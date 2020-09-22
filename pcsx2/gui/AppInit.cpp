@@ -243,11 +243,11 @@ void Pcsx2App::OnInitCmdLine( wxCmdLineParser& parser )
 
 	parser.AddSwitch( wxEmptyString,L"profiling",	_("update options to ease profiling (debug)") );
 
-	const PluginInfo* pi = tbl_PluginInfo; do {
+	ForPlugins([&] (const PluginInfo * pi) {
 		parser.AddOption( wxEmptyString, pi->GetShortname().Lower(),
 			pxsFmt( _("specify the file to use as the %s plugin"), WX_STR(pi->GetShortname()) )
 		);
-	} while( ++pi, pi->shortname != NULL );
+	});
 
 	parser.SetSwitchChars( L"-" );
 }
@@ -261,6 +261,7 @@ bool Pcsx2App::OnCmdLineError( wxCmdLineParser& parser )
 bool Pcsx2App::ParseOverrides( wxCmdLineParser& parser )
 {
 	wxString dest;
+	bool parsed = true;
 
 	if (parser.Found( L"cfgpath", &dest ) && !dest.IsEmpty())
 	{
@@ -287,34 +288,33 @@ bool Pcsx2App::ParseOverrides( wxCmdLineParser& parser )
 	if (parser.Found(L"fullscreen"))	Overrides.GsWindowMode = GsWinMode_Fullscreen;
 	if (parser.Found(L"windowed"))		Overrides.GsWindowMode = GsWinMode_Windowed;
 
-	const PluginInfo* pi = tbl_PluginInfo; do
-	{
-		if( !parser.Found( pi->GetShortname().Lower(), &dest ) ) continue;
-
-		if( wxFileExists( dest ) )
-			Console.Warning( pi->GetShortname() + L" override: " + dest );
-		else
+	ForPlugins([&] (const PluginInfo * pi) {
+		if (parser.Found( pi->GetShortname().Lower(), &dest))
 		{
-			wxDialogWithHelpers okcan( NULL, AddAppName(_("Plugin Override Error - %s")) );
+			if( wxFileExists( dest ) )
+				Console.Warning( pi->GetShortname() + L" override: " + dest );
+			else
+			{
+				wxDialogWithHelpers okcan( NULL, AddAppName(_("Plugin Override Error - %s")) );
 
-			okcan += okcan.Heading( wxsFormat(
-				_("%s Plugin Override Error!  The following file does not exist or is not a valid %s plugin:\n\n"),
-				pi->GetShortname().c_str(), pi->GetShortname().c_str()
-			) );
+				okcan += okcan.Heading( wxsFormat(
+					_("%s Plugin Override Error!  The following file does not exist or is not a valid %s plugin:\n\n"),
+					pi->GetShortname().c_str(), pi->GetShortname().c_str()
+				) );
 
-			okcan += okcan.GetCharHeight();
-			okcan += okcan.Text(dest);
-			okcan += okcan.GetCharHeight();
-			okcan += okcan.Heading(AddAppName(_("Press OK to use the default configured plugin, or Cancel to close %s.")));
+				okcan += okcan.GetCharHeight();
+				okcan += okcan.Text(dest);
+				okcan += okcan.GetCharHeight();
+				okcan += okcan.Heading(AddAppName(_("Press OK to use the default configured plugin, or Cancel to close %s.")));
 
-			if( wxID_CANCEL == pxIssueConfirmation( okcan, MsgButtons().OKCancel() ) ) return false;
+				if( wxID_CANCEL == pxIssueConfirmation( okcan, MsgButtons().OKCancel() ) ) parsed = false;
+			}
+
+			if (parsed) Overrides.Filenames.Plugins[pi->id] = dest;
 		}
-		
-		Overrides.Filenames.Plugins[pi->id] = dest;
+	});
 
-	} while( ++pi, pi->shortname != NULL );
-	
-	return true;
+	return parsed;
 }
 
 bool Pcsx2App::OnCmdLineParsed( wxCmdLineParser& parser )
