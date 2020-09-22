@@ -56,7 +56,14 @@ Devel
 
 oprofile_data/
 
-# Recording Specific Ignores (pcsx2-rr)
+# AppImage Generation
+*.AppImage
+/bin/usr
+/bin/.DirIcon
+/bin/AppRun
+/bin/*.desktop
+
+# Recording Specific Ignores
 *.p2s
 *.p2m2
 *.p2m2_backup
@@ -112,6 +119,7 @@ oprofile_data/
 /plugins/USBqemu/Win32/bin
 /tools/bin
 .vs
+.vscode
 
 /pcsx2/windows/VCprojects/GSdx_opengl_debug_hw.txt
 /pcsx2/windows/VCprojects/GSdx_opengl_debug_sw.txt
