@@ -72,6 +72,22 @@ jobs:
         if: steps.cache-submodules.outputs.cache-hit != 'true'
         run: git submodule update --init --recursive --jobs 2
 
+      - name: Prepare Artifact Git Info
+        shell: bash
+        run: |
+          echo "##[set-output name=branch;]${GITHUB_REF#refs/heads/}"
+          ARTIFACT_NAME="commit-$(git rev-parse --short "$GITHUB_SHA")"
+          if [ ${{ github.event_name == 'pull_request' }} ]; then
+            echo "##[set-output name=short-sha;]$(git rev-parse --short "${{ github.event.pull_request.head.sha }}")"
+            if [ ! -z "${{ github.event.pull_request.number }}" ]; then
+              ARTIFACT_NAME="pr-${{ github.event.pull_request.number }}-commit-$(git rev-parse --short "${{ github.event.pull_request.head.sha }}")"
+            fi
+          else
+            echo "##[set-output name=short-sha;]$(git rev-parse --short "$GITHUB_SHA")"
+          fi
+          echo "##[set-output name=artifact-metadata;]${ARTIFACT_NAME}"
+        id: git-vars
+
       # -- SETUP CCACHE - https://cristianadam.eu/20200113/speeding-up-c-plus-plus-github-actions-using-ccache/
       - name: Prepare ccache timestamp
         id: ccache_cache_timestamp
@@ -103,3 +119,13 @@ jobs:
       - name: Build PCSX2
         working-directory: ./build
         run: ../.github/workflows/scripts/linux/compile.sh
+
+      - name: Build AppImage Artifacts
+        run: ./.github/workflows/scripts/app-image.sh
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        continue-on-error: true
+        with:
+          name: PCSX2-linux-${{ matrix.platform }}-${{ steps.git-vars.outputs.artifact-metadata }}
+          path: ./PCSX2-*.AppImage

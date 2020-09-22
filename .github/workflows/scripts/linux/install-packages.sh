@@ -79,6 +79,33 @@ declare -a PCSX2_PACKAGES=(
   "zlib1g-dev"
 )
 
+# Many of these may not be required!
+# Extensive testing is required
+declare -a APP_IMAGE_PACKAGES=(
+  "libfuse2"
+  "libatspi2.0-0"
+  "libblkid1"
+  "libbsd0"
+  "libdatrie1"
+  "libdbus-1-3"
+  "libgcrypt20"
+  "libgraphite2-3"
+  "libjbig0"
+  "liblz4-1"
+  "lz4"
+  "liblzma5"
+  "libmount1"
+  "libpcre2-8-0"
+  "libselinux1"
+  "libsystemd0"
+  "libwebp6"
+  "libxau6"
+  "libxdmcp6"
+  "libzstd1"
+  "libcanberra-gtk-module"
+  "libcanberra-gtk3-module"
+)
+
 # - https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md
 ARCH=""
 echo "${PLATFORM}"
@@ -121,3 +148,10 @@ for i in "${PCSX2_PACKAGES[@]}"; do
 done
 echo "Will install the following packages for pcsx2 - ${PCSX2_PACKAGES_STR}"
 sudo apt-get -y install ${PCSX2_PACKAGES_STR}
+
+# Install packages needed for appimage construction
+APP_IMAGE_PACKAGES_STR=""
+for i in "${APP_IMAGE_PACKAGES[@]}"; do
+  APP_IMAGE_PACKAGES_STR="${APP_IMAGE_PACKAGES} ${i}${ARCH}"
+done
+echo "Will install the following packages for constructing the AppImage - ${APP_IMAGE_PACKAGES_STR}"
