@@ -518,7 +518,8 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 	// that write the bad alpha value. Sw blending will force the draw to run primitive by primitive
 	// (therefore primitiveID will be constant to 1).
 	// Switch DATE_GL42 with DATE_GL45 in such cases to ensure accuracy.
-	if (sw_blending && DATE_GL42) {
+	// No mix of COLCLIP + sw blend + DATE_GL42, neither sw fbmask + DATE_GL42.
+	if ((((accumulation_blend || blend_non_recursive) && m_env.COLCLAMP.CLAMP == 0) || sw_blending) && DATE_GL42) {
 		GL_PERF("DATE: Swap DATE_GL42 with DATE_GL45");
 		m_require_full_barrier = true;
 		DATE_GL42 = false;
@@ -553,12 +554,6 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 			m_ps_sel.hdr = 1;
 		}
 	}
-
-	// Seriously don't expect me to support this kind of crazyness.
-	// No mix of COLCLIP + accumulation_blend + DATE GL42
-	// Neither fbmask and GL42
-	ASSERT(!(m_ps_sel.hdr && DATE_GL42));
-	ASSERT(!(m_ps_sel.fbmask && DATE_GL42));
 
 	// For stat to optimize accurate option
 #if 0
