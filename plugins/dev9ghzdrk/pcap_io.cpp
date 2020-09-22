@@ -17,6 +17,7 @@
 #ifdef _WIN32
 #include <winsock2.h>
 #include <iphlpapi.h>
+#include <ws2tcpip.h>
 #include <windows.h>
 #include <comdef.h>
 #elif defined(__linux__)
@@ -267,31 +268,16 @@ void pcap_io_close()
 	#endif
 }
 
+void displayAddress(const SOCKET_ADDRESS& Address)
+{
+
+}
+
 
 int pcap_io_get_dev_num()
 { 
 	#ifdef _WIN32
-	static IP_ADAPTER_ADDRESSES AdapterInfo[128];
-	static PIP_ADAPTER_ADDRESSES pAdapterInfo;
-	ULONG dwBufLen = sizeof(AdapterInfo);
-	int i = 0;
-
-	DWORD dwStatus = GetAdaptersAddresses(
-		AF_UNSPEC,
-		GAA_FLAG_INCLUDE_PREFIX,
-		NULL,
-		AdapterInfo,
-		&dwBufLen);
-	if (dwStatus != ERROR_SUCCESS)
-		return 0;
-
-	pAdapterInfo = AdapterInfo;
-	do
-	{
-		pAdapterInfo = pAdapterInfo->Next;
-		i++;
-	} while (pAdapterInfo);
-	return i;
+	return 0;
 	#elif
 	pcap_if_t *alldevs;
 	pcap_if_t *d;
@@ -315,28 +301,6 @@ int pcap_io_get_dev_num()
 char* pcap_io_get_dev_name(int num)
 {
 	#ifdef _WIN32
-	static IP_ADAPTER_ADDRESSES AdapterInfo[128];
-	static PIP_ADAPTER_ADDRESSES pAdapterInfo;
-	ULONG dwBufLen = sizeof(AdapterInfo);
-	int i = 0;
-
-	DWORD dwStatus = GetAdaptersAddresses(
-		AF_UNSPEC,
-		GAA_FLAG_INCLUDE_PREFIX,
-		NULL,
-		AdapterInfo,
-		&dwBufLen);
-	if (dwStatus != ERROR_SUCCESS)
-		return 0;
-
-	pAdapterInfo = AdapterInfo;
-	do
-	{
-		if (i == num)
-			return pAdapterInfo->AdapterName;
-		pAdapterInfo = pAdapterInfo->Next;
-		i++;
-	} while (pAdapterInfo);
 	#elif
 	pcap_if_t *alldevs;
 	pcap_if_t *d;
@@ -366,31 +330,6 @@ char* pcap_io_get_dev_name(int num)
 char* pcap_io_get_dev_desc(int num)
 {
 	#ifdef _WIN32
-	static IP_ADAPTER_ADDRESSES AdapterInfo[128];
-	static PIP_ADAPTER_ADDRESSES pAdapterInfo;
-	ULONG dwBufLen = sizeof(AdapterInfo);
-	int i = 0;
-
-	DWORD dwStatus = GetAdaptersAddresses(
-		AF_UNSPEC,
-		GAA_FLAG_INCLUDE_PREFIX,
-		NULL,
-		AdapterInfo,
-		&dwBufLen);
-	if (dwStatus != ERROR_SUCCESS)
-		return 0;
-
-	pAdapterInfo = AdapterInfo;
-	do
-	{
-		if (i == num)
-		{
-			_bstr_t b(pAdapterInfo->Description);
-			return b;
-		}
-		pAdapterInfo = pAdapterInfo->Next;
-		i++;
-	} while (pAdapterInfo);
 	#elif
 	pcap_if_t *alldevs;
 	pcap_if_t *d;

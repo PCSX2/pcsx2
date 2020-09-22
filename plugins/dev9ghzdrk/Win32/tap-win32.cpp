@@ -28,6 +28,7 @@
  */
 #include <stdio.h>
 #include <windows.h>
+#include <tchar.h>
 #include "tap.h"
 #include "..\dev9.h"
 #include <string>
@@ -64,245 +65,147 @@
 #define USERMODEDEVICEDIR "\\\\.\\Global\\"
 #define TAPSUFFIX         ".tap"
 
-#define TAP_COMPONENT_ID "tap0801"
+#define TAP_COMPONENT_ID "tap0901"
 
-vector<string>* get_tap_reg ()
+bool IsTAPDevice(const TCHAR* guid)
 {
-  vector<string>* names = new vector<string>();
-  HKEY adapter_key;
-  LONG status;
-  DWORD len;
+	HKEY netcard_key;
+	LONG status;
+	DWORD len;
+	int i = 0;
 
-  int i = 0;
+	status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, ADAPTER_KEY, 0, KEY_READ, &netcard_key);
 
-  status = RegOpenKeyEx(
-			HKEY_LOCAL_MACHINE,
-			ADAPTER_KEY,
-			0,
-			KEY_READ,
-			&adapter_key);
+	if (status != ERROR_SUCCESS)
+		return false;
 
-  if (status != ERROR_SUCCESS)
-    printf ( "Error opening registry key: %s", ADAPTER_KEY);
-
-  while (true)
-    {
-      char enum_name[256];
-      char unit_string[256];
-      HKEY unit_key;
-      char component_id_string[] = "ComponentId";
-      char component_id[256];
-      char net_cfg_instance_id_string[] = "NetCfgInstanceId";
-      char net_cfg_instance_id[256];
-      DWORD data_type;
-
-      len = sizeof (enum_name);
-      status = RegEnumKeyEx(
-			    adapter_key,
-			    i,
-			    enum_name,
-			    &len,
-			    NULL,
-			    NULL,
-			    NULL,
-			    NULL);
-      if (status == ERROR_NO_MORE_ITEMS)
-	break;
-      else if (status != ERROR_SUCCESS)
-	printf ( "Error enumerating registry subkeys of key: %s",
-	     ADAPTER_KEY);
-
-	  _snprintf (unit_string, sizeof(unit_string), "%s\\%s",
-			ADAPTER_KEY, enum_name);
-
-      status = RegOpenKeyEx(
-			    HKEY_LOCAL_MACHINE,
-			    unit_string,
-			    0,
-			    KEY_READ,
-			    &unit_key);
-
-      if (status != ERROR_SUCCESS)
-	printf ( "Error opening registry key: %s", unit_string);
-      else
+	for (;;)
 	{
-	  len = sizeof (component_id);
-	  status = RegQueryValueEx(
-				   unit_key,
-				   component_id_string,
-				   NULL,
-				   &data_type,
-				   (LPBYTE)component_id,
-				   &len);
+		TCHAR enum_name[256];
+		TCHAR unit_string[256];
+		HKEY unit_key;
+		TCHAR component_id_string[] = _T("ComponentId");
+		TCHAR component_id[256];
+		TCHAR net_cfg_instance_id_string[] = _T("NetCfgInstanceId");
+		TCHAR net_cfg_instance_id[256];
+		DWORD data_type;
 
-	  if (status != ERROR_SUCCESS || data_type != REG_SZ)
-	    printf ( "Error opening registry key: %s\\%s",
-		 unit_string, component_id_string);
-	  else
-	    {	      
-	      len = sizeof (net_cfg_instance_id);
-	      status = RegQueryValueEx(
-				       unit_key,
-				       net_cfg_instance_id_string,
-				       NULL,
-				       &data_type,
-				       (LPBYTE)net_cfg_instance_id,
-				       &len);
+		len = sizeof(enum_name);
+		status = RegEnumKeyEx(netcard_key, i, enum_name, &len, nullptr, nullptr, nullptr, nullptr);
 
-			if (status == ERROR_SUCCESS && data_type == REG_SZ)
+		if (status == ERROR_NO_MORE_ITEMS)
+			break;
+		else if (status != ERROR_SUCCESS)
+			return false;
+
+		_sntprintf(unit_string, sizeof(unit_string), _T("%s\\%s"), ADAPTER_KEY, enum_name);
+
+		status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, unit_string, 0, KEY_READ, &unit_key);
+
+		if (status != ERROR_SUCCESS)
+		{
+			return false;
+		}
+		else
+		{
+			len = sizeof(component_id);
+			status = RegQueryValueEx(unit_key, component_id_string, nullptr, &data_type,
+									 (LPBYTE)component_id, &len);
+
+			if (!(status != ERROR_SUCCESS || data_type != REG_SZ))
 			{
-				if(!memcmp(component_id, "tap",3))
-				{
-					printf("*** Found possible tap adapter: %s\n",component_id);
+				len = sizeof(net_cfg_instance_id);
+				status = RegQueryValueEx(unit_key, net_cfg_instance_id_string, nullptr, &data_type,
+										 (LPBYTE)net_cfg_instance_id, &len);
 
-					int version = atoi(component_id+3);
-					if(version>=800)
+				if (status == ERROR_SUCCESS && data_type == REG_SZ)
+				{
+					// tap_ovpnconnect, tap0901 or root\tap, no clue why
+					if (!strncmp(component_id, "tap", 3) || !strncmp(component_id, "root\\tap", 8))
 					{
-						names->push_back(net_cfg_instance_id);
+						RegCloseKey(unit_key);
+						RegCloseKey(netcard_key);
+						return true;
 					}
 				}
 			}
-	    }
-	  RegCloseKey (unit_key);
+			RegCloseKey(unit_key);
+		}
+		++i;
 	}
-      ++i;
-    }
 
-  RegCloseKey (adapter_key);
-  return names;
+	RegCloseKey(netcard_key);
+	return false;
 }
-
-struct temp_11{string name;string guid;};
-vector<temp_11>*  get_panel_reg ()
-{
-  LONG status;
-  HKEY network_connections_key;
-  DWORD len;
-  vector<temp_11>* names = new vector<temp_11>();
-  int i = 0;
-
-  status = RegOpenKeyEx(
-			HKEY_LOCAL_MACHINE,
-			NETWORK_CONNECTIONS_KEY,
-			0,
-			KEY_READ,
-			&network_connections_key);
-
-  if (status != ERROR_SUCCESS)
-    printf ( "Error opening registry key: %s", NETWORK_CONNECTIONS_KEY);
-
-  while (true)
-    {
-      char enum_name[256];
-      char connection_string[256];
-      HKEY connection_key;
-      char name_data[256];
-      DWORD name_type;
-      const char name_string[] = "Name";
-
-      len = sizeof (enum_name);
-      status = RegEnumKeyEx(
-			    network_connections_key,
-			    i,
-			    enum_name,
-			    &len,
-			    NULL,
-			    NULL,
-			    NULL,
-			    NULL);
-      if (status == ERROR_NO_MORE_ITEMS)
-	break;
-      else if (status != ERROR_SUCCESS)
-	printf ( "Error enumerating registry subkeys of key: %s",
-	     NETWORK_CONNECTIONS_KEY);
-
-      _snprintf (connection_string, sizeof(connection_string),
-			"%s\\%s\\Connection",
-			NETWORK_CONNECTIONS_KEY, enum_name);
-
-      status = RegOpenKeyEx(
-			    HKEY_LOCAL_MACHINE,
-			    connection_string,
-			    0,
-			    KEY_READ,
-			    &connection_key);
-
-      if (status != ERROR_SUCCESS)
-	printf ( "Error opening registry key: %s", connection_string);
-      else
-	{
-	  len = sizeof (name_data);
-	  status = RegQueryValueEx(
-				   connection_key,
-				   name_string,
-				   NULL,
-				   &name_type,
-				   (LPBYTE)name_data,
-				   &len);
-
-	  if (status != ERROR_SUCCESS || name_type != REG_SZ)
-	    printf ( "Error opening registry key: %s\\%s\\%s",
-		 NETWORK_CONNECTIONS_KEY, connection_string, name_string);
-	  else
-	    {
-		  temp_11 t = {name_data,enum_name};
-		  names->push_back(t);
-
-	    }
-	  RegCloseKey (connection_key);
-	}
-      ++i;
-    }
-
-  RegCloseKey (network_connections_key);
-
-  return names;
-}
-
 
 vector<tap_adapter>* GetTapAdapters()
 {
-	vector<tap_adapter>* rv = new vector<tap_adapter>();
-	int links;
+	vector<tap_adapter>* tap_nic = new vector<tap_adapter>();
+	LONG status;
+	HKEY control_net_key;
+	DWORD len;
+	DWORD cSubKeys = 0;
 
-	vector<string> *tap_reg = get_tap_reg ();
-	vector<temp_11> *panel_reg = get_panel_reg ();
+	status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, NETWORK_CONNECTIONS_KEY, 0, KEY_READ | KEY_QUERY_VALUE,
+						  &control_net_key);
 
-	printf ( "\nAvailable TAP-WIN32 adapters [name, GUID]:\n");
+	if (status != ERROR_SUCCESS)
+		return false;
 
-	/* loop through each TAP-Win32 adapter registry entry */
-	for (size_t i = 0; i<tap_reg->size();i++)
+	status = RegQueryInfoKey(control_net_key, nullptr, nullptr, nullptr, &cSubKeys, nullptr, nullptr,
+							 nullptr, nullptr, nullptr, nullptr, nullptr);
+
+	if (status != ERROR_SUCCESS)
+		return false;
+
+	for (DWORD i = 0; i < cSubKeys; i++)
 	{
-		links = 0;
+		TCHAR enum_name[256];
+		TCHAR connection_string[256];
+		HKEY connection_key;
+		TCHAR name_data[256];
+		DWORD name_type;
+		const TCHAR name_string[] = _T("Name");
 
-		/* loop through each network connections entry in the control panel */
-		for (size_t j = 0; j<panel_reg->size();j++)
+		len = sizeof(enum_name);
+		status = RegEnumKeyEx(control_net_key, i, enum_name, &len, nullptr, nullptr, nullptr, nullptr);
+
+		if (status != ERROR_SUCCESS)
+			continue;
+
+		_sntprintf(connection_string, sizeof(connection_string), _T("%s\\%s\\Connection"),
+				   NETWORK_CONNECTIONS_KEY, enum_name);
+
+		status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, connection_string, 0, KEY_READ, &connection_key);
+
+		if (status == ERROR_SUCCESS)
 		{
-			if (!strcmp ((*tap_reg)[i].c_str(), (*panel_reg)[j].guid.c_str()))
+			len = sizeof(name_data);
+			status = RegQueryValueEx(connection_key, name_string, nullptr, &name_type, (LPBYTE)name_data,
+									 &len);
+
+			if (status != ERROR_SUCCESS || name_type != REG_SZ)
 			{
-				//printf ("'%s' %s\n", (*panel_reg)[j].name.c_str(),(*tap_reg)[i].c_str());
-				tap_adapter t = { (*panel_reg)[j].name,(*tap_reg)[i]};
-				t.guid= string("tap:") + t.guid;
-				t.name=string("tap:") + t.name;
-				rv->push_back(t);
-				++links;
+				continue;
 			}
-		}
+			else
+			{
+				if (IsTAPDevice(enum_name))
+				{
+					std::string tmp = name_data;
+					std::string tmp2 = enum_name;
+					tap_adapter t = {tmp, tmp2};
+					tap_nic->push_back(t);
+				}
+			}
 
-		if (links > 1)
-		{
-			//warn_panel_dup = true;
-		}
-		else if (links == 0)
-		{
-			/* a TAP adapter exists without a link from the network
-			connections control panel */
-//			warn_panel_null = true;
-			printf ("[NULL] %s\n",(*tap_reg)[i].c_str());
+			RegCloseKey(connection_key);
 		}
 	}
-	delete tap_reg,panel_reg;
-	return rv;
+
+	RegCloseKey(control_net_key);
+
+	return tap_nic;
 }
 
 //Set the connection status
@@ -364,7 +267,11 @@ HANDLE TAPOpen(const char *device_guid)
 
 TAPAdapter::TAPAdapter()
 {
-	htap=TAPOpen(config.Eth+4);
+	if (config.ethEnable == 0)
+		return;
+	htap = TAPOpen(config.Eth);
+	if (htap == INVALID_HANDLE_VALUE)
+		SysMessage("Can't open Device '%s'\n", config.Eth);
 
     read.Offset = 0;
     read.OffsetHigh = 0;
