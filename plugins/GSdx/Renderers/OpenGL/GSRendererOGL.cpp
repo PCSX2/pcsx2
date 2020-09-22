@@ -446,7 +446,7 @@ void GSRendererOGL::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 	}
 }
 
-void GSRendererOGL::EmulateBlending(bool DATE_GL42)
+void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 {
 	GSDeviceOGL* dev         = (GSDeviceOGL*)m_dev;
 	const GIFRegALPHA& ALPHA = m_context->ALPHA;
@@ -516,8 +516,14 @@ void GSRendererOGL::EmulateBlending(bool DATE_GL42)
 	// SW Blending
 	// GL42 interact very badly with sw blending. GL42 uses the primitiveID to find the primitive
 	// that write the bad alpha value. Sw blending will force the draw to run primitive by primitive
-	// (therefore primitiveID will be constant to 1)
-	sw_blending &= !DATE_GL42;
+	// (therefore primitiveID will be constant to 1).
+	// Switch DATE_GL42 with DATE_GL45 in such cases to ensure accuracy.
+	if (sw_blending && DATE_GL42) {
+		GL_PERF("DATE: Swap DATE_GL42 with DATE_GL45");
+		m_require_full_barrier = true;
+		DATE_GL42 = false;
+		DATE_GL45 = true;
+	}
 
 	// Color clip
 	if (m_env.COLCLAMP.CLAMP == 0) {
@@ -1055,10 +1061,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		if (m_prim_overlap == PRIM_OVERLAP_NO || m_texture_shuffle) {
 			// It is way too complex to emulate texture shuffle with DATE. So just use
 			// the slow but accurate algo
-			GL_PERF("DATE with %s", m_texture_shuffle ? "texture shuffle" : "no prim overlap");
+			GL_PERF("DATE: With %s", m_texture_shuffle ? "texture shuffle" : "no prim overlap");
 			m_require_full_barrier = true;
 			DATE_GL45 = true;
-			DATE = false;
 		} else if (m_om_csel.wa && !m_context->TEST.ATE) {
 			// Performance note: check alpha range with GetAlphaMinMax()
 			// Note: all my dump are already above 120fps, but it seems to reduce GPU load
@@ -1066,38 +1071,36 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			GetAlphaMinMax();
 			if (m_context->TEST.DATM && m_vt.m_alpha.max < 128) {
 				// Only first pixel (write 0) will pass (alpha is 1)
-				GL_PERF("Fast DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+				GL_PERF("DATE: Fast with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 				DATE_one = true;
 			} else if (!m_context->TEST.DATM && m_vt.m_alpha.min >= 128) {
 				// Only first pixel (write 1) will pass (alpha is 0)
-				GL_PERF("Fast DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+				GL_PERF("DATE: Fast with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 				DATE_one = true;
 			} else if ((m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 50) || (m_index.tail < 100)) {
 				// texture barrier will split the draw call into n draw call. It is very efficient for
 				// few primitive draws. Otherwise it sucks.
-				GL_PERF("Slower DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+				GL_PERF("DATE: Slow with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 				m_require_full_barrier = true;
 				DATE_GL45 = true;
-				DATE = false;
 			} else {
 				switch (m_accurate_date) {
 					case ACC_DATE_FULL:
-						GL_PERF("Full Accurate DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+						GL_PERF("DATE: Full AD with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 						if (GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture) {
 							DATE_GL42 = true;
 						} else {
 							m_require_full_barrier = true;
 							DATE_GL45 = true;
-							DATE = false;
 						}
 						break;
 					case ACC_DATE_FAST:
-						GL_PERF("Fast Accurate DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+						GL_PERF("DATE: Fast AD with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 						DATE_one = true;
 						break;
 					case ACC_DATE_NONE:
 					default:
-						GL_PERF("Inaccurate DATE with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+						GL_PERF("DATE: Off AD with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 						break;
 				}
 			}
@@ -1117,7 +1120,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Blend
 
 	if (!IsOpaque() && rt) {
-		EmulateBlending(DATE_GL42);
+		EmulateBlending(DATE_GL42, DATE_GL45);
 	} else {
 		dev->OMSetBlendState(); // No blending please
 	}
@@ -1127,9 +1130,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		m_om_csel.wa = 0;
 	}
 
-	// DATE (setup part)
+	// DATE setup, no DATE_GL45 please
 
-	if (DATE) {
+	if (DATE && !DATE_GL45) {
 		GSVector4i dRect = ComputeBoundingBox(rtscale, rtsize);
 
 		// Reduce the quantity of clean function
