@@ -17,7 +17,7 @@ Var UserPrivileges
 Var IsAdmin
 
 !ifndef APP_VERSION
-  !define APP_VERSION      "1.6.0"
+  !define APP_VERSION      "1.8.0"
 !endif
 
 !define APP_NAME         "PCSX2 ${APP_VERSION}"
