@@ -393,6 +393,12 @@ static void recCFC2()
 		xMOV(eax, ptr32[&vu0Regs.VI[_Rd_].UL]);
 
 	// FixMe: Should R-Reg have upper 9 bits 0?
+#ifdef __M_X86_64
+	if (_Rd_ >= 16)
+		xCDQE(); // Sign Extend
+
+	xMOV(ptr64[&cpuRegs.GPR.r[_Rt_].UD[0]], rax);
+#else
 	xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
 
 	if (_Rd_ >= 16)
@@ -403,6 +409,7 @@ static void recCFC2()
 	}
 	else
 		xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], 0);
+#endif
 
 	// FixMe: I think this is needed, but not sure how it works
 	// Update Refraction 20/09/2021: This is needed because Const Prop is broken

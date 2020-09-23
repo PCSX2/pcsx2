@@ -1156,6 +1156,7 @@ const xRegister32
 	__fi void xCWD() { xWrite8(0x98); }
 	__fi void xCDQ() { xWrite8(0x99); }
 	__fi void xCWDE() { xWrite8(0x98); }
+	__fi void xCDQE() { xWrite16(0x9848); }
 
 	__fi void xLAHF() { xWrite8(0x9f); }
 	__fi void xSAHF() { xWrite8(0x9e); }
@@ -1365,6 +1366,16 @@ const xRegister32
 		}
 #else
 		xMOV(dst, (sptr)addr);
+#endif
+	}
+
+	void xWriteImm64ToMem(u64* addr, const xAddressReg& tmp, u64 imm)
+	{
+#ifdef __M_X86_64
+		xImm64Op(xMOV, ptr64[addr], tmp, imm);
+#else
+		xMOV(ptr32[(u32*)addr], (u32)(imm & 0xFFFFFFFF));
+		xMOV(ptr32[(u32*)addr + 1], (u32)(imm >> 32));
 #endif
 	}
 

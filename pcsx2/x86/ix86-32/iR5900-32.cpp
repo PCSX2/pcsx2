@@ -218,12 +218,29 @@ void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr)
 	}
 }
 
+void _signExtendToMem(void* mem)
+{
+#ifdef __M_X86_64
+	xCDQE();
+	xMOV(ptr64[mem], rax);
+#else
+	xCDQ();
+	xMOV(ptr32[mem], eax);
+	xMOV(ptr32[(void*)((sptr)mem + 4)], edx);
+#endif
+}
+
 void eeSignExtendTo(int gpr, bool onlyupper)
 {
-	xCDQ();
-	if (!onlyupper)
-		xMOV(ptr32[&cpuRegs.GPR.r[gpr].UL[0]], eax);
-	xMOV(ptr32[&cpuRegs.GPR.r[gpr].UL[1]], edx);
+	if (onlyupper)
+	{
+		xCDQ();
+		xMOV(ptr32[&cpuRegs.GPR.r[gpr].UL[1]], edx);
+	}
+	else
+	{
+		_signExtendToMem(&cpuRegs.GPR.r[gpr].UD[0]);
+	}
 }
 
 int _flushXMMunused()

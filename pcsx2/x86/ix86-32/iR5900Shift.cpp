@@ -69,9 +69,7 @@ void recSLLs_(int info, int sa)
 		xSHL(eax, sa);
 	}
 
-	xCDQ();
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
+	eeSignExtendTo(_Rd_);
 }
 
 void recSLL_(int info)
@@ -95,9 +93,7 @@ void recSRLs_(int info, int sa)
 	if (sa != 0)
 		xSHR(eax, sa);
 
-	xCDQ();
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
+	eeSignExtendTo(_Rd_);
 }
 
 void recSRL_(int info)
@@ -121,9 +117,7 @@ void recSRAs_(int info, int sa)
 	if (sa != 0)
 		xSAR(eax, sa);
 
-	xCDQ();
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
+	eeSignExtendTo(_Rd_);
 }
 
 void recSRA_(int info)
@@ -141,9 +135,15 @@ void recDSLL_const()
 
 void recDSLLs_(int info, int sa)
 {
-	int rtreg, rdreg;
 	pxAssert(!(info & PROCESS_EE_XMM));
 
+#ifdef __M_X86_64
+	xMOV(rax, ptr[&cpuRegs.GPR.r[_Rt_].UD[0]]);
+	if (sa != 0)
+		xSHL(rax, sa);
+	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
+#else
+	int rtreg, rdreg;
 	_addNeededGPRtoXMMreg(_Rt_);
 	_addNeededGPRtoXMMreg(_Rd_);
 	rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
@@ -159,6 +159,7 @@ void recDSLLs_(int info, int sa)
 	xMOVL.PD(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(rdreg));
 	_deleteGPRtoXMMreg(_Rt_, 3);
 	_deleteGPRtoXMMreg(_Rd_, 3);
+#endif
 }
 
 void recDSLL_(int info)
@@ -176,9 +177,15 @@ void recDSRL_const()
 
 void recDSRLs_(int info, int sa)
 {
-	int rtreg, rdreg;
 	pxAssert(!(info & PROCESS_EE_XMM));
 
+#ifdef __M_X86_64
+	xMOV(rax, ptr[&cpuRegs.GPR.r[_Rt_].UD[0]]);
+	if (sa != 0)
+		xSHR(rax, sa);
+	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
+#else
+	int rtreg, rdreg;
 	_addNeededGPRtoXMMreg(_Rt_);
 	_addNeededGPRtoXMMreg(_Rd_);
 	rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
@@ -194,6 +201,7 @@ void recDSRLs_(int info, int sa)
 	xMOVL.PD(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(rdreg));
 	_deleteGPRtoXMMreg(_Rt_, 3);
 	_deleteGPRtoXMMreg(_Rd_, 3);
+#endif
 }
 
 void recDSRL_(int info)
@@ -211,9 +219,15 @@ void recDSRA_const()
 
 void recDSRAs_(int info, int sa)
 {
-	int rtreg, rdreg, t0reg;
 	pxAssert(!(info & PROCESS_EE_XMM));
 
+#ifdef __M_X86_64
+	xMOV(rax, ptr[&cpuRegs.GPR.r[_Rt_].UD[0]]);
+	if (sa != 0)
+		xSAR(rax, sa);
+	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
+#else
+	int rtreg, rdreg, t0reg;
 	_addNeededGPRtoXMMreg(_Rt_);
 	_addNeededGPRtoXMMreg(_Rd_);
 	rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
@@ -250,6 +264,7 @@ void recDSRAs_(int info, int sa)
 	xMOVL.PD(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(rdreg));
 	_deleteGPRtoXMMreg(_Rt_, 3);
 	_deleteGPRtoXMMreg(_Rd_, 3);
+#endif
 }
 
 void recDSRA_(int info)
@@ -270,12 +285,17 @@ void recDSLL32s_(int info, int sa)
 	pxAssert(!(info & PROCESS_EE_XMM));
 
 	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+#ifdef __M_X86_64
+	xSHL(rax, sa + 32);
+	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
+#else
 	if (sa != 0)
 	{
 		xSHL(eax, sa);
 	}
 	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[0]], 0);
 	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], eax);
+#endif
 }
 
 void recDSLL32_(int info)
@@ -299,8 +319,12 @@ void recDSRL32s_(int info, int sa)
 	if (sa != 0)
 		xSHR(eax, sa);
 
+#ifdef __M_X86_64
+	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
+#else
 	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
 	xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[1]], 0);
+#endif
 }
 
 void recDSRL32_(int info)
@@ -318,6 +342,9 @@ void recDSRA32_const()
 
 void recDSRA32s_(int info, int sa)
 {
+#ifdef __M_X86_64
+	recDSRAs_(info, sa + 32);
+#else
 	pxAssert(!(info & PROCESS_EE_XMM));
 
 	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[1]]);
@@ -327,6 +354,7 @@ void recDSRA32s_(int info, int sa)
 
 	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
 	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
+#endif
 }
 
 void recDSRA32_(int info)
@@ -361,6 +389,31 @@ static void recShiftV(const xImpl_Group2& shift)
 	}
 	eeSignExtendTo(_Rd_);
 }
+
+#ifdef __M_X86_64
+
+static void recDShiftV_constt(const xImpl_Group2& shift)
+{
+	xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+
+	xMOV64(rax, g_cpuConstRegs[_Rt_].UD[0]);
+	shift(rax, cl);
+
+	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
+}
+
+static void recDShiftV(const xImpl_Group2& shift)
+{
+	xMOV(rax, ptr[&cpuRegs.GPR.r[_Rt_].UD[0]]);
+	if (_Rs_ != 0)
+	{
+		xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+		shift(rax, cl);
+	}
+	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
+}
+
+#else
 
 __aligned16 u32 s_sa[4] = {0x1f, 0, 0x3f, 0};
 
@@ -402,6 +455,7 @@ void recSetConstShiftV(int info, int* rsreg, int* rdreg, int* rstemp)
 	xMOVDZX(xRegisterSSE(*rstemp), eax);
 	*rsreg = *rstemp;
 }
+#endif
 
 //// SLLV
 void recSLLV_const()
@@ -489,6 +543,9 @@ void recDSLLV_consts(int info)
 
 void recDSLLV_constt(int info)
 {
+#ifdef __M_X86_64
+	recDShiftV_constt(xSHL);
+#else
 	int rsreg, rdreg, rstemp = -1;
 	recSetConstShiftV(info, &rsreg, &rdreg, &rstemp);
 	xMOVDQA(xRegisterSSE(rdreg), ptr[&cpuRegs.GPR.r[_Rt_]]);
@@ -502,10 +559,14 @@ void recDSLLV_constt(int info)
 	xMOVL.PD(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(rdreg));
 	//_deleteGPRtoXMMreg(_Rt_, 3);
 	_deleteGPRtoXMMreg(_Rd_, 3);
+#endif
 }
 
 void recDSLLV_(int info)
 {
+#ifdef __M_X86_64
+	recDShiftV(xSHL);
+#else
 	int rsreg, rtreg, rdreg, rstemp = -1;
 	recSetShiftV(info, &rsreg, &rtreg, &rdreg, &rstemp);
 
@@ -519,6 +580,7 @@ void recDSLLV_(int info)
 	xMOVL.PD(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(rdreg));
 	_deleteGPRtoXMMreg(_Rt_, 3);
 	_deleteGPRtoXMMreg(_Rd_, 3);
+#endif
 }
 
 EERECOMPILE_CODE0(DSLLV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
@@ -540,6 +602,9 @@ void recDSRLV_consts(int info)
 
 void recDSRLV_constt(int info)
 {
+#ifdef __M_X86_64
+	recDShiftV_constt(xSHR);
+#else
 	int rsreg, rdreg, rstemp = -1;
 	recSetConstShiftV(info, &rsreg, &rdreg, &rstemp);
 
@@ -554,10 +619,14 @@ void recDSRLV_constt(int info)
 	xMOVL.PD(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(rdreg));
 	//_deleteGPRtoXMMreg(_Rt_, 3);
 	_deleteGPRtoXMMreg(_Rd_, 3);
+#endif
 }
 
 void recDSRLV_(int info)
 {
+#ifdef __M_X86_64
+	recDShiftV(xSHR);
+#else
 	int rsreg, rtreg, rdreg, rstemp = -1;
 	recSetShiftV(info, &rsreg, &rtreg, &rdreg, &rstemp);
 
@@ -571,6 +640,7 @@ void recDSRLV_(int info)
 	xMOVL.PD(ptr64[&cpuRegs.GPR.r[_Rd_].UD[0]], xRegisterSSE(rdreg));
 	_deleteGPRtoXMMreg(_Rt_, 3);
 	_deleteGPRtoXMMreg(_Rd_, 3);
+#endif
 }
 
 EERECOMPILE_CODE0(DSRLV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
@@ -592,6 +662,9 @@ void recDSRAV_consts(int info)
 
 void recDSRAV_constt(int info)
 {
+#ifdef __M_X86_64
+	recDShiftV_constt(xSAR);
+#else
 	int rsreg, rdreg, rstemp = -1, t0reg, t1reg;
 	t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	t1reg = _allocTempXMMreg(XMMT_INT, -1);
@@ -627,10 +700,14 @@ void recDSRAV_constt(int info)
 	_freeXMMreg(t1reg);
 	if (rstemp != -1)
 		_freeXMMreg(rstemp);
+#endif
 }
 
 void recDSRAV_(int info)
 {
+#ifdef __M_X86_64
+	recDShiftV(xSAR);
+#else
 	int rsreg, rtreg, rdreg, rstemp = -1, t0reg, t1reg;
 	t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	t1reg = _allocTempXMMreg(XMMT_INT, -1);
@@ -665,6 +742,7 @@ void recDSRAV_(int info)
 	_freeXMMreg(t1reg);
 	if (rstemp != -1)
 		_freeXMMreg(rstemp);
+#endif
 }
 
 EERECOMPILE_CODE0(DSRAV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
