@@ -270,7 +270,7 @@ typedef void(CALLBACK *_GSsetExclusive)(int isExclusive);
 typedef std::wstring*(CALLBACK *_GSsetupRecording)(int);
 typedef void(CALLBACK *_GSreset)();
 typedef void(CALLBACK *_GSwriteCSR)(u32 value);
-typedef void(CALLBACK *_GSmakeSnapshot)(const char *path);
+typedef bool(CALLBACK *_GSmakeSnapshot)(const char *path);
 typedef void(CALLBACK *_GSmakeSnapshot2)(const char *path, int *, int);
 
 // PAD
