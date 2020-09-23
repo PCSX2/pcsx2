@@ -121,11 +121,18 @@ jobs:
         run: ../.github/workflows/scripts/linux/compile.sh
 
       - name: Build AppImage Artifacts
+        env:
+          PLATFORM: ${{ matrix.platform }}
         run: ./.github/workflows/scripts/app-image.sh
+
+      - name: Tar AppImage to Preserve File Permissions
+        # https://github.com/actions/upload-artifact#maintaining-file-permissions-and-case-sensitive-files
+        continue-on-error: true
+        run: tar -cvf appImage.tar ./PCSX2.AppImage
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         continue-on-error: true
         with:
-          name: PCSX2-linux-${{ matrix.platform }}-${{ steps.git-vars.outputs.artifact-metadata }}
-          path: ./PCSX2-*.AppImage
+          name: PCSX2-linux-${{ matrix.platform }}-${{ matrix.compiler }}-${{ steps.git-vars.outputs.artifact-metadata }}
+          path: appImage.tar

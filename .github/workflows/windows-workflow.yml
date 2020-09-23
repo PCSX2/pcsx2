@@ -100,7 +100,7 @@ jobs:
       - name: Build PCSX2
         run: msbuild "buildbot.xml" /m /v:n /t:ReleaseAll /p:Platform=${{ matrix.platform }}
 
-      - name: Upload artifact
+      - name: Upload Artifact
         uses: actions/upload-artifact@v2
         continue-on-error: true
         with:

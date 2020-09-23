@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=PCSX2
+GenericName=PlayStation 2 Emulator
+Comment=The PlayStation 2 Emulator
+Icon=PCSX2
+TryExec=PCSX2
+Exec=PCSX2 %f
+Terminal=false
+Categories=Game;Emulator;
+Keywords=PS2;Playstation;

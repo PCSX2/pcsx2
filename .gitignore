@@ -58,10 +58,8 @@ oprofile_data/
 
 # AppImage Generation
 *.AppImage
-/bin/usr
-/bin/.DirIcon
-/bin/AppRun
-/bin/*.desktop
+/.appdir
+appImage.tar
 
 # Recording Specific Ignores
 *.p2s
