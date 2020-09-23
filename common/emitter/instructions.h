@@ -168,6 +168,7 @@ namespace x86Emitter
 	extern void xCWD();
 	extern void xCDQ();
 	extern void xCWDE();
+	extern void xCDQE();
 
 	extern void xLAHF();
 	extern void xSAHF();
@@ -215,6 +216,31 @@ namespace x86Emitter
 	/// On i386, resolves to `mov dst, (sptr)addr`
 	/// On x86-64, resolves to either `mov dst, (sptr)addr` or `lea dst, [addr]` depending on the distance from RIP
 	void xLoadFarAddr(const xAddressReg& dst, void* addr);
+
+	//////////////////////////////////////////////////////////////////////////////////////////
+	/// Helper function to write a 64-bit constant to memory
+	/// May use `tmp` on x86-64
+	void xWriteImm64ToMem(u64* addr, const xAddressReg& tmp, u64 imm);
+
+#ifdef __M_X86_64
+	//////////////////////////////////////////////////////////////////////////////////////////
+	/// Helper function to run operations with large immediates
+	/// If the immediate fits in 32 bits, runs op(target, imm)
+	/// Otherwise, loads imm into tmpRegister and then runs op(dst, tmp)
+	template <typename Op, typename Dst>
+	void xImm64Op(const Op& op, const Dst& dst, const xRegister64& tmpRegister, s64 imm)
+	{
+		if (imm == (s32)imm)
+		{
+			op(dst, imm);
+		}
+		else
+		{
+			xMOV64(tmpRegister, imm);
+			op(dst, tmpRegister);
+		}
+	}
+#endif
 
 	//////////////////////////////////////////////////////////////////////////////////////////
 	// JMP / Jcc Instructions!

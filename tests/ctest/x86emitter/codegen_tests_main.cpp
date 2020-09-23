@@ -51,6 +51,9 @@ TEST(CodegenTests, MOVTest)
 	CODEGEN_TEST_64(xMOV64(rax, 0x1234567890), "48 b8 90 78 56 34 12 00 00 00");
 	CODEGEN_TEST_64(xMOV64(r8, 0x1234567890), "49 b8 90 78 56 34 12 00 00 00");
 	CODEGEN_TEST_64(xMOV(ptr32[base], 0x12), "c7 05 f6 ff ff ff 12 00 00 00");
+	CODEGEN_TEST_BOTH(xMOVSX(eax, dx), "0f bf c2");
+	CODEGEN_TEST_64(xMOVSX(rax, r8d), "49 63 c0");
+	CODEGEN_TEST_64(xMOVSX(rax, ebx), "48 63 c3");
 }
 
 TEST(CodegenTests, LEATest)

@@ -147,6 +147,30 @@ void recSetBranchEQ(int info, int bne, int process)
 
 		_eeFlushAllUnused();
 
+#ifdef __M_X86_64
+		if (process & PROCESS_CONSTS)
+		{
+			xImm64Op(xCMP, ptr64[&cpuRegs.GPR.r[_Rt_].UD[0]], rax, g_cpuConstRegs[_Rs_].UD[0]);
+		}
+		else if (process & PROCESS_CONSTT)
+		{
+			xImm64Op(xCMP, ptr64[&cpuRegs.GPR.r[_Rs_].UD[0]], rax, g_cpuConstRegs[_Rt_].UD[0]);
+		}
+		else
+		{
+			xMOV(rax, ptr[&cpuRegs.GPR.r[_Rs_].UD[0]]);
+			xCMP(rax, ptr[&cpuRegs.GPR.r[_Rt_].UD[0]]);
+		}
+
+		if (bne)
+		{
+			j32Ptr[1] = JE32(0);
+		}
+		else
+		{
+			j32Ptr[0] = j32Ptr[1] = JNE32(0);
+		}
+#else
 		if (bne)
 		{
 			if (process & PROCESS_CONSTS)
@@ -208,6 +232,7 @@ void recSetBranchEQ(int info, int bne, int process)
 				j32Ptr[1] = JNE32(0);
 			}
 		}
+#endif
 	}
 
 	_clearNeededXMMregs();

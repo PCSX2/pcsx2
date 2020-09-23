@@ -179,6 +179,13 @@ void recLoad32(u32 bits, bool sign)
 
 	if (_Rt_)
 	{
+#if __M_X86_64
+		// EAX holds the loaded value, so sign extend as needed:
+		if (sign)
+			xCDQE();
+
+		xMOV(ptr64[&cpuRegs.GPR.r[_Rt_].UD[0]], rax);
+#else
 		// EAX holds the loaded value, so sign extend as needed:
 		if (sign)
 			xCDQ();
@@ -188,6 +195,7 @@ void recLoad32(u32 bits, bool sign)
 			xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
 		else
 			xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], 0);
+#endif
 	}
 }
 
@@ -283,6 +291,17 @@ void recLWL()
 	xMOV(ecx, calleeSavedReg1d);
 	xMOV(edx, 0xffffff);
 	xSHR(edx, cl);
+# ifdef __M_X86_64
+	xAND(edx, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+
+	// OR in bytes loaded
+	xNEG(ecx);
+	xADD(ecx, 24);
+	xSHL(eax, cl);
+	xOR(eax, edx);
+
+	eeSignExtendTo(_Rt_);
+# else
 	xAND(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], edx);
 
 	// OR in bytes loaded
@@ -294,6 +313,7 @@ void recLWL()
 	// eax will always have the sign bit
 	xCDQ();
 	xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
+# endif
 #else
 	iFlushCall(FLUSH_INTERPRETER);
 	_deleteEEreg(_Rs_, 1);

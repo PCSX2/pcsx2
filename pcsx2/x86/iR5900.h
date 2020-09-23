@@ -117,6 +117,7 @@ u32* _eeGetConstReg(int reg);
 void _eeMoveGPRtoR(const x86Emitter::xRegister32& to, int fromgpr);
 void _eeMoveGPRtoM(uptr to, int fromgpr);
 void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr);
+void _signExtendToMem(void* mem);
 void eeSignExtendTo(int gpr, bool onlyupper = false);
 
 void _eeFlushAllUnused();

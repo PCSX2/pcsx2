@@ -59,8 +59,13 @@ void recWritebackHILO(int info, int writed, int upper)
 	uptr hiaddr = (uptr)&cpuRegs.HI.UL[upper ? 2 : 0];
 	u8 testlive = upper ? EEINST_LIVE2 : EEINST_LIVE0;
 
+#ifdef __M_X86_64
+	if (g_pCurInstInfo->regs[XMMGPR_HI] & testlive)
+		xMOVSX(rcx, edx);
+#else
 	if (g_pCurInstInfo->regs[XMMGPR_HI] & testlive)
 		xMOV(ecx, edx);
+#endif
 
 	if (g_pCurInstInfo->regs[XMMGPR_LO] & testlive)
 	{
@@ -79,9 +84,7 @@ void recWritebackHILO(int info, int writed, int upper)
 			reglo = -1;
 		}
 
-		xCDQ();
-		xMOV(ptr[(void*)(loaddr)], eax);
-		xMOV(ptr[(void*)(loaddr + 4)], edx);
+		_signExtendToMem((void*)loaddr);
 		savedlo = 1;
 	}
 
@@ -106,10 +109,16 @@ void recWritebackHILO(int info, int writed, int upper)
 		{
 			_deleteEEreg(_Rd_, 0);
 
+#ifdef __M_X86_64
+			if (!savedlo)
+				xCDQE();
+			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
+#else
 			if (!savedlo)
 				xCDQ();
 			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
 			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
+#endif
 		}
 	}
 
@@ -129,9 +138,13 @@ void recWritebackHILO(int info, int writed, int upper)
 			reghi = -1;
 		}
 
+#ifdef __M_X86_64
+		xMOV(ptr[(void*)(hiaddr)], rcx);
+#else
 		xMOV(ptr[(void*)(hiaddr)], ecx);
 		xSAR(ecx, 31);
 		xMOV(ptr[(void*)(hiaddr + 4)], ecx);
+#endif
 	}
 }
 
@@ -156,8 +169,7 @@ void recWritebackConstHILO(u64 res, int writed, int upper)
 		}
 		else
 		{
-			xMOV(ptr32[(u32*)(loaddr)], res & 0xffffffff);
-			xMOV(ptr32[(u32*)(loaddr + 4)], (res & 0x80000000) ? 0xffffffff : 0);
+			xWriteImm64ToMem((u64*)loaddr, rax, (s64)(s32)(res & 0xffffffff));
 		}
 	}
 
@@ -177,8 +189,7 @@ void recWritebackConstHILO(u64 res, int writed, int upper)
 		else
 		{
 			_deleteEEreg(XMMGPR_HI, 0);
-			xMOV(ptr32[(u32*)(hiaddr)], res >> 32);
-			xMOV(ptr32[(u32*)(hiaddr + 4)], (res >> 63) ? 0xffffffff : 0);
+			xWriteImm64ToMem((u64*)hiaddr, rax, (s64)res >> 32);
 		}
 	}
 
@@ -524,6 +535,20 @@ EERECOMPILE_CODE0(DIVU1, XMMINFO_READS | XMMINFO_READT);
 
 static void writeBackMAddToHiLoRd(int hiloID)
 {
+#if __M_X86_64
+	// eax -> LO, edx -> HI
+	xCDQE();
+	if (_Rd_)
+	{
+		_eeOnWriteReg(_Rd_, 1);
+		_deleteEEreg(_Rd_, 0);
+		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UD[0]], rax);
+	}
+	xMOV(ptr[&cpuRegs.LO.UD[hiloID]], rax);
+
+	xMOVSX(rax, edx);
+	xMOV(ptr[&cpuRegs.HI.UD[hiloID]], rax);
+#else
 	// eax -> LO, ecx -> HI
 	xCDQ();
 	if (_Rd_)
@@ -541,25 +566,36 @@ static void writeBackMAddToHiLoRd(int hiloID)
 	xMOV(eax, ecx);
 	xCDQ();
 	xMOV(ptr[&cpuRegs.HI.UL[hiloID * 2 + 1]], edx);
+#endif
 }
 
 static void addConstantAndWriteBackToHiLoRd(int hiloID, u64 constant)
 {
+#if __M_X86_64
+	const xRegister32& ehi = edx;
+#else
+	const xRegister32& ehi = ecx;
+#endif
 	_deleteEEreg(XMMGPR_LO, 1);
 	_deleteEEreg(XMMGPR_HI, 1);
 
 	xMOV(eax, ptr[&cpuRegs.LO.UL[hiloID * 2]]);
-	xMOV(ecx, ptr[&cpuRegs.HI.UL[hiloID * 2]]);
+	xMOV(ehi, ptr[&cpuRegs.HI.UL[hiloID * 2]]);
 	xADD(eax, (u32)(constant & 0xffffffff));
-	xADC(ecx, (u32)(constant >> 32));
+	xADC(ehi, (u32)(constant >> 32));
 	writeBackMAddToHiLoRd(hiloID);
 }
 
 static void addEaxEdxAndWriteBackToHiLoRd(int hiloID)
 {
+#if __M_X86_64
+	xADD(eax, ptr[&cpuRegs.LO.UL[hiloID * 2]]);
+	xADC(edx, ptr[&cpuRegs.HI.UL[hiloID * 2]]);
+#else
 	xMOV(ecx, edx);
 	xADD(eax, ptr[&cpuRegs.LO.UL[hiloID * 2]]);
 	xADC(ecx, ptr[&cpuRegs.HI.UL[hiloID * 2]]);
+#endif
 	writeBackMAddToHiLoRd(hiloID);
 }
 
