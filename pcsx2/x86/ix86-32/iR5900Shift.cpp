@@ -341,6 +341,27 @@ EERECOMPILE_CODEX(eeRecompileCode2, DSRA32);
 * Format:  OP rd, rt, rs                                 *
 *********************************************************/
 
+static void recShiftV_constt(const xImpl_Group2& shift)
+{
+	xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+
+	xMOV(eax, g_cpuConstRegs[_Rt_].UL[0]);
+	shift(eax, cl);
+
+	eeSignExtendTo(_Rd_);
+}
+
+static void recShiftV(const xImpl_Group2& shift)
+{
+	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+	if (_Rs_ != 0)
+	{
+		xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+		shift(eax, cl);
+	}
+	eeSignExtendTo(_Rd_);
+}
+
 __aligned16 u32 s_sa[4] = {0x1f, 0, 0x3f, 0};
 
 void recSetShiftV(int info, int* rsreg, int* rtreg, int* rdreg, int* rstemp)
@@ -395,27 +416,12 @@ void recSLLV_consts(int info)
 
 void recSLLV_constt(int info)
 {
-	xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
-
-	xMOV(eax, g_cpuConstRegs[_Rt_].UL[0]);
-	xAND(ecx, 0x1f);
-	xSHL(eax, cl);
-
-	eeSignExtendTo(_Rd_);
+	recShiftV_constt(xSHL);
 }
 
 void recSLLV_(int info)
 {
-	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
-	if (_Rs_ != 0)
-	{
-		xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
-		xAND(ecx, 0x1f);
-		xSHL(eax, cl);
-	}
-	xCDQ();
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
+	recShiftV(xSHL);
 }
 
 EERECOMPILE_CODE0(SLLV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
@@ -433,27 +439,12 @@ void recSRLV_consts(int info)
 
 void recSRLV_constt(int info)
 {
-	xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
-
-	xMOV(eax, g_cpuConstRegs[_Rt_].UL[0]);
-	xAND(ecx, 0x1f);
-	xSHR(eax, cl);
-
-	eeSignExtendTo(_Rd_);
+	recShiftV_constt(xSHR);
 }
 
 void recSRLV_(int info)
 {
-	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
-	if (_Rs_ != 0)
-	{
-		xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
-		xAND(ecx, 0x1f);
-		xSHR(eax, cl);
-	}
-	xCDQ();
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
+	recShiftV(xSHR);
 }
 
 EERECOMPILE_CODE0(SRLV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
@@ -471,27 +462,12 @@ void recSRAV_consts(int info)
 
 void recSRAV_constt(int info)
 {
-	xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
-
-	xMOV(eax, g_cpuConstRegs[_Rt_].UL[0]);
-	xAND(ecx, 0x1f);
-	xSAR(eax, cl);
-
-	eeSignExtendTo(_Rd_);
+	recShiftV_constt(xSAR);
 }
 
 void recSRAV_(int info)
 {
-	xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
-	if (_Rs_ != 0)
-	{
-		xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
-		xAND(ecx, 0x1f);
-		xSAR(eax, cl);
-	}
-	xCDQ();
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
-	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
+	recShiftV(xSAR);
 }
 
 EERECOMPILE_CODE0(SRAV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);

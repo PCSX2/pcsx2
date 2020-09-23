@@ -347,52 +347,87 @@ void recDSUBU(void)
 	recDSUB();
 }
 
-//// AND
-void recAND_const()
+enum class LogicalOp
 {
-	g_cpuConstRegs[_Rd_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] & g_cpuConstRegs[_Rt_].UD[0];
-}
+	AND,
+	OR,
+	XOR,
+	NOR
+};
 
-void recAND_constv(int info, int creg, u32 vreg)
+static void recLogicalOp_constv(LogicalOp op, int info, int creg, u32 vreg)
 {
 	pxAssert(!(info & PROCESS_EE_XMM));
+
+	xImpl_G1Logic bad{};
+	const xImpl_G1Logic& xOP = op == LogicalOp::AND ? xAND
+	                         : op == LogicalOp::OR  ? xOR
+	                         : op == LogicalOp::XOR ? xXOR
+	                         : op == LogicalOp::NOR ? xOR : bad;
+	s64 fixedInput, fixedOutput, identityInput;
+	bool hasFixed = true;
+	switch (op)
+	{
+		case LogicalOp::AND:
+			fixedInput = 0;
+			fixedOutput = 0;
+			identityInput = -1;
+			break;
+		case LogicalOp::OR:
+			fixedInput = -1;
+			fixedOutput = -1;
+			identityInput = 0;
+			break;
+		case LogicalOp::XOR:
+			hasFixed = false;
+			identityInput = 0;
+			break;
+		case LogicalOp::NOR:
+			fixedInput = -1;
+			fixedOutput = 0;
+			identityInput = 0;
+			break;
+		default:
+			pxAssert(0);
+	}
 
 	GPR_reg64 cval = g_cpuConstRegs[creg];
 
 	for (int i = 0; i < 2; i++)
 	{
-		if (!cval.UL[i])
+		if (hasFixed && cval.SL[i] == (s32)fixedInput)
 		{
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], 0);
+			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], (s32)fixedOutput);
 		}
 		else if (_Rd_ == vreg)
 		{
-			if (cval.SL[i] != -1)
-				xAND(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], cval.UL[i]);
+			if (cval.SL[i] != identityInput)
+				xOP(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], cval.UL[i]);
+			if (op == LogicalOp::NOR)
+				xNOT(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]]);
 		}
 		else
 		{
 			xMOV(eax, ptr32[&cpuRegs.GPR.r[vreg].UL[i]]);
-			if (cval.SL[i] != -1)
-				xAND(eax, cval.UL[i]);
+			if (cval.SL[i] != identityInput)
+				xOP(eax, cval.UL[i]);
+			if (op == LogicalOp::NOR)
+				xNOT(eax);
 			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
 		}
 	}
 }
 
-void recAND_consts(int info)
-{
-	recAND_constv(info, _Rs_, _Rt_);
-}
-
-void recAND_constt(int info)
-{
-	recAND_constv(info, _Rt_, _Rs_);
-}
-
-void recAND_(int info)
+static void recLogicalOp(LogicalOp op, int info)
 {
 	pxAssert(!(info & PROCESS_EE_XMM));
+
+	xImpl_G1Logic bad{};
+	const xImpl_G1Logic& xOP = op == LogicalOp::AND ? xAND
+	                         : op == LogicalOp::OR  ? xOR
+	                         : op == LogicalOp::XOR ? xXOR
+	                         : op == LogicalOp::NOR ? xOR : bad;
+	pxAssert(&xOP != &bad);
 
 	u32 rs = _Rs_, rt = _Rt_;
 	if (_Rd_ == _Rt_)
@@ -400,21 +435,51 @@ void recAND_(int info)
 
 	for (int i = 0; i < 2; i++)
 	{
-		if (_Rd_ == rs)
+		if (op == LogicalOp::XOR && rs == rt)
 		{
-			if (rs == rt)
-				continue;
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
-			xAND(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
+			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], 0);
+		}
+		else if (_Rd_ == rs)
+		{
+			if (rs != rt)
+			{
+				xMOV(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
+				xOP(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
+			}
+			if (op == LogicalOp::NOR)
+				xNOT(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]]);
 		}
 		else
 		{
 			xMOV(eax, ptr32[&cpuRegs.GPR.r[rs].UL[i]]);
 			if (rs != rt)
-				xAND(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
+				xOP(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
+			if (op == LogicalOp::NOR)
+				xNOT(eax);
 			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
 		}
 	}
+}
+
+//// AND
+void recAND_const()
+{
+	g_cpuConstRegs[_Rd_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] & g_cpuConstRegs[_Rt_].UD[0];
+}
+
+void recAND_consts(int info)
+{
+	recLogicalOp_constv(LogicalOp::AND, info, _Rs_, _Rt_);
+}
+
+void recAND_constt(int info)
+{
+	recLogicalOp_constv(LogicalOp::AND, info, _Rt_, _Rs_);
+}
+
+void recAND_(int info)
+{
+	recLogicalOp(LogicalOp::AND, info);
 }
 
 EERECOMPILE_CODE0(AND, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
@@ -425,68 +490,19 @@ void recOR_const()
 	g_cpuConstRegs[_Rd_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] | g_cpuConstRegs[_Rt_].UD[0];
 }
 
-void recOR_constv(int info, int creg, u32 vreg)
-{
-	pxAssert(!(info & PROCESS_EE_XMM));
-
-	GPR_reg64 cval = g_cpuConstRegs[creg];
-
-	for (int i = 0; i < 2; i++)
-	{
-		if (cval.SL[i] == -1)
-		{
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], -1);
-		}
-		else if (_Rd_ == vreg)
-		{
-			if (cval.UL[i])
-				xOR(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], cval.UL[i]);
-		}
-		else
-		{
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[vreg].UL[i]]);
-			if (cval.UL[i])
-				xOR(eax, cval.UL[i]);
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
-		}
-	}
-}
-
 void recOR_consts(int info)
 {
-	recOR_constv(info, _Rs_, _Rt_);
+	recLogicalOp_constv(LogicalOp::OR, info, _Rs_, _Rt_);
 }
 
 void recOR_constt(int info)
 {
-	recOR_constv(info, _Rt_, _Rs_);
+	recLogicalOp_constv(LogicalOp::OR, info, _Rt_, _Rs_);
 }
 
 void recOR_(int info)
 {
-	pxAssert(!(info & PROCESS_EE_XMM));
-
-	u32 rs = _Rs_, rt = _Rt_;
-	if (_Rd_ == _Rt_)
-		rs = _Rt_, rt = _Rs_;
-
-	for (int i = 0; i < 2; i++)
-	{
-		if (_Rd_ == rs)
-		{
-			if (rs == rt)
-				continue;
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
-			xOR(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
-		}
-		else
-		{
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[rs].UL[i]]);
-			if (rs != rt)
-				xOR(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
-		}
-	}
+	recLogicalOp(LogicalOp::OR, info);
 }
 
 EERECOMPILE_CODE0(OR, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
@@ -497,65 +513,19 @@ void recXOR_const()
 	g_cpuConstRegs[_Rd_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] ^ g_cpuConstRegs[_Rt_].UD[0];
 }
 
-void recXOR_constv(int info, int creg, u32 vreg)
-{
-	pxAssert(!(info & PROCESS_EE_XMM));
-
-	GPR_reg64 cval = g_cpuConstRegs[creg];
-
-	for (int i = 0; i < 2; i++)
-	{
-		if (_Rd_ == vreg)
-		{
-			if (cval.UL[i])
-				xXOR(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], cval.UL[i]);
-		}
-		else
-		{
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[vreg].UL[i]]);
-			if (cval.UL[i])
-				xXOR(eax, cval.UL[i]);
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
-		}
-	}
-}
-
 void recXOR_consts(int info)
 {
-	recXOR_constv(info, _Rs_, _Rt_);
+	recLogicalOp_constv(LogicalOp::XOR, info, _Rs_, _Rt_);
 }
 
 void recXOR_constt(int info)
 {
-	recXOR_constv(info, _Rt_, _Rs_);
+	recLogicalOp_constv(LogicalOp::XOR, info, _Rt_, _Rs_);
 }
 
 void recXOR_(int info)
 {
-	pxAssert(!(info & PROCESS_EE_XMM));
-
-	u32 rs = _Rs_, rt = _Rt_;
-	if (_Rd_ == _Rt_)
-		rs = _Rt_, rt = _Rs_;
-
-	for (int i = 0; i < 2; i++)
-	{
-		if (rs == rt)
-		{
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], 0);
-		}
-		else if (_Rd_ == rs)
-		{
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
-			xXOR(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
-		}
-		else
-		{
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[rs].UL[i]]);
-			xXOR(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
-		}
-	}
+	recLogicalOp(LogicalOp::XOR, info);
 }
 
 EERECOMPILE_CODE0(XOR, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
@@ -566,71 +536,19 @@ void recNOR_const()
 	g_cpuConstRegs[_Rd_].UD[0] = ~(g_cpuConstRegs[_Rs_].UD[0] | g_cpuConstRegs[_Rt_].UD[0]);
 }
 
-void recNOR_constv(int info, int creg, u32 vreg)
-{
-	pxAssert(!(info & PROCESS_EE_XMM));
-
-	GPR_reg64 cval = g_cpuConstRegs[creg];
-
-	for (int i = 0; i < 2; i++)
-	{
-		if (_Rd_ == vreg)
-		{
-			if (cval.UL[i])
-				xOR(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], cval.UL[i]);
-			xNOT(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]]);
-		}
-		else
-		{
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[vreg].UL[i]]);
-			if (cval.UL[i])
-				xOR(eax, cval.UL[i]);
-			xNOT(eax);
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
-		}
-	}
-}
-
 void recNOR_consts(int info)
 {
-	recNOR_constv(info, _Rs_, _Rt_);
+	recLogicalOp_constv(LogicalOp::NOR, info, _Rs_, _Rt_);
 }
 
 void recNOR_constt(int info)
 {
-	recNOR_constv(info, _Rt_, _Rs_);
+	recLogicalOp_constv(LogicalOp::NOR, info, _Rt_, _Rs_);
 }
 
 void recNOR_(int info)
 {
-	pxAssert(!(info & PROCESS_EE_XMM));
-
-	u32 rs = _Rs_, rt = _Rt_;
-	if (_Rd_ == _Rt_)
-		rs = _Rt_, rt = _Rs_;
-
-	for (int i = 0; i < 2; i++)
-	{
-		if (_Rd_ == rs)
-		{
-			if (rs == rt)
-			{
-				xNOT(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]]);
-				continue;
-			}
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
-			xOR(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
-			xNOT(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]]);
-		}
-		else
-		{
-			xMOV(eax, ptr32[&cpuRegs.GPR.r[rs].UL[i]]);
-			if (rs != rt)
-				xOR(eax, ptr32[&cpuRegs.GPR.r[rt].UL[i]]);
-			xNOT(eax);
-			xMOV(ptr32[&cpuRegs.GPR.r[_Rd_].UL[i]], eax);
-		}
-	}
+	recLogicalOp(LogicalOp::NOR, info);
 }
 
 EERECOMPILE_CODE0(NOR, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
