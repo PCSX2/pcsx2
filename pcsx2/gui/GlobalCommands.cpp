@@ -384,7 +384,8 @@ namespace Implementations
 
 	void Sys_TakeSnapshot()
 	{
-		GSmakeSnapshot(g_Conf->Folders.Snapshots.ToUTF8());
+		if (GSmakeSnapshot(g_Conf->Folders.Snapshots.ToUTF8()))
+		   OSDlog(ConsoleColors::Color_Black, true, "Snapshot taken");
 	}
 
 	void Sys_RenderToggle()
