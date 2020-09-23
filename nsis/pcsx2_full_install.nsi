@@ -19,7 +19,6 @@ InstallDir "$PROGRAMFILES\PCSX2"
 
 !define INSTDIR_REG_KEY  "Software\Microsoft\Windows\CurrentVersion\Uninstall\${APP_FILENAME}"
 
-!include "StrContains.nsh"
 !include "SectionVersionCheck.nsh"
 
 !insertmacro MUI_PAGE_COMPONENTS
