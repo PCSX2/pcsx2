@@ -489,7 +489,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 	}
 
 	if (PRIM->FST) {
-		GL_INS("First vertex is  P: %d => %d    T: %d => %d", v[0].XYZ.X, v[1].XYZ.X, v[0].U, v[1].U);
+		GL_INS("TS: First vertex is  P: %d => %d    T: %d => %d", v[0].XYZ.X, v[1].XYZ.X, v[0].U, v[1].U);
 
 		for(size_t i = 0; i < count; i += 2) {
 			if (write_ba)
@@ -518,7 +518,7 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 		}
 	} else {
 		const float offset_8pix = 8.0f / tw;
-		GL_INS("First vertex is  P: %d => %d    T: %f => %f (offset %f)", v[0].XYZ.X, v[1].XYZ.X, v[0].ST.S, v[1].ST.S, offset_8pix);
+		GL_INS("TS: First vertex is  P: %d => %d    T: %f => %f (offset %f)", v[0].XYZ.X, v[1].XYZ.X, v[0].ST.S, v[1].ST.S, offset_8pix);
 
 		for(size_t i = 0; i < count; i += 2) {
 			if (write_ba)
@@ -608,7 +608,7 @@ GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Sou
 			}
 		}
 
-		GL_INS("offset detected %f,%f t_pos %d (linear %d, scale %f)",
+		GL_INS("Offset: detected %f,%f t_pos %d (linear %d, scale %f)",
 				half_offset.x, half_offset.y, t_position, linear, scale.x);
 
 	} else if (m_vt.m_eq.q) {
@@ -620,7 +620,7 @@ GSVector4 GSRendererHW::RealignTargetTextureCoordinate(const GSTextureCache::Sou
 		half_offset.x = 0.5f * q / tw;
 		half_offset.y = 0.5f * q / th;
 
-		GL_INS("ST offset detected %f,%f (linear %d, scale %f)",
+		GL_INS("ST offset: detected %f,%f (linear %d, scale %f)",
 				half_offset.x, half_offset.y, linear, scale.x);
 
 	}
@@ -1137,16 +1137,16 @@ void GSRendererHW::Draw()
 	if (m_channel_shuffle) {
 		m_channel_shuffle = draw_sprite_tex && (m_context->TEX0.PSM == PSM_PSMT8) && single_page;
 		if (m_channel_shuffle) {
-			GL_CACHE("Channel shuffle effect detected SKIP");
+			GL_CACHE("CS: Effect detected SKIP");
 			return;
 		}
 	} else if (draw_sprite_tex && m_context->FRAME.Block() == m_context->TEX0.TBP0) {
 		// Special post-processing effect
 		if ((m_context->TEX0.PSM == PSM_PSMT8) && single_page) {
-			GL_INS("Channel shuffle effect detected");
+			GL_INS("CS: Effect detected");
 			m_channel_shuffle = true;
 		} else {
-			GL_DBG("Special post-processing effect not supported");
+			GL_DBG("CS: Special post-processing effect not supported");
 			m_channel_shuffle = false;
 		}
 	} else {
@@ -1314,14 +1314,14 @@ void GSRendererHW::Draw()
 				// So we check if it's a TS effect by checking the scissor.
 				((m_context->SCISSOR.SCAX1 - m_context->SCISSOR.SCAX0) < 32);
 
-			GL_INS("WARNING: Possible misdetection of effect, texture shuffle is %s", m_texture_shuffle ? "Enabled" : "Disabled");
+			GL_INS("TS_WARNING: Possible misdetection of effect, texture shuffle is %s", m_texture_shuffle ? "Enabled" : "Disabled");
 		}
 
 		// Texture shuffle is not yet supported with strange clamp mode
 		ASSERT(!m_texture_shuffle || (context->CLAMP.WMS < 3 && context->CLAMP.WMT < 3));
 
 		if (m_src->m_target && m_context->TEX0.PSM == PSM_PSMT8 && single_page && draw_sprite_tex) {
-			GL_INS("Channel shuffle effect detected (2nd shot)");
+			GL_INS("CS: Effect detected (2nd shot)");
 			m_channel_shuffle = true;
 		} else {
 			m_channel_shuffle = false;
