@@ -88,11 +88,9 @@ Function TempFilesOut
     File /nonfatal ..\bin\Plugins\gsdx32-sse4.dll
     File /nonfatal ..\bin\Plugins\gsdx32-avx2.dll
     File /nonfatal ..\bin\Plugins\spu2-x.dll
-    File /nonfatal ..\bin\Plugins\cdvdGigaherz.dll
     File /nonfatal ..\bin\Plugins\lilypad.dll
     File /nonfatal ..\bin\Plugins\USBnull.dll
     File /nonfatal ..\bin\Plugins\DEV9null.dll
-    File /nonfatal ..\bin\Plugins\FWnull.dll
 
   SetOutPath "$TEMP\PCSX2 ${APP_VERSION}\Langs"
     File /nonfatal /r ..\bin\Langs\*.mo
