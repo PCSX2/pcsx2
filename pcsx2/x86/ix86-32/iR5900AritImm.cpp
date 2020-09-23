@@ -194,47 +194,48 @@ void recANDI_const()
 	g_cpuConstRegs[_Rt_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] & (u64)_ImmU_; // Zero-extended Immediate
 }
 
-void recLogicalOpI(int info, int op)
+enum class LogicalOp
 {
+	AND,
+	OR,
+	XOR
+};
+
+static void recLogicalOpI(int info, LogicalOp op)
+{
+	xImpl_G1Logic bad{};
+	const xImpl_G1Logic& xOP = op == LogicalOp::AND ? xAND
+	                         : op == LogicalOp::OR  ? xOR
+	                         : op == LogicalOp::XOR ? xXOR : bad;
+	pxAssert(&xOP != &bad);
+
 	if (_ImmU_ != 0)
 	{
 		if (_Rt_ == _Rs_)
 		{
-			switch (op)
-			{
-				case 0: xAND(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], _ImmU_); break;
-				case 1: xOR(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], _ImmU_); break;
-				case 2: xXOR(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], _ImmU_); break;
-				default: pxAssert(0);
-			}
+			xOP(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], _ImmU_);
 		}
 		else
 		{
 			xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
-			if (op != 0)
+			if (op != LogicalOp::AND)
 				xMOV(edx, ptr[&cpuRegs.GPR.r[_Rs_].UL[1]]);
 
-			switch (op)
-			{
-				case 0: xAND(eax, _ImmU_); break;
-				case 1: xOR(eax, _ImmU_); break;
-				case 2: xXOR(eax, _ImmU_); break;
-				default: pxAssert(0);
-			}
+			xOP(eax, _ImmU_);
 
-			if (op != 0)
+			if (op != LogicalOp::AND)
 				xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
 			xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
 		}
 
-		if (op == 0)
+		if (op == LogicalOp::AND)
 		{
 			xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], 0);
 		}
 	}
 	else
 	{
-		if (op == 0)
+		if (op == LogicalOp::AND)
 		{
 			xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], 0);
 			xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], 0);
@@ -254,7 +255,7 @@ void recLogicalOpI(int info, int op)
 
 void recANDI_(int info)
 {
-	recLogicalOpI(info, 0);
+	recLogicalOpI(info, LogicalOp::AND);
 }
 
 EERECOMPILE_CODEX(eeRecompileCode1, ANDI);
@@ -267,7 +268,7 @@ void recORI_const()
 
 void recORI_(int info)
 {
-	recLogicalOpI(info, 1);
+	recLogicalOpI(info, LogicalOp::OR);
 }
 
 EERECOMPILE_CODEX(eeRecompileCode1, ORI);
@@ -280,7 +281,7 @@ void recXORI_const()
 
 void recXORI_(int info)
 {
-	recLogicalOpI(info, 2);
+	recLogicalOpI(info, LogicalOp::XOR);
 }
 
 EERECOMPILE_CODEX(eeRecompileCode1, XORI);

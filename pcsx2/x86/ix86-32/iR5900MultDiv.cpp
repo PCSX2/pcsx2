@@ -522,35 +522,53 @@ void recDIVU1_constt(int info)
 
 EERECOMPILE_CODE0(DIVU1, XMMINFO_READS | XMMINFO_READT);
 
+static void writeBackMAddToHiLoRd(int hiloID)
+{
+	// eax -> LO, ecx -> HI
+	xCDQ();
+	if (_Rd_)
+	{
+		_eeOnWriteReg(_Rd_, 1);
+		_deleteEEreg(_Rd_, 0);
+		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
+	}
+
+	xMOV(ptr[&cpuRegs.LO.UL[hiloID * 2]], eax);
+	xMOV(ptr[&cpuRegs.LO.UL[hiloID * 2 + 1]], edx);
+
+	xMOV(ptr[&cpuRegs.HI.UL[hiloID * 2]], ecx);
+	xMOV(eax, ecx);
+	xCDQ();
+	xMOV(ptr[&cpuRegs.HI.UL[hiloID * 2 + 1]], edx);
+}
+
+static void addConstantAndWriteBackToHiLoRd(int hiloID, u64 constant)
+{
+	_deleteEEreg(XMMGPR_LO, 1);
+	_deleteEEreg(XMMGPR_HI, 1);
+
+	xMOV(eax, ptr[&cpuRegs.LO.UL[hiloID * 2]]);
+	xMOV(ecx, ptr[&cpuRegs.HI.UL[hiloID * 2]]);
+	xADD(eax, (u32)(constant & 0xffffffff));
+	xADC(ecx, (u32)(constant >> 32));
+	writeBackMAddToHiLoRd(hiloID);
+}
+
+static void addEaxEdxAndWriteBackToHiLoRd(int hiloID)
+{
+	xMOV(ecx, edx);
+	xADD(eax, ptr[&cpuRegs.LO.UL[hiloID * 2]]);
+	xADC(ecx, ptr[&cpuRegs.HI.UL[hiloID * 2]]);
+	writeBackMAddToHiLoRd(hiloID);
+}
+
 void recMADD()
 {
 	if (GPR_IS_CONST2(_Rs_, _Rt_))
 	{
 		u64 result = ((s64)g_cpuConstRegs[_Rs_].SL[0] * (s64)g_cpuConstRegs[_Rt_].SL[0]);
-		_deleteEEreg(XMMGPR_LO, 1);
-		_deleteEEreg(XMMGPR_HI, 1);
-
-		// dadd
-		xMOV(eax, ptr[&cpuRegs.LO.UL[0]]);
-		xMOV(ecx, ptr[&cpuRegs.HI.UL[0]]);
-		xADD(eax, (u32)result & 0xffffffff);
-		xADC(ecx, (u32)(result >> 32));
-		xCDQ();
-		if (_Rd_)
-		{
-			_eeOnWriteReg(_Rd_, 1);
-			_deleteEEreg(_Rd_, 0);
-			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
-			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
-		}
-
-		xMOV(ptr[&cpuRegs.LO.UL[0]], eax);
-		xMOV(ptr[&cpuRegs.LO.UL[1]], edx);
-
-		xMOV(ptr[&cpuRegs.HI.UL[0]], ecx);
-		xMOV(eax, ecx);
-		xCDQ();
-		xMOV(ptr[&cpuRegs.HI.UL[1]], edx);
+		addConstantAndWriteBackToHiLoRd(0, result);
 		return;
 	}
 
@@ -575,25 +593,7 @@ void recMADD()
 		xMUL(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	}
 
-	xMOV(ecx, edx);
-	xADD(eax, ptr[&cpuRegs.LO.UL[0]]);
-	xADC(ecx, ptr[&cpuRegs.HI.UL[0]]);
-	xCDQ();
-	if (_Rd_)
-	{
-		_eeOnWriteReg(_Rd_, 1);
-		_deleteEEreg(_Rd_, 0);
-		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
-	}
-
-	xMOV(ptr[&cpuRegs.LO.UL[0]], eax);
-	xMOV(ptr[&cpuRegs.LO.UL[1]], edx);
-
-	xMOV(ptr[&cpuRegs.HI.UL[0]], ecx);
-	xMOV(eax, ecx);
-	xCDQ();
-	xMOV(ptr[&cpuRegs.HI.UL[1]], edx);
+	addEaxEdxAndWriteBackToHiLoRd(0);
 }
 
 void recMADDU()
@@ -601,30 +601,7 @@ void recMADDU()
 	if (GPR_IS_CONST2(_Rs_, _Rt_))
 	{
 		u64 result = ((u64)g_cpuConstRegs[_Rs_].UL[0] * (u64)g_cpuConstRegs[_Rt_].UL[0]);
-		_deleteEEreg(XMMGPR_LO, 1);
-		_deleteEEreg(XMMGPR_HI, 1);
-
-		// dadd
-		xMOV(eax, ptr[&cpuRegs.LO.UL[0]]);
-		xMOV(ecx, ptr[&cpuRegs.HI.UL[0]]);
-		xADD(eax, (u32)result & 0xffffffff);
-		xADC(ecx, (u32)(result >> 32));
-		xCDQ();
-		if (_Rd_)
-		{
-			_eeOnWriteReg(_Rd_, 1);
-			_deleteEEreg(_Rd_, 0);
-			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
-			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
-		}
-
-		xMOV(ptr[&cpuRegs.LO.UL[0]], eax);
-		xMOV(ptr[&cpuRegs.LO.UL[1]], edx);
-
-		xMOV(ptr[&cpuRegs.HI.UL[0]], ecx);
-		xMOV(eax, ecx);
-		xCDQ();
-		xMOV(ptr[&cpuRegs.HI.UL[1]], edx);
+		addConstantAndWriteBackToHiLoRd(0, result);
 		return;
 	}
 
@@ -649,25 +626,7 @@ void recMADDU()
 		xUMUL(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	}
 
-	xMOV(ecx, edx);
-	xADD(eax, ptr[&cpuRegs.LO.UL[0]]);
-	xADC(ecx, ptr[&cpuRegs.HI.UL[0]]);
-	xCDQ();
-	if (_Rd_)
-	{
-		_eeOnWriteReg(_Rd_, 1);
-		_deleteEEreg(_Rd_, 0);
-		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
-	}
-
-	xMOV(ptr[&cpuRegs.LO.UL[0]], eax);
-	xMOV(ptr[&cpuRegs.LO.UL[1]], edx);
-
-	xMOV(ptr[&cpuRegs.HI.UL[0]], ecx);
-	xMOV(eax, ecx);
-	xCDQ();
-	xMOV(ptr[&cpuRegs.HI.UL[1]], edx);
+	addEaxEdxAndWriteBackToHiLoRd(0);
 }
 
 void recMADD1()
@@ -675,30 +634,7 @@ void recMADD1()
 	if (GPR_IS_CONST2(_Rs_, _Rt_))
 	{
 		u64 result = ((s64)g_cpuConstRegs[_Rs_].SL[0] * (s64)g_cpuConstRegs[_Rt_].SL[0]);
-		_deleteEEreg(XMMGPR_LO, 1);
-		_deleteEEreg(XMMGPR_HI, 1);
-
-		// dadd
-		xMOV(eax, ptr[&cpuRegs.LO.UL[2]]);
-		xMOV(ecx, ptr[&cpuRegs.HI.UL[2]]);
-		xADD(eax, (u32)result & 0xffffffff);
-		xADC(ecx, (u32)(result >> 32));
-		xCDQ();
-		if (_Rd_)
-		{
-			_eeOnWriteReg(_Rd_, 1);
-			_deleteEEreg(_Rd_, 0);
-			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
-			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
-		}
-
-		xMOV(ptr[&cpuRegs.LO.UL[2]], eax);
-		xMOV(ptr[&cpuRegs.LO.UL[3]], edx);
-
-		xMOV(ptr[&cpuRegs.HI.UL[2]], ecx);
-		xMOV(eax, ecx);
-		xCDQ();
-		xMOV(ptr[&cpuRegs.HI.UL[3]], edx);
+		addConstantAndWriteBackToHiLoRd(1, result);
 		return;
 	}
 
@@ -723,25 +659,7 @@ void recMADD1()
 		xMUL(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	}
 
-	xMOV(ecx, edx);
-	xADD(eax, ptr[&cpuRegs.LO.UL[2]]);
-	xADC(ecx, ptr[&cpuRegs.HI.UL[2]]);
-	xCDQ();
-	if (_Rd_)
-	{
-		_eeOnWriteReg(_Rd_, 1);
-		_deleteEEreg(_Rd_, 0);
-		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
-	}
-
-	xMOV(ptr[&cpuRegs.LO.UL[2]], eax);
-	xMOV(ptr[&cpuRegs.LO.UL[3]], edx);
-
-	xMOV(ptr[&cpuRegs.HI.UL[2]], ecx);
-	xMOV(eax, ecx);
-	xCDQ();
-	xMOV(ptr[&cpuRegs.HI.UL[3]], edx);
+	addEaxEdxAndWriteBackToHiLoRd(1);
 }
 
 void recMADDU1()
@@ -749,30 +667,7 @@ void recMADDU1()
 	if (GPR_IS_CONST2(_Rs_, _Rt_))
 	{
 		u64 result = ((u64)g_cpuConstRegs[_Rs_].UL[0] * (u64)g_cpuConstRegs[_Rt_].UL[0]);
-		_deleteEEreg(XMMGPR_LO, 1);
-		_deleteEEreg(XMMGPR_HI, 1);
-
-		// dadd
-		xMOV(eax, ptr[&cpuRegs.LO.UL[2]]);
-		xMOV(ecx, ptr[&cpuRegs.HI.UL[2]]);
-		xADD(eax, (u32)result & 0xffffffff);
-		xADC(ecx, (u32)(result >> 32));
-		xCDQ();
-		if (_Rd_)
-		{
-			_eeOnWriteReg(_Rd_, 1);
-			_deleteEEreg(_Rd_, 0);
-			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
-			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
-		}
-
-		xMOV(ptr[&cpuRegs.LO.UL[2]], eax);
-		xMOV(ptr[&cpuRegs.LO.UL[3]], edx);
-
-		xMOV(ptr[&cpuRegs.HI.UL[2]], ecx);
-		xMOV(eax, ecx);
-		xCDQ();
-		xMOV(ptr[&cpuRegs.HI.UL[3]], edx);
+		addConstantAndWriteBackToHiLoRd(1, result);
 		return;
 	}
 
@@ -797,25 +692,7 @@ void recMADDU1()
 		xUMUL(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	}
 
-	xMOV(ecx, edx);
-	xADD(eax, ptr[&cpuRegs.LO.UL[2]]);
-	xADC(ecx, ptr[&cpuRegs.HI.UL[2]]);
-	xCDQ();
-	if (_Rd_)
-	{
-		_eeOnWriteReg(_Rd_, 1);
-		_deleteEEreg(_Rd_, 0);
-		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
-	}
-
-	xMOV(ptr[&cpuRegs.LO.UL[2]], eax);
-	xMOV(ptr[&cpuRegs.LO.UL[3]], edx);
-
-	xMOV(ptr[&cpuRegs.HI.UL[2]], ecx);
-	xMOV(eax, ecx);
-	xCDQ();
-	xMOV(ptr[&cpuRegs.HI.UL[3]], edx);
+	addEaxEdxAndWriteBackToHiLoRd(1);
 }
 
 
