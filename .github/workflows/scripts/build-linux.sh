@@ -4,8 +4,8 @@ set -e
 
 # Packages - Build Environment
 declare -a BUILD_PACKAGES=(
-	"cmake"
 	"ccache"
+	"cmake"
 	"g++-10-multilib"
 )
 
@@ -20,11 +20,8 @@ declare -a PCSX2_PACKAGES=(
 	"libgirepository-1.0-1"
 	"libgl-dev"
 	"libgl1-mesa-dev"
-	"libgl1"
-	"libglx0"
-	"libglx-mesa0"
 	"libgl1-mesa-dri"
-	"libllvm10"
+	"libgl1"
 	"libgles-dev"
 	"libgles-dev"
 	"libgles2-mesa-dev"
@@ -33,9 +30,12 @@ declare -a PCSX2_PACKAGES=(
 	"libglu1-mesa"
 	"libglvnd-dev"
 	"libglx-dev"
+	"libglx-mesa0"
+	"libglx0"
 	"libgtk-3-dev"
 	"libgtk2.0-dev"
 	"libharfbuzz-dev"
+	"libllvm10"
 	"liblzma-dev"
 	"libpango1.0-dev"
 	"libpcap0.8-dev"
