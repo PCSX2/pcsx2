@@ -363,7 +363,7 @@ bool AppCorePlugins::OpenPlugin_GS()
 void AppCorePlugins::ClosePlugin_GS()
 {
 	_parent::ClosePlugin_GS();
-	if( CloseViewportWithPlugins && GetMTGS().IsSelf() && GSopen2 ) sApp.CloseGsPanel();
+	if( GetMTGS().IsSelf() && GSopen2 ) sApp.CloseGsPanel();
 }
 
 
