@@ -177,7 +177,6 @@ extern "C" {
 enum PS2E_ComponentTypes {
     PS2E_TYPE_GS = 0,
     PS2E_TYPE_PAD,
-    PS2E_TYPE_SPU2,
     PS2E_TYPE_DEV9,
     PS2E_TYPE_USB,
     PS2E_TYPE_SIO,
@@ -187,7 +186,6 @@ enum PS2E_ComponentTypes {
 enum PluginLibVersion {
     PS2E_VER_GS = 0x1000,
     PS2E_VER_PAD = 0x1000,
-    PS2E_VER_SPU2 = 0x1000,
     PS2E_VER_DEV9 = 0x1000,
     PS2E_VER_USB = 0x1000,
     PS2E_VER_SIO = 0x1000

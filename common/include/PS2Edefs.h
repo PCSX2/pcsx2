@@ -74,14 +74,13 @@ typedef struct _keyEvent
 ///////////////////////////////////////////////////////////////////////
 
 #if defined(GSdefs) || defined(PADdefs) || defined(SIOdefs) ||     \
-    defined(SPU2defs) || defined(DEV9defs) || defined(USBdefs)
+    defined(DEV9defs) || defined(USBdefs)
 #define COMMONdefs
 #endif
 
 // PS2EgetLibType returns (may be OR'd)
 #define PS2E_LT_GS 0x01
 #define PS2E_LT_PAD 0x02 // -=[ OBSOLETE ]=-
-#define PS2E_LT_SPU2 0x04
 #define PS2E_LT_DEV9 0x10
 #define PS2E_LT_USB 0x20
 #define PS2E_LT_SIO 0x80
@@ -89,7 +88,6 @@ typedef struct _keyEvent
 // PS2EgetLibVersion2 (high 16 bits)
 #define PS2E_GS_VERSION 0x0006
 #define PS2E_PAD_VERSION 0x0002 // -=[ OBSOLETE ]=-
-#define PS2E_SPU2_VERSION 0x0005
 #define PS2E_DEV9_VERSION 0x0003
 #define PS2E_USB_VERSION 0x0003
 #define PS2E_SIO_VERSION 0x0001
@@ -247,59 +245,6 @@ s32 CALLBACK PADtest();
 
 #endif
 
-/* SPU2 plugin API */
-
-// if this file is included with this define
-// the next api will not be skipped by the compiler
-#if defined(SPU2defs) || defined(BUILTIN_SPU2_PLUGIN)
-
-// basic funcs
-
-s32 CALLBACK SPU2init();
-s32 CALLBACK SPU2open(void *pDsp);
-void CALLBACK SPU2close();
-void CALLBACK SPU2shutdown();
-void CALLBACK SPU2setSettingsDir(const char *dir);
-void CALLBACK SPU2setLogDir(const char *dir);
-
-void CALLBACK SPU2reset();
-void CALLBACK SPU2ps1reset();
-void CALLBACK SPU2write(u32 mem, u16 value);
-u16 CALLBACK SPU2read(u32 mem);
-
-void CALLBACK SPU2readDMA4Mem(u16 *pMem, int size);
-void CALLBACK SPU2writeDMA4Mem(u16 *pMem, int size);
-void CALLBACK SPU2interruptDMA4();
-void CALLBACK SPU2readDMA7Mem(u16 *pMem, int size);
-void CALLBACK SPU2writeDMA7Mem(u16 *pMem, int size);
-
-// all addresses passed by dma will be pointers to the array starting at baseaddr
-// This function is necessary to successfully save and reload the spu2 state
-void CALLBACK SPU2setDMABaseAddr(uptr baseaddr);
-
-void CALLBACK SPU2interruptDMA7();
-
-u32 CALLBACK SPU2ReadMemAddr(int core);
-void CALLBACK SPU2WriteMemAddr(int core, u32 value);
-
-void CALLBACK SPU2irqCallback(void (*SPU2callback)(), void (*DMA4callback)(), void (*DMA7callback)());
-
-// extended funcs
-// if start is 1, starts recording spu2 data, else stops
-// returns a non zero value if successful
-// for now, pData is not used
-int CALLBACK SPU2setupRecording(int start, void *pData);
-
-void CALLBACK SPU2setClockPtr(u32 *ptr);
-void CALLBACK SPU2setTimeStretcher(short int enable);
-
-void CALLBACK SPU2async(u32 cycles);
-s32 CALLBACK SPU2freeze(int mode, freezeData *data);
-void CALLBACK SPU2configure();
-s32 CALLBACK SPU2test();
-
-#endif
-
 /* DEV9 plugin API */
 
 // if this file is included with this define
@@ -429,30 +374,6 @@ typedef void(CALLBACK *_PADgsDriverInfo)(GSdriverInfo *info);
 typedef s32(CALLBACK *_PADsetSlot)(u8 port, u8 slot);
 typedef s32(CALLBACK *_PADqueryMtap)(u8 port);
 typedef void(CALLBACK *_PADWriteEvent)(keyEvent &evt);
-
-// SPU2
-typedef s32(CALLBACK *_SPU2open)(void *pDsp);
-typedef void(CALLBACK *_SPU2reset)();
-typedef void (CALLBACK *_SPU2ps1reset)();
-typedef void(CALLBACK *_SPU2write)(u32 mem, u16 value);
-typedef u16(CALLBACK *_SPU2read)(u32 mem);
-typedef void(CALLBACK *_SPU2readDMA4Mem)(u16 *pMem, int size);
-typedef void(CALLBACK *_SPU2writeDMA4Mem)(u16 *pMem, int size);
-typedef void(CALLBACK *_SPU2interruptDMA4)();
-typedef void(CALLBACK *_SPU2readDMA7Mem)(u16 *pMem, int size);
-typedef void(CALLBACK *_SPU2writeDMA7Mem)(u16 *pMem, int size);
-typedef void(CALLBACK *_SPU2setDMABaseAddr)(uptr baseaddr);
-typedef void(CALLBACK *_SPU2interruptDMA7)();
-typedef void(CALLBACK *_SPU2irqCallback)(void (*SPU2callback)(), void (*DMA4callback)(), void (*DMA7callback)());
-typedef u32(CALLBACK *_SPU2ReadMemAddr)(int core);
-typedef void(CALLBACK *_SPU2WriteMemAddr)(int core, u32 value);
-
-typedef int(CALLBACK *_SPU2setupRecording)(int, std::wstring*);
-
-typedef void(CALLBACK *_SPU2setClockPtr)(u32 *ptr);
-typedef void(CALLBACK *_SPU2setTimeStretcher)(short int enable);
-
-typedef void(CALLBACK *_SPU2async)(u32 cycles);
 
 // DEV9
 // NOTE: The read/write functions CANNOT use XMM/MMX regs

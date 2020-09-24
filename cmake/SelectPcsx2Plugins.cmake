@@ -179,35 +179,6 @@ endif()
 #---------------------------------------
 
 #---------------------------------------
-#			SPU2null
-#---------------------------------------
-if(GTKn_FOUND AND EXTRA_PLUGINS)
-    set(SPU2null TRUE)
-endif()
-#---------------------------------------
-
-#---------------------------------------
-#			spu2-x
-#---------------------------------------
-# requires: -SoundTouch
-#           -ALSA
-#           -SDL
-#           -common_libs
-#
-# optional: -Portaudio
-#---------------------------------------
-if((SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs)
-	AND ((Linux AND ALSA_FOUND) OR (UNIX AND NOT Linux)))
-	set(spu2-x TRUE)
-elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x")
-	set(spu2-x FALSE)
-else()
-	set(spu2-x FALSE)
-    print_dep("Skip build of spu2-x: missing dependencies" "${msg_dep_spu2x}")
-endif()
-#---------------------------------------
-
-#---------------------------------------
 #			USBnull
 #---------------------------------------
 if(GTKn_FOUND)

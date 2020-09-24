@@ -81,7 +81,6 @@ const PluginInfo tbl_PluginInfo[] =
 {
 	{ "GS",		PluginId_GS,	PS2E_LT_GS,		PS2E_GS_VERSION		},
 	{ "PAD",	PluginId_PAD,	PS2E_LT_PAD,	PS2E_PAD_VERSION	},
-	{ "SPU2",	PluginId_SPU2,	PS2E_LT_SPU2,	PS2E_SPU2_VERSION	},
 	{ "USB",	PluginId_USB,	PS2E_LT_USB,	PS2E_USB_VERSION	},
 	{ "DEV9",	PluginId_DEV9,	PS2E_LT_DEV9,	PS2E_DEV9_VERSION	},
 
@@ -274,32 +273,6 @@ _PADWriteEvent	   PADWriteEvent;
 
 static void PAD_update( u32 padslot ) { }
 
-// SPU2
-#ifndef BUILTIN_SPU2_PLUGIN
-_SPU2open          SPU2open;
-_SPU2write         SPU2write;
-_SPU2reset         SPU2reset;
-_SPU2ps1reset      SPU2ps1reset;
-_SPU2read          SPU2read;
-
-_SPU2readDMA4Mem   SPU2readDMA4Mem;
-_SPU2writeDMA4Mem  SPU2writeDMA4Mem;
-_SPU2interruptDMA4 SPU2interruptDMA4;
-_SPU2readDMA7Mem   SPU2readDMA7Mem;
-_SPU2writeDMA7Mem  SPU2writeDMA7Mem;
-_SPU2setDMABaseAddr SPU2setDMABaseAddr;
-_SPU2interruptDMA7 SPU2interruptDMA7;
-
-_SPU2ReadMemAddr   SPU2ReadMemAddr;
-_SPU2WriteMemAddr   SPU2WriteMemAddr;
-_SPU2setupRecording SPU2setupRecording;
-_SPU2irqCallback   SPU2irqCallback;
-
-_SPU2setClockPtr   SPU2setClockPtr;
-_SPU2async         SPU2async;
-#endif
-
-
 // DEV9
 #ifndef BUILTIN_DEV9_PLUGIN
 _DEV9open          DEV9open;
@@ -438,47 +411,6 @@ static const LegacyApi_OptMethod s_MethMessOpt_PAD[] =
 };
 
 // ----------------------------------------------------------------------------
-//  SPU2 Mess!
-// ----------------------------------------------------------------------------
-
-// manualized reset that writes core reset registers of the SPU2 plugin:
-static void CALLBACK SPU2_Reset()
-{
-	SPU2write( 0x1f90019A, 1<<15 );		// core 0
-	SPU2write( 0x1f90059A, 1<<15 );		// core 1
-}
-
-static const LegacyApi_ReqMethod s_MethMessReq_SPU2[] =
-{
-	{	"SPU2open",				(vMeth**)&SPU2open,			NULL },
-	{	"SPU2reset",			(vMeth**)&SPU2reset,		SPU2_Reset },
-	{   "SPU2ps1reset",         (vMeth**)&SPU2ps1reset,     SPU2ps1reset},
-	{	"SPU2write",			(vMeth**)&SPU2write,		NULL },
-	{	"SPU2read",				(vMeth**)&SPU2read,			NULL },
-	{	"SPU2readDMA4Mem",		(vMeth**)&SPU2readDMA4Mem,	NULL },
-	{	"SPU2readDMA7Mem",		(vMeth**)&SPU2readDMA7Mem,	NULL },
-	{	"SPU2writeDMA4Mem",		(vMeth**)&SPU2writeDMA4Mem,	NULL },
-	{	"SPU2writeDMA7Mem",		(vMeth**)&SPU2writeDMA7Mem,	NULL },
-	{	"SPU2interruptDMA4",	(vMeth**)&SPU2interruptDMA4,NULL },
-	{	"SPU2interruptDMA7",	(vMeth**)&SPU2interruptDMA7,NULL },
-	{	"SPU2ReadMemAddr",		(vMeth**)&SPU2ReadMemAddr,	NULL },
-	{	"SPU2irqCallback",		(vMeth**)&SPU2irqCallback,	NULL },
-
-	{ NULL }
-};
-
-static const LegacyApi_OptMethod s_MethMessOpt_SPU2[] =
-{
-	{	"SPU2setClockPtr",		(vMeth**)&SPU2setClockPtr	},
-	{	"SPU2async",			(vMeth**)&SPU2async			},
-	{	"SPU2WriteMemAddr",		(vMeth**)&SPU2WriteMemAddr	},
-	{	"SPU2setDMABaseAddr",	(vMeth**)&SPU2setDMABaseAddr},
-	{	"SPU2setupRecording",	(vMeth**)&SPU2setupRecording},
-
-	{ NULL }
-};
-
-// ----------------------------------------------------------------------------
 //  DEV9 Mess!
 // ----------------------------------------------------------------------------
 static const LegacyApi_ReqMethod s_MethMessReq_DEV9[] =
@@ -532,7 +464,6 @@ static const LegacyApi_ReqMethod* const s_MethMessReq[] =
 {
 	s_MethMessReq_GS,
 	s_MethMessReq_PAD,
-	s_MethMessReq_SPU2,
 	s_MethMessReq_USB,
 	s_MethMessReq_DEV9
 };
@@ -541,7 +472,6 @@ static const LegacyApi_OptMethod* const s_MethMessOpt[] =
 {
 	s_MethMessOpt_GS,
 	s_MethMessOpt_PAD,
-	s_MethMessOpt_SPU2,
 	s_MethMessOpt_USB,
 	s_MethMessOpt_DEV9
 };
@@ -706,9 +636,6 @@ void* StaticLibrary::GetSymbol(const wxString &name)
 #ifdef BUILTIN_PAD_PLUGIN
 	RETURN_COMMON_SYMBOL(PAD);
 #endif
-#ifdef BUILTIN_SPU2_PLUGIN
-	RETURN_COMMON_SYMBOL(SPU2);
-#endif
 #ifdef BUILTIN_DEV9_PLUGIN
 	RETURN_COMMON_SYMBOL(DEV9);
 #endif
@@ -769,9 +696,6 @@ SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxStri
 #endif
 #ifdef BUILTIN_PAD_PLUGIN
 		case PluginId_PAD:
-#endif
-#ifdef BUILTIN_SPU2_PLUGIN
-		case PluginId_SPU2:
 #endif
 #ifdef BUILTIN_DEV9_PLUGIN
 		case PluginId_DEV9:
@@ -1045,16 +969,6 @@ bool SysCorePlugins::OpenPlugin_PAD()
 	return !PADopen( (void*)pDsp );
 }
 
-bool SysCorePlugins::OpenPlugin_SPU2()
-{
-	if( SPU2open((void*)pDsp) ) return false;
-
-	SPU2irqCallback( spu2Irq, spu2DMA4Irq, spu2DMA7Irq );
-	if( SPU2setDMABaseAddr != NULL ) SPU2setDMABaseAddr((uptr)iopMem->Main);
-	if( SPU2setClockPtr != NULL ) SPU2setClockPtr(&psxRegs.cycle);
-	return true;
-}
-
 bool SysCorePlugins::OpenPlugin_DEV9()
 {
 	dev9Handler = NULL;
@@ -1103,7 +1017,6 @@ void SysCorePlugins::Open( PluginsEnum_t pid )
 	{
 		case PluginId_GS:	result = OpenPlugin_GS();	break;
 		case PluginId_PAD:	result = OpenPlugin_PAD();	break;
-		case PluginId_SPU2:	result = OpenPlugin_SPU2();	break;
 		case PluginId_USB:	result = OpenPlugin_USB();	break;
 		case PluginId_DEV9:	result = OpenPlugin_DEV9();	break;
 
@@ -1177,11 +1090,6 @@ void SysCorePlugins::ClosePlugin_PAD()
 	_generalclose( PluginId_PAD );
 }
 
-void SysCorePlugins::ClosePlugin_SPU2()
-{
-	_generalclose( PluginId_SPU2 );
-}
-
 void SysCorePlugins::ClosePlugin_DEV9()
 {
 	_generalclose( PluginId_DEV9 );
@@ -1211,7 +1119,6 @@ void SysCorePlugins::Close( PluginsEnum_t pid )
 	{
 		case PluginId_GS:	ClosePlugin_GS();	break;
 		case PluginId_PAD:	ClosePlugin_PAD();	break;
-		case PluginId_SPU2:	ClosePlugin_SPU2();	break;
 		case PluginId_USB:	ClosePlugin_USB();	break;
 		case PluginId_DEV9:	ClosePlugin_DEV9();	break;
 		case PluginId_Mcd:	ClosePlugin_Mcd();	break;
