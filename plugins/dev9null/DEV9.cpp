@@ -28,7 +28,6 @@
 #include <string.h>
 #include <errno.h>
 #include <string>
-using namespace std;
 
 #include "DEV9.h"
 #include "svnrev.h"
@@ -45,8 +44,8 @@ void (*DEV9irq)(int);
 
 __aligned16 s8 dev9regs[0x10000];
 
-string s_strIniPath = "inis";
-string s_strLogPath = "logs";
+std::string s_strIniPath = "inis";
+std::string s_strLogPath = "logs";
 
 EXPORT_C_(void)
 DEV9configure()
