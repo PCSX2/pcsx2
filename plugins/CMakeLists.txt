@@ -38,14 +38,6 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/PadNull" AND PadNull)
 	add_subdirectory(PadNull)
 endif()
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/SPU2null" AND SPU2null)
-	add_subdirectory(SPU2null)
-endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x" AND spu2-x)
-	add_subdirectory(spu2-x/src)
-endif()
-
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/USBnull" AND USBnull)
 	add_subdirectory(USBnull)
 endif()

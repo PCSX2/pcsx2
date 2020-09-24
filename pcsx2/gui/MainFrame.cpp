@@ -431,7 +431,6 @@ void MainEmuFrame::CreateConfigMenu()
 	m_menuConfig.AppendSeparator();
 
 	m_menuConfig.Append(MenuId_Config_GS,		_("&Video (GS)"),		m_PluginMenuPacks[PluginId_GS]);
-	m_menuConfig.Append(MenuId_Config_SPU2,		_("&Audio (SPU2)"),		m_PluginMenuPacks[PluginId_SPU2]);
 	m_menuConfig.Append(MenuId_Config_PAD,		_("&Controllers (PAD)"),m_PluginMenuPacks[PluginId_PAD]);
 	m_menuConfig.Append(MenuId_Config_DEV9,		_("&Dev9"),				m_PluginMenuPacks[PluginId_DEV9]);
 	m_menuConfig.Append(MenuId_Config_USB,		_("&USB"),				m_PluginMenuPacks[PluginId_USB]);
