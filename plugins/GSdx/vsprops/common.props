@@ -16,6 +16,7 @@
       <AdditionalIncludeDirectories>$(VTUNE_AMPLIFIER_XE_2015_DIR)include;$(ProjectDir);$(SolutionDir)common\include;$(SolutionDir)3rdparty\baseclasses;$(SolutionDir)3rdparty;$(SolutionDir)3rdparty\freetype\include;$(SolutionDir)3rdparty\libpng;$(SolutionDir)3rdparty\xz\xz\src\liblzma\api;$(SolutionDir)3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>LZMA_API_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <AdditionalDependencies>d3dcompiler.lib;d3d11.lib;dxgi.lib;dxguid.lib;winmm.lib;strmiids.lib;opengl32.lib;comsuppw.lib;comctl32.lib;%(AdditionalDependencies)</AdditionalDependencies>
