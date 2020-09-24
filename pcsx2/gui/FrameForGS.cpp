@@ -142,7 +142,14 @@ void GSPanel::InitRecordingAccelerators()
 		m_Accels->findKeycodeWithCommandId("InputRecordingModeToggle").toTitleizedString(),
 		g_InputRecording.IsActive());
 
-	recordingConLog(L"Initialized Recording Key Bindings\n");
+	recordingConLog(L"Initialized Input Recording Key Bindings\n");
+}
+
+void GSPanel::RemoveRecordingAccelerators()
+{
+	m_Accels.reset(new AcceleratorDictionary);
+	InitDefaultAccelerators();
+	recordingConLog(L"Disabled Input Recording Key Bindings\n");
 }
 #endif
 

@@ -59,6 +59,7 @@ public:
 	wxString GetAssociatedKeyCode(const char* id);
 #ifndef DISABLE_RECORDING
 	void InitRecordingAccelerators();
+	void RemoveRecordingAccelerators();
 #endif
 
 protected:

@@ -1038,6 +1038,12 @@ void Pcsx2App::CloseGsPanel()
 		if (GSPanel* woot = gsFrame->GetViewport())
 			woot->Destroy();
 	}
+#ifndef DISABLE_RECORDING
+	// Disable recording controls that only make sense if the game is running
+	sMainFrame.enableRecordingMenuItem(MenuId_Recording_FrameAdvance, false);
+	sMainFrame.enableRecordingMenuItem(MenuId_Recording_TogglePause, false);
+	sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, false);
+#endif
 }
 
 void Pcsx2App::OnGsFrameClosed( wxWindowID id )
@@ -1052,15 +1058,6 @@ void Pcsx2App::OnGsFrameClosed( wxWindowID id )
 		// right now there's no way to resume from suspend without GUI.
 		PrepForExit();
 	}
-#ifndef DISABLE_RECORDING
-	else
-	{
-		// Disable recording controls that only make sense if the game is running
-		sMainFrame.enableRecordingMenuItem(MenuId_Recording_FrameAdvance, false);
-		sMainFrame.enableRecordingMenuItem(MenuId_Recording_TogglePause, false);
-		sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, false);
-	}
-#endif
 }
 
 void Pcsx2App::OnProgramLogClosed( wxWindowID id )
