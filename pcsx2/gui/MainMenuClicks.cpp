@@ -45,6 +45,11 @@ void MainEmuFrame::Menu_SysSettings_Click(wxCommandEvent &event)
 	AppOpenDialog<SysConfigDialog>( this );
 }
 
+void MainEmuFrame::Menu_AudioSettings_Click(wxCommandEvent &event)
+{
+    SPU2configure();
+}
+
 void MainEmuFrame::Menu_McdSettings_Click(wxCommandEvent &event)
 {
 	ScopedCoreThreadClose closed_core;
