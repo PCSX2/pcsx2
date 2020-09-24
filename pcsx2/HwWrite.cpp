@@ -23,6 +23,7 @@
 #include "ps2/eeHwTraceLog.inl"
 
 #include "ps2/pgif.h"
+#include "SPU2/spu2.h"
 #include "R3000A.h"
 
 using namespace R5900;

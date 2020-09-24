@@ -20,6 +20,7 @@
 
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
+#include "SPU2/spu2.h"
 
 #include <math.h>
 

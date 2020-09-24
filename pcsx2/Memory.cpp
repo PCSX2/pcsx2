@@ -44,6 +44,7 @@ BIOS
 
 #include "ps2/HwInternal.h"
 #include "ps2/BiosTools.h"
+#include "SPU2/spu2.h"
 
 #include "Utilities/PageFaultSource.h"
 

@@ -17,6 +17,7 @@
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
 #include "ps2/pgif.h" // for PSX kernel TTY in iopMemWrite32
+#include "SPU2/spu2.h"
 
 uptr *psxMemWLUT = NULL;
 const uptr *psxMemRLUT = NULL;
