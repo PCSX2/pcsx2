@@ -249,6 +249,7 @@ set(pcsx2SPU2Sources
     SPU2/Linux/ConfigDebug.cpp
     SPU2/Linux/ConfigSoundTouch.cpp
     SPU2/Linux/Dialogs.cpp
+    SPU2/wx/wxConfig.cpp
     )
 
 # SPU2 headers
@@ -269,6 +270,7 @@ set(pcsx2SPU2Headers
     SPU2/Linux/Alsa.h
     SPU2/Linux/Config.h
     SPU2/Linux/Dialogs.h
+    SPU2/wx/wxConfig.h
 )
 
 # DebugTools sources
@@ -768,6 +770,9 @@ set(pcsx2FinalLibs
     ${ZLIB_LIBRARIES}
     ${AIO_LIBRARIES}
     ${GCOV_LIBRARIES}
+    ${ALSA_LIBRARIES}
+    ${SOUNDTOUCH_LIBRARIES}
+    ${SDL2_LIBRARIES}
     ${Platform_Libs}
 )
 

@@ -15,7 +15,11 @@
  * along with SPU2-X.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Global.h"
+#include "../Config.h"
+#ifdef __linux__
+#include "../Linux/Config.h"
+#endif
+#include "../Global.h"
 #include "wxConfig.h"
 
 MixerTab::MixerTab(wxWindow* parent)

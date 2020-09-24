@@ -26,6 +26,8 @@
 
 using namespace Threading;
 
+MutexRecursive  mtx_SPU2Status;
+
 #include "svnrev.h"
 
 #ifdef _MSC_VER

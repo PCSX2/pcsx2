@@ -455,36 +455,6 @@ extern _PADqueryMtap PADqueryMtap;
 extern _PADWriteEvent PADWriteEvent;
 #endif
 
-// SPU2
-#ifndef BUILTIN_SPU2_PLUGIN
-extern _SPU2open SPU2open;
-extern _SPU2reset SPU2reset;
-extern _SPU2ps1reset SPU2ps1reset;
-extern _SPU2write SPU2write;
-extern _SPU2read SPU2read;
-
-extern _SPU2readDMA4Mem SPU2readDMA4Mem;
-extern _SPU2writeDMA4Mem SPU2writeDMA4Mem;
-extern _SPU2interruptDMA4 SPU2interruptDMA4;
-extern _SPU2readDMA7Mem SPU2readDMA7Mem;
-extern _SPU2writeDMA7Mem SPU2writeDMA7Mem;
-extern _SPU2setDMABaseAddr SPU2setDMABaseAddr;
-extern _SPU2interruptDMA7 SPU2interruptDMA7;
-extern _SPU2ReadMemAddr SPU2ReadMemAddr;
-extern _SPU2setupRecording SPU2setupRecording;
-extern _SPU2WriteMemAddr SPU2WriteMemAddr;
-extern _SPU2irqCallback SPU2irqCallback;
-
-extern _SPU2irqCallback SPU2irqCallback;
-
-extern _SPU2setupRecording SPU2setupRecording;
-
-extern _SPU2setClockPtr SPU2setClockPtr;
-extern _SPU2setTimeStretcher SPU2setTimeStretcher;
-
-extern _SPU2async SPU2async;
-#endif
-
 // DEV9
 #ifndef BUILTIN_DEV9_PLUGIN
 extern _DEV9open DEV9open;

@@ -15,7 +15,10 @@
  * along with SPU2-X.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+
 #pragma once
+
+#include "Global.h"
 
 extern bool DebugEnabled;
 

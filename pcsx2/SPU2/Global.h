@@ -15,8 +15,7 @@
  * along with SPU2-X.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _SPU2X_GLOBAL_H_
-#define _SPU2X_GLOBAL_H_
+#pragma once 
 
 #define NOMINMAX
 
@@ -104,4 +103,3 @@ extern void SysMessage(const wchar_t *fmt, ...);
 #include "Debug.h"
 #include "SndOut.h"
 
-#endif
