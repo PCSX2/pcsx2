@@ -71,9 +71,6 @@ void SaveStateBase::vif1Freeze()
 // Vif0/Vif1 Write32
 //------------------------------------------------------------------
 
-extern bool _chainVIF0();
-extern bool _VIF0chain();
-
 __fi void vif0FBRST(u32 value) {
 	VIF_LOG("VIF0_FBRST write32 0x%8.8x", value);
 
