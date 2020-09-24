@@ -21,7 +21,7 @@
 #include "Utilities/Threading.h"
 #include "SaveState.h"
 
-Threading::MutexRecursive  mtx_SPU2Status;
+extern Threading::MutexRecursive  mtx_SPU2Status;
 
 s32 SPU2init();
 s32 SPU2reset();
