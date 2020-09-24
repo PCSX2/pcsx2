@@ -27,6 +27,7 @@
 using namespace Threading;
 
 MutexRecursive  mtx_SPU2Status;
+bool SPU2_dummy_callback = false;
 
 #include "svnrev.h"
 
@@ -93,9 +94,6 @@ s32 SPU2test()
 // --------------------------------------------------------------------------------------
 
 u16 *DMABaseAddr;
-void (*_irqcallback)();
-void (*dma4callback)();
-void (*dma7callback)();
 
 u32 SPU2ReadMemAddr(int core)
 {
@@ -119,13 +117,6 @@ void SPU2setSettingsDir(const char *dir)
 void SPU2setLogDir(const char *dir)
 {
     CfgSetLogDir(dir);
-}
-
-void SPU2irqCallback(void (*SPU2callback)(), void (*DMA4callback)(), void (*DMA7callback)())
-{
-    _irqcallback = SPU2callback;
-    dma4callback = DMA4callback;
-    dma7callback = DMA7callback;
 }
 
 void SPU2readDMA4Mem(u16 *pMem, u32 size) // size now in 16bit units
@@ -252,6 +243,7 @@ s32 SPU2init()
     }
 
     IsInitialized = true;
+    SPU2_dummy_callback = false;
 
     ReadSettings();
 
@@ -409,6 +401,7 @@ void SPU2shutdown()
     if (!IsInitialized)
         return;
     IsInitialized = false;
+    SPU2_dummy_callback = false;
 
     ConLog("* SPU2-X: Shutting down.\n");
 

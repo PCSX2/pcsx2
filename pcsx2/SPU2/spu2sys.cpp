@@ -24,6 +24,7 @@
 
 #include "Global.h"
 #include "Dma.h"
+#include "IopDma.h"
 
 #include "spu2.h" // needed until I figure out a nice solution for irqcallback dependencies.
 
@@ -407,8 +408,8 @@ __forceinline void TimeUpdate(u32 cClocks)
         if (has_to_call_irq) {
             //ConLog("* SPU2-X: Irq Called (%04x) at cycle %d.\n", Spdif.Info, Cycles);
             has_to_call_irq = false;
-            if (_irqcallback)
-                _irqcallback();
+            if(!SPU2_dummy_callback)
+                spu2Irq();
         }
 
         //Update DMA4 interrupt delay counter
@@ -418,8 +419,10 @@ __forceinline void TimeUpdate(u32 cClocks)
                 //ConLog("counter set and callback!\n");
                 Cores[0].MADR = Cores[0].TADR;
                 Cores[0].DMAICounter = 0;
-                if (dma4callback)
-                    dma4callback();
+                if(!SPU2_dummy_callback)
+                    spu2DMA4Irq();
+                else
+                    SPU2interruptDMA4();
             } else {
                 Cores[0].MADR += TickInterval << 1;
             }
@@ -432,8 +435,10 @@ __forceinline void TimeUpdate(u32 cClocks)
                 Cores[1].MADR = Cores[1].TADR;
                 Cores[1].DMAICounter = 0;
                 //ConLog( "* SPU2 > DMA 7 Callback!  %d\n", Cycles );
-                if (dma7callback)
-                    dma7callback();
+                if(!SPU2_dummy_callback)
+                     spu2DMA7Irq();
+                else
+                     SPU2interruptDMA7();
             } else {
                 Cores[1].MADR += TickInterval << 1;
             }
@@ -693,7 +698,8 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
                 //ConLog("SPU direct DMA Write. Current TSA = %x\n", TSA);
                 if (Cores[0].IRQEnable && (Cores[0].IRQA <= Cores[0].TSA)) {
                     SetIrqCall(0);
-                    _irqcallback();
+                    if(!SPU2_dummy_callback)
+                        spu2Irq();
                 }
                 DmaWrite(value);
                 show = false;

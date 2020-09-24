@@ -23,6 +23,8 @@
 
 extern Threading::MutexRecursive  mtx_SPU2Status;
 
+extern bool SPU2_dummy_callback;
+
 s32 SPU2init();
 s32 SPU2reset();
 s32 SPU2ps1reset();
@@ -53,7 +55,6 @@ void SPU2WriteMemAddr(int core, u32 value);
 void SPU2setDMABaseAddr(uptr baseaddr);
 void SPU2setSettingsDir(const char *dir);
 void SPU2setLogDir(const char *dir);
-void SPU2irqCallback(void (*SPU2callback)(), void (*DMA4callback)(), void (*DMA7callback)());
 void SPU2readDMA4Mem(u16 *pMem, u32 size);
 void SPU2writeDMA4Mem(u16 *pMem, u32 size);
 void SPU2interruptDMA4();
@@ -63,11 +64,6 @@ void SPU2writeDMA7Mem(u16 *pMem, u32 size);
 #include "spu2replay.h"
 
 extern u8 callirq;
-
-extern void (*_irqcallback)();
-
-extern void (*dma4callback)();
-extern void (*dma7callback)();
 
 extern s16 *input_data;
 extern u32 input_data_ptr;
