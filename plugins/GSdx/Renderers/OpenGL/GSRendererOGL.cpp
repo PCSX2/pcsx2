@@ -513,18 +513,6 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 		default:
 			/*sw_blending |= accumulation_blend*/;
 	}
-	// SW Blending
-	// GL42 interact very badly with sw blending. GL42 uses the primitiveID to find the primitive
-	// that write the bad alpha value. Sw blending will force the draw to run primitive by primitive
-	// (therefore primitiveID will be constant to 1).
-	// Switch DATE_GL42 with DATE_GL45 in such cases to ensure accuracy.
-	// No mix of COLCLIP + sw blend + DATE_GL42, neither sw fbmask + DATE_GL42.
-	if ((((accumulation_blend || blend_non_recursive) && m_env.COLCLAMP.CLAMP == 0) || sw_blending) && DATE_GL42) {
-		GL_PERF("DATE: Swap DATE_GL42 with DATE_GL45");
-		m_require_full_barrier = true;
-		DATE_GL42 = false;
-		DATE_GL45 = true;
-	}
 
 	// Color clip
 	if (m_env.COLCLAMP.CLAMP == 0) {
@@ -553,6 +541,19 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 			GL_INS("COLCLIP HDR mode ENABLED");
 			m_ps_sel.hdr = 1;
 		}
+	}
+
+	// GL42 interact very badly with sw blending. GL42 uses the primitiveID to find the primitive
+	// that write the bad alpha value. Sw blending will force the draw to run primitive by primitive
+	// (therefore primitiveID will be constant to 1).
+	// Switch DATE_GL42 with DATE_GL45 in such cases to ensure accuracy.
+	// No mix of COLCLIP + sw blend + DATE_GL42, neither sw fbmask + DATE_GL42.
+	// Note: Do the swap after colclip to avoid adding extra conditions.
+	if (sw_blending && DATE_GL42) {
+		GL_PERF("DATE: Swap DATE_GL42 with DATE_GL45");
+		m_require_full_barrier = true;
+		DATE_GL42 = false;
+		DATE_GL45 = true;
 	}
 
 	// For stat to optimize accurate option
