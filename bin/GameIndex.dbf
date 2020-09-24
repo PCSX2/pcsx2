@@ -1352,6 +1352,7 @@ vuClampMode = 2 // Fixes water reflection.
 Serial = SCES-50360
 Name   = Twisted Metal - Black
 Region = PAL-M5
+VU0KickstartHack = 1 // Fixes Bad Car Models
 ---------------------------------------------
 Serial = SCES-50361
 Name   = Jak and Daxter: The Precursor Legacy
@@ -1737,6 +1738,7 @@ Compat = 5
 Serial = SCES-51480
 Name   = Twisted Metal - Black - Online
 Region = PAL-M5
+VU0KickstartHack = 1 // Fixes Bad Car Models
 ---------------------------------------------
 Serial = SCES-51513
 Name   = EyeToy - Play
@@ -4580,6 +4582,7 @@ Serial = SCUS-97101
 Name   = Twisted Metal - Black
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Bad Car Models
 ---------------------------------------------
 Serial = SCUS-97102
 Name   = Gran Turismo 3 - A-Spec
@@ -4832,6 +4835,7 @@ Region = NTSC-U
 Serial = SCUS-97164
 Name   = Twisted Metal Black [Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Bad Car Models
 ---------------------------------------------
 Serial = SCUS-97165
 Name   = Official U.S. PlayStation Magazine Demo Disc 051
@@ -4890,6 +4894,7 @@ Serial = SCUS-97179
 Name   = Twisted Metal Black
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Bad Car Models
 ---------------------------------------------
 Serial = SCUS-97181
 Name   = Official U.S. PlayStation Magazine Demo Disc 055
@@ -4946,11 +4951,13 @@ Region = NTSC-U
 Serial = SCUS-97195
 Name   = Twisted Metal Black - Online
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Bad Car Models
 ---------------------------------------------
 Serial = SCUS-97196
 Name   = Twisted Metal Black - Online [Demo]
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Bad Car Models
 ---------------------------------------------
 Serial = SCUS-97197
 Name   = War of the Monsters
