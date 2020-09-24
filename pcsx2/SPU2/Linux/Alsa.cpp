@@ -21,9 +21,9 @@
 
 #include <alsa/asoundlib.h>
 
-#include "Global.h"
+#include "../Global.h"
 #include "Alsa.h"
-#include "SndOut.h"
+#include "../SndOut.h"
 
 // Does not work, except as effectively a null plugin.
 class AlsaMod : public SndOutModule

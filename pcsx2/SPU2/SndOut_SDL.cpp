@@ -18,7 +18,11 @@
 
 #include "Global.h"
 #include "SndOut.h"
-#include "Dialogs.h"
+#ifdef __linux__
+#include "Linux/Dialogs.h"
+#elif defined(_WIN32)
+#include "Windows/Dialogs.h"
+#endif
 
 #include <memory>
 

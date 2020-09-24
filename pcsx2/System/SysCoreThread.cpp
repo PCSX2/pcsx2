@@ -27,6 +27,7 @@
 #include "MTVU.h"
 #include "IPC.h"
 #include "FW.h"
+#include "SPU2/spu2.h"
 
 #include "../DebugTools/MIPSAnalyst.h"
 #include "../DebugTools/SymbolMap.h"
@@ -291,7 +292,6 @@ void SysCoreThread::OnSuspendInThread()
 	GetCorePlugins().Close();
 	DoCDVDclose();
 	FWclose();
-    SPU2close();
 }
 
 void SysCoreThread::OnResumeInThread( bool isSuspended )
@@ -300,7 +300,6 @@ void SysCoreThread::OnResumeInThread( bool isSuspended )
 	if (isSuspended || !g_GameStarted)
 		DoCDVDopen();
 	FWopen();
-    SPU2open();
 }
 
 
@@ -317,7 +316,6 @@ void SysCoreThread::OnCleanupInThread()
 	vu1Thread.WaitVU();
 	DoCDVDclose();
 	FWclose();
-    SPU2close();
 	GetCorePlugins().Close();
 	GetCorePlugins().Shutdown();
 

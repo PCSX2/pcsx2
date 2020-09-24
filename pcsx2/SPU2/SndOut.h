@@ -675,9 +675,7 @@ extern SndOutModule *XAudio2Out;
 #if defined(_WIN32) || defined(SPU2X_PORTAUDIO)
 extern SndOutModule *PortaudioOut;
 #endif
-#if defined(SPU2X_SDL) || defined(SPU2X_SDL2)
 extern SndOutModule *const SDLOut;
-#endif
 #ifdef __linux__
 extern SndOutModule *AlsaOut;
 #endif
