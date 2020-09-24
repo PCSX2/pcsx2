@@ -32,6 +32,7 @@
 #include "Dump.h"
 #include "DebugTools/Debug.h"
 #include "R3000A.h"
+#include "SPU2/spu2.h"
 
 // renderswitch - tells GSdx to go into dx9 sw if "renderswitch" is set.
 bool renderswitch = false;
@@ -440,8 +441,7 @@ namespace Implementations
 				std::wstring* filename = nullptr;
 				if (filename = GSsetupRecording(g_Pcsx2Recording))
 				{
-					if (SPU2setupRecording)
-						SPU2setupRecording(g_Pcsx2Recording, filename);
+					SPU2setupRecording(g_Pcsx2Recording, filename);
 					delete filename;
 				}
 				else
@@ -453,8 +453,7 @@ namespace Implementations
 			else
 			{
 				// the GS doesn't support recording
-				if (SPU2setupRecording)
-					SPU2setupRecording(g_Pcsx2Recording, NULL);
+				SPU2setupRecording(g_Pcsx2Recording, NULL);
 			}
 
 			if (GetMainFramePtr() && needsMainFrameEnable)
@@ -465,8 +464,7 @@ namespace Implementations
 			// stop recording
 			if (GSsetupRecording)
 				GSsetupRecording(g_Pcsx2Recording);
-			if (SPU2setupRecording)
-				SPU2setupRecording(g_Pcsx2Recording, NULL);
+			SPU2setupRecording(g_Pcsx2Recording, NULL);
 		}
 	}
 

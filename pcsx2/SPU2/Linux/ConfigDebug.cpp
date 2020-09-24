@@ -15,7 +15,7 @@
  * along with SPU2-X.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Global.h"
+#include "../Global.h"
 #include "Dialogs.h"
 #include "Config.h"
 #include "Utilities/Path.h"

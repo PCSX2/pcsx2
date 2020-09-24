@@ -24,7 +24,7 @@
 #if defined(__unix__) || defined(__APPLE__)
 #include <SDL.h>
 #include <SDL_audio.h>
-#include "Linux/Config.h"
+#include "Config.h"
 #endif
 
 class MixerTab : public wxPanel

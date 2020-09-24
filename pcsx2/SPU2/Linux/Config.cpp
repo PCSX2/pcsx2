@@ -15,14 +15,14 @@
  * along with SPU2-X.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Global.h"
+#include "../Global.h"
 #include "Dialogs.h"
 #include "Config.h"
 
 #if defined(__unix__) || defined(__APPLE__)
 #include <SDL.h>
 #include <SDL_audio.h>
-#include "wx/wxConfig.h"
+#include "../wx/wxConfig.h"
 #endif
 
 int AutoDMAPlayRate[2] = {0, 0};

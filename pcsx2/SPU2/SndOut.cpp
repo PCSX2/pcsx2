@@ -91,9 +91,7 @@ SndOutModule *mods[] =
 #if defined(_WIN32) || defined(SPU2X_PORTAUDIO)
         PortaudioOut,
 #endif
-#if defined(SPU2X_SDL) || defined(SPU2X_SDL2)
         SDLOut,
-#endif
 #if defined(__linux__) /* && defined(__ALSA__)*/
         AlsaOut,
 #endif
