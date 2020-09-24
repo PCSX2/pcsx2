@@ -377,7 +377,6 @@ void V_Core::DoDMAwrite(u16 *pMem, u32 size)
     DMAPtr = pMem;
 
     if (size < 2) {
-        //if(dma7callback) dma7callback();
         Regs.STATX &= ~0x80;
         //Regs.ATTR |= 0x30;
         DMAICounter = 1;

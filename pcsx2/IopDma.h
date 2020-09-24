@@ -36,6 +36,8 @@ extern void usbInterrupt();
 extern void usbIrq(int cycles);
 extern void fwIrq();
 extern void spu2Irq();
+extern void spu2DMA4Irq();
+extern void spu2DMA7Irq();
 
 extern void iopIntcIrq( uint irqType );
 extern void iopTestIntc();

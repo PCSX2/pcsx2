@@ -17,6 +17,7 @@
 
 #include "Global.h"
 #include "Dma.h"
+#include "IopDma.h"
 
 #include "spu2.h" // required for ENABLE_NEW_IOPDMA_SPU2 define
 
@@ -90,11 +91,15 @@ StereoOut32 V_Core::ReadInput_HiFi()
                 // Hack, kinda. We call the interrupt early here, since PCSX2 doesn't like them delayed.
                 //DMAICounter		= 1;
                 if (Index == 0) {
-                    if (dma4callback)
-                        dma4callback();
+                    if(!SPU2_dummy_callback)
+                        spu2DMA4Irq();
+                    else
+                        SPU2interruptDMA4();
                 } else {
-                    if (dma7callback)
-                        dma7callback();
+                    if(!SPU2_dummy_callback)
+                         spu2DMA7Irq();
+                    else
+                         SPU2interruptDMA7();
                 }
             }
         }
@@ -153,11 +158,15 @@ StereoOut32 V_Core::ReadInput()
                 // Hack, kinda. We call the interrupt early here, since PCSX2 doesn't like them delayed.
                 //DMAICounter   = 1;
                 if (Index == 0) {
-                    if (dma4callback)
-                        dma4callback();
+                    if(!SPU2_dummy_callback)
+                        spu2DMA4Irq();
+                    else
+                        SPU2interruptDMA4();
                 } else {
-                    if (dma7callback)
-                        dma7callback();
+                    if(!SPU2_dummy_callback)
+                         spu2DMA7Irq();
+                    else
+                         SPU2interruptDMA7();
                 }
             }
         }

@@ -143,20 +143,6 @@ int conprintf(const char *fmt, ...)
 #endif
 }
 
-void dummy1()
-{
-}
-
-void dummy4()
-{
-    SPU2interruptDMA4();
-}
-
-void dummy7()
-{
-    SPU2interruptDMA7();
-}
-
 u64 HighResFrequency()
 {
     u64 freq;
@@ -252,7 +238,7 @@ s2r_replay(HWND hwnd, HINSTANCE hinst, LPSTR filename, int nCmdShow)
     InitWaitSync(); // Initialize the WaitSync stuff
 
     SPU2init();
-    SPU2irqCallback(dummy1, dummy4, dummy7);
+    SPU2_dummy_callback = true;
     SPU2setClockPtr(&CurrentIOPCycle);
     SPU2open(&hwnd);
 
