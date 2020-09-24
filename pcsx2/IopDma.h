@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __PSXDMA_H__
-#define __PSXDMA_H__
+#pragma once 
 
 #include "PS2Edefs.h"
 
@@ -43,5 +42,3 @@ extern void iopTestIntc();
 
 extern DEV9handler dev9Handler;
 extern USBhandler usbHandler;
-
-#endif /* __PSXDMA_H__ */

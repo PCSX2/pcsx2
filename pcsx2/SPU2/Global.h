@@ -71,7 +71,6 @@ static __forceinline T GetClamped(T src, T min, T max)
 }
 
 #ifdef __WXMAC__
-#include "PS2Eext.h"
 #else
 extern void SysMessage(const char *fmt, ...);
 #endif

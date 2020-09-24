@@ -17,7 +17,7 @@
 //
 
 #include "Global.h"
-#include "PS2E-spu2.h"
+#include "spu2.h"
 
 #ifdef _MSC_VER
 #include "Windows.h"

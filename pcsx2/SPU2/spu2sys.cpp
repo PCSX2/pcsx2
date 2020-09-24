@@ -25,7 +25,7 @@
 #include "Global.h"
 #include "Dma.h"
 
-#include "PS2E-spu2.h" // needed until I figure out a nice solution for irqcallback dependencies.
+#include "spu2.h" // needed until I figure out a nice solution for irqcallback dependencies.
 
 s16 *spu2regs = NULL;
 s16 *_spu2mem = NULL;

@@ -29,6 +29,7 @@
 #include "Counters.h"
 
 #include "Utilities/SafeArray.inl"
+#include "SPU2/spu2.h"
 
 using namespace R5900;
 
@@ -244,6 +245,8 @@ SaveStateBase& SaveStateBase::FreezePlugins()
 		FreezeTag( FastFormatAscii().Write("Plugin:%s", tbl_PluginInfo[i].shortname) );
 		GetCorePlugins().Freeze( (PluginsEnum_t)i, *this );
 	}
+    // now with more core!
+    SPU2DoFreeze(*this);
 
 	return *this;
 }
