@@ -21,6 +21,7 @@
 #include "IPU/IPUdma.h"
 #include "Gif_Unit.h"
 #include "IopCommon.h"
+#include "SPU2/spu2.h"
 
 using namespace R5900;
 
