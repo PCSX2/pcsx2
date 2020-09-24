@@ -28,6 +28,7 @@
 #include "IPC.h"
 #include "FW.h"
 #include "SPU2/spu2.h"
+#include "R3000A.h"
 
 #include "../DebugTools/MIPSAnalyst.h"
 #include "../DebugTools/SymbolMap.h"
@@ -89,6 +90,7 @@ void SysCoreThread::Start()
 {
 	if( !GetCorePlugins().AreLoaded() ) return;
 	GetCorePlugins().Init();
+    SPU2init();
 	_parent::Start();
 }
 
@@ -292,6 +294,7 @@ void SysCoreThread::OnSuspendInThread()
 	GetCorePlugins().Close();
 	DoCDVDclose();
 	FWclose();
+    SPU2close();
 }
 
 void SysCoreThread::OnResumeInThread( bool isSuspended )
@@ -300,6 +303,9 @@ void SysCoreThread::OnResumeInThread( bool isSuspended )
 	if (isSuspended || !g_GameStarted)
 		DoCDVDopen();
 	FWopen();
+    SPU2open((void*)pDsp);
+    SPU2setDMABaseAddr((uptr)iopMem->Main);
+	SPU2setClockPtr(&psxRegs.cycle);
 }
 
 
@@ -316,8 +322,10 @@ void SysCoreThread::OnCleanupInThread()
 	vu1Thread.WaitVU();
 	DoCDVDclose();
 	FWclose();
+    SPU2close();
 	GetCorePlugins().Close();
 	GetCorePlugins().Shutdown();
+    SPU2shutdown();
 
 	_mm_setcsr( m_mxcsr_saved.bitmask );
 	Threading::DisableHiresScheduler();
