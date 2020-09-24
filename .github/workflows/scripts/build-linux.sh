@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 # Packages - Build Environment
 declare -a BUILD_PACKAGES=(
@@ -14,12 +14,25 @@ declare -a PCSX2_PACKAGES=(
 	"libaio-dev"
 	"libasound2-dev"
 	"libcairo2-dev"
+	"libegl-dev"
 	"libegl1-mesa-dev"
 	"libgdk-pixbuf2.0-dev"
 	"libgirepository-1.0-1"
+	"libgl-dev"
 	"libgl1-mesa-dev"
+	"libgl1"
+	"libglx0"
+	"libglx-mesa0"
+	"libgl1-mesa-dri"
+	"libllvm10"
+	"libgles-dev"
+	"libgles-dev"
+	"libgles2-mesa-dev"
 	"libglib2.0-dev"
 	"libglu1-mesa-dev"
+	"libglu1-mesa"
+	"libglvnd-dev"
+	"libglx-dev"
 	"libgtk-3-dev"
 	"libgtk2.0-dev"
 	"libharfbuzz-dev"
@@ -28,6 +41,7 @@ declare -a PCSX2_PACKAGES=(
 	"libpcap0.8-dev"
 	"libsdl2-dev"
 	"libsoundtouch-dev"
+	"libwxgtk3.0-gtk3-0v5"
 	"libwxgtk3.0-gtk3-dev"
 	"libx11-xcb-dev"
 	"libxext-dev"
