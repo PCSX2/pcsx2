@@ -553,7 +553,7 @@ extern void InitADSR();
 extern void CalculateADSR(V_Voice &vc);
 extern void UpdateSpdifMode();
 
-namespace Savestate
+namespace SPU2Savestate
 {
 struct DataBlock;
 

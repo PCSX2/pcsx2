@@ -18,7 +18,7 @@
 #include "Global.h"
 #include "Dma.h"
 
-#include "PS2E-spu2.h" // temporary until I resolve cyclePtr/TimeUpdate dependencies.
+#include "spu2.h" // temporary until I resolve cyclePtr/TimeUpdate dependencies.
 
 extern u8 callirq;
 

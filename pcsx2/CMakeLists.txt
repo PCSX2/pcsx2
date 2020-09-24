@@ -243,6 +243,12 @@ set(pcsx2SPU2Sources
     SPU2/Timestretcher.cpp
     SPU2/Wavedump_wav.cpp
     SPU2/WavFile.cpp
+    SPU2/Linux/Alsa.cpp
+    SPU2/Linux/CfgHelpers.cpp
+    SPU2/Linux/Config.cpp
+    SPU2/Linux/ConfigDebug.cpp
+    SPU2/Linux/ConfigSoundTouch.cpp
+    SPU2/Linux/Dialogs.cpp
     )
 
 # SPU2 headers
@@ -260,6 +266,9 @@ set(pcsx2SPU2Headers
     SPU2/spdif.h
     SPU2/spu2replay.h
     SPU2/WavFile.h
+    SPU2/Linux/Alsa.h
+    SPU2/Linux/Config.h
+    SPU2/Linux/Dialogs.h
 )
 
 # DebugTools sources

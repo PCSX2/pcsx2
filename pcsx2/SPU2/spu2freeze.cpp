@@ -16,9 +16,9 @@
  */
 
 #include "Global.h"
-#include "PS2E-spu2.h" // hopefully temporary, until I resolve lClocks depdendency
+#include "spu2.h" // hopefully temporary, until I resolve lClocks depdendency
 
-namespace Savestate
+namespace SPU2Savestate
 {
 // Arbitrary ID to identify SPU2-X saves.
 static const u32 SAVE_ID = 0x1227521;
@@ -33,7 +33,7 @@ static void wipe_the_cache()
 }
 }
 
-struct Savestate::DataBlock
+struct SPU2Savestate::DataBlock
 {
     u32 spu2id;          // SPU2-X state identifier lets ZeroGS/PeopsSPU2 know this isn't their state)
     u8 unkregs[0x10000]; // SPU2 raw register memory
@@ -49,7 +49,7 @@ struct Savestate::DataBlock
     int PlayMode;
 };
 
-s32 __fastcall Savestate::FreezeIt(DataBlock &spud)
+s32 __fastcall SPU2Savestate::FreezeIt(DataBlock &spud)
 {
     spud.spu2id = SAVE_ID;
     spud.version = SAVE_VERSION;
@@ -78,7 +78,7 @@ s32 __fastcall Savestate::FreezeIt(DataBlock &spud)
     return 0;
 }
 
-s32 __fastcall Savestate::ThawIt(DataBlock &spud)
+s32 __fastcall SPU2Savestate::ThawIt(DataBlock &spud)
 {
     if (spud.spu2id != SAVE_ID || spud.version < SAVE_VERSION) {
         fprintf(stderr, "\n*** SPU2-X Warning:\n");
@@ -141,7 +141,7 @@ s32 __fastcall Savestate::ThawIt(DataBlock &spud)
     return 0;
 }
 
-s32 __fastcall Savestate::SizeIt()
+s32 __fastcall SPU2Savestate::SizeIt()
 {
     return sizeof(DataBlock);
 }

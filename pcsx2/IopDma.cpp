@@ -26,7 +26,7 @@ using namespace R3000A;
 // Dma8     in PsxSpd.c
 // Dma11/12 in PsxSio2.c
 
-static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore, _SPU2writeDMA4Mem spu2WriteFunc, _SPU2readDMA4Mem spu2ReadFunc)
+static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore)
 {
 	const char dmaNum = spuCore ? '7' : '4';
 
@@ -38,36 +38,39 @@ static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore, _
 
 	// Update the spu2 to the current cycle before initiating the DMA
 
-	if (SPU2async)
-	{
-		SPU2async(psxRegs.cycle - psxCounters[6].sCycleT);
-		//Console.Status("cycles sent to SPU2 %x\n", psxRegs.cycle - psxCounters[6].sCycleT);
+    SPU2async(psxRegs.cycle - psxCounters[6].sCycleT);
+    //Console.Status("cycles sent to SPU2 %x\n", psxRegs.cycle - psxCounters[6].sCycleT);
 
-		psxCounters[6].sCycleT = psxRegs.cycle;
-		psxCounters[6].CycleT = size * 3;
+    psxCounters[6].sCycleT = psxRegs.cycle;
+    psxCounters[6].CycleT = size * 3;
 
-		psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
-		psxNextsCounter = psxRegs.cycle;
-		if (psxCounters[6].CycleT < psxNextCounter)
-			psxNextCounter = psxCounters[6].CycleT;
+    psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
+    psxNextsCounter = psxRegs.cycle;
+    if (psxCounters[6].CycleT < psxNextCounter)
+        psxNextCounter = psxCounters[6].CycleT;
 
-		if((g_iopNextEventCycle - psxNextsCounter) > (u32)psxNextCounter)
-		{
-			//DevCon.Warning("SPU2async Setting new counter branch, old %x new %x ((%x - %x = %x) > %x delta)", g_iopNextEventCycle, psxNextsCounter + psxNextCounter, g_iopNextEventCycle, psxNextsCounter, (g_iopNextEventCycle - psxNextsCounter), psxNextCounter);
-			g_iopNextEventCycle = psxNextsCounter + psxNextCounter;
-		}
-	}
+    if((g_iopNextEventCycle - psxNextsCounter) > (u32)psxNextCounter)
+    {
+        //DevCon.Warning("SPU2async Setting new counter branch, old %x new %x ((%x - %x = %x) > %x delta)", g_iopNextEventCycle, psxNextsCounter + psxNextCounter, g_iopNextEventCycle, psxNextsCounter, (g_iopNextEventCycle - psxNextsCounter), psxNextCounter);
+        g_iopNextEventCycle = psxNextsCounter + psxNextCounter;
+    }
 
 	switch (chcr)
 	{
 		case 0x01000201: //cpu to spu2 transfer
 			PSXDMA_LOG("*** DMA %c - mem2spu *** %x addr = %x size = %x", dmaNum, chcr, madr, bcr);
-			spu2WriteFunc((u16 *)iopPhysMem(madr), size*2);
+            if(dmaNum==7)
+			    SPU2writeDMA7Mem((u16 *)iopPhysMem(madr), size*2);
+            else if(dmaNum==4)
+			    SPU2writeDMA4Mem((u16 *)iopPhysMem(madr), size*2);
 			break;
 
 		case 0x01000200: //spu2 to cpu transfer
 			PSXDMA_LOG("*** DMA %c - spu2mem *** %x addr = %x size = %x", dmaNum, chcr, madr, bcr);
-			spu2ReadFunc((u16 *)iopPhysMem(madr), size*2);
+            if(dmaNum==7)
+			    SPU2readDMA7Mem((u16 *)iopPhysMem(madr), size*2);
+            else if(dmaNum==4)
+			    SPU2readDMA4Mem((u16 *)iopPhysMem(madr), size*2);
 			psxCpu->Clear(spuCore ? HW_DMA7_MADR : HW_DMA4_MADR, size);
 			break;
 
@@ -79,7 +82,7 @@ static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore, _
 
 void psxDma4(u32 madr, u32 bcr, u32 chcr)		// SPU2's Core 0
 {
-	psxDmaGeneric(madr, bcr, chcr, 0, SPU2writeDMA4Mem, SPU2readDMA4Mem);
+	psxDmaGeneric(madr, bcr, chcr, 0);
 }
 
 int psxDma4Interrupt()
@@ -105,7 +108,7 @@ void spu2DMA4Irq()
 
 void psxDma7(u32 madr, u32 bcr, u32 chcr)		// SPU2's Core 1
 {
-	psxDmaGeneric(madr, bcr, chcr, 1, SPU2writeDMA7Mem, SPU2readDMA7Mem);
+	psxDmaGeneric(madr, bcr, chcr, 1);
 }
 
 int psxDma7Interrupt()

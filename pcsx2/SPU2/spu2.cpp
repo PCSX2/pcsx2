@@ -18,16 +18,19 @@
 #include "Global.h"
 #include "spu2.h"
 #include "Dma.h"
-#include "Dialogs.h"
+#ifdef __linux__
+#include "Linux/Dialogs.h"
+#elif defined(_WIN32)
+#include "Windows/Dialogs.h"
+#endif
+
+using namespace Threading;
 
 #include "svnrev.h"
 
 #ifdef _MSC_VER
 #define snprintf sprintf_s
 #endif
-// PCSX2 expects ASNI, not unicode, so this MUST always be char...
-static char libraryName[256];
-
 int SampleRate = 48000;
 
 static bool IsOpened = false;
@@ -92,26 +95,26 @@ void (*_irqcallback)();
 void (*dma4callback)();
 void (*dma7callback)();
 
-u32 CALLBACK SPU2ReadMemAddr(int core)
+u32 SPU2ReadMemAddr(int core)
 {
     return Cores[core].MADR;
 }
-void CALLBACK SPU2WriteMemAddr(int core, u32 value)
+void SPU2WriteMemAddr(int core, u32 value)
 {
     Cores[core].MADR = value;
 }
 
-void CALLBACK SPU2setDMABaseAddr(uptr baseaddr)
+void SPU2setDMABaseAddr(uptr baseaddr)
 {
     DMABaseAddr = (u16 *)baseaddr;
 }
 
-void CALLBACK SPU2setSettingsDir(const char *dir)
+void SPU2setSettingsDir(const char *dir)
 {
     CfgSetSettingsDir(dir);
 }
 
-void CALLBACK SPU2setLogDir(const char *dir)
+void SPU2setLogDir(const char *dir)
 {
     CfgSetLogDir(dir);
 }
@@ -123,7 +126,7 @@ void SPU2irqCallback(void (*SPU2callback)(), void (*DMA4callback)(), void (*DMA7
     dma7callback = DMA7callback;
 }
 
-void CALLBACK SPU2readDMA4Mem(u16 *pMem, u32 size) // size now in 16bit units
+void SPU2readDMA4Mem(u16 *pMem, u32 size) // size now in 16bit units
 {
     if (cyclePtr != NULL)
         TimeUpdate(*cyclePtr);
@@ -132,7 +135,7 @@ void CALLBACK SPU2readDMA4Mem(u16 *pMem, u32 size) // size now in 16bit units
     Cores[0].DoDMAread(pMem, size);
 }
 
-void CALLBACK SPU2writeDMA4Mem(u16 *pMem, u32 size) // size now in 16bit units
+void SPU2writeDMA4Mem(u16 *pMem, u32 size) // size now in 16bit units
 {
     if (cyclePtr != NULL)
         TimeUpdate(*cyclePtr);
@@ -145,21 +148,21 @@ void CALLBACK SPU2writeDMA4Mem(u16 *pMem, u32 size) // size now in 16bit units
     Cores[0].DoDMAwrite(pMem, size);
 }
 
-void CALLBACK SPU2interruptDMA4()
+void SPU2interruptDMA4()
 {
     FileLog("[%10d] SPU2 interruptDMA4\n", Cycles);
     Cores[0].Regs.STATX |= 0x80;
     //Cores[0].Regs.ATTR &= ~0x30;
 }
 
-void CALLBACK SPU2interruptDMA7()
+void SPU2interruptDMA7()
 {
     FileLog("[%10d] SPU2 interruptDMA7\n", Cycles);
     Cores[1].Regs.STATX |= 0x80;
     //Cores[1].Regs.ATTR &= ~0x30;
 }
 
-void CALLBACK SPU2readDMA7Mem(u16 *pMem, u32 size)
+void SPU2readDMA7Mem(u16 *pMem, u32 size)
 {
     if (cyclePtr != NULL)
         TimeUpdate(*cyclePtr);
@@ -168,7 +171,7 @@ void CALLBACK SPU2readDMA7Mem(u16 *pMem, u32 size)
     Cores[1].DoDMAread(pMem, size);
 }
 
-void CALLBACK SPU2writeDMA7Mem(u16 *pMem, u32 size)
+void SPU2writeDMA7Mem(u16 *pMem, u32 size)
 {
     if (cyclePtr != NULL)
         TimeUpdate(*cyclePtr);
@@ -339,6 +342,7 @@ uptr gsWindowHandle = 0;
 
 s32 SPU2open(void *pDsp)
 {
+	ScopedLock lock( mtx_SPU2Status );
     if (IsOpened)
         return 0;
 
@@ -384,6 +388,7 @@ s32 SPU2open(void *pDsp)
 
 void SPU2close()
 {
+	ScopedLock lock( mtx_SPU2Status );
     if (!IsOpened)
         return;
     IsOpened = false;
@@ -585,7 +590,7 @@ s32 SPU2freeze(int mode, freezeData *data)
     }
 
     if (mode == FREEZE_SIZE) {
-        data->size = Savestate::SizeIt();
+        data->size = SPU2Savestate::SizeIt();
         return 0;
     }
 
@@ -596,17 +601,50 @@ s32 SPU2freeze(int mode, freezeData *data)
         return -1;
     }
 
-    Savestate::DataBlock &spud = (Savestate::DataBlock &)*(data->data);
+    SPU2Savestate::DataBlock &spud = (SPU2Savestate::DataBlock &)*(data->data);
 
     switch (mode) {
         case FREEZE_LOAD:
-            return Savestate::ThawIt(spud);
+            return SPU2Savestate::ThawIt(spud);
         case FREEZE_SAVE:
-            return Savestate::FreezeIt(spud);
+            return SPU2Savestate::FreezeIt(spud);
 
             jNO_DEFAULT;
     }
 
     // technically unreachable, but kills a warning:
     return 0;
+}
+
+void SPU2DoFreeze( SaveStateBase& state )
+{
+	ScopedLock lock( mtx_SPU2Status );
+
+	freezeData fP = { 0, NULL };
+	if( !SPU2freeze( FREEZE_SIZE, &fP ) )
+		fP.size = 0;
+
+	int fsize = fP.size;
+	state.Freeze( fsize );
+
+	Console.Indent().WriteLn( "%s SPU-2", state.IsSaving() ? "Saving" : "Loading");
+
+	fP.size = fsize;
+	if( fP.size == 0 ) return;
+
+	state.PrepBlock( fP.size );
+	fP.data = (s8*)state.GetBlockPtr();
+
+	if( state.IsSaving() )
+	{
+		if( !SPU2freeze(FREEZE_SAVE, &fP) )
+            throw std::runtime_error(" * SPU-2: Error saving state!\n");
+	}
+	else
+	{
+		if( !SPU2freeze(FREEZE_LOAD, &fP) )
+            throw std::runtime_error(" * SPU-2: Error loading state!\n");
+	}
+
+	state.CommitBlock( fP.size );
 }

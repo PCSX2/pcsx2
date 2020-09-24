@@ -18,6 +18,10 @@
 #pragma once
 
 #include "Pcsx2Defs.h"
+#include "Utilities/Threading.h"
+#include "SaveState.h"
+
+Threading::MutexRecursive  mtx_SPU2Status;
 
 s32 SPU2init();
 s32 SPU2reset();
@@ -38,11 +42,25 @@ void SPU2setClockPtr(u32 *ptr);
 
 void SPU2async(u32 cycles);
 s32 SPU2freeze(int mode, freezeData *data);
+void SPU2DoFreeze( SaveStateBase& state );
 void SPU2configure();
 void SPU2about();
 s32 SPU2test();
 
-#include "Spu2replay.h"
+
+u32 SPU2ReadMemAddr(int core);
+void SPU2WriteMemAddr(int core, u32 value);
+void SPU2setDMABaseAddr(uptr baseaddr);
+void SPU2setSettingsDir(const char *dir);
+void SPU2setLogDir(const char *dir);
+void SPU2irqCallback(void (*SPU2callback)(), void (*DMA4callback)(), void (*DMA7callback)());
+void SPU2readDMA4Mem(u16 *pMem, u32 size);
+void SPU2writeDMA4Mem(u16 *pMem, u32 size);
+void SPU2interruptDMA4();
+void SPU2interruptDMA7();
+void SPU2readDMA7Mem(u16 *pMem, u32 size);
+void SPU2writeDMA7Mem(u16 *pMem, u32 size);
+#include "spu2replay.h"
 
 extern u8 callirq;
 
