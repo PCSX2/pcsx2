@@ -36104,6 +36104,11 @@ Serial = SLUS-20229
 Name   = Jonny Moseley - Mad Trix
 Region = NTSC-U
 Compat = 5
+[patches = AE94FAF8]
+	author=refraction
+	comment=Fixes interlacing for videos
+	patch=1,EE,0024a6f0,word,24030003
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20230
 Name   = Max Payne
