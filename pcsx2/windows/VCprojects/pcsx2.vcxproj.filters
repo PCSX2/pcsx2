@@ -160,6 +160,9 @@
     <Filter Include="System\Ps2\Iop\FW">
       <UniqueIdentifier>{157740ae-b338-4d7f-81cb-cffa9d39a756}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\SPU2">
+      <UniqueIdentifier>{bed493d6-96dc-4057-a1f2-31f88ec927d9}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -903,6 +906,150 @@
     </ClCompile>
     <ClCompile Include="..\..\FW.cpp">
       <Filter>System\Ps2\Iop\FW</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Dma.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Dma.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Linux\ConfigDebug.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Linux\Dialogs.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows/dsp.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows\dsp.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Debug.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Debug.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Linux\ConfigSoundTouch.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows\ConfigSoundtouch.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Linux\Config.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Linux\CfgHelpers.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Linux\Alsa.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\ADSR.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\defs.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Config.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Global.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\DplIIdecoder.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Lowpass.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Lowpass.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Mixer.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Mixer.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\ReadInput.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows\RealtimeDebugger.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\RegLog.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\regs.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\RegTable.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Reverb.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows/resource.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\SndOut.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\SndOut.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows\SndOut_DSound.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows\SndOut_waveOut.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows\SndOut_XAudio2.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\spu2.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\spu2.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\spu2freeze.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\spu2replay.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\spu2replay.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\spu2sys.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\spdif.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Wavedump_wav.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\WavFile.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\WavFile.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows/WinConfig.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\wx\wxConfig.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows\UIHelpers.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Timestretcher.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
