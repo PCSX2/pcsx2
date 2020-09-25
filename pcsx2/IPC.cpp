@@ -44,8 +44,7 @@ SocketIPC::SocketIPC(SysCoreThread* vm)
 {
 #ifdef _WIN32
 	WSADATA wsa;
-	SOCKET new_socket;
-	struct sockaddr_in server, client;
+	struct sockaddr_in server;
 
 
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
