@@ -39,6 +39,8 @@ public:
 	
 	// Resume emulation (incase the emulation is currently paused) and pause after a single frame has passed
 	void FrameAdvance();
+	// Returns true if emulation is currently set up to frame advance.
+	bool IsFrameAdvancing();
 	// Returns true if the input recording has been paused, which can occur:
 	// - After a single frame has passed after InputRecordingControls::FrameAdvance
 	// - Explicitly paused via an InputRecordingControls function 
@@ -51,7 +53,7 @@ public:
 	void Resume();
 	void SetFrameCountTracker(u32 newFrame);
 	// Sets frameAdvancing variable to false
-	// Used to restrict a frameAdvaceTravker value from transferring between recordings
+	// Used to restrict a frameAdvanceTracker value from transferring between recordings
 	void DisableFrameAdvance();
 	// Alternates emulation between a paused and unpaused state
 	void TogglePause();
