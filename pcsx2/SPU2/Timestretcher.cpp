@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "Global.h"
 #include "soundtouch/SoundTouch.h"
 #include <wx/datetime.h>

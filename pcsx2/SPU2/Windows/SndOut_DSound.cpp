@@ -13,7 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Global.h"
+#include "PrecompiledHeader.h"
+#include "../Global.h"
 
 #define _WIN32_DCOM
 #include "Dialogs.h"
@@ -416,6 +417,7 @@ public:
 			MessageBox((HWND)parent, L"Error Opening the config dialog.", L"OMG ERROR!", MB_OK | MB_SETFOREGROUND);
 			return;
 		}
+		
 	}
 
 	s32 Test() const

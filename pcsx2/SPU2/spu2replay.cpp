@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "Global.h"
 #include "spu2.h"
 
@@ -199,8 +200,7 @@ BOOL WINAPI HandlerRoutine(DWORD dwCtrlType)
 #endif
 
 #include "Windows/Dialogs.h"
-EXPORT_C_(void)
-s2r_replay(HWND hwnd, HINSTANCE hinst, LPSTR filename, int nCmdShow)
+void s2r_replay(HWND hwnd, HINSTANCE hinst, LPSTR filename, int nCmdShow)
 {
 	int events = 0;
 

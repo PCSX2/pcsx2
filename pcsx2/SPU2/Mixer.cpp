@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "Global.h"
 
 // Games have turned out to be surprisingly sensitive to whether a parked, silent voice is being fully emulated.

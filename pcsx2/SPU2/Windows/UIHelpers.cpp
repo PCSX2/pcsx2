@@ -13,7 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Global.h"
+#include "PrecompiledHeader.h"
+#include "../Global.h"
 #include "Dialogs.h"
 
 int SendDialogMsg(HWND hwnd, int dlgId, UINT code, WPARAM wParam, LPARAM lParam)

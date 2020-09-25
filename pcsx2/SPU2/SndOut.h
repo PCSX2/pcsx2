@@ -670,7 +670,7 @@ extern SndOutModule* WaveOut;
 extern SndOutModule* DSoundOut;
 extern SndOutModule* XAudio2Out;
 #endif
-#if defined(_WIN32) || defined(SPU2X_PORTAUDIO)
+#if defined(SPU2X_PORTAUDIO)
 extern SndOutModule* PortaudioOut;
 #endif
 extern SndOutModule* const SDLOut;

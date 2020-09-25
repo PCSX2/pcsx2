@@ -15,6 +15,7 @@
 
 #pragma once
 
+
 #define NOMINMAX
 
 extern bool psxmode;
@@ -99,4 +100,5 @@ extern void SysMessage(const wchar_t* fmt, ...);
 
 #include "Config.h"
 #include "Debug.h"
+#include "Mixer.h"
 #include "SndOut.h"

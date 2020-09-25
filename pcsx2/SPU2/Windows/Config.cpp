@@ -13,7 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Global.h"
+#include "PrecompiledHeader.h"
+#include "../Global.h"
 #include "Dialogs.h"
 #include <math.h>
 
@@ -140,7 +141,6 @@ void ReadSettings()
 	Config_WaveOut.NumBuffers = CfgReadInt(L"WAVEOUT", L"Buffer_Count", 4);
 
 	DSoundOut->ReadSettings();
-	PortaudioOut->ReadSettings();
 
 	SoundtouchCfg::ReadSettings();
 	DebugConfig::ReadSettings();
@@ -195,7 +195,6 @@ void WriteSettings()
 	CfgWriteInt(L"DSP PLUGIN", L"ModuleNum", dspPluginModule);
 	CfgWriteBool(L"DSP PLUGIN", L"Enabled", dspPluginEnabled);
 
-	PortaudioOut->WriteSettings();
 	DSoundOut->WriteSettings();
 	SoundtouchCfg::WriteSettings();
 	DebugConfig::WriteSettings();
@@ -205,13 +204,11 @@ void CheckOutputModule(HWND window)
 {
 	OutputModule = SendMessage(GetDlgItem(window, IDC_OUTPUT), CB_GETCURSEL, 0, 0);
 	const bool IsConfigurable =
-		mods[OutputModule] == PortaudioOut ||
 		mods[OutputModule] == WaveOut ||
 		mods[OutputModule] == DSoundOut;
 
 	const bool AudioExpansion =
-		mods[OutputModule] == XAudio2Out ||
-		mods[OutputModule] == PortaudioOut;
+		mods[OutputModule] == XAudio2Out;
 
 	EnableWindow(GetDlgItem(window, IDC_OUTCONF), IsConfigurable);
 	EnableWindow(GetDlgItem(window, IDC_SPEAKERS), AudioExpansion);
