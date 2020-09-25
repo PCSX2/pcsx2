@@ -28,42 +28,32 @@
 
 namespace inputRec
 {
-	static void log(const std::string& log)
+	static void log(const std::string log)
 	{
 		if (log.empty())
 			return;
 
-		recordingConLog(fmt::format("[REC]: %s\n", log));
+		recordingConLog(fmt::format("[REC]: {}\n", log));
 
 		// NOTE - Color is not currently used for OSD logs
 		if (GSosdLog)
 			GSosdLog(log.c_str(), wxGetApp().GetProgramLog()->GetRGBA(ConsoleColors::Color_StrongMagenta));
 	}
 
-	static void consoleLog(const std::string& log)
+	static void consoleLog(const std::string log)
 	{
 		if (log.empty())
 			return;
 
-		recordingConLog(fmt::format("[REC]: %s\n", log));
+		recordingConLog(fmt::format("[REC]: {}\n", log));
 	}
 
 	static void consoleMultiLog(std::vector<std::string> logs)
 	{
 		std::string log;
 		for (std::string l : logs)
-			log.append(fmt::format("[REC]: %s\n", l));
+			log.append(fmt::format("[REC]: {}\n", l));
 
 		recordingConLog(log);
-	}
-
-
-	static void consoleMultiLog(std::vector<wxString> logs)
-	{
-		std::vector<std::string> stdLogs;
-		for (wxString l : logs)
-			stdLogs.push_back(std::string(l));
-
-		consoleMultiLog(stdLogs);
 	}
 } // namespace inputRec
