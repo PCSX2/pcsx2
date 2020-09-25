@@ -279,7 +279,6 @@
     <ClCompile Include="..\..\SPU2\RegTable.cpp" />
     <ClCompile Include="..\..\SPU2\Reverb.cpp" />
     <ClCompile Include="..\..\SPU2\SndOut.cpp" />
-    <ClCompile Include="..\..\SPU2\SndOut_SDL.cpp" />
     <ClCompile Include="..\..\SPU2\spu2freeze.cpp" />
     <ClCompile Include="..\..\SPU2\spu2replay.cpp" />
     <ClCompile Include="..\..\SPU2\spu2sys.cpp" />
