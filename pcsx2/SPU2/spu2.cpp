@@ -26,7 +26,7 @@
 
 using namespace Threading;
 
-MutexRecursive  mtx_SPU2Status;
+MutexRecursive mtx_SPU2Status;
 bool SPU2_dummy_callback = false;
 
 #include "svnrev.h"
@@ -41,7 +41,7 @@ static bool IsInitialized = false;
 
 static u32 pClocks = 0;
 
-u32 *cyclePtr = NULL;
+u32* cyclePtr = NULL;
 u32 lClocks = 0;
 
 
@@ -49,7 +49,7 @@ u32 lClocks = 0;
 
 static bool CheckSSE()
 {
-    return true;
+	return true;
 
 #if 0
 	if( !cpu_detected )
@@ -68,216 +68,225 @@ static bool CheckSSE()
 
 void SPU2configure()
 {
-    if (!CheckSSE())
-        return;
-    configure();
+	if (!CheckSSE())
+		return;
+	configure();
 }
 
 // --------------------------------------------------------------------------------------
 //  DMA 4/7 Callbacks from Core Emulator
 // --------------------------------------------------------------------------------------
 
-u16 *DMABaseAddr;
+u16* DMABaseAddr;
 
 u32 SPU2ReadMemAddr(int core)
 {
-    return Cores[core].MADR;
+	return Cores[core].MADR;
 }
 void SPU2WriteMemAddr(int core, u32 value)
 {
-    Cores[core].MADR = value;
+	Cores[core].MADR = value;
 }
 
 void SPU2setDMABaseAddr(uptr baseaddr)
 {
-    DMABaseAddr = (u16 *)baseaddr;
+	DMABaseAddr = (u16*)baseaddr;
 }
 
-void SPU2setSettingsDir(const char *dir)
+void SPU2setSettingsDir(const char* dir)
 {
-    CfgSetSettingsDir(dir);
+	CfgSetSettingsDir(dir);
 }
 
-void SPU2setLogDir(const char *dir)
+void SPU2setLogDir(const char* dir)
 {
-    CfgSetLogDir(dir);
+	CfgSetLogDir(dir);
 }
 
-void SPU2readDMA4Mem(u16 *pMem, u32 size) // size now in 16bit units
+void SPU2readDMA4Mem(u16* pMem, u32 size) // size now in 16bit units
 {
-    if (cyclePtr != NULL)
-        TimeUpdate(*cyclePtr);
+	if (cyclePtr != NULL)
+		TimeUpdate(*cyclePtr);
 
-    FileLog("[%10d] SPU2 readDMA4Mem size %x\n", Cycles, size << 1);
-    Cores[0].DoDMAread(pMem, size);
+	FileLog("[%10d] SPU2 readDMA4Mem size %x\n", Cycles, size << 1);
+	Cores[0].DoDMAread(pMem, size);
 }
 
-void SPU2writeDMA4Mem(u16 *pMem, u32 size) // size now in 16bit units
+void SPU2writeDMA4Mem(u16* pMem, u32 size) // size now in 16bit units
 {
-    if (cyclePtr != NULL)
-        TimeUpdate(*cyclePtr);
+	if (cyclePtr != NULL)
+		TimeUpdate(*cyclePtr);
 
-    FileLog("[%10d] SPU2 writeDMA4Mem size %x at address %x\n", Cycles, size << 1, Cores[0].TSA);
+	FileLog("[%10d] SPU2 writeDMA4Mem size %x at address %x\n", Cycles, size << 1, Cores[0].TSA);
 #ifdef S2R_ENABLE
-    if (!replay_mode)
-        s2r_writedma4(Cycles, pMem, size);
+	if (!replay_mode)
+		s2r_writedma4(Cycles, pMem, size);
 #endif
-    Cores[0].DoDMAwrite(pMem, size);
+	Cores[0].DoDMAwrite(pMem, size);
 }
 
 void SPU2interruptDMA4()
 {
-    FileLog("[%10d] SPU2 interruptDMA4\n", Cycles);
-    Cores[0].Regs.STATX |= 0x80;
-    //Cores[0].Regs.ATTR &= ~0x30;
+	FileLog("[%10d] SPU2 interruptDMA4\n", Cycles);
+	Cores[0].Regs.STATX |= 0x80;
+	//Cores[0].Regs.ATTR &= ~0x30;
 }
 
 void SPU2interruptDMA7()
 {
-    FileLog("[%10d] SPU2 interruptDMA7\n", Cycles);
-    Cores[1].Regs.STATX |= 0x80;
-    //Cores[1].Regs.ATTR &= ~0x30;
+	FileLog("[%10d] SPU2 interruptDMA7\n", Cycles);
+	Cores[1].Regs.STATX |= 0x80;
+	//Cores[1].Regs.ATTR &= ~0x30;
 }
 
-void SPU2readDMA7Mem(u16 *pMem, u32 size)
+void SPU2readDMA7Mem(u16* pMem, u32 size)
 {
-    if (cyclePtr != NULL)
-        TimeUpdate(*cyclePtr);
+	if (cyclePtr != NULL)
+		TimeUpdate(*cyclePtr);
 
-    FileLog("[%10d] SPU2 readDMA7Mem size %x\n", Cycles, size << 1);
-    Cores[1].DoDMAread(pMem, size);
+	FileLog("[%10d] SPU2 readDMA7Mem size %x\n", Cycles, size << 1);
+	Cores[1].DoDMAread(pMem, size);
 }
 
-void SPU2writeDMA7Mem(u16 *pMem, u32 size)
+void SPU2writeDMA7Mem(u16* pMem, u32 size)
 {
-    if (cyclePtr != NULL)
-        TimeUpdate(*cyclePtr);
+	if (cyclePtr != NULL)
+		TimeUpdate(*cyclePtr);
 
-    FileLog("[%10d] SPU2 writeDMA7Mem size %x at address %x\n", Cycles, size << 1, Cores[1].TSA);
+	FileLog("[%10d] SPU2 writeDMA7Mem size %x at address %x\n", Cycles, size << 1, Cores[1].TSA);
 #ifdef S2R_ENABLE
-    if (!replay_mode)
-        s2r_writedma7(Cycles, pMem, size);
+	if (!replay_mode)
+		s2r_writedma7(Cycles, pMem, size);
 #endif
-    Cores[1].DoDMAwrite(pMem, size);
+	Cores[1].DoDMAwrite(pMem, size);
 }
 
 s32 SPU2reset()
 {
-    if (SndBuffer::Test() == 0 && SampleRate != 48000)
-    {
-        SampleRate = 48000;
-        SndBuffer::Cleanup();
+	if (SndBuffer::Test() == 0 && SampleRate != 48000)
+	{
+		SampleRate = 48000;
+		SndBuffer::Cleanup();
 
-        try {
-            SndBuffer::Init();
-        }
-        catch (std::exception& ex) {
-            fprintf(stderr, "SPU2-X Error: Could not initialize device, or something.\nReason: %s", ex.what());
-            SPU2close();
-            return -1;
-        }
-    }
-    else
-        SampleRate = 48000;
+		try
+		{
+			SndBuffer::Init();
+		}
+		catch (std::exception& ex)
+		{
+			fprintf(stderr, "SPU2-X Error: Could not initialize device, or something.\nReason: %s", ex.what());
+			SPU2close();
+			return -1;
+		}
+	}
+	else
+		SampleRate = 48000;
 
-    memset(spu2regs, 0, 0x010000);
-    memset(_spu2mem, 0, 0x200000);
-    memset(_spu2mem + 0x2800, 7, 0x10); // from BIOS reversal. Locks the voices so they don't run free.
-    Cores[0].Init(0);
-    Cores[1].Init(1);
-    return 0;
+	memset(spu2regs, 0, 0x010000);
+	memset(_spu2mem, 0, 0x200000);
+	memset(_spu2mem + 0x2800, 7, 0x10); // from BIOS reversal. Locks the voices so they don't run free.
+	Cores[0].Init(0);
+	Cores[1].Init(1);
+	return 0;
 }
 
 s32 SPU2ps1reset()
 {
-    printf("RESET PS1 \n");
+	printf("RESET PS1 \n");
 
-    if (SndBuffer::Test() == 0 && SampleRate != 44100)
-    {
-        SampleRate = 44100;
-        SndBuffer::Cleanup();
+	if (SndBuffer::Test() == 0 && SampleRate != 44100)
+	{
+		SampleRate = 44100;
+		SndBuffer::Cleanup();
 
-        try {
-            SndBuffer::Init();
-        }
-        catch (std::exception& ex) {
-            fprintf(stderr, "SPU2-X Error: Could not initialize device, or something.\nReason: %s", ex.what());
-            SPU2close();
-            return -1;
-        }
-    }
-    else
-        SampleRate = 44100;
+		try
+		{
+			SndBuffer::Init();
+		}
+		catch (std::exception& ex)
+		{
+			fprintf(stderr, "SPU2-X Error: Could not initialize device, or something.\nReason: %s", ex.what());
+			SPU2close();
+			return -1;
+		}
+	}
+	else
+		SampleRate = 44100;
 
-   /* memset(spu2regs, 0, 0x010000);
+	/* memset(spu2regs, 0, 0x010000);
     memset(_spu2mem, 0, 0x200000);
     memset(_spu2mem + 0x2800, 7, 0x10); // from BIOS reversal. Locks the voices so they don't run free.
     Cores[0].Init(0);
     Cores[1].Init(1);*/
-    return 0;
+	return 0;
 }
 
 s32 SPU2init()
 {
-    assert(regtable[0x400] == NULL);
+	assert(regtable[0x400] == NULL);
 
-    if (IsInitialized) {
-        printf(" * SPU2-X: Already initialized - Ignoring SPU2init signal.");
-        return 0;
-    }
+	if (IsInitialized)
+	{
+		printf(" * SPU2-X: Already initialized - Ignoring SPU2init signal.");
+		return 0;
+	}
 
-    IsInitialized = true;
-    SPU2_dummy_callback = false;
+	IsInitialized = true;
+	SPU2_dummy_callback = false;
 
-    ReadSettings();
+	ReadSettings();
 
 #ifdef SPU2_LOG
-    if (AccessLog()) {
-        spu2Log = OpenLog(AccessLogFileName);
-        setvbuf(spu2Log, NULL, _IONBF, 0);
-        FileLog("SPU2init\n");
-    }
+	if (AccessLog())
+	{
+		spu2Log = OpenLog(AccessLogFileName);
+		setvbuf(spu2Log, NULL, _IONBF, 0);
+		FileLog("SPU2init\n");
+	}
 #endif
-    srand((unsigned)time(NULL));
+	srand((unsigned)time(NULL));
 
-    spu2regs = (s16 *)malloc(0x010000);
-    _spu2mem = (s16 *)malloc(0x200000);
+	spu2regs = (s16*)malloc(0x010000);
+	_spu2mem = (s16*)malloc(0x200000);
 
-    // adpcm decoder cache:
-    //  the cache data size is determined by taking the number of adpcm blocks
-    //  (2MB / 16) and multiplying it by the decoded block size (28 samples).
-    //  Thus: pcm_cache_data = 7,340,032 bytes (ouch!)
-    //  Expanded: 16 bytes expands to 56 bytes [3.5:1 ratio]
-    //    Resulting in 2MB * 3.5.
+	// adpcm decoder cache:
+	//  the cache data size is determined by taking the number of adpcm blocks
+	//  (2MB / 16) and multiplying it by the decoded block size (28 samples).
+	//  Thus: pcm_cache_data = 7,340,032 bytes (ouch!)
+	//  Expanded: 16 bytes expands to 56 bytes [3.5:1 ratio]
+	//    Resulting in 2MB * 3.5.
 
-    pcm_cache_data = (PcmCacheEntry *)calloc(pcm_BlockCount, sizeof(PcmCacheEntry));
+	pcm_cache_data = (PcmCacheEntry*)calloc(pcm_BlockCount, sizeof(PcmCacheEntry));
 
-    if ((spu2regs == NULL) || (_spu2mem == NULL) || (pcm_cache_data == NULL)) {
-        SysMessage("SPU2-X: Error allocating Memory\n");
-        return -1;
-    }
+	if ((spu2regs == NULL) || (_spu2mem == NULL) || (pcm_cache_data == NULL))
+	{
+		SysMessage("SPU2-X: Error allocating Memory\n");
+		return -1;
+	}
 
-    // Patch up a copy of regtable that directly maps "NULLs" to SPU2 memory.
+	// Patch up a copy of regtable that directly maps "NULLs" to SPU2 memory.
 
-    memcpy(regtable, regtable_original, sizeof(regtable));
+	memcpy(regtable, regtable_original, sizeof(regtable));
 
-    for (uint mem = 0; mem < 0x800; mem++) {
-        u16 *ptr = regtable[mem >> 1];
-        if (!ptr) {
-            regtable[mem >> 1] = &(spu2Ru16(mem));
-        }
-    }
+	for (uint mem = 0; mem < 0x800; mem++)
+	{
+		u16* ptr = regtable[mem >> 1];
+		if (!ptr)
+		{
+			regtable[mem >> 1] = &(spu2Ru16(mem));
+		}
+	}
 
-    SPU2reset();
+	SPU2reset();
 
-    DMALogOpen();
-    InitADSR();
+	DMALogOpen();
+	InitADSR();
 
 #ifdef S2R_ENABLE
-    if (!replay_mode)
-        s2r_open(Cycles, "replay_dump.s2r");
+	if (!replay_mode)
+		s2r_open(Cycles, "replay_dump.s2r");
 #endif
-    return 0;
+	return 0;
 }
 
 #ifdef _MSC_VER
@@ -287,147 +296,158 @@ extern HWND hDebugDialog;
 
 static INT_PTR CALLBACK DebugProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-    int wmId;
+	int wmId;
 
-    switch (uMsg) {
-        case WM_PAINT:
-            return FALSE;
-        case WM_INITDIALOG: {
-            debugDialogOpen = true;
-        } break;
+	switch (uMsg)
+	{
+		case WM_PAINT:
+			return FALSE;
+		case WM_INITDIALOG:
+		{
+			debugDialogOpen = true;
+		}
+		break;
 
-        case WM_COMMAND:
-            wmId = LOWORD(wParam);
-            // Parse the menu selections:
-            switch (wmId) {
-                case IDOK:
-                case IDCANCEL:
-                    debugDialogOpen = false;
-                    EndDialog(hWnd, 0);
-                    break;
-                default:
-                    return FALSE;
-            }
-            break;
+		case WM_COMMAND:
+			wmId = LOWORD(wParam);
+			// Parse the menu selections:
+			switch (wmId)
+			{
+				case IDOK:
+				case IDCANCEL:
+					debugDialogOpen = false;
+					EndDialog(hWnd, 0);
+					break;
+				default:
+					return FALSE;
+			}
+			break;
 
-        default:
-            return FALSE;
-    }
-    return TRUE;
+		default:
+			return FALSE;
+	}
+	return TRUE;
 }
 #endif
 uptr gsWindowHandle = 0;
 
-s32 SPU2open(void *pDsp)
+s32 SPU2open(void* pDsp)
 {
-	ScopedLock lock( mtx_SPU2Status );
-    if (IsOpened)
-        return 0;
+	ScopedLock lock(mtx_SPU2Status);
+	if (IsOpened)
+		return 0;
 
-    FileLog("[%10d] SPU2 Open\n", Cycles);
+	FileLog("[%10d] SPU2 Open\n", Cycles);
 
-    if (pDsp != NULL)
-        gsWindowHandle = *(uptr *)pDsp;
-    else
-        gsWindowHandle = 0;
+	if (pDsp != NULL)
+		gsWindowHandle = *(uptr*)pDsp;
+	else
+		gsWindowHandle = 0;
 
 #ifdef _MSC_VER
 #ifdef PCSX2_DEVBUILD // Define may not be needed but not tested yet. Better make sure.
-    if (IsDevBuild && VisualDebug()) {
-        if (debugDialogOpen == 0) {
-            hDebugDialog = CreateDialogParam(hInstance, MAKEINTRESOURCE(IDD_DEBUG), 0, DebugProc, 0);
-            ShowWindow(hDebugDialog, SW_SHOWNORMAL);
-            debugDialogOpen = 1;
-        }
-    } else if (debugDialogOpen) {
-        DestroyWindow(hDebugDialog);
-        debugDialogOpen = 0;
-    }
+	if (IsDevBuild && VisualDebug())
+	{
+		if (debugDialogOpen == 0)
+		{
+			hDebugDialog = CreateDialogParam(hInstance, MAKEINTRESOURCE(IDD_DEBUG), 0, DebugProc, 0);
+			ShowWindow(hDebugDialog, SW_SHOWNORMAL);
+			debugDialogOpen = 1;
+		}
+	}
+	else if (debugDialogOpen)
+	{
+		DestroyWindow(hDebugDialog);
+		debugDialogOpen = 0;
+	}
 #endif
 #endif
 
-    IsOpened = true;
-    lClocks = (cyclePtr != NULL) ? *cyclePtr : 0;
+	IsOpened = true;
+	lClocks = (cyclePtr != NULL) ? *cyclePtr : 0;
 
-    try {
-        SndBuffer::Init();
+	try
+	{
+		SndBuffer::Init();
 
 #ifndef __POSIX__
-        DspLoadLibrary(dspPlugin, dspPluginModule);
+		DspLoadLibrary(dspPlugin, dspPluginModule);
 #endif
-        WaveDump::Open();
-    } catch (std::exception &ex) {
-        fprintf(stderr, "SPU2-X Error: Could not initialize device, or something.\nReason: %s", ex.what());
-        SPU2close();
-        return -1;
-    }
-    SPU2setDMABaseAddr((uptr)iopMem->Main);
+		WaveDump::Open();
+	}
+	catch (std::exception& ex)
+	{
+		fprintf(stderr, "SPU2-X Error: Could not initialize device, or something.\nReason: %s", ex.what());
+		SPU2close();
+		return -1;
+	}
+	SPU2setDMABaseAddr((uptr)iopMem->Main);
 	SPU2setClockPtr(&psxRegs.cycle);
-    return 0;
+	return 0;
 }
 
 void SPU2close()
 {
-	ScopedLock lock( mtx_SPU2Status );
-    if (!IsOpened)
-        return;
-    IsOpened = false;
+	ScopedLock lock(mtx_SPU2Status);
+	if (!IsOpened)
+		return;
+	IsOpened = false;
 
-    FileLog("[%10d] SPU2 Close\n", Cycles);
+	FileLog("[%10d] SPU2 Close\n", Cycles);
 
 #ifndef __POSIX__
-    DspCloseLibrary();
+	DspCloseLibrary();
 #endif
 
-    SndBuffer::Cleanup();
+	SndBuffer::Cleanup();
 }
 
 void SPU2shutdown()
 {
-    if (!IsInitialized)
-        return;
-    IsInitialized = false;
-    SPU2_dummy_callback = false;
+	if (!IsInitialized)
+		return;
+	IsInitialized = false;
+	SPU2_dummy_callback = false;
 
-    ConLog("* SPU2-X: Shutting down.\n");
+	ConLog("* SPU2-X: Shutting down.\n");
 
-    SPU2close();
+	SPU2close();
 
 #ifdef S2R_ENABLE
-    if (!replay_mode)
-        s2r_close();
+	if (!replay_mode)
+		s2r_close();
 #endif
 
-    DoFullDump();
+	DoFullDump();
 #ifdef STREAM_DUMP
-    fclose(il0);
-    fclose(il1);
+	fclose(il0);
+	fclose(il1);
 #endif
 #ifdef EFFECTS_DUMP
-    fclose(el0);
-    fclose(el1);
+	fclose(el0);
+	fclose(el1);
 #endif
-    WaveDump::Close();
+	WaveDump::Close();
 
-    DMALogClose();
+	DMALogClose();
 
-    safe_free(spu2regs);
-    safe_free(_spu2mem);
-    safe_free(pcm_cache_data);
+	safe_free(spu2regs);
+	safe_free(_spu2mem);
+	safe_free(pcm_cache_data);
 
 
 #ifdef SPU2_LOG
-    if (!AccessLog())
-        return;
-    FileLog("[%10d] SPU2shutdown\n", Cycles);
-    if (spu2Log)
-        fclose(spu2Log);
+	if (!AccessLog())
+		return;
+	FileLog("[%10d] SPU2shutdown\n", Cycles);
+	if (spu2Log)
+		fclose(spu2Log);
 #endif
 }
 
-void SPU2setClockPtr(u32 *ptr)
+void SPU2setClockPtr(u32* ptr)
 {
-    cyclePtr = ptr;
+	cyclePtr = ptr;
 }
 
 #ifdef DEBUG_KEYS
@@ -437,116 +457,134 @@ static bool lState[6];
 
 void SPU2async(u32 cycles)
 {
-    DspUpdate();
+	DspUpdate();
 
-    if (cyclePtr != NULL) {
-        TimeUpdate(*cyclePtr);
-    } else {
-        pClocks += cycles;
-        TimeUpdate(pClocks);
-    }
+	if (cyclePtr != NULL)
+	{
+		TimeUpdate(*cyclePtr);
+	}
+	else
+	{
+		pClocks += cycles;
+		TimeUpdate(pClocks);
+	}
 
 #ifdef DEBUG_KEYS
-    u32 curTicks = GetTickCount();
-    if ((curTicks - lastTicks) >= 50) {
-        int oldI = Interpolation;
-        bool cState[6];
-        for (int i = 0; i < 6; i++) {
-            cState[i] = !!(GetAsyncKeyState(VK_NUMPAD0 + i) & 0x8000);
+	u32 curTicks = GetTickCount();
+	if ((curTicks - lastTicks) >= 50)
+	{
+		int oldI = Interpolation;
+		bool cState[6];
+		for (int i = 0; i < 6; i++)
+		{
+			cState[i] = !!(GetAsyncKeyState(VK_NUMPAD0 + i) & 0x8000);
 
-            if ((cState[i] && !lState[i]) && i != 5)
-                Interpolation = i;
+			if ((cState[i] && !lState[i]) && i != 5)
+				Interpolation = i;
 
-            if ((cState[i] && !lState[i]) && i == 5) {
-                postprocess_filter_enabled = !postprocess_filter_enabled;
-                printf("Post process filters %s \n", postprocess_filter_enabled ? "enabled" : "disabled");
-            }
+			if ((cState[i] && !lState[i]) && i == 5)
+			{
+				postprocess_filter_enabled = !postprocess_filter_enabled;
+				printf("Post process filters %s \n", postprocess_filter_enabled ? "enabled" : "disabled");
+			}
 
-            lState[i] = cState[i];
-        }
+			lState[i] = cState[i];
+		}
 
-        if (Interpolation != oldI) {
-            printf("Interpolation set to %d", Interpolation);
-            switch (Interpolation) {
-                case 0:
-                    printf(" - Nearest.\n");
-                    break;
-                case 1:
-                    printf(" - Linear.\n");
-                    break;
-                case 2:
-                    printf(" - Cubic.\n");
-                    break;
-                case 3:
-                    printf(" - Hermite.\n");
-                    break;
-                case 4:
-                    printf(" - Catmull-Rom.\n");
-                    break;
-                default:
-                    printf(" (unknown).\n");
-                    break;
-            }
-        }
+		if (Interpolation != oldI)
+		{
+			printf("Interpolation set to %d", Interpolation);
+			switch (Interpolation)
+			{
+				case 0:
+					printf(" - Nearest.\n");
+					break;
+				case 1:
+					printf(" - Linear.\n");
+					break;
+				case 2:
+					printf(" - Cubic.\n");
+					break;
+				case 3:
+					printf(" - Hermite.\n");
+					break;
+				case 4:
+					printf(" - Catmull-Rom.\n");
+					break;
+				default:
+					printf(" (unknown).\n");
+					break;
+			}
+		}
 
-        lastTicks = curTicks;
-    }
+		lastTicks = curTicks;
+	}
 #endif
 }
 
 u16 SPU2read(u32 rmem)
 {
-    //	if(!replay_mode)
-    //		s2r_readreg(Cycles,rmem);
+	//	if(!replay_mode)
+	//		s2r_readreg(Cycles,rmem);
 
-    u16 ret = 0xDEAD;
-    u32 core = 0, mem = rmem & 0xFFFF, omem = mem;
-    if (mem & 0x400) {
-        omem ^= 0x400;
-        core = 1;
-    }
+	u16 ret = 0xDEAD;
+	u32 core = 0, mem = rmem & 0xFFFF, omem = mem;
+	if (mem & 0x400)
+	{
+		omem ^= 0x400;
+		core = 1;
+	}
 
-    if (omem == 0x1f9001AC) {
-        ret = Cores[core].DmaRead();
-    } else {
-        if (cyclePtr != NULL)
-            TimeUpdate(*cyclePtr);
+	if (omem == 0x1f9001AC)
+	{
+		ret = Cores[core].DmaRead();
+	}
+	else
+	{
+		if (cyclePtr != NULL)
+			TimeUpdate(*cyclePtr);
 
-        if (rmem >> 16 == 0x1f80) {
-            ret = Cores[0].ReadRegPS1(rmem);
-        } else if (mem >= 0x800) {
-            ret = spu2Ru16(mem);
-            ConLog("* SPU2-X: Read from reg>=0x800: %x value %x\n", mem, ret);
-        } else {
-            ret = *(regtable[(mem >> 1)]);
-            //FileLog("[%10d] SPU2 read mem %x (core %d, register %x): %x\n",Cycles, mem, core, (omem & 0x7ff), ret);
-            SPU2writeLog("read", rmem, ret);
-        }
-    }
+		if (rmem >> 16 == 0x1f80)
+		{
+			ret = Cores[0].ReadRegPS1(rmem);
+		}
+		else if (mem >= 0x800)
+		{
+			ret = spu2Ru16(mem);
+			ConLog("* SPU2-X: Read from reg>=0x800: %x value %x\n", mem, ret);
+		}
+		else
+		{
+			ret = *(regtable[(mem >> 1)]);
+			//FileLog("[%10d] SPU2 read mem %x (core %d, register %x): %x\n",Cycles, mem, core, (omem & 0x7ff), ret);
+			SPU2writeLog("read", rmem, ret);
+		}
+	}
 
-    return ret;
+	return ret;
 }
 
 void SPU2write(u32 rmem, u16 value)
 {
 #ifdef S2R_ENABLE
-    if (!replay_mode)
-        s2r_writereg(Cycles, rmem, value);
+	if (!replay_mode)
+		s2r_writereg(Cycles, rmem, value);
 #endif
 
-    // Note: Reverb/Effects are very sensitive to having precise update timings.
-    // If the SPU2 isn't in in sync with the IOP, samples can end up playing at rather
-    // incorrect pitches and loop lengths.
+	// Note: Reverb/Effects are very sensitive to having precise update timings.
+	// If the SPU2 isn't in in sync with the IOP, samples can end up playing at rather
+	// incorrect pitches and loop lengths.
 
-    if (cyclePtr != NULL)
-        TimeUpdate(*cyclePtr);
+	if (cyclePtr != NULL)
+		TimeUpdate(*cyclePtr);
 
-    if (rmem >> 16 == 0x1f80)
-        Cores[0].WriteRegPS1(rmem, value);
-    else {
-        SPU2writeLog("write", rmem, value);
-        SPU2_FastWrite(rmem, value);
-    }
+	if (rmem >> 16 == 0x1f80)
+		Cores[0].WriteRegPS1(rmem, value);
+	else
+	{
+		SPU2writeLog("write", rmem, value);
+		SPU2_FastWrite(rmem, value);
+	}
 }
 
 // if start is 1, starts recording spu2 data, else stops
@@ -554,80 +592,86 @@ void SPU2write(u32 rmem, u16 value)
 // for now, pData is not used
 int SPU2setupRecording(int start, std::wstring* filename)
 {
-    if (start == 0)
-        RecordStop();
-    else if (start == 1)
-        RecordStart(filename);
+	if (start == 0)
+		RecordStop();
+	else if (start == 1)
+		RecordStart(filename);
 
-    return 0;
+	return 0;
 }
 
-s32 SPU2freeze(int mode, freezeData *data)
+s32 SPU2freeze(int mode, freezeData* data)
 {
-    pxAssume(data != NULL);
-    if (!data) {
-        printf("SPU2-X savestate null pointer!\n");
-        return -1;
-    }
+	pxAssume(data != NULL);
+	if (!data)
+	{
+		printf("SPU2-X savestate null pointer!\n");
+		return -1;
+	}
 
-    if (mode == FREEZE_SIZE) {
-        data->size = SPU2Savestate::SizeIt();
-        return 0;
-    }
+	if (mode == FREEZE_SIZE)
+	{
+		data->size = SPU2Savestate::SizeIt();
+		return 0;
+	}
 
-    pxAssume(mode == FREEZE_LOAD || mode == FREEZE_SAVE);
+	pxAssume(mode == FREEZE_LOAD || mode == FREEZE_SAVE);
 
-    if (data->data == NULL) {
-        printf("SPU2-X savestate null pointer!\n");
-        return -1;
-    }
+	if (data->data == NULL)
+	{
+		printf("SPU2-X savestate null pointer!\n");
+		return -1;
+	}
 
-    SPU2Savestate::DataBlock &spud = (SPU2Savestate::DataBlock &)*(data->data);
+	SPU2Savestate::DataBlock& spud = (SPU2Savestate::DataBlock&)*(data->data);
 
-    switch (mode) {
-        case FREEZE_LOAD:
-            return SPU2Savestate::ThawIt(spud);
-        case FREEZE_SAVE:
-            return SPU2Savestate::FreezeIt(spud);
+	switch (mode)
+	{
+		case FREEZE_LOAD:
+			return SPU2Savestate::ThawIt(spud);
+		case FREEZE_SAVE:
+			return SPU2Savestate::FreezeIt(spud);
 
-            jNO_DEFAULT;
-    }
+			jNO_DEFAULT;
+	}
 
-    // technically unreachable, but kills a warning:
-    return 0;
+	// technically unreachable, but kills a warning:
+	return 0;
 }
 
-void SPU2DoFreezeOut( void* dest )
+void SPU2DoFreezeOut(void* dest)
 {
-	ScopedLock lock( mtx_SPU2Status );
+	ScopedLock lock(mtx_SPU2Status);
 
-	freezeData fP = { 0, (s8*)dest };
-	if (SPU2freeze( FREEZE_SIZE, &fP)!=0) return;
-	if (!fP.size) return;
+	freezeData fP = {0, (s8*)dest};
+	if (SPU2freeze(FREEZE_SIZE, &fP) != 0)
+		return;
+	if (!fP.size)
+		return;
 
-	Console.Indent().WriteLn( "Saving SPU-2");
+	Console.Indent().WriteLn("Saving SPU-2");
 
-	if (SPU2freeze(FREEZE_SAVE, &fP)!=0)
-        throw std::runtime_error(" * SPU-2: Error saving state!\n");
+	if (SPU2freeze(FREEZE_SAVE, &fP) != 0)
+		throw std::runtime_error(" * SPU-2: Error saving state!\n");
 }
 
 
-void SPU2DoFreezeIn( pxInputStream& infp )
+void SPU2DoFreezeIn(pxInputStream& infp)
 {
-	ScopedLock lock( mtx_SPU2Status );
+	ScopedLock lock(mtx_SPU2Status);
 
-	freezeData fP = { 0, NULL };
-	if (SPU2freeze( FREEZE_SIZE, &fP )!=0)
+	freezeData fP = {0, NULL};
+	if (SPU2freeze(FREEZE_SIZE, &fP) != 0)
 		fP.size = 0;
 
-	Console.Indent().WriteLn( "Loading SPU-2");
+	Console.Indent().WriteLn("Loading SPU-2");
 
 	if (!infp.IsOk() || !infp.Length())
 	{
 		// no state data to read, but SPU-2 expects some state data?
 		// Issue a warning to console...
-		if( fP.size != 0 )
-			Console.Indent().Warning( "Warning: No data for SPU-2 found. Status may be unpredictable." );
+		if (fP.size != 0)
+			Console.Indent().Warning("Warning: No data for SPU-2 found. Status may be unpredictable.");
 
 		return;
 
@@ -637,10 +681,10 @@ void SPU2DoFreezeIn( pxInputStream& infp )
 		// on the status of the plugin when loading, so let's ignore it.
 	}
 
-	ScopedAlloc<s8> data( fP.size );
+	ScopedAlloc<s8> data(fP.size);
 	fP.data = data.GetPtr();
 
-	infp.Read( fP.data, fP.size );
-	if (SPU2freeze(FREEZE_LOAD, &fP)!=0)
-        throw std::runtime_error(" * SPU-2: Error loading state!\n");
+	infp.Read(fP.data, fP.size);
+	if (SPU2freeze(FREEZE_LOAD, &fP) != 0)
+		throw std::runtime_error(" * SPU-2: Error loading state!\n");
 }

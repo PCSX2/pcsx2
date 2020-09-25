@@ -92,7 +92,7 @@ extern bool dspPluginEnabled;
 
 namespace SoundtouchCfg
 {
-extern void ApplySettings(soundtouch::SoundTouch &sndtouch);
+	extern void ApplySettings(soundtouch::SoundTouch& sndtouch);
 }
 
 //////

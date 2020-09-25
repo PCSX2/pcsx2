@@ -23,19 +23,19 @@
 
 namespace DebugConfig
 {
-extern void ReadSettings();
-extern void WriteSettings();
-extern void OpenDialog();
-extern void EnableControls(HWND hWnd);
-}
+	extern void ReadSettings();
+	extern void WriteSettings();
+	extern void OpenDialog();
+	extern void EnableControls(HWND hWnd);
+} // namespace DebugConfig
 
 namespace SoundtouchCfg
 {
-extern void ReadSettings();
-extern void WriteSettings();
-extern void OpenDialog(HWND hWnd);
-extern BOOL CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
-}
+	extern void ReadSettings();
+	extern void WriteSettings();
+	extern void OpenDialog(HWND hWnd);
+	extern BOOL CALLBACK DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
+} // namespace SoundtouchCfg
 
 extern int SendDialogMsg(HWND hwnd, int dlgId, UINT code, WPARAM wParam, LPARAM lParam);
 
@@ -44,31 +44,31 @@ extern void AssignSliderValue(HWND hWnd, int idc, int editbox, int value);
 extern int GetSliderValue(HWND hWnd, int idc);
 extern BOOL DoHandleScrollMessage(HWND hwndDisplay, WPARAM wParam, LPARAM lParam);
 
-extern void CfgSetSettingsDir(const char *dir);
-extern void CfgSetLogDir(const char *dir);
+extern void CfgSetSettingsDir(const char* dir);
+extern void CfgSetLogDir(const char* dir);
 
-extern bool CfgFindName(const TCHAR *Section, const TCHAR *Name);
+extern bool CfgFindName(const TCHAR* Section, const TCHAR* Name);
 
-extern void CfgWriteBool(const TCHAR *Section, const TCHAR *Name, bool Value);
-extern void CfgWriteInt(const TCHAR *Section, const TCHAR *Name, int Value);
-extern void CfgWriteFloat(const TCHAR *Section, const TCHAR *Name, float Value);
-extern void CfgWriteStr(const TCHAR *Section, const TCHAR *Name, const wxString &Data);
+extern void CfgWriteBool(const TCHAR* Section, const TCHAR* Name, bool Value);
+extern void CfgWriteInt(const TCHAR* Section, const TCHAR* Name, int Value);
+extern void CfgWriteFloat(const TCHAR* Section, const TCHAR* Name, float Value);
+extern void CfgWriteStr(const TCHAR* Section, const TCHAR* Name, const wxString& Data);
 
-extern bool CfgReadBool(const TCHAR *Section, const TCHAR *Name, bool Default);
-extern void CfgReadStr(const TCHAR *Section, const TCHAR *Name, wxString &Data, const TCHAR *Default);
-extern void CfgReadStr(const TCHAR *Section, const TCHAR *Name, TCHAR *Data, int DataSize, const TCHAR *Default);
-extern int CfgReadInt(const TCHAR *Section, const TCHAR *Name, int Default);
-extern float CfgReadFloat(const TCHAR *Section, const TCHAR *Name, float Default);
+extern bool CfgReadBool(const TCHAR* Section, const TCHAR* Name, bool Default);
+extern void CfgReadStr(const TCHAR* Section, const TCHAR* Name, wxString& Data, const TCHAR* Default);
+extern void CfgReadStr(const TCHAR* Section, const TCHAR* Name, TCHAR* Data, int DataSize, const TCHAR* Default);
+extern int CfgReadInt(const TCHAR* Section, const TCHAR* Name, int Default);
+extern float CfgReadFloat(const TCHAR* Section, const TCHAR* Name, float Default);
 
 // Items Specific to DirectSound
 #define STRFY(x) #x
 #define verifyc(x) Verifyc(x, STRFY(x))
 
-extern void Verifyc(HRESULT hr, const char *fn);
+extern void Verifyc(HRESULT hr, const char* fn);
 
 struct ds_device_data
 {
-    wxString name;
-    GUID guid;
-    bool hasGuid;
+	wxString name;
+	GUID guid;
+	bool hasGuid;
 };

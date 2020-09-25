@@ -16,91 +16,91 @@
 #include "Dialogs.h"
 #include <wx/fileconf.h>
 
-wxFileConfig *spuConfig = nullptr;
+wxFileConfig* spuConfig = nullptr;
 wxString path(L"~/.config/PCSX2/inis/SPU2.ini");
 bool pathSet = false;
 
 void initIni()
 {
-    if (spuConfig == nullptr)
-        spuConfig = new wxFileConfig(L"", L"", path, L"", wxCONFIG_USE_LOCAL_FILE);
+	if (spuConfig == nullptr)
+		spuConfig = new wxFileConfig(L"", L"", path, L"", wxCONFIG_USE_LOCAL_FILE);
 }
 
-void setIni(const wchar_t *Section)
+void setIni(const wchar_t* Section)
 {
-    initIni();
-    spuConfig->SetPath(wxsFormat(L"/%s", Section));
+	initIni();
+	spuConfig->SetPath(wxsFormat(L"/%s", Section));
 }
 
-void CfgSetSettingsDir(const char *dir)
+void CfgSetSettingsDir(const char* dir)
 {
-    FileLog("CfgSetSettingsDir(%s)\n", dir);
-    path = wxString::FromUTF8(dir) + L"/SPU2.ini";
-    pathSet = true;
+	FileLog("CfgSetSettingsDir(%s)\n", dir);
+	path = wxString::FromUTF8(dir) + L"/SPU2.ini";
+	pathSet = true;
 }
 
-void CfgWriteBool(const wchar_t *Section, const wchar_t *Name, bool Value)
+void CfgWriteBool(const wchar_t* Section, const wchar_t* Name, bool Value)
 {
-    setIni(Section);
-    spuConfig->Write(Name, Value);
+	setIni(Section);
+	spuConfig->Write(Name, Value);
 }
 
-void CfgWriteInt(const wchar_t *Section, const wchar_t *Name, int Value)
+void CfgWriteInt(const wchar_t* Section, const wchar_t* Name, int Value)
 {
-    setIni(Section);
-    spuConfig->Write(Name, Value);
+	setIni(Section);
+	spuConfig->Write(Name, Value);
 }
 
-void CfgWriteFloat(const wchar_t *Section, const wchar_t *Name, float Value)
+void CfgWriteFloat(const wchar_t* Section, const wchar_t* Name, float Value)
 {
-    setIni(Section);
-    spuConfig->Write(Name, (double)Value);
+	setIni(Section);
+	spuConfig->Write(Name, (double)Value);
 }
 
-void CfgWriteStr(const wchar_t *Section, const wchar_t *Name, const wxString &Data)
+void CfgWriteStr(const wchar_t* Section, const wchar_t* Name, const wxString& Data)
 {
-    setIni(Section);
-    spuConfig->Write(Name, Data);
+	setIni(Section);
+	spuConfig->Write(Name, Data);
 }
 
-bool CfgReadBool(const wchar_t *Section, const wchar_t *Name, bool Default)
+bool CfgReadBool(const wchar_t* Section, const wchar_t* Name, bool Default)
 {
-    bool ret;
+	bool ret;
 
-    setIni(Section);
-    spuConfig->Read(Name, &ret, Default);
+	setIni(Section);
+	spuConfig->Read(Name, &ret, Default);
 
-    return ret;
+	return ret;
 }
 
-int CfgReadInt(const wchar_t *Section, const wchar_t *Name, int Default)
+int CfgReadInt(const wchar_t* Section, const wchar_t* Name, int Default)
 {
-    int ret;
+	int ret;
 
-    setIni(Section);
-    spuConfig->Read(Name, &ret, Default);
+	setIni(Section);
+	spuConfig->Read(Name, &ret, Default);
 
-    return ret;
+	return ret;
 }
 
-float CfgReadFloat(const wchar_t *Section, const wchar_t *Name, float Default)
+float CfgReadFloat(const wchar_t* Section, const wchar_t* Name, float Default)
 {
-    double ret;
+	double ret;
 
-    setIni(Section);
-    spuConfig->Read(Name, &ret, (double)Default);
+	setIni(Section);
+	spuConfig->Read(Name, &ret, (double)Default);
 
-    return (float)ret;
+	return (float)ret;
 }
 
-void CfgReadStr(const wchar_t *Section, const wchar_t *Name, wchar_t *Data, int DataSize, const wchar_t *Default)
+void CfgReadStr(const wchar_t* Section, const wchar_t* Name, wchar_t* Data, int DataSize, const wchar_t* Default)
 {
-    setIni(Section);
-    wcscpy(Data, spuConfig->Read(Name, Default).wc_str());
+	setIni(Section);
+	wcscpy(Data, spuConfig->Read(Name, Default).wc_str());
 }
 
-void CfgReadStr(const wchar_t *Section, const wchar_t *Name, wxString &Data, const wchar_t *Default)
+void CfgReadStr(const wchar_t* Section, const wchar_t* Name, wxString& Data, const wchar_t* Default)
 {
-    setIni(Section);
-    Data = spuConfig->Read(Name, Default);
+	setIni(Section);
+	Data = spuConfig->Read(Name, Default);
 }

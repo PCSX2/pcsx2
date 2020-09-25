@@ -30,11 +30,11 @@
 extern int AlsaSetupSound();
 extern void AlsaRemoveSound();
 extern int AlsaSoundGetBytesBuffered();
-extern void AlsaSoundFeedVoiceData(unsigned char *pSound, long lBytes);
+extern void AlsaSoundFeedVoiceData(unsigned char* pSound, long lBytes);
 
 extern int SetupSound();
 extern void RemoveSound();
 extern int SoundGetBytesBuffered();
-extern void SoundFeedVoiceData(unsigned char *pSound, long lBytes);
+extern void SoundFeedVoiceData(unsigned char* pSound, long lBytes);
 
 #endif // __LINUX_H__

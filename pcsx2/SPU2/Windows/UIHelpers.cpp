@@ -18,30 +18,31 @@
 
 int SendDialogMsg(HWND hwnd, int dlgId, UINT code, WPARAM wParam, LPARAM lParam)
 {
-    return SendMessage(GetDlgItem(hwnd, dlgId), code, wParam, lParam);
+	return SendMessage(GetDlgItem(hwnd, dlgId), code, wParam, lParam);
 }
 
-__forceinline void Verifyc(HRESULT hr, const char *fn)
+__forceinline void Verifyc(HRESULT hr, const char* fn)
 {
-    if (FAILED(hr)) {
-        assert(0);
-        throw std::runtime_error("DirectSound returned an error from %s");
-    }
+	if (FAILED(hr))
+	{
+		assert(0);
+		throw std::runtime_error("DirectSound returned an error from %s");
+	}
 }
 
 void AssignSliderValue(HWND idcwnd, HWND hwndDisplay, int value)
 {
-    value = std::min(std::max(value, 0), 512);
-    SendMessage(idcwnd, TBM_SETPOS, TRUE, value);
+	value = std::min(std::max(value, 0), 512);
+	SendMessage(idcwnd, TBM_SETPOS, TRUE, value);
 
-    wchar_t tbox[32];
-    swprintf_s(tbox, L"%d", value);
-    SetWindowText(hwndDisplay, tbox);
+	wchar_t tbox[32];
+	swprintf_s(tbox, L"%d", value);
+	SetWindowText(hwndDisplay, tbox);
 }
 
 void AssignSliderValue(HWND hWnd, int idc, int editbox, int value)
 {
-    AssignSliderValue(GetDlgItem(hWnd, idc), GetDlgItem(hWnd, editbox), value);
+	AssignSliderValue(GetDlgItem(hWnd, idc), GetDlgItem(hWnd, editbox), value);
 }
 
 // Generic slider/scroller message handler.  This is succient so long as you
@@ -49,29 +50,30 @@ void AssignSliderValue(HWND hWnd, int idc, int editbox, int value)
 // updating a custom label.
 BOOL DoHandleScrollMessage(HWND hwndDisplay, WPARAM wParam, LPARAM lParam)
 {
-    int wmId = LOWORD(wParam);
-    int wmEvent = HIWORD(wParam);
+	int wmId = LOWORD(wParam);
+	int wmEvent = HIWORD(wParam);
 
-    switch (wmId) {
-        //case TB_ENDTRACK:
-        //case TB_THUMBPOSITION:
-        case TB_LINEUP:
-        case TB_LINEDOWN:
-        case TB_PAGEUP:
-        case TB_PAGEDOWN:
-            wmEvent = (int)SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
-        case TB_THUMBTRACK:
-            AssignSliderValue((HWND)lParam, hwndDisplay, wmEvent);
-            break;
+	switch (wmId)
+	{
+		//case TB_ENDTRACK:
+		//case TB_THUMBPOSITION:
+		case TB_LINEUP:
+		case TB_LINEDOWN:
+		case TB_PAGEUP:
+		case TB_PAGEDOWN:
+			wmEvent = (int)SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
+		case TB_THUMBTRACK:
+			AssignSliderValue((HWND)lParam, hwndDisplay, wmEvent);
+			break;
 
-        default:
-            return FALSE;
-    }
-    return TRUE;
+		default:
+			return FALSE;
+	}
+	return TRUE;
 }
 
 int GetSliderValue(HWND hWnd, int idc)
 {
-    int retval = (int)SendMessage(GetDlgItem(hWnd, idc), TBM_GETPOS, 0, 0);
-    return GetClamped(retval, 0, 512);
+	int retval = (int)SendMessage(GetDlgItem(hWnd, idc), TBM_GETPOS, 0, 0);
+	return GetClamped(retval, 0, 512);
 }

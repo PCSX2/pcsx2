@@ -20,75 +20,77 @@
 class WaveOutModule : public SndOutModule
 {
 private:
-    static const uint MAX_BUFFER_COUNT = 8;
+	static const uint MAX_BUFFER_COUNT = 8;
 
-    static const int PacketsPerBuffer = (1024 / SndOutPacketSize);
-    static const int BufferSize = SndOutPacketSize * PacketsPerBuffer;
+	static const int PacketsPerBuffer = (1024 / SndOutPacketSize);
+	static const int BufferSize = SndOutPacketSize * PacketsPerBuffer;
 
-    u32 numBuffers;
-    HWAVEOUT hwodevice;
-    WAVEFORMATEX wformat;
-    WAVEHDR whbuffer[MAX_BUFFER_COUNT];
+	u32 numBuffers;
+	HWAVEOUT hwodevice;
+	WAVEFORMATEX wformat;
+	WAVEHDR whbuffer[MAX_BUFFER_COUNT];
 
-    StereoOut16 *qbuffer;
+	StereoOut16* qbuffer;
 
 #define QBUFFER(x) (qbuffer + BufferSize * (x))
 
-    bool waveout_running;
-    HANDLE thread;
-    DWORD tid;
+	bool waveout_running;
+	HANDLE thread;
+	DWORD tid;
 
-    wchar_t ErrText[256];
+	wchar_t ErrText[256];
 
-    template <typename T>
-    DWORD CALLBACK Thread()
-    {
-        static const int BufferSizeBytes = BufferSize * sizeof(T);
+	template <typename T>
+	DWORD CALLBACK Thread()
+	{
+		static const int BufferSizeBytes = BufferSize * sizeof(T);
 
-        while (waveout_running) {
-            bool didsomething = false;
-            for (u32 i = 0; i < numBuffers; i++) {
-                if (!(whbuffer[i].dwFlags & WHDR_DONE))
-                    continue;
+		while (waveout_running)
+		{
+			bool didsomething = false;
+			for (u32 i = 0; i < numBuffers; i++)
+			{
+				if (!(whbuffer[i].dwFlags & WHDR_DONE))
+					continue;
 
-                WAVEHDR *buf = whbuffer + i;
+				WAVEHDR* buf = whbuffer + i;
 
-                buf->dwBytesRecorded = buf->dwBufferLength;
+				buf->dwBytesRecorded = buf->dwBufferLength;
 
-                T *t = (T *)buf->lpData;
-                for (int p = 0; p < PacketsPerBuffer; p++, t += SndOutPacketSize)
-                    SndBuffer::ReadSamples(t);
+				T* t = (T*)buf->lpData;
+				for (int p = 0; p < PacketsPerBuffer; p++, t += SndOutPacketSize)
+					SndBuffer::ReadSamples(t);
 
-                whbuffer[i].dwFlags &= ~WHDR_DONE;
-                waveOutWrite(hwodevice, buf, sizeof(WAVEHDR));
-                didsomething = true;
-            }
+				whbuffer[i].dwFlags &= ~WHDR_DONE;
+				waveOutWrite(hwodevice, buf, sizeof(WAVEHDR));
+				didsomething = true;
+			}
 
-            if (didsomething)
-                Sleep(1);
-            else
-                Sleep(0);
-        }
-        return 0;
-    }
+			if (didsomething)
+				Sleep(1);
+			else
+				Sleep(0);
+		}
+		return 0;
+	}
 
-    template <typename T>
-    static DWORD CALLBACK RThread(WaveOutModule *obj)
-    {
-        return obj->Thread<T>();
-    }
+	template <typename T>
+	static DWORD CALLBACK RThread(WaveOutModule* obj)
+	{
+		return obj->Thread<T>();
+	}
 
 public:
-    s32 Init()
-    {
-        numBuffers = Config_WaveOut.NumBuffers;
+	s32 Init()
+	{
+		numBuffers = Config_WaveOut.NumBuffers;
 
-        MMRESULT woores;
+		MMRESULT woores;
 
-        if (Test())
-            return -1;
+		if (Test())
+			return -1;
 
-// TODO : Use dsound to determine the speaker configuration, and expand audio from there.
+			// TODO : Use dsound to determine the speaker configuration, and expand audio from there.
 
 #if 0
 		int speakerConfig;
@@ -129,193 +131,203 @@ public:
 		}
 #endif
 
-        wformat.wFormatTag = WAVE_FORMAT_PCM;
-        wformat.nSamplesPerSec = SampleRate;
-        wformat.wBitsPerSample = 16;
-        wformat.nChannels = 2;
-        wformat.nBlockAlign = ((wformat.wBitsPerSample * wformat.nChannels) / 8);
-        wformat.nAvgBytesPerSec = (wformat.nSamplesPerSec * wformat.nBlockAlign);
-        wformat.cbSize = 0;
+		wformat.wFormatTag = WAVE_FORMAT_PCM;
+		wformat.nSamplesPerSec = SampleRate;
+		wformat.wBitsPerSample = 16;
+		wformat.nChannels = 2;
+		wformat.nBlockAlign = ((wformat.wBitsPerSample * wformat.nChannels) / 8);
+		wformat.nAvgBytesPerSec = (wformat.nSamplesPerSec * wformat.nBlockAlign);
+		wformat.cbSize = 0;
 
-        qbuffer = new StereoOut16[BufferSize * numBuffers];
+		qbuffer = new StereoOut16[BufferSize * numBuffers];
 
-        woores = waveOutOpen(&hwodevice, WAVE_MAPPER, &wformat, 0, 0, 0);
-        if (woores != MMSYSERR_NOERROR) {
-            waveOutGetErrorText(woores, (wchar_t *)&ErrText, 255);
-            SysMessage("WaveOut Error: %s", ErrText);
-            return -1;
-        }
+		woores = waveOutOpen(&hwodevice, WAVE_MAPPER, &wformat, 0, 0, 0);
+		if (woores != MMSYSERR_NOERROR)
+		{
+			waveOutGetErrorText(woores, (wchar_t*)&ErrText, 255);
+			SysMessage("WaveOut Error: %s", ErrText);
+			return -1;
+		}
 
-        const int BufferSizeBytes = wformat.nBlockAlign * BufferSize;
+		const int BufferSizeBytes = wformat.nBlockAlign * BufferSize;
 
-        for (u32 i = 0; i < numBuffers; i++) {
-            whbuffer[i].dwBufferLength = BufferSizeBytes;
-            whbuffer[i].dwBytesRecorded = BufferSizeBytes;
-            whbuffer[i].dwFlags = 0;
-            whbuffer[i].dwLoops = 0;
-            whbuffer[i].dwUser = 0;
-            whbuffer[i].lpData = (LPSTR)QBUFFER(i);
-            whbuffer[i].lpNext = 0;
-            whbuffer[i].reserved = 0;
-            waveOutPrepareHeader(hwodevice, whbuffer + i, sizeof(WAVEHDR));
-            whbuffer[i].dwFlags |= WHDR_DONE; //avoid deadlock
-        }
+		for (u32 i = 0; i < numBuffers; i++)
+		{
+			whbuffer[i].dwBufferLength = BufferSizeBytes;
+			whbuffer[i].dwBytesRecorded = BufferSizeBytes;
+			whbuffer[i].dwFlags = 0;
+			whbuffer[i].dwLoops = 0;
+			whbuffer[i].dwUser = 0;
+			whbuffer[i].lpData = (LPSTR)QBUFFER(i);
+			whbuffer[i].lpNext = 0;
+			whbuffer[i].reserved = 0;
+			waveOutPrepareHeader(hwodevice, whbuffer + i, sizeof(WAVEHDR));
+			whbuffer[i].dwFlags |= WHDR_DONE; //avoid deadlock
+		}
 
-        // Start Thread
-        // [Air]: The waveout code does not use wait objects, so setting a time critical
-        // priority level is a bad idea.  Standard priority will do fine.  The buffer will get the
-        // love it needs and won't suck resources idling pointlessly.  Just don't try to
-        // run it in uber-low-latency mode.
-        waveout_running = true;
-        thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)RThread<StereoOut16>, this, 0, &tid);
+		// Start Thread
+		// [Air]: The waveout code does not use wait objects, so setting a time critical
+		// priority level is a bad idea.  Standard priority will do fine.  The buffer will get the
+		// love it needs and won't suck resources idling pointlessly.  Just don't try to
+		// run it in uber-low-latency mode.
+		waveout_running = true;
+		thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)RThread<StereoOut16>, this, 0, &tid);
 
-        return 0;
-    }
+		return 0;
+	}
 
-    void Close()
-    {
-        // Stop Thread
-        fprintf(stderr, "* SPU2-X: Waiting for waveOut thread to finish...");
-        waveout_running = false;
+	void Close()
+	{
+		// Stop Thread
+		fprintf(stderr, "* SPU2-X: Waiting for waveOut thread to finish...");
+		waveout_running = false;
 
-        WaitForSingleObject(thread, INFINITE);
-        CloseHandle(thread);
+		WaitForSingleObject(thread, INFINITE);
+		CloseHandle(thread);
 
-        fprintf(stderr, " Done.\n");
+		fprintf(stderr, " Done.\n");
 
-        //
-        // Clean up
-        //
-        waveOutReset(hwodevice);
-        for (u32 i = 0; i < numBuffers; i++) {
-            waveOutUnprepareHeader(hwodevice, &whbuffer[i], sizeof(WAVEHDR));
-        }
-        waveOutClose(hwodevice);
+		//
+		// Clean up
+		//
+		waveOutReset(hwodevice);
+		for (u32 i = 0; i < numBuffers; i++)
+		{
+			waveOutUnprepareHeader(hwodevice, &whbuffer[i], sizeof(WAVEHDR));
+		}
+		waveOutClose(hwodevice);
 
-        safe_delete_array(qbuffer);
-    }
+		safe_delete_array(qbuffer);
+	}
 
 private:
-    static BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
-    {
-        int wmId, wmEvent;
+	static BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+	{
+		int wmId, wmEvent;
 
-        switch (uMsg) {
-            case WM_INITDIALOG:
+		switch (uMsg)
+		{
+			case WM_INITDIALOG:
 
-                wchar_t temp[128];
-                INIT_SLIDER(IDC_BUFFERS_SLIDER, 3, MAX_BUFFER_COUNT, 2, 1, 1);
-                SendMessage(GetDlgItem(hWnd, IDC_BUFFERS_SLIDER), TBM_SETPOS, TRUE, Config_WaveOut.NumBuffers);
-                swprintf_s(temp, 128, L"%d (%d ms latency)", Config_WaveOut.NumBuffers, 1000 / (96000 / (Config_WaveOut.NumBuffers * BufferSize)));
-                SetWindowText(GetDlgItem(hWnd, IDC_LATENCY_LABEL), temp);
-                break;
+				wchar_t temp[128];
+				INIT_SLIDER(IDC_BUFFERS_SLIDER, 3, MAX_BUFFER_COUNT, 2, 1, 1);
+				SendMessage(GetDlgItem(hWnd, IDC_BUFFERS_SLIDER), TBM_SETPOS, TRUE, Config_WaveOut.NumBuffers);
+				swprintf_s(temp, 128, L"%d (%d ms latency)", Config_WaveOut.NumBuffers, 1000 / (96000 / (Config_WaveOut.NumBuffers * BufferSize)));
+				SetWindowText(GetDlgItem(hWnd, IDC_LATENCY_LABEL), temp);
+				break;
 
-            case WM_COMMAND:
-                wmId = LOWORD(wParam);
-                wmEvent = HIWORD(wParam);
-                // Parse the menu selections:
-                switch (wmId) {
-                    case IDOK: {
-                        Config_WaveOut.NumBuffers = (int)SendMessage(GetDlgItem(hWnd, IDC_BUFFERS_SLIDER), TBM_GETPOS, 0, 0);
+			case WM_COMMAND:
+				wmId = LOWORD(wParam);
+				wmEvent = HIWORD(wParam);
+				// Parse the menu selections:
+				switch (wmId)
+				{
+					case IDOK:
+					{
+						Config_WaveOut.NumBuffers = (int)SendMessage(GetDlgItem(hWnd, IDC_BUFFERS_SLIDER), TBM_GETPOS, 0, 0);
 
-                        if (Config_WaveOut.NumBuffers < 3)
-                            Config_WaveOut.NumBuffers = 3;
-                        if (Config_WaveOut.NumBuffers > MAX_BUFFER_COUNT)
-                            Config_WaveOut.NumBuffers = MAX_BUFFER_COUNT;
-                    }
-                        EndDialog(hWnd, 0);
-                        break;
-                    case IDCANCEL:
-                        EndDialog(hWnd, 0);
-                        break;
-                    default:
-                        return FALSE;
-                }
-                break;
+						if (Config_WaveOut.NumBuffers < 3)
+							Config_WaveOut.NumBuffers = 3;
+						if (Config_WaveOut.NumBuffers > MAX_BUFFER_COUNT)
+							Config_WaveOut.NumBuffers = MAX_BUFFER_COUNT;
+					}
+						EndDialog(hWnd, 0);
+						break;
+					case IDCANCEL:
+						EndDialog(hWnd, 0);
+						break;
+					default:
+						return FALSE;
+				}
+				break;
 
-            case WM_HSCROLL:
-                wmId = LOWORD(wParam);
-                wmEvent = HIWORD(wParam);
-                switch (wmId) {
-                    case TB_LINEUP:
-                    case TB_LINEDOWN:
-                    case TB_PAGEUP:
-                    case TB_PAGEDOWN:
-                    case TB_TOP:
-                    case TB_BOTTOM:
-                        wmEvent = (int)SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
-                    case TB_THUMBPOSITION:
-                    case TB_THUMBTRACK:
-                        if (wmEvent < 3)
-                            wmEvent = 3;
-                        if (wmEvent > MAX_BUFFER_COUNT)
-                            wmEvent = MAX_BUFFER_COUNT;
-                        SendMessage((HWND)lParam, TBM_SETPOS, TRUE, wmEvent);
-                        swprintf_s(temp, L"%d (%d ms latency)", wmEvent, 1000 / (96000 / (wmEvent * BufferSize)));
-                        SetWindowText(GetDlgItem(hWnd, IDC_LATENCY_LABEL), temp);
-                        break;
-                    default:
-                        return FALSE;
-                }
-                break;
+			case WM_HSCROLL:
+				wmId = LOWORD(wParam);
+				wmEvent = HIWORD(wParam);
+				switch (wmId)
+				{
+					case TB_LINEUP:
+					case TB_LINEDOWN:
+					case TB_PAGEUP:
+					case TB_PAGEDOWN:
+					case TB_TOP:
+					case TB_BOTTOM:
+						wmEvent = (int)SendMessage((HWND)lParam, TBM_GETPOS, 0, 0);
+					case TB_THUMBPOSITION:
+					case TB_THUMBTRACK:
+						if (wmEvent < 3)
+							wmEvent = 3;
+						if (wmEvent > MAX_BUFFER_COUNT)
+							wmEvent = MAX_BUFFER_COUNT;
+						SendMessage((HWND)lParam, TBM_SETPOS, TRUE, wmEvent);
+						swprintf_s(temp, L"%d (%d ms latency)", wmEvent, 1000 / (96000 / (wmEvent * BufferSize)));
+						SetWindowText(GetDlgItem(hWnd, IDC_LATENCY_LABEL), temp);
+						break;
+					default:
+						return FALSE;
+				}
+				break;
 
-            default:
-                return FALSE;
-        }
-        return TRUE;
-    }
+			default:
+				return FALSE;
+		}
+		return TRUE;
+	}
 
 public:
-    virtual void Configure(uptr parent)
-    {
-        INT_PTR ret;
-        ret = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_WAVEOUT), (HWND)parent, (DLGPROC)ConfigProc, 1);
-        if (ret == -1) {
-            MessageBox((HWND)parent, L"Error Opening the config dialog.", L"OMG ERROR!", MB_OK | MB_SETFOREGROUND);
-            return;
-        }
-    }
+	virtual void Configure(uptr parent)
+	{
+		INT_PTR ret;
+		ret = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_WAVEOUT), (HWND)parent, (DLGPROC)ConfigProc, 1);
+		if (ret == -1)
+		{
+			MessageBox((HWND)parent, L"Error Opening the config dialog.", L"OMG ERROR!", MB_OK | MB_SETFOREGROUND);
+			return;
+		}
+	}
 
-    s32 Test() const
-    {
-        if (waveOutGetNumDevs() == 0) {
-            SysMessage("No waveOut Devices Present\n");
-            return -1;
-        }
-        return 0;
-    }
+	s32 Test() const
+	{
+		if (waveOutGetNumDevs() == 0)
+		{
+			SysMessage("No waveOut Devices Present\n");
+			return -1;
+		}
+		return 0;
+	}
 
-    int GetEmptySampleCount()
-    {
-        int result = 0;
-        for (int i = 0; i < MAX_BUFFER_COUNT; i++) {
-            result += (whbuffer[i].dwFlags & WHDR_DONE) ? BufferSize : 0;
-        }
-        return result;
-    }
+	int GetEmptySampleCount()
+	{
+		int result = 0;
+		for (int i = 0; i < MAX_BUFFER_COUNT; i++)
+		{
+			result += (whbuffer[i].dwFlags & WHDR_DONE) ? BufferSize : 0;
+		}
+		return result;
+	}
 
-    const wchar_t *GetIdent() const
-    {
-        return L"waveout";
-    }
+	const wchar_t* GetIdent() const
+	{
+		return L"waveout";
+	}
 
-    const wchar_t *GetLongName() const
-    {
-        return L"WaveOut (Laggy)";
-    }
+	const wchar_t* GetLongName() const
+	{
+		return L"WaveOut (Laggy)";
+	}
 
-    void ReadSettings()
-    {
-    }
+	void ReadSettings()
+	{
+	}
 
-    void SetApiSettings(wxString api)
-    {
-    }
+	void SetApiSettings(wxString api)
+	{
+	}
 
-    void WriteSettings() const
-    {
-    }
+	void WriteSettings() const
+	{
+	}
 
 } static WO;
 
-SndOutModule *WaveOut = &WO;
+SndOutModule* WaveOut = &WO;

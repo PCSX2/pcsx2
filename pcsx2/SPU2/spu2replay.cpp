@@ -20,75 +20,75 @@
 #include "Windows.h"
 #endif
 
-FILE *s2rfile;
+FILE* s2rfile;
 
 void s2r_write16(s16 data)
 {
-    fwrite(&data, 2, 1, s2rfile);
+	fwrite(&data, 2, 1, s2rfile);
 }
 
 void s2r_write32(u32 data)
 {
-    fwrite(&data, 4, 1, s2rfile);
+	fwrite(&data, 4, 1, s2rfile);
 }
 
 static void EMITC(u32 i, u32 a)
 {
-    s2r_write32(((i & 0x7u) << 29u) | (a & 0x1FFFFFFFu));
+	s2r_write32(((i & 0x7u) << 29u) | (a & 0x1FFFFFFFu));
 }
 
-int s2r_open(u32 ticks, char *filename)
+int s2r_open(u32 ticks, char* filename)
 {
-    s2rfile = fopen(filename, "wb");
-    if (s2rfile)
-        s2r_write32(ticks);
-    return s2rfile ? 0 : -1;
+	s2rfile = fopen(filename, "wb");
+	if (s2rfile)
+		s2r_write32(ticks);
+	return s2rfile ? 0 : -1;
 }
 
 void s2r_readreg(u32 ticks, u32 addr)
 {
-    if (!s2rfile)
-        return;
-    s2r_write32(ticks);
-    EMITC(0, addr);
+	if (!s2rfile)
+		return;
+	s2r_write32(ticks);
+	EMITC(0, addr);
 }
 
 void s2r_writereg(u32 ticks, u32 addr, s16 value)
 {
-    if (!s2rfile)
-        return;
-    s2r_write32(ticks);
-    EMITC(1, addr);
-    s2r_write16(value);
+	if (!s2rfile)
+		return;
+	s2r_write32(ticks);
+	EMITC(1, addr);
+	s2r_write16(value);
 }
 
-void s2r_writedma4(u32 ticks, u16 *data, u32 len)
+void s2r_writedma4(u32 ticks, u16* data, u32 len)
 {
-    u32 i;
-    if (!s2rfile)
-        return;
-    s2r_write32(ticks);
-    EMITC(2, len);
-    for (i = 0; i < len; i++, data++)
-        s2r_write16(*data);
+	u32 i;
+	if (!s2rfile)
+		return;
+	s2r_write32(ticks);
+	EMITC(2, len);
+	for (i = 0; i < len; i++, data++)
+		s2r_write16(*data);
 }
 
-void s2r_writedma7(u32 ticks, u16 *data, u32 len)
+void s2r_writedma7(u32 ticks, u16* data, u32 len)
 {
-    u32 i;
-    if (!s2rfile)
-        return;
-    s2r_write32(ticks);
-    EMITC(3, len);
-    for (i = 0; i < len; i++, data++)
-        s2r_write16(*data);
+	u32 i;
+	if (!s2rfile)
+		return;
+	s2r_write32(ticks);
+	EMITC(3, len);
+	for (i = 0; i < len; i++, data++)
+		s2r_write16(*data);
 }
 
 void s2r_close()
 {
-    if (!s2rfile)
-        return;
-    fclose(s2rfile);
+	if (!s2rfile)
+		return;
+	fclose(s2rfile);
 }
 
 ///////////////////////////////////////////////////////////////
@@ -112,89 +112,89 @@ bool Running = false;
 
 #ifdef _MSC_VER
 
-int conprintf(const char *fmt, ...)
+int conprintf(const char* fmt, ...)
 {
 #ifdef _WIN32
-    char s[1024];
-    va_list list;
+	char s[1024];
+	va_list list;
 
-    va_start(list, fmt);
-    vsprintf(s, fmt, list);
-    va_end(list);
+	va_start(list, fmt);
+	vsprintf(s, fmt, list);
+	va_end(list);
 
-    HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
-    if (handle == INVALID_HANDLE_VALUE)
-        return 0;
+	HANDLE handle = GetStdHandle(STD_OUTPUT_HANDLE);
+	if (handle == INVALID_HANDLE_VALUE)
+		return 0;
 
-    DWORD written = 0;
-    WriteConsoleA(handle, s, strlen(s), &written, 0);
-    FlushFileBuffers(handle);
+	DWORD written = 0;
+	WriteConsoleA(handle, s, strlen(s), &written, 0);
+	FlushFileBuffers(handle);
 
-    return written;
+	return written;
 #else
-    va_list list;
-    va_start(list, fmt);
-    int ret = vsprintf(stderr, fmt, list);
-    va_end(list);
-    return ret;
+	va_list list;
+	va_start(list, fmt);
+	int ret = vsprintf(stderr, fmt, list);
+	va_end(list);
+	return ret;
 #endif
 }
 
 u64 HighResFrequency()
 {
-    u64 freq;
+	u64 freq;
 #ifdef _WIN32
-    QueryPerformanceFrequency((LARGE_INTEGER *)&freq);
+	QueryPerformanceFrequency((LARGE_INTEGER*)&freq);
 #else
 // TODO
 #endif
-    return freq;
+	return freq;
 }
 
 u64 HighResCounter()
 {
-    u64 time;
+	u64 time;
 #ifdef _WIN32
-    QueryPerformanceCounter((LARGE_INTEGER *)&time);
+	QueryPerformanceCounter((LARGE_INTEGER*)&time);
 #else
 // TODO
 #endif
-    return time;
+	return time;
 }
 
 void InitWaitSync() // not extremely accurate but enough.
 {
-    HighResFreq = HighResFrequency();
-    HighResPrev = HighResCounter();
-    HighResScale = (double)HighResFreq / (double)IOP_CLK;
+	HighResFreq = HighResFrequency();
+	HighResPrev = HighResCounter();
+	HighResScale = (double)HighResFreq / (double)IOP_CLK;
 }
 
 u32 WaitSync(u32 TargetCycle)
 {
-    u32 WaitCycles = (TargetCycle - CurrentIOPCycle);
-    u32 WaitTime = WaitCycles / IOPCiclesPerMS;
-    if (WaitTime > 10)
-        WaitTime = 10;
-    if (WaitTime == 0)
-        WaitTime = 1;
-    SleepEx(WaitTime, TRUE);
+	u32 WaitCycles = (TargetCycle - CurrentIOPCycle);
+	u32 WaitTime = WaitCycles / IOPCiclesPerMS;
+	if (WaitTime > 10)
+		WaitTime = 10;
+	if (WaitTime == 0)
+		WaitTime = 1;
+	SleepEx(WaitTime, TRUE);
 
-    // Refresh current time after sleeping
-    u64 Current = HighResCounter();
-    u32 delta = (u32)floor((Current - HighResPrev) / HighResScale + 0.5); // We lose some precision here, cycles might drift away over long periods of time ;P
+	// Refresh current time after sleeping
+	u64 Current = HighResCounter();
+	u32 delta = (u32)floor((Current - HighResPrev) / HighResScale + 0.5); // We lose some precision here, cycles might drift away over long periods of time ;P
 
-    // Calculate time delta
-    CurrentIOPCycle += delta;
-    HighResPrev += (u64)floor(delta * HighResScale + 0.5); // Trying to compensate drifting mentioned above, not necessarily useful.
+	// Calculate time delta
+	CurrentIOPCycle += delta;
+	HighResPrev += (u64)floor(delta * HighResScale + 0.5); // Trying to compensate drifting mentioned above, not necessarily useful.
 
-    return delta;
+	return delta;
 }
 
 #ifdef _WIN32
 BOOL WINAPI HandlerRoutine(DWORD dwCtrlType)
 {
-    Running = false;
-    return TRUE;
+	Running = false;
+	return TRUE;
 }
 #endif
 
@@ -202,103 +202,108 @@ BOOL WINAPI HandlerRoutine(DWORD dwCtrlType)
 EXPORT_C_(void)
 s2r_replay(HWND hwnd, HINSTANCE hinst, LPSTR filename, int nCmdShow)
 {
-    int events = 0;
+	int events = 0;
 
-    Running = true;
+	Running = true;
 
 #ifdef _WIN32
-    AllocConsole();
-    SetConsoleCtrlHandler(HandlerRoutine, TRUE);
+	AllocConsole();
+	SetConsoleCtrlHandler(HandlerRoutine, TRUE);
 
-    conprintf("Playing %s file on %x...", filename, hwnd);
+	conprintf("Playing %s file on %x...", filename, hwnd);
 #endif
 
-    // load file
-    FILE *file = fopen(filename, "rb");
+	// load file
+	FILE* file = fopen(filename, "rb");
 
-    if (!file) {
-        conprintf("Could not open the replay file.");
-        return;
-    }
-// if successful, init the plugin
+	if (!file)
+	{
+		conprintf("Could not open the replay file.");
+		return;
+	}
+	// if successful, init the plugin
 
 #define TryRead(dest, size, count, file)                                           \
-    if (fread(dest, size, count, file) < count) {                                  \
-        conprintf("Error reading from file.");                                     \
-        goto Finish; /* Need to exit the while() loop and maybe also the switch */ \
-    }
+	if (fread(dest, size, count, file) < count)                                    \
+	{                                                                              \
+		conprintf("Error reading from file.");                                     \
+		goto Finish; /* Need to exit the while() loop and maybe also the switch */ \
+	}
 
-    TryRead(&CurrentIOPCycle, 4, 1, file);
+	TryRead(&CurrentIOPCycle, 4, 1, file);
 
-    replay_mode = true;
+	replay_mode = true;
 
-    InitWaitSync(); // Initialize the WaitSync stuff
+	InitWaitSync(); // Initialize the WaitSync stuff
 
-    SPU2init();
-    SPU2_dummy_callback = true;
-    SPU2setClockPtr(&CurrentIOPCycle);
-    SPU2open(&hwnd);
+	SPU2init();
+	SPU2_dummy_callback = true;
+	SPU2setClockPtr(&CurrentIOPCycle);
+	SPU2open(&hwnd);
 
-    CurrentIOPCycle = 0;
+	CurrentIOPCycle = 0;
 
-    SPU2async(0);
+	SPU2async(0);
 
-    while (!feof(file) && Running) {
-        u32 ccycle = 0;
-        u32 evid = 0;
-        u32 sval = 0;
-        u32 tval = 0;
+	while (!feof(file) && Running)
+	{
+		u32 ccycle = 0;
+		u32 evid = 0;
+		u32 sval = 0;
+		u32 tval = 0;
 
-        TryRead(&ccycle, 4, 1, file);
-        TryRead(&sval, 4, 1, file);
+		TryRead(&ccycle, 4, 1, file);
+		TryRead(&sval, 4, 1, file);
 
-        evid = sval >> 29;
-        sval &= 0x1FFFFFFF;
+		evid = sval >> 29;
+		sval &= 0x1FFFFFFF;
 
-        u32 TargetCycle = ccycle * 768;
+		u32 TargetCycle = ccycle * 768;
 
-        while (TargetCycle > CurrentIOPCycle) {
-            u32 delta = WaitSync(TargetCycle);
-            SPU2async(delta);
-        }
+		while (TargetCycle > CurrentIOPCycle)
+		{
+			u32 delta = WaitSync(TargetCycle);
+			SPU2async(delta);
+		}
 
-        switch (evid) {
-            case 0:
-                SPU2read(sval);
-                break;
-            case 1:
-                TryRead(&tval, 2, 1, file);
-                SPU2write(sval, tval);
-                break;
-            case 2:
-                TryRead(dmabuffer, sval, 2, file);
-                SPU2writeDMA4Mem(dmabuffer, sval);
-                break;
-            case 3:
-                TryRead(dmabuffer, sval, 2, file);
-                SPU2writeDMA7Mem(dmabuffer, sval);
-                break;
-            default:
-                // not implemented
-                return;
-                break;
-        }
-        events++;
-    }
+		switch (evid)
+		{
+			case 0:
+				SPU2read(sval);
+				break;
+			case 1:
+				TryRead(&tval, 2, 1, file);
+				SPU2write(sval, tval);
+				break;
+			case 2:
+				TryRead(dmabuffer, sval, 2, file);
+				SPU2writeDMA4Mem(dmabuffer, sval);
+				break;
+			case 3:
+				TryRead(dmabuffer, sval, 2, file);
+				SPU2writeDMA7Mem(dmabuffer, sval);
+				break;
+			default:
+				// not implemented
+				return;
+				break;
+		}
+		events++;
+	}
 
 Finish:
 
-    //shutdown
-    SPU2close();
-    SPU2shutdown();
-    fclose(file);
+	//shutdown
+	SPU2close();
+	SPU2shutdown();
+	fclose(file);
 
-    conprintf("Finished playing %s file (%d cycles, %d events).", filename, CurrentIOPCycle, events);
+	conprintf("Finished playing %s file (%d cycles, %d events).", filename, CurrentIOPCycle, events);
 
 #ifdef _WIN32
-    FreeConsole();
+	FreeConsole();
 #endif
 
-    replay_mode = false;
+	replay_mode = false;
 }
 #endif

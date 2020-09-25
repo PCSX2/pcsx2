@@ -116,11 +116,11 @@ SyncTab::SyncTab(wxWindow* parent)
 
 	auto* adv_box = new wxStaticBoxSizer(wxVERTICAL, this, "Advanced");
 
-	auto* babble_label = new wxStaticText(this, wxID_ANY, \
-	"For fine-tuning time stretching.\n"\
-	"Larger is better for slowdown, && smaller for speedup (60+ fps).\n"\
-	"All options in microseconds.",\
-	wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
+	auto* babble_label = new wxStaticText(this, wxID_ANY,
+										  "For fine-tuning time stretching.\n"
+										  "Larger is better for slowdown, && smaller for speedup (60+ fps).\n"
+										  "All options in microseconds.",
+										  wxDefaultPosition, wxDefaultSize, wxALIGN_CENTRE_HORIZONTAL);
 	babble_label->Wrap(300);
 
 	adv_box->Add(babble_label, wxSizerFlags().Centre());

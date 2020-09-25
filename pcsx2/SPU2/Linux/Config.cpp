@@ -79,153 +79,157 @@ bool temp_debug_state;
 
 void ReadSettings()
 {
-    // For some reason this can be called before we know what ini file we're writing to.
-    // Lets not try to read it if that happens.
-    if (!pathSet) {
-        FileLog("Read called without the path set.\n");
-        return;
-    }
+	// For some reason this can be called before we know what ini file we're writing to.
+	// Lets not try to read it if that happens.
+	if (!pathSet)
+	{
+		FileLog("Read called without the path set.\n");
+		return;
+	}
 
-    Interpolation = CfgReadInt(L"MIXING", L"Interpolation", 4);
-    EffectsDisabled = CfgReadBool(L"MIXING", L"Disable_Effects", false);
-    postprocess_filter_dealias = CfgReadBool(L"MIXING", L"DealiasFilter", false);
-    FinalVolume = ((float)CfgReadInt(L"MIXING", L"FinalVolume", 100)) / 100;
-    if (FinalVolume > 1.0f)
-        FinalVolume = 1.0f;
+	Interpolation = CfgReadInt(L"MIXING", L"Interpolation", 4);
+	EffectsDisabled = CfgReadBool(L"MIXING", L"Disable_Effects", false);
+	postprocess_filter_dealias = CfgReadBool(L"MIXING", L"DealiasFilter", false);
+	FinalVolume = ((float)CfgReadInt(L"MIXING", L"FinalVolume", 100)) / 100;
+	if (FinalVolume > 1.0f)
+		FinalVolume = 1.0f;
 
-    AdvancedVolumeControl = CfgReadBool(L"MIXING", L"AdvancedVolumeControl", false);
-    VolumeAdjustCdb = CfgReadFloat(L"MIXING", L"VolumeAdjustC(dB)", 0);
-    VolumeAdjustFLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustFL(dB)", 0);
-    VolumeAdjustFRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustFR(dB)", 0);
-    VolumeAdjustBLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustBL(dB)", 0);
-    VolumeAdjustBRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustBR(dB)", 0);
-    VolumeAdjustSLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustSL(dB)", 0);
-    VolumeAdjustSRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustSR(dB)", 0);
-    VolumeAdjustLFEdb = CfgReadFloat(L"MIXING", L"VolumeAdjustLFE(dB)", 0);
-    VolumeAdjustC = powf(10, VolumeAdjustCdb / 10);
-    VolumeAdjustFL = powf(10, VolumeAdjustFLdb / 10);
-    VolumeAdjustFR = powf(10, VolumeAdjustFRdb / 10);
-    VolumeAdjustBL = powf(10, VolumeAdjustBLdb / 10);
-    VolumeAdjustBR = powf(10, VolumeAdjustBRdb / 10);
-    VolumeAdjustSL = powf(10, VolumeAdjustSLdb / 10);
-    VolumeAdjustSR = powf(10, VolumeAdjustSRdb / 10);
-    VolumeAdjustLFE = powf(10, VolumeAdjustLFEdb / 10);
-    delayCycles = CfgReadInt(L"DEBUG", L"DelayCycles", 4);
+	AdvancedVolumeControl = CfgReadBool(L"MIXING", L"AdvancedVolumeControl", false);
+	VolumeAdjustCdb = CfgReadFloat(L"MIXING", L"VolumeAdjustC(dB)", 0);
+	VolumeAdjustFLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustFL(dB)", 0);
+	VolumeAdjustFRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustFR(dB)", 0);
+	VolumeAdjustBLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustBL(dB)", 0);
+	VolumeAdjustBRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustBR(dB)", 0);
+	VolumeAdjustSLdb = CfgReadFloat(L"MIXING", L"VolumeAdjustSL(dB)", 0);
+	VolumeAdjustSRdb = CfgReadFloat(L"MIXING", L"VolumeAdjustSR(dB)", 0);
+	VolumeAdjustLFEdb = CfgReadFloat(L"MIXING", L"VolumeAdjustLFE(dB)", 0);
+	VolumeAdjustC = powf(10, VolumeAdjustCdb / 10);
+	VolumeAdjustFL = powf(10, VolumeAdjustFLdb / 10);
+	VolumeAdjustFR = powf(10, VolumeAdjustFRdb / 10);
+	VolumeAdjustBL = powf(10, VolumeAdjustBLdb / 10);
+	VolumeAdjustBR = powf(10, VolumeAdjustBRdb / 10);
+	VolumeAdjustSL = powf(10, VolumeAdjustSLdb / 10);
+	VolumeAdjustSR = powf(10, VolumeAdjustSRdb / 10);
+	VolumeAdjustLFE = powf(10, VolumeAdjustLFEdb / 10);
+	delayCycles = CfgReadInt(L"DEBUG", L"DelayCycles", 4);
 
-    wxString temp;
+	wxString temp;
 
 #if SDL_MAJOR_VERSION >= 2 || !defined(SPU2X_PORTAUDIO)
-    CfgReadStr(L"OUTPUT", L"Output_Module", temp, SDLOut->GetIdent());
+	CfgReadStr(L"OUTPUT", L"Output_Module", temp, SDLOut->GetIdent());
 #else
-    CfgReadStr(L"OUTPUT", L"Output_Module", temp, PortaudioOut->GetIdent());
+	CfgReadStr(L"OUTPUT", L"Output_Module", temp, PortaudioOut->GetIdent());
 #endif
-    OutputModule = FindOutputModuleById(temp.c_str()); // find the driver index of this module
+	OutputModule = FindOutputModuleById(temp.c_str()); // find the driver index of this module
 
 // find current API
 #ifdef SPU2X_PORTAUDIO
 #ifdef __linux__
-    CfgReadStr(L"PORTAUDIO", L"HostApi", temp, L"ALSA");
-    if (temp == L"OSS")
-        OutputAPI = 1;
-    else if (temp == L"JACK")
-        OutputAPI = 2;
-    else // L"ALSA"
-        OutputAPI = 0;
+	CfgReadStr(L"PORTAUDIO", L"HostApi", temp, L"ALSA");
+	if (temp == L"OSS")
+		OutputAPI = 1;
+	else if (temp == L"JACK")
+		OutputAPI = 2;
+	else // L"ALSA"
+		OutputAPI = 0;
 #else
-    CfgReadStr(L"PORTAUDIO", L"HostApi", temp, L"OSS");
-    OutputAPI = 0; // L"OSS"
+	CfgReadStr(L"PORTAUDIO", L"HostApi", temp, L"OSS");
+	OutputAPI = 0; // L"OSS"
 #endif
 #endif
 
 #if defined(__unix__) || defined(__APPLE__)
-    CfgReadStr(L"SDL", L"HostApi", temp, L"pulseaudio");
-    SdlOutputAPI = 0;
+	CfgReadStr(L"SDL", L"HostApi", temp, L"pulseaudio");
+	SdlOutputAPI = 0;
 #if SDL_MAJOR_VERSION >= 2
-    // YES It sucks ...
-    for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i) {
-        if (!temp.Cmp(wxString(SDL_GetAudioDriver(i), wxConvUTF8)))
-            SdlOutputAPI = i;
-    }
+	// YES It sucks ...
+	for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i)
+	{
+		if (!temp.Cmp(wxString(SDL_GetAudioDriver(i), wxConvUTF8)))
+			SdlOutputAPI = i;
+	}
 #endif
 #endif
 
-    SndOutLatencyMS = CfgReadInt(L"OUTPUT", L"Latency", 300);
-    SynchMode = CfgReadInt(L"OUTPUT", L"Synch_Mode", 0);
-    numSpeakers = CfgReadInt(L"OUTPUT", L"SpeakerConfiguration", 0);
+	SndOutLatencyMS = CfgReadInt(L"OUTPUT", L"Latency", 300);
+	SynchMode = CfgReadInt(L"OUTPUT", L"Synch_Mode", 0);
+	numSpeakers = CfgReadInt(L"OUTPUT", L"SpeakerConfiguration", 0);
 
 #ifdef SPU2X_PORTAUDIO
-    PortaudioOut->ReadSettings();
+	PortaudioOut->ReadSettings();
 #endif
 #if defined(__unix__) || defined(__APPLE__)
-    SDLOut->ReadSettings();
+	SDLOut->ReadSettings();
 #endif
-    SoundtouchCfg::ReadSettings();
-    DebugConfig::ReadSettings();
+	SoundtouchCfg::ReadSettings();
+	DebugConfig::ReadSettings();
 
-    // Sanity Checks
-    // -------------
+	// Sanity Checks
+	// -------------
 
-    Clampify(SndOutLatencyMS, LATENCY_MIN, LATENCY_MAX);
+	Clampify(SndOutLatencyMS, LATENCY_MIN, LATENCY_MAX);
 
-    if (mods[OutputModule] == nullptr) {
-        fwprintf(stderr, L"* SPU2-X: Unknown output module '%s' specified in configuration file.\n", temp.wc_str());
-        fprintf(stderr, "* SPU2-X: Defaulting to SDL (%S).\n", SDLOut->GetIdent());
-        OutputModule = FindOutputModuleById(SDLOut->GetIdent());
-    }
+	if (mods[OutputModule] == nullptr)
+	{
+		fwprintf(stderr, L"* SPU2-X: Unknown output module '%s' specified in configuration file.\n", temp.wc_str());
+		fprintf(stderr, "* SPU2-X: Defaulting to SDL (%S).\n", SDLOut->GetIdent());
+		OutputModule = FindOutputModuleById(SDLOut->GetIdent());
+	}
 
-    WriteSettings();
-    spuConfig->Flush();
+	WriteSettings();
+	spuConfig->Flush();
 }
 
 /*****************************************************************************/
 
 void WriteSettings()
 {
-    if (!pathSet) {
-        FileLog("Write called without the path set.\n");
-        return;
-    }
+	if (!pathSet)
+	{
+		FileLog("Write called without the path set.\n");
+		return;
+	}
 
-    CfgWriteInt(L"MIXING", L"Interpolation", Interpolation);
-    CfgWriteBool(L"MIXING", L"Disable_Effects", EffectsDisabled);
-    CfgWriteBool(L"MIXING", L"DealiasFilter", postprocess_filter_dealias);
-    CfgWriteInt(L"MIXING", L"FinalVolume", (int)(FinalVolume * 100 + 0.5f));
+	CfgWriteInt(L"MIXING", L"Interpolation", Interpolation);
+	CfgWriteBool(L"MIXING", L"Disable_Effects", EffectsDisabled);
+	CfgWriteBool(L"MIXING", L"DealiasFilter", postprocess_filter_dealias);
+	CfgWriteInt(L"MIXING", L"FinalVolume", (int)(FinalVolume * 100 + 0.5f));
 
-    CfgWriteBool(L"MIXING", L"AdvancedVolumeControl", AdvancedVolumeControl);
-    CfgWriteFloat(L"MIXING", L"VolumeAdjustC(dB)", VolumeAdjustCdb);
-    CfgWriteFloat(L"MIXING", L"VolumeAdjustFL(dB)", VolumeAdjustFLdb);
-    CfgWriteFloat(L"MIXING", L"VolumeAdjustFR(dB)", VolumeAdjustFRdb);
-    CfgWriteFloat(L"MIXING", L"VolumeAdjustBL(dB)", VolumeAdjustBLdb);
-    CfgWriteFloat(L"MIXING", L"VolumeAdjustBR(dB)", VolumeAdjustBRdb);
-    CfgWriteFloat(L"MIXING", L"VolumeAdjustSL(dB)", VolumeAdjustSLdb);
-    CfgWriteFloat(L"MIXING", L"VolumeAdjustSR(dB)", VolumeAdjustSRdb);
-    CfgWriteFloat(L"MIXING", L"VolumeAdjustLFE(dB)", VolumeAdjustLFEdb);
+	CfgWriteBool(L"MIXING", L"AdvancedVolumeControl", AdvancedVolumeControl);
+	CfgWriteFloat(L"MIXING", L"VolumeAdjustC(dB)", VolumeAdjustCdb);
+	CfgWriteFloat(L"MIXING", L"VolumeAdjustFL(dB)", VolumeAdjustFLdb);
+	CfgWriteFloat(L"MIXING", L"VolumeAdjustFR(dB)", VolumeAdjustFRdb);
+	CfgWriteFloat(L"MIXING", L"VolumeAdjustBL(dB)", VolumeAdjustBLdb);
+	CfgWriteFloat(L"MIXING", L"VolumeAdjustBR(dB)", VolumeAdjustBRdb);
+	CfgWriteFloat(L"MIXING", L"VolumeAdjustSL(dB)", VolumeAdjustSLdb);
+	CfgWriteFloat(L"MIXING", L"VolumeAdjustSR(dB)", VolumeAdjustSRdb);
+	CfgWriteFloat(L"MIXING", L"VolumeAdjustLFE(dB)", VolumeAdjustLFEdb);
 
-    CfgWriteStr(L"OUTPUT", L"Output_Module", mods[OutputModule]->GetIdent());
-    CfgWriteInt(L"OUTPUT", L"Latency", SndOutLatencyMS);
-    CfgWriteInt(L"OUTPUT", L"Synch_Mode", SynchMode);
-    CfgWriteInt(L"OUTPUT", L"SpeakerConfiguration", numSpeakers);
-    CfgWriteInt(L"DEBUG", L"DelayCycles", delayCycles);
+	CfgWriteStr(L"OUTPUT", L"Output_Module", mods[OutputModule]->GetIdent());
+	CfgWriteInt(L"OUTPUT", L"Latency", SndOutLatencyMS);
+	CfgWriteInt(L"OUTPUT", L"Synch_Mode", SynchMode);
+	CfgWriteInt(L"OUTPUT", L"SpeakerConfiguration", numSpeakers);
+	CfgWriteInt(L"DEBUG", L"DelayCycles", delayCycles);
 
 #ifdef SPU2X_PORTAUDIO
-    PortaudioOut->WriteSettings();
+	PortaudioOut->WriteSettings();
 #endif
 #if defined(__unix__) || defined(__APPLE__)
-    SDLOut->WriteSettings();
+	SDLOut->WriteSettings();
 #endif
-    SoundtouchCfg::WriteSettings();
-    DebugConfig::WriteSettings();
+	SoundtouchCfg::WriteSettings();
+	DebugConfig::WriteSettings();
 }
 
 void configure()
 {
-    auto *dialog = new Dialog;
+	auto* dialog = new Dialog;
 
-    initIni();
-    ReadSettings();
-    dialog->Display();
-    WriteSettings();
-    delete spuConfig;
-    spuConfig = nullptr;
-    wxDELETE(dialog);
+	initIni();
+	ReadSettings();
+	dialog->Display();
+	WriteSettings();
+	delete spuConfig;
+	spuConfig = nullptr;
+	wxDELETE(dialog);
 }

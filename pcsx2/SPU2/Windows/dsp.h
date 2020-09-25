@@ -26,32 +26,32 @@
 
 typedef struct winampDSPModule
 {
-    char *description;      // description
-    HWND hwndParent;        // parent window (filled in by calling app)
-    HINSTANCE hDllInstance; // instance handle to this DLL (filled in by calling app)
+	char* description;      // description
+	HWND hwndParent;        // parent window (filled in by calling app)
+	HINSTANCE hDllInstance; // instance handle to this DLL (filled in by calling app)
 
-    void (*Config)(struct winampDSPModule *this_mod); // configuration dialog (if needed)
-    int (*Init)(struct winampDSPModule *this_mod);    // 0 on success, creates window, etc (if needed)
+	void (*Config)(struct winampDSPModule* this_mod); // configuration dialog (if needed)
+	int (*Init)(struct winampDSPModule* this_mod);    // 0 on success, creates window, etc (if needed)
 
-    // modify waveform samples: returns number of samples to actually write
-    // (typically numsamples, but no more than twice numsamples, and no less than half numsamples)
-    // numsamples should always be at least 128. should, but I'm not sure
-    int (*ModifySamples)(struct winampDSPModule *this_mod, short int *samples, int numsamples, int bps, int nch, int srate);
+	// modify waveform samples: returns number of samples to actually write
+	// (typically numsamples, but no more than twice numsamples, and no less than half numsamples)
+	// numsamples should always be at least 128. should, but I'm not sure
+	int (*ModifySamples)(struct winampDSPModule* this_mod, short int* samples, int numsamples, int bps, int nch, int srate);
 
-    void (*Quit)(struct winampDSPModule *this_mod); // called when unloading
+	void (*Quit)(struct winampDSPModule* this_mod); // called when unloading
 
-    void *userData; // user data, optional
+	void* userData; // user data, optional
 } winampDSPModule;
 
 typedef struct
 {
-    int version;                        // DSP_HDRVER
-    char *description;                  // description of library
-    winampDSPModule *(*getModule)(int); // module retrieval function
+	int version;                        // DSP_HDRVER
+	char* description;                  // description of library
+	winampDSPModule* (*getModule)(int); // module retrieval function
 } winampDSPHeader;
 
 // exported symbols
-typedef winampDSPHeader *(*winampDSPGetHeaderType)();
+typedef winampDSPHeader* (*winampDSPGetHeaderType)();
 
 // header version: 0x20 == 0.20 == winamp 2.0
 #define DSP_HDRVER 0x20

@@ -16,6 +16,6 @@
 #pragma once
 
 extern void DMALogOpen();
-extern void DMA4LogWrite(void *lpData, u32 ulSize);
-extern void DMA7LogWrite(void *lpData, u32 ulSize);
+extern void DMA4LogWrite(void* lpData, u32 ulSize);
+extern void DMA7LogWrite(void* lpData, u32 ulSize);
 extern void DMALogClose();

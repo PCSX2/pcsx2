@@ -20,29 +20,29 @@
 
 extern uptr gsWindowHandle;
 
-void SysMessage(const char *fmt, ...)
+void SysMessage(const char* fmt, ...)
 {
-    va_list list;
-    char tmp[512];
-    wchar_t wtmp[512];
+	va_list list;
+	char tmp[512];
+	wchar_t wtmp[512];
 
-    va_start(list, fmt);
-    vsprintf_s(tmp, fmt, list);
-    va_end(list);
-    swprintf_s(wtmp, L"%S", tmp);
-    MessageBox((!!gsWindowHandle) ? (HWND)gsWindowHandle : GetActiveWindow(), wtmp,
-               L"SPU2-X System Message", MB_OK | MB_SETFOREGROUND);
+	va_start(list, fmt);
+	vsprintf_s(tmp, fmt, list);
+	va_end(list);
+	swprintf_s(wtmp, L"%S", tmp);
+	MessageBox((!!gsWindowHandle) ? (HWND)gsWindowHandle : GetActiveWindow(), wtmp,
+			   L"SPU2-X System Message", MB_OK | MB_SETFOREGROUND);
 }
 
-void SysMessage(const wchar_t *fmt, ...)
+void SysMessage(const wchar_t* fmt, ...)
 {
-    va_list list;
-    va_start(list, fmt);
-    wxString wtmp;
-    wtmp.PrintfV(fmt, list);
-    va_end(list);
-    MessageBox((!!gsWindowHandle) ? (HWND)gsWindowHandle : GetActiveWindow(), wtmp,
-               L"SPU2-X System Message", MB_OK | MB_SETFOREGROUND);
+	va_list list;
+	va_start(list, fmt);
+	wxString wtmp;
+	wtmp.PrintfV(fmt, list);
+	va_end(list);
+	MessageBox((!!gsWindowHandle) ? (HWND)gsWindowHandle : GetActiveWindow(), wtmp,
+			   L"SPU2-X System Message", MB_OK | MB_SETFOREGROUND);
 }
 
 //////
@@ -51,9 +51,9 @@ void SysMessage(const wchar_t *fmt, ...)
 
 static wxString CfgFile(L"inis/SPU2.ini");
 
-void CfgSetSettingsDir(const char *dir)
+void CfgSetSettingsDir(const char* dir)
 {
-    CfgFile = Path::Combine((dir == NULL) ? wxString(L"inis") : wxString::FromUTF8(dir), L"SPU2.ini");
+	CfgFile = Path::Combine((dir == NULL) ? wxString(L"inis") : wxString::FromUTF8(dir), L"SPU2.ini");
 }
 
 
@@ -72,24 +72,24 @@ void CfgSetSettingsDir(const char *dir)
 \*_____________________________________________*/
 
 
-void CfgWriteBool(const TCHAR *Section, const TCHAR *Name, bool Value)
+void CfgWriteBool(const TCHAR* Section, const TCHAR* Name, bool Value)
 {
-    const TCHAR *Data = Value ? L"TRUE" : L"FALSE";
-    WritePrivateProfileString(Section, Name, Data, CfgFile);
+	const TCHAR* Data = Value ? L"TRUE" : L"FALSE";
+	WritePrivateProfileString(Section, Name, Data, CfgFile);
 }
 
-void CfgWriteInt(const TCHAR *Section, const TCHAR *Name, int Value)
+void CfgWriteInt(const TCHAR* Section, const TCHAR* Name, int Value)
 {
-    TCHAR Data[32];
-    _itow(Value, Data, 10);
-    WritePrivateProfileString(Section, Name, Data, CfgFile);
+	TCHAR Data[32];
+	_itow(Value, Data, 10);
+	WritePrivateProfileString(Section, Name, Data, CfgFile);
 }
 
-void CfgWriteFloat(const TCHAR *Section, const TCHAR *Name, float Value)
+void CfgWriteFloat(const TCHAR* Section, const TCHAR* Name, float Value)
 {
-    TCHAR Data[32];
-    _swprintf(Data, L"%f", Value);
-    WritePrivateProfileString(Section, Name, Data, CfgFile);
+	TCHAR Data[32];
+	_swprintf(Data, L"%f", Value);
+	WritePrivateProfileString(Section, Name, Data, CfgFile);
 }
 
 /*void CfgWriteStr(const TCHAR* Section, const TCHAR* Name, const TCHAR *Data)
@@ -97,99 +97,104 @@ void CfgWriteFloat(const TCHAR *Section, const TCHAR *Name, float Value)
 WritePrivateProfileString( Section, Name, Data, CfgFile );
 }*/
 
-void CfgWriteStr(const TCHAR *Section, const TCHAR *Name, const wxString &Data)
+void CfgWriteStr(const TCHAR* Section, const TCHAR* Name, const wxString& Data)
 {
-    WritePrivateProfileString(Section, Name, Data, CfgFile);
+	WritePrivateProfileString(Section, Name, Data, CfgFile);
 }
 
 /*****************************************************************************/
 
-bool CfgReadBool(const TCHAR *Section, const TCHAR *Name, bool Default)
+bool CfgReadBool(const TCHAR* Section, const TCHAR* Name, bool Default)
 {
-    TCHAR Data[255] = {0};
+	TCHAR Data[255] = {0};
 
-    GetPrivateProfileString(Section, Name, L"", Data, 255, CfgFile);
-    Data[254] = 0;
-    if (wcslen(Data) == 0) {
-        CfgWriteBool(Section, Name, Default);
-        return Default;
-    }
+	GetPrivateProfileString(Section, Name, L"", Data, 255, CfgFile);
+	Data[254] = 0;
+	if (wcslen(Data) == 0)
+	{
+		CfgWriteBool(Section, Name, Default);
+		return Default;
+	}
 
-    if (wcscmp(Data, L"1") == 0)
-        return true;
-    if (wcscmp(Data, L"Y") == 0)
-        return true;
-    if (wcscmp(Data, L"T") == 0)
-        return true;
-    if (wcscmp(Data, L"YES") == 0)
-        return true;
-    if (wcscmp(Data, L"TRUE") == 0)
-        return true;
-    return false;
+	if (wcscmp(Data, L"1") == 0)
+		return true;
+	if (wcscmp(Data, L"Y") == 0)
+		return true;
+	if (wcscmp(Data, L"T") == 0)
+		return true;
+	if (wcscmp(Data, L"YES") == 0)
+		return true;
+	if (wcscmp(Data, L"TRUE") == 0)
+		return true;
+	return false;
 }
 
 
-int CfgReadInt(const TCHAR *Section, const TCHAR *Name, int Default)
+int CfgReadInt(const TCHAR* Section, const TCHAR* Name, int Default)
 {
-    TCHAR Data[255] = {0};
-    GetPrivateProfileString(Section, Name, L"", Data, 255, CfgFile);
-    Data[254] = 0;
+	TCHAR Data[255] = {0};
+	GetPrivateProfileString(Section, Name, L"", Data, 255, CfgFile);
+	Data[254] = 0;
 
-    if (wcslen(Data) == 0) {
-        CfgWriteInt(Section, Name, Default);
-        return Default;
-    }
+	if (wcslen(Data) == 0)
+	{
+		CfgWriteInt(Section, Name, Default);
+		return Default;
+	}
 
-    return _wtoi(Data);
+	return _wtoi(Data);
 }
 
-float CfgReadFloat(const TCHAR *Section, const TCHAR *Name, float Default)
+float CfgReadFloat(const TCHAR* Section, const TCHAR* Name, float Default)
 {
-    TCHAR Data[255] = {0};
-    GetPrivateProfileString(Section, Name, L"", Data, 255, CfgFile);
-    Data[254] = 0;
+	TCHAR Data[255] = {0};
+	GetPrivateProfileString(Section, Name, L"", Data, 255, CfgFile);
+	Data[254] = 0;
 
-    if (wcslen(Data) == 0) {
-        CfgWriteFloat(Section, Name, Default);
-        return Default;
-    }
+	if (wcslen(Data) == 0)
+	{
+		CfgWriteFloat(Section, Name, Default);
+		return Default;
+	}
 
-    return (float)_wtof(Data);
+	return (float)_wtof(Data);
 }
 
-void CfgReadStr(const TCHAR *Section, const TCHAR *Name, TCHAR *Data, int DataSize, const TCHAR *Default)
+void CfgReadStr(const TCHAR* Section, const TCHAR* Name, TCHAR* Data, int DataSize, const TCHAR* Default)
 {
-    GetPrivateProfileString(Section, Name, L"", Data, DataSize, CfgFile);
+	GetPrivateProfileString(Section, Name, L"", Data, DataSize, CfgFile);
 
-    if (wcslen(Data) == 0) {
-        swprintf_s(Data, DataSize, L"%s", Default);
-        CfgWriteStr(Section, Name, Data);
-    }
+	if (wcslen(Data) == 0)
+	{
+		swprintf_s(Data, DataSize, L"%s", Default);
+		CfgWriteStr(Section, Name, Data);
+	}
 }
 
-void CfgReadStr(const TCHAR *Section, const TCHAR *Name, wxString &Data, const TCHAR *Default)
+void CfgReadStr(const TCHAR* Section, const TCHAR* Name, wxString& Data, const TCHAR* Default)
 {
-    wchar_t workspace[512];
-    GetPrivateProfileString(Section, Name, L"", workspace, ArraySize(workspace), CfgFile);
+	wchar_t workspace[512];
+	GetPrivateProfileString(Section, Name, L"", workspace, ArraySize(workspace), CfgFile);
 
-    Data = workspace;
+	Data = workspace;
 
-    if (Data.empty()) {
-        Data = Default;
-        CfgWriteStr(Section, Name, Default);
-    }
+	if (Data.empty())
+	{
+		Data = Default;
+		CfgWriteStr(Section, Name, Default);
+	}
 }
 
 // Tries to read the requested value.
 // Returns FALSE if the value isn't found.
-bool CfgFindName(const TCHAR *Section, const TCHAR *Name)
+bool CfgFindName(const TCHAR* Section, const TCHAR* Name)
 {
-    // Only load 24 characters.  No need to load more.
-    TCHAR Data[24] = {0};
-    GetPrivateProfileString(Section, Name, L"", Data, 24, CfgFile);
-    Data[23] = 0;
+	// Only load 24 characters.  No need to load more.
+	TCHAR Data[24] = {0};
+	GetPrivateProfileString(Section, Name, L"", Data, 24, CfgFile);
+	Data[23] = 0;
 
-    if (wcslen(Data) == 0)
-        return false;
-    return true;
+	if (wcslen(Data) == 0)
+		return false;
+	return true;
 }
