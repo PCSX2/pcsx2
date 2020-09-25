@@ -411,7 +411,7 @@ public:
 	virtual void Configure(uptr parent)
 	{
 		INT_PTR ret;
-		ret = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_DSOUND), (HWND)parent, (DLGPROC)ConfigProc, 1);
+		ret = DialogBoxParam(NULL, MAKEINTRESOURCE(IDD_DSOUND), (HWND)parent, (DLGPROC)ConfigProc, 1);
 		if (ret == -1)
 		{
 			MessageBox((HWND)parent, L"Error Opening the config dialog.", L"OMG ERROR!", MB_OK | MB_SETFOREGROUND);

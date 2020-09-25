@@ -263,7 +263,7 @@ namespace DebugConfig
 
 	void OpenDialog()
 	{
-		INT_PTR ret = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_CONFIG_DEBUG), GetActiveWindow(), (DLGPROC)DialogProc, 1);
+		INT_PTR ret = DialogBoxParam(NULL, MAKEINTRESOURCE(IDD_CONFIG_DEBUG), GetActiveWindow(), (DLGPROC)DialogProc, 1);
 		if (ret == -1)
 		{
 			MessageBox(GetActiveWindow(), L"Error Opening the debug configuration dialog.", L"OMG ERROR!", MB_OK | MB_SETFOREGROUND);
