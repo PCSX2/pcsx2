@@ -4379,7 +4379,7 @@ Region = NTSC-J
 Serial = SCPS-55024
 Name   = Armored Core 2 - Another Age
 Region = NTSC-J
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 MemCardFilter = SCPS-55024/SLPS-25007/SLPS-25040/SLPS-73403/SLPS-73411
 ---------------------------------------------
 Serial = SCPS-55025
@@ -7032,7 +7032,7 @@ Compat = 5
 Serial = SLES-50079
 Name   = Armored Core 2
 Region = PAL-E
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 ---------------------------------------------
 Serial = SLES-50080
 Name   = NBA Hoopz
@@ -8862,7 +8862,7 @@ Region = PAL-M4
 Serial = SLES-50905
 Name   = Armored Core 2 - Another Age
 Region = PAL-E
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 // Save import option was removed from PAL release.
 ---------------------------------------------
 Serial = SLES-50906
@@ -31375,7 +31375,7 @@ Region = NTSC-J
 Serial = SLPS-25007
 Name   = Armored Core 2
 Region = NTSC-J
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 ---------------------------------------------
 Serial = SLPS-25008
 Name   = Sorcerous Stabber Orphen
@@ -31515,7 +31515,7 @@ Serial = SLPS-25040
 Name   = Armored Core 2 - Another Age
 Region = NTSC-J
 Compat = 5
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 MemCardFilter = SCPS-55024/SLPS-25007/SLPS-25040/SLPS-73403/SLPS-73411
 ---------------------------------------------
 Serial = SLPS-25041
@@ -35099,7 +35099,7 @@ Region = NTSC-J
 Serial = SLPS-73403
 Name   = Armored Core 2 [PlayStation 2 The Best]
 Region = NTSC-J
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 ---------------------------------------------
 Serial = SLPS-73404
 Name   = Klonoa 2 [PlayStation 2 The Best]
@@ -35127,7 +35127,7 @@ Region = NTSC-J
 Serial = SLPS-73411
 Name   = Armored Core 2 - Another Age [PlayStation 2 The Best]
 Region = NTSC-J
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 MemCardFilter = SCPS-55024/SLPS-25007/SLPS-25040/SLPS-73403/SLPS-73411
 ---------------------------------------------
 Serial = SLPS-73412
@@ -35251,7 +35251,7 @@ Serial = SLUS-20014
 Name   = Armored Core 2
 Region = NTSC-U
 Compat = 5
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 ---------------------------------------------
 Serial = SLUS-20015
 Name   = Eternal Ring
@@ -36200,7 +36200,7 @@ Compat = 5
 Serial = SLUS-20249
 Name   = Armored Core 2 - Another Age
 Region = NTSC-U
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 // Can import data from regular Armored Core 2.
 MemCardFilter = SLUS-20249/SLUS-20014
 ---------------------------------------------
