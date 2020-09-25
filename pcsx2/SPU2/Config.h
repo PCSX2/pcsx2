@@ -16,6 +16,9 @@
 #pragma once
 
 #include "Global.h"
+#ifdef _WIN32
+#include <soundtouch\soundtouch\SoundTouch.h>
+#endif
 
 extern bool DebugEnabled;
 

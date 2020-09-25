@@ -20,6 +20,7 @@
 // Contents should be cross-platform compatible whenever possible.
 
 
+#include "PrecompiledHeader.h"
 #include "Global.h"
 #include "Dma.h"
 #include "IopDma.h"

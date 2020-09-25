@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "Global.h"
 
 
@@ -86,11 +87,11 @@ SndOutModule* mods[] =
 		DSoundOut,
 		WaveOut,
 #endif
-#if defined(_WIN32) || defined(SPU2X_PORTAUDIO)
+#if  defined(SPU2X_PORTAUDIO)
 		PortaudioOut,
 #endif
-		SDLOut,
 #if defined(__linux__) /* && defined(__ALSA__)*/
+		SDLOut,
 		AlsaOut,
 #endif
 		NULL // signals the end of our list

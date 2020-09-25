@@ -13,7 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Global.h"
+#include "PrecompiledHeader.h"
+#include "../Global.h"
 
 #define _WIN32_WINNT 0x0600
 #include <windows.h>

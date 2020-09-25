@@ -13,10 +13,17 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
+#include "Mixer.h"
 #include "Global.h"
+#include "SndOut.h"
 
 #define _WIN32_DCOM
-#include "Dialogs.h"
+#ifdef _WIN32
+#include "Windows/Dialogs.h"
+#elif defined __linux
+#include "Linux/Dialogs.h"
+#endif
 
 #include "portaudio.h"
 
@@ -25,8 +32,9 @@
 #include <vector>
 
 #ifdef _WIN32
-#include "pa_win_wasapi.h"
+#include <portaudio/include/pa_win_wasapi.h>
 #endif
+#include "Debug.h"
 
 int PaCallback(const void* inputBuffer, void* outputBuffer,
 			   unsigned long framesPerBuffer,

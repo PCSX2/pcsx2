@@ -16,6 +16,7 @@
 // Note the file is mostly a copy paste of the WavFile.h from SoundTouch library. It was
 // shrunken to support only output 16 bits wav files
 
+#include "PrecompiledHeader.h"
 #include <stdio.h>
 #include <stdexcept>
 #include <string>

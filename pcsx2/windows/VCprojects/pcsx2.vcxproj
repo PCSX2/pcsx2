@@ -65,6 +65,7 @@
     </ClCompile>
     <Link>
       <LargeAddressAware>Yes</LargeAddressAware>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -267,52 +268,42 @@
     <ClCompile Include="..\..\IopGte.cpp" />
     <ClCompile Include="..\..\IPC.cpp" />
     <ClCompile Include="..\..\FW.cpp" />
-    <ClCompile Include="..\..\SPU2\ADSR.cpp" />
-    <ClCompile Include="..\..\SPU2\Debug.cpp" />
     <ClCompile Include="..\..\SPU2\DplIIdecoder.cpp" />
-    <ClCompile Include="..\..\SPU2\Dma.cpp" />
-    <ClCompile Include="..\..\SPU2\Lowpass.cpp" />
-    <ClCompile Include="..\..\SPU2\Mixer.cpp" />
-    <ClCompile Include="..\..\SPU2\spu2.cpp" />
-    <ClCompile Include="..\..\SPU2\ReadInput.cpp" />
+    <ClCompile Include="..\..\SPU2\debug.cpp" />
     <ClCompile Include="..\..\SPU2\RegLog.cpp" />
-    <ClCompile Include="..\..\SPU2\RegTable.cpp" />
-    <ClCompile Include="..\..\SPU2\Reverb.cpp" />
-    <ClCompile Include="..\..\SPU2\SndOut.cpp" />
-    <ClCompile Include="..\..\SPU2\spu2freeze.cpp" />
     <ClCompile Include="..\..\SPU2\spu2replay.cpp" />
-    <ClCompile Include="..\..\SPU2\spu2sys.cpp" />
+    <ClCompile Include="..\..\SPU2\wavedump_wav.cpp" />
+    <ClCompile Include="..\..\SPU2\Lowpass.cpp" />
+    <ClCompile Include="..\..\SPU2\SndOut.cpp" />
     <ClCompile Include="..\..\SPU2\Timestretcher.cpp" />
-    <ClCompile Include="..\..\SPU2\Wavedump_wav.cpp" />
-    <ClCompile Include="..\..\SPU2\WavFile.cpp" />
+    <ClCompile Include="..\..\SPU2\Windows\SndOut_DSound.cpp" />
+    <ClCompile Include="..\..\SPU2\Windows\SndOut_waveOut.cpp" />
+    <ClCompile Include="..\..\SPU2\Windows\SndOut_XAudio2.cpp" />
     <ClCompile Include="..\..\SPU2\Linux\Alsa.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\SPU2\Linux\CfgHelpers.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="..\..\SPU2\dma.cpp" />
+    <ClCompile Include="..\..\SPU2\RegTable.cpp" />
+    <ClCompile Include="..\..\SPU2\spu2freeze.cpp" />
+    <ClCompile Include="..\..\SPU2\spu2sys.cpp" />
+    <ClCompile Include="..\..\SPU2\ADSR.cpp" />
+    <ClCompile Include="..\..\SPU2\Mixer.cpp" />
+    <ClCompile Include="..\..\SPU2\ReadInput.cpp" />
+    <ClCompile Include="..\..\SPU2\Reverb.cpp" />
+    <ClCompile Include="..\..\SPU2\Windows\dsp.cpp" />
     <ClCompile Include="..\..\SPU2\Linux\Config.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\SPU2\Linux\ConfigDebug.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\SPU2\Linux\ConfigSoundTouch.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\SPU2\Linux\Dialogs.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="..\..\SPU2\wx\wxConfig.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\SPU2\Windows\SndOut_waveOut.cpp" />
-    <ClCompile Include="..\..\SPU2\Windows\SndOut_DSound.cpp" />
-    <ClCompile Include="..\..\SPU2\Windows\SndOut_XAudio2.cpp" />
-    <ClCompile Include="..\..\SPU2\Windows\UIHelpers.cpp" />
-    <ClCompile Include="..\..\SPU2\Windows\RealtimeDebugger.cpp" />
-    <ClCompile Include="..\..\SPU2\Windows\dsp.cpp" />
+    <ClCompile Include="..\..\SPU2\Windows\CfgHelpers.cpp" />
+    <ClCompile Include="..\..\SPU2\Windows\Config.cpp" />
+    <ClCompile Include="..\..\SPU2\Windows\ConfigDebug.cpp" />
     <ClCompile Include="..\..\SPU2\Windows\ConfigSoundtouch.cpp" />
+    <ClCompile Include="..\..\SPU2\Windows\RealtimeDebugger.cpp" />
+    <ClCompile Include="..\..\SPU2\Windows\UIHelpers.cpp" />
+    <ClCompile Include="..\..\SPU2\spu2.cpp" />
     <ClCompile Include="..\..\IPU\IPUdma.cpp" />
     <ClCompile Include="..\..\IPU\IPUdither.cpp" />
     <ClCompile Include="..\..\Linux\LnxConsolePipe.cpp">
@@ -565,22 +556,24 @@
     <ClInclude Include="..\..\IopGte.h" />
     <ClInclude Include="..\..\IPC.h" />
     <ClInclude Include="..\..\FW.h" />
-    <ClCompile Include="..\..\SPU2\Config.h" />
-    <ClCompile Include="..\..\SPU2\Debug.h" />
-    <ClCompile Include="..\..\SPU2\defs.h" />
-    <ClCompile Include="..\..\SPU2\Dma.h" />
-    <ClCompile Include="..\..\SPU2\Global.h" />
-    <ClCompile Include="..\..\SPU2\Lowpass.h" />
-    <ClCompile Include="..\..\SPU2\Mixer.h" />
-    <ClCompile Include="..\..\SPU2\spu2.h" />
-    <ClCompile Include="..\..\SPU2\regs.h" />
-    <ClCompile Include="..\..\SPU2\SndOut.h" />
-    <ClCompile Include="..\..\SPU2\spdif.h" />
-    <ClCompile Include="..\..\SPU2\spu2replay.h" />
-    <ClCompile Include="..\..\SPU2\WavFile.h" />
-    <ClCompile Include="..\..\SPU2\Windows/resource.h" />
-    <ClCompile Include="..\..\SPU2\Windows/WinConfig.h" />
-    <ClCompile Include="..\..\SPU2\Windows/dsp.h" />
+    <ClInclude Include="..\..\SPU2\Config.h" />
+    <ClInclude Include="..\..\SPU2\Global.h" />
+    <ClInclude Include="..\..\SPU2\spu2replay.h" />
+    <ClInclude Include="..\..\SPU2\Lowpass.h" />
+    <ClInclude Include="..\..\SPU2\SndOut.h" />
+    <ClInclude Include="..\..\SPU2\Linux\Alsa.h" />
+    <ClInclude Include="..\..\SPU2\spdif.h" />
+    <ClInclude Include="..\..\SPU2\defs.h" />
+    <ClInclude Include="..\..\SPU2\Dma.h" />
+    <ClInclude Include="..\..\SPU2\regs.h" />
+    <ClInclude Include="..\..\SPU2\Mixer.h" />
+    <ClInclude Include="..\..\SPU2\Windows\dsp.h" />
+    <ClInclude Include="..\..\SPU2\Linux\Config.h" />
+    <ClInclude Include="..\..\SPU2\Linux\Dialogs.h" />
+    <ClInclude Include="..\..\SPU2\Windows\Dialogs.h" />
+    <ClInclude Include="..\..\SPU2\Windows\WinConfig.h" />
+    <ClInclude Include="..\..\SPU2\spu2.h" />
+    <ClInclude Include="..\..\SPU2\Windows\resource.h" />
     <ClInclude Include="..\..\IPU\IPUdma.h" />
     <ClInclude Include="..\..\Mdec.h" />
     <ClInclude Include="..\..\Patch.h" />
@@ -734,9 +727,15 @@
     <ResourceCompile Include="..\wxResources.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\3rdparty\portaudio\build\msvc\portaudio.vcxproj">
+      <Project>{0a18a071-125e-442f-aff7-a3f68abecf99}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\pthreads4w\build\pthreads4w.vcxproj">
       <Project>{0fae817d-9a32-4830-857e-81da57246e16}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\3rdparty\soundtouch\SoundTouch.vcxproj">
+      <Project>{e9b51944-7e6d-4bcd-83f2-7bbd5a46182d}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_adv.vcxproj">
       <Project>{24c45343-fd20-5c92-81c1-35a2ae841e79}</Project>
