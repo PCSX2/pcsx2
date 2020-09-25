@@ -44,7 +44,8 @@ void SPU2setClockPtr(u32 *ptr);
 
 void SPU2async(u32 cycles);
 s32 SPU2freeze(int mode, freezeData *data);
-void SPU2DoFreeze( SaveStateBase& state );
+void SPU2DoFreezeIn( pxInputStream& infp );
+void SPU2DoFreezeOut( void* dest );
 void SPU2configure();
 void SPU2about();
 s32 SPU2test();
