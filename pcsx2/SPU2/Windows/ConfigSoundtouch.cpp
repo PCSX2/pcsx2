@@ -128,7 +128,7 @@ BOOL CALLBACK SoundtouchCfg::DialogProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPA
 void SoundtouchCfg::OpenDialog(HWND hWnd)
 {
 	INT_PTR ret;
-	ret = DialogBox(hInstance, MAKEINTRESOURCE(IDD_CONFIG_SOUNDTOUCH), hWnd, (DLGPROC)DialogProc);
+	ret = DialogBox(NULL, MAKEINTRESOURCE(IDD_CONFIG_SOUNDTOUCH), hWnd, (DLGPROC)DialogProc);
 	if (ret == -1)
 	{
 		MessageBox(GetActiveWindow(), L"Error Opening the Soundtouch advanced dialog.", L"OMG ERROR!", MB_OK | MB_SETFOREGROUND);

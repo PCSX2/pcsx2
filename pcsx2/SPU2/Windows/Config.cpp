@@ -435,9 +435,10 @@ void configure()
 {
 	INT_PTR ret;
 	ReadSettings();
-	ret = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_CONFIG), GetActiveWindow(), (DLGPROC)ConfigProc, 1);
+	ret = DialogBoxParam(NULL, MAKEINTRESOURCE(IDD_CONFIG), GetActiveWindow(), (DLGPROC)ConfigProc, 1);
 	if (ret == -1)
 	{
+		DWORD dw = GetLastError(); 
 		MessageBox(GetActiveWindow(), L"Error Opening the config dialog.", L"OMG ERROR!", MB_OK | MB_SETFOREGROUND);
 		return;
 	}

@@ -44,8 +44,6 @@ static u32 pClocks = 0;
 
 u32* cyclePtr = NULL;
 u32 lClocks = 0;
-
-
 //static bool cpu_detected = false;
 
 static bool CheckSSE()
@@ -351,7 +349,7 @@ s32 SPU2open(void* pDsp)
 	{
 		if (debugDialogOpen == 0)
 		{
-			hDebugDialog = CreateDialogParam(hInstance, MAKEINTRESOURCE(IDD_DEBUG), 0, DebugProc, 0);
+			hDebugDialog = CreateDialogParam(NULL, MAKEINTRESOURCE(IDD_DEBUG), 0, DebugProc, 0);
 			ShowWindow(hDebugDialog, SW_SHOWNORMAL);
 			debugDialogOpen = 1;
 		}
