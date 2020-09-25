@@ -1,11 +1,11 @@
 #!/bin/bash
 
-set -ex
+set -e
 
 # Packages - Build Environment
 declare -a BUILD_PACKAGES=(
-	"cmake"
 	"ccache"
+	"cmake"
 	"g++-10-multilib"
 )
 
@@ -14,20 +14,34 @@ declare -a PCSX2_PACKAGES=(
 	"libaio-dev"
 	"libasound2-dev"
 	"libcairo2-dev"
+	"libegl-dev"
 	"libegl1-mesa-dev"
 	"libgdk-pixbuf2.0-dev"
 	"libgirepository-1.0-1"
+	"libgl-dev"
 	"libgl1-mesa-dev"
+	"libgl1-mesa-dri"
+	"libgl1"
+	"libgles-dev"
+	"libgles-dev"
+	"libgles2-mesa-dev"
 	"libglib2.0-dev"
 	"libglu1-mesa-dev"
+	"libglu1-mesa"
+	"libglvnd-dev"
+	"libglx-dev"
+	"libglx-mesa0"
+	"libglx0"
 	"libgtk-3-dev"
 	"libgtk2.0-dev"
 	"libharfbuzz-dev"
+	"libllvm10"
 	"liblzma-dev"
 	"libpango1.0-dev"
 	"libpcap0.8-dev"
 	"libsdl2-dev"
 	"libsoundtouch-dev"
+	"libwxgtk3.0-gtk3-0v5"
 	"libwxgtk3.0-gtk3-dev"
 	"libx11-xcb-dev"
 	"libxext-dev"
