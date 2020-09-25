@@ -121,6 +121,11 @@ void InputRecordingControls::FrameAdvance()
 	Resume();
 }
 
+bool InputRecordingControls::IsFrameAdvancing()
+{
+	return frameAdvancing;
+}
+
 bool InputRecordingControls::IsPaused()
 {
 	return (emulationCurrentlyPaused && CoreThread.IsOpen() && CoreThread.IsPaused());
