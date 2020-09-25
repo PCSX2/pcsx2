@@ -5569,7 +5569,7 @@ Region = NTSC-U
 EETimingHack = 1 // Fixes random hangs.
 [patches = C909A32E]
 	author=Refraction & YukiXXL
-	//Flashlight and Nightvision not working propetly fix.
+	// Flashlight and Nightvision not working propetly fix.
 	patch=0,EE,00367798,word,48438000
 	patch=0,EE,0036779C,word,4B06521B
 	//Offline button fix
@@ -45003,7 +45003,7 @@ Region = PAL-E
 EETimingHack = 1 // Fixes random hangs.
 [patches = 0DDA2728]
 	author=Refraction & YukiXXL
-	//Flashlight and Nightvision not working propetly fix.
+	// Flashlight and Nightvision not working propetly fix.
 	patch=0,EE,0038E8E8,word,48438000
 	patch=0,EE,0036CC9C,word,4B06521B
 	//Offline button fix.
