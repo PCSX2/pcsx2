@@ -23,6 +23,7 @@
 
 #include "ZipTools/ThreadedZipTools.h"
 #include "Utilities/pxStreams.h"
+#include "SPU2/spu2.h"
 
 #include "ConsoleLogger.h"
 
@@ -240,6 +241,29 @@ public:
 	uint GetDataSize() const			{ return VU1_PROGSIZE; }
 };
 
+class SavestateEntry_SPU2 : public BaseSavestateEntry
+{
+public:
+	virtual ~SavestateEntry_SPU2() = default;
+
+	wxString GetFilename() const		    { return L"SPU2.bin"; }
+	void FreezeIn( pxInputStream& reader ) const  { return SPU2DoFreezeIn(reader); }
+    void FreezeOut( SaveStateBase& writer ) const 
+    { 
+        int size = 0;
+        freezeData fP = { 0, NULL };
+        if(SPU2freeze( FREEZE_SIZE, &fP)==0) {
+            size = fP.size;
+            writer.PrepBlock( size ); 
+            SPU2DoFreezeOut(writer.GetBlockPtr()); 
+            writer.CommitBlock( size ); 
+        }
+        return;
+    }
+	bool IsRequired() const { return true; }
+};
+
+
 
 // [TODO] : Add other components as files to the savestate gzip?
 //  * VU0/VU1 memory banks?  VU0prog, VU1prog, VU0data, VU1data.
@@ -260,6 +284,7 @@ static const std::unique_ptr<BaseSavestateEntry> SavestateEntries[] = {
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_VU1mem),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_VU0prog),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_VU1prog),
+	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_SPU2),
 
 	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry( PluginId_GS )),
 	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry( PluginId_PAD )),

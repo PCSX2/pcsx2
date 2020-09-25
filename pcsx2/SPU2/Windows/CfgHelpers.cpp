@@ -51,11 +51,11 @@ void SysMessage(const wchar_t *fmt, ...)
 
 #include "Utilities/Path.h"
 
-static wxString CfgFile(L"inis/SPU2-X.ini");
+static wxString CfgFile(L"inis/SPU2.ini");
 
 void CfgSetSettingsDir(const char *dir)
 {
-    CfgFile = Path::Combine((dir == NULL) ? wxString(L"inis") : wxString::FromUTF8(dir), L"SPU2-X.ini");
+    CfgFile = Path::Combine((dir == NULL) ? wxString(L"inis") : wxString::FromUTF8(dir), L"SPU2.ini");
 }
 
 

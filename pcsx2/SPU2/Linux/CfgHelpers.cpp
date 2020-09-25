@@ -19,7 +19,7 @@
 #include <wx/fileconf.h>
 
 wxFileConfig *spuConfig = nullptr;
-wxString path(L"~/.pcsx2/inis/spu2-x.ini");
+wxString path(L"~/.config/PCSX2/inis/SPU2.ini");
 bool pathSet = false;
 
 void initIni()
@@ -37,7 +37,7 @@ void setIni(const wchar_t *Section)
 void CfgSetSettingsDir(const char *dir)
 {
     FileLog("CfgSetSettingsDir(%s)\n", dir);
-    path = wxString::FromUTF8(dir) + L"/spu2-x.ini";
+    path = wxString::FromUTF8(dir) + L"/SPU2.ini";
     pathSet = true;
 }
 

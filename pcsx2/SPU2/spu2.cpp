@@ -23,6 +23,8 @@
 #elif defined(_WIN32)
 #include "Windows/Dialogs.h"
 #endif
+#include "R3000A.h"
+#include "Utilities/pxStreams.h"
 
 using namespace Threading;
 
@@ -377,6 +379,8 @@ s32 SPU2open(void *pDsp)
         SPU2close();
         return -1;
     }
+    SPU2setDMABaseAddr((uptr)iopMem->Main);
+	SPU2setClockPtr(&psxRegs.cycle);
     return 0;
 }
 
@@ -611,35 +615,50 @@ s32 SPU2freeze(int mode, freezeData *data)
     return 0;
 }
 
-void SPU2DoFreeze( SaveStateBase& state )
+void SPU2DoFreezeOut( void* dest )
+{
+	ScopedLock lock( mtx_SPU2Status );
+
+	freezeData fP = { 0, (s8*)dest };
+	if (SPU2freeze( FREEZE_SIZE, &fP)!=0) return;
+	if (!fP.size) return;
+
+	Console.Indent().WriteLn( "Saving SPU-2");
+
+	if (SPU2freeze(FREEZE_SAVE, &fP)!=0)
+        throw std::runtime_error(" * SPU-2: Error saving state!\n");
+}
+
+
+void SPU2DoFreezeIn( pxInputStream& infp )
 {
 	ScopedLock lock( mtx_SPU2Status );
 
 	freezeData fP = { 0, NULL };
-	if( !SPU2freeze( FREEZE_SIZE, &fP ) )
+	if (SPU2freeze( FREEZE_SIZE, &fP )!=0)
 		fP.size = 0;
 
-	int fsize = fP.size;
-	state.Freeze( fsize );
+	Console.Indent().WriteLn( "Loading SPU-2");
 
-	Console.Indent().WriteLn( "%s SPU-2", state.IsSaving() ? "Saving" : "Loading");
-
-	fP.size = fsize;
-	if( fP.size == 0 ) return;
-
-	state.PrepBlock( fP.size );
-	fP.data = (s8*)state.GetBlockPtr();
-
-	if( state.IsSaving() )
+	if (!infp.IsOk() || !infp.Length())
 	{
-		if( !SPU2freeze(FREEZE_SAVE, &fP) )
-            throw std::runtime_error(" * SPU-2: Error saving state!\n");
-	}
-	else
-	{
-		if( !SPU2freeze(FREEZE_LOAD, &fP) )
-            throw std::runtime_error(" * SPU-2: Error loading state!\n");
+		// no state data to read, but SPU-2 expects some state data?
+		// Issue a warning to console...
+		if( fP.size != 0 )
+			Console.Indent().Warning( "Warning: No data for SPU-2 found. Status may be unpredictable." );
+
+		return;
+
+		// Note: Size mismatch check could also be done here on loading, but
+		// some plugins may have built-in version support for non-native formats or
+		// older versions of a different size... or could give different sizes depending
+		// on the status of the plugin when loading, so let's ignore it.
 	}
 
-	state.CommitBlock( fP.size );
+	ScopedAlloc<s8> data( fP.size );
+	fP.data = data.GetPtr();
+
+	infp.Read( fP.data, fP.size );
+	if (SPU2freeze(FREEZE_LOAD, &fP)!=0)
+        throw std::runtime_error(" * SPU-2: Error loading state!\n");
 }
