@@ -20,49 +20,49 @@
 
 namespace SoundtouchCfg
 {
-// Timestretch Slider Bounds, Min/Max
-const int SequenceLen_Min = 20;
-const int SequenceLen_Max = 100;
+	// Timestretch Slider Bounds, Min/Max
+	const int SequenceLen_Min = 20;
+	const int SequenceLen_Max = 100;
 
-const int SeekWindow_Min = 10;
-const int SeekWindow_Max = 30;
+	const int SeekWindow_Min = 10;
+	const int SeekWindow_Max = 30;
 
-const int Overlap_Min = 5;
-const int Overlap_Max = 15;
+	const int Overlap_Min = 5;
+	const int Overlap_Max = 15;
 
-int SequenceLenMS = 30;
-int SeekWindowMS = 20;
-int OverlapMS = 10;
+	int SequenceLenMS = 30;
+	int SeekWindowMS = 20;
+	int OverlapMS = 10;
 
-static void ClampValues()
-{
-    Clampify(SequenceLenMS, SequenceLen_Min, SequenceLen_Max);
-    Clampify(SeekWindowMS, SeekWindow_Min, SeekWindow_Max);
-    Clampify(OverlapMS, Overlap_Min, Overlap_Max);
-}
+	static void ClampValues()
+	{
+		Clampify(SequenceLenMS, SequenceLen_Min, SequenceLen_Max);
+		Clampify(SeekWindowMS, SeekWindow_Min, SeekWindow_Max);
+		Clampify(OverlapMS, Overlap_Min, Overlap_Max);
+	}
 
-void ApplySettings(soundtouch::SoundTouch &sndtouch)
-{
-    sndtouch.setSetting(SETTING_SEQUENCE_MS, SequenceLenMS);
-    sndtouch.setSetting(SETTING_SEEKWINDOW_MS, SeekWindowMS);
-    sndtouch.setSetting(SETTING_OVERLAP_MS, OverlapMS);
-}
+	void ApplySettings(soundtouch::SoundTouch& sndtouch)
+	{
+		sndtouch.setSetting(SETTING_SEQUENCE_MS, SequenceLenMS);
+		sndtouch.setSetting(SETTING_SEEKWINDOW_MS, SeekWindowMS);
+		sndtouch.setSetting(SETTING_OVERLAP_MS, OverlapMS);
+	}
 
-void ReadSettings()
-{
-    SequenceLenMS = CfgReadInt(L"SOUNDTOUCH", L"SequenceLengthMS", 30);
-    SeekWindowMS = CfgReadInt(L"SOUNDTOUCH", L"SeekWindowMS", 20);
-    OverlapMS = CfgReadInt(L"SOUNDTOUCH", L"OverlapMS", 10);
+	void ReadSettings()
+	{
+		SequenceLenMS = CfgReadInt(L"SOUNDTOUCH", L"SequenceLengthMS", 30);
+		SeekWindowMS = CfgReadInt(L"SOUNDTOUCH", L"SeekWindowMS", 20);
+		OverlapMS = CfgReadInt(L"SOUNDTOUCH", L"OverlapMS", 10);
 
-    ClampValues();
-    WriteSettings();
-}
+		ClampValues();
+		WriteSettings();
+	}
 
-void WriteSettings()
-{
-    CfgWriteInt(L"SOUNDTOUCH", L"SequenceLengthMS", SequenceLenMS);
-    CfgWriteInt(L"SOUNDTOUCH", L"SeekWindowMS", SeekWindowMS);
-    CfgWriteInt(L"SOUNDTOUCH", L"OverlapMS", OverlapMS);
-}
+	void WriteSettings()
+	{
+		CfgWriteInt(L"SOUNDTOUCH", L"SequenceLengthMS", SequenceLenMS);
+		CfgWriteInt(L"SOUNDTOUCH", L"SeekWindowMS", SeekWindowMS);
+		CfgWriteInt(L"SOUNDTOUCH", L"OverlapMS", OverlapMS);
+	}
 
 } // namespace SoundtouchCfg

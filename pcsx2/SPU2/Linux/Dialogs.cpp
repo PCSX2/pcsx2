@@ -21,32 +21,32 @@
 #if defined(__unix__)
 #include <wx/wx.h>
 
-void SysMessage(const char *fmt, ...)
+void SysMessage(const char* fmt, ...)
 {
-    va_list list;
-    char msg[512];
+	va_list list;
+	char msg[512];
 
-    va_start(list, fmt);
-    vsprintf(msg, fmt, list);
-    va_end(list);
+	va_start(list, fmt);
+	vsprintf(msg, fmt, list);
+	va_end(list);
 
-    if (msg[strlen(msg) - 1] == '\n')
-        msg[strlen(msg) - 1] = 0;
+	if (msg[strlen(msg) - 1] == '\n')
+		msg[strlen(msg) - 1] = 0;
 
-    wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
-    dialog.ShowModal();
+	wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
+	dialog.ShowModal();
 }
 
-void SysMessage(const wchar_t *fmt, ...)
+void SysMessage(const wchar_t* fmt, ...)
 {
-    va_list list;
-    va_start(list, fmt);
-    wxString msg;
-    msg.PrintfV(fmt, list);
-    va_end(list);
+	va_list list;
+	va_start(list, fmt);
+	wxString msg;
+	msg.PrintfV(fmt, list);
+	va_end(list);
 
-    wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
-    dialog.ShowModal();
+	wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
+	dialog.ShowModal();
 }
 #endif
 
@@ -54,7 +54,7 @@ void DspUpdate()
 {
 }
 
-s32 DspLoadLibrary(wchar_t *fileName, int modnum)
+s32 DspLoadLibrary(wchar_t* fileName, int modnum)
 {
-    return 0;
+	return 0;
 }

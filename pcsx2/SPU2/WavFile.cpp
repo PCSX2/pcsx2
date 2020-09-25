@@ -37,109 +37,113 @@ static const char dataStr[] = "data";
 // Class WavOutFile
 //
 
-WavOutFile::WavOutFile(const char *fileName, int sampleRate, int bits, int channels)
+WavOutFile::WavOutFile(const char* fileName, int sampleRate, int bits, int channels)
 {
-    bytesWritten = 0;
-    fptr = fopen(fileName, "wb");
-    if (fptr == NULL) {
-        string msg = "Error : Unable to open file \"";
-        msg += fileName;
-        msg += "\" for writing.";
-        //pmsg = msg.c_str;
-        throw runtime_error(msg);
-    }
+	bytesWritten = 0;
+	fptr = fopen(fileName, "wb");
+	if (fptr == NULL)
+	{
+		string msg = "Error : Unable to open file \"";
+		msg += fileName;
+		msg += "\" for writing.";
+		//pmsg = msg.c_str;
+		throw runtime_error(msg);
+	}
 
-    fillInHeader(sampleRate, bits, channels);
-    writeHeader();
+	fillInHeader(sampleRate, bits, channels);
+	writeHeader();
 }
 
 
 WavOutFile::~WavOutFile()
 {
-    if (fptr) {
-        finishHeader();
-        fclose(fptr);
-    }
+	if (fptr)
+	{
+		finishHeader();
+		fclose(fptr);
+	}
 }
 
 
 
 void WavOutFile::fillInHeader(uint sampleRate, uint bits, uint channels)
 {
-    // fill in the 'riff' part..
+	// fill in the 'riff' part..
 
-    // copy string 'RIFF' to riff_char
-    memcpy(&(header.riff.riff_char), riffStr, 4);
-    // package_len unknown so far
-    header.riff.package_len = 0;
-    // copy string 'WAVE' to wave
-    memcpy(&(header.riff.wave), waveStr, 4);
+	// copy string 'RIFF' to riff_char
+	memcpy(&(header.riff.riff_char), riffStr, 4);
+	// package_len unknown so far
+	header.riff.package_len = 0;
+	// copy string 'WAVE' to wave
+	memcpy(&(header.riff.wave), waveStr, 4);
 
 
-    // fill in the 'format' part..
+	// fill in the 'format' part..
 
-    // copy string 'fmt ' to fmt
-    memcpy(&(header.format.fmt), fmtStr, 4);
+	// copy string 'fmt ' to fmt
+	memcpy(&(header.format.fmt), fmtStr, 4);
 
-    header.format.format_len = 0x10;
-    header.format.fixed = 1;
-    header.format.channel_number = (short)channels;
-    header.format.sample_rate = (int)sampleRate;
-    header.format.bits_per_sample = (short)bits;
-    header.format.byte_per_sample = (short)(bits * channels / 8);
-    header.format.byte_rate = header.format.byte_per_sample * (int)sampleRate;
-    header.format.sample_rate = (int)sampleRate;
+	header.format.format_len = 0x10;
+	header.format.fixed = 1;
+	header.format.channel_number = (short)channels;
+	header.format.sample_rate = (int)sampleRate;
+	header.format.bits_per_sample = (short)bits;
+	header.format.byte_per_sample = (short)(bits * channels / 8);
+	header.format.byte_rate = header.format.byte_per_sample * (int)sampleRate;
+	header.format.sample_rate = (int)sampleRate;
 
-    // fill in the 'data' part..
+	// fill in the 'data' part..
 
-    // copy string 'data' to data_field
-    memcpy(&(header.data.data_field), dataStr, 4);
-    // data_len unknown so far
-    header.data.data_len = 0;
+	// copy string 'data' to data_field
+	memcpy(&(header.data.data_field), dataStr, 4);
+	// data_len unknown so far
+	header.data.data_len = 0;
 }
 
 
 void WavOutFile::finishHeader()
 {
-    // supplement the file length into the header structure
-    header.riff.package_len = bytesWritten + 36;
-    header.data.data_len = bytesWritten;
+	// supplement the file length into the header structure
+	header.riff.package_len = bytesWritten + 36;
+	header.data.data_len = bytesWritten;
 
-    writeHeader();
+	writeHeader();
 }
 
 
 
 void WavOutFile::writeHeader()
 {
-    int res;
+	int res;
 
-    // write the supplemented header in the beginning of the file
-    fseek(fptr, 0, SEEK_SET);
-    res = fwrite(&header, sizeof(header), 1, fptr);
-    if (res != 1) {
-        throw runtime_error("Error while writing to a wav file.");
-    }
+	// write the supplemented header in the beginning of the file
+	fseek(fptr, 0, SEEK_SET);
+	res = fwrite(&header, sizeof(header), 1, fptr);
+	if (res != 1)
+	{
+		throw runtime_error("Error while writing to a wav file.");
+	}
 
-    // jump back to the end of the file
-    fseek(fptr, 0, SEEK_END);
+	// jump back to the end of the file
+	fseek(fptr, 0, SEEK_END);
 }
 
 
-void WavOutFile::write(const short *buffer, int numElems)
+void WavOutFile::write(const short* buffer, int numElems)
 {
-    int res;
+	int res;
 
-    // 16bit format & 16 bit samples
+	// 16bit format & 16 bit samples
 
-    assert(header.format.bits_per_sample == 16);
-    if (numElems < 1)
-        return; // nothing to do
+	assert(header.format.bits_per_sample == 16);
+	if (numElems < 1)
+		return; // nothing to do
 
-    res = fwrite(buffer, 2, numElems, fptr);
+	res = fwrite(buffer, 2, numElems, fptr);
 
-    if (res != numElems) {
-        throw runtime_error("Error while writing to a wav file.");
-    }
-    bytesWritten += 2 * numElems;
+	if (res != numElems)
+	{
+		throw runtime_error("Error while writing to a wav file.");
+	}
+	bytesWritten += 2 * numElems;
 }

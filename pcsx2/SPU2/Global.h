@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#pragma once 
+#pragma once
 
 #define NOMINMAX
 
@@ -27,7 +27,7 @@ struct V_Core;
 
 namespace soundtouch
 {
-class SoundTouch;
+	class SoundTouch;
 }
 
 #include <assert.h>
@@ -44,9 +44,9 @@ class SoundTouch;
 
 namespace VersionInfo
 {
-static const u8 Release = 2;
-static const u8 Revision = 0; // increase that with each version
-}
+	static const u8 Release = 2;
+	static const u8 Revision = 0; // increase that with each version
+} // namespace VersionInfo
 
 //////////////////////////////////////////////////////////////////////////
 // Override Win32 min/max macros with the STL's type safe and macro
@@ -56,22 +56,22 @@ static const u8 Revision = 0; // increase that with each version
 #undef max
 
 template <typename T>
-static __forceinline void Clampify(T &src, T min, T max)
+static __forceinline void Clampify(T& src, T min, T max)
 {
-    src = std::min(std::max(src, min), max);
+	src = std::min(std::max(src, min), max);
 }
 
 template <typename T>
 static __forceinline T GetClamped(T src, T min, T max)
 {
-    return std::min(std::max(src, min), max);
+	return std::min(std::max(src, min), max);
 }
 
 #ifdef __WXMAC__
 #else
-extern void SysMessage(const char *fmt, ...);
+extern void SysMessage(const char* fmt, ...);
 #endif
-extern void SysMessage(const wchar_t *fmt, ...);
+extern void SysMessage(const wchar_t* fmt, ...);
 
 //////////////////////////////////////////////////////////////
 // Dev / Debug conditionals --
@@ -100,4 +100,3 @@ extern void SysMessage(const wchar_t *fmt, ...);
 #include "Config.h"
 #include "Debug.h"
 #include "SndOut.h"
-
