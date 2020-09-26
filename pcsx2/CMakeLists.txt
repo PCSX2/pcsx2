@@ -690,10 +690,10 @@ set(pcsx2FinalLibs
 )
 
 if(BUILTIN_GS)
-    set(pcsx2FinalLibs "${pcsx2FinalLibs} GSdx")
+    set(pcsx2FinalLibs "${pcsx2FinalLibs} GSdx-1.2.0")
 endif()
 if(BUILTIN_PAD)
-    set(pcsx2FinalLibs "${pcsx2FinalLibs} onepad-1.2.0")
+    set(pcsx2FinalLibs "${pcsx2FinalLibs} onepad-2.0.0")
 endif()
 if(BUILTIN_SPU2)
     set(pcsx2FinalLibs "${pcsx2FinalLibs} spu2x-2.0.0")

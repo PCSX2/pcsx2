@@ -39,7 +39,7 @@ set(onepadGuiResources
     )
 
 # plugin name
-set(Output onepad)
+set(Output onepad-2.0.0)
 
 set(onepadFinalFlags
     -fvisibility=hidden

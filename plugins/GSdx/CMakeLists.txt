@@ -5,9 +5,8 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif()
 
-
 # plugin name (no version number to ease future version bump and bisect)
-set(Output GSdx)
+set(Output GSdx-1.2.0)
 
 set(CommonFlags
     -fno-operator-names # because Xbyak uses and()/xor()/or()/not() function
@@ -42,7 +41,6 @@ endif()
 if(XDG_STD)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DXDG_STD)
 endif()
-
 
 set(GSdxSources
     GS.cpp
