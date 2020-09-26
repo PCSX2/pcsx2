@@ -1523,6 +1523,9 @@
     <ResourceCompile Include="..\..\..\3rdparty\wxwidgets3.0\include\wx\msw\wx.rc">
       <Filter>AppHost\Resources</Filter>
     </ResourceCompile>
+    <ResourceCompile Include="..\..\SPU2\Windows\SPU2.rc">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="..\..\rdebug\deci2.h">
