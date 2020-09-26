@@ -42,7 +42,7 @@ in SHADER
 } PSin;
 
 // Give a different name so I remember there is a special case!
-#if defined(ps_main1) || defined(ps_main10)
+#if defined(ps_convert_rgba8_16bits) || defined(ps_convert_float32_32bits)
 layout(location = 0) out uint SV_Target1;
 #else
 layout(location = 0) out vec4 SV_Target0;
@@ -65,15 +65,15 @@ vec4 ps_crt(uint i)
     return sample_c() * clamp((mask[i] + 0.5f), 0.0f, 1.0f);
 }
 
-#ifdef ps_main0
-void ps_main0()
+#ifdef ps_copy
+void ps_copy()
 {
     SV_Target0 = sample_c();
 }
 #endif
 
-#ifdef ps_main1
-void ps_main1()
+#ifdef ps_convert_rgba8_16bits
+void ps_convert_rgba8_16bits()
 {
     // Input Color is RGBA8
 
@@ -117,16 +117,16 @@ void ps_main1()
 }
 #endif
 
-#ifdef ps_main10
-void ps_main10()
+#ifdef ps_convert_float32_32bits
+void ps_convert_float32_32bits()
 {
     // Convert a GL_FLOAT32 depth texture into a 32 bits UINT texture
     SV_Target1 = uint(exp2(32.0f) * sample_c().r);
 }
 #endif
 
-#ifdef ps_main11
-void ps_main11()
+#ifdef ps_convert_float32_rgba8
+void ps_convert_float32_rgba8()
 {
     // Convert a GL_FLOAT32 depth texture into a RGBA color texture
     const vec4 bitSh = vec4(exp2(24.0f), exp2(16.0f), exp2(8.0f), exp2(0.0f));
@@ -138,8 +138,8 @@ void ps_main11()
 }
 #endif
 
-#ifdef ps_main12
-void ps_main12()
+#ifdef ps_convert_float16_rgb5a1
+void ps_convert_float16_rgb5a1()
 {
     // Convert a GL_FLOAT32 (only 16 lsb) depth into a RGB5A1 color texture
     const vec4 bitSh = vec4(exp2(32.0f), exp2(27.0f), exp2(22.0f), exp2(17.0f));
@@ -150,8 +150,8 @@ void ps_main12()
 }
 #endif
 
-#ifdef ps_main13
-void ps_main13()
+#ifdef ps_convert_rgba8_float32
+void ps_convert_rgba8_float32()
 {
     // Convert a RRGBA texture into a float depth texture
     // FIXME: I'm afraid of the accuracy
@@ -160,8 +160,8 @@ void ps_main13()
 }
 #endif
 
-#ifdef ps_main14
-void ps_main14()
+#ifdef ps_convert_rgba8_float24
+void ps_convert_rgba8_float24()
 {
     // Same as above but without the alpha channel (24 bits Z)
 
@@ -172,8 +172,8 @@ void ps_main14()
 }
 #endif
 
-#ifdef ps_main15
-void ps_main15()
+#ifdef ps_convert_rgba8_float16
+void ps_convert_rgba8_float16()
 {
     // Same as above but without the A/B channels (16 bits Z)
 
@@ -184,8 +184,8 @@ void ps_main15()
 }
 #endif
 
-#ifdef ps_main16
-void ps_main16()
+#ifdef ps_convert_rgb5a1_float16
+void ps_convert_rgb5a1_float16()
 {
     // Convert a RGB5A1 (saved as RGBA8) color to a 16 bit Z
     // FIXME: I'm afraid of the accuracy
@@ -196,8 +196,8 @@ void ps_main16()
 }
 #endif
 
-#ifdef ps_main17
-void ps_main17()
+#ifdef ps_convert_rgba_8i
+void ps_convert_rgba_8i()
 {
 
     // Potential speed optimization. There is a high probability that
@@ -278,15 +278,15 @@ void ps_main17()
 }
 #endif
 
-#ifdef ps_main19
-void ps_main19()
+#ifdef ps_osd
+void ps_osd()
 {
     SV_Target0 = PSin.c * vec4(1.0, 1.0, 1.0, sample_c().r);
 }
 #endif
 
-#ifdef ps_main7
-void ps_main7()
+#ifdef ps_filter_transparency
+void ps_filter_transparency()
 {
     vec4 c = sample_c();
 
@@ -296,7 +296,7 @@ void ps_main7()
 }
 #endif
 
-#ifdef ps_main5
+#ifdef ps_filter_scanlines
 vec4 ps_scanlines(uint i)
 {
     vec4 mask[2] =
@@ -308,7 +308,7 @@ vec4 ps_scanlines(uint i)
     return sample_c() * clamp((mask[i] + 0.5f), 0.0f, 1.0f);
 }
 
-void ps_main5() // scanlines
+void ps_filter_scanlines() // scanlines
 {
     highp uvec4 p = uvec4(gl_FragCoord);
 
@@ -318,8 +318,8 @@ void ps_main5() // scanlines
 }
 #endif
 
-#ifdef ps_main6
-void ps_main6() // diagonal
+#ifdef ps_filter_diagonal
+void ps_filter_diagonal() // diagonal
 {
     highp uvec4 p = uvec4(gl_FragCoord);
 
@@ -329,8 +329,8 @@ void ps_main6() // diagonal
 }
 #endif
 
-#ifdef ps_main8
-void ps_main8() // triangular
+#ifdef ps_filter_triangular
+void ps_filter_triangular() // triangular
 {
     highp uvec4 p = uvec4(gl_FragCoord);
 
@@ -340,8 +340,8 @@ void ps_main8() // triangular
 }
 #endif
 
-#ifdef ps_main9
-void ps_main9()
+#ifdef ps_filter_complex
+void ps_filter_complex()
 {
 
     const float PI = 3.14159265359f;
@@ -362,8 +362,8 @@ void ps_main9()
 
 // Used for DATE (stencil)
 // DATM == 1
-#ifdef ps_main2
-void ps_main2()
+#ifdef ps_datm1
+void ps_datm1()
 {
     if(sample_c().a < (127.5f / 255.0f)) // >= 0x80 pass
         discard;
@@ -372,23 +372,23 @@ void ps_main2()
 
 // Used for DATE (stencil)
 // DATM == 0
-#ifdef ps_main3
-void ps_main3()
+#ifdef ps_datm0
+void ps_datm0()
 {
     if((127.5f / 255.0f) < sample_c().a) // < 0x80 pass (== 0x80 should not pass)
         discard;
 }
 #endif
 
-#ifdef ps_main4
-void ps_main4()
+#ifdef ps_mod256
+void ps_mod256()
 {
     SV_Target0 = mod(round(sample_c() * 255.0f), 256.0f) / 255.0f;
 }
 #endif
 
-#ifdef ps_main18
-void ps_main18()
+#ifdef ps_yuv
+void ps_yuv()
 {
     vec4 i = sample_c();
     vec4 o;

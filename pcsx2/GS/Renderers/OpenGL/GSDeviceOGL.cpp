@@ -450,8 +450,9 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 		m_convert.vs = vs;
 		for (size_t i = 0; i < std::size(m_convert.ps); i++)
 		{
-			ps = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
-			std::string pretty_name = "Convert pipe " + std::to_string(i);
+			const char* name = shaderName(static_cast<ShaderConvert>(i));
+			ps = m_shader->Compile("convert.glsl", name, GL_FRAGMENT_SHADER, shader.data());
+			std::string pretty_name = std::string("Convert pipe ") + name;
 			m_convert.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
 
