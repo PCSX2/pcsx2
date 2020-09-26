@@ -14,6 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "AppConfig.h"
 #include "../Global.h"
 #include "Dialogs.h"
 
@@ -50,10 +51,21 @@ void SysMessage(const wchar_t* fmt, ...)
 
 #include "Utilities/Path.h"
 
-static wxString CfgFile(L"inis/SPU2.ini");
+wxString CfgFile(L"SPU2.ini");
+bool pathSet = false;
+
+void initIni()
+{
+	if (!pathSet)
+	{
+		CfgFile = GetSettingsFolder().Combine(CfgFile).GetFullPath();
+		pathSet = true;
+	}
+}
 
 void CfgSetSettingsDir(const char* dir)
 {
+	initIni();
 	CfgFile = Path::Combine((dir == nullptr) ? wxString(L"inis") : wxString::FromUTF8(dir), L"SPU2.ini");
 }
 
@@ -75,12 +87,14 @@ void CfgSetSettingsDir(const char* dir)
 
 void CfgWriteBool(const TCHAR* Section, const TCHAR* Name, bool Value)
 {
+	initIni();
 	const TCHAR* Data = Value ? L"TRUE" : L"FALSE";
 	WritePrivateProfileString(Section, Name, Data, CfgFile);
 }
 
 void CfgWriteInt(const TCHAR* Section, const TCHAR* Name, int Value)
 {
+	initIni();
 	TCHAR Data[32];
 	_itow(Value, Data, 10);
 	WritePrivateProfileString(Section, Name, Data, CfgFile);
@@ -88,6 +102,7 @@ void CfgWriteInt(const TCHAR* Section, const TCHAR* Name, int Value)
 
 void CfgWriteFloat(const TCHAR* Section, const TCHAR* Name, float Value)
 {
+	initIni();
 	TCHAR Data[32];
 	_swprintf(Data, L"%f", Value);
 	WritePrivateProfileString(Section, Name, Data, CfgFile);
@@ -100,6 +115,7 @@ WritePrivateProfileString( Section, Name, Data, CfgFile );
 
 void CfgWriteStr(const TCHAR* Section, const TCHAR* Name, const wxString& Data)
 {
+	initIni();
 	WritePrivateProfileString(Section, Name, Data, CfgFile);
 }
 
@@ -107,6 +123,7 @@ void CfgWriteStr(const TCHAR* Section, const TCHAR* Name, const wxString& Data)
 
 bool CfgReadBool(const TCHAR* Section, const TCHAR* Name, bool Default)
 {
+	initIni();
 	TCHAR Data[255] = {0};
 
 	GetPrivateProfileString(Section, Name, L"", Data, 255, CfgFile);
@@ -133,6 +150,7 @@ bool CfgReadBool(const TCHAR* Section, const TCHAR* Name, bool Default)
 
 int CfgReadInt(const TCHAR* Section, const TCHAR* Name, int Default)
 {
+	initIni();
 	TCHAR Data[255] = {0};
 	GetPrivateProfileString(Section, Name, L"", Data, 255, CfgFile);
 	Data[254] = 0;
@@ -148,6 +166,7 @@ int CfgReadInt(const TCHAR* Section, const TCHAR* Name, int Default)
 
 float CfgReadFloat(const TCHAR* Section, const TCHAR* Name, float Default)
 {
+	initIni();
 	TCHAR Data[255] = {0};
 	GetPrivateProfileString(Section, Name, L"", Data, 255, CfgFile);
 	Data[254] = 0;
@@ -163,6 +182,7 @@ float CfgReadFloat(const TCHAR* Section, const TCHAR* Name, float Default)
 
 void CfgReadStr(const TCHAR* Section, const TCHAR* Name, TCHAR* Data, int DataSize, const TCHAR* Default)
 {
+	initIni();
 	GetPrivateProfileString(Section, Name, L"", Data, DataSize, CfgFile);
 
 	if (wcslen(Data) == 0)
@@ -174,6 +194,7 @@ void CfgReadStr(const TCHAR* Section, const TCHAR* Name, TCHAR* Data, int DataSi
 
 void CfgReadStr(const TCHAR* Section, const TCHAR* Name, wxString& Data, const TCHAR* Default)
 {
+	initIni();
 	wchar_t workspace[512];
 	GetPrivateProfileString(Section, Name, L"", workspace, ArraySize(workspace), CfgFile);
 
@@ -190,6 +211,7 @@ void CfgReadStr(const TCHAR* Section, const TCHAR* Name, wxString& Data, const T
 // Returns FALSE if the value isn't found.
 bool CfgFindName(const TCHAR* Section, const TCHAR* Name)
 {
+	initIni();
 	// Only load 24 characters.  No need to load more.
 	TCHAR Data[24] = {0};
 	GetPrivateProfileString(Section, Name, L"", Data, 24, CfgFile);
