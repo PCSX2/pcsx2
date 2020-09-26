@@ -236,6 +236,8 @@ void CALLBACK PADupdate(int pad);
 // before the pad saw them. So the gui needs to send them back to the pad.
 void CALLBACK PADWriteEvent(keyEvent &evt);
 
+void CALLBACK PADSetupInputRecording(bool start, char padsRequested);
+
 // extended funcs
 
 void CALLBACK PADgsDriverInfo(GSdriverInfo *info);
@@ -374,6 +376,7 @@ typedef void(CALLBACK *_PADgsDriverInfo)(GSdriverInfo *info);
 typedef s32(CALLBACK *_PADsetSlot)(u8 port, u8 slot);
 typedef s32(CALLBACK *_PADqueryMtap)(u8 port);
 typedef void(CALLBACK *_PADWriteEvent)(keyEvent &evt);
+typedef void(CALLBACK *_PADSetupInputRecording)(bool start, char padsRequested);
 
 // DEV9
 // NOTE: The read/write functions CANNOT use XMM/MMX regs
@@ -453,6 +456,7 @@ extern _PADgsDriverInfo PADgsDriverInfo;
 extern _PADsetSlot PADsetSlot;
 extern _PADqueryMtap PADqueryMtap;
 extern _PADWriteEvent PADWriteEvent;
+extern _PADSetupInputRecording PADSetupInputRecording;
 #endif
 
 // DEV9

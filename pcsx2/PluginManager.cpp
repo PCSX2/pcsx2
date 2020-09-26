@@ -259,16 +259,17 @@ static void CALLBACK GS_Legacy_GSreadFIFO2(u64* pMem, int qwc) {
 
 // PAD
 #ifndef BUILTIN_PAD_PLUGIN
-_PADinit           PADinit;
-_PADopen           PADopen;
-_PADstartPoll      PADstartPoll;
-_PADpoll           PADpoll;
-_PADquery          PADquery;
-_PADupdate         PADupdate;
-_PADkeyEvent       PADkeyEvent;
-_PADsetSlot        PADsetSlot;
-_PADqueryMtap      PADqueryMtap;
-_PADWriteEvent	   PADWriteEvent;
+_PADinit                PADinit;
+_PADopen                PADopen;
+_PADstartPoll           PADstartPoll;
+_PADpoll                PADpoll;
+_PADquery               PADquery;
+_PADupdate              PADupdate;
+_PADkeyEvent            PADkeyEvent;
+_PADsetSlot             PADsetSlot;
+_PADqueryMtap           PADqueryMtap;
+_PADWriteEvent          PADWriteEvent;
+_PADSetupInputRecording PADSetupInputRecording;
 #endif
 
 static void PAD_update( u32 padslot ) { }
@@ -405,8 +406,11 @@ static const LegacyApi_ReqMethod s_MethMessReq_PAD[] =
 
 static const LegacyApi_OptMethod s_MethMessOpt_PAD[] =
 {
-	{	"PADupdate",		(vMeth**)&PADupdate },
-	{   "PADWriteEvent",	(vMeth**)&PADWriteEvent },
+	{	"PADupdate",				(vMeth**)&PADupdate },
+	{   "PADWriteEvent",			(vMeth**)&PADWriteEvent },
+#ifndef DISABLE_RECORDING
+	{	"PADSetupInputRecording",	(vMeth**)&PADSetupInputRecording },
+#endif
 	{ NULL },
 };
 

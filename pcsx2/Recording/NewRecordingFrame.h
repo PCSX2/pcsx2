@@ -24,7 +24,9 @@ enum MenuIds_New_Recording_Frame
 {
 	MenuIds_New_Recording_Frame_File = 0,
 	MenuIds_New_Recording_Frame_Author,
-	MenuIds_New_Recording_Frame_From
+	MenuIds_New_Recording_Frame_From,
+	MenuIds_New_Recording_Frame_Port_0,
+	MenuIds_New_Recording_Frame_Port_1
 };
 
 // The Dialog to pop-up when recording a new movie
@@ -36,22 +38,26 @@ public:
 
 	wxString GetFile() const;
 	wxString GetAuthor() const;
-	int GetFrom() const;
+	char GetStartType() const;
+	wxByte GetPads() const noexcept;
 
 protected:
 	void OnFileDirChange(wxFileDirPickerEvent& event);
 	void OnFileChanged(wxFileDirPickerEvent& event);
+	void OnBoxCheck(wxCommandEvent& event);
 	void EnableOkBox();
 
-private:
 	wxStaticText* m_fileLabel;
 	wxFilePickerCtrl* m_filePicker;
 	bool m_fileBrowsed;
 	wxStaticText* m_authorLabel;
 	wxTextCtrl* m_authorInput;
+	wxStaticText* m_ControllerLabel;
+	wxCheckListBox* m_ControllerCheck[2];
 	wxStaticText* m_fromLabel;
 	wxChoice* m_fromChoice;
 	wxButton* m_startRecording;
 	wxButton* m_cancelRecording;
+	wxByte pads = 0;
 };
 #endif

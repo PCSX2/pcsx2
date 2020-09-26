@@ -24,100 +24,149 @@
 #include "InputRecordingFile.h"
 #include "Utilities/InputRecordingLogger.h"
 
-void InputRecordingFileHeader::Init()
+void InputRecordingFile::InputRecordingFileHeader::Init() noexcept
 {
-	memset(author, 0, ArraySize(author));
-	memset(gameName, 0, ArraySize(gameName));
+	m_fileVersion = 2;
+	m_totalFrames = 0;
+	m_redoCount = 0;
 }
 
-void InputRecordingFileHeader::SetEmulatorVersion()
+bool InputRecordingFile::InputRecordingFileHeader::ReadHeader(FILE* m_recordingFile)
 {
-	wxString emuVersion = wxString::Format("%s-%d.%d.%d", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo);
-	int max = ArraySize(emu) - 1;
-	strncpy(emu, emuVersion.c_str(), max);
-	emu[max] = 0;
+	return (fread(this, s_seekpointTotalFrames, 1, m_recordingFile) == 1 && fread(&m_totalFrames, 9, 1, m_recordingFile) == 1); // Reads in totalFrames, redoCount, & startType
 }
 
-void InputRecordingFileHeader::SetAuthor(wxString _author)
+void InputRecordingFile::InputRecordingFileHeader::SetEmulatorVersion()
 {
-	int max = ArraySize(author) - 1;
-	strncpy(author, _author.c_str(), max);
-	author[max] = 0;
+	const wxString emulatorVersion = wxString::Format("%s-%d.%d.%d", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo);
+	m_emulatorVersion.fill(0);
+	strncpy(m_emulatorVersion.data(), emulatorVersion.c_str(), m_emulatorVersion.size() - 1);
 }
 
-void InputRecordingFileHeader::SetGameName(wxString _gameName)
+void InputRecordingFile::InputRecordingFileHeader::SetAuthor(wxString author)
 {
-	int max = ArraySize(gameName) - 1;
-	strncpy(gameName, _gameName.c_str(), max);
-	gameName[max] = 0;
+	m_author.fill(0);
+	strncpy(m_author.data(), author.c_str(), m_author.size() - 1);
+}
+
+void InputRecordingFile::InputRecordingFileHeader::SetGameName(wxString gameName)
+{
+	m_gameName.fill(0);
+	strncpy(m_gameName.data(), gameName.c_str(), m_gameName.size() - 1);
+}
+
+u8 InputRecordingFile::GetFileVersion() const noexcept
+{
+	return m_header.m_fileVersion;
+}
+
+const char* InputRecordingFile::GetEmulatorVersion() const noexcept
+{
+	return m_header.m_emulatorVersion.data();
+}
+
+const char* InputRecordingFile::GetAuthor() const noexcept
+{
+	return m_header.m_author.data();
+}
+
+const char* InputRecordingFile::GetGameName() const noexcept
+{
+	return m_header.m_gameName.data();
+}
+
+long InputRecordingFile::GetTotalFrames() const noexcept
+{
+	return m_header.m_totalFrames;
+}
+
+unsigned long InputRecordingFile::GetRedoCount() const noexcept
+{
+	return m_header.m_redoCount;
+}
+
+InputRecordingStartType InputRecordingFile::GetStartType() const noexcept
+{
+	return m_header.m_startType;
+}
+
+bool InputRecordingFile::FromSavestate() const noexcept
+{
+	return m_header.m_startType == InputRecordingStartType::Savestate;
+}
+
+wxByte InputRecordingFile::GetPads() const noexcept
+{
+	return m_header.m_pads;
 }
 
 bool InputRecordingFile::Close()
 {
-	if (recordingFile == nullptr)
-	{
+	if (m_recordingFile == nullptr)
 		return false;
-	}
-	fclose(recordingFile);
-	recordingFile = nullptr;
-	filename = "";
+	fclose(m_recordingFile);
+	m_recordingFile = nullptr;
+	m_filename = "";
+	m_padCount = 0;
 	return true;
 }
 
-const wxString &InputRecordingFile::GetFilename()
+const wxString& InputRecordingFile::GetFilename() const noexcept
 {
-	return filename;
+	return m_filename;
 }
 
-InputRecordingFileHeader &InputRecordingFile::GetHeader()
+InputRecordingFile::InputRecordingFileHeader& InputRecordingFile::GetHeader() noexcept
 {
-	return header;
+	return m_header;
 }
 
-long &InputRecordingFile::GetTotalFrames()
+int InputRecordingFile::GetPadCount() const noexcept
 {
-	return totalFrames;
+	return m_padCount;
 }
 
-unsigned long &InputRecordingFile::GetUndoCount()
+bool InputRecordingFile::IsPortUsed(const int port) const noexcept
 {
-	return undoCount;
+	return m_header.m_pads & (15 << 4 * port);
 }
 
-bool InputRecordingFile::FromSaveState()
+bool InputRecordingFile::IsMultitapUsed(const int port) const noexcept
 {
-	return savestate.fromSavestate;
+	return m_header.m_pads & (14 << 4 * port);
 }
 
-void InputRecordingFile::IncrementUndoCount()
+bool InputRecordingFile::IsSlotUsed(const int port, const int slot) const noexcept
 {
-	undoCount++;
-	if (recordingFile == nullptr)
+	return m_header.m_pads & (1 << (4 * port + slot));
+}
+
+void InputRecordingFile::IncrementRedoCount()
+{
+	if (m_recordingFile != nullptr)
 	{
-		return;
+		m_header.m_redoCount++;
+		fseek(m_recordingFile, InputRecordingFileHeader::s_seekpointRedoCount, SEEK_SET);
+		fwrite(&m_header.m_redoCount, 4, 1, m_recordingFile);
 	}
-	fseek(recordingFile, seekpointUndoCount, SEEK_SET);
-	fwrite(&undoCount, 4, 1, recordingFile);
 }
 
-bool InputRecordingFile::open(const wxString path, bool newRecording)
+bool InputRecordingFile::open(const wxString path, const bool newRecording)
 {
 	if (newRecording)
 	{
-		if ((recordingFile = wxFopen(path, L"wb+")) != nullptr)
+		if ((m_recordingFile = wxFopen(path, L"wb+")) != nullptr)
 		{
-			filename = path;
-			totalFrames = 0;
-			undoCount = 0;
-			header.Init();
+			m_filename = path;
+			m_header.Init();
 			return true;
 		}
 	}
-	else if ((recordingFile = wxFopen(path, L"rb+")) != nullptr)
+	else if ((m_recordingFile = wxFopen(path, L"rb+")) != nullptr)
 	{
 		if (verifyRecordingFileHeader())
 		{
-			filename = path;
+			m_filename = path;
 			return true;
 		}
 		Close();
@@ -128,11 +177,17 @@ bool InputRecordingFile::open(const wxString path, bool newRecording)
 	return false;
 }
 
-bool InputRecordingFile::OpenNew(const wxString path, bool fromSavestate)
+bool InputRecordingFile::OpenNew(const wxString path, const char startType, const wxByte slots)
 {
 	if (!open(path, true))
 		return false;
-	savestate.fromSavestate = fromSavestate;
+	m_header.m_startType = static_cast<InputRecordingStartType>(startType);
+	m_header.m_pads = slots;
+	for (u8 pad = 0; pad < 8; pad++)
+		if (m_header.m_pads & (1 << pad))
+			m_padCount++;
+	m_recordingBlockSize = s_controllerInputBytes * m_padCount;
+	m_seekpointInputData = InputRecordingFileHeader::s_seekpointPads + 1;
 	return true;
 }
 
@@ -141,102 +196,93 @@ bool InputRecordingFile::OpenExisting(const wxString path)
 	return open(path, false);
 }
 
-bool InputRecordingFile::ReadKeyBuffer(u8 &result, const uint &frame, const uint port, const uint bufIndex)
-{
-	if (recordingFile == nullptr)
-	{
-		return false;
-	}
-
-	long seek = getRecordingBlockSeekPoint(frame) + controllerInputBytes * port + bufIndex;
-	if (fseek(recordingFile, seek, SEEK_SET) != 0 || fread(&result, 1, 1, recordingFile) != 1)
-	{
-		return false;
-	}
-
-	return true;
-}
-
-bool InputRecordingFile::SetTotalFrames(long frame)
+bool InputRecordingFile::SetTotalFrames(const long frame) noexcept
 {
 	bool ret = false;
-	if (recordingFile != nullptr)
+	if (m_recordingFile != nullptr)
 	{
-		if (totalFrames < frame)
+		if (m_header.m_totalFrames < frame)
 		{
-			totalFrames = frame;
-			fseek(recordingFile, seekpointTotalFrames, SEEK_SET);
-			fwrite(&totalFrames, 4, 1, recordingFile);
+			m_header.m_totalFrames = frame;
+			fseek(m_recordingFile, InputRecordingFileHeader::s_seekpointTotalFrames, SEEK_SET);
+			fwrite(&m_header.m_totalFrames, 4, 1, m_recordingFile);
 			ret = true;
 		}
-		else if (totalFrames == frame)
+		else if (m_header.m_totalFrames == frame)
 			ret = true;
-		fflush(recordingFile);
+		fflush(m_recordingFile);
 	}
 	return ret;
 }
 
+bool InputRecordingFile::ReadKeyBuffer(u8& result, const u32 frame, const u32 seekOffset) const
+{
+	if (m_recordingFile == nullptr)
+		return false;
+
+	const u64 seek = getRecordingBlockSeekPoint(frame) + seekOffset;
+	return fseek(m_recordingFile, seek, SEEK_SET) == 0 && fread(&result, 1, 1, m_recordingFile) == 1;
+}
+
 bool InputRecordingFile::WriteHeader()
 {
-	if (recordingFile == nullptr)
-	{
+	if (m_recordingFile == nullptr)
 		return false;
-	}
-	rewind(recordingFile);
-	if (fwrite(&header, sizeof(InputRecordingFileHeader), 1, recordingFile) != 1
-		|| fwrite(&totalFrames, 4, 1, recordingFile) != 1
-		|| fwrite(&undoCount, 4, 1, recordingFile) != 1
-		|| fwrite(&savestate, 1, 1, recordingFile) != 1)
-	{
-		return false;
-	}
-	return true;
+	rewind(m_recordingFile);
+	return fwrite(&m_header, InputRecordingFileHeader::s_seekpointTotalFrames, 1, m_recordingFile) == 1 && fwrite(&m_header.m_totalFrames, 10, 1, m_recordingFile) == 1; // Writes totalFrames, redoCount, startType, & pads
 }
 
-bool InputRecordingFile::WriteKeyBuffer(const uint &frame, const uint port, const uint bufIndex, const u8 &buf)
+bool InputRecordingFile::WriteKeyBuffer(const u8 buf, const u32 frame, const u32 seekOffset) const
 {
-	if (recordingFile == nullptr)
-	{
+	if (m_recordingFile == nullptr)
 		return false;
-	}
 
-	long seek = getRecordingBlockSeekPoint(frame) + 18 * port + bufIndex;
-
-	if (fseek(recordingFile, seek, SEEK_SET) != 0 || fwrite(&buf, 1, 1, recordingFile) != 1)
-	{
-		return false;
-	}
-
-	fflush(recordingFile);
-	return true;
+	const u64 seek = getRecordingBlockSeekPoint(frame) + seekOffset;
+	return fseek(m_recordingFile, seek, SEEK_SET) == 0 && fwrite(&buf, 1, 1, m_recordingFile) == 1;
 }
 
-long InputRecordingFile::getRecordingBlockSeekPoint(const long &frame)
+u64 InputRecordingFile::getRecordingBlockSeekPoint(const u32 frame) const
 {
-	return headerSize + sizeof(bool) + frame * inputBytesPerFrame;
+	return m_seekpointInputData + frame * m_recordingBlockSize;
 }
 
 bool InputRecordingFile::verifyRecordingFileHeader()
 {
-	if (recordingFile == nullptr)
-	{
+	if (m_recordingFile == nullptr)
 		return false;
-	}
+
 	// Verify header contents
-	rewind(recordingFile);
-	if (fread(&header, sizeof(InputRecordingFileHeader), 1, recordingFile) != 1
-		|| fread(&totalFrames, 4, 1, recordingFile) != 1
-		|| fread(&undoCount, 4, 1, recordingFile) != 1
-		|| fread(&savestate.fromSavestate, sizeof(bool), 1, recordingFile) != 1)
+	m_header.ReadHeader(m_recordingFile);
+
+	// Check for valid verison
+	switch (m_header.m_fileVersion)
 	{
-		return false;
-	}
-	
-	// Check for current verison
-	if (header.version != 1)
-	{
-		inputRec::consoleLog(fmt::format("Input recording file is not a supported version - {}", header.version));
-		return false;
+		case 1: // Official version 1 with no slot info written to file; Backwards compatibility
+			m_padCount = 2;
+			m_recordingBlockSize = 36;
+			m_seekpointInputData = InputRecordingFileHeader::s_seekpointPads;
+			m_header.m_startType = (char)m_header.m_startType == 0 ? InputRecordingStartType::UnspecifiedBoot : InputRecordingStartType::Savestate;
+			m_header.m_pads = 17; // Pads 1A (1) & 2A (16)
+			break;
+		case 2: // Official Version 2
+			// Additional: header -> pads
+			if (fread(&m_header.m_pads, 1, 1, m_recordingFile) != 1)
+				return false;
+
+			if (m_header.m_pads == 0)
+			{
+				inputRec::log("Input Recording File must have at least 1 controller");
+				return false;
+			}
+			for (u8 pad = 0; pad < 8; pad++)
+				if (m_header.m_pads & (1 << pad))
+					m_padCount++;
+			m_recordingBlockSize = s_controllerInputBytes * m_padCount;
+			m_seekpointInputData = InputRecordingFileHeader::s_seekpointPads + 1;
+			break;
+		default:
+			inputRec::consoleLog(fmt::format("Input recording file is not a supported version - {}", m_header.m_fileVersion));
+			return false;
 	}
 	return true;
 }

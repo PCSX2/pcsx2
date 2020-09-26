@@ -155,7 +155,7 @@ wxWindowID SwapOrReset_Iso(wxWindow* owner, IScopedCoreThread& core_control, con
 		dialog += dialog.GetCharHeight();
 		dialog += dialog.Heading(_("Do you want to swap discs or boot the new image (via system reset)?"));
 #ifndef DISABLE_RECORDING
-		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
+		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSavestate())
 			dialog += dialog.Text(_("\n(Warning: The savestate accompanying the current input recording\nmay not be compatible with the new source)"));
 #endif
 		result = pxIssueConfirmation( dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
@@ -208,7 +208,7 @@ wxWindowID SwapOrReset_Disc(wxWindow* owner, IScopedCoreThread& core, const wxSt
 		dialog += dialog.GetCharHeight();
 		dialog += dialog.Heading(_("Do you want to swap discs or boot the new disc (via system reset)?"));
 #ifndef DISABLE_RECORDING
-		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
+		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSavestate())
 			dialog += dialog.Text(_("\n(Warning: The savestate accompanying the current input recording\nmay not be compatible with the new source)"));
 #endif
 		result = pxIssueConfirmation(dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
@@ -253,7 +253,7 @@ wxWindowID SwapOrReset_CdvdSrc(wxWindow* owner, CDVD_SourceType newsrc)
 		dialog += dialog.Heading(changeMsg + L"\n\n" +
 								 _("Do you want to swap discs or boot the new image (system reset)?"));
 #ifndef DISABLE_RECORDING
-		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
+		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSavestate())
 			dialog += dialog.Text(_("\n(Warning: The savestate accompanying the current input recording\nmay not be compatible with the new source)"));
 #endif
 		result = pxIssueConfirmation(dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
@@ -589,7 +589,7 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent& event)
 							  "Enabling Input Recording"))
 		{
 			checked = false;
-			m_GameSettingsSubmenu.FindChildItem(MenuId_EnableInputRecording)->Check(false);
+			m_GameSettingsSubmenu.Check(MenuId_EnableInputRecording, false);
 		}
 	}
 
@@ -597,6 +597,7 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent& event)
 	if (checked)
 	{
 		GetMenuBar()->Insert(TopLevelMenu_InputRecording, &m_menuRecording, _("&Input Record"));
+		// Will only init once per session
 		g_InputRecording.InitInputRecordingWindows(this);
 		SysConsole.recordingConsole.Enabled = true;
 		// Enable Recording Keybindings
@@ -754,7 +755,7 @@ void MainEmuFrame::Menu_SuspendResume_Click(wxCommandEvent& event)
 	// Disable the menu item.  The state of the menu is indeterminate until the core thread
 	// has responded (it updates status after the plugins are loaded and emulation has
 	// engaged successfully).
-
+	
 	EnableMenuItem(MenuId_Sys_SuspendResume, false);
 	GetSysExecutorThread().PostEvent(new SysExecEvent_ToggleSuspend());
 }
@@ -974,13 +975,13 @@ void MainEmuFrame::VideoCaptureUpdate()
 
 	if (m_capturingVideo)
 	{
-		m_submenuVideoCapture.FindItem(MenuId_Capture_Video_Record)->Enable(false);
-		m_submenuVideoCapture.FindItem(MenuId_Capture_Video_Stop)->Enable(true);
+		m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, false);
+		m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, true);
 	}
 	else
 	{
-		m_submenuVideoCapture.FindItem(MenuId_Capture_Video_Record)->Enable(true);
-		m_submenuVideoCapture.FindItem(MenuId_Capture_Video_Stop)->Enable(false);
+		m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, true);
+		m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, false);
 	}
 }
 
@@ -1025,10 +1026,19 @@ void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent& event)
 			g_InputRecordingControls.Resume();
 		return;
 	}
-	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
-	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
+	
+	m_menuRecording.Enable(MenuId_Recording_New, false);
+	m_menuRecording.Enable(MenuId_Recording_Stop, true);
 	m_menuRecording.FindChildItem(MenuId_Recording_ToggleRecordingMode)->Enable(true);
+	m_menuConfig.Enable(MenuId_Config_Multitap0Toggle, false);
+	m_menuConfig.Enable(MenuId_Config_Multitap1Toggle, false);
+
+	if (g_InputRecording.GetInputRecordingData().FromSavestate())
+		m_menuSys.Enable(MenuId_Boot_ELF, false);
+	else
+		m_menuSys.Enable(MenuId_Config_FastBoot, false);
 	ApplyFirstFrameStatus();
+	ApplySettings();
 }
 
 void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent& event)
@@ -1043,19 +1053,37 @@ void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent& event)
 	case 1:
 		if (recordingLoaded)
 			RecordingMenuReset();
+		[[fallthrough]];
 	case 0:
 		if (!initiallyPaused)
 			g_InputRecordingControls.Resume();
 		return;
+	default:
+		break;
 	}
 
 	if (!recordingLoaded)
 	{
-		m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
-		m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
+		//Disbales Config's Multitap options & saves Multitap settings to buffers
+		m_menuRecording.Enable(MenuId_Recording_New, false);
+		m_menuRecording.Enable(MenuId_Recording_Stop, true);
+		m_menuConfig.Enable(MenuId_Config_Multitap0Toggle, false);
+		m_menuConfig.Enable(MenuId_Config_Multitap1Toggle, false);
 		m_menuRecording.FindChildItem(MenuId_Recording_ToggleRecordingMode)->Enable(true);
 	}
+
+	if (g_InputRecording.GetInputRecordingData().FromSavestate())
+	{
+		m_menuSys.Enable(MenuId_Boot_ELF, false);
+		m_menuSys.Enable(MenuId_Config_FastBoot, true);
+	}
+	else
+	{
+		m_menuSys.Enable(MenuId_Boot_ELF, true);
+		m_menuSys.Enable(MenuId_Config_FastBoot, false);
+	}
 	ApplyFirstFrameStatus();
+	ApplySettings();
 }
 
 void MainEmuFrame::ApplyFirstFrameStatus()
@@ -1067,7 +1095,7 @@ void MainEmuFrame::ApplyFirstFrameStatus()
 		if (GSPanel* viewport = gsFrame->GetViewport())
 			keyCodeStr = viewport->GetAssociatedKeyCode(("GoToFirstFrame"));
 
-	if (!g_InputRecording.GetInputRecordingData().FromSaveState())
+	if (!g_InputRecording.GetInputRecordingData().FromSavestate())
 	{
 		switch (g_Conf->CdvdSource)
 		{
@@ -1102,10 +1130,19 @@ void MainEmuFrame::Menu_Recording_Stop_Click(wxCommandEvent& event)
 
 void MainEmuFrame::RecordingMenuReset()
 {
-	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(true);
-	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(false);
-	m_menuRecording.FindChildItem(MenuId_Recording_ToggleRecordingMode)->Enable(false);
+	m_menuRecording.Enable(MenuId_Recording_New, true);
+	m_menuRecording.Enable(MenuId_Recording_Stop, false);
+	m_menuRecording.Enable(MenuId_Recording_ToggleRecordingMode, false);
+	m_menuConfig.Enable(MenuId_Config_Multitap0Toggle, true);
+	m_menuConfig.Enable(MenuId_Config_Multitap1Toggle, true);
+	
+	if (g_InputRecording.GetInputRecordingData().FromSavestate())
+		m_menuSys.Enable(MenuId_Boot_ELF, true);
+	else
+		m_menuSys.Enable(MenuId_Config_FastBoot, true);
 	ApplyCDVDStatus();
+	UpdateStatusBar();
+	ApplySettings();
 }
 
 void MainEmuFrame::Menu_Recording_TogglePause_Click(wxCommandEvent& event)
@@ -1128,6 +1165,6 @@ void MainEmuFrame::Menu_Recording_ToggleRecordingMode_Click(wxCommandEvent& even
 
 void MainEmuFrame::Menu_Recording_VirtualPad_Open_Click(wxCommandEvent& event)
 {
-	g_InputRecording.ShowVirtualPad(event.GetId() - MenuId_Recording_VirtualPad_Port0);
+	g_InputRecording.ShowVirtualPad(event.GetId() - MenuId_Recording_VirtualPad_Port0_0);
 }
 #endif

@@ -16,99 +16,122 @@
 #pragma once
 
 #ifndef DISABLE_RECORDING
-
 #include "System.h"
-
+#include <array>
 #include "PadData.h"
 
-// NOTE / TODOs for Version 2
-// - Move fromSavestate, undoCount, and total frames into the header
-
-struct InputRecordingFileHeader
+enum class InputRecordingStartType : char
 {
-	u8 version = 1;
-	char emu[50] = "";
-	char author[255] = "";
-	char gameName[255] = "";
-
-public:
-	void SetEmulatorVersion();
-	void Init();
-	void SetAuthor(wxString author);
-	void SetGameName(wxString cdrom);
-};
-
-
-// DEPRECATED / Slated for Removal
-struct InputRecordingSavestate
-{
-	// Whether we start from the savestate or from power-on
-	bool fromSavestate = false;
+	UnspecifiedBoot = -1,
+	FullBoot,
+	FastBoot,
+	Savestate,
 };
 
 // Handles all operations on the input recording file
 class InputRecordingFile
 {
+	struct InputRecordingFileHeader
+	{
+		friend class InputRecordingFile;
+		void Init() noexcept;
+		void SetEmulatorVersion();
+		void SetAuthor(wxString author);
+		void SetGameName(wxString gameName);
+		bool ReadHeader(FILE* m_recordingFile);
+
+	private:
+		u8 m_fileVersion = 1;
+		std::array<char, 50> m_emulatorVersion;
+		std::array<char, 255> m_author;
+		std::array<char, 255> m_gameName;
+		// An signed 32-bit frame limit is equivalent to 1.13 years of continuous 60fps footage
+		long m_totalFrames = 0;
+		unsigned long m_redoCount = 0;
+		InputRecordingStartType m_startType = InputRecordingStartType::FullBoot;
+		wxByte m_pads = 0;
+		static const int s_seekpointTotalFrames = 561;
+		static const int s_seekpointRedoCount = s_seekpointTotalFrames + 4;
+		static const int s_seekpointPads = s_seekpointRedoCount + 5; // Skips savestate: seekpointRedoCount + 4
+	};
+
 public:
+	//
+	// Header-related functions
+	//
+	// Retieve the version of the current p2m2 file
+	// 1 - No Multitap (Pads 1A & 2A only)
+	// 2 - Multitap
+	u8 GetFileVersion() const noexcept;
+	// Retrieve the version of PCSX2 that the recording originated from
+	const char* GetEmulatorVersion() const noexcept;
+	// Retrieve the orginal author of the recording
+	const char* GetAuthor() const noexcept;
+	// Retrieve the name of the game/iso that the file is paired with
+	const char* GetGameName() const noexcept;
+	// Retrieve the maximum number of frames, or in other words, the length of the recording
+	long GetTotalFrames() const noexcept;
+	// Retrieve the number of times a save-state has been loaded while recording this movie
+	// this is also often referred to as a "re-record"
+	unsigned long GetRedoCount() const noexcept;
+	// Retrieve how the recording will load its the first frame
+	InputRecordingStartType GetStartType() const noexcept;
+	// Retrieve whether the recording begins from a savestate
+	bool FromSavestate() const noexcept;
+	// Retrieve the byte that represents the array of set pads
+	wxByte GetPads() const noexcept;
+
+	//
+	// General File Related Functions
+	//
+
+	static const int s_controllerInputBytes = 18;
 	~InputRecordingFile() { Close(); }
 
-	// Closes the underlying input recording file, writing the header and 
+	// Closes the underlying input recording file, writing the header and
 	// prepares for a possible new recording to be started
 	bool Close();
 	// Retrieve the input recording's filename (not the path)
-	const wxString &GetFilename();
+	const wxString& GetFilename() const noexcept;
 	// Retrieve the input recording's header which contains high-level metadata on the recording
-	InputRecordingFileHeader &GetHeader();
-	// The maximum number of frames, or in other words, the length of the recording
-	long &GetTotalFrames();
-	// The number of times a save-state has been loaded while recording this movie
-	// this is also often referred to as a "re-record"
-	unsigned long &GetUndoCount();
-	// Whether or not this input recording starts by loading a save-state or by booting the game fresh
-	bool FromSaveState();
-	// Increment the number of undo actions and commit it to the recording file
-	void IncrementUndoCount();
+	InputRecordingFileHeader& GetHeader() noexcept;
+	// Retrieve the number of pads being used
+	int GetPadCount() const noexcept;
+	// Whether the selected pad is activated
+	bool IsPortUsed(const int port) const noexcept;
+	// Whether the selected port has slot 2, 3, or 4 activated
+	bool IsMultitapUsed(const int port) const noexcept;
+	// Whether the selected port has any slots activated
+	bool IsSlotUsed(const int port, const int slot) const noexcept;
+	// Increment the number of redo actions and commit it to the recording file
+	void IncrementRedoCount();
 	// Open an existing recording file
 	bool OpenExisting(const wxString path);
 	// Create and open a brand new input recording, either starting from a save-state or from
 	// booting the game
-	bool OpenNew(const wxString path, bool fromSaveState);
+	bool OpenNew(const wxString path, const char startType, const wxByte slots);
+	// Updates the total frame counter and commit it to the recording file
+	bool SetTotalFrames(const long frames) noexcept;
 	// Reads the current frame's input data from the file in order to intercept and overwrite
 	// the current frame's value from the emulator
-	bool ReadKeyBuffer(u8 &result, const uint &frame, const uint port, const uint bufIndex);
-	// Updates the total frame counter and commit it to the recording file
-	bool SetTotalFrames(long frames);
+	bool ReadKeyBuffer(u8& result, const u32 frame, const u32 seekOffset) const;
 	// Persist the input recording file header's current state to the file
 	bool WriteHeader();
 	// Writes the current frame's input data to the file so it can be replayed
-	bool WriteKeyBuffer(const uint &frame, const uint port, const uint bufIndex, const u8 &buf);
+	bool WriteKeyBuffer(const u8 buf, const u32 frame, const u32 seekOffset) const;
 
 private:
-	static const int controllerPortsSupported = 2;
-	static const int controllerInputBytes = 18;
-	static const int inputBytesPerFrame = controllerInputBytes * controllerPortsSupported;
-	// TODO - version 2, this could be greatly simplified if everything was in the header
-	// + 4 + 4 is the totalFrame and undoCount values
-	static const int headerSize = sizeof(InputRecordingFileHeader) + 4 + 4;
-	// DEPRECATED / Slated for Removal
-	static const int recordingSavestateHeaderSize = sizeof(bool);
-	static const int seekpointTotalFrames = sizeof(InputRecordingFileHeader);
-	static const int seekpointUndoCount = sizeof(InputRecordingFileHeader) + 4;
-	static const int seekpointSaveStateHeader = seekpointUndoCount + 4;
+	int m_seekpointInputData;
+	int m_recordingBlockSize;
+	int m_padCount = 0;
 
-	InputRecordingFileHeader header;
-	wxString filename = "";
-	FILE* recordingFile = nullptr;
-	InputRecordingSavestate savestate;
-
-	// An signed 32-bit frame limit is equivalent to 1.13 years of continuous 60fps footage
-	long totalFrames = 0;
-	unsigned long undoCount = 0;
+	InputRecordingFileHeader m_header;
+	wxString m_filename = "";
+	FILE* m_recordingFile = nullptr;
 
 	// Calculates the position of the current frame in the input recording
-	long getRecordingBlockSeekPoint(const long& frame);
-	bool open(const wxString path, bool newRecording);
+	u64 getRecordingBlockSeekPoint(const u32 frame) const;
+	bool open(const wxString path, const bool newRecording);
 	bool verifyRecordingFileHeader();
 };
-
 #endif

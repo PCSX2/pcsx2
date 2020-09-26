@@ -50,7 +50,7 @@
 #include "Recording/VirtualPad/img/upPressed.h"
 
 
-VirtualPad::VirtualPad(wxWindow* parent, int controllerPort, AppConfig::InputRecordingOptions& options)
+VirtualPad::VirtualPad(wxWindow* parent, int controllerPort, int controllerSlot, AppConfig::InputRecordingOptions& options)
 	: wxFrame(parent, wxID_ANY, wxEmptyString)
 	, options(options)
 {
@@ -129,7 +129,7 @@ VirtualPad::VirtualPad(wxWindow* parent, int controllerPort, AppConfig::InputRec
 
 	// Finalize layout
 	SetIcons(wxGetApp().GetIconBundle());
-	SetTitle(wxString::Format("Virtual Pad - Port %d", controllerPort + 1));
+	SetTitle(wxString::Format("Virtual Pad - Slot %d%c", controllerPort + 1, 'A' + controllerSlot));
 	SetPosition(options.VirtualPadPosition);
 	SetBackgroundColour(*wxWHITE);
 	SetBackgroundStyle(wxBG_STYLE_PAINT);

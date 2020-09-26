@@ -209,6 +209,14 @@ enum MenuIdentifiers
 	MenuId_Recording_ToggleRecordingMode,
 	MenuId_Recording_VirtualPad_Port0,
 	MenuId_Recording_VirtualPad_Port1,
+	MenuId_Recording_VirtualPad_Port0_0,
+	MenuId_Recording_VirtualPad_Port0_1,
+	MenuId_Recording_VirtualPad_Port0_2,
+	MenuId_Recording_VirtualPad_Port0_3,
+	MenuId_Recording_VirtualPad_Port1_0,
+	MenuId_Recording_VirtualPad_Port1_1,
+	MenuId_Recording_VirtualPad_Port1_2,
+	MenuId_Recording_VirtualPad_Port1_3,
 #endif
 
 };

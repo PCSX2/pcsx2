@@ -20,3 +20,4 @@ EXPORTS
 	PADsetSlot
 	PADsetSettingsDir
 	PADqueryMtap
+	PADSetupInputRecording

@@ -193,3 +193,5 @@ EXPORT_C_(s32)
 PADqueryMtap(u8 port);
 EXPORT_C_(void)
 PADsetSettingsDir(const char *dir);
+EXPORT_C_(void)
+PADSetupInputRecording(bool start, char padsRequested);

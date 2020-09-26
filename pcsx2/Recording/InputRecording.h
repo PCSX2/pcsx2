@@ -20,7 +20,6 @@
 #include "Recording/InputRecordingFile.h"
 #include "Recording/NewRecordingFrame.h"
 
-
 class InputRecording
 {
 public:
@@ -37,7 +36,7 @@ public:
 
 	// Main handler for ingesting input data and either saving it to the recording file (recording)
 	// or mutating it to the contents of the recording file (replaying)
-	void ControllerInterrupt(u8& data, u8& port, u16& BufCount, u8 buf[]);
+	void ControllerInterrupt(const u8 data, const u8 port, const u8 slot, const u16 bufCount, u8& bufVal);
 
 	// The running frame counter for the input recording
 	s32 GetFrameCounter();
@@ -93,7 +92,7 @@ public:
 	// Resets emulation to the beginning of a recording
 	bool GoToFirstFrame();
 	// Displays the VirtualPad window for the chosen pad
-	void ShowVirtualPad(int const port);
+	void ShowVirtualPad(int const arrayPosition);
 
 private:
 	enum class InputRecordingMode
@@ -103,8 +102,8 @@ private:
 		Replaying,
 	};
 
-	static const int CONTROLLER_PORT_ONE = 0;
-	static const int CONTROLLER_PORT_TWO = 1;
+	static const u8 NUM_PORTS = 2;
+	static const u8 NUM_SLOTS = 4;
 
 	// 0x42 is the magic number to indicate the default controller read query
 	// See - Lilypad.cpp::PADpoll - https://github.com/PCSX2/pcsx2/blob/v1.5.0-dev/plugins/LilyPad/LilyPad.cpp#L1193
@@ -121,17 +120,32 @@ private:
 	bool initialLoad = false;
 	u32 startingFrame = 0;
 	s32 frameCounter = 0;
-	bool incrementUndo = false;
-	InputRecordingMode state = InputRecording::InputRecordingMode::NotActive;
+	bool incrementRedo = false;
+	InputRecordingMode state = InputRecordingMode::NotActive;
 
-	// Controller Data
 	struct InputRecordingPad
 	{
+		// Controller data
 		std::unique_ptr<PadData> padData;
+		// VirtualPad
 		std::unique_ptr<VirtualPad> virtualPad;
+		// Recording Mode
+		InputRecordingMode state;
+		// File seek offset
+		u8 seekOffset;
 		InputRecordingPad();
 		~InputRecordingPad();
-	} pads[2];
+	} pads[NUM_PORTS][NUM_SLOTS];
+
+	InputRecordingPad& GetPad(const int port, const int slot) noexcept { return pads[port][slot]; }
+	void SetPads(const bool newRecording);
+
+	// Holds the multitap and fastboot settings from before loading a recording
+	struct Buffer
+	{
+		bool multitaps[NUM_PORTS] = {false, false};
+		bool fastBoot = false;
+	} buffers;
 
 	// Resolve the name and region of the game currently loaded using the GameDB
 	// If the game cannot be found in the DB, the fallback is the ISO filename

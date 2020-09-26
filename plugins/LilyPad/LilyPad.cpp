@@ -242,6 +242,9 @@ int slots[2];
 // Which ports we're running on.
 int portInitialized[2];
 
+// Whether an input recording is currently active
+bool isRecording = false;
+
 // Force value to be from 0 to 255.
 u8 Cap(int i)
 {
@@ -273,15 +276,24 @@ void UpdateEnabledDevices(int updateList = 0)
     // Enable all devices I might want.  Can ignore the rest.
     RefreshEnabledDevices(updateList);
     // Figure out which pads I'm getting input for.
-    for (int port = 0; port < 2; port++) {
-        for (int slot = 0; slot < 4; slot++) {
-            if (slot > 0 && !config.multitap[port]) {
-                pads[port][slot].enabled = 0;
-            } else {
-                pads[port][slot].enabled = pads[port][slot].initialized && config.padConfigs[port][slot].type != DisabledPad;
-            }
-        }
-    }
+	// If an input recording is active, ignore this.
+	if (!isRecording)
+	{
+		for (int port = 0; port < 2; port++)
+		{
+			for (int slot = 0; slot < 4; slot++)
+			{
+				if (slot > 0 && !config.multitap[port])
+				{
+					pads[port][slot].enabled = 0;
+				}
+				else
+				{
+					pads[port][slot].enabled = pads[port][slot].initialized && config.padConfigs[port][slot].type != DisabledPad;
+				}
+			}
+		}
+	}
     for (int i = 0; i < dm->numDevices; i++) {
         Device *dev = dm->devices[i];
 
@@ -1667,4 +1679,17 @@ s32 CALLBACK PADsetSlot(u8 port, u8 slot)
     // First slot always allowed.
     // return pads[port][slot].enabled | !slot;
     return 1;
+}
+
+void CALLBACK PADSetupInputRecording(bool start, char padsRequested)
+{
+	if (start)
+	{
+		isRecording = true;
+		for (int port = 0, bit = 0; port < 2; port++)
+			for (int slot = 0; slot < 4; slot++, bit++)
+				pads[port][slot].enabled = padsRequested & (1 << bit);
+	}
+	else
+		isRecording = false;
 }
