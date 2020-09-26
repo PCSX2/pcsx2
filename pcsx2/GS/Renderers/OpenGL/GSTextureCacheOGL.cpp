@@ -29,31 +29,31 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 	const GIFRegTEX0& TEX0 = t->m_TEX0;
 
 	GLuint fmt;
-	int ps_shader;
+	ShaderConvert ps_shader;
 	switch (TEX0.PSM)
 	{
 		case PSM_PSMCT32:
 		case PSM_PSMCT24:
 			fmt = GL_RGBA8;
-			ps_shader = ShaderConvert_COPY;
+			ps_shader = ShaderConvert::COPY;
 			break;
 
 		case PSM_PSMCT16:
 		case PSM_PSMCT16S:
 			fmt = GL_R16UI;
-			ps_shader = ShaderConvert_RGBA8_TO_16_BITS;
+			ps_shader = ShaderConvert::RGBA8_TO_16_BITS;
 			break;
 
 		case PSM_PSMZ32:
 		case PSM_PSMZ24:
 			fmt = GL_R32UI;
-			ps_shader = ShaderConvert_FLOAT32_TO_32_BITS;
+			ps_shader = ShaderConvert::FLOAT32_TO_32_BITS;
 			break;
 
 		case PSM_PSMZ16:
 		case PSM_PSMZ16S:
 			fmt = GL_R16UI;
-			ps_shader = ShaderConvert_FLOAT32_TO_32_BITS;
+			ps_shader = ShaderConvert::FLOAT32_TO_32_BITS;
 			break;
 
 		default:

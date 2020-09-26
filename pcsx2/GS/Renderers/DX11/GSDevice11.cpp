@@ -635,7 +635,7 @@ GSTexture* GSDevice11::FetchSurface(int type, int w, int h, int format)
 	return __super::FetchSurface(type, w, h, format);
 }
 
-GSTexture* GSDevice11::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format, int ps_shader)
+GSTexture* GSDevice11::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format, ShaderConvert ps_shader)
 {
 	GSTexture* dst = NULL;
 
@@ -650,7 +650,7 @@ GSTexture* GSDevice11::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int
 	{
 		GSVector4 dRect(0, 0, w, h);
 
-		StretchRect(src, sRect, rt, dRect, m_convert.ps[ps_shader].get(), NULL);
+		StretchRect(src, sRect, rt, dRect, m_convert.ps[static_cast<int>(ps_shader)].get(), NULL);
 
 		dst = CreateOffscreen(w, h, format);
 
@@ -703,9 +703,9 @@ void GSDevice11::CloneTexture(GSTexture* src, GSTexture** dest)
 	CopyRect(src, *dest, GSVector4i(0, 0, w, h));
 }
 
-void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader, bool linear)
+void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
 {
-	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[shader].get(), nullptr, linear);
+	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[static_cast<int>(shader)].get(), nullptr, linear);
 }
 
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, bool linear)
@@ -729,7 +729,7 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	wil::com_ptr_nothrow<ID3D11BlendState> bs;
 	m_dev->CreateBlendState(&bd, bs.put());
 
-	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[ShaderConvert_COPY].get(), nullptr, bs.get(), false);
+	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[static_cast<int>(ShaderConvert::COPY)].get(), nullptr, bs.get(), false);
 }
 
 void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, ID3D11BlendState* bs, bool linear)
@@ -740,8 +740,10 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 		return;
 	}
 
-	const bool draw_in_depth = (ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT32] || ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT24]
-	                   || ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT16] || ps == m_convert.ps[ShaderConvert_RGB5A1_TO_FLOAT16]);
+	const bool draw_in_depth = ps == m_convert.ps[static_cast<int>(ShaderConvert::RGBA8_TO_FLOAT32)]
+	                        || ps == m_convert.ps[static_cast<int>(ShaderConvert::RGBA8_TO_FLOAT24)]
+	                        || ps == m_convert.ps[static_cast<int>(ShaderConvert::RGBA8_TO_FLOAT16)]
+	                        || ps == m_convert.ps[static_cast<int>(ShaderConvert::RGB5A1_TO_FLOAT16)];
 
 	BeginScene();
 
@@ -827,7 +829,7 @@ void GSDevice11::RenderOsd(GSTexture* dt)
 	// ps
 	PSSetShaderResource(0, m_font.get());
 	PSSetSamplerState(m_convert.pt.get(), nullptr);
-	PSSetShader(m_convert.ps[ShaderConvert_OSD].get(), nullptr);
+	PSSetShader(m_convert.ps[static_cast<int>(ShaderConvert::OSD)].get(), nullptr);
 
 	// ia
 	IASetInputLayout(m_convert.il.get());
@@ -1022,7 +1024,7 @@ void GSDevice11::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vert
 	// ps
 	PSSetShaderResources(rt, nullptr);
 	PSSetSamplerState(m_convert.pt.get(), nullptr);
-	PSSetShader(m_convert.ps[datm ? ShaderConvert_DATM_1 : ShaderConvert_DATM_0].get(), nullptr);
+	PSSetShader(m_convert.ps[static_cast<int>(datm ? ShaderConvert::DATM_1 : ShaderConvert::DATM_0)].get(), nullptr);
 
 	//
 

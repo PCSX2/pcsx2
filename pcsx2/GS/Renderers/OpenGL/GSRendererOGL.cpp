@@ -1614,7 +1614,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	if (hdr_rt)
 	{
 		const GSVector4 sRect = GSVector4(commitRect) / GSVector4(rtsize.x, rtsize.y).xyxy();
-		dev->StretchRect(hdr_rt, sRect, rt, GSVector4(commitRect), ShaderConvert_MOD_256, false);
+		dev->StretchRect(hdr_rt, sRect, rt, GSVector4(commitRect), ShaderConvert::MOD_256, false);
 
 		dev->Recycle(hdr_rt);
 	}
