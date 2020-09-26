@@ -46,15 +46,15 @@ public:
 	// - Explicitly paused via an InputRecordingControls function 
 	bool IsPaused();
 	// Pause emulation at the next available Vsync
-	void Pause();
+	void Pause() noexcept;
 	// Pause emulation immediately, not waiting for the next Vsync
 	void PauseImmediately();
 	// Resume emulation when the next pcsx2 App event is handled
 	void Resume();
-	void SetFrameCountTracker(u32 newFrame);
+	void SetFrameCountTracker(const u32 newFrame) noexcept;
 	// Sets frameAdvancing variable to false
 	// Used to restrict a frameAdvanceTracker value from transferring between recordings
-	void DisableFrameAdvance();
+	void DisableFrameAdvance() noexcept;
 	// Alternates emulation between a paused and unpaused state
 	void TogglePause();
 	// Switches between recording and replaying the active input recording file
@@ -62,26 +62,26 @@ public:
 	// Enables the frame locking mechanism so that when recordings are loaded
 	// or when processing a reboot with a recording active that no frames are
 	// lost in prior emulation
-	void Lock(u32 frame);
+	void Lock(u32 frame) noexcept;
 
 private:
 	// Indicates if the input recording controls have explicitly paused emulation or not
-	bool emulationCurrentlyPaused = false;
+	bool m_emulationCurrentlyPaused = false;
 	// Indicates on the next VSync if we are frame advancing, this value
 	// and should be cleared once a single frame has passed
-	bool frameAdvancing = false;
+	bool m_frameAdvancing = false;
 	// The input recording frame that frame advancing began on
-	s32 frameAdvanceMarker = 0;
+	s32 m_frameAdvanceMarker = 0;
 	// Used to detect if the internal PCSX2 g_FrameCount has changed
-	u32 frameCountTracker = -1;
+	u32 m_frameCountTracker = -1;
 	// Indicates if we intend to call CoreThread.PauseSelf() on the current or next available vsync
-	bool pauseEmulation = false;
+	bool m_pauseEmulation = false;
 	// Indicates if we intend to call CoreThread.Resume() when the next pcsx2 App event is handled
-	bool resumeEmulation = false;
+	bool m_resumeEmulation = false;
 	// Indicates to switch to replay mode after the next vsync
-	bool switchToReplay = false;
+	bool m_switchToReplay = false;
 	// Used to stop recording frames from incrementing during a reset
-	bool frameLock = false;
+	bool m_frameLock = false;
 };
 
 extern InputRecordingControls g_InputRecordingControls;

@@ -116,7 +116,7 @@ public:
 	// the current frame's value from the emulator
 	bool ReadKeyBuffer(u8& result, const u32 frame, const u32 seekOffset) const;
 	// Persist the input recording file header's current state to the file
-	bool WriteHeader();
+	bool WriteHeader() const;
 	// Writes the current frame's input data to the file so it can be replayed
 	bool WriteKeyBuffer(const u8 buf, const u32 frame, const u32 seekOffset) const;
 

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copym_right (C) 2002-2020  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -27,72 +27,72 @@ void PadData::UpdateControllerData(u16 bufIndex, u8 const& bufVal)
 	switch (index)
 	{
 		case BufferIndex::PressedFlagsGroupOne:
-			leftPressed = IsButtonPressed(LEFT, bufVal);
-			downPressed = IsButtonPressed(DOWN, bufVal);
-			rightPressed = IsButtonPressed(RIGHT, bufVal);
-			upPressed = IsButtonPressed(UP, bufVal);
-			start = IsButtonPressed(START, bufVal);
-			r3 = IsButtonPressed(R3, bufVal);
-			l3 = IsButtonPressed(L3, bufVal);
-			select = IsButtonPressed(SELECT, bufVal);
+			m_leftPressed = IsButtonPressed(m_LEFT, bufVal);
+			m_downPressed = IsButtonPressed(m_DOWN, bufVal);
+			m_rightPressed = IsButtonPressed(m_RIGHT, bufVal);
+			m_upPressed = IsButtonPressed(m_UP, bufVal);
+			m_start = IsButtonPressed(m_START, bufVal);
+			m_r3 = IsButtonPressed(m_R3, bufVal);
+			m_l3 = IsButtonPressed(m_L3, bufVal);
+			m_select = IsButtonPressed(m_SELECT, bufVal);
 			break;
 		case BufferIndex::PressedFlagsGroupTwo:
-			squarePressed = IsButtonPressed(SQUARE, bufVal);
-			crossPressed = IsButtonPressed(CROSS, bufVal);
-			circlePressed = IsButtonPressed(CIRCLE, bufVal);
-			trianglePressed = IsButtonPressed(TRIANGLE, bufVal);
-			r1Pressed = IsButtonPressed(R1, bufVal);
-			l1Pressed = IsButtonPressed(L1, bufVal);
-			r2Pressed = IsButtonPressed(R2, bufVal);
-			l2Pressed = IsButtonPressed(L2, bufVal);
+			m_squarePressed = IsButtonPressed(m_SQUARE, bufVal);
+			m_crossPressed = IsButtonPressed(m_CROSS, bufVal);
+			m_circlePressed = IsButtonPressed(m_CIRCLE, bufVal);
+			m_trianglePressed = IsButtonPressed(m_TRIANGLE, bufVal);
+			m_r1Pressed = IsButtonPressed(m_R1, bufVal);
+			m_l1Pressed = IsButtonPressed(m_L1, bufVal);
+			m_r2Pressed = IsButtonPressed(m_R2, bufVal);
+			m_l2Pressed = IsButtonPressed(m_L2, bufVal);
 			break;
 		case BufferIndex::RightAnalogXVector:
-			rightAnalogX = bufVal;
+			m_rightAnalogX = bufVal;
 			break;
 		case BufferIndex::RightAnalogYVector:
-			rightAnalogY = bufVal;
+			m_rightAnalogY = bufVal;
 			break;
 		case BufferIndex::LeftAnalogXVector:
-			leftAnalogX = bufVal;
+			m_leftAnalogX = bufVal;
 			break;
 		case BufferIndex::LeftAnalogYVector:
-			leftAnalogY = bufVal;
+			m_leftAnalogY = bufVal;
 			break;
 		case BufferIndex::RightPressure:
-			rightPressure = bufVal;
+			m_rightPressure = bufVal;
 			break;
 		case BufferIndex::LeftPressure:
-			leftPressure = bufVal;
+			m_leftPressure = bufVal;
 			break;
 		case BufferIndex::UpPressure:
-			upPressure = bufVal;
+			m_upPressure = bufVal;
 			break;
 		case BufferIndex::DownPressure:
-			downPressure = bufVal;
+			m_downPressure = bufVal;
 			break;
 		case BufferIndex::TrianglePressure:
-			trianglePressure = bufVal;
+			m_trianglePressure = bufVal;
 			break;
 		case BufferIndex::CirclePressure:
-			circlePressure = bufVal;
+			m_circlePressure = bufVal;
 			break;
 		case BufferIndex::CrossPressure:
-			crossPressure = bufVal;
+			m_crossPressure = bufVal;
 			break;
 		case BufferIndex::SquarePressure:
-			squarePressure = bufVal;
+			m_squarePressure = bufVal;
 			break;
 		case BufferIndex::L1Pressure:
-			l1Pressure = bufVal;
+			m_l1Pressure = bufVal;
 			break;
 		case BufferIndex::R1Pressure:
-			r1Pressure = bufVal;
+			m_r1Pressure = bufVal;
 			break;
 		case BufferIndex::L2Pressure:
-			l2Pressure = bufVal;
+			m_l2Pressure = bufVal;
 			break;
 		case BufferIndex::R2Pressure:
-			r2Pressure = bufVal;
+			m_r2Pressure = bufVal;
 			break;
 	}
 }
@@ -105,60 +105,60 @@ u8 PadData::PollControllerData(u16 bufIndex)
 	{
 		case BufferIndex::PressedFlagsGroupOne:
 			// Construct byte by combining flags if the buttons are pressed
-			byte |= BitmaskOrZero(leftPressed, LEFT);
-			byte |= BitmaskOrZero(downPressed, DOWN);
-			byte |= BitmaskOrZero(rightPressed, RIGHT);
-			byte |= BitmaskOrZero(upPressed, UP);
-			byte |= BitmaskOrZero(start, START);
-			byte |= BitmaskOrZero(r3, R3);
-			byte |= BitmaskOrZero(l3, L3);
-			byte |= BitmaskOrZero(select, SELECT);
+			byte |= BitmaskOrZero(m_leftPressed, m_LEFT);
+			byte |= BitmaskOrZero(m_downPressed, m_DOWN);
+			byte |= BitmaskOrZero(m_rightPressed, m_RIGHT);
+			byte |= BitmaskOrZero(m_upPressed, m_UP);
+			byte |= BitmaskOrZero(m_start, m_START);
+			byte |= BitmaskOrZero(m_r3, m_R3);
+			byte |= BitmaskOrZero(m_l3, m_L3);
+			byte |= BitmaskOrZero(m_select, m_SELECT);
 			// We flip the bits because as mentioned below, 0 = pressed
 			return ~byte;
 		case BufferIndex::PressedFlagsGroupTwo:
 			// Construct byte by combining flags if the buttons are pressed
-			byte |= BitmaskOrZero(squarePressed, SQUARE);
-			byte |= BitmaskOrZero(crossPressed, CROSS);
-			byte |= BitmaskOrZero(circlePressed, CIRCLE);
-			byte |= BitmaskOrZero(trianglePressed, TRIANGLE);
-			byte |= BitmaskOrZero(r1Pressed, R1);
-			byte |= BitmaskOrZero(l1Pressed, L1);
-			byte |= BitmaskOrZero(r2Pressed, R2);
-			byte |= BitmaskOrZero(l2Pressed, L2);
+			byte |= BitmaskOrZero(m_squarePressed, m_SQUARE);
+			byte |= BitmaskOrZero(m_crossPressed, m_CROSS);
+			byte |= BitmaskOrZero(m_circlePressed, m_CIRCLE);
+			byte |= BitmaskOrZero(m_trianglePressed, m_TRIANGLE);
+			byte |= BitmaskOrZero(m_r1Pressed, m_R1);
+			byte |= BitmaskOrZero(m_l1Pressed, m_L1);
+			byte |= BitmaskOrZero(m_r2Pressed, m_R2);
+			byte |= BitmaskOrZero(m_l2Pressed, m_L2);
 			// We flip the bits because as mentioned below, 0 = pressed
 			return ~byte;
 		case BufferIndex::RightAnalogXVector:
-			return rightAnalogX;
+			return m_rightAnalogX;
 		case BufferIndex::RightAnalogYVector:
-			return rightAnalogY;
+			return m_rightAnalogY;
 		case BufferIndex::LeftAnalogXVector:
-			return leftAnalogX;
+			return m_leftAnalogX;
 		case BufferIndex::LeftAnalogYVector:
-			return leftAnalogY;
+			return m_leftAnalogY;
 		case BufferIndex::RightPressure:
-			return rightPressure;
+			return m_rightPressure;
 		case BufferIndex::LeftPressure:
-			return leftPressure;
+			return m_leftPressure;
 		case BufferIndex::UpPressure:
-			return upPressure;
+			return m_upPressure;
 		case BufferIndex::DownPressure:
-			return downPressure;
+			return m_downPressure;
 		case BufferIndex::TrianglePressure:
-			return trianglePressure;
+			return m_trianglePressure;
 		case BufferIndex::CirclePressure:
-			return circlePressure;
+			return m_circlePressure;
 		case BufferIndex::CrossPressure:
-			return crossPressure;
+			return m_crossPressure;
 		case BufferIndex::SquarePressure:
-			return squarePressure;
+			return m_squarePressure;
 		case BufferIndex::L1Pressure:
-			return l1Pressure;
+			return m_l1Pressure;
 		case BufferIndex::R1Pressure:
-			return r1Pressure;
+			return m_r1Pressure;
 		case BufferIndex::L2Pressure:
-			return l2Pressure;
+			return m_l2Pressure;
 		case BufferIndex::R2Pressure:
-			return r2Pressure;
+			return m_r2Pressure;
 		default:
 			return 0;
 	}
@@ -169,18 +169,18 @@ bool PadData::IsButtonPressed(ButtonResolver buttonResolver, u8 const& bufVal)
 	// Rather than the flags being SET if the button is pressed, it is the opposite
 	// For example: 0111 1111 with `left` being the first bit indicates `left` is pressed.
 	// So, we are forced to flip the pressed bits with a NOT first
-	return (~bufVal & buttonResolver.buttonBitmask) > 0;
+	return (~bufVal & buttonResolver.m_buttonBitmask) > 0;
 }
 
 u8 PadData::BitmaskOrZero(bool pressed, ButtonResolver buttonInfo)
 {
-	return pressed ? buttonInfo.buttonBitmask : 0;
+	return pressed ? buttonInfo.m_buttonBitmask : 0;
 }
 
-wxString PadData::RawPadBytesToString(int start, int end)
+wxString PadData::RawPadBytesToString(int m_start, int end)
 {
 	wxString str;
-	for (int i = start; i < end; i++)
+	for (int i = m_start; i < end; i++)
 	{
 		str += wxString::Format("%d", PollControllerData(i));
 		if (i != end - 1)

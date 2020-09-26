@@ -517,34 +517,26 @@ namespace Implementations
 	void FrameAdvance()
 	{
 		if (g_Conf->EmuOptions.EnableRecordingTools)
-		{
 			g_InputRecordingControls.FrameAdvance();
-		}
 	}
 
 	void TogglePause()
 	{
 		if (g_Conf->EmuOptions.EnableRecordingTools)
-		{
 			g_InputRecordingControls.TogglePause();
-		}
 	}
 
 	void InputRecordingModeToggle()
 	{
 		if (g_Conf->EmuOptions.EnableRecordingTools)
-		{
 			g_InputRecordingControls.RecordModeToggle();
-		}
 	}
 
 	void GoToFirstFrame()
 	{
 		if (g_Conf->EmuOptions.EnableRecordingTools && g_InputRecording.IsActive())
-		{
 			if (!g_InputRecording.GoToFirstFrame() && wxGetApp().HasGUI())
 				sMainFrame.RecordingMenuReset();
-		}
 	}
 
 	void States_SaveSlot(int slot)

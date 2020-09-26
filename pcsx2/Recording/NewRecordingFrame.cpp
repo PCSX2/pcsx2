@@ -103,7 +103,7 @@ void NewRecordingFrame::OnFileChanged(wxFileDirPickerEvent& event)
 
 void NewRecordingFrame::OnBoxCheck(wxCommandEvent& event)
 {
-	pads ^= 1 << (((event.GetId() - MenuIds_New_Recording_Frame_Port_0) << 2) + event.GetInt());
+	m_pads ^= 1 << (((event.GetId() - MenuIds_New_Recording_Frame_Port_0) << 2) + event.GetInt());
 	EnableOkBox();
 }
 
@@ -117,7 +117,7 @@ void NewRecordingFrame::EnableOkBox()
 	}
 	else if (m_fileBrowsed)
 	{
-		if (pads == 0)
+		if (m_pads == 0)
 		{
 			m_startRecording->SetLabel(_("No Pads"));
 			m_startRecording->Enable(false);
@@ -152,6 +152,6 @@ char NewRecordingFrame::GetStartType() const
 
 wxByte NewRecordingFrame::GetPads() const noexcept
 {
-	return pads;
+	return m_pads;
 }
 #endif

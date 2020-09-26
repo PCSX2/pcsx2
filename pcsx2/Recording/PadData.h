@@ -21,8 +21,8 @@ class PadData
 {
 public:
 	/// Constants
-	static const u8 ANALOG_VECTOR_NEUTRAL = 127;
-	static const u16 END_INDEX_CONTROLLER_BUFFER = 17;
+	static const u8 s_ANALOG_VECTOR_NEUTRAL = 127;
+	static const u16 s_END_INDEX_CONTROLLER_BUFFER = 17;
 
 	enum class BufferIndex
 	{
@@ -47,46 +47,46 @@ public:
 	};
 
 	/// Pressure Buttons - 0-255
-	u8 circlePressure = 0;
-	u8 crossPressure = 0;
-	u8 squarePressure = 0;
-	u8 trianglePressure = 0;
-	u8 downPressure = 0;
-	u8 leftPressure = 0;
-	u8 rightPressure = 0;
-	u8 upPressure = 0;
-	u8 l1Pressure = 0;
-	u8 l2Pressure = 0;
-	u8 r1Pressure = 0;
-	u8 r2Pressure = 0;
+	u8 m_circlePressure = 0;
+	u8 m_crossPressure = 0;
+	u8 m_squarePressure = 0;
+	u8 m_trianglePressure = 0;
+	u8 m_downPressure = 0;
+	u8 m_leftPressure = 0;
+	u8 m_rightPressure = 0;
+	u8 m_upPressure = 0;
+	u8 m_l1Pressure = 0;
+	u8 m_l2Pressure = 0;
+	u8 m_r1Pressure = 0;
+	u8 m_r2Pressure = 0;
 
 	/// Pressure Button Flags
 	/// NOTE - It shouldn't be possible to depress a button while also having no pressure
 	/// But for the sake of completeness, it should be tracked.
-	bool circlePressed = false;
-	bool crossPressed = false;
-	bool squarePressed = false;
-	bool trianglePressed = false;
-	bool downPressed = false;
-	bool leftPressed = false;
-	bool rightPressed = false;
-	bool upPressed = false;
-	bool l1Pressed = false;
-	bool l2Pressed = false;
-	bool r1Pressed = false;
-	bool r2Pressed = false;
+	bool m_circlePressed = false;
+	bool m_crossPressed = false;
+	bool m_squarePressed = false;
+	bool m_trianglePressed = false;
+	bool m_downPressed = false;
+	bool m_leftPressed = false;
+	bool m_rightPressed = false;
+	bool m_upPressed = false;
+	bool m_l1Pressed = false;
+	bool m_l2Pressed = false;
+	bool m_r1Pressed = false;
+	bool m_r2Pressed = false;
 
 	/// Normal (un)pressed buttons
-	bool select = false;
-	bool start = false;
-	bool l3 = false;
-	bool r3 = false;
+	bool m_select = false;
+	bool m_start = false;
+	bool m_l3 = false;
+	bool m_r3 = false;
 
 	/// Analog Sticks - 0-255 (127 center)
-	u8 leftAnalogX = ANALOG_VECTOR_NEUTRAL;
-	u8 leftAnalogY = ANALOG_VECTOR_NEUTRAL;
-	u8 rightAnalogX = ANALOG_VECTOR_NEUTRAL;
-	u8 rightAnalogY = ANALOG_VECTOR_NEUTRAL;
+	u8 m_leftAnalogX = s_ANALOG_VECTOR_NEUTRAL;
+	u8 m_leftAnalogY = s_ANALOG_VECTOR_NEUTRAL;
+	u8 m_rightAnalogX = s_ANALOG_VECTOR_NEUTRAL;
+	u8 m_rightAnalogY = s_ANALOG_VECTOR_NEUTRAL;
 
 	// Given the input buffer and the current index, updates the correct field(s)
 	void UpdateControllerData(u16 bufIndex, u8 const& bufVal);
@@ -98,26 +98,26 @@ public:
 private:
 	struct ButtonResolver
 	{
-		u8 buttonBitmask;
+		u8 m_buttonBitmask;
 	};
 
-	const ButtonResolver LEFT = ButtonResolver{0b10000000};
-	const ButtonResolver DOWN = ButtonResolver{0b01000000};
-	const ButtonResolver RIGHT = ButtonResolver{0b00100000};
-	const ButtonResolver UP = ButtonResolver{0b00010000};
-	const ButtonResolver START = ButtonResolver{0b00001000};
-	const ButtonResolver R3 = ButtonResolver{0b00000100};
-	const ButtonResolver L3 = ButtonResolver{0b00000010};
-	const ButtonResolver SELECT = ButtonResolver{0b00000001};
+	const ButtonResolver m_LEFT = ButtonResolver{0b10000000};
+	const ButtonResolver m_DOWN = ButtonResolver{0b01000000};
+	const ButtonResolver m_RIGHT = ButtonResolver{0b00100000};
+	const ButtonResolver m_UP = ButtonResolver{0b00010000};
+	const ButtonResolver m_START = ButtonResolver{0b00001000};
+	const ButtonResolver m_R3 = ButtonResolver{0b00000100};
+	const ButtonResolver m_L3 = ButtonResolver{0b00000010};
+	const ButtonResolver m_SELECT = ButtonResolver{0b00000001};
 
-	const ButtonResolver SQUARE = ButtonResolver{0b10000000};
-	const ButtonResolver CROSS = ButtonResolver{0b01000000};
-	const ButtonResolver CIRCLE = ButtonResolver{0b00100000};
-	const ButtonResolver TRIANGLE = ButtonResolver{0b00010000};
-	const ButtonResolver R1 = ButtonResolver{0b00001000};
-	const ButtonResolver L1 = ButtonResolver{0b00000100};
-	const ButtonResolver R2 = ButtonResolver{0b00000010};
-	const ButtonResolver L2 = ButtonResolver{0b00000001};
+	const ButtonResolver m_SQUARE = ButtonResolver{0b10000000};
+	const ButtonResolver m_CROSS = ButtonResolver{0b01000000};
+	const ButtonResolver m_CIRCLE = ButtonResolver{0b00100000};
+	const ButtonResolver m_TRIANGLE = ButtonResolver{0b00010000};
+	const ButtonResolver m_R1 = ButtonResolver{0b00001000};
+	const ButtonResolver m_L1 = ButtonResolver{0b00000100};
+	const ButtonResolver m_R2 = ButtonResolver{0b00000010};
+	const ButtonResolver m_L2 = ButtonResolver{0b00000001};
 
 	// Checks and returns if button a is pressed or not
 	bool IsButtonPressed(ButtonResolver buttonResolver, u8 const& bufVal);

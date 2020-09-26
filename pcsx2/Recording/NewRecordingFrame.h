@@ -58,6 +58,6 @@ protected:
 	wxChoice* m_fromChoice;
 	wxButton* m_startRecording;
 	wxButton* m_cancelRecording;
-	wxByte pads = 0;
+	wxByte m_pads = 0;
 };
 #endif

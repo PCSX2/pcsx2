@@ -26,31 +26,31 @@ class VirtualPadData
 {
 public:
 	/// Controller Background
-	ImageFile background;
+	ImageFile m_background;
 
 	/// Pressure Buttons
-	ControllerPressureButton circle;
-	ControllerPressureButton cross;
-	ControllerPressureButton down;
-	ControllerPressureButton l1;
-	ControllerPressureButton l2;
-	ControllerPressureButton left;
-	ControllerPressureButton r1;
-	ControllerPressureButton r2;
-	ControllerPressureButton right;
-	ControllerPressureButton square;
-	ControllerPressureButton triangle;
-	ControllerPressureButton up;
+	ControllerPressureButton m_circle;
+	ControllerPressureButton m_cross;
+	ControllerPressureButton m_down;
+	ControllerPressureButton m_l1;
+	ControllerPressureButton m_l2;
+	ControllerPressureButton m_left;
+	ControllerPressureButton m_r1;
+	ControllerPressureButton m_r2;
+	ControllerPressureButton m_right;
+	ControllerPressureButton m_square;
+	ControllerPressureButton m_triangle;
+	ControllerPressureButton m_up;
 
 	/// Normal (un)pressed buttons
-	ControllerNormalButton l3;
-	ControllerNormalButton r3;
-	ControllerNormalButton select;
-	ControllerNormalButton start;
+	ControllerNormalButton m_l3;
+	ControllerNormalButton m_r3;
+	ControllerNormalButton m_select;
+	ControllerNormalButton m_start;
 
 	/// Analog Sticks
-	AnalogStick leftAnalog;
-	AnalogStick rightAnalog;
+	AnalogStick m_leftAnalog;
+	AnalogStick m_rightAnalog;
 
 	// Given the input buffer and the current index, updates the respective field(s) within this object
 	// Additionally overwrites the PadData object under the following criteria:

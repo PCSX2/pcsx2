@@ -38,148 +38,140 @@ wxCommandEvent VirtualPadElement::ConstructEvent(wxEventTypeTag<wxSpinEvent> eve
 
 void ControllerNormalButton::UpdateGuiElement(std::queue<VirtualPadElement*>& renderQueue, bool& clearScreenRequired)
 {
-	ControllerNormalButton& button = *this;
 	// This boolean is set when we parse the PadData in VirtualPadData::UpdateVirtualPadData
 	// Updating wxWidget elements can be expensive, we only want to do this if required
-	if (button.widgetUpdateRequired)
-		button.pressedBox->SetValue(button.pressed);
+	if (m_widgetUpdateRequired)
+		m_pressedBox->SetValue(m_pressed);
 
 	// We only render the button if it is pressed
-	if (button.pressed)
+	if (m_pressed)
 		renderQueue.push(this);
 	// However, if the button has been drawn to the screen in the past
 	// we need to ensure the screen is cleared.
 	// This is needed in the scenario where only a single button is being pressed/released
 	// As no other elements will trigger a clear
-	else if (button.currentlyRendered)
+	else if (m_currentlyRendered)
 	{
-		button.currentlyRendered = false;
+		m_currentlyRendered = false;
 		clearScreenRequired = true;
 	}
 }
 
 void ControllerPressureButton::UpdateGuiElement(std::queue<VirtualPadElement*>& renderQueue, bool& clearScreenRequired)
 {
-	ControllerPressureButton& button = *this;
-	if (button.widgetUpdateRequired)
-		button.pressureSpinner->SetValue(button.pressure);
+	if (m_widgetUpdateRequired)
+		m_pressureSpinner->SetValue(m_pressure);
 
-	if (button.pressed)
+	if (m_pressed)
 		renderQueue.push(this);
-	else if (button.currentlyRendered)
+	else if (m_currentlyRendered)
 	{
-		button.currentlyRendered = false;
+		m_currentlyRendered = false;
 		clearScreenRequired = true;
 	}
 }
 
 void AnalogStick::UpdateGuiElement(std::queue<VirtualPadElement*>& renderQueue, bool& clearScreenRequired)
 {
-	AnalogStick& analogStick = *this;
-	if (analogStick.xVector.widgetUpdateRequired)
+	if (m_xVector.m_widgetUpdateRequired)
 	{
-		analogStick.xVector.slider->SetValue(analogStick.xVector.val);
-		analogStick.xVector.spinner->SetValue(analogStick.xVector.val);
+		m_xVector.m_slider->SetValue(m_xVector.m_val);
+		m_xVector.m_spinner->SetValue(m_xVector.m_val);
 	}
-	if (analogStick.yVector.widgetUpdateRequired)
+	if (m_yVector.m_widgetUpdateRequired)
 	{
-		analogStick.yVector.slider->SetValue(analogStick.yVector.val);
-		analogStick.yVector.spinner->SetValue(analogStick.yVector.val);
+		m_yVector.m_slider->SetValue(m_yVector.m_val);
+		m_yVector.m_spinner->SetValue(m_yVector.m_val);
 	}
 
 	// We render the analog sticks as long as they are not in the neutral position
-	if (!(analogStick.xVector.val == PadData::ANALOG_VECTOR_NEUTRAL && analogStick.yVector.val == PadData::ANALOG_VECTOR_NEUTRAL))
+	if (!(m_xVector.m_val == PadData::s_ANALOG_VECTOR_NEUTRAL && m_yVector.m_val == PadData::s_ANALOG_VECTOR_NEUTRAL))
 		renderQueue.push(this);
-	else if (analogStick.currentlyRendered)
+	else if (m_currentlyRendered)
 	{
-		analogStick.currentlyRendered = false;
+		m_currentlyRendered = false;
 		clearScreenRequired = true;
 	}
 }
 
 void ControllerNormalButton::EnableWidgets(bool enable)
 {
-	this->pressedBox->Enable(enable);
+	m_pressedBox->Enable(enable);
 }
 
 void ControllerPressureButton::EnableWidgets(bool enable)
 {
-	this->pressureSpinner->Enable(enable);
+	m_pressureSpinner->Enable(enable);
 }
 
 void AnalogStick::EnableWidgets(bool enable)
 {
-	this->xVector.slider->Enable(enable);
-	this->yVector.slider->Enable(enable);
-	this->xVector.spinner->Enable(enable);
-	this->yVector.spinner->Enable(enable);
+	m_xVector.m_slider->Enable(enable);
+	m_yVector.m_slider->Enable(enable);
+	m_xVector.m_spinner->Enable(enable);
+	m_yVector.m_spinner->Enable(enable);
 }
 
 void ControllerNormalButton::Render(wxDC& dc)
 {
-	ControllerNormalButton& button = *this;
-	ImageFile& img = button.icon;
-	dc.DrawBitmap(img.image, img.coords, true);
-	button.currentlyRendered = true;
+	dc.DrawBitmap(m_icon.m_image, m_icon.m_coords, true);
+	m_currentlyRendered = true;
 }
 
 void ControllerPressureButton::Render(wxDC& dc)
 {
-	ControllerPressureButton& button = *this;
-	ImageFile& img = button.icon;
-	dc.DrawBitmap(img.image, img.coords, true);
-	button.currentlyRendered = true;
+	dc.DrawBitmap(m_icon.m_image, m_icon.m_coords, true);
+	m_currentlyRendered = true;
 }
 
 void AnalogStick::Render(wxDC& dc)
 {
-	AnalogStick& analogStick = *this;
 	// Render graphic
-	AnalogPosition analogPos = analogStick.positionGraphic;
+	AnalogPosition analogPos = m_positionGraphic;
 	// Determine new end coordinates
-	int newXCoord = analogPos.centerCoords.x + ((analogStick.xVector.val - 127) / 127.0) * analogPos.radius;
-	int newYCoord = analogPos.centerCoords.y + ((analogStick.yVector.val - 127) / 127.0) * analogPos.radius;
+	int newXCoord = analogPos.m_centerCoords.x + ((m_xVector.m_val - 127) / 127.0) * analogPos.m_radius;
+	int newYCoord = analogPos.m_centerCoords.y + ((m_yVector.m_val - 127) / 127.0) * analogPos.m_radius;
 	// We want to ensure the line segment length is capped at the defined radius
 	// NOTE - The conventional way to do this is using arctan2, but the analog values that come out
 	// of the Pad plugins in pcsx2 do not permit this, the coordinates returned do not define a circle.
-	const float lengthOfLine = sqrt(pow(newXCoord - analogPos.centerCoords.x, 2) + pow(newYCoord - analogPos.centerCoords.y, 2));
-	if (lengthOfLine > analogPos.radius)
+	const float lengthOfLine = sqrt(pow(newXCoord - analogPos.m_centerCoords.x, 2) + pow(newYCoord - analogPos.m_centerCoords.y, 2));
+	if (lengthOfLine > analogPos.m_radius)
 	{
-		newXCoord = ((1 - analogPos.radius / lengthOfLine) * analogPos.centerCoords.x) + analogPos.radius / lengthOfLine * newXCoord;
-		newYCoord = ((1 - analogPos.radius / lengthOfLine) * analogPos.centerCoords.y) + analogPos.radius / lengthOfLine * newYCoord;
+		newXCoord = ((1 - analogPos.m_radius / lengthOfLine) * analogPos.m_centerCoords.x) + analogPos.m_radius / lengthOfLine * newXCoord;
+		newYCoord = ((1 - analogPos.m_radius / lengthOfLine) * analogPos.m_centerCoords.y) + analogPos.m_radius / lengthOfLine * newYCoord;
 	}
 	// Set the new end coordinate
-	analogPos.endCoords = wxPoint(newXCoord, newYCoord);
+	analogPos.m_endCoords = wxPoint(newXCoord, newYCoord);
 	// Draw line and tip
-	dc.SetPen(wxPen(*wxBLUE, analogPos.lineThickness));
-	dc.DrawLine(analogPos.centerCoords, analogPos.endCoords);
-	dc.DrawCircle(analogPos.endCoords, wxCoord(analogPos.lineThickness));
+	dc.SetPen(wxPen(*wxBLUE, analogPos.m_lineThickness));
+	dc.DrawLine(analogPos.m_centerCoords, analogPos.m_endCoords);
+	dc.DrawCircle(analogPos.m_endCoords, wxCoord(analogPos.m_lineThickness));
 	dc.SetPen(wxNullPen);
-	analogStick.currentlyRendered = true;
+	m_currentlyRendered = true;
 }
 
 void ControllerNormalButton::Reset(wxEvtHandler* destWindow)
 {
-	this->pressedBox->SetValue(false);
-	wxPostEvent(destWindow, ConstructEvent(wxEVT_CHECKBOX, this->pressedBox));
+	m_pressedBox->SetValue(false);
+	wxPostEvent(destWindow, ConstructEvent(wxEVT_CHECKBOX, m_pressedBox));
 }
 
 void ControllerPressureButton::Reset(wxEvtHandler* destWindow)
 {
-	this->pressureSpinner->SetValue(0);
-	wxPostEvent(destWindow, ConstructEvent(wxEVT_SPINCTRL, this->pressureSpinner));
+	m_pressureSpinner->SetValue(0);
+	wxPostEvent(destWindow, ConstructEvent(wxEVT_SPINCTRL, m_pressureSpinner));
 }
 
 void AnalogStick::Reset(wxEvtHandler* destWindow)
 {
-	this->xVector.slider->SetValue(127);
-	this->yVector.slider->SetValue(127);
-	wxPostEvent(destWindow, ConstructEvent(wxEVT_SLIDER, this->xVector.slider));
-	wxPostEvent(destWindow, ConstructEvent(wxEVT_SLIDER, this->yVector.slider));
-	this->xVector.spinner->SetValue(127);
-	this->xVector.spinner->SetValue(127);
-	wxPostEvent(destWindow, ConstructEvent(wxEVT_SPINCTRL, this->xVector.spinner));
-	wxPostEvent(destWindow, ConstructEvent(wxEVT_SPINCTRL, this->yVector.spinner));
+	m_xVector.m_slider->SetValue(127);
+	m_yVector.m_slider->SetValue(127);
+	wxPostEvent(destWindow, ConstructEvent(wxEVT_SLIDER, m_xVector.m_slider));
+	wxPostEvent(destWindow, ConstructEvent(wxEVT_SLIDER, m_yVector.m_slider));
+	m_xVector.m_spinner->SetValue(127);
+	m_xVector.m_spinner->SetValue(127);
+	wxPostEvent(destWindow, ConstructEvent(wxEVT_SPINCTRL, m_xVector.m_spinner));
+	wxPostEvent(destWindow, ConstructEvent(wxEVT_SPINCTRL, m_yVector.m_spinner));
 }
 
 bool ControllerNormalButton::UpdateData(bool& padDataVal, bool ignoreRealController, bool readOnly)
@@ -194,74 +186,71 @@ bool ControllerPressureButton::UpdateData(bool& padDataVal, bool ignoreRealContr
 
 bool ControllerButton::UpdateButtonData(bool& padDataVal, bool ignoreRealController, bool readOnly)
 {
-	ControllerButton& button = *this;
 	if (!ignoreRealController || readOnly)
 	{
 		// If controller is being bypassed and controller's state has changed
-		const bool bypassedWithChangedState = button.isControllerPressBypassed && padDataVal != button.prevPressedVal;
+		const bool bypassedWithChangedState = m_isControllerPressBypassed && padDataVal != m_prevPressedVal;
 		if (bypassedWithChangedState)
 		{
-			button.prevPressedVal = padDataVal;
-			button.isControllerPressBypassed = false;
+			m_prevPressedVal = padDataVal;
+			m_isControllerPressBypassed = false;
 		}
 		// If we aren't bypassing the controller OR the previous condition was met
-		if (bypassedWithChangedState || !button.isControllerPressBypassed || readOnly)
+		if (bypassedWithChangedState || !m_isControllerPressBypassed || readOnly)
 		{
-			button.widgetUpdateRequired = button.pressed != padDataVal;
-			button.pressed = padDataVal;
+			m_widgetUpdateRequired = m_pressed != padDataVal;
+			m_pressed = padDataVal;
 			return false;
 		}
 	}
 	// Otherwise, we update the real PadData value, which will in turn be used to update the interrupt's buffer
-	button.prevPressedVal = padDataVal;
-	padDataVal = button.pressed;
-	return button.prevPressedVal != button.pressed;
+	m_prevPressedVal = padDataVal;
+	padDataVal = m_pressed;
+	return m_prevPressedVal != m_pressed;
 }
 
 bool ControllerPressureButton::UpdateData(u8& padDataVal, bool ignoreRealController, bool readOnly)
 {
-	ControllerPressureButton& button = *this;
 	if (!ignoreRealController || readOnly)
 	{
-		const bool bypassedWithChangedState = button.isControllerPressureBypassed && padDataVal != button.prevPressureVal;
+		const bool bypassedWithChangedState = m_isControllerPressureBypassed && padDataVal != m_prevPressureVal;
 		if (bypassedWithChangedState)
 		{
-			button.prevPressureVal = padDataVal;
-			button.isControllerPressureBypassed = false;
+			m_prevPressureVal = padDataVal;
+			m_isControllerPressureBypassed = false;
 		}
-		if (bypassedWithChangedState || !button.isControllerPressureBypassed || readOnly)
+		if (bypassedWithChangedState || !m_isControllerPressureBypassed || readOnly)
 		{
-			button.widgetUpdateRequired = button.pressure != padDataVal;
-			button.pressure = padDataVal;
+			m_widgetUpdateRequired = m_pressure != padDataVal;
+			m_pressure = padDataVal;
 			return false;
 		}
 	}
-	button.prevPressureVal = padDataVal;
-	padDataVal = button.pressure;
-	return button.prevPressureVal != button.pressure;
+	m_prevPressureVal = padDataVal;
+	padDataVal = m_pressure;
+	return m_prevPressureVal != m_pressure;
 }
 
 bool AnalogVector::UpdateData(u8& padDataVal, bool ignoreRealController, bool readOnly)
 {
-	AnalogVector& vector = *this;
 	if (!ignoreRealController || readOnly)
 	{
-		const bool bypassedWithChangedState = vector.isControllerBypassed && padDataVal != vector.prevVal;
+		const bool bypassedWithChangedState = m_isControllerBypassed && padDataVal != m_prevVal;
 		if (bypassedWithChangedState)
 		{
-			vector.prevVal = padDataVal;
-			vector.isControllerBypassed = false;
+			m_prevVal = padDataVal;
+			m_isControllerBypassed = false;
 		}
-		if (bypassedWithChangedState || !vector.isControllerBypassed || readOnly)
+		if (bypassedWithChangedState || !m_isControllerBypassed || readOnly)
 		{
-			vector.widgetUpdateRequired = vector.val != padDataVal;
-			vector.val = padDataVal;
+			m_widgetUpdateRequired = m_val != padDataVal;
+			m_val = padDataVal;
 			return false;
 		}
 	}
-	vector.prevVal = padDataVal;
-	padDataVal = vector.val;
-	return vector.prevVal != vector.val;
+	m_prevVal = padDataVal;
+	padDataVal = m_val;
+	return m_prevVal != m_val;
 }
 
 #endif

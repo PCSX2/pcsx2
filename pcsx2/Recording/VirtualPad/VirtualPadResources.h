@@ -29,22 +29,22 @@
 
 struct ImageFile
 {
-	wxBitmap image;
-	wxPoint coords;
-	u32 width = 0;
-	u32 height = 0;
+	wxBitmap m_image;
+	wxPoint m_coords;
+	u32 m_width = 0;
+	u32 m_height = 0;
 };
 
 struct AnalogVector
 {
-	wxSlider* slider = 0;
-	wxSpinCtrl* spinner = 0;
+	wxSlider* m_slider = 0;
+	wxSpinCtrl* m_spinner = 0;
 
-	u8 val = 127;
+	u8 m_val = 127;
 
-	bool isControllerBypassed = false;
-	bool widgetUpdateRequired = false;
-	u8 prevVal = 127;
+	bool m_isControllerBypassed = false;
+	bool m_widgetUpdateRequired = false;
+	u8 m_prevVal = 127;
 
 	bool UpdateData(u8& padDataVal, bool ignoreRealController, bool readOnly);
 };
@@ -52,17 +52,17 @@ struct AnalogVector
 
 struct AnalogPosition
 {
-	wxPoint centerCoords;
-	wxPoint endCoords;
+	wxPoint m_centerCoords;
+	wxPoint m_endCoords;
 
-	int lineThickness = 0;
-	int radius = 0;
+	int m_lineThickness = 0;
+	int m_radius = 0;
 };
 
 class VirtualPadElement
 {
 public:
-	bool currentlyRendered = false;
+	bool m_currentlyRendered = false;
 
 	wxCommandEvent ConstructEvent(wxEventTypeTag<wxCommandEvent> eventType, wxWindow *obj);
 	wxCommandEvent ConstructEvent(wxEventTypeTag<wxSpinEvent> eventType, wxWindow *obj);
@@ -76,10 +76,10 @@ public:
 class ControllerButton
 {
 public:
-	bool isControllerPressBypassed = false;
-	bool pressed = false;
-	bool prevPressedVal = false;
-	bool widgetUpdateRequired = false;
+	bool m_isControllerPressBypassed = false;
+	bool m_pressed = false;
+	bool m_prevPressedVal = false;
+	bool m_widgetUpdateRequired = false;
 
 	bool UpdateButtonData(bool& padDataVal, bool ignoreRealController, bool readOnly);
 };
@@ -87,8 +87,8 @@ public:
 class ControllerNormalButton : public ControllerButton, public VirtualPadElement
 {
 public:
-	ImageFile icon;
-	wxCheckBox* pressedBox = 0;
+	ImageFile m_icon;
+	wxCheckBox* m_pressedBox = 0;
 
 	bool UpdateData(bool& padDataVal, bool ignoreRealController, bool readOnly);
 	void EnableWidgets(bool enable) override;
@@ -100,13 +100,13 @@ public:
 class ControllerPressureButton : public ControllerButton, public VirtualPadElement
 {
 public:
-	ImageFile icon;
-	wxSpinCtrl* pressureSpinner = 0;
+	ImageFile m_icon;
+	wxSpinCtrl* m_pressureSpinner = 0;
 
-	u8 pressure = 0;
+	u8 m_pressure = 0;
 
-	bool isControllerPressureBypassed = false;
-	u8 prevPressureVal = 0;
+	bool m_isControllerPressureBypassed = false;
+	u8 m_prevPressureVal = 0;
 
 	bool UpdateData(bool& padDataVal, bool ignoreRealController, bool readOnly);
 	bool UpdateData(u8& padDataVal, bool ignoreRealController, bool readOnly);
@@ -119,10 +119,10 @@ public:
 class AnalogStick : public VirtualPadElement
 {
 public:
-	AnalogVector xVector;
-	AnalogVector yVector;
+	AnalogVector m_xVector;
+	AnalogVector m_yVector;
 
-	AnalogPosition positionGraphic;
+	AnalogPosition m_positionGraphic;
 
 	void EnableWidgets(bool enable) override;
 	void Render(wxDC& dc) override;

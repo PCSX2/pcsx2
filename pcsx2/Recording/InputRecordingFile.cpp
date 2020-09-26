@@ -224,7 +224,7 @@ bool InputRecordingFile::ReadKeyBuffer(u8& result, const u32 frame, const u32 se
 	return fseek(m_recordingFile, seek, SEEK_SET) == 0 && fread(&result, 1, 1, m_recordingFile) == 1;
 }
 
-bool InputRecordingFile::WriteHeader()
+bool InputRecordingFile::WriteHeader() const
 {
 	if (m_recordingFile == nullptr)
 		return false;

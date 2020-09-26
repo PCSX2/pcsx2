@@ -49,37 +49,37 @@ public:
 
 private:
 	/// Constants
-	const wxSize SPINNER_SIZE = wxSize(100, 40);
-	static const int ANALOG_SLIDER_WIDTH = 185;
-	static const int ANALOG_SLIDER_HEIGHT = 30;
+	const wxSize m_SPINNER_SIZE = wxSize(100, 40);
+	static const int s_ANALOG_SLIDER_WIDTH = 185;
+	static const int s_ANALOG_SLIDER_HEIGHT = 30;
 
-	static const int PRESSURE_MAX = 255;
-	static const int ANALOG_NEUTRAL = 127;
-	static const int ANALOG_MAX = 255;
+	static const int s_PRESSURE_MAX = 255;
+	static const int s_ANALOG_NEUTRAL = 127;
+	static const int s_ANALOG_MAX = 255;
 
-	AppConfig::InputRecordingOptions& options;
+	AppConfig::InputRecordingOptions& m_options;
 
-	bool clearScreenRequired = false;
-	bool ignoreRealController = false;
+	bool m_clearScreenRequired = false;
+	bool m_ignoreRealController = false;
 	// When enabled, forces the VirtualPad to be re-rendered even if no updates are made.
 	// This helps to make sure the UI is rendered prior to receiving data from the controller
-	bool manualRedrawMode = false;
-	bool readOnlyMode = false;
+	bool m_manualRedrawMode = false;
+	bool m_readOnlyMode = false;
 
-	VirtualPadData virtualPadData;
+	VirtualPadData m_virtualPadData;
 
-	std::vector<VirtualPadElement*> virtualPadElements;
-	std::queue<VirtualPadElement*> renderQueue;
+	std::vector<VirtualPadElement*> m_virtualPadElements;
+	std::queue<VirtualPadElement*> m_renderQueue;
 
 	void enableUiElements(bool enable);
 
 	/// GUI Elements
-	wxCheckBox* ignoreRealControllerBox;
-	wxButton* resetButton;
+	wxCheckBox* m_ignoreRealControllerBox;
+	wxButton* m_resetButton;
 
-	std::map<wxWindowID, ControllerNormalButton*> buttonElements;
-	std::map<wxWindowID, ControllerPressureButton*> pressureElements;
-	std::map<wxWindowID, AnalogVector*> analogElements;
+	std::map<wxWindowID, ControllerNormalButton*> m_buttonElements;
+	std::map<wxWindowID, ControllerPressureButton*> m_pressureElements;
+	std::map<wxWindowID, AnalogVector*> m_analogElements;
 
 	/// Event Listeners
 	void OnMoveAround(wxMoveEvent& event);
@@ -97,7 +97,7 @@ private:
 	void OnResetButton(wxCommandEvent& event);
 
 	/// GUI Creation Utility Functions
-	float scalingFactor = 1.0;
+	float m_scalingFactor = 1.0;
 	bool floatCompare(float A, float B, float epsilon = 0.005f);
 
 	wxSize ScaledSize(wxSize size);

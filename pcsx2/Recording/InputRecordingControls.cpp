@@ -38,18 +38,18 @@ void InputRecordingControls::HandleFrameAdvanceAndPausing()
 	// When loading a recording file or rebooting with a recording active, lock will be enabled.
 	// Emulation will be forced into and remain in a paused state until the transition in progress
 	// has completed - signaled when g_framecount and frameCountTracker are equal.
-	if (frameLock)
+	if (m_frameLock)
 	{
-		if (g_FrameCount == frameCountTracker)
+		if (g_FrameCount == m_frameCountTracker)
 		{
-			frameLock = false;
+			m_frameLock = false;
 			Resume();
 		}
-		else if (!emulationCurrentlyPaused && CoreThread.IsOpen() && CoreThread.IsRunning())
+		else if (!m_emulationCurrentlyPaused && CoreThread.IsOpen() && CoreThread.IsRunning())
 		{
-			pauseEmulation = true;
-			resumeEmulation = false;
-			emulationCurrentlyPaused = true;
+			m_pauseEmulation = true;
+			m_resumeEmulation = false;
+			m_emulationCurrentlyPaused = true;
 			CoreThread.PauseSelf();
 		}
 		return;
@@ -57,55 +57,55 @@ void InputRecordingControls::HandleFrameAdvanceAndPausing()
 	// As a safeguard, use the global g_FrameCount to know when the frame counter has truly changed.
 	//
 	// NOTE - Do not mutate g_FrameCount or use it's value to set the input recording's internal frame counter
-	else if (frameCountTracker != g_FrameCount)
+	else if (m_frameCountTracker != g_FrameCount)
 	{
-		frameCountTracker = g_FrameCount;
+		m_frameCountTracker = g_FrameCount;
 		if (g_InputRecording.GetFrameCounter() < INT_MAX)
 			g_InputRecording.IncrementFrameCounter();
 	}
 	else
 	{
-		if (pauseEmulation)
+		if (m_pauseEmulation)
 		{
-			emulationCurrentlyPaused = true;
+			m_emulationCurrentlyPaused = true;
 			CoreThread.PauseSelf();
 		}
 		return;
 	}
 
-	if (switchToReplay)
+	if (m_switchToReplay)
 	{
 		g_InputRecording.SetToReplayMode();
-		switchToReplay = false;
+		m_switchToReplay = false;
 	}
 
 	if ((g_InputRecording.IsReplaying() &&
 		 g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames()) ||
 		g_InputRecording.GetFrameCounter() == INT_MAX)
-		pauseEmulation = true;
+		m_pauseEmulation = true;
 
 	// If we haven't yet advanced atleast a single frame from when we paused, setup things to be paused
-	if (frameAdvancing && frameAdvanceMarker < g_InputRecording.GetFrameCounter())
+	if (m_frameAdvancing && m_frameAdvanceMarker < g_InputRecording.GetFrameCounter()) 
 	{
-		frameAdvancing = false;
-		pauseEmulation = true;
+		m_frameAdvancing = false;
+		m_pauseEmulation = true;
 	}
 
 	// Pause emulation if we need to (either due to frame advancing, or pause has been explicitly toggled on)
-	if (pauseEmulation && CoreThread.IsOpen() && CoreThread.IsRunning())
+	if (m_pauseEmulation && CoreThread.IsOpen() && CoreThread.IsRunning())
 	{
-		emulationCurrentlyPaused = true;
+		m_emulationCurrentlyPaused = true;
 		CoreThread.PauseSelf();
 	}
 }
 
 void InputRecordingControls::ResumeCoreThreadIfStarted()
 {
-	if (resumeEmulation && CoreThread.IsOpen() && CoreThread.IsPaused())
+	if (m_resumeEmulation && CoreThread.IsOpen() && CoreThread.IsPaused())
 	{
 		CoreThread.Resume();
-		resumeEmulation = false;
-		emulationCurrentlyPaused = false;
+		m_resumeEmulation = false;
+		m_emulationCurrentlyPaused = false;
 	}
 }
 
@@ -117,25 +117,25 @@ void InputRecordingControls::FrameAdvance()
 		g_InputRecording.SetToRecordMode();
 		return;
 	}
-	frameAdvanceMarker = g_InputRecording.GetFrameCounter();
-	frameAdvancing = true;
+	m_frameAdvanceMarker = g_InputRecording.GetFrameCounter();
+	m_frameAdvancing = true;
 	Resume();
 }
 
 bool InputRecordingControls::IsFrameAdvancing()
 {
-	return frameAdvancing;
+	return m_frameAdvancing;
 }
 
 bool InputRecordingControls::IsPaused()
 {
-	return (emulationCurrentlyPaused && CoreThread.IsOpen() && CoreThread.IsPaused());
+	return (m_emulationCurrentlyPaused && CoreThread.IsOpen() && CoreThread.IsPaused());
 }
 
-void InputRecordingControls::Pause()
+void InputRecordingControls::Pause() noexcept
 {
-	pauseEmulation = true;
-	resumeEmulation = false;
+	m_pauseEmulation = true;
+	m_resumeEmulation = false;
 }
 
 void InputRecordingControls::PauseImmediately()
@@ -145,7 +145,7 @@ void InputRecordingControls::PauseImmediately()
 	Pause();
 	if (CoreThread.IsOpen() && CoreThread.IsRunning())
 	{
-		emulationCurrentlyPaused = true;
+		m_emulationCurrentlyPaused = true;
 		CoreThread.PauseSelf();
 	}
 }
@@ -158,32 +158,32 @@ void InputRecordingControls::Resume()
 		g_InputRecording.SetToRecordMode();
 		return;
 	}
-	pauseEmulation = false;
-	resumeEmulation = true;
+	m_pauseEmulation = false;
+	m_resumeEmulation = true;
 }
 
-void InputRecordingControls::SetFrameCountTracker(u32 newFrame)
+void InputRecordingControls::SetFrameCountTracker(const u32 newFrame) noexcept
 {
-	frameCountTracker = newFrame;
+	m_frameCountTracker = newFrame;
 }
 
-void InputRecordingControls::DisableFrameAdvance()
+void InputRecordingControls::DisableFrameAdvance() noexcept
 {
-	frameAdvancing = false;
+	m_frameAdvancing = false;
 }
 
 void InputRecordingControls::TogglePause()
 {
-	if (pauseEmulation &&
+	if (m_pauseEmulation &&
 		g_InputRecording.IsReplaying() &&
 		g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
 	{
 		g_InputRecording.SetToRecordMode();
 		return;
 	}
-	pauseEmulation = !pauseEmulation;
-	resumeEmulation = !pauseEmulation;
-	inputRec::log(pauseEmulation ? "Paused Emulation" : "Resumed Emulation");
+	m_pauseEmulation = !m_pauseEmulation;
+	m_resumeEmulation = !m_pauseEmulation;
+	inputRec::log(m_pauseEmulation ? "Paused Emulation" : "Resumed Emulation");
 }
 
 void InputRecordingControls::RecordModeToggle()
@@ -198,14 +198,14 @@ void InputRecordingControls::RecordModeToggle()
 			g_InputRecording.SetToReplayMode();
 	}
 	else if (g_InputRecording.IsRecording())
-		switchToReplay = true;
+		m_switchToReplay = true;
 }
 
-void InputRecordingControls::Lock(u32 frame)
+void InputRecordingControls::Lock(u32 frame) noexcept
 {
-	frameLock = true;
-	frameCountTracker = frame;
-	resumeEmulation = false;
+	m_frameLock = true;
+	m_frameCountTracker = frame;
+	m_resumeEmulation = false;
 	//Ensures that g_frameCount can be used to resume emulation after a fast/full boot
 	if (!g_InputRecording.GetInputRecordingData().FromSavestate())
 		g_FrameCount = frame + 1;

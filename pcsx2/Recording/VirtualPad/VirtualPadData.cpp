@@ -26,57 +26,57 @@ bool VirtualPadData::UpdateVirtualPadData(u16 bufIndex, PadData* padData, bool i
 	switch (index)
 	{
 		case PadData::BufferIndex::PressedFlagsGroupOne:
-			changeDetected |= left.UpdateData(padData->leftPressed, ignoreRealController, readOnly);
-			changeDetected |= down.UpdateData(padData->downPressed, ignoreRealController, readOnly);
-			changeDetected |= right.UpdateData(padData->rightPressed, ignoreRealController, readOnly);
-			changeDetected |= up.UpdateData(padData->upPressed, ignoreRealController, readOnly);
-			changeDetected |= start.UpdateData(padData->start, ignoreRealController, readOnly);
-			changeDetected |= r3.UpdateData(padData->r3, ignoreRealController, readOnly);
-			changeDetected |= l3.UpdateData(padData->l3, ignoreRealController, readOnly);
-			changeDetected |= select.UpdateData(padData->select, ignoreRealController, readOnly);
+			changeDetected |= m_left.UpdateData(padData->m_leftPressed, ignoreRealController, readOnly);
+			changeDetected |= m_down.UpdateData(padData->m_downPressed, ignoreRealController, readOnly);
+			changeDetected |= m_right.UpdateData(padData->m_rightPressed, ignoreRealController, readOnly);
+			changeDetected |= m_up.UpdateData(padData->m_upPressed, ignoreRealController, readOnly);
+			changeDetected |= m_start.UpdateData(padData->m_start, ignoreRealController, readOnly);
+			changeDetected |= m_r3.UpdateData(padData->m_r3, ignoreRealController, readOnly);
+			changeDetected |= m_l3.UpdateData(padData->m_l3, ignoreRealController, readOnly);
+			changeDetected |= m_select.UpdateData(padData->m_select, ignoreRealController, readOnly);
 			return changeDetected;
 		case PadData::BufferIndex::PressedFlagsGroupTwo:
-			changeDetected |= square.UpdateData(padData->squarePressed, ignoreRealController, readOnly);
-			changeDetected |= cross.UpdateData(padData->crossPressed, ignoreRealController, readOnly);
-			changeDetected |= circle.UpdateData(padData->circlePressed, ignoreRealController, readOnly);
-			changeDetected |= triangle.UpdateData(padData->trianglePressed, ignoreRealController, readOnly);
-			changeDetected |= r1.UpdateData(padData->r1Pressed, ignoreRealController, readOnly);
-			changeDetected |= l1.UpdateData(padData->l1Pressed, ignoreRealController, readOnly);
-			changeDetected |= r2.UpdateData(padData->r2Pressed, ignoreRealController, readOnly);
-			changeDetected |= l2.UpdateData(padData->l2Pressed, ignoreRealController, readOnly);
+			changeDetected |= m_square.UpdateData(padData->m_squarePressed, ignoreRealController, readOnly);
+			changeDetected |= m_cross.UpdateData(padData->m_crossPressed, ignoreRealController, readOnly);
+			changeDetected |= m_circle.UpdateData(padData->m_circlePressed, ignoreRealController, readOnly);
+			changeDetected |= m_triangle.UpdateData(padData->m_trianglePressed, ignoreRealController, readOnly);
+			changeDetected |= m_r1.UpdateData(padData->m_r1Pressed, ignoreRealController, readOnly);
+			changeDetected |= m_l1.UpdateData(padData->m_l1Pressed, ignoreRealController, readOnly);
+			changeDetected |= m_r2.UpdateData(padData->m_r2Pressed, ignoreRealController, readOnly);
+			changeDetected |= m_l2.UpdateData(padData->m_l2Pressed, ignoreRealController, readOnly);
 			return changeDetected;
 		case PadData::BufferIndex::RightAnalogXVector:
-			return rightAnalog.xVector.UpdateData(padData->rightAnalogX, ignoreRealController, readOnly);
+			return m_rightAnalog.m_xVector.UpdateData(padData->m_rightAnalogX, ignoreRealController, readOnly);
 		case PadData::BufferIndex::RightAnalogYVector:
-			return rightAnalog.yVector.UpdateData(padData->rightAnalogY, ignoreRealController, readOnly);
+			return m_rightAnalog.m_yVector.UpdateData(padData->m_rightAnalogY, ignoreRealController, readOnly);
 		case PadData::BufferIndex::LeftAnalogXVector:
-			return leftAnalog.xVector.UpdateData(padData->leftAnalogX, ignoreRealController, readOnly);
+			return m_leftAnalog.m_xVector.UpdateData(padData->m_leftAnalogX, ignoreRealController, readOnly);
 		case PadData::BufferIndex::LeftAnalogYVector:
-			return leftAnalog.yVector.UpdateData(padData->leftAnalogY, ignoreRealController, readOnly);
+			return m_leftAnalog.m_yVector.UpdateData(padData->m_leftAnalogY, ignoreRealController, readOnly);
 		case PadData::BufferIndex::RightPressure:
-			return right.UpdateData(padData->rightPressure, ignoreRealController, readOnly);
+			return m_right.UpdateData(padData->m_rightPressure, ignoreRealController, readOnly);
 		case PadData::BufferIndex::LeftPressure:
-			return left.UpdateData(padData->leftPressure, ignoreRealController, readOnly);
+			return m_left.UpdateData(padData->m_leftPressure, ignoreRealController, readOnly);
 		case PadData::BufferIndex::UpPressure:
-			return up.UpdateData(padData->upPressure, ignoreRealController, readOnly);
+			return m_up.UpdateData(padData->m_upPressure, ignoreRealController, readOnly);
 		case PadData::BufferIndex::DownPressure:
-			return down.UpdateData(padData->downPressure, ignoreRealController, readOnly);
+			return m_down.UpdateData(padData->m_downPressure, ignoreRealController, readOnly);
 		case PadData::BufferIndex::TrianglePressure:
-			return triangle.UpdateData(padData->trianglePressure, ignoreRealController, readOnly);
+			return m_triangle.UpdateData(padData->m_trianglePressure, ignoreRealController, readOnly);
 		case PadData::BufferIndex::CirclePressure:
-			return circle.UpdateData(padData->circlePressure, ignoreRealController, readOnly);
+			return m_circle.UpdateData(padData->m_circlePressure, ignoreRealController, readOnly);
 		case PadData::BufferIndex::CrossPressure:
-			return cross.UpdateData(padData->crossPressure, ignoreRealController, readOnly);
+			return m_cross.UpdateData(padData->m_crossPressure, ignoreRealController, readOnly);
 		case PadData::BufferIndex::SquarePressure:
-			return square.UpdateData(padData->squarePressure, ignoreRealController, readOnly);
+			return m_square.UpdateData(padData->m_squarePressure, ignoreRealController, readOnly);
 		case PadData::BufferIndex::L1Pressure:
-			return l1.UpdateData(padData->l1Pressure, ignoreRealController, readOnly);
+			return m_l1.UpdateData(padData->m_l1Pressure, ignoreRealController, readOnly);
 		case PadData::BufferIndex::R1Pressure:
-			return r1.UpdateData(padData->r1Pressure, ignoreRealController, readOnly);
+			return m_r1.UpdateData(padData->m_r1Pressure, ignoreRealController, readOnly);
 		case PadData::BufferIndex::L2Pressure:
-			return l2.UpdateData(padData->l2Pressure, ignoreRealController, readOnly);
+			return m_l2.UpdateData(padData->m_l2Pressure, ignoreRealController, readOnly);
 		case PadData::BufferIndex::R2Pressure:
-			return r2.UpdateData(padData->r2Pressure, ignoreRealController, readOnly);
+			return m_r2.UpdateData(padData->m_r2Pressure, ignoreRealController, readOnly);
 	}
 	return changeDetected;
 }

@@ -39,35 +39,35 @@ public:
 	void ControllerInterrupt(const u8 data, const u8 port, const u8 slot, const u16 bufCount, u8& bufVal);
 
 	// The running frame counter for the input recording
-	s32 GetFrameCounter();
+	s32 GetFrameCounter() const noexcept;
 
-	InputRecordingFile& GetInputRecordingData();
+	InputRecordingFile& GetInputRecordingData() noexcept;
 
 	// The internal PCSX2 g_FrameCount value on the first frame of the recording
-	u32 GetStartingFrame();
+	u32 GetStartingFrame() const noexcept;
 
-	void IncrementFrameCounter();
+	void IncrementFrameCounter() noexcept;
 
 	// DEPRECATED: Slated for removal
 	// If the current frame contains controller / input data
-	bool IsInterruptFrame();
+	bool IsInterruptFrame() const noexcept;
 
 	// If there is currently an input recording being played back or actively being recorded
-	bool IsActive();
+	bool IsActive() const noexcept;
 
 	// Whether or not the recording's initial state has yet to be loaded or saved and
 	// the rest of the recording can be initialized
 	// This is not applicable to recordings from a "power-on" state
-	bool IsInitialLoad();
+	bool IsInitialLoad() const noexcept;
 
 	// If there is currently an input recording being played back
-	bool IsReplaying();
+	bool IsReplaying() const noexcept;
 
 	// If there are inputs currently being recorded to a file
-	bool IsRecording();
+	bool IsRecording() const noexcept;
 
 	// String representation of the current recording mode to be interpolated into the title
-	wxString RecordingModeTitleSegment();
+	wxString RecordingModeTitleSegment() const noexcept;
 
 	// Sets input recording to Record Mode
 	void SetToRecordMode();
@@ -79,7 +79,7 @@ public:
 	void SetFrameCounter(u32 newGFrameCount);
 
 	// Store the starting internal PCSX2 g_FrameCount value
-	void SetStartingFrame(u32 newStartingFrame);
+	void SetStartingFrame(u32 newStartingFrame) noexcept;
 
 	/// Functions called from GUI
 
@@ -102,50 +102,50 @@ private:
 		Replaying,
 	};
 
-	static const u8 NUM_PORTS = 2;
-	static const u8 NUM_SLOTS = 4;
+	static const u8 s_NUM_PORTS = 2;
+	static const u8 s_NUM_SLOTS = 4;
 
 	// 0x42 is the magic number to indicate the default controller read query
 	// See - Lilypad.cpp::PADpoll - https://github.com/PCSX2/pcsx2/blob/v1.5.0-dev/plugins/LilyPad/LilyPad.cpp#L1193
-	static const u8 READ_DATA_AND_VIBRATE_FIRST_BYTE = 0x42;
+	static const u8 s_READ_DATA_AND_VIBRATE_FIRST_BYTE = 0x42;
 	// 0x5A is always the second byte in the buffer when the normal READ_DATA_AND_VIBRATE (0x42) query is executed.
 	// See - LilyPad.cpp::PADpoll - https://github.com/PCSX2/pcsx2/blob/v1.5.0-dev/plugins/LilyPad/LilyPad.cpp#L1194
-	static const u8 READ_DATA_AND_VIBRATE_SECOND_BYTE = 0x5A;
+	static const u8 s_READ_DATA_AND_VIBRATE_SECOND_BYTE = 0x5A;
 
-	std::unique_ptr<NewRecordingFrame> newRecordingFrame;
-	std::unique_ptr<wxFileDialog> openFileDialog;
 	// DEPRECATED: Slated for removal
-	bool fInterruptFrame = false;
-	InputRecordingFile inputRecordingData;
-	bool initialLoad = false;
-	u32 startingFrame = 0;
-	s32 frameCounter = 0;
-	bool incrementRedo = false;
-	InputRecordingMode state = InputRecordingMode::NotActive;
+	bool m_fInterruptFrame = false;
+	std::unique_ptr<NewRecordingFrame> m_newRecordingFrame;
+	std::unique_ptr<wxFileDialog> m_openFileDialog;
+	InputRecordingFile m_inputRecordingData;
+	bool m_initialLoad = false;
+	u32 m_startingFrame = 0;
+	s32 m_frameCounter = 0;
+	bool m_incrementRedo = false;
+	InputRecordingMode m_state = InputRecordingMode::NotActive;
 
 	struct InputRecordingPad
 	{
 		// Controller data
-		std::unique_ptr<PadData> padData;
+		std::unique_ptr<PadData> m_padData;
 		// VirtualPad
-		std::unique_ptr<VirtualPad> virtualPad;
+		std::unique_ptr<VirtualPad> m_virtualPad;
 		// Recording Mode
-		InputRecordingMode state;
+		InputRecordingMode m_state;
 		// File seek offset
-		u8 seekOffset;
+		u8 m_seekOffset;
 		InputRecordingPad();
 		~InputRecordingPad();
-	} pads[NUM_PORTS][NUM_SLOTS];
+	} m_pads[s_NUM_PORTS][s_NUM_SLOTS];
 
-	InputRecordingPad& GetPad(const int port, const int slot) noexcept { return pads[port][slot]; }
+	InputRecordingPad& GetPad(const int port, const int slot) noexcept { return m_pads[port][slot]; }
 	void SetPads(const bool newRecording);
 
 	// Holds the multitap and fastboot settings from before loading a recording
 	struct Buffer
 	{
-		bool multitaps[NUM_PORTS] = {false, false};
+		bool multitaps[s_NUM_PORTS] = {false, false};
 		bool fastBoot = false;
-	} buffers;
+	} m_buffers;
 
 	// Resolve the name and region of the game currently loaded using the GameDB
 	// If the game cannot be found in the DB, the fallback is the ISO filename
