@@ -138,7 +138,7 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 	int size = (sz) & (~511);
 
 	if (MsgAutoDMA())
-		ConLog("* SPU2-X: DMA%c AutoDMA Transfer of %d bytes to %x (%02x %x %04x).\n",
+		ConLog("* SPU-2: DMA%c AutoDMA Transfer of %d bytes to %x (%02x %x %04x).\n",
 			   GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, (~Regs.ATTR) & 0x7fff);
 
 	InputDataProgress = 0;
@@ -245,7 +245,7 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 		cacheLine++;
 	} while (cacheLine != &cacheEnd);
 
-	//ConLog( "* SPU2-X: Cache Clear Range!  TSA=0x%x, TDA=0x%x (low8=0x%x, high8=0x%x, len=0x%x)\n",
+	//ConLog( "* SPU-2: Cache Clear Range!  TSA=0x%x, TDA=0x%x (low8=0x%x, high8=0x%x, len=0x%x)\n",
 	//	TSA, buff1end, flagTSA, flagTDA, clearLen );
 
 
@@ -426,7 +426,7 @@ void V_Core::DoDMAwrite(u16* pMem, u32 size)
 	{
 		if (TSA > 0xfffff)
 		{
-			ConLog("* SPU2-X: Transfer Start Address out of bounds. TSA is %x\n", TSA);
+			ConLog("* SPU-2: Transfer Start Address out of bounds. TSA is %x\n", TSA);
 		}
 	}
 
@@ -442,7 +442,7 @@ void V_Core::DoDMAwrite(u16* pMem, u32 size)
 	else
 	{
 		if (MsgDMA())
-			ConLog("* SPU2-X: DMA%c Transfer of %d bytes to %x (%02x %x %04x). IRQE = %d IRQA = %x \n",
+			ConLog("* SPU-2: DMA%c Transfer of %d bytes to %x (%02x %x %04x). IRQE = %d IRQA = %x \n",
 				   GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, (~Regs.ATTR) & 0x7fff,
 				   Cores[0].IRQEnable, Cores[0].IRQA);
 

@@ -19,7 +19,7 @@
 
 namespace SPU2Savestate
 {
-	// Arbitrary ID to identify SPU2-X saves.
+	// Arbitrary ID to identify SPU-2 saves.
 	static const u32 SAVE_ID = 0x1227521;
 
 	// versioning for saves.
@@ -34,11 +34,11 @@ namespace SPU2Savestate
 
 struct SPU2Savestate::DataBlock
 {
-	u32 spu2id;          // SPU2-X state identifier lets ZeroGS/PeopsSPU2 know this isn't their state)
+	u32 spu2id;          // SPU-2 state identifier lets ZeroGS/PeopsSPU2 know this isn't their state)
 	u8 unkregs[0x10000]; // SPU2 raw register memory
 	u8 mem[0x200000];    // SPU2 raw sample memory
 
-	u32 version; // SPU2-X version identifier
+	u32 version; // SPU-2 version identifier
 	V_Core Cores[2];
 	V_SPDIF Spdif;
 	s16 OutPos;
@@ -81,7 +81,7 @@ s32 __fastcall SPU2Savestate::ThawIt(DataBlock& spud)
 {
 	if (spud.spu2id != SAVE_ID || spud.version < SAVE_VERSION)
 	{
-		fprintf(stderr, "\n*** SPU2-X Warning:\n");
+		fprintf(stderr, "\n*** SPU-2 Warning:\n");
 		if (spud.spu2id == SAVE_ID)
 			fprintf(stderr, "\tSavestate version is from an older version of PCSX2.\n");
 		else

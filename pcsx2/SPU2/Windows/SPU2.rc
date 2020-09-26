@@ -7,7 +7,6 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "svnrev.h"
 #include "afxresmw.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -26,7 +25,7 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 
 IDD_CONFIG DIALOGEX 0, 0, 310, 260
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "SPU2-X Settings"
+CAPTION "SPU-2 Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     PUSHBUTTON      "OK",IDOK,101,238,50,14,NOT WS_TABSTOP
@@ -63,7 +62,7 @@ END
 
 IDD_DEBUG DIALOGEX 0, 0, 303, 473
 STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "SPU2-X Debug"
+CAPTION "SPU-2 Debug"
 FONT 9, "Lucida Console", 400, 0, 0x0
 BEGIN
     DEFPUSHBUTTON   "Close",IDOK,246,451,50,14
@@ -105,7 +104,7 @@ END
 
 IDD_CONFIG_SOUNDTOUCH DIALOGEX 0, 0, 206, 223
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Soundtouch Advanced Configuration - SPU2-X"
+CAPTION "Soundtouch Advanced Configuration - SPU-2"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,50,201,50,14
@@ -128,7 +127,7 @@ END
 
 IDD_CONFIG_DEBUG DIALOGEX 0, 0, 292, 239
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "SPU2-X Debugging Options"
+CAPTION "SPU-2 Debugging Options"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "OK",IDOK,93,217,50,14
@@ -215,14 +214,6 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Bitmap
-//
-
-IDB_SPU2X_SMALL         BITMAP                  "..\\..\\spu2-x-sm.bmp"
-
 /////////////////////////////////////////////////////////////////////////////
 //
 // Version
@@ -247,12 +238,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "SPU2 Plugin for PS2 Emulators"
             VALUE "CompanyName", "PCSX2 Dev Team"
-            VALUE "FileDescription", "SPU2-X Plugin (git build)"
+            VALUE "FileDescription", "SPU-2 Plugin (git build)"
             VALUE "FileVersion", "2.0.GIT"
-            VALUE "InternalName", "SPU2-X"
+            VALUE "InternalName", "SPU-2"
             VALUE "LegalCopyright", "Copyright (C) 2011"
-            VALUE "OriginalFilename", "SPU2-X-2.0.dll"
-            VALUE "ProductName", "SPU2-X"
+            VALUE "OriginalFilename", "SPU-2-2.0.dll"
+            VALUE "ProductName", "SPU-2"
             VALUE "ProductVersion", "2.0.GIT"
         END
     END

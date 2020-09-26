@@ -171,8 +171,8 @@ void ReadSettings()
 
 	if (mods[OutputModule] == nullptr)
 	{
-		fwprintf(stderr, L"* SPU2-X: Unknown output module '%s' specified in configuration file.\n", temp.wc_str());
-		fprintf(stderr, "* SPU2-X: Defaulting to SDL (%S).\n", SDLOut->GetIdent());
+		fwprintf(stderr, L"* SPU-2: Unknown output module '%s' specified in configuration file.\n", temp.wc_str());
+		fprintf(stderr, "* SPU-2: Defaulting to SDL (%S).\n", SDLOut->GetIdent());
 		OutputModule = FindOutputModuleById(SDLOut->GetIdent());
 	}
 

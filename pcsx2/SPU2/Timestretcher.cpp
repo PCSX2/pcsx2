@@ -380,7 +380,7 @@ void SndBuffer::UpdateTempoChangeSoundTouch()
 
 		pSoundTouch->setTempo(eTempo = (float)newTempo);
 
-		/*ConLog("* SPU2-X: [Nominal %d%%] [Emergency: %d%%] (baseTempo: %d%% ) (newTempo: %d%%) (buffer: %d%%)\n",
+		/*ConLog("* SPU-2: [Nominal %d%%] [Emergency: %d%%] (baseTempo: %d%% ) (newTempo: %d%%) (buffer: %d%%)\n",
 			//(relation < 0.0) ? "Normalize" : "",
 			(int)(tempoChange * 100.0 * 0.03),
 			(int)(emergencyAdj * 100.0),
