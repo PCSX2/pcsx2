@@ -14,18 +14,20 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "Mixer.h"
+//#include "Mixer.h"
 #include "Global.h"
 #include "SndOut.h"
 
 #define _WIN32_DCOM
 #ifdef _WIN32
+#include <portaudio/include/portaudio.h>
 #include "Windows/Dialogs.h"
 #elif defined __linux
+#include "portaudio.h"
 #include "Linux/Dialogs.h"
 #endif
 
-#include "portaudio.h"
+
 
 #include "wchar.h"
 
@@ -556,7 +558,7 @@ public:
 		// keep portaudio initialized until the dialog closes
 
 		INT_PTR ret;
-		ret = DialogBoxParam(hInstance, MAKEINTRESOURCE(IDD_PORTAUDIO), (HWND)parent, (DLGPROC)ConfigProc, 1);
+		ret = DialogBoxParam(nullptr, MAKEINTRESOURCE(IDD_PORTAUDIO), (HWND)parent, (DLGPROC)ConfigProc, 1);
 		if (ret == -1)
 		{
 			MessageBox((HWND)parent, L"Error Opening the config dialog.", L"OMG ERROR!", MB_OK | MB_SETFOREGROUND);

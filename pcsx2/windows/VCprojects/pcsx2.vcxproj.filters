@@ -997,6 +997,9 @@
     <ClCompile Include="..\..\SPU2\wavedump_wav.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\SPU2\SndOut_Portaudio.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
