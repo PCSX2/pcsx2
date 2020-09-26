@@ -486,9 +486,9 @@ void MainEmuFrame::CreateCaptureMenu()
 void MainEmuFrame::CreateRecordMenu()
 {
 #ifndef DISABLE_RECORDING
-	m_menuRecording.Append(MenuId_Recording_New, _("New"), _("Create a new input recording."));
+	m_menuRecording.Append(MenuId_Recording_New, _("New"), _("Create a new input recording."))->Enable(false);
 	m_menuRecording.Append(MenuId_Recording_Stop, _("Stop"), _("Stop the active input recording."))->Enable(false);
-	m_menuRecording.Append(MenuId_Recording_Play, _("Play"), _("Playback an existing input recording."));
+	m_menuRecording.Append(MenuId_Recording_Play, _("Play"), _("Playback an existing input recording."))->Enable(false);
 	m_menuRecording.AppendSeparator();
 	m_menuRecording.Append(MenuId_Recording_TogglePause, _("Toggle Pause"), _("Pause or resume emulation on the fly."))->Enable(false);
 	m_menuRecording.Append(MenuId_Recording_FrameAdvance, _("Frame Advance"), _("Advance emulation forward by a single frame at a time."))->Enable(false);
