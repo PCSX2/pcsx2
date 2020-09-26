@@ -22,7 +22,7 @@
 //Uncomment the next line to use the old time stretcher
 //#define SPU2X_USE_OLD_STRETCHER
 
-static soundtouch::SoundTouch* pSoundTouch = NULL;
+static soundtouch::SoundTouch* pSoundTouch = nullptr;
 
 // data prediction amount, used to "commit" data that hasn't
 // finished timestretch processing.
@@ -380,7 +380,7 @@ void SndBuffer::UpdateTempoChangeSoundTouch()
 
 		pSoundTouch->setTempo(eTempo = (float)newTempo);
 
-		/*ConLog("* SPU-2: [Nominal %d%%] [Emergency: %d%%] (baseTempo: %d%% ) (newTempo: %d%%) (buffer: %d%%)\n",
+		/*ConLog("* SPU2: [Nominal %d%%] [Emergency: %d%%] (baseTempo: %d%% ) (newTempo: %d%%) (buffer: %d%%)\n",
 			//(relation < 0.0) ? "Normalize" : "",
 			(int)(tempoChange * 100.0 * 0.03),
 			(int)(emergencyAdj * 100.0),
@@ -541,7 +541,7 @@ void SndBuffer::soundtouchInit()
 // reset timestretch management vars, and delay updates a bit:
 void SndBuffer::soundtouchClearContents()
 {
-	if (pSoundTouch == NULL)
+	if (pSoundTouch == nullptr)
 		return;
 
 	pSoundTouch->clear();

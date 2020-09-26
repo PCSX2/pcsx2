@@ -38,7 +38,7 @@ bool _RegDump = false;
 
 bool _visual_debug_enabled = false;
 
-// this is set true if PCSX2 invokes the SetLogDir callback, which tells SPU-2 to use that over
+// this is set true if PCSX2 invokes the SetLogDir callback, which tells SPU2 to use that over
 // the configured crap in the ini file.
 static bool LogLocationSetByPcsx2 = false;
 
@@ -58,9 +58,9 @@ wxString RegDumpFileName;
 
 void CfgSetLogDir(const char* dir)
 {
-	LogsFolder = (dir == NULL) ? wxString(L"logs") : wxString(dir, wxConvFile);
-	DumpsFolder = (dir == NULL) ? wxString(L"logs") : wxString(dir, wxConvFile);
-	LogLocationSetByPcsx2 = (dir != NULL);
+	LogsFolder = (dir == nullptr) ? wxString(L"logs") : wxString(dir, wxConvFile);
+	DumpsFolder = (dir == nullptr) ? wxString(L"logs") : wxString(dir, wxConvFile);
+	LogLocationSetByPcsx2 = (dir != nullptr);
 }
 
 FILE* OpenBinaryLog(const wxString& logfile)
@@ -263,7 +263,7 @@ namespace DebugConfig
 
 	void OpenDialog()
 	{
-		INT_PTR ret = DialogBoxParam(NULL, MAKEINTRESOURCE(IDD_CONFIG_DEBUG), GetActiveWindow(), (DLGPROC)DialogProc, 1);
+		INT_PTR ret = DialogBoxParam(nullptr, MAKEINTRESOURCE(IDD_CONFIG_DEBUG), GetActiveWindow(), (DLGPROC)DialogProc, 1);
 		if (ret == -1)
 		{
 			MessageBox(GetActiveWindow(), L"Error Opening the debug configuration dialog.", L"OMG ERROR!", MB_OK | MB_SETFOREGROUND);

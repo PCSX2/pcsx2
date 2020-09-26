@@ -21,11 +21,11 @@
 
 extern u8 callirq;
 
-static FILE* DMA4LogFile = NULL;
-static FILE* DMA7LogFile = NULL;
-static FILE* ADMA4LogFile = NULL;
-static FILE* ADMA7LogFile = NULL;
-static FILE* ADMAOutLogFile = NULL;
+static FILE* DMA4LogFile = nullptr;
+static FILE* DMA7LogFile = nullptr;
+static FILE* ADMA4LogFile = nullptr;
+static FILE* ADMA7LogFile = nullptr;
+static FILE* ADMAOutLogFile = nullptr;
 
 static FILE* REGWRTLogFile[2] = {0, 0};
 
@@ -101,12 +101,12 @@ void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not spl
 	LogAutoDMA(Index ? ADMA7LogFile : ADMA4LogFile);
 
 	// HACKFIX!! DMAPtr can be invalid after a savestate load, so the savestate just forces it
-	// to NULL and we ignore it here.  (used to work in old VM editions of PCSX2 with fixed
+	// to nullptr and we ignore it here.  (used to work in old VM editions of PCSX2 with fixed
 	// addressing, but new PCSX2s have dynamic memory addressing).
 
 	if (mode)
 	{
-		if (DMAPtr != NULL)
+		if (DMAPtr != nullptr)
 			//memcpy((ADMATempBuffer+(spos<<1)),DMAPtr+InputDataProgress,0x400);
 			memcpy(GetMemPtr(0x2000 + (Index << 10) + spos), DMAPtr + InputDataProgress, 0x400);
 		MADR += 0x400;
@@ -115,14 +115,14 @@ void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not spl
 	}
 	else
 	{
-		if (DMAPtr != NULL)
+		if (DMAPtr != nullptr)
 			//memcpy((ADMATempBuffer+spos),DMAPtr+InputDataProgress,0x200);
 			memcpy(GetMemPtr(0x2000 + (Index << 10) + spos), DMAPtr + InputDataProgress, 0x200);
 		MADR += 0x200;
 		InputDataLeft -= 0x100;
 		InputDataProgress += 0x100;
 
-		if (DMAPtr != NULL)
+		if (DMAPtr != nullptr)
 			//memcpy((ADMATempBuffer+spos+0x200),DMAPtr+InputDataProgress,0x200);
 			memcpy(GetMemPtr(0x2200 + (Index << 10) + spos), DMAPtr + InputDataProgress, 0x200);
 		MADR += 0x200;
@@ -138,7 +138,7 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 	int size = (sz) & (~511);
 
 	if (MsgAutoDMA())
-		ConLog("* SPU-2: DMA%c AutoDMA Transfer of %d bytes to %x (%02x %x %04x).\n",
+		ConLog("* SPU2: DMA%c AutoDMA Transfer of %d bytes to %x (%02x %x %04x).\n",
 			   GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, (~Regs.ATTR) & 0x7fff);
 
 	InputDataProgress = 0;
@@ -245,7 +245,7 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 		cacheLine++;
 	} while (cacheLine != &cacheEnd);
 
-	//ConLog( "* SPU-2: Cache Clear Range!  TSA=0x%x, TDA=0x%x (low8=0x%x, high8=0x%x, len=0x%x)\n",
+	//ConLog( "* SPU2: Cache Clear Range!  TSA=0x%x, TDA=0x%x (low8=0x%x, high8=0x%x, len=0x%x)\n",
 	//	TSA, buff1end, flagTSA, flagTDA, clearLen );
 
 
@@ -426,7 +426,7 @@ void V_Core::DoDMAwrite(u16* pMem, u32 size)
 	{
 		if (TSA > 0xfffff)
 		{
-			ConLog("* SPU-2: Transfer Start Address out of bounds. TSA is %x\n", TSA);
+			ConLog("* SPU2: Transfer Start Address out of bounds. TSA is %x\n", TSA);
 		}
 	}
 
@@ -442,7 +442,7 @@ void V_Core::DoDMAwrite(u16* pMem, u32 size)
 	else
 	{
 		if (MsgDMA())
-			ConLog("* SPU-2: DMA%c Transfer of %d bytes to %x (%02x %x %04x). IRQE = %d IRQA = %x \n",
+			ConLog("* SPU2: DMA%c Transfer of %d bytes to %x (%02x %x %04x). IRQE = %d IRQA = %x \n",
 				   GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, (~Regs.ATTR) & 0x7fff,
 				   Cores[0].IRQEnable, Cores[0].IRQA);
 

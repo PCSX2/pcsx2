@@ -32,7 +32,7 @@ void SysMessage(const char* fmt, ...)
 	va_end(list);
 	swprintf_s(wtmp, L"%S", tmp);
 	MessageBox((!!gsWindowHandle) ? (HWND)gsWindowHandle : GetActiveWindow(), wtmp,
-			   L"SPU-2 System Message", MB_OK | MB_SETFOREGROUND);
+			   L"SPU2 System Message", MB_OK | MB_SETFOREGROUND);
 }
 
 void SysMessage(const wchar_t* fmt, ...)
@@ -43,7 +43,7 @@ void SysMessage(const wchar_t* fmt, ...)
 	wtmp.PrintfV(fmt, list);
 	va_end(list);
 	MessageBox((!!gsWindowHandle) ? (HWND)gsWindowHandle : GetActiveWindow(), wtmp,
-			   L"SPU-2 System Message", MB_OK | MB_SETFOREGROUND);
+			   L"SPU2 System Message", MB_OK | MB_SETFOREGROUND);
 }
 
 //////
@@ -54,7 +54,7 @@ static wxString CfgFile(L"inis/SPU2.ini");
 
 void CfgSetSettingsDir(const char* dir)
 {
-	CfgFile = Path::Combine((dir == NULL) ? wxString(L"inis") : wxString::FromUTF8(dir), L"SPU2.ini");
+	CfgFile = Path::Combine((dir == nullptr) ? wxString(L"inis") : wxString::FromUTF8(dir), L"SPU2.ini");
 }
 
 

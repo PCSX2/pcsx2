@@ -121,8 +121,8 @@ public:
 		m_UseHardware = false;
 		m_WasapiExclusiveMode = false;
 		started = false;
-		stream = NULL;
-		ActualPaCallback = NULL;
+		stream = nullptr;
+		ActualPaCallback = nullptr;
 		m_ApiId = -1;
 		m_SuggestedLatencyMS = 20;
 		actualUsedChannels = 0;
@@ -134,21 +134,21 @@ public:
 	s32 Init()
 	{
 		started = false;
-		stream = NULL;
+		stream = nullptr;
 
 		ReadSettings();
 
 		PaError err = Pa_Initialize();
 		if (err != paNoError)
 		{
-			fprintf(stderr, "* SPU-2: PortAudio error: %s\n", Pa_GetErrorText(err));
+			fprintf(stderr, "* SPU2: PortAudio error: %s\n", Pa_GetErrorText(err));
 			return -1;
 		}
 		started = true;
 
 		int deviceIndex = -1;
 
-		fprintf(stderr, "* SPU-2: Enumerating PortAudio devices:\n");
+		fprintf(stderr, "* SPU2: Enumerating PortAudio devices:\n");
 		for (int i = 0, j = 0; i < Pa_GetDeviceCount(); i++)
 		{
 			const PaDeviceInfo* info = Pa_GetDeviceInfo(i);
@@ -188,7 +188,7 @@ public:
 
 		if (deviceIndex >= 0)
 		{
-			void* infoPtr = NULL;
+			void* infoPtr = nullptr;
 
 			const PaDeviceInfo* devinfo = Pa_GetDeviceInfo(deviceIndex);
 
@@ -289,12 +289,12 @@ public:
 				infoPtr};
 
 			err = Pa_OpenStream(&stream,
-								NULL, &outParams, SampleRate,
+								nullptr, &outParams, SampleRate,
 								SndOutPacketSize,
 								paNoFlag,
 								PaCallback,
 
-								NULL);
+								nullptr);
 		}
 		else
 		{
@@ -302,11 +302,11 @@ public:
 									   0, actualUsedChannels, paInt32, 48000,
 									   SndOutPacketSize,
 									   PaCallback,
-									   NULL);
+									   nullptr);
 		}
 		if (err != paNoError)
 		{
-			fprintf(stderr, "* SPU-2: PortAudio error: %s\n", Pa_GetErrorText(err));
+			fprintf(stderr, "* SPU2: PortAudio error: %s\n", Pa_GetErrorText(err));
 			Pa_Terminate();
 			return -1;
 		}
@@ -314,9 +314,9 @@ public:
 		err = Pa_StartStream(stream);
 		if (err != paNoError)
 		{
-			fprintf(stderr, "* SPU-2: PortAudio error: %s\n", Pa_GetErrorText(err));
+			fprintf(stderr, "* SPU2: PortAudio error: %s\n", Pa_GetErrorText(err));
 			Pa_CloseStream(stream);
-			stream = NULL;
+			stream = nullptr;
 			Pa_Terminate();
 			return -1;
 		}
@@ -335,20 +335,20 @@ public:
 				{
 					err = Pa_StopStream(stream);
 					if (err != paNoError)
-						fprintf(stderr, "* SPU-2: PortAudio error: %s\n", Pa_GetErrorText(err));
+						fprintf(stderr, "* SPU2: PortAudio error: %s\n", Pa_GetErrorText(err));
 				}
 
 				err = Pa_CloseStream(stream);
 				if (err != paNoError)
-					fprintf(stderr, "* SPU-2: PortAudio error: %s\n", Pa_GetErrorText(err));
+					fprintf(stderr, "* SPU2: PortAudio error: %s\n", Pa_GetErrorText(err));
 
-				stream = NULL;
+				stream = nullptr;
 			}
 
 			// Seems to do more harm than good.
 			//PaError err = Pa_Terminate();
 			//if( err != paNoError )
-			//	fprintf(stderr,"* SPU-2: PortAudio error: %s\n", Pa_GetErrorText( err ) );
+			//	fprintf(stderr,"* SPU2: PortAudio error: %s\n", Pa_GetErrorText( err ) );
 
 			started = false;
 		}
@@ -550,7 +550,7 @@ public:
 		PaError err = Pa_Initialize(); // Initialization can be done multiple times, PA keeps a counter
 		if (err != paNoError)
 		{
-			fprintf(stderr, "* SPU-2: PortAudio error: %s\n", Pa_GetErrorText(err));
+			fprintf(stderr, "* SPU2: PortAudio error: %s\n", Pa_GetErrorText(err));
 			return;
 		}
 		// keep portaudio initialized until the dialog closes

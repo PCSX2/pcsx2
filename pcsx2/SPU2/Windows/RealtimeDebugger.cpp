@@ -18,7 +18,7 @@
 #include "Dialogs.h"
 
 bool debugDialogOpen = false;
-HWND hDebugDialog = NULL;
+HWND hDebugDialog = nullptr;
 
 #ifdef PCSX2_DEVBUILD
 
@@ -45,7 +45,7 @@ BOOL DrawRectangle(HDC dc, int left, int top, int width, int height)
 }
 
 
-HFONT hf = NULL;
+HFONT hf = nullptr;
 int lCount = 0;
 void UpdateDebugDialog()
 {

@@ -19,7 +19,7 @@
 
 namespace SPU2Savestate
 {
-	// Arbitrary ID to identify SPU-2 saves.
+	// Arbitrary ID to identify SPU2 saves.
 	static const u32 SAVE_ID = 0x1227521;
 
 	// versioning for saves.
@@ -34,11 +34,11 @@ namespace SPU2Savestate
 
 struct SPU2Savestate::DataBlock
 {
-	u32 spu2id;          // SPU-2 state identifier lets ZeroGS/PeopsSPU2 know this isn't their state)
+	u32 spu2id;          // SPU2 state identifier lets ZeroGS/PeopsSPU2 know this isn't their state)
 	u8 unkregs[0x10000]; // SPU2 raw register memory
 	u8 mem[0x200000];    // SPU2 raw sample memory
 
-	u32 version; // SPU-2 version identifier
+	u32 version; // SPU2 version identifier
 	V_Core Cores[2];
 	V_SPDIF Spdif;
 	s16 OutPos;
@@ -55,9 +55,9 @@ s32 __fastcall SPU2Savestate::FreezeIt(DataBlock& spud)
 
 	pxAssertMsg(spu2regs && _spu2mem, "Looks like PCSX2 is trying to savestate while components are shut down.  That's a no-no! It shouldn't crash, but the savestate will probably be corrupted.");
 
-	if (spu2regs != NULL)
+	if (spu2regs != nullptr)
 		memcpy(spud.unkregs, spu2regs, sizeof(spud.unkregs));
-	if (_spu2mem != NULL)
+	if (_spu2mem != nullptr)
 		memcpy(spud.mem, _spu2mem, sizeof(spud.mem));
 
 	memcpy(spud.Cores, Cores, sizeof(Cores));
@@ -81,7 +81,7 @@ s32 __fastcall SPU2Savestate::ThawIt(DataBlock& spud)
 {
 	if (spud.spu2id != SAVE_ID || spud.version < SAVE_VERSION)
 	{
-		fprintf(stderr, "\n*** SPU-2 Warning:\n");
+		fprintf(stderr, "\n*** SPU2 Warning:\n");
 		if (spud.spu2id == SAVE_ID)
 			fprintf(stderr, "\tSavestate version is from an older version of PCSX2.\n");
 		else
@@ -135,12 +135,12 @@ s32 __fastcall SPU2Savestate::ThawIt(DataBlock& spud)
 			}
 		}
 
-		// HACKFIX!! DMAPtr can be invalid after a savestate load, so force it to NULL and
+		// HACKFIX!! DMAPtr can be invalid after a savestate load, so force it to nullptr and
 		// ignore it on any pending ADMA writes.  (the DMAPtr concept used to work in old VM
 		// editions of PCSX2 with fixed addressing, but new PCSX2s have dynamic memory
 		// addressing).
 
-		Cores[0].DMAPtr = Cores[1].DMAPtr = NULL;
+		Cores[0].DMAPtr = Cores[1].DMAPtr = nullptr;
 	}
 	return 0;
 }

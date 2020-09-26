@@ -150,11 +150,11 @@ void ReadSettings()
 
 	Clampify(SndOutLatencyMS, LATENCY_MIN, LATENCY_MAX);
 
-	if (mods[OutputModule] == NULL)
+	if (mods[OutputModule] == nullptr)
 	{
 		// Unsupported or legacy module.
-		fwprintf(stderr, L"* SPU-2: Unknown output module '%s' specified in configuration file.\n", omodid);
-		fprintf(stderr, "* SPU-2: Defaulting to DirectSound (%S).\n", DSoundOut->GetIdent());
+		fwprintf(stderr, L"* SPU2: Unknown output module '%s' specified in configuration file.\n", omodid);
+		fprintf(stderr, "* SPU2: Defaulting to DirectSound (%S).\n", DSoundOut->GetIdent());
 		OutputModule = FindOutputModuleById(DSoundOut->GetIdent());
 	}
 }
@@ -251,7 +251,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SendDialogMsg(hWnd, IDC_OUTPUT, CB_RESETCONTENT, 0, 0);
 
 			int modidx = 0;
-			while (mods[modidx] != NULL)
+			while (mods[modidx] != nullptr)
 			{
 				swprintf_s(temp, 72, L"%d - %s", modidx, mods[modidx]->GetLongName());
 				SendDialogMsg(hWnd, IDC_OUTPUT, CB_ADDSTRING, 0, (LPARAM)temp);
@@ -323,7 +323,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				case IDC_OUTCONF:
 				{
 					const int module = (int)SendMessage(GetDlgItem(hWnd, IDC_OUTPUT), CB_GETCURSEL, 0, 0);
-					if (mods[module] == NULL)
+					if (mods[module] == nullptr)
 						break;
 					mods[module]->Configure((uptr)hWnd);
 				}
@@ -435,7 +435,7 @@ void configure()
 {
 	INT_PTR ret;
 	ReadSettings();
-	ret = DialogBoxParam(NULL, MAKEINTRESOURCE(IDD_CONFIG), GetActiveWindow(), (DLGPROC)ConfigProc, 1);
+	ret = DialogBoxParam(nullptr, MAKEINTRESOURCE(IDD_CONFIG), GetActiveWindow(), (DLGPROC)ConfigProc, 1);
 	if (ret == -1)
 	{
 		MessageBox(GetActiveWindow(), L"Error Opening the config dialog.", L"OMG ERROR!", MB_OK | MB_SETFOREGROUND);
