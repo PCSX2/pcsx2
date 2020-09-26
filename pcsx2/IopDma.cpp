@@ -28,7 +28,7 @@ using namespace R3000A;
 
 static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore)
 {
-	const char dmaNum = spuCore ? '7' : '4';
+	const char dmaNum = spuCore ? 7 : 4;
 
 	/*if (chcr & 0x400) DevCon.Status("SPU 2 DMA %c linked list chain mode! chcr = %x madr = %x bcr = %x\n", dmaNum, chcr, madr, bcr);
 	if (chcr & 0x40000000) DevCon.Warning("SPU 2 DMA %c Unusual bit set on 'to' direction chcr = %x madr = %x bcr = %x\n", dmaNum, chcr, madr, bcr);
@@ -58,7 +58,7 @@ static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore)
 	switch (chcr)
 	{
 		case 0x01000201: //cpu to spu2 transfer
-			PSXDMA_LOG("*** DMA %c - mem2spu *** %x addr = %x size = %x", dmaNum, chcr, madr, bcr);
+			PSXDMA_LOG("*** DMA %d - mem2spu *** %x addr = %x size = %x", dmaNum, chcr, madr, bcr);
             if(dmaNum==7)
 			    SPU2writeDMA7Mem((u16 *)iopPhysMem(madr), size*2);
             else if(dmaNum==4)
@@ -66,7 +66,7 @@ static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore)
 			break;
 
 		case 0x01000200: //spu2 to cpu transfer
-			PSXDMA_LOG("*** DMA %c - spu2mem *** %x addr = %x size = %x", dmaNum, chcr, madr, bcr);
+			PSXDMA_LOG("*** DMA %d - spu2mem *** %x addr = %x size = %x", dmaNum, chcr, madr, bcr);
             if(dmaNum==7)
 			    SPU2readDMA7Mem((u16 *)iopPhysMem(madr), size*2);
             else if(dmaNum==4)
@@ -75,7 +75,7 @@ static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore)
 			break;
 
 		default:
-			Console.Error("*** DMA %c - SPU unknown *** %x addr = %x size = %x", dmaNum, chcr, madr, bcr);
+			Console.Error("*** DMA %d - SPU unknown *** %x addr = %x size = %x", dmaNum, chcr, madr, bcr);
 			break;
 	}
 }
