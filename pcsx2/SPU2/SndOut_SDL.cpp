@@ -89,7 +89,7 @@ struct SDLAudioMod : public SndOutModule
 		// Mandatory otherwise, init will be redone in SDL_OpenAudio
 		if (SDL_Init(SDL_INIT_AUDIO) < 0)
 		{
-			std::cerr << "SPU-2: SDL INIT audio error: " << SDL_GetError() << std::endl;
+			std::cerr << "SPU2: SDL INIT audio error: " << SDL_GetError() << std::endl;
 			return -1;
 		}
 
@@ -101,15 +101,15 @@ struct SDLAudioMod : public SndOutModule
 			// Reopen the audio
 			if (SDL_AudioInit(m_api.c_str()) < 0)
 			{
-				std::cerr << "SPU-2: SDL audio init error: " << SDL_GetError() << std::endl;
+				std::cerr << "SPU2: SDL audio init error: " << SDL_GetError() << std::endl;
 				return -1;
 			}
 		}
 #endif
 
-		if (SDL_OpenAudio(&spec, NULL) < 0)
+		if (SDL_OpenAudio(&spec, nullptr) < 0)
 		{
-			std::cerr << "SPU-2: SDL audio error: " << SDL_GetError() << std::endl;
+			std::cerr << "SPU2: SDL audio error: " << SDL_GetError() << std::endl;
 			return -1;
 		}
 
@@ -118,11 +118,11 @@ struct SDLAudioMod : public SndOutModule
 #endif
 
 		/* This is so ugly. It is hilariously ugly. I didn't use a vector to save reallocs. */
-		if (samples != spec.samples || buffer == NULL)
+		if (samples != spec.samples || buffer == nullptr)
 			buffer = std::unique_ptr<StereoOut_SDL[]>(new StereoOut_SDL[spec.samples]);
 		if (samples != spec.samples)
 		{
-			fprintf(stderr, "SPU-2: SDL failed to get desired samples (%d) got %d samples instead\n", samples, spec.samples);
+			fprintf(stderr, "SPU2: SDL failed to get desired samples (%d) got %d samples instead\n", samples, spec.samples);
 
 			// Samples must always be a multiple of packet size.
 			assert(spec.samples % SndOutPacketSize == 0);

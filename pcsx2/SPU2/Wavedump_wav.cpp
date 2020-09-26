@@ -67,8 +67,8 @@ namespace WaveDump
 				}
 				catch (std::runtime_error& ex)
 				{
-					printf("SPU-2 > %s.\n\tWave Log for this core source disabled.", ex.what());
-					m_CoreWav[cidx][srcidx] = NULL;
+					printf("SPU2 > %s.\n\tWave Log for this core source disabled.", ex.what());
+					m_CoreWav[cidx][srcidx] = nullptr;
 				}
 			}
 		}
@@ -91,7 +91,7 @@ namespace WaveDump
 	{
 		if (!IsDevBuild)
 			return;
-		if (m_CoreWav[coreidx][src] != NULL)
+		if (m_CoreWav[coreidx][src] != nullptr)
 			m_CoreWav[coreidx][src]->write((s16*)&sample, 2);
 	}
 
@@ -107,7 +107,7 @@ using namespace Threading;
 
 bool WavRecordEnabled = false;
 
-static WavOutFile* m_wavrecord = NULL;
+static WavOutFile* m_wavrecord = nullptr;
 static Mutex WavRecordMutex;
 
 void RecordStart(std::wstring* filename)
@@ -130,8 +130,8 @@ void RecordStart(std::wstring* filename)
 	}
 	catch (std::runtime_error&)
 	{
-		m_wavrecord = NULL; // not needed, but what the heck. :)
-		SysMessage("SPU-2 couldn't open file for recording: %s.\nRecording to wavfile disabled.", "audio_recording.wav");
+		m_wavrecord = nullptr; // not needed, but what the heck. :)
+		SysMessage("SPU2 couldn't open file for recording: %s.\nRecording to wavfile disabled.", "audio_recording.wav");
 	}
 }
 
@@ -145,7 +145,7 @@ void RecordStop()
 void RecordWrite(const StereoOut16& sample)
 {
 	ScopedLock lock(WavRecordMutex);
-	if (m_wavrecord == NULL)
+	if (m_wavrecord == nullptr)
 		return;
 	m_wavrecord->write((s16*)&sample, 2);
 }

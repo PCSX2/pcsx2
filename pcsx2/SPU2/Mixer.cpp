@@ -82,7 +82,7 @@ static void __forceinline XA_decode_block(s16* buffer, const s16* block, s32& pr
 	const s32 shift = (header & 0xF) + 16;
 	const int id = header >> 4 & 0xF;
 	if (id > 4 && MsgToConsole())
-		ConLog("* SPU-2: Unknown ADPCM coefficients table id %d\n", id);
+		ConLog("* SPU2: Unknown ADPCM coefficients table id %d\n", id);
 	const s32 pred1 = tbl_XA_Factor[id][0];
 	const s32 pred2 = tbl_XA_Factor[id][1];
 
@@ -133,7 +133,7 @@ static void __forceinline IncrementNextA(V_Core& thiscore, uint voiceidx)
 // decoded pcm data, used to cache the decoded data so that it needn't be decoded
 // multiple times.  Cache chunks are decoded when the mixer requests the blocks, and
 // invalided when DMA transfers and memory writes are performed.
-PcmCacheEntry* pcm_cache_data = NULL;
+PcmCacheEntry* pcm_cache_data = nullptr;
 
 int g_counter_cache_hits = 0;
 int g_counter_cache_misses = 0;
@@ -169,7 +169,7 @@ static __forceinline s32 GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
 					if (IsDevBuild)
 					{
 						if (MsgVoiceOff())
-							ConLog("* SPU-2: Voice Off by EndPoint: %d \n", voiceidx);
+							ConLog("* SPU2: Voice Off by EndPoint: %d \n", voiceidx);
 					}
 				}
 			}
@@ -206,7 +206,7 @@ static __forceinline s32 GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
 			vc.Prev1 = vc.SBuffer[27];
 			vc.Prev2 = vc.SBuffer[26];
 
-			//ConLog( "* SPU-2: Cache Hit! NextA=0x%x, cacheIdx=0x%x\n", vc.NextA, cacheIdx );
+			//ConLog( "* SPU2: Cache Hit! NextA=0x%x, cacheIdx=0x%x\n", vc.NextA, cacheIdx );
 
 			if (IsDevBuild)
 				g_counter_cache_hits++;
@@ -339,7 +339,7 @@ static __forceinline void CalculateADSR(V_Core& thiscore, uint voiceidx)
 		if (IsDevBuild)
 		{
 			if (MsgVoiceOff())
-				ConLog("* SPU-2: Voice Off by ADSR: %d \n", voiceidx);
+				ConLog("* SPU2: Voice Off by ADSR: %d \n", voiceidx);
 		}
 		vc.Stop();
 	}

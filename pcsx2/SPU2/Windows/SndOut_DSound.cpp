@@ -85,7 +85,7 @@ private:
 			if (FAILED(buffer->Lock(poffset, BufferSizeBytes, (LPVOID*)&p1, &s1, &p2, &s2, 0)))
 			{
 				assert(0);
-				fputs("* SPU-2: Directsound Warning > Buffer lock failure.  You may need to increase\n\tyour configured DSound buffer count.\n", stderr);
+				fputs("* SPU2: Directsound Warning > Buffer lock failure.  You may need to increase\n\tyour configured DSound buffer count.\n", stderr);
 				continue;
 			}
 			oldp1 = p1;
@@ -104,7 +104,7 @@ private:
 public:
 	s32 Init()
 	{
-		CoInitializeEx(NULL, COINIT_MULTITHREADED);
+		CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 
 		//
 		// Initialize DSound
@@ -117,13 +117,13 @@ public:
 				throw std::runtime_error("screw it");
 
 			if ((FAILED(IIDFromString(m_Device, &cGuid))) ||
-				FAILED(DirectSoundCreate8(&cGuid, &dsound, NULL)))
+				FAILED(DirectSoundCreate8(&cGuid, &dsound, nullptr)))
 				throw std::runtime_error("try again?");
 		}
 		catch (std::runtime_error&)
 		{
 			// if the GUID failed, just open up the default dsound driver:
-			if (FAILED(DirectSoundCreate8(NULL, &dsound, NULL)))
+			if (FAILED(DirectSoundCreate8(nullptr, &dsound, nullptr)))
 				throw std::runtime_error("DirectSound failed to initialize!");
 		}
 
@@ -179,7 +179,7 @@ public:
 
 			throw std::runtime_error("DirectSound Error: Buffer could not be created.");
 		}
-		if (FAILED(buffer_->QueryInterface(IID_IDirectSoundBuffer8, (void**)&buffer)) || buffer == NULL)
+		if (FAILED(buffer_->QueryInterface(IID_IDirectSoundBuffer8, (void**)&buffer)) || buffer == nullptr)
 			throw std::runtime_error("DirectSound Error: Interface could not be queried.");
 
 		buffer_->Release();
@@ -189,7 +189,7 @@ public:
 
 		for (uint i = 0; i < m_NumBuffers; i++)
 		{
-			buffer_events[i] = CreateEvent(NULL, FALSE, FALSE, NULL);
+			buffer_events[i] = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 			not[i].dwOffset = (wfx.nBlockAlign + BufferSizeBytes * (i + 1)) % desc.dwBufferBytes;
 			not[i].hEventNotify = buffer_events[i];
 		}
@@ -210,7 +210,7 @@ public:
 		// Start Thread
 		myLastWrite = 0;
 		dsound_running = true;
-		thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)RThread<StereoOut16>, this, 0, &tid);
+		thread = CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)RThread<StereoOut16>, this, 0, &tid);
 		SetThreadPriority(thread, THREAD_PRIORITY_ABOVE_NORMAL);
 
 		return 0;
@@ -219,7 +219,7 @@ public:
 	void Close()
 	{
 		// Stop Thread
-		fprintf(stderr, "* SPU-2: Waiting for DSound thread to finish...");
+		fprintf(stderr, "* SPU2: Waiting for DSound thread to finish...");
 		dsound_running = false;
 
 		WaitForSingleObject(thread, INFINITE);
@@ -230,15 +230,15 @@ public:
 		//
 		// Clean up
 		//
-		if (buffer != NULL)
+		if (buffer != nullptr)
 		{
 			buffer->Stop();
 
 			for (u32 i = 0; i < m_NumBuffers; i++)
 			{
-				if (buffer_events[i] != NULL)
+				if (buffer_events[i] != nullptr)
 					CloseHandle(buffer_events[i]);
-				buffer_events[i] = NULL;
+				buffer_events[i] = nullptr;
 			}
 
 			safe_release(buffer_notify);
@@ -285,7 +285,7 @@ private:
 				SendMessage(GetDlgItem(hWnd, IDC_DS_DEVICE), CB_RESETCONTENT, 0, 0);
 
 				ndevs = 0;
-				DirectSoundEnumerate(DSEnumCallback, NULL);
+				DirectSoundEnumerate(DSEnumCallback, nullptr);
 
 				tSel = -1;
 				for (int i = 0; i < ndevs; i++)
@@ -411,7 +411,7 @@ public:
 	virtual void Configure(uptr parent)
 	{
 		INT_PTR ret;
-		ret = DialogBoxParam(NULL, MAKEINTRESOURCE(IDD_DSOUND), (HWND)parent, (DLGPROC)ConfigProc, 1);
+		ret = DialogBoxParam(nullptr, MAKEINTRESOURCE(IDD_DSOUND), (HWND)parent, (DLGPROC)ConfigProc, 1);
 		if (ret == -1)
 		{
 			MessageBox((HWND)parent, L"Error Opening the config dialog.", L"OMG ERROR!", MB_OK | MB_SETFOREGROUND);
@@ -480,7 +480,7 @@ BOOL CALLBACK DSound::ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 BOOL CALLBACK DSound::DSEnumCallback(LPGUID lpGuid, LPCTSTR lpcstrDescription, LPCTSTR lpcstrModule, LPVOID lpContext)
 {
-	pxAssume(DSoundOut != NULL);
+	pxAssume(DSoundOut != nullptr);
 	return DS._DSEnumCallback(lpGuid, lpcstrDescription, lpcstrModule, lpContext);
 }
 

@@ -458,7 +458,7 @@ struct V_Core
 	// uninitialized constructor
 	V_Core()
 		: Index(-1)
-		, DMAPtr(NULL)
+		, DMAPtr(nullptr)
 	{
 	}
 	V_Core(int idx); // our badass constructor

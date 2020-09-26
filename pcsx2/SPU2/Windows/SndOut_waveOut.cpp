@@ -172,7 +172,7 @@ public:
 		// love it needs and won't suck resources idling pointlessly.  Just don't try to
 		// run it in uber-low-latency mode.
 		waveout_running = true;
-		thread = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)RThread<StereoOut16>, this, 0, &tid);
+		thread = CreateThread(nullptr, 0, (LPTHREAD_START_ROUTINE)RThread<StereoOut16>, this, 0, &tid);
 
 		return 0;
 	}
@@ -180,7 +180,7 @@ public:
 	void Close()
 	{
 		// Stop Thread
-		fprintf(stderr, "* SPU-2: Waiting for waveOut thread to finish...");
+		fprintf(stderr, "* SPU2: Waiting for waveOut thread to finish...");
 		waveout_running = false;
 
 		WaitForSingleObject(thread, INFINITE);
@@ -279,7 +279,7 @@ public:
 	virtual void Configure(uptr parent)
 	{
 		INT_PTR ret;
-		ret = DialogBoxParam(NULL, MAKEINTRESOURCE(IDD_WAVEOUT), (HWND)parent, (DLGPROC)ConfigProc, 1);
+		ret = DialogBoxParam(nullptr, MAKEINTRESOURCE(IDD_WAVEOUT), (HWND)parent, (DLGPROC)ConfigProc, 1);
 		if (ret == -1)
 		{
 			MessageBox((HWND)parent, L"Error Opening the config dialog.", L"OMG ERROR!", MB_OK | MB_SETFOREGROUND);

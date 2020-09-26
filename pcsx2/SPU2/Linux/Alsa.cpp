@@ -44,7 +44,7 @@ protected:
 	void _InternalCallback()
 	{
 		snd_pcm_sframes_t avail;
-		fprintf(stderr, "* SPU-2:Iz in your internal callback.\n");
+		fprintf(stderr, "* SPU2:Iz in your internal callback.\n");
 
 		avail = snd_pcm_avail_update(handle);
 		while (avail >= (int)period_time)
@@ -64,16 +64,16 @@ protected:
 	// entry point for our C++ified object state. :)
 	static void ExternalCallback(snd_async_handler_t* pcm_call)
 	{
-		fprintf(stderr, "* SPU-2:Iz in your external callback.\n");
+		fprintf(stderr, "* SPU2:Iz in your external callback.\n");
 		AlsaMod* data = (AlsaMod*)snd_async_handler_get_callback_private(pcm_call);
 
-		pxAssume(data != NULL);
+		pxAssume(data != nullptr);
 		//pxAssume( data->handle == snd_async_handler_get_pcm(pcm_call) );
 
 		// Not sure if we just need an assert, or something like this:
 		if (data->handle != snd_async_handler_get_pcm(pcm_call))
 		{
-			fprintf(stderr, "* SPU-2: Failed to handle sound.\n");
+			fprintf(stderr, "* SPU2: Failed to handle sound.\n");
 			return;
 		}
 
@@ -83,15 +83,15 @@ protected:
 public:
 	s32 Init()
 	{
-		//fprintf(stderr,"* SPU-2: Initing Alsa\n");
+		//fprintf(stderr,"* SPU2: Initing Alsa\n");
 		snd_pcm_hw_params_t* hwparams;
 		snd_pcm_sw_params_t* swparams;
 		snd_pcm_status_t* status;
 		int pchannels = 2;
 		snd_pcm_format_t format = SND_PCM_FORMAT_S16_LE;
 
-		handle = NULL;
-		pcm_callback = NULL;
+		handle = nullptr;
+		pcm_callback = nullptr;
 		pspeed = SAMPLE_RATE;
 
 		// buffer time and period time are in microseconds...
@@ -183,10 +183,10 @@ public:
 
 		// Bind our asynchronous callback magic:
 
-		if (handle == NULL)
+		if (handle == nullptr)
 			fprintf(stderr, "No handle.");
 
-		//fprintf(stderr,"* SPU-2:Iz setting your internal callback.\n");
+		//fprintf(stderr,"* SPU2:Iz setting your internal callback.\n");
 		// The external handler never seems to get called after this.
 		snd_async_add_pcm_handler(&pcm_callback, handle, ExternalCallback, this);
 		err = snd_pcm_start(handle);
@@ -204,13 +204,13 @@ public:
 
 	void Close()
 	{
-		//fprintf(stderr,"* SPU-2: Closing Alsa\n");
-		if (handle == NULL)
+		//fprintf(stderr,"* SPU2: Closing Alsa\n");
+		if (handle == nullptr)
 			return;
 
 		snd_pcm_drop(handle);
 		snd_pcm_close(handle);
-		handle = NULL;
+		handle = nullptr;
 	}
 
 	virtual void Configure(uptr parent)
@@ -226,9 +226,9 @@ public:
 
 	int GetEmptySampleCount()
 	{
-		if (handle == NULL)
+		if (handle == nullptr)
 		{
-			fprintf(stderr, "Handle is NULL!\n");
+			fprintf(stderr, "Handle is nullptr!\n");
 			return 0;
 		}
 

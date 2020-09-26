@@ -94,13 +94,13 @@ SndOutModule* mods[] =
 		SDLOut,
 		AlsaOut,
 #endif
-		NULL // signals the end of our list
+		nullptr // signals the end of our list
 };
 
 int FindOutputModuleById(const wchar_t* omodid)
 {
 	int modcnt = 0;
-	while (mods[modcnt] != NULL)
+	while (mods[modcnt] != nullptr)
 	{
 		if (wcscmp(mods[modcnt]->GetIdent(), omodid) == 0)
 			break;
@@ -115,8 +115,8 @@ __aligned(4) volatile s32 SndBuffer::m_rpos;
 __aligned(4) volatile s32 SndBuffer::m_wpos;
 
 bool SndBuffer::m_underrun_freeze;
-StereoOut32* SndBuffer::sndTempBuffer = NULL;
-StereoOut16* SndBuffer::sndTempBuffer16 = NULL;
+StereoOut32* SndBuffer::sndTempBuffer = nullptr;
+StereoOut16* SndBuffer::sndTempBuffer16 = nullptr;
 int SndBuffer::sndTempProgress = 0;
 
 int GetAlignedBufferSize(int comp)
@@ -375,7 +375,7 @@ void SndBuffer::_WriteSamples(StereoOut32* bData, int nSamples)
 
 void SndBuffer::Init()
 {
-	if (mods[OutputModule] == NULL)
+	if (mods[OutputModule] == nullptr)
 	{
 		_InitFail();
 		return;
@@ -512,7 +512,7 @@ void SndBuffer::Write(const StereoOut32& Sample)
 
 s32 SndBuffer::Test()
 {
-	if (mods[OutputModule] == NULL)
+	if (mods[OutputModule] == nullptr)
 		return -1;
 
 	return mods[OutputModule]->Test();

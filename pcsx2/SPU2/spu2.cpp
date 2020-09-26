@@ -42,7 +42,7 @@ static bool IsInitialized = false;
 
 static u32 pClocks = 0;
 
-u32* cyclePtr = NULL;
+u32* cyclePtr = nullptr;
 u32 lClocks = 0;
 //static bool cpu_detected = false;
 
@@ -58,7 +58,7 @@ static bool CheckSSE()
 	}
 	if( !x86caps.hasStreamingSIMDExtensions || !x86caps.hasStreamingSIMD2Extensions )
 	{
-		SysMessage( "Your CPU does not support SSE2 instructions.\nThe SPU-2 plugin requires SSE2 to run." );
+		SysMessage( "Your CPU does not support SSE2 instructions.\nThe SPU2 plugin requires SSE2 to run." );
 		return false;
 	}
 	return true;
@@ -104,7 +104,7 @@ void SPU2setLogDir(const char* dir)
 
 void SPU2readDMA4Mem(u16* pMem, u32 size) // size now in 16bit units
 {
-	if (cyclePtr != NULL)
+	if (cyclePtr != nullptr)
 		TimeUpdate(*cyclePtr);
 
 	FileLog("[%10d] SPU2 readDMA4Mem size %x\n", Cycles, size << 1);
@@ -113,7 +113,7 @@ void SPU2readDMA4Mem(u16* pMem, u32 size) // size now in 16bit units
 
 void SPU2writeDMA4Mem(u16* pMem, u32 size) // size now in 16bit units
 {
-	if (cyclePtr != NULL)
+	if (cyclePtr != nullptr)
 		TimeUpdate(*cyclePtr);
 
 	FileLog("[%10d] SPU2 writeDMA4Mem size %x at address %x\n", Cycles, size << 1, Cores[0].TSA);
@@ -140,7 +140,7 @@ void SPU2interruptDMA7()
 
 void SPU2readDMA7Mem(u16* pMem, u32 size)
 {
-	if (cyclePtr != NULL)
+	if (cyclePtr != nullptr)
 		TimeUpdate(*cyclePtr);
 
 	FileLog("[%10d] SPU2 readDMA7Mem size %x\n", Cycles, size << 1);
@@ -149,7 +149,7 @@ void SPU2readDMA7Mem(u16* pMem, u32 size)
 
 void SPU2writeDMA7Mem(u16* pMem, u32 size)
 {
-	if (cyclePtr != NULL)
+	if (cyclePtr != nullptr)
 		TimeUpdate(*cyclePtr);
 
 	FileLog("[%10d] SPU2 writeDMA7Mem size %x at address %x\n", Cycles, size << 1, Cores[1].TSA);
@@ -173,7 +173,7 @@ s32 SPU2reset()
 		}
 		catch (std::exception& ex)
 		{
-			fprintf(stderr, "SPU-2 Error: Could not initialize device, or something.\nReason: %s", ex.what());
+			fprintf(stderr, "SPU2 Error: Could not initialize device, or something.\nReason: %s", ex.what());
 			SPU2close();
 			return -1;
 		}
@@ -204,7 +204,7 @@ s32 SPU2ps1reset()
 		}
 		catch (std::exception& ex)
 		{
-			fprintf(stderr, "SPU-2 Error: Could not initialize device, or something.\nReason: %s", ex.what());
+			fprintf(stderr, "SPU2 Error: Could not initialize device, or something.\nReason: %s", ex.what());
 			SPU2close();
 			return -1;
 		}
@@ -222,11 +222,11 @@ s32 SPU2ps1reset()
 
 s32 SPU2init()
 {
-	assert(regtable[0x400] == NULL);
+	assert(regtable[0x400] == nullptr);
 
 	if (IsInitialized)
 	{
-		printf(" * SPU-2: Already initialized - Ignoring SPU2init signal.");
+		printf(" * SPU2: Already initialized - Ignoring SPU2init signal.");
 		return 0;
 	}
 
@@ -239,11 +239,11 @@ s32 SPU2init()
 	if (AccessLog())
 	{
 		spu2Log = OpenLog(AccessLogFileName);
-		setvbuf(spu2Log, NULL, _IONBF, 0);
+		setvbuf(spu2Log, nullptr, _IONBF, 0);
 		FileLog("SPU2init\n");
 	}
 #endif
-	srand((unsigned)time(NULL));
+	srand((unsigned)time(nullptr));
 
 	spu2regs = (s16*)malloc(0x010000);
 	_spu2mem = (s16*)malloc(0x200000);
@@ -257,13 +257,13 @@ s32 SPU2init()
 
 	pcm_cache_data = (PcmCacheEntry*)calloc(pcm_BlockCount, sizeof(PcmCacheEntry));
 
-	if ((spu2regs == NULL) || (_spu2mem == NULL) || (pcm_cache_data == NULL))
+	if ((spu2regs == nullptr) || (_spu2mem == nullptr) || (pcm_cache_data == nullptr))
 	{
-		SysMessage("SPU-2: Error allocating Memory\n");
+		SysMessage("SPU2: Error allocating Memory\n");
 		return -1;
 	}
 
-	// Patch up a copy of regtable that directly maps "NULLs" to SPU2 memory.
+	// Patch up a copy of regtable that directly maps "nullptrs" to SPU2 memory.
 
 	memcpy(regtable, regtable_original, sizeof(regtable));
 
@@ -338,7 +338,7 @@ s32 SPU2open(void* pDsp)
 
 	FileLog("[%10d] SPU2 Open\n", Cycles);
 
-	if (pDsp != NULL)
+	if (pDsp != nullptr)
 		gsWindowHandle = *(uptr*)pDsp;
 	else
 		gsWindowHandle = 0;
@@ -349,7 +349,7 @@ s32 SPU2open(void* pDsp)
 	{
 		if (debugDialogOpen == 0)
 		{
-			hDebugDialog = CreateDialogParam(NULL, MAKEINTRESOURCE(IDD_DEBUG), 0, DebugProc, 0);
+			hDebugDialog = CreateDialogParam(nullptr, MAKEINTRESOURCE(IDD_DEBUG), 0, DebugProc, 0);
 			ShowWindow(hDebugDialog, SW_SHOWNORMAL);
 			debugDialogOpen = 1;
 		}
@@ -363,7 +363,7 @@ s32 SPU2open(void* pDsp)
 #endif
 
 	IsOpened = true;
-	lClocks = (cyclePtr != NULL) ? *cyclePtr : 0;
+	lClocks = (cyclePtr != nullptr) ? *cyclePtr : 0;
 
 	try
 	{
@@ -376,7 +376,7 @@ s32 SPU2open(void* pDsp)
 	}
 	catch (std::exception& ex)
 	{
-		fprintf(stderr, "SPU-2 Error: Could not initialize device, or something.\nReason: %s", ex.what());
+		fprintf(stderr, "SPU2 Error: Could not initialize device, or something.\nReason: %s", ex.what());
 		SPU2close();
 		return -1;
 	}
@@ -408,7 +408,7 @@ void SPU2shutdown()
 	IsInitialized = false;
 	SPU2_dummy_callback = false;
 
-	ConLog("* SPU-2: Shutting down.\n");
+	ConLog("* SPU2: Shutting down.\n");
 
 	SPU2close();
 
@@ -458,7 +458,7 @@ void SPU2async(u32 cycles)
 {
 	DspUpdate();
 
-	if (cyclePtr != NULL)
+	if (cyclePtr != nullptr)
 	{
 		TimeUpdate(*cyclePtr);
 	}
@@ -540,7 +540,7 @@ u16 SPU2read(u32 rmem)
 	}
 	else
 	{
-		if (cyclePtr != NULL)
+		if (cyclePtr != nullptr)
 			TimeUpdate(*cyclePtr);
 
 		if (rmem >> 16 == 0x1f80)
@@ -550,7 +550,7 @@ u16 SPU2read(u32 rmem)
 		else if (mem >= 0x800)
 		{
 			ret = spu2Ru16(mem);
-			ConLog("* SPU-2: Read from reg>=0x800: %x value %x\n", mem, ret);
+			ConLog("* SPU2: Read from reg>=0x800: %x value %x\n", mem, ret);
 		}
 		else
 		{
@@ -574,7 +574,7 @@ void SPU2write(u32 rmem, u16 value)
 	// If the SPU2 isn't in in sync with the IOP, samples can end up playing at rather
 	// incorrect pitches and loop lengths.
 
-	if (cyclePtr != NULL)
+	if (cyclePtr != nullptr)
 		TimeUpdate(*cyclePtr);
 
 	if (rmem >> 16 == 0x1f80)
@@ -601,10 +601,10 @@ int SPU2setupRecording(int start, std::wstring* filename)
 
 s32 SPU2freeze(int mode, freezeData* data)
 {
-	pxAssume(data != NULL);
+	pxAssume(data != nullptr);
 	if (!data)
 	{
-		printf("SPU-2 savestate null pointer!\n");
+		printf("SPU2 savestate null pointer!\n");
 		return -1;
 	}
 
@@ -616,9 +616,9 @@ s32 SPU2freeze(int mode, freezeData* data)
 
 	pxAssume(mode == FREEZE_LOAD || mode == FREEZE_SAVE);
 
-	if (data->data == NULL)
+	if (data->data == nullptr)
 	{
-		printf("SPU-2 savestate null pointer!\n");
+		printf("SPU2 savestate null pointer!\n");
 		return -1;
 	}
 
@@ -648,10 +648,10 @@ void SPU2DoFreezeOut(void* dest)
 	if (!fP.size)
 		return;
 
-	Console.Indent().WriteLn("Saving SPU-2");
+	Console.Indent().WriteLn("Saving SPU2");
 
 	if (SPU2freeze(FREEZE_SAVE, &fP) != 0)
-		throw std::runtime_error(" * SPU-2: Error saving state!\n");
+		throw std::runtime_error(" * SPU2: Error saving state!\n");
 }
 
 
@@ -659,18 +659,18 @@ void SPU2DoFreezeIn(pxInputStream& infp)
 {
 	ScopedLock lock(mtx_SPU2Status);
 
-	freezeData fP = {0, NULL};
+	freezeData fP = {0, nullptr};
 	if (SPU2freeze(FREEZE_SIZE, &fP) != 0)
 		fP.size = 0;
 
-	Console.Indent().WriteLn("Loading SPU-2");
+	Console.Indent().WriteLn("Loading SPU2");
 
 	if (!infp.IsOk() || !infp.Length())
 	{
-		// no state data to read, but SPU-2 expects some state data?
+		// no state data to read, but SPU2 expects some state data?
 		// Issue a warning to console...
 		if (fP.size != 0)
-			Console.Indent().Warning("Warning: No data for SPU-2 found. Status may be unpredictable.");
+			Console.Indent().Warning("Warning: No data for SPU2 found. Status may be unpredictable.");
 
 		return;
 
@@ -685,5 +685,5 @@ void SPU2DoFreezeIn(pxInputStream& infp)
 
 	infp.Read(fP.data, fP.size);
 	if (SPU2freeze(FREEZE_LOAD, &fP) != 0)
-		throw std::runtime_error(" * SPU-2: Error loading state!\n");
+		throw std::runtime_error(" * SPU2: Error loading state!\n");
 }
