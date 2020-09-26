@@ -58,7 +58,7 @@ static bool CheckSSE()
 	}
 	if( !x86caps.hasStreamingSIMDExtensions || !x86caps.hasStreamingSIMD2Extensions )
 	{
-		SysMessage( "Your CPU does not support SSE2 instructions.\nThe SPU2-X plugin requires SSE2 to run." );
+		SysMessage( "Your CPU does not support SSE2 instructions.\nThe SPU-2 plugin requires SSE2 to run." );
 		return false;
 	}
 	return true;
@@ -173,7 +173,7 @@ s32 SPU2reset()
 		}
 		catch (std::exception& ex)
 		{
-			fprintf(stderr, "SPU2-X Error: Could not initialize device, or something.\nReason: %s", ex.what());
+			fprintf(stderr, "SPU-2 Error: Could not initialize device, or something.\nReason: %s", ex.what());
 			SPU2close();
 			return -1;
 		}
@@ -204,7 +204,7 @@ s32 SPU2ps1reset()
 		}
 		catch (std::exception& ex)
 		{
-			fprintf(stderr, "SPU2-X Error: Could not initialize device, or something.\nReason: %s", ex.what());
+			fprintf(stderr, "SPU-2 Error: Could not initialize device, or something.\nReason: %s", ex.what());
 			SPU2close();
 			return -1;
 		}
@@ -226,7 +226,7 @@ s32 SPU2init()
 
 	if (IsInitialized)
 	{
-		printf(" * SPU2-X: Already initialized - Ignoring SPU2init signal.");
+		printf(" * SPU-2: Already initialized - Ignoring SPU2init signal.");
 		return 0;
 	}
 
@@ -259,7 +259,7 @@ s32 SPU2init()
 
 	if ((spu2regs == NULL) || (_spu2mem == NULL) || (pcm_cache_data == NULL))
 	{
-		SysMessage("SPU2-X: Error allocating Memory\n");
+		SysMessage("SPU-2: Error allocating Memory\n");
 		return -1;
 	}
 
@@ -376,7 +376,7 @@ s32 SPU2open(void* pDsp)
 	}
 	catch (std::exception& ex)
 	{
-		fprintf(stderr, "SPU2-X Error: Could not initialize device, or something.\nReason: %s", ex.what());
+		fprintf(stderr, "SPU-2 Error: Could not initialize device, or something.\nReason: %s", ex.what());
 		SPU2close();
 		return -1;
 	}
@@ -408,7 +408,7 @@ void SPU2shutdown()
 	IsInitialized = false;
 	SPU2_dummy_callback = false;
 
-	ConLog("* SPU2-X: Shutting down.\n");
+	ConLog("* SPU-2: Shutting down.\n");
 
 	SPU2close();
 
@@ -550,7 +550,7 @@ u16 SPU2read(u32 rmem)
 		else if (mem >= 0x800)
 		{
 			ret = spu2Ru16(mem);
-			ConLog("* SPU2-X: Read from reg>=0x800: %x value %x\n", mem, ret);
+			ConLog("* SPU-2: Read from reg>=0x800: %x value %x\n", mem, ret);
 		}
 		else
 		{
@@ -604,7 +604,7 @@ s32 SPU2freeze(int mode, freezeData* data)
 	pxAssume(data != NULL);
 	if (!data)
 	{
-		printf("SPU2-X savestate null pointer!\n");
+		printf("SPU-2 savestate null pointer!\n");
 		return -1;
 	}
 
@@ -618,7 +618,7 @@ s32 SPU2freeze(int mode, freezeData* data)
 
 	if (data->data == NULL)
 	{
-		printf("SPU2-X savestate null pointer!\n");
+		printf("SPU-2 savestate null pointer!\n");
 		return -1;
 	}
 

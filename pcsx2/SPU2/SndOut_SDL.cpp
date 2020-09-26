@@ -89,7 +89,7 @@ struct SDLAudioMod : public SndOutModule
 		// Mandatory otherwise, init will be redone in SDL_OpenAudio
 		if (SDL_Init(SDL_INIT_AUDIO) < 0)
 		{
-			std::cerr << "SPU2-X: SDL INIT audio error: " << SDL_GetError() << std::endl;
+			std::cerr << "SPU-2: SDL INIT audio error: " << SDL_GetError() << std::endl;
 			return -1;
 		}
 
@@ -101,7 +101,7 @@ struct SDLAudioMod : public SndOutModule
 			// Reopen the audio
 			if (SDL_AudioInit(m_api.c_str()) < 0)
 			{
-				std::cerr << "SPU2-X: SDL audio init error: " << SDL_GetError() << std::endl;
+				std::cerr << "SPU-2: SDL audio init error: " << SDL_GetError() << std::endl;
 				return -1;
 			}
 		}
@@ -109,7 +109,7 @@ struct SDLAudioMod : public SndOutModule
 
 		if (SDL_OpenAudio(&spec, NULL) < 0)
 		{
-			std::cerr << "SPU2-X: SDL audio error: " << SDL_GetError() << std::endl;
+			std::cerr << "SPU-2: SDL audio error: " << SDL_GetError() << std::endl;
 			return -1;
 		}
 
@@ -122,7 +122,7 @@ struct SDLAudioMod : public SndOutModule
 			buffer = std::unique_ptr<StereoOut_SDL[]>(new StereoOut_SDL[spec.samples]);
 		if (samples != spec.samples)
 		{
-			fprintf(stderr, "SPU2-X: SDL failed to get desired samples (%d) got %d samples instead\n", samples, spec.samples);
+			fprintf(stderr, "SPU-2: SDL failed to get desired samples (%d) got %d samples instead\n", samples, spec.samples);
 
 			// Samples must always be a multiple of packet size.
 			assert(spec.samples % SndOutPacketSize == 0);

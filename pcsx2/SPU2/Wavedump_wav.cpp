@@ -67,7 +67,7 @@ namespace WaveDump
 				}
 				catch (std::runtime_error& ex)
 				{
-					printf("SPU2-X > %s.\n\tWave Log for this core source disabled.", ex.what());
+					printf("SPU-2 > %s.\n\tWave Log for this core source disabled.", ex.what());
 					m_CoreWav[cidx][srcidx] = NULL;
 				}
 			}
@@ -131,7 +131,7 @@ void RecordStart(std::wstring* filename)
 	catch (std::runtime_error&)
 	{
 		m_wavrecord = NULL; // not needed, but what the heck. :)
-		SysMessage("SPU2-X couldn't open file for recording: %s.\nRecording to wavfile disabled.", "audio_recording.wav");
+		SysMessage("SPU-2 couldn't open file for recording: %s.\nRecording to wavfile disabled.", "audio_recording.wav");
 	}
 }
 

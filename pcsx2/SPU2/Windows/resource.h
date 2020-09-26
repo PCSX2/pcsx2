@@ -1,7 +1,6 @@
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by Spu2-X.rc
-//
+// Used by SPU2.rc
 #define IDD_CONFIG 9
 #define IDD_DEBUG 105
 #define IDD_DSOUND 106

@@ -57,7 +57,7 @@ void SetIrqCall(int core)
 __forceinline s16* GetMemPtr(u32 addr)
 {
 #ifndef DEBUG_FAST
-	// In case you're wondering, this assert is the reason SPU2-X
+	// In case you're wondering, this assert is the reason SPU-2
 	// runs so incrediously slow in Debug mode. :P
 	pxAssume(addr < 0x100000);
 #endif
@@ -83,7 +83,7 @@ __forceinline void spu2M_Write(u32 addr, s16 value)
 		pcm_cache_data[cacheIdx].Validated = false;
 
 		if (MsgToConsole() && MsgCache())
-			ConLog("* SPU2-X: PcmCache Block Clear at 0x%x (cacheIdx=0x%x)\n", addr, cacheIdx);
+			ConLog("* SPU-2: PcmCache Block Clear at 0x%x (cacheIdx=0x%x)\n", addr, cacheIdx);
 	}
 	*GetMemPtr(addr) = value;
 }
@@ -118,7 +118,7 @@ V_Core::~V_Core() throw()
 
 void V_Core::Init(int index)
 {
-	ConLog("* SPU2-X: Init SPU2 core %d \n", index);
+	ConLog("* SPU-2: Init SPU2 core %d \n", index);
 	//memset(this, 0, sizeof(V_Core));
 	// Explicitly initializing variables instead.
 	Mute = false;
@@ -415,7 +415,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 	{
 		if (has_to_call_irq)
 		{
-			//ConLog("* SPU2-X: Irq Called (%04x) at cycle %d.\n", Spdif.Info, Cycles);
+			//ConLog("* SPU-2: Irq Called (%04x) at cycle %d.\n", Spdif.Info, Cycles);
 			has_to_call_irq = false;
 			if (!SPU2_dummy_callback)
 				spu2Irq();
@@ -486,7 +486,7 @@ __forceinline void UpdateSpdifMode()
 	if (Spdif.Out & 0x4) // use 24/32bit PCM data streaming
 	{
 		PlayMode = 8;
-		ConLog("* SPU2-X: WARNING: Possibly CDDA mode set!\n");
+		ConLog("* SPU-2: WARNING: Possibly CDDA mode set!\n");
 		return;
 	}
 
@@ -506,12 +506,12 @@ __forceinline void UpdateSpdifMode()
 	}
 	if (OPM != PlayMode)
 	{
-		ConLog("* SPU2-X: Play Mode Set to %s (%d).\n",
+		ConLog("* SPU-2: Play Mode Set to %s (%d).\n",
 			   (PlayMode == 0) ? "Normal" : ((PlayMode == 1) ? "PCM Clone" : ((PlayMode == 2) ? "PCM Bypass" : "BitStream Bypass")), PlayMode);
 	}
 }
 
-// Converts an SPU2 register volume write into a 32 bit SPU2-X volume.  The value is extended
+// Converts an SPU2 register volume write into a 32 bit SPU-2 volume.  The value is extended
 // properly into the lower 16 bits of the value to provide a full spectrum of volumes.
 static s32 GetVol32(u16 src)
 {
@@ -714,12 +714,12 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 
 			case 0x1da4:
 				IRQA = map_spu1to2(value);
-				//ConLog("SPU2-X Setting IRQA to %x \n", IRQA);
+				//ConLog("SPU-2 Setting IRQA to %x \n", IRQA);
 				break;
 
 			case 0x1da6:
 				TSA = map_spu1to2(value);
-				//ConLog("SPU2-X Setting TSA to %x \n", TSA);
+				//ConLog("SPU-2 Setting TSA to %x \n", TSA);
 				break;
 
 			case 0x1da8: // Spu Write to Memory
@@ -986,11 +986,11 @@ u16 V_Core::ReadRegPS1(u32 mem)
 				break;
 			case 0x1da4:
 				value = map_spu2to1(IRQA);
-				//ConLog("SPU2-X IRQA read: 0x1da4 = %x , (IRQA = %x)\n", value, IRQA);
+				//ConLog("SPU-2 IRQA read: 0x1da4 = %x , (IRQA = %x)\n", value, IRQA);
 				break;
 			case 0x1da6:
 				value = map_spu2to1(TSA);
-				//ConLog("SPU2-X TSA read: 0x1da6 = %x , (TSA = %x)\n", value, TSA);
+				//ConLog("SPU-2 TSA read: 0x1da6 = %x , (TSA = %x)\n", value, TSA);
 				break;
 			case 0x1da8:
 				value = DmaRead();
@@ -998,14 +998,14 @@ u16 V_Core::ReadRegPS1(u32 mem)
 				break;
 			case 0x1daa:
 				value = Cores[0].Regs.ATTR;
-				//ConLog("SPU2-X ps1 reg psxSPUCNT read return value: %x\n", value);
+				//ConLog("SPU-2 ps1 reg psxSPUCNT read return value: %x\n", value);
 				break;
 			case 0x1dac: // 1F801DACh - Sound RAM Data Transfer Control (should be 0004h)
 				value = psxSoundDataTransferControl;
 				break;
 			case 0x1dae:
 				value = Cores[0].Regs.STATX;
-				//ConLog("SPU2-X ps1 reg REG_P_STATX read return value: %x\n", value);
+				//ConLog("SPU-2 ps1 reg REG_P_STATX read return value: %x\n", value);
 				break;
 		}
 
@@ -1230,17 +1230,17 @@ static void __fastcall RegWrite_Core(u16 value)
 			if (value & 0x000E)
 			{
 				if (MsgToConsole())
-					ConLog("* SPU2-X: Core %d ATTR unknown bits SET! value=%04x\n", core, value);
+					ConLog("* SPU-2: Core %d ATTR unknown bits SET! value=%04x\n", core, value);
 			}
 
 			if (thiscore.AttrBit0 != bit0)
 			{
 				if (MsgToConsole())
-					ConLog("* SPU2-X: ATTR bit 0 set to %d\n", thiscore.AttrBit0);
+					ConLog("* SPU-2: ATTR bit 0 set to %d\n", thiscore.AttrBit0);
 			}
 			if (thiscore.IRQEnable != irqe)
 			{
-				//ConLog("* SPU2-X: Core%d IRQ %s at cycle %d. Current IRQA = %x Current EffectA = %x\n",
+				//ConLog("* SPU-2: Core%d IRQ %s at cycle %d. Current IRQA = %x Current EffectA = %x\n",
 				//	core, ((thiscore.IRQEnable==0)?"disabled":"enabled"), Cycles, thiscore.IRQA, thiscore.EffectsStartA);
 
 				if (!thiscore.IRQEnable)
@@ -1417,10 +1417,10 @@ static void __fastcall RegWrite_Core(u16 value)
 
 		case REG_S_ADMAS:
 			if (MsgToConsole())
-				ConLog("* SPU2-X: Core %d AutoDMAControl set to %d (at cycle %d)\n", core, value, Cycles);
+				ConLog("* SPU-2: Core %d AutoDMAControl set to %d (at cycle %d)\n", core, value, Cycles);
 
 			if (psxmode)
-				ConLog("* SPU2-X: Writing to REG_S_ADMAS while in PSX mode! value: %x", value);
+				ConLog("* SPU-2: Writing to REG_S_ADMAS while in PSX mode! value: %x", value);
 			// hack for ps1driver which writes -1 (and never turns the adma off after psxlogo).
 			// adma isn't available in psx mode either
 			if (value == 32767)
@@ -1873,7 +1873,7 @@ void StartVoices(int core, u32 value)
 			V_Voice& thisvc(Cores[core].Voices[vc]);
 
 			if (MsgKeyOnOff())
-				ConLog("* SPU2-X: KeyOn: C%dV%02d: SSA: %8x; M: %s%s%s%s; H: %04x; P: %04x V: %04x/%04x; ADSR: %04x%04x\n",
+				ConLog("* SPU-2: KeyOn: C%dV%02d: SSA: %8x; M: %s%s%s%s; H: %04x; P: %04x V: %04x/%04x; ADSR: %04x%04x\n",
 					   core, vc, thisvc.StartA,
 					   (Cores[core].VoiceGates[vc].DryL) ? "+" : "-", (Cores[core].VoiceGates[vc].DryR) ? "+" : "-",
 					   (Cores[core].VoiceGates[vc].WetL) ? "+" : "-", (Cores[core].VoiceGates[vc].WetR) ? "+" : "-",
@@ -1896,6 +1896,6 @@ void StopVoices(int core, u32 value)
 
 		Cores[core].Voices[vc].ADSR.Releasing = true;
 		if (MsgKeyOnOff())
-			ConLog("* SPU2-X: KeyOff: Core %d; Voice %d.\n", core, vc);
+			ConLog("* SPU-2: KeyOff: Core %d; Voice %d.\n", core, vc);
 	}
 }

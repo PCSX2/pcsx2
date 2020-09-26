@@ -153,8 +153,8 @@ void ReadSettings()
 	if (mods[OutputModule] == NULL)
 	{
 		// Unsupported or legacy module.
-		fwprintf(stderr, L"* SPU2-X: Unknown output module '%s' specified in configuration file.\n", omodid);
-		fprintf(stderr, "* SPU2-X: Defaulting to DirectSound (%S).\n", DSoundOut->GetIdent());
+		fwprintf(stderr, L"* SPU-2: Unknown output module '%s' specified in configuration file.\n", omodid);
+		fprintf(stderr, "* SPU-2: Defaulting to DirectSound (%S).\n", DSoundOut->GetIdent());
 		OutputModule = FindOutputModuleById(DSoundOut->GetIdent());
 	}
 }
@@ -438,7 +438,6 @@ void configure()
 	ret = DialogBoxParam(NULL, MAKEINTRESOURCE(IDD_CONFIG), GetActiveWindow(), (DLGPROC)ConfigProc, 1);
 	if (ret == -1)
 	{
-		DWORD dw = GetLastError(); 
 		MessageBox(GetActiveWindow(), L"Error Opening the config dialog.", L"OMG ERROR!", MB_OK | MB_SETFOREGROUND);
 		return;
 	}

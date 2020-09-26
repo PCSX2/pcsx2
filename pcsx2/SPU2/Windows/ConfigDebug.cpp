@@ -38,7 +38,7 @@ bool _RegDump = false;
 
 bool _visual_debug_enabled = false;
 
-// this is set true if PCSX2 invokes the SetLogDir callback, which tells SPU2-X to use that over
+// this is set true if PCSX2 invokes the SetLogDir callback, which tells SPU-2 to use that over
 // the configured crap in the ini file.
 static bool LogLocationSetByPcsx2 = false;
 

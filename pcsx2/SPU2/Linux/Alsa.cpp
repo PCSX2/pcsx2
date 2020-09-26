@@ -44,7 +44,7 @@ protected:
 	void _InternalCallback()
 	{
 		snd_pcm_sframes_t avail;
-		fprintf(stderr, "* SPU2-X:Iz in your internal callback.\n");
+		fprintf(stderr, "* SPU-2:Iz in your internal callback.\n");
 
 		avail = snd_pcm_avail_update(handle);
 		while (avail >= (int)period_time)
@@ -64,7 +64,7 @@ protected:
 	// entry point for our C++ified object state. :)
 	static void ExternalCallback(snd_async_handler_t* pcm_call)
 	{
-		fprintf(stderr, "* SPU2-X:Iz in your external callback.\n");
+		fprintf(stderr, "* SPU-2:Iz in your external callback.\n");
 		AlsaMod* data = (AlsaMod*)snd_async_handler_get_callback_private(pcm_call);
 
 		pxAssume(data != NULL);
@@ -73,7 +73,7 @@ protected:
 		// Not sure if we just need an assert, or something like this:
 		if (data->handle != snd_async_handler_get_pcm(pcm_call))
 		{
-			fprintf(stderr, "* SPU2-X: Failed to handle sound.\n");
+			fprintf(stderr, "* SPU-2: Failed to handle sound.\n");
 			return;
 		}
 
@@ -83,7 +83,7 @@ protected:
 public:
 	s32 Init()
 	{
-		//fprintf(stderr,"* SPU2-X: Initing Alsa\n");
+		//fprintf(stderr,"* SPU-2: Initing Alsa\n");
 		snd_pcm_hw_params_t* hwparams;
 		snd_pcm_sw_params_t* swparams;
 		snd_pcm_status_t* status;
@@ -186,7 +186,7 @@ public:
 		if (handle == NULL)
 			fprintf(stderr, "No handle.");
 
-		//fprintf(stderr,"* SPU2-X:Iz setting your internal callback.\n");
+		//fprintf(stderr,"* SPU-2:Iz setting your internal callback.\n");
 		// The external handler never seems to get called after this.
 		snd_async_add_pcm_handler(&pcm_callback, handle, ExternalCallback, this);
 		err = snd_pcm_start(handle);
@@ -204,7 +204,7 @@ public:
 
 	void Close()
 	{
-		//fprintf(stderr,"* SPU2-X: Closing Alsa\n");
+		//fprintf(stderr,"* SPU-2: Closing Alsa\n");
 		if (handle == NULL)
 			return;
 

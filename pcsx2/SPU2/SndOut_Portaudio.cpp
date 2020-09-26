@@ -141,14 +141,14 @@ public:
 		PaError err = Pa_Initialize();
 		if (err != paNoError)
 		{
-			fprintf(stderr, "* SPU2-X: PortAudio error: %s\n", Pa_GetErrorText(err));
+			fprintf(stderr, "* SPU-2: PortAudio error: %s\n", Pa_GetErrorText(err));
 			return -1;
 		}
 		started = true;
 
 		int deviceIndex = -1;
 
-		fprintf(stderr, "* SPU2-X: Enumerating PortAudio devices:\n");
+		fprintf(stderr, "* SPU-2: Enumerating PortAudio devices:\n");
 		for (int i = 0, j = 0; i < Pa_GetDeviceCount(); i++)
 		{
 			const PaDeviceInfo* info = Pa_GetDeviceInfo(i);
@@ -306,7 +306,7 @@ public:
 		}
 		if (err != paNoError)
 		{
-			fprintf(stderr, "* SPU2-X: PortAudio error: %s\n", Pa_GetErrorText(err));
+			fprintf(stderr, "* SPU-2: PortAudio error: %s\n", Pa_GetErrorText(err));
 			Pa_Terminate();
 			return -1;
 		}
@@ -314,7 +314,7 @@ public:
 		err = Pa_StartStream(stream);
 		if (err != paNoError)
 		{
-			fprintf(stderr, "* SPU2-X: PortAudio error: %s\n", Pa_GetErrorText(err));
+			fprintf(stderr, "* SPU-2: PortAudio error: %s\n", Pa_GetErrorText(err));
 			Pa_CloseStream(stream);
 			stream = NULL;
 			Pa_Terminate();
@@ -335,12 +335,12 @@ public:
 				{
 					err = Pa_StopStream(stream);
 					if (err != paNoError)
-						fprintf(stderr, "* SPU2-X: PortAudio error: %s\n", Pa_GetErrorText(err));
+						fprintf(stderr, "* SPU-2: PortAudio error: %s\n", Pa_GetErrorText(err));
 				}
 
 				err = Pa_CloseStream(stream);
 				if (err != paNoError)
-					fprintf(stderr, "* SPU2-X: PortAudio error: %s\n", Pa_GetErrorText(err));
+					fprintf(stderr, "* SPU-2: PortAudio error: %s\n", Pa_GetErrorText(err));
 
 				stream = NULL;
 			}
@@ -348,7 +348,7 @@ public:
 			// Seems to do more harm than good.
 			//PaError err = Pa_Terminate();
 			//if( err != paNoError )
-			//	fprintf(stderr,"* SPU2-X: PortAudio error: %s\n", Pa_GetErrorText( err ) );
+			//	fprintf(stderr,"* SPU-2: PortAudio error: %s\n", Pa_GetErrorText( err ) );
 
 			started = false;
 		}
@@ -550,7 +550,7 @@ public:
 		PaError err = Pa_Initialize(); // Initialization can be done multiple times, PA keeps a counter
 		if (err != paNoError)
 		{
-			fprintf(stderr, "* SPU2-X: PortAudio error: %s\n", Pa_GetErrorText(err));
+			fprintf(stderr, "* SPU-2: PortAudio error: %s\n", Pa_GetErrorText(err));
 			return;
 		}
 		// keep portaudio initialized until the dialog closes
