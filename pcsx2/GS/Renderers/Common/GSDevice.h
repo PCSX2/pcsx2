@@ -26,30 +26,34 @@
 #include <dxgi.h>
 #endif
 
-enum ShaderConvert
+enum class ShaderConvert
 {
-	ShaderConvert_COPY = 0,
-	ShaderConvert_RGBA8_TO_16_BITS,
-	ShaderConvert_DATM_1,
-	ShaderConvert_DATM_0,
-	ShaderConvert_MOD_256,
-	ShaderConvert_SCANLINE = 5,
-	ShaderConvert_DIAGONAL_FILTER,
-	ShaderConvert_TRANSPARENCY_FILTER,
-	ShaderConvert_TRIANGULAR_FILTER,
-	ShaderConvert_COMPLEX_FILTER,
-	ShaderConvert_FLOAT32_TO_32_BITS = 10,
-	ShaderConvert_FLOAT32_TO_RGBA8,
-	ShaderConvert_FLOAT16_TO_RGB5A1,
-	ShaderConvert_RGBA8_TO_FLOAT32 = 13,
-	ShaderConvert_RGBA8_TO_FLOAT24,
-	ShaderConvert_RGBA8_TO_FLOAT16,
-	ShaderConvert_RGB5A1_TO_FLOAT16,
-	ShaderConvert_RGBA_TO_8I = 17,
-	ShaderConvert_YUV,
-	ShaderConvert_OSD,
-	ShaderConvert_Count
+	COPY = 0,
+	RGBA8_TO_16_BITS,
+	DATM_1,
+	DATM_0,
+	MOD_256,
+	SCANLINE = 5,
+	DIAGONAL_FILTER,
+	TRANSPARENCY_FILTER,
+	TRIANGULAR_FILTER,
+	COMPLEX_FILTER,
+	FLOAT32_TO_32_BITS = 10,
+	FLOAT32_TO_RGBA8,
+	FLOAT16_TO_RGB5A1,
+	RGBA8_TO_FLOAT32 = 13,
+	RGBA8_TO_FLOAT24,
+	RGBA8_TO_FLOAT16,
+	RGB5A1_TO_FLOAT16,
+	RGBA_TO_8I = 17,
+	YUV,
+	OSD,
+	Count
 };
+
+/// Get the name of a shader
+/// (Can't put methods on an enum class)
+const char* shaderName(ShaderConvert value);
 
 enum ChannelFetch
 {
@@ -200,7 +204,7 @@ public:
 	virtual bool Reset(int w, int h);
 	virtual bool IsLost(bool update = false) { return false; }
 	virtual void Present(const GSVector4i& r, int shader);
-	virtual void Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, int shader = 0);
+	virtual void Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY);
 	virtual void Flip() {}
 
 	virtual void SetVSync(int vsync) { m_vsync = vsync; }
@@ -226,13 +230,13 @@ public:
 	GSTexture* CreateTexture(int w, int h, int format = 0);
 	GSTexture* CreateOffscreen(int w, int h, int format = 0);
 
-	virtual GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, int ps_shader = 0) { return NULL; }
+	virtual GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, ShaderConvert ps_shader = ShaderConvert::COPY) { return NULL; }
 
 	virtual void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r) {}
-	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader = 0, bool linear = true) {}
+	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) {}
 	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, bool red, bool green, bool blue, bool alpha) {}
 
-	void StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, int shader = 0, bool linear = true);
+	void StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true);
 
 	virtual void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1) {}
 	virtual void PSSetShaderResource(int i, GSTexture* sRect) {}

@@ -18,6 +18,36 @@
 #include "GS/GSGL.h"
 #include "GS/GS.h"
 
+const char* shaderName(ShaderConvert value)
+{
+	switch (value)
+	{
+		case ShaderConvert::COPY:                return "ps_copy";
+		case ShaderConvert::RGBA8_TO_16_BITS:    return "ps_convert_rgba8_16bits";
+		case ShaderConvert::DATM_1:              return "ps_datm1";
+		case ShaderConvert::DATM_0:              return "ps_datm0";
+		case ShaderConvert::MOD_256:             return "ps_mod256";
+		case ShaderConvert::SCANLINE:            return "ps_filter_scanlines";
+		case ShaderConvert::DIAGONAL_FILTER:     return "ps_filter_diagonal";
+		case ShaderConvert::TRANSPARENCY_FILTER: return "ps_filter_transparency";
+		case ShaderConvert::TRIANGULAR_FILTER:   return "ps_filter_triangular";
+		case ShaderConvert::COMPLEX_FILTER:      return "ps_filter_complex";
+		case ShaderConvert::FLOAT32_TO_32_BITS:  return "ps_convert_float32_32bits";
+		case ShaderConvert::FLOAT32_TO_RGBA8:    return "ps_convert_float32_rgba8";
+		case ShaderConvert::FLOAT16_TO_RGB5A1:   return "ps_convert_float16_rgb5a1";
+		case ShaderConvert::RGBA8_TO_FLOAT32:    return "ps_convert_rgba8_float32";
+		case ShaderConvert::RGBA8_TO_FLOAT24:    return "ps_convert_rgba8_float24";
+		case ShaderConvert::RGBA8_TO_FLOAT16:    return "ps_convert_rgba8_float16";
+		case ShaderConvert::RGB5A1_TO_FLOAT16:   return "ps_convert_rgb5a1_float16";
+		case ShaderConvert::RGBA_TO_8I:          return "ps_convert_rgba_8i";
+		case ShaderConvert::YUV:                 return "ps_yuv";
+		case ShaderConvert::OSD:                 return "ps_osd";
+		default:
+			ASSERT(0);
+			return "ShaderConvertUnknownShader";
+	}
+}
+
 GSDevice::GSDevice()
 	: m_vsync(false)
 	, m_rbswapped(false)
@@ -89,9 +119,9 @@ void GSDevice::Present(const GSVector4i& r, int shader)
 
 	if (m_current)
 	{
-		static int s_shader[5] = {ShaderConvert_COPY, ShaderConvert_SCANLINE,
-			ShaderConvert_DIAGONAL_FILTER, ShaderConvert_TRIANGULAR_FILTER,
-			ShaderConvert_COMPLEX_FILTER}; // FIXME
+		static constexpr ShaderConvert s_shader[5] = {ShaderConvert::COPY, ShaderConvert::SCANLINE,
+			ShaderConvert::DIAGONAL_FILTER, ShaderConvert::TRIANGULAR_FILTER,
+			ShaderConvert::COMPLEX_FILTER}; // FIXME
 
 		Present(m_current, m_backbuffer, GSVector4(r), s_shader[shader]);
 		RenderOsd(m_backbuffer);
@@ -100,7 +130,7 @@ void GSDevice::Present(const GSVector4i& r, int shader)
 	Flip();
 }
 
-void GSDevice::Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, int shader)
+void GSDevice::Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader)
 {
 	StretchRect(sTex, dTex, dRect, shader, m_linear_present);
 }
@@ -223,7 +253,7 @@ GSTexture* GSDevice::CreateOffscreen(int w, int h, int format)
 	return FetchSurface(GSTexture::Offscreen, w, h, format);
 }
 
-void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, int shader, bool linear)
+void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
 {
 	StretchRect(sTex, GSVector4(0, 0, 1, 1), dTex, dRect, shader, linear);
 }
@@ -315,7 +345,7 @@ void GSDevice::ExternalFX()
 		const GSVector4 sRect(0, 0, 1, 1);
 		const GSVector4 dRect(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert_TRANSPARENCY_FILTER, false);
+		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert::TRANSPARENCY_FILTER, false);
 		DoExternalFX(m_target_tmp, m_current);
 	}
 }
@@ -329,7 +359,7 @@ void GSDevice::FXAA()
 		const GSVector4 sRect(0, 0, 1, 1);
 		const GSVector4 dRect(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert_TRANSPARENCY_FILTER, false);
+		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert::TRANSPARENCY_FILTER, false);
 		DoFXAA(m_target_tmp, m_current);
 	}
 }
@@ -343,7 +373,7 @@ void GSDevice::ShadeBoost()
 		const GSVector4 sRect(0, 0, 1, 1);
 		const GSVector4 dRect(0, 0, s.x, s.y);
 
-		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert_COPY, false);
+		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert::COPY, false);
 		DoShadeBoost(m_target_tmp, m_current);
 	}
 }

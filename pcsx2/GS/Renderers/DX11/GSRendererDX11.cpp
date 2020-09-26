@@ -893,7 +893,7 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 		hdr_rt = dev->CreateRenderTarget(rtsize.x, rtsize.y, DXGI_FORMAT_R32G32B32A32_FLOAT);
 		// Warning: StretchRect must be called before BeginScene otherwise
 		// vertices will be overwritten. Trust me you don't want to do that.
-		dev->StretchRect(rt, sRect, hdr_rt, dRect, ShaderConvert_COPY, false);
+		dev->StretchRect(rt, sRect, hdr_rt, dRect, ShaderConvert::COPY, false);
 	}
 
 	if (m_ps_sel.dfmt == 1)
@@ -1180,7 +1180,7 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	{
 		const GSVector4 dRect(ComputeBoundingBox(rtscale, rtsize));
 		const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
-		dev->StretchRect(hdr_rt, sRect, rt, dRect, ShaderConvert_MOD_256, false);
+		dev->StretchRect(hdr_rt, sRect, rt, dRect, ShaderConvert::MOD_256, false);
 
 		dev->Recycle(hdr_rt);
 	}
