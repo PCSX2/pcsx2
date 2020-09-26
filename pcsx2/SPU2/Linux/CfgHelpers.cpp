@@ -13,15 +13,21 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "AppConfig.h"
 #include "Dialogs.h"
 #include <wx/fileconf.h>
 
 wxFileConfig* spuConfig = nullptr;
-wxString path(L"~/.config/PCSX2/inis/SPU2.ini");
+wxString path(L"SPU2.ini");
 bool pathSet = false;
 
 void initIni()
 {
+	if(!pathSet) 
+	{
+		path = GetSettingsFolder().Combine( path ).GetFullPath();
+		pathSet = true;
+	}
 	if (spuConfig == nullptr)
 		spuConfig = new wxFileConfig(L"", L"", path, L"", wxCONFIG_USE_LOCAL_FILE);
 }
@@ -35,7 +41,7 @@ void setIni(const wchar_t* Section)
 void CfgSetSettingsDir(const char* dir)
 {
 	FileLog("CfgSetSettingsDir(%s)\n", dir);
-	path = wxString::FromUTF8(dir) + L"/SPU2.ini";
+	path = Path::Combine((dir == nullptr) ? wxString(L"inis") : wxString::FromUTF8(dir), L"SPU2.ini");
 	pathSet = true;
 }
 
