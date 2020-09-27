@@ -417,7 +417,6 @@ public:
 			MessageBox((HWND)parent, L"Error Opening the config dialog.", L"OMG ERROR!", MB_OK | MB_SETFOREGROUND);
 			return;
 		}
-		
 	}
 
 	s32 Test() const
@@ -428,6 +427,8 @@ public:
 	int GetEmptySampleCount()
 	{
 		DWORD play, write;
+		if (buffer == nullptr)
+            return 0;
 		buffer->GetCurrentPosition(&play, &write);
 
 		// Note: Dsound's write cursor is bogus.  Use our own instead:
