@@ -113,6 +113,7 @@ set(dev9ghzdrkFinalLibs
 )
 
 add_pcsx2_plugin(${Output} "${dev9ghzdrkFinalSources}" "${dev9ghzdrkFinalLibs}" "${dev9ghzdrkFinalFlags}")
+target_compile_features(${Output} PRIVATE cxx_std_17)
 
 #if(PACKAGE_MODE)
 #    install(FILES Linux/dev9ghzdrk.ui DESTINATION bin )

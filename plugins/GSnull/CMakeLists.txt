@@ -75,3 +75,4 @@ set(GSnullFinalLibs
 )
 
 add_pcsx2_plugin(${Output} "${GSnullFinalSources}" "${GSnullFinalLibs}" "${GSnullFinalFlags}")
+target_compile_features(${Output} PRIVATE cxx_std_17)

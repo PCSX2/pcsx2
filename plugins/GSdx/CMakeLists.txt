@@ -262,11 +262,15 @@ else()
         # Don't append -SSE2 on the first build to keep same name as SIMD build
         add_pcsx2_plugin("${Output}" "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
         add_pcsx2_plugin("${Output}-SSE4" "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags} -mssse3 -msse4 -msse4.1")
+        target_compile_features("${Output}-SSE4" PRIVATE cxx_std_17)
         add_pcsx2_plugin("${Output}-AVX2" "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags} -mavx -mavx2 -mbmi -mbmi2")
+        target_compile_features("${Output}-AVX2" PRIVATE cxx_std_17)
     else()
         add_pcsx2_plugin(${Output} "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
     endif()
 endif()
+
+target_compile_features(${Output} PRIVATE cxx_std_17)
 
 ################################### Replay Loader
 if(BUILD_REPLAY_LOADERS)
@@ -275,4 +279,5 @@ if(BUILD_REPLAY_LOADERS)
         linux_replay.cpp
     )
     add_pcsx2_executable(${Replay} "${GSdxReplayLoaderFinalSources}" "${LIBC_LIBRARIES}" "${GSdxFinalFlags}")
+    target_compile_features(${Replay} PRIVATE cxx_std_17)
 endif(BUILD_REPLAY_LOADERS)

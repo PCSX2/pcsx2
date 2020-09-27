@@ -54,3 +54,4 @@ set(SPU2nullFinalLibs
 )
 
 add_pcsx2_plugin(${Output} "${SPU2nullFinalSources}" "${SPU2nullFinalLibs}" "${SPU2nullFinalFlags}")
+target_compile_features(${Output} PRIVATE cxx_std_17)
