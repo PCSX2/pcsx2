@@ -438,6 +438,53 @@ void GSRendererHW::Lines2Sprites()
 	}
 }
 
+void GSRendererHW::EmulateAtst(const GSTextureCache::Source* tex, GSVector4& FogColor_AREF, uint8& ps_atst, const bool pass_2)
+{
+	static const uint32 inverted_atst[] = {ATST_ALWAYS, ATST_NEVER, ATST_GEQUAL, ATST_GREATER, ATST_NOTEQUAL, ATST_LESS, ATST_LEQUAL, ATST_EQUAL};
+
+	if (!m_context->TEST.ATE)
+		return;
+
+	// Check for pass 2, otherwise do pass 1.
+	const int atst = pass_2 ? inverted_atst[m_context->TEST.ATST] : m_context->TEST.ATST;
+
+	switch (atst)
+	{
+		case ATST_LESS:
+			FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
+			ps_atst = 1;
+			break;
+		case ATST_LEQUAL:
+			FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
+			ps_atst = 1;
+			break;
+		case ATST_GEQUAL:
+			// Maybe a -1 trick multiplication factor could be used to merge with ATST_LEQUAL case
+			FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
+			ps_atst = 2;
+			break;
+		case ATST_GREATER:
+			// Maybe a -1 trick multiplication factor could be used to merge with ATST_LESS case
+			FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
+			ps_atst = 2;
+			break;
+		case ATST_EQUAL:
+			FogColor_AREF.a = (float)m_context->TEST.AREF;
+			ps_atst = 3;
+			break;
+		case ATST_NOTEQUAL:
+			FogColor_AREF.a = (float)m_context->TEST.AREF;
+			ps_atst = 4;
+			break;
+
+		case ATST_NEVER: // Draw won't be done so no need to implement it in shader
+		case ATST_ALWAYS:
+		default:
+			ps_atst = 0;
+			break;
+	}
+}
+
 // Fix the vertex position/tex_coordinate from 16 bits color to 32 bits color
 void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 {
