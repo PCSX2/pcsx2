@@ -466,12 +466,14 @@ void MainEmuFrame::CreateCaptureMenu()
 
 void MainEmuFrame::CreateRecordMenu()
 {
+#ifndef DISABLE_RECORDING
 	m_menuRecording.Append(MenuId_Recording_New, _("New"));
 	m_menuRecording.Append(MenuId_Recording_Stop, _("Stop"))->Enable(false);
 	m_menuRecording.Append(MenuId_Recording_Play, _("Play"));
 	m_menuRecording.AppendSeparator();
 	m_menuRecording.Append(MenuId_Recording_VirtualPad_Port0, _("Virtual Pad (Port 1)"));
 	m_menuRecording.Append(MenuId_Recording_VirtualPad_Port1, _("Virtual Pad (Port 2)"));
+#endif
 }
 
 void MainEmuFrame::CreateHelpMenu()

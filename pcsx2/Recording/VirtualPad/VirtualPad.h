@@ -43,14 +43,21 @@ public:
 	// - PadData will not be updated if ReadOnly mode is set
 	// - returns a bool to indicate if the PadData has been updated
 	bool UpdateControllerData(u16 const bufIndex, PadData* padData);
-	// Enables ReadOnly mode and disables GUI widgets
-	void SetReadOnlyMode();
-	// Disables ReadOnly mode and re-enables GUI widgets
-	void ClearReadOnlyMode();
+	// Enables/Disables read only mode and enables/disables GUI widgets
+	void SetReadOnlyMode(bool readOnly);
 	// To be called at maximum, once per frame to update widget's value and re-render the VirtualPad's graphics
 	void Redraw();
 
 private:
+	/// Constants
+	const wxSize SPINNER_SIZE = wxSize(100, 40);
+	static const int ANALOG_SLIDER_WIDTH = 185;
+	static const int ANALOG_SLIDER_HEIGHT = 30;
+
+	static const int PRESSURE_MAX = 255;
+	static const int ANALOG_NEUTRAL = 127;
+	static const int ANALOG_MAX = 255;
+
 	AppConfig::InputRecordingOptions& options;
 
 	bool clearScreenRequired = false;
@@ -65,10 +72,11 @@ private:
 	std::vector<VirtualPadElement*> virtualPadElements;
 	std::queue<VirtualPadElement*> renderQueue;
 
-	void enablePadElements(bool enable);
+	void enableUiElements(bool enable);
 
 	/// GUI Elements
 	wxCheckBox* ignoreRealControllerBox;
+	wxButton* resetButton;
 
 	std::map<wxWindowID, ControllerNormalButton*> buttonElements;
 	std::map<wxWindowID, ControllerPressureButton*> pressureElements;
@@ -84,21 +92,24 @@ private:
 
 	void OnAnalogSliderChange(wxCommandEvent& event);
 	void OnAnalogSpinnerChange(wxCommandEvent& event);
-	void OnIgnoreRealController(wxCommandEvent const& event);
+	void OnIgnoreRealController(wxCommandEvent& event);
 	void OnNormalButtonPress(wxCommandEvent& event);
 	void OnPressureButtonPressureChange(wxCommandEvent& event);
+	void OnResetButton(wxCommandEvent& event);
 
 	/// GUI Creation Utility Functions
 	float scalingFactor = 1.0;
+	bool floatCompare(float A, float B, float epsilon = 0.005f);
 
+	wxSize ScaledSize(wxSize size);
 	wxSize ScaledSize(int x, int y);
-	wxPoint ScaledPoint(wxPoint point, int widgetWidth = 0, bool rightAligned = false);
-	wxPoint ScaledPoint(int x, int y, int widgetWidth = 0, bool rightAligned = false);
+	wxPoint ScaledPoint(wxPoint point, wxSize widgetSize = wxDefaultSize, bool rightAlignedCoord = false, bool bottomAlignedCoord = false);
+	wxPoint ScaledPoint(int x, int y, int widgetWidth, int widgetHeight, bool rightAlignedCoord = false, bool bottomAlignedCoord = false);
 
-	ImageFile NewBitmap(wxImage resource, wxPoint imgCoord);
+	ImageFile NewBitmap(wxImage resource, wxPoint imgCoord, bool dontScale = false);
 	ImageFile NewBitmap(float scalingFactor, wxImage resource, wxPoint imgCoord);
 
-	void InitPressureButtonGuiElements(ControllerPressureButton& button, ImageFile image, wxWindow* parentWindow, wxPoint pressureSpinnerCoord, bool rightAlignedCoord = false);
+	void InitPressureButtonGuiElements(ControllerPressureButton& button, ImageFile image, wxWindow* parentWindow, wxPoint pressureSpinnerCoord, bool rightAlignedCoord = false, bool bottomAlignedCoord = false);
 	void InitNormalButtonGuiElements(ControllerNormalButton& btn, ImageFile image, wxWindow* parentWindow, wxPoint checkboxCoord);
 	void InitAnalogStickGuiElements(AnalogStick& analog, wxWindow* parentWindow, wxPoint centerPoint, int radius, wxPoint xSliderPoint,
 									wxPoint ySliderPoint, bool flipYSlider, wxPoint xSpinnerPoint, wxPoint ySpinnerPoint, bool rightAlignedSpinners = false);

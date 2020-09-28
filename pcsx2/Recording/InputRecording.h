@@ -24,7 +24,7 @@ class InputRecording
 {
 public:
 	InputRecording();
-    
+
 	// Save or load PCSX2's global frame counter (g_FrameCount) along with each full/fast boot
 	//
 	// This is to prevent any inaccuracy issues caused by having a different
@@ -34,26 +34,26 @@ public:
 
 	// Main handler for ingesting input data and either saving it to the recording file (recording)
 	// or mutating it to the contents of the recording file (replaying)
-	void ControllerInterrupt(u8 &data, u8 &port, u16 &BufCount, u8 buf[]);
+	void ControllerInterrupt(u8& data, u8& port, u16& BufCount, u8 buf[]);
 
 	// The running frame counter for the input recording
 	s32 GetFrameCounter();
 
-	InputRecordingFile &GetInputRecordingData();
+	InputRecordingFile& GetInputRecordingData();
 
 	// The internal PCSX2 g_FrameCount value on the first frame of the recording
 	u32 GetStartingFrame();
 
 	void IncrementFrameCounter();
 
-	// DEPRECATED: Slated for removal 
+	// DEPRECATED: Slated for removal
 	// If the current frame contains controller / input data
 	bool IsInterruptFrame();
 
 	// If there is currently an input recording being played back or actively being recorded
 	bool IsActive();
 
-	// Whether or not the recording's initial state has yet to be loaded or saved and 
+	// Whether or not the recording's initial state has yet to be loaded or saved and
 	// the rest of the recording can be initialized
 	// This is not applicable to recordings from a "power-on" state
 	bool IsInitialLoad();
@@ -78,7 +78,7 @@ public:
 
 	// Store the starting internal PCSX2 g_FrameCount value
 	void SetStartingFrame(u32 newStartingFrame);
-	
+
 	/// Functions called from GUI
 
 	// Create a new input recording file
@@ -87,8 +87,8 @@ public:
 	bool Play(wxString filename);
 	// Stop the active input recording
 	void Stop();
-
-	void setVirtualPadPtr(VirtualPad *ptr, int const port);
+	// Initialze VirtualPad window
+	void setVirtualPadPtr(VirtualPad* ptr, int const port);
 
 private:
 	enum class InputRecordingMode
@@ -99,16 +99,16 @@ private:
 	};
 
 	static const int CONTROLLER_PORT_ONE = 0;
-    static const int CONTROLLER_PORT_TWO = 1;
+	static const int CONTROLLER_PORT_TWO = 1;
 
 	// 0x42 is the magic number to indicate the default controller read query
 	// See - Lilypad.cpp::PADpoll - https://github.com/PCSX2/pcsx2/blob/v1.5.0-dev/plugins/LilyPad/LilyPad.cpp#L1193
 	static const u8 READ_DATA_AND_VIBRATE_FIRST_BYTE = 0x42;
 	// 0x5A is always the second byte in the buffer when the normal READ_DATA_AND_VIBRATE (0x42) query is executed.
 	// See - LilyPad.cpp::PADpoll - https://github.com/PCSX2/pcsx2/blob/v1.5.0-dev/plugins/LilyPad/LilyPad.cpp#L1194
-    static const u8 READ_DATA_AND_VIBRATE_SECOND_BYTE = 0x5A;
+	static const u8 READ_DATA_AND_VIBRATE_SECOND_BYTE = 0x5A;
 
-	// DEPRECATED: Slated for removal 
+	// DEPRECATED: Slated for removal
 	bool fInterruptFrame = false;
 	InputRecordingFile inputRecordingData;
 	bool initialLoad = false;
@@ -116,13 +116,13 @@ private:
 	s32 frameCounter = 0;
 	bool incrementUndo = false;
 	InputRecordingMode state = InputRecording::InputRecordingMode::NotActive;
-    
+
 	// Controller Data
-	PadData *padData[2];
+	PadData* padData[2];
 
 	// VirtualPads
-	VirtualPad *virtualPads[2];
-	
+	VirtualPad* virtualPads[2];
+
 	// Resolve the name and region of the game currently loaded using the GameDB
 	// If the game cannot be found in the DB, the fallback is the ISO filename
 	wxString resolveGameName();

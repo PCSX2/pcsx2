@@ -184,9 +184,7 @@ wxString PadData::RawPadBytesToString(int start, int end)
 	{
 		str += wxString::Format("%d", PollControllerData(i));
 		if (i != end - 1)
-		{
 			str += ", ";
-		}
 	}
 	return str;
 }

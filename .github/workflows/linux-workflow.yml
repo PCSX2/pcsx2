@@ -78,13 +78,13 @@ jobs:
           string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
           message("::set-output name=timestamp::${current_date}")
 
-      # - name: ccache cache files
-      #   uses: actions/cache@v2
-      #   with:
-      #     path: .ccache
-      #     key: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-${{ matrix.compiler-version }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
-      #     restore-keys: |
-      #       ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-${{ matrix.compiler-version }}-ccache-
+      - name: ccache cache files
+        uses: actions/cache@v2
+        with:
+          path: .ccache
+          key: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-${{ matrix.compiler-version }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: |
+            ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-${{ matrix.compiler-version }}-ccache-
 
       - name: Install Packages
         env:
@@ -102,4 +102,3 @@ jobs:
           chmod +x .github/workflows/scripts/build-linux.sh
           ./.github/workflows/scripts/build-linux.sh generate_cmake
           ./.github/workflows/scripts/build-linux.sh compile
-          ls ./pcsx2/Recording/VirtualPad/img
