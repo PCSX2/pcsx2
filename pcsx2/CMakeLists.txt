@@ -507,7 +507,9 @@ set(pcsx2RecordingHeaders
 set(res_rec_vp_src "${CMAKE_SOURCE_DIR}/pcsx2/Recording/VirtualPad/img")
 set(pcsx2RecordingVirtualPadResources
 	${res_rec_vp_src}/circlePressed.h
-	${res_rec_vp_src}/controller.h
+	${res_rec_vp_src}/controllerFull.h
+	${res_rec_vp_src}/controllerHalf.h
+	${res_rec_vp_src}/controllerThreeQuarters.h
 	${res_rec_vp_src}/crossPressed.h
 	${res_rec_vp_src}/downPressed.h
 	${res_rec_vp_src}/l1Pressed.h
@@ -760,7 +762,7 @@ endforeach()
 ### Generate Recording resource files
 ### Drop them into the folder alongside the png files
 foreach(res_file IN ITEMS
-				circlePressed controller crossPressed downPressed l1Pressed l2Pressed l3Pressed leftPressed
+				circlePressed controllerFull controllerHalf controllerThreeQuarters crossPressed downPressed l1Pressed l2Pressed l3Pressed leftPressed
 				r1Pressed r2Pressed r3Pressed rightPressed selectPressed squarePressed startPressed trianglePressed upPressed)
     add_custom_command(OUTPUT  "${res_rec_vp_src}/${res_file}.h" COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${res_rec_vp_src}/${res_file}.png" "${res_rec_vp_src}/${res_file}" )
 endforeach()

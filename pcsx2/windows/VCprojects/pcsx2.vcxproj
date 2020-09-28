@@ -145,7 +145,15 @@
       <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
     <!-- Generate Recording GUI Image Headers -->
-    <CustomBuild Include="..\..\Recording\VirtualPad\img\controller.png">
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\controllerFull.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\controllerThreeQuarters.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\controllerHalf.png">
       <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
       <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>

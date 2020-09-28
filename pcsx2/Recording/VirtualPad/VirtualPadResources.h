@@ -25,6 +25,7 @@
 #include "wx/gdicmn.h"
 #include "wx/slider.h"
 #include "wx/spinctrl.h"
+#include "wx/dcbuffer.h"
 
 struct ImageFile
 {
@@ -63,8 +64,12 @@ class VirtualPadElement
 public:
 	bool currentlyRendered = false;
 
+	wxCommandEvent ConstructEvent(wxEventTypeTag<wxCommandEvent> eventType, wxWindow *obj);
+	wxCommandEvent ConstructEvent(wxEventTypeTag<wxSpinEvent> eventType, wxWindow *obj);
+
 	virtual void EnableWidgets(bool enable) = 0;
 	virtual void Render(wxDC& dc) = 0;
+	virtual void Reset(wxEvtHandler* destWindow) = 0;
 	virtual void UpdateGuiElement(std::queue<VirtualPadElement*>& renderQueue, bool& clearScreenRequired) = 0;
 };
 
@@ -88,6 +93,7 @@ public:
 	bool UpdateData(bool& padDataVal, bool ignoreRealController, bool readOnly);
 	void EnableWidgets(bool enable) override;
 	void Render(wxDC& dc) override;
+	void Reset(wxEvtHandler* destWindow) override;
 	void UpdateGuiElement(std::queue<VirtualPadElement*>& renderQueue, bool& clearScreenRequired) override;
 };
 
@@ -106,6 +112,7 @@ public:
 	bool UpdateData(u8& padDataVal, bool ignoreRealController, bool readOnly);
 	void EnableWidgets(bool enable) override;
 	void Render(wxDC& dc) override;
+	void Reset(wxEvtHandler* destWindow) override;
 	void UpdateGuiElement(std::queue<VirtualPadElement*>& renderQueue, bool& clearScreenRequired) override;
 };
 
@@ -119,6 +126,7 @@ public:
 
 	void EnableWidgets(bool enable) override;
 	void Render(wxDC& dc) override;
+	void Reset(wxEvtHandler* destWindow) override;
 	void UpdateGuiElement(std::queue<VirtualPadElement*>& renderQueue, bool& clearScreenRequired) override;
 };
 

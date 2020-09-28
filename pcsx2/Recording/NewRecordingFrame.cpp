@@ -19,13 +19,13 @@
 
 
 #ifndef DISABLE_RECORDING
-NewRecordingFrame::NewRecordingFrame(wxWindow *parent)
+NewRecordingFrame::NewRecordingFrame(wxWindow* parent)
 	: wxDialog(parent, wxID_ANY, "New Input Recording", wxDefaultPosition, wxDefaultSize, wxSTAY_ON_TOP | wxCAPTION)
 {
-	wxPanel *panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _("panel"));
+	wxPanel* panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _("panel"));
 
-	wxFlexGridSizer *fgs = new wxFlexGridSizer(4, 2, 20, 20);
-	wxBoxSizer *container = new wxBoxSizer(wxVERTICAL);
+	wxFlexGridSizer* fgs = new wxFlexGridSizer(4, 2, 20, 20);
+	wxBoxSizer* container = new wxBoxSizer(wxVERTICAL);
 
 	m_fileLabel = new wxStaticText(panel, wxID_ANY, _("File Path"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
 	m_authorLabel = new wxStaticText(panel, wxID_ANY, _("Author"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
@@ -65,7 +65,8 @@ wxString NewRecordingFrame::GetFile() const
 	wxString path = m_filePicker->GetPath();
 	// wxWidget's removes the extension if it contains wildcards
 	// on wxGTK https://trac.wxwidgets.org/ticket/15285
-	if (!path.EndsWith(".p2m2")) {
+	if (!path.EndsWith(".p2m2"))
+	{
 		return wxString::Format("%s.p2m2", path);
 	}
 	return path;

@@ -22,21 +22,31 @@
 #include "Recording/VirtualPad/VirtualPadResources.h"
 #include "Recording/PadData.h"
 
+wxCommandEvent VirtualPadElement::ConstructEvent(wxEventTypeTag<wxCommandEvent> eventType, wxWindow* obj)
+{
+	wxCommandEvent event(eventType, obj->GetId());
+	event.SetEventObject(obj);
+	return event;
+}
+
+wxCommandEvent VirtualPadElement::ConstructEvent(wxEventTypeTag<wxSpinEvent> eventType, wxWindow* obj)
+{
+	wxCommandEvent event(eventType, obj->GetId());
+	event.SetEventObject(obj);
+	return event;
+}
+
 void ControllerNormalButton::UpdateGuiElement(std::queue<VirtualPadElement*>& renderQueue, bool& clearScreenRequired)
 {
 	ControllerNormalButton& button = *this;
 	// This boolean is set when we parse the PadData in VirtualPadData::UpdateVirtualPadData
 	// Updating wxWidget elements can be expensive, we only want to do this if required
 	if (button.widgetUpdateRequired)
-	{
 		button.pressedBox->SetValue(button.pressed);
-	}
 
 	// We only render the button if it is pressed
 	if (button.pressed)
-	{
 		renderQueue.push(this);
-	}
 	// However, if the button has been drawn to the screen in the past
 	// we need to ensure the screen is cleared.
 	// This is needed in the scenario where only a single button is being pressed/released
@@ -52,14 +62,10 @@ void ControllerPressureButton::UpdateGuiElement(std::queue<VirtualPadElement*>& 
 {
 	ControllerPressureButton& button = *this;
 	if (button.widgetUpdateRequired)
-	{
 		button.pressureSpinner->SetValue(button.pressure);
-	}
 
 	if (button.pressed)
-	{
 		renderQueue.push(this);
-	}
 	else if (button.currentlyRendered)
 	{
 		button.currentlyRendered = false;
@@ -83,9 +89,7 @@ void AnalogStick::UpdateGuiElement(std::queue<VirtualPadElement*>& renderQueue, 
 
 	// We render the analog sticks as long as they are not in the neutral position
 	if (!(analogStick.xVector.val == PadData::ANALOG_VECTOR_NEUTRAL && analogStick.yVector.val == PadData::ANALOG_VECTOR_NEUTRAL))
-	{
 		renderQueue.push(this);
-	}
 	else if (analogStick.currentlyRendered)
 	{
 		analogStick.currentlyRendered = false;
@@ -95,47 +99,20 @@ void AnalogStick::UpdateGuiElement(std::queue<VirtualPadElement*>& renderQueue, 
 
 void ControllerNormalButton::EnableWidgets(bool enable)
 {
-	ControllerNormalButton& button = *this;
-	if (enable)
-	{
-		button.pressedBox->Enable();
-	}
-	else
-	{
-		button.pressedBox->Disable();
-	}
+	this->pressedBox->Enable(enable);
 }
 
 void ControllerPressureButton::EnableWidgets(bool enable)
 {
-	ControllerPressureButton& button = *this;
-	if (enable)
-	{
-		button.pressureSpinner->Enable();
-	}
-	else
-	{
-		button.pressureSpinner->Disable();
-	}
+	this->pressureSpinner->Enable(enable);
 }
 
 void AnalogStick::EnableWidgets(bool enable)
 {
-	AnalogStick& analog = *this;
-	if (enable)
-	{
-		analog.xVector.slider->Enable();
-		analog.yVector.slider->Enable();
-		analog.xVector.spinner->Enable();
-		analog.yVector.spinner->Enable();
-	}
-	else
-	{
-		analog.xVector.slider->Disable();
-		analog.yVector.slider->Disable();
-		analog.xVector.spinner->Disable();
-		analog.yVector.spinner->Disable();
-	}
+	this->xVector.slider->Enable(enable);
+	this->yVector.slider->Enable(enable);
+	this->xVector.spinner->Enable(enable);
+	this->yVector.spinner->Enable(enable);
 }
 
 void ControllerNormalButton::Render(wxDC& dc)
@@ -179,6 +156,30 @@ void AnalogStick::Render(wxDC& dc)
 	dc.DrawCircle(analogPos.endCoords, wxCoord(analogPos.lineThickness));
 	dc.SetPen(wxNullPen);
 	analogStick.currentlyRendered = true;
+}
+
+void ControllerNormalButton::Reset(wxEvtHandler* destWindow)
+{
+	this->pressedBox->SetValue(false);
+	wxPostEvent(destWindow, ConstructEvent(wxEVT_CHECKBOX, this->pressedBox));
+}
+
+void ControllerPressureButton::Reset(wxEvtHandler* destWindow)
+{
+	this->pressureSpinner->SetValue(0);
+	wxPostEvent(destWindow, ConstructEvent(wxEVT_SPINCTRL, this->pressureSpinner));
+}
+
+void AnalogStick::Reset(wxEvtHandler* destWindow)
+{
+	this->xVector.slider->SetValue(127);
+	this->yVector.slider->SetValue(127);
+	wxPostEvent(destWindow, ConstructEvent(wxEVT_SLIDER, this->xVector.slider));
+	wxPostEvent(destWindow, ConstructEvent(wxEVT_SLIDER, this->yVector.slider));
+	this->xVector.spinner->SetValue(127);
+	this->xVector.spinner->SetValue(127);
+	wxPostEvent(destWindow, ConstructEvent(wxEVT_SPINCTRL, this->xVector.spinner));
+	wxPostEvent(destWindow, ConstructEvent(wxEVT_SPINCTRL, this->yVector.spinner));
 }
 
 bool ControllerNormalButton::UpdateData(bool& padDataVal, bool ignoreRealController, bool readOnly)
