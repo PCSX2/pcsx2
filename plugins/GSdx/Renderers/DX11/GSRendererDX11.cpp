@@ -113,50 +113,6 @@ void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 	dev->IASetPrimitiveTopology(t);
 }
 
-void GSRendererDX11::EmulateAtst(const int pass, const GSTextureCache::Source* tex)
-{
-	static const uint32 inverted_atst[] = {ATST_ALWAYS, ATST_NEVER, ATST_GEQUAL, ATST_GREATER, ATST_NOTEQUAL, ATST_LESS, ATST_LEQUAL, ATST_EQUAL};
-	int atst = (pass == 2) ? inverted_atst[m_context->TEST.ATST] : m_context->TEST.ATST;
-
-	if (!m_context->TEST.ATE) return;
-
-	switch (atst)
-	{
-		case ATST_LESS:
-			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
-			m_ps_sel.atst = 1;
-			break;
-		case ATST_LEQUAL:
-			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
-			m_ps_sel.atst = 1;
-			break;
-		case ATST_GEQUAL:
-			// Maybe a -1 trick multiplication factor could be used to merge with ATST_LEQUAL case
-			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f;
-			m_ps_sel.atst = 2;
-			break;
-		case ATST_GREATER:
-			// Maybe a -1 trick multiplication factor could be used to merge with ATST_LESS case
-			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF - 0.1f + 1.0f;
-			m_ps_sel.atst = 2;
-			break;
-		case ATST_EQUAL:
-			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
-			m_ps_sel.atst = 3;
-			break;
-		case ATST_NOTEQUAL:
-			ps_cb.FogColor_AREF.a = (float)m_context->TEST.AREF;
-			m_ps_sel.atst = 4;
-			break;
-
-		case ATST_NEVER: // Draw won't be done so no need to implement it in shader
-		case ATST_ALWAYS:
-		default:
-			m_ps_sel.atst = 0;
-			break;
-	}
-}
-
 void GSRendererDX11::EmulateZbuffer()
 {
 	if (m_context->TEST.ZTE)
@@ -1016,11 +972,12 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	// pass to handle the depth based on the alpha test.
 	bool ate_RGBA_then_Z = false;
 	bool ate_RGB_then_ZA = false;
+	uint8 ps_atst = 0;
 	if (ate_first_pass & ate_second_pass)
 	{
 		// fprintf(stdout, "%d: Complex Alpha Test\n", s_n);
-		bool commutative_depth = (m_om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z) || (m_om_dssel.ztst == ZTST_ALWAYS);
-		bool commutative_alpha = (m_context->ALPHA.C != 1); // when either Alpha Src or a constant
+		const bool commutative_depth = (m_om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z) || (m_om_dssel.ztst == ZTST_ALWAYS);
+		const bool commutative_alpha = (m_context->ALPHA.C != 1); // when either Alpha Src or a constant
 
 		ate_RGBA_then_Z = (m_context->TEST.AFAIL == AFAIL_FB_ONLY) & commutative_depth;
 		ate_RGB_then_ZA = (m_context->TEST.AFAIL == AFAIL_RGB_ONLY) & commutative_depth & commutative_alpha;
@@ -1043,7 +1000,8 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	}
 	else
 	{
-		EmulateAtst(1, tex);
+		EmulateAtst(tex, ps_cb.FogColor_AREF, ps_atst, false);
+		m_ps_sel.atst = ps_atst;
 	}
 
 	if (tex)
@@ -1132,14 +1090,16 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 		{
 			// Enable ATE as first pass to update the depth
 			// of pixels that passed the alpha test
-			EmulateAtst(1, tex);
+			EmulateAtst(tex, ps_cb.FogColor_AREF, ps_atst, false);
 		}
 		else
 		{
 			// second pass will process the pixels that failed
 			// the alpha test
-			EmulateAtst(2, tex);
+			EmulateAtst(tex, ps_cb.FogColor_AREF, ps_atst, true);
 		}
+
+		m_ps_sel.atst = ps_atst;
 
 		dev->SetupPS(m_ps_sel, &ps_cb, m_ps_ssel);
 

@@ -75,7 +75,6 @@ class GSRendererOGL final : public GSRendererHW
 		inline void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);
 		inline void EmulateBlending(bool& DATE_GL42, bool& DATE_GL45);
 		inline void EmulateTextureSampler(const GSTextureCache::Source* tex);
-		inline void EmulateAtst(const int pass, const GSTextureCache::Source* tex);
 		inline void EmulateZbuffer();
 
 	public:
