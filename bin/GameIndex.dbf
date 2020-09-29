@@ -13285,6 +13285,7 @@ Serial = SLES-52931
 Name   = Legend of Kay
 Region = PAL-M5
 Compat = 5
+vuClampMode = 3 // Fixes broken polygons on trees.
 ---------------------------------------------
 Serial = SLES-52939
 Name   = Airborne Troops - Countdown to D-Day
@@ -41038,7 +41039,7 @@ Serial = SLUS-21248
 Name   = Legend of Kay
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1 // For freezes in some scene transitions.
+vuClampMode = 3 // Fixes broken polygons on trees.
 ---------------------------------------------
 Serial = SLUS-21249
 Name   = Yourself Fitness - Lifestyle
