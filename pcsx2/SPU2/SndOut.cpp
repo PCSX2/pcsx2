@@ -86,7 +86,7 @@ SndOutModule* mods[] =
 		XAudio2Out,
 		WaveOut,
 #endif
-#if  defined(SPU2X_PORTAUDIO)
+#if defined(SPU2X_PORTAUDIO)
 		PortaudioOut,
 #endif
 #if defined(__linux__) /* && defined(__ALSA__)*/

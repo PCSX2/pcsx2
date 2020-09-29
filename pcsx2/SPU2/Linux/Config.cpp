@@ -82,10 +82,7 @@ void ReadSettings()
 	// For some reason this can be called before we know what ini file we're writing to.
 	// Lets not try to read it if that happens.
 	if (!pathSet)
-	{
-		FileLog("Read called without the path set.\n");
-		return;
-	}
+		initIni();
 
 	Interpolation = CfgReadInt(L"MIXING", L"Interpolation", 4);
 	EffectsDisabled = CfgReadBool(L"MIXING", L"Disable_Effects", false);

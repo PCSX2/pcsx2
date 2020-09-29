@@ -23,9 +23,9 @@ bool pathSet = false;
 
 void initIni()
 {
-	if(!pathSet) 
+	if (!pathSet)
 	{
-		path = GetSettingsFolder().Combine( path ).GetFullPath();
+		path = GetSettingsFolder().Combine(path).GetFullPath();
 		pathSet = true;
 	}
 	if (spuConfig == nullptr)

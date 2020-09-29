@@ -193,7 +193,7 @@ void WriteSettings()
 	CfgWriteInt(L"DSP PLUGIN", L"ModuleNum", dspPluginModule);
 	CfgWriteBool(L"DSP PLUGIN", L"Enabled", dspPluginEnabled);
 
- 	PortaudioOut->WriteSettings();
+	PortaudioOut->WriteSettings();
 	SoundtouchCfg::WriteSettings();
 	DebugConfig::WriteSettings();
 }
@@ -206,7 +206,7 @@ void CheckOutputModule(HWND window)
 		mods[OutputModule] == WaveOut;
 
 	const bool AudioExpansion =
-		mods[OutputModule] == XAudio2Out || 
+		mods[OutputModule] == XAudio2Out ||
 		mods[OutputModule] == PortaudioOut;
 
 	EnableWindow(GetDlgItem(window, IDC_OUTCONF), IsConfigurable);
