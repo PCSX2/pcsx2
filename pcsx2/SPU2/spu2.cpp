@@ -24,6 +24,7 @@
 #endif
 #include "R3000A.h"
 #include "Utilities/pxStreams.h"
+#include "AppCoreThread.h"
 
 using namespace Threading;
 
@@ -69,7 +70,10 @@ void SPU2configure()
 {
 	if (!CheckSSE())
 		return;
+
+	ScopedCoreThreadPause paused_core;
 	configure();
+	paused_core.AllowResume();
 }
 
 // --------------------------------------------------------------------------------------
