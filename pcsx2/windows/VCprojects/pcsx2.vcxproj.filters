@@ -985,9 +985,6 @@
     <ClCompile Include="..\..\SPU2\Windows\SndOut_waveOut.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\SPU2\Windows\SndOut_DSound.cpp">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\SPU2\Windows\UIHelpers.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>

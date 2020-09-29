@@ -225,10 +225,7 @@ s32 SPU2init()
 	assert(regtable[0x400] == nullptr);
 
 	if (IsInitialized)
-	{
-		printf(" * SPU2: Already initialized - Ignoring SPU2init signal.");
 		return 0;
-	}
 
 	IsInitialized = true;
 	SPU2_dummy_callback = false;

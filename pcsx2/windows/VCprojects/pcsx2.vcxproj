@@ -288,7 +288,6 @@
     <ClCompile Include="..\..\SPU2\Lowpass.cpp" />
     <ClCompile Include="..\..\SPU2\SndOut.cpp" />
     <ClCompile Include="..\..\SPU2\Timestretcher.cpp" />
-    <ClCompile Include="..\..\SPU2\Windows\SndOut_DSound.cpp" />
     <ClCompile Include="..\..\SPU2\Windows\SndOut_waveOut.cpp" />
     <ClCompile Include="..\..\SPU2\Windows\SndOut_XAudio2.cpp" />
     <ClCompile Include="..\..\SPU2\Linux\Alsa.cpp">

@@ -61,11 +61,6 @@ extern int CfgReadInt(const TCHAR* Section, const TCHAR* Name, int Default);
 extern float CfgReadFloat(const TCHAR* Section, const TCHAR* Name, float Default);
 
 // Items Specific to DirectSound
-#define STRFY(x) #x
-#define verifyc(x) Verifyc(x, STRFY(x))
-
-extern void Verifyc(HRESULT hr, const char* fn);
-
 struct ds_device_data
 {
 	wxString name;
