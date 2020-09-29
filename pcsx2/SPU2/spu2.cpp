@@ -19,6 +19,7 @@
 #include "Dma.h"
 #ifdef __linux__
 #include "Linux/Dialogs.h"
+#include "Linux/Config.h"
 #elif defined(_WIN32)
 #include "Windows/Dialogs.h"
 #endif
