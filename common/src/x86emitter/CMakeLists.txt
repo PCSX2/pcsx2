@@ -73,6 +73,7 @@ set(x86emitterFinalLibs
 )
 
 add_pcsx2_lib(${Output} "${x86emitterFinalSources}" "${x86emitterFinalLibs}" "${x86emitterFinalFlags}")
+target_compile_features(${Output} PUBLIC cxx_std_17)
 
 if(COMMAND target_precompile_headers)
 	target_precompile_headers(${Output} PRIVATE PrecompiledHeader.h)
