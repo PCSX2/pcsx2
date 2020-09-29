@@ -20,7 +20,7 @@ include(Pcsx2Utils)
 
 check_no_parenthesis_in_path()
 detectOperatingSystem()
-check_compiler_version("4.8" "4.8")
+check_compiler_version("7.0" "7.0")
 
 #-------------------------------------------------------------------------------
 # Include specific module

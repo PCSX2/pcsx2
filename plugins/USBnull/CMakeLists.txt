@@ -57,3 +57,5 @@ if(BUILTIN_USB)
 else()
     add_pcsx2_plugin(${Output} "${USBnullFinalSources}" "${USBnullFinalLibs}" "${USBnullFinalFlags}")
 endif()
+
+target_compile_features(${Output} PRIVATE cxx_std_17)

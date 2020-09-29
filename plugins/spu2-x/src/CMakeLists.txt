@@ -156,3 +156,5 @@ if(BUILTIN_SPU2)
 else()
     add_pcsx2_plugin(${Output} "${spu2xFinalSources}" "${spu2xFinalLibs}" "${spu2xFinalFlags}")
 endif()
+
+target_compile_features(${Output} PRIVATE cxx_std_17)

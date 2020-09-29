@@ -145,3 +145,5 @@ if(BUILTIN_PAD)
 else()
     add_pcsx2_plugin(${Output} "${onepadFinalSources}" "${onepadFinalLibs}" "${onepadFinalFlags}")
 endif()
+
+target_compile_features(${Output} PRIVATE cxx_std_17)
