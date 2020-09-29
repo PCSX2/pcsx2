@@ -67,25 +67,6 @@ BEGIN
     DEFPUSHBUTTON   "Close",IDOK,246,451,50,14
 END
 
-IDD_DSOUND DIALOGEX 0, 0, 196, 218
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "DirectSound Output Module Settings"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,45,196,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,102,196,50,14
-    COMBOBOX        IDC_DS_DEVICE,8,13,180,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "DirectSound Device:",IDC_STATIC,6,3,65,8
-    CONTROL         "",IDC_BUFFERS_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,40,137,108,10
-    LTEXT           "Increase the buffer count if you are experiencing loopy or stuttery audio even when games run at high FPS.",IDC_STATIC,13,157,169,27
-    CTEXT           "8  (80 ms latency)",IDC_LATENCY_LABEL,46,123,95,11
-    LTEXT           "The options above are useful for compatibility with older and/or buggy sound drivers ONLY, and should not be checked unless you experience sound problems (such as crackly audio or silence).",IDC_STATIC,18,68,172,38
-    CONTROL         "Disable Global Focus",IDC_GLOBALFOCUS_DISABLE,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,6,38,140,10
-    CONTROL         "Use a crappy alternate buffering mode",IDC_USE_HARDWARE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,53,140,10
-    GROUPBOX        "Output Buffers",IDC_STATIC,6,111,183,77
-END
-
 IDD_WAVEOUT DIALOGEX 0, 0, 170, 122
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "WaveOut Output Module Settings"
@@ -177,14 +158,6 @@ BEGIN
         RIGHTMARGIN, 296
         TOPMARGIN, 7
         BOTTOMMARGIN, 465
-    END
-
-    IDD_DSOUND, DIALOG
-    BEGIN
-        LEFTMARGIN, 4
-        RIGHTMARGIN, 191
-        TOPMARGIN, 3
-        BOTTOMMARGIN, 214
     END
 
     IDD_WAVEOUT, DIALOG

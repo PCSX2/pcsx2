@@ -66,7 +66,6 @@ void initIni()
 void CfgSetSettingsDir(const char* dir)
 {
 	initIni();
-	CfgFile = Path::Combine((dir == nullptr) ? wxString(L"inis") : wxString::FromUTF8(dir), L"SPU2.ini");
 }
 
 

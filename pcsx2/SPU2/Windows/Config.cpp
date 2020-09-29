@@ -136,11 +136,10 @@ void ReadSettings()
 	dspPluginModule = CfgReadInt(L"DSP PLUGIN", L"ModuleNum", 0);
 	dspPluginEnabled = CfgReadBool(L"DSP PLUGIN", L"Enabled", false);
 
-	// Read DSOUNDOUT and WAVEOUT configs:
+	// Read WAVEOUT configs:
 	CfgReadStr(L"WAVEOUT", L"Device", Config_WaveOut.Device, L"default");
 	Config_WaveOut.NumBuffers = CfgReadInt(L"WAVEOUT", L"Buffer_Count", 4);
 
-	DSoundOut->ReadSettings();
 	PortaudioOut->ReadSettings();
 
 	SoundtouchCfg::ReadSettings();
@@ -155,8 +154,6 @@ void ReadSettings()
 	{
 		// Unsupported or legacy module.
 		fwprintf(stderr, L"* SPU2: Unknown output module '%s' specified in configuration file.\n", omodid);
-		fprintf(stderr, "* SPU2: Defaulting to DirectSound (%S).\n", DSoundOut->GetIdent());
-		OutputModule = FindOutputModuleById(DSoundOut->GetIdent());
 	}
 }
 
@@ -197,7 +194,6 @@ void WriteSettings()
 	CfgWriteBool(L"DSP PLUGIN", L"Enabled", dspPluginEnabled);
 
  	PortaudioOut->WriteSettings();
-	DSoundOut->WriteSettings();
 	SoundtouchCfg::WriteSettings();
 	DebugConfig::WriteSettings();
 }
@@ -207,8 +203,7 @@ void CheckOutputModule(HWND window)
 	OutputModule = SendMessage(GetDlgItem(window, IDC_OUTPUT), CB_GETCURSEL, 0, 0);
 	const bool IsConfigurable =
 		mods[OutputModule] == PortaudioOut ||
-		mods[OutputModule] == WaveOut ||
-		mods[OutputModule] == DSoundOut;
+		mods[OutputModule] == WaveOut;
 
 	const bool AudioExpansion =
 		mods[OutputModule] == XAudio2Out || 

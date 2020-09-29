@@ -84,7 +84,6 @@ SndOutModule* mods[] =
 		&NullOut,
 #ifdef _MSC_VER
 		XAudio2Out,
-		DSoundOut,
 		WaveOut,
 #endif
 #if  defined(SPU2X_PORTAUDIO)

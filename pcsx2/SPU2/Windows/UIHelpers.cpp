@@ -22,15 +22,6 @@ int SendDialogMsg(HWND hwnd, int dlgId, UINT code, WPARAM wParam, LPARAM lParam)
 	return SendMessage(GetDlgItem(hwnd, dlgId), code, wParam, lParam);
 }
 
-__forceinline void Verifyc(HRESULT hr, const char* fn)
-{
-	if (FAILED(hr))
-	{
-		assert(0);
-		throw std::runtime_error("DirectSound returned an error from %s");
-	}
-}
-
 void AssignSliderValue(HWND idcwnd, HWND hwndDisplay, int value)
 {
 	value = std::min(std::max(value, 0), 512);
