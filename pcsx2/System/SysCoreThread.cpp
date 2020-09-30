@@ -17,6 +17,7 @@
 #include "Common.h"
 #include "gui/App.h"
 #include "IopBios.h"
+#include "R5900.h"
 
 #include "Counters.h"
 #include "GS.h"
@@ -295,7 +296,7 @@ void SysCoreThread::OnSuspendInThread()
 void SysCoreThread::OnResumeInThread( bool isSuspended )
 {
 	GetCorePlugins().Open();
-	if (isSuspended)
+	if (isSuspended || !g_GameStarted)
 		DoCDVDopen();
 	FWopen();
 }
