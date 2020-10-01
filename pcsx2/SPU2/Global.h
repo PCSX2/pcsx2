@@ -43,12 +43,6 @@ namespace soundtouch
 #include "Pcsx2Defs.h"
 #include "Pcsx2Types.h"
 
-namespace VersionInfo
-{
-	static const u8 Release = 2;
-	static const u8 Revision = 0; // increase that with each version
-} // namespace VersionInfo
-
 //////////////////////////////////////////////////////////////////////////
 // Override Win32 min/max macros with the STL's type safe and macro
 // free varieties (much safer!)

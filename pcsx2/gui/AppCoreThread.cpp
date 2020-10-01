@@ -45,8 +45,8 @@ typedef void (AppCoreThread::*FnPtr_CoreThreadMethod)();
 class SysExecEvent_InvokeCoreThreadMethod : public SysExecEvent
 {
 protected:
-	FnPtr_CoreThreadMethod	m_method;
-	bool	m_IsCritical;
+	FnPtr_CoreThreadMethod m_method;
+	bool m_IsCritical;
 
 public:
 	wxString GetEventName() const { return L"CoreThreadMethod"; }
@@ -56,7 +56,7 @@ public:
 	bool AllowCancelOnExit() const { return false; }
 	bool IsCriticalEvent() const { return m_IsCritical; }
 
-	SysExecEvent_InvokeCoreThreadMethod( FnPtr_CoreThreadMethod method, bool critical=false )
+	SysExecEvent_InvokeCoreThreadMethod(FnPtr_CoreThreadMethod method, bool critical = false)
 	{
 		m_method = method;
 		m_IsCritical = critical;
@@ -71,27 +71,30 @@ public:
 protected:
 	void InvokeEvent()
 	{
-		if( m_method ) (CoreThread.*m_method)();
+		if (m_method)
+			(CoreThread.*m_method)();
 	}
 };
 
-static void PostCoreStatus( CoreThreadStatus pevt )
+static void PostCoreStatus(CoreThreadStatus pevt)
 {
-	sApp.PostAction( CoreThreadStatusEvent( pevt ) );
+	sApp.PostAction(CoreThreadStatusEvent(pevt));
 }
 
 // --------------------------------------------------------------------------------------
 //  AppCoreThread Implementations
 // --------------------------------------------------------------------------------------
-AppCoreThread::AppCoreThread() : SysCoreThread()
+AppCoreThread::AppCoreThread()
+	: SysCoreThread()
 {
 	m_resetCdvd = false;
 }
 
 AppCoreThread::~AppCoreThread()
 {
-	try {
-		_parent::Cancel();		// use parent's, skips thread affinity check.
+	try
+	{
+		_parent::Cancel(); // use parent's, skips thread affinity check.
 	}
 	DESTRUCTOR_CATCHALL
 }
@@ -101,17 +104,17 @@ static void _Cancel()
 	GetCoreThread().Cancel();
 }
 
-void AppCoreThread::Cancel( bool isBlocking )
+void AppCoreThread::Cancel(bool isBlocking)
 {
-	if (GetSysExecutorThread().IsRunning() && !GetSysExecutorThread().Rpc_TryInvoke( _Cancel, L"AppCoreThread::Cancel" ))
-		_parent::Cancel( wxTimeSpan(0, 0, 4, 0) );
+	if (GetSysExecutorThread().IsRunning() && !GetSysExecutorThread().Rpc_TryInvoke(_Cancel, L"AppCoreThread::Cancel"))
+		_parent::Cancel(wxTimeSpan(0, 0, 4, 0));
 }
 
 void AppCoreThread::Reset()
 {
-	if( !GetSysExecutorThread().IsSelf() )
+	if (!GetSysExecutorThread().IsSelf())
 	{
-		GetSysExecutorThread().PostEvent( SysExecEvent_InvokeCoreThreadMethod(&AppCoreThread::Reset) );
+		GetSysExecutorThread().PostEvent(SysExecEvent_InvokeCoreThreadMethod(&AppCoreThread::Reset));
 		return;
 	}
 
@@ -120,9 +123,9 @@ void AppCoreThread::Reset()
 
 void AppCoreThread::ResetQuick()
 {
-	if( !GetSysExecutorThread().IsSelf() )
+	if (!GetSysExecutorThread().IsSelf())
 	{
-		GetSysExecutorThread().PostEvent( SysExecEvent_InvokeCoreThreadMethod(&AppCoreThread::ResetQuick) );
+		GetSysExecutorThread().PostEvent(SysExecEvent_InvokeCoreThreadMethod(&AppCoreThread::ResetQuick));
 		return;
 	}
 
@@ -139,48 +142,50 @@ static void _Suspend()
 	GetCoreThread().Suspend(true);
 }
 
-void AppCoreThread::Suspend( bool isBlocking )
+void AppCoreThread::Suspend(bool isBlocking)
 {
-	if (IsClosed()) return;
+	if (IsClosed())
+		return;
 
 	if (IsSelf())
 	{
 		// this should never fail...
-		bool result = GetSysExecutorThread().Rpc_TryInvokeAsync( _Suspend, L"AppCoreThread::Suspend" );
+		bool result = GetSysExecutorThread().Rpc_TryInvokeAsync(_Suspend, L"AppCoreThread::Suspend");
 		pxAssert(result);
 	}
-	else if (!GetSysExecutorThread().Rpc_TryInvoke( _Suspend, L"AppCoreThread::Suspend" ))
+	else if (!GetSysExecutorThread().Rpc_TryInvoke(_Suspend, L"AppCoreThread::Suspend"))
 		_parent::Suspend(true);
 }
 
 void AppCoreThread::Resume()
 {
-	if( !GetSysExecutorThread().IsSelf() )
+	if (!GetSysExecutorThread().IsSelf())
 	{
-		GetSysExecutorThread().PostEvent( SysExecEvent_InvokeCoreThreadMethod(&AppCoreThread::Resume) );
+		GetSysExecutorThread().PostEvent(SysExecEvent_InvokeCoreThreadMethod(&AppCoreThread::Resume));
 		return;
 	}
 
 	GetCorePlugins().Init();
-    SPU2init();
+	SPU2init();
 	_parent::Resume();
 }
 
 void AppCoreThread::ChangeCdvdSource()
 {
-	if( !GetSysExecutorThread().IsSelf() )
+	if (!GetSysExecutorThread().IsSelf())
 	{
-		GetSysExecutorThread().PostEvent( new SysExecEvent_InvokeCoreThreadMethod(&AppCoreThread::ChangeCdvdSource) );
+		GetSysExecutorThread().PostEvent(new SysExecEvent_InvokeCoreThreadMethod(&AppCoreThread::ChangeCdvdSource));
 		return;
 	}
 
-	CDVD_SourceType cdvdsrc( g_Conf->CdvdSource );
-	if( cdvdsrc == CDVDsys_GetSourceType() ) return;
+	CDVD_SourceType cdvdsrc(g_Conf->CdvdSource);
+	if (cdvdsrc == CDVDsys_GetSourceType())
+		return;
 
 	// Fast change of the CDVD source only -- a Pause will suffice.
 
 	ScopedCoreThreadPause paused_core;
-	CDVDsys_ChangeSource( cdvdsrc );
+	CDVDsys_ChangeSource(cdvdsrc);
 	paused_core.AllowResume();
 
 	// TODO: Add a listener for CDVDsource changes?  Or should we bother?
@@ -188,24 +193,25 @@ void AppCoreThread::ChangeCdvdSource()
 
 void Pcsx2App::SysApplySettings()
 {
-	if( AppRpc_TryInvoke(&Pcsx2App::SysApplySettings) ) return;
-	CoreThread.ApplySettings( g_Conf->EmuOptions );
+	if (AppRpc_TryInvoke(&Pcsx2App::SysApplySettings))
+		return;
+	CoreThread.ApplySettings(g_Conf->EmuOptions);
 
-	CDVD_SourceType cdvdsrc( g_Conf->CdvdSource );
-	if( cdvdsrc != CDVDsys_GetSourceType() || (cdvdsrc == CDVD_SourceType::Iso && (CDVDsys_GetFile(cdvdsrc) != g_Conf->CurrentIso)) )
+	CDVD_SourceType cdvdsrc(g_Conf->CdvdSource);
+	if (cdvdsrc != CDVDsys_GetSourceType() || (cdvdsrc == CDVD_SourceType::Iso && (CDVDsys_GetFile(cdvdsrc) != g_Conf->CurrentIso)))
 	{
 		CoreThread.ResetCdvd();
 	}
 
-	CDVDsys_SetFile(CDVD_SourceType::Iso, g_Conf->CurrentIso );
+	CDVDsys_SetFile(CDVD_SourceType::Iso, g_Conf->CurrentIso);
 }
 
 void AppCoreThread::OnResumeReady()
 {
 	wxGetApp().SysApplySettings();
-	wxGetApp().PostMethod( AppSaveSettings );
+	wxGetApp().PostMethod(AppSaveSettings);
 
-	sApp.PostAppMethod( &Pcsx2App::leaveDebugMode );
+	sApp.PostAppMethod(&Pcsx2App::leaveDebugMode);
 	_parent::OnResumeReady();
 }
 
@@ -224,10 +230,12 @@ void AppCoreThread::OnPauseDebug()
 // Load Game Settings found in database
 // (game fixes, round modes, clamp modes, etc...)
 // Returns number of gamefixes set
-static int loadGameSettings(Pcsx2Config& dest, const Game_Data& game) {
-	if( !game.IsOk() ) return 0;
+static int loadGameSettings(Pcsx2Config& dest, const Game_Data& game)
+{
+	if (!game.IsOk())
+		return 0;
 
-	int  gf  = 0;
+	int gf = 0;
 
 	if (game.keyExists("eeRoundMode"))
 	{
@@ -251,35 +259,38 @@ static int loadGameSettings(Pcsx2Config& dest, const Game_Data& game) {
 		}
 	}
 
-	if (game.keyExists("eeClampMode")) {
+	if (game.keyExists("eeClampMode"))
+	{
 		int clampMode = game.getInt("eeClampMode");
 		PatchesCon->WriteLn("(GameDB) Changing EE/FPU clamp mode [mode=%d]", clampMode);
-		dest.Cpu.Recompiler.fpuOverflow			= (clampMode >= 1);
-		dest.Cpu.Recompiler.fpuExtraOverflow	= (clampMode >= 2);
-		dest.Cpu.Recompiler.fpuFullMode			= (clampMode >= 3);
+		dest.Cpu.Recompiler.fpuOverflow = (clampMode >= 1);
+		dest.Cpu.Recompiler.fpuExtraOverflow = (clampMode >= 2);
+		dest.Cpu.Recompiler.fpuFullMode = (clampMode >= 3);
 		gf++;
 	}
 
-	if (game.keyExists("vuClampMode")) {
+	if (game.keyExists("vuClampMode"))
+	{
 		int clampMode = game.getInt("vuClampMode");
 		PatchesCon->WriteLn("(GameDB) Changing VU0/VU1 clamp mode [mode=%d]", clampMode);
-		dest.Cpu.Recompiler.vuOverflow			= (clampMode >= 1);
-		dest.Cpu.Recompiler.vuExtraOverflow		= (clampMode >= 2);
-		dest.Cpu.Recompiler.vuSignOverflow		= (clampMode >= 3);
+		dest.Cpu.Recompiler.vuOverflow = (clampMode >= 1);
+		dest.Cpu.Recompiler.vuExtraOverflow = (clampMode >= 2);
+		dest.Cpu.Recompiler.vuSignOverflow = (clampMode >= 3);
 		gf++;
 	}
 
 
-	if (game.keyExists("mvuFlagSpeedHack")) {
+	if (game.keyExists("mvuFlagSpeedHack"))
+	{
 		bool vuFlagHack = game.getInt("mvuFlagSpeedHack") ? 1 : 0;
 		PatchesCon->WriteLn("(GameDB) Changing mVU flag speed hack [mode=%d]", vuFlagHack);
 		dest.Speedhacks.vuFlagHack = vuFlagHack;
 		gf++;
 	}
 
-	for( GamefixId id=GamefixId_FIRST; id<pxEnumEnd; ++id )
+	for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; ++id)
 	{
-		wxString key( EnumToString(id) );
+		wxString key(EnumToString(id));
 		key += L"Hack";
 
 		if (game.keyExists(key))
@@ -313,7 +324,7 @@ void PatchesVerboseReset()
 // PatchesCon points to either Console or ConsoleWriter_Null, such that if we're in Devel mode
 // or the user enabled the devel/verbose console it prints all patching info whenever it's applied,
 // else it prints the patching info only once - right after boot.
-const IConsoleWriter *PatchesCon = &Console;
+const IConsoleWriter* PatchesCon = &Console;
 
 static void SetupPatchesCon(bool verbose)
 {
@@ -335,7 +346,7 @@ static void SetupPatchesCon(bool verbose)
 // It doesn't require that the emulation is paused, and console writes/title should
 // be thread safe, but it's best if things don't move around much while it runs.
 static Threading::Mutex mtx__ApplySettings;
-static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
+static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 {
 	Threading::ScopedLock lock(mtx__ApplySettings);
 	// 'fixup' is the EmuConfig we're going to upload to the emulator, which very well may
@@ -348,19 +359,19 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 
 	fixup = src;
 
-	const CommandlineOverrides& overrides( wxGetApp().Overrides );
-	if( overrides.DisableSpeedhacks || !g_Conf->EnableSpeedHacks )
+	const CommandlineOverrides& overrides(wxGetApp().Overrides);
+	if (overrides.DisableSpeedhacks || !g_Conf->EnableSpeedHacks)
 		fixup.Speedhacks.DisableAll();
 
-	if( overrides.ApplyCustomGamefixes )
+	if (overrides.ApplyCustomGamefixes)
 	{
-		for (GamefixId id=GamefixId_FIRST; id < pxEnumEnd; ++id)
-			fixup.Gamefixes.Set( id, overrides.Gamefixes.Get(id) );
+		for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; ++id)
+			fixup.Gamefixes.Set(id, overrides.Gamefixes.Get(id));
 	}
-	else if( !g_Conf->EnableGameFixes )
+	else if (!g_Conf->EnableGameFixes)
 		fixup.Gamefixes.DisableAll();
 
-	if( overrides.ProfilingMode )
+	if (overrides.ProfilingMode)
 	{
 		fixup.GS.FrameLimitEnable = false;
 		fixup.GS.VsyncEnable = VsyncMode::Off;
@@ -383,11 +394,12 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 	// settings as if the game is already running (title, loadeding patches, etc).
 	bool ingame = (ElfCRC && (g_GameLoading || g_GameStarted));
 	if (ingame)
-		gameCRC.Printf( L"%8.8x", ElfCRC );
-	if (ingame && !DiscSerial.IsEmpty()) gameSerial = L" [" + DiscSerial + L"]";
+		gameCRC.Printf(L"%8.8x", ElfCRC);
+	if (ingame && !DiscSerial.IsEmpty())
+		gameSerial = L" [" + DiscSerial + L"]";
 
 	const wxString newGameKey(ingame ? SysGetDiscID() : SysGetBiosDiscID());
-	const bool verbose( newGameKey != curGameKey && ingame );
+	const bool verbose(newGameKey != curGameKey && ingame);
 	//Console.WriteLn(L"------> patches verbose: %d   prev: '%s'   new: '%s'", (int)verbose, WX_STR(curGameKey), WX_STR(newGameKey));
 	SetupPatchesCon(verbose);
 
@@ -397,15 +409,15 @@ static void _ApplySettings( const Pcsx2Config& src, Pcsx2Config& fixup )
 
 	if (!curGameKey.IsEmpty())
 	{
-		if (IGameDatabase* GameDB = AppHost_GetGameDatabase() )
+		if (IGameDatabase* GameDB = AppHost_GetGameDatabase())
 		{
 			Game_Data game;
 			if (GameDB->findGame(game, curGameKey))
 			{
 				int compat = game.getInt("Compat");
-				gameName   = game.getString("Name");
-				gameName  += L" (" + game.getString("Region") + L")";
-				gameCompat = L" [Status = "+compatToStringWX(compat)+L"]";
+				gameName = game.getString("Name");
+				gameName += L" (" + game.getString("Region") + L")";
+				gameCompat = L" [Status = " + compatToStringWX(compat) + L"]";
 				gameMemCardFilter = game.getString("MemCardFilter");
 			}
 
@@ -499,7 +511,7 @@ void LoadAllPatchesAndStuff(const Pcsx2Config& cfg)
 #endif
 }
 
-void AppCoreThread::ApplySettings( const Pcsx2Config& src )
+void AppCoreThread::ApplySettings(const Pcsx2Config& src)
 {
 	// Re-entry guard protects against cases where code wants to manually set core settings
 	// which are not part of g_Conf.  The subsequent call to apply g_Conf settings (which is
@@ -508,19 +520,21 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 	_ApplySettings(src, fixup);
 
 	static int localc = 0;
-	RecursionGuard guard( localc );
-	if( guard.IsReentrant() ) return;
-	if( fixup == EmuConfig ) return;
+	RecursionGuard guard(localc);
+	if (guard.IsReentrant())
+		return;
+	if (fixup == EmuConfig)
+		return;
 
-	if( m_ExecMode >= ExecMode_Opened )
+	if (m_ExecMode >= ExecMode_Opened)
 	{
 		ScopedCoreThreadPause paused_core;
-		_parent::ApplySettings( fixup );
+		_parent::ApplySettings(fixup);
 		paused_core.AllowResume();
 	}
 	else
 	{
-		_parent::ApplySettings( fixup );
+		_parent::ApplySettings(fixup);
 	}
 
 	if (m_ExecMode >= ExecMode_Paused)
@@ -534,27 +548,27 @@ void AppCoreThread::ApplySettings( const Pcsx2Config& src )
 
 void AppCoreThread::DoCpuReset()
 {
-	PostCoreStatus( CoreThread_Reset );
+	PostCoreStatus(CoreThread_Reset);
 	_parent::DoCpuReset();
 }
 
-void AppCoreThread::OnResumeInThread( bool isSuspended )
+void AppCoreThread::OnResumeInThread(bool isSuspended)
 {
-	if( m_resetCdvd )
+	if (m_resetCdvd)
 	{
-		CDVDsys_ChangeSource( g_Conf->CdvdSource );
+		CDVDsys_ChangeSource(g_Conf->CdvdSource);
 		cdvdCtrlTrayOpen();
 		m_resetCdvd = false;
 	}
 
-	_parent::OnResumeInThread( isSuspended );
-	PostCoreStatus( CoreThread_Resumed );
+	_parent::OnResumeInThread(isSuspended);
+	PostCoreStatus(CoreThread_Resumed);
 }
 
 void AppCoreThread::OnSuspendInThread()
 {
 	_parent::OnSuspendInThread();
-	PostCoreStatus( CoreThread_Suspended );
+	PostCoreStatus(CoreThread_Suspended);
 }
 
 // Called whenever the thread has terminated, for either regular or irregular reasons.
@@ -564,7 +578,7 @@ void AppCoreThread::OnSuspendInThread()
 void AppCoreThread::OnCleanupInThread()
 {
 	m_ExecMode = ExecMode_Closing;
-	PostCoreStatus( CoreThread_Stopped );
+	PostCoreStatus(CoreThread_Stopped);
 	_parent::OnCleanupInThread();
 }
 
@@ -593,10 +607,10 @@ bool AppCoreThread::StateCheckInThread()
 	return _parent::StateCheckInThread();
 }
 
-void AppCoreThread::UploadStateCopy( const VmStateBuffer& copy )
+void AppCoreThread::UploadStateCopy(const VmStateBuffer& copy)
 {
 	ScopedCoreThreadPause paused_core;
-	_parent::UploadStateCopy( copy );
+	_parent::UploadStateCopy(copy);
 	paused_core.AllowResume();
 }
 
@@ -604,23 +618,24 @@ static uint m_except_threshold = 0;
 
 void AppCoreThread::ExecuteTaskInThread()
 {
-	PostCoreStatus( CoreThread_Started );
+	PostCoreStatus(CoreThread_Started);
 	m_except_threshold = 0;
 	_parent::ExecuteTaskInThread();
 }
 
 void AppCoreThread::DoCpuExecute()
 {
-	try {
+	try
+	{
 		_parent::DoCpuExecute();
 	}
 	catch (BaseR5900Exception& ex)
 	{
-		Console.Error( ex.FormatMessage() );
+		Console.Error(ex.FormatMessage());
 
 		// [TODO] : Debugger Hook!
 
-		if( ++m_except_threshold > 6 )
+		if (++m_except_threshold > 6)
 		{
 			// If too many TLB Misses occur, we're probably going to crash and
 			// the game is probably running miserably.
@@ -629,7 +644,7 @@ void AppCoreThread::DoCpuExecute()
 			//Suspend();
 
 			// [TODO] Issue error dialog to the user here...
-			Console.Error( "Too many execution errors.  VM execution has been suspended!" );
+			Console.Error("Too many execution errors.  VM execution has been suspended!");
 
 			// Hack: this keeps the EE thread from running more code while the SysExecutor
 			// thread catches up and signals it for suspension.
@@ -641,33 +656,34 @@ void AppCoreThread::DoCpuExecute()
 // --------------------------------------------------------------------------------------
 //  BaseSysExecEvent_ScopedCore / SysExecEvent_CoreThreadClose / SysExecEvent_CoreThreadPause
 // --------------------------------------------------------------------------------------
-void BaseSysExecEvent_ScopedCore::_post_and_wait( IScopedCoreThread& core )
+void BaseSysExecEvent_ScopedCore::_post_and_wait(IScopedCoreThread& core)
 {
 	DoScopedTask();
 
-	ScopedLock lock( m_mtx_resume );
+	ScopedLock lock(m_mtx_resume);
 	PostResult();
 
-	if( m_resume )
+	if (m_resume)
 	{
 		// If the sender of the message requests a non-blocking resume, then we need
 		// to deallocate the m_sync object, since the sender will likely leave scope and
 		// invalidate it.
-		switch( m_resume->WaitForResult() )
+		switch (m_resume->WaitForResult())
 		{
 			case ScopedCore_BlockingResume:
-				if( m_sync ) m_sync->ClearResult();
+				if (m_sync)
+					m_sync->ClearResult();
 				core.AllowResume();
-			break;
+				break;
 
 			case ScopedCore_NonblockingResume:
 				m_sync = NULL;
 				core.AllowResume();
-			break;
+				break;
 
 			case ScopedCore_SkipResume:
 				m_sync = NULL;
-			break;
+				break;
 		}
 	}
 }
@@ -691,10 +707,10 @@ void SysExecEvent_CoreThreadPause::InvokeEvent()
 	// All plugins should be initialized and opened upon resuming from
 	// a paused state.  If the thread that puased us changed plugin status, it should
 	// have used Close instead.
-	if( CorePluginsAreOpen )
+	if (CorePluginsAreOpen)
 	{
 		CorePluginsAreOpen = GetCorePlugins().AreOpen();
-		pxAssertDev( CorePluginsAreOpen, "Invalid plugin close/shutdown detected during paused CoreThread; please Stop/Suspend the core instead." );
+		pxAssertDev(CorePluginsAreOpen, "Invalid plugin close/shutdown detected during paused CoreThread; please Stop/Suspend the core instead.");
 	}
 	paused_core.AllowResume();
 
@@ -712,16 +728,16 @@ void SysExecEvent_CoreThreadPause::InvokeEvent()
 //  ScopedCoreThreadClose / ScopedCoreThreadPause
 // --------------------------------------------------------------------------------------
 
-static DeclareTls(bool) ScopedCore_IsPaused			= false;
-static DeclareTls(bool) ScopedCore_IsFullyClosed	= false;
+static DeclareTls(bool) ScopedCore_IsPaused = false;
+static DeclareTls(bool) ScopedCore_IsFullyClosed = false;
 
 BaseScopedCoreThread::BaseScopedCoreThread()
 {
 	//AffinityAssert_AllowFrom_MainUI();
 
-	m_allowResume		= false;
-	m_alreadyStopped	= false;
-	m_alreadyScoped		= false;
+	m_allowResume = false;
+	m_alreadyStopped = false;
+	m_alreadyScoped = false;
 }
 
 BaseScopedCoreThread::~BaseScopedCoreThread() = default;
@@ -741,11 +757,12 @@ void BaseScopedCoreThread::DisallowResume()
 
 void BaseScopedCoreThread::DoResume()
 {
-	if( m_alreadyStopped ) return;
-	if( !GetSysExecutorThread().IsSelf() )
+	if (m_alreadyStopped)
+		return;
+	if (!GetSysExecutorThread().IsSelf())
 	{
 		//DbgCon.WriteLn("(ScopedCoreThreadPause) Threaded Scope Created!");
-		m_sync_resume.PostResult( m_allowResume ? ScopedCore_NonblockingResume : ScopedCore_SkipResume );
+		m_sync_resume.PostResult(m_allowResume ? ScopedCore_NonblockingResume : ScopedCore_SkipResume);
 		m_mtx_resume.Wait();
 	}
 	else
@@ -755,15 +772,16 @@ void BaseScopedCoreThread::DoResume()
 // Returns TRUE if the event is posted to the SysExecutor.
 // Returns FALSE if the thread *is* the SysExecutor (no message is posted, calling code should
 //  handle the code directly).
-bool BaseScopedCoreThread::PostToSysExec( BaseSysExecEvent_ScopedCore* msg )
+bool BaseScopedCoreThread::PostToSysExec(BaseSysExecEvent_ScopedCore* msg)
 {
-	std::unique_ptr<BaseSysExecEvent_ScopedCore> smsg( msg );
-	if( !smsg || GetSysExecutorThread().IsSelf()) return false;
+	std::unique_ptr<BaseSysExecEvent_ScopedCore> smsg(msg);
+	if (!smsg || GetSysExecutorThread().IsSelf())
+		return false;
 
 	msg->SetSyncState(m_sync);
 	msg->SetResumeStates(m_sync_resume, m_mtx_resume);
 
-	GetSysExecutorThread().PostEvent( smsg.release() );
+	GetSysExecutorThread().PostEvent(smsg.release());
 	m_sync.WaitForResult();
 	m_sync.RethrowException();
 
@@ -772,17 +790,17 @@ bool BaseScopedCoreThread::PostToSysExec( BaseSysExecEvent_ScopedCore* msg )
 
 ScopedCoreThreadClose::ScopedCoreThreadClose()
 {
-	if( ScopedCore_IsFullyClosed )
+	if (ScopedCore_IsFullyClosed)
 	{
 		// tracks if we're already in scope or not.
 		m_alreadyScoped = true;
 		return;
 	}
 
-	if( !PostToSysExec(new SysExecEvent_CoreThreadClose()) )
+	if (!PostToSysExec(new SysExecEvent_CoreThreadClose()))
 	{
 		m_alreadyStopped = CoreThread.IsClosed();
-		if ( !m_alreadyStopped )
+		if (!m_alreadyStopped)
 			CoreThread.Suspend();
 	}
 
@@ -791,28 +809,31 @@ ScopedCoreThreadClose::ScopedCoreThreadClose()
 
 ScopedCoreThreadClose::~ScopedCoreThreadClose()
 {
-	if( m_alreadyScoped ) return;
-	try {
+	if (m_alreadyScoped)
+		return;
+	try
+	{
 		_parent::DoResume();
 		ScopedCore_IsFullyClosed = false;
 	}
 	DESTRUCTOR_CATCHALL
 }
 
-ScopedCoreThreadPause::ScopedCoreThreadPause( BaseSysExecEvent_ScopedCore* abuse_me )
+ScopedCoreThreadPause::ScopedCoreThreadPause(BaseSysExecEvent_ScopedCore* abuse_me)
 {
-	if( ScopedCore_IsFullyClosed || ScopedCore_IsPaused )
+	if (ScopedCore_IsFullyClosed || ScopedCore_IsPaused)
 	{
 		// tracks if we're already in scope or not.
 		m_alreadyScoped = true;
 		return;
 	}
 
-	if( !abuse_me ) abuse_me = new SysExecEvent_CoreThreadPause();
-	if( !PostToSysExec( abuse_me ) )
+	if (!abuse_me)
+		abuse_me = new SysExecEvent_CoreThreadPause();
+	if (!PostToSysExec(abuse_me))
 	{
 		m_alreadyStopped = CoreThread.IsPaused();
-		if( !m_alreadyStopped )
+		if (!m_alreadyStopped)
 			CoreThread.Pause();
 	}
 
@@ -821,8 +842,10 @@ ScopedCoreThreadPause::ScopedCoreThreadPause( BaseSysExecEvent_ScopedCore* abuse
 
 ScopedCoreThreadPause::~ScopedCoreThreadPause()
 {
-	if( m_alreadyScoped ) return;
-	try {
+	if (m_alreadyScoped)
+		return;
+	try
+	{
 		_parent::DoResume();
 		ScopedCore_IsPaused = false;
 	}
@@ -835,7 +858,7 @@ ScopedCoreThreadPopup::ScopedCoreThreadPopup()
 	// ensure that the GS window isn't blocking the popup, and to avoid crashes if the GS window
 	// is maximized or fullscreen.
 
-	if( !GSopen2 )
+	if (!GSopen2)
 		m_scoped_core = std::unique_ptr<BaseScopedCoreThread>(new ScopedCoreThreadClose());
 	else
 		m_scoped_core = std::unique_ptr<BaseScopedCoreThread>(new ScopedCoreThreadPause());
@@ -843,10 +866,12 @@ ScopedCoreThreadPopup::ScopedCoreThreadPopup()
 
 void ScopedCoreThreadPopup::AllowResume()
 {
-	if( m_scoped_core ) m_scoped_core->AllowResume();
+	if (m_scoped_core)
+		m_scoped_core->AllowResume();
 }
 
 void ScopedCoreThreadPopup::DisallowResume()
 {
-	if( m_scoped_core ) m_scoped_core->DisallowResume();
+	if (m_scoped_core)
+		m_scoped_core->DisallowResume();
 }
