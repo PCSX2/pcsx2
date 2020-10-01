@@ -257,7 +257,7 @@ static unsigned char xor_table[256]={
  0x00, 0x87, 0x96, 0x11, 0xA5, 0x22, 0x33, 0xB4, 0xB4, 0x33, 0x22, 0xA5, 0x11, 0x96, 0x87, 0x00};
 
 static void xfromman_call20_calculateXors(unsigned char buffer[128], unsigned char blah[4]){
-	register unsigned char a=0, b=0, c=0, i;
+	unsigned char a=0, b=0, c=0, i;
 
 	for (i=0; i<128; i++){
 		a ^= xor_table[buffer[i]];
