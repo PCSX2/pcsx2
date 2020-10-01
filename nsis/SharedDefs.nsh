@@ -41,8 +41,11 @@ Name "${APP_NAME}"
 Function IsUserAdmin
 !include WinVer.nsh
 # No user should ever have to experience this pain ;)
-  ${IfNot} ${AtLeastWin8.1}
-    MessageBox MB_OK "Your operating system is unsupported by PCSX2. Please upgrade your operating system or install PCSX2."
+  ${IfNot} ${AtLeastWinVista}
+    MessageBox MB_OK "Your operating system is unsupported by PCSX2. Please upgrade your operating system or install PCSX2 1.4.0."
+    Quit
+  ${ElseIfNot} ${AtLeastWin8.1}
+    MessageBox MB_OK "Your operating system is unsupported by PCSX2. Please upgrade your operating system or install PCSX2 1.6.0."
     Quit
   ${EndIf}
 
@@ -61,7 +64,7 @@ Pop $UserPrivileges
 
 ${If} $UserPrivileges == "Admin"
     StrCpy $IsAdmin 1
-    ${ElseIf} $UserPrivileges == "User"
+${ElseIf} $UserPrivileges == "User"
     StrCpy $IsAdmin 0
 ${EndIf}
 FunctionEnd
