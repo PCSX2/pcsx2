@@ -130,6 +130,7 @@ struct sif_iop
 	bool busy;
 
 	s32 cycles;
+	u32 writeJunk;
 
 	s32 counter; // Used to keep track of how much is left in IOP.
 	struct sifData data; // Only used in IOP.
