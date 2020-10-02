@@ -23,7 +23,6 @@
 _sif sif0;
 
 static bool done = false;
-static int writeJunk = 0;
 
 static __fi void Sif0Init()
 {
@@ -84,11 +83,11 @@ static __fi bool WriteIOPtoFifo()
 	sif0.iop.cycles += (writeSize >> 2)/* * BIAS*/;		// fixme : should be >> 4
 	sif0.iop.counter -= writeSize;
 
-	if (sif0.iop.counter == 0 && writeJunk)
+	if (sif0.iop.counter == 0 && sif0.iop.writeJunk)
 	{
-		SIF_LOG("Writing Junk %d", writeJunk);
-		sif0.fifo.writeJunk(writeJunk);
-		writeJunk = 0;
+		SIF_LOG("Writing Junk %d", sif0.iop.writeJunk);
+		sif0.fifo.writeJunk(sif0.iop.writeJunk);
+		sif0.iop.writeJunk = 0;
 	}
 	return true;
 }
@@ -152,10 +151,10 @@ static __fi bool ProcessIOPTag()
 	//Maximum transfer amount 1mb-16 also masking out top part which is a "Mode" cache stuff, we don't care :)
 	sif0.iop.counter = sif0words & 0xFFFFF;
 
-	writeJunk = (sif0.iop.counter & 0x3) ? (4 - sif0.iop.counter & 0x3) : 0;
+	sif0.iop.writeJunk = (sif0.iop.counter & 0x3) ? (4 - sif0.iop.counter & 0x3) : 0;
 	// IOP tags have an IRQ bit and an End of Transfer bit:
 	if (sif0tag.IRQ  || (sif0tag.ID & 4)) sif0.iop.end = true;
-	SIF_LOG("SIF0 IOP Tag: madr=%lx, tadr=%lx, counter=%lx (%08X_%08X) Junk %d", hw_dma9.madr, hw_dma9.tadr, sif0.iop.counter, sif0words, sif0data, writeJunk);
+	SIF_LOG("SIF0 IOP Tag: madr=%lx, tadr=%lx, counter=%lx (%08X_%08X) Junk %d", hw_dma9.madr, hw_dma9.tadr, sif0.iop.counter, sif0words, sif0data, sif0.iop.writeJunk);
 
 	return true;
 }
