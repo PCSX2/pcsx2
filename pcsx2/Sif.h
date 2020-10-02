@@ -37,6 +37,7 @@ struct sifData
 struct sifFifo
 {
 	u32 data[FIFO_SIF_W];
+	u32 junk[4];
 	s32 readPos;
 	s32 writePos;
 	s32 size;
@@ -52,9 +53,28 @@ struct sifFifo
 		{
 			const int wP0 = std::min((FIFO_SIF_W - writePos), words);
 			const int wP1 = words - wP0;
-
+			if (size < 4)
+			{
+				memcpy(&junk[size], from, (4 - size) << 2);
+			}
 			memcpy(&data[writePos], from, wP0 << 2);
 			memcpy(&data[0], &from[wP0], wP1 << 2);
+
+			writePos = (writePos + words) & (FIFO_SIF_W - 1);
+			size += words;
+		}
+		SIF_LOG("  SIF + %d = %d (pos=%d)", words, size, writePos);
+	}
+
+	void writeJunk(int words)
+	{
+		if (words > 0)
+		{
+			const int wP0 = std::min((FIFO_SIF_W - writePos), words);
+			const int wP1 = words - wP0;
+
+			memcpy(&data[writePos], &junk[4-words], wP0 << 2);
+			memcpy(&data[0], &junk[(4 - words)+wP0], wP1 << 2);
 
 			writePos = (writePos + words) & (FIFO_SIF_W - 1);
 			size += words;
