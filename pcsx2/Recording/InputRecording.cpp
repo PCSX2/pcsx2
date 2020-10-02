@@ -32,23 +32,28 @@
 
 void SaveStateBase::InputRecordingFreeze()
 {
+	// NOTE - BE CAREFUL
+	// CHANGING THIS WILL BREAK BACKWARDS COMPATIBILITY ON SAVESTATES
 	FreezeTag("InputRecording");
 	Freeze(g_FrameCount);
 
 #ifndef DISABLE_RECORDING
-	// Loading a save-state is an asynchronous task. If we are playing a recording
-	// that starts from a savestate (not power-on) and the starting (pcsx2 internal) frame
-	// marker has not been set (which comes from the save-state), we initialize it.
-	if (g_InputRecording.IsInitialLoad())
-		g_InputRecording.SetStartingFrame(g_FrameCount);
-	else if (g_InputRecording.IsActive())
+	if (g_Conf->EmuOptions.EnableRecordingTools)
 	{
-		// Explicitly set the frame change tracking variable as to not
-		// detect saving or loading a savestate as a frame being drawn
-		g_InputRecordingControls.SetFrameCountTracker(g_FrameCount);
+		// Loading a save-state is an asynchronous task. If we are playing a recording
+		// that starts from a savestate (not power-on) and the starting (pcsx2 internal) frame
+		// marker has not been set (which comes from the save-state), we initialize it.
+		if (g_InputRecording.IsInitialLoad())
+			g_InputRecording.SetStartingFrame(g_FrameCount);
+		else if (g_InputRecording.IsActive())
+		{
+			// Explicitly set the frame change tracking variable as to not
+			// detect saving or loading a savestate as a frame being drawn
+			g_InputRecordingControls.SetFrameCountTracker(g_FrameCount);
 
-		if (IsLoading())
-			g_InputRecording.SetFrameCounter(g_FrameCount);
+			if (IsLoading())
+				g_InputRecording.SetFrameCounter(g_FrameCount);
+		}
 	}
 #endif
 }
