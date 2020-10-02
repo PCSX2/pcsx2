@@ -10632,27 +10632,11 @@ vuRoundMode = 0 // Crashes without.
 Serial = SLES-51753
 Name   = True Crime - Streets of L.A.
 Region = PAL-E
-[patches = C96245F4]
-	author=PSI
-	// Due to an edge case with SIF0 DMA that isn't handled properly in PCSX2
-	// the game accidentally resets DVD streams, which causes it to crash.
-	// This patch forces the streaming module to use different buffers
-	// which prevents the DVD streams from being cleared.
-	patch=1,EE,00480640,word,10000000
-[/patches]
 ---------------------------------------------
 Serial = SLES-51754
 Name   = True Crime - Streets of L.A.
 Region = PAL-M5
 Compat = 3
-[patches = 6B9AEA0D]
-	author=PSI
-	// Due to an edge case with SIF0 DMA that isn't handled properly in PCSX2
-	// the game accidentally resets DVD streams, which causes it to crash.
-	// This patch forces the streaming module to use different buffers
-	// which prevents the DVD streams from being cleared.
-	patch=1,EE,00480DB0,word,10000000
-[/patches]
 ---------------------------------------------
 Serial = SLES-51755
 Name   = Disney-Pixar's Finding Nemo
@@ -37650,14 +37634,6 @@ Serial = SLUS-20550
 Name   = True Crime - Streets of L.A.
 Region = NTSC-U
 Compat = 3
-[patches = eb7854f1]
-	author=PSI
-	// Due to an edge case with SIF0 DMA that isn't handled properly in PCSX2
-	// the game accidentally resets DVD streams, which causes it to crash.
-	// This patch forces the streaming module to use different buffers
-	// which prevents the DVD streams from being cleared.
-	patch=1,EE,00480640,word,10000000
-[/patches]
 ---------------------------------------------
 Serial = SLUS-20552
 Name   = Grand Theft Auto - Vice City
