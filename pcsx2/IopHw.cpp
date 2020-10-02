@@ -80,12 +80,14 @@ void psxDmaInterrupt(int n)
 
 void psxDmaInterrupt2(int n)
 {
-	bool fire_interrupt = false;
+	// SIF0 and SIF1 DMA IRQ's cannot be supressed due to a mask flag for "tag" interrupts being available which cannot be disabled.
+	// The hardware can't disinguish between the DMA End and Tag Interrupt flags on these channels so interrupts always fire
+	bool fire_interrupt = n == 2 || n == 3;
 
 	if (n == 33) {
 		for (int i = 0; i < 6; i++) {
-			if (HW_DMA_ICR2 & (1 << (16 + i))) {
-				if (HW_DMA_ICR2 & (1 << (24 + i))) {
+			if (HW_DMA_ICR2 & (1 << (24 + i))) {
+				if (HW_DMA_ICR2 & (1 << (16 + i)) || i == 2 || i == 3) {
 					fire_interrupt = true;
 					break;
 				}
@@ -104,14 +106,11 @@ void psxDmaInterrupt2(int n)
 		fire_interrupt = true;
 	}
 
-	// SIF0 and SIF1 DMA IRQ's cannot be supressed due to a mask flag for "tag" interrupts being available which cannot be disabled.
-	// The hardware can't disinguish between the DMA End and Tag Interrupt flags on these channels so interrupts always fire
-	if (n == 2 || n == 3)
-		fire_interrupt = true;
-
 	if (fire_interrupt)
 	{
-		HW_DMA_ICR2 |= (1 << (24 + n));
+		if(n != 33)
+			HW_DMA_ICR2 |= (1 << (24 + n));
+
 		if (HW_DMA_ICR2 & (1 << 23)) {
 			HW_DMA_ICR2 |= 0x80000000; //Set master IRQ condition met
 		}
