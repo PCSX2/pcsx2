@@ -12909,6 +12909,7 @@ Region = PAL-G
 Serial = SLES-52755
 Name   = Blood Will Tell
 Region = PAL-M5
+VU0KickstartHack = 1 // Fixes main character model SPS.
 ---------------------------------------------
 Serial = SLES-52760
 Name   = Pro Evolution Soccer 4
@@ -38721,6 +38722,7 @@ Serial = SLUS-20782
 Name   = Blood Will Tell
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes main character model SPS.
 ---------------------------------------------
 Serial = SLUS-20784
 Name   = Italian Job, The
