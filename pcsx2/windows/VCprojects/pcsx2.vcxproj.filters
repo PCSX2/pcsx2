@@ -163,6 +163,9 @@
     <Filter Include="System\Ps2\SPU2">
       <UniqueIdentifier>{bed493d6-96dc-4057-a1f2-31f88ec927d9}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Recording\VirtualPad\Images">
+      <UniqueIdentifier>{ad528458-08eb-49a2-aefa-3c2b86ab8896}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -1595,6 +1598,63 @@
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\Logo.png">
       <Filter>AppHost\Resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\circlePressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\controllerFull.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\controllerHalf.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\controllerThreeQuarters.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\crossPressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\downPressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\l1Pressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\l2Pressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\l3Pressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\leftPressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\startPressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\r1Pressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\r2Pressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\r3Pressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\rightPressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\selectPressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\squarePressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\trianglePressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\upPressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
