@@ -191,6 +191,7 @@ protected:
 	void OnActivate(wxActivateEvent& evt);
 
 	void Menu_SysSettings_Click(wxCommandEvent& event);
+	void Menu_NetworkSettings_Click(wxCommandEvent &event);
 	void Menu_AudioSettings_Click(wxCommandEvent& event);
 	void Menu_McdSettings_Click(wxCommandEvent& event);
 	void Menu_WindowSettings_Click(wxCommandEvent& event);

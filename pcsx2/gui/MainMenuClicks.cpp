@@ -21,6 +21,7 @@
 #include "GSFrame.h"
 #include "SPU2/spu2.h"
 #include "System/SysThreads.h"
+#include "DEV9/DEV9.h"
 
 #include "ConsoleLogger.h"
 #include "MainFrame.h"
@@ -58,7 +59,12 @@ void MainEmuFrame::Menu_McdSettings_Click(wxCommandEvent& event)
 	AppOpenModalDialog<McdConfigDialog>(wxEmptyString, this);
 }
 
-void MainEmuFrame::Menu_WindowSettings_Click(wxCommandEvent& event)
+void MainEmuFrame::Menu_NetworkSettings_Click(wxCommandEvent &event)
+{
+    DEV9configure();
+}
+
+void MainEmuFrame::Menu_WindowSettings_Click(wxCommandEvent &event)
 {
 	wxCommandEvent evt(pxEvt_SetSettingsPage);
 	evt.SetString(L"GS Window");

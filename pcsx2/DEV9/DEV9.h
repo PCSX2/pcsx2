@@ -636,6 +636,7 @@ static flash_info_t devices[] = {
 #define FLASH_REGSIZE			0x20
 
 extern void dev9Irq(int cycles);
+extern void DEV9configure();
 
 void FLASHinit();
 s32 DEV9init();

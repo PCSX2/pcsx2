@@ -83,7 +83,7 @@ function(COMPILE_GRESOURCES output xml_out)
         if (NOT "${CG_ARG_C_PREFIX}" STREQUAL "")
             list(APPEND CG_GENERATE_COMMAND_LINE --c-name "${CG_ARG_C_PREFIX}")
         endif()
-        set(CG_TARGET_FILE_ENDING "c")
+        set(CG_TARGET_FILE_ENDING "cpp")
     elseif ("${CG_ARG_TYPE}" STREQUAL "EMBED_H")
         # EMBED_H mode, output includable header file.
         list(APPEND CG_GENERATE_COMMAND_LINE --generate-header)
