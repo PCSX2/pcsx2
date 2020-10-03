@@ -74,21 +74,19 @@ typedef struct _keyEvent
 ///////////////////////////////////////////////////////////////////////
 
 #if defined(GSdefs) || defined(PADdefs) || defined(SIOdefs) ||     \
-    defined(DEV9defs) || defined(USBdefs)
+    defined(USBdefs)
 #define COMMONdefs
 #endif
 
 // PS2EgetLibType returns (may be OR'd)
 #define PS2E_LT_GS 0x01
 #define PS2E_LT_PAD 0x02 // -=[ OBSOLETE ]=-
-#define PS2E_LT_DEV9 0x10
 #define PS2E_LT_USB 0x20
 #define PS2E_LT_SIO 0x80
 
 // PS2EgetLibVersion2 (high 16 bits)
 #define PS2E_GS_VERSION 0x0006
 #define PS2E_PAD_VERSION 0x0002 // -=[ OBSOLETE ]=-
-#define PS2E_DEV9_VERSION 0x0003
 #define PS2E_USB_VERSION 0x0003
 #define PS2E_SIO_VERSION 0x0001
 #ifdef COMMONdefs
@@ -123,9 +121,6 @@ typedef char __keyEvent_Size__[(sizeof(keyEvent) == 8) ? 1 : -1];
 #define SIO_TYPE_MC 0x00000100
 
 typedef int(CALLBACK *SIOchangeSlotCB)(int slot);
-
-typedef void (*DEV9callback)(int cycles);
-typedef int (*DEV9handler)(void);
 
 typedef void (*USBcallback)(int cycles);
 typedef int (*USBhandler)(void);
@@ -245,46 +240,6 @@ s32 CALLBACK PADtest();
 
 #endif
 
-/* DEV9 plugin API */
-
-// if this file is included with this define
-// the next api will not be skipped by the compiler
-#if defined(DEV9defs) || defined(BUILTIN_DEV9_PLUGIN)
-
-// basic funcs
-
-// NOTE: The read/write functions CANNOT use XMM/MMX regs
-// If you want to use them, need to save and restore current ones
-s32 CALLBACK DEV9init();
-s32 CALLBACK DEV9open(void *pDsp);
-void CALLBACK DEV9close();
-void CALLBACK DEV9shutdown();
-void CALLBACK DEV9setSettingsDir(const char *dir);
-void CALLBACK DEV9setLogDir(const char *dir);
-
-u8 CALLBACK DEV9read8(u32 addr);
-u16 CALLBACK DEV9read16(u32 addr);
-u32 CALLBACK DEV9read32(u32 addr);
-void CALLBACK DEV9write8(u32 addr, u8 value);
-void CALLBACK DEV9write16(u32 addr, u16 value);
-void CALLBACK DEV9write32(u32 addr, u32 value);
-void CALLBACK DEV9readDMA8Mem(u32 *pMem, int size);
-void CALLBACK DEV9writeDMA8Mem(u32 *pMem, int size);
-
-// cycles = IOP cycles before calling callback,
-// if callback returns 1 the irq is triggered, else not
-void CALLBACK DEV9irqCallback(DEV9callback callback);
-DEV9handler CALLBACK DEV9irqHandler(void);
-
-// extended funcs
-
-s32 CALLBACK DEV9freeze(int mode, freezeData *data);
-void CALLBACK DEV9configure();
-void CALLBACK DEV9about();
-s32 CALLBACK DEV9test();
-
-#endif
-
 /* USB plugin API */
 
 // if this file is included with this define
@@ -375,22 +330,6 @@ typedef s32(CALLBACK *_PADsetSlot)(u8 port, u8 slot);
 typedef s32(CALLBACK *_PADqueryMtap)(u8 port);
 typedef void(CALLBACK *_PADWriteEvent)(keyEvent &evt);
 
-// DEV9
-// NOTE: The read/write functions CANNOT use XMM/MMX regs
-// If you want to use them, need to save and restore current ones
-typedef s32(CALLBACK *_DEV9open)(void *pDsp);
-typedef u8(CALLBACK *_DEV9read8)(u32 mem);
-typedef u16(CALLBACK *_DEV9read16)(u32 mem);
-typedef u32(CALLBACK *_DEV9read32)(u32 mem);
-typedef void(CALLBACK *_DEV9write8)(u32 mem, u8 value);
-typedef void(CALLBACK *_DEV9write16)(u32 mem, u16 value);
-typedef void(CALLBACK *_DEV9write32)(u32 mem, u32 value);
-typedef void(CALLBACK *_DEV9readDMA8Mem)(u32 *pMem, int size);
-typedef void(CALLBACK *_DEV9writeDMA8Mem)(u32 *pMem, int size);
-typedef void(CALLBACK *_DEV9irqCallback)(DEV9callback callback);
-typedef DEV9handler(CALLBACK *_DEV9irqHandler)(void);
-typedef void(CALLBACK *_DEV9async)(u32 cycles);
-
 // USB
 // NOTE: The read/write functions CANNOT use XMM/MMX regs
 // If you want to use them, need to save and restore current ones
@@ -453,22 +392,6 @@ extern _PADgsDriverInfo PADgsDriverInfo;
 extern _PADsetSlot PADsetSlot;
 extern _PADqueryMtap PADqueryMtap;
 extern _PADWriteEvent PADWriteEvent;
-#endif
-
-// DEV9
-#ifndef BUILTIN_DEV9_PLUGIN
-extern _DEV9open DEV9open;
-extern _DEV9read8 DEV9read8;
-extern _DEV9read16 DEV9read16;
-extern _DEV9read32 DEV9read32;
-extern _DEV9write8 DEV9write8;
-extern _DEV9write16 DEV9write16;
-extern _DEV9write32 DEV9write32;
-extern _DEV9readDMA8Mem DEV9readDMA8Mem;
-extern _DEV9writeDMA8Mem DEV9writeDMA8Mem;
-extern _DEV9irqCallback DEV9irqCallback;
-extern _DEV9irqHandler DEV9irqHandler;
-extern _DEV9async DEV9async;
 #endif
 
 // USB

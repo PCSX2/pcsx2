@@ -83,29 +83,6 @@ endif()
 
 
 #---------------------------------------
-#			dev9null
-#---------------------------------------
-if(GTKn_FOUND)
-    set(dev9null TRUE)
-endif()
-
-#---------------------------------------
-#			dev9ghzdrk
-#---------------------------------------
-if(NOT DISABLE_DEV9GHZDRK)
-if(GTKn_FOUND AND PCAP_FOUND AND LIBXML2_FOUND)
-    set(dev9ghzdrk TRUE)
-    list(APPEND CMAKE_MODULE_PATH
-        ${CMAKE_MODULE_PATH}/macros)
-    include(GlibCompileResourcesSupport) 
-else()
-    set(dev9ghzdrk FALSE)
-    print_dep("Skip build of dev9ghzdrk: missing dependencies" "${msg_dep_dev}")
-endif()
-endif()
-#---------------------------------------
-
-#---------------------------------------
 #			GSnull
 #---------------------------------------
 if(GTKn_FOUND AND EXTRA_PLUGINS)
