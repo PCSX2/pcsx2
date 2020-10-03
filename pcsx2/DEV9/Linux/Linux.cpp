@@ -124,7 +124,7 @@ DEV9configure() {
     gtk_init (NULL, NULL);
     GError *error = NULL;
     builder = gtk_builder_new();
-    if (!builder_add_from_resource(builder, "/net/pcsx2/dev9ghzdrk/Linux/dev9ghzdrk.ui", &error)) {
+    if (!builder_add_from_resource(builder, "/net/pcsx2/dev9/DEV9/Linux/dev9.ui", &error)) {
         g_warning("Could not build config ui: %s", error->message);
         g_error_free(error);
         g_object_unref(G_OBJECT(builder));
