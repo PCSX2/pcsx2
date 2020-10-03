@@ -281,6 +281,49 @@ set(pcsx2SPU2Headers
 	SPU2/wx/wxConfig.h
 )
 
+# DEV9 UI sources
+compile_gresources( pcsx2DEV9UISources
+					pcsx2DEV9UIXML 
+					TYPE EMBED_C
+					RESOURCES "DEV9/Linux/dev9.ui"
+					PREFIX "/net/pcsx2/dev9"
+					COMPRESS_ALL
+					STRIPBLANKS_ALL
+)
+
+# DEV9 UI headers
+compile_gresources( pcsx2DEV9UIHeaders
+					pcsx2DEV9UIXML
+					TYPE EMBED_H
+					RESOURCES "DEV9/Linux/dev9.ui"
+					PREFIX "/net/pcsx2/dev9"
+					COMPRESS_ALL
+					STRIPBLANKS_ALL
+)
+
+# DEV9 sources
+set(pcsx2DEV9Sources
+	DEV9/smap.cpp
+	DEV9/DEV9.cpp
+	DEV9/flash.cpp
+	DEV9/pcap_io.cpp
+	DEV9/Linux/Config.cpp
+	DEV9/Linux/Linux.cpp
+	DEV9/Linux/net.cpp
+	${pcsx2DEV9UISources}
+	)
+
+# DEV9 headers
+set(pcsx2DEV9Headers
+	DEV9/DEV9.h
+	DEV9/ata.h
+	DEV9/net.h
+	DEV9/pcap_io.h
+	DEV9/smap.h
+	${pcsx2DEV9UIHeaders}
+	)
+
+
 # DebugTools sources
 set(pcsx2DebugToolsSources
 	DebugTools/DebugInterface.cpp
@@ -713,6 +756,8 @@ set(Common
 	${pcsx2CDVDHeaders}
 	${pcsx2SPU2Sources}
 	${pcsx2SPU2Headers}
+	${pcsx2DEV9Sources}
+	${pcsx2DEV9Headers}
 	${pcsx2DebugToolsSources}
 	${pcsx2GuiSources}
 	${pcsx2GuiResources}
@@ -783,6 +828,8 @@ set(pcsx2FinalLibs
     ${ALSA_LIBRARIES}
     ${SOUNDTOUCH_LIBRARIES}
     ${SDL2_LIBRARIES}
+	${PCAP_LIBRARY}
+	${LIBXML2_LIBRARIES}
     ${Platform_Libs}
 )
 

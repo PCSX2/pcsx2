@@ -211,7 +211,6 @@ for ARG in "$@"; do
         --lto               ) flags="$flags -DUSE_LTO=TRUE" ;;
         --pgo-optimize      ) flags="$flags -DUSE_PGO_OPTIMIZE=TRUE" ;;
         --pgo-generate      ) flags="$flags -DUSE_PGO_GENERATE=TRUE" ;;
-        --no-dev9ghzdrk     ) flags="$flags -DDISABLE_DEV9GHZDRK=TRUE" ;;
         --no-portaudio      ) flags="$flags -DPORTAUDIO_API=FALSE" ;;
         --no-simd           ) flags="$flags -DDISABLE_ADVANCE_SIMD=TRUE" ;;
         --no-trans          ) flags="$flags -DNO_TRANSLATION=TRUE" ;;

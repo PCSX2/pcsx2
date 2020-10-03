@@ -62,7 +62,7 @@ void SaveConf() {
      */
 
 
-    const std::string file(s_strIniPath + "dev9ghzdrk.cfg");
+    const std::string file(s_strIniPath + "DEV9.cfg");
 
     xmlSaveFormatFileEnc(file.c_str(), doc, "UTF-8", 1);
 //    free(configFile);
@@ -79,7 +79,7 @@ void SaveConf() {
 
 void LoadConf() {
 
-    const std::string file(s_strIniPath + "dev9ghzdrk.cfg");
+    const std::string file(s_strIniPath + "DEV9.cfg");
     if( -1 == access( file.c_str(), F_OK ) )
         return;
 

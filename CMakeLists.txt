@@ -29,6 +29,7 @@ include(BuildParameters)
 # SearchForStuff be done before SelectPcsx2Plugins
 include(SearchForStuff)
 include(SelectPcsx2Plugins)
+include(macros/GlibCompileResourcesSupport)
 
 # Must be done after SearchForStuff
 get_git_version_info()
