@@ -63,7 +63,7 @@ void OnInitDialog(HWND hW)
 	vector<tap_adapter>* al = GetTapAdapters();
 	for (size_t i = 0; i < al->size(); i++)
 	{
-		int itm = ComboBox_AddString(GetDlgItem(hW, IDC_ETHDEV), al[0][i].name.c_str());
+		int itm = SendMessageA(GetDlgItem(hW, IDC_ETHDEV), CB_ADDSTRING, NULL, (LPARAM)(LPCTSTR)al[0][i].name.c_str());
 		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV), itm, _strdup(al[0][i].guid.c_str()));
 		if (strcmp(al[0][i].guid.c_str(), config.Eth) == 0)
 		{

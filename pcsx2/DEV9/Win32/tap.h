@@ -28,8 +28,9 @@ vector<tap_adapter>* GetTapAdapters();
 class TAPAdapter : public NetAdapter
 {
 	HANDLE htap;
-	OVERLAPPED read,write;
+	OVERLAPPED read, write;
 	bool isActive = false;
+
 public:
 	TAPAdapter();
 	virtual bool blocks();
