@@ -20,8 +20,10 @@
 
 #include "Utilities/PersistentThread.h"
 #include "System/SysThreads.h"
+#ifdef _WIN32
 #include <WinSock2.h>
 #include <windows.h>
+#endif
 
 using namespace Threading;
 

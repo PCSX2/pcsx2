@@ -1,4 +1,4 @@
-include(macros/CompileGResources)
+include(macros/GlibCompileResourcesSupport)
 
 
 if (openSUSE)

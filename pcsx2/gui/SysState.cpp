@@ -291,7 +291,6 @@ static const std::unique_ptr<BaseSavestateEntry> SavestateEntries[] = {
 	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry(PluginId_PAD)),
 	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry(PluginId_USB)),
 };
->>>>>>> DEV9: initial work on merge, removing references
 
 // It's bad mojo to have savestates trying to read and write from the same file at the
 // same time.  To prevent that we use this mutex lock, which is used by both the
