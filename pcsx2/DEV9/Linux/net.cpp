@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "net.h"
+#include "../net.h"
 #include "../DEV9.h"
 
 #include <pthread.h>

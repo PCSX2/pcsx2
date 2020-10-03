@@ -18,6 +18,7 @@
 #include "SPU2/spu2.h"
 
 #include "Sif.h"
+#include "DEV9/DEV9.h"
 
 using namespace R3000A;
 

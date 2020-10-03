@@ -22,11 +22,11 @@
 #include <pwd.h>
 #include <string.h>
 
-#include "Config.h"
+#include "../Config.h"
 #include "../DEV9.h"
 #include "pcap.h"
-#include "pcap_io.h"
-#include "net.h"
+#include "../pcap_io.h"
+#include "../net.h"
 
 static GtkBuilder * builder;
 

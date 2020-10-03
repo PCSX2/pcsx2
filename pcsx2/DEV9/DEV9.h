@@ -122,7 +122,6 @@ EXTERN  int ThreadRun;
 
 s32  _DEV9open();
 void _DEV9close();
-EXTERN  DEV9callback DEV9irq;
 //void DEV9thread();
 
 EXTERN  PluginLog DEV9Log;
@@ -636,13 +635,22 @@ static flash_info_t devices[] = {
 
 #define FLASH_REGSIZE			0x20
 
-EXPORT_C_(void)
-FLASHinit();
-EXPORT_C_(u32)
- FLASHread32(u32 addr, int size);
-EXPORT_C_(void)
-FLASHwrite32(u32 addr, u32 value, int size);
+extern void dev9Irq(int cycles);
+
+void FLASHinit();
+u32 FLASHread32(u32 addr, int size);
+void FLASHwrite32(u32 addr, u32 value, int size);
 void _DEV9irq(int cause, int cycles);
+int DEV9irqHandler(void);
+void DEV9async(u32 cycles);
+void DEV9writeDMA8Mem(u32* pMem, int size);
+void DEV9readDMA8Mem(u32 *pMem, int size);
+u8 DEV9read8(u32 addr);
+u16 DEV9read16(u32 addr);
+u32 DEV9read32(u32 addr);
+void DEV9write8(u32 addr,  u8 value);
+void DEV9write16(u32 addr, u16 value);
+void DEV9write32(u32 addr, u32 value);
 
 int emu_printf(const char *fmt, ...);
 
