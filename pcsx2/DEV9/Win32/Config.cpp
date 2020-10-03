@@ -18,6 +18,7 @@
 
 #include <winsock2.h>
 #include "..\DEV9.h"
+#include "AppConfig.h"
 
 BOOL WritePrivateProfileInt(LPCSTR lpAppName, LPCSTR lpKeyName, int intvar, LPCSTR lpFileName)
 {
@@ -32,7 +33,7 @@ bool FileExists(std::string szPath)
 
 void SaveConf()
 {
-	const std::string file(s_strIniPath + "dev9ghz.ini");
+	const std::string file(GetSettingsFolder().Combine(wxString("DEV9.cfg")).GetFullPath());
 	DeleteFile(file.c_str());
 
 	WritePrivateProfileString("DEV9", "Eth", config.Eth, file.c_str());
@@ -44,7 +45,7 @@ void SaveConf()
 
 void LoadConf()
 {
-	const std::string file(s_strIniPath + "dev9ghz.ini");
+	const std::string file(GetSettingsFolder().Combine(wxString("DEV9.cfg")).GetFullPath());
 	if (FileExists(file.c_str()) == false)
 		return;
 

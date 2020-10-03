@@ -85,7 +85,8 @@ void OnOk()
 {
 
 	char* ptr = gtk_combo_box_text_get_active_text((GtkComboBoxText*)gtk_builder_get_object(builder, "IDC_ETHDEV"));
-	strcpy(config.Eth, ptr);
+	if (ptr != nullptr)
+		strcpy(config.Eth, ptr);
 
 	strcpy(config.Hdd, gtk_entry_get_text((GtkEntry*)gtk_builder_get_object(builder, "IDC_HDDFILE")));
 
