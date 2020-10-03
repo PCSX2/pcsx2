@@ -28,6 +28,7 @@
 #include "IPC.h"
 #include "FW.h"
 #include "SPU2/spu2.h"
+#include "DEV9/DEV9.h"
 
 #include "../DebugTools/MIPSAnalyst.h"
 #include "../DebugTools/SymbolMap.h"
@@ -94,6 +95,7 @@ void SysCoreThread::Start()
 		return;
 	GetCorePlugins().Init();
 	SPU2init();
+    DEV9init();
 	_parent::Start();
 }
 
@@ -301,6 +303,7 @@ void SysCoreThread::ExecuteTaskInThread()
 void SysCoreThread::OnSuspendInThread()
 {
 	GetCorePlugins().Close();
+    DEV9close();
 	DoCDVDclose();
 	FWclose();
 	SPU2close();
@@ -313,6 +316,7 @@ void SysCoreThread::OnResumeInThread(bool isSuspended)
 		DoCDVDopen();
 	FWopen();
 	SPU2open((void*)pDsp);
+    DEV9open((void*)pDsp);
 }
 
 
@@ -328,11 +332,13 @@ void SysCoreThread::OnCleanupInThread()
 	// FIXME: temporary workaround for deadlock on exit, which actually should be a crash
 	vu1Thread.WaitVU();
 	SPU2close();
+    DEV9close();
 	DoCDVDclose();
 	FWclose();
 	GetCorePlugins().Close();
 	GetCorePlugins().Shutdown();
 	SPU2shutdown();
+    DEV9shutdown();
 
 	_mm_setcsr(m_mxcsr_saved.bitmask);
 	Threading::DisableHiresScheduler();

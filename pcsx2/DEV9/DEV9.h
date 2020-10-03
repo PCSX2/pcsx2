@@ -638,6 +638,10 @@ static flash_info_t devices[] = {
 extern void dev9Irq(int cycles);
 
 void FLASHinit();
+s32 DEV9init();
+void DEV9close();
+s32 DEV9open(void *pDsp);
+void DEV9shutdown();
 u32 FLASHread32(u32 addr, int size);
 void FLASHwrite32(u32 addr, u32 value, int size);
 void _DEV9irq(int cause, int cycles);
