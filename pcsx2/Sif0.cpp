@@ -80,7 +80,7 @@ static __fi bool WriteIOPtoFifo()
 	hw_dma9.madr += writeSize << 2;
 
 	// iop is 1/8th the clock rate of the EE and psxcycles is in words (not quadwords).
-	sif0.iop.cycles += (writeSize >> 2)/* * BIAS*/;		// fixme : should be >> 4
+	sif0.iop.cycles += writeSize; //1 word per cycle
 	sif0.iop.counter -= writeSize;
 
 	if (sif0.iop.counter == 0 && sif0.iop.writeJunk)
