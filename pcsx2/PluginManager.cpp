@@ -82,7 +82,6 @@ const PluginInfo tbl_PluginInfo[] =
 	{ "GS",		PluginId_GS,	PS2E_LT_GS,		PS2E_GS_VERSION		},
 	{ "PAD",	PluginId_PAD,	PS2E_LT_PAD,	PS2E_PAD_VERSION	},
 	{ "USB",	PluginId_USB,	PS2E_LT_USB,	PS2E_USB_VERSION	},
-	{ "DEV9",	PluginId_DEV9,	PS2E_LT_DEV9,	PS2E_DEV9_VERSION	},
 
 	{ NULL },
 
@@ -273,24 +272,6 @@ _PADWriteEvent	   PADWriteEvent;
 
 static void PAD_update( u32 padslot ) { }
 
-// DEV9
-#ifndef BUILTIN_DEV9_PLUGIN
-_DEV9open          DEV9open;
-_DEV9read8         DEV9read8;
-_DEV9read16        DEV9read16;
-_DEV9read32        DEV9read32;
-_DEV9write8        DEV9write8;
-_DEV9write16       DEV9write16;
-_DEV9write32       DEV9write32;
-
-_DEV9readDMA8Mem   DEV9readDMA8Mem;
-_DEV9writeDMA8Mem  DEV9writeDMA8Mem;
-
-_DEV9irqCallback   DEV9irqCallback;
-_DEV9irqHandler    DEV9irqHandler;
-_DEV9async         DEV9async;
-#endif
-
 // USB
 #ifndef BUILTIN_USB_PLUGIN
 _USBopen           USBopen;
@@ -307,7 +288,6 @@ _USBirqHandler     USBirqHandler;
 _USBsetRAM         USBsetRAM;
 #endif
 
-DEV9handler dev9Handler;
 USBhandler usbHandler;
 uptr pDsp[2];
 
@@ -411,32 +391,6 @@ static const LegacyApi_OptMethod s_MethMessOpt_PAD[] =
 };
 
 // ----------------------------------------------------------------------------
-//  DEV9 Mess!
-// ----------------------------------------------------------------------------
-static const LegacyApi_ReqMethod s_MethMessReq_DEV9[] =
-{
-	{	"DEV9open",			(vMeth**)&DEV9open,			NULL },
-	{	"DEV9read8",		(vMeth**)&DEV9read8,		NULL },
-	{	"DEV9read16",		(vMeth**)&DEV9read16,		NULL },
-	{	"DEV9read32",		(vMeth**)&DEV9read32,		NULL },
-	{	"DEV9write8",		(vMeth**)&DEV9write8,		NULL },
-	{	"DEV9write16",		(vMeth**)&DEV9write16,		NULL },
-	{	"DEV9write32",		(vMeth**)&DEV9write32,		NULL },
-	{	"DEV9readDMA8Mem",	(vMeth**)&DEV9readDMA8Mem,	NULL },
-	{	"DEV9writeDMA8Mem",	(vMeth**)&DEV9writeDMA8Mem,	NULL },
-	{	"DEV9irqCallback",	(vMeth**)&DEV9irqCallback,	NULL },
-	{	"DEV9irqHandler",	(vMeth**)&DEV9irqHandler,	NULL },
-
-	{ NULL }
-};
-
-static const LegacyApi_OptMethod s_MethMessOpt_DEV9[] =
-{
-	{ "DEV9async", (vMeth**)&DEV9async },
-	{ NULL }
-};
-
-// ----------------------------------------------------------------------------
 //  USB Mess!
 // ----------------------------------------------------------------------------
 static const LegacyApi_ReqMethod s_MethMessReq_USB[] =
@@ -465,7 +419,6 @@ static const LegacyApi_ReqMethod* const s_MethMessReq[] =
 	s_MethMessReq_GS,
 	s_MethMessReq_PAD,
 	s_MethMessReq_USB,
-	s_MethMessReq_DEV9
 };
 
 static const LegacyApi_OptMethod* const s_MethMessOpt[] =
@@ -473,7 +426,6 @@ static const LegacyApi_OptMethod* const s_MethMessOpt[] =
 	s_MethMessOpt_GS,
 	s_MethMessOpt_PAD,
 	s_MethMessOpt_USB,
-	s_MethMessOpt_DEV9
 };
 
 SysCorePlugins *g_plugins = NULL;
@@ -636,9 +588,6 @@ void* StaticLibrary::GetSymbol(const wxString &name)
 #ifdef BUILTIN_PAD_PLUGIN
 	RETURN_COMMON_SYMBOL(PAD);
 #endif
-#ifdef BUILTIN_DEV9_PLUGIN
-	RETURN_COMMON_SYMBOL(DEV9);
-#endif
 #ifdef BUILTIN_USB_PLUGIN
 	RETURN_COMMON_SYMBOL(USB);
 #endif
@@ -696,9 +645,6 @@ SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxStri
 #endif
 #ifdef BUILTIN_PAD_PLUGIN
 		case PluginId_PAD:
-#endif
-#ifdef BUILTIN_DEV9_PLUGIN
-		case PluginId_DEV9:
 #endif
 #ifdef BUILTIN_USB_PLUGIN
 		case PluginId_USB:
@@ -969,16 +915,6 @@ bool SysCorePlugins::OpenPlugin_PAD()
 	return !PADopen( (void*)pDsp );
 }
 
-bool SysCorePlugins::OpenPlugin_DEV9()
-{
-	dev9Handler = NULL;
-
-	if( DEV9open( (void*)pDsp ) ) return false;
-	DEV9irqCallback( dev9Irq );
-	dev9Handler = DEV9irqHandler();
-	return true;
-}
-
 bool SysCorePlugins::OpenPlugin_USB()
 {
 	usbHandler = NULL;
@@ -1018,7 +954,6 @@ void SysCorePlugins::Open( PluginsEnum_t pid )
 		case PluginId_GS:	result = OpenPlugin_GS();	break;
 		case PluginId_PAD:	result = OpenPlugin_PAD();	break;
 		case PluginId_USB:	result = OpenPlugin_USB();	break;
-		case PluginId_DEV9:	result = OpenPlugin_DEV9();	break;
 
 		jNO_DEFAULT;
 	}
@@ -1090,11 +1025,6 @@ void SysCorePlugins::ClosePlugin_PAD()
 	_generalclose( PluginId_PAD );
 }
 
-void SysCorePlugins::ClosePlugin_DEV9()
-{
-	_generalclose( PluginId_DEV9 );
-}
-
 void SysCorePlugins::ClosePlugin_USB()
 {
 	_generalclose( PluginId_USB );
@@ -1120,7 +1050,6 @@ void SysCorePlugins::Close( PluginsEnum_t pid )
 		case PluginId_GS:	ClosePlugin_GS();	break;
 		case PluginId_PAD:	ClosePlugin_PAD();	break;
 		case PluginId_USB:	ClosePlugin_USB();	break;
-		case PluginId_DEV9:	ClosePlugin_DEV9();	break;
 		case PluginId_Mcd:	ClosePlugin_Mcd();	break;
 		
 		jNO_DEFAULT;

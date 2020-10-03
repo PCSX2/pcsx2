@@ -6,14 +6,6 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 endif()
 
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/dev9null" AND dev9null)
-	add_subdirectory(dev9null)
-endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/dev9ghzdrk" AND dev9ghzdrk)
-	add_subdirectory(dev9ghzdrk)
-endif()
-
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSdx" AND GSdx)
 	add_subdirectory(GSdx)
 endif()
