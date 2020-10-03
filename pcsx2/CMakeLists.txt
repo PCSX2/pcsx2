@@ -1,3 +1,6 @@
+include(macros/GlibCompileResourcesSupport)
+
+
 if (openSUSE)
     # openSUSE don't install wx in a standard library system
     # path. Let's bypass the dynamic linker and hardcode the path.
@@ -310,7 +313,7 @@ set(pcsx2DEV9Sources
 	DEV9/Linux/Config.cpp
 	DEV9/Linux/Linux.cpp
 	DEV9/Linux/net.cpp
-	${pcsx2DEV9UISources}
+    #${pcsx2DEV9UISources}
 	)
 
 # DEV9 headers
@@ -320,7 +323,7 @@ set(pcsx2DEV9Headers
 	DEV9/net.h
 	DEV9/pcap_io.h
 	DEV9/smap.h
-	${pcsx2DEV9UIHeaders}
+    #${pcsx2DEV9UIHeaders}
 	)
 
 

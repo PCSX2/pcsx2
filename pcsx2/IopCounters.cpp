@@ -21,6 +21,7 @@
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
 #include "SPU2/spu2.h"
+#include "DEV9/DEV9.h"
 
 #include <math.h>
 
@@ -514,11 +515,8 @@ void psxRcntUpdate()
 	else
 		c -= difference;
 	psxNextCounter = c;
-	if (DEV9async)
-	{
-		DEV9async(1);
-	}
-	if (USBasync)
+	DEV9async(1);
+	if(USBasync)
 	{
 		const s32 difference = psxRegs.cycle - psxCounters[7].sCycleT;
 		s32 c = psxCounters[7].CycleT;

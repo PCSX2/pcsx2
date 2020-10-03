@@ -42,5 +42,4 @@ extern void spu2DMA7Irq();
 extern void iopIntcIrq( uint irqType );
 extern void iopTestIntc();
 
-extern DEV9handler dev9Handler;
 extern USBhandler usbHandler;

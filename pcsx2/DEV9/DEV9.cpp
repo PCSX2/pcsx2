@@ -82,17 +82,6 @@ u8 eeprom[] = {
 
 u32 *iopPC;
 
-const unsigned char version  = PS2E_DEV9_VERSION;
-const unsigned char revision = 0;
-const unsigned char build    = 4;    // increase that with each version
-
-
-static const char *libraryName     = "GiGaHeRz's DEV9 Driver"
-#ifdef _DEBUG
-	"(debug)"
-#endif
-;
-
 #ifdef _WIN32
 HANDLE hEeprom;
 HANDLE mapping;
@@ -100,22 +89,6 @@ HANDLE mapping;
 int hEeprom;
 int mapping;
 #endif
-
-EXPORT_C_(u32)
-PS2EgetLibType() {
-	return PS2E_LT_DEV9;
-}
-
-EXPORT_C_(const char*)
-PS2EgetLibName() {
-	return libraryName;
-}
-
-EXPORT_C_(u32)
-PS2EgetLibVersion2(u32 type) {
-	return (version<<16) | (revision<<8) | build;
-}
-
 
 std::string s_strIniPath = "inis";
 std::string s_strLogPath = "logs";
@@ -157,8 +130,7 @@ void LogInit()
 	DEV9Log.Open(LogFile);
 }
 
-EXPORT_C_(s32)
-DEV9init()
+s32 DEV9init()
 {
 
 #ifdef DEV9_LOG_ENABLE
@@ -242,16 +214,14 @@ DEV9init()
 	return 0;
 }
 
-EXPORT_C_(void)
-DEV9shutdown() {
+void DEV9shutdown() {
 	DEV9_LOG("DEV9shutdown\n");
 #ifdef DEV9_LOG_ENABLE
 	DEV9Log.Close();
 #endif
 }
 
-EXPORT_C_(s32)
-DEV9open(void *pDsp)
+s32 DEV9open(void *pDsp)
 {
 	DEV9_LOG("DEV9open\n");
 	LoadConf();
@@ -266,8 +236,7 @@ DEV9open(void *pDsp)
 	return _DEV9open();
 }
 
-EXPORT_C_(void)
-DEV9close()
+void DEV9close()
 {
 	DEV9_LOG("DEV9close\n");
 #ifdef ENABLE_ATA
@@ -276,19 +245,13 @@ DEV9close()
 	_DEV9close();
 }
 
-EXPORT_C_(int)
-_DEV9irqHandler(void)
+int DEV9irqHandler(void)
 {
 	//dev9Ru16(SPD_R_INTR_STAT)|= dev9.irqcause;
 	DEV9_LOG("_DEV9irqHandler %x, %x\n", dev9.irqcause, dev9Ru16(SPD_R_INTR_MASK));
 	if (dev9.irqcause & dev9Ru16(SPD_R_INTR_MASK)) 
 		return 1;
 	return 0;
-}
-
-EXPORT_C_(DEV9handler)
-DEV9irqHandler(void) {
-	return (DEV9handler)_DEV9irqHandler;
 }
 
 void _DEV9irq(int cause, int cycles)
@@ -298,14 +261,13 @@ void _DEV9irq(int cause, int cycles)
 	dev9.irqcause|= cause;
 
 	if(cycles<1)
-		DEV9irq(1);
+		dev9Irq(1);
 	else
-		DEV9irq(cycles);
+		dev9Irq(cycles);
 }
 
 
-EXPORT_C_(u8)
- DEV9read8(u32 addr) {
+u8 DEV9read8(u32 addr) {
 	if (!config.ethEnable & !config.hddEnable)
 		return 0;
 
@@ -372,8 +334,7 @@ EXPORT_C_(u8)
 	return hard;
 }
 
-EXPORT_C_(u16)
-DEV9read16(u32 addr)
+u16 DEV9read16(u32 addr)
 {
 	if (!config.ethEnable & !config.hddEnable)
 		return 0;
@@ -438,8 +399,7 @@ DEV9read16(u32 addr)
 	return hard;
 }
 
-EXPORT_C_(u32)
-DEV9read32(u32 addr)
+u32 DEV9read32(u32 addr)
 {
 	if (!config.ethEnable & !config.hddEnable)
 		return 0;
@@ -474,8 +434,7 @@ DEV9read32(u32 addr)
 //	return hard;
 }
 
-EXPORT_C_(void)
-DEV9write8(u32 addr,  u8 value)
+void DEV9write8(u32 addr,  u8 value)
 {
 	if (!config.ethEnable & !config.hddEnable)
 		return;
@@ -585,8 +544,7 @@ DEV9write8(u32 addr,  u8 value)
 	DEV9_LOG("*Known 8bit write at address %lx value %x\n", addr, value);
 }
 
-EXPORT_C_(void)
-DEV9write16(u32 addr, u16 value)
+void DEV9write16(u32 addr, u16 value)
 {
 	if (!config.ethEnable & !config.hddEnable)
 		return;
@@ -610,7 +568,7 @@ DEV9write16(u32 addr, u16 value)
 			if ((dev9Ru16(SPD_R_INTR_MASK)!=value) && ((dev9Ru16(SPD_R_INTR_MASK)|value) & dev9.irqcause))
 			{
 				DEV9_LOG("SPD_R_INTR_MASK16=0x%X	, checking for masked/unmasked interrupts\n",value);
-				DEV9irq(1);
+				dev9Irq(1);
 			}
 			break;
 		
@@ -629,8 +587,7 @@ DEV9write16(u32 addr, u16 value)
 	DEV9_LOG("*Known 16bit write at address %lx value %x\n", addr, value);
 }
 
-EXPORT_C_(void)
-DEV9write32(u32 addr, u32 value)
+void DEV9write32(u32 addr, u32 value)
 {
 	if (!config.ethEnable & !config.hddEnable)
 		return;
@@ -667,8 +624,7 @@ DEV9write32(u32 addr, u32 value)
 	DEV9_LOG("*Known 32bit write at address %lx value %lx\n", addr, value);
 }
 
-EXPORT_C_(void)
-DEV9readDMA8Mem(u32 *pMem, int size)
+void DEV9readDMA8Mem(u32 *pMem, int size)
 {
 	if (!config.ethEnable & !config.hddEnable)
 		return;
@@ -682,8 +638,7 @@ DEV9readDMA8Mem(u32 *pMem, int size)
 #endif
 }
 
-EXPORT_C_(void)
-DEV9writeDMA8Mem(u32* pMem, int size)
+void DEV9writeDMA8Mem(u32* pMem, int size)
 {
 	if (!config.ethEnable & !config.hddEnable)
 		return;
@@ -698,35 +653,21 @@ DEV9writeDMA8Mem(u32* pMem, int size)
 }
 
 
-//plugin interface
-EXPORT_C_(void)
-DEV9irqCallback(void (*callback)(int cycles)) {
-	DEV9irq = callback;
-}
-
-EXPORT_C_(void)
-DEV9async(u32 cycles)
+void DEV9async(u32 cycles)
 {
 	smap_async(cycles);
 }
 
 // extended funcs
 
-EXPORT_C_(s32)
- DEV9test() {
-	return 0;
-}
-
-EXPORT_C_(void)
-DEV9setSettingsDir(const char* dir)
+void DEV9setSettingsDir(const char* dir)
 {
 	// Grab the ini directory.
 	// TODO: Use
     s_strIniPath = (dir == NULL) ? "inis" : dir;
 }
 
-EXPORT_C_(void)
-DEV9setLogDir(const char* dir)
+void DEV9setLogDir(const char* dir)
 {
 	// Get the path to the log directory.
 	s_strLogPath = (dir == NULL) ? "logs" : dir;

@@ -15,12 +15,13 @@
 
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
+#include "DEV9/DEV9.h"
 
 using namespace R3000A;
 
 void dev9Interrupt()
 {
-	if ((dev9Handler != NULL) && (dev9Handler() != 1)) return;
+	if (DEV9irqHandler() != 1) return;
 
 	iopIntcIrq(13);
 }

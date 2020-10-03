@@ -57,8 +57,7 @@ static const char* getCmdName(u32 cmd){
 	}
 }
 
-EXPORT_C_(void)
-FLASHinit(){
+void FLASHinit(){
 	FILE *fd;
 
 	id= FLASH_ID_64MBIT;
@@ -82,8 +81,7 @@ FLASHinit(){
 		memset(file, 0xFF, CARD_SIZE_ECC);
 }
 
-EXPORT_C_(u32)
- FLASHread32(u32 addr, int size) {
+ u32 FLASHread32(u32 addr, int size) {
 	u32 value, refill= 0;
 
 	switch(addr) {
@@ -148,8 +146,7 @@ EXPORT_C_(u32)
 	}
 }
 
-EXPORT_C_(void)
-FLASHwrite32(u32 addr, u32 value, int size) {
+void FLASHwrite32(u32 addr, u32 value, int size) {
 
 	switch(addr & 0x1FFFFFFF) {
 	case FLASH_R_DATA:
