@@ -87,7 +87,7 @@ private:
 	HANDLE hOverlappedFile;
 	OVERLAPPED asyncOperationContext;
 	bool asyncInProgress;
-	byte mDummyAsyncPrefetchTarget[GZFILE_READ_CHUNK_SIZE];
+	char mDummyAsyncPrefetchTarget[GZFILE_READ_CHUNK_SIZE];
 #endif
 
 	void AsyncPrefetchReset();

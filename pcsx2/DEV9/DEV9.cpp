@@ -13,11 +13,12 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #define WINVER 0x0600
 #define _WIN32_WINNT 0x0600
 
 #ifdef _WIN32
-#include <winsock2.h>
+//#include <winsock2.h>
 #include <Winioctl.h>
 #include <windows.h>
 #elif defined(__linux__)
@@ -206,7 +207,7 @@ s32 DEV9init()
 
 #ifdef _WIN32
 	hEeprom = CreateFile(
-		"eeprom.dat",
+		L"eeprom.dat",
 		GENERIC_READ | GENERIC_WRITE,
 		0,
 		NULL,

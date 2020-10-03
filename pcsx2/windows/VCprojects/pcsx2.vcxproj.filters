@@ -169,6 +169,9 @@
     <Filter Include="Recording\VirtualPad\Images">
       <UniqueIdentifier>{ad528458-08eb-49a2-aefa-3c2b86ab8896}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\DEV9">
+      <UniqueIdentifier>{8d5454f9-590c-4c53-aae1-8391c6465e50}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -1003,6 +1006,30 @@
     <ClCompile Include="..\..\SPU2\SndOut_Portaudio.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\DEV9\DEV9.cpp">
+      <Filter>System\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\flash.cpp">
+      <Filter>System\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\pcap_io.cpp">
+      <Filter>System\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\smap.cpp">
+      <Filter>System\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\Win32\Config.cpp">
+      <Filter>System\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\Win32\net.cpp">
+      <Filter>System\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\Win32\tap-win32.cpp">
+      <Filter>System\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\Win32\Win32.cpp">
+      <Filter>System\DEV9</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1524,6 +1551,30 @@
     <ClInclude Include="..\..\Recording\Utilities\InputRecordingLogger.h">
       <Filter>Recording\Utilities</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\DEV9\ata.h">
+      <Filter>System\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\Config.h">
+      <Filter>System\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\DEV9.h">
+      <Filter>System\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\net.h">
+      <Filter>System\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\pcap_io.h">
+      <Filter>System\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\smap.h">
+      <Filter>System\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\Win32\resource.h">
+      <Filter>System\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\Win32\tap.h">
+      <Filter>System\DEV9</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\wxResources.rc">
@@ -1534,6 +1585,9 @@
     </ResourceCompile>
     <ResourceCompile Include="..\..\SPU2\Windows\SPU2.rc">
       <Filter>System\Ps2\SPU2</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="..\..\DEV9\Win32\DEV9ghzdrk.rc">
+      <Filter>System\DEV9</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>

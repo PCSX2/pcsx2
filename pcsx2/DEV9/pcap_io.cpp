@@ -13,17 +13,19 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 
 #ifdef _WIN32
 #include <winsock2.h>
-#include <iphlpapi.h>
-#include <ws2tcpip.h>
 #include <windows.h>
-#include <comdef.h>
+#include <iphlpapi.h>
+//#include <ws2tcpip.h>
+//#include <comdef.h>
 #elif defined(__linux__)
 #include <sys/ioctl.h>
 #include <net/if.h>
 #endif
+
 #include <stdio.h>
 #include <stdarg.h>
 #include "pcap_io.h"

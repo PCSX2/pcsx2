@@ -24,6 +24,7 @@
 #define write_portable(a, b, c) (send(a, b, c, 0))
 #define close_portable(a) (closesocket(a))
 #define bzero(b, len) (memset((b), '\0', (len)), (void)0)
+#include <WinSock2.h>
 #include <windows.h>
 #else
 #define read_portable(a, b, c) (read(a, b, c))
