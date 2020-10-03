@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014 David Quintana [gigaherz]
+ *  Copyright (C) 2002-2010  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -31,7 +31,7 @@
 #include "net.h"
 #include "pcap_io.h"
 
-bool has_link=true;
+bool has_link = true;
 volatile bool fireIntR = false;
 std::mutex frame_counter_mutex;
 std::mutex reset_mutex;
@@ -65,21 +65,21 @@ void test()
 bool rx_fifo_can_rx()
 {
 	//check if RX is on & stuff like that here
-	
+
 	//Check if there is space on RXBD
-	if (dev9Ru8(SMAP_R_RXFIFO_FRAME_CNT)==64)
+	if (dev9Ru8(SMAP_R_RXFIFO_FRAME_CNT) == 64)
 		return false;
-	
+
 	//Check if there is space on fifo
 	int rd_ptr = dev9Ru32(SMAP_R_RXFIFO_RD_PTR);
 	int space = sizeof(dev9.rxfifo) -
-		((dev9.rxfifo_wr_ptr-rd_ptr)&16383);
+				((dev9.rxfifo_wr_ptr - rd_ptr) & 16383);
 
 
-	if(space==0)
+	if (space == 0)
 		space = sizeof(dev9.rxfifo);
 
-	if (space<1514)
+	if (space < 1514)
 		return false;
 
 	//we can recv a packet !
@@ -88,33 +88,33 @@ bool rx_fifo_can_rx()
 
 void rx_process(NetPacket* pk)
 {
-	smap_bd_t *pbd= ((smap_bd_t *)&dev9.dev9R[SMAP_BD_RX_BASE & 0xffff])+dev9.rxbdi;
+	smap_bd_t* pbd = ((smap_bd_t*)&dev9.dev9R[SMAP_BD_RX_BASE & 0xffff]) + dev9.rxbdi;
 
-	int bytes=(pk->size+3)&(~3);
+	int bytes = (pk->size + 3) & (~3);
 
-	if (!(pbd->ctrl_stat & SMAP_BD_RX_EMPTY)) 
+	if (!(pbd->ctrl_stat & SMAP_BD_RX_EMPTY))
 	{
 		emu_printf("ERROR : Discarding %d bytes (RX%d not ready)\n", bytes, dev9.rxbdi);
 		return;
 	}
 
-	int pstart=(dev9.rxfifo_wr_ptr)&16383;
-	int i=0;
-	while(i<bytes)
+	int pstart = (dev9.rxfifo_wr_ptr) & 16383;
+	int i = 0;
+	while (i < bytes)
 	{
 		dev9_rxfifo_write(pk->buffer[i++]);
-		dev9.rxfifo_wr_ptr&=16383;
+		dev9.rxfifo_wr_ptr &= 16383;
 	}
 
 	//increase RXBD
 	std::unique_lock<std::mutex> reset_lock(reset_mutex);
 	dev9.rxbdi++;
-	dev9.rxbdi&=(SMAP_BD_SIZE/8)-1;
+	dev9.rxbdi &= (SMAP_BD_SIZE / 8) - 1;
 
 	//Fill the BD with info !
 	pbd->length = pk->size;
 	pbd->pointer = 0x4000 + pstart;
-	pbd->ctrl_stat&= ~SMAP_BD_RX_EMPTY;
+	pbd->ctrl_stat &= ~SMAP_BD_RX_EMPTY;
 
 	//increase frame count
 	std::unique_lock<std::mutex> counter_lock(frame_counter_mutex);
@@ -124,49 +124,49 @@ void rx_process(NetPacket* pk)
 	//spams// emu_printf("Got packet, %d bytes (%d fifo)\n", pk->size,bytes);
 	fireIntR = true;
 	//_DEV9irq(SMAP_INTR_RXEND,0);//now ? or when the fifo is full ? i guess now atm
-								//note that this _is_ wrong since the IOP interrupt system is not thread safe.. but nothing i can do about that
+	//note that this _is_ wrong since the IOP interrupt system is not thread safe.. but nothing i can do about that
 }
 
 u32 wswap(u32 d)
 {
-	return (d>>16)|(d<<16);
+	return (d >> 16) | (d << 16);
 }
 
 void tx_process()
 {
 	//we loop based on count ? or just *use* it ?
-	u32 cnt=dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT);
+	u32 cnt = dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT);
 	//spams// printf("tx_process : %u cnt frames !\n",cnt);
 
 	NetPacket pk;
-	u32 fc=0;
-	for (fc=0;fc<cnt;fc++)
+	u32 fc = 0;
+	for (fc = 0; fc < cnt; fc++)
 	{
-		smap_bd_t *pbd= ((smap_bd_t *)&dev9.dev9R[SMAP_BD_TX_BASE & 0xffff])+dev9.txbdi;
+		smap_bd_t* pbd = ((smap_bd_t*)&dev9.dev9R[SMAP_BD_TX_BASE & 0xffff]) + dev9.txbdi;
 
-		if (! (pbd->ctrl_stat&SMAP_BD_TX_READY))
+		if (!(pbd->ctrl_stat & SMAP_BD_TX_READY))
 		{
 			emu_printf("ERROR : !pbd->ctrl_stat&SMAP_BD_TX_READY\n");
 			break;
 		}
-		if (pbd->length&3)
+		if (pbd->length & 3)
 		{
 			//spams// emu_printf("WARN : pbd->length not aligned %u\n",pbd->length);
 		}
 
-		if(pbd->length>1514)
+		if (pbd->length > 1514)
 		{
 			emu_printf("ERROR : Trying to send packet too big.\n");
 		}
 		else
 		{
-			u32 base=(pbd->pointer-0x1000)&16383;
+			u32 base = (pbd->pointer - 0x1000) & 16383;
 			DEV9_LOG("Sending Packet from base %x, size %d\n", base, pbd->length);
 			//spams// emu_printf("Sending Packet from base %x, size %u\n", base, pbd->length);
-			
-			pk.size=pbd->length;
-			
-			if (!(pbd->pointer>=0x1000))
+
+			pk.size = pbd->length;
+
+			if (!(pbd->pointer >= 0x1000))
 			{
 				emu_printf("ERROR: odd , !pbd->pointer>0x1000 | 0x%X %u\n", pbd->pointer, pbd->length);
 			}
@@ -205,26 +205,26 @@ void tx_process()
 			}
 			*/
 
-			if(base+pbd->length > 16384)
+			if (base + pbd->length > 16384)
 			{
-				u32 was=16384-base;
-				memcpy(pk.buffer,dev9.txfifo+base,was);
-				memcpy(pk.buffer+was,dev9.txfifo,pbd->length-was);
-				printf("Warped read, was=%u, sz=%u, sz-was=%u\n", was, pbd->length, pbd->length-was);
+				u32 was = 16384 - base;
+				memcpy(pk.buffer, dev9.txfifo + base, was);
+				memcpy(pk.buffer + was, dev9.txfifo, pbd->length - was);
+				printf("Warped read, was=%u, sz=%u, sz-was=%u\n", was, pbd->length, pbd->length - was);
 			}
 			else
 			{
-				memcpy(pk.buffer,dev9.txfifo+base,pbd->length);
+				memcpy(pk.buffer, dev9.txfifo + base, pbd->length);
 			}
 			tx_put(&pk);
 		}
 
 
-		pbd->ctrl_stat&= ~SMAP_BD_TX_READY;
+		pbd->ctrl_stat &= ~SMAP_BD_TX_READY;
 
 		//increase TXBD
 		dev9.txbdi++;
-		dev9.txbdi&=(SMAP_BD_SIZE/8)-1;
+		dev9.txbdi &= (SMAP_BD_SIZE / 8) - 1;
 
 		//decrease frame count -- this is not thread safe
 		dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT)--;
@@ -232,112 +232,112 @@ void tx_process()
 
 	//spams// emu_printf("processed %u frames, %u count, cnt = %u\n",fc,dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT),cnt);
 	//if some error/early exit signal TXDNV
-	if (fc!=cnt || cnt==0)
+	if (fc != cnt || cnt == 0)
 	{
 		printf("WARN : (fc!=cnt || cnt==0) but packet send request was made oO..\n");
-		_DEV9irq(SMAP_INTR_TXDNV,0);
+		_DEV9irq(SMAP_INTR_TXDNV, 0);
 	}
 	//if we actualy send something send TXEND
-	if(fc!=0)
-		_DEV9irq(SMAP_INTR_TXEND,100);//now ? or when the fifo is empty ? i guess now atm
+	if (fc != 0)
+		_DEV9irq(SMAP_INTR_TXEND, 100); //now ? or when the fifo is empty ? i guess now atm
 }
 
 
 void emac3_write(u32 addr)
 {
-	u32 value=wswap(dev9Ru32(addr));
-	switch(addr)
+	u32 value = wswap(dev9Ru32(addr));
+	switch (addr)
 	{
-	case SMAP_R_EMAC3_MODE0_L:
-		DEV9_LOG("SMAP: SMAP_R_EMAC3_MODE0 write %x\n", value);
-		value = (value & (~SMAP_E3_SOFT_RESET)) | SMAP_E3_TXMAC_IDLE | SMAP_E3_RXMAC_IDLE;
-		dev9Ru16(SMAP_R_EMAC3_STA_CTRL_H)|= SMAP_E3_PHY_OP_COMP;
-		break;
-	case SMAP_R_EMAC3_TxMODE0_L:
-		DEV9_LOG("SMAP: SMAP_R_EMAC3_TxMODE0_L write %x\n", value);
-		//spams// emu_printf("SMAP: SMAP_R_EMAC3_TxMODE0_L write %x\n", value);
-		//Process TX  here ?
-		if (!(value & SMAP_E3_TX_GNP_0))
-			emu_printf("SMAP_R_EMAC3_TxMODE0_L: SMAP_E3_TX_GNP_0 not set\n");
+		case SMAP_R_EMAC3_MODE0_L:
+			DEV9_LOG("SMAP: SMAP_R_EMAC3_MODE0 write %x\n", value);
+			value = (value & (~SMAP_E3_SOFT_RESET)) | SMAP_E3_TXMAC_IDLE | SMAP_E3_RXMAC_IDLE;
+			dev9Ru16(SMAP_R_EMAC3_STA_CTRL_H) |= SMAP_E3_PHY_OP_COMP;
+			break;
+		case SMAP_R_EMAC3_TxMODE0_L:
+			DEV9_LOG("SMAP: SMAP_R_EMAC3_TxMODE0_L write %x\n", value);
+			//spams// emu_printf("SMAP: SMAP_R_EMAC3_TxMODE0_L write %x\n", value);
+			//Process TX  here ?
+			if (!(value & SMAP_E3_TX_GNP_0))
+				emu_printf("SMAP_R_EMAC3_TxMODE0_L: SMAP_E3_TX_GNP_0 not set\n");
 
-		tx_process();
-		value = value& ~SMAP_E3_TX_GNP_0;
-		if (value)
-			emu_printf("SMAP_R_EMAC3_TxMODE0_L: extra bits set !\n");
-		break;
-	case SMAP_R_EMAC3_TxMODE1_L:
-		emu_printf("SMAP_R_EMAC3_TxMODE1_L 32bit write %x\n", value);
-		if (value == 0x380f0000)
-		{
-			emu_printf("Adapter Detection Hack - Resetting RX/TX\n");
-			_DEV9irq(SMAP_INTR_RXEND | SMAP_INTR_TXEND | SMAP_INTR_TXDNV, 5);
-		}
-		break;
-	case SMAP_R_EMAC3_STA_CTRL_L:
-		DEV9_LOG("SMAP: SMAP_R_EMAC3_STA_CTRL write %x\n", value);
-		{
-			if (value & (SMAP_E3_PHY_READ)) 
+			tx_process();
+			value = value & ~SMAP_E3_TX_GNP_0;
+			if (value)
+				emu_printf("SMAP_R_EMAC3_TxMODE0_L: extra bits set !\n");
+			break;
+		case SMAP_R_EMAC3_TxMODE1_L:
+			emu_printf("SMAP_R_EMAC3_TxMODE1_L 32bit write %x\n", value);
+			if (value == 0x380f0000)
 			{
-				value|= SMAP_E3_PHY_OP_COMP;
-				int reg = value & (SMAP_E3_PHY_REG_ADDR_MSK);
-				u16 val = dev9.phyregs[reg];
-				switch (reg) 
-				{
-				case SMAP_DsPHYTER_BMSR:
-					if (has_link)
-						val|= SMAP_PHY_BMSR_LINK | SMAP_PHY_BMSR_ANCP;
-					break;
-				case SMAP_DsPHYTER_PHYSTS:
-					if (has_link)
-						val|= SMAP_PHY_STS_LINK |SMAP_PHY_STS_100M | SMAP_PHY_STS_FDX | SMAP_PHY_STS_ANCP;
-					break;
-				}
-				DEV9_LOG("phy_read %d: %x\n", reg, val);
-				value=(value&0xFFFF)|(val<<16);
-			} 
-			if (value & (SMAP_E3_PHY_WRITE)) 
-			{
-				value|= SMAP_E3_PHY_OP_COMP;
-				int reg = value & (SMAP_E3_PHY_REG_ADDR_MSK);
-				u16 val = value>>16;
-				switch (reg) 
-				{
-				case SMAP_DsPHYTER_BMCR:
-					val&= ~SMAP_PHY_BMCR_RST;
-					val|= 0x1;
-					break;
-				}
-				DEV9_LOG("phy_write %d: %x\n", reg, val);
-				dev9.phyregs[reg] = val;
+				emu_printf("Adapter Detection Hack - Resetting RX/TX\n");
+				_DEV9irq(SMAP_INTR_RXEND | SMAP_INTR_TXEND | SMAP_INTR_TXDNV, 5);
 			}
-		}
-		break;
-	default:
-		DEV9_LOG("SMAP: emac3 write  %x=%x\n",addr, value);
+			break;
+		case SMAP_R_EMAC3_STA_CTRL_L:
+			DEV9_LOG("SMAP: SMAP_R_EMAC3_STA_CTRL write %x\n", value);
+			{
+				if (value & (SMAP_E3_PHY_READ))
+				{
+					value |= SMAP_E3_PHY_OP_COMP;
+					int reg = value & (SMAP_E3_PHY_REG_ADDR_MSK);
+					u16 val = dev9.phyregs[reg];
+					switch (reg)
+					{
+						case SMAP_DsPHYTER_BMSR:
+							if (has_link)
+								val |= SMAP_PHY_BMSR_LINK | SMAP_PHY_BMSR_ANCP;
+							break;
+						case SMAP_DsPHYTER_PHYSTS:
+							if (has_link)
+								val |= SMAP_PHY_STS_LINK | SMAP_PHY_STS_100M | SMAP_PHY_STS_FDX | SMAP_PHY_STS_ANCP;
+							break;
+					}
+					DEV9_LOG("phy_read %d: %x\n", reg, val);
+					value = (value & 0xFFFF) | (val << 16);
+				}
+				if (value & (SMAP_E3_PHY_WRITE))
+				{
+					value |= SMAP_E3_PHY_OP_COMP;
+					int reg = value & (SMAP_E3_PHY_REG_ADDR_MSK);
+					u16 val = value >> 16;
+					switch (reg)
+					{
+						case SMAP_DsPHYTER_BMCR:
+							val &= ~SMAP_PHY_BMCR_RST;
+							val |= 0x1;
+							break;
+					}
+					DEV9_LOG("phy_write %d: %x\n", reg, val);
+					dev9.phyregs[reg] = val;
+				}
+			}
+			break;
+		default:
+			DEV9_LOG("SMAP: emac3 write  %x=%x\n", addr, value);
 	}
-	dev9Ru32(addr)=wswap(value);
+	dev9Ru32(addr) = wswap(value);
 }
 EXPORT_C_(u8)
 smap_read8(u32 addr)
 {
-	switch(addr)
+	switch (addr)
 	{
-	case SMAP_R_TXFIFO_FRAME_CNT:
-		printf("SMAP_R_TXFIFO_FRAME_CNT read 8\n");
-		break;
-	case SMAP_R_RXFIFO_FRAME_CNT:
-		printf("SMAP_R_RXFIFO_FRAME_CNT read 8\n");
-		break;
+		case SMAP_R_TXFIFO_FRAME_CNT:
+			printf("SMAP_R_TXFIFO_FRAME_CNT read 8\n");
+			break;
+		case SMAP_R_RXFIFO_FRAME_CNT:
+			printf("SMAP_R_RXFIFO_FRAME_CNT read 8\n");
+			break;
 
-	case SMAP_R_BD_MODE:
-		return dev9.bd_swap;
+		case SMAP_R_BD_MODE:
+			return dev9.bd_swap;
 
-	default:
-		DEV9_LOG("SMAP : Unknown 8 bit read @ %X,v=%X\n",addr,dev9Ru8(addr));
-		return dev9Ru8(addr);
+		default:
+			DEV9_LOG("SMAP : Unknown 8 bit read @ %X,v=%X\n", addr, dev9Ru8(addr));
+			return dev9Ru8(addr);
 	}
 
-	DEV9_LOG("SMAP : error , 8 bit read @ %X,v=%X\n",addr,dev9Ru8(addr));
+	DEV9_LOG("SMAP : error , 8 bit read @ %X,v=%X\n", addr, dev9Ru8(addr));
 	return dev9Ru8(addr);
 }
 EXPORT_C_(u16)
@@ -415,7 +415,7 @@ smap_read16(u32 addr)
 		*/
 	}
 #ifdef DEV9_LOG_ENABLE
-	switch(addr)
+	switch (addr)
 	{
 		case SMAP_R_TXFIFO_FRAME_CNT:
 			printf("SMAP_R_TXFIFO_FRAME_CNT read 16\n");
@@ -487,7 +487,7 @@ smap_read16(u32 addr)
 			DEV9_LOG("SMAP_R_EMAC3_STA_CTRL_H 16bit read %x\n", dev9Ru16(addr));
 			return dev9Ru16(addr);
 		default:
-			DEV9_LOG("SMAP : Unknown 16 bit read @ %X,v=%X\n",addr,dev9Ru16(addr));
+			DEV9_LOG("SMAP : Unknown 16 bit read @ %X,v=%X\n", addr, dev9Ru16(addr));
 			return dev9Ru16(addr);
 	}
 #endif
@@ -497,41 +497,41 @@ smap_read16(u32 addr)
 EXPORT_C_(u32)
 smap_read32(u32 addr)
 {
-	if (addr>=SMAP_EMAC3_REGBASE && addr<SMAP_EMAC3_REGEND)
+	if (addr >= SMAP_EMAC3_REGBASE && addr < SMAP_EMAC3_REGEND)
 	{
-		u32 hi=smap_read16(addr);
-		u32 lo=smap_read16(addr+2)<<16;
-		return hi|lo;
+		u32 hi = smap_read16(addr);
+		u32 lo = smap_read16(addr + 2) << 16;
+		return hi | lo;
 	}
-	switch(addr)
+	switch (addr)
 	{
-	case SMAP_R_TXFIFO_FRAME_CNT:
-		printf("SMAP_R_TXFIFO_FRAME_CNT read 32\n");
-		return dev9Ru32(addr);
-	case SMAP_R_RXFIFO_FRAME_CNT:
-		printf("SMAP_R_RXFIFO_FRAME_CNT read 32\n");
-		return dev9Ru32(addr);
-	case SMAP_R_EMAC3_STA_CTRL_L:
-		DEV9_LOG("SMAP_R_EMAC3_STA_CTRL_L 32bit read value %x\n", dev9Ru32(addr));
-		return dev9Ru32(addr);
+		case SMAP_R_TXFIFO_FRAME_CNT:
+			printf("SMAP_R_TXFIFO_FRAME_CNT read 32\n");
+			return dev9Ru32(addr);
+		case SMAP_R_RXFIFO_FRAME_CNT:
+			printf("SMAP_R_RXFIFO_FRAME_CNT read 32\n");
+			return dev9Ru32(addr);
+		case SMAP_R_EMAC3_STA_CTRL_L:
+			DEV9_LOG("SMAP_R_EMAC3_STA_CTRL_L 32bit read value %x\n", dev9Ru32(addr));
+			return dev9Ru32(addr);
 
-	case SMAP_R_RXFIFO_DATA:
+		case SMAP_R_RXFIFO_DATA:
 		{
-			int rd_ptr = dev9Ru32(SMAP_R_RXFIFO_RD_PTR)&16383;
+			int rd_ptr = dev9Ru32(SMAP_R_RXFIFO_RD_PTR) & 16383;
 
 			int rv = *((u32*)(dev9.rxfifo + rd_ptr));
 
-			dev9Ru32(SMAP_R_RXFIFO_RD_PTR) = ((rd_ptr+4)&16383);
+			dev9Ru32(SMAP_R_RXFIFO_RD_PTR) = ((rd_ptr + 4) & 16383);
 
-			if(dev9.bd_swap)
-				rv=(rv<<24)|(rv>>24)|((rv>>8)&0xFF00)|((rv<<8)&0xFF0000);
+			if (dev9.bd_swap)
+				rv = (rv << 24) | (rv >> 24) | ((rv >> 8) & 0xFF00) | ((rv << 8) & 0xFF0000);
 
 			DEV9_LOG("SMAP_R_RXFIFO_DATA 32bit read %x\n", rv);
 			return rv;
 		}
-	default:
-		DEV9_LOG("SMAP : Unknown 32 bit read @ %X,v=%X\n",addr,dev9Ru32(addr));
-		return dev9Ru32(addr);
+		default:
+			DEV9_LOG("SMAP : Unknown 32 bit read @ %X,v=%X\n", addr, dev9Ru32(addr));
+			return dev9Ru32(addr);
 	}
 }
 EXPORT_C_(void)
@@ -539,83 +539,84 @@ smap_write8(u32 addr, u8 value)
 {
 	std::unique_lock<std::mutex> reset_lock(reset_mutex, std::defer_lock);
 	std::unique_lock<std::mutex> counter_lock(frame_counter_mutex, std::defer_lock);
-	switch(addr)
+	switch (addr)
 	{
-	case SMAP_R_TXFIFO_FRAME_INC:
-		DEV9_LOG("SMAP_R_TXFIFO_FRAME_INC 8bit write %x\n", value);
-		{
-			dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT)++;
-		}
-		return;
+		case SMAP_R_TXFIFO_FRAME_INC:
+			DEV9_LOG("SMAP_R_TXFIFO_FRAME_INC 8bit write %x\n", value);
+			{
+				dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT)++;
+			}
+			return;
 
-	case SMAP_R_RXFIFO_FRAME_DEC:
-		DEV9_LOG("SMAP_R_RXFIFO_FRAME_DEC 8bit write %x\n", value);
-		counter_lock.lock();
-		dev9Ru8(addr) = value;
-		{
-			dev9Ru8(SMAP_R_RXFIFO_FRAME_CNT)--;
-		}
-		counter_lock.unlock();
-		return;
-
-	case SMAP_R_TXFIFO_CTRL:
-		DEV9_LOG("SMAP_R_TXFIFO_CTRL 8bit write %x\n", value);
-		if(value&SMAP_TXFIFO_RESET)
-		{
-			dev9.txbdi=0;
-			dev9.txfifo_rd_ptr=0;
-			dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT)=0;	//this actualy needs to be atomic (lock mov ...)
-			dev9Ru32(SMAP_R_TXFIFO_WR_PTR)=0;
-			dev9Ru32(SMAP_R_TXFIFO_SIZE)=16384;
-		}
-		value&= ~SMAP_TXFIFO_RESET;
-		dev9Ru8(addr) = value;
-		return;
-
-	case SMAP_R_RXFIFO_CTRL:
-		DEV9_LOG("SMAP_R_RXFIFO_CTRL 8bit write %x\n", value);
-		if(value&SMAP_RXFIFO_RESET)
-		{
-			reset_lock.lock(); //lock reset mutex 1st
+		case SMAP_R_RXFIFO_FRAME_DEC:
+			DEV9_LOG("SMAP_R_RXFIFO_FRAME_DEC 8bit write %x\n", value);
 			counter_lock.lock();
-			dev9.rxbdi=0;
-			dev9.rxfifo_wr_ptr=0;
-			dev9Ru8(SMAP_R_RXFIFO_FRAME_CNT)=0;
-			dev9Ru32(SMAP_R_RXFIFO_RD_PTR)=0;
-			dev9Ru32(SMAP_R_RXFIFO_SIZE)=16384;
-			reset_lock.unlock();
+			dev9Ru8(addr) = value;
+			{
+				dev9Ru8(SMAP_R_RXFIFO_FRAME_CNT)--;
+			}
 			counter_lock.unlock();
-		}
-		value&= ~SMAP_RXFIFO_RESET;
-		dev9Ru8(addr) = value;
-		return;
+			return;
 
-	case SMAP_R_BD_MODE:
-		if(value&SMAP_BD_SWAP)
-		{
-			DEV9_LOG("SMAP_R_BD_MODE: byteswapped.\n");
-			emu_printf("BD Byteswapping enabled.\n");
-			dev9.bd_swap=1;
-		}
-		else
-		{
-			DEV9_LOG("SMAP_R_BD_MODE: NOT byteswapped.\n");
-			emu_printf("BD Byteswapping disabled.\n");
-			dev9.bd_swap=0;
-		}
-		return;
-	default :
-		DEV9_LOG("SMAP : Unknown 8 bit write @ %X,v=%X\n",addr,value);
-		dev9Ru8(addr) = value;
-		return;
+		case SMAP_R_TXFIFO_CTRL:
+			DEV9_LOG("SMAP_R_TXFIFO_CTRL 8bit write %x\n", value);
+			if (value & SMAP_TXFIFO_RESET)
+			{
+				dev9.txbdi = 0;
+				dev9.txfifo_rd_ptr = 0;
+				dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT) = 0; //this actualy needs to be atomic (lock mov ...)
+				dev9Ru32(SMAP_R_TXFIFO_WR_PTR) = 0;
+				dev9Ru32(SMAP_R_TXFIFO_SIZE) = 16384;
+			}
+			value &= ~SMAP_TXFIFO_RESET;
+			dev9Ru8(addr) = value;
+			return;
+
+		case SMAP_R_RXFIFO_CTRL:
+			DEV9_LOG("SMAP_R_RXFIFO_CTRL 8bit write %x\n", value);
+			if (value & SMAP_RXFIFO_RESET)
+			{
+				reset_lock.lock(); //lock reset mutex 1st
+				counter_lock.lock();
+				dev9.rxbdi = 0;
+				dev9.rxfifo_wr_ptr = 0;
+				dev9Ru8(SMAP_R_RXFIFO_FRAME_CNT) = 0;
+				dev9Ru32(SMAP_R_RXFIFO_RD_PTR) = 0;
+				dev9Ru32(SMAP_R_RXFIFO_SIZE) = 16384;
+				reset_lock.unlock();
+				counter_lock.unlock();
+			}
+			value &= ~SMAP_RXFIFO_RESET;
+			dev9Ru8(addr) = value;
+			return;
+
+		case SMAP_R_BD_MODE:
+			if (value & SMAP_BD_SWAP)
+			{
+				DEV9_LOG("SMAP_R_BD_MODE: byteswapped.\n");
+				emu_printf("BD Byteswapping enabled.\n");
+				dev9.bd_swap = 1;
+			}
+			else
+			{
+				DEV9_LOG("SMAP_R_BD_MODE: NOT byteswapped.\n");
+				emu_printf("BD Byteswapping disabled.\n");
+				dev9.bd_swap = 0;
+			}
+			return;
+		default:
+			DEV9_LOG("SMAP : Unknown 8 bit write @ %X,v=%X\n", addr, value);
+			dev9Ru8(addr) = value;
+			return;
 	}
 }
 EXPORT_C_(void)
 smap_write16(u32 addr, u16 value)
 {
-	if (addr >= SMAP_BD_TX_BASE && addr < (SMAP_BD_TX_BASE + SMAP_BD_SIZE)) {
-		if(dev9.bd_swap)
-			value = (value>>8)|(value<<8);
+	if (addr >= SMAP_BD_TX_BASE && addr < (SMAP_BD_TX_BASE + SMAP_BD_SIZE))
+	{
+		if (dev9.bd_swap)
+			value = (value >> 8) | (value << 8);
 		dev9Ru16(addr) = value;
 		/*
 		switch (addr & 0x7) 
@@ -641,13 +642,13 @@ smap_write16(u32 addr, u16 value)
 		*/
 		return;
 	}
-	else if (addr >= SMAP_BD_RX_BASE && addr < (SMAP_BD_RX_BASE + SMAP_BD_SIZE)) 
+	else if (addr >= SMAP_BD_RX_BASE && addr < (SMAP_BD_RX_BASE + SMAP_BD_SIZE))
 	{
 		//int rx_index=(addr - SMAP_BD_RX_BASE)>>3;
-		if(dev9.bd_swap)
-			value = (value>>8)|(value<<8);
+		if (dev9.bd_swap)
+			value = (value >> 8) | (value << 8);
 		dev9Ru16(addr) = value;
-/*
+		/*
 		switch (addr & 0x7) 
 		{
 		case 0: // ctrl_stat
@@ -675,88 +676,88 @@ smap_write16(u32 addr, u16 value)
 		return;
 	}
 
-	switch(addr)
+	switch (addr)
 	{
-	case SMAP_R_INTR_CLR:
-		DEV9_LOG("SMAP: SMAP_R_INTR_CLR 16bit write %x\n", value);
-		dev9.irqcause&= ~value;
-		return;
+		case SMAP_R_INTR_CLR:
+			DEV9_LOG("SMAP: SMAP_R_INTR_CLR 16bit write %x\n", value);
+			dev9.irqcause &= ~value;
+			return;
 
-	case SMAP_R_TXFIFO_WR_PTR:
-		DEV9_LOG("SMAP: SMAP_R_TXFIFO_WR_PTR 16bit write %x\n", value);
-		dev9Ru16(addr) = value;
-		return;
-#define EMAC3_L_WRITE(name) \
-	case name: \
+		case SMAP_R_TXFIFO_WR_PTR:
+			DEV9_LOG("SMAP: SMAP_R_TXFIFO_WR_PTR 16bit write %x\n", value);
+			dev9Ru16(addr) = value;
+			return;
+#define EMAC3_L_WRITE(name)                                   \
+	case name:                                                \
 		DEV9_LOG("SMAP: " #name " 16 bit write %x\n", value); \
-		dev9Ru16(addr) = value; \
+		dev9Ru16(addr) = value;                               \
 		return;
-	//handle L writes
-	EMAC3_L_WRITE(SMAP_R_EMAC3_MODE0_L )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_MODE1_L )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_TxMODE0_L )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_TxMODE1_L )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_RxMODE_L )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_INTR_STAT_L )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_INTR_ENABLE_L )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_ADDR_HI_L )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_ADDR_LO_L )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_VLAN_TPID )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_PAUSE_TIMER_L )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_INDIVID_HASH1 )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_INDIVID_HASH2 )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_INDIVID_HASH3 )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_INDIVID_HASH4 )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_GROUP_HASH1 )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_GROUP_HASH2 )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_GROUP_HASH3 )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_GROUP_HASH4 )
+			//handle L writes
+			EMAC3_L_WRITE(SMAP_R_EMAC3_MODE0_L)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_MODE1_L)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_TxMODE0_L)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_TxMODE1_L)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_RxMODE_L)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_INTR_STAT_L)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_INTR_ENABLE_L)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_ADDR_HI_L)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_ADDR_LO_L)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_VLAN_TPID)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_PAUSE_TIMER_L)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_INDIVID_HASH1)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_INDIVID_HASH2)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_INDIVID_HASH3)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_INDIVID_HASH4)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_GROUP_HASH1)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_GROUP_HASH2)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_GROUP_HASH3)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_GROUP_HASH4)
 
-	EMAC3_L_WRITE( SMAP_R_EMAC3_LAST_SA_HI )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_LAST_SA_LO )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_INTER_FRAME_GAP_L )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_STA_CTRL_L )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_TX_THRESHOLD_L )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_RX_WATERMARK_L )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_TX_OCTETS )
-	EMAC3_L_WRITE( SMAP_R_EMAC3_RX_OCTETS )
+			EMAC3_L_WRITE(SMAP_R_EMAC3_LAST_SA_HI)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_LAST_SA_LO)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_INTER_FRAME_GAP_L)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_STA_CTRL_L)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_TX_THRESHOLD_L)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_RX_WATERMARK_L)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_TX_OCTETS)
+			EMAC3_L_WRITE(SMAP_R_EMAC3_RX_OCTETS)
 
-#define EMAC3_H_WRITE(name) \
-	case name: \
+#define EMAC3_H_WRITE(name)                                   \
+	case name:                                                \
 		DEV9_LOG("SMAP: " #name " 16 bit write %x\n", value); \
-		dev9Ru16(addr) = value; \
-		emac3_write(addr-2); \
+		dev9Ru16(addr) = value;                               \
+		emac3_write(addr - 2);                                \
 		return;
-	//handle H writes
-	EMAC3_H_WRITE(SMAP_R_EMAC3_MODE0_H )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_MODE1_H )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_TxMODE0_H )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_TxMODE1_H )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_RxMODE_H )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_INTR_STAT_H )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_INTR_ENABLE_H )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_ADDR_HI_H )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_ADDR_LO_H )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_VLAN_TPID+2 )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_PAUSE_TIMER_H )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_INDIVID_HASH1+2 )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_INDIVID_HASH2+2 )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_INDIVID_HASH3+2 )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_INDIVID_HASH4+2 )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_GROUP_HASH1+2 )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_GROUP_HASH2+2 )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_GROUP_HASH3+2 )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_GROUP_HASH4+2 )
+			//handle H writes
+			EMAC3_H_WRITE(SMAP_R_EMAC3_MODE0_H)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_MODE1_H)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_TxMODE0_H)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_TxMODE1_H)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_RxMODE_H)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_INTR_STAT_H)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_INTR_ENABLE_H)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_ADDR_HI_H)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_ADDR_LO_H)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_VLAN_TPID + 2)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_PAUSE_TIMER_H)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_INDIVID_HASH1 + 2)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_INDIVID_HASH2 + 2)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_INDIVID_HASH3 + 2)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_INDIVID_HASH4 + 2)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_GROUP_HASH1 + 2)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_GROUP_HASH2 + 2)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_GROUP_HASH3 + 2)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_GROUP_HASH4 + 2)
 
-	EMAC3_H_WRITE( SMAP_R_EMAC3_LAST_SA_HI+2 )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_LAST_SA_LO+2 )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_INTER_FRAME_GAP_H )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_STA_CTRL_H )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_TX_THRESHOLD_H )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_RX_WATERMARK_H )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_TX_OCTETS+2 )
-	EMAC3_H_WRITE( SMAP_R_EMAC3_RX_OCTETS+2 )
-/*
+			EMAC3_H_WRITE(SMAP_R_EMAC3_LAST_SA_HI + 2)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_LAST_SA_LO + 2)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_INTER_FRAME_GAP_H)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_STA_CTRL_H)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_TX_THRESHOLD_H)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_RX_WATERMARK_H)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_TX_OCTETS + 2)
+			EMAC3_H_WRITE(SMAP_R_EMAC3_RX_OCTETS + 2)
+			/*
 	case SMAP_R_EMAC3_MODE0_L:
 		DEV9_LOG("SMAP: SMAP_R_EMAC3_MODE0 write %x\n", value);
 		dev9Ru16(addr) = value;
@@ -785,52 +786,52 @@ smap_write16(u32 addr, u16 value)
 		return;
 		*/
 
-	default :
-		DEV9_LOG("SMAP : Unknown 16 bit write @ %X,v=%X\n",addr,value);
-		dev9Ru16(addr) = value;
-		return;
+		default:
+			DEV9_LOG("SMAP : Unknown 16 bit write @ %X,v=%X\n", addr, value);
+			dev9Ru16(addr) = value;
+			return;
 	}
 }
 EXPORT_C_(void)
 smap_write32(u32 addr, u32 value)
 {
-	if (addr>=SMAP_EMAC3_REGBASE && addr<SMAP_EMAC3_REGEND)
+	if (addr >= SMAP_EMAC3_REGBASE && addr < SMAP_EMAC3_REGEND)
 	{
-		smap_write16(addr,value&0xFFFF);
-		smap_write16(addr+2,value>>16);
+		smap_write16(addr, value & 0xFFFF);
+		smap_write16(addr + 2, value >> 16);
 		return;
 	}
-	switch(addr)
+	switch (addr)
 	{
-	case SMAP_R_TXFIFO_DATA:
-		if(dev9.bd_swap)
-			value=(value<<24)|(value>>24)|((value>>8)&0xFF00)|((value<<8)&0xFF0000);
+		case SMAP_R_TXFIFO_DATA:
+			if (dev9.bd_swap)
+				value = (value << 24) | (value >> 24) | ((value >> 8) & 0xFF00) | ((value << 8) & 0xFF0000);
 
-		DEV9_LOG("SMAP_R_TXFIFO_DATA 32bit write %x\n", value);
-		*((u32*)(dev9.txfifo+dev9Ru32(SMAP_R_TXFIFO_WR_PTR)))=value;
-		dev9Ru32(SMAP_R_TXFIFO_WR_PTR) = (dev9Ru32(SMAP_R_TXFIFO_WR_PTR)+4)&16383;
-		return;
-	default :
-		DEV9_LOG("SMAP : Unknown 32 bit write @ %X,v=%X\n",addr,value);
-		dev9Ru32(addr) = value;
-		return;
+			DEV9_LOG("SMAP_R_TXFIFO_DATA 32bit write %x\n", value);
+			*((u32*)(dev9.txfifo + dev9Ru32(SMAP_R_TXFIFO_WR_PTR))) = value;
+			dev9Ru32(SMAP_R_TXFIFO_WR_PTR) = (dev9Ru32(SMAP_R_TXFIFO_WR_PTR) + 4) & 16383;
+			return;
+		default:
+			DEV9_LOG("SMAP : Unknown 32 bit write @ %X,v=%X\n", addr, value);
+			dev9Ru32(addr) = value;
+			return;
 	}
 }
 EXPORT_C_(void)
-smap_readDMA8Mem(u32 *pMem, int size)
+smap_readDMA8Mem(u32* pMem, int size)
 {
-	if(dev9Ru16(SMAP_R_RXFIFO_CTRL)&SMAP_RXFIFO_DMAEN)
+	if (dev9Ru16(SMAP_R_RXFIFO_CTRL) & SMAP_RXFIFO_DMAEN)
 	{
-		dev9Ru32(SMAP_R_RXFIFO_RD_PTR)&=16383;
-		size>>=1;
+		dev9Ru32(SMAP_R_RXFIFO_RD_PTR) &= 16383;
+		size >>= 1;
 		DEV9_LOG(" * * SMAP DMA READ START: rd_ptr=%d, wr_ptr=%d\n", dev9Ru32(SMAP_R_RXFIFO_RD_PTR), dev9.rxfifo_wr_ptr);
-		while(size>0)
+		while (size > 0)
 		{
-			*pMem = *((u32*)(dev9.rxfifo+dev9Ru32(SMAP_R_RXFIFO_RD_PTR)));
+			*pMem = *((u32*)(dev9.rxfifo + dev9Ru32(SMAP_R_RXFIFO_RD_PTR)));
 			pMem++;
-			dev9Ru32(SMAP_R_RXFIFO_RD_PTR) = (dev9Ru32(SMAP_R_RXFIFO_RD_PTR)+4)&16383;
-			
-			size-=4;
+			dev9Ru32(SMAP_R_RXFIFO_RD_PTR) = (dev9Ru32(SMAP_R_RXFIFO_RD_PTR) + 4) & 16383;
+
+			size -= 4;
 		}
 		DEV9_LOG(" * * SMAP DMA READ END:   rd_ptr=%d, wr_ptr=%d\n", dev9Ru32(SMAP_R_RXFIFO_RD_PTR), dev9.rxfifo_wr_ptr);
 
@@ -840,25 +841,24 @@ smap_readDMA8Mem(u32 *pMem, int size)
 EXPORT_C_(void)
 smap_writeDMA8Mem(u32* pMem, int size)
 {
-	if(dev9Ru16(SMAP_R_TXFIFO_CTRL)&SMAP_TXFIFO_DMAEN)
+	if (dev9Ru16(SMAP_R_TXFIFO_CTRL) & SMAP_TXFIFO_DMAEN)
 	{
-		dev9Ru32(SMAP_R_TXFIFO_WR_PTR)&=16383;
-		size>>=1;
+		dev9Ru32(SMAP_R_TXFIFO_WR_PTR) &= 16383;
+		size >>= 1;
 		DEV9_LOG(" * * SMAP DMA WRITE START: wr_ptr=%d, rd_ptr=%d\n", dev9Ru32(SMAP_R_TXFIFO_WR_PTR), dev9.txfifo_rd_ptr);
-		while(size>0)
+		while (size > 0)
 		{
-			int value=*pMem;
+			int value = *pMem;
 			//	value=(value<<24)|(value>>24)|((value>>8)&0xFF00)|((value<<8)&0xFF0000);
 			pMem++;
 
-			*((u32*)(dev9.txfifo+dev9Ru32(SMAP_R_TXFIFO_WR_PTR)))=value;
-			dev9Ru32(SMAP_R_TXFIFO_WR_PTR) = (dev9Ru32(SMAP_R_TXFIFO_WR_PTR)+4)&16383;
-			size-=4;
+			*((u32*)(dev9.txfifo + dev9Ru32(SMAP_R_TXFIFO_WR_PTR))) = value;
+			dev9Ru32(SMAP_R_TXFIFO_WR_PTR) = (dev9Ru32(SMAP_R_TXFIFO_WR_PTR) + 4) & 16383;
+			size -= 4;
 		}
 		DEV9_LOG(" * * SMAP DMA WRITE END:   wr_ptr=%d, rd_ptr=%d\n", dev9Ru32(SMAP_R_TXFIFO_WR_PTR), dev9.txfifo_rd_ptr);
 
 		dev9Ru16(SMAP_R_TXFIFO_CTRL) &= ~SMAP_TXFIFO_DMAEN;
-
 	}
 }
 EXPORT_C_(void)
