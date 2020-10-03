@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014 David Quintana [gigaherz]
+ *  Copyright (C) 2002-2010  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -30,37 +30,43 @@ extern HINSTANCE hInst;
 //HANDLE handleDEV9Thread = NULL;
 //DWORD dwThreadId, dwThrdParam;
 
-void SysMessage(char *fmt, ...) {
+void SysMessage(char* fmt, ...)
+{
 	va_list list;
 	char tmp[512];
 
-	va_start(list,fmt);
-	vsprintf(tmp,fmt,list);
+	va_start(list, fmt);
+	vsprintf(tmp, fmt, list);
 	va_end(list);
 	MessageBox(0, tmp, "Dev9 Msg", 0);
 }
 
-void OnInitDialog(HWND hW) {
-	char *dev;
+void OnInitDialog(HWND hW)
+{
+	char* dev;
 	//int i;
 
 	LoadConf();
 
 	ComboBox_AddString(GetDlgItem(hW, IDC_BAYTYPE), "Expansion");
 	ComboBox_AddString(GetDlgItem(hW, IDC_BAYTYPE), "PC Card");
-	for (int i=0; i<pcap_io_get_dev_num(); i++) {
+	for (int i = 0; i < pcap_io_get_dev_num(); i++)
+	{
 		dev = pcap_io_get_dev_desc(i);
-		int itm=ComboBox_AddString(GetDlgItem(hW, IDC_ETHDEV), dev);
-		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV),itm,_strdup(pcap_io_get_dev_name(i)));
-		if (strcmp(pcap_io_get_dev_name(i), config.Eth) == 0) {
+		int itm = ComboBox_AddString(GetDlgItem(hW, IDC_ETHDEV), dev);
+		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV), itm, _strdup(pcap_io_get_dev_name(i)));
+		if (strcmp(pcap_io_get_dev_name(i), config.Eth) == 0)
+		{
 			ComboBox_SetCurSel(GetDlgItem(hW, IDC_ETHDEV), itm);
 		}
 	}
-	vector<tap_adapter> * al=GetTapAdapters();
-	for (size_t i=0; i<al->size(); i++) {
-		int itm=ComboBox_AddString(GetDlgItem(hW, IDC_ETHDEV), al[0][i].name.c_str());
-		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV),itm,_strdup( al[0][i].guid.c_str()));
-		if (strcmp(al[0][i].guid.c_str(), config.Eth) == 0) {
+	vector<tap_adapter>* al = GetTapAdapters();
+	for (size_t i = 0; i < al->size(); i++)
+	{
+		int itm = ComboBox_AddString(GetDlgItem(hW, IDC_ETHDEV), al[0][i].name.c_str());
+		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV), itm, _strdup(al[0][i].guid.c_str()));
+		if (strcmp(al[0][i].guid.c_str(), config.Eth) == 0)
+		{
 			ComboBox_SetCurSel(GetDlgItem(hW, IDC_ETHDEV), itm);
 		}
 	}
@@ -71,12 +77,13 @@ void OnInitDialog(HWND hW) {
 	Button_SetCheck(GetDlgItem(hW, IDC_HDDENABLED), config.hddEnable);
 }
 
-void OnOk(HWND hW) {
+void OnOk(HWND hW)
+{
 	int i = ComboBox_GetCurSel(GetDlgItem(hW, IDC_ETHDEV));
 	if (i == -1)
 	{
 		//adapter not selected
-		if ( Button_GetCheck(GetDlgItem(hW, IDC_ETHENABLED)))
+		if (Button_GetCheck(GetDlgItem(hW, IDC_ETHENABLED)))
 		{
 			//Trying to use an ethernet without
 			//selected adapter, we can't have that
@@ -107,15 +114,18 @@ void OnOk(HWND hW) {
 	EndDialog(hW, TRUE);
 }
 
-BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam) {
+BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
 
-	switch(uMsg) {
+	switch (uMsg)
+	{
 		case WM_INITDIALOG:
 			OnInitDialog(hW);
 			return TRUE;
 
 		case WM_COMMAND:
-			switch(LOWORD(wParam)) {
+			switch (LOWORD(wParam))
+			{
 				case IDCANCEL:
 					EndDialog(hW, FALSE);
 					return TRUE;
@@ -127,13 +137,16 @@ BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-BOOL CALLBACK AboutDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam) {
-	switch(uMsg) {
+BOOL CALLBACK AboutDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
 		case WM_INITDIALOG:
 			return TRUE;
 
 		case WM_COMMAND:
-			switch(LOWORD(wParam)) {
+			switch (LOWORD(wParam))
+			{
 				case IDOK:
 					EndDialog(hW, FALSE);
 					return TRUE;
@@ -142,29 +155,32 @@ BOOL CALLBACK AboutDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	return FALSE;
 }
 
-void DEV9configure() {
- 	ScopedCoreThreadPause paused_core;
-    DialogBox(hInst,
-              MAKEINTRESOURCE(IDD_CONFIG),
-              GetActiveWindow(),
-             (DLGPROC)ConfigureDlgProc);
-		//SysMessage("Nothing to Configure");
-    paused_core.AllowResume();
+void DEV9configure()
+{
+	ScopedCoreThreadPause paused_core;
+	DialogBox(hInst,
+			  MAKEINTRESOURCE(IDD_CONFIG),
+			  GetActiveWindow(),
+			  (DLGPROC)ConfigureDlgProc);
+	//SysMessage("Nothing to Configure");
+	paused_core.AllowResume();
 }
 
 EXPORT_C_(void)
-DEV9about() {
-    DialogBox(hInst,
-              MAKEINTRESOURCE(IDD_ABOUT),
-              GetActiveWindow(),
-              (DLGPROC)AboutDlgProc);
+DEV9about()
+{
+	DialogBox(hInst,
+			  MAKEINTRESOURCE(IDD_ABOUT),
+			  GetActiveWindow(),
+			  (DLGPROC)AboutDlgProc);
 }
 
-BOOL APIENTRY DllMain(HANDLE hModule,                  // DLL INIT
-                      DWORD  dwReason,
-                      LPVOID lpReserved) {
+BOOL APIENTRY DllMain(HANDLE hModule, // DLL INIT
+					  DWORD dwReason,
+					  LPVOID lpReserved)
+{
 	hInst = (HINSTANCE)hModule;
-	return TRUE;                                          // very quick :)
+	return TRUE; // very quick :)
 }
 /*
 UINT DEV9ThreadProc() {
@@ -183,12 +199,12 @@ NetAdapter* GetNetAdapter()
 	}
 	return na;
 }
-s32  _DEV9open()
+s32 _DEV9open()
 {
 	//handleDEV9Thread = CreateThread (NULL, 0, (LPTHREAD_START_ROUTINE) DEV9ThreadProc, &dwThrdParam, CREATE_SUSPENDED, &dwThreadId);
 	//SetThreadPriority(handleDEV9Thread,THREAD_PRIORITY_HIGHEST);
 	//ResumeThread (handleDEV9Thread);
-	NetAdapter* na=GetNetAdapter();
+	NetAdapter* na = GetNetAdapter();
 	if (!na)
 	{
 		emu_printf("Failed to GetNetAdapter()\n");
@@ -201,7 +217,8 @@ s32  _DEV9open()
 	return 0;
 }
 
-void _DEV9close() {
+void _DEV9close()
+{
 	//TerminateThread(handleDEV9Thread,0);
 	//handleDEV9Thread = NULL;
 	TermNet();

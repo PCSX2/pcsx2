@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014 David Quintana [gigaherz]
+ *  Copyright (C) 2002-2010  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -16,12 +16,12 @@
 #ifndef __SOCKS_H__
 #define __SOCKS_H__
 
-long sockOpen(char *Device);
+long sockOpen(char* Device);
 void sockClose();
-long sockSendData(void *pData, int Size);
-long sockRecvData(void *pData, int Size);
+long sockSendData(void* pData, int Size);
+long sockRecvData(void* pData, int Size);
 long sockGetDevicesNum();
-char *sockGetDevice(int index);
-char *sockGetDeviceDesc(int index);
+char* sockGetDevice(int index);
+char* sockGetDeviceDesc(int index);
 
 #endif /* __SOCKS_H__*/

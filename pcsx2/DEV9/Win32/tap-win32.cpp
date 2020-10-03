@@ -1,31 +1,18 @@
-/*
- *  TAP-Win32 -- A kernel driver to provide virtual tap device functionality
- *               on Windows.  Originally derived from the CIPE-Win32
- *               project by Damion K. Wilson, with extensive modifications by
- *               James Yonan.
+/*  PCSX2 - PS2 Emulator for PCs
+ *  Copyright (C) 2002-2010  PCSX2 Dev Team
  *
- *  All source code which derives from the CIPE-Win32 project is
- *  Copyright (C) Damion K. Wilson, 2003, and is released under the
- *  GPL version 2 (see below).
+ *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
+ *  of the GNU Lesser General Public License as published by the Free Software Found-
+ *  ation, either version 3 of the License, or (at your option) any later version.
  *
- *  All other source code is Copyright (C) James Yonan, 2003-2004,
- *  and is released under the GPL version 2 (see below).
+ *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
+ *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
+ *  PURPOSE.  See the GNU General Public License for more details.
  *
- *  This program is free software; you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation; either version 2 of the License, or
- *  (at your option) any later version.
- *
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with this program (see the file COPYING included with this
- *  distribution); if not, write to the Free Software Foundation, Inc.,
- *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ *  You should have received a copy of the GNU General Public License along with PCSX2.
+ *  If not, see <http://www.gnu.org/licenses/>.
  */
+
 #include <stdio.h>
 #include <windows.h>
 #include <tchar.h>
@@ -37,18 +24,18 @@
 // TAP IOCTLs
 //=============
 
-#define TAP_CONTROL_CODE(request,method) \
-  CTL_CODE (FILE_DEVICE_UNKNOWN, request, method, FILE_ANY_ACCESS)
+#define TAP_CONTROL_CODE(request, method) \
+	CTL_CODE(FILE_DEVICE_UNKNOWN, request, method, FILE_ANY_ACCESS)
 
-#define TAP_IOCTL_GET_MAC               TAP_CONTROL_CODE (1, METHOD_BUFFERED)
-#define TAP_IOCTL_GET_VERSION           TAP_CONTROL_CODE (2, METHOD_BUFFERED)
-#define TAP_IOCTL_GET_MTU               TAP_CONTROL_CODE (3, METHOD_BUFFERED)
-#define TAP_IOCTL_GET_INFO              TAP_CONTROL_CODE (4, METHOD_BUFFERED)
-#define TAP_IOCTL_CONFIG_POINT_TO_POINT TAP_CONTROL_CODE (5, METHOD_BUFFERED)
-#define TAP_IOCTL_SET_MEDIA_STATUS      TAP_CONTROL_CODE (6, METHOD_BUFFERED)
-#define TAP_IOCTL_CONFIG_DHCP_MASQ      TAP_CONTROL_CODE (7, METHOD_BUFFERED)
-#define TAP_IOCTL_GET_LOG_LINE          TAP_CONTROL_CODE (8, METHOD_BUFFERED)
-#define TAP_IOCTL_CONFIG_DHCP_SET_OPT   TAP_CONTROL_CODE (9, METHOD_BUFFERED)
+#define TAP_IOCTL_GET_MAC TAP_CONTROL_CODE(1, METHOD_BUFFERED)
+#define TAP_IOCTL_GET_VERSION TAP_CONTROL_CODE(2, METHOD_BUFFERED)
+#define TAP_IOCTL_GET_MTU TAP_CONTROL_CODE(3, METHOD_BUFFERED)
+#define TAP_IOCTL_GET_INFO TAP_CONTROL_CODE(4, METHOD_BUFFERED)
+#define TAP_IOCTL_CONFIG_POINT_TO_POINT TAP_CONTROL_CODE(5, METHOD_BUFFERED)
+#define TAP_IOCTL_SET_MEDIA_STATUS TAP_CONTROL_CODE(6, METHOD_BUFFERED)
+#define TAP_IOCTL_CONFIG_DHCP_MASQ TAP_CONTROL_CODE(7, METHOD_BUFFERED)
+#define TAP_IOCTL_GET_LOG_LINE TAP_CONTROL_CODE(8, METHOD_BUFFERED)
+#define TAP_IOCTL_CONFIG_DHCP_SET_OPT TAP_CONTROL_CODE(9, METHOD_BUFFERED)
 
 //=================
 // Registry keys
@@ -63,7 +50,7 @@
 //======================
 
 #define USERMODEDEVICEDIR "\\\\.\\Global\\"
-#define TAPSUFFIX         ".tap"
+#define TAPSUFFIX ".tap"
 
 #define TAP_COMPONENT_ID "tap0901"
 
@@ -211,56 +198,60 @@ vector<tap_adapter>* GetTapAdapters()
 //Set the connection status
 static int TAPSetStatus(HANDLE handle, int status)
 {
-    unsigned long len = 0;
+	unsigned long len = 0;
 
-    return DeviceIoControl(handle, TAP_IOCTL_SET_MEDIA_STATUS,
-                &status, sizeof (status),
-                &status, sizeof (status), &len, NULL);
+	return DeviceIoControl(handle, TAP_IOCTL_SET_MEDIA_STATUS,
+						   &status, sizeof(status),
+						   &status, sizeof(status), &len, NULL);
 }
 //Open the TAP adapter and set the connection to enabled :)
-HANDLE TAPOpen(const char *device_guid)
+HANDLE TAPOpen(const char* device_guid)
 {
 	char device_path[256];
-	
-	struct {
-        unsigned long major;
-        unsigned long minor;
-        unsigned long debug;
-    } version;
-    LONG version_len;
 
-    _snprintf (device_path, sizeof(device_path), "%s%s%s",
-              USERMODEDEVICEDIR,
-              device_guid,
-              TAPSUFFIX);
+	struct
+	{
+		unsigned long major;
+		unsigned long minor;
+		unsigned long debug;
+	} version;
+	LONG version_len;
 
-    HANDLE handle = CreateFile (
-        device_path,
-        GENERIC_READ | GENERIC_WRITE,
-        0,
-        0,
-        OPEN_EXISTING,
-        FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED,
-        0 );
+	_snprintf(device_path, sizeof(device_path), "%s%s%s",
+			  USERMODEDEVICEDIR,
+			  device_guid,
+			  TAPSUFFIX);
 
-    if (handle == INVALID_HANDLE_VALUE) {
-        return INVALID_HANDLE_VALUE;
-    }
+	HANDLE handle = CreateFile(
+		device_path,
+		GENERIC_READ | GENERIC_WRITE,
+		0,
+		0,
+		OPEN_EXISTING,
+		FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED,
+		0);
 
-    BOOL bret = DeviceIoControl(handle, TAP_IOCTL_GET_VERSION,
-                           &version, sizeof (version),
-                           &version, sizeof (version), (LPDWORD)&version_len, NULL);
+	if (handle == INVALID_HANDLE_VALUE)
+	{
+		return INVALID_HANDLE_VALUE;
+	}
 
-    if (bret == FALSE) {
-        CloseHandle(handle);
-        return INVALID_HANDLE_VALUE;
-    }
+	BOOL bret = DeviceIoControl(handle, TAP_IOCTL_GET_VERSION,
+								&version, sizeof(version),
+								&version, sizeof(version), (LPDWORD)&version_len, NULL);
 
-    if (!TAPSetStatus(handle, TRUE)) {
-        return INVALID_HANDLE_VALUE;
-    }
+	if (bret == FALSE)
+	{
+		CloseHandle(handle);
+		return INVALID_HANDLE_VALUE;
+	}
 
-    return handle;
+	if (!TAPSetStatus(handle, TRUE))
+	{
+		return INVALID_HANDLE_VALUE;
+	}
+
+	return handle;
 }
 
 
@@ -273,69 +264,67 @@ TAPAdapter::TAPAdapter()
 	if (htap == INVALID_HANDLE_VALUE)
 		SysMessage("Can't open Device '%s'\n", config.Eth);
 
-    read.Offset = 0;
-    read.OffsetHigh = 0;
-    read.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+	read.Offset = 0;
+	read.OffsetHigh = 0;
+	read.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
 
     write.Offset = 0;
     write.OffsetHigh = 0;
     write.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
     isActive = true;
-	
-	
 }
 
 bool TAPAdapter::blocks()
 {
-	return true;	//we use blocking io
+	return true; //we use blocking io
 }
 bool TAPAdapter::isInitialised()
 {
 	return (htap != NULL);
 }
-u8 broadcast_adddrrrr[6]={0xFF,0xFF,0xFF,0xFF,0xFF,0xFF};
+u8 broadcast_adddrrrr[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 //gets a packet.rv :true success
 bool TAPAdapter::recv(NetPacket* pkt)
 {
 	DWORD read_size;
 	BOOL result = ReadFile(htap,
-		pkt->buffer,
-		sizeof(pkt->buffer),
-		&read_size,
-		&read);
+						   pkt->buffer,
+						   sizeof(pkt->buffer),
+						   &read_size,
+						   &read);
 
-	 if (!result) {
-            DWORD dwError = GetLastError();
-            if (dwError == ERROR_IO_PENDING) 
+	if (!result)
+	{
+		DWORD dwError = GetLastError();
+		if (dwError == ERROR_IO_PENDING)
+		{
+			WaitForSingleObject(read.hEvent, INFINITE);
+			result = GetOverlappedResult(htap, &read,
+										 &read_size, FALSE);
+			if (!result)
 			{
-				WaitForSingleObject(read.hEvent, INFINITE);
-                result = GetOverlappedResult( htap, &read,
-                                              &read_size, FALSE);
-                if (!result) 
-				{
-
-                }
-            } 
-			else {
-
-            }
-        }
+			}
+		}
+		else
+		{
+		}
+	}
 
 
 	if (result)
 	{
-		if((memcmp(pkt->buffer,dev9.eeprom,6)!=0)&&(memcmp(pkt->buffer,&broadcast_adddrrrr,6)!=0))
+		if ((memcmp(pkt->buffer, dev9.eeprom, 6) != 0) && (memcmp(pkt->buffer, &broadcast_adddrrrr, 6) != 0))
 		{
 			//ignore strange packets
 			return false;
 		}
 
-		if(memcmp(pkt->buffer+6,dev9.eeprom,6)==0)
+		if (memcmp(pkt->buffer + 6, dev9.eeprom, 6) == 0)
 		{
 			//avoid pcap looping packets
 			return false;
 		}
-		pkt->size=read_size;
+		pkt->size = read_size;
 		return true;
 	}
 	else
@@ -346,31 +335,31 @@ bool TAPAdapter::send(NetPacket* pkt)
 {
 	DWORD writen;
 	BOOL result = WriteFile(htap,
-                          pkt->buffer,
-						  pkt->size,
-						  &writen,
-                          &write);
+							pkt->buffer,
+							pkt->size,
+							&writen,
+							&write);
 
-	 if (!result) {
-            DWORD dwError = GetLastError();
-            if (dwError == ERROR_IO_PENDING) 
+	if (!result)
+	{
+		DWORD dwError = GetLastError();
+		if (dwError == ERROR_IO_PENDING)
+		{
+			WaitForSingleObject(write.hEvent, INFINITE);
+			result = GetOverlappedResult(htap, &write,
+										 &writen, FALSE);
+			if (!result)
 			{
-				WaitForSingleObject(write.hEvent, INFINITE);
-                result = GetOverlappedResult( htap, &write,
-                                              &writen, FALSE);
-                if (!result) 
-				{
-
-                }
-            } 
-			else {
-
-            }
-        }
+			}
+		}
+		else
+		{
+		}
+	}
 
 	if (result)
 	{
-		if (writen!=pkt->size)
+		if (writen != pkt->size)
 			return false;
 
 		return true;
@@ -390,7 +379,7 @@ TAPAdapter::~TAPAdapter()
 }
 
 //i leave these for reference, in case we need msth :p
-#if 0==666
+#if 0 == 666
 //======================
 // Compile time configuration
 //======================
@@ -785,7 +774,7 @@ static int tap_win32_write(tap_win32_overlapped_t *overlapped,
     if (!result) { 
         switch (error = GetLastError())
         { 
-        case ERROR_IO_PENDING: 
+        case ERROR_IO_PENDING:
 #ifndef TUN_ASYNCHRONOUS_WRITES
             WaitForSingleObject(overlapped->write_event, INFINITE);
 #endif

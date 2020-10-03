@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014 David Quintana [gigaherz]
+ *  Copyright (C) 2002-2010  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -27,10 +27,11 @@ bool FileExists(std::string szPath)
 {
 	DWORD dwAttrib = GetFileAttributes(szPath.c_str());
 	return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
-		!(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+			!(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
-void SaveConf() {
+void SaveConf()
+{
 	const std::string file(s_strIniPath + "dev9ghz.ini");
 	DeleteFile(file.c_str());
 
@@ -41,7 +42,8 @@ void SaveConf() {
 	WritePrivateProfileInt("DEV9", "hddEnable", config.hddEnable, file.c_str());
 }
 
-void LoadConf() {
+void LoadConf()
+{
 	const std::string file(s_strIniPath + "dev9ghz.ini");
 	if (FileExists(file.c_str()) == false)
 		return;

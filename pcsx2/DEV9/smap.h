@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014 David Quintana [gigaherz]
+ *  Copyright (C) 2002-2010  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -31,8 +31,8 @@ EXPORT_C_(void)
 smap_write32(u32 addr, u32 value);
 
 EXPORT_C_(void)
-smap_readDMA8Mem(u32 *pMem, int size);
+smap_readDMA8Mem(u32* pMem, int size);
 EXPORT_C_(void)
-smap_writeDMA8Mem(u32 *pMem, int size);
+smap_writeDMA8Mem(u32* pMem, int size);
 EXPORT_C_(void)
 smap_async(u32 cycles);

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014 David Quintana [gigaherz]
+ *  Copyright (C) 2002-2010  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -12,7 +12,6 @@
  *  You should have received a copy of the GNU General Public License along with PCSX2.
  *  If not, see <http://www.gnu.org/licenses/>.
  */
-
 
 #define WINVER 0x0600
 #define _WIN32_WINNT 0x0600
@@ -33,17 +32,17 @@
 #include <string.h>
 #include <errno.h>
 #include <stdarg.h>
-#define EXTERN 
+#define EXTERN
 #include "DEV9.h"
-#undef EXTERN 
+#undef EXTERN
 #include "Config.h"
 #include "smap.h"
 #include "ata.h"
 
 #ifdef _WIN32
-#pragma warning(disable:4244)
+#pragma warning(disable : 4244)
 
-HINSTANCE hInst=NULL;
+HINSTANCE hInst = NULL;
 #endif
 
 //#define HDD_48BIT
@@ -53,7 +52,8 @@ HINSTANCE hInst=NULL;
 static __inline__ unsigned long long GetTickCount(void)
 {
 	unsigned long long int x;
-	__asm__ volatile ("rdtsc" : "=A" (x));
+	__asm__ volatile("rdtsc"
+					 : "=A"(x));
 	return x;
 }
 
@@ -62,25 +62,82 @@ static __inline__ unsigned long long GetTickCount(void)
 static __inline__ unsigned long long GetTickCount(void)
 {
 	unsigned hi, lo;
-	__asm__ __volatile__ ("rdtsc" : "=a"(lo), "=d"(hi));
-	return ( (unsigned long long)lo)|( ((unsigned long long)hi)<<32 );
+	__asm__ __volatile__("rdtsc"
+						 : "=a"(lo), "=d"(hi));
+	return ((unsigned long long)lo) | (((unsigned long long)hi) << 32);
 }
 
 #endif
 
 u8 eeprom[] = {
 	//0x6D, 0x76, 0x63, 0x61, 0x31, 0x30, 0x08, 0x01,
-	0x76, 0x6D, 0x61, 0x63, 0x30, 0x31, 0x07, 0x02,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x10, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-	0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+	0x76,
+	0x6D,
+	0x61,
+	0x63,
+	0x30,
+	0x31,
+	0x07,
+	0x02,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x10,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x10,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x10,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
+	0x00,
 };
 
-u32 *iopPC;
+u32* iopPC;
 
 #ifdef _WIN32
 HANDLE hEeprom;
@@ -99,24 +156,27 @@ int Log = 1;
 int Log = 0;
 #endif
 
-void __Log(char *fmt, ...) {
-	if (!Log) return;
+void __Log(char* fmt, ...)
+{
+	if (!Log)
+		return;
 	va_list list;
 
-	static int ticks=-1;
-	int nticks=GetTickCount();
+	static int ticks = -1;
+	int nticks = GetTickCount();
 
-	if(ticks==-1) ticks=nticks;
+	if (ticks == -1)
+		ticks = nticks;
 
-	if(iopPC!=NULL)
+	if (iopPC != NULL)
 	{
 		DEV9Log.Write("[%10d + %4d, IOP PC = %08x] ", nticks, nticks - ticks, *iopPC);
 	}
 	else
 	{
-		DEV9Log.Write( "[%10d + %4d] ", nticks, nticks - ticks);
+		DEV9Log.Write("[%10d + %4d] ", nticks, nticks - ticks);
 	}
-	ticks=nticks;
+	ticks = nticks;
 
 	va_start(list, fmt);
 	DEV9Log.Write(fmt, list);
@@ -146,63 +206,62 @@ s32 DEV9init()
 
 #ifdef _WIN32
 	hEeprom = CreateFile(
-	  "eeprom.dat",
-	  GENERIC_READ|GENERIC_WRITE,
-	  0,
-	  NULL,
-	  OPEN_EXISTING,
-	  FILE_FLAG_WRITE_THROUGH,
-	  NULL
-	);
+		"eeprom.dat",
+		GENERIC_READ | GENERIC_WRITE,
+		0,
+		NULL,
+		OPEN_EXISTING,
+		FILE_FLAG_WRITE_THROUGH,
+		NULL);
 
-	if(hEeprom==INVALID_HANDLE_VALUE)
+	if (hEeprom == INVALID_HANDLE_VALUE)
 	{
-		dev9.eeprom=(u16*)eeprom;
+		dev9.eeprom = (u16*)eeprom;
 	}
 	else
 	{
-		mapping=CreateFileMapping(hEeprom,NULL,PAGE_READWRITE,0,0,NULL);
-		if(mapping==INVALID_HANDLE_VALUE)
+		mapping = CreateFileMapping(hEeprom, NULL, PAGE_READWRITE, 0, 0, NULL);
+		if (mapping == INVALID_HANDLE_VALUE)
 		{
 			CloseHandle(hEeprom);
-			dev9.eeprom=(u16*)eeprom;
+			dev9.eeprom = (u16*)eeprom;
 		}
 		else
 		{
-			dev9.eeprom = (u16*)MapViewOfFile(mapping,FILE_MAP_WRITE,0,0,0);
+			dev9.eeprom = (u16*)MapViewOfFile(mapping, FILE_MAP_WRITE, 0, 0, 0);
 
-			if(dev9.eeprom==NULL)
+			if (dev9.eeprom == NULL)
 			{
 				CloseHandle(mapping);
 				CloseHandle(hEeprom);
-				dev9.eeprom=(u16*)eeprom;
+				dev9.eeprom = (u16*)eeprom;
 			}
 		}
 	}
 #else
 	hEeprom = open("eeprom.dat", O_RDWR, 0);
 
-	if(-1 == hEeprom)
+	if (-1 == hEeprom)
 	{
-		dev9.eeprom=(u16*)eeprom;
+		dev9.eeprom = (u16*)eeprom;
 	}
 	else
 	{
-			dev9.eeprom = (u16*)mmap(NULL, 64, PROT_READ|PROT_WRITE, MAP_FILE|MAP_SHARED, hEeprom, 0);
+		dev9.eeprom = (u16*)mmap(NULL, 64, PROT_READ | PROT_WRITE, MAP_FILE | MAP_SHARED, hEeprom, 0);
 
-			if(dev9.eeprom==NULL)
-			{
-				close(hEeprom);
-				dev9.eeprom=(u16*)eeprom;
-			}
+		if (dev9.eeprom == NULL)
+		{
+			close(hEeprom);
+			dev9.eeprom = (u16*)eeprom;
+		}
 	}
 #endif
 
 	int rxbi;
 
-	for(rxbi=0;rxbi<(SMAP_BD_SIZE/8);rxbi++)
+	for (rxbi = 0; rxbi < (SMAP_BD_SIZE / 8); rxbi++)
 	{
-		smap_bd_t *pbd = (smap_bd_t *)&dev9.dev9R[SMAP_BD_RX_BASE & 0xffff];
+		smap_bd_t* pbd = (smap_bd_t*)&dev9.dev9R[SMAP_BD_RX_BASE & 0xffff];
 		pbd = &pbd[rxbi];
 
 		pbd->ctrl_stat = SMAP_BD_RX_EMPTY;
@@ -214,22 +273,23 @@ s32 DEV9init()
 	return 0;
 }
 
-void DEV9shutdown() {
+void DEV9shutdown()
+{
 	DEV9_LOG("DEV9shutdown\n");
 #ifdef DEV9_LOG_ENABLE
 	DEV9Log.Close();
 #endif
 }
 
-s32 DEV9open(void *pDsp)
+s32 DEV9open(void* pDsp)
 {
 	DEV9_LOG("DEV9open\n");
 	LoadConf();
 	DEV9_LOG("open r+: %s\n", config.Hdd);
-	config.HddSize = 8*1024;
-	
+	config.HddSize = 8 * 1024;
+
 	iopPC = (u32*)pDsp;
-	
+
 #ifdef ENABLE_ATA
 	ata_init();
 #endif
@@ -249,7 +309,7 @@ int DEV9irqHandler(void)
 {
 	//dev9Ru16(SPD_R_INTR_STAT)|= dev9.irqcause;
 	DEV9_LOG("_DEV9irqHandler %x, %x\n", dev9.irqcause, dev9Ru16(SPD_R_INTR_MASK));
-	if (dev9.irqcause & dev9Ru16(SPD_R_INTR_MASK)) 
+	if (dev9.irqcause & dev9Ru16(SPD_R_INTR_MASK))
 		return 1;
 	return 0;
 }
@@ -258,21 +318,22 @@ void _DEV9irq(int cause, int cycles)
 {
 	DEV9_LOG("_DEV9irq %x, %x\n", cause, dev9Ru16(SPD_R_INTR_MASK));
 
-	dev9.irqcause|= cause;
+	dev9.irqcause |= cause;
 
-	if(cycles<1)
+	if (cycles < 1)
 		dev9Irq(1);
 	else
 		dev9Irq(cycles);
 }
 
 
-u8 DEV9read8(u32 addr) {
+u8 DEV9read8(u32 addr)
+{
 	if (!config.ethEnable & !config.hddEnable)
 		return 0;
 
 	u8 hard;
-	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
+	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
 	{
 #ifdef ENABLE_ATA
 		return ata_read<1>(addr);
@@ -280,13 +341,13 @@ u8 DEV9read8(u32 addr) {
 		return 0;
 #endif
 	}
-	if (addr>=SMAP_REGBASE && addr<FLASH_REGBASE)
+	if (addr >= SMAP_REGBASE && addr < FLASH_REGBASE)
 	{
 		//smap
 		return smap_read8(addr);
 	}
-	
-	switch (addr) 
+
+	switch (addr)
 	{
 		case SPD_R_PIO_DATA:
 
@@ -296,24 +357,26 @@ u8 DEV9read8(u32 addr) {
 				break;
 			}*/
 
-			if(dev9.eeprom_state==EEPROM_TDATA)
+			if (dev9.eeprom_state == EEPROM_TDATA)
 			{
-				if(dev9.eeprom_command==2) //read
+				if (dev9.eeprom_command == 2) //read
 				{
-					if(dev9.eeprom_bit==0xFF)
-						hard=0;
+					if (dev9.eeprom_bit == 0xFF)
+						hard = 0;
 					else
-						hard=((dev9.eeprom[dev9.eeprom_address]<<dev9.eeprom_bit)&0x8000)>>11;
+						hard = ((dev9.eeprom[dev9.eeprom_address] << dev9.eeprom_bit) & 0x8000) >> 11;
 					dev9.eeprom_bit++;
-					if(dev9.eeprom_bit==16)
+					if (dev9.eeprom_bit == 16)
 					{
 						dev9.eeprom_address++;
-						dev9.eeprom_bit=0;
+						dev9.eeprom_bit = 0;
 					}
 				}
-				else hard=0;
+				else
+					hard = 0;
 			}
-			else hard=0;
+			else
+				hard = 0;
 			return hard;
 
 		case DEV9_R_REV:
@@ -321,15 +384,16 @@ u8 DEV9read8(u32 addr) {
 			break;
 
 		default:
-			if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE))) {
+			if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
+			{
 				return (u8)FLASHread32(addr, 1);
 			}
 
-			hard = dev9Ru8(addr); 
+			hard = dev9Ru8(addr);
 			DEV9_LOG("*Unknown 8bit read at address %lx value %x\n", addr, hard);
 			return hard;
 	}
-	
+
 	DEV9_LOG("*Known 8bit read at address %lx value %x\n", addr, hard);
 	return hard;
 }
@@ -340,7 +404,7 @@ u16 DEV9read16(u32 addr)
 		return 0;
 
 	u16 hard;
-	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
+	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
 	{
 #ifdef ENABLE_ATA
 		return ata_read<2>(addr);
@@ -348,13 +412,13 @@ u16 DEV9read16(u32 addr)
 		return 0;
 #endif
 	}
-	if (addr>=SMAP_REGBASE && addr<FLASH_REGBASE)
+	if (addr >= SMAP_REGBASE && addr < FLASH_REGBASE)
 	{
 		//smap
 		return smap_read16(addr);
 	}
 
-	switch (addr) 
+	switch (addr)
 	{
 		case SPD_R_INTR_STAT:
 			return dev9.irqcause;
@@ -376,25 +440,27 @@ u16 DEV9read16(u32 addr)
 			/*if (config.hddEnable) {
 				hard|= 0x2;
 			}*/
-			if (config.ethEnable) {
-				hard|= 0x1;
+			if (config.ethEnable)
+			{
+				hard |= 0x1;
 			}
-			hard|= 0x20;//flash
+			hard |= 0x20; //flash
 			break;
 
 		case SPD_R_0e:
 			hard = 0x0002;
 			break;
 		default:
-			if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE))) {
+			if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
+			{
 				return (u16)FLASHread32(addr, 2);
 			}
 
-			hard = dev9Ru16(addr); 
+			hard = dev9Ru16(addr);
 			DEV9_LOG("*Unknown 16bit read at address %lx value %x\n", addr, hard);
 			return hard;
 	}
-	
+
 	DEV9_LOG("*Known 16bit read at address %lx value %x\n", addr, hard);
 	return hard;
 }
@@ -405,7 +471,7 @@ u32 DEV9read32(u32 addr)
 		return 0;
 
 	u32 hard;
-	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
+	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
 	{
 #ifdef ENABLE_ATA
 		return ata_read<4>(addr);
@@ -413,52 +479,54 @@ u32 DEV9read32(u32 addr)
 		return 0;
 #endif
 	}
-	if (addr>=SMAP_REGBASE && addr<FLASH_REGBASE)
+	if (addr >= SMAP_REGBASE && addr < FLASH_REGBASE)
 	{
 		//smap
 		return smap_read32(addr);
 	}
-//	switch (addr) {
+	//	switch (addr) {
 
-//		default:
-			if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE))) {
-				return (u32)FLASHread32(addr, 4);
-			}
+	//		default:
+	if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
+	{
+		return (u32)FLASHread32(addr, 4);
+	}
 
-			hard = dev9Ru32(addr); 
-			DEV9_LOG("*Unknown 32bit read at address %lx value %x\n", addr, hard);
-			return hard;
-//	}
+	hard = dev9Ru32(addr);
+	DEV9_LOG("*Unknown 32bit read at address %lx value %x\n", addr, hard);
+	return hard;
+	//	}
 
-//	DEV9_LOG("*Known 32bit read at address %lx: %lx\n", addr, hard);
-//	return hard;
+	//	DEV9_LOG("*Known 32bit read at address %lx: %lx\n", addr, hard);
+	//	return hard;
 }
 
-void DEV9write8(u32 addr,  u8 value)
+void DEV9write8(u32 addr, u8 value)
 {
 	if (!config.ethEnable & !config.hddEnable)
 		return;
 
-	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
+	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
 	{
 #ifdef ENABLE_ATA
-		ata_write<1>(addr,value);
+		ata_write<1>(addr, value);
 #endif
 		return;
 	}
-	if (addr>=SMAP_REGBASE && addr<FLASH_REGBASE)
+	if (addr >= SMAP_REGBASE && addr < FLASH_REGBASE)
 	{
 		//smap
-		smap_write8(addr,value);
+		smap_write8(addr, value);
 		return;
 	}
-	switch (addr) {
+	switch (addr)
+	{
 		case 0x10000020:
 			dev9.irqcause = 0xff;
 			break;
 		case SPD_R_INTR_STAT:
 			emu_printf("SPD_R_INTR_STAT	, WTFH ?\n");
-			dev9.irqcause=value;
+			dev9.irqcause = value;
 			return;
 		case SPD_R_INTR_MASK:
 			emu_printf("SPD_R_INTR_MASK8	, WTFH ?\n");
@@ -467,36 +535,36 @@ void DEV9write8(u32 addr,  u8 value)
 		case SPD_R_PIO_DIR:
 			//DEV9_LOG("SPD_R_PIO_DIR 8bit write %x\n", value);
 
-			if((value&0xc0)!=0xc0)
+			if ((value & 0xc0) != 0xc0)
 				return;
 
-			if((value&0x30)==0x20)
+			if ((value & 0x30) == 0x20)
 			{
-				dev9.eeprom_state=0;
+				dev9.eeprom_state = 0;
 			}
-			dev9.eeprom_dir=(value>>4)&3;
-			
+			dev9.eeprom_dir = (value >> 4) & 3;
+
 			return;
 
 		case SPD_R_PIO_DATA:
 			//DEV9_LOG("SPD_R_PIO_DATA 8bit write %x\n", value);
 
-			if((value&0xc0)!=0xc0)
+			if ((value & 0xc0) != 0xc0)
 				return;
 
-			switch(dev9.eeprom_state)
+			switch (dev9.eeprom_state)
 			{
 				case EEPROM_READY:
-					dev9.eeprom_command=0;
+					dev9.eeprom_command = 0;
 					dev9.eeprom_state++;
 					break;
 				case EEPROM_OPCD0:
-					dev9.eeprom_command = (value>>4)&2;
+					dev9.eeprom_command = (value >> 4) & 2;
 					dev9.eeprom_state++;
-					dev9.eeprom_bit=0xFF;
+					dev9.eeprom_bit = 0xFF;
 					break;
 				case EEPROM_OPCD1:
-					dev9.eeprom_command |= (value>>5)&1;
+					dev9.eeprom_command |= (value >> 5) & 1;
 					dev9.eeprom_state++;
 					break;
 				case EEPROM_ADDR0:
@@ -506,32 +574,33 @@ void DEV9write8(u32 addr,  u8 value)
 				case EEPROM_ADDR4:
 				case EEPROM_ADDR5:
 					dev9.eeprom_address =
-						(dev9.eeprom_address&(63^(1<<(dev9.eeprom_state-EEPROM_ADDR0))))|
-						((value>>(dev9.eeprom_state-EEPROM_ADDR0))&(0x20>>(dev9.eeprom_state-EEPROM_ADDR0)));
+						(dev9.eeprom_address & (63 ^ (1 << (dev9.eeprom_state - EEPROM_ADDR0)))) |
+						((value >> (dev9.eeprom_state - EEPROM_ADDR0)) & (0x20 >> (dev9.eeprom_state - EEPROM_ADDR0)));
 					dev9.eeprom_state++;
 					break;
 				case EEPROM_TDATA:
+				{
+					if (dev9.eeprom_command == 1) //write
 					{
-						if(dev9.eeprom_command==1) //write
+						dev9.eeprom[dev9.eeprom_address] =
+							(dev9.eeprom[dev9.eeprom_address] & (63 ^ (1 << dev9.eeprom_bit))) |
+							((value >> dev9.eeprom_bit) & (0x8000 >> dev9.eeprom_bit));
+						dev9.eeprom_bit++;
+						if (dev9.eeprom_bit == 16)
 						{
-							dev9.eeprom[dev9.eeprom_address] =
-								(dev9.eeprom[dev9.eeprom_address]&(63^(1<<dev9.eeprom_bit)))|
-								((value>>dev9.eeprom_bit)&(0x8000>>dev9.eeprom_bit));
-							dev9.eeprom_bit++;
-							if(dev9.eeprom_bit==16)
-							{
-								dev9.eeprom_address++;
-								dev9.eeprom_bit=0;
-							}
+							dev9.eeprom_address++;
+							dev9.eeprom_bit = 0;
 						}
 					}
-					break;
+				}
+				break;
 			}
 
 			return;
 
 		default:
-			if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE))) {
+			if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
+			{
 				FLASHwrite32(addr, (u32)value, 1);
 				return;
 			}
@@ -549,32 +618,33 @@ void DEV9write16(u32 addr, u16 value)
 	if (!config.ethEnable & !config.hddEnable)
 		return;
 
-	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
+	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
 	{
 #ifdef ENABLE_ATA
-		ata_write<2>(addr,value);
+		ata_write<2>(addr, value);
 #endif
 		return;
 	}
-	if (addr>=SMAP_REGBASE && addr<FLASH_REGBASE)
+	if (addr >= SMAP_REGBASE && addr < FLASH_REGBASE)
 	{
 		//smap
-		smap_write16(addr,value);
+		smap_write16(addr, value);
 		return;
 	}
-	switch (addr) 
+	switch (addr)
 	{
 		case SPD_R_INTR_MASK:
-			if ((dev9Ru16(SPD_R_INTR_MASK)!=value) && ((dev9Ru16(SPD_R_INTR_MASK)|value) & dev9.irqcause))
+			if ((dev9Ru16(SPD_R_INTR_MASK) != value) && ((dev9Ru16(SPD_R_INTR_MASK) | value) & dev9.irqcause))
 			{
-				DEV9_LOG("SPD_R_INTR_MASK16=0x%X	, checking for masked/unmasked interrupts\n",value);
+				DEV9_LOG("SPD_R_INTR_MASK16=0x%X	, checking for masked/unmasked interrupts\n", value);
 				dev9Irq(1);
 			}
 			break;
-		
+
 		default:
 
-			if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE))) {
+			if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
+			{
 				FLASHwrite32(addr, (u32)value, 2);
 				return;
 			}
@@ -592,26 +662,27 @@ void DEV9write32(u32 addr, u32 value)
 	if (!config.ethEnable & !config.hddEnable)
 		return;
 
-	if (addr>=ATA_DEV9_HDD_BASE && addr<ATA_DEV9_HDD_END)
+	if (addr >= ATA_DEV9_HDD_BASE && addr < ATA_DEV9_HDD_END)
 	{
 #ifdef ENABLE_ATA
-		ata_write<4>(addr,value);
+		ata_write<4>(addr, value);
 #endif
 		return;
 	}
-	if (addr>=SMAP_REGBASE && addr<FLASH_REGBASE)
+	if (addr >= SMAP_REGBASE && addr < FLASH_REGBASE)
 	{
 		//smap
-		smap_write32(addr,value);
+		smap_write32(addr, value);
 		return;
 	}
-	switch (addr) 
-		{
+	switch (addr)
+	{
 		case SPD_R_INTR_MASK:
 			emu_printf("SPD_R_INTR_MASK	, WTFH ?\n");
 			break;
 		default:
-			if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE))) {
+			if ((addr >= FLASH_REGBASE) && (addr < (FLASH_REGBASE + FLASH_REGSIZE)))
+			{
 				FLASHwrite32(addr, (u32)value, 4);
 				return;
 			}
@@ -624,17 +695,17 @@ void DEV9write32(u32 addr, u32 value)
 	DEV9_LOG("*Known 32bit write at address %lx value %lx\n", addr, value);
 }
 
-void DEV9readDMA8Mem(u32 *pMem, int size)
+void DEV9readDMA8Mem(u32* pMem, int size)
 {
 	if (!config.ethEnable & !config.hddEnable)
 		return;
 
 	DEV9_LOG("*DEV9readDMA8Mem: size %x\n", size);
 	emu_printf("rDMA\n");
-	
-	smap_readDMA8Mem(pMem,size);
+
+	smap_readDMA8Mem(pMem, size);
 #ifdef ENABLE_ATA
-	ata_readDMA8Mem(pMem,size);
+	ata_readDMA8Mem(pMem, size);
 #endif
 }
 
@@ -645,10 +716,10 @@ void DEV9writeDMA8Mem(u32* pMem, int size)
 
 	DEV9_LOG("*DEV9writeDMA8Mem: size %x\n", size);
 	emu_printf("wDMA\n");
-	
-	smap_writeDMA8Mem(pMem,size);
+
+	smap_writeDMA8Mem(pMem, size);
 #ifdef ENABLE_ATA
-	ata_writeDMA8Mem(pMem,size);
+	ata_writeDMA8Mem(pMem, size);
 #endif
 }
 
@@ -664,7 +735,7 @@ void DEV9setSettingsDir(const char* dir)
 {
 	// Grab the ini directory.
 	// TODO: Use
-    s_strIniPath = (dir == NULL) ? "inis" : dir;
+	s_strIniPath = (dir == NULL) ? "inis" : dir;
 }
 
 void DEV9setLogDir(const char* dir)
@@ -678,12 +749,12 @@ void DEV9setLogDir(const char* dir)
 	LogInit();
 }
 
-int emu_printf(const char *fmt, ...)
+int emu_printf(const char* fmt, ...)
 {
 	va_list vl;
 	int ret;
-	va_start(vl,fmt);
-	ret = vfprintf(stderr,fmt,vl);
+	va_start(vl, fmt);
+	ret = vfprintf(stderr, fmt, vl);
 	va_end(vl);
 	fflush(stderr);
 	return ret;

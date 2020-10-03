@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014 David Quintana [gigaherz]
+ *  Copyright (C) 2002-2010  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -22,18 +22,18 @@
 NetAdapter* nif;
 HANDLE rx_thread;
 
-volatile bool RxRunning=false;
+volatile bool RxRunning = false;
 //rx thread
 DWORD WINAPI NetRxThread(LPVOID lpThreadParameter)
-{	
+{
 	NetPacket tmp;
-	while(RxRunning)
+	while (RxRunning)
 	{
-		while(rx_fifo_can_rx() && nif->recv(&tmp))
+		while (rx_fifo_can_rx() && nif->recv(&tmp))
 		{
 			rx_process(&tmp);
 		}
-		
+
 		Sleep(10);
 	}
 
@@ -42,23 +42,23 @@ DWORD WINAPI NetRxThread(LPVOID lpThreadParameter)
 
 void tx_put(NetPacket* pkt)
 {
-	if (nif!=NULL)
+	if (nif != NULL)
 		nif->send(pkt);
 	//pkt must be copied if its not processed by here, since it can be allocated on the callers stack
 }
 void InitNet(NetAdapter* ad)
 {
-	nif=ad;
-	RxRunning=true;
+	nif = ad;
+	RxRunning = true;
 
-	rx_thread=CreateThread(0,0,NetRxThread,0,CREATE_SUSPENDED,0);
+	rx_thread = CreateThread(0, 0, NetRxThread, 0, CREATE_SUSPENDED, 0);
 
-	SetThreadPriority(rx_thread,THREAD_PRIORITY_HIGHEST);
+	SetThreadPriority(rx_thread, THREAD_PRIORITY_HIGHEST);
 	ResumeThread(rx_thread);
 }
 void TermNet()
 {
-	if(RxRunning)
+	if (RxRunning)
 	{
 		RxRunning = false;
 		emu_printf("Waiting for RX-net thread to terminate..");
