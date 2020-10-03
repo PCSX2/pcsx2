@@ -280,6 +280,7 @@ TAPAdapter::TAPAdapter()
     write.Offset = 0;
     write.OffsetHigh = 0;
     write.hEvent = CreateEvent(NULL, FALSE, FALSE, NULL);
+    isActive = true;
 	
 	
 }
@@ -379,10 +380,13 @@ bool TAPAdapter::send(NetPacket* pkt)
 }
 TAPAdapter::~TAPAdapter()
 {
+	if (!isActive)
+		return;
 	CloseHandle(read.hEvent);
 	CloseHandle(write.hEvent);
 	TAPSetStatus(htap, FALSE);
 	CloseHandle(htap);
+	isActive = false;
 }
 
 //i leave these for reference, in case we need msth :p
