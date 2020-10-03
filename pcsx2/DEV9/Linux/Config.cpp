@@ -18,6 +18,7 @@
 
 //#include <winsock2.h>
 #include "../DEV9.h"
+#include "AppConfig.h"
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -63,7 +64,9 @@ void SaveConf()
      */
 
 
-	const std::string file(s_strIniPath + "DEV9.cfg");
+	const std::string file(GetSettingsFolder().Combine(wxString("DEV9.cfg")).GetFullPath());
+
+	fprintf(stderr, "CONF: %s", file.c_str());
 
 	xmlSaveFormatFileEnc(file.c_str(), doc, "UTF-8", 1);
 	//    free(configFile);
@@ -81,7 +84,7 @@ void SaveConf()
 void LoadConf()
 {
 
-	const std::string file(s_strIniPath + "DEV9.cfg");
+	const std::string file(GetSettingsFolder().Combine(wxString("DEV9.cfg")).GetFullPath());
 	if (-1 == access(file.c_str(), F_OK))
 		return;
 
