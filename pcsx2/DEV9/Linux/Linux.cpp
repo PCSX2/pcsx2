@@ -27,6 +27,7 @@
 #include "pcap.h"
 #include "../pcap_io.h"
 #include "../net.h"
+#include "AppCoreThread.h"
 
 static GtkBuilder * builder;
 
@@ -118,9 +119,8 @@ static guint builder_add_from_resource(GtkBuilder *builder
     return ret;
 }
 
-EXPORT_C_(void)
-DEV9configure() {
-
+void DEV9configure() {
+	ScopedCoreThreadPause paused_core;
     gtk_init (NULL, NULL);
     GError *error = NULL;
     builder = gtk_builder_new();
@@ -140,7 +140,7 @@ DEV9configure() {
     break;
     }
     gtk_widget_hide (GTK_WIDGET(dlg));
-
+	paused_core.AllowResume();
 }
 
 NetAdapter* GetNetAdapter()

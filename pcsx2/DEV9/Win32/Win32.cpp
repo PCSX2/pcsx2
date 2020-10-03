@@ -24,6 +24,7 @@
 #include "..\pcap_io.h"
 #include "..\net.h"
 #include "tap.h"
+#include "AppCoreThread.h"
 
 extern HINSTANCE hInst;
 //HANDLE handleDEV9Thread = NULL;
@@ -141,13 +142,14 @@ BOOL CALLBACK AboutDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	return FALSE;
 }
 
-EXPORT_C_(void)
-DEV9configure() {
+void DEV9configure() {
+ 	ScopedCoreThreadPause paused_core;
     DialogBox(hInst,
               MAKEINTRESOURCE(IDD_CONFIG),
               GetActiveWindow(),
              (DLGPROC)ConfigureDlgProc);
 		//SysMessage("Nothing to Configure");
+    paused_core.AllowResume();
 }
 
 EXPORT_C_(void)
