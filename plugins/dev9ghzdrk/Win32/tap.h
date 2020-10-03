@@ -29,6 +29,7 @@ class TAPAdapter : public NetAdapter
 {
 	HANDLE htap;
 	OVERLAPPED read,write;
+	bool isActive = false;
 public:
 	TAPAdapter();
 	virtual bool blocks();
