@@ -1,17 +1,33 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+/*
+ *  TAP-Win32 -- A kernel driver to provide virtual tap device functionality
+ *               on Windows.  Originally derived from the CIPE-Win32
+ *               project by Damion K. Wilson, with extensive modifications by
+ *               James Yonan.
  *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
+ *  All source code which derives from the CIPE-Win32 project is
+ *  Copyright (C) Damion K. Wilson, 2003, and is released under the
+ *  GPL version 2 (see below).
  *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
+ *  All other source code is Copyright (C) James Yonan, 2003-2004,
+ *  and is released under the GPL version 2 (see below).
  *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
+ *  This program is free software; you can redistribute it and/or modify
+ *  it under the terms of the GNU General Public License as published by
+ *  the Free Software Foundation; either version 2 of the License, or
+ *  (at your option) any later version.
+ *
+ *  This program is distributed in the hope that it will be useful,
+ *  but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with this program (see the file COPYING included with this
+ *  distribution); if not, write to the Free Software Foundation, Inc.,
+ *  59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
+
+#include "PrecompiledHeader.h"
 
 #include <stdio.h>
 #include <windows.h>
@@ -41,9 +57,9 @@
 // Registry keys
 //=================
 
-#define ADAPTER_KEY "SYSTEM\\CurrentControlSet\\Control\\Class\\{4D36E972-E325-11CE-BFC1-08002BE10318}"
+#define ADAPTER_KEY L"SYSTEM\\CurrentControlSet\\Control\\Class\\{4D36E972-E325-11CE-BFC1-08002BE10318}"
 
-#define NETWORK_CONNECTIONS_KEY "SYSTEM\\CurrentControlSet\\Control\\Network\\{4D36E972-E325-11CE-BFC1-08002BE10318}"
+#define NETWORK_CONNECTIONS_KEY L"SYSTEM\\CurrentControlSet\\Control\\Network\\{4D36E972-E325-11CE-BFC1-08002BE10318}"
 
 //======================
 // Filesystem prefixes
@@ -108,7 +124,7 @@ bool IsTAPDevice(const TCHAR* guid)
 				if (status == ERROR_SUCCESS && data_type == REG_SZ)
 				{
 					// tap_ovpnconnect, tap0901 or root\tap, no clue why
-					if ((!strncmp(component_id, "tap", 3) || !strncmp(component_id, "root\\tap", 8)) && !_tcscmp(net_cfg_instance_id, guid))
+					if ((!wcsncmp(component_id, L"tap", 3) || !wcsncmp(component_id, L"root\\tap", 8)) && !_tcscmp(net_cfg_instance_id, guid))
 					{
 						RegCloseKey(unit_key);
 						RegCloseKey(netcard_key);
@@ -179,8 +195,8 @@ vector<tap_adapter>* GetTapAdapters()
 			{
 				if (IsTAPDevice(enum_name))
 				{
-					std::string tmp = name_data;
-					std::string tmp2 = enum_name;
+					std::string tmp("hello");
+					std::string tmp2("hello");
 					tap_adapter t = {tmp, tmp2};
 					tap_nic->push_back(t);
 				}
@@ -222,7 +238,7 @@ HANDLE TAPOpen(const char* device_guid)
 			  device_guid,
 			  TAPSUFFIX);
 
-	HANDLE handle = CreateFile(
+	HANDLE handle = CreateFileA(
 		device_path,
 		GENERIC_READ | GENERIC_WRITE,
 		0,

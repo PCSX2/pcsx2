@@ -13,6 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
+
 // The code has been designed for 64Mb flash and uses as file support the second memory card
 #include <stdio.h>
 //#include <winsock2.h>

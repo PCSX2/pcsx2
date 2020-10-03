@@ -13,10 +13,10 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include <stdio.h>
-#include <winsock2.h>
-#include <windows.h>
-#include <windowsx.h>
+//#include <windows.h>
+//#include <windowsx.h>
 
 #include "..\Config.h"
 #include "resource.h"
@@ -38,7 +38,7 @@ void SysMessage(char* fmt, ...)
 	va_start(list, fmt);
 	vsprintf(tmp, fmt, list);
 	va_end(list);
-	MessageBox(0, tmp, "Dev9 Msg", 0);
+	MessageBoxA(0, tmp, "Dev9 Msg", 0);
 }
 
 void OnInitDialog(HWND hW)
@@ -71,7 +71,7 @@ void OnInitDialog(HWND hW)
 		}
 	}
 
-	Edit_SetText(GetDlgItem(hW, IDC_HDDFILE), config.Hdd);
+	SetWindowTextA(GetDlgItem(hW, IDC_HDDFILE), config.Hdd);
 
 	Button_SetCheck(GetDlgItem(hW, IDC_ETHENABLED), config.ethEnable);
 	Button_SetCheck(GetDlgItem(hW, IDC_HDDENABLED), config.hddEnable);
@@ -104,7 +104,7 @@ void OnOk(HWND hW)
 		strcpy(config.Eth, ptr);
 	}
 
-	Edit_GetText(GetDlgItem(hW, IDC_HDDFILE), config.Hdd, 256);
+	GetWindowTextA(GetDlgItem(hW, IDC_HDDFILE), config.Hdd, 256);
 
 	config.ethEnable = Button_GetCheck(GetDlgItem(hW, IDC_ETHENABLED));
 	config.hddEnable = Button_GetCheck(GetDlgItem(hW, IDC_HDDENABLED));
@@ -175,13 +175,6 @@ DEV9about()
 			  (DLGPROC)AboutDlgProc);
 }
 
-BOOL APIENTRY DllMain(HANDLE hModule, // DLL INIT
-					  DWORD dwReason,
-					  LPVOID lpReserved)
-{
-	hInst = (HINSTANCE)hModule;
-	return TRUE; // very quick :)
-}
 /*
 UINT DEV9ThreadProc() {
 	DEV9thread();
