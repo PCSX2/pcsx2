@@ -20,6 +20,7 @@
 #include "GS.h"
 #include "GSFrame.h"
 #include "SPU2/spu2.h"
+#include "System/SysThreads.h"
 
 #include "ConsoleLogger.h"
 #include "MainFrame.h"
@@ -164,6 +165,7 @@ wxWindowID SwapOrReset_Iso(wxWindow* owner, IScopedCoreThread& core_control, con
 		}
 	}
 
+	g_CDVDReset = true;
 	g_Conf->CdvdSource = CDVD_SourceType::Iso;
 	SysUpdateIsoSrcFile(isoFilename);
 
@@ -258,6 +260,7 @@ wxWindowID SwapOrReset_CdvdSrc(wxWindow* owner, CDVD_SourceType newsrc)
 		}
 	}
 
+	g_CDVDReset = true;
 	CDVD_SourceType oldsrc = g_Conf->CdvdSource;
 	g_Conf->CdvdSource = newsrc;
 

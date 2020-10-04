@@ -314,7 +314,8 @@ bool SysThreadBase::StateCheckInThread()
 			m_RunningLock.Acquire();
 			if( m_ExecMode != ExecMode_Closing )
 			{
-				OnResumeInThread( false );
+				OnResumeInThread( g_CDVDReset );
+				g_CDVDReset = false;
 				break;
 			}
 			m_sem_ChangingExecMode.Post();
