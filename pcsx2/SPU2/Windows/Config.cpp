@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "../Global.h"
 #include "Dialogs.h"
+#include "Config.h"
 #include <math.h>
 
 #ifdef PCSX2_DEVBUILD
