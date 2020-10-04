@@ -265,3 +265,5 @@ protected:
 // them to extend the class and override virtual methods).
 //
 extern SysCoreThread& GetCoreThread();
+
+extern bool g_CDVDReset;

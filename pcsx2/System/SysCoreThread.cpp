@@ -42,6 +42,8 @@
 
 #include "x86emitter/x86_intrin.h"
 
+bool g_CDVDReset = false;
+
 // --------------------------------------------------------------------------------------
 //  SysCoreThread *External Thread* Implementations
 //    (Called from outside the context of this thread)
@@ -307,7 +309,7 @@ void SysCoreThread::OnSuspendInThread()
 void SysCoreThread::OnResumeInThread(bool isSuspended)
 {
 	GetCorePlugins().Open();
-	if (isSuspended || !g_GameStarted)
+	if (isSuspended)
 		DoCDVDopen();
 	FWopen();
 	SPU2open((void*)pDsp);
