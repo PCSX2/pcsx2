@@ -7126,9 +7126,10 @@ Name   = Oni
 Region = PAL-E
 Compat = 5
 [patches = 22E85E68]
-	comment=Patches by Nachbrenner
-	// Skip "branch if copro 0 condition false".
-	patch=0,EE,001cef7c,word,00000000 // bc0f $001cef7c
+	comment=Patch by refraction
+	// Rearrange PCR write and BC0F instruction
+	patch=0,EE,001CEF78,word,4100ffff
+	patch=0,EE,001CEF7C,word,ac430000
 [/patches]
 ---------------------------------------------
 Serial = SLES-50136
@@ -7194,9 +7195,10 @@ Name   = Oni
 Region = PAL-F
 Compat = 5
 [patches = F77639F1]
-	comment=Patches by Nachbrenner
-	// Skip "branch if copro 0 condition false".
-	patch=0,EE,001cef7c,word,00000000 // bc0f $001cef7c
+	comment=Patch by refraction
+	// Rearrange PCR write and BC0F instruction
+	patch=0,EE,001CEF78,word,4100ffff
+	patch=0,EE,001CEF7C,word,ac430000
 [/patches]
 ---------------------------------------------
 Serial = SLES-50177
@@ -7204,18 +7206,20 @@ Name   = Oni
 Region = PAL-G
 Compat = 5
 [patches = 32629F36]
-	comment=Patches by Nachbrenner
-	// Skip "branch if copro 0 condition false".
-	patch=0,EE,001cef7c,word,00000000 // bc0f $001cef7c
+	comment=Patch by refraction
+	// Rearrange PCR write and BC0F instruction
+	patch=0,EE,001CEF78,word,4100ffff
+	patch=0,EE,001CEF7C,word,ac430000
 [/patches]
 ---------------------------------------------
 Serial = SLES-50178
 Name   = Oni
 Region = PAL-I
 [patches = 172B6971]
-	author=Nachbrenner
-	// Skip "branch if copro 0 condition false".
-	patch=0,EE,001cef7c,word,00000000 // bc0f $001cef7c
+	comment=Patch by refraction
+	// Rearrange PCR write and BC0F instruction
+	patch=0,EE,001CEF78,word,4100ffff
+	patch=0,EE,001CEF7C,word,ac430000
 [/patches]
 ---------------------------------------------
 Serial = SLES-50179
@@ -35397,9 +35401,10 @@ Name   = Oni
 Region = NTSC-U
 Compat = 5
 [patches = FD9CD8FC]
-	comment=Patch by Shadow Lady
-	// Skip branch bc0f.
-	patch=0,EE,001CF3CC,word,00000000
+	comment=Patch by refraction
+	// Rearrange PCR write and BC0F instruction
+	patch=0,EE,001CF3C8,word,4100ffff
+	patch=0,EE,001CF3CC,word,ac430000
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20065
