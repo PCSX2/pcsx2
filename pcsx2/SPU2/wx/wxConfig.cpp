@@ -29,13 +29,14 @@ MixerTab::MixerTab(wxWindow* parent)
 	// Mixing Settings
 	top_box->Add(new wxStaticText(this, wxID_ANY, "Interpolation"), wxSizerFlags().Centre());
 
-	m_interpolation.Add("Nearest (Fastest/bad quality)");
-	m_interpolation.Add("Linear (Simple/okay sound)");
-	m_interpolation.Add("Cubic (Artificial highs)");
-	m_interpolation.Add("Hermite (Better highs)");
-	m_interpolation.Add("Catmull-Rom (PS2-like/slow)");
+	wxArrayString interpolation_entries;
+	interpolation_entries.Add("Nearest (Fastest/bad quality)");
+	interpolation_entries.Add("Linear (Simple/okay sound)");
+	interpolation_entries.Add("Cubic (Artificial highs)");
+	interpolation_entries.Add("Hermite (Better highs)");
+	interpolation_entries.Add("Catmull-Rom (PS2-like/slow)");
 
-	m_inter_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_interpolation);
+	m_inter_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, interpolation_entries);
 
 	effect_check = new wxCheckBox(this, wxID_ANY, "Disable Effects Processing (Speedup)");
 	dealias_check = new wxCheckBox(this, wxID_ANY, "Use the de-alias filter (Overemphasizes the highs) ");
@@ -54,11 +55,13 @@ MixerTab::MixerTab(wxWindow* parent)
 
 	m_audio_box = new wxBoxSizer(wxVERTICAL);
 	m_audio_box->Add(new wxStaticText(this, wxID_ANY, "Audio Expansion Mode"), wxSizerFlags().Centre());
-	m_audio.Add("Stereo (None, Default)");
-	m_audio.Add("Quadrafonic");
-	m_audio.Add("Surround 5.1");
-	m_audio.Add("Surround 7.1");
-	m_audio_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_audio);
+
+	wxArrayString audio_entries;
+	audio_entries.Add("Stereo (None, Default)");
+	audio_entries.Add("Quadrafonic");
+	audio_entries.Add("Surround 5.1");
+	audio_entries.Add("Surround 7.1");
+	m_audio_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, audio_entries);
 	m_audio_box->Add(m_audio_select, wxSizerFlags().Expand());
 
 	top_box->Add(m_inter_select, wxSizerFlags().Centre());
@@ -110,10 +113,12 @@ SyncTab::SyncTab(wxWindow* parent)
 	auto* top_box = new wxBoxSizer(wxVERTICAL);
 
 	top_box->Add(new wxStaticText(this, wxID_ANY, "Synchronization"), wxSizerFlags().Centre());
-	m_sync.Add("TimeStretch (Recommended)");
-	m_sync.Add("Async Mix (Breaks some games!)");
-	m_sync.Add("None (Audio can skip.)");
-	m_sync_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_sync);
+
+	wxArrayString sync_entries;
+	sync_entries.Add("TimeStretch (Recommended)");
+	sync_entries.Add("Async Mix (Breaks some games!)");
+	sync_entries.Add("None (Audio can skip.)");
+	m_sync_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, sync_entries);
 
 	auto* adv_box = new wxStaticBoxSizer(wxVERTICAL, this, "Advanced");
 
@@ -352,12 +357,14 @@ Dialog::Dialog()
 
 	// Module
 	module_box->Add(new wxStaticText(this, wxID_ANY, "Module"), wxSizerFlags().Centre());
-	m_module.Add("No Sound (Emulate SPU2 only)");
+
+	wxArrayString module_entries;
+	module_entries.Add("No Sound (Emulate SPU2 only)");
 #ifdef SPU2X_PORTAUDIO
-	m_module.Add("PortAudio (Cross-platform)");
+	module_entries.Add("PortAudio (Cross-platform)");
 #endif
-	m_module.Add("SDL Audio (Recommended for PulseAudio)");
-	m_module_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_module);
+	module_entries.Add("SDL Audio (Recommended for PulseAudio)");
+	m_module_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, module_entries);
 	module_box->Add(m_module_select, wxSizerFlags().Centre());
 
 #ifdef SPU2X_PORTAUDIO
@@ -365,16 +372,18 @@ Dialog::Dialog()
 	m_portaudio_box = new wxBoxSizer(wxVERTICAL);
 	m_portaudio_text = new wxStaticText(this, wxID_ANY, "Portaudio API");
 	m_portaudio_box->Add(m_portaudio_text, wxSizerFlags().Centre());
+
+	wxArrayString portaudio_entries;
 #ifdef __linux__
-	m_portaudio.Add("ALSA (recommended)");
-	m_portaudio.Add("OSS (legacy)");
-	m_portaudio.Add("JACK");
+	portaudio_entries.Add("ALSA (recommended)");
+	portaudio_entries.Add("OSS (legacy)");
+	portaudio_entries.Add("JACK");
 #elif defined(__APPLE__)
-	m_portaudio.Add("CoreAudio");
+	portaudio_entries.Add("CoreAudio");
 #else
-	m_portaudio.Add("OSS");
+	portaudio_entries.Add("OSS");
 #endif
-	m_portaudio_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_portaudio);
+	m_portaudio_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, portaudio_entries);
 	m_portaudio_box->Add(m_portaudio_select, wxSizerFlags().Centre());
 #endif
 
@@ -383,10 +392,11 @@ Dialog::Dialog()
 	m_sdl_text = new wxStaticText(this, wxID_ANY, "SDL API");
 	m_sdl_box->Add(m_sdl_text, wxSizerFlags().Centre());
 
+	wxArrayString  sdl_entries;
 	for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i)
-		m_sdl.Add(SDL_GetAudioDriver(i));
+		sdl_entries.Add(SDL_GetAudioDriver(i));
 
-	m_sdl_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_sdl);
+	m_sdl_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, sdl_entries);
 	m_sdl_box->Add(m_sdl_select, wxSizerFlags().Centre());
 
 #ifdef SPU2X_PORTAUDIO

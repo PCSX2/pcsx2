@@ -30,13 +30,10 @@
 class MixerTab : public wxPanel
 {
 public:
-	wxArrayString m_interpolation;
-	wxChoice* m_inter_select;
+	wxChoice* m_inter_select, *m_audio_select;
 	wxCheckBox *effect_check, *dealias_check;
 	wxSlider *m_latency_slider, *m_volume_slider;
-	wxArrayString m_audio;
-	wxChoice* m_audio_select;
-	wxStaticBoxSizer *m_mix_box, *m_volume_box, *m_latency_box;
+	wxStaticBoxSizer *m_volume_box, *m_latency_box;
 	wxBoxSizer* m_audio_box;
 
 	MixerTab(wxWindow* parent);
@@ -49,12 +46,8 @@ public:
 class SyncTab : public wxPanel
 {
 public:
-	wxStaticBoxSizer* m_sync_box;
-	wxArrayString m_sync;
 	wxChoice* m_sync_select;
-	wxButton* launch_adv_dialog;
-
-	wxButton* reset_button;
+	wxButton* launch_adv_dialog, *reset_button;
 	wxSpinCtrl *seq_spin, *seek_spin, *overlap_spin;
 
 	SyncTab(wxWindow* parent);
@@ -71,7 +64,6 @@ public:
 	wxCheckBox* debug_check;
 	wxButton* launch_debug_dialog;
 
-	wxBoxSizer* m_together_box;
 	wxStaticBoxSizer *m_console_box, *m_log_only_box, *dump_box;
 	wxCheckBox* show_check;
 	wxCheckBox *key_check, *voice_check, *dma_check, *autodma_check, *buffer_check, *adpcm_check;
@@ -87,11 +79,8 @@ public:
 
 class Dialog : public wxDialog
 {
-	wxBoxSizer *m_top_box, *m_left_box, *m_right_box;
-	wxBoxSizer *m_portaudio_box, *m_sdl_box;
+	wxBoxSizer *m_top_box, *m_portaudio_box, *m_sdl_box;
 	wxStaticBoxSizer* m_output_box;
-
-	wxArrayString m_module, m_portaudio, m_sdl;
 	wxChoice *m_module_select, *m_portaudio_select, *m_sdl_select;
 	wxStaticText *m_portaudio_text, *m_sdl_text;
 
