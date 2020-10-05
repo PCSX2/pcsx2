@@ -61,7 +61,7 @@ void MainEmuFrame::Menu_McdSettings_Click(wxCommandEvent& event)
 
 void MainEmuFrame::Menu_NetworkSettings_Click(wxCommandEvent &event)
 {
-    DEV9configure();
+	DEV9configure();
 }
 
 void MainEmuFrame::Menu_WindowSettings_Click(wxCommandEvent &event)
