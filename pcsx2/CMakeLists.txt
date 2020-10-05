@@ -826,7 +826,10 @@ if(USE_VTUNE)
     set(pcsx2FinalLibs ${pcsx2FinalLibs} ${VTUNE_LIBRARIES})
 endif()
 
+include(CheckPIESupported)
+check_pie_supported()
 add_pcsx2_executable(${Output} "${pcsx2FinalSources}" "${pcsx2FinalLibs}" "${pcsx2FinalFlags}")
+set_property(TARGET ${Output} PROPERTY POSITION_INDEPENDENT_CODE TRUE)
 target_compile_features(${Output} PRIVATE cxx_std_17)
 
 if(COMMAND target_precompile_headers)
