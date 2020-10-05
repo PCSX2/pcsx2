@@ -460,7 +460,7 @@ void MainEmuFrame::CreateCdvdMenu()
 	m_menuCDVD.Append(MenuId_Src_Disc, _("&Disc"), _("Uses a disc drive as the CDVD source."), wxITEM_RADIO);
 	m_menuCDVD.Append(MenuId_Src_NoDisc, _("&No disc"), _("Use this to boot into your virtual PS2's BIOS configuration."), wxITEM_RADIO);
 
-#if defined(__FREEBSD__) || defined(__APPLE__)
+#if defined(__FREEBSD__)
 	m_menuItem_DriveListMenu->Enable(false);
 	m_menuCDVD.Enable(MenuId_Src_Disc, false);
 #endif

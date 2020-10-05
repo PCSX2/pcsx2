@@ -750,8 +750,8 @@ set(pcsx2LinuxSources
     )
 
 set(pcsx2OSXSources
-	CDVD/Linux/DriveUtility.cpp
-	CDVD/Linux/IOCtlSrc.cpp
+	CDVD/macOS/DriveUtility.cpp
+	CDVD/macOS/IOCtlSrc.cpp
 	Linux/LnxConsolePipe.cpp
 #	Linux/LnxKeyCodes.cpp
 	Darwin/DarwinFlatFileReader.cpp
