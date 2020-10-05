@@ -564,7 +564,13 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 		}
 
 		if ((curI & _Mbit_) && isVU0) {
-			mVUup.mBit = true;
+			incPC(-2);
+			if (!(curI & _Mbit_)) { //If the last instruction was also M-Bit we don't need to sync again
+				incPC(2);
+				mVUup.mBit = true;
+			}
+			else
+				incPC(2);
 		}
 
 		if (curI & _Ibit_) {
@@ -611,7 +617,10 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 		}
 
 		if (mVUup.mBit && !branch && !mVUup.eBit)
+		{
+			mVUregs.needExactMatch |= 7;
 			break;
+		}
 
 		if (mVUinfo.isEOB)
 			break;
@@ -652,6 +661,10 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 				mVUDoDBit(mVU, &mFC);
 			}
 			else if (mVUup.mBit && !mVUup.eBit && !mVUinfo.isEOB) {
+				// Need to make sure the flags are exact, Gungrave does FCAND with Mbit, then directly after FMAND with M-bit
+				// Also call setupBranch to sort flag instances
+				
+				mVUsetupBranch(mVU, mFC);
 				// Make sure we save the current state so it can come back to it
 				u32* cpS = (u32*)&mVUregs;
 				u32* lpS = (u32*)&mVU.prog.lpState;
