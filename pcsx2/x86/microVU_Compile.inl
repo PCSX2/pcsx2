@@ -564,7 +564,11 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 		}
 
 		if ((curI & _Mbit_) && isVU0) {
-			mVUup.mBit = true;
+			incPC(-2);
+			if (!(curI & _Mbit_)) { //If the last instruction was also M-Bit we don't need to sync again
+				mVUup.mBit = true;
+			}
+			incPC(2);
 		}
 
 		if (curI & _Ibit_) {
