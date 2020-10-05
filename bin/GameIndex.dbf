@@ -11060,6 +11060,7 @@ Serial = SLES-51917
 Name   = Beyond Good and Evil
 Region = PAL-M6
 eeRoundMode = 0 // Fixes SPS with water in some places.
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLES-51918
 Name   = Prince of Persia - The Sands of Time
@@ -38629,6 +38630,7 @@ Name   = Beyond Good and Evil
 Region = NTSC-U
 Compat = 5
 eeRoundMode = 0 // Fixes SPS with water in some places.
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLUS-20764
 Name   = Bombastic
@@ -44651,6 +44653,7 @@ Serial = SLUS-29082
 Name   = Beyond Good and Evil [Demo]
 Region = NTSC-U
 eeRoundMode = 0 // Fixes SPS with water in some places.
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLUS-29083
 Name   = Maximo vs. The Army of Zin [Demo]
