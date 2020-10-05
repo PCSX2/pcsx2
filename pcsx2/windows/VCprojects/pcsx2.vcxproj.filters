@@ -997,6 +997,9 @@
     <ClCompile Include="..\..\SPU2\SndOut_Portaudio.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\SPU2\SndOut_SDL.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -1596,6 +1599,25 @@
     <CustomBuild Include="..\..\gui\Resources\Logo.png">
       <Filter>AppHost\Resources</Filter>
     </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\controllerFull.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\controllerThreeQuarters.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\controllerHalf.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\circlePressed.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\crossPressed.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\downPressed.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\l1Pressed.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\l2Pressed.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\l3Pressed.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\leftPressed.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\r1Pressed.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\r2Pressed.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\r3Pressed.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\rightPressed.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\selectPressed.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\squarePressed.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\startPressed.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\trianglePressed.png" />
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\upPressed.png" />
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\PCSX2.manifest">

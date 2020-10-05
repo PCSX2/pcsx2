@@ -16,6 +16,7 @@
 #include <cassert>
 #include <iostream>
 
+#include "PrecompiledHeader.h"
 #include "Global.h"
 #include "SndOut.h"
 #ifdef __linux__
