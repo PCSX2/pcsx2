@@ -95,7 +95,7 @@ void SysCoreThread::Start()
 		return;
 	GetCorePlugins().Init();
 	SPU2init();
-    DEV9init();
+	DEV9init();
 	_parent::Start();
 }
 
@@ -303,7 +303,7 @@ void SysCoreThread::ExecuteTaskInThread()
 void SysCoreThread::OnSuspendInThread()
 {
 	GetCorePlugins().Close();
-    DEV9close();
+	DEV9close();
 	DoCDVDclose();
 	FWclose();
 	SPU2close();
@@ -316,7 +316,7 @@ void SysCoreThread::OnResumeInThread(bool isSuspended)
 		DoCDVDopen();
 	FWopen();
 	SPU2open((void*)pDsp);
-    DEV9open((void*)pDsp);
+	DEV9open((void*)pDsp);
 }
 
 
@@ -332,13 +332,13 @@ void SysCoreThread::OnCleanupInThread()
 	// FIXME: temporary workaround for deadlock on exit, which actually should be a crash
 	vu1Thread.WaitVU();
 	SPU2close();
-    DEV9close();
+	DEV9close();
 	DoCDVDclose();
 	FWclose();
 	GetCorePlugins().Close();
 	GetCorePlugins().Shutdown();
 	SPU2shutdown();
-    DEV9shutdown();
+	DEV9shutdown();
 
 	_mm_setcsr(m_mxcsr_saved.bitmask);
 	Threading::DisableHiresScheduler();
