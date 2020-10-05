@@ -652,6 +652,10 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 				mVUDoDBit(mVU, &mFC);
 			}
 			else if (mVUup.mBit && !mVUup.eBit && !mVUinfo.isEOB) {
+				// Need to make sure the flags are exact, Gungrave does FCAND with Mbit, then directly after FMAND with M-bit
+				// Also call setupBranch to sort flag instances
+				mVUregs.needExactMatch |= 7;
+				mVUsetupBranch(mVU, mFC);
 				// Make sure we save the current state so it can come back to it
 				u32* cpS = (u32*)&mVUregs;
 				u32* lpS = (u32*)&mVU.prog.lpState;
