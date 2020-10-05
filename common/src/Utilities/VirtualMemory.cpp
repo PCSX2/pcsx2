@@ -87,8 +87,10 @@ VirtualMemoryManager::VirtualMemoryManager(const wxString &name, uptr base, size
     m_baseptr = (uptr)HostSys::MmapReserve(base, reserved_bytes);
 
     if (!m_baseptr || (upper_bounds != 0 && (((uptr)m_baseptr + reserved_bytes) > upper_bounds))) {
+#ifdef JIT_DEBUG
         DevCon.Warning(L"%s: host memory @ %ls -> %ls is unavailable; attempting to map elsewhere...",
                        WX_STR(m_name), pxsPtr(base), pxsPtr(base + size));
+#endif
 
         SafeSysMunmap(m_baseptr, reserved_bytes);
 
@@ -100,8 +102,10 @@ VirtualMemoryManager::VirtualMemoryManager(const wxString &name, uptr base, size
     }
 
     bool fulfillsRequirements = true;
+#ifdef JIT_DEBUG
     if (strict && m_baseptr != base)
         fulfillsRequirements = false;
+#endif
     if ((upper_bounds != 0) && ((m_baseptr + reserved_bytes) > upper_bounds))
         fulfillsRequirements = false;
     if (!fulfillsRequirements) {
@@ -119,8 +123,10 @@ VirtualMemoryManager::VirtualMemoryManager(const wxString &name, uptr base, size
     else
         mbkb.Write("[%ukb]", reserved_bytes / 1024);
 
+#ifdef JIT_DEBUG
     DevCon.WriteLn(Color_Gray, L"%-32s @ %ls -> %ls %ls", WX_STR(m_name),
                    pxsPtr(m_baseptr), pxsPtr((uptr)m_baseptr + reserved_bytes), mbkb.c_str());
+#endif
 }
 
 VirtualMemoryManager::~VirtualMemoryManager()
@@ -273,8 +279,10 @@ void *VirtualMemoryReserve::Assign(VirtualMemoryManagerPtr allocator, void * bas
     else
         mbkb.Write("[%ukb]", reserved_bytes / 1024);
 
+#ifdef JIT_DEBUG
     DevCon.WriteLn(Color_Gray, L"%-32s @ %ls -> %ls %ls", WX_STR(m_name),
                    pxsPtr(m_baseptr), pxsPtr((uptr)m_baseptr + reserved_bytes), mbkb.c_str());
+#endif
 
     return m_baseptr;
 }
@@ -346,7 +354,9 @@ bool VirtualMemoryReserve::TryResize(uint newsize)
         uint toReservePages = newPages - m_pages_reserved;
         uint toReserveBytes = toReservePages * __pagesize;
 
+#ifdef JIT_DEBUG
         DevCon.WriteLn(L"%-32s is being expanded by %u pages.", WX_STR(m_name), toReservePages);
+#endif
 
         if (!m_allocator->AllocAtAddress(GetPtrEnd(), toReserveBytes)) {
             Console.Warning("%-32s could not be passively resized due to virtual memory conflict!", WX_STR(m_name));
@@ -354,21 +364,26 @@ bool VirtualMemoryReserve::TryResize(uint newsize)
             return false;
         }
 
+#ifdef JIT_DEBUG
         DevCon.WriteLn(Color_Gray, L"%-32s @ %08p -> %08p [%umb]", WX_STR(m_name),
                        m_baseptr, (uptr)m_baseptr + toReserveBytes, toReserveBytes / _1mb);
+#endif
     } else if (newPages < m_pages_reserved) {
         if (m_pages_commited > newsize)
             return false;
 
         uint toRemovePages = m_pages_reserved - newPages;
         uint toRemoveBytes = toRemovePages * __pagesize;
-
+#ifdef JIT_DEBUG
         DevCon.WriteLn(L"%-32s is being shrunk by %u pages.", WX_STR(m_name), toRemovePages);
+#endif
 
         m_allocator->Free(GetPtrEnd() - toRemoveBytes, toRemoveBytes);
 
+#ifdef JIT_DEBUG
         DevCon.WriteLn(Color_Gray, L"%-32s @ %08p -> %08p [%umb]", WX_STR(m_name),
                        m_baseptr, GetPtrEnd(), GetReserveSizeInBytes() / _1mb);
+#endif
     }
 
     m_pages_reserved = newPages;

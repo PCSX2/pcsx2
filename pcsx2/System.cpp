@@ -360,7 +360,7 @@ namespace HostMemoryMap {
 static VirtualMemoryManagerPtr makeMainMemoryManager() {
 	// Everything looks nicer when the start of all the sections is a nice round looking number.
 	// Also reduces the variation in the address due to small changes in code.
-	// Breaks ASLR but so does anything else that tries to make addresses constant for our debugging pleasure
+	// Ignored if JIT_DEBUG isn't set as it breaks ASLR.
 	uptr codeBase = (uptr)(void*)makeMainMemoryManager / (1 << 28) * (1 << 28);
 
 	// The allocation is ~640mb in size, slighly under 3*2^28.

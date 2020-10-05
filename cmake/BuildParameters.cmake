@@ -185,7 +185,7 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
     #     - code uses the ebx register so it's not compliant with PIC.
     #     - Impacts the performance too much.
     #     - Only plugins. No package will link to them.
-    set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
     if(NOT DEFINED ARCH_FLAG)
         if (DISABLE_ADVANCE_SIMD)
