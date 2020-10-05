@@ -5821,7 +5821,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SCUS-97464
-Name   = Sly 3 - Honor Amongst Thieves
+Name   = Sly 3 - Honor Among Thieves
 Region = NTSC-U
 Compat = 5
 vuClampMode = 2 // Fixes bugged camera.
