@@ -34263,6 +34263,7 @@ Region = NTSC-J
 Serial = SLPS-25784
 Name   = Another Century's Episode 3 - The Final
 Region = NTSC-J
+vuClampMode = 3
 ---------------------------------------------
 Serial = SLPS-25786
 Name   = Hisshou Pachinko-Pachislot Kouryaku Series Vol.10 - CR Shinseiki Evangelion - Kiseki no kachi Ha
