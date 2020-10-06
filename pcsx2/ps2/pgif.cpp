@@ -395,7 +395,7 @@ u32 immRespHndl(u32 cmd, u32 data)
             data = pgif1reg & 0x000FFFFF;
             break;  //Read Texture Window setting  ;GP0(E2h) ;20bit/MSBs=Nothing
         case 0x03:
-            data = pgif2reg & 0x00FFFFF;
+            data = pgif2reg & 0x000FFFFF;
             break;  //Read Draw area top left      ;GP0(E3h) ;20bit/MSBs=Nothing
         case 0x04:
             data = pgif3reg & 0x000FFFFF;
