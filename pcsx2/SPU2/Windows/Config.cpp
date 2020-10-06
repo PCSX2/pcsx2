@@ -89,7 +89,7 @@ void ReadSettings()
 
 	EffectsDisabled = CfgReadBool(L"MIXING", L"Disable_Effects", false);
 	postprocess_filter_dealias = CfgReadBool(L"MIXING", L"DealiasFilter", false);
-	FinalVolume = ((float)CfgReadInt(L"MIXING", L"FinalVolume", 100)) / 100;
+	FinalVolume = ((float)CfgReadInt(L"MIXING", L"FinalVolume", 100)) / 200;
 	if (FinalVolume > 1.0f)
 		FinalVolume = 1.0f;
 
@@ -168,7 +168,7 @@ void WriteSettings()
 
 	CfgWriteBool(L"MIXING", L"Disable_Effects", EffectsDisabled);
 	CfgWriteBool(L"MIXING", L"DealiasFilter", postprocess_filter_dealias);
-	CfgWriteInt(L"MIXING", L"FinalVolume", (int)(FinalVolume * 100 + 0.5f));
+	CfgWriteInt(L"MIXING", L"FinalVolume", (int)(FinalVolume * 200 + 0.5f));
 
 	CfgWriteBool(L"MIXING", L"AdvancedVolumeControl", AdvancedVolumeControl);
 	CfgWriteFloat(L"MIXING", L"VolumeAdjustC(dB)", VolumeAdjustCdb);
@@ -270,8 +270,8 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			swprintf_s(temp, L"%d ms (avg)", SndOutLatencyMS);
 			SetWindowText(GetDlgItem(hWnd, IDC_LATENCY_LABEL), temp);
 
-			int configvol = (int)(FinalVolume * 100 + 0.5f);
-			INIT_SLIDER(IDC_VOLUME_SLIDER, 0, 100, 10, 42, 1);
+			int configvol = (int)(FinalVolume * 200 + 0.5f);
+			INIT_SLIDER(IDC_VOLUME_SLIDER, 0, 200, 10, 42, 1);
 
 			SendDialogMsg(hWnd, IDC_VOLUME_SLIDER, TBM_SETPOS, TRUE, configvol);
 			swprintf_s(temp, L"%d%%", configvol);
@@ -300,7 +300,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					double res = ((int)SendDialogMsg(hWnd, IDC_LATENCY_SLIDER, TBM_GETPOS, 0, 0)) / 128.0;
 					SndOutLatencyMS = (int)pow(res, 3.0);
 					Clampify(SndOutLatencyMS, LATENCY_MIN, LATENCY_MAX);
-					FinalVolume = (float)(SendDialogMsg(hWnd, IDC_VOLUME_SLIDER, TBM_GETPOS, 0, 0)) / 100;
+					FinalVolume = (float)(SendDialogMsg(hWnd, IDC_VOLUME_SLIDER, TBM_GETPOS, 0, 0)) / 200;
 					Interpolation = (int)SendDialogMsg(hWnd, IDC_INTERPOLATE, CB_GETCURSEL, 0, 0);
 					OutputModule = (int)SendDialogMsg(hWnd, IDC_OUTPUT, CB_GETCURSEL, 0, 0);
 					SynchMode = (int)SendDialogMsg(hWnd, IDC_SYNCHMODE, CB_GETCURSEL, 0, 0);
