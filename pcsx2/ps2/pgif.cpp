@@ -392,13 +392,13 @@ u32 immRespHndl(u32 cmd, u32 data)
         case 0x01:
             break;  //Returns Nothing (old value in GPUREAD remains unchanged)
         case 0x02:
-            data = pgif1reg & 0x001FFFFF;
+            data = pgif1reg & 0x000FFFFF;
             break;  //Read Texture Window setting  ;GP0(E2h) ;20bit/MSBs=Nothing
         case 0x03:
-            data = pgif2reg & 0x001FFFFF;
+            data = pgif2reg & 0x000FFFFF;
             break;  //Read Draw area top left      ;GP0(E3h) ;20bit/MSBs=Nothing
         case 0x04:
-            data = pgif3reg & 0x001FFFFF;
+            data = pgif3reg & 0x000FFFFF;
             break;  //Read Draw area bottom right  ;GP0(E4h) ;20bit/MSBs=Nothing
         case 0x05:
             data = pgif4reg & 0x003FFFFF;
