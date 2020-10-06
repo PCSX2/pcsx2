@@ -1294,6 +1294,7 @@ Serial = SCES-50034
 Name   = MotoGP
 Region = PAL-M5
 Compat = 5
+VU0KickstartHack = 1 // Fixes Crash On Load
 ---------------------------------------------
 Serial = SCES-50105
 Name   = Sky Odyssey
@@ -30151,6 +30152,7 @@ Region = NTSC-J
 Serial = SLPS-20040
 Name   = Moto GP
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Crash On Load
 ---------------------------------------------
 Serial = SLPS-20041
 Name   = Mahjong Goku Taisei
@@ -35384,6 +35386,7 @@ Serial = SLUS-20058
 Name   = Moto GP
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Crash On Load
 ---------------------------------------------
 Serial = SLUS-20062
 Name   = Grand Theft Auto III
