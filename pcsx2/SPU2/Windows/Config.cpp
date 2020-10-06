@@ -271,7 +271,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			SetWindowText(GetDlgItem(hWnd, IDC_LATENCY_LABEL), temp);
 
 			int configvol = (int)(FinalVolume * 200 + 0.5f);
-			INIT_SLIDER(IDC_VOLUME_SLIDER, 0, 200, 10, 42, 1);
+			INIT_SLIDER(IDC_VOLUME_SLIDER, 0, 200, 10, 10, 1);
 
 			SendDialogMsg(hWnd, IDC_VOLUME_SLIDER, TBM_SETPOS, TRUE, configvol);
 			swprintf_s(temp, L"%d%%", configvol);
