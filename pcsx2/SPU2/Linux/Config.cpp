@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "../Global.h"
 #include "Dialogs.h"
 #include "Config.h"

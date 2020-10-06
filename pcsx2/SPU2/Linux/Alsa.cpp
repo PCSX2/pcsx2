@@ -17,6 +17,7 @@
 
 #ifdef __linux__
 
+#include "PrecompiledHeader.h"
 #include <alsa/asoundlib.h>
 
 #include "../Global.h"

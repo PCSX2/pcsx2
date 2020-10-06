@@ -15,6 +15,7 @@
 
 // To be continued...
 
+#include "PrecompiledHeader.h"
 #include "Dialogs.h"
 #include <cstring>
 
