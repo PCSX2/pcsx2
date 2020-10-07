@@ -93,10 +93,6 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			wxEmptyString
 		},
 		{
-			_("Switch to GSdx software rendering when an FMV plays"),
-			wxEmptyString
-		},
-		{
 			_("Preload TLB hack to avoid tlb miss on Goemon"),
 			wxEmptyString
 		},

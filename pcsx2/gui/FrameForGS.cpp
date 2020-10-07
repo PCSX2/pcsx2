@@ -274,8 +274,6 @@ void GSPanel::DoResize()
 		zoom = std::max( (float)arr, (float)(1.0/arr) );
 
 	viewport.Scale(zoom, zoom*g_Conf->GSWindow.StretchY.ToFloat()/100.0 );
-	if (viewport == client && EmuConfig.Gamefixes.FMVinSoftwareHack && g_Conf->GSWindow.IsFullscreen)
-		viewport.x += 1; //avoids crash on some systems switching HW><SW in fullscreen aspect ratio's with FMV Software switch.
 	SetSize( viewport );
 	CenterOnParent();
 	
