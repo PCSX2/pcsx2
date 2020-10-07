@@ -77,7 +77,7 @@ public:
 	// the current frame's value from the emulator
 	bool ReadKeyBuffer(u8 &result, const uint &frame, const uint port, const uint bufIndex);
 	// Updates the total frame counter and commit it to the recording file
-	void SetTotalFrames(long frames);
+	bool SetTotalFrames(long frames);
 	// Persist the input recording file header's current state to the file
 	bool WriteHeader();
 	// Writes the current frame's input data to the file so it can be replayed

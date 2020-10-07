@@ -173,15 +173,23 @@ bool InputRecordingFile::ReadKeyBuffer(u8 &result, const uint &frame, const uint
 	return true;
 }
 
-void InputRecordingFile::SetTotalFrames(long frame)
+bool InputRecordingFile::SetTotalFrames(long frame)
 {
-	if (recordingFile == nullptr || totalFrames >= frame)
+	bool ret = false;
+	if (recordingFile != nullptr)
 	{
-		return;
+		if (totalFrames < frame)
+		{
+			totalFrames = frame;
+			fseek(recordingFile, seekpointTotalFrames, SEEK_SET);
+			fwrite(&totalFrames, 4, 1, recordingFile);
+			ret = true;
+		}
+		else if (totalFrames == frame)
+			ret = true;
+		fflush(recordingFile);
 	}
-	totalFrames = frame;
-	fseek(recordingFile, seekpointTotalFrames, SEEK_SET);
-	fwrite(&totalFrames, 4, 1, recordingFile);
+	return ret;
 }
 
 bool InputRecordingFile::WriteHeader()

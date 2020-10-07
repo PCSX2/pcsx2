@@ -816,7 +816,7 @@ void MainEmuFrame::AppendKeycodeNamesToMenuOptions()
 }
 
 #ifndef DISABLE_RECORDING
-void MainEmuFrame::initializeRecordingMenuItem(MenuIdentifiers menuId, wxString keyCodeStr, bool enable)
+void MainEmuFrame::initializeRecordingMenuItem(int menuId, wxString keyCodeStr, bool enable)
 {
 	wxMenuItem& item = *m_menuRecording.FindChildItem(menuId);
 	wxString text = item.GetItemLabel();
@@ -825,9 +825,9 @@ void MainEmuFrame::initializeRecordingMenuItem(MenuIdentifiers menuId, wxString 
 	item.Enable(enable);
 }
 
-void MainEmuFrame::enableRecordingMenuItem(MenuIdentifiers menuId, bool enable)
+void MainEmuFrame::enableRecordingMenuItem(int menuId, bool enable)
 {
-	wxMenuItem& item = *m_menuRecording.FindChildItem(menuId);
+	wxMenuItem& item = *m_menuRecording.FindItem(menuId);
 	item.Enable(enable);
 }
 #endif

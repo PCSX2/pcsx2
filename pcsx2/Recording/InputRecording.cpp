@@ -75,16 +75,16 @@ void InputRecording::setVirtualPadPtr(VirtualPad* ptr, int const port)
 	virtualPads[port] = ptr;
 }
 
-void InputRecording::RecordingReset()
+void InputRecording::OnBoot()
 {
 	// Booting is an asynchronous task. If we are playing a recording
 	// that starts from power-on and the starting (pcsx2 internal) frame
 	// marker has not been set, we initialize it.
-	if (g_InputRecording.IsInitialLoad())
-		g_InputRecording.SetStartingFrame(0);
-	else if (g_InputRecording.IsActive())
+	if (initialLoad)
+		SetStartingFrame(0);
+	else if (IsActive())
 	{
-		g_InputRecording.SetFrameCounter(0);
+		SetFrameCounter(0);
 		g_InputRecordingControls.Lock(0);
 	}
 	else
@@ -172,11 +172,8 @@ void InputRecording::IncrementFrameCounter()
 {
 	frameCounter++;
 	if (state == InputRecordingMode::Recording)
-	{
-		GetInputRecordingData().SetTotalFrames(frameCounter);
-		if (frameCounter == inputRecordingData.GetTotalFrames())
+		if (inputRecordingData.SetTotalFrames(frameCounter)) // Don't increment if we're at the last frame
 			incrementUndo = false;
-	}
 }
 
 bool InputRecording::IsInterruptFrame()
@@ -235,13 +232,17 @@ void InputRecording::SetToReplayMode()
 
 void InputRecording::SetFrameCounter(u32 newGFrameCount)
 {
-	if (newGFrameCount > startingFrame + (u32)g_InputRecording.GetInputRecordingData().GetTotalFrames())
+	const u32 endFrame = startingFrame + inputRecordingData.GetTotalFrames();
+	if (newGFrameCount >= endFrame)
 	{
-		inputRec::consoleLog("Warning, you've loaded PCSX2 emulation to a point after the end of the original recording. This should be avoided.");
-		inputRec::consoleLog("Savestate's framecount has been ignored.");
-		frameCounter = g_InputRecording.GetInputRecordingData().GetTotalFrames();
+		if (newGFrameCount > endFrame)
+		{
+			inputRec::consoleLog("Warning, you've loaded PCSX2 emulation to a point after the end of the original recording. This should be avoided.");
+			inputRec::consoleLog("Savestate's framecount has been ignored.");
+		}
 		if (state == InputRecordingMode::Replaying)
 			SetToRecordMode();
+		frameCounter = inputRecordingData.GetTotalFrames();
 		incrementUndo = false;
 	}
 	else

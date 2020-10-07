@@ -30,7 +30,7 @@ public:
 	// This is to prevent any inaccuracy issues caused by having a different
 	// internal emulation frame count than what it was at the beginning of the
 	// original recording
-	void RecordingReset();
+	void OnBoot();
 
 	// Main handler for ingesting input data and either saving it to the recording file (recording)
 	// or mutating it to the contents of the recording file (replaying)
