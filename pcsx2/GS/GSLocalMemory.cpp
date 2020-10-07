@@ -1733,7 +1733,7 @@ void GSLocalMemory::SaveBMP(const std::string& fn, u32 bp, u32 bw, u32 psm, int 
 		}
 	}
 
-	GSTextureSW t(GSTexture::Offscreen, w, h);
+	GSTextureSW t(GSTexture::Type::Offscreen, w, h);
 
 	if (t.Update(GSVector4i(0, 0, w, h), bits, pitch))
 	{

@@ -1569,7 +1569,7 @@ void GSRendererSW::SharedData::UpdateSource()
 
 			if (global.clut != NULL)
 			{
-				GSTextureSW* t = new GSTextureSW(0, 256, 1);
+				GSTextureSW* t = new GSTextureSW(GSTexture::Type::Invalid, 256, 1);
 
 				t->Update(GSVector4i(0, 0, 256, 1), global.clut, sizeof(u32) * 256);
 

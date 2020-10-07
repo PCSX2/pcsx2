@@ -26,7 +26,7 @@ class GSTextureSW final : public GSTexture
 	std::atomic_flag m_mapped;
 
 public:
-	GSTextureSW(int type, int width, int height);
+	GSTextureSW(Type type, int width, int height);
 	virtual ~GSTextureSW();
 
 	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0);

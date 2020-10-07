@@ -317,7 +317,7 @@ void GSRendererDX11::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache:
 				m_channel_shuffle = false;
 			}
 		}
-		else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt))
+		else if ((tex->m_texture->GetType() == GSTexture::Type::DepthStencil) && !(tex->m_32_bits_fmt))
 		{
 			// So far 2 games hit this code path. Urban Chaos and Tales of Abyss
 			// UC: will copy depth to green channel
@@ -653,7 +653,7 @@ void GSRendererDX11::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		// Require a float conversion if the texure is a depth otherwise uses Integral scaling
 		if (psm.depth)
 		{
-			m_ps_sel.depth_fmt = (tex->m_texture->GetType() != GSTexture::DepthStencil) ? 3 : 1;
+			m_ps_sel.depth_fmt = (tex->m_texture->GetType() != GSTexture::Type::DepthStencil) ? 3 : 1;
 		}
 
 		// Shuffle is a 16 bits format, so aem is always required
@@ -700,7 +700,7 @@ void GSRendererDX11::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		}
 
 		// Depth format
-		if (tex->m_texture->GetType() == GSTexture::DepthStencil)
+		if (tex->m_texture->GetType() == GSTexture::Type::DepthStencil)
 		{
 			// Require a float conversion if the texure is a depth format
 			m_ps_sel.depth_fmt = (psm.bpp == 16) ? 2 : 1;

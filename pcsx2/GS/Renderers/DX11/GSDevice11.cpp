@@ -418,7 +418,7 @@ bool GSDevice11::Create(const WindowInfo& wi)
 	const GSVector2i tex_font = m_osd.get_texture_font_size();
 
 	m_font = std::unique_ptr<GSTexture>(
-		CreateSurface(GSTexture::Texture, tex_font.x, tex_font.y, DXGI_FORMAT_R8_UNORM));
+		CreateSurface(GSTexture::Type::Texture, tex_font.x, tex_font.y, DXGI_FORMAT_R8_UNORM));
 
 	return true;
 }
@@ -562,7 +562,7 @@ void GSDevice11::ClearStencil(GSTexture* t, u8 c)
 	m_ctx->ClearDepthStencilView(*(GSTexture11*)t, D3D11_CLEAR_STENCIL, 0, c);
 }
 
-GSTexture* GSDevice11::CreateSurface(int type, int w, int h, int format)
+GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int w, int h, int format)
 {
 	D3D11_TEXTURE2D_DESC desc;
 
@@ -584,17 +584,17 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, int format)
 
 	switch (type)
 	{
-		case GSTexture::RenderTarget:
+		case GSTexture::Type::RenderTarget:
 			desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
 			break;
-		case GSTexture::DepthStencil:
+		case GSTexture::Type::DepthStencil:
 			desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
 			break;
-		case GSTexture::Texture:
+		case GSTexture::Type::Texture:
 			desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
 			desc.MipLevels = layers;
 			break;
-		case GSTexture::Offscreen:
+		case GSTexture::Type::Offscreen:
 			desc.Usage = D3D11_USAGE_STAGING;
 			desc.CPUAccessFlags |= D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
 			break;
@@ -611,10 +611,10 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, int format)
 
 		switch (type)
 		{
-			case GSTexture::RenderTarget:
+			case GSTexture::Type::RenderTarget:
 				ClearRenderTarget(t, 0);
 				break;
-			case GSTexture::DepthStencil:
+			case GSTexture::Type::DepthStencil:
 				ClearDepth(t);
 				break;
 		}
@@ -627,10 +627,10 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, int format)
 	return t;
 }
 
-GSTexture* GSDevice11::FetchSurface(int type, int w, int h, int format)
+GSTexture* GSDevice11::FetchSurface(GSTexture::Type type, int w, int h, int format)
 {
 	if (format == 0)
-		format = (type == GSTexture::DepthStencil || type == GSTexture::SparseDepthStencil) ? DXGI_FORMAT_R32G8X24_TYPELESS : DXGI_FORMAT_R8G8B8A8_UNORM;
+		format = (type == GSTexture::Type::DepthStencil || type == GSTexture::Type::SparseDepthStencil) ? DXGI_FORMAT_R32G8X24_TYPELESS : DXGI_FORMAT_R8G8B8A8_UNORM;
 
 	return __super::FetchSurface(type, w, h, format);
 }
@@ -678,7 +678,7 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
 	// DX api isn't happy if we pass a box for depth copy
 	// It complains that depth/multisample must be a full copy
 	// and asks us to use a NULL for the box
-	const bool depth = (sTex->GetType() == GSTexture::DepthStencil);
+	const bool depth = (sTex->GetType() == GSTexture::Type::DepthStencil);
 	auto pBox = depth ? nullptr : &box;
 
 	m_ctx->CopySubresourceRegion(*(GSTexture11*)dTex, 0, 0, 0, 0, *(GSTexture11*)sTex, 0, pBox);
@@ -686,7 +686,7 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
 
 void GSDevice11::CloneTexture(GSTexture* src, GSTexture** dest)
 {
-	if (!src || !(src->GetType() == GSTexture::DepthStencil || src->GetType() == GSTexture::RenderTarget))
+	if (!src || !(src->GetType() == GSTexture::Type::DepthStencil || src->GetType() == GSTexture::Type::RenderTarget))
 	{
 		ASSERT(0);
 		return;
@@ -695,7 +695,7 @@ void GSDevice11::CloneTexture(GSTexture* src, GSTexture** dest)
 	const int w = src->GetWidth();
 	const int h = src->GetHeight();
 
-	if (src->GetType() == GSTexture::DepthStencil)
+	if (src->GetType() == GSTexture::Type::DepthStencil)
 		*dest = CreateDepthStencil(w, h, src->GetFormat());
 	else
 		*dest = CreateRenderTarget(w, h, src->GetFormat());

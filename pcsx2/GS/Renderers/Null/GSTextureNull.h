@@ -21,14 +21,15 @@ class GSTextureNull : public GSTexture
 {
 	struct
 	{
-		int type, w, h, format;
+		Type type;
+		int w, h, format;
 	} m_desc;
 
 public:
 	GSTextureNull();
-	GSTextureNull(int type, int w, int h, int format);
+	GSTextureNull(Type type, int w, int h, int format);
 
-	int GetType() const { return m_desc.type; }
+	Type GetType() const { return m_desc.type; }
 	int GetFormat() const { return m_desc.format; }
 
 	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) { return true; }

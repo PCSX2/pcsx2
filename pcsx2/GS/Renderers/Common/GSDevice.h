@@ -175,8 +175,8 @@ protected:
 	unsigned int m_frame; // for ageing the pool
 	bool m_linear_present;
 
-	virtual GSTexture* CreateSurface(int type, int w, int h, int format) = 0;
-	virtual GSTexture* FetchSurface(int type, int w, int h, int format);
+	virtual GSTexture* CreateSurface(GSTexture::Type type, int w, int h, int format) = 0;
+	virtual GSTexture* FetchSurface(GSTexture::Type type, int w, int h, int format);
 
 	virtual void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) = 0;
 	virtual void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset) = 0;
@@ -244,7 +244,7 @@ public:
 	void ExternalFX();
 	virtual void RenderOsd(GSTexture* dt) {};
 
-	bool ResizeTexture(GSTexture** t, int type, int w, int h);
+	bool ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h);
 	bool ResizeTexture(GSTexture** t, int w, int h);
 	bool ResizeTarget(GSTexture** t, int w, int h);
 	bool ResizeTarget(GSTexture** t);

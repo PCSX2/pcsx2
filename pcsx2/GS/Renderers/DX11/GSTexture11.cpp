@@ -31,13 +31,13 @@ GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture)
 	m_size.y = (int)m_desc.Height;
 
 	if (m_desc.BindFlags & D3D11_BIND_RENDER_TARGET)
-		m_type = RenderTarget;
+		m_type = Type::RenderTarget;
 	else if (m_desc.BindFlags & D3D11_BIND_DEPTH_STENCIL)
-		m_type = DepthStencil;
+		m_type = Type::DepthStencil;
 	else if (m_desc.BindFlags & D3D11_BIND_SHADER_RESOURCE)
-		m_type = Texture;
+		m_type = Type::Texture;
 	else if (m_desc.Usage == D3D11_USAGE_STAGING)
-		m_type = Offscreen;
+		m_type = Type::Offscreen;
 
 	m_format = (int)m_desc.Format;
 

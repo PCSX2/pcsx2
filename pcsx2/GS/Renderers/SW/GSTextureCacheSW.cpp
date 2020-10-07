@@ -296,7 +296,7 @@ bool GSTextureCacheSW::Texture::Save(const std::string& fn, bool dds) const
 	int w = 1 << m_TEX0.TW;
 	int h = 1 << m_TEX0.TH;
 
-	GSTextureSW t(0, w, h);
+	GSTextureSW t(GSTexture::Type::Invalid, w, h);
 
 	GSTexture::GSMap m;
 
