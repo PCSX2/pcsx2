@@ -161,7 +161,7 @@ namespace PboPool
 	}
 } // namespace PboPool
 
-GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read, bool mipmap)
+GSTextureOGL::GSTextureOGL(Type type, int w, int h, int format, GLuint fbo_read, bool mipmap)
 	: m_clean(false), m_generate_mipmap(true), m_local_buffer(nullptr), m_r_x(0), m_r_y(0), m_r_w(0), m_r_h(0), m_layer(0)
 {
 	// OpenGL didn't like dimensions of size 0
@@ -252,18 +252,18 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read, 
 
 	switch (m_type)
 	{
-		case GSTexture::Backbuffer:
+		case Type::Backbuffer:
 			return; // backbuffer isn't a real texture
-		case GSTexture::Offscreen:
+		case Type::Offscreen:
 			// Offscreen is only used to read color. So it only requires 4B by pixel
 			m_local_buffer = (u8*)_aligned_malloc(m_size.x * m_size.y * 4, 32);
 			break;
-		case GSTexture::Texture:
+		case Type::Texture:
 			// Only 32 bits input texture will be supported for mipmap
 			m_max_layer = mipmap && m_format == GL_RGBA8 ? (int)log2(std::max(w, h)) : 1;
 			break;
-		case SparseRenderTarget:
-		case SparseDepthStencil:
+		case Type::SparseRenderTarget:
+		case Type::SparseDepthStencil:
 			m_sparse = true;
 			break;
 		default:
@@ -378,7 +378,7 @@ void GSTextureOGL::Clear(const void* data, const GSVector4i& area)
 
 bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
-	ASSERT(m_type != GSTexture::DepthStencil && m_type != GSTexture::Offscreen);
+	ASSERT(m_type != Type::DepthStencil && m_type != Type::Offscreen);
 
 	if (layer >= m_max_layer)
 		return true;
@@ -460,9 +460,9 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 	u32 row_byte = r.width() << m_int_shift;
 	m.pitch = row_byte;
 
-	if (m_type == GSTexture::Offscreen)
+	if (m_type == Type::Offscreen)
 	{
-		// The fastest way will be to use a PBO to read the data asynchronously. Unfortunately GS
+		// The fastest way will be to use a PBO to read the data asynchronously. Unfortunately GSdx
 		// architecture is waiting the data right now.
 
 #ifdef GL_EXT_TEX_SUB_IMAGE
@@ -489,7 +489,7 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 
 		return true;
 	}
-	else if (m_type == GSTexture::Texture || m_type == GSTexture::RenderTarget)
+	else if (m_type == Type::Texture || m_type == Type::RenderTarget)
 	{
 		GL_PUSH_("Upload Texture %d", m_texture_id); // POP is in Unmap
 
@@ -518,7 +518,7 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 
 void GSTextureOGL::Unmap()
 {
-	if (m_type == GSTexture::Texture || m_type == GSTexture::RenderTarget)
+	if (m_type == Type::Texture || m_type == Type::RenderTarget)
 	{
 
 		PboPool::Unmap();

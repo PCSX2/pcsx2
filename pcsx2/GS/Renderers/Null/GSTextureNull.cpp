@@ -21,7 +21,7 @@ GSTextureNull::GSTextureNull()
 	memset(&m_desc, 0, sizeof(m_desc));
 }
 
-GSTextureNull::GSTextureNull(int type, int w, int h, int format)
+GSTextureNull::GSTextureNull(Type type, int w, int h, int format)
 {
 	m_desc.type = type;
 	m_desc.w = w;

@@ -17,7 +17,7 @@
 #include "GSTextureSW.h"
 #include "GS/GSPng.h"
 
-GSTextureSW::GSTextureSW(int type, int width, int height)
+GSTextureSW::GSTextureSW(Type type, int width, int height)
 {
 	m_mapped.clear(std::memory_order_release);
 	m_size = GSVector2i(width, height);

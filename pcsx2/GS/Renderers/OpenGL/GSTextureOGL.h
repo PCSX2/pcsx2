@@ -60,7 +60,7 @@ private:
 	u32 m_mem_usage;
 
 public:
-	explicit GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read, bool mipmap);
+	explicit GSTextureOGL(Type type, int w, int h, int format, GLuint fbo_read, bool mipmap);
 	virtual ~GSTextureOGL();
 
 	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) final;
@@ -69,8 +69,8 @@ public:
 	void GenerateMipmap() final;
 	bool Save(const std::string& fn) final;
 
-	bool IsBackbuffer() { return (m_type == GSTexture::Backbuffer); }
-	bool IsDss() { return (m_type == GSTexture::DepthStencil || m_type == GSTexture::SparseDepthStencil); }
+	bool IsBackbuffer() { return (m_type == Type::Backbuffer); }
+	bool IsDss() { return (m_type == Type::DepthStencil || m_type == Type::SparseDepthStencil); }
 
 	u32 GetID() final { return m_texture_id; }
 	bool HasBeenCleaned() { return m_clean; }

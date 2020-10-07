@@ -135,7 +135,7 @@ void GSDevice::Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect,
 	StretchRect(sTex, dTex, dRect, shader, m_linear_present);
 }
 
-GSTexture* GSDevice::FetchSurface(int type, int w, int h, int format)
+GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int w, int h, int format)
 {
 	const GSVector2i size(w, h);
 
@@ -225,32 +225,32 @@ void GSDevice::PurgePool()
 
 GSTexture* GSDevice::CreateSparseRenderTarget(int w, int h, int format)
 {
-	return FetchSurface(HasColorSparse() ? GSTexture::SparseRenderTarget : GSTexture::RenderTarget, w, h, format);
+	return FetchSurface(HasColorSparse() ? GSTexture::Type::SparseRenderTarget : GSTexture::Type::RenderTarget, w, h, format);
 }
 
 GSTexture* GSDevice::CreateSparseDepthStencil(int w, int h, int format)
 {
-	return FetchSurface(HasDepthSparse() ? GSTexture::SparseDepthStencil : GSTexture::DepthStencil, w, h, format);
+	return FetchSurface(HasDepthSparse() ? GSTexture::Type::SparseDepthStencil : GSTexture::Type::DepthStencil, w, h, format);
 }
 
 GSTexture* GSDevice::CreateRenderTarget(int w, int h, int format)
 {
-	return FetchSurface(GSTexture::RenderTarget, w, h, format);
+	return FetchSurface(GSTexture::Type::RenderTarget, w, h, format);
 }
 
 GSTexture* GSDevice::CreateDepthStencil(int w, int h, int format)
 {
-	return FetchSurface(GSTexture::DepthStencil, w, h, format);
+	return FetchSurface(GSTexture::Type::DepthStencil, w, h, format);
 }
 
 GSTexture* GSDevice::CreateTexture(int w, int h, int format)
 {
-	return FetchSurface(GSTexture::Texture, w, h, format);
+	return FetchSurface(GSTexture::Type::Texture, w, h, format);
 }
 
 GSTexture* GSDevice::CreateOffscreen(int w, int h, int format)
 {
-	return FetchSurface(GSTexture::Offscreen, w, h, format);
+	return FetchSurface(GSTexture::Type::Offscreen, w, h, format);
 }
 
 void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
@@ -378,7 +378,7 @@ void GSDevice::ShadeBoost()
 	}
 }
 
-bool GSDevice::ResizeTexture(GSTexture** t, int type, int w, int h)
+bool GSDevice::ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h)
 {
 	if (t == NULL)
 	{
@@ -402,18 +402,18 @@ bool GSDevice::ResizeTexture(GSTexture** t, int type, int w, int h)
 
 bool GSDevice::ResizeTexture(GSTexture** t, int w, int h)
 {
-	return ResizeTexture(t, GSTexture::Texture, w, h);
+	return ResizeTexture(t, GSTexture::Type::Texture, w, h);
 }
 
 bool GSDevice::ResizeTarget(GSTexture** t, int w, int h)
 {
-	return ResizeTexture(t, GSTexture::RenderTarget, w, h);
+	return ResizeTexture(t, GSTexture::Type::RenderTarget, w, h);
 }
 
 bool GSDevice::ResizeTarget(GSTexture** t)
 {
 	GSVector2i s = m_current->GetSize();
-	return ResizeTexture(t, GSTexture::RenderTarget, s.x, s.y);
+	return ResizeTexture(t, GSTexture::Type::RenderTarget, s.x, s.y);
 }
 
 GSAdapter::operator std::string() const
