@@ -81,7 +81,7 @@ typedef struct _cdvdTN
 // CDVD
 // NOTE: The read/write functions CANNOT use XMM/MMX regs
 // If you want to use them, need to save and restore current ones
-typedef s32(CALLBACK* _CDVDopen)(const char* pTitleFilename);
+typedef s32(CALLBACK* _CDVDopen)(const char* pTitleFilename, bool launchELF);
 
 // Initiates an asynchronous track read operation.
 // Returns -1 on error (invalid track)

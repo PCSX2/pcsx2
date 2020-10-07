@@ -368,12 +368,20 @@ bool DoCDVDopen()
 
 	auto CurrentSourceType = enum_cast(m_CurrentSourceType);
 	int ret = CDVD->open(!m_SourceFilename[CurrentSourceType].IsEmpty() ?
-							 static_cast<const char*>(m_SourceFilename[CurrentSourceType].ToUTF8()) :
-							 (char*)NULL);
+							static_cast<const char*>(m_SourceFilename[CurrentSourceType].ToUTF8()) :
+							(char*)NULL,
+							(CurrentSourceType == CDVD_TYPE_NODISC));
 
 	if (ret == -1)
-		return false; // error! (handled by caller)
-	//if( ret == 1 )	throw Exception::CancelEvent(L"User canceled the CDVD plugin's open dialog."); <--- TODO_CDVD is this still needed?
+	{
+		// CDVD was unable to open, error handled by caller
+		return false;
+	}
+	if (ret == -2)
+	{
+		// CDVD was unable to open but it doesn't matter because we are launching an ELF
+		return true;
+	}
 
 	int cdtype = DoCDVDdetectDiskType();
 
@@ -544,7 +552,7 @@ void DoCDVDresetDiskTypeCache()
 
 
 
-s32 CALLBACK NODISCopen(const char* pTitle)
+s32 CALLBACK NODISCopen(const char* pTitle, bool launchELF)
 {
 	return 0;
 }

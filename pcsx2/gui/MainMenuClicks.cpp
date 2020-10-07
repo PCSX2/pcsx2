@@ -626,6 +626,7 @@ void MainEmuFrame::Menu_OpenELF_Click(wxCommandEvent&)
 	if (_DoSelectELFBrowser())
 	{
 		g_Conf->EmuOptions.UseBOOT2Injection = true;
+		CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
 		sApp.SysExecute(g_Conf->CdvdSource, g_Conf->CurrentELF);
 	}
 

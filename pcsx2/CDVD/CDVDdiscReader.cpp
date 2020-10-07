@@ -181,7 +181,7 @@ void StopKeepAliveThread()
 	s_keepalive_thread.join();
 }
 
-s32 CALLBACK DISCopen(const char* pTitle)
+s32 CALLBACK DISCopen(const char* pTitle, bool launchELF)
 {
 #if defined(_WIN32)
 	std::wstring drive = g_Conf->Folders.RunDisc.GetPath().ToStdWstring();

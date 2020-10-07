@@ -40,12 +40,18 @@ void CALLBACK ISOclose()
 	iso.Close();
 }
 
-s32 CALLBACK ISOopen(const char* pTitle)
+s32 CALLBACK ISOopen(const char* pTitle, bool launchELF)
 {
 	ISOclose(); // just in case
 
 	if ((pTitle == NULL) || (pTitle[0] == 0))
 	{
+		if (launchELF) 
+		{
+			// In this case, no ISO is specified but we are launching from an ELF so it doesn't matter
+			return -2;
+		}
+		
 		Console.Error("CDVDiso Error: No filename specified.");
 		return -1;
 	}
