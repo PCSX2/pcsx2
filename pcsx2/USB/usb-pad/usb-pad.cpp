@@ -52,6 +52,11 @@ namespace usb_pad
 		"Logitech Buzz(tm) Controller V1",
 		"",
 		"Logitech"};
+	static const USBDescStrings kbm_desc_strings = {
+		"",
+		"USB Multipurpose Controller",
+		"",
+		"KONAMI"};
 
 	std::list<std::string> PadDevice::ListAPIs()
 	{
@@ -86,6 +91,16 @@ namespace usb_pad
 		return PadDevice::LongAPIName(name);
 	}
 
+	std::list<std::string> KeyboardmaniaDevice::ListAPIs()
+	{
+		return PadDevice::ListAPIs();
+	}
+
+	const TCHAR* KeyboardmaniaDevice::LongAPIName(const std::string& name)
+	{
+		return PadDevice::LongAPIName(name);
+	}
+
 #ifdef _DEBUG
 	void PrintBits(void* data, int size)
 	{
@@ -100,7 +115,6 @@ namespace usb_pad
 				*(ptrB++) = ' ';
 		}
 		*ptrB = '\0';
-
 	}
 
 #else
@@ -239,6 +253,11 @@ namespace usb_pad
 						{
 							ret = sizeof(pad_gtforce_hid_report_descriptor);
 							memcpy(data, pad_gtforce_hid_report_descriptor, ret);
+						}
+						else if (t == WT_KEYBOARDMANIA_CONTROLLER)
+						{
+							ret = sizeof(kbm_hid_report_descriptor);
+							memcpy(data, kbm_hid_report_descriptor, ret);
 						}
 						else
 						{
@@ -407,6 +426,14 @@ namespace usb_pad
 				buf[3] = data.hatswitch & 0x0F;       // 4bits?
 				buf[3] |= (data.buttons & 0x0F) << 4; // 4 bits // TODO Or does it start at buf[4]?
 				buf[4] = (data.buttons >> 4) & 0x3F;  // 10 - 4 = 6 bits
+				break;
+
+			case WT_KEYBOARDMANIA_CONTROLLER:
+				buf[0] = 0x3F;
+				buf[1] = data.buttons & 0xFF;
+				buf[2] = (data.buttons >> 8) & 0xFF;
+				buf[3] = (data.buttons >> 16) & 0xFF;
+				buf[4] = (data.buttons >> 24) & 0xFF;
 				break;
 
 			default:
@@ -781,6 +808,79 @@ namespace usb_pad
 	}
 
 	int BuzzDevice::Freeze(int mode, USBDevice* dev, void* data)
+	{
+		return PadDevice::Freeze(mode, dev, data);
+	}
+
+	// ---- Keyboardmania ----
+
+	USBDevice* KeyboardmaniaDevice::CreateDevice(int port)
+	{
+		std::string varApi;
+#ifdef _WIN32
+		std::wstring tmp;
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, tmp);
+		varApi = wstr_to_str(tmp);
+#else
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+#endif
+		PadProxyBase* proxy = RegisterPad::instance().Proxy(varApi);
+		if (!proxy)
+		{
+			Console.WriteLn("usb-pad: %s: Invalid input API.", TypeName());
+			return NULL;
+		}
+
+		Pad* pad = proxy->CreateObject(port, TypeName());
+
+		if (!pad)
+			return NULL;
+
+		pad->Type(WT_KEYBOARDMANIA_CONTROLLER);
+		PADState* s = new PADState();
+
+		s->desc.full = &s->desc_dev;
+		s->desc.str = kbm_desc_strings;
+
+		if (usb_desc_parse_dev(kbm_dev_descriptor, sizeof(kbm_dev_descriptor), s->desc, s->desc_dev) < 0)
+			goto fail;
+		if (usb_desc_parse_config(kbm_config_descriptor, sizeof(kbm_config_descriptor), s->desc_dev) < 0)
+			goto fail;
+
+		s->f.dev_subtype = pad->Type();
+		s->pad = pad;
+		s->port = port;
+		s->dev.speed = USB_SPEED_FULL;
+		s->dev.klass.handle_attach = usb_desc_attach;
+		s->dev.klass.handle_reset = pad_handle_reset;
+		s->dev.klass.handle_control = pad_handle_control;
+		s->dev.klass.handle_data = pad_handle_data;
+		s->dev.klass.unrealize = pad_handle_destroy;
+		s->dev.klass.open = pad_open;
+		s->dev.klass.close = pad_close;
+		s->dev.klass.usb_desc = &s->desc;
+		s->dev.klass.product_desc = s->desc.str[2];
+
+		usb_desc_init(&s->dev);
+		usb_ep_init(&s->dev);
+		pad_handle_reset((USBDevice*)s);
+
+		return (USBDevice*)s;
+
+	fail:
+		pad_handle_destroy((USBDevice*)s);
+		return nullptr;
+	}
+
+	int KeyboardmaniaDevice::Configure(int port, const std::string& api, void* data)
+	{
+		auto proxy = RegisterPad::instance().Proxy(api);
+		if (proxy)
+			return proxy->Configure(port, TypeName(), data);
+		return RESULT_CANCELED;
+	}
+
+	int KeyboardmaniaDevice::Freeze(int mode, USBDevice* dev, void* data)
 	{
 		return PadDevice::Freeze(mode, dev, data);
 	}

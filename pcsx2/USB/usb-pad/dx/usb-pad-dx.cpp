@@ -58,6 +58,19 @@ namespace usb_pad
 				return 5;
 			}
 
+			if (mType == WT_KEYBOARDMANIA_CONTROLLER)
+			{
+				for (int i = 0; i < 31; i++)
+				{
+					if (GetControl(mPort, i))
+					{
+						mWheelData.buttons |= 1 << i;
+					}
+				}
+				pad_copy_data(mType, buf, mWheelData);
+				return len;
+			}
+
 			//Allow in both ports but warn in configure dialog that only one DX wheel is supported for now
 			//if(idx == 0){
 			//mWheelData.steering = 8191 + (int)(GetControl(STEERING, false)* 8191.0f) ;

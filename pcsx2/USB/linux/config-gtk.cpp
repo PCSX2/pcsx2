@@ -235,7 +235,6 @@ void USBconfigure()
 	const char* players[] = {"Player 1:", "Player 2:"};
 
 	GtkWidget *rs_cb, *vbox;
-	uint32_t sel_idx = 0;
 
 	// Create the dialog window
 	GtkWidget* dlg = gtk_dialog_new_with_buttons(

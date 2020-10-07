@@ -46,6 +46,7 @@ enum DeviceType
 	DEVTYPE_EYETOY,
 	DEVTYPE_BEATMANIA_DADADA,
 	DEVTYPE_SEGA_SEAMIC,
+	DEVTYPE_KEYBOARDMANIA,
 };
 
 struct SelectDeviceName
@@ -210,7 +211,7 @@ public:
 		return *registerDevice;
 	}
 
-	~RegisterDevice() { }
+	~RegisterDevice() {}
 
 	static void Register();
 	void Unregister();
