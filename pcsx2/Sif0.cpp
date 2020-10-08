@@ -83,12 +83,7 @@ static __fi bool WriteIOPtoFifo()
 	sif0.iop.cycles += writeSize; //1 word per cycle
 	sif0.iop.counter -= writeSize;
 
-	if (sif0.iop.counter == 0 && sif0.iop.writeJunk)
-	{
-		SIF_LOG("Writing Junk %d", sif0.iop.writeJunk);
-		sif0.fifo.writeJunk(sif0.iop.writeJunk);
-		sif0.iop.writeJunk = 0;
-	}
+	
 	return true;
 }
 
@@ -231,7 +226,7 @@ static __fi void HandleEETransfer()
 	if (sif0ch.qwc > 0) // If we're writing something, continue to do so.
 	{
 		// Write from Fifo to EE.
-		if (sif0.fifo.size > 0)
+		if (sif0.fifo.size >= 4)
 		{
 			WriteFifoToEE();
 		}
@@ -312,6 +307,13 @@ __fi void SIF0Dma()
 	{
 		//I realise this is very hacky in a way but its an easy way of checking if both are doing something
 		BusyCheck = 0;
+
+		if (sif0.iop.counter == 0 && sif0.iop.writeJunk && sif0.fifo.sif_free() >= sif0.iop.writeJunk)
+		{
+			SIF_LOG("Writing Junk %d", sif0.iop.writeJunk);
+			sif0.fifo.writeJunk(sif0.iop.writeJunk);
+			sif0.iop.writeJunk = 0;
+		}
 
 		if (sif0.iop.busy)
 		{
