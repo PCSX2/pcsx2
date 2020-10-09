@@ -52,7 +52,6 @@ enum GamefixId
 	Fix_VIFFIFO,
 	Fix_VIF1Stall,
 	Fix_GIFFIFO,
-	Fix_FMVinSoftware,
 	Fix_GoemonTlbMiss,
 	Fix_ScarfaceIbit,
 	Fix_CrashTagTeamIbit,
@@ -356,7 +355,6 @@ struct Pcsx2Config
             VIFFIFOHack : 1,            // Pretends to fill the non-existant VIF FIFO Buffer.
             VIF1StallHack : 1,          // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
             GIFFIFOHack : 1,            // Enabled the GIF FIFO (more correct but slower)
-            FMVinSoftwareHack : 1,      // Toggle in and out of software rendering when an FMV runs.
             GoemonTlbHack : 1,          // Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
             ScarfaceIbit : 1,           // Scarface I bit hack. Needed to stop constant VU recompilation
             CrashTagTeamRacingIbit : 1, // Crash Tag Team Racing I bit hack. Needed to stop constant VU recompilation
@@ -546,7 +544,7 @@ TraceLogFilters&				SetTraceConfig();
 #define CHECK_VIFFIFOHACK			(EmuConfig.Gamefixes.VIFFIFOHack)    // Pretends to fill the non-existant VIF FIFO Buffer.
 #define CHECK_VIF1STALLHACK			(EmuConfig.Gamefixes.VIF1StallHack)  // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
 #define CHECK_GIFFIFOHACK			(EmuConfig.Gamefixes.GIFFIFOHack)	 // Enabled the GIF FIFO (more correct but slower)
-#define CHECK_FMVINSOFTWAREHACK	 	(EmuConfig.Gamefixes.FMVinSoftwareHack) // Toggle in and out of software rendering when an FMV runs.
+
 //------------ Advanced Options!!! ---------------
 #define CHECK_VU_OVERFLOW			(EmuConfig.Cpu.Recompiler.vuOverflow)
 #define CHECK_VU_EXTRA_OVERFLOW		(EmuConfig.Cpu.Recompiler.vuExtraOverflow) // If enabled, Operands are clamped before being used in the VU recs

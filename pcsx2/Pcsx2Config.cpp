@@ -264,7 +264,6 @@ const wxChar *const tbl_GamefixNames[] =
 	L"VIFFIFO",
 	L"VIF1Stall",
 	L"GIFFIFO",
-	L"FMVinSoftware",
 	L"GoemonTlb",
 	L"ScarfaceIbit",
 	L"CrashTagTeamRacingIbit",
@@ -328,7 +327,6 @@ void Pcsx2Config::GamefixOptions::Set( GamefixId id, bool enabled )
 		case Fix_VIFFIFO:		VIFFIFOHack			= enabled;  break;
 		case Fix_VIF1Stall:		VIF1StallHack		= enabled;  break;
 		case Fix_GIFFIFO:		GIFFIFOHack			= enabled;  break;
-		case Fix_FMVinSoftware:	FMVinSoftwareHack	= enabled;  break;
 		case Fix_GoemonTlbMiss: GoemonTlbHack		= enabled;  break;
 		case Fix_ScarfaceIbit:  ScarfaceIbit        = enabled;  break;
 		case Fix_CrashTagTeamIbit: CrashTagTeamRacingIbit = enabled; break;
@@ -355,7 +353,6 @@ bool Pcsx2Config::GamefixOptions::Get( GamefixId id ) const
 		case Fix_VIFFIFO:		return VIFFIFOHack;
 		case Fix_VIF1Stall:		return VIF1StallHack;
 		case Fix_GIFFIFO:		return GIFFIFOHack;
-		case Fix_FMVinSoftware:	return FMVinSoftwareHack;
 		case Fix_GoemonTlbMiss: return GoemonTlbHack;
 		case Fix_ScarfaceIbit:  return ScarfaceIbit;
 		case Fix_CrashTagTeamIbit: return CrashTagTeamRacingIbit;
@@ -382,7 +379,6 @@ void Pcsx2Config::GamefixOptions::LoadSave( IniInterface& ini )
 	IniBitBool( VIFFIFOHack );
 	IniBitBool( VIF1StallHack );
 	IniBitBool( GIFFIFOHack );
-	IniBitBool( FMVinSoftwareHack );
 	IniBitBool( GoemonTlbHack );
 	IniBitBool( ScarfaceIbit );
 	IniBitBool( CrashTagTeamRacingIbit );
