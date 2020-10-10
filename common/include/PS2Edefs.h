@@ -170,10 +170,12 @@ void CALLBACK GSsetGameCRC(int crc, int gameoptions);
 // controls frame skipping in the GS, if this routine isn't present, frame skipping won't be done
 void CALLBACK GSsetFrameSkip(int frameskip);
 
-// if start is 1, starts recording spu2 data, else stops
+// Starts recording GS frame data
 // returns a non zero value if successful
-// for now, pData is not used
-std::wstring* CALLBACK GSsetupRecording(int start);
+int CALLBACK GSsetupRecording(std::wstring& filename);
+
+// Stops recording GS frame data
+void CALLBACK GSendRecording();
 
 void CALLBACK GSreset();
 //deprecated: GSgetTitleInfo was used in PCSX2 but no plugin supported it prior to r4070:
@@ -267,7 +269,8 @@ typedef void(CALLBACK *_GSsetGameCRC)(int, int);
 typedef void(CALLBACK *_GSsetFrameSkip)(int frameskip);
 typedef void(CALLBACK *_GSsetVsync)(int enabled);
 typedef void(CALLBACK *_GSsetExclusive)(int isExclusive);
-typedef std::wstring*(CALLBACK *_GSsetupRecording)(int);
+typedef int(CALLBACK* _GSsetupRecording)(std::wstring&);
+typedef void(CALLBACK* _GSendRecording)();
 typedef void(CALLBACK *_GSreset)();
 typedef void(CALLBACK *_GSwriteCSR)(u32 value);
 typedef bool(CALLBACK *_GSmakeSnapshot)(const char *path);
@@ -316,6 +319,7 @@ extern _GSsetGameCRC GSsetGameCRC;
 extern _GSsetFrameSkip GSsetFrameSkip;
 extern _GSsetVsync GSsetVsync;
 extern _GSsetupRecording GSsetupRecording;
+extern _GSendRecording GSendRecording;
 extern _GSreset GSreset;
 extern _GSwriteCSR GSwriteCSR;
 #endif

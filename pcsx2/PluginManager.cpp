@@ -174,6 +174,7 @@ _GSsetFrameSkip		GSsetFrameSkip;
 _GSsetVsync			GSsetVsync;
 _GSsetExclusive		GSsetExclusive;
 _GSsetupRecording	GSsetupRecording;
+_GSendRecording		GSendRecording;
 _GSreset			GSreset;
 _GSwriteCSR			GSwriteCSR;
 #endif
@@ -334,6 +335,7 @@ static const LegacyApi_OptMethod s_MethMessOpt_GS[] =
 	{	"GSopen2",			(vMeth**)&GSopen2			},
 	{	"GSreset",			(vMeth**)&GSreset			},
 	{	"GSsetupRecording",	(vMeth**)&GSsetupRecording	},
+	{	"GSendRecording",	(vMeth**)&GSendRecording	},
 	{	"GSmakeSnapshot2",	(vMeth**)&GSmakeSnapshot2	},
 	{	"GSgifSoftReset",	(vMeth**)&GSgifSoftReset	},
 	{	"GSreadFIFO",		(vMeth**)&GSreadFIFO		},

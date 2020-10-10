@@ -883,11 +883,10 @@ void MainEmuFrame::VideoCaptureToggle()
 		if (GSsetupRecording)
 		{
 			// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens
-			std::wstring* filename = nullptr;
-			if (filename = GSsetupRecording(true))
+			std::wstring filename;
+			if (GSsetupRecording(filename))
 			{
-				SPU2setupRecording(true, filename);
-				delete filename;
+				SPU2setupRecording(true, &filename);
 				m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, false);
 				m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, true);
 			}
@@ -911,8 +910,8 @@ void MainEmuFrame::VideoCaptureToggle()
 	else
 	{
 		// stop recording
-		if (GSsetupRecording)
-			GSsetupRecording(false);
+		if (GSendRecording)
+			GSendRecording();
 		SPU2setupRecording(false, nullptr);
 		m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, true);
 		m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, false);

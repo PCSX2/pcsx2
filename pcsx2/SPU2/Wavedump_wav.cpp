@@ -110,7 +110,7 @@ bool WavRecordEnabled = false;
 static WavOutFile* m_wavrecord = nullptr;
 static Mutex WavRecordMutex;
 
-void RecordStart(std::wstring* filename)
+void RecordStart(const std::wstring* filename)
 {
 	WavRecordEnabled = false;
 

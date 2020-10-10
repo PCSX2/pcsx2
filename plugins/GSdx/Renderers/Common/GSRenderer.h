@@ -72,7 +72,7 @@ public:
 	void SetAspectRatio(int aspect) {m_aspectratio = aspect;}
 	void SetVSync(int vsync);
 
-	virtual std::wstring* BeginCapture();
+	virtual int BeginCapture(std::wstring& filename);
 	virtual void EndCapture();
 
 	void PurgePool();
