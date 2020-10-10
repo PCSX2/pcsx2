@@ -434,6 +434,7 @@ void CACHE()
 			if ((pCache[index].tag[way] & (DIRTY_FLAG | VALID_FLAG)) == (DIRTY_FLAG | VALID_FLAG))	// Dirty
 			{
 				CACHE_LOG("DXLTG Dirty WriteBack! PPF %x", ppf);
+				ppf = (ppf & 0x7fffffff);
 				*reinterpret_cast<mem64_t*>(ppf) = pCache[index].data[way][0].b8._u64[0];
 				*reinterpret_cast<mem64_t*>(ppf + 8) = pCache[index].data[way][0].b8._u64[1];
 				*reinterpret_cast<mem64_t*>(ppf + 16) = pCache[index].data[way][1].b8._u64[0];
