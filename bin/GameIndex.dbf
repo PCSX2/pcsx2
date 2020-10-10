@@ -19887,6 +19887,13 @@ Region = NTSC-J
 Serial = SLPM-62051
 Name   = Yanya Caballista - featuring Gawoo
 Region = NTSC-J
+[patches = 402435E5]
+	author=Prafull and Refraction
+	// Fix slow and choppy gameplay.
+	// Fixed by rearranging COP2 instructions.
+	patch=1,EE,00298370,word,48488800
+	patch=1,EE,00298398,word,4a0203bd
+[/patches]
 ---------------------------------------------
 Serial = SLPM-62052
 Name   = Beatmania Da! Da! Da!
