@@ -22793,6 +22793,16 @@ Serial = SLPM-65161
 Name   = Aero Dancing 4
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPM-65163
+Name   = Dynasty Warriors 3
+Region = NTSC-C
+[patches = 397F3835]
+	comment=COP2 flag instance patch by refraction
+	// A mac flag check after running another vsub op which is irrelivant, rearranging
+	patch=0,EE,00276170,word,48438800
+	patch=0,EE,0027617c,word,4BE521AC
+[/patches]
+---------------------------------------------
 Serial = SLPM-65164
 Name   = Project Minerva [Limited Edition]
 Region = NTSC-J
