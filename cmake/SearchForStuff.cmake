@@ -2,7 +2,7 @@
 #						Search all libraries on the system
 #-------------------------------------------------------------------------------
 ## Use cmake package to find module
-if (Linux)
+if (Linux OR APPLE)
     find_package(ALSA)
     find_package(PCAP)
     find_package(LibXml2)

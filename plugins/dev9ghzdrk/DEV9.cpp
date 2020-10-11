@@ -25,6 +25,9 @@
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <err.h>
+#elif defined(__APPLE__)
+#include <sys/mman.h>
+#include <unistd.h>
 #endif
 
 
