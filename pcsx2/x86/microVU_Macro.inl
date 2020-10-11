@@ -203,9 +203,9 @@ REC_COP2_mVU0(CLIP,		"CLIP",		0x08);
 // Macro VU - Redirect Lower Instructions
 //------------------------------------------------------------------
 
-REC_COP2_mVU0(DIV,		"DIV",		0x02);
-REC_COP2_mVU0(SQRT,		"SQRT",		0x02);
-REC_COP2_mVU0(RSQRT,	"RSQRT",	0x02);
+REC_COP2_mVU0(DIV,		"DIV",		0x12);
+REC_COP2_mVU0(SQRT,		"SQRT",		0x12);
+REC_COP2_mVU0(RSQRT,	"RSQRT",	0x12);
 REC_COP2_mVU0(IADD,		"IADD",		0x04);
 REC_COP2_mVU0(IADDI,	"IADDI",	0x04);
 REC_COP2_mVU0(IAND,		"IAND",		0x04);
