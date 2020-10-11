@@ -57,11 +57,13 @@ void InitNet(NetAdapter* ad)
 
        int ret = pthread_create(&rx_thread, NULL, NetRxThread, NULL);
        pthread_attr_init(&thAttr);
+#if !defined(__APPLE__)
        pthread_attr_getschedpolicy(&thAttr, &policy);
        max_prio_for_policy = sched_get_priority_max(policy);
 
 
        pthread_setschedprio(rx_thread, max_prio_for_policy);
+#endif
        pthread_attr_destroy(&thAttr);
 }
 

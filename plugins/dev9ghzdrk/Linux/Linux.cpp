@@ -28,6 +28,10 @@
 #include "pcap_io.h"
 #include "net.h"
 
+#ifdef __APPLE__
+#include <CoreFoundation/CoreFoundation.h>
+#endif
+
 static GtkBuilder * builder;
 
 void SysMessage(char *fmt, ...) {
@@ -122,6 +126,14 @@ EXPORT_C_(void)
 DEV9configure() {
 
     gtk_init (NULL, NULL);
+
+#if defined(__APPLE__)
+    // GTK may try to use xim and crash the program, so force quartz module
+    GtkSettings *settings = gtk_settings_get_default();
+    gtk_settings_set_string_property(settings, "gtk-im-module", "quartz", "");
+    dispatch_async(dispatch_get_main_queue(), ^{
+#endif
+
     GError *error = NULL;
     builder = gtk_builder_new();
     if (!builder_add_from_resource(builder, "/net/pcsx2/dev9ghzdrk/Linux/dev9ghzdrk.ui", &error)) {
@@ -141,6 +153,9 @@ DEV9configure() {
     }
     gtk_widget_hide (GTK_WIDGET(dlg));
 
+#if defined(__APPLE__)
+    });
+#endif
 }
 
 NetAdapter* GetNetAdapter()
