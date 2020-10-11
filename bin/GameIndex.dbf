@@ -14612,10 +14612,12 @@ vuRoundMode = 0 // Fixes textures and crashes.
 Serial = SLES-53524
 Name   = Mortal Kombat - Shaolin Monks
 Region = PAL-M5
+eeRoundMode = 2 // Fixes texture sizes
 ---------------------------------------------
 Serial = SLES-53525
 Name   = Mortal Kombat - Shaolin Monks
 Region = PAL-G
+eeRoundMode = 2 // Fixes texture sizes
 ---------------------------------------------
 Serial = SLES-53526
 Name   = Suffering, The - Ties that Bind
@@ -40239,6 +40241,7 @@ Serial = SLUS-21087
 Name   = Mortal Kombat - Shaolin Monks
 Region = NTSC-U
 Compat = 5
+eeRoundMode = 2 // Fixes texture sizes
 ---------------------------------------------
 Serial = SLUS-21088
 Name   = Disney's Chicken Little

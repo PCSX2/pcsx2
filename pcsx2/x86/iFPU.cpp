@@ -1028,19 +1028,6 @@ void recDIV_S_xmm(int info)
 			roundmodeFlag = true;
 		}
 	}
-	else
-	{
-		if (g_sseMXCSR.GetRoundMode() != SSEround_Nearest)
-		{
-			// Set roundmode to nearest since it isn't already
-			//Console.WriteLn("div to nearest");
-
-			roundmode_nearest = g_sseMXCSR;
-			roundmode_nearest.SetRoundMode( SSEround_Nearest );
-			xLDMXCSR( roundmode_nearest );
-			roundmodeFlag = true;
-		}
-	}
 
 	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
 		case PROCESS_EE_S:
@@ -1600,16 +1587,6 @@ void recSQRT_S_xmm(int info)
 	bool roundmodeFlag = false;
 	//Console.WriteLn("FPU: SQRT");
 
-	if (g_sseMXCSR.GetRoundMode() != SSEround_Nearest)
-	{
-		// Set roundmode to nearest if it isn't already
-		//Console.WriteLn("sqrt to nearest");
-		roundmode_nearest = g_sseMXCSR;
-		roundmode_nearest.SetRoundMode( SSEround_Nearest );
-		xLDMXCSR (roundmode_nearest);
-		roundmodeFlag = true;
-	}
-
 	if( info & PROCESS_EE_T ) xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	else xMOVSSZX(xRegisterSSE(EEREC_D), ptr[&fpuRegs.fpr[_Ft_]]);
 
@@ -1633,8 +1610,6 @@ void recSQRT_S_xmm(int info)
 	if (CHECK_FPU_OVERFLOW) xMIN.SS(xRegisterSSE(EEREC_D), ptr[&g_maxvals[0]]);// Only need to do positive clamp, since EEREC_D is positive
 	xSQRT.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 	if (CHECK_FPU_EXTRA_OVERFLOW) ClampValues(EEREC_D); // Shouldn't need to clamp again since SQRT of a number will always be smaller than the original number, doing it just incase :/
-
-	if (roundmodeFlag) xLDMXCSR (g_sseMXCSR);
 }
 
 FPURECOMPILE_CONSTCODE(SQRT_S, XMMINFO_WRITED|XMMINFO_READT);

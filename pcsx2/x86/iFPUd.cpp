@@ -652,20 +652,7 @@ void recDIV_S_xmm(int info)
 			roundmodeFlag = true;
 		}
 	}
-	else
-	{
-		if (g_sseMXCSR.GetRoundMode() != SSEround_Nearest)
-		{
-			// Set roundmode to nearest since it isn't already
-			//Console.WriteLn("div to nearest");
-
-			roundmode_nearest = g_sseMXCSR;
-			roundmode_nearest.SetRoundMode( SSEround_Nearest );
-			xLDMXCSR( roundmode_nearest );
-			roundmodeFlag = true;
-		}
-	}
-
+	
 	int sreg, treg;
 
 	ALLOC_S(sreg); ALLOC_T(treg);
@@ -927,20 +914,9 @@ void recSQRT_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::SQRT_F);
 	u8 *pjmp;
-	int roundmodeFlag = 0;
 	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 	//Console.WriteLn("FPU: SQRT");
-
-	if (g_sseMXCSR.GetRoundMode() != SSEround_Nearest)
-	{
-		// Set roundmode to nearest if it isn't already
-		//Console.WriteLn("sqrt to nearest");
-		roundmode_nearest = g_sseMXCSR;
-		roundmode_nearest.SetRoundMode( SSEround_Nearest );
-		xLDMXCSR (roundmode_nearest);
-		roundmodeFlag = 1;
-	}
 
 	GET_T(EEREC_D);
 
@@ -966,10 +942,6 @@ void recSQRT_S_xmm(int info)
 	xSQRT.SD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 
 	ToPS2FPU(EEREC_D, false, t1reg, false);
-
-	if (roundmodeFlag == 1) {
-		xLDMXCSR (g_sseMXCSR);
-	}
 
 	_freeX86reg(tempReg);
 	_freeXMMreg(t1reg);
@@ -1056,17 +1028,6 @@ void recRSQRT_S_xmm(int info)
 	// Should this do the same?  or is changing the roundmode to nearest the better
 	// behavior for both recs? --air
 
-	bool roundmodeFlag = false;
-	if (g_sseMXCSR.GetRoundMode() != SSEround_Nearest)
-	{
-		// Set roundmode to nearest if it isn't already
-		//Console.WriteLn("sqrt to nearest");
-		roundmode_nearest = g_sseMXCSR;
-		roundmode_nearest.SetRoundMode( SSEround_Nearest );
-		xLDMXCSR (roundmode_nearest);
-		roundmodeFlag = true;
-	}
-
 	ALLOC_S(sreg); ALLOC_T(treg);
 
 	if (FPU_FLAGS_ID)
@@ -1077,8 +1038,6 @@ void recRSQRT_S_xmm(int info)
 	xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(sreg));
 
 	_freeXMMreg(treg); _freeXMMreg(sreg);
-
-	if (roundmodeFlag) xLDMXCSR (g_sseMXCSR);
 }
 
 FPURECOMPILE_CONSTCODE(RSQRT_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
