@@ -36331,6 +36331,12 @@ Serial = SLUS-20277
 Name   = Dynasty Warriors 3
 Region = NTSC-U
 Compat = 5
+[patches = 4A35E19F]
+	comment=COP2 flag instance patch by refraction
+	// A mac flag check after running another vsub op which is irrelivant, rearranging
+	patch=0,EE,00273230,word,48438800
+	patch=0,EE,0027323c,word,4BE521AC
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20278
 Name   = Yanya Caballista - City Skater
