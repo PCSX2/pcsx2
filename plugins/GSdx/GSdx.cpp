@@ -286,8 +286,8 @@ void GSdxApp::Init()
 	};
 
 	m_gs_acc_date_level.push_back(GSSetting(0, "Off", ""));
-	m_gs_acc_date_level.push_back(GSSetting(1, "Fast", "Default"));
-	m_gs_acc_date_level.push_back(GSSetting(2, "Full", "Slow"));
+	m_gs_acc_date_level.push_back(GSSetting(1, "Basic", ""));
+	m_gs_acc_date_level.push_back(GSSetting(2, "Full", "Default"));
 
 	m_gs_acc_blend_level.push_back(GSSetting(0, "None", "Fastest"));
 	m_gs_acc_blend_level.push_back(GSSetting(1, "Basic", "Recommended"));
@@ -320,7 +320,7 @@ void GSdxApp::Init()
 	m_default_configuration["linux_replay"]                               = "1";
 #endif
 	m_default_configuration["aa1"]                                        = "0";
-	m_default_configuration["accurate_date"]                              = "1";
+	m_default_configuration["accurate_date"]                              = "2";
 	m_default_configuration["accurate_blending_unit"]                     = "1";
 	m_default_configuration["AspectRatio"]                                = "1";
 	m_default_configuration["autoflush_sw"]                               = "1";
