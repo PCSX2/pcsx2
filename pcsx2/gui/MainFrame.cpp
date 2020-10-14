@@ -200,7 +200,11 @@ void MainEmuFrame::OnMoveAround(wxMoveEvent& evt)
 		{
 			if (!proglog->IsMaximized())
 			{
-				g_Conf->ProgLogBox.DisplayPosition = GetRect().GetTopRight();
+				// GetSize() is wrong on windows.
+				// GetTopRight() is also wrong on windows since it probably uses GetSize() while it gives the wrong values for autodock.
+				// ConsoleLogger.cpp L713: if( wxWindow* main = GetParent() ) ;always triggers on false and it's corresponding lines never get executed.
+				const int xCoord = GetRect().GetTopLeft().x + GetClientSize().GetWidth() + 10; // Adds a 10px gap between the main window and console.
+				g_Conf->ProgLogBox.DisplayPosition = wxPoint(xCoord, GetRect().GetTopLeft().y);
 				proglog->SetPosition(g_Conf->ProgLogBox.DisplayPosition);
 			}
 		}
@@ -314,7 +318,7 @@ void MainEmuFrame::InitLogBoxPosition(AppConfig::ConsoleLogOptions& conf)
 
 	if (conf.AutoDock)
 	{
-		conf.DisplayPosition = GetScreenPosition() + wxSize(GetSize().x, 0);
+		conf.DisplayPosition = GetScreenPosition() + wxSize(GetClientSize().x, 0); // Position of the console in AutoDock when the main window moves.
 	}
 	else if (conf.DisplayPosition != wxDefaultPosition)
 	{
