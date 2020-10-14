@@ -64,7 +64,7 @@ bool _visual_debug_enabled = false; // windows only feature
 
 // OUTPUT
 u32 OutputModule = 0;
-int SndOutLatencyMS = 300;
+int SndOutLatencyMS = 100;
 int SynchMode = 0; // Time Stretch, Async or Disabled
 #ifdef SPU2X_PORTAUDIO
 u32 OutputAPI = 0;
@@ -147,7 +147,7 @@ void ReadSettings()
 #endif
 #endif
 
-	SndOutLatencyMS = CfgReadInt(L"OUTPUT", L"Latency", 300);
+	SndOutLatencyMS = CfgReadInt(L"OUTPUT", L"Latency", 100);
 	SynchMode = CfgReadInt(L"OUTPUT", L"Synch_Mode", 0);
 	numSpeakers = CfgReadInt(L"OUTPUT", L"SpeakerConfiguration", 0);
 
