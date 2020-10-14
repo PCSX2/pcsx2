@@ -264,7 +264,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			double minlat = (SynchMode == 0) ? LATENCY_MIN_TS : LATENCY_MIN;
 			int minexp = (int)(pow(minlat + 1, 1.0 / 3.0) * 128.0);
 			int maxexp = (int)(pow((double)LATENCY_MAX + 2, 1.0 / 3.0) * 128.0);
-			INIT_SLIDER(IDC_LATENCY_SLIDER, minexp, maxexp, 200, 42, 1);
+			INIT_SLIDER(IDC_LATENCY_SLIDER, minexp, maxexp, 200, 13, 15);
 
 			SendDialogMsg(hWnd, IDC_LATENCY_SLIDER, TBM_SETPOS, TRUE, (int)((pow((double)SndOutLatencyMS, 1.0 / 3.0) * 128.0) + 1));
 			swprintf_s(temp, L"%d ms (avg)", SndOutLatencyMS);
