@@ -394,9 +394,9 @@ void MainEmuFrame::CreatePcsx2Menu()
 								 wxEmptyString, wxITEM_CHECK);
 #endif
 
-	if (IsDebugBuild || IsDevBuild)
-		m_GameSettingsSubmenu.Append(MenuId_EnableHostFs, _("Enable &Host Filesystem"),
-									 wxEmptyString, wxITEM_CHECK);
+
+	m_GameSettingsSubmenu.Append(MenuId_EnableHostFs, _("Enable &Host Filesystem"),
+								 wxEmptyString, wxITEM_CHECK);
 
 	m_menuSys.AppendSeparator();
 
