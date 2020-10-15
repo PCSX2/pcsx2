@@ -1965,6 +1965,23 @@ Name   = WRC 4
 Region = PAL-M8
 Compat = 1
 XgKickHack = 1 // Fixes SPS.
+[patches]
+	author=kozarovv
+	// Proper patch for WRC 4. CRC independent. 
+	// I wrote small runtime that move unpacker higher right after emulator boot. 
+	// Seems little bit extensive, but there is no way to make it smaller. 
+	// Solves TLB miss errors which prevented the game from booting.
+	patch=0,EE,0040000C,double,3c0500603cc70054
+	patch=0,EE,00400014,double,24a5001024840010
+	patch=0,EE,0040001C,double,7ca6000078860000
+	patch=0,EE,00400024,double,000000001487fffb
+	patch=0,EE,0040002c,double,000000000817fff5
+	patch=0,EE,005fffd4,double,3c1c70003c040060
+	patch=0,EE,005fffdc,double,3c0700003c067000
+	patch=0,EE,005fffe4,double,279c000024840800	
+	patch=0,EE,005fffec,double,24e7100024c60080
+	patch=0,EE,005ffff4,double,00c7e8200818000c
+[/patches]
 ---------------------------------------------
 Serial = SCES-52405
 Name   = DJ - Decks & FX - House Edition
@@ -8483,6 +8500,16 @@ Serial = SLES-50778
 Name   = TD Overdrive - The Brotherhood of Speed
 Region = PAL-M5
 Compat = 2
+[patches = AE9EB9A0]
+	author=kozarovv
+	// Fix initial loading by looping for some time on EE side. That allow IOP proceed requests correctly.
+	patch=1,EE,E0022430,extended,00308C68
+	patch=1,EE,20308C68,extended,0803fff7
+	patch=1,EE,20308C6C,extended,240f2000
+	patch=1,EE,200fffdc,double,55eeffff0000702d
+	patch=1,EE,200fffe4,double,0c0c243025ce0004
+	patch=1,EE,200fffec,double,080c231c00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-50779
 Name   = ESPN NBA 2Night 2002
@@ -9853,6 +9880,16 @@ Region = PAL-E
 Serial = SLES-51343
 Name   = Galerians - Ash
 Region = PAL-M5
+[patches = 1AE08CF5]
+	author=kozarovv
+	// Floats workaround to make HW GSDX mode working.
+	// There is still overflow on GS, but this time GSDX can handle it just fine in HW mode. 
+	patch=1,EE,001e7130,word,3c017e00
+	patch=1,EE,001e7138,word,44812800
+	patch=1,EE,001e7150,word,44813000
+	patch=1,EE,001e7160,word,44813800
+	patch=1,EE,001e7170,word,44810000
+[/patches]
 ---------------------------------------------
 Serial = SLES-51344
 Name   = Guilty Gear X2
@@ -13790,6 +13827,14 @@ Region = PAL-M5
 Serial = SLES-53099
 Name   = Pilot Down - Behind Enemy Lines
 Region = PAL-M5
+vuRoundMode = 0
+[patches = 53BB63A0]
+	author=kozarovv
+	// Patch allow sending VU1 mpg successfully. This fix missing graphic. Thanks to PSI for figuring what is wrong. 
+	// Game need at least -2 EE cyclerate + MTVU on my pc to get full speed. 
+	// To fix shadows set VU rounding to nearest - thx Atomic83
+	patch=1,EE,00426140,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-53100
 Name   = Scooby Doo! Unmasked
@@ -15208,9 +15253,11 @@ Name   = Superman Returns
 Region = PAL-E
 [patches = E8F7BAB6]
 	author=kozarovv
-	// Use iaddiu instead of FSAND.
-	patch=1,EE,00639ef0,word,10050208
+	// Fix sps and various graphical issues by Using iaddiu instead of FSAND
+	// require preload frame data and crc hack atleast minimum for GSDX HW
+	patch=1,EE,00639Ef0,word,10050208
 	patch=1,EE,0063a068,word,10080208
+	patch=1,EE,0063D488,word,10020208
 [/patches]
 ---------------------------------------------
 Serial = SLES-53747
@@ -16496,6 +16543,18 @@ Region = PAL-I
 Serial = SLES-54350
 Name   = Superman Returns
 Region = PAL-G
+---------------------------------------------
+Serial = SLES-54350
+Name   = Superman Returns
+Region = PAL-S
+[patches = EDF0A0A7]
+	author=kozarovv
+	// Fix sps and various graphical issues by Using iaddiu instead of FSAND
+	// require preload frame data and crc hack atleast minimum for GSDX HW
+	patch=1,EE,00639Ef0,word,10050208
+	patch=1,EE,0063a068,word,10080208
+	patch=1,EE,0063D488,word,10020208
+[/patches]
 ---------------------------------------------
 Serial = SLES-54354
 Name   = Final Fantasy XII
@@ -36021,6 +36080,26 @@ Serial = SLUS-20213
 Name   = Test Drive
 Region = NTSC-U
 Compat = 5
+[patches = D4A56F59]
+	author=kozarovv
+	// 2.00 GameVersion. Fix initial loading by looping for some time on EE side. That allow IOP proceed requests correctly.
+	patch=1,EE,E00223a2,extended,00308A30
+	patch=1,EE,20308a30,extended,0803fff7
+	patch=1,EE,20308a34,extended,240f2000
+	patch=1,EE,200fffdc,double,55eeffff0000702d
+	patch=1,EE,200fffe4,double,0c0c23a225ce0004
+	patch=1,EE,200fffec,double,080c228e00000000
+[/patches]
+[patches = F456F555]
+	author=kozarovv
+	// 1.00 GameVersion. Fix initial loading by looping for some time on EE side. That allow IOP proceed requests correctly.
+	patch=1,EE,E0022262,extended,00308530
+	patch=1,EE,20308530,extended,0803fff7
+	patch=1,EE,20308534,extended,240f2000
+	patch=1,EE,200fffdc,double,55eeffff0000702d
+	patch=1,EE,200fffe4,double,0c0c226225ce0004
+	patch=1,EE,200fffec,double,080c214e00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20214
 Name   = State of Emergency
@@ -37694,6 +37773,16 @@ Serial = SLUS-20560
 Name   = Galerians - Ash
 Region = NTSC-U
 Compat = 5
+[patches = B506C936]
+	author=kozarovv
+	// Floats workaround to make HW GSDX mode working.
+	// There is still overflow on GS, but this time GSDX can handle it just fine in HW mode. 
+	patch=1,EE,001e12a8,word,3c017e00
+	patch=1,EE,001e12b0,word,44812800
+	patch=1,EE,001e12c8,word,44813000
+	patch=1,EE,001e12d8,word,44813800
+	patch=1,EE,001e12e8,word,44810000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20561
 Name   = Disaster Report
@@ -38770,6 +38859,13 @@ Serial = SLUS-20793
 Name   = Gladiator - Sword of Vengeance
 Region = NTSC-U
 Compat = 5
+[patches = C5DAD771]
+	author=Prafull
+	// Fix hang before menu screen
+	// The patch causes few artifacts in FMV
+	// Skips part of IPU
+	patch=1,EE,00286674,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20794
 Name   = ESPN - Major League Baseball
@@ -39455,6 +39551,15 @@ Compat = 5
 Serial = SLUS-20935
 Name   = IHRA Professional Drag Racing 2005
 Region = NTSC-U
+[patches = F7C26EBF]
+	author=kozarovv
+	// This is quite interesting bug. Game take advantage of VU memory wrapping.
+	// All that work fine in pcsx2, excluding one BAL that always hit 0x3ff0. This is no issue per se,
+	// but due to way pcsx2 work this caused ton of unnecessary caching, and killed performance. 
+    // Patch replace dmove a1, zero with li a1, 2. This simple trick make branch directly to 0x0 instead of 0x3ff0. 
+	// To be honest it was new for me that VU support something like memory wrapping at all. Since all addresses created by that runtime always have -0x10 offset, adding 2 make them hit precisely what should be hit. This don't have any bad side effect. 
+	patch=1,EE,0041D510,word,24050002
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20936
 Name   = UEFA Euro 2004
@@ -39711,6 +39816,11 @@ vuRoundMode = 0 // Fixes Red SPS while ingame.
 eeClampMode = 3 // Fixes White SPS while ingame.
 eeRoundMode = 0 // Partially fixes wrong ennemies eye rendering.
 EETimingHack = 1 // Fixes garbled character annimation.
+[patches = 675CEB8F]
+	author=Prafull
+	// Fixes almost all problems apart from little translucent fog effect in some areas
+	patch=1,EE,001473b0,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20984
 Name   = Resident Evil Outbreak - File #2
@@ -41997,6 +42107,14 @@ Serial = SLUS-21434
 Name   = Superman Returns - The Video Game
 Region = NTSC-U
 Compat = 4
+[patches = E1BF5DCA]
+	author=kozarovv
+	// Fix sps and various graphical issues by Using iaddiu instead of FSAND
+	// require preload frame data and crc hack atleast minimum for GSDX HW
+	patch=1,EE,00639E70,word,10050208
+	patch=1,EE,00639FE8,word,10080208
+	patch=1,EE,0063D408,word,10020208
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21435
 Name   = One Piece - Grand Adventure
