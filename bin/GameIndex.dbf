@@ -1679,6 +1679,8 @@ Name   = Primal
 Region = PAL-M5
 Compat = 5 // With GSdx, SW-mode only.
 vuRoundMode = 0 // Fixes SPS.
+vuClampMode = 2 // Fix other SPS.
+VU0KickstartHack = 1 // Fixes objects disappearing.
 ---------------------------------------------
 Serial = SCES-51159
 Name   = The Getaway
@@ -1828,6 +1830,8 @@ Serial = SCES-51685
 Name   = Primal
 Region = PAL-E-R
 vuRoundMode = 0 // Fixes SPS.
+vuClampMode = 2 // Fix other SPS.
+VU0KickstartHack = 1 // Fixes objects disappearing.
 ---------------------------------------------
 Serial = SCES-51706
 Name   = Amplitude
@@ -4759,6 +4763,8 @@ Name   = Primal - Civilization Is Only Skin Deep
 Region = NTSC-U
 Compat = 5
 vuRoundMode = 0 // Fixes SPS.
+vuClampMode = 2 // Fix other SPS.
+VU0KickstartHack = 1 // Fixes objects disappearing.
 ---------------------------------------------
 Serial = SCUS-97144
 Name   = PlayStation Underground 5.1
@@ -5074,6 +5080,7 @@ Name   = Primal [Demo]
 Region = NTSC-U
 vuRoundMode = 0 // Fixes SPS.
 vuClampMode = 2 // Fix other SPS.
+VU0KickstartHack = 1 // Fixes objects disappearing.
 ---------------------------------------------
 Serial = SCUS-97226
 Name   = NCAA GameBreaker 2003 [Demo]
@@ -7554,6 +7561,7 @@ Serial = SLES-50306
 Name   = Resident Evil - CODE Veronica X
 Region = PAL-M4
 Compat = 5
+VU0KickstartHack = 1 // Fixes lightning effects.
 ---------------------------------------------
 Serial = SLES-50310
 Name   = Freak Out
@@ -9602,6 +9610,7 @@ Serial = SLES-51232
 Name   = Virtua Tennis 2
 Region = PAL-M4
 Compat = 5
+XgKickHack = 1 // Fixes black models on certain games in World Tour.
 ---------------------------------------------
 Serial = SLES-51233
 Name   = DragonBall Z - Budokai
@@ -20388,6 +20397,7 @@ Serial = SLPM-62236
 Name   = Power Smash 2
 Region = NTSC-J
 Compat = 5
+XgKickHack = 1 // Fixes black models on certain games in World Tour.
 ---------------------------------------------
 Serial = SLPM-62237
 Name   = Gakuen Toshi Vara Noir [Limited Edition]
@@ -35904,6 +35914,7 @@ Serial = SLUS-20184
 Name   = Resident Evil - CODE Veronica X
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes lightning effects.
 ---------------------------------------------
 Serial = SLUS-20186
 Name   = Monster Jam - Maximum Destruction
@@ -37334,6 +37345,7 @@ Serial = SLUS-20480
 Name   = Tennis - Sega Sports
 Region = NTSC-U
 Compat = 5
+XgKickHack = 1 // Fixes black models on certain games in World Tour.
 ---------------------------------------------
 Serial = SLUS-20482
 Name   = Sphinx and the Cursed Mummy
