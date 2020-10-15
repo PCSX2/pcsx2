@@ -10000,6 +10000,24 @@ Compat = 5
 Serial = SLES-51381
 Name   = Everblue 2
 Region = PAL-E
+[patches = 00C584CB]
+	author=kozarovv
+	// Rearrange COP2 ops to fix DIV Q timings
+	patch=1,EE,00230b68,word,4b0c211c
+	patch=1,EE,00230b6c,word,4be503bc
+	patch=1,EE,00230b84,word,4bc0295c
+	patch=1,EE,00230b88,word,4be603bc
+	patch=1,EE,00230ba0,word,4bc0319c
+	patch=1,EE,00230ba4,word,4be703bc
+	patch=1,EE,00230bbc,word,4bc039dc
+	patch=1,EE,00230bc0,word,4be803bc
+	patch=1,EE,00230bd8,word,4bc0421c
+	patch=1,EE,00230bdc,word,4be903bc
+	patch=1,EE,00230bf4,word,4bc04a5c
+	patch=1,EE,00230bf8,word,4bea03bc
+	patch=1,EE,00230c10,word,4bc0529c
+	patch=1,EE,00230c14,word,4beb03bc
+[/patches]
 ---------------------------------------------
 Serial = SLES-51382
 Name   = Shrek - Super Party
@@ -37979,6 +37997,24 @@ Serial = SLUS-20598
 Name   = Everblue 2
 Region = NTSC-U
 Compat = 5
+[patches = BCE9B7BB]
+	author=kozarovv
+	// Rearrange COP2 ops to fix DIV Q timings
+	patch=1,EE,00230b68,word,4b0c211c
+	patch=1,EE,00230b6c,word,4be503bc
+	patch=1,EE,00230b84,word,4bc0295c
+	patch=1,EE,00230b88,word,4be603bc
+	patch=1,EE,00230ba0,word,4bc0319c
+	patch=1,EE,00230ba4,word,4be703bc
+	patch=1,EE,00230bbc,word,4bc039dc
+	patch=1,EE,00230bc0,word,4be803bc
+	patch=1,EE,00230bd8,word,4bc0421c
+	patch=1,EE,00230bdc,word,4be903bc
+	patch=1,EE,00230bf4,word,4bc04a5c
+	patch=1,EE,00230bf8,word,4bea03bc
+	patch=1,EE,00230c10,word,4bc0529c
+	patch=1,EE,00230c14,word,4beb03bc
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20599
 Name   = Whiteout
