@@ -2525,7 +2525,7 @@ int GSState::Defrost(const GSFreezeData* fd)
 
 	ReadState(&m_q, data);
 
-	PRIM = !m_env.PRMODECONT.AC ? (GIFRegPRIM*)&m_env.PRMODE : &m_env.PRIM;
+	PRIM = &m_env.PRIM;
 
 	UpdateContext();
 
