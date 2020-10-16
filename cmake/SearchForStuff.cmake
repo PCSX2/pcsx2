@@ -40,10 +40,10 @@ endif()
 #list(APPEND wxWidgets_CONFIG_OPTIONS --version=3.0)
 
 # Let's not specifically require Gtk 2 or 3, either. As long as you have wx there...
-#if(GTK3_API AND NOT APPLE)
-#    list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
-#elseif(NOT APPLE)
+#if(GTK2_API AND NOT APPLE)
 #    list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk2)
+#elseif(NOT APPLE)
+#    list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
 #endif()
 
 # wx2.8 => /usr/bin/wx-config-2.8
@@ -124,14 +124,14 @@ endif()
 if(UNIX)
     find_package(X11)
     # Most plugins (if not all) and PCSX2 core need gtk2, so set the required flags
-    if (GTK3_API)
-        if(CMAKE_CROSSCOMPILING)
-            find_package(GTK3 REQUIRED gtk)
-        else()
-            check_lib(GTK3 gtk+-3.0 gtk/gtk.h)
-        endif()
+    if (GTK2_API)
+    find_package(GTK2 REQUIRED gtk)
     else()
-        find_package(GTK2 REQUIRED gtk)
+    if(CMAKE_CROSSCOMPILING)
+        find_package(GTK3 REQUIRED gtk)
+    else()
+        check_lib(GTK3 gtk+-3.0 gtk/gtk.h)
+    endif()
     endif()
 endif()
 
@@ -139,12 +139,12 @@ endif()
 #		    Use system include
 #----------------------------------------
 if(UNIX)
-	if(GTK2_FOUND)
-		include_directories(${GTK2_INCLUDE_DIRS})
-    elseif(GTK3_FOUND)
-		include_directories(${GTK3_INCLUDE_DIRS})
+	if(GTK3_FOUND)
+        include_directories(${GTK3_INCLUDE_DIRS})
         # A lazy solution
         set(GTK2_LIBRARIES ${GTK3_LIBRARIES})
+    elseif(GTK2_FOUND)
+        include_directories(${GTK2_INCLUDE_DIRS})
 	endif()
 
 	if(X11_FOUND)

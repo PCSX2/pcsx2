@@ -207,7 +207,7 @@ for ARG in "$@"; do
         --sdl12             ) flags="$flags -DSDL2_API=FALSE" ;;
         --extra             ) flags="$flags -DEXTRA_PLUGINS=TRUE" ;;
         --asan              ) flags="$flags -DUSE_ASAN=TRUE" ;;
-        --gtk3              ) flags="$flags -DGTK3_API=TRUE" ;;
+        --gtk2              ) flags="$flags -DGTK2_API=TRUE" ;;
         --lto               ) flags="$flags -DUSE_LTO=TRUE" ;;
         --pgo-optimize      ) flags="$flags -DUSE_PGO_OPTIMIZE=TRUE" ;;
         --pgo-generate      ) flags="$flags -DUSE_PGO_GENERATE=TRUE" ;;
