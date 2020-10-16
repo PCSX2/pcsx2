@@ -20,6 +20,7 @@ set(OpenGL_GL_PREFERENCE GLVND)
 find_package(OpenGL)
 find_package(PNG)
 find_package(Vtune)
+
 # The requirement of wxWidgets is checked in SelectPcsx2Plugins module
 # Does not require the module (allow to compile non-wx plugins)
 # Force the unicode build (the variable is only supported on cmake 2.8.3 and above)
@@ -35,13 +36,15 @@ else()
     set(wxWidgets_CONFIG_OPTIONS --unicode=yes)
 endif()
 
-list(APPEND wxWidgets_CONFIG_OPTIONS --version=3.0)
+# I'm removing the version check, because it excludes newer versions and requires specifically 3.0.
+#list(APPEND wxWidgets_CONFIG_OPTIONS --version=3.0)
 
-if(GTK3_API AND NOT APPLE)
-    list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
-elseif(NOT APPLE)
-    list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk2)
-endif()
+# Let's not specifically require Gtk 2 or 3, either. As long as you have wx there...
+#if(GTK3_API AND NOT APPLE)
+#    list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
+#elseif(NOT APPLE)
+#    list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk2)
+#endif()
 
 # wx2.8 => /usr/bin/wx-config-2.8
 # lib32-wx2.8 => /usr/bin/wx-config32-2.8
@@ -66,8 +69,20 @@ else()
     if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
         set(wxWidgets_CONFIG_EXECUTABLE "/usr/local/bin/wxgtk3u-3.0-config")
     endif()
+    if(EXISTS "/usr/bin/wx-config-3.2")
+        set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.2")
+    endif()
+    if(EXISTS "/usr/bin/wx-config-3.1")
+        set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.1")
+    endif()
     if(EXISTS "/usr/bin/wx-config-3.0")
         set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.0")
+    endif()
+    if(EXISTS "/usr/bin/wx-config")
+        set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config")
+    endif()
+    if(EXISTS "/usr/bin/wx-config-gtk3")
+        set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-gtk3")
     endif()
 endif()
 
@@ -76,13 +91,6 @@ find_package(ZLIB)
 
 ## Use pcsx2 package to find module
 include(FindLibc)
-
-## Only needed by the extra plugins
-if(EXTRA_PLUGINS)
-    include(FindCg)
-    include(FindGlew)
-    find_package(JPEG)
-endif()
 
 ## Use CheckLib package to find module
 include(CheckLib)
