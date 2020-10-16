@@ -1693,15 +1693,13 @@ Serial = SCES-51176
 Name   = Disney's Treasure Planet
 Region = PAL-M4
 EETimingHack = 1 // Fixes hang before going ingame.
-eeRoundMode = 0 // Fixes characters flying into sky.
-eeClampMode = 3 // Required to load areas correctly.
+vuClampMode = 3 // Fixes SPS when the solar surfer's engines are inactive
 ---------------------------------------------
 Serial = SCES-51177
 Name   = Disney's Treasure Planet
 Region = PAL
 EETimingHack = 1 // Fixes hang before going ingame.
-eeRoundMode = 0 // Fixes characters flying into sky.
-eeClampMode = 3 // Required to load areas correctly.
+vuClampMode = 3 // Fixes SPS when the solar surfer's engines are inactive
 ---------------------------------------------
 Serial = SCES-51179
 Name   = This is Football 2003
@@ -4773,8 +4771,7 @@ Serial = SCUS-97146
 Name   = Disney's Treasure Planet
 Region = NTSC-U
 EETimingHack = 1 // Fixes hang before going ingame.
-eeRoundMode = 0 // Fixes characters flying into sky.
-eeClampMode = 3 // Required to load areas correctly.
+vuClampMode = 3 // Fixes SPS when the solar surfer's engines are inactive
 ---------------------------------------------
 Serial = SCUS-97147
 Name   = Cool Boarders 2001 [Demo]
@@ -40068,8 +40065,10 @@ Name   = Disney's Stitch - Experiment 626
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21054
-Name   = Disney's Classics - Treasure Planet
+Name   = Disney's Treasure Planet (Disney Classics)
 Region = NTSC-U
+EETimingHack = 1 // Fixes hang before going ingame.
+vuClampMode = 3 // Fixes SPS when the solar surfer's engines are inactive
 ---------------------------------------------
 Serial = SLUS-21056
 Name   = Cabal, The ~~CANCELLED~~
