@@ -242,7 +242,7 @@ void GSState::Reset()
 
 	m_env.Reset();
 
-	PRIM = !m_env.PRMODECONT.AC ? (GIFRegPRIM*)&m_env.PRMODE : &m_env.PRIM;
+	PRIM = &m_env.PRIM;
 
 	UpdateContext();
 
@@ -777,9 +777,9 @@ __forceinline void GSState::ApplyPRIM(uint32 prim)
 {
 	// ASSERT(r->PRIM.PRIM < 7);
 
-	if(GSUtil::GetPrimClass(m_env.PRIM.PRIM) == GSUtil::GetPrimClass(prim & 7)) // NOTE: assume strips/fans are converted to lists
+	if (GSUtil::GetPrimClass(m_env.PRIM.PRIM) == GSUtil::GetPrimClass(prim & 7)) // NOTE: assume strips/fans are converted to lists
 	{
-		if((m_env.PRIM.u32[0] ^ prim) & 0x7f8) // all fields except PRIM
+		if (m_env.PRMODECONT.AC == 1 && (m_env.PRIM.u32[0] ^ prim) & 0x7f8) // all fields except PRIM
 		{
 			Flush();
 		}
@@ -789,11 +789,17 @@ __forceinline void GSState::ApplyPRIM(uint32 prim)
 		Flush();
 	}
 
-	m_env.PRIM.u32[0] = prim;
-	m_env.PRMODE._PRIM = prim;
+	if (m_env.PRMODECONT.AC == 1)
+	{
+		m_env.PRIM.u32[0] = prim;
 
-	UpdateContext();
-
+		UpdateContext();
+	}
+	else
+	{
+		m_env.PRIM.PRIM = prim & 0x7;
+	}
+	
 	UpdateVertexKick();
 
 	ASSERT(m_index.tail == 0 || m_index.buff[m_index.tail - 1] + 1 == m_vertex.next);
@@ -1117,37 +1123,30 @@ template<int i> void GSState::GIFRegHandlerXYOFFSET(const GIFReg* RESTRICT r)
 void GSState::GIFRegHandlerPRMODECONT(const GIFReg* RESTRICT r)
 {
 	GL_REG("PRMODECONT = 0x%x_%x", r->u32[1], r->u32[0]);
-	if(r->PRMODECONT != m_env.PRMODECONT)
-	{
-		Flush();
-	}
 
 	m_env.PRMODECONT.AC = r->PRMODECONT.AC;
 
-	PRIM = m_env.PRMODECONT.AC ? &m_env.PRIM : (GIFRegPRIM*)&m_env.PRMODE;
-
 	// if(PRIM->PRIM == 7) printf("Invalid PRMODECONT/PRIM\n");
-
-	UpdateContext();
-
-	UpdateVertexKick();
 }
 
 void GSState::GIFRegHandlerPRMODE(const GIFReg* RESTRICT r)
 {
 	GL_REG("PRMODE = 0x%x_%x", r->u32[1], r->u32[0]);
-	if(!m_env.PRMODECONT.AC)
+	if (!m_env.PRMODECONT.AC)
 	{
-		Flush();
+		if ((m_env.PRIM.u32[0] ^ r->PRMODE.u32[0]) & 0x7f8)
+			Flush();
+	}
+	else
+	{
+		return;
 	}
 
-	uint32 _PRIM = m_env.PRMODE._PRIM;
-	m_env.PRMODE = (GSVector4i)r->PRMODE;
-	m_env.PRMODE._PRIM = _PRIM;
+	uint32 _PRIM = m_env.PRIM.PRIM;
+	m_env.PRIM = (GSVector4i)r->PRMODE;
+	m_env.PRIM.PRIM = _PRIM;
 
 	UpdateContext();
-
-	UpdateVertexKick();
 }
 
 void GSState::GIFRegHandlerTEXCLUT(const GIFReg* RESTRICT r)
