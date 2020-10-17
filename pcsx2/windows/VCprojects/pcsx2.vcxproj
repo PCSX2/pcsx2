@@ -598,6 +598,7 @@
     <ClInclude Include="..\..\Recording\VirtualPad\VirtualPad.h" />
     <ClInclude Include="..\..\Recording\VirtualPad\VirtualPadData.h" />
     <ClInclude Include="..\..\Recording\VirtualPad\VirtualPadResources.h" />
+    <ClInclude Include="..\..\Recording\Utilities\InputRecordingLogger.h" />
     <ClInclude Include="..\..\Utilities\AsciiFile.h" />
     <ClInclude Include="..\..\Elfheader.h" />
     <ClInclude Include="..\..\CDVD\IsoFileFormats.h" />
