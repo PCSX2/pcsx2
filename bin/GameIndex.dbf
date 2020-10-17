@@ -10311,6 +10311,7 @@ Region = PAL-M3
 Serial = SLES-51553
 Name   = Chaos Legion
 Region = PAL-M5
+vuClampMode = 2 // Fixes SPS in item menu.
 ---------------------------------------------
 Serial = SLES-51554
 Name   = Cell Damage Overdrive
@@ -10575,6 +10576,8 @@ Region = PAL-E-F-G
 Serial = SLES-51696
 Name   = Dragon's Lair 3D - Special Edition
 Region = PAL-M5
+EETimingHack = 1 // Fixes hang before going ingame.
+VU0KickstartHack = 1 // Fixes SPS.
 ---------------------------------------------
 Serial = SLES-51697
 Name   = SSX 3
@@ -12240,8 +12243,9 @@ Name   = World Championship Pool 2004
 Region = PAL-UM3
 ---------------------------------------------
 Serial = SLES-52486
-Name   = Astroboy
+Name   = Astro Boy
 Region = PAL-M5
+eeRoundMode = 0 // Fixes character behaviour.
 ---------------------------------------------
 Serial = SLES-52490
 Name   = Dance UK - Extra Trax
@@ -18859,6 +18863,7 @@ Region = NTSC-K
 Serial = SLKA-25026
 Name   = Chaos Legion
 Region = NTSC-K
+vuClampMode = 2 // Fixes SPS in item menu.
 ---------------------------------------------
 Serial = SLKA-25030
 Name   = WWE SmackDown! Shut Your Mouth
@@ -19071,6 +19076,7 @@ Region = NTSC-K
 Serial = SLKA-25159
 Name   = Astro Boy
 Region = NTSC-K
+eeRoundMode = 0 // Fixes character behaviour.
 ---------------------------------------------
 Serial = SLKA-25160
 Name   = Shin Megami Tensei III: Nocturne Maniax
@@ -23187,6 +23193,7 @@ Serial = SLPM-65249
 Name   = Chaos Legion
 Region = NTSC-J
 Compat = 5
+vuClampMode = 2 // Fixes SPS in item menu.
 ---------------------------------------------
 Serial = SLPM-65254
 Name   = Galaxy Angel
@@ -24260,6 +24267,7 @@ Region = NTSC-J
 Serial = SLPM-65551
 Name   = Astro Boy Atom
 Region = NTSC-J
+eeRoundMode = 0 // Fixes character behaviour.
 ---------------------------------------------
 Serial = SLPM-65552
 Name   = Metal Wolf Rev [Limited Edition]
@@ -38459,6 +38467,7 @@ Serial = SLUS-20695
 Name   = Chaos Legion
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 // Fixes SPS in item menu.
 ---------------------------------------------
 Serial = SLUS-20696
 Name   = Jimmy Neutron - Boy Genius - Jet Fusion
@@ -39252,6 +39261,7 @@ Serial = SLUS-20867
 Name   = Astro Boy
 Region = NTSC-U
 Compat = 5
+eeRoundMode = 0 // Fixes character behaviour.
 ---------------------------------------------
 Serial = SLUS-20868
 Name   = MVP Baseball 2004
