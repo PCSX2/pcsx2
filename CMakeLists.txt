@@ -35,10 +35,15 @@ get_git_version_info()
 write_svnrev_h()
 
 if(NOT NO_TRANSLATION)
-# make the translation
-if(EXISTS "${CMAKE_SOURCE_DIR}/locales")
-    add_subdirectory(locales)
+    # make the translation
+    if(EXISTS "${CMAKE_SOURCE_DIR}/locales")
+        add_subdirectory(locales)
+    endif()
 endif()
+
+# 3rdpary Libraries
+if(EXISTS "${CMAKE_SOURCE_DIR}/3rdparty/fmt/fmt")
+    add_subdirectory(3rdparty/fmt/fmt)
 endif()
 
 # make common
@@ -95,3 +100,6 @@ else()
         INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2-linux.sh"          DESTINATION "${CMAKE_SOURCE_DIR}/bin")
     endif()
 endif()
+
+# Link Libraries
+target_link_libraries(PCSX2 fmt::fmt)
