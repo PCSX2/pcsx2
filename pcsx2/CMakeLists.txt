@@ -555,7 +555,7 @@ set(pcsx2RecordingHeaders
 	${rec_src}/InputRecordingFile.h
 	${rec_src}/NewRecordingFrame.h
 	${rec_src}/PadData.h
-	${rec_src}/Utilities/InputRecordingLogger.h
+    ${rec_src}/Utilities/InputRecordingLogger.h
 	${rec_vp_src}/VirtualPad.h
 	${rec_vp_src}/VirtualPadData.h
 	${rec_vp_src}/VirtualPadResources.h

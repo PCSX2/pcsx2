@@ -27,7 +27,6 @@
 
 #ifndef DISABLE_RECORDING
 #	include "Recording/InputRecording.h"
-#	include "Recording/Utilities/InputRecordingLogger.h"
 #endif
 
 #include <wx/utils.h>
@@ -143,7 +142,7 @@ void GSPanel::InitRecordingAccelerators()
 		m_Accels->findKeycodeWithCommandId("InputRecordingModeToggle").toTitleizedString(),
 		g_InputRecording.IsActive());
 
-	inputRec::consoleLog("Initialized Input Recording Key Bindings");
+	recordingConLog(L"Initialized Input Recording Key Bindings\n");
 }
 
 void GSPanel::RemoveRecordingAccelerators()

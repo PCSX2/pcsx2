@@ -27,7 +27,6 @@
 
 #include "InputRecording.h"
 #include "InputRecordingControls.h"
-#include "Utilities/InputRecordingLogger.h"
 
 #endif
 
@@ -222,7 +221,7 @@ void InputRecording::SetToRecordMode()
 	state = InputRecordingMode::Recording;
 	virtualPads[CONTROLLER_PORT_ONE]->SetReadOnlyMode(false);
 	virtualPads[CONTROLLER_PORT_TWO]->SetReadOnlyMode(false);
-	inputRec::log("Record mode ON");
+	recordingConLog("[REC]: Record mode ON.\n");
 }
 
 void InputRecording::SetToReplayMode()
@@ -230,15 +229,15 @@ void InputRecording::SetToReplayMode()
 	state = InputRecordingMode::Replaying;
 	virtualPads[CONTROLLER_PORT_ONE]->SetReadOnlyMode(true);
 	virtualPads[CONTROLLER_PORT_TWO]->SetReadOnlyMode(true);
-	inputRec::log("Replay mode ON");
+	recordingConLog("[REC]: Replay mode ON.\n");
 }
 
 void InputRecording::SetFrameCounter(u32 newGFrameCount)
 {
 	if (newGFrameCount > startingFrame + (u32)g_InputRecording.GetInputRecordingData().GetTotalFrames())
 	{
-		inputRec::consoleLog("Warning, you've loaded PCSX2 emulation to a point after the end of the original recording. This should be avoided.");
-		inputRec::consoleLog("Savestate's framecount has been ignored.");
+		recordingConLog(L"[REC]: Warning, you've loaded PCSX2 emulation to a point after the end of the original recording. This should be avoided.\n");
+		recordingConLog(L"[REC]: Savestate's framecount has been ignored.\n");
 		frameCounter = g_InputRecording.GetInputRecordingData().GetTotalFrames();
 		if (state == InputRecordingMode::Replaying)
 			SetToRecordMode();
@@ -248,7 +247,7 @@ void InputRecording::SetFrameCounter(u32 newGFrameCount)
 	{
 		if (newGFrameCount < startingFrame)
 		{
-			inputRec::consoleLog("Warning, you've loaded PCSX2 emulation to a point before the start of the original recording. This should be avoided.");
+			recordingConLog(L"[REC]: Warning, you've loaded PCSX2 emulation to a point before the start of the original recording. This should be avoided.\n");
 			if (state == InputRecordingMode::Recording)
 				SetToReplayMode();
 		}
@@ -262,8 +261,9 @@ void InputRecording::SetFrameCounter(u32 newGFrameCount)
 void InputRecording::SetStartingFrame(u32 newStartingFrame)
 {
 	startingFrame = newStartingFrame;
+	// TODO - make a function of my own to simplify working with the logging macros
 	if (inputRecordingData.FromSaveState())
-		inputRec::consoleLog("Internal Starting Frame: %d", startingFrame);
+		recordingConLog(wxString::Format(L"[REC]: Internal Starting Frame: %d\n", startingFrame));
 	frameCounter = 0;
 	initialLoad = false;
 	g_InputRecordingControls.Lock(startingFrame);
@@ -276,7 +276,7 @@ void InputRecording::Stop()
 	virtualPads[CONTROLLER_PORT_TWO]->SetReadOnlyMode(false);
 	incrementUndo = false;
 	if (inputRecordingData.Close())
-		inputRec::log("Input recording stopped");
+		recordingConLog(L"[REC]: InputRecording Recording Stopped.\n");
 }
 
 bool InputRecording::Create(wxString FileName, bool fromSaveState, wxString authorName)
@@ -307,8 +307,7 @@ bool InputRecording::Create(wxString FileName, bool fromSaveState, wxString auth
 	inputRecordingData.WriteHeader();
 	SetToRecordMode();
 	g_InputRecordingControls.DisableFrameAdvance();
-	inputRec::log("Started new input recording");
-	inputRec::consoleLog("Filename %s", std::string(FileName));
+	recordingConLog(wxString::Format(L"[REC]: Started new recording - [%s]\n", FileName));
 	return true;
 }
 
@@ -325,14 +324,14 @@ bool InputRecording::Play(wxString fileName)
 	{
 		if (!CoreThread.IsOpen())
 		{
-			inputRec::consoleLog("Game is not open, aborting playing input recording which starts on a save-state.");
+			recordingConLog(L"[REC]: Game is not open, aborting playing input recording which starts on a save-state.\n");
 			inputRecordingData.Close();
 			return false;
 		}
 		if (!wxFileExists(inputRecordingData.GetFilename() + "_SaveState.p2s"))
 		{
-			inputRec::consoleLog("Could not locate savestate file at location - %s_SaveState.p2s",
-								 inputRecordingData.GetFilename());
+			recordingConLog(wxString::Format("[REC]: Could not locate savestate file at location - %s_SaveState.p2s\n",
+											 inputRecordingData.GetFilename()));
 			inputRecordingData.Close();
 			return false;
 		}
@@ -348,19 +347,18 @@ bool InputRecording::Play(wxString fileName)
 	// Check if the current game matches with the one used to make the original recording
 	if (!g_Conf->CurrentIso.IsEmpty())
 		if (resolveGameName() != inputRecordingData.GetHeader().gameName)
-			inputRec::consoleLog("Input recording was possibly constructed for a different game.");
+			recordingConLog(L"[REC]: Recording was possibly constructed for a different game.\n");
 
 	incrementUndo = true;
 	SetToReplayMode();
-	inputRec::log("Playing input recording");
 	g_InputRecordingControls.DisableFrameAdvance();
-	inputRec::consoleMultiLog({wxString::Format("Replaying input recording - [%s]", std::string(inputRecordingData.GetFilename())),
-							   wxString::Format("PCSX2 Version Used: %s", std::string(inputRecordingData.GetHeader().emu)),
-							   wxString::Format("Recording File Version: %d", inputRecordingData.GetHeader().version),
-							   wxString::Format("Associated Game Name or ISO Filename: %s", std::string(inputRecordingData.GetHeader().gameName)),
-							   wxString::Format("Author: %s", inputRecordingData.GetHeader().author),
-							   wxString::Format("Total Frames: %d", inputRecordingData.GetTotalFrames()),
-							   wxString::Format("Undo Count: %d", inputRecordingData.GetUndoCount())});
+	recordingConLog(wxString::Format(L"[REC]: Replaying input recording - [%s]\n", inputRecordingData.GetFilename()));
+	recordingConLog(wxString::Format(L"[REC]: PCSX2 Version Used: %s\n", inputRecordingData.GetHeader().emu));
+	recordingConLog(wxString::Format(L"[REC]: Recording File Version: %d\n", inputRecordingData.GetHeader().version));
+	recordingConLog(wxString::Format(L"[REC]: Associated Game Name or ISO Filename: %s\n", inputRecordingData.GetHeader().gameName));
+	recordingConLog(wxString::Format(L"[REC]: Author: %s\n", inputRecordingData.GetHeader().author));
+	recordingConLog(wxString::Format(L"[REC]: Total Frames: %d\n", inputRecordingData.GetTotalFrames()));
+	recordingConLog(wxString::Format(L"[REC]: Undo Count: %d\n", inputRecordingData.GetUndoCount()));
 	return true;
 }
 
