@@ -163,9 +163,6 @@
     <Filter Include="System\Ps2\SPU2">
       <UniqueIdentifier>{bed493d6-96dc-4057-a1f2-31f88ec927d9}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Recording\Utilities">
-      <UniqueIdentifier>{85c5a0d2-6404-439f-8756-d908a1442b96}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Recording\VirtualPad\Images">
       <UniqueIdentifier>{ad528458-08eb-49a2-aefa-3c2b86ab8896}</UniqueIdentifier>
     </Filter>
@@ -1520,9 +1517,6 @@
     </ClInclude>
     <ClInclude Include="..\..\SPU2\Windows\WinConfig.h">
       <Filter>System\Ps2\SPU2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Recording\Utilities\InputRecordingLogger.h">
-      <Filter>Recording\Utilities</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
