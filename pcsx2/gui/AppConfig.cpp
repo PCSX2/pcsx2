@@ -173,6 +173,9 @@ namespace PathDefs
 
 	wxDirName GetProgramDataDir()
 	{
+		char* evar = getenv("PCSX2_GAMEINDEX_DIR");
+		if (evar)
+			return wxDirName(evar);
 #ifndef GAMEINDEX_DIR_COMPILATION
 		return AppRoot();
 #else
@@ -221,6 +224,9 @@ namespace PathDefs
 
 	wxDirName GetPlugins()
 	{
+		char* evar = getenv("PCSX2_PLUGIN_DIR");
+		if (evar)
+			return wxDirName(evar);
 		// Each linux distributions have his rules for path so we give them the possibility to
 		// change it with compilation flags. -- Gregory
 #ifndef PLUGIN_DIR_COMPILATION
