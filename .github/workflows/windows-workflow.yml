@@ -105,3 +105,4 @@ jobs:
         with:
           name: PCSX2-${{ matrix.platform }}-${{ steps.git-vars.outputs.artifact-metadata }}
           path: bin
+          retention-days: 30 # https://docs.github.com/en/free-pro-team@latest/actions/reference/usage-limits-billing-and-administration#artifact-and-log-retention-policy
