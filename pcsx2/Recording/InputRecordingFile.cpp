@@ -21,8 +21,7 @@
 #include "MainFrame.h"
 #include "MemoryTypes.h"
 
-#include "InputRecordingFile.h"
-#include "Utilities/InputRecordingLogger.h"
+#include "Recording/InputRecordingFile.h"
 
 void InputRecordingFileHeader::Init()
 {
@@ -121,10 +120,10 @@ bool InputRecordingFile::open(const wxString path, bool newRecording)
 			return true;
 		}
 		Close();
-		inputRec::consoleLog("Input recording file header is invalid");
+		recordingConLog(wxString::Format("[REC]: Input recording file header is invalid\n"));
 		return false;
 	}
-	inputRec::consoleLog("Input recording file opening failed. Error - %s", strerror(errno));
+	recordingConLog(wxString::Format("[REC]: Input recording file opening failed. Error - %s\n", strerror(errno)));
 	return false;
 }
 
@@ -141,7 +140,7 @@ bool InputRecordingFile::OpenNew(const wxString path, bool fromSavestate)
 			}
 		}
 		else
-			inputRec::consoleLog("Game is not open, aborting playing input recording which starts on a save-state.");
+			recordingConLog(L"[REC]: Game is not open, aborting playing input recording which starts on a save-state.\n");
 		return false;
 	}
 	else if (open(path, true))
@@ -243,7 +242,7 @@ bool InputRecordingFile::verifyRecordingFileHeader()
 	// Check for current verison
 	if (header.version != 1)
 	{
-		inputRec::consoleLog("Input recording file is not a supported version - %d", header.version);
+		recordingConLog(wxString::Format("[REC]: Input recording file is not a supported version - %d\n", header.version));
 		return false;
 	}
 	return true;
