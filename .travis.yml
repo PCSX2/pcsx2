@@ -6,10 +6,10 @@ cache: ccache
 
 dist: xenial
 
-# build only master branch
-branches:
-  only:
-    - master
+# # build only master branch
+# branches:
+#   only:
+#     - master
 
 matrix:
   include:
