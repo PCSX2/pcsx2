@@ -36,9 +36,10 @@ jobs:
       matrix:
         os: [ubuntu-20.04]
         platform: [x86, x64]
+        compiler: [gcc, clang]
         experimental: [false]
 
-    name: ${{ matrix.os }}-${{ matrix.platform }}
+    name: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
@@ -82,23 +83,22 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .ccache
-          key: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-${{ matrix.compiler-version }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          key: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
           restore-keys: |
-            ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-${{ matrix.compiler-version }}-ccache-
+            ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-ccache-
 
       - name: Install Packages
         env:
           PLATFORM: ${{ matrix.platform }}
-        # TODO - give the file executable permissions and commit it
-        run: |
-          chmod +x .github/workflows/scripts/build-linux.sh
-          ./.github/workflows/scripts/build-linux.sh install_packages
+          COMPILER: ${{ matrix.compiler }}
+        run: ./.github/workflows/scripts/linux/install-packages.sh
 
-      - name: Build PCSX2
+      - name: Generate CMake
         env:
           PLATFORM: ${{ matrix.platform }}
-        # TODO - give the file executable permissions and commit it
-        run: |
-          chmod +x .github/workflows/scripts/build-linux.sh
-          ./.github/workflows/scripts/build-linux.sh generate_cmake
-          ./.github/workflows/scripts/build-linux.sh compile
+          COMPILER: ${{ matrix.compiler }}
+        run: ./.github/workflows/scripts/linux/generate-cmake.sh
+
+      - name: Build PCSX2
+        working-directory: ./build
+        run: ../.github/workflows/scripts/linux/compile.sh
