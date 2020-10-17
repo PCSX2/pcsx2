@@ -244,7 +244,7 @@ for ARG in "$@"; do
             echo "--no-portaudio  : Skip portaudio for spu2x."
             echo
             echo "** Expert Developer option **"
-            echo "--gtk3          : replace GTK2 by GTK3"
+            echo "--gtk2          : use GTK 2 instead of GTK 3"
             echo "--no-cross-multilib: Build a native PCSX2 (nonfunctional recompiler)"
             echo "--no-trans      : Don't regenerate mo files when building."
             echo "--clang         : Build with Clang/llvm"
