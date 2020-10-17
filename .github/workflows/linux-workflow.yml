@@ -63,9 +63,10 @@ jobs:
         with:
           key: submodules-${{ hashFiles('./.gitmodules') }}
           path: |
+            ./.git/modules/
+            ./3rdparty/fmt
             ./3rdparty/xz
             ./3rdparty/gtest
-            ./.git/modules/
 
       - name: Checkout Submodules
         if: steps.cache-submodules.outputs.cache-hit != 'true'
