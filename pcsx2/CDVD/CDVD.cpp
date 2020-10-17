@@ -1677,6 +1677,18 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 			case 0x12: // sceCdReadILinkId (0:9)
 				SetResultSize(9);
 				cdvdReadILinkID(&cdvd.Result[1]);
+				if ((!cdvd.Result[3]) && (!cdvd.Result[4])) // nvm file is missing correct iLinkId, return hardcoded one
+				{
+					cdvd.Result[0] = 0x00;
+					cdvd.Result[1] = 0x00;
+					cdvd.Result[2] = 0xAC;
+					cdvd.Result[3] = 0xFF;
+					cdvd.Result[4] = 0xFF;
+					cdvd.Result[5] = 0xFF;
+					cdvd.Result[6] = 0xFF;
+					cdvd.Result[7] = 0xB9;
+					cdvd.Result[8] = 0x86;
+				}
 				break;
 
 			case 0x13: // sceCdWriteILinkID (8:1)
