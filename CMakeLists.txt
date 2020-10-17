@@ -100,6 +100,3 @@ else()
         INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2-linux.sh"          DESTINATION "${CMAKE_SOURCE_DIR}/bin")
     endif()
 endif()
-
-# Link Libraries
-target_link_libraries(PCSX2 fmt::fmt)
