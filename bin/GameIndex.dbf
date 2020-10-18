@@ -13646,22 +13646,27 @@ Region = PAL-M4 // Nordic.
 Serial = SLES-53028
 Name   = Hitman - Blood Money
 Region = PAL-E
+vuClampMode = 0 // Fixes bump mapping issues
 ---------------------------------------------
 Serial = SLES-53029
 Name   = Hitman - Blood Money
 Region = PAL-F
+vuClampMode = 0 // Fixes bump mapping issues
 ---------------------------------------------
 Serial = SLES-53030
 Name   = Hitman - Blood Money
 Region = PAL-G
+vuClampMode = 0 // Fixes bump mapping issues
 ---------------------------------------------
 Serial = SLES-53031
 Name   = Hitman - Blood Money
 Region = PAL-I
+vuClampMode = 0 // Fixes bump mapping issues
 ---------------------------------------------
 Serial = SLES-53032
 Name   = Hitman - Blood Money
 Region = PAL-S
+vuClampMode = 0 // Fixes bump mapping issues
 ---------------------------------------------
 Serial = SLES-53035
 Name   = Masters of the Universe - He-Man - Defender of Greyskull
@@ -40479,6 +40484,7 @@ Serial = SLUS-21108
 Name   = Hitman - Blood Money
 Region = NTSC-U
 Compat = 5
+vuClampMode = 0 // Fixes bump mapping issues
 ---------------------------------------------
 Serial = SLUS-21109
 Name   = Drive to Survive
@@ -45105,6 +45111,7 @@ Region = NTSC-U
 Serial = SLUS-29191
 Name   = Hitman - Blood Money & Urban Chaos [Demo]
 Region = NTSC-U
+vuClampMode = 0 // Fixes bump mapping issues
 ---------------------------------------------
 Serial = SLUS-29192
 Name   = Test Drive Unlimited [Public Beta Vol.1.0]
