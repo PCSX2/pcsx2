@@ -1420,6 +1420,15 @@ Serial = SCES-50499
 Name   = Ecco the Dolphin - Defender of the Future
 Region = PAL-M5
 Compat = 2
+[patches = 7FEDF999]
+	author=PSI
+	// Ecco has an evil race condition: one of its custom IOP modules resets CDVDMAN while it's loading a module from disc.
+	// The race condition is resolved by making the EE slower. This gives enough time for CDVDMAN to reset itself before
+	// the EE sends a request to load a module.
+	// Alternatively, this patch swaps the load order of the modules.
+	patch=1,EE,201018d8,extended,24040007
+	patch=1,EE,201018e4,extended,24040006
+[/patches]
 ---------------------------------------------
 Serial = SCES-50500
 Name   = Headhunter
