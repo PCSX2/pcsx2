@@ -184,7 +184,7 @@ void VifUnpackSSE_Dynarec::ModUnpack( int upknum, bool PostOp )
 
 		case 8: if(PostOp) { UnpkLoopIteration++; UnpkLoopIteration = UnpkLoopIteration & 0x1; } break;
 		case 9:	if (!PostOp) { UnpkLoopIteration++; } break;
-		case 10: 	break;
+		case 10:if (!PostOp) { UnpkLoopIteration++; } break;
 
 		case 12: 	break;
 		case 13: 	break;

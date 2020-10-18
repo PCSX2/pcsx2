@@ -289,6 +289,8 @@ void VifUnpackSSE_Base::xUPK_V3_8() const {
 		xPUNPCK.LWD(destReg, destReg);
 		xShiftR    (destReg, 24);
 	}
+	if (UnpkLoopIteration != IsAligned)
+		xAND.PS(destReg, ptr128[SSEXYZWMask[0]]);
 }
 
 void VifUnpackSSE_Base::xUPK_V4_32() const {
