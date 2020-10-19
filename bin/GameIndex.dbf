@@ -11805,21 +11805,61 @@ Serial = SLES-52278
 Name   = Mafia
 Region = PAL-E
 EETimingHack = 1
+[patches = A8ECA67A]
+	comment=Patch by Prafull
+	// Avoids hanging before Molotov Party.
+	patch=1,EE,003e2bb4,word,00000000
+	// Fixes crash in The priest mission.
+	patch=1,EE,0016f04c,word,1000000d
+[/patches]
 ---------------------------------------------
 Serial = SLES-52279
 Name   = Mafia
 Region = PAL-G
 EETimingHack = 1
+[patches = B1744B0F]
+	comment=Patch by Prafull
+	// Avoids hanging before Molotov Party.
+	patch=1,EE,003e2454,word,00000000
+	// Fixes crash in The priest mission.
+	patch=1,EE,0016f04c,word,1000000d
+[/patches]
 ---------------------------------------------
 Serial = SLES-52280
 Name   = Mafia
 Region = PAL-F
 EETimingHack = 1
+[patches = E185C725]
+	comment=Patch by Prafull
+	// Avoids hanging before Molotov Party.
+	patch=1,EE,003e23d4,word,00000000
+	// Fixes crash in The priest mission.
+	patch=1,EE,0016f04c,word,1000000d
+[/patches]
+---------------------------------------------
+Serial = SLES-52281
+Name   = Mafia
+Region = PAL-I
+EETimingHack = 1
+[patches = B5FFA1E9]
+	comment=Patch by Prafull
+	// Avoids hanging before Molotov Party.
+	patch=1,EE,003e25c4,word,00000000
+	// Fixes crash in The priest mission.
+	patch=1,EE,0016f04c,word,1000000d
+[/patches]
 ---------------------------------------------
 Serial = SLES-52282
 Name   = Mafia
 Region = PAL-S
 EETimingHack = 1
+[patches = B67F4F9E]
+	comment=Patch by Prafull
+	// Avoids hanging before Molotov Party.
+	patch=1,EE,003e25f4,word,00000000
+	// Fixes crash in The priest mission.
+	patch=1,EE,0016f04c,word,1000000d
+[/patches]
 ---------------------------------------------
 Serial = SLES-52283
 Name   = Terminator 3 - The Redemption
