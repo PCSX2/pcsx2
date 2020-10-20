@@ -17106,6 +17106,7 @@ Serial = SLES-54569
 Name   = Zombie Hunters 2
 Region = PAL-E
 Compat = 5
+XgKickHack = 1 // Fixes blank textures
 ---------------------------------------------
 Serial = SLES-54579
 Name   = Flintstones, The - Bedrock Racing
