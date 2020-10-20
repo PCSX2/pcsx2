@@ -155,3 +155,4 @@ for i in "${APP_IMAGE_PACKAGES[@]}"; do
   APP_IMAGE_PACKAGES_STR="${APP_IMAGE_PACKAGES} ${i}${ARCH}"
 done
 echo "Will install the following packages for constructing the AppImage - ${APP_IMAGE_PACKAGES_STR}"
+sudo apt-get -y install ${APP_IMAGE_PACKAGES_STR}
