@@ -19740,6 +19740,12 @@ Compat = 5
 Serial = SLPM-55191
 Name   = L2 - Love x Loop
 Region = NTSC-J
+[patches = 9F9DCD8A]
+	author=PSI, kozarovv
+	// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+	// This patch skips over the stack code, allowing the game to boot.
+	patch=1,EE,001B4828,word,10000008
+[/patches]
 ---------------------------------------------
 Serial = SLPM-55207
 Name   = Hakuouki - Zuisouroku [Limited Edition]
@@ -26670,6 +26676,12 @@ Region = NTSC-J
 Serial = SLPM-66186
 Name   = Game ni Nattayo! Dokura-chan
 Region = NTSC-J
+[patches = 169099FC]
+	author=PSI, kozarovv
+	// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+	// This patch skips over the stack code, allowing the game to boot.
+	patch=1,EE,00156608,word,10000003
+[/patches]
 ---------------------------------------------
 Serial = SLPM-66187
 Name   = Exciting Pro Wrestling 6 - SmackDown vs. RAW [Yuke's the Best]
@@ -28131,6 +28143,12 @@ Region = NTSC-J
 Serial = SLPM-66582
 Name   = Kohitsuji Hokaku Keakaku! Sweet Boys Life [Limited Edition]
 Region = NTSC-J
+[patches = 9466CBA1]
+	author=PSI, kozarovv
+	// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+	// This patch skips over the stack code, allowing the game to boot.
+	patch=1,EE,0014A148,word,10000003
+[/patches]
 ---------------------------------------------
 Serial = SLPM-66583
 Name   = Kohitsuji Hokaku Keakaku! Sweet Boys Life
@@ -28727,6 +28745,12 @@ Region = NTSC-J
 Serial = SLPM-66738
 Name   = Sakura Ran Koukou Hosutobu
 Region = NTSC-J
+[patches = 3BE2C709]
+	author=PSI, Prafull
+	// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+	// This patch skips over the stack code, allowing the game to boot.
+	patch=1,EE,00189e88,word,10000003
+[/patches]
 ---------------------------------------------
 Serial = SLPM-66739
 Name   = Burnout Dominator
