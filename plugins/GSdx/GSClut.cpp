@@ -40,31 +40,46 @@ GSClut::GSClut(GSLocalMemory* mem)
 	{
 		for(int j = 0; j < 64; j++)
 		{
-			m_wc[0][i][j] = &GSClut::WriteCLUT_NULL;
+			// The GS seems to check the lower 3 bits to tell if the format is 8/4bit
+			// for the reload.
+			const bool eight_bit = (j & 0x7) == 0x3;
+			const bool four_bit = (j & 0x7) == 0x4;
+
+			switch (i)
+			{
+			case PSM_PSMCT32:
+			case PSM_PSMCT24: // undocumented (KH?)
+				if(eight_bit)
+					m_wc[0][i][j] = &GSClut::WriteCLUT32_I8_CSM1;
+				else if(four_bit)
+					m_wc[0][i][j] = &GSClut::WriteCLUT32_I4_CSM1;
+				else
+					m_wc[0][i][j] = &GSClut::WriteCLUT_NULL;
+				break;
+			case PSM_PSMCT16:
+				if (eight_bit)
+					m_wc[0][i][j] = &GSClut::WriteCLUT16_I8_CSM1;
+				else if (four_bit)
+					m_wc[0][i][j] = &GSClut::WriteCLUT16_I4_CSM1;
+				else
+					m_wc[0][i][j] = &GSClut::WriteCLUT_NULL;
+				break;
+			case PSM_PSMCT16S:
+				if (eight_bit)
+					m_wc[0][i][j] = &GSClut::WriteCLUT16S_I8_CSM1;
+				else if (four_bit)
+					m_wc[0][i][j] = &GSClut::WriteCLUT16S_I4_CSM1;
+				else
+					m_wc[0][i][j] = &GSClut::WriteCLUT_NULL;
+				break;
+			default:
+				m_wc[0][i][j] = &GSClut::WriteCLUT_NULL;
+			}
+
+			// TODO: test this
 			m_wc[1][i][j] = &GSClut::WriteCLUT_NULL;
 		}
 	}
-
-	m_wc[0][PSM_PSMCT32][PSM_PSMT8] = &GSClut::WriteCLUT32_I8_CSM1;
-	m_wc[0][PSM_PSMCT32][PSM_PSMT8H] = &GSClut::WriteCLUT32_I8_CSM1;
-	m_wc[0][PSM_PSMCT32][PSM_PSMT4] = &GSClut::WriteCLUT32_I4_CSM1;
-	m_wc[0][PSM_PSMCT32][PSM_PSMT4HL] = &GSClut::WriteCLUT32_I4_CSM1;
-	m_wc[0][PSM_PSMCT32][PSM_PSMT4HH] = &GSClut::WriteCLUT32_I4_CSM1;
-	m_wc[0][PSM_PSMCT24][PSM_PSMT8] = &GSClut::WriteCLUT32_I8_CSM1;
-	m_wc[0][PSM_PSMCT24][PSM_PSMT8H] = &GSClut::WriteCLUT32_I8_CSM1;
-	m_wc[0][PSM_PSMCT24][PSM_PSMT4] = &GSClut::WriteCLUT32_I4_CSM1;
-	m_wc[0][PSM_PSMCT24][PSM_PSMT4HL] = &GSClut::WriteCLUT32_I4_CSM1;
-	m_wc[0][PSM_PSMCT24][PSM_PSMT4HH] = &GSClut::WriteCLUT32_I4_CSM1;
-	m_wc[0][PSM_PSMCT16][PSM_PSMT8] = &GSClut::WriteCLUT16_I8_CSM1;
-	m_wc[0][PSM_PSMCT16][PSM_PSMT8H] = &GSClut::WriteCLUT16_I8_CSM1;
-	m_wc[0][PSM_PSMCT16][PSM_PSMT4] = &GSClut::WriteCLUT16_I4_CSM1;
-	m_wc[0][PSM_PSMCT16][PSM_PSMT4HL] = &GSClut::WriteCLUT16_I4_CSM1;
-	m_wc[0][PSM_PSMCT16][PSM_PSMT4HH] = &GSClut::WriteCLUT16_I4_CSM1;
-	m_wc[0][PSM_PSMCT16S][PSM_PSMT8] = &GSClut::WriteCLUT16S_I8_CSM1;
-	m_wc[0][PSM_PSMCT16S][PSM_PSMT8H] = &GSClut::WriteCLUT16S_I8_CSM1;
-	m_wc[0][PSM_PSMCT16S][PSM_PSMT4] = &GSClut::WriteCLUT16S_I4_CSM1;
-	m_wc[0][PSM_PSMCT16S][PSM_PSMT4HL] = &GSClut::WriteCLUT16S_I4_CSM1;
-	m_wc[0][PSM_PSMCT16S][PSM_PSMT4HH] = &GSClut::WriteCLUT16S_I4_CSM1;
 
 	m_wc[1][PSM_PSMCT32][PSM_PSMT8] = &GSClut::WriteCLUT32_CSM2<256>;
 	m_wc[1][PSM_PSMCT32][PSM_PSMT8H] = &GSClut::WriteCLUT32_CSM2<256>;
@@ -236,6 +251,12 @@ template<int n> void GSClut::WriteCLUT16S_CSM2(const GIFRegTEX0& TEX0, const GIF
 	{
 		clut[i] = s[col[i]];
 	}
+}
+
+void GSClut::WriteCLUT_NULL(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
+{
+	// xenosaga3, bios
+	GL_INS("[WARNING] CLUT write ignored (psm: %d, cpsm: %d)", TEX0.PSM, TEX0.CPSM);
 }
 
 #if 0
