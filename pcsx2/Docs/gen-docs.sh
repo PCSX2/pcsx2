@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 ### Retrieve the latest git tag
 ### - Assumes atleast git 2.18

@@ -25,7 +25,6 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
    # If you'd like to temporarily disable it, either comment out the line, or remove it!
   gameFixes:
     - VuAddSubHack
-    - FpuCompareHack
     - FpuMulHack
     - FpuNegDivHack
     - XGKickHack
@@ -112,9 +111,6 @@ These values are case-sensitive so take care.  If you incorrectly specify a Game
 
 -   `VuAddSubHack`
     -   Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
-
--   `FpuCompareHack`
-    -   Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
 
 -   `FpuMulHack`
     -   Tales of Destiny hangs.
