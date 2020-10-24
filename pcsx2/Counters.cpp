@@ -287,7 +287,10 @@ Fixed100 GetVerticalFrequency()
 		return EmuConfig.GS.FrameratePAL;
 	case GS_VideoMode::NTSC:
 	case GS_VideoMode::DVD_NTSC:
-		return EmuConfig.GS.FramerateNTSC;
+		// TODO: beatmania appears to use a strange NTSC mode setting with interlace disabled
+		// As far as I know this isn't a valid setting, but hw tests confirm this drops the
+		// framerate slightly which allows the audio to sync back up.
+		return gsIsInterlaced ? EmuConfig.GS.FramerateNTSC : EmuConfig.GS.FramerateNTSC - 0.11f;
 	case GS_VideoMode::SDTV_480P:
 		return 59.94;
 	case GS_VideoMode::HDTV_1080P:
