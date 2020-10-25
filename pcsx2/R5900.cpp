@@ -755,7 +755,12 @@ inline bool isBranchOrJump(u32 addr)
 {
 	u32 op = memRead32(addr);
 	const OPCODE& opcode = GetInstruction(op);
-
+	
+	// Return false for eret & syscall as they are branch type in pcsx2 debugging tools,
+	// but shouldn't have delay slot in isBreakpointNeeded/isMemcheckNeeded.
+	if ((opcode.flags == (IS_BRANCH | BRANCHTYPE_SYSCALL)) || (opcode.flags == (IS_BRANCH | BRANCHTYPE_ERET)))
+		return false;
+		
 	return (opcode.flags & IS_BRANCH) != 0;
 }
 
