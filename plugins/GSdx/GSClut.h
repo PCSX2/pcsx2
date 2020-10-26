@@ -75,7 +75,7 @@ class alignas(32) GSClut : public GSAlignedClass<32>
 	template<int n> void WriteCLUT16_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 	template<int n> void WriteCLUT16S_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 
-	void WriteCLUT_NULL(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT) {} // xenosaga 3, bios
+	void WriteCLUT_NULL(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 
 	static void WriteCLUT_T32_I8_CSM1(const uint32* RESTRICT src, uint16* RESTRICT clut);
 	static void WriteCLUT_T32_I4_CSM1(const uint32* RESTRICT src, uint16* RESTRICT clut);
