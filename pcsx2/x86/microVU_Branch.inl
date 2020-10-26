@@ -71,7 +71,8 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
 	}
 
 	// Save MAC, Status and CLIP Flag Instances
-	xMOV(ptr32[&mVU.regs().VI[REG_STATUS_FLAG].UL], getFlagReg(fStatus));
+	mVUallocSFLAGc(gprT1, gprT2, fStatus);
+	xMOV(ptr32[&mVU.regs().VI[REG_STATUS_FLAG].UL], gprT1);
 	mVUallocMFLAGa(mVU, gprT1, fMac);
 	mVUallocCFLAGa(mVU, gprT2, fClip);
 	xMOV(ptr32[&mVU.regs().VI[REG_MAC_FLAG].UL], gprT1);
@@ -170,7 +171,8 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 	}
 
 	// Save MAC, Status and CLIP Flag Instances
-	xMOV(ptr32[&mVU.regs().VI[REG_STATUS_FLAG].UL],	getFlagReg(fStatus));
+	mVUallocSFLAGc(gprT1, gprT2, fStatus);
+	xMOV(ptr32[&mVU.regs().VI[REG_STATUS_FLAG].UL], gprT1);
 	mVUallocMFLAGa(mVU, gprT1, fMac);
 	mVUallocCFLAGa(mVU, gprT2, fClip);
 	xMOV(ptr32[&mVU.regs().VI[REG_MAC_FLAG].UL],	gprT1);
