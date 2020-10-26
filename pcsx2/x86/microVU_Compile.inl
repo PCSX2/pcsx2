@@ -689,6 +689,12 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 			goto perf_and_return;
 		}
 		else if (!mVUinfo.isBdelay) {
+			// Handle range wrapping
+			if ((xPC + 8) == mVU.microMemSize)
+			{
+				mVUsetupRange(mVU, xPC, false);
+				mVUsetupRange(mVU, 0, 1);
+			}
 			incPC(1);
 		}
 		else {

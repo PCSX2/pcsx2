@@ -230,28 +230,27 @@ void mVUprintUniqueRatio(microVU& mVU) {
 	DevCon.WriteLn("%d / %d [%3.1f%%]", v.size(), total, 100.-(double)v.size()/(double)total*100.);
 }
 
-// Compare partial program by only checking compiled ranges...
-__ri bool mVUcmpPartial(microVU& mVU, microProgram& prog) {
-	std::deque<microRange>::const_iterator it(prog.ranges->begin());
-	for ( ; it != prog.ranges->end(); ++it) {
-		if((it[0].start<0)||(it[0].end<0))  { DevCon.Error("microVU%d: Negative Range![%d][%d]", mVU.index, it[0].start, it[0].end); }
-		if (memcmp_mmx(cmpOffset(prog.data), cmpOffset(mVU.regs().Micro), ((it[0].end + 8)  -  it[0].start))) {
-			return 0;
-		}
-	}
-	return 1;
-}
-
 // Compare Cached microProgram to mVU.regs().Micro
 __fi bool mVUcmpProg(microVU& mVU, microProgram& prog, const bool cmpWholeProg) {
-	if ((cmpWholeProg && !memcmp_mmx((u8*)prog.data, mVU.regs().Micro, mVU.microMemSize))
-	|| (!cmpWholeProg && mVUcmpPartial(mVU, prog))) {
-		mVU.prog.cleared =  0;
-		mVU.prog.cur	 = &prog;
-		mVU.prog.isSame  =  cmpWholeProg ? 1 : -1;
-		return true;
+	if (cmpWholeProg)
+	{
+		if (memcmp_mmx((u8*)prog.data, mVU.regs().Micro, mVU.microMemSize))
+			return false;
 	}
-	return false;
+	else
+	{
+		for (const auto& range : *prog.ranges) {
+			auto cmpOffset = [&](void* x) { return (u8*)x + range.start; };
+			if ((range.start < 0) || (range.end < 0)) { DevCon.Error("microVU%d: Negative Range![%d][%d]", mVU.index, range.start, range.end); }
+			if (memcmp_mmx(cmpOffset(prog.data), cmpOffset(mVU.regs().Micro), ((range.end+8) - range.start))) {
+				return false;
+			}
+		}
+	}
+	mVU.prog.cleared = 0;
+	mVU.prog.cur = &prog;
+	mVU.prog.isSame = cmpWholeProg ? 1 : -1;
+	return true;
 }
 
 // Searches for Cached Micro Program and sets prog.cur to it (returns entry-point to program)
