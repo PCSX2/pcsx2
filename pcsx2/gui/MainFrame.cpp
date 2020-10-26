@@ -367,7 +367,7 @@ void MainEmuFrame::CreatePcsx2Menu()
 	m_menuSys.FindItem(MenuId_Sys_Shutdown)->Enable(false);
 
 	m_menuSys.Append(MenuId_Boot_ELF, _("&Run ELF..."),
-		_("For running raw PS2 binaries directly."));
+					 _("For running raw PS2 binaries directly."));
 
 	m_menuSys.AppendSeparator();
 
@@ -379,20 +379,20 @@ void MainEmuFrame::CreatePcsx2Menu()
 	m_menuSys.Append(MenuId_GameSettingsSubMenu, _("&Game Settings"), &m_GameSettingsSubmenu);
 
 	m_GameSettingsSubmenu.Append(MenuId_EnablePatches, _("Automatic &Gamefixes"),
-		_("Automatically applies needed Gamefixes to known problematic games."), wxITEM_CHECK);
+								 _("Automatically applies needed Gamefixes to known problematic games."), wxITEM_CHECK);
 
 	m_GameSettingsSubmenu.Append(MenuId_EnableCheats, _("Enable &Cheats"),
-		_("Use cheats otherwise known as pnachs from the cheats folder."), wxITEM_CHECK);
+								 _("Use cheats otherwise known as pnachs from the cheats folder."), wxITEM_CHECK);
 
 	m_GameSettingsSubmenu.Append(MenuId_EnableIPC, _("Enable &IPC"),
 								 wxEmptyString, wxITEM_CHECK);
 
 	m_GameSettingsSubmenu.Append(MenuId_EnableWideScreenPatches, _("Enable &Widescreen Patches"),
-		_("Enabling Widescreen Patches may occasionally cause issues."), wxITEM_CHECK);
+								 _("Enabling Widescreen Patches may occasionally cause issues."), wxITEM_CHECK);
 
 #ifndef DISABLE_RECORDING
 	m_GameSettingsSubmenu.Append(MenuId_EnableInputRecording, _("Enable &Input Recording"),
-		_("Input Recording for controller/keyboard presses, tools for automation and playback."), wxITEM_CHECK);
+								 _("Input Recording for controller/keyboard presses, tools for automation and playback."), wxITEM_CHECK);
 #endif
 
 
@@ -409,7 +409,7 @@ void MainEmuFrame::CreatePcsx2Menu()
 	m_menuSys.AppendSeparator();
 
 	m_menuSys.Append(MenuId_Exit, _("E&xit"),
-					AddAppName(_("Closing %s may be hazardous to your health.")));
+					 AddAppName(_("Closing %s may be hazardous to your health.")));
 }
 
 void MainEmuFrame::CreateCdvdMenu()
