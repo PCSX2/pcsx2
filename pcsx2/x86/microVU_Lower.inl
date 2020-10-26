@@ -80,7 +80,10 @@ mVUop(mVU_DIV) {
 		writeQreg(Fs, mVUinfo.writeQ);
 
 		if (mVU.cop2)
+		{
+			xAND(gprF0, ~0xc0000);
 			xOR(gprF0, ptr32[&mVU.divFlag]);
+		}
 
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.regAlloc->clearNeeded(Ft);
@@ -103,7 +106,10 @@ mVUop(mVU_SQRT) {
 		writeQreg(Ft, mVUinfo.writeQ);
 
 		if (mVU.cop2)
+		{
+			xAND(gprF0, ~0xc0000);
 			xOR(gprF0, ptr32[&mVU.divFlag]);
+		}
 
 		mVU.regAlloc->clearNeeded(Ft);
 		mVU.profiler.EmitOp(opSQRT);
@@ -145,7 +151,10 @@ mVUop(mVU_RSQRT) {
 		writeQreg(Fs, mVUinfo.writeQ);
 
 		if (mVU.cop2)
+		{
+			xAND(gprF0, ~0xc0000);
 			xOR(gprF0, ptr32[&mVU.divFlag]);
+		}
 
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.regAlloc->clearNeeded(Ft);

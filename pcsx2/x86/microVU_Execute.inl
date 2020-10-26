@@ -95,11 +95,10 @@ void mVUdispatcherCD(mV) {
 		xLDMXCSR(g_sseVUMXCSR);
 
 		mVUrestoreRegs(mVU);
-
-		xMOV(gprF0, ptr32[&mVU.statFlag[0]]);
-		xMOV(gprF1, ptr32[&mVU.statFlag[1]]);
-		xMOV(gprF2, ptr32[&mVU.statFlag[2]]);
-		xMOV(gprF3, ptr32[&mVU.statFlag[3]]);
+		xMOV(gprF0, ptr32[&mVU.regs().micro_statusflags[0]]);
+		xMOV(gprF1, ptr32[&mVU.regs().micro_statusflags[1]]);
+		xMOV(gprF2, ptr32[&mVU.regs().micro_statusflags[2]]);
+		xMOV(gprF3, ptr32[&mVU.regs().micro_statusflags[3]]);
 
 		// Jump to Recompiled Code Block
 		xJMP(ptrNative[&mVU.resumePtrXG]);
@@ -110,10 +109,10 @@ void mVUdispatcherCD(mV) {
 		//xMOV(ptr32[&mVU.resumePtrXG], gprT1);
 
 		// Backup Status Flag (other regs were backed up on xgkick)
-		xMOV(ptr32[&mVU.statFlag[0]], gprF0);
-		xMOV(ptr32[&mVU.statFlag[1]], gprF1);
-		xMOV(ptr32[&mVU.statFlag[2]], gprF2);
-		xMOV(ptr32[&mVU.statFlag[3]], gprF3);
+		xMOV(ptr32[&mVU.regs().micro_statusflags[0]], gprF0);
+		xMOV(ptr32[&mVU.regs().micro_statusflags[1]], gprF1);
+		xMOV(ptr32[&mVU.regs().micro_statusflags[2]], gprF2);
+		xMOV(ptr32[&mVU.regs().micro_statusflags[3]], gprF3);
 
 		// Load EE's MXCSR state
 		xLDMXCSR(g_sseMXCSR);
