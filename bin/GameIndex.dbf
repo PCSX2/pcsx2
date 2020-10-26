@@ -6325,6 +6325,15 @@ Serial = SCUS-97621
 Name   = Twisted Metal - Head-On [Extra Twisted Edition]
 Region = NTSC-U
 Compat = 5
+[patches = 3DC2FE45]
+	author=refraction
+	// COP2 rearrangement. RSQRT directly followed by DIV and a few ops using Q causes issues
+	// Fixes fire effects
+	patch=1,EE,002461d8,word,4bf4b33c
+	patch=1,EE,002461dc,word,4b806d9c
+	patch=1,EE,002461e0,word,4bc069fc
+	patch=1,EE,002461e4,word,4a54c3bc
+[/patches]
 ---------------------------------------------
 Serial = SCUS-97622
 Name   = SingStar 80's [with Microphone]
