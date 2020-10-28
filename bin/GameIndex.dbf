@@ -39694,15 +39694,6 @@ Compat = 5
 Serial = SLUS-20935
 Name   = IHRA Professional Drag Racing 2005
 Region = NTSC-U
-[patches = F7C26EBF]
-	author=kozarovv
-	// This is quite interesting bug. Game take advantage of VU memory wrapping.
-	// All that work fine in pcsx2, excluding one BAL that always hit 0x3ff0. This is no issue per se,
-	// but due to way pcsx2 work this caused ton of unnecessary caching, and killed performance. 
-    // Patch replace dmove a1, zero with li a1, 2. This simple trick make branch directly to 0x0 instead of 0x3ff0. 
-	// To be honest it was new for me that VU support something like memory wrapping at all. Since all addresses created by that runtime always have -0x10 offset, adding 2 make them hit precisely what should be hit. This don't have any bad side effect. 
-	patch=1,EE,0041D510,word,24050002
-[/patches]
 ---------------------------------------------
 Serial = SLUS-20936
 Name   = UEFA Euro 2004
