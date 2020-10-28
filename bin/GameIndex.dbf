@@ -1228,6 +1228,19 @@ Serial = SCED-52970
 Name   = SCEE Hits Demo
 Region = PAL-M5
 ---------------------------------------------
+Serial = SCED-53161
+Name   = Official PlayStation 2 Magazine Demo 58
+Region = PAL-M5
+[patches = 38174DD2]
+	comment=Patch by refraction. Fixes R&C 3 shadows, disable automatic fixes for other games
+	patch=1,EE,0047df64,word,48418800
+	patch=1,EE,0047df68,word,4A39D86C
+	patch=1,EE,0047df6c,word,48428800
+	patch=1,EE,0047df70,word,4A7503BC
+	patch=1,EE,0047df74,word,4A0002FF
+	patch=1,EE,0047df78,word,4A0002FF
+[/patches]
+---------------------------------------------
 Serial = SCED-53163
 Name   = Official PlayStation 2 Magazine Demo 60
 Region = PAL-M12
