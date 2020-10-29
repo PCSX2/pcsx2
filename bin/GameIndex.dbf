@@ -6612,7 +6612,7 @@ MemCardFilter = SLAJ-25077/SLPM-55122/SLPM-66307/SLPM-74247/SLAJ-25035/SLPM-6551
 Serial = SLAJ-25078
 Name   = Black
 Region = NTSC-Unk
-vuClampMode = 3
+vuClampMode = 3 // Fixes SPS
 ---------------------------------------------
 Serial = SLAJ-25079
 Name   = Shin Sangoku Musou 4 - Empires
@@ -6784,6 +6784,7 @@ Region = PAL-E
 Serial = SLED-53937
 Name   = Black [Demo]
 Region = PAL-M5
+vuClampMode = 3 // Fixes SPS
 ---------------------------------------------
 Serial = SLED-53951
 Name   = Honda Demo [Demo]
@@ -15648,7 +15649,7 @@ Serial = SLES-53886
 Name   = Black
 Region = PAL-M5
 Compat = 5
-vuClampMode = 3
+vuClampMode = 3 // Fixes SPS
 [patches = ADDFF505]
 	author=refraction
 	// COP2 Rearrangement. Fixes broken collisions.
@@ -15963,7 +15964,7 @@ Serial = SLES-54030
 Name   = Black
 Region = PAL-E
 Compat = 5
-vuClampMode = 3
+vuClampMode = 3 // Fixes SPS
 ---------------------------------------------
 Serial = SLES-54031
 Name   = Da Vinci Code, The
@@ -27342,7 +27343,7 @@ Serial = SLPM-66354
 Name   = Black
 Region = NTSC-J
 Compat = 5
-vuClampMode = 3
+vuClampMode = 3 // Fixes SPS
 ---------------------------------------------
 Serial = SLPM-66356
 Name   = Baldr Force EXE [Alchemist Best]
@@ -41977,8 +41978,8 @@ Serial = SLUS-21376
 Name   = Black
 Region = NTSC-U
 Compat = 5
-vuClampMode = 3
-[patches = ADDFF505]
+vuClampMode = 3 // Fixes SPS
+[patches = 5C891FF1]
 	author=refraction
 	// COP2 Rearrangement. Fixes broken collisions.
 	patch=1,EE,0037EB14,word,4b000460
