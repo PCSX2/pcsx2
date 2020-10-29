@@ -493,23 +493,23 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 	switch (m_sw_blending) {
 		case ACC_BLEND_ULTRA:
 			sw_blending |= true;
-			// fall through
+			[[fallthrough]];
 		case ACC_BLEND_FULL:
 			if (!m_vt.m_alpha.valid && (ALPHA.C == 0)) GetAlphaMinMax();
 			sw_blending |= (ALPHA.A != ALPHA.B) && ((ALPHA.C == 0 && m_vt.m_alpha.max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
-			// fall through
+			[[fallthrough]];
 		case ACC_BLEND_HIGH:
 			sw_blending |= (ALPHA.C == 1);
-			// fall through
+			[[fallthrough]];
 		case ACC_BLEND_MEDIUM:
 			// Initial idea was to enable accurate blending for sprite rendering to handle
 			// correctly post-processing effect. Some games (ZoE) use tons of sprites as particles.
 			// In order to keep it fast, let's limit it to smaller draw call.
 			sw_blending |= m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 100;
-			// fall through
+			[[fallthrough]];
 		case ACC_BLEND_BASIC:
 			sw_blending |= impossible_or_free_blend;
-			// fall through
+			[[fallthrough]];
 		default:
 			/*sw_blending |= accumulation_blend*/;
 	}
