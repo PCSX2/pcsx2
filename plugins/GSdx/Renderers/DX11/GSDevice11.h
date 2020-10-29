@@ -309,29 +309,27 @@ public:
 		{
 			struct
 			{
-				uint32 abe:1;
-				uint32 a:2;
-				uint32 b:2;
-				uint32 c:2;
-				uint32 d:2;
+				// Color mask
 				uint32 wr:1;
 				uint32 wg:1;
 				uint32 wb:1;
 				uint32 wa:1;
+				// Alpha blending
+				uint32 blend_index:7;
+				uint32 abe:1;
 				uint32 accu_blend:1;
 			};
 
 			struct
 			{
-				uint32 _pad:1;
-				uint32 abcd:8;
+				// Color mask
 				uint32 wrgba:4;
 			};
 
 			uint32 key;
 		};
 
-		operator uint32() {return key & 0x3fff;}
+		operator uint32() {return key & 0x1fff;}
 
 		OMBlendSelector() : key(0) {}
 	};
