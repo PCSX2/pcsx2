@@ -198,7 +198,11 @@ void ToPS2FPU_Full(int reg, bool flags, int absreg, bool acc, bool addsub)
 	u8 *to_underflow = JB8(0);
 
 	xCVTSD2SS(xRegisterSSE(reg), xRegisterSSE(reg)); //simply convert
+#ifdef __M_X86_64
+	u32* end = JMP32(0);
+#else
 	u8 *end = JMP8(0);
+#endif
 
 	x86SetJ8(to_complex);
 	xUCOMI.SD(xRegisterSSE(absreg), ptr[&s_const.dbl_ps2_overflow]);
@@ -207,7 +211,11 @@ void ToPS2FPU_Full(int reg, bool flags, int absreg, bool acc, bool addsub)
 	xPSUB.Q(xRegisterSSE(reg), ptr[&s_const.dbl_one_exp]); //lower exponent
 	xCVTSD2SS(xRegisterSSE(reg), xRegisterSSE(reg)); //convert
 	xPADD.D(xRegisterSSE(reg), ptr[s_const.one_exp]); //raise exponent
-	u8 *end2 = JMP8(0);
+#ifdef __M_X86_64
+	u32 *end2 = JMP32(0);
+#else
+	u8* end2 = JMP8(0);
+#endif
 
 	x86SetJ8(to_overflow);
 	xCVTSD2SS(xRegisterSSE(reg), xRegisterSSE(reg));
@@ -246,8 +254,13 @@ void ToPS2FPU_Full(int reg, bool flags, int absreg, bool acc, bool addsub)
 	xCVTSD2SS(xRegisterSSE(reg), xRegisterSSE(reg));
 	xAND.PS(xRegisterSSE(reg), ptr[s_const.neg]); //flush to zero
 
+#ifdef __M_X86_64
+	x86SetJ32(end);
+	x86SetJ32(end2);
+#else
 	x86SetJ8(end);
 	x86SetJ8(end2);
+#endif
 	x86SetJ8(end3);
 	if (flags && FPU_FLAGS_UNDERFLOW && addsub)
 		x86SetJ8(end4);
