@@ -505,29 +505,22 @@ void GSRendererDX11::EmulateBlending()
 		return;
 
 	m_om_bsel.abe = 1;
-	m_om_bsel.a = ALPHA.A;
-	m_om_bsel.b = ALPHA.B;
-	m_om_bsel.c = ALPHA.C;
-	m_om_bsel.d = ALPHA.D;
 
 	if (m_env.PABE.PABE)
 	{
-		if (m_om_bsel.a == 0 && m_om_bsel.b == 1 && m_om_bsel.c == 0 && m_om_bsel.d == 1)
+		if (ALPHA.A == 0 && ALPHA.B == 1 && ALPHA.C == 0 && ALPHA.D == 1)
 		{
 			// this works because with PABE alpha blending is on when alpha >= 0x80, but since the pixel shader
 			// cannot output anything over 0x80 (== 1.0) blending with 0x80 or turning it off gives the same result
 
 			m_om_bsel.abe = 0;
 		}
-		else
-		{
-			// Breath of Fire Dragon Quarter, Strawberry Shortcake, Super Robot Wars.
-			//ASSERT(0);
-		}
+
+		// Breath of Fire Dragon Quarter, Strawberry Shortcake, Super Robot Wars.
 	}
 
-	const uint8 blend_index  = uint8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
-	const int blend_flag = m_dev->GetBlendFlags(blend_index);
+	m_om_bsel.blend_index = uint8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
+	const int blend_flag = m_dev->GetBlendFlags(m_om_bsel.blend_index);
 
 	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
 	const bool accumulation_blend = !!(blend_flag & BLEND_ACCU);
