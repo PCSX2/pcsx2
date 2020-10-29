@@ -819,7 +819,7 @@ void pt(const char* str){
 	printf("%02i:%02i:%02i%s", current->tm_hour, current->tm_min, current->tm_sec, str);
 }
 
-EXPORT_C_(int) GSsetupRecording(std::wstring& filename)
+EXPORT_C_(int) GSsetupRecording(std::string& filename)
 {
 	if (s_gs == NULL) {
 		printf("GSdx: no s_gs for recording\n");
