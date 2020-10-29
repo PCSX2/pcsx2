@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2020  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -63,9 +63,11 @@ void OnInitDialog(HWND hW)
 	vector<tap_adapter>* al = GetTapAdapters();
 	for (size_t i = 0; i < al->size(); i++)
 	{
-		int itm = SendMessageA(GetDlgItem(hW, IDC_ETHDEV), CB_ADDSTRING, NULL, (LPARAM)(LPCTSTR)al[0][i].name.c_str());
-		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV), itm, _strdup(al[0][i].guid.c_str()));
-		if (strcmp(al[0][i].guid.c_str(), config.Eth) == 0)
+		int itm = ComboBox_AddString(GetDlgItem(hW, IDC_ETHDEV), al[0][i].name);
+		char guid_char[256];
+		wcstombs(guid_char, al[0][i].guid, wcslen(al[0][i].guid) + 1);
+		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV), itm, _strdup(guid_char));
+		if (strcmp(guid_char, config.Eth) == 0)
 		{
 			ComboBox_SetCurSel(GetDlgItem(hW, IDC_ETHDEV), itm);
 		}
