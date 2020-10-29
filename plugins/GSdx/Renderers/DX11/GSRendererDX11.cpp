@@ -534,7 +534,7 @@ void GSRendererDX11::EmulateBlending()
 		case ACC_BLEND_MEDIUM_D3D11:
 		case ACC_BLEND_BASIC_D3D11:
 			sw_blending |= accumulation_blend || blend_non_recursive;
-			// fall through
+			[[fallthrough]];
 		default: break;
 	}
 
