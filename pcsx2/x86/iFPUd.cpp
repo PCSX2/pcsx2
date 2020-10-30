@@ -470,7 +470,7 @@ void FPU_MUL(int info, int regd, int sreg, int treg, bool acc, bool fast_path = 
 			xANDN.PS(flt, ptr[s_const.pos_inf]);
 			xPTEST(flt, flt);
 		} else {
-			const xRegisterLong cmp(_allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0));
+			const xRegister32 cmp(_allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0));
 			xAND.PS(flt, ptr[s_const.pos_inf]);
 			xCMP.PS(flt, ptr[s_const.pos_inf], SSE2_Equal);
 			xMOVMSKPS(cmp, flt);
