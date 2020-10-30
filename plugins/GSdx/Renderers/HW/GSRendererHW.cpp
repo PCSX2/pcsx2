@@ -438,7 +438,7 @@ void GSRendererHW::Lines2Sprites()
 	}
 }
 
-void GSRendererHW::EmulateAtst(const GSTextureCache::Source* tex, GSVector4& FogColor_AREF, uint8& ps_atst, const bool pass_2)
+void GSRendererHW::EmulateAtst(GSVector4& FogColor_AREF, uint8& ps_atst, const bool pass_2)
 {
 	static const uint32 inverted_atst[] = {ATST_ALWAYS, ATST_NEVER, ATST_GEQUAL, ATST_GREATER, ATST_NOTEQUAL, ATST_LESS, ATST_LEQUAL, ATST_EQUAL};
 
@@ -476,7 +476,6 @@ void GSRendererHW::EmulateAtst(const GSTextureCache::Source* tex, GSVector4& Fog
 			FogColor_AREF.a = (float)m_context->TEST.AREF;
 			ps_atst = 4;
 			break;
-
 		case ATST_NEVER: // Draw won't be done so no need to implement it in shader
 		case ATST_ALWAYS:
 		default:

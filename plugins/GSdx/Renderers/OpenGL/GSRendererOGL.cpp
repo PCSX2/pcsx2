@@ -1219,7 +1219,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		m_om_dssel.zwe = false;
 		m_om_csel.wa = false;
 	} else {
-		EmulateAtst(tex, ps_cb.FogColor_AREF, ps_atst, false);
+		EmulateAtst(ps_cb.FogColor_AREF, ps_atst, false);
 		m_ps_sel.atst = ps_atst;
 	}
 
@@ -1336,13 +1336,13 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		{
 			// Enable ATE as first pass to update the depth
 			// of pixels that passed the alpha test
-			EmulateAtst(tex, ps_cb.FogColor_AREF, ps_atst, false);
+			EmulateAtst(ps_cb.FogColor_AREF, ps_atst, false);
 		}
 		else
 		{
 			// second pass will process the pixels that failed
 			// the alpha test
-			EmulateAtst(tex, ps_cb.FogColor_AREF, ps_atst, true);
+			EmulateAtst(ps_cb.FogColor_AREF, ps_atst, true);
 		}
 
 		m_ps_sel.atst = ps_atst;
