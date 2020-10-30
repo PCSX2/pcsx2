@@ -27352,6 +27352,14 @@ Name   = Black
 Region = NTSC-J
 Compat = 5
 vuClampMode = 3 // Fixes SPS
+[patches = B3A9F9ED]
+	author=refraction
+	// COP2 Rearrangement. Fixes broken collisions.
+	patch=1,EE,0037ECD4,word,4b000460
+	patch=1,EE,0037ECD8,word,4af103bc
+	patch=1,EE,0037ECF0,word,4a800460
+	patch=1,EE,0037ECF4,word,4b7103bc
+[/patches]
 ---------------------------------------------
 Serial = SLPM-66356
 Name   = Baldr Force EXE [Alchemist Best]
