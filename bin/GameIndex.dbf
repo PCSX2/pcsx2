@@ -28748,7 +28748,7 @@ Region = NTSC-J
 Serial = SLPM-66731
 Name   = Black [EA Best Hits]
 Region = NTSC-J
-vuClampMode = 0
+vuClampMode = 3 // Fixes SPS
 ---------------------------------------------
 Serial = SLPM-66732
 Name   = Iinazuke [Limited Edition]
@@ -29618,7 +29618,7 @@ Region = NTSC-J
 Serial = SLPM-66961
 Name   = Black [EA-SY! 1980]
 Region = NTSC-J
-vuClampMode = 0
+vuClampMode = 3 // Fixes SPS
 ---------------------------------------------
 Serial = SLPM-66962
 Name   = Burnout 3 - Takedown [EA-SY! 1980]
@@ -45210,7 +45210,7 @@ Region = NTSC-U
 Serial = SLUS-29180
 Name   = Black [Demo]
 Region = NTSC-U
-vuClampMode = 0
+vuClampMode = 3 // Fixes SPS
 ---------------------------------------------
 Serial = SLUS-29185
 Name   = Driver - Parallel Lines [Demo]
