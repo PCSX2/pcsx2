@@ -15965,6 +15965,14 @@ Name   = Black
 Region = PAL-E
 Compat = 5
 vuClampMode = 3 // Fixes SPS
+[patches = CAA04879]
+	author=refraction
+	// COP2 Rearrangement. Fixes broken collisions.
+	patch=1,EE,0037EB54,word,4b000460
+	patch=1,EE,0037EB58,word,4af103bc
+	patch=1,EE,0037EB70,word,4a800460
+	patch=1,EE,0037EB74,word,4b7103bc
+[/patches]
 ---------------------------------------------
 Serial = SLES-54031
 Name   = Da Vinci Code, The
