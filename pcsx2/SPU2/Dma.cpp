@@ -289,7 +289,7 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 			// understanding would trigger the interrupt early causing it to switch buffers again immediately
 			// and an interrupt never fires again, leaving the voices looping the same samples forever.
 
-			if (Cores[i].IRQEnable && (Cores[i].IRQA > TSA || Cores[i].IRQA <= TDA))
+			if (Cores[i].IRQEnable && (Cores[i].IRQA >= TSA || Cores[i].IRQA < TDA))
 			{
 				//ConLog("DMAwrite Core %d: IRQ Called (IRQ passed). IRQA = %x Cycles = %d\n", i, Cores[i].IRQA, Cycles );
 				SetIrqCall(i);
@@ -307,7 +307,7 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 		// Buffer doesn't wrap/overflow!
 		// Just set the TDA and check for an IRQ...
 
-		TDA = (buff1end + 1) & 0xfffff;
+		TDA = buff1end;
 
 		// Flag interrupt?  If IRQA occurs between start and dest, flag it.
 		// Important: Test both core IRQ settings for either DMA!
@@ -315,14 +315,14 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 #if NO_BIOS_HACKFIX
 		for (int i = 0; i < 2; i++)
 		{
-			if (Cores[i].IRQEnable && (Cores[i].IRQA > TSA && Cores[i].IRQA <= TDA))
+			if(Cores[i].IRQEnable && (Cores[i].IRQA >= TSA) && (Cores[i].IRQA < TDA))
 			{
 				//ConLog("DMAwrite Core %d: IRQ Called (IRQ passed). IRQA = %x Cycles = %d\n", i, Cores[i].IRQA, Cycles );
 				SetIrqCall(i);
 			}
 		}
 #else
-		if (IRQEnable && (IRQA > TSA) && (IRQA <= TDA))
+		if(IRQEnable && (IRQA >= TSA) && (IRQA < TDA))
 		{
 			SetIrqCall(Index);
 		}
@@ -370,7 +370,7 @@ void V_Core::DoDMAread(u16* pMem, u32 size)
 
 		for (int i = 0; i < 2; i++)
 		{
-			if (Cores[i].IRQEnable && (Cores[i].IRQA > TSA || Cores[i].IRQA <= TDA))
+			if (Cores[i].IRQEnable && (Cores[i].IRQA >= TSA || Cores[i].IRQA < TDA))
 			{
 				SetIrqCall(i);
 			}
@@ -381,14 +381,14 @@ void V_Core::DoDMAread(u16* pMem, u32 size)
 		// Buffer doesn't wrap/overflow!
 		// Just set the TDA and check for an IRQ...
 
-		TDA = (buff1end + 0x20) & 0xfffff;
+		TDA = buff1end;
 
 		// Flag interrupt?  If IRQA occurs between start and dest, flag it.
 		// Important: Test both core IRQ settings for either DMA!
 
 		for (int i = 0; i < 2; i++)
 		{
-			if (Cores[i].IRQEnable && (Cores[i].IRQA > TSA && Cores[i].IRQA <= TDA))
+			if (Cores[i].IRQEnable && (Cores[i].IRQA >= TSA || Cores[i].IRQA < TDA))
 			{
 				SetIrqCall(i);
 			}
