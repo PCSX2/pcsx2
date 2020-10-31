@@ -33,12 +33,11 @@
 #define IDC_CRC_LEVEL_TEXT              2039
 #define IDC_HACKS_ENABLED               2040
 #define IDC_ACCURATE_DATE               2041
-#define IDC_ACCURATE_DATE_TEXT          2042
-#define IDC_ACCURATE_BLEND_UNIT         2043
-#define IDC_ACCURATE_BLEND_UNIT_D3D11   2044
-#define IDC_ACCURATE_BLEND_UNIT_TEXT    2045
-#define IDC_DITHERING                   2046
-#define IDC_DITHERING_TEXT              2047
+#define IDC_ACCURATE_BLEND_UNIT         2042
+#define IDC_ACCURATE_BLEND_UNIT_D3D11   2043
+#define IDC_ACCURATE_BLEND_UNIT_TEXT    2044
+#define IDC_DITHERING                   2045
+#define IDC_DITHERING_TEXT              2046
 // Software Renderer Settings:
 #define IDC_MIPMAP_SW                   2060
 #define IDC_AA1                         2061
