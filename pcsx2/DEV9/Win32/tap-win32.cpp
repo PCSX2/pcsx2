@@ -263,8 +263,6 @@ TAPAdapter::TAPAdapter()
 	if (config.ethEnable == 0)
 		return;
 	htap = TAPOpen(config.Eth);
-	if (htap == INVALID_HANDLE_VALUE)
-		SysMessage("Can't open Device '%s'\n", config.Eth);
 
 	read.Offset = 0;
 	read.OffsetHigh = 0;
