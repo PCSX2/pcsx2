@@ -38152,7 +38152,6 @@ Serial = SLUS-20217
 Name   = Arctic Thunder
 Region = NTSC-U
 Compat = 5
-SkipMPEGHack = 1
 ---------------------------------------------
 Serial = SLUS-20218
 Name   = Stunt GP
