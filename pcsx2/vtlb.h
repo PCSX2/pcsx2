@@ -210,9 +210,10 @@ namespace vtlb_private
 	struct VTLBVirtual
 	{
 	private:
-		uptr value;
 		explicit VTLBVirtual(uptr value): value(value) { }
 	public:
+		bool handler = false;
+		uptr value;
 		VTLBVirtual(): value(0) {}
 		VTLBVirtual(VTLBPhysical phys, u32 paddr, u32 vaddr);
 		static VTLBVirtual fromPointer(uptr ptr, u32 vaddr) {

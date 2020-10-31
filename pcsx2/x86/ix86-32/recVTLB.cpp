@@ -150,6 +150,9 @@ static void iMOV64_Smart( const xIndirectVoid& destRm, const xIndirectVoid& srcR
 
 namespace vtlb_private
 {
+
+	std::unique_ptr<VTLBVirtual> vtlb_dummy(new VTLBVirtual());
+
 	// ------------------------------------------------------------------------
 	// Prepares eax, ecx, and, ebx for Direct or Indirect operations.
 	// Returns the writeback pointer for ebx (return address from indirect handling)
@@ -161,7 +164,10 @@ namespace vtlb_private
 
 		xMOV( eax, arg1regd );
 		xSHR( eax, VTLB_PAGE_BITS );
-		xMOV( rax, ptrNative[xComplexAddress(rbx, vtlbdata.vmap, rax*wordsize)] );
+		
+		uptr offset = (uptr)vtlb_dummy.get();
+		offset -= (uptr)&(vtlb_dummy->value);
+		xMOV( rax, ptrNative[xComplexAddress(rbx, vtlbdata.vmap, (rax*wordsize)+offset)] );
 		u32* writeback = xLEA_Writeback( rbx );
 		xADD( arg1reg, rax );
 
