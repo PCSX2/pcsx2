@@ -518,7 +518,6 @@ struct V_Core
 
 	void LogAutoDMA(FILE* fp);
 
-	s32 NewDmaRead(u32* data, u32 bytesLeft, u32* bytesProcessed);
 	s32 NewDmaWrite(u32* data, u32 bytesLeft, u32* bytesProcessed);
 	void NewDmaInterrupt();
 

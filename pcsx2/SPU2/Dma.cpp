@@ -315,14 +315,14 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 #if NO_BIOS_HACKFIX
 		for (int i = 0; i < 2; i++)
 		{
-			if(Cores[i].IRQEnable && (Cores[i].IRQA >= TSA) && (Cores[i].IRQA < TDA))
+			if (Cores[i].IRQEnable && (Cores[i].IRQA >= TSA) && (Cores[i].IRQA < TDA))
 			{
 				//ConLog("DMAwrite Core %d: IRQ Called (IRQ passed). IRQA = %x Cycles = %d\n", i, Cores[i].IRQA, Cycles );
 				SetIrqCall(i);
 			}
 		}
 #else
-		if(IRQEnable && (IRQA >= TSA) && (IRQA < TDA))
+		if (IRQEnable && (IRQA >= TSA) && (IRQA < TDA))
 		{
 			SetIrqCall(Index);
 		}
@@ -388,7 +388,7 @@ void V_Core::DoDMAread(u16* pMem, u32 size)
 
 		for (int i = 0; i < 2; i++)
 		{
-			if (Cores[i].IRQEnable && (Cores[i].IRQA >= TSA || Cores[i].IRQA < TDA))
+			if (Cores[i].IRQEnable && (Cores[i].IRQA >= TSA) && (Cores[i].IRQA < TDA))
 			{
 				SetIrqCall(i);
 			}
