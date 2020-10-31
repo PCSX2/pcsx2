@@ -110,40 +110,7 @@ void *HostSys::MmapReserve(uptr base, size_t size)
     if(base==0)
         return MmapReservePtr(0, size);
 #ifndef JIT_DEBUG
-    // 32 bit has sign requirements for the jit that 64 shouldn't have issues
-    // with
- 	if (sizeof(void*) == 4)
-    {
-        // as the entropy used by mmap address randomization is unknown 
-        // and that we need to clear one bit of entropy for our JIT to work we
-        // generate our own cryptographically secure address like a good boy.
-        // entropy of approximately 29.5 bits, aka 800M, probably unrealistic to
-        // brute force.
-        HCRYPTPROV hProvider;
-        if (FALSE == CryptAcquireContext(&hProvider, NULL, NULL, PROV_RSA_FULL, 0)) 
-        {
-            if (NTE_BAD_KEYSET == GetLastError()) 
-            {
-                if (FALSE == CryptAcquireContext(&hProvider, NULL, NULL, PROV_RSA_FULL, CRYPT_NEWKEYSET)) 
-                {
-                    return MmapReservePtr(0, size);
-                }
-            }
-        }
-        do
-        {
-            CryptGenRandom(hProvider, sizeof base, (BYTE *)&base);
-        }while(!((base)<0x30000000));
-        CryptReleaseContext(hProvider, 0U);
-    }
-    else 
-    {
-        // our system allocator uses the codebase address as a hint and finds the
-        // closest available address to our code pointer, reusing the main
-        // executable ASLR. Best we can do 'til we rewrite our VTLB and JIT
-        // handlers.
-        base = (uptr)&_platform_InstallSignalHandler;
-    }
+	return MmapReservePtr((void*)0x50000000, size);
 #endif
     return MmapReservePtr((void *)base, size);
 }

@@ -57,12 +57,11 @@ static vtlbHandler UnmappedPhyHandler0;
 static vtlbHandler UnmappedPhyHandler1;
 
 vtlb_private::VTLBPhysical vtlb_private::VTLBPhysical::fromPointer(sptr ptr) {
-	pxAssertMsg(ptr >= 0, "Address too high");
-	return VTLBPhysical(ptr);
+	return VTLBPhysical(ptr, false);
 }
 
 vtlb_private::VTLBPhysical vtlb_private::VTLBPhysical::fromHandler(vtlbHandler handler) {
-	return VTLBPhysical(handler | POINTER_SIGN_BIT);
+	return VTLBPhysical(handler, true);
 }
 
 vtlb_private::VTLBVirtual::VTLBVirtual(VTLBPhysical phys, u32 paddr, u32 vaddr) {
@@ -70,7 +69,7 @@ vtlb_private::VTLBVirtual::VTLBVirtual(VTLBPhysical phys, u32 paddr, u32 vaddr) 
 	pxAssertMsg(0 == (vaddr & VTLB_PAGE_MASK), "Should be page aligned");
 	pxAssertMsg((uptr)paddr < POINTER_SIGN_BIT, "Address too high");
 	if (phys.isHandler()) {
-		value = phys.raw() + paddr - vaddr;
+		value = (phys.raw() | POINTER_SIGN_BIT) + paddr - vaddr;
 	} else {
 		value = phys.raw() - vaddr;
 	}

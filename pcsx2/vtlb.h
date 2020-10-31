@@ -190,11 +190,10 @@ namespace vtlb_private
 	{
 	private:
 		sptr value;
-		explicit VTLBPhysical(sptr value): value(value) { }
+		bool handler = false;
+		explicit VTLBPhysical(sptr value, bool handler): value(value), handler(handler) { }
 	public:
 		VTLBPhysical(): value(0) {}
-		/// Create from a pointer to raw memory
-		static VTLBPhysical fromPointer(void *ptr) { return fromPointer((sptr)ptr); }
 		/// Create from an integer representing a pointer to raw memory
 		static VTLBPhysical fromPointer(sptr ptr);
 		/// Create from a handler and address
@@ -203,11 +202,9 @@ namespace vtlb_private
 		/// Get the raw value held by the entry
 		uptr raw() const { return value; }
 		/// Returns whether or not this entry is a handler
-		bool isHandler() const { return value < 0; }
+		bool isHandler() const { return handler; }
 		/// Assumes the entry is a pointer, giving back its value
 		uptr assumePtr() const { return value; }
-		/// Assumes the entry is a handler, and gets the raw handler ID
-		u8 assumeHandler() const { return value; }
 	};
 
 	struct VTLBVirtual
