@@ -1010,58 +1010,69 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	EmulateTextureShuffleAndFbmask();
 
 	// DATE: selection of the algorithm. Must be done before blending because GL42 is not compatible with blending
-	if (DATE) {
-		if (m_prim_overlap == PRIM_OVERLAP_NO || m_texture_shuffle) {
+	if (DATE)
+	{
+		if (m_prim_overlap == PRIM_OVERLAP_NO || m_texture_shuffle)
+		{
 			// It is way too complex to emulate texture shuffle with DATE. So just use
 			// the slow but accurate algo
 			GL_PERF("DATE: With %s", m_texture_shuffle ? "texture shuffle" : "no prim overlap");
 			m_require_full_barrier = true;
 			DATE_GL45 = true;
-		} else if (m_om_csel.wa && !m_context->TEST.ATE) {
+		}
+		else if (m_om_csel.wa && !m_context->TEST.ATE)
+		{
 			// Performance note: check alpha range with GetAlphaMinMax()
 			// Note: all my dump are already above 120fps, but it seems to reduce GPU load
 			// with big upscaling
 			GetAlphaMinMax();
-			if (m_context->TEST.DATM && m_vt.m_alpha.max < 128) {
+			if (m_context->TEST.DATM && m_vt.m_alpha.max < 128)
+			{
 				// Only first pixel (write 0) will pass (alpha is 1)
 				GL_PERF("DATE: Fast with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 				DATE_one = true;
-			} else if (!m_context->TEST.DATM && m_vt.m_alpha.min >= 128) {
+			}
+			else if (!m_context->TEST.DATM && m_vt.m_alpha.min >= 128)
+			{
 				// Only first pixel (write 1) will pass (alpha is 0)
 				GL_PERF("DATE: Fast with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 				DATE_one = true;
-			} else if ((m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 50) || (m_index.tail < 100)) {
+			}
+			else if ((m_vt.m_primclass == GS_SPRITE_CLASS && m_drawlist.size() < 50) || (m_index.tail < 100))
+			{
 				// texture barrier will split the draw call into n draw call. It is very efficient for
 				// few primitive draws. Otherwise it sucks.
 				GL_PERF("DATE: Slow with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 				m_require_full_barrier = true;
 				DATE_GL45 = true;
-			} else {
-				switch (m_accurate_date) {
-					case ACC_DATE_FULL:
-						GL_PERF("DATE: Full AD with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
-						if (GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture) {
-							DATE_GL42 = true;
-						} else {
-							m_require_full_barrier = true;
-							DATE_GL45 = true;
-						}
-						break;
-					case ACC_DATE_FAST:
-						GL_PERF("DATE: Fast AD with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
-						DATE_one = true;
-						break;
-					case ACC_DATE_NONE:
-					default:
-						GL_PERF("DATE: Off AD with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
-						break;
+			}
+			else
+			{
+				// Note: Fast level (DATE_one) was removed as it's less accurate.
+				if (m_accurate_date)
+				{
+					GL_PERF("DATE: Full AD with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+					if (GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture)
+					{
+						DATE_GL42 = true;
+					}
+					else
+					{
+						m_require_full_barrier = true;
+						DATE_GL45 = true;
+					}
+				}
+				else
+				{
+					GL_PERF("DATE: Off AD with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 				}
 			}
-		} else if (!m_om_csel.wa && !m_context->TEST.ATE) {
+		}
+		else if (!m_om_csel.wa && !m_context->TEST.ATE)
+		{
 			// TODO: is it legal ? Likely but it need to be tested carefully
 			// DATE_GL45 = true;
 			// m_require_one_barrier = true; << replace it with a cheap barrier
-
 		}
 
 		// Will save my life !
