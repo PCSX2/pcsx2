@@ -23,7 +23,6 @@ enum PluginsEnum_t
 {
 	PluginId_GS = 0,
 	PluginId_PAD,
-	PluginId_USB,
 	PluginId_Count,
 
 	// Memorycard plugin support is preliminary, and is only hacked/hardcoded in at this
