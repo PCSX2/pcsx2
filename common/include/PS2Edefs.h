@@ -73,21 +73,18 @@ typedef struct _keyEvent
 
 ///////////////////////////////////////////////////////////////////////
 
-#if defined(GSdefs) || defined(PADdefs) || defined(SIOdefs) ||     \
-    defined(USBdefs)
+#if defined(GSdefs) || defined(PADdefs) || defined(SIOdefs)
 #define COMMONdefs
 #endif
 
 // PS2EgetLibType returns (may be OR'd)
 #define PS2E_LT_GS 0x01
 #define PS2E_LT_PAD 0x02 // -=[ OBSOLETE ]=-
-#define PS2E_LT_USB 0x20
 #define PS2E_LT_SIO 0x80
 
 // PS2EgetLibVersion2 (high 16 bits)
 #define PS2E_GS_VERSION 0x0006
 #define PS2E_PAD_VERSION 0x0002 // -=[ OBSOLETE ]=-
-#define PS2E_USB_VERSION 0x0003
 #define PS2E_SIO_VERSION 0x0001
 #ifdef COMMONdefs
 
@@ -121,9 +118,6 @@ typedef char __keyEvent_Size__[(sizeof(keyEvent) == 8) ? 1 : -1];
 #define SIO_TYPE_MC 0x00000100
 
 typedef int(CALLBACK *SIOchangeSlotCB)(int slot);
-
-typedef void (*USBcallback)(int cycles);
-typedef int (*USBhandler)(void);
 
 typedef struct _GSdriverInfo
 {
@@ -240,44 +234,6 @@ s32 CALLBACK PADtest();
 
 #endif
 
-/* USB plugin API */
-
-// if this file is included with this define
-// the next api will not be skipped by the compiler
-#if defined(USBdefs) || defined(BUILTIN_USB_PLUGIN)
-
-// basic funcs
-
-s32 CALLBACK USBinit();
-s32 CALLBACK USBopen(void *pDsp);
-void CALLBACK USBclose();
-void CALLBACK USBshutdown();
-void CALLBACK USBsetSettingsDir(const char *dir);
-void CALLBACK USBsetLogDir(const char *dir);
-
-u8 CALLBACK USBread8(u32 addr);
-u16 CALLBACK USBread16(u32 addr);
-u32 CALLBACK USBread32(u32 addr);
-void CALLBACK USBwrite8(u32 addr, u8 value);
-void CALLBACK USBwrite16(u32 addr, u16 value);
-void CALLBACK USBwrite32(u32 addr, u32 value);
-void CALLBACK USBasync(u32 cycles);
-
-// cycles = IOP cycles before calling callback,
-// if callback returns 1 the irq is triggered, else not
-void CALLBACK USBirqCallback(USBcallback callback);
-USBhandler CALLBACK USBirqHandler(void);
-void CALLBACK USBsetRAM(void *mem);
-
-// extended funcs
-
-s32 CALLBACK USBfreeze(int mode, freezeData *data);
-void CALLBACK USBconfigure();
-void CALLBACK USBabout();
-s32 CALLBACK USBtest();
-
-#endif
-
 // might be useful for emulators
 #ifdef PLUGINtypedefs
 
@@ -330,23 +286,6 @@ typedef s32(CALLBACK *_PADsetSlot)(u8 port, u8 slot);
 typedef s32(CALLBACK *_PADqueryMtap)(u8 port);
 typedef void(CALLBACK *_PADWriteEvent)(keyEvent &evt);
 
-// USB
-// NOTE: The read/write functions CANNOT use XMM/MMX regs
-// If you want to use them, need to save and restore current ones
-typedef s32(CALLBACK *_USBopen)(void *pDsp);
-typedef u8(CALLBACK *_USBread8)(u32 mem);
-typedef u16(CALLBACK *_USBread16)(u32 mem);
-typedef u32(CALLBACK *_USBread32)(u32 mem);
-typedef void(CALLBACK *_USBwrite8)(u32 mem, u8 value);
-typedef void(CALLBACK *_USBwrite16)(u32 mem, u16 value);
-typedef void(CALLBACK *_USBwrite32)(u32 mem, u32 value);
-typedef void(CALLBACK *_USBasync)(u32 cycles);
-
-typedef void(CALLBACK *_USBirqCallback)(USBcallback callback);
-typedef USBhandler(CALLBACK *_USBirqHandler)(void);
-typedef void(CALLBACK *_USBsetRAM)(void *mem);
-#endif
-
 #ifdef PLUGINfuncs
 
 // GS
@@ -392,22 +331,6 @@ extern _PADgsDriverInfo PADgsDriverInfo;
 extern _PADsetSlot PADsetSlot;
 extern _PADqueryMtap PADqueryMtap;
 extern _PADWriteEvent PADWriteEvent;
-#endif
-
-// USB
-#ifndef BUILTIN_USB_PLUGIN
-extern _USBopen USBopen;
-extern _USBread8 USBread8;
-extern _USBread16 USBread16;
-extern _USBread32 USBread32;
-extern _USBwrite8 USBwrite8;
-extern _USBwrite16 USBwrite16;
-extern _USBwrite32 USBwrite32;
-extern _USBasync USBasync;
-
-extern _USBirqCallback USBirqCallback;
-extern _USBirqHandler USBirqHandler;
-extern _USBsetRAM USBsetRAM;
 #endif
 
 #endif

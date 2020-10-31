@@ -446,7 +446,6 @@ void MainEmuFrame::CreateConfigMenu()
 
 	m_menuConfig.Append(MenuId_Config_GS, _("&Video (GS)"), m_PluginMenuPacks[PluginId_GS]);
 	m_menuConfig.Append(MenuId_Config_PAD, _("&Controllers (PAD)"), m_PluginMenuPacks[PluginId_PAD]);
-	m_menuConfig.Append(MenuId_Config_USB, _("&USB"), m_PluginMenuPacks[PluginId_USB]);
 
 	m_menuConfig.AppendSeparator();
 	m_menuConfig.Append(MenuId_Config_Multitap0Toggle, _("Multitap &1"), wxEmptyString, wxITEM_CHECK);
