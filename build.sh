@@ -239,7 +239,6 @@ for ARG in "$@"; do
             echo
             echo "** Distribution Compatibilities **"
             echo "--sdl12         : Build with SDL1.2 (requires if wx is linked against SDL1.2)"
-            echo "--no-dev9ghzdrk : Skip dev9ghzdrk. (Avoids needing escalated privileges to build.)"
             echo "--no-portaudio  : Skip portaudio for spu2x."
             echo
             echo "** Expert Developer option **"

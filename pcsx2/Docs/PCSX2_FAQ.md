@@ -157,10 +157,7 @@ The PS2 EE, IOP and VU processors are substantially different from a PC CPU and 
 ### What are PCSX2 plugins?
 PCSX2 uses a plugin framework for various sections of the emulator. A plugin is a small, incomplete piece of software that, when plugged in to another piece of software, provides some sort of additional function. PCSX2 uses plugins for:
 * Video (GSdx)
-* Audio (SPU2-X)
 * Controls (Lilypad for Windows, OnePad for Linux)
-* CD/DVD Drives (CDVDGigaherz)
-* PS2 Networking/HDD Adapter (DEV9ghzdrk)
 * USB (No plugin included)
 * Firewire (No plugin included)
 
