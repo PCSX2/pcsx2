@@ -303,21 +303,22 @@ void SysCoreThread::ExecuteTaskInThread()
 void SysCoreThread::OnSuspendInThread()
 {
 	GetCorePlugins().Close();
-	DEV9close();
 	DoCDVDclose();
 	FWclose();
 	SPU2close();
+	DEV9close();
 }
 
 void SysCoreThread::OnResumeInThread(bool isSuspended)
 {
 	GetCorePlugins().Open();
 	if (isSuspended)
+	{
 		DoCDVDopen();
+		DEV9open((void*)pDsp);
+	}
 	FWopen();
 	SPU2open((void*)pDsp);
-	if (isSuspended)
-		DEV9open((void*)pDsp);
 }
 
 
