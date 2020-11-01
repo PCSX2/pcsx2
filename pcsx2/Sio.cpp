@@ -440,6 +440,7 @@ SIO_WRITE memcardWrite(u8 data)
 					once = false;
 					break;
 				}
+				[[fallthrough]];
 
 			default:
 				DevCon.Warning("%s cmd: %02X??", __FUNCTION__, data);
@@ -530,6 +531,7 @@ SIO_WRITE memcardRead(u8 data)
 					once = false;
 					break;
 				}
+				[[fallthrough]];
 
 			default:
 				DevCon.Warning("%s cmd: %02X??", __FUNCTION__, data);
@@ -713,7 +715,7 @@ SIO_WRITE sioWriteMemcard(u8 data)
 		case 0x11: // On Boot/Probe
 		case 0x12: // On Write/Delete/Recheck?
 			sio2.packet.recvVal3 = 0x8C;
-			// Fall through
+			[[fallthrough]];
 
 		case 0x81: // Checked right after copy/delete
 		case 0xBF: // Wtf?? On game booting?

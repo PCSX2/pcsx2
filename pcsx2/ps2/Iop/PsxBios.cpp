@@ -86,6 +86,7 @@ bool __fastcall psxBiosCall()
             // putc(c, fd)
             if (psxRegs.GPR.n.a1 != 1)
                 return false;
+            [[fallthrough]];
         // fd=1, fall through to putchar
         case 0xa3c:
         case 0xb3d:

@@ -461,6 +461,7 @@ static __fi bool ipuVDEC(u32 val)
 			// This is due to differences with IPU and the MPEG standard. See get_macroblock_address_increment().
 
 			ipuRegs.ctrl.ECD = (ipuRegs.cmd.DATA == 0);
+			[[fallthrough]];
 
 		case 1:
 			if (!getBits32((u8*)&ipuRegs.top, 0))
