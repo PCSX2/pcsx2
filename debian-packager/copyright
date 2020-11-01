@@ -8,17 +8,13 @@ Copyright:
  2010-2012 Miguel Colon <debian.micove@gmail.com>
 License: LGPL-3
 
-Files: pcsx2/* common/* plugins/spu2-x/* plugins/PadNull/Pad* plugins/USBnull/* plugins/FWnull/* plugins/CDVDnull/CDVD* plugins/GSnull/* plugins/dev9null/DEV9.cpp
+Files: pcsx2/* common/* plugins/PadNull/Pad* plugins/USBnull/* plugins/GSnull/*
 Copyright: 2002-2012 PCSX2 Dev Team
 License: LGPL-3+
 
 Files: pcsx2/Mdec.cpp pcsx2/Mdec.h pcsx2/RDebug/deci2_drfp.cpp pcsx2/IPU/mpeg2lib/* pcsx2/cheatscpp.h common/include/api/* plugins/onepad/* plugins/PadNull/Linux/* plugins/SPU2null/* plugins/GSnull/Registers.h plugins/GSnull/Linux/Linux* plugins/GSnull/Linux/Config* plugins/dev9null/DEV9.h plugins/dev9null/Config.*
 Copyright: 2002-2012 PCSX2 Dev Team
 License: GPL-2+
-
-Files: plugins/spu2-x/src/Spu2replay.* plugins/spu2-x/src/Decode* plugins/spu2-x/src/Linux/ConfigSoundTouch.cpp plugins/spu2-x/src/spdif.h plugins/spu2-x/src/Debug.h
-Copyright: 2002-2012 PCSX2 Dev Team
-License: LGPL-2.1+
 
 Files: common/src/Utilities/vssprintf.cpp
 Copyright: 2002 Michael Ringgaard
