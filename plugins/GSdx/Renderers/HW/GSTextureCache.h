@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include <limits>
+
 #include "Renderers/Common/GSRenderer.h"
 #include "Renderers/Common/GSFastList.h"
 #include "Renderers/Common/GSDirtyRect.h"
@@ -228,7 +230,7 @@ protected:
 	static bool m_disable_partial_invalidation;
 	bool m_texture_inside_rt;
 	static bool m_wrap_gs_mem;
-	constexpr static size_t S_SURFACE_OFFSET_CACHE_MAX_SIZE = 65536;
+	constexpr static size_t S_SURFACE_OFFSET_CACHE_MAX_SIZE = std::numeric_limits<uint16>::max();
 	std::unordered_map<SurfaceOffsetKey, SurfaceOffset, SurfaceOffsetKeyHash, SurfaceOffsetKeyEqual> m_surface_offset_cache;
 
 	virtual Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false, int x_offset = 0, int y_offset = 0);
