@@ -107,7 +107,7 @@ run_cppcheck()
 
     check="--enable=warning,style,missingInclude"
 
-    for d in pcsx2 common plugins/GSdx plugins/spu2\-x plugins/onepad plugins/cdvdGigaherz
+    for d in pcsx2 common plugins/GSdx plugins/onepad
     do
         flat_d=$(echo $d | sed -e 's@/@_@')
         log=cpp_check__${flat_d}.log

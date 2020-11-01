@@ -159,7 +159,6 @@ PCSX2 uses a plugin framework for various sections of the emulator. A plugin is 
 * Video (GSdx)
 * Controls (Lilypad for Windows, OnePad for Linux)
 * USB (No plugin included)
-* Firewire (No plugin included)
 
 Each plugin will have its own Plugin Settings menu, and can be found under the Config menu.
 
