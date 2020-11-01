@@ -316,7 +316,8 @@ void SysCoreThread::OnResumeInThread(bool isSuspended)
 		DoCDVDopen();
 	FWopen();
 	SPU2open((void*)pDsp);
-	DEV9open((void*)pDsp);
+	if (isSuspended)
+		DEV9open((void*)pDsp);
 }
 
 
