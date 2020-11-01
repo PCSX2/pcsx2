@@ -489,7 +489,7 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 	const bool blend_non_recursive = !!(blend_flag & BLEND_NO_REC);
 
 	// Warning no break on purpose
-	// Note: the "fall through" comments tell gcc not to complain about not having breaks.
+	// Note: the [[fallthrough]] attribute tell compilers not to complain about not having breaks.
 	switch (m_sw_blending) {
 		case ACC_BLEND_ULTRA:
 			sw_blending |= true;

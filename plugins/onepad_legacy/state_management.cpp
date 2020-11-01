@@ -202,7 +202,7 @@ u8 pad_poll(u8 value)
                     query.set_result(ConfigExit);
                     return 0xF3;
                 }
-                // fallthrough on purpose (but I don't know why)
+                [[fallthrough]]; // fallthrough on purpose (but I don't know why)
 
             case CMD_READ_DATA_AND_VIBRATE:
             {

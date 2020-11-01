@@ -348,7 +348,8 @@ void vifMFIFOInterrupt()
 			case 0: //Set up transfer
 				mfifoVIF1transfer();
 				vif1Regs.stat.FQC = std::min((u16)0x10, vif1ch.qwc);
-				
+				[[fallthrough]];
+
 			case 1: //Transfer data
 				if(vif1.inprogress & 0x1) //Just in case the tag breaks early (or something wierd happens)!
 					mfifo_VIF1chain();

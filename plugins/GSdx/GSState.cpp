@@ -2783,7 +2783,7 @@ __forceinline void GSState::VertexKick(uint32 skip)
 		case GS_LINESTRIP:
 		case GS_TRIANGLESTRIP:
 			m_vertex.head = head + 1;
-			// fall through
+			[[fallthrough]];
 		case GS_TRIANGLEFAN:
 			if(tail >= m_vertex.maxcount) GrowVertexBuffer(); // in case too many vertices were skipped
 			break;
