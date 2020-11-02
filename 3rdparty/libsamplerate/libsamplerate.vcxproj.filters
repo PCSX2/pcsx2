@@ -1,0 +1,51 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="src_zoh.c">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src_linear.c">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="src_sinc.c">
+      <Filter>Source</Filter>
+    </ClCompile>
+    <ClCompile Include="samplerate.c">
+      <Filter>Source</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="common.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="samplerate.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="config.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="fastest_coeffs.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="float_cast.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="high_qual_coeffs.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+    <ClInclude Include="mid_qual_coeffs.h">
+      <Filter>Headers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="Headers">
+      <UniqueIdentifier>{358b26fc-b1ef-4294-a9cc-d6a64be4ba77}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source">
+      <UniqueIdentifier>{f23ee9cc-d36b-453e-9cbc-6ac40131f1e6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resources">
+      <UniqueIdentifier>{f3ed8158-880e-4aa4-ac5e-c82086a24375}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
