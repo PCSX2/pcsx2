@@ -22,9 +22,7 @@
 #include <cerrno>
 #include <cassert>
 
-#include "version.h" //CMake generated
 #include "USB.h"
-#include "platcompat.h"
 #include "osdebugout.h"
 #include "qemu-usb/USBinternal.h"
 #include "qemu-usb/desc.h"
@@ -32,8 +30,6 @@
 #include "deviceproxy.h"
 
 #define PSXCLK	36864000	/* 36.864 Mhz */
-
-static char libraryName[256];
 
 OHCIState *qemu_ohci = NULL;
 USBDevice *usb_device[2] = { NULL };
@@ -195,14 +191,8 @@ s32 USBinit() {
 
 	if (conf.Log && !usbLog)
 	{
-		usbLog =
-#if _UNICODE
-			_wfopen(LogDir.c_str(), L"wb");// L"wb,ccs=UNICODE");
-#else
-			fopen(LogDir.c_str(), "w");
-#endif
+		usbLog = wfopen(LogDir.c_str(), "wb");// L"wb,ccs=UNICODE");
 		//if(usbLog) setvbuf(usbLog, NULL,  _IONBF, 0);
-		USB_LOG("usbqemu wheel mod plugin version %d.%d.%d\n", VER_REV, VER_BLD, VER_FIX);
 		USB_LOG("USBinit\n");
 	}
 
@@ -239,7 +229,6 @@ s32 USBopen(void *pDsp) {
 	{
 		usbLog = fopen("logs/usbLog.txt", "a");
 		//if(usbLog) setvbuf(usbLog, NULL,  _IONBF, 0);
-		USB_LOG("usbqemu wheel mod plugin version %d.%d.%d\n", VER_REV, VER_BLD, VER_FIX);
 	}
 
 	USB_LOG("USBopen\n");

@@ -31,7 +31,6 @@
 #include "vl.h"
 #include "queue.h"
 #include "USBinternal.h"
-#include "platcompat.h"
 #include "../osdebugout.h"
 
 #define DMA_DIRECTION_TO_DEVICE 0

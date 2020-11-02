@@ -364,7 +364,6 @@ set(pcsx2USBHeaders
 	USB/proxybase.h
 	USB/deviceproxy.h
 	USB/configuration.h
-	USB/platcompat.h
 	USB/osdebugout.h
 	USB/helpers.h
 	USB/readerwriterqueue/readerwriterqueue.h

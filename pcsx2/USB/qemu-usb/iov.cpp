@@ -16,7 +16,6 @@
  * GNU GPL, version 2 or (at your option) any later version.
  */
 
-#include "platcompat.h"
 #include "vl.h"
 //#include "qemu-common.h"
 #include "iov.h"

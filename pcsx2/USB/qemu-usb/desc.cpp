@@ -1,5 +1,3 @@
-#include "platcompat.h"
-
 #include "vl.h"
 #include "desc.h"
 #include "glib.h"
