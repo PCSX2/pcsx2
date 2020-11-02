@@ -93,6 +93,9 @@ find_package(ZLIB)
 ## Use pcsx2 package to find module
 include(FindLibc)
 
+## Use pcsx2 package to find module
+include(Findlibsamplerate)
+
 ## Use CheckLib package to find module
 include(CheckLib)
 if(Linux)
@@ -187,6 +190,10 @@ endif()
 
 if(PCAP_FOUND)
 	include_directories(${PCAP_INCLUDE_DIR})
+endif()
+
+if(LIBSAMPLERATE_FOUND)
+    include_directories(${LIBSAMPLERATE_INCLUDE_DIR})
 endif()
 
 if(LIBXML2_FOUND)
