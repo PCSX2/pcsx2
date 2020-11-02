@@ -371,17 +371,17 @@ wxString InputRecording::resolveGameName()
 	const wxString gameKey(SysGetDiscID());
 	if (!gameKey.IsEmpty())
 	{
-		if (IGameDatabase* GameDB = AppHost_GetGameDatabase())
+		if (IGameDatabase* gameDB = AppHost_GetGameDatabase())
 		{
-			Game_Data game;
-			if (GameDB->findGame(game, gameKey))
+			GameDatabaseSchema::GameEntry game = gameDB->findGame(std::string(gameKey));
+			if (game.isValid)
 			{
-				gameName = game.getString("Name");
-				gameName += L" (" + game.getString("Region") + L")";
+				gameName = game.name;
+				gameName += L" (" + game.region + L")";
 			}
 		}
 	}
-	return !gameName.IsEmpty() ? gameName : Path::GetFilename(g_Conf->CurrentIso);
+	return !gameName.IsEmpty() ? gameName : (wxString)Path::GetFilename(g_Conf->CurrentIso);
 }
 
 #endif
