@@ -235,7 +235,6 @@ USBDevice* LogitechMicDevice::CreateDevice(int port)
 		return nullptr;
 
 	SINGSTARMICMINIState *s = (SINGSTARMICMINIState *)dev;
-	const USBDescDevice *full = s->desc.full;
 	s->desc = {};
 	s->desc_dev = {};
 

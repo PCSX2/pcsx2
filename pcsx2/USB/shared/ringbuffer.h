@@ -74,12 +74,14 @@ public:
 	{
 		return std::chrono::duration_cast<ms>(hrc::now()-mLastWrite).count();
 	}
-
 private:
-	bool m_overrun;
-	size_t m_begin, m_end, m_capacity;
+    size_t m_capacity;
 	char *m_data;
+	size_t m_begin;
+	bool m_overrun;
+    size_t m_end;
 	hrc::time_point mLastWrite = hrc::time_point(ns(0));
+
 };
 
 #endif

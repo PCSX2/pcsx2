@@ -24,7 +24,7 @@
 */
 #include "hid.h"
 #include "input-keymap.h"
-#include "osdebugout.h"
+#include "../osdebugout.h"
 
 #define HID_USAGE_ERROR_ROLLOVER        0x01
 #define HID_USAGE_POSTFAIL              0x02
@@ -283,6 +283,7 @@ static void hid_keyboard_process_keycode(HIDState *hs)
         }
         /* fall through to process Ctrl_L */
     //case 0xe1 ... 0xe7:
+    [[fallthrough]];
     case 0xe1:
     case 0xe2:
     case 0xe3:
@@ -341,7 +342,7 @@ static void hid_keyboard_process_keycode(HIDState *hs)
             }
         }
         if (i < 0) {
-            if (hs->kbd.keys < sizeof(hs->kbd.key)) {
+            if (hs->kbd.keys < (int32_t)sizeof(hs->kbd.key)) {
                 hs->kbd.key[hs->kbd.keys++] = hid_code;
             }
         }

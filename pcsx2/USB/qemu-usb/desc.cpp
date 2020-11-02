@@ -1,7 +1,7 @@
 #include "vl.h"
 #include "desc.h"
 #include "glib.h"
-#include "osdebugout.h"
+#include "../osdebugout.h"
 //#include "trace.h"
 
 /* ------------------------------------------------------------------ */
@@ -128,7 +128,6 @@ int usb_desc_iface_group(const USBDescIfaceAssoc& iad, int flags,
 						 uint8_t *dest, size_t len)
 {
 	int pos = 0;
-	int i = 0;
 
 	/* handle interface association descriptor */
 	uint8_t bLength = 0x08;
@@ -209,7 +208,7 @@ int usb_desc_endpoint(const USBDescEndpoint& ep, int flags,
 	uint8_t superlen = (flags & USB_DESC_FLAG_SUPER) ? 0x06 : 0;
 	USBDescriptor *d = (USBDescriptor *)dest;
 
-	if (len < bLength + extralen + superlen) {
+	if (len < (size_t)(bLength + extralen + superlen)) {
 		return -1;
 	}
 
@@ -251,7 +250,7 @@ int usb_desc_other(const USBDescOther& desc, uint8_t *dest, size_t len)
 {
 	int bLength = desc.length ? desc.length : desc.data[0];
 
-	if (len < bLength) {
+	if (len < (size_t)bLength) {
 		return -1;
 	}
 
@@ -389,7 +388,6 @@ int usb_desc_parse_config (const uint8_t *data, int len, USBDescDevice& dev)
 {
 	int pos = 0;
 	USBDescIface *iface = nullptr;
-	USBDescIfaceAssoc *ifaceAssoc = nullptr;
 	USBDescConfig *config = nullptr;
 	USBDescriptor *d;
 
@@ -668,7 +666,7 @@ int usb_desc_string(USBDevice *dev, int index, uint8_t *dest, size_t len)
 	dest[0] = bLength;
 	dest[1] = USB_DT_STRING;
 	i = 0; pos = 2;
-	while (pos+1 < bLength && pos+1 < len) {
+	while (pos+1 < bLength && (size_t)(pos+1) < len) {
 		dest[pos++] = str[i++];
 		dest[pos++] = 0;
 	}
@@ -744,7 +742,7 @@ int usb_desc_get_descriptor(USBDevice *dev, USBPacket *p,
 	}
 
 	if (ret > 0) {
-		if (ret > len) {
+		if ((size_t)ret > len) {
 			ret = len;
 		}
 		memcpy(dest, buf, ret);
@@ -757,11 +755,9 @@ int usb_desc_get_descriptor(USBDevice *dev, USBPacket *p,
 int usb_desc_handle_control(USBDevice *dev, USBPacket *p,
 		int request, int value, int index, int length, uint8_t *data)
 {
-	bool msos = (dev->flags & (1 << USB_DEV_FLAG_MSOS_DESC_IN_USE));
-	const USBDesc *desc = usb_device_get_usb_desc(dev);
+	assert(usb_device_get_usb_desc(dev) != NULL);
 	int ret = -1;
 
-	assert(desc != NULL);
 	switch(request) {
 	case DeviceOutRequest | USB_REQ_SET_ADDRESS:
 		dev->addr = value;

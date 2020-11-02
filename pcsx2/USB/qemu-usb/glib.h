@@ -2,7 +2,12 @@
 #define GLIB_H
 #include <cstddef>
 #include <cstdint>
-#include "gmem-size.h"
+
+#ifdef __M_X86_64
+#define G_MAXSIZE G_MAXUINT64
+#else
+#define G_MAXSIZE G_MAXUINT32
+#endif
 
 #define G_MAXUINT64    0xffffffffffffffffUL
 #define G_MAXUINT32    ((uint32_t)0xffffffff)

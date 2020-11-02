@@ -780,7 +780,6 @@ static void usb_msd_handle_control(USBDevice *dev, USBPacket *p, int request, in
         p->actual_length = 1;
         break;
     default:
-    fail:
         p->status = USB_RET_STALL;
         break;
     }
@@ -801,8 +800,6 @@ static void usb_msd_cancel_io(USBDevice *dev, USBPacket *p)
 static void usb_msd_handle_data(USBDevice *dev, USBPacket *p)
 {
     MSDState *s = (MSDState *)dev;
-    int ret = 0;
-    size_t file_ret = 0;
     struct usb_msd_cbw cbw;
     uint8_t devep = p->ep->nr;
 
@@ -877,7 +874,7 @@ static void usb_msd_handle_data(USBDevice *dev, USBPacket *p)
                     }
                 }
             }
-            if (p->actual_length < p->iov.size) {
+            if ((size_t)p->actual_length < p->iov.size) {
                 DPRINTF("Deferring packet %p [wait data-out]\n", p);
                 s->packet = p;
                 p->status = USB_RET_ASYNC;
@@ -955,7 +952,7 @@ static void usb_msd_handle_data(USBDevice *dev, USBPacket *p)
                 }
             }
 
-            if (p->actual_length < p->iov.size) {
+            if ((size_t)p->actual_length < p->iov.size) {
                 DPRINTF("Deferring packet %p [wait data-in]\n", p);
                 s->packet = p;
                 p->status = USB_RET_ASYNC;
@@ -1049,7 +1046,6 @@ const char* MsdDevice::TypeName()
 
 int MsdDevice::Freeze(int mode, USBDevice *dev, void *data)
 {
-    uint32_t fat32_serial = 0;
     MSDState *s = (MSDState *)dev;
     MSDState::freeze *tmp;
 
