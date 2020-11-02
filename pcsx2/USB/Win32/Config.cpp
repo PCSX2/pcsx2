@@ -1,3 +1,4 @@
+#include "AppCoreThread.h"
 #include "../USB.h"
 #include "resource.h"
 #include "Config.h"
@@ -226,12 +227,14 @@ EXPORT_C_(BOOL) AboutDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	return FALSE;
 }
 
-EXPORT_C_(void) USBconfigure() {
+void USBconfigure() {
+	ScopedCoreThreadPause paused_core;
     RegisterDevice::Register();
     DialogBox(hInst,
               MAKEINTRESOURCE(IDD_CONFIG),
               GetActiveWindow(),
               (DLGPROC)ConfigureDlgProc);
+	paused_core.AllowResume();
 }
 
 EXPORT_C_(void) USBabout() {
