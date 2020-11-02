@@ -2,7 +2,6 @@
 #include <cstdio>
 #include <vector>
 #include <algorithm>
-#include "platcompat.h"
 #include "osdebugout.h"
 
 extern HINSTANCE hInst;

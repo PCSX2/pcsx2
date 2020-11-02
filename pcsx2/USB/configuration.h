@@ -1,12 +1,54 @@
 #pragma once
 
-#ifndef CONFIGURATION_H
-#define CONFIGURATION_H
+
+#ifdef _WIN32
+#ifndef NOMINMAX
+#define NOMINMAX
+#endif
+#include <windows.h>
+#define wfopen _wfopen
+#define fseeko64 _fseeki64
+#define ftello64 _ftelli64
+#define TSTDSTRING std::wstring
+#define TSTDSTRINGSTREAM std::wstringstream
+#define TSTDTOSTRING std::to_wstring
+
+#ifdef _MSC_VER
+typedef SSIZE_T ssize_t;
+#endif
+
+//FIXME narrow string fmt
+#ifdef UNICODE
+#define SFMTs "S"
+#endif
+
+#define __builtin_constant_p(p) false
+
+#else //_WIN32
+
+#define MAX_PATH PATH_MAX
+#define __inline inline
+
+//#ifndef TEXT
+//#define TEXT(x) L##x
+//#endif
+//FIXME narrow string fmt
+#define SFMTs "s"
+#define TEXT(val) val
+#define TCHAR char
+#define wfopen fopen
+#define TSTDSTRING std::string
+#define TSTDSTRINGSTREAM std::stringstream
+#define TSTDTOSTRING std::to_string
+
+void SysMessage(const char *fmt, ...);
+
+#endif //_WIN32
+
 #include <vector>
 #include <string>
 #include <map>
 #include <sstream>
-#include "platcompat.h"
 #include "osdebugout.h"
 
 #define RESULT_CANCELED 0
@@ -70,6 +112,9 @@ bool SaveSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TC
 bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, std::string& value);
 bool SaveSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, const std::string& value);
 #endif
+
+void USBsetSettingsDir( const char* dir );
+void USBsetLogDir( const char* dir );
 
 template<typename Type>
 bool LoadSetting(const char* dev_type, int port, const std::string& key, const TCHAR* name, Type& var)
@@ -163,4 +208,8 @@ bool SaveSetting(const TCHAR* section, const TCHAR* key, const Type var)
 	return ret;
 }
 
-#endif
+template <class T, std::size_t N>
+constexpr std::size_t countof(const T (&)[N]) noexcept
+{
+    return N;
+}

@@ -12,7 +12,7 @@ TSTDSTRING IniPath = TSTDSTRING(TEXT("./inis/")) + iniFile; // default path, jus
 TSTDSTRING LogDir;
 CIniFile ciniFile;
 
-EXPORT_C_(void) USBsetSettingsDir( const char* dir )
+void USBsetSettingsDir( const char* dir )
 {
 #ifdef _UNICODE
 	OSDebugOut(L"USBsetSettingsDir: %S\n", dir);
@@ -29,7 +29,7 @@ EXPORT_C_(void) USBsetSettingsDir( const char* dir )
 #endif
 }
 
-EXPORT_C_(void) USBsetLogDir( const char* dir )
+void USBsetLogDir( const char* dir )
 {
 #ifdef _UNICODE
 	OSDebugOut(L"USBsetLogDir: %S\n", dir);

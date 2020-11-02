@@ -13,7 +13,6 @@
 
 #ifndef IOV_H
 #define IOV_H
-#include "platcompat.h" /* ssize_t */
 
 #if !defined(_BITS_UIO_H) && !defined(__iovec_defined) /* /usr/include/bits/uio.h */
 struct iovec {

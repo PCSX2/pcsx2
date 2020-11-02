@@ -1,9 +1,15 @@
-#ifndef QEMU_HW_USB_DESC_H
-#define QEMU_HW_USB_DESC_H
+#pragma once
 
-#include "platcompat.h"
 #include <wchar.h>
 #include <vector>
+
+#if defined(_WIN32) && !defined(__MINGW32__)
+#define PACK(def,name) __pragma( pack(push, 1) ) def name __pragma( pack(pop) )
+#elif defined(__clang__)
+#define PACK(def,name) def __attribute__((packed)) name
+#else
+#define PACK(def,name) def __attribute__((gcc_struct, packed)) name
+#endif
 
 /* binary representation */
 PACK(typedef struct  USBDescriptor {
@@ -244,4 +250,3 @@ int usb_desc_handle_control(USBDevice *dev, USBPacket *p,
 
 int usb_desc_set_config(USBDevice *dev, int value);
 int usb_desc_set_interface(USBDevice *dev, int index, int value);
-#endif /* QEMU_HW_USB_DESC_H */

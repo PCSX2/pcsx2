@@ -2,7 +2,6 @@
 #include <cstring>
 #include <cassert>
 #include "osdebugout.h"
-#include "platcompat.h"
 
 #if 0
 #define DPRINTF OSDebugOut

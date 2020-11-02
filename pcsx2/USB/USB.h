@@ -23,7 +23,7 @@
 #include <string>
 #include <limits.h>
 
-#include "platcompat.h"
+#include "SaveState.h"
 #include "osdebugout.h"
 
 // ---------------------------------------------------------------------

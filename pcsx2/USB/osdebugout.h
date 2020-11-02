@@ -8,7 +8,6 @@
 void __Log(const char* fmt, ...);
 
 #ifdef _WIN32
-#include "platcompat.h"
 
 #include <vector>
 void _OSDebugOut(const TCHAR *psz_fmt, ...);

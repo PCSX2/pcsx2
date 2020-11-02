@@ -1,6 +1,6 @@
 #pragma once
 #include "../configuration.h"
-#include "qemu-usb/hid.h"
+#include "../qemu-usb/hid.h"
 #include <list>
 #include <string>
 

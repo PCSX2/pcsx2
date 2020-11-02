@@ -1,4 +1,3 @@
-#include "platcompat.h"
 #include "USBinternal.h"
 #include "vl.h"
 
