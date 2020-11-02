@@ -60,7 +60,6 @@ typedef struct {
 } USBfreezeData;
 
 u8 *ram = 0;
-USBcallback _USBirq;
 FILE *usbLog;
 int64_t usb_frame_time;
 int64_t usb_bit_time;
@@ -81,13 +80,6 @@ Window g_GSwin;
 Config::Config(): Log(0)
 {
 	memset(&WheelType, 0, sizeof(WheelType));
-}
-
-void USBirq(int cycles)
-{
-	//USB_LOG("USBirq.\n");
-
-	_USBirq(cycles);
 }
 
 void __Log(const char *fmt, ...) {
@@ -195,7 +187,7 @@ void CreateDevices()
 	}
 }
 
-EXPORT_C_(s32) USBinit() {
+s32 USBinit() {
 	OSDebugOut(TEXT("USBinit\n"));
 
 	RegisterDevice::Register();
@@ -223,7 +215,7 @@ EXPORT_C_(s32) USBinit() {
 	return 0;
 }
 
-EXPORT_C_(void) USBshutdown() {
+void USBshutdown() {
 
 	OSDebugOut(TEXT("USBshutdown\n"));
 	DestroyDevices();
@@ -241,7 +233,7 @@ EXPORT_C_(void) USBshutdown() {
 //#endif
 }
 
-EXPORT_C_(s32) USBopen(void *pDsp) {
+s32 USBopen(void *pDsp) {
 
 	if (conf.Log && !usbLog)
 	{
@@ -299,7 +291,7 @@ EXPORT_C_(s32) USBopen(void *pDsp) {
 	return 0;
 }
 
-EXPORT_C_(void) USBclose() {
+void USBclose() {
 	OSDebugOut(TEXT("USBclose\n"));
 
 	if(usb_device[0] && usb_device[0]->klass.close)
@@ -312,17 +304,17 @@ EXPORT_C_(void) USBclose() {
 
 }
 
-EXPORT_C_(u8) USBread8(u32 addr) {
+u8 USBread8(u32 addr) {
 	USB_LOG("* Invalid 8bit read at address %lx\n", addr);
 	return 0;
 }
 
-EXPORT_C_(u16) USBread16(u32 addr) {
+u16 USBread16(u32 addr) {
 	USB_LOG("* Invalid 16bit read at address %lx\n", addr);
 	return 0;
 }
 
-EXPORT_C_(u32) USBread32(u32 addr) {
+u32 USBread32(u32 addr) {
 	u32 hard;
 
 	hard=ohci_mem_read(qemu_ohci,addr);
@@ -332,42 +324,27 @@ EXPORT_C_(u32) USBread32(u32 addr) {
 	return hard;
 }
 
-EXPORT_C_(void) USBwrite8(u32 addr,  u8 value) {
+void USBwrite8(u32 addr,  u8 value) {
 	USB_LOG("* Invalid 8bit write at address %lx value %x\n", addr, value);
 }
 
-EXPORT_C_(void) USBwrite16(u32 addr, u16 value) {
+void USBwrite16(u32 addr, u16 value) {
 	USB_LOG("* Invalid 16bit write at address %lx value %x\n", addr, value);
 }
 
-EXPORT_C_(void) USBwrite32(u32 addr, u32 value) {
+void USBwrite32(u32 addr, u32 value) {
 	USB_LOG("* Known 32bit write at address %lx value %lx\n", addr, value);
 	ohci_mem_write(qemu_ohci,addr,value);
 }
 
-EXPORT_C_(void) USBirqCallback(USBcallback callback) {
-	_USBirq = callback;
-}
-
 extern u32 bits;
 
-EXPORT_C_(int) _USBirqHandler(void)
-{
-	//fprintf(stderr," * USB: IRQ Acknowledged.\n");
-	//qemu_ohci->intr_status&=~bits;
-	return 1;
-}
-
-EXPORT_C_(USBhandler) USBirqHandler(void) {
-	return (USBhandler)_USBirqHandler;
-}
-
-EXPORT_C_(void) USBsetRAM(void *mem) {
+void USBsetRAM(void *mem) {
 	ram = (u8*)mem;
 	Reset();
 }
 
-EXPORT_C_(s32) USBfreeze(int mode, freezeData *data) {
+s32 USBfreeze(int mode, freezeData *data) {
 	USBfreezeData usbd = { 0 };
 
 	//TODO FREEZE_SIZE mismatch causes loading to fail in PCSX2 beforehand
@@ -608,7 +585,7 @@ EXPORT_C_(s32) USBfreeze(int mode, freezeData *data) {
 	return 0;
 }
 
-EXPORT_C_(void) USBasync(u32 cycles)
+void USBasync(u32 cycles)
 {
 	remaining += cycles;
 	clocks += remaining;
@@ -641,10 +618,6 @@ EXPORT_C_(void) USBasync(u32 cycles)
 	//{
 	//ohci_frame_boundary(qemu_ohci);
 	//}
-}
-
-EXPORT_C_(s32) USBtest() {
-	return 0;
 }
 
 int cpu_physical_memory_rw(u32 addr, u8 *buf, size_t len, int is_write)

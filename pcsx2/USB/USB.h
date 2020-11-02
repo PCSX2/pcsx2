@@ -18,9 +18,6 @@
 
 #pragma once
 
-#ifndef __PS2USB_H__
-#define __PS2USB_H__
-
 #include <cstdio>
 #include <cstring>
 #include <string>
@@ -36,11 +33,25 @@ extern u8 *ram;
 
 // ---------------------------------------------------------------------
 
-extern USBcallback _USBirq;
-void USBirq(int);
-
 void DestroyDevices();
 void CreateDevices();
+
+s32 USBinit();
+void USBasync(u32 cycles);
+void USBshutdown();
+void USBclose();
+s32 USBopen(void *pDsp);
+s32 USBfreeze(int mode, freezeData *data);
+
+u8 USBread8(u32 addr);
+u16 USBread16(u32 addr);
+u32 USBread32(u32 addr);
+void USBwrite8(u32 addr,  u8 value);
+void USBwrite16(u32 addr, u16 value);
+void USBwrite32(u32 addr, u32 value);
+
+
+void USBsetRAM(void *mem);
 
 extern FILE *usbLog;
 s64 get_clock();
@@ -55,4 +66,3 @@ void UninitWindow();
 # endif
 #endif
 
-#endif

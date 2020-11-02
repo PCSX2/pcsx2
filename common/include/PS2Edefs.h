@@ -285,6 +285,7 @@ typedef void(CALLBACK *_PADgsDriverInfo)(GSdriverInfo *info);
 typedef s32(CALLBACK *_PADsetSlot)(u8 port, u8 slot);
 typedef s32(CALLBACK *_PADqueryMtap)(u8 port);
 typedef void(CALLBACK *_PADWriteEvent)(keyEvent &evt);
+#endif
 
 #ifdef PLUGINfuncs
 
