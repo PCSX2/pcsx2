@@ -5,6 +5,7 @@
 #include <map>
 #include <vector>
 #include <string>
+#include "AppCoreThread.h"
 #include "../gtk.h"
 
 #include "../osdebugout.h"
@@ -14,6 +15,7 @@
 #include "../usb-mic/audiodeviceproxy.h"
 
 #include "config.h"
+#include "../USB.h"
 
 // src/USB.cpp
 extern bool configChanged;
@@ -185,11 +187,9 @@ static GtkWidget* new_frame(const char *label, GtkWidget *box)
 	return vbox;
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
 
-void CALLBACK USBconfigure() {
+void USBconfigure() {
+ 	ScopedCoreThreadPause paused_core;
 
 	RegisterDevice::Register();
 	LoadConfig();
@@ -301,11 +301,8 @@ void CALLBACK USBconfigure() {
 		configChanged = true;
 	}
 //	ClearAPIs();
+	paused_core.AllowResume();
 }
 
 void CALLBACK USBabout() {
 }
-
-#ifdef __cplusplus
-} //extern "C"
-#endif

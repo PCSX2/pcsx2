@@ -33,6 +33,8 @@ extern u8 *ram;
 
 // ---------------------------------------------------------------------
 
+void USBconfigure();
+
 void DestroyDevices();
 void CreateDevices();
 
