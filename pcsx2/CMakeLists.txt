@@ -361,8 +361,6 @@ set(pcsx2USBSources
 # USB headers
 set(pcsx2USBHeaders
 	USB/USB.h
-	USB/PS2Etypes.h
-	USB/PS2Edefs.h
 	USB/proxybase.h
 	USB/deviceproxy.h
 	USB/configuration.h
@@ -905,6 +903,7 @@ set(pcsx2FinalLibs
     Utilities
     x86emitter
     fmt::fmt
+    libsamplerate
     ${wxWidgets_LIBRARIES}
     ${GTK2_LIBRARIES}
     ${ZLIB_LIBRARIES}
@@ -914,6 +913,7 @@ set(pcsx2FinalLibs
     ${SOUNDTOUCH_LIBRARIES}
     ${SDL2_LIBRARIES}
     ${PCAP_LIBRARY}
+    ${LIBSAMPLERATE_LIBRARIES}
     ${LIBXML2_LIBRARIES}
     ${Platform_Libs}
 )
