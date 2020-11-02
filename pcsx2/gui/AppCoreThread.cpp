@@ -29,6 +29,7 @@
 
 #include "CDVD/CDVD.h"
 #include "SPU2/spu2.h"
+#include "USB/USB.h"
 #include "Elfheader.h"
 #include "Patch.h"
 #include "R5900Exceptions.h"
@@ -171,6 +172,7 @@ void AppCoreThread::Resume()
 
 	GetCorePlugins().Init();
 	SPU2init();
+    USBinit();
 	_parent::Resume();
 }
 
