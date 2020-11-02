@@ -23,7 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
-#include "osdebugout.h"
+#include "../osdebugout.h"
+#include "../platcompat.h"
 #include "vl.h"
 #include "iov.h"
 //#include "trace.h"
@@ -39,7 +40,7 @@ void usb_pick_speed(USBPort *port)
     USBDevice *udev = port->dev;
     int i;
 
-    for (i = 0; i < ARRAY_SIZE(speeds); i++) {
+    for (i = 0; i < (int)ARRAY_SIZE(speeds); i++) {
         if ((udev->speedmask & (1 << speeds[i])) &&
             (port->speedmask & (1 << speeds[i]))) {
             udev->speed = speeds[i];
@@ -138,7 +139,7 @@ static void do_token_setup(USBDevice *s, USBPacket *p)
     s->setup_index = 0;
     p->actual_length = 0;
     s->setup_len   = (s->setup_buf[7] << 8) | s->setup_buf[6];
-    if (s->setup_len > sizeof(s->data_buf)) {
+    if (s->setup_len > (int32_t)sizeof(s->data_buf)) {
         fprintf(stderr,
                 "usb_generic_handle_packet: ctrl buffer too small (%d > %zu)\n",
                 s->setup_len, sizeof(s->data_buf));
@@ -200,7 +201,7 @@ static void do_token_in(USBDevice *s, USBPacket *p)
     case SETUP_STATE_DATA:
         if (s->setup_buf[0] & USB_DIR_IN) {
             int len = s->setup_len - s->setup_index;
-            if (len > p->iov.size) {
+            if ((size_t)len > p->iov.size) {
                 len = p->iov.size;
             }
             usb_packet_copy(p, s->data_buf + s->setup_index, len);
@@ -236,7 +237,7 @@ static void do_token_out(USBDevice *s, USBPacket *p)
     case SETUP_STATE_DATA:
         if (!(s->setup_buf[0] & USB_DIR_IN)) {
             int len = s->setup_len - s->setup_index;
-            if (len > p->iov.size) {
+            if ((size_t)len > p->iov.size) {
                 len = p->iov.size;
             }
             usb_packet_copy(p, s->data_buf + s->setup_index, len);
@@ -271,7 +272,7 @@ static void do_parameter(USBDevice *s, USBPacket *p)
     value   = (s->setup_buf[3] << 8) | s->setup_buf[2];
     index   = (s->setup_buf[5] << 8) | s->setup_buf[4];
 
-    if (s->setup_len > sizeof(s->data_buf)) {
+    if (s->setup_len > (int32_t)sizeof(s->data_buf)) {
         fprintf(stderr,
                 "usb_generic_handle_packet: ctrl buffer too small (%d > %zu)\n",
                 s->setup_len, sizeof(s->data_buf));
@@ -450,7 +451,7 @@ void usb_packet_complete_one(USBDevice *dev, USBPacket *p)
     assert(p->status != USB_RET_ASYNC && p->status != USB_RET_NAK);
 
     if (p->status != USB_RET_SUCCESS ||
-            (p->short_not_ok && (p->actual_length < p->iov.size))) {
+            (p->short_not_ok && ((size_t)p->actual_length < p->iov.size))) {
         ep->halted = true;
     }
     usb_packet_set_state(p, USB_PACKET_COMPLETE);
@@ -527,14 +528,9 @@ static const char *usb_packet_state_name(USBPacketState state)
 
 void usb_packet_check_state(USBPacket *p, USBPacketState expected)
 {
-    USBDevice *dev;
-    USBBus *bus;
-
     if (p->state == expected) {
         return;
     }
-    dev = p->ep->dev;
-    bus = dev->bus; //usb_bus_from_device(dev);
     //trace_usb_packet_state_fault(bus->busnr, dev->port->path, p->ep->nr, p,
     //                             usb_packet_state_name(p->state),
     //                             usb_packet_state_name(expected));

@@ -694,8 +694,8 @@ static void singstar_mic_handle_data(USBDevice *dev, USBPacket *p)
     case USB_TOKEN_OUT:
         printf("token out ep: %d\n", devep);
 		OSDebugOut(TEXT("token out ep: %d len: %d\n"), devep, p->actual_length);
+    [[fallthrough]];
     default:
-    fail:
         p->status = USB_RET_STALL;
         break;
     }

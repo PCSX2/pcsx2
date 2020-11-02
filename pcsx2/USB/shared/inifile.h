@@ -537,5 +537,9 @@ typedef KeyIndexA KeyIndex;
 typedef SecIndexA SecIndex;
 #endif
 
+
+std::wstring str_to_wstr(const std::string& arg);
+std::string wstr_to_str(const std::wstring& arg);
+
 #endif
 

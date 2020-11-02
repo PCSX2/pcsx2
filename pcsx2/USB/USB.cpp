@@ -78,16 +78,6 @@ Config::Config(): Log(0)
 	memset(&WheelType, 0, sizeof(WheelType));
 }
 
-void __Log(const char *fmt, ...) {
-	va_list list;
-
-	if (!conf.Log ||!usbLog) return;
-
-	va_start(list, fmt);
-	vfprintf(usbLog, fmt, list);
-	va_end(list);
-}
-
 //Simpler to reset and reattach after USBclose/USBopen
 void Reset()
 {

@@ -1,7 +1,7 @@
 #include "ringbuffer.h"
 #include <cstring>
 #include <cassert>
-#include "osdebugout.h"
+#include "../osdebugout.h"
 
 #if 0
 #define DPRINTF OSDebugOut
@@ -152,8 +152,6 @@ size_t RingBuffer::peek_read() const
 
 void RingBuffer::write(size_t bytes)
 {
-	size_t before = m_end;
-
 	//assert( bytes <= m_capacity - size() );
 
 	// push m_begin forward if m_end overlaps it
@@ -175,7 +173,6 @@ void RingBuffer::read(size_t bytes)
 {
 	assert( bytes <= size() );
 
-	size_t before = m_begin;
 	m_overrun = false;
 	if ((m_begin < m_end && m_begin + bytes > m_end) ||
 		m_begin + bytes > m_end + m_capacity)

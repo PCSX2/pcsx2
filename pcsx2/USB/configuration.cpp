@@ -35,9 +35,9 @@ std::string GetSelectedAPI(const std::pair<int, std::string>& pair)
 bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, TSTDSTRING& value)
 {
 	CIniKey *key;
-	auto sect = ciniFile.GetSection(section);
-	if (sect && (key = sect->GetKey(param))) {
-		value = key->GetValue();
+	auto sect = ciniFile.GetSection(str_to_wstr(section));
+	if (sect && (key = sect->GetKey(str_to_wstr(param)))) {
+		value = wstr_to_str(key->GetValue());
 		return true;
 	}
 	return false;
@@ -46,8 +46,8 @@ bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TC
 bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, int32_t& value)
 {
 	CIniKey *key;
-	auto sect = ciniFile.GetSection(section);
-	if (sect && (key = sect->GetKey(param))) {
+	auto sect = ciniFile.GetSection(str_to_wstr(section));
+	if (sect && (key = sect->GetKey(str_to_wstr(param)))) {
 		try {
 			value = std::stoi(key->GetValue());
 			return true;
@@ -61,19 +61,19 @@ bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TC
 
 bool SaveSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, const TSTDSTRING& value)
 {
-	ciniFile.SetKeyValue(section, param, value);
+	ciniFile.SetKeyValue(str_to_wstr(section), str_to_wstr(param), str_to_wstr(value));
 	return true;
 }
 
 bool SaveSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, int32_t value)
 {
-	ciniFile.SetKeyValue(section, param, TSTDTOSTRING(value));
+	ciniFile.SetKeyValue(str_to_wstr(section), str_to_wstr(param), str_to_wstr(TSTDTOSTRING(value)));
 	return true;
 }
 
 void SaveConfig() {
 
-	SaveSetting(_T("MAIN"), _T("log"), conf.Log);
+	SaveSetting("MAIN", "log", conf.Log);
 
 	SaveSetting(nullptr, 0, N_DEVICE_PORT, N_DEVICE, conf.Port[0]);
 	SaveSetting(nullptr, 1, N_DEVICE_PORT, N_DEVICE, conf.Port[1]);
@@ -86,15 +86,15 @@ void SaveConfig() {
 		SaveSetting(nullptr, k.first.first, k.first.second, N_DEVICE_API, k.second);
 	}
 
-	bool ret = ciniFile.Save(IniPath);
+	ciniFile.Save(str_to_wstr(IniPath));
 	OSDebugOut(_T("ciniFile.Save: %d [%s]\n"), ret, IniPath.c_str());
 }
 
 void LoadConfig() {
 	std::cerr << "USB load config\n" << std::endl;
-	ciniFile.Load(IniPath);
+	ciniFile.Load(str_to_wstr(IniPath));
 
-	LoadSetting(_T("MAIN"), _T("log"), conf.Log);
+	LoadSetting("MAIN", "log", conf.Log);
 
 	LoadSetting(nullptr, 0, N_DEVICE_PORT, N_DEVICE, conf.Port[0]);
 	LoadSetting(nullptr, 1, N_DEVICE_PORT, N_DEVICE, conf.Port[1]);
@@ -133,7 +133,7 @@ void LoadConfig() {
 
 void ClearSection(const TCHAR* section)
 {
-	auto s = ciniFile.GetSection(section);
+	auto s = ciniFile.GetSection(str_to_wstr(section));
 	if (s) {
 		s->RemoveAllKeys();
 	}

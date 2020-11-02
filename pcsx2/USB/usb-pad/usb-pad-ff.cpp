@@ -1,6 +1,6 @@
 #include "usb-pad.h"
 #include "lg/lg_ff.h"
-#include "osdebugout.h"
+#include "../osdebugout.h"
 
 namespace usb_pad {
 
