@@ -350,7 +350,7 @@ set(pcsx2USBSources
 	USB/usb-mic/usb-mic-logitech.cpp
 	USB/usb-mic/usb-headset.cpp
 	USB/usb-eyetoy/jpgd/jpgd.cpp
-	USB/usb-eyetoy/jo_mpeg.c
+	USB/usb-eyetoy/jo_mpeg.cpp
 	USB/usb-eyetoy/usb-eyetoy-webcam.cpp
 	USB/usb-hid/usb-hid.cpp
 	USB/shared/shared.cpp
