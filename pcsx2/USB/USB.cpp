@@ -339,7 +339,7 @@ s32 USBfreeze(int mode, freezeData *data) {
 	//TODO FREEZE_SIZE mismatch causes loading to fail in PCSX2 beforehand
 	if (mode == FREEZE_LOAD)
 	{
-		if(data->size < sizeof(USBfreezeData))
+		if((long unsigned int)data->size < sizeof(USBfreezeData))
 		{
 			SysMessage(TEXT("ERROR: Unable to load freeze data! Got %d bytes, expected >= %d.\n"), data->size, sizeof(USBfreezeData));
 			return -1;
@@ -358,7 +358,7 @@ s32 USBfreeze(int mode, freezeData *data) {
 		//clocks = usbd.cycles;
 		//remaining = usbd.remaining;
 
-		for(int i=0; i< qemu_ohci->num_ports; i++)
+		for(uint32_t i=0; i< qemu_ohci->num_ports; i++)
 		{
 			usbd.t.rhport[i].port.opaque = qemu_ohci;
 			usbd.t.rhport[i].port.ops = qemu_ohci->rhport[i].port.ops;
@@ -368,7 +368,7 @@ s32 USBfreeze(int mode, freezeData *data) {
 
 		s8 *ptr = data->data + sizeof(USBfreezeData);
 		// Load the state of the attached devices
-		if (data->size != sizeof(USBfreezeData) + usbd.device[0].size + usbd.device[1].size + 8192)
+		if ((long unsigned int)data->size != sizeof(USBfreezeData) + usbd.device[0].size + usbd.device[1].size + 8192)
 			return -1;
 
 		RegisterDevice& regInst = RegisterDevice::instance();
@@ -398,7 +398,7 @@ s32 USBfreeze(int mode, freezeData *data) {
 
 			if (proxy && usb_device[i]) /* usb device creation may have failed for some reason */
 			{
-				if (proxy->Freeze(FREEZE_SIZE, usb_device[i], nullptr) != usbd.device[i].size)
+				if (proxy->Freeze(FREEZE_SIZE, usb_device[i], nullptr) != (s32)usbd.device[i].size)
 				{
 					SysMessage(TEXT("Port %d: device's freeze size doesn't match.\n"), 1+(1-i));
 					return -1;
@@ -509,13 +509,13 @@ s32 USBfreeze(int mode, freezeData *data) {
 				usbd.usb_packet.dev_index = i;
 		}
 
-		strncpy(usbd.freezeID,  USBfreezeID, strlen(USBfreezeID));
+		strncpy(usbd.freezeID, USBfreezeID, strlen(usbd.freezeID));
 		usbd.t = *qemu_ohci;
 		usbd.usb_packet.ep = qemu_ohci->usb_packet.ep ? *qemu_ohci->usb_packet.ep : USBEndpoint{0};
 		usbd.t.usb_packet.iov = { };
 		usbd.t.usb_packet.ep = nullptr;
 
-		for(int i=0; i< qemu_ohci->num_ports; i++)
+		for(uint32_t i=0; i< qemu_ohci->num_ports; i++)
 		{
 			usbd.t.rhport[i].port.opaque = nullptr;
 			usbd.t.rhport[i].port.ops = nullptr;
@@ -580,7 +580,7 @@ void USBasync(u32 cycles)
 	clocks += remaining;
 	if(qemu_ohci->eof_timer>0)
 	{
-		while(remaining>=qemu_ohci->eof_timer)
+		while((uint64_t)remaining>=qemu_ohci->eof_timer)
 		{
 			remaining-=qemu_ohci->eof_timer;
 			qemu_ohci->eof_timer=0;

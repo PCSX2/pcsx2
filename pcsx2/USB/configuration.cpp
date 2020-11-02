@@ -2,6 +2,7 @@
 #include "deviceproxy.h"
 #include "configuration.h"
 #include "shared/inifile.h"
+#include "platcompat.h"
 #include <map>
 #include <vector>
 
@@ -14,33 +15,13 @@ CIniFile ciniFile;
 
 void USBsetSettingsDir( const char* dir )
 {
-#ifdef _UNICODE
-	OSDebugOut(L"USBsetSettingsDir: %S\n", dir);
-	wchar_t dst[4096] = {0};
-	size_t num = 0;
-	mbstowcs_s(&num, dst, dir, countof(dst));
-	IniPath = dst;
-	IniPath.append(iniFile);
-	OSDebugOut(L"USBsetSettingsDir: %s\n", IniPath.c_str());
-
-#else
 	IniPath = dir;
 	IniPath.append(iniFile);
-#endif
 }
 
 void USBsetLogDir( const char* dir )
 {
-#ifdef _UNICODE
-	OSDebugOut(L"USBsetLogDir: %S\n", dir);
-	wchar_t dst[4096] = {0};
-	size_t num = 0;
-	mbstowcs_s(&num, dst, dir, countof(dst));
-	LogDir = dst;
-	LogDir.append(_T("USBqemu-wheel.log"));
-#else
 	LogDir = dir;
-#endif
 }
 
 std::string GetSelectedAPI(const std::pair<int, std::string>& pair)
@@ -89,33 +70,6 @@ bool SaveSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TC
 	ciniFile.SetKeyValue(section, param, TSTDTOSTRING(value));
 	return true;
 }
-
-#ifdef _UNICODE
-bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, std::string& value)
-{
-	char tmpA[4096] = { 0 };
-	size_t num = 0;
-	std::wstring str;
-
-	CIniKey *key;
-	auto sect = ciniFile.GetSection(section);
-	if (sect && (key = sect->GetKey(param))) {
-		str = key->GetValue();
-		wcstombs_s(&num, tmpA, str.c_str(), sizeof(tmpA)); //TODO error-check
-		value = tmpA;
-		return true;
-	}
-	return false;
-}
-
-bool SaveSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, const std::string& value)
-{
-	std::wstring wstr;
-	wstr.assign(value.begin(), value.end());
-	ciniFile.SetKeyValue(section, param, wstr);
-	return true;
-}
-#endif
 
 void SaveConfig() {
 
