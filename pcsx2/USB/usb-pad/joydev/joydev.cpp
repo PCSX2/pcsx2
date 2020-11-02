@@ -2,7 +2,7 @@
 #include "../../osdebugout.h"
 #include <cassert>
 #include <sstream>
-#include "linux/util.h"
+#include "../../linux/util.h"
 
 namespace usb_pad { namespace joydev {
 

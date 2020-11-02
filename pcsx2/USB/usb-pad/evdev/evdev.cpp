@@ -1,9 +1,9 @@
 #include "evdev.h"
-#include "osdebugout.h"
+#include "../../osdebugout.h"
 #include <cassert>
 #include <sstream>
 #include <linux/hidraw.h>
-#include "linux/util.h"
+#include "../../linux/util.h"
 
 namespace usb_pad { namespace evdev {
 

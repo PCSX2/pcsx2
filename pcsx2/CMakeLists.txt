@@ -356,6 +356,25 @@ set(pcsx2USBSources
 	USB/shared/shared.cpp
 	USB/shared/inifile.cpp
 	USB/shared/ringbuffer.cpp
+	USB/icon_buzz_24.cpp
+	USB/usb-msd/usb-msd-gtk.cpp
+	USB/usb-pad/joydev/joydev.cpp
+	USB/usb-pad/joydev/joydev-gtk.cpp
+	USB/usb-pad/evdev/shared-gtk.cpp
+	USB/usb-pad/evdev/evdev-ff.cpp
+	USB/usb-pad/evdev/evdev.cpp
+	USB/usb-pad/evdev/evdev-gtk.cpp
+	USB/usb-hid/evdev/evdev-gtk.cpp
+	USB/usb-eyetoy/cam-linux.cpp
+	USB/linux/config.cpp
+	USB/linux/config-gtk.cpp
+	USB/linux/util.cpp
+	USB/qemu-usb/input-keymap-linux-to-qcode.cpp
+	USB/usb-mic/audiodev-pulse.cpp
+    USB/usb-pad/api_init_linux.cpp
+    USB/usb-eyetoy/api_init_linux.cpp
+    USB/usb-hid/api_init_linux.cpp
+    USB/usb-mic/api_init_linux.cpp
     )
 
 # USB headers
@@ -400,6 +419,21 @@ set(pcsx2USBHeaders
 	USB/shared/shared.h
 	USB/shared/inifile.h
 	USB/shared/ringbuffer.h
+    USB/linux/ini.h
+	USB/linux/actualfile.h
+	USB/linux/config.h
+	USB/linux/util.h
+	USB/gtk.h
+	USB/icon_buzz_24.h
+	USB/usb-pad/joydev/joydev.h
+	USB/usb-pad/evdev/shared.h
+	USB/usb-pad/evdev/evdev.h
+	USB/usb-pad/evdev/evdev-ff.h
+	USB/usb-hid/evdev/evdev.h
+	USB/usb-hid/evdev/evdev.cpp
+	USB/usb-eyetoy/cam-linux.h
+	USB/qemu-usb/input-keymap-linux-to-qcode.h
+	USB/usb-mic/audiodev-pulse.h
     )
 
 
@@ -903,7 +937,6 @@ set(pcsx2FinalLibs
     Utilities
     x86emitter
     fmt::fmt
-    libsamplerate
     ${wxWidgets_LIBRARIES}
     ${GTK2_LIBRARIES}
     ${ZLIB_LIBRARIES}
@@ -914,6 +947,7 @@ set(pcsx2FinalLibs
     ${SDL2_LIBRARIES}
     ${PCAP_LIBRARY}
     ${LIBSAMPLERATE_LIBRARIES}
+    ${PULSEAUDIO_LIBRARIES}
     ${LIBXML2_LIBRARIES}
     ${Platform_Libs}
 )

@@ -1,7 +1,7 @@
 #pragma once
 #include <linux/joystick.h>
 #include <unistd.h>
-#include "gtk.h"
+#include "../../gtk.h"
 #include "../padproxy.h"
 #include "../../configuration.h"
 

@@ -1,9 +1,9 @@
 #include "evdev.h"
-#include "osdebugout.h"
+#include "../../osdebugout.h"
 #include <cassert>
 #include <sstream>
 #include "../hidproxy.h"
-#include "qemu-usb/input-keymap-linux-to-qcode.h"
+#include "../../qemu-usb/input-keymap-linux-to-qcode.h"
 
 #ifdef USING_X11
 #include <X11/Xlib.h>

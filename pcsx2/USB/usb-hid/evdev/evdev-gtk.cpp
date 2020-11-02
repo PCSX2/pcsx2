@@ -2,7 +2,7 @@
 #include "../usb-hid.h"
 #include "evdev.h"
 #include <linux/input.h>
-#include "gtk.h"
+#include "../../gtk.h"
 #include <cstdio>
 #include <sstream>
 
