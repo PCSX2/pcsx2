@@ -371,10 +371,10 @@ set(pcsx2USBSources
 	USB/linux/util.cpp
 	USB/qemu-usb/input-keymap-linux-to-qcode.cpp
 	USB/usb-mic/audiodev-pulse.cpp
-    USB/usb-pad/api_init_linux.cpp
-    USB/usb-eyetoy/api_init_linux.cpp
-    USB/usb-hid/api_init_linux.cpp
-    USB/usb-mic/api_init_linux.cpp
+	USB/usb-pad/api_init_linux.cpp
+	USB/usb-eyetoy/api_init_linux.cpp
+	USB/usb-hid/api_init_linux.cpp
+	USB/usb-mic/api_init_linux.cpp
     )
 
 # USB headers
@@ -413,13 +413,13 @@ set(pcsx2USBHeaders
 	USB/usb-eyetoy/videodev.h
 	USB/usb-eyetoy/usb-eyetoy-webcam.h
 	USB/usb-eyetoy/ov519.h
-    USB/usb-hid/hidproxy.h
+	USB/usb-hid/hidproxy.h
 	USB/usb-hid/usb-hid.h
 	USB/usb-hid/noop.h
 	USB/shared/shared.h
 	USB/shared/inifile.h
 	USB/shared/ringbuffer.h
-    USB/linux/ini.h
+	USB/linux/ini.h
 	USB/linux/actualfile.h
 	USB/linux/config.h
 	USB/linux/util.h
@@ -435,8 +435,6 @@ set(pcsx2USBHeaders
 	USB/qemu-usb/input-keymap-linux-to-qcode.h
 	USB/usb-mic/audiodev-pulse.h
     )
-
-
 
 
 # DebugTools sources
