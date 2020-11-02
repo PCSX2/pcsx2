@@ -11,9 +11,9 @@
 #include <stdint.h>
 
 #ifdef _MSC_VER
-#define JPGD_NORETURN __declspec(noreturn) 
+#define JPGD_NORETURN __declspec(noreturn)
 #elif defined(__GNUC__)
-#define JPGD_NORETURN __attribute__ ((noreturn))
+#define JPGD_NORETURN __attribute__((noreturn))
 #else
 #define JPGD_NORETURN
 #endif
@@ -23,11 +23,11 @@
 
 namespace jpgd
 {
-	typedef unsigned char  uint8;
-	typedef   signed short int16;
+	typedef unsigned char uint8;
+	typedef signed short int16;
 	typedef unsigned short uint16;
-	typedef unsigned int   uint;
-	typedef   signed int   int32;
+	typedef unsigned int uint;
+	typedef signed int int32;
 
 	// Loads a JPEG image from a memory buffer or a file.
 	// req_comps can be 1 (grayscale), 3 (RGB), or 4 (RGBA).
@@ -40,15 +40,42 @@ namespace jpgd
 	// Success/failure error codes.
 	enum jpgd_status
 	{
-		JPGD_SUCCESS = 0, JPGD_FAILED = -1, JPGD_DONE = 1,
-		JPGD_BAD_DHT_COUNTS = -256, JPGD_BAD_DHT_INDEX, JPGD_BAD_DHT_MARKER, JPGD_BAD_DQT_MARKER, JPGD_BAD_DQT_TABLE,
-		JPGD_BAD_PRECISION, JPGD_BAD_HEIGHT, JPGD_BAD_WIDTH, JPGD_TOO_MANY_COMPONENTS,
-		JPGD_BAD_SOF_LENGTH, JPGD_BAD_VARIABLE_MARKER, JPGD_BAD_DRI_LENGTH, JPGD_BAD_SOS_LENGTH,
-		JPGD_BAD_SOS_COMP_ID, JPGD_W_EXTRA_BYTES_BEFORE_MARKER, JPGD_NO_ARITHMITIC_SUPPORT, JPGD_UNEXPECTED_MARKER,
-		JPGD_NOT_JPEG, JPGD_UNSUPPORTED_MARKER, JPGD_BAD_DQT_LENGTH, JPGD_TOO_MANY_BLOCKS,
-		JPGD_UNDEFINED_QUANT_TABLE, JPGD_UNDEFINED_HUFF_TABLE, JPGD_NOT_SINGLE_SCAN, JPGD_UNSUPPORTED_COLORSPACE,
-		JPGD_UNSUPPORTED_SAMP_FACTORS, JPGD_DECODE_ERROR, JPGD_BAD_RESTART_MARKER,
-		JPGD_BAD_SOS_SPECTRAL, JPGD_BAD_SOS_SUCCESSIVE, JPGD_STREAM_READ, JPGD_NOTENOUGHMEM, JPGD_TOO_MANY_SCANS
+		JPGD_SUCCESS = 0,
+		JPGD_FAILED = -1,
+		JPGD_DONE = 1,
+		JPGD_BAD_DHT_COUNTS = -256,
+		JPGD_BAD_DHT_INDEX,
+		JPGD_BAD_DHT_MARKER,
+		JPGD_BAD_DQT_MARKER,
+		JPGD_BAD_DQT_TABLE,
+		JPGD_BAD_PRECISION,
+		JPGD_BAD_HEIGHT,
+		JPGD_BAD_WIDTH,
+		JPGD_TOO_MANY_COMPONENTS,
+		JPGD_BAD_SOF_LENGTH,
+		JPGD_BAD_VARIABLE_MARKER,
+		JPGD_BAD_DRI_LENGTH,
+		JPGD_BAD_SOS_LENGTH,
+		JPGD_BAD_SOS_COMP_ID,
+		JPGD_W_EXTRA_BYTES_BEFORE_MARKER,
+		JPGD_NO_ARITHMITIC_SUPPORT,
+		JPGD_UNEXPECTED_MARKER,
+		JPGD_NOT_JPEG,
+		JPGD_UNSUPPORTED_MARKER,
+		JPGD_BAD_DQT_LENGTH,
+		JPGD_TOO_MANY_BLOCKS,
+		JPGD_UNDEFINED_QUANT_TABLE,
+		JPGD_UNDEFINED_HUFF_TABLE,
+		JPGD_NOT_SINGLE_SCAN,
+		JPGD_UNSUPPORTED_COLORSPACE,
+		JPGD_UNSUPPORTED_SAMP_FACTORS,
+		JPGD_DECODE_ERROR,
+		JPGD_BAD_RESTART_MARKER,
+		JPGD_BAD_SOS_SPECTRAL,
+		JPGD_BAD_SOS_SUCCESSIVE,
+		JPGD_STREAM_READ,
+		JPGD_NOTENOUGHMEM,
+		JPGD_TOO_MANY_SCANS
 	};
 
 	// Input stream interface.
@@ -59,8 +86,8 @@ namespace jpgd
 	class jpeg_decoder_stream
 	{
 	public:
-		jpeg_decoder_stream() { }
-		virtual ~jpeg_decoder_stream() { }
+		jpeg_decoder_stream() {}
+		virtual ~jpeg_decoder_stream() {}
 
 		// The read() method is called when the internal input buffer is empty.
 		// Parameters:
@@ -76,7 +103,7 @@ namespace jpgd
 	class jpeg_decoder_file_stream : public jpeg_decoder_stream
 	{
 		jpeg_decoder_file_stream(const jpeg_decoder_file_stream&);
-		jpeg_decoder_file_stream& operator =(const jpeg_decoder_file_stream&);
+		jpeg_decoder_file_stream& operator=(const jpeg_decoder_file_stream&);
 
 		FILE* m_pFile;
 		bool m_eof_flag, m_error_flag;
@@ -98,13 +125,28 @@ namespace jpgd
 		uint m_ofs, m_size;
 
 	public:
-		jpeg_decoder_mem_stream() : m_pSrc_data(NULL), m_ofs(0), m_size(0) { }
-		jpeg_decoder_mem_stream(const uint8* pSrc_data, uint size) : m_pSrc_data(pSrc_data), m_ofs(0), m_size(size) { }
+		jpeg_decoder_mem_stream()
+			: m_pSrc_data(NULL)
+			, m_ofs(0)
+			, m_size(0)
+		{
+		}
+		jpeg_decoder_mem_stream(const uint8* pSrc_data, uint size)
+			: m_pSrc_data(pSrc_data)
+			, m_ofs(0)
+			, m_size(size)
+		{
+		}
 
-		virtual ~jpeg_decoder_mem_stream() { }
+		virtual ~jpeg_decoder_mem_stream() {}
 
 		bool open(const uint8* pSrc_data, uint size);
-		void close() { m_pSrc_data = NULL; m_ofs = 0; m_size = 0; }
+		void close()
+		{
+			m_pSrc_data = NULL;
+			m_ofs = 0;
+			m_size = 0;
+		}
 
 		virtual int read(uint8* pBuf, int max_bytes_to_read, bool* pEOF_flag);
 	};
@@ -114,8 +156,15 @@ namespace jpgd
 
 	enum
 	{
-		JPGD_IN_BUF_SIZE = 8192, JPGD_MAX_BLOCKS_PER_MCU = 10, JPGD_MAX_HUFF_TABLES = 8, JPGD_MAX_QUANT_TABLES = 4,
-		JPGD_MAX_COMPONENTS = 4, JPGD_MAX_COMPS_IN_SCAN = 4, JPGD_MAX_BLOCKS_PER_ROW = 16384, JPGD_MAX_HEIGHT = 32768, JPGD_MAX_WIDTH = 32768
+		JPGD_IN_BUF_SIZE = 8192,
+		JPGD_MAX_BLOCKS_PER_MCU = 10,
+		JPGD_MAX_HUFF_TABLES = 8,
+		JPGD_MAX_QUANT_TABLES = 4,
+		JPGD_MAX_COMPONENTS = 4,
+		JPGD_MAX_COMPS_IN_SCAN = 4,
+		JPGD_MAX_BLOCKS_PER_ROW = 16384,
+		JPGD_MAX_HEIGHT = 32768,
+		JPGD_MAX_WIDTH = 32768
 	};
 
 	typedef int16 jpgd_quant_t;
@@ -142,7 +191,7 @@ namespace jpgd
 		int begin_decoding();
 
 		// Returns the next scan line.
-		// For grayscale images, pScan_line will point to a buffer containing 8-bit pixels (get_bytes_per_pixel() will return 1). 
+		// For grayscale images, pScan_line will point to a buffer containing 8-bit pixels (get_bytes_per_pixel() will return 1).
 		// Otherwise, it will always point to a buffer containing 32-bit RGBA pixels (A will always be 255, and get_bytes_per_pixel() will return 4).
 		// Returns JPGD_SUCCESS if a scan line has been returned.
 		// Returns JPGD_DONE if all scan lines have been returned.
@@ -164,17 +213,17 @@ namespace jpgd
 
 	private:
 		jpeg_decoder(const jpeg_decoder&);
-		jpeg_decoder& operator =(const jpeg_decoder&);
+		jpeg_decoder& operator=(const jpeg_decoder&);
 
 		typedef void (*pDecode_block_func)(jpeg_decoder*, int, int, int);
 
 		struct huff_tables
 		{
 			bool ac_table;
-			uint  look_up[256];
-			uint  look_up2[256];
+			uint look_up[256];
+			uint look_up2[256];
 			uint8 code_size[JPGD_HUFF_CODE_SIZE_MAX_LENGTH];
-			uint  tree[JPGD_HUFF_TREE_MAX_LENGTH];
+			uint tree[JPGD_HUFF_TREE_MAX_LENGTH];
 		};
 
 		struct coeff_buf
@@ -214,26 +263,26 @@ namespace jpgd
 		int m_comp_ident[JPGD_MAX_COMPONENTS];        // component's ID
 		int m_comp_h_blocks[JPGD_MAX_COMPONENTS];
 		int m_comp_v_blocks[JPGD_MAX_COMPONENTS];
-		int m_comps_in_scan;                          // # of components in scan
-		int m_comp_list[JPGD_MAX_COMPS_IN_SCAN];      // components in this scan
-		int m_comp_dc_tab[JPGD_MAX_COMPONENTS];       // component's DC Huffman coding table selector
-		int m_comp_ac_tab[JPGD_MAX_COMPONENTS];       // component's AC Huffman coding table selector
-		int m_spectral_start;                         // spectral selection start
-		int m_spectral_end;                           // spectral selection end
-		int m_successive_low;                         // successive approximation low
-		int m_successive_high;                        // successive approximation high
-		int m_max_mcu_x_size;                         // MCU's max. X size in pixels
-		int m_max_mcu_y_size;                         // MCU's max. Y size in pixels
+		int m_comps_in_scan;                     // # of components in scan
+		int m_comp_list[JPGD_MAX_COMPS_IN_SCAN]; // components in this scan
+		int m_comp_dc_tab[JPGD_MAX_COMPONENTS];  // component's DC Huffman coding table selector
+		int m_comp_ac_tab[JPGD_MAX_COMPONENTS];  // component's AC Huffman coding table selector
+		int m_spectral_start;                    // spectral selection start
+		int m_spectral_end;                      // spectral selection end
+		int m_successive_low;                    // successive approximation low
+		int m_successive_high;                   // successive approximation high
+		int m_max_mcu_x_size;                    // MCU's max. X size in pixels
+		int m_max_mcu_y_size;                    // MCU's max. Y size in pixels
 		int m_blocks_per_mcu;
 		int m_max_blocks_per_row;
 		int m_mcus_per_row, m_mcus_per_col;
 		int m_mcu_org[JPGD_MAX_BLOCKS_PER_MCU];
-		int m_total_lines_left;                       // total # lines left in image
-		int m_mcu_lines_left;                         // total # lines left in this MCU
+		int m_total_lines_left; // total # lines left in image
+		int m_mcu_lines_left;   // total # lines left in this MCU
 		int m_num_buffered_scanlines;
 		int m_real_dest_bytes_per_scan_line;
-		int m_dest_bytes_per_scan_line;               // rounded up
-		int m_dest_bytes_per_pixel;                   // 4 (RGB) or 1 (Y)
+		int m_dest_bytes_per_scan_line; // rounded up
+		int m_dest_bytes_per_pixel;     // 4 (RGB) or 1 (Y)
 		huff_tables* m_pHuff_tabs[JPGD_MAX_HUFF_TABLES];
 		coeff_buf* m_dc_coeffs[JPGD_MAX_COMPONENTS];
 		coeff_buf* m_ac_coeffs[JPGD_MAX_COMPONENTS];
@@ -275,7 +324,12 @@ namespace jpgd
 		bool m_sample_buf_prev_valid;
 		bool m_has_sse2;
 
-		inline int check_sample_buf_ofs(int ofs) const { assert(ofs >= 0); assert(ofs < m_max_blocks_per_row * 64); return ofs; }
+		inline int check_sample_buf_ofs(int ofs) const
+		{
+			assert(ofs >= 0);
+			assert(ofs < m_max_blocks_per_row * 64);
+			return ofs;
+		}
 		void free_all_blocks();
 		JPGD_NORETURN void stop_decoding(jpgd_status status);
 		void* alloc(size_t n, bool zero = false);

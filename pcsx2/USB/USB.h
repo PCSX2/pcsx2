@@ -26,7 +26,7 @@
 // ---------------------------------------------------------------------
 #define USBdefs
 
-extern u8 *ram;
+extern u8* ram;
 
 // ---------------------------------------------------------------------
 
@@ -39,29 +39,28 @@ s32 USBinit();
 void USBasync(u32 cycles);
 void USBshutdown();
 void USBclose();
-s32 USBopen(void *pDsp);
-s32 USBfreeze(int mode, freezeData *data);
+s32 USBopen(void* pDsp);
+s32 USBfreeze(int mode, freezeData* data);
 
 u8 USBread8(u32 addr);
 u16 USBread16(u32 addr);
 u32 USBread32(u32 addr);
-void USBwrite8(u32 addr,  u8 value);
+void USBwrite8(u32 addr, u8 value);
 void USBwrite16(u32 addr, u16 value);
 void USBwrite32(u32 addr, u32 value);
 
 
-void USBsetRAM(void *mem);
+void USBsetRAM(void* mem);
 
-extern FILE *usbLog;
+extern FILE* usbLog;
 s64 get_clock();
 
 /* usb-pad-raw.cpp */
 #if _WIN32
 extern HWND gsWnd;
-# if defined(BUILD_RAW)
+#if defined(BUILD_RAW)
 extern HWND msgWindow;
 int InitWindow(HWND);
 void UninitWindow();
-# endif
 #endif
-
+#endif

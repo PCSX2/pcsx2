@@ -46,14 +46,14 @@
 #if __cplusplus
 extern "C" {
 #endif
-extern int INISaveString(const char *file, const char *section, const char *keyword, const char *value);
-extern int INILoadString(const char *file, const char *section, const char *keyword, char *buffer);
+extern int INISaveString(const char* file, const char* section, const char* keyword, const char* value);
+extern int INILoadString(const char* file, const char* section, const char* keyword, char* buffer);
 
-extern int INISaveUInt(const char *file, const char *section, const char *keyword, unsigned int value);
-extern int INILoadUInt(const char *file, const char *section, const char *keyword, unsigned int *buffer);
+extern int INISaveUInt(const char* file, const char* section, const char* keyword, unsigned int value);
+extern int INILoadUInt(const char* file, const char* section, const char* keyword, unsigned int* buffer);
 
 // NULL in the keyword below removes the whole section.
-extern int INIRemove(const char *file, const char *section, const char *keyword);
+extern int INIRemove(const char* file, const char* section, const char* keyword);
 
 #if __cplusplus
 }

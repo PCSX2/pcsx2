@@ -20,50 +20,51 @@
 
 struct USBDevice;
 
-namespace usb_mic {
-class SingstarDevice
+namespace usb_mic
 {
-public:
-	virtual ~SingstarDevice() {}
-	static USBDevice* CreateDevice(int port);
-	static USBDevice* CreateDevice(int port, const std::string& api);
-	static const TCHAR* Name()
+	class SingstarDevice
 	{
-		return TEXT("Singstar");
-	}
-	static const char* TypeName()
-	{
-		return "singstar";
-	}
-	static std::list<std::string> ListAPIs()
-	{
-		return RegisterAudioDevice::instance().Names();
-	}
-	static const TCHAR* LongAPIName(const std::string& name)
-	{
-		auto proxy = RegisterAudioDevice::instance().Proxy(name);
-		if (proxy)
-			return proxy->Name();
-		return nullptr;
-	}
-	static int Configure(int port, const std::string& api, void *data);
-	static int Freeze(int mode, USBDevice *dev, void *data);
-};
+	public:
+		virtual ~SingstarDevice() {}
+		static USBDevice* CreateDevice(int port);
+		static USBDevice* CreateDevice(int port, const std::string& api);
+		static const TCHAR* Name()
+		{
+			return TEXT("Singstar");
+		}
+		static const char* TypeName()
+		{
+			return "singstar";
+		}
+		static std::list<std::string> ListAPIs()
+		{
+			return RegisterAudioDevice::instance().Names();
+		}
+		static const TCHAR* LongAPIName(const std::string& name)
+		{
+			auto proxy = RegisterAudioDevice::instance().Proxy(name);
+			if (proxy)
+				return proxy->Name();
+			return nullptr;
+		}
+		static int Configure(int port, const std::string& api, void* data);
+		static int Freeze(int mode, USBDevice* dev, void* data);
+	};
 
-class LogitechMicDevice : public SingstarDevice
-{
-public:
-	virtual ~LogitechMicDevice() {}
-	static USBDevice* CreateDevice(int port);
-	static const char* TypeName()
+	class LogitechMicDevice : public SingstarDevice
 	{
-		return "logitech_usbmic";
-	}
-	static const TCHAR* Name()
-	{
-		return TEXT("Logitech USB Mic");
-	}
-};
+	public:
+		virtual ~LogitechMicDevice() {}
+		static USBDevice* CreateDevice(int port);
+		static const char* TypeName()
+		{
+			return "logitech_usbmic";
+		}
+		static const TCHAR* Name()
+		{
+			return TEXT("Logitech USB Mic");
+		}
+	};
 
-}
+} // namespace usb_mic
 #endif

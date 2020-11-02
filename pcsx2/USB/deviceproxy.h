@@ -46,30 +46,37 @@ enum DeviceType
 	DEVTYPE_EYETOY,
 };
 
-struct SelectDeviceName {
+struct SelectDeviceName
+{
 	template <typename S>
-	std::string operator()(const std::pair<const DeviceType, S> &x) const { return x.second->TypeName(); }
+	std::string operator()(const std::pair<const DeviceType, S>& x) const
+	{
+		return x.second->TypeName();
+	}
 };
 
 class DeviceError : public std::runtime_error
 {
-	public:
-	DeviceError(const char* msg) : std::runtime_error(msg) {}
+public:
+	DeviceError(const char* msg)
+		: std::runtime_error(msg)
+	{
+	}
 	virtual ~DeviceError() {}
 };
 
 class DeviceProxyBase
 {
-	public:
-	DeviceProxyBase() {};
+public:
+	DeviceProxyBase(){};
 	virtual ~DeviceProxyBase() {}
 	virtual USBDevice* CreateDevice(int port) = 0;
 	virtual const TCHAR* Name() const = 0;
 	virtual const char* TypeName() const = 0;
-	virtual int Configure(int port, const std::string& api, void *data) = 0;
+	virtual int Configure(int port, const std::string& api, void* data) = 0;
 	virtual std::list<std::string> ListAPIs() = 0;
 	virtual const TCHAR* LongAPIName(const std::string& name) = 0;
-	virtual int Freeze(int mode, USBDevice *dev, void *data) = 0;
+	virtual int Freeze(int mode, USBDevice* dev, void* data) = 0;
 
 	virtual bool IsValidAPI(const std::string& api)
 	{
@@ -84,7 +91,7 @@ class DeviceProxyBase
 template <class T>
 class DeviceProxy : public DeviceProxyBase
 {
-	public:
+public:
 	DeviceProxy() {}
 	virtual ~DeviceProxy()
 	{
@@ -102,7 +109,7 @@ class DeviceProxy : public DeviceProxyBase
 	{
 		return T::TypeName();
 	}
-	virtual int Configure(int port, const std::string& api, void *data)
+	virtual int Configure(int port, const std::string& api, void* data)
 	{
 		return T::Configure(port, api, data);
 	}
@@ -114,7 +121,7 @@ class DeviceProxy : public DeviceProxyBase
 	{
 		return T::LongAPIName(name);
 	}
-	virtual int Freeze(int mode, USBDevice *dev, void *data)
+	virtual int Freeze(int mode, USBDevice* dev, void* data)
 	{
 		return T::Freeze(mode, dev, data);
 	}
@@ -126,14 +133,19 @@ class RegisterProxy
 	RegisterProxy(const RegisterProxy&) = delete;
 	RegisterProxy() {}
 
-	public:
-	typedef std::map<std::string, std::unique_ptr<T> > RegisterProxyMap;
-	static RegisterProxy& instance() {
+public:
+	typedef std::map<std::string, std::unique_ptr<T>> RegisterProxyMap;
+	static RegisterProxy& instance()
+	{
 		static RegisterProxy registerProxy;
 		return registerProxy;
 	}
 
-	virtual ~RegisterProxy() { Clear(); OSDebugOut("%p\n", this); }
+	virtual ~RegisterProxy()
+	{
+		Clear();
+		OSDebugOut("%p\n", this);
+	}
 
 	void Clear()
 	{
@@ -182,11 +194,12 @@ class RegisterDevice
 {
 	RegisterDevice(const RegisterDevice&) = delete;
 	RegisterDevice() {}
-	static RegisterDevice *registerDevice;
+	static RegisterDevice* registerDevice;
 
-	public:
-	typedef std::map<DeviceType, std::unique_ptr<DeviceProxyBase> > RegisterDeviceMap;
-	static RegisterDevice& instance() {
+public:
+	typedef std::map<DeviceType, std::unique_ptr<DeviceProxyBase>> RegisterDeviceMap;
+	static RegisterDevice& instance()
+	{
 		if (!registerDevice)
 			registerDevice = new RegisterDevice();
 		return *registerDevice;
@@ -210,11 +223,10 @@ class RegisterDevice
 				return k.second;
 		return nullptr;*/
 		auto proxy = std::find_if(registerDeviceMap.begin(),
-			registerDeviceMap.end(),
-			[&name](const RegisterDeviceMap::value_type& val) -> bool
-		{
-			return val.second->TypeName() == name;
-		});
+								  registerDeviceMap.end(),
+								  [&name](const RegisterDeviceMap::value_type& val) -> bool {
+									  return val.second->TypeName() == name;
+								  });
 		if (proxy != registerDeviceMap.end())
 			return proxy->second.get();
 		return nullptr;
@@ -232,11 +244,10 @@ class RegisterDevice
 	DeviceType Index(const std::string& name)
 	{
 		auto proxy = std::find_if(registerDeviceMap.begin(),
-			registerDeviceMap.end(),
-			[&name](RegisterDeviceMap::value_type& val) -> bool
-		{
-			return val.second->TypeName() == name;
-		});
+								  registerDeviceMap.end(),
+								  [&name](RegisterDeviceMap::value_type& val) -> bool {
+									  return val.second->TypeName() == name;
+								  });
 		if (proxy != registerDeviceMap.end())
 			return proxy->first;
 		return DEVTYPE_NONE;
@@ -266,7 +277,7 @@ class RegisterDevice
 		return registerDeviceMap;
 	}
 
-	private:
+private:
 	RegisterDeviceMap registerDeviceMap;
 };
 
