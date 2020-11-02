@@ -2,6 +2,6 @@
 #define LINUXCONFIG_H
 #include <sstream>
 #include <string>
-#include "osdebugout.h"
+#include "../osdebugout.h"
 
 #endif

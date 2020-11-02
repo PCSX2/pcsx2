@@ -5,7 +5,7 @@
 #include <thread>
 #include <stdio.h>
 #include <sstream>
-#include "gtk.h"
+#include "../../gtk.h"
 
 namespace usb_pad { namespace joydev {
 

@@ -1,7 +1,7 @@
 #include "usb-msd.h"
 #include "../linux/ini.h"
 #include "../configuration.h"
-#include "gtk.h"
+#include "../gtk.h"
 
 namespace usb_msd {
 

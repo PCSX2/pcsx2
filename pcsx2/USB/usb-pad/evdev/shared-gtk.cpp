@@ -1,6 +1,6 @@
 #include "shared.h"
 #include "../../osdebugout.h"
-#include "icon_buzz_24.h"
+#include "../../icon_buzz_24.h"
 
 #include <chrono>
 #include <thread>

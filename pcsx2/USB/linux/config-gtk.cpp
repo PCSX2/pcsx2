@@ -5,7 +5,7 @@
 #include <map>
 #include <vector>
 #include <string>
-#include "gtk.h"
+#include "../gtk.h"
 
 #include "../osdebugout.h"
 #include "../configuration.h"
@@ -33,28 +33,6 @@ gboolean run_msg_dialog(gpointer data)
 	gtk_dialog_run (GTK_DIALOG(dialog));
 	gtk_widget_destroy (dialog);
 	return FALSE;
-}
-
-void SysMessage(const char *fmt, ...)
-{
-	va_list list;
-	char msg[1024];
-
-	va_start (list, fmt);
-	vsnprintf (msg, sizeof(msg), fmt, list);
-	va_end (list);
-
-	if (msg[strlen(msg) - 1] == '\n')
-		msg[strlen(msg) - 1] = 0;
-
-	GtkWidget *dialog;
-	dialog = gtk_message_dialog_new (NULL,
-									GTK_DIALOG_DESTROY_WITH_PARENT,
-									GTK_MESSAGE_INFO,
-									GTK_BUTTONS_OK,
-									"%s", msg);
-	// run on main thread, a bit iffy
-	g_idle_add (run_msg_dialog, (gpointer)dialog);
 }
 
 static void wheeltypeChanged (GtkComboBox *widget, gpointer data)

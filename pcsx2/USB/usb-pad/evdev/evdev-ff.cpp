@@ -1,6 +1,6 @@
 #include "evdev-ff.h"
-#include "osdebugout.h"
-#include "usb-pad/lg/lg_ff.h"
+#include "../../osdebugout.h"
+#include "../../usb-pad/lg/lg_ff.h"
 #include <unistd.h>
 #include <cerrno>
 #include <cstring>

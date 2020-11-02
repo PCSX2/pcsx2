@@ -13,7 +13,7 @@
 
 #include <linux/videodev2.h>
 
-#include "gtk.h"
+#include "../gtk.h"
 
 #include "cam-linux.h"
 #include "usb-eyetoy-webcam.h"

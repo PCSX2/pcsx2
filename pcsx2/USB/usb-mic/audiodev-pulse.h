@@ -1,10 +1,10 @@
 #include <cstdint>
 #include <cstring>
 #include <pulse/pulseaudio.h>
-#include "shared/ringbuffer.h"
+#include "../shared/ringbuffer.h"
 #include "../osdebugout.h"
 #include "audiodeviceproxy.h"
-#include "../libsamplerate/samplerate.h"
+#include <samplerate.h>
 //#include <typeinfo>
 //#include <thread>
 #include <mutex>

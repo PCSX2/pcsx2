@@ -40,9 +40,9 @@
 int64_t last_cycle = 0;
 #define MIN_IRQ_INTERVAL 64 /* hack */
 
-extern void USBirq(int);
 extern int64_t get_clock();
 extern int get_ticks_per_second();
+extern void usbIrq(int);
 
 //#define DEBUG_PACKET
 //#define DEBUG_OHCI
@@ -64,7 +64,7 @@ static inline void ohci_intr_update(OHCIState *ohci)
         //if ((get_clock() - last_cycle) > MIN_IRQ_INTERVAL)
         if (ohci->intr_status != OHCI_INTR_WD) //HACK skip first intr with _WD, _SF should follow shortly
         {
-            USBirq(1);
+            usbIrq(1);
             last_cycle = get_clock();
         }
     }
