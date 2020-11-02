@@ -15,7 +15,8 @@
 
 #include "osdebugout.h"
 
-std::wostream& operator<<(std::wostream& os, const std::string& s) {
+std::wostream& operator<<(std::wostream& os, const std::string& s)
+{
 	std::wstring ws;
 	ws.assign(s.begin(), s.end());
 	return os << ws;
@@ -23,9 +24,9 @@ std::wostream& operator<<(std::wostream& os, const std::string& s) {
 
 #ifdef _WIN32
 static int rateLimit = 0;
-void _OSDebugOut(const TCHAR *psz_fmt, ...)
+void _OSDebugOut(const TCHAR* psz_fmt, ...)
 {
-	if(rateLimit > 0 && rateLimit < 100)
+	if (rateLimit > 0 && rateLimit < 100)
 	{
 		rateLimit++;
 		return;

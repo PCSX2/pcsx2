@@ -21,7 +21,10 @@
 #if 0
 #define DPRINTF OSDebugOut
 #else
-#define DPRINTF(...) do{}while(0)
+#define DPRINTF(...) \
+	do               \
+	{                \
+	} while (0)
 #endif
 
 RingBuffer::RingBuffer()
@@ -33,19 +36,20 @@ RingBuffer::RingBuffer()
 {
 }
 
-RingBuffer::RingBuffer(size_t capacity) : RingBuffer()
+RingBuffer::RingBuffer(size_t capacity)
+	: RingBuffer()
 {
 	reserve(capacity);
 }
 
 RingBuffer::~RingBuffer()
 {
-	delete [] m_data;
+	delete[] m_data;
 }
 
 void RingBuffer::reserve(size_t capacity)
 {
-	delete [] m_data;
+	delete[] m_data;
 	m_data = new char[capacity];
 	memset(m_data, 0, capacity);
 	m_capacity = capacity;
@@ -63,7 +67,7 @@ size_t RingBuffer::size() const
 			size = 0;
 	}
 	else if (m_begin < m_end)
-		size = m_end - m_begin;  // [   b...e   ]
+		size = m_end - m_begin; // [   b...e   ]
 	else
 		size = m_capacity - m_begin + m_end; // [...e   b...]
 
@@ -71,7 +75,7 @@ size_t RingBuffer::size() const
 	return size;
 }
 
-size_t RingBuffer::read(uint8_t *dst, size_t nbytes)
+size_t RingBuffer::read(uint8_t* dst, size_t nbytes)
 {
 	size_t to_read = nbytes;
 	while (to_read > 0 && size() > 0)
@@ -85,12 +89,12 @@ size_t RingBuffer::read(uint8_t *dst, size_t nbytes)
 	return nbytes - to_read;
 }
 
-void RingBuffer::write(uint8_t *src, size_t nbytes)
+void RingBuffer::write(uint8_t* src, size_t nbytes)
 {
 	size_t bytes;
 	while (nbytes > 0)
 	{
-		bytes = std::min(nbytes, m_capacity - m_end); 
+		bytes = std::min(nbytes, m_capacity - m_end);
 		memcpy(back(), src, bytes);
 		write(bytes);
 		src += bytes;
@@ -105,12 +109,12 @@ size_t RingBuffer::peek_write(bool overwrite) const
 	if (overwrite)
 		return m_capacity - m_end;
 
-	if (m_end < m_begin)		// [...e   b...]
+	if (m_end < m_begin) // [...e   b...]
 		peek = m_begin - m_end;
 	else if (m_end < m_capacity) // [   b...e   ]
 		peek = m_capacity - m_end;
 	else
-		peek = m_begin;    // [   b.......e]
+		peek = m_begin; // [   b.......e]
 
 	DPRINTF(TEXT("peek_write %zu\n"), peek);
 	return peek;
@@ -126,12 +130,12 @@ size_t RingBuffer::peek_read() const
 		else
 			peek = 0;
 	}
-	else if (m_begin < m_end)     // [   b...e   ]
+	else if (m_begin < m_end) // [   b...e   ]
 		peek = m_end - m_begin;
-	else if (m_begin < m_capacity)  // [...e   b...]
+	else if (m_begin < m_capacity) // [...e   b...]
 		peek = m_capacity - m_begin;
 	else
-		peek = m_end;    // [...e      b]
+		peek = m_end; // [...e      b]
 
 	DPRINTF(TEXT("peek_read %zu\n"), peek);
 	return peek;
@@ -171,11 +175,11 @@ void RingBuffer::write(size_t bytes)
 
 	// push m_begin forward if m_end overlaps it
 	if ((m_end < m_begin && m_end + bytes > m_begin) ||
-			m_end + bytes > m_begin + m_capacity)
+		m_end + bytes > m_begin + m_capacity)
 	{
 		m_overrun = true;
 		m_begin = (m_end + bytes) % m_capacity;
-		m_end   = m_begin;
+		m_end = m_begin;
 	}
 	else
 		m_end = (m_end + bytes) % m_capacity;
@@ -186,7 +190,7 @@ void RingBuffer::write(size_t bytes)
 
 void RingBuffer::read(size_t bytes)
 {
-	assert( bytes <= size() );
+	assert(bytes <= size());
 
 	m_overrun = false;
 	if ((m_begin < m_end && m_begin + bytes > m_end) ||

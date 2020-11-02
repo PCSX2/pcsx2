@@ -53,10 +53,10 @@
 #include "qusb.h"
 
 #ifndef glue
-#define xglue(x, y) x ## y
+#define xglue(x, y) x##y
 #define glue(x, y) xglue(x, y)
-#define stringify(s)	tostring(s)
-#define tostring(s)	#s
+#define stringify(s) tostring(s)
+#define tostring(s) #s
 #endif
 
 #ifndef MIN
@@ -68,19 +68,19 @@
 
 /* vl.c */
 uint64_t muldiv64(uint64_t a, uint32_t b, uint32_t c);
-int cpu_physical_memory_rw(uint32_t addr, uint8_t *buf,
-	size_t len, int is_write);
+int cpu_physical_memory_rw(uint32_t addr, uint8_t* buf,
+						   size_t len, int is_write);
 
 inline int cpu_physical_memory_read(uint32_t addr,
-	uint8_t *buf, size_t len)
+									uint8_t* buf, size_t len)
 {
 	return cpu_physical_memory_rw(addr, buf, len, 0);
 }
 
 inline int cpu_physical_memory_write(uint32_t addr,
-	const uint8_t *buf, size_t len)
+									 const uint8_t* buf, size_t len)
 {
-	return cpu_physical_memory_rw(addr, (uint8_t *)buf, len, 1);
+	return cpu_physical_memory_rw(addr, (uint8_t*)buf, len, 1);
 }
 
 #endif /* VL_H */

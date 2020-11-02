@@ -28,13 +28,13 @@ TSTDSTRING IniPath = TSTDSTRING(TEXT("./inis/")) + iniFile; // default path, jus
 TSTDSTRING LogDir;
 CIniFile ciniFile;
 
-void USBsetSettingsDir( const char* dir )
+void USBsetSettingsDir(const char* dir)
 {
 	IniPath = dir;
 	IniPath.append(iniFile);
 }
 
-void USBsetLogDir( const char* dir )
+void USBsetLogDir(const char* dir)
 {
 	LogDir = dir;
 }
@@ -49,9 +49,10 @@ std::string GetSelectedAPI(const std::pair<int, std::string>& pair)
 
 bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, TSTDSTRING& value)
 {
-	CIniKey *key;
+	CIniKey* key;
 	auto sect = ciniFile.GetSection(str_to_wstr(section));
-	if (sect && (key = sect->GetKey(str_to_wstr(param)))) {
+	if (sect && (key = sect->GetKey(str_to_wstr(param))))
+	{
 		value = wstr_to_str(key->GetValue());
 		return true;
 	}
@@ -60,14 +61,17 @@ bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TC
 
 bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, int32_t& value)
 {
-	CIniKey *key;
+	CIniKey* key;
 	auto sect = ciniFile.GetSection(str_to_wstr(section));
-	if (sect && (key = sect->GetKey(str_to_wstr(param)))) {
-		try {
+	if (sect && (key = sect->GetKey(str_to_wstr(param))))
+	{
+		try
+		{
 			value = std::stoi(key->GetValue());
 			return true;
 		}
-		catch (std::exception& err) {
+		catch (std::exception& err)
+		{
 			OSDebugOut(TEXT("%" SFMTs "\n"), err.what());
 		}
 	}
@@ -86,7 +90,8 @@ bool SaveSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TC
 	return true;
 }
 
-void SaveConfig() {
+void SaveConfig()
+{
 
 	SaveSetting("MAIN", "log", conf.Log);
 
@@ -105,8 +110,10 @@ void SaveConfig() {
 	OSDebugOut(_T("ciniFile.Save: %d [%s]\n"), ret, IniPath.c_str());
 }
 
-void LoadConfig() {
-	std::cerr << "USB load config\n" << std::endl;
+void LoadConfig()
+{
+	std::cerr << "USB load config\n"
+			  << std::endl;
 	ciniFile.Load(str_to_wstr(IniPath));
 
 	LoadSetting("MAIN", "log", conf.Log);
@@ -119,7 +126,7 @@ void LoadConfig() {
 
 	auto& instance = RegisterDevice::instance();
 
-	for (int i=0; i<2; i++)
+	for (int i = 0; i < 2; i++)
 	{
 		std::string api;
 		LoadSetting(nullptr, i, conf.Port[i], N_DEVICE_API, api);
@@ -141,7 +148,7 @@ void LoadConfig() {
 				OSDebugOut(_T("API OK\n"));
 		}
 
-		if(api.size())
+		if (api.size())
 			changedAPIs[std::make_pair(i, conf.Port[i])] = api;
 	}
 }
@@ -149,7 +156,8 @@ void LoadConfig() {
 void ClearSection(const TCHAR* section)
 {
 	auto s = ciniFile.GetSection(str_to_wstr(section));
-	if (s) {
+	if (s)
+	{
 		s->RemoveAllKeys();
 	}
 }

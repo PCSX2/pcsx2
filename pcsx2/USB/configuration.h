@@ -23,43 +23,44 @@
 #include "platcompat.h"
 
 #define RESULT_CANCELED 0
-#define RESULT_OK       1
-#define RESULT_FAILED   2
+#define RESULT_OK 1
+#define RESULT_FAILED 2
 
 // freeze modes:
-#define FREEZE_LOAD			0
-#define FREEZE_SAVE			1
-#define FREEZE_SIZE			2
+#define FREEZE_LOAD 0
+#define FREEZE_SAVE 1
+#define FREEZE_SIZE 2
 
 // Device-level config related defines
-#define S_DEVICE_API	TEXT("Device API")
-#define S_WHEEL_TYPE	TEXT("Wheel type")
-#define S_DEVICE_PORT0	TEXT("Port 0")
-#define S_DEVICE_PORT1	TEXT("Port 1")
-#define S_CONFIG_PATH	TEXT("Path")
+#define S_DEVICE_API TEXT("Device API")
+#define S_WHEEL_TYPE TEXT("Wheel type")
+#define S_DEVICE_PORT0 TEXT("Port 0")
+#define S_DEVICE_PORT1 TEXT("Port 1")
+#define S_CONFIG_PATH TEXT("Path")
 
-#define N_DEVICE_API	TEXT("device_api")
-#define N_DEVICES		TEXT("devices")
-#define N_DEVICE		TEXT("device")
-#define N_WHEEL_PT		TEXT("wheel_pt")
-#define N_DEVICE_PORT0	TEXT("port_0")
-#define N_DEVICE_PORT1	TEXT("port_1")
-#define N_DEVICE_PORT	"port"
-#define N_WHEEL_TYPE0	TEXT("wheel_type_0")
-#define N_WHEEL_TYPE1	TEXT("wheel_type_1")
-#define N_WHEEL_TYPE	TEXT("wheel_type")
-#define N_CONFIG_PATH	TEXT("path")
+#define N_DEVICE_API TEXT("device_api")
+#define N_DEVICES TEXT("devices")
+#define N_DEVICE TEXT("device")
+#define N_WHEEL_PT TEXT("wheel_pt")
+#define N_DEVICE_PORT0 TEXT("port_0")
+#define N_DEVICE_PORT1 TEXT("port_1")
+#define N_DEVICE_PORT "port"
+#define N_WHEEL_TYPE0 TEXT("wheel_type_0")
+#define N_WHEEL_TYPE1 TEXT("wheel_type_1")
+#define N_WHEEL_TYPE TEXT("wheel_type")
+#define N_CONFIG_PATH TEXT("path")
 
 #define PLAYER_TWO_PORT 0
 #define PLAYER_ONE_PORT 1
 #define USB_PORT PLAYER_ONE_PORT
 
-struct Config {
-  int Log;
-  std::string Port[2];
-  int WheelType[2];
+struct Config
+{
+	int Log;
+	std::string Port[2];
+	int WheelType[2];
 
-  Config();
+	Config();
 };
 
 extern Config conf;
@@ -84,10 +85,10 @@ bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TC
 bool SaveSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, const std::string& value);
 #endif
 
-void USBsetSettingsDir( const char* dir );
-void USBsetLogDir( const char* dir );
+void USBsetSettingsDir(const char* dir);
+void USBsetLogDir(const char* dir);
 
-template<typename Type>
+template <typename Type>
 bool LoadSetting(const char* dev_type, int port, const std::string& key, const TCHAR* name, Type& var)
 {
 	bool ret = false;
@@ -115,7 +116,7 @@ bool LoadSetting(const char* dev_type, int port, const std::string& key, const T
 	return ret;
 }
 
-template<typename Type>
+template <typename Type>
 bool LoadSetting(const TCHAR* section, const TCHAR* key, Type& var)
 {
 	bool ret = false;
@@ -142,7 +143,7 @@ bool LoadSetting(const TCHAR* section, const TCHAR* key, Type& var)
  * ...
  *
  * */
-template<typename Type>
+template <typename Type>
 bool SaveSetting(const char* dev_type, int port, const std::string& key, const TCHAR* name, const Type var)
 {
 	bool ret = false;
@@ -168,7 +169,7 @@ bool SaveSetting(const char* dev_type, int port, const std::string& key, const T
 	return ret;
 }
 
-template<typename Type>
+template <typename Type>
 bool SaveSetting(const TCHAR* section, const TCHAR* key, const Type var)
 {
 	bool ret = false;

@@ -26,16 +26,16 @@
 #endif
 
 #ifdef _WIN32
-#	define CALLBACK			__stdcall
+#define CALLBACK __stdcall
 #else
-#	define CALLBACK			__attribute__((stdcall))
+#define CALLBACK __attribute__((stdcall))
 #endif
 
 #ifndef EXPORT_C_
 #ifdef _MSC_VER
 #define EXPORT_C_(type) extern "C" type CALLBACK
 #else
-#define EXPORT_C_(type) extern "C" __attribute__((stdcall,externally_visible,visibility("default"))) type
+#define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
 //#define EXPORT_C_(type) extern "C" __attribute__((stdcall,visibility("default"))) type
 #endif
 #endif
@@ -61,7 +61,7 @@ typedef SSIZE_T ssize_t;
 
 #define __builtin_constant_p(p) false
 
-void SysMessageW(const wchar_t *fmt, ...);
+void SysMessageW(const wchar_t* fmt, ...);
 #define SysMessage SysMessageW
 
 #ifndef _T
@@ -85,7 +85,7 @@ void SysMessageW(const wchar_t *fmt, ...);
 #define TSTDSTRINGSTREAM std::stringstream
 #define TSTDTOSTRING std::to_string
 
-void SysMessage(const char *fmt, ...);
+void SysMessage(const char* fmt, ...);
 
 #endif //_WIN32
 
@@ -96,22 +96,20 @@ void SysMessage(const char *fmt, ...);
 
 template <size_t size>
 errno_t mbstowcs_s(
-	size_t *pReturnValue,
+	size_t* pReturnValue,
 	wchar_t (&wcstr)[size],
-	const char *mbstr,
-	size_t count
-)
+	const char* mbstr,
+	size_t count)
 {
 	return mbstowcs_s(pReturnValue, wcstr, size, mbstr, count);
 }
 
 template <size_t size>
 errno_t wcstombs_s(
-	size_t *pReturnValue,
+	size_t* pReturnValue,
 	char (&mbstr)[size],
-	const wchar_t *wcstr,
-	size_t count
-)
+	const wchar_t* wcstr,
+	size_t count)
 {
 	return wcstombs_s(pReturnValue, mbstr, size, wcstr, count);
 }
@@ -127,20 +125,20 @@ errno_t wcstombs_s(
 template <class T, std::size_t N>
 constexpr std::size_t countof(const T (&)[N]) noexcept
 {
-    return N;
+	return N;
 }
 
 template <class T>
 constexpr std::size_t countof(const T N)
 {
-    return N.size();
+	return N.size();
 }
 
 //TODO Idk, used only in desc.h and struct USBDescriptor should be already packed anyway
 #if defined(_WIN32) && !defined(__MINGW32__)
-#define PACK(def,name) __pragma( pack(push, 1) ) def name __pragma( pack(pop) )
+#define PACK(def, name) __pragma(pack(push, 1)) def name __pragma(pack(pop))
 #elif defined(__clang__)
-#define PACK(def,name) def __attribute__((packed)) name
+#define PACK(def, name) def __attribute__((packed)) name
 #else
-#define PACK(def,name) def __attribute__((gcc_struct, packed)) name
+#define PACK(def, name) def __attribute__((gcc_struct, packed)) name
 #endif

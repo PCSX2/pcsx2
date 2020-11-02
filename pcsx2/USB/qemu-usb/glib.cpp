@@ -17,7 +17,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#define SIZE_OVERFLOWS(a,b) (G_UNLIKELY ((b) > 0 && (a) > G_MAXSIZE / (b)))
+#define SIZE_OVERFLOWS(a, b) (G_UNLIKELY((b) > 0 && (a) > G_MAXSIZE / (b)))
 
 /**
  * g_malloc:
@@ -28,25 +28,24 @@
  * 
  * Returns: a pointer to the allocated memory
  */
-void*
-my_g_malloc (size_t n_bytes)
+void* my_g_malloc(size_t n_bytes)
 {
-  if (G_LIKELY (n_bytes))
-    {
-      void* mem;
+	if (G_LIKELY(n_bytes))
+	{
+		void* mem;
 
-      mem = malloc (n_bytes);
-      //TRACE (GLIB_MEM_ALLOC((void*) mem, (unsigned int) n_bytes, 0, 0));
-      if (mem)
-        return mem;
+		mem = malloc(n_bytes);
+		//TRACE (GLIB_MEM_ALLOC((void*) mem, (unsigned int) n_bytes, 0, 0));
+		if (mem)
+			return mem;
 
-      //g_error ("%s: failed to allocate %"G_GSIZE_FORMAT" bytes",
-      //         G_STRLOC, n_bytes);
-    }
+		//g_error ("%s: failed to allocate %"G_GSIZE_FORMAT" bytes",
+		//         G_STRLOC, n_bytes);
+	}
 
-  //TRACE(GLIB_MEM_ALLOC((void*) NULL, (int) n_bytes, 0, 0));
+	//TRACE(GLIB_MEM_ALLOC((void*) NULL, (int) n_bytes, 0, 0));
 
-  return NULL;
+	return NULL;
 }
 /**
  * g_malloc0:
@@ -57,25 +56,24 @@ my_g_malloc (size_t n_bytes)
  * 
  * Returns: a pointer to the allocated memory
  */
-void*
-my_g_malloc0 (size_t n_bytes)
+void* my_g_malloc0(size_t n_bytes)
 {
-  if (G_LIKELY (n_bytes))
-    {
-      void* mem;
+	if (G_LIKELY(n_bytes))
+	{
+		void* mem;
 
-      mem = calloc (1, n_bytes);
-      //TRACE (GLIB_MEM_ALLOC((void*) mem, (unsigned int) n_bytes, 1, 0));
-      if (mem)
-        return mem;
+		mem = calloc(1, n_bytes);
+		//TRACE (GLIB_MEM_ALLOC((void*) mem, (unsigned int) n_bytes, 1, 0));
+		if (mem)
+			return mem;
 
-      //g_error ("%s: failed to allocate %"G_GSIZE_FORMAT" bytes",
-      //         G_STRLOC, n_bytes);
-    }
+		//g_error ("%s: failed to allocate %"G_GSIZE_FORMAT" bytes",
+		//         G_STRLOC, n_bytes);
+	}
 
-  //TRACE(GLIB_MEM_ALLOC((void*) NULL, (int) n_bytes, 1, 0));
+	//TRACE(GLIB_MEM_ALLOC((void*) NULL, (int) n_bytes, 1, 0));
 
-  return NULL;
+	return NULL;
 }
 /**
  * g_malloc_n:
@@ -88,17 +86,16 @@ my_g_malloc0 (size_t n_bytes)
  * Since: 2.24
  * Returns: a pointer to the allocated memory
  */
-void*
-my_g_malloc_n (size_t n_blocks,
-	    size_t n_block_bytes)
+void* my_g_malloc_n(size_t n_blocks,
+					size_t n_block_bytes)
 {
-  if (SIZE_OVERFLOWS (n_blocks, n_block_bytes))
-    {
-      //g_error ("%s: overflow allocating %"G_GSIZE_FORMAT"*%"G_GSIZE_FORMAT" bytes",
-      //         G_STRLOC, n_blocks, n_block_bytes);
-    }
+	if (SIZE_OVERFLOWS(n_blocks, n_block_bytes))
+	{
+		//g_error ("%s: overflow allocating %"G_GSIZE_FORMAT"*%"G_GSIZE_FORMAT" bytes",
+		//         G_STRLOC, n_blocks, n_block_bytes);
+	}
 
-  return my_g_malloc (n_blocks * n_block_bytes);
+	return my_g_malloc(n_blocks * n_block_bytes);
 }
 
 /**
@@ -114,29 +111,28 @@ my_g_malloc_n (size_t n_blocks,
  * 
  * Returns: the new address of the allocated memory
  */
-void*
-my_g_realloc (void* mem,
-	   size_t    n_bytes)
+void* my_g_realloc(void* mem,
+				   size_t n_bytes)
 {
-  void* newmem;
+	void* newmem;
 
-  if (G_LIKELY (n_bytes))
-    {
-      newmem = realloc (mem, n_bytes);
-      //TRACE (GLIB_MEM_REALLOC((void*) newmem, (void*)mem, (unsigned int) n_bytes, 0));
-      if (newmem)
-        return newmem;
+	if (G_LIKELY(n_bytes))
+	{
+		newmem = realloc(mem, n_bytes);
+		//TRACE (GLIB_MEM_REALLOC((void*) newmem, (void*)mem, (unsigned int) n_bytes, 0));
+		if (newmem)
+			return newmem;
 
-      //g_error ("%s: failed to allocate %"G_GSIZE_FORMAT" bytes",
-      //         G_STRLOC, n_bytes);
-    }
+		//g_error ("%s: failed to allocate %"G_GSIZE_FORMAT" bytes",
+		//         G_STRLOC, n_bytes);
+	}
 
-  if (mem)
-    free (mem);
+	if (mem)
+		free(mem);
 
-  //TRACE (GLIB_MEM_REALLOC((void*) NULL, (void*)mem, 0, 0));
+	//TRACE (GLIB_MEM_REALLOC((void*) NULL, (void*)mem, 0, 0));
 
-  return NULL;
+	return NULL;
 }
 
 /**
@@ -151,16 +147,15 @@ my_g_realloc (void* mem,
  * Since: 2.24
  * Returns: the new address of the allocated memory
  */
-void*
-my_g_realloc_n (void* mem,
-	     size_t    n_blocks,
-	     size_t    n_block_bytes)
+void* my_g_realloc_n(void* mem,
+					 size_t n_blocks,
+					 size_t n_block_bytes)
 {
-  if (SIZE_OVERFLOWS (n_blocks, n_block_bytes))
-    {
-      //g_error ("%s: overflow allocating %"G_GSIZE_FORMAT"*%"G_GSIZE_FORMAT" bytes",
-      //         G_STRLOC, n_blocks, n_block_bytes);
-    }
+	if (SIZE_OVERFLOWS(n_blocks, n_block_bytes))
+	{
+		//g_error ("%s: overflow allocating %"G_GSIZE_FORMAT"*%"G_GSIZE_FORMAT" bytes",
+		//         G_STRLOC, n_blocks, n_block_bytes);
+	}
 
-  return my_g_realloc (mem, n_blocks * n_block_bytes);
+	return my_g_realloc(mem, n_blocks * n_block_bytes);
 }

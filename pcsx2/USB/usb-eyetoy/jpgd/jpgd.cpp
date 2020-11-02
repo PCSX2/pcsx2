@@ -3,7 +3,7 @@
 // Supports box and linear chroma upsampling.
 //
 // Released under two licenses. You are free to choose which license you want:
-// License 1: 
+// License 1:
 // Public Domain
 //
 // License 2:
@@ -32,73 +32,116 @@
 #include <assert.h>
 
 #ifdef _MSC_VER
-#pragma warning (disable : 4611) // warning C4611: interaction between '_setjmp' and C++ object destruction is non-portable
+#pragma warning(disable : 4611) // warning C4611: interaction between '_setjmp' and C++ object destruction is non-portable
 #endif
 
 #ifndef JPGD_USE_SSE2
 
-	#if defined(__GNUC__)
-		#if defined(__SSE2__)
-			#define JPGD_USE_SSE2 (1)
-		#endif
-	#elif defined(_MSC_VER)
-		#if defined(_M_X64)
-			#define JPGD_USE_SSE2 (1)
-		#endif
-	#endif
+#if defined(__GNUC__)
+#if defined(__SSE2__)
+#define JPGD_USE_SSE2 (1)
+#endif
+#elif defined(_MSC_VER)
+#if defined(_M_X64)
+#define JPGD_USE_SSE2 (1)
+#endif
+#endif
 
 #endif
 
 #define JPGD_TRUE (1)
 #define JPGD_FALSE (0)
 
-#define JPGD_MAX(a,b) (((a)>(b)) ? (a) : (b))
-#define JPGD_MIN(a,b) (((a)<(b)) ? (a) : (b))
+#define JPGD_MAX(a, b) (((a) > (b)) ? (a) : (b))
+#define JPGD_MIN(a, b) (((a) < (b)) ? (a) : (b))
 
-namespace jpgd {
+namespace jpgd
+{
 
 	static inline void* jpgd_malloc(size_t nSize) { return malloc(nSize); }
 	static inline void jpgd_free(void* p) { free(p); }
 
 	// DCT coefficients are stored in this sequence.
-	static int g_ZAG[64] = { 0,1,8,16,9,2,3,10,17,24,32,25,18,11,4,5,12,19,26,33,40,48,41,34,27,20,13,6,7,14,21,28,35,42,49,56,57,50,43,36,29,22,15,23,30,37,44,51,58,59,52,45,38,31,39,46,53,60,61,54,47,55,62,63 };
+	static int g_ZAG[64] = {0, 1, 8, 16, 9, 2, 3, 10, 17, 24, 32, 25, 18, 11, 4, 5, 12, 19, 26, 33, 40, 48, 41, 34, 27, 20, 13, 6, 7, 14, 21, 28, 35, 42, 49, 56, 57, 50, 43, 36, 29, 22, 15, 23, 30, 37, 44, 51, 58, 59, 52, 45, 38, 31, 39, 46, 53, 60, 61, 54, 47, 55, 62, 63};
 
 	enum JPEG_MARKER
 	{
-		M_SOF0 = 0xC0, M_SOF1 = 0xC1, M_SOF2 = 0xC2, M_SOF3 = 0xC3, M_SOF5 = 0xC5, M_SOF6 = 0xC6, M_SOF7 = 0xC7, M_JPG = 0xC8,
-		M_SOF9 = 0xC9, M_SOF10 = 0xCA, M_SOF11 = 0xCB, M_SOF13 = 0xCD, M_SOF14 = 0xCE, M_SOF15 = 0xCF, M_DHT = 0xC4, M_DAC = 0xCC,
-		M_RST0 = 0xD0, M_RST1 = 0xD1, M_RST2 = 0xD2, M_RST3 = 0xD3, M_RST4 = 0xD4, M_RST5 = 0xD5, M_RST6 = 0xD6, M_RST7 = 0xD7,
-		M_SOI = 0xD8, M_EOI = 0xD9, M_SOS = 0xDA, M_DQT = 0xDB, M_DNL = 0xDC, M_DRI = 0xDD, M_DHP = 0xDE, M_EXP = 0xDF,
-		M_APP0 = 0xE0, M_APP15 = 0xEF, M_JPG0 = 0xF0, M_JPG13 = 0xFD, M_COM = 0xFE, M_TEM = 0x01, M_ERROR = 0x100, RST0 = 0xD0
+		M_SOF0 = 0xC0,
+		M_SOF1 = 0xC1,
+		M_SOF2 = 0xC2,
+		M_SOF3 = 0xC3,
+		M_SOF5 = 0xC5,
+		M_SOF6 = 0xC6,
+		M_SOF7 = 0xC7,
+		M_JPG = 0xC8,
+		M_SOF9 = 0xC9,
+		M_SOF10 = 0xCA,
+		M_SOF11 = 0xCB,
+		M_SOF13 = 0xCD,
+		M_SOF14 = 0xCE,
+		M_SOF15 = 0xCF,
+		M_DHT = 0xC4,
+		M_DAC = 0xCC,
+		M_RST0 = 0xD0,
+		M_RST1 = 0xD1,
+		M_RST2 = 0xD2,
+		M_RST3 = 0xD3,
+		M_RST4 = 0xD4,
+		M_RST5 = 0xD5,
+		M_RST6 = 0xD6,
+		M_RST7 = 0xD7,
+		M_SOI = 0xD8,
+		M_EOI = 0xD9,
+		M_SOS = 0xDA,
+		M_DQT = 0xDB,
+		M_DNL = 0xDC,
+		M_DRI = 0xDD,
+		M_DHP = 0xDE,
+		M_EXP = 0xDF,
+		M_APP0 = 0xE0,
+		M_APP15 = 0xEF,
+		M_JPG0 = 0xF0,
+		M_JPG13 = 0xFD,
+		M_COM = 0xFE,
+		M_TEM = 0x01,
+		M_ERROR = 0x100,
+		RST0 = 0xD0
 	};
 
-	enum JPEG_SUBSAMPLING { JPGD_GRAYSCALE = 0, JPGD_YH1V1, JPGD_YH2V1, JPGD_YH1V2, JPGD_YH2V2 };
+	enum JPEG_SUBSAMPLING
+	{
+		JPGD_GRAYSCALE = 0,
+		JPGD_YH1V1,
+		JPGD_YH2V1,
+		JPGD_YH1V2,
+		JPGD_YH2V2
+	};
 
 #if JPGD_USE_SSE2
 #include "jpgd_idct.h"
 #endif
 
-#define CONST_BITS  13
-#define PASS1_BITS  2
+#define CONST_BITS 13
+#define PASS1_BITS 2
 #define SCALEDONE ((int32)1)
 
-#define FIX_0_298631336  ((int32)2446)        /* FIX(0.298631336) */
-#define FIX_0_390180644  ((int32)3196)        /* FIX(0.390180644) */
-#define FIX_0_541196100  ((int32)4433)        /* FIX(0.541196100) */
-#define FIX_0_765366865  ((int32)6270)        /* FIX(0.765366865) */
-#define FIX_0_899976223  ((int32)7373)        /* FIX(0.899976223) */
-#define FIX_1_175875602  ((int32)9633)        /* FIX(1.175875602) */
-#define FIX_1_501321110  ((int32)12299)       /* FIX(1.501321110) */
-#define FIX_1_847759065  ((int32)15137)       /* FIX(1.847759065) */
-#define FIX_1_961570560  ((int32)16069)       /* FIX(1.961570560) */
-#define FIX_2_053119869  ((int32)16819)       /* FIX(2.053119869) */
-#define FIX_2_562915447  ((int32)20995)       /* FIX(2.562915447) */
-#define FIX_3_072711026  ((int32)25172)       /* FIX(3.072711026) */
+#define FIX_0_298631336 ((int32)2446)  /* FIX(0.298631336) */
+#define FIX_0_390180644 ((int32)3196)  /* FIX(0.390180644) */
+#define FIX_0_541196100 ((int32)4433)  /* FIX(0.541196100) */
+#define FIX_0_765366865 ((int32)6270)  /* FIX(0.765366865) */
+#define FIX_0_899976223 ((int32)7373)  /* FIX(0.899976223) */
+#define FIX_1_175875602 ((int32)9633)  /* FIX(1.175875602) */
+#define FIX_1_501321110 ((int32)12299) /* FIX(1.501321110) */
+#define FIX_1_847759065 ((int32)15137) /* FIX(1.847759065) */
+#define FIX_1_961570560 ((int32)16069) /* FIX(1.961570560) */
+#define FIX_2_053119869 ((int32)16819) /* FIX(2.053119869) */
+#define FIX_2_562915447 ((int32)20995) /* FIX(2.562915447) */
+#define FIX_3_072711026 ((int32)25172) /* FIX(3.072711026) */
 
-#define DESCALE(x,n)  (((x) + (SCALEDONE << ((n)-1))) >> (n))
-#define DESCALE_ZEROSHIFT(x,n)  (((x) + (128 << (n)) + (SCALEDONE << ((n)-1))) >> (n))
+#define DESCALE(x, n) (((x) + (SCALEDONE << ((n)-1))) >> (n))
+#define DESCALE_ZEROSHIFT(x, n) (((x) + (128 << (n)) + (SCALEDONE << ((n)-1))) >> (n))
 
-#define MULTIPLY(var, cnst)  ((var) * (cnst))
+#define MULTIPLY(var, cnst) ((var) * (cnst))
 
 #define CLAMP(i) ((static_cast<uint>(i) > 255) ? (((~i) >> 31) & 0xFF) : (i))
 
@@ -158,7 +201,7 @@ namespace jpgd {
 	{
 		static void idct(int* pTemp, const jpgd_block_coeff_t* pSrc)
 		{
-			(void)pTemp; 
+			(void)pTemp;
 			(void)pSrc;
 		}
 	};
@@ -262,22 +305,525 @@ namespace jpgd {
 	};
 
 	static const uint8 s_idct_row_table[] =
-	{
-	  1,0,0,0,0,0,0,0, 2,0,0,0,0,0,0,0, 2,1,0,0,0,0,0,0, 2,1,1,0,0,0,0,0, 2,2,1,0,0,0,0,0, 3,2,1,0,0,0,0,0, 4,2,1,0,0,0,0,0, 4,3,1,0,0,0,0,0,
-	  4,3,2,0,0,0,0,0, 4,3,2,1,0,0,0,0, 4,3,2,1,1,0,0,0, 4,3,2,2,1,0,0,0, 4,3,3,2,1,0,0,0, 4,4,3,2,1,0,0,0, 5,4,3,2,1,0,0,0, 6,4,3,2,1,0,0,0,
-	  6,5,3,2,1,0,0,0, 6,5,4,2,1,0,0,0, 6,5,4,3,1,0,0,0, 6,5,4,3,2,0,0,0, 6,5,4,3,2,1,0,0, 6,5,4,3,2,1,1,0, 6,5,4,3,2,2,1,0, 6,5,4,3,3,2,1,0,
-	  6,5,4,4,3,2,1,0, 6,5,5,4,3,2,1,0, 6,6,5,4,3,2,1,0, 7,6,5,4,3,2,1,0, 8,6,5,4,3,2,1,0, 8,7,5,4,3,2,1,0, 8,7,6,4,3,2,1,0, 8,7,6,5,3,2,1,0,
-	  8,7,6,5,4,2,1,0, 8,7,6,5,4,3,1,0, 8,7,6,5,4,3,2,0, 8,7,6,5,4,3,2,1, 8,7,6,5,4,3,2,2, 8,7,6,5,4,3,3,2, 8,7,6,5,4,4,3,2, 8,7,6,5,5,4,3,2,
-	  8,7,6,6,5,4,3,2, 8,7,7,6,5,4,3,2, 8,8,7,6,5,4,3,2, 8,8,8,6,5,4,3,2, 8,8,8,7,5,4,3,2, 8,8,8,7,6,4,3,2, 8,8,8,7,6,5,3,2, 8,8,8,7,6,5,4,2,
-	  8,8,8,7,6,5,4,3, 8,8,8,7,6,5,4,4, 8,8,8,7,6,5,5,4, 8,8,8,7,6,6,5,4, 8,8,8,7,7,6,5,4, 8,8,8,8,7,6,5,4, 8,8,8,8,8,6,5,4, 8,8,8,8,8,7,5,4,
-	  8,8,8,8,8,7,6,4, 8,8,8,8,8,7,6,5, 8,8,8,8,8,7,6,6, 8,8,8,8,8,7,7,6, 8,8,8,8,8,8,7,6, 8,8,8,8,8,8,8,6, 8,8,8,8,8,8,8,7, 8,8,8,8,8,8,8,8,
+		{
+			1,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			2,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			2,
+			1,
+			0,
+			0,
+			0,
+			0,
+			0,
+			0,
+			2,
+			1,
+			1,
+			0,
+			0,
+			0,
+			0,
+			0,
+			2,
+			2,
+			1,
+			0,
+			0,
+			0,
+			0,
+			0,
+			3,
+			2,
+			1,
+			0,
+			0,
+			0,
+			0,
+			0,
+			4,
+			2,
+			1,
+			0,
+			0,
+			0,
+			0,
+			0,
+			4,
+			3,
+			1,
+			0,
+			0,
+			0,
+			0,
+			0,
+			4,
+			3,
+			2,
+			0,
+			0,
+			0,
+			0,
+			0,
+			4,
+			3,
+			2,
+			1,
+			0,
+			0,
+			0,
+			0,
+			4,
+			3,
+			2,
+			1,
+			1,
+			0,
+			0,
+			0,
+			4,
+			3,
+			2,
+			2,
+			1,
+			0,
+			0,
+			0,
+			4,
+			3,
+			3,
+			2,
+			1,
+			0,
+			0,
+			0,
+			4,
+			4,
+			3,
+			2,
+			1,
+			0,
+			0,
+			0,
+			5,
+			4,
+			3,
+			2,
+			1,
+			0,
+			0,
+			0,
+			6,
+			4,
+			3,
+			2,
+			1,
+			0,
+			0,
+			0,
+			6,
+			5,
+			3,
+			2,
+			1,
+			0,
+			0,
+			0,
+			6,
+			5,
+			4,
+			2,
+			1,
+			0,
+			0,
+			0,
+			6,
+			5,
+			4,
+			3,
+			1,
+			0,
+			0,
+			0,
+			6,
+			5,
+			4,
+			3,
+			2,
+			0,
+			0,
+			0,
+			6,
+			5,
+			4,
+			3,
+			2,
+			1,
+			0,
+			0,
+			6,
+			5,
+			4,
+			3,
+			2,
+			1,
+			1,
+			0,
+			6,
+			5,
+			4,
+			3,
+			2,
+			2,
+			1,
+			0,
+			6,
+			5,
+			4,
+			3,
+			3,
+			2,
+			1,
+			0,
+			6,
+			5,
+			4,
+			4,
+			3,
+			2,
+			1,
+			0,
+			6,
+			5,
+			5,
+			4,
+			3,
+			2,
+			1,
+			0,
+			6,
+			6,
+			5,
+			4,
+			3,
+			2,
+			1,
+			0,
+			7,
+			6,
+			5,
+			4,
+			3,
+			2,
+			1,
+			0,
+			8,
+			6,
+			5,
+			4,
+			3,
+			2,
+			1,
+			0,
+			8,
+			7,
+			5,
+			4,
+			3,
+			2,
+			1,
+			0,
+			8,
+			7,
+			6,
+			4,
+			3,
+			2,
+			1,
+			0,
+			8,
+			7,
+			6,
+			5,
+			3,
+			2,
+			1,
+			0,
+			8,
+			7,
+			6,
+			5,
+			4,
+			2,
+			1,
+			0,
+			8,
+			7,
+			6,
+			5,
+			4,
+			3,
+			1,
+			0,
+			8,
+			7,
+			6,
+			5,
+			4,
+			3,
+			2,
+			0,
+			8,
+			7,
+			6,
+			5,
+			4,
+			3,
+			2,
+			1,
+			8,
+			7,
+			6,
+			5,
+			4,
+			3,
+			2,
+			2,
+			8,
+			7,
+			6,
+			5,
+			4,
+			3,
+			3,
+			2,
+			8,
+			7,
+			6,
+			5,
+			4,
+			4,
+			3,
+			2,
+			8,
+			7,
+			6,
+			5,
+			5,
+			4,
+			3,
+			2,
+			8,
+			7,
+			6,
+			6,
+			5,
+			4,
+			3,
+			2,
+			8,
+			7,
+			7,
+			6,
+			5,
+			4,
+			3,
+			2,
+			8,
+			8,
+			7,
+			6,
+			5,
+			4,
+			3,
+			2,
+			8,
+			8,
+			8,
+			6,
+			5,
+			4,
+			3,
+			2,
+			8,
+			8,
+			8,
+			7,
+			5,
+			4,
+			3,
+			2,
+			8,
+			8,
+			8,
+			7,
+			6,
+			4,
+			3,
+			2,
+			8,
+			8,
+			8,
+			7,
+			6,
+			5,
+			3,
+			2,
+			8,
+			8,
+			8,
+			7,
+			6,
+			5,
+			4,
+			2,
+			8,
+			8,
+			8,
+			7,
+			6,
+			5,
+			4,
+			3,
+			8,
+			8,
+			8,
+			7,
+			6,
+			5,
+			4,
+			4,
+			8,
+			8,
+			8,
+			7,
+			6,
+			5,
+			5,
+			4,
+			8,
+			8,
+			8,
+			7,
+			6,
+			6,
+			5,
+			4,
+			8,
+			8,
+			8,
+			7,
+			7,
+			6,
+			5,
+			4,
+			8,
+			8,
+			8,
+			8,
+			7,
+			6,
+			5,
+			4,
+			8,
+			8,
+			8,
+			8,
+			8,
+			6,
+			5,
+			4,
+			8,
+			8,
+			8,
+			8,
+			8,
+			7,
+			5,
+			4,
+			8,
+			8,
+			8,
+			8,
+			8,
+			7,
+			6,
+			4,
+			8,
+			8,
+			8,
+			8,
+			8,
+			7,
+			6,
+			5,
+			8,
+			8,
+			8,
+			8,
+			8,
+			7,
+			6,
+			6,
+			8,
+			8,
+			8,
+			8,
+			8,
+			7,
+			7,
+			6,
+			8,
+			8,
+			8,
+			8,
+			8,
+			8,
+			7,
+			6,
+			8,
+			8,
+			8,
+			8,
+			8,
+			8,
+			8,
+			6,
+			8,
+			8,
+			8,
+			8,
+			8,
+			8,
+			8,
+			7,
+			8,
+			8,
+			8,
+			8,
+			8,
+			8,
+			8,
+			8,
 	};
 
-	static const uint8 s_idct_col_table[] = 
-	{ 
-		1, 1, 2, 3, 3, 3, 3, 3, 3, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 
-		7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8 
-	};
+	static const uint8 s_idct_col_table[] =
+		{
+			1, 1, 2, 3, 3, 3, 3, 3, 3, 4, 5, 5, 5, 5, 5, 5, 5, 5, 5, 5, 6, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7,
+			7, 7, 7, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8, 8};
 
 	// Scalar "fast pathing" IDCT.
 	static void idct(const jpgd_block_coeff_t* pSrc_ptr, uint8* pDst_ptr, int block_max_zag, bool use_simd)
@@ -286,7 +832,7 @@ namespace jpgd {
 
 		assert(block_max_zag >= 1);
 		assert(block_max_zag <= 64);
-				
+
 		if (block_max_zag <= 1)
 		{
 			int k = ((pSrc_ptr[0] + 4) >> 3) + 128;
@@ -324,15 +870,33 @@ namespace jpgd {
 		{
 			switch (*pRow_tab)
 			{
-			case 0: Row<0>::idct(pTemp, pSrc); break;
-			case 1: Row<1>::idct(pTemp, pSrc); break;
-			case 2: Row<2>::idct(pTemp, pSrc); break;
-			case 3: Row<3>::idct(pTemp, pSrc); break;
-			case 4: Row<4>::idct(pTemp, pSrc); break;
-			case 5: Row<5>::idct(pTemp, pSrc); break;
-			case 6: Row<6>::idct(pTemp, pSrc); break;
-			case 7: Row<7>::idct(pTemp, pSrc); break;
-			case 8: Row<8>::idct(pTemp, pSrc); break;
+				case 0:
+					Row<0>::idct(pTemp, pSrc);
+					break;
+				case 1:
+					Row<1>::idct(pTemp, pSrc);
+					break;
+				case 2:
+					Row<2>::idct(pTemp, pSrc);
+					break;
+				case 3:
+					Row<3>::idct(pTemp, pSrc);
+					break;
+				case 4:
+					Row<4>::idct(pTemp, pSrc);
+					break;
+				case 5:
+					Row<5>::idct(pTemp, pSrc);
+					break;
+				case 6:
+					Row<6>::idct(pTemp, pSrc);
+					break;
+				case 7:
+					Row<7>::idct(pTemp, pSrc);
+					break;
+				case 8:
+					Row<8>::idct(pTemp, pSrc);
+					break;
 			}
 
 			pSrc += 8;
@@ -346,14 +910,30 @@ namespace jpgd {
 		{
 			switch (nonzero_rows)
 			{
-			case 1: Col<1>::idct(pDst_ptr, pTemp); break;
-			case 2: Col<2>::idct(pDst_ptr, pTemp); break;
-			case 3: Col<3>::idct(pDst_ptr, pTemp); break;
-			case 4: Col<4>::idct(pDst_ptr, pTemp); break;
-			case 5: Col<5>::idct(pDst_ptr, pTemp); break;
-			case 6: Col<6>::idct(pDst_ptr, pTemp); break;
-			case 7: Col<7>::idct(pDst_ptr, pTemp); break;
-			case 8: Col<8>::idct(pDst_ptr, pTemp); break;
+				case 1:
+					Col<1>::idct(pDst_ptr, pTemp);
+					break;
+				case 2:
+					Col<2>::idct(pDst_ptr, pTemp);
+					break;
+				case 3:
+					Col<3>::idct(pDst_ptr, pTemp);
+					break;
+				case 4:
+					Col<4>::idct(pDst_ptr, pTemp);
+					break;
+				case 5:
+					Col<5>::idct(pDst_ptr, pTemp);
+					break;
+				case 6:
+					Col<6>::idct(pDst_ptr, pTemp);
+					break;
+				case 7:
+					Col<7>::idct(pDst_ptr, pTemp);
+					break;
+				case 8:
+					Col<8>::idct(pDst_ptr, pTemp);
+					break;
 			}
 
 			pTemp++;
@@ -615,8 +1195,8 @@ namespace jpgd {
 	}
 
 	// Tables and macro used to fully decode the DPCM differences.
-	static const int s_extend_test[16] = { 0, 0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, 0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000 };
-	static const int s_extend_offset[16] = { 0, -1, -3, -7, -15, -31, -63, -127, -255, -511, -1023, -2047, -4095, -8191, -16383, -32767 };
+	static const int s_extend_test[16] = {0, 0x0001, 0x0002, 0x0004, 0x0008, 0x0010, 0x0020, 0x0040, 0x0080, 0x0100, 0x0200, 0x0400, 0x0800, 0x1000, 0x2000, 0x4000};
+	static const int s_extend_offset[16] = {0, -1, -3, -7, -15, -31, -63, -127, -255, -511, -1023, -2047, -4095, -8191, -16383, -32767};
 	//static const int s_extend_mask[] = { 0, (1 << 0), (1 << 1), (1 << 2), (1 << 3), (1 << 4), (1 << 5), (1 << 6), (1 << 7), (1 << 8), (1 << 9), (1 << 10), (1 << 11), (1 << 12), (1 << 13), (1 << 14), (1 << 15), (1 << 16) };
 
 #define JPGD_HUFF_EXTEND(x, s) (((x) < s_extend_test[s & 15]) ? ((x) + s_extend_offset[s & 15]) : (x))
@@ -625,7 +1205,7 @@ namespace jpgd {
 	void jpeg_decoder::free_all_blocks()
 	{
 		m_pStream = nullptr;
-		for (mem_block* b = m_pMem_blocks; b; )
+		for (mem_block* b = m_pMem_blocks; b;)
 		{
 			mem_block* n = b->m_pNext;
 			jpgd_free(b);
@@ -642,7 +1222,7 @@ namespace jpgd {
 		free_all_blocks();
 		longjmp(m_jmp_state, status);
 	}
-		
+
 	void* jpeg_decoder::alloc(size_t nSize, bool zero)
 	{
 		nSize = (JPGD_MAX(nSize, 1) + 3) & ~3;
@@ -671,15 +1251,16 @@ namespace jpgd {
 			b->m_size = capacity;
 			rv = b->m_data;
 		}
-		if (zero) memset(rv, 0, nSize);
+		if (zero)
+			memset(rv, 0, nSize);
 		return rv;
 	}
 
 	void* jpeg_decoder::alloc_aligned(size_t nSize, uint32_t align, bool zero)
 	{
 		assert((align >= 1U) && ((align & (align - 1U)) == 0U));
-		void *p = alloc(nSize + align - 1U, zero);
-		p = (void *)( ((uintptr_t)p + (align - 1U)) & ~((uintptr_t)(align - 1U)) );
+		void* p = alloc(nSize + align - 1U, zero);
+		p = (void*)(((uintptr_t)p + (align - 1U)) & ~((uintptr_t)(align - 1U)));
 		return p;
 	}
 
@@ -1017,73 +1598,73 @@ namespace jpgd {
 	{
 		int c;
 
-		for (; ; )
+		for (;;)
 		{
 			c = next_marker();
 
 			switch (c)
 			{
-			case M_SOF0:
-			case M_SOF1:
-			case M_SOF2:
-			case M_SOF3:
-			case M_SOF5:
-			case M_SOF6:
-			case M_SOF7:
-				//      case M_JPG:
-			case M_SOF9:
-			case M_SOF10:
-			case M_SOF11:
-			case M_SOF13:
-			case M_SOF14:
-			case M_SOF15:
-			case M_SOI:
-			case M_EOI:
-			case M_SOS:
-			{
-				return c;
-			}
-			case M_DHT:
-			{
-				read_dht_marker();
-				break;
-			}
-			// No arithmitic support - dumb patents!
-			case M_DAC:
-			{
-				stop_decoding(JPGD_NO_ARITHMITIC_SUPPORT);
-				break;
-			}
-			case M_DQT:
-			{
-				read_dqt_marker();
-				break;
-			}
-			case M_DRI:
-			{
-				read_dri_marker();
-				break;
-			}
-			//case M_APP0:  /* no need to read the JFIF marker */
-			case M_JPG:
-			case M_RST0:    /* no parameters */
-			case M_RST1:
-			case M_RST2:
-			case M_RST3:
-			case M_RST4:
-			case M_RST5:
-			case M_RST6:
-			case M_RST7:
-			case M_TEM:
-			{
-				stop_decoding(JPGD_UNEXPECTED_MARKER);
-				break;
-			}
-			default:    /* must be DNL, DHP, EXP, APPn, JPGn, COM, or RESn or APP0 */
-			{
-				skip_variable_marker();
-				break;
-			}
+				case M_SOF0:
+				case M_SOF1:
+				case M_SOF2:
+				case M_SOF3:
+				case M_SOF5:
+				case M_SOF6:
+				case M_SOF7:
+					//      case M_JPG:
+				case M_SOF9:
+				case M_SOF10:
+				case M_SOF11:
+				case M_SOF13:
+				case M_SOF14:
+				case M_SOF15:
+				case M_SOI:
+				case M_EOI:
+				case M_SOS:
+				{
+					return c;
+				}
+				case M_DHT:
+				{
+					read_dht_marker();
+					break;
+				}
+				// No arithmitic support - dumb patents!
+				case M_DAC:
+				{
+					stop_decoding(JPGD_NO_ARITHMITIC_SUPPORT);
+					break;
+				}
+				case M_DQT:
+				{
+					read_dqt_marker();
+					break;
+				}
+				case M_DRI:
+				{
+					read_dri_marker();
+					break;
+				}
+				//case M_APP0:  /* no need to read the JFIF marker */
+				case M_JPG:
+				case M_RST0: /* no parameters */
+				case M_RST1:
+				case M_RST2:
+				case M_RST3:
+				case M_RST4:
+				case M_RST5:
+				case M_RST6:
+				case M_RST7:
+				case M_TEM:
+				{
+					stop_decoding(JPGD_UNEXPECTED_MARKER);
+					break;
+				}
+				default: /* must be DNL, DHP, EXP, APPn, JPGn, COM, or RESn or APP0 */
+				{
+					skip_variable_marker();
+					break;
+				}
 			}
 		}
 	}
@@ -1105,7 +1686,7 @@ namespace jpgd {
 
 		bytesleft = 4096;
 
-		for (; ; )
+		for (;;)
 		{
 			if (--bytesleft == 0)
 				stop_decoding(JPGD_NOT_JPEG);
@@ -1139,28 +1720,28 @@ namespace jpgd {
 
 		switch (c)
 		{
-		case M_SOF2:
-		{
-			m_progressive_flag = JPGD_TRUE;
-			read_sof_marker();
-			break;
-		}
-		case M_SOF0:  /* baseline DCT */
-		case M_SOF1:  /* extended sequential DCT */
-		{
-			read_sof_marker();
-			break;
-		}
-		case M_SOF9:  /* Arithmitic coding */
-		{
-			stop_decoding(JPGD_NO_ARITHMITIC_SUPPORT);
-			break;
-		}
-		default:
-		{
-			stop_decoding(JPGD_UNSUPPORTED_MARKER);
-			break;
-		}
+			case M_SOF2:
+			{
+				m_progressive_flag = JPGD_TRUE;
+				read_sof_marker();
+				break;
+			}
+			case M_SOF0: /* baseline DCT */
+			case M_SOF1: /* extended sequential DCT */
+			{
+				read_sof_marker();
+				break;
+			}
+			case M_SOF9: /* Arithmitic coding */
+			{
+				stop_decoding(JPGD_NO_ARITHMITIC_SUPPORT);
+				break;
+			}
+			default:
+			{
+				stop_decoding(JPGD_UNSUPPORTED_MARKER);
+				break;
+			}
 		}
 	}
 
@@ -1191,7 +1772,7 @@ namespace jpgd {
 		m_image_x_size = m_image_y_size = 0;
 		m_pStream = pStream;
 		m_progressive_flag = JPGD_FALSE;
-				
+
 		memset(m_huff_ac, 0, sizeof(m_huff_ac));
 		memset(m_huff_num, 0, sizeof(m_huff_num));
 		memset(m_huff_val, 0, sizeof(m_huff_val));
@@ -1296,8 +1877,8 @@ namespace jpgd {
 	}
 
 #define SCALEBITS 16
-#define ONE_HALF  ((int) 1 << (SCALEBITS-1))
-#define FIX(x)    ((int) ((x) * (1L<<SCALEBITS) + 0.5f))
+#define ONE_HALF ((int)1 << (SCALEBITS - 1))
+#define FIX(x) ((int)((x) * (1L << SCALEBITS) + 0.5f))
 
 	// Create a few tables that allow us to quickly convert YCbCr to RGB.
 	void jpeg_decoder::create_look_ups()
@@ -1473,7 +2054,11 @@ namespace jpgd {
 		get_bits_no_markers(16);
 	}
 
-	static inline int dequantize_ac(int c, int q) { c *= q; return c; }
+	static inline int dequantize_ac(int c, int q)
+	{
+		c *= q;
+		return c;
+	}
 
 	// Decodes and dequantizes the next row of coefficients.
 	void jpeg_decoder::decode_next_row()
@@ -1918,10 +2503,12 @@ namespace jpgd {
 		const int half_image_x_size = (m_image_x_size >> 1) - 1;
 
 		static const uint8_t s_muls[2][2][4] =
-		{
-			{ { 1, 3, 3, 9 }, { 3, 9, 1, 3 }, },
-			{ { 3, 1, 9, 3 }, { 9, 3, 3, 1 } }
-		};
+			{
+				{
+					{1, 3, 3, 9},
+					{3, 9, 1, 3},
+				},
+				{{3, 1, 9, 3}, {9, 3, 3, 1}}};
 
 		if (((row & 15) >= 1) && ((row & 15) <= 14))
 		{
@@ -2184,77 +2771,77 @@ namespace jpgd {
 
 		switch (m_scan_type)
 		{
-		case JPGD_YH2V2:
-		{
-			if ((m_flags & cFlagBoxChromaFiltering) == 0)
+			case JPGD_YH2V2:
 			{
-				if (m_num_buffered_scanlines == 1)
+				if ((m_flags & cFlagBoxChromaFiltering) == 0)
 				{
-					*pScan_line = m_pScan_line_1;
-				}
-				else if (m_num_buffered_scanlines == 0)
-				{
-					m_num_buffered_scanlines = H2V2ConvertFiltered();
-					*pScan_line = m_pScan_line_0;
-				}
+					if (m_num_buffered_scanlines == 1)
+					{
+						*pScan_line = m_pScan_line_1;
+					}
+					else if (m_num_buffered_scanlines == 0)
+					{
+						m_num_buffered_scanlines = H2V2ConvertFiltered();
+						*pScan_line = m_pScan_line_0;
+					}
 
-				m_num_buffered_scanlines--;
-			}
-			else
-			{
-				if ((m_mcu_lines_left & 1) == 0)
-				{
-					H2V2Convert();
-					*pScan_line = m_pScan_line_0;
+					m_num_buffered_scanlines--;
 				}
 				else
-					*pScan_line = m_pScan_line_1;
-			}
+				{
+					if ((m_mcu_lines_left & 1) == 0)
+					{
+						H2V2Convert();
+						*pScan_line = m_pScan_line_0;
+					}
+					else
+						*pScan_line = m_pScan_line_1;
+				}
 
-			break;
-		}
-		case JPGD_YH2V1:
-		{
-			if ((m_flags & cFlagBoxChromaFiltering) == 0)
-				H2V1ConvertFiltered();
-			else
-				H2V1Convert();
-			*pScan_line = m_pScan_line_0;
-			break;
-		}
-		case JPGD_YH1V2:
-		{
-			if (chroma_y_filtering)
+				break;
+			}
+			case JPGD_YH2V1:
 			{
-				H1V2ConvertFiltered();
+				if ((m_flags & cFlagBoxChromaFiltering) == 0)
+					H2V1ConvertFiltered();
+				else
+					H2V1Convert();
 				*pScan_line = m_pScan_line_0;
+				break;
 			}
-			else
+			case JPGD_YH1V2:
 			{
-				if ((m_mcu_lines_left & 1) == 0)
+				if (chroma_y_filtering)
 				{
-					H1V2Convert();
+					H1V2ConvertFiltered();
 					*pScan_line = m_pScan_line_0;
 				}
 				else
-					*pScan_line = m_pScan_line_1;
+				{
+					if ((m_mcu_lines_left & 1) == 0)
+					{
+						H1V2Convert();
+						*pScan_line = m_pScan_line_0;
+					}
+					else
+						*pScan_line = m_pScan_line_1;
+				}
+
+				break;
 			}
+			case JPGD_YH1V1:
+			{
+				H1V1Convert();
+				*pScan_line = m_pScan_line_0;
+				break;
+			}
+			case JPGD_GRAYSCALE:
+			{
+				gray_convert();
+				*pScan_line = m_pScan_line_0;
 
-			break;
-		}
-		case JPGD_YH1V1:
-		{
-			H1V1Convert();
-			*pScan_line = m_pScan_line_0;
-			break;
-		}
-		case JPGD_GRAYSCALE:
-		{
-			gray_convert();
-			*pScan_line = m_pScan_line_0;
-
-			break;
-		}
+				break;
+			}
 		}
 
 		*pScan_line_len = m_real_dest_bytes_per_scan_line;
@@ -2641,8 +3228,8 @@ namespace jpgd {
 			stop_decoding(JPGD_DECODE_ERROR);
 
 		// Allocate the coefficient buffer, enough for one MCU
-		m_pMCU_coefficients = (jpgd_block_coeff_t *)alloc_aligned(m_max_blocks_per_mcu * 64 * sizeof(jpgd_block_coeff_t));
-				
+		m_pMCU_coefficients = (jpgd_block_coeff_t*)alloc_aligned(m_max_blocks_per_mcu * 64 * sizeof(jpgd_block_coeff_t));
+
 		for (i = 0; i < m_max_blocks_per_mcu; i++)
 			m_mcu_block_max_zag[i] = 64;
 
@@ -2956,7 +3543,7 @@ namespace jpgd {
 		uint32_t total_scans = 0;
 		const uint32_t MAX_SCANS_TO_PROCESS = 1000;
 
-		for (; ; )
+		for (;;)
 		{
 			int dc_only_scan, refinement_scan;
 			pDecode_block_func decode_block_func;
@@ -2975,7 +3562,7 @@ namespace jpgd {
 				if (m_spectral_end)
 					stop_decoding(JPGD_BAD_SOS_SPECTRAL);
 			}
-			else if (m_comps_in_scan != 1)  /* AC scans can only contain one component */
+			else if (m_comps_in_scan != 1) /* AC scans can only contain one component */
 				stop_decoding(JPGD_BAD_SOS_SPECTRAL);
 
 			if ((refinement_scan) && (m_successive_low != m_successive_high - 1))
