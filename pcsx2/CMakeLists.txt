@@ -312,7 +312,7 @@ set(pcsx2DEV9Sources
 	DEV9/pcap_io.cpp
 	DEV9/Linux/Config.cpp
 	DEV9/Linux/Linux.cpp
-	DEV9/Linux/net.cpp
+	DEV9/net.cpp
 	${pcsx2DEV9UISources}
 	)
 
