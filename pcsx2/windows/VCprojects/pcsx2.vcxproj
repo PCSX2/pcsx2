@@ -63,12 +63,12 @@
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">false</ShowIncludes>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NDEBUG;_SECURE_SCL_=0;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NDEBUG;_SECURE_SCL_=0;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;BUILD_RAW=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;BUILD_RAW=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;BUILD_RAW=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;BUILD_RAW=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NDEBUG;_SECURE_SCL_=0;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;BUILD_RAW=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NDEBUG;_SECURE_SCL_=0;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;BUILD_RAW=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <LargeAddressAware>Yes</LargeAddressAware>
@@ -349,6 +349,52 @@
     <ClCompile Include="..\..\Recording\NewRecordingFrame.cpp" />
     <ClCompile Include="..\..\Recording\InputRecordingFile.cpp" />
     <ClCompile Include="..\..\Recording\PadData.cpp" />
+    <ClCompile Include="..\..\USB\configuration.cpp" />
+    <ClCompile Include="..\..\USB\deviceproxy.cpp" />
+    <ClCompile Include="..\..\USB\device_init.cpp" />
+    <ClCompile Include="..\..\USB\osdebugout.cpp" />
+    <ClCompile Include="..\..\USB\qemu-usb\bus.cpp" />
+    <ClCompile Include="..\..\USB\qemu-usb\core.cpp" />
+    <ClCompile Include="..\..\USB\qemu-usb\desc.cpp" />
+    <ClCompile Include="..\..\USB\qemu-usb\glib.cpp" />
+    <ClCompile Include="..\..\USB\qemu-usb\hid.cpp" />
+    <ClCompile Include="..\..\USB\qemu-usb\input-keymap-qcode-to-qnum.cpp" />
+    <ClCompile Include="..\..\USB\qemu-usb\input-keymap-win32-to-qcode.cpp" />
+    <ClCompile Include="..\..\USB\qemu-usb\iov.cpp" />
+    <ClCompile Include="..\..\USB\qemu-usb\usb-ohci.cpp" />
+    <ClCompile Include="..\..\USB\qemu-usb\vl.cpp" />
+    <ClCompile Include="..\..\USB\shared\hidapi.cpp" />
+    <ClCompile Include="..\..\USB\shared\inifile.cpp" />
+    <ClCompile Include="..\..\USB\shared\rawinput.cpp" />
+    <ClCompile Include="..\..\USB\shared\ringbuffer.cpp" />
+    <ClCompile Include="..\..\USB\shared\shared.cpp" />
+    <ClCompile Include="..\..\USB\usb-eyetoy\api_init_win32.cpp" />
+    <ClCompile Include="..\..\USB\usb-eyetoy\cam-windows.cpp" />
+    <ClCompile Include="..\..\USB\usb-eyetoy\jo_mpeg.cpp" />
+    <ClCompile Include="..\..\USB\usb-eyetoy\jpgd\jpgd.cpp" />
+    <ClCompile Include="..\..\USB\usb-eyetoy\usb-eyetoy-webcam.cpp" />
+    <ClCompile Include="..\..\USB\usb-hid\api_init_win32.cpp" />
+    <ClCompile Include="..\..\USB\usb-hid\raw\rawinput.cpp" />
+    <ClCompile Include="..\..\USB\usb-hid\usb-hid.cpp" />
+    <ClCompile Include="..\..\USB\usb-mic\api_init_win32.cpp" />
+    <ClCompile Include="..\..\USB\usb-mic\audiodev-wasapi.cpp" />
+    <ClCompile Include="..\..\USB\usb-mic\usb-headset.cpp" />
+    <ClCompile Include="..\..\USB\usb-mic\usb-mic-logitech.cpp" />
+    <ClCompile Include="..\..\USB\usb-mic\usb-mic-singstar.cpp" />
+    <ClCompile Include="..\..\USB\usb-msd\usb-msd-win32.cpp" />
+    <ClCompile Include="..\..\USB\usb-msd\usb-msd.cpp" />
+    <ClCompile Include="..\..\USB\usb-pad\api_init_win32.cpp" />
+    <ClCompile Include="..\..\USB\usb-pad\dx\dinput-config.cpp" />
+    <ClCompile Include="..\..\USB\usb-pad\dx\dinput.cpp" />
+    <ClCompile Include="..\..\USB\usb-pad\dx\usb-pad-dx.cpp" />
+    <ClCompile Include="..\..\USB\usb-pad\lg\lg_ff.cpp" />
+    <ClCompile Include="..\..\USB\usb-pad\raw\raw-config.cpp" />
+    <ClCompile Include="..\..\USB\usb-pad\raw\usb-pad-raw.cpp" />
+    <ClCompile Include="..\..\USB\usb-pad\usb-pad-ff.cpp" />
+    <ClCompile Include="..\..\USB\usb-pad\usb-pad.cpp" />
+    <ClCompile Include="..\..\USB\usb-pad\usb-seamic.cpp" />
+    <ClCompile Include="..\..\USB\USB.cpp" />
+    <ClCompile Include="..\..\USB\Win32\Config.cpp" />
     <ClCompile Include="..\..\Utilities\FileUtils.cpp" />
     <ClCompile Include="..\..\Dump.cpp" />
     <ClCompile Include="..\..\x86\iMisc.cpp" />
@@ -616,6 +662,59 @@
     <ClInclude Include="..\..\Recording\VirtualPad\VirtualPadData.h" />
     <ClInclude Include="..\..\Recording\VirtualPad\VirtualPadResources.h" />
     <ClInclude Include="..\..\Recording\Utilities\InputRecordingLogger.h" />
+    <ClInclude Include="..\..\USB\configuration.h" />
+    <ClInclude Include="..\..\USB\deviceproxy.h" />
+    <ClInclude Include="..\..\USB\helpers.h" />
+    <ClInclude Include="..\..\USB\osdebugout.h" />
+    <ClInclude Include="..\..\USB\platcompat.h" />
+    <ClInclude Include="..\..\USB\proxybase.h" />
+    <ClInclude Include="..\..\USB\qemu-usb\desc.h" />
+    <ClInclude Include="..\..\USB\qemu-usb\glib.h" />
+    <ClInclude Include="..\..\USB\qemu-usb\hid.h" />
+    <ClInclude Include="..\..\USB\qemu-usb\input-keymap-win32-to-qcode.h" />
+    <ClInclude Include="..\..\USB\qemu-usb\input-keymap.h" />
+    <ClInclude Include="..\..\USB\qemu-usb\iov.h" />
+    <ClInclude Include="..\..\USB\qemu-usb\queue.h" />
+    <ClInclude Include="..\..\USB\qemu-usb\qusb.h" />
+    <ClInclude Include="..\..\USB\qemu-usb\USBinternal.h" />
+    <ClInclude Include="..\..\USB\qemu-usb\vl.h" />
+    <ClInclude Include="..\..\USB\readerwriterqueue\atomicops.h" />
+    <ClInclude Include="..\..\USB\readerwriterqueue\readerwriterqueue.h" />
+    <ClInclude Include="..\..\USB\shared\hidapi.h" />
+    <ClInclude Include="..\..\USB\shared\inifile.h" />
+    <ClInclude Include="..\..\USB\shared\rawinput.h" />
+    <ClInclude Include="..\..\USB\shared\ringbuffer.h" />
+    <ClInclude Include="..\..\USB\shared\shared.h" />
+    <ClInclude Include="..\..\USB\usb-eyetoy\cam-windows.h" />
+    <ClInclude Include="..\..\USB\usb-eyetoy\jo_mpeg.h" />
+    <ClInclude Include="..\..\USB\usb-eyetoy\jpgd\jpgd.h" />
+    <ClInclude Include="..\..\USB\usb-eyetoy\ov519.h" />
+    <ClInclude Include="..\..\USB\usb-eyetoy\usb-eyetoy-webcam.h" />
+    <ClInclude Include="..\..\USB\usb-eyetoy\videodev.h" />
+    <ClInclude Include="..\..\USB\usb-eyetoy\videodeviceproxy.h" />
+    <ClInclude Include="..\..\USB\usb-hid\hidproxy.h" />
+    <ClInclude Include="..\..\USB\usb-hid\noop.h" />
+    <ClInclude Include="..\..\USB\usb-hid\raw\rawinput.h" />
+    <ClInclude Include="..\..\USB\usb-hid\usb-hid.h" />
+    <ClInclude Include="..\..\USB\usb-mic\audio.h" />
+    <ClInclude Include="..\..\USB\usb-mic\audiodev-noop.h" />
+    <ClInclude Include="..\..\USB\usb-mic\audiodev-wasapi.h" />
+    <ClInclude Include="..\..\USB\usb-mic\audiodev.h" />
+    <ClInclude Include="..\..\USB\usb-mic\audiodeviceproxy.h" />
+    <ClInclude Include="..\..\USB\usb-mic\usb-headset.h" />
+    <ClInclude Include="..\..\USB\usb-mic\usb-mic-singstar.h" />
+    <ClInclude Include="..\..\USB\usb-msd\usb-msd.h" />
+    <ClInclude Include="..\..\USB\usb-pad\dx\dx.h" />
+    <ClInclude Include="..\..\USB\usb-pad\dx\usb-pad-dx.h" />
+    <ClInclude Include="..\..\USB\usb-pad\dx\versionproxy.h" />
+    <ClInclude Include="..\..\USB\usb-pad\lg\lg_ff.h" />
+    <ClInclude Include="..\..\USB\usb-pad\padproxy.h" />
+    <ClInclude Include="..\..\USB\usb-pad\raw\raw-config-res.h" />
+    <ClInclude Include="..\..\USB\usb-pad\raw\usb-pad-raw.h" />
+    <ClInclude Include="..\..\USB\usb-pad\usb-pad.h" />
+    <ClInclude Include="..\..\USB\USB.h" />
+    <ClInclude Include="..\..\USB\Win32\Config.h" />
+    <ClInclude Include="..\..\USB\Win32\resource.h" />
     <ClInclude Include="..\..\Utilities\AsciiFile.h" />
     <ClInclude Include="..\..\Elfheader.h" />
     <ClInclude Include="..\..\CDVD\IsoFileFormats.h" />
@@ -755,6 +854,8 @@
     </ResourceCompile>
     <ResourceCompile Include="..\..\SPU2\Windows\SPU2.rc" />
     <ResourceCompile Include="..\..\DEV9\Win32\DEV9ghzdrk.rc" />
+    <ResourceCompile Include="..\..\USB\usb-pad\dx\versionproxy.rc" />
+    <ResourceCompile Include="..\..\USB\usb-pad\raw\raw-config.rc" />
     <ResourceCompile Include="..\wxResources.rc" />
   </ItemGroup>
   <ItemGroup>
