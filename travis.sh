@@ -86,6 +86,7 @@ linux_32_script() {
 		-DCMAKE_BUILD_TYPE=Release \
 		-DBUILD_REPLAY_LOADERS=TRUE \
 		-DCMAKE_BUILD_PO=FALSE \
+		-DGTK2_API=TRUE \
 		..
 
 	# Documentation says 1.5 cores, so 2 or 3 threads should work ok.
@@ -129,6 +130,7 @@ linux_64_script() {
 		-DCMAKE_BUILD_TYPE=Devel \
 		-DBUILD_REPLAY_LOADERS=TRUE \
 		-DCMAKE_BUILD_PO=FALSE \
+		-DGTK2_API=TRUE \
 		..
 
 	# Documentation says 1.5 cores, so 2 or 3 threads should work ok.
