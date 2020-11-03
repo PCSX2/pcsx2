@@ -39,12 +39,13 @@ endif()
 # I'm removing the version check, because it excludes newer versions and requires specifically 3.0.
 #list(APPEND wxWidgets_CONFIG_OPTIONS --version=3.0)
 
-# Let's not specifically require Gtk 2 or 3, either. As long as you have wx there...
-#if(GTK2_API AND NOT APPLE)
-#    list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk2)
-#elseif(NOT APPLE)
-#    list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
-#endif()
+# The wx version must be specified so a mix of gtk2 and gtk3 isn't used
+# as that can cause compile errors.
+if(GTK2_API AND NOT APPLE)
+    list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk2)
+elseif(NOT APPLE)
+    list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
+endif()
 
 # wx2.8 => /usr/bin/wx-config-2.8
 # lib32-wx2.8 => /usr/bin/wx-config32-2.8
@@ -81,7 +82,7 @@ else()
     if(EXISTS "/usr/bin/wx-config")
         set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config")
     endif()
-    if(EXISTS "/usr/bin/wx-config-gtk3")
+    if(NOT GTK2_API AND EXISTS "/usr/bin/wx-config-gtk3")
         set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-gtk3")
     endif()
 endif()
