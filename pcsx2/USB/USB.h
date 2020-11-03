@@ -49,6 +49,9 @@ void USBwrite8(u32 addr, u8 value);
 void USBwrite16(u32 addr, u16 value);
 void USBwrite32(u32 addr, u32 value);
 
+void USBDoFreezeOut(void* dest);
+void USBDoFreezeIn(pxInputStream& infp);
+
 
 void USBsetRAM(void* mem);
 
