@@ -14,18 +14,21 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "..\net.h"
-#include "..\Dev9.h"
 
-//mtfifo<NetPacket*> rx_fifo;
-//mtfifo<NetPacket*> tx_fifo;
+#include <chrono>
+#include <thread>
+#if defined(__linux__)
+#include <pthread.h>
+#endif
+#include "net.h"
+#include "DEV9.h"
 
 NetAdapter* nif;
-HANDLE rx_thread;
+std::thread rx_thread;
 
 volatile bool RxRunning = false;
 //rx thread
-DWORD WINAPI NetRxThread(LPVOID lpThreadParameter)
+void NetRxThread()
 {
 	NetPacket tmp;
 	while (RxRunning)
@@ -34,39 +37,50 @@ DWORD WINAPI NetRxThread(LPVOID lpThreadParameter)
 		{
 			rx_process(&tmp);
 		}
-
-		Sleep(10);
+		std::this_thread::yield();
 	}
-
-	return 0;
 }
 
 void tx_put(NetPacket* pkt)
 {
-	if (nif != NULL)
+	if (nif != nullptr)
 		nif->send(pkt);
 	//pkt must be copied if its not processed by here, since it can be allocated on the callers stack
 }
+
 void InitNet(NetAdapter* ad)
 {
 	nif = ad;
 	RxRunning = true;
 
-	rx_thread = CreateThread(0, 0, NetRxThread, 0, CREATE_SUSPENDED, 0);
+	rx_thread = std::thread(NetRxThread);
 
-	SetThreadPriority(rx_thread, THREAD_PRIORITY_HIGHEST);
-	ResumeThread(rx_thread);
+#ifdef _WIN32
+	SetThreadPriority(rx_thread.native_handle(), THREAD_PRIORITY_HIGHEST);
+#elif defined(__linux__)
+	pthread_attr_t thAttr;
+	int policy = 0;
+	int max_prio_for_policy = 0;
+
+	pthread_attr_init(&thAttr);
+	pthread_attr_getschedpolicy(&thAttr, &policy);
+	max_prio_for_policy = sched_get_priority_max(policy);
+
+	pthread_setschedprio(rx_thread.native_handle(), max_prio_for_policy);
+	pthread_attr_destroy(&thAttr);
+#endif
 }
+
 void TermNet()
 {
 	if (RxRunning)
 	{
 		RxRunning = false;
 		emu_printf("Waiting for RX-net thread to terminate..");
-		WaitForSingleObject(rx_thread, -1);
+		rx_thread.join();
 		emu_printf(".done\n");
 
 		delete nif;
-		nif = NULL;
+		nif = nullptr;
 	}
 }

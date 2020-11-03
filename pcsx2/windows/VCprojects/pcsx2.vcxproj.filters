@@ -1018,7 +1018,7 @@
     <ClCompile Include="..\..\DEV9\smap.cpp">
       <Filter>System\DEV9</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\DEV9\Win32\net.cpp">
+    <ClCompile Include="..\..\DEV9\net.cpp">
       <Filter>System\DEV9</Filter>
     </ClCompile>
     <ClCompile Include="..\..\DEV9\Win32\tap-win32.cpp">
