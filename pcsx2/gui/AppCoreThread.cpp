@@ -328,6 +328,8 @@ static int loadGameSettings(Pcsx2Config& dest, const GameDatabaseSchema::GameEnt
 	//}
 
 	//return gf;
+
+	return 0;
 }
 
 // Used to track the current game serial/id, and used to disable verbose logging of
