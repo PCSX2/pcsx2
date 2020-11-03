@@ -22,6 +22,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#include "PrecompiledHeader.h"
 #include "../deviceproxy.h"
 #include "hidproxy.h"
 #include "../qemu-usb/desc.h"

@@ -23,6 +23,8 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  */
+
+#include "PrecompiledHeader.h"
 #include "../osdebugout.h"
 #include "../platcompat.h"
 #include "vl.h"

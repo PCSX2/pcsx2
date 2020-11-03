@@ -24,6 +24,7 @@
 
 // Most stuff is based on Qemu 1.7 USB soundcard passthrough code.
 
+#include "PrecompiledHeader.h"
 #include "../qemu-usb/vl.h"
 #include "../qemu-usb/desc.h"
 #include "usb-mic-singstar.h"

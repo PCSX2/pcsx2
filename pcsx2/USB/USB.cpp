@@ -19,6 +19,7 @@
 #include <cerrno>
 #include <cassert>
 
+#include "PrecompiledHeader.h"
 #include "Utilities/pxStreams.h"
 #include "USB.h"
 #include "osdebugout.h"
@@ -189,7 +190,11 @@ s32 USBinit()
 
 	if (conf.Log && !usbLog)
 	{
+#ifdef _WIN32
+		usbLog = wfopen(LogDir.c_str(), L"wb"); // L"wb,ccs=UNICODE");
+#else
 		usbLog = wfopen(LogDir.c_str(), "wb"); // L"wb,ccs=UNICODE");
+#endif
 		//if(usbLog) setvbuf(usbLog, NULL,  _IONBF, 0);
 		USB_LOG("USBinit\n");
 	}

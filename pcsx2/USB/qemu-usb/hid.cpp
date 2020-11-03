@@ -22,6 +22,8 @@
 * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 * THE SOFTWARE.
 */
+
+#include "PrecompiledHeader.h"
 #include "hid.h"
 #include "input-keymap.h"
 #include "../osdebugout.h"

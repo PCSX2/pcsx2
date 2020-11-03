@@ -29,7 +29,7 @@
 #include "../usb-pad.h"
 #include "../../configuration.h"
 #include "../../osdebugout.h"
-#include "usb-pad/lg/lg_ff.h"
+#include "../../usb-pad/lg/lg_ff.h"
 
 #define DINPUT_AXES_COUNT 32
 

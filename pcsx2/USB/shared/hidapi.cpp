@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include <windows.h>
 #include <setupapi.h>
 #include "hidapi.h"

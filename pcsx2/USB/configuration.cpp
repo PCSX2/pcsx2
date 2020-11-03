@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "osdebugout.h"
 #include "deviceproxy.h"
 #include "configuration.h"
@@ -30,13 +31,21 @@ CIniFile ciniFile;
 
 void USBsetSettingsDir(const char* dir)
 {
+#ifdef _WIN32
+	IniPath = str_to_wstr(dir);
+#else
 	IniPath = dir;
+#endif
 	IniPath.append(iniFile);
 }
 
 void USBsetLogDir(const char* dir)
 {
+#ifdef _WIN32
+	LogDir = str_to_wstr(dir);
+#else
 	LogDir = dir;
+#endif
 }
 
 std::string GetSelectedAPI(const std::pair<int, std::string>& pair)
@@ -50,18 +59,37 @@ std::string GetSelectedAPI(const std::pair<int, std::string>& pair)
 bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, TSTDSTRING& value)
 {
 	CIniKey* key;
+#ifdef _WIN32
+	auto sect = ciniFile.GetSection(section);
+	if (sect && (key = sect->GetKey(param)))
+	{
+		value = key->GetValue();
+		return true;
+	}
+#else
 	auto sect = ciniFile.GetSection(str_to_wstr(section));
 	if (sect && (key = sect->GetKey(str_to_wstr(param))))
 	{
 		value = wstr_to_str(key->GetValue());
 		return true;
 	}
+#endif
 	return false;
 }
 
 bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, int32_t& value)
 {
 	CIniKey* key;
+#ifdef _WIN32
+	auto sect = ciniFile.GetSection(section);
+	if (sect && (key = sect->GetKey(param)))
+	{
+		try
+		{
+			value = std::stoi(key->GetValue());
+			return true;
+		}
+#else
 	auto sect = ciniFile.GetSection(str_to_wstr(section));
 	if (sect && (key = sect->GetKey(str_to_wstr(param))))
 	{
@@ -70,6 +98,7 @@ bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TC
 			value = std::stoi(key->GetValue());
 			return true;
 		}
+#endif
 		catch (std::exception& err)
 		{
 			OSDebugOut(TEXT("%" SFMTs "\n"), err.what());
@@ -80,20 +109,32 @@ bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TC
 
 bool SaveSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, const TSTDSTRING& value)
 {
+#ifdef _WIN32
+	ciniFile.SetKeyValue(section, param, value);
+#else
 	ciniFile.SetKeyValue(str_to_wstr(section), str_to_wstr(param), str_to_wstr(value));
+#endif
 	return true;
 }
 
 bool SaveSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, int32_t value)
 {
+#ifdef _WIN32
+	ciniFile.SetKeyValue(section, param, TSTDTOSTRING(value));
+#else
 	ciniFile.SetKeyValue(str_to_wstr(section), str_to_wstr(param), str_to_wstr(TSTDTOSTRING(value)));
+#endif
 	return true;
 }
 
 void SaveConfig()
 {
 
+#ifdef _WIN32
+	SaveSetting(L"MAIN", L"log", conf.Log);
+#else
 	SaveSetting("MAIN", "log", conf.Log);
+#endif
 
 	SaveSetting(nullptr, 0, N_DEVICE_PORT, N_DEVICE, conf.Port[0]);
 	SaveSetting(nullptr, 1, N_DEVICE_PORT, N_DEVICE, conf.Port[1]);
@@ -106,17 +147,27 @@ void SaveConfig()
 		SaveSetting(nullptr, k.first.first, k.first.second, N_DEVICE_API, k.second);
 	}
 
-	ciniFile.Save(str_to_wstr(IniPath));
+#ifdef _WIN32
+	bool ret = ciniFile.Save(IniPath);
 	OSDebugOut(_T("ciniFile.Save: %d [%s]\n"), ret, IniPath.c_str());
+#else
+	bool ret = ciniFile.Save(str_to_wstr(IniPath));
+	OSDebugOut(_T("ciniFile.Save: %d [%s]\n"), ret, IniPath.c_str());
+#endif
 }
 
 void LoadConfig()
 {
 	std::cerr << "USB load config\n"
 			  << std::endl;
-	ciniFile.Load(str_to_wstr(IniPath));
 
+#ifdef _WIN32
+	ciniFile.Load(IniPath);
+	LoadSetting(L"MAIN", L"log", conf.Log);
+#else
+	ciniFile.Load(str_to_wstr(IniPath));
 	LoadSetting("MAIN", "log", conf.Log);
+#endif
 
 	LoadSetting(nullptr, 0, N_DEVICE_PORT, N_DEVICE, conf.Port[0]);
 	LoadSetting(nullptr, 1, N_DEVICE_PORT, N_DEVICE, conf.Port[1]);
@@ -155,7 +206,11 @@ void LoadConfig()
 
 void ClearSection(const TCHAR* section)
 {
+#ifdef _WIN32
+	auto s = ciniFile.GetSection(section);
+#else
 	auto s = ciniFile.GetSection(str_to_wstr(section));
+#endif
 	if (s)
 	{
 		s->RemoveAllKeys();
@@ -173,5 +228,9 @@ void RemoveSection(const char* dev_type, int port, const std::string& key)
 	section << tkey << _T(" ") << port;
 	TSTDSTRING str = section.str();
 
+#ifdef _WIN32
+	ciniFile.RemoveSection(section.str());
+#else
 	ciniFile.RemoveSection(str_to_wstr(section.str()));
+#endif
 }

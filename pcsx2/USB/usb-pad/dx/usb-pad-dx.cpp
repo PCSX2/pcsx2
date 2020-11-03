@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "usb-pad-dx.h"
 #include "dx.h"
 #include <cmath>

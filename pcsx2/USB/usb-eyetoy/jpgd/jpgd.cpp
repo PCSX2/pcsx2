@@ -26,6 +26,8 @@
 // Important:
 // #define JPGD_USE_SSE2 to 0 to completely disable SSE2 usage.
 //
+
+#include "PrecompiledHeader.h"
 #include "jpgd.h"
 #include <string.h>
 #include <algorithm>

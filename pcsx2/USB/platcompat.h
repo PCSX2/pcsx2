@@ -57,8 +57,9 @@
 #define TSTDTOSTRING std::to_wstring
 
 #ifdef _MSC_VER
-typedef SSIZE_T ssize_t;
+//typedef SSIZE_T ssize_t;
 #endif
+
 
 //FIXME narrow string fmt
 #define SFMTs "S"

@@ -3,6 +3,7 @@
  License: GPLv3
  */
 
+#include "PrecompiledHeader.h"
 #include "lg_ff.h"
 
 typedef struct

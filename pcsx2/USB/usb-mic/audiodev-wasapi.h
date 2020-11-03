@@ -17,7 +17,7 @@
 
 #include "audiodeviceproxy.h"
 #include "../libsamplerate/samplerate.h"
-#include "shared/ringbuffer.h"
+#include "../shared/ringbuffer.h"
 
 #include <mmdeviceapi.h>
 #include <audioclient.h>

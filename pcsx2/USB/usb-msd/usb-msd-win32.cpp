@@ -13,6 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
+#include <commdlg.h>
 #include "usb-msd.h"
 #include "../Win32/Config.h"
 #include "../Win32/resource.h"

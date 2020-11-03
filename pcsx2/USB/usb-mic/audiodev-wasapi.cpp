@@ -15,6 +15,7 @@
 
 // Used OBS as example
 
+#include "PrecompiledHeader.h"
 #include <assert.h>
 #include <propsys.h>
 #include <typeinfo>

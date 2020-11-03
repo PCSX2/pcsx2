@@ -27,6 +27,7 @@
  *	http://www.cs.cornell.edu/dali/api/mpegvideo-c.html
  * */
 
+#include "PrecompiledHeader.h"
 #include <stdio.h>
 #include <math.h>
 #include <memory.h>

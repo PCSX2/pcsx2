@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "padproxy.h"
 #include "raw/usb-pad-raw.h"
 #include "dx/usb-pad-dx.h"
