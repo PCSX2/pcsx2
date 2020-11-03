@@ -926,12 +926,12 @@ namespace usb_mic
 			switch (uMsg)
 			{
 				case WM_CREATE:
-					SetWindowLongPtr(hW, GWLP_USERDATA, (LONG)lParam);
+					SetWindowLongPtr(hW, GWLP_USERDATA, lParam);
 					break;
 				case WM_INITDIALOG:
 				{
 					s = (WASAPISettings*)lParam;
-					SetWindowLongPtr(hW, GWLP_USERDATA, (LONG)lParam);
+					SetWindowLongPtr(hW, GWLP_USERDATA, lParam);
 					int buffering = 50;
 					LoadSetting(s->dev_type, s->port, APINAME, N_BUFFER_LEN_SRC, buffering);
 

@@ -624,7 +624,7 @@ namespace usb_mic
 						return;
 					}
 
-					OSDebugOut(TEXT("data len: %d bytes, src[0]: %d frames, src[1]: %d frames\n"), len, out_frames[0], out_frames[1]);
+					OSDebugOut(TEXT("data len: %zu bytes, src[0]: %d frames, src[1]: %d frames\n"), len, out_frames[0], out_frames[1]);
 
 					//TODO well, it is 16bit interleaved, right?
 					//Merge with MIC_MODE_SHARED case?
@@ -718,7 +718,7 @@ namespace usb_mic
 			case USB_TOKEN_OUT:
 				printf("token out ep: %d\n", devep);
 				OSDebugOut(TEXT("token out ep: %d len: %d\n"), devep, p->actual_length);
-				[[fallthrough]];
+				break;
 			default:
 				p->status = USB_RET_STALL;
 				break;
@@ -866,11 +866,11 @@ namespace usb_mic
 	int SingstarDevice::Freeze(int mode, USBDevice* dev, void* data)
 	{
 		SINGSTARMICState* s = (SINGSTARMICState*)dev;
+		if (!s)
+			return 0;
 		switch (mode)
 		{
 			case FREEZE_LOAD:
-				if (!s)
-					return -1;
 				s->f = *(SINGSTARMICState::freeze*)data;
 				if (s->audsrc[0])
 					s->audsrc[0]->SetResampling(s->f.srate[0]);
@@ -878,8 +878,6 @@ namespace usb_mic
 					s->audsrc[1]->SetResampling(s->f.srate[1]);
 				return sizeof(SINGSTARMICState::freeze);
 			case FREEZE_SAVE:
-				if (!s)
-					return -1;
 				*(SINGSTARMICState::freeze*)data = s->f;
 				return sizeof(SINGSTARMICState::freeze);
 			case FREEZE_SIZE:
@@ -887,7 +885,7 @@ namespace usb_mic
 			default:
 				break;
 		}
-		return -1;
+		return 0;
 	}
 
 } // namespace usb_mic

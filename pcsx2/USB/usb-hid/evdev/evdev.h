@@ -57,10 +57,6 @@ namespace usb_hid
 			static void ReaderThread(void* ptr);
 
 			int mHandle;
-			uint16_t mAxisMap[ABS_MAX + 1];
-			uint16_t mBtnMap[KEY_MAX + 1];
-			int mAxisCount;
-			int mButtonCount;
 
 			std::thread mReaderThread;
 			std::atomic<bool> mReaderThreadIsRunning;

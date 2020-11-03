@@ -64,6 +64,18 @@ namespace usb_hid
 		return nullptr;
 	}
 
+	std::list<std::string> BeatManiaDevice::ListAPIs()
+	{
+		return RegisterUsbHID::instance().Names();
+	}
+
+	const TCHAR* BeatManiaDevice::LongAPIName(const std::string& name)
+	{
+		auto proxy = RegisterUsbHID::instance().Proxy(name);
+		if (proxy)
+			return proxy->Name();
+		return nullptr;
+	}
 	std::list<std::string> HIDMouseDevice::ListAPIs()
 	{
 		return RegisterUsbHID::instance().Names();
@@ -99,6 +111,14 @@ namespace usb_hid
 		"HID Tablet",
 		"HID Keyboard",
 	};
+
+
+	static const USBDescStrings beatmania_dadada_desc_strings = {
+		"",
+		"KONAMI CPJ1",
+		"USB JIS Mini Keyboard",
+	};
+
 
 	/* mostly the same values as the Bochs USB Keyboard device */
 	static const uint8_t kbd_dev_desc[] = {
@@ -414,6 +434,105 @@ namespace usb_hid
 		0xc0,       /* End Collection */
 	};
 
+	static const uint8_t beatmania_dev_desc[] = {
+		0x12,         /*  u8 bLength; */
+		0x01,         /*  u8 bDescriptorType; Device */
+		WBVAL(0x110), /*  u16 bcdUSB; v1.10 */
+
+		0x00, /*  u8  bDeviceClass; */
+		0x00, /*  u8  bDeviceSubClass; */
+		0x00, /*  u8  bDeviceProtocol; [ low/full speeds only ] */
+		0x08, /*  u8  bMaxPacketSize0; 8 Bytes */
+
+		//  0x27, 0x06, /*  u16 idVendor; */
+		WBVAL(0x0510),
+		// 0x01, 0x00, /*  u16 idProduct; */
+		WBVAL(0x0002),
+		WBVAL(0x0020), /*  u16 bcdDevice */
+
+		1,   /*  u8  iManufacturer; */
+		2,   /*  u8  iProduct; */
+		0,   /*  u8  iSerialNumber; */
+		0x01 /*  u8  bNumConfigurations; */
+	};
+
+	static const uint8_t beatmania_config_desc[] = {
+		0x09,       // bLength
+		0x02,       // bDescriptorType (Configuration)
+		0x22, 0x00, // wTotalLength 34
+		0x01,       // bNumInterfaces 1
+		0x01,       // bConfigurationValue
+		0x02,       // iConfiguration (String Index)
+		0xA0,       // bmAttributes Remote Wakeup
+		0x14,       // bMaxPower 40mA
+
+		0x09, // bLength
+		0x04, // bDescriptorType (Interface)
+		0x00, // bInterfaceNumber 0
+		0x00, // bAlternateSetting
+		0x01, // bNumEndpoints 1
+		0x03, // bInterfaceClass
+		0x01, // bInterfaceSubClass
+		0x01, // bInterfaceProtocol
+		0x00, // iInterface (String Index)
+
+		0x09,       // bLength
+		0x21,       // bDescriptorType (HID)
+		0x10, 0x01, // bcdHID 1.10
+		0x0F,       // bCountryCode
+		0x01,       // bNumDescriptors
+		0x22,       // bDescriptorType[0] (HID)
+		0x44, 0x00, // wDescriptorLength[0] 68
+
+		0x07,       // bLength
+		0x05,       // bDescriptorType (Endpoint)
+		0x81,       // bEndpointAddress (IN/D2H)
+		0x03,       // bmAttributes (Interrupt)
+		0x08, 0x00, // wMaxPacketSize 8
+		0x0A,       // bInterval 10 (unit depends on device speed)
+
+		// 34 bytes
+	};
+
+	static const uint8_t beatmania_dadada_hid_report_descriptor[] = {
+		0x05, 0x01,       // Usage Page (Generic Desktop Ctrls)
+		0x09, 0x06,       // Usage (Keyboard)
+		0xA1, 0x01,       // Collection (Application)
+		0x05, 0x07,       //   Usage Page (Kbrd/Keypad)
+		0x19, 0xE0,       //   Usage Minimum (0xE0)
+		0x29, 0xE7,       //   Usage Maximum (0xE7)
+		0x15, 0x00,       //   Logical Minimum (0)
+		0x25, 0x01,       //   Logical Maximum (1)
+		0x75, 0x01,       //   Report Size (1)
+		0x95, 0x08,       //   Report Count (8)
+		0x81, 0x02,       //   Input (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position)
+		0x75, 0x08,       //   Report Size (8)
+		0x95, 0x01,       //   Report Count (1)
+		0x81, 0x01,       //   Input (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+		0x05, 0x07,       //   Usage Page (Kbrd/Keypad)
+		0x19, 0x00,       //   Usage Minimum (0x00)
+		0x29, 0xFF,       //   Usage Maximum (0xFF)
+		0x15, 0x00,       //   Logical Minimum (0)
+		0x26, 0xFF, 0x00, //   Logical Maximum (255)
+		0x75, 0x08,       //   Report Size (8)
+		0x95, 0x06,       //   Report Count (6)
+		0x81, 0x00,       //   Input (Data,Array,Abs,No Wrap,Linear,Preferred State,No Null Position)
+		0x05, 0x08,       //   Usage Page (LEDs)
+		0x19, 0x01,       //   Usage Minimum (Num Lock)
+		0x29, 0x05,       //   Usage Maximum (Kana)
+		0x15, 0x00,       //   Logical Minimum (0)
+		0x25, 0x01,       //   Logical Maximum (1)
+		0x75, 0x01,       //   Report Size (1)
+		0x95, 0x05,       //   Report Count (5)
+		0x91, 0x02,       //   Output (Data,Var,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+		0x75, 0x03,       //   Report Size (3)
+		0x95, 0x01,       //   Report Count (1)
+		0x91, 0x01,       //   Output (Const,Array,Abs,No Wrap,Linear,Preferred State,No Null Position,Non-volatile)
+		0xC0,             // End Collection
+
+		// 68 bytes
+	};
+
 	static void usb_hid_changed(HIDState* hs)
 	{
 		UsbHIDState* us = CONTAINER_OF(hs, UsbHIDState, f.hid);
@@ -463,9 +582,16 @@ namespace usb_hid
 						}
 						else if (hs->kind == HID_KEYBOARD)
 						{
-							memcpy(data, qemu_keyboard_hid_report_descriptor,
-								   sizeof(qemu_keyboard_hid_report_descriptor));
-							p->actual_length = sizeof(qemu_keyboard_hid_report_descriptor);
+							if (hs->sub_kind == HID_SUBKIND_BEATMANIA)
+							{
+								p->actual_length = sizeof(beatmania_dadada_hid_report_descriptor);
+								memcpy(data, beatmania_dadada_hid_report_descriptor, p->actual_length);
+							}
+							else
+							{
+								p->actual_length = sizeof(qemu_keyboard_hid_report_descriptor);
+								memcpy(data, qemu_keyboard_hid_report_descriptor, p->actual_length);
+							}
 						}
 						break;
 					default:
@@ -665,6 +791,8 @@ namespace usb_hid
 		auto s = reinterpret_cast<UsbHIDState*>(dev);
 		auto freezed = reinterpret_cast<UsbHIDState::freeze*>(data);
 
+		if (!s)
+			return 0;
 		switch (mode)
 		{
 			case FREEZE_LOAD:
@@ -682,7 +810,7 @@ namespace usb_hid
 			default:
 				break;
 		}
-		return -1;
+		return 0;
 	}
 
 	USBDevice* HIDMouseDevice::CreateDevice(int port)
@@ -750,6 +878,79 @@ namespace usb_hid
 	}
 
 	int HIDMouseDevice::Freeze(int mode, USBDevice* dev, void* data)
+	{
+		return HIDKbdDevice::Freeze(mode, dev, data);
+	}
+
+	// ---- BeatMania Da Da Da!! ----
+
+	USBDevice* BeatManiaDevice::CreateDevice(int port)
+	{
+		OSDebugOut(_T("%s\n"), __func__);
+		UsbHIDState* s;
+
+		std::string varApi;
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+		UsbHIDProxyBase* proxy = RegisterUsbHID::instance().Proxy(varApi);
+		if (!proxy)
+		{
+			SysMessage(TEXT("Invalid HID API: %" SFMTs "\n"), varApi.c_str());
+			return nullptr;
+		}
+
+		UsbHID* usbhid = proxy->CreateObject(port, TypeName());
+
+		if (!usbhid)
+			return nullptr;
+
+		s = new UsbHIDState();
+
+		s->desc.full = &s->desc_dev;
+		s->desc.str = beatmania_dadada_desc_strings;
+
+		if (usb_desc_parse_dev(beatmania_dev_desc, sizeof(beatmania_dev_desc), s->desc, s->desc_dev) < 0)
+			goto fail;
+		if (usb_desc_parse_config(beatmania_config_desc, sizeof(beatmania_config_desc), s->desc_dev) < 0)
+			goto fail;
+
+		s->usbhid = usbhid;
+		s->dev.speed = USB_SPEED_FULL;
+		s->dev.klass.handle_attach = usb_desc_attach;
+		s->dev.klass.handle_reset = usb_hid_handle_reset;
+		s->dev.klass.handle_control = usb_hid_handle_control;
+		s->dev.klass.handle_data = usb_hid_handle_data;
+		s->dev.klass.unrealize = usb_hid_unrealize;
+		s->dev.klass.open = usb_hid_open;
+		s->dev.klass.close = usb_hid_close;
+		s->dev.klass.usb_desc = &s->desc;
+		s->dev.klass.product_desc = s->desc.str[2];
+		s->port = port;
+
+		usb_desc_init(&s->dev);
+		usb_ep_init(&s->dev);
+		s->intr = usb_ep_get(&s->dev, USB_TOKEN_IN, 1);
+		hid_init(&s->f.hid, HID_KEYBOARD, usb_hid_changed);
+		s->f.hid.sub_kind = HID_SUBKIND_BEATMANIA;
+		s->usbhid->SetHIDState(&s->f.hid);
+		s->usbhid->SetHIDType(HIDTYPE_KBD);
+
+		usb_hid_handle_reset((USBDevice*)s);
+
+		return (USBDevice*)s;
+	fail:
+		usb_hid_unrealize((USBDevice*)s);
+		return nullptr;
+	}
+
+	int BeatManiaDevice::Configure(int port, const std::string& api, void* data)
+	{
+		auto proxy = RegisterUsbHID::instance().Proxy(api);
+		if (proxy)
+			return proxy->Configure(port, TypeName(), HIDTYPE_KBD, data);
+		return RESULT_CANCELED;
+	}
+
+	int BeatManiaDevice::Freeze(int mode, USBDevice* dev, void* data)
 	{
 		return HIDKbdDevice::Freeze(mode, dev, data);
 	}

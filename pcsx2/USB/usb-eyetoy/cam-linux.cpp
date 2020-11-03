@@ -44,14 +44,12 @@ namespace usb_eyetoy
 	namespace linux_api
 	{
 
-		static pthread_t _eyetoy_thread;
-		static pthread_t* eyetoy_thread = &_eyetoy_thread;
+		static pthread_t eyetoy_thread = 0;
 		static unsigned char eyetoy_running = 0;
 
 		static int fd = -1;
 		buffer_t* buffers;
 		static unsigned int n_buffers;
-		static int out_buf;
 		static unsigned int pixelformat;
 
 		buffer_t mpeg_buffer;
@@ -384,6 +382,8 @@ namespace usb_eyetoy
 						break;
 				}
 			}
+			eyetoy_running = 0;
+			fprintf(stderr, "V4L2 thread quit\n");
 			return NULL;
 		}
 
@@ -448,15 +448,15 @@ namespace usb_eyetoy
 			if (eyetoy_running)
 			{
 				eyetoy_running = 0;
-				pthread_join(*eyetoy_thread, NULL);
+				pthread_join(eyetoy_thread, NULL);
 				v4l_close();
 			}
-			eyetoy_running = 1;
 			std::string selectedDevice;
 			LoadSetting(EyeToyWebCamDevice::TypeName(), mPort, APINAME, N_DEVICE, selectedDevice);
 			if (v4l_open(selectedDevice) != 0)
 				return -1;
-			pthread_create(eyetoy_thread, NULL, &v4l_thread, NULL);
+			pthread_create(&eyetoy_thread, NULL, &v4l_thread, NULL);
+			eyetoy_running = 1;
 			return 0;
 		};
 
@@ -465,7 +465,9 @@ namespace usb_eyetoy
 			if (eyetoy_running)
 			{
 				eyetoy_running = 0;
-				pthread_join(*eyetoy_thread, NULL);
+				if (eyetoy_thread)
+					pthread_join(eyetoy_thread, NULL);
+				eyetoy_thread = 0;
 				v4l_close();
 			}
 			return 0;
@@ -489,8 +491,6 @@ namespace usb_eyetoy
 
 		int GtkConfigure(int port, const char* dev_type, void* data)
 		{
-			GtkWidget *ro_frame, *ro_label, *rs_hbox, *rs_label;
-
 			std::string selectedDevice;
 			LoadSetting(dev_type, port, APINAME, N_DEVICE, selectedDevice);
 
@@ -532,7 +532,7 @@ namespace usb_eyetoy
 			int ret = RESULT_OK;
 			if (result == GTK_RESPONSE_OK)
 			{
-				if (sel_new != sel_idx)
+				if (devList.size() && sel_new != sel_idx)
 				{
 					if (!SaveSetting(dev_type, port, APINAME, N_DEVICE, devList.at(sel_new)))
 					{

@@ -584,7 +584,7 @@ namespace usb_pad
 
 		static bool PollInput(const std::vector<std::pair<std::string, ConfigMapping>>& fds, std::string& dev_name, bool isaxis, int& value, bool& inverted, int& initial)
 		{
-			int event_fd = -1, t;
+			int event_fd = -1;
 			ssize_t len;
 			input_event event;
 			struct AxisValue
@@ -749,9 +749,9 @@ namespace usb_pad
 			ApiCallbacks apicbs{GetEventName, EnumerateDevices, PollInput};
 			int ret = 0;
 			if (!strcmp(dev_type, BuzzDevice::TypeName()))
-				ret = GtkBuzzConfigure(port, dev_type, "Evdev Settings", "evdev", GTK_WINDOW(data), apicbs);
+				ret = GtkBuzzConfigure(port, dev_type, "Evdev Settings", evdev::APINAME, GTK_WINDOW(data), apicbs);
 			else
-				ret = GtkPadConfigure(port, dev_type, "Evdev Settings", "evdev", GTK_WINDOW(data), apicbs);
+				ret = GtkPadConfigure(port, dev_type, "Evdev Settings", evdev::APINAME, GTK_WINDOW(data), apicbs);
 			return ret;
 		}
 

@@ -100,6 +100,25 @@ namespace usb_pad
 		static void Initialize();
 	};
 
+	class SeamicDevice
+	{
+	public:
+		virtual ~SeamicDevice() {}
+		static USBDevice* CreateDevice(int port);
+		static const TCHAR* Name()
+		{
+			return TEXT("Sega Seamic");
+		}
+		static const char* TypeName()
+		{
+			return "seamic";
+		}
+		static std::list<std::string> ListAPIs();
+		static const TCHAR* LongAPIName(const std::string& name);
+		static int Configure(int port, const std::string& api, void* data);
+		static int Freeze(int mode, USBDevice* dev, void* data);
+	};
+
 // Most likely as seen on https://github.com/matlo/GIMX
 #define CMD_DOWNLOAD 0x00
 #define CMD_DOWNLOAD_AND_PLAY 0x01
@@ -148,12 +167,15 @@ namespace usb_pad
 		WT_GT_FORCE,               //formula gp
 		WT_ROCKBAND1_DRUMKIT,
 		WT_BUZZ_CONTROLLER,
+		WT_SEGA_SEAMIC,
 	};
 
 	inline int range_max(PS2WheelTypes type)
 	{
 		if (type == WT_DRIVING_FORCE_PRO || type == WT_DRIVING_FORCE_PRO_1102)
 			return 0x3FFF;
+		if (type == WT_SEGA_SEAMIC)
+			return 255;
 		return 0x3FF;
 	}
 
@@ -296,7 +318,7 @@ namespace usb_pad
 		virtual void SetSpringForce(const parsed_ff_data& ff) = 0;
 		virtual void SetDamperForce(const parsed_ff_data& ff) = 0;
 		virtual void SetFrictionForce(const parsed_ff_data& ff) = 0;
-		//virtual void SetAutoCenter(int value) = 0;
+		virtual void SetAutoCenter(int value) = 0;
 		//virtual void SetGain(int gain) = 0;
 		virtual void DisableForce(EffectID force) = 0;
 	};
@@ -1083,7 +1105,7 @@ namespace usb_pad
 		0x03,       // bmAttributes (Interrupt)
 		0x40, 0x00, // wMaxPacketSize 64
 		0x0A,       // bInterval 10 (unit depends on device speed)
-					// 41 bytes
+		// 41 bytes
 	};
 
 	//Wii Rock Band drum kit

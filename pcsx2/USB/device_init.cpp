@@ -24,6 +24,8 @@
 void RegisterDevice::Register()
 {
 	auto& inst = RegisterDevice::instance();
+	if (inst.Map().size()) // FIXME Don't clear proxies, singstar keeps a copy to uninit audio
+		return;
 	inst.Add(DEVTYPE_PAD, new DeviceProxy<usb_pad::PadDevice>());
 	inst.Add(DEVTYPE_MSD, new DeviceProxy<usb_msd::MsdDevice>());
 	inst.Add(DEVTYPE_SINGSTAR, new DeviceProxy<usb_mic::SingstarDevice>());
@@ -34,6 +36,8 @@ void RegisterDevice::Register()
 	inst.Add(DEVTYPE_RBKIT, new DeviceProxy<usb_pad::RBDrumKitDevice>());
 	inst.Add(DEVTYPE_BUZZ, new DeviceProxy<usb_pad::BuzzDevice>());
 	inst.Add(DEVTYPE_EYETOY, new DeviceProxy<usb_eyetoy::EyeToyWebCamDevice>());
+	inst.Add(DEVTYPE_BEATMANIA_DADADA, new DeviceProxy<usb_hid::BeatManiaDevice>());
+	inst.Add(DEVTYPE_SEGA_SEAMIC, new DeviceProxy<usb_pad::SeamicDevice>());
 
 	RegisterAPIs();
 }

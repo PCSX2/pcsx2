@@ -346,6 +346,7 @@ set(pcsx2USBSources
 	USB/usb-pad/usb-pad.cpp
 	USB/usb-pad/usb-pad-ff.cpp
 	USB/usb-pad/lg/lg_ff.cpp
+	USB/usb-pad/usb-seamic.cpp
 	USB/usb-mic/usb-mic-singstar.cpp
 	USB/usb-mic/usb-mic-logitech.cpp
 	USB/usb-mic/usb-headset.cpp

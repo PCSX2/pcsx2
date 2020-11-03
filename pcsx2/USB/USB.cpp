@@ -300,13 +300,13 @@ void USBclose()
 
 u8 USBread8(u32 addr)
 {
-	USB_LOG("* Invalid 8bit read at address %lx\n", addr);
+	USB_LOG("* Invalid 8bit read at address %08x\n", addr);
 	return 0;
 }
 
 u16 USBread16(u32 addr)
 {
-	USB_LOG("* Invalid 16bit read at address %lx\n", addr);
+	USB_LOG("* Invalid 16bit read at address %08x\n", addr);
 	return 0;
 }
 
@@ -316,24 +316,24 @@ u32 USBread32(u32 addr)
 
 	hard = ohci_mem_read(qemu_ohci, addr);
 
-	USB_LOG("* Known 32bit read at address %lx: %lx\n", addr, hard);
+	USB_LOG("* Known 32bit read at address %08x: %08x\n", addr, hard);
 
 	return hard;
 }
 
 void USBwrite8(u32 addr, u8 value)
 {
-	USB_LOG("* Invalid 8bit write at address %lx value %x\n", addr, value);
+	USB_LOG("* Invalid 8bit write at address %08x value %x\n", addr, value);
 }
 
 void USBwrite16(u32 addr, u16 value)
 {
-	USB_LOG("* Invalid 16bit write at address %lx value %x\n", addr, value);
+	USB_LOG("* Invalid 16bit write at address %08x value %x\n", addr, value);
 }
 
 void USBwrite32(u32 addr, u32 value)
 {
-	USB_LOG("* Known 32bit write at address %lx value %lx\n", addr, value);
+	USB_LOG("* Known 32bit write at address %08x value %08x\n", addr, value);
 	ohci_mem_write(qemu_ohci, addr, value);
 }
 
@@ -354,7 +354,7 @@ s32 USBfreeze(int mode, freezeData* data)
 	{
 		if ((long unsigned int)data->size < sizeof(USBfreezeData))
 		{
-			Console.WriteLn(Color_Red, "USB: Unable to load freeze data! Got %d bytes, expected >= %d.\n", data->size, sizeof(USBfreezeData));
+			Console.WriteLn(Color_Red, "USB: Unable to load freeze data! Got %d bytes, expected >= %zu.\n", data->size, sizeof(USBfreezeData));
 			return -1;
 		}
 
@@ -367,6 +367,11 @@ s32 USBfreeze(int mode, freezeData* data)
 			return -1;
 		}
 
+		s8* ptr = data->data + sizeof(USBfreezeData);
+		// Load the state of the attached devices
+		if (data->size != sizeof(USBfreezeData) + usbd.device[0].size + usbd.device[1].size + 8192)
+			return -1;
+
 		//TODO Subsequent save state loadings make USB "stall" for n seconds since previous load
 		//clocks = usbd.cycles;
 		//remaining = usbd.remaining;
@@ -377,12 +382,11 @@ s32 USBfreeze(int mode, freezeData* data)
 			usbd.t.rhport[i].port.ops = qemu_ohci->rhport[i].port.ops;
 			usbd.t.rhport[i].port.dev = qemu_ohci->rhport[i].port.dev;
 		}
+		//if (qemu_ohci->usb_packet.iov.iov)
+		usb_packet_cleanup(&qemu_ohci->usb_packet);
 		*qemu_ohci = usbd.t;
-
-		s8* ptr = data->data + sizeof(USBfreezeData);
-		// Load the state of the attached devices
-		if ((long unsigned int)data->size != sizeof(USBfreezeData) + usbd.device[0].size + usbd.device[1].size + 8192)
-			return -1;
+		// restore USBPacket for OHCIState
+		usb_packet_init(&qemu_ohci->usb_packet);
 
 		RegisterDevice& regInst = RegisterDevice::instance();
 		for (int i = 0; i < 2; i++)
@@ -431,6 +435,21 @@ s32 USBfreeze(int mode, freezeData* data)
 				usb_device[i]->setup_len = tmp.setup_len;
 				usb_device[i]->setup_index = tmp.setup_index;
 
+#ifndef NDEBUG
+				std::cerr << "Loading save state:\nport: " << i
+						  << "\naddr:        " << (int)usb_device[i]->addr
+						  << "\nattached:    " << usb_device[i]->attached
+						  << "\nauto_attach: " << usb_device[i]->auto_attach
+						  << "\nconfig:  " << usb_device[i]->configuration
+						  << "\nninterf: " << usb_device[i]->ninterfaces
+						  << "\nflags:   " << usb_device[i]->flags
+						  << "\nstate:   " << usb_device[i]->state
+						  << "\nremote_wakeup: " << usb_device[i]->remote_wakeup
+						  << "\nsetup_state:   " << usb_device[i]->setup_state
+						  << "\nsetup_len:     " << usb_device[i]->setup_len
+						  << "\nsetup_index:   " << usb_device[i]->setup_index
+						  << std::endl;
+#endif
 				memcpy(usb_device[i]->data_buf, tmp.data_buf, sizeof(tmp.data_buf));
 				memcpy(usb_device[i]->setup_buf, tmp.setup_buf, sizeof(tmp.setup_buf));
 
@@ -442,9 +461,14 @@ s32 USBfreeze(int mode, freezeData* data)
 				}
 
 				proxy->Freeze(FREEZE_LOAD, usb_device[i], ptr);
-				//TODO reset port if save state's and configured wheel types are different
-				usb_detach(&qemu_ohci->rhport[i].port);
-				usb_attach(&qemu_ohci->rhport[i].port);
+				if (!usb_device[i]->attached)
+				{ // FIXME FREEZE_SAVE fcked up
+					usb_device[i]->attached = true;
+					usb_device_reset(usb_device[i]);
+					//TODO reset port if save state's and configured wheel types are different
+					usb_detach(&qemu_ohci->rhport[i].port);
+					usb_attach(&qemu_ohci->rhport[i].port);
+				}
 			}
 			else if (!proxy && index != DEVTYPE_NONE)
 			{
@@ -455,10 +479,6 @@ s32 USBfreeze(int mode, freezeData* data)
 		}
 
 		int dev_index = usbd.usb_packet.dev_index;
-		// restore USBPacket for OHCIState
-		//if (qemu_ohci->usb_packet.iov.iov)
-		usb_packet_cleanup(&qemu_ohci->usb_packet);
-		usb_packet_init(&qemu_ohci->usb_packet);
 
 		if (usb_device[dev_index])
 		{
@@ -511,7 +531,7 @@ s32 USBfreeze(int mode, freezeData* data)
 			auto proxy = regInst.Device(index);
 			usbd.device[i].index = index;
 
-			if (proxy)
+			if (proxy && usb_device[i])
 				usbd.device[i].size = proxy->Freeze(FREEZE_SIZE, usb_device[i], nullptr);
 			else
 				usbd.device[i].size = 0;
@@ -522,9 +542,10 @@ s32 USBfreeze(int mode, freezeData* data)
 
 		strncpy(usbd.freezeID, USBfreezeID, strlen(USBfreezeID));
 		usbd.t = *qemu_ohci;
-		usbd.usb_packet.ep = qemu_ohci->usb_packet.ep ? *qemu_ohci->usb_packet.ep : USBEndpoint{0};
 		usbd.t.usb_packet.iov = {};
 		usbd.t.usb_packet.ep = nullptr;
+		if (qemu_ohci->usb_packet.ep)
+			usbd.usb_packet.ep = *qemu_ohci->usb_packet.ep;
 
 		for (uint32_t i = 0; i < qemu_ohci->num_ports; i++)
 		{
@@ -542,14 +563,13 @@ s32 USBfreeze(int mode, freezeData* data)
 		for (int i = 0; i < 2; i++)
 		{
 			auto proxy = regInst.Device(conf.Port[i]);
-			if (proxy && usbd.device[i].size)
+			if (usb_device[i])
 			{
-				proxy->Freeze(FREEZE_SAVE, usb_device[i], ptr);
-				if (usb_device[i])
-					usbd.device[i].dev = *usb_device[i];
-
-				memset(&usbd.device[i].dev.klass, 0, sizeof(USBDeviceClass));
+				usbd.device[i].dev = *usb_device[i];
+				if (proxy && usbd.device[i].size)
+					proxy->Freeze(FREEZE_SAVE, usb_device[i], ptr);
 			}
+			memset(&usbd.device[i].dev.klass, 0, sizeof(USBDeviceClass));
 
 			ptr += usbd.device[i].size;
 		}

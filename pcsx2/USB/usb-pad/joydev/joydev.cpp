@@ -29,7 +29,7 @@ namespace usb_pad
 #define NORM(x, n) (((uint32_t)(32768 + x) * n) / 0xFFFF)
 #define NORM2(x, n) (((uint32_t)(32768 + x) * n) / 0x7FFF)
 
-		void EnumerateDevices(vstring& list)
+		void EnumerateDevices(device_list& list)
 		{
 			int fd;
 			int res;
@@ -69,7 +69,7 @@ namespace usb_pad
 					else
 					{
 						OSDebugOut("Joydev device name: %s\n", buf);
-						list.push_back(std::make_pair(std::string(buf), path));
+						list.push_back({buf, buf, path});
 					}
 
 					close(fd);
@@ -114,7 +114,6 @@ namespace usb_pad
 					continue;
 				}
 
-				const auto& mappings = device.cfg.controls;
 				//Non-blocking read sets len to -1 and errno to EAGAIN if no new data
 				while ((len = read(device.cfg.fd, &events, sizeof(events))) > -1)
 				{
@@ -325,9 +324,10 @@ namespace usb_pad
 
 		int JoyDevPad::Open()
 		{
-			vstring device_list;
+			device_list device_list;
 			bool has_steering;
 			int count;
+			int32_t b_gain, gain, b_ac, ac;
 			memset(&mWheelData, 0, sizeof(wheel_data_t));
 
 			// Setting to unpressed
@@ -350,17 +350,26 @@ namespace usb_pad
 
 			EnumerateDevices(device_list);
 
+			if (!LoadSetting(mDevType, mPort, APINAME, N_GAIN_ENABLED, b_gain))
+				b_gain = 1;
+			if (!LoadSetting(mDevType, mPort, APINAME, N_GAIN, gain))
+				gain = 100;
+			if (!LoadSetting(mDevType, mPort, APINAME, N_AUTOCENTER_MANAGED, b_ac))
+				b_ac = 1;
+			if (!LoadSetting(mDevType, mPort, APINAME, N_AUTOCENTER, ac))
+				ac = 100;
+
 			for (const auto& it : device_list)
 			{
 				has_steering = false;
 				mDevices.push_back({});
 
 				struct device_data& device = mDevices.back();
-				device.name = it.first;
+				device.name = it.name;
 
-				if ((device.cfg.fd = open(it.second.c_str(), O_RDWR | O_NONBLOCK)) < 0)
+				if ((device.cfg.fd = open(it.path.c_str(), O_RDWR | O_NONBLOCK)) < 0)
 				{
-					OSDebugOut("Cannot open device: %s\n", it.second.c_str());
+					OSDebugOut("Cannot open device: %s\n", it.path.c_str());
 					continue;
 				}
 
@@ -441,12 +450,12 @@ namespace usb_pad
 
 				std::stringstream event;
 				int index = 0;
-				const char* tmp = it.second.c_str();
+				const char* tmp = it.path.c_str();
 				while (*tmp && !isdigit(*tmp))
 					tmp++;
 
 				sscanf(tmp, "%d", &index);
-				OSDebugOut("input index: %d of '%s'\n", index, it.second.c_str());
+				OSDebugOut("input index: %d of '%s'\n", index, it.path.c_str());
 
 				//TODO kernel limit is 32?
 				for (int j = 0; j <= 99; j++)
@@ -472,15 +481,11 @@ namespace usb_pad
 						OSDebugOut("%s: Cannot open '%s'\n", APINAME, event.str().c_str());
 					}
 					else
-						mFFdev = new evdev::EvdevFF(mHandleFF);
+						mFFdev = new evdev::EvdevFF(mHandleFF, b_gain, gain, b_ac, ac);
 				}
 			}
 
 			return 0;
-
-		quit:
-			Close();
-			return 1;
 		}
 
 		int JoyDevPad::Close()

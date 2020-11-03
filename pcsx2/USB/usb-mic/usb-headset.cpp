@@ -1062,11 +1062,11 @@ namespace usb_mic
 	int HeadsetDevice::Freeze(int mode, USBDevice* dev, void* data)
 	{
 		HeadsetState* s = (HeadsetState*)dev;
+		if (!s)
+			return 0;
 		switch (mode)
 		{
 			case FREEZE_LOAD:
-				if (!s)
-					return -1;
 				s->f = *(HeadsetState::freeze*)data;
 				if (s->audsrc)
 					s->audsrc->SetResampling(s->f.in.srate);
@@ -1074,8 +1074,6 @@ namespace usb_mic
 					s->audsink->SetResampling(s->f.out.srate);
 				return sizeof(HeadsetState::freeze);
 			case FREEZE_SAVE:
-				if (!s)
-					return -1;
 				*(HeadsetState::freeze*)data = s->f;
 				return sizeof(HeadsetState::freeze);
 			case FREEZE_SIZE:
@@ -1083,7 +1081,7 @@ namespace usb_mic
 			default:
 				break;
 		}
-		return -1;
+		return 0;
 	}
 
 } // namespace usb_mic

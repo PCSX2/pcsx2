@@ -93,4 +93,23 @@ namespace usb_hid
 		static int Freeze(int mode, USBDevice* dev, void* data);
 	};
 
+	class BeatManiaDevice
+	{
+	public:
+		virtual ~BeatManiaDevice() {}
+		static USBDevice* CreateDevice(int port);
+		static const TCHAR* Name()
+		{
+			return TEXT("BeatMania Da Da Da!! Keyboard");
+		}
+		static const char* TypeName()
+		{
+			return "beatmania";
+		}
+		static std::list<std::string> ListAPIs();
+		static const TCHAR* LongAPIName(const std::string& name);
+		static int Configure(int port, const std::string& api, void* data);
+		static int Freeze(int mode, USBDevice* dev, void* data);
+	};
+
 } // namespace usb_hid
