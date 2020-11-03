@@ -27,7 +27,7 @@ namespace usb_pad
 		class EvdevFF : public FFDevice
 		{
 		public:
-			EvdevFF(int fd);
+			EvdevFF(int fd, bool gain_enabled, int gain, bool ac_managed, int ac_strength);
 			~EvdevFF();
 
 			void SetConstantForce(int level);
@@ -45,6 +45,10 @@ namespace usb_pad
 
 			bool mUseRumble;
 			int mLastValue;
+			bool m_gain_enabled;
+			int m_gain;
+			bool m_ac_managed;
+			int m_ac_strength;
 		};
 
 	} // namespace evdev

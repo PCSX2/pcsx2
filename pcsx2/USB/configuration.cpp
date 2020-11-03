@@ -161,3 +161,17 @@ void ClearSection(const TCHAR* section)
 		s->RemoveAllKeys();
 	}
 }
+
+void RemoveSection(const char* dev_type, int port, const std::string& key)
+{
+	TSTDSTRING tkey;
+	tkey.assign(key.begin(), key.end());
+
+	TSTDSTRINGSTREAM section;
+	if (dev_type)
+		section << dev_type << _T(" ");
+	section << tkey << _T(" ") << port;
+	TSTDSTRING str = section.str();
+
+	ciniFile.RemoveSection(str_to_wstr(section.str()));
+}

@@ -420,6 +420,14 @@ namespace usb_pad
 				buf[3] = (data.buttons >> 8) & 0xff;
 				buf[4] = 0xf0 | ((data.buttons >> 16) & 0xf);
 				break;
+			case WT_SEGA_SEAMIC:
+				buf[0] = data.steering & 0xFF;
+				buf[1] = data.throttle & 0xFF;
+				buf[2] = data.brake & 0xFF;
+				buf[3] = data.hatswitch & 0x0F;       // 4bits?
+				buf[3] |= (data.buttons & 0x0F) << 4; // 4 bits // TODO Or does it start at buf[4]?
+				buf[4] = (data.buttons >> 4) & 0x3F;  // 10 - 4 = 6 bits
+				break;
 
 			default:
 				break;
@@ -629,17 +637,15 @@ namespace usb_pad
 	{
 		PADState* s = (PADState*)dev;
 
+		if (!s)
+			return 0;
 		switch (mode)
 		{
 			case FREEZE_LOAD:
-				if (!s)
-					return -1;
 				s->f = *(PADState::freeze*)data;
 				s->pad->Type((PS2WheelTypes)s->f.wheel_type);
 				return sizeof(PADState::freeze);
 			case FREEZE_SAVE:
-				if (!s)
-					return -1;
 				*(PADState::freeze*)data = s->f;
 				return sizeof(PADState::freeze);
 			case FREEZE_SIZE:
@@ -647,7 +653,7 @@ namespace usb_pad
 			default:
 				break;
 		}
-		return -1;
+		return 0;
 	}
 
 	// ---- Rock Band drum kit ----

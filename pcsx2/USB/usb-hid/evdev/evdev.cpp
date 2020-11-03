@@ -39,7 +39,6 @@ namespace usb_hid
 		bool FindHid(const std::string& evphys, std::string& hid_dev)
 		{
 			int fd;
-			int res;
 			char buf[256];
 
 			std::stringstream str;
@@ -100,18 +99,8 @@ namespace usb_hid
 		{
 			// Make sure there is atleast two types so we won't go beyond array length
 			assert((int)HIDTYPE_MOUSE == 1);
-			int t;
 			std::stringstream name;
-			char buf[1024];
 
-			unsigned long keybit[NBITS(KEY_MAX)] = {0};
-			unsigned long absbit[NBITS(ABS_MAX)] = {0};
-
-			memset(mAxisMap, -1, sizeof(mAxisMap));
-			memset(mBtnMap, -1, sizeof(mBtnMap));
-
-			mAxisCount = 0;
-			mButtonCount = 0;
 			mHandle = -1;
 
 			std::string path;
@@ -124,38 +113,11 @@ namespace usb_hid
 			if (path.empty() || !file_exists(path))
 				goto quit;
 
-			/*if (GetEvdevName(joypath, buf)) {
-		name << buf;
-		name << " (evdev)";
-	}*/
-
 			if ((mHandle = open(path.c_str(), O_RDWR | O_NONBLOCK)) < 0)
 			{
 				OSDebugOut("Cannot open device: %s\n", path.c_str());
 				goto quit;
 			}
-
-			/*	if ((ioctl(mHandle, EVIOCGBIT(EV_ABS, sizeof(absbit)), absbit) < 0) &&
-		(ioctl(mHandle, EVIOCGBIT(EV_KEY, sizeof(keybit)), keybit) < 0)) {
-		// Probably isn't a evdev joystick
-		SysMessage(APINAME ": Getting atleast some of the bits failed: %s\n", strerror(errno));
-		goto quit;
-	}*/
-
-			/*unsigned int version;
-	if (ioctl(mHandle, EVIOCGVERSION, &version) < 0)
-	{
-		SysMessage(APINAME ": Get version failed: %s\n", strerror(errno));
-		return false;
-	}*/
-
-			/*	for (int i = 0; i < KEY_MAX; ++i) {
-		if (test_bit(i, keybit)) {
-			OSDebugOut("Joystick has button: 0x%x\n", i);
-			mBtnMap[i] = mButtonCount;
-			++mButtonCount;
-		}
-	}*/
 
 			if (!mReaderThreadIsRunning)
 			{
@@ -186,9 +148,6 @@ namespace usb_hid
 
 			EvDev* dev = static_cast<EvDev*>(ptr);
 			HIDState* hs = dev->mHIDState;
-			int32_t lastX = 0, lastY = 0;
-			bool shift = false;
-			bool grabbed = false;
 
 			dev->mReaderThreadIsRunning = true;
 

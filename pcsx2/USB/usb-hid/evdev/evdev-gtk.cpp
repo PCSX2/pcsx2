@@ -109,8 +109,7 @@ namespace usb_hid
 
 		int GtkHidConfigure(int port, const char* dev_type, HIDType hid_type, GtkWindow* parent)
 		{
-			GtkWidget *ro_frame, *ro_label, *rs_hbox, *rs_label, *rs_cb;
-			GtkWidget *main_hbox, *right_vbox, *left_vbox;
+			GtkWidget *main_hbox, *right_vbox, *rs_cb;
 
 			assert((int)HIDTYPE_MOUSE == 1); //make sure there is atleast two types so we won't go beyond array length
 

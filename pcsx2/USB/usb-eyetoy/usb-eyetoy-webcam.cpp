@@ -454,7 +454,7 @@ namespace usb_eyetoy
 
 						s->frame_step++;
 					}
-					else if (s->frame_step < 10)
+					else if (s->mpeg_frame_offset < s->mpeg_frame_size)
 					{
 						int data_pk = s->mpeg_frame_size - s->mpeg_frame_offset;
 						if (data_pk > max_ep_size)
@@ -464,7 +464,7 @@ namespace usb_eyetoy
 
 						s->frame_step++;
 					}
-					else if (s->frame_step == 10)
+					else
 					{
 						uint8_t footer[] = {
 							0xFF, 0xFF, 0xFF, 0x51, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
@@ -518,7 +518,7 @@ namespace usb_eyetoy
 		VideoDeviceProxyBase* proxy = RegisterVideoDevice::instance().Proxy(varApi);
 		if (!proxy)
 		{
-			SysMessage(TEXT("Invalid video device API: " SFMTs "\n"), varApi.c_str());
+			SysMessage(TEXT("Invalid video device API: %" SFMTs "\n"), varApi.c_str());
 			return NULL;
 		}
 
@@ -597,7 +597,7 @@ namespace usb_eyetoy
 		default:
 		break;
 	}*/
-		return -1;
+		return 0;
 	}
 
 } // namespace usb_eyetoy

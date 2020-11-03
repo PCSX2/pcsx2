@@ -27,15 +27,19 @@
 
 #ifdef _WIN32
 #define CALLBACK __stdcall
-#else
+#elif defined(__i386__)
 #define CALLBACK __attribute__((stdcall))
+#else
+#define CALLBACK
 #endif
 
 #ifndef EXPORT_C_
 #ifdef _MSC_VER
 #define EXPORT_C_(type) extern "C" type CALLBACK
+#elif defined(__i386__)
+#define EXPORT_C_(type) extern "C" __attribute__((stdcall, visibility("default"))) type
 #else
-#define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
+#define EXPORT_C_(type) extern "C" __attribute__((visibility("default"))) type
 //#define EXPORT_C_(type) extern "C" __attribute__((stdcall,visibility("default"))) type
 #endif
 #endif

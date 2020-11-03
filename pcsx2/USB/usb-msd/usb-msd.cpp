@@ -618,7 +618,7 @@ namespace usb_msd
 		MSDState* s = (MSDState*)opaque;
 		DPRINTF("Command: lun=%d tag=0x%x len %zd data=0x%02x\n", cbw->lun, cbw->tag, cbw->data_len, cbw->cmd[0]);
 
-		uint32_t lba;
+		int64_t lba;
 		uint32_t xfer_len;
 		s->f.last_cmd = cbw->cmd[0];
 
@@ -701,7 +701,7 @@ namespace usb_msd
 				s->f.data_len = xfer_len * LBA_BLOCK_SIZE;
 				s->f.file_op_tag = s->f.tag;
 
-				DPRINTF("read lba=0x%x, len=0x%x\n", lba, xfer_len * LBA_BLOCK_SIZE);
+				DPRINTF("read lba=0x%llx, len=0x%x\n", lba, xfer_len * LBA_BLOCK_SIZE);
 
 				if (xfer_len == 0) // nothing to do
 					break;
@@ -1088,11 +1088,11 @@ namespace usb_msd
 		MSDState* s = (MSDState*)dev;
 		MSDState::freeze* tmp;
 
+		if (!s)
+			return 0;
 		switch (mode)
 		{
 			case FREEZE_LOAD:
-				if (!s)
-					return -1;
 				//if (s->f.req) free (s->f.req);
 
 				tmp = (MSDState::freeze*)data;
@@ -1107,8 +1107,6 @@ namespace usb_msd
 				return sizeof(MSDState::freeze); // + sizeof(ReqState);
 
 			case FREEZE_SAVE:
-				if (!s)
-					return -1;
 				tmp = (MSDState::freeze*)data;
 				*tmp = s->f;
 				return sizeof(MSDState::freeze);
@@ -1118,7 +1116,7 @@ namespace usb_msd
 			default:
 				break;
 		}
-		return -1;
+		return 0;
 	}
 
 #undef DPRINTF

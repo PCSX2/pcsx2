@@ -461,7 +461,7 @@ struct USBPort
 	USBPortOps* ops;
 	void* opaque;
 	int index; /* internal port index, may be used with the opaque */
-	//QTAILQ_ENTRY(USBPort) next; /* Used internally by qemu.  */
+			   //QTAILQ_ENTRY(USBPort) next; /* Used internally by qemu.  */
 };
 
 typedef void USBCallback(USBPacket* packet, void* opaque);

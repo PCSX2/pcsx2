@@ -46,6 +46,7 @@ namespace usb_hid
 		UsbHIDProxyBase(const std::string& name);
 		virtual UsbHID* CreateObject(int port, const char* dev_type) const = 0;
 		// ProxyBase::Configure is ignored
+		virtual int Configure(int port, const char* dev_type, void* data) { return RESULT_CANCELED; }
 		virtual int Configure(int port, const char* dev_type, HIDType hid_type, void* data) = 0;
 	};
 
@@ -75,10 +76,6 @@ namespace usb_hid
 		virtual const TCHAR* Name() const
 		{
 			return T::Name();
-		}
-		virtual int Configure(int port, const char* dev_type, void* data)
-		{
-			return RESULT_CANCELED;
 		}
 		virtual int Configure(int port, const char* dev_type, HIDType hid_type, void* data)
 		{

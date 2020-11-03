@@ -67,6 +67,7 @@ extern Config conf;
 void SaveConfig();
 void LoadConfig();
 void ClearSection(const TCHAR* section);
+void RemoveSection(const char* dev_type, int port, const std::string& key);
 
 extern TSTDSTRING IniPath;
 extern TSTDSTRING LogDir;

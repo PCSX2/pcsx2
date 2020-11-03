@@ -695,7 +695,7 @@ namespace usb_pad
 					if (!InitHid())
 						return FALSE;
 					dgHwnd = hW;
-					SetWindowLongPtr(hW, GWLP_USERDATA, (LONG)lParam);
+					SetWindowLongPtr(hW, GWLP_USERDATA, lParam);
 					//SendDlgItemMessage(hW, IDC_BUILD_DATE, WM_SETTEXT, 0, (LPARAM)__DATE__ " " __TIME__);
 					ListView_SetExtendedListViewStyle(GetDlgItem(hW, IDC_LIST1), LVS_EX_FULLROWSELECT);
 

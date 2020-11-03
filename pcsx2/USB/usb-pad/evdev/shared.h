@@ -21,8 +21,19 @@
 #include "../../configuration.h"
 
 #define N_HIDRAW_FF_PT "hidraw_ff_pt"
+#define N_GAIN_ENABLED "gain_enabled"
+#define N_GAIN "gain"
+#define N_AUTOCENTER "autocenter"
+#define N_AUTOCENTER_MANAGED "ac_managed"
 
-typedef std::vector<std::pair<std::string, std::string>> vstring;
+struct evdev_device
+{
+	std::string name;
+	std::string id;
+	std::string path;
+};
+
+typedef std::vector<evdev_device> device_list;
 GtkWidget* new_combobox(const char* label, GtkWidget* vbox);
 
 namespace usb_pad
@@ -65,7 +76,7 @@ namespace usb_pad
 			JOY_MAPS_COUNT
 		};
 
-		static const char* JoystickMapNames[] = {
+		static constexpr const char* JoystickMapNames[] = {
 			"cross",
 			"square",
 			"circle",
@@ -86,7 +97,7 @@ namespace usb_pad
 			"throttle",
 			"brake"};
 
-		static const char* buzz_map_names[] = {
+		static constexpr const char* buzz_map_names[] = {
 			"red",
 			"yellow",
 			"green",
@@ -103,24 +114,31 @@ namespace usb_pad
 
 		struct ConfigMapping
 		{
-			std::vector<uint16_t> controls;
+			std::vector<int16_t> controls;
 			int inverted[3];
 			int initial[3];
 			int fd = -1;
+
+			ConfigMapping() = default;
+			ConfigMapping(int fd_)
+				: fd(fd_)
+			{
+			}
 		};
 
 		struct ApiCallbacks
 		{
 			bool (*get_event_name)(const char* dev_type, int map, int event, const char** name);
-			void (*populate)(vstring& jsdata);
+			void (*populate)(device_list& jsdata);
 			bool (*poll)(const std::vector<std::pair<std::string, ConfigMapping>>& jsconf, std::string& dev_name, bool isaxis, int& value, bool& inverted, int& initial);
 		};
 
+		typedef std::pair<std::string, ConfigMapping> MappingPair;
 		struct ConfigData
 		{
-			std::vector<std::pair<std::string, ConfigMapping>> jsconf;
-			vstring joysticks;
-			vstring::const_iterator js_iter;
+			std::vector<MappingPair> jsconf;
+			device_list joysticks;
+			device_list::const_iterator js_iter;
 			GtkWidget* label;
 			GtkListStore* store;
 			GtkTreeView* treeview;
