@@ -2343,6 +2343,7 @@ Serial = SCES-53358
 Name   = 24: The Game
 Region = PAL-M9
 VU0KickstartHack = 1 // Fixes missing geometry.
+vuClampMode = 2 // Fixes minimap HUD.
 ---------------------------------------------
 Serial = SCES-53372
 Name   = Tourist Trophy - The Real Riding Simulator
@@ -20299,6 +20300,7 @@ Serial = SLPM-62132
 Name   = 24: The Game
 Region = NTSC-J
 VU0KickstartHack = 1 // Fixes missing geometry.
+vuClampMode = 2 // Fixes minimap HUD.
 ---------------------------------------------
 Serial = SLPM-62133
 Name   = Bloody Roar 3 [Konami The Best]
@@ -41427,6 +41429,7 @@ Name   = 24: The Game
 Region = NTSC-U
 Compat = 5
 VU0KickstartHack = 1 // Fixes missing geometry.
+vuClampMode = 2 // Fixes minimap HUD.
 ---------------------------------------------
 Serial = SLUS-21269
 Name   = Bully
