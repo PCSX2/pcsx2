@@ -312,20 +312,21 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					// Fixes Jak eyes rendering
 
 					SurfaceOffsetKey sok;
-					sok.req_bp = bp;
-					sok.req_bp_end = bp_end;
-					sok.req_bw = bw;
-					sok.req_psm = psm;
-					sok.surf_max_valid_w = t->m_valid.w;
-					sok.surf_max_valid_z = t->m_valid.z;
-					sok.surf_m_end_block = t->m_end_block;
-					sok.surf_tex0_tbp0 = t->m_TEX0.TBP0;
+					sok.elems[0].psm = psm;
+					sok.elems[0].bp = bp;
+					sok.elems[0].bw = bw;
+					sok.elems[0].rect = GSVector4i(0, 0, tw, th);
+					sok.elems[1].psm = t->m_TEX0.PSM;
+					sok.elems[1].bp = t->m_TEX0.TBP0;
+					sok.elems[1].bw = t->m_TEX0.TBW;
+					sok.elems[1].rect = t->m_valid;
 					const SurfaceOffset so = ComputeSurfaceOffset(sok);
 					if (so.is_valid)
 					{
 						dst = t;
-						x_offset = so.offset.x;
-						y_offset = so.offset.y;
+						// Offset from Target to Source in Target coords.
+						x_offset = so.b2a_offset.x;
+						y_offset = so.b2a_offset.y;
 						break;
 					}
 				}
@@ -870,11 +871,11 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 						to_string(type),
 						t->m_texture ? t->m_texture->GetID() : 0,
 						t->m_TEX0.TBP0, t->m_end_block,
-						so.offset.x, so.offset.y, so.offset.z, so.offset.w,
+						so.b2a_offset.x, so.b2a_offset.y, so.b2a_offset.z, so.b2a_offset.w,
 						bw
 					);
 					// TODO: do not add this rect above too
-					t->m_dirty.push_back(GSDirtyRect(so.offset, psm));
+					t->m_dirty.push_back(GSDirtyRect(so.b2a_offset, t->m_TEX0.PSM));
 					t->m_TEX0.TBW = bw;
 					continue;
 				}
@@ -1923,105 +1924,107 @@ void GSTextureCache::AttachPaletteToSource(Source* s, uint16 pal, bool need_gs_t
 GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const GSOffset* off, const GSVector4i& r, const Target* t)
 {
 	if (!off || !t)
-		return { false, GSVector4i(0, 0, 0, 0) };
+		return { false };
 	SurfaceOffsetKey sok;
-	const GSLocalMemory::psm_t& write_psm_s = GSLocalMemory::m_psm[t->m_TEX0.PSM];
-	const GSLocalMemory::psm_t& target_psm_s = GSLocalMemory::m_psm[off->psm];
-	const bool write_before_target = off->bp < t->m_TEX0.TBP0;
-	if (write_before_target)
-	{  // Search offset from write to target.
-		sok.req_psm = off->psm;
-		sok.req_bp = t->m_TEX0.TBP0;
-		sok.req_bw = std::max<uint32>(1u, off->bw);
-		sok.req_bp_end = t->m_end_block;
-		sok.surf_tex0_tbp0 = off->bp;
-		sok.surf_m_end_block = write_psm_s.bn(r.z - 1, r.w - 1, sok.surf_tex0_tbp0, sok.req_bw);
-		sok.surf_max_valid_z = r.z;
-		sok.surf_max_valid_w = r.w;
-	}
-	else
-	{  // Search offset from target to write.
-		sok.req_psm = off->psm;
-		sok.req_bp = off->bp;
-		sok.req_bw = std::max<uint32>(1u, off->bw);
-		sok.req_bp_end = target_psm_s.bn(r.z - 1, r.w - 1, sok.req_bp, sok.req_bw);
-		sok.surf_tex0_tbp0 = t->m_TEX0.TBP0;
-		sok.surf_m_end_block = t->m_end_block;
-		sok.surf_max_valid_z = t->m_valid.z;
-		sok.surf_max_valid_w = t->m_valid.w;
-	}
-	GL_CACHE("TC comp surf write off: searching offset from %s (0x%x => 0x%x) to %s (0x%x => 0x%x).",
-		write_before_target ? "write" : "target",
-		sok.surf_tex0_tbp0, sok.surf_m_end_block,
-		write_before_target ? "target" : "write",
-		sok.req_bp, sok.req_bp_end);
-	SurfaceOffset so = ComputeSurfaceOffset(sok);
-	if (write_before_target)
-	{
-		so.offset.z = so.offset.width();
-		so.offset.w = so.offset.height();
-		so.offset.x = 0;
-		so.offset.y = 0;
-	}
+	sok.elems[0].bp = off->bp;
+	sok.elems[0].bw = off->bw;
+	sok.elems[0].psm = off->psm;
+	sok.elems[0].rect = r;
+	sok.elems[1].bp = t->m_TEX0.TBP0;
+	sok.elems[1].bw = t->m_TEX0.TBW;
+	sok.elems[1].psm = t->m_TEX0.PSM;
+	sok.elems[1].rect = t->m_valid;
+	const SurfaceOffset so = ComputeSurfaceOffset(sok);
 	return so;
 }
 
-GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const SurfaceOffsetKey& sok)
+GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const GSTextureCache::SurfaceOffsetKey& sok)
 {
-	if (sok.req_bp > sok.surf_m_end_block || sok.req_bp_end < sok.surf_tex0_tbp0)
-		return { false, GSVector4i(0, 0, 0, 0) };  // No overlap, early return.
+	const SurfaceOffsetKeyElem& a_el = sok.elems[0];
+	const SurfaceOffsetKeyElem& b_el = sok.elems[1];
+	const GSLocalMemory::psm_t& a_psm_s = GSLocalMemory::m_psm[a_el.psm];
+	const GSLocalMemory::psm_t& b_psm_s = GSLocalMemory::m_psm[b_el.psm];
+	const uint32_t a_bp_end = a_psm_s.bn(a_el.rect.z - 1, a_el.rect.w - 1, a_el.bp, a_el.bw);
+	const uint32_t b_bp_end = b_psm_s.bn(b_el.rect.z - 1, b_el.rect.w - 1, b_el.bp, b_el.bw);
+	if (a_el.bp > b_bp_end || a_bp_end < b_el.bp)
+		return { false };  // No overlap, early return.
 	auto it = m_surface_offset_cache.find(sok);
 	if (it != m_surface_offset_cache.end())
 		return it->second;  // Cache HIT.
 	
 	// Cache MISS.
 	// Sweep search for a valid <x,y> offset.
-	SurfaceOffset so = { false, GSVector4i(0, 0, 0, 0) };
-	const GSLocalMemory::psm_t& psm_s = GSLocalMemory::m_psm[sok.req_psm];
-	const int surf_max_valid_z = static_cast<int>(sok.surf_max_valid_z);
-	const int surf_max_valid_w = static_cast<int>(sok.surf_max_valid_w);
+	SurfaceOffset so = { false };
 	GL_CACHE("TC comp surf off: sweep search <x,y> offset such that BP 0x%x (END 0x%x, Valid <z=%d,w=%d>) + OFF <x,y> = 0x%x.",
-		sok.surf_tex0_tbp0, sok.surf_m_end_block, sok.surf_max_valid_z, sok.surf_max_valid_w, sok.req_bp);
-	for (so.offset.x = 0; so.offset.x < surf_max_valid_z; so.offset.x += psm_s.bs.x)
+		b_el.bp, b_bp_end, b_el.rect.z, b_el.rect.w, a_el.bp);
+	const int dx = b_psm_s.bs.x;
+	const int dy = b_psm_s.bs.y;
+	GSVector4i& b2a_offset = so.b2a_offset;
+	// Search <x, y> offset.
+	if (a_el.bp >= b_el.bp)
 	{
-		for (so.offset.y = 0; so.offset.y < surf_max_valid_w; so.offset.y += psm_s.bs.y)
+		for (b2a_offset.x = 0; b2a_offset.x < b_el.rect.z; b2a_offset.x += dx)
 		{
-			const uint32 candidate_bp = psm_s.bn(so.offset.x, so.offset.y, sok.surf_tex0_tbp0, sok.req_bw);
-			// GL_PERF("TC comp surf off: comparing candidate 0x%x with 0x%x (OFF <%d, %d>)", candidate_bp, sok.req_bp, so.offset.x, so.offset.y);
-			if (sok.req_bp == candidate_bp)
+			for (b2a_offset.y = 0; b2a_offset.y < b_el.rect.w; b2a_offset.y += dy)
 			{
-				// Sweep search HIT: <x,y> offset found.
-				so.is_valid = true;
-				// Sweep search <z,w> offset.
-				bool computed_zw = false;
-				for (so.offset.z = so.offset.x + psm_s.bs.x - 1; so.offset.z <= surf_max_valid_z; so.offset.z += psm_s.bs.x)
+				const uint32 a_candidate_bp = b_psm_s.bn(b2a_offset.x, b2a_offset.y, b_el.bp, b_el.bw);
+				// GL_PERF("TC comp surf off: comparing candidate 0x%x with 0x%x (OFF <%d, %d>)", a_candidate_bp, sok.req_bp, so.offset.x, so.offset.y);
+				if (a_el.bp == a_candidate_bp)
 				{
-					for (so.offset.w = so.offset.y + psm_s.bs.y - 1; so.offset.w <= surf_max_valid_w; so.offset.w += psm_s.bs.y)
-					{
-						const uint32 candidate_bp_end = psm_s.bn(so.offset.z, so.offset.w, sok.surf_tex0_tbp0, sok.req_bw);
-						if (sok.req_bp_end == candidate_bp_end)
-						{
-							computed_zw = true;  // Sweep search HIT: <z,w> offset found.
-							++so.offset.z;
-							++so.offset.w;
-							break;
-						}
-					}
-					if (computed_zw)
-						break;
+					// Sweep search HIT: <x,y> offset found.
+					so.is_valid = true;
+					break;
 				}
-				if (!computed_zw)
-				{
-					// Sweep search MISS: assume max possible <z,w> offset is valid.
-					so.offset.z = surf_max_valid_z;
-					so.offset.w = surf_max_valid_w;
-				}
+			}
+			if (so.is_valid)
 				break;
+		}
+	}
+	else
+	{
+		so.is_valid = true;
+		b2a_offset.x = 0;
+		b2a_offset.y = 0;
+	}
+
+	if (so.is_valid)
+	{
+		if (a_bp_end >= b_bp_end)
+		{
+			b2a_offset.z = b_el.rect.z;
+			b2a_offset.w = b_el.rect.w;
+		}
+		else
+		{
+			// Sweep search <z,w> offset.
+			bool computed_zw = false;
+			for (b2a_offset.z = b2a_offset.x + dx - 1; b2a_offset.z <= b_el.rect.z; b2a_offset.z += dx)
+			{
+				for (b2a_offset.w = b2a_offset.y + dy - 1; b2a_offset.w <= b_el.rect.w; b2a_offset.w += dy)
+				{
+					const uint32 a_candidate_bp_end = b_psm_s.bn(b2a_offset.z, b2a_offset.w, b_el.bp, b_el.bw);
+					if (a_bp_end == a_candidate_bp_end)
+					{
+						++b2a_offset.z;
+						++b2a_offset.w;
+						computed_zw = true;  // Sweep search HIT: <z,w> offset found.
+						break;
+					}
+				}
+				if (computed_zw)
+					break;
+			}
+			if (!computed_zw)
+			{
+				// Sweep search MISS: assume max possible <z,w> offset is valid.
+				b2a_offset.z = b_el.rect.z;
+				b2a_offset.w = b_el.rect.w;
 			}
 		}
-		if (so.is_valid)
-			break;
 	}
+
+	so.b2a_offset = b2a_offset;
+	
 	// Clear cache if size too big.
 	if (m_surface_offset_cache.size() + 1 > S_SURFACE_OFFSET_CACHE_MAX_SIZE)
 	{
@@ -2032,13 +2035,13 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 	if (so.is_valid)
 	{
 		GL_CACHE("TC comp surf off: Cached HIT element (size %d), BW: %d, PSM %s, BP 0x%x (END 0x%x) + OFF <%d,%d => %d,%d> -> 0x%x (END: 0x%x)",
-			m_surface_offset_cache.size(), sok.req_bw, psm_str(sok.req_psm), sok.surf_tex0_tbp0, sok.surf_m_end_block, so.offset.x, so.offset.y, so.offset.z, so.offset.w, sok.req_bp, sok.req_bp_end);
+			m_surface_offset_cache.size(), b_el.bw, psm_str(b_el.psm), b_el.bp, b_bp_end, so.b2a_offset.x, so.b2a_offset.y, so.b2a_offset.z, so.b2a_offset.w, a_el.bp, a_bp_end);
 	}
 	else
 	{
 		// Sweep MISS: no valid <x,y> offset found.
 		GL_CACHE("TC comp surf off: Cached MISS element (size %d), BW: %d, PSM %s, BP 0x%x (END 0x%x) -/-> 0x%x (END: 0x%x)",
-			m_surface_offset_cache.size(), sok.req_bw, psm_str(sok.req_psm), sok.surf_tex0_tbp0, sok.surf_m_end_block, sok.req_bp, sok.req_bp_end);
+			m_surface_offset_cache.size(), b_el.bw, psm_str(b_el.psm), b_el.bp, b_bp_end, a_el.bp, a_bp_end);
 	}
 	return so;
 }
@@ -2109,6 +2112,7 @@ void GSTextureCache::UpdateTarget(Target* t)
 		{
 			if (tSrc == t)
 				continue;
+			// TODO Fix this mess.
 			const SurfaceOffset so = ComputeSurfaceOffset(off, r, tSrc);
 			if (so.is_valid)
 			{
@@ -2117,21 +2121,21 @@ void GSTextureCache::UpdateTarget(Target* t)
 					tSrcTex ? tSrcTex->GetID() : 0,
 					tSrc->m_TEX0.TBP0,
 					tSrc->m_end_block,
-					so.offset.x, so.offset.y, so.offset.z, so.offset.w,
+					so.b2a_offset.x, so.b2a_offset.y, so.b2a_offset.z, so.b2a_offset.w,
 					t->m_texture ? t->m_texture->GetID() : 0,
 					t->m_TEX0.TBP0,
 					t->m_end_block
 				);
 				// const int ww = std::min<int>(so.offset.width(), w);
 				// const int hh = std::min<int>(so.offset.height(), h);
-				int ww = so.offset.width();
+				int ww = so.b2a_offset.width();
 				if (ww > w)
 				{
 					// TODO: Investigate why this can happen; Might be due to missing/wrong BW conversion.
 					GL_CACHE("TC: Invalid ww %d correcting with %d", ww, w);
 					ww = w;
 				}
-				int hh = so.offset.height();
+				int hh = so.b2a_offset.height();
 				if (hh > h)
 				{
 					// TODO: Investigate why this can happen; Might be due to missing/wrong BW conversion.
@@ -2368,28 +2372,30 @@ void GSTextureCache::PaletteMap::Clear() {
 
 std::size_t GSTextureCache::SurfaceOffsetKeyHash::operator()(const SurfaceOffsetKey& key) const
 {
-	std::hash<uint32> hash_fn;
+	std::hash<uint32> hash_fn_u32;
+	std::hash<int> hash_fn_int;
+	std::hash<size_t> hash_fn_szt;
 	size_t hash = 0x9e3779b9;
-	hash = hash ^ (hash_fn(key.req_bp) << 1);
-	hash = hash ^ (hash_fn(key.req_bp_end) << 1);
-	hash = hash ^ (hash_fn(key.req_bw) << 1);
-	hash = hash ^ (hash_fn(key.req_psm) << 1);
-	hash = hash ^ (hash_fn(key.surf_max_valid_w) << 1);
-	hash = hash ^ (hash_fn(key.surf_max_valid_z) << 1);
-	hash = hash ^ (hash_fn(key.surf_m_end_block) << 1);
-	hash = hash ^ (hash_fn(key.surf_tex0_tbp0) << 1);
-	return hash_fn(hash);
+	for (size_t i = 0; i < 2; ++i)
+	{
+		hash ^= hash_fn_u32(key.elems[i].bp) << 1;
+		hash ^= hash_fn_u32(key.elems[i].bw) << 1;
+		hash ^= hash_fn_u32(key.elems[i].psm) << 1;
+		hash ^= hash_fn_int(key.elems[i].rect.x) << 1;
+		hash ^= hash_fn_int(key.elems[i].rect.y) << 1;
+		hash ^= hash_fn_int(key.elems[i].rect.z) << 1;
+		hash ^= hash_fn_int(key.elems[i].rect.w) << 1;
+	}
+	return hash_fn_szt(hash);
 }
 
 bool GSTextureCache::SurfaceOffsetKeyEqual::operator()(const SurfaceOffsetKey& lhs, const SurfaceOffsetKey& rhs) const
 {
-	return lhs.req_bp == rhs.req_bp
-		&& lhs.req_bp_end == rhs.req_bp_end
-		&& lhs.req_bw == rhs.req_bw
-		&& lhs.req_psm == rhs.req_psm
-		&& lhs.surf_max_valid_w == rhs.surf_max_valid_w
-		&& lhs.surf_max_valid_z == rhs.surf_max_valid_z
-		&& lhs.surf_m_end_block == rhs.surf_m_end_block
-		&& lhs.surf_tex0_tbp0 == rhs.surf_tex0_tbp0
-		;
+	for (size_t i = 0; i < 2; ++i)
+		if (lhs.elems[i].bp != rhs.elems[i].bp
+			|| lhs.elems[i].bw != rhs.elems[i].bw
+			|| lhs.elems[i].psm != rhs.elems[i].psm
+			|| lhs.elems[i].rect != rhs.elems[i].rect)
+			return false;
+	return true;
 }

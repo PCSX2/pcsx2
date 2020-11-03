@@ -188,22 +188,23 @@ public:
 		void RemoveAt(Source* s);
 	};
 
+	struct SurfaceOffsetKeyElem
+	{
+		uint32 psm;
+		uint32 bp;
+		uint32 bw;
+		GSVector4i rect;
+	};
+
 	struct SurfaceOffsetKey
 	{
-		uint32 req_psm;
-		uint32 req_bp;
-		uint32 req_bp_end;
-		uint32 req_bw;
-		uint32 surf_tex0_tbp0;
-		uint32 surf_max_valid_z;
-		uint32 surf_max_valid_w;
-		uint32 surf_m_end_block;
+		SurfaceOffsetKeyElem elems[2];  // A and B elems.
 	};
 
 	struct SurfaceOffset
 	{
 		bool is_valid;
-		GSVector4i offset;
+		GSVector4i b2a_offset;  // B to A offset in B coords.
 	};
 
 	struct SurfaceOffsetKeyHash
