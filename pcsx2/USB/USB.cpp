@@ -115,7 +115,7 @@ USBDevice* CreateDevice(DeviceType index, int port)
 	if (devProxy)
 		device = devProxy->CreateDevice(port);
 	else
-		SysMessage(TEXT("Device %d: Unknown device type"), 1 - port);
+		Console.WriteLn(Color_Red, "Device %d: Unknown device type", 1 - port);
 
 	if (!device)
 	{
@@ -157,7 +157,7 @@ USBDevice* CreateDevice(const std::string& name, int port)
 		if (devProxy)
 			device = devProxy->CreateDevice(port);
 		else
-			SysMessage(TEXT("Port %d: Unknown device type"), port);
+			Console.WriteLn(Color_Red, "Port %d: Unknown device type", port);
 	}
 
 	if (!device)
@@ -266,7 +266,7 @@ s32 USBopen(void* pDsp)
 	}
 	catch (std::runtime_error& e)
 	{
-		SysMessage(TEXT("%" SFMTs "\n"), e.what());
+		Console.WriteLn(Color_Red, "USB: %s", e.what());
 	}
 
 	if (configChanged || (!usb_device[0] && !usb_device[1]))
@@ -354,7 +354,7 @@ s32 USBfreeze(int mode, freezeData* data)
 	{
 		if ((long unsigned int)data->size < sizeof(USBfreezeData))
 		{
-			SysMessage(TEXT("ERROR: Unable to load freeze data! Got %d bytes, expected >= %d.\n"), data->size, sizeof(USBfreezeData));
+			Console.WriteLn(Color_Red, "USB: Unable to load freeze data! Got %d bytes, expected >= %d.\n", data->size, sizeof(USBfreezeData));
 			return -1;
 		}
 
@@ -363,7 +363,7 @@ s32 USBfreeze(int mode, freezeData* data)
 
 		if (strcmp(usbd.freezeID, USBfreezeID) != 0)
 		{
-			SysMessage(TEXT("ERROR: Unable to load freeze data! Found ID '%") TEXT(SFMTs) TEXT("', expected ID '%") TEXT(SFMTs) TEXT("'.\n"), usbd.freezeID, USBfreezeID);
+			Console.WriteLn(Color_Red, "USB: Unable to load freeze data! Found ID %s, expected ID %s.\n", usbd.freezeID, USBfreezeID);
 			return -1;
 		}
 
@@ -413,7 +413,7 @@ s32 USBfreeze(int mode, freezeData* data)
 			{
 				if (proxy->Freeze(FREEZE_SIZE, usb_device[i], nullptr) != (s32)usbd.device[i].size)
 				{
-					SysMessage(TEXT("Port %d: device's freeze size doesn't match.\n"), 1 + (1 - i));
+					Console.WriteLn(Color_Red, "USB: Port %d: device's freeze size doesn't match.\n", 1 + (1 - i));
 					return -1;
 				}
 
@@ -448,7 +448,7 @@ s32 USBfreeze(int mode, freezeData* data)
 			}
 			else if (!proxy && index != DEVTYPE_NONE)
 			{
-				SysMessage(TEXT("Port %d: unknown device.\nPlugin is probably too old for this save.\n"), 1 + (1 - i));
+				Console.WriteLn(Color_Red, "USB: Port %d: unknown device.\nPlugin is probably too old for this save.\n", 1 + (1 - i));
 				return -1;
 			}
 			ptr += usbd.device[i].size;
@@ -494,7 +494,6 @@ s32 USBfreeze(int mode, freezeData* data)
 		}
 		else
 		{
-			SysMessage(TEXT("USB packet has invalid device index? %d\n"), dev_index); // or just a bug
 			return -1;
 		}
 	}
@@ -521,7 +520,7 @@ s32 USBfreeze(int mode, freezeData* data)
 				usbd.usb_packet.dev_index = i;
 		}
 
-		strncpy(usbd.freezeID, USBfreezeID, strlen(usbd.freezeID));
+		strncpy(usbd.freezeID, USBfreezeID, strlen(USBfreezeID));
 		usbd.t = *qemu_ohci;
 		usbd.usb_packet.ep = qemu_ohci->usb_packet.ep ? *qemu_ohci->usb_packet.ep : USBEndpoint{0};
 		usbd.t.usb_packet.iov = {};
@@ -676,7 +675,7 @@ void USBDoFreezeIn(pxInputStream& infp)
 
 	if (!infp.IsOk() || !infp.Length())
 	{
-		// no state data to read, but SPU2 expects some state data?
+		// no state data to read, but USB expects some state data?
 		// Issue a warning to console...
 		if (fP.size != 0)
 			Console.Indent().Warning("Warning: No data for USB found. Status may be unpredictable.");
@@ -693,6 +692,7 @@ void USBDoFreezeIn(pxInputStream& infp)
 	fP.data = data.GetPtr();
 
 	infp.Read(fP.data, fP.size);
-	if (USBfreeze(FREEZE_LOAD, &fP) != 0)
-		throw std::runtime_error(" * USB: Error loading state!\n");
+	//if (USBfreeze(FREEZE_LOAD, &fP) != 0)
+	//	throw std::runtime_error(" * USB: Error loading state!\n");
+	USBfreeze(FREEZE_LOAD, &fP);
 }
