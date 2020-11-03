@@ -24,6 +24,7 @@
 #include "ZipTools/ThreadedZipTools.h"
 #include "Utilities/pxStreams.h"
 #include "SPU2/spu2.h"
+#include "USB/USB.h"
 
 #include "ConsoleLogger.h"
 
@@ -264,6 +265,30 @@ public:
 	bool IsRequired() const { return true; }
 };
 
+class SavestateEntry_USB : public BaseSavestateEntry
+{
+public:
+	virtual ~SavestateEntry_USB() = default;
+
+	wxString GetFilename() const { return L"USB.bin"; }
+	void FreezeIn(pxInputStream& reader) const { return USBDoFreezeIn(reader); }
+	void FreezeOut(SaveStateBase& writer) const
+	{
+		int size = 0;
+		freezeData fP = {0, NULL};
+		if (USBfreeze(FREEZE_SIZE, &fP) == 0)
+		{
+			size = fP.size;
+			writer.PrepBlock(size);
+			USBDoFreezeOut(writer.GetBlockPtr());
+			writer.CommitBlock(size);
+		}
+		return;
+	}
+	bool IsRequired() const { return true; }
+};
+
+
 
 
 // [TODO] : Add other components as files to the savestate gzip?
@@ -286,6 +311,7 @@ static const std::unique_ptr<BaseSavestateEntry> SavestateEntries[] = {
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_VU0prog),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_VU1prog),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_SPU2),
+	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_USB),
 
 	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry(PluginId_GS)),
 	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry(PluginId_PAD)),
