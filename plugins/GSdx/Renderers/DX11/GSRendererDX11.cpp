@@ -131,7 +131,7 @@ void GSRendererDX11::EmulateZbuffer()
 	const bool clamp_z = (uint32)(GSVector4i(m_vt.m_max.p).z) > max_z;
 
 	vs_cb.MaxDepth = GSVector2i(0xFFFFFFFF);
-	ps_cb.Af_MaxDepth.y = 1.0f;
+	//ps_cb.Af_MaxDepth.y = 1.0f;
 	m_ps_sel.zclamp = 0;
 
 	if (clamp_z)
@@ -146,8 +146,6 @@ void GSRendererDX11::EmulateZbuffer()
 			m_ps_sel.zclamp = 1;
 		}
 	}
-
-	
 
 	GSVertex* v = &m_vertex.buff[0];
 	// Minor optimization of a corner case (it allow to better emulate some alpha test effects)
