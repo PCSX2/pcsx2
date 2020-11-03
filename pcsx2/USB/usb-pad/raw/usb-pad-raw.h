@@ -20,8 +20,8 @@
 #include <atomic>
 #include "../padproxy.h"
 #include "../usb-pad.h"
-#include "shared/rawinput.h"
-#include "readerwriterqueue/readerwriterqueue.h"
+#include "../../shared/rawinput.h"
+#include "../../readerwriterqueue/readerwriterqueue.h"
 
 namespace usb_pad
 {

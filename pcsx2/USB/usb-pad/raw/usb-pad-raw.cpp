@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "../../USB.h"
 #include "../../Win32/Config.h"
 #include "usb-pad-raw.h"

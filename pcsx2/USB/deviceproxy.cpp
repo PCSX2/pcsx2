@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "deviceproxy.h"
 #include "usb-pad/padproxy.h"
 #include "usb-mic/audiodeviceproxy.h"

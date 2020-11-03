@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "usb-mic-singstar.h"
 #include "audio.h"
 #include "../qemu-usb/desc.h"

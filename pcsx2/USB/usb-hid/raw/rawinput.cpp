@@ -13,10 +13,11 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "rawinput.h"
 #include "../../Win32/Config.h"
-#include "qemu-usb/input-keymap.h"
-#include "qemu-usb/input-keymap-win32-to-qcode.h"
+#include "../../qemu-usb/input-keymap.h"
+#include "../../qemu-usb/input-keymap-win32-to-qcode.h"
 
 namespace usb_hid
 {

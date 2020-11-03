@@ -18,6 +18,8 @@
 
 #include <pshpack4.h>
 
+#define NTSTATUS int
+
 typedef USHORT USAGE, *PUSAGE;
 
 #define HID_USAGE_PAGE_GENERIC ((USAGE)0x01)

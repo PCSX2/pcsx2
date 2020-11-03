@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "shared/rawinput.h"
+#include "../../shared/rawinput.h"
 #include "../hidproxy.h"
 #include "../usb-hid.h"
 

@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "padproxy.h"
 #include "usb-pad.h"
 #include "../qemu-usb/desc.h"

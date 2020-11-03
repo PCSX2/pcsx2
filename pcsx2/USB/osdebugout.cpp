@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "osdebugout.h"
 
 std::wostream& operator<<(std::wostream& os, const std::string& s)

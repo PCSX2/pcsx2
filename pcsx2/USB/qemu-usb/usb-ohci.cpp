@@ -28,6 +28,7 @@
 
 //typedef CPUReadMemoryFunc
 
+#include "PrecompiledHeader.h"
 #include "vl.h"
 #include "queue.h"
 #include "USBinternal.h"

@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "AppCoreThread.h"
 #include "../USB.h"
 #include "resource.h"

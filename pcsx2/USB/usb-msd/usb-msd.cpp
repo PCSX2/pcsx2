@@ -7,6 +7,7 @@
  * This code is licenced under the LGPL.
  */
 
+#include "PrecompiledHeader.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

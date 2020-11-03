@@ -13,6 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
+
 #define _WIN32_WINNT 0x0502
 #include <stdio.h>
 #include <windows.h>

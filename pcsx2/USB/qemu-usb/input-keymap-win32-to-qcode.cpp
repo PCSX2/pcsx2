@@ -18,6 +18,7 @@
  * To re-generate, run:
  *   keymap-gen --lang=stdc++ --varname=qemu_input_map_win32_to_qcode code-map keymaps.csv win32 qcode
 */
+#include "PrecompiledHeader.h"
 #include "input-keymap-win32-to-qcode.h"
 const std::array<QKeyCode, 252> qemu_input_map_win32_to_qcode = {
 	Q_KEY_CODE_UNMAPPED,      /* win32:0 (unnamed) -> linux:None (unnamed) -> qcode:None (unnamed) */
