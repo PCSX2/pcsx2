@@ -51,11 +51,11 @@ const char* dialog_message(int ID, bool* updateText) {
 			return "Control the number of Auto-CRC fixes and hacks applied to games.\n\n"
 				"Automatic:\nAutomatically sets the recommended CRC level based on the selected renderer.\n"
 				"This is the recommended setting.\n"
-				"Partial will be selected for OpenGL.\nFull will be selected for Direct3D.\n\n"
+				"Partial will be selected for OpenGL.\nFull will be selected for Direct3D 11.\n\n"
 				"None:\nRemove all CRC rendering fixes and hacks.\n\n"
 				"Minimum:\nEnables CRC lookup for special post processing effects.\n\n"
 				"Partial:\nFor an optimal experience with OpenGL.\n\n"
-				"Full:\nFor an optimal experience with Direct3D.\n\n"
+				"Full:\nFor an optimal experience with Direct3D 11.\n\n"
 				"Aggressive:\nUse more aggressive CRC hacks.\n"
 				"Removes effects in some games which make the image appear sharper/clearer.\n"
 				"Affected games: AC4, BleachBB, Bully, DBZBT 2 & 3, DeathByDegrees, Evangelion, FF games, FightingBeautyWulong, GOW 1 & 2, Kunoichi, IkkiTousen, Okami, Oneechanbara2, OnimushaDoD, RDRevolver, Simple2000Vol114, SoTC, SteambotChronicles, Tekken5, Ultraman, XenosagaE3, Yakuza 1 & 2.\n";
@@ -98,7 +98,7 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_ACCURATE_DATE:
 			return "Implement a more accurate algorithm to compute GS destination alpha testing.\n"
 				"It improves shadow and transparency rendering.\n\n"
-				"Note: Direct3D is less accurate.";
+				"Note: Direct3D 11 is less accurate.";
 		case IDC_ACCURATE_BLEND_UNIT:
 			return "Control the accuracy level of the GS blending unit emulation.\n\n"
 				"None:\nFast but introduces various rendering issues.\n"
@@ -210,7 +210,7 @@ const char* dialog_message(int ID, bool* updateText) {
 				"It is intended for debug.\n\n"
 				"High:\nExtend it to triangle based primitives. It is ultra slow!\n"
 				"It is intended for debug.\n\n"
-				"Note: Direct3D and OpenGL blending options aren't the same, even High blending on Direct3D is like 1/3 of Basic blending on OpenGL.";
+				"Note: Direct3D 11 and OpenGL blending options aren't the same, even High blending on Direct3D 11 is like 1/3 of Basic blending on OpenGL.";
 #endif
 		default:
 			if (updateText)
