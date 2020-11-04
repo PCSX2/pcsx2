@@ -17,7 +17,7 @@
 
 #include <chrono>
 #include <thread>
-#if defined(__linux__)
+#if defined(__unix__) || defined(__APPLE__)
 #include <pthread.h>
 #endif
 #include "net.h"
@@ -57,7 +57,7 @@ void InitNet(NetAdapter* ad)
 
 #ifdef _WIN32
 	SetThreadPriority(rx_thread.native_handle(), THREAD_PRIORITY_HIGHEST);
-#elif defined(__linux__)
+#elif defined(__unix__) || defined(__APPLE__)
 	pthread_attr_t thAttr;
 	int policy = 0;
 	int max_prio_for_policy = 0;
