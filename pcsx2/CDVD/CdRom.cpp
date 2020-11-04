@@ -225,7 +225,7 @@ void cdrInterrupt()
 			cdr.Result[0] = cdr.StatP;
 			cdr.Stat = Acknowledge;
 			break;
-
+		
 		case CdlPlay:
 			cdr.CmdProcess = 0;
 			SetResultSize(1);
@@ -663,7 +663,7 @@ void cdrWrite0(u8 rt)
 
 void setPs1CDVDSpeed(int speed)
 {
-	//std::cout << "SPEED: " << speed << std::endl;
+	//DevCon.WriteLn("SPEED: " + speed);
 	cdReadTime = (PSXCLK / (75 * speed));
 }
 
@@ -748,8 +748,18 @@ void cdrWrite1(u8 rt)
 			AddIrqQueue(cdr.Cmd, 0x800); // the seek delay occurs on the next read / seek command (CdlReadS, CdlSeekL, etc)
 		}
 		break;
-
+		do_CdlPlay:
 		case CdlPlay:
+
+			if (cdr.Reading)
+			{
+				StopReading();
+			}
+			if (cdr.SetlocPending)
+			{
+				memcpy(cdr.SetSectorSeek, cdr.SetSector, 4);
+				cdr.SetlocPending = 0;
+			}
 			cdr.Play = 1;
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
@@ -845,18 +855,6 @@ void cdrWrite1(u8 rt)
 			{
 				StopCdda();
 				cdvd.Type = CDVD_TYPE_CDDA;
-				if (cdr.Reading == 1)
-				{
-					StopReading();
-				}
-				if (cdr.SetlocPending)
-				{
-					memcpy(cdr.SetSectorSeek, cdr.SetSector, 4);
-					cdr.SetlocPending = 0;
-				}
-
-				// BIOS CD Player
-				// - Pause player, hit Track 01/02/../xx (Setloc issued!!)
 			}
 
 			cdvd.Speed = 1 + ((cdr.Mode >> 7) & 0x1);
@@ -927,6 +925,8 @@ void cdrWrite1(u8 rt)
 			break;
 
 		case CdlReadS:
+			if (cdvd.Type == CDVD_TYPE_CDDA)
+				goto do_CdlPlay;
 			cdr.Irq = 0;
 			StopReading();
 			cdr.Ctrl |= 0x80;

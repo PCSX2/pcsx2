@@ -1186,8 +1186,6 @@ static void cdvdWrite04(u8 rt)
 { // NCOMMAND
 	CDVD_LOG("cdvdWrite04: NCMD %s (%x) (ParamP = %x)", nCmdName[rt], rt, cdvd.ParamP);
 
-	std::cout << "COMMAND: " << nCmdName[rt] << std::endl;
-
 	cdvd.nCommand = rt;
 	// Why fiddle with Status and PwOff here at all? (rama)
 	cdvd.Status = cdvd.Spinning ? CDVD_STATUS_SPIN : CDVD_STATUS_STOP; // checkme
