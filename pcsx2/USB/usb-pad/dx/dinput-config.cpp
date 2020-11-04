@@ -28,6 +28,7 @@
 #include "versionproxy.h"
 
 #include "usb-pad-dx.h"
+#include "../../shared/inifile.h"
 
 namespace usb_pad
 {
@@ -1227,7 +1228,7 @@ namespace usb_pad
 			ClearSection(section);
 			SaveSetting(section, _T("INVERTFORCES"), INVERTFORCES[port]);
 
-			SaveSetting(section, _T("# CONTROL n"), "GUID,MAPPING TYPE,MAPPED TO,INVERTED,HALF,LINEAR,OFFSET,DEADZONE");
+			SaveSetting(section, _T("# CONTROL n"), str_to_wstr("GUID,MAPPING TYPE,MAPPED TO,INVERTED,HALF,LINEAR,OFFSET,DEADZONE"));
 
 			for (auto& control : g_Controls[port])
 			{
@@ -1249,7 +1250,7 @@ namespace usb_pad
 				}
 
 				swprintf_s(text, _T("CONTROL %i"), cid);
-				SaveSetting(section, text, ss.str());
+				SaveSetting(section, text, str_to_wstr(ss.str()));
 			}
 
 			SaveSetting(section, _T("GAINZ"), GAINZ[port][0]);
@@ -1284,7 +1285,7 @@ namespace usb_pad
 					std::stringstream ss;
 
 					swprintf_s(text, _T("CONTROL %i"), cid);
-					if (!LoadSetting(section, text, control))
+					if (!LoadSetting(section, text, str_to_wstr(control)))
 						continue;
 
 					ss << control;

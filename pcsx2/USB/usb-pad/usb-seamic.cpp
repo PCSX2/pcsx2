@@ -18,6 +18,7 @@
 #include "usb-pad.h"
 #include "../qemu-usb/desc.h"
 #include "../usb-mic/usb-mic-singstar.h"
+#include "../shared/inifile.h"
 
 namespace usb_pad
 {
@@ -391,19 +392,19 @@ namespace usb_pad
 	USBDevice* SeamicDevice::CreateDevice(int port)
 	{
 		std::string varApi;
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
 		PadProxyBase* proxy = RegisterPad::instance().Proxy(varApi);
 		if (!proxy)
 		{
-			SysMessage(TEXT("PAD: Invalid input API.\n"));
+			Console.WriteLn("USB: PAD: Invalid input API.\n");
 			USB_LOG("usb-pad: %s: Invalid input API.\n", TypeName());
 			return NULL;
 		}
 
-		USB_LOG("usb-pad: creating device '%s' on port %d with %s\n", TypeName(), port, varApi.c_str());
+		USB_LOG("usb-pad: creating device '%s' on port %d with %s\n", TypeName(), port, str_to_wstr(varApi));
 
 		std::string api;
-		if (!LoadSetting(nullptr, port, usb_mic::SingstarDevice::TypeName(), N_DEVICE_API, api))
+		if (!LoadSetting(nullptr, port, usb_mic::SingstarDevice::TypeName(), N_DEVICE_API, str_to_wstr(api)))
 			return nullptr;
 
 		USBDevice* mic = usb_mic::SingstarDevice::CreateDevice(port, api);

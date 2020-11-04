@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include <math.h>
+#include <dinput.h>
 #include "dx.h"
 
 #define SAFE_DELETE(p)  \

@@ -29,6 +29,7 @@
 #include "../qemu-usb/desc.h"
 #include "usb-hid.h"
 #include "../osdebugout.h"
+#include "../shared/inifile.h"
 
 #define CONTAINER_OF(p, type, field) ((type*)((char*)p - ((ptrdiff_t) & ((type*)0)->field)))
 
@@ -729,11 +730,11 @@ namespace usb_hid
 		UsbHIDState* s;
 
 		std::string varApi;
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
 		UsbHIDProxyBase* proxy = RegisterUsbHID::instance().Proxy(varApi);
 		if (!proxy)
 		{
-			SysMessage(TEXT("Invalid HID API: %" SFMTs "\n"), varApi.c_str());
+			Console.WriteLn("Invalid HID API: %s \n", varApi.c_str());
 			return nullptr;
 		}
 
@@ -820,11 +821,11 @@ namespace usb_hid
 		UsbHIDState* s;
 
 		std::string varApi;
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
 		UsbHIDProxyBase* proxy = RegisterUsbHID::instance().Proxy(varApi);
 		if (!proxy)
 		{
-			SysMessage(TEXT("Invalid HID API: %" SFMTs "\n"), varApi.c_str());
+			Console.WriteLn("Invalid HID API: %s\n", varApi.c_str());
 			return nullptr;
 		}
 
@@ -892,11 +893,11 @@ namespace usb_hid
 		UsbHIDState* s;
 
 		std::string varApi;
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
 		UsbHIDProxyBase* proxy = RegisterUsbHID::instance().Proxy(varApi);
 		if (!proxy)
 		{
-			SysMessage(TEXT("Invalid HID API: %" SFMTs "\n"), varApi.c_str());
+			Console.WriteLn("Invalid HID API: %s\n", varApi.c_str());
 			return nullptr;
 		}
 

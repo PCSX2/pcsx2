@@ -17,6 +17,7 @@
 #include "padproxy.h"
 #include "usb-pad.h"
 #include "../qemu-usb/desc.h"
+#include "../shared/inifile.h"
 
 namespace usb_pad
 {
@@ -538,11 +539,11 @@ namespace usb_pad
 	USBDevice* PadDevice::CreateDevice(int port)
 	{
 		std::string varApi;
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
 		PadProxyBase* proxy = RegisterPad::instance().Proxy(varApi);
 		if (!proxy)
 		{
-			SysMessage(TEXT("PAD: Invalid input API.\n"));
+			Console.WriteLn("USB: PAD: Invalid input API.\n");
 			USB_LOG("usb-pad: %s: Invalid input API.\n", TypeName());
 			return NULL;
 		}
@@ -662,11 +663,11 @@ namespace usb_pad
 	USBDevice* RBDrumKitDevice::CreateDevice(int port)
 	{
 		std::string varApi;
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
 		PadProxyBase* proxy = RegisterPad::instance().Proxy(varApi);
 		if (!proxy)
 		{
-			SysMessage(TEXT("RBDK: Invalid input API.\n"));
+			Console.WriteLn("RBDK: Invalid input API.\n");
 			USB_LOG("usb-pad: %s: Invalid input API.\n", TypeName());
 			return NULL;
 		}
@@ -731,11 +732,11 @@ namespace usb_pad
 	USBDevice* BuzzDevice::CreateDevice(int port)
 	{
 		std::string varApi;
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
 		PadProxyBase* proxy = RegisterPad::instance().Proxy(varApi);
 		if (!proxy)
 		{
-			SysMessage(TEXT("Buzz: Invalid input API.\n"));
+			Console.WriteLn("Buzz: Invalid input API.\n");
 			USB_LOG("usb-pad: %s: Invalid input API.\n", TypeName());
 			return NULL;
 		}

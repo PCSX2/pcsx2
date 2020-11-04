@@ -136,15 +136,15 @@ void SaveConfig()
 	SaveSetting("MAIN", "log", conf.Log);
 #endif
 
-	SaveSetting(nullptr, 0, N_DEVICE_PORT, N_DEVICE, conf.Port[0]);
-	SaveSetting(nullptr, 1, N_DEVICE_PORT, N_DEVICE, conf.Port[1]);
+	SaveSetting(nullptr, 0, N_DEVICE_PORT, N_DEVICE, str_to_wstr(conf.Port[0]));
+	SaveSetting(nullptr, 1, N_DEVICE_PORT, N_DEVICE, str_to_wstr(conf.Port[1]));
 
 	SaveSetting(nullptr, 0, N_DEVICE_PORT, N_WHEEL_TYPE, conf.WheelType[0]);
 	SaveSetting(nullptr, 1, N_DEVICE_PORT, N_WHEEL_TYPE, conf.WheelType[1]);
 
 	for (auto& k : changedAPIs)
 	{
-		SaveSetting(nullptr, k.first.first, k.first.second, N_DEVICE_API, k.second);
+		SaveSetting(nullptr, k.first.first, k.first.second, N_DEVICE_API, str_to_wstr(k.second));
 	}
 
 #ifdef _WIN32
@@ -169,8 +169,8 @@ void LoadConfig()
 	LoadSetting("MAIN", "log", conf.Log);
 #endif
 
-	LoadSetting(nullptr, 0, N_DEVICE_PORT, N_DEVICE, conf.Port[0]);
-	LoadSetting(nullptr, 1, N_DEVICE_PORT, N_DEVICE, conf.Port[1]);
+	LoadSetting(nullptr, 0, N_DEVICE_PORT, N_DEVICE, str_to_wstr(conf.Port[0]));
+	LoadSetting(nullptr, 1, N_DEVICE_PORT, N_DEVICE, str_to_wstr(conf.Port[1]));
 
 	LoadSetting(nullptr, 0, N_DEVICE_PORT, N_WHEEL_TYPE, conf.WheelType[0]);
 	LoadSetting(nullptr, 1, N_DEVICE_PORT, N_WHEEL_TYPE, conf.WheelType[1]);
@@ -180,7 +180,7 @@ void LoadConfig()
 	for (int i = 0; i < 2; i++)
 	{
 		std::string api;
-		LoadSetting(nullptr, i, conf.Port[i], N_DEVICE_API, api);
+		LoadSetting(nullptr, i, conf.Port[i], N_DEVICE_API, str_to_wstr(api));
 		auto dev = instance.Device(conf.Port[i]);
 
 		if (dev)

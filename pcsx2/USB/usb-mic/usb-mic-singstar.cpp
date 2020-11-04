@@ -28,6 +28,7 @@
 #include "../qemu-usb/vl.h"
 #include "../qemu-usb/desc.h"
 #include "usb-mic-singstar.h"
+#include "../shared/inifile.h"
 #include <assert.h>
 
 static FILE* file = NULL;
@@ -777,7 +778,7 @@ namespace usb_mic
 	USBDevice* SingstarDevice::CreateDevice(int port)
 	{
 		std::string api;
-		LoadSetting(nullptr, port, SingstarDevice::TypeName(), N_DEVICE_API, api);
+		LoadSetting(nullptr, port, SingstarDevice::TypeName(), N_DEVICE_API, str_to_wstr(api));
 		return SingstarDevice::CreateDevice(port, api);
 	}
 	USBDevice* SingstarDevice::CreateDevice(int port, const std::string& api)
@@ -790,7 +791,7 @@ namespace usb_mic
 		s->audsrcproxy = RegisterAudioDevice::instance().Proxy(api);
 		if (!s->audsrcproxy)
 		{
-			SysMessage(TEXT("singstar: Invalid audio API: '%") TEXT(SFMTs) TEXT("'\n"), api.c_str());
+			Console.WriteLn("singstar: Invalid audio API: '%s'\n", api.c_str());
 			delete s;
 			return NULL;
 		}

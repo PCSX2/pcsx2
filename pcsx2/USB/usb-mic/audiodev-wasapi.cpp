@@ -154,7 +154,7 @@ namespace usb_mic
 			HRESULT err = CoCreateInstance(CLSID_MMDeviceEnumerator, NULL, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void**)&mmEnumerator);
 			if (FAILED(err))
 			{
-				SysMessage(TEXT("MMAudioDevice::Init(): Could not create IMMDeviceEnumerator = %08lX\n"), err);
+				Console.WriteLn("MMAudioDevice::Init(): Could not create IMMDeviceEnumerator = %08lX\n", err);
 				return false;
 			}
 			//TODO Not starting thread here unnecesserily
@@ -183,7 +183,7 @@ namespace usb_mic
 			if (FAILED(err))
 			{
 				if (!mDeviceLost)
-					SysMessage(TEXT("MMAudioDevice::Reinitialize(): Could not create IMMDevice = %08lX\n"), err);
+					Console.WriteLn("MMAudioDevice::Reinitialize(): Could not create IMMDevice = %08lX\n", err);
 				return false;
 			}
 
@@ -191,7 +191,7 @@ namespace usb_mic
 			if (FAILED(err))
 			{
 				if (!mDeviceLost)
-					SysMessage(TEXT("MMAudioDevice::Reinitialize(): Could not create IAudioClient = %08lX\n"), err);
+					Console.WriteLn("MMAudioDevice::Reinitialize(): Could not create IAudioClient = %08lX\n", err);
 				return false;
 			}
 
@@ -219,7 +219,7 @@ namespace usb_mic
 			if (FAILED(err))
 			{
 				if (!mDeviceLost)
-					SysMessage(TEXT("MMAudioDevice::Reinitialize(): Could not get mix format from audio client = %08lX\n"), err);
+					Console.WriteLn("MMAudioDevice::Reinitialize(): Could not get mix format from audio client = %08lX\n", err);
 				return false;
 			}
 
@@ -233,7 +233,7 @@ namespace usb_mic
 				if (wfext->SubFormat != KSDATAFORMAT_SUBTYPE_IEEE_FLOAT)
 				{
 					if (!mDeviceLost)
-						SysMessage(TEXT("MMAudioDevice::Reinitialize(): Unsupported wave format\n"));
+						Console.WriteLn("MMAudioDevice::Reinitialize(): Unsupported wave format\n");
 					CoTaskMemFree(pwfx);
 					return false;
 				}
@@ -241,7 +241,7 @@ namespace usb_mic
 			else if (pwfx->wFormatTag != WAVE_FORMAT_IEEE_FLOAT)
 			{
 				if (!mDeviceLost)
-					SysMessage(TEXT("MMAudioDevice::Reinitialize(): Unsupported wave format\n"));
+					Console.WriteLn("MMAudioDevice::Reinitialize(): Unsupported wave format\n");
 				CoTaskMemFree(pwfx);
 				return false;
 			}
@@ -267,7 +267,7 @@ namespace usb_mic
 			if (FAILED(err))
 			{
 				if (!mDeviceLost)
-					SysMessage(TEXT("MMAudioDevice::Reinitialize(): Could not initialize audio client, result = %08lX\n"), err);
+					Console.WriteLn("MMAudioDevice::Reinitialize(): Could not initialize audio client, result = %08lX\n", err);
 				CoTaskMemFree(pwfx);
 				return false;
 			}
@@ -281,7 +281,7 @@ namespace usb_mic
 			if (FAILED(err))
 			{
 				if (!mDeviceLost)
-					SysMessage(TEXT("MMAudioDevice::Reinitialize(): Could not get audio %s client, result = %08lX\n"),
+					Console.WriteLn("MMAudioDevice::Reinitialize(): Could not get audio %s client, result = %08lX\n",
 							   (mAudioDir == AUDIODIR_SOURCE ? TEXT("capture") : TEXT("render")), err);
 				CoTaskMemFree(pwfx);
 				return false;
@@ -292,7 +292,7 @@ namespace usb_mic
 			if (FAILED(err))
 			{
 				if (!mDeviceLost)
-					SysMessage(TEXT("MMAudioDevice::Reinitialize(): Could not get audio capture clock, result = %08lX\n"), err);
+					Console.WriteLn("MMAudioDevice::Reinitialize(): Could not get audio capture clock, result = %08lX\n", err);
 				CoTaskMemFree(pwfx);
 				return false;
 			}
@@ -310,7 +310,7 @@ namespace usb_mic
 			{
 				OSDebugOut(TEXT("Failed to create resampler: error %08lX\n"), errVal);
 #ifndef _DEBUG
-				SysMessage(TEXT("USBqemu: Failed to create resampler: error %08lX"), errVal);
+				Console.WriteLn("USBqemu: Failed to create resampler: error %08lX", errVal);
 #endif
 				return false;
 			}
@@ -798,7 +798,7 @@ namespace usb_mic
 			err = CoCreateInstance(CLSID_MMDeviceEnumerator, NULL, CLSCTX_ALL, IID_IMMDeviceEnumerator, (void**)&mmEnumerator);
 			if (FAILED(err))
 			{
-				SysMessage(TEXT("AudioDevices: Could not create IMMDeviceEnumerator\n"));
+				Console.WriteLn("AudioDevices: Could not create IMMDeviceEnumerator\n");
 				return;
 			}
 
@@ -811,7 +811,7 @@ namespace usb_mic
 			err = mmEnumerator->EnumAudioEndpoints(audioDeviceType, flags, &collection);
 			if (FAILED(err))
 			{
-				SysMessage(TEXT("AudioDevices: Could not enumerate audio endpoints\n"));
+				Console.WriteLn("AudioDevices: Could not enumerate audio endpoints\n");
 				SafeRelease(mmEnumerator);
 				return;
 			}

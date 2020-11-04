@@ -18,7 +18,8 @@
 #include <cstdio>
 #include <vector>
 #include <algorithm>
-#include "osdebugout.h"
+#include "../osdebugout.h"
+#include "../platcompat.h"
 
 extern HINSTANCE hInst;
 
@@ -64,7 +65,7 @@ namespace shared
 
 		static void CursorCapture(HWND hWnd)
 		{
-			OSDebugOut(TEXT("Capture cursor\n"));
+			Console.WriteLn("Capture cursor\n");
 			SetCapture(hWnd);
 			ShowCursor(0);
 
@@ -81,7 +82,7 @@ namespace shared
 
 		static void CursorRelease()
 		{
-			OSDebugOut(TEXT("Release cursor\n"));
+			Console.WriteLn("Release cursor\n");
 			if (cursorCaptured)
 			{
 				ClipCursor(0);
@@ -146,15 +147,15 @@ namespace shared
 			switch (uMsg)
 			{
 				case WM_ACTIVATE:
-					OSDebugOut(TEXT("******      WM_ACTIVATE        ****** %p %d\n"), hWnd, LOWORD(wParam) != WA_INACTIVE);
+					Console.WriteLn("******      WM_ACTIVATE        ****** %p %d\n", hWnd, LOWORD(wParam) != WA_INACTIVE);
 					skipInput = LOWORD(wParam) == WA_INACTIVE;
 					break;
 				case WM_SETFOCUS:
-					OSDebugOut(TEXT("******      WM_SETFOCUS        ****** %p\n"), hWnd);
+					Console.WriteLn("******      WM_SETFOCUS        ****** %p\n", hWnd);
 					skipInput = false;
 					break;
 				case WM_KILLFOCUS:
-					OSDebugOut(TEXT("******      WM_KILLFOCUS        ****** %p\n"), hWnd);
+					Console.WriteLn("******      WM_KILLFOCUS        ****** %p\n", hWnd);
 					skipInput = true;
 					break;
 			}
@@ -197,17 +198,17 @@ namespace shared
 					break;
 				}
 				case WM_ACTIVATE:
-					OSDebugOut(TEXT("******      WM_ACTIVATE        ****** %p %d\n"), hWnd, LOWORD(wParam) != WA_INACTIVE);
+					Console.WriteLn("******      WM_ACTIVATE        ****** %p %d\n", hWnd, LOWORD(wParam) != WA_INACTIVE);
 					skipInput = LOWORD(wParam) == WA_INACTIVE;
 					if (LOWORD(wParam) == WA_INACTIVE)
 						CursorRelease();
 					break;
 				case WM_SETFOCUS:
-					OSDebugOut(TEXT("******      WM_SETFOCUS        ****** %p\n"), hWnd);
+					Console.WriteLn("******      WM_SETFOCUS        ****** %p\n", hWnd);
 					//skipInput = false; //TODO when the hell is WM_SETFOCUS sent? seems like only when mouse is capped
 					break;
 				case WM_KILLFOCUS:
-					OSDebugOut(TEXT("******      WM_KILLFOCUS        ****** %p\n"), hWnd);
+					Console.WriteLn("******      WM_KILLFOCUS        ****** %p\n", hWnd);
 					//skipInput = true;
 					break;
 				case WM_SIZE:

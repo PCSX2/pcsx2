@@ -17,6 +17,7 @@
 #include "usb-mic-singstar.h"
 #include "audio.h"
 #include "../qemu-usb/desc.h"
+#include "../shared/inifile.h"
 
 namespace usb_mic
 {
@@ -242,7 +243,7 @@ namespace usb_mic
 	USBDevice* LogitechMicDevice::CreateDevice(int port)
 	{
 		std::string api;
-		if (!LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, api))
+		if (!LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(api)))
 			return nullptr;
 
 		USBDevice* dev = SingstarDevice::CreateDevice(port, api);
