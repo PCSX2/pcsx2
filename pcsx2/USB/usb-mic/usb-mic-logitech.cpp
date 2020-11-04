@@ -243,7 +243,11 @@ namespace usb_mic
 	USBDevice* LogitechMicDevice::CreateDevice(int port)
 	{
 		std::string api;
+#ifdef _WIN32
 		if (!LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(api)))
+#else
+		if (!LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, api))
+#endif
 			return nullptr;
 
 		USBDevice* dev = SingstarDevice::CreateDevice(port, api);

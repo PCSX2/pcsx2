@@ -516,7 +516,11 @@ namespace usb_eyetoy
 	{
 		VideoDevice* videodev = nullptr;
 		std::string varApi;
+#ifdef _WIN32
 		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
+#else
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+#endif
 		VideoDeviceProxyBase* proxy = RegisterVideoDevice::instance().Proxy(varApi);
 		if (!proxy)
 		{

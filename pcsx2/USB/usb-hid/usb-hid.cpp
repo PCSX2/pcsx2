@@ -730,7 +730,11 @@ namespace usb_hid
 		UsbHIDState* s;
 
 		std::string varApi;
+#ifdef _WIN32
 		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
+#else
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+#endif
 		UsbHIDProxyBase* proxy = RegisterUsbHID::instance().Proxy(varApi);
 		if (!proxy)
 		{
@@ -821,7 +825,11 @@ namespace usb_hid
 		UsbHIDState* s;
 
 		std::string varApi;
+#ifdef _WIN32
 		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
+#else
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+#endif
 		UsbHIDProxyBase* proxy = RegisterUsbHID::instance().Proxy(varApi);
 		if (!proxy)
 		{
@@ -893,7 +901,11 @@ namespace usb_hid
 		UsbHIDState* s;
 
 		std::string varApi;
+#ifdef _WIN32
 		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
+#else
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+#endif
 		UsbHIDProxyBase* proxy = RegisterUsbHID::instance().Proxy(varApi);
 		if (!proxy)
 		{

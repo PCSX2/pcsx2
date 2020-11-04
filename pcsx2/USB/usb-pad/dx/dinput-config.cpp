@@ -1228,7 +1228,11 @@ namespace usb_pad
 			ClearSection(section);
 			SaveSetting(section, _T("INVERTFORCES"), INVERTFORCES[port]);
 
+#ifdef _WIN32
 			SaveSetting(section, _T("# CONTROL n"), str_to_wstr("GUID,MAPPING TYPE,MAPPED TO,INVERTED,HALF,LINEAR,OFFSET,DEADZONE"));
+#else
+			SaveSetting(section, _T("# CONTROL n"), "GUID,MAPPING TYPE,MAPPED TO,INVERTED,HALF,LINEAR,OFFSET,DEADZONE");
+#endif
 
 			for (auto& control : g_Controls[port])
 			{
@@ -1250,7 +1254,11 @@ namespace usb_pad
 				}
 
 				swprintf_s(text, _T("CONTROL %i"), cid);
+#ifdef _WIN32
 				SaveSetting(section, text, str_to_wstr(ss.str()));
+#else
+				SaveSetting(section, text, ss.str());
+#endif
 			}
 
 			SaveSetting(section, _T("GAINZ"), GAINZ[port][0]);
@@ -1285,7 +1293,11 @@ namespace usb_pad
 					std::stringstream ss;
 
 					swprintf_s(text, _T("CONTROL %i"), cid);
+#ifdef _WIN32
 					if (!LoadSetting(section, text, str_to_wstr(control)))
+#else
+					if (!LoadSetting(section, text, control))
+#endif
 						continue;
 
 					ss << control;

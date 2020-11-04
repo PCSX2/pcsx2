@@ -539,7 +539,11 @@ namespace usb_pad
 	USBDevice* PadDevice::CreateDevice(int port)
 	{
 		std::string varApi;
+#ifdef _WIN32
 		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
+#else
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+#endif
 		PadProxyBase* proxy = RegisterPad::instance().Proxy(varApi);
 		if (!proxy)
 		{
@@ -663,7 +667,11 @@ namespace usb_pad
 	USBDevice* RBDrumKitDevice::CreateDevice(int port)
 	{
 		std::string varApi;
+#ifdef _WIN32
 		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
+#else
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+#endif
 		PadProxyBase* proxy = RegisterPad::instance().Proxy(varApi);
 		if (!proxy)
 		{
@@ -732,7 +740,11 @@ namespace usb_pad
 	USBDevice* BuzzDevice::CreateDevice(int port)
 	{
 		std::string varApi;
+#ifdef _WIN32
 		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
+#else
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+#endif
 		PadProxyBase* proxy = RegisterPad::instance().Proxy(varApi);
 		if (!proxy)
 		{

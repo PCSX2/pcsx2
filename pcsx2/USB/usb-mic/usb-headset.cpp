@@ -986,7 +986,11 @@ namespace usb_mic
 	USBDevice* HeadsetDevice::CreateDevice(int port)
 	{
 		std::string api;
+#ifdef _WIN32
 		if (!LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(api)))
+#else
+		if (!LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, api))
+#endif
 			return nullptr;
 		return HeadsetDevice::CreateDevice(port, api);
 	}
