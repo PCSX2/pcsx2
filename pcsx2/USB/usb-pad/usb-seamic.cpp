@@ -18,7 +18,7 @@
 #include "usb-pad.h"
 #include "../qemu-usb/desc.h"
 #include "../usb-mic/usb-mic-singstar.h"
-#include "../shared/inifile.h"
+#include "../shared/inifile_usb.h"
 
 namespace usb_pad
 {

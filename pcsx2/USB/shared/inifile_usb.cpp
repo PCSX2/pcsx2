@@ -14,7 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "inifile.h"
+#include "inifile_usb.h"
 #include <algorithm>
 #include <iostream>
 #include <fstream>

@@ -17,7 +17,7 @@
 #include "padproxy.h"
 #include "usb-pad.h"
 #include "../qemu-usb/desc.h"
-#include "../shared/inifile.h"
+#include "../shared/inifile_usb.h"
 
 namespace usb_pad
 {

@@ -14,7 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "rawinput.h"
+#include "rawinput_usb.h"
 #include <cstdio>
 #include <vector>
 #include <algorithm>

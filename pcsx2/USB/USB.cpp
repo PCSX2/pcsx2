@@ -25,7 +25,7 @@
 #include "osdebugout.h"
 #include "qemu-usb/USBinternal.h"
 #include "qemu-usb/desc.h"
-#include "shared/shared.h"
+#include "shared/shared_usb.h"
 #include "deviceproxy.h"
 
 #define PSXCLK 36864000 /* 36.864 Mhz */

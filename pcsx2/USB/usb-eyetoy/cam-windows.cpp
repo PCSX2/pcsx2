@@ -19,7 +19,7 @@
 #include "usb-eyetoy-webcam.h"
 #include "jo_mpeg.h"
 
-#include "../Win32/Config.h"
+#include "../Win32/Config_usb.h"
 #include "../Win32/resource.h"
 
 namespace usb_eyetoy

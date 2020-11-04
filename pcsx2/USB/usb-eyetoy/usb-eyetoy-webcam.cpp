@@ -19,7 +19,7 @@
 #include "usb-eyetoy-webcam.h"
 #include "ov519.h"
 #include "../qemu-usb/desc.h"
-#include "../shared/inifile.h"
+#include "../shared/inifile_usb.h"
 
 namespace usb_eyetoy
 {

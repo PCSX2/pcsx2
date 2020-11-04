@@ -28,7 +28,7 @@
 #include "../qemu-usb/vl.h"
 #include "../qemu-usb/desc.h"
 #include "usb-mic-singstar.h"
-#include "../shared/inifile.h"
+#include "../shared/inifile_usb.h"
 #include <assert.h>
 
 static FILE* file = NULL;

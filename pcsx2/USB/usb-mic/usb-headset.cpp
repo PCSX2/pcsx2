@@ -27,7 +27,7 @@
 #include "PrecompiledHeader.h"
 #include "../qemu-usb/vl.h"
 #include "../qemu-usb/desc.h"
-#include "../shared/inifile.h"
+#include "../shared/inifile_usb.h"
 #include <assert.h>
 
 #include "audio.h"

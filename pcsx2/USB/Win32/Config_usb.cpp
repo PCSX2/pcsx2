@@ -17,13 +17,14 @@
 #include "AppCoreThread.h"
 #include "../USB.h"
 #include "resource.h"
-#include "Config.h"
+#include "Config_usb.h"
 #include "../deviceproxy.h"
 #include "../usb-pad/padproxy.h"
 #include "../usb-mic/audiodeviceproxy.h"
 #include "../configuration.h"
+#include "../shared/inifile_usb.h"
 
-HINSTANCE hInst;
+HINSTANCE hInstUSB;
 extern bool configChanged;
 
 void SysMessageA(const char* fmt, ...)
@@ -79,7 +80,7 @@ void PopulateAPIs(HWND hW, int port)
 	std::string selApi = GetSelectedAPI(std::make_pair(port, devName));
 
 	std::string var;
-	if (LoadSetting(nullptr, port, rd.Name(devtype), N_DEVICE_API, var))
+	if (LoadSetting(nullptr, port, rd.Name(devtype), N_DEVICE_API, str_to_wstr(var)))
 		OSDebugOut(L"Current API: %S\n", var.c_str());
 	else
 	{
@@ -104,7 +105,7 @@ void PopulateAPIs(HWND hW, int port)
 	SendDlgItemMessage(hW, port ? IDC_COMBO_API1 : IDC_COMBO_API2, CB_SETCURSEL, sel, 0);
 }
 
-BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
+BOOL CALLBACK ConfigureDlgProcUSB(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 
 	int port;
@@ -196,7 +197,7 @@ BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 									if (it == list.end())
 										break;
 									std::string api = *it;
-									Win32Handles handles(hInst, hW);
+									Win32Handles handles(hInstUSB, hW);
 									if (device->Configure(port, api, &handles) == RESULT_FAILED)
 										SysMessage(TEXT("Some settings may not have been saved!\n"));
 								}
@@ -233,50 +234,13 @@ BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-
-EXPORT_C_(BOOL)
-AboutDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg)
-	{
-		case WM_INITDIALOG:
-			return TRUE;
-
-		case WM_COMMAND:
-			switch (LOWORD(wParam))
-			{
-				case IDOK:
-					EndDialog(hW, FALSE);
-					return TRUE;
-			}
-	}
-	return FALSE;
-}
-
 void USBconfigure()
 {
 	ScopedCoreThreadPause paused_core;
 	RegisterDevice::Register();
-	DialogBox(hInst,
+	DialogBox(hInstUSB,
 			  MAKEINTRESOURCE(IDD_CONFIG),
 			  GetActiveWindow(),
-			  (DLGPROC)ConfigureDlgProc);
+			  (DLGPROC)ConfigureDlgProcUSB);
 	paused_core.AllowResume();
-}
-
-EXPORT_C_(void)
-USBabout()
-{
-	DialogBox(hInst,
-			  MAKEINTRESOURCE(IDD_ABOUT),
-			  GetActiveWindow(),
-			  (DLGPROC)AboutDlgProc);
-}
-
-BOOL APIENTRY DllMain(HANDLE hModule,
-					  DWORD dwReason,
-					  LPVOID lpReserved)
-{
-	hInst = (HINSTANCE)hModule;
-	return TRUE;
 }
