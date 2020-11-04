@@ -316,11 +316,13 @@ void SysCoreThread::OnResumeInThread(bool isSuspended)
 {
 	GetCorePlugins().Open();
 	if (isSuspended)
+	{
 		DoCDVDopen();
+		DEV9open((void*)pDsp);
+		USBopen((void*)pDsp);
+	}
 	FWopen();
 	SPU2open((void*)pDsp);
-	DEV9open((void*)pDsp);
-	USBopen((void*)pDsp);
 }
 
 

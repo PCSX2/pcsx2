@@ -172,7 +172,6 @@ void AppCoreThread::Resume()
 
 	GetCorePlugins().Init();
 	SPU2init();
-    USBinit();
 	_parent::Resume();
 }
 
