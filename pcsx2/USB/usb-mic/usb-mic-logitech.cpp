@@ -17,7 +17,7 @@
 #include "usb-mic-singstar.h"
 #include "audio.h"
 #include "../qemu-usb/desc.h"
-#include "../shared/inifile.h"
+#include "../shared/inifile_usb.h"
 
 namespace usb_mic
 {

@@ -14,7 +14,7 @@
  */
 
 #include "../padproxy.h"
-#include "../../Win32/Config.h"
+#include "../../Win32/Config_usb.h"
 
 namespace usb_pad
 {

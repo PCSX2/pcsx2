@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include <commdlg.h>
 #include "usb-msd.h"
-#include "../Win32/Config.h"
+#include "../Win32/Config_usb.h"
 #include "../Win32/resource.h"
 
 namespace usb_msd

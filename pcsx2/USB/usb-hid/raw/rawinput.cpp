@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "rawinput.h"
-#include "../../Win32/Config.h"
+#include "../../Win32/Config_usb.h"
 #include "../../qemu-usb/input-keymap.h"
 #include "../../qemu-usb/input-keymap-win32-to-qcode.h"
 

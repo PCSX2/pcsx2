@@ -354,8 +354,8 @@ set(pcsx2USBSources
 	USB/usb-eyetoy/jo_mpeg.cpp
 	USB/usb-eyetoy/usb-eyetoy-webcam.cpp
 	USB/usb-hid/usb-hid.cpp
-	USB/shared/shared.cpp
-	USB/shared/inifile.cpp
+	USB/shared/shared_usb.cpp
+	USB/shared/inifile_usb.cpp
 	USB/shared/ringbuffer.cpp
 	USB/icon_buzz_24.cpp
 	USB/usb-msd/usb-msd-gtk.cpp
@@ -417,8 +417,8 @@ set(pcsx2USBHeaders
 	USB/usb-hid/hidproxy.h
 	USB/usb-hid/usb-hid.h
 	USB/usb-hid/noop.h
-	USB/shared/shared.h
-	USB/shared/inifile.h
+	USB/shared/shared_usb.h
+	USB/shared/inifile_usb.h
 	USB/shared/ringbuffer.h
 	USB/linux/ini.h
 	USB/linux/actualfile.h

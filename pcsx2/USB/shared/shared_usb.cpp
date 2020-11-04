@@ -14,11 +14,11 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "shared.h"
+#include "shared_usb.h"
 #include <stdexcept>
 
 #if defined(BUILD_RAW)
-#include "rawinput.h"
+#include "rawinput_usb.h"
 #endif
 
 namespace shared

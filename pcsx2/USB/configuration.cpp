@@ -17,7 +17,7 @@
 #include "osdebugout.h"
 #include "deviceproxy.h"
 #include "configuration.h"
-#include "shared/inifile.h"
+#include "shared/inifile_usb.h"
 #include "platcompat.h"
 #include <map>
 #include <vector>

@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "../../USB.h"
-#include "../../Win32/Config.h"
+#include "../../Win32/Config_usb.h"
 #include "usb-pad-raw.h"
 
 namespace usb_pad

@@ -22,7 +22,7 @@
 #include <functiondiscoverykeys_devpkey.h>
 #include <process.h>
 #include "audiodev-wasapi.h"
-#include "../Win32/Config.h"
+#include "../Win32/Config_usb.h"
 #include "../Win32/resource.h"
 
 #define SafeRelease(x) \

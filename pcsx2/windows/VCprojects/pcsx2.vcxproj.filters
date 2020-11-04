@@ -1150,29 +1150,8 @@
     <ClCompile Include="..\..\USB\usb-hid\usb-hid.cpp">
       <Filter>System\Ps2\USB\usb-hid</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\USB\shared\inifile.cpp">
-      <Filter>System\Ps2\USB\shared</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\USB\shared\ringbuffer.cpp">
       <Filter>System\Ps2\USB\shared</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\USB\shared\shared.cpp">
-      <Filter>System\Ps2\USB\shared</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\USB\usb-eyetoy\api_init_win32.cpp">
-      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\USB\usb-hid\api_init_win32.cpp">
-      <Filter>System\Ps2\USB\usb-hid</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\USB\usb-mic\api_init_win32.cpp">
-      <Filter>System\Ps2\USB\usb-mic</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\USB\usb-pad\api_init_win32.cpp">
-      <Filter>System\Ps2\USB\usb-pad</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\USB\Win32\Config.cpp">
-      <Filter>System\Ps2\USB\Win32</Filter>
     </ClCompile>
     <ClCompile Include="..\..\USB\usb-mic\audiodev-wasapi.cpp">
       <Filter>System\Ps2\USB\usb-mic</Filter>
@@ -1181,9 +1160,6 @@
       <Filter>System\Ps2\USB\usb-msd</Filter>
     </ClCompile>
     <ClCompile Include="..\..\USB\shared\hidapi.cpp">
-      <Filter>System\Ps2\USB\shared</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\USB\shared\rawinput.cpp">
       <Filter>System\Ps2\USB\shared</Filter>
     </ClCompile>
     <ClCompile Include="..\..\USB\qemu-usb\input-keymap-win32-to-qcode.cpp">
@@ -1209,6 +1185,30 @@
     </ClCompile>
     <ClCompile Include="..\..\USB\usb-pad\raw\usb-pad-raw.cpp">
       <Filter>System\Ps2\USB\usb-pad\raw</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\USB\usb-pad\api_init_win32_pad.cpp">
+      <Filter>System\Ps2\USB\usb-pad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\USB\usb-mic\api_init_win32_mic.cpp">
+      <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\USB\usb-hid\api_init_win32_hid.cpp">
+      <Filter>System\Ps2\USB\usb-hid</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\USB\usb-eyetoy\api_init_win32_eyetoy.cpp">
+      <Filter>System\Ps2\USB\usb-eyetoy</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\USB\Win32\Config_usb.cpp">
+      <Filter>System\Ps2\USB\Win32</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\USB\shared\shared_usb.cpp">
+      <Filter>System\Ps2\USB\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\USB\shared\inifile_usb.cpp">
+      <Filter>System\Ps2\USB\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\USB\shared\rawinput_usb.cpp">
+      <Filter>System\Ps2\USB\shared</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1866,17 +1866,8 @@
     <ClInclude Include="..\..\USB\usb-hid\usb-hid.h">
       <Filter>System\Ps2\USB\usb-hid</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\USB\shared\inifile.h">
-      <Filter>System\Ps2\USB\shared</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\USB\shared\ringbuffer.h">
       <Filter>System\Ps2\USB\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\USB\shared\shared.h">
-      <Filter>System\Ps2\USB\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\USB\Win32\Config.h">
-      <Filter>System\Ps2\USB\Win32</Filter>
     </ClInclude>
     <ClInclude Include="..\..\USB\Win32\resource.h">
       <Filter>System\Ps2\USB\Win32</Filter>
@@ -1885,9 +1876,6 @@
       <Filter>System\Ps2\USB\usb-mic</Filter>
     </ClInclude>
     <ClInclude Include="..\..\USB\shared\hidapi.h">
-      <Filter>System\Ps2\USB\shared</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\USB\shared\rawinput.h">
       <Filter>System\Ps2\USB\shared</Filter>
     </ClInclude>
     <ClInclude Include="..\..\USB\qemu-usb\input-keymap-win32-to-qcode.h">
@@ -1913,6 +1901,18 @@
     </ClInclude>
     <ClInclude Include="..\..\USB\usb-pad\raw\usb-pad-raw.h">
       <Filter>System\Ps2\USB\usb-pad\raw</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\USB\Win32\Config_usb.h">
+      <Filter>System\Ps2\USB\Win32</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\USB\shared\shared_usb.h">
+      <Filter>System\Ps2\USB\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\USB\shared\inifile_usb.h">
+      <Filter>System\Ps2\USB\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\USB\shared\rawinput_usb.h">
+      <Filter>System\Ps2\USB\shared</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
