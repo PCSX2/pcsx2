@@ -63,12 +63,12 @@
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">false</ShowIncludes>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;BUILD_RAW=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;BUILD_RAW=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;BUILD_RAW=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;BUILD_RAW=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NDEBUG;_SECURE_SCL_=0;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;BUILD_RAW=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NDEBUG;_SECURE_SCL_=0;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;BUILD_RAW=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NDEBUG;_SECURE_SCL_=0;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NDEBUG;_SECURE_SCL_=0;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
       <LargeAddressAware>Yes</LargeAddressAware>
@@ -856,6 +856,7 @@
     <ResourceCompile Include="..\..\DEV9\Win32\DEV9ghzdrk.rc" />
     <ResourceCompile Include="..\..\USB\usb-pad\dx\versionproxy.rc" />
     <ResourceCompile Include="..\..\USB\usb-pad\raw\raw-config.rc" />
+    <ResourceCompile Include="..\..\USB\Win32\USBDialog.rc" />
     <ResourceCompile Include="..\wxResources.rc" />
   </ItemGroup>
   <ItemGroup>
