@@ -1934,6 +1934,9 @@
     <ResourceCompile Include="..\..\USB\usb-pad\raw\raw-config.rc">
       <Filter>System\Ps2\USB\usb-pad\raw</Filter>
     </ResourceCompile>
+    <ResourceCompile Include="..\..\USB\Win32\USBDialog.rc">
+      <Filter>System\Ps2\USB\Win32</Filter>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="..\..\rdebug\deci2.h">
