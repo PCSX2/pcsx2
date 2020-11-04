@@ -91,7 +91,7 @@ namespace usb_pad
 
 	void SetAutoCenter(FFDevice* ffdev, const autocenter& effect)
 	{
-		OSDebugOut(_T("%s: k1 %d k2 %d clip %d\n"), __func__, effect.k1, effect.k2, effect.clip);
+		DevCon.WriteLn("%s: k1 %d k2 %d clip %d\n", __func__, effect.k1, effect.k2, effect.clip);
 		ffdev->SetAutoCenter((effect.k1 * effect.clip / 255) * 100 / 255); // FIXME
 	}
 
@@ -103,7 +103,7 @@ namespace usb_pad
 
 		static int warned = 0;
 		int caps = 0;
-		OSDebugOut(TEXT("FFB %02X, %02X, %02X, %02X : %02X, %02X, %02X, %02X\n"),
+		DevCon.WriteLn("FFB %02X, %02X, %02X, %02X : %02X, %02X, %02X, %02X\n",
 				   ffdata->cmdslot, ffdata->type, ffdata->u.params[0], ffdata->u.params[1],
 				   ffdata->u.params[2], ffdata->u.params[3], ffdata->u.params[4], ffdata->padd0);
 
@@ -173,7 +173,7 @@ namespace usb_pad
 								{
 									if (warned == 0)
 									{
-										OSDebugOut("variable force cannot be converted to constant force (l1=%hhu, t1=%hhu, s1=%hhu, d1=%hhu\n",
+										DevCon.WriteLn("variable force cannot be converted to constant force (l1=%hhu, t1=%hhu, s1=%hhu, d1=%hhu\n",
 												   ffdata->u.variable.l1, ffdata->u.variable.t1, ffdata->u.variable.s1, ffdata->u.variable.d1);
 										warned = 1;
 									}
@@ -189,7 +189,7 @@ namespace usb_pad
 								{
 									if (warned == 0)
 									{
-										OSDebugOut("variable force cannot be converted to constant force (l2=%hhu, t2=%hhu, s2=%hhu, d2=%hhu\n",
+										DevCon.WriteLn("variable force cannot be converted to constant force (l2=%hhu, t2=%hhu, s2=%hhu, d2=%hhu\n",
 												   ffdata->u.variable.l2, ffdata->u.variable.t2, ffdata->u.variable.s2, ffdata->u.variable.d2);
 										warned = 1;
 									}
@@ -216,7 +216,7 @@ namespace usb_pad
 							SetAutoCenter(mFFdev, ffdata->u.autocenter);
 							break;
 						default:
-							OSDebugOut(TEXT("CMD_DOWNLOAD_AND_PLAY: unhandled force type 0x%02X in slots 0x%02X\n"), ffdata->type, slots);
+							DevCon.WriteLn("CMD_DOWNLOAD_AND_PLAY: unhandled force type 0x%02X in slots 0x%02X\n", ffdata->type, slots);
 							break;
 					}
 				}
@@ -251,7 +251,7 @@ namespace usb_pad
 									mFFdev->DisableForce(EFF_DAMPER);
 									break;
 								default:
-									OSDebugOut(TEXT("CMD_STOP: unhandled force type 0x%02X in slot 0x%02X\n"), ffdata->type, slots);
+									DevCon.WriteLn("CMD_STOP: unhandled force type 0x%02X in slot 0x%02X\n", ffdata->type, slots);
 									break;
 							}
 						}
@@ -259,7 +259,7 @@ namespace usb_pad
 				}
 				break;
 				case CMD_DEFAULT_SPRING_ON: //0x04
-					OSDebugOut(TEXT("CMD_DEFAULT_SPRING_ON: unhandled cmd\n"));
+					DevCon.WriteLn("CMD_DEFAULT_SPRING_ON: unhandled cmd\n");
 					break;
 				case CMD_DEFAULT_SPRING_OFF: //0x05
 				{
@@ -270,24 +270,24 @@ namespace usb_pad
 					}
 					else
 					{
-						OSDebugOut(TEXT("CMD_DEFAULT_SPRING_OFF: unhandled slots 0x%02X\n"), slots);
+						DevCon.WriteLn("CMD_DEFAULT_SPRING_OFF: unhandled slots 0x%02X\n", slots);
 					}
 				}
 				break;
 				case CMD_NORMAL_MODE: //0x08
-					OSDebugOut(TEXT("CMD_NORMAL_MODE: unhandled cmd\n"));
+					DevCon.WriteLn("CMD_NORMAL_MODE: unhandled cmd\n");
 					break;
 				case CMD_SET_LED: //0x09
-					OSDebugOut(TEXT("CMD_SET_LED: unhandled cmd\n"));
+					DevCon.WriteLn("CMD_SET_LED: unhandled cmd\n");
 					break;
 				case CMD_RAW_MODE: //0x0B
-					OSDebugOut(TEXT("CMD_RAW_MODE: unhandled cmd\n"));
+					DevCon.WriteLn("CMD_RAW_MODE: unhandled cmd\n");
 					break;
 				case CMD_SET_DEFAULT_SPRING: //0x0E
-					OSDebugOut(TEXT("CMD_SET_DEFAULT_SPRING: unhandled cmd\n"));
+					DevCon.WriteLn("CMD_SET_DEFAULT_SPRING: unhandled cmd\n");
 					break;
 				case CMD_SET_DEAD_BAND: //0x0F
-					OSDebugOut(TEXT("CMD_SET_DEAD_BAND: unhandled cmd\n"));
+					DevCon.WriteLn("CMD_SET_DEAD_BAND: unhandled cmd\n");
 					break;
 			}
 		}
@@ -302,7 +302,7 @@ namespace usb_pad
 			if (ffdata->type == EXT_CMD_WHEEL_RANGE_200_DEGREES)
 			{
 			}
-			OSDebugOut(TEXT("CMD_EXTENDED: unhandled cmd 0x%02X%02X%02X\n"),
+			DevCon.WriteLn("CMD_EXTENDED: unhandled cmd 0x%02X%02X%02X\n",
 					   ffdata->type, ffdata->u.params[0], ffdata->u.params[1]);
 		}
 	}

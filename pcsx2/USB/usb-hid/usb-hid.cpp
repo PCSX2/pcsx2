@@ -557,7 +557,7 @@ namespace usb_hid
 		HIDState* hs = &us->f.hid;
 		int ret;
 
-		OSDebugOut(TEXT("usb-hid: req %04X val: %04X idx: %04X len: %d\n"), request, value, index, length);
+		DevCon.WriteLn("usb-hid: req %04X val: %04X idx: %04X len: %d\n", request, value, index, length);
 		ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
 		if (ret >= 0)
 		{
@@ -642,7 +642,7 @@ namespace usb_hid
 				break;
 			case SET_IDLE:
 				hs->idle = (uint8_t)(value >> 8);
-				OSDebugOut(TEXT("IDLE %d\n"), hs->idle);
+				DevCon.WriteLn("IDLE %d\n", hs->idle);
 				hid_set_next_idle(hs);
 				if (hs->kind == HID_MOUSE || hs->kind == HID_TABLET)
 				{
@@ -897,7 +897,7 @@ namespace usb_hid
 
 	USBDevice* BeatManiaDevice::CreateDevice(int port)
 	{
-		OSDebugOut(_T("%s\n"), __func__);
+		DevCon.WriteLn("%s\n", __func__);
 		UsbHIDState* s;
 
 		std::string varApi;

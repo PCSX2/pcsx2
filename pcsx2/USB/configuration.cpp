@@ -101,7 +101,7 @@ bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TC
 #endif
 		catch (std::exception& err)
 		{
-			OSDebugOut(TEXT("%" SFMTs "\n"), err.what());
+			DevCon.WriteLn("%s\n", err.what());
 		}
 	}
 	return false;
@@ -161,7 +161,7 @@ void SaveConfig()
 	OSDebugOut(_T("ciniFile.Save: %d [%s]\n"), ret, IniPath.c_str());
 #else
 	bool ret = ciniFile.Save(str_to_wstr(IniPath));
-	OSDebugOut(_T("ciniFile.Save: %d [%s]\n"), ret, IniPath.c_str());
+	DevCon.WriteLn("ciniFile.Save: %d [%s]\n", ret, IniPath.c_str());
 #endif
 }
 
@@ -203,7 +203,7 @@ void LoadConfig()
 
 		if (dev)
 		{
-			OSDebugOut(_T("Checking device '%" SFMTs "' api: '%" SFMTs "'...\n"), conf.Port[i].c_str(), api.c_str());
+			DevCon.WriteLn("Checking device '%s' api: '%s'...\n", conf.Port[i].c_str(), api.c_str());
 			if (!dev->IsValidAPI(api))
 			{
 				api = "<invalid>";
@@ -211,10 +211,10 @@ void LoadConfig()
 				if (!apis.empty())
 					api = *apis.begin();
 
-				OSDebugOut(_T("Invalid! Defaulting to '%" SFMTs "'\n"), api.c_str());
+				DevCon.WriteLn("Invalid! Defaulting to '%s'\n", api.c_str());
 			}
 			else
-				OSDebugOut(_T("API OK\n"));
+				DevCon.WriteLn("API OK\n");
 		}
 
 		if (api.size())

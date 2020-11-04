@@ -95,7 +95,7 @@ bool LoadSetting(const char* dev_type, int port, const std::string& key, const T
 	bool ret = false;
 	if (key.empty())
 	{
-		OSDebugOut(_T("Key is empty for '%s' on port %d\n"), name, port);
+		DevCon.WriteLn("Key is empty for '%s' on port %d\n", name, port);
 		return false;
 	}
 
@@ -108,7 +108,7 @@ bool LoadSetting(const char* dev_type, int port, const std::string& key, const T
 	section << tkey << _T(" ") << port;
 	TSTDSTRING str = section.str();
 
-	OSDebugOut("[%s] '%s'=", str.c_str(), name);
+	DevCon.WriteLn("[%s] '%s'=", str.c_str(), name);
 	ret = LoadSettingValue(IniPath, str, name, var);
 	if (ret)
 		OSDebugOutStream_noprfx(var);
@@ -121,7 +121,7 @@ template <typename Type>
 bool LoadSetting(const TCHAR* section, const TCHAR* key, Type& var)
 {
 	bool ret = false;
-	OSDebugOut("[%s] '%s'=", section, key);
+	DevCon.WriteLn("[%s] '%s'=", section, key);
 	ret = LoadSettingValue(IniPath, section, key, var);
 	if (ret)
 		OSDebugOutStream_noprfx(var);
@@ -150,7 +150,7 @@ bool SaveSetting(const char* dev_type, int port, const std::string& key, const T
 	bool ret = false;
 	if (key.empty())
 	{
-		OSDebugOut(_T("Key is empty for '%s' on port %d\n"), name, port);
+		DevCon.WriteLn("Key is empty for '%s' on port %d\n", name, port);
 		return false;
 	}
 
@@ -163,7 +163,7 @@ bool SaveSetting(const char* dev_type, int port, const std::string& key, const T
 	section << tkey << _T(" ") << port;
 	TSTDSTRING str = section.str();
 
-	OSDebugOut(_T("[%s] '%s'="), str.c_str(), name);
+	DevCon.WriteLn("[%s] '%s'=", str.c_str(), name);
 
 	ret = SaveSettingValue(IniPath, str, name, var);
 	OSDebugOutStream_noprfx(var);
@@ -174,7 +174,7 @@ template <typename Type>
 bool SaveSetting(const TCHAR* section, const TCHAR* key, const Type var)
 {
 	bool ret = false;
-	OSDebugOut(_T("[%s] '%s'="), section, key);
+	DevCon.WriteLn("[%s] '%s'=", section, key);
 
 	ret = SaveSettingValue(IniPath, section, key, var);
 	OSDebugOutStream_noprfx(var);
