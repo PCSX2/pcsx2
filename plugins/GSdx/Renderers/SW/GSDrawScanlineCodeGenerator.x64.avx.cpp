@@ -55,8 +55,8 @@
 static const int _rz_rbx = -8 * 1;
 static const int _rz_r12 = -8 * 2;
 static const int _rz_r13 = -8 * 3;
-static const int _rz_r14 = -8 * 4;
-static const int _rz_r15 = -8 * 5;
+//static const int _rz_r14 = -8 * 4;
+//static const int _rz_r15 = -8 * 5;
 static const int _rz_top = -8 * 6;
 static const int _rz_zs  = -8 * 8;
 static const int _rz_zd  = -8 * 10;
