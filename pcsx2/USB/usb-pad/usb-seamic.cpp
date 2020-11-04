@@ -392,7 +392,11 @@ namespace usb_pad
 	USBDevice* SeamicDevice::CreateDevice(int port)
 	{
 		std::string varApi;
+#ifdef _WIN32
 		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
+#else
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+#endif
 		PadProxyBase* proxy = RegisterPad::instance().Proxy(varApi);
 		if (!proxy)
 		{
@@ -401,10 +405,16 @@ namespace usb_pad
 			return NULL;
 		}
 
-		USB_LOG("usb-pad: creating device '%s' on port %d with %s\n", TypeName(), port, str_to_wstr(varApi));
-
 		std::string api;
+
+
+#ifdef _WIN32
+		USB_LOG("usb-pad: creating device '%s' on port %d with %s\n", TypeName(), port, str_to_wstr(varApi));
 		if (!LoadSetting(nullptr, port, usb_mic::SingstarDevice::TypeName(), N_DEVICE_API, str_to_wstr(api)))
+#else
+		USB_LOG("usb-pad: creating device '%s' on port %d with %s\n", TypeName(), port, varApi.c_str());
+		if (!LoadSetting(nullptr, port, usb_mic::SingstarDevice::TypeName(), N_DEVICE_API, api))
+#endif
 			return nullptr;
 
 		USBDevice* mic = usb_mic::SingstarDevice::CreateDevice(port, api);

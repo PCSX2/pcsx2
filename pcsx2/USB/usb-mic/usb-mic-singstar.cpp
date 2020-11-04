@@ -778,7 +778,11 @@ namespace usb_mic
 	USBDevice* SingstarDevice::CreateDevice(int port)
 	{
 		std::string api;
+#ifdef _WIN32
 		LoadSetting(nullptr, port, SingstarDevice::TypeName(), N_DEVICE_API, str_to_wstr(api));
+#else
+		LoadSetting(nullptr, port, SingstarDevice::TypeName(), N_DEVICE_API, api);
+#endif
 		return SingstarDevice::CreateDevice(port, api);
 	}
 	USBDevice* SingstarDevice::CreateDevice(int port, const std::string& api)
