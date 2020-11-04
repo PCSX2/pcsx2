@@ -13,7 +13,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
 
@@ -662,13 +661,10 @@ void cdrWrite0(u8 rt)
 	}
 }
 
-void setPsxSpeed()
+void setPs1CDVDSpeed(int speed)
 {
-	// psxmode: trying to get delays right (fix "dma3 not ready" and mdec glitches)
-	// odd.. tests suggest this should be exactly * 2. could it be that the old psx 1x / 2x speeds aren't handled the same on PS2?
-	// used Chrono Cross intro music and see that it doesn't stutter, then use any other FMV game (with sound) and see that it doesn't stall.
-	// result: cdReadTime = ((PSXCLK / 75) / BIAS) * 2; is exactly right
-	cdReadTime = ((PSXCLK / 75) / BIAS) * 2;
+	//std::cout << "SPEED: " << speed << std::endl;
+	cdReadTime = (PSXCLK / (75 * speed));
 }
 
 u8 cdrRead1(void)
@@ -748,6 +744,7 @@ void cdrWrite1(u8 rt)
 
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
+			cdr.SetlocPending = 1;
 			AddIrqQueue(cdr.Cmd, 0x800); // the seek delay occurs on the next read / seek command (CdlReadS, CdlSeekL, etc)
 		}
 		break;
@@ -844,6 +841,26 @@ void cdrWrite1(u8 rt)
 			cdr.Mode = cdr.Param[0];
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
+			if (cdr.Mode && MODE_CDDA)
+			{
+				StopCdda();
+				cdvd.Type = CDVD_TYPE_CDDA;
+				if (cdr.Reading == 1)
+				{
+					StopReading();
+				}
+				if (cdr.SetlocPending)
+				{
+					memcpy(cdr.SetSectorSeek, cdr.SetSector, 4);
+					cdr.SetlocPending = 0;
+				}
+
+				// BIOS CD Player
+				// - Pause player, hit Track 01/02/../xx (Setloc issued!!)
+			}
+
+			cdvd.Speed = 1 + ((cdr.Mode >> 7) & 0x1);
+			setPs1CDVDSpeed(cdvd.Speed);
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
 

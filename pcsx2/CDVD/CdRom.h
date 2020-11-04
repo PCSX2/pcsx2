@@ -60,6 +60,7 @@ struct cdrStruct
 	u8 ResultP;
 	u8 ResultReady;
 	u8 Cmd;
+	u8 SetlocPending;
 	u8 Readed;
 	u32 Reading;
 
@@ -74,7 +75,6 @@ struct cdrStruct
 	int Reset;
 	int RErr;
 	int FirstSector;
-
 	xa_decode_t Xa;
 
 	int Init;
@@ -95,7 +95,7 @@ u8 cdrRead0(void);
 u8 cdrRead1(void);
 u8 cdrRead2(void);
 u8 cdrRead3(void);
-void setPsxSpeed();
+void setPs1CDVDSpeed(int speed);
 void cdrWrite0(u8 rt);
 void cdrWrite1(u8 rt);
 void cdrWrite2(u8 rt);

@@ -137,6 +137,7 @@ struct cdvdStruct
 	bool Spinning;    // indicates if the Cdvd is spinning or needs a spinup delay
 };
 
+extern cdvdStruct cdvd;
 
 extern void cdvdReset();
 extern void cdvdVsync();
