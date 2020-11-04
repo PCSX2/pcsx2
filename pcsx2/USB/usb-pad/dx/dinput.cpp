@@ -846,7 +846,7 @@ namespace usb_pad
 					pKeyboard->SetDataFormat(&c_dfDIKeyboard);
 					pKeyboard->SetCooperativeLevel(hWindow, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
 					pKeyboard->Acquire();
-					g_pJoysticks.push_back(new JoystickDevice(CT_KEYBOARD, pKeyboard, GUID_SysKeyboard, _T("SysKeyboard")));
+					g_pJoysticks.push_back(new JoystickDevice(CT_KEYBOARD, pKeyboard, GUID_SysKeyboard, TEXT("SysKeyboard")));
 				}
 
 				OSDebugOut(TEXT("DINPUT: CreateDevice Mouse %p\n"), hWindow);
@@ -857,7 +857,7 @@ namespace usb_pad
 					pMouse->SetDataFormat(&c_dfDIMouse2);
 					pMouse->SetCooperativeLevel(hWindow, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
 					pMouse->Acquire();
-					g_pJoysticks.push_back(new JoystickDevice(CT_MOUSE, pMouse, GUID_SysMouse, _T("SysMouse")));
+					g_pJoysticks.push_back(new JoystickDevice(CT_MOUSE, pMouse, GUID_SysMouse, TEXT("SysMouse")));
 				}
 
 				//enumerate attached only
@@ -869,7 +869,7 @@ namespace usb_pad
 				{
 					auto joy = g_pJoysticks[i];
 					auto device = joy->GetDevice();
-					OSDebugOut(_T("DINPUT: SetDataFormat Joystick %s\n"), joy->Product().c_str());
+					OSDebugOut(TEXT("DINPUT: SetDataFormat Joystick %s\n"), joy->Product().c_str());
 					device->SetDataFormat(&c_dfDIJoystick2);
 
 					DIDEVCAPS diCaps;
@@ -878,7 +878,7 @@ namespace usb_pad
 
 					if (diCaps.dwFlags & DIDC_FORCEFEEDBACK)
 					{
-						OSDebugOut(_T("DINPUT: SetCooperativeLevel Joystick %s\n"), joy->Product().c_str());
+						OSDebugOut(TEXT("DINPUT: SetCooperativeLevel Joystick %s\n"), joy->Product().c_str());
 						//Exclusive
 						device->SetCooperativeLevel(hWindow, DISCL_EXCLUSIVE | DISCL_BACKGROUND);
 

@@ -104,8 +104,8 @@ bool LoadSetting(const char* dev_type, int port, const std::string& key, const T
 
 	TSTDSTRINGSTREAM section;
 	if (dev_type)
-		section << dev_type << _T(" ");
-	section << tkey << _T(" ") << port;
+		section << dev_type << TEXT(" ");
+	section << tkey << TEXT(" ") << port;
 	TSTDSTRING str = section.str();
 
 	DevCon.WriteLn("[%s] '%s'=", str.c_str(), name);
@@ -159,8 +159,8 @@ bool SaveSetting(const char* dev_type, int port, const std::string& key, const T
 
 	TSTDSTRINGSTREAM section;
 	if (dev_type)
-		section << dev_type << _T(" ");
-	section << tkey << _T(" ") << port;
+		section << dev_type << TEXT(" ");
+	section << tkey << TEXT(" ") << port;
 	TSTDSTRING str = section.str();
 
 	DevCon.WriteLn("[%s] '%s'=", str.c_str(), name);
