@@ -816,6 +816,7 @@ namespace usb_pad
 				close(it.cfg.fd);
 				it.cfg.fd = -1;
 			}
+			mDevices.clear();
 			return 0;
 		}
 
