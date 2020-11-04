@@ -27,6 +27,7 @@
 #include "PrecompiledHeader.h"
 #include "../qemu-usb/vl.h"
 #include "../qemu-usb/desc.h"
+#include "../shared/inifile.h"
 #include <assert.h>
 
 #include "audio.h"
@@ -985,7 +986,7 @@ namespace usb_mic
 	USBDevice* HeadsetDevice::CreateDevice(int port)
 	{
 		std::string api;
-		if (!LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, api))
+		if (!LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(api)))
 			return nullptr;
 		return HeadsetDevice::CreateDevice(port, api);
 	}
@@ -1000,7 +1001,7 @@ namespace usb_mic
 		s->audsrcproxy = RegisterAudioDevice::instance().Proxy(api);
 		if (!s->audsrcproxy)
 		{
-			SysMessage(TEXT("headset: Invalid audio API: '%") TEXT(SFMTs) TEXT("'\n"), api.c_str());
+			Console.WriteLn("headset: Invalid audio API: '%s'\n", api.c_str());
 			delete s;
 			return NULL;
 		}

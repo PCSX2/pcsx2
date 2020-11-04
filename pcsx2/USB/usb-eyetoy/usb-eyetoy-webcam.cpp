@@ -19,6 +19,7 @@
 #include "usb-eyetoy-webcam.h"
 #include "ov519.h"
 #include "../qemu-usb/desc.h"
+#include "../shared/inifile.h"
 
 namespace usb_eyetoy
 {
@@ -515,11 +516,11 @@ namespace usb_eyetoy
 	{
 		VideoDevice* videodev = nullptr;
 		std::string varApi;
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
 		VideoDeviceProxyBase* proxy = RegisterVideoDevice::instance().Proxy(varApi);
 		if (!proxy)
 		{
-			SysMessage(TEXT("Invalid video device API: %" SFMTs "\n"), varApi.c_str());
+			Console.WriteLn("Invalid video device API: %" SFMTs "\n", varApi.c_str());
 			return NULL;
 		}
 

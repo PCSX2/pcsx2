@@ -1044,7 +1044,7 @@ namespace usb_msd
 		s->file = wfopen(var.c_str(), TEXT("r+b"));
 		if (!s->file)
 		{
-			SysMessage(TEXT("usb-msd: Could not open image file '%s'\n"), var.c_str());
+			Console.WriteLn("usb-msd: Could not open image file '%s'\n", var.c_str());
 			goto fail;
 		}
 
