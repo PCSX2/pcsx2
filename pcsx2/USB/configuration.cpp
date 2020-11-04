@@ -158,7 +158,7 @@ void SaveConfig()
 
 #ifdef _WIN32
 	bool ret = ciniFile.Save(IniPath);
-	OSDebugOut(_T("ciniFile.Save: %d [%s]\n"), ret, IniPath.c_str());
+	OSDebugOut(TEXT("ciniFile.Save: %d [%s]\n"), ret, IniPath.c_str());
 #else
 	bool ret = ciniFile.Save(str_to_wstr(IniPath));
 	DevCon.WriteLn("ciniFile.Save: %d [%s]\n", ret, IniPath.c_str());
@@ -242,8 +242,8 @@ void RemoveSection(const char* dev_type, int port, const std::string& key)
 
 	TSTDSTRINGSTREAM section;
 	if (dev_type)
-		section << dev_type << _T(" ");
-	section << tkey << _T(" ") << port;
+		section << dev_type << TEXT(" ");
+	section << tkey << TEXT(" ") << port;
 	TSTDSTRING str = section.str();
 
 #ifdef _WIN32

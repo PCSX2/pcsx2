@@ -442,7 +442,7 @@ namespace usb_pad
 		{
 			CID = controlid;
 			RemoveInputMap(port, controlid);
-			SetWindowText(GetDlgItem(hWnd, LABELS[CID]), _T("Unmapped"));
+			SetWindowText(GetDlgItem(hWnd, LABELS[CID]), TEXT("Unmapped"));
 		}
 
 		void CreateDrawing(int port, HDC hDrawingDC, int scale)
@@ -1220,18 +1220,18 @@ namespace usb_pad
 
 		void SaveDInputConfig(int port, const char* dev_type)
 		{
-			SaveSetting(_T("dinput"), _T("BYPASSCAL"), BYPASSCAL);
+			SaveSetting(TEXT("dinput"), TEXT("BYPASSCAL"), BYPASSCAL);
 
 			wchar_t section[256];
 			swprintf_s(section, L"%S dinput %d", dev_type, port);
 
 			ClearSection(section);
-			SaveSetting(section, _T("INVERTFORCES"), INVERTFORCES[port]);
+			SaveSetting(section, TEXT("INVERTFORCES"), INVERTFORCES[port]);
 
 #ifdef _WIN32
-			SaveSetting(section, _T("# CONTROL n"), str_to_wstr("GUID,MAPPING TYPE,MAPPED TO,INVERTED,HALF,LINEAR,OFFSET,DEADZONE"));
+			SaveSetting(section, TEXT("# CONTROL n"), str_to_wstr("GUID,MAPPING TYPE,MAPPED TO,INVERTED,HALF,LINEAR,OFFSET,DEADZONE"));
 #else
-			SaveSetting(section, _T("# CONTROL n"), "GUID,MAPPING TYPE,MAPPED TO,INVERTED,HALF,LINEAR,OFFSET,DEADZONE");
+			SaveSetting(section, TEXT("# CONTROL n"), "GUID,MAPPING TYPE,MAPPED TO,INVERTED,HALF,LINEAR,OFFSET,DEADZONE");
 #endif
 
 			for (auto& control : g_Controls[port])
@@ -1242,7 +1242,7 @@ namespace usb_pad
 
 				std::stringstream ss;
 				ss << joy->GetGUID() << "," << im.type << "," << im.mapped;
-				//SaveSetting(section, _T("ProductName"), joy->Product());
+				//SaveSetting(section, TEXT("ProductName"), joy->Product());
 
 				if (joy->GetControlType() == CT_JOYSTICK)
 				{
@@ -1253,7 +1253,7 @@ namespace usb_pad
 					   << "," << im.DEADZONE;
 				}
 
-				swprintf_s(text, _T("CONTROL %i"), cid);
+				swprintf_s(text, TEXT("CONTROL %i"), cid);
 #ifdef _WIN32
 				SaveSetting(section, text, str_to_wstr(ss.str()));
 #else
@@ -1261,29 +1261,29 @@ namespace usb_pad
 #endif
 			}
 
-			SaveSetting(section, _T("GAINZ"), GAINZ[port][0]);
-			SaveSetting(section, _T("FFMULTI"), FFMULTI[port][0]);
+			SaveSetting(section, TEXT("GAINZ"), GAINZ[port][0]);
+			SaveSetting(section, TEXT("FFMULTI"), FFMULTI[port][0]);
 			//only for config dialog
-			SaveSetting(section, _T("UseRamp"), useRamp);
+			SaveSetting(section, TEXT("UseRamp"), useRamp);
 		}
 
 		void LoadDInputConfig(int port, const char* dev_type)
 		{
-			LoadSetting(_T("dinput"), _T("BYPASSCAL"), BYPASSCAL);
+			LoadSetting(TEXT("dinput"), TEXT("BYPASSCAL"), BYPASSCAL);
 
 			wchar_t section[256];
 			swprintf_s(section, L"%S dinput %d", dev_type, port);
 
-			LoadSetting(section, _T("INVERTFORCES"), INVERTFORCES[port]);
-			if (!LoadSetting(section, _T("GAINZ"), GAINZ[port][0]))
+			LoadSetting(section, TEXT("INVERTFORCES"), INVERTFORCES[port]);
+			if (!LoadSetting(section, TEXT("GAINZ"), GAINZ[port][0]))
 				GAINZ[port][0] = 10000;
 
-			if (!LoadSetting(section, _T("FFMULTI"), FFMULTI[port][0]))
+			if (!LoadSetting(section, TEXT("FFMULTI"), FFMULTI[port][0]))
 				FFMULTI[port][0] = 0;
 
 			try
 			{
-				swprintf_s(section, _T("%" SFMTs " dinput %d"), dev_type, port);
+				swprintf_s(section, TEXT("%" SFMTs " dinput %d"), dev_type, port);
 
 				for (int cid = 0; cid < CID_COUNT; cid++)
 				{
@@ -1292,7 +1292,7 @@ namespace usb_pad
 					std::string control, guid, value;
 					std::stringstream ss;
 
-					swprintf_s(text, _T("CONTROL %i"), cid);
+					swprintf_s(text, TEXT("CONTROL %i"), cid);
 #ifdef _WIN32
 					if (!LoadSetting(section, text, str_to_wstr(control)))
 #else
@@ -1323,7 +1323,7 @@ namespace usb_pad
 
 					if (im.type == MT_NONE)
 					{
-						OSDebugOut(_T("Skipping control %d (%s), mapping type is None\n"), cid, g_pJoysticks[im.index]->Product().c_str());
+						OSDebugOut(TEXT("Skipping control %d (%s), mapping type is None\n"), cid, g_pJoysticks[im.index]->Product().c_str());
 						continue;
 					}
 
@@ -1352,7 +1352,7 @@ namespace usb_pad
 				OSDebugOut(TEXT("%" SFMTs "\n"), err.what());
 			}
 
-			LoadSetting(section, _T("UseRamp"), useRamp);
+			LoadSetting(section, TEXT("UseRamp"), useRamp);
 		}
 
 		int DInputPad::Configure(int port, const char* dev_type, void* data)

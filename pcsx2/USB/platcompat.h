@@ -56,11 +56,6 @@
 #define TSTDSTRINGSTREAM std::wstringstream
 #define TSTDTOSTRING std::to_wstring
 
-#ifdef _MSC_VER
-//typedef SSIZE_T ssize_t;
-#endif
-
-
 //FIXME narrow string fmt
 #define SFMTs "S"
 
@@ -68,10 +63,6 @@
 
 void SysMessageW(const wchar_t* fmt, ...);
 #define SysMessage SysMessageW
-
-#ifndef _T
-#define _T(x) L##x
-#endif
 
 #else //_WIN32
 

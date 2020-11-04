@@ -56,7 +56,7 @@ namespace usb_pad
 				std::wstring hid, tmp;
 				//swprintf_s(sec, TEXT("%S RAW DEVICE %d"), dev_type, j++);
 
-				if (LoadSetting(dev_type, j, "RAW DEVICE", _T("HID"), hid) && !hid.empty() && !MapExists(maps, hid))
+				if (LoadSetting(dev_type, j, "RAW DEVICE", TEXT("HID"), hid) && !hid.empty() && !MapExists(maps, hid))
 				{
 					Mappings m;
 					ZeroMemory(&m, sizeof(Mappings));
@@ -106,7 +106,7 @@ namespace usb_pad
 			{
 				WCHAR dev[1024] = {0}, tmp[16] = {0}, bind[32] = {0};
 
-				SaveSetting<std::wstring>(dev_type, numDevice, "RAW DEVICE", _T("HID"), it.hidPath);
+				SaveSetting<std::wstring>(dev_type, numDevice, "RAW DEVICE", TEXT("HID"), it.hidPath);
 
 				//writing everything separately, then string lengths are more predictable
 				for (int i = 0; i < MAX_BUTTONS; i++)
