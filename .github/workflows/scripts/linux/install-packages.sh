@@ -119,5 +119,9 @@ PCSX2_PACKAGES_STR=""
 for i in "${PCSX2_PACKAGES[@]}"; do
   PCSX2_PACKAGES_STR="${PCSX2_PACKAGES_STR} ${i}${ARCH}"
 done
+if [ "${PLATFORM}" == "x86" ]; then
+echo "Installing workaround attempt"
+sudo apt-get -y install libgcc-s1:i386
+fi
 echo "Will install the following packages for pcsx2 - ${PCSX2_PACKAGES_STR}"
 sudo apt-get -y install ${PCSX2_PACKAGES_STR}
