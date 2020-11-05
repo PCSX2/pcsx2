@@ -94,7 +94,7 @@ namespace usb_eyetoy
 			}
 			else
 			{
-				fprintf(stderr, "unk format %c%c%c%c\n", pixelformat, pixelformat >> 8, pixelformat >> 16, pixelformat >> 24);
+				Console.Warning("unk format %c%c%c%c\n", pixelformat, pixelformat >> 8, pixelformat >> 16, pixelformat >> 24);
 			}
 		}
 
@@ -114,7 +114,7 @@ namespace usb_eyetoy
 
 					case EIO:
 					default:
-						fprintf(stderr, "%s error %d, %s\n", "VIDIOC_DQBUF", errno, strerror(errno));
+						Console.Warning("%s error %d, %s\n", "VIDIOC_DQBUF", errno, strerror(errno));
 						return -1;
 				}
 			}
@@ -125,7 +125,7 @@ namespace usb_eyetoy
 
 			if (-1 == xioctl(fd, VIDIOC_QBUF, &buf))
 			{
-				fprintf(stderr, "%s error %d, %s\n", "VIDIOC_QBUF", errno, strerror(errno));
+				Console.Warning("%s error %d, %s\n", "VIDIOC_QBUF", errno, strerror(errno));
 				return -1;
 			}
 
@@ -176,7 +176,7 @@ namespace usb_eyetoy
 				CLEAR(cap);
 				if (ioctl(fd, VIDIOC_QUERYCAP, &cap) >= 0)
 				{
-					fprintf(stderr, "Camera: %s / %s\n", dev_name, (char*)cap.card);
+					Console.Warning("Camera: %s / %s\n", dev_name, (char*)cap.card);
 					if (!selectedDevice.empty() && strcmp(selectedDevice.c_str(), (char*)cap.card) == 0)
 					{
 						goto cont;
@@ -193,7 +193,7 @@ namespace usb_eyetoy
 				fd = open(dev_name, O_RDWR | O_NONBLOCK, 0);
 				if (-1 == fd)
 				{
-					fprintf(stderr, "Cannot open '%s': %d, %s\n", dev_name, errno, strerror(errno));
+					Console.Warning("Cannot open '%s': %d, %s\n", dev_name, errno, strerror(errno));
 					return -1;
 				}
 			}
@@ -205,25 +205,25 @@ namespace usb_eyetoy
 			{
 				if (EINVAL == errno)
 				{
-					fprintf(stderr, "%s is no V4L2 device\n", dev_name);
+					Console.Warning("%s is no V4L2 device\n", dev_name);
 					return -1;
 				}
 				else
 				{
-					fprintf(stderr, "%s error %d, %s\n", "VIDIOC_QUERYCAP", errno, strerror(errno));
+					Console.Warning("%s error %d, %s\n", "VIDIOC_QUERYCAP", errno, strerror(errno));
 					return -1;
 				}
 			}
 
 			if (!(cap.capabilities & V4L2_CAP_VIDEO_CAPTURE))
 			{
-				fprintf(stderr, "%s is no video capture device\n", dev_name);
+				Console.Warning("%s is no video capture device\n", dev_name);
 				return -1;
 			}
 
 			if (!(cap.capabilities & V4L2_CAP_STREAMING))
 			{
-				fprintf(stderr, "%s does not support streaming i/o\n", dev_name);
+				Console.Warning("%s does not support streaming i/o\n", dev_name);
 				return -1;
 			}
 
@@ -258,11 +258,11 @@ namespace usb_eyetoy
 
 			if (-1 == xioctl(fd, VIDIOC_S_FMT, &fmt))
 			{
-				fprintf(stderr, "%s error %d, %s\n", "VIDIOC_S_FMT", errno, strerror(errno));
+				Console.Warning("%s error %d, %s\n", "VIDIOC_S_FMT", errno, strerror(errno));
 				return -1;
 			}
 			pixelformat = fmt.fmt.pix.pixelformat;
-			fprintf(stderr, "VIDIOC_S_FMT res=%dx%d, fmt=%c%c%c%c\n", fmt.fmt.pix.width, fmt.fmt.pix.height,
+			Console.Warning("VIDIOC_S_FMT res=%dx%d, fmt=%c%c%c%c\n", fmt.fmt.pix.width, fmt.fmt.pix.height,
 					pixelformat, pixelformat >> 8, pixelformat >> 16, pixelformat >> 24);
 
 			struct v4l2_requestbuffers req;
@@ -275,19 +275,19 @@ namespace usb_eyetoy
 			{
 				if (EINVAL == errno)
 				{
-					fprintf(stderr, "%s does not support memory mapping\n", dev_name);
+					Console.Warning("%s does not support memory mapping\n", dev_name);
 					return -1;
 				}
 				else
 				{
-					fprintf(stderr, "%s error %d, %s\n", "VIDIOC_REQBUFS", errno, strerror(errno));
+					Console.Warning("%s error %d, %s\n", "VIDIOC_REQBUFS", errno, strerror(errno));
 					return -1;
 				}
 			}
 
 			if (req.count < 2)
 			{
-				fprintf(stderr, "Insufficient buffer memory on %s\n", dev_name);
+				Console.Warning("Insufficient buffer memory on %s\n", dev_name);
 				return -1;
 			}
 
@@ -295,7 +295,7 @@ namespace usb_eyetoy
 
 			if (!buffers)
 			{
-				fprintf(stderr, "Out of memory\n");
+				Console.Warning("Out of memory\n");
 				return -1;
 			}
 
@@ -310,7 +310,7 @@ namespace usb_eyetoy
 
 				if (-1 == xioctl(fd, VIDIOC_QUERYBUF, &buf))
 				{
-					fprintf(stderr, "%s error %d, %s\n", "VIDIOC_QUERYBUF", errno, strerror(errno));
+					Console.Warning("%s error %d, %s\n", "VIDIOC_QUERYBUF", errno, strerror(errno));
 					return -1;
 				}
 
@@ -319,7 +319,7 @@ namespace usb_eyetoy
 
 				if (MAP_FAILED == buffers[n_buffers].start)
 				{
-					fprintf(stderr, "%s error %d, %s\n", "mmap", errno, strerror(errno));
+					Console.Warning("%s error %d, %s\n", "mmap", errno, strerror(errno));
 					return -1;
 				}
 			}
@@ -334,7 +334,7 @@ namespace usb_eyetoy
 
 				if (-1 == xioctl(fd, VIDIOC_QBUF, &buf))
 				{
-					fprintf(stderr, "%s error %d, %s\n", "VIDIOC_QBUF", errno, strerror(errno));
+					Console.Warning("%s error %d, %s\n", "VIDIOC_QBUF", errno, strerror(errno));
 					return -1;
 				}
 			}
@@ -343,7 +343,7 @@ namespace usb_eyetoy
 			type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 			if (-1 == xioctl(fd, VIDIOC_STREAMON, &type))
 			{
-				fprintf(stderr, "%s error %d, %s\n", "VIDIOC_STREAMON", errno, strerror(errno));
+				Console.Warning("%s error %d, %s\n", "VIDIOC_STREAMON", errno, strerror(errno));
 				return -1;
 			}
 			return 0;
@@ -368,13 +368,13 @@ namespace usb_eyetoy
 					{
 						if (errno == EINTR)
 							continue;
-						fprintf(stderr, "%s error %d, %s\n", "select", errno, strerror(errno));
+						Console.Warning("%s error %d, %s\n", "select", errno, strerror(errno));
 						break;
 					}
 
 					if (ret == 0)
 					{
-						fprintf(stderr, "select timeout\n");
+						Console.Warning("select timeout\n");
 						break;
 					}
 
@@ -383,7 +383,7 @@ namespace usb_eyetoy
 				}
 			}
 			eyetoy_running = 0;
-			fprintf(stderr, "V4L2 thread quit\n");
+			Console.Warning("V4L2 thread quit\n");
 			return NULL;
 		}
 
@@ -393,7 +393,7 @@ namespace usb_eyetoy
 			type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 			if (-1 == xioctl(fd, VIDIOC_STREAMOFF, &type))
 			{
-				fprintf(stderr, "%s error %d, %s\n", "VIDIOC_STREAMOFF", errno, strerror(errno));
+				Console.Warning("%s error %d, %s\n", "VIDIOC_STREAMOFF", errno, strerror(errno));
 				return -1;
 			}
 
@@ -401,7 +401,7 @@ namespace usb_eyetoy
 			{
 				if (-1 == munmap(buffers[i].start, buffers[i].length))
 				{
-					fprintf(stderr, "%s error %d, %s\n", "munmap", errno, strerror(errno));
+					Console.Warning("%s error %d, %s\n", "munmap", errno, strerror(errno));
 					return -1;
 				}
 			}
@@ -409,7 +409,7 @@ namespace usb_eyetoy
 
 			if (-1 == close(fd))
 			{
-				fprintf(stderr, "%s error %d, %s\n", "close", errno, strerror(errno));
+				Console.Warning("%s error %d, %s\n", "close", errno, strerror(errno));
 				return -1;
 			}
 			fd = -1;

@@ -352,7 +352,6 @@
     <ClCompile Include="..\..\USB\configuration.cpp" />
     <ClCompile Include="..\..\USB\deviceproxy.cpp" />
     <ClCompile Include="..\..\USB\device_init.cpp" />
-    <ClCompile Include="..\..\USB\osdebugout.cpp" />
     <ClCompile Include="..\..\USB\qemu-usb\bus.cpp" />
     <ClCompile Include="..\..\USB\qemu-usb\core.cpp" />
     <ClCompile Include="..\..\USB\qemu-usb\desc.cpp" />
@@ -665,7 +664,6 @@
     <ClInclude Include="..\..\USB\configuration.h" />
     <ClInclude Include="..\..\USB\deviceproxy.h" />
     <ClInclude Include="..\..\USB\helpers.h" />
-    <ClInclude Include="..\..\USB\osdebugout.h" />
     <ClInclude Include="..\..\USB\platcompat.h" />
     <ClInclude Include="..\..\USB\proxybase.h" />
     <ClInclude Include="..\..\USB\qemu-usb\desc.h" />

@@ -14,7 +14,6 @@
  */
 
 #include "shared.h"
-#include "../../osdebugout.h"
 #include "../../icon_buzz_24.h"
 
 #include <chrono>
@@ -229,7 +228,6 @@ namespace usb_pad
 			{
 				std::string name = (cfg->joysticks.begin() + idx)->name;
 				cfg->js_iter = (cfg->joysticks.begin() + idx);
-				OSDebugOut("Selected player %d idx: %d dev: '%s'\n", 2 - port, idx, name.c_str());
 			}
 		}
 
@@ -246,7 +244,6 @@ namespace usb_pad
 				bool is_axis = (type >= JOY_STEERING && type <= JOY_BRAKE);
 
 				gtk_label_set_text(GTK_LABEL(cfg->label), "Polling for input for 5 seconds...");
-				OSDebugOut("Polling: isaxis:%d %d\n", is_axis, type);
 
 				// let label change its text
 				while (gtk_events_pending())
@@ -286,7 +283,6 @@ namespace usb_pad
 				bool inverted = false;
 
 				gtk_label_set_text(GTK_LABEL(cfg->label), "Polling for input for 5 seconds...");
-				OSDebugOut("Polling: %s\n", buzz_map_names[type]);
 
 				// let label change its text
 				while (gtk_events_pending())
@@ -301,9 +297,6 @@ namespace usb_pad
 
 					if (it != cfg->jsconf.end() && type < it->second.controls.size())
 					{
-						OSDebugOut("setting mappings for %s %s_%lu=%d\n", dev_name.c_str(),
-								   buzz_map_names[type % countof(buzz_map_names)],
-								   type / countof(buzz_map_names), value);
 						it->second.controls[type] = value;
 						refresh_store(cfg);
 					}
@@ -329,7 +322,6 @@ namespace usb_pad
 			int binding;
 
 			gtk_tree_model_get(model, iter, COL_NAME, &dev_name, COL_BINDING, &binding, -1);
-			OSDebugOut("name: %s, bind: %d\n", dev_name, binding);
 
 			auto& js = cfg->jsconf;
 			auto it = std::find_if(js.begin(), js.end(),
@@ -339,7 +331,6 @@ namespace usb_pad
 			if (it != js.end())
 			{
 				it->second.controls[binding] = (uint16_t)-1;
-				OSDebugOut("Delete binding '%d' for '%s'\n", binding, it->first.c_str());
 			}
 			gtk_list_store_remove(GTK_LIST_STORE(model), iter);
 			//refresh_store(cfg);
@@ -425,14 +416,12 @@ namespace usb_pad
 			{
 				if ((fd = open(it.path.c_str(), O_RDONLY | O_NONBLOCK)) < 0)
 				{
-					OSDebugOut("Cannot open device: %s\n", it.path.c_str());
 					continue;
 				}
 
 				ConfigMapping c(fd);
 				LoadMappings(cfg.dev_type, port, it.id, c);
 				cfg.jsconf.push_back(std::make_pair(it.id, c));
-				OSDebugOut("mappings for '%s': %zu\n", it.name.c_str(), c.controls.size());
 			}
 
 			refresh_store(&cfg);
@@ -761,7 +750,6 @@ namespace usb_pad
 			{
 				if ((fd = open(it.path.c_str(), O_RDONLY | O_NONBLOCK)) < 0)
 				{
-					OSDebugOut("Cannot open device: %s\n", it.path.c_str());
 					continue;
 				}
 
@@ -769,7 +757,6 @@ namespace usb_pad
 				c.fd = fd;
 				LoadBuzzMappings(cfg.dev_type, port, it.id, c);
 				cfg.jsconf.push_back(std::make_pair(it.id, c));
-				OSDebugOut("mappings for '%s': %lu\n", it.name.c_str(), c.controls.size());
 			}
 
 			refresh_store(&cfg);
@@ -882,7 +869,6 @@ namespace usb_pad
 						gtk_button_set_image_position(GTK_BUTTON(button), GTK_POS_LEFT);
 
 						GList* children = gtk_container_get_children(GTK_CONTAINER(button));
-						//OSDebugOut("widget: %s\n", gtk_widget_get_name(GTK_WIDGET(children->data)));
 
 						//Gtk 3.16+
 						//gtk_label_set_xalign (GTK_WIDGET(children), 0.0)

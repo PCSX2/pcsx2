@@ -59,7 +59,7 @@ namespace usb_eyetoy
 			HRESULT hr = CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pCreateDevEnum));
 			if (FAILED(hr))
 			{
-				fprintf(stderr, "Error Creating Device Enumerator");
+				Console.Warning("Error Creating Device Enumerator");
 				return devList;
 			}
 
@@ -67,7 +67,7 @@ namespace usb_eyetoy
 			hr = pCreateDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnum, NULL);
 			if (FAILED(hr))
 			{
-				fprintf(stderr, "You have no video capture hardware");
+				Console.Warning("You have no video capture hardware");
 				return devList;
 			};
 
@@ -112,7 +112,7 @@ namespace usb_eyetoy
 			HRESULT hr = CoCreateInstance(CLSID_CaptureGraphBuilder2, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pGraphBuilder));
 			if (FAILED(hr))
 			{
-				fprintf(stderr, "CoCreateInstance CLSID_CaptureGraphBuilder2 err : %x\n", hr);
+				Console.Warning("CoCreateInstance CLSID_CaptureGraphBuilder2 err : %x\n", hr);
 				return -1;
 			}
 
@@ -120,21 +120,21 @@ namespace usb_eyetoy
 			hr = CoCreateInstance(CLSID_FilterGraph, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pGraph));
 			if (FAILED(hr))
 			{
-				fprintf(stderr, "CoCreateInstance CLSID_FilterGraph err : %x\n", hr);
+				Console.Warning("CoCreateInstance CLSID_FilterGraph err : %x\n", hr);
 				return -1;
 			}
 
 			hr = pGraphBuilder->SetFiltergraph(pGraph);
 			if (FAILED(hr))
 			{
-				fprintf(stderr, "SetFiltergraph err : %x\n", hr);
+				Console.Warning("SetFiltergraph err : %x\n", hr);
 				return -1;
 			}
 
 			hr = pGraph->QueryInterface(IID_IMediaControl, (void**)&pControl);
 			if (FAILED(hr))
 			{
-				fprintf(stderr, "QueryInterface IID_IMediaControl err : %x\n", hr);
+				Console.Warning("QueryInterface IID_IMediaControl err : %x\n", hr);
 				return -1;
 			}
 
@@ -143,7 +143,7 @@ namespace usb_eyetoy
 			hr = CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pCreateDevEnum));
 			if (FAILED(hr))
 			{
-				fprintf(stderr, "Error Creating Device Enumerator");
+				Console.Warning("Error Creating Device Enumerator");
 				return -1;
 			}
 
@@ -151,7 +151,7 @@ namespace usb_eyetoy
 			hr = pCreateDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnum, NULL);
 			if (FAILED(hr))
 			{
-				fprintf(stderr, "You have no video capture hardware");
+				Console.Warning("You have no video capture hardware");
 				return -1;
 			};
 
@@ -164,7 +164,7 @@ namespace usb_eyetoy
 				hr = pMoniker->BindToStorage(0, 0, IID_PPV_ARGS(&pPropBag));
 				if (FAILED(hr))
 				{
-					fprintf(stderr, "BindToStorage err : %x\n", hr);
+					Console.Warning("BindToStorage err : %x\n", hr);
 					goto freeMoniker;
 				}
 
@@ -178,10 +178,10 @@ namespace usb_eyetoy
 				}
 				if (FAILED(hr))
 				{
-					fprintf(stderr, "Read name err : %x\n", hr);
+					Console.Warning("Read name err : %x\n", hr);
 					goto freeVar;
 				}
-				fprintf(stderr, "Camera: '%ls'\n", var.bstrVal);
+				Console.Warning("Camera: '%ls'\n", var.bstrVal);
 				if (!selectedDevice.empty() && selectedDevice != var.bstrVal)
 				{
 					goto freeVar;
@@ -191,7 +191,7 @@ namespace usb_eyetoy
 				hr = pGraph->AddSourceFilterForMoniker(pMoniker, NULL, L"sourcefilter", &sourcefilter);
 				if (FAILED(hr))
 				{
-					fprintf(stderr, "AddSourceFilterForMoniker err : %x\n", hr);
+					Console.Warning("AddSourceFilterForMoniker err : %x\n", hr);
 					goto freeVar;
 				}
 
@@ -210,7 +210,7 @@ namespace usb_eyetoy
 							VIDEO_STREAM_CONFIG_CAPS scc;
 							AM_MEDIA_TYPE* pmtConfig;
 							hr = pSourceConfig->GetStreamCaps(iFormat, &pmtConfig, (BYTE*)&scc);
-							fprintf(stderr, "GetStreamCaps min=%dx%d max=%dx%d, fmt=%x\n",
+							Console.Warning("GetStreamCaps min=%dx%d max=%dx%d, fmt=%x\n",
 									scc.MinOutputSize.cx, scc.MinOutputSize.cy,
 									scc.MaxOutputSize.cx, scc.MaxOutputSize.cy,
 									pmtConfig->subtype);
@@ -239,14 +239,14 @@ namespace usb_eyetoy
 				hr = CoCreateInstance(CLSID_SampleGrabber, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&samplegrabberfilter));
 				if (FAILED(hr))
 				{
-					fprintf(stderr, "CoCreateInstance CLSID_SampleGrabber err : %x\n", hr);
+					Console.Warning("CoCreateInstance CLSID_SampleGrabber err : %x\n", hr);
 					goto freeVar;
 				}
 
 				hr = pGraph->AddFilter(samplegrabberfilter, L"samplegrabberfilter");
 				if (FAILED(hr))
 				{
-					fprintf(stderr, "AddFilter samplegrabberfilter err : %x\n", hr);
+					Console.Warning("AddFilter samplegrabberfilter err : %x\n", hr);
 					goto freeVar;
 				}
 
@@ -254,7 +254,7 @@ namespace usb_eyetoy
 				hr = samplegrabberfilter->QueryInterface(IID_PPV_ARGS(&samplegrabber));
 				if (FAILED(hr))
 				{
-					fprintf(stderr, "QueryInterface err : %x\n", hr);
+					Console.Warning("QueryInterface err : %x\n", hr);
 					goto freeVar;
 				}
 
@@ -265,7 +265,7 @@ namespace usb_eyetoy
 				hr = samplegrabber->SetMediaType(&mt);
 				if (FAILED(hr))
 				{
-					fprintf(stderr, "SetMediaType err : %x\n", hr);
+					Console.Warning("SetMediaType err : %x\n", hr);
 					goto freeVar;
 				}
 
@@ -273,7 +273,7 @@ namespace usb_eyetoy
 				hr = samplegrabber->SetCallback(callbackhandler, 0);
 				if (hr != S_OK)
 				{
-					fprintf(stderr, "SetCallback err : %x\n", hr);
+					Console.Warning("SetCallback err : %x\n", hr);
 					goto freeVar;
 				}
 
@@ -281,14 +281,14 @@ namespace usb_eyetoy
 				hr = CoCreateInstance(CLSID_NullRenderer, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&nullrenderer));
 				if (FAILED(hr))
 				{
-					fprintf(stderr, "CoCreateInstance CLSID_NullRenderer err : %x\n", hr);
+					Console.Warning("CoCreateInstance CLSID_NullRenderer err : %x\n", hr);
 					goto freeVar;
 				}
 
 				hr = pGraph->AddFilter(nullrenderer, L"nullrenderer");
 				if (FAILED(hr))
 				{
-					fprintf(stderr, "AddFilter nullrenderer err : %x\n", hr);
+					Console.Warning("AddFilter nullrenderer err : %x\n", hr);
 					goto freeVar;
 				}
 
@@ -296,7 +296,7 @@ namespace usb_eyetoy
 				hr = pGraphBuilder->RenderStream(&PIN_CATEGORY_PREVIEW, &MEDIATYPE_Video, sourcefilter, samplegrabberfilter, nullrenderer);
 				if (FAILED(hr))
 				{
-					fprintf(stderr, "RenderStream err : %x\n", hr);
+					Console.Warning("RenderStream err : %x\n", hr);
 					goto freeVar;
 				}
 
@@ -305,7 +305,7 @@ namespace usb_eyetoy
 				hr = pGraphBuilder->ControlStream(&PIN_CATEGORY_CAPTURE, &MEDIATYPE_Video, sourcefilter, &start, &stop, 1, 2);
 				if (FAILED(hr))
 				{
-					fprintf(stderr, "ControlStream err : %x\n", hr);
+					Console.Warning("ControlStream err : %x\n", hr);
 					goto freeVar;
 				}
 
@@ -376,7 +376,7 @@ namespace usb_eyetoy
 			}
 			else
 			{
-				fprintf(stderr, "dshow_callback: unk format: len=%d bpp=%d\n", len, bitsperpixel);
+				Console.Warning("dshow_callback: unk format: len=%d bpp=%d\n", len, bitsperpixel);
 			}
 		}
 
@@ -431,7 +431,7 @@ namespace usb_eyetoy
 			int ret = InitializeDevice(selectedDevice);
 			if (ret < 0)
 			{
-				fprintf(stderr, "Camera: cannot find '%ls'\n", selectedDevice.c_str());
+				Console.Warning("Camera: cannot find '%ls'\n", selectedDevice.c_str());
 				return -1;
 			}
 

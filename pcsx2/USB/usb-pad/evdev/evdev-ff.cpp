@@ -14,7 +14,6 @@
  */
 
 #include "evdev-ff.h"
-#include "../../osdebugout.h"
 #include "../../usb-pad/lg/lg_ff.h"
 #include <unistd.h>
 #include <cerrno>
@@ -42,40 +41,33 @@ namespace usb_pad
 			unsigned char features[BITS_TO_UCHAR(FF_MAX)];
 			if (ioctl(mHandle, EVIOCGBIT(EV_FF, sizeof(features)), features) < 0)
 			{
-				OSDebugOut("Get features failed: %s\n", strerror(errno));
 			}
 
 			int effects = 0;
 			if (ioctl(mHandle, EVIOCGEFFECTS, &effects) < 0)
 			{
-				OSDebugOut("Get effects failed: %s\n", strerror(errno));
 			}
 
 			if (!testBit(FF_CONSTANT, features))
 			{
-				OSDebugOut("device does not support FF_CONSTANT\n");
 				if (testBit(FF_RUMBLE, features))
 					mUseRumble = true;
 			}
 
 			if (!testBit(FF_SPRING, features))
 			{
-				OSDebugOut("device does not support FF_SPRING\n");
 			}
 
 			if (!testBit(FF_DAMPER, features))
 			{
-				OSDebugOut("device does not support FF_DAMPER\n");
 			}
 
 			if (!testBit(FF_GAIN, features))
 			{
-				OSDebugOut("device does not support FF_GAIN\n");
 			}
 
 			if (!testBit(FF_AUTOCENTER, features))
 			{
-				OSDebugOut("device does not support FF_AUTOCENTER\n");
 			}
 
 			memset(&mEffect, 0, sizeof(mEffect));
@@ -109,7 +101,6 @@ namespace usb_pad
 			{
 				if (mEffIds[i] != -1 && ioctl(mHandle, EVIOCRMFF, mEffIds[i]) == -1)
 				{
-					OSDebugOut("Failed to unload EffectID(%d) effect.\n", i);
 				}
 			}
 		}
@@ -122,7 +113,6 @@ namespace usb_pad
 			play.value = 0;
 			if (write(mHandle, (const void*)&play, sizeof(play)) == -1)
 			{
-				OSDebugOut("Stop effect failed: %s\n", strerror(errno));
 			}
 		}
 
@@ -143,10 +133,8 @@ namespace usb_pad
 				// 		mEffect.u.constant.envelope.fade_length = 0;//0x100;
 				// 		mEffect.u.constant.envelope.fade_level = 0;
 
-				OSDebugOut("Constant force: %d\n", level);
 				if (ioctl(mHandle, EVIOCSFF, &(mEffect)) < 0)
 				{
-					OSDebugOut("Failed to upload constant effect: %s\n", strerror(errno));
 					return;
 				}
 				play.code = mEffect.id;
@@ -176,7 +164,6 @@ namespace usb_pad
 
 				if (ioctl(mHandle, EVIOCSFF, &(mEffect)) < 0)
 				{
-					OSDebugOut("Failed to upload constant effect: %s\n", strerror(errno));
 					return;
 				}
 				play.code = mEffect.id;
@@ -185,7 +172,6 @@ namespace usb_pad
 
 			if (write(mHandle, (const void*)&play, sizeof(play)) == -1)
 			{
-				OSDebugOut("Play effect failed: %s\n", strerror(errno));
 			}
 		}
 
@@ -205,13 +191,8 @@ namespace usb_pad
 			mEffect.u.condition[0].center = ff.u.condition.center;
 			mEffect.u.condition[0].deadband = ff.u.condition.deadband;
 
-			OSDebugOut("Spring force: coef %d/%d sat %d/%d\n",
-					   mEffect.u.condition[0].left_coeff, mEffect.u.condition[0].right_coeff,
-					   mEffect.u.condition[0].left_saturation, mEffect.u.condition[0].right_saturation);
-
 			if (ioctl(mHandle, EVIOCSFF, &(mEffect)) < 0)
 			{
-				OSDebugOut("Failed to upload spring effect: %s\n", strerror(errno));
 				return;
 			}
 
@@ -220,7 +201,6 @@ namespace usb_pad
 
 			if (write(mHandle, (const void*)&play, sizeof(play)) == -1)
 			{
-				OSDebugOut("Play effect failed: %s\n", strerror(errno));
 			}
 		}
 
@@ -240,11 +220,9 @@ namespace usb_pad
 			mEffect.u.condition[0].center = ff.u.condition.center;
 			mEffect.u.condition[0].deadband = ff.u.condition.deadband;
 
-			OSDebugOut("Damper force: %d/%d\n", mEffect.u.condition[0].left_coeff, mEffect.u.condition[0].right_coeff);
 
 			if (ioctl(mHandle, EVIOCSFF, &(mEffect)) < 0)
 			{
-				OSDebugOut("Failed to upload damper effect: %s\n", strerror(errno));
 				return;
 			}
 
@@ -253,7 +231,6 @@ namespace usb_pad
 
 			if (write(mHandle, (const void*)&play, sizeof(play)) == -1)
 			{
-				OSDebugOut("Play effect failed: %s\n", strerror(errno));
 			}
 		}
 
@@ -273,10 +250,8 @@ namespace usb_pad
 			mEffect.u.condition[0].center = ff.u.condition.center;
 			mEffect.u.condition[0].deadband = ff.u.condition.deadband;
 
-			OSDebugOut("Friction force: %d/%d\n", mEffect.u.condition[0].left_coeff, mEffect.u.condition[0].right_coeff);
 			if (ioctl(mHandle, EVIOCSFF, &(mEffect)) < 0)
 			{
-				OSDebugOut("Failed to upload friction effect: %s\n", strerror(errno));
 				return;
 			}
 
@@ -285,7 +260,6 @@ namespace usb_pad
 
 			if (write(mHandle, (const void*)&play, sizeof(play)) == -1)
 			{
-				OSDebugOut("Play effect failed: %s\n", strerror(errno));
 			}
 		}
 
@@ -300,9 +274,6 @@ namespace usb_pad
 			ie.code = FF_AUTOCENTER;
 			ie.value = value * 0xFFFFUL / 100;
 
-			OSDebugOut("Autocenter: %d\n", value);
-			if (write(mHandle, &ie, sizeof(ie)) == -1)
-				OSDebugOut("Failed to set autocenter: %s\n", strerror(errno));
 		}
 
 		void EvdevFF::SetGain(int gain /* between 0 and 100 */)
@@ -313,9 +284,6 @@ namespace usb_pad
 			ie.code = FF_GAIN;
 			ie.value = 0xFFFFUL * gain / 100;
 
-			OSDebugOut("Gain: %d\n", gain);
-			if (write(mHandle, &ie, sizeof(ie)) == -1)
-				OSDebugOut("Failed to set gain: %s\n", strerror(errno));
 		}
 
 	} // namespace evdev

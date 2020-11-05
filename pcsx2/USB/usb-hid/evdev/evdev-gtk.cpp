@@ -13,7 +13,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../osdebugout.h"
 #include "../usb-hid.h"
 #include "evdev.h"
 #include <linux/input.h>
@@ -50,7 +49,7 @@ namespace usb_hid
 			DIR* dirp = opendir(EVDEV_DIR);
 			if (dirp == NULL)
 			{
-				fprintf(stderr, "Error opening " EVDEV_DIR ": %s\n", strerror(errno));
+				Console.Warning("Error opening " EVDEV_DIR ": %s\n", strerror(errno));
 				return;
 			}
 
@@ -65,7 +64,6 @@ namespace usb_hid
 					const char* const start = dp->d_name + devlen - len;
 					if (strncmp(start, devstr[hid_type], len) == 0)
 					{
-						OSDebugOut("%s%s\n", EVDEV_DIR, dp->d_name);
 
 						str.clear();
 						str.str("");
@@ -75,13 +73,11 @@ namespace usb_hid
 						std::string dev_path = str.str();
 						if (!GetEvdevName(dev_path, name))
 						{
-							OSDebugOut("Failed to get name: %s\n", dev_path.c_str());
 							//XXX though it also could mean that controller is unusable
 							cfg.devs.push_back(std::make_pair(dp->d_name, dev_path));
 						}
 						else
 						{
-							OSDebugOut("Name: %s\n", name);
 							cfg.devs.push_back(std::make_pair(std::string(name), dev_path));
 						}
 					}
@@ -104,7 +100,6 @@ namespace usb_hid
 			if (idx > 0)
 			{
 			}
-			OSDebugOut("Selected player %d idx: %d dev: '%s'\n", 2 - cfg->port, idx, name.c_str());
 		}
 
 		int GtkHidConfigure(int port, const char* dev_type, HIDType hid_type, GtkWindow* parent)

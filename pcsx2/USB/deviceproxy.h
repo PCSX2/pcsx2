@@ -97,7 +97,6 @@ public:
 	DeviceProxy() {}
 	virtual ~DeviceProxy()
 	{
-		OSDebugOut(TEXT("%p\n"), this);
 	}
 	virtual USBDevice* CreateDevice(int port)
 	{
@@ -146,7 +145,6 @@ public:
 	virtual ~RegisterProxy()
 	{
 		Clear();
-		OSDebugOut("%p\n", this);
 	}
 
 	void Clear()
@@ -207,7 +205,7 @@ public:
 		return *registerDevice;
 	}
 
-	~RegisterDevice() { OSDebugOut("%p\n", this); }
+	~RegisterDevice() { }
 
 	static void Register();
 	void Unregister();

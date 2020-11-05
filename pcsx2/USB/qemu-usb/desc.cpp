@@ -17,7 +17,6 @@
 #include "vl.h"
 #include "desc.h"
 #include "glib.h"
-#include "../osdebugout.h"
 //#include "trace.h"
 
 /* ------------------------------------------------------------------ */
@@ -821,8 +820,6 @@ int usb_desc_get_descriptor(USBDevice* dev, USBPacket* p,
 			break;
 
 		default:
-			OSDebugOut(TEXT("%s: %d unknown type %d (len %zd)\n"), __func__,
-					   dev->addr, type, len);
 			break;
 	}
 
@@ -931,7 +928,6 @@ int usb_desc_handle_control(USBDevice* dev, USBPacket* p,
 			ret = 0;
 			break;
 		case InterfaceOutRequest | USB_REQ_SET_INTERFACE:
-			OSDebugOut(TEXT("usb_desc_set_interface\n"));
 			ret = usb_desc_set_interface(dev, index, value);
 			//trace_usb_set_interface(dev->addr, index, value, ret);
 			break;

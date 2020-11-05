@@ -18,7 +18,6 @@
 #include <cstdio>
 #include <vector>
 #include <algorithm>
-#include "../osdebugout.h"
 #include "../platcompat.h"
 
 extern HINSTANCE hInst;
@@ -136,7 +135,7 @@ namespace shared
 			if (RegisterRawInputDevices(Rid, countof(Rid), sizeof(Rid[0])) == FALSE)
 			{
 				//registration failed. Call GetLastError for the cause of the error.
-				fprintf(stderr, "Could not (de)register raw input devices.\n");
+				Console.Warning("Could not (de)register raw input devices.\n");
 				return 0;
 			}
 			return 1;
@@ -233,7 +232,7 @@ namespace shared
 		{
 			MSG* msg = reinterpret_cast<MSG*>(lParam);
 
-			//fprintf(stderr, "hook: %d, %d, %d\n", code, wParam, lParam);
+			//Console.Warning("hook: %d, %d, %d\n", code, wParam, lParam);
 			if (code == HC_ACTION)
 				RawInputProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
 			return CallNextHookEx(hHook, code, wParam, lParam);
@@ -243,7 +242,7 @@ namespace shared
 		{
 			MSG* msg = reinterpret_cast<MSG*>(lParam);
 
-			//fprintf(stderr, "hook: %d, %d, %d\n", code, wParam, lParam);
+			//Console.Warning("hook: %d, %d, %d\n", code, wParam, lParam);
 			if (code == HC_ACTION)
 				MyWndProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);
 			return CallNextHookEx(hHookWnd, code, wParam, lParam);
@@ -251,7 +250,7 @@ namespace shared
 
 		static LRESULT CALLBACK KBHookProc(INT code, WPARAM wParam, LPARAM lParam)
 		{
-			fprintf(stderr, "kb hook: %d, %zd, %zd\n", code, wParam, lParam);
+			Console.Warning("kb hook: %d, %zd, %zd\n", code, wParam, lParam);
 			KBDLLHOOKSTRUCT* kb = reinterpret_cast<KBDLLHOOKSTRUCT*>(lParam);
 			//if(code == HC_ACTION)
 			//	RawInputProc(msg->hwnd, msg->message, msg->wParam, msg->lParam);

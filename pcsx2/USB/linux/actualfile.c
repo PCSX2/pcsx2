@@ -28,17 +28,9 @@ int IsActualFile(const char *filename) {
   int retval;
   struct stat64 filestat;
 
-#ifdef VERBOSE_FUNCTION_ACTUALFILE
-  PrintLog("USBqemu file: IsActualFile(%s)", filename);
-#endif /* VERBOSE_FUNCTION_ACTUALFILE */
-
   errno = 0;
   retval = stat64(filename, &filestat);
   if((retval < 0) || (errno != 0)) {
-#ifdef VERBOSE_WARNING_ACTUALFILE
-    PrintLog("USBqemu file:   Error retrieving stats on %s", filename);
-    PrintLog("USBqemu file:     %i:%s\n", errno, strerror(errno));
-#endif /* VERBOSE_WARNING_ACTUALFILE */
     return(-1); // Name doesn't exist.
   } // ENDIF- Trouble getting stat on a file?
 
@@ -48,18 +40,12 @@ int IsActualFile(const char *filename) {
 
 
 void ActualFileDelete(const char *filename) {
-#ifdef VERBOSE_FUNCTION_ACTUALFILE
-  PrintLog("USBqemu file: ActualFileDelete(%s)", filename);
-#endif /* VERBOSE_FUNCTION_ACTUALFILE */
 
   unlink(filename);
 } // END ActualFileDelete()
 
 
 void ActualFileRename(const char *origname, const char *newname) {
-#ifdef VERBOSE_FUNCTION_ACTUALFILE
-  PrintLog("USBqemu file: ActualFileRename(%s->%s)", origname, newname);
-#endif /* VERBOSE_FUNCTION_ACTUALFILE */
 
   rename(origname, newname);
   return;
@@ -71,17 +57,9 @@ ACTUALHANDLE ActualFileOpenForRead(const char *filename) {
 
   if(filename == NULL)  return(-1);
 
-#ifdef VERBOSE_FUNCTION_ACTUALFILE
-  PrintLog("USBqemu file: ActualFileOpenForRead(%s)", filename);
-#endif /* VERBOSE_FUNCTION_ACTUALFILE */
-
   errno = 0;
   newhandle = open(filename, O_RDONLY | O_LARGEFILE);
   if((newhandle < 0) || (errno != 0)) {
-#ifdef VERBOSE_WARNING_ACTUALFILE
-    PrintLog("USBqemu file:   Error opening file %s\n", filename);
-    PrintLog("USBqemu file:     (%i) %i:%s\n", newhandle, errno, strerror(errno));
-#endif /* VERBOSE_WARNING_ACTUALFILE */
     return(-1);
   } // ENDIF- Error? Abort
 
@@ -92,10 +70,6 @@ ACTUALHANDLE ActualFileOpenForRead(const char *filename) {
 off64_t ActualFileSize(ACTUALHANDLE handle) {
   int retval;
   struct stat64 filestat;
-
-#ifdef VERBOSE_FUNCTION_ACTUALFILE
-  PrintLog("USBqemu file: ActualFileSize()\n");
-#endif /* VERBOSE_FUNCTION_ACTUALFILE */
 
   errno = 0;
   retval = fstat64(handle, &filestat);
@@ -110,17 +84,9 @@ int ActualFileSeek(ACTUALHANDLE handle, off64_t position) {
   if(handle < 0)  return(-1);
   if(position < 0)  return(-1); // Maybe... position = 0?
 
-#ifdef VERBOSE_FUNCTION_ACTUALFILE
-  PrintLog("USBqemu file: ActualFileSeek(%lli)", position);
-#endif /* VERBOSE_FUNCTION_ACTUALFILE */
-
   errno = 0;
   moved = lseek64(handle, position, SEEK_SET);
   if(errno != 0) {
-#ifdef VERBOSE_WARNING_ACTUALFILE
-    PrintLog("USBqemu file:   Error on seek (%lli)", position);
-    PrintLog("USBqemu file:     %i:%s\n", errno, strerror(errno));
-#endif /* VERBOSE_WARNING_ACTUALFILE */
     return(-1);
   } // ENDIF- Error? Abort
 
@@ -135,17 +101,9 @@ int ActualFileRead(ACTUALHANDLE handle, int bytes, char *buffer) {
   if(bytes < 1)  return(-1);
   if(buffer == NULL)  return(-1);
 
-#ifdef VERBOSE_FUNCTION_ACTUALFILE
-  PrintLog("USBqemu file: ActualFileRead(%i)", bytes);
-#endif /* VERBOSE_FUNCTION_ACTUALFILE */
-
   errno = 0;
   retval = read(handle, buffer, bytes);
   if((retval < 0) || (errno != 0)) {
-#ifdef VERBOSE_WARNING_ACTUALFILE
-    PrintLog("USBqemu file:   Error reading from file!");
-    PrintLog("USBqemu file:     %i:%s", errno, strerror(errno));
-#endif /* VERBOSE_WARNING_ACTUALFILE */
     // return(-1);
   } // ENDIF- Error? Abort
 
@@ -155,10 +113,6 @@ int ActualFileRead(ACTUALHANDLE handle, int bytes, char *buffer) {
 
 void ActualFileClose(ACTUALHANDLE handle) {
   if(handle < 0)  return;
-
-#ifdef VERBOSE_FUNCTION_ACTUALFILE
-  PrintLog("USBqemu file: ActualFileClose()");
-#endif /* VERBOSE_FUNCTION_ACTUALFILE */
 
   errno = 0;
   close(handle);
@@ -171,17 +125,9 @@ ACTUALHANDLE ActualFileOpenForWrite(const char *filename) {
 
   if(filename == NULL)  return(-1);
 
-#ifdef VERBOSE_FUNCTION_ACTUALFILE
-  PrintLog("USBqemu file: ActualFileOpenForWrite(%s)", filename);
-#endif /* VERBOSE_FUNCTION_ACTUALFILE */
-
   errno = 0;
   newhandle = open(filename, O_WRONLY | O_CREAT | O_LARGEFILE, 0644);
   if((newhandle < 0) || (errno != 0)) {
-#ifdef VERBOSE_WARNING_ACTUALFILE
-    PrintLog("USBqemu file:   Error opening file %s", filename);
-    PrintLog("USBqemu file:     (%i) %i:%s", newhandle, errno, strerror(errno));
-#endif /* VERBOSE_WARNING_ACTUALFILE */
     return(-1);
   } // ENDIF- Error? Abort
 
@@ -196,17 +142,9 @@ int ActualFileWrite(ACTUALHANDLE handle, int bytes, char *buffer) {
   if(bytes < 1)  return(-1);
   if(buffer == NULL)  return(-1);
 
-#ifdef VERBOSE_FUNCTION_ACTUALFILE
-  PrintLog("USBqemu file: ActualFileWrite(%i)", bytes);
-#endif /* VERBOSE_FUNCTION_ACTUALFILE */
-
   errno = 0;
   retval = write(handle, buffer, bytes);
   if((retval < 0) || (errno != 0)) {
-#ifdef VERBOSE_WARNING_ACTUALFILE
-    PrintLog("USBqemu file:   Error writing to file!");
-    PrintLog("USBqemu file:     %i:%s", errno, strerror(errno));
-#endif /* VERBOSE_WARNING_ACTUALFILE */
     // return(-1);
   } // ENDIF- Error? Abort
 

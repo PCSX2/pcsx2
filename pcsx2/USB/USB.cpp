@@ -22,7 +22,6 @@
 #include "PrecompiledHeader.h"
 #include "Utilities/pxStreams.h"
 #include "USB.h"
-#include "osdebugout.h"
 #include "qemu-usb/USBinternal.h"
 #include "qemu-usb/desc.h"
 #include "shared/shared_usb.h"
@@ -36,7 +35,9 @@ USBDevice* usb_device[2] = {NULL};
 bool configChanged = false;
 
 Config conf;
-char USBfreezeID[] = "USBqemuW01";
+// we'll probably switch our save state system at some point to standardize in
+// the core anyways
+char USBfreezeID[] = "govqemUSB1";
 typedef struct
 {
 	char freezeID[11];
@@ -121,7 +122,6 @@ USBDevice* CreateDevice(DeviceType index, int port)
 
 	if (!device)
 	{
-		USB_LOG("USBqemu: failed to create device type %d on port %d\n", index, port);
 	}
 	return device;
 }
@@ -164,7 +164,6 @@ USBDevice* CreateDevice(const std::string& name, int port)
 
 	if (!device)
 	{
-		USB_LOG("USBqemu: failed to create device '%s' on port %d\n", name.c_str(), port);
 	}
 	return device;
 }
@@ -212,7 +211,6 @@ s32 USBinit()
 void USBshutdown()
 {
 
-	OSDebugOut(TEXT("USBshutdown\n"));
 	DestroyDevices();
 	RegisterDevice::instance().Unregister();
 
@@ -259,7 +257,6 @@ s32 USBopen(void* pDsp)
 
 	g_GSdsp = (Display*)((uptr*)pDsp)[0];
 	g_GSwin = (Window)((uptr*)pDsp)[1];
-	OSDebugOut("X11 display %p Xwindow %lu\n", g_GSdsp, g_GSwin);
 #endif
 
 	try
@@ -289,7 +286,6 @@ s32 USBopen(void* pDsp)
 
 void USBclose()
 {
-	OSDebugOut(TEXT("USBclose\n"));
 
 	if (usb_device[0] && usb_device[0]->klass.close)
 		usb_device[0]->klass.close(usb_device[0]);
@@ -302,13 +298,11 @@ void USBclose()
 
 u8 USBread8(u32 addr)
 {
-	USB_LOG("* Invalid 8bit read at address %08x\n", addr);
 	return 0;
 }
 
 u16 USBread16(u32 addr)
 {
-	USB_LOG("* Invalid 16bit read at address %08x\n", addr);
 	return 0;
 }
 
@@ -318,24 +312,20 @@ u32 USBread32(u32 addr)
 
 	hard = ohci_mem_read(qemu_ohci, addr);
 
-	USB_LOG("* Known 32bit read at address %08x: %08x\n", addr, hard);
 
 	return hard;
 }
 
 void USBwrite8(u32 addr, u8 value)
 {
-	USB_LOG("* Invalid 8bit write at address %08x value %x\n", addr, value);
 }
 
 void USBwrite16(u32 addr, u16 value)
 {
-	USB_LOG("* Invalid 16bit write at address %08x value %x\n", addr, value);
 }
 
 void USBwrite32(u32 addr, u32 value)
 {
-	USB_LOG("* Known 32bit write at address %08x value %08x\n", addr, value);
 	ohci_mem_write(qemu_ohci, addr, value);
 }
 
@@ -437,21 +427,6 @@ s32 USBfreeze(int mode, freezeData* data)
 				usb_device[i]->setup_len = tmp.setup_len;
 				usb_device[i]->setup_index = tmp.setup_index;
 
-#ifndef NDEBUG
-				std::cerr << "Loading save state:\nport: " << i
-						  << "\naddr:        " << (int)usb_device[i]->addr
-						  << "\nattached:    " << usb_device[i]->attached
-						  << "\nauto_attach: " << usb_device[i]->auto_attach
-						  << "\nconfig:  " << usb_device[i]->configuration
-						  << "\nninterf: " << usb_device[i]->ninterfaces
-						  << "\nflags:   " << usb_device[i]->flags
-						  << "\nstate:   " << usb_device[i]->state
-						  << "\nremote_wakeup: " << usb_device[i]->remote_wakeup
-						  << "\nsetup_state:   " << usb_device[i]->setup_state
-						  << "\nsetup_len:     " << usb_device[i]->setup_len
-						  << "\nsetup_index:   " << usb_device[i]->setup_index
-						  << std::endl;
-#endif
 				memcpy(usb_device[i]->data_buf, tmp.data_buf, sizeof(tmp.data_buf));
 				memcpy(usb_device[i]->setup_buf, tmp.setup_buf, sizeof(tmp.setup_buf));
 
@@ -600,7 +575,7 @@ s32 USBfreeze(int mode, freezeData* data)
 		data->size += 8192; // qemu_ohci->usb_packet.actual_length;
 		if (qemu_ohci->usb_packet.actual_length > 8192)
 		{
-			fprintf(stderr, "Saving failed! USB packet is larger than 8K, try again later.\n");
+			Console.Warning("Saving failed! USB packet is larger than 8K, try again later.\n");
 			return -1;
 		}
 	}
@@ -645,11 +620,9 @@ void USBasync(u32 cycles)
 
 int cpu_physical_memory_rw(u32 addr, u8* buf, size_t len, int is_write)
 {
-	//OSDebugOut(TEXT("%s addr %08X, len %d\n"), is_write ? TEXT("write") : TEXT("read "), addr, len);
 	// invalid address, reset and try again
 	if (addr + len >= 0x200000)
 	{
-		OSDebugOut(TEXT("invalid address, soft resetting ohci.\n"));
 		if (qemu_ohci)
 			ohci_soft_reset(qemu_ohci);
 		return 1;

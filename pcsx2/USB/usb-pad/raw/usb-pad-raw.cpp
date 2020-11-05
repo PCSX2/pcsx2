@@ -37,15 +37,12 @@ namespace usb_pad
 				{
 					res = WriteFile(pad->mUsbHandle, buf.data(), buf.size(), &written, &pad->mOLWrite);
 					uint8_t* d = buf.data();
-					OSDebugOut(TEXT("FFB %02X, %02X : %02X, %02X : %02X, %02X : %02X\n"),
 							   d[1], d[2], d[3], d[4], d[5], d[6], d[7]);
 
 					WaitForSingleObject(pad->mOLWrite.hEvent, 1000);
 					if (GetOverlappedResult(pad->mUsbHandle, &pad->mOLWrite, &written, FALSE))
-						OSDebugOut(TEXT("last write ffb: %d %d, written %d\n"), res, res2, written);
 				}
 			}
-			OSDebugOut(TEXT("WriterThread exited.\n"));
 
 			pad->mWriterThreadIsRunning = false;
 		}
@@ -69,12 +66,11 @@ namespace usb_pad
 					if (!pad->mReportData.try_enqueue(report)) // TODO May leave queue with too stale data. Use multi-producer/consumer queue?
 					{
 						if (!errCount)
-							fprintf(stderr, "%s: Could not enqueue report data: %zd\n", APINAME, pad->mReportData.size_approx());
+							Console.Warning("%s: Could not enqueue report data: %zd\n", APINAME, pad->mReportData.size_approx());
 						errCount = (++errCount) % 16;
 					}
 				}
 			}
-			OSDebugOut(TEXT("ReaderThread exited.\n"));
 
 			pad->mReaderThreadIsRunning = false;
 		}
@@ -84,7 +80,7 @@ namespace usb_pad
 			ULONG value = 0;
 			int player = 1 - mPort;
 
-			//fprintf(stderr,"usb-pad: poll len=%li\n", len);
+			//Console.Warning("usb-pad: poll len=%li\n", len);
 			if (mDoPassthrough)
 			{
 				std::array<uint8_t, 32> report; //32 is random
@@ -175,7 +171,6 @@ namespace usb_pad
 
 			if (!mFFData.enqueue(report))
 			{
-				OSDebugOut(TEXT("Failed to enqueue ffb command\n"));
 				return 0;
 			}
 
@@ -285,7 +280,7 @@ namespace usb_pad
 						continue; // if here then maybe something is up with HIDP_CAPS.NumberInputValueCaps
 					}
 
-					//fprintf(stderr, "Min/max %d/%d\t", pValueCaps[i].LogicalMin, pValueCaps[i].LogicalMax);
+					//Console.Warning("Min/max %d/%d\t", pValueCaps[i].LogicalMin, pValueCaps[i].LogicalMax);
 
 					//Get mapped axis for physical axis
 					uint16_t v = 0;
@@ -300,7 +295,7 @@ namespace usb_pad
 							v = mapping->axisMap[pValueCaps[i].Range.UsageMin - HID_USAGE_GENERIC_X];
 							break;
 						case HID_USAGE_GENERIC_HATSWITCH:
-							//fprintf(stderr, "Hat: %02X\n", value);
+							//Console.Warning("Hat: %02X\n", value);
 							v = mapping->axisMap[6];
 							break;
 					}
@@ -316,7 +311,7 @@ namespace usb_pad
 						switch (PLY_GET_VALUE(j, v))
 						{
 							case PAD_AXIS_X: // X-axis
-								//fprintf(stderr, "X: %d\n", value);
+								//Console.Warning("X: %d\n", value);
 								// Need for logical min too?
 								//generic_data.axis_x = ((value - pValueCaps[i].LogicalMin) * 0x3FF) / (pValueCaps[i].LogicalMax - pValueCaps[i].LogicalMin);
 								if (type == WT_DRIVING_FORCE_PRO || type == WT_DRIVING_FORCE_PRO_1102)
@@ -332,19 +327,19 @@ namespace usb_pad
 								break;
 
 							case PAD_AXIS_Z: // Z-axis
-								//fprintf(stderr, "Z: %d\n", value);
+								//Console.Warning("Z: %d\n", value);
 								//XXX Limit value range to 0..255
 								mapping->data[j].throttle = (value * 0xFF) / pValueCaps[i].LogicalMax;
 								break;
 
 							case PAD_AXIS_RZ: // Rotate-Z
-								//fprintf(stderr, "Rz: %d\n", value);
+								//Console.Warning("Rz: %d\n", value);
 								//XXX Limit value range to 0..255
 								mapping->data[j].brake = (value * 0xFF) / pValueCaps[i].LogicalMax;
 								break;
 
 							case PAD_AXIS_HAT: // TODO Hat Switch
-								//fprintf(stderr, "Hat: %02X\n", value);
+								//Console.Warning("Hat: %02X\n", value);
 								//TODO 4 vs 8 direction hat switch
 								if (pValueCaps[i].LogicalMax == 4 && value < 4)
 									mapping->data[j].hatswitch = HATS_8TO4[value];
@@ -455,7 +450,7 @@ namespace usb_pad
 				HidD_GetAttributes(mUsbHandle, &(attr));
 				if (attr.VendorID != PAD_VID || attr.ProductID == 0xC262)
 				{
-					fwprintf(stderr, TEXT("USBqemu: Vendor is not Logitech or wheel is G920. Not sending force feedback commands for safety reasons.\n"));
+					Console.Warning("USB: Vendor is not Logitech or wheel is G920. Not sending force feedback commands for safety reasons.\n");
 					mDoPassthrough = 0;
 					Close();
 				}
@@ -485,7 +480,7 @@ namespace usb_pad
 				return 0;
 			}
 			else
-				fwprintf(stderr, TEXT("USBqemu: Could not open device '%s'.\nPassthrough and FFB will not work.\n"), path.c_str());
+				Console.Warning("USB: Could not open device '%s'.\nPassthrough and FFB will not work.\n", path.c_str());
 
 			return 0;
 		}

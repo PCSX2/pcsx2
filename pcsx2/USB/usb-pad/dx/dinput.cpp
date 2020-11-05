@@ -431,7 +431,6 @@ namespace usb_pad
 			//start the effect
 			if (g_pEffectConstant[port])
 			{
-				OSDebugOut(TEXT("DINPUT: Start Effect\n"));
 				g_pEffectConstant[port]->SetParameters(&eff, DIEP_START | DIEP_GAIN | DIEP_AXES | DIEP_DIRECTION);
 			}
 		}
@@ -687,7 +686,6 @@ namespace usb_pad
 
 		void JoystickDeviceFF::SetConstantForce(int level)
 		{
-			OSDebugOut(TEXT("constant force: %d\n"), level);
 
 			//FIXME either this or usb-pad-ff was inverted
 			if (INVERTFORCES[m_port])
@@ -723,7 +721,6 @@ namespace usb_pad
 			cSpring.lOffset = ff.u.condition.center * DI_FFNOMINALMAX / SHRT_MAX;
 			cSpring.lDeadBand = ff.u.condition.deadband * DI_FFNOMINALMAX / USHRT_MAX;
 
-			OSDebugOut(TEXT("spring: %d  %d coeff:%d/%d sat:%d/%d\n"),
 					   cSpring.lOffset, cSpring.lDeadBand,
 					   cSpring.lNegativeCoefficient, cSpring.lPositiveCoefficient,
 					   cSpring.dwNegativeSaturation, cSpring.dwPositiveSaturation);
@@ -759,7 +756,6 @@ namespace usb_pad
 			cFriction.lOffset = ff.u.condition.center * DI_FFNOMINALMAX / SHRT_MAX;
 			cFriction.lDeadBand = ff.u.condition.deadband * DI_FFNOMINALMAX / USHRT_MAX;
 
-			OSDebugOut(TEXT("friction %d/%d %d\n"),
 					   cFriction.lNegativeCoefficient, cFriction.lPositiveCoefficient,
 					   cFriction.dwNegativeSaturation);
 
@@ -828,17 +824,14 @@ namespace usb_pad
 			LPDIRECTINPUTDEVICE8 pMouse = NULL;
 
 			//release any previous resources
-			OSDebugOut(TEXT("DINPUT: FreeDirectInput %p\n"), hWindow);
 
 			if (refCount == 0)
 			{
 				// Create a DInput object
-				OSDebugOut(TEXT("DINPUT: DirectInput8Create %p\n"), hWindow);
 				if (FAILED(hr = DirectInput8Create(GetModuleHandle(NULL), DIRECTINPUT_VERSION,
 												   IID_IDirectInput8, (VOID**)&g_pDI, NULL)))
 					return hr;
 
-				OSDebugOut(TEXT("DINPUT: CreateDevice Keyboard %p\n"), hWindow);
 				//Create Keyboard
 				g_pDI->CreateDevice(GUID_SysKeyboard, &pKeyboard, NULL);
 				if (pKeyboard)
@@ -849,7 +842,6 @@ namespace usb_pad
 					g_pJoysticks.push_back(new JoystickDevice(CT_KEYBOARD, pKeyboard, GUID_SysKeyboard, TEXT("SysKeyboard")));
 				}
 
-				OSDebugOut(TEXT("DINPUT: CreateDevice Mouse %p\n"), hWindow);
 				//Create Mouse
 				g_pDI->CreateDevice(GUID_SysMouse, &pMouse, NULL);
 				if (pMouse)
@@ -861,7 +853,6 @@ namespace usb_pad
 				}
 
 				//enumerate attached only
-				OSDebugOut(TEXT("DINPUT: EnumDevices Joystick %p\n"), hWindow);
 				g_pDI->EnumDevices(DI8DEVCLASS_GAMECTRL, EnumJoysticksCallback, NULL, DIEDFL_ATTACHEDONLY);
 
 				//loop through all attached joysticks
@@ -869,7 +860,6 @@ namespace usb_pad
 				{
 					auto joy = g_pJoysticks[i];
 					auto device = joy->GetDevice();
-					OSDebugOut(TEXT("DINPUT: SetDataFormat Joystick %s\n"), joy->Product().c_str());
 					device->SetDataFormat(&c_dfDIJoystick2);
 
 					DIDEVCAPS diCaps;
@@ -878,7 +868,6 @@ namespace usb_pad
 
 					if (diCaps.dwFlags & DIDC_FORCEFEEDBACK)
 					{
-						OSDebugOut(TEXT("DINPUT: SetCooperativeLevel Joystick %s\n"), joy->Product().c_str());
 						//Exclusive
 						device->SetCooperativeLevel(hWindow, DISCL_EXCLUSIVE | DISCL_BACKGROUND);
 
@@ -892,9 +881,7 @@ namespace usb_pad
 					else
 						device->SetCooperativeLevel(hWindow, DISCL_NONEXCLUSIVE | DISCL_BACKGROUND);
 
-					OSDebugOut(TEXT("DINPUT: EnumObjects Joystick %i\n"), i);
 					device->EnumObjects(EnumObjectsCallback, device, DIDFT_ALL);
-					OSDebugOut(TEXT("DINPUT: Acquire Joystick %i\n"), i);
 					device->Acquire();
 				}
 			}
@@ -1031,7 +1018,6 @@ namespace usb_pad
 		//set left/right ffb torque
 		void SetConstantForce(int port, LONG magnitude)
 		{
-			OSDebugOut(TEXT("constant force: %d\n"), magnitude);
 			if (!FFB[port])
 				return;
 

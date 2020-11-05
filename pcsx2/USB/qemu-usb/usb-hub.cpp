@@ -548,9 +548,6 @@ static int usb_hub_handle_packet(USBDevice* dev, int pid,
 {
 	USBHubState* s = (USBHubState*)dev;
 
-#if defined(DEBUG) && 0
-	printf("usb_hub: pid=0x%x\n", pid);
-#endif
 	if (dev->state == USB_STATE_DEFAULT &&
 		dev->addr != 0 &&
 		devaddr != dev->addr &&

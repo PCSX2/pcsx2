@@ -14,7 +14,6 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "osdebugout.h"
 #include "deviceproxy.h"
 #include "configuration.h"
 #include "shared/inifile_usb.h"
@@ -168,10 +167,8 @@ void SaveConfig()
 
 #ifdef _WIN32
 	bool ret = ciniFile.Save(IniPath);
-	OSDebugOut(TEXT("ciniFile.Save: %d [%s]\n"), ret, IniPath.c_str());
 #else
 	bool ret = ciniFile.Save(str_to_wstr(IniPath));
-	DevCon.WriteLn("ciniFile.Save: %d [%s]\n", ret, IniPath.c_str());
 #endif
 }
 
@@ -213,7 +210,6 @@ void LoadConfig()
 
 		if (dev)
 		{
-			DevCon.WriteLn("Checking device '%s' api: '%s'...\n", conf.Port[i].c_str(), api.c_str());
 			if (!dev->IsValidAPI(api))
 			{
 				api = "<invalid>";
@@ -221,10 +217,7 @@ void LoadConfig()
 				if (!apis.empty())
 					api = *apis.begin();
 
-				DevCon.WriteLn("Invalid! Defaulting to '%s'\n", api.c_str());
 			}
-			else
-				DevCon.WriteLn("API OK\n");
 		}
 
 		if (api.size())

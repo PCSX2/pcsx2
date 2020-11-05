@@ -15,7 +15,6 @@
 
 #include "PrecompiledHeader.h"
 #include "videodeviceproxy.h"
-#include "../osdebugout.h"
 #include "usb-eyetoy-webcam.h"
 #include "ov519.h"
 #include "../qemu-usb/desc.h"
@@ -341,14 +340,12 @@ namespace usb_eyetoy
 		{
 			case VendorDeviceRequest | 0x1: //Read register
 				data[0] = s->regs[index & 0xFF];
-				OSDebugOut(TEXT("=== READ  reg 0x%02x = 0x%02x (%d)\n"), index, data[0], data[0]);
 				p->actual_length = 1;
 				break;
 
 			case VendorDeviceOutRequest | 0x1: //Write register
 				if (!(index >= R51x_I2C_SADDR_3 && index <= R518_I2C_CTL))
 				{
-					OSDebugOut(TEXT("*** WRITE reg 0x%02x = 0x%02x (%d)\n"), index, data[0], data[0]);
 				}
 
 				switch (index)
@@ -361,13 +358,10 @@ namespace usb_eyetoy
 						}
 						break;
 					case OV519_R10_H_SIZE:
-						OSDebugOut(TEXT("Set width %d\n"), data[0] << 4);
 						break;
 					case OV519_R11_V_SIZE:
-						OSDebugOut(TEXT("Set height %d\n"), data[0] << 3);
 						break;
 					case R518_I2C_CTL:
-						//OSDebugOut(TEXT("Set R518_I2C_CTL %d %d\n"), s->regs[R518_I2C_CTL], data[0]);
 						if (data[0] == 1) // Commit I2C write
 						{
 							//uint8_t reg = s->regs[s->regs[R51x_I2C_W_SID]];
@@ -381,10 +375,7 @@ namespace usb_eyetoy
 							else if (reg < sizeof(s->i2c_regs))
 							{
 								s->i2c_regs[reg] = val;
-								OSDebugOut(TEXT("I2C write to 0x%02x = 0x%02x\n"), reg, val);
 							}
-							else
-								OSDebugOut(TEXT("I2C write out-of-bounds\n"));
 						}
 						else if (s->regs[R518_I2C_CTL] == 0x03 && data[0] == 0x05)
 						{
@@ -395,10 +386,7 @@ namespace usb_eyetoy
 							if (i2c_reg < sizeof(s->i2c_regs))
 							{
 								s->regs[R51x_I2C_DATA] = s->i2c_regs[i2c_reg];
-								OSDebugOut(TEXT("I2C read from 0x%02x = 0x%02x\n"), i2c_reg, s->regs[R51x_I2C_DATA]);
 							}
-							else
-								OSDebugOut(TEXT("Unhandled read from I2C: 0x%02x\n"), s->regs[R51x_I2C_SADDR_2]);
 						}
 						break;
 					default:
@@ -411,7 +399,6 @@ namespace usb_eyetoy
 
 				break;
 			default:
-				OSDebugOut(TEXT("default ******************* %04x\n"), request);
 				p->status = USB_RET_STALL;
 				break;
 		}
@@ -480,7 +467,7 @@ namespace usb_eyetoy
 				else if (devep == 2)
 				{
 					// get audio
-					//fprintf(stderr, "get audio %d\n", len);
+					//Console.Warning("get audio %d\n", len);
 					memset(data, 0, p->iov.size);
 					usb_packet_copy(p, data, p->iov.size);
 				}

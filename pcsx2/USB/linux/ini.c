@@ -24,33 +24,11 @@
 const char INIext[] = ".ini";
 const char INInewext[] = ".new";
 
-#if VERBOSE_FUNCTION_INI
-void PrintLog(const char *fmt, ...) {
-    char logfiletemp[2048];
-    va_list list;
-    int len;
-
-    va_start(list, fmt);
-    vsprintf(logfiletemp, fmt, list);
-    va_end(list);
-    len = 0;
-    while((len < 2048) && (logfiletemp[len] != 0))  len++;
-    if((len > 0) && (logfiletemp[len-1] == '\n'))  len--;
-    if((len > 0) && (logfiletemp[len-1] == '\r'))  len--;
-    logfiletemp[len] = 0; // Slice off the last "\r\n"...
-    fprintf(stderr, "%s\n", logfiletemp);
-}
-#endif
-
 // Returns: position where new extensions should be added.
 int INIRemoveExt(const char *argname, char *tempname) {
   int i;
   int j;
   int k;
-
-#ifdef VERBOSE_FUNCTION_INI
-  PrintLog("USBqemu ini: RemoveExt(%s)", argname);
-#endif /* VERBOSE_FUNCTION_INI */
 
   i = 0;
   while((i <= INIMAXLEN) && (*(argname + i) != 0)) {
@@ -82,10 +60,6 @@ int INIRemoveExt(const char *argname, char *tempname) {
 void INIAddInExt(char *tempname, int temppos) {
   int i;
 
-#ifdef VERBOSE_FUNCTION_INI
-  PrintLog("USBqemu ini: AddInExt(%s, %i)", tempname, temppos);
-#endif /* VERBOSE_FUNCTION_INI */
-
   i = 0;
   while((i + temppos < INIMAXLEN) && (INIext[i] != 0)) {
     *(tempname + temppos + i) = INIext[i];
@@ -97,10 +71,6 @@ void INIAddInExt(char *tempname, int temppos) {
 
 void INIAddOutExt(char *tempname, int temppos) {
   int i;
-
-#ifdef VERBOSE_FUNCTION_INI
-  PrintLog("USBqemu ini: AddOutExt(%s, %i)", tempname, temppos);
-#endif /* VERBOSE_FUNCTION_INI */
 
   i = 0;
   while((i + temppos < INIMAXLEN) && (INInewext[i] != 0)) {
@@ -118,10 +88,6 @@ int INIReadLine(ACTUALHANDLE infile, char *buffer) {
   char tempin[2];
   int retflag;
   int retval;
-
-#ifdef VERBOSE_FUNCTION_INI
-  PrintLog("USBqemu ini: ReadLine()");
-#endif /* VERBOSE_FUNCTION_INI */
 
   charcount = 0;
   i = 0;
@@ -145,10 +111,6 @@ int INIReadLine(ACTUALHANDLE infile, char *buffer) {
   } // ENDWHILE- Loading up on characters until an End-of-Line appears
   *(buffer + i) = 0; // And 0-terminate
 
-#ifdef VERBOSE_FUNCTION_INI
-  PrintLog("USBqemu ini:   Line: %s", buffer);
-#endif /* VERBOSE_FUNCTION_INI */
-
   return(charcount);
 } // END INIReadLine()
 // Note: Do we need to back-skip a char if something other \n follows \r?
@@ -162,9 +124,6 @@ int INIFindSection(ACTUALHANDLE infile, const char *section) {
   int retval;
   char scanbuffer[INIMAXLEN+1];
 
-#ifdef VERBOSE_FUNCTION_INI
-  PrintLog("USBqemu ini: FindSection(%s)", section);
-#endif /* VERBOSE_FUNCTION_INI */
 
   charcount = 0;
   retflag = 0;
@@ -200,10 +159,6 @@ int INIFindKeyword(ACTUALHANDLE infile, const char *keyword, char *buffer) {
   int retval;
   char scanbuffer[INIMAXLEN+1];
 
-#ifdef VERBOSE_FUNCTION_INI
-  PrintLog("USBqemu ini: FindKeyword(%s)", keyword);
-#endif /* VERBOSE_FUNCTION_INI */
-
   charcount = 0;
   retflag = 0;
 
@@ -235,10 +190,6 @@ int INIFindKeyword(ACTUALHANDLE infile, const char *keyword, char *buffer) {
     if(retflag == 0)  charcount += retval;
   } // ENDWHILE- Scanning lines for the correct [Section] header.
 
-#ifdef VERBOSE_FUNCTION_INI
-  PrintLog("USBqemu ini:   Value: %s", buffer);
-#endif /* VERBOSE_FUNCTION_INI */
-
   return(charcount);
 } // END INIFindKeyWord()
 
@@ -249,10 +200,6 @@ int INICopy(ACTUALHANDLE infile, ACTUALHANDLE outfile, int charcount) {
   int i;
   int chunk;
   int retval;
-
-#ifdef VERBOSE_FUNCTION_INI
-  PrintLog("USBqemu ini: Copy(%i)", charcount);
-#endif /* VERBOSE_FUNCTION_INI */
 
   i = charcount;
   chunk = 4096;
@@ -290,11 +237,6 @@ int INISaveString(const char *file, const char *section, const char *keyword, co
   if(keyword == NULL)  return(-1);
   if(value == NULL)  return(-1);
 
-#ifdef VERBOSE_FUNCTION_INI
-  PrintLog("USBqemu ini: SaveString(%s, %s, %s, %s)",
-           file, section, keyword, value);
-#endif /* VERBOSE_FUNCTION_INI */
-
   filepos = INIRemoveExt(file, inname);
   for(i = 0; i <= filepos; i++)  outname[i] = inname[i];
   INIAddInExt(inname, filepos);
@@ -303,9 +245,6 @@ int INISaveString(const char *file, const char *section, const char *keyword, co
   filepos = 0;
   infile = ActualFileOpenForRead(inname);
   if(infile == ACTUALHANDLENULL) {
-#ifdef VERBOSE_FUNCTION_INI
-    PrintLog("USBqemu ini:   creating new file");
-#endif /* VERBOSE_FUNCTION_INI */
     outfile = ActualFileOpenForWrite(inname);
     if(outfile == ACTUALHANDLENULL)  return(-1); // Just a bad name? Abort.
 
@@ -335,9 +274,6 @@ int INISaveString(const char *file, const char *section, const char *keyword, co
 
   retval = INIFindSection(infile, section);
   if(retval < 0) {
-#ifdef VERBOSE_FUNCTION_INI
-    PrintLog("USBqemu ini:   creating new section");
-#endif /* VERBOSE_FUNCTION_INI */
     outfile = ActualFileOpenForWrite(outname);
     if(outfile == ACTUALHANDLENULL) {
       ActualFileClose(infile);
@@ -385,9 +321,6 @@ int INISaveString(const char *file, const char *section, const char *keyword, co
 
   retval = INIFindKeyword(infile, keyword, NULL);
   if(retval < 0) {
-#ifdef VERBOSE_FUNCTION_INI
-    PrintLog("USBqemu ini:   creating new keyword");
-#endif /* VERBOSE_FUNCTION_INI */
     ActualFileSeek(infile, filepos);
     retval = INIReadLine(infile, templine);
     i = 0;
@@ -431,9 +364,6 @@ int INISaveString(const char *file, const char *section, const char *keyword, co
     } // ENDIF- Trouble writing it out? Abort.
 
   } else {
-#ifdef VERBOSE_FUNCTION_INI
-    PrintLog("USBqemu ini:   replacing keyword");
-#endif /* VERBOSE_FUNCTION_INI */
     filepos += retval; // Position just before old version of keyword
 
     outfile = ActualFileOpenForWrite(outname);
@@ -493,11 +423,6 @@ int INILoadString(const char *file, const char *section, const char *keyword, ch
   if(keyword == NULL)  return(-1);
   if(buffer == NULL)  return(-1);
 
-#ifdef VERBOSE_FUNCTION_INI
-  PrintLog("USBqemu ini: LoadString(%s, %s, %s)",
-           file, section, keyword);
-#endif /* VERBOSE_FUNCTION_INI */
-
   filepos = INIRemoveExt(file, inname);
   INIAddInExt(inname, filepos);
 
@@ -538,10 +463,6 @@ int INIRemove(const char *file, const char *section, const char *keyword) {
   if(file == NULL)  return(-1);
   if(section == NULL)  return(-1);
 
-#ifdef VERBOSE_FUNCTION_INI
-  PrintLog("USBqemu ini: Remove(%s, %s, %s)",
-           file, section, keyword);
-#endif /* VERBOSE_FUNCTION_INI */
 
   filepos = INIRemoveExt(file, inname);
   for(i = 0; i <= filepos; i++)  outname[i] = inname[i];
@@ -560,9 +481,6 @@ int INIRemove(const char *file, const char *section, const char *keyword) {
 
   filepos = retval;
   if(keyword == NULL) {
-#ifdef VERBOSE_FUNCTION_INI
-  PrintLog("USBqemu ini:   removing section");
-#endif /* VERBOSE_FUNCTION_INI */
     outfile = ActualFileOpenForWrite(outname);
     if(outfile == ACTUALHANDLENULL) {
       ActualFileClose(infile);
@@ -614,9 +532,6 @@ int INIRemove(const char *file, const char *section, const char *keyword) {
     } // ENDIF- Couldn't find the keyword? Abort
     filepos += retval;
 
-#ifdef VERBOSE_FUNCTION_INI
-  PrintLog("USBqemu ini:   removing keyword");
-#endif /* VERBOSE_FUNCTION_INI */
     outfile = ActualFileOpenForWrite(outname);
     if(outfile == ACTUALHANDLENULL) {
       ActualFileClose(infile);

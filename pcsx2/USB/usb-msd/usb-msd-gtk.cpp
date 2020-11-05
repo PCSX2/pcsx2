@@ -25,7 +25,7 @@ namespace usb_msd
 	{
 #ifndef NDEBUG
 		const gchar* text = gtk_entry_get_text(GTK_ENTRY(widget));
-		fprintf(stderr, "Entry text:%s\n", text);
+		Console.Warning("Entry text:%s\n", text);
 #endif
 	}
 
@@ -51,7 +51,7 @@ namespace usb_msd
 			char* filename;
 
 			filename = gtk_file_chooser_get_filename(GTK_FILE_CHOOSER(dialog));
-			fprintf(stderr, "%s\n", filename);
+			Console.Warning("%s\n", filename);
 			gtk_entry_set_text(GTK_ENTRY(entry), filename);
 			g_free(filename);
 		}

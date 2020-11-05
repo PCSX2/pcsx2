@@ -169,17 +169,6 @@ namespace usb_pad
 				return false;
 
 			DIJOYSTATE2 js = g_pJoysticks[ijoy]->GetDeviceState();
-			std::cerr << __func__ << ": joystick[" << ijoy << "]: "
-					  << "\tlX " << js.lX << "\n"
-					  << "\tlY " << js.lY << "\n"
-					  << "\tlZ " << js.lZ << "\n"
-					  << "\tlRx " << js.lRx << "\n"
-					  << "\tlRy " << js.lRy << "\n"
-					  << "\tlRz " << js.lRz << "\n"
-					  << "\trglSlider0 " << js.rglSlider[0] << "\n"
-					  << "\trglSlider1 " << js.rglSlider[1] << "\n"
-					  << std::endl;
-
 			LONG detectrange = 2000;
 			for (int32_t axisid = 0; axisid < DINPUT_AXES_COUNT; axisid++)
 			{
@@ -434,7 +423,6 @@ namespace usb_pad
 			CID = controlid;
 			swprintf_s(text, L"Listening...");
 			SetWindowText(GetDlgItem(hWnd, LABELS[CID]), text);
-			OSDebugOut(TEXT("Begin Listen %i\n"), -1);
 			ListenAxis();
 		}
 
@@ -1323,7 +1311,6 @@ namespace usb_pad
 
 					if (im.type == MT_NONE)
 					{
-						OSDebugOut(TEXT("Skipping control %d (%s), mapping type is None\n"), cid, g_pJoysticks[im.index]->Product().c_str());
 						continue;
 					}
 
@@ -1349,7 +1336,6 @@ namespace usb_pad
 			}
 			catch (std::exception& err)
 			{
-				OSDebugOut(TEXT("%" SFMTs "\n"), err.what());
 			}
 
 			LoadSetting(section, TEXT("UseRamp"), useRamp);

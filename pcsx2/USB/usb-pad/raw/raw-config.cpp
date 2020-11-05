@@ -299,7 +299,7 @@ namespace usb_pad
 
 				if (usbHandle == INVALID_HANDLE_VALUE)
 				{
-					fprintf(stderr, "Could not open device %i\n", i);
+					Console.Warning("Could not open device %i\n", i);
 					free(didData);
 					i++;
 					continue;
@@ -312,7 +312,6 @@ namespace usb_pad
 				if (caps.UsagePage == HID_USAGE_PAGE_GENERIC &&
 					caps.Usage == HID_USAGE_GENERIC_JOYSTICK)
 				{
-					OSDebugOut(TEXT("Joystick found %04X:%04X\n"), attr.VendorID, attr.ProductID);
 					std::wstring strPath(didData->DevicePath);
 					std::transform(strPath.begin(), strPath.end(), strPath.begin(), ::toupper);
 					joysDev.push_back(strPath);
@@ -610,7 +609,6 @@ namespace usb_pad
 									{
 										mapping->axisMap[axis] = PLY_SET_MAPPED(plyCapturing, axisCapturing);
 										axisPass2 = false;
-										OSDebugOut(TEXT("Selected axis %d\n"), axis);
 										swprintf_s(buf, TEXT("Captured wheel axis %d"), axis);
 										SendDlgItemMessage(dgHwnd, IDC_STATIC_CAP, WM_SETTEXT, 0, (LPARAM)buf);
 										axisCapturing = PAD_AXIS_COUNT;
@@ -626,7 +624,6 @@ namespace usb_pad
 								{
 									mapping->axisMap[6] = PLY_SET_MAPPED(plyCapturing, axisCapturing);
 									axisPass2 = false;
-									OSDebugOut(TEXT("Selected hat switch\n"));
 									swprintf_s(buf, TEXT("Captured wheel hat switch"));
 									SendDlgItemMessage(dgHwnd, IDC_STATIC_CAP, WM_SETTEXT, 0, (LPARAM)buf);
 									axisCapturing = PAD_AXIS_COUNT;

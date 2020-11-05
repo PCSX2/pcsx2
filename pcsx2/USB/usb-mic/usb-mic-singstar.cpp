@@ -418,10 +418,6 @@ namespace usb_mic
 		if (set_vol)
 		{
 			//if (s->debug) {
-			fprintf(stderr, "singstar: mute %d, lvol %3d, rvol %3d\n",
-					s->f.mute, s->f.vol[0], s->f.vol[1]);
-			OSDebugOut(TEXT("singstar: mute %d, lvol %3d, rvol %3d\n"),
-					   s->f.mute, s->f.vol[0], s->f.vol[1]);
 			//}
 		}
 
@@ -438,11 +434,10 @@ namespace usb_mic
 		int ret = USB_RET_STALL;
 
 		//cs 1 cn 0xFF, ep 0x81 attrib 1
-		fprintf(stderr, "singstar: ep control cs %x, cn %X, %X %X data:", cs, cn, attrib, ep);
-		OSDebugOut(TEXT("singstar: ep control cs %x, cn %X, attr: %02X ep: %04X\n"), cs, cn, attrib, ep);
+		Console.Warning("singstar: ep control cs %x, cn %X, %X %X data:", cs, cn, attrib, ep);
 		/*for(int i=0; i<length; i++)
-		fprintf(stderr, "%02X ", data[i]);
-	fprintf(stderr, "\n");*/
+		Console.Warning("%02X ", data[i]);
+	Console.Warning("\n");*/
 
 		switch (aid)
 		{
@@ -458,13 +453,11 @@ namespace usb_mic
 					if (s->audsrc[1])
 						s->audsrc[1]->SetResampling(s->f.srate[1]);
 
-					OSDebugOut(TEXT("singstar: set sampling to %d\n"), s->f.srate[0]);
 				}
 				else if (cn < 2)
 				{
 
 					s->f.srate[cn] = data[0] | (data[1] << 8) | (data[2] << 16);
-					OSDebugOut(TEXT("singstar: set cn %d sampling to %d\n"), cn, s->f.srate[cn]);
 					if (s->audsrc[cn])
 						s->audsrc[cn]->SetResampling(s->f.srate[cn]);
 				}
@@ -486,7 +479,6 @@ namespace usb_mic
 	{
 		SINGSTARMICState* s = (SINGSTARMICState*)dev;
 		s->f.intf = alt_new;
-		OSDebugOut(TEXT("singstar: intf:%d alt:%d -> %d\n"), intf, alt_old, alt_new);
 #if defined(_DEBUG)
 		/* close previous debug audio output file */
 		if (file && intf > 0 && alt_old != alt_new)
@@ -503,7 +495,6 @@ namespace usb_mic
 		SINGSTARMICState* s = (SINGSTARMICState*)dev;
 		int ret = 0;
 
-		OSDebugOut(TEXT("singstar: req %04X val: %04X idx: %04X len: %d\n"), request, value, index, length);
 
 		ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
 		if (ret >= 0)
@@ -525,7 +516,7 @@ namespace usb_mic
 				if (ret < 0)
 				{
 					//if (s->debug) {
-					fprintf(stderr, "singstar: fail: get control\n");
+					Console.Warning("singstar: fail: get control\n");
 					//}
 					goto fail;
 				}
@@ -541,7 +532,7 @@ namespace usb_mic
 				if (ret < 0)
 				{
 					//if (s->debug) {
-					fprintf(stderr, "singstar: fail: set control\n data:");
+					Console.Warning("singstar: fail: set control\n data:");
 					//}
 					goto fail;
 				}
@@ -583,8 +574,7 @@ namespace usb_mic
 		switch (p->pid)
 		{
 			case USB_TOKEN_IN:
-				//fprintf(stderr, "token in ep: %d len: %zd\n", devep, p->iov.size);
-				//OSDebugOut(TEXT("token in ep: %d len: %zd\n"), devep, p->iov.size);
+				//Console.Warning("token in ep: %d len: %zd\n", devep, p->iov.size);
 				if (devep == 1)
 				{
 
@@ -626,7 +616,6 @@ namespace usb_mic
 						return;
 					}
 
-					OSDebugOut(TEXT("data len: %zu bytes, src[0]: %d frames, src[1]: %d frames\n"), len, out_frames[0], out_frames[1]);
 
 					//TODO well, it is 16bit interleaved, right?
 					//Merge with MIC_MODE_SHARED case?
@@ -647,7 +636,6 @@ namespace usb_mic
 							}
 
 							ret = i;
-							OSDebugOut("RET %d == %d/%d\n", ret, frames, max_frames);
 						}
 						break;
 						case MIC_MODE_SHARED:
@@ -718,8 +706,6 @@ namespace usb_mic
 				}
 				break;
 			case USB_TOKEN_OUT:
-				printf("token out ep: %d\n", devep);
-				OSDebugOut(TEXT("token out ep: %d len: %d\n"), devep, p->actual_length);
 				break;
 			default:
 				p->status = USB_RET_STALL;

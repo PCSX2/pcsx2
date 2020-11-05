@@ -32,7 +32,6 @@ namespace usb_mic
 			int* pa_ready = (int*)userdata;
 
 			state = pa_context_get_state(c);
-			OSDebugOut("pa_context_get_state() %d\n", state);
 			switch (state)
 			{
 				// There are just here for reference
@@ -98,13 +97,12 @@ namespace usb_mic
 
 			pa_ml = pa_mainloop_new();
 			pa_mlapi = pa_mainloop_get_api(pa_ml);
-			pa_ctx = pa_context_new(pa_mlapi, "USBqemu-devicelist");
+			pa_ctx = pa_context_new(pa_mlapi, "USB-devicelist");
 
 			pa_context_connect(pa_ctx, NULL, PA_CONTEXT_NOFLAGS, NULL);
 
 			pa_context_set_state_callback(pa_ctx, pa_context_state_cb, &pa_ready);
 
-			OSDebugOut("pa_get_devicelist\n");
 			for (;;)
 			{
 
@@ -184,14 +182,12 @@ namespace usb_mic
 			AudioDeviceInfoList srcDevs;
 			if (pa_get_devicelist(srcDevs, AUDIODIR_SOURCE) != 0)
 			{
-				OSDebugOut("pa_get_devicelist failed\n");
 				return RESULT_FAILED;
 			}
 
 			AudioDeviceInfoList sinkDevs;
 			if (pa_get_devicelist(sinkDevs, AUDIODIR_SINK) != 0)
 			{
-				OSDebugOut("pa_get_devicelist failed\n");
 				return RESULT_FAILED;
 			}
 
@@ -345,7 +341,6 @@ namespace usb_mic
 
 				//TODO reconnect stream as well?
 
-				OSDebugOut("pa_context_connect %s\n", pa_strerror(ret));
 			}
 			else
 				mLastGetBuffer = now;
@@ -365,10 +360,6 @@ namespace usb_mic
 				pDst += samples;
 				samples_to_read -= samples;
 			}
-			OSDebugOut("Since last write: %lld ms, left in buffer: %0.03f ms / %d bytes\n",
-					   mOutBuffer.MilliSecsSinceLastWrite(),
-					   1000.f * mOutBuffer.peek_read<short>() / mSamplesPerSec / mSSpec.channels,
-					   mOutBuffer.peek_read());
 			return (frames - (samples_to_read / GetChannels()));
 		}
 
@@ -392,7 +383,6 @@ namespace usb_mic
 
 				//TODO reconnect stream as well?
 
-				OSDebugOut("pa_context_connect %s\n", pa_strerror(ret));
 				if (ret != PA_OK)
 					return frames;
 			}
@@ -504,7 +494,7 @@ namespace usb_mic
 			mPMainLoop = pa_threaded_mainloop_new();
 			pa_mainloop_api* mlapi = pa_threaded_mainloop_get_api(mPMainLoop);
 
-			mPContext = pa_context_new(mlapi, "USBqemu");
+			mPContext = pa_context_new(mlapi, "USB");
 
 			pa_context_set_state_callback(mPContext,
 										  context_state_cb,
@@ -519,7 +509,6 @@ namespace usb_mic
 									 PA_CONTEXT_NOFLAGS,
 									 NULL);
 
-			OSDebugOut("pa_context_connect %s\n", pa_strerror(ret));
 			if (ret != PA_OK)
 				goto unlock_and_fail;
 
@@ -534,7 +523,7 @@ namespace usb_mic
 			}
 
 			mStream = pa_stream_new(mPContext,
-									"USBqemu-pulse",
+									"USB-pulse",
 									&mSSpec,
 									NULL);
 
@@ -552,7 +541,6 @@ namespace usb_mic
 			buffer_attr.prebuf = (uint32_t)-1;
 			buffer_attr.minreq = (uint32_t)-1;
 			buffer_attr.fragsize = pa_usec_to_bytes(mBuffering * 1000, &mSSpec);
-			OSDebugOut("usec_to_bytes %zu\n", buffer_attr.fragsize);
 
 			if (mAudioDir == AUDIODIR_SOURCE)
 			{
@@ -564,7 +552,6 @@ namespace usb_mic
 											   mDeviceName.c_str(),
 											   &buffer_attr,
 											   PA_STREAM_ADJUST_LATENCY);
-				OSDebugOut("pa_stream_connect_record %s\n", pa_strerror(ret));
 			}
 			else
 			{
@@ -588,7 +575,6 @@ namespace usb_mic
 												 flags,
 												 nullptr,
 												 nullptr);
-				OSDebugOut("pa_stream_connect_playback %s\n", pa_strerror(ret));
 			}
 
 			if (ret != PA_OK)
@@ -606,8 +592,6 @@ namespace usb_mic
 				pa_threaded_mainloop_wait(mPMainLoop);
 			}
 
-			OSDebugOut("pa_stream_is_corked %d\n", pa_stream_is_corked(mStream));
-			OSDebugOut("pa_stream_is_suspended %d\n", pa_stream_is_suspended(mStream));
 
 			pa_op = pa_stream_cork(mStream, 0, stream_success_cb, this);
 			if (pa_op)
@@ -623,7 +607,6 @@ namespace usb_mic
 			pa_usec_t r_usec;
 			int negative;
 			ret = pa_stream_get_latency(mStream, &r_usec, &negative);
-			OSDebugOut("Latency %llu\n", r_usec);
 
 			// Setup resampler
 			mResampler = src_delete(mResampler);
@@ -631,7 +614,6 @@ namespace usb_mic
 			mResampler = src_new(SRC_SINC_FASTEST, GetChannels(), &ret);
 			if (!mResampler)
 			{
-				OSDebugOut("Failed to create resampler: error %08X\n", ret);
 				goto error;
 			}
 
@@ -671,9 +653,6 @@ namespace usb_mic
 				bytes += bytes % pa_frame_size(&ss);
 				mInBuffer.reserve(bytes);
 			}
-
-			OSDebugOut("Ringbuffer size, in: %zu, out: %zu\n",
-					   mInBuffer.capacity(), mOutBuffer.capacity());
 
 			src_reset(mResampler);
 		}
@@ -716,7 +695,6 @@ namespace usb_mic
 			PulseAudioDevice* padev = (PulseAudioDevice*)userdata;
 
 			state = pa_context_get_state(c);
-			OSDebugOut("pa_context_get_state %d\n", state);
 			switch (state)
 			{
 				case PA_CONTEXT_CONNECTING:
@@ -755,10 +733,8 @@ namespace usb_mic
 			if (padev->mQuit)
 				return;
 
-			//OSDebugOut("stream_read_callback %d bytes\n", nbytes);
 
 			int ret = pa_stream_peek(p, &padata, &nbytes);
-			//OSDebugOut("pa_stream_peek %zu %s\n", nbytes, pa_strerror(ret));
 
 			if (ret != PA_OK)
 				return;
@@ -768,19 +744,15 @@ namespace usb_mic
 			{
 				ret = pa_stream_drop(p);
 				if (ret != PA_OK)
-					OSDebugOut("pa_stream_drop %d: %s\n", ret, pa_strerror(ret));
 				return;
 			}
 
 			if (padev->mInBuffer.capacity() < nbytes)
-				OSDebugOut("input ringbuffer overrun: %zu < %zu\n", padev->mInBuffer.capacity(), nbytes);
 
 			padev->mInBuffer.write((uint8_t*)padata, nbytes);
 
 			//if copy succeeded, drop samples at pulse's side
 			ret = pa_stream_drop(p);
-			if (ret != PA_OK)
-				OSDebugOut("pa_stream_drop %s\n", pa_strerror(ret));
 
 			size_t resampled = static_cast<size_t>(padev->mInBuffer.size<float>() * padev->mResampleRatio * padev->mTimeAdjust);
 			if (resampled == 0)
@@ -812,12 +784,12 @@ namespace usb_mic
 				padev->mInBuffer.read<float>(samples);
 			}
 
-			/*	OSDebugOut("input %zu frames: %zu, used %zu, left %zu bytes, output frames: %zu\n",
-		nbytes,
-		nbytes / sizeof(float) / padev->GetChannels(),
-		input_frames_used,
-		padev->mInBuffer.peek_read(),
-		output_frames_gen);*/
+			/*
+				nbytes,
+				nbytes / sizeof(float) / padev->GetChannels(),
+				input_frames_used,
+				padev->mInBuffer.peek_read(),
+				output_frames_gen);*/
 
 			std::lock_guard<std::mutex> lock(padev->mMutex);
 
@@ -897,7 +869,6 @@ namespace usb_mic
 				ret = pa_stream_begin_write(padev->mStream, &pa_buffer, &pa_bytes);
 				if (ret != PA_OK)
 				{
-					OSDebugOut("pa_stream_begin_write %d: %s\n", ret, pa_strerror(ret));
 					goto exit;
 				}
 
@@ -920,7 +891,6 @@ namespace usb_mic
 				ret = pa_stream_write(padev->mStream, pa_buffer, pa_bytes, NULL, 0LL, PA_SEEK_RELATIVE);
 				if (ret != PA_OK)
 				{
-					OSDebugOut("pa_stream_write %d: %s\n", ret, pa_strerror(ret));
 					pa_stream_cancel_write(padev->mStream); //TODO needed?
 					goto exit;
 				}

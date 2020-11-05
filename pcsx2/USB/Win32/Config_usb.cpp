@@ -66,7 +66,6 @@ void SelChangedAPI(HWND hW, int port)
 
 void PopulateAPIs(HWND hW, int port)
 {
-	OSDebugOut(TEXT("Populate api %d\n"), port);
 	SendDlgItemMessage(hW, port ? IDC_COMBO_API1 : IDC_COMBO_API2, CB_RESETCONTENT, 0, 0);
 	int devtype = SendDlgItemMessage(hW, port ? IDC_COMBO1 : IDC_COMBO2, CB_GETCURSEL, 0, 0);
 	if (devtype == 0)
@@ -81,7 +80,6 @@ void PopulateAPIs(HWND hW, int port)
 
 	std::string var;
 	if (LoadSetting(nullptr, port, rd.Name(devtype), N_DEVICE_API, str_to_wstr(var)))
-		OSDebugOut(L"Current API: %S\n", var.c_str());
 	else
 	{
 		if (apis.begin() != apis.end())
