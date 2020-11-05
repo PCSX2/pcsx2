@@ -1186,7 +1186,6 @@ void ohci_frame_boundary(void* opaque)
 	/* if reset bit was set, don't process possibly invalid descriptors */
 	/* TODO intr_status is interrupts that driver wants, so not quite right to us it here */
 	bool hack = false; // ohci->intr_status & ohci->intr & OHCI_INTR_RHSC;
-	if (hack)
 
 	/* Process all the lists at the end of the frame */
 	if ((ohci->ctl & OHCI_CTL_PLE) && !hack)

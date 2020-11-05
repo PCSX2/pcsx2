@@ -274,6 +274,7 @@ namespace usb_pad
 			ie.code = FF_AUTOCENTER;
 			ie.value = value * 0xFFFFUL / 100;
 
+			write(mHandle, &ie, sizeof(ie));
 		}
 
 		void EvdevFF::SetGain(int gain /* between 0 and 100 */)
@@ -284,6 +285,7 @@ namespace usb_pad
 			ie.code = FF_GAIN;
 			ie.value = 0xFFFFUL * gain / 100;
 
+			write(mHandle, &ie, sizeof(ie));
 		}
 
 	} // namespace evdev
