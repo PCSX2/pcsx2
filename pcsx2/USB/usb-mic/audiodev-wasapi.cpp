@@ -76,8 +76,6 @@ namespace usb_mic
 			LARGE_INTEGER currentTime;
 			QueryPerformanceCounter(&currentTime);
 
-			if (currentTime.QuadPart < lastQPCTime)
-
 			lastQPCTime = currentTime.QuadPart;
 
 			double timeVal = double(currentTime.QuadPart);
