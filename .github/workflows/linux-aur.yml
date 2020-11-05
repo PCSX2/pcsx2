@@ -1,24 +1,8 @@
-- name: Publish AUR package
-  uses: KSXGitHub/github-actions-deploy-aur@v2.2.0
-
-
-
+name: AUR Build
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
 on:
   push:
-    branches:
-      - master
-    paths-ignore:
-      - .gitignore
-      - "**/*.md"
-      - .clang-format
-      - debian-packager/
-      - bin/PCSX2_keys.ini.default
-      - "plugins/LilyPad/**"
-      - .travis.yml # TODO - remove with travis-ci
-      - appveyor.yml # TODO - remove with appveyor
-  pull_request:
     branches:
       - master
     paths-ignore:
@@ -35,10 +19,11 @@ jobs:
   aur-publish:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
       - name: Publish AUR package
-        uses: KSXGitHub/github-actions-deploy-aur@master
+        uses: KSXGitHub/github-actions-deploy-aur@v2.2.3
         with:
           pkgname: pcsx2-git
           pkgbuild: ./PKGBUILD
