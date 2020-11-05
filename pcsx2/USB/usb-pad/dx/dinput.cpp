@@ -721,10 +721,6 @@ namespace usb_pad
 			cSpring.lOffset = ff.u.condition.center * DI_FFNOMINALMAX / SHRT_MAX;
 			cSpring.lDeadBand = ff.u.condition.deadband * DI_FFNOMINALMAX / USHRT_MAX;
 
-					   cSpring.lOffset, cSpring.lDeadBand,
-					   cSpring.lNegativeCoefficient, cSpring.lPositiveCoefficient,
-					   cSpring.dwNegativeSaturation, cSpring.dwPositiveSaturation);
-
 			if (g_pEffectSpring[m_port])
 				g_pEffectSpring[m_port]->SetParameters(&effSpring, DIEP_TYPESPECIFICPARAMS | DIEP_START);
 		}
@@ -755,9 +751,6 @@ namespace usb_pad
 
 			cFriction.lOffset = ff.u.condition.center * DI_FFNOMINALMAX / SHRT_MAX;
 			cFriction.lDeadBand = ff.u.condition.deadband * DI_FFNOMINALMAX / USHRT_MAX;
-
-					   cFriction.lNegativeCoefficient, cFriction.lPositiveCoefficient,
-					   cFriction.dwNegativeSaturation);
 
 			if (g_pEffectFriction[m_port])
 				g_pEffectFriction[m_port]->SetParameters(&effFriction, DIEP_TYPESPECIFICPARAMS | DIEP_START);
