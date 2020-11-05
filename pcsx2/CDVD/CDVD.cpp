@@ -37,7 +37,7 @@
 // this string will be empty.
 wxString DiscSerial;
 
-static cdvdStruct cdvd;
+cdvdStruct cdvd;
 
 s64 PSXCLK = 36864000;
 
@@ -1270,73 +1270,7 @@ static void cdvdWrite04(u8 rt)
 			// this'll skip the seek delay.
 			cdvd.Reading = 1;
 			break;
-
-		case N_CD_READ_CDDA:  // CdReadCDDA
-		case N_CD_READ_XCDDA: // CdReadXCDDA
-			// Assign the seek to sector based on cdvd.Param[0]-[3], and the number of  sectors based on cdvd.Param[4]-[7].
-			cdvd.SeekToSector = *(u32*)(cdvd.Param + 0);
-			cdvd.nSectors = *(u32*)(cdvd.Param + 4);
-
-			if (cdvd.Param[8] == 0)
-				cdvd.RetryCnt = 0x100;
-			else
-				cdvd.RetryCnt = cdvd.Param[8];
-
-			cdvd.SpindlCtrl = cdvd.Param[9];
-
-			switch (cdvd.Param[9])
-			{
-				case 0x01:
-					cdvd.Speed = 1;
-					break;
-				case 0x02:
-					cdvd.Speed = 2;
-					break;
-				case 0x03:
-					cdvd.Speed = 4;
-					break;
-				case 0x04:
-					cdvd.Speed = 12;
-					break;
-				default:
-					cdvd.Speed = 24;
-					break;
-			}
-
-			switch (cdvd.Param[10])
-			{
-				case 1:
-					cdvd.ReadMode = CDVD_MODE_2368;
-					cdvd.BlockSize = 2368;
-					break;
-				case 2:
-				case 0:
-					cdvd.ReadMode = CDVD_MODE_2352;
-					cdvd.BlockSize = 2352;
-					break;
-			}
-
-			CDVD_LOG("CdReadCDDA > startSector=%d, nSectors=%d, RetryCnt=%x, Speed=%xx(%x), ReadMode=%x(%x) (1074=%x)",
-					 cdvd.Sector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
-
-			if (EmuConfig.CdvdVerboseReads)
-				Console.WriteLn(Color_Gray, L"CdAudioRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx",
-								cdvd.Sector, cdvd.nSectors, cdvd.BlockSize, cdvd.Speed);
-
-			cdvd.ReadTime = cdvdBlockReadTime(MODE_CDROM);
-			CDVDREAD_INT(cdvdStartSeek(cdvd.SeekToSector, MODE_CDROM));
-
-			// Read-ahead by telling the plugin about the track now.
-			// This helps improve performance on actual from-cd emulation
-			// (ie, not using the hard drive)
-			cdvd.RErr = DoCDVDreadTrack(cdvd.SeekToSector, cdvd.ReadMode);
-
-			// Set the reading block flag.  If a seek is pending then Readed will
-			// take priority in the handler anyway.  If the read is contiguous then
-			// this'll skip the seek delay.
-			cdvd.Reading = 1;
-			break;
-
+		
 		case N_DVD_READ: // DvdRead
 			// Assign the seek to sector based on cdvd.Param[0]-[3], and the number of  sectors based on cdvd.Param[4]-[7].
 			cdvd.SeekToSector = *(u32*)(cdvd.Param + 0);
