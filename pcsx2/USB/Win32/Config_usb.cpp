@@ -237,6 +237,7 @@ BOOL CALLBACK ConfigureDlgProcUSB(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lPar
 void USBconfigure()
 {
 	ScopedCoreThreadPause paused_core;
+    USBsetSettingsDir();
 	RegisterDevice::Register();
 	DialogBox(hInstUSB,
 			  MAKEINTRESOURCE(IDD_CONFIG),
