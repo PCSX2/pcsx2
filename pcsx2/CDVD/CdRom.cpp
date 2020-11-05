@@ -665,6 +665,7 @@ void setPs1CDVDSpeed(int speed)
 {
 	//DevCon.WriteLn("SPEED: " + speed);
 	cdReadTime = (PSXCLK / (75 * speed));
+	//DevCon.WriteLn("cdReadTime: " + unsigned(cdReadTime));
 }
 
 u8 cdrRead1(void)
@@ -750,7 +751,7 @@ void cdrWrite1(u8 rt)
 		break;
 		do_CdlPlay:
 		case CdlPlay:
-
+			// Taken from pcsxr
 			if (cdr.Reading)
 			{
 				StopReading();
@@ -925,7 +926,7 @@ void cdrWrite1(u8 rt)
 			break;
 
 		case CdlReadS:
-			if (cdvd.Type == CDVD_TYPE_CDDA)
+			if (cdvd.Type == CDVD_TYPE_CDDA) // Taken from pcsxr
 				goto do_CdlPlay;
 			cdr.Irq = 0;
 			StopReading();
