@@ -27,6 +27,7 @@
 #include "qemu-usb/desc.h"
 #include "shared/shared_usb.h"
 #include "deviceproxy.h"
+#include "configuration.h"
 
 #define PSXCLK 36864000 /* 36.864 Mhz */
 
@@ -183,7 +184,7 @@ void CreateDevices()
 
 s32 USBinit()
 {
-	OSDebugOut(TEXT("USBinit\n"));
+	USBsetSettingsDir();
 
 	RegisterDevice::Register();
 	LoadConfig();
@@ -196,7 +197,6 @@ s32 USBinit()
 		usbLog = wfopen(LogDir.c_str(), "wb"); // L"wb,ccs=UNICODE");
 #endif
 		//if(usbLog) setvbuf(usbLog, NULL,  _IONBF, 0);
-		USB_LOG("USBinit\n");
 	}
 
 	qemu_ohci = ohci_create(0x1f801600, 2);
@@ -237,9 +237,6 @@ s32 USBopen(void* pDsp)
 		usbLog = fopen("logs/usbLog.txt", "a");
 		//if(usbLog) setvbuf(usbLog, NULL,  _IONBF, 0);
 	}
-
-	USB_LOG("USBopen\n");
-	OSDebugOut(TEXT("USBopen\n"));
 
 #if _WIN32
 

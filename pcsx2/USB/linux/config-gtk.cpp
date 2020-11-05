@@ -207,6 +207,7 @@ void USBconfigure()
 {
 	ScopedCoreThreadPause paused_core;
 
+    USBsetSettingsDir();
 	RegisterDevice::Register();
 	LoadConfig();
 	void* that = NULL;

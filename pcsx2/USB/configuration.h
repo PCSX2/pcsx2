@@ -71,7 +71,7 @@ void RemoveSection(const char* dev_type, int port, const std::string& key);
 
 extern TSTDSTRING IniPath;
 extern TSTDSTRING LogDir;
-extern const TCHAR* iniFile;
+extern wxString iniFile;
 extern std::map<std::pair<int /*port*/, std::string /*devname*/>, std::string> changedAPIs;
 std::string GetSelectedAPI(const std::pair<int /*port*/, std::string /*devname*/>& pair);
 
@@ -86,7 +86,7 @@ bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TC
 bool SaveSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, const std::string& value);
 #endif
 
-void USBsetSettingsDir(const char* dir);
+void USBsetSettingsDir();
 void USBsetLogDir(const char* dir);
 
 template <typename Type>
