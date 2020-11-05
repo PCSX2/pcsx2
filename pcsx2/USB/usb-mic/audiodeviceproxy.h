@@ -24,7 +24,6 @@
 #include "../helpers.h"
 #include "../configuration.h"
 #include "../deviceproxy.h"
-#include "../osdebugout.h"
 #include "audiodev.h"
 
 namespace usb_mic
@@ -65,7 +64,7 @@ namespace usb_mic
 			: AudioDeviceProxyBase(name)
 		{
 		} //Why can't it automagically, ugh
-		~AudioDeviceProxy() { OSDebugOut(TEXT("%p\n"), this); }
+		~AudioDeviceProxy() { }
 
 		AudioDevice* CreateObject(int port, const char* dev_type, int mic, AudioDir dir) const
 		{
@@ -75,7 +74,6 @@ namespace usb_mic
 			}
 			catch (AudioDeviceError& err)
 			{
-				OSDebugOut(TEXT("AudioDevice port %d mic %d: %") TEXT(SFMTs) TEXT("\n"), port, mic, err.what());
 				(void)err;
 				return nullptr;
 			}

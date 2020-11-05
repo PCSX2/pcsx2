@@ -32,7 +32,6 @@
 #include "vl.h"
 #include "queue.h"
 #include "USBinternal.h"
-#include "../osdebugout.h"
 
 #define DMA_DIRECTION_TO_DEVICE 0
 #define DMA_DIRECTION_FROM_DEVICE 1
@@ -82,7 +81,7 @@ static void ohci_die(OHCIState* ohci)
 {
 	//OHCIPCIState *dev = container_of(ohci, OHCIPCIState, state);
 
-	fprintf(stderr, "ohci_die: DMA error\n");
+	Console.Warning("ohci_die: DMA error\n");
 
 	ohci_set_interrupt(ohci, OHCI_INTR_UE);
 	ohci_bus_stop(ohci);
@@ -114,7 +113,6 @@ static void ohci_attach2(USBPort* port1, USBDevice* dev)
 		dev->port = port1;
 		port1->dev = dev;
 		dev->state = USB_STATE_ATTACHED;
-		OSDebugOut(TEXT("usb-ohci: Attached port %d\n"), port1->index);
 	}
 	else
 	{
@@ -138,7 +136,6 @@ static void ohci_attach2(USBPort* port1, USBDevice* dev)
 			dev->state = USB_STATE_NOTATTACHED;
 		}
 		port1->dev = NULL;
-		OSDebugOut(TEXT("usb-ohci: Detached port %d\n"), port1->index);
 	}
 
 	if (old_state != port->ctrl)
@@ -152,7 +149,6 @@ static void ohci_attach(USBPort* port1)
 	OHCIPort* port = &s->rhport[port1->index];
 	uint32_t old_state = port->ctrl;
 
-	OSDebugOut(TEXT("Attach port %d\n"), port1->index);
 	port1->dev->port = port1;
 
 	/* set connect status */
@@ -188,7 +184,6 @@ static void ohci_detach(USBPort* port1)
 	OHCIPort* port = &s->rhport[port1->index];
 	uint32_t old_state = port->ctrl;
 
-	OSDebugOut(TEXT("Detach port %d\n"), port1->index);
 	if (port1->dev)
 		ohci_async_cancel_device(s, port1->dev);
 
@@ -341,7 +336,6 @@ void ohci_hard_reset(OHCIState* ohci)
 	ohci_soft_reset(ohci);
 	ohci->ctl = 0;
 	ohci_roothub_reset(ohci);
-	OSDebugOut(TEXT("usb-ohci: Hard Reset.\n"));
 }
 
 #define le32_to_cpu(x) (x)
@@ -1162,7 +1156,6 @@ static void ohci_process_lists(OHCIState* ohci, int completion)
 	{
 		if (ohci->ctrl_cur && ohci->ctrl_cur != ohci->ctrl_head)
 		{
-			OSDebugOut(TEXT("usb-ohci: head %x, cur %x\n"), ohci->ctrl_head, ohci->ctrl_cur);
 		}
 		if (!ohci_service_ed_list(ohci, ohci->ctrl_head, completion))
 		{
@@ -1194,7 +1187,6 @@ void ohci_frame_boundary(void* opaque)
 	/* TODO intr_status is interrupts that driver wants, so not quite right to us it here */
 	bool hack = false; // ohci->intr_status & ohci->intr & OHCI_INTR_RHSC;
 	if (hack)
-		OSDebugOut(TEXT("skipping PLE\n"));
 
 	/* Process all the lists at the end of the frame */
 	if ((ohci->ctl & OHCI_CTL_PLE) && !hack)
@@ -1213,7 +1205,6 @@ void ohci_frame_boundary(void* opaque)
 			usb_cancel_packet(&ohci->usb_packet);
 			ohci->async_td = 0;
 		}
-		OSDebugOut(TEXT("usb-ohci: stop endpoints\n"));
 		ohci_stop_endpoints(ohci);
 	}
 	ohci->old_ctl = ohci->ctl;
@@ -1261,7 +1252,6 @@ int ohci_bus_start(OHCIState* ohci)
 {
 	ohci->eof_timer = 0;
 
-	OSDebugOut(TEXT("usb-ohci:  USB Operational\n"));
 
 	ohci_sof(ohci);
 
@@ -1316,7 +1306,6 @@ static void ohci_set_frame_interval(OHCIState* ohci, uint16_t val)
 
 	if (val != ohci->fi)
 	{
-		OSDebugOut(TEXT("usb-ohci: FrameInterval = 0x%x (%u)\n"), ohci->fi, ohci->fi);
 	}
 
 	ohci->fi = val;
@@ -1361,15 +1350,12 @@ static void ohci_set_ctl(OHCIState* ohci, uint32_t val)
 			/* clear pending SF otherwise linux driver loops in ohci_irq() */
 			ohci->intr_status &= ~OHCI_INTR_SF;
 			ohci_intr_update(ohci);
-			OSDebugOut(TEXT("usb-ohci: USB Suspended\n"));
 			break;
 		case OHCI_USB_RESUME:
 			//trace_usb_ohci_resume(ohci->name);
-			OSDebugOut(TEXT("usb-ohci: USB Resume\n"));
 			break;
 		case OHCI_USB_RESET:
 			ohci_roothub_reset(ohci);
-			OSDebugOut(TEXT("usb-ohci: USB Reset\n"));
 			break;
 	}
 	//ohci_intr_update(ohci);
@@ -1416,7 +1402,6 @@ static void ohci_set_hub_status(OHCIState* ohci, uint32_t val)
 
 		for (i = 0; i < ohci->num_ports; i++)
 			ohci_port_power(ohci, i, 0);
-		OSDebugOut(TEXT("usb-ohci: powered down all ports\n"));
 	}
 
 	if (val & OHCI_RHS_LPSC)
@@ -1425,7 +1410,6 @@ static void ohci_set_hub_status(OHCIState* ohci, uint32_t val)
 
 		for (i = 0; i < ohci->num_ports; i++)
 			ohci_port_power(ohci, i, 1);
-		OSDebugOut(TEXT("usb-ohci: powered up all ports\n"));
 	}
 
 	if (val & OHCI_RHS_DRWE)
@@ -1458,12 +1442,10 @@ static void ohci_port_set_status(OHCIState* ohci, int portnum, uint32_t val)
 
 	if (ohci_port_set_if_connected(ohci, portnum, val & OHCI_PORT_PSS))
 	{
-		OSDebugOut(TEXT("usb-ohci: port %d: SUSPEND\n"), portnum);
 	}
 
 	if (ohci_port_set_if_connected(ohci, portnum, val & OHCI_PORT_PRS))
 	{
-		OSDebugOut(TEXT("usb-ohci: port %d: RESET\n"), portnum);
 		usb_device_reset(port->port.dev);
 		port->ctrl &= ~OHCI_PORT_PRS;
 		/* ??? Should this also set OHCI_PORT_PESC.  */
@@ -1514,7 +1496,7 @@ uint32_t ohci_mem_read(OHCIState* ptr, uint32_t addr)
 	int idx = (addr - ptr->mem_base) >> 2;
 	if (idx < countof(reg_names))
 	{
-		fprintf(stderr, "ohci_mem_read %s(%d): %08x\n", reg_names[idx], idx, val);
+		Console.Warning("ohci_mem_read %s(%d): %08x\n", reg_names[idx], idx, val);
 	}
 	return val;
 }
@@ -1531,7 +1513,6 @@ uint32_t ohci_mem_read(OHCIState* ptr, uint32_t addr)
 	/* Only aligned reads are allowed on OHCI */
 	if (addr & 3)
 	{
-		OSDebugOut(TEXT("usb-ohci: Mis-aligned read\n"));
 		return 0xffffffff;
 	}
 
@@ -1604,7 +1585,6 @@ uint32_t ohci_mem_read(OHCIState* ptr, uint32_t addr)
 			return ohci->rhstatus;
 
 		default:
-			OSDebugOut(TEXT("ohci_read: Bad offset %x\n"), (int)addr);
 			return 0xffffffff;
 	}
 }
@@ -1616,7 +1596,7 @@ void ohci_mem_write(OHCIState* ptr, uint32_t addr, uint32_t val)
 	int idx = (addr - ptr->mem_base) >> 2;
 	if (idx < countof(reg_names))
 	{
-		fprintf(stderr, "ohci_mem_write %s(%d): %08x\n", reg_names[idx], idx, val);
+		Console.Warning("ohci_mem_write %s(%d): %08x\n", reg_names[idx], idx, val);
 	}
 	ohci_mem_write_impl(ptr, addr, val);
 }
@@ -1633,14 +1613,13 @@ void ohci_mem_write(OHCIState* ptr, uint32_t addr, uint32_t val)
 	/* Only aligned reads are allowed on OHCI */
 	if (addr & 3)
 	{
-		fprintf(stderr, "usb-ohci: Mis-aligned write\n");
+		Console.Warning("usb-ohci: Mis-aligned write\n");
 		return;
 	}
 
 	if ((addr >= 0x54) && (addr < (0x54 + ohci->num_ports * 4)))
 	{
 		/* HcRhPortStatus */
-		OSDebugOut(TEXT("ohci_port_set_status: %d = 0x%08x\n"), (addr - 0x54) >> 2, val);
 		ohci_port_set_status(ohci, (addr - 0x54) >> 2, val);
 		return;
 	}
@@ -1723,7 +1702,6 @@ void ohci_mem_write(OHCIState* ptr, uint32_t addr, uint32_t val)
 			break;
 
 		default:
-			OSDebugOut(TEXT("ohci_write: Bad offset %x\n"), (int)addr);
 			break;
 	}
 }
@@ -1778,8 +1756,6 @@ OHCIState* ohci_create(uint32_t base, int ports)
 			usb_bit_time = 1;
 		}
 #endif
-		OSDebugOut(TEXT("usb-ohci: usb_bit_time=%lli usb_frame_time=%lli\n"),
-				   usb_frame_time, usb_bit_time);
 	}
 
 	ohci->num_ports = ports;

@@ -331,7 +331,6 @@ set(pcsx2USBSources
 	USB/USB.cpp
 	USB/deviceproxy.cpp
 	USB/configuration.cpp
-	USB/osdebugout.cpp
 	USB/device_init.cpp
 	USB/qemu-usb/glib.cpp
 	USB/qemu-usb/vl.cpp
@@ -384,7 +383,6 @@ set(pcsx2USBHeaders
 	USB/proxybase.h
 	USB/deviceproxy.h
 	USB/configuration.h
-	USB/osdebugout.h
 	USB/platcompat.h
 	USB/helpers.h
 	USB/readerwriterqueue/readerwriterqueue.h

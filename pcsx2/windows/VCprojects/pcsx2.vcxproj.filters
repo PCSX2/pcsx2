@@ -1081,9 +1081,6 @@
     <ClCompile Include="..\..\USB\deviceproxy.cpp">
       <Filter>System\Ps2\USB</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\USB\osdebugout.cpp">
-      <Filter>System\Ps2\USB</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\USB\USB.cpp">
       <Filter>System\Ps2\USB</Filter>
     </ClCompile>
@@ -1762,9 +1759,6 @@
       <Filter>System\Ps2\USB</Filter>
     </ClInclude>
     <ClInclude Include="..\..\USB\helpers.h">
-      <Filter>System\Ps2\USB</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\USB\osdebugout.h">
       <Filter>System\Ps2\USB</Filter>
     </ClInclude>
     <ClInclude Include="..\..\USB\platcompat.h">

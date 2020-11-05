@@ -14,7 +14,6 @@
  */
 
 #include "evdev.h"
-#include "../../osdebugout.h"
 #include <cassert>
 #include <sstream>
 #include "../hidproxy.h"
@@ -47,7 +46,7 @@ namespace usb_hid
 			DIR* dirp = opendir("/dev/input/");
 			if (dirp == NULL)
 			{
-				perror("Error opening /dev/input/");
+				Console.Warning("Error opening /dev/input/");
 				return false;
 			}
 
@@ -55,7 +54,6 @@ namespace usb_hid
 			{
 				if (strncmp(dp->d_name, "hidraw", 6) == 0)
 				{
-					OSDebugOut("%s\n", dp->d_name);
 
 					str.clear();
 					str.str("");
@@ -64,7 +62,7 @@ namespace usb_hid
 
 					if (fd < 0)
 					{
-						perror("Unable to open device");
+						Console.Warning("Unable to open device");
 						continue;
 					}
 
@@ -73,9 +71,9 @@ namespace usb_hid
 
 					/*			res = ioctl(fd, HIDIOCGRAWPHYS(256), buf);
 			if (res < 0)
-				perror("HIDIOCGRAWPHYS");
+				Console.Warning("HIDIOCGRAWPHYS");
 			else
-				OSDebugOut("Raw Phys: %s\n", buf);*/
+			*/
 					close(fd);
 					if (evphys == buf)
 					{
@@ -106,7 +104,6 @@ namespace usb_hid
 			std::string path;
 			if (!LoadSetting(mDevType, mPort, APINAME, N_DEVICE, path))
 			{
-				OSDebugOut("Cannot load evdev hid device setting!\n");
 				return 1;
 			}
 
@@ -115,7 +112,6 @@ namespace usb_hid
 
 			if ((mHandle = open(path.c_str(), O_RDWR | O_NONBLOCK)) < 0)
 			{
-				OSDebugOut("Cannot open device: %s\n", path.c_str());
 				goto quit;
 			}
 
@@ -165,7 +161,6 @@ namespace usb_hid
 						{
 							case EV_ABS:
 							{
-								OSDebugOut("EV_ABS: %d, val: %d\n", event.code, event.value);
 
 								if (dev->mHIDType == HIDTYPE_MOUSE) // usually mouse position is expected to be relative
 									continue;
@@ -190,7 +185,6 @@ namespace usb_hid
 							break;
 							case EV_REL:
 							{
-								OSDebugOut("EV_REL: %d, val: %d\n", event.code, event.value);
 								if (!hs->ptr.eh_entry)
 									continue;
 
@@ -210,7 +204,6 @@ namespace usb_hid
 							break;
 							case EV_KEY:
 							{
-								OSDebugOut("EV_KEY: 0x%02x (%d), val: %d\n", event.code, event.code, event.value);
 
 #ifdef USING_X11 //FIXME not thread-safe
 								if (event.code == KEY_LEFTSHIFT || event.code == KEY_RIGHTSHIFT)
@@ -282,7 +275,6 @@ namespace usb_hid
 							break;
 							case EV_SYN: //TODO useful?
 							{
-								OSDebugOut("EV_SYN: %d, val: %d\n", event.code, event.value);
 								switch (event.code)
 								{
 									case SYN_REPORT:
@@ -302,14 +294,12 @@ namespace usb_hid
 
 					if (len < sizeof(input_event) && errno != EAGAIN)
 					{
-						OSDebugOut("%s: evdev read error %d\n", APINAME, errno);
 						break;
 					}
 				}
 
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
-			OSDebugOut(TEXT("ReaderThread exited.\n"));
 
 			dev->mReaderThreadIsRunning = false;
 		}

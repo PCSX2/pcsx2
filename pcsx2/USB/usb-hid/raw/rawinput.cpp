@@ -124,7 +124,7 @@ namespace usb_hid
 							//int axis = (value * 0x3FFF) / pValueCaps[i].LogicalMax;
 							break;
 						case HID_USAGE_GENERIC_HATSWITCH:
-							//fprintf(stderr, "Hat: %02X\n", value);
+							//Console.Warning("Hat: %02X\n", value);
 							break;
 					}
 				}
@@ -141,7 +141,6 @@ namespace usb_hid
 			if (!hs->kbd.eh_entry)
 				return;
 			static uint32_t nr = 0;
-			OSDebugOut(TEXT("%ud kb: %hu %hu %hu %u\n"), nr, k.MakeCode, k.VKey, k.Flags, k.ExtraInformation);
 
 			nr++;
 			if (nr > 10)
@@ -189,7 +188,6 @@ namespace usb_hid
 			if (m.usButtonFlags & RI_MOUSE_WHEEL)
 				z = (short)m.usButtonData / WHEEL_DELTA;
 
-			//OSDebugOut(TEXT("mouse: %d %d %u %hd\n"), m.lLastX, m.lLastY, m.ulButtons, z);
 
 			ev.type = INPUT_EVENT_KIND_BTN;
 

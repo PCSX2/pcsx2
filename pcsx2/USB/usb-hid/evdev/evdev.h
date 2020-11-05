@@ -68,13 +68,13 @@ namespace usb_hid
 			int fd = 0;
 			if ((fd = open(path.c_str(), O_RDONLY)) < 0)
 			{
-				fprintf(stderr, "Cannot open %s\n", path.c_str());
+				Console.Warning("Cannot open %s\n", path.c_str());
 			}
 			else
 			{
 				if (ioctl(fd, EVIOCGNAME(_Size), name) < -1)
 				{
-					fprintf(stderr, "Cannot get controller's name\n");
+					Console.Warning("Cannot get controller's name\n");
 					close(fd);
 					return false;
 				}

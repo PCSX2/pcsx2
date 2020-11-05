@@ -19,7 +19,6 @@
 #include <string>
 #include <map>
 #include <sstream>
-#include "osdebugout.h"
 #include "platcompat.h"
 
 #define RESULT_CANCELED 0
@@ -95,7 +94,6 @@ bool LoadSetting(const char* dev_type, int port, const std::string& key, const T
 	bool ret = false;
 	if (key.empty())
 	{
-		DevCon.WriteLn("Key is empty for '%s' on port %d\n", name, port);
 		return false;
 	}
 
@@ -108,12 +106,7 @@ bool LoadSetting(const char* dev_type, int port, const std::string& key, const T
 	section << tkey << TEXT(" ") << port;
 	TSTDSTRING str = section.str();
 
-	DevCon.WriteLn("[%s] '%s'=", str.c_str(), name);
 	ret = LoadSettingValue(IniPath, str, name, var);
-	if (ret)
-		OSDebugOutStream_noprfx(var);
-	else
-		OSDebugOut_noprfx("<failed>\n");
 	return ret;
 }
 
@@ -121,12 +114,7 @@ template <typename Type>
 bool LoadSetting(const TCHAR* section, const TCHAR* key, Type& var)
 {
 	bool ret = false;
-	DevCon.WriteLn("[%s] '%s'=", section, key);
 	ret = LoadSettingValue(IniPath, section, key, var);
-	if (ret)
-		OSDebugOutStream_noprfx(var);
-	else
-		OSDebugOut_noprfx("<failed>\n");
 	return ret;
 }
 
@@ -150,7 +138,6 @@ bool SaveSetting(const char* dev_type, int port, const std::string& key, const T
 	bool ret = false;
 	if (key.empty())
 	{
-		DevCon.WriteLn("Key is empty for '%s' on port %d\n", name, port);
 		return false;
 	}
 
@@ -163,10 +150,8 @@ bool SaveSetting(const char* dev_type, int port, const std::string& key, const T
 	section << tkey << TEXT(" ") << port;
 	TSTDSTRING str = section.str();
 
-	DevCon.WriteLn("[%s] '%s'=", str.c_str(), name);
 
 	ret = SaveSettingValue(IniPath, str, name, var);
-	OSDebugOutStream_noprfx(var);
 	return ret;
 }
 
@@ -174,9 +159,7 @@ template <typename Type>
 bool SaveSetting(const TCHAR* section, const TCHAR* key, const Type var)
 {
 	bool ret = false;
-	DevCon.WriteLn("[%s] '%s'=", section, key);
 
 	ret = SaveSettingValue(IniPath, section, key, var);
-	OSDebugOutStream_noprfx(var);
 	return ret;
 }

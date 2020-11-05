@@ -476,7 +476,6 @@ namespace usb_mic
 		uint32_t aid = ATTRIB_ID(cs, attrib, idif);
 		int ret = USB_RET_STALL;
 
-		OSDebugOut(TEXT("cs: %02x attr: %02x cn: %d, unit: %04x\n"), cs, attrib, cn, idif);
 		switch (aid)
 		{
 			case ATTRIB_ID(AUDIO_MUTE_CONTROL, AUDIO_REQUEST_GET_CUR, 0x0600):
@@ -600,12 +599,10 @@ namespace usb_mic
 				s->f.in.mute = data[0] & 1;
 				set_vol = true;
 				ret = 0;
-				OSDebugOut(TEXT("=> mic set cn %d mute %d\n"), cn, s->f.in.mute);
 				break;
 			case ATTRIB_ID(AUDIO_VOLUME_CONTROL, AUDIO_REQUEST_SET_CUR, 0x0600):
 			case ATTRIB_ID(AUDIO_VOLUME_CONTROL, AUDIO_REQUEST_SET_CUR, 0x0200):
 				vol = data[0] + (data[1] << 8);
-				OSDebugOut(TEXT("=> mic set cn %d volume %d\n"), cn, vol);
 				//qemu usb audiocard formula
 				vol -= 0x8000;
 				vol = (vol * 255 + 0x4400) / 0x8800;
@@ -625,11 +622,9 @@ namespace usb_mic
 				s->f.out.mute = data[0] & 1;
 				set_vol = true;
 				ret = 0;
-				OSDebugOut(TEXT("=> headphones set cn %d mute %04x\n"), cn, s->f.out.mute);
 				break;
 			case ATTRIB_ID(AUDIO_VOLUME_CONTROL, AUDIO_REQUEST_SET_CUR, 0x0100):
 				vol = data[0] + (data[1] << 8);
-				OSDebugOut(TEXT("=> headphones set cn %d volume %04x\n"), cn, vol);
 				if (cn < 2)
 				{
 
@@ -654,9 +649,6 @@ namespace usb_mic
 		if (set_vol)
 		{
 			//if (s->f.debug) {
-			OSDebugOut(TEXT("headset: mute %d, vol %3d; mute %d vol %d %d\n"),
-					   s->f.in.mute, s->f.in.vol,
-					   s->f.out.mute, s->f.out.vol[0], s->f.out.vol[1]);
 			//}
 		}
 
@@ -673,22 +665,19 @@ namespace usb_mic
 		int ret = USB_RET_STALL;
 
 		//cs 1 cn 0xFF, ep 0x81 attrib 1
-		OSDebugOut(TEXT("headset: ep control cs %x, cn %X, attr: %02X ep: %04X\n"), cs, cn, attrib, ep);
 		/*for(int i=0; i<length; i++)
-        fprintf(stderr, "%02X ", data[i]);
-    fprintf(stderr, "\n");*/
+        Console.Warning("%02X ", data[i]);
+    Console.Warning("\n");*/
 
 		switch (aid)
 		{
 			case ATTRIB_ID(AUDIO_SAMPLING_FREQ_CONTROL, AUDIO_REQUEST_SET_CUR, 0x84):
 				s->f.in.srate = data[0] | (data[1] << 8) | (data[2] << 16);
-				OSDebugOut(TEXT("=> mic set cn %d sampling to %d\n"), cn, s->f.in.srate);
 				if (s->audsrc)
 					s->audsrc->SetResampling(s->f.in.srate);
 				ret = 0;
 				break;
 			case ATTRIB_ID(AUDIO_SAMPLING_FREQ_CONTROL, AUDIO_REQUEST_GET_CUR, 0x84):
-				OSDebugOut(TEXT("=> mic get cn %d sampling %d\n"), cn, s->f.in.srate);
 				data[0] = s->f.in.srate & 0xFF;
 				data[1] = (s->f.in.srate >> 8) & 0xFF;
 				data[2] = (s->f.in.srate >> 16) & 0xFF;
@@ -697,13 +686,11 @@ namespace usb_mic
 
 			case ATTRIB_ID(AUDIO_SAMPLING_FREQ_CONTROL, AUDIO_REQUEST_SET_CUR, 0x01):
 				s->f.out.srate = data[0] | (data[1] << 8) | (data[2] << 16);
-				OSDebugOut(TEXT("=> headphones set cn %d sampling to %d\n"), cn, s->f.out.srate);
 				if (s->audsink)
 					s->audsink->SetResampling(s->f.out.srate);
 				ret = 0;
 				break;
 			case ATTRIB_ID(AUDIO_SAMPLING_FREQ_CONTROL, AUDIO_REQUEST_GET_CUR, 0x01):
-				OSDebugOut(TEXT("=> headphones get cn %d sampling %d\n"), cn, s->f.out.srate);
 				data[0] = s->f.out.srate & 0xFF;
 				data[1] = (s->f.out.srate >> 8) & 0xFF;
 				data[2] = (s->f.out.srate >> 16) & 0xFF;
@@ -720,7 +707,6 @@ namespace usb_mic
 		HeadsetState* s = (HeadsetState*)dev;
 		int ret = 0;
 
-		OSDebugOut(TEXT("headset: req %04X val: %04X idx: %04X len: %d\n"), request, value, index, length);
 
 		ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
 		if (ret >= 0)
@@ -742,7 +728,7 @@ namespace usb_mic
 				if (ret < 0)
 				{
 					//if (s->debug) {
-					fprintf(stderr, "headset: fail: get control\n");
+					Console.Warning("headset: fail: get control\n");
 					//}
 					goto fail;
 				}
@@ -758,7 +744,7 @@ namespace usb_mic
 				if (ret < 0)
 				{
 					//if (s->debug) {
-					fprintf(stderr, "headset: fail: set control\n data:");
+					Console.Warning("headset: fail: set control\n data:");
 					//}
 					goto fail;
 				}
@@ -800,8 +786,7 @@ namespace usb_mic
 		switch (p->pid)
 		{
 			case USB_TOKEN_IN:
-				//fprintf(stderr, "token in ep: %d len: %zd\n", devep, p->iov.size);
-				OSDebugOut(TEXT("token in ep: %d len: %zd\n"), devep, p->iov.size);
+				//Console.Warning("token in ep: %d len: %zd\n", devep, p->iov.size);
 				if (devep == 4 && s->dev.altsetting[2] && s->audsrc)
 				{
 
@@ -862,7 +847,6 @@ namespace usb_mic
 				break;
 			case USB_TOKEN_OUT:
 
-				//OSDebugOut(TEXT("token out ep: %d len: %d\n"), devep, p->iov.size);
 				if (!s->audsink)
 					return;
 

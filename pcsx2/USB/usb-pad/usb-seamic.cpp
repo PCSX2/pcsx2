@@ -323,11 +323,9 @@ namespace usb_pad
 
 				break;
 			case InterfaceRequest | USB_REQ_GET_DESCRIPTOR:
-				OSDebugOut(TEXT("InterfaceRequest | USB_REQ_GET_DESCRIPTOR 0x%04X\n"), value);
 				switch (value >> 8)
 				{
 					case USB_DT_REPORT:
-						OSDebugOut(TEXT("Sending hid report desc.\n"));
 						ret = sizeof(hid_report_descriptor);
 						memcpy(data, hid_report_descriptor, ret);
 						p->actual_length = ret;
@@ -340,13 +338,11 @@ namespace usb_pad
 			case SET_REPORT:
 				if (length > 0)
 				{
-					OSDebugOut(TEXT("SET_REPORT: 0x%02X \n"), data[0]);
 					p->actual_length = 0;
 					//p->status = USB_RET_SUCCESS;
 				}
 				break;
 			case SET_IDLE:
-				OSDebugOut(TEXT("SET_IDLE\n"));
 				break;
 			default:
 				ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
@@ -401,7 +397,6 @@ namespace usb_pad
 		if (!proxy)
 		{
 			Console.WriteLn("USB: PAD: Invalid input API.\n");
-			USB_LOG("usb-pad: %s: Invalid input API.\n", TypeName());
 			return NULL;
 		}
 
@@ -409,10 +404,8 @@ namespace usb_pad
 
 
 #ifdef _WIN32
-		USB_LOG("usb-pad: creating device '%s' on port %d with %s\n", TypeName(), port, str_to_wstr(varApi));
 		if (!LoadSetting(nullptr, port, usb_mic::SingstarDevice::TypeName(), N_DEVICE_API, str_to_wstr(api)))
 #else
-		USB_LOG("usb-pad: creating device '%s' on port %d with %s\n", TypeName(), port, varApi.c_str());
 		if (!LoadSetting(nullptr, port, usb_mic::SingstarDevice::TypeName(), N_DEVICE_API, api))
 #endif
 			return nullptr;

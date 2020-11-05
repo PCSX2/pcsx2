@@ -101,7 +101,6 @@ namespace usb_pad
 		}
 		*ptrB = '\0';
 
-		OSDebugOut(TEXT("%" SFMTs "\n"), bits);
 	}
 
 #else
@@ -207,9 +206,9 @@ namespace usb_pad
 				break;
 			case USB_TOKEN_OUT:
 				usb_packet_copy(p, data, MIN(p->iov.size, sizeof(data)));
-				/*fprintf(stderr,"usb-pad: data token out len=0x%X %X,%X,%X,%X,%X,%X,%X,%X\n",len,
+				/*Console.Warning("usb-pad: data token out len=0x%X %X,%X,%X,%X,%X,%X,%X,%X\n",len,
 			data[0],data[1],data[2],data[3],data[4],data[5],data[6],data[7]);*/
-				//fprintf(stderr,"usb-pad: data token out len=0x%X\n",len);
+				//Console.Warning("usb-pad: data token out len=0x%X\n",len);
 				ret = s->pad->TokenOut(data, p->iov.size);
 				break;
 			default:
@@ -244,11 +243,9 @@ namespace usb_pad
 
 				break;
 			case InterfaceRequest | USB_REQ_GET_DESCRIPTOR: //GT3
-				OSDebugOut(TEXT("InterfaceRequest | USB_REQ_GET_DESCRIPTOR 0x%04X\n"), value);
 				switch (value >> 8)
 				{
 					case USB_DT_REPORT:
-						OSDebugOut(TEXT("Sending hid report desc.\n"));
 						if (t == WT_DRIVING_FORCE_PRO || t == WT_DRIVING_FORCE_PRO_1102)
 						{
 							ret = sizeof(pad_driving_force_pro_hid_report_descriptor);
@@ -275,7 +272,6 @@ namespace usb_pad
 				// no idea, Rock Band 2 keeps spamming this
 				if (length > 0)
 				{
-					OSDebugOut(TEXT("SET_REPORT: 0x%02X \n"), data[0]);
 					/* 0x01: Num Lock LED
 			 * 0x02: Caps Lock LED
 			 * 0x04: Scroll Lock LED
@@ -286,7 +282,6 @@ namespace usb_pad
 				}
 				break;
 			case SET_IDLE:
-				OSDebugOut(TEXT("SET_IDLE\n"));
 				break;
 			default:
 				ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
@@ -387,7 +382,6 @@ namespace usb_pad
 				w->hi |= 0x11 << 24;       //enables wheel and pedals?
 
 				//PrintBits(w, sizeof(*w));
-				//OSDebugOut(TEXT("DFP thr: %u brake: %u\n"), (w->hi >> 8) & 0xFF, (w->hi >> 16) & 0xFF);
 
 				break;
 			case WT_DRIVING_FORCE_PRO_1102:
@@ -439,7 +433,7 @@ namespace usb_pad
 
 		u_wheel_data_t* w = (u_wheel_data_t*)buf;
 
-		//fprintf(stderr,"usb-pad: axis x %d\n", data.axis_x);
+		//Console.Warning("usb-pad: axis x %d\n", data.axis_x);
 		switch (type)
 		{
 			case WT_GENERIC:
@@ -491,7 +485,6 @@ namespace usb_pad
 				w->u.dfp_data.axis_x = data.steering;
 				w->u.dfp_data.axis_z = 1 | (data.throttle * 0x3F) / 0xFF; //TODO Always > 0 or everything stops working, wut.
 				w->u.dfp_data.axis_rz = 0x3F - (data.brake * 0x3F) / 0xFF;
-				//OSDebugOut(TEXT("dfp: axis_z=0x%02x, axis_rz=0x%02x\n"), w->u.dfp_data.axis_z, w->u.dfp_data.axis_rz);
 
 				w->u.dfp_data.magic1 = 1;
 				w->u.dfp_data.magic2 = 1;
@@ -548,11 +541,9 @@ namespace usb_pad
 		if (!proxy)
 		{
 			Console.WriteLn("USB: PAD: Invalid input API.\n");
-			USB_LOG("usb-pad: %s: Invalid input API.\n", TypeName());
 			return NULL;
 		}
 
-		USB_LOG("usb-pad: creating device '%s' on port %d with %s\n", TypeName(), port, varApi.c_str());
 		Pad* pad = proxy->CreateObject(port, TypeName());
 
 		if (!pad)
@@ -676,11 +667,9 @@ namespace usb_pad
 		if (!proxy)
 		{
 			Console.WriteLn("RBDK: Invalid input API.\n");
-			USB_LOG("usb-pad: %s: Invalid input API.\n", TypeName());
 			return NULL;
 		}
 
-		USB_LOG("usb-pad: creating device '%s' on port %d with %s\n", TypeName(), port, varApi.c_str());
 		Pad* pad = proxy->CreateObject(port, TypeName());
 
 		if (!pad)
@@ -749,11 +738,9 @@ namespace usb_pad
 		if (!proxy)
 		{
 			Console.WriteLn("Buzz: Invalid input API.\n");
-			USB_LOG("usb-pad: %s: Invalid input API.\n", TypeName());
 			return NULL;
 		}
 
-		USB_LOG("usb-pad: creating device '%s' on port %d with %s\n", TypeName(), port, varApi.c_str());
 		Pad* pad = proxy->CreateObject(port, TypeName());
 
 		if (!pad)

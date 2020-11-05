@@ -14,7 +14,6 @@
  */
 
 #include "joydev.h"
-#include "../../osdebugout.h"
 #include <cassert>
 #include <sstream>
 #include "../../linux/util.h"
@@ -41,7 +40,7 @@ namespace usb_pad
 			DIR* dirp = opendir("/dev/input/");
 			if (!dirp)
 			{
-				perror("Error opening /dev/input/");
+				Console.Warning("Error opening /dev/input/");
 				return;
 			}
 
@@ -49,7 +48,6 @@ namespace usb_pad
 			{
 				if (strncmp(dp->d_name, "js", 2) == 0)
 				{
-					OSDebugOut("%s\n", dp->d_name);
 
 					str.clear();
 					str.str("");
@@ -59,16 +57,15 @@ namespace usb_pad
 
 					if (fd < 0)
 					{
-						perror("Unable to open device");
+						Console.Warning("Unable to open device");
 						continue;
 					}
 
 					res = ioctl(fd, JSIOCGNAME(sizeof(buf)), buf);
 					if (res < 0)
-						perror("JSIOCGNAME");
+						Console.Warning("JSIOCGNAME");
 					else
 					{
-						OSDebugOut("Joydev device name: %s\n", buf);
 						list.push_back({buf, buf, path});
 					}
 
@@ -123,7 +120,6 @@ namespace usb_pad
 						js_event& event = events[i];
 						if ((event.type & ~JS_EVENT_INIT) == JS_EVENT_AXIS)
 						{
-							OSDebugOut("Axis: %d, mapped: 0x%02x, val: %d\n", event.number, device.axis_map[event.number], event.value);
 							switch (device.axis_map[event.number])
 							{
 								case 0x80 | JOY_STEERING:
@@ -189,7 +185,6 @@ namespace usb_pad
 						}
 						else if ((event.type & ~JS_EVENT_INIT) == JS_EVENT_BUTTON)
 						{
-							OSDebugOut("Button: %d, mapped: 0x%02x, val: %d\n", event.number, device.btn_map[event.number], event.value);
 							PS2Buttons button = PAD_BUTTON_COUNT;
 							if (device.btn_map[event.number] >= (0x8000 | JOY_CROSS) &&
 								device.btn_map[event.number] <= (0x8000 | JOY_L3))
@@ -251,7 +246,6 @@ namespace usb_pad
 										button = PAD_L2;
 										break;
 									default:
-										OSDebugOut("Unmapped Button: %d, %d\n", event.number, event.value);
 										break;
 								}
 							}
@@ -268,7 +262,6 @@ namespace usb_pad
 
 					if (len <= 0)
 					{
-						OSDebugOut("%s: TokenIn: read error %d\n", APINAME, errno);
 						break;
 					}
 				}
@@ -344,7 +337,6 @@ namespace usb_pad
 			std::string joypath;
 			/*if (!LoadSetting(mDevType, mPort, APINAME, N_JOYSTICK, joypath))
 	{
-		OSDebugOut("Cannot load joystick setting: %s\n", N_JOYSTICK);
 		return 1;
 	}*/
 
@@ -369,7 +361,6 @@ namespace usb_pad
 
 				if ((device.cfg.fd = open(it.path.c_str(), O_RDWR | O_NONBLOCK)) < 0)
 				{
-					OSDebugOut("Cannot open device: %s\n", it.path.c_str());
 					continue;
 				}
 
@@ -402,7 +393,6 @@ namespace usb_pad
 					if (ioctl(device.cfg.fd, JSIOCGAXES, &(count)) >= 0)
 					{
 						for (int i = 0; i < count; ++i)
-							OSDebugOut("Axis: %d -> %d\n", i, device.axis_map[i]);
 
 						for (int k = 0; k < count; k++)
 						{
@@ -431,7 +421,6 @@ namespace usb_pad
 					{
 						for (int i = 0; i < count; ++i)
 						{
-							OSDebugOut("Button: %d -> %d BTN_[GAMEPAD|SOUTH]: %d\n", i, device.btn_map[i], device.btn_map[i] == BTN_GAMEPAD);
 							if (device.btn_map[i] == BTN_GAMEPAD)
 								device.is_gamepad = true;
 						}
@@ -455,7 +444,6 @@ namespace usb_pad
 					tmp++;
 
 				sscanf(tmp, "%d", &index);
-				OSDebugOut("input index: %d of '%s'\n", index, it.path.c_str());
 
 				//TODO kernel limit is 32?
 				for (int j = 0; j <= 99; j++)
@@ -478,7 +466,6 @@ namespace usb_pad
 				{
 					if ((mHandleFF = open(event.str().c_str(), /*O_WRONLY*/ O_RDWR)) < 0)
 					{
-						OSDebugOut("%s: Cannot open '%s'\n", APINAME, event.str().c_str());
 					}
 					else
 						mFFdev = new evdev::EvdevFF(mHandleFF, b_gain, gain, b_ac, ac);

@@ -61,7 +61,6 @@ namespace usb_mic
 			QueryPerformanceCounter(&currentTime);
 
 			if (currentTime.QuadPart < lastQPCTime)
-				OSDebugOut(TEXT("GetQPCTimeMS: WTF, clock went backwards! %I64d < %I64d"), currentTime.QuadPart, lastQPCTime);
 
 			lastQPCTime = currentTime.QuadPart;
 
@@ -78,7 +77,6 @@ namespace usb_mic
 			QueryPerformanceCounter(&currentTime);
 
 			if (currentTime.QuadPart < lastQPCTime)
-				OSDebugOut(TEXT("GetQPCTime100NS: WTF, clock went backwards! %I64d < %I64d"), currentTime.QuadPart, lastQPCTime);
 
 			lastQPCTime = currentTime.QuadPart;
 
@@ -259,7 +257,6 @@ namespace usb_mic
 			if (mBuffering == 0)
 				mBuffering = 50;
 			mBuffering = std::min(std::max(mBuffering, 1LL), 1000LL);
-			OSDebugOut(TEXT("Buffering: %d\n"), mBuffering);
 
 			err = mmClient->Initialize(AUDCLNT_SHAREMODE_SHARED, flags, ConvertMSTo100NanoSec(mBuffering), 0, pwfx, NULL);
 			//err = AUDCLNT_E_UNSUPPORTED_FORMAT;
@@ -308,9 +305,8 @@ namespace usb_mic
 
 			if (!mResampler)
 			{
-				OSDebugOut(TEXT("Failed to create resampler: error %08lX\n"), errVal);
 #ifndef _DEBUG
-				Console.WriteLn("USBqemu: Failed to create resampler: error %08lX", errVal);
+				Console.WriteLn("USB: Failed to create resampler: error %08lX", errVal);
 #endif
 				return false;
 			}
@@ -344,7 +340,6 @@ namespace usb_mic
 		{
 			if (WaitForSingleObject(mMutex, 5000) != WAIT_OBJECT_0)
 			{
-				OSDebugOut(TEXT("Failed to wait for mutex\n"));
 				return;
 			}
 
@@ -378,7 +373,6 @@ namespace usb_mic
 		{
 			if (WaitForSingleObject(mMutex, 5000) != WAIT_OBJECT_0)
 			{
-				OSDebugOut(TEXT("Failed to wait for mutex\n"));
 				*size = 0;
 				return false;
 			}
@@ -398,7 +392,6 @@ namespace usb_mic
 			HRESULT hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
 			if ((S_OK != hr) && (S_FALSE != hr) /* already inited */ && (hr != RPC_E_CHANGED_MODE))
 			{
-				OSDebugOut(TEXT("Com initialization failed with %d\n"), hr);
 				goto error;
 			}
 
@@ -453,7 +446,6 @@ namespace usb_mic
 					DWORD resMutex = WaitForSingleObject(src->mMutex, 30000);
 					if (resMutex != WAIT_OBJECT_0)
 					{
-						OSDebugOut(TEXT("Mutex wait failed: %d\n"), resMutex);
 						goto error;
 					}
 
@@ -470,7 +462,6 @@ namespace usb_mic
 
 					if (!ReleaseMutex(src->mMutex))
 					{
-						OSDebugOut(TEXT("Mutex release failed\n"));
 						goto error;
 					}
 				}
@@ -504,7 +495,6 @@ namespace usb_mic
 			hr = CoInitializeEx(NULL, COINIT_MULTITHREADED);
 			if ((S_OK != hr) && (S_FALSE != hr) /* already inited */ && (hr != RPC_E_CHANGED_MODE))
 			{
-				OSDebugOut(TEXT("Com initialization failed with %d\n"), hr);
 				goto error;
 			}
 
@@ -531,7 +521,6 @@ namespace usb_mic
 				DWORD resMutex = WaitForSingleObject(src->mMutex, 5000);
 				if (resMutex != WAIT_OBJECT_0)
 				{
-					OSDebugOut(TEXT("Mutex wait failed: %d\n"), resMutex);
 					goto error;
 				}
 
@@ -583,7 +572,6 @@ namespace usb_mic
 			if (numFramesPadding < src->mDeviceSamplesPerSec / 1000)
 			{
 				numFramesAvailable = std::min(bufferFrameCount - numFramesPadding, (src->mDeviceSamplesPerSec / 1000));
-				OSDebugOut(TEXT("Writing silence %u\n"), numFramesAvailable);
 
 				hr = src->mmRender->GetBuffer(numFramesAvailable, &pData);
 				if (FAILED(hr))
@@ -595,7 +583,6 @@ namespace usb_mic
 			device_error:
 				if (!ReleaseMutex(src->mMutex))
 				{
-					OSDebugOut(TEXT("Mutex release failed\n"));
 					goto error;
 				}
 
@@ -604,7 +591,6 @@ namespace usb_mic
 					if (hr == AUDCLNT_E_DEVICE_INVALIDATED)
 					{
 						src->mDeviceLost = true;
-						OSDebugOut(TEXT("Audio device has been lost, attempting to reinitialize\n"));
 					}
 					else
 						goto error;
@@ -634,7 +620,6 @@ namespace usb_mic
 			DWORD resMutex = WaitForSingleObject(mMutex, 1000);
 			if (resMutex != WAIT_OBJECT_0)
 			{
-				OSDebugOut(TEXT("Mutex wait failed: %d\n"), resMutex);
 				return 0;
 			}
 
@@ -646,7 +631,6 @@ namespace usb_mic
 			//{
 			//	mTimeAdjust = (mSamples / (diff / 1e7)) / mSamplesPerSec;
 			//	//if(mTimeAdjust > 1.0) mTimeAdjust = 1.0; //If game is in 'turbo mode', just return zero samples or...?
-			//	OSDebugOut(TEXT("timespan: %") TEXT(PRId64) TEXT(" sampling: %f adjust: %f\n"), diff, float(mSamples) / diff * 1e7, mTimeAdjust);
 			//	mLastTimeNS = mTime;
 			//	mSamples = 0;
 			//}
@@ -666,11 +650,9 @@ namespace usb_mic
 				pDst += samples;
 				samples_to_read -= samples;
 			}
-			OSDebugOut(TEXT("Since last write: %lld ms, left in buffer: %d bytes / %d ms\n"),
 					   mOutBuffer.MilliSecsSinceLastWrite(), mOutBuffer.peek_read(),
 					   1000 * mOutBuffer.peek_read<short>() / mSamplesPerSec / mDeviceChannels);
 			if (!ReleaseMutex(mMutex))
-				OSDebugOut(TEXT("Mutex release failed\n"));
 
 			return (outFrames - (samples_to_read / mDeviceChannels));
 		}
@@ -686,7 +668,6 @@ namespace usb_mic
 			DWORD resMutex = WaitForSingleObject(mMutex, 1000);
 			if (resMutex != WAIT_OBJECT_0)
 			{
-				OSDebugOut(TEXT("Mutex wait failed: %d\n"), resMutex);
 				return 0;
 			}
 
@@ -695,7 +676,6 @@ namespace usb_mic
 
 			if (!ReleaseMutex(mMutex))
 			{
-				OSDebugOut(TEXT("Mutex release failed\n"));
 			}
 
 			return inFrames;
@@ -716,7 +696,6 @@ namespace usb_mic
 				FreeData();
 				if (Reinitialize())
 				{
-					OSDebugOut(TEXT("Device reacquired.\n"));
 					Start();
 				}
 				else
@@ -734,7 +713,6 @@ namespace usb_mic
 				{
 					mDeviceLost = true;
 					FreeData();
-					OSDebugOut(TEXT("Audio device has been lost, attempting to reinitialize\n"));
 				}
 				return 0;
 			}

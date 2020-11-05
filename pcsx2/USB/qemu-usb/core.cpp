@@ -25,7 +25,6 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "../osdebugout.h"
 #include "../platcompat.h"
 #include "vl.h"
 #include "iov.h"
@@ -86,7 +85,6 @@ void usb_port_reset(USBPort* port)
 {
 	USBDevice* dev = port->dev;
 
-	OSDebugOut(TEXT("port %d\n"), port->index);
 	assert(dev != NULL);
 	usb_detach(port);
 	usb_attach(port);
@@ -149,7 +147,7 @@ static void do_token_setup(USBDevice* s, USBPacket* p)
 	s->setup_len = (s->setup_buf[7] << 8) | s->setup_buf[6];
 	if (s->setup_len > (int32_t)sizeof(s->data_buf))
 	{
-		fprintf(stderr,
+		Console.Warning(
 				"usb_generic_handle_packet: ctrl buffer too small (%d > %zu)\n",
 				s->setup_len, sizeof(s->data_buf));
 		p->status = USB_RET_STALL;
@@ -303,7 +301,7 @@ static void do_parameter(USBDevice* s, USBPacket* p)
 
 	if (s->setup_len > (int32_t)sizeof(s->data_buf))
 	{
-		fprintf(stderr,
+		Console.Warning(
 				"usb_generic_handle_packet: ctrl buffer too small (%d > %zu)\n",
 				s->setup_len, sizeof(s->data_buf));
 		p->status = USB_RET_STALL;
@@ -660,7 +658,7 @@ void usb_packet_copy(USBPacket* p, void* ptr, size_t bytes)
 			iov_from_buf(iov->iov, iov->niov, p->actual_length, ptr, bytes);
 			break;
 		default:
-			fprintf(stderr, "%s: invalid pid: %x\n", __func__, p->pid);
+			Console.Warning("%s: invalid pid: %x\n", __func__, p->pid);
 			abort();
 	}
 	p->actual_length += bytes;
@@ -746,7 +744,7 @@ void usb_ep_dump(USBDevice* dev)
 	};
 	int ifnum, ep, first;
 
-	fprintf(stderr, "Device \"%s\", config %d\n",
+	Console.Warning("Device \"%s\", config %d\n",
 			dev->product_desc, dev->configuration);
 	for (ifnum = 0; ifnum < 16; ifnum++)
 	{
@@ -759,10 +757,10 @@ void usb_ep_dump(USBDevice* dev)
 				if (first)
 				{
 					first = 0;
-					fprintf(stderr, "  Interface %d, alternative %d\n",
+					Console.Warning("  Interface %d, alternative %d\n",
 							ifnum, dev->altsetting[ifnum]);
 				}
-				fprintf(stderr, "    Endpoint %d, IN, %s, %d max\n", ep,
+				Console.Warning("    Endpoint %d, IN, %s, %d max\n", ep,
 						tname[dev->ep_in[ep].type],
 						dev->ep_in[ep].max_packet_size);
 			}
@@ -772,16 +770,16 @@ void usb_ep_dump(USBDevice* dev)
 				if (first)
 				{
 					first = 0;
-					fprintf(stderr, "  Interface %d, alternative %d\n",
+					Console.Warning("  Interface %d, alternative %d\n",
 							ifnum, dev->altsetting[ifnum]);
 				}
-				fprintf(stderr, "    Endpoint %d, OUT, %s, %d max\n", ep,
+				Console.Warning("    Endpoint %d, OUT, %s, %d max\n", ep,
 						tname[dev->ep_out[ep].type],
 						dev->ep_out[ep].max_packet_size);
 			}
 		}
 	}
-	fprintf(stderr, "--\n");
+	Console.Warning("--\n");
 }
 
 struct USBEndpoint* usb_ep_get(USBDevice* dev, int pid, int ep)

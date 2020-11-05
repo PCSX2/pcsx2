@@ -42,8 +42,6 @@ namespace usb_msd
 
 #define LBA_BLOCK_SIZE 512
 
-#define DPRINTF(fmt, ...) OSDebugOut(TEXT(fmt), ##__VA_ARGS__)
-
 /* USB requests.  */
 #define MassStorageReset 0xff
 #define GetMaxLun 0xfe
@@ -438,7 +436,6 @@ namespace usb_msd
 	{
 		MSDState* s = (MSDState*)dev;
 
-		DPRINTF("Reset\n");
 		s->f.mode = USB_MSDM_CBW;
 	}
 
@@ -474,9 +471,6 @@ namespace usb_msd
 	{
 		size_t len;
 
-		DPRINTF("Command status %d tag 0x%x, len %zd\n",
-				s->f.csw.status, le32_to_cpu(s->f.csw.tag), p->iov.size);
-
 		assert(s->f.csw.sig == cpu_to_le32(0x53425355));
 		len = MIN(sizeof(s->f.csw), p->iov.size);
 		usb_packet_copy(p, &s->f.csw, len);
@@ -490,7 +484,6 @@ namespace usb_msd
 		/* Set s->packet to NULL before calling usb_packet_complete
        because another request may be issued before
        usb_packet_complete returns.  */
-		DPRINTF("Packet complete %p\n", p);
 		s->packet = NULL;
 		usb_packet_complete(&s->dev, p);
 	}
@@ -517,8 +510,6 @@ namespace usb_msd
 	{
 		MSDState* s = req;
 		USBPacket* p = s->packet;
-
-		DPRINTF("Command complete %d tag 0x%x\n", status, s->f.file_op_tag);
 
 		s->f.csw.sig = cpu_to_le32(0x53425355);
 		s->f.csw.tag = cpu_to_le32(s->f.req.tag);
@@ -581,7 +572,6 @@ namespace usb_msd
 					usb_packet_copy(p, s->f.buf, len);
 					if (len > 0 && (file_ret = fwrite(s->f.buf, 1, len, s->file)) < len)
 					{
-						DPRINTF("Write failed: %d!=%d\n", len, file_ret);
 						s->f.result = COMMAND_FAILED; //PHASE_ERROR;
 						set_sense(s, SENSE_CODE(WRITE_FAULT));
 						goto fail;
@@ -617,7 +607,6 @@ namespace usb_msd
 	static void send_command(void* opaque, struct usb_msd_cbw* cbw)
 	{
 		MSDState* s = (MSDState*)opaque;
-		DPRINTF("Command: lun=%d tag=0x%x len %zd data=0x%02x\n", cbw->lun, cbw->tag, cbw->data_len, cbw->cmd[0]);
 
 		int64_t lba;
 		uint32_t xfer_len;
@@ -637,13 +626,11 @@ namespace usb_msd
 				//set_sense(s, SENSE_CODE(LUN_NOT_READY));
 				break;
 			case REQUEST_SENSE: //device shall keep old sense data
-				DPRINTF("REQUEST_SENSE allocation length: %d\n", (int)cbw->cmd[4]);
 				memcpy(s->f.buf, s->f.sense_buf,
 					   /* XXX the UFI device shall return only the number of bytes requested, as is */
 					   cbw->cmd[4] < sizeof(s->f.sense_buf) ? (size_t)cbw->cmd[4] : sizeof(s->f.sense_buf));
 				break;
 			case INQUIRY:
-				DPRINTF("INQUIRY evpd: %d page: %d\n", (int)cbw->cmd[1], (int)cbw->cmd[2]);
 				memset(s->f.buf, 0, sizeof(s->f.buf));
 				s->f.buf[0] = 0;      //SCSI Peripheral Device Type: 0x0 - direct access device, 0x1f - unknown/no device
 				s->f.buf[1] = 1 << 7; //removable
@@ -677,7 +664,6 @@ namespace usb_msd
 				lbas = fsize / LBA_BLOCK_SIZE;
 				if (lbas > 0xFFFFFFFF)
 				{
-					DPRINTF("Maximum LBA is out of range!\n");
 					s->f.result = COMMAND_FAILED;
 					set_sense(s, SENSE_CODE(OUT_OF_RANGE));
 					*last_lba = 0xFFFFFFFF;
@@ -685,7 +671,6 @@ namespace usb_msd
 				else
 					*last_lba = static_cast<uint32_t>(lbas);
 
-				DPRINTF("read capacity lba=0x%x, block=0x%x\n", *last_lba, *blk_len);
 
 				*last_lba = bswap32(*last_lba);
 				*blk_len = bswap32(*blk_len);
@@ -702,7 +687,6 @@ namespace usb_msd
 				s->f.data_len = xfer_len * LBA_BLOCK_SIZE;
 				s->f.file_op_tag = s->f.tag;
 
-				DPRINTF("read lba=0x%llx, len=0x%x\n", lba, xfer_len * LBA_BLOCK_SIZE);
 
 				if (xfer_len == 0) // nothing to do
 					break;
@@ -735,7 +719,6 @@ namespace usb_msd
 					xfer_len = bswap16(*(uint16_t*)&cbw->cmd[7]);
 				else
 					xfer_len = bswap32(*(uint32_t*)&cbw->cmd[6]);
-				DPRINTF("write lba=0x%x, len=0x%x\n", lba, xfer_len * LBA_BLOCK_SIZE);
 
 				s->f.data_len = xfer_len * LBA_BLOCK_SIZE;
 				s->f.file_op_tag = s->f.tag;
@@ -757,7 +740,6 @@ namespace usb_msd
 				//Actual write comes with next command in USB_MSDM_DATAOUT
 				break;
 			default:
-				DPRINTF("usb-msd: invalid command %d\n", cbw->cmd[0]);
 				s->f.result = COMMAND_FAILED;
 				set_sense(s, SENSE_CODE(INVALID_OPCODE));
 				s->f.mode = USB_MSDM_CSW; //TODO
@@ -777,14 +759,11 @@ namespace usb_msd
 			return;
 		}
 
-		OSDebugOut(TEXT("request %04x %04x %04x\n"), request, value, index);
-
 		switch (request)
 		{
 				/* Class specific requests.  */
 			case ClassInterfaceOutRequest | MassStorageReset:
 				/* Reset state ready for the next CBW.  */
-				DPRINTF("Resetting msd...\n");
 				s->f.mode = USB_MSDM_CBW;
 				ret = 0;
 				break;
@@ -834,20 +813,19 @@ namespace usb_msd
 					case USB_MSDM_CBW:
 						if (p->iov.size != 31)
 						{
-							fprintf(stderr, "usb-msd: Bad CBW size\n");
+							Console.Warning("usb-msd: Bad CBW size\n");
 							goto fail;
 						}
 						usb_packet_copy(p, &cbw, 31);
 						if (le32_to_cpu(cbw.sig) != 0x43425355)
 						{
-							fprintf(stderr, "usb-msd: Bad signature %08x\n",
+							Console.Warning("usb-msd: Bad signature %08x\n",
 									le32_to_cpu(cbw.sig));
 							goto fail;
 						}
-						DPRINTF("Command on LUN %d\n", cbw.lun);
 						if (cbw.lun != 0)
 						{
-							fprintf(stderr, "usb-msd: Bad LUN %d\n", cbw.lun);
+							Console.Warning("usb-msd: Bad LUN %d\n", cbw.lun);
 							goto fail;
 						}
 						s->f.tag = le32_to_cpu(cbw.tag);
@@ -864,8 +842,6 @@ namespace usb_msd
 						{
 							s->f.mode = USB_MSDM_DATAOUT;
 						}
-						DPRINTF("Command tag 0x%x flags %08x len %d data %d\n",
-								s->f.tag, cbw.flags, cbw.cmd_len, s->f.data_len);
 
 						//async fread/fwrite handle or something
 						s->f.req.valid = true;
@@ -874,9 +850,7 @@ namespace usb_msd
 						break;
 
 					case USB_MSDM_DATAOUT:
-						DPRINTF("Data out: write %d bytes of %d remaining\n", p->iov.size, s->f.data_len);
 						//TODO check if CBW still falls into here on write error a.k.a s->f.mode is set wrong
-						DPRINTF("Data out %zd/%d\n", p->iov.size, s->f.data_len);
 						if (p->iov.size > s->f.data_len)
 						{
 							goto fail;
@@ -904,7 +878,6 @@ namespace usb_msd
 						}
 						if ((size_t)p->actual_length < p->iov.size)
 						{
-							DPRINTF("Deferring packet %p [wait data-out]\n", p);
 							s->packet = p;
 							p->status = USB_RET_ASYNC;
 						}
@@ -914,7 +887,6 @@ namespace usb_msd
 						break;
 
 					default:
-						DPRINTF("Unexpected write (len %d, mode %d)\n", p->iov.size, s->f.mode);
 						goto fail;
 				}
 				break;
@@ -937,8 +909,6 @@ namespace usb_msd
 
 					case USB_MSDM_CSW:
 					send_csw:
-						DPRINTF("Command status %d tag 0x%x, len %d\n",
-								s->f.result, s->f.tag, p->iov.size);
 						if (p->iov.size < 13)
 						{
 							goto fail;
@@ -947,7 +917,6 @@ namespace usb_msd
 						if (false && s->f.req.valid)
 						{ // If reading/writing using something asynchronous
 							/* still in flight */
-							DPRINTF("Deferring packet %p [wait status]\n", p);
 							s->packet = p;
 							p->status = USB_RET_ASYNC;
 						}
@@ -963,7 +932,6 @@ namespace usb_msd
 
 					case USB_MSDM_DATAIN:
 						//if (len == 13) goto send_csw;
-						DPRINTF("Data in: reading %d bytes of remaining %d bytes\n", p->iov.size, s->f.data_len);
 						if (p->iov.size > s->f.data_len)
 						{
 							//len = s->f.data_len;
@@ -992,20 +960,17 @@ namespace usb_msd
 
 						if ((size_t)p->actual_length < p->iov.size)
 						{
-							DPRINTF("Deferring packet %p [wait data-in]\n", p);
 							s->packet = p;
 							p->status = USB_RET_ASYNC;
 						}
 						break;
 
 					default:
-						DPRINTF("Unexpected read (len %d, mode %d)\n", p->iov.size, s->f.mode);
 						goto fail;
 				}
 				break;
 
 			default:
-				DPRINTF("Bad token\n");
 			fail:
 				p->status = USB_RET_STALL;
 				//s->f.mode = USB_MSDM_CSW;
@@ -1036,7 +1001,7 @@ namespace usb_msd
 
 		if (!LoadSetting(TypeName(), port, api, N_CONFIG_PATH, var))
 		{
-			fprintf(stderr, "usb-msd: Could not load settings\n");
+			Console.Warning("usb-msd: Could not load settings\n");
 			delete s;
 			return NULL;
 		}
@@ -1120,5 +1085,4 @@ namespace usb_msd
 		return 0;
 	}
 
-#undef DPRINTF
 } // namespace usb_msd

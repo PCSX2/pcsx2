@@ -14,7 +14,6 @@
  */
 
 #include "evdev.h"
-#include "../../osdebugout.h"
 
 #include <chrono>
 #include <thread>
@@ -657,7 +656,6 @@ namespace usb_pad
 							continue;
 						}
 
-						OSDebugOut("Axis %d absinfo min %d max %d\n", i, absinfo.minimum, absinfo.maximum);
 						//TODO from SDL2, usable here?
 						CalcAxisCorr(abs_correct[i], absinfo);
 					}
@@ -682,7 +680,6 @@ namespace usb_pad
 							event_fd = js.second.fd;
 							dev_name = js.first;
 
-							OSDebugOut("PollInput: polling...%s\n", dev_name.c_str());
 							break;
 						}
 					}
@@ -690,7 +687,6 @@ namespace usb_pad
 
 				if (event_fd > -1 && (len = read(event_fd, &event, sizeof(event))) > -1 && (len == sizeof(event)))
 				{
-					OSDebugOut("PollInput: event...%d\n", event.type);
 					if (isaxis && event.type == EV_ABS)
 					{
 						auto& val = axisVal[event.code];
@@ -706,7 +702,6 @@ namespace usb_pad
 						{
 							int ac_val = AxisCorrect(abs_correct[event.code], event.value);
 							int diff = ac_val - val.value;
-							OSDebugOut("Axis %d value initial: %d, diff: %d, corr: %d raw %d\n", event.code, val.value, diff, ac_val, event.value);
 							if (std::abs(diff) > 2047)
 							{
 								value = event.code;
@@ -727,7 +722,6 @@ namespace usb_pad
 				}
 				else if (errno != EAGAIN)
 				{
-					OSDebugOut("PollInput: read error %d\n", errno);
 					goto error;
 				}
 				else

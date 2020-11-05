@@ -23,7 +23,6 @@
 #include "AppCoreThread.h"
 #include "../gtk.h"
 
-#include "../osdebugout.h"
 #include "../configuration.h"
 #include "../deviceproxy.h"
 #include "../usb-pad/padproxy.h"
@@ -60,7 +59,6 @@ static void wheeltypeChanged(GtkComboBox* widget, gpointer data)
 		uint8_t port = MIN(reinterpret_cast<uintptr_t>(data), 1);
 
 		conf.WheelType[port] = idx;
-		DevCon.WriteLn("Selected wheel type, port %d idx: %d\n", port, idx);
 	}
 }
 
@@ -85,7 +83,6 @@ static void populateApiWidget(SettingsCB* settingsCB, const std::string& device)
 		else
 			api = it->second;
 
-		DevCon.WriteLn("Current api: %s\n", api.c_str());
 		settingsCB->api = api;
 		int i = 0;
 		for (auto& it : dev->ListAPIs())
@@ -119,7 +116,6 @@ static void deviceChanged(GtkComboBox* widget, gpointer data)
 	else
 		conf.Port[0] = s;
 
-	DevCon.WriteLn("Selected player %d idx: %d [%s]\n", player, active, s.c_str());
 }
 
 static void apiChanged(GtkComboBox* widget, gpointer data)
@@ -147,7 +143,6 @@ static void apiChanged(GtkComboBox* widget, gpointer data)
 				changedAPIs[pair] = *it;
 			settingsCB->api = *it;
 
-			DevCon.WriteLn("selected api: %s\n", it->c_str());
 		}
 	}
 }
@@ -162,12 +157,10 @@ static void configureApi(GtkWidget* widget, gpointer data)
 	auto& api = settingsCB->api;
 	auto dev = RegisterDevice::instance().Device(name);
 
-	DevCon.WriteLn("configure api %s [%s] for player %d\n", api.c_str(), name.c_str(), player);
 	if (dev)
 	{
 		GtkWidget* dlg = GTK_WIDGET(g_object_get_data(G_OBJECT(widget), "dlg"));
 		int res = dev->Configure(port, api, dlg);
-		DevCon.WriteLn("Configure returned %d\n", res);
 	}
 }
 
@@ -253,7 +246,6 @@ void USBconfigure()
 			auto deviceProxy = RegisterDevice::instance().Device(device);
 			if (!deviceProxy)
 			{
-				DevCon.WriteLn("Device '%s' is registered, but failed to get proxy!\n"), device.c_str();
 				continue;
 			}
 			auto name = deviceProxy->Name();

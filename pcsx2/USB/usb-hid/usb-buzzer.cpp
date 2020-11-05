@@ -653,8 +653,6 @@ static int usb_keyboard_poll(USBKeyboardState *s, uint8_t *buf, int len)
 		buf[3]=data[4];
 		buf[4]=data[5]|0xF0;
 
-	//	printf("Got buzzer event !!!\nData %02X %02X %02X %02X %02X %02X\n", data[0], data[1], data[2], data[3], data[4], data[5]);
-
 		return 16;
 	}
 
@@ -784,7 +782,6 @@ static int usb_keyboard_handle_control(USBDevice *dev, int request, int value,
 		buf[3]=data[2];
 		buf[4]=data[3];
 		buf[5]=data[4];
-	//	printf("Lamps %02X %02X %02X %02X %02X %02X %02X\nlen = %i\n", data[0], data[1], data[2], data[3], data[4], data[5], data[6], length);
 		CancelIo(usb_buzzer);
 		WriteFile(usb_buzzer, buf, 8, 0, &ovl);
 		break;
@@ -792,7 +789,6 @@ static int usb_keyboard_handle_control(USBDevice *dev, int request, int value,
         ret = 0;
         break;
     default:
-		printf("Bad request value %08X", request);
     fail:
         ret = USB_RET_STALL;
         break;
@@ -822,7 +818,6 @@ static int usb_keyboard_handle_data(USBDevice *dev, int pid,
 		buf[3]=data[2];
 		buf[4]=data[3];
 		buf[5]=data[4];
-	//	printf("Lamps %02X %02X %02X %02X %02X %02X %02X %02X", data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7]);
 		CancelIo(usb_buzzer);
 		WriteFile(usb_buzzer, buf, 8, 0, &ovl);
 		break;
@@ -897,7 +892,6 @@ USBDevice *usb_keyboard_init(void)
 
 		usb_buzzer=CreateFile(didData->DevicePath, GENERIC_READ|GENERIC_WRITE, FILE_SHARE_READ|FILE_SHARE_WRITE, 0, OPEN_EXISTING, FILE_FLAG_OVERLAPPED, 0);
 		if(usb_buzzer==INVALID_HANDLE_VALUE){
-			printf("Could not open device %i\n", i);
 			free(didData);
 			i++;
 			continue;
@@ -905,12 +899,10 @@ USBDevice *usb_keyboard_init(void)
 
 		HidD_GetAttributes(usb_buzzer, &attr);
 
-		printf("Device %i : VID %04X PID %04X\n", i, attr.VendorID, attr.ProductID);
 
 		if((attr.VendorID==BUZZER_VID) && (attr.ProductID==BUZZER_PID || attr.ProductID==BUZZER_PID2)){
 			//We've found our buzzers !!!
 			free(didData);
-			printf("Buzzers found !!!\n");
 			
 			memset(buf, 0, 8);
 			buf[2]=0xFF;
@@ -938,9 +930,6 @@ USBDevice *usb_keyboard_init(void)
 		}
 		i++;
 	}
-
-	if(usb_buzzer==INVALID_HANDLE_VALUE)
-		printf("Could not find buzzers\n");
 
     return (USBDevice *)s;
 }

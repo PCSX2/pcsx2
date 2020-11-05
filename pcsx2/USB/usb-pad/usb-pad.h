@@ -45,7 +45,7 @@ namespace usb_pad
 	class PadDevice
 	{
 	public:
-		virtual ~PadDevice() { OSDebugOut("%p\n", this); }
+		virtual ~PadDevice() { }
 		static USBDevice* CreateDevice(int port);
 		static const TCHAR* Name()
 		{

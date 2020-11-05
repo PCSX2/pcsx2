@@ -14,7 +14,6 @@
  */
 
 #include "evdev.h"
-#include "../../osdebugout.h"
 #include <cassert>
 #include <sstream>
 #include <linux/hidraw.h>
@@ -57,7 +56,7 @@ namespace usb_pad
 			DIR* dirp = opendir("/dev/");
 			if (!dirp)
 			{
-				perror("Error opening /dev/");
+				Console.Warning("Error opening /dev/");
 				return false;
 			}
 
@@ -65,7 +64,6 @@ namespace usb_pad
 			{
 				if (strncmp(dp->d_name, "hidraw", 6) == 0)
 				{
-					OSDebugOut("%s\n", dp->d_name);
 
 					str.clear();
 					str.str("");
@@ -75,7 +73,7 @@ namespace usb_pad
 
 					if (fd < 0)
 					{
-						perror("Unable to open device");
+						Console.Warning("Unable to open device");
 						continue;
 					}
 
@@ -84,16 +82,14 @@ namespace usb_pad
 
 					res = ioctl(fd, HIDIOCGRAWPHYS(sizeof(buf)), buf);
 					if (res < 0)
-						perror("HIDIOCGRAWPHYS");
-					else
-						OSDebugOut("Raw Phys: %s\n", buf);
+						Console.Warning("HIDIOCGRAWPHYS");
 
 					struct hidraw_devinfo info;
 					memset(&info, 0x0, sizeof(info));
 
 					if (ioctl(fd, HIDIOCGRAWINFO, &info) < 0)
 					{
-						perror("HIDIOCGRAWINFO");
+						Console.Warning("HIDIOCGRAWINFO");
 					}
 					else
 					{
@@ -133,7 +129,7 @@ namespace usb_pad
 			DIR* dirp = opendir(EVDEV_DIR);
 			if (!dirp)
 			{
-				perror("Error opening " EVDEV_DIR);
+				Console.Warning("Error opening " EVDEV_DIR);
 				return;
 			}
 
@@ -151,7 +147,6 @@ namespace usb_pad
 				//if (strncmp(dp->d_name, "event", 5) == 0) {
 				if (str_ends_with(dp->d_name, "event-kbd") || str_ends_with(dp->d_name, "event-mouse") || str_ends_with(dp->d_name, "event-joystick"))
 				{
-					OSDebugOut(EVDEV_DIR "%s\n", dp->d_name);
 
 					str.clear();
 					str.str("");
@@ -169,7 +164,7 @@ namespace usb_pad
 
 					if (fd < 0)
 					{
-						perror("Unable to open device");
+						Console.Warning("Unable to open device");
 						continue;
 					}
 
@@ -177,10 +172,9 @@ namespace usb_pad
 
 					res = ioctl(fd, EVIOCGNAME(sizeof(buf)), buf);
 					if (res < 0)
-						perror("EVIOCGNAME");
+						Console.Warning("EVIOCGNAME");
 					else
 					{
-						OSDebugOut("Evdev device name: %s\n", buf);
 						list_cache.push_back({buf, dp->d_name, path});
 					}
 
@@ -330,7 +324,6 @@ namespace usb_pad
 
 								value = AxisCorrect(device.abs_correct[event.code], event.value);
 								/*if (event.code == 0)
-							OSDebugOut("Axis: %d, mapped: 0x%02x, val: %d, corrected: %d\n",
 								event.code, device.axis_map[event.code] & ~0x80, event.value, value);
 						*/
 								SetAxis(device, event.code, value);
@@ -339,12 +332,9 @@ namespace usb_pad
 							case EV_KEY:
 							{
 								code = device.btn_map[event.code] != (uint16_t)-1 ? device.btn_map[event.code] : event.code;
-								OSDebugOut("%s Button: 0x%02x, mapped: 0x%02x, val: %d\n",
-										   device.name.c_str(), event.code, device.btn_map[event.code], event.value);
 
 								if (mType == WT_BUZZ_CONTROLLER)
 								{
-									OSDebugOut("evdev buzz: code: %d, map: %08x\n", event.code, device.btn_map[event.code]);
 									if (device.btn_map[event.code] != (uint16_t)-1)
 									{
 										if (event.value)
@@ -416,7 +406,6 @@ namespace usb_pad
 											button = PAD_L2;
 											break;
 										default:
-											OSDebugOut("Unmapped Button: %d, %d\n", code, event.value);
 											break;
 									}
 #endif
@@ -450,7 +439,6 @@ namespace usb_pad
 
 					if (len <= 0)
 					{
-						OSDebugOut("%s: TokenIn: read error %d\n", APINAME, errno);
 						break;
 					}
 				}
@@ -500,9 +488,6 @@ namespace usb_pad
 			if (mUseRawFF)
 			{
 
-				OSDebugOut("FF: %02x %02x %02x %02x %02x %02x %02x\n",
-						   data[0], data[1], data[2], data[3], data[4], data[5], data[6]);
-
 				if (data[0] == 0x8 || data[0] == 0xB)
 					return len;
 				if (data[0] == 0xF8 &&
@@ -516,7 +501,6 @@ namespace usb_pad
 
 				if (!mFFData.enqueue(report))
 				{
-					OSDebugOut("Failed to enqueue ffb command\n");
 					return 0;
 				}
 				return len;
@@ -580,7 +564,6 @@ namespace usb_pad
 				std::string joypath;
 				if (!LoadSetting(mDevType, mPort, APINAME, N_JOYSTICK, joypath))
 				{
-					OSDebugOut("Cannot load device setting: %s\n", N_JOYSTICK);
 					return 1;
 				}
 
@@ -590,7 +573,6 @@ namespace usb_pad
 				int fd = -1;
 				if ((fd = open(joypath.c_str(), O_RDWR | O_NONBLOCK)) < 0)
 				{
-					OSDebugOut("Cannot open device: %s\n", joypath.c_str());
 					return 1;
 				}
 
@@ -598,7 +580,6 @@ namespace usb_pad
 				if (ioctl(fd, EVIOCGPHYS(sizeof(buf) - 1), buf) > 0)
 				{
 					evphys = buf;
-					OSDebugOut("Evdev Phys: %s\n", evphys.c_str());
 
 					int pid, vid;
 					if ((mUseRawFF = FindHidraw(evphys, hid_dev, &vid, &pid)))
@@ -624,7 +605,7 @@ namespace usb_pad
 				}
 				else
 				{
-					perror("EVIOCGPHYS failed");
+					Console.Warning("EVIOCGPHYS failed");
 				}
 				close(fd);
 			}
@@ -641,7 +622,6 @@ namespace usb_pad
 
 				if ((device.cfg.fd = open(it.path.c_str(), O_RDWR | O_NONBLOCK)) < 0)
 				{
-					OSDebugOut("Cannot open device: %s\n", it.path.c_str());
 					continue;
 				}
 
@@ -703,7 +683,6 @@ namespace usb_pad
 							continue;
 						}
 
-						OSDebugOut("Axis %d absinfo min %d max %d\n", i, absinfo.minimum, absinfo.maximum);
 
 						//device.axis_map[i] = device.axes;
 
@@ -739,8 +718,6 @@ namespace usb_pad
 #ifndef NDEBUG
 				for (int i = 0; i < ABS_MAX; ++i)
 				{
-					if (device.axis_map[i] != (uint8_t)-1 && (device.axis_map[i] & 0x80))
-						OSDebugOut("Axis: 0x%02x -> %s\n", i, JoystickMapNames[device.axis_map[i] & ~0x80]);
 				}
 #endif
 
@@ -748,12 +725,10 @@ namespace usb_pad
 				{
 					if (test_bit(i, keybit))
 					{
-						//OSDebugOut("Device has button: 0x%x\n", i);
 						device.btn_map[i] = -1; //device.buttons;
 						if (i == BTN_GAMEPAD)
 						{
 							device.is_gamepad = true;
-							OSDebugOut("Device is a gamepad\n");
 						}
 						for (int k = 0; k < max_buttons; k++)
 						{
@@ -761,7 +736,6 @@ namespace usb_pad
 							{
 								has_mappings = true;
 								device.btn_map[i] = 0x8000 | k;
-								OSDebugOut("Remap button: 0x%x -> %s\n", i, JoystickMapNames[k]);
 							}
 						}
 					}
@@ -770,7 +744,6 @@ namespace usb_pad
 				{
 					if (test_bit(i, keybit))
 					{
-						OSDebugOut("Device has button: 0x%x\n", i);
 						device.btn_map[i] = -1; //device.buttons;
 						for (int k = 0; k < max_buttons; k++)
 						{
@@ -784,7 +757,6 @@ namespace usb_pad
 				}
 				if (!has_mappings)
 				{
-					OSDebugOut("Device %s [%s] has no mappings, discarding\n", device.name.c_str(), ""); //it.second.c_str());
 					close(device.cfg.fd);
 					mDevices.pop_back();
 				}
@@ -835,8 +807,7 @@ namespace usb_pad
 					res = write(mHidHandle, buf.data(), buf.size());
 					if (res < 0)
 					{
-						printf("Error: %d\n", errno);
-						perror("write");
+						Console.Warning("write");
 					}
 				}
 				else
@@ -844,7 +815,6 @@ namespace usb_pad
 					std::this_thread::sleep_for(std::chrono::milliseconds(1));
 				}
 			}
-			OSDebugOut(TEXT("WriterThread exited.\n"));
 
 			mWriterThreadIsRunning = false;
 		}

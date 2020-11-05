@@ -14,7 +14,6 @@
  */
 
 #include "joydev.h"
-#include "../../osdebugout.h"
 
 #include <chrono>
 #include <thread>
@@ -129,7 +128,6 @@ namespace usb_pad
 						else
 						{
 							int diff = event.value - val.value;
-							OSDebugOut("Axis %d value: %d, difference: %d\n", event.number, event.value, diff);
 							if (std::abs(diff) > 2047)
 							{
 								value = event.number;
@@ -150,7 +148,6 @@ namespace usb_pad
 				}
 				else if (errno != EAGAIN)
 				{
-					OSDebugOut("PollInput: read error %d\n", errno);
 					goto error;
 				}
 				else
