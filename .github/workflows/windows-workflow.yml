@@ -54,34 +54,56 @@ jobs:
       #   run: |
       #     echo "$GITHUB_CONTEXT"
 
-      - name: Checkout Repository & Submodules
+      - name: Checkout Repository
         uses: actions/checkout@v2
+
+      - name: Cache Submodules
+        id: cache-submodules
+        uses: actions/cache@v2
         with:
-          submodules: true
+          key: submodules-${{ hashFiles('./.gitmodules') }}
+          path: |
+            ./.git/modules/
+            ./3rdparty/fmt
+            ./3rdparty/xz
+            ./3rdparty/gtest
+
+      - name: Checkout Submodules
+        if: steps.cache-submodules.outputs.cache-hit != 'true'
+        run: git submodule update --init --recursive --jobs 2
 
       - name: Prepare Artifact Git Info
         shell: bash
         run: |
           echo "##[set-output name=branch;]${GITHUB_REF#refs/heads/}"
-          echo "##[set-output name=short-sha;]$(git rev-parse --short "$GITHUB_SHA")"
+          ARTIFACT_NAME="commit-$(git rev-parse --short "$GITHUB_SHA")"
           if [ ${{ github.event_name == 'pull_request' }} ]; then
-            echo "##[set-output name=file-name-metadata;]pr-${{ github.event.pull_request.number }}"
+            echo "##[set-output name=short-sha;]$(git rev-parse --short "${{ github.event.pull_request.head.sha }}")"
+            if [ ! -z "${{ github.event.pull_request.number }}" ]; then
+              ARTIFACT_NAME="pr-${{ github.event.pull_request.number }}-commit-$(git rev-parse --short "${{ github.event.pull_request.head.sha }}")"
+            fi
           else
-            echo "##[set-output name=file-name-metadata;]commit-$(git rev-parse --short "$GITHUB_SHA")"
+            echo "##[set-output name=short-sha;]$(git rev-parse --short "$GITHUB_SHA")"
           fi
+          echo "##[set-output name=artifact-metadata;]${ARTIFACT_NAME}"
         id: git-vars
 
+      - name: Verify VS Project Files
+        shell: powershell
+        run: .\.github\workflows\scripts\windows\validate-vs-filters.ps1
+
       - name: Setup msbuild
-        uses: microsoft/setup-msbuild@v1.0.1
+        uses: microsoft/setup-msbuild@v1.0.2
         with:
-          vs-version: 15.0
+          vs-version: 16.7
 
       - name: Build PCSX2
-        run: msbuild "buildbot.xml" /m /v:m /fl1 /t:ReleaseAll /p:Platform=${{ matrix.platform }}
+        run: msbuild "buildbot.xml" /m /v:n /t:ReleaseAll /p:Platform=${{ matrix.platform }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         continue-on-error: true
         with:
-          name: PCSX2-${{ matrix.platform }}-${{ steps.git-vars.outputs.file-name-metadata }}
+          name: PCSX2-${{ matrix.platform }}-${{ steps.git-vars.outputs.artifact-metadata }}
           path: bin
+          retention-days: 30 # https://docs.github.com/en/free-pro-team@latest/actions/reference/usage-limits-billing-and-administration#artifact-and-log-retention-policy

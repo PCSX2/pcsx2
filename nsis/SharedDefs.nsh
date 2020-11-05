@@ -3,6 +3,8 @@
 ; These definitions are shared between the 2 installers (pre-install/portable and full)
 ; This reduces duplicate code throughout both installers.
 
+!include "FileFunc.nsh"
+
 ManifestDPIAware true
 Unicode true
 ShowInstDetails nevershow
@@ -15,7 +17,7 @@ Var UserPrivileges
 Var IsAdmin
 
 !ifndef APP_VERSION
-  !define APP_VERSION      "1.6.0"
+  !define APP_VERSION      "1.8.0"
 !endif
 
 !define APP_NAME         "PCSX2 ${APP_VERSION}"
@@ -42,6 +44,9 @@ Function IsUserAdmin
   ${IfNot} ${AtLeastWinVista}
     MessageBox MB_OK "Your operating system is unsupported by PCSX2. Please upgrade your operating system or install PCSX2 1.4.0."
     Quit
+  ${ElseIfNot} ${AtLeastWin8.1}
+    MessageBox MB_OK "Your operating system is unsupported by PCSX2. Please upgrade your operating system or install PCSX2 1.6.0."
+    Quit
   ${EndIf}
 
 UserInfo::GetOriginalAccountType
@@ -51,7 +56,7 @@ Pop $UserPrivileges
   # current thread/process. If the user tokens were elevated or limited for
   # this process, GetOriginalAccountType will return the non-restricted
   # account type.
-  # On Vista with UAC, for example, this is not the same value when running
+  # On Windows with UAC, for example, this is not the same value when running
   # with `RequestExecutionLevel user`. GetOriginalAccountType will return
   # "admin" while GetAccountType will return "user".
   ;UserInfo::GetOriginalAccountType
@@ -59,7 +64,60 @@ Pop $UserPrivileges
 
 ${If} $UserPrivileges == "Admin"
     StrCpy $IsAdmin 1
-    ${ElseIf} $UserPrivileges == "User"
+${ElseIf} $UserPrivileges == "User"
     StrCpy $IsAdmin 0
 ${EndIf}
+FunctionEnd
+
+Function ShowHelpMessage
+  !define line1 "Command line options:$\r$\n$\r$\n"
+  !define line2 "/S - silent install (must be uppercase)$\r$\n"
+  !define line3 "/D=path\to\install\folder - Change install directory (Must be uppercase, the last option given and no quotes)$\r$\n"
+  !define line4 "/NoStart - Do not create start menu shortcut$\r$\n"
+  !define line5 "/NoDesktop - Do not create desktop shortcut$\r$\n"
+  !define line6 "/Portable- Install in portable mode instead of full install, no effect unless /S is passed as well"
+  MessageBox MB_OK "${line1}${line2}${line3}${line4}${line5}${line6}"
+  Abort
+FunctionEnd
+
+Function .onInit
+    Var /GLOBAL cmdLineParams
+    Push $R0
+    ${GetParameters} $cmdLineParams
+    ClearErrors
+
+    ${GetOptions} $cmdLineParams '/?' $R0
+    IfErrors +2 0
+    Call ShowHelpMessage
+
+    ${GetOptions} $cmdLineParams '/H' $R0
+    IfErrors +2 0
+    Call ShowHelpMessage
+
+    Pop $R0
+
+
+    Var /GLOBAL option_startMenu
+    Var /GLOBAL option_desktop
+    Var /GLOBAL option_portable
+    StrCpy $option_startMenu     1
+    StrCpy $option_desktop       1
+    StrCpy $option_portable      0
+
+    Push $R0
+
+    ${GetOptions} $cmdLineParams '/NoStart' $R0
+    IfErrors +2 0
+    StrCpy $option_startMenu 0
+
+    ${GetOptions} $cmdLineParams '/NoDesktop' $R0
+    IfErrors +2 0
+    StrCpy $option_desktop 0
+
+    ${GetOptions} $cmdLineParams '/Portable' $R0
+    IfErrors +2 0
+    StrCpy $option_portable 1
+
+    Pop $R0
+    
 FunctionEnd

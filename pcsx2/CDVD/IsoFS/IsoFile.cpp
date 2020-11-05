@@ -14,7 +14,7 @@
  */
 
 
- #include "PrecompiledHeader.h"
+#include "PrecompiledHeader.h"
 
 #include "IsoFS.h"
 #include "IsoFile.h"
@@ -44,12 +44,12 @@ void IsoFile::Init()
 {
 	//pxAssertDev( fileEntry.IsFile(), "IsoFile Error: Filename points to a directory." );
 
-	currentSectorNumber	= fileEntry.lba;
-	currentOffset		= 0;
-	sectorOffset		= 0;
-	maxOffset			= std::max<u32>( 0, fileEntry.size );
+	currentSectorNumber = fileEntry.lba;
+	currentOffset = 0;
+	sectorOffset = 0;
+	maxOffset = std::max<u32>(0, fileEntry.size);
 
-	if(maxOffset > 0)
+	if (maxOffset > 0)
 		internalReader.readSector(currentSector, currentSectorNumber);
 }
 
@@ -60,7 +60,7 @@ u32 IsoFile::seek(u32 absoffset)
 	int oldSectorNumber = currentSectorNumber;
 	int newSectorNumber = fileEntry.lba + (int)(endOffset / sectorLength);
 
-	if(oldSectorNumber != newSectorNumber)
+	if (oldSectorNumber != newSectorNumber)
 	{
 		internalReader.readSector(currentSector, newSectorNumber);
 	}
@@ -76,24 +76,24 @@ u32 IsoFile::seek(u32 absoffset)
 // and fileLength.
 u32 IsoFile::seek(s64 offset, wxSeekMode ref_position)
 {
-	switch( ref_position )
+	switch (ref_position)
 	{
 		case wxFromStart:
-			pxAssertDev( offset >= 0 && offset <= (s64)ULONG_MAX, "Invalid seek position from start." );
+			pxAssertDev(offset >= 0 && offset <= (s64)ULONG_MAX, "Invalid seek position from start.");
 			return seek(offset);
 
 		case wxFromCurrent:
 			// truncate negative values to zero, and positive values to 4gb
-			return seek( std::min( std::max<s64>(0, (s64)currentOffset+offset), (s64)ULONG_MAX ) );
+			return seek(std::min(std::max<s64>(0, (s64)currentOffset + offset), (s64)ULONG_MAX));
 
 		case wxFromEnd:
 			// truncate negative values to zero, and positive values to 4gb
-			return seek( std::min( std::max<s64>(0, (s64)fileEntry.size+offset), (s64)ULONG_MAX ) );
+			return seek(std::min(std::max<s64>(0, (s64)fileEntry.size + offset), (s64)ULONG_MAX));
 
-		jNO_DEFAULT;
+			jNO_DEFAULT;
 	}
 
-	return 0;		// unreachable
+	return 0; // unreachable
 }
 
 void IsoFile::reset()
@@ -106,9 +106,10 @@ s32 IsoFile::skip(s32 n)
 {
 	s32 oldOffset = currentOffset;
 
-	if (n<0) return 0;
+	if (n < 0)
+		return 0;
 
-	seek(currentOffset+n);
+	seek(currentOffset + n);
 
 	return currentOffset - oldOffset;
 }
@@ -136,7 +137,7 @@ void IsoFile::makeDataAvailable()
 
 u8 IsoFile::readByte()
 {
-	if(currentOffset >= maxOffset)
+	if (currentOffset >= maxOffset)
 		throw Exception::EndOfStream();
 
 	makeDataAvailable();
@@ -154,7 +155,7 @@ int IsoFile::internalRead(void* dest, int off, int len)
 		size_t slen = len;
 		if (slen > (maxOffset - currentOffset))
 		{
-			slen = (int) (maxOffset - currentOffset);
+			slen = (int)(maxOffset - currentOffset);
 		}
 
 		memcpy((u8*)dest + off, currentSector + sectorOffset, slen);
@@ -169,10 +170,11 @@ int IsoFile::internalRead(void* dest, int off, int len)
 // returns the number of bytes actually read.
 s32 IsoFile::read(void* dest, s32 len)
 {
-	pxAssert( dest != NULL );
-	pxAssert( len >= 0 );		// should we silent-fail on negative length reads?  prolly not...
+	pxAssert(dest != NULL);
+	pxAssert(len >= 0); // should we silent-fail on negative length reads?  prolly not...
 
-	if( len <= 0 ) return 0;
+	if (len <= 0)
+		return 0;
 
 	int off = 0;
 
@@ -194,7 +196,8 @@ s32 IsoFile::read(void* dest, s32 len)
 	}
 
 	// Read remaining, if any
-	if (len > 0) {
+	if (len > 0)
+	{
 		makeDataAvailable();
 		int lastSector = internalRead(dest, off, len);
 		totalLength += lastSector;
@@ -213,13 +216,13 @@ s32 IsoFile::read(void* dest, s32 len)
 std::string IsoFile::readLine()
 {
 	std::string s;
-	s.reserve( 512 );
+	s.reserve(512);
 
-	while( !eof() )
+	while (!eof())
 	{
 		u8 c = read<u8>();
 
-		if((c=='\n') || (c=='\r') || (c==0))
+		if ((c == '\n') || (c == '\r') || (c == 0))
 			break;
 
 		s += c;

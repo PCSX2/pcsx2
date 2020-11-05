@@ -68,7 +68,6 @@
 -- VIFFIFOHack            = 1 // Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
 -- VIF1StallHack          = 1 // SOCOM II HUD and Spy Hunter loading hang.
 -- GIFFIFOHack            = 1 // Enables the GIF FIFO. Needed for Wallace & Grommit, Hot Wheels, DJ Hero.
--- FMVinSoftwareHack      = 1 // Silent Hill 2-3. Fixes FMVs that are obscured when using hardware rendering by switching to software rendering while an FMV plays.
 -- ScarfaceIbitHack       = 1 // VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
 -- CrashTagTeamRacingIbit = 1 // VU I bit Hack avoid constant recompilation (Crash Tag Team Racing).
 -- VU0KickstartHack       = 1 // Let VU0 run ahead to fix some timing issues
@@ -1229,6 +1228,19 @@ Serial = SCED-52970
 Name   = SCEE Hits Demo
 Region = PAL-M5
 ---------------------------------------------
+Serial = SCED-53161
+Name   = Official PlayStation 2 Magazine Demo 58
+Region = PAL-M5
+[patches = 38174DD2]
+	comment=Patch by refraction. Fixes R&C 3 shadows, disable automatic fixes for other games
+	patch=1,EE,0047df64,word,48418800
+	patch=1,EE,0047df68,word,4A39D86C
+	patch=1,EE,0047df6c,word,48428800
+	patch=1,EE,0047df70,word,4A7503BC
+	patch=1,EE,0047df74,word,4A0002FF
+	patch=1,EE,0047df78,word,4A0002FF
+[/patches]
+---------------------------------------------
 Serial = SCED-53163
 Name   = Official PlayStation 2 Magazine Demo 60
 Region = PAL-M12
@@ -1294,6 +1306,7 @@ Serial = SCES-50034
 Name   = MotoGP
 Region = PAL-M5
 Compat = 5
+VU0KickstartHack = 1 // Fixes Crash On Load
 ---------------------------------------------
 Serial = SCES-50105
 Name   = Sky Odyssey
@@ -1352,6 +1365,7 @@ vuClampMode = 2 // Fixes water reflection.
 Serial = SCES-50360
 Name   = Twisted Metal - Black
 Region = PAL-M5
+VU0KickstartHack = 1 // Fixes Bad Car Models
 ---------------------------------------------
 Serial = SCES-50361
 Name   = Jak and Daxter: The Precursor Legacy
@@ -1419,6 +1433,15 @@ Serial = SCES-50499
 Name   = Ecco the Dolphin - Defender of the Future
 Region = PAL-M5
 Compat = 2
+[patches = 7FEDF999]
+	author=PSI
+	// Ecco has an evil race condition: one of its custom IOP modules resets CDVDMAN while it's loading a module from disc.
+	// The race condition is resolved by making the EE slower. This gives enough time for CDVDMAN to reset itself before
+	// the EE sends a request to load a module.
+	// Alternatively, this patch swaps the load order of the modules.
+	patch=1,EE,201018d8,extended,24040007
+	patch=1,EE,201018e4,extended,24040006
+[/patches]
 ---------------------------------------------
 Serial = SCES-50500
 Name   = Headhunter
@@ -1678,6 +1701,8 @@ Name   = Primal
 Region = PAL-M5
 Compat = 5 // With GSdx, SW-mode only.
 vuRoundMode = 0 // Fixes SPS.
+vuClampMode = 2 // Fix other SPS.
+VU0KickstartHack = 1 // Fixes objects disappearing.
 ---------------------------------------------
 Serial = SCES-51159
 Name   = The Getaway
@@ -1692,15 +1717,13 @@ Serial = SCES-51176
 Name   = Disney's Treasure Planet
 Region = PAL-M4
 EETimingHack = 1 // Fixes hang before going ingame.
-eeRoundMode = 0 // Fixes characters flying into sky.
-eeClampMode = 3 // Required to load areas correctly.
+vuClampMode = 3 // Fixes SPS when the solar surfer's engines are inactive
 ---------------------------------------------
 Serial = SCES-51177
 Name   = Disney's Treasure Planet
 Region = PAL
 EETimingHack = 1 // Fixes hang before going ingame.
-eeRoundMode = 0 // Fixes characters flying into sky.
-eeClampMode = 3 // Required to load areas correctly.
+vuClampMode = 3 // Fixes SPS when the solar surfer's engines are inactive
 ---------------------------------------------
 Serial = SCES-51179
 Name   = This is Football 2003
@@ -1737,6 +1760,7 @@ Compat = 5
 Serial = SCES-51480
 Name   = Twisted Metal - Black - Online
 Region = PAL-M5
+VU0KickstartHack = 1 // Fixes Bad Car Models
 ---------------------------------------------
 Serial = SCES-51513
 Name   = EyeToy - Play
@@ -1826,6 +1850,8 @@ Serial = SCES-51685
 Name   = Primal
 Region = PAL-E-R
 vuRoundMode = 0 // Fixes SPS.
+vuClampMode = 2 // Fix other SPS.
+VU0KickstartHack = 1 // Fixes objects disappearing.
 ---------------------------------------------
 Serial = SCES-51706
 Name   = Amplitude
@@ -1965,6 +1991,23 @@ Name   = WRC 4
 Region = PAL-M8
 Compat = 1
 XgKickHack = 1 // Fixes SPS.
+[patches]
+	author=kozarovv
+	// Proper patch for WRC 4. CRC independent. 
+	// I wrote small runtime that move unpacker higher right after emulator boot. 
+	// Seems little bit extensive, but there is no way to make it smaller. 
+	// Solves TLB miss errors which prevented the game from booting.
+	patch=0,EE,0040000C,double,3c0500603cc70054
+	patch=0,EE,00400014,double,24a5001024840010
+	patch=0,EE,0040001C,double,7ca6000078860000
+	patch=0,EE,00400024,double,000000001487fffb
+	patch=0,EE,0040002c,double,000000000817fff5
+	patch=0,EE,005fffd4,double,3c1c70003c040060
+	patch=0,EE,005fffdc,double,3c0700003c067000
+	patch=0,EE,005fffe4,double,279c000024840800	
+	patch=0,EE,005fffec,double,24e7100024c60080
+	patch=0,EE,005ffff4,double,00c7e8200818000c
+[/patches]
 ---------------------------------------------
 Serial = SCES-52405
 Name   = DJ - Decks & FX - House Edition
@@ -2299,6 +2342,8 @@ Region = PAL-M11
 Serial = SCES-53358
 Name   = 24: The Game
 Region = PAL-M9
+VU0KickstartHack = 1 // Fixes missing geometry.
+vuClampMode = 2 // Fixes minimap HUD.
 ---------------------------------------------
 Serial = SCES-53372
 Name   = Tourist Trophy - The Real Riding Simulator
@@ -4377,7 +4422,7 @@ Region = NTSC-J
 Serial = SCPS-55024
 Name   = Armored Core 2 - Another Age
 Region = NTSC-J
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 MemCardFilter = SCPS-55024/SLPS-25007/SLPS-25040/SLPS-73403/SLPS-73411
 ---------------------------------------------
 Serial = SCPS-55025
@@ -4580,6 +4625,7 @@ Serial = SCUS-97101
 Name   = Twisted Metal - Black
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Bad Car Models
 ---------------------------------------------
 Serial = SCUS-97102
 Name   = Gran Turismo 3 - A-Spec
@@ -4755,6 +4801,8 @@ Name   = Primal - Civilization Is Only Skin Deep
 Region = NTSC-U
 Compat = 5
 vuRoundMode = 0 // Fixes SPS.
+vuClampMode = 2 // Fix other SPS.
+VU0KickstartHack = 1 // Fixes objects disappearing.
 ---------------------------------------------
 Serial = SCUS-97144
 Name   = PlayStation Underground 5.1
@@ -4769,8 +4817,7 @@ Serial = SCUS-97146
 Name   = Disney's Treasure Planet
 Region = NTSC-U
 EETimingHack = 1 // Fixes hang before going ingame.
-eeRoundMode = 0 // Fixes characters flying into sky.
-eeClampMode = 3 // Required to load areas correctly.
+vuClampMode = 3 // Fixes SPS when the solar surfer's engines are inactive
 ---------------------------------------------
 Serial = SCUS-97147
 Name   = Cool Boarders 2001 [Demo]
@@ -4832,6 +4879,7 @@ Region = NTSC-U
 Serial = SCUS-97164
 Name   = Twisted Metal Black [Demo]
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Bad Car Models
 ---------------------------------------------
 Serial = SCUS-97165
 Name   = Official U.S. PlayStation Magazine Demo Disc 051
@@ -4890,6 +4938,7 @@ Serial = SCUS-97179
 Name   = Twisted Metal Black
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Bad Car Models
 ---------------------------------------------
 Serial = SCUS-97181
 Name   = Official U.S. PlayStation Magazine Demo Disc 055
@@ -4946,11 +4995,13 @@ Region = NTSC-U
 Serial = SCUS-97195
 Name   = Twisted Metal Black - Online
 Region = NTSC-U
+VU0KickstartHack = 1 // Fixes Bad Car Models
 ---------------------------------------------
 Serial = SCUS-97196
 Name   = Twisted Metal Black - Online [Demo]
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Bad Car Models
 ---------------------------------------------
 Serial = SCUS-97197
 Name   = War of the Monsters
@@ -5066,6 +5117,7 @@ Name   = Primal [Demo]
 Region = NTSC-U
 vuRoundMode = 0 // Fixes SPS.
 vuClampMode = 2 // Fix other SPS.
+VU0KickstartHack = 1 // Fixes objects disappearing.
 ---------------------------------------------
 Serial = SCUS-97226
 Name   = NCAA GameBreaker 2003 [Demo]
@@ -5813,7 +5865,7 @@ Region = NTSC-U
 Compat = 5
 ---------------------------------------------
 Serial = SCUS-97464
-Name   = Sly 3 - Honor Amongst Thieves
+Name   = Sly 3 - Honor Among Thieves
 Region = NTSC-U
 Compat = 5
 vuClampMode = 2 // Fixes bugged camera.
@@ -6287,6 +6339,15 @@ Serial = SCUS-97621
 Name   = Twisted Metal - Head-On [Extra Twisted Edition]
 Region = NTSC-U
 Compat = 5
+[patches = 3DC2FE45]
+	author=refraction
+	// COP2 rearrangement. RSQRT directly followed by DIV and a few ops using Q causes issues
+	// Fixes fire effects
+	patch=1,EE,002461d8,word,4bf4b33c
+	patch=1,EE,002461dc,word,4b806d9c
+	patch=1,EE,002461e0,word,4bc069fc
+	patch=1,EE,002461e4,word,4a54c3bc
+[/patches]
 ---------------------------------------------
 Serial = SCUS-97622
 Name   = SingStar 80's [with Microphone]
@@ -6552,7 +6613,7 @@ MemCardFilter = SLAJ-25077/SLPM-55122/SLPM-66307/SLPM-74247/SLAJ-25035/SLPM-6551
 Serial = SLAJ-25078
 Name   = Black
 Region = NTSC-Unk
-vuClampMode = 0
+vuClampMode = 3 // Fixes SPS
 ---------------------------------------------
 Serial = SLAJ-25079
 Name   = Shin Sangoku Musou 4 - Empires
@@ -6724,6 +6785,7 @@ Region = PAL-E
 Serial = SLED-53937
 Name   = Black [Demo]
 Region = PAL-M5
+vuClampMode = 3 // Fixes SPS
 ---------------------------------------------
 Serial = SLED-53951
 Name   = Honda Demo [Demo]
@@ -7025,7 +7087,7 @@ Compat = 5
 Serial = SLES-50079
 Name   = Armored Core 2
 Region = PAL-E
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 ---------------------------------------------
 Serial = SLES-50080
 Name   = NBA Hoopz
@@ -7118,9 +7180,10 @@ Name   = Oni
 Region = PAL-E
 Compat = 5
 [patches = 22E85E68]
-	comment=Patches by Nachbrenner
-	// Skip "branch if copro 0 condition false".
-	patch=0,EE,001cef7c,word,00000000 // bc0f $001cef7c
+	comment=Patch by refraction
+	// Rearrange PCR write and BC0F instruction
+	patch=0,EE,001CEF78,word,4100ffff
+	patch=0,EE,001CEF7C,word,ac430000
 [/patches]
 ---------------------------------------------
 Serial = SLES-50136
@@ -7186,9 +7249,10 @@ Name   = Oni
 Region = PAL-F
 Compat = 5
 [patches = F77639F1]
-	comment=Patches by Nachbrenner
-	// Skip "branch if copro 0 condition false".
-	patch=0,EE,001cef7c,word,00000000 // bc0f $001cef7c
+	comment=Patch by refraction
+	// Rearrange PCR write and BC0F instruction
+	patch=0,EE,001CEF78,word,4100ffff
+	patch=0,EE,001CEF7C,word,ac430000
 [/patches]
 ---------------------------------------------
 Serial = SLES-50177
@@ -7196,18 +7260,20 @@ Name   = Oni
 Region = PAL-G
 Compat = 5
 [patches = 32629F36]
-	comment=Patches by Nachbrenner
-	// Skip "branch if copro 0 condition false".
-	patch=0,EE,001cef7c,word,00000000 // bc0f $001cef7c
+	comment=Patch by refraction
+	// Rearrange PCR write and BC0F instruction
+	patch=0,EE,001CEF78,word,4100ffff
+	patch=0,EE,001CEF7C,word,ac430000
 [/patches]
 ---------------------------------------------
 Serial = SLES-50178
 Name   = Oni
 Region = PAL-I
 [patches = 172B6971]
-	author=Nachbrenner
-	// Skip "branch if copro 0 condition false".
-	patch=0,EE,001cef7c,word,00000000 // bc0f $001cef7c
+	comment=Patch by refraction
+	// Rearrange PCR write and BC0F instruction
+	patch=0,EE,001CEF78,word,4100ffff
+	patch=0,EE,001CEF7C,word,ac430000
 [/patches]
 ---------------------------------------------
 Serial = SLES-50179
@@ -7542,6 +7608,7 @@ Serial = SLES-50306
 Name   = Resident Evil - CODE Veronica X
 Region = PAL-M4
 Compat = 5
+VU0KickstartHack = 1 // Fixes lightning effects.
 ---------------------------------------------
 Serial = SLES-50310
 Name   = Freak Out
@@ -8475,6 +8542,16 @@ Serial = SLES-50778
 Name   = TD Overdrive - The Brotherhood of Speed
 Region = PAL-M5
 Compat = 2
+[patches = AE9EB9A0]
+	author=kozarovv
+	// Fix initial loading by looping for some time on EE side. That allow IOP proceed requests correctly.
+	patch=1,EE,E0022430,extended,00308C68
+	patch=1,EE,20308C68,extended,0803fff7
+	patch=1,EE,20308C6C,extended,240f2000
+	patch=1,EE,200fffdc,double,55eeffff0000702d
+	patch=1,EE,200fffe4,double,0c0c243025ce0004
+	patch=1,EE,200fffec,double,080c231c00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-50779
 Name   = ESPN NBA 2Night 2002
@@ -8855,7 +8932,7 @@ Region = PAL-M4
 Serial = SLES-50905
 Name   = Armored Core 2 - Another Age
 Region = PAL-E
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 // Save import option was removed from PAL release.
 ---------------------------------------------
 Serial = SLES-50906
@@ -9590,6 +9667,7 @@ Serial = SLES-51232
 Name   = Virtua Tennis 2
 Region = PAL-M4
 Compat = 5
+XgKickHack = 1 // Fixes black models on certain games in World Tour.
 ---------------------------------------------
 Serial = SLES-51233
 Name   = DragonBall Z - Budokai
@@ -9845,6 +9923,16 @@ Region = PAL-E
 Serial = SLES-51343
 Name   = Galerians - Ash
 Region = PAL-M5
+[patches = 1AE08CF5]
+	author=kozarovv
+	// Floats workaround to make HW GSDX mode working.
+	// There is still overflow on GS, but this time GSDX can handle it just fine in HW mode. 
+	patch=1,EE,001e7130,word,3c017e00
+	patch=1,EE,001e7138,word,44812800
+	patch=1,EE,001e7150,word,44813000
+	patch=1,EE,001e7160,word,44813800
+	patch=1,EE,001e7170,word,44810000
+[/patches]
 ---------------------------------------------
 Serial = SLES-51344
 Name   = Guilty Gear X2
@@ -9942,6 +10030,24 @@ Compat = 5
 Serial = SLES-51381
 Name   = Everblue 2
 Region = PAL-E
+[patches = 00C584CB]
+	author=kozarovv
+	// Rearrange COP2 ops to fix DIV Q timings
+	patch=1,EE,00230b68,word,4b0c211c
+	patch=1,EE,00230b6c,word,4be503bc
+	patch=1,EE,00230b84,word,4bc0295c
+	patch=1,EE,00230b88,word,4be603bc
+	patch=1,EE,00230ba0,word,4bc0319c
+	patch=1,EE,00230ba4,word,4be703bc
+	patch=1,EE,00230bbc,word,4bc039dc
+	patch=1,EE,00230bc0,word,4be803bc
+	patch=1,EE,00230bd8,word,4bc0421c
+	patch=1,EE,00230bdc,word,4be903bc
+	patch=1,EE,00230bf4,word,4bc04a5c
+	patch=1,EE,00230bf8,word,4bea03bc
+	patch=1,EE,00230c10,word,4bc0529c
+	patch=1,EE,00230c14,word,4beb03bc
+[/patches]
 ---------------------------------------------
 Serial = SLES-51382
 Name   = Shrek - Super Party
@@ -10229,6 +10335,7 @@ Region = PAL-M3
 Serial = SLES-51553
 Name   = Chaos Legion
 Region = PAL-M5
+vuClampMode = 2 // Fixes SPS in item menu.
 ---------------------------------------------
 Serial = SLES-51554
 Name   = Cell Damage Overdrive
@@ -10493,6 +10600,8 @@ Region = PAL-E-F-G
 Serial = SLES-51696
 Name   = Dragon's Lair 3D - Special Edition
 Region = PAL-M5
+EETimingHack = 1 // Fixes hang before going ingame.
+VU0KickstartHack = 1 // Fixes SPS.
 ---------------------------------------------
 Serial = SLES-51697
 Name   = SSX 3
@@ -10625,27 +10734,11 @@ vuRoundMode = 0 // Crashes without.
 Serial = SLES-51753
 Name   = True Crime - Streets of L.A.
 Region = PAL-E
-[patches = C96245F4]
-	author=PSI
-	// Due to an edge case with SIF0 DMA that isn't handled properly in PCSX2
-	// the game accidentally resets DVD streams, which causes it to crash.
-	// This patch forces the streaming module to use different buffers
-	// which prevents the DVD streams from being cleared.
-	patch=1,EE,00480640,word,10000000
-[/patches]
 ---------------------------------------------
 Serial = SLES-51754
 Name   = True Crime - Streets of L.A.
 Region = PAL-M5
 Compat = 3
-[patches = 6B9AEA0D]
-	author=PSI
-	// Due to an edge case with SIF0 DMA that isn't handled properly in PCSX2
-	// the game accidentally resets DVD streams, which causes it to crash.
-	// This patch forces the streaming module to use different buffers
-	// which prevents the DVD streams from being cleared.
-	patch=1,EE,00480DB0,word,10000000
-[/patches]
 ---------------------------------------------
 Serial = SLES-51755
 Name   = Disney-Pixar's Finding Nemo
@@ -11064,6 +11157,7 @@ Serial = SLES-51917
 Name   = Beyond Good and Evil
 Region = PAL-M6
 eeRoundMode = 0 // Fixes SPS with water in some places.
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLES-51918
 Name   = Prince of Persia - The Sands of Time
@@ -11735,21 +11829,61 @@ Serial = SLES-52278
 Name   = Mafia
 Region = PAL-E
 EETimingHack = 1
+[patches = A8ECA67A]
+	comment=Patch by Prafull
+	// Avoids hanging before Molotov Party.
+	patch=1,EE,003e2bb4,word,00000000
+	// Fixes crash in The priest mission.
+	patch=1,EE,0016f04c,word,1000000d
+[/patches]
 ---------------------------------------------
 Serial = SLES-52279
 Name   = Mafia
 Region = PAL-G
 EETimingHack = 1
+[patches = B1744B0F]
+	comment=Patch by Prafull
+	// Avoids hanging before Molotov Party.
+	patch=1,EE,003e2454,word,00000000
+	// Fixes crash in The priest mission.
+	patch=1,EE,0016f04c,word,1000000d
+[/patches]
 ---------------------------------------------
 Serial = SLES-52280
 Name   = Mafia
 Region = PAL-F
 EETimingHack = 1
+[patches = E185C725]
+	comment=Patch by Prafull
+	// Avoids hanging before Molotov Party.
+	patch=1,EE,003e23d4,word,00000000
+	// Fixes crash in The priest mission.
+	patch=1,EE,0016f04c,word,1000000d
+[/patches]
+---------------------------------------------
+Serial = SLES-52281
+Name   = Mafia
+Region = PAL-I
+EETimingHack = 1
+[patches = B5FFA1E9]
+	comment=Patch by Prafull
+	// Avoids hanging before Molotov Party.
+	patch=1,EE,003e25c4,word,00000000
+	// Fixes crash in The priest mission.
+	patch=1,EE,0016f04c,word,1000000d
+[/patches]
 ---------------------------------------------
 Serial = SLES-52282
 Name   = Mafia
 Region = PAL-S
 EETimingHack = 1
+[patches = B67F4F9E]
+	comment=Patch by Prafull
+	// Avoids hanging before Molotov Party.
+	patch=1,EE,003e25f4,word,00000000
+	// Fixes crash in The priest mission.
+	patch=1,EE,0016f04c,word,1000000d
+[/patches]
 ---------------------------------------------
 Serial = SLES-52283
 Name   = Terminator 3 - The Redemption
@@ -12173,8 +12307,9 @@ Name   = World Championship Pool 2004
 Region = PAL-UM3
 ---------------------------------------------
 Serial = SLES-52486
-Name   = Astroboy
+Name   = Astro Boy
 Region = PAL-M5
+eeRoundMode = 0 // Fixes character behaviour.
 ---------------------------------------------
 Serial = SLES-52490
 Name   = Dance UK - Extra Trax
@@ -12902,6 +13037,7 @@ Region = PAL-G
 Serial = SLES-52755
 Name   = Blood Will Tell
 Region = PAL-M5
+VU0KickstartHack = 1 // Fixes main character model SPS.
 ---------------------------------------------
 Serial = SLES-52760
 Name   = Pro Evolution Soccer 4
@@ -13278,6 +13414,7 @@ Serial = SLES-52931
 Name   = Legend of Kay
 Region = PAL-M5
 Compat = 5
+vuClampMode = 3 // Fixes broken polygons on trees.
 ---------------------------------------------
 Serial = SLES-52939
 Name   = Airborne Troops - Countdown to D-Day
@@ -13586,22 +13723,27 @@ Region = PAL-M4 // Nordic.
 Serial = SLES-53028
 Name   = Hitman - Blood Money
 Region = PAL-E
+vuClampMode = 0 // Fixes bump mapping issues
 ---------------------------------------------
 Serial = SLES-53029
 Name   = Hitman - Blood Money
 Region = PAL-F
+vuClampMode = 0 // Fixes bump mapping issues
 ---------------------------------------------
 Serial = SLES-53030
 Name   = Hitman - Blood Money
 Region = PAL-G
+vuClampMode = 0 // Fixes bump mapping issues
 ---------------------------------------------
 Serial = SLES-53031
 Name   = Hitman - Blood Money
 Region = PAL-I
+vuClampMode = 0 // Fixes bump mapping issues
 ---------------------------------------------
 Serial = SLES-53032
 Name   = Hitman - Blood Money
 Region = PAL-S
+vuClampMode = 0 // Fixes bump mapping issues
 ---------------------------------------------
 Serial = SLES-53035
 Name   = Masters of the Universe - He-Man - Defender of Greyskull
@@ -13782,6 +13924,14 @@ Region = PAL-M5
 Serial = SLES-53099
 Name   = Pilot Down - Behind Enemy Lines
 Region = PAL-M5
+vuRoundMode = 0
+[patches = 53BB63A0]
+	author=kozarovv
+	// Patch allow sending VU1 mpg successfully. This fix missing graphic. Thanks to PSI for figuring what is wrong. 
+	// Game need at least -2 EE cyclerate + MTVU on my pc to get full speed. 
+	// To fix shadows set VU rounding to nearest - thx Atomic83
+	patch=1,EE,00426140,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLES-53100
 Name   = Scooby Doo! Unmasked
@@ -14224,7 +14374,7 @@ Name   = Colosseum - Road to Freedom
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-53357
-Name   = Colosseum - Road to Freedom
+Name   = 21 Card Games
 Region = PAL-E
 ---------------------------------------------
 Serial = SLES-53360
@@ -14886,11 +15036,11 @@ Name   = Ultimate Film Quiz, The
 Region = PAL-M6
 ---------------------------------------------
 Serial = SLES-53599
-Name   = Ultimate Film Quiz, The
+Name   = Ultimate Music Quiz, The
 Region = PAL-M6
 ---------------------------------------------
 Serial = SLES-53600
-Name   = Ultimate Film Quiz, The
+Name   = Ultimate World Cup Quiz, The
 Region = PAL-M6
 ---------------------------------------------
 Serial = SLES-53601
@@ -15201,9 +15351,11 @@ Name   = Superman Returns
 Region = PAL-E
 [patches = E8F7BAB6]
 	author=kozarovv
-	// Use iaddiu instead of FSAND.
-	patch=1,EE,00639ef0,word,10050208
+	// Fix sps and various graphical issues by Using iaddiu instead of FSAND
+	// require preload frame data and crc hack atleast minimum for GSDX HW
+	patch=1,EE,00639Ef0,word,10050208
 	patch=1,EE,0063a068,word,10080208
+	patch=1,EE,0063D488,word,10020208
 [/patches]
 ---------------------------------------------
 Serial = SLES-53747
@@ -15498,7 +15650,15 @@ Serial = SLES-53886
 Name   = Black
 Region = PAL-M5
 Compat = 5
-vuClampMode = 0
+vuClampMode = 3 // Fixes SPS
+[patches = ADDFF505]
+	author=refraction
+	// COP2 Rearrangement. Fixes broken collisions.
+	patch=1,EE,0037EBD4,word,4b000460
+	patch=1,EE,0037EBD8,word,4af103bc
+	patch=1,EE,0037EBF0,word,4a800460
+	patch=1,EE,0037EBF4,word,4b7103bc
+[/patches]
 ---------------------------------------------
 Serial = SLES-53897
 Name   = Dreamworks Vecinos Invasores
@@ -15530,6 +15690,7 @@ Serial = SLES-53904
 Name   = DT Racer
 Region = PAL-M5
 GIFFIFOHack = 1 // Fixes corrupted graphics in the menus.
+VU0KickstartHack = 1 // Fixes TLB misses and collision bugs
 ---------------------------------------------
 Serial = SLES-53906
 Name   = 50cent - Bulletproof
@@ -15804,7 +15965,15 @@ Serial = SLES-54030
 Name   = Black
 Region = PAL-E
 Compat = 5
-vuClampMode = 0
+vuClampMode = 3 // Fixes SPS
+[patches = CAA04879]
+	author=refraction
+	// COP2 Rearrangement. Fixes broken collisions.
+	patch=1,EE,0037EB54,word,4b000460
+	patch=1,EE,0037EB58,word,4af103bc
+	patch=1,EE,0037EB70,word,4a800460
+	patch=1,EE,0037EB74,word,4b7103bc
+[/patches]
 ---------------------------------------------
 Serial = SLES-54031
 Name   = Da Vinci Code, The
@@ -16490,6 +16659,18 @@ Serial = SLES-54350
 Name   = Superman Returns
 Region = PAL-G
 ---------------------------------------------
+Serial = SLES-54350
+Name   = Superman Returns
+Region = PAL-S
+[patches = EDF0A0A7]
+	author=kozarovv
+	// Fix sps and various graphical issues by Using iaddiu instead of FSAND
+	// require preload frame data and crc hack atleast minimum for GSDX HW
+	patch=1,EE,00639Ef0,word,10050208
+	patch=1,EE,0063a068,word,10080208
+	patch=1,EE,0063D488,word,10020208
+[/patches]
+---------------------------------------------
 Serial = SLES-54354
 Name   = Final Fantasy XII
 Region = PAL-E
@@ -16966,6 +17147,7 @@ Serial = SLES-54569
 Name   = Zombie Hunters 2
 Region = PAL-E
 Compat = 5
+XgKickHack = 1 // Fixes blank textures
 ---------------------------------------------
 Serial = SLES-54579
 Name   = Flintstones, The - Bedrock Racing
@@ -18763,6 +18945,7 @@ Region = NTSC-K
 Serial = SLKA-25026
 Name   = Chaos Legion
 Region = NTSC-K
+vuClampMode = 2 // Fixes SPS in item menu.
 ---------------------------------------------
 Serial = SLKA-25030
 Name   = WWE SmackDown! Shut Your Mouth
@@ -18975,6 +19158,7 @@ Region = NTSC-K
 Serial = SLKA-25159
 Name   = Astro Boy
 Region = NTSC-K
+eeRoundMode = 0 // Fixes character behaviour.
 ---------------------------------------------
 Serial = SLKA-25160
 Name   = Shin Megami Tensei III: Nocturne Maniax
@@ -19597,6 +19781,12 @@ Compat = 5
 Serial = SLPM-55191
 Name   = L2 - Love x Loop
 Region = NTSC-J
+[patches = 9F9DCD8A]
+	author=PSI, kozarovv
+	// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+	// This patch skips over the stack code, allowing the game to boot.
+	patch=1,EE,001B4828,word,10000008
+[/patches]
 ---------------------------------------------
 Serial = SLPM-55207
 Name   = Hakuouki - Zuisouroku [Limited Edition]
@@ -20109,6 +20299,8 @@ Region = NTSC-J
 Serial = SLPM-62132
 Name   = 24: The Game
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes missing geometry.
+vuClampMode = 2 // Fixes minimap HUD.
 ---------------------------------------------
 Serial = SLPM-62133
 Name   = Bloody Roar 3 [Konami The Best]
@@ -20381,6 +20573,7 @@ Serial = SLPM-62236
 Name   = Power Smash 2
 Region = NTSC-J
 Compat = 5
+XgKickHack = 1 // Fixes black models on certain games in World Tour.
 ---------------------------------------------
 Serial = SLPM-62237
 Name   = Gakuen Toshi Vara Noir [Limited Edition]
@@ -22786,6 +22979,16 @@ Serial = SLPM-65161
 Name   = Aero Dancing 4
 Region = NTSC-J
 ---------------------------------------------
+Serial = SLPM-65163
+Name   = Dynasty Warriors 3
+Region = NTSC-C
+[patches = 397F3835]
+	comment=COP2 flag instance patch by refraction
+	// A mac flag check after running another vsub op which is irrelivant, rearranging
+	patch=0,EE,00276170,word,48438800
+	patch=0,EE,0027617c,word,4BE521AC
+[/patches]
+---------------------------------------------
 Serial = SLPM-65164
 Name   = Project Minerva [Limited Edition]
 Region = NTSC-J
@@ -23079,6 +23282,7 @@ Serial = SLPM-65249
 Name   = Chaos Legion
 Region = NTSC-J
 Compat = 5
+vuClampMode = 2 // Fixes SPS in item menu.
 ---------------------------------------------
 Serial = SLPM-65254
 Name   = Galaxy Angel
@@ -24152,6 +24356,7 @@ Region = NTSC-J
 Serial = SLPM-65551
 Name   = Astro Boy Atom
 Region = NTSC-J
+eeRoundMode = 0 // Fixes character behaviour.
 ---------------------------------------------
 Serial = SLPM-65552
 Name   = Metal Wolf Rev [Limited Edition]
@@ -26513,6 +26718,12 @@ Region = NTSC-J
 Serial = SLPM-66186
 Name   = Game ni Nattayo! Dokura-chan
 Region = NTSC-J
+[patches = 169099FC]
+	author=PSI, kozarovv
+	// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+	// This patch skips over the stack code, allowing the game to boot.
+	patch=1,EE,00156608,word,10000003
+[/patches]
 ---------------------------------------------
 Serial = SLPM-66187
 Name   = Exciting Pro Wrestling 6 - SmackDown vs. RAW [Yuke's the Best]
@@ -27142,7 +27353,15 @@ Serial = SLPM-66354
 Name   = Black
 Region = NTSC-J
 Compat = 5
-vuClampMode = 0
+vuClampMode = 3 // Fixes SPS
+[patches = B3A9F9ED]
+	author=refraction
+	// COP2 Rearrangement. Fixes broken collisions.
+	patch=1,EE,0037ECD4,word,4b000460
+	patch=1,EE,0037ECD8,word,4af103bc
+	patch=1,EE,0037ECF0,word,4a800460
+	patch=1,EE,0037ECF4,word,4b7103bc
+[/patches]
 ---------------------------------------------
 Serial = SLPM-66356
 Name   = Baldr Force EXE [Alchemist Best]
@@ -27974,6 +28193,12 @@ Region = NTSC-J
 Serial = SLPM-66582
 Name   = Kohitsuji Hokaku Keakaku! Sweet Boys Life [Limited Edition]
 Region = NTSC-J
+[patches = 9466CBA1]
+	author=PSI, kozarovv
+	// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+	// This patch skips over the stack code, allowing the game to boot.
+	patch=1,EE,0014A148,word,10000003
+[/patches]
 ---------------------------------------------
 Serial = SLPM-66583
 Name   = Kohitsuji Hokaku Keakaku! Sweet Boys Life
@@ -28541,7 +28766,7 @@ Region = NTSC-J
 Serial = SLPM-66731
 Name   = Black [EA Best Hits]
 Region = NTSC-J
-vuClampMode = 0
+vuClampMode = 3 // Fixes SPS
 ---------------------------------------------
 Serial = SLPM-66732
 Name   = Iinazuke [Limited Edition]
@@ -28570,6 +28795,12 @@ Region = NTSC-J
 Serial = SLPM-66738
 Name   = Sakura Ran Koukou Hosutobu
 Region = NTSC-J
+[patches = 3BE2C709]
+	author=PSI, Prafull
+	// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+	// This patch skips over the stack code, allowing the game to boot.
+	patch=1,EE,00189e88,word,10000003
+[/patches]
 ---------------------------------------------
 Serial = SLPM-66739
 Name   = Burnout Dominator
@@ -29405,7 +29636,7 @@ Region = NTSC-J
 Serial = SLPM-66961
 Name   = Black [EA-SY! 1980]
 Region = NTSC-J
-vuClampMode = 0
+vuClampMode = 3 // Fixes SPS
 ---------------------------------------------
 Serial = SLPM-66962
 Name   = Burnout 3 - Takedown [EA-SY! 1980]
@@ -30151,6 +30382,7 @@ Region = NTSC-J
 Serial = SLPS-20040
 Name   = Moto GP
 Region = NTSC-J
+VU0KickstartHack = 1 // Fixes Crash On Load
 ---------------------------------------------
 Serial = SLPS-20041
 Name   = Mahjong Goku Taisei
@@ -31368,7 +31600,7 @@ Region = NTSC-J
 Serial = SLPS-25007
 Name   = Armored Core 2
 Region = NTSC-J
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 ---------------------------------------------
 Serial = SLPS-25008
 Name   = Sorcerous Stabber Orphen
@@ -31508,7 +31740,7 @@ Serial = SLPS-25040
 Name   = Armored Core 2 - Another Age
 Region = NTSC-J
 Compat = 5
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 MemCardFilter = SCPS-55024/SLPS-25007/SLPS-25040/SLPS-73403/SLPS-73411
 ---------------------------------------------
 Serial = SLPS-25041
@@ -34263,8 +34495,7 @@ Region = NTSC-J
 Serial = SLPS-25784
 Name   = Another Century's Episode 3 - The Final
 Region = NTSC-J
-eeClampMode = 3 // The game won't freeze on mission 2 loading.
-vuClampMode = 3 // The game won't freeze on mission 2 loading.
+vuClampMode = 3
 ---------------------------------------------
 Serial = SLPS-25786
 Name   = Hisshou Pachinko-Pachislot Kouryaku Series Vol.10 - CR Shinseiki Evangelion - Kiseki no kachi Ha
@@ -35092,7 +35323,7 @@ Region = NTSC-J
 Serial = SLPS-73403
 Name   = Armored Core 2 [PlayStation 2 The Best]
 Region = NTSC-J
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 ---------------------------------------------
 Serial = SLPS-73404
 Name   = Klonoa 2 [PlayStation 2 The Best]
@@ -35120,7 +35351,7 @@ Region = NTSC-J
 Serial = SLPS-73411
 Name   = Armored Core 2 - Another Age [PlayStation 2 The Best]
 Region = NTSC-J
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 MemCardFilter = SCPS-55024/SLPS-25007/SLPS-25040/SLPS-73403/SLPS-73411
 ---------------------------------------------
 Serial = SLPS-73412
@@ -35244,7 +35475,7 @@ Serial = SLUS-20014
 Name   = Armored Core 2
 Region = NTSC-U
 Compat = 5
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 ---------------------------------------------
 Serial = SLUS-20015
 Name   = Eternal Ring
@@ -35385,6 +35616,7 @@ Serial = SLUS-20058
 Name   = Moto GP
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes Crash On Load
 ---------------------------------------------
 Serial = SLUS-20062
 Name   = Grand Theft Auto III
@@ -35402,9 +35634,10 @@ Name   = Oni
 Region = NTSC-U
 Compat = 5
 [patches = FD9CD8FC]
-	comment=Patch by Shadow Lady
-	// Skip branch bc0f.
-	patch=0,EE,001CF3CC,word,00000000
+	comment=Patch by refraction
+	// Rearrange PCR write and BC0F instruction
+	patch=0,EE,001CF3C8,word,4100ffff
+	patch=0,EE,001CF3CC,word,ac430000
 [/patches]
 ---------------------------------------------
 Serial = SLUS-20065
@@ -35885,6 +36118,7 @@ Serial = SLUS-20184
 Name   = Resident Evil - CODE Veronica X
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes lightning effects.
 ---------------------------------------------
 Serial = SLUS-20186
 Name   = Monster Jam - Maximum Destruction
@@ -36010,6 +36244,26 @@ Serial = SLUS-20213
 Name   = Test Drive
 Region = NTSC-U
 Compat = 5
+[patches = D4A56F59]
+	author=kozarovv
+	// 2.00 GameVersion. Fix initial loading by looping for some time on EE side. That allow IOP proceed requests correctly.
+	patch=1,EE,E00223a2,extended,00308A30
+	patch=1,EE,20308a30,extended,0803fff7
+	patch=1,EE,20308a34,extended,240f2000
+	patch=1,EE,200fffdc,double,55eeffff0000702d
+	patch=1,EE,200fffe4,double,0c0c23a225ce0004
+	patch=1,EE,200fffec,double,080c228e00000000
+[/patches]
+[patches = F456F555]
+	author=kozarovv
+	// 1.00 GameVersion. Fix initial loading by looping for some time on EE side. That allow IOP proceed requests correctly.
+	patch=1,EE,E0022262,extended,00308530
+	patch=1,EE,20308530,extended,0803fff7
+	patch=1,EE,20308534,extended,240f2000
+	patch=1,EE,200fffdc,double,55eeffff0000702d
+	patch=1,EE,200fffe4,double,0c0c226225ce0004
+	patch=1,EE,200fffec,double,080c214e00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20214
 Name   = State of Emergency
@@ -36097,6 +36351,11 @@ Serial = SLUS-20229
 Name   = Jonny Moseley - Mad Trix
 Region = NTSC-U
 Compat = 5
+[patches = AE94FAF8]
+	author=refraction
+	comment=Fixes interlacing for videos
+	patch=1,EE,0024a6f0,word,24030003
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20230
 Name   = Max Payne
@@ -36188,7 +36447,7 @@ Compat = 5
 Serial = SLUS-20249
 Name   = Armored Core 2 - Another Age
 Region = NTSC-U
-eeClampMode = 0 // Fixes Abnormal AI behavior.
+eeClampMode = 2 // Fixes Abnormal AI behavior.
 // Can import data from regular Armored Core 2.
 MemCardFilter = SLUS-20249/SLUS-20014
 ---------------------------------------------
@@ -36317,18 +36576,17 @@ Serial = SLUS-20277
 Name   = Dynasty Warriors 3
 Region = NTSC-U
 Compat = 5
+[patches = 4A35E19F]
+	comment=COP2 flag instance patch by refraction
+	// A mac flag check after running another vsub op which is irrelivant, rearranging
+	patch=0,EE,00273230,word,48438800
+	patch=0,EE,0027323c,word,4BE521AC
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20278
 Name   = Yanya Caballista - City Skater
 Region = NTSC-U
 Compat = 4
-[patches = 12BCE532]
-	author=Prafull
-	// Fix slow and choppy gameplay.
-	// Fixed by rearranging COP2 instructions.
-	patch=1,EE,002aaa58,word,48488800
-	patch=1,EE,002aaa80,word,4a0203bd
-[/patches]
 ---------------------------------------------
 Serial = SLUS-20279
 Name   = X-Men - Next Dimension
@@ -37304,6 +37562,7 @@ Serial = SLUS-20480
 Name   = Tennis - Sega Sports
 Region = NTSC-U
 Compat = 5
+XgKickHack = 1 // Fixes black models on certain games in World Tour.
 ---------------------------------------------
 Serial = SLUS-20482
 Name   = Sphinx and the Cursed Mummy
@@ -37637,14 +37896,6 @@ Serial = SLUS-20550
 Name   = True Crime - Streets of L.A.
 Region = NTSC-U
 Compat = 3
-[patches = eb7854f1]
-	author=PSI
-	// Due to an edge case with SIF0 DMA that isn't handled properly in PCSX2
-	// the game accidentally resets DVD streams, which causes it to crash.
-	// This patch forces the streaming module to use different buffers
-	// which prevents the DVD streams from being cleared.
-	patch=1,EE,00480640,word,10000000
-[/patches]
 ---------------------------------------------
 Serial = SLUS-20552
 Name   = Grand Theft Auto - Vice City
@@ -37683,6 +37934,16 @@ Serial = SLUS-20560
 Name   = Galerians - Ash
 Region = NTSC-U
 Compat = 5
+[patches = B506C936]
+	author=kozarovv
+	// Floats workaround to make HW GSDX mode working.
+	// There is still overflow on GS, but this time GSDX can handle it just fine in HW mode. 
+	patch=1,EE,001e12a8,word,3c017e00
+	patch=1,EE,001e12b0,word,44812800
+	patch=1,EE,001e12c8,word,44813000
+	patch=1,EE,001e12d8,word,44813800
+	patch=1,EE,001e12e8,word,44810000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20561
 Name   = Disaster Report
@@ -37856,6 +38117,24 @@ Serial = SLUS-20598
 Name   = Everblue 2
 Region = NTSC-U
 Compat = 5
+[patches = BCE9B7BB]
+	author=kozarovv
+	// Rearrange COP2 ops to fix DIV Q timings
+	patch=1,EE,00230b68,word,4b0c211c
+	patch=1,EE,00230b6c,word,4be503bc
+	patch=1,EE,00230b84,word,4bc0295c
+	patch=1,EE,00230b88,word,4be603bc
+	patch=1,EE,00230ba0,word,4bc0319c
+	patch=1,EE,00230ba4,word,4be703bc
+	patch=1,EE,00230bbc,word,4bc039dc
+	patch=1,EE,00230bc0,word,4be803bc
+	patch=1,EE,00230bd8,word,4bc0421c
+	patch=1,EE,00230bdc,word,4be903bc
+	patch=1,EE,00230bf4,word,4bc04a5c
+	patch=1,EE,00230bf8,word,4bea03bc
+	patch=1,EE,00230c10,word,4bc0529c
+	patch=1,EE,00230c14,word,4beb03bc
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20599
 Name   = Whiteout
@@ -38303,6 +38582,7 @@ Serial = SLUS-20695
 Name   = Chaos Legion
 Region = NTSC-U
 Compat = 5
+vuClampMode = 2 // Fixes SPS in item menu.
 ---------------------------------------------
 Serial = SLUS-20696
 Name   = Jimmy Neutron - Boy Genius - Jet Fusion
@@ -38632,6 +38912,7 @@ Name   = Beyond Good and Evil
 Region = NTSC-U
 Compat = 5
 eeRoundMode = 0 // Fixes SPS with water in some places.
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLUS-20764
 Name   = Bombastic
@@ -38708,6 +38989,7 @@ Serial = SLUS-20782
 Name   = Blood Will Tell
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes main character model SPS.
 ---------------------------------------------
 Serial = SLUS-20784
 Name   = Italian Job, The
@@ -38759,6 +39041,13 @@ Serial = SLUS-20793
 Name   = Gladiator - Sword of Vengeance
 Region = NTSC-U
 Compat = 5
+[patches = C5DAD771]
+	author=Prafull
+	// Fix hang before menu screen
+	// The patch causes few artifacts in FMV
+	// Skips part of IPU
+	patch=1,EE,00286674,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20794
 Name   = ESPN - Major League Baseball
@@ -39087,6 +39376,7 @@ Serial = SLUS-20867
 Name   = Astro Boy
 Region = NTSC-U
 Compat = 5
+eeRoundMode = 0 // Fixes character behaviour.
 ---------------------------------------------
 Serial = SLUS-20868
 Name   = MVP Baseball 2004
@@ -39700,6 +39990,11 @@ vuRoundMode = 0 // Fixes Red SPS while ingame.
 eeClampMode = 3 // Fixes White SPS while ingame.
 eeRoundMode = 0 // Partially fixes wrong ennemies eye rendering.
 EETimingHack = 1 // Fixes garbled character annimation.
+[patches = 675CEB8F]
+	author=Prafull
+	// Fixes almost all problems apart from little translucent fog effect in some areas
+	patch=1,EE,001473b0,word,00000000
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20984
 Name   = Resident Evil Outbreak - File #2
@@ -40068,8 +40363,10 @@ Name   = Disney's Stitch - Experiment 626
 Region = NTSC-U
 ---------------------------------------------
 Serial = SLUS-21054
-Name   = Disney's Classics - Treasure Planet
+Name   = Disney's Treasure Planet (Disney Classics)
 Region = NTSC-U
+EETimingHack = 1 // Fixes hang before going ingame.
+vuClampMode = 3 // Fixes SPS when the solar surfer's engines are inactive
 ---------------------------------------------
 Serial = SLUS-21056
 Name   = Cabal, The ~~CANCELLED~~
@@ -40249,6 +40546,7 @@ Name   = DT Racer
 Region = NTSC-U
 Compat = 5
 GIFFIFOHack = 1 // Fixes corrupted graphics in the menus.
+VU0KickstartHack = 1 // Fixes TLB misses and collision bugs
 ---------------------------------------------
 Serial = SLUS-21096
 Name   = Ape Escape - Pumped & Primed
@@ -40312,6 +40610,7 @@ Serial = SLUS-21108
 Name   = Hitman - Blood Money
 Region = NTSC-U
 Compat = 5
+vuClampMode = 0 // Fixes bump mapping issues
 ---------------------------------------------
 Serial = SLUS-21109
 Name   = Drive to Survive
@@ -41026,7 +41325,7 @@ Serial = SLUS-21248
 Name   = Legend of Kay
 Region = NTSC-U
 Compat = 5
-EETimingHack = 1 // For freezes in some scene transitions.
+vuClampMode = 3 // Fixes broken polygons on trees.
 ---------------------------------------------
 Serial = SLUS-21249
 Name   = Yourself Fitness - Lifestyle
@@ -41129,6 +41428,8 @@ Serial = SLUS-21268
 Name   = 24: The Game
 Region = NTSC-U
 Compat = 5
+VU0KickstartHack = 1 // Fixes missing geometry.
+vuClampMode = 2 // Fixes minimap HUD.
 ---------------------------------------------
 Serial = SLUS-21269
 Name   = Bully
@@ -41696,7 +41997,15 @@ Serial = SLUS-21376
 Name   = Black
 Region = NTSC-U
 Compat = 5
-vuClampMode = 0
+vuClampMode = 3 // Fixes SPS
+[patches = 5C891FF1]
+	author=refraction
+	// COP2 Rearrangement. Fixes broken collisions.
+	patch=1,EE,0037EB14,word,4b000460
+	patch=1,EE,0037EB18,word,4af103bc
+	patch=1,EE,0037EB30,word,4a800460
+	patch=1,EE,0037EB34,word,4b7103bc
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21377
 Name   = Dance Dance Revolution SuperNOVA
@@ -41986,6 +42295,14 @@ Serial = SLUS-21434
 Name   = Superman Returns - The Video Game
 Region = NTSC-U
 Compat = 4
+[patches = E1BF5DCA]
+	author=kozarovv
+	// Fix sps and various graphical issues by Using iaddiu instead of FSAND
+	// require preload frame data and crc hack atleast minimum for GSDX HW
+	patch=1,EE,00639E70,word,10050208
+	patch=1,EE,00639FE8,word,10080208
+	patch=1,EE,0063D408,word,10020208
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21435
 Name   = One Piece - Grand Adventure
@@ -44652,6 +44969,7 @@ Serial = SLUS-29082
 Name   = Beyond Good and Evil [Demo]
 Region = NTSC-U
 eeRoundMode = 0 // Fixes SPS with water in some places.
+VU0KickstartHack = 1 // Fixes Character SPS.
 ---------------------------------------------
 Serial = SLUS-29083
 Name   = Maximo vs. The Army of Zin [Demo]
@@ -44911,7 +45229,7 @@ Region = NTSC-U
 Serial = SLUS-29180
 Name   = Black [Demo]
 Region = NTSC-U
-vuClampMode = 0
+vuClampMode = 3 // Fixes SPS
 ---------------------------------------------
 Serial = SLUS-29185
 Name   = Driver - Parallel Lines [Demo]
@@ -44928,6 +45246,7 @@ Region = NTSC-U
 Serial = SLUS-29191
 Name   = Hitman - Blood Money & Urban Chaos [Demo]
 Region = NTSC-U
+vuClampMode = 0 // Fixes bump mapping issues
 ---------------------------------------------
 Serial = SLUS-29192
 Name   = Test Drive Unlimited [Public Beta Vol.1.0]

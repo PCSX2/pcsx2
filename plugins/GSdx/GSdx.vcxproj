@@ -127,7 +127,6 @@
     <ClCompile Include="GSPng.cpp" />
     <ClCompile Include="Renderers\SW\GSRasterizer.cpp" />
     <ClCompile Include="Renderers\Common\GSRenderer.cpp" />
-    <ClCompile Include="Renderers\OpenCL\GSRendererCL.cpp" />
     <ClCompile Include="Renderers\DX11\GSRendererDX11.cpp" />
     <ClCompile Include="Renderers\HW\GSRendererHW.cpp" />
     <ClCompile Include="Renderers\Null\GSRendererNull.cpp" />
@@ -200,7 +199,6 @@
     <ClInclude Include="GSPng.h" />
     <ClInclude Include="Renderers\SW\GSRasterizer.h" />
     <ClInclude Include="Renderers\Common\GSRenderer.h" />
-    <ClInclude Include="Renderers\OpenCL\GSRendererCL.h" />
     <ClInclude Include="Renderers\DX11\GSRendererDX11.h" />
     <ClInclude Include="Renderers\HW\GSRendererHW.h" />
     <ClInclude Include="Renderers\Null\GSRendererNull.h" />
@@ -256,7 +254,6 @@
     <None Include="res\merge.fx" />
     <None Include="res\shadeboost.fx" />
     <None Include="res\tfx.fx" />
-    <None Include="res\tfx.cl" />
     <None Include="res\glsl\common_header.glsl" />
     <None Include="res\glsl\convert.glsl" />
     <None Include="res\glsl\interlace.glsl" />
@@ -279,10 +276,6 @@
     </ProjectReference>
     <ProjectReference Include="..\..\3rdparty\libpng\projects\vstudio\libpng\libpng.vcxproj">
       <Project>{d6973076-9317-4ef2-a0b8-b7a18ac0713e}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\..\3rdparty\opencl\opencl.vcxproj">
-      <Project>{d80d4a75-c385-41bd-ae62-83d2e2b595a7}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="..\..\3rdparty\xz\liblzma.vcxproj">
       <Project>{12728250-16ec-4dc6-94d7-e21dd88947f8}</Project>

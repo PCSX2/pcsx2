@@ -26,11 +26,6 @@
 //#define ENABLE_ACCURATE_BUFFER_EMULATION
 #define ENABLE_JIT_RASTERIZER
 
-#define EXTERNAL_SHADER_LOADING 1
-
-//#define ENABLE_DYNAMIC_CRC_HACK
-#define DYNA_DLL_PATH "c:/dev/pcsx2/trunk/tools/dynacrchack/DynaCrcHack.dll"
-
 //#define DISABLE_HW_TEXTURE_CACHE // Slow but fixes a lot of bugs
 
 //#define DISABLE_BITMASKING
@@ -50,8 +45,4 @@
 
 #if defined(__unix__) && !(defined(_DEBUG) || defined(_DEVEL))
 #define DISABLE_PERF_MON // Burn cycle for nothing in release mode
-#endif
-
-#ifdef _WIN32
-//#define ENABLE_OPENCL
 #endif

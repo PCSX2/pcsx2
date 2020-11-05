@@ -24,13 +24,14 @@
 #include "GS.h"
 
 #ifdef __unix__
-PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate                 = NULL;
+PFNGLBLENDFUNCSEPARATEPROC glBlendFuncSeparate = NULL;
 #endif
-PFNGLTEXTUREPAGECOMMITMENTEXTPROC      glTexturePageCommitmentEXT		   = NULL;
+PFNGLTEXTUREPAGECOMMITMENTEXTPROC glTexturePageCommitmentEXT = NULL;
 
 #include "PFN_GLLOADER_CPP.h"
 
-namespace GLExtension {
+namespace GLExtension
+{
 
 	static std::unordered_set<std::string> s_extensions;
 
@@ -46,9 +47,10 @@ namespace GLExtension {
 		else
 			s_extensions.erase(ext);
 	}
-}
+} // namespace GLExtension
 
-namespace ReplaceGL {
+namespace ReplaceGL
+{
 	void APIENTRY ScissorIndexed(GLuint index, GLint left, GLint bottom, GLsizei width, GLsizei height)
 	{
 		glScissor(left, bottom, width, height);
@@ -63,96 +65,113 @@ namespace ReplaceGL {
 	{
 	}
 
-}
+} // namespace ReplaceGL
 
 #ifdef _WIN32
-namespace Emulate_DSA {
+namespace Emulate_DSA
+{
 	// Texture entry point
-	void APIENTRY BindTextureUnit(GLuint unit, GLuint texture) {
+	void APIENTRY BindTextureUnit(GLuint unit, GLuint texture)
+	{
 		glActiveTexture(GL_TEXTURE0 + unit);
 		glBindTexture(GL_TEXTURE_2D, texture);
 	}
 
-	void APIENTRY CreateTexture(GLenum target, GLsizei n, GLuint *textures) {
+	void APIENTRY CreateTexture(GLenum target, GLsizei n, GLuint* textures)
+	{
 		glGenTextures(1, textures);
 	}
 
-	void APIENTRY TextureStorage(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height) {
+	void APIENTRY TextureStorage(GLuint texture, GLsizei levels, GLenum internalformat, GLsizei width, GLsizei height)
+	{
 		BindTextureUnit(7, texture);
 		glTexStorage2D(GL_TEXTURE_2D, levels, internalformat, width, height);
 	}
 
-	void APIENTRY TextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void *pixels) {
+	void APIENTRY TextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format, GLenum type, const void* pixels)
+	{
 		BindTextureUnit(7, texture);
 		glTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, width, height, format, type, pixels);
 	}
 
-	void APIENTRY CopyTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height) {
+	void APIENTRY CopyTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)
+	{
 		BindTextureUnit(7, texture);
 		glCopyTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, x, y, width, height);
 	}
 
-	void APIENTRY GetTexureImage(GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void *pixels) {
+	void APIENTRY GetTexureImage(GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void* pixels)
+	{
 		BindTextureUnit(7, texture);
 		glGetTexImage(GL_TEXTURE_2D, level, format, type, pixels);
 	}
 
-	void APIENTRY TextureParameteri (GLuint texture, GLenum pname, GLint param) {
+	void APIENTRY TextureParameteri(GLuint texture, GLenum pname, GLint param)
+	{
 		BindTextureUnit(7, texture);
 		glTexParameteri(GL_TEXTURE_2D, pname, param);
 	}
 
-	void APIENTRY GenerateTextureMipmap(GLuint texture) {
+	void APIENTRY GenerateTextureMipmap(GLuint texture)
+	{
 		BindTextureUnit(7, texture);
 		glGenerateMipmap(GL_TEXTURE_2D);
 	}
 
 	// Misc entry point
 	// (only purpose is to have a consistent API otherwise it is useless)
-	void APIENTRY CreateProgramPipelines(GLsizei n, GLuint *pipelines) {
+	void APIENTRY CreateProgramPipelines(GLsizei n, GLuint* pipelines)
+	{
 		glGenProgramPipelines(n, pipelines);
 	}
 
-	void APIENTRY CreateSamplers(GLsizei n, GLuint *samplers) {
+	void APIENTRY CreateSamplers(GLsizei n, GLuint* samplers)
+	{
 		glGenSamplers(n, samplers);
 	}
 
 	// Replace function pointer to emulate DSA behavior
-	void Init() {
+	void Init()
+	{
 		fprintf(stderr, "DSA is not supported. Expect slower performance\n");
-		glBindTextureUnit             = BindTextureUnit;
-		glCreateTextures              = CreateTexture;
-		glTextureStorage2D            = TextureStorage;
-		glTextureSubImage2D           = TextureSubImage;
-		glCopyTextureSubImage2D       = CopyTextureSubImage;
-		glGetTextureImage             = GetTexureImage;
-		glTextureParameteri           = TextureParameteri;
+		glBindTextureUnit = BindTextureUnit;
+		glCreateTextures = CreateTexture;
+		glTextureStorage2D = TextureStorage;
+		glTextureSubImage2D = TextureSubImage;
+		glCopyTextureSubImage2D = CopyTextureSubImage;
+		glGetTextureImage = GetTexureImage;
+		glTextureParameteri = TextureParameteri;
 
-		glCreateProgramPipelines      = CreateProgramPipelines;
-		glCreateSamplers              = CreateSamplers;
+		glCreateProgramPipelines = CreateProgramPipelines;
+		glCreateSamplers = CreateSamplers;
 	}
-}
+} // namespace Emulate_DSA
 #endif
 
-namespace GLLoader {
+namespace GLLoader
+{
 
-#define fprintf_once(out, ...) do if (s_first_load) fprintf(out, __VA_ARGS__); while(0);
+#define fprintf_once(out, ...)         \
+	do                                 \
+		if (s_first_load)              \
+			fprintf(out, __VA_ARGS__); \
+	while (0);
 
 	bool s_first_load = true;
 
 	bool amd_legacy_buggy_driver = false;
-	bool vendor_id_amd      = false;
-	bool vendor_id_nvidia   = false;
-	bool vendor_id_intel    = false;
-	bool mesa_driver        = false;
-	bool in_replayer        = false;
+	bool vendor_id_amd = false;
+	bool vendor_id_nvidia = false;
+	bool vendor_id_intel = false;
+	bool mesa_driver = false;
+	bool in_replayer = false;
 	bool buggy_sso_dual_src = false;
 
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_ARB_clear_texture = false;
 	bool found_GL_ARB_get_texture_sub_image = false; // Not yet used
 	// DX11 GPU
-	bool found_GL_ARB_gpu_shader5 = false; // Require IvyBridge
+	bool found_GL_ARB_gpu_shader5 = false;             // Require IvyBridge
 	bool found_GL_ARB_shader_image_load_store = false; // Intel IB. Nvidia/AMD miss Mesa implementation.
 	bool found_GL_ARB_shader_storage_buffer_object = false;
 	bool found_GL_ARB_compute_shader = false;
@@ -168,7 +187,8 @@ namespace GLLoader {
 
 	static void mandatory(const std::string& ext)
 	{
-		if (!GLExtension::Has(ext)) {
+		if (!GLExtension::Has(ext))
+		{
 			fprintf(stderr, "ERROR: %s is NOT SUPPORTED\n", ext.c_str());
 			throw GSDXRecoverableError();
 		}
@@ -180,16 +200,20 @@ namespace GLLoader {
 	{
 		bool found = GLExtension::Has(name);
 
-		if (!found) {
+		if (!found)
+		{
 			fprintf_once(stdout, "INFO: %s is NOT SUPPORTED\n", name.c_str());
-		} else {
+		}
+		else
+		{
 			fprintf_once(stdout, "INFO: %s is available\n", name.c_str());
 		}
 
 		std::string opt("override_");
 		opt += name;
 
-		if (theApp.GetConfigI(opt.c_str()) != -1) {
+		if (theApp.GetConfigI(opt.c_str()) != -1)
+		{
 			found = theApp.GetConfigB(opt.c_str());
 			fprintf(stderr, "Override %s detection (%s)\n", name.c_str(), found ? "Enabled" : "Disabled");
 			GLExtension::Set(name, found);
@@ -201,12 +225,14 @@ namespace GLLoader {
 	void check_gl_version(int major, int minor)
 	{
 		const GLubyte* s = glGetString(GL_VERSION);
-		if (s == NULL) {
+		if (s == NULL)
+		{
 			fprintf(stderr, "Error: GLLoader failed to get GL version\n");
 			throw GSDXRecoverableError();
 		}
 		GLuint v = 1;
-		while (s[v] != '\0' && s[v-1] != ' ') v++;
+		while (s[v] != '\0' && s[v - 1] != ' ')
+			v++;
 
 		const char* vendor = (const char*)glGetString(GL_VENDOR);
 		fprintf_once(stdout, "OpenGL information. GPU: %s. Vendor: %s. Driver: %s\n", glGetString(GL_RENDERER), vendor, &s[v]);
@@ -239,7 +265,8 @@ namespace GLLoader {
 		// As of 2019 SSO is still broken on intel (Kaby Lake confirmed).
 		buggy_sso_dual_src = vendor_id_intel || vendor_id_amd /*|| amd_legacy_buggy_driver*/;
 
-		if (theApp.GetConfigI("override_geometry_shader") != -1) {
+		if (theApp.GetConfigI("override_geometry_shader") != -1)
+		{
 			found_geometry_shader = theApp.GetConfigB("override_geometry_shader");
 			GLExtension::Set("GL_ARB_geometry_shader4", found_geometry_shader);
 			fprintf(stderr, "Overriding geometry shaders detection\n");
@@ -249,17 +276,19 @@ namespace GLLoader {
 		GLint minor_gl = 0;
 		glGetIntegerv(GL_MAJOR_VERSION, &major_gl);
 		glGetIntegerv(GL_MINOR_VERSION, &minor_gl);
-		if ( (major_gl < major) || ( major_gl == major && minor_gl < minor ) ) {
+		if ((major_gl < major) || (major_gl == major && minor_gl < minor))
+		{
 			fprintf(stderr, "OpenGL %d.%d is not supported. Only OpenGL %d.%d\n was found", major, minor, major_gl, minor_gl);
 			throw GSDXRecoverableError();
 		}
-    }
+	}
 
 	void check_gl_supported_extension()
 	{
 		int max_ext = 0;
 		glGetIntegerv(GL_NUM_EXTENSIONS, &max_ext);
-		for (GLint i = 0; i < max_ext; i++) {
+		for (GLint i = 0; i < max_ext; i++)
+		{
 			std::string ext{(const char*)glGetStringi(GL_EXTENSIONS, i)};
 			GLExtension::Set(ext);
 			//fprintf(stderr, "DEBUG ext: %s\n", ext.c_str());
@@ -279,7 +308,8 @@ namespace GLLoader {
 		}
 
 		// Only for HW renderer
-		if (theApp.GetCurrentRendererType() == GSRendererType::OGL_HW) {
+		if (theApp.GetCurrentRendererType() == GSRendererType::OGL_HW)
+		{
 			mandatory("GL_ARB_copy_image");
 			mandatory("GL_ARB_clip_control");
 		}
@@ -309,33 +339,38 @@ namespace GLLoader {
 			found_GL_ARB_get_texture_sub_image = optional("GL_ARB_get_texture_sub_image");
 		}
 
-		if (vendor_id_amd) {
+		if (vendor_id_amd)
+		{
 			fprintf_once(stderr, "The OpenGL hardware renderer is slow on AMD GPUs due to an inefficient driver.\n"
-					"Check out the link below for further information.\n"
-					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know\n");
+								 "Check out the link below for further information.\n"
+								 "https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know\n");
 		}
 
-		if (vendor_id_intel && (!GLExtension::Has("GL_ARB_texture_barrier") || !GLExtension::Has("GL_ARB_direct_state_access"))) {
+		if (vendor_id_intel && (!GLExtension::Has("GL_ARB_texture_barrier") || !GLExtension::Has("GL_ARB_direct_state_access")))
+		{
 			// Assume that driver support is good when texture barrier and DSA is supported, disable the log then.
 			fprintf_once(stderr, "The OpenGL renderer is inefficient on Intel GPUs due to an inefficient driver.\n"
-					"Check out the link below for further information.\n"
-					"https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-Intel-GPUs-All-you-need-to-know\n");
+								 "Check out the link below for further information.\n"
+								 "https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-Intel-GPUs-All-you-need-to-know\n");
 		}
 
-		if (!GLExtension::Has("GL_ARB_viewport_array")) {
-			glScissorIndexed   = ReplaceGL::ScissorIndexed;
+		if (!GLExtension::Has("GL_ARB_viewport_array"))
+		{
+			glScissorIndexed = ReplaceGL::ScissorIndexed;
 			glViewportIndexedf = ReplaceGL::ViewportIndexedf;
 			fprintf_once(stderr, "GL_ARB_viewport_array is not supported! Function pointer will be replaced\n");
 		}
 
-		if (!GLExtension::Has("GL_ARB_texture_barrier")) {
+		if (!GLExtension::Has("GL_ARB_texture_barrier"))
+		{
 			glTextureBarrier = ReplaceGL::TextureBarrier;
 			fprintf_once(stderr, "GL_ARB_texture_barrier is not supported! Blending emulation will not be supported\n");
 		}
 
 #ifdef _WIN32
 		// Thank you Intel for not providing support of basic features on your IGPUs.
-		if (!GLExtension::Has("GL_ARB_direct_state_access")) {
+		if (!GLExtension::Has("GL_ARB_direct_state_access"))
+		{
 			Emulate_DSA::Init();
 		}
 #endif
@@ -345,7 +380,8 @@ namespace GLLoader {
 	{
 		GLint index_count = 0;
 		glGetInternalformativ(GL_TEXTURE_2D, internal_fmt, GL_NUM_VIRTUAL_PAGE_SIZES_ARB, 1, &index_count);
-		if (!index_count) {
+		if (!index_count)
+		{
 			fprintf_once(stdout, "%s isn't sparse compatible. No index found\n", name);
 			return false;
 		}
@@ -353,9 +389,10 @@ namespace GLLoader {
 		GLint x, y;
 		glGetInternalformativ(GL_TEXTURE_2D, internal_fmt, GL_VIRTUAL_PAGE_SIZE_X_ARB, 1, &x);
 		glGetInternalformativ(GL_TEXTURE_2D, internal_fmt, GL_VIRTUAL_PAGE_SIZE_Y_ARB, 1, &y);
-		if (x > x_max && y > y_max) {
+		if (x > x_max && y > y_max)
+		{
 			fprintf_once(stdout, "%s isn't sparse compatible. Page size (%d,%d) is too big (%d, %d)\n",
-					name, x, y, x_max, y_max);
+						 name, x, y, x_max, y_max);
 			return false;
 		}
 
@@ -364,9 +401,10 @@ namespace GLLoader {
 
 	static void check_sparse_compatibility()
 	{
-		if (!GLExtension::Has("GL_ARB_sparse_texture") || 
+		if (!GLExtension::Has("GL_ARB_sparse_texture") ||
 			!GLExtension::Has("GL_EXT_direct_state_access") ||
-			theApp.GetConfigI("override_GL_ARB_sparse_texture") != 1) {
+			theApp.GetConfigI("override_GL_ARB_sparse_texture") != 1)
+		{
 			found_compatible_GL_ARB_sparse_texture2 = false;
 			found_compatible_sparse_depth = false;
 
@@ -374,7 +412,8 @@ namespace GLLoader {
 		}
 
 		found_compatible_GL_ARB_sparse_texture2 = true;
-		if (!GLExtension::Has("GL_ARB_sparse_texture2")) {
+		if (!GLExtension::Has("GL_ARB_sparse_texture2"))
+		{
 			// Only check format from GSTextureOGL
 			found_compatible_GL_ARB_sparse_texture2 &= is_sparse2_compatible("GL_R8", GL_R8, 256, 256);
 
@@ -397,8 +436,8 @@ namespace GLLoader {
 		// driver reports a compatible sparse format for depth texture but it isn't attachable to a frame buffer.
 		found_compatible_sparse_depth = !vendor_id_amd && is_sparse2_compatible("GL_DEPTH32F_STENCIL8", GL_DEPTH32F_STENCIL8, 128, 128);
 
-		fprintf_once(stdout, "INFO sparse color texture is %s\n", found_compatible_GL_ARB_sparse_texture2 ? "available" : "NOT SUPPORTED");
-		fprintf_once(stdout, "INFO sparse depth texture is %s\n", found_compatible_sparse_depth ? "available" : "NOT SUPPORTED");
+		fprintf_once(stdout, "INFO: sparse color texture is %s\n", found_compatible_GL_ARB_sparse_texture2 ? "available" : "NOT SUPPORTED");
+		fprintf_once(stdout, "INFO: sparse depth texture is %s\n", found_compatible_sparse_depth ? "available" : "NOT SUPPORTED");
 	}
 
 	void check_gl_requirements()
@@ -414,4 +453,4 @@ namespace GLLoader {
 
 		s_first_load = false;
 	}
-}
+} // namespace GLLoader

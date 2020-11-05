@@ -257,6 +257,7 @@ namespace ioman {
 			IOManDir *dir;
 		};
 
+		constexpr filedesc(): type(FILE_FREE), file(nullptr) {}
 		operator bool() const { return type != FILE_FREE; }
 		operator IOManFile*() const { return type == FILE_FILE ? file : NULL; }
 		operator IOManDir*() const { return type == FILE_DIR ? dir : NULL; }
@@ -326,7 +327,10 @@ namespace ioman {
 	void reset()
 	{
 		for (int i = 0; i < maxfds; i++)
-			fds[i].close();
+		{
+			if (fds[i])
+				fds[i].close();
+		}
 	}
 
 	bool is_host(const std::string path)

@@ -58,3 +58,4 @@ set(PadNullFinalLibs
 )
 
 add_pcsx2_plugin(${Output} "${PadNullFinalSources}" "${PadNullFinalLibs}" "${PadNullFinalFlags}")
+target_compile_features(${Output} PRIVATE cxx_std_17)

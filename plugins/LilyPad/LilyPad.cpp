@@ -716,13 +716,11 @@ inline void SetVibrate(int port, int slot, int motor, u8 val)
 
 u32 CALLBACK PS2EgetLibType(void)
 {
-    ps2e = 1;
     return PS2E_LT_PAD;
 }
 
 u32 CALLBACK PS2EgetLibVersion2(u32 type)
 {
-    ps2e = 1;
     if (type == PS2E_LT_PAD)
         return (PS2E_PAD_VERSION << 16) | VERSION;
     return 0;
@@ -740,7 +738,7 @@ void GetNameAndVersionString(wchar_t *out)
 }
 #endif
 
-char *CALLBACK PSEgetLibName()
+char *CALLBACK PS2EgetLibName(void)
 {
 #if defined(PCSX2_DEBUG)
     static char version[50];
@@ -751,12 +749,6 @@ char *CALLBACK PSEgetLibName()
     sprintf(version, "LilyPad (%lld)", SVN_REV);
     return version;
 #endif
-}
-
-char *CALLBACK PS2EgetLibName(void)
-{
-    ps2e = 1;
-    return PSEgetLibName();
 }
 
 //void CALLBACK PADgsDriverInfo(GSdriverInfo *info) {
@@ -832,10 +824,6 @@ struct QueryInfo
     u8 queryDone;
     u8 response[42];
 } query = {0, 0, 0, 0, 0, 0xFF, {0xF3}};
-
-#ifdef _MSC_VER
-int saveStateIndex = 0;
-#endif
 
 s32 CALLBACK PADinit(u32 flags)
 {
@@ -918,39 +906,6 @@ static const u8 queryMode[7] = {0x5A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 static const u8 setNativeMode[7] = {0x5A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5A};
 
 #ifdef _MSC_VER
-// Implements a couple of the hacks that affect whatever top-level window
-// the GS viewport belongs to (title, screensaver)
-ExtraWndProcResult TitleHackWndProc(HWND hWndTop, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT *output)
-{
-    switch (uMsg) {
-        case WM_SETTEXT:
-            if (config.saveStateTitle) {
-                wchar_t text[200];
-                int len;
-                if (IsWindowUnicode(hWndTop)) {
-                    len = wcslen((wchar_t *)lParam);
-                    if (len < sizeof(text) / sizeof(wchar_t))
-                        wcscpy(text, (wchar_t *)lParam);
-                } else {
-                    len = MultiByteToWideChar(CP_ACP, 0, (char *)lParam, -1, text, sizeof(text) / sizeof(wchar_t));
-                }
-                if (len > 0 && len < 150 && !wcsstr(text, L" | State(Lilypad) ")) {
-                    wsprintfW(text + len, L" | State(Lilypad) %i", saveStateIndex);
-                    SetWindowText(hWndTop, text);
-                    return NO_WND_PROC;
-                }
-            }
-            break;
-        case WM_SYSCOMMAND:
-            if ((wParam == SC_SCREENSAVE || wParam == SC_MONITORPOWER) && config.disableScreenSaver)
-                return NO_WND_PROC;
-            break;
-        default:
-            break;
-    }
-    return CONTINUE_BLISSFULLY;
-}
-
 // Useful sequence before changing into active/inactive state.
 // Handles hooking/unhooking of mouse and KB and also mouse cursor visibility.
 // towardsActive==true indicates we're gaining activity (on focus etc), false is for losing activity (on close, kill focus, etc).
@@ -984,12 +939,6 @@ ExtraWndProcResult StatusWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
             // losing/gaining focus.
             // Note - I never managed to see this case entered, but SET/KILLFOCUS are entered. - avih 2014-04-16
             PrepareActivityState(LOWORD(wParam) != WA_INACTIVE);
-            break;
-        case WM_CLOSE:
-            if (config.closeHack) {
-                ExitProcess(0);
-                return NO_WND_PROC;
-            }
             break;
         case WM_DESTROY:
             QueueKeyEvent(VK_ESCAPE, KEYPRESS);
@@ -1053,17 +1002,6 @@ DWORD WINAPI RenameWindowThreadProc(void *lpParameter)
     }
     return 0;
 }
-
-void SaveStateChanged()
-{
-    if (config.saveStateTitle) {
-        // GSDX only checks its window's message queue at certain points or something, so
-        // have to do this in another thread to prevent deadlock.
-        HANDLE hThread = CreateThread(0, 0, RenameWindowThreadProc, 0, 0, 0);
-        if (hThread)
-            CloseHandle(hThread);
-    }
-}
 #endif
 
 s32 CALLBACK PADopen(void *pDsp)
@@ -1109,14 +1047,11 @@ s32 CALLBACK PADopen(void *pDsp)
                 openCount = 0;
                 return -1;
             }
-            hWndTopProc.Eat(TitleHackWndProc, 0);
-        } else
-            hWndGSProc.Eat(TitleHackWndProc, 0);
+        }
 
         if (config.forceHide) {
             hWndGSProc.Eat(HideCursorProc, 0);
         }
-        SaveStateChanged();
 
         windowThreadId = GetWindowThreadProcessId(hWndTop, 0);
     }
@@ -1242,9 +1177,6 @@ u8 CALLBACK PADpoll(u8 value)
             // CONFIG_MODE
             case 0x43:
                 if (pad->config && padtype != neGconPad) {
-                    if (pad->mode == MODE_DIGITAL && padtype == Dualshock2Pad && config.padConfigs[query.port][query.slot].autoAnalog) {
-                        pad->mode = MODE_ANALOG;
-                    }
                     // In config mode.  Might not actually be leaving it.
                     SET_RESULT(ConfigExit);
                     DEBUG_OUT(0xF3);
@@ -1467,9 +1399,6 @@ u8 CALLBACK PADpoll(u8 value)
                         pad->modeLock = 3;
                     } else {
                         pad->modeLock = 0;
-                        if (pad->mode == MODE_DIGITAL && padtype == Dualshock2Pad && config.padConfigs[query.port][query.slot].autoAnalog) {
-                            pad->mode = MODE_ANALOG;
-                        }
                     }
                     query.queryDone = 1;
                 }
@@ -1596,32 +1525,6 @@ keyEvent *CALLBACK PADkeyEvent()
         PrepareActivityState(false);
     }
 
-    if ((ev.key == VK_ESCAPE || (int)ev.key == -2) && ev.evt == KEYPRESS && config.escapeFullscreenHack) {
-        static int t;
-        if ((int)ev.key != -2 && IsWindowMaximized(hWndTop)) {
-            t = timeGetTime();
-            QueueKeyEvent(-2, KEYPRESS);
-            HANDLE hThread = CreateThread(0, 0, MaximizeWindowThreadProc, 0, 0, 0);
-            if (hThread)
-                CloseHandle(hThread);
-            restoreFullScreen = 1;
-            return 0;
-        }
-        if (ev.key != VK_ESCAPE) {
-            if (timeGetTime() - t < 1000) {
-                QueueKeyEvent(-2, KEYPRESS);
-                return 0;
-            }
-        }
-        ev.key = VK_ESCAPE;
-    }
-
-    if (ev.key == VK_F2 && ev.evt == KEYPRESS) {
-        saveStateIndex += 1 - 2 * shiftDown;
-        saveStateIndex = (saveStateIndex + 10) % 10;
-        SaveStateChanged();
-    }
-
     // So don't change skip mode on alt-F4.
     if (ev.key == VK_F4 && altDown) {
         return 0;
@@ -1742,16 +1645,6 @@ u32 CALLBACK PADreadPort2(PadDataS *pads)
     pads->controllerType = pads->controllerType >> 4;
     memset(pads + 7, 0, sizeof(PadDataS) - 7);
     return 0;
-}
-
-u32 CALLBACK PSEgetLibType()
-{
-    return 8;
-}
-
-u32 CALLBACK PSEgetLibVersion()
-{
-    return (VERSION & 0xFFFFFF);
 }
 
 s32 CALLBACK PADqueryMtap(u8 port)

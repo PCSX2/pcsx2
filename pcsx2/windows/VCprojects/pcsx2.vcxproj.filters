@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Misc">
@@ -147,6 +147,30 @@
     </Filter>
     <Filter Include="Recording\gui">
       <UniqueIdentifier>{93e36831-627f-4529-b709-1f4bad398512}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Recording\VirtualPad">
+      <UniqueIdentifier>{ae88cd9a-f9f2-4196-979c-7a16ed5e455e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\CDVD\Windows">
+      <UniqueIdentifier>{be861049-a142-4650-85a5-a2fdd4eef011}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\CDVD\Linux">
+      <UniqueIdentifier>{a5904fb6-e846-4cbf-940c-ca1c604140a0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\Iop\FW">
+      <UniqueIdentifier>{157740ae-b338-4d7f-81cb-cffa9d39a756}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\SPU2">
+      <UniqueIdentifier>{bed493d6-96dc-4057-a1f2-31f88ec927d9}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Recording\Utilities">
+      <UniqueIdentifier>{85c5a0d2-6404-439f-8756-d908a1442b96}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Recording\VirtualPad\Images">
+      <UniqueIdentifier>{ad528458-08eb-49a2-aefa-3c2b86ab8896}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\DEV9">
+      <UniqueIdentifier>{8d5454f9-590c-4c53-aae1-8391c6465e50}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -847,20 +871,164 @@
     <ClCompile Include="..\..\Recording\PadData.cpp">
       <Filter>Recording</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Recording\RecordingControls.cpp">
-      <Filter>Recording</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Recording\RecordingInputManager.cpp">
-      <Filter>Recording</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Recording\NewRecordingFrame.cpp">
       <Filter>Recording\gui</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Recording\VirtualPad.cpp">
-      <Filter>Recording\gui</Filter>
+    <ClCompile Include="..\..\Recording\VirtualPad\VirtualPad.cpp">
+      <Filter>Recording\VirtualPad</Filter>
     </ClCompile>
     <ClCompile Include="..\..\IPU\IPUdither.cpp">
       <Filter>System\Ps2\IPU</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\InputRecordingControls.cpp">
+      <Filter>Recording</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\VirtualPad\VirtualPadData.cpp">
+      <Filter>Recording\VirtualPad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\VirtualPad\VirtualPadResources.cpp">
+      <Filter>Recording\VirtualPad</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\CDVDdiscReader.cpp">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\CDVDdiscThread.cpp">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\Windows\DriveUtility.cpp">
+      <Filter>System\Ps2\Iop\CDVD\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\Windows\IOCtlSrc.cpp">
+      <Filter>System\Ps2\Iop\CDVD\Windows</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\Linux\IOCtlSrc.cpp">
+      <Filter>System\Ps2\Iop\CDVD\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\CDVD\Linux\DriveUtility.cpp">
+      <Filter>System\Ps2\Iop\CDVD\Linux</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gui\DriveList.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\IPC.cpp">
+      <Filter>System</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\FW.cpp">
+      <Filter>System\Ps2\Iop\FW</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Dma.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\spu2.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\spu2freeze.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\spu2replay.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\spu2sys.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Mixer.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Lowpass.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows\Config.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Linux\Config.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows\CfgHelpers.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\ADSR.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Linux\Alsa.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows\ConfigDebug.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows\ConfigSoundtouch.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\debug.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Linux\Dialogs.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\DplIIdecoder.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows\dsp.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\ReadInput.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows\RealtimeDebugger.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\RegLog.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\RegTable.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Reverb.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\SndOut.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows\SndOut_XAudio2.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows\SndOut_waveOut.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Windows\UIHelpers.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\Timestretcher.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\wavedump_wav.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\SPU2\SndOut_Portaudio.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\DEV9.cpp">
+      <Filter>System\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\flash.cpp">
+      <Filter>System\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\pcap_io.cpp">
+      <Filter>System\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\smap.cpp">
+      <Filter>System\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\Win32\net.cpp">
+      <Filter>System\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\Win32\tap-win32.cpp">
+      <Filter>System\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\Win32\Win32.cpp">
+      <Filter>System\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\Win32\DEV9WinConfig.cpp">
+      <Filter>System\DEV9</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1299,17 +1467,113 @@
     <ClInclude Include="..\..\Recording\PadData.h">
       <Filter>Recording</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Recording\RecordingControls.h">
-      <Filter>Recording</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Recording\RecordingInputManager.h">
-      <Filter>Recording</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Recording\NewRecordingFrame.h">
       <Filter>Recording\gui</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Recording\VirtualPad.h">
-      <Filter>Recording\gui</Filter>
+    <ClInclude Include="..\..\Recording\VirtualPad\VirtualPad.h">
+      <Filter>Recording\VirtualPad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Recording\InputRecordingControls.h">
+      <Filter>Recording</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Recording\VirtualPad\VirtualPadData.h">
+      <Filter>Recording\VirtualPad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Recording\VirtualPad\VirtualPadResources.h">
+      <Filter>Recording\VirtualPad</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\CDVD\CDVDdiscReader.h">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\DriveList.h">
+      <Filter>AppHost\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\IPC.h">
+      <Filter>System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\FW.h">
+      <Filter>System\Ps2\Iop\FW</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\Windows\Dialogs.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\spu2.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\spu2replay.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\Mixer.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\Lowpass.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\Config.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\Linux\Config.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\Linux\Alsa.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\defs.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\Linux\Dialogs.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\Dma.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\Windows\dsp.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\Global.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\regs.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\SndOut.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\Windows\resource.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\spdif.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SPU2\Windows\WinConfig.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Recording\Utilities\InputRecordingLogger.h">
+      <Filter>Recording\Utilities</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\ata.h">
+      <Filter>System\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\Config.h">
+      <Filter>System\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\DEV9.h">
+      <Filter>System\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\net.h">
+      <Filter>System\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\pcap_io.h">
+      <Filter>System\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\smap.h">
+      <Filter>System\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\Win32\resource.h">
+      <Filter>System\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\Win32\tap.h">
+      <Filter>System\DEV9</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -1318,6 +1582,12 @@
     </ResourceCompile>
     <ResourceCompile Include="..\..\..\3rdparty\wxwidgets3.0\include\wx\msw\wx.rc">
       <Filter>AppHost\Resources</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="..\..\SPU2\Windows\SPU2.rc">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="..\..\DEV9\Win32\DEV9ghzdrk.rc">
+      <Filter>System\DEV9</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1388,6 +1658,63 @@
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\Logo.png">
       <Filter>AppHost\Resources</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\circlePressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\controllerFull.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\controllerHalf.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\controllerThreeQuarters.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\crossPressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\downPressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\l1Pressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\l2Pressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\l3Pressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\leftPressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\startPressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\r1Pressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\r2Pressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\r3Pressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\rightPressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\selectPressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\squarePressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\trianglePressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
+    </CustomBuild>
+    <CustomBuild Include="..\..\Recording\VirtualPad\img\upPressed.png">
+      <Filter>Recording\VirtualPad\Images</Filter>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>

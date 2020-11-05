@@ -60,7 +60,7 @@ void psxDmaInterrupt(int n)
 			if (HW_DMA_ICR & (1 << (16 + i))) {
 				if (HW_DMA_ICR & (1 << (24 + i))) {
 					if (HW_DMA_ICR & (1 << 23)) {
-						HW_DMA_ICR |= 0x80000000; //Set master IRQ condition met						
+						HW_DMA_ICR |= 0x80000000; //Set master IRQ condition met
 					}
 					psxRegs.CP0.n.Cause &= ~0x7C;
 					iopIntcIrq(3);
@@ -80,27 +80,37 @@ void psxDmaInterrupt(int n)
 
 void psxDmaInterrupt2(int n)
 {
+	// SIF0 and SIF1 DMA IRQ's cannot be supressed due to a mask flag for "tag" interrupts being available which cannot be disabled.
+	// The hardware can't disinguish between the DMA End and Tag Interrupt flags on these channels so interrupts always fire
+	bool fire_interrupt = n == 2 || n == 3;
+
 	if (n == 33) {
 		for (int i = 0; i < 6; i++) {
-			if (HW_DMA_ICR2 & (1 << (16 + i))) {
-				if (HW_DMA_ICR2 & (1 << (24 + i))) {
-					if (HW_DMA_ICR2 & (1 << 23)) {
-						HW_DMA_ICR2 |= 0x80000000; //Set master IRQ condition met
-					}
-					iopIntcIrq(3);					
+			if (HW_DMA_ICR2 & (1 << (24 + i))) {
+				if (HW_DMA_ICR2 & (1 << (16 + i)) || i == 2 || i == 3) {
+					fire_interrupt = true;
 					break;
 				}
 			}
 		}
-	} else if (HW_DMA_ICR2 & (1 << (16 + n)))
+	}
+	else if (HW_DMA_ICR2 & (1 << (16 + n)))
 	{
-/*		if (HW_DMA_ICR2 & (1 << (24 + n))) {
+		/*
+		if (HW_DMA_ICR2 & (1 << (24 + n))) {
 			Console.WriteLn("*PCSX2*: HW_DMA_ICR2 n=%d already set", n);
 		}
 		if (psxHu32(0x1070) & 8) {
 			Console.WriteLn("*PCSX2*: psxHu32(0x1070) 8 already set (n=%d)", n);
 		}*/
-		HW_DMA_ICR2|= (1 << (24 + n));
+		fire_interrupt = true;
+	}
+
+	if (fire_interrupt)
+	{
+		if(n != 33)
+			HW_DMA_ICR2 |= (1 << (24 + n));
+
 		if (HW_DMA_ICR2 & (1 << 23)) {
 			HW_DMA_ICR2 |= 0x80000000; //Set master IRQ condition met
 		}

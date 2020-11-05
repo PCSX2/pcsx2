@@ -24,14 +24,14 @@ public:
 	static const int sectorLength = 2048;
 
 protected:
-	SectorSource&		internalReader;
-	IsoFileDescriptor	fileEntry;
+	SectorSource& internalReader;
+	IsoFileDescriptor fileEntry;
 
 	u32 currentOffset;
 	u32 maxOffset;
 
 	int currentSectorNumber;
-	u8	currentSector[sectorLength];
+	u8 currentSector[sectorLength];
 	int sectorOffset;
 
 public:
@@ -51,26 +51,26 @@ public:
 
 	const IsoFileDescriptor& getEntry();
 
-	u8	 readByte();
-	s32  read(void* dest, s32 len);
+	u8 readByte();
+	s32 read(void* dest, s32 len);
 	std::string readLine();
 
 	// Tool to read a specific value type, including structs.
-	template< class T >
+	template <class T>
 	T read()
 	{
-		if(sizeof(T)==1)
+		if (sizeof(T) == 1)
 			return (T)readByte();
 		else
 		{
 			T t;
-			read((u8*)&t,sizeof(t));
+			read((u8*)&t, sizeof(t));
 			return t;
 		}
 	}
 
 protected:
 	void makeDataAvailable();
-	int  internalRead(void* dest, int off, int len);
+	int internalRead(void* dest, int off, int len);
 	void Init();
 };

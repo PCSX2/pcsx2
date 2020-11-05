@@ -57,7 +57,7 @@ void GSOsdManager::LoadSize() {
 	/* This is not exact, I'm sure there's some convoluted way to determine these
 	 * from FreeType but they don't make it easy. */
 	m_atlas_w = m_size * 96; // random guess
-	m_atlas_h = m_size; // another random guess
+	m_atlas_h = m_size + 10; // another random guess
 }
 
 GSOsdManager::GSOsdManager() : m_atlas_h(0)

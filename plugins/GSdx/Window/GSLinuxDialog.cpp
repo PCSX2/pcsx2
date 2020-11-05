@@ -280,6 +280,9 @@ void populate_hw_table(GtkWidget* hw_table)
 	GtkWidget* af_label     = left_label("Anisotropic Filtering:");
 	GtkWidget* af_combo_box = CreateComboBoxFromVector(theApp.m_gs_max_anisotropy, "MaxAnisotropy");
 
+	GtkWidget* dither_label     = left_label("Dithering (PgDn):");
+	GtkWidget* dither_combo_box = CreateComboBoxFromVector(theApp.m_gs_dithering, "dithering_ps2");
+
 	GtkWidget* mipmap_label     = left_label("Mipmapping (Insert):");
 	GtkWidget* mipmap_combo_box = CreateComboBoxFromVector(theApp.m_gs_hw_mipmapping, "mipmap_hw");
 
@@ -308,6 +311,7 @@ void populate_hw_table(GtkWidget* hw_table)
 	InsertWidgetInTable(hw_table , paltex_check   , large_fb_check);
 	InsertWidgetInTable(hw_table , fsaa_label     , fsaa_combo_box);
 	InsertWidgetInTable(hw_table , af_label       , af_combo_box);
+	InsertWidgetInTable(hw_table , dither_label   , dither_combo_box);
 	InsertWidgetInTable(hw_table , mipmap_label   , mipmap_combo_box);
 	InsertWidgetInTable(hw_table , crc_label      , crc_combo_box);
 	InsertWidgetInTable(hw_table , acc_date_label , acc_date_combo_box);

@@ -36,9 +36,10 @@ jobs:
       matrix:
         os: [ubuntu-20.04]
         platform: [x86, x64]
+        compiler: [gcc, clang]
         experimental: [false]
 
-    name: ${{ matrix.os }}-${{ matrix.platform }}
+    name: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
@@ -53,10 +54,23 @@ jobs:
       #     echo "$GITHUB_CONTEXT"
       #     echo ${{ github.event.pull_request.title }}
 
-      - name: Checkout Repository & Submodules
+      - name: Checkout Repository
         uses: actions/checkout@v2
+
+      - name: Cache Submodules
+        id: cache-submodules
+        uses: actions/cache@v2
         with:
-          submodules: true
+          key: submodules-${{ hashFiles('./.gitmodules') }}
+          path: |
+            ./.git/modules/
+            ./3rdparty/fmt
+            ./3rdparty/xz
+            ./3rdparty/gtest
+
+      - name: Checkout Submodules
+        if: steps.cache-submodules.outputs.cache-hit != 'true'
+        run: git submodule update --init --recursive --jobs 2
 
       # -- SETUP CCACHE - https://cristianadam.eu/20200113/speeding-up-c-plus-plus-github-actions-using-ccache/
       - name: Prepare ccache timestamp
@@ -70,26 +84,22 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .ccache
-          key: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-${{ matrix.compiler-version }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          key: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
           restore-keys: |
-            ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-${{ matrix.compiler-version }}-ccache-
+            ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-ccache-
 
       - name: Install Packages
         env:
           PLATFORM: ${{ matrix.platform }}
-        # TODO - give the file executable permissions and commit it
-        run: |
-          chmod +x .github/workflows/scripts/build-linux.sh
-          ./.github/workflows/scripts/build-linux.sh install_packages
+          COMPILER: ${{ matrix.compiler }}
+        run: ./.github/workflows/scripts/linux/install-packages.sh
 
-      - name: Build PCSX2
+      - name: Generate CMake
         env:
           PLATFORM: ${{ matrix.platform }}
-        # TODO - give the file executable permissions and commit it
-        run: |
-          chmod +x .github/workflows/scripts/build-linux.sh
-          ./.github/workflows/scripts/build-linux.sh generate_cmake
-          ./.github/workflows/scripts/build-linux.sh compile
+          COMPILER: ${{ matrix.compiler }}
+        run: ./.github/workflows/scripts/linux/generate-cmake.sh
 
-
-
+      - name: Build PCSX2
+        working-directory: ./build
+        run: ../.github/workflows/scripts/linux/compile.sh

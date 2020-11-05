@@ -51,8 +51,10 @@ void setupMacroOp(int mode, const char* opName) {
 		microVU0.prog.IRinfo.info[0].sFlag.lastWrite   = 0;
 		microVU0.prog.IRinfo.info[0].mFlag.doFlag      = true;
 		microVU0.prog.IRinfo.info[0].mFlag.write       = 0xff;
-		
-		xMOV(gprF0, ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL]);
+		//Denormalize
+		mVUallocSFLAGd(&vu0Regs.VI[REG_STATUS_FLAG].UL);
+
+		xMOV(gprF0, eax);
 	}
 }
 
@@ -61,12 +63,15 @@ void endMacroOp(int mode) {
 		xMOVSS(ptr32[&vu0Regs.VI[REG_Q].UL], xmmPQ);
 	}
 	if (mode & 0x10) { // Status/Mac Flags were Updated
-		xMOV(ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL], gprF0);
+		// Normalize
+		mVUallocSFLAGc(eax, gprF0, 0);
+		xMOV(ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL], eax);
 	}
 	microVU0.regAlloc->flushAll();
 
 	if (mode & 0x10) { // Update VU0 Status/Mac instances after flush to avoid corrupting anything
-		xMOVDZX(xmmT1, ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL]);
+		mVUallocSFLAGd(&vu0Regs.VI[REG_STATUS_FLAG].UL);
+		xMOVDZX(xmmT1, eax);
 		xSHUF.PS(xmmT1, xmmT1, 0);
 		xMOVAPS(ptr128[&microVU0.regs().micro_statusflags], xmmT1);
 
@@ -203,9 +208,9 @@ REC_COP2_mVU0(CLIP,		"CLIP",		0x08);
 // Macro VU - Redirect Lower Instructions
 //------------------------------------------------------------------
 
-REC_COP2_mVU0(DIV,		"DIV",		0x02);
-REC_COP2_mVU0(SQRT,		"SQRT",		0x02);
-REC_COP2_mVU0(RSQRT,	"RSQRT",	0x02);
+REC_COP2_mVU0(DIV,		"DIV",		0x12);
+REC_COP2_mVU0(SQRT,		"SQRT",		0x12);
+REC_COP2_mVU0(RSQRT,	"RSQRT",	0x12);
 REC_COP2_mVU0(IADD,		"IADD",		0x04);
 REC_COP2_mVU0(IADDI,	"IADDI",	0x04);
 REC_COP2_mVU0(IAND,		"IAND",		0x04);
@@ -295,8 +300,7 @@ static void recCFC2() {
 	iFlushCall(FLUSH_EVERYTHING);
 
 	if (_Rd_ == REG_STATUS_FLAG) { // Normalize Status Flag
-		xMOV(gprF0, ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL]);
-		mVUallocSFLAGc(eax, gprF0, 0);
+		xMOV(eax, ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL]);
 	}
 	else xMOV(eax, ptr32[&vu0Regs.VI[_Rd_].UL]);
 
@@ -375,21 +379,20 @@ static void recCTC2() {
 			break;
 		case REG_STATUS_FLAG:
 		{
-			if (_Rt_) { // Denormalizes flag into eax (gprT1)
-				mVUallocSFLAGd(&cpuRegs.GPR.r[_Rt_].UL[0]);
-				xMOV(ptr32[&vu0Regs.VI[_Rd_].UL], eax);
+			if (_Rt_) {
+				xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+				xAND(eax, 0xFC0);
+				xAND(ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL], 0x3F);
+				xOR(ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL], eax);
+				
 			}
-			else xMOV(ptr32[&vu0Regs.VI[_Rd_].UL], 0);
-			__aligned16 static const u32 sticky_flags[4] = { 0xFC0,0xFC0,0xFC0,0xFC0 };
-			__aligned16 static const u32 status_flags[4] = { 0x3F,0x3F,0x3F,0x3F };
+			else xAND(ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL], 0x3F);
 
 			//Need to update the sticky flags for microVU
-			xMOVDZX(xmmT1, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+			mVUallocSFLAGd(&vu0Regs.VI[REG_STATUS_FLAG].UL);
+			xMOVDZX(xmmT1, eax);
 			xSHUF.PS(xmmT1, xmmT1, 0);
-			xAND.PS(xmmT1, ptr128[&sticky_flags]);
-			xMOVAPS(xmmT2, ptr128[&vu0Regs.micro_statusflags]);
-			xAND.PS(xmmT1, ptr128[&status_flags]);
-			xOR.PS(xmmT1, xmmT2);
+			// Make sure the values are everywhere the need to be
 			xMOVAPS(ptr128[&vu0Regs.micro_statusflags], xmmT1);
 			break;
 		}

@@ -79,6 +79,12 @@ mVUop(mVU_DIV) {
 
 		writeQreg(Fs, mVUinfo.writeQ);
 
+		if (mVU.cop2)
+		{
+			xAND(gprF0, ~0xc0000);
+			xOR(gprF0, ptr32[&mVU.divFlag]);
+		}
+
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.regAlloc->clearNeeded(Ft);
 		mVU.regAlloc->clearNeeded(t1);
@@ -98,6 +104,12 @@ mVUop(mVU_SQRT) {
 		if (CHECK_VU_OVERFLOW) xMIN.SS(Ft, ptr32[mVUglob.maxvals]); // Clamp infinities (only need to do positive clamp since xmmFt is positive)
 		xSQRT.SS(Ft, Ft);
 		writeQreg(Ft, mVUinfo.writeQ);
+
+		if (mVU.cop2)
+		{
+			xAND(gprF0, ~0xc0000);
+			xOR(gprF0, ptr32[&mVU.divFlag]);
+		}
 
 		mVU.regAlloc->clearNeeded(Ft);
 		mVU.profiler.EmitOp(opSQRT);
@@ -137,6 +149,12 @@ mVUop(mVU_RSQRT) {
 		djmp.SetTarget();
 
 		writeQreg(Fs, mVUinfo.writeQ);
+
+		if (mVU.cop2)
+		{
+			xAND(gprF0, ~0xc0000);
+			xOR(gprF0, ptr32[&mVU.divFlag]);
+		}
 
 		mVU.regAlloc->clearNeeded(Fs);
 		mVU.regAlloc->clearNeeded(Ft);

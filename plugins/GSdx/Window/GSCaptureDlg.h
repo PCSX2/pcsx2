@@ -46,6 +46,7 @@ protected:
 
 public:
 	GSCaptureDlg();
+	void InvalidFile();
 
 	int m_width;
 	int m_height;

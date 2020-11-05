@@ -20,12 +20,14 @@
 #include "AppSaveStates.h"
 #include "Counters.h"
 #include "GS.h"
+#include "MainFrame.h"
 #include "MSWstuff.h"
 
 #include "ConsoleLogger.h"
 
 #ifndef DISABLE_RECORDING
 #	include "Recording/InputRecording.h"
+#	include "Recording/Utilities/InputRecordingLogger.h"
 #endif
 
 #include <wx/utils.h>
@@ -130,7 +132,25 @@ void GSPanel::InitRecordingAccelerators()
 	m_Accels->Map(AAC(WXK_NUMPAD8), "States_LoadSlot8");
 	m_Accels->Map(AAC(WXK_NUMPAD9), "States_LoadSlot9");
 
-	recordingConLog(L"Initialized Recording Key Bindings\n");
+	GetMainFramePtr()->initializeRecordingMenuItem(
+		MenuId_Recording_FrameAdvance,
+		m_Accels->findKeycodeWithCommandId("FrameAdvance").toTitleizedString());
+	GetMainFramePtr()->initializeRecordingMenuItem(
+		MenuId_Recording_TogglePause,
+		m_Accels->findKeycodeWithCommandId("TogglePause").toTitleizedString());
+	GetMainFramePtr()->initializeRecordingMenuItem(
+		MenuId_Recording_ToggleRecordingMode,
+		m_Accels->findKeycodeWithCommandId("InputRecordingModeToggle").toTitleizedString(),
+		g_InputRecording.IsActive());
+
+	inputRec::consoleLog("Initialized Input Recording Key Bindings");
+}
+
+void GSPanel::RemoveRecordingAccelerators()
+{
+	m_Accels.reset(new AcceleratorDictionary);
+	InitDefaultAccelerators();
+	recordingConLog(L"Disabled Input Recording Key Bindings\n");
 }
 #endif
 
@@ -255,8 +275,6 @@ void GSPanel::DoResize()
 		zoom = std::max( (float)arr, (float)(1.0/arr) );
 
 	viewport.Scale(zoom, zoom*g_Conf->GSWindow.StretchY.ToFloat()/100.0 );
-	if (viewport == client && EmuConfig.Gamefixes.FMVinSoftwareHack && g_Conf->GSWindow.IsFullscreen)
-		viewport.x += 1; //avoids crash on some systems switching HW><SW in fullscreen aspect ratio's with FMV Software switch.
 	SetSize( viewport );
 	CenterOnParent();
 	
@@ -425,7 +443,7 @@ void GSPanel::DirectKeyCommand( wxKeyEvent& evt )
 void GSPanel::UpdateScreensaver()
 {
 	bool prevent = g_Conf->GSWindow.DisableScreenSaver
-	               && m_HasFocus && m_coreRunning;
+				   && m_HasFocus && m_coreRunning;
 	ScreensaverAllow(!prevent);
 }
 
@@ -732,25 +750,15 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 #ifndef DISABLE_RECORDING
 	wxString title;
 	wxString movieMode;
-	switch (g_InputRecording.GetModeState())
+	if (g_InputRecording.IsActive()) 
 	{
-		case INPUT_RECORDING_MODE_RECORD:
-			movieMode = "Recording";
-			title = templates.RecordingTemplate;
-			break;
-		case INPUT_RECORDING_MODE_REPLAY:
-			movieMode = "Replaying";
-			title = templates.RecordingTemplate;
-			break;
-		case INPUT_RECORDING_MODE_NONE:
-			movieMode = "No movie";
-			title = templates.TitleTemplate;
-			break;
+		title = templates.RecordingTemplate;
+		title.Replace(L"${frame}", pxsFmt(L"%d", g_InputRecording.GetFrameCounter()));
+		title.Replace(L"${maxFrame}", pxsFmt(L"%d", g_InputRecording.GetInputRecordingData().GetTotalFrames()));
+		title.Replace(L"${mode}", g_InputRecording.RecordingModeTitleSegment());
+	} else {
+		title = templates.TitleTemplate;
 	}
-
-	title.Replace(L"${frame}", pxsFmt(L"%d", g_FrameCount));
-	title.Replace(L"${maxFrame}", pxsFmt(L"%d", g_InputRecording.GetInputRecordingData().GetTotalFrames()));
-	title.Replace(L"${mode}", movieMode);
 #else
 	wxString title = templates.TitleTemplate;
 #endif

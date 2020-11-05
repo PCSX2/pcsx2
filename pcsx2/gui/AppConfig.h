@@ -166,6 +166,7 @@ public:
 
 		wxDirName RunIso;		// last used location for Iso loading.
 		wxDirName RunELF;		// last used location for ELF loading.
+		wxFileName RunDisc;		// last used location for Disc loading.
 
 		FolderOptions();
 		void LoadSave( IniInterface& conf );
@@ -248,6 +249,16 @@ public:
 		void LoadSave( IniInterface& conf );
 		void SanityCheck();
 	};
+
+#ifndef DISABLE_RECORDING
+	struct InputRecordingOptions
+	{
+		wxPoint		VirtualPadPosition;
+
+		InputRecordingOptions();
+		void loadSave( IniInterface& conf );
+	};
+#endif
 
 	struct UiTemplateOptions {
 		UiTemplateOptions();
@@ -340,6 +351,9 @@ public:
 	FilenameOptions			BaseFilenames;
 	GSWindowOptions			GSWindow;
 	FramerateOptions		Framerate;
+#ifndef DISABLE_RECORDING
+	InputRecordingOptions   inputRecording;
+#endif
 	UiTemplateOptions		Templates;
 	
 	// PCSX2-core emulation options, which are passed to the emu core prior to initiating

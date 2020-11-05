@@ -39,23 +39,10 @@ GSSettingsDlg::GSSettingsDlg()
 	{
 		auto is_d3d11_renderer = [](const auto &renderer) {
 			const GSRendererType type = static_cast<GSRendererType>(renderer.value);
-			return type == GSRendererType::DX1011_HW || type == GSRendererType::DX1011_SW || type == GSRendererType::DX1011_OpenCL;
+			return type == GSRendererType::DX1011_HW;
 		};
 		m_renderers.erase(std::remove_if(m_renderers.begin(), m_renderers.end(), is_d3d11_renderer), m_renderers.end());
 	}
-
-#ifdef ENABLE_OPENCL
-	std::list<OCLDeviceDesc> ocldevs;
-
-	GSUtil::GetDeviceDescs(ocldevs);
-
-	int index = 0;
-
-	for(auto dev : ocldevs)
-	{
-		m_ocl_devs.push_back(GSSetting(index++, dev.name.c_str(), ""));
-	}
-#endif
 }
 
 std::vector<GSSettingsDlg::Adapter> GSSettingsDlg::EnumerateD3D11Adapters()
@@ -98,27 +85,12 @@ void GSSettingsDlg::OnInit()
 	__super::OnInit();
 
 	GSRendererType renderer = GSRendererType(theApp.GetConfigI("Renderer"));
-	const bool dx11 = renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_OpenCL;
+	const bool dx11 = renderer == GSRendererType::DX1011_HW;
 	if (renderer == GSRendererType::Undefined || m_d3d11_adapters.empty() && dx11)
 		renderer = GSUtil::GetBestRenderer();
 	ComboBoxInit(IDC_RENDERER, m_renderers, static_cast<int32_t>(renderer));
 	UpdateAdapters();
 
-	std::string ocldev = theApp.GetConfigS("ocldev");
-
-	unsigned int ocl_sel = 0;
-
-	for(unsigned int i = 0; i < m_ocl_devs.size(); i++)
-	{
-		if(ocldev == m_ocl_devs[i].name)
-		{
-			ocl_sel = i;
-
-			break;
-		}
-	}
-
-	ComboBoxInit(IDC_OPENCL_DEVICE, m_ocl_devs, ocl_sel);
 	ComboBoxInit(IDC_MIPMAP_HW, theApp.m_gs_hw_mipmapping, theApp.GetConfigI("mipmap_hw"));
 
 	ComboBoxInit(IDC_INTERLACE, theApp.m_gs_interlace, theApp.GetConfigI("interlace"));
@@ -129,6 +101,7 @@ void GSSettingsDlg::OnInit()
 	ComboBoxInit(IDC_ACCURATE_BLEND_UNIT, theApp.m_gs_acc_blend_level, theApp.GetConfigI("accurate_blending_unit"));
 	ComboBoxInit(IDC_ACCURATE_BLEND_UNIT_D3D11, theApp.m_gs_acc_blend_level_d3d11, theApp.GetConfigI("accurate_blending_unit_d3d11"));
 	ComboBoxInit(IDC_CRC_LEVEL, theApp.m_gs_crc_level, theApp.GetConfigI("crc_hack_level"));
+	ComboBoxInit(IDC_DITHERING, theApp.m_gs_dithering, theApp.GetConfigI("dithering_ps2"));
 
 	CheckDlgButton(m_hWnd, IDC_PALTEX, theApp.GetConfigB("paltex"));
 	CheckDlgButton(m_hWnd, IDC_LARGE_FB, theApp.GetConfigB("large_framebuffer"));
@@ -220,13 +193,6 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				theApp.SetConfig("Adapter", (*m_current_adapters)[data].id.c_str());
 			}
 
-			if(ComboBoxGetSelData(IDC_OPENCL_DEVICE, data))
-			{
-				if ((UINT)data < m_ocl_devs.size()) {
-					theApp.SetConfig("ocldev", m_ocl_devs[(int)data].name.c_str());
-				}
-			}
-
 			if(ComboBoxGetSelData(IDC_RENDERER, data))
 			{
 				theApp.SetConfig("Renderer", (int)data);
@@ -281,6 +247,11 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				theApp.SetConfig("MaxAnisotropy", (int)data);
 			}
 
+			if (ComboBoxGetSelData(IDC_DITHERING, data))
+			{
+				theApp.SetConfig("dithering_ps2", (int)data);
+			}
+
 			theApp.SetConfig("mipmap", (int)IsDlgButtonChecked(m_hWnd, IDC_MIPMAP_SW));
 			theApp.SetConfig("paltex", (int)IsDlgButtonChecked(m_hWnd, IDC_PALTEX));
 			theApp.SetConfig("large_framebuffer", (int)IsDlgButtonChecked(m_hWnd, IDC_LARGE_FB));
@@ -304,7 +275,7 @@ void GSSettingsDlg::UpdateAdapters()
 		return;
 
 	const GSRendererType renderer = static_cast<GSRendererType>(data);
-	const bool dx11 = renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_OpenCL;
+	const bool dx11 = renderer == GSRendererType::DX1011_HW;
 
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ADAPTER), dx11);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_ADAPTER_TEXT), dx11);
@@ -345,12 +316,11 @@ void GSSettingsDlg::UpdateControls()
 	{
 		const GSRendererType renderer = static_cast<GSRendererType>(i);
 
-		const bool dx11 = renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::DX1011_OpenCL;
-		const bool ogl = renderer == GSRendererType::OGL_HW || renderer == GSRendererType::OGL_SW || renderer == GSRendererType::OGL_OpenCL;
+		const bool dx11 = renderer == GSRendererType::DX1011_HW;
+		const bool ogl = renderer == GSRendererType::OGL_HW || renderer == GSRendererType::OGL_SW;
 
 		const bool hw =  renderer == GSRendererType::DX1011_HW || renderer == GSRendererType::OGL_HW;
-		const bool sw =  renderer == GSRendererType::DX1011_SW || renderer == GSRendererType::OGL_SW;
-		const bool ocl = renderer == GSRendererType::DX1011_OpenCL || renderer == GSRendererType::OGL_OpenCL;
+		const bool sw =  renderer == GSRendererType::OGL_SW;
 		const bool null = renderer == GSRendererType::Null;
 
 		const int sw_threads = SendMessage(GetDlgItem(m_hWnd, IDC_SWTHREADS), UDM_GETPOS, 0, 0);
@@ -360,12 +330,6 @@ void GSSettingsDlg::UpdateControls()
 		ShowWindow(GetDlgItem(m_hWnd, IDC_NULL), null ? SW_SHOW : SW_HIDE);
 		ShowWindow(GetDlgItem(m_hWnd, IDC_LOGOGL), ogl ? SW_SHOW : SW_HIDE);
 
-#ifndef ENABLE_OPENCL
-		ShowWindow(GetDlgItem(m_hWnd, IDC_OPENCL_TEXT), SW_HIDE);
-		ShowWindow(GetDlgItem(m_hWnd, IDC_OPENCL_DEVICE), SW_HIDE);
-#endif
-		EnableWindow(GetDlgItem(m_hWnd, IDC_OPENCL_TEXT), ocl);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_OPENCL_DEVICE), ocl);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_INTERLACE), !null);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_INTERLACE_TEXT), !null);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_FILTER), !null);
@@ -379,6 +343,8 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_PALTEX), hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_DITHERING), hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_DITHERING_TEXT), hw);
 
 		INT_PTR filter;
 		if (ComboBoxGetSelData(IDC_FILTER, filter))

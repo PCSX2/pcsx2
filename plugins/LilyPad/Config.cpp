@@ -42,38 +42,8 @@ const wchar_t *padTypes[] = {
     L"PS1 Mouse",
     L"neGcon"};
 
-// Hacks or configurations which PCSX2 needs with a specific value
-void PCSX2_overrideConfig(GeneralConfig &config_in_out)
-{
-    config_in_out.disableScreenSaver = 0;   // Not required - handled internally by PCSX2
-    config_in_out.escapeFullscreenHack = 0; // Not required - handled internally by PCSX2
-    config_in_out.saveStateTitle = 0;       // Not required - handled internally by PCSX2
-    config_in_out.closeHack = 0;            // Cannot function when used by PCSX2
-}
-
-// Dialog widgets which should be disabled - mostly matching PCSX2_overrideConfig
-const UINT *PCSX2_disabledWidgets()
-{
-    static const UINT disabledWidgets[] = {
-        IDC_DISABLE_SCREENSAVER,
-        IDC_ESCAPE_FULLSCREEN_HACK,
-        IDC_SAVE_STATE_TITLE,
-        IDC_ANALOG_START1, // start in analog mode - only useful for PS1
-        IDC_CLOSE_HACK,
-        0};
-    return disabledWidgets;
-}
-
 GeneralConfig config;
-
-// 1 if running inside a PS2 emulator.  Set to 1 on any
-// of the PS2-specific functions (PS2EgetLibVersion2, PS2EgetLibType).
-// Only affects if I allow read input in GS thread to be set.
-// Also disables usage of AutoAnalog mode if in PS2 mode.
-u8 ps2e = 0;
-
 HWND hWndProp = 0;
-
 int selected = 0;
 bool quickSetup = false;
 
@@ -107,11 +77,8 @@ const GeneralSettingsBool BoolOptionsInfo[] = {
     {L"Multitap 1", IDC_MULTITAP1, 0},
     {L"Multitap 2", IDC_MULTITAP2, 0},
 
-    {L"Escape Fullscreen Hack", IDC_ESCAPE_FULLSCREEN_HACK, 1}, // Not required for PCSX2
-    {L"Disable Screen Saver", IDC_DISABLE_SCREENSAVER, 1},      // Not required for PCSX2
     {L"Logging", IDC_DEBUG_FILE, 0},
 
-    {L"Save State in Title", IDC_SAVE_STATE_TITLE, 0}, // Not required for PCSX2
     {L"GH2", IDC_GH2_HACK, 0},
 };
 
@@ -879,7 +846,6 @@ int SaveSettings(wchar_t *file = 0)
     for (int i = 0; i < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); i++) {
         noError &= WritePrivateProfileInt(L"General Settings", BoolOptionsInfo[i].name, config.bools[i], file);
     }
-    WritePrivateProfileInt(L"General Settings", L"Close Hack", config.closeHack, file);
 
     WritePrivateProfileInt(L"General Settings", L"Keyboard Mode", config.keyboardApi, file);
     WritePrivateProfileInt(L"General Settings", L"Mouse Mode", config.mouseApi, file);
@@ -891,9 +857,6 @@ int SaveSettings(wchar_t *file = 0)
             wchar_t temp[50];
             wsprintf(temp, L"Pad %i %i", port, slot);
             WritePrivateProfileInt(temp, L"Mode", config.padConfigs[port][slot].type, file);
-            // PS1 Emu compatibility code, no need to run it on pcsx2.
-            if (!ps2e)
-                noError &= WritePrivateProfileInt(temp, L"Auto Analog", config.padConfigs[port][slot].autoAnalog, file);
         }
     }
 
@@ -991,7 +954,6 @@ int LoadSettings(int force, wchar_t *file)
     for (int i = 0; i < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); i++) {
         config.bools[i] = GetPrivateProfileBool(L"General Settings", BoolOptionsInfo[i].name, BoolOptionsInfo[i].defaultValue, file);
     }
-    config.closeHack = (u8)GetPrivateProfileIntW(L"General Settings", L"Close Hack", 0, file);
 
     config.keyboardApi = (DeviceAPI)GetPrivateProfileIntW(L"General Settings", L"Keyboard Mode", WM, file);
     if (!config.keyboardApi)
@@ -1009,9 +971,6 @@ int LoadSettings(int force, wchar_t *file)
             wchar_t temp[50];
             wsprintf(temp, L"Pad %i %i", port, slot);
             config.padConfigs[port][slot].type = (PadType)GetPrivateProfileInt(temp, L"Mode", Dualshock2Pad, file);
-            // PS1 Emu compatibility code, no need to run it on pcsx2.
-            if (!ps2e)
-                config.padConfigs[port][slot].autoAnalog = GetPrivateProfileBool(temp, L"Auto Analog", 0, file);
         }
     }
 
@@ -1165,9 +1124,6 @@ int LoadSettings(int force, wchar_t *file)
     config.multipleBinding = multipleBinding;
 
     RefreshEnabledDevicesAndDisplay(1);
-
-    if (ps2e)
-        PCSX2_overrideConfig(config);
 
     return 0;
 }
@@ -2219,7 +2175,6 @@ void UpdatePadList(HWND hWnd)
     recurse = 1;
     HWND hWndList = GetDlgItem(hWnd, IDC_PAD_LIST);
     HWND hWndCombo = GetDlgItem(hWnd, IDC_PAD_TYPE);
-    HWND hWndAnalog = GetDlgItem(hWnd, IDC_ANALOG_START1);
     int slot;
     int port;
     int index = 0;
@@ -2273,14 +2228,11 @@ void UpdatePadList(HWND hWnd)
     if (!ListIndexToPortAndSlot(sel, &port, &slot)) {
         enable = 0;
         SendMessage(hWndCombo, CB_SETCURSEL, -1, 0);
-        CheckDlgButton(hWnd, IDC_ANALOG_START1, BST_UNCHECKED);
     } else {
         enable = 1;
         SendMessage(hWndCombo, CB_SETCURSEL, config.padConfigs[port][slot].type, 0);
-        CheckDlgButton(hWnd, IDC_ANALOG_START1, BST_CHECKED * config.padConfigs[port][slot].autoAnalog);
     }
     EnableWindow(hWndCombo, enable);
-    EnableWindow(hWndAnalog, config.padConfigs[port][slot].type == Dualshock2Pad ? enable : 0);
     //ListView_SetExtendedListViewStyleEx(hWndList, LVS_EX_DOUBLEBUFFER|LVS_EX_ONECLICKACTIVATE, LVS_EX_DOUBLEBUFFER|LVS_EX_ONECLICKACTIVATE);
     recurse = 0;
 }
@@ -2308,16 +2260,6 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                 SendMessage(hWndList, LVM_SETEXTENDEDLISTVIEWSTYLE, 0, LVS_EX_FULLROWSELECT);
                 for (int i = 0; i < numPadTypes; i++)
                     SendMessage(hWndCombo, CB_ADDSTRING, 0, (LPARAM)padTypes[i]);
-
-                if (ps2e) {
-                    // This disables some widgets which are not required for PCSX2.
-                    // Currently the trigger is that it's in PS2 emulation mode
-                    const UINT *toDisable = PCSX2_disabledWidgets();
-                    while (toDisable && *toDisable) {
-                        ShowWindow(GetDlgItem(hWnd, *toDisable), 0);
-                        toDisable++;
-                    }
-                }
             }
         }
             UpdatePadPages();
@@ -2333,7 +2275,6 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
             for (int j = 0; j < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); j++) {
                 CheckDlgButton(hWnd, BoolOptionsInfo[j].ControlId, BST_CHECKED * config.bools[j]);
             }
-            CheckDlgButton(hWnd, IDC_CLOSE_HACK, BST_CHECKED * config.closeHack);
 
             AddTooltip(IDC_M_WM, hWnd);
             AddTooltip(IDC_M_RAW, hWnd);
@@ -2345,7 +2286,6 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
             AddTooltip(IDC_DIAG_LIST, hWnd);
             AddTooltip(IDC_G_DI, hWnd);
             AddTooltip(IDC_G_XI, hWnd);
-            AddTooltip(IDC_ANALOG_START1, hWnd);
             AddTooltip(ID_RESTORE_DEFAULTS, hWnd);
 
             if (config.keyboardApi < 0 || config.keyboardApi > 3)
@@ -2412,13 +2352,6 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                     }
                 }
                 break;
-            } else if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == IDC_ANALOG_START1) {
-                int index = ListView_GetNextItem(hWndList, -1, LVNI_SELECTED);
-                int port, slot;
-                if (!ListIndexToPortAndSlot(index, &port, &slot))
-                    break;
-                config.padConfigs[port][slot].autoAnalog = (IsDlgButtonChecked(hWnd, IDC_ANALOG_START1) == BST_CHECKED);
-                PropSheet_Changed(hWndProp, hWnd);
             } else if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == ID_RESTORE_DEFAULTS) {
                 int msgboxID = MessageBoxA(hWndProp, "This will delete all current settings and revert back to the default settings of LilyPad. Continue?",
                                            "Restore Defaults Confirmation", MB_YESNO | MB_DEFBUTTON2 | MB_ICONEXCLAMATION);
@@ -2441,7 +2374,6 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
                 for (int j = 0; j < sizeof(BoolOptionsInfo) / sizeof(BoolOptionsInfo[0]); j++) {
                     config.bools[j] = (IsDlgButtonChecked(hWnd, BoolOptionsInfo[j].ControlId) == BST_CHECKED);
                 }
-                config.closeHack = IsDlgButtonChecked(hWnd, IDC_CLOSE_HACK) == BST_CHECKED;
 
                 for (int i = 0; i < 4; i++) {
                     if (i && IsDlgButtonChecked(hWnd, IDC_KB_DISABLE + i) == BST_CHECKED) {

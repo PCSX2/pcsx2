@@ -17,6 +17,7 @@
 #include "Common.h"
 #include "gui/App.h"
 #include "IopBios.h"
+#include "R5900.h"
 
 #include "Counters.h"
 #include "GS.h"
@@ -24,18 +25,25 @@
 #include "Patch.h"
 #include "SysThreads.h"
 #include "MTVU.h"
+#include "IPC.h"
+#include "FW.h"
+#include "SPU2/spu2.h"
+#include "DEV9/DEV9.h"
 
 #include "../DebugTools/MIPSAnalyst.h"
 #include "../DebugTools/SymbolMap.h"
 
 #include "Utilities/PageFaultSource.h"
 #include "Utilities/Threading.h"
+#include "IopBios.h"
 
 #ifdef __WXMSW__
-#	include <wx/msw/wrapwin.h>
+#include <wx/msw/wrapwin.h>
 #endif
 
 #include "x86emitter/x86_intrin.h"
+
+bool g_CDVDReset = false;
 
 // --------------------------------------------------------------------------------------
 //  SysCoreThread *External Thread* Implementations
@@ -44,33 +52,36 @@
 
 SysCoreThread::SysCoreThread()
 {
-	m_name					= L"EE Core";
-	m_resetRecompilers		= true;
-	m_resetProfilers		= true;
-	m_resetVsyncTimers		= true;
-	m_resetVirtualMachine	= true;
+	m_name = L"EE Core";
+	m_resetRecompilers = true;
+	m_resetProfilers = true;
+	m_resetVsyncTimers = true;
+	m_resetVirtualMachine = true;
 
-	m_hasActiveMachine		= false;
+	m_hasActiveMachine = false;
 }
 
 SysCoreThread::~SysCoreThread()
 {
-	try {
+	try
+	{
 		SysCoreThread::Cancel();
 	}
 	DESTRUCTOR_CATCHALL
 }
 
-void SysCoreThread::Cancel( bool isBlocking )
+void SysCoreThread::Cancel(bool isBlocking)
 {
 	m_hasActiveMachine = false;
+	R3000A::ioman::reset();
 	_parent::Cancel();
 }
 
-bool SysCoreThread::Cancel( const wxTimeSpan& span )
+bool SysCoreThread::Cancel(const wxTimeSpan& span)
 {
 	m_hasActiveMachine = false;
-	return _parent::Cancel( span );
+	R3000A::ioman::reset();
+	return _parent::Cancel(span);
 }
 
 void SysCoreThread::OnStart()
@@ -80,8 +91,11 @@ void SysCoreThread::OnStart()
 
 void SysCoreThread::Start()
 {
-	if( !GetCorePlugins().AreLoaded() ) return;
+	if (!GetCorePlugins().AreLoaded())
+		return;
 	GetCorePlugins().Init();
+	SPU2init();
+	DEV9init();
 	_parent::Start();
 }
 
@@ -96,17 +110,17 @@ void SysCoreThread::Start()
 //
 void SysCoreThread::OnResumeReady()
 {
-	if( m_resetVirtualMachine )
+	if (m_resetVirtualMachine)
 		m_hasActiveMachine = false;
 
-	if( !m_hasActiveMachine )
+	if (!m_hasActiveMachine)
 		m_resetRecompilers = true;
 }
 
 // This function *will* reset the emulator in order to allow the specified elf file to
 // take effect.  This is because it really doesn't make sense to change the elf file outside
 // the context of a reset/restart.
-void SysCoreThread::SetElfOverride( const wxString& elf )
+void SysCoreThread::SetElfOverride(const wxString& elf)
 {
 	//pxAssertDev( !m_hasValidMachine, "Thread synchronization error while assigning ELF override." );
 	m_elf_override = elf;
@@ -121,8 +135,9 @@ void SysCoreThread::ResetQuick()
 {
 	Suspend();
 
-	m_resetVirtualMachine	= true;
-	m_hasActiveMachine		= false;
+	m_resetVirtualMachine = true;
+	m_hasActiveMachine = false;
+	R3000A::ioman::reset();
 }
 
 void SysCoreThread::Reset()
@@ -130,7 +145,7 @@ void SysCoreThread::Reset()
 	ResetQuick();
 	GetVmMemory().DecommitAll();
 	SysClearExecutionCache();
-	sApp.PostAppMethod( &Pcsx2App::leaveDebugMode );
+	sApp.PostAppMethod(&Pcsx2App::leaveDebugMode);
 	g_FrameCount = 0;
 }
 
@@ -139,24 +154,27 @@ void SysCoreThread::Reset()
 // resets of the core and components (including plugins, if needed).  The scope of resetting
 // is determined by comparing the current settings against the new settings, so that only
 // real differences are applied.
-void SysCoreThread::ApplySettings( const Pcsx2Config& src )
+void SysCoreThread::ApplySettings(const Pcsx2Config& src)
 {
-	if( src == EmuConfig ) return;
+	if (src == EmuConfig)
+		return;
 
-	if( !pxAssertDev( IsPaused(), "CoreThread is not paused; settings cannot be applied." ) ) return;
+	if (!pxAssertDev(IsPaused(), "CoreThread is not paused; settings cannot be applied."))
+		return;
 
-	m_resetRecompilers		= ( src.Cpu != EmuConfig.Cpu ) || ( src.Gamefixes != EmuConfig.Gamefixes ) || ( src.Speedhacks != EmuConfig.Speedhacks );
-	m_resetProfilers		= ( src.Profiler != EmuConfig.Profiler );
-	m_resetVsyncTimers		= ( src.GS != EmuConfig.GS );
+	m_resetRecompilers = (src.Cpu != EmuConfig.Cpu) || (src.Gamefixes != EmuConfig.Gamefixes) || (src.Speedhacks != EmuConfig.Speedhacks);
+	m_resetProfilers = (src.Profiler != EmuConfig.Profiler);
+	m_resetVsyncTimers = (src.GS != EmuConfig.GS);
 
 	const_cast<Pcsx2Config&>(EmuConfig) = src;
 }
 
-void SysCoreThread::UploadStateCopy( const VmStateBuffer& copy )
+void SysCoreThread::UploadStateCopy(const VmStateBuffer& copy)
 {
-	if( !pxAssertDev( IsPaused(), "CoreThread is not paused; new VM state cannot be uploaded." ) ) return;
+	if (!pxAssertDev(IsPaused(), "CoreThread is not paused; new VM state cannot be uploaded."))
+		return;
 
-	memLoadingState loadme( copy );
+	memLoadingState loadme(copy);
 	loadme.FreezeAll();
 	m_resetVirtualMachine = false;
 }
@@ -178,38 +196,38 @@ void SysCoreThread::_reset_stuff_as_needed()
 
 	GetVmMemory().CommitAll();
 
-	if( m_resetVirtualMachine || m_resetRecompilers || m_resetProfilers )
+	if (m_resetVirtualMachine || m_resetRecompilers || m_resetProfilers)
 	{
 		SysClearExecutionCache();
 		memBindConditionalHandlers();
-		SetCPUState( EmuConfig.Cpu.sseMXCSR, EmuConfig.Cpu.sseVUMXCSR );
+		SetCPUState(EmuConfig.Cpu.sseMXCSR, EmuConfig.Cpu.sseVUMXCSR);
 
-		m_resetRecompilers		= false;
-		m_resetProfilers		= false;
+		m_resetRecompilers = false;
+		m_resetProfilers = false;
 	}
 
-	if( m_resetVirtualMachine )
+	if (m_resetVirtualMachine)
 	{
 		DoCpuReset();
 
-		m_resetVirtualMachine	= false;
-		m_resetVsyncTimers		= false;
+		m_resetVirtualMachine = false;
+		m_resetVsyncTimers = false;
 
 		ForgetLoadedPatches();
 	}
 
-	if( m_resetVsyncTimers )
+	if (m_resetVsyncTimers)
 	{
 		UpdateVSyncRate();
 		frameLimitReset();
 
-		m_resetVsyncTimers		= false;
+		m_resetVsyncTimers = false;
 	}
 }
 
 void SysCoreThread::DoCpuReset()
 {
-	AffinityAssert_AllowFromSelf( pxDiagSpot );
+	AffinityAssert_AllowFromSelf(pxDiagSpot);
 	cpuReset();
 }
 
@@ -231,7 +249,7 @@ void SysCoreThread::GameStartingInThread()
 {
 	GetMTGS().SendGameCRC(ElfCRC);
 
-	MIPSAnalyst::ScanForFunctions(ElfTextRange.first,ElfTextRange.first+ElfTextRange.second,true);
+	MIPSAnalyst::ScanForFunctions(ElfTextRange.first, ElfTextRange.first + ElfTextRange.second, true);
 	symbolMap.UpdateActiveSymbols();
 	sApp.PostAppMethod(&Pcsx2App::resetDebugger);
 
@@ -239,6 +257,13 @@ void SysCoreThread::GameStartingInThread()
 #ifdef USE_SAVESLOT_UI_UPDATES
 	UI_UpdateSysControls();
 #endif
+	if (EmuConfig.EnableIPC && m_IpcState == OFF)
+	{
+		m_IpcState = ON;
+		m_socketIpc = std::make_unique<SocketIPC>(this);
+	}
+	if (m_IpcState == ON && m_socketIpc->m_end)
+		m_socketIpc->Start();
 }
 
 bool SysCoreThread::StateCheckInThread()
@@ -264,42 +289,60 @@ void SysCoreThread::ExecuteTaskInThread()
 
 	m_mxcsr_saved.bitmask = _mm_getcsr();
 
-	PCSX2_PAGEFAULT_PROTECT {
-		while(true) {
+	PCSX2_PAGEFAULT_PROTECT
+	{
+		while (true)
+		{
 			StateCheckInThread();
 			DoCpuExecute();
 		}
-	} PCSX2_PAGEFAULT_EXCEPT;
+	}
+	PCSX2_PAGEFAULT_EXCEPT;
 }
 
 void SysCoreThread::OnSuspendInThread()
 {
 	GetCorePlugins().Close();
+	DEV9close();
+	DoCDVDclose();
+	FWclose();
+	SPU2close();
 }
 
-void SysCoreThread::OnResumeInThread( bool isSuspended )
+void SysCoreThread::OnResumeInThread(bool isSuspended)
 {
 	GetCorePlugins().Open();
+	if (isSuspended)
+		DoCDVDopen();
+	FWopen();
+	SPU2open((void*)pDsp);
+	DEV9open((void*)pDsp);
 }
 
 
 // Invoked by the pthread_exit or pthread_cancel.
 void SysCoreThread::OnCleanupInThread()
 {
-	m_ExecMode				= ExecMode_Closing;
+	m_ExecMode = ExecMode_Closing;
 
-	m_hasActiveMachine		= false;
-	m_resetVirtualMachine	= true;
+	m_hasActiveMachine = false;
+	m_resetVirtualMachine = true;
 
+	R3000A::ioman::reset();
 	// FIXME: temporary workaround for deadlock on exit, which actually should be a crash
 	vu1Thread.WaitVU();
+	SPU2close();
+	DEV9close();
+	DoCDVDclose();
+	FWclose();
 	GetCorePlugins().Close();
 	GetCorePlugins().Shutdown();
+	SPU2shutdown();
+	DEV9shutdown();
 
-	_mm_setcsr( m_mxcsr_saved.bitmask );
+	_mm_setcsr(m_mxcsr_saved.bitmask);
 	Threading::DisableHiresScheduler();
 	_parent::OnCleanupInThread();
 
-	m_ExecMode				= ExecMode_NoThreadYet;
+	m_ExecMode = ExecMode_NoThreadYet;
 }
-

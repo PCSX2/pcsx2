@@ -27,7 +27,8 @@
 #include "Debugger/DisassemblyDialog.h"
 
 #ifndef DISABLE_RECORDING
-#	include "Recording/VirtualPad.h"
+#include "Recording/InputRecording.h"
+#include "Recording/VirtualPad/VirtualPad.h"
 #endif
 
 #include <wx/cmdline.h>
@@ -40,13 +41,13 @@ using namespace pxSizerFlags;
 void Pcsx2App::DetectCpuAndUserMode()
 {
 	AffinityAssert_AllowFrom_MainUI();
-	
+
 #ifdef _M_X86
 	x86caps.Identify();
 	x86caps.CountCores();
 	x86caps.SIMD_EstablishMXCSRmask();
 
-	if(!x86caps.hasStreamingSIMD2Extensions )
+	if (!x86caps.hasStreamingSIMD2Extensions)
 	{
 		// This code will probably never run if the binary was correctly compiled for SSE2
 		// SSE2 is required for any decent speed and is supported by more than decade old x86 CPUs
@@ -66,42 +67,47 @@ void Pcsx2App::DetectCpuAndUserMode()
 
 void Pcsx2App::OpenMainFrame()
 {
-	if( AppRpc_TryInvokeAsync( &Pcsx2App::OpenMainFrame ) ) return;
+	if (AppRpc_TryInvokeAsync(&Pcsx2App::OpenMainFrame))
+		return;
 
-	if( GetMainFramePtr() != NULL ) return;
+	if (GetMainFramePtr() != NULL)
+		return;
 
-	MainEmuFrame* mainFrame = new MainEmuFrame( NULL, pxGetAppName() );
+	MainEmuFrame* mainFrame = new MainEmuFrame(NULL, pxGetAppName());
 	m_id_MainFrame = mainFrame->GetId();
 
-	DisassemblyDialog* disassembly = new DisassemblyDialog( mainFrame );
+	DisassemblyDialog* disassembly = new DisassemblyDialog(mainFrame);
 	m_id_Disassembler = disassembly->GetId();
 
 #ifndef DISABLE_RECORDING
-	VirtualPad* virtualPad0 = new VirtualPad(mainFrame, wxID_ANY, wxEmptyString, 0);
+	VirtualPad* virtualPad0 = new VirtualPad(mainFrame, 0, g_Conf->inputRecording);
+	g_InputRecording.setVirtualPadPtr(virtualPad0, 0);
 	m_id_VirtualPad[0] = virtualPad0->GetId();
 
-	VirtualPad* virtualPad1 = new VirtualPad(mainFrame, wxID_ANY, wxEmptyString, 1);
+	VirtualPad* virtualPad1 = new VirtualPad(mainFrame, 1, g_Conf->inputRecording);
+	g_InputRecording.setVirtualPadPtr(virtualPad1, 1);
 	m_id_VirtualPad[1] = virtualPad1->GetId();
 
 	NewRecordingFrame* newRecordingFrame = new NewRecordingFrame(mainFrame);
 	m_id_NewRecordingFrame = newRecordingFrame->GetId();
 #endif
-	
+
 	if (g_Conf->EmuOptions.Debugger.ShowDebuggerOnStart)
 		disassembly->Show();
 
-	PostIdleAppMethod( &Pcsx2App::OpenProgramLog );
+	PostIdleAppMethod(&Pcsx2App::OpenProgramLog);
 
-	SetTopWindow( mainFrame );		// not really needed...
-	SetExitOnFrameDelete( false );	// but being explicit doesn't hurt...
+	SetTopWindow(mainFrame);     // not really needed...
+	SetExitOnFrameDelete(false); // but being explicit doesn't hurt...
 	mainFrame->Show();
 }
 
 void Pcsx2App::OpenProgramLog()
 {
-	if( AppRpc_TryInvokeAsync( &Pcsx2App::OpenProgramLog ) ) return;
+	if (AppRpc_TryInvokeAsync(&Pcsx2App::OpenProgramLog))
+		return;
 
-	if( /*ConsoleLogFrame* frame =*/ GetProgramLog() )
+	if (/*ConsoleLogFrame* frame =*/GetProgramLog())
 	{
 		//pxAssume( );
 		return;
@@ -109,13 +115,14 @@ void Pcsx2App::OpenProgramLog()
 
 	wxWindow* m_current_focus = wxGetActiveWindow();
 
-	ScopedLock lock( m_mtx_ProgramLog );
-	m_ptr_ProgramLog	= new ConsoleLogFrame( GetMainFramePtr(), L"PCSX2 Program Log", g_Conf->ProgLogBox );
-	m_id_ProgramLogBox	= m_ptr_ProgramLog->GetId();
+	ScopedLock lock(m_mtx_ProgramLog);
+	m_ptr_ProgramLog = new ConsoleLogFrame(GetMainFramePtr(), L"PCSX2 Program Log", g_Conf->ProgLogBox);
+	m_id_ProgramLogBox = m_ptr_ProgramLog->GetId();
 	EnableAllLogging();
 
-	if( m_current_focus ) m_current_focus->SetFocus();
-	
+	if (m_current_focus)
+		m_current_focus->SetFocus();
+
 	// This is test code for printing out all supported languages and their canonical names in wiki-fied
 	// format.  I might use it again soon, so I'm leaving it in for now... --air
 	/*
@@ -132,71 +139,70 @@ void Pcsx2App::OpenProgramLog()
 
 void Pcsx2App::AllocateCoreStuffs()
 {
-	if( AppRpc_TryInvokeAsync( &Pcsx2App::AllocateCoreStuffs ) ) return;
+	if (AppRpc_TryInvokeAsync(&Pcsx2App::AllocateCoreStuffs))
+		return;
 
 	SysLogMachineCaps();
 	AppApplySettings();
 
 	GetVmReserve().ReserveAll();
 
-	if( !m_CpuProviders )
+	if (!m_CpuProviders)
 	{
 		// FIXME : Some or all of SysCpuProviderPack should be run from the SysExecutor thread,
 		// so that the thread is safely blocked from being able to start emulation.
 
 		m_CpuProviders = std::make_unique<SysCpuProviderPack>();
 
-		if( m_CpuProviders->HadSomeFailures( g_Conf->EmuOptions.Cpu.Recompiler ) )
+		if (m_CpuProviders->HadSomeFailures(g_Conf->EmuOptions.Cpu.Recompiler))
 		{
 			// HadSomeFailures only returns 'true' if an *enabled* cpu type fails to init.  If
 			// the user already has all interps configured, for example, then no point in
 			// popping up this dialog.
-			
-			wxDialogWithHelpers exconf( NULL, _("PCSX2 Recompiler Error(s)") );
+
+			wxDialogWithHelpers exconf(NULL, _("PCSX2 Recompiler Error(s)"));
 
 			wxTextCtrl* scrollableTextArea = new wxTextCtrl(
 				&exconf, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
-				wxTE_READONLY | wxTE_MULTILINE | wxTE_WORDWRAP
-			);
+				wxTE_READONLY | wxTE_MULTILINE | wxTE_WORDWRAP);
 
 			exconf += 12;
-			exconf += exconf.Heading( pxE( L"Warning: Some of the configured PS2 recompilers failed to initialize and have been disabled:" )
-			);
+			exconf += exconf.Heading(pxE(L"Warning: Some of the configured PS2 recompilers failed to initialize and have been disabled:"));
 
 			exconf += 6;
-			exconf += scrollableTextArea	| pxExpand.Border(wxALL, 16);
-			
+			exconf += scrollableTextArea | pxExpand.Border(wxALL, 16);
+
 			Pcsx2Config::RecompilerOptions& recOps = g_Conf->EmuOptions.Cpu.Recompiler;
-			
-			if( BaseException* ex = m_CpuProviders->GetException_EE() )
+
+			if (BaseException* ex = m_CpuProviders->GetException_EE())
 			{
-				scrollableTextArea->AppendText( L"* R5900 (EE)\n\t" + ex->FormatDisplayMessage() + L"\n\n" );
-				recOps.EnableEE		= false;
+				scrollableTextArea->AppendText(L"* R5900 (EE)\n\t" + ex->FormatDisplayMessage() + L"\n\n");
+				recOps.EnableEE = false;
 			}
 
-			if( BaseException* ex = m_CpuProviders->GetException_IOP() )
+			if (BaseException* ex = m_CpuProviders->GetException_IOP())
 			{
-				scrollableTextArea->AppendText( L"* R3000A (IOP)\n\t"  + ex->FormatDisplayMessage() + L"\n\n" );
-				recOps.EnableIOP	= false;
+				scrollableTextArea->AppendText(L"* R3000A (IOP)\n\t" + ex->FormatDisplayMessage() + L"\n\n");
+				recOps.EnableIOP = false;
 			}
 
-			if( BaseException* ex = m_CpuProviders->GetException_MicroVU0() )
+			if (BaseException* ex = m_CpuProviders->GetException_MicroVU0())
 			{
-				scrollableTextArea->AppendText( L"* microVU0\n\t" + ex->FormatDisplayMessage() + L"\n\n" );
-				recOps.UseMicroVU0	= false;
-				recOps.EnableVU0	= false;
+				scrollableTextArea->AppendText(L"* microVU0\n\t" + ex->FormatDisplayMessage() + L"\n\n");
+				recOps.UseMicroVU0 = false;
+				recOps.EnableVU0 = false;
 			}
 
-			if( BaseException* ex = m_CpuProviders->GetException_MicroVU1() )
+			if (BaseException* ex = m_CpuProviders->GetException_MicroVU1())
 			{
-				scrollableTextArea->AppendText( L"* microVU1\n\t" + ex->FormatDisplayMessage() + L"\n\n" );
-				recOps.UseMicroVU1	= false;
-				recOps.EnableVU1	= false;
+				scrollableTextArea->AppendText(L"* microVU1\n\t" + ex->FormatDisplayMessage() + L"\n\n");
+				recOps.UseMicroVU1 = false;
+				recOps.EnableVU1 = false;
 			}
 
-			exconf += exconf.Heading(pxE( L"Note: Recompilers are not necessary for PCSX2 to run, however they typically improve emulation speed substantially. You may have to manually re-enable the recompilers listed above, if you resolve the errors." ));
+			exconf += exconf.Heading(pxE(L"Note: Recompilers are not necessary for PCSX2 to run, however they typically improve emulation speed substantially. You may have to manually re-enable the recompilers listed above, if you resolve the errors."));
 
-			pxIssueConfirmation( exconf, MsgButtons().OK() );
+			pxIssueConfirmation(exconf, MsgButtons().OK());
 		}
 	}
 
@@ -204,73 +210,73 @@ void Pcsx2App::AllocateCoreStuffs()
 }
 
 
-void Pcsx2App::OnInitCmdLine( wxCmdLineParser& parser )
+void Pcsx2App::OnInitCmdLine(wxCmdLineParser& parser)
 {
-	parser.SetLogo( AddAppName(" >>  %s  --  A PlayStation 2 Emulator for the PC  <<") + L"\n\n" +
-		_("All options are for the current session only and will not be saved.\n")
-	);
+	parser.SetLogo(AddAppName(" >>  %s  --  A PlayStation 2 Emulator for the PC  <<") + L"\n\n" +
+				   _("All options are for the current session only and will not be saved.\n"));
 
-	wxString fixlist( L" " );
-	for (GamefixId i=GamefixId_FIRST; i < pxEnumEnd; ++i)
+	wxString fixlist(L" ");
+	for (GamefixId i = GamefixId_FIRST; i < pxEnumEnd; ++i)
 	{
-		if( i != GamefixId_FIRST ) fixlist += L",";
+		if (i != GamefixId_FIRST)
+			fixlist += L",";
 		fixlist += EnumToString(i);
 	}
 
-	parser.AddParam( _("IsoFile"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL );
-	parser.AddSwitch( L"h",			L"help",		_("displays this list of command line options"), wxCMD_LINE_OPTION_HELP );
-	parser.AddSwitch( wxEmptyString,L"console",		_("forces the program log/console to be visible"), wxCMD_LINE_VAL_STRING );
-	parser.AddSwitch( wxEmptyString,L"fullscreen",	_("use fullscreen GS mode") );
-	parser.AddSwitch( wxEmptyString,L"windowed",	_("use windowed GS mode") );
+	parser.AddParam(_("IsoFile"), wxCMD_LINE_VAL_STRING, wxCMD_LINE_PARAM_OPTIONAL);
+	parser.AddSwitch(L"h", L"help", _("displays this list of command line options"), wxCMD_LINE_OPTION_HELP);
+	parser.AddSwitch(wxEmptyString, L"console", _("forces the program log/console to be visible"), wxCMD_LINE_VAL_STRING);
+	parser.AddSwitch(wxEmptyString, L"fullscreen", _("use fullscreen GS mode"));
+	parser.AddSwitch(wxEmptyString, L"windowed", _("use windowed GS mode"));
 
-	parser.AddSwitch( wxEmptyString,L"nogui",		_("disables display of the gui while running games") );
-	parser.AddSwitch( wxEmptyString,L"noguiprompt",	_("when nogui - prompt before exiting on suspend") );
+	parser.AddSwitch(wxEmptyString, L"nogui", _("disables display of the gui while running games"));
+	parser.AddSwitch(wxEmptyString, L"noguiprompt", _("when nogui - prompt before exiting on suspend"));
 
-	parser.AddOption( wxEmptyString,L"elf",			_("executes an ELF image"), wxCMD_LINE_VAL_STRING );
-	parser.AddOption( wxEmptyString,L"irx",			_("executes an IRX image"), wxCMD_LINE_VAL_STRING );
-	parser.AddSwitch( wxEmptyString,L"nodisc",		_("boots an empty DVD tray; use to enter the PS2 system menu") );
-	parser.AddSwitch( wxEmptyString,L"usecd",		_("boots from the CDVD plugin (overrides IsoFile parameter)") );
+	parser.AddOption(wxEmptyString, L"elf", _("executes an ELF image"), wxCMD_LINE_VAL_STRING);
+	parser.AddOption(wxEmptyString, L"irx", _("executes an IRX image"), wxCMD_LINE_VAL_STRING);
+	parser.AddSwitch(wxEmptyString, L"nodisc", _("boots an empty DVD tray; use to enter the PS2 system menu"));
+	parser.AddSwitch(wxEmptyString, L"usecd", _("boots from the disc drive (overrides IsoFile parameter)"));
 
-	parser.AddSwitch( wxEmptyString,L"nohacks",		_("disables all speedhacks") );
-	parser.AddOption( wxEmptyString,L"gamefixes",	_("use the specified comma or pipe-delimited list of gamefixes.") + fixlist, wxCMD_LINE_VAL_STRING );
-	parser.AddSwitch( wxEmptyString,L"fullboot",	_("disables fast booting") );
-	parser.AddOption( wxEmptyString,L"gameargs",	_("passes the specified space-delimited string of launch arguments to the game"), wxCMD_LINE_VAL_STRING);
+	parser.AddSwitch(wxEmptyString, L"nohacks", _("disables all speedhacks"));
+	parser.AddOption(wxEmptyString, L"gamefixes", _("use the specified comma or pipe-delimited list of gamefixes.") + fixlist, wxCMD_LINE_VAL_STRING);
+	parser.AddSwitch(wxEmptyString, L"fullboot", _("disables fast booting"));
+	parser.AddOption(wxEmptyString, L"gameargs", _("passes the specified space-delimited string of launch arguments to the game"), wxCMD_LINE_VAL_STRING);
 
-	parser.AddOption( wxEmptyString,L"cfgpath",		_("changes the configuration file path"), wxCMD_LINE_VAL_STRING );
-	parser.AddOption( wxEmptyString,L"cfg",			_("specifies the PCSX2 configuration file to use"), wxCMD_LINE_VAL_STRING );
-	parser.AddSwitch( wxEmptyString,L"forcewiz",	AddAppName(_("forces %s to start the First-time Wizard")) );
-	parser.AddSwitch( wxEmptyString,L"portable",	_("enables portable mode operation (requires admin/root access)") );
+	parser.AddOption(wxEmptyString, L"cfgpath", _("changes the configuration file path"), wxCMD_LINE_VAL_STRING);
+	parser.AddOption(wxEmptyString, L"cfg", _("specifies the PCSX2 configuration file to use"), wxCMD_LINE_VAL_STRING);
+	parser.AddSwitch(wxEmptyString, L"forcewiz", AddAppName(_("forces %s to start the First-time Wizard")));
+	parser.AddSwitch(wxEmptyString, L"portable", _("enables portable mode operation (requires admin/root access)"));
 
-	parser.AddSwitch( wxEmptyString,L"profiling",	_("update options to ease profiling (debug)") );
+	parser.AddSwitch(wxEmptyString, L"profiling", _("update options to ease profiling (debug)"));
 
-	const PluginInfo* pi = tbl_PluginInfo; do {
-		parser.AddOption( wxEmptyString, pi->GetShortname().Lower(),
-			pxsFmt( _("specify the file to use as the %s plugin"), WX_STR(pi->GetShortname()) )
-		);
-	} while( ++pi, pi->shortname != NULL );
+	ForPlugins([&](const PluginInfo* pi) {
+		parser.AddOption(wxEmptyString, pi->GetShortname().Lower(),
+						 pxsFmt(_("specify the file to use as the %s plugin"), WX_STR(pi->GetShortname())));
+	});
 
-	parser.SetSwitchChars( L"-" );
+	parser.SetSwitchChars(L"-");
 }
 
-bool Pcsx2App::OnCmdLineError( wxCmdLineParser& parser )
+bool Pcsx2App::OnCmdLineError(wxCmdLineParser& parser)
 {
-	wxApp::OnCmdLineError( parser );
+	wxApp::OnCmdLineError(parser);
 	return false;
 }
 
-bool Pcsx2App::ParseOverrides( wxCmdLineParser& parser )
+bool Pcsx2App::ParseOverrides(wxCmdLineParser& parser)
 {
 	wxString dest;
+	bool parsed = true;
 
-	if (parser.Found( L"cfgpath", &dest ) && !dest.IsEmpty())
+	if (parser.Found(L"cfgpath", &dest) && !dest.IsEmpty())
 	{
-		Console.Warning( L"Config path override: " + dest );
+		Console.Warning(L"Config path override: " + dest);
 		Overrides.SettingsFolder = dest;
 	}
 
-	if (parser.Found( L"cfg", &dest ) && !dest.IsEmpty())
+	if (parser.Found(L"cfg", &dest) && !dest.IsEmpty())
 	{
-		Console.Warning( L"Config file override: " + dest );
+		Console.Warning(L"Config file override: " + dest);
 		Overrides.VmSettingsFile = dest;
 	}
 
@@ -281,45 +287,47 @@ bool Pcsx2App::ParseOverrides( wxCmdLineParser& parser )
 	if (parser.Found(L"gamefixes", &dest))
 	{
 		Overrides.ApplyCustomGamefixes = true;
-		Overrides.Gamefixes.Set( dest, true );
+		Overrides.Gamefixes.Set(dest, true);
 	}
 
-	if (parser.Found(L"fullscreen"))	Overrides.GsWindowMode = GsWinMode_Fullscreen;
-	if (parser.Found(L"windowed"))		Overrides.GsWindowMode = GsWinMode_Windowed;
+	if (parser.Found(L"fullscreen"))
+		Overrides.GsWindowMode = GsWinMode_Fullscreen;
+	if (parser.Found(L"windowed"))
+		Overrides.GsWindowMode = GsWinMode_Windowed;
 
-	const PluginInfo* pi = tbl_PluginInfo; do
-	{
-		if( !parser.Found( pi->GetShortname().Lower(), &dest ) ) continue;
-
-		if( wxFileExists( dest ) )
-			Console.Warning( pi->GetShortname() + L" override: " + dest );
-		else
+	ForPlugins([&](const PluginInfo* pi) {
+		if (parser.Found(pi->GetShortname().Lower(), &dest))
 		{
-			wxDialogWithHelpers okcan( NULL, AddAppName(_("Plugin Override Error - %s")) );
+			if (wxFileExists(dest))
+				Console.Warning(pi->GetShortname() + L" override: " + dest);
+			else
+			{
+				wxDialogWithHelpers okcan(NULL, AddAppName(_("Plugin Override Error - %s")));
 
-			okcan += okcan.Heading( wxsFormat(
-				_("%s Plugin Override Error!  The following file does not exist or is not a valid %s plugin:\n\n"),
-				pi->GetShortname().c_str(), pi->GetShortname().c_str()
-			) );
+				okcan += okcan.Heading(wxsFormat(
+					_("%s Plugin Override Error!  The following file does not exist or is not a valid %s plugin:\n\n"),
+					pi->GetShortname().c_str(), pi->GetShortname().c_str()));
 
-			okcan += okcan.GetCharHeight();
-			okcan += okcan.Text(dest);
-			okcan += okcan.GetCharHeight();
-			okcan += okcan.Heading(AddAppName(_("Press OK to use the default configured plugin, or Cancel to close %s.")));
+				okcan += okcan.GetCharHeight();
+				okcan += okcan.Text(dest);
+				okcan += okcan.GetCharHeight();
+				okcan += okcan.Heading(AddAppName(_("Press OK to use the default configured plugin, or Cancel to close %s.")));
 
-			if( wxID_CANCEL == pxIssueConfirmation( okcan, MsgButtons().OKCancel() ) ) return false;
+				if (wxID_CANCEL == pxIssueConfirmation(okcan, MsgButtons().OKCancel()))
+					parsed = false;
+			}
+
+			if (parsed)
+				Overrides.Filenames.Plugins[pi->id] = dest;
 		}
-		
-		Overrides.Filenames.Plugins[pi->id] = dest;
+	});
 
-	} while( ++pi, pi->shortname != NULL );
-	
-	return true;
+	return parsed;
 }
 
-bool Pcsx2App::OnCmdLineParsed( wxCmdLineParser& parser )
+bool Pcsx2App::OnCmdLineParsed(wxCmdLineParser& parser)
 {
-	if( parser.Found(L"console") )
+	if (parser.Found(L"console"))
 	{
 		Startup.ForceConsole = true;
 		OpenProgramLog();
@@ -328,30 +336,34 @@ bool Pcsx2App::OnCmdLineParsed( wxCmdLineParser& parser )
 	// Suppress wxWidgets automatic options parsing since none of them pertain to PCSX2 needs.
 	//wxApp::OnCmdLineParsed( parser );
 
-	m_UseGUI	= !parser.Found(L"nogui");
+	m_UseGUI = !parser.Found(L"nogui");
 	m_NoGuiExitPrompt = parser.Found(L"noguiprompt"); // by default no prompt for exit with nogui.
 
-	if( !ParseOverrides(parser) ) return false;
+	if (!ParseOverrides(parser))
+		return false;
 
 	// --- Parse Startup/Autoboot options ---
 
-	Startup.NoFastBoot		= parser.Found(L"fullboot");
-	Startup.ForceWizard		= parser.Found(L"forcewiz");
-	Startup.PortableMode	= parser.Found(L"portable");
+	Startup.NoFastBoot = parser.Found(L"fullboot");
+	Startup.ForceWizard = parser.Found(L"forcewiz");
+	Startup.PortableMode = parser.Found(L"portable");
 
-	if( parser.GetParamCount() >= 1 )
+	if (parser.GetParamCount() >= 1)
 	{
-		Startup.IsoFile		= parser.GetParam( 0 );
-		Startup.CdvdSource	= CDVD_SourceType::Iso;
-		Startup.SysAutoRun	= true;
+		Startup.IsoFile = parser.GetParam(0);
+		Startup.CdvdSource = CDVD_SourceType::Iso;
+		Startup.SysAutoRun = true;
 	}
 	else
 	{
 		wxString elf_file;
-		if (parser.Found(L"elf", &elf_file) && !elf_file.IsEmpty()) {
+		if (parser.Found(L"elf", &elf_file) && !elf_file.IsEmpty())
+		{
 			Startup.SysAutoRunElf = true;
 			Startup.ElfFile = elf_file;
-		} else if (parser.Found(L"irx", &elf_file) && !elf_file.IsEmpty()) {
+		}
+		else if (parser.Found(L"irx", &elf_file) && !elf_file.IsEmpty())
+		{
 			Startup.SysAutoRunIrx = true;
 			Startup.ElfFile = elf_file;
 		}
@@ -361,10 +373,10 @@ bool Pcsx2App::OnCmdLineParsed( wxCmdLineParser& parser )
 	if (parser.Found(L"gameargs", &game_args) && !game_args.IsEmpty())
 		Startup.GameLaunchArgs = game_args;
 
-	if( parser.Found(L"usecd") )
+	if (parser.Found(L"usecd"))
 	{
-		Startup.CdvdSource	= CDVD_SourceType::Plugin;
-		Startup.SysAutoRun	= true;
+		Startup.CdvdSource = CDVD_SourceType::Disc;
+		Startup.SysAutoRun = true;
 	}
 
 	if (parser.Found(L"nodisc"))
@@ -382,20 +394,20 @@ typedef void (wxEvtHandler::*pxStuckThreadEventHandler)(pxMessageBoxEvent&);
 // --------------------------------------------------------------------------------------
 //   GameDatabaseLoaderThread
 // --------------------------------------------------------------------------------------
-class GameDatabaseLoaderThread : public pxThread
-	, EventListener_AppStatus
+class GameDatabaseLoaderThread : public pxThread, EventListener_AppStatus
 {
 	typedef pxThread _parent;
 
 public:
 	GameDatabaseLoaderThread()
-		: pxThread( L"GameDatabaseLoader" )
+		: pxThread(L"GameDatabaseLoader")
 	{
 	}
 
 	virtual ~GameDatabaseLoaderThread()
 	{
-		try {
+		try
+		{
 			_parent::Cancel();
 		}
 		DESTRUCTOR_CATCHALL
@@ -413,7 +425,7 @@ protected:
 		_parent::OnCleanupInThread();
 		wxGetApp().DeleteThread(this);
 	}
-	
+
 	void AppStatusEvent_OnExit()
 	{
 		Block();
@@ -427,11 +439,11 @@ bool Pcsx2App::OnInit()
 
 	InitCPUTicks();
 
-	pxDoAssert		= AppDoAssert;
-	pxDoOutOfMemory	= SysOutOfMemory_EmergencyResponse;
+	pxDoAssert = AppDoAssert;
+	pxDoOutOfMemory = SysOutOfMemory_EmergencyResponse;
 
 	g_Conf = std::make_unique<AppConfig>();
-    wxInitAllImageHandlers();
+	wxInitAllImageHandlers();
 
 	Console.WriteLn("Applying operating system default language...");
 	{
@@ -442,7 +454,8 @@ bool Pcsx2App::OnInit()
 	}
 
 	Console.WriteLn("Command line parsing...");
-	if( !_parent::OnInit() ) return false;
+	if (!_parent::OnInit())
+		return false;
 	Console.WriteLn("Command line parsed!");
 
 	i18n_SetLanguagePath();
@@ -464,7 +477,7 @@ bool Pcsx2App::OnInit()
 	try
 	{
 		InitDefaultGlobalAccelerators();
-		delete wxLog::SetActiveTarget( new pxLogConsole() );
+		delete wxLog::SetActiveTarget(new pxLogConsole());
 
 		SysExecutorThread.Start();
 		DetectCpuAndUserMode();
@@ -474,18 +487,20 @@ bool Pcsx2App::OnInit()
 		// PCSX2 has a lot of event handling logistics, so we *cannot* depend on wxWidgets automatic event
 		// loop termination code.  We have a much safer system in place that continues to process messages
 		// until all "important" threads are closed out -- not just until the main frame is closed(-ish).
-		m_timer_Termination = std::make_unique<wxTimer>( this, wxID_ANY );
+		m_timer_Termination = std::make_unique<wxTimer>(this, wxID_ANY);
 		Bind(wxEVT_TIMER, &Pcsx2App::OnScheduledTermination, this, m_timer_Termination->GetId());
-		SetExitOnFrameDelete( false );
+		SetExitOnFrameDelete(false);
 
 
 		//   Start GUI and/or Direct Emulation
 		// -------------------------------------
 		pxSizerFlags::SetBestPadding();
-		if( Startup.ForceConsole ) g_Conf->ProgLogBox.Visible = true;
+		if (Startup.ForceConsole)
+			g_Conf->ProgLogBox.Visible = true;
 		OpenProgramLog();
 		AllocateCoreStuffs();
-		if( m_UseGUI ) OpenMainFrame();
+		if (m_UseGUI)
+			OpenMainFrame();
 
 
 		(new GameDatabaseLoaderThread())->Start();
@@ -493,41 +508,41 @@ bool Pcsx2App::OnInit()
 		// By default no IRX injection
 		g_Conf->CurrentIRX = "";
 
-		if( Startup.SysAutoRun )
+		if (Startup.SysAutoRun)
 		{
 			g_Conf->EmuOptions.UseBOOT2Injection = !Startup.NoFastBoot;
 			g_Conf->CdvdSource = Startup.CdvdSource;
 			if (Startup.CdvdSource == CDVD_SourceType::Iso)
-				SysUpdateIsoSrcFile( Startup.IsoFile );
-			sApp.SysExecute( Startup.CdvdSource );
+				SysUpdateIsoSrcFile(Startup.IsoFile);
+			sApp.SysExecute(Startup.CdvdSource);
 			g_Conf->CurrentGameArgs = Startup.GameLaunchArgs;
 		}
-		else if ( Startup.SysAutoRunElf )
+		else if (Startup.SysAutoRunElf)
 		{
 			g_Conf->EmuOptions.UseBOOT2Injection = true;
 
-			sApp.SysExecute( Startup.CdvdSource, Startup.ElfFile );
+			sApp.SysExecute(Startup.CdvdSource, Startup.ElfFile);
 		}
-		else if (Startup.SysAutoRunIrx )
+		else if (Startup.SysAutoRunIrx)
 		{
 			g_Conf->EmuOptions.UseBOOT2Injection = true;
 
 			g_Conf->CurrentIRX = Startup.ElfFile;
 
 			// FIXME: ElfFile is an irx it will crash
-			sApp.SysExecute( Startup.CdvdSource, Startup.ElfFile );
+			sApp.SysExecute(Startup.CdvdSource, Startup.ElfFile);
 		}
 	}
 	// ----------------------------------------------------------------------------
-	catch( Exception::StartupAborted& ex )		// user-aborted, no popups needed.
+	catch (Exception::StartupAborted& ex) // user-aborted, no popups needed.
 	{
-		Console.Warning( ex.FormatDiagnosticMessage() );
+		Console.Warning(ex.FormatDiagnosticMessage());
 		CleanupOnExit();
 		return false;
 	}
-	catch( Exception::HardwareDeficiency& ex )
+	catch (Exception::HardwareDeficiency& ex)
 	{
-		Msgbox::Alert( ex.FormatDisplayMessage() + L"\n\n" + AddAppName(_("Press OK to close %s.")), _("PCSX2 Error: Hardware Deficiency") );
+		Msgbox::Alert(ex.FormatDisplayMessage() + L"\n\n" + AddAppName(_("Press OK to close %s.")), _("PCSX2 Error: Hardware Deficiency."));
 		CleanupOnExit();
 		return false;
 	}
@@ -536,36 +551,36 @@ bool Pcsx2App::OnInit()
 	// since it means the emulator is completely non-functional.  Let's pop up an error and
 	// exit gracefully-ish.
 	//
-	catch( Exception::RuntimeError& ex )
+	catch (Exception::RuntimeError& ex)
 	{
-		Console.Error( ex.FormatDiagnosticMessage() );
-		Msgbox::Alert( ex.FormatDisplayMessage() + L"\n\n" + AddAppName(_("Press OK to close %s.")),
-			AddAppName(_("%s Critical Error")), wxICON_ERROR );
+		Console.Error(ex.FormatDiagnosticMessage());
+		Msgbox::Alert(ex.FormatDisplayMessage() + L"\n\n" + AddAppName(_("Press OK to close %s.")),
+					  AddAppName(_("%s Critical Error")), wxICON_ERROR);
 		CleanupOnExit();
 		return false;
 	}
-    return true;
+	return true;
 }
 
 static int m_term_threshold = 20;
 
-void Pcsx2App::OnScheduledTermination( wxTimerEvent& evt )
+void Pcsx2App::OnScheduledTermination(wxTimerEvent& evt)
 {
-	if( !pxAssertDev( m_ScheduledTermination, "Scheduled Termination check is inconsistent with ScheduledTermination status." ) )
+	if (!pxAssertDev(m_ScheduledTermination, "Scheduled Termination check is inconsistent with ScheduledTermination status."))
 	{
 		m_timer_Termination->Stop();
 		return;
 	}
 
-	if( m_PendingSaves != 0 )
+	if (m_PendingSaves != 0)
 	{
-		if( --m_term_threshold > 0 )
+		if (--m_term_threshold > 0)
 		{
-			Console.WriteLn( "(App) %d saves are still pending; exit postponed...", m_PendingSaves );
+			Console.WriteLn("(App) %d saves are still pending; exit postponed...", m_PendingSaves);
 			return;
 		}
-		
-		Console.Error( "(App) %s pending saves have exceeded OnExit threshold and are being prematurely terminated!", m_PendingSaves );
+
+		Console.Error("(App) %s pending saves have exceeded OnExit threshold and are being prematurely terminated!", m_PendingSaves);
 	}
 
 	m_timer_Termination->Stop();
@@ -581,15 +596,16 @@ void Pcsx2App::OnScheduledTermination( wxTimerEvent& evt )
 // the glorious user, whomever (s)he-it might be.
 void Pcsx2App::PrepForExit()
 {
-	if( m_ScheduledTermination ) return;
+	if (m_ScheduledTermination)
+		return;
 	m_ScheduledTermination = true;
 
-	DispatchEvent( AppStatus_Exiting );
+	DispatchEvent(AppStatus_Exiting);
 
 	CoreThread.Cancel();
 	SysExecutorThread.ShutdownQueue();
 
-	m_timer_Termination->Start( 500 );
+	m_timer_Termination->Start(500);
 }
 
 // This cleanup procedure can only be called when the App message pump is still active.
@@ -600,9 +616,10 @@ void Pcsx2App::CleanupRestartable()
 
 	CoreThread.Cancel();
 	SysExecutorThread.ShutdownQueue();
-	IdleEventDispatcher( L"Cleanup" );
+	IdleEventDispatcher(L"Cleanup");
 
-	if( g_Conf ) AppSaveSettings();
+	if (g_Conf)
+		AppSaveSettings();
 }
 
 // This cleanup handler can be called from OnExit (it doesn't need a running message pump),
@@ -618,15 +635,18 @@ void Pcsx2App::CleanupOnExit()
 		CleanupRestartable();
 		CleanupResources();
 	}
-	catch( Exception::CancelEvent& )		{ throw; }
-	catch( Exception::RuntimeError& ex )
+	catch (Exception::CancelEvent&)
+	{
+		throw;
+	}
+	catch (Exception::RuntimeError& ex)
 	{
 		// Handle runtime errors gracefully during shutdown.  Mostly these are things
 		// that we just don't care about by now, and just want to "get 'er done!" so
 		// we can exit the app. ;)
 
-		Console.Error( L"Runtime exception handled during CleanupOnExit:\n" );
-		Console.Indent().Error( ex.FormatDiagnosticMessage() );
+		Console.Error(L"Runtime exception handled during CleanupOnExit:\n");
+		Console.Indent().Error(ex.FormatDiagnosticMessage());
 	}
 
 	// Notice: deleting the plugin manager (unloading plugins) here causes Lilypad to crash,
@@ -634,19 +654,19 @@ void Pcsx2App::CleanupOnExit()
 	// We don't need to unload plugins anyway tho -- shutdown is plenty safe enough for
 	// closing out all the windows.  So just leave it be and let the plugins get unloaded
 	// during the wxApp destructor. -- air
-	
+
 	// FIXME: performing a wxYield() here may fix that problem. -- air
 
 	pxDoAssert = pxAssertImpl_LogIt;
-	Console_SetActiveHandler( ConsoleWriter_Stdout );
+	Console_SetActiveHandler(ConsoleWriter_Stdout);
 }
 
 void Pcsx2App::CleanupResources()
 {
-	ScopedBusyCursor cursor( Cursor_ReallyBusy );
+	ScopedBusyCursor cursor(Cursor_ReallyBusy);
 	//delete wxConfigBase::Set( NULL );
 
-	while( wxGetLocale() != NULL )
+	while (wxGetLocale() != NULL)
 		delete wxGetLocale();
 
 	m_mtx_LoadingGameDB.Wait();
@@ -660,7 +680,7 @@ int Pcsx2App::OnExit()
 	return wxApp::OnExit();
 }
 
-void Pcsx2App::OnDestroyWindow( wxWindowDestroyEvent& evt )
+void Pcsx2App::OnDestroyWindow(wxWindowDestroyEvent& evt)
 {
 	// Precautions:
 	//  * Whenever windows are destroyed, make sure to check if it matches our "active"
@@ -671,10 +691,10 @@ void Pcsx2App::OnDestroyWindow( wxWindowDestroyEvent& evt )
 	//  * The virtual machine's plugins usually depend on the GS window handle being valid,
 	//    so if the GS window is the one being shut down then we need to make sure to close
 	//    out the Corethread before it vanishes completely from existence.
-	
 
-	OnProgramLogClosed( evt.GetId() );
-	OnGsFrameClosed( evt.GetId() );
+
+	OnProgramLogClosed(evt.GetId());
+	OnGsFrameClosed(evt.GetId());
 	evt.Skip();
 }
 
@@ -696,12 +716,12 @@ protected:
 };
 
 
-Pcsx2App::Pcsx2App() 
-	: SysExecutorThread( new SysEvtHandler() )
+Pcsx2App::Pcsx2App()
+	: SysExecutorThread(new SysEvtHandler())
 {
-	// Warning: Do not delete this comment block! Gettext will parse it to allow
-	// the translation of some wxWidget internal strings. -- greg
-	#if 0
+// Warning: Do not delete this comment block! Gettext will parse it to allow
+// the translation of some wxWidget internal strings. -- greg
+#if 0
 	{
 		// Some common labels provided by wxWidgets.  wxWidgets translation files are chucked full
 		// of worthless crap, and tally more than 200k each.  We only need these couple.
@@ -723,29 +743,30 @@ Pcsx2App::Pcsx2App()
 		_("&Help");
 		_("&Home");
 
-		_("Show about dialog")
+		_("Show about dialog.")
 	}
-	#endif
+#endif
 
-	m_PendingSaves			= 0;
-	m_ScheduledTermination	= false;
-	m_UseGUI				= true;
-	m_NoGuiExitPrompt		= true;
+	m_PendingSaves = 0;
+	m_ScheduledTermination = false;
+	m_UseGUI = true;
+	m_NoGuiExitPrompt = true;
 
-	m_id_MainFrame		= wxID_ANY;
-	m_id_GsFrame		= wxID_ANY;
-	m_id_ProgramLogBox	= wxID_ANY;
-	m_id_Disassembler	= wxID_ANY;
-	m_ptr_ProgramLog	= NULL;
+	m_id_MainFrame = wxID_ANY;
+	m_id_GsFrame = wxID_ANY;
+	m_id_ProgramLogBox = wxID_ANY;
+	m_id_Disassembler = wxID_ANY;
+	m_ptr_ProgramLog = NULL;
 
-	SetAppName( L"PCSX2" );
+	SetAppName(L"PCSX2");
 	BuildCommandHash();
 }
 
 Pcsx2App::~Pcsx2App()
 {
-	pxDoAssert = pxAssertImpl_LogIt;	
-	try {
+	pxDoAssert = pxAssertImpl_LogIt;
+	try
+	{
 		vu1Thread.Cancel();
 	}
 	DESTRUCTOR_CATCHALL
@@ -754,28 +775,28 @@ Pcsx2App::~Pcsx2App()
 void Pcsx2App::CleanUp()
 {
 	CleanupResources();
-	m_Resources		= NULL;
-	m_RecentIsoList	= NULL;
+	m_Resources = NULL;
+	m_RecentIsoList = NULL;
 
 	DisableDiskLogging();
 
-	if( emuLog != NULL )
+	if (emuLog != NULL)
 	{
-		fclose( emuLog );
+		fclose(emuLog);
 		emuLog = NULL;
 	}
 
 	_parent::CleanUp();
 }
 
-__fi wxString AddAppName( const wxChar* fmt )
+__fi wxString AddAppName(const wxChar* fmt)
 {
-	return pxsFmt( fmt, WX_STR(pxGetAppName()) );
+	return pxsFmt(fmt, WX_STR(pxGetAppName()));
 }
 
-__fi wxString AddAppName( const char* fmt )
+__fi wxString AddAppName(const char* fmt)
 {
-	return pxsFmt( fromUTF8(fmt), WX_STR(pxGetAppName()) );
+	return pxsFmt(fromUTF8(fmt), WX_STR(pxGetAppName()));
 }
 
 // ------------------------------------------------------------------------------------------
@@ -796,10 +817,10 @@ __fi wxString AddAppName( const char* fmt )
 #ifdef PCSX2_DEBUG
 struct CrtDebugBreak
 {
-	CrtDebugBreak( int spot )
+	CrtDebugBreak(int spot)
 	{
 #ifdef __WXMSW__
-		_CrtSetBreakAlloc( spot );
+		_CrtSetBreakAlloc(spot);
 #endif
 	}
 };

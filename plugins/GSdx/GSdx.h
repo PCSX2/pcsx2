@@ -61,7 +61,7 @@ public:
 	std::string GetConfigS(const char* entry);
 
 	void SetCurrentRendererType(GSRendererType type);
-	GSRendererType GetCurrentRendererType();
+	GSRendererType GetCurrentRendererType() const;
 
 	void SetConfigDir(const char* dir);
 
@@ -70,6 +70,7 @@ public:
 	std::vector<GSSetting> m_gs_aspectratio;
 	std::vector<GSSetting> m_gs_upscale_multiplier;
 	std::vector<GSSetting> m_gs_max_anisotropy;
+	std::vector<GSSetting> m_gs_dithering;
 	std::vector<GSSetting> m_gs_bifilter;
 	std::vector<GSSetting> m_gs_trifilter;
 	std::vector<GSSetting> m_gs_hack;

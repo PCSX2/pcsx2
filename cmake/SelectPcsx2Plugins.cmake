@@ -3,7 +3,6 @@
 #-------------------------------------------------------------------------------
 set(msg_dep_common_libs "check these libraries -> wxWidgets (>=3.0), aio")
 set(msg_dep_pcsx2       "check these libraries -> wxWidgets (>=3.0), gtk2, zlib (>=1.2.4), pcsx2 common libs")
-set(msg_dep_cdvdgiga    "check these libraries -> gtk2, libudev")
 set(msg_dep_gsdx        "check these libraries -> opengl, png (>=1.2), zlib (>=1.2.4), X11, liblzma")
 set(msg_dep_onepad      "check these libraries -> sdl2, X11, gtk2")
 set(msg_dep_spu2x       "check these libraries -> soundtouch (>=1.5), alsa, portaudio (optional, >=1.9), sdl (>=1.2), pcsx2 common libs")
@@ -82,57 +81,6 @@ endif()
 # be build.
 #-------------------------------------------------------------------------------
 
-#---------------------------------------
-#			CDVDnull
-#---------------------------------------
-if(GTKn_FOUND)
-    set(CDVDnull TRUE)
-endif()
-#---------------------------------------
-
-#---------------------------------------
-#			cdvdGigaherz
-#---------------------------------------
-if(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/cdvdGigaherz" OR NOT Linux)
-    set(cdvdGigaherz FALSE)
-elseif(Linux AND GTKn_FOUND AND LIBUDEV_FOUND)
-    set(cdvdGigaherz TRUE)
-else()
-    set(cdvdGigaherz FALSE)
-    print_dep("Skip build of cdvdGigaherz: missing dependencies" "${msg_dep_cdvdgiga}")
-endif()
-#---------------------------------------
-
-#---------------------------------------
-#			dev9null
-#---------------------------------------
-if(GTKn_FOUND)
-    set(dev9null TRUE)
-endif()
-
-#---------------------------------------
-#			dev9ghzdrk
-#---------------------------------------
-if(NOT DISABLE_DEV9GHZDRK)
-if(GTKn_FOUND AND PCAP_FOUND AND LIBXML2_FOUND)
-    set(dev9ghzdrk TRUE)
-    list(APPEND CMAKE_MODULE_PATH
-        ${CMAKE_MODULE_PATH}/macros)
-    include(GlibCompileResourcesSupport) 
-else()
-    set(dev9ghzdrk FALSE)
-    print_dep("Skip build of dev9ghzdrk: missing dependencies" "${msg_dep_dev}")
-endif()
-endif()
-#---------------------------------------
-
-#---------------------------------------
-#			FWnull
-#---------------------------------------
-if(GTKn_FOUND)
-    set(FWnull TRUE)
-endif()
-#---------------------------------------
 
 #---------------------------------------
 #			GSnull
@@ -204,35 +152,6 @@ elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/onepad_legacy" OR APPLE)
 else()
 	set(onepad_legacy FALSE)
     print_dep("Skip build of onepad_legacy: missing dependencies" "${msg_dep_onepad}")
-endif()
-#---------------------------------------
-
-#---------------------------------------
-#			SPU2null
-#---------------------------------------
-if(GTKn_FOUND AND EXTRA_PLUGINS)
-    set(SPU2null TRUE)
-endif()
-#---------------------------------------
-
-#---------------------------------------
-#			spu2-x
-#---------------------------------------
-# requires: -SoundTouch
-#           -ALSA
-#           -SDL
-#           -common_libs
-#
-# optional: -Portaudio
-#---------------------------------------
-if((SOUNDTOUCH_FOUND AND SDLn_FOUND AND common_libs)
-	AND ((Linux AND ALSA_FOUND) OR (UNIX AND NOT Linux)))
-	set(spu2-x TRUE)
-elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x")
-	set(spu2-x FALSE)
-else()
-	set(spu2-x FALSE)
-    print_dep("Skip build of spu2-x: missing dependencies" "${msg_dep_spu2x}")
 endif()
 #---------------------------------------
 

@@ -18,27 +18,7 @@
 
 #include "Common.h"
 
-
-union _u8bit_128
-{
-	u8 _u8[16];
-	u16 _u16[8];
-	u32 _u32[4];
-	u64	_u64[2];
-};
-
-struct u8bit_128 {
-	_u8bit_128 b8;
-
-};
-
-struct _cacheS {
-	u32 tag[2];
-	u8bit_128 data[2][4];
-};
-
-extern _cacheS pCache[64];
-
+void resetCache();
 void writeCache8(u32 mem, u8 value);
 void writeCache16(u32 mem, u16 value);
 void writeCache32(u32 mem, u32 value);

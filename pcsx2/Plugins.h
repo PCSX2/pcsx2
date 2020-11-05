@@ -189,7 +189,7 @@ typedef void CALLBACK FnType_SetDir( const char* dir );
 // Important: Contents of this structure must match the order of the contents of the
 // s_MethMessCommon[] array defined in Plugins.cpp.
 //
-// Note: Open is excluded from this list because the GS and CDVD have custom signatures >_<
+// Note: Open is excluded from this list because the GS has a custom signatures >_<
 //
 struct LegacyPluginAPI_Common
 {
@@ -401,29 +401,45 @@ protected:
 	virtual bool NeedsUnload() const;
 
 	virtual bool OpenPlugin_GS();
-	virtual bool OpenPlugin_CDVD();
 	virtual bool OpenPlugin_PAD();
-	virtual bool OpenPlugin_SPU2();
-	virtual bool OpenPlugin_DEV9();
 	virtual bool OpenPlugin_USB();
-	virtual bool OpenPlugin_FW();
 	virtual bool OpenPlugin_Mcd();
 
 	void _generalclose( PluginsEnum_t pid );
 
 	virtual void ClosePlugin_GS();
-	virtual void ClosePlugin_CDVD();
 	virtual void ClosePlugin_PAD();
-	virtual void ClosePlugin_SPU2();
-	virtual void ClosePlugin_DEV9();
 	virtual void ClosePlugin_USB();
-	virtual void ClosePlugin_FW();
 	virtual void ClosePlugin_Mcd();
 
 	friend class SysMtgsThread;
 };
 
 extern const PluginInfo tbl_PluginInfo[];
+
+template<typename Func>
+static void ForPlugins(const Func& f)
+{
+	const PluginInfo* pi = tbl_PluginInfo;
+
+	do
+	{
+		f(pi);
+	}  while(++pi, pi->shortname != nullptr);
+}
+
+template<typename Func>
+static bool IfPlugins(const Func& f)
+{
+	const PluginInfo* pi = tbl_PluginInfo;
+
+	do
+	{
+		if (f(pi)) return true;
+	}  while(++pi, pi->shortname != nullptr);
+
+	return false;
+}
 
 // GetPluginManager() is a required external implementation. This function is *NOT*
 // provided by the PCSX2 core library.  It provides an interface for the linking User

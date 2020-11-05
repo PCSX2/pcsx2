@@ -53,7 +53,7 @@ public:
 	GSCapture();
 	virtual ~GSCapture();
 
-	bool BeginCapture(float fps, GSVector2i recommendedResolution, float aspect);
+	std::wstring* BeginCapture(float fps, GSVector2i recommendedResolution, float aspect);
 	bool DeliverFrame(const void* bits, int pitch, bool rgba);
 	bool EndCapture();
 

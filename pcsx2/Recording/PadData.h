@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2019  PCSX2 Dev Team
+ *  Copyright (C) 2002-2020  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,75 +15,115 @@
 
 #pragma once
 
-#include <map>
-#include <vector>
-
-
 #ifndef DISABLE_RECORDING
-static const int PadDataNormalButtonCount = 16;
-enum PadData_NormalButton
-{
-	PadData_NormalButton_UP,
-	PadData_NormalButton_RIGHT,
-	PadData_NormalButton_LEFT,
-	PadData_NormalButton_DOWN,
-	PadData_NormalButton_CROSS,
-	PadData_NormalButton_CIRCLE,
-	PadData_NormalButton_SQUARE,
-	PadData_NormalButton_TRIANGLE,
-	PadData_NormalButton_L1,
-	PadData_NormalButton_L2,
-	PadData_NormalButton_R1,
-	PadData_NormalButton_R2,
-	PadData_NormalButton_L3,
-	PadData_NormalButton_R3,
-	PadData_NormalButton_SELECT,
-	PadData_NormalButton_START
-};
 
-static const int PadDataAnalogVectorCount = 4;
-enum PadData_AnalogVector
-{
-	PadData_AnalogVector_LEFT_ANALOG_X,
-	PadData_AnalogVector_LEFT_ANALOG_Y,
-	PadData_AnalogVector_RIGHT_ANALOG_X,
-	PadData_AnalogVector_RIGHT_ANALOG_Y
-};
-
-struct PadData
+class PadData
 {
 public:
-	PadData();
-	~PadData() {}
+	/// Constants
+	static const u8 ANALOG_VECTOR_NEUTRAL = 127;
+	static const u16 END_INDEX_CONTROLLER_BUFFER = 17;
 
-	bool fExistKey = false;
-	u8 buf[2][18];
+	enum class BufferIndex
+	{
+		PressedFlagsGroupOne,
+		PressedFlagsGroupTwo,
+		RightAnalogXVector,
+		RightAnalogYVector,
+		LeftAnalogXVector,
+		LeftAnalogYVector,
+		RightPressure,
+		LeftPressure,
+		UpPressure,
+		DownPressure,
+		TrianglePressure,
+		CirclePressure,
+		CrossPressure,
+		SquarePressure,
+		L1Pressure,
+		R1Pressure,
+		L2Pressure,
+		R2Pressure
+	};
 
-	// Prints controlller data every frame to the Controller Log filter, disabled by default
-	static void LogPadData(u8 port, u16 bufCount, u8 buf[512]);
+	/// Pressure Buttons - 0-255
+	u8 circlePressure = 0;
+	u8 crossPressure = 0;
+	u8 squarePressure = 0;
+	u8 trianglePressure = 0;
+	u8 downPressure = 0;
+	u8 leftPressure = 0;
+	u8 rightPressure = 0;
+	u8 upPressure = 0;
+	u8 l1Pressure = 0;
+	u8 l2Pressure = 0;
+	u8 r1Pressure = 0;
+	u8 r2Pressure = 0;
 
-	// Normal Buttons
-	std::vector<int> GetNormalButtons(int port) const;
-	void SetNormalButtons(int port, std::vector<int> buttons);
+	/// Pressure Button Flags
+	/// NOTE - It shouldn't be possible to depress a button while also having no pressure
+	/// But for the sake of completeness, it should be tracked.
+	bool circlePressed = false;
+	bool crossPressed = false;
+	bool squarePressed = false;
+	bool trianglePressed = false;
+	bool downPressed = false;
+	bool leftPressed = false;
+	bool rightPressed = false;
+	bool upPressed = false;
+	bool l1Pressed = false;
+	bool l2Pressed = false;
+	bool r1Pressed = false;
+	bool r2Pressed = false;
 
-	// Analog Vectors
-	// max left/up    : 0
-	// neutral        : 127
-	// max right/down : 255
-	std::vector<int> GetAnalogVectors(int port) const;
-	// max left/up    : 0
-	// neutral        : 127
-	// max right/down : 255
-	void SetAnalogVectors(int port, std::vector<int> vector);
+	/// Normal (un)pressed buttons
+	bool select = false;
+	bool start = false;
+	bool l3 = false;
+	bool r3 = false;
+
+	/// Analog Sticks - 0-255 (127 center)
+	u8 leftAnalogX = ANALOG_VECTOR_NEUTRAL;
+	u8 leftAnalogY = ANALOG_VECTOR_NEUTRAL;
+	u8 rightAnalogX = ANALOG_VECTOR_NEUTRAL;
+	u8 rightAnalogY = ANALOG_VECTOR_NEUTRAL;
+
+	// Given the input buffer and the current index, updates the correct field(s)
+	void UpdateControllerData(u16 bufIndex, u8 const& bufVal);
+	u8 PollControllerData(u16 bufIndex);
+
+	// Prints current PadData to the Controller Log filter which disabled by default
+	void LogPadData(u8 const& port);
 
 private:
-	void SetNormalButton(int port, PadData_NormalButton button, int pressure);
-	int GetNormalButton(int port, PadData_NormalButton button) const;
-	void GetKeyBit(wxByte keybit[2], PadData_NormalButton button) const;
-	int GetPressureByte(PadData_NormalButton button) const;
+	struct ButtonResolver
+	{
+		u8 buttonBitmask;
+	};
 
-	void SetAnalogVector(int port, PadData_AnalogVector vector, int val);
-	int GetAnalogVector(int port, PadData_AnalogVector vector) const;
-	int GetAnalogVectorByte(PadData_AnalogVector vector) const;
+	const ButtonResolver LEFT = ButtonResolver{0b10000000};
+	const ButtonResolver DOWN = ButtonResolver{0b01000000};
+	const ButtonResolver RIGHT = ButtonResolver{0b00100000};
+	const ButtonResolver UP = ButtonResolver{0b00010000};
+	const ButtonResolver START = ButtonResolver{0b00001000};
+	const ButtonResolver R3 = ButtonResolver{0b00000100};
+	const ButtonResolver L3 = ButtonResolver{0b00000010};
+	const ButtonResolver SELECT = ButtonResolver{0b00000001};
+
+	const ButtonResolver SQUARE = ButtonResolver{0b10000000};
+	const ButtonResolver CROSS = ButtonResolver{0b01000000};
+	const ButtonResolver CIRCLE = ButtonResolver{0b00100000};
+	const ButtonResolver TRIANGLE = ButtonResolver{0b00010000};
+	const ButtonResolver R1 = ButtonResolver{0b00001000};
+	const ButtonResolver L1 = ButtonResolver{0b00000100};
+	const ButtonResolver R2 = ButtonResolver{0b00000010};
+	const ButtonResolver L2 = ButtonResolver{0b00000001};
+
+	// Checks and returns if button a is pressed or not
+	bool IsButtonPressed(ButtonResolver buttonResolver, u8 const& bufVal);
+	u8 BitmaskOrZero(bool pressed, ButtonResolver buttonInfo);
+
+	wxString RawPadBytesToString(int start, int end);
 };
+
 #endif

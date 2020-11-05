@@ -33,7 +33,6 @@ option(USE_VTUNE "Plug VTUNE to profile GSdx JIT.")
 #-------------------------------------------------------------------------------
 # Graphical option
 #-------------------------------------------------------------------------------
-option(OPENCL_API "Add OpenCL support on GSdx")
 option(REBUILD_SHADER "Rebuild GLSL/CG shader (developer option)")
 option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option)")
 
@@ -43,11 +42,12 @@ option(BUILD_REPLAY_LOADERS "Build GS replayer to ease testing (developer option
 option(PACKAGE_MODE "Use this option to ease packaging of PCSX2 (developer/distribution option)")
 option(DISABLE_CHEATS_ZIP "Disable including the cheats_ws.zip file")
 option(DISABLE_PCSX2_WRAPPER "Disable including the PCSX2-linux.sh file")
+option(DISABLE_SETCAP "Do not set files capabilities")
 option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
 option(EXTRA_PLUGINS "Build various 'extra' plugins")
 option(PORTAUDIO_API "Build portaudio support on spu2x" ON)
 option(SDL2_API "Use SDL2 on spu2x and onepad (wxWidget mustn't be built with SDL1.2 support" ON)
-option(GTK3_API "Use GTK3 api (experimental/wxWidget must be built with GTK3 support)")
+option(GTK2_API "Use GTK2 api (legacy)")
 
 if(PACKAGE_MODE)
     if(NOT DEFINED PLUGIN_DIR)
@@ -392,7 +392,7 @@ endif()
 # Note: -DGTK_DISABLE_DEPRECATED can be used to test a build without gtk deprecated feature. It could be useful to port to a newer API
 set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${HARDENING_FLAG} ${DEBUG_FLAG} ${ASAN_FLAG} ${OPTIMIZATION_FLAG} ${LTO_FLAGS} ${PGO_FLAGS} ${PLUGIN_SUPPORT}")
 # c++ only flags
-set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -std=c++11 -Wno-invalid-offsetof")
+set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -Wno-invalid-offsetof")
 
 #-------------------------------------------------------------------------------
 # Allow user to set some default flags
@@ -434,16 +434,6 @@ if(DEFINED USER_CMAKE_CXX_FLAGS)
 endif()
 # Use some default machine flags
 string(STRIP "${CMAKE_CXX_FLAGS} ${DEFAULT_CPP_FLAG}" CMAKE_CXX_FLAGS)
-
-#-------------------------------------------------------------------------------
-# Too much user/packager use experimental flags as release flags
-#-------------------------------------------------------------------------------
-if(CMAKE_BUILD_TYPE MATCHES "Release" OR PACKAGE_MODE)
-    if (GTK3_API)
-        message(WARNING "GTK3 is highly experimental besides it requires a wxWidget built with __WXGTK3__ support !!!")
-    endif()
-endif()
-
 
 #-------------------------------------------------------------------------------
 # MacOS-specific things

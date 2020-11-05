@@ -20,6 +20,8 @@
 #include "newVif.h"
 #include "IPU/IPUdma.h"
 #include "Gif_Unit.h"
+#include "IopCommon.h"
+#include "SPU2/spu2.h"
 
 using namespace R5900;
 
@@ -62,6 +64,11 @@ void hwReset()
 	// i guess this is kinda a version, it's used by some bioses
 	psHu32(DMAC_ENABLEW) = 0x1201;
 	psHu32(DMAC_ENABLER) = 0x1201;
+
+	if ((psxHu32(HW_ICFG) & (1 << 3)))
+	{
+		SPU2ps1reset();
+	}
 
 	SPU2reset();
 
@@ -391,6 +398,10 @@ bool hwDmacSrcChain(DMACh& dma, int id)
             //Set MADR to data following the tag, and end the transfer.
 			dma.madr = dma.tadr + 16;
 			//Don't Increment tadr; breaks Soul Calibur II and III
+			return true;
+		// Undefined Tag handling ends the DMA, maintaining the bad TADR and Tag in upper CHCR
+		// Some games such as DT racer try to use RET tags on IPU, which it doesn't support
+		default:
 			return true;
 	}
 

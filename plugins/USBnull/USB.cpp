@@ -15,13 +15,12 @@
 
 #include <stdlib.h>
 #include <string>
-using namespace std;
 #include "svnrev.h"
 #include "USB.h"
 #include "null/config.inl"
 
-string s_strIniPath = "inis";
-string s_strLogPath = "logs";
+std::string s_strIniPath = "inis";
+std::string s_strLogPath = "logs";
 
 const unsigned char version = PS2E_USB_VERSION;
 const unsigned char revision = 0;

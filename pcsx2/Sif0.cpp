@@ -58,6 +58,13 @@ static __fi bool WriteFifoToEE()
 	sif0.ee.cycles += readSize;	// fixme : BIAS is factored in above
 	sif0ch.qwc -= readSize;
 
+	if (sif0ch.qwc == 0 && dmacRegs.ctrl.STS == STS_SIF0)
+	{
+		//DevCon.Warning("SIF0 Stall Control");
+		if ((sif0ch.chcr.MOD == NORMAL_MODE) || ((sif0ch.chcr.TAG >> 28) & 0x7) == TAG_CNTS)
+			dmacRegs.stadr.ADDR = sif0ch.madr;
+	}
+
 	return true;
 }
 
@@ -73,9 +80,10 @@ static __fi bool WriteIOPtoFifo()
 	hw_dma9.madr += writeSize << 2;
 
 	// iop is 1/8th the clock rate of the EE and psxcycles is in words (not quadwords).
-	sif0.iop.cycles += (writeSize >> 2)/* * BIAS*/;		// fixme : should be >> 4
+	sif0.iop.cycles += writeSize; //1 word per cycle
 	sif0.iop.counter -= writeSize;
 
+	
 	return true;
 }
 
@@ -85,7 +93,7 @@ static __fi bool ProcessEETag()
 	static __aligned16 u32 tag[4];
 	tDMA_TAG& ptag(*(tDMA_TAG*)tag);
 
-	sif0.fifo.read((u32*)&tag[0], 4); // Tag
+	sif0.fifo.read((u32*)&tag[0], 2); // Tag
 	SIF_LOG("SIF0 EE read tag: %x %x %x %x", tag[0], tag[1], tag[2], tag[3]);
 
 	sif0ch.unsafeTransfer(&ptag);
@@ -105,8 +113,8 @@ static __fi bool ProcessEETag()
 		case TAG_CNT:	break;
 
 		case TAG_CNTS:
-			if (dmacRegs.ctrl.STS == STS_SIF0)
-				dmacRegs.stadr.ADDR = sif0ch.madr + (sif0ch.qwc * 16);
+			if (dmacRegs.ctrl.STS == STS_SIF0) // STS == SIF0 - Initial Value
+					dmacRegs.stadr.ADDR = sif0ch.madr;
 			break;
 
 		case TAG_END:
@@ -121,26 +129,27 @@ static __fi bool ProcessIOPTag()
 {
 	// Process DMA tag at hw_dma9.tadr
 	sif0.iop.data = *(sifData *)iopPhysMem(hw_dma9.tadr);
-	sif0.iop.data.words = (sif0.iop.data.words + 3) & 0xfffffffc; // Round up to nearest 4.
+	sif0.iop.data.words = sif0.iop.data.words;
 
 	// send the EE's side of the DMAtag.  The tag is only 64 bits, with the upper 64 bits
 	// ignored by the EE.
 
 	sif0.fifo.write((u32*)iopPhysMem(hw_dma9.tadr + 8), 2);
-	sif0.fifo.writePos = (sif0.fifo.writePos + 2) & (FIFO_SIF_W - 1);		// iggy on the upper 64.
-	sif0.fifo.size += 2;
+	//sif0.fifo.writePos = (sif0.fifo.writePos + 2) & (FIFO_SIF_W - 1);		// iggy on the upper 64.
+	//sif0.fifo.size += 2;
 
 	hw_dma9.tadr += 16; ///hw_dma9.madr + 16 + sif0.sifData.words << 2;
 
 	// We're only copying the first 24 bits.  Bits 30 and 31 (checked below) are Stop/IRQ bits.
 	hw_dma9.madr = sif0data & 0xFFFFFF;
-	if (sif0words > 0xFFFFC) DevCon.Warning("SIF0 Overrun %x", sif0words);
+	if (sif0words > 0xFFFFF) DevCon.Warning("SIF0 Overrun %x", sif0words);
 	//Maximum transfer amount 1mb-16 also masking out top part which is a "Mode" cache stuff, we don't care :)
-	sif0.iop.counter = sif0words & 0xFFFFC;
+	sif0.iop.counter = sif0words & 0xFFFFF;
 
+	sif0.iop.writeJunk = (sif0.iop.counter & 0x3) ? (4 - sif0.iop.counter & 0x3) : 0;
 	// IOP tags have an IRQ bit and an End of Transfer bit:
 	if (sif0tag.IRQ  || (sif0tag.ID & 4)) sif0.iop.end = true;
-	SIF_LOG("SIF0 IOP Tag: madr=%lx, tadr=%lx, counter=%lx (%08X_%08X)", hw_dma9.madr, hw_dma9.tadr, sif0.iop.counter, sif0words, sif0data);
+	SIF_LOG("SIF0 IOP Tag: madr=%lx, tadr=%lx, counter=%lx (%08X_%08X) Junk %d", hw_dma9.madr, hw_dma9.tadr, sif0.iop.counter, sif0words, sif0data, sif0.iop.writeJunk);
 
 	return true;
 }
@@ -190,11 +199,6 @@ static __fi void HandleEETransfer()
 		return;
 	}
 
-	if (dmacRegs.ctrl.STS == STS_SIF0)
-	{
-		DevCon.Warning("SIF0 stall control not properly implemented");
-	}
-
 	/*if (sif0ch.qwc == 0)
 		if (sif0ch.chcr.MOD == NORMAL_MODE)
 			if (!sif0.ee.end){
@@ -222,7 +226,7 @@ static __fi void HandleEETransfer()
 	if (sif0ch.qwc > 0) // If we're writing something, continue to do so.
 	{
 		// Write from Fifo to EE.
-		if (sif0.fifo.size > 0)
+		if (sif0.fifo.size >= 4)
 		{
 			WriteFifoToEE();
 		}
@@ -303,6 +307,13 @@ __fi void SIF0Dma()
 	{
 		//I realise this is very hacky in a way but its an easy way of checking if both are doing something
 		BusyCheck = 0;
+
+		if (sif0.iop.counter == 0 && sif0.iop.writeJunk && sif0.fifo.sif_free() >= sif0.iop.writeJunk)
+		{
+			SIF_LOG("Writing Junk %d", sif0.iop.writeJunk);
+			sif0.fifo.writeJunk(sif0.iop.writeJunk);
+			sif0.iop.writeJunk = 0;
+		}
 
 		if (sif0.iop.busy)
 		{

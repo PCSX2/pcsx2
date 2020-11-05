@@ -305,7 +305,7 @@ bool SysThreadBase::StateCheckInThread()
 			m_ExecMode = ExecMode_Paused;
 			m_RunningLock.Release();
 		}
-		// fallthrough...
+			[[fallthrough]];
 
 		case ExecMode_Paused:
 			while( m_ExecMode == ExecMode_Paused )
@@ -314,13 +314,15 @@ bool SysThreadBase::StateCheckInThread()
 			m_RunningLock.Acquire();
 			if( m_ExecMode != ExecMode_Closing )
 			{
-				OnResumeInThread( false );
+				OnResumeInThread( g_CDVDReset );
+				g_CDVDReset = false;
 				break;
 			}
 			m_sem_ChangingExecMode.Post();
 			
+			[[fallthrough]];
+		
 		// fallthrough if we're switching to closing state...
-
 		// -------------------------------------
 		case ExecMode_Closing:
 		{
@@ -328,7 +330,7 @@ bool SysThreadBase::StateCheckInThread()
 			m_ExecMode = ExecMode_Closed;
 			m_RunningLock.Release();
 		}
-		// Fall through
+			[[fallthrough]];
 
 		case ExecMode_Closed:
 			while( m_ExecMode == ExecMode_Closed )

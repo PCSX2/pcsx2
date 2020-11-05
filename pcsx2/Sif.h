@@ -37,6 +37,7 @@ struct sifData
 struct sifFifo
 {
 	u32 data[FIFO_SIF_W];
+	u32 junk[4];
 	s32 readPos;
 	s32 writePos;
 	s32 size;
@@ -50,11 +51,38 @@ struct sifFifo
 	{
 		if (words > 0)
 		{
+			if ((FIFO_SIF_W - size) < words)
+				DevCon.Warning("Not enough space in SIF0 FIFO!\n");
+
+			if (size < 4)
+			{
+				u32 amt = std::min(4 - size, words);
+				memcpy(&junk[size], from, amt << 2);
+			}
+
 			const int wP0 = std::min((FIFO_SIF_W - writePos), words);
 			const int wP1 = words - wP0;
 
 			memcpy(&data[writePos], from, wP0 << 2);
 			memcpy(&data[0], &from[wP0], wP1 << 2);
+
+			writePos = (writePos + words) & (FIFO_SIF_W - 1);
+			size += words;
+		}
+		SIF_LOG("  SIF + %d = %d (pos=%d)", words, size, writePos);
+	}
+
+	void writeJunk(int words)
+	{
+		if (words > 0)
+		{
+			if ((FIFO_SIF_W - size) < words)
+				DevCon.Warning("Not enough Junk space in SIF0 FIFO!\n");
+			const int wP0 = std::min((FIFO_SIF_W - writePos), words);
+			const int wP1 = words - wP0;
+
+			memcpy(&data[writePos], &junk[4-words], wP0 << 2);
+			memcpy(&data[0], &junk[(4 - words)+wP0], wP1 << 2);
 
 			writePos = (writePos + words) & (FIFO_SIF_W - 1);
 			size += words;
@@ -110,6 +138,7 @@ struct sif_iop
 	bool busy;
 
 	s32 cycles;
+	s32 writeJunk;
 
 	s32 counter; // Used to keep track of how much is left in IOP.
 	struct sifData data; // Only used in IOP.

@@ -400,12 +400,12 @@ void GIFdma()
 				{
 					// stalled.
 					// We really need to test this. Pay attention to prevcycles, as it used to trigger GIFchains in the code above. (rama)
-					//Console.WriteLn("GS Stall Control start Source = %x, Drain = %x\n MADR = %x, STADR = %x", (psHu32(0xe000) >> 4) & 0x3, (psHu32(0xe000) >> 6) & 0x3,gifch.madr, psHu32(DMAC_STADR));
+					//DevCon.Warning("GS Stall Control start Source = %x, Drain = %x\n MADR = %x, STADR = %x", (psHu32(0xe000) >> 4) & 0x3, (psHu32(0xe000) >> 6) & 0x3,gifch.madr, psHu32(DMAC_STADR));
 					gif.prevcycles = gif.gscycles;
 					gifch.tadr -= 16;
 					gifch.qwc = 0;
 					hwDmacIrq(DMAC_STALL_SIS);
-					GifDMAInt(gif.gscycles);
+					GifDMAInt(128);
 					gif.gscycles = 0;
 					return;
 				}

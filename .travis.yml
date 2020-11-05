@@ -1,25 +1,26 @@
 language: cpp
 
-sudo: required
+os: linux
 
 cache: ccache
 
 dist: xenial
 
-matrix:
+# build only master branch
+branches:
+  only:
+    - master
+
+jobs:
   include:
     - env: VERSION=8 BITS=64
       compiler: gcc
-      os: linux
     - env: VERSION=8 BITS=32
       compiler: gcc
-      os: linux
     - env: VERSION=7 BITS=32
       compiler: gcc
-      os: linux
     - env: VERSION=3.8 BITS=32
       compiler: clang
-      os: linux
 
 before_install:
   - ./travis.sh before_install

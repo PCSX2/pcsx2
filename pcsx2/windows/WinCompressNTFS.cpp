@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Win32.h"
+#include <winioctl.h>
 
 // Throws an exception based on the value returned from GetLastError.
 // Performs an option return value success/fail check on hresult.

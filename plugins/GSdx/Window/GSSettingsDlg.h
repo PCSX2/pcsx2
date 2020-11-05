@@ -91,8 +91,6 @@ class GSSettingsDlg : public GSDialog
 	std::vector<Adapter> *m_current_adapters;
 	std::string m_last_selected_adapter_id;
 
-	std::vector<GSSetting> m_ocl_devs;
-
 	std::vector<Adapter> EnumerateD3D11Adapters();
 
 	void UpdateAdapters();

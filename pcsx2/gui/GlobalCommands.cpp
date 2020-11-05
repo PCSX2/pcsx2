@@ -23,8 +23,8 @@
 #include "AppSaveStates.h"
 
 #ifndef DISABLE_RECORDING
-#	include "Recording/RecordingControls.h"
-#	include "Recording/InputRecording.h"
+#include "Recording/InputRecordingControls.h"
+#include "Recording/InputRecording.h"
 #endif
 
 // Various includes needed for dumping...
@@ -32,6 +32,7 @@
 #include "Dump.h"
 #include "DebugTools/Debug.h"
 #include "R3000A.h"
+#include "SPU2/spu2.h"
 
 // renderswitch - tells GSdx to go into dx9 sw if "renderswitch" is set.
 bool renderswitch = false;
@@ -42,15 +43,18 @@ extern bool switchAR;
 static int g_Pcsx2Recording = 0; // true 1 if recording video and sound
 
 
-KeyAcceleratorCode::KeyAcceleratorCode( const wxKeyEvent& evt )
+KeyAcceleratorCode::KeyAcceleratorCode(const wxKeyEvent& evt)
 {
 	val32 = 0;
 
 	keycode = evt.GetKeyCode();
 
-	if( evt.AltDown() ) Alt();
-	if( evt.CmdDown() ) Cmd();
-	if( evt.ShiftDown() ) Shift();
+	if (evt.AltDown())
+		Alt();
+	if (evt.CmdDown())
+		Cmd();
+	if (evt.ShiftDown())
+		Shift();
 }
 
 wxString KeyAcceleratorCode::ToString() const
@@ -58,11 +62,11 @@ wxString KeyAcceleratorCode::ToString() const
 	// Let's use wx's string formatter:
 
 	return wxAcceleratorEntry(
-		(cmd ? wxACCEL_CMD : 0) |
-		(shift ? wxACCEL_SHIFT : 0) |
-		(alt ? wxACCEL_ALT : 0),
-		keycode
-	).ToString();
+			   (cmd ? wxACCEL_CMD : 0) |
+				   (shift ? wxACCEL_SHIFT : 0) |
+				   (alt ? wxACCEL_ALT : 0),
+			   keycode)
+		.ToString();
 }
 
 LimiterModeType g_LimiterMode = Limit_Nominal;
@@ -74,11 +78,14 @@ namespace Implementations
 		g_Conf->EmuOptions.GS.FrameSkipEnable = !g_Conf->EmuOptions.GS.FrameSkipEnable;
 		SetGSConfig().FrameSkipEnable = g_Conf->EmuOptions.GS.FrameSkipEnable;
 
-		if( EmuConfig.GS.FrameSkipEnable ) {
-			OSDlog( Color_StrongRed, true, "(FrameSkipping) Enabled." );
-			OSDlog( Color_StrongRed, true, "  FrameDraws=%d, FrameSkips=%d", g_Conf->EmuOptions.GS.FramesToDraw, g_Conf->EmuOptions.GS.FramesToSkip );
-		} else {
-			OSDlog( Color_StrongRed, true, "(FrameSkipping) Disabled." );
+		if (EmuConfig.GS.FrameSkipEnable)
+		{
+			OSDlog(Color_StrongRed, true, "(FrameSkipping) Enabled.");
+			OSDlog(Color_StrongRed, true, "  FrameDraws=%d, FrameSkips=%d", g_Conf->EmuOptions.GS.FramesToDraw, g_Conf->EmuOptions.GS.FramesToSkip);
+		}
+		else
+		{
+			OSDlog(Color_StrongRed, true, "(FrameSkipping) Disabled.");
 		}
 	}
 
@@ -86,25 +93,25 @@ namespace Implementations
 	{
 		ScopedCoreThreadPause pauser;
 
-		if( !g_Conf->EmuOptions.GS.FrameLimitEnable )
+		if (!g_Conf->EmuOptions.GS.FrameLimitEnable)
 		{
 			g_Conf->EmuOptions.GS.FrameLimitEnable = true;
 			g_LimiterMode = Limit_Turbo;
-			OSDlog( Color_StrongRed, true, "(FrameLimiter) Turbo + FrameLimit ENABLED." );
+			OSDlog(Color_StrongRed, true, "(FrameLimiter) Turbo + FrameLimit ENABLED.");
 			g_Conf->EmuOptions.GS.FrameSkipEnable = !!g_Conf->Framerate.SkipOnTurbo;
 		}
-		else if( g_LimiterMode == Limit_Turbo )
+		else if (g_LimiterMode == Limit_Turbo)
 		{
 			g_LimiterMode = Limit_Nominal;
 
-			if ( g_Conf->Framerate.SkipOnLimit)
+			if (g_Conf->Framerate.SkipOnLimit)
 			{
-				OSDlog( Color_StrongRed, true,  "(FrameLimiter) Turbo DISABLED. Frameskip ENABLED" );
+				OSDlog(Color_StrongRed, true, "(FrameLimiter) Turbo DISABLED. Frameskip ENABLED");
 				g_Conf->EmuOptions.GS.FrameSkipEnable = true;
 			}
 			else
 			{
-				OSDlog( Color_StrongRed, true, "(FrameLimiter) Turbo DISABLED." );
+				OSDlog(Color_StrongRed, true, "(FrameLimiter) Turbo DISABLED.");
 				g_Conf->EmuOptions.GS.FrameSkipEnable = false;
 			}
 		}
@@ -112,14 +119,14 @@ namespace Implementations
 		{
 			g_LimiterMode = Limit_Turbo;
 
-			if ( g_Conf->Framerate.SkipOnTurbo)
+			if (g_Conf->Framerate.SkipOnTurbo)
 			{
-				OSDlog( Color_StrongRed, true, "(FrameLimiter) Turbo + Frameskip ENABLED." );
+				OSDlog(Color_StrongRed, true, "(FrameLimiter) Turbo + Frameskip ENABLED.");
 				g_Conf->EmuOptions.GS.FrameSkipEnable = true;
 			}
 			else
 			{
-				OSDlog( Color_StrongRed, true, "(FrameLimiter) Turbo ENABLED." );
+				OSDlog(Color_StrongRed, true, "(FrameLimiter) Turbo ENABLED.");
 				g_Conf->EmuOptions.GS.FrameSkipEnable = false;
 			}
 		}
@@ -138,15 +145,15 @@ namespace Implementations
 		// out a better consistency approach... -air
 
 		ScopedCoreThreadPause pauser;
-		if( g_LimiterMode == Limit_Slomo )
+		if (g_LimiterMode == Limit_Slomo)
 		{
 			g_LimiterMode = Limit_Nominal;
-			OSDlog( Color_StrongRed, true, "(FrameLimiter) SlowMotion DISABLED." );
+			OSDlog(Color_StrongRed, true, "(FrameLimiter) SlowMotion DISABLED.");
 		}
 		else
 		{
 			g_LimiterMode = Limit_Slomo;
-			OSDlog( Color_StrongRed, true, "(FrameLimiter) SlowMotion ENABLED." );
+			OSDlog(Color_StrongRed, true, "(FrameLimiter) SlowMotion ENABLED.");
 			g_Conf->EmuOptions.GS.FrameLimitEnable = true;
 		}
 
@@ -159,7 +166,7 @@ namespace Implementations
 	{
 		ScopedCoreThreadPause pauser;
 		g_Conf->EmuOptions.GS.FrameLimitEnable = !g_Conf->EmuOptions.GS.FrameLimitEnable;
-		OSDlog( Color_StrongRed, true, "(FrameLimiter) %s.", g_Conf->EmuOptions.GS.FrameLimitEnable ? "ENABLED" : "DISABLED" );
+		OSDlog(Color_StrongRed, true, "(FrameLimiter) %s.", g_Conf->EmuOptions.GS.FrameLimitEnable ? "ENABLED" : "DISABLED");
 
 		// Turbo/Slowmo don't make sense when framelimiter is toggled
 		g_LimiterMode = Limit_Nominal;
@@ -180,15 +187,25 @@ namespace Implementations
 	void GSwindow_CycleAspectRatio()
 	{
 		AspectRatioType& art = g_Conf->GSWindow.AspectRatio;
-		const char *arts = "Not modified";
+		const char* arts = "Not modified";
 		if (art == AspectRatio_Stretch && switchAR) //avoids a double 4:3 when coming from FMV aspect ratio switch
 			art = AspectRatio_4_3;
-		switch( art )
+		switch (art)
 		{
-			case AspectRatio_Stretch:	art = AspectRatio_4_3; arts = "4:3"; break;
-			case AspectRatio_4_3:		art = AspectRatio_16_9; arts = "16:9"; break;
-			case AspectRatio_16_9:		art = AspectRatio_Stretch; arts = "Stretch"; break;
-			default: break;
+			case AspectRatio_Stretch:
+				art = AspectRatio_4_3;
+				arts = "4:3";
+				break;
+			case AspectRatio_4_3:
+				art = AspectRatio_16_9;
+				arts = "16:9";
+				break;
+			case AspectRatio_16_9:
+				art = AspectRatio_Stretch;
+				arts = "Stretch";
+				break;
+			default:
+				break;
 		}
 
 		OSDlog(Color_StrongBlue, true, "(GSwindow) Aspect ratio: %s", arts);
@@ -199,66 +216,70 @@ namespace Implementations
 	{
 		g_Conf->GSWindow.OffsetX = x;
 		g_Conf->GSWindow.OffsetY = y;
-		OSDlog( Color_StrongBlue, true, "(GSwindow) Offset: x=%f, y=%f", x,y);
+		OSDlog(Color_StrongBlue, true, "(GSwindow) Offset: x=%f, y=%f", x, y);
 
 		UpdateImagePosition();
-
 	}
 
-	void GSwindow_OffsetYplus(){
-		SetOffset(g_Conf->GSWindow.OffsetX.ToFloat(), g_Conf->GSWindow.OffsetY.ToFloat()+1);
+	void GSwindow_OffsetYplus()
+	{
+		SetOffset(g_Conf->GSWindow.OffsetX.ToFloat(), g_Conf->GSWindow.OffsetY.ToFloat() + 1);
 	}
 
-	void GSwindow_OffsetYminus(){
-		SetOffset(g_Conf->GSWindow.OffsetX.ToFloat(), g_Conf->GSWindow.OffsetY.ToFloat()-1);
+	void GSwindow_OffsetYminus()
+	{
+		SetOffset(g_Conf->GSWindow.OffsetX.ToFloat(), g_Conf->GSWindow.OffsetY.ToFloat() - 1);
 	}
 
-	void GSwindow_OffsetXplus(){
-		SetOffset(g_Conf->GSWindow.OffsetX.ToFloat()+1, g_Conf->GSWindow.OffsetY.ToFloat());
+	void GSwindow_OffsetXplus()
+	{
+		SetOffset(g_Conf->GSWindow.OffsetX.ToFloat() + 1, g_Conf->GSWindow.OffsetY.ToFloat());
 	}
 
-	void GSwindow_OffsetXminus(){
-		SetOffset(g_Conf->GSWindow.OffsetX.ToFloat()-1, g_Conf->GSWindow.OffsetY.ToFloat());
+	void GSwindow_OffsetXminus()
+	{
+		SetOffset(g_Conf->GSWindow.OffsetX.ToFloat() - 1, g_Conf->GSWindow.OffsetY.ToFloat());
 	}
 
-	void GSwindow_OffsetReset(){
-		SetOffset(0,0);
+	void GSwindow_OffsetReset()
+	{
+		SetOffset(0, 0);
 	}
 
 	void SetZoomY(float zoom)
 	{
-		if( zoom <= 0 )
+		if (zoom <= 0)
 			return;
 		g_Conf->GSWindow.StretchY = zoom;
-		OSDlog( Color_StrongBlue, true, "(GSwindow) Vertical stretch: %f", zoom);
+		OSDlog(Color_StrongBlue, true, "(GSwindow) Vertical stretch: %f", zoom);
 
 		UpdateImagePosition();
 	}
 
 	void GSwindow_ZoomInY()
 	{
-		SetZoomY( g_Conf->GSWindow.StretchY.ToFloat()+1 );
+		SetZoomY(g_Conf->GSWindow.StretchY.ToFloat() + 1);
 	}
 	void GSwindow_ZoomOutY()
 	{
-		SetZoomY( g_Conf->GSWindow.StretchY.ToFloat()-1 );
+		SetZoomY(g_Conf->GSWindow.StretchY.ToFloat() - 1);
 	}
 	void GSwindow_ZoomResetY()
 	{
-		SetZoomY( 100 );
+		SetZoomY(100);
 	}
 
 	void SetZoom(float zoom)
 	{
-		if( zoom < 0 )
+		if (zoom < 0)
 			return;
 		g_Conf->GSWindow.Zoom = zoom;
-		
-		if ( zoom == 0 )
-			OSDlog( Color_StrongBlue, true, "(GSwindow) Zoom: 0 (auto, no black bars)");
+
+		if (zoom == 0)
+			OSDlog(Color_StrongBlue, true, "(GSwindow) Zoom: 0 (auto, no black bars)");
 		else
-			OSDlog( Color_StrongBlue, true, "(GSwindow) Zoom: %f", zoom);
-		
+			OSDlog(Color_StrongBlue, true, "(GSwindow) Zoom: %f", zoom);
+
 		UpdateImagePosition();
 	}
 
@@ -266,31 +287,36 @@ namespace Implementations
 	void GSwindow_ZoomIn()
 	{
 		float z = g_Conf->GSWindow.Zoom.ToFloat();
-		if( z==0 ) z = 100;
+		if (z == 0)
+			z = 100;
 		z++;
-		SetZoom( z );
+		SetZoom(z);
 	}
 	void GSwindow_ZoomOut()
 	{
 		float z = g_Conf->GSWindow.Zoom.ToFloat();
-		if( z==0 ) z = 100;
+		if (z == 0)
+			z = 100;
 		z--;
-		SetZoom( z );
+		SetZoom(z);
 	}
 	void GSwindow_ZoomToggle()
 	{
 		float z = g_Conf->GSWindow.Zoom.ToFloat();
-		if( z==100 )	z = 0;
-		else			z = 100;
+		if (z == 100)
+			z = 0;
+		else
+			z = 100;
 
-		SetZoom( z );
+		SetZoom(z);
 	}
 
 
 	void Sys_Suspend()
 	{
 		GSFrame* gsframe = wxGetApp().GetGsFramePtr();
-		if (gsframe && gsframe->IsShown() && gsframe->IsFullScreen()) {
+		if (gsframe && gsframe->IsShown() && gsframe->IsFullScreen())
+		{
 			// On some cases, probably due to driver bugs, if we don't exit fullscreen then
 			// the content stays on screen. Try to prevent that by first exiting fullscreen,
 			// but don't update the internal PCSX2 state/config, and PCSX2 will restore
@@ -303,7 +329,8 @@ namespace Implementations
 		CoreThread.Suspend();
 
 		gsframe = wxGetApp().GetGsFramePtr(); // just in case suspend removes this window
-		if (gsframe && !wxGetApp().HasGUI() && g_Conf->GSWindow.CloseOnEsc) {
+		if (gsframe && !wxGetApp().HasGUI() && g_Conf->GSWindow.CloseOnEsc)
+		{
 			// When we run with --nogui, PCSX2 only knows to exit when the gs window closes.
 			// However, by default suspend just hides the gs window, so PCSX2 will not exit
 			// and there will also be no way to exit it even if no windows are left.
@@ -312,7 +339,7 @@ namespace Implementations
 			// So if we're set to close on esc and nogui:
 			// If the user didn't specify --noguiprompt - exit immediately.
 			// else prompt to either exit or abort the suspend.
-			if (!wxGetApp().ExitPromptWithNoGUI() // configured to exit without a dialog
+			if (!wxGetApp().ExitPromptWithNoGUI()          // configured to exit without a dialog
 				|| (wxOK == wxMessageBox(_("Exit PCSX2?"), // or confirmed exit at the dialog
 										 L"PCSX2",
 										 wxICON_WARNING | wxOK | wxCANCEL)))
@@ -357,14 +384,14 @@ namespace Implementations
 
 	void Sys_TakeSnapshot()
 	{
-		GSmakeSnapshot( g_Conf->Folders.Snapshots.ToUTF8() );
+		GSmakeSnapshot(g_Conf->Folders.Snapshots.ToUTF8());
 	}
 
 	void Sys_RenderToggle()
 	{
-		if(renderswitch_delay == 0)
+		if (renderswitch_delay == 0)
 		{
-			ScopedCoreThreadPause paused_core( new SysExecEvent_SaveSinglePlugin(PluginId_GS) );
+			ScopedCoreThreadPause paused_core(new SysExecEvent_SaveSinglePlugin(PluginId_GS));
 			renderswitch = !renderswitch;
 			paused_core.AllowResume();
 			renderswitch_delay = -1;
@@ -378,7 +405,7 @@ namespace Implementations
 		// --arcum42
 
 		// FIXME: Some of the trace logs will require recompiler resets to be activated properly.
-#ifdef PCSX2_DEVBUILD		
+#ifdef PCSX2_DEVBUILD
 		SetTraceConfig().Enabled = !EmuConfig.Trace.Enabled;
 		Console.WriteLn(EmuConfig.Trace.Enabled ? "Logging Enabled." : "Logging Disabled.");
 #endif
@@ -389,28 +416,27 @@ namespace Implementations
 		// fixme : fix up gsstate mess and make it mtgs compatible -- air
 #ifdef _STGS_GSSTATE_CODE
 		wxString Text;
-		if( strgametitle[0] != 0 )
+		if (strgametitle[0] != 0)
 		{
 			// only take the first two words
 			wxString gsText;
 
-			wxStringTokenizer parts( strgametitle, L" " );
+			wxStringTokenizer parts(strgametitle, L" ");
 
-			wxString name( parts.GetNextToken() );	// first part
-			wxString part2( parts.GetNextToken() );
+			wxString name(parts.GetNextToken()); // first part
+			wxString part2(parts.GetNextToken());
 
-			if( !!part2 )
+			if (!!part2)
 				name += L"_" + part2;
 
-			gsText.Printf( L"%s.%d.gs", WX_STR(name), StatesC );
-			Text = Path::Combine( g_Conf->Folders.Savestates, gsText );
+			gsText.Printf(L"%s.%d.gs", WX_STR(name), StatesC);
+			Text = Path::Combine(g_Conf->Folders.Savestates, gsText);
 		}
 		else
 		{
 			Text = GetGSStateFilename();
 		}
 #endif
-
 	}
 
 	void Sys_RecordingToggle()
@@ -420,38 +446,50 @@ namespace Implementations
 
 		g_Pcsx2Recording ^= 1;
 
-		GetMTGS().WaitGS();		// make sure GS is in sync with the audio stream when we start.
-		if (g_Pcsx2Recording) {
+		GetMTGS().WaitGS(); // make sure GS is in sync with the audio stream when we start.
+		if (g_Pcsx2Recording)
+		{
 			// start recording
 
 			// make the recording setup dialog[s] pseudo-modal also for the main PCSX2 window
 			// (the GSdx dialog is already properly modal for the GS window)
 			bool needsMainFrameEnable = false;
-			if (GetMainFramePtr() && GetMainFramePtr()->IsEnabled()) {
+			if (GetMainFramePtr() && GetMainFramePtr()->IsEnabled())
+			{
 				needsMainFrameEnable = true;
 				GetMainFramePtr()->Disable();
 			}
 
-			if (GSsetupRecording) {
+			if (GSsetupRecording)
+			{
 				// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens.
-				if (GSsetupRecording(g_Pcsx2Recording, NULL)) {
-					if (SPU2setupRecording) SPU2setupRecording(g_Pcsx2Recording, NULL);
-				} else {
+				std::wstring* filename = nullptr;
+				if (filename = GSsetupRecording(g_Pcsx2Recording))
+				{
+					SPU2setupRecording(g_Pcsx2Recording, filename);
+					delete filename;
+				}
+				else
+				{
 					// recording dialog canceled by the user. align our state
 					g_Pcsx2Recording ^= 1;
 				}
-			} else {
-				// the GS doesn't support recording.
-				if (SPU2setupRecording) SPU2setupRecording(g_Pcsx2Recording, NULL);
+			}
+			else
+			{
+				// the GS doesn't support recording
+				SPU2setupRecording(g_Pcsx2Recording, NULL);
 			}
 
 			if (GetMainFramePtr() && needsMainFrameEnable)
 				GetMainFramePtr()->Enable();
-
-		} else {
+		}
+		else
+		{
 			// stop recording
-			if (GSsetupRecording) GSsetupRecording(g_Pcsx2Recording, NULL);
-			if (SPU2setupRecording) SPU2setupRecording(g_Pcsx2Recording, NULL);
+			if (GSsetupRecording)
+				GSsetupRecording(g_Pcsx2Recording);
+			SPU2setupRecording(g_Pcsx2Recording, NULL);
 		}
 	}
 
@@ -465,15 +503,15 @@ namespace Implementations
 
 	void FullscreenToggle()
 	{
-		if( GSFrame* gsframe = wxGetApp().GetGsFramePtr() )
-			gsframe->ShowFullScreen( !gsframe->IsFullScreen() );
+		if (GSFrame* gsframe = wxGetApp().GetGsFramePtr())
+			gsframe->ShowFullScreen(!gsframe->IsFullScreen());
 	}
 #ifndef DISABLE_RECORDING
 	void FrameAdvance()
 	{
 		if (g_Conf->EmuOptions.EnableRecordingTools)
 		{
-			g_RecordingControls.FrameAdvance();
+			g_InputRecordingControls.FrameAdvance();
 		}
 	}
 
@@ -481,7 +519,7 @@ namespace Implementations
 	{
 		if (g_Conf->EmuOptions.EnableRecordingTools)
 		{
-			g_RecordingControls.TogglePause();
+			g_InputRecordingControls.TogglePause();
 		}
 	}
 
@@ -489,7 +527,7 @@ namespace Implementations
 	{
 		if (g_Conf->EmuOptions.EnableRecordingTools)
 		{
-			g_InputRecording.RecordModeToggle();
+			g_InputRecordingControls.RecordModeToggle();
 		}
 	}
 
@@ -605,7 +643,7 @@ namespace Implementations
 		States_LoadSlot(9);
 	}
 #endif
-}
+} // namespace Implementations
 
 // --------------------------------------------------------------------------------------
 //  CommandDeclarations table
@@ -616,201 +654,221 @@ namespace Implementations
 // goold old fashioned way! :)
 
 static const GlobalCommandDescriptor CommandDeclarations[] =
-{
-	{	"States_FreezeCurrentSlot",
-		States_FreezeCurrentSlot,
-		pxL( "Save state" ),
-		pxL( "Saves the virtual machine state to the current slot." ),
-		false,
-	},
+	{
+		{
+			"States_FreezeCurrentSlot",
+			States_FreezeCurrentSlot,
+			pxL("Save state"),
+			pxL("Saves the virtual machine state to the current slot."),
+			false,
+		},
 
-	{	"States_DefrostCurrentSlot",
-		States_DefrostCurrentSlot,
-		pxL( "Load state" ),
-		pxL( "Loads a virtual machine state from the current slot." ),
-		false,
-	},
+		{
+			"States_DefrostCurrentSlot",
+			States_DefrostCurrentSlot,
+			pxL("Load state"),
+			pxL("Loads a virtual machine state from the current slot."),
+			false,
+		},
 
-	{	"States_DefrostCurrentSlotBackup",
-		States_DefrostCurrentSlotBackup,
-		pxL( "Load State Backup" ),
-		pxL( "Loads virtual machine state backup for current slot." ),
-		false,
-	},
+		{
+			"States_DefrostCurrentSlotBackup",
+			States_DefrostCurrentSlotBackup,
+			pxL("Load State Backup"),
+			pxL("Loads virtual machine state backup for current slot."),
+			false,
+		},
 
-	{	"States_CycleSlotForward",
-		States_CycleSlotForward,
-		pxL( "Cycle to next slot" ),
-		pxL( "Cycles the current save slot in +1 fashion!" ),
-		false,
-	},
+		{
+			"States_CycleSlotForward",
+			States_CycleSlotForward,
+			pxL("Cycle to next slot"),
+			pxL("Cycles the current save slot in +1 fashion!"),
+			false,
+		},
 
-	{	"States_CycleSlotBackward",
-		States_CycleSlotBackward,
-		pxL( "Cycle to prev slot" ),
-		pxL( "Cycles the current save slot in -1 fashion!" ),
-		false,
-	},
+		{
+			"States_CycleSlotBackward",
+			States_CycleSlotBackward,
+			pxL("Cycle to prev slot"),
+			pxL("Cycles the current save slot in -1 fashion!"),
+			false,
+		},
 
-	{	"Frameskip_Toggle",
-		Implementations::Frameskip_Toggle,
-		NULL,
-		NULL,
-		false,
-	},
+		{
+			"Frameskip_Toggle",
+			Implementations::Frameskip_Toggle,
+			NULL,
+			NULL,
+			false,
+		},
 
-	{	"Framelimiter_TurboToggle",
-		Implementations::Framelimiter_TurboToggle,
-		NULL,
-		NULL,
-		false,
-	},
+		{
+			"Framelimiter_TurboToggle",
+			Implementations::Framelimiter_TurboToggle,
+			NULL,
+			NULL,
+			false,
+		},
 
-	{	"Framelimiter_SlomoToggle",
-		Implementations::Framelimiter_SlomoToggle,
-		NULL,
-		NULL,
-		false,
-	},
+		{
+			"Framelimiter_SlomoToggle",
+			Implementations::Framelimiter_SlomoToggle,
+			NULL,
+			NULL,
+			false,
+		},
 
-	{	"Framelimiter_MasterToggle",
-		Implementations::Framelimiter_MasterToggle,
-		NULL,
-		NULL,
-		false,
-	},
+		{
+			"Framelimiter_MasterToggle",
+			Implementations::Framelimiter_MasterToggle,
+			NULL,
+			NULL,
+			false,
+		},
 
-	{	"GSwindow_CycleAspectRatio",
-		Implementations::GSwindow_CycleAspectRatio,
-		NULL,
-		NULL,
-		true,
-	},
+		{
+			"GSwindow_CycleAspectRatio",
+			Implementations::GSwindow_CycleAspectRatio,
+			NULL,
+			NULL,
+			true,
+		},
 
-	{	"GSwindow_ZoomIn",
-		Implementations::GSwindow_ZoomIn,
-		NULL,
-		NULL,
-		false,
-	},
+		{
+			"GSwindow_ZoomIn",
+			Implementations::GSwindow_ZoomIn,
+			NULL,
+			NULL,
+			false,
+		},
 
-	{	"GSwindow_ZoomOut",
-		Implementations::GSwindow_ZoomOut,
-		NULL,
-		NULL,
-		false,
-	},
+		{
+			"GSwindow_ZoomOut",
+			Implementations::GSwindow_ZoomOut,
+			NULL,
+			NULL,
+			false,
+		},
 
-	{	"GSwindow_ZoomToggle",
-		Implementations::GSwindow_ZoomToggle,
-		NULL,
-		NULL,
-		false,
-	},
+		{
+			"GSwindow_ZoomToggle",
+			Implementations::GSwindow_ZoomToggle,
+			NULL,
+			NULL,
+			false,
+		},
 
-	{	"GSwindow_ZoomInY"     , Implementations::GSwindow_ZoomInY     , NULL, NULL, false},
-	{	"GSwindow_ZoomOutY"    , Implementations::GSwindow_ZoomOutY    , NULL, NULL, false},
-	{	"GSwindow_ZoomResetY"  , Implementations::GSwindow_ZoomResetY  , NULL, NULL, false},
+		{"GSwindow_ZoomInY", Implementations::GSwindow_ZoomInY, NULL, NULL, false},
+		{"GSwindow_ZoomOutY", Implementations::GSwindow_ZoomOutY, NULL, NULL, false},
+		{"GSwindow_ZoomResetY", Implementations::GSwindow_ZoomResetY, NULL, NULL, false},
 
-	{	"GSwindow_OffsetYminus", Implementations::GSwindow_OffsetYminus, NULL, NULL, false},
-	{	"GSwindow_OffsetYplus" , Implementations::GSwindow_OffsetYplus , NULL, NULL, false},
-	{	"GSwindow_OffsetXminus", Implementations::GSwindow_OffsetXminus, NULL, NULL, false},
-	{	"GSwindow_OffsetXplus" , Implementations::GSwindow_OffsetXplus , NULL, NULL, false},
-	{	"GSwindow_OffsetReset" , Implementations::GSwindow_OffsetReset , NULL, NULL, false},
+		{"GSwindow_OffsetYminus", Implementations::GSwindow_OffsetYminus, NULL, NULL, false},
+		{"GSwindow_OffsetYplus", Implementations::GSwindow_OffsetYplus, NULL, NULL, false},
+		{"GSwindow_OffsetXminus", Implementations::GSwindow_OffsetXminus, NULL, NULL, false},
+		{"GSwindow_OffsetXplus", Implementations::GSwindow_OffsetXplus, NULL, NULL, false},
+		{"GSwindow_OffsetReset", Implementations::GSwindow_OffsetReset, NULL, NULL, false},
 
-	{	"Sys_SuspendResume",
-		Implementations::Sys_SuspendResume,
-		NULL,
-		NULL,
-		false,
-	},
+		{
+			"Sys_SuspendResume",
+			Implementations::Sys_SuspendResume,
+			NULL,
+			NULL,
+			false,
+		},
 
-	{	"Sys_TakeSnapshot",
-		Implementations::Sys_TakeSnapshot,
-		NULL,
-		NULL,
-		false,
-	},
+		{
+			"Sys_TakeSnapshot",
+			Implementations::Sys_TakeSnapshot,
+			NULL,
+			NULL,
+			false,
+		},
 
-	{	"Sys_RenderswitchToggle",
-		Implementations::Sys_RenderToggle,
-		NULL,
-		NULL,
-		false,
-	},
+		{
+			"Sys_RenderswitchToggle",
+			Implementations::Sys_RenderToggle,
+			NULL,
+			NULL,
+			false,
+		},
 
-	{	"Sys_LoggingToggle",
-		Implementations::Sys_LoggingToggle,
-		NULL,
-		NULL,
-		false,
-	},
+		{
+			"Sys_LoggingToggle",
+			Implementations::Sys_LoggingToggle,
+			NULL,
+			NULL,
+			false,
+		},
 
-	{	"Sys_FreezeGS",
-		Implementations::Sys_FreezeGS,
-		NULL,
-		NULL,
-		false,
-	},
-	{	"Sys_RecordingToggle",
-		Implementations::Sys_RecordingToggle,
-		NULL,
-		NULL,
-		false,
-	},
+		{
+			"Sys_FreezeGS",
+			Implementations::Sys_FreezeGS,
+			NULL,
+			NULL,
+			false,
+		},
+		{
+			"Sys_RecordingToggle",
+			Implementations::Sys_RecordingToggle,
+			NULL,
+			NULL,
+			false,
+		},
 
-	{	"FullscreenToggle",
-		Implementations::FullscreenToggle,
-		NULL,
-		NULL,
-		false,
-	},
+		{
+			"FullscreenToggle",
+			Implementations::FullscreenToggle,
+			NULL,
+			NULL,
+			false,
+		},
 
 #ifndef DISABLE_RECORDING
-	{ "FrameAdvance"				, Implementations::FrameAdvance,				NULL, NULL, false },
-	{ "TogglePause"					, Implementations::TogglePause,					NULL, NULL, false },
-	{ "InputRecordingModeToggle"	, Implementations::InputRecordingModeToggle,	NULL, NULL, false },
-	{ "States_SaveSlot0"			, Implementations::States_SaveSlot0,			NULL, NULL, false },
-	{ "States_SaveSlot1"			, Implementations::States_SaveSlot1,			NULL, NULL, false },
-	{ "States_SaveSlot2"			, Implementations::States_SaveSlot2,			NULL, NULL, false },
-	{ "States_SaveSlot3"			, Implementations::States_SaveSlot3,			NULL, NULL, false },
-	{ "States_SaveSlot4"			, Implementations::States_SaveSlot4,			NULL, NULL, false },
-	{ "States_SaveSlot5"			, Implementations::States_SaveSlot5,			NULL, NULL, false },
-	{ "States_SaveSlot6"			, Implementations::States_SaveSlot6,			NULL, NULL, false },
-	{ "States_SaveSlot7"			, Implementations::States_SaveSlot7,			NULL, NULL, false },
-	{ "States_SaveSlot8"			, Implementations::States_SaveSlot8,			NULL, NULL, false },
-	{ "States_SaveSlot9"			, Implementations::States_SaveSlot9,			NULL, NULL, false },
-	{ "States_LoadSlot0"			, Implementations::States_LoadSlot0,			NULL, NULL, false },
-	{ "States_LoadSlot1"			, Implementations::States_LoadSlot1,			NULL, NULL, false },
-	{ "States_LoadSlot2"			, Implementations::States_LoadSlot2,			NULL, NULL, false },
-	{ "States_LoadSlot3"			, Implementations::States_LoadSlot3,			NULL, NULL, false },
-	{ "States_LoadSlot4"			, Implementations::States_LoadSlot4,			NULL, NULL, false },
-	{ "States_LoadSlot5"			, Implementations::States_LoadSlot5,			NULL, NULL, false },
-	{ "States_LoadSlot6"			, Implementations::States_LoadSlot6,			NULL, NULL, false },
-	{ "States_LoadSlot7"			, Implementations::States_LoadSlot7,			NULL, NULL, false },
-	{ "States_LoadSlot8"			, Implementations::States_LoadSlot8,			NULL, NULL, false },
-	{ "States_LoadSlot9"			, Implementations::States_LoadSlot9,			NULL, NULL, false },
+		{"FrameAdvance", Implementations::FrameAdvance, NULL, NULL, false},
+		{"TogglePause", Implementations::TogglePause, NULL, NULL, false},
+		{"InputRecordingModeToggle", Implementations::InputRecordingModeToggle, NULL, NULL, false},
+		{"States_SaveSlot0", Implementations::States_SaveSlot0, NULL, NULL, false},
+		{"States_SaveSlot1", Implementations::States_SaveSlot1, NULL, NULL, false},
+		{"States_SaveSlot2", Implementations::States_SaveSlot2, NULL, NULL, false},
+		{"States_SaveSlot3", Implementations::States_SaveSlot3, NULL, NULL, false},
+		{"States_SaveSlot4", Implementations::States_SaveSlot4, NULL, NULL, false},
+		{"States_SaveSlot5", Implementations::States_SaveSlot5, NULL, NULL, false},
+		{"States_SaveSlot6", Implementations::States_SaveSlot6, NULL, NULL, false},
+		{"States_SaveSlot7", Implementations::States_SaveSlot7, NULL, NULL, false},
+		{"States_SaveSlot8", Implementations::States_SaveSlot8, NULL, NULL, false},
+		{"States_SaveSlot9", Implementations::States_SaveSlot9, NULL, NULL, false},
+		{"States_LoadSlot0", Implementations::States_LoadSlot0, NULL, NULL, false},
+		{"States_LoadSlot1", Implementations::States_LoadSlot1, NULL, NULL, false},
+		{"States_LoadSlot2", Implementations::States_LoadSlot2, NULL, NULL, false},
+		{"States_LoadSlot3", Implementations::States_LoadSlot3, NULL, NULL, false},
+		{"States_LoadSlot4", Implementations::States_LoadSlot4, NULL, NULL, false},
+		{"States_LoadSlot5", Implementations::States_LoadSlot5, NULL, NULL, false},
+		{"States_LoadSlot6", Implementations::States_LoadSlot6, NULL, NULL, false},
+		{"States_LoadSlot7", Implementations::States_LoadSlot7, NULL, NULL, false},
+		{"States_LoadSlot8", Implementations::States_LoadSlot8, NULL, NULL, false},
+		{"States_LoadSlot9", Implementations::States_LoadSlot9, NULL, NULL, false},
 #endif
-	// Command Declarations terminator:
-	// (must always be last in list!!)
-	{ NULL }
-};
+		// Command Declarations terminator:
+		// (must always be last in list!!)
+		{NULL}};
 
-void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *searchfor )
+void AcceleratorDictionary::Map(const KeyAcceleratorCode& _acode, const char* searchfor)
 {
 	// Search override mapping at ini file
 	KeyAcceleratorCode acode = _acode;
 	wxString overrideStr;
-	wxAcceleratorEntry codeParser;	//Provides string parsing capabilities
-	wxFileConfig cfg(L"", L"", L"" , GetUiKeysFilename(), wxCONFIG_USE_GLOBAL_FILE );
-	if( cfg.Read( wxString::FromUTF8(searchfor), &overrideStr) )
+	wxAcceleratorEntry codeParser; //Provides string parsing capabilities
+	wxFileConfig cfg(L"", L"", L"", GetUiKeysFilename(), wxCONFIG_USE_GLOBAL_FILE);
+	if (cfg.Read(wxString::FromUTF8(searchfor), &overrideStr))
 	{
 		// needs a '\t' prefix (originally used for wxMenu accelerators parsing)...
 		if (codeParser.FromString(wxString(L"\t") + overrideStr))
 		{
 			// ini file contains alternative parsable key combination for current 'searchfor'.
 			acode = codeParser;
-			if (acode.keycode >= 'A' && acode.keycode <= 'Z') {
+			if (acode.keycode >= 'A' && acode.keycode <= 'Z')
+			{
 				// Note that this needs to match the key event codes at Pcsx2App::PadKeyDispatch
 				// Our canonical representation is the char code (at lower case if
 				// applicable) with a separate modifier indicator, including shift.
@@ -820,9 +878,10 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 				// So we only need to change upper case letters to lower case.
 				acode.keycode += 'a' - 'A';
 			}
-			if (_acode.ToString() != acode.ToString()) {
+			if (_acode.ToString() != acode.ToString())
+			{
 				Console.WriteLn(Color_StrongGreen, L"Overriding '%s': assigning %s (instead of %s)",
-					WX_STR(fromUTF8(searchfor)), WX_STR(acode.ToString()), WX_STR(_acode.ToString()));
+								WX_STR(fromUTF8(searchfor)), WX_STR(acode.ToString()), WX_STR(_acode.ToString()));
 			}
 		}
 		else
@@ -839,13 +898,12 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 	if (iter != end())
 		result = iter->second;
 
-	if( result != NULL )
+	if (result != NULL)
 	{
 		Console.Warning(
 			L"Kbd Accelerator '%s' is mapped multiple times.\n"
 			L"\t'Command %s' is being replaced by '%s'",
-			WX_STR(acode.ToString()), WX_STR(fromUTF8( result->Id )), WX_STR(fromUTF8( searchfor ))
-		);
+			WX_STR(acode.ToString()), WX_STR(fromUTF8(result->Id)), WX_STR(fromUTF8(searchfor)));
 	}
 
 	std::unordered_map<std::string, const GlobalCommandDescriptor*>::const_iterator acceleratorIter(wxGetApp().GlobalCommands->find(searchfor));
@@ -853,15 +911,15 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 	if (acceleratorIter != wxGetApp().GlobalCommands->end())
 		result = acceleratorIter->second;
 
-	if( result == NULL )
+	if (result == NULL)
 	{
-		Console.Warning( L"Kbd Accelerator '%s' is mapped to unknown command '%s'",
-			WX_STR(acode.ToString()), WX_STR(fromUTF8( searchfor ))
-		);
+		Console.Warning(L"Kbd Accelerator '%s' is mapped to unknown command '%s'",
+						WX_STR(acode.ToString()), WX_STR(fromUTF8(searchfor)));
 	}
 	else
 	{
-		if (!strcmp("Sys_TakeSnapshot", searchfor)) {
+		if (!strcmp("Sys_TakeSnapshot", searchfor))
+		{
 			// Sys_TakeSnapshot is special in a bad way. On its own it creates a screenshot
 			// but GSdx also checks whether shift or ctrl are held down, and for each of
 			// them it does a different thing (gs dumps). So we need to map a shortcut and
@@ -872,37 +930,56 @@ void AcceleratorDictionary::Map( const KeyAcceleratorCode& _acode, const char *s
 			// and ctrl held together, but PCSX2 traditionally mapped f8, shift-f8 and ctrl-shift-f8
 			// to Sys_TakeSnapshot, so let's not change it - we'll keep adding only shift and
 			// ctrl-shift to the base shortcut.
-			if (acode.cmd || acode.shift) {
+			if (acode.cmd || acode.shift)
+			{
 				Console.Error(L"Cannot map %s to Sys_TakeSnapshot - must not include Shift or Ctrl - these modifiers will be added automatically.",
-					WX_STR(acode.ToString()));
+							  WX_STR(acode.ToString()));
 			}
-			else {
-				KeyAcceleratorCode shifted(acode); shifted.Shift();
-				KeyAcceleratorCode controlledShifted(shifted); controlledShifted.Cmd();
+			else
+			{
+				KeyAcceleratorCode shifted(acode);
+				shifted.Shift();
+				KeyAcceleratorCode controlledShifted(shifted);
+				controlledShifted.Cmd();
 				operator[](acode.val32) = result;
 				operator[](shifted.val32) = result;
 				operator[](controlledShifted.val32) = result;
 
-				if (_acode.val32 != acode.val32) { // overriding default
+				if (_acode.val32 != acode.val32)
+				{ // overriding default
 					Console.WriteLn(Color_Green, L"Sys_TakeSnapshot: automatically mapping also %s and %s",
-						WX_STR(shifted.ToString()),
-						WX_STR(controlledShifted.ToString())
-						);
+									WX_STR(shifted.ToString()),
+									WX_STR(controlledShifted.ToString()));
 				}
 			}
 		}
-		else {
+		else
+		{
 			operator[](acode.val32) = result;
 		}
 	}
 }
 
+KeyAcceleratorCode AcceleratorDictionary::findKeycodeWithCommandId(const char* commandId)
+{
+	for (auto entry = this->begin(); entry != this->end(); entry++)
+	{
+		if (strcmp(entry->second->Id, commandId) == 0)
+		{
+			const KeyAcceleratorCode keycode(entry->first);
+			return keycode;
+		}
+	}
+	return KeyAcceleratorCode(0);
+}
+
 void Pcsx2App::BuildCommandHash()
 {
-	if( !GlobalCommands ) GlobalCommands = std::unique_ptr<CommandDictionary>(new CommandDictionary);
+	if (!GlobalCommands)
+		GlobalCommands = std::unique_ptr<CommandDictionary>(new CommandDictionary);
 
 	const GlobalCommandDescriptor* curcmd = CommandDeclarations;
-	while( curcmd->Invoke != NULL )
+	while (curcmd->Invoke != NULL)
 	{
 		(*GlobalCommands)[curcmd->Id] = curcmd;
 		curcmd++;
@@ -913,18 +990,21 @@ void Pcsx2App::InitDefaultGlobalAccelerators()
 {
 	typedef KeyAcceleratorCode AAC;
 
-	if( !GlobalAccels ) GlobalAccels = std::unique_ptr<AcceleratorDictionary>(new AcceleratorDictionary);
+	if (!GlobalAccels)
+		GlobalAccels = std::unique_ptr<AcceleratorDictionary>(new AcceleratorDictionary);
 
 	// Why do we even have those here? all of them seem to be overridden
 	// by GSPanel::m_Accels ( GSPanel::InitDefaultAccelerators() )
+	// - One reason is because this is used to initialize shortcuts in the MainFrame's UI (see - MainFrame::AppendShortcutToMenuOption)
+	//   this is before the GS Window has been initialized.
 
-	GlobalAccels->Map( AAC( WXK_F1 ),			"States_FreezeCurrentSlot" );
-	GlobalAccels->Map( AAC( WXK_F3 ),			"States_DefrostCurrentSlot" );
-	GlobalAccels->Map( AAC( WXK_F2 ),			"States_CycleSlotForward" );
-	GlobalAccels->Map( AAC( WXK_F2 ).Shift(),	"States_CycleSlotBackward" );
+	GlobalAccels->Map(AAC(WXK_F1), "States_FreezeCurrentSlot");
+	GlobalAccels->Map(AAC(WXK_F3), "States_DefrostCurrentSlot");
+	GlobalAccels->Map(AAC(WXK_F2), "States_CycleSlotForward");
+	GlobalAccels->Map(AAC(WXK_F2).Shift(), "States_CycleSlotBackward");
 
-	GlobalAccels->Map( AAC( WXK_F4 ),			"Framelimiter_MasterToggle");
-	GlobalAccels->Map( AAC( WXK_F4 ).Shift(),	"Frameskip_Toggle");
+	GlobalAccels->Map(AAC(WXK_F4), "Framelimiter_MasterToggle");
+	GlobalAccels->Map(AAC(WXK_F4).Shift(), "Frameskip_Toggle");
 
 	/*GlobalAccels->Map( AAC( WXK_ESCAPE ),		"Sys_Suspend");
 	GlobalAccels->Map( AAC( WXK_F8 ),			"Sys_TakeSnapshot");

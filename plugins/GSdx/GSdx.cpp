@@ -91,9 +91,6 @@ bool GSdxApp::LoadResource(int id, std::vector<char>& buff, const char* type)
 		case IDR_TFX_FS_GLSL:
 			path = "/GSdx/res/glsl/tfx_fs.glsl";
 			break;
-		case IDR_TFX_CL:
-			path = "/GSdx/res/tfx.cl";
-			break;
 		case IDR_FONT_ROBOTO:
 			path = "/GSdx/res/fonts-roboto/Roboto-Regular.ttf";
 			break;
@@ -208,26 +205,16 @@ void GSdxApp::Init()
 	m_section = "Settings";
 
 #ifdef _WIN32
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_HW), "Direct3D 11", "Hardware"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW), "OpenGL", "Hardware"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_SW), "Direct3D 11", "Software"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_SW), "OpenGL", "Software"));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_HW), "Direct3D 11", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW), "OpenGL", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_SW), "Software", ""));
 #else // Linux
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW), "OpenGL", "Hardware"));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_SW), "OpenGL", "Software"));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW), "OpenGL", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_SW), "Software", ""));
 #endif
 
 	// The null renderer goes third, it has use for benchmarking purposes in a release build
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null), "None", "Core Benchmark"));
-
-#ifdef ENABLE_OPENCL
-	// OpenCL stuff goes last
-	// FIXME openCL isn't attached to a device (could be impacted by the window management stuff however)
-#ifdef _WIN32
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_OpenCL),	"Direct3D 11",	"OpenCL"));
-#endif
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_OpenCL),		"OpenGL",		"OpenCL"));
-#endif
+	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null), "Null", ""));
 
 	m_gs_interlace.push_back(GSSetting(0, "None", ""));
 	m_gs_interlace.push_back(GSSetting(1, "Weave tff", "saw-tooth"));
@@ -255,6 +242,10 @@ void GSdxApp::Init()
 	m_gs_max_anisotropy.push_back(GSSetting(4, "4x", ""));
 	m_gs_max_anisotropy.push_back(GSSetting(8, "8x", ""));
 	m_gs_max_anisotropy.push_back(GSSetting(16, "16x", ""));
+
+	m_gs_dithering.push_back(GSSetting(0, "Off", ""));
+	m_gs_dithering.push_back(GSSetting(1, "Scaled", ""));
+	m_gs_dithering.push_back(GSSetting(2, "Unscaled", "Default"));
 
 	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Nearest), "Nearest", ""));
 	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Forced_But_Sprite), "Bilinear", "Forced excluding sprite"));
@@ -295,8 +286,8 @@ void GSdxApp::Init()
 	};
 
 	m_gs_acc_date_level.push_back(GSSetting(0, "Off", ""));
-	m_gs_acc_date_level.push_back(GSSetting(1, "Fast", "Default"));
-	m_gs_acc_date_level.push_back(GSSetting(2, "Full", "Slow"));
+	m_gs_acc_date_level.push_back(GSSetting(1, "Basic", ""));
+	m_gs_acc_date_level.push_back(GSSetting(2, "Full", "Default"));
 
 	m_gs_acc_blend_level.push_back(GSSetting(0, "None", "Fastest"));
 	m_gs_acc_blend_level.push_back(GSSetting(1, "Basic", "Recommended"));
@@ -329,7 +320,7 @@ void GSdxApp::Init()
 	m_default_configuration["linux_replay"]                               = "1";
 #endif
 	m_default_configuration["aa1"]                                        = "0";
-	m_default_configuration["accurate_date"]                              = "1";
+	m_default_configuration["accurate_date"]                              = "2";
 	m_default_configuration["accurate_blending_unit"]                     = "1";
 	m_default_configuration["AspectRatio"]                                = "1";
 	m_default_configuration["autoflush_sw"]                               = "1";
@@ -344,7 +335,7 @@ void GSdxApp::Init()
 	m_default_configuration["debug_glsl_shader"]                          = "0";
 	m_default_configuration["debug_opengl"]                               = "0";
 	m_default_configuration["disable_hw_gl_draw"]                         = "0";
-	m_default_configuration["dithering_ps2"]                              = "1";
+	m_default_configuration["dithering_ps2"]                              = "2";
 	m_default_configuration["dump"]                                       = "0";
 	m_default_configuration["extrathreads"]                               = "2";
 	m_default_configuration["extrathreads_height"]                        = "4";
@@ -360,7 +351,6 @@ void GSdxApp::Init()
 	m_default_configuration["ModeHeight"]                                 = "480";
 	m_default_configuration["ModeWidth"]                                  = "640";
 	m_default_configuration["NTSC_Saturation"]                            = "1";
-	m_default_configuration["ocldev"]                                     = "";
 #ifdef _WIN32
 	m_default_configuration["osd_fontname"]                               = "C:\\Windows\\Fonts\\my_favorite_font_e_g_tahoma.ttf";
 #else
@@ -565,7 +555,7 @@ void GSdxApp::SetCurrentRendererType(GSRendererType type)
 	m_current_renderer_type = type;
 }
 
-GSRendererType GSdxApp::GetCurrentRendererType()
+GSRendererType GSdxApp::GetCurrentRendererType() const
 {
 	return m_current_renderer_type;
 }

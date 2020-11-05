@@ -41,9 +41,11 @@ BIOS
 #include "GS.h"
 #include "VUmicro.h"
 #include "MTVU.h"
+#include "DEV9/DEV9.h"
 
 #include "ps2/HwInternal.h"
 #include "ps2/BiosTools.h"
+#include "SPU2/spu2.h"
 
 #include "Utilities/PageFaultSource.h"
 

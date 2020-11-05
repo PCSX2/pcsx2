@@ -99,7 +99,7 @@ run_cppcheck()
 
     define=""
     for undef in _WINDOWS _M_AMD64 _MSC_VER WIN32 __INTEL_COMPILER __x86_64__ \
-    __SSE4_1__ __SSSE3__ __SSE__ __AVX2__ __USE_ISOC11 ASAN_WORKAROUND ENABLE_OPENCL ENABLE_OGL_DEBUG \
+    __SSE4_1__ __SSSE3__ __SSE__ __AVX2__ __USE_ISOC11 ASAN_WORKAROUND ENABLE_OGL_DEBUG \
     XBYAK_USE_MMAP_ALLOCATOR MAP_ANONYMOUS MAP_ANON XBYAK_DISABLE_AVX512
     do
         define="$define -U$undef"
@@ -207,11 +207,10 @@ for ARG in "$@"; do
         --sdl12             ) flags="$flags -DSDL2_API=FALSE" ;;
         --extra             ) flags="$flags -DEXTRA_PLUGINS=TRUE" ;;
         --asan              ) flags="$flags -DUSE_ASAN=TRUE" ;;
-        --gtk3              ) flags="$flags -DGTK3_API=TRUE" ;;
+        --gtk2              ) flags="$flags -DGTK2_API=TRUE" ;;
         --lto               ) flags="$flags -DUSE_LTO=TRUE" ;;
         --pgo-optimize      ) flags="$flags -DUSE_PGO_OPTIMIZE=TRUE" ;;
         --pgo-generate      ) flags="$flags -DUSE_PGO_GENERATE=TRUE" ;;
-        --no-dev9ghzdrk     ) flags="$flags -DDISABLE_DEV9GHZDRK=TRUE" ;;
         --no-portaudio      ) flags="$flags -DPORTAUDIO_API=FALSE" ;;
         --no-simd           ) flags="$flags -DDISABLE_ADVANCE_SIMD=TRUE" ;;
         --no-trans          ) flags="$flags -DNO_TRANSLATION=TRUE" ;;
@@ -219,7 +218,6 @@ for ARG in "$@"; do
         --no-cross-multilib ) useCross=0; ;;
         --coverity          ) CoverityBuild=1; cleanBuild=1; ;;
         --vtune             ) flags="$flags -DUSE_VTUNE=TRUE" ;;
-        --opencl            ) flags="$flags -DOPENCL_API=TRUE" ;;
         -D*                 ) flags="$flags $ARG" ;;
 
         *)
@@ -238,15 +236,13 @@ for ARG in "$@"; do
             echo
             echo "** Developer option **"
             echo "--cross-multilib: Build a 32bit PCSX2 on a 64bit machine using multilib."
-            echo "--opencl        : Enable experimental OpenCL support"
             echo
             echo "** Distribution Compatibilities **"
             echo "--sdl12         : Build with SDL1.2 (requires if wx is linked against SDL1.2)"
-            echo "--no-dev9ghzdrk : Skip dev9ghzdrk. (Avoids needing escalated privileges to build.)"
             echo "--no-portaudio  : Skip portaudio for spu2x."
             echo
             echo "** Expert Developer option **"
-            echo "--gtk3          : replace GTK2 by GTK3"
+            echo "--gtk2          : use GTK 2 instead of GTK 3"
             echo "--no-cross-multilib: Build a native PCSX2 (nonfunctional recompiler)"
             echo "--no-trans      : Don't regenerate mo files when building."
             echo "--clang         : Build with Clang/llvm"

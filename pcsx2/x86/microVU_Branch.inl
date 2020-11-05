@@ -71,7 +71,8 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
 	}
 
 	// Save MAC, Status and CLIP Flag Instances
-	xMOV(ptr32[&mVU.regs().VI[REG_STATUS_FLAG].UL], getFlagReg(fStatus));
+	mVUallocSFLAGc(gprT1, gprT2, fStatus);
+	xMOV(ptr32[&mVU.regs().VI[REG_STATUS_FLAG].UL], gprT1);
 	mVUallocMFLAGa(mVU, gprT1, fMac);
 	mVUallocCFLAGa(mVU, gprT2, fClip);
 	xMOV(ptr32[&mVU.regs().VI[REG_MAC_FLAG].UL], gprT1);
@@ -96,7 +97,7 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
 		xSHUF.PS(xmmT1, xmmT1, 0);
 		xMOVAPS(ptr128[&mVU.regs().micro_macflags], xmmT1);
 
-		xMOVDZX(xmmT1, ptr32[&mVU.regs().VI[REG_STATUS_FLAG].UL]);
+		xMOVDZX(xmmT1, getFlagReg(fStatus));
 		xSHUF.PS(xmmT1, xmmT1, 0);
 		xMOVAPS(ptr128[&mVU.regs().micro_statusflags], xmmT1);
 	}
@@ -170,7 +171,8 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 	}
 
 	// Save MAC, Status and CLIP Flag Instances
-	xMOV(ptr32[&mVU.regs().VI[REG_STATUS_FLAG].UL],	getFlagReg(fStatus));
+	mVUallocSFLAGc(gprT1, gprT2, fStatus);
+	xMOV(ptr32[&mVU.regs().VI[REG_STATUS_FLAG].UL], gprT1);
 	mVUallocMFLAGa(mVU, gprT1, fMac);
 	mVUallocCFLAGa(mVU, gprT2, fClip);
 	xMOV(ptr32[&mVU.regs().VI[REG_MAC_FLAG].UL],	gprT1);
@@ -196,7 +198,7 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 		xSHUF.PS(xmmT1, xmmT1, 0);
 		xMOVAPS(ptr128[&mVU.regs().micro_macflags], xmmT1);
 
-		xMOVDZX(xmmT1, ptr32[&mVU.regs().VI[REG_STATUS_FLAG].UL]);
+		xMOVDZX(xmmT1, getFlagReg(fStatus));
 		xSHUF.PS(xmmT1, xmmT1, 0);
 		xMOVAPS(ptr128[&mVU.regs().micro_statusflags], xmmT1);
 	}
@@ -365,6 +367,7 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
 	
 	if (mVUup.tBit)
 	{
+		DevCon.Warning("T-Bit on branch, please report if broken");
 		u32 tempPC = iPC;
 		xTEST(ptr32[&VU0.VI[REG_FBRST].UL], (isVU1 ? 0x800 : 0x8));
 		xForwardJump32 eJMP(Jcc_Zero);
@@ -403,28 +406,32 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
 		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
 		xJMP(mVU.exitFunct);
 		eJMP.SetTarget();
-		iPC = tempPC;		
+		iPC = tempPC;
 	}
-	xCMP(ptr16[&mVU.branch], 0);
 
 	if (mVUup.eBit) { // Conditional Branch With E-Bit Set
 		if(mVUlow.evilBranch) 
 			DevCon.Warning("End on evil branch! - Not implemented! - If game broken report to PCSX2 Team");
-		
-		incPC(3);
+
 		mVUendProgram(mVU, &mFC, 2);
-		xForwardJump32 eJMP(xInvertCond((JccComparisonType)JMPcc));
+		xCMP(ptr16[&mVU.branch], 0);
+
+		incPC(3);
+		xForwardJump32 eJMP(((JccComparisonType)JMPcc));
 			incPC(1); // Set PC to First instruction of Non-Taken Side
 			xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
 			xJMP(mVU.exitFunct);
-			eJMP.SetTarget();
+		eJMP.SetTarget();
 		incPC(-4); // Go Back to Branch Opcode to get branchAddr
+
 		iPC = branchAddr(mVU)/4;
 		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
 		xJMP(mVU.exitFunct);
 		return;
 	}
 	else { // Normal Conditional Branch
+		xCMP(ptr16[&mVU.branch], 0);
+
 		incPC(3);
 		if(mVUlow.evilBranch) //We are dealing with an evil evil block, so we need to process this slightly differently
 		{

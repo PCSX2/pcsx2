@@ -392,13 +392,13 @@ u32 immRespHndl(u32 cmd, u32 data)
         case 0x01:
             break;  //Returns Nothing (old value in GPUREAD remains unchanged)
         case 0x02:
-            data = pgif1reg & 0x001FFFFF;
+            data = pgif1reg & 0x000FFFFF;
             break;  //Read Texture Window setting  ;GP0(E2h) ;20bit/MSBs=Nothing
         case 0x03:
-            data = pgif2reg & 0x001FFFFF;
+            data = pgif2reg & 0x000FFFFF;
             break;  //Read Draw area top left      ;GP0(E3h) ;20bit/MSBs=Nothing
         case 0x04:
-            data = pgif3reg & 0x001FFFFF;
+            data = pgif3reg & 0x000FFFFF;
             break;  //Read Draw area bottom right  ;GP0(E4h) ;20bit/MSBs=Nothing
         case 0x05:
             data = pgif4reg & 0x003FFFFF;
@@ -627,7 +627,7 @@ void PGIFw(int addr, u32 data)
     } else if (addr == PGPU_DAT_FIFO) {  //reverse write - mind the direction set by reg f380
         //PGpuDataReg = data;
         ringBufPut(&pgifDatRbC, &data);
-        //	Console.WriteLn( "\n\r PGIF REVERSE !!! DATA write 0x%08X = 0x%08X  IF_CTRL= %08X   PGPU_STAT= %08X  CmdCnt 0x%X \n\r",  addr, data,  getUpdPgifCtrlReg(),  getUpdPgpuStatReg(), pgifCmdRbC.count);
+		// 	Console.WriteLn( "\n\r PGIF REVERSE !!! DATA write 0x%08X = 0x%08X  IF_CTRL= %08X   PGPU_STAT= %08X  CmdCnt 0x%X \n\r",  addr, data,  getUpdPgifCtrlReg(),  getUpdPgpuStatReg(), pgifCmdRbC.count);
         drainPgpuDmaNrToIop();
     } else if (addr == PGPU_STAT) {
         PGpuStatReg = data;          //Should all bits be writable?

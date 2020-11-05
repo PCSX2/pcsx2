@@ -88,13 +88,12 @@ static void PostPluginStatus( PluginEventType pevt )
 
 static void ConvertPluginFilenames( wxString (&passins)[PluginId_Count] )
 {
-	const PluginInfo* pi = tbl_PluginInfo; do
-	{
+	ForPlugins([&] (const PluginInfo * pi) {
 		passins[pi->id] = wxGetApp().Overrides.Filenames[pi->id].GetFullPath();
 
 		if( passins[pi->id].IsEmpty() || !wxFileExists( passins[pi->id] ) )
 			passins[pi->id] = g_Conf->FullpathTo( pi->id );
-	} while( ++pi, pi->shortname != NULL );
+	});
 }
 
 typedef void (AppCorePlugins::*FnPtr_AppPluginManager)();
@@ -335,12 +334,6 @@ void AppCorePlugins::Open()
 {
 	AffinityAssert_AllowFrom_CoreThread();
 
-	/*if( !GetSysExecutorThread().IsSelf() )
-	{
-		GetSysExecutorThread().ProcessEvent( new SysExecEvent_AppPluginManager( &AppCorePlugins::Open ) );
-		return;
-	}*/
-
     SetLogFolder( GetLogFolder().ToString() );
 	SetSettingsFolder( GetSettingsFolder().ToString() );
 
@@ -370,7 +363,7 @@ bool AppCorePlugins::OpenPlugin_GS()
 void AppCorePlugins::ClosePlugin_GS()
 {
 	_parent::ClosePlugin_GS();
-	if( CloseViewportWithPlugins && GetMTGS().IsSelf() && GSopen2 ) sApp.CloseGsPanel();
+	if( GetMTGS().IsSelf() && GSopen2 ) sApp.CloseGsPanel();
 }
 
 
@@ -547,7 +540,6 @@ void SysExecEvent_SaveSinglePlugin::InvokeEvent()
 	s_DisableGsWindow = true;		// keeps the GS window smooth by avoiding closing the window
 
 	ScopedCoreThreadPause paused_core;
-	//_LoadPluginsImmediate();
 
 	if( CorePlugins.AreLoaded() )
 	{
@@ -569,8 +561,6 @@ void SysExecEvent_SaveSinglePlugin::InvokeEvent()
 			Console.WriteLn( Color_Green, L"Recovering single plugin: " + tbl_PluginInfo[m_pid].GetShortname() );
 			memLoadingState load( plugstore.get() );
 			GetCorePlugins().Freeze( m_pid, load );
-			// GS plugin suspend / resume hack. Removed in r4363, hopefully never to return :p
-			//GetCorePlugins().Close( m_pid );		// hack for stupid GS plugins.
 		}
 	}
 

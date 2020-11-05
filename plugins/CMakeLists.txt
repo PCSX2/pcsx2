@@ -6,26 +6,6 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 endif()
 
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/cdvdGigaherz" AND cdvdGigaherz)
-	add_subdirectory(cdvdGigaherz/src)
-endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/CDVDnull" AND CDVDnull)
-	add_subdirectory(CDVDnull)
-endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/dev9null" AND dev9null)
-	add_subdirectory(dev9null)
-endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/dev9ghzdrk" AND dev9ghzdrk)
-	add_subdirectory(dev9ghzdrk)
-endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/FWnull" AND FWnull)
-	add_subdirectory(FWnull)
-endif()
-
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSdx" AND GSdx)
 	add_subdirectory(GSdx)
 endif()
@@ -48,14 +28,6 @@ endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/PadNull" AND PadNull)
 	add_subdirectory(PadNull)
-endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/SPU2null" AND SPU2null)
-	add_subdirectory(SPU2null)
-endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/spu2-x" AND spu2-x)
-	add_subdirectory(spu2-x/src)
 endif()
 
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/USBnull" AND USBnull)

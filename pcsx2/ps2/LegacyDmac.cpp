@@ -421,14 +421,50 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 			{
 				if (!QueuedDMA.empty()) StartQueuedDMA();
 			}
+#ifdef PCSX2_DEVBUILD
 			if ((oldvalue & 0x30) != (value & 0x30))
 			{
-				DevCon.Warning("32bit Stall Source Changed to %x", (value & 0x30) >> 4);
+				std::string new_source;
+
+				switch ((value & 0x30) >> 4)
+				{
+				case 1:
+					new_source = "SIF0";
+					break;
+				case 2:
+					new_source = "fromSPR";
+					break;
+				case 3:
+					new_source = "fromIPU";
+					break;
+				default:
+					new_source = "None";
+					break;
+				}
+				DevCon.Warning("32bit Stall Source Changed to %s", new_source.c_str());
 			}
 			if ((oldvalue & 0xC0) != (value & 0xC0))
 			{
-				DevCon.Warning("32bit Stall Destination Changed to %x", (value & 0xC0) >> 4);
+				std::string new_dest;
+
+				switch ((value & 0xC0) >> 6)
+				{
+				case 1:
+					new_dest = "VIF1";
+					break;
+				case 2:
+					new_dest = "GIF";
+					break;
+				case 3:
+					new_dest = "SIF1";
+					break;
+				default:
+					new_dest = "None";
+					break;
+				}
+				DevCon.Warning("32bit Stall Destination Changed to %s", new_dest.c_str());
 			}
+#endif
 			return false;
 		}
 

@@ -404,7 +404,7 @@ GSCapture::~GSCapture()
 	EndCapture();
 }
 
-bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float aspect)
+std::wstring* GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float aspect)
 {
 	printf("Recommended resolution: %d x %d, DAR for muxing: %.4f\n", recommendedResolution.x, recommendedResolution.y, aspect);
 	std::lock_guard<std::recursive_mutex> lock(m_lock);
@@ -417,13 +417,35 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 
 	GSCaptureDlg dlg;
 
-	if(IDOK != dlg.DoModal()) return false;
+	if (IDOK != dlg.DoModal())
+		return nullptr;
 
-	m_size.x = (dlg.m_width + 7) & ~7;
-	m_size.y = (dlg.m_height + 7) & ~7;
+	{
+		int start = dlg.m_filename.length() - 4;
+		if (start > 0)
+		{
+			std::string test = dlg.m_filename.substr(start);
+			std::transform(test.begin(), test.end(), test.begin(), (char(_cdecl*)(int))tolower);
+			if (test.compare(".avi") != 0)
+				dlg.m_filename += ".avi";
+		}
+		else
+			dlg.m_filename += ".avi";
+
+		FILE* test = fopen(dlg.m_filename.c_str(), "w");
+		if (test)
+			fclose(test);
+		else
+		{
+			dlg.InvalidFile();
+			return nullptr;
+		}
+	}
 
 	std::wstring fn{dlg.m_filename.begin(), dlg.m_filename.end()};
 
+	m_size.x = (dlg.m_width + 7) & ~7;
+	m_size.y = (dlg.m_height + 7) & ~7;
 	//
 
 	HRESULT hr;
@@ -436,7 +458,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	|| FAILED(hr = cgb->SetFiltergraph(m_graph))
 	|| FAILED(hr = cgb->SetOutputFileName(&MEDIASUBTYPE_Avi, fn.c_str(), &mux, NULL)))
 	{
-		return false;
+		return nullptr;
 	}
 
 	m_src = new GSSource(m_size.x, m_size.y, fps, NULL, hr, dlg.m_colorspace);
@@ -444,31 +466,30 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	if (dlg.m_enc==0)
 	{
 		if (FAILED(hr = m_graph->AddFilter(m_src, L"Source")))
-			return false;
+			return nullptr;
 		if (FAILED(hr = m_graph->ConnectDirect(GetFirstPin(m_src, PINDIR_OUTPUT), GetFirstPin(mux, PINDIR_INPUT), NULL)))
-			return false;
+			return nullptr;
 	}
 	else
 	{
 		if(FAILED(hr = m_graph->AddFilter(m_src, L"Source"))
 		|| FAILED(hr = m_graph->AddFilter(dlg.m_enc, L"Encoder")))
 		{
-			return false;
+			return nullptr;
 		}
 
 		if(FAILED(hr = m_graph->ConnectDirect(GetFirstPin(m_src, PINDIR_OUTPUT), GetFirstPin(dlg.m_enc, PINDIR_INPUT), NULL))
 		|| FAILED(hr = m_graph->ConnectDirect(GetFirstPin(dlg.m_enc, PINDIR_OUTPUT), GetFirstPin(mux, PINDIR_INPUT), NULL)))
 		{
-			return false;
+			return nullptr;
 		}
 	}
 
 	BeginEnumFilters(m_graph, pEF, pBF)
 	{
-		CFilterInfo fi;
-		pBF->QueryFilterInfo(&fi);
-		std::wstring s{fi.achName};
-		printf("Filter [%p]: %s\n", pBF.p, std::string{s.begin(), s.end()}.c_str());
+		CFilterInfo filter;
+		pBF->QueryFilterInfo(&filter);
+		printf("Filter [%p]: %ls\n", pBF.p, &(*filter.achName));
 
 		BeginEnumPins(pBF, pEP, pPin)
 		{
@@ -477,8 +498,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 
 			CPinInfo pi;
 			pPin->QueryPinInfo(&pi);
-			std::wstring s{pi.achName};
-			printf("- Pin [%p - %p]: %s (%s)\n", pPin.p, pPinTo.p, std::string{s.begin(), s.end()}.c_str(), pi.dir ? "out" : "in");
+			printf("- Pin [%p - %p]: %ls (%s)\n", pPin.p, pPinTo.p, &(*filter.achName), pi.dir ? "out" : "in");
 		}
 		EndEnumPins
 	}
@@ -488,6 +508,8 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 
 	CComQIPtr<IGSSource>(m_src)->DeliverNewSegment();
 
+	m_capturing = true;
+	return new std::wstring(dlg.m_filename.begin(), dlg.m_filename.end() - 3);
 #elif defined(__unix__)
 	// Note I think it doesn't support multiple depth creation
 	GSmkdir(m_out_dir.c_str());
@@ -501,11 +523,10 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	for(int i = 0; i < m_threads; i++) {
 		m_workers.push_back(std::unique_ptr<GSPng::Worker>(new GSPng::Worker(&GSPng::Process)));
 	}
-#endif
 
 	m_capturing = true;
-
-	return true;
+	return new std::wstring();
+#endif
 }
 
 bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)

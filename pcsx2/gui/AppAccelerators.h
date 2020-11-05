@@ -58,6 +58,11 @@ struct KeyAcceleratorCode
 		keycode = code;
 	}
 
+	KeyAcceleratorCode(u32 value)
+	{
+		val32 = value;
+	}
+
 	KeyAcceleratorCode& Shift()
 	{
 		shift = true;
@@ -83,6 +88,36 @@ struct KeyAcceleratorCode
 	}
 
 	wxString ToString() const;
+
+	// Capitalizes the key portion of an accelerator code for displaying to the UI
+	// ie. Shift-a becomes Shift-A / Ctrl+Shift+a becomes Ctrl+Shift+A
+	wxString toTitleizedString() const
+	{
+		if (val32 == 0)
+			return wxEmptyString;
+
+		std::vector<wxString> tokens;
+		wxStringTokenizer tokenizer(ToString(), "+");
+		while (tokenizer.HasMoreTokens())
+			tokens.push_back(tokenizer.GetNextToken());
+
+		if (tokens.size() == 1)
+			return tokens.at(0);
+		else if (tokens.size() < 1)
+			return wxEmptyString;
+
+		wxString lastToken = tokens.at(tokens.size() - 1);
+		tokens.at(tokens.size() - 1) = lastToken[0] = wxToupper(lastToken[0]);
+		wxString modifiedKeyCode;
+		for (int i = 0; i < (int)tokens.size(); i++)
+		{
+			if (i == tokens.size() - 1)
+				modifiedKeyCode.append(tokens.at(i));
+			else
+				modifiedKeyCode.append(wxString::Format("%s+", tokens.at(i)));
+		}
+		return modifiedKeyCode;
+	}
 };
 
 
@@ -100,6 +135,8 @@ struct GlobalCommandDescriptor
 	const wxChar*	Tooltip;			// text displayed in toolbar tooltips and menu status bars.
 
 	bool			AlsoApplyToGui;		// Indicates that the GUI should be updated if possible.
+
+	wxString        keycodeString;
 };
 
 // --------------------------------------------------------------------------------------
@@ -130,4 +167,8 @@ public:
 
 	virtual ~AcceleratorDictionary() = default;
 	void Map( const KeyAcceleratorCode& acode, const char *searchfor );
+	// Searches the dictionary _by the value (command ID string)_ and returns
+	// the associated KeyAcceleratorCode.  Do not expect constant time lookup
+	// Returns a blank KeyAcceleratorCode if nothing is found
+	KeyAcceleratorCode findKeycodeWithCommandId(const char *commandId);
 };

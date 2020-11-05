@@ -175,6 +175,7 @@ public:
 	GSVector2i GetCustomResolution();
 	void SetScaling();
 	void Lines2Sprites();
+	void EmulateAtst(GSVector4& FogColor_AREF, uint8& atst, const bool pass_2);
 	void ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba);
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
 	GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);

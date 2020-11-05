@@ -18,14 +18,11 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-extern u8 ps2e;
-
 extern const wchar_t *padTypes[numPadTypes];
 
 struct PadConfig
 {
     PadType type;
-    u8 autoAnalog;
 };
 
 struct GeneralConfig
@@ -34,8 +31,6 @@ public:
     PadConfig padConfigs[2][4];
 
     int deviceSelect[2][4];
-
-    u8 closeHack;
 
     DeviceAPI keyboardApi;
     DeviceAPI mouseApi;
@@ -64,11 +59,8 @@ public:
 
             u8 multitap[2];
 
-            u8 escapeFullscreenHack;
-            u8 disableScreenSaver;
             u8 debug;
 
-            u8 saveStateTitle;
             u8 GH2;
         };
         u8 bools[15];

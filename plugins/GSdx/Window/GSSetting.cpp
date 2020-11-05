@@ -98,13 +98,12 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_ACCURATE_DATE:
 			return "Implement a more accurate algorithm to compute GS destination alpha testing.\n"
 				"It improves shadow and transparency rendering.\n\n"
-				"None:\nDisables accurate destination alpha testing.\n\n"
-				"Fast:\nFast accurate destination alpha testing.\n"
-				"Most of the time this option should be enough.\n"
+				"None:\nDisables DATE accuracy.\n\n"
+				"Basic:\nBasic DATE accuracy.\n"
+				"Can be inaccurate at times.\n"
+				"Full:\nFully emulates DATE accuracy. Might be slower.\n"
 				"This is the recommended setting.\n\n"
-				"Full:\nSlower but fully emulates destination alpha testing.\n"
-				"Not needed unless Fast mode isn't enough.\n\n"
-				"Note: Full mode is not available on Direct3D.";
+				"Note: Full mode is not available on Direct3D, Basic mode will be used on Full level as well.";
 		case IDC_ACCURATE_BLEND_UNIT:
 			return "Control the accuracy level of the GS blending unit emulation.\n\n"
 				"None:\nFast but introduces various rendering issues.\n"

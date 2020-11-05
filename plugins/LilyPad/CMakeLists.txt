@@ -101,3 +101,4 @@ set(lilypadFinalSources
     )
 
 add_pcsx2_plugin(${Output} "${lilypadFinalSources}" "${lilypadFinalLibs}" "${lilypadFinalFlags}")
+target_compile_features(${Output} PRIVATE cxx_std_17)

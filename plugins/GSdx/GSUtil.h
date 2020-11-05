@@ -24,16 +24,6 @@
 #include "GS.h"
 #include "xbyak/xbyak_util.h"
 
-struct OCLDeviceDesc
-{
-#ifdef ENABLE_OPENCL
-	cl::Device device;
-#endif
-	std::string name;
-	int version;
-	std::string tmppath;
-};
-
 class GSUtil
 {
 public:
@@ -53,11 +43,6 @@ public:
 
 	static bool CheckSSE();
 	static CRCHackLevel GetRecommendedCRCHackLevel(GSRendererType type);
-
-#ifdef ENABLE_OPENCL
-	static void GetDeviceDescs(std::list<OCLDeviceDesc>& dl);
-	static std::string GetDeviceUniqueName(cl::Device& device);
-#endif
 
 #ifdef _WIN32
 	static bool CheckDXGI();

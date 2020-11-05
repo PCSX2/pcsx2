@@ -15,6 +15,7 @@
 */
 
 void pgifInit(void);
+void pgifReset(void);
 
 extern void psxGPUw(int, u32);
 extern u32 psxGPUr(int);

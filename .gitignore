@@ -30,6 +30,8 @@
 **/x64/Debug*
 **/x64/Devel*
 
+**/bin/PCSX2-linux.sh
+
 _ReSharper.*
 pcsx2.snapshot_*
 svnrev.h
@@ -63,6 +65,7 @@ oprofile_data/
 # Visual Studio upgrades
 /Backup*
 /UpgradeLog*.htm
+/.vscode*
 
 /bin/**/*.dll
 /bin/**/*.exp
@@ -112,3 +115,4 @@ oprofile_data/
 
 /pcsx2/windows/VCprojects/GSdx_opengl_debug_hw.txt
 /pcsx2/windows/VCprojects/GSdx_opengl_debug_sw.txt
+/out/build/x64-Debug (default)
