@@ -39,7 +39,7 @@ namespace usb_msd
 				std::wstring var;
 				if (LoadSetting(MsdDevice::TypeName(), port, APINAME, N_CONFIG_PATH, var))
 					wcsncpy_s(buff, sizeof(buff), var.c_str(), countof(buff));
-				SetWindowTextW(GetDlgItem(hW, IDC_EDIT1), buff);
+				SetWindowTextW(GetDlgItem(hW, IDC_EDIT1_USB), buff);
 				return TRUE;
 			}
 			case WM_CREATE:
@@ -51,7 +51,7 @@ namespace usb_msd
 				{
 					switch (LOWORD(wParam))
 					{
-						case IDC_BUTTON1:
+						case IDC_BUTTON1_USB:
 							ZeroMemory(&ofn, sizeof(ofn));
 							ofn.lStructSize = sizeof(ofn);
 							ofn.hwndOwner = hW;
@@ -67,13 +67,13 @@ namespace usb_msd
 
 							if (GetOpenFileName(&ofn))
 							{
-								SetWindowText(GetDlgItem(hW, IDC_EDIT1), ofn.lpstrFile);
+								SetWindowText(GetDlgItem(hW, IDC_EDIT1_USB), ofn.lpstrFile);
 							}
 							break;
 						case IDOK:
 						{
 							INT_PTR res = RESULT_OK;
-							GetWindowTextW(GetDlgItem(hW, IDC_EDIT1), buff, countof(buff));
+							GetWindowTextW(GetDlgItem(hW, IDC_EDIT1_USB), buff, countof(buff));
 							port = (int)GetWindowLongPtr(hW, GWLP_USERDATA);
 							if (!SaveSetting<std::wstring>(MsdDevice::TypeName(), port, APINAME, N_CONFIG_PATH, buff))
 								res = RESULT_FAILED;
@@ -94,7 +94,7 @@ namespace usb_msd
 	{
 		Win32Handles handles = *(Win32Handles*)data;
 		return DialogBoxParam(handles.hInst,
-							  MAKEINTRESOURCE(IDD_DLGMSD),
+							  MAKEINTRESOURCE(IDD_DLGMSD_USB),
 							  handles.hWnd,
 							  (DLGPROC)MsdDlgProc, port);
 	}

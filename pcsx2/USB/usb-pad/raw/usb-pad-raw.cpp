@@ -37,10 +37,8 @@ namespace usb_pad
 				{
 					res = WriteFile(pad->mUsbHandle, buf.data(), buf.size(), &written, &pad->mOLWrite);
 					uint8_t* d = buf.data();
-							   d[1], d[2], d[3], d[4], d[5], d[6], d[7]);
 
 					WaitForSingleObject(pad->mOLWrite.hEvent, 1000);
-					if (GetOverlappedResult(pad->mUsbHandle, &pad->mOLWrite, &written, FALSE))
 				}
 			}
 

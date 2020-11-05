@@ -496,15 +496,15 @@ namespace usb_eyetoy
 
 					std::wstring selectedDevice;
 					LoadSetting(EyeToyWebCamDevice::TypeName(), port, APINAME, N_DEVICE, selectedDevice);
-					SendDlgItemMessage(hW, IDC_COMBO1, CB_RESETCONTENT, 0, 0);
+					SendDlgItemMessage(hW, IDC_COMBO1_USB, CB_RESETCONTENT, 0, 0);
 
 					std::vector<std::wstring> devList = getDevList();
 					for (auto i = 0; i != devList.size(); i++)
 					{
-						SendDlgItemMessageW(hW, IDC_COMBO1, CB_ADDSTRING, 0, (LPARAM)devList[i].c_str());
+						SendDlgItemMessageW(hW, IDC_COMBO1_USB, CB_ADDSTRING, 0, (LPARAM)devList[i].c_str());
 						if (selectedDevice == devList.at(i))
 						{
-							SendDlgItemMessage(hW, IDC_COMBO1, CB_SETCURSEL, i, i);
+							SendDlgItemMessage(hW, IDC_COMBO1_USB, CB_SETCURSEL, i, i);
 						}
 					}
 					return TRUE;
@@ -518,7 +518,7 @@ namespace usb_eyetoy
 							{
 								INT_PTR res = RESULT_OK;
 								static wchar_t selectedDevice[500] = {0};
-								GetWindowTextW(GetDlgItem(hW, IDC_COMBO1), selectedDevice, countof(selectedDevice));
+								GetWindowTextW(GetDlgItem(hW, IDC_COMBO1_USB), selectedDevice, countof(selectedDevice));
 								port = (int)GetWindowLongPtr(hW, GWLP_USERDATA);
 								if (!SaveSetting<std::wstring>(EyeToyWebCamDevice::TypeName(), port, APINAME, N_DEVICE, selectedDevice))
 								{
@@ -540,7 +540,7 @@ namespace usb_eyetoy
 		{
 			Win32Handles handles = *(Win32Handles*)data;
 			return DialogBoxParam(handles.hInst,
-								  MAKEINTRESOURCE(IDD_DLG_EYETOY),
+								  MAKEINTRESOURCE(IDD_DLG_EYETOY_USB),
 								  handles.hWnd,
 								  (DLGPROC)DirectShowDlgProc, port);
 		};

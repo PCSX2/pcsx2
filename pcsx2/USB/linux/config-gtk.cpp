@@ -216,7 +216,7 @@ void USBconfigure()
 
 	// Create the dialog window
 	GtkWidget* dlg = gtk_dialog_new_with_buttons(
-		"Qemu USB Settings", NULL, GTK_DIALOG_MODAL,
+		"USB Settings", NULL, GTK_DIALOG_MODAL,
 		GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 		GTK_STOCK_OK, GTK_RESPONSE_OK,
 		NULL);

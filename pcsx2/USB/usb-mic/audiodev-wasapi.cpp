@@ -650,9 +650,6 @@ namespace usb_mic
 				pDst += samples;
 				samples_to_read -= samples;
 			}
-					   mOutBuffer.MilliSecsSinceLastWrite(), mOutBuffer.peek_read(),
-					   1000 * mOutBuffer.peek_read<short>() / mSamplesPerSec / mDeviceChannels);
-			if (!ReleaseMutex(mMutex))
 
 			return (outFrames - (samples_to_read / mDeviceChannels));
 		}
@@ -842,7 +839,7 @@ namespace usb_mic
 			settings.dev_type = dev_type;
 
 			return (int)DialogBoxParam(h.hInst,
-									   MAKEINTRESOURCE(IDD_DLGWASAPI),
+									   MAKEINTRESOURCE(IDD_DLGWASAPI_USB),
 									   h.hWnd,
 									   (DLGPROC)WASAPIDlgProc, (LPARAM)&settings);
 		}
@@ -851,28 +848,28 @@ namespace usb_mic
 		{
 			settings->sourceDevs.clear();
 
-			SendDlgItemMessage(hW, IDC_COMBO1, CB_RESETCONTENT, 0, 0);
-			SendDlgItemMessage(hW, IDC_COMBO2, CB_RESETCONTENT, 0, 0);
+			SendDlgItemMessage(hW, IDC_COMBO1_USB, CB_RESETCONTENT, 0, 0);
+			SendDlgItemMessage(hW, IDC_COMBO2_USB, CB_RESETCONTENT, 0, 0);
 
-			SendDlgItemMessageW(hW, IDC_COMBO1, CB_ADDSTRING, 0, (LPARAM)L"None");
-			SendDlgItemMessageW(hW, IDC_COMBO2, CB_ADDSTRING, 0, (LPARAM)L"None");
+			SendDlgItemMessageW(hW, IDC_COMBO1_USB, CB_ADDSTRING, 0, (LPARAM)L"None");
+			SendDlgItemMessageW(hW, IDC_COMBO2_USB, CB_ADDSTRING, 0, (LPARAM)L"None");
 
-			SendDlgItemMessage(hW, IDC_COMBO1, CB_SETCURSEL, 0, 0);
-			SendDlgItemMessage(hW, IDC_COMBO2, CB_SETCURSEL, 0, 0);
+			SendDlgItemMessage(hW, IDC_COMBO1_USB, CB_SETCURSEL, 0, 0);
+			SendDlgItemMessage(hW, IDC_COMBO2_USB, CB_SETCURSEL, 0, 0);
 
 			MMAudioDevice::AudioDevices(settings->sourceDevs, AUDIODIR_SOURCE);
 			AudioDeviceInfoList::iterator it;
 			int i = 0;
 			for (it = settings->sourceDevs.begin(); it != settings->sourceDevs.end(); ++it)
 			{
-				SendDlgItemMessageW(hW, IDC_COMBO1, CB_ADDSTRING, 0, (LPARAM)it->strName.c_str());
-				SendDlgItemMessageW(hW, IDC_COMBO2, CB_ADDSTRING, 0, (LPARAM)it->strName.c_str());
+				SendDlgItemMessageW(hW, IDC_COMBO1_USB, CB_ADDSTRING, 0, (LPARAM)it->strName.c_str());
+				SendDlgItemMessageW(hW, IDC_COMBO2_USB, CB_ADDSTRING, 0, (LPARAM)it->strName.c_str());
 
 				i++;
 				if (it->strID == settings->selectedDev[0])
-					SendDlgItemMessage(hW, IDC_COMBO1, CB_SETCURSEL, i, i);
+					SendDlgItemMessage(hW, IDC_COMBO1_USB, CB_SETCURSEL, i, i);
 				if (it->strID == settings->selectedDev[1])
-					SendDlgItemMessage(hW, IDC_COMBO2, CB_SETCURSEL, i, i);
+					SendDlgItemMessage(hW, IDC_COMBO2_USB, CB_SETCURSEL, i, i);
 			}
 		}
 
@@ -880,20 +877,20 @@ namespace usb_mic
 		{
 			settings->sinkDevs.clear();
 
-			SendDlgItemMessage(hW, IDC_COMBO3, CB_RESETCONTENT, 0, 0);
-			SendDlgItemMessageW(hW, IDC_COMBO3, CB_ADDSTRING, 0, (LPARAM)L"None");
-			SendDlgItemMessage(hW, IDC_COMBO3, CB_SETCURSEL, 0, 0);
+			SendDlgItemMessage(hW, IDC_COMBO3_USB, CB_RESETCONTENT, 0, 0);
+			SendDlgItemMessageW(hW, IDC_COMBO3_USB, CB_ADDSTRING, 0, (LPARAM)L"None");
+			SendDlgItemMessage(hW, IDC_COMBO3_USB, CB_SETCURSEL, 0, 0);
 
 			MMAudioDevice::AudioDevices(settings->sinkDevs, AUDIODIR_SINK);
 			AudioDeviceInfoList::iterator it;
 			int i = 0;
 			for (it = settings->sinkDevs.begin(); it != settings->sinkDevs.end(); ++it)
 			{
-				SendDlgItemMessageW(hW, IDC_COMBO3, CB_ADDSTRING, 0, (LPARAM)it->strName.c_str());
+				SendDlgItemMessageW(hW, IDC_COMBO3_USB, CB_ADDSTRING, 0, (LPARAM)it->strName.c_str());
 
 				i++;
 				if (it->strID == settings->selectedDev[2])
-					SendDlgItemMessage(hW, IDC_COMBO3, CB_SETCURSEL, i, i);
+					SendDlgItemMessage(hW, IDC_COMBO3_USB, CB_SETCURSEL, i, i);
 			}
 		}
 
@@ -914,18 +911,18 @@ namespace usb_mic
 					int buffering = 50;
 					LoadSetting(s->dev_type, s->port, APINAME, N_BUFFER_LEN_SRC, buffering);
 
-					SendDlgItemMessage(hW, IDC_SLIDER1, TBM_SETRANGEMIN, TRUE, 1);
-					SendDlgItemMessage(hW, IDC_SLIDER1, TBM_SETRANGEMAX, TRUE, 1000);
-					SendDlgItemMessage(hW, IDC_SLIDER1, TBM_SETPOS, TRUE, buffering);
-					SetDlgItemInt(hW, IDC_BUFFER1, buffering, FALSE);
+					SendDlgItemMessage(hW, IDC_SLIDER1_USB, TBM_SETRANGEMIN, TRUE, 1);
+					SendDlgItemMessage(hW, IDC_SLIDER1_USB, TBM_SETRANGEMAX, TRUE, 1000);
+					SendDlgItemMessage(hW, IDC_SLIDER1_USB, TBM_SETPOS, TRUE, buffering);
+					SetDlgItemInt(hW, IDC_BUFFER1_USB, buffering, FALSE);
 
 					buffering = 50;
 					LoadSetting(s->dev_type, s->port, APINAME, N_BUFFER_LEN_SINK, buffering);
 
-					SendDlgItemMessage(hW, IDC_SLIDER2, TBM_SETRANGEMIN, TRUE, 1);
-					SendDlgItemMessage(hW, IDC_SLIDER2, TBM_SETRANGEMAX, TRUE, 1000);
-					SendDlgItemMessage(hW, IDC_SLIDER2, TBM_SETPOS, TRUE, buffering);
-					SetDlgItemInt(hW, IDC_BUFFER2, buffering, FALSE);
+					SendDlgItemMessage(hW, IDC_SLIDER2_USB, TBM_SETRANGEMIN, TRUE, 1);
+					SendDlgItemMessage(hW, IDC_SLIDER2_USB, TBM_SETRANGEMAX, TRUE, 1000);
+					SendDlgItemMessage(hW, IDC_SLIDER2_USB, TBM_SETPOS, TRUE, buffering);
+					SetDlgItemInt(hW, IDC_BUFFER2_USB, buffering, FALSE);
 
 					for (int i = 0; i < 2; i++)
 					{
@@ -939,16 +936,16 @@ namespace usb_mic
 					return TRUE;
 				}
 				case WM_HSCROLL:
-					if ((HWND)lParam == GetDlgItem(hW, IDC_SLIDER1))
+					if ((HWND)lParam == GetDlgItem(hW, IDC_SLIDER1_USB))
 					{
-						int pos = SendDlgItemMessage(hW, IDC_SLIDER1, TBM_GETPOS, 0, 0);
-						SetDlgItemInt(hW, IDC_BUFFER1, pos, FALSE);
+						int pos = SendDlgItemMessage(hW, IDC_SLIDER1_USB, TBM_GETPOS, 0, 0);
+						SetDlgItemInt(hW, IDC_BUFFER1_USB, pos, FALSE);
 						break;
 					}
-					else if ((HWND)lParam == GetDlgItem(hW, IDC_SLIDER2))
+					else if ((HWND)lParam == GetDlgItem(hW, IDC_SLIDER2_USB))
 					{
-						int pos = SendDlgItemMessage(hW, IDC_SLIDER2, TBM_GETPOS, 0, 0);
-						SetDlgItemInt(hW, IDC_BUFFER2, pos, FALSE);
+						int pos = SendDlgItemMessage(hW, IDC_SLIDER2_USB, TBM_GETPOS, 0, 0);
+						SetDlgItemInt(hW, IDC_BUFFER2_USB, pos, FALSE);
 						break;
 					}
 					break;
@@ -960,13 +957,13 @@ namespace usb_mic
 						{
 							switch (LOWORD(wParam))
 							{
-								case IDC_BUFFER1:
-									CHECKED_SET_MAX_INT(tmp, hW, IDC_BUFFER1, FALSE, 1, 1000);
-									SendDlgItemMessage(hW, IDC_SLIDER1, TBM_SETPOS, TRUE, tmp);
+								case IDC_BUFFER1_USB:
+									CHECKED_SET_MAX_INT(tmp, hW, IDC_BUFFER1_USB, FALSE, 1, 1000);
+									SendDlgItemMessage(hW, IDC_SLIDER1_USB, TBM_SETPOS, TRUE, tmp);
 									break;
-								case IDC_BUFFER2:
-									CHECKED_SET_MAX_INT(tmp, hW, IDC_BUFFER2, FALSE, 1, 1000);
-									SendDlgItemMessage(hW, IDC_SLIDER2, TBM_SETPOS, TRUE, tmp);
+								case IDC_BUFFER2_USB:
+									CHECKED_SET_MAX_INT(tmp, hW, IDC_BUFFER2_USB, FALSE, 1, 1000);
+									SendDlgItemMessage(hW, IDC_SLIDER2_USB, TBM_SETPOS, TRUE, tmp);
 									break;
 							}
 						}
@@ -980,9 +977,9 @@ namespace usb_mic
 									int p[3];
 									s = (WASAPISettings*)GetWindowLongPtr(hW, GWLP_USERDATA);
 									INT_PTR res = RESULT_OK;
-									p[0] = SendDlgItemMessage(hW, IDC_COMBO1, CB_GETCURSEL, 0, 0);
-									p[1] = SendDlgItemMessage(hW, IDC_COMBO2, CB_GETCURSEL, 0, 0);
-									p[2] = SendDlgItemMessage(hW, IDC_COMBO3, CB_GETCURSEL, 0, 0);
+									p[0] = SendDlgItemMessage(hW, IDC_COMBO1_USB, CB_GETCURSEL, 0, 0);
+									p[1] = SendDlgItemMessage(hW, IDC_COMBO2_USB, CB_GETCURSEL, 0, 0);
+									p[2] = SendDlgItemMessage(hW, IDC_COMBO3_USB, CB_GETCURSEL, 0, 0);
 
 									for (int i = 0; i < 3; i++)
 									{
@@ -999,10 +996,10 @@ namespace usb_mic
 											res = RESULT_FAILED;
 									}
 
-									if (!SaveSetting(s->dev_type, s->port, APINAME, N_BUFFER_LEN_SRC, (int32_t)SendDlgItemMessage(hW, IDC_SLIDER1, TBM_GETPOS, 0, 0)))
+									if (!SaveSetting(s->dev_type, s->port, APINAME, N_BUFFER_LEN_SRC, (int32_t)SendDlgItemMessage(hW, IDC_SLIDER1_USB, TBM_GETPOS, 0, 0)))
 										res = RESULT_FAILED;
 
-									if (!SaveSetting(s->dev_type, s->port, APINAME, N_BUFFER_LEN_SINK, (int32_t)SendDlgItemMessage(hW, IDC_SLIDER2, TBM_GETPOS, 0, 0)))
+									if (!SaveSetting(s->dev_type, s->port, APINAME, N_BUFFER_LEN_SINK, (int32_t)SendDlgItemMessage(hW, IDC_SLIDER2_USB, TBM_GETPOS, 0, 0)))
 										res = RESULT_FAILED;
 
 									EndDialog(hW, res);
