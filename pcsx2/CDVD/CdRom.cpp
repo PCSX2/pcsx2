@@ -225,7 +225,7 @@ void cdrInterrupt()
 			cdr.Result[0] = cdr.StatP;
 			cdr.Stat = Acknowledge;
 			break;
-		
+
 		case CdlPlay:
 			cdr.CmdProcess = 0;
 			SetResultSize(1);
