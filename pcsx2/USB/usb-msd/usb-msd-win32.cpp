@@ -17,7 +17,7 @@
 #include <commdlg.h>
 #include "usb-msd.h"
 #include "../Win32/Config_usb.h"
-#include "../Win32/resource.h"
+#include "../Win32/resource_usb.h"
 
 namespace usb_msd
 {

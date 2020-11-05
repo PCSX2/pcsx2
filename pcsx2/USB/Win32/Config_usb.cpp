@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "AppCoreThread.h"
 #include "../USB.h"
-#include "resource.h"
+#include "resource_usb.h"
 #include "Config_usb.h"
 #include "../deviceproxy.h"
 #include "../usb-pad/padproxy.h"

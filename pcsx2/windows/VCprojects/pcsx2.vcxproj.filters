@@ -1863,9 +1863,6 @@
     <ClInclude Include="..\..\USB\shared\ringbuffer.h">
       <Filter>System\Ps2\USB\shared</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\USB\Win32\resource.h">
-      <Filter>System\Ps2\USB\Win32</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\USB\usb-mic\audiodev-wasapi.h">
       <Filter>System\Ps2\USB\usb-mic</Filter>
     </ClInclude>
@@ -1907,6 +1904,9 @@
     </ClInclude>
     <ClInclude Include="..\..\USB\shared\rawinput_usb.h">
       <Filter>System\Ps2\USB\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\USB\Win32\resource_usb.h">
+      <Filter>System\Ps2\USB\Win32</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

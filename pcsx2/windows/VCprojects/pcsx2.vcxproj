@@ -712,7 +712,7 @@
     <ClInclude Include="..\..\USB\usb-pad\usb-pad.h" />
     <ClInclude Include="..\..\USB\USB.h" />
     <ClInclude Include="..\..\USB\Win32\Config_usb.h" />
-    <ClInclude Include="..\..\USB\Win32\resource.h" />
+    <ClInclude Include="..\..\USB\Win32\resource_usb.h" />
     <ClInclude Include="..\..\Utilities\AsciiFile.h" />
     <ClInclude Include="..\..\Elfheader.h" />
     <ClInclude Include="..\..\CDVD\IsoFileFormats.h" />
