@@ -19,7 +19,6 @@
 
 #include "IopCommon.h"
 #include "Patch.h"
-#include "GameDatabase.h"
 
 #include <memory>
 #include <vector>
