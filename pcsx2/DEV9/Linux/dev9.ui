@@ -5,7 +5,7 @@
   <object class="GtkDialog" id="IDD_CONFDLG">
     <property name="can_focus">False</property>
     <property name="border_width">5</property>
-    <property name="title" translatable="yes">HDD Configure</property>
+    <property name="title" translatable="yes">Network and HDD Settings</property>
     <property name="type_hint">dialog</property>
     <child internal-child="vbox">
       <object class="GtkVBox" id="dialog-vbox1">
@@ -59,7 +59,7 @@
           <object class="GtkLabel" id="label3">
         <property name="visible">True</property>
         <property name="can_focus">False</property>
-        <property name="label" translatable="yes">Dev9 Type </property>
+        <property name="label" translatable="yes">DEV9 Type: </property>
           </object>
           <packing>
         <property name="expand">False</property>
@@ -118,7 +118,7 @@
               <object class="GtkLabel" id="label4">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">Ethernet Device </property>
+            <property name="label" translatable="yes">Ethernet Device: </property>
               </object>
               <packing>
             <property name="expand">False</property>
@@ -193,7 +193,7 @@
               <object class="GtkLabel" id="label5">
             <property name="visible">True</property>
             <property name="can_focus">False</property>
-            <property name="label" translatable="yes">HDD File </property>
+            <property name="label" translatable="yes">HDD File: </property>
               </object>
               <packing>
             <property name="expand">False</property>
