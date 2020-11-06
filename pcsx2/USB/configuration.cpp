@@ -186,8 +186,11 @@ void LoadConfig()
 #endif
 
 #ifdef _WIN32
-	LoadSetting(nullptr, 0, N_DEVICE_PORT, N_DEVICE, str_to_wstr(conf.Port[0]));
-	LoadSetting(nullptr, 1, N_DEVICE_PORT, N_DEVICE, str_to_wstr(conf.Port[1]));
+	std::wstring tmp;
+	LoadSetting(nullptr, 0, N_DEVICE_PORT, N_DEVICE, tmp);
+	conf.Port[0] = wstr_to_str(tmp);
+	LoadSetting(nullptr, 1, N_DEVICE_PORT, N_DEVICE, tmp);
+	conf.Port[1] = wstr_to_str(tmp);
 #else
 	LoadSetting(nullptr, 0, N_DEVICE_PORT, N_DEVICE, conf.Port[0]);
 	LoadSetting(nullptr, 1, N_DEVICE_PORT, N_DEVICE, conf.Port[1]);

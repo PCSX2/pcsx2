@@ -7,13 +7,13 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
-#include "winresrc.h"
+#include "WinResrc.h"
 
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// English (United States) resources
+// Anglais (États-Unis) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -63,16 +63,6 @@ BEGIN
     GROUPBOX        "Device API",IDC_STATIC_USB,6,54,246,48
     LTEXT           "Port 1:",IDC_STATIC_USB,18,66,23,8
     LTEXT           "Port 2:",IDC_STATIC_USB,18,84,23,8
-END
-
-IDD_ABOUT_USB DIALOGEX 0, 0, 177, 106
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "USBabout"
-FONT 8, "MS Sans Serif", 0, 0, 0x0
-BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,65,85,50,14
-    LTEXT           "USB Driver",IDC_NAME_USB,70,10,54,8
-    GROUPBOX        "",IDC_STATIC_USB,5,35,170,43
 END
 
 IDD_DLGWASAPI_USB DIALOGEX 0, 0, 287, 230
@@ -147,18 +137,30 @@ END
 #ifdef APSTUDIO_INVOKED
 GUIDELINES DESIGNINFO
 BEGIN
+    IDD_DLGMSD_USB, DIALOG
+    BEGIN
+    END
+
+    IDD_CONFIG_USB, DIALOG
+    BEGIN
+    END
+
     IDD_DLGWASAPI_USB, DIALOG
+    BEGIN
+    END
+
+    IDD_DLG_EYETOY_USB, DIALOG
     BEGIN
     END
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // English (United States) resources
+#endif    // Anglais (États-Unis) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
 /////////////////////////////////////////////////////////////////////////////
-// Spanish (Argentina) resources
+// Espagnol (Argentine) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ESS)
 LANGUAGE LANG_SPANISH, SUBLANG_SPANISH_ARGENTINA
@@ -172,7 +174,7 @@ LANGUAGE LANG_SPANISH, SUBLANG_SPANISH_ARGENTINA
 
 1 TEXTINCLUDE 
 BEGIN
-    "resource.h\0"
+    "resource_usb.h\0"
 END
 
 2 TEXTINCLUDE 
@@ -189,7 +191,7 @@ END
 
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Spanish (Argentina) resources
+#endif    // Espagnol (Argentine) resources
 /////////////////////////////////////////////////////////////////////////////
 
 

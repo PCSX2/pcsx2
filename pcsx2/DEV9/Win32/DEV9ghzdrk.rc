@@ -10,17 +10,16 @@
 #define APSTUDIO_HIDDEN_SYMBOLS
 #include "windows.h"
 #undef APSTUDIO_HIDDEN_SYMBOLS
+
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Spanish (Argentina) resources
+// Espagnol (Argentine) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ESS)
-#ifdef _WIN32
 LANGUAGE LANG_SPANISH, SUBLANG_SPANISH_ARGENTINA
 #pragma code_page(1252)
-#endif //_WIN32
 
 #ifdef APSTUDIO_INVOKED
 /////////////////////////////////////////////////////////////////////////////
@@ -81,7 +80,7 @@ END
 //
 
 #ifdef APSTUDIO_INVOKED
-GUIDELINES DESIGNINFO 
+GUIDELINES DESIGNINFO
 BEGIN
     IDD_CONFIG, DIALOG
     BEGIN
@@ -93,7 +92,7 @@ BEGIN
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Spanish (Argentina) resources
+#endif    // Espagnol (Argentine) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
