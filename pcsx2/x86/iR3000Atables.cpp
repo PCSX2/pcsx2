@@ -940,14 +940,14 @@ void rpsxMTLO()
 void rpsxJ()
 {
 	// j target
-	u32 newpc = _Target_ * 4 + (psxpc & 0xf0000000);
+	u32 newpc = _InstrucTarget_ * 4 + (psxpc & 0xf0000000);
 	psxRecompileNextInstruction(1);
 	psxSetBranchImm(newpc);
 }
 
 void rpsxJAL()
 {
-	u32 newpc = (_Target_ << 2) + ( psxpc & 0xf0000000 );
+	u32 newpc = (_InstrucTarget_ << 2) + ( psxpc & 0xf0000000 );
 	_psxDeleteReg(31, 0);
 	PSX_SET_CONST(31);
 	g_psxConstRegs[31] = psxpc + 4;

@@ -37,7 +37,7 @@
 
 #include "Pcsx2Defs.h"
 #include "SysForwardDefs.h"
-#include "GameDatabase.h"
+#include "AppGameDatabase.h"
 
 enum patch_cpu_type {
 	NO_CPU,

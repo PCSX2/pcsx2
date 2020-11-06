@@ -50,7 +50,7 @@ void recJ()
 	EE::Profiler.EmitOp(eeOpcode::J);
 
 	// SET_FPUSTATE;
-	u32 newpc = (_Target_ << 2) + ( pc & 0xf0000000 );
+	u32 newpc = (_InstrucTarget_ << 2) + ( pc & 0xf0000000 );
 	recompileNextInstruction(1);
 	if (EmuConfig.Gamefixes.GoemonTlbHack)
 		SetBranchImm(vtlb_V2P(newpc));
@@ -63,7 +63,7 @@ void recJAL()
 {
 	EE::Profiler.EmitOp(eeOpcode::JAL);
 
-	u32 newpc = (_Target_ << 2) + ( pc & 0xf0000000 );
+	u32 newpc = (_InstrucTarget_ << 2) + ( pc & 0xf0000000 );
 	_deleteEEreg(31, 0);
 	if(EE_CONST_PROP)
 	{

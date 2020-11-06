@@ -17,6 +17,8 @@
 
 #include "GameDatabase.h"
 
+#include "AppConfig.h"
+
 class AppGameDatabase : public YamlGameDatabaseImpl
 {
 public:

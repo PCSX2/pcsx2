@@ -231,13 +231,13 @@ struct tlbs
 
 #define _PC_       cpuRegs.pc       // The next PC to be executed - only used in this header and R3000A.h
 
-#define _Funct_  ((cpuRegs.code      ) & 0x3F)  // The funct part of the instruction register
-#define _Rd_     ((cpuRegs.code >> 11) & 0x1F)  // The rd part of the instruction register
-#define _Rt_     ((cpuRegs.code >> 16) & 0x1F)  // The rt part of the instruction register
-#define _Rs_     ((cpuRegs.code >> 21) & 0x1F)  // The rs part of the instruction register
-#define _Sa_     ((cpuRegs.code >>  6) & 0x1F)  // The sa part of the instruction register
-#define _Im_     ((u16)cpuRegs.code) // The immediate part of the instruction register
-#define _Target_ (cpuRegs.code & 0x03ffffff)    // The target part of the instruction register
+#define _Funct_			((cpuRegs.code      ) & 0x3F)  // The funct part of the instruction register
+#define _Rd_			((cpuRegs.code >> 11) & 0x1F)  // The rd part of the instruction register
+#define _Rt_			((cpuRegs.code >> 16) & 0x1F)  // The rt part of the instruction register
+#define _Rs_			((cpuRegs.code >> 21) & 0x1F)  // The rs part of the instruction register
+#define _Sa_			((cpuRegs.code >>  6) & 0x1F)  // The sa part of the instruction register
+#define _Im_			((u16)cpuRegs.code) // The immediate part of the instruction register
+#define _InstrucTarget_ (cpuRegs.code & 0x03ffffff)    // The target part of the instruction register
 
 #define _Imm_	((s16)cpuRegs.code) // sign-extended immediate
 #define _ImmU_	(cpuRegs.code&0xffff) // zero-extended immediate
@@ -245,7 +245,7 @@ struct tlbs
 
 #define _Opcode_ (cpuRegs.code >> 26 )
 
-#define _JumpTarget_     ((_Target_ << 2) + (_PC_ & 0xf0000000))   // Calculates the target during a jump instruction
+#define _JumpTarget_     ((_InstrucTarget_ << 2) + (_PC_ & 0xf0000000))   // Calculates the target during a jump instruction
 #define _BranchTarget_   (((s32)(s16)_Im_ * 4) + _PC_)                 // Calculates the target during a branch instruction
 #define _TrapCode_       ((u16)cpuRegs.code >> 6)	// error code for non-immediate trap instructions.
 

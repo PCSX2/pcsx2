@@ -17,13 +17,10 @@
 
 #include "App.h"
 #include "AppGameDatabase.h"
-#include "PrecompiledHeader.h"
-#include "App.h"
-#include "AppGameDatabase.h"
+
 #include <wx/stdpaths.h>
 #include "fmt/core.h"
 
-// TODO - check that this is being threaded properly, remove from
 AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file)
 {
 	// TODO - config - kill this with fire with std::filesystem
@@ -55,7 +52,6 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file)
 	u64 qpc_Start = GetCPUTicks();
 	YamlGameDatabaseImpl gameDb = YamlGameDatabaseImpl();
 
-	// TODO - thread the load!
 	if (!gameDb.initDatabase(std::string(file)))
 	{
 		Console.Error(L"(GameDB) Database could not be loaded successfully");
