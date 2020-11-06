@@ -573,7 +573,6 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 #if defined(__unix__)
 #define VK_F5 XK_F5
 #define VK_F6 XK_F6
-#define VK_F7 XK_F7
 #define VK_DELETE XK_Delete
 #define VK_INSERT XK_Insert
 #define VK_PRIOR XK_Prior
@@ -591,11 +590,6 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 		case VK_F6:
 			if( m_wnd->IsManaged() )
 				m_aspectratio = (m_aspectratio + s_aspect_ratio_nb + step) % s_aspect_ratio_nb;
-			return;
-		case VK_F7:
-			m_shader = (m_shader + s_post_shader_nb + step) % s_post_shader_nb;
-			theApp.SetConfig("TVShader", m_shader);
-			printf("GSdx: Set shader to: %d.\n", m_shader);
 			return;
 		case VK_DELETE:
 			m_aa1 = !m_aa1;
