@@ -14,7 +14,7 @@
  */
 
 #pragma once
-#if not defined(_WIN32)
+#if !defined(_WIN32)
 #include "pcap.h"
 #endif
 #include "net.h"
