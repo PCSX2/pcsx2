@@ -19,7 +19,6 @@
 #define IDC_COMBO_API2_USB              1011
 #define IDC_BUTTON1_USB                 1012
 #define IDC_DFP_PASS_USB                1013
-#define IDC_BUILD_DATE_USB              1014
 #define IDC_EDIT1_USB                   1015
 #define IDC_COMBO_WHEEL_TYPE1_USB       1037
 #define IDC_COMBO_WHEEL_TYPE2_USB       1038

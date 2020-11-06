@@ -109,7 +109,6 @@ BOOL CALLBACK ConfigureDlgProcUSB(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lPar
 	switch (uMsg)
 	{
 		case WM_INITDIALOG:
-			SendDlgItemMessageA(hW, IDC_BUILD_DATE_USB, WM_SETTEXT, 0, (LPARAM)__DATE__ " " __TIME__);
 			LoadConfig();
 			CheckDlgButton(hW, IDC_LOGGING_USB, conf.Log);
 			//Selected emulated devices.
