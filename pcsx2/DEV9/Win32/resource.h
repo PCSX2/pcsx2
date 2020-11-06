@@ -7,10 +7,8 @@
 #define IDC_STATIC -1
 #endif
 
-#define IDD_CONFDLG 101
 #define IDD_CONFIG 101
 #define IDC_NAME 1000
-#define IDC_COMBO1 1007
 #define IDC_ETHDEV 1007
 #define IDC_BAYTYPE 1008
 #define IDC_ETHENABLED 1009
