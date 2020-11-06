@@ -79,8 +79,6 @@ EXPORT_C_(s32)
 DEV9freeze(u8 mode, freezeData *data);
 EXPORT_C_(void)
 DEV9configure();
-EXPORT_C_(void)
-DEV9about();
 EXPORT_C_(s32)
 DEV9test();
 
