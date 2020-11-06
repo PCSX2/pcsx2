@@ -139,24 +139,6 @@ BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 	return FALSE;
 }
 
-BOOL CALLBACK AboutDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-	switch (uMsg)
-	{
-		case WM_INITDIALOG:
-			return TRUE;
-
-		case WM_COMMAND:
-			switch (LOWORD(wParam))
-			{
-				case IDOK:
-					EndDialog(hW, FALSE);
-					return TRUE;
-			}
-	}
-	return FALSE;
-}
-
 void DEV9configure()
 {
 	ScopedCoreThreadPause paused_core;
@@ -166,15 +148,6 @@ void DEV9configure()
 			  (DLGPROC)ConfigureDlgProc);
 	//SysMessage("Nothing to Configure");
 	paused_core.AllowResume();
-}
-
-EXPORT_C_(void)
-DEV9about()
-{
-	DialogBox(hInst,
-			  MAKEINTRESOURCE(IDD_ABOUT),
-			  GetActiveWindow(),
-			  (DLGPROC)AboutDlgProc);
 }
 
 /*

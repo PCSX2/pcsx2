@@ -9,7 +9,6 @@
 
 #define IDD_CONFDLG 101
 #define IDD_CONFIG 101
-#define IDD_ABOUT 103
 #define IDC_NAME 1000
 #define IDC_COMBO1 1007
 #define IDC_ETHDEV 1007

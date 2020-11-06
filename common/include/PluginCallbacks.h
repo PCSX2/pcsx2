@@ -1371,7 +1371,6 @@ typedef void (CALLBACK* _DEV9keyEvent)(keyEvent* ev);
 typedef s32  (CALLBACK* _DEV9freeze)(int mode, freezeData *data);
 typedef void (CALLBACK* _DEV9configure)();
 typedef s32  (CALLBACK* _DEV9test)();
-typedef void (CALLBACK* _DEV9about)();
 
 // USB
 // NOTE: The read/write functions CANNOT use XMM/MMX regs
