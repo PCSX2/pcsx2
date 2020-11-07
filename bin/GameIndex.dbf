@@ -17305,12 +17305,8 @@ Name   = Star Wars - The Force Unleashed
 Region = PAL-M5
 [patches = 87109051]
 	author=kozarovv
-	// Fixes various graphics glitches.
-	// It's a problem which apply to all games made by Khrome studio.
-	// The EE seems to send invalid data to the GS and expect
-	// some kind of unknown behaviour to operate.
-	// This can be fixed on the GS side but the software render is impossible to fix.
-	// So this patch correct the issue on the EE side.
+	// Fix for graphical issues, QTE events, subtitles, health bar.
+	// Patch replace values passed to FPU to workaround x86 rounding issues.
 	patch=1,EE,0017cb84,word,3464fff0
 	patch=1,EE,0017cb90,word,3463fffc
 [/patches]
@@ -17318,6 +17314,13 @@ Region = PAL-M5
 Serial = SLES-54659
 Name   = Star Wars - The Force Unleashed
 Region = PAL-M4
+[patches = DAF2145C]
+	author=kozarovv
+	// Fix for graphical issues, QTE events, subtitles, health bar.
+	// Patch replace values passed to FPU to workaround x86 rounding issues.
+	patch=1,EE,0017cb84,word,3464fff0
+	patch=1,EE,0017cb90,word,3463fffc
+[/patches]
 ---------------------------------------------
 Serial = SLES-54663
 Name   = Jackass - The Game
@@ -34849,6 +34852,13 @@ Region = NTSC-J
 Serial = SLPS-25888
 Name   = Star Wars - The Force Unleashed
 Region = NTSC-J
+[patches = CC9BFDE3]
+	author=kozarovv
+	// Fix for graphical issues, QTE events, subtitles, health bar.
+	// Patch replace values passed to FPU to workaround x86 rounding issues.
+	patch=1,EE,0017d454,word,3464fff0
+	patch=1,EE,0017d460,word,3463fffc
+[/patches]
 ---------------------------------------------
 Serial = SLPS-25889
 Name   = Guitar Hero - Aerosmith
@@ -43043,6 +43053,13 @@ Serial = SLUS-21614
 Name   = Star Wars - The Force Unleashed
 Region = NTSC-U
 Compat = 4
+[patches = 879CDA5E]
+	author=kozarovv
+	// Fix for graphical issues, QTE events, subtitles, health bar.
+	// Patch replace values passed to FPU to workaround x86 rounding issues.
+	patch=1,EE,0017cf24,word,3464fff0
+	patch=1,EE,0017cf30,word,3463fffc
+[/patches]
 ---------------------------------------------
 Serial = SLUS-21615
 Name   = Wild ARMs 5
