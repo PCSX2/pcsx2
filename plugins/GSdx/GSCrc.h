@@ -125,7 +125,6 @@ public:
 		SoulReaver2,
 		Spartan,
 		StarOcean3,
-		StarWarsForceUnleashed,
 		SteambotChronicles,
 		SuperManReturns,
 		SVCChaos,
