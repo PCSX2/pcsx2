@@ -97,7 +97,7 @@ void SysCoreThread::Start()
 	GetCorePlugins().Init();
 	SPU2init();
 	DEV9init();
-    USBinit();
+	USBinit();
 	_parent::Start();
 }
 

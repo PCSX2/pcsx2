@@ -959,9 +959,6 @@ endif()
 if(BUILTIN_PAD)
     set(pcsx2FinalLibs "${pcsx2FinalLibs} onepad-1.2.0")
 endif()
-if(BUILTIN_USB)
-    set(pcsx2FinalLibs "${pcsx2FinalLibs} USBnull-0.7.0")
-endif()
 
 # additonal include directories
 include_directories(
