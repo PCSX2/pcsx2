@@ -43,13 +43,6 @@
 #define inline __inline
 #endif
 
-#ifdef _WIN32
-#define PRId64 "I64d"
-#define PRIx64 "I64x"
-#define PRIu64 "I64u"
-#define PRIo64 "I64o"
-#endif
-
 #include "qusb.h"
 
 #ifndef glue
