@@ -2,5 +2,5 @@
     needs="X11" \
     section="Applications/Emulators" \
     title="PCSX2" \
-    longtitle="A playstation 2 emulator" \
+    longtitle="A PlayStation 2 emulator" \
     command="/usr/games/PCSX2-linux.sh"

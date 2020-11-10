@@ -1052,7 +1052,7 @@ static __fi void _PMADDW(int dd, int ss)
 	s64 temp = ((s64)cpuRegs.GPR.r[_Rs_].SL[ss] * (s64)cpuRegs.GPR.r[_Rt_].SL[ss]);
 	s64 temp2 = temp + ((s64)cpuRegs.HI.SL[ss] << 32);
 
-	//Playstation 2 division voodoo, for some reason only the lower half is affected
+	//PlayStation 2 division voodoo, for some reason only the lower half is affected
 	if (ss == 0)
 	{
 		if (((cpuRegs.GPR.r[_Rt_].SL[ss] & 0x7FFFFFFF) == 0 || (cpuRegs.GPR.r[_Rt_].SL[ss] & 0x7FFFFFFF) == 0x7FFFFFFF) &&

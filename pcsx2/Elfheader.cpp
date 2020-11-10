@@ -352,7 +352,7 @@ int GetPS2ElfName( wxString& name )
 
 		if( retype == 0 )
 		{
-			Console.Error("(GetElfName) Disc image is *not* a Playstation or PS2 game!");
+			Console.Error("(GetElfName) Disc image is *not* a PlayStation or PS2 game!");
 			return 0;
 		}
 	}
