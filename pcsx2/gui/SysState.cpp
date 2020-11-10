@@ -251,11 +251,10 @@ public:
 	void FreezeIn(pxInputStream& reader) const { return SPU2DoFreezeIn(reader); }
 	void FreezeOut(SaveStateBase& writer) const
 	{
-		int size = 0;
 		freezeData fP = {0, NULL};
 		if (SPU2freeze(FREEZE_SIZE, &fP) == 0)
 		{
-			size = fP.size;
+			const int size = fP.size;
 			writer.PrepBlock(size);
 			SPU2DoFreezeOut(writer.GetBlockPtr());
 			writer.CommitBlock(size);
@@ -274,11 +273,10 @@ public:
 	void FreezeIn(pxInputStream& reader) const { return USBDoFreezeIn(reader); }
 	void FreezeOut(SaveStateBase& writer) const
 	{
-		int size = 0;
 		freezeData fP = {0, NULL};
 		if (USBfreeze(FREEZE_SIZE, &fP) == 0)
 		{
-			size = fP.size;
+			const int size = fP.size;
 			writer.PrepBlock(size);
 			USBDoFreezeOut(writer.GetBlockPtr());
 			writer.CommitBlock(size);

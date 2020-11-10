@@ -237,36 +237,34 @@ static void ohci_wakeup(USBPort* port1)
 static USBDevice* ohci_find_device(OHCIState* ohci, uint8_t addr)
 {
 	USBDevice* dev;
-	int i;
 
-	for (i = 0; i < ohci->num_ports; i++)
+	for (unsigned int i = 0; i < ohci->num_ports; i++)
 	{
 		if ((ohci->rhport[i].ctrl & OHCI_PORT_PES) == 0)
 		{
 			continue;
 		}
 		dev = usb_find_device(&ohci->rhport[i].port, addr);
-		if (dev != NULL)
+		if (dev != nullptr)
 		{
 			return dev;
 		}
 	}
-	return NULL;
+	return nullptr;
 }
 
 //TODO no devices using this yet
 static void ohci_stop_endpoints(OHCIState* ohci)
 {
 	USBDevice* dev;
-	int i, j;
 
-	for (i = 0; i < ohci->num_ports; i++)
+	for (unsigned int i = 0; i < ohci->num_ports; i++)
 	{
 		dev = ohci->rhport[i].port.dev;
 		if (dev && dev->attached)
 		{
 			usb_device_ep_stopped(dev, &dev->ep_ctl);
-			for (j = 0; j < USB_MAX_ENDPOINTS; j++)
+			for (int j = 0; j < USB_MAX_ENDPOINTS; j++)
 			{
 				usb_device_ep_stopped(dev, &dev->ep_in[j]);
 				usb_device_ep_stopped(dev, &dev->ep_out[j]);
@@ -719,7 +717,7 @@ static int ohci_service_iso_td(OHCIState* ohci, struct ohci_ed* ed,
 	//                         str, len, ret);
 
 	/* Writeback */
-	if (dir == OHCI_TD_DIR_IN && ret >= 0 && ret <= len)
+	if (dir == OHCI_TD_DIR_IN && ret >= 0 && ret <= (int)len)
 	{
 		/* IN transfer succeeded */
 		if (ohci_copy_iso_td(ohci, start_addr, end_addr, ohci->usb_buf, ret,
@@ -1397,17 +1395,13 @@ static void ohci_set_hub_status(OHCIState* ohci, uint32_t val)
 
 	if (val & OHCI_RHS_LPS)
 	{
-		int i;
-
-		for (i = 0; i < ohci->num_ports; i++)
+		for (unsigned int i = 0; i < ohci->num_ports; i++)
 			ohci_port_power(ohci, i, 0);
 	}
 
 	if (val & OHCI_RHS_LPSC)
 	{
-		int i;
-
-		for (i = 0; i < ohci->num_ports; i++)
+		for (unsigned int i = 0; i < ohci->num_ports; i++)
 			ohci_port_power(ohci, i, 1);
 	}
 
