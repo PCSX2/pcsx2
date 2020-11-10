@@ -164,6 +164,8 @@ namespace Implementations
 
 	void Framelimiter_MasterToggle()
 	{
+		bool cdvdrst = g_CDVDReset;
+		g_CDVDReset = false;
 		ScopedCoreThreadPause pauser;
 		g_Conf->EmuOptions.GS.FrameLimitEnable = !g_Conf->EmuOptions.GS.FrameLimitEnable;
 		OSDlog(Color_StrongRed, true, "(FrameLimiter) %s.", g_Conf->EmuOptions.GS.FrameLimitEnable ? "ENABLED" : "DISABLED");
@@ -172,6 +174,7 @@ namespace Implementations
 		g_LimiterMode = Limit_Nominal;
 
 		pauser.AllowResume();
+		g_CDVDReset = cdvdrst;
 	}
 
 	void UpdateImagePosition()
