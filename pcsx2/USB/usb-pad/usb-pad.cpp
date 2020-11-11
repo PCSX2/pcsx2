@@ -533,7 +533,9 @@ namespace usb_pad
 	{
 		std::string varApi;
 #ifdef _WIN32
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
+		std::wstring tmp;
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, tmp);
+		varApi = wstr_to_str(tmp);
 #else
 		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
 #endif
@@ -659,7 +661,9 @@ namespace usb_pad
 	{
 		std::string varApi;
 #ifdef _WIN32
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
+		std::wstring tmp;
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, tmp);
+		varApi = wstr_to_str(tmp);
 #else
 		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
 #endif
@@ -730,7 +734,9 @@ namespace usb_pad
 	{
 		std::string varApi;
 #ifdef _WIN32
-		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(varApi));
+		std::wstring tmp;
+		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, tmp);
+		varApi = wstr_to_str(tmp);
 #else
 		LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, varApi);
 #endif

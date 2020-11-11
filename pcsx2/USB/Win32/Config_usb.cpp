@@ -79,7 +79,8 @@ void PopulateAPIs(HWND hW, int port)
 	std::string selApi = GetSelectedAPI(std::make_pair(port, devName));
 
 	std::string var;
-	if (!LoadSetting(nullptr, port, rd.Name(devtype), N_DEVICE_API, str_to_wstr(var)))
+	std::wstring tmp;
+	if (!LoadSetting(nullptr, port, rd.Name(devtype), N_DEVICE_API, tmp))
 	{
 		if (apis.begin() != apis.end())
 		{
@@ -88,6 +89,7 @@ void PopulateAPIs(HWND hW, int port)
 		}
 	}
 
+	var = wstr_to_str(tmp);
 	int i = 0, sel = 0;
 	for (auto& api : apis)
 	{

@@ -971,11 +971,14 @@ namespace usb_mic
 	{
 		std::string api;
 #ifdef _WIN32
-		if (!LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, str_to_wstr(api)))
+		std::wstring tmp;
+		if (!LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, tmp))
+			return nullptr;
+		api = wstr_to_str(tmp);
 #else
 		if (!LoadSetting(nullptr, port, TypeName(), N_DEVICE_API, api))
-#endif
 			return nullptr;
+#endif
 		return HeadsetDevice::CreateDevice(port, api);
 	}
 

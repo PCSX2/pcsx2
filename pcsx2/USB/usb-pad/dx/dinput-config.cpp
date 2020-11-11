@@ -1282,11 +1282,15 @@ namespace usb_pad
 
 					swprintf_s(text, TEXT("CONTROL %i"), cid);
 #ifdef _WIN32
-					if (!LoadSetting(section, text, str_to_wstr(control)))
+					std::wstring tmp;
+					bool res_control = LoadSetting(section, text, tmp);
+					control = wstr_to_str(tmp);
+					if (!res_control)
+						continue;
 #else
 					if (!LoadSetting(section, text, control))
-#endif
 						continue;
+#endif
 
 					ss << control;
 					std::getline(ss, guid, ',');
