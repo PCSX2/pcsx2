@@ -32,7 +32,7 @@ assignees: ''
 <!-- Additionally, the unofficial PCSX2 Wiki often lists various fixes for upscaling issues. -->
 
 <!-- We are not accepting issues related to the libretro core. -->
-<!-- The libretro core is being matained separately at this time. -->
+<!-- The libretro core is being maintained separately at this time. -->
 
 <!-- Please make sure your system meets our requirements for OS version, CPU and GPU. -->
 <!-- We do not accept bug reports for unsupported operating systems. -->
