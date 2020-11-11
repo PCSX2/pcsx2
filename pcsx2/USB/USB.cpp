@@ -80,7 +80,6 @@ Window g_GSwin;
 Config::Config()
 	: Log(0)
 {
-	memset(&WheelType, 0, sizeof(WheelType));
 }
 
 //Simpler to reset and reattach after USBclose/USBopen
