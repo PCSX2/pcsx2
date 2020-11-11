@@ -40,4 +40,4 @@ If your issue is graphical in nature or you think screenshots will help illustra
  - GPU: [e.g. GTX 1070]
 
 **Logs and Dumps**
-Please feel free to attach any logs, block dumps, [gsdump](https://forums.pcsx2.net/Thread-How-to-create-a-proper-GS-dump) etc here. If your problem is graphical in nature it is highly recommended that you provide a gdump.
+Please feel free to attach any logs, block dumps, [gsdump](https://forums.pcsx2.net/Thread-How-to-create-a-proper-GS-dump) etc here. If your problem is graphical in nature it is highly recommended that you provide a gsdump.
