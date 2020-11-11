@@ -7,7 +7,7 @@ assignees: ''
 
 ---
 
-<!-- Important: Read First-->
+<!-- Important: Read First -->
 
 <!-- Please do not make support requests on Github. -->
 <!-- Our issue tracker is for tracking bugs and feature requests only. -->
@@ -40,7 +40,7 @@ assignees: ''
 <!-- Please read our known issues pages for AMD and Intel drivers. -->
 
 <!-- Discord: https://discord.com/invite/TCz3t9k -->
-<!-- Forums: https://forums.pcsx2.net/index.php> -->
+<!-- Forums: https://forums.pcsx2.net/index.php -->
 <!-- Wiki: https://wiki.pcsx2.net/Main_Page -->
 <!-- System Requirements: https://github.com/PCSX2/pcsx2#system-requirements -->
 <!-- Intel Drivers: https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-Intel-GPUs-All-you-need-to-know -->
@@ -52,14 +52,14 @@ assignees: ''
 <!-- A clear and concise description of what the bug is. -->
 
 **To Reproduce**
-<!-- Steps to reproduce the behavior -->
+<!-- Steps to reproduce the behavior. -->
 
 **Expected behavior**
 <!-- A clear and concise description of what you expected to happen. -->
 
 **GS Settings**
 <!-- Any non-default settings for GS. -->
-<!-- If you don't want to list them out, please provide screenshots of your configuration window (including hw hacks if enabled) -->
+<!-- If you don't want to list them out, please provide screenshots of your configuration window (including hw hacks if enabled). -->
 
 **Emulation Settings**
 <!-- Any non-default core settings. -->
@@ -69,8 +69,7 @@ assignees: ''
 <!-- If you need to modify the settings manually because a game requires you to do so to work, please state that explicitly. -->
 
 **GS Window Screenshots**
-<!-- If your issue is graphical in nature or you think screenshots will help illustrate your issue, you may do that here. -->
-<!-- Otherwise you may delete this section. -->
+<!-- If your issue is graphical in nature and you think screenshots will help illustrate your issue, you may do that here. -->
 
 **System Info (please complete the following information):**
  - PCSX2 Revision: <!-- e.g. dev-525 -->
