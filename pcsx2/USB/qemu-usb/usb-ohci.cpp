@@ -61,8 +61,7 @@ static inline void ohci_intr_update(OHCIState* ohci)
 	if (level)
 	{
 
-		//if ((get_clock() - last_cycle) > MIN_IRQ_INTERVAL)
-		if (ohci->intr_status != OHCI_INTR_WD) //HACK skip first intr with _WD, _SF should follow shortly
+		if ((get_clock() - last_cycle) > MIN_IRQ_INTERVAL)
 		{
 			usbIrq(1);
 			last_cycle = get_clock();
