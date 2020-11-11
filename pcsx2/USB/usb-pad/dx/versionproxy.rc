@@ -283,15 +283,6 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 //
-// Bitmap
-//
-
-IDB_BITMAP1             BITMAP                  "EC_Sim_Hardwarer.bmp"
-IDB_BITMAP2             BITMAP                  "EC_Sim_ShopR.bmp"
-IDB_BITMAP3             BITMAP                  "toca.bmp"
-
-/////////////////////////////////////////////////////////////////////////////
-//
 // AFX_DIALOG_LAYOUT
 //
 

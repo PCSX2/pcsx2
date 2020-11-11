@@ -4,9 +4,6 @@
 //
 #define IDC_STATIC -1
 #define IDOK2 2
-#define IDB_BITMAP1 111
-#define IDB_BITMAP2 112
-#define IDB_BITMAP3 113
 #define IDD_DLG_BUZZ 114
 #define IDD_DIALOG1 202
 #define IDC_DEL0 1001
