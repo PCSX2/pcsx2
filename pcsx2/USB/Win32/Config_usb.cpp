@@ -63,6 +63,18 @@ void SelChangedAPI(HWND hW, int port)
 	changedAPIs[std::make_pair(port, devName)] = *it;
 }
 
+void SelChangedSubtype(HWND hW, int port)
+{
+	int sel = SendDlgItemMessage(hW, port ? IDC_COMBO_WHEEL_TYPE1_USB : IDC_COMBO_WHEEL_TYPE2_USB, CB_GETCURSEL, 0, 0);
+	int devtype = SendDlgItemMessage(hW, port ? IDC_COMBO1_USB : IDC_COMBO2_USB, CB_GETCURSEL, 0, 0);
+	if (devtype == 0)
+		return;
+	devtype--;
+	auto& rd = RegisterDevice::instance();
+	auto devName = rd.Name(devtype);
+	changedSubtype[std::make_pair(port, devName)] = sel;
+}
+
 void PopulateAPIs(HWND hW, int port)
 {
 	SendDlgItemMessage(hW, port ? IDC_COMBO_API1_USB : IDC_COMBO_API2_USB, CB_RESETCONTENT, 0, 0);
@@ -103,6 +115,30 @@ void PopulateAPIs(HWND hW, int port)
 	SendDlgItemMessage(hW, port ? IDC_COMBO_API1_USB : IDC_COMBO_API2_USB, CB_SETCURSEL, sel, 0);
 }
 
+void PopulateSubType(HWND hW, int port)
+{
+	SendDlgItemMessage(hW, port ? IDC_COMBO_WHEEL_TYPE1_USB : IDC_COMBO_WHEEL_TYPE2_USB, CB_RESETCONTENT, 0, 0);
+	int devtype = SendDlgItemMessage(hW, port ? IDC_COMBO1_USB : IDC_COMBO2_USB, CB_GETCURSEL, 0, 0);
+	if (devtype == 0)
+		return;
+	devtype--;
+	auto& rd = RegisterDevice::instance();
+	auto dev = rd.Device(devtype);
+	auto devName = rd.Name(devtype);
+
+	int sel = 0;
+	if (!LoadSetting(nullptr, port, dev->TypeName(), N_DEV_SUBTYPE, sel))
+	{
+		changedSubtype[std::make_pair(port, devName)] = sel;
+	}
+
+	for (auto subtype : dev->SubTypes())
+	{
+		SendDlgItemMessageA(hW, port ? IDC_COMBO_WHEEL_TYPE1_USB : IDC_COMBO_WHEEL_TYPE2_USB, CB_ADDSTRING, 0, (LPARAM)subtype.c_str());
+	}
+	SendDlgItemMessage(hW, port ? IDC_COMBO_WHEEL_TYPE1_USB : IDC_COMBO_WHEEL_TYPE2_USB, CB_SETCURSEL, sel, 0);
+}
+
 BOOL CALLBACK ConfigureDlgProcUSB(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
 
@@ -137,19 +173,9 @@ BOOL CALLBACK ConfigureDlgProcUSB(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lPar
 				SendDlgItemMessage(hW, IDC_COMBO2_USB, CB_SETCURSEL, p2, 0);
 				PopulateAPIs(hW, 0);
 				PopulateAPIs(hW, 1);
+				PopulateSubType(hW, 0);
+				PopulateSubType(hW, 1);
 			}
-
-			SendDlgItemMessageA(hW, IDC_COMBO_WHEEL_TYPE1_USB, CB_ADDSTRING, 0, (LPARAM) "Driving Force");
-			SendDlgItemMessageA(hW, IDC_COMBO_WHEEL_TYPE1_USB, CB_ADDSTRING, 0, (LPARAM) "Driving Force Pro");
-			SendDlgItemMessageA(hW, IDC_COMBO_WHEEL_TYPE1_USB, CB_ADDSTRING, 0, (LPARAM) "Driving Force Pro (rev11.02)");
-			SendDlgItemMessageA(hW, IDC_COMBO_WHEEL_TYPE1_USB, CB_ADDSTRING, 0, (LPARAM) "GT Force");
-			SendDlgItemMessage(hW, IDC_COMBO_WHEEL_TYPE1_USB, CB_SETCURSEL, conf.WheelType[PLAYER_ONE_PORT], 0);
-
-			SendDlgItemMessageA(hW, IDC_COMBO_WHEEL_TYPE2_USB, CB_ADDSTRING, 0, (LPARAM) "Driving Force");
-			SendDlgItemMessageA(hW, IDC_COMBO_WHEEL_TYPE2_USB, CB_ADDSTRING, 0, (LPARAM) "Driving Force Pro");
-			SendDlgItemMessageA(hW, IDC_COMBO_WHEEL_TYPE2_USB, CB_ADDSTRING, 0, (LPARAM) "Driving Force Pro (rev11.02)");
-			SendDlgItemMessageA(hW, IDC_COMBO_WHEEL_TYPE2_USB, CB_ADDSTRING, 0, (LPARAM) "GT Force");
-			SendDlgItemMessage(hW, IDC_COMBO_WHEEL_TYPE2_USB, CB_SETCURSEL, conf.WheelType[PLAYER_TWO_PORT], 0);
 
 			return TRUE;
 			break;
@@ -168,6 +194,12 @@ BOOL CALLBACK ConfigureDlgProcUSB(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lPar
 						case IDC_COMBO2_USB:
 							port = (LOWORD(wParam) == IDC_COMBO1_USB) ? 1 : 0;
 							PopulateAPIs(hW, port);
+							PopulateSubType(hW, port);
+							break;
+						case IDC_COMBO_WHEEL_TYPE1_USB:
+						case IDC_COMBO_WHEEL_TYPE2_USB:
+							port = (LOWORD(wParam) == IDC_COMBO_WHEEL_TYPE1_USB) ? 1 : 0;
+							SelChangedSubtype(hW, port);
 							break;
 					}
 					break;
@@ -215,9 +247,6 @@ BOOL CALLBACK ConfigureDlgProcUSB(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lPar
 								i = SendDlgItemMessage(hW, IDC_COMBO2_USB, CB_GETCURSEL, 0, 0);
 								conf.Port[0] = regInst.Name(i - 1);
 							}
-							//wheel type
-							conf.WheelType[PLAYER_ONE_PORT] = SendDlgItemMessage(hW, IDC_COMBO_WHEEL_TYPE1_USB, CB_GETCURSEL, 0, 0);
-							conf.WheelType[PLAYER_TWO_PORT] = SendDlgItemMessage(hW, IDC_COMBO_WHEEL_TYPE2_USB, CB_GETCURSEL, 0, 0);
 
 							SaveConfig();
 							CreateDevices();

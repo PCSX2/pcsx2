@@ -59,6 +59,10 @@ namespace usb_pad
 		static const TCHAR* LongAPIName(const std::string& name);
 		static int Configure(int port, const std::string& api, void* data);
 		static int Freeze(int mode, USBDevice* dev, void* data);
+		static std::vector<std::string> SubTypes()
+		{
+			return {"Driving Force", "Driving Force Pro", "Driving Force Pro (rev11.02)", "GT Force"};
+		}
 	};
 
 	class RBDrumKitDevice
@@ -78,6 +82,10 @@ namespace usb_pad
 		static const TCHAR* LongAPIName(const std::string& name);
 		static int Configure(int port, const std::string& api, void* data);
 		static int Freeze(int mode, USBDevice* dev, void* data);
+		static std::vector<std::string> SubTypes()
+		{
+			return {};
+		}
 	};
 
 	class BuzzDevice
@@ -97,6 +105,10 @@ namespace usb_pad
 		static const TCHAR* LongAPIName(const std::string& name);
 		static int Configure(int port, const std::string& api, void* data);
 		static int Freeze(int mode, USBDevice* dev, void* data);
+		static std::vector<std::string> SubTypes()
+		{
+			return {};
+		}
 		static void Initialize();
 	};
 
@@ -117,6 +129,10 @@ namespace usb_pad
 		static const TCHAR* LongAPIName(const std::string& name);
 		static int Configure(int port, const std::string& api, void* data);
 		static int Freeze(int mode, USBDevice* dev, void* data);
+		static std::vector<std::string> SubTypes()
+		{
+			return {};
+		}
 	};
 
 // Most likely as seen on https://github.com/matlo/GIMX

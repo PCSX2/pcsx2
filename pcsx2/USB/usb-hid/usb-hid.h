@@ -72,6 +72,10 @@ namespace usb_hid
 		static const TCHAR* LongAPIName(const std::string& name);
 		static int Configure(int port, const std::string& api, void* data);
 		static int Freeze(int mode, USBDevice* dev, void* data);
+		static std::vector<std::string> SubTypes()
+		{
+			return {};
+		}
 	};
 
 	class HIDMouseDevice
@@ -91,6 +95,10 @@ namespace usb_hid
 		static const TCHAR* LongAPIName(const std::string& name);
 		static int Configure(int port, const std::string& api, void* data);
 		static int Freeze(int mode, USBDevice* dev, void* data);
+		static std::vector<std::string> SubTypes()
+		{
+			return {};
+		}
 	};
 
 	class BeatManiaDevice
@@ -110,6 +118,10 @@ namespace usb_hid
 		static const TCHAR* LongAPIName(const std::string& name);
 		static int Configure(int port, const std::string& api, void* data);
 		static int Freeze(int mode, USBDevice* dev, void* data);
+		static std::vector<std::string> SubTypes()
+		{
+			return {};
+		}
 	};
 
 } // namespace usb_hid

@@ -52,6 +52,10 @@ namespace usb_eyetoy
 		}
 		static int Configure(int port, const std::string& api, void* data);
 		static int Freeze(int mode, USBDevice* dev, void* data);
+		static std::vector<std::string> SubTypes()
+		{
+			return {};
+		}
 	};
 
 } // namespace usb_eyetoy

@@ -34,8 +34,6 @@
 // Device-level config related defines
 #define S_DEVICE_API TEXT("Device API")
 #define S_WHEEL_TYPE TEXT("Wheel type")
-#define S_DEVICE_PORT0 TEXT("Port 0")
-#define S_DEVICE_PORT1 TEXT("Port 1")
 #define S_CONFIG_PATH TEXT("Path")
 
 #define N_DEVICE_API TEXT("device_api")
@@ -45,9 +43,7 @@
 #define N_DEVICE_PORT0 TEXT("port_0")
 #define N_DEVICE_PORT1 TEXT("port_1")
 #define N_DEVICE_PORT "port"
-#define N_WHEEL_TYPE0 TEXT("wheel_type_0")
-#define N_WHEEL_TYPE1 TEXT("wheel_type_1")
-#define N_WHEEL_TYPE TEXT("wheel_type")
+#define N_DEV_SUBTYPE TEXT("subtype")
 #define N_CONFIG_PATH TEXT("path")
 
 #define PLAYER_TWO_PORT 0
@@ -58,7 +54,6 @@ struct Config
 {
 	int Log;
 	std::string Port[2];
-	int WheelType[2];
 
 	Config();
 };
@@ -72,7 +67,9 @@ void RemoveSection(const char* dev_type, int port, const std::string& key);
 extern TSTDSTRING IniPath;
 extern TSTDSTRING LogDir;
 extern std::map<std::pair<int /*port*/, std::string /*devname*/>, std::string> changedAPIs;
+extern std::map<std::pair<int /*port*/, std::string /*devname*/>, int> changedSubtype;
 std::string GetSelectedAPI(const std::pair<int /*port*/, std::string /*devname*/>& pair);
+int GetSelectedSubtype(const std::pair<int, std::string>& pair);
 
 bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, TSTDSTRING& value);
 bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, int32_t& value);

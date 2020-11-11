@@ -269,12 +269,6 @@ namespace usb_pad
 			tie.pszText = TEXT("Player 2");
 			SendDlgItemMessage(hW, IDC_TAB1, TCM_INSERTITEM, 1, (LPARAM)&tie);
 
-			//SendDlgItemMessageA(hW, IDC_COMBO_WHEEL_TYPE, CB_ADDSTRING, 0, (LPARAM)"DF / Generic Logitech Wheel");
-			////SendDlgItemMessageA(hW, IDC_COMBO_WHEEL_TYPE, CB_ADDSTRING, 0, (LPARAM)"Driving Force");
-			//SendDlgItemMessageA(hW, IDC_COMBO_WHEEL_TYPE, CB_ADDSTRING, 0, (LPARAM)"Driving Force Pro");
-			//SendDlgItemMessage(hW, IDC_COMBO_WHEEL_TYPE, CB_SETCURSEL, conf.WheelType1, 0);
-			////SendDlgItemMessageA(hW, IDC_COMBO_WHEEL_TYPE, CB_ADDSTRING, 0, (LPARAM)"Driving Force GT");
-
 			//Selected FFB target device
 			SendDlgItemMessageA(hW, IDC_COMBO_FFB, CB_ADDSTRING, 0, (LPARAM) "None");
 			SendDlgItemMessage(hW, IDC_COMBO_FFB, CB_SETCURSEL, 0, 0);
@@ -657,8 +651,6 @@ namespace usb_pad
 			SendDlgItemMessage(hW, IDC_COMBO_FFB, CB_SETCURSEL, selectedJoy[plyCapturing], 0);
 			SendDlgItemMessage(hW, IDC_STATIC_CAP, WM_SETTEXT, 0, (LPARAM)TEXT(""));
 
-			SendDlgItemMessage(hW, IDC_COMBO_WHEEL_TYPE, CB_SETCURSEL, conf.WheelType[1 - plyCapturing], 0);
-
 			btnCapturing = PAD_BUTTON_COUNT;
 			axisCapturing = PAD_AXIS_COUNT;
 			hatCapturing = PAD_HAT_COUNT;
@@ -787,9 +779,6 @@ namespace usb_pad
 						case LBN_SELCHANGE:
 							switch (LOWORD(wParam))
 							{
-								case IDC_COMBO_WHEEL_TYPE:
-									conf.WheelType[1 - plyCapturing] = SendDlgItemMessage(hW, IDC_COMBO_WHEEL_TYPE, CB_GETCURSEL, 0, 0);
-									break;
 								case IDC_COMBO_FFB:
 									selectedJoy[plyCapturing] = SendDlgItemMessage(hW, IDC_COMBO_FFB, CB_GETCURSEL, 0, 0);
 									//player_joys[plyCapturing] = *(joysDev.begin() + selectedJoy[plyCapturing]);
