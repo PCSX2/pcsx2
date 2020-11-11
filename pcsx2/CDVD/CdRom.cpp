@@ -852,7 +852,7 @@ void cdrWrite1(u8 rt)
 			cdr.Mode = cdr.Param[0];
 			cdr.Ctrl |= 0x80;
 			cdr.Stat = NoIntr;
-			if (cdr.Mode && MODE_CDDA)
+			if (cdr.Mode & MODE_CDDA)
 			{
 				StopCdda();
 				cdvd.Type = CDVD_TYPE_CDDA;
