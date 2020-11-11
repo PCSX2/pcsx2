@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Support Forums
+    url: https://forums.pcsx2.net/index.php
+    about: For community support and answers
+  - name: Discord
+    url: https://discord.com/invite/TCz3t9k
+    about: Get direct support and hang out with us
+  - name: Wiki
+    url: https://wiki.pcsx2.net/Main_Page
+    about: For user provided information and reports
