@@ -1783,6 +1783,14 @@ XgKickHack = 1 // Fixes SPS.
 Serial = SCES-51593
 Name   = Hardware Online Arena [Beta, Promo & Full Release]
 Region = PAL-M4
+VU0KickstartHack = 1 // Reduces chance of hanging going ingame
+[patches = 81797E77]
+	comment=Reduces chance of game hanging going ingame
+	comment=caused by vu0 integer register being set twice causing bad cop2 timing
+	comment=Game will require EE Cycle Rate -1 to fix hangs completely
+	patch=1,EE,002c5e50,word,8000033c
+	patch=1,EE,002c5f40,word,8000033c
+[/patches]
 ---------------------------------------------
 Serial = SCES-51607
 Name   = Ratchet & Clank 2 - Locked & Loaded
