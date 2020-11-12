@@ -174,11 +174,11 @@ msgstr ""
 msgid ""
 "PCSX2 requires a *legal* copy of the PS2 BIOS in order to run games.\n"
 "You cannot use a copy obtained from a friend or the Internet.\n"
-"You must dump the BIOS from your *own* Playstation 2 console."
+"You must dump the BIOS from your *own* PlayStation 2 console."
 msgstr ""
 "يتطلب PCSX2 نسخة * قانونية * من الـ PS2 BIOS لتشغيل الألعاب.\n"
 "لا يمكنك استخدام نسخة تم الحصول عليها من صديق أو عن طريق الإنترنت.\n"
-"يجب عليك استخراج BIOS من الـ Playstation 2 الخاصة بك."
+"يجب عليك استخراج BIOS من الـ PlayStation 2 الخاصة بك."
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:32
 #, c-format

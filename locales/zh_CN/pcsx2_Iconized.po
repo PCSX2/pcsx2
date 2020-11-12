@@ -168,11 +168,11 @@ msgstr ""
 msgid ""
 "PCSX2 requires a *legal* copy of the PS2 BIOS in order to run games.\n"
 "You cannot use a copy obtained from a friend or the Internet.\n"
-"You must dump the BIOS from your *own* Playstation 2 console."
+"You must dump the BIOS from your *own* PlayStation 2 console."
 msgstr ""
 "PCSX2 需要一个合法的 PS2 BIOS 副本来运行游戏。\n"
 "使用非法复制或下载的副本为侵权行为。\n"
-"您必须从您自己的 Playstation 2 实机中取得 BIOS。"
+"您必须从您自己的 PlayStation 2 实机中取得 BIOS。"
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:32
 #, c-format
@@ -719,11 +719,11 @@ msgstr ""
 "严重错误，sVU 重编译器已过时，您应该使用 microVU。:)"
 
 #~ msgid ""
-#~ "Playstation game discs are not supported by PCSX2.  If you want to "
+#~ "PlayStation game discs are not supported by PCSX2.  If you want to "
 #~ "emulate PSX games then you'll have to download a PSX-specific emulator, "
 #~ "such as ePSXe or PCSX."
 #~ msgstr ""
-#~ "PCSX2 不支持 Playstation 1 游戏。如果您想模拟 PS1 游戏请下载一个 PS1 模拟"
+#~ "PCSX2 不支持 PlayStation 1 游戏。如果您想模拟 PS1 游戏请下载一个 PS1 模拟"
 #~ "器，如 ePSXe 或 PCSX。"
 
 #, c-format

@@ -893,7 +893,7 @@ msgstr "رخصة"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:62
 msgid "PlayStation 2 Emulator:"
-msgstr "محاكي الـ Playstation 2:"
+msgstr "محاكي الـ Playtation 2:"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:64
 msgid ""

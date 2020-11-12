@@ -940,7 +940,7 @@ msgstr ""
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:62
 #, fuzzy
 msgid "PlayStation 2 Emulator:"
-msgstr "Play Station 2 emulator"
+msgstr "PlayStation 2 emulator"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:64
 msgid ""
