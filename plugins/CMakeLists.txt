@@ -29,7 +29,3 @@ endif()
 if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/PadNull" AND PadNull)
 	add_subdirectory(PadNull)
 endif()
-
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/USBnull" AND USBnull)
-	add_subdirectory(USBnull)
-endif()

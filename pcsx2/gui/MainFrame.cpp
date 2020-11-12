@@ -249,6 +249,7 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_SelectPluginsBios_Click, this, MenuId_Config_BIOS);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_AudioSettings_Click, this, MenuId_Config_SPU2);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_NetworkSettings_Click, this, MenuId_Config_DEV9);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_USBSettings_Click, this, MenuId_Config_USB);
 
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_GSSettings_Click, this, MenuId_Video_CoreSettings);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_WindowSettings_Click, this, MenuId_Video_WindowSettings);
@@ -441,12 +442,12 @@ void MainEmuFrame::CreateConfigMenu()
 	m_menuConfig.Append(MenuId_Config_BIOS, _("&Plugin/BIOS Selector..."));
 	m_menuConfig.Append(MenuId_Config_SPU2, _("&Audio Settings..."));
 	m_menuConfig.Append(MenuId_Config_DEV9,			_("&Network and HDD Settings...") );
+	m_menuConfig.Append(MenuId_Config_USB, _("&USB Settings..."));
 
 	m_menuConfig.AppendSeparator();
 
 	m_menuConfig.Append(MenuId_Config_GS, _("&Video (GS)"), m_PluginMenuPacks[PluginId_GS]);
 	m_menuConfig.Append(MenuId_Config_PAD, _("&Controllers (PAD)"), m_PluginMenuPacks[PluginId_PAD]);
-	m_menuConfig.Append(MenuId_Config_USB, _("&USB"), m_PluginMenuPacks[PluginId_USB]);
 
 	m_menuConfig.AppendSeparator();
 	m_menuConfig.Append(MenuId_Config_Multitap0Toggle, _("Multitap &1"), wxEmptyString, wxITEM_CHECK);

@@ -81,7 +81,6 @@ const PluginInfo tbl_PluginInfo[] =
 {
 	{ "GS",		PluginId_GS,	PS2E_LT_GS,		PS2E_GS_VERSION		},
 	{ "PAD",	PluginId_PAD,	PS2E_LT_PAD,	PS2E_PAD_VERSION	},
-	{ "USB",	PluginId_USB,	PS2E_LT_USB,	PS2E_USB_VERSION	},
 
 	{ NULL },
 
@@ -272,23 +271,6 @@ _PADWriteEvent	   PADWriteEvent;
 
 static void PAD_update( u32 padslot ) { }
 
-// USB
-#ifndef BUILTIN_USB_PLUGIN
-_USBopen           USBopen;
-_USBread8          USBread8;
-_USBread16         USBread16;
-_USBread32         USBread32;
-_USBwrite8         USBwrite8;
-_USBwrite16        USBwrite16;
-_USBwrite32        USBwrite32;
-_USBasync          USBasync;
-
-_USBirqCallback    USBirqCallback;
-_USBirqHandler     USBirqHandler;
-_USBsetRAM         USBsetRAM;
-#endif
-
-USBhandler usbHandler;
 uptr pDsp[2];
 
 static s32 CALLBACK _hack_PADinit()
@@ -390,42 +372,16 @@ static const LegacyApi_OptMethod s_MethMessOpt_PAD[] =
 	{ NULL },
 };
 
-// ----------------------------------------------------------------------------
-//  USB Mess!
-// ----------------------------------------------------------------------------
-static const LegacyApi_ReqMethod s_MethMessReq_USB[] =
-{
-	{	"USBopen",			(vMeth**)&USBopen,			NULL },
-	{	"USBread8",			(vMeth**)&USBread8,			NULL },
-	{	"USBread16",		(vMeth**)&USBread16,		NULL },
-	{	"USBread32",		(vMeth**)&USBread32,		NULL },
-	{	"USBwrite8",		(vMeth**)&USBwrite8,		NULL },
-	{	"USBwrite16",		(vMeth**)&USBwrite16,		NULL },
-	{	"USBwrite32",		(vMeth**)&USBwrite32,		NULL },
-	{	"USBirqCallback",	(vMeth**)&USBirqCallback,	NULL },
-	{	"USBirqHandler",	(vMeth**)&USBirqHandler,	NULL },
-	{ NULL }
-};
-
-static const LegacyApi_OptMethod s_MethMessOpt_USB[] =
-{
-	{	"USBasync",		(vMeth**)&USBasync },
-	{	"USBsetRAM",	(vMeth**)&USBsetRAM },
-	{ NULL }
-};
-
 static const LegacyApi_ReqMethod* const s_MethMessReq[] =
 {
 	s_MethMessReq_GS,
 	s_MethMessReq_PAD,
-	s_MethMessReq_USB,
 };
 
 static const LegacyApi_OptMethod* const s_MethMessOpt[] =
 {
 	s_MethMessOpt_GS,
 	s_MethMessOpt_PAD,
-	s_MethMessOpt_USB,
 };
 
 SysCorePlugins *g_plugins = NULL;
@@ -588,10 +544,6 @@ void* StaticLibrary::GetSymbol(const wxString &name)
 #ifdef BUILTIN_PAD_PLUGIN
 	RETURN_COMMON_SYMBOL(PAD);
 #endif
-#ifdef BUILTIN_USB_PLUGIN
-	RETURN_COMMON_SYMBOL(USB);
-#endif
-
 
 #undef RETURN_COMMON_SYMBOL
 #undef RETURN_SYMBOL
@@ -645,9 +597,6 @@ SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxStri
 #endif
 #ifdef BUILTIN_PAD_PLUGIN
 		case PluginId_PAD:
-#endif
-#ifdef BUILTIN_USB_PLUGIN
-		case PluginId_USB:
 #endif
 		case PluginId_Count:
 			IsStatic	= true;
@@ -915,19 +864,6 @@ bool SysCorePlugins::OpenPlugin_PAD()
 	return !PADopen( (void*)pDsp );
 }
 
-bool SysCorePlugins::OpenPlugin_USB()
-{
-	usbHandler = NULL;
-
-	if( USBopen((void*)pDsp) ) return false;
-	USBirqCallback( usbIrq );
-	usbHandler = USBirqHandler();
-	// iopMem is not initialized yet. Moved elsewhere
-	//if( USBsetRAM != NULL )
-	//	USBsetRAM(iopMem->Main);
-	return true;
-}
-
 bool SysCorePlugins::OpenPlugin_Mcd()
 {
 	ScopedLock lock( m_mtx_PluginStatus );
@@ -953,7 +889,6 @@ void SysCorePlugins::Open( PluginsEnum_t pid )
 	{
 		case PluginId_GS:	result = OpenPlugin_GS();	break;
 		case PluginId_PAD:	result = OpenPlugin_PAD();	break;
-		case PluginId_USB:	result = OpenPlugin_USB();	break;
 
 		jNO_DEFAULT;
 	}
@@ -1025,11 +960,6 @@ void SysCorePlugins::ClosePlugin_PAD()
 	_generalclose( PluginId_PAD );
 }
 
-void SysCorePlugins::ClosePlugin_USB()
-{
-	_generalclose( PluginId_USB );
-}
-
 void SysCorePlugins::ClosePlugin_Mcd()
 {
 	ScopedLock lock( m_mtx_PluginStatus );
@@ -1049,7 +979,6 @@ void SysCorePlugins::Close( PluginsEnum_t pid )
 	{
 		case PluginId_GS:	ClosePlugin_GS();	break;
 		case PluginId_PAD:	ClosePlugin_PAD();	break;
-		case PluginId_USB:	ClosePlugin_USB();	break;
 		case PluginId_Mcd:	ClosePlugin_Mcd();	break;
 		
 		jNO_DEFAULT;

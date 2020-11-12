@@ -312,7 +312,7 @@ set(pcsx2DEV9Sources
 	DEV9/pcap_io.cpp
 	DEV9/Linux/Config.cpp
 	DEV9/Linux/Linux.cpp
-	DEV9/Linux/net.cpp
+	DEV9/net.cpp
 	${pcsx2DEV9UISources}
 	)
 
@@ -325,6 +325,115 @@ set(pcsx2DEV9Headers
 	DEV9/smap.h
 	${pcsx2DEV9UIHeaders}
 	)
+
+# USB sources 
+set(pcsx2USBSources
+	USB/USB.cpp
+	USB/deviceproxy.cpp
+	USB/configuration.cpp
+	USB/device_init.cpp
+	USB/qemu-usb/glib.cpp
+	USB/qemu-usb/vl.cpp
+	USB/qemu-usb/iov.cpp
+	USB/qemu-usb/desc.cpp
+	USB/qemu-usb/core.cpp
+	USB/qemu-usb/bus.cpp
+	USB/qemu-usb/usb-ohci.cpp
+	USB/qemu-usb/hid.cpp
+	USB/qemu-usb/input-keymap-qcode-to-qnum.cpp
+	USB/usb-msd/usb-msd.cpp
+	USB/usb-pad/usb-pad.cpp
+	USB/usb-pad/usb-pad-ff.cpp
+	USB/usb-pad/lg/lg_ff.cpp
+	USB/usb-pad/usb-seamic.cpp
+	USB/usb-mic/usb-mic-singstar.cpp
+	USB/usb-mic/usb-mic-logitech.cpp
+	USB/usb-mic/usb-headset.cpp
+	USB/usb-eyetoy/jpgd/jpgd.cpp
+	USB/usb-eyetoy/jo_mpeg.cpp
+	USB/usb-eyetoy/usb-eyetoy-webcam.cpp
+	USB/usb-hid/usb-hid.cpp
+	USB/shared/shared_usb.cpp
+	USB/shared/inifile_usb.cpp
+	USB/shared/ringbuffer.cpp
+	USB/icon_buzz_24.cpp
+	USB/usb-msd/usb-msd-gtk.cpp
+	USB/usb-pad/joydev/joydev.cpp
+	USB/usb-pad/joydev/joydev-gtk.cpp
+	USB/usb-pad/evdev/shared-gtk.cpp
+	USB/usb-pad/evdev/evdev-ff.cpp
+	USB/usb-pad/evdev/evdev.cpp
+	USB/usb-pad/evdev/evdev-gtk.cpp
+	USB/usb-hid/evdev/evdev-gtk.cpp
+	USB/usb-eyetoy/cam-linux.cpp
+	USB/linux/config.cpp
+	USB/linux/config-gtk.cpp
+	USB/linux/util.cpp
+	USB/qemu-usb/input-keymap-linux-to-qcode.cpp
+	USB/usb-mic/audiodev-pulse.cpp
+	USB/usb-pad/api_init_linux.cpp
+	USB/usb-eyetoy/api_init_linux.cpp
+	USB/usb-hid/api_init_linux.cpp
+	USB/usb-mic/api_init_linux.cpp
+    )
+
+# USB headers
+set(pcsx2USBHeaders
+	USB/USB.h
+	USB/proxybase.h
+	USB/deviceproxy.h
+	USB/configuration.h
+	USB/platcompat.h
+	USB/helpers.h
+	USB/readerwriterqueue/readerwriterqueue.h
+	USB/readerwriterqueue/atomicops.h
+	USB/qemu-usb/glib.h
+	USB/qemu-usb/vl.h
+	USB/qemu-usb/qusb.h
+	USB/qemu-usb/USBinternal.h
+	USB/qemu-usb/desc.h
+	USB/qemu-usb/iov.h
+	USB/qemu-usb/queue.h
+	USB/qemu-usb/hid.h
+	USB/qemu-usb/input-keymap.h
+	USB/usb-msd/usb-msd.h
+	USB/usb-pad/usb-pad.h
+	USB/usb-pad/padproxy.h
+	USB/usb-pad/lg/lg_ff.h
+	USB/usb-mic/audio.h
+	USB/usb-mic/audiodev.h
+	USB/usb-mic/audiodeviceproxy.h
+	USB/usb-mic/usb-mic-singstar.h
+	USB/usb-mic/usb-headset.h
+	USB/usb-mic/audiodev-noop.h
+	USB/usb-eyetoy/jpgd/jpgd.h
+	USB/usb-eyetoy/jo_mpeg.h
+	USB/usb-eyetoy/videodeviceproxy.h
+	USB/usb-eyetoy/videodev.h
+	USB/usb-eyetoy/usb-eyetoy-webcam.h
+	USB/usb-eyetoy/ov519.h
+	USB/usb-hid/hidproxy.h
+	USB/usb-hid/usb-hid.h
+	USB/usb-hid/noop.h
+	USB/shared/shared_usb.h
+	USB/shared/inifile_usb.h
+	USB/shared/ringbuffer.h
+	USB/linux/ini.h
+	USB/linux/actualfile.h
+	USB/linux/config.h
+	USB/linux/util.h
+	USB/gtk.h
+	USB/icon_buzz_24.h
+	USB/usb-pad/joydev/joydev.h
+	USB/usb-pad/evdev/shared.h
+	USB/usb-pad/evdev/evdev.h
+	USB/usb-pad/evdev/evdev-ff.h
+	USB/usb-hid/evdev/evdev.h
+	USB/usb-hid/evdev/evdev.cpp
+	USB/usb-eyetoy/cam-linux.h
+	USB/qemu-usb/input-keymap-linux-to-qcode.h
+	USB/usb-mic/audiodev-pulse.h
+    )
 
 
 # DebugTools sources
@@ -761,6 +870,8 @@ set(Common
 	${pcsx2SPU2Headers}
 	${pcsx2DEV9Sources}
 	${pcsx2DEV9Headers}
+    ${pcsx2USBSources}
+    ${pcsx2USBHeaders}
 	${pcsx2DebugToolsSources}
 	${pcsx2GuiSources}
 	${pcsx2GuiResources}
@@ -832,6 +943,8 @@ set(pcsx2FinalLibs
     ${SOUNDTOUCH_LIBRARIES}
     ${SDL2_LIBRARIES}
     ${PCAP_LIBRARY}
+    ${LIBSAMPLERATE_LIBRARIES}
+    ${PULSEAUDIO_LIBRARIES}
     ${LIBXML2_LIBRARIES}
     ${Platform_Libs}
 )
@@ -845,9 +958,6 @@ if(BUILTIN_GS)
 endif()
 if(BUILTIN_PAD)
     set(pcsx2FinalLibs "${pcsx2FinalLibs} onepad-1.2.0")
-endif()
-if(BUILTIN_USB)
-    set(pcsx2FinalLibs "${pcsx2FinalLibs} USBnull-0.7.0")
 endif()
 
 # additonal include directories

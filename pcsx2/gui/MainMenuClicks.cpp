@@ -22,6 +22,7 @@
 #include "SPU2/spu2.h"
 #include "System/SysThreads.h"
 #include "DEV9/DEV9.h"
+#include "USB/USB.h"
 
 #include "ConsoleLogger.h"
 #include "MainFrame.h"
@@ -62,6 +63,11 @@ void MainEmuFrame::Menu_McdSettings_Click(wxCommandEvent& event)
 void MainEmuFrame::Menu_NetworkSettings_Click(wxCommandEvent &event)
 {
 	DEV9configure();
+}
+
+void MainEmuFrame::Menu_USBSettings_Click(wxCommandEvent& event)
+{
+	USBconfigure();
 }
 
 void MainEmuFrame::Menu_WindowSettings_Click(wxCommandEvent &event)

@@ -1,0 +1,206 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource_usb.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "WinResrc.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// Anglais (États-Unis) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_DLGMSD_USB DIALOGEX 0, 0, 316, 74
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "USB Mass Storage Device"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,204,54,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,258,54,50,14
+    GROUPBOX        "Image file path",IDC_STATIC_USB,6,6,300,36
+    EDITTEXT        IDC_EDIT1_USB,12,18,234,14,ES_AUTOHSCROLL,WS_EX_ACCEPTFILES
+    PUSHBUTTON      "Browse",IDC_BUTTON1_USB,252,18,50,14
+END
+
+IDD_CONFIG_USB DIALOGEX 0, 0, 257, 205
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "USB Settings"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    PUSHBUTTON      "Cancel",IDCANCEL,194,184,50,14
+    CONTROL         "Enable Logging (for developer use only)",IDC_LOGGING_USB, "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,102,144,12
+    COMBOBOX        IDC_COMBO1_USB,48,17,198,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Port 1:",IDC_STATIC_USB,19,19,23,8
+    COMBOBOX        IDC_COMBO2_USB,48,35,198,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Port 2:",IDC_STATIC_USB,19,37,23,8
+    DEFPUSHBUTTON   "Configure",IDC_CONFIGURE1_USB,198,64,50,14
+    DEFPUSHBUTTON   "Configure",IDC_CONFIGURE2_USB,198,82,50,14
+    DEFPUSHBUTTON   "OK",IDOK,138,184,50,14
+    COMBOBOX        IDC_COMBO_WHEEL_TYPE1_USB,42,144,192,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Port 1:",IDC_STATIC_USB,12,144,23,8
+    GROUPBOX        "Emulated wheel",IDC_STATIC_USB,6,132,240,48
+    COMBOBOX        IDC_COMBO_WHEEL_TYPE2_USB,42,162,192,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Port 2:",IDC_STATIC_USB,12,162,23,8
+    GROUPBOX        "Device type",IDC_STATIC_USB,6,6,246,48
+    COMBOBOX        IDC_COMBO_API1_USB,48,65,144,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO_API2_USB,48,83,144,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Device API",IDC_STATIC_USB,6,54,246,48
+    LTEXT           "Port 1:",IDC_STATIC_USB,18,66,23,8
+    LTEXT           "Port 2:",IDC_STATIC_USB,18,84,23,8
+END
+
+IDD_DLGWASAPI_USB DIALOGEX 0, 0, 287, 230
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "WASAPI Settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,174,210,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,228,210,50,14
+    GROUPBOX        "Audio Input",IDC_STATIC_USB,6,6,270,54
+    LTEXT           "Player 1:",IDC_STATIC_USB,12,18,30,8
+    LTEXT           "Player 2:",IDC_STATIC_USB,12,36,30,8
+    COMBOBOX        IDC_COMBO1_USB,48,18,216,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_COMBO2_USB,48,36,216,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "1 ms",IDC_STATIC_USB,18,138,16,8
+    LTEXT           "1000 ms",IDC_STATIC_USB,240,138,28,8
+    GROUPBOX        "Input Buffering",IDC_STATIC_USB,6,108,270,46
+    CONTROL         "",IDC_SLIDER1_USB,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,18,121,252,15
+    EDITTEXT        IDC_BUFFER1_USB,122,138,40,12,ES_AUTOHSCROLL | ES_NUMBER
+    GROUPBOX        "Audio Output",IDC_STATIC_USB,6,66,270,36
+    COMBOBOX        IDC_COMBO3_USB,48,78,216,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "1 ms",IDC_STATIC_USB,18,186,16,8
+    LTEXT           "1000 ms",IDC_STATIC_USB,240,186,28,8
+    GROUPBOX        "Output Buffering",IDC_STATIC_USB,6,156,270,46
+    CONTROL         "",IDC_SLIDER2_USB,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,18,169,252,15
+    EDITTEXT        IDC_BUFFER2_USB,122,186,40,12,ES_AUTOHSCROLL | ES_NUMBER
+END
+
+IDD_DLG_EYETOY_USB DIALOGEX 0, 0, 309, 49
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "EyeToy Settings"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    LTEXT           "Device:",IDC_STATIC_USB,7,8,27,8
+    COMBOBOX        IDC_COMBO1_USB,40,7,262,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    DEFPUSHBUTTON   "OK",IDOK,198,28,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,252,28,50,14
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_DLGMIC_USB AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_CONFIG_USB AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DLGWASAPI_USB AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+IDD_DLG_EYETOY_USB AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_DLGMSD_USB, DIALOG
+    BEGIN
+    END
+
+    IDD_CONFIG_USB, DIALOG
+    BEGIN
+    END
+
+    IDD_DLGWASAPI_USB, DIALOG
+    BEGIN
+    END
+
+    IDD_DLG_EYETOY_USB, DIALOG
+    BEGIN
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Anglais (États-Unis) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Espagnol (Argentine) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ESS)
+LANGUAGE LANG_SPANISH, SUBLANG_SPANISH_ARGENTINA
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource_usb.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""WinResrc.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Espagnol (Argentine) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

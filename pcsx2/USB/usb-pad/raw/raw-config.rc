@@ -1,0 +1,146 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "raw-config-res.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "winresrc.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (United States) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_RAWCONFIG DIALOGEX 0, 0, 385, 272
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Configure (raw input api)"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    DEFPUSHBUTTON   "OK",IDOK,270,252,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,326,252,50,14
+    CONTROL         "",IDC_TAB1,"SysTabControl32",0x0,6,6,372,240
+    PUSHBUTTON      "Cross / A",IDC_BUTTON1,192,42,50,14
+    PUSHBUTTON      "Square / X",IDC_BUTTON2,246,42,50,14
+    PUSHBUTTON      "Circle / B",IDC_BUTTON3,192,60,50,14
+    PUSHBUTTON      "Triangle / Y",IDC_BUTTON4,246,60,50,14
+    PUSHBUTTON      "L1 / L",IDC_BUTTON6,192,79,50,14
+    PUSHBUTTON      "R1 / R",IDC_BUTTON5,246,79,50,14
+    PUSHBUTTON      "L2",IDC_BUTTON8,192,96,50,14
+    PUSHBUTTON      "R2",IDC_BUTTON7,246,96,50,14
+    PUSHBUTTON      "L3",IDC_BUTTON12,192,114,50,14
+    PUSHBUTTON      "R3",IDC_BUTTON11,246,114,50,14
+    PUSHBUTTON      "Select",IDC_BUTTON9,192,132,50,14
+    PUSHBUTTON      "Start",IDC_BUTTON10,246,132,50,14
+    PUSHBUTTON      "Up",IDC_BUTTON13,224,161,50,14
+    PUSHBUTTON      "Left",IDC_BUTTON14,194,179,50,14
+    PUSHBUTTON      "Right",IDC_BUTTON15,254,179,50,14
+    PUSHBUTTON      "Down",IDC_BUTTON16,224,196,50,14
+    PUSHBUTTON      "Wheel",IDC_BUTTON17,306,42,50,14
+    PUSHBUTTON      "Clutch",IDC_BUTTON18,306,60,50,14
+    PUSHBUTTON      "Throttle",IDC_BUTTON19,306,79,50,14
+    PUSHBUTTON      "Brake",IDC_BUTTON20,306,95,50,14
+    PUSHBUTTON      "Hatswitch",IDC_BUTTON21,306,114,50,14
+    LTEXT           "",IDC_STATIC_CAP,6,252,156,8
+    CONTROL         "",IDC_LIST1,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,12,42,174,136
+    PUSHBUTTON      "Unbind",IDC_UNBIND,12,180,50,14
+    COMBOBOX        IDC_COMBO_FFB,18,207,167,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Logitech wheel pass-through",IDC_DFP_PASS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,18,224,168,12,WS_EX_STATICEDGE
+    GROUPBOX        "Bind axes",IDC_STATIC,301,30,59,102
+    GROUPBOX        "Bind hat switch to a button",IDC_STATIC,192,150,114,66
+    GROUPBOX        "FF / pass-through device",IDC_STATIC,14,196,175,43
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO
+BEGIN
+    IDD_RAWCONFIG, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 378
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 265
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_RAWCONFIG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+#endif    // English (United States) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+/////////////////////////////////////////////////////////////////////////////
+// Spanish (Argentina) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ESS)
+LANGUAGE LANG_SPANISH, SUBLANG_SPANISH_ARGENTINA
+#pragma code_page(1252)
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "raw-config-res.h\0"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""WinResrc.h""\r\n"
+    "\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+    "\0"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+#endif    // Spanish (Argentina) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+

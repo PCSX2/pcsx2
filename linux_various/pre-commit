@@ -28,7 +28,7 @@ PARSE_EXTS=true
 # file types to parse. Only effective when PARSE_EXTS is true.
  FILE_EXTS=".c .h .cpp .hpp .inl"
 
-ALLOWED_ROOT_DIR="./plugins/USBnull ./plugins/GSnull ./plugins/PadNull ./plugins/LilyPad/ ./plugins/onepad/ ./common"
+ALLOWED_ROOT_DIR="./plugins/GSnull ./plugins/PadNull ./plugins/LilyPad/ ./plugins/onepad/ ./common"
 
 ##################################################################
 # There should be no need to change anything below this line.
