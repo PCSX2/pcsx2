@@ -9,7 +9,7 @@ assignees: ''
 
 <!-- Important: Read First -->
 
-<!-- Please do not make support requests on Github. -->
+<!-- Please do not make support requests on GitHub. -->
 <!-- Our issue tracker is for tracking bugs and feature requests only. -->
 <!-- If you need help configuring the emulator please make a request on our forums or contact us on discord. -->
 <!-- If you are unsure, start with discord or the forums. -->
