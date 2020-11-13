@@ -168,13 +168,23 @@ GtkWidget* new_combobox(const char* label, GtkWidget* vbox)
 {
 	GtkWidget *rs_hbox, *rs_label, *rs_cb;
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+	rs_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+	gtk_box_set_homogeneous(GTK_BOX(rs_hbox), FALSE);
+#else
 	rs_hbox = gtk_hbox_new(FALSE, 0);
+#endif
 	gtk_box_pack_start(GTK_BOX(vbox), rs_hbox, FALSE, TRUE, 0);
 
 	rs_label = gtk_label_new(label);
 	gtk_box_pack_start(GTK_BOX(rs_hbox), rs_label, FALSE, TRUE, 5);
 	gtk_label_set_justify(GTK_LABEL(rs_label), GTK_JUSTIFY_RIGHT);
+#if GTK_CHECK_VERSION(3, 0, 0)
+	gtk_label_set_xalign(GTK_LABEL(rs_label), 1.0f);
+	gtk_label_set_yalign(GTK_LABEL(rs_label), 0.5f);
+#else
 	gtk_misc_set_alignment(GTK_MISC(rs_label), 1, 0.5);
+#endif
 
 	rs_cb = gtk_combo_box_text_new();
 	gtk_box_pack_start(GTK_BOX(rs_hbox), rs_cb, TRUE, TRUE, 5);
@@ -190,7 +200,12 @@ static GtkWidget* new_frame(const char* label, GtkWidget* box)
 	gtk_frame_set_label_widget(GTK_FRAME(ro_frame), ro_label);
 	gtk_label_set_use_markup(GTK_LABEL(ro_label), TRUE);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+	GtkWidget* vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
+#else
 	GtkWidget* vbox = gtk_vbox_new(FALSE, 5);
+#endif
 	gtk_container_add(GTK_CONTAINER(ro_frame), vbox);
 	return vbox;
 }
@@ -203,7 +218,6 @@ void USBconfigure()
     USBsetSettingsDir();
 	RegisterDevice::Register();
 	LoadConfig();
-	void* that = NULL;
 	SettingsCB settingsCB[2];
 	settingsCB[0].player = 0;
 	settingsCB[1].player = 1;
@@ -223,7 +237,12 @@ void USBconfigure()
 	gtk_window_set_position(GTK_WINDOW(dlg), GTK_WIN_POS_CENTER);
 	gtk_window_set_resizable(GTK_WINDOW(dlg), TRUE);
 	GtkWidget* dlg_area_box = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
+#if GTK_CHECK_VERSION(3, 0, 0)
+	GtkWidget* main_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+	gtk_box_set_homogeneous(GTK_BOX(main_vbox), FALSE);
+#else
 	GtkWidget* main_vbox = gtk_vbox_new(FALSE, 5);
+#endif
 	gtk_container_add(GTK_CONTAINER(dlg_area_box), main_vbox);
 
 	/*** Device type ***/
@@ -289,7 +308,7 @@ void USBconfigure()
 
 		sel_idx = 0;
 
-		for (int i = 0; i < countof(wt); i++)
+		for (int i = 0; i < (int)countof(wt); i++)
 		{
 			gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rs_cb), wt[i]);
 			if (conf.WheelType[port] == i)

@@ -201,13 +201,23 @@ namespace usb_mic
 			GtkWidget* dlg_area_box = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
 
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+			GtkWidget* main_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+			gtk_box_set_homogeneous(GTK_BOX(main_vbox), FALSE);
+#else
 			GtkWidget* main_vbox = gtk_vbox_new(FALSE, 5);
+#endif
 			gtk_box_pack_start(GTK_BOX(dlg_area_box), main_vbox, TRUE, FALSE, 5);
 
 			ro_frame = gtk_frame_new("Audio Devices");
 			gtk_box_pack_start(GTK_BOX(main_vbox), ro_frame, TRUE, FALSE, 5);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+			GtkWidget* frame_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+			gtk_box_set_homogeneous(GTK_BOX(frame_vbox), FALSE);
+#else
 			GtkWidget* frame_vbox = gtk_vbox_new(FALSE, 5);
+#endif
 			gtk_container_add(GTK_CONTAINER(ro_frame), frame_vbox);
 
 			const char* labels[] = {"Source 1", "Source 2", "Sink 1", "Sink 2"};
@@ -235,32 +245,64 @@ namespace usb_mic
 			ro_frame = gtk_frame_new("Buffer lengths");
 			gtk_box_pack_start(GTK_BOX(main_vbox), ro_frame, TRUE, FALSE, 5);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+			frame_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+			gtk_box_set_homogeneous(GTK_BOX(frame_vbox), FALSE);
+#else
 			frame_vbox = gtk_vbox_new(FALSE, 5);
+#endif
 			gtk_container_add(GTK_CONTAINER(ro_frame), frame_vbox);
 
 			const char* labels_buff[] = {"Sources", "Sinks"};
 			const char* buff_var_name[] = {N_BUFFER_LEN_SRC, N_BUFFER_LEN_SINK};
 			GtkWidget* scales[2];
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+			GtkWidget* table = gtk_grid_new();
+#else
 			GtkWidget* table = gtk_table_new(2, 2, true);
+#endif
 			gtk_container_add(GTK_CONTAINER(frame_vbox), table);
+#if GTK_CHECK_VERSION(3, 0, 0)
+			gtk_grid_set_column_homogeneous(GTK_GRID(table), FALSE);
+			gtk_grid_set_row_homogeneous(GTK_GRID(table), FALSE);
+			gtk_grid_set_column_spacing(GTK_GRID(table), 5);
+			gtk_grid_set_row_spacing(GTK_GRID(table), 5);
+#else
 			gtk_table_set_homogeneous(GTK_TABLE(table), FALSE);
 			GtkAttachOptions opt = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL); // default
+#endif
 
 			for (int i = 0; i < 2; i++)
 			{
 				GtkWidget* label = gtk_label_new(labels_buff[i]);
+#if GTK_CHECK_VERSION(3, 0, 0)
+				gtk_widget_set_margin_start(GTK_WIDGET(label), 5);
+				gtk_label_set_xalign(GTK_LABEL(label), 1.0f);
+				gtk_label_set_yalign(GTK_LABEL(label), 0.5f);
+#else
 				gtk_table_attach(GTK_TABLE(table), label,
 								 0, 1,
 								 0 + i, 1 + i,
 								 GTK_SHRINK, GTK_SHRINK, 5, 1);
+#endif
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+				gtk_grid_attach(GTK_GRID(table), label, 0, i, 1, 1);
+
+				scales[i] = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 1, 1000, 1);
+				for (int v = 1; v <= 1000; v += 100)
+					gtk_scale_add_mark(GTK_SCALE(scales[i]), v, GTK_POS_BOTTOM, nullptr);
+				gtk_widget_set_hexpand(GTK_WIDGET(scales[i]), TRUE);
+				gtk_grid_attach(GTK_GRID(table), scales[i], 1, i, 1, 1);
+#else
 				//scales[i] = gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL, 1, 1000, 1);
 				scales[i] = gtk_hscale_new_with_range(1, 1000, 1);
 				gtk_table_attach(GTK_TABLE(table), scales[i],
 								 1, 2,
 								 0 + i, 1 + i,
 								 opt, opt, 5, 1);
+#endif
 
 				int32_t var;
 				if (LoadSetting(dev_type, port, APINAME, buff_var_name[i], var))

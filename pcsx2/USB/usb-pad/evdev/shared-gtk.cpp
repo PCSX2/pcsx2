@@ -197,7 +197,6 @@ namespace usb_pad
 										   COL_NAME, it.first.c_str(),
 										   COL_PS2, name.c_str(),
 										   COL_PC, pc_name,
-										   COL_COLUMN_WIDTH, 50,
 										   COL_BINDING, i,
 										   -1);
 					}
@@ -207,7 +206,6 @@ namespace usb_pad
 										   COL_NAME, it.first.c_str(),
 										   COL_PS2, JoystickMapNames[i],
 										   COL_PC, pc_name,
-										   COL_COLUMN_WIDTH, 50,
 										   COL_BINDING, i,
 										   -1);
 					}
@@ -408,7 +406,7 @@ namespace usb_pad
 			cfg.js_iter = cfg.joysticks.end();
 			cfg.label = gtk_label_new("");
 			cfg.store = gtk_list_store_new(NUM_COLS,
-										   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
+										   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT);
 			cfg.cb = &apicbs;
 			cfg.dev_type = dev_type;
 
@@ -442,8 +440,13 @@ namespace usb_pad
 
 			GtkWidget* dlg = gtk_dialog_new_with_buttons(
 				title.c_str(), parent, GTK_DIALOG_MODAL,
+#if GTK_CHECK_VERSION(3, 0, 0)
+				"_Cancel", GTK_RESPONSE_CANCEL,
+				"_OK", GTK_RESPONSE_OK,
+#else
 				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 				GTK_STOCK_OK, GTK_RESPONSE_OK,
+#endif
 				NULL);
 			gtk_window_set_position(GTK_WINDOW(dlg), GTK_WIN_POS_CENTER);
 			gtk_window_set_resizable(GTK_WINDOW(dlg), TRUE);
@@ -452,12 +455,27 @@ namespace usb_pad
 			// ---------------------------
 			GtkWidget* dlg_area_box = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+			main_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+			gtk_box_set_homogeneous(GTK_BOX(main_hbox), FALSE);
+#else
 			main_hbox = gtk_hbox_new(FALSE, 5);
+#endif
 			gtk_container_add(GTK_CONTAINER(dlg_area_box), main_hbox);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+			left_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+			gtk_box_set_homogeneous(GTK_BOX(left_vbox), FALSE);
+#else
 			left_vbox = gtk_vbox_new(FALSE, 5);
+#endif
 			gtk_box_pack_start(GTK_BOX(main_hbox), left_vbox, TRUE, TRUE, 5);
+#if GTK_CHECK_VERSION(3, 0, 0)
+			right_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+			gtk_box_set_homogeneous(GTK_BOX(right_vbox), FALSE);
+#else
 			right_vbox = gtk_vbox_new(FALSE, 5);
+#endif
 			gtk_box_pack_start(GTK_BOX(main_hbox), right_vbox, TRUE, TRUE, 5);
 
 			// ---------------------------
@@ -469,7 +487,7 @@ namespace usb_pad
 			GtkCellRenderer* render = gtk_cell_renderer_text_new();
 
 			gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
-														-1, "Name", render, "text", COL_NAME, "width", COL_COLUMN_WIDTH, NULL);
+														-1, "Name", render, "text", COL_NAME, NULL);
 			gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
 														-1, "PS2", render, "text", COL_PS2, NULL);
 			gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
@@ -507,10 +525,20 @@ namespace usb_pad
 
 			// Remapping
 			{
+#if GTK_CHECK_VERSION(3, 0, 0)
+				GtkWidget* table = gtk_grid_new();
+#else
 				GtkWidget* table = gtk_table_new(5, 7, true);
+#endif
 				gtk_container_add(GTK_CONTAINER(right_vbox), table);
 				//GtkAttachOptions opt = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL); // default
 				GtkAttachOptions opt = (GtkAttachOptions)(GTK_FILL);
+#if GTK_CHECK_VERSION(3, 0, 0)
+				gtk_grid_set_column_homogeneous(GTK_GRID(table), TRUE);
+				gtk_grid_set_row_homogeneous(GTK_GRID(table), FALSE);
+				gtk_grid_set_column_spacing(GTK_GRID(table), 5);
+				gtk_grid_set_row_spacing(GTK_GRID(table), 5);
+#endif
 
 				const char* button_labels[] = {
 					"L2",
@@ -554,13 +582,22 @@ namespace usb_pad
 					g_object_set_data(G_OBJECT(button), JOYTYPE, reinterpret_cast<gpointer>(button_pos[i].type));
 					g_object_set_data(G_OBJECT(button), CFG, &cfg);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+					gtk_grid_attach(GTK_GRID(table), button, button_pos[i].x, button_pos[i].y, 1, 1);
+#else
 					gtk_table_attach(GTK_TABLE(table), button,
 									 0 + button_pos[i].x, 1 + button_pos[i].x,
 									 0 + button_pos[i].y, 1 + button_pos[i].y,
 									 opt, opt, 5, 1);
+#endif
 				}
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+				GtkWidget* hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+				gtk_box_set_homogeneous(GTK_BOX(hbox), FALSE);
+#else
 				GtkWidget* hbox = gtk_hbox_new(false, 5);
+#endif
 				gtk_container_add(GTK_CONTAINER(right_vbox), hbox);
 
 				button = gtk_button_new_with_label("Steering");
@@ -594,10 +631,21 @@ namespace usb_pad
 			GtkWidget* ff_scales[2];
 			int32_t ff_enabled[2];
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+			GtkWidget* table = gtk_grid_new();
+#else
 			GtkWidget* table = gtk_table_new(3, 2, true);
+#endif
 			gtk_container_add(GTK_CONTAINER(ro_frame), table);
+#if GTK_CHECK_VERSION(3, 0, 0)
+			gtk_grid_set_column_homogeneous(GTK_GRID(table), FALSE);
+			gtk_grid_set_row_homogeneous(GTK_GRID(table), FALSE);
+			gtk_grid_set_column_spacing(GTK_GRID(table), 5);
+			gtk_grid_set_row_spacing(GTK_GRID(table), 5);
+#else
 			gtk_table_set_homogeneous(GTK_TABLE(table), FALSE);
 			GtkAttachOptions opt = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL); // default
+#endif
 
 			for (int i = 0; i < 2; i++)
 			{
@@ -606,29 +654,51 @@ namespace usb_pad
 				else
 					ff_enabled[i] = 1;
 
-				GtkWidget* chk_btn = gtk_check_button_new_with_label(labels_buff[i][0]);
-				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chk_btn), (gboolean)ff_enabled[i]);
-				g_signal_connect(G_OBJECT(chk_btn), "toggled", G_CALLBACK(checkbox_toggled), reinterpret_cast<gboolean*>(&ff_enabled[i]));
-				gtk_table_attach(GTK_TABLE(table), chk_btn,
-								 2, 3,
-								 0 + i, 1 + i,
-								 GTK_FILL, GTK_SHRINK, 5, 1);
-
 				GtkWidget* label = gtk_label_new(labels_buff[i][1]);
+
+#if GTK_CHECK_VERSION(3, 0, 0)
+				gtk_widget_set_margin_start(GTK_WIDGET(label), 5);
+				gtk_label_set_xalign(GTK_LABEL(label), 1.0f);
+				gtk_label_set_yalign(GTK_LABEL(label), 0.5f);
+				gtk_grid_attach(GTK_GRID(table), label, 0, i, 1, 1);
+#else
 				gtk_misc_set_alignment(GTK_MISC(label), 1.0f, 0.5f);
 				gtk_table_attach(GTK_TABLE(table), label,
 								 0, 1,
 								 0 + i, 1 + i,
 								 GTK_FILL, GTK_SHRINK, 5, 1);
+#endif
 
 				//ff_scales[i] = gtk_scale_new_with_range (GTK_ORIENTATION_HORIZONTAL, 1, 100, 1);
 				ff_scales[i] = gtk_hscale_new_with_range(0, 100, 1);
+#if GTK_CHECK_VERSION(3, 0, 0)
+				ff_scales[i] = gtk_scale_new_with_range(GTK_ORIENTATION_HORIZONTAL, 0, 100, 1);
+				gtk_widget_set_hexpand(GTK_WIDGET(ff_scales[i]), TRUE);
+#endif
 				for (int v = 0; v <= 100; v += 10)
 					gtk_scale_add_mark(GTK_SCALE(ff_scales[i]), v, GTK_POS_BOTTOM, nullptr);
+
+#if GTK_CHECK_VERSION(3, 0, 0)
+				gtk_grid_attach(GTK_GRID(table), ff_scales[i], 1, i, 1, 1);
+#else
 				gtk_table_attach(GTK_TABLE(table), ff_scales[i],
 								 1, 2,
 								 0 + i, 1 + i,
 								 opt, opt, 5, 1);
+#endif
+
+				GtkWidget* chk_btn = gtk_check_button_new_with_label(labels_buff[i][0]);
+				gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(chk_btn), (gboolean)ff_enabled[i]);
+				g_signal_connect(G_OBJECT(chk_btn), "toggled", G_CALLBACK(checkbox_toggled), reinterpret_cast<gboolean*>(&ff_enabled[i]));
+
+#if GTK_CHECK_VERSION(3, 0, 0)
+				gtk_grid_attach(GTK_GRID(table), chk_btn, 2, i, 1, 1);
+#else
+				gtk_table_attach(GTK_TABLE(table), chk_btn,
+								 2, 3,
+								 0 + i, 1 + i,
+								 GTK_FILL, GTK_SHRINK, 5, 1);
+#endif
 
 				int32_t var;
 				if (LoadSetting(dev_type, port, apiname, ff_var_name[i][1], var))
@@ -645,7 +715,12 @@ namespace usb_pad
 				ro_frame = gtk_frame_new("Logitech wheel force feedback pass-through using hidraw");
 				gtk_box_pack_start(GTK_BOX(right_vbox), ro_frame, FALSE, FALSE, 5);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+				GtkWidget* frame_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+				gtk_box_set_homogeneous(GTK_BOX(frame_vbox), FALSE);
+#else
 				GtkWidget* frame_vbox = gtk_vbox_new(FALSE, 5);
+#endif
 				gtk_container_add(GTK_CONTAINER(ro_frame), frame_vbox);
 
 				GtkWidget* chk_btn = gtk_check_button_new_with_label("Enable");
@@ -731,7 +806,7 @@ namespace usb_pad
 
 		int GtkBuzzConfigure(int port, const char* dev_type, const char* apititle, const char* apiname, GtkWindow* parent, ApiCallbacks& apicbs)
 		{
-			GtkWidget *main_hbox, *right_vbox, *left_vbox, *treeview;
+			GtkWidget* treeview;
 			GtkWidget* button;
 
 			int fd;
@@ -767,8 +842,13 @@ namespace usb_pad
 
 			GtkWidget* dlg = gtk_dialog_new_with_buttons(
 				title.c_str(), parent, GTK_DIALOG_MODAL,
+#if GTK_CHECK_VERSION(3, 0, 0)
+				"_Cancel", GTK_RESPONSE_CANCEL,
+				"_OK", GTK_RESPONSE_OK,
+#else
 				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 				GTK_STOCK_OK, GTK_RESPONSE_OK,
+#endif
 				NULL);
 			gtk_window_set_position(GTK_WINDOW(dlg), GTK_WIN_POS_CENTER);
 			gtk_window_set_resizable(GTK_WINDOW(dlg), TRUE);
@@ -777,6 +857,14 @@ namespace usb_pad
 			// ---------------------------
 			GtkWidget* dlg_area_box = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+			GtkWidget* grid = gtk_grid_new();
+			gtk_container_add(GTK_CONTAINER(dlg_area_box), grid);
+			gtk_grid_set_column_homogeneous(GTK_GRID(grid), FALSE);
+			gtk_grid_set_row_homogeneous(GTK_GRID(grid), FALSE);
+			gtk_grid_set_column_spacing(GTK_GRID(grid), 5);
+			gtk_grid_set_row_spacing(GTK_GRID(grid), 5);
+#else
 			main_hbox = gtk_hbox_new(FALSE, 5);
 			gtk_container_add(GTK_CONTAINER(dlg_area_box), main_hbox);
 
@@ -784,9 +872,14 @@ namespace usb_pad
 			gtk_box_pack_start(GTK_BOX(main_hbox), left_vbox, TRUE, TRUE, 5);
 			right_vbox = gtk_vbox_new(FALSE, 5);
 			gtk_box_pack_start(GTK_BOX(main_hbox), right_vbox, TRUE, TRUE, 5);
+#endif
 
 			// ---------------------------
 			treeview = gtk_tree_view_new();
+#if GTK_CHECK_VERSION(3, 0, 0)
+			gtk_widget_set_hexpand(GTK_WIDGET(treeview), TRUE);
+			gtk_widget_set_vexpand(GTK_WIDGET(treeview), TRUE);
+#endif
 			cfg.treeview = GTK_TREE_VIEW(treeview);
 			auto selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
 			gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
@@ -794,12 +887,14 @@ namespace usb_pad
 			GtkCellRenderer* render = gtk_cell_renderer_text_new();
 
 			gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
-														-1, "Name", render, "text", COL_NAME, "width", COL_COLUMN_WIDTH, NULL);
+														-1, "Name", render, "text", COL_NAME, NULL);
 			gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
 														-1, "PS2", render, "text", COL_PS2, NULL);
 			gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
 														-1, "PC", render, "text", COL_PC, NULL);
 
+			//GtkTreeViewColumn *col = gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), 0);
+			//gtk_tree_view_column_set_expand(col, FALSE);
 			gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(treeview), 0);
 
 			gtk_tree_view_column_set_resizable(gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), 0), TRUE);
@@ -814,15 +909,28 @@ namespace usb_pad
 			gtk_widget_set_size_request(GTK_WIDGET(scwin), 200, 100);
 			gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scwin), GTK_POLICY_AUTOMATIC,
 										   GTK_POLICY_ALWAYS);
+#if GTK_CHECK_VERSION(3, 0, 0)
+			gtk_widget_set_hexpand(GTK_WIDGET(scwin), TRUE);
+			gtk_grid_attach(GTK_GRID(grid), scwin, 0, 0, 1, 1);
+#else
 			gtk_box_pack_start(GTK_BOX(left_vbox), scwin, TRUE, TRUE, 5);
+#endif
 
 			button = gtk_button_new_with_label("Clear binding");
+#if GTK_CHECK_VERSION(3, 0, 0)
+			gtk_grid_attach(GTK_GRID(grid), button, 0, 1, 1, 1);
+#else
 			gtk_box_pack_start(GTK_BOX(left_vbox), button, FALSE, FALSE, 5);
+#endif
 			g_object_set_data(G_OBJECT(button), CFG, &cfg);
 			g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(clear_binding_clicked), reinterpret_cast<gpointer>(port));
 
 			button = gtk_button_new_with_label("Clear All");
+#if GTK_CHECK_VERSION(3, 0, 0)
+			gtk_grid_attach(GTK_GRID(grid), button, 0, 2, 1, 1);
+#else
 			gtk_box_pack_start(GTK_BOX(left_vbox), button, FALSE, FALSE, 5);
+#endif
 			g_object_set_data(G_OBJECT(button), CFG, &cfg);
 			g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(clear_all_clicked), reinterpret_cast<gpointer>(port));
 
@@ -830,9 +938,21 @@ namespace usb_pad
 
 			// Remapping
 			{
+#if GTK_CHECK_VERSION(3, 0, 0)
+				GtkWidget* table = gtk_grid_new();
+				GtkWidget* box = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+				gtk_widget_set_hexpand(GTK_WIDGET(table), FALSE);
+				gtk_grid_set_column_homogeneous(GTK_GRID(table), FALSE);
+				gtk_grid_set_row_homogeneous(GTK_GRID(table), FALSE);
+				gtk_grid_set_column_spacing(GTK_GRID(table), 5);
+				gtk_grid_set_row_spacing(GTK_GRID(table), 5);
+				gtk_container_add(GTK_CONTAINER(box), table);
+				gtk_grid_attach(GTK_GRID(grid), box, 1, 0, 1, 4);
+#else
 				GtkWidget* table = gtk_table_new(5, 4, true);
 				gtk_container_add(GTK_CONTAINER(right_vbox), table);
 				GtkAttachOptions opt = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL); // default
+#endif
 
 				static const char* button_labels[]{
 					"Red",
@@ -858,6 +978,13 @@ namespace usb_pad
 					0x00FFFF,
 				};
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+				gtk_grid_attach(GTK_GRID(table), gtk_label_new("Player 1"), 0, 0, 1, 1);
+				gtk_grid_attach(GTK_GRID(table), gtk_label_new("Player 2"), 1, 0, 1, 1);
+				gtk_grid_attach(GTK_GRID(table), gtk_label_new("Player 3"), 2, 0, 1, 1);
+				gtk_grid_attach(GTK_GRID(table), gtk_label_new("Player 4"), 3, 0, 1, 1);
+#endif
+
 				for (int j = 0; j < 4; j++)
 				{
 					for (int i = 0; i < countof(button_labels); i++)
@@ -874,19 +1001,31 @@ namespace usb_pad
 						//gtk_label_set_xalign (GTK_WIDGET(children), 0.0)
 
 						//gtk_misc_set_alignment (GTK_MISC (children->data), 0.0, 0.5);
+#if GTK_CHECK_VERSION(3, 0, 0)
+						//if (GTK_IS_ALIGNMENT(children->data))
+						//	gtk_alignment_set(GTK_ALIGNMENT(children->data), 0.0f, 0.5f, 0.2f, 0.f);
+#else
 						if (GTK_IS_ALIGNMENT(children->data))
 							gtk_alignment_set(GTK_ALIGNMENT(children->data), 0.0f, 0.5f, 0.2f, 0.f);
+#endif
 
 						g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked_buzz), reinterpret_cast<gpointer>(port));
 
 						g_object_set_data(G_OBJECT(button), JOYTYPE, reinterpret_cast<gpointer>(j * countof(buzz_btns) + buzz_btns[i]));
 						g_object_set_data(G_OBJECT(button), CFG, &cfg);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+						gtk_grid_attach(GTK_GRID(table), button, j, i + 1, 1, 1);
+#else
 						gtk_table_attach(GTK_TABLE(table), button,
 										 j, 1 + j,
 										 i + 1, 2 + i,
 										 opt, opt, 5, 1);
+#endif
 					}
+#if GTK_CHECK_VERSION(3, 0, 0)
+				gtk_box_pack_start(GTK_BOX(box), cfg.label, TRUE, TRUE, 5);
+#else
 
 					gtk_table_attach(GTK_TABLE(table), gtk_label_new("Player 1"),
 									 0, 1, 0, 1, opt, opt, 5, 1);
@@ -896,12 +1035,16 @@ namespace usb_pad
 									 2, 3, 0, 1, opt, opt, 5, 1);
 					gtk_table_attach(GTK_TABLE(table), gtk_label_new("Player 4"),
 									 3, 4, 0, 1, opt, opt, 5, 1);
+#endif
 				}
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+#else
 				GtkWidget* hbox = gtk_hbox_new(false, 5);
 				gtk_container_add(GTK_CONTAINER(right_vbox), hbox);
 
 				gtk_box_pack_start(GTK_BOX(right_vbox), cfg.label, TRUE, TRUE, 5);
+#endif
 			}
 
 			// ---------------------------

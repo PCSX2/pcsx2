@@ -37,8 +37,13 @@ namespace usb_msd
 		dialog = gtk_file_chooser_dialog_new("Open File",
 											 NULL,
 											 GTK_FILE_CHOOSER_ACTION_OPEN,
+#if GTK_CHECK_VERSION(3, 0, 0)
+											 "_Cancel", GTK_RESPONSE_CANCEL,
+											 "_Open", GTK_RESPONSE_ACCEPT,
+#else
 											 GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 											 GTK_STOCK_OPEN, GTK_RESPONSE_ACCEPT,
+#endif
 											 NULL);
 
 		//XXX check access? Dialog seems to default to "Recently used" etc.
@@ -65,8 +70,13 @@ namespace usb_msd
 
 		GtkWidget* dlg = gtk_dialog_new_with_buttons(
 			"Mass Storage Settings", GTK_WINDOW(data), GTK_DIALOG_MODAL,
+#if GTK_CHECK_VERSION(3, 0, 0)
+			"_Cancel", GTK_RESPONSE_CANCEL,
+			"_Ok", GTK_RESPONSE_OK,
+#else
 			GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 			GTK_STOCK_OK, GTK_RESPONSE_OK,
+#endif
 			NULL);
 		gtk_window_set_position(GTK_WINDOW(dlg), GTK_WIN_POS_CENTER);
 		gtk_window_set_resizable(GTK_WINDOW(dlg), TRUE);
@@ -79,10 +89,20 @@ namespace usb_msd
 		gtk_frame_set_label_widget(GTK_FRAME(ro_frame), ro_label);
 		gtk_label_set_use_markup(GTK_LABEL(ro_label), TRUE);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+		vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+		gtk_box_set_homogeneous(GTK_BOX(vbox), FALSE);
+#else
 		vbox = gtk_vbox_new(FALSE, 5);
+#endif
 		gtk_container_add(GTK_CONTAINER(ro_frame), vbox);
 
+#if GTK_CHECK_VERSION(3, 0, 0)
+		rs_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+		gtk_box_set_homogeneous(GTK_BOX(rs_hbox), FALSE);
+#else
 		rs_hbox = gtk_hbox_new(FALSE, 0);
+#endif
 		gtk_box_pack_start(GTK_BOX(vbox), rs_hbox, FALSE, TRUE, 0);
 
 		GtkWidget* entry = gtk_entry_new();

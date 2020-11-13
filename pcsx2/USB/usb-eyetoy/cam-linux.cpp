@@ -504,9 +504,19 @@ namespace usb_eyetoy
 			gtk_window_set_default_size(GTK_WINDOW(dlg), 320, 75);
 
 			GtkWidget* dlg_area_box = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
+#if GTK_CHECK_VERSION(3, 0, 0)
+			GtkWidget* main_hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 5);
+			gtk_box_set_homogeneous(GTK_BOX(main_hbox), FALSE);
+#else
 			GtkWidget* main_hbox = gtk_hbox_new(FALSE, 5);
+#endif
 			gtk_container_add(GTK_CONTAINER(dlg_area_box), main_hbox);
+#if GTK_CHECK_VERSION(3, 0, 0)
+			GtkWidget* right_vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 5);
+			gtk_box_set_homogeneous(GTK_BOX(right_vbox), FALSE);
+#else
 			GtkWidget* right_vbox = gtk_vbox_new(FALSE, 5);
+#endif
 			gtk_box_pack_start(GTK_BOX(main_hbox), right_vbox, TRUE, TRUE, 5);
 
 			GtkWidget* rs_cb = new_combobox("Device:", right_vbox);

@@ -46,7 +46,6 @@ namespace usb_pad
 			COL_NAME = 0,
 			COL_PS2,
 			COL_PC,
-			COL_COLUMN_WIDTH,
 			COL_BINDING,
 			NUM_COLS
 		};
