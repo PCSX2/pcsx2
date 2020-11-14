@@ -25,7 +25,7 @@
 
 /* Number of Downstream Ports on the root hub.  */
 
-#define OHCI_MAX_PORTS 15 // status regs from 0x0c54 but usb snooping \
+#define OHCI_MAX_PORTS 15 // status regs from 0x0c54 but usb snooping
 						  // reg is at 0x0c80, so only 11 ports?
 
 extern int64_t usb_frame_time;
