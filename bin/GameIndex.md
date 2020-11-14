@@ -115,7 +115,7 @@ The clamp modes are also numerically based.
 
 ## Game Fixes
 
-These values are case-sensitive so take care.  If you incorrect specify a GameFix, you will get a validation error on startup.  Any invalid game-fixes will be dropped from the game's list of fixes.
+These values are case-sensitive so take care.  If you incorrectly specify a GameFix, you will get a validation error on startup.  Any invalid game-fixes will be dropped from the game's list of fixes.
 
 ### Options
 
