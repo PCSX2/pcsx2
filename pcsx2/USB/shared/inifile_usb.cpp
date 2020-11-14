@@ -177,7 +177,7 @@ void CIniFileA::Load(std::istream& input, bool bMerge)
 
 		if (!sRead.empty())
 		{
-			unsigned int nType = (sRead.find_first_of("[") == 0 && (sRead[sRead.find_last_not_of(" \t\r\n")] == ']')) ? SECTION : OTHER;
+			auto nType = (sRead.find_first_of("[") == 0 && (sRead[sRead.find_last_not_of(" \t\r\n")] == ']')) ? SECTION : OTHER;
 			nType = ((nType == OTHER) && (sRead.find_first_of("=") != std::string::npos && sRead.find_first_of("=") > 0)) ? KEY : nType;
 			nType = ((nType == OTHER) && (sRead.find_first_of("#") == 0)) ? COMMENT : nType;
 
@@ -674,7 +674,7 @@ void CIniFileW::Load(std::wistream& input, bool bMerge)
 
 		if (!sRead.empty())
 		{
-			unsigned int nType = (sRead.find_first_of(L"[") == 0 && (sRead[sRead.find_last_not_of(L" \t\r\n")] == L']')) ? SECTION : OTHER;
+			auto nType = (sRead.find_first_of(L"[") == 0 && (sRead[sRead.find_last_not_of(L" \t\r\n")] == L']')) ? SECTION : OTHER;
 			nType = ((nType == OTHER) && (sRead.find_first_of(L"=") != std::wstring::npos && sRead.find_first_of(L"=") > 0)) ? KEY : nType;
 			nType = ((nType == OTHER) && (sRead.find_first_of(L"#") == 0)) ? COMMENT : nType;
 

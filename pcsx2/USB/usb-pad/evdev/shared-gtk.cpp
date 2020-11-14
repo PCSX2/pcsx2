@@ -173,7 +173,7 @@ namespace usb_pad
 			gtk_list_store_clear(cfg->store);
 			for (auto& it : cfg->jsconf)
 			{
-				for (int i = 0; /*i < JOY_MAPS_COUNT && */ i < it.second.controls.size(); i++)
+				for (int i = 0; /*i < JOY_MAPS_COUNT && */ i < (int)it.second.controls.size(); i++)
 				{
 					if (it.second.controls[i] < 0)
 						continue;
@@ -218,7 +218,7 @@ namespace usb_pad
 		static void joystick_changed(GtkComboBox* widget, gpointer data)
 		{
 			gint idx = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
-			int port = reinterpret_cast<uintptr_t>(data);
+			//int port = reinterpret_cast<uintptr_t>(data);
 			ConfigData* cfg = (ConfigData*)g_object_get_data(G_OBJECT(widget), CFG);
 
 			if (!cfg)
@@ -256,7 +256,7 @@ namespace usb_pad
 											   return i.first == dev_name;
 										   });
 
-					if (it != cfg->jsconf.end() && type < it->second.controls.size())
+					if (it != cfg->jsconf.end() && type < (int)it->second.controls.size())
 					{
 						it->second.controls[type] = value;
 						if (is_axis)
@@ -295,7 +295,7 @@ namespace usb_pad
 											   return i.first == dev_name;
 										   });
 
-					if (it != cfg->jsconf.end() && type < it->second.controls.size())
+					if (it != cfg->jsconf.end() && type < (int)it->second.controls.size())
 					{
 						it->second.controls[type] = value;
 						refresh_store(cfg);
@@ -546,7 +546,7 @@ namespace usb_pad
 					{3, 2, JOY_START},
 				};
 
-				for (int i = 0; i < countof(button_labels); i++)
+				for (int i = 0; i < (int)countof(button_labels); i++)
 				{
 					GtkWidget* button = gtk_button_new_with_label(button_labels[i]);
 					g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), reinterpret_cast<gpointer>(port));
@@ -860,7 +860,7 @@ namespace usb_pad
 
 				for (int j = 0; j < 4; j++)
 				{
-					for (int i = 0; i < countof(button_labels); i++)
+					for (int i = 0; i < (int)countof(button_labels); i++)
 					{
 						GtkWidget* button = gtk_button_new_with_label(button_labels[i]);
 

@@ -477,7 +477,7 @@ namespace usb_eyetoy
 		{
 			mpeg_mutex.lock();
 			int len2 = mpeg_buffer.length;
-			if (len < mpeg_buffer.length)
+			if (len < (int)mpeg_buffer.length)
 				len2 = len;
 			memcpy(buf, mpeg_buffer.start, len2);
 			mpeg_mutex.unlock();
@@ -513,7 +513,7 @@ namespace usb_eyetoy
 
 			std::vector<std::string> devList = getDevList();
 			int sel_idx = 0;
-			for (auto idx = 0; idx < devList.size(); idx++)
+			for (uint32_t idx = 0; idx < (uint32_t)devList.size(); idx++)
 			{
 				gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rs_cb), devList.at(idx).c_str());
 				if (!selectedDevice.empty() && selectedDevice == devList.at(idx))

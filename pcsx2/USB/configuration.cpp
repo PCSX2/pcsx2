@@ -168,7 +168,7 @@ void SaveConfig()
 #ifdef _WIN32
 	bool ret = ciniFile.Save(IniPath);
 #else
-	bool ret = ciniFile.Save(str_to_wstr(IniPath));
+	[[maybe_unused]]bool ret = ciniFile.Save(str_to_wstr(IniPath));
 #endif
 }
 
