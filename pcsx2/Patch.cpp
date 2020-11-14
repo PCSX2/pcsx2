@@ -127,19 +127,19 @@ int LoadPatchesFromGamesDB(const wxString& crc, const GameDatabaseSchema::GameEn
 {
 	if (game.isValid)
 	{
-		GameDatabaseSchema::PatchCollection patchCollection;
+		GameDatabaseSchema::Patch patch;
 		if (game.patches.count(std::string(crc)) == 1)
 		{
-			patchCollection = game.patches.at(std::string(crc));
+			patch = game.patches.at(std::string(crc));
 		}
 		else if (game.patches.count("default") == 1)
 		{
-			patchCollection = game.patches.at("default");
+			patch = game.patches.at("default");
 		}
 
-		if (patchCollection.patchLines.size() > 0)
+		if (patch.patchLines.size() > 0)
 		{
-			for (auto line : patchCollection.patchLines)
+			for (auto line : patch.patchLines)
             {
                 inifile_command(line);
             }

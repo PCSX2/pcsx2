@@ -17,6 +17,7 @@
 
 #include "GameDatabase.h"
 
+#include "fmt/core.h"
 #include "yaml-cpp/yaml.h"
 
 std::string GameDatabaseSchema::GameEntry::memcardFiltersAsString()
@@ -49,6 +50,23 @@ int YamlGameDatabaseImpl::safeGetInt(const YAML::Node& n, std::string key, int d
 	return n[key].as<int>();
 }
 
+std::vector<std::string> YamlGameDatabaseImpl::safeGetMultilineString(const YAML::Node& n, std::string key, std::vector<std::string> def)
+{
+	if (!n[key])
+		return def;
+
+	std::vector<std::string> lines;
+
+    std::istringstream stream(safeGetString(n, key));
+	std::string line;
+
+	while(std::getline(stream, line)) {
+		lines.push_back(line);
+	}
+
+	return lines;
+}
+
 std::vector<std::string> YamlGameDatabaseImpl::safeGetStringList(const YAML::Node& n, std::string key, std::vector<std::string> def)
 {
 	if (!n[key])
@@ -58,21 +76,22 @@ std::vector<std::string> YamlGameDatabaseImpl::safeGetStringList(const YAML::Nod
 
 GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::string serial, const YAML::Node& node)
 {
+	if (serial == "SCUS-97265")
+		int x = 0;
 	GameDatabaseSchema::GameEntry gameEntry;
 	try
 	{
 		gameEntry.name = safeGetString(node, "name");
 		gameEntry.region = safeGetString(node, "region");
-		gameEntry.compat = static_cast<GameDatabaseSchema::Compatibility>(safeGetInt(node, "compat"));
-		gameEntry.eeRoundMode = static_cast<GameDatabaseSchema::RoundMode>(safeGetInt(node, "eeRoundMode"));
-		gameEntry.vuRoundMode = static_cast<GameDatabaseSchema::RoundMode>(safeGetInt(node, "vuRoundMode"));
-		gameEntry.eeClampMode = static_cast<GameDatabaseSchema::ClampMode>(safeGetInt(node, "eeClampMode"));
-		gameEntry.vuClampMode = static_cast<GameDatabaseSchema::ClampMode>(safeGetInt(node, "vuClampMode"));
+		gameEntry.compat = static_cast<GameDatabaseSchema::Compatibility>(safeGetInt(node, "compat", enum_cast(gameEntry.compat)));
+		gameEntry.eeRoundMode = static_cast<GameDatabaseSchema::RoundMode>(safeGetInt(node, "eeRoundMode", enum_cast(gameEntry.eeRoundMode)));
+		gameEntry.vuRoundMode = static_cast<GameDatabaseSchema::RoundMode>(safeGetInt(node, "vuRoundMode", enum_cast(gameEntry.vuRoundMode)));
+		gameEntry.eeClampMode = static_cast<GameDatabaseSchema::ClampMode>(safeGetInt(node, "eeClampMode", enum_cast(gameEntry.eeClampMode)));
+		gameEntry.vuClampMode = static_cast<GameDatabaseSchema::ClampMode>(safeGetInt(node, "vuClampMode", enum_cast(gameEntry.vuClampMode)));
 
 		// Validate game fixes, invalid ones will be dropped!
-		for (std::string fix : gameEntry.gameFixes)
+		for (std::string fix : safeGetStringList(node, "gameFixes"))
 		{
-			std::vector<std::string> rawFixes = safeGetStringList(node, "gameFixes");
 			bool fixValidated = false;
 			for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; ++id)
 			{
@@ -89,7 +108,7 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 			}
 			else
 			{
-				Console.Error("[GameDB] Invalid gamefix: '%s', specified for serial: '%s'. Dropping!", fix, serial);
+				Console.Error(fmt::format("[GameDB] Invalid gamefix: '{}', specified for serial: '{}'. Dropping!", fix, serial));
 			}
 		}
 		
@@ -103,7 +122,7 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 				// NOTE - currently only 1 speedhack!
 				if (speedHack != "mvuFlagSpeedHack")
 				{
-					Console.Error("[GameDB] Invalid speedhack: '%s', specified for serial: '%s'. Dropping!", speedHack, serial);
+					Console.Error(fmt::format("[GameDB] Invalid speedhack: '{}', specified for serial: '{}'. Dropping!", speedHack, serial));
 					continue;
 				}
 
@@ -117,18 +136,17 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 		{
 			for (YAML::const_iterator it = patches.begin(); it != patches.end(); ++it)
 			{
-				YAML::Node key = it->first;
-				YAML::Node val = it->second;
+				const YAML::Node& node = *it;
 				GameDatabaseSchema::Patch patchCol;
-				patchCol.author = safeGetString(val, "author");
-				patchCol.patchLines = safeGetStringList(val, "patchLines");
-				gameEntry.patches[key.as<std::string>()] = patchCol;
+				patchCol.author = safeGetString(node, "author");
+				patchCol.patchLines = safeGetMultilineString(node, "content");
+				gameEntry.patches[safeGetString(node, "crc", "default")] = patchCol;
 			}
 		}
 	}
 	catch (YAML::RepresentationException e)
 	{
-		Console.Error("[GameDB] Invalid GameDB syntax detected on serial: '%s'.  Error Details - %s", serial, e.what());
+		Console.Error(fmt::format("[GameDB] Invalid GameDB syntax detected on serial: '{}'.  Error Details - {}", serial, e.msg));
 		gameEntry.isValid = false;
 	}
 	return gameEntry;
@@ -167,13 +185,13 @@ bool YamlGameDatabaseImpl::initDatabase(const std::string filePath)
 			}
 			catch (YAML::RepresentationException e)
 			{
-				Console.Error("[GameDB] Invalid GameDB syntax detected.  Error Details - %s", e.what());
+				Console.Error(fmt::format("[GameDB] Invalid GameDB syntax detected.  Error Details - {}", e.msg));
 			}
 		}
 	}
 	catch (const std::exception& e)
 	{
-		Console.Error("Error occured when initializing GameDB: %s", e.what());
+		Console.Error(fmt::format("Error occured when initializing GameDB: {}", e.what()));
 		return false;
 	}
 

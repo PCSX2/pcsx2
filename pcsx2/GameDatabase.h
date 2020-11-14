@@ -103,6 +103,7 @@ private:
 	// TODO - config - move these into a generic library
 	std::string safeGetString(const YAML::Node& n, std::string key, std::string def = "");
 	int safeGetInt(const YAML::Node& n, std::string key, int def = 0);
+	std::vector<std::string> safeGetMultilineString(const YAML::Node& n, std::string key, std::vector<std::string> def = {});
 	std::vector<std::string> safeGetStringList(const YAML::Node& n, std::string key, std::vector<std::string> def = {});
 };
 
