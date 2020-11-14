@@ -1,0 +1,181 @@
+# GameDB Documentation
+
+- [YAML Game Format](#yaml-game-format)
+- [Rounding Modes](#rounding-modes)
+  - [Options](#options)
+- [Clamping Modes](#clamping-modes)
+  - [Options](#options-1)
+- [Game Fixes](#game-fixes)
+  - [Options](#options-2)
+- [SpeedHacks](#speedhacks)
+  - [Options](#options-3)
+- [Memory Card Filter Override](#memory-card-filter-override)
+- [Patches](#patches)
+
+## YAML Game Format
+
+The following is an annotated and comprehensive example of everything that can be defined for a single Game entry.
+
+```yaml
+SERIAL-12345: # !required! Serial number for the game, this is how games are looked up
+  name: "A Sample Game" # !required!
+  region: "NTSC-U" # !required!
+  roundModes:
+    eeRoundMode: 0
+    vuRoundMode: 3
+  clampModes:
+    eeClampMode: 0
+    vuClampMode: 3
+   # If a GameFix is included in the list, it will be enabled.
+   # If you'd like to temporarily disable it, either comment out the line, or remove it!
+  gameFixes:
+    - VuAddSubHack
+    - FpuCompareHack
+    - FpuMulHack
+    - FpuNegDivHack
+    - XGKickHack
+    - IPUWaitHack
+    - EETimingHack
+    - SkipMPEGHack
+    - OPHFlagHack
+    - DMABusyHack
+    - VIFFIFOHack
+    - VIF1StallHack
+    - GIFFIFOHack
+    - ScarfaceIbitHack
+    - CrashTagTeamRaci
+    - VU0KickstartHack
+    - VuAddSubHack
+    - FpuCompareHack
+    - FpuMulHack
+    - FpuNegDivHack
+    - XGKickHack
+    - IPUWaitHack
+    - EETimingHack
+    - SkipMPEGHack
+    - OPHFlagHack
+    - DMABusyHack
+    - VIFFIFOHack
+    - VIF1StallHack
+    - GIFFIFOHack
+    - ScarfaceIbitHack
+    - CrashTagTeamRacingIbitHack
+    - VU0KickstartHack
+  # The value of the speedhacks is assumed to be an integer,
+  # but at the time of writing there is only one speedhack option and its effectively a boolean (0/1)
+  speedHacks:
+    mvuFlagSpeedHack: 0
+  memcardFilters:
+    - "SERIAL-123"
+    - "SERIAL-456"
+  # You can define multple patches, but they are identified by the CRC.
+  # A duplicate CRC will throw a validation error at startup in the console
+  # If the CRC is omitted, the crc will be set internally to 'default'
+  patches:
+    - crc: "CRC-1"
+      author: "Some Person"
+      content: |- # !required! This allows for multi-line strings in YAML, this type preserves new-line characters
+        comment=Sample Patch
+        patch=1,EE,00000002,word,00000000
+    - crc: "CRC-2"
+      author: "Some Person"
+      content: |-
+        comment=Another Sample
+        patch=1,EE,00000001,word,00000000
+```
+
+> Note that quoting strings in YAML is optional, but certain characters are reserved like '*' and require the string to be quoted, be aware / use a YAML linter to avoid confusion.
+
+## Rounding Modes
+
+The rounding modes are numerically based.
+
+These modes can be specified either on the **EE** (`eeRoundMode`) or **VU** (`vuRoundMode`)
+
+### Options
+
+- `0` = **Nearest**
+- `1` = **Negative Infinity**
+- `2` = **Positive Infinity**
+- `3` = **Chop (Zero)**
+  - The is the common default
+
+## Clamping Modes
+
+The clamp modes are also numerically based.
+- `eeClampMode` refers to the EE's FPU co-processor
+- `vuClampMode` refers to the VU's and COP2 (VU0 Macro-mode)
+
+### Options
+
+- `0` = **Disables** clamping completely
+- `1` = Clamp **Normally** (only clamp results)
+- `2` = Clamp **Extra** (clamp results as well as operands)
+- `3` = **Full Clamping** for FPU / Extra+Preserve Sign Clamping for VU
+
+## Game Fixes
+
+These values are case-sensitive so take care.  If you incorrect specify a GameFix, you will get a validation error on startup.  Any invalid game-fixes will be dropped from the game's list of fixes.
+
+### Options
+
+- `VuAddSubHack`
+  - Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
+- `FpuCompareHack`
+  - Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
+- `FpuMulHack`
+  - Tales of Destiny hangs.
+- `FpuNegDivHack`
+  - Gundam games messed up camera-view. Dakar 2's sky showing over 3D. Others...
+- `XGKickHack`
+  - Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace
+- `IPUWaitHack`
+  - FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
+- `EETimingHack`
+  - General purpose timing hack.
+- `SkipMPEGHack`
+  - Finds sceMpegIsEnd pattern in games and then recompiles code to say the videos are finished.
+- `OPHFlagHack`
+  - Bleach Bankais and others
+- `DMABusyHack`
+  - Mana Khemia, Metal Saga. Denies writes to the DMAC when it's busy.
+- `VIFFIFOHack`
+  - Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
+- `VIF1StallHack`
+  - SOCOM II HUD and Spy Hunter loading hang.
+- `GIFFIFOHack`
+  - Enables the GIF FIFO. Needed for Wallace & Grommit, Hot Wheels, DJ Hero.
+- `FMVinSoftwareHack`
+  - Silent Hill 2-3. Fixes FMVs that are obscured when using hardware rendering by switching to software rendering whil
+- `ScarfaceIbitHack`
+  - VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
+- `CrashTagTeamRacingIbitHack`
+  - VU I bit Hack avoid constant recompilation (Crash Tag Team Racing).
+- `VU0KickstartHack`
+  - Let VU0 run ahead to fix some timing issues
+
+## SpeedHacks
+
+These values are in a key-value format, where the value is assumed to be an integer.
+
+### Options
+
+- `mvuFlagSpeedHack`
+  - Accepted Values - `0` / `1`
+  - Katamari Damacy have weird speed bug when this speed hack is enabled (and it is by default)
+
+## Memory Card Filter Override
+
+By default, the FolderMemoryCard filters save games based on thegame's serial, which means that only saves whose folder names containthe game's serial are loaded.
+
+This works fine for the vast majority of games, but fails in some cases, for which this override is for.Examples include multi-disc games, where later games often reuse theserial of the previous disc(s), and games that allow transfer of savedata between different games, such as importing data from a prequel.
+
+> Values should be specified as a list of strings, example shown above.
+
+## Patches
+
+The patch that corresponds with the running game's CRC will take precedence over the defaults.  Multiple patches for the same CRC cannot be defined and this will throw an invalidation errors.
+
+Patches should be defined as multi-line string blocks, where each line would correspond with a line in a conventional `*.pnach` file
+
+For more information on how to write a patch, see the following [forum post](https://forums.pcsx2.net/Thread-How-PNACH-files-work-2-0)
