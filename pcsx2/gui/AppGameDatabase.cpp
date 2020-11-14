@@ -50,9 +50,8 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file)
 	}
 
 	u64 qpc_Start = GetCPUTicks();
-	YamlGameDatabaseImpl gameDb = YamlGameDatabaseImpl();
 
-	if (!gameDb.initDatabase(std::string(file)))
+	if (!this->initDatabase(std::string(file)))
 	{
 		Console.Error(L"(GameDB) Database could not be loaded successfully");
 		return *this;
@@ -60,7 +59,7 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file)
 
 	u64 qpc_end = GetCPUTicks();
 
-	Console.WriteLn(fmt::format("(GameDB) {} games on record (loaded in {}ms)", gameDb.numGames(),
+	Console.WriteLn(fmt::format("(GameDB) {} games on record (loaded in {}ms)", this->numGames(),
 								(u32)(((qpc_end - qpc_Start) * 1000) / GetTickFrequency())));
 
 	return *this;

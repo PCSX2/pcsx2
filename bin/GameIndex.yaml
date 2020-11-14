@@ -52,23 +52,23 @@
 # ---------------------------------------------
 # - Game Fixes (Case Sensitive!)
 # ---------------------------------------------
-# -- VuAddSubHack           // Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
-# -- FpuCompareHack         // Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
-# -- FpuMulHack             // Tales of Destiny hangs.
-# -- FpuNegDivHack          // Gundam games messed up camera-view. Dakar 2's sky showing over 3D. Others...
-# -- XgKickHack             // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
-# -- IPUWaitHack            // FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
-# -- EETimingHack           // General purpose timing hack.
-# -- SkipMPEGHack           // Finds sceMpegIsEnd pattern in games and then recompiles code to say the videos are finished.
-# -- OPHFLagHack            // Bleach Bankais and others
-# -- DMABusyHack            // Mana Khemia, Metal Saga. Denies writes to the DMAC when it's busy.
-# -- VIFFIFOHack            // Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
-# -- VIF1StallHack          // SOCOM II HUD and Spy Hunter loading hang.
-# -- GIFFIFOHack            // Enables the GIF FIFO. Needed for Wallace & Grommit, Hot Wheels, DJ Hero.
-# -- FMVinSoftwareHack      // Silent Hill 2-3. Fixes FMVs that are obscured when using hardware rendering by switching to software rendering while an FMV plays.
-# -- ScarfaceIbitHack       // VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
-# -- CrashTagTeamRacingIbit // VU I bit Hack avoid constant recompilation (Crash Tag Team Racing).
-# -- VU0KickstartHack       // Let VU0 run ahead to fix some timing issues
+# -- VuAddSubHack               // Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
+# -- FpuCompareHack             // Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
+# -- FpuMulHack                 // Tales of Destiny hangs.
+# -- FpuNegDivHack              // Gundam games messed up camera-view. Dakar 2's sky showing over 3D. Others...
+# -- XGKickHack                 // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
+# -- IPUWaitHack                // FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
+# -- EETimingHack               // General purpose timing hack.
+# -- SkipMPEGHack               // Finds sceMpegIsEnd pattern in games and then recompiles code to say the videos are finished.
+# -- OPHFlagHack                // Bleach Bankais and others
+# -- DMABusyHack                // Mana Khemia, Metal Saga. Denies writes to the DMAC when it's busy.
+# -- VIFFIFOHack                // Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
+# -- VIF1StallHack              // SOCOM II HUD and Spy Hunter loading hang.
+# -- GIFFIFOHack                // Enables the GIF FIFO. Needed for Wallace & Grommit, Hot Wheels, DJ Hero.
+# -- FMVinSoftwareHack          // Silent Hill 2-3. Fixes FMVs that are obscured when using hardware rendering by switching to software rendering while an FMV plays.
+# -- ScarfaceIbitHack           // VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
+# -- CrashTagTeamRacingIbitHack // VU I bit Hack avoid constant recompilation (Crash Tag Team Racing).
+# -- VU0KickstartHack           // Let VU0 run ahead to fix some timing issues
 # ---------------------------------------------
 # -- Speed Hacks (SpeedHackName: n)
 # ---------------------------------------------
@@ -136,17 +136,17 @@
 # -- FpuCompareHack         = 1 // Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
 # -- FpuMulHack             = 1 // Tales of Destiny hangs.
 # -- FpuNegDivHack          = 1 // Gundam games messed up camera-view. Dakar 2's sky showing over 3D. Others...
-# -- XgKickHack             = 1 // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
+# -- XGKickHack             = 1 // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
 # -- IPUWaitHack            = 1 // FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
 # -- EETimingHack           = 1 // General purpose timing hack.
 # -- SkipMPEGHack           = 1 // Finds sceMpegIsEnd pattern in games and then recompiles code to say the videos are finished.
-# -- OPHFLagHack            = 1 // Bleach Bankais and others
+# -- OPHFlagHack            = 1 // Bleach Bankais and others
 # -- DMABusyHack            = 1 // Mana Khemia, Metal Saga. Denies writes to the DMAC when it's busy.
 # -- VIFFIFOHack            = 1 // Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
 # -- VIF1StallHack          = 1 // SOCOM II HUD and Spy Hunter loading hang.
 # -- GIFFIFOHack            = 1 // Enables the GIF FIFO. Needed for Wallace & Grommit, Hot Wheels, DJ Hero.
 # -- ScarfaceIbitHack       = 1 // VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
-# -- CrashTagTeamRacingIbit = 1 // VU I bit Hack avoid constant recompilation (Crash Tag Team Racing).
+# -- CrashTagTeamRacingIbitHack = 1 // VU I bit Hack avoid constant recompilation (Crash Tag Team Racing).
 # -- VU0KickstartHack       = 1 // Let VU0 run ahead to fix some timing issues
 
 # ---------------------------------------------
@@ -224,8 +224,8 @@ PBPX-95201:
   patches:
     - crc: "70D26E09"
       content: |-
-        "// Change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function."
-        "patch=0,EE,00290408,word,24060000"
+        // Change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function.
+        patch=0,EE,00290408,word,24060000
 PBPX-95205:
   name: "Playstation 2 - Demo Disc 2000"
   region: "PAL-Unk"
@@ -243,10 +243,10 @@ PBPX-95506:
   region: "PAL-M5"
   patches:
     - content: |-
-        "// 7ACF7E03"
-        "comment=You must enable the EETimingHack when playing the WRC demo to avoids random hangs."
-        "comment=You must change the EE Clamping mode to Full when playing the Klonoa 2 demo to avoids misplaced objects."
-        "comment=You must change the VU Clamping mode to extra when playing the Klonoa 2 demo to fixes reflections issues."
+        // 7ACF7E03
+        comment=You must enable the EETimingHack when playing the WRC demo to avoids random hangs.
+        comment=You must change the EE Clamping mode to Full when playing the Klonoa 2 demo to avoids misplaced objects.
+        comment=You must change the VU Clamping mode to extra when playing the Klonoa 2 demo to fixes reflections issues.
 PBPX-95517:
   name: "Network Adapter Start-Up Disc"
   region: "NTSC-U"
@@ -706,7 +706,7 @@ SCAJ-20111:
   name: "Crash Bandicoot 5"
   region: "NTSC-Unk"
   gameFixes:
-    - XgKickHack # Fixes bad Geometry.
+    - XGKickHack # Fixes bad Geometry.
     - VU0KickstartHack # Fixes loading hang.
 SCAJ-20112:
   name: "Tales of Rebirth"
@@ -916,7 +916,7 @@ SCAJ-20161:
   name: "Siren 2"
   region: "NTSC-J"
   gameFixes:
-    - XgKickHack # Fixes SPS.
+    - XGKickHack # Fixes SPS.
 SCAJ-20162:
   name: "Rogue Galaxy"
   region: "NTSC-Unk"
@@ -936,7 +936,7 @@ SCAJ-20167:
   name: "Siren 2"
   region: "NTSC-Ch-J"
   gameFixes:
-    - XgKickHack # Fixes SPS.
+    - XGKickHack # Fixes SPS.
 SCAJ-20168:
   name: "Rule of Rose"
   region: "NTSC-Unk"
@@ -1212,7 +1212,7 @@ SCED-51657:
   patches:
     - crc: "90C0E5F1"
       content: |-
-        "comment=Must enable FPU Negative Div Hack gamefix for Dakar 2 Demo"
+        comment=Must enable FPU Negative Div Hack gamefix for Dakar 2 Demo
 SCED-51700:
   name: "Jak II: Renegade [Demo]"
   region: "PAL-Unk"
@@ -1251,13 +1251,13 @@ SCED-53161:
   patches:
     - crc: "38174DD2"
       content: |-
-        "comment=Patch by refraction. Fixes R&C 3 shadows, disable automatic fixes for other games"
-        "patch=1,EE,0047df64,word,48418800"
-        "patch=1,EE,0047df68,word,4A39D86C"
-        "patch=1,EE,0047df6c,word,48428800"
-        "patch=1,EE,0047df70,word,4A7503BC"
-        "patch=1,EE,0047df74,word,4A0002FF"
-        "patch=1,EE,0047df78,word,4A0002FF"
+        comment=Patch by refraction. Fixes R&C 3 shadows, disable automatic fixes for other games
+        patch=1,EE,0047df64,word,48418800
+        patch=1,EE,0047df68,word,4A39D86C
+        patch=1,EE,0047df6c,word,48428800
+        patch=1,EE,0047df70,word,4A7503BC
+        patch=1,EE,0047df74,word,4A0002FF
+        patch=1,EE,0047df78,word,4A0002FF
 SCED-53163:
   name: "Official PlayStation 2 Magazine Demo 60"
   region: "PAL-M12"
@@ -1282,19 +1282,19 @@ SCES-50003:
   patches:
     - crc: "7A51F86E"
       content: |-
-        "comment=Patch by Prafull and kozarovv"
-        "// Fixes game hanging on boot."
-        "patch=0,EE,002b4c44,word,24060000"
-        "// Fixes sound."
-        "patch=1,IOP,001D77E4,word,27C40010"
-        "patch=1,IOP,001D77E8,word,0C0032B7"
-        "patch=1,IOP,001D77EC,word,00000000"
+        comment=Patch by Prafull and kozarovv
+        // Fixes game hanging on boot.
+        patch=0,EE,002b4c44,word,24060000
+        // Fixes sound.
+        patch=1,IOP,001D77E4,word,27C40010
+        patch=1,IOP,001D77E8,word,0C0032B7
+        patch=1,IOP,001D77EC,word,00000000
 SCES-50004:
   name: "Formula One 2001"
   region: "PAL-M6"
   compat: 5
   gameFixes:
-    - XgKickHack
+    - XGKickHack
 SCES-50005:
   name: "Wipeout Fusion"
   region: "PAL-M5"
@@ -1305,9 +1305,9 @@ SCES-50006:
   compat: 5
   patches:
     - content: |-
-        "// 04F9D87F"
-        "comment=- This gamedisc supports multiple languages through the BIOS configuration."
-        "comment=- Implementation requires Full boot - 'Boot CDVD (full)'."
+        // 04F9D87F
+        comment=- This gamedisc supports multiple languages through the BIOS configuration.
+        comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SCES-50009:
   name: "Wild Wild Racing"
   region: "PAL-Unk"
@@ -1436,13 +1436,13 @@ SCES-50499:
   patches:
     - crc: "7FEDF999"
       content: |-
-        "author=PSI"
-        "// Ecco has an evil race condition: one of its custom IOP modules resets CDVDMAN while it's loading a module from disc."
-        "// The race condition is resolved by making the EE slower. This gives enough time for CDVDMAN to reset itself before"
-        "// the EE sends a request to load a module."
-        "// Alternatively, this patch swaps the load order of the modules."
-        "patch=1,EE,201018d8,extended,24040007"
-        "patch=1,EE,201018e4,extended,24040006"
+        author=PSI
+        // Ecco has an evil race condition: one of its custom IOP modules resets CDVDMAN while it's loading a module from disc.
+        // The race condition is resolved by making the EE slower. This gives enough time for CDVDMAN to reset itself before
+        // the EE sends a request to load a module.
+        // Alternatively, this patch swaps the load order of the modules.
+        patch=1,EE,201018d8,extended,24040007
+        patch=1,EE,201018e4,extended,24040006
 SCES-50500:
   name: "Headhunter"
   region: "PAL-M5"
@@ -1542,11 +1542,11 @@ SCES-50878:
   compat: 5
   patches:
     - content: |-
-        "// CRC 2251E14D, F48F994A"
-        "comment=patches by Shadow Lady"
-        "// IPU BUSY! fix..."
-        "patch=0,EE,00292424,word,24200001"
-        "patch=0,EE,00292624,word,00000000"
+        // CRC 2251E14D, F48F994A
+        comment=patches by Shadow Lady
+        // IPU BUSY! fix...
+        patch=0,EE,00292424,word,24200001
+        patch=0,EE,00292624,word,00000000
 SCES-50885:
   name: "Ape Escape 2"
   region: "PAL-E"
@@ -1584,12 +1584,12 @@ SCES-50934:
   region: "PAL-M7"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes SPS.
+    - XGKickHack # Fixes SPS.
 SCES-50935:
   name: "WRC II Extreme"
   region: "PAL-Unk"
   gameFixes:
-    - XgKickHack # Fixes SPS.
+    - XGKickHack # Fixes SPS.
 SCES-50956:
   name: "Ferrari F355 Challenge"
   region: "PAL-M5"
@@ -1631,7 +1631,7 @@ SCES-51004:
   name: "Formula One 2002"
   region: "PAL-M6"
   gameFixes:
-    - XgKickHack
+    - XGKickHack
 SCES-51039:
   name: "This is Football 2003"
   region: "PAL-M7"
@@ -1729,7 +1729,7 @@ SCES-51592:
   region: "PAL-M6"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes SPS.
+    - XGKickHack # Fixes SPS.
 SCES-51593:
   name: "Hardware Online Arena [Beta, Promo & Full Release]"
   region: "PAL-M4"
@@ -1738,11 +1738,11 @@ SCES-51593:
   patches:
     - crc: "81797E77"
       content: |-
-        "comment=Reduces chance of game hanging going ingame"
-        "comment=caused by vu0 integer register being set twice causing bad cop2 timing"
-        "comment=Game will require EE Cycle Rate -1 to fix hangs completely"
-        "patch=1,EE,002c5e50,word,8000033c"
-        "patch=1,EE,002c5f40,word,8000033c"
+        comment=Reduces chance of game hanging going ingame
+        comment=caused by vu0 integer register being set twice causing bad cop2 timing
+        comment=Game will require EE Cycle Rate -1 to fix hangs completely
+        patch=1,EE,002c5e50,word,8000033c
+        patch=1,EE,002c5f40,word,8000033c
 SCES-51607:
   name: "Ratchet & Clank 2 - Locked & Loaded"
   region: "PAL-M5"
@@ -1760,8 +1760,8 @@ SCES-51608:
     - VU0KickstartHack # Fixes Character SPS.
   patches:
     - content: |-
-        "comment=- This gamedisc supports multiple languages through the BIOS configuration."
-        "comment=- Implementation requires Full boot - 'Boot CDVD (full)'."
+        comment=- This gamedisc supports multiple languages through the BIOS configuration.
+        comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SCES-51610:
   name: "This is Football 2004 (Red Devils 2004)"
   region: "PAL-F-G"
@@ -1798,7 +1798,7 @@ SCES-51684:
   region: "PAL-M8"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes SPS.
+    - XGKickHack # Fixes SPS.
 SCES-51685:
   name: "Primal"
   region: "PAL-E-R"
@@ -1831,8 +1831,8 @@ SCES-51725:
   patches:
     - crc: "555019B2"
       content: |-
-        "patch=0,EE,00571414,word,00000000"
-        "patch=0,EE,00571438,word,00000000"
+        patch=0,EE,00571414,word,00000000
+        patch=0,EE,00571438,word,00000000
 SCES-51844:
   name: "Time Crisis 3"
   region: "PAL-M5"
@@ -1878,10 +1878,10 @@ SCES-52033:
   patches:
     - crc: "27E54B37"
       content: |-
-        "author=refraction"
-        "// Cop2 problems."
-        "patch=0,EE,003953F8,word,48438000"
-        "patch=0,EE,003735FC,word,4B06521B"
+        author=refraction
+        // Cop2 problems.
+        patch=0,EE,003953F8,word,48438000
+        patch=0,EE,003735FC,word,4B06521B
 SCES-52042:
   name: "Formula One 2004"
   region: "PAL-M6"
@@ -1931,24 +1931,24 @@ SCES-52389:
   region: "PAL-M8"
   compat: 1
   gameFixes:
-    - XgKickHack # Fixes SPS.
+    - XGKickHack # Fixes SPS.
   patches:
     - content: |-
-        "author=kozarovv"
-        "// Proper patch for WRC 4. CRC independent."
-        "// I wrote small runtime that move unpacker higher right after emulator boot."
-        "// Seems little bit extensive, but there is no way to make it smaller."
-        "// Solves TLB miss errors which prevented the game from booting."
-        "patch=0,EE,0040000C,double,3c0500603cc70054"
-        "patch=0,EE,00400014,double,24a5001024840010"
-        "patch=0,EE,0040001C,double,7ca6000078860000"
-        "patch=0,EE,00400024,double,000000001487fffb"
-        "patch=0,EE,0040002c,double,000000000817fff5"
-        "patch=0,EE,005fffd4,double,3c1c70003c040060"
-        "patch=0,EE,005fffdc,double,3c0700003c067000"
-        "patch=0,EE,005fffe4,double,279c000024840800"
-        "patch=0,EE,005fffec,double,24e7100024c60080"
-        "patch=0,EE,005ffff4,double,00c7e8200818000c"
+        author=kozarovv
+        // Proper patch for WRC 4. CRC independent.
+        // I wrote small runtime that move unpacker higher right after emulator boot.
+        // Seems little bit extensive, but there is no way to make it smaller.
+        // Solves TLB miss errors which prevented the game from booting.
+        patch=0,EE,0040000C,double,3c0500603cc70054
+        patch=0,EE,00400014,double,24a5001024840010
+        patch=0,EE,0040001C,double,7ca6000078860000
+        patch=0,EE,00400024,double,000000001487fffb
+        patch=0,EE,0040002c,double,000000000817fff5
+        patch=0,EE,005fffd4,double,3c1c70003c040060
+        patch=0,EE,005fffdc,double,3c0700003c067000
+        patch=0,EE,005fffe4,double,279c000024840800
+        patch=0,EE,005fffec,double,24e7100024c60080
+        patch=0,EE,005ffff4,double,00c7e8200818000c
 SCES-52405:
   name: "DJ - Decks & FX - House Edition"
   region: "PAL-M9"
@@ -1972,10 +1972,10 @@ SCES-52424:
   patches:
     - crc: "1D54FEA9"
       content: |-
-        "patch=0,EE,001A3154,word,48498800"
-        "patch=0,EE,001A3158,word,4B00682C"
-        "patch=0,EE,001A3164,word,484A8800"
-        "patch=0,EE,001A3168,word,4B0C682C"
+        patch=0,EE,001A3154,word,48498800
+        patch=0,EE,001A3158,word,4B00682C
+        patch=0,EE,001A3164,word,484A8800
+        patch=0,EE,001A3168,word,4B0C682C
 SCES-52425:
   name: "This is Football 5"
   region: "PAL-Unk"
@@ -2025,8 +2025,8 @@ SCES-52460:
     - VU0KickstartHack # Fixes Character SPS.
   patches:
     - content: |-
-        "comment=- This gamedisc supports multiple languages through the BIOS configuration."
-        "comment=- Implementation requires Full boot - 'Boot CDVD (full)'."
+        comment=- This gamedisc supports multiple languages through the BIOS configuration.
+        comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SCES-52529:
   name: "Sly Racoon 2 - Band of Thieves"
   region: "PAL-M11"
@@ -2059,9 +2059,9 @@ SCES-52677:
   compat: 5
   patches:
     - content: |-
-        "// D859B1B4"
-        "comment=- This gamedisc supports widescreen through the BIOS configuration."
-        "comment=- Implementation requires Full boot - 'Boot CDVD (full)'."
+        // D859B1B4
+        comment=- This gamedisc supports widescreen through the BIOS configuration.
+        comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SCES-52748:
   name: "EyeToy - Play 2"
   region: "PAL-M12"
@@ -2166,7 +2166,7 @@ SCES-53247:
   region: "PAL-M8"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes SPS.
+    - XGKickHack # Fixes SPS.
 SCES-53285:
   name: "Ratchet - Gladiator"
   region: "PAL-M5"
@@ -2300,14 +2300,14 @@ SCES-53680:
   name: "WRC avec Sebastien Loeb"
   region: "PAL-M5"
   gameFixes:
-    - XgKickHack # Fixes SPS.
+    - XGKickHack # Fixes SPS.
   patches:
     - crc: "79BAD675"
       content: |-
-        "author=By Prafull"
-        "// Nopping a branch in delay slot instruction causing very bad performances"
-        "// in the playground mode when using physics (such as moving barrels etc..)."
-        "patch=1,EE,003d2394,word,00000000"
+        author=By Prafull
+        // Nopping a branch in delay slot instruction causing very bad performances
+        // in the playground mode when using physics (such as moving barrels etc..).
+        patch=1,EE,003d2394,word,00000000
 SCES-53688:
   name: "Urban Reign"
   region: "PAL-M5"
@@ -2320,13 +2320,13 @@ SCES-53851:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes SPS.
+    - XGKickHack # Fixes SPS.
   patches:
     - content: |-
-        "// CRC C040B6AB, Unknown"
-        "comment=Swapping a COP2 op into place to make the flags work without delays."
-        "patch=0,EE,002E2B44,word,48449000"
-        "patch=0,EE,002E2B4C,word,4BC949FF"
+        // CRC C040B6AB, Unknown
+        comment=Swapping a COP2 op into place to make the flags work without delays.
+        patch=0,EE,002E2B44,word,48449000
+        patch=0,EE,002E2B4C,word,4BC949FF
 SCES-53879:
   name: "Buzz! The Big Quiz"
   region: "PAL-E"
@@ -2407,11 +2407,11 @@ SCES-54041:
   patches:
     - crc: "194C9F38"
       content: |-
-        "// Fixes collision/missile hit issues."
-        "patch=0,EE,00131EB4,word,48498800"
-        "patch=0,EE,00131EB8,word,4B00682C"
-        "patch=0,EE,00131EC4,word,484A8800"
-        "patch=0,EE,00131EC8,word,4B0C682C"
+        // Fixes collision/missile hit issues.
+        patch=0,EE,00131EB4,word,48498800
+        patch=0,EE,00131EB8,word,4B00682C
+        patch=0,EE,00131EC4,word,484A8800
+        patch=0,EE,00131EC8,word,4B0C682C
 SCES-54071:
   name: "Buzz! The Big Quiz"
   region: "PAL-Unk"
@@ -2543,9 +2543,9 @@ SCES-54552:
   patches:
     - crc: "CBB4B383"
       content: |-
-        "author=kozarovv"
-        "// Fixes Vedan Myna area out of bounds glitch."
-        "patch=1,EE,00124898,word,3442fffe"
+        author=kozarovv
+        // Fixes Vedan Myna area out of bounds glitch.
+        patch=1,EE,00124898,word,3442fffe
 SCES-54571:
   name: "Sing-Star Pop Hits"
   region: "PAL-G"
@@ -2787,10 +2787,10 @@ SCKA-20032:
   patches:
     - crc: "3676E74C"
       content: |-
-        "author=refraction"
-        "// Cop2 problems."
-        "patch=1,EE,00398898,word,48438000 //4b06521b"
-        "patch=1,EE,0039889c,word,4b06521b //48438000"
+        author=refraction
+        // Cop2 problems.
+        patch=1,EE,00398898,word,48438000 //4b06521b
+        patch=1,EE,0039889c,word,4b06521b //48438000
 SCKA-20033:
   name: "Smash Court Professional Tournament 2 [Limited Edition]"
   region: "NTSC-K"
@@ -2916,18 +2916,18 @@ SCKA-20069:
   name: "Siren 2"
   region: "NTSC-K"
   gameFixes:
-    - XgKickHack # Fixes SPS.
+    - XGKickHack # Fixes SPS.
 SCKA-20070:
   name: "Ace Combat Zero - The Belkan War"
   region: "NTSC-K"
   patches:
     - crc: "2799A4E5"
       content: |-
-        "// Fixes collision/missle hit issues."
-        "patch=0,EE,00131ebc,word,48498800"
-        "patch=0,EE,00131ec0,word,4B00682C"
-        "patch=0,EE,00131ecc,word,484A8800"
-        "patch=0,EE,00131ed0,word,4B0C682C"
+        // Fixes collision/missle hit issues.
+        patch=0,EE,00131ebc,word,48498800
+        patch=0,EE,00131ec0,word,4B00682C
+        patch=0,EE,00131ecc,word,484A8800
+        patch=0,EE,00131ed0,word,4B0C682C
 SCKA-20071:
   name: "MLB '06 - The Show"
   region: "NTSC-K"
@@ -2970,7 +2970,7 @@ SCKA-20092:
   name: "K-1 World Grand Prix 2006"
   region: "NTSC-K"
   gameFixes:
-    - XgKickHack # Fixes grey fighters problem.
+    - XGKickHack # Fixes grey fighters problem.
 SCKA-20096:
   name: "Barnyard"
   region: "NTSC-K"
@@ -3066,9 +3066,9 @@ SCPS-11008:
   patches:
     - crc: "EE838B5C"
       content: |-
-        "comment=Patches by Nachbrenner"
-        "// Skip OP.PSS."
-        "patch=0,EE,001d6258,word,24020001"
+        comment=Patches by Nachbrenner
+        // Skip OP.PSS.
+        patch=0,EE,001d6258,word,24020001
 SCPS-11009:
   name: "Ka (Mosquito)"
   region: "NTSC-J"
@@ -3126,9 +3126,9 @@ SCPS-11022:
   patches:
     - crc: "0cf7e6ff"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fixes initial hang."
-        "patch=1,EE,00176000,word,00000000"
+        comment=Patch by Prafull
+        // Fixes initial hang.
+        patch=1,EE,00176000,word,00000000
 SCPS-11023:
   name: "Bravo Music - Chou-Meikyokuban"
   region: "NTSC-J"
@@ -3240,7 +3240,7 @@ SCPS-15019:
   name: "Formula One 2001"
   region: "NTSC-J"
   gameFixes:
-    - XgKickHack
+    - XGKickHack
 SCPS-15020:
   name: "Legaia 2 - Duel Saga"
   region: "NTSC-J"
@@ -3285,7 +3285,7 @@ SCPS-15032:
   name: "Formula One 2002"
   region: "NTSC-J"
   gameFixes:
-    - XgKickHack
+    - XGKickHack
 SCPS-15033:
   name: "Dark Chronicle"
   region: "NTSC-J"
@@ -3350,14 +3350,14 @@ SCPS-15050:
   patches:
     - crc: "25433CBD"
       content: |-
-        "comment=Patches by Nachbrenner"
-        "// Fix D3_CHCR (might be redundant)."
-        "patch=0,EE,0011c1b8,word,00000000"
-        "// Skip sceIpuSync."
-        "patch=0,EE,00208eb0,word,03e00008"
-        "patch=0,EE,00208eb4,word,00000000"
-        "// Fix sceIpuRestartDMA."
-        "patch=0,EE,00208e04,word,00000000"
+        comment=Patches by Nachbrenner
+        // Fix D3_CHCR (might be redundant).
+        patch=0,EE,0011c1b8,word,00000000
+        // Skip sceIpuSync.
+        patch=0,EE,00208eb0,word,03e00008
+        patch=0,EE,00208eb4,word,00000000
+        // Fix sceIpuRestartDMA.
+        patch=0,EE,00208e04,word,00000000
 SCPS-15051:
   name: "MLB 2003"
   region: "NTSC-J"
@@ -3601,13 +3601,13 @@ SCPS-15106:
   region: "NTSC-J"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes SPS.
+    - XGKickHack # Fixes SPS.
   patches:
     - crc: "626552EB"
       content: |-
-        "comment=Swapping a COP2 op into place to make the flags work without delays."
-        "patch=0,EE,0013AB64,word,48449000"
-        "patch=0,EE,0013AB6C,word,4BC949FF"
+        comment=Swapping a COP2 op into place to make the flags work without delays.
+        patch=0,EE,0013AB64,word,48449000
+        patch=0,EE,0013AB6C,word,4BC949FF
 SCPS-15107:
   name: "Gunparade Orchestra - Midori no Shou [Limited Edition]"
   region: "NTSC-J"
@@ -3652,7 +3652,7 @@ SCPS-15119:
   region: "NTSC-J"
   compat: 5
   gameFixes:
-    - OPHFLagHack # Special moves "Bankai" hang otherwise
+    - OPHFlagHack # Special moves "Bankai" hang otherwise
 SCPS-15120:
   name: "Ratchet & Clank 5 Gekitotsu! Dodeka Ginga no Mirimiri Gundan"
   region: "NTSC-J"
@@ -3939,7 +3939,7 @@ SCPS-19326:
   name: "Siren 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
   gameFixes:
-    - XgKickHack # Fixes SPS.
+    - XGKickHack # Fixes SPS.
 SCPS-19327:
   name: "Ape Escape 3 [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
@@ -4174,7 +4174,7 @@ SCPS-55047:
   name: "Formula One 2002"
   region: "NTSC-J"
   gameFixes:
-    - XgKickHack
+    - XGKickHack
 SCPS-55048:
   name: "Dark Chronicle"
   region: "NTSC-J"
@@ -4190,12 +4190,12 @@ SCPS-55901:
   patches:
     - crc: "A3D63039"
       content: |-
-        "// Reduces JPEG quality to its minimum for save file thumbnails. This prevents"
-        "// the game from calling its own exit function, which was strangely its safety"
-        "// mechanism for when a captured thumbnail exceeded 4 KB in size."
-        "comment=Save Point Crash Prevention"
-        "author=pandubz, PSI, turtleli"
-        "patch=1,EE,20285f48,extended,24040000"
+        // Reduces JPEG quality to its minimum for save file thumbnails. This prevents
+        // the game from calling its own exit function, which was strangely its safety
+        // mechanism for when a captured thumbnail exceeded 4 KB in size.
+        comment=Save Point Crash Prevention
+        author=pandubz, PSI, turtleli
+        patch=1,EE,20285f48,extended,24040000
 SCPS-55902:
   name: "Gran Turismo - Concept 2002 Tokyo-Geneva"
   region: "NTSC-J"
@@ -4228,23 +4228,23 @@ SCPS-56006:
   patches:
     - crc: "35B4028B"
       content: |-
-        "comment=Patches by Shadow Lady"
-        "// IPU BUSY! fix..."
-        "patch=0,EE,00290b24,word,24200001"
-        "patch=0,EE,00290d24,word,00000000"
+        comment=Patches by Shadow Lady
+        // IPU BUSY! fix...
+        patch=0,EE,00290b24,word,24200001
+        patch=0,EE,00290d24,word,00000000
 SCPS-56008:
   name: "Fatal Frame"
   region: "NTSC-K"
   compat: 5
   patches:
     - content: |-
-        "// BCF04BF3"
-        "comment=- At least when using GSdx in D3D11 Hardware mode, and due to missing"
-        "comment=-  rendering-fixes, black stripes can show up on ghosts,"
-        "comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching."
-        "comment=- This can be fixed by having 'Enable HW Hacks' set"
-        "comment=-  in the GSdx configuration dialog, and having 'Align Sprite' set"
-        "comment=-  and 'Sprite' set to Half in 'Advanced Settings and Hacks'."
+        // BCF04BF3
+        comment=- At least when using GSdx in D3D11 Hardware mode, and due to missing
+        comment=-  rendering-fixes, black stripes can show up on ghosts,
+        comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
+        comment=- This can be fixed by having 'Enable HW Hacks' set
+        comment=-  in the GSdx configuration dialog, and having 'Align Sprite' set
+        comment=-  and 'Sprite' set to Half in 'Advanced Settings and Hacks'.
 SCPS-56011:
   name: "U - Underwater Unit"
   region: "NTSC-J"
@@ -4412,23 +4412,23 @@ SCUS-97140:
   patches:
     - crc: "DBD09DD4"
       content: |-
-        "comment=COP2 flag instance patch"
-        "// Pair of vsubs with associated cfc2s."
-        "patch=0,EE,002EA424,word,48468801"
-        "patch=0,EE,002EA434,word,4BC311AC"
-        "// Bunch of vclips without enough cycles before reading the clip flag."
-        "patch=0,EE,00329110,word,48489000"
-        "patch=0,EE,00329124,word,4BDAD1FF"
-        "patch=0,EE,0032916C,word,48459000"
-        "patch=0,EE,00329180,word,4BDAD1FF"
-        "patch=0,EE,003291DC,word,48459000"
-        "patch=0,EE,003291F0,word,4BDAD1FF"
-        "patch=0,EE,0032924C,word,48459000"
-        "patch=0,EE,00329260,word,4BDAD1FF"
-        "patch=0,EE,003292BC,word,48459000"
-        "patch=0,EE,003292D0,word,4BDAD1FF"
-        "patch=0,EE,0032940C,word,48459000"
-        "patch=0,EE,00329420,word,4BDAD1FF"
+        comment=COP2 flag instance patch
+        // Pair of vsubs with associated cfc2s.
+        patch=0,EE,002EA424,word,48468801
+        patch=0,EE,002EA434,word,4BC311AC
+        // Bunch of vclips without enough cycles before reading the clip flag.
+        patch=0,EE,00329110,word,48489000
+        patch=0,EE,00329124,word,4BDAD1FF
+        patch=0,EE,0032916C,word,48459000
+        patch=0,EE,00329180,word,4BDAD1FF
+        patch=0,EE,003291DC,word,48459000
+        patch=0,EE,003291F0,word,4BDAD1FF
+        patch=0,EE,0032924C,word,48459000
+        patch=0,EE,00329260,word,4BDAD1FF
+        patch=0,EE,003292BC,word,48459000
+        patch=0,EE,003292D0,word,4BDAD1FF
+        patch=0,EE,0032940C,word,48459000
+        patch=0,EE,00329420,word,4BDAD1FF
 SCUS-97142:
   name: "Primal - Civilization Is Only Skin Deep"
   region: "NTSC-U"
@@ -4464,7 +4464,7 @@ SCUS-97150:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - XgKickHack
+    - XGKickHack
 SCUS-97152:
   name: "Dark Cloud [Demo]"
   region: "NTSC-U"
@@ -4823,10 +4823,10 @@ SCUS-97264:
   patches:
     - crc: "D5605611"
       content: |-
-        "author=refraction"
-        "// Cop2 problems."
-        "patch=0,EE,003735F8,word,48438000"
-        "patch=0,EE,003735FC,word,4B06521B"
+        author=refraction
+        // Cop2 problems.
+        patch=0,EE,003735F8,word,48438000
+        patch=0,EE,003735FC,word,4B06521B
 SCUS-97265:
   name: "Jak II"
   region: "NTSC-U"
@@ -5379,11 +5379,11 @@ SCUS-97474:
   patches:
     - crc: "75ED4282"
       content: |-
-        "author=CK1"
-        "// Remove the need of the VIF FIFO."
-        "// Solve a massive slowdown when looking at the sun when ingame."
-        "patch=1,EE,0019eb40,word,00000000"
-        "patch=1,EE,0019eb4c,word,00000000"
+        author=CK1
+        // Remove the need of the VIF FIFO.
+        // Solve a massive slowdown when looking at the sun when ingame.
+        patch=1,EE,0019eb40,word,00000000
+        patch=1,EE,0019eb4c,word,00000000
 SCUS-97475:
   name: "SOCOM 3 - U.S. Navy SEALs [Regular Demo]"
   region: "NTSC-U"
@@ -5392,11 +5392,11 @@ SCUS-97475:
   patches:
     - crc: "314F0905"
       content: |-
-        "author=CK1"
-        "// Remove the need of the VIF FIFO."
-        "// Solve a massive slowdown when looking at the sun when ingame."
-        "patch=1,EE,0019DC8C,word,00000000"
-        "patch=1,EE,0019DC80,word,00000000"
+        author=CK1
+        // Remove the need of the VIF FIFO.
+        // Solve a massive slowdown when looking at the sun when ingame.
+        patch=1,EE,0019DC8C,word,00000000
+        patch=1,EE,0019DC80,word,00000000
 SCUS-97478:
   name: "EyeToy - Kinetic"
   region: "NTSC-U"
@@ -5458,9 +5458,9 @@ SCUS-97490:
   patches:
     - crc: "0643F90C"
       content: |-
-        "author=kozarovv"
-        "// Fixes Vedan Myna out of bounds glitch."
-        "patch=1,EE,00124898,word,3442fffe"
+        author=kozarovv
+        // Fixes Vedan Myna out of bounds glitch.
+        patch=1,EE,00124898,word,3442fffe
 SCUS-97491:
   name: "Jampack Demo Disc Vol.13 [T-Rated]"
   region: "NTSC-U"
@@ -5744,13 +5744,13 @@ SCUS-97621:
   patches:
     - crc: "3DC2FE45"
       content: |-
-        "author=refraction"
-        "// COP2 rearrangement. RSQRT directly followed by DIV and a few ops using Q causes issues"
-        "// Fixes fire effects"
-        "patch=1,EE,002461d8,word,4bf4b33c"
-        "patch=1,EE,002461dc,word,4b806d9c"
-        "patch=1,EE,002461e0,word,4bc069fc"
-        "patch=1,EE,002461e4,word,4a54c3bc"
+        author=refraction
+        // COP2 rearrangement. RSQRT directly followed by DIV and a few ops using Q causes issues
+        // Fixes fire effects
+        patch=1,EE,002461d8,word,4bf4b33c
+        patch=1,EE,002461dc,word,4b806d9c
+        patch=1,EE,002461e0,word,4bc069fc
+        patch=1,EE,002461e4,word,4a54c3bc
 SCUS-97622:
   name: "SingStar 80's [with Microphone]"
   region: "NTSC-U"
@@ -6253,9 +6253,9 @@ SLES-50046:
   patches:
     - crc: "EDD7E0FF"
       content: |-
-        "author=Nachbrenner"
-        "// Skip Videos."
-        "patch=0,EE,0024ddc0,word,24020001"
+        author=Nachbrenner
+        // Skip Videos.
+        patch=0,EE,0024ddc0,word,24020001
 SLES-50047:
   name: "F1 Racing Championship"
   region: "PAL-M3"
@@ -6263,10 +6263,10 @@ SLES-50047:
   patches:
     - crc: "3063bd41"
       content: |-
-        "author=Prafull"
-        "// Fixes IPU issues causing a hang at loading menu."
-        "patch=1,EE,00258e34,word,00000000"
-        "patch=1,EE,00217484,word,00000000"
+        author=Prafull
+        // Fixes IPU issues causing a hang at loading menu.
+        patch=1,EE,00258e34,word,00000000
+        patch=1,EE,00217484,word,00000000
 SLES-50048:
   name: "Donald Duck - Quack Attack"
   region: "PAL-M5"
@@ -6417,11 +6417,11 @@ SLES-50126:
   patches:
     - crc: "2064ACE6"
       content: |-
-        "comment=Patch by leilei"
-        "// Removes intro and end credits FMVs."
-        "// Fixes hanging caused by FMVs."
-        "patch=1,EE,0072C161,byte,00000061"
-        "patch=1,EE,00722677,byte,00000061"
+        comment=Patch by leilei
+        // Removes intro and end credits FMVs.
+        // Fixes hanging caused by FMVs.
+        patch=1,EE,0072C161,byte,00000061
+        patch=1,EE,00722677,byte,00000061
 SLES-50127:
   name: "Quake III - Revolution"
   region: "PAL-E"
@@ -6445,10 +6445,10 @@ SLES-50134:
   patches:
     - crc: "22E85E68"
       content: |-
-        "comment=Patch by refraction"
-        "// Rearrange PCR write and BC0F instruction"
-        "patch=0,EE,001CEF78,word,4100ffff"
-        "patch=0,EE,001CEF7C,word,ac430000"
+        comment=Patch by refraction
+        // Rearrange PCR write and BC0F instruction
+        patch=0,EE,001CEF78,word,4100ffff
+        patch=0,EE,001CEF7C,word,ac430000
 SLES-50136:
   name: "Robot Warlords"
   region: "PAL-E"
@@ -6501,10 +6501,10 @@ SLES-50176:
   patches:
     - crc: "F77639F1"
       content: |-
-        "comment=Patch by refraction"
-        "// Rearrange PCR write and BC0F instruction"
-        "patch=0,EE,001CEF78,word,4100ffff"
-        "patch=0,EE,001CEF7C,word,ac430000"
+        comment=Patch by refraction
+        // Rearrange PCR write and BC0F instruction
+        patch=0,EE,001CEF78,word,4100ffff
+        patch=0,EE,001CEF7C,word,ac430000
 SLES-50177:
   name: "Oni"
   region: "PAL-G"
@@ -6512,20 +6512,20 @@ SLES-50177:
   patches:
     - crc: "32629F36"
       content: |-
-        "comment=Patch by refraction"
-        "// Rearrange PCR write and BC0F instruction"
-        "patch=0,EE,001CEF78,word,4100ffff"
-        "patch=0,EE,001CEF7C,word,ac430000"
+        comment=Patch by refraction
+        // Rearrange PCR write and BC0F instruction
+        patch=0,EE,001CEF78,word,4100ffff
+        patch=0,EE,001CEF7C,word,ac430000
 SLES-50178:
   name: "Oni"
   region: "PAL-I"
   patches:
     - crc: "172B6971"
       content: |-
-        "comment=Patch by refraction"
-        "// Rearrange PCR write and BC0F instruction"
-        "patch=0,EE,001CEF78,word,4100ffff"
-        "patch=0,EE,001CEF7C,word,ac430000"
+        comment=Patch by refraction
+        // Rearrange PCR write and BC0F instruction
+        patch=0,EE,001CEF78,word,4100ffff
+        patch=0,EE,001CEF7C,word,ac430000
 SLES-50179:
   name: "Oni"
   region: "PAL-S"
@@ -6599,9 +6599,9 @@ SLES-50211:
   compat: 5
   patches:
     - content: |-
-        "comment=- This gamedisc supports multiple languages."
-        "comment=- Language selection is done through the BIOS configuration."
-        "comment=- Implementation requires Full boot - 'Boot CDVD (full)'."
+        comment=- This gamedisc supports multiple languages.
+        comment=- Language selection is done through the BIOS configuration.
+        comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SLES-50212:
   name: "Paris-Dakar Rally"
   region: "PAL-E"
@@ -6622,13 +6622,13 @@ SLES-50215:
   patches:
     - crc: "C9C145BF"
       content: |-
-        "comment=Patches by Nachbrenner"
-        "// Skip movie 'PlaySega'."
-        "patch=0,EE,001a42d0,word,03e00008"
-        "patch=0,EE,001a42d4,word,00000000"
-        "// Skip movie 'PlayAcclaim'."
-        "patch=0,EE,001a4468,word,03e00008"
-        "patch=0,EE,001a446c,word,00000000"
+        comment=Patches by Nachbrenner
+        // Skip movie 'PlaySega'.
+        patch=0,EE,001a42d0,word,03e00008
+        patch=0,EE,001a42d4,word,00000000
+        // Skip movie 'PlayAcclaim'.
+        patch=0,EE,001a4468,word,03e00008
+        patch=0,EE,001a446c,word,00000000
 SLES-50217:
   name: "Dave Mirra Freestyle BMX 2"
   region: "PAL-E-S"
@@ -6669,7 +6669,7 @@ SLES-50230:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes SPS.
+    - XGKickHack # Fixes SPS.
 SLES-50231:
   name: "International League Soccer"
   region: "PAL-M5"
@@ -6697,13 +6697,13 @@ SLES-50252:
   patches:
     - crc: "FBE2613D"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fixes VSync issues."
-        "patch=0,EE,001a66ac,word,03e00008"
-        "// Avoids hanging at first loading screen."
-        "patch=0,EE,001a6688,word,00000000"
-        "// Skips movies."
-        "patch=0,EE,001b1b00,word,24020001"
+        comment=Patch by Prafull
+        // Fixes VSync issues.
+        patch=0,EE,001a66ac,word,03e00008
+        // Avoids hanging at first loading screen.
+        patch=0,EE,001a6688,word,00000000
+        // Skips movies.
+        patch=0,EE,001b1b00,word,24020001
 SLES-50253:
   name: "Modern Groove - Ministry of Sound Edition"
   region: "PAL-E"
@@ -6732,13 +6732,13 @@ SLES-50267:
   patches:
     - crc: "2547FF67"
       content: |-
-        "author=Nachbrenner"
-        "// Skip PSX2_Mpeg_PlayFile__FPc."
-        "patch=0,EE,00107a00,word,03e00008"
-        "patch=0,EE,00107a04,word,24020001"
-        "// Skip SuperSync__Fi."
-        "patch=0,EE,00100eb0,word,03e00008"
-        "patch=0,EE,00100eb4,word,24020001"
+        author=Nachbrenner
+        // Skip PSX2_Mpeg_PlayFile__FPc.
+        patch=0,EE,00107a00,word,03e00008
+        patch=0,EE,00107a04,word,24020001
+        // Skip SuperSync__Fi.
+        patch=0,EE,00100eb0,word,03e00008
+        patch=0,EE,00100eb4,word,24020001
 SLES-50268:
   name: "SpyHunter"
   region: "PAL-M5"
@@ -6942,15 +6942,15 @@ SLES-50423:
   patches:
     - crc: "063FF7DB"
       content: |-
-        "author=prafull"
-        "// Skips IPU videos."
-        "// Each videos can be called separately"
-        "// on this game."
-        "// This seems like the only way of patching"
-        "// them all. The issue here is the PCSX2 IPU"
-        "// do not support well the EA proprietary IPU"
-        "// Library causing hanging in menus."
-        "patch=1,EE,001f4d2c,word,00000000"
+        author=prafull
+        // Skips IPU videos.
+        // Each videos can be called separately
+        // on this game.
+        // This seems like the only way of patching
+        // them all. The issue here is the PCSX2 IPU
+        // do not support well the EA proprietary IPU
+        // Library causing hanging in menus.
+        patch=1,EE,001f4d2c,word,00000000
 SLES-50424:
   name: "Cricket 2002"
   region: "PAL-E"
@@ -7097,12 +7097,12 @@ SLES-50503:
   patches:
     - crc: "7193F81D"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fixes game hanging at start."
-        "patch=1,EE,00195f38,word,00000000"
-        "patch=1,EE,001a2fbc,word,00000000"
-        "patch=1,EE,00198b68,word,00000000"
-        "patch=1,EE,00145b50,word,00000000"
+        comment=Patch by Prafull
+        // Fixes game hanging at start.
+        patch=1,EE,00195f38,word,00000000
+        patch=1,EE,001a2fbc,word,00000000
+        patch=1,EE,00198b68,word,00000000
+        patch=1,EE,00145b50,word,00000000
 SLES-50504:
   name: "Half-Life"
   region: "PAL-E"
@@ -7229,12 +7229,12 @@ SLES-50578:
   patches:
     - crc: "9FAC4FF3"
       content: |-
-        "comment=COP2 flag instance patch by refraction"
-        "// A mac flag check just after a vsub which gets in the way, rearranging."
-        "patch=0,EE,00170F20,word,48438800"
-        "patch=0,EE,00170F24,word,4BE521AC"
-        "patch=0,EE,00170F28,word,30848000"
-        "patch=0,EE,00170F2C,word,4BE72B3C"
+        comment=COP2 flag instance patch by refraction
+        // A mac flag check just after a vsub which gets in the way, rearranging.
+        patch=0,EE,00170F20,word,48438800
+        patch=0,EE,00170F24,word,4BE521AC
+        patch=0,EE,00170F28,word,30848000
+        patch=0,EE,00170F2C,word,4BE72B3C
 SLES-50579:
   name: "Kessen II"
   region: "PAL-F"
@@ -7392,12 +7392,12 @@ SLES-50709:
   patches:
     - crc: "837321FA"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fixes game hanging at start."
-        "patch=1,EE,001980a8,word,00000000"
-        "patch=1,EE,001a512c,word,00000000"
-        "patch=1,EE,0019acd8,word,00000000"
-        "patch=1,EE,00147cc0,word,00000000"
+        comment=Patch by Prafull
+        // Fixes game hanging at start.
+        patch=1,EE,001980a8,word,00000000
+        patch=1,EE,001a512c,word,00000000
+        patch=1,EE,0019acd8,word,00000000
+        patch=1,EE,00147cc0,word,00000000
 SLES-50710:
   name: "Dr. Muto"
   region: "PAL-M5"
@@ -7410,11 +7410,11 @@ SLES-50713:
   patches:
     - crc: "6E62DE7B"
       content: |-
-        "author=Prafull"
-        "// Fix hanging problem & SPS."
-        "// Snow effect has to be removed for this fix (needs accurate emulation)."
-        "// Fixed by rearranging COP2 instructions."
-        "patch=1,EE,00214aec,word,00000000"
+        author=Prafull
+        // Fix hanging problem & SPS.
+        // Snow effect has to be removed for this fix (needs accurate emulation).
+        // Fixed by rearranging COP2 instructions.
+        patch=1,EE,00214aec,word,00000000
 SLES-50714:
   name: "Defender"
   region: "PAL-M5"
@@ -7539,14 +7539,14 @@ SLES-50778:
   patches:
     - crc: "AE9EB9A0"
       content: |-
-        "author=kozarovv"
-        "// Fix initial loading by looping for some time on EE side. That allow IOP proceed requests correctly."
-        "patch=1,EE,E0022430,extended,00308C68"
-        "patch=1,EE,20308C68,extended,0803fff7"
-        "patch=1,EE,20308C6C,extended,240f2000"
-        "patch=1,EE,200fffdc,double,55eeffff0000702d"
-        "patch=1,EE,200fffe4,double,0c0c243025ce0004"
-        "patch=1,EE,200fffec,double,080c231c00000000"
+        author=kozarovv
+        // Fix initial loading by looping for some time on EE side. That allow IOP proceed requests correctly.
+        patch=1,EE,E0022430,extended,00308C68
+        patch=1,EE,20308C68,extended,0803fff7
+        patch=1,EE,20308C6C,extended,240f2000
+        patch=1,EE,200fffdc,double,55eeffff0000702d
+        patch=1,EE,200fffe4,double,0c0c243025ce0004
+        patch=1,EE,200fffec,double,080c231c00000000
 SLES-50779:
   name: "ESPN NBA 2Night 2002"
   region: "PAL-E"
@@ -7640,13 +7640,13 @@ SLES-50821:
   compat: 5
   patches:
     - content: |-
-        "// 22E91837"
-        "comment=- At least when using GSdx in D3D11 Hardware mode, and due to missing"
-        "comment=-  rendering-fixes, black stripes can show up on ghosts,"
-        "comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching."
-        "comment=- This can be fixed by having 'Enable HW Hacks' set"
-        "comment=-  in the GSdx configuration dialog, and having 'Align Sprite' set"
-        "comment=-  and 'Sprite' set to Half in 'Advanced Settings and Hacks'."
+        // 22E91837
+        comment=- At least when using GSdx in D3D11 Hardware mode, and due to missing
+        comment=-  rendering-fixes, black stripes can show up on ghosts,
+        comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
+        comment=- This can be fixed by having 'Enable HW Hacks' set
+        comment=-  in the GSdx configuration dialog, and having 'Align Sprite' set
+        comment=-  and 'Sprite' set to Half in 'Advanced Settings and Hacks'.
 SLES-50822:
   name: "Shadow Hearts"
   region: "PAL-M3"
@@ -7743,22 +7743,22 @@ SLES-50843:
   patches:
     - crc: "0379b4f7"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fixes hanging at start."
-        "patch=0,EE,00151898,word,00000000"
-        "// Fixes ingame hangs."
-        "patch=0,EE,001518b0,word,00000000"
-        "patch=0,EE,001518c4,word,00000000"
-        "patch=0,EE,001518d8,word,00000000"
-        "patch=0,EE,001518ec,word,00000000"
-        "patch=0,EE,00151900,word,00000000"
-        "patch=0,EE,00151914,word,00000000"
-        "patch=0,EE,00151928,word,00000000"
-        "patch=0,EE,0015193C,word,00000000"
-        "patch=0,EE,00151950,word,00000000"
-        "patch=0,EE,00151968,word,00000000"
-        "patch=0,EE,00151978,word,00000000"
-        "patch=0,EE,00151914,word,00000000"
+        comment=Patch by Prafull
+        // Fixes hanging at start.
+        patch=0,EE,00151898,word,00000000
+        // Fixes ingame hangs.
+        patch=0,EE,001518b0,word,00000000
+        patch=0,EE,001518c4,word,00000000
+        patch=0,EE,001518d8,word,00000000
+        patch=0,EE,001518ec,word,00000000
+        patch=0,EE,00151900,word,00000000
+        patch=0,EE,00151914,word,00000000
+        patch=0,EE,00151928,word,00000000
+        patch=0,EE,0015193C,word,00000000
+        patch=0,EE,00151950,word,00000000
+        patch=0,EE,00151968,word,00000000
+        patch=0,EE,00151978,word,00000000
+        patch=0,EE,00151914,word,00000000
 SLES-50845:
   name: "Medal of Honour - Frontline"
   region: "PAL-F"
@@ -7814,10 +7814,10 @@ SLES-50874:
   patches:
     - crc: "A0ED2D23"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fixes controller issue but skips videos."
-        "patch=0,EE,002d8568,word,03e00008"
-        "patch=0,EE,002d856c,word,00000000"
+        comment=Patch by Prafull
+        // Fixes controller issue but skips videos.
+        patch=0,EE,002d8568,word,03e00008
+        patch=0,EE,002d856c,word,00000000
 SLES-50875:
   name: "F1 2002"
   region: "PAL-I"
@@ -7834,7 +7834,7 @@ SLES-50879:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - FPUNegDivHack # Fixes sky being shown over the 3d.
+    - FpuNegDivHack # Fixes sky being shown over the 3d.
     - EETimingHack # Flickery videos without it.
 SLES-50880:
   name: "BMX XXX"
@@ -7895,10 +7895,10 @@ SLES-50920:
   patches:
     - crc: "401F4726"
       content: |-
-        "comment=Patch by Wgarvin"
-        "// Fixes (black voids) central tower level loading."
-        "// Issue: Some doors leading to some areas appeared as black voids that you can walk in to."
-        "patch=1,EE,001BCC4C,word,46150036"
+        comment=Patch by Wgarvin
+        // Fixes (black voids) central tower level loading.
+        // Issue: Some doors leading to some areas appeared as black voids that you can walk in to.
+        patch=1,EE,001BCC4C,word,46150036
 SLES-50921:
   name: "Way of the Samurai"
   region: "PAL-M3"
@@ -7954,7 +7954,7 @@ SLES-50958:
   name: "Warhammer 40,000 - Firewarrior"
   region: "PAL-M4"
   gameFixes:
-    - XgKickHack # Fixes corrupted graphics.
+    - XGKickHack # Fixes corrupted graphics.
 SLES-50963:
   name: "Riding Spirits"
   region: "PAL-M5"
@@ -8063,10 +8063,10 @@ SLES-51023:
   patches:
     - crc: "5C313124"
       content: |-
-        "comment=Patches by Shadow Lady"
-        "// IPU menus."
-        "patch=0,EE,002328a8,word,00000000"
-        "patch=0,EE,00338570,word,00000000"
+        comment=Patches by Shadow Lady
+        // IPU menus.
+        patch=0,EE,002328a8,word,00000000
+        patch=0,EE,00338570,word,00000000
 SLES-51025:
   name: "BDFL Manager 2003"
   region: "PAL-G"
@@ -8083,8 +8083,8 @@ SLES-51043:
   patches:
     - crc: "0EF1D4BA"
       content: |-
-        "comment=Spyro PAL startup fix"
-        "patch=1,EE,001E763C,word,24020001"
+        comment=Spyro PAL startup fix
+        patch=1,EE,001E763C,word,24020001
 SLES-51044:
   name: "Burnout 2 - Point of Impact"
   region: "PAL-M5"
@@ -8220,9 +8220,9 @@ SLES-51101:
   patches:
     - crc: "30b27954"
       content: |-
-        "comment=Patches by Nachbrenner"
-        "// Skip IPU synchronisation."
-        "patch=0,EE,00111100,word,00000000"
+        comment=Patches by Nachbrenner
+        // Skip IPU synchronisation.
+        patch=0,EE,00111100,word,00000000
 SLES-51108:
   name: "Hitman 2 - Silent Assassin"
   region: "PAL-F"
@@ -8449,15 +8449,15 @@ SLES-51227:
   compat: 5
   patches:
     - content: |-
-        "// 54AD76D7"
-        "comment=- This gamedisc supports multiple languages and widescreen."
-        "comment=- Language & widescreen selection is done through the BIOS configuration."
-        "comment=- Implementation requires Full boot - 'Boot CDVD (full)'."
-        "comment=- Full boot is recommended anyway for this gamedisc to avoid text problems."
-        "author=Prafull"
-        "// Fix ingame SPS by interchanging vclipw.xyz vf5, vf5w with cfc2."
-        "patch=1,EE,001db3a0,word,48489000"
-        "patch=1,EE,001db3a4,word,4bc529ff"
+        // 54AD76D7
+        comment=- This gamedisc supports multiple languages and widescreen.
+        comment=- Language & widescreen selection is done through the BIOS configuration.
+        comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
+        comment=- Full boot is recommended anyway for this gamedisc to avoid text problems.
+        author=Prafull
+        // Fix ingame SPS by interchanging vclipw.xyz vf5, vf5w with cfc2.
+        patch=1,EE,001db3a0,word,48489000
+        patch=1,EE,001db3a4,word,4bc529ff
 SLES-51229:
   name: "Virtua Cop - Elite Edition"
   region: "PAL-M5"
@@ -8470,7 +8470,7 @@ SLES-51232:
   region: "PAL-M4"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes black models on certain games in World Tour.
+    - XGKickHack # Fixes black models on certain games in World Tour.
 SLES-51233:
   name: "DragonBall Z - Budokai"
   region: "PAL-M4"
@@ -8561,14 +8561,14 @@ SLES-51272:
   clampModes:
     vuClampMode: 3  # Fixes water rendering.
   gameFixes:
-    - XgKickHack # Fixes SPS while ingame.
+    - XGKickHack # Fixes SPS while ingame.
 SLES-51273:
   name: "Wakeboarding Unleashed"
   region: "PAL-F"
   clampModes:
     vuClampMode: 3  # Fixes water rendering.
   gameFixes:
-    - XgKickHack # Fixes SPS while ingame.
+    - XGKickHack # Fixes SPS while ingame.
 SLES-51282:
   name: "Tiger Woods PGA Tour 2003"
   region: "PAL-E"
@@ -8578,10 +8578,10 @@ SLES-51283:
   patches:
     - crc: "D1D97A29"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fixes freeze during entrances."
-        "patch=1,EE,0010b7ac,word,00000000 //0440fffa"
-        "patch=1,EE,0010b894,word,00000000 //0440fffa"
+        comment=Patch by Prafull
+        // Fixes freeze during entrances.
+        patch=1,EE,0010b7ac,word,00000000 //0440fffa
+        patch=1,EE,0010b894,word,00000000 //0440fffa
 SLES-51284:
   name: "Contra - Shattered Soldier"
   region: "PAL-M3"
@@ -8610,15 +8610,15 @@ SLES-51292:
   patches:
     - crc: "9fccacb5"
       content: |-
-        "author=PSI"
-        "// The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end."
-        "// The second function causes stack corruption as it allocates over the buffer, which is still transferring data."
-        "// This works on real hardware due to the data cache - the transfer will remain safe in main memory, and the stack corruption only happens in cache."
-        "// This patch inserts a bc0f instruction right after the transfer starts, forcing the game to wait for the transfer to end ASAP."
-        "patch=0,EE,00164974,word,4100ffff"
-        "patch=0,EE,00164978,word,00000000"
-        "patch=0,EE,0016497c,word,03e00008"
-        "patch=0,EE,00164980,word,27bd0030"
+        author=PSI
+        // The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end.
+        // The second function causes stack corruption as it allocates over the buffer, which is still transferring data.
+        // This works on real hardware due to the data cache - the transfer will remain safe in main memory, and the stack corruption only happens in cache.
+        // This patch inserts a bc0f instruction right after the transfer starts, forcing the game to wait for the transfer to end ASAP.
+        patch=0,EE,00164974,word,4100ffff
+        patch=0,EE,00164978,word,00000000
+        patch=0,EE,0016497c,word,03e00008
+        patch=0,EE,00164980,word,27bd0030
 SLES-51294:
   name: "XIII"
   region: "PAL-Unk"
@@ -8691,14 +8691,14 @@ SLES-51343:
   patches:
     - crc: "1AE08CF5"
       content: |-
-        "author=kozarovv"
-        "// Floats workaround to make HW GSDX mode working."
-        "// There is still overflow on GS, but this time GSDX can handle it just fine in HW mode."
-        "patch=1,EE,001e7130,word,3c017e00"
-        "patch=1,EE,001e7138,word,44812800"
-        "patch=1,EE,001e7150,word,44813000"
-        "patch=1,EE,001e7160,word,44813800"
-        "patch=1,EE,001e7170,word,44810000"
+        author=kozarovv
+        // Floats workaround to make HW GSDX mode working.
+        // There is still overflow on GS, but this time GSDX can handle it just fine in HW mode.
+        patch=1,EE,001e7130,word,3c017e00
+        patch=1,EE,001e7138,word,44812800
+        patch=1,EE,001e7150,word,44813000
+        patch=1,EE,001e7160,word,44813800
+        patch=1,EE,001e7170,word,44810000
 SLES-51344:
   name: "Guilty Gear X2"
   region: "PAL-E"
@@ -8708,11 +8708,11 @@ SLES-51345:
   patches:
     - crc: "945301BE"
       content: |-
-        "comment=Swapping a COP2 op into place to make the flags work without delays"
-        "patch=0,EE,001D4534,word,4A0002FF"
-        "patch=0,EE,001D4544,word,4B07FA0B"
-        "patch=0,EE,001D4720,word,4A0002FF"
-        "patch=0,EE,001D4730,word,4B07FA0B"
+        comment=Swapping a COP2 op into place to make the flags work without delays
+        patch=0,EE,001D4534,word,4A0002FF
+        patch=0,EE,001D4544,word,4B07FA0B
+        patch=0,EE,001D4720,word,4A0002FF
+        patch=0,EE,001D4730,word,4B07FA0B
 SLES-51347:
   name: "Die Hard - Vendetta"
   region: "PAL-M4"
@@ -8782,22 +8782,22 @@ SLES-51381:
   patches:
     - crc: "00C584CB"
       content: |-
-        "author=kozarovv"
-        "// Rearrange COP2 ops to fix DIV Q timings"
-        "patch=1,EE,00230b68,word,4b0c211c"
-        "patch=1,EE,00230b6c,word,4be503bc"
-        "patch=1,EE,00230b84,word,4bc0295c"
-        "patch=1,EE,00230b88,word,4be603bc"
-        "patch=1,EE,00230ba0,word,4bc0319c"
-        "patch=1,EE,00230ba4,word,4be703bc"
-        "patch=1,EE,00230bbc,word,4bc039dc"
-        "patch=1,EE,00230bc0,word,4be803bc"
-        "patch=1,EE,00230bd8,word,4bc0421c"
-        "patch=1,EE,00230bdc,word,4be903bc"
-        "patch=1,EE,00230bf4,word,4bc04a5c"
-        "patch=1,EE,00230bf8,word,4bea03bc"
-        "patch=1,EE,00230c10,word,4bc0529c"
-        "patch=1,EE,00230c14,word,4beb03bc"
+        author=kozarovv
+        // Rearrange COP2 ops to fix DIV Q timings
+        patch=1,EE,00230b68,word,4b0c211c
+        patch=1,EE,00230b6c,word,4be503bc
+        patch=1,EE,00230b84,word,4bc0295c
+        patch=1,EE,00230b88,word,4be603bc
+        patch=1,EE,00230ba0,word,4bc0319c
+        patch=1,EE,00230ba4,word,4be703bc
+        patch=1,EE,00230bbc,word,4bc039dc
+        patch=1,EE,00230bc0,word,4be803bc
+        patch=1,EE,00230bd8,word,4bc0421c
+        patch=1,EE,00230bdc,word,4be903bc
+        patch=1,EE,00230bf4,word,4bc04a5c
+        patch=1,EE,00230bf8,word,4bea03bc
+        patch=1,EE,00230c10,word,4bc0529c
+        patch=1,EE,00230c14,word,4beb03bc
 SLES-51382:
   name: "Shrek - Super Party"
   region: "PAL-E"
@@ -8975,10 +8975,10 @@ SLES-51495:
   patches:
     - crc: "96B76E56"
       content: |-
-        "comment=Patches by Nachbrenner"
-        "// Fix IPU busy!"
-        "patch=0,EE,003300b0,word,03e00008"
-        "patch=0,EE,003300b4,word,00000000"
+        comment=Patches by Nachbrenner
+        // Fix IPU busy!
+        patch=0,EE,003300b0,word,03e00008
+        patch=0,EE,003300b4,word,00000000
 SLES-51496:
   name: "Breath of Fire: Dragon Quarter"
   region: "PAL-M5"
@@ -8998,7 +8998,7 @@ SLES-51509:
   name: "World of Outlaws - Sprint Cars"
   region: "PAL-E"
   gameFixes:
-    - XgKickHack
+    - XGKickHack
 SLES-51510:
   name: "Dancing Stage Fever MegaMix"
   region: "PAL-M5"
@@ -9128,7 +9128,7 @@ SLES-51624:
   region: "PAL-E"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes missing blue lines on the characters in dark areas.
+    - XGKickHack # Fixes missing blue lines on the characters in dark areas.
 SLES-51625:
   name: "Ultimate Mindgames"
   region: "PAL-E"
@@ -9502,7 +9502,7 @@ SLES-51843:
   compat: 5
   patches:
     - content: |-
-        "comment=You need to set the EE cycle speed to -1 to be able to load the game."
+        comment=You need to set the EE cycle speed to -1 to be able to load the game.
 SLES-51845:
   name: "Barbie - Horse Adventure"
   region: "PAL-M6"
@@ -10075,9 +10075,9 @@ SLES-52149:
   compat: 5
   patches:
     - content: |-
-        "comment=- This gamedisc supports multiple languages."
-        "comment=- Language selection is done through the BIOS configuration."
-        "comment=- Implementation requires Full boot - 'Boot CDVD (full)'."
+        comment=- This gamedisc supports multiple languages.
+        comment=- Language selection is done through the BIOS configuration.
+        comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SLES-52150:
   name: "Legacy of Kain - Defiance"
   region: "PAL-M5"
@@ -10160,7 +10160,7 @@ SLES-52230:
   name: "Muppets Party Cruise"
   region: "PAL-Unk"
   gameFixes:
-    - OPHFLagHack # Fixes some hanging throughout the game.
+    - OPHFlagHack # Fixes some hanging throughout the game.
 SLES-52237:
   name: "dot Hack - Part 1 - Infection"
   region: "PAL-M5"
@@ -10242,11 +10242,11 @@ SLES-52278:
   patches:
     - crc: "A8ECA67A"
       content: |-
-        "comment=Patch by Prafull"
-        "// Avoids hanging before Molotov Party."
-        "patch=1,EE,003e2bb4,word,00000000"
-        "// Fixes crash in The priest mission."
-        "patch=1,EE,0016f04c,word,1000000d"
+        comment=Patch by Prafull
+        // Avoids hanging before Molotov Party.
+        patch=1,EE,003e2bb4,word,00000000
+        // Fixes crash in The priest mission.
+        patch=1,EE,0016f04c,word,1000000d
 SLES-52279:
   name: "Mafia"
   region: "PAL-G"
@@ -10255,11 +10255,11 @@ SLES-52279:
   patches:
     - crc: "B1744B0F"
       content: |-
-        "comment=Patch by Prafull"
-        "// Avoids hanging before Molotov Party."
-        "patch=1,EE,003e2454,word,00000000"
-        "// Fixes crash in The priest mission."
-        "patch=1,EE,0016f04c,word,1000000d"
+        comment=Patch by Prafull
+        // Avoids hanging before Molotov Party.
+        patch=1,EE,003e2454,word,00000000
+        // Fixes crash in The priest mission.
+        patch=1,EE,0016f04c,word,1000000d
 SLES-52280:
   name: "Mafia"
   region: "PAL-F"
@@ -10268,11 +10268,11 @@ SLES-52280:
   patches:
     - crc: "E185C725"
       content: |-
-        "comment=Patch by Prafull"
-        "// Avoids hanging before Molotov Party."
-        "patch=1,EE,003e23d4,word,00000000"
-        "// Fixes crash in The priest mission."
-        "patch=1,EE,0016f04c,word,1000000d"
+        comment=Patch by Prafull
+        // Avoids hanging before Molotov Party.
+        patch=1,EE,003e23d4,word,00000000
+        // Fixes crash in The priest mission.
+        patch=1,EE,0016f04c,word,1000000d
 SLES-52281:
   name: "Mafia"
   region: "PAL-I"
@@ -10281,11 +10281,11 @@ SLES-52281:
   patches:
     - crc: "B5FFA1E9"
       content: |-
-        "comment=Patch by Prafull"
-        "// Avoids hanging before Molotov Party."
-        "patch=1,EE,003e25c4,word,00000000"
-        "// Fixes crash in The priest mission."
-        "patch=1,EE,0016f04c,word,1000000d"
+        comment=Patch by Prafull
+        // Avoids hanging before Molotov Party.
+        patch=1,EE,003e25c4,word,00000000
+        // Fixes crash in The priest mission.
+        patch=1,EE,0016f04c,word,1000000d
 SLES-52282:
   name: "Mafia"
   region: "PAL-S"
@@ -10294,11 +10294,11 @@ SLES-52282:
   patches:
     - crc: "B67F4F9E"
       content: |-
-        "comment=Patch by Prafull"
-        "// Avoids hanging before Molotov Party."
-        "patch=1,EE,003e25f4,word,00000000"
-        "// Fixes crash in The priest mission."
-        "patch=1,EE,0016f04c,word,1000000d"
+        comment=Patch by Prafull
+        // Avoids hanging before Molotov Party.
+        patch=1,EE,003e25f4,word,00000000
+        // Fixes crash in The priest mission.
+        patch=1,EE,0016f04c,word,1000000d
 SLES-52283:
   name: "Terminator 3 - The Redemption"
   region: "PAL-M5"
@@ -10535,12 +10535,12 @@ SLES-52418:
   patches:
     - crc: "52085DF1"
       content: |-
-        "// Game takes advantage of the VU's extended float range."
-        "// This limits it so x86 can handle it."
-        "author=refraction and PSI"
-        "comment=VU float patch"
-        "patch=1,EE,0037A680,word,7e7fffff"
-        "patch=1,EE,0037A688,word,fe7fffff"
+        // Game takes advantage of the VU's extended float range.
+        // This limits it so x86 can handle it.
+        author=refraction and PSI
+        comment=VU float patch
+        patch=1,EE,0037A680,word,7e7fffff
+        patch=1,EE,0037A688,word,fe7fffff
 SLES-52423:
   name: "Smash Court Tennis - Pro Tournament 2"
   region: "PAL-Unk"
@@ -10690,12 +10690,12 @@ SLES-52510:
   patches:
     - crc: "EEE2F6A3"
       content: |-
-        "comment=Patches By Prafull"
-        "// New patch fixes most issues."
-        "patch=0,EE,003a9b20,word,00000000"
-        "// Fix hang at Level 4."
-        "patch=0,EE,0037b764,word,03e00008"
-        "patch=0,EE,0037b768,word,00000000"
+        comment=Patches By Prafull
+        // New patch fixes most issues.
+        patch=0,EE,003a9b20,word,00000000
+        // Fix hang at Level 4.
+        patch=0,EE,0037b764,word,03e00008
+        patch=0,EE,0037b768,word,00000000
 SLES-52511:
   name: "Headhunter - Redemption (EX)"
   region: "PAL-E"
@@ -10828,7 +10828,7 @@ SLES-52568:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes bad Geometry.
+    - XGKickHack # Fixes bad Geometry.
     - VU0KickstartHack # Fixes loading hang.
 SLES-52569:
   name: "Spyro - A Hero's Tail"
@@ -11142,9 +11142,9 @@ SLES-52711:
   patches:
     - crc: "958e5086"
       content: |-
-        "comment=Patch by Prafull"
-        "// Sheep screen freeze fix."
-        "patch=1,EE,001c83a4,word,00000000"
+        comment=Patch by Prafull
+        // Sheep screen freeze fix.
+        patch=1,EE,001c83a4,word,00000000
 SLES-52713:
   name: "NBA Live 2005"
   region: "PAL-M3"
@@ -11548,9 +11548,9 @@ SLES-52943:
   patches:
     - crc: "7D5403E1"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fixes random hangs."
-        "patch=1,EE,0043c930,word,00000000"
+        comment=Patch by Prafull
+        // Fixes random hangs.
+        patch=1,EE,0043c930,word,00000000
 SLES-52944:
   name: "Robotech - Invasion"
   region: "PAL-M5"
@@ -11702,9 +11702,9 @@ SLES-53007:
   compat: 5
   patches:
     - content: |-
-        "comment=- This gamedisc supports multiple languages."
-        "comment=- Language selection is done through the BIOS configuration."
-        "comment=- Implementation requires Full boot - 'Boot CDVD (full)'."
+        comment=- This gamedisc supports multiple languages.
+        comment=- Language selection is done through the BIOS configuration.
+        comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SLES-53011:
   name: "Gallop Racer 2"
   region: "PAL-E"
@@ -11733,30 +11733,30 @@ SLES-53020:
   patches:
     - crc: "BF6F101F"
       content: |-
-        "comment=Rearranging COP2 ops to avoid macflag bad stuff."
-        "// Solves door problems, possibly other issues later on (nobody ever got that far :P)."
-        "patch=0,EE,0010BC88,word,48468800"
-        "patch=0,EE,0010BC8C,word,4bec682c"
-        "patch=0,EE,0010BC90,word,4b8d617d"
-        "patch=0,EE,0010BC98,word,4a6d617c"
-        "patch=0,EE,0012B2CC,word,48468800"
-        "patch=0,EE,0012B2D0,word,4bec682c"
-        "patch=0,EE,0012B2D4,word,4b8d617d"
-        "patch=0,EE,0012B2DC,word,4a6d617c"
-        "patch=0,EE,0012B5F4,word,48468800"
-        "patch=0,EE,0012B5F8,word,4bec682c"
-        "patch=0,EE,0012B5FC,word,4b8d617d"
-        "patch=0,EE,0012B604,word,4a6d617c"
-        "patch=0,EE,001B0B5C,word,4bec682c"
-        "patch=0,EE,001B0B68,word,4b8d617d"
-        "patch=0,EE,001BF5FC,word,48588800"
-        "patch=0,EE,001BF60C,word,4a0002ff"
-        "patch=0,EE,001BFBB8,word,48588800"
-        "patch=0,EE,001BFBC8,word,4a0002ff"
-        "patch=0,EE,001BF818,word,48588800"
-        "patch=0,EE,001BF828,word,4a0002ff"
-        "patch=0,EE,001C017C,word,48588800"
-        "patch=0,EE,001C018C,word,4a0002ff"
+        comment=Rearranging COP2 ops to avoid macflag bad stuff.
+        // Solves door problems, possibly other issues later on (nobody ever got that far :P).
+        patch=0,EE,0010BC88,word,48468800
+        patch=0,EE,0010BC8C,word,4bec682c
+        patch=0,EE,0010BC90,word,4b8d617d
+        patch=0,EE,0010BC98,word,4a6d617c
+        patch=0,EE,0012B2CC,word,48468800
+        patch=0,EE,0012B2D0,word,4bec682c
+        patch=0,EE,0012B2D4,word,4b8d617d
+        patch=0,EE,0012B2DC,word,4a6d617c
+        patch=0,EE,0012B5F4,word,48468800
+        patch=0,EE,0012B5F8,word,4bec682c
+        patch=0,EE,0012B5FC,word,4b8d617d
+        patch=0,EE,0012B604,word,4a6d617c
+        patch=0,EE,001B0B5C,word,4bec682c
+        patch=0,EE,001B0B68,word,4b8d617d
+        patch=0,EE,001BF5FC,word,48588800
+        patch=0,EE,001BF60C,word,4a0002ff
+        patch=0,EE,001BFBB8,word,48588800
+        patch=0,EE,001BFBC8,word,4a0002ff
+        patch=0,EE,001BF818,word,48588800
+        patch=0,EE,001BF828,word,4a0002ff
+        patch=0,EE,001C017C,word,48588800
+        patch=0,EE,001C018C,word,4a0002ff
 SLES-53021:
   name: "Gunbird - Special Edition"
   region: "PAL-M3"
@@ -11955,11 +11955,11 @@ SLES-53099:
   patches:
     - crc: "53BB63A0"
       content: |-
-        "author=kozarovv"
-        "// Patch allow sending VU1 mpg successfully. This fix missing graphic. Thanks to PSI for figuring what is wrong."
-        "// Game need at least -2 EE cyclerate + MTVU on my pc to get full speed."
-        "// To fix shadows set VU rounding to nearest - thx Atomic83"
-        "patch=1,EE,00426140,word,00000000"
+        author=kozarovv
+        // Patch allow sending VU1 mpg successfully. This fix missing graphic. Thanks to PSI for figuring what is wrong.
+        // Game need at least -2 EE cyclerate + MTVU on my pc to get full speed.
+        // To fix shadows set VU rounding to nearest - thx Atomic83
+        patch=1,EE,00426140,word,00000000
 SLES-53100:
   name: "Scooby Doo! Unmasked"
   region: "PAL-M4"
@@ -12061,9 +12061,9 @@ SLES-53154:
   region: "PAL-M8"
   patches:
     - content: |-
-        "comment=- This gamedisc supports multiple languages."
-        "comment=- Language selection is done through the BIOS configuration."
-        "comment=- Implementation requires Full boot - 'Boot CDVD (full)'."
+        comment=- This gamedisc supports multiple languages.
+        comment=- Language selection is done through the BIOS configuration.
+        comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SLES-53155:
   name: "Star Wars - Episode III - Revenge of the Sith"
   region: "PAL-M3"
@@ -12472,7 +12472,7 @@ SLES-53439:
   name: "Crash Tag Team Racing"
   region: "PAL-M6"
   gameFixes:
-    - CrashTagTeamRacingIbit # Fixes constant recompilation problems.
+    - CrashTagTeamRacingIbitHack # Fixes constant recompilation problems.
 SLES-53441:
   name: "Heroes of the Pacific"
   region: "PAL-M5"
@@ -12707,48 +12707,48 @@ SLES-53539:
   compat: 5
   patches:
     - content: |-
-        "author=atomic83github"
-        "// Found with the help of the dev-9 plugin and the PS4 emu."
-        "// This is a game bug trigger by a timing issue."
-        "// The game have an internal crash reporting system"
-        "// which rely on a debug server connected to the console."
-        "// When the game do an error, it expects the debug server to be connected"
-        "// to send the crash dump."
-        "// But that never happen on PCSX2 as the debug server is not present."
-        "// Thus, the game will enter in an infinite loop at the asylum level."
-        "// This only happen when certain conditions are meet in the game."
-        "// This patch makes the game to exit the loop by cancelling the debug reporting."
-        "patch=0,EE,001c5958,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle"
-        "patch=0,EE,001c5b6c,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle"
-        "patch=0,EE,001c5d24,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle"
-        "// The game have no frame pacing system in place."
-        "// This causes a massive slowdown in loading screens."
-        "// Thankfully, this can be patched out."
-        "patch=0,EE,002097b8,word,00000000 // QDT::KCORE::RENDER_CONTEXT::DoSwapStuff(void)+0x1a4"
+        author=atomic83github
+        // Found with the help of the dev-9 plugin and the PS4 emu.
+        // This is a game bug trigger by a timing issue.
+        // The game have an internal crash reporting system
+        // which rely on a debug server connected to the console.
+        // When the game do an error, it expects the debug server to be connected
+        // to send the crash dump.
+        // But that never happen on PCSX2 as the debug server is not present.
+        // Thus, the game will enter in an infinite loop at the asylum level.
+        // This only happen when certain conditions are meet in the game.
+        // This patch makes the game to exit the loop by cancelling the debug reporting.
+        patch=0,EE,001c5958,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+        patch=0,EE,001c5b6c,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+        patch=0,EE,001c5d24,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+        // The game have no frame pacing system in place.
+        // This causes a massive slowdown in loading screens.
+        // Thankfully, this can be patched out.
+        patch=0,EE,002097b8,word,00000000 // QDT::KCORE::RENDER_CONTEXT::DoSwapStuff(void)+0x1a4
 SLES-53540:
   name: "Fahrenheit"
   region: "PAL-M4"
   compat: 5
   patches:
     - content: |-
-        "author=atomic83github"
-        "// Found with the help of the dev-9 plugin and the PS4 emu."
-        "// This is a game bug trigger by a timing issue."
-        "// The game have an internal crash reporting system"
-        "// which rely on a debug server connected to the console."
-        "// When the game do an error, it expects the debug server to be connected"
-        "// to send the crash dump."
-        "// But that never happen on PCSX2 as the debug server is not present."
-        "// Thus, the game will enter in an infinite loop at the asylum level."
-        "// This only happen when certain conditions are meet in the game."
-        "// This patch makes the game to exit the loop by cancelling the debug reporting."
-        "patch=0,EE,001c5958,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle"
-        "patch=0,EE,001c5b6c,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle"
-        "patch=0,EE,001c5d24,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle"
-        "// The game have no frame pacing system in place."
-        "// This causes a massive slowdown in loading screens."
-        "// Thankfully, this can be patched out."
-        "patch=0,EE,002097b8,word,00000000 // QDT::KCORE::RENDER_CONTEXT::DoSwapStuff(void)+0x1a4"
+        author=atomic83github
+        // Found with the help of the dev-9 plugin and the PS4 emu.
+        // This is a game bug trigger by a timing issue.
+        // The game have an internal crash reporting system
+        // which rely on a debug server connected to the console.
+        // When the game do an error, it expects the debug server to be connected
+        // to send the crash dump.
+        // But that never happen on PCSX2 as the debug server is not present.
+        // Thus, the game will enter in an infinite loop at the asylum level.
+        // This only happen when certain conditions are meet in the game.
+        // This patch makes the game to exit the loop by cancelling the debug reporting.
+        patch=0,EE,001c5958,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+        patch=0,EE,001c5b6c,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+        patch=0,EE,001c5d24,word,00000000 // QDT::KCOM::COM_SERVICE::RetrieveComHandle
+        // The game have no frame pacing system in place.
+        // This causes a massive slowdown in loading screens.
+        // Thankfully, this can be patched out.
+        patch=0,EE,002097b8,word,00000000 // QDT::KCORE::RENDER_CONTEXT::DoSwapStuff(void)+0x1a4
 SLES-53541:
   name: "Tiger Woods PGA Tour 06"
   region: "PAL-M4"
@@ -12996,9 +12996,9 @@ SLES-53667:
   compat: 5
   patches:
     - content: |-
-        "comment=- This gamedisc supports multiple languages."
-        "comment=- Language selection is done through the BIOS configuration."
-        "comment=- Implementation requires Full boot - 'Boot CDVD (full)'."
+        comment=- This gamedisc supports multiple languages.
+        comment=- Language selection is done through the BIOS configuration.
+        comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SLES-53668:
   name: "Micro Machines v4"
   region: "PAL-M5"
@@ -13150,12 +13150,12 @@ SLES-53746:
   patches:
     - crc: "E8F7BAB6"
       content: |-
-        "author=kozarovv"
-        "// Fix sps and various graphical issues by Using iaddiu instead of FSAND"
-        "// require preload frame data and crc hack atleast minimum for GSDX HW"
-        "patch=1,EE,00639Ef0,word,10050208"
-        "patch=1,EE,0063a068,word,10080208"
-        "patch=1,EE,0063D488,word,10020208"
+        author=kozarovv
+        // Fix sps and various graphical issues by Using iaddiu instead of FSAND
+        // require preload frame data and crc hack atleast minimum for GSDX HW
+        patch=1,EE,00639Ef0,word,10050208
+        patch=1,EE,0063a068,word,10080208
+        patch=1,EE,0063D488,word,10020208
 SLES-53747:
   name: "Ed, Edd, 'n Eddy - The Misadventure"
   region: "PAL-E"
@@ -13299,9 +13299,9 @@ SLES-53826:
   compat: 5
   patches:
     - content: |-
-        "comment=- This gamedisc supports multiple languages."
-        "comment=- Language selection is done through the BIOS configuration."
-        "comment=- Implementation requires Full boot - 'Boot CDVD (full)'."
+        comment=- This gamedisc supports multiple languages.
+        comment=- Language selection is done through the BIOS configuration.
+        comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SLES-53827:
   name: "Tom Clancy's Splinter Cell - Double Agent"
   region: "PAL-M3"
@@ -13412,12 +13412,12 @@ SLES-53886:
   patches:
     - crc: "ADDFF505"
       content: |-
-        "author=refraction"
-        "// COP2 Rearrangement. Fixes broken collisions."
-        "patch=1,EE,0037EBD4,word,4b000460"
-        "patch=1,EE,0037EBD8,word,4af103bc"
-        "patch=1,EE,0037EBF0,word,4a800460"
-        "patch=1,EE,0037EBF4,word,4b7103bc"
+        author=refraction
+        // COP2 Rearrangement. Fixes broken collisions.
+        patch=1,EE,0037EBD4,word,4b000460
+        patch=1,EE,0037EBD8,word,4af103bc
+        patch=1,EE,0037EBF0,word,4a800460
+        patch=1,EE,0037EBF4,word,4b7103bc
 SLES-53897:
   name: "Dreamworks Vecinos Invasores"
   region: "PAL-S"
@@ -13454,9 +13454,9 @@ SLES-53908:
   compat: 5
   patches:
     - content: |-
-        "comment=- This gamedisc supports multiple languages."
-        "comment=- Language selection is done through the BIOS configuration."
-        "comment=- Implementation requires Full boot - 'Boot CDVD (full)'."
+        comment=- This gamedisc supports multiple languages.
+        comment=- Language selection is done through the BIOS configuration.
+        comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SLES-53909:
   name: "Full Spectrum Warrior - Ten Hammers"
   region: "PAL-G"
@@ -13580,10 +13580,10 @@ SLES-53984:
   patches:
     - crc: "2EC49E65"
       content: |-
-        "comment=Patch by kozarovv"
-        "// Intro screen freeze fix."
-        "patch=1,EE,002FF3F0,word,27BDFEE0"
-        "patch=1,EE,002FF42C,word,27BD0120"
+        comment=Patch by kozarovv
+        // Intro screen freeze fix.
+        patch=1,EE,002FF3F0,word,27BDFEE0
+        patch=1,EE,002FF42C,word,27BD0120
 SLES-53987:
   name: "Over the Hedge"
   region: "PAL-S"
@@ -13652,8 +13652,8 @@ SLES-54021:
   patches:
     - crc: "b02c81e5"
       content: |-
-        "// Fixes random hangs when going ingame."
-        "patch=1,EE,001128e0,word,00000000"
+        // Fixes random hangs when going ingame.
+        patch=1,EE,001128e0,word,00000000
 SLES-54023:
   name: "Bible Game, The"
   region: "PAL-M3"
@@ -13669,12 +13669,12 @@ SLES-54030:
   patches:
     - crc: "CAA04879"
       content: |-
-        "author=refraction"
-        "// COP2 Rearrangement. Fixes broken collisions."
-        "patch=1,EE,0037EB54,word,4b000460"
-        "patch=1,EE,0037EB58,word,4af103bc"
-        "patch=1,EE,0037EB70,word,4a800460"
-        "patch=1,EE,0037EB74,word,4b7103bc"
+        author=refraction
+        // COP2 Rearrangement. Fixes broken collisions.
+        patch=1,EE,0037EB54,word,4b000460
+        patch=1,EE,0037EB58,word,4af103bc
+        patch=1,EE,0037EB70,word,4a800460
+        patch=1,EE,0037EB74,word,4b7103bc
 SLES-54031:
   name: "Da Vinci Code, The"
   region: "PAL-M5"
@@ -13955,9 +13955,9 @@ SLES-54185:
   patches:
     - crc: "33F7D21A"
       content: |-
-        "comment=- This gamedisc supports multiple languages."
-        "comment=- Language selection is done through the BIOS configuration."
-        "comment=- Implementation requires Full boot - 'Boot CDVD (full)'."
+        comment=- This gamedisc supports multiple languages.
+        comment=- Language selection is done through the BIOS configuration.
+        comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SLES-54186:
   name: "Devil May Cry 3 - Dante's Awakening [Special Edition]"
   region: "PAL-M5"
@@ -14232,10 +14232,10 @@ SLES-54349:
   patches:
     - crc: "E7F7B6BD"
       content: |-
-        "author=kozarovv"
-        "// Use iaddiu instead of FSAND."
-        "patch=1,EE,00639ef0,word,10050208"
-        "patch=1,EE,0063a068,word,10080208"
+        author=kozarovv
+        // Use iaddiu instead of FSAND.
+        patch=1,EE,00639ef0,word,10050208
+        patch=1,EE,0063a068,word,10080208
 SLES-54350:
   name: "Superman Returns"
   region: "PAL-G"
@@ -14245,12 +14245,12 @@ SLES-54350:
   patches:
     - crc: "EDF0A0A7"
       content: |-
-        "author=kozarovv"
-        "// Fix sps and various graphical issues by Using iaddiu instead of FSAND"
-        "// require preload frame data and crc hack atleast minimum for GSDX HW"
-        "patch=1,EE,00639Ef0,word,10050208"
-        "patch=1,EE,0063a068,word,10080208"
-        "patch=1,EE,0063D488,word,10020208"
+        author=kozarovv
+        // Fix sps and various graphical issues by Using iaddiu instead of FSAND
+        // require preload frame data and crc hack atleast minimum for GSDX HW
+        patch=1,EE,00639Ef0,word,10050208
+        patch=1,EE,0063a068,word,10080208
+        patch=1,EE,0063D488,word,10020208
 SLES-54354:
   name: "Final Fantasy XII"
   region: "PAL-E"
@@ -14274,9 +14274,9 @@ SLES-54359:
   patches:
     - crc: "0EE5646B"
       content: |-
-        "comment=Patch by kozarovv and refraction"
-        "// Fixes HUD and menu display."
-        "patch=1,EE,001849b8,word,00000000"
+        comment=Patch by kozarovv and refraction
+        // Fixes HUD and menu display.
+        patch=1,EE,001849b8,word,00000000
 SLES-54360:
   name: "Pro Evolution Soccer 6"
   region: "PAL-F"
@@ -14589,7 +14589,7 @@ SLES-54549:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - FPUNegDivHack # Fixes black fade effects and some overlays texts in the menus.
+    - FpuNegDivHack # Fixes black fade effects and some overlays texts in the menus.
 SLES-54551:
   name: "Premier Manager 2006-2007"
   region: "PAL-G"
@@ -14612,18 +14612,18 @@ SLES-54559:
   patches:
     - crc: "d6a0a3ef"
       content: |-
-        "author=Prafull"
-        "// Fix character falling through floor."
-        "// Fixed by rearranging COP2 instructions."
-        "// Bad syncro between COP2 and VU0 (bottleneck for PCSX2)."
-        "patch=1,EE,001b1d1c,word,48428800"
-        "patch=1,EE,001b1d20,word,4be228ec"
-        "patch=1,EE,001b1d24,word,4a0002ff"
-        "patch=1,EE,001b1d28,word,4a0002ff"
-        "patch=1,EE,001de5c0,word,48428800"
-        "patch=1,EE,001de5c4,word,4be3696c"
-        "patch=1,EE,001de5c8,word,4a0002ff"
-        "patch=1,EE,001de5cc,word,4a0002ff"
+        author=Prafull
+        // Fix character falling through floor.
+        // Fixed by rearranging COP2 instructions.
+        // Bad syncro between COP2 and VU0 (bottleneck for PCSX2).
+        patch=1,EE,001b1d1c,word,48428800
+        patch=1,EE,001b1d20,word,4be228ec
+        patch=1,EE,001b1d24,word,4a0002ff
+        patch=1,EE,001b1d28,word,4a0002ff
+        patch=1,EE,001de5c0,word,48428800
+        patch=1,EE,001de5c4,word,4be3696c
+        patch=1,EE,001de5c8,word,4a0002ff
+        patch=1,EE,001de5cc,word,4a0002ff
 SLES-54560:
   name: "Alpine Ski Racing 2007"
   region: "PAL-Unk"
@@ -14641,7 +14641,7 @@ SLES-54569:
   region: "PAL-E"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes blank textures
+    - XGKickHack # Fixes blank textures
 SLES-54579:
   name: "Flintstones, The - Bedrock Racing"
   region: "PAL-Unk"
@@ -14773,22 +14773,22 @@ SLES-54658:
   patches:
     - crc: "87109051"
       content: |-
-        "author=kozarovv"
-        "// Fix for graphical issues, QTE events, subtitles, health bar."
-        "// Patch replace values passed to FPU to workaround x86 rounding issues."
-        "patch=1,EE,0017cb84,word,3464fff0"
-        "patch=1,EE,0017cb90,word,3463fffc"
+        author=kozarovv
+        // Fix for graphical issues, QTE events, subtitles, health bar.
+        // Patch replace values passed to FPU to workaround x86 rounding issues.
+        patch=1,EE,0017cb84,word,3464fff0
+        patch=1,EE,0017cb90,word,3463fffc
 SLES-54659:
   name: "Star Wars - The Force Unleashed"
   region: "PAL-M4"
   patches:
     - crc: "DAF2145C"
       content: |-
-        "author=kozarovv"
-        "// Fix for graphical issues, QTE events, subtitles, health bar."
-        "// Patch replace values passed to FPU to workaround x86 rounding issues."
-        "patch=1,EE,0017cb84,word,3464fff0"
-        "patch=1,EE,0017cb90,word,3463fffc"
+        author=kozarovv
+        // Fix for graphical issues, QTE events, subtitles, health bar.
+        // Patch replace values passed to FPU to workaround x86 rounding issues.
+        patch=1,EE,0017cb84,word,3464fff0
+        patch=1,EE,0017cb90,word,3463fffc
 SLES-54663:
   name: "Jackass - The Game"
   region: "PAL-M5"
@@ -14806,9 +14806,9 @@ SLES-54674:
   compat: 5
   patches:
     - content: |-
-        "comment=- This gamedisc supports multiple languages."
-        "comment=- Language selection is done through the BIOS configuration."
-        "comment=- Implementation requires Full boot - 'Boot CDVD (full)'."
+        comment=- This gamedisc supports multiple languages.
+        comment=- Language selection is done through the BIOS configuration.
+        comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SLES-54675:
   name: "Street Warrior"
   region: "PAL-E"
@@ -14869,7 +14869,7 @@ SLES-54727:
   name: "Naruto - Uzumaki Chronicles"
   region: "PAL-M5"
   gameFixes:
-    - OPHFLagHack
+    - OPHFlagHack
 SLES-54731:
   name: "King of Clubs"
   region: "PAL-M5"
@@ -14996,9 +14996,9 @@ SLES-54815:
   patches:
     - crc: "8AE9536D"
       content: |-
-        "comment=Patch by kozarovv and refraction"
-        "// Fixes HUD and menu display."
-        "patch=1,EE,00173c38,word,00000000"
+        comment=Patch by kozarovv and refraction
+        // Fixes HUD and menu display.
+        patch=1,EE,00173c38,word,00000000
 SLES-54819:
   name: "Manhunt 2"
   region: "PAL-M5"
@@ -15343,7 +15343,7 @@ SLES-55090:
   name: "Naruto - Uzumaki Chronicles 2"
   region: "PAL-M5"
   gameFixes:
-    - OPHFLagHack
+    - OPHFlagHack
 SLES-55105:
   name: "UEFA Euro 2008 - Austria-Switzerland"
   region: "PAL-M5"
@@ -15686,9 +15686,9 @@ SLES-55442:
   compat: 5
   patches:
     - content: |-
-        "comment=- This gamedisc supports multiple languages."
-        "comment=- Language selection is done through the BIOS configuration."
-        "comment=- Implementation requires Full boot - 'Boot CDVD (full)'."
+        comment=- This gamedisc supports multiple languages.
+        comment=- Language selection is done through the BIOS configuration.
+        comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SLES-55443:
   name: "Mana Khemia - Alchemists of Al-Revis"
   region: "PAL-E"
@@ -16035,8 +16035,8 @@ SLES-82038:
   patches:
     - crc: "812C5A96"
       content: |-
-        "comment=Patch by Shadow Lady"
-        "patch=0,EE,00104170,word,00000000"
+        comment=Patch by Shadow Lady
+        patch=0,EE,00104170,word,00000000
 SLES-82039:
   name: "Onimusha - Dawn of Dreams [Disc2]"
   region: "PAL-M5"
@@ -16046,8 +16046,8 @@ SLES-82039:
   patches:
     - crc: "812C5A96"
       content: |-
-        "comment=Patch by Shadow Lady"
-        "patch=0,EE,00104170,word,00000000"
+        comment=Patch by Shadow Lady
+        patch=0,EE,00104170,word,00000000
 SLES-82042:
   name: "Metal Gear Solid 3 - Subsistence [Disc1of3]"
   region: "PAL-E-F"
@@ -16115,7 +16115,7 @@ SLKA-15007:
   region: "NTSC-K"
   compat: 5
   gameFixes:
-    - OPHFLagHack
+    - OPHFlagHack
 SLKA-15008:
   name: "Choro Q HG2"
   region: "NTSC-E-F-G"
@@ -16124,7 +16124,7 @@ SLKA-15021:
   region: "NTSC-K"
   compat: 5
   gameFixes:
-    - OPHFLagHack
+    - OPHFlagHack
 SLKA-15032:
   name: "Gradius V"
   region: "NTSC-K"
@@ -16163,10 +16163,10 @@ SLKA-25030:
   patches:
     - crc: "43E396A7"
       content: |-
-        "comment=Patch by Prafull and Arapapa"
-        "// Fixes freeze during entrances."
-        "patch=1,EE,0010b894,word,00000000"
-        "patch=1,EE,0010b7ac,word,00000000"
+        comment=Patch by Prafull and Arapapa
+        // Fixes freeze during entrances.
+        patch=1,EE,0010b894,word,00000000
+        patch=1,EE,0010b7ac,word,00000000
 SLKA-25032:
   name: "Enter the Matrix"
   region: "NTSC-K"
@@ -16606,7 +16606,7 @@ SLKA-25313:
   region: "NTSC-K"
   compat: 5
   gameFixes:
-    - OPHFLagHack
+    - OPHFlagHack
 SLKA-25314:
   name: "Kidou Senshi Gundam SEED: Rengou vs. Z.A.F.T."
   region: "NTSC-K"
@@ -16688,7 +16688,7 @@ SLKA-25366:
   region: "NTSC-K"
   compat: 5
   gameFixes:
-    - OPHFLagHack
+    - OPHFlagHack
 SLKA-25374:
   name: "FIFA Street 2"
   region: "NTSC-K"
@@ -16872,10 +16872,10 @@ SLPM-55191:
   patches:
     - crc: "9F9DCD8A"
       content: |-
-        "author=PSI, kozarovv"
-        "// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled."
-        "// This patch skips over the stack code, allowing the game to boot."
-        "patch=1,EE,001B4828,word,10000008"
+        author=PSI, kozarovv
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,001B4828,word,10000008
 SLPM-55207:
   name: "Hakuouki - Zuisouroku [Limited Edition]"
   region: "NTSC-J"
@@ -17399,7 +17399,7 @@ SLPM-62203:
   name: "Dog of Bay"
   region: "NTSC-J"
   gameFixes:
-    - XgKickHack # Fixes corrupted textures.
+    - XGKickHack # Fixes corrupted textures.
 SLPM-62204:
   name: "LEGO Racers 2"
   region: "NTSC-J"
@@ -17487,7 +17487,7 @@ SLPM-62236:
   region: "NTSC-J"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes black models on certain games in World Tour.
+    - XGKickHack # Fixes black models on certain games in World Tour.
 SLPM-62237:
   name: "Gakuen Toshi Vara Noir [Limited Edition]"
   region: "NTSC-J"
@@ -17577,7 +17577,7 @@ SLPM-62271:
   name: "Simple 2000 Series Vol.20 - The Dungeon RPG"
   region: "NTSC-J"
   gameFixes:
-    - XgKickHack # Fixes missing blue lines on the characters in dark areas.
+    - XGKickHack # Fixes missing blue lines on the characters in dark areas.
 SLPM-62272:
   name: "Simple 2000 Series Vol.18 - The Party Sugoroku"
   region: "NTSC-J"
@@ -18196,11 +18196,11 @@ SLPM-62524:
   patches:
     - crc: "85E92C92"
       content: |-
-        "// Skip videos (custom)."
-        "patch=0,EE,001b4cd8,word,00000000"
-        "// Skip videos (custom)."
-        "patch=0,EE,001b4c90,word,03e00008"
-        "patch=0,EE,001b4c94,word,00000000"
+        // Skip videos (custom).
+        patch=0,EE,001b4cd8,word,00000000
+        // Skip videos (custom).
+        patch=0,EE,001b4c90,word,03e00008
+        patch=0,EE,001b4c94,word,00000000
 SLPM-62525:
   name: "Simple 2000 Series Vol.61 - The O-Ane-Chan-Bara"
   region: "NTSC-J"
@@ -18484,7 +18484,7 @@ SLPM-62623:
   region: "NTSC-J"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes chocolate coloured characters.
+    - XGKickHack # Fixes chocolate coloured characters.
 SLPM-62624:
   name: "Indoor Helicopter Adventure 2"
   region: "NTSC-J"
@@ -18740,9 +18740,9 @@ SLPM-62718:
   patches:
     - crc: "8D984276"
       content: |-
-        "// By PSI"
-        "comment=Stop screen shaking (game switches to Progressive)"
-        "patch=1,EE,20158558,extended,30420000"
+        // By PSI
+        comment=Stop screen shaking (game switches to Progressive)
+        patch=1,EE,20158558,extended,30420000
 SLPM-62719:
   name: "Nobunaga no Yabou - Tenka Souyo"
   region: "NTSC-J"
@@ -18982,12 +18982,12 @@ SLPM-65015:
   patches:
     - crc: "7C012435"
       content: |-
-        "comment=COP2 flag instance patch by refraction"
-        "// A mac flag check just after a vsub which gets in the way, rearranging."
-        "patch=0,EE,00170F20,word,48438800"
-        "patch=0,EE,00170F24,word,4BE521AC"
-        "patch=0,EE,00170F28,word,30848000"
-        "patch=0,EE,00170F2C,word,4BE72B3C"
+        comment=COP2 flag instance patch by refraction
+        // A mac flag check just after a vsub which gets in the way, rearranging.
+        patch=0,EE,00170F20,word,48438800
+        patch=0,EE,00170F24,word,4BE521AC
+        patch=0,EE,00170F28,word,30848000
+        patch=0,EE,00170F2C,word,4BE72B3C
 SLPM-65016:
   name: "Love Songs [Limited Edition]"
   region: "NTSC-J"
@@ -19136,10 +19136,10 @@ SLPM-65071:
   patches:
     - crc: "8449ffe1"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fixes the hang at start of chapter 2."
-        "patch=1,EE,002a140c,word,00000000"
-        "patch=1,EE,002a120c,word,00000000"
+        comment=Patch by Prafull
+        // Fixes the hang at start of chapter 2.
+        patch=1,EE,002a140c,word,00000000
+        patch=1,EE,002a120c,word,00000000
 SLPM-65072:
   name: "ESPN Winter X-Games Snowboarding 2002"
   region: "NTSC-J"
@@ -19396,10 +19396,10 @@ SLPM-65163:
   patches:
     - crc: "397F3835"
       content: |-
-        "comment=COP2 flag instance patch by refraction"
-        "// A mac flag check after running another vsub op which is irrelivant, rearranging"
-        "patch=0,EE,00276170,word,48438800"
-        "patch=0,EE,0027617c,word,4BE521AC"
+        comment=COP2 flag instance patch by refraction
+        // A mac flag check after running another vsub op which is irrelivant, rearranging
+        patch=0,EE,00276170,word,48438800
+        patch=0,EE,0027617c,word,4BE521AC
 SLPM-65164:
   name: "Project Minerva [Limited Edition]"
   region: "NTSC-J"
@@ -19578,8 +19578,8 @@ SLPM-65232:
   compat: 5
   patches:
     - content: |-
-        "// 08995DEE"
-        "comment=- This disc has the same CRC as SLUS-20484, the NTSC-U disc."
+        // 08995DEE
+        comment=- This disc has the same CRC as SLUS-20484, the NTSC-U disc.
 SLPM-65233:
   name: "Devil May Cry 2 [Lucia Disc]"
   region: "NTSC-J"
@@ -20594,13 +20594,13 @@ SLPM-65583:
   region: "NTSC-J"
   compat: 4
   gameFixes:
-    - XgKickHack
+    - XGKickHack
   patches:
     - crc: "C4467D30"
       content: |-
-        "comment=Patch by Nachbrenner"
-        "// Skip sceIpuSync."
-        "patch=1,EE,0027c808,word,03e00008"
+        comment=Patch by Nachbrenner
+        // Skip sceIpuSync.
+        patch=1,EE,0027c808,word,03e00008
 SLPM-65585:
   name: "Princess Holiday"
   region: "NTSC-J"
@@ -20668,9 +20668,9 @@ SLPM-65604:
   patches:
     - crc: "9BDBA170"
       content: |-
-        "comment=Patch by Shadow Lady"
-        "// IPU menu hang fix..."
-        "patch=0,EE,00115c00,word,03e00008"
+        comment=Patch by Shadow Lady
+        // IPU menu hang fix...
+        patch=0,EE,00115c00,word,03e00008
 SLPM-65607:
   name: "3LDK - Shiawase ni Narouyo [Limited Edition]"
   region: "NTSC-J"
@@ -21281,7 +21281,7 @@ SLPM-65801:
   region: "NTSC-J"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes bad geometry.
+    - XGKickHack # Fixes bad geometry.
     - VU0KickstartHack # Fixes loading hang.
 SLPM-65802:
   name: "Def Jam - Vendetta [EA Best Hits]"
@@ -22420,10 +22420,10 @@ SLPM-66186:
   patches:
     - crc: "169099FC"
       content: |-
-        "author=PSI, kozarovv"
-        "// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled."
-        "// This patch skips over the stack code, allowing the game to boot."
-        "patch=1,EE,00156608,word,10000003"
+        author=PSI, kozarovv
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,00156608,word,10000003
 SLPM-66187:
   name: "Exciting Pro Wrestling 6 - SmackDown vs. RAW [Yuke's the Best]"
   region: "NTSC-J"
@@ -22704,8 +22704,8 @@ SLPM-66275:
   patches:
     - crc: "BD17248E"
       content: |-
-        "comment=Patch by Shadow Lady"
-        "patch=0,EE,00104170,word,00000000"
+        comment=Patch by Shadow Lady
+        patch=0,EE,00104170,word,00000000
 SLPM-66276:
   name: "Shin Onimusha - Dawn of Dreams [Disc2of2]"
   region: "NTSC-J"
@@ -22715,8 +22715,8 @@ SLPM-66276:
   patches:
     - crc: "BD17248E"
       content: |-
-        "comment=Patch by Shadow Lady"
-        "patch=0,EE,00104170,word,00000000"
+        comment=Patch by Shadow Lady
+        patch=0,EE,00104170,word,00000000
 SLPM-66277:
   name: "Juiced"
   region: "NTSC-J"
@@ -22881,7 +22881,7 @@ SLPM-66329:
   region: "NTSC-J"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes rendering problems.
+    - XGKickHack # Fixes rendering problems.
 SLPM-66330:
   name: "Tokimeki Memorial - Girl's Side - 2nd Kiss"
   region: "NTSC-J"
@@ -22952,12 +22952,12 @@ SLPM-66354:
   patches:
     - crc: "B3A9F9ED"
       content: |-
-        "author=refraction"
-        "// COP2 Rearrangement. Fixes broken collisions."
-        "patch=1,EE,0037ECD4,word,4b000460"
-        "patch=1,EE,0037ECD8,word,4af103bc"
-        "patch=1,EE,0037ECF0,word,4a800460"
-        "patch=1,EE,0037ECF4,word,4b7103bc"
+        author=refraction
+        // COP2 Rearrangement. Fixes broken collisions.
+        patch=1,EE,0037ECD4,word,4b000460
+        patch=1,EE,0037ECD8,word,4af103bc
+        patch=1,EE,0037ECF0,word,4a800460
+        patch=1,EE,0037ECF4,word,4b7103bc
 SLPM-66356:
   name: "Baldr Force EXE [Alchemist Best]"
   region: "NTSC-J"
@@ -23377,9 +23377,9 @@ SLPM-66497:
   patches:
     - crc: "33DB9037"
       content: |-
-        "// Intro screen freeze fix."
-        "patch=1,EE,002e91e8,word,27bdfee0 //27bdff70"
-        "patch=1,EE,002e9224,word,27bd0120 //27bd0090"
+        // Intro screen freeze fix.
+        patch=1,EE,002e91e8,word,27bdfee0 //27bdff70
+        patch=1,EE,002e9224,word,27bd0120 //27bd0090
 SLPM-66498:
   name: "TOCA Race Driver 2 - Ultimate Racing Simulator"
   region: "NTSC-J"
@@ -23622,10 +23622,10 @@ SLPM-66582:
   patches:
     - crc: "9466CBA1"
       content: |-
-        "author=PSI, kozarovv"
-        "// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled."
-        "// This patch skips over the stack code, allowing the game to boot."
-        "patch=1,EE,0014A148,word,10000003"
+        author=PSI, kozarovv
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,0014A148,word,10000003
 SLPM-66583:
   name: "Kohitsuji Hokaku Keakaku! Sweet Boys Life"
   region: "NTSC-J"
@@ -24140,10 +24140,10 @@ SLPM-66738:
   patches:
     - crc: "3BE2C709"
       content: |-
-        "author=PSI, Prafull"
-        "// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled."
-        "// This patch skips over the stack code, allowing the game to boot."
-        "patch=1,EE,00189e88,word,10000003"
+        author=PSI, Prafull
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,00189e88,word,10000003
 SLPM-66739:
   name: "Burnout Dominator"
   region: "NTSC-J"
@@ -24966,12 +24966,12 @@ SLPM-67531:
   patches:
     - crc: "46CFF455"
       content: |-
-        "comment=COP2 flag instance patch by refraction"
-        "// A mac flag check just after a vsub which gets in the way, rearranging."
-        "patch=0,EE,00170F20,word,48438800"
-        "patch=0,EE,00170F24,word,4BE521AC"
-        "patch=0,EE,00170F28,word,30848000"
-        "patch=0,EE,00170F2C,word,4BE72B3C"
+        comment=COP2 flag instance patch by refraction
+        // A mac flag check just after a vsub which gets in the way, rearranging.
+        patch=0,EE,00170F20,word,48438800
+        patch=0,EE,00170F24,word,4BE521AC
+        patch=0,EE,00170F28,word,30848000
+        patch=0,EE,00170F2C,word,4BE72B3C
 SLPM-67535:
   name: "Memories Of"
   region: "NTSC-J-K"
@@ -25403,10 +25403,10 @@ SLPS-20042:
   patches:
     - crc: "32F1FA12"
       content: |-
-        "author=Prafull"
-        "// Fixes IPU issues causing a hang at loading menu."
-        "patch=1,EE,00251f94,word,00000000 //0440fffa"
-        "patch=1,EE,0020e7a4,word,00000000 //1440fffa"
+        author=Prafull
+        // Fixes IPU issues causing a hang at loading menu.
+        patch=1,EE,00251f94,word,00000000 //0440fffa
+        patch=1,EE,0020e7a4,word,00000000 //1440fffa
 SLPS-20043:
   name: "Lake Masters Fishing EX"
   region: "NTSC-J"
@@ -25442,7 +25442,7 @@ SLPS-20057:
   name: "Dog of Bay"
   region: "NTSC-J"
   gameFixes:
-    - XgKickHack # Fixes corrupted textures.
+    - XGKickHack # Fixes corrupted textures.
 SLPS-20058:
   name: "Kengo"
   region: "NTSC-J"
@@ -25572,7 +25572,7 @@ SLPS-20120:
   name: "Formula One 2001"
   region: "NTSC-J"
   gameFixes:
-    - XgKickHack
+    - XGKickHack
 SLPS-20121:
   name: "Kanon"
   region: "NTSC-J"
@@ -25743,9 +25743,9 @@ SLPS-20273:
   patches:
     - crc: "34fb1fb7"
       content: |-
-        "author=Prafull"
-        "// Fixes game hanging before going ingame."
-        "patch=1,EE,001023d0,word,00000000"
+        author=Prafull
+        // Fixes game hanging before going ingame.
+        patch=1,EE,001023d0,word,00000000
 SLPS-20279:
   name: "Hissatsu Pachinko Station v7 - Tensei Bakabon 2"
   region: "NTSC-J"
@@ -26092,7 +26092,7 @@ SLPS-20430:
   region: "NTSC-J"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes cell shade like effect.
+    - XGKickHack # Fixes cell shade like effect.
 SLPS-20431:
   name: "Simple 2000 Series Vol.86 - The Menkyou Shutoku Simulation"
   region: "NTSC-J"
@@ -26306,23 +26306,23 @@ SLPS-25002:
   patches:
     - crc: "7894BA09"
       content: |-
-        "// Change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function."
-        "patch=0,EE,00290408,word,24060000"
-        "//patch=0,EE,0029055C,word,10000013"
-        "// I tried to write a comment explaining this then realised the futility."
-        "//patch=0,EE,0028FE78,word,FFB300E0"
-        "//patch=0,EE,0028FE7C,word,3C130058"
-        "//patch=0,EE,0028FE80,word,0C0CD678"
-        "//patch=0,EE,0028FE84,word,266457C0"
-        "//patch=0,EE,0028FE88,word,1440FFFD"
-        "//patch=0,EE,0028FE8C,word,32224000"
-        "//patch=0,EE,0028FE90,word,1040000E"
-        "//patch=0,EE,0028FE94,word,FFB400F0"
-        "//patch=0,EE,0028FE98,word,3402C020"
-        "//patch=0,EE,0028FE9C,word,322BFFF0"
-        "//patch=0,EE,0028FEA0,word,1162000B"
-        "//patch=0,EE,0028FEA4,word,3C140058"
-        "//patch=0,EE,0028FEA8,word,00000000"
+        // Change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function.
+        patch=0,EE,00290408,word,24060000
+        //patch=0,EE,0029055C,word,10000013
+        // I tried to write a comment explaining this then realised the futility.
+        //patch=0,EE,0028FE78,word,FFB300E0
+        //patch=0,EE,0028FE7C,word,3C130058
+        //patch=0,EE,0028FE80,word,0C0CD678
+        //patch=0,EE,0028FE84,word,266457C0
+        //patch=0,EE,0028FE88,word,1440FFFD
+        //patch=0,EE,0028FE8C,word,32224000
+        //patch=0,EE,0028FE90,word,1040000E
+        //patch=0,EE,0028FE94,word,FFB400F0
+        //patch=0,EE,0028FE98,word,3402C020
+        //patch=0,EE,0028FE9C,word,322BFFF0
+        //patch=0,EE,0028FEA0,word,1162000B
+        //patch=0,EE,0028FEA4,word,3C140058
+        //patch=0,EE,0028FEA8,word,00000000
 SLPS-25003:
   name: "Evergrace"
   region: "NTSC-J"
@@ -26372,13 +26372,13 @@ SLPS-25015:
   patches:
     - crc: "6F9C4D7C"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fixes VSync issues."
-        "patch=1,EE,001a341c,word,03e00008"
-        "// Avoid hang at first loading screen."
-        "patch=1,EE,001a33f8,word,00000000"
-        "// Skips movies."
-        "patch=1,EE,001adc38,word,24020001"
+        comment=Patch by Prafull
+        // Fixes VSync issues.
+        patch=1,EE,001a341c,word,03e00008
+        // Avoid hang at first loading screen.
+        patch=1,EE,001a33f8,word,00000000
+        // Skips movies.
+        patch=1,EE,001adc38,word,24020001
 SLPS-25016:
   name: "Neo Atlas 3"
   region: "NTSC-J"
@@ -26410,13 +26410,13 @@ SLPS-25026:
   patches:
     - crc: "82C02240"
       content: |-
-        "comment=Patch by Prafull and kozarovv"
-        "// Fixes game hanging on boot."
-        "patch=1,EE,002B666C,word,24060000"
-        "// Fixes sound."
-        "patch=1,IOP,001D77E4,word,27C40010"
-        "patch=1,IOP,001D77E8,word,0C0032B7"
-        "patch=1,IOP,001D77EC,word,00000000"
+        comment=Patch by Prafull and kozarovv
+        // Fixes game hanging on boot.
+        patch=1,EE,002B666C,word,24060000
+        // Fixes sound.
+        patch=1,IOP,001D77E4,word,27C40010
+        patch=1,IOP,001D77E8,word,0C0032B7
+        patch=1,IOP,001D77EC,word,00000000
 SLPS-25028:
   name: "Shutokou Battle 0"
   region: "NTSC-J"
@@ -26521,10 +26521,10 @@ SLPS-25057:
   patches:
     - crc: "04C3765E"
       content: |-
-        "comment=Patch by Wgarvin"
-        "// Fixes (black voids) central tower level loading."
-        "// Issue: Some doors leading to some areas appeared as black voids that you can walk in to."
-        "patch=1,EE,001BE37C,word,46150036"
+        comment=Patch by Wgarvin
+        // Fixes (black voids) central tower level loading.
+        // Issue: Some doors leading to some areas appeared as black voids that you can walk in to.
+        patch=1,EE,001BE37C,word,46150036
 SLPS-25059:
   name: "G-Breaker - Legend of Cloudia"
   region: "NTSC-J"
@@ -26565,13 +26565,13 @@ SLPS-25074:
   compat: 5
   patches:
     - content: |-
-        "// 9883194E"
-        "comment=- At least when using GSdx in D3D11 Hardware mode, and due to missing"
-        "comment=-  rendering-fixes, black stripes can show up on ghosts,"
-        "comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching."
-        "comment=- This can be fixed by having 'Enable HW Hacks' set"
-        "comment=-  in the GSdx configuration dialog, and having 'Align Sprite' set"
-        "comment=-  and 'Sprite' set to Half in 'Advanced Settings and Hacks'."
+        // 9883194E
+        comment=- At least when using GSdx in D3D11 Hardware mode, and due to missing
+        comment=-  rendering-fixes, black stripes can show up on ghosts,
+        comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
+        comment=- This can be fixed by having 'Enable HW Hacks' set
+        comment=-  in the GSdx configuration dialog, and having 'Align Sprite' set
+        comment=-  and 'Sprite' set to Half in 'Advanced Settings and Hacks'.
 SLPS-25075:
   name: "Sidewinder F"
   region: "NTSC-J"
@@ -26634,11 +26634,11 @@ SLPS-25100:
   compat: 5
   patches:
     - content: |-
-        "// CRC 26173F9A, 7c359c94"
-        "comment=Patches by Shadow Lady"
-        "// IPU BUSY! fix..."
-        "patch=0,EE,00291764,word,24200001"
-        "patch=0,EE,00291964,word,00000000"
+        // CRC 26173F9A, 7c359c94
+        comment=Patches by Shadow Lady
+        // IPU BUSY! fix...
+        patch=0,EE,00291764,word,24200001
+        patch=0,EE,00291964,word,00000000
 SLPS-25102:
   name: "Project Arms"
   region: "NTSC-J"
@@ -27605,11 +27605,11 @@ SLPS-25418:
   patches:
     - crc: "86089F31"
       content: |-
-        "comment=Rearranging COP2 instructions that use old results"
-        "patch=0,EE,001A3B6C,word,48498800"
-        "patch=0,EE,001A3B70,word,4B00682C"
-        "patch=0,EE,001A3B7C,word,484A8800"
-        "patch=0,EE,001A3B80,word,4B0C682C"
+        comment=Rearranging COP2 instructions that use old results
+        patch=0,EE,001A3B6C,word,48498800
+        patch=0,EE,001A3B70,word,4B00682C
+        patch=0,EE,001A3B7C,word,484A8800
+        patch=0,EE,001A3B80,word,4B0C682C
 SLPS-25419:
   name: "Mobile Suit Gundam - Gundam vs. Z-Gundam"
   region: "NTSC-J"
@@ -27619,9 +27619,9 @@ SLPS-25421:
   patches:
     - crc: "D2F0DC73"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fix hang at shipping shed."
-        "patch=1,EE,002bd36c,word,00000000"
+        comment=Patch by Prafull
+        // Fix hang at shipping shed.
+        patch=1,EE,002bd36c,word,00000000
 SLPS-25422:
   name: "Death by Degrees - Tekken - Nina Williams"
   region: "NTSC-J"
@@ -27990,7 +27990,7 @@ SLPS-25542:
   region: "NTSC-J"
   compat: 5
   gameFixes:
-    - OPHFLagHack
+    - OPHFlagHack
 SLPS-25543:
   name: "Futakoi - Koi to Mizugi no Survival"
   region: "NTSC-J"
@@ -28262,11 +28262,11 @@ SLPS-25629:
   patches:
     - crc: "A04B52DB"
       content: |-
-        "// Fixes collision/missle hit issues."
-        "patch=0,EE,00131e84,word,48498800"
-        "patch=0,EE,00131e88,word,4B00682C"
-        "patch=0,EE,00131e94,word,484A8800"
-        "patch=0,EE,00131e98,word,4B0C682C"
+        // Fixes collision/missle hit issues.
+        patch=0,EE,00131e84,word,48498800
+        patch=0,EE,00131e88,word,4B00682C
+        patch=0,EE,00131e94,word,484A8800
+        patch=0,EE,00131e98,word,4B0C682C
 SLPS-25630:
   name: "Pro Yakyuu Netsu Star 2006"
   region: "NTSC-J"
@@ -28572,7 +28572,7 @@ SLPS-25710:
   region: "NTSC-J"
   compat: 4
   gameFixes:
-    - XgKickHack # Fixes grey fighters problem.
+    - XGKickHack # Fixes grey fighters problem.
 SLPS-25711:
   name: "Kashimashi! Girl Meets Girl [Best Collection]"
   region: "NTSC-J"
@@ -28586,7 +28586,7 @@ SLPS-25714:
   name: "Naruto - Konoha Spirits"
   region: "NTSC-J"
   gameFixes:
-    - OPHFLagHack
+    - OPHFlagHack
 SLPS-25715:
   name: "Tales of Destiny"
   region: "NTSC-J"
@@ -29097,11 +29097,11 @@ SLPS-25888:
   patches:
     - crc: "CC9BFDE3"
       content: |-
-        "author=kozarovv"
-        "// Fix for graphical issues, QTE events, subtitles, health bar."
-        "// Patch replace values passed to FPU to workaround x86 rounding issues."
-        "patch=1,EE,0017d454,word,3464fff0"
-        "patch=1,EE,0017d460,word,3463fffc"
+        author=kozarovv
+        // Fix for graphical issues, QTE events, subtitles, health bar.
+        // Patch replace values passed to FPU to workaround x86 rounding issues.
+        patch=1,EE,0017d454,word,3464fff0
+        patch=1,EE,0017d460,word,3463fffc
 SLPS-25889:
   name: "Guitar Hero - Aerosmith"
   region: "NTSC-J"
@@ -29193,12 +29193,12 @@ SLPS-29001:
   patches:
     - crc: "A3D63039"
       content: |-
-        "// Reduces JPEG quality to its minimum for save file thumbnails. This prevents"
-        "// the game from calling its own exit function, which was strangely its safety"
-        "// mechanism for when a captured thumbnail exceeded 4 KB in size."
-        "comment=Save Point Crash Prevention"
-        "author=pandubz, PSI, turtleli"
-        "patch=1,EE,20285f48,extended,24040000"
+        // Reduces JPEG quality to its minimum for save file thumbnails. This prevents
+        // the game from calling its own exit function, which was strangely its safety
+        // mechanism for when a captured thumbnail exceeded 4 KB in size.
+        comment=Save Point Crash Prevention
+        author=pandubz, PSI, turtleli
+        patch=1,EE,20285f48,extended,24040000
 SLPS-29002:
   name: "Xenosaga Episode 1 - Der Wille zur Macht"
   region: "NTSC-J"
@@ -29206,12 +29206,12 @@ SLPS-29002:
   patches:
     - crc: "A3D63039"
       content: |-
-        "// Reduces JPEG quality to its minimum for save file thumbnails. This prevents"
-        "// the game from calling its own exit function, which was strangely its safety"
-        "// mechanism for when a captured thumbnail exceeded 4 KB in size."
-        "comment=Save Point Crash Prevention"
-        "author=pandubz, PSI, turtleli"
-        "patch=1,EE,20285f48,extended,24040000"
+        // Reduces JPEG quality to its minimum for save file thumbnails. This prevents
+        // the game from calling its own exit function, which was strangely its safety
+        // mechanism for when a captured thumbnail exceeded 4 KB in size.
+        comment=Save Point Crash Prevention
+        author=pandubz, PSI, turtleli
+        patch=1,EE,20285f48,extended,24040000
 SLPS-29003:
   name: "Lord of the Rings - The Two Towers [Collector's Box]"
   region: "NTSC-J"
@@ -29667,12 +29667,12 @@ SLPS-73901:
   patches:
     - crc: "A3D63039"
       content: |-
-        "// Reduces JPEG quality to its minimum for save file thumbnails. This prevents"
-        "// the game from calling its own exit function, which was strangely its safety"
-        "// mechanism for when a captured thumbnail exceeded 4 KB in size."
-        "comment=Save Point Crash Prevention"
-        "author=pandubz, PSI, turtleli"
-        "patch=1,EE,20285f48,extended,24040000"
+        // Reduces JPEG quality to its minimum for save file thumbnails. This prevents
+        // the game from calling its own exit function, which was strangely its safety
+        // mechanism for when a captured thumbnail exceeded 4 KB in size.
+        comment=Save Point Crash Prevention
+        author=pandubz, PSI, turtleli
+        patch=1,EE,20285f48,extended,24040000
 SLUS-20001:
   name: "Tekken Tag Tournament"
   region: "NTSC-U"
@@ -29777,11 +29777,11 @@ SLUS-20037:
   patches:
     - crc: "F802A575"
       content: |-
-        "comment=Swapping a COP2 op into place to make the flags work without delays"
-        "patch=0,EE,001D249C,word,4A0002FF"
-        "patch=0,EE,001D24AC,word,4B07FA0B"
-        "patch=0,EE,001D268C,word,4A0002FF"
-        "patch=0,EE,001D269C,word,4B07FA0B"
+        comment=Swapping a COP2 op into place to make the flags work without delays
+        patch=0,EE,001D249C,word,4A0002FF
+        patch=0,EE,001D24AC,word,4B07FA0B
+        patch=0,EE,001D268C,word,4A0002FF
+        patch=0,EE,001D269C,word,4B07FA0B
 SLUS-20039:
   name: "Top Gear Dare Devil"
   region: "NTSC-U"
@@ -29860,10 +29860,10 @@ SLUS-20064:
   patches:
     - crc: "FD9CD8FC"
       content: |-
-        "comment=Patch by refraction"
-        "// Rearrange PCR write and BC0F instruction"
-        "patch=0,EE,001CF3C8,word,4100ffff"
-        "patch=0,EE,001CF3CC,word,ac430000"
+        comment=Patch by refraction
+        // Rearrange PCR write and BC0F instruction
+        patch=0,EE,001CF3C8,word,4100ffff
+        patch=0,EE,001CF3CC,word,ac430000
 SLUS-20065:
   name: "Smuggler's Run"
   region: "NTSC-U"
@@ -29885,15 +29885,15 @@ SLUS-20071:
   compat: 5
   patches:
     - content: |-
-        "// 23AF6876 DVD Version."
-        "// 51068006 CD Version."
-        "comment=Patch by Benji229, Pseudonym, Prafull, kozarovv and refraction"
-        "// Fixes game hanging on boot."
-        "patch=0,EE,002b06ec,word,24060000"
-        "// Fixes sound."
-        "patch=1,IOP,001D77E4,word,27C40010"
-        "patch=1,IOP,001D77E8,word,0C0032B7"
-        "patch=1,IOP,001D77EC,word,00000000"
+        // 23AF6876 DVD Version.
+        // 51068006 CD Version.
+        comment=Patch by Benji229, Pseudonym, Prafull, kozarovv and refraction
+        // Fixes game hanging on boot.
+        patch=0,EE,002b06ec,word,24060000
+        // Fixes sound.
+        patch=1,IOP,001D77E4,word,27C40010
+        patch=1,IOP,001D77E8,word,0C0032B7
+        patch=1,IOP,001D77EC,word,00000000
 SLUS-20072:
   name: "MX 2002 - featuring Ricky Carmichael"
   region: "NTSC-U"
@@ -30089,13 +30089,13 @@ SLUS-20141:
   patches:
     - crc: "116154AD"
       content: |-
-        "author=Nachbrenner"
-        "// Skip PSX2_Mpeg_PlayFile__FPc."
-        "patch=0,EE,00107a00,word,03e00008"
-        "patch=0,EE,00107a04,word,24020001"
-        "// Skip SuperSync__Fi."
-        "patch=0,EE,00100eb0,word,03e00008"
-        "patch=0,EE,00100eb4,word,24020001"
+        author=Nachbrenner
+        // Skip PSX2_Mpeg_PlayFile__FPc.
+        patch=0,EE,00107a00,word,03e00008
+        patch=0,EE,00107a04,word,24020001
+        // Skip SuperSync__Fi.
+        patch=0,EE,00100eb0,word,03e00008
+        patch=0,EE,00100eb4,word,24020001
 SLUS-20143:
   name: "ESPN - NBA 2 Night"
   region: "NTSC-U"
@@ -30141,15 +30141,15 @@ SLUS-20152:
   patches:
     - crc: "A32F7CD0"
       content: |-
-        "comment=Rearranging COP2 ops"
-        "// This one seems unintuitive but I can't see how the cycles add up for the maddbc to be the source of the flags."
-        "patch=0,EE,0010FFC8,word,48428800"
-        "patch=0,EE,0010FFDC,word,4BE83A4B"
-        "// Same as ace combat 5, these are definite."
-        "patch=0,EE,0017C6C4,word,48438800"
-        "patch=0,EE,0017C6D4,word,4BE4282C"
-        "patch=0,EE,0017C0C4,word,48438800"
-        "patch=0,EE,0017C0D4,word,4B0B602C"
+        comment=Rearranging COP2 ops
+        // This one seems unintuitive but I can't see how the cycles add up for the maddbc to be the source of the flags.
+        patch=0,EE,0010FFC8,word,48428800
+        patch=0,EE,0010FFDC,word,4BE83A4B
+        // Same as ace combat 5, these are definite.
+        patch=0,EE,0017C6C4,word,48438800
+        patch=0,EE,0017C6D4,word,4BE4282C
+        patch=0,EE,0017C0C4,word,48438800
+        patch=0,EE,0017C0D4,word,4B0B602C
 SLUS-20153:
   name: "RC Revenge Pro"
   region: "NTSC-U"
@@ -30195,11 +30195,11 @@ SLUS-20167:
   patches:
     - crc: "A56A0525"
       content: |-
-        "comment=Patch by leilei"
-        "// Removes intro and end credits FMVs."
-        "// Fixes hanging caused by FMVs."
-        "patch=1,EE,0072C1E1,byte,00000061"
-        "patch=1,EE,007226F7,byte,00000061"
+        comment=Patch by leilei
+        // Removes intro and end credits FMVs.
+        // Fixes hanging caused by FMVs.
+        patch=1,EE,0072C1E1,byte,00000061
+        patch=1,EE,007226F7,byte,00000061
 SLUS-20168:
   name: "Triple Play 2002"
   region: "NTSC-U"
@@ -30311,22 +30311,22 @@ SLUS-20202:
   patches:
     - crc: "F00293CA"
       content: |-
-        "comment=Patches by Nachbrenner"
-        "// Skip movie 'PlaySega'."
-        "patch=0,EE,001a0b50,word,03e00008"
-        "patch=0,EE,001a0b54,word,00000000"
-        "// Skip movie 'PlayAcclaim'."
-        "patch=0,EE,001a0ce8,word,03e00008"
-        "patch=0,EE,001a0cec,word,00000000"
+        comment=Patches by Nachbrenner
+        // Skip movie 'PlaySega'.
+        patch=0,EE,001a0b50,word,03e00008
+        patch=0,EE,001a0b54,word,00000000
+        // Skip movie 'PlayAcclaim'.
+        patch=0,EE,001a0ce8,word,03e00008
+        patch=0,EE,001a0cec,word,00000000
     - crc: "4C9EE7DF"
       content: |-
-        "comment=Patches by Nachbrenner"
-        "// Skip movie 'PlaySega'."
-        "patch=0,EE,001a1950,word,03e00008"
-        "patch=0,EE,001a1954,word,00000000"
-        "// Skip movie 'PlayAcclaim'."
-        "patch=0,EE,001a1ae8,word,03e00008"
-        "patch=0,EE,001a1aec,word,00000000"
+        comment=Patches by Nachbrenner
+        // Skip movie 'PlaySega'.
+        patch=0,EE,001a1950,word,03e00008
+        patch=0,EE,001a1954,word,00000000
+        // Skip movie 'PlayAcclaim'.
+        patch=0,EE,001a1ae8,word,03e00008
+        patch=0,EE,001a1aec,word,00000000
 SLUS-20204:
   name: "Smuggler's Run 2 - Hostile Territory"
   region: "NTSC-U"
@@ -30369,24 +30369,24 @@ SLUS-20213:
   patches:
     - crc: "D4A56F59"
       content: |-
-        "author=kozarovv"
-        "// 2.00 GameVersion. Fix initial loading by looping for some time on EE side. That allow IOP proceed requests correctly."
-        "patch=1,EE,E00223a2,extended,00308A30"
-        "patch=1,EE,20308a30,extended,0803fff7"
-        "patch=1,EE,20308a34,extended,240f2000"
-        "patch=1,EE,200fffdc,double,55eeffff0000702d"
-        "patch=1,EE,200fffe4,double,0c0c23a225ce0004"
-        "patch=1,EE,200fffec,double,080c228e00000000"
+        author=kozarovv
+        // 2.00 GameVersion. Fix initial loading by looping for some time on EE side. That allow IOP proceed requests correctly.
+        patch=1,EE,E00223a2,extended,00308A30
+        patch=1,EE,20308a30,extended,0803fff7
+        patch=1,EE,20308a34,extended,240f2000
+        patch=1,EE,200fffdc,double,55eeffff0000702d
+        patch=1,EE,200fffe4,double,0c0c23a225ce0004
+        patch=1,EE,200fffec,double,080c228e00000000
     - crc: "F456F555"
       content: |-
-        "author=kozarovv"
-        "// 1.00 GameVersion. Fix initial loading by looping for some time on EE side. That allow IOP proceed requests correctly."
-        "patch=1,EE,E0022262,extended,00308530"
-        "patch=1,EE,20308530,extended,0803fff7"
-        "patch=1,EE,20308534,extended,240f2000"
-        "patch=1,EE,200fffdc,double,55eeffff0000702d"
-        "patch=1,EE,200fffe4,double,0c0c226225ce0004"
-        "patch=1,EE,200fffec,double,080c214e00000000"
+        author=kozarovv
+        // 1.00 GameVersion. Fix initial loading by looping for some time on EE side. That allow IOP proceed requests correctly.
+        patch=1,EE,E0022262,extended,00308530
+        patch=1,EE,20308530,extended,0803fff7
+        patch=1,EE,20308534,extended,240f2000
+        patch=1,EE,200fffdc,double,55eeffff0000702d
+        patch=1,EE,200fffe4,double,0c0c226225ce0004
+        patch=1,EE,200fffec,double,080c214e00000000
 SLUS-20214:
   name: "State of Emergency"
   region: "NTSC-U"
@@ -30438,13 +30438,13 @@ SLUS-20225:
   patches:
     - crc: "03854A28"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fixes VSync issues."
-        "patch=0,EE,001a62ac,word,03e00008"
-        "// Avoid hang at first loading screen."
-        "patch=0,EE,001a6288,word,00000000"
-        "// Skips movies."
-        "patch=0,EE,001b1700,word,24020001"
+        comment=Patch by Prafull
+        // Fixes VSync issues.
+        patch=0,EE,001a62ac,word,03e00008
+        // Avoid hang at first loading screen.
+        patch=0,EE,001a6288,word,00000000
+        // Skips movies.
+        patch=0,EE,001b1700,word,24020001
 SLUS-20226:
   name: "Batman - Vengeance"
   region: "NTSC-U"
@@ -30466,9 +30466,9 @@ SLUS-20229:
   patches:
     - crc: "AE94FAF8"
       content: |-
-        "author=refraction"
-        "comment=Fixes interlacing for videos"
-        "patch=1,EE,0024a6f0,word,24030003"
+        author=refraction
+        comment=Fixes interlacing for videos
+        patch=1,EE,0024a6f0,word,24030003
 SLUS-20230:
   name: "Max Payne"
   region: "NTSC-U"
@@ -30593,15 +30593,15 @@ SLUS-20264:
   patches:
     - crc: "2870c248"
       content: |-
-        "author=Prafull"
-        "// Skips IPU videos."
-        "// Each video can be called separately"
-        "// on this game."
-        "// This seems like the only way of patching"
-        "// them all. The issue here is the PCSX2 IPU"
-        "// do not support well the EA proprietary IPU"
-        "// Library causing hanging in menus."
-        "patch=1,EE,001f4d2c,word,00000000"
+        author=Prafull
+        // Skips IPU videos.
+        // Each video can be called separately
+        // on this game.
+        // This seems like the only way of patching
+        // them all. The issue here is the PCSX2 IPU
+        // do not support well the EA proprietary IPU
+        // Library causing hanging in menus.
+        patch=1,EE,001f4d2c,word,00000000
 SLUS-20265:
   name: "James Bond 007 - Agent Under Fire"
   region: "NTSC-U"
@@ -30649,12 +30649,12 @@ SLUS-20275:
   patches:
     - crc: "53A803AF"
       content: |-
-        "comment=COP2 flag instance patch by refraction"
-        "// A mac flag check just after a vsub which gets in the way, rearranging."
-        "patch=0,EE,0016EFB0,word,48438800"
-        "patch=0,EE,0016EFB4,word,4BE521AC"
-        "patch=0,EE,0016EFB8,word,30848000"
-        "patch=0,EE,0016EFBC,word,4BE72B3C"
+        comment=COP2 flag instance patch by refraction
+        // A mac flag check just after a vsub which gets in the way, rearranging.
+        patch=0,EE,0016EFB0,word,48438800
+        patch=0,EE,0016EFB4,word,4BE521AC
+        patch=0,EE,0016EFB8,word,30848000
+        patch=0,EE,0016EFBC,word,4BE72B3C
 SLUS-20277:
   name: "Dynasty Warriors 3"
   region: "NTSC-U"
@@ -30662,10 +30662,10 @@ SLUS-20277:
   patches:
     - crc: "4A35E19F"
       content: |-
-        "comment=COP2 flag instance patch by refraction"
-        "// A mac flag check after running another vsub op which is irrelivant, rearranging"
-        "patch=0,EE,00273230,word,48438800"
-        "patch=0,EE,0027323c,word,4BE521AC"
+        comment=COP2 flag instance patch by refraction
+        // A mac flag check after running another vsub op which is irrelivant, rearranging
+        patch=0,EE,00273230,word,48438800
+        patch=0,EE,0027323c,word,4BE521AC
 SLUS-20278:
   name: "Yanya Caballista - City Skater"
   region: "NTSC-U"
@@ -30689,7 +30689,7 @@ SLUS-20283:
   name: "World of Outlaws - Sprint Cars 2002"
   region: "NTSC-U"
   gameFixes:
-    - XgKickHack
+    - XGKickHack
 SLUS-20284:
   name: "Freaky Flyers"
   region: "NTSC-U"
@@ -30699,11 +30699,11 @@ SLUS-20284:
   patches:
     - crc: "9d1ba44d"
       content: |-
-        "author=Prafull"
-        "// Fix hanging problem & SPS."
-        "// Snow effect has to be removed for this fix (and that needs accurate emulation)."
-        "// Fixed by rearranging COP2 instructions."
-        "patch=1,EE,002131bc,word,00000000"
+        author=Prafull
+        // Fix hanging problem & SPS.
+        // Snow effect has to be removed for this fix (and that needs accurate emulation).
+        // Fixed by rearranging COP2 instructions.
+        patch=1,EE,002131bc,word,00000000
 SLUS-20285:
   name: "Moto GP 2"
   region: "NTSC-U"
@@ -30816,8 +30816,8 @@ SLUS-20315:
   patches:
     - crc: "4B8E0DE8"
       content: |-
-        "comment=Spyro NTSC startup fix"
-        "patch=1,EE,001e71dc,word,24020001"
+        comment=Spyro NTSC startup fix
+        patch=1,EE,001e71dc,word,24020001
 SLUS-20316:
   name: "WWF SmackDown! - Just Bring It!"
   region: "NTSC-U"
@@ -30829,10 +30829,10 @@ SLUS-20318:
   patches:
     - crc: "36E02E91"
       content: |-
-        "comment=Patch by Wgarvin"
-        "// Fixes (black voids) central tower level loading."
-        "// Issue: Some doors leading to some areas appeared as black voids that you can walk in to."
-        "patch=1,EE,001BE42C,word,46150036"
+        comment=Patch by Wgarvin
+        // Fixes (black voids) central tower level loading.
+        // Issue: Some doors leading to some areas appeared as black voids that you can walk in to.
+        patch=1,EE,001BE42C,word,46150036
 SLUS-20319:
   name: "Romance of the Three Kingdoms VII"
   region: "NTSC-U"
@@ -30874,10 +30874,10 @@ SLUS-20328:
   patches:
     - crc: "833FE0A4"
       content: |-
-        "comment=Patches by Shadow Lady"
-        "// IPU BUSY! fix..."
-        "patch=0,EE,002917e4,word,24200001"
-        "patch=0,EE,002919e4,word,00000000"
+        comment=Patches by Shadow Lady
+        // IPU BUSY! fix...
+        patch=0,EE,002917e4,word,24200001
+        patch=0,EE,002919e4,word,00000000
 SLUS-20329:
   name: "Pro Race Driver"
   region: "NTSC-U"
@@ -31031,11 +31031,11 @@ SLUS-20369:
   patches:
     - crc: "36feee3a"
       content: |-
-        "author=Prafull"
-        "// Fixes Hanging at start of fight."
-        "patch=1,EE,001d7fec,word,1000000f"
-        "patch=1,EE,001d8020,word,1000000f"
-        "patch=1,EE,001d8074,word,1000000f"
+        author=Prafull
+        // Fixes Hanging at start of fight.
+        patch=1,EE,001d7fec,word,1000000f
+        patch=1,EE,001d8020,word,1000000f
+        patch=1,EE,001d8074,word,1000000f
 SLUS-20370:
   name: "Kingdom Hearts"
   region: "NTSC-U"
@@ -31072,13 +31072,13 @@ SLUS-20378:
   patches:
     - crc: "466d1c13"
       content: |-
-        "author=Prafull"
-        "// Fix ingame texture problems."
-        "// Fixed by rearranging COP2 instructions."
-        "patch=1,EE,001af778,word,daa70010"
-        "patch=1,EE,001af77c,word,4a000038"
-        "patch=1,EE,001af84c,word,daa70010"
-        "patch=1,EE,001af850,word,4a000038"
+        author=Prafull
+        // Fix ingame texture problems.
+        // Fixed by rearranging COP2 instructions.
+        patch=1,EE,001af778,word,daa70010
+        patch=1,EE,001af77c,word,4a000038
+        patch=1,EE,001af84c,word,daa70010
+        patch=1,EE,001af850,word,4a000038
 SLUS-20379:
   name: "Dark Angel - James Cameron's"
   region: "NTSC-U"
@@ -31121,13 +31121,13 @@ SLUS-20388:
   compat: 5
   patches:
     - content: |-
-        "// 339A0B8C"
-        "comment=- At least when using GSdx in D3D11 Hardware mode, and due to missing"
-        "comment=-  rendering-fixes, black stripes can show up on ghosts,"
-        "comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching."
-        "comment=- This can be fixed by having 'Enable HW Hacks' set"
-        "comment=-  in the GSdx configuration dialog, and having 'Align Sprite' set"
-        "comment=-  and 'Sprite' set to Half in 'Advanced Settings and Hacks'."
+        // 339A0B8C
+        comment=- At least when using GSdx in D3D11 Hardware mode, and due to missing
+        comment=-  rendering-fixes, black stripes can show up on ghosts,
+        comment=-  spirits and photos, when Upscaling and\or using WideScreen-patching.
+        comment=- This can be fixed by having 'Enable HW Hacks' set
+        comment=-  in the GSdx configuration dialog, and having 'Align Sprite' set
+        comment=-  and 'Sprite' set to Half in 'Advanced Settings and Hacks'.
 SLUS-20389:
   name: "Endgame"
   region: "NTSC-U"
@@ -31155,13 +31155,13 @@ SLUS-20394:
   patches:
     - crc: "B78EAA30"
       content: |-
-        "author=PSI"
-        "// Ecco has an evil race condition: one of its custom IOP modules resets CDVDMAN while it's loading a module from disc."
-        "// The race condition is resolved by making the EE slower. This gives enough time for CDVDMAN to reset itself before"
-        "// the EE sends a request to load a module."
-        "// Alternatively, this patch swaps the load order of the modules."
-        "patch=1,EE,201018d8,extended,24040007"
-        "patch=1,EE,201018e4,extended,24040006"
+        author=PSI
+        // Ecco has an evil race condition: one of its custom IOP modules resets CDVDMAN while it's loading a module from disc.
+        // The race condition is resolved by making the EE slower. This gives enough time for CDVDMAN to reset itself before
+        // the EE sends a request to load a module.
+        // Alternatively, this patch swaps the load order of the modules.
+        patch=1,EE,201018d8,extended,24040007
+        patch=1,EE,201018e4,extended,24040006
 SLUS-20395:
   name: "GTC Africa"
   region: "NTSC-U"
@@ -31244,7 +31244,7 @@ SLUS-20418:
   clampModes:
     vuClampMode: 3  # Fixes water rendering.
   gameFixes:
-    - XgKickHack # Fixes SPS while ingame.
+    - XGKickHack # Fixes SPS while ingame.
 SLUS-20419:
   name: "World Rally Championship"
   region: "NTSC-U"
@@ -31292,15 +31292,15 @@ SLUS-20430:
   patches:
     - crc: "d195b670"
       content: |-
-        "author=PSI"
-        "// The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end."
-        "// The second function causes stack corruption as it allocates over the buffer, which is still transferring data."
-        "// This works on real hardware due to the data cache - the transfer will remain safe in main memory, and the stack corruption only happens in cache."
-        "// This patch inserts a bc0f instruction right after the transfer starts, forcing the game to wait for the transfer to end ASAP."
-        "patch=0,EE,00161a1c,word,4100ffff"
-        "patch=0,EE,00161a20,word,00000000"
-        "patch=0,EE,00161a24,word,03e00008"
-        "patch=0,EE,00161a28,word,27bd0030"
+        author=PSI
+        // The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end.
+        // The second function causes stack corruption as it allocates over the buffer, which is still transferring data.
+        // This works on real hardware due to the data cache - the transfer will remain safe in main memory, and the stack corruption only happens in cache.
+        // This patch inserts a bc0f instruction right after the transfer starts, forcing the game to wait for the transfer to end ASAP.
+        patch=0,EE,00161a1c,word,4100ffff
+        patch=0,EE,00161a20,word,00000000
+        patch=0,EE,00161a24,word,03e00008
+        patch=0,EE,00161a28,word,27bd0030
 SLUS-20431:
   name: "Wreckless - The Yakuza Missions"
   region: "NTSC-U"
@@ -31386,10 +31386,10 @@ SLUS-20455:
   patches:
     - crc: "8FF059A1"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fixes controller issue but skips videos."
-        "patch=0,EE,002d8c58,word,03e00008"
-        "patch=0,EE,002d8c5c,word,00000000"
+        comment=Patch by Prafull
+        // Fixes controller issue but skips videos.
+        patch=0,EE,002d8c58,word,03e00008
+        patch=0,EE,002d8c5c,word,00000000
 SLUS-20456:
   name: "Soccer Mania"
   region: "NTSC-U"
@@ -31441,10 +31441,10 @@ SLUS-20467:
   patches:
     - crc: "3baebcc3"
       content: |-
-        "author=Prafull"
-        "// Fix ingame SPS by interchanging vclipw.xyz vf5, vf5w with cfc2."
-        "patch=1,EE,001d90e0,word,48489000"
-        "patch=1,EE,001d90e4,word,4bc529ff"
+        author=Prafull
+        // Fix ingame SPS by interchanging vclipw.xyz vf5, vf5w with cfc2.
+        patch=1,EE,001d90e0,word,48489000
+        patch=1,EE,001d90e4,word,4bc529ff
 SLUS-20468:
   name: "Dynasty Tactics"
   region: "NTSC-U"
@@ -31455,12 +31455,12 @@ SLUS-20469:
   patches:
     - crc: "6D1276AB"
       content: |-
-        "// Reduces JPEG quality to its minimum for save file thumbnails. This prevents"
-        "// the game from calling its own exit function, which was strangely its safety"
-        "// mechanism for when a captured thumbnail exceeded 4 KB in size."
-        "comment=Save Point Crash Prevention"
-        "author=pandubz, PSI, turtleli"
-        "patch=1,EE,20289db0,extended,24040000"
+        // Reduces JPEG quality to its minimum for save file thumbnails. This prevents
+        // the game from calling its own exit function, which was strangely its safety
+        // mechanism for when a captured thumbnail exceeded 4 KB in size.
+        comment=Save Point Crash Prevention
+        author=pandubz, PSI, turtleli
+        patch=1,EE,20289db0,extended,24040000
 SLUS-20470:
   name: "EverQuest - Online Adventures"
   region: "NTSC-U"
@@ -31498,7 +31498,7 @@ SLUS-20480:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes black models on certain games in World Tour.
+    - XGKickHack # Fixes black models on certain games in World Tour.
 SLUS-20482:
   name: "Sphinx and the Cursed Mummy"
   region: "NTSC-U"
@@ -31510,18 +31510,18 @@ SLUS-20483:
   patches:
     - crc: "B0AE1898"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fixes freeze during entrances."
-        "patch=1,EE,0010b894,word,00000000"
-        "patch=1,EE,0010b7ac,word,00000000"
+        comment=Patch by Prafull
+        // Fixes freeze during entrances.
+        patch=1,EE,0010b894,word,00000000
+        patch=1,EE,0010b7ac,word,00000000
 SLUS-20484:
   name: "Devil May Cry 2 [Disc1of2]"
   region: "NTSC-U"
   compat: 5
   patches:
     - content: |-
-        "// 08995DEE"
-        "comment=- This disc has the same CRC as SLPM-65232, the NTSC-J disc."
+        // 08995DEE
+        comment=- This disc has the same CRC as SLPM-65232, the NTSC-J disc.
 SLUS-20485:
   name: "Dino Stalker"
   region: "NTSC-U"
@@ -31765,7 +31765,7 @@ SLUS-20546:
   region: "NTSC-U"
   compat: 4
   gameFixes:
-    - OPHFLagHack # Avoid hanging at the "press start" screen.
+    - OPHFlagHack # Avoid hanging at the "press start" screen.
   # Comments from old GameIndex.dbf for this Game
   #  Needs EmotionEngine set to "Interpreter" and "Enable EE Cache" enabled.
 SLUS-20547:
@@ -31816,14 +31816,14 @@ SLUS-20560:
   patches:
     - crc: "B506C936"
       content: |-
-        "author=kozarovv"
-        "// Floats workaround to make HW GSDX mode working."
-        "// There is still overflow on GS, but this time GSDX can handle it just fine in HW mode."
-        "patch=1,EE,001e12a8,word,3c017e00"
-        "patch=1,EE,001e12b0,word,44812800"
-        "patch=1,EE,001e12c8,word,44813000"
-        "patch=1,EE,001e12d8,word,44813800"
-        "patch=1,EE,001e12e8,word,44810000"
+        author=kozarovv
+        // Floats workaround to make HW GSDX mode working.
+        // There is still overflow on GS, but this time GSDX can handle it just fine in HW mode.
+        patch=1,EE,001e12a8,word,3c017e00
+        patch=1,EE,001e12b0,word,44812800
+        patch=1,EE,001e12c8,word,44813000
+        patch=1,EE,001e12d8,word,44813800
+        patch=1,EE,001e12e8,word,44810000
 SLUS-20561:
   name: "Disaster Report"
   region: "NTSC-U"
@@ -31974,7 +31974,7 @@ SLUS-20597:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes corrupted graphics.
+    - XGKickHack # Fixes corrupted graphics.
 SLUS-20598:
   name: "Everblue 2"
   region: "NTSC-U"
@@ -31982,22 +31982,22 @@ SLUS-20598:
   patches:
     - crc: "BCE9B7BB"
       content: |-
-        "author=kozarovv"
-        "// Rearrange COP2 ops to fix DIV Q timings"
-        "patch=1,EE,00230b68,word,4b0c211c"
-        "patch=1,EE,00230b6c,word,4be503bc"
-        "patch=1,EE,00230b84,word,4bc0295c"
-        "patch=1,EE,00230b88,word,4be603bc"
-        "patch=1,EE,00230ba0,word,4bc0319c"
-        "patch=1,EE,00230ba4,word,4be703bc"
-        "patch=1,EE,00230bbc,word,4bc039dc"
-        "patch=1,EE,00230bc0,word,4be803bc"
-        "patch=1,EE,00230bd8,word,4bc0421c"
-        "patch=1,EE,00230bdc,word,4be903bc"
-        "patch=1,EE,00230bf4,word,4bc04a5c"
-        "patch=1,EE,00230bf8,word,4bea03bc"
-        "patch=1,EE,00230c10,word,4bc0529c"
-        "patch=1,EE,00230c14,word,4beb03bc"
+        author=kozarovv
+        // Rearrange COP2 ops to fix DIV Q timings
+        patch=1,EE,00230b68,word,4b0c211c
+        patch=1,EE,00230b6c,word,4be503bc
+        patch=1,EE,00230b84,word,4bc0295c
+        patch=1,EE,00230b88,word,4be603bc
+        patch=1,EE,00230ba0,word,4bc0319c
+        patch=1,EE,00230ba4,word,4be703bc
+        patch=1,EE,00230bbc,word,4bc039dc
+        patch=1,EE,00230bc0,word,4be803bc
+        patch=1,EE,00230bd8,word,4bc0421c
+        patch=1,EE,00230bdc,word,4be903bc
+        patch=1,EE,00230bf4,word,4bc04a5c
+        patch=1,EE,00230bf8,word,4bea03bc
+        patch=1,EE,00230c10,word,4bc0529c
+        patch=1,EE,00230c14,word,4beb03bc
 SLUS-20599:
   name: "Whiteout"
   region: "NTSC-U"
@@ -32133,7 +32133,7 @@ SLUS-20635:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - OPHFLagHack # Fixes some hanging throughout the game.
+    - OPHFlagHack # Fixes some hanging throughout the game.
 SLUS-20636:
   name: "Suffering, The"
   region: "NTSC-U"
@@ -32280,11 +32280,11 @@ SLUS-20671:
   patches:
     - crc: "B67F4F9E"
       content: |-
-        "comment=Patch by Prafull"
-        "// Avoids hanging before Molotov Party."
-        "patch=1,EE,003e2bb4,word,00000000"
-        "// Fixes crash in The priest mission."
-        "patch=1,EE,0016f04c,word,1000000d"
+        comment=Patch by Prafull
+        // Avoids hanging before Molotov Party.
+        patch=1,EE,003e2bb4,word,00000000
+        // Fixes crash in The priest mission.
+        patch=1,EE,0016f04c,word,1000000d
 SLUS-20672:
   name: "Final Fantasy X-2"
   region: "NTSC-U"
@@ -32488,18 +32488,18 @@ SLUS-20726:
   patches:
     - crc: "A13E5DD5"
       content: |-
-        "comment=Patch by Prafull"
-        "// Avoids hang at start."
-        "patch=1,EE,003161c0,word,00000000"
+        comment=Patch by Prafull
+        // Avoids hang at start.
+        patch=1,EE,003161c0,word,00000000
 SLUS-20727:
   name: "ESPN - NFL Football"
   region: "NTSC-U"
   patches:
     - crc: "56920AD1"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fixes random hangs."
-        "patch=0,EE,003bb900,word,00000000"
+        comment=Patch by Prafull
+        // Fixes random hangs.
+        patch=0,EE,003bb900,word,00000000
 SLUS-20728:
   name: "ESPN - NHL Hockey"
   region: "NTSC-U"
@@ -32630,17 +32630,17 @@ SLUS-20758:
   patches:
     - crc: "03F9C6D1"
       content: |-
-        "comment=IPU freeze fix"
-        "patch=0,EE,00109d04,word,00000000"
+        comment=IPU freeze fix
+        patch=0,EE,00109d04,word,00000000
 SLUS-20759:
   name: "Growlanser Generations [Disc2of2]"
   region: "NTSC-U"
   compat: 5
   patches:
     - content: |-
-        "// CRC 4AD529BB, 4CD3663F"
-        "comment=IPU freeze fix"
-        "patch=0,EE,00109d04,word,00000000"
+        // CRC 4AD529BB, 4CD3663F
+        comment=IPU freeze fix
+        patch=0,EE,00109d04,word,00000000
 SLUS-20760:
   name: "World Championship Pool 2004"
   region: "NTSC-U"
@@ -32769,11 +32769,11 @@ SLUS-20793:
   patches:
     - crc: "C5DAD771"
       content: |-
-        "author=Prafull"
-        "// Fix hang before menu screen"
-        "// The patch causes few artifacts in FMV"
-        "// Skips part of IPU"
-        "patch=1,EE,00286674,word,00000000"
+        author=Prafull
+        // Fix hang before menu screen
+        // The patch causes few artifacts in FMV
+        // Skips part of IPU
+        patch=1,EE,00286674,word,00000000
 SLUS-20794:
   name: "ESPN - Major League Baseball"
   region: "NTSC-U"
@@ -32974,11 +32974,11 @@ SLUS-20851:
   patches:
     - crc: "39B574F0"
       content: |-
-        "comment=Rearranging COP2 instructions that use old results"
-        "patch=0,EE,001A3B94,word,48498800"
-        "patch=0,EE,001A3B98,word,4B00682C"
-        "patch=0,EE,001A3BA4,word,484A8800"
-        "patch=0,EE,001A3BA8,word,4B0C682C"
+        comment=Rearranging COP2 instructions that use old results
+        patch=0,EE,001A3B94,word,48498800
+        patch=0,EE,001A3B98,word,4B00682C
+        patch=0,EE,001A3BA4,word,484A8800
+        patch=0,EE,001A3BA8,word,4B0C682C
 SLUS-20852:
   name: "Terminator 3, The - The Redemption"
   region: "NTSC-U"
@@ -33165,7 +33165,7 @@ SLUS-20894:
   compat: 5
   patches:
     - content: |-
-        "comment=You need to set the EE cycle speed to -1 to be able to load the game."
+        comment=You need to set the EE cycle speed to -1 to be able to load the game.
 SLUS-20895:
   name: "Bujingai - The Forsaken City"
   region: "NTSC-U"
@@ -33222,7 +33222,7 @@ SLUS-20909:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - XgKickHack # Fixes bad geometry.
+    - XGKickHack # Fixes bad geometry.
     - VU0KickstartHack # Fixes loading hang.
 SLUS-20910:
   name: "Test Drive - Eve of Destruction"
@@ -33270,18 +33270,18 @@ SLUS-20919:
   patches:
     - crc: "42F9D5AF"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fixes random hangs."
-        "patch=1,EE,0041c680,word,00000000"
+        comment=Patch by Prafull
+        // Fixes random hangs.
+        patch=1,EE,0041c680,word,00000000
 SLUS-20920:
   name: "ESPN - NBA 2K5"
   region: "NTSC-U"
   patches:
     - crc: "903C7BC5"
       content: |-
-        "comment=Patch by Prafull"
-        "// Avoids hanging at loading screen."
-        "patch=1,EE,003bc800,word,00000000"
+        comment=Patch by Prafull
+        // Avoids hanging at loading screen.
+        patch=1,EE,003bc800,word,00000000
 SLUS-20921:
   name: "ESPN - NHL 2K5"
   region: "NTSC-U"
@@ -33289,9 +33289,9 @@ SLUS-20921:
   patches:
     - crc: "9B6E69EC"
       content: |-
-        "comment=Patch by Prafull"
-        "// Avoids hang at start."
-        "patch=1,EE,003ed218,word,00000000"
+        comment=Patch by Prafull
+        // Avoids hang at start.
+        patch=1,EE,003ed218,word,00000000
 SLUS-20922:
   name: "ESPN - College Hoops 2K5"
   region: "NTSC-U"
@@ -33299,9 +33299,9 @@ SLUS-20922:
   patches:
     - crc: "2b54d3e5"
       content: |-
-        "comment=Patch by Prafull"
-        "// Avoids hang at loading."
-        "patch=1,EE,003bcc08,word,00000000"
+        comment=Patch by Prafull
+        // Avoids hang at loading.
+        patch=1,EE,003bcc08,word,00000000
 SLUS-20923:
   name: "King of Fighters - Maximum Impact"
   region: "NTSC-U"
@@ -33461,12 +33461,12 @@ SLUS-20961:
   patches:
     - crc: "08901101"
       content: |-
-        "comment=Patch by Prafull"
-        "// New patch fixes most issues."
-        "patch=0,EE,003a94f8,word,00000000"
-        "// Fix hang at Level 4."
-        "patch=0,EE,0037b1a4,word,03e00008"
-        "patch=0,EE,0037b1a8,word,00000000"
+        comment=Patch by Prafull
+        // New patch fixes most issues.
+        patch=0,EE,003a94f8,word,00000000
+        // Fix hang at Level 4.
+        patch=0,EE,0037b1a4,word,03e00008
+        patch=0,EE,0037b1a8,word,00000000
 SLUS-20962:
   name: "Castle of Shikigami 2"
   region: "NTSC-U"
@@ -33575,9 +33575,9 @@ SLUS-20983:
   patches:
     - crc: "675CEB8F"
       content: |-
-        "author=Prafull"
-        "// Fixes almost all problems apart from little translucent fog effect in some areas"
-        "patch=1,EE,001473b0,word,00000000"
+        author=Prafull
+        // Fixes almost all problems apart from little translucent fog effect in some areas
+        patch=1,EE,001473b0,word,00000000
 SLUS-20984:
   name: "Resident Evil Outbreak - File #2"
   region: "NTSC-U"
@@ -33678,35 +33678,35 @@ SLUS-21006:
   compat: 5
   patches:
     - content: |-
-        "// CRC US 95CC86EF, RU 28557423"
-        "comment=Rearranging COP2 ops so as to avoid macflag bad stuff"
-        "// Solves door problems, possibly other issues later on (nobody ever got that far :P)."
-        "patch=0,EE,0010BC88,word,48468800"
-        "patch=0,EE,0010BC8C,word,4bec682c"
-        "patch=0,EE,0010BC90,word,4b8d617d"
-        "patch=0,EE,0010BC98,word,4a6d617c"
-        "patch=0,EE,0012B200,word,48468800"
-        "patch=0,EE,0012B204,word,4bec682c"
-        "patch=0,EE,0012B208,word,4b8d617d"
-        "patch=0,EE,0012B210,word,4a6d617c"
-        "patch=0,EE,0012B528,word,48468800"
-        "patch=0,EE,0012B52C,word,4bec682c"
-        "patch=0,EE,0012B530,word,4b8d617d"
-        "patch=0,EE,0012B538,word,4a6d617c"
-        "patch=0,EE,00165BB0,word,48468800"
-        "patch=0,EE,00165BB4,word,4bec682c"
-        "patch=0,EE,00165BB8,word,4b8d617d"
-        "patch=0,EE,00165BC0,word,4a6d617c"
-        "patch=0,EE,001B0A40,word,4bec682c"
-        "patch=0,EE,001B0A4C,word,4b8d617d"
-        "patch=0,EE,001BF4C0,word,48588800"
-        "patch=0,EE,001BF4D0,word,4a0002ff"
-        "patch=0,EE,001BFA7C,word,48588800"
-        "patch=0,EE,001BFA8C,word,4a0002ff"
-        "patch=0,EE,001BF6DC,word,48588800"
-        "patch=0,EE,001BF6EC,word,4a0002ff"
-        "patch=0,EE,001C0040,word,48588800"
-        "patch=0,EE,001C0050,word,4a0002ff"
+        // CRC US 95CC86EF, RU 28557423
+        comment=Rearranging COP2 ops so as to avoid macflag bad stuff
+        // Solves door problems, possibly other issues later on (nobody ever got that far :P).
+        patch=0,EE,0010BC88,word,48468800
+        patch=0,EE,0010BC8C,word,4bec682c
+        patch=0,EE,0010BC90,word,4b8d617d
+        patch=0,EE,0010BC98,word,4a6d617c
+        patch=0,EE,0012B200,word,48468800
+        patch=0,EE,0012B204,word,4bec682c
+        patch=0,EE,0012B208,word,4b8d617d
+        patch=0,EE,0012B210,word,4a6d617c
+        patch=0,EE,0012B528,word,48468800
+        patch=0,EE,0012B52C,word,4bec682c
+        patch=0,EE,0012B530,word,4b8d617d
+        patch=0,EE,0012B538,word,4a6d617c
+        patch=0,EE,00165BB0,word,48468800
+        patch=0,EE,00165BB4,word,4bec682c
+        patch=0,EE,00165BB8,word,4b8d617d
+        patch=0,EE,00165BC0,word,4a6d617c
+        patch=0,EE,001B0A40,word,4bec682c
+        patch=0,EE,001B0A4C,word,4b8d617d
+        patch=0,EE,001BF4C0,word,48588800
+        patch=0,EE,001BF4D0,word,4a0002ff
+        patch=0,EE,001BFA7C,word,48588800
+        patch=0,EE,001BFA8C,word,4a0002ff
+        patch=0,EE,001BF6DC,word,48588800
+        patch=0,EE,001BF6EC,word,4a0002ff
+        patch=0,EE,001C0040,word,48588800
+        patch=0,EE,001C0050,word,4a0002ff
 SLUS-21007:
   name: "Kuon"
   region: "NTSC-U"
@@ -34356,9 +34356,9 @@ SLUS-21171:
   patches:
     - crc: "304c115c"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fix hang at shipping shed."
-        "patch=1,EE,002bdb1c,word,00000000"
+        comment=Patch by Prafull
+        // Fix hang at shipping shed.
+        patch=1,EE,002bdb1c,word,00000000
 SLUS-21172:
   name: "Conflict - Global Terror"
   region: "NTSC-U"
@@ -34398,8 +34398,8 @@ SLUS-21180:
   patches:
     - crc: "FE44479E"
       content: |-
-        "comment=Patch by Shadow Lady"
-        "patch=0,EE,00104170,word,00000000"
+        comment=Patch by Shadow Lady
+        patch=0,EE,00104170,word,00000000
 SLUS-21181:
   name: "D.I.C.E."
   region: "NTSC-U"
@@ -34443,7 +34443,7 @@ SLUS-21191:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - CrashTagTeamRacingIbit # Fixes constant recompilation problems.
+    - CrashTagTeamRacingIbitHack # Fixes constant recompilation problems.
 SLUS-21192:
   name: "Cabela's Outdoor Adventures 2006"
   region: "NTSC-U"
@@ -34623,18 +34623,18 @@ SLUS-21232:
   patches:
     - crc: "A60E027C"
       content: |-
-        "comment=Patch by Prafull"
-        "// This fixes random hangs and makes the game playable."
-        "patch=1,EE,0045f410,word,00000000"
+        comment=Patch by Prafull
+        // This fixes random hangs and makes the game playable.
+        patch=1,EE,0045f410,word,00000000
 SLUS-21233:
   name: "NBA 2K6"
   region: "NTSC-U"
   patches:
     - crc: "E5C65369"
       content: |-
-        "comment=Patch by Prafull"
-        "// Avoids hang at start."
-        "patch=1,EE,004413a8,word,00000000"
+        comment=Patch by Prafull
+        // Avoids hang at start.
+        patch=1,EE,004413a8,word,00000000
 SLUS-21234:
   name: "NHL 2K6"
   region: "NTSC-U"
@@ -34642,9 +34642,9 @@ SLUS-21234:
   patches:
     - crc: "87007AB7"
       content: |-
-        "author=Prafull"
-        "// Avoid hang at start."
-        "patch=1,EE,003fd608,word,00000000"
+        author=Prafull
+        // Avoid hang at start.
+        patch=1,EE,003fd608,word,00000000
 SLUS-21235:
   name: "MLB 2k6"
   region: "NTSC-U"
@@ -34652,9 +34652,9 @@ SLUS-21235:
   patches:
     - crc: "88BB9A5C"
       content: |-
-        "comment=Patch by Prafull"
-        "// Avoids hang at start."
-        "patch=1,EE,003c4280,word,00000000"
+        comment=Patch by Prafull
+        // Avoids hang at start.
+        patch=1,EE,003c4280,word,00000000
 SLUS-21236:
   name: "Tokyo Xtreme Racer Drift"
   region: "NTSC-U"
@@ -34984,10 +34984,10 @@ SLUS-21307:
   patches:
     - crc: "EEC195CA"
       content: |-
-        "comment=Patch by kozarovv"
-        "// Intro screen freeze fix."
-        "patch=1,EE,002FEB80,word,27bdfee0"
-        "patch=1,EE,002FEBBC,word,27bd0120"
+        comment=Patch by kozarovv
+        // Intro screen freeze fix.
+        patch=1,EE,002FEB80,word,27bdfee0
+        patch=1,EE,002FEBBC,word,27bd0120
 SLUS-21309:
   name: "Let's Ride - Silver Buckle Stables"
   region: "NTSC-U"
@@ -35016,9 +35016,9 @@ SLUS-21314:
   patches:
     - crc: "f73488d5"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fixes random hangs when going ingame."
-        "patch=1,EE,00296368,word,00000000"
+        comment=Patch by Prafull
+        // Fixes random hangs when going ingame.
+        patch=1,EE,00296368,word,00000000
 SLUS-21315:
   name: "50cent - Bulletproof"
   region: "NTSC-U"
@@ -35060,9 +35060,9 @@ SLUS-21324:
   patches:
     - crc: "D592B291"
       content: |-
-        "comment=Patch by Prafull"
-        "// Skip hang at start."
-        "patch=1,EE,0036b220,word,00000000 //1040fffd"
+        comment=Patch by Prafull
+        // Skip hang at start.
+        patch=1,EE,0036b220,word,00000000 //1040fffd
 SLUS-21325:
   name: "Harry Potter and The Goblet of Fire"
   region: "NTSC-U"
@@ -35164,11 +35164,11 @@ SLUS-21346:
   patches:
     - crc: "65729657"
       content: |-
-        "// Fixes collision/missle hit issues."
-        "patch=0,EE,00131EBC,word,48498800"
-        "patch=0,EE,00131EC0,word,4B00682C"
-        "patch=0,EE,00131ECC,word,484A8800"
-        "patch=0,EE,00131ED0,word,4B0C682C"
+        // Fixes collision/missle hit issues.
+        patch=0,EE,00131EBC,word,48498800
+        patch=0,EE,00131EC0,word,4B00682C
+        patch=0,EE,00131ECC,word,484A8800
+        patch=0,EE,00131ED0,word,4B0C682C
 SLUS-21347:
   name: "AMF Xtreme Bowling"
   region: "NTSC-U"
@@ -35245,8 +35245,8 @@ SLUS-21362:
   patches:
     - crc: "FFDE85E9"
       content: |-
-        "comment=Patch by Shadow Lady"
-        "patch=0,EE,00104170,word,00000000"
+        comment=Patch by Shadow Lady
+        patch=0,EE,00104170,word,00000000
 SLUS-21363:
   name: "Zatch Bell! Mamodo Fury"
   region: "NTSC-U"
@@ -35289,9 +35289,9 @@ SLUS-21372:
   patches:
     - crc: "D03D4C77"
       content: |-
-        "comment=Patch by kozarovv and refraction"
-        "// Fixes HUD and menu display."
-        "patch=1,EE,001849b8,word,00000000"
+        comment=Patch by kozarovv and refraction
+        // Fixes HUD and menu display.
+        patch=1,EE,001849b8,word,00000000
 SLUS-21373:
   name: "Drakengard 2"
   region: "NTSC-U"
@@ -35317,12 +35317,12 @@ SLUS-21376:
   patches:
     - crc: "5C891FF1"
       content: |-
-        "author=refraction"
-        "// COP2 Rearrangement. Fixes broken collisions."
-        "patch=1,EE,0037EB14,word,4b000460"
-        "patch=1,EE,0037EB18,word,4af103bc"
-        "patch=1,EE,0037EB30,word,4a800460"
-        "patch=1,EE,0037EB34,word,4b7103bc"
+        author=refraction
+        // COP2 Rearrangement. Fixes broken collisions.
+        patch=1,EE,0037EB14,word,4b000460
+        patch=1,EE,0037EB18,word,4af103bc
+        patch=1,EE,0037EB30,word,4a800460
+        patch=1,EE,0037EB34,word,4b7103bc
 SLUS-21377:
   name: "Dance Dance Revolution SuperNOVA"
   region: "NTSC-U"
@@ -35522,9 +35522,9 @@ SLUS-21424:
   patches:
     - crc: "F5AEDCC3"
       content: |-
-        "comment=Patch by Prafull"
-        "// Avoids hang at start."
-        "patch=1,EE,0044ef60,word,00000000"
+        comment=Patch by Prafull
+        // Avoids hang at start.
+        patch=1,EE,0044ef60,word,00000000
 SLUS-21425:
   name: "NHL 2K7"
   region: "NTSC-U"
@@ -35532,9 +35532,9 @@ SLUS-21425:
   patches:
     - crc: "478EFBDB"
       content: |-
-        "comment=Patch by Prafull"
-        "// Avoids hang at start."
-        "patch=1,EE,004409d8,word,00000000"
+        comment=Patch by Prafull
+        // Avoids hang at start.
+        patch=1,EE,004409d8,word,00000000
 SLUS-21426:
   name: "Call of Duty 3"
   region: "NTSC-U"
@@ -35571,12 +35571,12 @@ SLUS-21434:
   patches:
     - crc: "E1BF5DCA"
       content: |-
-        "author=kozarovv"
-        "// Fix sps and various graphical issues by Using iaddiu instead of FSAND"
-        "// require preload frame data and crc hack atleast minimum for GSDX HW"
-        "patch=1,EE,00639E70,word,10050208"
-        "patch=1,EE,00639FE8,word,10080208"
-        "patch=1,EE,0063D408,word,10020208"
+        author=kozarovv
+        // Fix sps and various graphical issues by Using iaddiu instead of FSAND
+        // require preload frame data and crc hack atleast minimum for GSDX HW
+        patch=1,EE,00639E70,word,10050208
+        patch=1,EE,00639FE8,word,10080208
+        patch=1,EE,0063D408,word,10020208
 SLUS-21435:
   name: "One Piece - Grand Adventure"
   region: "NTSC-U"
@@ -35886,7 +35886,7 @@ SLUS-21498:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - OPHFLagHack
+    - OPHFlagHack
 SLUS-21499:
   name: "Evolution GT"
   region: "NTSC-U"
@@ -36126,7 +36126,7 @@ SLUS-21594:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - OPHFLagHack
+    - OPHFlagHack
 SLUS-21595:
   name: "T.M.N.T. - Teenage Mutant Ninja Turtles"
   region: "NTSC-U"
@@ -36156,21 +36156,21 @@ SLUS-21601:
   patches:
     - crc: "75D13A19"
       content: |-
-        "author=kozarovv"
-        "// Rearrange COP2 instructions to fix bad mac flag stuff. Fix for bouncing vehicles."
-        "patch=1,EE,0027573c,word,48448800"
-        "patch=1,EE,00275740,word,309000E0"
-        "patch=1,EE,00275748,word,4BF0116C"
-        "patch=1,EE,00275750,word,00908024"
-        "patch=1,EE,00275754,word,4A0002FF"
-        "patch=1,EE,00275758,word,4BF019AC"
-        "patch=1,EE,0027576c,word,48448800"
-        "patch=1,EE,00275770,word,309000E0"
-        "patch=1,EE,00275774,word,4BE2896C"
-        "patch=1,EE,00275778,word,48448800"
-        "patch=1,EE,0027577c,word,4BE389AC"
-        "patch=1,EE,00275780,word,4A0002FF"
-        "patch=1,EE,00275784,word,4A0002FF"
+        author=kozarovv
+        // Rearrange COP2 instructions to fix bad mac flag stuff. Fix for bouncing vehicles.
+        patch=1,EE,0027573c,word,48448800
+        patch=1,EE,00275740,word,309000E0
+        patch=1,EE,00275748,word,4BF0116C
+        patch=1,EE,00275750,word,00908024
+        patch=1,EE,00275754,word,4A0002FF
+        patch=1,EE,00275758,word,4BF019AC
+        patch=1,EE,0027576c,word,48448800
+        patch=1,EE,00275770,word,309000E0
+        patch=1,EE,00275774,word,4BE2896C
+        patch=1,EE,00275778,word,48448800
+        patch=1,EE,0027577c,word,4BE389AC
+        patch=1,EE,00275780,word,4A0002FF
+        patch=1,EE,00275784,word,4A0002FF
 SLUS-21602:
   name: "Transformers - The Game"
   region: "NTSC-U"
@@ -36197,9 +36197,9 @@ SLUS-21607:
   patches:
     - crc: "B80CE8EC"
       content: |-
-        "comment=Patch by kozarovv and refraction"
-        "// Fixes HUD and menu display."
-        "patch=1,EE,00173cb8,word,00000000"
+        comment=Patch by kozarovv and refraction
+        // Fixes HUD and menu display.
+        patch=1,EE,00173cb8,word,00000000
 SLUS-21608:
   name: "Dance Dance Revolution - SuperNOVA 2"
   region: "NTSC-U"
@@ -36227,11 +36227,11 @@ SLUS-21614:
   patches:
     - crc: "879CDA5E"
       content: |-
-        "author=kozarovv"
-        "// Fix for graphical issues, QTE events, subtitles, health bar."
-        "// Patch replace values passed to FPU to workaround x86 rounding issues."
-        "patch=1,EE,0017cf24,word,3464fff0"
-        "patch=1,EE,0017cf30,word,3463fffc"
+        author=kozarovv
+        // Fix for graphical issues, QTE events, subtitles, health bar.
+        // Patch replace values passed to FPU to workaround x86 rounding issues.
+        patch=1,EE,0017cf24,word,3464fff0
+        patch=1,EE,0017cf30,word,3463fffc
 SLUS-21615:
   name: "Wild ARMs 5"
   region: "NTSC-U"
@@ -36311,9 +36311,9 @@ SLUS-21632:
   patches:
     - crc: "77B49EF8"
       content: |-
-        "// Patched by Prafull-thanks to harsh."
-        "// Avoids hang at start."
-        "patch=1,EE,00432310,word,00000000"
+        // Patched by Prafull-thanks to harsh.
+        // Avoids hang at start.
+        patch=1,EE,00432310,word,00000000
 SLUS-21633:
   name: "Aqua Teen Hunger Force - Zombie Ninja Pro-Am"
   region: "NTSC-U"
@@ -36323,7 +36323,7 @@ SLUS-21634:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - FPUNegDivHack # Fixes black fade effects and some overlays texts in the menus.
+    - FpuNegDivHack # Fixes black fade effects and some overlays texts in the menus.
 SLUS-21635:
   name: "Monster Jam"
   region: "NTSC-U"
@@ -36566,8 +36566,8 @@ SLUS-21697:
   patches:
     - crc: "304497e5"
       content: |-
-        "// Fixes random hangs when going ingame."
-        "patch=1,EE,002242e0,word,00000000"
+        // Fixes random hangs when going ingame.
+        patch=1,EE,002242e0,word,00000000
 SLUS-21698:
   name: "NCAA March Madness '08"
   region: "NTSC-U"
@@ -36687,17 +36687,17 @@ SLUS-21729:
   patches:
     - crc: "0be24520"
       content: |-
-        "author=Prafull"
-        "// Fixes hanging at start."
-        "// This hanging problem is common in every 2K"
-        "// games sport titles."
-        "// They all hit the exact same piece of code when crashing."
-        "// The game can randomly goes a bit further but it's impossible"
-        "// to progress in menus without this patch at least."
-        "// Note: This issue will only happen if the game"
-        "// run on the inhouse Visual Concept engine."
-        "// My theory is on a deep timing issue."
-        "patch=0,EE,003cc1a0,word,00000000"
+        author=Prafull
+        // Fixes hanging at start.
+        // This hanging problem is common in every 2K
+        // games sport titles.
+        // They all hit the exact same piece of code when crashing.
+        // The game can randomly goes a bit further but it's impossible
+        // to progress in menus without this patch at least.
+        // Note: This issue will only happen if the game
+        // run on the inhouse Visual Concept engine.
+        // My theory is on a deep timing issue.
+        patch=0,EE,003cc1a0,word,00000000
 SLUS-21730:
   name: "Jumper"
   region: "NTSC-U"
@@ -36767,11 +36767,11 @@ SLUS-21744:
   patches:
     - crc: "1B6C22B9"
       content: |-
-        "author=PSI"
-        "// This game intentionally corrupts a DMA transfer by writing junk values to a buffer just before starting a transfer."
-        "// Normally this would require EE data cache, but this patch NOPs out the bad writes. This is likely anti-emulation code."
-        "patch=1,EE,003cb014,word,00000000"
-        "patch=1,EE,003cb124,word,00000000"
+        author=PSI
+        // This game intentionally corrupts a DMA transfer by writing junk values to a buffer just before starting a transfer.
+        // Normally this would require EE data cache, but this patch NOPs out the bad writes. This is likely anti-emulation code.
+        patch=1,EE,003cb014,word,00000000
+        patch=1,EE,003cb124,word,00000000
 SLUS-21746:
   name: "Call of Duty: World at War - Final Fronts"
   region: "NTSC-U"
@@ -36835,9 +36835,9 @@ SLUS-21763:
   patches:
     - crc: "29fdcbf7"
       content: |-
-        "author=Prafull"
-        "// Avoid hang at start."
-        "patch=1,EE,00431848,word,00000000"
+        author=Prafull
+        // Avoid hang at start.
+        patch=1,EE,00431848,word,00000000
 SLUS-21764:
   name: "Cake Mania - Baker's Challenge"
   region: "NTSC-U"
@@ -37367,14 +37367,14 @@ SLUS-21913:
   patches:
     - crc: "71BA3429"
       content: |-
-        "author=kozarovv"
-        "// Fixes graphics glitches."
-        "// It's a problem which apply to all games made by Khrome studio."
-        "// The EE seems to send invalid data to the GS and expect"
-        "// some kind of unknown behaviour to opperate."
-        "// This can be fixed on the GS side but the software render is impossible to fix."
-        "// So this patch correct the issue on the EE side."
-        "patch=1,EE,00173328,word,3464fffd"
+        author=kozarovv
+        // Fixes graphics glitches.
+        // It's a problem which apply to all games made by Khrome studio.
+        // The EE seems to send invalid data to the GS and expect
+        // some kind of unknown behaviour to opperate.
+        // This can be fixed on the GS side but the software render is impossible to fix.
+        // So this patch correct the issue on the EE side.
+        patch=1,EE,00173328,word,3464fffd
 SLUS-21914:
   name: "NHL 2K10"
   region: "NTSC-U"
@@ -37382,9 +37382,9 @@ SLUS-21914:
   patches:
     - crc: "82CA153C"
       content: |-
-        "comment=Patch by Prafull"
-        "// Fixes hanging problem."
-        "patch=1,EE,00431b70,word,00000000"
+        comment=Patch by Prafull
+        // Fixes hanging problem.
+        patch=1,EE,00431b70,word,00000000
 SLUS-21915:
   name: "Lord of the Rings, The: Aragorn's Quest"
   region: "NTSC-U"
@@ -37738,7 +37738,7 @@ SLUS-29049:
   name: "Warhammer 40,000 - Fire Warrior [Demo]"
   region: "NTSC-U"
   gameFixes:
-    - XgKickHack # Fixes corrupted graphics.
+    - XGKickHack # Fixes corrupted graphics.
 SLUS-29050:
   name: "Everquest Online Adventures [Regular Demo]"
   region: "NTSC-U"
@@ -37865,7 +37865,7 @@ SLUS-29101:
   name: "Crash Twinsanity & Spyro - A Hero's Tail [Demo]"
   region: "NTSC-U"
   gameFixes:
-    - XgKickHack # Fixes bad geometry.
+    - XGKickHack # Fixes bad geometry.
     - VU0KickstartHack # Fixes loading hang (only for Crash).
 SLUS-29104:
   name: "Galactic Wrestling - Featuring Ultimate Muscle [Demo]"
@@ -38111,7 +38111,7 @@ TCES-53247:
   name: "WRC: Rally Evolved Beta Trial Code"
   region: "PAL-E"
   gameFixes:
-    - XgKickHack # Fixes SPS.
+    - XGKickHack # Fixes SPS.
 TCES-53286:
   name: "Jak X Beta Trial Code"
   region: "PAL-E"
@@ -38150,7 +38150,7 @@ TCPS-10111:
   name: "Eremental Gerad"
   region: "NTSC-J"
   gameFixes:
-    - XgKickHack # Fixes chocolate coloured characters.
+    - XGKickHack # Fixes chocolate coloured characters.
 TCPS-10113:
   name: "Mushihime-sama"
   region: "NTSC-J"
