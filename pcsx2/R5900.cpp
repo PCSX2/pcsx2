@@ -16,7 +16,6 @@
 
 #include "PrecompiledHeader.h"
 #include "Common.h"
-#include "AppConfig.h"
 
 #include "R5900.h"
 #include "R3000A.h"

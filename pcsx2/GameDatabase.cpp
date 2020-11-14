@@ -76,8 +76,6 @@ std::vector<std::string> YamlGameDatabaseImpl::safeGetStringList(const YAML::Nod
 
 GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::string serial, const YAML::Node& node)
 {
-	if (serial == "SCUS-97265")
-		int x = 0;
 	GameDatabaseSchema::GameEntry gameEntry;
 	try
 	{
@@ -111,7 +109,7 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 				Console.Error(fmt::format("[GameDB] Invalid gamefix: '{}', specified for serial: '{}'. Dropping!", fix, serial));
 			}
 		}
-		
+
 		if (YAML::Node speedHacksNode = node["speedHacks"])
 		{
 			for (YAML::const_iterator entry = speedHacksNode.begin(); entry != speedHacksNode.end(); entry++)
@@ -144,7 +142,7 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 					Console.Error(fmt::format("[GameDB] Patch with duplicate CRC: '{}' detected for serial: '{}'.  Skipping patch.", crc, serial));
 					continue;
 				}
-					
+
 				GameDatabaseSchema::Patch patchCol;
 
 				patchCol.author = safeGetString(node, "author");
