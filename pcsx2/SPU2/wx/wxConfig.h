@@ -80,7 +80,6 @@ public:
 class Dialog : public wxDialog
 {
 	wxBoxSizer *m_top_box, *m_portaudio_box, *m_sdl_box;
-	wxStaticBoxSizer* m_output_box;
 	wxChoice *m_module_select, *m_portaudio_select, *m_sdl_select;
 	wxStaticText *m_portaudio_text, *m_sdl_text;
 

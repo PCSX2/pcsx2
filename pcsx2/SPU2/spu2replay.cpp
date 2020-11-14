@@ -101,8 +101,8 @@ bool replay_mode = false;
 
 u16 dmabuffer[0xFFFFF];
 
-const u32 IOP_CLK = 768 * 48000;
-const u32 IOPCiclesPerMS = 768 * 48;
+[[maybe_unused]]const u32 IOP_CLK = 768 * 48000;
+[[maybe_unused]]const u32 IOPCiclesPerMS = 768 * 48;
 u32 CurrentIOPCycle = 0;
 
 u64 HighResFreq;
