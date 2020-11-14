@@ -38951,6 +38951,10 @@ Serial = SLUS-20767
 Name   = MX Unleashed
 Region = NTSC-U
 Compat = 5
+[patches = 9866FE54]
+	patch=1,EE,001Cb6E8,word,484E9000
+	patch=1,EE,001CB6EC,word,4BDBD9FF
+[/patches]
 ---------------------------------------------
 Serial = SLUS-20769
 Name   = Harry Potter - Quidditch World Cup
