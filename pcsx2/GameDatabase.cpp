@@ -95,7 +95,7 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 			bool fixValidated = false;
 			for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; ++id)
 			{
-				std::string validFix = wxString(EnumToString(id)) + L"Hack";
+				std::string validFix = wxString(EnumToString(id)).ToStdString() + L"Hack";
 				if (validFix == fix)
 				{
 					fixValidated = true;
