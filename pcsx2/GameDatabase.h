@@ -17,13 +17,6 @@
 
 #include "yaml-cpp/yaml.h"
 
-// TODO - config - is this still required? not needed on our integration branch
-
-// _Target_ is defined by R300A.h and R5900.h and the definition leaks to here.
-// The problem, at least with Visual Studio 2019 on Windows,
-// is that unordered_map includes xhash which uses _Target_ as a template
-// parameter. Unless we undef it here, the build breaks with a cryptic error message.
-#undef _Target_
 #include <unordered_map>
 #include <vector>
 #include <string>
@@ -47,6 +40,7 @@ public:
 
 	enum class RoundMode
 	{
+		Undefined = -1,
 		Nearest = 0,
 		NegativeInfinity,
 		PositiveInfinity,
@@ -55,41 +49,14 @@ public:
 
 	enum class ClampMode
 	{
+		Undefined = -1,
 		Disabled = 0,
 		Normal,
 		Extra,
 		Full
 	};
 
-	// No point in using enums because i need to convert from a string then
-	// left here incase i turn these into lists to validate against
-	/*enum class GameFix
-	{
-		VuAddSubHack = 0,
-		FpuCompareHack,
-		FpuMulHack,
-		FpuNegDivHack,
-		XgKickHack,
-		IPUWaitHack,
-		EETimingHack,
-		SkipMPEGHack,
-		OPHFLagHack,
-		DMABusyHack,
-		VIFFIFOHack,
-		VIF1StallHack,
-		GIFFIFOHack,
-		FMVinSoftwareHack,
-		ScarfaceIbitHack,
-		CrashTagTeamRacingIbit,
-		VU0KickstartHack,
-	};
-
-	enum class SpeedHacks
-	{
-		mvuFlagSpeedHack = 0
-	};*/
-
-	struct PatchCollection
+	struct Patch
 	{
 		std::string author;
 		std::vector<std::string> patchLines;
@@ -101,14 +68,14 @@ public:
 		std::string name;
 		std::string region;
 		Compatibility compat = Compatibility::Unknown;
-		RoundMode eeRoundMode = RoundMode::Nearest;
-		RoundMode vuRoundMode = RoundMode::Nearest;
-		ClampMode eeClampMode = ClampMode::Disabled;
-		ClampMode vuClampMode = ClampMode::Disabled;
+		RoundMode eeRoundMode = RoundMode::Undefined;
+		RoundMode vuRoundMode = RoundMode::Undefined;
+		ClampMode eeClampMode = ClampMode::Undefined;
+		ClampMode vuClampMode = ClampMode::Undefined;
 		std::vector<std::string> gameFixes;
-		std::vector<std::string> speedHacks;
+		std::unordered_map<std::string, int> speedHacks;
 		std::vector<std::string> memcardFilters;
-		std::unordered_map<std::string, PatchCollection> patches;
+		std::unordered_map<std::string, Patch> patches;
 
 		std::string memcardFiltersAsString();
 	};
@@ -131,9 +98,9 @@ public:
 
 private:
 	std::unordered_map<std::string, GameDatabaseSchema::GameEntry> gameDb;
-	GameDatabaseSchema::GameEntry entryFromYaml(const YAML::Node& node);
+	GameDatabaseSchema::GameEntry entryFromYaml(const std::string serial, const YAML::Node& node);
 
-	// TODO move these into a generic library
+	// TODO - config - move these into a generic library
 	std::string safeGetString(const YAML::Node& n, std::string key, std::string def = "");
 	int safeGetInt(const YAML::Node& n, std::string key, int def = 0);
 	std::vector<std::string> safeGetStringList(const YAML::Node& n, std::string key, std::vector<std::string> def = {});

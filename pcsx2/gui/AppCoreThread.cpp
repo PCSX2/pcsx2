@@ -245,91 +245,89 @@ void AppCoreThread::OnPauseDebug()
 // Returns number of gamefixes set
 static int loadGameSettings(Pcsx2Config& dest, const GameDatabaseSchema::GameEntry& game)
 {
-	//if (!game.IsOk())
-	//	return 0;
+	if (!game.isValid)
+		return 0;
 
-	//int gf = 0;
+	int gf = 0;
 
-	//if (game.keyExists("eeRoundMode"))
-	//{
-	//	SSE_RoundMode eeRM = (SSE_RoundMode)game.getInt("eeRoundMode");
-	//	if (EnumIsValid(eeRM))
-	//	{
-	//		PatchesCon->WriteLn("(GameDB) Changing EE/FPU roundmode to %d [%s]", eeRM, EnumToString(eeRM));
-	//		dest.Cpu.sseMXCSR.SetRoundMode(eeRM);
-	//		++gf;
-	//	}
-	//}
+	if (game.eeRoundMode != GameDatabaseSchema::RoundMode::Undefined)
+	{
+		SSE_RoundMode eeRM = (SSE_RoundMode)enum_cast(game.eeRoundMode);
+		if (EnumIsValid(eeRM))
+		{
+			PatchesCon->WriteLn("(GameDB) Changing EE/FPU roundmode to %d [%s]", eeRM, EnumToString(eeRM));
+			dest.Cpu.sseMXCSR.SetRoundMode(eeRM);
+			gf++;
+		}
+	}
 
-	//if (game.keyExists("vuRoundMode"))
-	//{
-	//	SSE_RoundMode vuRM = (SSE_RoundMode)game.getInt("vuRoundMode");
-	//	if (EnumIsValid(vuRM))
-	//	{
-	//		PatchesCon->WriteLn("(GameDB) Changing VU0/VU1 roundmode to %d [%s]", vuRM, EnumToString(vuRM));
-	//		dest.Cpu.sseVUMXCSR.SetRoundMode(vuRM);
-	//		++gf;
-	//	}
-	//}
+	if (game.vuRoundMode != GameDatabaseSchema::RoundMode::Undefined)
+	{
+		SSE_RoundMode vuRM = (SSE_RoundMode)enum_cast(game.vuRoundMode);
+		if (EnumIsValid(vuRM))
+		{
+			PatchesCon->WriteLn("(GameDB) Changing VU0/VU1 roundmode to %d [%s]", vuRM, EnumToString(vuRM));
+			dest.Cpu.sseVUMXCSR.SetRoundMode(vuRM);
+			gf++;
+		}
+	}
 
-	//if (game.keyExists("eeClampMode"))
-	//{
-	//	int clampMode = game.getInt("eeClampMode");
-	//	PatchesCon->WriteLn("(GameDB) Changing EE/FPU clamp mode [mode=%d]", clampMode);
-	//	dest.Cpu.Recompiler.fpuOverflow = (clampMode >= 1);
-	//	dest.Cpu.Recompiler.fpuExtraOverflow = (clampMode >= 2);
-	//	dest.Cpu.Recompiler.fpuFullMode = (clampMode >= 3);
-	//	gf++;
-	//}
+	if (game.eeClampMode != GameDatabaseSchema::ClampMode::Undefined)
+	{
+		int clampMode = enum_cast(game.eeClampMode);
+		PatchesCon->WriteLn("(GameDB) Changing EE/FPU clamp mode [mode=%d]", clampMode);
+		dest.Cpu.Recompiler.fpuOverflow = (clampMode >= 1);
+		dest.Cpu.Recompiler.fpuExtraOverflow = (clampMode >= 2);
+		dest.Cpu.Recompiler.fpuFullMode = (clampMode >= 3);
+		gf++;
+	}
 
-	//if (game.keyExists("vuClampMode"))
-	//{
-	//	int clampMode = game.getInt("vuClampMode");
-	//	PatchesCon->WriteLn("(GameDB) Changing VU0/VU1 clamp mode [mode=%d]", clampMode);
-	//	dest.Cpu.Recompiler.vuOverflow = (clampMode >= 1);
-	//	dest.Cpu.Recompiler.vuExtraOverflow = (clampMode >= 2);
-	//	dest.Cpu.Recompiler.vuSignOverflow = (clampMode >= 3);
-	//	gf++;
-	//}
+	if (game.vuClampMode != GameDatabaseSchema::ClampMode::Undefined)
+	{
+		int clampMode = enum_cast(game.vuClampMode);
+		PatchesCon->WriteLn("(GameDB) Changing VU0/VU1 clamp mode [mode=%d]", clampMode);
+		dest.Cpu.Recompiler.vuOverflow = (clampMode >= 1);
+		dest.Cpu.Recompiler.vuExtraOverflow = (clampMode >= 2);
+		dest.Cpu.Recompiler.vuSignOverflow = (clampMode >= 3);
+		gf++;
+	}
 
+	if (game.speedHacks.count("mvuFlagSpeedHack") == 1)
+	{
+		bool vuFlagHack = game.speedHacks.at("mvuFlagSpeedHack") ? 1 : 0;
+		PatchesCon->WriteLn("(GameDB) Changing mVU flag speed hack [mode=%d]", vuFlagHack);
+		dest.Speedhacks.vuFlagHack = vuFlagHack;
+		gf++;
+	}
 
-	//if (game.keyExists("mvuFlagSpeedHack"))
-	//{
-	//	bool vuFlagHack = game.getInt("mvuFlagSpeedHack") ? 1 : 0;
-	//	PatchesCon->WriteLn("(GameDB) Changing mVU flag speed hack [mode=%d]", vuFlagHack);
-	//	dest.Speedhacks.vuFlagHack = vuFlagHack;
-	//	gf++;
-	//}
+    if (game.keyExists("InstantVU1SpeedHack"))
+	{
+		bool vu1InstantHack = game.getInt("InstantVU1SpeedHack") ? 1 : 0;
+		PatchesCon->WriteLn("(GameDB) Changing Instant VU1 speedhack [mode=%d]", vu1InstantHack);
+		dest.Speedhacks.vu1Instant = vu1InstantHack;
+		gf++;
+	}
 
-	//if (game.keyExists("InstantVU1SpeedHack"))
-	//{
-	//	bool vu1InstantHack = game.getInt("InstantVU1SpeedHack") ? 1 : 0;
-	//	PatchesCon->WriteLn("(GameDB) Changing Instant VU1 speedhack [mode=%d]", vu1InstantHack);
-	//	dest.Speedhacks.vu1Instant = vu1InstantHack;
-	//	gf++;
-	//}
+	// TODO - config - this could be simplified with maps instead of bitfields and enums
+	for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; ++id)
+	{
+		std::string key = wxString(EnumToString(id)) + L"Hack";
 
-	//for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; ++id)
-	//{
-	//	wxString key(EnumToString(id));
-	// 	key += L"Hack";
+		// Gamefixes are already guaranteed to be valid, any invalid ones are dropped
+		if (std::find(game.gameFixes.begin(), game.gameFixes.end(), key) != game.gameFixes.end())
+		{
+			// if the fix is present, it is said to be enabled
+			dest.Gamefixes.Set(id, true);
+			PatchesCon->WriteLn(L"(GameDB) Enabled Gamefix: " + key);
+			gf++;
 
-	//	if (game.keyExists(key))
-	//	{
-	//		bool enableIt = game.getBool(key);
-	//		dest.Gamefixes.Set(id, enableIt);
-	//		PatchesCon->WriteLn(L"(GameDB) %s Gamefix: " + key, enableIt ? L"Enabled" : L"Disabled");
-	//		gf++;
+			// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
+			if (id == Fix_GoemonTlbMiss && true)
+				vtlb_Alloc_Ppmap();
+		}
+	}
 
-	//		// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
-	//		if (id == Fix_GoemonTlbMiss && enableIt)
-	//			vtlb_Alloc_Ppmap();
-	//	}
-	//}
-
-	//return gf;
-
-	return 0;
+	return gf;
 }
 
 // Used to track the current game serial/id, and used to disable verbose logging of

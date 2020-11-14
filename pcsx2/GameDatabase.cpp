@@ -35,13 +35,10 @@ std::string GameDatabaseSchema::GameEntry::memcardFiltersAsString()
 	return filters;
 }
 
-/// TODO - the following helper functions can realistically be put in some sort of general yaml utility library
-// TODO - might be a way to condense this with templates? get it working first
 std::string YamlGameDatabaseImpl::safeGetString(const YAML::Node& n, std::string key, std::string def)
 {
 	if (!n[key])
 		return def;
-	// TODO - test this safety consideration (parse a value that isn't actually a string
 	return n[key].as<std::string>();
 }
 
@@ -49,7 +46,6 @@ int YamlGameDatabaseImpl::safeGetInt(const YAML::Node& n, std::string key, int d
 {
 	if (!n[key])
 		return def;
-	// TODO - test this safety consideration (parse a value that isn't actually an int
 	return n[key].as<int>();
 }
 
@@ -57,25 +53,65 @@ std::vector<std::string> YamlGameDatabaseImpl::safeGetStringList(const YAML::Nod
 {
 	if (!n[key])
 		return def;
-	// TODO - test this safety consideration (parse a value that isn't actually a string
 	return n[key].as<std::vector<std::string>>();
 }
 
-GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const YAML::Node& node)
+GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::string serial, const YAML::Node& node)
 {
-	GameDatabaseSchema::GameEntry entry;
+	GameDatabaseSchema::GameEntry gameEntry;
 	try
 	{
-		entry.name = safeGetString(node, "name");
-		entry.region = safeGetString(node, "region");
-		entry.compat = static_cast<GameDatabaseSchema::Compatibility>(safeGetInt(node, "compat"));
-		entry.eeRoundMode = static_cast<GameDatabaseSchema::RoundMode>(safeGetInt(node, "eeRoundMode"));
-		entry.vuRoundMode = static_cast<GameDatabaseSchema::RoundMode>(safeGetInt(node, "vuRoundMode"));
-		entry.eeClampMode = static_cast<GameDatabaseSchema::ClampMode>(safeGetInt(node, "eeClampMode"));
-		entry.vuClampMode = static_cast<GameDatabaseSchema::ClampMode>(safeGetInt(node, "vuClampMode"));
-		entry.gameFixes = safeGetStringList(node, "gameFixes");
-		entry.speedHacks = safeGetStringList(node, "speedHacks");
-		entry.memcardFilters = safeGetStringList(node, "memcardFilters");
+		gameEntry.name = safeGetString(node, "name");
+		gameEntry.region = safeGetString(node, "region");
+		gameEntry.compat = static_cast<GameDatabaseSchema::Compatibility>(safeGetInt(node, "compat"));
+		gameEntry.eeRoundMode = static_cast<GameDatabaseSchema::RoundMode>(safeGetInt(node, "eeRoundMode"));
+		gameEntry.vuRoundMode = static_cast<GameDatabaseSchema::RoundMode>(safeGetInt(node, "vuRoundMode"));
+		gameEntry.eeClampMode = static_cast<GameDatabaseSchema::ClampMode>(safeGetInt(node, "eeClampMode"));
+		gameEntry.vuClampMode = static_cast<GameDatabaseSchema::ClampMode>(safeGetInt(node, "vuClampMode"));
+
+		// Validate game fixes, invalid ones will be dropped!
+		for (std::string fix : gameEntry.gameFixes)
+		{
+			std::vector<std::string> rawFixes = safeGetStringList(node, "gameFixes");
+			bool fixValidated = false;
+			for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; ++id)
+			{
+				std::string validFix = wxString(EnumToString(id)) + L"Hack";
+				if (validFix == fix)
+				{
+					fixValidated = true;
+					break;
+				}
+			}
+			if (fixValidated)
+			{
+				gameEntry.gameFixes.push_back(fix);
+			}
+			else
+			{
+				Console.Error("[GameDB] Invalid gamefix: '%s', specified for serial: '%s'. Dropping!", fix, serial);
+			}
+		}
+		
+		if (YAML::Node speedHacksNode = node["speedHacks"])
+		{
+			for (YAML::const_iterator entry = speedHacksNode.begin(); entry != speedHacksNode.end(); entry++)
+			{
+				// Validate speedhacks, invalid ones will be skipped!
+				std::string speedHack = entry->first.as<std::string>();
+
+				// NOTE - currently only 1 speedhack!
+				if (speedHack != "mvuFlagSpeedHack")
+				{
+					Console.Error("[GameDB] Invalid speedhack: '%s', specified for serial: '%s'. Dropping!", speedHack, serial);
+					continue;
+				}
+
+				gameEntry.speedHacks[speedHack] = entry->second.as<int>();
+			}
+		}
+
+		gameEntry.memcardFilters = safeGetStringList(node, "memcardFilters");
 
 		if (YAML::Node patches = node["patches"])
 		{
@@ -83,18 +119,19 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const YAML::No
 			{
 				YAML::Node key = it->first;
 				YAML::Node val = it->second;
-				GameDatabaseSchema::PatchCollection patchCol;
+				GameDatabaseSchema::Patch patchCol;
 				patchCol.author = safeGetString(val, "author");
 				patchCol.patchLines = safeGetStringList(val, "patchLines");
-				entry.patches[key.as<std::string>()] = patchCol;
+				gameEntry.patches[key.as<std::string>()] = patchCol;
 			}
 		}
 	}
-	catch (std::exception& e)
+	catch (YAML::RepresentationException e)
 	{
-		entry.isValid = false;
+		Console.Error("[GameDB] Invalid GameDB syntax detected on serial: '%s'.  Error Details - %s", serial, e.what());
+		gameEntry.isValid = false;
 	}
-	return entry;
+	return gameEntry;
 }
 
 GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::findGame(const std::string serial)
@@ -112,28 +149,31 @@ int YamlGameDatabaseImpl::numGames()
 	return gameDb.size();
 }
 
-// yaml-cpp definitely takes longer to parse this giant file, but the library feels more mature
-// rapidyaml exists and I have it mostly setup in another branch which could be easily dropped in as a replacement if needed
-//
-// the problem i ran into with rapidyaml is there is a lack of usage/documentation as it's new
-// and i didn't like the default way it handles exceptions (seemed to be configurable, but i didn't have much luck)
-
 bool YamlGameDatabaseImpl::initDatabase(const std::string filePath)
 {
 	try
 	{
-		// yaml-cpp has memory leak issues, convert to a map and throw it away!
+		// yaml-cpp has memory leak issues if you persist and modify a YAML::Node
+		// convert to a map and throw it away instead!
 		YAML::Node data = YAML::LoadFile(filePath);
 		for (YAML::const_iterator entry = data.begin(); entry != data.end(); entry++)
 		{
-			// TODO - helper function to throw an error gracefully if an entry is malformed
-			std::string serial = entry->first.as<std::string>();
-			gameDb[serial] = entryFromYaml(entry->second);
+			// we don't want to throw away the entire GameDB file if a single entry is made, but we do
+			// want to yell about it so it can be corrected
+			try
+			{
+				std::string serial = entry->first.as<std::string>();
+				gameDb[serial] = entryFromYaml(serial, entry->second);
+			}
+			catch (YAML::RepresentationException e)
+			{
+				Console.Error("[GameDB] Invalid GameDB syntax detected.  Error Details - %s", e.what());
+			}
 		}
 	}
 	catch (const std::exception& e)
 	{
-		// TODO - error log
+		Console.Error("Error occured when initializing GameDB: %s", e.what());
 		return false;
 	}
 
