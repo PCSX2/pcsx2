@@ -38953,7 +38953,7 @@ Region = NTSC-U
 Compat = 5
 [patches = 9866FE54]
 	author=refraction
-	comment=fixes COP2 instructor order to resolve SPS
+	comment=fixes COP2 instruction order to resolve SPS
 	patch=1,EE,001Cb6E8,word,484E9000
 	patch=1,EE,001CB6EC,word,4BDBD9FF
 [/patches]
