@@ -332,7 +332,7 @@ bool InputRecording::Play(wxString fileName)
 		if (!wxFileExists(inputRecordingData.GetFilename() + "_SaveState.p2s"))
 		{
 			inputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}_SaveState.p2s",
-											 inputRecordingData.GetFilename()));
+											 inputRecordingData.GetFilename().ToStdString()));
 			inputRecordingData.Close();
 			return false;
 		}
