@@ -137,10 +137,19 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 			for (YAML::const_iterator it = patches.begin(); it != patches.end(); ++it)
 			{
 				const YAML::Node& node = *it;
+				std::string crc = safeGetString(node, "crc", "default");
+
+				if (gameEntry.patches.count(crc) == 1)
+				{
+					Console.Error(fmt::format("[GameDB] Patch with duplicate CRC: '{}' detected for serial: '{}'.  Skipping patch.", crc, serial));
+					continue;
+				}
+					
 				GameDatabaseSchema::Patch patchCol;
+
 				patchCol.author = safeGetString(node, "author");
 				patchCol.patchLines = safeGetMultilineString(node, "content");
-				gameEntry.patches[safeGetString(node, "crc", "default")] = patchCol;
+				gameEntry.patches[crc] = patchCol;
 			}
 		}
 	}
