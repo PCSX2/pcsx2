@@ -53,6 +53,7 @@ linux_32_before_install() {
 		libpng12-dev:i386 \
 		libsdl2-dev:i386 \
 		libsoundtouch-dev:i386 \
+		libsamplerate0-dev:i386 \
 		libwxgtk3.0-dev:i386 \
 		libxext-dev:i386 \
 		libxft-dev:i386 \
@@ -113,6 +114,7 @@ linux_64_before_install() {
 		libpng12-dev \
 		libsdl2-dev \
 		libsoundtouch-dev \
+		libsamplerate0-dev \
 		libwxgtk3.0-dev \
 		portaudio19-dev \
 		libxml2-dev \
