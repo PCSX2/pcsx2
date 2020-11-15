@@ -164,11 +164,11 @@ msgstr ""
 msgid ""
 "PCSX2 requires a *legal* copy of the PS2 BIOS in order to run games.\n"
 "You cannot use a copy obtained from a friend or the Internet.\n"
-"You must dump the BIOS from your *own* PlayStation 2 console."
+"You must dump the BIOS from your *own* Playstation 2 console."
 msgstr ""
 "為了運行遊戲，PCSX2 需要一份「合法」的 PS2 BIOS 拷貝。\n"
 "您不能使用從朋友或網路借來的 PS2 BIOS 拷貝。\n"
-"您必須從您「自己」的 PlayStation 2 主機擷取 BIOS。"
+"您必須從您「自己」的 Playstation 2 主機擷取 BIOS。"
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:32
 #, c-format
@@ -770,11 +770,11 @@ msgstr ""
 "替。：）"
 
 #~ msgid ""
-#~ "PlayStation game discs are not supported by PCSX2.  If you want to "
+#~ "Playstation game discs are not supported by PCSX2.  If you want to "
 #~ "emulate PSX games then you'll have to download a PSX-specific emulator, "
 #~ "such as ePSXe or PCSX."
 #~ msgstr ""
-#~ "PCSX2 不支援 PlayStation 遊戲光碟。\n"
+#~ "PCSX2 不支援 Playstation 遊戲光碟。\n"
 #~ "若您想要模擬 PS 遊戲，您必須下載 PS 模擬器，譬如 ePSXe 或 PCSX。"
 
 #, c-format

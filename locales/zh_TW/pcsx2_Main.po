@@ -856,7 +856,7 @@ msgstr "授權"
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:62
 msgid "PlayStation 2 Emulator:"
-msgstr "PlayStation 2 模擬器："
+msgstr "Playstation 2 模擬器："
 
 #: pcsx2/gui/Dialogs/AboutBoxDialog.cpp:64
 msgid ""

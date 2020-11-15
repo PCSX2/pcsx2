@@ -189,11 +189,11 @@ msgstr ""
 msgid ""
 "PCSX2 requires a *legal* copy of the PS2 BIOS in order to run games.\n"
 "You cannot use a copy obtained from a friend or the Internet.\n"
-"You must dump the BIOS from your *own* PlayStation 2 console."
+"You must dump the BIOS from your *own* Playstation 2 console."
 msgstr ""
 "PCSX2 vyžaduje *legální* kopii BIOSu PS2, abyste mohli hrát hry.\n"
 "Nemůžete použít kopii získanou od kamaráda nebo z Internetu.\n"
-"Musíte ho vypsat z *Vaší* vlastní konzole PlayStation 2."
+"Musíte ho vypsat z *Vaší* vlastní konzole Playstation 2."
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:32
 #, c-format
@@ -787,11 +787,11 @@ msgstr ""
 "mVU :)"
 
 #~ msgid ""
-#~ "PlayStation game discs are not supported by PCSX2.  If you want to "
+#~ "Playstation game discs are not supported by PCSX2.  If you want to "
 #~ "emulate PSX games then you'll have to download a PSX-specific emulator, "
 #~ "such as ePSXe or PCSX."
 #~ msgstr ""
-#~ "Herní disky PlayStation nejsou PCSX2 podporovány. Pokud chcete emulovat "
+#~ "Herní disky Playstation nejsou PCSX2 podporovány. Pokud chcete emulovat "
 #~ "hry PSX, pak si budete muset stáhnout PSX emulátor, jako ePSXe nebo PCSX."
 
 #, c-format

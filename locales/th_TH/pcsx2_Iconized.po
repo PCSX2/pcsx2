@@ -174,11 +174,11 @@ msgstr ""
 msgid ""
 "PCSX2 requires a *legal* copy of the PS2 BIOS in order to run games.\n"
 "You cannot use a copy obtained from a friend or the Internet.\n"
-"You must dump the BIOS from your *own* PlayStation 2 console."
+"You must dump the BIOS from your *own* Playstation 2 console."
 msgstr ""
 "PCSX2 ต้องการสำเนาที่*ถูกกฎหมาย*ของไบออส PS2 เพื่อที่จะรันเกม\n"
 "คุณไม่สามารถใช้สำเนาจากเพื่อนหรือจากในอินเตอร์เน็ต\n"
-"คุณต้องดัมพ์ไบออสจากคอนโซล PlayStation 2 *ของคุณเอง*"
+"คุณต้องดัมพ์ไบออสจากคอนโซล Playstation 2 *ของคุณเอง*"
 
 #: pcsx2/gui/Dialogs/ImportSettingsDialog.cpp:32
 #, c-format
@@ -751,11 +751,11 @@ msgstr ""
 "sVU rec นั้นล้าสมัย และคุณควรต้องใช้ microVU แทน :)"
 
 #~ msgid ""
-#~ "PlayStation game discs are not supported by PCSX2.  If you want to "
+#~ "Playstation game discs are not supported by PCSX2.  If you want to "
 #~ "emulate PSX games then you'll have to download a PSX-specific emulator, "
 #~ "such as ePSXe or PCSX."
 #~ msgstr ""
-#~ "PCSX2 ไม่รองรับดิสก์เกม PlayStation 1 ถ้าคุณต้องการเล่นเกมนี้\n"
+#~ "PCSX2 ไม่รองรับดิสก์เกม Playstation 1 ถ้าคุณต้องการเล่นเกมนี้\n"
 #~ "คุณจะต้องดาวน์โหลดตัวจำลอง ePSXe หรือ PCSX"
 
 #, c-format
