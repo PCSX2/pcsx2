@@ -334,7 +334,8 @@ namespace usb_mic
 			if (mPAready == 3 && dur >= 1000)
 			{
 				mLastGetBuffer = now;
-				[[maybe_unused]]int ret = pa_context_connect(mPContext,
+				[[maybe_unused]]
+				int ret = pa_context_connect(mPContext,
 											 mServer,
 											 PA_CONTEXT_NOFLAGS,
 											 NULL);
