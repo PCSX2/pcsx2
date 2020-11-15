@@ -108,7 +108,7 @@ namespace usb_pad
 					}
 				}
 			}
-		quit:
+		//quit:
 			closedir(dirp);
 			return false;
 		}
@@ -134,7 +134,7 @@ namespace usb_pad
 			}
 
 			// get rid of unplugged devices
-			for (int i = 0; i < list_cache.size();)
+			for (int i = 0; i < (int)list_cache.size();)
 			{
 				if (!file_exists(list_cache[i].path))
 					list_cache.erase(list_cache.begin() + i);
@@ -183,7 +183,7 @@ namespace usb_pad
 			}
 
 			list.assign(list_cache.begin(), list_cache.end());
-		quit:
+		//quit:
 			closedir(dirp);
 		}
 
@@ -220,7 +220,7 @@ namespace usb_pad
 				//case ABS_Y: mWheelData.clutch = NORM(value, 0xFF); break; //no wheel on PS2 has one, afaik
 				//case ABS_RX: mWheelData.axis_rx = NORM(event.value, 0xFF); break;
 				case ABS_RY:
-				treat_me_like_ABS_RY:
+				//treat_me_like_ABS_RY:
 					mWheelData.throttle = 0xFF;
 					mWheelData.brake = 0xFF;
 					if (value < 0)

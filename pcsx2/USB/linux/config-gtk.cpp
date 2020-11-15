@@ -160,7 +160,7 @@ static void configureApi(GtkWidget* widget, gpointer data)
 	if (dev)
 	{
 		GtkWidget* dlg = GTK_WIDGET(g_object_get_data(G_OBJECT(widget), "dlg"));
-		int res = dev->Configure(port, api, dlg);
+		[[maybe_unused]]int res = dev->Configure(port, api, dlg);
 	}
 }
 
@@ -203,7 +203,6 @@ void USBconfigure()
     USBsetSettingsDir();
 	RegisterDevice::Register();
 	LoadConfig();
-	void* that = NULL;
 	SettingsCB settingsCB[2];
 	settingsCB[0].player = 0;
 	settingsCB[1].player = 1;
@@ -289,7 +288,7 @@ void USBconfigure()
 
 		sel_idx = 0;
 
-		for (int i = 0; i < countof(wt); i++)
+		for (int i = 0; i < (int)countof(wt); i++)
 		{
 			gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rs_cb), wt[i]);
 			if (conf.WheelType[port] == i)

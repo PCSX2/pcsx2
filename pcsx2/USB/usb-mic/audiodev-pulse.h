@@ -138,27 +138,27 @@ namespace usb_mic
 			int mChannels;
 			int mBuffering;
 			std::string mDeviceName;
-			int mSamplesPerSec;
 			pa_sample_spec mSSpec;
 
-			SRC_STATE* mResampler;
-			double mResampleRatio;
-			// Speed up or slow down audio
-			double mTimeAdjust;
 			RingBuffer mOutBuffer;
 			RingBuffer mInBuffer;
 			//std::thread mThread;
 			//std::condition_variable mEvent;
 			std::mutex mMutex;
-			bool mQuit;
 			bool mPaused;
+			bool mQuit;
 			hrc::time_point mLastGetBuffer;
 
-			int mPAready;
 			pa_threaded_mainloop* mPMainLoop;
 			pa_context* mPContext;
 			pa_stream* mStream;
 			char* mServer; //TODO add server selector?
+			int mPAready;
+			double mResampleRatio;
+			// Speed up or slow down audio
+			double mTimeAdjust;
+			int mSamplesPerSec;
+			SRC_STATE* mResampler;
 
 			int mOutSamples;
 			hrc::time_point mLastOut;

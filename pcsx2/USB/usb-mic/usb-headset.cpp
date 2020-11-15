@@ -472,7 +472,7 @@ namespace usb_mic
 									 int length, uint8_t* data)
 	{
 		uint8_t cs = cscn >> 8;
-		uint8_t cn = cscn - 1; /* -1 for the non-present master control */
+		const uint8_t cn = cscn - 1; /* -1 for the non-present master control */
 		uint32_t aid = ATTRIB_ID(cs, attrib, idif);
 		int ret = USB_RET_STALL;
 
@@ -586,7 +586,7 @@ namespace usb_mic
 									 int length, uint8_t* data)
 	{
 		uint8_t cs = cscn >> 8;
-		uint8_t cn = cscn - 1; /* -1 for the non-present master control */
+		const uint8_t cn = cscn - 1; /* -1 for the non-present master control */
 		uint32_t aid = ATTRIB_ID(cs, attrib, idif);
 		uint16_t vol;
 		int ret = USB_RET_STALL;
@@ -660,7 +660,7 @@ namespace usb_mic
 									int length, uint8_t* data)
 	{
 		uint8_t cs = cscn >> 8;
-		uint8_t cn = cscn - 1; /* -1 for the non-present master control */
+		[[maybe_unused]] const uint8_t cn = cscn - 1; /* -1 for the non-present master control */
 		uint32_t aid = ATTRIB_ID(cs, attrib, ep);
 		int ret = USB_RET_STALL;
 

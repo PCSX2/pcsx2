@@ -334,6 +334,7 @@ namespace usb_mic
 			if (mPAready == 3 && dur >= 1000)
 			{
 				mLastGetBuffer = now;
+				[[maybe_unused]]
 				int ret = pa_context_connect(mPContext,
 											 mServer,
 											 PA_CONTEXT_NOFLAGS,
@@ -460,11 +461,10 @@ namespace usb_mic
 
 		void PulseAudioDevice::Uninit()
 		{
-			int ret;
 			if (mStream)
 			{
 				pa_threaded_mainloop_lock(mPMainLoop);
-				ret = pa_stream_disconnect(mStream);
+				[[maybe_unused]]int ret = pa_stream_disconnect(mStream);
 				pa_stream_unref(mStream);
 				mStream = nullptr;
 				pa_threaded_mainloop_unlock(mPMainLoop);
@@ -875,7 +875,7 @@ namespace usb_mic
 					padev->mOutBuffer.read(read);
 				}
 
-				if (pa_bytes > final_bytes)
+				if ((ssize_t)pa_bytes > final_bytes)
 					memset((uint8_t*)pa_buffer + final_bytes, 0, pa_bytes - final_bytes);
 
 				ret = pa_stream_write(padev->mStream, pa_buffer, pa_bytes, NULL, 0LL, PA_SEEK_RELATIVE);

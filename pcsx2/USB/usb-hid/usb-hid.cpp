@@ -276,7 +276,7 @@ namespace usb_hid
 		0x0a,       /*  u8  ep_bInterval; (255ms -- usb 2.0 spec) */
 	};
 
-	static const uint8_t qemu_tablet_config_descriptor[] = {
+	[[maybe_unused]]static const uint8_t qemu_tablet_config_descriptor[] = {
 		/* one configuration */
 		0x09,       /*  u8  bLength; */
 		0x02,       /*  u8  bDescriptorType; Configuration */

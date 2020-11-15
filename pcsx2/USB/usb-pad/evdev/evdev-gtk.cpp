@@ -566,7 +566,7 @@ namespace usb_pad
 
 			if (map < JOY_STEERING || !strcmp(dev_type, BuzzDevice::TypeName()))
 			{
-				if (event < key_to_str.size())
+				if (event < (int)key_to_str.size())
 				{
 					*name = key_to_str[event];
 					return true;

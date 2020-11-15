@@ -72,7 +72,7 @@ namespace usb_pad
 					close(fd);
 				}
 			}
-		quit:
+		//quit:
 			closedir(dirp);
 		}
 

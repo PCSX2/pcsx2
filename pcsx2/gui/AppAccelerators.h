@@ -111,7 +111,7 @@ struct KeyAcceleratorCode
 		wxString modifiedKeyCode;
 		for (int i = 0; i < (int)tokens.size(); i++)
 		{
-			if (i == tokens.size() - 1)
+			if (i == (int)(tokens.size() - 1))
 				modifiedKeyCode.append(tokens.at(i));
 			else
 				modifiedKeyCode.append(wxString::Format("%s+", tokens.at(i)));

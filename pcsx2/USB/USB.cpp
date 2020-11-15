@@ -361,7 +361,7 @@ s32 USBfreeze(int mode, freezeData* data)
 
 		s8* ptr = data->data + sizeof(USBfreezeData);
 		// Load the state of the attached devices
-		if (data->size != sizeof(USBfreezeData) + usbd.device[0].size + usbd.device[1].size + 8192)
+		if ((long unsigned int)data->size != sizeof(USBfreezeData) + usbd.device[0].size + usbd.device[1].size + 8192)
 			return -1;
 
 		//TODO Subsequent save state loadings make USB "stall" for n seconds since previous load
