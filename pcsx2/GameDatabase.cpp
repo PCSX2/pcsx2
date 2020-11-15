@@ -26,7 +26,7 @@ std::string GameDatabaseSchema::GameEntry::memcardFiltersAsString()
 		return "";
 
 	std::string filters;
-	for (int i = 0; i < memcardFilters.size(); i++)
+	for (u32 i = 0; i < memcardFilters.size(); i++)
 	{
 		std::string f = memcardFilters.at(i);
 		filters.append(f);
@@ -93,7 +93,7 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 			bool fixValidated = false;
 			for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; ++id)
 			{
-				std::string validFix = wxString(EnumToString(id)).ToStdString() + L"Hack";
+				std::string validFix = wxString(EnumToString(id)).Append(L"Hack").ToStdString();
 				if (validFix == fix)
 				{
 					fixValidated = true;
