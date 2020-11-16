@@ -14,17 +14,33 @@
  */
 
 #pragma once
-#include "DEV9.h"
 
-void ata_init();
-void ata_term();
+#include <string>
+#include <thread>
+#include <atomic>
+#include <chrono>
+#include "ghc/filesystem.h"
 
-template <int sz>
-void ata_write(u32 addr, u32 value);
-template <int sz>
-u8 ata_read(u32 addr);
+class HddCreate
+{
+public:
+	ghc::filesystem::path filePath;
+	int neededSize;
 
-EXPORT_C_(void)
-ata_readDMA8Mem(u32* pMem, int size);
-EXPORT_C_(void)
-ata_writeDMA8Mem(u32* pMem, int size);
+	std::atomic_bool errored{false};
+
+private:
+	std::thread fileThread;
+	std::atomic_bool completed{false};
+
+	std::chrono::steady_clock::time_point lastUpdate;
+
+public:
+	void Start();
+
+private:
+	void SetFileProgress(int currentSize);
+	void SetError();
+	void SetDone();
+	void WriteImage(ghc::filesystem::path hddPath, int reqSizeMB);
+};

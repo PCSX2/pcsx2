@@ -172,6 +172,12 @@
     <Filter Include="System\Ps2\DEV9">
       <UniqueIdentifier>{8d5454f9-590c-4c53-aae1-8391c6465e50}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\DEV9\ATA">
+      <UniqueIdentifier>{bc20f567-851d-4440-a3fd-ef470241962e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\ATA\Commands">
+      <UniqueIdentifier>{9e9b52d7-7b1c-44b2-82d8-1e0d8085e7e0}</UniqueIdentifier>
+    </Filter>
     <Filter Include="System\Ps2\USB">
       <UniqueIdentifier>{df9de75c-2272-4f73-b2a0-4f9f492ba1e9}</UniqueIdentifier>
     </Filter>
@@ -1054,6 +1060,39 @@
     <ClCompile Include="..\..\SPU2\SndOut_Portaudio.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\DEV9\ATA\Commands\ATA_Command.cpp">
+      <Filter>System\Ps2\DEV9\ATA\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\ATA\Commands\ATA_CmdDMA.cpp">
+      <Filter>System\Ps2\DEV9\ATA\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\ATA\Commands\ATA_CmdExecuteDeviceDiag.cpp">
+      <Filter>System\Ps2\DEV9\ATA\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\ATA\Commands\ATA_CmdNoData.cpp">
+      <Filter>System\Ps2\DEV9\ATA\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\ATA\Commands\ATA_CmdPIOData.cpp">
+      <Filter>System\Ps2\DEV9\ATA\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\ATA\Commands\ATA_CmdSMART.cpp">
+      <Filter>System\Ps2\DEV9\ATA\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\ATA\Commands\ATA_SCE.cpp">
+      <Filter>System\Ps2\DEV9\ATA\Commands</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\ATA\ATA_Info.cpp">
+      <Filter>System\Ps2\DEV9\ATA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\ATA\ATA_State.cpp">
+      <Filter>System\Ps2\DEV9\ATA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\ATA\ATA_Transfer.cpp">
+      <Filter>System\Ps2\DEV9\ATA</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\ATA\HddCreate.cpp">
+      <Filter>System\Ps2\DEV9\ATA</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\DEV9\DEV9.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
@@ -1788,8 +1827,11 @@
     <ClInclude Include="..\..\Recording\Utilities\InputRecordingLogger.h">
       <Filter>Recording\Utilities</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\DEV9\ata.h">
-      <Filter>System\Ps2\DEV9</Filter>
+    <ClInclude Include="..\..\DEV9\ATA\ATA.h">
+      <Filter>System\Ps2\DEV9\ATA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\ATA\HddCreate.h">
+      <Filter>System\Ps2\DEV9\ATA</Filter>
     </ClInclude>
     <ClInclude Include="..\..\DEV9\Config.h">
       <Filter>System\Ps2\DEV9</Filter>
