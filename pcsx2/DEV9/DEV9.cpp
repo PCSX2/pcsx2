@@ -84,8 +84,6 @@ u8 eeprom[] = {
 };
 // clang-format on
 
-u32* iopPC;
-
 #ifdef _WIN32
 HANDLE hEeprom;
 HANDLE mapping;
@@ -98,16 +96,20 @@ std::string s_strIniPath = "inis";
 std::string s_strLogPath = "logs";
 // Warning: The below log function is SLOW. Better fix it before attempting to use it.
 #ifdef _DEBUG
-int Log = 1;
+int logFile = 1;
 #else
-int Log = 0;
+int logFile = 0;
 #endif
 
-void __Log(char* fmt, ...)
+void __Log(int level, const char* fmt, ...)
 {
-	if (!Log)
+	static char buffer[1024];
+
+	if (level < DEV9_LOG_LEVEL)
 		return;
-	va_list list;
+
+	va_list list1;
+	va_list list2;
 
 	static int ticks = -1;
 	int nticks = GetTickCount();
@@ -115,35 +117,40 @@ void __Log(char* fmt, ...)
 	if (ticks == -1)
 		ticks = nticks;
 
-	if (iopPC != NULL)
-	{
-		DEV9Log.Write("[%10d + %4d, IOP PC = %08x] ", nticks, nticks - ticks, *iopPC);
-	}
-	else
-	{
+	if (logFile)
 		DEV9Log.Write("[%10d + %4d] ", nticks, nticks - ticks);
-	}
 	ticks = nticks;
 
-	va_start(list, fmt);
-	DEV9Log.Write(fmt, list);
-	va_end(list);
+	if (logFile)
+	{
+		va_start(list1, fmt);
+		//PSELog has no vargs method
+		//use tmp buffer
+		vsnprintf(buffer, 1024, fmt, list1);
+		DEV9Log.Write(buffer);
+		va_end(list1);
+	}
+
+	va_start(list2, fmt);
+	emu_vprintf(fmt, list2);
+	va_end(list2);
 }
 
 void LogInit()
 {
 	const std::string LogFile(s_strLogPath + "/dev9Log.txt");
-	DEV9Log.WriteToFile = true;
-	DEV9Log.Open(LogFile);
+	if (logFile)
+	{
+		DEV9Log.WriteToFile = true;
+		DEV9Log.Open(LogFile);
+	}
 }
 
 s32 DEV9init()
 {
-
-#ifdef DEV9_LOG_ENABLE
 	LogInit();
 	DEV9_LOG("DEV9init\n");
-#endif
+
 	memset(&dev9, 0, sizeof(dev9));
 	DEV9_LOG("DEV9init2\n");
 
@@ -223,9 +230,9 @@ s32 DEV9init()
 void DEV9shutdown()
 {
 	DEV9_LOG("DEV9shutdown\n");
-#ifdef DEV9_LOG_ENABLE
-	DEV9Log.Close();
-#endif
+	
+	if (logFile)
+		DEV9Log.Close();
 }
 
 s32 DEV9open(void* pDsp)
@@ -234,8 +241,6 @@ s32 DEV9open(void* pDsp)
 	LoadConf();
 	DEV9_LOG("open r+: %s\n", config.Hdd);
 	config.HddSize = 8 * 1024;
-
-	iopPC = (u32*)pDsp;
 
 #ifdef ENABLE_ATA
 	ata_init();
@@ -799,6 +804,14 @@ int emu_printf(const char* fmt, ...)
 	va_start(vl, fmt);
 	ret = vfprintf(stderr, fmt, vl);
 	va_end(vl);
+	fflush(stderr);
+	return ret;
+}
+
+int emu_vprintf(const char* fmt, va_list vl)
+{
+	int ret;
+	ret = vfprintf(stderr, fmt, vl);
 	fflush(stderr);
 	return ret;
 }

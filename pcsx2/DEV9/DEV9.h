@@ -41,14 +41,18 @@
 #define __inline inline
 
 #endif
+// clang-format off
+#define DEV_LOG_LEVEL_VERBOSE	1
+#define DEV_LOG_LEVEL_INFO		2
+#define DEV_LOG_LEVEL_ERROR		3
 
-//#define DEV9_LOG_ENABLE
+#define DEV9_LOG_LEVEL	DEV_LOG_LEVEL_INFO
 
-#ifdef DEV9_LOG_ENABLE
-#define DEV9_LOG __Log
-#else
-#define DEV9_LOG(...)
-#endif
+#define DEV9_LOG(...)		__Log(DEV_LOG_LEVEL_VERBOSE,__VA_ARGS__)
+#define DEV9_LOG_VERB(...)	__Log(DEV_LOG_LEVEL_VERBOSE,__VA_ARGS__)
+#define DEV9_LOG_INFO(...)	__Log(DEV_LOG_LEVEL_INFO,	__VA_ARGS__)
+#define DEV9_LOG_ERROR(...)	__Log(DEV_LOG_LEVEL_ERROR,	__VA_ARGS__)
+// clang-format on
 
 void rx_process(NetPacket* pk);
 bool rx_fifo_can_rx();
@@ -130,7 +134,7 @@ EXTERN PluginLog DEV9Log;
 //Yes these are meant to be a lowercase extern
 extern std::string s_strIniPath;
 extern std::string s_strLogPath;
-void __Log(char* fmt, ...);
+void __Log(int level, const char* fmt, ...);
 
 void SysMessage(char* fmt, ...);
 
@@ -718,6 +722,7 @@ void DEV9write16(u32 addr, u16 value);
 void DEV9write32(u32 addr, u32 value);
 
 int emu_printf(const char* fmt, ...);
+int emu_vprintf(const char* fmt, va_list);
 
 #ifdef _WIN32
 #pragma warning(error : 4013)
