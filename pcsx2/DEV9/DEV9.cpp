@@ -27,6 +27,7 @@
 #include <err.h>
 #endif
 
+#include "ghc/filesystem.h"
 
 #include <fcntl.h>
 #include <stdlib.h>
@@ -37,8 +38,9 @@
 #include "DEV9.h"
 #undef EXTERN
 #include "Config.h"
+#include "AppConfig.h"
 #include "smap.h"
-#include "ata.h"
+
 
 #ifdef _WIN32
 #pragma warning(disable : 4244)
@@ -250,7 +252,19 @@ s32 DEV9open(void* pDsp)
 #else
 	DEV9_LOG("open r+: %s\n", config.Hdd);
 #endif
-	config.HddSize = 8 * 1024;
+
+#ifdef _WIN32
+	ghc::filesystem::path hddPath(std::wstring(config.Hdd));
+#else
+	ghc::filesystem::path hddPath(config.Hdd);
+#endif
+
+	if (hddPath.is_relative())
+	{
+		//GHC uses UTF8 on all platforms
+		ghc::filesystem::path path(GetSettingsFolder().ToUTF8().data());
+		hddPath = path / hddPath;
+	}
 
 #ifdef ENABLE_ATA
 	ata_init();
