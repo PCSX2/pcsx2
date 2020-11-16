@@ -267,6 +267,17 @@
     <ClCompile Include="..\..\DebugTools\MipsAssemblerTables.cpp" />
     <ClCompile Include="..\..\DebugTools\MipsStackWalk.cpp" />
     <ClCompile Include="..\..\DebugTools\SymbolMap.cpp" />
+    <ClCompile Include="..\..\DEV9\ATA\Commands\ATA_Command.cpp" />
+    <ClCompile Include="..\..\DEV9\ATA\Commands\ATA_CmdDMA.cpp" />
+    <ClCompile Include="..\..\DEV9\ATA\Commands\ATA_CmdExecuteDeviceDiag.cpp" />
+    <ClCompile Include="..\..\DEV9\ATA\Commands\ATA_CmdNoData.cpp" />
+    <ClCompile Include="..\..\DEV9\ATA\Commands\ATA_CmdPIOData.cpp" />
+    <ClCompile Include="..\..\DEV9\ATA\Commands\ATA_CmdSMART.cpp" />
+    <ClCompile Include="..\..\DEV9\ATA\Commands\ATA_SCE.cpp" />
+    <ClCompile Include="..\..\DEV9\ATA\ATA_Info.cpp" />
+    <ClCompile Include="..\..\DEV9\ATA\ATA_State.cpp" />
+    <ClCompile Include="..\..\DEV9\ATA\ATA_Transfer.cpp" />
+    <ClCompile Include="..\..\DEV9\ATA\HddCreate.cpp" />
     <ClCompile Include="..\..\DEV9\DEV9.cpp" />
     <ClCompile Include="..\..\DEV9\flash.cpp" />
     <ClCompile Include="..\..\DEV9\pcap_io.cpp" />
@@ -628,7 +639,8 @@
     <ClInclude Include="..\..\DebugTools\MipsAssemblerTables.h" />
     <ClInclude Include="..\..\DebugTools\MipsStackWalk.h" />
     <ClInclude Include="..\..\DebugTools\SymbolMap.h" />
-    <ClInclude Include="..\..\DEV9\ata.h" />
+    <ClInclude Include="..\..\DEV9\ATA\ATA.h" />
+    <ClInclude Include="..\..\DEV9\ATA\HddCreate.h" />
     <ClInclude Include="..\..\DEV9\Config.h" />
     <ClInclude Include="..\..\DEV9\DEV9.h" />
     <ClInclude Include="..\..\DEV9\net.h" />
