@@ -19,7 +19,7 @@
 
 #include "Global.h"
 #include "SndOut.h"
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 #include "Linux/Dialogs.h"
 #elif defined(_WIN32)
 #include "Windows/Dialogs.h"

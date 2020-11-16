@@ -21,7 +21,7 @@
 //#include <winsock2.h>
 #include <Winioctl.h>
 #include <windows.h>
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__APPLE__)
 #include <sys/types.h>
 #include <sys/mman.h>
 #include <err.h>

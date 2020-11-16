@@ -22,7 +22,7 @@
 #ifdef _WIN32
 #include <portaudio/include/portaudio.h>
 #include "Windows/Dialogs.h"
-#elif defined __linux
+#elif defined(__linux__) || defined(__APPLE__)
 #include "portaudio.h"
 #include "Linux/Dialogs.h"
 #endif
