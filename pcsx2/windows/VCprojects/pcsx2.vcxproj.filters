@@ -1066,6 +1066,9 @@
     <ClCompile Include="..\..\DEV9\smap.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\DEV9\net.cpp">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\DEV9\Win32\tap-win32.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
@@ -1210,7 +1213,6 @@
     <ClCompile Include="..\..\USB\shared\rawinput_usb.cpp">
       <Filter>System\Ps2\USB\shared</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\DEV9\net.cpp" />
     <ClCompile Include="..\..\PAD\Windows\DeviceEnumerator.cpp">
       <Filter>System\Ps2\PAD</Filter>
     </ClCompile>
