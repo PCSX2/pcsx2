@@ -28,6 +28,7 @@
 #include "PS2Edefs.h"
 #include "PS2Eext.h"
 #include "net.h"
+#include "ATA/ATA.h"
 
 #ifdef _WIN32
 
@@ -82,6 +83,8 @@ EXTERN Config config;
 
 typedef struct
 {
+	ATA* ata;
+
 	s8 dev9R[0x10000];
 	u8 eeprom_state;
 	u8 eeprom_command;
@@ -99,14 +102,21 @@ typedef struct
 	u16 txfifo_rd_ptr;
 
 	u8 bd_swap;
-	u16 atabuf[1024];
-	u32 atacount;
-	u32 atasize;
 	u16 phyregs[32];
-	int irqcause;
-	u8 atacmd;
-	u32 atasector;
-	u32 atansector;
+
+	u16 irqcause;
+	u16 irqmask;
+	u16 dma_ctrl;
+	u16 xfr_ctrl;
+	u16 if_ctrl;
+
+	u16 pio_mode;
+	u16 mdma_mode;
+	u16 udma_mode;
+
+	//Non-Regs
+	int fifo_bytes_read;
+	int fifo_bytes_write;
 } dev9Struct;
 
 //EEPROM states
