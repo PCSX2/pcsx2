@@ -19,7 +19,7 @@
 #include "Dialogs.h"
 #include <cstring>
 
-#if defined(__unix__)
+#if defined(__unix__) || defined(__APPLE__)
 #include <wx/wx.h>
 
 void SysMessage(const char* fmt, ...)

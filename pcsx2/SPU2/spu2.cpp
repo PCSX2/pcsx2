@@ -17,7 +17,7 @@
 #include "Global.h"
 #include "spu2.h"
 #include "Dma.h"
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 #include "Linux/Dialogs.h"
 #include "Linux/Config.h"
 #elif defined(_WIN32)

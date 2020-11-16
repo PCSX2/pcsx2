@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "../Config.h"
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 #include "../Linux/Config.h"
 #endif
 #include "../Global.h"

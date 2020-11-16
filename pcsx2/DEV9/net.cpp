@@ -58,16 +58,13 @@ void InitNet(NetAdapter* ad)
 #ifdef _WIN32
 	SetThreadPriority(rx_thread.native_handle(), THREAD_PRIORITY_HIGHEST);
 #elif defined(__POSIX__)
-	pthread_attr_t thAttr;
 	int policy = 0;
-	int max_prio_for_policy = 0;
+	sched_param param;
 
-	pthread_attr_init(&thAttr);
-	pthread_attr_getschedpolicy(&thAttr, &policy);
-	max_prio_for_policy = sched_get_priority_max(policy);
+	pthread_getschedparam(rx_thread.native_handle(), &policy, &param);
+	param.sched_priority = sched_get_priority_max(policy);
 
-	pthread_setschedprio(rx_thread.native_handle(), max_prio_for_policy);
-	pthread_attr_destroy(&thAttr);
+	pthread_setschedparam(rx_thread.native_handle(), policy, &param);
 #endif
 }
 

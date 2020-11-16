@@ -4,9 +4,9 @@
 ## Use cmake package to find module
 if (Linux)
     find_package(ALSA)
-    find_package(PCAP)
-    find_package(LibXml2)
 endif()
+find_package(PCAP)
+find_package(LibXml2)
 find_package(Freetype) # GSdx OSD
 find_package(Gettext) # translation tool
 if(EXISTS ${PROJECT_SOURCE_DIR}/.git)

@@ -69,7 +69,7 @@ s64 remaining = 0;
 
 #if _WIN32
 HWND gsWnd = nullptr;
-#else
+#elif defined(__linux__)
 #include "gtk.h"
 #include <gdk/gdkx.h>
 #include <X11/X.h>
@@ -253,7 +253,7 @@ s32 USBopen(void* pDsp)
 	}
 	gsWnd = hWnd;
 	pDsp = gsWnd;
-#else
+#elif defined(__linux__)
 
 	g_GSdsp = (Display*)((uptr*)pDsp)[0];
 	g_GSwin = (Window)((uptr*)pDsp)[1];

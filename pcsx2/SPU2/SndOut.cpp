@@ -89,8 +89,10 @@ SndOutModule* mods[] =
 #if defined(SPU2X_PORTAUDIO)
 		PortaudioOut,
 #endif
-#if defined(__linux__) /* && defined(__ALSA__)*/
+#if defined(__linux__) || defined(__APPLE__)
 		SDLOut,
+#endif
+#if defined(__linux__) /* && defined(__ALSA__)*/
 		AlsaOut,
 #endif
 		nullptr // signals the end of our list

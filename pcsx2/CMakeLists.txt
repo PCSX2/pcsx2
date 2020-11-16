@@ -326,6 +326,10 @@ set(pcsx2DEV9Headers
 	${pcsx2DEV9UIHeaders}
 	)
 
+# USBNull
+set(pcsx2USBNullSources USB/USBNull.cpp)
+set(pcsx2USBNullHeaders USB/USB.h)
+
 # USB sources 
 set(pcsx2USBSources
 	USB/USB.cpp
@@ -375,7 +379,7 @@ set(pcsx2USBSources
 	USB/usb-eyetoy/api_init_linux.cpp
 	USB/usb-hid/api_init_linux.cpp
 	USB/usb-mic/api_init_linux.cpp
-    )
+	)
 
 # USB headers
 set(pcsx2USBHeaders
@@ -870,8 +874,6 @@ set(Common
 	${pcsx2SPU2Headers}
 	${pcsx2DEV9Sources}
 	${pcsx2DEV9Headers}
-    ${pcsx2USBSources}
-    ${pcsx2USBHeaders}
 	${pcsx2DebugToolsSources}
 	${pcsx2GuiSources}
 	${pcsx2GuiResources}
@@ -898,6 +900,8 @@ if(Linux)
 	set(Platform
 		${pcsx2LinuxSources}
 		${pcsx2LinuxHeaders}
+		${pcsx2USBSources}
+		${pcsx2USBHeaders}
 		)
 		
 	set(Platform_Libs
@@ -916,7 +920,9 @@ endif()
 if(APPLE)
 	set(Platform
 		${pcsx2OSXSources}
-		${pcsx2LinuxHeaders})
+		${pcsx2LinuxHeaders}
+		${pcsx2USBNullSources}
+		${pcsx2USBNullHeaders})
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
