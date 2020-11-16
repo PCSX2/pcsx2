@@ -416,7 +416,7 @@ smap_read16(u32 addr)
 		}
 		*/
 	}
-#ifdef DEV9_LOG_ENABLE
+#if (DEV9_LOG_LEVEL <= 1)
 	switch (addr)
 	{
 		case SMAP_R_TXFIFO_FRAME_CNT:
@@ -829,7 +829,7 @@ smap_readDMA8Mem(u32* pMem, int size)
 	if (dev9Ru16(SMAP_R_RXFIFO_CTRL) & SMAP_RXFIFO_DMAEN)
 	{
 		dev9Ru32(SMAP_R_RXFIFO_RD_PTR) &= 16383;
-		size >>= 1;
+
 		DEV9_LOG(" * * SMAP DMA READ START: rd_ptr=%d, wr_ptr=%d\n", dev9Ru32(SMAP_R_RXFIFO_RD_PTR), dev9.rxfifo_wr_ptr);
 		while (size > 0)
 		{
@@ -850,7 +850,7 @@ smap_writeDMA8Mem(u32* pMem, int size)
 	if (dev9Ru16(SMAP_R_TXFIFO_CTRL) & SMAP_TXFIFO_DMAEN)
 	{
 		dev9Ru32(SMAP_R_TXFIFO_WR_PTR) &= 16383;
-		size >>= 1;
+
 		DEV9_LOG(" * * SMAP DMA WRITE START: wr_ptr=%d, rd_ptr=%d\n", dev9Ru32(SMAP_R_TXFIFO_WR_PTR), dev9.txfifo_rd_ptr);
 		while (size > 0)
 		{

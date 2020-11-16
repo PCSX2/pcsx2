@@ -774,6 +774,7 @@ void DEV9readDMA8Mem(u32* pMem, int size)
 
 	DEV9_LOG("*DEV9readDMA8Mem: size %x\n", size);
 	emu_printf("rDMA\n");
+	size >>= 1;
 
 	smap_readDMA8Mem(pMem, size);
 #ifdef ENABLE_ATA
@@ -788,6 +789,7 @@ void DEV9writeDMA8Mem(u32* pMem, int size)
 
 	DEV9_LOG("*DEV9writeDMA8Mem: size %x\n", size);
 	emu_printf("wDMA\n");
+	size >>= 1;
 
 	smap_writeDMA8Mem(pMem, size);
 #ifdef ENABLE_ATA
