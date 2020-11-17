@@ -86,16 +86,6 @@ remove_3rdparty()
     rm -fr $LOCAL_REPO/tools
 }
 
-remove_not_yet_free_plugin()
-{
-    echo "Remove non free plugins"
-    # remove also deprecated plugins
-    for plugin in USBqemu
-    do
-        rm -fr $LOCAL_REPO/plugins/$plugin
-    done
-}
-
 remove_remaining_non_free_file()
 {
     echo "Remove remaining non free file. TODO UPSTREAM"
@@ -113,7 +103,6 @@ remove_dot_git()
 ######################################################################
 download_orig $BRANCH
 remove_3rdparty
-remove_not_yet_free_plugin
 remove_remaining_non_free_file
 
 get_git_version
