@@ -256,19 +256,16 @@ s32 USBopen(void* pDsp)
 
 #if _WIN32
 
-	HWND hWnd = (HWND)pDsp;
-	//HWND hWnd=(HWND)((uptr*)pDsp)[0];
-
-	if (!IsWindow(hWnd))
-		hWnd = *(HWND*)hWnd;
-
-	if (!IsWindow(hWnd))
-		hWnd = NULL;
-	else
+	HWND hWnd = 0;
+	if (IsWindow((HWND)pDsp))
 	{
-		while (GetWindowLong(hWnd, GWL_STYLE) & WS_CHILD)
-			hWnd = GetParent(hWnd);
+		hWnd = (HWND)pDsp;
 	}
+	else if (pDsp && !IsBadReadPtr(pDsp, 4) && IsWindow(*(HWND*)pDsp))
+	{
+		hWnd = *(HWND*)pDsp;
+	}
+
 	gsWnd = hWnd;
 	pDsp = gsWnd;
 #elif defined(__linux__)
