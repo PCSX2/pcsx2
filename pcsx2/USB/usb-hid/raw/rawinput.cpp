@@ -182,12 +182,11 @@ namespace usb_hid
 
 		static void ParseRawInputMS(RAWMOUSE& m, HIDState* hs)
 		{
-			int b = 0, z = 0;
+			int z = 0;
 			InputEvent ev{};
 
 			if (m.usButtonFlags & RI_MOUSE_WHEEL)
 				z = (short)m.usButtonData / WHEEL_DELTA;
-
 
 			ev.type = INPUT_EVENT_KIND_BTN;
 
@@ -245,13 +244,13 @@ namespace usb_hid
 			if (m.usFlags & MOUSE_MOVE_ABSOLUTE)
 			{
 				/*ev.type = INPUT_EVENT_KIND_ABS;
-		ev.u.abs.axis = INPUT_AXIS_X;
-		ev.u.abs.value = m.lLastX;
-		SendPointerEvent(ev, hs);
+				ev.u.abs.axis = INPUT_AXIS_X;
+				ev.u.abs.value = m.lLastX;
+				SendPointerEvent(ev, hs);
 
-		ev.u.abs.axis = INPUT_AXIS_Y;
-		ev.u.abs.value = m.lLastY;
-		SendPointerEvent(ev, hs);*/
+				ev.u.abs.axis = INPUT_AXIS_Y;
+				ev.u.abs.value = m.lLastY;
+				SendPointerEvent(ev, hs);*/
 			}
 			else
 			{
@@ -289,8 +288,8 @@ namespace usb_hid
 
 		int RawInput::Close()
 		{
-			Reset();
 			shared::rawinput::UnregisterCallback(this);
+			Reset();
 			return 0;
 		}
 
