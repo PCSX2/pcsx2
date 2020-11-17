@@ -18,6 +18,7 @@
 #include <cstdio>
 #include <vector>
 #include <algorithm>
+#include <mutex>
 #include "../platcompat.h"
 
 extern HINSTANCE hInst;
@@ -34,15 +35,18 @@ namespace shared
 		HWND eatenWnd = nullptr;
 		HHOOK hHook = nullptr, hHookWnd = nullptr, hHookKB = nullptr;
 		bool skipInput = false;
+		std::mutex cb_mutex;
 
 		void RegisterCallback(ParseRawInputCB* cb)
 		{
+			std::scoped_lock<std::mutex> lk(cb_mutex);
 			if (cb && std::find(callbacks.begin(), callbacks.end(), cb) == callbacks.end())
 				callbacks.push_back(cb);
 		}
 
 		void UnregisterCallback(ParseRawInputCB* cb)
 		{
+			std::scoped_lock<std::mutex> lk(cb_mutex);
 			auto it = std::find(callbacks.begin(), callbacks.end(), cb);
 			if (it != callbacks.end())
 				callbacks.erase(it);
@@ -189,6 +193,7 @@ namespace shared
 						if (pRawInput->header.dwType == RIM_TYPEKEYBOARD)
 							ToggleCursor(hWnd, pRawInput->data.keyboard);
 
+						std::lock_guard<std::mutex> lk(cb_mutex);
 						for (auto cb : callbacks)
 							cb->ParseRawInput(pRawInput);
 					}
