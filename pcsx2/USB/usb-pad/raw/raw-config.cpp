@@ -15,7 +15,9 @@
 
 #include "PrecompiledHeader.h"
 
+#if !defined(_WIN32_WINNT)
 #define _WIN32_WINNT 0x0502
+#endif
 #include <stdio.h>
 #include <windows.h>
 #include <windowsx.h>

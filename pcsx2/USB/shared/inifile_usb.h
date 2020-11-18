@@ -49,12 +49,10 @@
 #define __CINIFILE_H_
 
 #ifdef _WIN32
-// VC6 "identifier was truncated to '255' characters in the debug information"
-#if defined(_MSC_VER) && (_MSC_VER >= 1200) && (_MSC_VER < 1300)
-#pragma warning(disable : 4786)
-#endif
 // Prevent compile time warnings for deprecation
+#if !defined(_CRT_SECURE_NO_DEPRECATE)
 #define _CRT_SECURE_NO_DEPRECATE
+#endif
 #endif
 
 #include <set>
