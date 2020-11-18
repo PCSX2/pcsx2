@@ -259,6 +259,11 @@ static void cdvdWriteMAC(const u8* num)
 	setNvmData(num, 0, 8, offsetof(NVMLayout, mac));
 }
 
+void cdvdReadLanguageParams(u8* config)
+{
+	getNvmData(config, 0xF, 16, offsetof(NVMLayout, config1));
+}
+
 s32 cdvdReadConfig(u8* config)
 {
 	// make sure its in read mode
