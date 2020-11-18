@@ -235,7 +235,7 @@ void SysThreadBase::Resume()
 			if (m_ExecMode == ExecMode_Opened)
 				return;
 		}
-			// fall through...
+			[[fallthrough]];
 
 		case ExecMode_Closing:
 		case ExecMode_Pausing:
