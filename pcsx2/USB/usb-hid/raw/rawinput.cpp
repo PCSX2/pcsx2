@@ -138,7 +138,7 @@ namespace usb_hid
 
 		static void ParseRawInputKB(RAWKEYBOARD& k, HIDState* hs)
 		{
-			if (!hs->kbd.eh_entry)
+			if (hs->kind != HID_KEYBOARD || !hs->kbd.eh_entry)
 				return;
 			static uint32_t nr = 0;
 
@@ -174,14 +174,14 @@ namespace usb_hid
 
 		static void SendPointerEvent(InputEvent& ev, HIDState* hs)
 		{
-			if (hs->ptr.eh_entry)
-			{
-				hs->ptr.eh_entry(hs, &ev);
-			}
+			hs->ptr.eh_entry(hs, &ev);
 		}
 
 		static void ParseRawInputMS(RAWMOUSE& m, HIDState* hs)
 		{
+			if (!hs->ptr.eh_entry || (hs->kind != HID_MOUSE && hs->kind != HID_TABLET))
+				return;
+
 			int z = 0;
 			InputEvent ev{};
 
