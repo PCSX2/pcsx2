@@ -17,6 +17,7 @@
 
 #include "System.h"
 #include "SysThreads.h"
+#include "CDVD/CDVDaccess.h"
 
 // --------------------------------------------------------------------------------------
 //  SysThreadBase *External Thread* Implementations
@@ -314,7 +315,8 @@ bool SysThreadBase::StateCheckInThread()
 			m_RunningLock.Acquire();
 			if( m_ExecMode != ExecMode_Closing )
 			{
-				OnResumeInThread( g_CDVDReset );
+				if ( g_CDVDReset )
+					DoCDVDopen();
 				g_CDVDReset = false;
 				break;
 			}
@@ -338,6 +340,7 @@ bool SysThreadBase::StateCheckInThread()
 
 			m_RunningLock.Acquire();
 			OnResumeInThread( true );
+			g_CDVDReset = false;
 		break;
 
 		jNO_DEFAULT;
