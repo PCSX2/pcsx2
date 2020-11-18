@@ -17,7 +17,7 @@
 #include "shared_usb.h"
 #include <stdexcept>
 
-#if defined(BUILD_RAW)
+#ifdef _WIN32
 #include "rawinput_usb.h"
 #endif
 
@@ -26,8 +26,7 @@ namespace shared
 
 	void Initialize(void* ptr)
 	{
-// Keeping it simple, for now
-#if defined(BUILD_RAW)
+#ifdef _WIN32
 		if (!shared::rawinput::Initialize(ptr))
 			throw std::runtime_error("Failed to initialize raw input!");
 #endif
@@ -35,7 +34,7 @@ namespace shared
 
 	void Uninitialize(/*void *ptr*/)
 	{
-#if defined(BUILD_RAW)
+#ifdef _WIN32
 		shared::rawinput::Uninitialize(/*ptr*/);
 #endif
 	}

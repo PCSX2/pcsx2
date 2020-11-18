@@ -60,9 +60,4 @@ s64 get_clock();
 /* usb-pad-raw.cpp */
 #if _WIN32
 extern HWND gsWnd;
-#if defined(BUILD_RAW)
-extern HWND msgWindow;
-int InitWindow(HWND);
-void UninitWindow();
-#endif
 #endif

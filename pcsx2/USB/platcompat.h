@@ -25,14 +25,6 @@
 #endif
 #endif
 
-#ifdef _WIN32
-#define CALLBACK __stdcall
-#elif defined(__i386__)
-#define CALLBACK __attribute__((stdcall))
-#else
-#define CALLBACK
-#endif
-
 #ifndef EXPORT_C_
 #ifdef _MSC_VER
 #define EXPORT_C_(type) extern "C" type CALLBACK
