@@ -119,7 +119,7 @@ namespace usb_hid
 			{
 				if (mReaderThread.joinable())
 					mReaderThread.join();
-				mReaderThread = std::thread(EvDev::ReaderThread, this);
+				mReaderThread = std::thread(&EvDev::ReaderThread, this);
 			}
 			return 0;
 
@@ -137,20 +137,17 @@ namespace usb_hid
 			return 0;
 		}
 
-		void EvDev::ReaderThread(void* ptr)
+		void EvDev::ReaderThread()
 		{
 			ssize_t len;
 			input_event events[32];
 
-			EvDev* dev = static_cast<EvDev*>(ptr);
-			HIDState* hs = dev->mHIDState;
+			mReaderThreadIsRunning = true;
 
-			dev->mReaderThreadIsRunning = true;
-
-			while (dev->mHandle != -1)
+			while (mHandle != -1)
 			{
 				//Non-blocking read sets len to -1 and errno to EAGAIN if no new data
-				while ((len = read(dev->mHandle, &events, sizeof(events))) > -1)
+				while ((len = read(mHandle, &events, sizeof(events))) > -1)
 				{
 					InputEvent ev{};
 					len /= sizeof(events[0]);
@@ -162,10 +159,10 @@ namespace usb_hid
 							case EV_ABS:
 							{
 
-								if (dev->mHIDType == HIDTYPE_MOUSE) // usually mouse position is expected to be relative
+								if (mHIDState->kind == HID_MOUSE || mHIDState->kind == HID_KEYBOARD) // usually mouse position is expected to be relative
 									continue;
 
-								if (!hs->ptr.eh_entry)
+								if (!mHIDState->ptr.eh_entry)
 									continue;
 
 								ev.type = INPUT_EVENT_KIND_ABS;
@@ -173,19 +170,19 @@ namespace usb_hid
 								{
 									ev.u.abs.axis = INPUT_AXIS_X;
 									ev.u.abs.value = event.value;
-									hs->ptr.eh_entry(hs, &ev);
+									mHIDState->ptr.eh_entry(mHIDState, &ev);
 								}
 								else if (event.code == ABS_Y)
 								{
 									ev.u.abs.axis = INPUT_AXIS_Y;
 									ev.u.abs.value = event.value;
-									hs->ptr.eh_entry(hs, &ev);
+									mHIDState->ptr.eh_entry(mHIDState, &ev);
 								}
 							}
 							break;
 							case EV_REL:
 							{
-								if (!hs->ptr.eh_entry)
+								if (mHIDState->kind == HID_KEYBOARD || !mHIDState->ptr.eh_entry)
 									continue;
 
 								ev.type = INPUT_EVENT_KIND_REL;
@@ -193,12 +190,12 @@ namespace usb_hid
 								if (event.code == ABS_X)
 								{
 									ev.u.rel.axis = INPUT_AXIS_X;
-									hs->ptr.eh_entry(hs, &ev);
+									mHIDState->ptr.eh_entry(mHIDState, &ev);
 								}
 								else if (event.code == ABS_Y)
 								{
 									ev.u.rel.axis = INPUT_AXIS_Y;
-									hs->ptr.eh_entry(hs, &ev);
+									mHIDState->ptr.eh_entry(mHIDState, &ev);
 								}
 							}
 							break;
@@ -229,7 +226,7 @@ namespace usb_hid
 								}
 #endif
 
-								if (hs->kbd.eh_entry)
+								if (mHIDState->kind == HID_KEYBOARD && mHIDState->kbd.eh_entry)
 								{
 
 									QKeyCode qcode = Q_KEY_CODE_UNMAPPED;
@@ -243,11 +240,11 @@ namespace usb_hid
 										ev.u.key.key.type = KEY_VALUE_KIND_QCODE;
 										ev.u.key.key.u.qcode = qcode;
 
-										hs->kbd.eh_entry(hs, &ev);
+										mHIDState->kbd.eh_entry(mHIDState, &ev);
 									}
 								}
 
-								if (hs->ptr.eh_entry)
+								if (mHIDState->kind != HID_KEYBOARD && mHIDState->ptr.eh_entry)
 								{
 									ev.type = INPUT_EVENT_KIND_BTN;
 									switch (event.code)
@@ -255,17 +252,17 @@ namespace usb_hid
 										case BTN_LEFT:
 											ev.u.btn.button = INPUT_BUTTON_LEFT;
 											ev.u.btn.down = (event.value == 1);
-											hs->ptr.eh_entry(hs, &ev);
+											mHIDState->ptr.eh_entry(mHIDState, &ev);
 											break;
 										case BTN_RIGHT:
 											ev.u.btn.button = INPUT_BUTTON_RIGHT;
 											ev.u.btn.down = (event.value == 1);
-											hs->ptr.eh_entry(hs, &ev);
+											mHIDState->ptr.eh_entry(mHIDState, &ev);
 											break;
 										case BTN_MIDDLE:
 											ev.u.btn.button = INPUT_BUTTON_MIDDLE;
 											ev.u.btn.down = (event.value == 1);
-											hs->ptr.eh_entry(hs, &ev);
+											mHIDState->ptr.eh_entry(mHIDState, &ev);
 											break;
 										default:
 											break;
@@ -278,8 +275,8 @@ namespace usb_hid
 								switch (event.code)
 								{
 									case SYN_REPORT:
-										if (hs->ptr.eh_sync) //TODO sync here?
-											hs->ptr.eh_sync(hs);
+										if (mHIDState->ptr.eh_sync) //TODO sync here?
+											mHIDState->ptr.eh_sync(mHIDState);
 										break;
 									case SYN_DROPPED:
 										//restore last good state
@@ -301,7 +298,7 @@ namespace usb_hid
 				std::this_thread::sleep_for(std::chrono::milliseconds(1));
 			}
 
-			dev->mReaderThreadIsRunning = false;
+			mReaderThreadIsRunning = false;
 		}
 
 	} // namespace evdev
