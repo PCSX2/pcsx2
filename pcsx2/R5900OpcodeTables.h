@@ -22,6 +22,7 @@ enum Syscall : u8
 	SetGsCrt = 2,
 	SetVTLBRefillHandler = 13,
 	GetOSParamConfig = 75,
+	GetOSParamConfig2 = 111,
 	sysPrintOut = 117,
 	sceSifSetDma = 119,
 	Deci2Call = 124
