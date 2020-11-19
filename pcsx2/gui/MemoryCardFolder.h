@@ -212,9 +212,9 @@ struct MemoryCardFileHandleStructure {
 // --------------------------------------------------------------------------------------
 // Small helper class to keep memory card files opened between calls to Read()/Save() 
 class FileAccessHelper {
-protected:
+private:
 	std::map<std::string, MemoryCardFileHandleStructure> m_files;
-	MemoryCardFileMetadataReference* m_lastWrittenFileRef; // we remember this to reduce redundant metadata checks/writes
+	MemoryCardFileMetadataReference* m_lastWrittenFileRef = nullptr; // we remember this to reduce redundant metadata checks/writes
 
 public:
 	FileAccessHelper();
@@ -236,7 +236,7 @@ public:
 	// returns true if any changes were made
 	static bool CleanMemcardFilename( char* name );
 
-protected:
+private:
 	// helper function for CleanMemcardFilename()
 	static bool CleanMemcardFilenameEndDotOrSpace( char* name, size_t length );
 
@@ -246,8 +246,7 @@ protected:
 	// If entry is given, it also attempts to set the created and modified timestamps of the file according to the entry
 	void CloseFileHandle( wxFFile* file, const MemoryCardFileEntry* entry = nullptr );
 
-	void WriteMetadata( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef );
-	void WriteMetadata( bool metadataIsNonstandard, wxFileName& metadataFilename, const MemoryCardFileEntry* const entry );
+	void WriteMetadata( wxFileName folderName, const MemoryCardFileMetadataReference* fileRef );
 };
 
 // --------------------------------------------------------------------------------------
