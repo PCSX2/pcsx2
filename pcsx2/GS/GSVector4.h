@@ -205,6 +205,17 @@ public:
 		return m;
 	}
 
+	/// Makes Clang think that the whole vector is needed, preventing it from changing shuffles around because it thinks we don't need the whole vector
+	/// Useful for e.g. preventing clang from optimizing shuffles that remove possibly-denormal garbage data from vectors before computing with them
+	__forceinline GSVector4 noopt()
+	{
+		// Note: Clang is currently the only compiler that attempts to optimize vector intrinsics, if that changes in the future the implementation should be updated
+#ifdef __clang__
+		__asm__("":"+x"(m)::);
+#endif
+		return *this;
+	}
+
 	__forceinline uint32 rgba32() const
 	{
 		return GSVector4i(*this).rgba32();
