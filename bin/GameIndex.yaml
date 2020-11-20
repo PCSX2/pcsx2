@@ -20,163 +20,8 @@
 # ---------------------------------------------
 # Usage
 # ---------------------------------------------
-# For comprehensive usage examples / explanations, see the following doc
+# For comprehensive usage examples / explanations, see the following documentaiton
 # https://github.com/PCSX2/pcsx2/blob/master/bin/GameIndex.md
-
-# ---------------------------------------------
-# Quick Reference / Allowed Values
-# ---------------------------------------------
-# - Compatibility (compat: n)
-# -- 0 = Unknown Compatibility Status
-# -- 1 = Nothing
-# -- 2 = Intro
-# -- 3 = Menu
-# -- 4 = In-game
-# -- 5 = Playable
-# -- 6 = Perfect
-# ---------------------------------------------
-# - Rounding Modes (eeRoundMode: n and vuRoundMode: n)
-# -- 0 = Nearest
-# -- 1 = Negative Infinity
-# -- 2 = Positive Infinity
-# -- 3 = Chop (Zero)
-# ---------------------------------------------
-# - Clamp Modes (eeClampMode: n and vuClampMode: n)
-# -- eeClampMode refers to the EE's FPU co-processor
-# -- vuClampMode refers to the VU's and COP2 (VU0 Macro-mode)
-#
-# -- 0 = Disables clamping completely
-# -- 1 = Clamp Normally (only clamp results)
-# -- 2 = Clamp Extra (clamp results as well as operands)
-# -- 3 = Full Clamping for FPU / Extra+Preserve Sign Clamping for VU
-# ---------------------------------------------
-# - Game Fixes (Case Sensitive!)
-# ---------------------------------------------
-# -- VuAddSubHack               // Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
-# -- FpuCompareHack             // Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
-# -- FpuMulHack                 // Tales of Destiny hangs.
-# -- FpuNegDivHack              // Gundam games messed up camera-view. Dakar 2's sky showing over 3D. Others...
-# -- XGKickHack                 // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
-# -- IPUWaitHack                // FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
-# -- EETimingHack               // General purpose timing hack.
-# -- SkipMPEGHack               // Finds sceMpegIsEnd pattern in games and then recompiles code to say the videos are finished.
-# -- OPHFlagHack                // Bleach Bankais and others
-# -- DMABusyHack                // Mana Khemia, Metal Saga. Denies writes to the DMAC when it's busy.
-# -- VIFFIFOHack                // Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
-# -- VIF1StallHack              // SOCOM II HUD and Spy Hunter loading hang.
-# -- GIFFIFOHack                // Enables the GIF FIFO. Needed for Wallace & Grommit, Hot Wheels, DJ Hero.
-# -- FMVinSoftwareHack          // Silent Hill 2-3. Fixes FMVs that are obscured when using hardware rendering by switching to software rendering while an FMV plays.
-# -- ScarfaceIbitHack           // VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
-# -- CrashTagTeamRacingIbitHack // VU I bit Hack avoid constant recompilation (Crash Tag Team Racing).
-# -- VU0KickstartHack           // Let VU0 run ahead to fix some timing issues
-# ---------------------------------------------
-# -- Speed Hacks (SpeedHackName: n)
-# ---------------------------------------------
-# -- mvuFlagSpeedHack = 1 or 0 // Katamari Damacy have weird speed bug when this speed hack is enabled (and it is by default)
-# ---------------------------------------------
-
-# ---------------------------------------------
-# -- PCSX2 Game Database!
-# ---------------------------------------------
-
-# ---------------------------------------------
-# -- Credits
-# ---------------------------------------------
-# -- Game Data (serials, titles, and region info) is
-# -- based on the information found at http://sonyindex.com
-# -- Additional Games and Data by PCSX2 team
-
-# ---------------------------------------------
-# -- Notes
-# ---------------------------------------------
-# -- Games are indexed by their Serial Codes so it must be listed first.
-# -- Formatting should be kept to the syntax that's currently being used.
-# -- You can use C++ style 1-line comments (//) or (--)
-# -- All comments must be written in this header or they will not be
-# -- saved properly by PCSX2's database writer.
-# -- For gamefixes/roundmodes/clampmodes, PCSX2 will use the current user
-# -- settings if the game database does not explicitly change the values.
-
-# ---------------------------------------------
-# -- Compatibility Status (Compat = n)
-# ---------------------------------------------
-# -- The compatibility info is numerically based.
-# -- 0 = Unknown Compatibility Status
-# -- 1 = Nothing
-# -- 2 = Intro
-# -- 3 = Menu
-# -- 4 = In-game
-# -- 5 = Playable
-# -- 6 = Perfect
-
-# ---------------------------------------------
-# -- Round Modes (eeRoundMode = n and vuRoundMode = n)
-# ---------------------------------------------
-# -- The rounding modes are numerically based.
-# -- 0 = Nearest
-# -- 1 = Negative Infinity
-# -- 2 = Positive Infinity
-# -- 3 = Chop (Zero)
-
-# ---------------------------------------------
-# -- Clamp Modes (eeClampMode = n and vuClampMode = n)
-# ---------------------------------------------
-# -- The clamp modes are numerically based.
-# -- eeClampMode refers to the EE's FPU co-processor
-# -- vuClampMode refers to the VU's and COP2 (VU0 Macro-mode)
-# -- 0 = Disables clamping completely
-# -- 1 = Clamp Normally (only clamp results)
-# -- 2 = Clamp Extra (clamp results as well as operands)
-# -- 3 = Full Clamping for FPU / Extra+Preserve Sign Clamping for VU
-
-# ---------------------------------------------
-# -- Game Fixes (GameFixName = 1)
-# ---------------------------------------------
-# -- VuAddSubHack           = 1 // Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
-# -- FpuCompareHack         = 1 // Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
-# -- FpuMulHack             = 1 // Tales of Destiny hangs.
-# -- FpuNegDivHack          = 1 // Gundam games messed up camera-view. Dakar 2's sky showing over 3D. Others...
-# -- XGKickHack             = 1 // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
-# -- IPUWaitHack            = 1 // FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
-# -- EETimingHack           = 1 // General purpose timing hack.
-# -- SkipMPEGHack           = 1 // Finds sceMpegIsEnd pattern in games and then recompiles code to say the videos are finished.
-# -- OPHFlagHack            = 1 // Bleach Bankais and others
-# -- DMABusyHack            = 1 // Mana Khemia, Metal Saga. Denies writes to the DMAC when it's busy.
-# -- VIFFIFOHack            = 1 // Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
-# -- VIF1StallHack          = 1 // SOCOM II HUD and Spy Hunter loading hang.
-# -- GIFFIFOHack            = 1 // Enables the GIF FIFO. Needed for Wallace & Grommit, Hot Wheels, DJ Hero.
-# -- ScarfaceIbitHack       = 1 // VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
-# -- CrashTagTeamRacingIbitHack = 1 // VU I bit Hack avoid constant recompilation (Crash Tag Team Racing).
-# -- VU0KickstartHack       = 1 // Let VU0 run ahead to fix some timing issues
-
-# ---------------------------------------------
-# -- Speed Hacks (SpeedHackName = <value>)
-# ---------------------------------------------
-# -- mvuFlagSpeedHack = 1 or 0 // Katamari Damacy have weird speed bug when this speed hack is enabled (and it is by default)
-
-# ---------------------------------------------
-# -- Memory Card Filter Override (MemCardFilter = s)
-# ---------------------------------------------
-# -- By default, the FolderMemoryCard filters save games based on the
-# -- game's serial, which means that only saves whose folder names contain
-# -- the game's serial are loaded. This works fine for the vast majority
-# -- of games, but fails in some cases, for which this override is for.
-# -- Examples include multi-disc games, where later games often reuse the
-# -- serial of the previous disc(s), and games that allow transfer of save
-# -- data between different games, such as importing data from a prequel.
-# -- To allow multiple serials separate them with slashes, like this:
-# -- MemCardFilter = SLUS-12345/SLUS-12346/SLUS-12347
-
-# ---------------------------------------------
-# -- Patches ([patches] or [patches = CRC])
-# ---------------------------------------------
-# -- Patches must be specified in blocks.
-# -- The blocks must end with a [/patch] tag.
-# -- The block tags must be on their own lines.
-# -- PCSX2 only loads the first [patches] block that matches the game.
-# -- The [patches] block based on CRC takes priority when PCSX2 searches for patches...
-# -- Everything inside the patches block gets fed to PCSX2's old patch parser.
-# -- Currently the patch syntax is the same as PCSX2's old *.pnach system...
 
 # ---------------------------------------------
 # -- Game List
@@ -222,16 +67,19 @@ PBPX-95201:
   region: "NTSC-J"
   compat: 5
   patches:
-    - crc: "70D26E09"
+    70D26E09:
       content: |-
         // Change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function.
         patch=0,EE,00290408,word,24060000
+PBPX-95204:
+  name: "Playstation 2 - Demo Disc 2000"
+  region: "PAL-M5"
 PBPX-95205:
   name: "Playstation 2 - Demo Disc 2000"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 PBPX-95216:
   name: "HDD Utility Disc [Beta]"
-  region: "PAL-Unk"
+  region: "NTSC-U"
 PBPX-95503:
   name: "Gran Turismo 3 - A-Spec [PS2 Bundle]"
   region: "NTSC-U"
@@ -242,14 +90,23 @@ PBPX-95506:
   name: "Playstation 2 - Demo Disc 2001"
   region: "PAL-M5"
   patches:
-    - content: |-
+    default:
+      content: |-
         // 7ACF7E03
         comment=You must enable the EETimingHack when playing the WRC demo to avoids random hangs.
         comment=You must change the EE Clamping mode to Full when playing the Klonoa 2 demo to avoids misplaced objects.
         comment=You must change the VU Clamping mode to extra when playing the Klonoa 2 demo to fixes reflections issues.
+PBPX-95514:
+  name: "Playstation 2 - Demo Disc 2002"
+  region: "PAL-M5"
+  gameFixes:
+    - VU0KickstartHack # Fixes Character SPS in Ratchet and Clank.
 PBPX-95517:
   name: "Network Adapter Start-Up Disc"
   region: "NTSC-U"
+PBPX-95520:
+  name: "Playstation 2 - Demo Disc 2002"
+  region: "PAL-M5"
 PBPX-95524:
   name: "Gran Turismo 4 - Prologue"
   region: "NTSC-Unk"
@@ -318,7 +175,7 @@ SCAJ-20002:
   region: "NTSC-Unk"
 SCAJ-20003:
   name: "Warrior in Argus"
-  region: "NTSC-Unk"
+  region: "NTSC-J"
 SCAJ-20004:
   name: "dot Hack Vol.3"
   region: "NTSC-Unk"
@@ -337,7 +194,7 @@ SCAJ-20004:
     - "SLPS-73233"
 SCAJ-20005:
   name: "Guilty Gear XX"
-  region: "NTSC-Unk"
+  region: "NTSC-J"
 SCAJ-20006:
   name: "Gunbarl Collection with Time Crisis"
   region: "NTSC-Unk"
@@ -381,7 +238,7 @@ SCAJ-20015:
     eeRoundMode: 0  # Ladder glitch in "Assembly of Nihilo B11" level.
 SCAJ-20016:
   name: "Warrior of Argus"
-  region: "NTSC-Unk"
+  region: "NTSC-CH-E"
 SCAJ-20017:
   name: "Sly Cooper"
   region: "NTSC-Unk"
@@ -390,7 +247,7 @@ SCAJ-20018:
   region: "NTSC-Unk"
 SCAJ-20019:
   name: "Arc the Lad - Twilight of the Spirits"
-  region: "NTSC-Unk"
+  region: "NTSC-J"
 SCAJ-20020:
   name: "Drag-on Dragoon"
   region: "NTSC-Unk"
@@ -1154,7 +1011,7 @@ SCED-50041:
   region: "PAL-E"
 SCED-50163:
   name: "PlayStation 2 Greatest Hits Vol.3 [Demo]"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SCED-50254:
   name: "Official Review of the 2000 FIA Formula 1 World Championship [Formula One 2001 Bonus Disc]"
   region: "PAL-Unk"
@@ -1200,7 +1057,7 @@ SCED-51540:
   region: "PAL-M5"
 SCED-51568:
   name: "Official PlayStation 2 Magazine Demo 33"
-  region: "PAL-Unk"
+  region: "PAL-E-G"
   roundModes:
     vuRoundMode: 0  # Fixes SPS (Primal).
   clampModes:
@@ -1210,26 +1067,26 @@ SCED-51657:
   region: "PAL-Unk"
   compat: 5
   patches:
-    - crc: "90C0E5F1"
+    90C0E5F1:
       content: |-
         comment=Must enable FPU Negative Div Hack gamefix for Dakar 2 Demo
 SCED-51700:
   name: "Jak II: Renegade [Demo]"
-  region: "PAL-Unk"
+  region: "PAL-M5"
   gameFixes:
     - VU0KickstartHack # Fixes Character SPS.
 SCED-52049:
   name: "Dog's Life [Demo]"
-  region: "PAL-Unk"
+  region: "PAL-M11"
   compat: 5
   clampModes:
     vuClampMode: 3  # Fixes minor SPS on characters.
 SCED-52355:
   name: "Military Multi Demo"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SCED-52436:
   name: "Playstation2 UK Demo 7-2004"
-  region: "PAL-Unk"
+  region: "PAL-M5"
   compat: 5
 SCED-52681:
   name: "Gran Turismo 4 BMW 1 Series [Demo]"
@@ -1239,7 +1096,7 @@ SCED-52818:
   region: "PAL-M11"
 SCED-52952:
   name: "Jak 3 [Demo]"
-  region: "PAL-Unk"
+  region: "PAL-M5"
   gameFixes:
     - VU0KickstartHack # Fixes Character SPS.
 SCED-52970:
@@ -1249,7 +1106,7 @@ SCED-53161:
   name: "Official PlayStation 2 Magazine Demo 58"
   region: "PAL-M5"
   patches:
-    - crc: "38174DD2"
+    38174DD2:
       content: |-
         comment=Patch by refraction. Fixes R&C 3 shadows, disable automatic fixes for other games
         patch=1,EE,0047df64,word,48418800
@@ -1280,7 +1137,7 @@ SCES-50003:
   region: "PAL-M5"
   compat: 5
   patches:
-    - crc: "7A51F86E"
+    7A51F86E:
       content: |-
         comment=Patch by Prafull and kozarovv
         // Fixes game hanging on boot.
@@ -1304,7 +1161,8 @@ SCES-50006:
   region: "PAL-M5"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         // 04F9D87F
         comment=- This gamedisc supports multiple languages through the BIOS configuration.
         comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
@@ -1366,7 +1224,7 @@ SCES-50360:
   name: "Twisted Metal - Black"
   region: "PAL-M5"
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Car Models
+    - VU0KickstartHack # Fixes Bad Car Models.
 SCES-50361:
   name: "Jak and Daxter: The Precursor Legacy"
   region: "PAL-M6"
@@ -1434,7 +1292,7 @@ SCES-50499:
   region: "PAL-M5"
   compat: 2
   patches:
-    - crc: "7FEDF999"
+    7FEDF999:
       content: |-
         author=PSI
         // Ecco has an evil race condition: one of its custom IOP modules resets CDVDMAN while it's loading a module from disc.
@@ -1465,7 +1323,7 @@ SCES-50595:
   region: "PAL-E"
 SCES-50596:
   name: "Monsters Inc."
-  region: "PAL-DA"
+  region: "PAL-D"
 SCES-50597:
   name: "Monsters en Co - Schrik Eiland"
   region: "PAL-DU"
@@ -1489,10 +1347,10 @@ SCES-50603:
   region: "PAL-S"
 SCES-50604:
   name: "Monsters, Inc - Skrämmarön"
-  region: "PAL-SE"
+  region: "PAL-SW"
 SCES-50605:
   name: "Monstros e Companhia - Ilha Assustadora"
-  region: "PAL-PO"
+  region: "PAL-PL"
 SCES-50611:
   name: "Space Channel 5"
   region: "PAL-M5"
@@ -1541,7 +1399,8 @@ SCES-50878:
   region: "PAL-M5"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         // CRC 2251E14D, F48F994A
         comment=patches by Shadow Lady
         // IPU BUSY! fix...
@@ -1600,7 +1459,7 @@ SCES-50960:
   compat: 5
 SCES-50966:
   name: "Disney's Stitch - Experiment 626"
-  region: "PAL-E-SE"
+  region: "PAL-E-SW"
 SCES-50967:
   name: "Kingdom Hearts"
   region: "PAL-E"
@@ -1640,7 +1499,7 @@ SCES-51040:
   region: "PAL-F"
 SCES-51041:
   name: "This is Football 2003"
-  region: "PAL-Unk"
+  region: "PAL-F-DU"
 SCES-51102:
   name: "Ape Escape 2"
   region: "PAL-F"
@@ -1714,7 +1573,7 @@ SCES-51480:
   name: "Twisted Metal - Black - Online"
   region: "PAL-M5"
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Car Models
+    - VU0KickstartHack # Fixes Bad Car Models.
 SCES-51513:
   name: "EyeToy - Play"
   region: "PAL-M11"
@@ -1734,12 +1593,12 @@ SCES-51593:
   name: "Hardware Online Arena [Beta, Promo & Full Release]"
   region: "PAL-M4"
   gameFixes:
-    - VU0KickstartHack # Reduces chance of hanging going ingame
+    - VU0KickstartHack # Reduces chance of hanging going ingame.
   patches:
-    - crc: "81797E77"
+    81797E77:
       content: |-
-        comment=Reduces chance of game hanging going ingame
-        comment=caused by vu0 integer register being set twice causing bad cop2 timing
+        comment=Reduces chance of game hanging going in-game
+        comment=caused by VU0 integer register being set twice causing bad COP2 timing
         comment=Game will require EE Cycle Rate -1 to fix hangs completely
         patch=1,EE,002c5e50,word,8000033c
         patch=1,EE,002c5f40,word,8000033c
@@ -1759,18 +1618,19 @@ SCES-51608:
   gameFixes:
     - VU0KickstartHack # Fixes Character SPS.
   patches:
-    - content: |-
+    default:
+      content: |-
         comment=- This gamedisc supports multiple languages through the BIOS configuration.
         comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SCES-51610:
   name: "This is Football 2004 (Red Devils 2004)"
-  region: "PAL-F-G"
+  region: "PAL-F-DU"
 SCES-51611:
   name: "This is Football 2004"
   region: "PAL-M4"
 SCES-51612:
   name: "This is Football 5"
-  region: "PAL-E-NO"
+  region: "PAL-E-N"
 SCES-51613:
   name: "This is Football 2004"
   region: "PAL-M4"
@@ -1779,7 +1639,7 @@ SCES-51614:
   region: "PAL-F"
 SCES-51618:
   name: "SOCOM - U.S. Navy SEALs"
-  region: "PAL-Unk"
+  region: "PAL-M5"
   clampModes:
     vuClampMode: 2  # Fixes bad shadows.
   gameFixes:
@@ -1829,7 +1689,7 @@ SCES-51725:
   region: "PAL-M3"
   compat: 3
   patches:
-    - crc: "555019B2"
+    555019B2:
       content: |-
         patch=0,EE,00571414,word,00000000
         patch=0,EE,00571438,word,00000000
@@ -1859,7 +1719,7 @@ SCES-51971:
   region: "PAL-E"
 SCES-51977:
   name: "Hardware Online Arena"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SCES-51979:
   name: "Destruction Derby Arenas"
   region: "PAL-M6"
@@ -1876,7 +1736,7 @@ SCES-52033:
   gameFixes:
     - EETimingHack # Fixes random hangs.
   patches:
-    - crc: "27E54B37"
+    27E54B37:
       content: |-
         author=refraction
         // Cop2 problems.
@@ -1908,7 +1768,7 @@ SCES-52299:
   region: "PAL-S"
 SCES-52306:
   name: "SOCOM II - U.S. Navy SEALs"
-  region: "PAL-Unk"
+  region: "PAL-M5"
   compat: 5
   gameFixes:
     - EETimingHack # Get rids of DMA8/9 non-fatal errors.
@@ -1933,7 +1793,8 @@ SCES-52389:
   gameFixes:
     - XGKickHack # Fixes SPS.
   patches:
-    - content: |-
+    default:
+      content: |-
         author=kozarovv
         // Proper patch for WRC 4. CRC independent.
         // I wrote small runtime that move unpacker higher right after emulator boot.
@@ -1970,15 +1831,15 @@ SCES-52424:
   region: "PAL-M5"
   compat: 5
   patches:
-    - crc: "1D54FEA9"
+    1D54FEA9:
       content: |-
         patch=0,EE,001A3154,word,48498800
         patch=0,EE,001A3158,word,4B00682C
         patch=0,EE,001A3164,word,484A8800
         patch=0,EE,001A3168,word,4B0C682C
 SCES-52425:
-  name: "This is Football 5"
-  region: "PAL-Unk"
+  name: "This is Football 2004"
+  region: "PAL-A"
 SCES-52426:
   name: "This is Football 2005"
   region: "PAL-M4"
@@ -1993,10 +1854,10 @@ SCES-52430:
   region: "PAL-F"
 SCES-52431:
   name: "This is Football 2005"
-  region: "PAL-Unk"
+  region: "PAL-A-E"
 SCES-52432:
   name: "This is Football 2005"
-  region: "PAL-Unk"
+  region: "PAL-F-DU"
 SCES-52438:
   name: "Gran Turismo 4 - Prologue"
   region: "PAL-M5"
@@ -2024,7 +1885,8 @@ SCES-52460:
   gameFixes:
     - VU0KickstartHack # Fixes Character SPS.
   patches:
-    - content: |-
+    default:
+      content: |-
         comment=- This gamedisc supports multiple languages through the BIOS configuration.
         comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SCES-52529:
@@ -2042,7 +1904,7 @@ SCES-52565:
   region: "PAL-G"
 SCES-52566:
   name: "SingStar"
-  region: "PAL-Unk"
+  region: "PAL-I"
 SCES-52582:
   name: "Everybody's Golf"
   region: "PAL-M5"
@@ -2058,7 +1920,8 @@ SCES-52677:
   region: "PAL-M7"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         // D859B1B4
         comment=- This gamedisc supports widescreen through the BIOS configuration.
         comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
@@ -2074,7 +1937,7 @@ SCES-52758:
   region: "PAL-M6"
 SCES-52762:
   name: "DJ Decks & FX"
-  region: "PAL-Unk"
+  region: "PAL-F"
 SCES-52763:
   name: "DJ Decks & FX Vol.1"
   region: "PAL-G"
@@ -2083,7 +1946,7 @@ SCES-52826:
   region: "PAL-E"
 SCES-52827:
   name: "SingStar Party"
-  region: "PAL-Unk"
+  region: "PAL-I"
 SCES-52828:
   name: "Sing-Star NRJ Music Tour"
   region: "PAL-F"
@@ -2151,10 +2014,10 @@ SCES-53183:
   region: "PAL-E"
 SCES-53184:
   name: "SingStar Norske Hits"
-  region: "PAL-NO"
+  region: "PAL-N"
 SCES-53185:
   name: "SingStar Svenska Hits"
-  region: "PAL-SE"
+  region: "PAL-SW"
 SCES-53202:
   name: "Tekken 5"
   region: "PAL-M5"
@@ -2282,10 +2145,10 @@ SCES-53607:
   region: "PAL-DU"
 SCES-53609:
   name: "Sing-Star '80s"
-  region: "PAL-SE"
+  region: "PAL-SW"
 SCES-53610:
   name: "Sing-Star '80s"
-  region: "PAL-Unk"
+  region: "PAL-PL"
 SCES-53642:
   name: "Ape Escape 3"
   region: "PAL-M5"
@@ -2302,7 +2165,7 @@ SCES-53680:
   gameFixes:
     - XGKickHack # Fixes SPS.
   patches:
-    - crc: "79BAD675"
+    79BAD675:
       content: |-
         author=By Prafull
         // Nopping a branch in delay slot instruction causing very bad performances
@@ -2322,7 +2185,8 @@ SCES-53851:
   gameFixes:
     - XGKickHack # Fixes SPS.
   patches:
-    - content: |-
+    default:
+      content: |-
         // CRC C040B6AB, Unknown
         comment=Swapping a COP2 op into place to make the flags work without delays.
         patch=0,EE,002E2B44,word,48449000
@@ -2379,10 +2243,10 @@ SCES-53926:
   region: "PAL-M3"
 SCES-53927:
   name: "Buzz! The Big Quiz"
-  region: "PAL-Unk"
+  region: "PAL-FI"
 SCES-53929:
   name: "Buzz! The Big Quiz"
-  region: "PAL-Unk"
+  region: "PAL-P"
 SCES-53931:
   name: "Shinobido - Way of the Ninja"
   region: "PAL-M5"
@@ -2396,7 +2260,7 @@ SCES-53960:
   region: "PAL-M5"
 SCES-54025:
   name: "SingStar Rocks!"
-  region: "PAL-Unk"
+  region: "PAL-IR"
 SCES-54041:
   name: "Ace Combat - The Belkan War"
   region: "PAL-M5"
@@ -2405,7 +2269,7 @@ SCES-54041:
     - "SCES-50410"
     - "SCES-52424"
   patches:
-    - crc: "194C9F38"
+    194C9F38:
       content: |-
         // Fixes collision/missile hit issues.
         patch=0,EE,00131EB4,word,48498800
@@ -2423,7 +2287,7 @@ SCES-54077:
   region: "PAL-I"
 SCES-54078:
   name: "SingStar Norsk pa Norsk"
-  region: "PAL-NO"
+  region: "PAL-N"
 SCES-54128:
   name: "Deutsch Rock-Pop"
   region: "PAL-G"
@@ -2477,7 +2341,7 @@ SCES-54262:
   region: "PAL-S"
 SCES-54263:
   name: "Buzz! The Sports Quiz"
-  region: "PAL-Unk"
+  region: "PAL-P"
 SCES-54264:
   name: "Buzz! The Sports Quiz"
   region: "PAL-E"
@@ -2489,10 +2353,10 @@ SCES-54266:
   region: "PAL-M3"
 SCES-54267:
   name: "Buzz! The Sports Quiz"
-  region: "PAL-Unk"
+  region: "PAL-PL"
 SCES-54268:
   name: "Buzz! The Sports Quiz"
-  region: "PAL-Unk"
+  region: "PAL-M3"
 SCES-54269:
   name: "Buzz! The Sports Quiz"
   region: "PAL-Unk"
@@ -2507,7 +2371,7 @@ SCES-54330:
   region: "PAL-E"
 SCES-54353:
   name: "SingStar Legends"
-  region: "PAL-DA"
+  region: "PAL-D"
 SCES-54477:
   name: "SOCOM - US Navy Seals - Combined Assault"
   region: "PAL-M5"
@@ -2541,11 +2405,17 @@ SCES-54552:
   name: "Rogue Galaxy"
   region: "PAL-M5"
   patches:
-    - crc: "CBB4B383"
+    CBB4B383:
       content: |-
         author=kozarovv
         // Fixes Vedan Myna area out of bounds glitch.
         patch=1,EE,00124898,word,3442fffe
+SCES-54560:
+  name: "Sing-Star R&B"
+  region: "PAL-E"
+SCES-54570:
+  name: "Sing-Star Pop Hits"
+  region: "PAL-E"
 SCES-54571:
   name: "Sing-Star Pop Hits"
   region: "PAL-G"
@@ -2554,7 +2424,7 @@ SCES-54597:
   region: "PAL-M3"
 SCES-54598:
   name: "SingStar - Svenska Hits Schlager"
-  region: "PAL-SE"
+  region: "PAL-SW"
 SCES-54599:
   name: "SingStar - '90s"
   region: "PAL-E"
@@ -2785,7 +2655,7 @@ SCKA-20032:
   gameFixes:
     - EETimingHack # Fixes random hangs.
   patches:
-    - crc: "3676E74C"
+    3676E74C:
       content: |-
         author=refraction
         // Cop2 problems.
@@ -2921,7 +2791,7 @@ SCKA-20070:
   name: "Ace Combat Zero - The Belkan War"
   region: "NTSC-K"
   patches:
-    - crc: "2799A4E5"
+    2799A4E5:
       content: |-
         // Fixes collision/missle hit issues.
         patch=0,EE,00131ebc,word,48498800
@@ -3064,7 +2934,7 @@ SCPS-11008:
   region: "NTSC-J"
   compat: 5
   patches:
-    - crc: "EE838B5C"
+    EE838B5C:
       content: |-
         comment=Patches by Nachbrenner
         // Skip OP.PSS.
@@ -3124,7 +2994,7 @@ SCPS-11022:
   name: "Yoake no Mariko 2nd Act"
   region: "NTSC-J"
   patches:
-    - crc: "0cf7e6ff"
+    0cf7e6ff:
       content: |-
         comment=Patch by Prafull
         // Fixes initial hang.
@@ -3348,7 +3218,7 @@ SCPS-15050:
   region: "NTSC-J"
   compat: 5
   patches:
-    - crc: "25433CBD"
+    25433CBD:
       content: |-
         comment=Patches by Nachbrenner
         // Fix D3_CHCR (might be redundant).
@@ -3603,7 +3473,7 @@ SCPS-15106:
   gameFixes:
     - XGKickHack # Fixes SPS.
   patches:
-    - crc: "626552EB"
+    626552EB:
       content: |-
         comment=Swapping a COP2 op into place to make the flags work without delays.
         patch=0,EE,0013AB64,word,48449000
@@ -4188,7 +4058,7 @@ SCPS-55901:
   name: "Xenosaga Episode I - Der Wille zur Macht"
   region: "NTSC-J"
   patches:
-    - crc: "A3D63039"
+    A3D63039:
       content: |-
         // Reduces JPEG quality to its minimum for save file thumbnails. This prevents
         // the game from calling its own exit function, which was strangely its safety
@@ -4226,7 +4096,7 @@ SCPS-56006:
   region: "NTSC-K"
   compat: 5
   patches:
-    - crc: "35B4028B"
+    35B4028B:
       content: |-
         comment=Patches by Shadow Lady
         // IPU BUSY! fix...
@@ -4237,7 +4107,8 @@ SCPS-56008:
   region: "NTSC-K"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         // BCF04BF3
         comment=- At least when using GSdx in D3D11 Hardware mode, and due to missing
         comment=-  rendering-fixes, black stripes can show up on ghosts,
@@ -4286,7 +4157,7 @@ SCUS-97101:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Car Models
+    - VU0KickstartHack # Fixes Bad Car Models.
 SCUS-97102:
   name: "Gran Turismo 3 - A-Spec"
   region: "NTSC-U"
@@ -4410,7 +4281,7 @@ SCUS-97140:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "DBD09DD4"
+    DBD09DD4:
       content: |-
         comment=COP2 flag instance patch
         // Pair of vsubs with associated cfc2s.
@@ -4503,7 +4374,7 @@ SCUS-97164:
   name: "Twisted Metal Black [Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Car Models
+    - VU0KickstartHack # Fixes Bad Car Models.
 SCUS-97165:
   name: "Official U.S. PlayStation Magazine Demo Disc 051"
   region: "NTSC-U"
@@ -4596,13 +4467,13 @@ SCUS-97195:
   name: "Twisted Metal Black - Online"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Car Models
+    - VU0KickstartHack # Fixes Bad Car Models.
 SCUS-97196:
   name: "Twisted Metal Black - Online [Demo]"
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Car Models
+    - VU0KickstartHack # Fixes Bad Car Models.
 SCUS-97197:
   name: "War of the Monsters"
   region: "NTSC-U"
@@ -4821,7 +4692,7 @@ SCUS-97264:
   gameFixes:
     - EETimingHack # Fixes random hangs.
   patches:
-    - crc: "D5605611"
+    D5605611:
       content: |-
         author=refraction
         // Cop2 problems.
@@ -5377,7 +5248,7 @@ SCUS-97474:
   clampModes:
     vuClampMode: 0  # Fixes SPS ingame.
   patches:
-    - crc: "75ED4282"
+    75ED4282:
       content: |-
         author=CK1
         // Remove the need of the VIF FIFO.
@@ -5390,7 +5261,7 @@ SCUS-97475:
   clampModes:
     vuClampMode: 0  # Fixes SPS ingame.
   patches:
-    - crc: "314F0905"
+    314F0905:
       content: |-
         author=CK1
         // Remove the need of the VIF FIFO.
@@ -5456,7 +5327,7 @@ SCUS-97490:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "0643F90C"
+    0643F90C:
       content: |-
         author=kozarovv
         // Fixes Vedan Myna out of bounds glitch.
@@ -5742,7 +5613,7 @@ SCUS-97621:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "3DC2FE45"
+    3DC2FE45:
       content: |-
         author=refraction
         // COP2 rearrangement. RSQRT directly followed by DIV and a few ops using Q causes issues
@@ -5982,7 +5853,7 @@ SLAJ-25078:
   name: "Black"
   region: "NTSC-Unk"
   clampModes:
-    vuClampMode: 3  # Fixes SPS
+    vuClampMode: 3  # Fixes SPS.
 SLAJ-25079:
   name: "Shin Sangoku Musou 4 - Empires"
   region: "NTSC-Unk"
@@ -6034,7 +5905,7 @@ SLAJ-35001:
   region: "NTSC-Unk"
 SLAJ-35003:
   name: "Sakura Taisen - Atsuki Chishio Ni"
-  region: "NTSC-Unk"
+  region: "NTSC-CH"
 SLED-50117:
   name: "Metal Gear Solid 2 - Sons of Liberty [Demo] [Zone of the Enders Bonus Disc]"
   region: "PAL-E"
@@ -6043,10 +5914,10 @@ SLED-50359:
   region: "PAL-E"
 SLED-50478:
   name: "WWF Smackdown! - Just Bring It [Demo]"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SLED-50488:
   name: "Spy Hunter [Demo]"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SLED-50884:
   name: "TimeSplitters 2 [Demo]"
   region: "PAL-E"
@@ -6084,7 +5955,7 @@ SLED-52488:
   region: "PAL-E"
 SLED-52597:
   name: "Burnout 3 - Takedown [Demo]"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SLED-52875:
   name: "Sega Superstars [Demo]"
   region: "PAL-E"
@@ -6116,7 +5987,7 @@ SLED-53937:
   name: "Black [Demo]"
   region: "PAL-M5"
   clampModes:
-    vuClampMode: 3  # Fixes SPS
+    vuClampMode: 3  # Fixes SPS.
 SLED-53951:
   name: "Honda Demo [Demo]"
   region: "PAL-E"
@@ -6130,7 +6001,7 @@ SLED-54035:
   region: "PAL-M5"
 SLED-54312:
   name: "Need for Speed - Carbon [Demo]"
-  region: "PAL-Unk"
+  region: "PAL-E"
   clampModes:
     eeClampMode: 3  # Fixes game hang after opening intro.
 SLES-50003:
@@ -6154,7 +6025,7 @@ SLES-50013:
   region: "PAL-G"
 SLES-50014:
   name: "FIFA 2001"
-  region: "PAL-Unk"
+  region: "PAL-GR"
 SLES-50015:
   name: "FIFA 2001"
   region: "PAL-I"
@@ -6200,6 +6071,9 @@ SLES-50027:
 SLES-50028:
   name: "NHL 2001"
   region: "PAL-G"
+SLES-50029:
+  name: "NHL 2001"
+  region: "PAL-F"
 SLES-50030:
   name: "SSX Snowboarding"
   region: "PAL-M3"
@@ -6251,7 +6125,7 @@ SLES-50046:
   region: "PAL-F-G"
   compat: 2
   patches:
-    - crc: "EDD7E0FF"
+    EDD7E0FF:
       content: |-
         author=Nachbrenner
         // Skip Videos.
@@ -6261,7 +6135,7 @@ SLES-50047:
   region: "PAL-M3"
   compat: 5
   patches:
-    - crc: "3063bd41"
+    3063bd41:
       content: |-
         author=Prafull
         // Fixes IPU issues causing a hang at loading menu.
@@ -6306,6 +6180,9 @@ SLES-50056:
 SLES-50057:
   name: "Dynasty Warriors 2"
   region: "PAL-E"
+SLES-50058:
+  name: "Dynasty Warriors 2"
+  region: "PAL-F"
 SLES-50059:
   name: "Dynasty Warriors 2"
   region: "PAL-G"
@@ -6406,6 +6283,9 @@ SLES-50115:
 SLES-50118:
   name: "Tiger Woods PGA Tour 2001"
   region: "PAL-E"
+SLES-50119:
+  name: "Tiger Woods PGA Tour 2001"
+  region: "PAL-A"
 SLES-50120:
   name: "Rumble Racing"
   region: "PAL-M3"
@@ -6415,7 +6295,7 @@ SLES-50126:
   region: "PAL-M3"
   compat: 5
   patches:
-    - crc: "2064ACE6"
+    2064ACE6:
       content: |-
         comment=Patch by leilei
         // Removes intro and end credits FMVs.
@@ -6428,6 +6308,9 @@ SLES-50127:
 SLES-50128:
   name: "Knockout Kings 2001"
   region: "PAL-E"
+SLES-50129:
+  name: "Knockout Kings 2001"
+  region: "PAL-F"
 SLES-50130:
   name: "Knockout Kings 2001"
   region: "PAL-G"
@@ -6443,7 +6326,7 @@ SLES-50134:
   region: "PAL-E"
   compat: 5
   patches:
-    - crc: "22E85E68"
+    22E85E68:
       content: |-
         comment=Patch by refraction
         // Rearrange PCR write and BC0F instruction
@@ -6499,7 +6382,7 @@ SLES-50176:
   region: "PAL-F"
   compat: 5
   patches:
-    - crc: "F77639F1"
+    F77639F1:
       content: |-
         comment=Patch by refraction
         // Rearrange PCR write and BC0F instruction
@@ -6510,7 +6393,7 @@ SLES-50177:
   region: "PAL-G"
   compat: 5
   patches:
-    - crc: "32629F36"
+    32629F36:
       content: |-
         comment=Patch by refraction
         // Rearrange PCR write and BC0F instruction
@@ -6520,7 +6403,7 @@ SLES-50178:
   name: "Oni"
   region: "PAL-I"
   patches:
-    - crc: "172B6971"
+    172B6971:
       content: |-
         comment=Patch by refraction
         // Rearrange PCR write and BC0F instruction
@@ -6583,9 +6466,18 @@ SLES-50203:
 SLES-50204:
   name: "Star Wars - Super Bombad Racing"
   region: "PAL-E"
+SLES-50205:
+  name: "Star Wars - Super Bombad Racing"
+  region: "PAL-F"
 SLES-50206:
   name: "Star Wars - Super Bombad Racing"
   region: "PAL-G"
+SLES-50207:
+  name: "Star Wars - Super Bombad Racing"
+  region: "PAL-I"
+SLES-50208:
+  name: "Star Wars - Super Bombad Racing"
+  region: "PAL-S"
 SLES-50209:
   name: "Jeremy McGrath Supercross World"
   region: "PAL-M5"
@@ -6598,7 +6490,8 @@ SLES-50211:
   region: "PAL-M3"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         comment=- This gamedisc supports multiple languages.
         comment=- Language selection is done through the BIOS configuration.
         comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
@@ -6620,7 +6513,7 @@ SLES-50215:
   region: "PAL-M4"
   compat: 5
   patches:
-    - crc: "C9C145BF"
+    C9C145BF:
       content: |-
         comment=Patches by Nachbrenner
         // Skip movie 'PlaySega'.
@@ -6695,7 +6588,7 @@ SLES-50252:
   region: "PAL-M3"
   compat: 5
   patches:
-    - crc: "FBE2613D"
+    FBE2613D:
       content: |-
         comment=Patch by Prafull
         // Fixes VSync issues.
@@ -6722,6 +6615,12 @@ SLES-50262:
 SLES-50263:
   name: "Portal Runner"
   region: "PAL-E"
+SLES-50264:
+  name: "Playmobil - Hype - The Time Quest"
+  region: "PAL-F"
+SLES-50265:
+  name: "Playmobil - Hype - The Time Quest"
+  region: "PAL-G"
 SLES-50266:
   name: "Playmobil - Hype - The Time Quest"
   region: "PAL-M4"
@@ -6730,7 +6629,7 @@ SLES-50267:
   name: "CART Fury Championship Racing"
   region: "PAL-M5"
   patches:
-    - crc: "2547FF67"
+    2547FF67:
       content: |-
         author=Nachbrenner
         // Skip PSX2_Mpeg_PlayFile__FPc.
@@ -6792,6 +6691,12 @@ SLES-50296:
 SLES-50297:
   name: "Gift"
   region: "PAL-G"
+SLES-50298:
+  name: "Gift"
+  region: "PAL-I"
+SLES-50299:
+  name: "Gift"
+  region: "PAL-S"
 SLES-50306:
   name: "Resident Evil - CODE Veronica X"
   region: "PAL-M4"
@@ -6852,7 +6757,7 @@ SLES-50355:
     - EETimingHack # Fixes video speed.
 SLES-50356:
   name: "ESPN International Winter Sports"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SLES-50358:
   name: "Devil May Cry"
   region: "PAL-M5"
@@ -6891,7 +6796,7 @@ SLES-50383:
   compat: 5
 SLES-50384:
   name: "Project Zero II"
-  region: "PAL-Unk"
+  region: "PAL-I"
 SLES-50385:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-S"
@@ -6927,6 +6832,12 @@ SLES-50402:
 SLES-50412:
   name: "Pro Evolution Soccer"
   region: "PAL-M3"
+SLES-50419:
+  name: "Supercar Street Challenge"
+  region: "PAL-E"
+SLES-50420:
+  name: "Supercar Street Challenge"
+  region: "PAL-F"
 SLES-50421:
   name: "Supercar Street Challenge"
   region: "PAL-G"
@@ -6940,7 +6851,7 @@ SLES-50423:
   region: "PAL-M4"
   compat: 5
   patches:
-    - crc: "063FF7DB"
+    063FF7DB:
       content: |-
         author=prafull
         // Skips IPU videos.
@@ -7040,6 +6951,9 @@ SLES-50466:
 SLES-50467:
   name: "FIFA 2002"
   region: "PAL-G"
+SLES-50468:
+  name: "FIFA 2002"
+  region: "PAL-Unk"
 SLES-50469:
   name: "FIFA 2002"
   region: "PAL-GR"
@@ -7095,7 +7009,7 @@ SLES-50503:
   name: "Weakest Link"
   region: "PAL-E"
   patches:
-    - crc: "7193F81D"
+    7193F81D:
       content: |-
         comment=Patch by Prafull
         // Fixes game hanging at start.
@@ -7201,6 +7115,9 @@ SLES-50554:
 SLES-50556:
   name: "New York Race"
   region: "PAL-M6"
+SLES-50557:
+  name: "Polaroid Pete"
+  region: "PAL-E"
 SLES-50558:
   name: "DSF Fussball Manager 2002"
   region: "PAL-G"
@@ -7227,7 +7144,7 @@ SLES-50578:
   name: "Kessen II"
   region: "PAL-E"
   patches:
-    - crc: "9FAC4FF3"
+    9FAC4FF3:
       content: |-
         comment=COP2 flag instance patch by refraction
         // A mac flag check just after a vsub which gets in the way, rearranging.
@@ -7331,6 +7248,9 @@ SLES-50650:
   name: "Resident Evil Gun Survivor 2 - Code Veronica"
   region: "PAL-E"
   compat: 5
+SLES-50652:
+  name: "Iron Eagle Max"
+  region: "PAL-E"
 SLES-50653:
   name: "Gitaroo Man"
   region: "PAL-M3"
@@ -7383,6 +7303,9 @@ SLES-50704:
   name: "Godai - Elemental Force"
   region: "PAL-F-G"
   compat: 5
+SLES-50705:
+  name: "Godai - Elemental Force"
+  region: "PAL-I-S"
 SLES-50706:
   name: "Army Men - Real Time Strategy"
   region: "PAL-M4"
@@ -7390,7 +7313,7 @@ SLES-50709:
   name: "Weakest Link (Le Maillon Fable)"
   region: "PAL-F"
   patches:
-    - crc: "837321FA"
+    837321FA:
       content: |-
         comment=Patch by Prafull
         // Fixes game hanging at start.
@@ -7404,11 +7327,14 @@ SLES-50710:
 SLES-50711:
   name: "Red Card Football"
   region: "PAL-M5"
+SLES-50712:
+  name: "NHL Hitz 20-03"
+  region: "PAL-E"
 SLES-50713:
   name: "Freaky Flyers"
   region: "PAL-E"
   patches:
-    - crc: "6E62DE7B"
+    6E62DE7B:
       content: |-
         author=Prafull
         // Fix hanging problem & SPS.
@@ -7454,6 +7380,9 @@ SLES-50727:
 SLES-50728:
   name: "Tiger Woods PGA Tour 2002"
   region: "PAL-M3"
+SLES-50729:
+  name: "Tiger Woods USA Tour 2002"
+  region: "PAL-A"
 SLES-50730:
   name: "VIP"
   region: "PAL-M5"
@@ -7502,7 +7431,7 @@ SLES-50763:
   compat: 5
 SLES-50765:
   name: "Music Maker"
-  region: "PAL-Unk"
+  region: "PAL-M6"
 SLES-50767:
   name: "V8 Supercars Australia - Race Driver"
   region: "PAL-E"
@@ -7537,7 +7466,7 @@ SLES-50778:
   region: "PAL-M5"
   compat: 2
   patches:
-    - crc: "AE9EB9A0"
+    AE9EB9A0:
       content: |-
         author=kozarovv
         // Fix initial loading by looping for some time on EE side. That allow IOP proceed requests correctly.
@@ -7556,6 +7485,9 @@ SLES-50787:
 SLES-50788:
   name: "Frogger - The Great Quest"
   region: "PAL-M5"
+SLES-50789:
+  name: "Men in Black II: Alien Escape"
+  region: "PAL-M5"
 SLES-50790:
   name: "International Superstar Soccer 2002"
   region: "PAL-M3"
@@ -7571,7 +7503,7 @@ SLES-50795:
   region: "PAL-M5"
 SLES-50796:
   name: "FIFA World Cup 2002"
-  region: "PAL-E-SE"
+  region: "PAL-E-SW"
 SLES-50797:
   name: "FIFA World Cup 2002"
   region: "PAL-F"
@@ -7589,7 +7521,7 @@ SLES-50800:
   region: "PAL-S"
 SLES-50801:
   name: "FIFA World Cup 2002"
-  region: "PAL-Unk"
+  region: "PAL-GR"
 SLES-50802:
   name: "Knockout Kings 2002"
   region: "PAL-G"
@@ -7639,7 +7571,8 @@ SLES-50821:
   region: "PAL-M5"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         // 22E91837
         comment=- At least when using GSdx in D3D11 Hardware mode, and due to missing
         comment=-  rendering-fixes, black stripes can show up on ghosts,
@@ -7655,9 +7588,18 @@ SLES-50822:
 SLES-50826:
   name: "Star Wars - Clone Wars"
   region: "PAL-E"
+SLES-50827:
+  name: "Star Wars - Clone Wars"
+  region: "PAL-F"
+SLES-50828:
+  name: "Star Wars - Clone Wars"
+  region: "PAL-G"
 SLES-50829:
-  name: "Commandos 2 - Men of Courage"
-  region: "PAL-Unk"
+  name: "Star Wars: La Guerra dei Cloni"
+  region: "PAL-I"
+SLES-50830:
+  name: "Star Wars: Las Guerras Clon"
+  region: "PAL-S"
 SLES-50831:
   name: "Star Wars - Bounty Hunter"
   region: "PAL-E"
@@ -7741,7 +7683,7 @@ SLES-50843:
   name: "Crashed"
   region: "PAL-M5"
   patches:
-    - crc: "0379b4f7"
+    0379b4f7:
       content: |-
         comment=Patch by Prafull
         // Fixes hanging at start.
@@ -7760,7 +7702,7 @@ SLES-50843:
         patch=0,EE,00151978,word,00000000
         patch=0,EE,00151914,word,00000000
 SLES-50845:
-  name: "Medal of Honour - Frontline"
+  name: "Medal of Honor: En Première Ligne"
   region: "PAL-F"
 SLES-50846:
   name: "Medal of Honor - Frontline"
@@ -7773,7 +7715,7 @@ SLES-50849:
   region: "PAL-M5"
 SLES-50850:
   name: "ATV Off-Road 2"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SLES-50852:
   name: "Sven-Goran Eriksson's World Challenge"
   region: "PAL-E"
@@ -7783,6 +7725,9 @@ SLES-50853:
 SLES-50854:
   name: "WM Nationalspieler"
   region: "PAL-G"
+SLES-50855:
+  name: "Mundial 2002 Challenge"
+  region: "PAL-P"
 SLES-50859:
   name: "Commandos 2 - Men of Courage"
   region: "PAL-E"
@@ -7812,7 +7757,7 @@ SLES-50874:
   region: "PAL-M4"
   compat: 5
   patches:
-    - crc: "A0ED2D23"
+    A0ED2D23:
       content: |-
         comment=Patch by Prafull
         // Fixes controller issue but skips videos.
@@ -7865,9 +7810,15 @@ SLES-50899:
 SLES-50900:
   name: "X-Men - The Next Dimension"
   region: "PAL-F"
+SLES-50901:
+  name: "Conflict - Desert Storm"
+  region: "PAL-I"
 SLES-50902:
   name: "Conflict - Desert Storm"
   region: "PAL-M4"
+SLES-50903:
+  name: "MegaRace 3: Nanotech Disaster"
+  region: "PAL-M5"
 SLES-50905:
   name: "Armored Core 2 - Another Age"
   region: "PAL-E"
@@ -7893,7 +7844,7 @@ SLES-50920:
   region: "PAL-M5"
   compat: 5
   patches:
-    - crc: "401F4726"
+    401F4726:
       content: |-
         comment=Patch by Wgarvin
         // Fixes (black voids) central tower level loading.
@@ -7932,7 +7883,7 @@ SLES-50939:
   region: "PAL-M4"
 SLES-50946:
   name: "Britney's Dance Beat"
-  region: "PAL-Unk"
+  region: "PAL-UK"
 SLES-50947:
   name: "Britney's Dance Beat"
   region: "PAL-M3"
@@ -8061,15 +8012,24 @@ SLES-51023:
   region: "PAL-E"
   compat: 5
   patches:
-    - crc: "5C313124"
+    5C313124:
       content: |-
         comment=Patches by Shadow Lady
         // IPU menus.
         patch=0,EE,002328a8,word,00000000
         patch=0,EE,00338570,word,00000000
+SLES-51024:
+  name: "Roger Lemerre: La Sélection des Champions 2003"
+  region: "PAL-F"
 SLES-51025:
   name: "BDFL Manager 2003"
   region: "PAL-G"
+SLES-51026:
+  name: "Football Manager Campionato 2003"
+  region: "PAL-I"
+SLES-51027:
+  name: "Mánager de Liga 2003"
+  region: "PAL-S"
 SLES-51038:
   name: "MX Superfly featuring Ricky Carmichael"
   region: "PAL-E"
@@ -8081,7 +8041,7 @@ SLES-51043:
   region: "PAL-M6"
   compat: 5
   patches:
-    - crc: "0EF1D4BA"
+    0EF1D4BA:
       content: |-
         comment=Spyro PAL startup fix
         patch=1,EE,001E763C,word,24020001
@@ -8126,6 +8086,9 @@ SLES-51061:
   name: "Grand Theft Auto - Vice City"
   region: "PAL-M5"
   compat: 5
+SLES-51063:
+  name: "Hot Wheels: Velocity X: Maximum Justice"
+  region: "PAL-E"
 SLES-51064:
   name: "Gladius"
   region: "PAL-M3"
@@ -8212,23 +8175,29 @@ SLES-51096:
   region: "PAL-G"
 SLES-51100:
   name: "Club Football - Liverpool - 2003-2004 Season"
-  region: "PAL-Unk"
+  region: "PAL-M6"
 SLES-51101:
   name: "Eggo Mania"
   region: "PAL-M3"
   compat: 5
   patches:
-    - crc: "30b27954"
+    30b27954:
       content: |-
         comment=Patches by Nachbrenner
         // Skip IPU synchronisation.
         patch=0,EE,00111100,word,00000000
+SLES-51107:
+  name: "Hitman 2 - Silent Assassin"
+  region: "PAL-I"
 SLES-51108:
   name: "Hitman 2 - Silent Assassin"
   region: "PAL-F"
 SLES-51109:
   name: "Hitman 2 - Silent Assassin"
   region: "PAL-G"
+SLES-51110:
+  name: "Hitman 2 - Silent Assassin"
+  region: "PAL-S"
 SLES-51113:
   name: "Zone of the Enders: The 2nd Runner Special Edition"
   region: "PAL-M5"
@@ -8412,17 +8381,17 @@ SLES-51209:
   region: "PAL-M5"
   compat: 5
 SLES-51214:
-  name: "18 Wheeler - American Pro Trucker"
-  region: "PAL-Unk"
+  name: "Harry Potter og Hemmelighedernes Kammer"
+  region: "PAL-D"
 SLES-51215:
   name: "Harry Potter og Mysteriekammeret"
-  region: "PAL-NO"
+  region: "PAL-N"
 SLES-51216:
   name: "Harry Potter ja Salaisuuksien Kammio"
   region: "PAL-FI"
 SLES-51217:
   name: "Harry Potter och Hemligheternas Kammare"
-  region: "PAL-SE"
+  region: "PAL-SW"
 SLES-51218:
   name: "Harry Potter en de Geheime Kamer"
   region: "PAL-DU"
@@ -8448,7 +8417,8 @@ SLES-51227:
   region: "PAL-M10"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         // 54AD76D7
         comment=- This gamedisc supports multiple languages and widescreen.
         comment=- Language & widescreen selection is done through the BIOS configuration.
@@ -8569,6 +8539,9 @@ SLES-51273:
     vuClampMode: 3  # Fixes water rendering.
   gameFixes:
     - XGKickHack # Fixes SPS while ingame.
+SLES-51275:
+  name: "Summoner 2"
+  region: "PAL-I"
 SLES-51282:
   name: "Tiger Woods PGA Tour 2003"
   region: "PAL-E"
@@ -8576,7 +8549,7 @@ SLES-51283:
   name: "WWE SmackDown! Shut Your Mouth"
   region: "PAL-E"
   patches:
-    - crc: "D1D97A29"
+    D1D97A29:
       content: |-
         comment=Patch by Prafull
         // Fixes freeze during entrances.
@@ -8608,7 +8581,7 @@ SLES-51292:
   region: "PAL-M5"
   compat: 4
   patches:
-    - crc: "9fccacb5"
+    9fccacb5:
       content: |-
         author=PSI
         // The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end.
@@ -8689,7 +8662,7 @@ SLES-51343:
   name: "Galerians - Ash"
   region: "PAL-M5"
   patches:
-    - crc: "1AE08CF5"
+    1AE08CF5:
       content: |-
         author=kozarovv
         // Floats workaround to make HW GSDX mode working.
@@ -8706,7 +8679,7 @@ SLES-51345:
   name: "Run Like Hell"
   region: "PAL-M5"
   patches:
-    - crc: "945301BE"
+    945301BE:
       content: |-
         comment=Swapping a COP2 op into place to make the flags work without delays
         patch=0,EE,001D4534,word,4A0002FF
@@ -8776,11 +8749,14 @@ SLES-51374:
   name: "RoboCop"
   region: "PAL-M5"
   compat: 5
+SLES-51377:
+  name: "Taxi 3"
+  region: "PAL-F"
 SLES-51381:
   name: "Everblue 2"
   region: "PAL-E"
   patches:
-    - crc: "00C584CB"
+    00C584CB:
       content: |-
         author=kozarovv
         // Rearrange COP2 ops to fix DIV Q timings
@@ -8863,6 +8839,9 @@ SLES-51418:
 SLES-51423:
   name: "Celtic - Club Football"
   region: "PAL-E"
+SLES-51425:
+  name: "Fatman & Slim" # Beta
+  region: "PAL-E"
 SLES-51433:
   name: "Ghost Vibration"
   region: "PAL-E"
@@ -8904,6 +8883,9 @@ SLES-51448:
 SLES-51449:
   name: "Return to Castle Wolfenstein - Operation Resurrection"
   region: "PAL-E"
+SLES-51450:
+  name: "Return to Castle Wolfenstein - Opération Résurrection"
+  region: "PAL-F"
 SLES-51451:
   name: "Whiteout"
   region: "PAL-M3"
@@ -8913,9 +8895,15 @@ SLES-51456:
 SLES-51458:
   name: "BDFL Manager 2004"
   region: "PAL-G"
+SLES-51459:
+  name: "Roger Lemerre - La Sélection des Champions 2004"
+  region: "PAL-F"
 SLES-51460:
   name: "Football Manager 2004"
   region: "PAL-I"
+SLES-51461:
+  name: "Football Manager 2004"
+  region: "PAL-S"
 SLES-51462:
   name: "Shrek Super Party"
   region: "PAL-M4"
@@ -8926,12 +8914,18 @@ SLES-51466:
 SLES-51467:
   name: "Freedom Fighters"
   region: "PAL-E"
+SLES-51468:
+  name: "Freedom Fighters"
+  region: "PAL-F"
 SLES-51469:
   name: "Freedom Fighters"
   region: "PAL-G"
 SLES-51470:
   name: "Freedom Fighters"
   region: "PAL-I"
+SLES-51471:
+  name: "Freedom Fighters"
+  region: "PAL-S"
 SLES-51473:
   name: "Kya - Dark Lineage"
   region: "PAL-M5"
@@ -8973,7 +8967,7 @@ SLES-51495:
   region: "PAL-M4"
   compat: 5
   patches:
-    - crc: "96B76E56"
+    96B76E56:
       content: |-
         comment=Patches by Nachbrenner
         // Fix IPU busy!
@@ -9006,6 +9000,9 @@ SLES-51510:
 SLES-51511:
   name: "Crash Nitro Kart"
   region: "PAL-M6"
+SLES-51522:
+  name: "Return to Castle Wolfenstein: Operation Resurrection"
+  region: "PAL-S"
 SLES-51523:
   name: "Conflict - Desert Storm II"
   region: "PAL-M5"
@@ -9145,6 +9142,9 @@ SLES-51633:
 SLES-51636:
   name: "XGRA - Extreme G Racing Association"
   region: "PAL-M5"
+SLES-51645:
+  name: "Def Jam - Vendetta [Demo]"
+  region: "PAL-E"
 SLES-51646:
   name: "Energy Airforce"
   region: "PAL-M4"
@@ -9450,6 +9450,9 @@ SLES-51819:
   name: "Final Fantasy X-2"
   region: "PAL-S"
   compat: 5
+SLES-51820:
+  name: "Sniper Elite"
+  region: "PAL-M5"
 SLES-51821:
   name: "Alias"
   region: "PAL-M5"
@@ -9468,6 +9471,9 @@ SLES-51825:
 SLES-51826:
   name: "AFL Live 2004"
   region: "PAL-E"
+SLES-51827:
+  name: "Gladiator - Sword of Vengeance"
+  region: "PAL-E-FR"
 SLES-51828:
   name: "Gladiator - Sword of Vengeance"
   region: "PAL-G"
@@ -9501,7 +9507,8 @@ SLES-51843:
   region: "PAL-M5"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         comment=You need to set the EE cycle speed to -1 to be able to load the game.
 SLES-51845:
   name: "Barbie - Horse Adventure"
@@ -9654,6 +9661,9 @@ SLES-51903:
 SLES-51906:
   name: "Rolling"
   region: "PAL-M5"
+SLES-51907:
+  name: "Disney/Pixar Alla Ricerca di Nemo"
+  region: "PAL-I"
 SLES-51908:
   name: "Van Helsing"
   region: "PAL-M5"
@@ -9700,7 +9710,7 @@ SLES-51924:
   compat: 5
 SLES-51925:
   name: "Splashdown 2 - Rides Gone Wild"
-  region: "PAL-Unk"
+  region: "PAL-A"
 SLES-51926:
   name: "Outlaw Golf"
   region: "PAL-M3"
@@ -9771,6 +9781,12 @@ SLES-51958:
 SLES-51959:
   name: "Football Generation"
   region: "PAL-M5"
+SLES-51960:
+  name: "Disney/Pixar À Procura de Nemo"
+  region: "PAL-P"
+SLES-51961:
+  name: "Prince of Persia - The Sands of Time" # Pre-order Demo
+  region: "PAL-E"
 SLES-51963:
   name: "FIFA 2004"
   region: "PAL-F-G"
@@ -9926,6 +9942,9 @@ SLES-52036:
 SLES-52038:
   name: "Terminator 3 - Rise of the Machines"
   region: "PAL-G"
+SLES-52039:
+  name: "Terminator 3 - La Rebelión de las Máquinas"
+  region: "PAL-S"
 SLES-52041:
   name: "Detonator"
   region: "PAL-E"
@@ -10074,7 +10093,8 @@ SLES-52149:
   region: "PAL-M5"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         comment=- This gamedisc supports multiple languages.
         comment=- Language selection is done through the BIOS configuration.
         comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
@@ -10090,6 +10110,9 @@ SLES-52152:
 SLES-52153:
   name: "Driver 3"
   region: "PAL-E-S"
+SLES-52155:
+  name: "EyeToy - L'Eredita"
+  region: "PAL-I"
 SLES-52159:
   name: "Myth Makers Super Kart GP"
   region: "PAL-E"
@@ -10158,7 +10181,7 @@ SLES-52219:
   compat: 5
 SLES-52230:
   name: "Muppets Party Cruise"
-  region: "PAL-Unk"
+  region: "PAL-E-F"
   gameFixes:
     - OPHFlagHack # Fixes some hanging throughout the game.
 SLES-52237:
@@ -10175,7 +10198,7 @@ SLES-52238:
   compat: 5
 SLES-52240:
   name: "International Pool Championship"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SLES-52241:
   name: "Myth Makers - Orbs of Doom"
   region: "PAL-E"
@@ -10240,7 +10263,7 @@ SLES-52278:
   gameFixes:
     - EETimingHack
   patches:
-    - crc: "A8ECA67A"
+    A8ECA67A:
       content: |-
         comment=Patch by Prafull
         // Avoids hanging before Molotov Party.
@@ -10253,7 +10276,7 @@ SLES-52279:
   gameFixes:
     - EETimingHack
   patches:
-    - crc: "B1744B0F"
+    B1744B0F:
       content: |-
         comment=Patch by Prafull
         // Avoids hanging before Molotov Party.
@@ -10266,7 +10289,7 @@ SLES-52280:
   gameFixes:
     - EETimingHack
   patches:
-    - crc: "E185C725"
+    E185C725:
       content: |-
         comment=Patch by Prafull
         // Avoids hanging before Molotov Party.
@@ -10279,7 +10302,7 @@ SLES-52281:
   gameFixes:
     - EETimingHack
   patches:
-    - crc: "B5FFA1E9"
+    B5FFA1E9:
       content: |-
         comment=Patch by Prafull
         // Avoids hanging before Molotov Party.
@@ -10292,7 +10315,7 @@ SLES-52282:
   gameFixes:
     - EETimingHack
   patches:
-    - crc: "B67F4F9E"
+    B67F4F9E:
       content: |-
         comment=Patch by Prafull
         // Avoids hanging before Molotov Party.
@@ -10409,6 +10432,9 @@ SLES-52342:
 SLES-52343:
   name: "Midway Arcade Treasures"
   region: "PAL-E"
+SLES-52346:
+  name: "Retro Classics - 8 Arcade Classics from Yesteryears"
+  region: "PAL-E"
 SLES-52348:
   name: "Seven Samurai 20XX"
   region: "PAL-M5"
@@ -10450,6 +10476,9 @@ SLES-52371:
 SLES-52372:
   name: "Spider-Man 2"
   region: "PAL-M5"
+SLES-52373:
+  name: "Champions of Norrath"
+  region: "PAL-E-S"
 SLES-52374:
   name: "Fight Night 2004"
   region: "PAL-M3"
@@ -10486,13 +10515,16 @@ SLES-52386:
   region: "PAL-E"
 SLES-52387:
   name: "SpyHunter 2"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SLES-52388:
   name: "Transformers Armada - Prelude to Energon [Special Edition]"
   region: "PAL-M5"
   compat: 5
   gameFixes:
     - VIFFIFOHack
+SLES-52392:
+  name: "Combat Elite - WWII Paratroopers [Preview]"
+  region: "PAL-E"
 SLES-52393:
   name: "Pinball Fun"
   region: "PAL-E"
@@ -10509,12 +10541,18 @@ SLES-52395:
 SLES-52396:
   name: "Euro 2004"
   region: "PAL-P-S"
+  clampModes:
+    vuClampMode: 3  # Fixes disappearing ball and black box issues.
 SLES-52397:
   name: "Euro 2004"
   region: "PAL-M3"
+  clampModes:
+    vuClampMode: 3  # Fixes disappearing ball and black box issues.
 SLES-52398:
   name: "Euro 2004"
   region: "PAL-M3"
+  clampModes:
+    vuClampMode: 3  # Fixes disappearing ball and black box issues.
 SLES-52402:
   name: "Perfect Ace 2 - The Championships"
   region: "PAL-M5"
@@ -10533,7 +10571,7 @@ SLES-52418:
   region: "PAL-M5"
   compat: 4
   patches:
-    - crc: "52085DF1"
+    52085DF1:
       content: |-
         // Game takes advantage of the VU's extended float range.
         // This limits it so x86 can handle it.
@@ -10565,6 +10603,9 @@ SLES-52445:
 SLES-52446:
   name: "Mashed"
   region: "PAL-M5"
+SLES-52447:
+  name: "Spider-Man 2"
+  region: "PAL-I"
 SLES-52448:
   name: "Knights of the Temple"
   region: "PAL-M4"
@@ -10581,7 +10622,7 @@ SLES-52451:
   compat: 5
 SLES-52457:
   name: "Shrek 2"
-  region: "PAL-SE"
+  region: "PAL-SW"
 SLES-52458:
   name: "Disgaea: Hour of Darkness"
   region: "PAL-E"
@@ -10688,7 +10729,7 @@ SLES-52510:
   region: "PAL-M3"
   compat: 4
   patches:
-    - crc: "EEE2F6A3"
+    EEE2F6A3:
       content: |-
         comment=Patches By Prafull
         // New patch fixes most issues.
@@ -10768,6 +10809,9 @@ SLES-52541:
   name: "Grand Theft Auto - San Andreas"
   region: "PAL-M5"
   compat: 5
+SLES-52542:
+  name: "All Music Dance!"
+  region: "PAL-I"
 SLES-52544:
   name: "Trivial Pursuit Unhinged"
   region: "PAL-M3"
@@ -10879,6 +10923,9 @@ SLES-52587:
 SLES-52588:
   name: "Mercenaries"
   region: "PAL-E"
+SLES-52589:
+  name: "Mercenaries"
+  region: "PAL-F"
 SLES-52590:
   name: "Mercenaries"
   region: "PAL-G"
@@ -10903,7 +10950,7 @@ SLES-52599:
   region: "PAL-M5"
 SLES-52600:
   name: "Harry Potter and The Prisoner of Azkaban"
-  region: "PAL-Unk"
+  region: "PAL-PL"
 SLES-52601:
   name: "Ex Zeus"
   region: "PAL-E"
@@ -11076,6 +11123,9 @@ SLES-52674:
 SLES-52675:
   name: "Hugo Cannon Cruise"
   region: "PAL-Unk"
+SLES-52676:
+  name: "Hugo Cannon Cruise"
+  region: "PAL-R"
 SLES-52678:
   name: "Viewtiful Joe"
   region: "PAL-M5"
@@ -11103,6 +11153,9 @@ SLES-52694:
 SLES-52695:
   name: "Roger Lemerre - La Selection des Champions"
   region: "PAL-F"
+SLES-52696:
+  name: "Football Manager Campionato 2005"
+  region: "PAL-I"
 SLES-52697:
   name: "Manager de la Liga 2005"
   region: "PAL-S"
@@ -11140,7 +11193,7 @@ SLES-52711:
   name: "Titeuf Mega Compet"
   region: "PAL-F"
   patches:
-    - crc: "958e5086"
+    958e5086:
       content: |-
         comment=Patch by Prafull
         // Sheep screen freeze fix.
@@ -11168,6 +11221,9 @@ SLES-52719:
 SLES-52720:
   name: "Ford Racing 3"
   region: "PAL-M5"
+SLES-52722:
+  name: "Kidz Sports Ice Hockey"
+  region: "PAL-E"
 SLES-52725:
   name: "Need for Speed - Underground 2"
   region: "PAL-M8"
@@ -11202,7 +11258,13 @@ SLES-52738:
   name: "Obscure"
   region: "PAL-F-I"
   compat: 5
+SLES-52741:
+  name: "Red Star, The [Beta]"
+  region: "PAL-E"
 SLES-52745:
+  name: "Hugo - Cannon Cruise"
+  region: "PAL-M4"
+SLES-52746:
   name: "Hugo - Cannon Cruise"
   region: "PAL-M4"
 SLES-52747:
@@ -11426,6 +11488,9 @@ SLES-52867:
 SLES-52868:
   name: "Viewtiful Joe 2"
   region: "PAL-M5"
+SLES-52871:
+  name: "Xtreme Speed"
+  region: "PAL-E"
 SLES-52872:
   name: "Constantine"
   region: "PAL-M5"
@@ -11463,6 +11528,9 @@ SLES-52888:
 SLES-52889:
   name: "Disney's Winnie the Pooh Rumbly Tumbly Adventure"
   region: "PAL-M6"
+SLES-52894:
+  name: "Bard's Tale, The"
+  region: "PAL-E"
 SLES-52895:
   name: "Spongebob Squarepants - The Movie"
   region: "PAL-E"
@@ -11470,6 +11538,9 @@ SLES-52895:
 SLES-52896:
   name: "Spongebob Squarepants - The Movie"
   region: "PAL-F-G"
+SLES-52897:
+  name: "Spongebob Squarepants - The Movie"
+  region: "PAL-I"
 SLES-52898:
   name: "King of Fighters - Maximum Impact"
   region: "PAL-E-JP"
@@ -11480,8 +11551,11 @@ SLES-52902:
   name: "Arcade Classics Vol.1"
   region: "PAL-E"
 SLES-52906:
-  name: "Spongebob and Friends - Movin'"
+  name: "Eyetoy -Spongebob and Friends - Movin'"
   region: "PAL-E"
+SLES-52907:
+  name: "Eyetoy - Spongebob and Friends - Movin'"
+  region: "PAL-M4"
 SLES-52908:
   name: "Urbz, The - Sims in the City"
   region: "PAL-M11"
@@ -11504,7 +11578,7 @@ SLES-52913:
   compat: 5
 SLES-52915:
   name: "Shark Tale"
-  region: "PAL-SE"
+  region: "PAL-SW"
 SLES-52917:
   name: "Scaler"
   region: "PAL-E-F"
@@ -11515,6 +11589,9 @@ SLES-52918:
 SLES-52919:
   name: "NRL Rugby League 2"
   region: "PAL-E"
+SLES-52920:
+  name: "Alarm for Cobra 11 - Vol. II"
+  region: "PAL-E-G"
 SLES-52921:
   name: "Rogue Trooper"
   region: "PAL-M5"
@@ -11530,6 +11607,9 @@ SLES-52931:
   compat: 5
   clampModes:
     vuClampMode: 3  # Fixes broken polygons on trees.
+SLES-52934:
+  name: "Guilty Gear Isuka [Preview]"
+  region: "PAL-E"
 SLES-52939:
   name: "Airborne Troops - Countdown to D-Day"
   region: "PAL-M4"
@@ -11546,7 +11626,7 @@ SLES-52943:
   name: "ESPN NFL 2K5"
   region: "PAL-E"
   patches:
-    - crc: "7D5403E1"
+    7D5403E1:
       content: |-
         comment=Patch by Prafull
         // Fixes random hangs.
@@ -11581,6 +11661,9 @@ SLES-52957:
 SLES-52958:
   name: "Premier Manager 2004-2005"
   region: "PAL-E"
+SLES-52959:
+  name: "Premier Manager 2004-2005"
+  region: "PAL-G"
 SLES-52960:
   name: "Premier Manager 2004-2005"
   region: "PAL-F"
@@ -11609,7 +11692,7 @@ SLES-52967:
   compat: 5
 SLES-52968:
   name: "Burnout 2 - Point of Impact"
-  region: "PAL-Unk"
+  region: "PAL-E"
   compat: 5
   roundModes:
     vuRoundMode: 1  # Bright lights in cars.
@@ -11701,10 +11784,17 @@ SLES-53007:
   region: "PAL-M5"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         comment=- This gamedisc supports multiple languages.
         comment=- Language selection is done through the BIOS configuration.
         comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
+SLES-53008:
+  name: "Mercenaries"
+  region: "PAL-I-S"
+SLES-53009:
+  name: "Dance Factory"
+  region: "PAL-M5"
 SLES-53011:
   name: "Gallop Racer 2"
   region: "PAL-E"
@@ -11731,7 +11821,7 @@ SLES-53020:
   name: "Ghost in the Shell - Stand Alone Complex"
   region: "PAL-M5"
   patches:
-    - crc: "BF6F101F"
+    BF6F101F:
       content: |-
         comment=Rearranging COP2 ops to avoid macflag bad stuff.
         // Solves door problems, possibly other issues later on (nobody ever got that far :P).
@@ -11953,7 +12043,7 @@ SLES-53099:
   roundModes:
     vuRoundMode: 0
   patches:
-    - crc: "53BB63A0"
+    53BB63A0:
       content: |-
         author=kozarovv
         // Patch allow sending VU1 mpg successfully. This fix missing graphic. Thanks to PSI for figuring what is wrong.
@@ -12060,7 +12150,8 @@ SLES-53154:
   name: "Bard's Tale, The"
   region: "PAL-M8"
   patches:
-    - content: |-
+    default:
+      content: |-
         comment=- This gamedisc supports multiple languages.
         comment=- Language selection is done through the BIOS configuration.
         comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
@@ -12081,6 +12172,9 @@ SLES-53158:
 SLES-53172:
   name: "Strike Force Bowling"
   region: "PAL-M5"
+SLES-53173:
+  name: "Truck Racing 2"
+  region: "PAL-E"
 SLES-53174:
   name: "Golden Age of Racing"
   region: "PAL-E"
@@ -12094,6 +12188,9 @@ SLES-53175:
 SLES-53186:
   name: "International Super Karts"
   region: "PAL-E"
+SLES-53189:
+  name: "Maniac Mole"
+  region: "PAL-E"
 SLES-53190:
   name: "Girl Zone"
   region: "PAL-E"
@@ -12104,6 +12201,9 @@ SLES-53191:
 SLES-53192:
   name: "Nightmare Before Christmas, The - Tim Burton's"
   region: "PAL-M5"
+SLES-53193:
+  name: "Puzzle Party"
+  region: "PAL-E"
 SLES-53194:
   name: "LEGO Star Wars"
   region: "PAL-M7"
@@ -12158,6 +12258,9 @@ SLES-53226:
 SLES-53227:
   name: "Dreamworks' Madagascar"
   region: "PAL-M3"
+SLES-53231:
+  name: "Le Avventure di Lupin III - Il Tesoro del Re Stregone"
+  region: "PAL-I"
 SLES-53233:
   name: "Assault Suits Valken"
   region: "PAL-E"
@@ -12180,7 +12283,7 @@ SLES-53238:
   region: "PAL-M4"
 SLES-53242:
   name: "Madagascar"
-  region: "PAL-Unk"
+  region: "PAL-P"
 SLES-53246:
   name: "Madagascar"
   region: "PAL-S"
@@ -12226,13 +12329,16 @@ SLES-53303:
   name: "Ski Jumping 2006"
   region: "PAL-E-G"
 SLES-53309:
-  name: "Transformers"
-  region: "PAL-Unk"
+  name: "Transformers [Director's Cut]"
+  region: "PAL-M5"
   gameFixes:
     - VIFFIFOHack
 SLES-53311:
   name: "Graffiti Kingdom"
   region: "PAL-M5"
+SLES-53314:
+  name: "Melbourne Cup Challenge"
+  region: "PAL-A"
 SLES-53317:
   name: "Black Market Bowling"
   region: "PAL-E"
@@ -12249,6 +12355,9 @@ SLES-53319:
 SLES-53320:
   name: "S.C.A.R. - Squadra Corse Alfa Romeo"
   region: "PAL-M5"
+SLES-53321:
+  name: "The X Factor Sing"
+  region: "PAL-E"
 SLES-53322:
   name: "Obscure"
   region: "PAL-R"
@@ -12274,6 +12383,9 @@ SLES-53338:
 SLES-53339:
   name: "Dynasty Warriors 5"
   region: "PAL-E"
+SLES-53340:
+  name: "Dynasty Warriors 5"
+  region: "PAL-F"
 SLES-53341:
   name: "Dynasty Warriors 5"
   region: "PAL-G"
@@ -12281,6 +12393,9 @@ SLES-53341:
 SLES-53342:
   name: "EA Sports Cricket 2005"
   region: "PAL-E"
+SLES-53343:
+  name: "City Soccer Challenge"
+  region: "PAL-A"
 SLES-53344:
   name: "Guerrilla Strike"
   region: "PAL-E"
@@ -12304,10 +12419,16 @@ SLES-53350:
 SLES-53351:
   name: "SSX On Tour"
   region: "PAL-E"
+SLES-53353:
+  name: "Shonen Jump's Shaman King - Power of Spirit"
+  region: "PAL-M3"
 SLES-53354:
   name: "Superbike GP"
   region: "PAL-E"
   compat: 5
+SLES-53355:
+  name: "Obliterate"
+  region: "PAL-E"
 SLES-53356:
   name: "Colosseum - Road to Freedom"
   region: "PAL-E"
@@ -12329,6 +12450,9 @@ SLES-53363:
   compat: 5
   roundModes:
     eeRoundMode: 0  # Fixes commands not being visible
+SLES-53364:
+  name: "7 Sins"
+  region: "PAL-G"
 SLES-53366:
   name: "Killer 7"
   region: "PAL-M3"
@@ -12379,6 +12503,9 @@ SLES-53386:
 SLES-53387:
   name: "Batman Begins"
   region: "PAL-M7"
+SLES-53388:
+  name: "Rhythmic Star!"
+  region: "PAL-M5"
 SLES-53390:
   name: "Ultimate Spider-Man"
   region: "PAL-E"
@@ -12390,6 +12517,9 @@ SLES-53393:
   name: "Spartan Total Warrior"
   region: "PAL-M5"
   compat: 5
+SLES-53396:
+  name: "Spartan Total Warrior"
+  region: "PAL-M3"
 SLES-53398:
   name: "Zombie Zone"
   region: "PAL-E"
@@ -12397,6 +12527,12 @@ SLES-53398:
 SLES-53399:
   name: "Yakuza Fury"
   region: "PAL-E"
+SLES-53400:
+  name: "Shogun's Blade"
+  region: "PAL-A"
+SLES-53401:
+  name: "Iron Sea"
+  region: "PAL-A"
 SLES-53402:
   name: "Taxi Rider"
   region: "PAL-E"
@@ -12408,6 +12544,9 @@ SLES-53403:
   name: "Demolition Girl"
   region: "PAL-E"
   compat: 5
+SLES-53404:
+  name: "Deep Water"
+  region: "PAL-E"
 SLES-53405:
   name: "Digimon World 4"
   region: "PAL-M4"
@@ -12425,6 +12564,9 @@ SLES-53408:
 SLES-53411:
   name: "Kuon"
   region: "PAL-M3"
+SLES-53413:
+  name: "Rebel Raiders - Operation Nighthawk"
+  region: "PAL-M5"
 SLES-53414:
   name: "Echo Night - Beyond"
   region: "PAL-E"
@@ -12441,10 +12583,13 @@ SLES-53417:
   region: "PAL-G"
 SLES-53418:
   name: "Tak - The Great JuJu Challenge"
-  region: "PAL-Unk"
+  region: "PAL-A"
 SLES-53419:
   name: "LA Rush"
   region: "PAL-M5"
+SLES-53420:
+  name: "Winnie the Pooh's Rumbly Tumbly Adventure"
+  region: "PAL-PL"
 SLES-53424:
   name: "Dead to Rights 2"
   region: "PAL-M4"
@@ -12481,7 +12626,7 @@ SLES-53443:
   region: "PAL-M5"
 SLES-53444:
   name: "Pro Evolution Soccer 5"
-  region: "PAL-Unk"
+  region: "PAL-M5"
 SLES-53446:
   name: "Arcade USA"
   region: "PAL-E"
@@ -12509,12 +12654,21 @@ SLES-53462:
 SLES-53463:
   name: "NHL '06"
   region: "PAL-E"
+SLES-53464:
+  name: "The Great British Football Quiz"
+  region: "PAL-UK"
+SLES-53465:
+  name: "Maxi Quiz du Foot Français"
+  region: "PAL-F"
 SLES-53466:
   name: "Il Grande Quiz sul Calcio Italiano"
   region: "PAL-I"
 SLES-53468:
   name: "Family Boardgames"
   region: "PAL-M6"
+SLES-53470:
+  name: "De Grote Nederlandse Voetbalquiz"
+  region: "PAL-DU"
 SLES-53471:
   name: "LMA Manager 2006"
   region: "PAL-M5"
@@ -12538,6 +12692,9 @@ SLES-53483:
 SLES-53484:
   name: "Eagle Eye Golf"
   region: "PAL-M5"
+SLES-53485:
+  name: "Car Racing Challenge"
+  region: "PAL-E"
 SLES-53487:
   name: "Forty 4 Party"
   region: "PAL-E"
@@ -12551,6 +12708,9 @@ SLES-53489:
 SLES-53490:
   name: "Outlaw Tennis"
   region: "PAL-M5"
+SLES-53491:
+  name: "Karaoke Stage 2"
+  region: "PAL-M5"
 SLES-53492:
   name: "Total Overdose"
   region: "PAL-M5"
@@ -12558,9 +12718,21 @@ SLES-53494:
   name: "Spongebob Squarepants - Lights, Camera, PANTS!"
   region: "PAL-E"
   compat: 5
+SLES-53495:
+  name: "Nickelodeon Bob L'éponge - Silence on Tourne!"
+  region: "PAL-F"
 SLES-53496:
   name: "Spongebob Squarepants - Lights, Camera, PANTS!"
   region: "PAL-I"
+SLES-53497:
+  name: "Nickelodeon SpongeBob Schwammkopf - Film ab!"
+  region: "PAL-G"
+SLES-53498:
+  name: "Nickelodeon Bob Esponja - ¡Luces, Cámara, Esponja!"
+  region: "PAL-S"
+SLES-53499:
+  name: "Nickelodeon SpongeBob SquarePants: Licht uit, Camera aan!"
+  region: "PAL-DU"
 SLES-53501:
   name: "Star Wars - Battlefront II"
   region: "PAL-M3"
@@ -12706,7 +12878,8 @@ SLES-53539:
   region: "PAL-M4"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         author=atomic83github
         // Found with the help of the dev-9 plugin and the PS4 emu.
         // This is a game bug trigger by a timing issue.
@@ -12730,7 +12903,8 @@ SLES-53540:
   region: "PAL-M4"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         author=atomic83github
         // Found with the help of the dev-9 plugin and the PS4 emu.
         // This is a game bug trigger by a timing issue.
@@ -12784,6 +12958,9 @@ SLES-53552:
 SLES-53553:
   name: "James Bond 007 - From Russia with Love"
   region: "PAL-M7"
+SLES-53556:
+  name: "Driver - Parallel Lines"
+  region: "PAL-M3"
 SLES-53557:
   name: "Need for Speed - Most Wanted"
   region: "PAL-E"
@@ -12871,7 +13048,7 @@ SLES-53581:
   region: "PAL-S"
 SLES-53582:
   name: "Bratz - Rock Angelz"
-  region: "PAL-SE"
+  region: "PAL-SW"
 SLES-53583:
   name: "Bratz - Rock Angelz"
   region: "PAL-F"
@@ -12894,6 +13071,12 @@ SLES-53595:
 SLES-53596:
   name: "Ultimate Film Quiz, The"
   region: "PAL-M6"
+SLES-53597:
+  name: "Ultimate Sports Quiz, The"
+  region: "PAL-E"
+SLES-53598:
+  name: "Ultimate Trivia Quiz, The"
+  region: "PAL-M6"
 SLES-53599:
   name: "Ultimate Music Quiz, The"
   region: "PAL-M6"
@@ -12902,7 +13085,7 @@ SLES-53600:
   region: "PAL-M6"
 SLES-53601:
   name: "International Cue Club 2"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SLES-53614:
   name: "Classic British Motor Racing"
   region: "PAL-E"
@@ -12935,12 +13118,30 @@ SLES-53626:
     - "SLES-51693"
     - "SLES-52439"
     - "SLES-52531"
+SLES-53632:
+  name: "Dance - UK XL Party"
+  region: "PAL-UK"
+SLES-53633:
+  name: "Dance - UK XL Lite"
+  region: "PAL-UK"
+SLES-53634:
+  name: "Nicktoons Unite!"
+  region: "PAL-A"
 SLES-53635:
   name: "NASCAR '06 - Total Team Control"
   region: "PAL-E"
+SLES-53636:
+  name: "TY the Tasmanian Tiger 3 - Night of the Quinkan"
+  region: "PAL-A"
+SLES-53638:
+  name: "Ski Racing 2006"
+  region: "PAL-M5"
 SLES-53639:
   name: "Ford Street Racing"
   region: "PAL-M5"
+SLES-53640:
+  name: "Das Große deutsche Fußball-Quiz"
+  region: "PAL-G"
 SLES-53641:
   name: "Destroy All Humans!"
   region: "PAL-R"
@@ -12966,6 +13167,9 @@ SLES-53652:
   name: "Daemon Summoner"
   region: "PAL-E"
   compat: 5
+SLES-53653:
+  name: "WWII - Battle over Europe"
+  region: "PAL-E"
 SLES-53654:
   name: "London Racer - Destruction Madness"
   region: "PAL-M3"
@@ -12995,13 +13199,17 @@ SLES-53667:
   region: "PAL-M5"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         comment=- This gamedisc supports multiple languages.
         comment=- Language selection is done through the BIOS configuration.
         comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SLES-53668:
   name: "Micro Machines v4"
   region: "PAL-M5"
+SLES-53672:
+  name: "Ultimate Spider-Man [Limited]"
+  region: "PAL-E"
 SLES-53676:
   name: "WWE SmackDown! vs. RAW 2006"
   region: "PAL-E"
@@ -13013,6 +13221,9 @@ SLES-53682:
   name: "James Pond - Codename Robocod"
   region: "PAL-E"
   compat: 5
+SLES-53683:
+  name: "Kiddies Party Pack"
+  region: "PAL-M3"
 SLES-53685:
   name: "Codename: Kids Next Door - Operation V.I.D.E.O.G.A.M.E"
   region: "PAL-E-G"
@@ -13020,6 +13231,9 @@ SLES-53685:
 SLES-53686:
   name: "NHL Hockey 2K6"
   region: "PAL-M3"
+SLES-53687:
+  name: "NHL Hockey 2K6"
+  region: "PAL-M5"
 SLES-53689:
   name: "World Poker Tour 2K6"
   region: "PAL-M3"
@@ -13036,9 +13250,12 @@ SLES-53696:
 SLES-53697:
   name: "Dora the Explorer"
   region: "PAL-M3"
+SLES-53698:
+  name: "Ford vs. Chevy"
+  region: "PAL-M5"
 SLES-53699:
   name: "Swords of Destiny"
-  region: "PAL-Unk"
+  region: "PAL-E-F-S"
   compat: 5
 SLES-53701:
   name: "Super Monkey Ball Adventure"
@@ -13059,7 +13276,7 @@ SLES-53704:
   region: "PAL-R"
 SLES-53705:
   name: "King Kong, Peter Jackson's - The Official Game of the Movie"
-  region: "PAL-Unk"
+  region: "PAL-PL-E"
 SLES-53706:
   name: "Disney's The Chronicles of Narnia - The Lion, The Witch, and The Wardrobe"
   region: "PAL-E"
@@ -13081,7 +13298,7 @@ SLES-53712:
   region: "PAL-M3"
 SLES-53713:
   name: "Disney's The Chronicles of Narnia - The Lion, The Witch, and The Wardrobe"
-  region: "PAL-Unk"
+  region: "PAL-PL"
 SLES-53715:
   name: "Disney's The Chronicles of Narnia - The Lion, The Witch, and The Wardrobe"
   region: "PAL-R"
@@ -13148,7 +13365,7 @@ SLES-53746:
   name: "Superman Returns"
   region: "PAL-E"
   patches:
-    - crc: "E8F7BAB6"
+    E8F7BAB6:
       content: |-
         author=kozarovv
         // Fix sps and various graphical issues by Using iaddiu instead of FSAND
@@ -13164,9 +13381,15 @@ SLES-53747:
 SLES-53748:
   name: "Quest for Sleeping Beauty"
   region: "PAL-M7"
+SLES-53749:
+  name: "Cabela's Outdoor Adventures"
+  region: "PAL-A"
 SLES-53751:
   name: "Shrek Superslam"
   region: "PAL-M3"
+SLES-53752:
+  name: "Shrek Superslam"
+  region: "PAL-M4"
 SLES-53753:
   name: "Test Drive Unlimited"
   region: "PAL-M5"
@@ -13189,6 +13412,9 @@ SLES-53755:
 SLES-53756:
   name: "Resident Evil 4"
   region: "PAL-M5"
+SLES-53758:
+  name: "Sniper Elite [Pre-Production]"
+  region: "PAL-E"
 SLES-53759:
   name: "Matrix, The - Path of Neo"
   region: "PAL-M5"
@@ -13223,6 +13449,9 @@ SLES-53769:
 SLES-53772:
   name: "Air Raid 3"
   region: "PAL-E"
+SLES-53773:
+  name: "Cartoon Kingdom"
+  region: "PAL-M3"
 SLES-53775:
   name: "Reservoir Dogs"
   region: "PAL-M4"
@@ -13239,6 +13468,9 @@ SLES-53778:
 SLES-53779:
   name: "American Chopper 2 - Full Throttle"
   region: "PAL-E"
+SLES-53793:
+  name: "Pro Evolution Soccer 5 [Demo]"
+  region: "PAL-I"
 SLES-53794:
   name: "Drakengard 2"
   region: "PAL-M3"
@@ -13268,10 +13500,19 @@ SLES-53803:
 SLES-53804:
   name: "Shamu's Deep Sea Adventures"
   region: "PAL-E"
+SLES-53805:
+  name: "Cocoto Funfair"
+  region: "PAL-M5"
+SLES-53809:
+  name: "K-1 Premium Dynamite!!"
+  region: "PAL-E"
 SLES-53810:
   name: "Sensible Soccer 2006"
   region: "PAL-M5"
   compat: 5
+SLES-53812:
+  name: "Codename: Kids Next Door - Operation - V.I.D.E.O.G.A.M.E. [Promo]"
+  region: "PAL-M4"
 SLES-53813:
   name: "Friends - Celui qui Repond a Toutes les Questions"
   region: "PAL-F"
@@ -13284,6 +13525,9 @@ SLES-53819:
     - "SLES-82037"
 SLES-53820:
   name: "Armored Core - Last Raven"
+  region: "PAL-E"
+SLES-53821:
+  name: "Radio Helicopter II"
   region: "PAL-E"
 SLES-53824:
   name: "Trapt"
@@ -13298,7 +13542,8 @@ SLES-53826:
   region: "PAL-M5"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         comment=- This gamedisc supports multiple languages.
         comment=- Language selection is done through the BIOS configuration.
         comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
@@ -13338,7 +13583,7 @@ SLES-53848:
   compat: 5
 SLES-53849:
   name: "Asterix & Obelix XXL2"
-  region: "PAL-Unk"
+  region: "PAL-M4"
 SLES-53850:
   name: "Teenage Mutant Ninja Turtles 3 - Mutant Nightmare"
   region: "PAL-M5"
@@ -13346,6 +13591,9 @@ SLES-53852:
   name: "Taito Legends 2"
   region: "PAL-M5"
   compat: 5
+SLES-53853:
+  name: "Final Fight - Streetwise"
+  region: "PAL-M5"
 SLES-53855:
   name: "Heracles - Battle with the Gods"
   region: "PAL-E"
@@ -13403,14 +13651,17 @@ SLES-53874:
 SLES-53877:
   name: "Premier Manager 2006-2007"
   region: "PAL-M3"
+SLES-53885:
+  name: "Cabela's Dangerous Hunts 2"
+  region: "PAL-A"
 SLES-53886:
   name: "Black"
   region: "PAL-M5"
   compat: 5
   clampModes:
-    vuClampMode: 3  # Fixes SPS
+    vuClampMode: 3  # Fixes SPS.
   patches:
-    - crc: "ADDFF505"
+    ADDFF505:
       content: |-
         author=refraction
         // COP2 Rearrangement. Fixes broken collisions.
@@ -13453,7 +13704,8 @@ SLES-53908:
   region: "PAL-M8"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         comment=- This gamedisc supports multiple languages.
         comment=- Language selection is done through the BIOS configuration.
         comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
@@ -13465,6 +13717,12 @@ SLES-53909:
 SLES-53910:
   name: "Agent Hugo"
   region: "PAL-R"
+SLES-53911:
+  name: "Rugby 06"
+  region: "PAL-E"
+SLES-53912:
+  name: "Rugby 06"
+  region: "PAL-F"
 SLES-53913:
   name: "Plan, The"
   region: "PAL-F-I"
@@ -13524,11 +13782,20 @@ SLES-53956:
   name: "Aeon Flux"
   region: "PAL-E"
   compat: 5
+SLES-53957:
+  name: "Namco Museum 50th Anniversary"
+  region: "PAL-M5"
+SLES-53958:
+  name: "Noble Racing"
+  region: "PAL-E"
 SLES-53959:
   name: "Pac-Man World 3"
   region: "PAL-M5"
   gameFixes:
     - EETimingHack
+SLES-53961:
+  name: "Rock'N'Roll Adventures"
+  region: "PAL-E"
 SLES-53963:
   name: "Downhill Slalom"
   region: "PAL-E"
@@ -13549,6 +13816,9 @@ SLES-53967:
 SLES-53968:
   name: "Godfather, The (Le Parrain)"
   region: "PAL-F"
+SLES-53969:
+  name: "Godfather, The (Der Pate)"
+  region: "PAL-G"
 SLES-53970:
   name: "Godfather, The"
   region: "PAL-I"
@@ -13578,12 +13848,15 @@ SLES-53984:
   name: "Ice Age 2 - The Meltdown"
   region: "PAL-M6"
   patches:
-    - crc: "2EC49E65"
+    2EC49E65:
       content: |-
         comment=Patch by kozarovv
         // Intro screen freeze fix.
         patch=1,EE,002FF3F0,word,27BDFEE0
         patch=1,EE,002FF42C,word,27BD0120
+SLES-53986:
+  name: "Over the Hedge"
+  region: "PAL-I"
 SLES-53987:
   name: "Over the Hedge"
   region: "PAL-S"
@@ -13599,6 +13872,9 @@ SLES-53991:
 SLES-53994:
   name: "50cent - Bulletproof"
   region: "PAL-E"
+SLES-53995:
+  name: "World Championship Poker 2 featuring Howard Lederer"
+  region: "PAL-M5"
 SLES-53996:
   name: "Army Men - Major Malfunction"
   region: "PAL-E"
@@ -13631,7 +13907,7 @@ SLES-54010:
   region: "PAL-I"
 SLES-54011:
   name: "Disney-Pixar's Cars"
-  region: "PAL-SE"
+  region: "PAL-SW"
 SLES-54012:
   name: "Disney-Pixar's Cars"
   region: "PAL-G"
@@ -13644,13 +13920,16 @@ SLES-54015:
 SLES-54016:
   name: "AND 1 Streetball"
   region: "PAL-M5"
+SLES-54018:
+  name: "Jackpot Madness"
+  region: "PAL-E"
 SLES-54021:
   name: "Ruff Trigger"
   region: "PAL-M5"
   gameFixes:
     - EETimingHack # Fixes game engine errors when going ingame.
   patches:
-    - crc: "b02c81e5"
+    b02c81e5:
       content: |-
         // Fixes random hangs when going ingame.
         patch=1,EE,001128e0,word,00000000
@@ -13665,9 +13944,9 @@ SLES-54030:
   region: "PAL-E"
   compat: 5
   clampModes:
-    vuClampMode: 3  # Fixes SPS
+    vuClampMode: 3  # Fixes SPS.
   patches:
-    - crc: "CAA04879"
+    CAA04879:
       content: |-
         author=refraction
         // COP2 Rearrangement. Fixes broken collisions.
@@ -13716,7 +13995,7 @@ SLES-54080:
     - EETimingHack # Fixes game hanging at mission 1.
 SLES-54081:
   name: "FIFA World Cup 2006"
-  region: "PAL-Unk"
+  region: "PAL-PL"
 SLES-54083:
   name: "Pirates of the Caribbean - The Legend of Jack Sparrow"
   region: "PAL-E"
@@ -13734,6 +14013,9 @@ SLES-54087:
 SLES-54089:
   name: "State of Emergency 2"
   region: "PAL-M3"
+SLES-54092:
+  name: "State of Emergency 2"
+  region: "PAL-M3"
 SLES-54093:
   name: "Guitar Hero"
   region: "PAL-M5"
@@ -13748,28 +14030,28 @@ SLES-54097:
   region: "PAL-G"
 SLES-54106:
   name: "Kidz Sports - Ice Hockey"
-  region: "PAL-Unk"
+  region: "PAL-I"
 SLES-54107:
   name: "Kidz Sports - Basketball"
-  region: "PAL-Unk"
+  region: "PAL-I"
 SLES-54108:
   name: "Habitrail - Hamster Ball"
-  region: "PAL-Unk"
+  region: "PAL-I"
 SLES-54109:
   name: "Off-Road Extreme! [Special Edition]"
   region: "PAL-E"
 SLES-54110:
   name: "Monster Trux Arenas [Special Edition]"
-  region: "PAL-Unk"
+  region: "PAL-E"
 SLES-54111:
   name: "PDC World Championship Darts"
   region: "PAL-M6"
 SLES-54112:
   name: "Myth Makers - Orbs of Doom"
-  region: "PAL-Unk"
+  region: "PAL-I"
 SLES-54113:
   name: "Myth Makers - Super Kart GP"
-  region: "PAL-Unk"
+  region: "PAL-I"
 SLES-54114:
   name: "Kingdom Hearts II"
   region: "PAL-E"
@@ -13792,15 +14074,27 @@ SLES-54118:
 SLES-54120:
   name: "Snow Queen Quest, The"
   region: "PAL-M6"
+SLES-54122:
+  name: "Robin Hood 2 - The Siege"
+  region: "PAL-E"
 SLES-54123:
   name: "Marvel - Ultimate Alliance"
   region: "PAL-E-I"
+SLES-54124:
+  name: "The Quest for Aladdin's Treasure"
+  region: "PAL-M6"
+SLES-54125:
+  name: "Robin Hood's Quest"
+  region: "PAL-M6"
 SLES-54126:
   name: "Family Guy - The Video Game"
   region: "PAL-M5"
 SLES-54130:
   name: "Spy Hunter - Nowhere to Run"
   region: "PAL-M5"
+SLES-54131:
+  name: "SingStar Anthems"
+  region: "PAL-A"
 SLES-54132:
   name: "Guitar Hero"
   region: "PAL-M5"
@@ -13832,6 +14126,9 @@ SLES-54143:
 SLES-54146:
   name: "Crusty Demons"
   region: "PAL-M5"
+SLES-54147:
+  name: "Ice Age 2 - The Meltdown"
+  region: "PAL-R"
 SLES-54150:
   name: "Bionicle Heroes"
   region: "PAL-M6"
@@ -13861,6 +14158,9 @@ SLES-54155:
   region: "PAL-E"
 SLES-54156:
   name: "Mortal Kombat - Armageddon"
+  region: "PAL-M5"
+SLES-54157:
+  name: "SnoCross 2 featuring Blair Morgan"
   region: "PAL-M5"
 SLES-54158:
   name: "Hummer Badlands"
@@ -13919,6 +14219,9 @@ SLES-54172:
   name: "Garfield 2 - Tale of Two Kitties"
   region: "PAL-M11"
   compat: 5
+SLES-54173:
+  name: "Over The Hedge"
+  region: "PAL-SW"
 SLES-54174:
   name: "ZooCube"
   region: "PAL-E"
@@ -13953,7 +14256,7 @@ SLES-54185:
   region: "PAL-M5"
   compat: 5
   patches:
-    - crc: "33F7D21A"
+    33F7D21A:
       content: |-
         comment=- This gamedisc supports multiple languages.
         comment=- Language selection is done through the BIOS configuration.
@@ -14043,6 +14346,9 @@ SLES-54230:
   name: "Brian Lara International Cricket 2007"
   region: "PAL-E"
   compat: 5
+SLES-54231:
+  name: "Ricky Ponting International Cricket 2007"
+  region: "PAL-A"
 SLES-54232:
   name: "Kingdom Hearts II"
   region: "PAL-F"
@@ -14068,7 +14374,7 @@ SLES-54240:
   compat: 5
 SLES-54241:
   name: "FIFA '07"
-  region: "PAL-F-G-I"
+  region: "PAL-M3"
 SLES-54243:
   name: "FIFA '07"
   region: "PAL-P-S"
@@ -14094,7 +14400,7 @@ SLES-54251:
   region: "PAL-S"
 SLES-54252:
   name: "NBA Live '07"
-  region: "PAL-E-G-I"
+  region: "PAL-M3"
 SLES-54253:
   name: "Tiger Woods PGA Tour 07"
   region: "PAL-E"
@@ -14102,7 +14408,7 @@ SLES-54253:
     vuClampMode: 2  # Fix black textures on characters.
 SLES-54254:
   name: "Evolution GT"
-  region: "PAL-Unk"
+  region: "PAL-PL"
 SLES-54255:
   name: "King of Fighters, The - Maximum Impact 2"
   region: "PAL-M5"
@@ -14140,6 +14446,9 @@ SLES-54310:
   region: "PAL-M4"
 SLES-54311:
   name: "Noddy and The Magic Book"
+  region: "PAL-M5"
+SLES-54313:
+  name: "Legend of the Dragon"
   region: "PAL-M5"
 SLES-54316:
   name: "Open Season - Rebelles de la Foret"
@@ -14187,6 +14496,9 @@ SLES-54332:
 SLES-54333:
   name: "Sega MegaDrive Collection"
   region: "PAL-M5"
+SLES-54335:
+  name: "Steambot Chronicles"
+  region: "PAL-F"
 SLES-54336:
   name: "Lumines Plus"
   region: "PAL-M5"
@@ -14226,11 +14538,14 @@ SLES-54347:
   name: "Sims 2, The - Pets"
   region: "PAL-M11"
   compat: 5
+SLES-54348:
+  name: "Superman Returns"
+  region: "PAL-F"
 SLES-54349:
   name: "Superman Returns"
   region: "PAL-I"
   patches:
-    - crc: "E7F7B6BD"
+    E7F7B6BD:
       content: |-
         author=kozarovv
         // Use iaddiu instead of FSAND.
@@ -14239,11 +14554,11 @@ SLES-54349:
 SLES-54350:
   name: "Superman Returns"
   region: "PAL-G"
-SLES-54350:
+SLES-54351:
   name: "Superman Returns"
   region: "PAL-S"
   patches:
-    - crc: "EDF0A0A7"
+    EDF0A0A7:
       content: |-
         author=kozarovv
         // Fix sps and various graphical issues by Using iaddiu instead of FSAND
@@ -14272,7 +14587,7 @@ SLES-54359:
   name: "Legend of Spyro, The - A New Beginning"
   region: "PAL-M6"
   patches:
-    - crc: "0EE5646B"
+    0EE5646B:
       content: |-
         comment=Patch by kozarovv and refraction
         // Fixes HUD and menu display.
@@ -14301,12 +14616,21 @@ SLES-54368:
 SLES-54370:
   name: "Alpine Ski Racing"
   region: "PAL-E-G"
+SLES-54372:
+  name: "RTL Biathlon 2007"
+  region: "PAL-E-G"
 SLES-54374:
   name: "RTL Wintergames 2007"
   region: "PAL-E-G"
 SLES-54376:
   name: "Barnyard"
   region: "PAL-E"
+SLES-54377:
+  name: "Barnyard"
+  region: "PAL-G"
+SLES-54378:
+  name: "Barnyard"
+  region: "PAL-M4"
 SLES-54379:
   name: "NFL Street 3"
   region: "PAL-E"
@@ -14389,6 +14713,9 @@ SLES-54423:
 SLES-54424:
   name: "Dr. Dolittle"
   region: "PAL-M7"
+SLES-54425:
+  name: "Babe"
+  region: "PAL-M7"
 SLES-54426:
   name: "Casper and The Ghostly Trio"
   region: "PAL-M7"
@@ -14405,6 +14732,15 @@ SLES-54432:
   name: "Mercury Meltdown Remix"
   region: "PAL-M5"
   compat: 5
+SLES-54433:
+  name: "Dr. Dolittle"
+  region: "PAL-A"
+SLES-54435:
+  name: "Babe"
+  region: "PAL-A"
+SLES-54436:
+  name: "Jumanji"
+  region: "PAL-A"
 SLES-54437:
   name: "King of Fighters XI"
   region: "PAL-E"
@@ -14423,10 +14759,16 @@ SLES-54442:
   compat: 5
   roundModes:
     vuRoundMode: 2  # Fixes cut-off numbers and restores missing whitespace inside combo meter.
+SLES-54443:
+  name: "Made Man"
+  region: "PAL-M5"
 SLES-54444:
   name: "Made Man"
   region: "PAL-E"
   compat: 5
+SLES-54447:
+  name: "Pro Evolution Soccer 6"
+  region: "PAL-I"
 SLES-54448:
   name: "World Series of Poker - Tournament of Champions"
   region: "PAL-E"
@@ -14450,10 +14792,16 @@ SLES-54454:
   region: "PAL-E"
   # Comments from old GameIndex.dbf for this Game
   #  Voices can be switched between Japanese and English via Options menu.
+SLES-54455:
+  name: "Thrillville"
+  region: "PAL-E"
 SLES-54456:
   name: "Beverly Hills Cop"
   region: "PAL-M11"
   compat: 5
+SLES-54458:
+  name: "Party Carnival"
+  region: "PAL-E"
 SLES-54459:
   name: "All Star Fighters"
   region: "PAL-E"
@@ -14468,6 +14816,9 @@ SLES-54461:
 SLES-54462:
   name: "Zombie Virus"
   region: "PAL-E"
+SLES-54463:
+  name: "Sprint Cars - Road to Knoxville"
+  region: "PAL-A"
 SLES-54464:
   name: "Global Defence Force"
   region: "PAL-E"
@@ -14493,11 +14844,17 @@ SLES-54469:
 SLES-54471:
   name: "Captain Scarlet"
   region: "PAL-M6"
+SLES-54472:
+  name: "Home Alone"
+  region: "PAL-A"
 SLES-54473:
   name: "Flintstones, The - Bedrock Racing"
   region: "PAL-M10"
 SLES-54474:
   name: "Curious George"
+  region: "PAL-E"
+SLES-54475:
+  name: "Darwin"
   region: "PAL-E"
 SLES-54476:
   name: "Buccaneer"
@@ -14509,6 +14866,9 @@ SLES-54478:
 SLES-54483:
   name: "Fast and the Furious, The"
   region: "PAL-E"
+SLES-54485:
+  name: "Cinderella"
+  region: "PAL-M3"
 SLES-54486:
   name: "Xiaolin Showdown"
   region: "PAL-M5"
@@ -14539,6 +14899,9 @@ SLES-54493:
 SLES-54494:
   name: "Little Britain - The Video Game"
   region: "PAL-E"
+SLES-54508:
+  name: "National Geographic - Safari Adventures Africa"
+  region: "PAL-M6"
 SLES-54510:
   name: "Disney's Meet the Robinsons"
   region: "PAL-M3"
@@ -14551,20 +14914,41 @@ SLES-54512:
 SLES-54513:
   name: "UEFA Champions League"
   region: "PAL-I-S"
+SLES-54516:
+  name: "Thrillville"
+  region: "PAL-F-G"
+SLES-54517:
+  name: "Thrillville"
+  region: "PAL-M3"
 SLES-54518:
   name: "Clumsy Shumsy"
   region: "PAL-E"
+SLES-54519:
+  name: "Ford Street Racing XR Edition"
+  region: "PAL-A"
 SLES-54521:
   name: "Nickelodeon SpongeBob and Friends - Battle for Volcano Island"
   region: "PAL-M5"
 SLES-54527:
   name: "Flushed Away"
   region: "PAL-M5"
+SLES-54532:
+  name: "Home Alone"
+  region: "PAL-PL-P"
 SLES-54534:
   name: "Scarface - The World is Yours [Collector's Edition]"
   region: "PAL-E"
   gameFixes:
     - ScarfaceIbitHack
+SLES-54536:
+  name: "Big Idea's VeggieTales - LarryBoy and the Bad Apple"
+  region: "PAL-I"
+SLES-54537:
+  name: "K.O. King"
+  region: "PAL-E"
+SLES-54540:
+  name: "Hawk Superbike Racing"
+  region: "PAL-M6"
 SLES-54541:
   name: "Xena - Warrior Princess"
   region: "PAL-M6"
@@ -14581,6 +14965,9 @@ SLES-54545:
 SLES-54546:
   name: "Horsez"
   region: "PAL-M5"
+SLES-54547:
+  name: "World Championship Poker featuring Howard Lederer - All In"
+  region: "PAL-M5"
 SLES-54548:
   name: "Cocoto Fishing Master"
   region: "PAL-M4"
@@ -14590,6 +14977,9 @@ SLES-54549:
   compat: 5
   gameFixes:
     - FpuNegDivHack # Fixes black fade effects and some overlays texts in the menus.
+SLES-54550:
+  name: "White Van Racer"
+  region: "PAL-E"
 SLES-54551:
   name: "Premier Manager 2006-2007"
   region: "PAL-G"
@@ -14610,7 +15000,7 @@ SLES-54559:
   name: "Free Running"
   region: "PAL-E"
   patches:
-    - crc: "d6a0a3ef"
+    d6a0a3ef:
       content: |-
         author=Prafull
         // Fix character falling through floor.
@@ -14626,7 +15016,7 @@ SLES-54559:
         patch=1,EE,001de5cc,word,4a0002ff
 SLES-54560:
   name: "Alpine Ski Racing 2007"
-  region: "PAL-Unk"
+  region: "PAL-M3"
 SLES-54561:
   name: "Capcom Classics Collection Vol. 2"
   region: "PAL-E"
@@ -14636,6 +15026,9 @@ SLES-54563:
 SLES-54566:
   name: "Barbie in The 12 Dancing Princesses"
   region: "PAL-E"
+SLES-54568:
+  name: "Covert Command"
+  region: "PAL-E"
 SLES-54569:
   name: "Zombie Hunters 2"
   region: "PAL-E"
@@ -14644,7 +15037,7 @@ SLES-54569:
     - XGKickHack # Fixes blank textures
 SLES-54579:
   name: "Flintstones, The - Bedrock Racing"
-  region: "PAL-Unk"
+  region: "PAL-PL-P"
 SLES-54581:
   name: "Red Star, The"
   region: "PAL-M5"
@@ -14662,6 +15055,9 @@ SLES-54584:
 SLES-54586:
   name: "Ar tonelico: Melody of Elemia"
   region: "PAL-E"
+SLES-54587:
+  name: "Raw Danger"
+  region: "PAL-E"
 SLES-54588:
   name: "Brunswick Pro Bowling"
   region: "PAL-E"
@@ -14672,25 +15068,55 @@ SLES-54590:
   name: "Hard Knock High"
   region: "PAL-E"
   compat: 5
+SLES-54591:
+  name: "Special Forces"
+  region: "PAL-E"
+SLES-54592:
+  name: "Pétanque Pro"
+  region: "PAL-F"
+SLES-54593:
+  name: "Space Rebellion"
+  region: "PAL-E"
+SLES-54596:
+  name: "Heatseeker"
+  region: "PAL-M3"
 SLES-54604:
   name: "'Que pasa Neng! El Videojuego"
   region: "PAL-S"
 SLES-54606:
   name: "Harley-Davidson - Race to the Rally"
   region: "PAL-E"
+SLES-54607:
+  name: "MTV Pimp My Ride"
+  region: "PAL-A"
 SLES-54608:
   name: "Barbie in The 12 Dancing Princesses"
   region: "PAL-M4"
 SLES-54611:
   name: "TT Superbikes - Real Road Racing Championship"
   region: "PAL-M5"
+SLES-54612:
+  name: "Captain Scarlet"
+  region: "PAL-M5"
+SLES-54614:
+  name: "Lucinda Green's Equestrian Challenge"
+  region: "PAL-M5"
 SLES-54615:
   name: "Code of the Samurai"
   region: "PAL-E"
   compat: 5
+SLES-54616:
+  name: "Fantastic Four - Rise of the Silver Surfer"
+  region: "PAL-M5"
 SLES-54617:
   name: "Action Man A.T.O.M. - Alpha Teens on Machines"
   region: "PAL-M9"
+SLES-54619:
+  name: "Pinocchio"
+  region: "PAL-M3"
+SLES-54620:
+  name: "Snow White & the 7 Clever Boys"
+  region: "PAL-M3"
 SLES-54622:
   name: "Grand Theft Auto - Vice City Stories"
   region: "PAL-M5"
@@ -14710,11 +15136,20 @@ SLES-54627:
   compat: 5
   clampModes:
     vuClampMode: 0  # Fixes buggy lighting on certain objects.
+SLES-54628:
+  name: "Skate Attack [Promo]"
+  region: "PAL-E"
 SLES-54629:
   name: "Shin Megami Tensei - Devil Summoner - Raidou Kuzunoha vs. the Soulless Army"
   region: "PAL-E"
+SLES-54630:
+  name: "Chi Vuol Essere Milionario: Party Edition"
+  region: "PAL-I"
 SLES-54631:
   name: "Harley-Davidson - Race to the Rally"
+  region: "PAL-M4"
+SLES-54632:
+  name: "MTV Pimp My Ride"
   region: "PAL-M4"
 SLES-54633:
   name: "Premier Manager 08"
@@ -14764,6 +15199,15 @@ SLES-54648:
   gameFixes:
     - VuAddSubHack
     - VU0KickstartHack # Fixes Character SPS.
+SLES-54653:
+  name: "Freak Out - Extreme Freeride"
+  region: "PAL-M5"
+SLES-54655:
+  name: "Cabela's African Safari"
+  region: "PAL-A"
+SLES-54656:
+  name: "EyeToy - Bob the Builder"
+  region: "PAL-E"
 SLES-54657:
   name: "Charlotte's Web"
   region: "PAL-E"
@@ -14771,7 +15215,7 @@ SLES-54658:
   name: "Star Wars - The Force Unleashed"
   region: "PAL-M5"
   patches:
-    - crc: "87109051"
+    87109051:
       content: |-
         author=kozarovv
         // Fix for graphical issues, QTE events, subtitles, health bar.
@@ -14782,7 +15226,7 @@ SLES-54659:
   name: "Star Wars - The Force Unleashed"
   region: "PAL-M4"
   patches:
-    - crc: "DAF2145C"
+    DAF2145C:
       content: |-
         author=kozarovv
         // Fix for graphical issues, QTE events, subtitles, health bar.
@@ -14793,19 +15237,38 @@ SLES-54663:
   name: "Jackass - The Game"
   region: "PAL-M5"
   compat: 5
+SLES-54664:
+  name: "Top Gun"
+  region: "PAL-M11"
+SLES-54665:
+  name: "Paddington Bear"
+  region: "PAL-M11"
 SLES-54666:
   name: "Mr. Bean"
   region: "PAL-M11"
   compat: 5
+SLES-54668:
+  name: "EyeToy - Thomas & Friends - A Day at the Races"
+  region: "PAL-E"
+SLES-54669:
+  name: "Lassie"
+  region: "PAL-M11"
 SLES-54670:
   name: "Wacky Races - Mad Motors"
   region: "PAL-M11"
+SLES-54671:
+  name: "Johnny Bravo Date-O-Rama"
+  region: "PAL-E"
+SLES-54672:
+  name: "Casper's Scare School"
+  region: "PAL-M7"
 SLES-54674:
   name: "Lara Croft Tomb Raider - Anniversary"
   region: "PAL-M10"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         comment=- This gamedisc supports multiple languages.
         comment=- Language selection is done through the BIOS configuration.
         comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
@@ -14816,6 +15279,9 @@ SLES-54677:
   name: "Metal Slug - Anthology"
   region: "PAL-E"
   compat: 5
+SLES-54679:
+  name: "Metal Slug - Anthology"
+  region: "PAL-M3"
 SLES-54681:
   name: "Burnout Dominator"
   region: "PAL-E"
@@ -14824,6 +15290,12 @@ SLES-54681:
 SLES-54683:
   name: "Medal of Honor - Vanguard"
   region: "PAL-M9"
+SLES-54684:
+  name: "Peter Pan"
+  region: "PAL-M3"
+SLES-54685:
+  name: "Hansel and Gretel"
+  region: "PAL-M3"
 SLES-54686:
   name: "Impossible Mission"
   region: "PAL-E"
@@ -14831,12 +15303,21 @@ SLES-54686:
 SLES-54687:
   name: "Spectral vs. Generation"
   region: "PAL-E"
+SLES-54694:
+  name: "K-1 World GP"
+  region: "PAL-E"
 SLES-54695:
   name: "Azur & Asmar"
   region: "PAL-M5"
   compat: 5
+SLES-54700:
+  name: "SXR - Snow X Racing"
+  region: "PAL-M5"
 SLES-54705:
   name: "SBK-07 - Superbike World Championship"
+  region: "PAL-M5"
+SLES-54708:
+  name: "The History Channel - Great Battles of Rome"
   region: "PAL-M5"
 SLES-54711:
   name: "Shadow Hearts - From the New World"
@@ -14852,12 +15333,18 @@ SLES-54715:
   region: "PAL-M4"
   roundModes:
     vuRoundMode: 0  # Crashes without.
+SLES-54716:
+  name: "Skateboard Madness - Xtreme Edition"
+  region: "PAL-E"
 SLES-54717:
   name: "Power Volleyball"
   region: "PAL-E"
 SLES-54719:
   name: "Charlotte's Web"
   region: "PAL-M11"
+SLES-54720:
+  name: "Shield - The Game, The"
+  region: "PAL-M5"
 SLES-54723:
   name: "Spider-Man 3"
   region: "PAL-E"
@@ -14865,11 +15352,20 @@ SLES-54723:
 SLES-54724:
   name: "Spider-Man 3"
   region: "PAL-M4"
+SLES-54725:
+  name: "Kirikou and the Wild Beasts"
+  region: "PAL-M5"
+SLES-54726:
+  name: "Go Kart Rally"
+  region: "PAL-E"
 SLES-54727:
   name: "Naruto - Uzumaki Chronicles"
   region: "PAL-M5"
   gameFixes:
     - OPHFlagHack
+SLES-54728:
+  name: "Mountain Bike Adrenaline featuring Salomon"
+  region: "PAL-M5"
 SLES-54731:
   name: "King of Clubs"
   region: "PAL-M5"
@@ -14902,6 +15398,9 @@ SLES-54737:
   compat: 5
   roundModes:
     vuRoundMode: 2  # Fixes very minor lines appearing at certain points during the game.
+SLES-54738:
+  name: "Thunderbirds"
+  region: "PAL-M11"
 SLES-54744:
   name: "Disney-Pixar Ratatouille"
   region: "PAL-P-CR"
@@ -14933,6 +15432,12 @@ SLES-54755:
 SLES-54756:
   name: "Transformers - The Game"
   region: "PAL-F-S"
+SLES-54757:
+  name: "Transformers - The Game"
+  region: "PAL-G-I"
+SLES-54767:
+  name: "Sniper Assault"
+  region: "PAL-E"
 SLES-54770:
   name: "DreamWorks Shrek the Third"
   region: "PAL-E"
@@ -14943,6 +15448,9 @@ SLES-54771:
   region: "PAL-M5"
   clampModes:
     eeClampMode: 3  # Fixes objects spawning.
+SLES-54772:
+  name: "Monster Eggs"
+  region: "PAL-E"
 SLES-54774:
   name: "DreamWorks Shrek the Third"
   region: "PAL-M5"
@@ -14951,7 +15459,16 @@ SLES-54774:
 SLES-54776:
   name: "Fantastic Four - Rise of the Silver Surfer"
   region: "PAL-E-I"
+SLES-54778:
+  name: "Harry Potter and the Order of the Phoenix"
+  region: "PAL-E"
 SLES-54779:
+  name: "Harry Potter and the Order of the Phoenix"
+  region: "PAL-M5"
+SLES-54780:
+  name: "Harry Potter and the Order of the Phoenix"
+  region: "PAL-M6"
+SLES-54781:
   name: "Harry Potter and the Order of the Phoenix"
   region: "PAL-M5"
 SLES-54782:
@@ -14961,16 +15478,31 @@ SLES-54782:
 SLES-54784:
   name: "Xyanide - Resurrection"
   region: "PAL-M5"
+SLES-54786:
+  name: "Heracles - Chariot Racing"
+  region: "PAL-E-F"
 SLES-54788:
   name: "Aqua Teen Hunger Force - Zombie Ninja Pro-Am"
   region: "PAL-E"
+SLES-54789:
+  name: "Beta Bloc"
+  region: "PAL-E"
 SLES-54790:
   name: "Art of Fighting Anthology"
+  region: "PAL-E"
+SLES-54792:
+  name: "World Wrestling Championship"
   region: "PAL-E"
 SLES-54793:
   name: "WWE SmackDown vs. Raw 2008"
   region: "PAL-E"
   compat: 5
+SLES-54795:
+  name: "Falling Stars"
+  region: "PAL-M6"
+SLES-54803:
+  name: "They Came from the Skies"
+  region: "PAL-A"
 SLES-54804:
   name: "Operation Air Assault 2"
   region: "PAL-E"
@@ -14978,6 +15510,15 @@ SLES-54804:
 SLES-54805:
   name: "Wer Wird Millionar - Party Edition"
   region: "PAL-G"
+SLES-54806:
+  name: "Thrillville - Off the Rails"
+  region: "PAL-E"
+SLES-54807:
+  name: "Thrillville - Off the Rails"
+  region: "PAL-F"
+SLES-54809:
+  name: "Charlotte's Web"
+  region: "PAL-A"
 SLES-54810:
   name: "Rugby 08"
   region: "PAL-E"
@@ -14989,16 +15530,31 @@ SLES-54812:
   region: "PAL-E"
   clampModes:
     vuClampMode: 3  # Missing geometry with microVU.
+SLES-54813:
+  name: "NASCAR 08"
+  region: "PAL-A-E"
+SLES-54814:
+  name: "Dead Eye Jim"
+  region: "PAL-E"
 SLES-54815:
   name: "Spyro - The Eternal Night"
   region: "PAL-M6"
   compat: 5
   patches:
-    - crc: "8AE9536D"
+    8AE9536D:
       content: |-
         comment=Patch by kozarovv and refraction
         // Fixes HUD and menu display.
         patch=1,EE,00173c38,word,00000000
+SLES-54816:
+  name: "Spyro - The Eternal Night"
+  region: "PAL-R"
+SLES-54817:
+  name: "Garfield - Lasagna World Tour"
+  region: "PAL-M5"
+SLES-54818:
+  name: "Super PickUps"
+  region: "PAL-M5"
 SLES-54819:
   name: "Manhunt 2"
   region: "PAL-M5"
@@ -15013,18 +15569,33 @@ SLES-54822:
   name: "Atelier Iris 3: Grand Phantasm"
   region: "PAL-E"
 SLES-54825:
-  name: "Bob the Builder"
+  name: "EyeToy - Bob the Builder"
   region: "PAL-M3"
+SLES-54826:
+  name: "Surf's Up"
+  region: "PAL-M3"
+SLES-54833:
+  name: "Caveman Rock"
+  region: "PAL-E"
 SLES-54834:
   name: "Juiced 2"
   region: "PAL-M5"
   compat: 5
+SLES-54835:
+  name: "Power Rangers - Super Legends"
+  region: "PAL-M5"
 SLES-54836:
   name: "Disney High School Musical - Sing It!"
   region: "PAL-M5"
 SLES-54837:
   name: "Disney Princess - Enchanted Journey"
   region: "PAL-M3"
+SLES-54838:
+  name: "Donkey Xote"
+  region: "PAL-M5"
+SLES-54839:
+  name: "Mambo"
+  region: "PAL-E"
 SLES-54840:
   name: "Nickelodeon Avatar - The Legend of Aang - The Burning Earth"
   region: "PAL-M4"
@@ -15034,6 +15605,9 @@ SLES-54841:
 SLES-54842:
   name: "Crash of the Titans"
   region: "PAL-M5"
+SLES-54843:
+  name: "Crash of the Titans"
+  region: "PAL-R"
 SLES-54845:
   name: "Warriors Orochi"
   region: "PAL-Unk"
@@ -15043,27 +15617,50 @@ SLES-54859:
   compat: 5
   roundModes:
     vuRoundMode: 2  # Fixes cut-off numbers and restores missing whitespace inside combo meter.
+SLES-54860:
+  name: "Guitar Hero - Rocks The 80's"
+  region: "PAL-M4"
+  roundModes:
+    vuRoundMode: 2  # Fixes cut-off numbers and restores missing whitespace inside combo meter.
 SLES-54861:
   name: "Thomas & Friends - A Day at the Races"
   region: "PAL-M5"
+SLES-54863:
+  name: "Thomas & Friends - A Day at the Races"
+  region: "PAL-M2"
+SLES-54864:
+  name: "Legend of Camelot"
+  region: "PAL-M3"
+SLES-54865:
+  name: "Crabby Adventure"
+  region: "PAL-E"
 SLES-54866:
   name: "Games Galaxy 2"
   region: "PAL-M5"
+SLES-54867:
+  name: "Tiger Woods PGA Tour 08"
+  region: "PAL-E-F"
 SLES-54870:
-  name: "FIFA 08"
+  name: "FIFA '08"
   region: "PAL-E"
 SLES-54871:
-  name: "FIFA 2008"
+  name: "FIFA '08"
   region: "PAL-F-G-I"
 SLES-54872:
-  name: "FIFA 08"
+  name: "FIFA '08"
   region: "PAL-P-S"
 SLES-54873:
-  name: "FIFA 2008"
-  region: "PAL-M7"
+  name: "FIFA '08"
+  region: "PAL-M5"
+SLES-54874:
+  name: "FIFA '08"
+  region: "PAL-M5"
 SLES-54875:
   name: "Warriors Orochi"
   region: "PAL-E"
+SLES-54876:
+  name: "Warriors Orochi"
+  region: "PAL-F"
 SLES-54877:
   name: "Warriors Orochi"
   region: "PAL-G"
@@ -15077,6 +15674,12 @@ SLES-54879:
   region: "PAL-M5"
 SLES-54880:
   name: "NBA 2K8"
+  region: "PAL-M5"
+SLES-54881:
+  name: "NBA 2K8"
+  region: "PAL-M5"
+SLES-54882:
+  name: "Gecko Blaster"
   region: "PAL-M5"
 SLES-54883:
   name: "Alone in the Dark"
@@ -15092,15 +15695,36 @@ SLES-54884:
 SLES-54885:
   name: "Moto X Maniac"
   region: "PAL-E"
+SLES-54886:
+  name: "Astérix aux Jeux Olympiques"
+  region: "PAL-F"
+SLES-54887:
+  name: "Thrillville - Verrückte Achterbahn"
+  region: "PAL-G"
+SLES-54888:
+  name: "Pro Biker 2"
+  region: "PAL-E"
+SLES-54889:
+  name: "SWAT Siege"
+  region: "PAL-E"
+SLES-54890:
+  name: "Clever Kids - Dino Land"
+  region: "PAL-M6"
 SLES-54891:
   name: "Clever Kids - Pony World"
   region: "PAL-M6"
 SLES-54892:
   name: "Phantasy Star Universe - Ambition of the Illuminus"
   region: "PAL-M3"
+SLES-54893:
+  name: "NHL 08"
+  region: "PAL-M5"
 SLES-54895:
   name: "NBA Live 08"
   region: "PAL-M3"
+SLES-54896:
+  name: "NBA Live 08"
+  region: "PAL-F"
 SLES-54897:
   name: "GrimGrimoire"
   region: "PAL-E-JP"
@@ -15109,7 +15733,13 @@ SLES-54898:
   name: "Metropolismania 2"
   region: "PAL-E"
 SLES-54899:
-  name: "Bob the Builder"
+  name: "EyeToy - Bob the Builder"
+  region: "PAL-M5"
+SLES-54900:
+  name: "EyeToy - Bob the Builder"
+  region: "PAL-E-I"
+SLES-54901:
+  name: "Spider-Man - Friend or Foe"
   region: "PAL-M5"
 SLES-54903:
   name: "Sims 2, The - Castaway"
@@ -15135,24 +15765,57 @@ SLES-54914:
 SLES-54915:
   name: "Sonic Riders - Zero Gravity"
   region: "PAL-M5"
+SLES-54917:
+  name: "Agent Hugo - Lemoon Twist"
+  region: "PAL-M5"
 SLES-54918:
   name: "Agent Hugo - Lemoon Twist"
   region: "PAL-M7"
+SLES-54919:
+  name: "Agent Hugo - Lemoon Twist"
+  region: "PAL-R"
+SLES-54923:
+  name: "EyeToy - Bob the Builder"
+  region: "PAL-M3"
+SLES-54926:
+  name: "Realplay Pool"
+  region: "PAL-M5"
+SLES-54927:
+  name: "Realplay Golf"
+  region: "PAL-M5"
 SLES-54929:
   name: "Realplay Racing"
+  region: "PAL-M5"
+SLES-54930:
+  name: "Realplay Puzzlesphere"
   region: "PAL-M5"
 SLES-54931:
   name: "Looney Tunes - ACME Arsenal"
   region: "PAL-M5"
+SLES-54933:
+  name: "NBA Live 08"
+  region: "PAL-S"
 SLES-54937:
   name: "RTL Biathlon 2008"
   region: "PAL-G"
+SLES-54938:
+  name: "RTL Biathlon 2008"
+  region: "PAL-E"
 SLES-54939:
   name: "RTL Winter Sports 2008 - The Ultimate Challenge"
   region: "PAL-G"
+SLES-54940:
+  name: "Winter Sports 2008 - The Ultimate Challenge"
+  region: "PAL-E"
 SLES-54942:
   name: "Disney Princess - Enchanted Journey"
   region: "PAL-F-G-I"
+SLES-54943:
+  name: "Disney Princess - Enchanted Journey"
+  region: "PAL-D-N"
+SLES-54944:
+  name: "Disney Princess - Enchanted Journey"
+  region: "PAL-FI-SW"
 SLES-54945:
   name: "Dragonball Z Budokai Tenkaichi 3"
   region: "PAL-M6"
@@ -15160,11 +15823,23 @@ SLES-54945:
 SLES-54946:
   name: "Sega Superstars Tennis"
   region: "PAL-M5"
+SLES-54947:
+  name: "Dogz"
+  region: "PAL-M6"
+SLES-54948:
+  name: "Dogz"
+  region: "PAL-M9"
 SLES-54949:
   name: "Catz"
   region: "PAL-M6"
+SLES-54950:
+  name: "Catz"
+  region: "PAL-M9"
+SLES-54951:
+  name: "Ben 10 - Protector of Earth"
+  region: "PAL-M5"
 SLES-54952:
-  name: "Ben 10: Protector of Earth"
+  name: "Ben 10 - Protector of Earth"
   region: "PAL-M5"
   compat: 5
 SLES-54953:
@@ -15173,11 +15848,20 @@ SLES-54953:
 SLES-54955:
   name: "Finkles World"
   region: "PAL-E"
+SLES-54956:
+  name: "Wacky Zoo GP"
+  region: "PAL-E"
 SLES-54957:
   name: "Cheggers Party Quiz"
   region: "PAL-M5"
 SLES-54958:
   name: "Alan Hansen's Sports Challenge"
+  region: "PAL-M5"
+SLES-54959:
+  name: "MotoGP 07"
+  region: "PAL-M5"
+SLES-54960:
+  name: "Godzilla - Unleashed"
   region: "PAL-M5"
 SLES-54961:
   name: "World series of poker 2008"
@@ -15198,6 +15882,15 @@ SLES-54964:
   region: "PAL-M4"
   roundModes:
     vuRoundMode: 0  # Crashes without.
+SLES-54971:
+  name: "Hot Wheels - Beat That!"
+  region: "PAL-M4"
+SLES-54972:
+  name: "Wild Arms 5"
+  region: "PAL-M3"
+SLES-54973:
+  name: "Le Avventure di Lupin III: Lupin la Morte, Zenigata l'Amore"
+  region: "PAL-I"
 SLES-54974:
   name: "Guitar Hero III - Legends of Rock"
   region: "PAL-M4"
@@ -15209,13 +15902,31 @@ SLES-54975:
   compat: 5
 SLES-54981:
   name: "Bob the Builder - Festival of Fun"
-  region: "PAL-F-G-I"
+  region: "PAL-M3"
+SLES-54982:
+  name: "Bob the Builder - Festival of Fun"
+  region: "PAL-M5"
+SLES-54983:
+  name: "Postman Pat"
+  region: "PAL-M11"
+SLES-54984:
+  name: "The Water Horse - Legend of the Deep"
+  region: "PAL-M11"
 SLES-54986:
   name: "Bratz - The Movie"
   region: "PAL-E-F"
 SLES-54988:
   name: "Bratz - The Movie"
   region: "PAL-G"
+SLES-54989:
+  name: "Bratz - The Movie"
+  region: "PAL-I-S"
+SLES-54990:
+  name: "Nicktoons - Attack of the Toybots"
+  region: "PAL-A"
+SLES-54991:
+  name: "Nickelodeon SpongeBob and Friends - Attack of the Toybots"
+  region: "PAL-M6"
 SLES-54992:
   name: "PDC World Championship Darts 2008"
   region: "PAL-M6"
@@ -15243,6 +15954,11 @@ SLES-54998:
   region: "PAL-F"
   gameFixes:
     - EETimingHack # Flickery textures.
+SLES-54999:
+  name: "Mercenaries 2 - Inferno di Fuoco"
+  region: "PAL-I"
+  gameFixes:
+    - EETimingHack # Flickery textures.
 SLES-55000:
   name: "Mercenaries 2 - World in Flames"
   region: "PAL-G"
@@ -15259,16 +15975,37 @@ SLES-55002:
 SLES-55003:
   name: "Need for Speed - ProStreet"
   region: "PAL-F-G"
+SLES-55004:
+  name: "Need for Speed - ProStreet"
+  region: "PAL-I-S"
 SLES-55005:
   name: "Need for Speed - ProStreet"
   region: "PAL-M8"
+SLES-55006:
+  name: "Need for Speed - ProStreet"
+  region: "PAL-R"
 SLES-55007:
   name: "Boogie"
   region: "PAL-M7"
   compat: 4
+SLES-55008:
+  name: "Riding Star 3"
+  region: "PAL-M4"
+SLES-55010:
+  name: "Thrillville - Fuori dai Binari"
+  region: "PAL-I"
+SLES-55011:
+  name: "Thrillville - Fuera de Control"
+  region: "PAL-S"
+SLES-55012:
+  name: "Golden Compass, The"
+  region: "PAL-M5"
 SLES-55013:
   name: "Iridium Runners"
   region: "PAL-M5"
+SLES-55015:
+  name: "Barbie as the Island Princess"
+  region: "PAL-M6"
 SLES-55016:
   name: "DreamWorks Bee Movie Game"
   region: "PAL-M6"
@@ -15290,7 +16027,28 @@ SLES-55020:
 SLES-55021:
   name: "Pro Evolution Soccer 2008"
   region: "PAL-F-G"
+SLES-55023:
+  name: "Pro Evolution Soccer 2008"
+  region: "PAL-I"
 SLES-55024:
+  name: "Nickelodeon SpongeBob's Atlantis SquarePantis"
+  region: "PAL-M4"
+SLES-55025:
+  name: "Disney/Pixar Cars - Mater-National Championship"
+  region: "PAL-E-A"
+SLES-55026:
+  name: "Disney/Pixar Cars - Mater-National Championship"
+  region: "PAL-F-DU"
+SLES-55027:
+  name: "Disney/Pixar Cars - Hook International"
+  region: "PAL-G"
+SLES-55028:
+  name: "Disney/Pixar Cars - La Coppa Internazionale di Carl Attrezzi"
+  region: "PAL-I"
+SLES-55029:
+  name: "Disney/Pixar Cars - La Copa Internacional de Mate"
+  region: "PAL-S"
+SLES-55030:
   name: "Nickelodeon SpongeBob's Atlantis SquarePantis"
   region: "PAL-M4"
 SLES-55031:
@@ -15302,12 +16060,36 @@ SLES-55032:
 SLES-55034:
   name: "Asterix at the Olympic Games"
   region: "PAL-M5"
+SLES-55035:
+  name: "Asterix at the Olympic Games"
+  region: "PAL-E-A"
 SLES-55039:
   name: "Rock Band"
   region: "PAL-M5"
 SLES-55040:
   name: "Telly Addicts"
   region: "PAL-E"
+SLES-55041:
+  name: "Fire Pro Wrestling Returns"
+  region: "PAL-E"
+SLES-55042:
+  name: "Garfield - Lasagna World Tour"
+  region: "PAL-M5"
+SLES-55043:
+  name: "Garfield - Lasagna World Tour"
+  region: "PAL-F-DU"
+SLES-55044:
+  name: "Premier Manager 09"
+  region: "PAL-M4"
+SLES-55046:
+  name: "Sea Monsters - A Prehistoric Adventure"
+  region: "PAL-M5"
+SLES-55047:
+  name: "Ocean Commander"
+  region: "PAL-E"
+SLES-55048:
+  name: "Star Trek - Conquest"
+  region: "PAL-E-G"
 SLES-55049:
   name: "Toy Golf Extreme"
   region: "PAL-M5"
@@ -15317,12 +16099,18 @@ SLES-55049:
 SLES-55050:
   name: "MX vs. ATV - Untamed"
   region: "PAL-E"
+SLES-55051:
+  name: "MX vs. ATV Extrême Limite"
+  region: "PAL-F"
 SLES-55052:
   name: "Alvin and the Chipmunks"
   region: "PAL-M5"
 SLES-55053:
   name: "Jetix - Puzzle Buzzle"
   region: "PAL-M10"
+SLES-55055:
+  name: "Stealth Force 2"
+  region: "PAL-E"
 SLES-55064:
   name: "Luxor - Pharaoh's Challenge"
   region: "PAL-M5"
@@ -15333,18 +16121,48 @@ SLES-55075:
   name: "Speed racer"
   region: "PAL-M6"
   compat: 5
+SLES-55076:
+  name: "Saint & Sinner"
+  region: "PAL-E"
+SLES-55078:
+  name: "NHL 07"
+  region: "PAL-R"
 SLES-55079:
   name: "CID the Dummy"
   region: "PAL-M5"
+SLES-55080:
+  name: "Nickelodeon SpongeBob's Atlantis SquarePantis"
+  region: "PAL-A"
 SLES-55081:
   name: "Jackass - The Game"
   region: "PAL-E"
+SLES-55082:
+  name: "Urban Constructor"
+  region: "PAL-E"
+SLES-55088:
+  name: "Ultimate Board Game Collection"
+  region: "PAL-M5"
 SLES-55090:
   name: "Naruto - Uzumaki Chronicles 2"
   region: "PAL-M5"
   gameFixes:
     - OPHFlagHack
+SLES-55091:
+  name: "Hoppie"
+  region: "PAL-E"
+SLES-55102:
+  name: "The History Channel - Battle for the Pacific"
+  region: "PAL-E"
+SLES-55103:
+  name: "Cabela's Big Game Hunter 2008"
+  region: "PAL-E"
+SLES-55104:
+  name: "UEFA Euro 2008 - Austria-Switzerland"
+  region: "PAL-E"
 SLES-55105:
+  name: "UEFA Euro 2008 - Austria-Switzerland"
+  region: "PAL-M5"
+SLES-55106:
   name: "UEFA Euro 2008 - Austria-Switzerland"
   region: "PAL-M5"
 SLES-55108:
@@ -15359,6 +16177,12 @@ SLES-55110:
   name: "Odin Sphere"
   region: "PAL-M5"
   compat: 5
+SLES-55111:
+  name: "Nick Jr. Go Diego Go! Safari Rescue"
+  region: "PAL-E"
+SLES-55112:
+  name: "Nick Jr. Dora the Explorer - Dora Saves the Mermaids"
+  region: "PAL-A"
 SLES-55122:
   name: "Moorhuhn Fun Kart 2008"
   region: "PAL-M4"
@@ -15367,35 +16191,53 @@ SLES-55122:
 SLES-55123:
   name: "Legend of Sayuki"
   region: "PAL-M4"
+SLES-55125:
+  name: "Top Trumps - Doctor Who"
+  region: "PAL-E"
 SLES-55126:
   name: "Artlist Collection - The Dog Island"
   region: "PAL-M6"
 SLES-55129:
   name: "Jumper - Griffin's Story"
   region: "PAL-M5"
+SLES-55131:
+  name: "Roller Coaster Funfare"
+  region: "PAL-E"
+SLES-55132:
+  name: "Iron Chef"
+  region: "PAL-E"
 SLES-55133:
   name: "LEGO Indiana Jones - The Original Adventure"
   region: "PAL-M6"
+SLES-55134:
+  name: "Monster Jam"
+  region: "PAL-M5"
 SLES-55135:
   name: "LEGO Batman - The VideoGame"
   region: "PAL-M6"
 SLES-55136:
   name: "Let's Ride! Silver Buckle Stables"
   region: "PAL-M4"
+SLES-55138:
+  name: "Nickelodeon El Tigre - The Adventures of Manny Rivera"
+  region: "PAL-E"
 SLES-55143:
   name: "The Chronicles of Narnia: Prince Caspian"
-  region: "PAL-Unk"
+  region: "PAL-G-I"
 SLES-55144:
   name: "The Chronicles of Narnia: Prince Caspian"
-  region: "PAL-Unk"
+  region: "PAL-M6"
 SLES-55145:
-  name: "Le Monde de Narnia - Chapitre 2 - Le Prince Caspian"
-  region: "PAL-F"
+  name: "The Chronicles of Narnia: Prince Caspian"
+  region: "PAL-F-DU"
 SLES-55146:
   name: "The Chronicles of Narnia: Prince Caspian"
-  region: "PAL-Unk"
+  region: "PAL-UK"
 SLES-55147:
   name: "Silent Hill Origins"
+  region: "PAL-M5"
+SLES-55148:
+  name: "SBK 08 - Superbike World Championship"
   region: "PAL-M5"
 SLES-55150:
   name: "TNA Impact"
@@ -15409,9 +16251,27 @@ SLES-55152:
 SLES-55163:
   name: "Legend of Spyro, The - Dawn of the Dragon"
   region: "PAL-M6"
+SLES-55165:
+  name: "Mummy, The - Tomb of the Dragon Emperor"
+  region: "PAL-M6"
+SLES-55166:
+  name: "Bob O Construtor: Festival do Divertimento"
+  region: "PAL-P"
+SLES-55167:
+  name: "Soul Nomad & the World Eaters"
+  region: "PAL-E-J"
+SLES-55168:
+  name: "Paard & Pony - Topruiter"
+  region: "PAL-DU"
 SLES-55169:
   name: "Monster Lab"
   region: "PAL-M5"
+SLES-55170:
+  name: "Margot's Word Brain"
+  region: "PAL-M5"
+SLES-55172:
+  name: "Code Lyoko - Quest for Infinity"
+  region: "PAL-M4"
 SLES-55174:
   name: "NHL 08"
   region: "PAL-R"
@@ -15440,11 +16300,20 @@ SLES-55188:
   region: "PAL-G"
   roundModes:
     vuRoundMode: 2  # Fixes very minor lines appearing at certain points during the game.
+SLES-55189:
+  name: "Nick Jr. Go Diego Go! Safari Rescue"
+  region: "PAL-E-F"
+SLES-55190:
+  name: "Steam Express"
+  region: "PAL-E"
 SLES-55191:
   name: "Guitar Hero - Aerosmith"
   region: "PAL-E"
   roundModes:
     vuRoundMode: 0  # Crashes without.
+SLES-55192:
+  name: "Steam Express"
+  region: "PAL-M5"
 SLES-55193:
   name: "Disney-Pixar WALL-E"
   region: "PAL-R"
@@ -15462,7 +16331,7 @@ SLES-55195:
     vuRoundMode: 2  # Fixes very minor lines appearing at certain points during the game.
 SLES-55196:
   name: "Disney-Pixar WALL-E"
-  region: "PAL-PO-CR"
+  region: "PAL-PL-CR"
   roundModes:
     vuRoundMode: 2  # Fixes very minor lines appearing at certain points during the game.
 SLES-55197:
@@ -15481,9 +16350,24 @@ SLES-55200:
   region: "PAL-M4"
   roundModes:
     vuRoundMode: 0  # Crashes without.
+SLES-55201:
+  name: "Riding Star"
+  region: "PAL-M4"
+SLES-55202:
+  name: "Riding Star"
+  region: "PAL-M4"
+SLES-55203:
+  name: "My Horse & Me 2"
+  region: "PAL-M10"
 SLES-55204:
   name: "Crash - Mind Over Mutant"
   region: "PAL-M6"
+SLES-55205:
+  name: "Crash - Mind Over Mutant"
+  region: "PAL-M5"
+SLES-55206:
+  name: "Crash - Mind Over Mutant"
+  region: "PAL-R"
 SLES-55207:
   name: "Alone in the Dark"
   region: "PAL-M4"
@@ -15492,14 +16376,29 @@ SLES-55207:
 SLES-55208:
   name: "Incredible Hulk, The"
   region: "PAL-E-F-G"
+SLES-55209:
+  name: "Monopoly"
+  region: "PAL-M3"
+SLES-55214:
+  name: "Disney Hannah Montana - Spotlight World Tour"
+  region: "PAL-M4"
 SLES-55215:
   name: "Growlanser - Heritage of War"
   region: "PAL-E"
 SLES-55216:
   name: "Baroque"
   region: "PAL-E"
+SLES-55218:
+  name: "Tiger Woods PGA Tour 09"
+  region: "PAL-E"
+SLES-55219:
+  name: "Hasbro Family Game Night"
+  region: "PAL-M4"
 SLES-55220:
   name: "Summer Athletics"
+  region: "PAL-M5"
+SLES-55227:
+  name: "Legend of Spyro, The - Dawn of the Dragon"
   region: "PAL-M5"
 SLES-55231:
   name: "Fatal Fury - Battle Archives Volume 1"
@@ -15510,12 +16409,27 @@ SLES-55232:
 SLES-55233:
   name: "World Heroes Anthology"
   region: "PAL-E"
+SLES-55234:
+  name: "Kung Fu Panda"
+  region: "PAL-SW"
+SLES-55235:
+  name: "Kung Fu Panda"
+  region: "PAL-I"
+SLES-55236:
+  name: "Kung Fu Panda"
+  region: "PAL-G-S"
 SLES-55237:
   name: "Naruto - Ultimate Ninja 3"
   region: "PAL-M5"
   compat: 5
   clampModes:
     vuClampMode: 2  # Fixes invisible QTE button prompts and overbright in some scenes.
+SLES-55238:
+  name: "Madden NFL 09"
+  region: "PAL-E"
+SLES-55239:
+  name: "Hasbro Family Game Night"
+  region: "PAL-I"
 SLES-55240:
   name: "Pipe Mania"
   region: "PAL-M5"
@@ -15534,6 +16448,9 @@ SLES-55244:
 SLES-55245:
   name: "FIFA 09"
   region: "PAL-M5"
+SLES-55246:
+  name: "FIFA 09"
+  region: "PAL-M4"
 SLES-55247:
   name: "FIFA 09"
   region: "PAL-M5"
@@ -15544,28 +16461,79 @@ SLES-55248:
 SLES-55249:
   name: "Harry Potter and the Half-Blood Prince"
   region: "PAL-M10"
+SLES-55250:
+  name: "WWE SmackDown vs. Raw 2009"
+  region: "PAL-A"
 SLES-55251:
   name: "WWE SmackDown vs. Raw 2009"
   region: "PAL-M5"
   compat: 5
+SLES-55252:
+  name: "NBA 2K5"
+  region: "PAL-M5"
 SLES-55253:
   name: "NBA 2K5"
   region: "PAL-M5"
+SLES-55254:
+  name: "Incredible Hulk, The"
+  region: "PAL-M3"
 SLES-55263:
   name: "Nickelodeon Avatar - The Legend of Aang - Into the Inferno"
   region: "PAL-M7"
+SLES-55264:
+  name: "Nickelodeon Avatar - The Legend of Aang - Into the Inferno"
+  region: "PAL-A"
+SLES-55265:
+  name: "Legend of Spyro, The - Dawn of the Dragon"
+  region: "PAL-R-E"
 SLES-55266:
   name: "MotoGP 08"
   region: "PAL-M5"
   compat: 5
+SLES-55271:
+  name: "Spongebob Squarepants Featuring Nicktoons - Globs of Doom"
+  region: "PAL-E-F"
+SLES-55272:
+  name: "Spongebob Squarepants Featuring Nicktoons - Globs of Doom"
+  region: "PAL-M3"
 SLES-55274:
   name: "Diabolik - The Original Sin"
   region: "PAL-M6"
+SLES-55275:
+  name: "Jeep Thrills"
+  region: "PAL-M5"
+SLES-55276:
+  name: "Jello"
+  region: "PAL-E"
+SLES-55278:
+  name: "Monopoly"
+  region: "PAL-M4"
 SLES-55280:
   name: "King of Fighters '98 - Ultimate Match"
   region: "PAL-E"
+SLES-55281:
+  name: "Nickelodeon Dora the Explorer - Dora Saves the Snow Princess"
+  region: "PAL-M3"
+SLES-55284:
+  name: "Nickelodeon Go Diego Go! Great Dinosaur Rescue"
+  region: "PAL-M3"
+SLES-55288:
+  name: "Nick Jr. Dora the Explorer - Dora Saves the Mermaids"
+  region: "PAL-M4"
+SLES-55289:
+  name: "Nick Jr. Go Diego Go! Safari Rescue"
+  region: "PAL-M3"
 SLES-55292:
   name: "Samurai Shodown Anthology"
+  region: "PAL-E"
+SLES-55293:
+  name: "Disney Hannah Montana - Spotlight World Tour"
+  region: "PAL-M5"
+SLES-55294:
+  name: "Ferrari Challenge - Trofeo Pirelli"
+  region: "PAL-M5"
+SLES-55295:
+  name: "Score International Baja 1000 - World Championship Off Road Racing"
   region: "PAL-E"
 SLES-55328:
   name: "Millennium European Paintball Series, The - Championship Paintball 2009"
@@ -15573,15 +16541,45 @@ SLES-55328:
 SLES-55329:
   name: "Shrek's Carnival Craze"
   region: "PAL-M3"
+SLES-55330:
+  name: "Secret Service"
+  region: "PAL-E"
 SLES-55331:
   name: "Cabela's Dangerous Adventures"
   region: "PAL-E"
+SLES-55332:
+  name: "Monster Jam - Urban Assault"
+  region: "PAL-M5"
+SLES-55334:
+  name: "NBA Live 09"
+  region: "PAL-E-I-A"
+SLES-55335:
+  name: "NBA Live 09"
+  region: "PAL-E-G"
+SLES-55336:
+  name: "NBA Live 09"
+  region: "PAL-F"
+SLES-55337:
+  name: "NBA Live 09"
+  region: "PAL-S"
+SLES-55338:
+  name: "NHL 09"
+  region: "PAL-M6"
+SLES-55339:
+  name: "NHL 09"
+  region: "PAL-G"
+SLES-55340:
+  name: "Space Chimps"
+  region: "PAL-M5"
 SLES-55341:
   name: "Hasbro Family Game Night"
   region: "PAL-G"
 SLES-55342:
   name: "Hasbro Family Game Night"
-  region: "PAL-Unk"
+  region: "PAL-E"
+SLES-55343:
+  name: "Tube Mania"
+  region: "PAL-F"
 SLES-55344:
   name: "Rock Band - Song Back 1"
   region: "PAL-M5"
@@ -15589,20 +16587,32 @@ SLES-55345:
   name: "James Bond: Quantum of Solace"
   region: "PAL-M5"
   compat: 5
+SLES-55346:
+  name: "Rugby League 2 - World Cup Edition"
+  region: "PAL-E"
 SLES-55347:
   name: "Dragon Ball Z: Infinite World"
   region: "PAL-M5"
   compat: 5
+SLES-55348:
+  name: "Space Chimps"
+  region: "PAL-A"
 SLES-55349:
   name: "Need For Speed - Undercover"
   region: "PAL-E"
 SLES-55350:
   name: "Need for Speed - Undercover"
   region: "PAL-F-G"
+SLES-55351:
+  name: "Need for Speed - Undercover"
+  region: "PAL-I-S"
 SLES-55352:
   name: "Need For Speed - Undercover"
-  region: "PAL-R"
+  region: "PAL-M4"
   compat: 5
+SLES-55353:
+  name: "Need for Speed - Undercover"
+  region: "PAL-M6"
 SLES-55354:
   name: "Shin Megami Tensei: Persona 3 FES"
   region: "PAL-E"
@@ -15612,9 +16622,27 @@ SLES-55354:
 SLES-55355:
   name: "Guitar Hero - World Tour"
   region: "PAL-M5"
+SLES-55356:
+  name: "Bratz - Girlz Really Rock"
+  region: "PAL-M3"
+SLES-55357:
+  name: "Bratz - Girlz Really Rock"
+  region: "PAL-M3"
+SLES-55358:
+  name: "Bratz - Girlz Really Rock"
+  region: "PAL-M4"
+SLES-55359:
+  name: "Bratz - Girlz Really Rock"
+  region: "PAL-A"
+SLES-55364:
+  name: "Agent Hugo - Hula Holiday"
+  region: "PAL-M5"
 SLES-55365:
   name: "Agent Hugo - Hula Holiday"
   region: "PAL-M7"
+SLES-55366:
+  name: "Agent Hugo - Hula Holiday"
+  region: "PAL-R"
 SLES-55367:
   name: "Call of Duty - World at War - Final Fronts"
   region: "PAL-M4"
@@ -15635,8 +16663,17 @@ SLES-55374:
   name: "DreamWorks Madagascar 2 - Escape 2 Africa"
   region: "PAL-M6"
   compat: 5
+SLES-55375:
+  name: "DreamWorks Madagascar 2 - Escape 2 Africa"
+  region: "PAL-R"
 SLES-55376:
   name: "Nickelodeon Tak and the Guardians of Gross"
+  region: "PAL-E-G"
+SLES-55378:
+  name: "RTL Biathlon 2009"
+  region: "PAL-E-G"
+SLES-55379:
+  name: "RTL Biathlon 2009"
   region: "PAL-E-G"
 SLES-55380:
   name: "Sonic Unleashed"
@@ -15646,36 +16683,75 @@ SLES-55382:
   name: "Warriors Orochi 2"
   region: "PAL-E"
   compat: 5
+SLES-55383:
+  name: "Warriors Orochi 2"
+  region: "PAL-F"
 SLES-55384:
   name: "Warriors Orochi 2"
   region: "PAL-G"
 SLES-55392:
   name: "Disney Sing It!"
   region: "PAL-M6"
+SLES-55393:
+  name: "Disney Sing It!"
+  region: "PAL-M4"
 SLES-55394:
   name: "Disney TH!NK Fast"
   region: "PAL-E"
 SLES-55395:
   name: "Disney TH!NK Fast"
   region: "PAL-M3"
+SLES-55396:
+  name: "Disney Sing It - High School Musical 3 - Senior Year"
+  region: "PAL-M6"
+SLES-55397:
+  name: "Disney Sing It - High School Musical 3 - Senior Year"
+  region: "PAL-M4"
 SLES-55398:
   name: "Disney High School Musical 3 - Senior Year Dance!"
   region: "PAL-M6"
+SLES-55404:
+  name: "Nickelodeon The Naked Brothers Band - The Video Game"
+  region: "PAL-E"
 SLES-55405:
   name: "Pro Evolution Soccer 2009"
   region: "PAL-F-G"
 SLES-55406:
   name: "Pro Evolution Soccer 2009"
   region: "PAL-M4"
+SLES-55408:
+  name: "RTL Biathlon 2009"
+  region: "PAL-E-F"
 SLES-55409:
   name: "TT SuperBikes - Legends"
   region: "PAL-M5"
+SLES-55411:
+  name: "Winter Sports 2009 - The Next Challenge"
+  region: "PAL-E-F"
+SLES-55415:
+  name: "Disney TH!NK Fast"
+  region: "PAL-I-S"
+SLES-55418:
+  name: "Tube Mania"
+  region: "PAL-F-DU"
+SLES-55428:
+  name: "Disney Bolt"
+  region: "PAL-M4"
+SLES-55429:
+  name: "Disney Bolt"
+  region: "PAL-M3"
 SLES-55430:
   name: "Disney Bolt"
   region: "PAL-M3"
 SLES-55431:
   name: "Disney Bolt"
   region: "PAL-R"
+SLES-55433:
+  name: "Disney TH!NK Fast"
+  region: "PAL-R"
+SLES-55434:
+  name: "Disney Sing It"
+  region: "PAL-E-R"
 SLES-55440:
   name: "Ben 10: Alien Force"
   region: "PAL-M5"
@@ -15685,7 +16761,8 @@ SLES-55442:
   region: "PAL-M8"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         comment=- This gamedisc supports multiple languages.
         comment=- Language selection is done through the BIOS configuration.
         comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
@@ -15707,18 +16784,42 @@ SLES-55444:
 SLES-55448:
   name: "Indiana Jones and the Staff of Kings"
   region: "PAL-M5"
+SLES-55451:
+  name: "Rock Band 2"
+  region: "PAL-M5"
+SLES-55452:
+  name: "Rock Band 2"
+  region: "PAL-M5"
 SLES-55453:
   name: "SingStar Queen"
   region: "PAL-Unk"
 SLES-55457:
   name: "AC/DC LIVE: Rock Band Track Pack"
   region: "PAL-M5"
+SLES-55458:
+  name: "Rock Band - Song Pack 2"
+  region: "PAL-M5"
 SLES-55459:
   name: "Jelly Belly: Ballistic Beans"
+  region: "PAL-M5"
+SLES-55460:
+  name: "Trivial Pursuit"
+  region: "PAL-M3"
+SLES-55461:
+  name: "Dance Party Pop Hits"
+  region: "PAL-M5"
+SLES-55462:
+  name: "Dance Party Club Hits"
+  region: "PAL-M5"
+SLES-55465:
+  name: "Real Madrid: The Game"
   region: "PAL-M5"
 SLES-55467:
   name: "Trivial Pursuit"
   region: "PAL-M5"
+SLES-55468:
+  name: "Nickelodeon Dora the Explorer - Dora Saves the Snow Princess"
+  region: "PAL-E"
 SLES-55470:
   name: "Coraline"
   region: "PAL-M5"
@@ -15734,9 +16835,21 @@ SLES-55474:
 SLES-55476:
   name: "Scooby-Doo! First Frights"
   region: "PAL-M5"
+SLES-55479:
+  name: "Truck Racer"
+  region: "PAL-M5"
+SLES-55480:
+  name: "Kart Racer"
+  region: "PAL-M5"
+SLES-55481:
+  name: "Naruto Shippuden - Ultimate Ninja 4"
+  region: "PAL-E-F"
 SLES-55482:
   name: "Naruto Shippuden - Ultimate Ninja 4"
   region: "PAL-G-I-S"
+SLES-55483:
+  name: "Guilty Gear XX Accent Core Plus"
+  region: "PAL-E"
 SLES-55486:
   name: "DreamWorks Monsters vs. Aliens"
   region: "PAL-M7"
@@ -15746,6 +16859,9 @@ SLES-55487:
 SLES-55492:
   name: "SBK 09 - Superbike World Championship"
   region: "PAL-M5"
+SLES-55493:
+  name: "Marvel: Ultimate Alliance 2"
+  region: "PAL-E"
 SLES-55494:
   name: "X-Men Origins - Wolverine"
   region: "PAL-E-F"
@@ -15753,15 +16869,21 @@ SLES-55494:
     - FpuCompareHack # Flickering objects, sound loop.
 SLES-55495:
   name: "X-Men Origins - Wolverine"
-  region: "PAL-G-F-S"
+  region: "PAL-M3"
   gameFixes:
     - FpuCompareHack # Flickering objects, sound loop.
 SLES-55496:
   name: "Secret Agent Clank"
   region: "PAL-Unk"
+SLES-55499:
+  name: "Disney G-Force"
+  region: "PAL-M4"
 SLES-55500:
   name: "Disney G-Force"
   region: "PAL-G-I"
+SLES-55502:
+  name: "Disney G-Force"
+  region: "PAL-R"
 SLES-55509:
   name: "Music Maker - Rockstar"
   region: "PAL-M6"
@@ -15769,14 +16891,53 @@ SLES-55509:
 SLES-55511:
   name: "MTV Pimp My Ride - Street Racing"
   region: "PAL-M5"
+SLES-55512:
+  name: "Sengoku Anthology"
+  region: "PAL-M5"
+SLES-55516:
+  name: "L'Era Glaciale 3 - L'Alba dei Dinosauri"
+  region: "PAL-I"
+SLES-55517:
+  name: "Trivial Pursuit"
+  region: "PAL-M4"
+SLES-55518:
+  name: "Guitar Hero - Van Halen"
+  region: "PAL-A"
 SLES-55520:
   name: "Transformers - Revenge of the Fallen"
   region: "PAL-M5"
+SLES-55522:
+  name: "Disney/Pixar Up"
+  region: "PAL-E"
+SLES-55523:
+  name: "Disney/Pixar Up"
+  region: "PAL-S"
+SLES-55524:
+  name: "Disney/Pixar Up"
+  region: "PAL-F-DU"
 SLES-55525:
   name: "Disney-Pixar Oben"
   region: "PAL-G"
+SLES-55526:
+  name: "Disney/Pixar Psila ston Ourano"
+  region: "PAL-GR"
+SLES-55528:
+  name: "Tiger Woods PGA Tour 10"
+  region: "PAL-A"
+SLES-55529:
+  name: "Germany's Next Topmodel"
+  region: "PAL-G"
+SLES-55531:
+  name: "Disney/Pixar Up"
+  region: "PAL-I"
+SLES-55532:
+  name: "Aliens in the Attic"
+  region: "PAL-M5"
 SLES-55533:
   name: "Guitar Hero 5"
+  region: "PAL-M5"
+SLES-55536:
+  name: "Disney/Pixar Cars - Race-O-Rama"
   region: "PAL-M5"
 SLES-55537:
   name: "G.I. Joe - The Rise of Cobra"
@@ -15809,8 +16970,11 @@ SLES-55573:
   name: "MotorStorm Arctic Edge"
   region: "PAL-M14"
 SLES-55574:
-  name: "the Lord of the Rings - Aragorn's Quest"
+  name: "Lord of the Rings, The - Aragorn's Quest"
   region: "PAL-M6"
+SLES-55576:
+  name: "NBA 2K10"
+  region: "PAL-M5"
 SLES-55577:
   name: "DJ Hero"
   region: "PAL-M5"
@@ -15827,6 +16991,9 @@ SLES-55579:
     eeRoundMode: 1
   clampModes:
     vuClampMode: 0
+SLES-55581:
+  name: "FIFA 10"
+  region: "PAL-M5"
 SLES-55582:
   name: "FIFA 10"
   region: "PAL-F-G"
@@ -15840,23 +17007,35 @@ SLES-55584:
 SLES-55585:
   name: "FIFA 10"
   region: "PAL-E"
+SLES-55587:
+  name: "Pro Evolution Soccer 2010"
+  region: "PAL-M5"
 SLES-55588:
   name: "Pro Evolution Soccer 2010"
   region: "PAL-F-G"
 SLES-55589:
   name: "Pro Evolution Soccer 2010"
-  region: "PAL-I-P-S"
+  region: "PAL-M3"
 SLES-55592:
-  name: "Ben 10: Alien Force - Vilgax Attacks"
+  name: "Ben 10 - Alien Force - Vilgax Attacks"
   region: "PAL-M5"
   compat: 4
-SLES-55597:
-  name: "Hugo: Magic in the Trollwoods"
-  region: "PAL"
-  compat: 5
 SLES-55593:
   name: "Astro Boy - The Video Game"
   region: "PAL-M5"
+SLES-55597:
+  name: "Hugo - Magic in the Trollwoods"
+  region: "PAL-M5"
+  compat: 5
+SLES-55598:
+  name: "Hugo - Magic in the Trollwoods"
+  region: "PAL-M4"
+SLES-55599:
+  name: "Galileo Mystery - Die Krone des Midas"
+  region: "PAL-G"
+SLES-55604:
+  name: "PES 2010 - Pro Evolution Soccer [Demo]"
+  region: "PAL-M10"
 SLES-55605:
   name: "Naruto Shippuden - Ultimate Ninja 5"
   region: "PAL-M5"
@@ -15864,12 +17043,26 @@ SLES-55605:
 SLES-55609:
   name: "Scooby-Doo! and the Spooky Swamp"
   region: "PAL-M5"
+SLES-55610:
+  name: "Springdale"
+  region: "PAL-M5"
 SLES-55622:
   name: "Disney-Pixar Toy Story 3"
   region: "PAL-M6"
   compat: 5
   roundModes:
     vuRoundMode: 2  # Fixes very minor lines appearing at certain points during the game.
+SLES-55623:
+  name: "Disney-Pixar Toy Story 3"
+  region: "PAL-R"
+  roundModes:
+    vuRoundMode: 2  # Fixes very minor lines appearing at certain points during the game.
+SLES-55625:
+  name: "Despicable Me - The Game"
+  region: "PAL-M9"
+SLES-55628:
+  name: "Disney Sing It - Party Hits"
+  region: "PAL-M3"
 SLES-55635:
   name: "WWE SmackDown vs. Raw 2011"
   region: "PAL-M4"
@@ -15884,21 +17077,48 @@ SLES-55637:
 SLES-55638:
   name: "Pro Evolution Soccer 2011"
   region: "PAL-M4"
+SLES-55639:
+  name: "Ben 10 - Ultimate Alien - Cosmic Destruction"
+  region: "PAL-M5"
 SLES-55642:
   name: "FIFA 11"
   region: "PAL-M4"
   compat: 5
+SLES-55643:
+  name: "FIFA 11"
+  region: "PAL-M5"
 SLES-55644:
   name: "FIFA 11"
+  region: "PAL-M5"
+SLES-55645:
+  name: "NBA 2K11"
   region: "PAL-M5"
 SLES-55648:
   name: "WWE All-Stars"
   region: "PAL-M5"
   compat: 5
+SLES-55652:
+  name: "FIFA 12"
+  region: "PAL-M4"
 SLES-55653:
   name: "FIFA 12"
   region: "PAL-M5"
   compat: 5
+SLES-55654:
+  name: "FIFA 12"
+  region: "PAL-M5"
+SLES-55656:
+  name: "PES 2012 - Pro Evolution Soccer"
+  region: "PAL-M5"
+SLES-55657:
+  name: "PES 2012 - Pro Evolution Soccer"
+  region: "PAL-F-G"
+SLES-55658:
+  name: "PES 2012 - Pro Evolution Soccer"
+  region: "PAL-M4"
+SLES-55659:
+  name: "NBA 2K12"
+  region: "PAL-M5"
 SLES-55664:
   name: "FIFA 13"
   region: "PAL-M5"
@@ -15906,6 +17126,18 @@ SLES-55664:
 SLES-55665:
   name: "FIFA 13"
   region: "PAL-M4"
+SLES-55666:
+  name: "PES 2013 - Pro Evolution Soccer"
+  region: "PAL-M5"
+SLES-55667:
+  name: "PES 2013 - Pro Evolution Soccer"
+  region: "PAL-F-G"
+SLES-55668:
+  name: "PES 2013 - Pro Evolution Soccer"
+  region: "PAL-GR-I"
+SLES-55669:
+  name: "PES 2013 - Pro Evolution Soccer"
+  region: "PAL-P-S"
 SLES-55671:
   name: "FIFA 14"
   region: "PAL-M5"
@@ -15927,6 +17159,9 @@ SLES-55676:
 SLES-82001:
   name: "Summoner"
   region: "PAL-E"
+SLES-82003:
+  name: "Summoner"
+  region: "PAL-F"
 SLES-82005:
   name: "Summoner"
   region: "PAL-G"
@@ -16033,7 +17268,7 @@ SLES-82038:
   region: "PAL-M5"
   compat: 5
   patches:
-    - crc: "812C5A96"
+    812C5A96:
       content: |-
         comment=Patch by Shadow Lady
         patch=0,EE,00104170,word,00000000
@@ -16044,7 +17279,7 @@ SLES-82039:
   memcardFilters:
     - "SLES-82038"
   patches:
-    - crc: "812C5A96"
+    812C5A96:
       content: |-
         comment=Patch by Shadow Lady
         patch=0,EE,00104170,word,00000000
@@ -16161,7 +17396,7 @@ SLKA-25030:
   name: "WWE SmackDown! Shut Your Mouth"
   region: "NTSC-K"
   patches:
-    - crc: "43E396A7"
+    43E396A7:
       content: |-
         comment=Patch by Prafull and Arapapa
         // Fixes freeze during entrances.
@@ -16870,7 +18105,7 @@ SLPM-55191:
   name: "L2 - Love x Loop"
   region: "NTSC-J"
   patches:
-    - crc: "9F9DCD8A"
+    9F9DCD8A:
       content: |-
         author=PSI, kozarovv
         // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
@@ -18194,7 +19429,7 @@ SLPM-62524:
   region: "NTSC-J"
   compat: 5
   patches:
-    - crc: "85E92C92"
+    85E92C92:
       content: |-
         // Skip videos (custom).
         patch=0,EE,001b4cd8,word,00000000
@@ -18738,7 +19973,7 @@ SLPM-62718:
   name: "Sega Ages 2500 Series Vol.27 - Panzer Dragoon"
   region: "NTSC-J"
   patches:
-    - crc: "8D984276"
+    8D984276:
       content: |-
         // By PSI
         comment=Stop screen shaking (game switches to Progressive)
@@ -18980,7 +20215,7 @@ SLPM-65015:
   name: "Kessen 2"
   region: "NTSC-J"
   patches:
-    - crc: "7C012435"
+    7C012435:
       content: |-
         comment=COP2 flag instance patch by refraction
         // A mac flag check just after a vsub which gets in the way, rearranging.
@@ -19134,7 +20369,7 @@ SLPM-65071:
   name: "Drift Champ"
   region: "NTSC-J"
   patches:
-    - crc: "8449ffe1"
+    8449ffe1:
       content: |-
         comment=Patch by Prafull
         // Fixes the hang at start of chapter 2.
@@ -19394,7 +20629,7 @@ SLPM-65163:
   name: "Dynasty Warriors 3"
   region: "NTSC-C"
   patches:
-    - crc: "397F3835"
+    397F3835:
       content: |-
         comment=COP2 flag instance patch by refraction
         // A mac flag check after running another vsub op which is irrelivant, rearranging
@@ -19577,7 +20812,8 @@ SLPM-65232:
   region: "NTSC-J"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         // 08995DEE
         comment=- This disc has the same CRC as SLUS-20484, the NTSC-U disc.
 SLPM-65233:
@@ -20596,7 +21832,7 @@ SLPM-65583:
   gameFixes:
     - XGKickHack
   patches:
-    - crc: "C4467D30"
+    C4467D30:
       content: |-
         comment=Patch by Nachbrenner
         // Skip sceIpuSync.
@@ -20666,7 +21902,7 @@ SLPM-65604:
   region: "NTSC-J"
   compat: 5
   patches:
-    - crc: "9BDBA170"
+    9BDBA170:
       content: |-
         comment=Patch by Shadow Lady
         // IPU menu hang fix...
@@ -22418,7 +23654,7 @@ SLPM-66186:
   name: "Game ni Nattayo! Dokura-chan"
   region: "NTSC-J"
   patches:
-    - crc: "169099FC"
+    169099FC:
       content: |-
         author=PSI, kozarovv
         // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
@@ -22702,7 +23938,7 @@ SLPM-66275:
   region: "NTSC-J"
   compat: 5
   patches:
-    - crc: "BD17248E"
+    BD17248E:
       content: |-
         comment=Patch by Shadow Lady
         patch=0,EE,00104170,word,00000000
@@ -22713,7 +23949,7 @@ SLPM-66276:
   memcardFilters:
     - "SLPM-66275"
   patches:
-    - crc: "BD17248E"
+    BD17248E:
       content: |-
         comment=Patch by Shadow Lady
         patch=0,EE,00104170,word,00000000
@@ -22948,9 +24184,9 @@ SLPM-66354:
   region: "NTSC-J"
   compat: 5
   clampModes:
-    vuClampMode: 3  # Fixes SPS
+    vuClampMode: 3  # Fixes SPS.
   patches:
-    - crc: "B3A9F9ED"
+    B3A9F9ED:
       content: |-
         author=refraction
         // COP2 Rearrangement. Fixes broken collisions.
@@ -23375,7 +24611,7 @@ SLPM-66497:
   name: "Ice Age 2"
   region: "NTSC-J"
   patches:
-    - crc: "33DB9037"
+    33DB9037:
       content: |-
         // Intro screen freeze fix.
         patch=1,EE,002e91e8,word,27bdfee0 //27bdff70
@@ -23620,7 +24856,7 @@ SLPM-66582:
   name: "Kohitsuji Hokaku Keakaku! Sweet Boys Life [Limited Edition]"
   region: "NTSC-J"
   patches:
-    - crc: "9466CBA1"
+    9466CBA1:
       content: |-
         author=PSI, kozarovv
         // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
@@ -24115,7 +25351,7 @@ SLPM-66731:
   name: "Black [EA Best Hits]"
   region: "NTSC-J"
   clampModes:
-    vuClampMode: 3  # Fixes SPS
+    vuClampMode: 3  # Fixes SPS.
 SLPM-66732:
   name: "Iinazuke [Limited Edition]"
   region: "NTSC-J"
@@ -24138,7 +25374,7 @@ SLPM-66738:
   name: "Sakura Ran Koukou Hosutobu"
   region: "NTSC-J"
   patches:
-    - crc: "3BE2C709"
+    3BE2C709:
       content: |-
         author=PSI, Prafull
         // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
@@ -24964,7 +26200,7 @@ SLPM-67531:
   name: "Kessen 2"
   region: "NTSC-K"
   patches:
-    - crc: "46CFF455"
+    46CFF455:
       content: |-
         comment=COP2 flag instance patch by refraction
         // A mac flag check just after a vsub which gets in the way, rearranging.
@@ -25401,7 +26637,7 @@ SLPS-20042:
   name: "F1 Racing Championship"
   region: "NTSC-J"
   patches:
-    - crc: "32F1FA12"
+    32F1FA12:
       content: |-
         author=Prafull
         // Fixes IPU issues causing a hang at loading menu.
@@ -25741,7 +26977,7 @@ SLPS-20273:
   name: "Netsu Chu! Pro Baseball 2003"
   region: "NTSC-J"
   patches:
-    - crc: "34fb1fb7"
+    34fb1fb7:
       content: |-
         author=Prafull
         // Fixes game hanging before going ingame.
@@ -26304,7 +27540,7 @@ SLPS-25002:
   region: "NTSC-J"
   compat: 5
   patches:
-    - crc: "7894BA09"
+    7894BA09:
       content: |-
         // Change TLSNDDRV RPC to blocking, better would be to move the wait to the top of the function.
         patch=0,EE,00290408,word,24060000
@@ -26370,7 +27606,7 @@ SLPS-25015:
   name: "Choro Q - High Grade"
   region: "NTSC-J"
   patches:
-    - crc: "6F9C4D7C"
+    6F9C4D7C:
       content: |-
         comment=Patch by Prafull
         // Fixes VSync issues.
@@ -26408,7 +27644,7 @@ SLPS-25026:
   region: "NTSC-J"
   compat: 5
   patches:
-    - crc: "82C02240"
+    82C02240:
       content: |-
         comment=Patch by Prafull and kozarovv
         // Fixes game hanging on boot.
@@ -26519,7 +27755,7 @@ SLPS-25057:
   name: "King's Field IV"
   region: "NTSC-J"
   patches:
-    - crc: "04C3765E"
+    04C3765E:
       content: |-
         comment=Patch by Wgarvin
         // Fixes (black voids) central tower level loading.
@@ -26564,7 +27800,8 @@ SLPS-25074:
   region: "NTSC-J"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         // 9883194E
         comment=- At least when using GSdx in D3D11 Hardware mode, and due to missing
         comment=-  rendering-fixes, black stripes can show up on ghosts,
@@ -26633,7 +27870,8 @@ SLPS-25100:
   region: "NTSC-J"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         // CRC 26173F9A, 7c359c94
         comment=Patches by Shadow Lady
         // IPU BUSY! fix...
@@ -27603,7 +28841,7 @@ SLPS-25418:
   region: "NTSC-J"
   compat: 5
   patches:
-    - crc: "86089F31"
+    86089F31:
       content: |-
         comment=Rearranging COP2 instructions that use old results
         patch=0,EE,001A3B6C,word,48498800
@@ -27617,7 +28855,7 @@ SLPS-25421:
   name: "Bokujou Monogatari - Oh! Wonderful Life (First Print Limited Edition)"
   region: "NTSC-J"
   patches:
-    - crc: "D2F0DC73"
+    D2F0DC73:
       content: |-
         comment=Patch by Prafull
         // Fix hang at shipping shed.
@@ -28260,7 +29498,7 @@ SLPS-25629:
     - "SLPS-25418"
     - "SLPS-73218"
   patches:
-    - crc: "A04B52DB"
+    A04B52DB:
       content: |-
         // Fixes collision/missle hit issues.
         patch=0,EE,00131e84,word,48498800
@@ -29095,7 +30333,7 @@ SLPS-25888:
   name: "Star Wars - The Force Unleashed"
   region: "NTSC-J"
   patches:
-    - crc: "CC9BFDE3"
+    CC9BFDE3:
       content: |-
         author=kozarovv
         // Fix for graphical issues, QTE events, subtitles, health bar.
@@ -29191,7 +30429,7 @@ SLPS-29001:
   name: "Xenosaga Episode 1 - Der Wille zur Macht [Premium Box]"
   region: "NTSC-J"
   patches:
-    - crc: "A3D63039"
+    A3D63039:
       content: |-
         // Reduces JPEG quality to its minimum for save file thumbnails. This prevents
         // the game from calling its own exit function, which was strangely its safety
@@ -29204,7 +30442,7 @@ SLPS-29002:
   region: "NTSC-J"
   compat: 5
   patches:
-    - crc: "A3D63039"
+    A3D63039:
       content: |-
         // Reduces JPEG quality to its minimum for save file thumbnails. This prevents
         // the game from calling its own exit function, which was strangely its safety
@@ -29665,7 +30903,7 @@ SLPS-73901:
   name: "Xenosaga Episode 1 - Der Wille zur Macht [PlayStation 2 The Best]"
   region: "NTSC-J"
   patches:
-    - crc: "A3D63039"
+    A3D63039:
       content: |-
         // Reduces JPEG quality to its minimum for save file thumbnails. This prevents
         // the game from calling its own exit function, which was strangely its safety
@@ -29775,7 +31013,7 @@ SLUS-20037:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "F802A575"
+    F802A575:
       content: |-
         comment=Swapping a COP2 op into place to make the flags work without delays
         patch=0,EE,001D249C,word,4A0002FF
@@ -29858,7 +31096,7 @@ SLUS-20064:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "FD9CD8FC"
+    FD9CD8FC:
       content: |-
         comment=Patch by refraction
         // Rearrange PCR write and BC0F instruction
@@ -29884,7 +31122,8 @@ SLUS-20071:
   region: "NTSC-U"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         // 23AF6876 DVD Version.
         // 51068006 CD Version.
         comment=Patch by Benji229, Pseudonym, Prafull, kozarovv and refraction
@@ -30087,7 +31326,7 @@ SLUS-20141:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "116154AD"
+    116154AD:
       content: |-
         author=Nachbrenner
         // Skip PSX2_Mpeg_PlayFile__FPc.
@@ -30139,7 +31378,7 @@ SLUS-20152:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "A32F7CD0"
+    A32F7CD0:
       content: |-
         comment=Rearranging COP2 ops
         // This one seems unintuitive but I can't see how the cycles add up for the maddbc to be the source of the flags.
@@ -30193,7 +31432,7 @@ SLUS-20167:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "A56A0525"
+    A56A0525:
       content: |-
         comment=Patch by leilei
         // Removes intro and end credits FMVs.
@@ -30309,7 +31548,7 @@ SLUS-20202:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "F00293CA"
+    F00293CA:
       content: |-
         comment=Patches by Nachbrenner
         // Skip movie 'PlaySega'.
@@ -30318,7 +31557,7 @@ SLUS-20202:
         // Skip movie 'PlayAcclaim'.
         patch=0,EE,001a0ce8,word,03e00008
         patch=0,EE,001a0cec,word,00000000
-    - crc: "4C9EE7DF"
+    4C9EE7DF:
       content: |-
         comment=Patches by Nachbrenner
         // Skip movie 'PlaySega'.
@@ -30367,7 +31606,7 @@ SLUS-20213:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "D4A56F59"
+    D4A56F59:
       content: |-
         author=kozarovv
         // 2.00 GameVersion. Fix initial loading by looping for some time on EE side. That allow IOP proceed requests correctly.
@@ -30377,7 +31616,7 @@ SLUS-20213:
         patch=1,EE,200fffdc,double,55eeffff0000702d
         patch=1,EE,200fffe4,double,0c0c23a225ce0004
         patch=1,EE,200fffec,double,080c228e00000000
-    - crc: "F456F555"
+    F456F555:
       content: |-
         author=kozarovv
         // 1.00 GameVersion. Fix initial loading by looping for some time on EE side. That allow IOP proceed requests correctly.
@@ -30436,7 +31675,7 @@ SLUS-20225:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "03854A28"
+    03854A28:
       content: |-
         comment=Patch by Prafull
         // Fixes VSync issues.
@@ -30464,7 +31703,7 @@ SLUS-20229:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "AE94FAF8"
+    AE94FAF8:
       content: |-
         author=refraction
         comment=Fixes interlacing for videos
@@ -30591,7 +31830,7 @@ SLUS-20264:
   name: "F1 2001"
   region: "NTSC-U"
   patches:
-    - crc: "2870c248"
+    2870c248:
       content: |-
         author=Prafull
         // Skips IPU videos.
@@ -30647,7 +31886,7 @@ SLUS-20275:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "53A803AF"
+    53A803AF:
       content: |-
         comment=COP2 flag instance patch by refraction
         // A mac flag check just after a vsub which gets in the way, rearranging.
@@ -30660,7 +31899,7 @@ SLUS-20277:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "4A35E19F"
+    4A35E19F:
       content: |-
         comment=COP2 flag instance patch by refraction
         // A mac flag check after running another vsub op which is irrelivant, rearranging
@@ -30697,7 +31936,7 @@ SLUS-20284:
   roundModes:
     vuRoundMode: 1  # Fixes some bad effects.
   patches:
-    - crc: "9d1ba44d"
+    9d1ba44d:
       content: |-
         author=Prafull
         // Fix hanging problem & SPS.
@@ -30814,7 +32053,7 @@ SLUS-20315:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "4B8E0DE8"
+    4B8E0DE8:
       content: |-
         comment=Spyro NTSC startup fix
         patch=1,EE,001e71dc,word,24020001
@@ -30827,7 +32066,7 @@ SLUS-20318:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "36E02E91"
+    36E02E91:
       content: |-
         comment=Patch by Wgarvin
         // Fixes (black voids) central tower level loading.
@@ -30872,7 +32111,7 @@ SLUS-20328:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "833FE0A4"
+    833FE0A4:
       content: |-
         comment=Patches by Shadow Lady
         // IPU BUSY! fix...
@@ -31029,7 +32268,7 @@ SLUS-20369:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "36feee3a"
+    36feee3a:
       content: |-
         author=Prafull
         // Fixes Hanging at start of fight.
@@ -31070,7 +32309,7 @@ SLUS-20378:
   name: "Salt Lake 2002"
   region: "NTSC-U"
   patches:
-    - crc: "466d1c13"
+    466d1c13:
       content: |-
         author=Prafull
         // Fix ingame texture problems.
@@ -31120,7 +32359,8 @@ SLUS-20388:
   region: "NTSC-U"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         // 339A0B8C
         comment=- At least when using GSdx in D3D11 Hardware mode, and due to missing
         comment=-  rendering-fixes, black stripes can show up on ghosts,
@@ -31153,7 +32393,7 @@ SLUS-20394:
   region: "NTSC-U"
   compat: 2
   patches:
-    - crc: "B78EAA30"
+    B78EAA30:
       content: |-
         author=PSI
         // Ecco has an evil race condition: one of its custom IOP modules resets CDVDMAN while it's loading a module from disc.
@@ -31290,7 +32530,7 @@ SLUS-20430:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "d195b670"
+    d195b670:
       content: |-
         author=PSI
         // The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end.
@@ -31384,7 +32624,7 @@ SLUS-20455:
   name: "F1 2002"
   region: "NTSC-U"
   patches:
-    - crc: "8FF059A1"
+    8FF059A1:
       content: |-
         comment=Patch by Prafull
         // Fixes controller issue but skips videos.
@@ -31439,7 +32679,7 @@ SLUS-20467:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "3baebcc3"
+    3baebcc3:
       content: |-
         author=Prafull
         // Fix ingame SPS by interchanging vclipw.xyz vf5, vf5w with cfc2.
@@ -31453,7 +32693,7 @@ SLUS-20469:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "6D1276AB"
+    6D1276AB:
       content: |-
         // Reduces JPEG quality to its minimum for save file thumbnails. This prevents
         // the game from calling its own exit function, which was strangely its safety
@@ -31508,7 +32748,7 @@ SLUS-20483:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "B0AE1898"
+    B0AE1898:
       content: |-
         comment=Patch by Prafull
         // Fixes freeze during entrances.
@@ -31519,7 +32759,8 @@ SLUS-20484:
   region: "NTSC-U"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         // 08995DEE
         comment=- This disc has the same CRC as SLPM-65232, the NTSC-J disc.
 SLUS-20485:
@@ -31814,7 +33055,7 @@ SLUS-20560:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "B506C936"
+    B506C936:
       content: |-
         author=kozarovv
         // Floats workaround to make HW GSDX mode working.
@@ -31980,7 +33221,7 @@ SLUS-20598:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "BCE9B7BB"
+    BCE9B7BB:
       content: |-
         author=kozarovv
         // Rearrange COP2 ops to fix DIV Q timings
@@ -32278,7 +33519,7 @@ SLUS-20671:
   gameFixes:
     - EETimingHack
   patches:
-    - crc: "B67F4F9E"
+    B67F4F9E:
       content: |-
         comment=Patch by Prafull
         // Avoids hanging before Molotov Party.
@@ -32486,7 +33727,7 @@ SLUS-20726:
   name: "ESPN - NBA Basketball"
   region: "NTSC-U"
   patches:
-    - crc: "A13E5DD5"
+    A13E5DD5:
       content: |-
         comment=Patch by Prafull
         // Avoids hang at start.
@@ -32495,7 +33736,7 @@ SLUS-20727:
   name: "ESPN - NFL Football"
   region: "NTSC-U"
   patches:
-    - crc: "56920AD1"
+    56920AD1:
       content: |-
         comment=Patch by Prafull
         // Fixes random hangs.
@@ -32628,7 +33869,7 @@ SLUS-20758:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "03F9C6D1"
+    03F9C6D1:
       content: |-
         comment=IPU freeze fix
         patch=0,EE,00109d04,word,00000000
@@ -32637,7 +33878,8 @@ SLUS-20759:
   region: "NTSC-U"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         // CRC 4AD529BB, 4CD3663F
         comment=IPU freeze fix
         patch=0,EE,00109d04,word,00000000
@@ -32677,6 +33919,13 @@ SLUS-20767:
   name: "MX Unleashed"
   region: "NTSC-U"
   compat: 5
+  patches:
+    9866FE54:
+      content: |-
+        author=refraction
+        comment=fixes COP2 instruction order to resolve SPS
+        patch=1,EE,001Cb6E8,word,484E9000
+        patch=1,EE,001CB6EC,word,4BDBD9FF
 SLUS-20769:
   name: "Harry Potter - Quidditch World Cup"
   region: "NTSC-U"
@@ -32767,7 +34016,7 @@ SLUS-20793:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "C5DAD771"
+    C5DAD771:
       content: |-
         author=Prafull
         // Fix hang before menu screen
@@ -32972,7 +34221,7 @@ SLUS-20851:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "39B574F0"
+    39B574F0:
       content: |-
         comment=Rearranging COP2 instructions that use old results
         patch=0,EE,001A3B94,word,48498800
@@ -33164,7 +34413,8 @@ SLUS-20894:
   region: "NTSC-U"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         comment=You need to set the EE cycle speed to -1 to be able to load the game.
 SLUS-20895:
   name: "Bujingai - The Forsaken City"
@@ -33268,7 +34518,7 @@ SLUS-20919:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "42F9D5AF"
+    42F9D5AF:
       content: |-
         comment=Patch by Prafull
         // Fixes random hangs.
@@ -33277,7 +34527,7 @@ SLUS-20920:
   name: "ESPN - NBA 2K5"
   region: "NTSC-U"
   patches:
-    - crc: "903C7BC5"
+    903C7BC5:
       content: |-
         comment=Patch by Prafull
         // Avoids hanging at loading screen.
@@ -33287,7 +34537,7 @@ SLUS-20921:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "9B6E69EC"
+    9B6E69EC:
       content: |-
         comment=Patch by Prafull
         // Avoids hang at start.
@@ -33297,7 +34547,7 @@ SLUS-20922:
   region: "NTSC-U"
   compat: 2
   patches:
-    - crc: "2b54d3e5"
+    2b54d3e5:
       content: |-
         comment=Patch by Prafull
         // Avoids hang at loading.
@@ -33459,7 +34709,7 @@ SLUS-20961:
   region: "NTSC-U"
   compat: 4
   patches:
-    - crc: "08901101"
+    08901101:
       content: |-
         comment=Patch by Prafull
         // New patch fixes most issues.
@@ -33573,7 +34823,7 @@ SLUS-20983:
   gameFixes:
     - EETimingHack # Fixes garbled character annimation.
   patches:
-    - crc: "675CEB8F"
+    675CEB8F:
       content: |-
         author=Prafull
         // Fixes almost all problems apart from little translucent fog effect in some areas
@@ -33677,7 +34927,8 @@ SLUS-21006:
   region: "NTSC-U"
   compat: 5
   patches:
-    - content: |-
+    default:
+      content: |-
         // CRC US 95CC86EF, RU 28557423
         comment=Rearranging COP2 ops so as to avoid macflag bad stuff
         // Solves door problems, possibly other issues later on (nobody ever got that far :P).
@@ -34354,7 +35605,7 @@ SLUS-21171:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "304c115c"
+    304c115c:
       content: |-
         comment=Patch by Prafull
         // Fix hang at shipping shed.
@@ -34396,7 +35647,7 @@ SLUS-21180:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "FE44479E"
+    FE44479E:
       content: |-
         comment=Patch by Shadow Lady
         patch=0,EE,00104170,word,00000000
@@ -34621,7 +35872,7 @@ SLUS-21232:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "A60E027C"
+    A60E027C:
       content: |-
         comment=Patch by Prafull
         // This fixes random hangs and makes the game playable.
@@ -34630,7 +35881,7 @@ SLUS-21233:
   name: "NBA 2K6"
   region: "NTSC-U"
   patches:
-    - crc: "E5C65369"
+    E5C65369:
       content: |-
         comment=Patch by Prafull
         // Avoids hang at start.
@@ -34640,7 +35891,7 @@ SLUS-21234:
   region: "NTSC-U"
   compat: 2
   patches:
-    - crc: "87007AB7"
+    87007AB7:
       content: |-
         author=Prafull
         // Avoid hang at start.
@@ -34650,7 +35901,7 @@ SLUS-21235:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "88BB9A5C"
+    88BB9A5C:
       content: |-
         comment=Patch by Prafull
         // Avoids hang at start.
@@ -34982,7 +36233,7 @@ SLUS-21307:
   region: "NTSC-U"
   compat: 2
   patches:
-    - crc: "EEC195CA"
+    EEC195CA:
       content: |-
         comment=Patch by kozarovv
         // Intro screen freeze fix.
@@ -35014,7 +36265,7 @@ SLUS-21314:
   gameFixes:
     - EETimingHack # Needed to go ingame.
   patches:
-    - crc: "f73488d5"
+    f73488d5:
       content: |-
         comment=Patch by Prafull
         // Fixes random hangs when going ingame.
@@ -35058,7 +36309,7 @@ SLUS-21324:
   name: "Major League Baseball 2K5 [World Series Edition]"
   region: "NTSC-U"
   patches:
-    - crc: "D592B291"
+    D592B291:
       content: |-
         comment=Patch by Prafull
         // Skip hang at start.
@@ -35162,7 +36413,7 @@ SLUS-21346:
     - "SLUS-20152"
     - "SLUS-20851"
   patches:
-    - crc: "65729657"
+    65729657:
       content: |-
         // Fixes collision/missle hit issues.
         patch=0,EE,00131EBC,word,48498800
@@ -35243,7 +36494,7 @@ SLUS-21362:
   memcardFilters:
     - "SLUS-21180"
   patches:
-    - crc: "FFDE85E9"
+    FFDE85E9:
       content: |-
         comment=Patch by Shadow Lady
         patch=0,EE,00104170,word,00000000
@@ -35287,7 +36538,7 @@ SLUS-21372:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "D03D4C77"
+    D03D4C77:
       content: |-
         comment=Patch by kozarovv and refraction
         // Fixes HUD and menu display.
@@ -35315,7 +36566,7 @@ SLUS-21376:
   clampModes:
     vuClampMode: 3  # Fixes SPS
   patches:
-    - crc: "5C891FF1"
+    5C891FF1:
       content: |-
         author=refraction
         // COP2 Rearrangement. Fixes broken collisions.
@@ -35520,7 +36771,7 @@ SLUS-21424:
   name: "NBA 2K7"
   region: "NTSC-U"
   patches:
-    - crc: "F5AEDCC3"
+    F5AEDCC3:
       content: |-
         comment=Patch by Prafull
         // Avoids hang at start.
@@ -35530,7 +36781,7 @@ SLUS-21425:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "478EFBDB"
+    478EFBDB:
       content: |-
         comment=Patch by Prafull
         // Avoids hang at start.
@@ -35569,7 +36820,7 @@ SLUS-21434:
   region: "NTSC-U"
   compat: 4
   patches:
-    - crc: "E1BF5DCA"
+    E1BF5DCA:
       content: |-
         author=kozarovv
         // Fix sps and various graphical issues by Using iaddiu instead of FSAND
@@ -36154,7 +37405,7 @@ SLUS-21601:
   name: "Sprint Cars 2 - Showdown at Eldora"
   region: "NTSC-U"
   patches:
-    - crc: "75D13A19"
+    75D13A19:
       content: |-
         author=kozarovv
         // Rearrange COP2 instructions to fix bad mac flag stuff. Fix for bouncing vehicles.
@@ -36195,7 +37446,7 @@ SLUS-21607:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "B80CE8EC"
+    B80CE8EC:
       content: |-
         comment=Patch by kozarovv and refraction
         // Fixes HUD and menu display.
@@ -36225,7 +37476,7 @@ SLUS-21614:
   region: "NTSC-U"
   compat: 4
   patches:
-    - crc: "879CDA5E"
+    879CDA5E:
       content: |-
         author=kozarovv
         // Fix for graphical issues, QTE events, subtitles, health bar.
@@ -36309,7 +37560,7 @@ SLUS-21632:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "77B49EF8"
+    77B49EF8:
       content: |-
         // Patched by Prafull-thanks to harsh.
         // Avoids hang at start.
@@ -36564,7 +37815,7 @@ SLUS-21697:
   gameFixes:
     - EETimingHack # Fixes game engine errors when going ingame.
   patches:
-    - crc: "304497e5"
+    304497e5:
       content: |-
         // Fixes random hangs when going ingame.
         patch=1,EE,002242e0,word,00000000
@@ -36685,7 +37936,7 @@ SLUS-21729:
   name: "Major League Baseball 2K8"
   region: "NTSC-U"
   patches:
-    - crc: "0be24520"
+    0be24520:
       content: |-
         author=Prafull
         // Fixes hanging at start.
@@ -36765,7 +38016,7 @@ SLUS-21744:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "1B6C22B9"
+    1B6C22B9:
       content: |-
         author=PSI
         // This game intentionally corrupts a DMA transfer by writing junk values to a buffer just before starting a transfer.
@@ -36833,7 +38084,7 @@ SLUS-21763:
   region: "NTSC-U"
   compat: 2
   patches:
-    - crc: "29fdcbf7"
+    29fdcbf7:
       content: |-
         author=Prafull
         // Avoid hang at start.
@@ -37365,7 +38616,7 @@ SLUS-21913:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "71BA3429"
+    71BA3429:
       content: |-
         author=kozarovv
         // Fixes graphics glitches.
@@ -37380,7 +38631,7 @@ SLUS-21914:
   region: "NTSC-U"
   compat: 5
   patches:
-    - crc: "82CA153C"
+    82CA153C:
       content: |-
         comment=Patch by Prafull
         // Fixes hanging problem.

@@ -132,21 +132,15 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 
 		if (YAML::Node patches = node["patches"])
 		{
-			for (YAML::const_iterator it = patches.begin(); it != patches.end(); ++it)
+			for (YAML::const_iterator entry = patches.begin(); entry != patches.end(); entry++)
 			{
-				const YAML::Node& node = *it;
-				std::string crc = safeGetString(node, "crc", "default");
-
-				if (gameEntry.patches.count(crc) == 1)
-				{
-					Console.Error(fmt::format("[GameDB] Patch with duplicate CRC: '{}' detected for serial: '{}'.  Skipping patch.", crc, serial));
-					continue;
-				}
+				std::string crc = entry->first.as<std::string>();
+				YAML::Node patchNode = entry->second;
 
 				GameDatabaseSchema::Patch patchCol;
 
-				patchCol.author = safeGetString(node, "author");
-				patchCol.patchLines = safeGetMultilineString(node, "content");
+				patchCol.author = safeGetString(patchNode, "author");
+				patchCol.patchLines = safeGetMultilineString(patchNode, "content");
 				gameEntry.patches[crc] = patchCol;
 			}
 		}

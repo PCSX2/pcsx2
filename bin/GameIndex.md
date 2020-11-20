@@ -69,15 +69,13 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
     - "SERIAL-123"
     - "SERIAL-456"
   # You can define multple patches, but they are identified by the CRC.
-  # A duplicate CRC will throw a validation error at startup in the console
-  # If the CRC is omitted, the crc will be set internally to 'default'
   patches:
-    - crc: "CRC-1"
+    default: # Default CRC!
       author: "Some Person"
       content: |- # !required! This allows for multi-line strings in YAML, this type preserves new-line characters
         comment=Sample Patch
         patch=1,EE,00000002,word,00000000
-    - crc: "CRC-2"
+    "crc-1": # Specific CRC Patch!
       author: "Some Person"
       content: |-
         comment=Another Sample
@@ -136,7 +134,7 @@ These values are case-sensitive so take care.  If you incorrectly specify a Game
 - `SkipMPEGHack`
   - Finds sceMpegIsEnd pattern in games and then recompiles code to say the videos are finished.
 - `OPHFlagHack`
-  - Bleach Bankais and others
+  - Bleach Bankais and others.
 - `DMABusyHack`
   - Mana Khemia, Metal Saga. Denies writes to the DMAC when it's busy.
 - `VIFFIFOHack`
@@ -146,7 +144,7 @@ These values are case-sensitive so take care.  If you incorrectly specify a Game
 - `GIFFIFOHack`
   - Enables the GIF FIFO. Needed for Wallace & Grommit, Hot Wheels, DJ Hero.
 - `FMVinSoftwareHack`
-  - Silent Hill 2-3. Fixes FMVs that are obscured when using hardware rendering by switching to software rendering whil
+  - Silent Hill 2-3. Fixes FMVs that are obscured when using hardware rendering by switching to software rendering.
 - `ScarfaceIbitHack`
   - VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
 - `CrashTagTeamRacingIbitHack`
@@ -174,7 +172,7 @@ This works fine for the vast majority of games, but fails in some cases, for whi
 
 ## Patches
 
-The patch that corresponds with the running game's CRC will take precedence over the defaults.  Multiple patches for the same CRC cannot be defined and this will throw an invalidation errors.
+The patch that corresponds to the running game's CRC will take precedence over the `default`.  Multiple patches for the same CRC cannot be defined and this will throw an invalidation errors.
 
 Patches should be defined as multi-line string blocks, where each line would correspond with a line in a conventional `*.pnach` file
 
