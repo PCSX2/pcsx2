@@ -311,8 +311,8 @@ static int loadGameSettings(Pcsx2Config& dest, const GameDatabaseSchema::GameEnt
 	// TODO - config - this could be simplified with maps instead of bitfields and enums
 	for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; ++id)
 	{
-        std::string key = wxString(EnumToString(id)).Append(L"Hack").ToStdString();
-		
+		std::string key = wxString(EnumToString(id)).Append(L"Hack").ToStdString();
+
 		// Gamefixes are already guaranteed to be valid, any invalid ones are dropped
 		if (std::find(game.gameFixes.begin(), game.gameFixes.end(), key) != game.gameFixes.end())
 		{
