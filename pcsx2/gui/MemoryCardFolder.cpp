@@ -345,9 +345,8 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 		for ( const auto& file : GetOrderedFiles( dirPath ) ) {
 
 			wxFileName fileInfo( dirPath, file.m_fileName );
-			bool isFile = wxFile::Exists( fileInfo.GetFullPath() );
 
-			if ( isFile ) {
+			if ( file.m_isFile ) {
 				// don't load files in the root dir if we're filtering; no official software stores files there
 				if ( enableFiltering && parent == nullptr ) {
 					continue;
@@ -371,11 +370,9 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 				}
 
 				// is a subdirectory
-				wxDateTime creationTime, modificationTime;
 				fileInfo.AppendDir( fileInfo.GetFullName() );
 				fileInfo.SetName( L"" );
 				fileInfo.ClearExt();
-				fileInfo.GetTimes( NULL, &modificationTime, &creationTime );
 
 				// add entry for subdir in parent dir
 				MemoryCardFileEntry* newDirEntry = AppendFileEntryToDir( dirEntry );
@@ -393,8 +390,8 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 					}
 				} else {
 					newDirEntry->entry.data.mode = MemoryCardFileEntry::DefaultDirMode;
-					newDirEntry->entry.data.timeCreated = MemoryCardFileEntryDateTime::FromWxDateTime( creationTime );
-					newDirEntry->entry.data.timeModified = MemoryCardFileEntryDateTime::FromWxDateTime( modificationTime );
+					newDirEntry->entry.data.timeCreated = MemoryCardFileEntryDateTime::FromTime( file.m_timeCreated );
+					newDirEntry->entry.data.timeModified = MemoryCardFileEntryDateTime::FromTime( file.m_timeModified );
 					strcpy( reinterpret_cast<char*>(newDirEntry->entry.data.name), file.m_fileName.mbc_str() );
 				}
 
@@ -998,11 +995,12 @@ void FolderMemoryCard::FlushFileEntries( const u32 dirCluster, const u32 remaini
 
 				if ( m_performFileWrites ) {
 					// if this directory has nonstandard metadata, write that to the file system
-					wxFileName metaFileName( m_folderName.GetFullPath() + subDirPath + L"/_pcsx2_meta_directory" );
+					wxFileName metaFileName( m_folderName.GetFullPath() + subDirPath, L"_pcsx2_meta_directory" );
+					if ( !metaFileName.DirExists() ) {
+						metaFileName.Mkdir();
+					}
+
 					if ( filenameCleaned || entry->entry.data.mode != MemoryCardFileEntry::DefaultDirMode || entry->entry.data.attr != 0 ) {
-						if ( !metaFileName.DirExists() ) {
-							metaFileName.Mkdir();
-						}
 						wxFFile metaFile( metaFileName.GetFullPath(), L"wb" );
 						if ( metaFile.IsOpened() ) {
 							metaFile.Write( entry->entry.raw, sizeof( entry->entry.raw ) );
@@ -1012,6 +1010,20 @@ void FolderMemoryCard::FlushFileEntries( const u32 dirCluster, const u32 remaini
 						if ( metaFileName.FileExists() ) {
 							wxRemoveFile( metaFileName.GetFullPath() );
 						}
+					}
+
+					// write the directory index
+					metaFileName.SetName( L"_pcsx2_index" );
+					YAML::Node index = LoadYAMLFromFile( metaFileName.GetFullPath() );
+					YAML::Node entryNode = index[ "%ROOT" ];
+
+					entryNode["timeCreated"] = entry->entry.data.timeCreated.ToTime();
+					entryNode["timeModified"] = entry->entry.data.timeModified.ToTime();
+
+					// Write out the changes
+					wxFFile indexFile;
+					if ( indexFile.Open( metaFileName.GetFullPath(), L"w" ) ) {
+						indexFile.Write( YAML::Dump( index ) );
 					}
 				}
 
@@ -1335,14 +1347,17 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 	wxDir dir( dirPath );
 	if ( dir.IsOpened() ) {
 
-		YAML::Node index = LoadYAMLFromFile( wxFileName( dirPath, "_pcsx2_index" ).GetFullPath() );
+		const YAML::Node index = LoadYAMLFromFile( wxFileName( dirPath, "_pcsx2_index" ).GetFullPath() );
 
 		// We must be able to support legacy folder memcards without the index file, so for those
 		// track an order variable and make it negative - this way new files get their order preserved
 		// and old files are listed first.
 		// In the YAML File order is stored as an unsigned int, so use a signed int64_t to accommodate for
 		// all possible values without cutting them off
-		std::map<int64_t, EnumeratedFileEntry> sortContainer;
+		// Also exploit the fact pairs sort lexicographically to ensure directories are listed first
+		// (since they don't carry their own order in the index file)
+		std::map< std::pair<bool, int64_t>, EnumeratedFileEntry > sortContainer;
+		int64_t orderForDirectories = 1;
 		int64_t orderForLegacyFiles = -1;
 
 		wxString fileName;
@@ -1353,26 +1368,34 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 				continue;
 			}
 
-			const wxFileName fileInfo( dirPath, fileName );
-			try {
-				if ( wxFile::Exists( fileInfo.GetFullPath() ) ) {
-					const YAML::Node& node = index[ fileName.ToStdString() ];
-
-					EnumeratedFileEntry entry { fileName, node["timeCreated"].as<time_t>(), node["timeModified"].as<time_t>() };
-					sortContainer.try_emplace( node["order"].as<unsigned int>(), std::move(entry) );
-				}
-				else {
-					// TODO: Implement directories, for now force it to use the fallback implementation
-					throw YAML::InvalidNode( fileName.ToStdString() );
-				}
-			}
-			catch ( YAML::Exception& /*e*/ ) {
-				// File doesn't exist in index or it's corrupted - fall back to file-based timestamps and a custom order
+			wxFileName fileInfo( dirPath, fileName );
+			if ( wxFile::Exists( fileInfo.GetFullPath() ) ) {
 				wxDateTime creationTime, modificationTime;
 				fileInfo.GetTimes( nullptr, &modificationTime, &creationTime );
 
-				EnumeratedFileEntry entry { fileName, creationTime.GetTicks(), modificationTime.GetTicks() };
-				sortContainer.try_emplace( orderForLegacyFiles--, std::move(entry) );
+				const YAML::Node& node = index[ fileName.ToStdString() ];
+
+				// orderForLegacyFiles will decrement even if it ends up being unused, but that's fine
+				auto key = std::make_pair( true, node["order"].as<unsigned int>( orderForLegacyFiles-- ) );
+				EnumeratedFileEntry entry { fileName, node["timeCreated"].as<time_t>( creationTime.GetTicks() ),
+											node["timeModified"].as<time_t>( modificationTime.GetTicks() ), true };
+				sortContainer.try_emplace( std::move(key), std::move(entry) );
+			}
+			else {
+				fileInfo.AppendDir( fileInfo.GetFullName() );
+				fileInfo.SetName( L"" );
+
+				wxDateTime creationTime, modificationTime;
+				fileInfo.GetTimes( nullptr, &modificationTime, &creationTime );
+
+				const YAML::Node indexForDirectory = LoadYAMLFromFile( wxFileName( fileInfo.GetFullPath(), "_pcsx2_index" ).GetFullPath() );
+				const YAML::Node& node = indexForDirectory[ "%ROOT" ];
+
+				// orderForDirectories will increment even if it ends up being unused, but that's fine
+				auto key = std::make_pair( false, orderForDirectories++ );
+				EnumeratedFileEntry entry { fileName, node["timeCreated"].as<time_t>( creationTime.GetTicks() ),
+											node["timeModified"].as<time_t>( modificationTime.GetTicks() ), false };
+				sortContainer.try_emplace( std::move(key), std::move(entry) );
 			}
 
 			hasNext = dir.GetNext( &fileName );
@@ -1542,7 +1565,7 @@ void FileAccessHelper::WriteIndex( wxFileName folderName, const MemoryCardFileMe
 		// Newly added file - figure out the sort order as the entry should be added to the end of the list
 		unsigned int order = 0;
 		for ( const auto& node : index ) {
-			order = std::max( order, node.second["order"].as<unsigned int>() );
+			order = std::max( order, node.second["order"].as<unsigned int>(0) );
 		}
 
 		entryNode["order"] = order + 1;
