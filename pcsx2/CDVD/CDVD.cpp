@@ -165,13 +165,11 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 
 		NVMLayout* nvmLayout = getNvmLayout();
 		u8 ILinkID_Data[8] =  { 0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86 };
-		u8 Language_Data[8] = { 0x30, 0x21, 0x80, 0x00, 0x00, 0x70, 0x00, 0x00 };
 
 		fp.Seek(*(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, ilinkId)));
 		fp.Write(ILinkID_Data, sizeof(ILinkID_Data));
 
-		fp.Seek(*(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, config1)) + 0x10);
-		fp.Write(Language_Data, sizeof(Language_Data));
+		g_SkipBiosHack = false;
 	}
 
 	wxFFile fp(fname, L"r+b");
