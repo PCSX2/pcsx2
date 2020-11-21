@@ -390,6 +390,7 @@ protected:
 		wxString m_fileName; // TODO: Replace with std::string
 		time_t m_timeCreated;
 		time_t m_timeModified;
+		bool m_isFile;
 	};
 
 	// initializes memory card data, as if it was fresh from the factory
