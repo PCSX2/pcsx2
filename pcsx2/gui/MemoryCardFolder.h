@@ -87,6 +87,11 @@ struct MemoryCardFileEntryDateTime {
 		return t;
 	}
 
+	static MemoryCardFileEntryDateTime FromTime( time_t time ) {
+		// TODO: When wx is gone, this will have to be handled differently; for now, rely on wx
+		return FromWxDateTime( wxDateTime(time) );
+	}
+
 	wxDateTime ToWxDateTime() const {
 		wxDateTime::Tm tm;
 		tm.sec = this->second;
@@ -98,6 +103,11 @@ struct MemoryCardFileEntryDateTime {
 
 		wxDateTime time( tm );
 		return time.FromTimezone( wxDateTime::GMT9 );
+	}
+
+	time_t ToTime() const {
+		// TODO: When wx is gone, this will have to be handled differently; for now, rely on wx
+		return ToWxDateTime().GetTicks();
 	}
 
 	bool operator==( const MemoryCardFileEntryDateTime& other ) const {
@@ -247,6 +257,7 @@ private:
 	void CloseFileHandle( wxFFile* file, const MemoryCardFileEntry* entry = nullptr );
 
 	void WriteMetadata( wxFileName folderName, const MemoryCardFileMetadataReference* fileRef );
+	void WriteIndex( wxFileName folderName, const MemoryCardFileMetadataReference* fileRef );
 };
 
 // --------------------------------------------------------------------------------------
@@ -375,6 +386,12 @@ public:
 	void WriteToFile( const wxString& filename );
 
 protected:
+	struct EnumeratedFileEntry {
+		wxString m_fileName; // TODO: Replace with std::string
+		time_t m_timeCreated;
+		time_t m_timeModified;
+	};
+
 	// initializes memory card data, as if it was fresh from the factory
 	void InitializeInternalData();
 
@@ -458,7 +475,7 @@ protected:
 	// - dirPath: the full path to the directory containing the file in the host file system
 	// - fileName: the name of the file, without path
 	// - parent: pointer to the parent dir's quick-access reference element
-	bool AddFile( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const wxString& fileName, MemoryCardFileMetadataReference* parent = nullptr );
+	bool AddFile( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const EnumeratedFileEntry& fileEntry, MemoryCardFileMetadataReference* parent = nullptr );
 
 	// calculates the amount of clusters a directory would use up if put into a memory card
 	u32 CalculateRequiredClustersOfDirectory( const wxString& dirPath ) const;
@@ -537,6 +554,12 @@ protected:
 	wxString GetCardFullMessage( const wxString& filePath ) const {
 		return wxsFormat( pxE( L"(FolderMcd) Memory Card is full, could not add: %s" ), WX_STR( filePath ) );
 	}
+
+	// get the list of files (and their timestamps) in directory ordered as specified by the index file
+	// for legacy entries without an entry in the index file, order is unspecified and should not be relied on
+	std::vector<EnumeratedFileEntry> GetOrderedFiles( const wxString& dirPath ) const;
+
+	void DeleteFromIndex( const wxString& filePath, const wxString& entry ) const;
 };
 
 // --------------------------------------------------------------------------------------

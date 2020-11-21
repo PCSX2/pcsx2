@@ -22,9 +22,26 @@
 #include "System.h"
 #include "AppConfig.h"
 
+#include "yaml-cpp/yaml.h"
+
 #include "svnrev.h"
 
 bool RemoveDirectory( const wxString& dirname );
+
+// A helper function to parse the YAML file
+static YAML::Node LoadYAMLFromFile( const wxString& fileName ) {
+	YAML::Node index;
+
+	wxFFile indexFile;
+	if ( indexFile.Open( fileName, L"r" ) ) {
+		wxString fileContents;
+		if ( indexFile.ReadAll( &fileContents ) ) {
+			index = YAML::Load( fileContents.mbc_str() );
+		}
+	}
+
+	return index;
+}
 
 FolderMemoryCard::FolderMemoryCard() {
 	m_slot = 0;
@@ -312,10 +329,7 @@ bool FilterMatches( const wxString& fileName, const wxString& filter ) {
 }
 
 bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, MemoryCardFileMetadataReference* parent, const bool enableFiltering, const wxString& filter ) {
-	wxDir dir( dirPath );
-	if ( dir.IsOpened() ) {
-		wxString fileName;
-		bool hasNext;
+	if ( wxDir::Exists( dirPath ) ) {
 
 		wxString localFilter;
 		if ( enableFiltering ) {
@@ -328,39 +342,31 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 		}
 
 		int entryNumber = 2; // include . and ..
-		hasNext = dir.GetFirst( &fileName );
-		while ( hasNext ) {
-			if ( fileName.StartsWith( L"_pcsx2_" ) ) {
-				hasNext = dir.GetNext( &fileName );
-				continue;
-			}
+		for ( const auto& file : GetOrderedFiles( dirPath ) ) {
 
-			wxFileName fileInfo( dirPath, fileName );
+			wxFileName fileInfo( dirPath, file.m_fileName );
 			bool isFile = wxFile::Exists( fileInfo.GetFullPath() );
 
 			if ( isFile ) {
 				// don't load files in the root dir if we're filtering; no official software stores files there
 				if ( enableFiltering && parent == nullptr ) {
-					hasNext = dir.GetNext( &fileName );
 					continue;
 				}
-				if ( AddFile( dirEntry, dirPath, fileName, parent ) ) {
+				if ( AddFile( dirEntry, dirPath, file, parent ) ) {
 					++entryNumber;
 				}
 			} else {
 				// if possible filter added directories by game serial
 				// this has the effective result of only files relevant to the current game being loaded into the memory card
 				// which means every game essentially sees the memory card as if no other files exist
-				if ( enableFiltering && !FilterMatches( fileName, localFilter ) ) {
-					hasNext = dir.GetNext( &fileName );
+				if ( enableFiltering && !FilterMatches( file.m_fileName, localFilter ) ) {
 					continue;
 				}
 
 				// make sure we have enough space on the memcard for the directory
-				const u32 newNeededClusters = CalculateRequiredClustersOfDirectory( dirPath + L"/" + fileName ) + ( ( dirEntry->entry.data.length % 2 ) == 0 ? 1 : 0 );
+				const u32 newNeededClusters = CalculateRequiredClustersOfDirectory( dirPath + L"/" + file.m_fileName ) + ( ( dirEntry->entry.data.length % 2 ) == 0 ? 1 : 0 );
 				if ( newNeededClusters > GetAmountFreeDataClusters() ) {
-					Console.Warning( GetCardFullMessage( fileName ) );
-					hasNext = dir.GetNext( &fileName );
+					Console.Warning( GetCardFullMessage( file.m_fileName ) );
 					continue;
 				}
 
@@ -377,19 +383,19 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 
 				// set metadata
 				wxFileName metaFileName( dirPath, L"_pcsx2_meta_directory" );
-				metaFileName.AppendDir( fileName );
+				metaFileName.AppendDir( file.m_fileName );
 				wxFFile metaFile;
 				if ( metaFileName.FileExists() && metaFile.Open( metaFileName.GetFullPath(), L"rb" ) ) {
 					size_t bytesRead = metaFile.Read( &newDirEntry->entry.raw, sizeof( newDirEntry->entry.raw ) );
 					metaFile.Close();
 					if ( bytesRead < 0x60 ) {
-						strcpy( reinterpret_cast<char*>(newDirEntry->entry.data.name), fileName.mbc_str() );
+						strcpy( reinterpret_cast<char*>(newDirEntry->entry.data.name), file.m_fileName.mbc_str() );
 					}
 				} else {
 					newDirEntry->entry.data.mode = MemoryCardFileEntry::DefaultDirMode;
 					newDirEntry->entry.data.timeCreated = MemoryCardFileEntryDateTime::FromWxDateTime( creationTime );
 					newDirEntry->entry.data.timeModified = MemoryCardFileEntryDateTime::FromWxDateTime( modificationTime );
-					strcpy( reinterpret_cast<char*>(newDirEntry->entry.data.name), fileName.mbc_str() );
+					strcpy( reinterpret_cast<char*>(newDirEntry->entry.data.name), file.m_fileName.mbc_str() );
 				}
 
 				// create new cluster for . and .. entries
@@ -416,8 +422,6 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 				// and add all files in subdir
 				AddFolder( newDirEntry, fileInfo.GetFullPath(), dirRef );
 			}
-
-			hasNext = dir.GetNext( &fileName );
 		}
 
 		return true;
@@ -426,11 +430,11 @@ bool FolderMemoryCard::AddFolder( MemoryCardFileEntry* const dirEntry, const wxS
 	return false;
 }
 
-bool FolderMemoryCard::AddFile( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const wxString& fileName, MemoryCardFileMetadataReference* parent ) {
-	wxFileName relativeFilePath( dirPath, fileName );
+bool FolderMemoryCard::AddFile( MemoryCardFileEntry* const dirEntry, const wxString& dirPath, const EnumeratedFileEntry& fileEntry, MemoryCardFileMetadataReference* parent ) {
+	wxFileName relativeFilePath( dirPath, fileEntry.m_fileName );
 	relativeFilePath.MakeRelativeTo( m_folderName.GetPath() );
 
-	wxFileName fileInfo( dirPath, fileName );
+	wxFileName fileInfo( dirPath, fileEntry.m_fileName );
 	wxFFile file( fileInfo.GetFullPath(), L"rb" );
 	if ( file.IsOpened() ) {
 		// make sure we have enough space on the memcard to hold the data
@@ -444,26 +448,24 @@ bool FolderMemoryCard::AddFile( MemoryCardFileEntry* const dirEntry, const wxStr
 		}
 
 		MemoryCardFileEntry* newFileEntry = AppendFileEntryToDir( dirEntry );
-		wxDateTime creationTime, modificationTime;
-		fileInfo.GetTimes( NULL, &modificationTime, &creationTime );
 
 		// set file entry metadata
 		memset( newFileEntry->entry.raw, 0x00, sizeof( newFileEntry->entry.raw ) );
 
-		wxFileName metaFileName( dirPath, fileName );
+		wxFileName metaFileName( dirPath, fileEntry.m_fileName );
 		metaFileName.AppendDir( L"_pcsx2_meta" );
 		wxFFile metaFile;
 		if ( metaFileName.FileExists() && metaFile.Open( metaFileName.GetFullPath(), L"rb" ) ) {
 			size_t bytesRead = metaFile.Read( &newFileEntry->entry.raw, sizeof( newFileEntry->entry.raw ) );
 			metaFile.Close();
 			if ( bytesRead < 0x60 ) {
-				strcpy( reinterpret_cast<char*>(newFileEntry->entry.data.name), fileName.mbc_str() );
+				strcpy( reinterpret_cast<char*>(newFileEntry->entry.data.name), fileEntry.m_fileName.mbc_str() );
 			}
 		} else {
 			newFileEntry->entry.data.mode = MemoryCardFileEntry::DefaultFileMode;
-			newFileEntry->entry.data.timeCreated = MemoryCardFileEntryDateTime::FromWxDateTime( creationTime );
-			newFileEntry->entry.data.timeModified = MemoryCardFileEntryDateTime::FromWxDateTime( modificationTime );
-			strcpy( reinterpret_cast<char*>(newFileEntry->entry.data.name), fileName.mbc_str() );
+			newFileEntry->entry.data.timeCreated = MemoryCardFileEntryDateTime::FromTime( fileEntry.m_timeCreated );
+			newFileEntry->entry.data.timeModified = MemoryCardFileEntryDateTime::FromTime( fileEntry.m_timeModified );
+			strcpy( reinterpret_cast<char*>(newFileEntry->entry.data.name), fileEntry.m_fileName.mbc_str() );
 		}
 
 		newFileEntry->entry.data.length = filesize;
@@ -507,6 +509,7 @@ u32 FolderMemoryCard::CalculateRequiredClustersOfDirectory( const wxString& dirP
 	u32 requiredFileEntryPages = 2;
 	u32 requiredClusters = 0;
 
+	// No need to read the index file as we are only counting space required; order of files is irrelevant.
 	wxDir dir( dirPath );
 	wxString fileName;
 	bool hasNext = dir.GetFirst( &fileName );
@@ -1073,6 +1076,8 @@ void FolderMemoryCard::FlushDeletedFilesAndRemoveUnchangedDataFromCache( const s
 					RemoveDirectory( newFilePath );
 				}
 				wxRenameFile( filePath, newFilePath );
+				DeleteFromIndex( m_folderName.GetFullPath() + dirPath, fileName );
+
 			} else if ( entry->IsDir() ) {
 				// still exists and is a directory, recursive call for subdir
 				char cleanName[sizeof( entry->entry.data.name )];
@@ -1323,6 +1328,80 @@ void FolderMemoryCard::SetTimeLastWrittenToNow() {
 	m_framesUntilFlush = FramesAfterWriteUntilFlush;
 }
 
+std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedFiles( const wxString& dirPath ) const
+{
+	std::vector<EnumeratedFileEntry> result;
+
+	wxDir dir( dirPath );
+	if ( dir.IsOpened() ) {
+
+		YAML::Node index = LoadYAMLFromFile( wxFileName( dirPath, "_pcsx2_index" ).GetFullPath() );
+
+		// We must be able to support legacy folder memcards without the index file, so for those
+		// track an order variable and make it negative - this way new files get their order preserved
+		// and old files are listed first.
+		// In the YAML File order is stored as an unsigned int, so use a signed int64_t to accommodate for
+		// all possible values without cutting them off
+		std::map<int64_t, EnumeratedFileEntry> sortContainer;
+		int64_t orderForLegacyFiles = -1;
+
+		wxString fileName;
+		bool hasNext = dir.GetFirst( &fileName );
+		while ( hasNext ) {
+			if ( fileName.StartsWith( L"_pcsx2_" ) ) {
+				hasNext = dir.GetNext( &fileName );
+				continue;
+			}
+
+			const wxFileName fileInfo( dirPath, fileName );
+			try {
+				if ( wxFile::Exists( fileInfo.GetFullPath() ) ) {
+					const YAML::Node& node = index[ fileName.ToStdString() ];
+
+					EnumeratedFileEntry entry { fileName, node["timeCreated"].as<time_t>(), node["timeModified"].as<time_t>() };
+					sortContainer.try_emplace( node["order"].as<unsigned int>(), std::move(entry) );
+				}
+				else {
+					// TODO: Implement directories, for now force it to use the fallback implementation
+					throw YAML::InvalidNode( fileName.ToStdString() );
+				}
+			}
+			catch ( YAML::Exception& /*e*/ ) {
+				// File doesn't exist in index or it's corrupted - fall back to file-based timestamps and a custom order
+				wxDateTime creationTime, modificationTime;
+				fileInfo.GetTimes( nullptr, &modificationTime, &creationTime );
+
+				EnumeratedFileEntry entry { fileName, creationTime.GetTicks(), modificationTime.GetTicks() };
+				sortContainer.try_emplace( orderForLegacyFiles--, std::move(entry) );
+			}
+
+			hasNext = dir.GetNext( &fileName );
+		}
+
+		// Move items from the intermediate map to a final vector
+		result.reserve( sortContainer.size() );
+		for ( auto& e : sortContainer ) {
+			result.push_back( std::move(e.second) );
+		}
+	}
+
+	return result;
+}
+
+void FolderMemoryCard::DeleteFromIndex( const wxString& filePath, const wxString& entry ) const
+{
+	const wxString indexName = wxFileName( filePath, "_pcsx2_index" ).GetFullPath();
+
+	YAML::Node index = LoadYAMLFromFile( indexName );
+	index.remove( entry.ToStdString() );
+
+	// Write out the changes
+	wxFFile indexFile;
+	if ( indexFile.Open( indexName, L"w" ) ) {
+		indexFile.Write( YAML::Dump( index ) );
+	}
+}
+
 // from http://www.oocities.org/siliconvalley/station/8269/sma02/sma02.html#ECC
 void FolderMemoryCard::CalculateECC( u8* ecc, const u8* data ) {
 	static const u8 Table[] = {
@@ -1413,6 +1492,7 @@ wxFFile* FileAccessHelper::Open( const wxFileName& folderName, MemoryCardFileMet
 
 	if ( writeMetadata ) {
 		WriteMetadata( folderName, fileRef );
+		WriteIndex( folderName, fileRef );
 	}
 
 	return file;
@@ -1448,6 +1528,38 @@ void FileAccessHelper::WriteMetadata( wxFileName folderName, const MemoryCardFil
 	}
 }
 
+void FileAccessHelper::WriteIndex( wxFileName folderName, const MemoryCardFileMetadataReference* fileRef )
+{
+	fileRef->GetPath( &folderName );
+
+	const std::string fileName = folderName.GetName();
+	folderName.SetName( L"_pcsx2_index" );
+
+	YAML::Node index = LoadYAMLFromFile( folderName.GetFullPath() );
+	YAML::Node entryNode = index[fileName];
+
+	if ( !entryNode.IsDefined() ) {
+		// Newly added file - figure out the sort order as the entry should be added to the end of the list
+		unsigned int order = 0;
+		for ( const auto& node : index ) {
+			order = std::max( order, node.second["order"].as<unsigned int>() );
+		}
+
+		entryNode["order"] = order + 1;
+	}
+
+	// Update timestamps basing on internal data
+	const auto* entry = &fileRef->entry->entry.data;
+	entryNode["timeCreated"] = entry->timeCreated.ToTime();
+	entryNode["timeModified"] = entry->timeModified.ToTime();
+
+	// Write out the changes
+	wxFFile indexFile;
+	if ( indexFile.Open( folderName.GetFullPath(), L"w" ) ) {
+		indexFile.Write( YAML::Dump( index ) );
+	}
+}
+
 wxFFile* FileAccessHelper::ReOpen( const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata ) {
 	std::string internalPath;
 	fileRef->GetInternalPath( &internalPath );
@@ -1459,6 +1571,7 @@ wxFFile* FileAccessHelper::ReOpen( const wxFileName& folderName, MemoryCardFileM
 		if ( writeMetadata ) {
 			if ( m_lastWrittenFileRef != fileRef ) {
 				WriteMetadata( folderName, fileRef );
+				WriteIndex( folderName, fileRef );
 				m_lastWrittenFileRef = fileRef;
 			}
 		} else {
@@ -1478,13 +1591,6 @@ wxFFile* FileAccessHelper::ReOpen( const wxFileName& folderName, MemoryCardFileM
 
 void FileAccessHelper::CloseFileHandle( wxFFile* file, const MemoryCardFileEntry* entry ) {
 	file->Close();
-
-	if ( entry != nullptr ) {
-		wxFileName fn( file->GetName() );
-		wxDateTime modified = entry->entry.data.timeModified.ToWxDateTime();
-		wxDateTime created = entry->entry.data.timeCreated.ToWxDateTime();
-		fn.SetTimes( nullptr, &modified, &created );
-	}
 
 	delete file;
 }
