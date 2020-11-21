@@ -157,16 +157,21 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 		if (!fp.IsOpened())
 			throw Exception::CannotCreateStream(fname);
 
-		u8 zero[1024] = {0};
+		u8 zero[1024] = { 0 };
 		fp.Write(zero, sizeof(zero));
 
-		//Write NVM ILink area with dummy data (Age of Empires 2)
+		// Write NVM ILink area with dummy data (Age of Empires 2)
+		// Also write language data defaulting to English (Guitar Hero 2)
 
 		NVMLayout* nvmLayout = getNvmLayout();
-		u8 ILinkID_Data[8] = {0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86};
+		u8 ILinkID_Data[8] =  { 0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86 };
+		u8 Language_Data[8] = { 0x30, 0x21, 0x80, 0x00, 0x00, 0x70, 0x00, 0x00 };
 
 		fp.Seek(*(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, ilinkId)));
 		fp.Write(ILinkID_Data, sizeof(ILinkID_Data));
+
+		fp.Seek(*(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, config1)) + 0x10);
+		fp.Write(Language_Data, sizeof(Language_Data));
 	}
 
 	wxFFile fp(fname, L"r+b");

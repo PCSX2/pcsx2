@@ -943,7 +943,7 @@ void SYSCALL()
 					DevCon.Warning("Set GS CRTC configuration. %s %s (%s)",mode.c_str(), inter, field);
 				}
 				break;
-		case Syscall::GetOSParamConfig:
+		case Syscall::GetOsdConfigParam:
 			if(g_SkipBiosHack)
 			{
 				u8* pointer = (u8*)PSM(cpuRegs.GPR.n.a0.UL[0]);
@@ -964,7 +964,7 @@ void SYSCALL()
 				return;
 			}
 			break;
-		case Syscall::GetOSParamConfig2:
+		case Syscall::GetOsdConfigParam2:
 			if (g_SkipBiosHack)
 			{
 				u8* pointer = (u8*)PSM(cpuRegs.GPR.n.a0.UL[0]);
