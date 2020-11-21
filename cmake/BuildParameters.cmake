@@ -287,11 +287,18 @@ endif()
 # -Wno-overloaded-virtual: Gives a fair number of warnings under clang over in the wxwidget gui section of the code.
 # -Wno-deprecated-declarations: The USB plugins dialogs are written in straight gtk 2, which gives a million deprecated warnings. Suppress them until we can deal with them.
 # -Wno-format: Yeah, these need to be taken care of, but...
+# -Wno-stringop-truncation: Who comes up with these compiler warnings, anyways?
+# -Wno-stringop-overflow: Probably the same people as this one...
 
 set(DEFAULT_WARNINGS "-Wall -Wextra -Wno-attributes -Wno-unused-function -Wno-unused-parameter -Wno-missing-field-initializers -Wno-overloaded-virtual -Wno-deprecated-declarations -Wno-format")
 if (NOT USE_ICC)
     set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS} -Wno-unused-value ")
 endif()
+
+if (USE_GCC)
+set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS}  -Wno-stringop-truncation  -Wno-stringop-overflow ")
+endif()
+
 
 # -Wstrict-aliasing=n: to fix one day aliasing issue. n=1/2/3
 if (USE_ICC)
