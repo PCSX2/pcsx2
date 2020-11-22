@@ -1382,7 +1382,8 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 				wxDateTime creationTime, modificationTime;
 				fileInfo.GetTimes( nullptr, &modificationTime, &creationTime );
 
-				const YAML::Node& node = index[ fileName.ToStdString() ];
+				const wxCharTypeBuffer fileNameUTF8( fileName.ToUTF8() );
+				const YAML::Node& node = index[ fileNameUTF8.data() ];
 
 				// orderForLegacyFiles will decrement even if it ends up being unused, but that's fine
 				auto key = std::make_pair( true, node["order"].as<unsigned int>( orderForLegacyFiles-- ) );
@@ -1425,7 +1426,9 @@ void FolderMemoryCard::DeleteFromIndex( const wxString& filePath, const wxString
 	const wxString indexName = wxFileName( filePath, "_pcsx2_index" ).GetFullPath();
 
 	YAML::Node index = LoadYAMLFromFile( indexName );
-	index.remove( entry.ToStdString() );
+
+	const wxCharTypeBuffer entryUTF8( entry.ToUTF8() );
+	index.remove( entryUTF8.data() );
 
 	// Write out the changes
 	wxFFile indexFile;
@@ -1563,11 +1566,11 @@ void FileAccessHelper::WriteIndex( wxFileName folderName, const MemoryCardFileMe
 {
 	fileRef->GetPath( &folderName );
 
-	const std::string fileName = folderName.GetName();
+	const wxCharTypeBuffer fileName( folderName.GetName().ToUTF8() );
 	folderName.SetName( L"_pcsx2_index" );
 
 	YAML::Node index = LoadYAMLFromFile( folderName.GetFullPath() );
-	YAML::Node entryNode = index[fileName];
+	YAML::Node entryNode = index[ fileName.data() ];
 
 	if ( !entryNode.IsDefined() ) {
 		// Newly added file - figure out the sort order as the entry should be added to the end of the list
