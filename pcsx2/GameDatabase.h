@@ -84,7 +84,7 @@ public:
 class IGameDatabase
 {
 public:
-	virtual bool initDatabase(const std::string filePath) = 0;
+	virtual bool initDatabase(std::ifstream& stream) = 0;
 	virtual GameDatabaseSchema::GameEntry findGame(const std::string serial) = 0;
 	virtual int numGames() = 0;
 };
@@ -92,7 +92,7 @@ public:
 class YamlGameDatabaseImpl : public IGameDatabase
 {
 public:
-	bool initDatabase(const std::string filePath) override;
+	bool initDatabase(std::ifstream& stream) override;
 	GameDatabaseSchema::GameEntry findGame(const std::string serial) override;
 	int numGames() override;
 
@@ -100,11 +100,7 @@ private:
 	std::unordered_map<std::string, GameDatabaseSchema::GameEntry> gameDb;
 	GameDatabaseSchema::GameEntry entryFromYaml(const std::string serial, const YAML::Node& node);
 
-	// TODO - config - move these into a generic library
-	std::string safeGetString(const YAML::Node& n, std::string key, std::string def = "");
-	int safeGetInt(const YAML::Node& n, std::string key, int def = 0);
-	std::vector<std::string> safeGetMultilineString(const YAML::Node& n, std::string key, std::vector<std::string> def = {});
-	std::vector<std::string> safeGetStringList(const YAML::Node& n, std::string key, std::vector<std::string> def = {});
+	std::vector<std::string> convertMultiLineStringToVector(const std::string multiLineString);
 };
 
 extern IGameDatabase* AppHost_GetGameDatabase();
