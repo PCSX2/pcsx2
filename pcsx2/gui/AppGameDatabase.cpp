@@ -20,10 +20,21 @@
 
 #include <wx/stdpaths.h>
 #include "fmt/core.h"
+#include <fstream>
+
+std::ifstream AppGameDatabase::getFileAsStream(const wxString& file)
+{
+// TODO - config - refactor with std::filesystem/ghc::filesystem
+#ifdef _WIN32
+	return std::ifstream(file.wc_str());
+#else
+	return std::ifstream(file.c_str());
+#endif
+}
 
 AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file)
 {
-	// TODO - config - kill this with fire with std::filesystem
+	// TODO - config - refactor with std::filesystem/ghc::filesystem
 
 	wxString file(_file);
 	if (wxFileName(file).IsRelative())
@@ -45,21 +56,22 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file)
 
 	if (!wxFileExists(file))
 	{
-		Console.Error(L"(GameDB) Database Not Found! [%s]", WX_STR(file));
+		Console.Error(L"[GameDB] Database Not Found! [%s]", WX_STR(file));
 		return *this;
 	}
 
-	u64 qpc_Start = GetCPUTicks();
+	const u64 qpc_Start = GetCPUTicks();
 
-	if (!this->initDatabase(std::string(file)))
+	std::ifstream fileStream = getFileAsStream(file);
+	if (!this->initDatabase(fileStream))
 	{
-		Console.Error(L"(GameDB) Database could not be loaded successfully");
+		Console.Error(L"[GameDB] Database could not be loaded successfully");
 		return *this;
 	}
 
-	u64 qpc_end = GetCPUTicks();
+	const u64 qpc_end = GetCPUTicks();
 
-	Console.WriteLn(fmt::format("(GameDB) {} games on record (loaded in {}ms)", this->numGames(),
+	Console.WriteLn(fmt::format("[GameDB] {} games on record (loaded in {}ms)", this->numGames(),
 								(u32)(((qpc_end - qpc_Start) * 1000) / GetTickFrequency())));
 
 	return *this;
