@@ -946,7 +946,7 @@ void SYSCALL()
 		case Syscall::GetOsdConfigParam:
 			if(g_SkipBiosHack)
 			{
-				u8* pointer = (u8*)PSM(cpuRegs.GPR.n.a0.UL[0]);
+				u32 memaddr = cpuRegs.GPR.n.a0.UL[0];
 				u8 params[16];
 			
 				cdvdReadLanguageParams(params);
@@ -960,21 +960,21 @@ void SYSCALL()
 				osdconf |= (u32)(params[2] & 0x1F) << 16;			// Language
 				osdconf |= timezone << 21;							// Timezone
 
-				memcpy(pointer, &osdconf, 4);
+				memWrite32(memaddr, osdconf);
 				return;
 			}
 			break;
 		case Syscall::GetOsdConfigParam2:
 			if (g_SkipBiosHack)
 			{
-				u8* pointer = (u8*)PSM(cpuRegs.GPR.n.a0.UL[0]);
+				u32 memaddr = cpuRegs.GPR.n.a0.UL[0];
 				u8 params[16];
 
 				cdvdReadLanguageParams(params);
 
 				u32 osdconf2 = (u32)((params[3] & 0x78) << 1);  // Daylight Savings, 24hr clock, Date format
 
-				memcpy(pointer, &osdconf2, 4);
+				memWrite32(memaddr, osdconf2);
 				return;
 			}
 			break;
