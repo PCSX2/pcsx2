@@ -246,6 +246,8 @@ public:
 	// returns true if any changes were made
 	static bool CleanMemcardFilename( char* name );
 
+	static void WriteIndex( wxFileName folderName, const MemoryCardFileMetadataReference* fileRef );
+
 private:
 	// helper function for CleanMemcardFilename()
 	static bool CleanMemcardFilenameEndDotOrSpace( char* name, size_t length );
@@ -257,7 +259,6 @@ private:
 	void CloseFileHandle( wxFFile* file, const MemoryCardFileEntry* entry = nullptr );
 
 	void WriteMetadata( wxFileName folderName, const MemoryCardFileMetadataReference* fileRef );
-	void WriteIndex( wxFileName folderName, const MemoryCardFileMetadataReference* fileRef );
 };
 
 // --------------------------------------------------------------------------------------

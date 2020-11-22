@@ -985,70 +985,79 @@ void FolderMemoryCard::FlushFileEntries( const u32 dirCluster, const u32 remaini
 	const u32 filesInThisCluster = std::min( remainingFiles, 2u );
 	for ( unsigned int i = 0; i < filesInThisCluster; ++i ) {
 		MemoryCardFileEntry* entry = &entries->entries[i];
-		if ( entry->IsValid() && entry->IsUsed() && entry->IsDir() ) {
-			if ( !entry->IsDotDir() ) {
-				char cleanName[sizeof( entry->entry.data.name )];
-				memcpy( cleanName, (const char*)entry->entry.data.name, sizeof( cleanName ) );
-				bool filenameCleaned = FileAccessHelper::CleanMemcardFilename( cleanName );
-				const wxString subDirName = wxString::FromAscii( (const char*)cleanName );
-				const wxString subDirPath = dirPath + L"/" + subDirName;
+		if ( entry->IsValid() && entry->IsUsed() )
+		{	
+			if ( entry->IsDir() )
+			{
+				if ( !entry->IsDotDir() ) {
+					char cleanName[sizeof( entry->entry.data.name )];
+					memcpy( cleanName, (const char*)entry->entry.data.name, sizeof( cleanName ) );
+					bool filenameCleaned = FileAccessHelper::CleanMemcardFilename( cleanName );
+					const wxString subDirName = wxString::FromAscii( (const char*)cleanName );
+					const wxString subDirPath = dirPath + L"/" + subDirName;
 
-				if ( m_performFileWrites ) {
-					// if this directory has nonstandard metadata, write that to the file system
-					wxFileName metaFileName( m_folderName.GetFullPath() + subDirPath, L"_pcsx2_meta_directory" );
-					if ( !metaFileName.DirExists() ) {
-						metaFileName.Mkdir();
+					if ( m_performFileWrites ) {
+						// if this directory has nonstandard metadata, write that to the file system
+						wxFileName metaFileName( m_folderName.GetFullPath() + subDirPath, L"_pcsx2_meta_directory" );
+						if ( !metaFileName.DirExists() ) {
+							metaFileName.Mkdir();
+						}
+
+						if ( filenameCleaned || entry->entry.data.mode != MemoryCardFileEntry::DefaultDirMode || entry->entry.data.attr != 0 ) {
+							wxFFile metaFile( metaFileName.GetFullPath(), L"wb" );
+							if ( metaFile.IsOpened() ) {
+								metaFile.Write( entry->entry.raw, sizeof( entry->entry.raw ) );
+							}
+						} else {
+							// if metadata is standard make sure to remove a possibly existing metadata file
+							if ( metaFileName.FileExists() ) {
+								wxRemoveFile( metaFileName.GetFullPath() );
+							}
+						}
+
+						// write the directory index
+						metaFileName.SetName( L"_pcsx2_index" );
+						YAML::Node index = LoadYAMLFromFile( metaFileName.GetFullPath() );
+						YAML::Node entryNode = index[ "%ROOT" ];
+
+						entryNode["timeCreated"] = entry->entry.data.timeCreated.ToTime();
+						entryNode["timeModified"] = entry->entry.data.timeModified.ToTime();
+
+						// Write out the changes
+						wxFFile indexFile;
+						if ( indexFile.Open( metaFileName.GetFullPath(), L"w" ) ) {
+							indexFile.Write( YAML::Dump( index ) );
+						}
 					}
 
-					if ( filenameCleaned || entry->entry.data.mode != MemoryCardFileEntry::DefaultDirMode || entry->entry.data.attr != 0 ) {
-						wxFFile metaFile( metaFileName.GetFullPath(), L"wb" );
-						if ( metaFile.IsOpened() ) {
-							metaFile.Write( entry->entry.raw, sizeof( entry->entry.raw ) );
+					MemoryCardFileMetadataReference* dirRef = AddDirEntryToMetadataQuickAccess( entry, parent );
+
+					FlushFileEntries( entry->entry.data.cluster, entry->entry.data.length, subDirPath, dirRef );
+				}
+			} else if ( entry->IsFile() ) {
+				const MemoryCardFileMetadataReference* fileRef = AddFileEntryToMetadataQuickAccess( entry, parent );
+
+				if ( entry->entry.data.length == 0 ) {
+					// empty files need to be explicitly created, as there will be no data cluster referencing it later
+					if ( m_performFileWrites ) {
+						char cleanName[sizeof( entry->entry.data.name )];
+						memcpy( cleanName, (const char*)entry->entry.data.name, sizeof( cleanName ) );
+						FileAccessHelper::CleanMemcardFilename( cleanName );
+						const wxString filePath = dirPath + L"/" + wxString::FromAscii( (const char*)cleanName );
+						wxFileName fn( m_folderName.GetFullPath() + filePath );
+
+						if ( !fn.FileExists() ) {
+							if ( !fn.DirExists() ) {
+								fn.Mkdir( 0777, wxPATH_MKDIR_FULL );
+							}
+							wxFFile createEmptyFile( fn.GetFullPath(), L"wb" );
+							createEmptyFile.Close();
 						}
-					} else {
-						// if metadata is standard make sure to remove a possibly existing metadata file
-						if ( metaFileName.FileExists() ) {
-							wxRemoveFile( metaFileName.GetFullPath() );
-						}
-					}
-
-					// write the directory index
-					metaFileName.SetName( L"_pcsx2_index" );
-					YAML::Node index = LoadYAMLFromFile( metaFileName.GetFullPath() );
-					YAML::Node entryNode = index[ "%ROOT" ];
-
-					entryNode["timeCreated"] = entry->entry.data.timeCreated.ToTime();
-					entryNode["timeModified"] = entry->entry.data.timeModified.ToTime();
-
-					// Write out the changes
-					wxFFile indexFile;
-					if ( indexFile.Open( metaFileName.GetFullPath(), L"w" ) ) {
-						indexFile.Write( YAML::Dump( index ) );
 					}
 				}
 
-				MemoryCardFileMetadataReference* dirRef = AddDirEntryToMetadataQuickAccess( entry, parent );
-
-				FlushFileEntries( entry->entry.data.cluster, entry->entry.data.length, subDirPath, dirRef );
-			}
-		} else if ( entry->IsValid() && entry->IsUsed() && entry->IsFile() ) {
-			AddFileEntryToMetadataQuickAccess( entry, parent );
-			if ( entry->entry.data.length == 0 ) {
-				// empty files need to be explicitly created, as there will be no data cluster referencing it later
-				char cleanName[sizeof( entry->entry.data.name )];
-				memcpy( cleanName, (const char*)entry->entry.data.name, sizeof( cleanName ) );
-				FileAccessHelper::CleanMemcardFilename( cleanName );
-				const wxString filePath = dirPath + L"/" + wxString::FromAscii( (const char*)cleanName );
-
 				if ( m_performFileWrites ) {
-					wxFileName fn( m_folderName.GetFullPath() + filePath );
-					if ( !fn.FileExists() ) {
-						if ( !fn.DirExists() ) {
-							fn.Mkdir( 0777, wxPATH_MKDIR_FULL );
-						}
-						wxFFile createEmptyFile( fn.GetFullPath(), L"wb" );
-						createEmptyFile.Close();
-					}
+					FileAccessHelper::WriteIndex( m_folderName.GetFullPath() + dirPath, fileRef );
 				}
 			}
 		}
@@ -1515,7 +1524,6 @@ wxFFile* FileAccessHelper::Open( const wxFileName& folderName, MemoryCardFileMet
 
 	if ( writeMetadata ) {
 		WriteMetadata( folderName, fileRef );
-		WriteIndex( folderName, fileRef );
 	}
 
 	return file;
@@ -1594,7 +1602,6 @@ wxFFile* FileAccessHelper::ReOpen( const wxFileName& folderName, MemoryCardFileM
 		if ( writeMetadata ) {
 			if ( m_lastWrittenFileRef != fileRef ) {
 				WriteMetadata( folderName, fileRef );
-				WriteIndex( folderName, fileRef );
 				m_lastWrittenFileRef = fileRef;
 			}
 		} else {
