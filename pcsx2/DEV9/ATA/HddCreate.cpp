@@ -20,8 +20,54 @@
 
 void HddCreate::Start()
 {
+	//This can be called from the EE Core thread
+	//ensure that UI creation/deletaion is done on main thread
+	if (!wxIsMainThread())
+	{
+		wxTheApp->CallAfter([&] { Start(); });
+		//Block until done
+		std::unique_lock competedLock(completedMutex);
+		completedCV.wait(competedLock, [&] { return completed; });
+		return;
+	}
+
+	//This creates a modeless dialog
+	progressDialog = new wxProgressDialog("Creating HDD file", "Creating HDD file", neededSize, nullptr, wxPD_APP_MODAL | wxPD_AUTO_HIDE | wxPD_CAN_ABORT | wxPD_ELAPSED_TIME | wxPD_REMAINING_TIME);
+
 	fileThread = std::thread(&HddCreate::WriteImage, this, filePath, neededSize);
+
+	//This code was written for a modal dialog, however wxProgressDialog is modeless only
+	//The idea was block here in a ShowModal() call, and have the worker thread update the UI
+	//via CallAfter()
+
+	//Instead, loop here to update UI
+	char msg[32] = {0};
+	int currentSize;
+	while ((currentSize = written.load()) != neededSize && !errored.load())
+	{
+		snprintf(msg, 32, "%i / %i MiB", written.load(), neededSize);
+
+		if (!progressDialog->Update(currentSize, msg))
+			canceled.store(true);
+
+		std::this_thread::sleep_for(std::chrono::milliseconds(50));
+	}
+
 	fileThread.join();
+
+	if (errored.load())
+	{
+		wxMessageDialog dialog(nullptr, "Failed to create HDD file", "Info", wxOK);
+		dialog.ShowModal();
+	}
+
+	delete progressDialog;
+	//Signal calling thread to resume
+	{
+		std::lock_guard ioSignallock(completedMutex);
+		completed = true;
+	}
+	completedCV.notify_all();
 }
 
 void HddCreate::WriteImage(ghc::filesystem::path hddPath, int reqSizeMiB)
@@ -73,35 +119,31 @@ void HddCreate::WriteImage(ghc::filesystem::path hddPath, int reqSizeMiB)
 				return;
 			}
 		}
-		SetFileProgress(iMiB + 1);
+
+		const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastUpdate).count() >= 100 || (iMiB + 1) == neededSize)
+		{
+			lastUpdate = now;
+			SetFileProgress(iMiB + 1);
+		}
+		if (canceled.load())
+		{
+			newImage.close();
+			ghc::filesystem::remove(filePath);
+			SetError();
+			return;
+		}
 	}
 	newImage.flush();
 	newImage.close();
-
-	SetDone();
 }
 
 void HddCreate::SetFileProgress(int currentSize)
 {
-	std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-
-	if (std::chrono::duration_cast<std::chrono::seconds>(now - lastUpdate).count() >= 1)
-	{
-		lastUpdate = now;
-		fprintf(stdout, "%i / %i MiB\n", currentSize, neededSize);
-	}
+	written.store(currentSize);
 }
 
 void HddCreate::SetError()
 {
-	fprintf(stderr, "Unable to create file\n");
 	errored.store(true);
-	completed.store(true);
-}
-
-void HddCreate::SetDone()
-{
-	fprintf(stdout, "%i / %i MiB\n", neededSize, neededSize);
-	fprintf(stdout, "Done\n");
-	completed.store(true);
 }

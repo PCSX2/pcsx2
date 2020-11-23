@@ -15,9 +15,12 @@
 
 #pragma once
 
+#include <wx/progdlg.h>
+
 #include <string>
 #include <thread>
 #include <atomic>
+#include <condition_variable>
 #include <chrono>
 #include "ghc/filesystem.h"
 
@@ -30,8 +33,16 @@ public:
 	std::atomic_bool errored{false};
 
 private:
+	wxProgressDialog* progressDialog;
+	std::atomic_int written{0};
+
 	std::thread fileThread;
-	std::atomic_bool completed{false};
+
+	std::atomic_bool canceled{false};
+
+	std::mutex completedMutex;
+	std::condition_variable completedCV;
+	bool completed = false;
 
 	std::chrono::steady_clock::time_point lastUpdate;
 
@@ -41,6 +52,5 @@ public:
 private:
 	void SetFileProgress(int currentSize);
 	void SetError();
-	void SetDone();
 	void WriteImage(ghc::filesystem::path hddPath, int reqSizeMB);
 };

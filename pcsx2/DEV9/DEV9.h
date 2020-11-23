@@ -65,6 +65,9 @@ bool rx_fifo_can_rx();
 #define HDD_DEF "DEV9hdd.raw"
 #endif
 
+#define HDD_MIN_GB 8
+#define HDD_MAX_GB 120
+
 typedef struct
 {
 	char Eth[256];
