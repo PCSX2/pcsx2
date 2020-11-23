@@ -22,6 +22,9 @@
 #include <pwd.h>
 #include <string.h>
 
+#include <string>
+#include "ghc/filesystem.h"
+
 #include "../Config.h"
 #include "../DEV9.h"
 #include "pcap.h"
@@ -29,7 +32,9 @@
 #include "../net.h"
 #include "AppCoreThread.h"
 
-static GtkBuilder* builder;
+#include "../ATA/HddCreate.h"
+
+static GtkBuilder* builder = nullptr;
 
 void SysMessage(char* fmt, ...)
 {
@@ -72,7 +77,29 @@ void OnInitDialog()
 		}
 		idx++;
 	}
+
 	gtk_entry_set_text((GtkEntry*)gtk_builder_get_object(builder, "IDC_HDDFILE"), config.Hdd);
+
+	//HDDSpin
+	gtk_spin_button_set_range((GtkSpinButton*)gtk_builder_get_object(builder, "IDC_HDDSIZE_SPIN"), HDD_MIN_GB, HDD_MAX_GB);
+	gtk_spin_button_set_increments((GtkSpinButton*)gtk_builder_get_object(builder, "IDC_HDDSIZE_SPIN"), 1, 10);
+	gtk_spin_button_set_value((GtkSpinButton*)gtk_builder_get_object(builder, "IDC_HDDSIZE_SPIN"), config.HddSize / 1024);
+
+	//HDDSlider
+	gtk_range_set_range((GtkRange*)gtk_builder_get_object(builder, "IDC_HDDSIZE_SLIDER"), HDD_MIN_GB, HDD_MAX_GB);
+	gtk_range_set_increments((GtkRange*)gtk_builder_get_object(builder, "IDC_HDDSIZE_SLIDER"), 1, 10);
+
+	gtk_scale_add_mark((GtkScale*)gtk_builder_get_object(builder, "IDC_HDDSIZE_SLIDER"), HDD_MIN_GB, GTK_POS_BOTTOM, (std::to_string(HDD_MIN_GB) + " GiB").c_str());
+	gtk_scale_add_mark((GtkScale*)gtk_builder_get_object(builder, "IDC_HDDSIZE_SLIDER"), HDD_MAX_GB, GTK_POS_BOTTOM, (std::to_string(HDD_MAX_GB) + " GiB").c_str());
+
+	for (int i = 15; i < HDD_MAX_GB; i += 5)
+	{
+		gtk_scale_add_mark((GtkScale*)gtk_builder_get_object(builder, "IDC_HDDSIZE_SLIDER"), i, GTK_POS_BOTTOM, nullptr);
+	}
+
+	gtk_range_set_value((GtkRange*)gtk_builder_get_object(builder, "IDC_HDDSIZE_SLIDER"), config.HddSize / 1024);
+
+	//Checkboxes
 	gtk_toggle_button_set_active((GtkToggleButton*)gtk_builder_get_object(builder, "IDC_ETHENABLED"),
 								 config.ethEnable);
 	gtk_toggle_button_set_active((GtkToggleButton*)gtk_builder_get_object(builder, "IDC_HDDENABLED"),
@@ -81,46 +108,77 @@ void OnInitDialog()
 	initialized = 1;
 }
 
+void OnBrowse(GtkButton* button, gpointer usr_data)
+{
+	ghc::filesystem::path inis(GetSettingsFolder().ToString().ToStdString());
+
+	static const wxChar* hddFilterType = L"HDD|*.raw;*.RAW";
+
+	wxFileDialog ctrl(nullptr, _("HDD Image File"), GetSettingsFolder().ToString(), HDD_DEF,
+					  (wxString)hddFilterType + L"|" + _("All Files (*.*)") + L"|*.*", wxFD_SAVE);
+
+	if (ctrl.ShowModal() != wxID_CANCEL)
+	{
+		ghc::filesystem::path hddFile(ctrl.GetPath().ToStdString());
+
+		if (ghc::filesystem::exists(hddFile))
+		{
+			//Get file size
+			int filesizeGb = ghc::filesystem::file_size(hddFile) / (1024 * 1024 * 1024);
+
+			gtk_range_set_value((GtkRange*)gtk_builder_get_object(builder, "IDC_HDDSIZE_SLIDER"), filesizeGb);
+			gtk_spin_button_set_value((GtkSpinButton*)gtk_builder_get_object(builder, "IDC_HDDSIZE_SPIN"), filesizeGb);
+		}
+
+		if (hddFile.parent_path() == inis)
+			hddFile = hddFile.filename();
+
+		gtk_entry_set_text((GtkEntry*)gtk_builder_get_object(builder, "IDC_HDDFILE"), hddFile.c_str());
+	}
+}
+
+void OnSpin(GtkSpinButton* spin, gpointer usr_data)
+{
+	gtk_range_set_value((GtkRange*)gtk_builder_get_object(builder, "IDC_HDDSIZE_SLIDER"),
+						gtk_spin_button_get_value(spin));
+}
+
+void OnSlide(GtkRange* range, gpointer usr_data)
+{
+	gtk_spin_button_set_value((GtkSpinButton*)gtk_builder_get_object(builder, "IDC_HDDSIZE_SPIN"),
+							  gtk_range_get_value(range));
+}
+
 void OnOk()
 {
-
 	char* ptr = gtk_combo_box_text_get_active_text((GtkComboBoxText*)gtk_builder_get_object(builder, "IDC_ETHDEV"));
 	if (ptr != nullptr)
 		strcpy(config.Eth, ptr);
 
 	strcpy(config.Hdd, gtk_entry_get_text((GtkEntry*)gtk_builder_get_object(builder, "IDC_HDDFILE")));
+	config.HddSize = gtk_spin_button_get_value((GtkSpinButton*)gtk_builder_get_object(builder, "IDC_HDDSIZE_SPIN")) * 1024;
 
 	config.ethEnable = gtk_toggle_button_get_active((GtkToggleButton*)gtk_builder_get_object(builder, "IDC_ETHENABLED"));
 	config.hddEnable = gtk_toggle_button_get_active((GtkToggleButton*)gtk_builder_get_object(builder, "IDC_HDDENABLED"));
 
-	SaveConf();
-}
+	ghc::filesystem::path hddPath(config.Hdd);
 
-/* Simple GTK+2 variant of gtk_builder_add_from_resource() */
-static guint builder_add_from_resource(GtkBuilder* builder, const gchar* resource_path, GError** error)
-{
-	GBytes* data;
-	const gchar* buffer;
-	gsize buffer_length;
-	guint ret;
-
-	g_assert(error && *error == NULL);
-
-	data = g_resources_lookup_data(resource_path, G_RESOURCE_LOOKUP_FLAGS_NONE, error);
-	if (data == NULL)
+	if (hddPath.is_relative())
 	{
-		return 0;
+		//GHC uses UTF8 on all platforms
+		ghc::filesystem::path path(GetSettingsFolder().ToUTF8().data());
+		hddPath = path / hddPath;
 	}
 
-	buffer_length = 0;
-	buffer = (const gchar*)g_bytes_get_data(data, &buffer_length);
-	g_assert(buffer != NULL);
+	if (config.hddEnable && !ghc::filesystem::exists(hddPath))
+	{
+		HddCreate hddCreator;
+		hddCreator.filePath = hddPath;
+		hddCreator.neededSize = config.HddSize;
+		hddCreator.Start();
+	}
 
-	ret = gtk_builder_add_from_string(builder, buffer, buffer_length, error);
-
-	g_bytes_unref(data);
-
-	return ret;
+	SaveConf();
 }
 
 void DEV9configure()
@@ -128,12 +186,22 @@ void DEV9configure()
 	ScopedCoreThreadPause paused_core;
 	gtk_init(NULL, NULL);
 	GError* error = NULL;
-	builder = gtk_builder_new();
-	if (!builder_add_from_resource(builder, "/net/pcsx2/dev9/DEV9/Linux/dev9.ui", &error))
+	if (builder == nullptr)
 	{
-		g_warning("Could not build config ui: %s", error->message);
-		g_error_free(error);
-		g_object_unref(G_OBJECT(builder));
+		builder = gtk_builder_new();
+		gtk_builder_add_callback_symbols(builder,
+										 "OnBrowse", G_CALLBACK(&OnBrowse),
+										 "OnSpin", G_CALLBACK(&OnSpin),
+										 "OnSlide", G_CALLBACK(&OnSlide), nullptr);
+		if (!gtk_builder_add_from_resource(builder, "/net/pcsx2/dev9/DEV9/Linux/dev9.ui", &error))
+		{
+			g_warning("Could not build config ui: %s", error->message);
+			g_error_free(error);
+			g_object_unref(G_OBJECT(builder));
+			builder = nullptr;
+			return;
+		}
+		gtk_builder_connect_signals(builder, nullptr);
 	}
 	GtkDialog* dlg = GTK_DIALOG(gtk_builder_get_object(builder, "IDD_CONFDLG"));
 	OnInitDialog();

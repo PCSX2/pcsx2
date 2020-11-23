@@ -15,7 +15,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Espagnol (Argentine) resources
+// Spanish (Argentina) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ESS)
 LANGUAGE LANG_SPANISH, SUBLANG_SPANISH_ARGENTINA
@@ -54,23 +54,30 @@ END
 // Dialog
 //
 
-IDD_CONFIG DIALOGEX 0, 0, 290, 170
-STYLE DS_SETFONT | DS_MODALFRAME | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_CONFIG DIALOGEX 0, 0, 290, 205
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Network and HDD Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "OK",IDOK,92,150,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,148,150,50,14
+    DEFPUSHBUTTON   "OK",IDOK,92,185,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,148,185,50,14
     LTEXT           "DEV9 Type:",IDC_STATIC,15,10,41,11,SS_CENTERIMAGE
-    COMBOBOX        IDC_BAYTYPE,60,8,223,47,CBS_DROPDOWNLIST | CBS_SORT | WS_DISABLED
-    GROUPBOX        "Ethernet",IDC_STATIC,7,30,276,50
+    COMBOBOX        IDC_BAYTYPE,61,8,223,47,CBS_DROPDOWNLIST | CBS_SORT | WS_DISABLED
+    GROUPBOX        "Ethernet",IDC_STATIC,7,30,277,50
     CONTROL         "Enabled",IDC_ETHENABLED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,45,42,8
     LTEXT           "Ethernet Device:",IDC_STATIC,26,60,60,8,SS_CENTERIMAGE
     COMBOBOX        IDC_ETHDEV,94,58,182,82,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    GROUPBOX        "Hard Disk Drive (not yet properly implemented)",IDC_STATIC,7,90,276,50
-    CONTROL         "Enabled",IDC_HDDENABLED,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,15,105,42,8
-    LTEXT           "HDD File:",IDC_STATIC,26,120,60,8,SS_CENTERIMAGE | WS_DISABLED
-    EDITTEXT        IDC_HDDFILE,94,118,182,13,ES_AUTOHSCROLL | WS_DISABLED
+    GROUPBOX        "Hard Disk Drive",IDC_STATIC,7,90,277,85
+    CONTROL         "Enabled",IDC_HDDENABLED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,15,105,42,8
+    LTEXT           "HDD File:",IDC_STATIC,26,120,60,8,SS_CENTERIMAGE
+    EDITTEXT        IDC_HDDFILE,94,118,130,13,ES_AUTOHSCROLL
+    CONTROL         "",IDC_HDDSIZE_SLIDER,"msctls_trackbar32",WS_TABSTOP,90,141,150,15
+    LTEXT           "HDD Size (GiB):",IDC_STATIC,26,143,60,8,SS_CENTERIMAGE
+    EDITTEXT        IDC_HDDSIZE_TEXT,240,141,25,13,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_HDDSIZE_SPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_AUTOBUDDY | UDS_ARROWKEYS,265,141,11,13
+    LTEXT           "8 GiB",IDC_STATIC,89,158,17,8
+    LTEXT           "120 GiB",IDC_STATIC,219,157,25,8,0,WS_EX_RIGHT
+    PUSHBUTTON      "Browse",IDC_BROWSE,226,117,50,15
 END
 
 
@@ -85,14 +92,25 @@ BEGIN
     IDD_CONFIG, DIALOG
     BEGIN
         LEFTMARGIN, 7
-        RIGHTMARGIN, 283
+        RIGHTMARGIN, 284
         TOPMARGIN, 7
-        BOTTOMMARGIN, 164
+        BOTTOMMARGIN, 273
     END
 END
 #endif    // APSTUDIO_INVOKED
 
-#endif    // Espagnol (Argentine) resources
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_CONFIG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
+#endif    // Spanish (Argentina) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
