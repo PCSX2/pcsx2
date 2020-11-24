@@ -777,10 +777,11 @@ public:
 
 		#else
 
+		// The `& 0xF` keeps the compiler happy on cases that won't actually be hit
 		if(i == 0) return *this;
-		else if(i < 16) return srl<i>() | v.sll<16 - i>();
+		else if(i < 16) return srl<i & 0xF>() | v.sll<(16 - i) & 0xF>();
 		else if(i == 16) return v;
-		else if(i < 32) return v.srl<i - 16>();
+		else if(i < 32) return v.srl<(i - 16) & 0xF>();
 		else return zero();
 
 		#endif
