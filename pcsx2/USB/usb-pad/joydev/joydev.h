@@ -17,6 +17,7 @@
 #include "../../linux/util.h"
 #include "../evdev/evdev-ff.h"
 #include "../evdev/shared.h"
+#include "Utilities/Console.h"
 
 namespace usb_pad
 {

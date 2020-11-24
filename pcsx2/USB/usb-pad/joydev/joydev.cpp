@@ -14,9 +14,10 @@
  */
 
 #include "joydev.h"
+#include "../../linux/util.h"
+#include "Utilities/Console.h"
 #include <cassert>
 #include <sstream>
-#include "../../linux/util.h"
 
 namespace usb_pad
 {

@@ -17,6 +17,10 @@
 
 #include "x86emitter/tools.h"
 
+#include "Utilities/FixedPointTypes.h"
+#include "Utilities/General.h"
+#include <wx/filename.h>
+
 class IniInterface;
 
 enum PluginsEnum_t

@@ -17,6 +17,8 @@
 
 #include "Utilities/PersistentThread.h"
 #include "Utilities/pxEvents.h"
+
+#include <wx/timer.h>
 #include <memory>
 
 // TODO!!  Make the system defined in this header system a bit more generic, and then move

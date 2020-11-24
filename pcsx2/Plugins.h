@@ -18,9 +18,11 @@
 #define PLUGINtypedefs
 #define PLUGINfuncs
 
+#include "Config.h"
 #include "PS2Edefs.h"
 #include "PluginCallbacks.h"
 
+#include <Utilities/MemcpyFast.h>
 #include "Utilities/Threading.h"
 
 #include <wx/dynlib.h>

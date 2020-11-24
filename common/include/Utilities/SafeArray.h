@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "Utilities/Dependencies.h"
+
 // pxUSE_SECURE_MALLOC - enables bounds checking on scoped malloc allocations.
 
 #ifndef pxUSE_SECURE_MALLOC
