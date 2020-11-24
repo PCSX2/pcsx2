@@ -46,13 +46,17 @@ jobs:
           - os: ubuntu-20.04
             platform: x86
             compiler: clang
+            # Need to disable PCH until cmake 3.17
+            # (PCH conflicts with ccache, fixed by https://gitlab.kitware.com/cmake/cmake/-/merge_requests/4400)
+            cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+            detail: -nopch
             experimental: false
           - os: ubuntu-20.04
             platform: x86
             compiler: gcc
             cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
             detail: -nopch
-            experimental: true
+            experimental: false
 
     name: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}${{ matrix.detail }}
     runs-on: ${{ matrix.os }}
