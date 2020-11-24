@@ -13,6 +13,13 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "cam-linux.h"
+#include "usb-eyetoy-webcam.h"
+#include "jpgd/jpgd.h"
+#include "jo_mpeg.h"
+#include "../gtk.h"
+#include "Utilities/Console.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,13 +34,6 @@
 #include <unistd.h>
 
 #include <linux/videodev2.h>
-
-#include "../gtk.h"
-
-#include "cam-linux.h"
-#include "usb-eyetoy-webcam.h"
-#include "jpgd/jpgd.h"
-#include "jo_mpeg.h"
 
 GtkWidget* new_combobox(const char* label, GtkWidget* vbox); // src/linux/config-gtk.cpp
 

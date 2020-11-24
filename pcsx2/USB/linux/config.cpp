@@ -13,12 +13,13 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "config.h"
+
 #include "../configuration.h"
 #include "../deviceproxy.h"
 #include "../usb-pad/padproxy.h"
 #include "../usb-mic/audiodeviceproxy.h"
-
-#include "config.h"
+#include "Utilities/Console.h"
 
 void SysMessage_stderr(const char* fmt, ...)
 {

@@ -14,13 +14,14 @@
  */
 
 #pragma once
+#include "../usb-hid.h"
 #include "../../linux/util.h"
+#include "Utilities/Console.h"
 #include <linux/input.h>
 #include <unistd.h>
 #include <dirent.h>
 #include <thread>
 #include <atomic>
-#include "../usb-hid.h"
 
 namespace usb_hid
 {

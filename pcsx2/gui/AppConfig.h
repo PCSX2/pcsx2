@@ -16,8 +16,14 @@
 #pragma once
 
 #include "AppForwardDefs.h"
+#include "Config.h"
 #include "PathDefs.h"
 #include "CDVD/CDVDaccess.h"
+#include "Utilities/General.h"
+#include "Utilities/Path.h"
+
+#include <wx/colour.h>
+#include <wx/gdicmn.h>
 #include <memory>
 
 enum DocsModeType

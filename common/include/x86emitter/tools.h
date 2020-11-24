@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "Utilities/Dependencies.h"
+
 enum x86VendorType {
     x86Vendor_Intel = 0,
     x86Vendor_AMD = 1,

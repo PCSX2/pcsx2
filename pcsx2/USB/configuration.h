@@ -15,11 +15,12 @@
 
 #pragma once
 
+#include "platcompat.h"
+#include <wx/string.h>
 #include <vector>
 #include <string>
 #include <map>
 #include <sstream>
-#include "platcompat.h"
 
 #define RESULT_CANCELED 0
 #define RESULT_OK 1
