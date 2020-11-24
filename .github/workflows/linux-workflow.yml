@@ -34,12 +34,27 @@ jobs:
       # Prevent one build from failing everything (although maybe those should be included as experimental builds instead)
       fail-fast: false
       matrix:
-        os: [ubuntu-20.04]
-        platform: [x86, x64]
-        compiler: [gcc, clang]
-        experimental: [false]
+        include:
+          - os: ubuntu-20.04
+            platform: x86
+            compiler: gcc
+            experimental: false
+          - os: ubuntu-20.04
+            platform: x64
+            compiler: gcc
+            experimental: false
+          - os: ubuntu-20.04
+            platform: x86
+            compiler: clang
+            experimental: false
+          - os: ubuntu-20.04
+            platform: x86
+            compiler: gcc
+            cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+            detail: -nopch
+            experimental: true
 
-    name: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}
+    name: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}${{ matrix.detail }}
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
@@ -84,9 +99,9 @@ jobs:
         uses: actions/cache@v2
         with:
           path: .ccache
-          key: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          key: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}${{ matrix.detail }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
           restore-keys: |
-            ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}-ccache-
+            ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}${{ matrix.detail }}-ccache-
 
       - name: Install Packages
         env:
@@ -98,6 +113,7 @@ jobs:
         env:
           PLATFORM: ${{ matrix.platform }}
           COMPILER: ${{ matrix.compiler }}
+          ADDITIONAL_CMAKE_ARGS: ${{ matrix.cmakeflags }}
         run: ./.github/workflows/scripts/linux/generate-cmake.sh
 
       - name: Build PCSX2
