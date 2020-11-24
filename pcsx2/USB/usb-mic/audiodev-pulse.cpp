@@ -765,7 +765,7 @@ namespace usb_mic
 
 			while (padev->mInBuffer.peek_read() > 0)
 			{
-				data.data_in = (const float*)padev->mInBuffer.front();
+				data.data_in = (float*)padev->mInBuffer.front();
 				data.input_frames = padev->mInBuffer.peek_read<float>() / padev->GetChannels();
 				data.data_out = pBegin;
 				data.output_frames = (pEnd - pBegin) / padev->GetChannels();
