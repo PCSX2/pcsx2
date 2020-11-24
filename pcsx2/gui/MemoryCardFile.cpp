@@ -99,28 +99,22 @@ bool ConvertNoECCtoRAW(wxString file_in, wxString file_out)
 		wxFFile fout(file_out, "wb");
 
 		if (fout.IsOpened()) {
+			u8 buffer[512];
 			size_t size = fin.Length();
-			u8* buffer = (u8*)malloc(size);
 
-			if (buffer) {
-				u8 empty[4] = { 0 };
-				fin.Read(buffer, size);
+			for (size_t i = 0; i < (size / 512); i++) {
+				fin.Read(buffer, 512);
+				fout.Write(buffer, 512);
 
-				for (size_t i = 0; i < (size / 512); i++) {
-					u8* buf = &buffer[i * 512];
-					fout.Write(buf, 512);
-
-					for (int j = 0; j < 4; j++) {
-						u32 checksum = CalculateECC(&buf[j * 128]);
-						fout.Write(&checksum, 3);
-					}
-
-					fout.Write(empty, 4);
+				for (int j = 0; j < 4; j++) {
+					u32 checksum = CalculateECC(&buffer[j * 128]);
+					fout.Write(&checksum, 3);
 				}
 
-				result = true;
-				free(buffer);
+				fout.Write("\0\0\0\0", 4);
 			}
+
+			result = true;
 		}
 	}
 
