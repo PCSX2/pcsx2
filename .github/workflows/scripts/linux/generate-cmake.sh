@@ -17,6 +17,7 @@ echo "Additional CMake Args - ${ADDITIONAL_CMAKE_ARGS}"
 
 # Generate CMake into ./build
 cmake \
+-D CMAKE_CXX_COMPILER_LAUNCHER=ccache \
 -D CMAKE_BUILD_TYPE=Release \
 -D BUILD_REPLAY_LOADERS=TRUE \
 -D CMAKE_BUILD_PO=FALSE \
