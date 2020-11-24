@@ -25,7 +25,6 @@
 #include "../shared/inifile_usb.h"
 
 HINSTANCE hInstUSB;
-extern bool configChanged;
 
 void SysMessageA(const char* fmt, ...)
 {
@@ -223,7 +222,6 @@ BOOL CALLBACK ConfigureDlgProcUSB(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lPar
 							SaveConfig();
 							CreateDevices();
 							EndDialog(hW, RESULT_OK);
-							configChanged = true;
 							return TRUE;
 					}
 			}

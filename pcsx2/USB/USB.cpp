@@ -32,7 +32,6 @@
 
 OHCIState* qemu_ohci = NULL;
 USBDevice* usb_device[2] = {NULL};
-bool configChanged = false;
 static bool usb_opened = false;
 
 Config conf;
@@ -283,9 +282,8 @@ s32 USBopen(void* pDsp)
 		Console.WriteLn(Color_Red, "USB: %s", e.what());
 	}
 
-	if (configChanged || (!usb_device[0] && !usb_device[1]))
+	if (!usb_device[0] && !usb_device[1])
 	{
-		configChanged = false;
 		CreateDevices(); //TODO Pass pDsp to init?
 	}
 
@@ -353,7 +351,7 @@ s32 USBfreeze(int mode, freezeData* data)
 	{
 		if ((long unsigned int)data->size < sizeof(USBfreezeData))
 		{
-			Console.WriteLn(Color_Red, "USB: Unable to load freeze data! Got %d bytes, expected >= %zu.\n", data->size, sizeof(USBfreezeData));
+			Console.WriteLn(Color_Red, "USB: Unable to load freeze data! Got %d bytes, expected >= %zu.", data->size, sizeof(USBfreezeData));
 			return -1;
 		}
 
@@ -362,12 +360,10 @@ s32 USBfreeze(int mode, freezeData* data)
 
 		if (strcmp(usbd.freezeID, USBfreezeID) != 0)
 		{
-			Console.WriteLn(Color_Red, "USB: Unable to load freeze data! Found ID %s, expected ID %s.\n", usbd.freezeID, USBfreezeID);
+			Console.WriteLn(Color_Red, "USB: Unable to load freeze data! Found ID %s, expected ID %s.", usbd.freezeID, USBfreezeID);
 			return -1;
 		}
 
-		s8* ptr = data->data + sizeof(USBfreezeData);
-		// Load the state of the attached devices
 		if ((long unsigned int)data->size < sizeof(USBfreezeData) + usbd.device[0].size + usbd.device[1].size + 8192)
 			return -1;
 
@@ -390,6 +386,7 @@ s32 USBfreeze(int mode, freezeData* data)
 		// restore USBPacket for OHCIState
 		usb_packet_init(&qemu_ohci->usb_packet);
 
+		s8* ptr = data->data + sizeof(USBfreezeData);
 		RegisterDevice& regInst = RegisterDevice::instance();
 		for (int i = 0; i < 2; i++)
 		{
@@ -418,7 +415,7 @@ s32 USBfreeze(int mode, freezeData* data)
 			{
 				if (proxy->Freeze(FREEZE_SIZE, usb_device[i], nullptr) != (s32)usbd.device[i].size)
 				{
-					Console.WriteLn(Color_Red, "USB: Port %d: device's freeze size doesn't match.\n", 1 + (1 - i));
+					Console.WriteLn(Color_Red, "USB: Port %d: device's freeze size doesn't match.", i);
 					return -1;
 				}
 

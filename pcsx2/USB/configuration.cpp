@@ -174,8 +174,12 @@ void SaveConfig()
 
 void LoadConfig()
 {
-
 	USBsetSettingsDir();
+
+	static bool loaded = false;
+	if (loaded)
+		return;
+	loaded = true;
 
 #ifdef _WIN32
 	ciniFile.Load(IniPath);
