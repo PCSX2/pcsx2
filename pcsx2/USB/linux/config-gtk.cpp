@@ -31,9 +31,6 @@
 #include "config.h"
 #include "../USB.h"
 
-// src/USB.cpp
-extern bool configChanged;
-
 struct SettingsCB
 {
 	int player;
@@ -311,7 +308,7 @@ void USBconfigure()
 	if (result == GTK_RESPONSE_OK)
 	{
 		SaveConfig();
-		configChanged = true;
+		CreateDevices();
 	}
 	//	ClearAPIs();
 	paused_core.AllowResume();
