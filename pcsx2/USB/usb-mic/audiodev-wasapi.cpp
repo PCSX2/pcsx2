@@ -649,6 +649,7 @@ namespace usb_mic
 				samples_to_read -= samples;
 			}
 
+			resMutex = ReleaseMutex(mMutex);
 			return (outFrames - (samples_to_read / mDeviceChannels));
 		}
 
