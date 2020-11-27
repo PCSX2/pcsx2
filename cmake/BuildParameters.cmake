@@ -286,13 +286,17 @@ endif()
 # -Wno-unused-value: lots of warning for this kind of statements "0 && ...". There are used to disable some parts of code in release/dev build.
 # -Wno-overloaded-virtual: Gives a fair number of warnings under clang over in the wxwidget gui section of the code.
 # -Wno-deprecated-declarations: The USB plugins dialogs are written in straight gtk 2, which gives a million deprecated warnings. Suppress them until we can deal with them.
-# -Wno-format: Yeah, these need to be taken care of, but...
+# -Wno-format*: Yeah, these need to be taken care of, but...
 # -Wno-stringop-truncation: Who comes up with these compiler warnings, anyways?
 # -Wno-stringop-overflow: Probably the same people as this one...
 
-set(DEFAULT_WARNINGS "-Wall -Wextra -Wno-attributes -Wno-unused-function -Wno-unused-parameter -Wno-missing-field-initializers -Wno-overloaded-virtual -Wno-deprecated-declarations -Wno-format")
+set(DEFAULT_WARNINGS "-Wall -Wextra -Wno-attributes -Wno-unused-function -Wno-unused-parameter -Wno-missing-field-initializers -Wno-deprecated-declarations -Wno-format -Wno-format-security -Wno-overloaded-virtual")
 if (NOT USE_ICC)
     set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS} -Wno-unused-value ")
+endif()
+
+if (USE_CLANG)
+    set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS} -Wno-overloaded-virtual ")
 endif()
 
 if (USE_GCC)
