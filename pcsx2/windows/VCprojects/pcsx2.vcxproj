@@ -883,6 +883,9 @@
     <ProjectReference Include="..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_core.vcxproj">
       <Project>{6744dad8-9c70-574a-bff2-9f8dddb24a75}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\..\..\3rdparty\yaml-cpp\yaml.vcxproj">
+      <Project>{48329442-e41b-4a1f-8364-36eee1b71343}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\zlib\zlib.vcxproj">
       <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
