@@ -40,7 +40,7 @@
     </ItemGroup>
     <Delete Files="@(CruftToDelete)" />
   </Target>
-  <Target Name="InternalBuild" AfterTargets="DebugAll;DevelAll;ReleaseAll;AppVeyor">
+  <Target Name="InternalBuild" AfterTargets="DebugAll;DevelAll;ReleaseAll">
     <MSBuild Projects="@(SolutionSet)" BuildInParallel="false" Properties="Configuration=$(BaseConfiguration)" Targets="Clean" />
     <MSBuild Projects="@(ProjectSetCPU)" BuildInParallel="false" Properties="Configuration=%(ConfigCPU.Identity)" Targets="Clean" />
     <CallTarget Targets="CleanCruft" />
@@ -71,14 +71,6 @@
     </PropertyGroup>
     <ItemGroup>
       <ConfigCPU Include="Release AVX2;Release SSE4"/>
-    </ItemGroup>
-  </Target>
-  <Target Name="AppVeyor">
-    <PropertyGroup>
-      <BaseConfiguration>Release</BaseConfiguration>
-    </PropertyGroup>
-    <ItemGroup>
-      <ConfigCPU Include="Release AVX2"/>
     </ItemGroup>
   </Target>
 </Project>
