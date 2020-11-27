@@ -66,6 +66,7 @@ jobs:
             ./.git/modules/
             ./3rdparty/fmt
             ./3rdparty/xz
+            ./3rdparty/yaml-cpp
             ./3rdparty/gtest
 
       - name: Checkout Submodules
