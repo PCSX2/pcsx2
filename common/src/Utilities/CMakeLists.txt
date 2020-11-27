@@ -112,6 +112,7 @@ set(UtilitiesFinalSources
 set(UtilitiesFinalLibs
     ${LIBC_LIBRARIES} # Gold (new linux linker) does not get automatically dependency of dependency
 	${wxWidgets_LIBRARIES}
+	yaml-cpp
 )
 
 add_pcsx2_lib(${Output} "${UtilitiesFinalSources}" "${UtilitiesFinalLibs}" "${UtilitiesFinalFlags}")
