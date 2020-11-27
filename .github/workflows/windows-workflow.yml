@@ -14,8 +14,6 @@ on:
       - bin/PCSX2_keys.ini.default
       - "plugins/onepad/**"
       - "plugins/onepad_legacy/**"
-      - .travis.yml # TODO - remove with travis-ci
-      - appveyor.yml # TODO - remove with appveyor
   pull_request:
     branches:
       - master
@@ -27,8 +25,6 @@ on:
       - bin/PCSX2_keys.ini.default
       - "plugins/onepad/**"
       - "plugins/onepad_legacy/**"
-      - .travis.yml # TODO - remove with travis-ci
-      - appveyor.yml # TODO - remove with appveyor
 
 jobs:
   build:
