@@ -212,12 +212,14 @@ const char *const x86_regnames_gpr32[] =
         "e8", "e9", "e10", "e11",
         "e12", "e13", "e14", "e15"};
 
+#ifdef __M_X86_64
 const char *const x86_regnames_gpr64[] =
     {
         "rax", "rcx", "rdx", "rbx",
         "rsp", "rbp", "rsi", "rdi",
         "r8", "r9", "r10", "r11",
         "r12", "r13", "r14", "r15"};
+#endif
 
 const char *const x86_regnames_sse[] =
     {
@@ -421,7 +423,7 @@ void EmitSibMagic(const xRegisterBase &reg1, const xIndirectVoid &sib, int extra
 __emitinline static void EmitRex(bool w, bool r, bool x, bool b)
 {
 #ifdef __M_X86_64
-    u8 rex = 0x40 | (w << 3) | (r << 2) | (x << 1) | b;
+    const u8 rex = 0x40 | (w << 3) | (r << 2) | (x << 1) | (u8)b;
     if (rex != 0x40)
         xWrite8(rex);
 #endif
