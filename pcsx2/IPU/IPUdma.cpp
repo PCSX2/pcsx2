@@ -219,64 +219,57 @@ void IPU0dma()
 
 	pMem = dmaGetAddr(ipu0ch.madr, true);
 
-	readsize = std::min(ipu0ch.qwc, (u16)ipuRegs.ctrl.OFC);
+	readsize = std::min(ipu0ch.qwc, (u32)ipuRegs.ctrl.OFC);
 	ipu_fifo.out.read(pMem, readsize);
 
 	ipu0ch.madr += readsize << 4;
-	ipu0ch.qwc -= readsize; // note: qwc is u16
-
+	ipu0ch.qwc -= readsize;
 	
-		if (dmacRegs.ctrl.STS == STS_fromIPU && ipu0ch.qwc == 0)   // STS == fromIPU
+	if (dmacRegs.ctrl.STS == STS_fromIPU && ipu0ch.qwc == 0)   // STS == fromIPU
+	{
+		//DevCon.Warning("fromIPU Stall Control");
+		dmacRegs.stadr.ADDR = ipu0ch.madr;
+		switch (dmacRegs.ctrl.STD)
 		{
-			//DevCon.Warning("fromIPU Stall Control");
-			dmacRegs.stadr.ADDR = ipu0ch.madr;
-			switch (dmacRegs.ctrl.STD)
-			{
-				case NO_STD:
-					break;
-				case STD_GIF: // GIF
-					//DevCon.Warning("GIFSTALL");
-					g_nDMATransfer.GIFSTALL = true;
-					break;
-				case STD_VIF1: // VIF
-					//DevCon.Warning("VIFSTALL");
-					g_nDMATransfer.VIFSTALL = true;
-					break;
-				case STD_SIF1:
-				//	DevCon.Warning("SIFSTALL");
-					g_nDMATransfer.SIFSTALL = true;
-					break;
-			}
+			case NO_STD:
+				break;
+			case STD_GIF: // GIF
+				//DevCon.Warning("GIFSTALL");
+				g_nDMATransfer.GIFSTALL = true;
+				break;
+			case STD_VIF1: // VIF
+				//DevCon.Warning("VIFSTALL");
+				g_nDMATransfer.VIFSTALL = true;
+				break;
+			case STD_SIF1:
+			//	DevCon.Warning("SIFSTALL");
+				g_nDMATransfer.SIFSTALL = true;
+				break;
 		}
-		//Fixme ( voodoocycles ):
-		//This was IPU_INT_FROM(readsize*BIAS );
-		//This broke vids in Digital Devil Saga
-		//Note that interrupting based on totalsize is just guessing..
+	}
+	//Fixme ( voodoocycles ):
+	//This was IPU_INT_FROM(readsize*BIAS );
+	//This broke vids in Digital Devil Saga
+	//Note that interrupting based on totalsize is just guessing..
 	
 	IPU_INT_FROM( readsize * BIAS );
-	if(ipuRegs.ctrl.IFC > 0) IPUProcessInterrupt();
+	if (ipuRegs.ctrl.IFC > 0) { IPUProcessInterrupt(); }
 
 	//return readsize;
 }
 
 __fi void dmaIPU0() // fromIPU
 {
-	if (ipu0ch.pad != 0)
-	{
-		// Note: pad is the padding right above qwc, so we're testing whether qwc
-		// has overflowed into pad.
-	    DevCon.Warning(L"IPU0dma's upper 16 bits set to %x", ipu0ch.pad);
-		ipu0ch.qwc = ipu0ch.pad = 0;
-		//If we are going to clear down IPU0, we should end it too. Going to test this scenario on the PS2 mind - Refraction
-		ipu0ch.chcr.STR = false;
-		hwDmacIrq(DMAC_FROM_IPU);
-	}
 	//if (dmacRegs.ctrl.STS == STS_fromIPU) DevCon.Warning("DMA Stall enabled on IPU0");
 
 	if (dmacRegs.ctrl.STS == STS_fromIPU)   // STS == fromIPU - Initial settings
 		dmacRegs.stadr.ADDR = ipu0ch.madr;
 
-	IPU_INT_FROM( 64 );
+	// Note: This should probably be a very small value, however anything lower than this will break Mana Khemia
+	// This is because the game sends bad DMA information, starts an IDEC, then sets it to the correct values
+	// but because our IPU is too quick, it messes up the sync between the DMA and IPU.
+	// So this will do until (if) we sort the timing out of IPU, shouldn't cause any problems for games for now.
+	IPU_INT_FROM( 160 );
 
 
 	
@@ -285,31 +278,6 @@ __fi void dmaIPU0() // fromIPU
 __fi void dmaIPU1() // toIPU
 {
 	IPU_LOG("IPU1DMAStart QWC %x, MADR %x, CHCR %x, TADR %x", ipu1ch.qwc, ipu1ch.madr, ipu1ch.chcr._u32, ipu1ch.tadr);
-
-	if (ipu1ch.pad != 0)
-	{
-		// Note: pad is the padding right above qwc, so we're testing whether qwc
-		// has overflowed into pad.
-	    DevCon.Warning(L"IPU1dma's upper 16 bits set to %x\n", ipu1ch.pad);
-		ipu1ch.qwc = ipu1ch.pad = 0;
-		// If we are going to clear down IPU1, we should end it too.
-		// Going to test this scenario on the PS2 mind - Refraction
-		ipu1ch.chcr.STR = false;
-		hwDmacIrq(DMAC_TO_IPU);
-	}
-
-	if (ipu1ch.chcr.MOD == NORMAL_MODE && ipu1ch.qwc == 0) //avoids freeze when IPU1 Normal error is triggered
-	{
-		/*ipu1ch.chcr.STR = false;
-		// Hack to force stop IPU
-		ipuRegs.cmd.BUSY = 0;
-		ipuRegs.ctrl.BUSY = 0;
-		ipuRegs.topbusy = 0;
-		//
-		hwDmacIrq(DMAC_TO_IPU);*/
-		IPU_LOG("IPU1 Normal error fix");
-		ipu1ch.qwc = 1;
-	}
 
 	if (ipu1ch.chcr.MOD == CHAIN_MODE)  //Chain Mode
 	{

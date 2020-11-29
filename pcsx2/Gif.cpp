@@ -392,7 +392,7 @@ void GIFdma()
 			if (ptag == NULL) return;
 			//DevCon.Warning("GIF Reading Tag MSK = %x", vif1Regs.mskpath3);
 			GIF_LOG("gifdmaChain %8.8x_%8.8x size=%d, id=%d, addr=%lx tadr=%lx", ptag[1]._u32, ptag[0]._u32, gifch.qwc, ptag->ID, gifch.madr, gifch.tadr);
-			if (!CHECK_GIFFIFOHACK)gifRegs.stat.FQC = std::min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
+			if (!CHECK_GIFFIFOHACK)gifRegs.stat.FQC = std::min((u32)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
 			if (dmacRegs.ctrl.STD == STD_GIF)
 			{
 				// there are still bugs, need to also check if gifch.madr +16*qwc >= stadr, if not, stall
@@ -420,7 +420,7 @@ void GIFdma()
 
 
 		if (!CHECK_GIFFIFOHACK) {
-			gifRegs.stat.FQC = std::min((u16)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
+			gifRegs.stat.FQC = std::min((u32)0x10, gifch.qwc);// FQC=31, hack ;) (for values of 31 that equal 16) [ used to be 0xE00; // APATH=3]
 			clearFIFOstuff(true);
 		}
 
@@ -470,7 +470,7 @@ void dmaGIF()
 	gifInterrupt();
 }
 
-static u16 QWCinGIFMFIFO(u32 DrainADDR)
+static u32 QWCinGIFMFIFO(u32 DrainADDR)
 {
 	u32 ret;
 
@@ -495,7 +495,7 @@ static u16 QWCinGIFMFIFO(u32 DrainADDR)
 
 static __fi bool mfifoGIFrbTransfer()
 {
-	u16 qwc = std::min(QWCinGIFMFIFO(gifch.madr), gifch.qwc);
+	u32 qwc = std::min(QWCinGIFMFIFO(gifch.madr), gifch.qwc);
 	if (qwc == 0) {
 		DevCon.Warning("GIF FIFO EMPTY before transfer (how?)");
 	}
