@@ -24,7 +24,7 @@ static u32 qwctag(u32 mask)
 	return (dmacRegs.rbor.ADDR + (mask & dmacRegs.rbsr.RMSK));
 }
 
-static u16 QWCinVIFMFIFO(u32 DrainADDR, u16 qwc)
+static u32 QWCinVIFMFIFO(u32 DrainADDR, u32 qwc)
 {
 	u32 ret;
 	
@@ -49,7 +49,7 @@ static u16 QWCinVIFMFIFO(u32 DrainADDR, u16 qwc)
 static __fi bool mfifoVIF1rbTransfer()
 {
 	u32 msize = dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16;
-	u16 mfifoqwc = std::min(QWCinVIFMFIFO(vif1ch.madr, vif1ch.qwc), vif1ch.qwc);
+	u32 mfifoqwc = std::min(QWCinVIFMFIFO(vif1ch.madr, vif1ch.qwc), vif1ch.qwc);
 	u32 *src;
 	bool ret;
 	
@@ -318,7 +318,7 @@ void vifMFIFOInterrupt()
 		if (vif1Regs.stat.test(VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS)) {
 			//vif1Regs.stat.FQC = 0; // FQC=0
 			//vif1ch.chcr.STR = false;
-			vif1Regs.stat.FQC = std::min((u16)0x10, vif1ch.qwc);
+			vif1Regs.stat.FQC = std::min((u32)0x10, vif1ch.qwc);
 			VIF_LOG("VIF1 MFIFO Stalled qwc = %x done = %x inprogress = %x", vif1ch.qwc, vif1.done, vif1.inprogress & 0x10);
 			//Used to check if the MFIFO was empty, there's really no need if it's finished what it needed.
 			if((vif1ch.qwc > 0 || !vif1.done)) {
@@ -347,7 +347,7 @@ void vifMFIFOInterrupt()
 		switch(vif1.inprogress & 1) {
 			case 0: //Set up transfer
 				mfifoVIF1transfer();
-				vif1Regs.stat.FQC = std::min((u16)0x10, vif1ch.qwc);
+				vif1Regs.stat.FQC = std::min((u32)0x10, vif1ch.qwc);
 				[[fallthrough]];
 
 			case 1: //Transfer data
@@ -357,7 +357,7 @@ void vifMFIFOInterrupt()
 				if(!(vif1Regs.stat.VGW && gifUnit.gifPath[GIF_PATH_3].state != GIF_PATH_IDLE)) //If we're waiting on GIF, stop looping, (can be over 1000 loops!)
 					CPU_INT(DMAC_MFIFO_VIF, (g_vif1Cycles == 0 ? 4 : g_vif1Cycles) );	
 
-				vif1Regs.stat.FQC = std::min((u16)0x10, vif1ch.qwc);
+				vif1Regs.stat.FQC = std::min((u32)0x10, vif1ch.qwc);
 				return;
 		}
 		return;
@@ -372,7 +372,7 @@ void vifMFIFOInterrupt()
 	}
 
 	g_vif1Cycles = 0;
-	vif1Regs.stat.FQC = std::min((u16)0x10, vif1ch.qwc);
+	vif1Regs.stat.FQC = std::min((u32)0x10, vif1ch.qwc);
 	vif1ch.chcr.STR = false;
 	hwDmacIrq(DMAC_VIF1);
 	DMA_LOG("VIF1 MFIFO DMA End");

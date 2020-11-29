@@ -161,8 +161,7 @@ union tDMA_SADR {
 
 union tDMA_QWC {
 	struct {
-		u16 QWC;
-		u16 _unused;
+		u32 QWC;
 	};
 	u32 _u32;
 
@@ -178,7 +177,7 @@ struct DMACh {
 	u32 _null0[3];
 	u32 madr;
 	u32 _null1[3];
-	u16 qwc; u16 pad;
+	u32 qwc;
 	u32 _null2[3];
 	u32 tadr;
 	u32 _null3[3];
