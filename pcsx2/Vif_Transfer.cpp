@@ -90,6 +90,7 @@ _vifT static __fi bool vifTransfer(u32 *data, int size, bool TTE) {
 	if (!TTE) // *WARNING* - Tags CAN have interrupts! so lets just ignore the dma modifying stuffs (GT4)
 	{
 		transferred  = transferred >> 2;
+		transferred = std::min((int)vifXch.qwc, transferred);
 		vifXch.madr +=(transferred << 4);
 		vifXch.qwc  -= transferred;
 
