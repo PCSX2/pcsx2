@@ -57,7 +57,6 @@ float VolumeAdjustBR;
 float VolumeAdjustSL;
 float VolumeAdjustSR;
 float VolumeAdjustLFE;
-unsigned int delayCycles;
 
 bool postprocess_filter_enabled = true;
 bool postprocess_filter_dealias = false;
@@ -109,7 +108,6 @@ void ReadSettings()
 	VolumeAdjustSL = powf(10, VolumeAdjustSLdb / 10);
 	VolumeAdjustSR = powf(10, VolumeAdjustSRdb / 10);
 	VolumeAdjustLFE = powf(10, VolumeAdjustLFEdb / 10);
-	delayCycles = CfgReadInt(L"DEBUG", L"DelayCycles", 4);
 
 	wxString temp;
 
@@ -207,7 +205,6 @@ void WriteSettings()
 	CfgWriteInt(L"OUTPUT", L"Latency", SndOutLatencyMS);
 	CfgWriteInt(L"OUTPUT", L"Synch_Mode", SynchMode);
 	CfgWriteInt(L"OUTPUT", L"SpeakerConfiguration", numSpeakers);
-	CfgWriteInt(L"DEBUG", L"DelayCycles", delayCycles);
 
 #ifdef SPU2X_PORTAUDIO
 	PortaudioOut->WriteSettings();

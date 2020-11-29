@@ -189,7 +189,6 @@ struct V_Voice
 	s32 SCurrent;
 
 	// it takes a few ticks for voices to start on the real SPU2?
-	void QueueStart();
 	bool Start();
 	void Stop();
 };
