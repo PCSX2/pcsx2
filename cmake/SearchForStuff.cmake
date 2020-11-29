@@ -203,7 +203,6 @@ if(PULSEAUDIO_FOUND)
     include_directories(${PULSEAUDIO_INCLUDE_DIR})
 endif()
 
-
 if(LIBXML2_FOUND)
 	include_directories(${LIBXML2_INCLUDE_DIRS})
 endif()
