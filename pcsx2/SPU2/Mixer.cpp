@@ -850,7 +850,8 @@ __forceinline
 	spu2M_WriteFast(0xA00 + OutPos, Ext.Right);
 
 	WaveDump::WriteCore(0, CoreSrc_External, Ext);
-
+	Ext.Left <<= 1;
+	Ext.Right <<= 1;
 	Ext = ApplyVolume(Ext, Cores[1].ExtVol);
 	StereoOut32 Out(Cores[1].Mix(VoiceData[1], InputData[1], Ext));
 
