@@ -48,6 +48,10 @@ if(PORTAUDIO_FOUND)
     set(pcsx2FinalFlags ${pcsx2FinalFlags} -DSPU2X_PORTAUDIO)
 endif()
 
+if(PULSEAUDIO_FOUND)
+    set(pcsx2FinalFlags ${pcsx2FinalFlags} -DSPU2X_PULSEAUDIO)
+endif()
+
 if(XDG_STD)
     set(pcsx2FinalFlags ${pcsx2FinalFlags} -DXDG_STD)
 endif()
@@ -370,7 +374,6 @@ set(pcsx2USBSources
 	USB/linux/config-gtk.cpp
 	USB/linux/util.cpp
 	USB/qemu-usb/input-keymap-linux-to-qcode.cpp
-	USB/usb-mic/audiodev-pulse.cpp
 	USB/usb-pad/api_init_linux.cpp
 	USB/usb-eyetoy/api_init_linux.cpp
 	USB/usb-hid/api_init_linux.cpp
@@ -432,9 +435,12 @@ set(pcsx2USBHeaders
 	USB/usb-hid/evdev/evdev.cpp
 	USB/usb-eyetoy/cam-linux.h
 	USB/qemu-usb/input-keymap-linux-to-qcode.h
-	USB/usb-mic/audiodev-pulse.h
     )
 
+if(PULSEAUDIO_FOUND)
+    set(pcsx2USBSources ${pcsx2USBSources} USB/usb-mic/audiodev-pulse.cpp)
+    set(pcsx2USBHeaders ${pcsx2USBHeaders} USB/usb-mic/audiodev-pulse.h)
+endif()
 
 # DebugTools sources
 set(pcsx2DebugToolsSources
@@ -944,13 +950,16 @@ set(pcsx2FinalLibs
     ${SDL2_LIBRARIES}
     ${PCAP_LIBRARY}
     ${LIBSAMPLERATE_LIBRARIES}
-    ${PULSEAUDIO_LIBRARIES}
     ${LIBXML2_LIBRARIES}
     ${Platform_Libs}
 )
 
 if(PORTAUDIO_FOUND)
     set(pcsx2FinalLibs ${pcsx2FinalLibs} ${PORTAUDIO_LIBRARIES})
+endif()
+
+if(PULSEAUDIO_FOUND)
+    set(pcsx2FinalLibs ${pcsx2FinalLibs} ${PULSEAUDIO_LIBRARIES})
 endif()
 
 if(BUILTIN_GS)
