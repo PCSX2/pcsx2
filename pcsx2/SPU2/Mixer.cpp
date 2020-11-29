@@ -861,8 +861,8 @@ __forceinline
 	}
 	else
 	{
-		Out.Left = MulShr32(Out.Left << (SndOutVolumeShift + 1), Cores[1].MasterVol.Left.Value);
-		Out.Right = MulShr32(Out.Right << (SndOutVolumeShift + 1), Cores[1].MasterVol.Right.Value);
+		Out.Left = MulShr32(Out.Left << SndOutVolumeShift, Cores[1].MasterVol.Left.Value);
+		Out.Right = MulShr32(Out.Right << SndOutVolumeShift, Cores[1].MasterVol.Right.Value);
 
 #ifdef DEBUG_KEYS
 		if (postprocess_filter_enabled)
