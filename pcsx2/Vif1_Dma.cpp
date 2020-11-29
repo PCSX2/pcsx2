@@ -436,6 +436,7 @@ void dmaVIF1()
 	        vif1ch.tadr, vif1ch.asr0, vif1ch.asr1);
 
 	g_vif1Cycles = 0;
+	vif1.inprogress = 0;
 
 	if (vif1ch.qwc > 0)   // Normal Mode
 	{

@@ -105,8 +105,6 @@ void __fastcall WriteFIFO_VIF1(const mem128_t *value)
 		DevCon.Warning("Offset on VIF1 FIFO start!");
 	}
 
-	vif1ch.qwc += 1;
-
 	bool ret = VIF1transfer((u32*)value, 4);
 
 	if (vif1.cmd) {

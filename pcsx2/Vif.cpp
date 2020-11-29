@@ -158,28 +158,21 @@ __fi void vif1FBRST(u32 value) {
 		SaveCol._u64[1] = vif1.MaskCol._u64[1];
 		SaveRow._u64[0] = vif1.MaskRow._u64[0];
 		SaveRow._u64[1] = vif1.MaskRow._u64[1];
+		u8 mfifo_empty = vif1.inprogress & 0x10;
 		memzero(vif1);
 		vif1.MaskCol._u64[0] = SaveCol._u64[0];
 		vif1.MaskCol._u64[1] = SaveCol._u64[1];
 		vif1.MaskRow._u64[0] = SaveRow._u64[0];
 		vif1.MaskRow._u64[1] = SaveRow._u64[1];
-		cpuRegs.interrupt &= ~((1 << 1) | (1 << 10)); //Stop all vif1 DMA's
-		///vif1ch.qwc -= std::min((int)vif1ch.qwc, 16); //not sure if the dma should stop, FFWDing could be tricky
-		vif1ch.qwc = 0;
 
-		psHu64(VIF1_FIFO) = 0;
-		psHu64(VIF1_FIFO + 8) = 0;
-		vif1.done = true;
-		vif1ch.chcr.STR = false;
 
 		GUNIT_WARN(Color_Red, "VIF FBRST Reset MSK = %x", vif1Regs.mskpath3);
 		vif1Regs.mskpath3 = false;
 		gifRegs.stat.M3P  = 0;
 		vif1Regs.err.reset();
-		vif1.inprogress = 0;
+		vif1.inprogress = mfifo_empty;
 		vif1.cmd = 0;
 		vif1.vifstalled.enabled = false;
-		vif1.irqoffset.enabled = false;
 		vif1Regs.stat._u32 = 0;
 	}
 
