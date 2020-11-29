@@ -427,6 +427,9 @@ __forceinline void TimeUpdate(u32 cClocks)
 			Cores[0].DMAICounter -= TickInterval;
 			if (Cores[0].DMAICounter <= 0)
 			{
+				if (Cores[0].IsDMARead)
+					Cores[0].FinishDMAread();
+
 				//ConLog("counter set and callback!\n");
 				Cores[0].MADR = Cores[0].TADR;
 				Cores[0].DMAICounter = 0;
@@ -447,6 +450,9 @@ __forceinline void TimeUpdate(u32 cClocks)
 			Cores[1].DMAICounter -= TickInterval;
 			if (Cores[1].DMAICounter <= 0)
 			{
+				if (Cores[1].IsDMARead)
+					Cores[1].FinishDMAread();
+
 				Cores[1].MADR = Cores[1].TADR;
 				Cores[1].DMAICounter = 0;
 				//ConLog( "* SPU2 > DMA 7 Callback!  %d\n", Cycles );
