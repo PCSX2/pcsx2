@@ -286,10 +286,13 @@ static s32 __forceinline GetNoiseValues()
 // Data is expected to be 16 bit signed (typical stuff!).
 // volume is expected to be 32 bit signed (31 bits with reverse phase)
 // Data is shifted up by 1 bit to give the output an effective 16 bit range.
+
+// Refraction 2020: I don't know what was being smoked at the time but the input data IS 16 bits
+// It's supposed to be signed to get to the negative part of the wave, but it's still already 16 bit
 static __forceinline s32 ApplyVolume(s32 data, s32 volume)
 {
 	//return (volume * data) >> 15;
-	return MulShr32(data << 1, volume);
+	return MulShr32(data, volume);
 }
 
 static __forceinline StereoOut32 ApplyVolume(const StereoOut32& data, const V_VolumeLR& volume)
