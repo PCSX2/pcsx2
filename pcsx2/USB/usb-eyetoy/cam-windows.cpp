@@ -64,8 +64,8 @@ namespace usb_eyetoy
 			}
 
 			IEnumMoniker* pEnum = 0;
-			hr = pCreateDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnum, NULL);
-			if (FAILED(hr))
+			hr = pCreateDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnum, 0);
+			if (hr != S_OK)
 			{
 				Console.Warning("You have no video capture hardware");
 				return devList;
@@ -148,8 +148,8 @@ namespace usb_eyetoy
 			}
 
 			IEnumMoniker* pEnum = 0;
-			hr = pCreateDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnum, NULL);
-			if (FAILED(hr))
+			hr = pCreateDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnum, 0);
+			if (hr != S_OK)
 			{
 				Console.Warning("You have no video capture hardware");
 				return -1;

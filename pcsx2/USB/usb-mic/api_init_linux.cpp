@@ -15,11 +15,15 @@
 
 #include "audiodeviceproxy.h"
 #include "audiodev-noop.h"
+#ifdef SPU2X_PULSEAUDIO
 #include "audiodev-pulse.h"
+#endif
 
 void usb_mic::RegisterAudioDevice::Register()
 {
 	auto& inst = RegisterAudioDevice::instance();
 	inst.Add(audiodev_noop::APINAME, new AudioDeviceProxy<audiodev_noop::NoopAudioDevice>());
+#ifdef SPU2X_PULSEAUDIO
 	inst.Add(audiodev_pulse::APINAME, new AudioDeviceProxy<audiodev_pulse::PulseAudioDevice>());
+#endif
 }

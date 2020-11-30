@@ -94,7 +94,7 @@ namespace usb_hid
 			if (!cfg)
 				return;
 
-			std::string& name = (cfg->devs.begin() + idx)->first;
+			//std::string& name = (cfg->devs.begin() + idx)->first;
 			cfg->iter = (cfg->devs.begin() + idx);
 
 			if (idx > 0)

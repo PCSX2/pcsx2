@@ -104,11 +104,11 @@ public:
 	}
 
 private:
+	size_t m_begin;
+	size_t m_end;
 	size_t m_capacity;
 	char* m_data;
-	size_t m_begin;
 	bool m_overrun;
-	size_t m_end;
 	hrc::time_point mLastWrite = hrc::time_point(ns(0));
 };
 

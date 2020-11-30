@@ -13,6 +13,13 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "cam-linux.h"
+#include "usb-eyetoy-webcam.h"
+#include "jpgd/jpgd.h"
+#include "jo_mpeg.h"
+#include "../gtk.h"
+#include "Utilities/Console.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,13 +34,6 @@
 #include <unistd.h>
 
 #include <linux/videodev2.h>
-
-#include "../gtk.h"
-
-#include "cam-linux.h"
-#include "usb-eyetoy-webcam.h"
-#include "jpgd/jpgd.h"
-#include "jo_mpeg.h"
 
 GtkWidget* new_combobox(const char* label, GtkWidget* vbox); // src/linux/config-gtk.cpp
 
@@ -477,7 +477,7 @@ namespace usb_eyetoy
 		{
 			mpeg_mutex.lock();
 			int len2 = mpeg_buffer.length;
-			if (len < mpeg_buffer.length)
+			if (len < (int)mpeg_buffer.length)
 				len2 = len;
 			memcpy(buf, mpeg_buffer.start, len2);
 			mpeg_mutex.unlock();
@@ -513,7 +513,7 @@ namespace usb_eyetoy
 
 			std::vector<std::string> devList = getDevList();
 			int sel_idx = 0;
-			for (auto idx = 0; idx < devList.size(); idx++)
+			for (uint32_t idx = 0; idx < (uint32_t)devList.size(); idx++)
 			{
 				gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rs_cb), devList.at(idx).c_str());
 				if (!selectedDevice.empty() && selectedDevice == devList.at(idx))

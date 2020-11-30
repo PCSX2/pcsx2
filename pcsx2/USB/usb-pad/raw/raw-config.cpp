@@ -15,7 +15,9 @@
 
 #include "PrecompiledHeader.h"
 
+#if !defined(_WIN32_WINNT)
 #define _WIN32_WINNT 0x0502
+#endif
 #include <stdio.h>
 #include <windows.h>
 #include <windowsx.h>
@@ -299,14 +301,21 @@ namespace usb_pad
 
 				if (usbHandle == INVALID_HANDLE_VALUE)
 				{
-					Console.Warning("Could not open device %i\n", i);
+					Console.Warning("Could not open device %i", i);
 					free(didData);
 					i++;
 					continue;
 				}
 
 				HidD_GetAttributes(usbHandle, &attr);
-				HidD_GetPreparsedData(usbHandle, &pPreparsedData);
+				if (!HidD_GetPreparsedData(usbHandle, &pPreparsedData))
+				{
+					Console.Warning("Could not get preparsed data from %04x:%04x", attr.VendorID, attr.ProductID);
+					free(didData);
+					i++;
+					continue;
+				}
+
 				HidP_GetCaps(pPreparsedData, &caps);
 
 				if (caps.UsagePage == HID_USAGE_PAGE_GENERIC &&

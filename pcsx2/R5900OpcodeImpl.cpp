@@ -23,6 +23,7 @@
 #include "R5900OpcodeTables.h"
 #include "R5900Exceptions.h"
 #include "GS.h"
+#include "CDVD/CDVD.h"
 
 GS_VideoMode gsVideoMode = GS_VideoMode::Uninitialized;
 bool gsIsInterlaced = false;
@@ -131,7 +132,7 @@ const char * const R5900::bios[256]=
 	"KSeg0",				"EnableCache",	"DisableCache",			"GetCop0",
 	"FlushCache",			"RFU101",		"CpuConfig",			"iGetCop0",
 	"iFlushCache",			"RFU105",		"iCpuConfig", 			"sceSifStopDma",
-	"SetCPUTimerHandler",	"SetCPUTimer",	"SetOsdConfigParam2",	"SetOsdConfigParam2",
+	"SetCPUTimerHandler",	"SetCPUTimer",	"SetOsdConfigParam2",	"GetOsdConfigParam2",
 //0x70
 	"GsGetIMR_iGsGetIMR",				"GsGetIMR_iGsPutIMR",	"SetPgifHandler", 				"SetVSyncFlag",
 	"RFU116",							"print", 				"sceSifDmaStat_isceSifDmaStat", "sceSifSetDma_isceSifSetDma",
@@ -942,7 +943,41 @@ void SYSCALL()
 					DevCon.Warning("Set GS CRTC configuration. %s %s (%s)",mode.c_str(), inter, field);
 				}
 				break;
+		case Syscall::GetOsdConfigParam:
+			if(g_SkipBiosHack)
+			{
+				u32 memaddr = cpuRegs.GPR.n.a0.UL[0];
+				u8 params[16];
+			
+				cdvdReadLanguageParams(params);
 
+				u32 osdconf = 0;
+				u32 timezone = params[4] | ((u32)(params[3] & 0x7) << 8);
+
+				osdconf |= params[1] & 0x1F;						// SPDIF, Screen mode, RGB/Comp, Jap/Eng Switch (Early bios)
+				osdconf |= (u32)params[0] << 5;						// PS1 Mode Settings
+				osdconf |= (u32)((params[2] & 0xE0) >> 5) << 13;	// OSD Ver (Not sure but best guess)
+				osdconf |= (u32)(params[2] & 0x1F) << 16;			// Language
+				osdconf |= timezone << 21;							// Timezone
+
+				memWrite32(memaddr, osdconf);
+				return;
+			}
+			break;
+		case Syscall::GetOsdConfigParam2:
+			if (g_SkipBiosHack)
+			{
+				u32 memaddr = cpuRegs.GPR.n.a0.UL[0];
+				u8 params[16];
+
+				cdvdReadLanguageParams(params);
+
+				u32 osdconf2 = (u32)((params[3] & 0x78) << 1);  // Daylight Savings, 24hr clock, Date format
+
+				memWrite32(memaddr, osdconf2);
+				return;
+			}
+			break;
 		case Syscall::SetVTLBRefillHandler:
 			DevCon.Warning("A tlb refill handler is set. New handler %x", (u32*)PSM(cpuRegs.GPR.n.a1.UL[0]));
 			break;

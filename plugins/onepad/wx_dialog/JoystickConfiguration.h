@@ -41,7 +41,6 @@ class JoystickConfiguration : public wxDialog
     wxCheckBox *m_cb_reverse_Lx, *m_cb_reverse_Ly, *m_cb_reverse_Rx, *m_cb_reverse_Ry,
         *m_cb_mouse_Ljoy, // Use mouse for left joystick
         *m_cb_mouse_Rjoy; // Use mouse for right joystick
-    wxButton *m_bt_ok, *m_bt_cancel;
 
     u32 m_pad_id;
     // isForLeftJoystick -> true is for Left Joystick, false is for Right Joystick

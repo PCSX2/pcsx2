@@ -109,7 +109,6 @@ oprofile_data/
 /pcsx2/gui/Resources/*.h
 !/pcsx2/gui/Resources/EmbeddedImage.h
 /plugins/GSdx/Template
-/plugins/USBqemu/Win32/bin
 /tools/bin
 .vs
 

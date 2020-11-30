@@ -61,6 +61,7 @@ enum patch_data_type {
 // PCSX2 currently supports the following values:
 // 0 - apply the patch line once on game boot/startup
 // 1 - apply the patch line continuously (technically - on every vsync)
+// 2 - effect of 0 and 1 combined, see below 
 // Note:
 // - while it may seem that a value of 1 does the same as 0, but also later
 //   continues to apply the patch on every vsync - it's not.
@@ -69,11 +70,11 @@ enum patch_data_type {
 //   will get applied before the first vsync and therefore earlier than 1 patches.
 // - There's no "place" value which indicates to apply both once on startup
 //   and then also continuously, however such behavior can be achieved by
-//   duplicating the line where one has a 0 place and the other has a 1 place.
-// FIXME: Do we want to apply the place=1 patches also on startup? (when the 0 patches are applied)
+//   duplicating the line where one has a 0 place and the other has a 1 place. 
 enum patch_place_type {
 	PPT_ONCE_ON_LOAD = 0,
 	PPT_CONTINUOUSLY = 1,
+	PPT_COMBINED_0_1 = 2,
 
 	_PPT_END_MARKER
 };

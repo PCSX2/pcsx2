@@ -280,7 +280,7 @@ namespace usb_pad
 				{
 					ret = s->pad->TokenIn(data, p->iov.size);
 					if (ret > 0)
-						usb_packet_copy(p, data, MIN(ret, sizeof(data)));
+						usb_packet_copy(p, data, MIN((unsigned long)ret, sizeof(data)));
 					else
 						p->status = ret;
 				}

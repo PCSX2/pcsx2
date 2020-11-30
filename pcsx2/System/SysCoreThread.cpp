@@ -245,6 +245,7 @@ void SysCoreThread::DoCpuReset()
 void SysCoreThread::VsyncInThread()
 {
 	ApplyLoadedPatches(PPT_CONTINUOUSLY);
+	ApplyLoadedPatches(PPT_COMBINED_0_1);
 }
 
 void SysCoreThread::GameStartingInThread()
@@ -256,6 +257,7 @@ void SysCoreThread::GameStartingInThread()
 	sApp.PostAppMethod(&Pcsx2App::resetDebugger);
 
 	ApplyLoadedPatches(PPT_ONCE_ON_LOAD);
+	ApplyLoadedPatches(PPT_COMBINED_0_1);
 #ifdef USE_SAVESLOT_UI_UPDATES
 	UI_UpdateSysControls();
 #endif

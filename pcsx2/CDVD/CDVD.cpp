@@ -157,16 +157,19 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 		if (!fp.IsOpened())
 			throw Exception::CannotCreateStream(fname);
 
-		u8 zero[1024] = {0};
+		u8 zero[1024] = { 0 };
 		fp.Write(zero, sizeof(zero));
 
-		//Write NVM ILink area with dummy data (Age of Empires 2)
+		// Write NVM ILink area with dummy data (Age of Empires 2)
+		// Also write language data defaulting to English (Guitar Hero 2)
 
 		NVMLayout* nvmLayout = getNvmLayout();
-		u8 ILinkID_Data[8] = {0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86};
+		u8 ILinkID_Data[8] =  { 0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86 };
 
 		fp.Seek(*(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, ilinkId)));
 		fp.Write(ILinkID_Data, sizeof(ILinkID_Data));
+
+		g_SkipBiosHack = false;
 	}
 
 	wxFFile fp(fname, L"r+b");
@@ -257,6 +260,11 @@ static void cdvdReadMAC(u8* num)
 static void cdvdWriteMAC(const u8* num)
 {
 	setNvmData(num, 0, 8, offsetof(NVMLayout, mac));
+}
+
+void cdvdReadLanguageParams(u8* config)
+{
+	getNvmData(config, 0xF, 16, offsetof(NVMLayout, config1));
 }
 
 s32 cdvdReadConfig(u8* config)

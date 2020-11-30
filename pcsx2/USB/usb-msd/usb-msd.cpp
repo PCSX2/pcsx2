@@ -381,11 +381,11 @@ namespace usb_msd
 		NO_SENSE, 0x00, 0x00};
 
 	/* LUN not ready, Manual intervention required */
-	const struct SCSISense sense_code_LUN_NOT_READY = {
+	[[maybe_unused]]const struct SCSISense sense_code_LUN_NOT_READY = {
 		NOT_READY, 0x04, 0x03};
 
 	/* LUN not ready, Medium not present */
-	const struct SCSISense sense_code_NO_MEDIUM = {
+	[[maybe_unused]]const struct SCSISense sense_code_NO_MEDIUM = {
 		NOT_READY, 0x3a, 0x00};
 
 	const struct SCSISense sense_code_UNKNOWN_ERROR = {

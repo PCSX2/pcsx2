@@ -17,6 +17,7 @@
 #include "../linux/ini.h"
 #include "../configuration.h"
 #include "../gtk.h"
+#include "Utilities/Console.h"
 
 namespace usb_msd
 {

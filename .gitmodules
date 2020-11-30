@@ -7,3 +7,6 @@
 [submodule "3rdparty/fmt/fmt"]
 	path = 3rdparty/fmt/fmt
 	url = https://github.com/fmtlib/fmt.git
+[submodule "3rdparty/yaml-cpp/yaml-cpp"]
+	path = 3rdparty/yaml-cpp/yaml-cpp
+	url = https://github.com/jbeder/yaml-cpp.git

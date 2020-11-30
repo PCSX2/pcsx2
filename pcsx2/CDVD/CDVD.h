@@ -139,6 +139,8 @@ struct cdvdStruct
 
 extern cdvdStruct cdvd;
 
+extern void cdvdReadLanguageParams(u8* config);
+
 extern void cdvdReset();
 extern void cdvdVsync();
 extern void cdvdActionInterrupt();

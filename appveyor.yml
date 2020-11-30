@@ -1,5 +1,5 @@
 # Static build version - changing the version dynamically means you can't
-# just click from GitHub to see how things are progressing until the build has
+# just click from github to see how things are progressing until the build has
 # finished, which could be a bit annoying.
 version: 1.{build}-{branch}
 

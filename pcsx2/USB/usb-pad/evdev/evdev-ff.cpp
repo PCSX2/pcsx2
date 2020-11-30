@@ -97,7 +97,7 @@ namespace usb_pad
 
 		EvdevFF::~EvdevFF()
 		{
-			for (int i = 0; i < countof(mEffIds); i++)
+			for (int i = 0; i < (int)countof(mEffIds); i++)
 			{
 				if (mEffIds[i] != -1 && ioctl(mHandle, EVIOCRMFF, mEffIds[i]) == -1)
 				{

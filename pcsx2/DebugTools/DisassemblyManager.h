@@ -181,7 +181,7 @@ public:
 	virtual u32 getTotalSize() { return size; };
 	virtual bool disassemble(u32 address, DisassemblyLineInfo& dest, bool insertSymbols);
 private:
-	DebugInterface* cpu;
+	[[maybe_unused]]DebugInterface* cpu;
 	u32 address;
 	u32 size;
 	std::string name;

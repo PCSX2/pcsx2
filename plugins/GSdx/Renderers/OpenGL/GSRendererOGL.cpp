@@ -763,12 +763,14 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		m_ps_ssel.triln = 0;
 	} else {
 		m_ps_ssel.biln  = bilinear;
+		// Aniso filtering doesn't work with textureLod so use texture (automatic_lod) instead.
 		// Enable aniso only for triangles. Sprites are flat so aniso is likely useless (it would save perf for others primitives).
-		m_ps_ssel.aniso = m_vt.m_primclass == GS_TRIANGLE_CLASS ? 1 : 0;
+		const bool anisotropic = m_vt.m_primclass == GS_TRIANGLE_CLASS && !trilinear_manual;
+		m_ps_ssel.aniso = anisotropic;
 		m_ps_ssel.triln = trilinear;
 		if (trilinear_manual) {
 			m_ps_sel.manual_lod = 1;
-		} else if (trilinear_auto) {
+		} else if (trilinear_auto || anisotropic) {
 			m_ps_sel.automatic_lod = 1;
 		}
 	}

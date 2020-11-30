@@ -83,7 +83,7 @@ namespace usb_hid
 					}
 				}
 			}
-		quit:
+		//quit:
 			closedir(dirp);
 			return false;
 		}
@@ -292,7 +292,7 @@ namespace usb_hid
 						}
 					}
 
-					if (len < sizeof(input_event) && errno != EAGAIN)
+					if (len < (ssize_t)sizeof(input_event) && errno != EAGAIN)
 					{
 						break;
 					}
