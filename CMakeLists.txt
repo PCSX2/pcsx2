@@ -24,6 +24,8 @@ check_compiler_version("7.0" "7.0")
 
 #-------------------------------------------------------------------------------
 # Include specific module
+# GNUInstallDirs must be done before BuildParameters
+include(GNUInstallDirs)
 # BuildParameters Must be done before SearchForStuff
 include(BuildParameters)
 # SearchForStuff be done before SelectPcsx2Plugins
@@ -68,9 +70,9 @@ endif()
 # Install some files to ease package creation
 if(PACKAGE_MODE)
     if(NOT DISABLE_CHEATS_ZIP)
-        INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/cheats_ws.zip" DESTINATION "${GAMEINDEX_DIR}")
+        INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/cheats_ws.zip" DESTINATION "${CMAKE_INSTALL_DATADIR}/PCSX2")
     endif()
-    INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/GameIndex.yaml" DESTINATION "${GAMEINDEX_DIR}")
+    INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/GameIndex.yaml" DESTINATION "${CMAKE_INSTALL_DATADIR}/PCSX2")
 
     # set categories depending on system/distribution in pcsx2.desktop
     if(openSUSE)
@@ -80,13 +82,13 @@ if(PACKAGE_MODE)
     endif()
     configure_file("${CMAKE_SOURCE_DIR}/linux_various/PCSX2.desktop.in" "${CMAKE_BINARY_DIR}/linux_various/PCSX2.desktop" @ONLY)
 
-    INSTALL(FILES "${CMAKE_BINARY_DIR}/linux_various/PCSX2.desktop" DESTINATION "${CMAKE_INSTALL_PREFIX}/share/applications")
-    INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2.xpm"     DESTINATION "${CMAKE_INSTALL_PREFIX}/share/pixmaps")
-    INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2_FAQ.pdf"      DESTINATION "${DOC_DIR}")
-    INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/Configuration_Guide.pdf"   DESTINATION "${DOC_DIR}")
-    INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2.1"            DESTINATION "${MAN_DIR}/man1")
+    INSTALL(FILES "${CMAKE_BINARY_DIR}/linux_various/PCSX2.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
+    INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2.xpm"     DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/pixmaps")
+    INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2_FAQ.pdf"      DESTINATION "${CMAKE_INSTALL_DOCDIR}")
+    INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/Configuration_Guide.pdf"   DESTINATION "${CMAKE_INSTALL_DOCDIR}")
+    INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2.1"            DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")
     if(NOT DISABLE_PCSX2_WRAPPER)
-        INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2-linux.sh"          DESTINATION "${BIN_DIR}")
+        INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2-linux.sh"          DESTINATION "${CMAKE_INSTALL_BINDIR}")
     endif()
 
 else()
