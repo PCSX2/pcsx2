@@ -887,6 +887,7 @@ Region = NTSC-Unk
 Serial = SCAJ-20159
 Name   = Soul Calibur III
 Region = NTSC-Ch-E-J
+EETimingHack = 1 // Fixes bad colours on charcter select when in Progressive Scan
 ---------------------------------------------
 Serial = SCAJ-20160
 Name   = Yoshitsuneki
@@ -3153,6 +3154,7 @@ Serial = SCKA-20059
 Name   = Soul Calibur III
 Region = NTSC-K
 Compat = 5
+EETimingHack = 1 // Fixes bad colours on charcter select when in Progressive Scan
 ---------------------------------------------
 Serial = SCKA-20060
 Name   = Ratchet - Deadlocked
@@ -21753,6 +21755,7 @@ eeClampMode = 2 // Fixes wrong color on some characters and breakable objects.
 Serial = SLPM-61133
 Name   = Soul Calibur III [Trial Version]
 Region = NTSC-J
+EETimingHack = 1 // Fixes bad colours on charcter select when in Progressive Scan
 ---------------------------------------------
 Serial = SLPM-61135
 Name   = Naruto - Narutimett Hero 3 [Trial Version]
@@ -35499,6 +35502,7 @@ Serial = SLPS-25577
 Name   = Soul Calibur III
 Region = NTSC-J
 Compat = 5
+EETimingHack = 1 // Fixes bad colours on charcter select when in Progressive Scan
 ---------------------------------------------
 Serial = SLPS-25578
 Name   = K-1 World Grand Prix 2005
