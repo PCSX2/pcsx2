@@ -42975,6 +42975,7 @@ Serial = SLUS-21216
 Name   = Soul Calibur III
 Region = NTSC-U
 Compat = 5
+EETimingHack = 1 // Fixes bad colours on charcter select when in Progressive Scan
 ---------------------------------------------
 Serial = SLUS-21217
 Name   = Incredibles, The - Rise of the Underminers
