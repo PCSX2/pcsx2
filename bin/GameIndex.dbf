@@ -39097,11 +39097,11 @@ Region = NTSC-U
 Compat = 2
 vuClampMode = 3 // Fixes water rendering.
 XgKickHack = 1 // Fixes SPS while ingame.
-eeRoundMode = 0 // Fixes crash when using the Subaru
 ---------------------------------------------
 Serial = SLUS-20419
 Name   = World Rally Championship
 Region = NTSC-U
+eeRoundMode = 0 // Fixes crash when using the Subaru
 ---------------------------------------------
 Serial = SLUS-20420
 Name   = Star Wars - Bounty Hunter
