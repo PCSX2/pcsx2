@@ -54,8 +54,8 @@ typedef struct
 	struct usb_packet
 	{
 		USBEndpoint ep; //usb packet endpoint
-		int dev_index;
-		int data_size;
+		u32 dev_index;
+		u32 data_size;
 	} usb_packet;
 } USBfreezeData;
 
@@ -461,9 +461,9 @@ s32 USBfreeze(int mode, freezeData* data)
 			ptr += usbd.device[i].size;
 		}
 
-		int dev_index = usbd.usb_packet.dev_index;
+		u32 dev_index = usbd.usb_packet.dev_index;
 
-		if (usb_device[dev_index])
+		if (dev_index < countof(usb_device) && usb_device[dev_index])
 		{
 			USBPacket* p = &qemu_ohci->usb_packet;
 			p->actual_length = usbd.usb_packet.data_size;
@@ -494,10 +494,6 @@ s32 USBfreeze(int mode, freezeData* data)
 					}
 				}
 			}
-		}
-		else
-		{
-			return -1;
 		}
 
 	}
