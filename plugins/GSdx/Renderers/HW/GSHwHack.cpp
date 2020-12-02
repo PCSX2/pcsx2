@@ -927,20 +927,6 @@ bool GSC_AceCombat4(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_BleachBladeBattlers(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (fi.TME && fi.FBP == 0x01180 && fi.FPSM == fi.TPSM && fi.TBP0 == 0x03fc0 && fi.TPSM == PSM_PSMCT32)
-		{
-			// Removes body shading. Not needed but offers a very decent speed boost.
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -1184,7 +1170,6 @@ void GSState::SetupCrcHack()
 	if (Aggressive)
 	{
 		lut[CRC::AceCombat4] = GSC_AceCombat4;
-		lut[CRC::BleachBladeBattlers] = GSC_BleachBladeBattlers;
 		lut[CRC::FFX2] = GSC_FFXGames;
 		lut[CRC::FFX] = GSC_FFXGames;
 		lut[CRC::FFXII] = GSC_FFXGames;
