@@ -125,7 +125,8 @@ int IPU_Fifo_Output::write(const u32 *value, uint size)
 			--transsize;
 		}
 	/*} while(true);*/
-
+	if(ipu0ch.chcr.STR)
+		IPU_INT_FROM(64);
 	return origsize - size;
 }
 

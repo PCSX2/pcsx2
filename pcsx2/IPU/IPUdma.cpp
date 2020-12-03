@@ -196,7 +196,6 @@ void IPU0dma()
 {
 	if(!ipuRegs.ctrl.OFC) 
 	{
-		IPU_INT_FROM( 64 );
 		IPUProcessInterrupt();
 		return;
 	}
