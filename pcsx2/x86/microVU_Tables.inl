@@ -211,7 +211,7 @@ mVUop(mVULowerOP_T3_11)	{ mVULowerOP_T3_11_OPCODE	[((mVU.code >> 6) & 0x1f)](mX)
 mVUop(mVUopU)			{ mVU_UPPER_OPCODE			[ (mVU.code & 0x3f) ](mX); } // Gets Upper Opcode
 mVUop(mVUopL)			{ mVULOWER_OPCODE			[ (mVU.code >>  25) ](mX); } // Gets Lower Opcode
 mVUop(mVUunknown) {
-	pass1 { mVUinfo.isBadOp = true; }
+	pass1 { if (mVU.code != 0x8000033c) mVUinfo.isBadOp = true; }
 	pass2 { if(mVU.code != 0x8000033c) Console.Error("microVU%d: Unknown Micro VU opcode called (%x) [%04x]\n", getIndex, mVU.code, xPC); }
 	pass3 { mVUlog("Unknown", mVU.code); }
 }

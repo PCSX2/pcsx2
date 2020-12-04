@@ -267,6 +267,7 @@ static __fi void _vifCode_MPG(int idx, u32 addr, const u32 *data, int size) {
 
 	if (idx && THREAD_VU1) {
 		vu1Thread.WriteMicroMem(addr, (u8*)data, size*4);
+		vifX.tag.addr = size * 4;
 		return;
 	}
 
