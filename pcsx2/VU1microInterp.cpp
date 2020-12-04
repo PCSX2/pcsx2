@@ -202,6 +202,11 @@ void InterpVU1::Shutdown() noexcept {
 	vu1Thread.WaitVU();
 }
 
+void InterpVU1::SetStartPC(u32 startPC)
+{
+	VU1.start_pc = startPC;
+}
+
 void InterpVU1::Step()
 {
 	VU1.VI[REG_TPC].UL &= VU1_PROGMASK;

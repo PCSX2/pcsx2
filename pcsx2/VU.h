@@ -134,6 +134,7 @@ struct __aligned16 VURegs {
 	// Current opcode being interpreted or recompiled (this var is used by Interps
 	// but not microVU.  Would like to have it local to their respective classes... someday)
 	u32 code;
+	u32 start_pc;
 
 	// branch/branchpc are used by interpreter only, but making them local to the interpreter
 	// classes requires considerable code refactoring.  Maybe later. >_<

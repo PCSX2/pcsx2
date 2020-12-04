@@ -61,7 +61,8 @@ void __fastcall vu1ExecMicro(u32 addr)
 	VU0.VI[REG_VPU_STAT].UL &= ~0xFF00;
 	VU0.VI[REG_VPU_STAT].UL |=  0x0100;
 	if ((s32)addr != -1) VU1.VI[REG_TPC].UL = addr;
-	_vuExecMicroDebug(VU1);
 
+	CpuVU1->SetStartPC(VU1.VI[REG_TPC].UL << 3);
+	_vuExecMicroDebug(VU1);
 	CpuVU1->Execute(vu1RunCycles);
 }
