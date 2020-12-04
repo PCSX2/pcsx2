@@ -118,19 +118,19 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
 
 void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 
-	int fStatus = getLastFlagInst(mVUpBlock->pState, mFC->xStatus, 0, isEbit);
-	int fMac	= getLastFlagInst(mVUpBlock->pState, mFC->xMac,    1, isEbit);
-	int fClip	= getLastFlagInst(mVUpBlock->pState, mFC->xClip,   2, isEbit);
+	int fStatus = getLastFlagInst(mVUpBlock->pState, mFC->xStatus, 0, isEbit && isEbit != 3);
+	int fMac	= getLastFlagInst(mVUpBlock->pState, mFC->xMac,    1, isEbit && isEbit != 3);
+	int fClip	= getLastFlagInst(mVUpBlock->pState, mFC->xClip,   2, isEbit && isEbit != 3);
 	int qInst	= 0;
 	int pInst	= 0;
 	microBlock stateBackup;
 	memcpy(&stateBackup, &mVUregs, sizeof(mVUregs)); //backup the state, it's about to get screwed with.
-	if(!isEbit)
+	if(!isEbit || isEbit == 3)
 		mVU.regAlloc->TDwritebackAll(); //Writing back ok, invalidating early kills the rec, so don't do it :P
 	else
 		mVU.regAlloc->flushAll();
 
-	if (isEbit) {
+	if (isEbit && isEbit != 3) {
 		memzero(mVUinfo);
 		memzero(mVUregsTemp);
 		mVUincCycles(mVU, 100); // Ensures Valid P/Q instances (And sets all cycle data to 0)
@@ -178,7 +178,7 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 	xMOV(ptr32[&mVU.regs().VI[REG_MAC_FLAG].UL],	gprT1);
 	xMOV(ptr32[&mVU.regs().VI[REG_CLIP_FLAG].UL],	gprT2);
 
-	if (!isEbit) { // Backup flag instances
+	if (!isEbit || isEbit == 3) { // Backup flag instances
 		xMOVAPS(xmmT1, ptr128[mVU.macFlag]);
 		xMOVAPS(ptr128[&mVU.regs().micro_macflags], xmmT1);
 		xMOVAPS(xmmT1, ptr128[mVU.clipFlag]);
@@ -204,14 +204,14 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 	}
 
 
-	if (isEbit || isVU1) { // Clear 'is busy' Flags
+	if ((isEbit && isEbit != 3) || isVU1) { // Clear 'is busy' Flags
 		if (!mVU.index || !THREAD_VU1) {
 			xAND(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? ~0x100 : ~0x001)); // VBS0/VBS1 flag
 			//xAND(ptr32[&mVU.getVifRegs().stat], ~VIF1_STAT_VEW); // Clear VU 'is busy' signal for vif
 		}
 	}
 
-	if (isEbit != 2) { // Save PC, and Jump to Exit Point
+	if (isEbit != 2 && isEbit != 3) { // Save PC, and Jump to Exit Point
 		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
 		xJMP(mVU.exitFunct);
 	}
@@ -292,6 +292,21 @@ void normBranch(mV, microFlagCycles& mFC) {
 		mVUDTendProgram(mVU, &mFC, 1);
 		eJMP.SetTarget();
 		iPC = tempPC;	
+	}
+	if (mVUup.mBit)
+	{
+		DevCon.Warning("M-Bit on normal branch, report if broken");
+		u32 tempPC = iPC;
+		u32* cpS = (u32*)&mVUregs;
+		u32* lpS = (u32*)&mVU.prog.lpState;
+		for (size_t i = 0; i < (sizeof(microRegInfo) - 4) / 4; i++, lpS++, cpS++) {
+			xMOV(ptr32[lpS], cpS[0]);
+		}
+		mVUendProgram(mVU, &mFC, 3);
+		iPC = branchAddr(mVU) / 4;
+		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
+		xJMP(mVU.exitFunct);
+		iPC = tempPC;
 	}
 	if (mVUup.eBit) { 
 		if(mVUlow.badBranch) 
@@ -408,7 +423,27 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
 		eJMP.SetTarget();
 		iPC = tempPC;
 	}
-
+	if (mVUup.mBit)
+	{
+		u32 tempPC = iPC;
+		u32* cpS = (u32*)&mVUregs;
+		u32* lpS = (u32*)&mVU.prog.lpState;
+		for (size_t i = 0; i < (sizeof(microRegInfo) - 4) / 4; i++, lpS++, cpS++) {
+			xMOV(ptr32[lpS], cpS[0]);
+		}
+		mVUendProgram(mVU, &mFC, 3);
+		xCMP(ptr16[&mVU.branch], 0);
+		xForwardJump32 dJMP((JccComparisonType)JMPcc);
+		incPC(4); // Set PC to First instruction of Non-Taken Side
+		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
+		xJMP(mVU.exitFunct);
+		dJMP.SetTarget();
+		incPC(-4); // Go Back to Branch Opcode to get branchAddr
+		iPC = branchAddr(mVU) / 4;
+		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
+		xJMP(mVU.exitFunct);
+		iPC = tempPC;
+	}
 	if (mVUup.eBit) { // Conditional Branch With E-Bit Set
 		if(mVUlow.evilBranch) 
 			DevCon.Warning("End on evil branch! - Not implemented! - If game broken report to PCSX2 Team");
@@ -471,6 +506,10 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
 }
 
 void normJump(mV, microFlagCycles& mFC) {
+	if (mVUup.mBit)
+	{
+		DevCon.Warning("M-Bit on Jump! Please report if broken");
+	}
 	if (mVUlow.constJump.isValid) { // Jump Address is Constant
 		if (mVUup.eBit) { // E-bit Jump
 			iPC = (mVUlow.constJump.regValue*2) & (mVU.progMemMask);

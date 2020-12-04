@@ -85,6 +85,7 @@ public:
 	virtual void Reserve()=0;
 	virtual void Shutdown()=0;
 	virtual void Reset()=0;
+	virtual void SetStartPC(u32 startPC)=0;
 	virtual void Execute(u32 cycles)=0;
 	virtual void ExecuteBlock(bool startUp)=0;
 
@@ -172,6 +173,7 @@ public:
 	void Reset() { }
 
 	void Step();
+	void SetStartPC(u32 startPC);
 	void Execute(u32 cycles);
 	void Clear(u32 addr, u32 size) {}
 
@@ -192,6 +194,7 @@ public:
 	void Shutdown() noexcept;
 	void Reset();
 
+	void SetStartPC(u32 startPC);
 	void Step();
 	void Execute(u32 cycles);
 	void Clear(u32 addr, u32 size) {}
@@ -217,6 +220,7 @@ public:
 	void Shutdown() noexcept;
 
 	void Reset();
+	void SetStartPC(u32 startPC);
 	void Execute(u32 cycles);
 	void Clear(u32 addr, u32 size);
 	void Vsync() noexcept;
@@ -237,6 +241,7 @@ public:
 	void Reserve();
 	void Shutdown() noexcept;
 	void Reset();
+	void SetStartPC(u32 startPC);
 	void Execute(u32 cycles);
 	void Clear(u32 addr, u32 size);
 	void Vsync() noexcept;

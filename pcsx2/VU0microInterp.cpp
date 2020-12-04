@@ -198,6 +198,11 @@ InterpVU0::InterpVU0()
 	IsInterpreter = true;
 }
 
+void InterpVU0::SetStartPC(u32 startPC)
+{
+	VU0.start_pc = startPC;
+}
+
 void InterpVU0::Step()
 {
 	vu0Exec( &VU0 );
