@@ -55,7 +55,7 @@ namespace usb_eyetoy
 		{
 			std::vector<std::wstring> devList;
 
-			ICreateDevEnum* pCreateDevEnum = 0;
+			ICreateDevEnum* pCreateDevEnum = nullptr;
 			HRESULT hr = CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pCreateDevEnum));
 			if (FAILED(hr))
 			{
@@ -63,7 +63,7 @@ namespace usb_eyetoy
 				return devList;
 			}
 
-			IEnumMoniker* pEnum = 0;
+			IEnumMoniker* pEnum = nullptr;
 			hr = pCreateDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnum, 0);
 			if (hr != S_OK)
 			{
@@ -71,11 +71,11 @@ namespace usb_eyetoy
 				return devList;
 			};
 
-			IMoniker* pMoniker = NULL;
+			IMoniker* pMoniker = nullptr;
 			while (pEnum->Next(1, &pMoniker, NULL) == S_OK)
 			{
-				IPropertyBag* pPropBag;
-				HRESULT hr = pMoniker->BindToStorage(0, 0, IID_PPV_ARGS(&pPropBag));
+				IPropertyBag* pPropBag = nullptr;
+				hr = pMoniker->BindToStorage(0, 0, IID_PPV_ARGS(&pPropBag));
 				if (FAILED(hr))
 				{
 					pMoniker->Release();
@@ -139,7 +139,7 @@ namespace usb_eyetoy
 			}
 
 			// enumerate all video capture devices
-			ICreateDevEnum* pCreateDevEnum = 0;
+			ICreateDevEnum* pCreateDevEnum = nullptr;
 			hr = CoCreateInstance(CLSID_SystemDeviceEnum, NULL, CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&pCreateDevEnum));
 			if (FAILED(hr))
 			{
@@ -147,7 +147,7 @@ namespace usb_eyetoy
 				return -1;
 			}
 
-			IEnumMoniker* pEnum = 0;
+			IEnumMoniker* pEnum = nullptr;
 			hr = pCreateDevEnum->CreateClassEnumerator(CLSID_VideoInputDeviceCategory, &pEnum, 0);
 			if (hr != S_OK)
 			{
@@ -157,10 +157,10 @@ namespace usb_eyetoy
 
 			pEnum->Reset();
 
-			IMoniker* pMoniker;
-			while (pEnum->Next(1, &pMoniker, NULL) == S_OK && sourcefilter == NULL)
+			IMoniker* pMoniker = nullptr;
+			while (pEnum->Next(1, &pMoniker, NULL) == S_OK && sourcefilter == nullptr)
 			{
-				IPropertyBag* pPropBag = 0;
+				IPropertyBag* pPropBag = nullptr;
 				hr = pMoniker->BindToStorage(0, 0, IID_PPV_ARGS(&pPropBag));
 				if (FAILED(hr))
 				{
@@ -170,7 +170,6 @@ namespace usb_eyetoy
 
 				VARIANT var;
 				VariantInit(&var);
-
 				hr = pPropBag->Read(L"Description", &var, 0);
 				if (FAILED(hr))
 				{
@@ -220,7 +219,7 @@ namespace usb_eyetoy
 								if ((pmtConfig->majortype == MEDIATYPE_Video) &&
 									(pmtConfig->formattype == FORMAT_VideoInfo) &&
 									(pmtConfig->cbFormat >= sizeof(VIDEOINFOHEADER)) &&
-									(pmtConfig->pbFormat != NULL))
+									(pmtConfig->pbFormat != nullptr))
 								{
 
 									VIDEOINFOHEADER* pVih = (VIDEOINFOHEADER*)pmtConfig->pbFormat;
@@ -317,7 +316,7 @@ namespace usb_eyetoy
 				pMoniker->Release();
 			}
 			pEnum->Release();
-			if (sourcefilter == NULL)
+			if (sourcefilter == nullptr)
 			{
 				return -1;
 			}
@@ -408,14 +407,14 @@ namespace usb_eyetoy
 		DirectShow::DirectShow(int port)
 		{
 			mPort = port;
-			pGraphBuilder = NULL;
-			pGraph = NULL;
-			pControl = NULL;
-			sourcefilter = NULL;
-			samplegrabberfilter = NULL;
-			nullrenderer = NULL;
-			pSourceConfig = NULL;
-			samplegrabber = NULL;
+			pGraphBuilder = nullptr;
+			pGraph = nullptr;
+			pControl = nullptr;
+			sourcefilter = nullptr;
+			samplegrabberfilter = nullptr;
+			nullrenderer = nullptr;
+			pSourceConfig = nullptr;
+			samplegrabber = nullptr;
 			callbackhandler = new CallbackHandler();
 			CoInitialize(NULL);
 		}
@@ -445,7 +444,7 @@ namespace usb_eyetoy
 
 		int DirectShow::Close()
 		{
-			if (sourcefilter != NULL)
+			if (sourcefilter != nullptr)
 			{
 				this->Stop();
 				pControl->Stop();
@@ -455,17 +454,17 @@ namespace usb_eyetoy
 				samplegrabberfilter->Release();
 				samplegrabber->Release();
 				nullrenderer->Release();
-				sourcefilter = NULL;
+				sourcefilter = nullptr;
 			}
 
 			pGraphBuilder->Release();
 			pGraph->Release();
 			pControl->Release();
 
-			if (mpeg_buffer.start != NULL)
+			if (mpeg_buffer.start != nullptr)
 			{
 				free(mpeg_buffer.start);
-				mpeg_buffer.start = NULL;
+				mpeg_buffer.start = nullptr;
 			}
 			return 0;
 		};
