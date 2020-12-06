@@ -9750,6 +9750,7 @@ Serial = SLES-51208
 Name   = Rocky
 Region = PAL-M5
 VIF1StallHack = 1 // Fixes freezes
+eeClampMode = 0 // Fixes boxers not appearing/disappearing
 ---------------------------------------------
 Serial = SLES-51209
 Name   = Haven - Call of the King
@@ -25872,6 +25873,8 @@ eeRoundMode = 0 // Ladder glitch in "Assembly of Nihilo B11" level.
 Serial = SLPM-65463
 Name   = Rocky
 Region = NTSC-J
+VIF1StallHack = 1 // Fixes freezes
+eeClampMode = 0 // Fixes boxers not appearing/disappearing
 ---------------------------------------------
 Serial = SLPM-65464
 Name   = Wind - A Breath of Heart
@@ -39764,6 +39767,8 @@ Serial = SLUS-20559
 Name   = Rocky
 Region = NTSC-U
 Compat = 5
+VIF1StallHack = 1 // Fixes freezes
+eeClampMode = 0 // Fixes boxers not appearing/disappearing
 ---------------------------------------------
 Serial = SLUS-20560
 Name   = Galerians - Ash
