@@ -73,18 +73,16 @@ typedef struct _keyEvent
 
 ///////////////////////////////////////////////////////////////////////
 
-#if defined(GSdefs) || defined(PADdefs) || defined(SIOdefs)
+#if defined(GSdefs) defined(SIOdefs)
 #define COMMONdefs
 #endif
 
 // PS2EgetLibType returns (may be OR'd)
 #define PS2E_LT_GS 0x01
-#define PS2E_LT_PAD 0x02 // -=[ OBSOLETE ]=-
 #define PS2E_LT_SIO 0x80
 
 // PS2EgetLibVersion2 (high 16 bits)
 #define PS2E_GS_VERSION 0x0006
-#define PS2E_PAD_VERSION 0x0002 // -=[ OBSOLETE ]=-
 #define PS2E_SIO_VERSION 0x0001
 #ifdef COMMONdefs
 
@@ -112,7 +110,6 @@ const char *CALLBACK PS2EgetLibName(void);
 typedef char __keyEvent_Size__[(sizeof(keyEvent) == 8) ? 1 : -1];
 
 // plugin types
-#define SIO_TYPE_PAD 0x00000001
 #define SIO_TYPE_MTAP 0x00000004
 #define SIO_TYPE_RM 0x00000040
 #define SIO_TYPE_MC 0x00000100
@@ -187,53 +184,6 @@ s32 CALLBACK GStest();
 
 #endif
 
-/* PAD plugin API -=[ OBSOLETE ]=- */
-
-// if this file is included with this define
-// the next api will not be skipped by the compiler
-#if defined(PADdefs) || defined(BUILTIN_PAD_PLUGIN)
-
-// basic funcs
-
-s32 CALLBACK PADinit(u32 flags);
-s32 CALLBACK PADopen(void *pDsp);
-void CALLBACK PADclose();
-void CALLBACK PADshutdown();
-void CALLBACK PADsetSettingsDir(const char *dir);
-void CALLBACK PADsetLogDir(const char *dir);
-
-// PADkeyEvent is called every vsync (return NULL if no event)
-keyEvent *CALLBACK PADkeyEvent();
-u8 CALLBACK PADstartPoll(int pad);
-u8 CALLBACK PADpoll(u8 value);
-// returns: 1 if supported pad1
-//			2 if supported pad2
-//			3 if both are supported
-u32 CALLBACK PADquery();
-
-// call to give a hint to the PAD plugin to query for the keyboard state. A
-// good plugin will query the OS for keyboard state ONLY in this function.
-// This function is necessary when multithreading because otherwise
-// the PAD plugin can get into deadlocks with the thread that really owns
-// the window (and input). Note that PADupdate can be called from a different
-// thread than the other functions, so mutex or other multithreading primitives
-// have to be added to maintain data integrity.
-void CALLBACK PADupdate(int pad);
-
-// Send a key event from wx-gui to pad
-// Note: On linux GSOpen2, wx-gui and pad share the same event buffer. Wx-gui reads and deletes event
-// before the pad saw them. So the gui needs to send them back to the pad.
-void CALLBACK PADWriteEvent(keyEvent &evt);
-
-// extended funcs
-
-void CALLBACK PADgsDriverInfo(GSdriverInfo *info);
-void CALLBACK PADconfigure();
-void CALLBACK PADabout();
-s32 CALLBACK PADtest();
-
-#endif
-
 // might be useful for emulators
 #ifdef PLUGINtypedefs
 
@@ -273,18 +223,6 @@ typedef void(CALLBACK *_GSwriteCSR)(u32 value);
 typedef bool(CALLBACK *_GSmakeSnapshot)(const char *path);
 typedef void(CALLBACK *_GSmakeSnapshot2)(const char *path, int *, int);
 
-// PAD
-typedef s32(CALLBACK *_PADinit)(u32 flags);
-typedef s32(CALLBACK *_PADopen)(void *pDsp);
-typedef u8(CALLBACK *_PADstartPoll)(int pad);
-typedef u8(CALLBACK *_PADpoll)(u8 value);
-typedef u32(CALLBACK *_PADquery)(int pad);
-typedef void(CALLBACK *_PADupdate)(int pad);
-typedef keyEvent *(CALLBACK *_PADkeyEvent)();
-typedef void(CALLBACK *_PADgsDriverInfo)(GSdriverInfo *info);
-typedef s32(CALLBACK *_PADsetSlot)(u8 port, u8 slot);
-typedef s32(CALLBACK *_PADqueryMtap)(u8 port);
-typedef void(CALLBACK *_PADWriteEvent)(keyEvent &evt);
 #endif
 
 #ifdef PLUGINfuncs
@@ -318,20 +256,6 @@ extern _GSsetVsync GSsetVsync;
 extern _GSsetupRecording GSsetupRecording;
 extern _GSreset GSreset;
 extern _GSwriteCSR GSwriteCSR;
-#endif
-
-// PAD
-#ifndef BUILTIN_PAD_PLUGIN
-extern _PADopen PADopen;
-extern _PADstartPoll PADstartPoll;
-extern _PADpoll PADpoll;
-extern _PADquery PADquery;
-extern _PADupdate PADupdate;
-extern _PADkeyEvent PADkeyEvent;
-extern _PADgsDriverInfo PADgsDriverInfo;
-extern _PADsetSlot PADsetSlot;
-extern _PADqueryMtap PADqueryMtap;
-extern _PADWriteEvent PADWriteEvent;
 #endif
 
 #endif

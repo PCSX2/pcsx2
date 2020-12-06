@@ -312,7 +312,6 @@ static const std::unique_ptr<BaseSavestateEntry> SavestateEntries[] = {
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_USB),
 
 	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry(PluginId_GS)),
-	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry(PluginId_PAD)),
 };
 
 // It's bad mojo to have savestates trying to read and write from the same file at the
