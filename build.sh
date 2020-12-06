@@ -206,6 +206,7 @@ for ARG in "$@"; do
         --strip             ) flags="$flags -DCMAKE_BUILD_STRIP=TRUE" ;;
         --sdl12             ) flags="$flags -DSDL2_API=FALSE" ;;
         --extra             ) flags="$flags -DEXTRA_PLUGINS=TRUE" ;;
+        --use-system-yaml   ) flags="$flags -DUSE_SYSTEM_YAML=TRUE" ;;
         --asan              ) flags="$flags -DUSE_ASAN=TRUE" ;;
         --gtk2              ) flags="$flags -DGTK2_API=TRUE" ;;
         --lto               ) flags="$flags -DUSE_LTO=TRUE" ;;
@@ -240,6 +241,7 @@ for ARG in "$@"; do
             echo "** Distribution Compatibilities **"
             echo "--sdl12         : Build with SDL1.2 (requires if wx is linked against SDL1.2)"
             echo "--no-portaudio  : Skip portaudio for spu2x."
+            echo "--use-system-yaml  : Use the system version of yaml-cpp, if available."
             echo
             echo "** Expert Developer option **"
             echo "--gtk2          : use GTK 2 instead of GTK 3"
