@@ -53,7 +53,7 @@ Section ""
 ; Write the installation path into the registry
   WriteRegStr HKLM Software\PCSX2 "Install_Dir" "$INSTDIR"
   ; Write the uninstall keys for Windows
-  WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "DisplayName"      "PCSX2 - Playstation 2 Emulator"
+  WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "DisplayName"      "PCSX2 - PlayStation 2 Emulator"
   WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "Publisher"        "PCSX2 Team"
   WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "DisplayIcon"      "$INSTDIR\pcsx2.exe"
   WriteRegStr   HKLM "${INSTDIR_REG_KEY}"  "DisplayVersion"   "${APP_VERSION}"

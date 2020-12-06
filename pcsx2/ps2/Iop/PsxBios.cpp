@@ -58,7 +58,7 @@ void psxBiosReset()
     flush_stdout(true);
 }
 
-// Called for Playstation BIOS calls at 0xA0, 0xB0 and 0xC0 in kernel reserved memory (seemingly by actually calling those addresses)
+// Called for PlayStation BIOS calls at 0xA0, 0xB0 and 0xC0 in kernel reserved memory (seemingly by actually calling those addresses)
 // Returns true if we internally process the call, not that we're likely to do any such thing
 bool __fastcall psxBiosCall()
 {

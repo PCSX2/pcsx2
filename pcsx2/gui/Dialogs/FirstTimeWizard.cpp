@@ -139,7 +139,7 @@ FirstTimeWizard::FirstTimeWizard( wxWindow* parent )
 	// Temporary tutorial message for the BIOS, needs proof-reading!!
 	m_page_bios		+= 12;
 	m_page_bios		+= new pxStaticHeading( &m_page_bios,
-		pxE( L"PCSX2 requires a *legal* copy of the PS2 BIOS in order to run games.\nYou cannot use a copy obtained from a friend or the Internet.\nYou must dump the BIOS from your *own* Playstation 2 console."
+		pxE( L"PCSX2 requires a *legal* copy of the PS2 BIOS in order to run games.\nYou cannot use a copy obtained from a friend or the Internet.\nYou must dump the BIOS from your *own* PlayStation 2 console."
 		)
 	) | StdExpand();
 

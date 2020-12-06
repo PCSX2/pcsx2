@@ -506,7 +506,7 @@ void MainEmuFrame::CreateHelpMenu()
 	m_menuHelp.Append(MenuId_Help_Website, _("&Website"));
 	m_menuHelp.Append(MenuId_Help_Wiki, _("&Wiki"));
 	m_menuHelp.Append(MenuId_Help_Forums, _("&Support Forums"));
-	m_menuHelp.Append(MenuId_Help_Github, _("&Github Repository"));
+	m_menuHelp.Append(MenuId_Help_Github, _("&GitHub Repository"));
 	m_menuHelp.AppendSeparator();
 	m_menuHelp.Append(MenuId_About, _("&About..."));
 }
