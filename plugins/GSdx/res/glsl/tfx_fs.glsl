@@ -678,8 +678,16 @@ void ps_blend(inout vec4 Color, float As)
     Color.rgb = trunc((A - B) * C + D);
 #endif
 
+#endif
+
     // Dithering
     ps_dither(Color);
+
+    // Always do clamp/wrap, even when there is no SW blending. Perhaps safer this way.
+    // Dithering needs clamp/wrap always.
+    // When dithering the bottom 3 bits become meaningless and cause lines in the picture
+    // so we need to limit the color depth on dithered items
+    // SW_BLEND already deals with this so no need to do in those cases.
 
     // Correct the Color value based on the output format
 #if PS_COLCLIP == 0 && PS_HDR == 0
@@ -699,8 +707,6 @@ void ps_blend(inout vec4 Color, float As)
     Color.rgb = vec3(ivec3(Color.rgb) & ivec3(0xF8));
 #elif PS_COLCLIP == 1 && PS_HDR == 0
     Color.rgb = vec3(ivec3(Color.rgb) & ivec3(0xFF));
-#endif
-
 #endif
 }
 
@@ -829,21 +835,9 @@ void ps_main()
     return;
 #endif
 
-#if !SW_BLEND
-    ps_dither(C);
-#endif
-
     ps_blend(C, alpha_blend);
 
     ps_fbmask(C);
-
-// When dithering the bottom 3 bits become meaningless and cause lines in the picture
-// so we need to limit the color depth on dithered items
-// SW_BLEND already deals with this so no need to do in those cases
-#if !SW_BLEND && PS_DITHER && PS_DFMT == FMT_16 && PS_COLCLIP == 0
-    C.rgb = clamp(C.rgb, vec3(0.0f), vec3(255.0f));
-    C.rgb = uvec3(uvec3(C.rgb) & uvec3(0xF8));
-#endif
 
 // #if PS_HDR == 1
     // Use negative value to avoid overflow of the texture (in accumulation mode)

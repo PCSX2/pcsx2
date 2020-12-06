@@ -676,30 +676,33 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 
 		float3 Cd = RT.rgb;
 		float3 Cs = Color.rgb;
-		float3 Cv;
 
 		float3 A = (PS_BLEND_A == 0) ? Cs : ((PS_BLEND_A == 1) ? Cd : (float3)0.0f);
 		float3 B = (PS_BLEND_B == 0) ? Cs : ((PS_BLEND_B == 1) ? Cd : (float3)0.0f);
 		float3 C = (PS_BLEND_C == 0) ? As : ((PS_BLEND_C == 1) ? Ad : Af);
 		float3 D = (PS_BLEND_D == 0) ? Cs : ((PS_BLEND_D == 1) ? Cd : (float3)0.0f);
 
-		Cv = (PS_BLEND_A == PS_BLEND_B) ? D : trunc(((A - B) * C) + D);
-
-		// Dithering
-		ps_dither(Cv, pos_xy);
-
-		// Standard Clamp
-		if (PS_COLCLIP == 0 && PS_HDR == 0)
-			Cv = clamp(Cv, (float3)0.0f, (float3)255.0f);
-
-		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
-		if (PS_DFMT == FMT_16)
-			Cv = (float3)((int3)Cv & (int3)0xF8);
-		else if (PS_COLCLIP == 1 && PS_HDR == 0)
-			Cv = (float3)((int3)Cv & (int3)0xFF);
-
-		Color.rgb = Cv;
+		Color.rgb = (PS_BLEND_A == PS_BLEND_B) ? D : trunc(((A - B) * C) + D);
 	}
+
+	// Dithering
+	ps_dither(Color.rgb, pos_xy);
+
+	// Always do clamp/wrap, even when there is no SW blending. Perhaps safer this way.
+	// Dithering needs clamp/wrap always.
+	// When dithering the bottom 3 bits become meaningless and cause lines in the picture
+	// so we need to limit the color depth on dithered items
+	// SW_BLEND already deals with this so no need to do in those cases.
+	
+	// Standard Clamp
+	if (PS_COLCLIP == 0 && PS_HDR == 0)
+		Color.rgb = clamp(Color.rgb, (float3)0.0f, (float3)255.0f);
+
+	// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
+	if (PS_DFMT == FMT_16)
+		Color.rgb = (float3)((int3)Color.rgb & (int3)0xF8);
+	else if (PS_COLCLIP == 1 && PS_HDR == 0)
+		Color.rgb = (float3)((int3)Color.rgb & (int3)0xFF);
 }
 
 PS_OUTPUT ps_main(PS_INPUT input)
@@ -750,21 +753,9 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		if (C.a < A_one) C.a += A_one;
 	}
 
-	if (!SW_BLEND)
-		ps_dither(C.rgb, input.p.xy);
-
 	ps_blend(C, alpha_blend, input.p.xy);
 
 	ps_fbmask(C, input.p.xy);
-
-	// When dithering the bottom 3 bits become meaningless and cause lines in the picture
-	// so we need to limit the color depth on dithered items
-	// SW_BLEND already deals with this so no need to do in those cases
-	if (!SW_BLEND && PS_DITHER && PS_DFMT == FMT_16 && !PS_COLCLIP)
-	{
-		C.rgb = clamp(C.rgb, (float3)0.0f, (float3)255.0f);
-		C.rgb = (uint3)((uint3)C.rgb & (uint3)0xF8);
-	}
 
 	output.c0 = C / 255.0f;
 	output.c1 = (float4)(alpha_blend);
