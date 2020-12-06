@@ -22,6 +22,7 @@
 #-------------------------------------------------------------------------------
 option(DISABLE_BUILD_DATE "Disable including the binary compile date")
 option(ENABLE_TESTS "Enables building the unit tests" ON)
+option(USE_SYSTEM_YAML "Uses a system version of yaml, if found")
 
 if(DISABLE_BUILD_DATE OR openSUSE)
     message(STATUS "Disabling the inclusion of the binary compile date.")
