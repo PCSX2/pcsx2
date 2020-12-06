@@ -71,7 +71,7 @@ INT_PTR CALLBACK GSDialog::DialogProc(HWND hWnd, UINT message, WPARAM wParam, LP
 		if (((LPNMHDR)lParam)->code == TTN_GETDISPINFO)
 		{
 			LPNMTTDISPINFO pInfo = (LPNMTTDISPINFO)lParam;
-			UINT id = GetWindowLongPtr((HWND)pInfo->hdr.idFrom, GWL_ID);
+			const UINT id = (UINT)GetWindowLongPtr((HWND)pInfo->hdr.idFrom, GWL_ID);
 
 			// lpszText is used only if hinst is NULL. Seems to be NULL already,
 			// but it can't hurt to explicitly set it.
@@ -227,7 +227,7 @@ bool GSDialog::ComboBoxGetSelData(UINT id, INT_PTR& data)
 {
 	HWND hWnd = GetDlgItem(m_hWnd, id);
 
-	int item = SendMessage(hWnd, CB_GETCURSEL, 0, 0);
+	const int item = (int)SendMessage(hWnd, CB_GETCURSEL, 0, 0);
 
 	if(item >= 0)
 	{
