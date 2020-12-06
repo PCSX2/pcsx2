@@ -403,13 +403,11 @@ protected:
 	virtual bool NeedsUnload() const;
 
 	virtual bool OpenPlugin_GS();
-	virtual bool OpenPlugin_PAD();
 	virtual bool OpenPlugin_Mcd();
 
 	void _generalclose( PluginsEnum_t pid );
 
 	virtual void ClosePlugin_GS();
-	virtual void ClosePlugin_PAD();
 	virtual void ClosePlugin_Mcd();
 
 	friend class SysMtgsThread;

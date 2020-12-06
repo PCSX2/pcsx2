@@ -80,8 +80,6 @@ bool SysPluginBindings::McdReIndex( uint port, uint slot, const wxString& filter
 const PluginInfo tbl_PluginInfo[] =
 {
 	{ "GS",		PluginId_GS,	PS2E_LT_GS,		PS2E_GS_VERSION		},
-	{ "PAD",	PluginId_PAD,	PS2E_LT_PAD,	PS2E_PAD_VERSION	},
-
 	{ NULL },
 
 	// See PluginEnums_t for details on the MemoryCard plugin hack.
@@ -255,28 +253,7 @@ static void CALLBACK GS_Legacy_GSreadFIFO2(u64* pMem, int qwc) {
 	while(qwc--) GSreadFIFO(pMem);
 }
 
-// PAD
-#ifndef BUILTIN_PAD_PLUGIN
-_PADinit           PADinit;
-_PADopen           PADopen;
-_PADstartPoll      PADstartPoll;
-_PADpoll           PADpoll;
-_PADquery          PADquery;
-_PADupdate         PADupdate;
-_PADkeyEvent       PADkeyEvent;
-_PADsetSlot        PADsetSlot;
-_PADqueryMtap      PADqueryMtap;
-_PADWriteEvent	   PADWriteEvent;
-#endif
-
-static void PAD_update( u32 padslot ) { }
-
 uptr pDsp[2];
-
-static s32 CALLBACK _hack_PADinit()
-{
-	return PADinit( 3 );
-}
 
 // ----------------------------------------------------------------------------
 // Important: Contents of this array must match the order of the contents of the
@@ -343,45 +320,14 @@ static const LegacyApi_OptMethod s_MethMessOpt_GS[] =
 	{ NULL }
 };
 
-// ----------------------------------------------------------------------------
-//  PAD Mess!
-// ----------------------------------------------------------------------------
-static s32 CALLBACK PAD_queryMtap( u8 slot ) { return 0; }
-static s32 CALLBACK PAD_setSlot(u8 port, u8 slot) { return 0; }
-
-static const LegacyApi_ReqMethod s_MethMessReq_PAD[] =
-{
-	{	"PADopen",			(vMeth**)&PADopen,		NULL },
-	{	"PADstartPoll",		(vMeth**)&PADstartPoll,	NULL },
-	{	"PADpoll",			(vMeth**)&PADpoll,		NULL },
-	{	"PADquery",			(vMeth**)&PADquery,		NULL },
-	{	"PADkeyEvent",		(vMeth**)&PADkeyEvent,	NULL },
-
-	// fixme - Following functions are new as of some revison post-0.9.6, and
-	// are for multitap support only.  They should either be optional or offer
-	// NOP fallbacks, to allow older plugins to retain functionality.
-	{	"PADsetSlot",		(vMeth**)&PADsetSlot,	(vMeth*)PAD_setSlot },
-	{	"PADqueryMtap",		(vMeth**)&PADqueryMtap,	(vMeth*)PAD_queryMtap },
-	{ NULL },
-};
-
-static const LegacyApi_OptMethod s_MethMessOpt_PAD[] =
-{
-	{	"PADupdate",		(vMeth**)&PADupdate },
-	{   "PADWriteEvent",	(vMeth**)&PADWriteEvent },
-	{ NULL },
-};
-
 static const LegacyApi_ReqMethod* const s_MethMessReq[] =
 {
 	s_MethMessReq_GS,
-	s_MethMessReq_PAD,
 };
 
 static const LegacyApi_OptMethod* const s_MethMessOpt[] =
 {
 	s_MethMessOpt_GS,
-	s_MethMessOpt_PAD,
 };
 
 SysCorePlugins *g_plugins = NULL;
@@ -541,9 +487,6 @@ void* StaticLibrary::GetSymbol(const wxString &name)
 #ifdef BUILTIN_GS_PLUGIN
 	RETURN_COMMON_SYMBOL(GS);
 #endif
-#ifdef BUILTIN_PAD_PLUGIN
-	RETURN_COMMON_SYMBOL(PAD);
-#endif
 
 #undef RETURN_COMMON_SYMBOL
 #undef RETURN_SYMBOL
@@ -594,9 +537,6 @@ SysCorePlugins::PluginStatus_t::PluginStatus_t( PluginsEnum_t _pid, const wxStri
 	switch (_pid) {
 #ifdef BUILTIN_GS_PLUGIN
 		case PluginId_GS:
-#endif
-#ifdef BUILTIN_PAD_PLUGIN
-		case PluginId_PAD:
 #endif
 		case PluginId_Count:
 			IsStatic	= true;
@@ -770,10 +710,6 @@ void SysCorePlugins::Load( const wxString (&folders)[PluginId_Count] )
 
 	indent.LeaveScope();
 
-	// Hack for PAD's stupid parameter passed on Init
-	PADinit = (_PADinit)m_info[PluginId_PAD]->CommonBindings.Init;
-	m_info[PluginId_PAD]->CommonBindings.Init = _hack_PADinit;
-
 	Console.WriteLn( Color_StrongBlue, "Plugins loaded successfully.\n" );
 
 	// HACK!  Manually bind the Internal MemoryCard plugin for now, until
@@ -859,11 +795,6 @@ bool SysCorePlugins::OpenPlugin_GS()
 	return true;
 }
 
-bool SysCorePlugins::OpenPlugin_PAD()
-{
-	return !PADopen( (void*)pDsp );
-}
-
 bool SysCorePlugins::OpenPlugin_Mcd()
 {
 	ScopedLock lock( m_mtx_PluginStatus );
@@ -888,7 +819,6 @@ void SysCorePlugins::Open( PluginsEnum_t pid )
 	switch( pid )
 	{
 		case PluginId_GS:	result = OpenPlugin_GS();	break;
-		case PluginId_PAD:	result = OpenPlugin_PAD();	break;
 
 		jNO_DEFAULT;
 	}
@@ -944,20 +874,8 @@ void SysCorePlugins::_generalclose( PluginsEnum_t pid )
 
 void SysCorePlugins::ClosePlugin_GS()
 {
-	// old-skool: force-close PAD before GS, because the PAD depends on the GS window.
-
 	if( GetMTGS().IsSelf() )
 		_generalclose( PluginId_GS );
-	else
-	{
-		if( !GSopen2 ) Close( PluginId_PAD );
-		GetMTGS().Suspend();
-	}
-}
-
-void SysCorePlugins::ClosePlugin_PAD()
-{
-	_generalclose( PluginId_PAD );
 }
 
 void SysCorePlugins::ClosePlugin_Mcd()
@@ -978,7 +896,6 @@ void SysCorePlugins::Close( PluginsEnum_t pid )
 	switch( pid )
 	{
 		case PluginId_GS:	ClosePlugin_GS();	break;
-		case PluginId_PAD:	ClosePlugin_PAD();	break;
 		case PluginId_Mcd:	ClosePlugin_Mcd();	break;
 		
 		jNO_DEFAULT;
@@ -1268,7 +1185,7 @@ bool SysCorePlugins::KeyEvent( const keyEvent& evt )
 	// The current version of PS2E doesn't support it yet, though.
 
 	ForPlugins([&] (const PluginInfo * pi) {
-		if( pi->id != PluginId_PAD && m_info[pi->id] )
+		if( m_info[pi->id] )
 			m_info[pi->id]->CommonBindings.KeyEvent( const_cast<keyEvent*>(&evt) );
 	});
 
