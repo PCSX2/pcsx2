@@ -9749,6 +9749,7 @@ EETimingHack = 1 // Fixes various VIF errors.
 Serial = SLES-51208
 Name   = Rocky
 Region = PAL-M5
+VIF1StallHack = 1 // Fixes freezes
 ---------------------------------------------
 Serial = SLES-51209
 Name   = Haven - Call of the King
