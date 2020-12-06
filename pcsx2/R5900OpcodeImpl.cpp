@@ -24,6 +24,7 @@
 #include "R5900Exceptions.h"
 #include "GS.h"
 #include "CDVD/CDVD.h"
+#include "ps2/BiosTools.h"
 
 GS_VideoMode gsVideoMode = GS_VideoMode::Uninitialized;
 bool gsIsInterlaced = false;
@@ -944,7 +945,7 @@ void SYSCALL()
 				}
 				break;
 		case Syscall::GetOsdConfigParam:
-			if(g_SkipBiosHack)
+			if(!NoOSD && g_SkipBiosHack)
 			{
 				u32 memaddr = cpuRegs.GPR.n.a0.UL[0];
 				u8 params[16];
@@ -965,7 +966,7 @@ void SYSCALL()
 			}
 			break;
 		case Syscall::GetOsdConfigParam2:
-			if (g_SkipBiosHack)
+			if (!NoOSD && g_SkipBiosHack)
 			{
 				u32 memaddr = cpuRegs.GPR.n.a0.UL[0];
 				u8 params[16];

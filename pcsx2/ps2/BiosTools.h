@@ -35,7 +35,8 @@ struct BiosDebugInformation
 	u32 threadListAddr;
 };
 
-extern u32 BiosVersion;		//  Used by CDVD
+extern u32 BiosVersion;		// Used by CDVD
+extern bool NoOSD;			// Used for HLE OSD Config Params
 extern u32 BiosChecksum;
 extern wxString BiosDescription;
 extern const BiosDebugInformation* CurrentBiosInformation;

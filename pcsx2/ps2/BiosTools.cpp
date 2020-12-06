@@ -51,6 +51,7 @@ static_assert( sizeof(romdir) == DIRENTRY_SIZE, "romdir struct not packed to 16 
 
 u32 BiosVersion;
 u32 BiosChecksum;
+bool NoOSD;
 wxString BiosDescription;
 const BiosDebugInformation* CurrentBiosInformation;
 
@@ -283,6 +284,13 @@ void LoadBIOS()
 		wxString biosZone;
 		wxFFile fp( Bios , "rb");
 		fp.Read( eeMem->ROM, std::min<s64>( Ps2MemSize::Rom, filesize ) );
+
+		// If file is less than 2mb it doesn't have an OSD (Devel consoles)
+		// So skip HLEing OSDSys Param stuff
+		if (filesize < 2465792)
+			NoOSD = true;
+		else
+			NoOSD = false;
 
 		ChecksumIt( BiosChecksum, eeMem->ROM );
 
