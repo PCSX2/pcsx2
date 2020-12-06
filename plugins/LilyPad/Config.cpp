@@ -97,7 +97,7 @@ void SetupLogSlider(HWND hWndSlider)
 int GetLogSliderVal(HWND hWnd, int id)
 {
     HWND hWndSlider = GetDlgItem(hWnd, id);
-    int val = SendMessage(hWndSlider, TBM_GETPOS, 0, 0);
+    int val = (int)SendMessage(hWndSlider, TBM_GETPOS, 0, 0);
     if (val <= (1 << 21)) {
         val = (val + 16) >> 5;
     } else {
@@ -1159,7 +1159,7 @@ void Diagnostics(HWND hWnd)
     item.iItem = index;
     if (!ListView_GetItem(hWndList, &item))
         return;
-    Diagnose(item.lParam, hWnd);
+    Diagnose((int)item.lParam, hWnd);
     RefreshEnabledDevicesAndDisplay(0, hWnd, 1);
 }
 
@@ -1257,7 +1257,7 @@ void DeleteBinding(int port, int slot, int padtype, Device *dev, Binding *b)
         }
     }
     Binding *bindings = dev->pads[port][slot][padtype].bindings;
-    int i = b - bindings;
+    int i = int(b - bindings);
     memmove(bindings + i, bindings + i + 1, sizeof(Binding) * (dev->pads[port][slot][padtype].numBindings - i - 1));
     dev->pads[port][slot][padtype].numBindings--;
 }
@@ -1275,7 +1275,7 @@ void DeleteFFBinding(int port, int slot, Device *dev, ForceFeedbackBinding *b)
         }
     }
     ForceFeedbackBinding *bindings = dev->pads[port][slot][padtype].ffBindings;
-    int i = b - bindings;
+    int i = int(b - bindings);
     memmove(bindings + i, bindings + i + 1, sizeof(Binding) * (dev->pads[port][slot][padtype].numFFBindings - i - 1));
     dev->pads[port][slot][padtype].numFFBindings--;
 }
@@ -1332,7 +1332,7 @@ int CreateEffectBinding(Device *dev, wchar_t *effectID, unsigned int port, unsig
     if (!eff) {
         return -1;
     }
-    int effectIndex = eff - dev->ffEffectTypes;
+    int effectIndex = int(eff - dev->ffEffectTypes);
     dev->pads[port][slot][padtype].ffBindings = (ForceFeedbackBinding *)realloc(dev->pads[port][slot][padtype].ffBindings, (dev->pads[port][slot][padtype].numFFBindings + 1) * sizeof(ForceFeedbackBinding));
     int newIndex = dev->pads[port][slot][padtype].numFFBindings;
     while (newIndex && dev->pads[port][slot][padtype].ffBindings[newIndex - 1].motor >= motor) {
@@ -1383,7 +1383,7 @@ int BindCommand(Device *dev, unsigned int uid, unsigned int port, unsigned int s
     if (!c)
         return -1;
     // Add before deleting.  Means I won't scroll up one line when scrolled down to bottom.
-    int controlIndex = c - dev->virtualControls;
+    int controlIndex = int(c - dev->virtualControls);
     int index = 0;
     PadBindings *p = dev->pads[port][slot] + padtype;
     p->bindings = (Binding *)realloc(p->bindings, (p->numBindings + 1) * sizeof(Binding));
@@ -1745,7 +1745,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
             if (HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_AXIS_DIRECTION) {
                 int index = ListView_GetNextItem(hWndList, -1, LVNI_SELECTED);
                 if (index >= 0) {
-                    int cbsel = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
+                    const int cbsel = (int)SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
                     if (cbsel >= 0) {
                         ForceFeedbackBinding *ffb;
                         Binding *b;
@@ -1763,8 +1763,8 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                     }
                 }
             } else if (HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_DEVICE_SELECT) {
-                int selectedDev = SendMessage(GetDlgItem(hWnd, IDC_DEVICE_SELECT), CB_GETCURSEL, 0, 0);
-                config.deviceSelect[port][slot] = SendMessage(GetDlgItem(hWnd, IDC_DEVICE_SELECT), CB_GETITEMDATA, selectedDev, 0);
+                const int selectedDev = (int)SendMessage(GetDlgItem(hWnd, IDC_DEVICE_SELECT), CB_GETCURSEL, 0, 0);
+                config.deviceSelect[port][slot] = (int)SendMessage(GetDlgItem(hWnd, IDC_DEVICE_SELECT), CB_GETITEMDATA, selectedDev, 0);
                 RefreshEnabledDevicesAndDisplay(1, hWndGeneral, 1);
                 if (selectedDev > 0) {
                     for (int i = 0; i < dm->numDevices; i++) {
@@ -1778,7 +1778,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                 }
                 ListView_SetColumnWidth(hWndList, 2, LVSCW_AUTOSIZE_USEHEADER);
             } else if (HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_FF_EFFECT) {
-                int typeIndex = SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
+                int typeIndex = (int)SendMessage((HWND)lParam, CB_GETCURSEL, 0, 0);
                 if (typeIndex >= 0)
                     ChangeEffect(port, slot, 0, 0, (unsigned int *)&typeIndex);
             } else if (HIWORD(wParam) == BN_CLICKED) {
@@ -1894,7 +1894,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
                     SetWindowTextW(GetDlgItem(hWnd, IDC_QUICK_SETUP_TEXT), L"");
 
                     RefreshEnabledDevices(0);
-                    int selectedDev = SendMessage(GetDlgItem(hWnd, IDC_DEVICE_SELECT), CB_GETCURSEL, 0, 0);
+                    const int selectedDev = (int)SendMessage(GetDlgItem(hWnd, IDC_DEVICE_SELECT), CB_GETCURSEL, 0, 0);
                     if (selectedDev > 0) {
                         for (int i = 0; i < dm->numDevices; i++) {
                             Device *dev = dm->devices[config.deviceSelect[port][slot]];
@@ -2306,9 +2306,9 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
             if (LOWORD(wParam) == IDC_PAD_TYPE) {
                 if (HIWORD(wParam) == CBN_SELCHANGE) {
                     HWND hWndCombo = GetDlgItem(hWnd, IDC_PAD_TYPE);
-                    int index = ListView_GetNextItem(hWndList, -1, LVNI_SELECTED);
-                    int sel = SendMessage(hWndCombo, CB_GETCURSEL, 0, 0);
-                    int port, slot;
+                    const int index = ListView_GetNextItem(hWndList, -1, LVNI_SELECTED);
+                    const int sel = (int)SendMessage(hWndCombo, CB_GETCURSEL, 0, 0);
+                    int port = 0, slot = 0;
                     if (sel < 0 || !ListIndexToPortAndSlot(index, &port, &slot))
                         break;
                     if (sel != config.padConfigs[port][slot].type) {
