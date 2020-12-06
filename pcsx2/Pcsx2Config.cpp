@@ -439,6 +439,7 @@ void Pcsx2Config::LoadSave( IniInterface& ini )
 #endif
 	IniBitBool( ConsoleToStdio );
 	IniBitBool( HostFs );
+	IniBitBool( FullBootConfig );
 
 	IniBitBool( BackupSavestate );
 	IniBitBool( McdEnableEjection );
