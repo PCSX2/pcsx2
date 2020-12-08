@@ -896,6 +896,19 @@ void GSState::GIFRegHandlerXYZ2(const GIFReg* RESTRICT r)
 
 template<int i> void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 {
+	// TODO: Paletted Formats
+	// 8-bit and 4 bit formats need to be addressed with a buffer width divisible 2.
+	// However, not doing so is possible and does have a behavior on the GS.
+	// When implementing such code care must be taken not to apply it unless it is
+	// used for a draw. Galaxy Angel will send TEX0 with a PSM of T8 and a TBW of 7
+	// only to immediately update it to CT32 with TEX2. The old code used to apply a
+	// correction on the TEX0 setting which caused the game to draw the CT32 texture
+	// with an incorrect buffer width.
+	//
+	// Bouken Jidai Katsugeki Goemon apparently uses a TBW of 1 but this game is currently
+	// extremely broken for the same reasons as MLB Power Pros in that it spams TEX0 with
+	// complete garbage making for a nice 1G heap of GSOffset.
+
 	GL_REG("Apply TEX0_%d = 0x%x_%x", i, TEX0.u32[1], TEX0.u32[0]);
 
 	// even if TEX0 did not change, a new palette may have been uploaded and will overwrite the currently queued for drawing
@@ -1000,13 +1013,6 @@ template<int i> void GSState::GIFRegHandlerTEX0(const GIFReg* RESTRICT r)
 
 	TEX0.TW = tw;
 	TEX0.TH = th;
-
-	if((TEX0.TBW & 1) && (TEX0.PSM == PSM_PSMT8 || TEX0.PSM == PSM_PSMT4))
-	{
-		ASSERT(TEX0.TBW == 1); // TODO // Bouken Jidai Katsugeki Goemon
-
-		TEX0.TBW &= ~1; // GS User 2.6
-	}
 
 	ApplyTEX0<i>(TEX0);
 
@@ -1413,6 +1419,16 @@ template<int i> void GSState::GIFRegHandlerZBUF(const GIFReg* RESTRICT r)
 
 void GSState::GIFRegHandlerBITBLTBUF(const GIFReg* RESTRICT r)
 {
+	// TODO: Paletted formats
+	// There is a memory bug on the GS as it relates to the transfering of
+	// 8-bit and 4-bit formats needing an even buffer width due to the
+	// second half of the page being addressed by TBW/2
+	//
+	// namcoXcapcom: Apparently uses DBW of 5 and 11 (and refers to them
+	// in TEX0 later as 4 and 10 respectively). However I can find no
+	// documentation on this problem, nothing in the game to suggest
+	// it is broken and the code here for it was likely incorrect to begin with.
+
 	GL_REG("BITBLTBUF = 0x%x_%x", r->u32[1], r->u32[0]);
 	if(r->BITBLTBUF != m_env.BITBLTBUF)
 	{
@@ -1420,16 +1436,6 @@ void GSState::GIFRegHandlerBITBLTBUF(const GIFReg* RESTRICT r)
 	}
 
 	m_env.BITBLTBUF = (GSVector4i)r->BITBLTBUF;
-
-	if((m_env.BITBLTBUF.SBW & 1) && (m_env.BITBLTBUF.SPSM == PSM_PSMT8 || m_env.BITBLTBUF.SPSM == PSM_PSMT4))
-	{
-		m_env.BITBLTBUF.SBW &= ~1;
-	}
-
-	if((m_env.BITBLTBUF.DBW & 1) && (m_env.BITBLTBUF.DPSM == PSM_PSMT8 || m_env.BITBLTBUF.DPSM == PSM_PSMT4))
-	{
-		m_env.BITBLTBUF.DBW &= ~1; // namcoXcapcom: 5, 11, refered to as 4, 10 in TEX0.TBW later
-	}
 }
 
 void GSState::GIFRegHandlerTRXPOS(const GIFReg* RESTRICT r)
