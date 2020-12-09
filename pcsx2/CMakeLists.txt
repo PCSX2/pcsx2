@@ -454,8 +454,8 @@ endif()
 
 
 # PAD resources pre-compilation
-set(PADImgHeader "${CMAKE_BINARY_DIR}/pcsx2/PAD/ImgHeader")
-set(PADImg "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Img")
+set(PADImgHeader "${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/ImgHeader")
+set(PADImg "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/Img")
 
 file(MAKE_DIRECTORY ${compiled_images})
 
@@ -468,39 +468,41 @@ foreach(result_file IN ITEMS
         COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${PADImg}/${result_file}.png" "${PADImgHeader}/${result_file}" )
 endforeach()
 
+add_custom_glib_res("resources" "onepad-res.xml" "onepad_res" res/game_controller_db.txt)
 
-# PAD sources 
-set(pcsx2PADSources
-    PAD/controller.cpp
-    PAD/GamePad.cpp
-    PAD/SDL/joystick.cpp
-    PAD/keyboard.cpp
-    PAD/KeyStatus.cpp
-    PAD/onepad.cpp
-    PAD/resources.cpp
-    PAD/state_management.cpp
-    PAD/wx_dialog/dialog.cpp
-    PAD/wx_dialog/opPanel.cpp
-    PAD/wx_dialog/GamepadConfiguration.cpp
-    PAD/wx_dialog/JoystickConfiguration.cpp
-    PAD/ini.cpp
-    PAD/linux.cpp
+
+# PAD/Linux sources 
+set(pcsx2PAD/LinuxSources
+    PAD/Linux/controller.cpp
+    PAD/Linux/GamePad.cpp
+    PAD/Linux/SDL/joystick.cpp
+    PAD/Linux/keyboard.cpp
+    PAD/Linux/KeyStatus.cpp
+    PAD/Linux/onepad.cpp
+    PAD/Linux/resources.cpp
+    PAD/Linux/state_management.cpp
+    PAD/Linux/wx_dialog/dialog.cpp
+    PAD/Linux/wx_dialog/opPanel.cpp
+    PAD/Linux/wx_dialog/GamepadConfiguration.cpp
+    PAD/Linux/wx_dialog/JoystickConfiguration.cpp
+    PAD/Linux/ini.cpp
+    PAD/Linux/linux.cpp
     )
 
-# PAD headers
-set(pcsx2PADHeaders
-    PAD/bitwise.h
-    PAD/controller.h
-    PAD/GamePad.h
-    PAD/SDL/joystick.h
-    PAD/keyboard.h
-    PAD/KeyStatus.h
-    PAD/onepad.h
-    PAD/resources.h
-    PAD/state_management.h
-    PAD/wx_dialog/opPanel.h
-    PAD/wx_dialog/GamepadConfiguration.h
-    PAD/wx_dialog/JoystickConfiguration.h
+# PAD/Linux headers
+set(pcsx2PAD/LinuxHeaders
+    PAD/Linux/bitwise.h
+    PAD/Linux/controller.h
+    PAD/Linux/GamePad.h
+    PAD/Linux/SDL/joystick.h
+    PAD/Linux/keyboard.h
+    PAD/Linux/KeyStatus.h
+    PAD/Linux/onepad.h
+    PAD/Linux/resources.h
+    PAD/Linux/state_management.h
+    PAD/Linux/wx_dialog/opPanel.h
+    PAD/Linux/wx_dialog/GamepadConfiguration.h
+    PAD/Linux/wx_dialog/JoystickConfiguration.h
     # images
     ${PADImgHeader}/analog.h
     ${PADImgHeader}/circle.h
