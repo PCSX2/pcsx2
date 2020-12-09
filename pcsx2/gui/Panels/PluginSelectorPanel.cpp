@@ -700,48 +700,6 @@ void Panels::PluginSelectorPanel::OnEnumComplete( wxCommandEvent& evt )
 				else if( index_sse2 >= 0 ) m_ComponentBoxes->Get(pid).SetSelection( index_sse2 );
 				else m_ComponentBoxes->Get(pid).SetSelection( 0 );
 			}
-			else if (pid == PluginId_PAD)
-			{
-				int count = (int)m_ComponentBoxes->Get(pid).GetCount();
-
-				int index_lilypad = -1;
-				int index_onepad = -1;
-				int index_onepad_legacy = -1;
-
-				for( int i = 0; i < count; i++ )
-				{
-					auto str = m_ComponentBoxes->Get(pid).GetString(i).Lower();
-
-					if (str.Contains("lilypad")) index_lilypad = i;
-					if (str.Contains("onepad"))
-					{
-						if (str.Contains("legacy"))
-							index_onepad_legacy = i;
-						else
-							index_onepad = i;
-					}
-				}
-
-				#ifdef _WIN32
-					if (index_lilypad >= 0)
-						m_ComponentBoxes->Get(pid).SetSelection(index_lilypad);
-					/* else if (index_onepad >= 0)
-						m_ComponentBoxes->Get(pid).SetSelection(index_onepad);
-					else if (index_onepad_legacy >= 0)
-						m_ComponentBoxes->Get(pid).SetSelection(index_onepad_legacy); */
-					else
-						m_ComponentBoxes->Get(pid).SetSelection(0);
-				#else
-					if (index_onepad >= 0)
-						m_ComponentBoxes->Get(pid).SetSelection(index_onepad);
-					else if (index_onepad_legacy >= 0)
-						m_ComponentBoxes->Get(pid).SetSelection(index_onepad_legacy);
-					else if (index_lilypad >= 0)
-						m_ComponentBoxes->Get(pid).SetSelection(index_lilypad);
-					else
-						m_ComponentBoxes->Get(pid).SetSelection(0);
-				#endif
-			}
 			else
 				m_ComponentBoxes->Get(pid).SetSelection( 0 );
 
