@@ -19,7 +19,7 @@
 
 #pragma once
 
-#include "onepad.h"
+#include "PAD.h"
 #include "controller.h"
 
 #ifdef SDL_BUILD

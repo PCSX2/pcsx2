@@ -51,7 +51,7 @@ void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>> &vjo
         SDL_EventState(SDL_CONTROLLERDEVICEREMOVED, SDL_ENABLE);
 
         { // Support as much Joystick as possible
-            GBytes *bytes = g_resource_lookup_data(onepad_res_get_resource(), "/onepad/res/game_controller_db.txt", G_RESOURCE_LOOKUP_FLAGS_NONE, nullptr);
+            GBytes *bytes = g_resource_lookup_data(onepad_res_get_resource(), "/PAD/res/game_controller_db.txt", G_RESOURCE_LOOKUP_FLAGS_NONE, nullptr);
 
             size_t size = 0;
             // SDL forget to add const for SDL_RWFromMem API...
@@ -157,7 +157,7 @@ JoystickInfo::JoystickInfo(int id)
     }
 
     if (joy == nullptr) {
-        fprintf(stderr, "onepad:failed to open joystick %d\n", id);
+        fprintf(stderr, "PAD: failed to open joystick %d\n", id);
         return;
     }
 
@@ -167,7 +167,7 @@ JoystickInfo::JoystickInfo(int id)
     const char *devname = SDL_JoystickNameForIndex(id);
 
     if (m_controller == nullptr) {
-        fprintf(stderr, "onepad: Joystick (%s,GUID:%s) isn't yet supported by the SDL2 game controller API\n"
+        fprintf(stderr, "PAD: Joystick (%s,GUID:%s) isn't yet supported by the SDL2 game controller API\n"
                         "Fortunately you can use AntiMicro (https://github.com/AntiMicro/antimicro) or Steam to configure your joystick\n"
                         "The mapping can be stored in OnePAD2.ini as 'SDL2 = <...mapping description...>'\n"
                         "Please report it to us (https://github.com/PCSX2/pcsx2/issues) so we can add your joystick to our internal database.",
@@ -229,7 +229,7 @@ JoystickInfo::JoystickInfo(int id)
         }
     }
 
-    fprintf(stdout, "onepad: controller (%s) detected%s, GUID:%s\n",
+    fprintf(stdout, "PAD: controller (%s) detected%s, GUID:%s\n",
             devname, m_haptic ? " with rumble support" : "", guid);
 
     m_no_error = true;

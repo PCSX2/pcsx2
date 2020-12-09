@@ -23,7 +23,7 @@
 
 #include "GamePad.h"
 #include "keyboard.h"
-#include "onepad.h"
+#include "PAD.h"
 
 extern std::string s_strIniPath;
 

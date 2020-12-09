@@ -18,9 +18,7 @@
  *  along with this program; if not, write to the Free Software
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
-
-#ifndef __PAD_H__
-#define __PAD_H__
+#pragma once
 
 #define GAMEPAD_NUMBER 2 // numbers of gamepad
 
@@ -109,12 +107,6 @@ enum gamePadValues {
 #include "KeyStatus.h"
 #include "mt_queue.h"
 
-#ifdef _MSC_VER
-#define EXPORT_C_(type) extern "C" __declspec(dllexport) type CALLBACK
-#else
-#define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
-#endif
-
 extern FILE *padLog;
 extern void initLogging();
 
@@ -135,4 +127,21 @@ void SaveConfig();
 
 void SysMessage(char *fmt, ...);
 
+s32 PADinit(u32 flags);
+void PADshutdown();
+s32 PADopen(void *pDsp);
+void PADsetSettingsDir(const char *dir);
+void PADsetLogDir(const char *dir);
+void PADclose();
+u32 PADquery();
+s32 PADsetSlot(u8 port, u8 slot);
+s32 PADfreeze(int mode, freezeData *data);
+u8 PADstartPoll(int pad);
+u8 PADpoll(u8 value);
+keyEvent * PADkeyEvent();
+void PADupdate(int pad);
+void PADconfigure();
+
+#if defined(__unix__)
+void PADWriteEvent(keyEvent &evt);
 #endif

@@ -457,7 +457,7 @@ endif()
 set(PADImgHeader "${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/ImgHeader")
 set(PADImg "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/Img")
 
-file(MAKE_DIRECTORY ${compiled_images})
+file(MAKE_DIRECTORY ${PADImgHeader})
 
 foreach(result_file IN ITEMS
         analog circle cross dp_bottom dp_left dp_right dp_up dualshock2
@@ -468,7 +468,7 @@ foreach(result_file IN ITEMS
         COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${PADImg}/${result_file}.png" "${PADImgHeader}/${result_file}" )
 endforeach()
 
-add_custom_glib_res("resources" "onepad-res.xml" "onepad_res" res/game_controller_db.txt)
+add_custom_glib_res("PAD/Linux/resources" "PAD/Linux/res/PAD-res.xml" "PAD_res" PAD/Linux/res/game_controller_db.txt)
 
 
 # PAD/Linux sources 
@@ -478,7 +478,7 @@ set(pcsx2PAD/LinuxSources
     PAD/Linux/SDL/joystick.cpp
     PAD/Linux/keyboard.cpp
     PAD/Linux/KeyStatus.cpp
-    PAD/Linux/onepad.cpp
+    PAD/Linux/PAD.cpp
     PAD/Linux/resources.cpp
     PAD/Linux/state_management.cpp
     PAD/Linux/wx_dialog/dialog.cpp
@@ -497,7 +497,7 @@ set(pcsx2PAD/LinuxHeaders
     PAD/Linux/SDL/joystick.h
     PAD/Linux/keyboard.h
     PAD/Linux/KeyStatus.h
-    PAD/Linux/onepad.h
+    PAD/Linux/PAD.h
     PAD/Linux/resources.h
     PAD/Linux/state_management.h
     PAD/Linux/wx_dialog/opPanel.h
@@ -1055,9 +1055,6 @@ endif()
 
 if(BUILTIN_GS)
     set(pcsx2FinalLibs "${pcsx2FinalLibs} GSdx")
-endif()
-if(BUILTIN_PAD)
-    set(pcsx2FinalLibs "${pcsx2FinalLibs} onepad-1.2.0")
 endif()
 
 # additonal include directories

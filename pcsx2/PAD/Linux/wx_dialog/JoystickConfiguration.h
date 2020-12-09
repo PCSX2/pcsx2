@@ -26,7 +26,7 @@
 
 #include "../GamePad.h"
 #include "../keyboard.h"
-#include "../onepad.h"
+#include "../PAD.h"
 
 static const s32 Lx_check_id = wxID_HIGHEST + 100 + 1;
 static const s32 Ly_check_id = wxID_HIGHEST + 100 + 2;

@@ -22,7 +22,7 @@
 #ifndef __KEYSTATUS_H__
 #define __KEYSTATUS_H__
 
-#include "onepad.h"
+#include "PAD.h"
 
 typedef struct
 {
