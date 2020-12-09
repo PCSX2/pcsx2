@@ -56,6 +56,11 @@ if(XDG_STD)
     set(pcsx2FinalFlags ${pcsx2FinalFlags} -DXDG_STD)
 endif()
 
+if(SDL_FOUND)
+    set(pcsx2FinalFlags ${pcsx2FinalFlags} -DSDL_BUILD)
+endif()
+
+
 set(Output PCSX2)
 
 # Main pcsx2 source
@@ -445,6 +450,82 @@ if(PULSEAUDIO_FOUND)
     set(pcsx2USBSources ${pcsx2USBSources} USB/usb-mic/audiodev-pulse.cpp)
     set(pcsx2USBHeaders ${pcsx2USBHeaders} USB/usb-mic/audiodev-pulse.h)
 endif()
+
+
+
+# PAD resources pre-compilation
+set(PADImgHeader "${CMAKE_BINARY_DIR}/pcsx2/PAD/ImgHeader")
+set(PADImg "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Img")
+
+file(MAKE_DIRECTORY ${compiled_images})
+
+foreach(result_file IN ITEMS
+        analog circle cross dp_bottom dp_left dp_right dp_up dualshock2
+        joystick_cursor l1 r1 l2 r2 l3 r3 select square start triangle arrow_up
+        arrow_bottom arrow_left arrow_right)
+    add_custom_command(
+        OUTPUT  "${PADImgHeader}/${result_file}.h"
+        COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${PADImg}/${result_file}.png" "${PADImgHeader}/${result_file}" )
+endforeach()
+
+
+# PAD sources 
+set(pcsx2PADSources
+    PAD/controller.cpp
+    PAD/GamePad.cpp
+    PAD/SDL/joystick.cpp
+    PAD/keyboard.cpp
+    PAD/KeyStatus.cpp
+    PAD/onepad.cpp
+    PAD/resources.cpp
+    PAD/state_management.cpp
+    PAD/wx_dialog/dialog.cpp
+    PAD/wx_dialog/opPanel.cpp
+    PAD/wx_dialog/GamepadConfiguration.cpp
+    PAD/wx_dialog/JoystickConfiguration.cpp
+    PAD/ini.cpp
+    PAD/linux.cpp
+    )
+
+# PAD headers
+set(pcsx2PADHeaders
+    PAD/bitwise.h
+    PAD/controller.h
+    PAD/GamePad.h
+    PAD/SDL/joystick.h
+    PAD/keyboard.h
+    PAD/KeyStatus.h
+    PAD/onepad.h
+    PAD/resources.h
+    PAD/state_management.h
+    PAD/wx_dialog/opPanel.h
+    PAD/wx_dialog/GamepadConfiguration.h
+    PAD/wx_dialog/JoystickConfiguration.h
+    # images
+    ${PADImgHeader}/analog.h
+    ${PADImgHeader}/circle.h
+    ${PADImgHeader}/cross.h
+    ${PADImgHeader}/dp_bottom.h
+    ${PADImgHeader}/dp_left.h
+    ${PADImgHeader}/dp_right.h
+    ${PADImgHeader}/dp_up.h
+    ${PADImgHeader}/dualshock2.h
+    ${PADImgHeader}/joystick_cursor.h
+    ${PADImgHeader}/l1.h
+    ${PADImgHeader}/r1.h
+    ${PADImgHeader}/l2.h
+    ${PADImgHeader}/r2.h
+    ${PADImgHeader}/l3.h
+    ${PADImgHeader}/r3.h
+    ${PADImgHeader}/select.h
+    ${PADImgHeader}/square.h
+    ${PADImgHeader}/start.h
+    ${PADImgHeader}/triangle.h
+    ${PADImgHeader}/arrow_up.h
+    ${PADImgHeader}/arrow_bottom.h
+    ${PADImgHeader}/arrow_left.h
+    ${PADImgHeader}/arrow_right.h
+    )
 
 # DebugTools sources
 set(pcsx2DebugToolsSources
@@ -908,6 +989,8 @@ if(Linux)
 		${pcsx2LinuxHeaders}
 		${pcsx2USBSources}
 		${pcsx2USBHeaders}
+        ${pcsx2PADHeaders}
+        ${pcsx2PADSources}
 		)
 		
 	set(Platform_Libs
