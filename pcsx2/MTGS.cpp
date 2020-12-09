@@ -23,6 +23,7 @@
 #include "Gif_Unit.h"
 #include "MTVU.h"
 #include "Elfheader.h"
+#include "PAD/Linux/PAD.h"
 
 
 // Uncomment this to enable profiling of the GS RingBufferCopy function.
@@ -450,7 +451,7 @@ void SysMtgsThread::ExecuteTaskInThread()
 
 							// if we're not using GSOpen2, then the GS window is on this thread (MTGS thread),
 							// so we need to call PADupdate from here.
-							if ((GSopen2 == NULL) && (PADupdate != NULL))
+							if (GSopen2 == NULL)
 								PADupdate(0);
 
 							m_QueuedFrameCount.fetch_sub(1);

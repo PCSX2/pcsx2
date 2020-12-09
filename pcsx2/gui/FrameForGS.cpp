@@ -22,6 +22,7 @@
 #include "GS.h"
 #include "MainFrame.h"
 #include "MSWstuff.h"
+#include "PAD/Linux/PAD.h"
 
 #include "ConsoleLogger.h"
 
@@ -314,7 +315,7 @@ void GSPanel::OnMouseEvent( wxMouseEvent& evt )
 #if defined(__unix__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
-	if( (PADWriteEvent != NULL) && (GSopen2 != NULL) ) {
+	if( (GSopen2 != NULL) ) {
 		keyEvent event;
 		// FIXME how to handle double click ???
 		if (evt.ButtonDown()) {
@@ -377,7 +378,7 @@ void GSPanel::OnKeyDownOrUp( wxKeyEvent& evt )
 #if defined(__unix__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
-	if( (PADWriteEvent != NULL) && (GSopen2 != NULL) ) {
+	if( (GSopen2 != NULL) ) {
 		keyEvent event;
 		event.key = evt.GetRawKeyCode();
 		if (evt.GetEventType() == wxEVT_KEY_UP)
@@ -410,7 +411,7 @@ void GSPanel::OnKeyDownOrUp( wxKeyEvent& evt )
 		evt.m_keyCode += (int)'a' - 'A';
 #endif
 
-	if ((PADopen != NULL) && CoreThread.IsOpen())
+	if (CoreThread.IsOpen())
 	{
 		return;
 	}
@@ -442,8 +443,7 @@ void GSPanel::DirectKeyCommand( wxKeyEvent& evt )
 
 void GSPanel::UpdateScreensaver()
 {
-	bool prevent = g_Conf->GSWindow.DisableScreenSaver
-				   && m_HasFocus && m_coreRunning;
+    bool prevent = g_Conf->GSWindow.DisableScreenSaver && m_HasFocus && m_coreRunning;
 	ScreensaverAllow(!prevent);
 }
 
@@ -463,7 +463,7 @@ void GSPanel::OnFocus( wxFocusEvent& evt )
 #if defined(__unix__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
-	if( (PADWriteEvent != NULL) && (GSopen2 != NULL) ) {
+	if((GSopen2 != NULL) ) {
 		keyEvent event = {0, 9}; // X equivalent of FocusIn;
 		PADWriteEvent(event);
 	}
@@ -481,7 +481,7 @@ void GSPanel::OnFocusLost( wxFocusEvent& evt )
 #if defined(__unix__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
-	if( (PADWriteEvent != NULL) && (GSopen2 != NULL) ) {
+	if((GSopen2 != NULL) ) {
 		keyEvent event = {0, 10}; // X equivalent of FocusOut
 		PADWriteEvent(event);
 	}

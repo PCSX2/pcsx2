@@ -46,7 +46,6 @@
 #include <queue>
 
 #define PADdefs
-#include "PS2Edefs.h"
 
 enum PadOptions {
     PADOPTION_FORCEFEEDBACK = 0x1,
@@ -110,7 +109,7 @@ enum gamePadValues {
 extern FILE *padLog;
 extern void initLogging();
 
-#define PAD_LOG __Log
+//#define PAD_LOG __Log
 //#define PAD_LOG __LogToConsole
 
 extern keyEvent event;

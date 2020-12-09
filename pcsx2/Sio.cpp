@@ -20,6 +20,7 @@
 #include "ConsoleLogger.h"
 #include "Sio.h"
 #include "sio_internal.h"
+#include "PAD/Linux/PAD.h"
 
 #ifndef DISABLE_RECORDING
 #	include "Recording/InputRecording.h"
