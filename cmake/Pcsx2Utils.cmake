@@ -180,3 +180,22 @@ macro(add_custom_glib_res out xml prefix)
             --c-name ${prefix} "${RESOURCE_DIR}/${xml}" --target=${out}.cpp
         DEPENDS res/${xml} ${RESOURCE_FILES})
 endmacro()
+
+# Helper macro to generate resources on linux (based on glib)
+macro(add_custom_glib out xml prefix)
+    set(RESOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}")
+    set(RESOURCE_FILES "${ARGN}")
+    # Note: trying to combine --generate-source and --generate-header doesn't work.
+    # It outputs whichever one comes last into the file named by the first
+    add_custom_command(
+        OUTPUT ${out}.h
+        COMMAND glib-compile-resources --sourcedir "${RESOURCE_DIR}" --generate-header
+            --c-name ${prefix} "${RESOURCE_DIR}/${xml}" --target=${out}.h
+        DEPENDS res/${xml} ${RESOURCE_FILES})
+
+    add_custom_command(
+        OUTPUT ${out}.cpp
+        COMMAND glib-compile-resources --sourcedir "${RESOURCE_DIR}" --generate-source
+            --c-name ${prefix} "${RESOURCE_DIR}/${xml}" --target=${out}.cpp
+        DEPENDS res/${xml} ${RESOURCE_FILES})
+endmacro()

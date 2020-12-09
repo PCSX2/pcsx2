@@ -763,31 +763,7 @@ void MainEmuFrame::Menu_ConfigPlugin_Click(wxCommandEvent& event)
 	wxWindowDisabler disabler;
 	ScopedCoreThreadPause paused_core(new SysExecEvent_SaveSinglePlugin(pid));
 
-#ifndef DISABLE_RECORDING
-	if (pid == PluginId_PAD)
-	{
-		// The recording features involve pausing emulation, and can be resumed ideally via key-bindings.
-		//
-		// However, since the PAD plugin is used to do so, if it's closed then there is nothing to read
-		// the keybind resulting producing an unrecovable state.
-		//
-		// If the CoreThread is paused prior to opening the PAD plugin settings then when the settings
-		// are closed the PAD will not re-open. To avoid this, we resume emulation prior to the plugins
-		// configuration handler doing so.
-		if (g_Conf->EmuOptions.EnableRecordingTools && g_InputRecordingControls.IsPaused())
-		{
-			g_InputRecordingControls.Resume();
-			GetCorePlugins().Configure(pid);
-			g_InputRecordingControls.Pause();
-		}
-		else
-			GetCorePlugins().Configure(pid);
-	}
-	else
-		GetCorePlugins().Configure(pid);
-#else
 	GetCorePlugins().Configure(pid);
-#endif
 }
 
 void MainEmuFrame::Menu_Debug_Open_Click(wxCommandEvent& event)

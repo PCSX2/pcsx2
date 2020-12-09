@@ -468,11 +468,11 @@ foreach(result_file IN ITEMS
         COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${PADImg}/${result_file}.png" "${PADImgHeader}/${result_file}" )
 endforeach()
 
-add_custom_glib_res("PAD/Linux/resources" "PAD/Linux/res/PAD-res.xml" "PAD_res" PAD/Linux/res/game_controller_db.txt)
+add_custom_glib("PAD/Linux/resources" "PAD/Linux/res/PAD-res.xml" "PAD_res" PAD/Linux/res/game_controller_db.txt)
 
 
 # PAD/Linux sources 
-set(pcsx2PAD/LinuxSources
+set(pcsx2PADSources
     PAD/Linux/controller.cpp
     PAD/Linux/GamePad.cpp
     PAD/Linux/SDL/joystick.cpp
@@ -490,7 +490,7 @@ set(pcsx2PAD/LinuxSources
     )
 
 # PAD/Linux headers
-set(pcsx2PAD/LinuxHeaders
+set(pcsx2PADHeaders
     PAD/Linux/bitwise.h
     PAD/Linux/controller.h
     PAD/Linux/GamePad.h
