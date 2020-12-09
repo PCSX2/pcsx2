@@ -37,7 +37,7 @@
 
 #include "../GamePad.h"
 #include "../keyboard.h"
-#include "../onepad.h"
+#include "../PAD.h"
 #include "opPanel.h"
 
 #include "GamepadConfiguration.h"
@@ -45,7 +45,7 @@
 
 // Allow to found quickly button id
 // e.g L2 → 0, triangle → 4, ...
-// see onepad.h for more details about gamepad button id
+// see PAD.h for more details about gamepad button id
 
 enum gui_buttons {
     Analog = PAD_R_LEFT + 1, // Analog button (not yet supported ?)

@@ -19,7 +19,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "onepad.h"
+#include "PAD.h"
 
 #define MODE_DIGITAL 0x41
 #define MODE_ANALOG 0x73

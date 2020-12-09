@@ -20,7 +20,7 @@
  */
 
 #include "GamePad.h"
-#include "onepad.h"
+#include "PAD.h"
 #include "keyboard.h"
 #include "state_management.h"
 
@@ -46,18 +46,6 @@ static void SysMessage(const char *fmt, ...)
 
     wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
     dialog.ShowModal();
-}
-
-EXPORT_C_(void)
-PADabout()
-{
-    SysMessage("OnePad is a rewrite of Zerofrog's ZeroPad, done by arcum42.");
-}
-
-EXPORT_C_(s32)
-PADtest()
-{
-    return 0;
 }
 
 s32 _PADopen(void *pDsp)
@@ -94,8 +82,7 @@ void PollForJoystickInput(int cpad)
     }
 }
 
-EXPORT_C_(void)
-PADupdate(int pad)
+void PADupdate(int pad)
 {
 #ifndef __APPLE__
     // Gamepad inputs don't count as an activity. Therefore screensaver will
@@ -131,8 +118,7 @@ PADupdate(int pad)
     Pad::rumble_all();
 }
 
-EXPORT_C_(void)
-PADconfigure()
+void PADconfigure()
 {
     LoadConfig();
 

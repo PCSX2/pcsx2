@@ -22,7 +22,7 @@
 #ifndef __KEYBOARD_H__
 #define __KEYBOARD_H__
 
-#include "onepad.h"
+#include "PAD.h"
 
 #if defined(__unix__) || defined(__APPLE__)
 

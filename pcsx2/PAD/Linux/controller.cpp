@@ -19,7 +19,7 @@
  *  Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA
  */
 
-#include "onepad.h"
+#include "PAD.h"
 #include "controller.h"
 
 __forceinline void set_keyboard_key(int pad, int keysym, int index)

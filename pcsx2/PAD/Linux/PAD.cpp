@@ -26,8 +26,7 @@
 #include <stdarg.h>
 
 #include "keyboard.h"
-#include "onepad.h"
-#include "svnrev.h"
+#include "PAD.h"
 #include "state_management.h"
 
 #ifdef __linux__
@@ -46,9 +45,6 @@ static keyEvent s_event;
 std::string s_strIniPath("inis/");
 std::string s_strLogPath("logs/");
 
-const u32 version = PS2E_PAD_VERSION;
-const u32 revision = 2;
-const u32 build = 0; // increase that with each version
 #define PAD_SAVE_STATE_VERSION ((revision << 8) | (build << 0))
 
 FILE *padLog = NULL;
@@ -57,50 +53,6 @@ KeyStatus g_key_status;
 
 MtQueue<keyEvent> g_ev_fifo;
 
-static void InitLibraryName()
-{
-#ifdef PUBLIC
-
-    // Public Release!
-    // Output a simplified string that's just our name:
-
-    strcpy(libraryName, "OnePAD");
-
-#else
-
-    // Use TortoiseSVN's SubWCRev utility's output
-    // to label the specific revision:
-
-    snprintf(libraryName, 255, "OnePAD %lld%s"
-#ifdef PCSX2_DEBUG
-                               "-Debug"
-#elif defined(PCSX2_DEVBUILD)
-                               "-Dev"
-#endif
-             ,
-             SVN_REV,
-             SVN_MODS ? "m" : "");
-#endif
-}
-
-EXPORT_C_(u32)
-PS2EgetLibType()
-{
-    return PS2E_LT_PAD;
-}
-
-EXPORT_C_(const char *)
-PS2EgetLibName()
-{
-    InitLibraryName();
-    return libraryName;
-}
-
-EXPORT_C_(u32)
-PS2EgetLibVersion2(u32 type)
-{
-    return (version << 16) | (revision << 8) | build;
-}
 
 void __Log(const char *fmt, ...)
 {
@@ -153,8 +105,7 @@ void CloseLogging()
 #endif
 }
 
-EXPORT_C_(s32)
-PADinit(u32 flags)
+s32 PADinit(u32 flags)
 {
     initLogging();
 
@@ -170,14 +121,12 @@ PADinit(u32 flags)
     return 0;
 }
 
-EXPORT_C_(void)
-PADshutdown()
+void PADshutdown()
 {
     CloseLogging();
 }
 
-EXPORT_C_(s32)
-PADopen(void *pDsp)
+s32 PADopen(void *pDsp)
 {
     memset(&event, 0, sizeof(event));
     g_key_status.Init();
@@ -190,15 +139,13 @@ PADopen(void *pDsp)
     return _PADopen(pDsp);
 }
 
-EXPORT_C_(void)
-PADsetSettingsDir(const char *dir)
+void PADsetSettingsDir(const char *dir)
 {
     // Get the path to the ini directory.
     s_strIniPath = (dir == NULL) ? "inis/" : dir;
 }
 
-EXPORT_C_(void)
-PADsetLogDir(const char *dir)
+void PADsetLogDir(const char *dir)
 {
     // Get the path to the log directory.
     s_strLogPath = (dir == NULL) ? "logs/" : dir;
@@ -208,20 +155,17 @@ PADsetLogDir(const char *dir)
     initLogging();
 }
 
-EXPORT_C_(void)
-PADclose()
+void PADclose()
 {
     _PADclose();
 }
 
-EXPORT_C_(u32)
-PADquery()
+u32 PADquery()
 {
     return 3; // both
 }
 
-EXPORT_C_(s32)
-PADsetSlot(u8 port, u8 slot)
+s32 PADsetSlot(u8 port, u8 slot)
 {
     port--;
     slot--;
@@ -234,8 +178,7 @@ PADsetSlot(u8 port, u8 slot)
     return 1;
 }
 
-EXPORT_C_(s32)
-PADfreeze(int mode, freezeData *data)
+s32 PADfreeze(int mode, freezeData *data)
 {
     if (!data)
         return -1;
@@ -303,21 +246,18 @@ PADfreeze(int mode, freezeData *data)
     return 0;
 }
 
-EXPORT_C_(u8)
-PADstartPoll(int pad)
+u8 PADstartPoll(int pad)
 {
     return pad_start_poll(pad);
 }
 
-EXPORT_C_(u8)
-PADpoll(u8 value)
+u8 PADpoll(u8 value)
 {
     return pad_poll(value);
 }
 
 // PADkeyEvent is called every vsync (return NULL if no event)
-EXPORT_C_(keyEvent *)
-PADkeyEvent()
+keyEvent * PADkeyEvent()
 {
 #ifdef SDL_BUILD
     // Take the opportunity to handle hot plugging here
@@ -347,8 +287,7 @@ PADkeyEvent()
 }
 
 #if defined(__unix__)
-EXPORT_C_(void)
-PADWriteEvent(keyEvent &evt)
+void PADWriteEvent(keyEvent &evt)
 {
     // if (evt.evt != 6) { // Skip mouse move events for logging
     //     PAD_LOG("Pushing Event. Event Type: %d, Key: %d\n", evt.evt, evt.key);

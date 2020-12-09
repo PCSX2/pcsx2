@@ -26,7 +26,7 @@
 
 #include "../GamePad.h"
 #include "../keyboard.h"
-#include "../onepad.h"
+#include "../PAD.h"
 
 static const s32 rumble_slider_id = wxID_HIGHEST + 200 + 1;
 static const s32 joy_slider_id = wxID_HIGHEST + 200 + 2;

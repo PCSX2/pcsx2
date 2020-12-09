@@ -73,7 +73,7 @@ typedef struct _keyEvent
 
 ///////////////////////////////////////////////////////////////////////
 
-#if defined(GSdefs) defined(SIOdefs)
+#if defined(GSdefs) || defined(SIOdefs)
 #define COMMONdefs
 #endif
 
