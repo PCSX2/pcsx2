@@ -554,6 +554,8 @@ void SysExecEvent_SaveSinglePlugin::InvokeEvent()
 			GetCorePlugins().Freeze( m_pid, save );
 		}
 			
+		bool wasOpen = GetCorePlugins().IsOpen(m_pid);
+
 		GetCorePlugins().Close( m_pid );
 		_post_and_wait( paused_core );
 
@@ -563,6 +565,9 @@ void SysExecEvent_SaveSinglePlugin::InvokeEvent()
 			memLoadingState load( plugstore.get() );
 			GetCorePlugins().Freeze( m_pid, load );
 		}
+
+		if (wasOpen)
+			GetCorePlugins().Open(m_pid);
 	}
 
 	s_DisableGsWindow = false;
