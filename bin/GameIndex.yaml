@@ -32,7 +32,6 @@ GUST-00009:
   roundModes:
     eeRoundMode: 0  # Fixes jump issue.
   gameFixes:
-    - DMABusyHack
     - GIFFIFOHack # Fixes flickering sprites.
 PAPX-90203:
   name: "Gran Turismo 2000 [Trial]"
@@ -631,12 +630,12 @@ SCAJ-20125:
   name: "Tekken 5"
   region: "NTSC-Unk"
   clampModes:
-    eeClampMode: 1
+    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
 SCAJ-20126:
   name: "Tekken 5"
   region: "NTSC-Unk"
   clampModes:
-    eeClampMode: 1
+    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
 SCAJ-20127:
   name: "EyeToy - Play 2 [with Camera]"
   region: "NTSC-Unk"
@@ -766,6 +765,8 @@ SCAJ-20158:
 SCAJ-20159:
   name: "Soul Calibur III"
   region: "NTSC-Ch-E-J"
+  gameFixes:
+    - EETimingHack # Fixes bad colours on charcter select when in Progressive Scan
 SCAJ-20160:
   name: "Yoshitsuneki"
   region: "NTSC-Unk"
@@ -912,7 +913,7 @@ SCAJ-20199:
   name: "Tekken 5 [PlayStation 2 The Best]"
   region: "NTSC-Unk"
   clampModes:
-    eeClampMode: 1
+    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
 SCAJ-25002:
   name: "Shinobi"
   region: "NTSC-Unk"
@@ -1182,6 +1183,8 @@ SCES-50139:
   name: "World Rally Championship"
   region: "PAL-M7"
   compat: 5
+  roundModes:
+    eeRoundMode: 0  # Fixes crash when using the Subaru
   gameFixes:
     - EETimingHack # Fix in-game Freeze.
 SCES-50240:
@@ -2023,7 +2026,7 @@ SCES-53202:
   region: "PAL-M5"
   compat: 5
   clampModes:
-    eeClampMode: 1
+    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
 SCES-53247:
   name: "WRC Rally Evolved"
   region: "PAL-M8"
@@ -2713,7 +2716,7 @@ SCKA-20049:
   name: "Tekken 5"
   region: "NTSC-K"
   clampModes:
-    eeClampMode: 1
+    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
 SCKA-20050:
   name: "Tales of Legendia"
   region: "NTSC-K"
@@ -2755,6 +2758,8 @@ SCKA-20059:
   name: "Soul Calibur III"
   region: "NTSC-K"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes bad colours on charcter select when in Progressive Scan
 SCKA-20060:
   name: "Ratchet - Deadlocked"
   region: "NTSC-K"
@@ -2823,7 +2828,7 @@ SCKA-20081:
   name: "Tekken 5 [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
   clampModes:
-    eeClampMode: 1
+    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
 SCKA-20086:
   name: "Shin Onimusha - Dawn of Dreams [Disc1of2]"
   region: "NTSC-K"
@@ -8376,6 +8381,10 @@ SLES-51203:
 SLES-51208:
   name: "Rocky"
   region: "PAL-M5"
+  clampModes:
+    eeClampMode: 0  # Fixes boxers not appearing/disappearing
+  gameFixes:
+    - VIF1StallHack # Fixes freezes
 SLES-51209:
   name: "Haven - Call of the King"
   region: "PAL-M5"
@@ -16773,7 +16782,6 @@ SLES-55443:
   roundModes:
     eeRoundMode: 0  # Fixes jump issue.
   gameFixes:
-    - DMABusyHack
     - GIFFIFOHack # Fixes flickering sprites.
 SLES-55444:
   name: "Ar tonelico II: Melody of Metafalica"
@@ -18225,6 +18233,8 @@ SLPM-61120:
 SLPM-61133:
   name: "Soul Calibur III [Trial Version]"
   region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Fixes bad colours on charcter select when in Progressive Scan
 SLPM-61135:
   name: "Naruto - Narutimett Hero 3 [Trial Version]"
   region: "NTSC-J"
@@ -21494,6 +21504,10 @@ SLPM-65462:
 SLPM-65463:
   name: "Rocky"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 0  # Fixes boxers not appearing/disappearing
+  gameFixes:
+    - VIF1StallHack # Fixes freezes
 SLPM-65464:
   name: "Wind - A Breath of Heart"
   region: "NTSC-J"
@@ -27865,6 +27879,8 @@ SLPS-25098:
 SLPS-25099:
   name: "World Rally Championship"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0  # Fixes crash when using the Subaru
 SLPS-25100:
   name: "Tekken 4"
   region: "NTSC-J"
@@ -29133,7 +29149,7 @@ SLPS-25510:
   region: "NTSC-J"
   compat: 5
   clampModes:
-    eeClampMode: 1
+    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
 SLPS-25511:
   name: "Rasetsu Alternative"
   region: "NTSC-J"
@@ -29336,6 +29352,8 @@ SLPS-25577:
   name: "Soul Calibur III"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes bad colours on charcter select when in Progressive Scan
 SLPS-25578:
   name: "K-1 World Grand Prix 2005"
   region: "NTSC-J"
@@ -30600,7 +30618,7 @@ SLPS-73223:
   name: "Tekken 5 [PlayStation 2 The Best]"
   region: "NTSC-J"
   clampModes:
-    eeClampMode: 1
+    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
 SLPS-73224:
   name: "Xenosaga Episode II - Jenseits von Gut und Bose [PlayStation 2 The Best] [Disc1of2]"
   region: "NTSC-J"
@@ -32488,6 +32506,8 @@ SLUS-20418:
 SLUS-20419:
   name: "World Rally Championship"
   region: "NTSC-U"
+  roundModes:
+    eeRoundMode: 0  # Fixes crash when using the Subaru
 SLUS-20420:
   name: "Star Wars - Bounty Hunter"
   region: "NTSC-U"
@@ -33050,6 +33070,10 @@ SLUS-20559:
   name: "Rocky"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    eeClampMode: 0  # Fixes boxers not appearing/disappearing
+  gameFixes:
+    - VIF1StallHack # Fixes freezes
 SLUS-20560:
   name: "Galerians - Ash"
   region: "NTSC-U"
@@ -35161,7 +35185,7 @@ SLUS-21059:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    eeClampMode: 1
+    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
 SLUS-21060:
   name: "WWE SmackDown! vs. RAW"
   region: "NTSC-U"
@@ -35560,7 +35584,7 @@ SLUS-21160:
   name: "Tekken 5 [Demo]"
   region: "NTSC-U"
   clampModes:
-    eeClampMode: 1
+    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
 SLUS-21161:
   name: "Fight Night - Round 2"
   region: "NTSC-U"
@@ -35798,6 +35822,8 @@ SLUS-21216:
   name: "Soul Calibur III"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes bad colours on charcter select when in Progressive Scan
 SLUS-21217:
   name: "Incredibles, The - Rise of the Underminers"
   region: "NTSC-U"
@@ -37974,7 +38000,6 @@ SLUS-21735:
   roundModes:
     eeRoundMode: 0  # Fixes jump issue.
   gameFixes:
-    - DMABusyHack
     - GIFFIFOHack # Fixes flickering sprites.
 SLUS-21736:
   name: "Wall-E"
