@@ -136,15 +136,9 @@ bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
 	{
-		if (Aggressive && fi.TME && fi.FPSM == PSM_PSMCT16 && (fi.FBP == 0x00100 || fi.FBP == 0x02100) && (fi.TBP0 == 0x00100 || fi.TBP0 == 0x02100) && fi.TPSM == PSM_PSMCT16)
+		if (Aggressive && fi.TME && fi.TPSM == PSM_PSMCT24 && fi.FBP == 0x1300 && (fi.TBP0 == 0x0F00 || fi.TBP0 == 0x1300 || fi.TBP0 == 0x2b00)) // || fi.FBP == 0x0100
 		{
-			// Can be used as a speed hack.
-			// Removes shadows.
-			skip = 1000;
-		}
-		else if (Aggressive && fi.TME && fi.TPSM == PSM_PSMCT24 && fi.FBP == 0x1300 && (fi.TBP0 == 0x0F00 || fi.TBP0 == 0x1300 || fi.TBP0 == 0x2b00)) // || fi.FBP == 0x0100
-		{
-			// Upscaling hack maybe ? Needs to be verified, move it to Aggressive state just in case.
+			// Ghosting when upscaling, HPO helps but isn't perfect.
 			skip = 1; // global haze/halo
 		}
 		else if ((Aggressive || !s_nativeres) && fi.TME && fi.TPSM == PSM_PSMCT24 && (fi.FBP == 0x0100 || fi.FBP == 0x2100) && (fi.TBP0 == 0x2b00 || fi.TBP0 == 0x2e80 || fi.TBP0 == 0x3100)) // 480P 2e80, interlaced 3100
@@ -152,13 +146,6 @@ bool GSC_GodOfWar2(const GSFrameInfo& fi, int& skip)
 			// Upscaling issue.
 			// Don't enable hack on native res if crc is below aggressive.
 			skip = 1; // water effect and water vertical lines
-		}
-	}
-	else
-	{
-		if (Aggressive && fi.TME && (fi.FBP == 0x00100 || fi.FBP == 0x02100) && fi.FPSM == PSM_PSMCT16)
-		{
-			skip = 3;
 		}
 	}
 
