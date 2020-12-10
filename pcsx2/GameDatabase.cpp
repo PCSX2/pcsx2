@@ -20,8 +20,24 @@
 #include "fmt/core.h"
 #include "yaml-cpp/yaml.h"
 #include <fstream>
+#include <algorithm>
 
-std::string GameDatabaseSchema::GameEntry::memcardFiltersAsString()
+std::string strToLower(std::string str)
+{
+	std::transform(str.begin(), str.end(), str.begin(),
+				   [](unsigned char c) { return std::tolower(c); });
+	return str;
+}
+
+bool compareStrNoCase(const std::string str1, const std::string str2)
+{
+	return std::equal(str1.begin(), str1.end(), str2.begin(),
+					  [](char a, char b) {
+						  return tolower(a) == tolower(b);
+					  });
+}
+
+std::string GameDatabaseSchema::GameEntry::memcardFiltersAsString() const
 {
 	if (memcardFilters.empty())
 		return "";
@@ -35,6 +51,26 @@ std::string GameDatabaseSchema::GameEntry::memcardFiltersAsString()
 			filters.append(",");
 	}
 	return filters;
+}
+
+bool GameDatabaseSchema::GameEntry::findPatch(const std::string crc, Patch& patch) const
+{
+	std::string crcLower = strToLower(crc);
+	Console.WriteLn(fmt::format("[GameDB] Searching for patch with CRC '{}'", crc));
+	if (patches.count(crcLower) == 1)
+	{
+		Console.WriteLn(fmt::format("[GameDB] Found patch with CRC '{}'", crc));
+		patch = patches.at(crcLower);
+		return true;
+	}
+	else if (patches.count("default") == 1)
+	{
+		Console.WriteLn("[GameDB] Found and falling back to default patch");
+		patch = patches.at("default");
+		return true;
+	}
+	Console.WriteLn("[GameDB] No CRC-specific patch or default patch found");
+	return false;
 }
 
 std::vector<std::string> YamlGameDatabaseImpl::convertMultiLineStringToVector(const std::string multiLineString)
@@ -111,7 +147,12 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 		{
 			for (const auto& entry : patches)
 			{
-				std::string crc = entry.first.as<std::string>();
+				std::string crc = strToLower(entry.first.as<std::string>());
+				if (gameEntry.patches.count(crc) == 1)
+				{
+					Console.Error(fmt::format("[GameDB] Duplicate CRC '{}' found for serial: '{}'. Skipping, CRCs are case-insensitive!", crc, serial));
+					continue;
+				}
 				YAML::Node patchNode = entry.second;
 
 				GameDatabaseSchema::Patch patchCol;
@@ -124,12 +165,12 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 	}
 	catch (const YAML::RepresentationException& e)
 	{
-		Console.Error(fmt::format("[GameDB] Invalid GameDB syntax detected on serial: '{}'.  Error Details - {}", serial, e.msg));
+		Console.Error(fmt::format("[GameDB] Invalid GameDB syntax detected on serial: '{}'. Error Details - {}", serial, e.msg));
 		gameEntry.isValid = false;
 	}
 	catch (const std::exception& e)
 	{
-		Console.Error(fmt::format("[GameDB] Unexpected error occurred when reading serial: '{}'.  Error Details - {}", serial, e.what()));
+		Console.Error(fmt::format("[GameDB] Unexpected error occurred when reading serial: '{}'. Error Details - {}", serial, e.what()));
 		gameEntry.isValid = false;
 	}
 	return gameEntry;
@@ -137,9 +178,15 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 
 GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::findGame(const std::string serial)
 {
-	if (gameDb.count(serial) == 1)
-		return gameDb[serial];
+	std::string serialLower = strToLower(serial);
+	Console.WriteLn(fmt::format("[GameDB] Searching for '{}' in GameDB", serialLower));
+	if (gameDb.count(serialLower) == 1)
+	{
+		Console.WriteLn(fmt::format("[GameDB] Found '{}' in GameDB", serialLower));
+		return gameDb[serialLower];
+	}
 
+	Console.Error(fmt::format("[GameDB] Could not find '{}' in GameDB", serialLower));
 	GameDatabaseSchema::GameEntry entry;
 	entry.isValid = false;
 	return entry;
@@ -168,12 +215,21 @@ bool YamlGameDatabaseImpl::initDatabase(std::ifstream& stream)
 			// but we do want to yell about it so it can be corrected
 			try
 			{
-				std::string serial = entry.first.as<std::string>();
+				// Serials and CRCs must be inserted as lower-case, as that is how they are retrieved
+				// this is because the application may pass a lowercase CRC or serial along
+				//
+				// However, YAML's keys are as expected case-sensitive, so we have to explicitly do our own duplicate checking
+				std::string serial = strToLower(entry.first.as<std::string>());
+				if (gameDb.count(serial) == 1)
+				{
+					Console.Error(fmt::format("[GameDB] Duplicate serial '{}' found in GameDB. Skipping, Serials are case-insensitive!", serial));
+					continue;
+				}
 				gameDb[serial] = entryFromYaml(serial, entry.second);
 			}
 			catch (const YAML::RepresentationException& e)
 			{
-				Console.Error(fmt::format("[GameDB] Invalid GameDB syntax detected.  Error Details - {}", e.msg));
+				Console.Error(fmt::format("[GameDB] Invalid GameDB syntax detected. Error Details - {}", e.msg));
 			}
 		}
 	}

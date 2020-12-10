@@ -128,16 +128,8 @@ int LoadPatchesFromGamesDB(const wxString& crc, const GameDatabaseSchema::GameEn
 	if (game.isValid)
 	{
 		GameDatabaseSchema::Patch patch;
-		if (game.patches.count(std::string(crc)) == 1)
-		{
-			patch = game.patches.at(std::string(crc));
-		}
-		else if (game.patches.count("default") == 1)
-		{
-			patch = game.patches.at("default");
-		}
-
-		if (patch.patchLines.size() > 0)
+		bool patchFound = game.findPatch(std::string(crc), patch);
+		if (patchFound && patch.patchLines.size() > 0)
 		{
 			for (auto line : patch.patchLines)
 			{

@@ -77,7 +77,8 @@ public:
 		std::vector<std::string> memcardFilters;
 		std::unordered_map<std::string, Patch> patches;
 
-		std::string memcardFiltersAsString();
+		std::string memcardFiltersAsString() const;
+		bool findPatch(const std::string crc, Patch& patch) const;
 	};
 };
 
@@ -104,3 +105,5 @@ private:
 };
 
 extern IGameDatabase* AppHost_GetGameDatabase();
+extern std::string strToLower(std::string str);
+extern bool compareStrNoCase(const std::string str1, const std::string str2);

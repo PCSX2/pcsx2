@@ -1,6 +1,7 @@
 # GameDB Documentation
 
 - [YAML Game Format](#yaml-game-format)
+- [A Note on Case Sensitivity](#a-note-on-case-sensitivity)
 - [Rounding Modes](#rounding-modes)
   - [Options](#options)
 - [Clamping Modes](#clamping-modes)
@@ -17,7 +18,7 @@
 The following is an annotated and comprehensive example of everything that can be defined for a single Game entry.
 
 ```yaml
-SERIAL-12345: # !required! Serial number for the game, this is how games are looked up
+SERIAL-12345: # !required! Serial number for the game, this is how games are looked up.  Case insensitive
   name: "A Sample Game" # !required!
   region: "NTSC-U" # !required!
   roundModes:
@@ -75,7 +76,7 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
       content: |- # !required! This allows for multi-line strings in YAML, this type preserves new-line characters
         comment=Sample Patch
         patch=1,EE,00000002,word,00000000
-    "crc-1": # Specific CRC Patch!
+    crc123: # Specific CRC Patch!
       author: "Some Person"
       content: |-
         comment=Another Sample
@@ -83,6 +84,18 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
 ```
 
 > Note that quoting strings in YAML is optional, but certain characters are reserved like '*' and require the string to be quoted, be aware / use a YAML linter to avoid confusion.
+
+## A Note on Case Sensitivity
+
+Both the serial numbers for the games, and the CRC patches are at the moment not case-sensitive and will be looked up with their lowercase representations.  **However, stylistically, uppercase is preferred and may be enforced and migrated to in the future**.
+
+For example:
+- `SLUS-123` will be stored and looked up in the GameDB as `slus-123`
+- Likewise, a CRC with upper-case hex `23AF6876` will be stored and looked up as `23af6876`
+
+However, YAML is case-sensitive and will allow multiple serials that only differ on casing.  To prevent mistakes, this will also throw a validation error and the first entry will be the one that wins.
+
+**Everything else can be safely assumed to be case sensitive!**
 
 ## Rounding Modes
 
@@ -172,7 +185,9 @@ This works fine for the vast majority of games, but fails in some cases, for whi
 
 ## Patches
 
-The patch that corresponds to the running game's CRC will take precedence over the `default`.  Multiple patches for the same CRC cannot be defined and this will throw an invalidation errors.
+The patch that corresponds to the running game's CRC will take precedence over the `default`.  Multiple patches using the same CRC cannot be defined and this will throw a validation error.
+
+> CRCs are case-insensitive, however uppercase is preferred stylistically!
 
 Patches should be defined as multi-line string blocks, where each line would correspond with a line in a conventional `*.pnach` file
 
