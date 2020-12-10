@@ -29,8 +29,8 @@ using namespace pxSizerFlags;
 Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 	: BaseApplicableConfigPanel_SpecificConfig( parent )
 {
-	m_check_LimiterDisable = new pxCheckBox( this, _("Disable Framelimiting"),
-		_("Uncaps FPS. Toggle in-game by pressing F4. Useful for running benchmarks." ) );
+	m_check_LimiterDisable = new pxCheckBox( this, _("Disable Framelimiting (F4)"),
+		_("Uncaps FPS. Useful for running benchmarks." ) );
 
 	m_check_LimiterDisable->SetToolTip( pxEt( L"Note that when Framelimiting is disabled, Turbo and SlowMotion modes will not be available either."
 	) );
@@ -60,13 +60,13 @@ Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 	s_spins += Label(L"%")							| StdExpand();
 	s_spins += 5;
 
-	s_spins += Label(_("Slow Motion Adjust:"))		| StdExpand();
+	s_spins += Label(_("Slow Motion Adjust (Shift + Tab):"))		| StdExpand();
 	s_spins += 5;
 	s_spins += m_spin_SlomoPct						| pxBorder(wxTOP, 3);
 	s_spins += Label(L"%")							| StdExpand();
 	s_spins += 5;
 
-	s_spins	+= Label(_("Turbo Adjust:"))			| StdExpand();
+	s_spins	+= Label(_("Turbo Adjust (Tab):"))			| StdExpand();
 	s_spins	+= 5;
 	s_spins	+= m_spin_TurboPct						| pxBorder(wxTOP, 3);
 	s_spins	+= Label(L"%" )							| StdExpand();
@@ -181,7 +181,7 @@ Panels::FrameSkipPanel::FrameSkipPanel( wxWindow* parent )
 		),
 
 		RadioPanelItem(
-			_("Constant skipping"),
+			_("Constant skipping (Shift + F4)"),
 			wxEmptyString,
 			_("Normal and Turbo limit rates skip frames.  Slow motion mode will still disable frameskipping.")
 		),
