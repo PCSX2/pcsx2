@@ -560,17 +560,6 @@ bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
 		{
 			skip = 1; // Removes black screen (not needed anymore maybe)?
 		}
-		if (Aggressive && fi.TME)
-		{
-			// depth textures (bully, mgs3s1 intro, Front Mission 5)
-			if ((fi.TPSM == PSM_PSMZ32 || fi.TPSM == PSM_PSMZ24 || fi.TPSM == PSM_PSMZ16 || fi.TPSM == PSM_PSMZ16S) ||
-				// General, often problematic post processing
-				(GSUtil::HasSharedBits(fi.FBP, fi.FPSM, fi.TBP0, fi.TPSM)))
-			{
-				// Removes burning air effect, the effect causes major slowdowns.
-				skip = 1;
-			}
-		}
 	}
 	else
 	{
