@@ -55,6 +55,10 @@
   <ItemDefinitionGroup>
     <ClCompile>
       <PreprocessorDefinitions>wxUSE_GUI=0;wxUSE_BASE=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MinimalRebuild>
+      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">false</MinimalRebuild>
+      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</MinimalRebuild>
+      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">false</MinimalRebuild>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
