@@ -15,6 +15,7 @@
  *  with PCSX2.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "Global.h"
 
 // For escape timer, so as not to break GSDX+DX9.
