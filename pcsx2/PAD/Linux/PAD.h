@@ -17,6 +17,13 @@
 
 #define GAMEPAD_NUMBER 2 // numbers of gamepad
 
+#include <wx/string.h>
+#include <wx/tokenzr.h>
+#include <wx/intl.h>
+#include <wx/log.h>
+#include <wx/filename.h>
+#include "Utilities/pxStreams.h"
+#include "Utilities/Console.h"
 #include <stdio.h>
 #include <assert.h>
 
