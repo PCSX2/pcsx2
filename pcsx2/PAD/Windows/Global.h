@@ -99,12 +99,6 @@ extern Window GSwin;
 #endif
 
 #ifdef _MSC_VER
-#define EXPORT_C_(type) extern "C" type CALLBACK
-#else
-#define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type CALLBACK
-#endif
-
-#ifdef _MSC_VER
 #define _WIN32_WINNT 0x0600
 #define NOMINMAX
 #include <algorithm>

@@ -52,7 +52,6 @@
 Display *GSdsp;
 Window GSwin;
 #else
-HINSTANCE hInst;
 HWND hWnd;
 HWND hWndTop;
 
