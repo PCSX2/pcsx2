@@ -22,7 +22,7 @@
 #include "VKey.h"
 #include "InputManager.h"
 #include "XInputEnum.h"
-#include "Config.h"
+#include "PADConfig.h"
 
 // Extra enum
 #define XINPUT_GAMEPAD_GUIDE 0x0400

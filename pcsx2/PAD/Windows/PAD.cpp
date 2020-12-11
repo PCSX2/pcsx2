@@ -25,7 +25,8 @@
 #include <sstream>
 #include "resource.h"
 #include "InputManager.h"
-#include "Config.h"
+#include "PADConfig.h"
+#include "PAD.h"
 
 #define PADdefs
 
@@ -37,6 +38,7 @@
 #include "KeyboardQueue.h"
 #include "svnrev.h"
 #include "DualShock3.h"
+#include <timeapi.h>
 
 #define WMA_FORCE_UPDATE (WM_APP + 0x537)
 #define FORCE_UPDATE_WPARAM ((WPARAM)0x74328943)
@@ -327,25 +329,6 @@ void UpdateEnabledDevices(int updateList = 0)
         }
     }
 }
-
-#ifdef _MSC_VER
-BOOL WINAPI DllMain(HINSTANCE hInstance, DWORD fdwReason, void *lpvReserved)
-{
-    hInst = hInstance;
-    if (fdwReason == DLL_PROCESS_ATTACH) {
-        InitializeCriticalSection(&updateLock);
-
-        DisableThreadLibraryCalls(hInstance);
-    } else if (fdwReason == DLL_PROCESS_DETACH) {
-        while (openCount)
-            PADclose();
-        PADshutdown();
-        UninitLibUsb();
-        DeleteCriticalSection(&updateLock);
-    }
-    return 1;
-}
-#endif
 
 void AddForce(ButtonSum *sum, u8 cmd, int delta = 255)
 {
@@ -705,7 +688,7 @@ void Update(unsigned int port, unsigned int slot)
         --stateUpdated[0];
 }
 
-void CALLBACK PADupdate(int port)
+void PADupdate(int port)
 {
     Update(port + 3, 0);
 }
@@ -713,18 +696,6 @@ void CALLBACK PADupdate(int port)
 inline void SetVibrate(int port, int slot, int motor, u8 val)
 {
     pads[port][slot].nextVibrate[motor] = val;
-}
-
-u32 CALLBACK PS2EgetLibType(void)
-{
-    return PS2E_LT_PAD;
-}
-
-u32 CALLBACK PS2EgetLibVersion2(u32 type)
-{
-    if (type == PS2E_LT_PAD)
-        return (PS2E_PAD_VERSION << 16) | VERSION;
-    return 0;
 }
 
 #ifdef _MSC_VER
@@ -739,24 +710,8 @@ void GetNameAndVersionString(wchar_t *out)
 }
 #endif
 
-char *CALLBACK PS2EgetLibName(void)
-{
-#if defined(PCSX2_DEBUG)
-    static char version[50];
-    sprintf(version, "LilyPad Debug (%lld)", SVN_REV);
-    return version;
-#else
-    static char version[50];
-    sprintf(version, "LilyPad (%lld)", SVN_REV);
-    return version;
-#endif
-}
 
-//void CALLBACK PADgsDriverInfo(GSdriverInfo *info) {
-//	info=info;
-//}
-
-void CALLBACK PADshutdown()
+void PADshutdown()
 {
     DEBUG_TEXT_OUT("LilyPad shutdown.\n\n");
     for (int i = 0; i < 8; i++)
@@ -826,7 +781,7 @@ struct QueryInfo
     u8 response[42];
 } query = {0, 0, 0, 0, 0, 0xFF, {0xF3}};
 
-s32 CALLBACK PADinit(u32 flags)
+s32 PADinit(u32 flags)
 {
     // Note:  Won't load settings if already loaded.
     if (LoadSettings() < 0) {
@@ -980,7 +935,7 @@ DWORD WINAPI MaximizeWindowThreadProc(void *lpParameter)
 }
 #endif
 
-void CALLBACK PADconfigure()
+void PADconfigure()
 {
     if (openCount) {
         return;
@@ -1005,7 +960,7 @@ DWORD WINAPI RenameWindowThreadProc(void *lpParameter)
 }
 #endif
 
-s32 CALLBACK PADopen(void *pDsp)
+s32 PADopen(void *pDsp)
 {
     if (openCount++)
         return 0;
@@ -1097,7 +1052,7 @@ s32 CALLBACK PADopen(void *pDsp)
     return 0;
 }
 
-void CALLBACK PADclose()
+void PADclose()
 {
     if (openCount && !--openCount) {
         DEBUG_TEXT_OUT("LilyPad closed\n\n");
@@ -1115,7 +1070,7 @@ void CALLBACK PADclose()
     }
 }
 
-u8 CALLBACK PADstartPoll(int port)
+u8 PADstartPoll(int port)
 {
     DEBUG_NEW_SET();
     port--;
@@ -1148,7 +1103,7 @@ inline int IsDualshock2(u8 port, u8 slot)
            (config.padConfigs[query.port][query.slot].type == GuitarPad && config.GH2);
 }
 
-u8 CALLBACK PADpoll(u8 value)
+u8 PADpoll(u8 value)
 {
     DEBUG_IN(value);
     if (query.lastByte + 1 >= query.numBytes) {
@@ -1460,40 +1415,12 @@ u8 CALLBACK PADpoll(u8 value)
 // returns: 1 if supports pad1
 //			2 if supports pad2
 //			3 if both are supported
-u32 CALLBACK PADquery()
+u32 PADquery()
 {
     return 3;
 }
 
-#ifdef _MSC_VER
-INT_PTR CALLBACK AboutDialogProc(HWND hWndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
-{
-    if (uMsg == WM_INITDIALOG) {
-        wchar_t idString[100];
-        GetNameAndVersionString(idString);
-        SetDlgItemTextW(hWndDlg, IDC_VERSION, idString);
-    } else if (uMsg == WM_COMMAND && (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)) {
-        EndDialog(hWndDlg, 0);
-        return 1;
-    }
-    return 0;
-}
-#endif
-
-
-void CALLBACK PADabout()
-{
-#ifdef _MSC_VER
-    DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUT), 0, AboutDialogProc);
-#endif
-}
-
-s32 CALLBACK PADtest()
-{
-    return 0;
-}
-
-keyEvent *CALLBACK PADkeyEvent()
+keyEvent *PADkeyEvent()
 {
     // If running both pads, ignore every other call.  So if two keys pressed in same interval...
     static char eventCount = 0;
@@ -1559,7 +1486,7 @@ struct PadPluginFreezeData
     QueryInfo query;
 };
 
-s32 CALLBACK PADfreeze(int mode, freezeData *data)
+s32 PADfreeze(int mode, freezeData *data)
 {
     if (!data) {
         printf("LilyPad savestate null pointer!\n");
@@ -1628,7 +1555,7 @@ s32 CALLBACK PADfreeze(int mode, freezeData *data)
     return 0;
 }
 
-u32 CALLBACK PADreadPort1(PadDataS *pads)
+u32 PADreadPort1(PadDataS *pads)
 {
     PADstartPoll(1);
     PADpoll(0x42);
@@ -1638,7 +1565,7 @@ u32 CALLBACK PADreadPort1(PadDataS *pads)
     return 0;
 }
 
-u32 CALLBACK PADreadPort2(PadDataS *pads)
+u32 PADreadPort2(PadDataS *pads)
 {
     PADstartPoll(2);
     PADpoll(0x42);
@@ -1648,7 +1575,7 @@ u32 CALLBACK PADreadPort2(PadDataS *pads)
     return 0;
 }
 
-s32 CALLBACK PADqueryMtap(u8 port)
+s32 PADqueryMtap(u8 port)
 {
     port--;
     if (port > 1)
@@ -1656,7 +1583,7 @@ s32 CALLBACK PADqueryMtap(u8 port)
     return config.multitap[port];
 }
 
-s32 CALLBACK PADsetSlot(u8 port, u8 slot)
+s32 PADsetSlot(u8 port, u8 slot)
 {
     port--;
     slot--;

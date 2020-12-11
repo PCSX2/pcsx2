@@ -23,7 +23,7 @@
 #ifdef _WIN32
 #include "WindowsMessaging.h"
 #include "DirectInput.h"
-#include "RawInput.h"
+#include "PADRawInput.h"
 #include "XInputEnum.h"
 #include "HidDevice.h"
 #include "DualShock3.h"

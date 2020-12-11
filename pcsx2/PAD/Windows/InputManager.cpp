@@ -19,7 +19,7 @@
 #include "Global.h"
 #include "InputManager.h"
 #include "KeyboardQueue.h"
-#include "Config.h"
+#include "PADConfig.h"
 
 InputDeviceManager *dm = 0;
 

@@ -1211,9 +1211,6 @@
       <Filter>System\Ps2\USB\shared</Filter>
     </ClCompile>
     <ClCompile Include="..\..\DEV9\net.cpp" />
-    <ClCompile Include="..\..\PAD\Windows\Config.cpp">
-      <Filter>System\Ps2\PAD</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\PAD\Windows\DeviceEnumerator.cpp">
       <Filter>System\Ps2\PAD</Filter>
     </ClCompile>
@@ -1238,9 +1235,6 @@
     <ClCompile Include="..\..\PAD\Windows\KeyboardQueue.cpp">
       <Filter>System\Ps2\PAD</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\PAD\Windows\RawInput.cpp">
-      <Filter>System\Ps2\PAD</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\PAD\Windows\Tooltips.cpp">
       <Filter>System\Ps2\PAD</Filter>
     </ClCompile>
@@ -1263,6 +1257,12 @@
       <Filter>System\Ps2\PAD</Filter>
     </ClCompile>
     <ClCompile Include="..\..\PAD\Windows\PAD.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\PADConfig.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\PADRawInput.cpp">
       <Filter>System\Ps2\PAD</Filter>
     </ClCompile>
   </ItemGroup>
@@ -1966,9 +1966,6 @@
     <ClInclude Include="..\..\USB\Win32\resource_usb.h">
       <Filter>System\Ps2\USB\Win32</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\PAD\Windows\Config.h">
-      <Filter>System\Ps2\PAD</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\PAD\Windows\DeviceEnumerator.h">
       <Filter>System\Ps2\PAD</Filter>
     </ClInclude>
@@ -1991,9 +1988,6 @@
       <Filter>System\Ps2\PAD</Filter>
     </ClInclude>
     <ClInclude Include="..\..\PAD\Windows\KeyboardQueue.h">
-      <Filter>System\Ps2\PAD</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\PAD\Windows\RawInput.h">
       <Filter>System\Ps2\PAD</Filter>
     </ClInclude>
     <ClInclude Include="..\..\PAD\Windows\resource.h">
@@ -2023,6 +2017,15 @@
     <ClInclude Include="..\..\PAD\Windows\XInputEnum.h">
       <Filter>System\Ps2\PAD</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\PADConfig.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\PADRawInput.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\PAD.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\wxResources.rc">
@@ -2046,7 +2049,7 @@
     <ResourceCompile Include="..\..\USB\Win32\USBDialog.rc">
       <Filter>System\Ps2\USB\Win32</Filter>
     </ResourceCompile>
-    <ResourceCompile Include="..\..\PAD\Windows\LilyPad.rc">
+    <ResourceCompile Include="..\..\PAD\Windows\PAD.rc">
       <Filter>System\Ps2\PAD</Filter>
     </ResourceCompile>
   </ItemGroup>
