@@ -56,7 +56,7 @@ if(XDG_STD)
     set(pcsx2FinalFlags ${pcsx2FinalFlags} -DXDG_STD)
 endif()
 
-if(SDL_FOUND)
+if(SDL_FOUND OR SDL2_FOUND)
     set(pcsx2FinalFlags ${pcsx2FinalFlags} -DSDL_BUILD)
 endif()
 
