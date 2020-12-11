@@ -363,7 +363,15 @@ namespace Implementations
 		}
 
 		if (g_Conf->GSWindow.CloseOnEsc)
+		{
 			sMainFrame.SetFocus();
+#ifndef DISABLE_RECORDING
+			// Disable recording controls that only make sense if the game is running
+			sMainFrame.enableRecordingMenuItem(MenuId_Recording_FrameAdvance, false);
+			sMainFrame.enableRecordingMenuItem(MenuId_Recording_TogglePause, false);
+			sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, false);
+#endif
+		}
 	}
 
 	void Sys_Resume()
