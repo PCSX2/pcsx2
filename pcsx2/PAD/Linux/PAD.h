@@ -127,7 +127,6 @@ void SysMessage(char* fmt, ...);
 s32 PADinit();
 void PADshutdown();
 s32 PADopen(void* pDsp);
-void PADsetSettingsDir(const char* dir);
 void PADsetLogDir(const char* dir);
 void PADclose();
 u32 PADquery();
