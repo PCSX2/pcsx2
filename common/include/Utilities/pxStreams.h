@@ -15,8 +15,10 @@
 
 #pragma once
 
+#include <wx/stream.h>
 #include "wx/filefn.h"
 #include <memory>
+#include "Dependencies.h"
 
 // --------------------------------------------------------------------------------------
 //  pxStreamBase
