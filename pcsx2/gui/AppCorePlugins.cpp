@@ -553,8 +553,8 @@ void SysExecEvent_SaveSinglePlugin::InvokeEvent()
 			memSavingState save( plugstore.get() );
 			GetCorePlugins().Freeze( m_pid, save );
 		}
-			
-		bool wasOpen = GetCorePlugins().IsOpen(m_pid);
+
+		const bool wasOpen = GetCorePlugins().IsOpen(m_pid);
 
 		GetCorePlugins().Close( m_pid );
 		_post_and_wait( paused_core );
