@@ -22,52 +22,53 @@
 
 #include "EmbeddedImage.h"
 
-enum gui_img {
-    img_l2,
-    img_r2,
-    img_l1,
-    img_r1,
-    img_triangle,
-    img_circle,
-    img_cross,
-    img_square,
-    img_select,
-    img_l3,
-    img_r3,
-    img_start,
-    img_dp_up,
-    img_dp_right,
-    img_dp_bottom,
-    img_dp_left,
-    img_left_cursor,
-    img_right_cursor,
-    img_analog,
-    img_background, // background pic
-    img_l_arrow_up,
-    img_l_arrow_right,
-    img_l_arrow_bottom,
-    img_l_arrow_left,
-    img_r_arrow_up,
-    img_r_arrow_right,
-    img_r_arrow_bottom,
-    img_r_arrow_left
+enum gui_img
+{
+	img_l2,
+	img_r2,
+	img_l1,
+	img_r1,
+	img_triangle,
+	img_circle,
+	img_cross,
+	img_square,
+	img_select,
+	img_l3,
+	img_r3,
+	img_start,
+	img_dp_up,
+	img_dp_right,
+	img_dp_bottom,
+	img_dp_left,
+	img_left_cursor,
+	img_right_cursor,
+	img_analog,
+	img_background, // background pic
+	img_l_arrow_up,
+	img_l_arrow_right,
+	img_l_arrow_bottom,
+	img_l_arrow_left,
+	img_r_arrow_up,
+	img_r_arrow_right,
+	img_r_arrow_bottom,
+	img_r_arrow_left
 };
 
 #define NB_IMG 28
 
 class opPanel : public wxPanel
 {
-    wxBitmap m_picture[NB_IMG];
-    bool m_show_image[NB_IMG];
-    int m_left_cursor_x, m_left_cursor_y, m_right_cursor_x, m_right_cursor_y;
-    wxDECLARE_EVENT_TABLE();
-    void OnPaint(wxPaintEvent &event);
+	wxBitmap m_picture[NB_IMG];
+	bool m_show_image[NB_IMG];
+	int m_left_cursor_x, m_left_cursor_y, m_right_cursor_x, m_right_cursor_y;
+	wxDECLARE_EVENT_TABLE();
+	void OnPaint(wxPaintEvent& event);
 
 public:
-    opPanel(wxWindow *, wxWindowID, const wxPoint &, const wxSize &);
-    void HideImg(int);
-    void ShowImg(int);
-    void MoveJoystick(int, int);
+	opPanel(wxWindow*, wxWindowID, const wxPoint&, const wxSize&);
+	void HideImg(int);
+	void ShowImg(int);
+	void MoveJoystick(int, int);
 };
 
 #endif // __OPPANEL_H__

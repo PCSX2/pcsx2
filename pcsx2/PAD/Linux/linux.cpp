@@ -23,102 +23,106 @@
 #include "wx_dialog/dialog.h"
 
 #ifndef __APPLE__
-Display *GSdsp;
+Display* GSdsp;
 Window GSwin;
 #endif
 
-static void SysMessage(const char *fmt, ...)
+static void SysMessage(const char* fmt, ...)
 {
-    va_list list;
-    char msg[512];
+	va_list list;
+	char msg[512];
 
-    va_start(list, fmt);
-    vsprintf(msg, fmt, list);
-    va_end(list);
+	va_start(list, fmt);
+	vsprintf(msg, fmt, list);
+	va_end(list);
 
-    if (msg[strlen(msg) - 1] == '\n')
-        msg[strlen(msg) - 1] = 0;
+	if (msg[strlen(msg) - 1] == '\n')
+		msg[strlen(msg) - 1] = 0;
 
-    wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
-    dialog.ShowModal();
+	wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
+	dialog.ShowModal();
 }
 
-s32 _PADopen(void *pDsp)
+s32 _PADopen(void* pDsp)
 {
 #ifndef __APPLE__
-    GSdsp = *(Display **)pDsp;
-    GSwin = (Window) * (((u32 *)pDsp) + 1);
+	GSdsp = *(Display**)pDsp;
+	GSwin = (Window) * (((u32*)pDsp) + 1);
 #endif
 
-    return 0;
+	return 0;
 }
 
 void _PADclose()
 {
-    s_vgamePad.clear();
+	s_vgamePad.clear();
 }
 
 void PollForJoystickInput(int cpad)
 {
-    int index = GamePad::uid_to_index(cpad);
-    if (index < 0)
-        return;
+	int index = GamePad::uid_to_index(cpad);
+	if (index < 0)
+		return;
 
-    auto &gamePad = s_vgamePad[index];
+	auto& gamePad = s_vgamePad[index];
 
-    gamePad->UpdateGamePadState();
+	gamePad->UpdateGamePadState();
 
-    for (int i = 0; i < MAX_KEYS; i++) {
-        s32 value = gamePad->GetInput((gamePadValues)i);
-        if (value != 0)
-            g_key_status.press(cpad, i, value);
-        else
-            g_key_status.release(cpad, i);
-    }
+	for (int i = 0; i < MAX_KEYS; i++)
+	{
+		s32 value = gamePad->GetInput((gamePadValues)i);
+		if (value != 0)
+			g_key_status.press(cpad, i, value);
+		else
+			g_key_status.release(cpad, i);
+	}
 }
 
 void PADupdate(int pad)
 {
 #ifndef __APPLE__
-    // Gamepad inputs don't count as an activity. Therefore screensaver will
-    // be fired after a couple of minute.
-    // Emulate an user activity
-    static int count = 0;
-    count++;
-    if ((count & 0xFFF) == 0) {
-        // 1 call every 4096 Vsync is enough
-        XResetScreenSaver(GSdsp);
-    }
+	// Gamepad inputs don't count as an activity. Therefore screensaver will
+	// be fired after a couple of minute.
+	// Emulate an user activity
+	static int count = 0;
+	count++;
+	if ((count & 0xFFF) == 0)
+	{
+		// 1 call every 4096 Vsync is enough
+		XResetScreenSaver(GSdsp);
+	}
 #endif
 
-    // Actually PADupdate is always call with pad == 0. So you need to update both
-    // pads -- Gregory
+	// Actually PADupdate is always call with pad == 0. So you need to update both
+	// pads -- Gregory
 
-    // Poll keyboard/mouse event. There is currently no way to separate pad0 from pad1 event.
-    // So we will populate both pad in the same time
-    for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
-        g_key_status.keyboard_state_acces(cpad);
-    }
-    UpdateKeyboardInput();
+	// Poll keyboard/mouse event. There is currently no way to separate pad0 from pad1 event.
+	// So we will populate both pad in the same time
+	for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++)
+	{
+		g_key_status.keyboard_state_acces(cpad);
+	}
+	UpdateKeyboardInput();
 
-    // Get joystick state + Commit
-    for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++) {
-        g_key_status.joystick_state_acces(cpad);
+	// Get joystick state + Commit
+	for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++)
+	{
+		g_key_status.joystick_state_acces(cpad);
 
-        PollForJoystickInput(cpad);
+		PollForJoystickInput(cpad);
 
-        g_key_status.commit_status(cpad);
-    }
+		g_key_status.commit_status(cpad);
+	}
 
-    Pad::rumble_all();
+	Pad::rumble_all();
 }
 
 void PADconfigure()
 {
- 	ScopedCoreThreadPause paused_core;
-    PADLoadConfig();
+	ScopedCoreThreadPause paused_core;
+	PADLoadConfig();
 
-    DisplayDialog();
- 	paused_core.AllowResume();
-    return;
+	DisplayDialog();
+	paused_core.AllowResume();
+	return;
 }

@@ -26,32 +26,32 @@
 class JoystickInfo : public GamePad
 {
 public:
-    JoystickInfo(int id);
-    ~JoystickInfo();
+	JoystickInfo(int id);
+	~JoystickInfo();
 
-    JoystickInfo(const JoystickInfo &) = delete;            // copy constructor
-    JoystickInfo &operator=(const JoystickInfo &) = delete; // assignment
+	JoystickInfo(const JoystickInfo&) = delete;            // copy constructor
+	JoystickInfo& operator=(const JoystickInfo&) = delete; // assignment
 
 
-    // opens handles to all possible joysticks
-    static void EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>> &vjoysticks);
+	// opens handles to all possible joysticks
+	static void EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>>& vjoysticks);
 
-    void Rumble(unsigned type, unsigned pad) override;
+	void Rumble(unsigned type, unsigned pad) override;
 
-    bool TestForce(float) override;
+	bool TestForce(float) override;
 
-    const char *GetName() final;
+	const char* GetName() final;
 
-    int GetInput(gamePadValues input) final;
+	int GetInput(gamePadValues input) final;
 
-    void UpdateGamePadState() final;
+	void UpdateGamePadState() final;
 
-    size_t GetUniqueIdentifier() final;
+	size_t GetUniqueIdentifier() final;
 
 private:
-    SDL_GameController *m_controller;
-    SDL_Haptic *m_haptic;
-    std::array<int, NB_EFFECT> m_effects_id;
-    size_t m_unique_id;
-    std::array<int, MAX_KEYS> m_pad_to_sdl;
+	SDL_GameController* m_controller;
+	SDL_Haptic* m_haptic;
+	std::array<int, NB_EFFECT> m_effects_id;
+	size_t m_unique_id;
+	std::array<int, MAX_KEYS> m_pad_to_sdl;
 };

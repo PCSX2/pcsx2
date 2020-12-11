@@ -24,17 +24,17 @@
 
 #if defined(__unix__) || defined(__APPLE__)
 
-extern void AnalyzeKeyEvent(keyEvent &evt);
+extern void AnalyzeKeyEvent(keyEvent& evt);
 extern void UpdateKeyboardInput();
-extern bool PollForNewKeyboardKeys(u32 &pkey);
+extern bool PollForNewKeyboardKeys(u32& pkey);
 #ifndef __APPLE__
-extern Display *GSdsp;
+extern Display* GSdsp;
 extern Window GSwin;
 #endif
 
 #else
 
-extern char *KeysymToChar(int keysym);
+extern char* KeysymToChar(int keysym);
 extern WNDPROC GSwndProc;
 extern HWND GShwnd;
 

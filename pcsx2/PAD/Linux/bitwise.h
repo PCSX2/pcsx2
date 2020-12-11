@@ -14,25 +14,25 @@
  */
 
 template <class T>
-static void __forceinline set_bit(T &value, int bit)
+static void __forceinline set_bit(T& value, int bit)
 {
-    value |= (1 << bit);
+	value |= (1 << bit);
 }
 
 template <class T>
-static void __forceinline clear_bit(T &value, int bit)
+static void __forceinline clear_bit(T& value, int bit)
 {
-    value &= ~(1 << bit);
+	value &= ~(1 << bit);
 }
 
 template <class T>
-static void __forceinline toggle_bit(T &value, int bit)
+static void __forceinline toggle_bit(T& value, int bit)
 {
-    value ^= (1 << bit);
+	value ^= (1 << bit);
 }
 
 template <class T>
-static bool __forceinline test_bit(T &value, int bit)
+static bool __forceinline test_bit(T& value, int bit)
 {
-    return (value & (1 << bit));
+	return (value & (1 << bit));
 }

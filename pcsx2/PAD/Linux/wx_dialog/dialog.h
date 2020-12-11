@@ -43,15 +43,16 @@
 // e.g L2 → 0, triangle → 4, ...
 // see PAD.h for more details about gamepad button id
 
-enum gui_buttons {
-    Analog = PAD_R_LEFT + 1, // Analog button (not yet supported ?)
-    JoyL_config,             // Left Joystick Configuration
-    JoyR_config,             // Right Joystick Configuration
-    Gamepad_config,          // Gamepad Configuration
-    Set_all,                 // Set all buttons
-    Apply,                   // Apply modifications without exit
-    Ok,                      // Apply modifications and exit
-    Cancel                   // Exit without apply modificatons
+enum gui_buttons
+{
+	Analog = PAD_R_LEFT + 1, // Analog button (not yet supported ?)
+	JoyL_config,             // Left Joystick Configuration
+	JoyR_config,             // Right Joystick Configuration
+	Gamepad_config,          // Gamepad Configuration
+	Set_all,                 // Set all buttons
+	Apply,                   // Apply modifications without exit
+	Ok,                      // Apply modifications and exit
+	Cancel                   // Exit without apply modificatons
 };
 
 #define BUTTONS_LENGHT 32 // numbers of buttons on the gamepad
@@ -61,32 +62,32 @@ enum gui_buttons {
 
 class PADDialog : public wxDialog
 {
-    // Panels
-    opPanel *m_pan_tabs[GAMEPAD_NUMBER]; // Gamepad Tabs box
-    // Notebooks
-    wxNotebook *m_tab_gamepad; // Joysticks Tabs
-    // Buttons
-    wxButton *m_bt_gamepad[GAMEPAD_NUMBER][BUTTONS_LENGHT]; // Joystick button use to modify the button mapping
-    // Contain all simulated key
-    u32 m_simulatedKeys[GAMEPAD_NUMBER][MAX_KEYS];
-    // Timer
-    wxTimer m_time_update_gui;
-    // Check if the gui must display feddback image
-    bool m_pressed[GAMEPAD_NUMBER][NB_IMG];
+	// Panels
+	opPanel* m_pan_tabs[GAMEPAD_NUMBER]; // Gamepad Tabs box
+	// Notebooks
+	wxNotebook* m_tab_gamepad; // Joysticks Tabs
+	// Buttons
+	wxButton* m_bt_gamepad[GAMEPAD_NUMBER][BUTTONS_LENGHT]; // Joystick button use to modify the button mapping
+	// Contain all simulated key
+	u32 m_simulatedKeys[GAMEPAD_NUMBER][MAX_KEYS];
+	// Timer
+	wxTimer m_time_update_gui;
+	// Check if the gui must display feddback image
+	bool m_pressed[GAMEPAD_NUMBER][NB_IMG];
 
-    // methods
-    void config_key(int, int);
-    void clear_key(int, int);
-    void repopulate();
+	// methods
+	void config_key(int, int);
+	void clear_key(int, int);
+	void repopulate();
 
-    // Events
-    void OnButtonClicked(wxCommandEvent &);
-    void JoystickEvent(wxTimerEvent &);
+	// Events
+	void OnButtonClicked(wxCommandEvent&);
+	void JoystickEvent(wxTimerEvent&);
 
 public:
-    PADDialog();
-    void InitDialog();
-    void show();
+	PADDialog();
+	void InitDialog();
+	void show();
 };
 
 extern void DisplayDialog(); // Main function
