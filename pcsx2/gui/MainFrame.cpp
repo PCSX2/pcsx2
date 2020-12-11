@@ -403,9 +403,12 @@ void MainEmuFrame::CreatePcsx2Menu()
 	m_GameSettingsSubmenu.Append(MenuId_Debug_CreateBlockdump, _("Create &Blockdump"), _("Creates a block dump for debugging purposes."), wxITEM_CHECK);
 
 	m_menuSys.AppendSeparator();
-
-	m_menuSys.Append(MenuId_Sys_LoadStates, _("&Load state"), &m_LoadStatesSubmenu);
-	m_menuSys.Append(MenuId_Sys_SaveStates, _("&Save state"), &m_SaveStatesSubmenu);
+	//  Implement custom hotkeys (F3) with translatable string intact + not blank in GUI. 
+	wxMenuItem* MainLoadStateLabel = m_menuSys.Append(MenuId_Sys_LoadStates, _("&Load state"), &m_LoadStatesSubmenu);
+	AppendShortcutToMenuOption(*MainLoadStateLabel, wxGetApp().GlobalAccels->findKeycodeWithCommandId("States_DefrostCurrentSlot").toTitleizedString());
+	//  Implement custom hotkeys (F1) with translatable string intact + not blank in GUI. 
+	wxMenuItem* MainSaveStateLabel = m_menuSys.Append(MenuId_Sys_SaveStates, _("&Save state"), &m_SaveStatesSubmenu);
+	AppendShortcutToMenuOption(*MainSaveStateLabel, wxGetApp().GlobalAccels->findKeycodeWithCommandId("States_FreezeCurrentSlot").toTitleizedString());
 
 	m_menuSys.Append(MenuId_EnableBackupStates, _("&Backup before save"), wxEmptyString, wxITEM_CHECK);
 
@@ -475,11 +478,14 @@ void MainEmuFrame::CreateWindowsMenu()
 void MainEmuFrame::CreateCaptureMenu()
 {
 	m_menuCapture.Append(MenuId_Capture_Video, _("Video"), &m_submenuVideoCapture);
-	m_submenuVideoCapture.Append(MenuId_Capture_Video_Record, _("Start Screenrecorder"));
+	//  Implement custom hotkeys (F12) with translatable string intact + not blank in GUI. 
+	wxMenuItem* MainVideoCaptureLabel = m_submenuVideoCapture.Append(MenuId_Capture_Video_Record, _("Start Screenrecorder"));
+	AppendShortcutToMenuOption(*MainVideoCaptureLabel, wxGetApp().GlobalAccels->findKeycodeWithCommandId("Sys_RecordingToggle").toTitleizedString());
 	m_submenuVideoCapture.Append(MenuId_Capture_Video_Stop, _("Stop Screenrecorder"))->Enable(false);
-
+	//  Implement custom hotkeys (F8) + (Shift + F8) + (Ctrl + Shift + F8) with translatable string intact + not blank in GUI. 
 	m_menuCapture.Append(MenuId_Capture_Screenshot, _("Screenshot"), &m_submenuScreenshot);
-	m_submenuScreenshot.Append(MenuId_Capture_Screenshot_Screenshot, _("Screenshot"));
+	wxMenuItem* MainScreenShotLabel = m_submenuScreenshot.Append(MenuId_Capture_Screenshot_Screenshot, _("Take Screenshot"));
+	AppendShortcutToMenuOption(*MainScreenShotLabel, wxGetApp().GlobalAccels->findKeycodeWithCommandId("Sys_TakeSnapshot").toTitleizedString());
 	m_submenuScreenshot.Append(MenuId_Capture_Screenshot_Screenshot_As, _("Screenshot As..."));
 }
 
@@ -651,7 +657,6 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 
 	ApplyCoreStatus();
 	ApplySettings();
-	AppendKeycodeNamesToMenuOptions();
 }
 
 MainEmuFrame::~MainEmuFrame()
@@ -729,6 +734,8 @@ void MainEmuFrame::ApplyCoreStatus()
 				susres->SetHelp(_("No emulation state is active; cannot suspend or resume."));
 			}
 		}
+		// Re-init keybinding after changing the label
+		AppendShortcutToMenuOption(*susres, wxGetApp().GlobalAccels->findKeycodeWithCommandId("Sys_SuspendResume").toTitleizedString());
 	}
 
 	const CDVD_SourceType Source = g_Conf->CdvdSource;
@@ -804,18 +811,15 @@ void MainEmuFrame::CommitPreset_noTrigger()
 	g_Conf->EmuOptions.EnablePatches = menubar.IsChecked(MenuId_EnablePatches);
 }
 
-static void AppendShortcutToMenuOption(wxMenuItem& item, wxString keyCodeStr)
+void MainEmuFrame::AppendShortcutToMenuOption(wxMenuItem& item, wxString keyCodeStr)
 {
-	wxString text = item.GetItemLabel();
-	const size_t tabPos = text.rfind(L'\t');
-	item.SetItemLabel(text.Mid(0, tabPos) + L"\t" + keyCodeStr);
-}
-
-void MainEmuFrame::AppendKeycodeNamesToMenuOptions()
-{
-
-	AppendShortcutToMenuOption(*m_menuSys.FindChildItem(MenuId_Sys_LoadStates), wxGetApp().GlobalAccels->findKeycodeWithCommandId("States_DefrostCurrentSlot").toTitleizedString());
-	AppendShortcutToMenuOption(*m_menuSys.FindChildItem(MenuId_Sys_SaveStates), wxGetApp().GlobalAccels->findKeycodeWithCommandId("States_FreezeCurrentSlot").toTitleizedString());
+    if (&item == nullptr)
+    {
+        return;
+    }
+    wxString text = item.GetItemLabel();
+    const size_t tabPos = text.rfind(L'\t');
+    item.SetItemLabel(text.Mid(0, tabPos) + L"\t" + keyCodeStr);
 }
 
 #ifndef DISABLE_RECORDING

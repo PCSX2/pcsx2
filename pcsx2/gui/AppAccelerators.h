@@ -107,7 +107,12 @@ struct KeyAcceleratorCode
 			return wxEmptyString;
 
 		wxString lastToken = tokens.at(tokens.size() - 1);
-		tokens.at(tokens.size() - 1) = lastToken[0] = wxToupper(lastToken[0]);
+		// If the final token is a key that is multiple characters. For example 'Tab' or 'Esc'.  There is no need to modify it
+		// Otherwise, it could be a normal letter key, so we capitalize it for stylistic reasons.
+		if (lastToken.Length() == 1)
+		{
+			tokens.at(tokens.size() - 1) = lastToken[0] = wxToupper(lastToken[0]);
+		}
 		wxString modifiedKeyCode;
 		for (int i = 0; i < (int)tokens.size(); i++)
 		{
