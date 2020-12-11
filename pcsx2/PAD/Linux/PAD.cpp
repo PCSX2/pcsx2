@@ -36,16 +36,16 @@
 #define snprintf sprintf_s
 #endif
 
-PADconf g_conf;
-static char libraryName[256];
+const u32 revision = 3;
+const u32 build = 0; // increase that with each version
+#define PAD_SAVE_STATE_VERSION ((revision << 8) | (build << 0))
 
+PADconf g_conf;
 keyEvent event;
 
 static keyEvent s_event;
 std::string s_strIniPath("inis/");
 std::string s_strLogPath("logs/");
-
-#define PAD_SAVE_STATE_VERSION ((revision << 8) | (build << 0))
 
 FILE *padLog = NULL;
 

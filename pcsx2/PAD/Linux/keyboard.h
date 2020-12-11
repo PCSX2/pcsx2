@@ -24,6 +24,10 @@
 
 #include "PAD.h"
 
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/keysym.h>
+
 #if defined(__unix__) || defined(__APPLE__)
 
 extern void AnalyzeKeyEvent(keyEvent &evt);
