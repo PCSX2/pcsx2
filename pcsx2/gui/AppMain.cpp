@@ -1024,13 +1024,29 @@ void Pcsx2App::OpenGsPanel()
 
 void Pcsx2App::CloseGsPanel()
 {
-	if( AppRpc_TryInvoke( &Pcsx2App::CloseGsPanel ) ) return;
+	if (AppRpc_TryInvoke(&Pcsx2App::CloseGsPanel))
+		return;
 
 	if (CloseViewportWithPlugins)
 	{
 		if (GSFrame* gsFrame = GetGsFramePtr())
-		if (GSPanel* woot = gsFrame->GetViewport())
-			woot->Destroy();
+			if (GSPanel* woot = gsFrame->GetViewport())
+				woot->Destroy();
+	}
+}
+
+void Pcsx2App::OnGsFrameClosed(wxWindowID id)
+{
+	if ((m_id_GsFrame == wxID_ANY) || (m_id_GsFrame != id))
+		return;
+
+	CoreThread.Suspend();
+
+	if (!m_UseGUI)
+	{
+		// The user is prompted before suspending (at Sys_Suspend() ), because
+		// right now there's no way to resume from suspend without GUI.
+		PrepForExit();
 	}
 #ifndef DISABLE_RECORDING
 	// Disable recording controls that only make sense if the game is running
@@ -1038,20 +1054,6 @@ void Pcsx2App::CloseGsPanel()
 	sMainFrame.enableRecordingMenuItem(MenuId_Recording_TogglePause, false);
 	sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, false);
 #endif
-}
-
-void Pcsx2App::OnGsFrameClosed( wxWindowID id )
-{
-	if( (m_id_GsFrame == wxID_ANY) || (m_id_GsFrame != id) ) return;
-
-	CoreThread.Suspend();
-
-	if( !m_UseGUI )
-	{
-		// The user is prompted before suspending (at Sys_Suspend() ), because
-		// right now there's no way to resume from suspend without GUI.
-		PrepForExit();
-	}
 }
 
 void Pcsx2App::OnProgramLogClosed( wxWindowID id )
