@@ -17,6 +17,8 @@
 
 #pragma once
 
+#include "PAD.h"
+
 #ifdef __linux__
 // Seriously why there is no standard
 #include "stdint.h"
@@ -141,55 +143,3 @@ extern HINSTANCE hInst;
 #endif
 // Needed for config screen
 void GetNameAndVersionString(wchar_t *out);
-
-typedef struct
-{
-    unsigned char controllerType;
-    unsigned short buttonStatus;
-    unsigned char rightJoyX, rightJoyY, leftJoyX, leftJoyY;
-    unsigned char moveX, moveY;
-    unsigned char reserved[91];
-} PadDataS;
-
-EXPORT_C_(void)
-PADupdate(int pad);
-EXPORT_C_(u32)
-PS2EgetLibType(void);
-EXPORT_C_(u32)
-PS2EgetLibVersion2(u32 type);
-EXPORT_C_(char *)
-PS2EgetLibName(void);
-EXPORT_C_(void)
-PADshutdown();
-EXPORT_C_(s32)
-PADinit(u32 flags);
-EXPORT_C_(s32)
-PADopen(void *pDsp);
-EXPORT_C_(void)
-PADclose();
-EXPORT_C_(u8)
-PADstartPoll(int pad);
-EXPORT_C_(u8)
-PADpoll(u8 value);
-EXPORT_C_(u32)
-PADquery();
-EXPORT_C_(void)
-PADabout();
-EXPORT_C_(s32)
-PADtest();
-EXPORT_C_(keyEvent *)
-PADkeyEvent();
-EXPORT_C_(u32)
-PADreadPort1(PadDataS *pads);
-EXPORT_C_(u32)
-PADreadPort2(PadDataS *pads);
-EXPORT_C_(void)
-PADconfigure();
-EXPORT_C_(s32)
-PADfreeze(int mode, freezeData *data);
-EXPORT_C_(s32)
-PADsetSlot(u8 port, u8 slot);
-EXPORT_C_(s32)
-PADqueryMtap(u8 port);
-EXPORT_C_(void)
-PADsetSettingsDir(const char *dir);

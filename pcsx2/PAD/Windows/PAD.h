@@ -38,17 +38,31 @@
 #include <queue>
 
 
-s32 PADinit();
+typedef struct
+{
+	unsigned char controllerType;
+	unsigned short buttonStatus;
+	unsigned char rightJoyX, rightJoyY, leftJoyX, leftJoyY;
+	unsigned char moveX, moveY;
+	unsigned char reserved[91];
+} PadDataS;
+
+
+void PADupdate(int pad);
 void PADshutdown();
+s32 PADinit(u32 flags);
 s32 PADopen(void* pDsp);
 void PADclose();
-u32 PADquery();
-s32 PADsetSlot(u8 port, u8 slot);
-s32 PADfreeze(int mode, freezeData* data);
 u8 PADstartPoll(int pad);
 u8 PADpoll(u8 value);
+u32 PADquery();
 keyEvent* PADkeyEvent();
-void PADupdate(int pad);
+u32 PADreadPort1(PadDataS* pads);
+u32 PADreadPort2(PadDataS* pads);
 void PADconfigure();
-//void PADDoFreezeOut(void* dest);
-//void PADDoFreezeIn(pxInputStream& infp);
+s32 PADfreeze(int mode, freezeData* data);
+s32 PADsetSlot(u8 port, u8 slot);
+s32 PADqueryMtap(u8 port);
+void PADsetSettingsDir(const char* dir);
+void PADDoFreezeOut(void* dest);
+void PADDoFreezeIn(pxInputStream& infp);
