@@ -454,7 +454,8 @@ endif()
 
 
 # PAD resources pre-compilation
-set(PADImgHeader "${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/ImgHeader")
+#set(PADImgHeader "${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/ImgHeader")
+set(PADImgHeader "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/ImgHeader")
 set(PADImg "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/Img")
 
 file(MAKE_DIRECTORY ${PADImgHeader})
@@ -468,7 +469,17 @@ foreach(result_file IN ITEMS
         COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${PADImg}/${result_file}.png" "${PADImgHeader}/${result_file}" )
 endforeach()
 
-add_custom_glib("PAD/Linux/resources" "PAD/Linux/res/PAD-res.xml" "PAD_res" PAD/Linux/res/game_controller_db.txt)
+add_custom_command(
+    OUTPUT ${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/resources.h
+    COMMAND glib-compile-resources --sourcedir "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res" --generate-header
+    --c-name PAD_res "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res/PAD-res.xml" --target=${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/resources.h
+    DEPENDS ${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res/PAD-res.xml ${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res/game_controller_db.txt)
+
+add_custom_command(
+    OUTPUT ${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/resources.cpp
+    COMMAND glib-compile-resources --sourcedir "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res" --generate-source
+    --c-name PAD_res "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res/PAD-res.xml" --target=${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/resources.cpp
+    DEPENDS ${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res/PAD-res.xml ${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res/game_controller_db.txt)
 
 
 # PAD/Linux sources 
@@ -479,7 +490,6 @@ set(pcsx2PADSources
     PAD/Linux/keyboard.cpp
     PAD/Linux/KeyStatus.cpp
     PAD/Linux/PAD.cpp
-    PAD/Linux/resources.cpp
     PAD/Linux/state_management.cpp
     PAD/Linux/wx_dialog/dialog.cpp
     PAD/Linux/wx_dialog/opPanel.cpp
@@ -487,6 +497,7 @@ set(pcsx2PADSources
     PAD/Linux/wx_dialog/JoystickConfiguration.cpp
     PAD/Linux/ini.cpp
     PAD/Linux/linux.cpp
+    PAD/Linux/resources.cpp
     )
 
 # PAD/Linux headers
@@ -498,11 +509,11 @@ set(pcsx2PADHeaders
     PAD/Linux/keyboard.h
     PAD/Linux/KeyStatus.h
     PAD/Linux/PAD.h
-    PAD/Linux/resources.h
     PAD/Linux/state_management.h
     PAD/Linux/wx_dialog/opPanel.h
     PAD/Linux/wx_dialog/GamepadConfiguration.h
     PAD/Linux/wx_dialog/JoystickConfiguration.h
+    PAD/Linux/resources.h
     # images
     ${PADImgHeader}/analog.h
     ${PADImgHeader}/circle.h

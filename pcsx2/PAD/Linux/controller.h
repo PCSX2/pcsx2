@@ -21,6 +21,7 @@
 
 #pragma once
 #include <string.h> // for memset
+#include "PS2Edefs.h"
 #define MAX_KEYS 24
 
 extern void set_keyboard_key(int pad, int keysym, int index);
