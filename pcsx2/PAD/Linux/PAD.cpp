@@ -41,240 +41,255 @@ static keyEvent s_event;
 std::string s_padstrIniPath("inis/");
 std::string s_padstrLogPath("logs/");
 
-FILE *padLog = NULL;
+FILE* padLog = NULL;
 
 KeyStatus g_key_status;
 
 MtQueue<keyEvent> g_ev_fifo;
 
 
-void __LogToConsole(const char *fmt, ...)
+void __LogToConsole(const char* fmt, ...)
 {
-    va_list list;
+	va_list list;
 
-    va_start(list, fmt);
+	va_start(list, fmt);
 
-    if (padLog != NULL)
-        vfprintf(padLog, fmt, list);
+	if (padLog != NULL)
+		vfprintf(padLog, fmt, list);
 
-    printf("OnePAD: ");
-    vprintf(fmt, list);
-    va_end(list);
+	printf("OnePAD: ");
+	vprintf(fmt, list);
+	va_end(list);
 }
 
 void initLogging()
 {
 #ifdef PAD_LOG
-    if (padLog)
-        return;
+	if (padLog)
+		return;
 
-    const std::string LogFile(s_padstrLogPath + "padLog.txt");
-    padLog = fopen(LogFile.c_str(), "w");
+	const std::string LogFile(s_padstrLogPath + "padLog.txt");
+	padLog = fopen(LogFile.c_str(), "w");
 
-    if (padLog)
-        setvbuf(padLog, NULL, _IONBF, 0);
+	if (padLog)
+		setvbuf(padLog, NULL, _IONBF, 0);
 
-    PAD_LOG("PADinit\n");
+	PAD_LOG("PADinit\n");
 #endif
 }
 
 void CloseLogging()
 {
 #ifdef PAD_LOG
-    if (padLog) {
-        fclose(padLog);
-        padLog = NULL;
-    }
+	if (padLog)
+	{
+		fclose(padLog);
+		padLog = NULL;
+	}
 #endif
 }
 
 s32 PADinit()
 {
-    initLogging();
+	initLogging();
 
-    PADLoadConfig();
+	PADLoadConfig();
 
-    Pad::reset_all();
+	Pad::reset_all();
 
-    query.reset();
+	query.reset();
 
-    for (int port = 0; port < 2; port++)
-    slots[port] = 0;
+	for (int port = 0; port < 2; port++)
+		slots[port] = 0;
 
-    return 0;
+	return 0;
 }
 
 void PADshutdown()
 {
-    CloseLogging();
+	CloseLogging();
 }
 
-s32 PADopen(void *pDsp)
+s32 PADopen(void* pDsp)
 {
-    memset(&event, 0, sizeof(event));
-    g_key_status.Init();
+	memset(&event, 0, sizeof(event));
+	g_key_status.Init();
 
-    g_ev_fifo.reset();
+	g_ev_fifo.reset();
 
 #if defined(__unix__) || defined(__APPLE__)
-    GamePad::EnumerateGamePads(s_vgamePad);
+	GamePad::EnumerateGamePads(s_vgamePad);
 #endif
-    return _PADopen(pDsp);
+	return _PADopen(pDsp);
 }
 
-void PADsetSettingsDir(const char *dir)
+void PADsetSettingsDir(const char* dir)
 {
-    // Get the path to the ini directory.
-    s_padstrIniPath = (dir == NULL) ? "inis/" : dir;
+	// Get the path to the ini directory.
+	s_padstrIniPath = (dir == NULL) ? "inis/" : dir;
 }
 
-void PADsetLogDir(const char *dir)
+void PADsetLogDir(const char* dir)
 {
-    // Get the path to the log directory.
-    s_padstrLogPath = (dir == NULL) ? "logs/" : dir;
+	// Get the path to the log directory.
+	s_padstrLogPath = (dir == NULL) ? "logs/" : dir;
 
-    // Reload the log file after updated the path
-    CloseLogging();
-    initLogging();
+	// Reload the log file after updated the path
+	CloseLogging();
+	initLogging();
 }
 
 void PADclose()
 {
-    _PADclose();
+	_PADclose();
 }
 
 u32 PADquery()
 {
-    return 3; // both
+	return 3; // both
 }
 
 s32 PADsetSlot(u8 port, u8 slot)
 {
-    port--;
-    slot--;
-    if (port > 1 || slot > 3) {
-        return 0;
-    }
-    // Even if no pad there, record the slot, as it is the active slot regardless.
-    slots[port] = slot;
+	port--;
+	slot--;
+	if (port > 1 || slot > 3)
+	{
+		return 0;
+	}
+	// Even if no pad there, record the slot, as it is the active slot regardless.
+	slots[port] = slot;
 
-    return 1;
+	return 1;
 }
 
-s32 PADfreeze(int mode, freezeData *data)
+s32 PADfreeze(int mode, freezeData* data)
 {
-    if (!data)
-        return -1;
+	if (!data)
+		return -1;
 
-    if (mode == FREEZE_SIZE) {
-        data->size = sizeof(PadPluginFreezeData);
+	if (mode == FREEZE_SIZE)
+	{
+		data->size = sizeof(PadPluginFreezeData);
+	}
+	else if (mode == FREEZE_LOAD)
+	{
+		PadPluginFreezeData* pdata = (PadPluginFreezeData*)(data->data);
 
-    } else if (mode == FREEZE_LOAD) {
-        PadPluginFreezeData *pdata = (PadPluginFreezeData *)(data->data);
+		Pad::stop_vibrate_all();
 
-        Pad::stop_vibrate_all();
+		if (data->size != sizeof(PadPluginFreezeData) || pdata->version != PAD_SAVE_STATE_VERSION ||
+			strncmp(pdata->format, "OnePad", sizeof(pdata->format)))
+			return 0;
 
-        if (data->size != sizeof(PadPluginFreezeData) || pdata->version != PAD_SAVE_STATE_VERSION ||
-            strncmp(pdata->format, "OnePad", sizeof(pdata->format)))
-            return 0;
+		query = pdata->query;
+		if (pdata->query.slot < 4)
+		{
+			query = pdata->query;
+		}
 
-        query = pdata->query;
-        if (pdata->query.slot < 4) {
-            query = pdata->query;
-        }
+		// Tales of the Abyss - pad fix
+		// - restore data for both ports
+		for (int port = 0; port < 2; port++)
+		{
+			for (int slot = 0; slot < 4; slot++)
+			{
+				u8 mode = pdata->padData[port][slot].mode;
 
-        // Tales of the Abyss - pad fix
-        // - restore data for both ports
-        for (int port = 0; port < 2; port++) {
-            for (int slot = 0; slot < 4; slot++) {
-                u8 mode = pdata->padData[port][slot].mode;
+				if (mode != MODE_DIGITAL && mode != MODE_ANALOG && mode != MODE_DS2_NATIVE)
+				{
+					break;
+				}
 
-                if (mode != MODE_DIGITAL && mode != MODE_ANALOG && mode != MODE_DS2_NATIVE) {
-                    break;
-                }
+				memcpy(&pads[port][slot], &pdata->padData[port][slot], sizeof(PadFreezeData));
+			}
 
-                memcpy(&pads[port][slot], &pdata->padData[port][slot], sizeof(PadFreezeData));
-            }
+			if (pdata->slot[port] < 4)
+				slots[port] = pdata->slot[port];
+		}
+	}
+	else if (mode == FREEZE_SAVE)
+	{
+		if (data->size != sizeof(PadPluginFreezeData))
+			return 0;
 
-            if (pdata->slot[port] < 4)
-            slots[port] = pdata->slot[port];
-        }
+		PadPluginFreezeData* pdata = (PadPluginFreezeData*)(data->data);
 
-    } else if (mode == FREEZE_SAVE) {
-        if (data->size != sizeof(PadPluginFreezeData))
-            return 0;
+		// Tales of the Abyss - pad fix
+		// - PCSX2 only saves port0 (save #1), then port1 (save #2)
 
-        PadPluginFreezeData *pdata = (PadPluginFreezeData *)(data->data);
+		memset(pdata, 0, data->size);
+		strncpy(pdata->format, "OnePad", sizeof(pdata->format));
+		pdata->version = PAD_SAVE_STATE_VERSION;
+		pdata->query = query;
 
-        // Tales of the Abyss - pad fix
-        // - PCSX2 only saves port0 (save #1), then port1 (save #2)
+		for (int port = 0; port < 2; port++)
+		{
+			for (int slot = 0; slot < 4; slot++)
+			{
+				pdata->padData[port][slot] = pads[port][slot];
+			}
 
-        memset(pdata, 0, data->size);
-        strncpy(pdata->format, "OnePad", sizeof(pdata->format));
-        pdata->version = PAD_SAVE_STATE_VERSION;
-        pdata->query = query;
+			pdata->slot[port] = slots[port];
+		}
+	}
+	else
+	{
+		return -1;
+	}
 
-        for (int port = 0; port < 2; port++) {
-            for (int slot = 0; slot < 4; slot++) {
-                pdata->padData[port][slot] = pads[port][slot];
-            }
-
-            pdata->slot[port] = slots[port];
-        }
-
-    } else {
-        return -1;
-    }
-
-    return 0;
+	return 0;
 }
 
 u8 PADstartPoll(int pad)
 {
-    return pad_start_poll(pad);
+	return pad_start_poll(pad);
 }
 
 u8 PADpoll(u8 value)
 {
-    return pad_poll(value);
+	return pad_poll(value);
 }
 
 // PADkeyEvent is called every vsync (return NULL if no event)
-keyEvent * PADkeyEvent()
+keyEvent* PADkeyEvent()
 {
 #ifdef SDL_BUILD
-    // Take the opportunity to handle hot plugging here
-    SDL_Event events;
-    while (SDL_PollEvent(&events)) {
-        switch (events.type) {
-            case SDL_CONTROLLERDEVICEADDED:
-            case SDL_CONTROLLERDEVICEREMOVED:
-                GamePad::EnumerateGamePads(s_vgamePad);
-                break;
-            default:
-                break;
-        }
-    }
+	// Take the opportunity to handle hot plugging here
+	SDL_Event events;
+	while (SDL_PollEvent(&events))
+	{
+		switch (events.type)
+		{
+			case SDL_CONTROLLERDEVICEADDED:
+			case SDL_CONTROLLERDEVICEREMOVED:
+				GamePad::EnumerateGamePads(s_vgamePad);
+				break;
+			default:
+				break;
+		}
+	}
 #endif
-    if (g_ev_fifo.size() == 0) {
-        // PAD_LOG("No events in queue, returning empty event\n");
-        s_event = event;
-        event.evt = 0;
-        event.key = 0;
-        return &s_event;
-    }
-    s_event = g_ev_fifo.dequeue();
-    AnalyzeKeyEvent(s_event);
-    // PAD_LOG("Returning Event. Event Type: %d, Key: %d\n", s_event.evt, s_event.key);
-    return &s_event;
+	if (g_ev_fifo.size() == 0)
+	{
+		// PAD_LOG("No events in queue, returning empty event\n");
+		s_event = event;
+		event.evt = 0;
+		event.key = 0;
+		return &s_event;
+	}
+	s_event = g_ev_fifo.dequeue();
+	AnalyzeKeyEvent(s_event);
+	// PAD_LOG("Returning Event. Event Type: %d, Key: %d\n", s_event.evt, s_event.key);
+	return &s_event;
 }
 
 #if defined(__unix__)
-void PADWriteEvent(keyEvent &evt)
+void PADWriteEvent(keyEvent& evt)
 {
-    // if (evt.evt != 6) { // Skip mouse move events for logging
-    //     PAD_LOG("Pushing Event. Event Type: %d, Key: %d\n", evt.evt, evt.key);
-    // }
-    g_ev_fifo.push(evt);
+	// if (evt.evt != 6) { // Skip mouse move events for logging
+	//     PAD_LOG("Pushing Event. Event Type: %d, Key: %d\n", evt.evt, evt.key);
+	// }
+	g_ev_fifo.push(evt);
 }
 #endif

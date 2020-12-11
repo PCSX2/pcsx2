@@ -20,8 +20,8 @@
 
 typedef struct
 {
-    u8 lx, ly;
-    u8 rx, ry;
+	u8 lx, ly;
+	u8 rx, ry;
 } PADAnalog;
 
 #define MAX_ANALOG_VALUE 32766
@@ -29,44 +29,44 @@ typedef struct
 class KeyStatus
 {
 private:
-    const u8 m_analog_released_val;
+	const u8 m_analog_released_val;
 
-    u16 m_button[GAMEPAD_NUMBER];
-    u16 m_internal_button_kbd[GAMEPAD_NUMBER];
-    u16 m_internal_button_joy[GAMEPAD_NUMBER];
+	u16 m_button[GAMEPAD_NUMBER];
+	u16 m_internal_button_kbd[GAMEPAD_NUMBER];
+	u16 m_internal_button_joy[GAMEPAD_NUMBER];
 
-    u8 m_button_pressure[GAMEPAD_NUMBER][MAX_KEYS];
-    u8 m_internal_button_pressure[GAMEPAD_NUMBER][MAX_KEYS];
+	u8 m_button_pressure[GAMEPAD_NUMBER][MAX_KEYS];
+	u8 m_internal_button_pressure[GAMEPAD_NUMBER][MAX_KEYS];
 
-    bool m_state_acces[GAMEPAD_NUMBER];
+	bool m_state_acces[GAMEPAD_NUMBER];
 
-    PADAnalog m_analog[GAMEPAD_NUMBER];
-    PADAnalog m_internal_analog_kbd[GAMEPAD_NUMBER];
-    PADAnalog m_internal_analog_joy[GAMEPAD_NUMBER];
+	PADAnalog m_analog[GAMEPAD_NUMBER];
+	PADAnalog m_internal_analog_kbd[GAMEPAD_NUMBER];
+	PADAnalog m_internal_analog_joy[GAMEPAD_NUMBER];
 
-    void analog_set(u32 pad, u32 index, u8 value);
-    bool analog_is_reversed(u32 pad, u32 index);
-    u8 analog_merge(u8 kbd, u8 joy);
+	void analog_set(u32 pad, u32 index, u8 value);
+	bool analog_is_reversed(u32 pad, u32 index);
+	u8 analog_merge(u8 kbd, u8 joy);
 
 public:
-    KeyStatus()
-        : m_analog_released_val(0x7F)
-    {
-        Init();
-    }
-    void Init();
+	KeyStatus()
+		: m_analog_released_val(0x7F)
+	{
+		Init();
+	}
+	void Init();
 
-    void keyboard_state_acces(u32 pad) { m_state_acces[pad] = true; }
-    void joystick_state_acces(u32 pad) { m_state_acces[pad] = false; }
+	void keyboard_state_acces(u32 pad) { m_state_acces[pad] = true; }
+	void joystick_state_acces(u32 pad) { m_state_acces[pad] = false; }
 
-    void press(u32 pad, u32 index, s32 value = 0xFF);
-    void release(u32 pad, u32 index);
+	void press(u32 pad, u32 index, s32 value = 0xFF);
+	void release(u32 pad, u32 index);
 
-    u16 get(u32 pad);
-    u8 get(u32 pad, u32 index);
+	u16 get(u32 pad);
+	u8 get(u32 pad, u32 index);
 
 
-    void commit_status(u32 pad);
+	void commit_status(u32 pad);
 };
 
 extern KeyStatus g_key_status;

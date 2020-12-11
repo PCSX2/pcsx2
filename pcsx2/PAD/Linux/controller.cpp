@@ -18,21 +18,21 @@
 
 __forceinline void set_keyboard_key(int pad, int keysym, int index)
 {
-    g_conf.keysym_map[pad][keysym] = index;
+	g_conf.keysym_map[pad][keysym] = index;
 }
 
 __forceinline int get_keyboard_key(int pad, int keysym)
 {
-    // You must use find instead of []
-    // [] will create an element if the key does not exist and return 0
-    std::map<u32, u32>::iterator it = g_conf.keysym_map[pad].find(keysym);
-    if (it != g_conf.keysym_map[pad].end())
-        return it->second;
-    else
-        return -1;
+	// You must use find instead of []
+	// [] will create an element if the key does not exist and return 0
+	std::map<u32, u32>::iterator it = g_conf.keysym_map[pad].find(keysym);
+	if (it != g_conf.keysym_map[pad].end())
+		return it->second;
+	else
+		return -1;
 }
 
 __forceinline bool IsAnalogKey(int index)
 {
-    return ((index >= PAD_L_UP) && (index <= PAD_R_LEFT));
+	return ((index >= PAD_L_UP) && (index <= PAD_R_LEFT));
 }

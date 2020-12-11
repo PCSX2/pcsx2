@@ -30,24 +30,24 @@ static const s32 enable_rumble_id = wxID_HIGHEST + 200 + 3;
 
 class GamepadConfiguration : public wxDialog
 {
-    wxCheckBox *m_cb_rumble;
-    wxSlider *m_sl_rumble_intensity, *m_sl_joystick_sensibility;
-    wxChoice *m_joy_map;
+	wxCheckBox* m_cb_rumble;
+	wxSlider *m_sl_rumble_intensity, *m_sl_joystick_sensibility;
+	wxChoice* m_joy_map;
 
-    u32 m_pad_id;
+	u32 m_pad_id;
 
-    // Methods
-    void repopulate();
+	// Methods
+	void repopulate();
 
-    // Events
-    void OnOk(wxCommandEvent &);
-    void OnSliderReleased(wxCommandEvent &);
-    void OnCheckboxChange(wxCommandEvent &);
-    void OnChoiceChange(wxCommandEvent &);
+	// Events
+	void OnOk(wxCommandEvent&);
+	void OnSliderReleased(wxCommandEvent&);
+	void OnCheckboxChange(wxCommandEvent&);
+	void OnChoiceChange(wxCommandEvent&);
 
 public:
-    GamepadConfiguration(int, wxWindow *);
-    void InitGamepadConfiguration();
+	GamepadConfiguration(int, wxWindow*);
+	void InitGamepadConfiguration();
 };
 
 #endif // __GAMEPADCONFIGURATION_H__

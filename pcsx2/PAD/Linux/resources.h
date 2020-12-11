@@ -3,5 +3,5 @@
 
 #include <gio/gio.h>
 
-extern GResource *PAD_res_get_resource (void);
+extern GResource* PAD_res_get_resource(void);
 #endif
