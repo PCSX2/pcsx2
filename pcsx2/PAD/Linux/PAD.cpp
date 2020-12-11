@@ -273,8 +273,12 @@ keyEvent* PADkeyEvent()
 		return &s_event;
 	}
 	s_event = g_ev_fifo.dequeue();
+
+//TODO: fix me for macOS
+#ifdef __linux__
 	AnalyzeKeyEvent(s_event);
 	// PAD_LOG("Returning Event. Event Type: %d, Key: %d\n", s_event.evt, s_event.key);
+#endif
 	return &s_event;
 }
 

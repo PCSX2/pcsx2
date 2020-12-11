@@ -974,6 +974,8 @@ set(Common
 	${pcsx2SPU2Headers}
 	${pcsx2DEV9Sources}
 	${pcsx2DEV9Headers}
+	${pcsx2PADHeaders}
+	${pcsx2PADSources}
 	${pcsx2DebugToolsSources}
 	${pcsx2GuiSources}
 	${pcsx2GuiResources}
@@ -1002,8 +1004,6 @@ if(Linux)
 		${pcsx2LinuxHeaders}
 		${pcsx2USBSources}
 		${pcsx2USBHeaders}
-        ${pcsx2PADHeaders}
-        ${pcsx2PADSources}
 		)
 		
 	set(Platform_Libs
