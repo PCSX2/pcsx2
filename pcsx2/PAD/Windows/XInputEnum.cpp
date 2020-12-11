@@ -15,6 +15,7 @@
  *  with PCSX2.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "Global.h"
 #include <VersionHelpers.h>
 #include <xinput.h>
