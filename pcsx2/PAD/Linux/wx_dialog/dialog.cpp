@@ -185,7 +185,7 @@ static std::string KeyName(int pad, int key, int keysym)
 #endif
 
 // Construtor of Dialog
-Dialog::Dialog()
+PADDialog::PADDialog()
     : wxDialog(NULL,                                  // Parent
                wxID_ANY,                              // ID
                _T("OnePad configuration"),            // Title
@@ -442,7 +442,7 @@ Dialog::Dialog()
         m_bt_gamepad[i][Analog]->Disable();
     }
 
-    Bind(wxEVT_BUTTON, &Dialog::OnButtonClicked, this);
+    Bind(wxEVT_BUTTON, &PADDialog::OnButtonClicked, this);
 
     for (int i = 0; i < GAMEPAD_NUMBER; ++i) {
         for (int j = 0; j < NB_IMG; ++j) {
@@ -451,10 +451,10 @@ Dialog::Dialog()
     }
 }
 
-void Dialog::InitDialog()
+void PADDialog::InitDialog()
 {
     GamePad::EnumerateGamePads(s_vgamePad); // activate gamepads
-    LoadConfig();                           // Load configuration from the ini file
+    PADLoadConfig();                           // Load configuration from the ini file
     repopulate();                           // Set label and fit simulated key array
 }
 
@@ -462,7 +462,7 @@ void Dialog::InitDialog()
 /*********** Events functions ***********/
 /****************************************/
 
-void Dialog::OnButtonClicked(wxCommandEvent &event)
+void PADDialog::OnButtonClicked(wxCommandEvent &event)
 {
     // Affichage d'un message à chaque clic sur le bouton
     wxButton *bt_tmp = (wxButton *)event.GetEventObject(); // get the button object
@@ -556,10 +556,10 @@ void Dialog::OnButtonClicked(wxCommandEvent &event)
             usleep(500000); // give enough time to the user to release the button
         }
     } else if (bt_id == Ok) {     // If the button ID is equals to the Ok button ID
-        SaveConfig();             // Save the configuration
+        PADSaveConfig();             // Save the configuration
         Close();                  // Close the window
     } else if (bt_id == Apply) {  // If the button ID is equals to the Apply button ID
-        SaveConfig();             // Save the configuration
+        PADSaveConfig();             // Save the configuration
     } else if (bt_id == Cancel) { // If the button ID is equals to the cancel button ID
         Close();                  // Close the window
     }
@@ -569,7 +569,7 @@ void Dialog::OnButtonClicked(wxCommandEvent &event)
 /*********** Methods functions **********/
 /****************************************/
 
-void Dialog::config_key(int pad, int key)
+void PADDialog::config_key(int pad, int key)
 {
     bool captured = false;
     u32 key_pressed = 0;
@@ -590,7 +590,7 @@ void Dialog::config_key(int pad, int key)
         KeyName(pad, key, m_simulatedKeys[pad][key]).c_str());
 }
 
-void Dialog::clear_key(int pad, int key)
+void PADDialog::clear_key(int pad, int key)
 {
     // Erase the keyboard binded key
     u32 keysim = m_simulatedKeys[pad][key];
@@ -602,7 +602,7 @@ void Dialog::clear_key(int pad, int key)
 
 
 // Set button values
-void Dialog::repopulate()
+void PADDialog::repopulate()
 {
     for (int gamepad_id = 0; gamepad_id < GAMEPAD_NUMBER; ++gamepad_id) {
         // keyboard/mouse key
@@ -622,17 +622,17 @@ void Dialog::repopulate()
 void DisplayDialog()
 {
     if (g_conf.ftw) {
-        wxString info("The OnePad GUI is provided to map the keyboard/mouse to the virtual PS2 pad.\n\n"
+        wxString info("The PAD GUI is provided to map the keyboard/mouse to the virtual PS2 pad.\n\n"
                       "Gamepads/Joysticks are plug and play. The active gamepad can be selected in the 'Gamepad Configuration' panel.\n\n");
 
         wxMessageDialog ftw(nullptr, info);
         ftw.ShowModal();
 
         g_conf.ftw = 0;
-        SaveConfig();
+        PADSaveConfig();
     }
 
-    Dialog dialog;
+    PADDialog dialog;
 
     dialog.InitDialog();
     dialog.ShowModal();

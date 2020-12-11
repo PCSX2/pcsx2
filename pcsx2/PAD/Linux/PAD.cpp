@@ -44,8 +44,8 @@ PADconf g_conf;
 keyEvent event;
 
 static keyEvent s_event;
-std::string s_strIniPath("inis/");
-std::string s_strLogPath("logs/");
+std::string s_padstrIniPath("inis/");
+std::string s_padstrLogPath("logs/");
 
 FILE *padLog = NULL;
 
@@ -53,17 +53,6 @@ KeyStatus g_key_status;
 
 MtQueue<keyEvent> g_ev_fifo;
 
-
-void __Log(const char *fmt, ...)
-{
-    va_list list;
-
-    if (padLog == NULL)
-        return;
-    va_start(list, fmt);
-    vfprintf(padLog, fmt, list);
-    va_end(list);
-}
 
 void __LogToConsole(const char *fmt, ...)
 {
@@ -85,7 +74,7 @@ void initLogging()
     if (padLog)
         return;
 
-    const std::string LogFile(s_strLogPath + "padLog.txt");
+    const std::string LogFile(s_padstrLogPath + "padLog.txt");
     padLog = fopen(LogFile.c_str(), "w");
 
     if (padLog)
@@ -109,7 +98,7 @@ s32 PADinit(u32 flags)
 {
     initLogging();
 
-    LoadConfig();
+    PADLoadConfig();
 
     Pad::reset_all();
 
@@ -142,13 +131,13 @@ s32 PADopen(void *pDsp)
 void PADsetSettingsDir(const char *dir)
 {
     // Get the path to the ini directory.
-    s_strIniPath = (dir == NULL) ? "inis/" : dir;
+    s_padstrIniPath = (dir == NULL) ? "inis/" : dir;
 }
 
 void PADsetLogDir(const char *dir)
 {
     // Get the path to the log directory.
-    s_strLogPath = (dir == NULL) ? "logs/" : dir;
+    s_padstrLogPath = (dir == NULL) ? "logs/" : dir;
 
     // Reload the log file after updated the path
     CloseLogging();

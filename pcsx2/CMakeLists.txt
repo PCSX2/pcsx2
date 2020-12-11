@@ -454,9 +454,9 @@ endif()
 
 
 # PAD resources pre-compilation
-#set(PADImgHeader "${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/ImgHeader")
-set(PADImgHeader "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/ImgHeader")
+set(PADImgHeader "${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/ImgHeader")
 set(PADImg "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/Img")
+include_directories ("${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/")
 
 file(MAKE_DIRECTORY ${PADImgHeader})
 
@@ -1008,6 +1008,7 @@ if(Linux)
 		
 	set(Platform_Libs
 		${LIBUDEV_LIBRARIES}
+        ${X11_LIBRARIES}
 		)
 endif()
 
