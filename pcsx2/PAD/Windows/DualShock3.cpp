@@ -18,7 +18,7 @@
 #include "PrecompiledHeader.h"
 #include "Global.h"
 #include "InputManager.h"
-#include "Config.h"
+#include "PADConfig.h"
 
 #include "usb.h"
 #include "HidDevice.h"

@@ -289,7 +289,7 @@
     <ClCompile Include="..\..\IopGte.cpp" />
     <ClCompile Include="..\..\IPC.cpp" />
     <ClCompile Include="..\..\FW.cpp" />
-    <ClCompile Include="..\..\PAD\Windows\Config.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\PADConfig.cpp" />
     <ClCompile Include="..\..\PAD\Windows\DeviceEnumerator.cpp" />
     <ClCompile Include="..\..\PAD\Windows\Diagnostics.cpp" />
     <ClCompile Include="..\..\PAD\Windows\DirectInput.cpp" />
@@ -299,7 +299,7 @@
     <ClCompile Include="..\..\PAD\Windows\InputManager.cpp" />
     <ClCompile Include="..\..\PAD\Windows\KeyboardQueue.cpp" />
     <ClCompile Include="..\..\PAD\Windows\PAD.cpp" />
-    <ClCompile Include="..\..\PAD\Windows\RawInput.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\PADRawInput.cpp" />
     <ClCompile Include="..\..\PAD\Windows\Tooltips.cpp" />
     <ClCompile Include="..\..\PAD\Windows\VKey.cpp" />
     <ClCompile Include="..\..\PAD\Windows\WindowsKeyboard.cpp" />
@@ -648,7 +648,8 @@
     <ClInclude Include="..\..\IopGte.h" />
     <ClInclude Include="..\..\IPC.h" />
     <ClInclude Include="..\..\FW.h" />
-    <ClInclude Include="..\..\PAD\Windows\Config.h" />
+    <ClInclude Include="..\..\PAD\Windows\PAD.h" />
+    <ClInclude Include="..\..\PAD\Windows\PADConfig.h" />
     <ClInclude Include="..\..\PAD\Windows\DeviceEnumerator.h" />
     <ClInclude Include="..\..\PAD\Windows\Diagnostics.h" />
     <ClInclude Include="..\..\PAD\Windows\DirectInput.h" />
@@ -657,7 +658,7 @@
     <ClInclude Include="..\..\PAD\Windows\HidDevice.h" />
     <ClInclude Include="..\..\PAD\Windows\InputManager.h" />
     <ClInclude Include="..\..\PAD\Windows\KeyboardQueue.h" />
-    <ClInclude Include="..\..\PAD\Windows\RawInput.h" />
+    <ClInclude Include="..\..\PAD\Windows\PADRawInput.h" />
     <ClInclude Include="..\..\PAD\Windows\resource.h" />
     <ClInclude Include="..\..\PAD\Windows\Tooltips.h" />
     <ClInclude Include="..\..\PAD\Windows\usb.h" />
@@ -888,7 +889,7 @@
     <ResourceCompile Include="..\..\..\3rdparty\wxwidgets3.0\include\wx\msw\wx.rc">
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\wxwidgets3.0\$(PlatformName);$(SolutionDir)3rdparty\wxwidgets3.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
-    <ResourceCompile Include="..\..\PAD\Windows\LilyPad.rc" />
+    <ResourceCompile Include="..\..\PAD\Windows\PAD.rc" />
     <ResourceCompile Include="..\..\SPU2\Windows\SPU2.rc" />
     <ResourceCompile Include="..\..\DEV9\Win32\DEV9ghzdrk.rc" />
     <ResourceCompile Include="..\..\USB\usb-pad\dx\versionproxy.rc" />

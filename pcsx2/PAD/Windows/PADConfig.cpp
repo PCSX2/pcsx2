@@ -15,11 +15,12 @@
  *  with PCSX2.  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
 #include "Global.h"
 
 #include "resource.h"
 #include "InputManager.h"
-#include "Config.h"
+#include "PADConfig.h"
 
 #include "Tooltips.h"
 #include "Diagnostics.h"
@@ -31,7 +32,9 @@
 #include <Shlwapi.h>
 
 // Needed to know if raw input is available.  It requires XP or higher.
-#include "RawInput.h"
+#include "PADRawInput.h"
+#include <commdlg.h>
+#include <timeapi.h>
 
 //max len 24 wchar_t
 const wchar_t *padTypes[] = {
