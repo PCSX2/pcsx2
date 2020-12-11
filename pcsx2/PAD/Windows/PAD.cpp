@@ -782,42 +782,40 @@ struct QueryInfo
     u8 response[42];
 } query = {0, 0, 0, 0, 0, 0xFF, {0xF3}};
 
-s32 PADinit(u32 flags)
+s32 PADinit()
 {
+	const u32 flags = 3;
     // Note:  Won't load settings if already loaded.
     if (LoadSettings() < 0) {
         return -1;
     }
     int port = (flags & 3);
-    if (port == 3) {
-        if (PADinit(1) == -1)
-            return -1;
-        return PADinit(2);
-    }
 
 #if defined(PCSX2_DEBUG) && defined(_MSC_VER)
     int tmpFlag = _CrtSetDbgFlag(_CRTDBG_REPORT_FLAG);
     tmpFlag |= _CRTDBG_ALLOC_MEM_DF | _CRTDBG_LEAK_CHECK_DF;
     _CrtSetDbgFlag(tmpFlag);
 #endif
+	for (int i = 2; i > 0; i--)
+	{
+		port = i;
+		port--;
 
-    port--;
+		for (int slot = 0; slot < 4; slot++)
+			ResetPad(port, slot);
+		slots[port] = 0;
+		portInitialized[port] = 1;
 
-    for (int slot = 0; slot < 4; slot++)
-        ResetPad(port, slot);
-    slots[port] = 0;
-    portInitialized[port] = 1;
-
-    query.lastByte = 1;
-    query.numBytes = 0;
-    ClearKeyQueue();
+		query.lastByte = 1;
+		query.numBytes = 0;
+		ClearKeyQueue();
 #ifdef __linux__
-    R_ClearKeyQueue();
+		R_ClearKeyQueue();
 #endif
-    // Just in case, when resuming emulation.
-    ReleaseModifierKeys();
+		// Just in case, when resuming emulation.
+		ReleaseModifierKeys();
+	}
 
-    DEBUG_TEXT_OUT("LilyPad initialized\n\n");
     return 0;
 }
 

@@ -304,7 +304,7 @@ wchar_t *GetCommandStringW(u8 command, int port, int slot)
 
 static wchar_t iniFile[MAX_PATH * 2] = L"inis/LilyPad.ini";
 
-void CALLBACK PADsetSettingsDir(const char *dir)
+void PADsetSettingsDir(const char *dir)
 {
     //swprintf_s( iniFile, L"%S", (dir==NULL) ? "inis" : dir );
 
