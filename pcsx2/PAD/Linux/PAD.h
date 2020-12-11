@@ -121,7 +121,7 @@ void PADSaveConfig();
 
 void SysMessage(char *fmt, ...);
 
-s32 PADinit(u32 flags);
+s32 PADinit();
 void PADshutdown();
 s32 PADopen(void *pDsp);
 void PADsetSettingsDir(const char *dir);

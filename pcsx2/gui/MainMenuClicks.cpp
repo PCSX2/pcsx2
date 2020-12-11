@@ -23,6 +23,7 @@
 #include "System/SysThreads.h"
 #include "DEV9/DEV9.h"
 #include "USB/USB.h"
+#include "PAD/Linux/PAD.h"
 
 #include "ConsoleLogger.h"
 #include "MainFrame.h"
@@ -68,6 +69,11 @@ void MainEmuFrame::Menu_NetworkSettings_Click(wxCommandEvent &event)
 void MainEmuFrame::Menu_USBSettings_Click(wxCommandEvent& event)
 {
 	USBconfigure();
+}
+
+void MainEmuFrame::Menu_PADSettings_Click(wxCommandEvent& event)
+{
+	PADconfigure();
 }
 
 void MainEmuFrame::Menu_WindowSettings_Click(wxCommandEvent &event)

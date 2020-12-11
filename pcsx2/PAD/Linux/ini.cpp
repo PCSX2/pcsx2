@@ -19,7 +19,7 @@
 #include "keyboard.h"
 #include "PAD.h"
 
-extern std::string s_strIniPath;
+extern std::string s_padstrIniPath;
 
 void DefaultKeyboardValues()
 {
@@ -43,10 +43,10 @@ void PADSaveConfig()
 {
     FILE *f;
 
-    const std::string iniFile(s_strIniPath + "OnePAD2.ini");
+    const std::string iniFile(s_padstrIniPath + "PAD.ini");
     f = fopen(iniFile.c_str(), "w");
     if (f == NULL) {
-        printf("OnePAD: failed to save ini %s\n", iniFile.c_str());
+        printf("PAD: failed to save ini %s\n", iniFile.c_str());
         return;
     }
 
@@ -75,7 +75,7 @@ void PADLoadConfig()
 
     g_conf.init();
 
-    const std::string iniFile(s_strIniPath + "OnePAD2.ini");
+    const std::string iniFile(s_padstrIniPath + "PAD.ini");
     f = fopen(iniFile.c_str(), "r");
     if (f == NULL) {
         printf("OnePAD: failed to load ini %s\n", iniFile.c_str());

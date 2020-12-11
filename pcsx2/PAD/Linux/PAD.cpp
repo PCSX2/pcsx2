@@ -88,7 +88,7 @@ void CloseLogging()
 #endif
 }
 
-s32 PADinit(u32 flags)
+s32 PADinit()
 {
     initLogging();
 

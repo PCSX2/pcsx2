@@ -35,6 +35,7 @@
 #include "Patch.h"
 #include "R5900Exceptions.h"
 #include "Sio.h"
+#include "PAD/Linux/PAD.h"
 
 #ifndef DISABLE_RECORDING
 #include "Recording/InputRecordingControls.h"
