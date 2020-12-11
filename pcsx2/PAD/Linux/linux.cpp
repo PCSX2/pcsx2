@@ -120,7 +120,7 @@ void PADupdate(int pad)
 
 void PADconfigure()
 {
-    LoadConfig();
+    PADLoadConfig();
 
     DisplayDialog();
     return;
