@@ -18,11 +18,13 @@
 
 #include "PAD.h"
 
+#if defined(__unix__) || defined(__APPLE__)
+
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
-
-#if defined(__unix__) || defined(__APPLE__)
+// x11 is dumb like that
+#undef DisableScreenSaver
 
 extern void AnalyzeKeyEvent(keyEvent& evt);
 extern void UpdateKeyboardInput();

@@ -39,7 +39,6 @@ PADconf g_conf;
 keyEvent event;
 
 static keyEvent s_event;
-std::string s_padstrIniPath("inis/");
 std::string s_padstrLogPath("logs/");
 
 FILE* padLog = NULL;
@@ -122,12 +121,6 @@ s32 PADopen(void* pDsp)
 	GamePad::EnumerateGamePads(s_vgamePad);
 #endif
 	return _PADopen(pDsp);
-}
-
-void PADsetSettingsDir(const char* dir)
-{
-	// Get the path to the ini directory.
-	s_padstrIniPath = (dir == NULL) ? "inis/" : dir;
 }
 
 void PADsetLogDir(const char* dir)

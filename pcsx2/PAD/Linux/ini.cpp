@@ -17,9 +17,8 @@
 
 #include "GamePad.h"
 #include "keyboard.h"
+#include "AppConfig.h"
 #include "PAD.h"
-
-extern std::string s_padstrIniPath;
 
 void DefaultKeyboardValues()
 {
@@ -43,7 +42,8 @@ void PADSaveConfig()
 {
 	FILE* f;
 
-	const std::string iniFile(s_padstrIniPath + "PAD.ini");
+	wxString iniName(L"PAD.ini");
+	const std::string iniFile = std::string(GetSettingsFolder().Combine(iniName).GetFullPath()); // default path, just in case
 	f = fopen(iniFile.c_str(), "w");
 	if (f == NULL)
 	{
@@ -76,7 +76,9 @@ void PADLoadConfig()
 
 	g_conf.init();
 
-	const std::string iniFile(s_padstrIniPath + "PAD.ini");
+
+	wxString iniName(L"PAD.ini");
+	const std::string iniFile = std::string(GetSettingsFolder().Combine(iniName).GetFullPath()); // default path, just in case
 	f = fopen(iniFile.c_str(), "r");
 	if (f == NULL)
 	{
