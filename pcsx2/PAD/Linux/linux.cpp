@@ -13,6 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "AppCoreThread.h"
 #include "GamePad.h"
 #include "PAD.h"
 #include "keyboard.h"
@@ -114,8 +115,10 @@ void PADupdate(int pad)
 
 void PADconfigure()
 {
+ 	ScopedCoreThreadPause paused_core;
     PADLoadConfig();
 
     DisplayDialog();
+ 	paused_core.AllowResume();
     return;
 }

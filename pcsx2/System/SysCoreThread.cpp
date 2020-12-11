@@ -30,6 +30,7 @@
 #include "SPU2/spu2.h"
 #include "DEV9/DEV9.h"
 #include "USB/USB.h"
+#include "PAD/Linux/PAD.h"
 
 #include "../DebugTools/MIPSAnalyst.h"
 #include "../DebugTools/SymbolMap.h"
@@ -327,7 +328,7 @@ void SysCoreThread::OnResumeInThread(bool isSuspended)
 	}
 	FWopen();
 	SPU2open((void*)pDsp);
-    PADopen();
+    PADopen((void*)pDsp);
 }
 
 
