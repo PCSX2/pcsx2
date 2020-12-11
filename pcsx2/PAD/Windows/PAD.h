@@ -26,9 +26,6 @@
 #include <assert.h>
 #include "PS2Edefs.h"
 
-#include <windows.h>
-#include <windowsx.h>
-
 #include <array>
 #include <vector>
 #include <map>
@@ -50,7 +47,7 @@ typedef struct
 
 void PADupdate(int pad);
 void PADshutdown();
-s32 PADinit(u32 flags);
+s32 PADinit();
 s32 PADopen(void* pDsp);
 void PADclose();
 u8 PADstartPoll(int pad);
