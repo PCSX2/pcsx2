@@ -21,7 +21,11 @@
 #include "AppSaveStates.h"
 #include "AppGameDatabase.h"
 #include "AppAccelerators.h"
+#ifdef _WIN32
+#include "PAD/Windows/PAD.h"
+#else
 #include "PAD/Linux/PAD.h"
+#endif
 
 #include "Plugins.h"
 #include "ps2/BiosTools.h"

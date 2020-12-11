@@ -25,7 +25,11 @@
 #include "Utilities/pxStreams.h"
 #include "SPU2/spu2.h"
 #include "USB/USB.h"
+#ifdef _WIN32
+#include "PAD/Windows/PAD.h"
+#else
 #include "PAD/Linux/PAD.h"
+#endif
 
 #include "ConsoleLogger.h"
 
