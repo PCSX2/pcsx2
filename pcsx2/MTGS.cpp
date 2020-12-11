@@ -23,7 +23,11 @@
 #include "Gif_Unit.h"
 #include "MTVU.h"
 #include "Elfheader.h"
+#ifdef _WIN32
+#include "PAD/Windows/PAD.h"
+#else
 #include "PAD/Linux/PAD.h"
+#endif
 
 
 // Uncomment this to enable profiling of the GS RingBufferCopy function.

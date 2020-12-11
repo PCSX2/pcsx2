@@ -81,6 +81,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="..\..\PAD\Windows\Default.ini" />
     <None Include="..\..\Utilities\folderdesc.txt" />
     <None Include="..\..\Docs\License.txt" />
     <None Include="..\..\x86\microVU_Alloc.inl" />
@@ -288,6 +289,24 @@
     <ClCompile Include="..\..\IopGte.cpp" />
     <ClCompile Include="..\..\IPC.cpp" />
     <ClCompile Include="..\..\FW.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\Config.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\DeviceEnumerator.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\Diagnostics.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\DirectInput.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\DualShock3.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\Global.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\HidDevice.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\InputManager.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\KeyboardQueue.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\PAD.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\RawInput.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\Tooltips.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\VKey.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\WindowsKeyboard.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\WindowsMessaging.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\WindowsMouse.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\WndProcEater.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\XInputEnum.cpp" />
     <ClCompile Include="..\..\SPU2\DplIIdecoder.cpp" />
     <ClCompile Include="..\..\SPU2\debug.cpp" />
     <ClCompile Include="..\..\SPU2\RegLog.cpp" />
@@ -629,6 +648,25 @@
     <ClInclude Include="..\..\IopGte.h" />
     <ClInclude Include="..\..\IPC.h" />
     <ClInclude Include="..\..\FW.h" />
+    <ClInclude Include="..\..\PAD\Windows\Config.h" />
+    <ClInclude Include="..\..\PAD\Windows\DeviceEnumerator.h" />
+    <ClInclude Include="..\..\PAD\Windows\Diagnostics.h" />
+    <ClInclude Include="..\..\PAD\Windows\DirectInput.h" />
+    <ClInclude Include="..\..\PAD\Windows\DualShock3.h" />
+    <ClInclude Include="..\..\PAD\Windows\Global.h" />
+    <ClInclude Include="..\..\PAD\Windows\HidDevice.h" />
+    <ClInclude Include="..\..\PAD\Windows\InputManager.h" />
+    <ClInclude Include="..\..\PAD\Windows\KeyboardQueue.h" />
+    <ClInclude Include="..\..\PAD\Windows\RawInput.h" />
+    <ClInclude Include="..\..\PAD\Windows\resource.h" />
+    <ClInclude Include="..\..\PAD\Windows\Tooltips.h" />
+    <ClInclude Include="..\..\PAD\Windows\usb.h" />
+    <ClInclude Include="..\..\PAD\Windows\VKey.h" />
+    <ClInclude Include="..\..\PAD\Windows\WindowsKeyboard.h" />
+    <ClInclude Include="..\..\PAD\Windows\WindowsMessaging.h" />
+    <ClInclude Include="..\..\PAD\Windows\WindowsMouse.h" />
+    <ClInclude Include="..\..\PAD\Windows\WndProcEater.h" />
+    <ClInclude Include="..\..\PAD\Windows\XInputEnum.h" />
     <ClInclude Include="..\..\SPU2\Config.h" />
     <ClInclude Include="..\..\SPU2\Global.h" />
     <ClInclude Include="..\..\SPU2\spu2replay.h" />
@@ -850,6 +888,7 @@
     <ResourceCompile Include="..\..\..\3rdparty\wxwidgets3.0\include\wx\msw\wx.rc">
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\wxwidgets3.0\$(PlatformName);$(SolutionDir)3rdparty\wxwidgets3.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
+    <ResourceCompile Include="..\..\PAD\Windows\LilyPad.rc" />
     <ResourceCompile Include="..\..\SPU2\Windows\SPU2.rc" />
     <ResourceCompile Include="..\..\DEV9\Win32\DEV9ghzdrk.rc" />
     <ResourceCompile Include="..\..\USB\usb-pad\dx\versionproxy.rc" />
@@ -905,6 +944,9 @@
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="..\PCSX2.manifest" />
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\PAD\Windows\frog.ico" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />

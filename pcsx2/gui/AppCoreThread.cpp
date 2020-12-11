@@ -34,7 +34,11 @@
 #include "Patch.h"
 #include "R5900Exceptions.h"
 #include "Sio.h"
+#ifdef _WIN32
+#include "PAD/Windows/PAD.h"
+#else
 #include "PAD/Linux/PAD.h"
+#endif
 
 #ifndef DISABLE_RECORDING
 #include "Recording/InputRecordingControls.h"

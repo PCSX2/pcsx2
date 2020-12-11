@@ -214,6 +214,9 @@
     <Filter Include="System\Ps2\USB\usb-pad\raw">
       <UniqueIdentifier>{8640e8ca-7d79-4221-b1bf-35bc142a9add}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\PAD">
+      <UniqueIdentifier>{e1cbcaf6-9f65-4f14-9e89-27dd0f10e047}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -263,6 +266,9 @@
     </None>
     <None Include="..\..\gui\Dialogs\BaseConfigurationDialog.inl">
       <Filter>AppHost\Dialogs</Filter>
+    </None>
+    <None Include="..\..\PAD\Windows\Default.ini">
+      <Filter>System\Ps2\PAD</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -1060,9 +1066,6 @@
     <ClCompile Include="..\..\DEV9\smap.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\DEV9\net.cpp">
-      <Filter>System\DEV9</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\DEV9\Win32\tap-win32.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
@@ -1206,6 +1209,61 @@
     </ClCompile>
     <ClCompile Include="..\..\USB\shared\rawinput_usb.cpp">
       <Filter>System\Ps2\USB\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\net.cpp" />
+    <ClCompile Include="..\..\PAD\Windows\Config.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\DeviceEnumerator.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\Diagnostics.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\DirectInput.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\DualShock3.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\Global.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\HidDevice.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\InputManager.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\KeyboardQueue.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\RawInput.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\Tooltips.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\VKey.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\WindowsKeyboard.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\WindowsMessaging.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\WindowsMouse.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\WndProcEater.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\XInputEnum.cpp">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\PAD\Windows\PAD.cpp">
+      <Filter>System\Ps2\PAD</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1908,6 +1966,63 @@
     <ClInclude Include="..\..\USB\Win32\resource_usb.h">
       <Filter>System\Ps2\USB\Win32</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\Config.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\DeviceEnumerator.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\Diagnostics.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\DirectInput.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\DualShock3.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\Global.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\HidDevice.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\InputManager.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\KeyboardQueue.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\RawInput.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\resource.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\Tooltips.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\usb.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\VKey.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\WindowsKeyboard.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\WindowsMessaging.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\WindowsMouse.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\WndProcEater.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\XInputEnum.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\wxResources.rc">
@@ -1930,6 +2045,9 @@
     </ResourceCompile>
     <ResourceCompile Include="..\..\USB\Win32\USBDialog.rc">
       <Filter>System\Ps2\USB\Win32</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="..\..\PAD\Windows\LilyPad.rc">
+      <Filter>System\Ps2\PAD</Filter>
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2063,5 +2181,10 @@
     <Manifest Include="..\PCSX2.manifest">
       <Filter>AppHost\Resources</Filter>
     </Manifest>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\PAD\Windows\frog.ico">
+      <Filter>System\Ps2\PAD</Filter>
+    </Image>
   </ItemGroup>
 </Project>
