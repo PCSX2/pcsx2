@@ -25,6 +25,7 @@
 #include "Utilities/pxStreams.h"
 #include "SPU2/spu2.h"
 #include "USB/USB.h"
+#include "PAD/Linux/PAD.h"
 
 #include "ConsoleLogger.h"
 
@@ -286,6 +287,27 @@ public:
 	bool IsRequired() const { return true; }
 };
 
+class SavestateEntry_PAD : public BaseSavestateEntry
+{
+public:
+	virtual ~SavestateEntry_PAD() = default;
+
+	wxString GetFilename() const { return L"PAD.bin"; }
+	void FreezeIn(pxInputStream& reader) const { return PADDoFreezeIn(reader); }
+	void FreezeOut(SaveStateBase& writer) const
+	{
+		freezeData fP = {0, NULL};
+		if (PADfreeze(FREEZE_SIZE, &fP) == 0)
+		{
+			const int size = fP.size;
+			writer.PrepBlock(size);
+			PADDoFreezeOut(writer.GetBlockPtr());
+			writer.CommitBlock(size);
+		}
+		return;
+	}
+	bool IsRequired() const { return true; }
+};
 
 
 
@@ -310,6 +332,7 @@ static const std::unique_ptr<BaseSavestateEntry> SavestateEntries[] = {
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_VU1prog),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_SPU2),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_USB),
+	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_PAD),
 
 	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry(PluginId_GS)),
 };

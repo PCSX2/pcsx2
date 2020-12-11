@@ -19,6 +19,7 @@
 #include <string.h>
 #include <stdarg.h>
 
+#include "Utilities/pxStreams.h"
 #include "keyboard.h"
 #include "PAD.h"
 #include "state_management.h"
@@ -293,3 +294,49 @@ void PADWriteEvent(keyEvent& evt)
 	g_ev_fifo.push(evt);
 }
 #endif
+
+void PADDoFreezeOut(void* dest)
+{
+	freezeData fP = {0, (s8*)dest};
+	if (PADfreeze(FREEZE_SIZE, &fP) != 0)
+		return;
+	if (!fP.size)
+		return;
+
+	Console.Indent().WriteLn("Saving PAD");
+
+	if (PADfreeze(FREEZE_SAVE, &fP) != 0)
+		throw std::runtime_error(" * PAD: Error saving state!\n");
+}
+
+
+void PADDoFreezeIn(pxInputStream& infp)
+{
+	freezeData fP = {0, nullptr};
+	if (PADfreeze(FREEZE_SIZE, &fP) != 0)
+		fP.size = 0;
+
+	Console.Indent().WriteLn("Loading PAD");
+
+	if (!infp.IsOk() || !infp.Length())
+	{
+		// no state data to read, but PAD expects some state data?
+		// Issue a warning to console...
+		if (fP.size != 0)
+			Console.Indent().Warning("Warning: No data for PAD found. Status may be unpredictable.");
+
+		return;
+
+		// Note: Size mismatch check could also be done here on loading, but
+		// some plugins may have built-in version support for non-native formats or
+		// older versions of a different size... or could give different sizes depending
+		// on the status of the plugin when loading, so let's ignore it.
+	}
+
+	ScopedAlloc<s8> data(fP.size);
+	fP.data = data.GetPtr();
+
+	infp.Read(fP.data, fP.size);
+	if (PADfreeze(FREEZE_LOAD, &fP) != 0)
+		throw std::runtime_error(" * PAD: Error loading state!\n");
+}
