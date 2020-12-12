@@ -394,7 +394,8 @@ struct Pcsx2Config
 				IntcStat		:1,		// tells Pcsx2 to fast-forward through intc_stat waits.
 				WaitLoop		:1,		// enables constant loop detection and fast-forwarding
 				vuFlagHack		:1,		// microVU specific flag hack
-				vuThread        :1;		// Enable Threaded VU1
+				vuThread		:1,		// Enable Threaded VU1
+				vu1Instant		:1;		// Enable Instant VU1 (Without MTVU only)
 		BITFIELD_END
 
 		s8	EECycleRate;		// EE cycle rate selector (1.0, 1.5, 2.0)
@@ -527,6 +528,7 @@ TraceLogFilters&				SetTraceConfig();
 // ------------ CPU / Recompiler Options ---------------
 
 #define THREAD_VU1					(EmuConfig.Cpu.Recompiler.UseMicroVU1 && EmuConfig.Speedhacks.vuThread)
+#define INSTANT_VU1					(EmuConfig.Speedhacks.vu1Instant)
 #define CHECK_MICROVU0				(EmuConfig.Cpu.Recompiler.UseMicroVU0)
 #define CHECK_MICROVU1				(EmuConfig.Cpu.Recompiler.UseMicroVU1)
 #define CHECK_EEREC					(EmuConfig.Cpu.Recompiler.EnableEE && GetCpuProviders().IsRecAvailable_EE())

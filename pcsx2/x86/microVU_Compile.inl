@@ -491,8 +491,6 @@ void* mVUcompileSingleInstruction(microVU& mVU, u32 startPC, uptr pState, microF
 	mVUsetFlags(mVU, mFC);           // Sets Up Flag instances
 	mVUoptimizePipeState(mVU);       // Optimize the End Pipeline State for nicer Block Linking
 	mVUdebugPrintBlocks(mVU, false); // Prints Start/End PC of blocks executed, for debugging...
-	
-	mVUtestCycles(mVU, mFC);              // Update VU Cycles and Exit Early if Necessary
 
 	// Second Pass
 	iPC = startPC / 4;

@@ -1064,6 +1064,7 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
 	EmuOptions.Speedhacks			= default_Pcsx2Config.Speedhacks;
 	EmuOptions.Speedhacks.bitset	= 0; //Turn off individual hacks to make it visually clear they're not used.
 	EmuOptions.Speedhacks.vuThread	= original_SpeedHacks.vuThread;
+	EmuOptions.Speedhacks.vu1Instant= original_SpeedHacks.vu1Instant;
 	EnableSpeedHacks = true;
 
 	// Actual application of current preset over the base settings which all presets use (mostly pcsx2's default values).
@@ -1092,12 +1093,14 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
 			EmuOptions.Speedhacks.IntcStat = true;
 			EmuOptions.Speedhacks.WaitLoop = true;
 			EmuOptions.Speedhacks.vuFlagHack = true;
+			EmuOptions.Speedhacks.vu1Instant = true;
 			
 			// If waterfalling from > Safe, break to avoid MTVU disable.
 			if (n > 1) break;
 			[[fallthrough]];
 			
 		case 0: // Safest
+			if(n == 0) EmuOptions.Speedhacks.vu1Instant = false;
 			isMTVUSet ? 0 : (isMTVUSet = true, EmuOptions.Speedhacks.vuThread = false); // Disable MTVU
 			break;
 

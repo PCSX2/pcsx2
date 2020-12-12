@@ -247,8 +247,8 @@ INTERPRETATE_COP2_FUNC(CALLMSR);
 void _setupBranchTest(u32*(jmpType)(u32), bool isLikely) {
 	printCOP2("COP2 Branch");
 	_eeFlushAllUnused();
-	xTEST(ptr32[&vif1Regs.stat._u32], 0x4);
-	//TEST32ItoM((uptr)&VU0.VI[REG_VPU_STAT].UL, 0x100);
+	//xTEST(ptr32[&vif1Regs.stat._u32], 0x4);
+	xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x100);
 	recDoBranchImm(jmpType(0), isLikely);
 }
 
@@ -397,12 +397,13 @@ static void recCTC2() {
 			break;
 		}
 		case REG_CMSAR1:	// Execute VU1 Micro SubRoutine
+			xMOV(ecx, 1);
+			xFastCall((void*)vu1Finish, ecx);
 			if (_Rt_) {
 				xMOV(ecx, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 			}
 			else xXOR(ecx, ecx);
 			xFastCall((void*)vu1ExecMicro, ecx);
-			xFastCall((void*)vif1VUFinish);
 			break;
 		case REG_FBRST:
 			if (!_Rt_) {
