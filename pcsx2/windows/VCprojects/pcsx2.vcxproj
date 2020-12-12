@@ -950,9 +950,6 @@
   <ItemGroup>
     <Manifest Include="..\PCSX2.manifest" />
   </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\PAD\Windows\frog.ico" />
-  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets" />
 </Project>

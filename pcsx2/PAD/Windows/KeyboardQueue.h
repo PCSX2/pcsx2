@@ -18,13 +18,13 @@
 // but takes little enough effort to be safe...
 
 void QueueKeyEvent(int key, int event);
-int GetQueuedKeyEvent(keyEvent *event);
+int GetQueuedKeyEvent(keyEvent* event);
 
 // Cleans up as well as clears queue.
 void ClearKeyQueue();
 
 #ifdef __linux__
-void R_QueueKeyEvent(const keyEvent &event);
-int R_GetQueuedKeyEvent(keyEvent *event);
+void R_QueueKeyEvent(const keyEvent& event);
+int R_GetQueuedKeyEvent(keyEvent* event);
 void R_ClearKeyQueue();
 #endif

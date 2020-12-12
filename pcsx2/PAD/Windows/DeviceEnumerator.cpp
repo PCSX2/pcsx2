@@ -34,23 +34,23 @@
 
 void EnumDevices(int hideDXXinput)
 {
-    // Needed for enumeration of some device types.
-    dm->ReleaseInput();
-    InputDeviceManager *oldDm = dm;
-    dm = new InputDeviceManager();
+	// Needed for enumeration of some device types.
+	dm->ReleaseInput();
+	InputDeviceManager* oldDm = dm;
+	dm = new InputDeviceManager();
 
 #ifdef _MSC_VER
-    EnumWindowsMessagingDevices();
-    EnumRawInputDevices();
-    EnumDualShock3s();
-    EnumXInputDevices();
-    EnumDirectInputDevices(hideDXXinput);
+	EnumWindowsMessagingDevices();
+	EnumRawInputDevices();
+	EnumDualShock3s();
+	EnumXInputDevices();
+	EnumDirectInputDevices(hideDXXinput);
 #else
-    EnumLnx();
-    EnumJoystickEvdev();
+	EnumLnx();
+	EnumJoystickEvdev();
 #endif
 
-    dm->CopyBindings(oldDm->numDevices, oldDm->devices);
+	dm->CopyBindings(oldDm->numDevices, oldDm->devices);
 
-    delete oldDm;
+	delete oldDm;
 }

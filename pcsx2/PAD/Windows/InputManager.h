@@ -31,42 +31,44 @@
  * Still more effort than it's worth to port to Linux, however.
  */
 
-enum PadType {
-    DisabledPad,
-    Dualshock2Pad,
-    GuitarPad,
-    PopnPad,
-    MousePad,
-    neGconPad,
-    numPadTypes // total number of PadTypes. Add new PadType above this line.
+enum PadType
+{
+	DisabledPad,
+	Dualshock2Pad,
+	GuitarPad,
+	PopnPad,
+	MousePad,
+	neGconPad,
+	numPadTypes // total number of PadTypes. Add new PadType above this line.
 };
 
 // Mostly match DirectInput8 values.  Note that these are for physical controls.
 // One physical axis maps to 3 virtual ones, and one physical POV control maps to
 // 4 virtual ones.
-enum ControlType {
-    NO_CONTROL = 0,
-    // Axes are ints.  Relative axes are for mice, mice wheels, etc,
-    // and are always reported relative to their last value.
-    // Absolute axes range from -65536 to 65536 and are absolute positions,
-    // like for joysticks and pressure sensitive buttons.
-    RELAXIS = 1,
-    ABSAXIS = 2,
+enum ControlType
+{
+	NO_CONTROL = 0,
+	// Axes are ints.  Relative axes are for mice, mice wheels, etc,
+	// and are always reported relative to their last value.
+	// Absolute axes range from -65536 to 65536 and are absolute positions,
+	// like for joysticks and pressure sensitive buttons.
+	RELAXIS = 1,
+	ABSAXIS = 2,
 
-    // Buttons range from 0 to 65536.
-    PSHBTN = 4,
-    TGLBTN = 8,
+	// Buttons range from 0 to 65536.
+	PSHBTN = 4,
+	TGLBTN = 8,
 
-    // POV controls are ints, values range from -1 to 36000.
-    // -1 means not pressed, otherwise it's an angle.
-    // For easy DirectInput compatibility, anything outside.
-    // that range is treated as -1 (Though 36000-37000 is treated
-    // like 0 to 1000, just in case).
-    POV = 16,
+	// POV controls are ints, values range from -1 to 36000.
+	// -1 means not pressed, otherwise it's an angle.
+	// For easy DirectInput compatibility, anything outside.
+	// that range is treated as -1 (Though 36000-37000 is treated
+	// like 0 to 1000, just in case).
+	POV = 16,
 
-    // Pressure sensitive buttons.  Only a different type because
-    // they have configurable dead zones, unlike  push or toggle buttons.
-    PRESSURE_BTN = 32,
+	// Pressure sensitive buttons.  Only a different type because
+	// they have configurable dead zones, unlike  push or toggle buttons.
+	PRESSURE_BTN = 32,
 };
 
 // Masks to determine button type.  Don't need one for POV.
@@ -76,12 +78,12 @@ enum ControlType {
 
 struct Binding
 {
-    int controlIndex;
-    int command;
-    int sensitivity;
-    int deadZone;
-    int skipDeadZone;
-    unsigned char rapidFire;
+	int controlIndex;
+	int command;
+	int sensitivity;
+	int deadZone;
+	int skipDeadZone;
+	unsigned char rapidFire;
 };
 
 #define UID_AXIS (1U << 31)
@@ -101,13 +103,13 @@ struct Binding
 // all directions are assigned individually.
 struct VirtualControl
 {
-    // Unique id for control, given device.  Based on source control's id,
-    // source control type, axis/pov flags if it's a pov/axis (Rather than
-    // a button or a pov/axis control's individual button), and an index,
-    // if the control is split.
-    unsigned int uid;
-    // virtual key code.  0 if none.
-    int physicalControlIndex;
+	// Unique id for control, given device.  Based on source control's id,
+	// source control type, axis/pov flags if it's a pov/axis (Rather than
+	// a button or a pov/axis control's individual button), and an index,
+	// if the control is split.
+	unsigned int uid;
+	// virtual key code.  0 if none.
+	int physicalControlIndex;
 };
 
 // Need one for each button, axis, and pov control.
@@ -117,48 +119,51 @@ struct VirtualControl
 // needed.
 struct PhysicalControl
 {
-    // index of the first virtual control corresponding to this.
-    // Buttons have 1 virtual control, axes 3, and povs 5, all
-    // in a row.
-    int baseVirtualControlIndex;
-    ControlType type;
-    // id.  Must be unique for control type.
-    // short so can be combined with other values to get
-    // uid for virtual controls.
-    unsigned short id;
-    unsigned short vkey;
-    wchar_t *name;
+	// index of the first virtual control corresponding to this.
+	// Buttons have 1 virtual control, axes 3, and povs 5, all
+	// in a row.
+	int baseVirtualControlIndex;
+	ControlType type;
+	// id.  Must be unique for control type.
+	// short so can be combined with other values to get
+	// uid for virtual controls.
+	unsigned short id;
+	unsigned short vkey;
+	wchar_t* name;
 };
 
-enum DeviceAPI {
-    NO_API = 0,
-    DI = 1,
-    WM = 2,
-    RAW = 3,
-    XINPUT = 4,
-    DS3 = 5,
-    // Not currently used.
-    LLHOOK = 6,
-    // Not a real API, obviously.  Only used with keyboards,
-    // to ignore individual buttons.  Wrapper itself takes care
-    // of ignoring bound keys.  Otherwise, works normally.
-    IGNORE_KEYBOARD = 7,
-    // XXX
-    LNX_KEYBOARD = 16,
-    LNX_JOY = 17,
+enum DeviceAPI
+{
+	NO_API = 0,
+	DI = 1,
+	WM = 2,
+	RAW = 3,
+	XINPUT = 4,
+	DS3 = 5,
+	// Not currently used.
+	LLHOOK = 6,
+	// Not a real API, obviously.  Only used with keyboards,
+	// to ignore individual buttons.  Wrapper itself takes care
+	// of ignoring bound keys.  Otherwise, works normally.
+	IGNORE_KEYBOARD = 7,
+	// XXX
+	LNX_KEYBOARD = 16,
+	LNX_JOY = 17,
 };
 
-enum DeviceType {
-    NO_DEVICE = 0,
-    KEYBOARD = 1,
-    MOUSE = 2,
-    OTHER = 3
+enum DeviceType
+{
+	NO_DEVICE = 0,
+	KEYBOARD = 1,
+	MOUSE = 2,
+	OTHER = 3
 };
 
-enum EffectType {
-    EFFECT_CONSTANT,
-    EFFECT_PERIODIC,
-    EFFECT_RAMP
+enum EffectType
+{
+	EFFECT_CONSTANT,
+	EFFECT_PERIODIC,
+	EFFECT_RAMP
 };
 
 // force range sfrom -BASE_SENSITIVITY to BASE_SENSITIVITY.
@@ -167,32 +172,32 @@ enum EffectType {
 // the axis with minimum force (Possibly 0 force), if applicable.
 struct AxisEffectInfo
 {
-    int force;
+	int force;
 };
 
 struct ForceFeedbackBinding
 {
-    AxisEffectInfo *axes;
-    int effectIndex;
-    unsigned char motor;
+	AxisEffectInfo* axes;
+	int effectIndex;
+	unsigned char motor;
 };
 
 // Bindings listed by effect, so I don't have to bother with
 // indexing effects.
 struct ForceFeedbackEffectType
 {
-    wchar_t *displayName;
-    // Because I'm lazy, can only have ASCII characters and no spaces.
-    wchar_t *effectID;
-    // constant, ramp, or periodic
-    EffectType type;
+	wchar_t* displayName;
+	// Because I'm lazy, can only have ASCII characters and no spaces.
+	wchar_t* effectID;
+	// constant, ramp, or periodic
+	EffectType type;
 };
 
 
 struct ForceFeedbackAxis
 {
-    wchar_t *displayName;
-    int id;
+	wchar_t* displayName;
+	int id;
 };
 
 // Used both for active devices and for sets of settings for devices.
@@ -203,32 +208,32 @@ struct ForceFeedbackAxis
 
 struct PadBindings
 {
-    Binding *bindings;
-    int numBindings;
-    ForceFeedbackBinding *ffBindings;
-    int numFFBindings;
+	Binding* bindings;
+	int numBindings;
+	ForceFeedbackBinding* ffBindings;
+	int numFFBindings;
 };
 
 class WndProcEater;
 
 struct InitInfo
 {
-    // 1 when binding key to ignore.
-    int bindingIgnore;
-    // 1 when binding.
-    int binding;
+	// 1 when binding key to ignore.
+	int bindingIgnore;
+	// 1 when binding.
+	int binding;
 
 #ifdef _MSC_VER
-    HWND hWndTop;
+	HWND hWndTop;
 
-    // For config screen, need to eat button's message handling.
-    //HWND hWndButton;
+	// For config screen, need to eat button's message handling.
+	//HWND hWndButton;
 
-    WndProcEater *hWndProc;
+	WndProcEater* hWndProc;
 #else
-    // Linux equivalent to HWND
-    Display *GSdsp;
-    Window GSwin;
+	// Linux equivalent to HWND
+	Display* GSdsp;
+	Window GSwin;
 #endif
 };
 
@@ -238,165 +243,165 @@ struct InitInfo
 class Device
 {
 public:
-    DeviceAPI api;
-    DeviceType type;
-    char active;
-    char attached;
-    // Based on input modes.
-    char enabled;
+	DeviceAPI api;
+	DeviceType type;
+	char active;
+	char attached;
+	// Based on input modes.
+	char enabled;
 
 #ifdef _MSC_VER
-    // Not all devices need to subclass the windproc, but most do so might as well
-    // put it here... --air
-    WndProcEater *hWndProc;
+	// Not all devices need to subclass the windproc, but most do so might as well
+	// put it here... --air
+	WndProcEater* hWndProc;
 #endif
 
-    union
-    {
-        // Allows for one loop to compare all 3 in order.
-        wchar_t *IDs[3];
-        struct
-        {
-            // Same as DisplayName, when not given.  Absolutely must be unique.
-            // Used for loading/saving controls.  If matches, all other strings
-            // are ignored, so must be unique.
-            wchar_t *instanceID;
-            // Not required.  Used when a device's instance id changes, doesn't have to
-            // be unique.  For devices that can only have one instance, not needed.
-            wchar_t *productID;
+	union
+	{
+		// Allows for one loop to compare all 3 in order.
+		wchar_t* IDs[3];
+		struct
+		{
+			// Same as DisplayName, when not given.  Absolutely must be unique.
+			// Used for loading/saving controls.  If matches, all other strings
+			// are ignored, so must be unique.
+			wchar_t* instanceID;
+			// Not required.  Used when a device's instance id changes, doesn't have to
+			// be unique.  For devices that can only have one instance, not needed.
+			wchar_t* productID;
 
-            wchar_t *displayName;
-        };
-    };
+			wchar_t* displayName;
+		};
+	};
 
-    PadBindings pads[2][4][numPadTypes];
+	PadBindings pads[2][4][numPadTypes];
 
-    // Virtual controls.  All basically act like pressure sensitivity buttons, with
-    // values between 0 and 2^16.  2^16 is fully down, 0 is up.  Larger values
-    // are allowed, but *only* for absolute axes (Which don't support the flip checkbox).
-    // Each control on a device must have a unique id, used for binding.
-    VirtualControl *virtualControls;
-    int numVirtualControls;
+	// Virtual controls.  All basically act like pressure sensitivity buttons, with
+	// values between 0 and 2^16.  2^16 is fully down, 0 is up.  Larger values
+	// are allowed, but *only* for absolute axes (Which don't support the flip checkbox).
+	// Each control on a device must have a unique id, used for binding.
+	VirtualControl* virtualControls;
+	int numVirtualControls;
 
-    int *virtualControlState;
-    int *oldVirtualControlState;
+	int* virtualControlState;
+	int* oldVirtualControlState;
 
-    PhysicalControl *physicalControls;
-    int numPhysicalControls;
-    int *physicalControlState;
+	PhysicalControl* physicalControls;
+	int numPhysicalControls;
+	int* physicalControlState;
 
-    ForceFeedbackEffectType *ffEffectTypes;
-    int numFFEffectTypes;
-    ForceFeedbackAxis *ffAxes;
-    int numFFAxes;
-    void AddFFAxis(const wchar_t *displayName, int id);
-    void AddFFEffectType(const wchar_t *displayName, const wchar_t *effectID, EffectType type);
+	ForceFeedbackEffectType* ffEffectTypes;
+	int numFFEffectTypes;
+	ForceFeedbackAxis* ffAxes;
+	int numFFAxes;
+	void AddFFAxis(const wchar_t* displayName, int id);
+	void AddFFEffectType(const wchar_t* displayName, const wchar_t* effectID, EffectType type);
 
-    Device(DeviceAPI, DeviceType, const wchar_t *displayName, const wchar_t *instanceID = 0, const wchar_t *deviceID = 0);
-    virtual ~Device();
+	Device(DeviceAPI, DeviceType, const wchar_t* displayName, const wchar_t* instanceID = 0, const wchar_t* deviceID = 0);
+	virtual ~Device();
 
-    // Allocates memory for old and new state, sets everything to 0.
-    // all old states are in one array, buttons, axes, and then POVs.
-    // start of each section is int aligned.  This makes it DirectInput
-    // compatible.
-    void AllocState();
+	// Allocates memory for old and new state, sets everything to 0.
+	// all old states are in one array, buttons, axes, and then POVs.
+	// start of each section is int aligned.  This makes it DirectInput
+	// compatible.
+	void AllocState();
 
-    // Doesn't actually flip.  Copies current state to old state.
-    void FlipState();
+	// Doesn't actually flip.  Copies current state to old state.
+	void FlipState();
 
-    // Frees state variables.
-    void FreeState();
+	// Frees state variables.
+	void FreeState();
 
-    ForceFeedbackEffectType *GetForcefeedbackEffect(wchar_t *id);
-    ForceFeedbackAxis *GetForceFeedbackAxis(int id);
+	ForceFeedbackEffectType* GetForcefeedbackEffect(wchar_t* id);
+	ForceFeedbackAxis* GetForceFeedbackAxis(int id);
 
-    VirtualControl *GetVirtualControl(unsigned int uid);
+	VirtualControl* GetVirtualControl(unsigned int uid);
 
-    PhysicalControl *AddPhysicalControl(ControlType type, unsigned short id, unsigned short vkey, const wchar_t *name = 0);
-    VirtualControl *AddVirtualControl(unsigned int uid, int physicalControlIndex);
+	PhysicalControl* AddPhysicalControl(ControlType type, unsigned short id, unsigned short vkey, const wchar_t* name = 0);
+	VirtualControl* AddVirtualControl(unsigned int uid, int physicalControlIndex);
 
-    virtual wchar_t *GetVirtualControlName(VirtualControl *c);
-    virtual wchar_t *GetPhysicalControlName(PhysicalControl *c);
+	virtual wchar_t* GetVirtualControlName(VirtualControl* c);
+	virtual wchar_t* GetPhysicalControlName(PhysicalControl* c);
 
-    void CalcVirtualState();
+	void CalcVirtualState();
 
-    virtual int Activate(InitInfo *args)
-    {
-        return 0;
-    }
+	virtual int Activate(InitInfo* args)
+	{
+		return 0;
+	}
 
-    inline virtual void Deactivate()
-    {
-        FreeState();
-        active = 0;
-    }
+	inline virtual void Deactivate()
+	{
+		FreeState();
+		active = 0;
+	}
 
-    // Default update proc.  All that's needed for post-based APIs.
-    inline virtual int Update()
-    {
-        return active;
-    }
+	// Default update proc.  All that's needed for post-based APIs.
+	inline virtual int Update()
+	{
+		return active;
+	}
 
-    // force is from -FULLY_DOWN to FULLY_DOWN.
-    // Either function can be overridden.  Second one by default calls the first
-    // for every bound effect that's affected.
+	// force is from -FULLY_DOWN to FULLY_DOWN.
+	// Either function can be overridden.  Second one by default calls the first
+	// for every bound effect that's affected.
 
-    // Note:  Only used externally for binding, so if override the other one, can assume
-    // all other forces are currently 0.
-    inline virtual void SetEffect(ForceFeedbackBinding *binding, unsigned char force) {}
-    virtual void SetEffects(unsigned char port, unsigned int slot, unsigned char motor, unsigned char force);
+	// Note:  Only used externally for binding, so if override the other one, can assume
+	// all other forces are currently 0.
+	inline virtual void SetEffect(ForceFeedbackBinding* binding, unsigned char force) {}
+	virtual void SetEffects(unsigned char port, unsigned int slot, unsigned char motor, unsigned char force);
 
-    // Called after reading.  Basically calls FlipState().
-    // Some device types (Those that don't incrementally update)
-    // could call FlipState elsewhere, but this makes it simpler to ignore
-    // while binding.
-    virtual void PostRead();
+	// Called after reading.  Basically calls FlipState().
+	// Some device types (Those that don't incrementally update)
+	// could call FlipState elsewhere, but this makes it simpler to ignore
+	// while binding.
+	virtual void PostRead();
 };
 
 class InputDeviceManager
 {
 public:
-    Device **devices;
-    int numDevices;
+	Device** devices;
+	int numDevices;
 
-    void ClearDevices();
+	void ClearDevices();
 
-    // When refreshing devices, back up old devices, then
-    // populate this with new devices, then call copy bindings.
-    // All old bindings are copied to matching devices.
+	// When refreshing devices, back up old devices, then
+	// populate this with new devices, then call copy bindings.
+	// All old bindings are copied to matching devices.
 
-    // When old devices are missing, I do a slightly more careful search
-    // using productIDs and then (in desperation) displayName.
-    // Finally create new dummy devices if no matches found.
-    void CopyBindings(int numDevices, Device **devices);
+	// When old devices are missing, I do a slightly more careful search
+	// using productIDs and then (in desperation) displayName.
+	// Finally create new dummy devices if no matches found.
+	void CopyBindings(int numDevices, Device** devices);
 
 
-    InputDeviceManager();
-    ~InputDeviceManager();
+	InputDeviceManager();
+	~InputDeviceManager();
 
-    void AddDevice(Device *d);
-    Device *GetActiveDevice(InitInfo *info, unsigned int *uid, int *index, int *value);
-    void Update(InitInfo *initInfo);
+	void AddDevice(Device* d);
+	Device* GetActiveDevice(InitInfo* info, unsigned int* uid, int* index, int* value);
+	void Update(InitInfo* initInfo);
 
-    // Called after reading state, after Update().
-    void PostRead();
+	// Called after reading state, after Update().
+	void PostRead();
 
-    void SetEffect(unsigned char port, unsigned int slot, unsigned char motor, unsigned char force);
+	void SetEffect(unsigned char port, unsigned int slot, unsigned char motor, unsigned char force);
 
-    // Update does this as needed.
-    // void GetInput(void *v);
-    void ReleaseInput();
+	// Update does this as needed.
+	// void GetInput(void *v);
+	void ReleaseInput();
 
-    void DisableDevice(int index);
-    inline void EnableDevice(int i)
-    {
-        devices[i]->enabled = 1;
-    }
+	void DisableDevice(int index);
+	inline void EnableDevice(int i)
+	{
+		devices[i]->enabled = 1;
+	}
 
-    void EnableDevices(DeviceType type, DeviceAPI api);
-    void DisableAllDevices();
+	void EnableDevices(DeviceType type, DeviceAPI api);
+	void DisableAllDevices();
 };
 
-extern InputDeviceManager *dm;
+extern InputDeviceManager* dm;
 
 #endif
