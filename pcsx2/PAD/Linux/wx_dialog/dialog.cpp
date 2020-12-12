@@ -309,7 +309,7 @@ static std::string KeyName(int pad, int key, int keysym)
 PADDialog::PADDialog()
 	: wxDialog(NULL,                                  // Parent
 			   wxID_ANY,                              // ID
-			   _T("OnePad configuration"),            // Title
+			   _T("GamePad configuration"),            // Title
 			   wxDefaultPosition,                     // Position
 			   wxSize(DEFAULT_WIDTH, DEFAULT_HEIGHT), // Width + Lenght
 			   // Style
