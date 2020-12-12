@@ -26,6 +26,7 @@
 #include "KeyboardQueue.h"
 #include "WndProcEater.h"
 #include "DualShock3.h"
+#include "PAD.h"
 
 #include <Shlwapi.h>
 
@@ -33,6 +34,7 @@
 #include "PADRawInput.h"
 #include <commdlg.h>
 #include <timeapi.h>
+#include "AppConfig.h"
 
 //max len 24 wchar_t
 const wchar_t* padTypes[] = {
@@ -331,20 +333,21 @@ wchar_t* GetCommandStringW(u8 command, int port, int slot)
 	return L"";
 }
 
-static wchar_t iniFile[MAX_PATH * 2] = L"inis/PAD.ini";
+static wchar_t iniFileUSB[MAX_PATH * 2] = L"inis/PAD.ini";
 
+// we disregard dir and use global settings instead, we should probably clean that up someday...
 void PADsetSettingsDir(const char* dir)
 {
-	//swprintf_s( iniFile, L"%S", (dir==NULL) ? "inis" : dir );
+	//swprintf_s( iniFileUSB, L"%S", (dir==NULL) ? "inis" : dir );
 
 	//uint targlen = MultiByteToWideChar(CP_ACP, 0, dir, -1, NULL, 0);
-	MultiByteToWideChar(CP_UTF8, 0, dir, -1, iniFile, MAX_PATH * 2);
-	wcscat_s(iniFile, L"/PAD.ini");
+	wxString iniName = "PAD.ini";
+	MultiByteToWideChar(CP_UTF8, 0, std::string(GetSettingsFolder().Combine(iniName).GetFullPath()).c_str(), -1, iniFileUSB, MAX_PATH * 2);
 
 	createIniDir = false;
 
 	FILE* temp = nullptr;
-	_wfopen_s(&temp, iniFile, L"r");
+	_wfopen_s(&temp, iniFileUSB, L"r");
 	if (!temp)
 	{ // File not found, possibly.
 		HRSRC res = FindResource(hInst, MAKEINTRESOURCE(IDR_INI1), RT_RCDATA);
@@ -355,7 +358,7 @@ void PADsetSettingsDir(const char* dir)
 			return;
 		size_t size = SizeofResource(hInst, res);
 		u8* fdata = (u8*)LockResource(data);
-		_wfopen_s(&temp, iniFile, L"w");
+		_wfopen_s(&temp, iniFileUSB, L"w");
 		if (!temp)
 			return;
 		fwrite(fdata, 1, size, temp);
@@ -933,7 +936,7 @@ int SaveSettings(wchar_t* file = 0)
 	// Need this either way for saving path.
 	if (!file)
 	{
-		file = iniFile;
+		file = iniFileUSB;
 	}
 	else
 	{
@@ -948,8 +951,8 @@ int SaveSettings(wchar_t* file = 0)
 	}
 	DeleteFileW(file);
 
-	WritePrivateProfileStringW(L"General Settings", L"Last Config Path", config.lastSaveConfigPath, iniFile);
-	WritePrivateProfileStringW(L"General Settings", L"Last Config Name", config.lastSaveConfigFileName, iniFile);
+	WritePrivateProfileStringW(L"General Settings", L"Last Config Path", config.lastSaveConfigPath, iniFileUSB);
+	WritePrivateProfileStringW(L"General Settings", L"Last Config Name", config.lastSaveConfigFileName, iniFileUSB);
 
 	// Just check first, last, and all pad bindings.  Should be more than enough.  No real need to check
 	// config path.
@@ -1063,7 +1066,7 @@ int LoadSettings(int force, wchar_t* file)
 
 	if (!file)
 	{
-		file = iniFile;
+		file = iniFileUSB;
 		GetPrivateProfileStringW(L"General Settings", L"Last Config Path", L"inis", config.lastSaveConfigPath, sizeof(config.lastSaveConfigPath), file);
 		GetPrivateProfileStringW(L"General Settings", L"Last Config Name", L"PAD.pad", config.lastSaveConfigFileName, sizeof(config.lastSaveConfigFileName), file);
 	}
@@ -1076,8 +1079,8 @@ int LoadSettings(int force, wchar_t* file)
 			wcscpy(config.lastSaveConfigPath, file);
 			wcscpy(config.lastSaveConfigFileName, c + 1);
 			*c = '\\';
-			WritePrivateProfileStringW(L"General Settings", L"Last Config Path", config.lastSaveConfigPath, iniFile);
-			WritePrivateProfileStringW(L"General Settings", L"Last Config Name", config.lastSaveConfigFileName, iniFile);
+			WritePrivateProfileStringW(L"General Settings", L"Last Config Path", config.lastSaveConfigPath, iniFileUSB);
+			WritePrivateProfileStringW(L"General Settings", L"Last Config Name", config.lastSaveConfigFileName, iniFileUSB);
 		}
 	}
 

@@ -23,7 +23,7 @@
 #include <vector>
 
 std::map<std::pair<int, std::string>, std::string> changedAPIs;
-wxString iniFile(L"USB.ini");
+wxString iniFileUSB(L"USB.ini");
 static TSTDSTRING usb_path;
 TSTDSTRING IniPath;  // default path, just in case
 TSTDSTRING LogDir;
@@ -35,9 +35,9 @@ void USBsetSettingsDir()
 	if(!USBpathSet)
 	{
 #ifdef _WIN32
-		IniPath = GetSettingsFolder().Combine( iniFile ).GetFullPath(); // default path, just in case
+		IniPath = GetSettingsFolder().Combine( iniFileUSB ).GetFullPath(); // default path, just in case
 #else
-		IniPath = std::string(GetSettingsFolder().Combine( iniFile ).GetFullPath()); // default path, just in case
+		IniPath = std::string(GetSettingsFolder().Combine( iniFileUSB ).GetFullPath()); // default path, just in case
 #endif
 		USBpathSet = true;
 	}
