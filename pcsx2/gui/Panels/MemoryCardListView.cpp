@@ -167,12 +167,12 @@ wxString MemoryCardListView_Simple::OnGetItemText(long item, long column) const
 					return _("[-- No cards --]");
 			}
 
-			wxDirName filepath( it.Filename.GetPath() );
+			wxDirName filepath( it.Filename.relative_path().string() );
 			
-			if (filepath.SameAs(g_Conf->Folders.MemoryCards))
-				return prefix + it.Filename.GetFullName();
+			if (filepath.SameAs(wxFileName(g_Conf->Folders.MemoryCards.relative_path().string())))
+				return prefix + it.Filename.string();
 			else
-				return prefix + it.Filename.GetFullPath();
+				return prefix + it.Filename.string();
 		}
 	}
 

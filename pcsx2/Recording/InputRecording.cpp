@@ -332,7 +332,7 @@ bool InputRecording::Play(wxString fileName)
 		if (!wxFileExists(inputRecordingData.GetFilename() + "_SaveState.p2s"))
 		{
 			inputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}_SaveState.p2s",
-											 inputRecordingData.GetFilename()));
+											 inputRecordingData.GetFilename().ToStdString()));
 			inputRecordingData.Close();
 			return false;
 		}
@@ -371,17 +371,17 @@ wxString InputRecording::resolveGameName()
 	const wxString gameKey(SysGetDiscID());
 	if (!gameKey.IsEmpty())
 	{
-		if (IGameDatabase* GameDB = AppHost_GetGameDatabase())
+		if (IGameDatabase* gameDB = AppHost_GetGameDatabase())
 		{
-			Game_Data game;
-			if (GameDB->findGame(game, gameKey))
+			GameDatabaseSchema::GameEntry game = gameDB->findGame(std::string(gameKey));
+			if (game.isValid)
 			{
-				gameName = game.getString("Name");
-				gameName += L" (" + game.getString("Region") + L")";
+				gameName = game.name;
+				gameName += L" (" + game.region + L")";
 			}
 		}
 	}
-	return !gameName.IsEmpty() ? gameName : Path::GetFilename(g_Conf->CurrentIso);
+	return !gameName.IsEmpty() ? gameName : (wxString)Path::GetFilename(g_Conf->CurrentIso.ToStdString());
 }
 
 #endif

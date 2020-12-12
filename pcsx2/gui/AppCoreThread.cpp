@@ -243,38 +243,38 @@ void AppCoreThread::OnPauseDebug()
 // Load Game Settings found in database
 // (game fixes, round modes, clamp modes, etc...)
 // Returns number of gamefixes set
-static int loadGameSettings(Pcsx2Config& dest, const Game_Data& game)
+static int loadGameSettings(Pcsx2Config& dest, const GameDatabaseSchema::GameEntry& game)
 {
-	if (!game.IsOk())
+	if (!game.isValid)
 		return 0;
 
 	int gf = 0;
 
-	if (game.keyExists("eeRoundMode"))
+	if (game.eeRoundMode != GameDatabaseSchema::RoundMode::Undefined)
 	{
-		SSE_RoundMode eeRM = (SSE_RoundMode)game.getInt("eeRoundMode");
+		SSE_RoundMode eeRM = (SSE_RoundMode)enum_cast(game.eeRoundMode);
 		if (EnumIsValid(eeRM))
 		{
 			PatchesCon->WriteLn("(GameDB) Changing EE/FPU roundmode to %d [%s]", eeRM, EnumToString(eeRM));
 			dest.Cpu.sseMXCSR.SetRoundMode(eeRM);
-			++gf;
+			gf++;
 		}
 	}
 
-	if (game.keyExists("vuRoundMode"))
+	if (game.vuRoundMode != GameDatabaseSchema::RoundMode::Undefined)
 	{
-		SSE_RoundMode vuRM = (SSE_RoundMode)game.getInt("vuRoundMode");
+		SSE_RoundMode vuRM = (SSE_RoundMode)enum_cast(game.vuRoundMode);
 		if (EnumIsValid(vuRM))
 		{
 			PatchesCon->WriteLn("(GameDB) Changing VU0/VU1 roundmode to %d [%s]", vuRM, EnumToString(vuRM));
 			dest.Cpu.sseVUMXCSR.SetRoundMode(vuRM);
-			++gf;
+			gf++;
 		}
 	}
 
-	if (game.keyExists("eeClampMode"))
+	if (game.eeClampMode != GameDatabaseSchema::ClampMode::Undefined)
 	{
-		int clampMode = game.getInt("eeClampMode");
+		int clampMode = enum_cast(game.eeClampMode);
 		PatchesCon->WriteLn("(GameDB) Changing EE/FPU clamp mode [mode=%d]", clampMode);
 		dest.Cpu.Recompiler.fpuOverflow = (clampMode >= 1);
 		dest.Cpu.Recompiler.fpuExtraOverflow = (clampMode >= 2);
@@ -282,9 +282,9 @@ static int loadGameSettings(Pcsx2Config& dest, const Game_Data& game)
 		gf++;
 	}
 
-	if (game.keyExists("vuClampMode"))
+	if (game.vuClampMode != GameDatabaseSchema::ClampMode::Undefined)
 	{
-		int clampMode = game.getInt("vuClampMode");
+		int clampMode = enum_cast(game.vuClampMode);
 		PatchesCon->WriteLn("(GameDB) Changing VU0/VU1 clamp mode [mode=%d]", clampMode);
 		dest.Cpu.Recompiler.vuOverflow = (clampMode >= 1);
 		dest.Cpu.Recompiler.vuExtraOverflow = (clampMode >= 2);
@@ -292,29 +292,29 @@ static int loadGameSettings(Pcsx2Config& dest, const Game_Data& game)
 		gf++;
 	}
 
-
-	if (game.keyExists("mvuFlagSpeedHack"))
+	if (game.speedHacks.count("mvuFlagSpeedHack") == 1)
 	{
-		bool vuFlagHack = game.getInt("mvuFlagSpeedHack") ? 1 : 0;
+		bool vuFlagHack = game.speedHacks.at("mvuFlagSpeedHack") ? 1 : 0;
 		PatchesCon->WriteLn("(GameDB) Changing mVU flag speed hack [mode=%d]", vuFlagHack);
 		dest.Speedhacks.vuFlagHack = vuFlagHack;
 		gf++;
 	}
 
+	// TODO - config - this could be simplified with maps instead of bitfields and enums
 	for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; ++id)
 	{
-		wxString key(EnumToString(id));
-		key += L"Hack";
-
-		if (game.keyExists(key))
+        std::string key = wxString(EnumToString(id)).Append(L"Hack").ToStdString();
+		
+		// Gamefixes are already guaranteed to be valid, any invalid ones are dropped
+		if (std::find(game.gameFixes.begin(), game.gameFixes.end(), key) != game.gameFixes.end())
 		{
-			bool enableIt = game.getBool(key);
-			dest.Gamefixes.Set(id, enableIt);
-			PatchesCon->WriteLn(L"(GameDB) %s Gamefix: " + key, enableIt ? L"Enabled" : L"Disabled");
+			// if the fix is present, it is said to be enabled
+			dest.Gamefixes.Set(id, true);
+			PatchesCon->WriteLn(L"(GameDB) Enabled Gamefix: " + key);
 			gf++;
 
 			// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
-			if (id == Fix_GoemonTlbMiss && enableIt)
+			if (id == Fix_GoemonTlbMiss && true)
 				vtlb_Alloc_Ppmap();
 		}
 	}
@@ -424,14 +424,13 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	{
 		if (IGameDatabase* GameDB = AppHost_GetGameDatabase())
 		{
-			Game_Data game;
-			if (GameDB->findGame(game, curGameKey))
+			GameDatabaseSchema::GameEntry game = GameDB->findGame(std::string(curGameKey));
+			if (game.isValid)
 			{
-				int compat = game.getInt("Compat");
-				gameName = game.getString("Name");
-				gameName += L" (" + game.getString("Region") + L")";
-				gameCompat = L" [Status = " + compatToStringWX(compat) + L"]";
-				gameMemCardFilter = game.getString("MemCardFilter");
+				gameName = game.name;
+				gameName += L" (" + game.region + L")";
+				gameCompat = L" [Status = " + compatToStringWX(game.compat) + L"]";
+				gameMemCardFilter = game.memcardFiltersAsString();
 			}
 
 			if (fixup.EnablePatches)
@@ -470,12 +469,12 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 
 	// regular cheat patches
 	if (fixup.EnableCheats)
-		gameCheats.Printf(L" [%d Cheats]", LoadPatchesFromDir(gameCRC, GetCheatsFolder(), L"Cheats"));
+		gameCheats.Printf(L" [%d Cheats]", LoadPatchesFromDir(gameCRC, wxDirName(GetCheatsFolder().string()), L"Cheats"));
 
 	// wide screen patches
 	if (fixup.EnableWideScreenPatches)
 	{
-		if (int numberLoadedWideScreenPatches = LoadPatchesFromDir(gameCRC, GetCheatsWsFolder(), L"Widescreen hacks"))
+		if (int numberLoadedWideScreenPatches = LoadPatchesFromDir(gameCRC, wxDirName(GetCheatsWsFolder().string()), L"Widescreen hacks"))
 		{
 			gameWsHacks.Printf(L" [%d widescreen hacks]", numberLoadedWideScreenPatches);
 			Console.WriteLn(Color_Gray, "Found widescreen patches in the cheats_ws folder --> skipping cheats_ws.zip");
@@ -483,7 +482,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 		else
 		{
 			// No ws cheat files found at the cheats_ws folder, try the ws cheats zip file.
-			wxString cheats_ws_archive = Path::Combine(PathDefs::GetProgramDataDir(), wxFileName(L"cheats_ws.zip"));
+			wxString cheats_ws_archive = Path::Combine(PathDefs::GetProgramDataDir().string(), "cheats_ws.zip");
 			int numberDbfCheatsLoaded = LoadPatchesFromZip(gameCRC, cheats_ws_archive);
 			PatchesCon->WriteLn(Color_Green, "(Wide Screen Cheats DB) Patches Loaded: %d", numberDbfCheatsLoaded);
 			gameWsHacks.Printf(L" [%d widescreen hacks]", numberDbfCheatsLoaded);

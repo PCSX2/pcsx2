@@ -226,9 +226,9 @@ static void iIopDumpBlock( int startpc, u8 * ptr )
 	int numused, count;
 
 	Console.WriteLn( "dump1 %x:%x, %x", startpc, psxpc, psxRegs.cycle );
-	g_Conf->Folders.Logs.Mkdir();
+	folderUtils.CreateFolder(g_Conf->Folders.Logs);
 
-	wxString filename( Path::Combine( g_Conf->Folders.Logs, wxsFormat( L"psxdump%.8X.txt", startpc ) ) );
+	wxString filename( Path::Combine( g_Conf->Folders.Logs.string(), wxsFormat( L"psxdump%.8X.txt", startpc ).ToStdString() ) );
 	AsciiFile f( filename, L"w" );
 
 	f.Printf("Dump PSX register data: 0x%x\n\n", (uptr)&psxRegs);
@@ -1182,7 +1182,7 @@ static void __fastcall iopRecRecompile( const u32 startpc )
 
 			case 2: // J
 			case 3: // JAL
-				s_branchTo = _Target_ << 2 | (i + 4) & 0xf0000000;
+				s_branchTo = _InstrucTarget_ << 2 | (i + 4) & 0xf0000000;
 				s_nEndBlock = i + 8;
 				goto StartRecomp;
 

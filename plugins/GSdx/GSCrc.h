@@ -116,6 +116,8 @@ public:
 		Shox,
 		Simple2000Vol114,
 		SkyGunner,
+		Sly2,
+		Sly3,
 		SMTNocturne,
 		SonicUnleashed,
 		SoTC,

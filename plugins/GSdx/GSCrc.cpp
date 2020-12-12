@@ -267,6 +267,22 @@ CRC::Game CRC::m_games[] =
 	{0x7FA1510D, TenchuWoH, EU, 0}, // PAL ES, IT
 	{0xC8DADF58, TenchuWoH, EU, 0},
 	{0x13DD9957, TenchuWoH, JP, 0},
+	{0x8BC95883, Sly3, US, 0},
+	{0x3130A4D3, Sly3, US, 0}, // E3 Demo
+	{0x35CCFA60, Sly3, US, 0}, // Regular Demo
+	{0x8C146034, Sly3, EU, 0}, // Demo
+	{0x3670B6F9, Sly3, EU, 0}, // Prototype
+	{0x8164C614, Sly3, EU, 0},
+	{0xA8CC1583, Sly3, KO, 0},
+	{0x518DD841, Sly2, KO, 0},
+	{0x07652DD9, Sly2, US, 0},
+	{0x5B93397F, Sly2, US, 0}, // E3 Demo
+	{0xA480549C, Sly2, US, 0}, // Prototype
+	{0xDD0B5E6C, Sly2, US, 0}, // Internal prototype disc
+	{0x615EA2DB, Sly2, JP, 0}, // Kaitou Sly Cooper 2
+	{0xFDA1CBF6, Sly2, EU, 0},
+	{0x15DD1F6F, Sly2, NoRegion, 0},
+	{0xBF1739E2, Sly2, NoRegion, 0}, // Prototype maybe, is it official ? I don't remember, found it when testing my dumps (LT).
 	{0x506644B3, BigMuthaTruckers, EU, 0},
 	{0x90F0D852, BigMuthaTruckers, US, 0},
 	{0x92624842, BigMuthaTruckers, US, 0},

@@ -34,7 +34,7 @@ bool FileExists(std::string szPath)
 
 void SaveConf()
 {
-	const std::string file(GetSettingsFolder().Combine(wxString("DEV9.cfg")).GetFullPath());
+	const std::string file(Path::Combine(GetSettingsFolder(), "DEV9.cfg"));
 	DeleteFileA(file.c_str());
 
 	WritePrivateProfileStringA("DEV9", "Eth", config.Eth, file.c_str());
@@ -46,7 +46,7 @@ void SaveConf()
 
 void LoadConf()
 {
-	const std::string file(GetSettingsFolder().Combine(wxString("DEV9.cfg")).GetFullPath());
+	const std::string file(Path::Combine(GetSettingsFolder(), "DEV9.cfg"));
 	if (FileExists(file.c_str()) == false)
 		return;
 

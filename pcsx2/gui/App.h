@@ -23,6 +23,8 @@
 
 #include "pxEventThread.h"
 
+#include "yaml-cpp/yaml.h"
+
 #include "AppCommon.h"
 #include "AppCoreThread.h"
 #include "RecentIsoList.h"
@@ -373,7 +375,7 @@ class CommandlineOverrides
 {
 public:
 	AppConfig::FilenameOptions	Filenames;
-	wxDirName		SettingsFolder;
+	std::string		SettingsFolder;
 	wxFileName		VmSettingsFile;
 
 	bool			DisableSpeedhacks;
@@ -409,13 +411,13 @@ public:
 
 	bool HasSettingsOverride() const
 	{
-		return SettingsFolder.IsOk() || VmSettingsFile.IsOk();
+		return folderUtils.DoesExist(SettingsFolder) ||  VmSettingsFile.IsOk();
 	}
 
 	bool HasPluginsOverride() const
 	{
 		for( int i=0; i<PluginId_Count; ++i )
-			if( Filenames.Plugins[i].IsOk() ) return true;
+			if( folderUtils.DoesExist(Filenames.Plugins[i]) ) return true;
 
 		return false;
 	}
@@ -606,12 +608,15 @@ public:
 	void CleanupRestartable();
 	void CleanupResources();
 	void WipeUserModeSettings();
-	bool TestUserPermissionsRights( const wxDirName& testFolder, wxString& createFailedStr, wxString& accessFailedStr );
+	bool TestUserPermissionsRights(const std::string& testFolder);
 	void EstablishAppUserMode();
 	void ForceFirstTimeWizardOnNextRun();
 
-	wxConfigBase* OpenInstallSettingsFile();
-	wxConfigBase* TestForPortableInstall();
+	bool OpenInstallSettingsFile();
+	bool TestForPortableInstall();
+    
+    bool Load(fs::path fN);
+    YAML::Node Save(fs::path fN);
 
 	bool HasPendingSaves() const;
 	void StartPendingSave();

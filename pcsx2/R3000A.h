@@ -135,13 +135,13 @@ extern s32 iopCycleEE;		// tracks IOP's current sych status with the EE
 /**** R3000A Instruction Macros ****/
 #define _PC_       psxRegs.pc       // The next PC to be executed
 
-#define _Funct_  ((psxRegs.code      ) & 0x3F)  // The funct part of the instruction register
-#define _Rd_     ((psxRegs.code >> 11) & 0x1F)  // The rd part of the instruction register
-#define _Rt_     ((psxRegs.code >> 16) & 0x1F)  // The rt part of the instruction register
-#define _Rs_     ((psxRegs.code >> 21) & 0x1F)  // The rs part of the instruction register
-#define _Sa_     ((psxRegs.code >>  6) & 0x1F)  // The sa part of the instruction register
-#define _Im_     ((u16)psxRegs.code) // The immediate part of the instruction register
-#define _Target_ (psxRegs.code & 0x03ffffff)    // The target part of the instruction register
+#define _Funct_			((psxRegs.code      ) & 0x3F)  // The funct part of the instruction register
+#define _Rd_			((psxRegs.code >> 11) & 0x1F)  // The rd part of the instruction register
+#define _Rt_			((psxRegs.code >> 16) & 0x1F)  // The rt part of the instruction register
+#define _Rs_			((psxRegs.code >> 21) & 0x1F)  // The rs part of the instruction register
+#define _Sa_			((psxRegs.code >>  6) & 0x1F)  // The sa part of the instruction register
+#define _Im_			((u16)psxRegs.code) // The immediate part of the instruction register
+#define _InstrucTarget_ (psxRegs.code & 0x03ffffff)    // The target part of the instruction register
 
 #define _Imm_	((short)psxRegs.code) // sign-extended immediate
 #define _ImmU_	(psxRegs.code&0xffff) // zero-extended immediate
@@ -160,7 +160,7 @@ extern s32 iopCycleEE;		// tracks IOP's current sych status with the EE
 #define _rHi_   psxRegs.GPR.n.hi   // The HI register
 #define _rLo_   psxRegs.GPR.n.lo   // The LO register
 
-#define _JumpTarget_    ((_Target_ << 2) + (_PC_ & 0xf0000000))   // Calculates the target during a jump instruction
+#define _JumpTarget_    ((_InstrucTarget_ << 2) + (_PC_ & 0xf0000000))   // Calculates the target during a jump instruction
 #define _BranchTarget_  (((s32)(s16)_Imm_ * 4) + _PC_)                 // Calculates the target during a branch instruction
 
 #define _SetLink(x)     psxRegs.GPR.r[x] = _PC_ + 4;       // Sets the return address in the link register

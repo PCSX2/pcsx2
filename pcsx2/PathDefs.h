@@ -53,19 +53,19 @@ namespace PathDefs
 {
 	// complete pathnames are returned by these functions (may or may not be absolute)
 
-	extern wxDirName GetSnapshots();
-	extern wxDirName GetBios();
-	extern wxDirName GetPlugins();
-	extern wxDirName GetSavestates();
-	extern wxDirName GetMemoryCards();
-	extern wxDirName GetSettings();
-	extern wxDirName GetLogs();
-	extern wxDirName GetLangs();
-	extern wxDirName GetCheats();
-	extern wxDirName GetCheatsWS();
-	extern wxDirName GetDocs();
+	extern fs::path GetSnapshots();
+	extern fs::path GetBios();
+	extern fs::path GetPlugins();
+	extern fs::path GetSavestates();
+	extern fs::path GetMemoryCards();
+	extern fs::path GetSettings();
+	extern fs::path GetLogs();
+	extern fs::path GetLangs();
+	extern fs::path GetCheats();
+	extern fs::path GetCheatsWS();
+	extern fs::path GetDocs();
 
-	extern wxDirName Get( FoldersEnum_t folderidx );
+	extern std::string Get( FoldersEnum_t folderidx );
 
 	// Base folder names used to extend out the documents/approot folder base into a complete
 	// path.  These are typically for internal AppConfig use only, barring a few special cases.

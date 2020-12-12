@@ -26,7 +26,7 @@ using namespace pxSizerFlags;
 
 static wxString GetNormalizedConfigFolder( FoldersEnum_t folderId )
 {
-	return Path::Normalize( g_Conf->Folders.IsDefault( folderId ) ? PathDefs::Get(folderId) : g_Conf->Folders[folderId] );
+	return Path::Normalize( g_Conf->Folders.IsDefault( folderId ) ? PathDefs::Get(folderId) : g_Conf->Folders[folderId].string() );
 }
 
 // Pass me TRUE if the default path is to be used, and the DirPickerCtrl disabled from use.
@@ -259,21 +259,21 @@ void Panels::DirPickerPanel::AppStatusEvent_OnSettingsApplied()
 
 void Panels::DirPickerPanel::Apply()
 {
-	wxDirName path( GetPath() );
+	std::string path( GetPath().ToString().ToStdString() );
 
-	if (!path.Exists())
+	if (!folderUtils.DoesExist(path))
 	{
 		wxDialogWithHelpers dialog( NULL, _("Create folder?") );
 		dialog += dialog.Heading(AddAppName(_("A configured folder does not exist.  Should %s try to create it?")));
 		dialog += 12;
-		dialog += dialog.Heading( path.ToString() );
+		dialog += dialog.Heading( path );
 
 		if( wxID_CANCEL == pxIssueConfirmation( dialog, MsgButtons().Custom(_("Create"), "create").Cancel(), L"CreateNewFolder" ) )
 			throw Exception::CannotApplySettings( this );
 	}
 
-	path.Mkdir();
-	g_Conf->Folders.Set( m_FolderId, path.ToString(), m_checkCtrl ? m_checkCtrl->GetValue() : false );
+	folderUtils.CreateFolder(path);
+	g_Conf->Folders.Set( m_FolderId, path , m_checkCtrl ? m_checkCtrl->GetValue() : false );
 }
 
 wxDirName Panels::DirPickerPanel::GetPath() const

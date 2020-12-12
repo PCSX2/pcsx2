@@ -48,7 +48,7 @@ void __mVUdumpProgram(microVU& mVU, microProgram& prog) {
 	mVUbranch	= 0;
 
 	const wxString logname(wxsFormat(L"microVU%d prog - %02d.html", mVU.index, prog.idx));
-	mVU.logFile = std::unique_ptr<AsciiFile>(new AsciiFile(Path::Combine(g_Conf->Folders.Logs, logname), L"w"));
+	mVU.logFile = std::unique_ptr<AsciiFile>(new AsciiFile(Path::Combine(g_Conf->Folders.Logs.string(), logname.ToStdString()), L"w"));
 
 	mVUlog("<html>\n");
 	mVUlog("<title>microVU%d MicroProgram Log</title>\n", mVU.index);

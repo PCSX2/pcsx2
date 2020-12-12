@@ -223,7 +223,7 @@ void Pcsx2Config::GSOptions::LoadSave( IniInterface& ini )
 
 	IniEntry( FrameLimitEnable );
 	IniEntry( FrameSkipEnable );
-	ini.EnumEntry( L"VsyncEnable", VsyncEnable, NULL, VsyncEnable );
+	ini.EnumEntry( "VsyncEnable", VsyncEnable, NULL, VsyncEnable );
 
 	IniEntry( LimitScalar );
 	IniEntry( FramerateNTSC );
@@ -256,9 +256,9 @@ const wxChar *const tbl_GamefixNames[] =
 	L"FpuMul",
 	L"FpuNegDiv",
 	L"XGKick",
-	L"IpuWait",
+	L"IPUWait",
 	L"EETiming",
-	L"SkipMpeg",
+	L"SkipMPEG",
 	L"OPHFlag",
 	L"DMABusy",
 	L"VIFFIFO",

@@ -43,7 +43,7 @@ struct McdSlotItem
 	MemoryCardType Type;		//The implementation used for this memory card
 	
 	//Only meaningful when IsPresent==true (a file exists for this item):
-	wxFileName	Filename;		// full pathname
+	fs::path	Filename;		// full pathname
 	bool		IsFormatted;
 	bool		IsPSX; // False: PS2 memory card, True: PSX memory card
 	uint		SizeInMB;		// size, in megabytes!

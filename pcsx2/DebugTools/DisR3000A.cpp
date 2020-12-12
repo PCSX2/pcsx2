@@ -56,7 +56,7 @@ typedef char* (*TdisR3000AF)(u32 code, u32 pc);
 #undef _Rs_
 #undef _Sa_
 #undef _Im_
-#undef _Target_
+#undef _InstrucTarget_
 
 #define _Funct_  ((code      ) & 0x3F) // The funct part of the instruction register
 #define _Rd_     ((code >> 11) & 0x1F) // The rd part of the instruction register
@@ -65,7 +65,7 @@ typedef char* (*TdisR3000AF)(u32 code, u32 pc);
 #define _Sa_     ((code >>  6) & 0x1F) // The sa part of the instruction register
 #define _Im_     ( code & 0xFFFF)      // The immediate part of the instruction register
 
-#define _Target_  ((pc & 0xf0000000) + ((code & 0x03ffffff) * 4))
+#define _InstrucTarget_  ((pc & 0xf0000000) + ((code & 0x03ffffff) * 4))
 #define _Branch_  (pc + 4 + ((short)_Im_ * 4))
 #define _OfB_     _Im_, _nRs_
 
@@ -75,7 +75,7 @@ typedef char* (*TdisR3000AF)(u32 code, u32 pc);
 #define dHI()		sprintf(ostr + strlen(ostr), " %8.8x (%s),", psxRegs.GPR.n.hi, "hi")
 #define dLO()		sprintf(ostr + strlen(ostr), " %8.8x (%s),", psxRegs.GPR.n.lo, "lo")
 #define dImm()		sprintf(ostr + strlen(ostr), " %4.4x (%d),", _Im_, _Im_)
-#define dTarget()	sprintf(ostr + strlen(ostr), " %8.8x,", _Target_)
+#define dTarget()	sprintf(ostr + strlen(ostr), " %8.8x,", _InstrucTarget_)
 #define dSa()		sprintf(ostr + strlen(ostr), " %2.2x (%d),", _Sa_, _Sa_)
 #define dOfB()		sprintf(ostr + strlen(ostr), " %4.4x (%8.8x (%s)),", _Im_, psxRegs.GPR.r[_Rs_], disRNameGPR[_Rs_])
 #define dOffset()	sprintf(ostr + strlen(ostr), " %8.8x,", _Branch_)

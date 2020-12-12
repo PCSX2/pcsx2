@@ -18,6 +18,7 @@
 #include "AppForwardDefs.h"
 #include "Config.h"
 #include "PathDefs.h"
+#include "Utilities/PathUtils.h"
 #include "CDVD/CDVDaccess.h"
 #include "Utilities/General.h"
 #include "Utilities/Path.h"
@@ -49,30 +50,32 @@ namespace PathDefs
 	// user checks "Use Default paths" option provided on most path selectors.  These are not
 	// used otherwise, in favor of the user-configurable specifications in the ini files.
 
-	extern wxDirName GetUserLocalDataDir();
-	extern wxDirName GetProgramDataDir();
-	extern wxDirName GetDocuments();
-	extern wxDirName GetDocuments( DocsModeType mode );
+	extern fs::path GetUserLocalDataDir();
+	extern fs::path GetProgramDataDir();
+	extern fs::path GetDocuments();
+	extern fs::path GetDocuments( DocsModeType mode );
 }
 
 extern DocsModeType		DocsFolderMode;				// 
 extern bool				UseDefaultSettingsFolder;	// when TRUE, pcsx2 derives the settings folder from the DocsFolderMode
 extern bool				UseDefaultPluginsFolder;
 
-extern wxDirName		CustomDocumentsFolder;		// allows the specification of a custom home folder for PCSX2 documents files.
-extern wxDirName		SettingsFolder;				// dictates where the settings folder comes from, *if* UseDefaultSettingsFolder is FALSE.
+extern fs::path		CustomDocumentsFolder;		// allows the specification of a custom home folder for PCSX2 documents files.
+extern fs::path		SettingsFolder;				// dictates where the settings folder comes from, *if* UseDefaultSettingsFolder is FALSE.
 
-extern wxDirName		InstallFolder;
-extern wxDirName		PluginsFolder;
+extern std::string		InstallFolder;
+extern fs::path		PluginsFolder;
 
-extern wxDirName GetSettingsFolder();
-extern wxString  GetVmSettingsFilename();
-extern wxString  GetUiSettingsFilename();
-extern wxString  GetUiKeysFilename();
+extern FolderUtils      folderUtils;
 
-extern wxDirName GetLogFolder();
-extern wxDirName GetCheatsFolder();
-extern wxDirName GetCheatsWsFolder();
+extern fs::path  GetSettingsFolder();
+extern fs::path  GetVmSettingsFilename();
+extern fs::path  GetUiSettingsFilename();
+extern fs::path  GetUiKeysFilename();
+
+extern fs::path GetLogFolder();
+extern fs::path GetCheatsFolder();
+extern fs::path GetCheatsWsFolder();
 
 enum InstallationModeType
 {
@@ -160,7 +163,7 @@ public:
 				UseDefaultCheatsWS:1;
 		BITFIELD_END
 
-		wxDirName
+		fs::path
 			Bios,
 			Snapshots,
 			Savestates,
@@ -170,30 +173,30 @@ public:
 			Cheats,
 			CheatsWS;
 
-		wxDirName RunIso;		// last used location for Iso loading.
-		wxDirName RunELF;		// last used location for ELF loading.
-		wxFileName RunDisc;		// last used location for Disc loading.
+		fs::path RunIso;		// last used location for Iso loading.
+		fs::path RunELF;		// last used location for ELF loading.
+		fs::path RunDisc;		// last used location for Disc loading.
 
 		FolderOptions();
 		void LoadSave( IniInterface& conf );
 		void ApplyDefaults();
 
-		void Set( FoldersEnum_t folderidx, const wxString& src, bool useDefault );
+		void Set( FoldersEnum_t folderidx, const std::string& src, bool useDefault );
 
-		const wxDirName& operator[]( FoldersEnum_t folderidx ) const;
-		wxDirName& operator[]( FoldersEnum_t folderidx );
+		const fs::path& operator[]( FoldersEnum_t folderidx ) const;
+		fs::path& operator[]( FoldersEnum_t folderidx );
 		bool IsDefault( FoldersEnum_t folderidx ) const;
 	};
 
 	// ------------------------------------------------------------------------
 	struct FilenameOptions
 	{
-		wxFileName Bios;
-		wxFileName Plugins[PluginId_Count];
+		std::string Bios;
+		std::string Plugins[PluginId_Count];
 
 		void LoadSave( IniInterface& conf );
 
-		const wxFileName& operator[]( PluginsEnum_t pluginidx ) const;
+		const std::string& operator[]( PluginsEnum_t pluginidx ) const;
 	};
 
 	// ------------------------------------------------------------------------
@@ -201,7 +204,7 @@ public:
 	//
 	struct McdOptions
 	{
-		wxFileName	Filename;	// user-configured location of this memory card
+		fs::path	Filename;	// user-configured location of this memory card
 		bool		Enabled;	// memory card enabled (if false, memcard will not show up in-game)
 		MemoryCardType Type;	// the memory card implementation that should be used
 	};
@@ -371,9 +374,9 @@ public:
 public:
 	AppConfig();
 
-	wxString FullpathToBios() const;
-	wxString FullpathToMcd( uint slot ) const;
-	wxString FullpathTo( PluginsEnum_t pluginId ) const;
+	std::string FullpathToBios() const;
+	std::string FullpathToMcd( uint slot ) const;
+	std::string FullpathTo( PluginsEnum_t pluginId ) const;
 
 	bool FullpathMatchTest( PluginsEnum_t pluginId, const wxString& cmpto ) const;
 

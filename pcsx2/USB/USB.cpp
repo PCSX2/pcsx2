@@ -621,7 +621,7 @@ void USBasync(u32 cycles)
 int cpu_physical_memory_rw(u32 addr, u8* buf, size_t len, int is_write)
 {
 	// invalid address, reset and try again
-	if ((u64)addr + len >= 0x200000)
+	if (addr + len >= 0x200000)
 	{
 		if (qemu_ohci)
 			ohci_soft_reset(qemu_ohci);

@@ -72,8 +72,9 @@ Panels::FirstTimeIntroPanel::FirstTimeIntroPanel( wxWindow* parent )
 
 	FastFormatUnicode configFile, faqFile;
 #ifndef DOC_DIR_COMPILATION
-	configFile.Write( L"file:///%s/Docs/Configuration_Guide.pdf", WX_STR(InstallFolder.ToString()) );
-	faqFile.Write( L"file:///%s/Docs/PCSX2_FAQ.pdf", WX_STR(InstallFolder.ToString()) );
+    wxString install = InstallFolder;
+	configFile.Write( L"file:///%s/Docs/Configuration_Guide.pdf", WX_STR(install) );
+	faqFile.Write( L"file:///%s/Docs/PCSX2_FAQ.pdf", WX_STR(install) );
 #else
 	// Each linux distributions have his rules for path so we give them the possibility to
 	// change it with compilation flags. -- Gregory
@@ -219,7 +220,7 @@ void FirstTimeWizard::OnPageChanging( wxWizardEvent& evt )
 
 		if( page == 0 )
 		{
-			if( wxFile::Exists(GetUiSettingsFilename()) || wxFile::Exists(GetVmSettingsFilename()) )
+			if( wxFile::Exists(GetUiSettingsFilename().string()) || wxFile::Exists(GetVmSettingsFilename().string()) )
 			{
 				// Asks the user if they want to import or overwrite the existing settings.
 

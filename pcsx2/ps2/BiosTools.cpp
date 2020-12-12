@@ -200,11 +200,11 @@ static void LoadExtraRom( const wxChar* ext, u8 (&dest)[_size] )
 
 	try
 	{
-		if( (filesize=Path::GetFileSize( Bios1 ) ) <= 0 )
+		if( (filesize=Path::GetFileSize( Bios1.ToStdString() ) ) <= 0 )
 		{
 			// Try the name properly extensioned next (name.rom1)
 			Bios1 = Path::ReplaceExtension( Bios, ext );
-			if( (filesize=Path::GetFileSize( Bios1 ) ) <= 0 )
+			if( (filesize=Path::GetFileSize( Bios1.ToStdString() ) ) <= 0 )
 			{
 				Console.WriteLn( Color_Gray, L"BIOS %s module not found, skipping...", ext );
 				return;
@@ -235,7 +235,7 @@ static void LoadIrx( const wxString& filename, u8* dest )
 	try
 	{
 		wxFile irx(filename);
-		if( (filesize=Path::GetFileSize( filename ) ) <= 0 ) {
+		if( (filesize=Path::GetFileSize( filename.ToStdString() ) ) <= 0 ) {
 			Console.Warning(L"IRX Warning: %s could not be read", WX_STR(filename));
 			return;
 		}
@@ -265,16 +265,16 @@ void LoadBIOS()
 
 	try
 	{
-		wxString Bios( g_Conf->FullpathToBios() );
-		if( !g_Conf->BaseFilenames.Bios.IsOk() || g_Conf->BaseFilenames.Bios.IsDir() )
-			throw Exception::FileNotFound( Bios )
+		fs::path Bios( g_Conf->FullpathToBios() );
+		if( fs::is_directory(g_Conf->BaseFilenames.Bios))
+			throw Exception::FileNotFound( Bios.wstring() )
 				.SetDiagMsg(L"BIOS has not been configured, or the configuration has been corrupted.")
 				.SetUserMsg(_("The PS2 BIOS could not be loaded.  The BIOS has not been configured, or the configuration has been corrupted.  Please re-configure."));
 
 		s64 filesize = Path::GetFileSize( Bios );
 		if( filesize <= 0 )
 		{
-			throw Exception::FileNotFound( Bios )
+			throw Exception::FileNotFound( Bios.wstring() )
 				.SetDiagMsg(L"Configured BIOS file does not exist, or has a file size of zero.")
 				.SetUserMsg(_("The configured BIOS file does not exist.  Please re-configure."));
 		}
@@ -282,7 +282,7 @@ void LoadBIOS()
 		BiosChecksum = 0;
 
 		wxString biosZone;
-		wxFFile fp( Bios , "rb");
+		wxFFile fp( Bios.wstring() , "rb");
 		fp.Read( eeMem->ROM, std::min<s64>( Ps2MemSize::Rom, filesize ) );
 
 		// If file is less than 2mb it doesn't have an OSD (Devel consoles)
@@ -294,7 +294,7 @@ void LoadBIOS()
 
 		ChecksumIt( BiosChecksum, eeMem->ROM );
 
-		pxInputStream memfp( Bios, new wxMemoryInputStream( eeMem->ROM, sizeof(eeMem->ROM) ) );
+		pxInputStream memfp( Bios.wstring(), new wxMemoryInputStream( eeMem->ROM, sizeof(eeMem->ROM) ) );
 		LoadBiosVersion( memfp, BiosVersion, BiosDescription, biosZone );
 
 		Console.SetTitle( pxsFmt( L"Running BIOS (%s v%u.%u)",
@@ -307,7 +307,7 @@ void LoadBIOS()
 		LoadExtraRom( L"rom2", eeMem->ROM2 );
 		LoadExtraRom( L"erom", eeMem->EROM );
 
-		if (g_Conf->CurrentIRX.Length() > 3)
+		if (g_Conf->CurrentIRX.length() > 3)
 			LoadIrx(g_Conf->CurrentIRX, &eeMem->ROM[0x3C0000]);
 
 		CurrentBiosInformation = NULL;
@@ -332,7 +332,7 @@ void LoadBIOS()
 
 bool IsBIOS(const wxString& filename, wxString& description)
 {
-	wxFileName Bios( g_Conf->Folders.Bios + filename );
+	wxFileName Bios( g_Conf->Folders.Bios.string() + filename );
 	pxInputStream inway( filename, new wxFFileInputStream( filename ) );
 
 	if (!inway.IsOk()) return false;

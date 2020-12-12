@@ -75,7 +75,7 @@ typedef int BOOL;
 
 #include "Utilities/FixedPointTypes.h"
 #include "Utilities/wxBaseTools.h"
-#include "Utilities/Path.h"
+#include "Utilities/PathUtils.h"
 #include "Utilities/Console.h"
 #include "Utilities/MemcpyFast.h"
 #include "Utilities/General.h"

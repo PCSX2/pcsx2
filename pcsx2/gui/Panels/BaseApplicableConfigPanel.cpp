@@ -62,7 +62,7 @@ bool ApplyStateStruct::ApplyPage( int pageid )
 	// Save these settings so we can restore them if the Apply fails.
 
 	DocsModeType	oldDocsMode			= DocsFolderMode;
-	wxDirName		oldSettingsFolder	= SettingsFolder;
+	fs::path		oldSettingsFolder	= SettingsFolder;
 	bool			oldUseDefSet		= UseDefaultSettingsFolder;
 
 	AppConfig confcopy( *g_Conf );
@@ -83,11 +83,11 @@ bool ApplyStateStruct::ApplyPage( int pageid )
 
 		// Note: apply first, then save -- in case the apply fails.
 
-		if( !PathDefs::GetSettings().Exists() )
-			PathDefs::GetSettings().Mkdir();//create the inis folder such that the plugins can be configured at the first time wizard.
+		if( !folderUtils.DoesExist(PathDefs::GetSettings()) )
+			folderUtils.CreateFolder(PathDefs::GetSettings()); //create the inis folder such that the plugins can be configured at the first time wizard.
 
-		if( !PathDefs::GetBios().Exists() )
-			PathDefs::GetBios().Mkdir();//create the bios folder such that it can be opened at the first time wizard without an error message.
+		if( !folderUtils.DoesExist(PathDefs::GetBios()))
+			folderUtils.CreateFolder(PathDefs::GetBios());//create the bios folder such that it can be opened at the first time wizard without an error message.
 
 		AppApplySettings( &confcopy );
 	}

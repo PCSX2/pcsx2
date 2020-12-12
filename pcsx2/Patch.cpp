@@ -19,7 +19,6 @@
 
 #include "IopCommon.h"
 #include "Patch.h"
-#include "GameDatabase.h"
 
 #include <memory>
 #include <vector>
@@ -27,6 +26,8 @@
 #include <wx/dir.h>
 #include <wx/txtstrm.h>
 #include <wx/zipstrm.h>
+#include <wx/wfstream.h>
+#include <PathDefs.h>
 
 // This is a declaration for PatchMemory.cpp::_ApplyPatch where we're (patch.cpp)
 // the only consumer, so it's not made public via Patch.h
@@ -120,37 +121,31 @@ static void inifile_command(const wxString& cmd)
 	/*int code = */PatchTableExecute(set, commands_patch);
 }
 
-// This routine receives a string containing patches, trims it,
-// Then sends the command to be parsed.
-void TrimPatches(wxString& s)
-{
-	wxStringTokenizer tkn( s, L"\n" );
-
-	while(tkn.HasMoreTokens()) {
-		inifile_command(tkn.GetNextToken());
-	}
-}
-
 // This routine loads patches from the game database (but not the config/game fixes/hacks)
 // Returns number of patches loaded
-int LoadPatchesFromGamesDB(const wxString& crc, const Game_Data& game)
+int LoadPatchesFromGamesDB(const wxString& crc, const GameDatabaseSchema::GameEntry& game)
 {
-	bool patchFound = false;
-	wxString patch;
-
-	if (game.IsOk())
+	if (game.isValid)
 	{
-		if (game.sectionExists(L"patches", crc)) {
-			patch = game.getSection(L"patches", crc);
-			patchFound = true;
+		GameDatabaseSchema::Patch patch;
+		if (game.patches.count(std::string(crc)) == 1)
+		{
+			patch = game.patches.at(std::string(crc));
 		}
-		else if (game.keyExists(L"[patches]")) {
-			patch = game.getString(L"[patches]");
-			patchFound = true;
+		else if (game.patches.count("default") == 1)
+		{
+			patch = game.patches.at("default");
+		}
+
+		if (patch.patchLines.size() > 0)
+		{
+			for (auto line : patch.patchLines)
+            {
+                inifile_command(line);
+            }
+
 		}
 	}
-
-	if (patchFound) TrimPatches(patch);
 
 	return Patch.size();
 }
@@ -195,7 +190,7 @@ static int _LoadPatchFiles(const wxDirName& folderName, wxString& fileSpec, cons
 		if (buffer.Upper().Matches(fileSpec.Upper())) {
 			PatchesCon->WriteLn(Color_Green, L"Found %s file: '%s'", WX_STR(friendlyName), WX_STR(buffer));
 			int before = Patch.size();
-			f.Open(Path::Combine(dir.GetName(), buffer));
+			f.Open(Path::Combine(dir.GetName().ToStdString(), buffer.ToStdString()));
 			inifile_process(f);
 			f.Close();
 			int loaded = Patch.size() - before;
@@ -252,8 +247,8 @@ int LoadPatchesFromDir(wxString name, const wxDirName& folderName, const wxStrin
 	// This comment _might_ be buggy. This function (LoadPatchesFromDir) loads from an explicit folder.
 	// This folder can be cheats or cheats_ws at either the default location or a custom one.
 	// This check only tests the default cheats folder, so the message it produces is possibly misleading.
-	if (folderName.ToString().IsSameAs(PathDefs::GetCheats().ToString()) && numberFoundPatchFiles == 0) {
-		wxString pathName = Path::Combine(folderName, name.MakeUpper() + L".pnach");
+	if (folderName.ToString().IsSameAs(PathDefs::GetCheats().string()) && numberFoundPatchFiles == 0) {
+		wxString pathName = Path::Combine(folderName.ToString().ToStdString() , (name.MakeUpper() + L".pnach").ToStdString());
 		PatchesCon->WriteLn(Color_Gray, L"Not found %s file: %s", WX_STR(friendlyName), WX_STR(pathName));
 	}
 

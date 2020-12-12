@@ -61,6 +61,7 @@ set(UtilitiesHeaders
 	../../include/Utilities/MemcpyFast.h
 	../../include/Utilities/MemsetFast.inl
 	../../include/Utilities/Path.h
+	../../include/Utilities/PathUtils.h
 	../../include/Utilities/PageFaultSource.h
 	../../include/Utilities/pxCheckBox.h
 	../../include/Utilities/pxForwardDefs.h
@@ -79,6 +80,7 @@ set(UtilitiesHeaders
 	../../include/Utilities/wxAppWithHelpers.h
 	../../include/Utilities/wxBaseTools.h
 	../../include/Utilities/wxGuiTools.h
+	../../include/Utilities/filesystem.hpp
 	PrecompiledHeader.h
 	ThreadingInternal.h
 )

@@ -26,7 +26,7 @@ void initIni()
 {
 	if (!pathSet)
 	{
-		path = GetSettingsFolder().Combine(path).GetFullPath();
+		path = Path::Combine(GetSettingsFolder().string(), path.ToStdString());
 		pathSet = true;
 	}
 	if (spuConfig == nullptr)
@@ -42,7 +42,7 @@ void setIni(const wchar_t* Section)
 void CfgSetSettingsDir(const char* dir)
 {
 	FileLog("CfgSetSettingsDir(%s)\n", dir);
-	path = Path::Combine((dir == nullptr) ? wxString(L"inis") : wxString::FromUTF8(dir), L"SPU2.ini");
+	path = Path::Combine((dir == nullptr) ? "inis" : std::string(dir), "SPU2.ini");
 	pathSet = true;
 }
 

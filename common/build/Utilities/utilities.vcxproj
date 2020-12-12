@@ -112,6 +112,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\Utilities\EmbeddedImage.h" />
     <ClInclude Include="..\..\include\Utilities\boost_spsc_queue.hpp" />
+    <ClInclude Include="..\..\include\Utilities\filesystem.hpp" />
     <ClInclude Include="..\..\include\Utilities\ScopedAlloc.h" />
     <ClInclude Include="..\..\src\Utilities\ThreadingInternal.h" />
     <ClInclude Include="..\..\include\Utilities\Assertions.h" />
@@ -126,6 +127,7 @@
     <ClInclude Include="..\..\include\Utilities\MakeUnique.h" />
     <ClInclude Include="..\..\include\Utilities\MemcpyFast.h" />
     <ClInclude Include="..\..\include\Utilities\Path.h" />
+    <ClInclude Include="..\..\include\Utilities\PathUtils.h" />
     <ClInclude Include="..\..\src\Utilities\PrecompiledHeader.h" />
     <ClInclude Include="..\..\include\Utilities\pxCheckBox.h" />
     <ClInclude Include="..\..\include\Utilities\pxEvents.h" />
@@ -140,6 +142,7 @@
     <ClInclude Include="..\..\include\Utilities\Threading.h" />
     <ClInclude Include="..\..\include\Utilities\PersistentThread.h" />
     <ClInclude Include="..\..\include\Utilities\RwMutex.h" />
+    <ClInclude Include="PathUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\3rdparty\pthreads4w\build\pthreads4w.vcxproj">

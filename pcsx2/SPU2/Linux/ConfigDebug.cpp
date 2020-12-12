@@ -17,7 +17,7 @@
 #include "../Global.h"
 #include "Dialogs.h"
 #include "Config.h"
-#include "Utilities/Path.h"
+#include "Utilities/PathUtils.h"
 
 bool DebugEnabled = false;
 bool _MsgToConsole = false;
@@ -40,8 +40,8 @@ bool _RegDump = false;
 // the configured crap in the ini file.
 static bool LogLocationSetByPcsx2 = false;
 
-static wxDirName LogsFolder;
-static wxDirName DumpsFolder;
+static std::string LogsFolder;
+static std::string DumpsFolder;
 
 wxString AccessLogFileName;
 wxString WaveLogFileName;
@@ -59,17 +59,17 @@ void CfgSetLogDir(const char* dir)
 	LogLocationSetByPcsx2 = (dir != nullptr);
 }
 
-FILE* OpenBinaryLog(const wxString& logfile)
+FILE* OpenBinaryLog(std::string logfile)
 {
 	return wxFopen(Path::Combine(LogsFolder, logfile), L"wb");
 }
 
-FILE* OpenLog(const wxString& logfile)
+FILE* OpenLog(std::string logfile)
 {
 	return wxFopen(Path::Combine(LogsFolder, logfile), L"w");
 }
 
-FILE* OpenDump(const wxString& logfile)
+FILE* OpenDump(std::string logfile)
 {
 	return wxFopen(Path::Combine(DumpsFolder, logfile), L"w");
 }

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2020  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -17,50 +17,41 @@
 
 #include "GameDatabase.h"
 
-// --------------------------------------------------------------------------------------
-//  AppGameDatabase
-// --------------------------------------------------------------------------------------
-// This class extends BaseGameDatabase_Impl and provides interfaces for loading and saving
-// the text-formatted game database.
-//
-// Example:
-// ---------------------------------------------
-// Serial = SLUS-20486
-// Name   = Marvel vs. Capcom 2
-// Region = NTSC-U
-// ---------------------------------------------
-//
-// [-- separators are a standard part of the formatting]
-//
+#include "AppConfig.h"
 
-// To Load this game data, use "Serial" as the initial Key
-// then specify "SLUS-20486" as the value in the constructor.
-// After the constructor loads the game data, you can use the
-// GameDatabase class's methods to get the other key's values.
-// Such as dbLoader.getString("Region") returns "NTSC-U"
-
-class AppGameDatabase : public BaseGameDatabaseImpl
+class AppGameDatabase : public YamlGameDatabaseImpl
 {
 public:
 	AppGameDatabase() {}
-	virtual ~AppGameDatabase() {
-		try {
-			Console.WriteLn( "(GameDB) Unloading..." );
+	virtual ~AppGameDatabase()
+	{
+		try
+		{
+			Console.WriteLn("(GameDB) Unloading...");
 		}
 		DESTRUCTOR_CATCHALL
 	}
 
-	AppGameDatabase& LoadFromFile(const wxString& file = Path::Combine( PathDefs::GetProgramDataDir(), wxFileName(L"GameIndex.dbf") ), const wxString& key = L"Serial" );
+	AppGameDatabase& LoadFromFile(const wxString& file = Path::Combine(PathDefs::GetProgramDataDir().string(), "GameIndex.yaml"));
 };
 
-static wxString compatToStringWX(int compat) {
-	switch (compat) {
-		case 6:  return L"Perfect";
-		case 5:  return L"Playable";
-		case 4:  return L"In-Game";
-		case 3:  return L"Menu";
-		case 2:  return L"Intro";
-		case 1:  return L"Nothing";
-		default: return L"Unknown";
+static wxString compatToStringWX(GameDatabaseSchema::Compatibility compat)
+{
+	switch (compat)
+	{
+		case GameDatabaseSchema::Compatibility::Perfect:
+			return L"Perfect";
+		case GameDatabaseSchema::Compatibility::Playable:
+			return L"Playable";
+		case GameDatabaseSchema::Compatibility::InGame:
+			return L"In-Game";
+		case GameDatabaseSchema::Compatibility::Menu:
+			return L"Menu";
+		case GameDatabaseSchema::Compatibility::Intro:
+			return L"Intro";
+		case GameDatabaseSchema::Compatibility::Nothing:
+			return L"Nothing";
+		default:
+			return L"Unknown";
 	}
 }
