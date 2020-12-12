@@ -45,7 +45,7 @@
 #define FORCE_UPDATE_LPARAM ((LPARAM)0x89437437)
 
 // PAD version.
-#define VERSION ((0 << 8) | 12 | (1 << 24))
+#define VERSION ((1 << 8) | 12 | (1 << 24))
 
 #ifdef __linux__
 Display* GSdsp;
