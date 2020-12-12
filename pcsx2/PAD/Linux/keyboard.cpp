@@ -109,7 +109,7 @@ bool PollForNewKeyboardKeys(u32& pkey)
 	{
 		if (CGEventSourceKeyState(kCGEventSourceStateHIDSystemState, key))
 		{
-			pkey = key == kVK_Escape ? 0 : key;
+			pkey = key == kVK_Escape ? UINT32_MAX : key;
 			return true;
 		}
 	}
@@ -309,7 +309,7 @@ bool PollForNewKeyboardKeys(u32& pkey)
 	{
 		if (ev->type == GDK_KEY_PRESS)
 		{
-			pkey = ev->key.keyval != GDK_KEY_Escape ? ev->key.keyval : 0;
+			pkey = ev->key.keyval != GDK_KEY_Escape ? ev->key.keyval : UINT32_MAX;
 			return true;
 		}
 		else if (ev->type == GDK_BUTTON_PRESS)

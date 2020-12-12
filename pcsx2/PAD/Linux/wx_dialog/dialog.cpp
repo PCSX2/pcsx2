@@ -722,8 +722,8 @@ void PADDialog::config_key(int pad, int key)
 		if (PollForNewKeyboardKeys(key_pressed))
 		{
 			// special case for keyboard/mouse to handle multiple keys
-			// Note: key_pressed == 0 when ESC is hit to abort the capture
-			if (key_pressed > 0)
+			// Note: key_pressed == UINT32_MAX when ESC is hit to abort the capture
+			if (key_pressed != UINT32_MAX)
 			{
 				clear_key(pad, key);
 				set_keyboard_key(pad, key_pressed, key);
