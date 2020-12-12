@@ -130,8 +130,5 @@ extern Window GSwin;
 
 #include "PS2Edefs.h"
 
-#ifdef _MSC_VER
-extern HINSTANCE hInst;
-#endif
 // Needed for config screen
 void GetNameAndVersionString(wchar_t* out);
