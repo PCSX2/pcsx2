@@ -39,6 +39,7 @@
 #include "AppConfig.h"
 #include <timeapi.h>
 #include "Utilities/pxStreams.h"
+#include "AppCoreThread.h"
 
 #define WMA_FORCE_UPDATE (WM_APP + 0x537)
 #define FORCE_UPDATE_WPARAM ((WPARAM)0x74328943)
@@ -1022,11 +1023,9 @@ DWORD WINAPI MaximizeWindowThreadProc(void* lpParameter)
 
 void PADconfigure()
 {
-	if (openCount)
-	{
-		return;
-	}
+	ScopedCoreThreadPause paused_core;
 	Configure();
+	paused_core.AllowResume();
 }
 
 #ifdef _MSC_VER
