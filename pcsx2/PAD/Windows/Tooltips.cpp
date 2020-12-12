@@ -33,7 +33,7 @@ LPWSTR dialog_message(int ID, bool* updateText)
 				   L"Note 1: By default PCSX2 uses a double-click by the left mouse button to toggle fullscreen mode, this makes the left mouse button unusable as an input."
 				   L"To disable this option in PCSX2 go to Config > Emulation Settings > GS Window tab, and disable the \"Double-click toggles fullscreen mode\" checkbox.\n\n"
 				   L"Note 2: This does not enable the mouse to function as an in-game mouse in PS2 games that support a USB mouse or lightgun."
-				   L"This requires a USB plugin, while LilyPad is a PAD plugin(PAD means it emulates devices that are to be plugged into the PlayStation controller port that connects the DualShock 2 controller).";
+				   L"This requires a USB device, while PAD is a PAD plugin(PAD means it emulates devices that are to be plugged into the PlayStation controller port that connects the DualShock 2 controller).";
 		case IDC_MOUSE_UNFOCUS:
 			return L"Enabled: Mouse is unfocused and can be used for emulation and outside it.\n\n"
 				   L"Disabled: Mouse is focused and can be used for emulation.";
@@ -66,7 +66,7 @@ LPWSTR dialog_message(int ID, bool* updateText)
 				   L"If it doesn't support Xinput then running through Steam as a non-Steam game might be required for the controllers to work properly.\n\n"
 				   L"https://gamepad-tester.com/ to test your controller and check if it only says 'Xinput' on top.";
 		case ID_RESTORE_DEFAULTS:
-			return L"Restores the default contents of LilyPad.ini, undoing all settings changes and bindings that have been set up.";
+			return L"Restores the default contents of PAD.ini, undoing all settings changes and bindings that have been set up.";
 		// Pad tabs
 		case IDC_BINDINGS_LIST:
 			return L"Shows a list of currently bound inputs of the selected Pad.\n\n"

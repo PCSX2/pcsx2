@@ -48,7 +48,7 @@ HWND hWndProp = 0;
 int selected = 0;
 bool quickSetup = false;
 
-// Older versions of PCSX2 don't always create the ini dir on startup, so LilyPad does it
+// Older versions of PCSX2 don't always create the ini dir on startup, so PAD does it
 // for it.  But if PCSX2 sets the ini path with a call to setSettingsDir, then it means
 // we shouldn't make our own.
 bool createIniDir = true;
@@ -331,7 +331,7 @@ wchar_t* GetCommandStringW(u8 command, int port, int slot)
 	return L"";
 }
 
-static wchar_t iniFile[MAX_PATH * 2] = L"inis/LilyPad.ini";
+static wchar_t iniFile[MAX_PATH * 2] = L"inis/PAD.ini";
 
 void PADsetSettingsDir(const char* dir)
 {
@@ -339,7 +339,7 @@ void PADsetSettingsDir(const char* dir)
 
 	//uint targlen = MultiByteToWideChar(CP_ACP, 0, dir, -1, NULL, 0);
 	MultiByteToWideChar(CP_UTF8, 0, dir, -1, iniFile, MAX_PATH * 2);
-	wcscat_s(iniFile, L"/LilyPad.ini");
+	wcscat_s(iniFile, L"/PAD.ini");
 
 	createIniDir = false;
 
@@ -1065,7 +1065,7 @@ int LoadSettings(int force, wchar_t* file)
 	{
 		file = iniFile;
 		GetPrivateProfileStringW(L"General Settings", L"Last Config Path", L"inis", config.lastSaveConfigPath, sizeof(config.lastSaveConfigPath), file);
-		GetPrivateProfileStringW(L"General Settings", L"Last Config Name", L"LilyPad.lily", config.lastSaveConfigFileName, sizeof(config.lastSaveConfigFileName), file);
+		GetPrivateProfileStringW(L"General Settings", L"Last Config Name", L"PAD.pad", config.lastSaveConfigFileName, sizeof(config.lastSaveConfigFileName), file);
 	}
 	else
 	{
@@ -2729,17 +2729,17 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 				memset(&ofn, 0, sizeof(ofn));
 				ofn.lStructSize = sizeof(ofn);
 				ofn.hwndOwner = hWnd;
-				ofn.lpstrFilter = L"LilyPad Config Files\0*.lily\0All Files\0*.*\0\0";
+				ofn.lpstrFilter = L"PAD Config Files\0*.pad\0All Files\0*.*\0\0";
 				wchar_t file[MAX_PATH + 1];
 				ofn.lpstrFile = file;
 				ofn.nMaxFile = MAX_PATH;
 				wcscpy(file, config.lastSaveConfigFileName);
 				ofn.lpstrInitialDir = config.lastSaveConfigPath;
 				ofn.Flags = OFN_DONTADDTORECENT | OFN_LONGNAMES | OFN_NOCHANGEDIR;
-				ofn.lpstrDefExt = L"lily";
+				ofn.lpstrDefExt = L"pad";
 				if (LOWORD(wParam) == ID_LOAD)
 				{
-					ofn.lpstrTitle = L"Load LilyPad Configuration";
+					ofn.lpstrTitle = L"Load PAD Configuration";
 					ofn.Flags |= OFN_FILEMUSTEXIST;
 					if (GetOpenFileNameW(&ofn))
 					{
@@ -2750,7 +2750,7 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 				}
 				else
 				{
-					ofn.lpstrTitle = L"Save LilyPad Configuration";
+					ofn.lpstrTitle = L"Save PAD Configuration";
 					ofn.Flags |= OFN_OVERWRITEPROMPT;
 					if (GetSaveFileNameW(&ofn))
 					{
@@ -2764,14 +2764,14 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 			}
 			else if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) == ID_RESTORE_DEFAULTS)
 			{
-				int msgboxID = MessageBoxA(hWndProp, "This will delete all current settings and revert back to the default settings of LilyPad. Continue?",
+				int msgboxID = MessageBoxA(hWndProp, "This will delete all current settings and revert back to the default settings of PAD. Continue?",
 										   "Restore Defaults Confirmation", MB_YESNO | MB_DEFBUTTON2 | MB_ICONEXCLAMATION);
 				switch (msgboxID)
 				{
 					case IDNO:
 						break;
 					case IDYES:
-						char iniLocation[MAX_PATH * 2] = "inis/LilyPad.ini";
+						char iniLocation[MAX_PATH * 2] = "inis/PAD.ini";
 						remove(iniLocation);
 						createIniDir = true;
 						LoadSettings(1);
