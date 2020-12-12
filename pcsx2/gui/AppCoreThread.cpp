@@ -301,6 +301,14 @@ static int loadGameSettings(Pcsx2Config& dest, const Game_Data& game)
 		gf++;
 	}
 
+	if (game.keyExists("InstantVU1SpeedHack"))
+	{
+		bool vu1InstantHack = game.getInt("InstantVU1SpeedHack") ? 1 : 0;
+		PatchesCon->WriteLn("(GameDB) Changing Instant VU1 speedhack [mode=%d]", vu1InstantHack);
+		dest.Speedhacks.vu1Instant = vu1InstantHack;
+		gf++;
+	}
+
 	for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; ++id)
 	{
 		wxString key(EnumToString(id));

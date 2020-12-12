@@ -63,11 +63,20 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
 	}
 
 	// Save P/Q Regs
-	if (qInst) { xPSHUF.D(xmmPQ, xmmPQ, 0xe5); }
+	if (qInst) { xPSHUF.D(xmmPQ, xmmPQ, 0xe1); }
 	xMOVSS(ptr32[&mVU.regs().VI[REG_Q].UL], xmmPQ);
+	xPSHUF.D(xmmPQ, xmmPQ, 0xe1);
+	xMOVSS(ptr32[&mVU.regs().pending_q], xmmPQ);
+	xPSHUF.D(xmmPQ, xmmPQ, 0xe1);
+
 	if (isVU1) {
-		xPSHUF.D(xmmPQ, xmmPQ, pInst ? 3 : 2);
+		xPSHUF.D(xmmPQ, xmmPQ, pInst ? 0x1b : 0x4e);
 		xMOVSS(ptr32[&mVU.regs().VI[REG_P].UL], xmmPQ);
+		xPSHUF.D(xmmPQ, xmmPQ, pInst ? 0x1b : 0x4e);
+
+		xPSHUF.D(xmmPQ, xmmPQ, 0x1b);
+		xMOVSS(ptr32[&mVU.regs().pending_p], xmmPQ);
+		xPSHUF.D(xmmPQ, xmmPQ, 0x1b);
 	}
 
 	// Save MAC, Status and CLIP Flag Instances
@@ -102,10 +111,9 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
 		xMOVAPS(ptr128[&mVU.regs().micro_statusflags], xmmT1);
 	}
 
-	if (isEbit || isVU1) { // Clear 'is busy' Flags
+	if (isEbit) { // Clear 'is busy' Flags
 		if (!mVU.index || !THREAD_VU1) {
 			xAND(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? ~0x100 : ~0x001)); // VBS0/VBS1 flag
-			xAND(ptr32[&mVU.getVifRegs().stat], ~VIF1_STAT_VEW); // Clear VU 'is busy' signal for vif
 		}
 	}
 
@@ -161,11 +169,11 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 	xPSHUF.D(xmmPQ, xmmPQ, 0xe1);
 
 	if (isVU1) {
-		xPSHUF.D(xmmPQ, xmmPQ, pInst ? 0x1b : 0x1e);
+		xPSHUF.D(xmmPQ, xmmPQ, pInst ? 0x1b : 0x4e);
 		xMOVSS(ptr32[&mVU.regs().VI[REG_P].UL], xmmPQ);
-		xPSHUF.D(xmmPQ, xmmPQ, pInst ? 0x1b : 0x4b);
+		xPSHUF.D(xmmPQ, xmmPQ, pInst ? 0x1b : 0x4e);
 
-		xPSHUF.D(xmmPQ, xmmPQ, 0xe1);
+		xPSHUF.D(xmmPQ, xmmPQ, 0x1b);
 		xMOVSS(ptr32[&mVU.regs().pending_p], xmmPQ);
 		xPSHUF.D(xmmPQ, xmmPQ, 0x1b);
 	}
@@ -204,10 +212,9 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 	}
 
 
-	if ((isEbit && isEbit != 3) || isVU1) { // Clear 'is busy' Flags
+	if ((isEbit && isEbit != 3)) { // Clear 'is busy' Flags
 		if (!mVU.index || !THREAD_VU1) {
 			xAND(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? ~0x100 : ~0x001)); // VBS0/VBS1 flag
-			//xAND(ptr32[&mVU.getVifRegs().stat], ~VIF1_STAT_VEW); // Clear VU 'is busy' signal for vif
 		}
 	}
 

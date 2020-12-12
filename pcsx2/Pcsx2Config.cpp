@@ -43,6 +43,7 @@ Pcsx2Config::SpeedhackOptions::SpeedhackOptions()
 	WaitLoop = true;
 	IntcStat = true;
 	vuFlagHack = true;
+	vu1Instant = true;
 }
 
 Pcsx2Config::SpeedhackOptions& Pcsx2Config::SpeedhackOptions::DisableAll()
@@ -65,6 +66,7 @@ void Pcsx2Config::SpeedhackOptions::LoadSave( IniInterface& ini )
 	IniBitBool( WaitLoop );
 	IniBitBool( vuFlagHack );
 	IniBitBool( vuThread );
+	IniBitBool( vu1Instant );
 }
 
 void Pcsx2Config::ProfilerOptions::LoadSave( IniInterface& ini )

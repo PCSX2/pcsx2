@@ -176,11 +176,17 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	m_check_vuThread = new pxCheckBox( vuHacksPanel, _("MTVU (Multi-Threaded microVU1)"),
 		_("Good Speedup and High Compatibility; may cause hanging... [Recommended if 3+ cores]") );
 
+	m_check_vu1Instant = new pxCheckBox(vuHacksPanel, _("Instant VU1 (Without MTVU Only)"),
+		_("Good Speedup and High Compatibility; may cause some graphical errors"));
+
 	m_check_vuFlagHack->SetToolTip( pxEt( L"Updates Status Flags only on blocks which will read them, instead of all the time. This is safe most of the time."
 	) );
 
 	m_check_vuThread->SetToolTip( pxEt( L"Runs VU1 on its own thread (microVU1-only). Generally a speedup on CPUs with 3 or more cores. This is safe for most games, but a few games are incompatible and may hang. In the case of GS limited games, it may be a slowdown (especially on dual core CPUs)."
 	) );
+
+	m_check_vu1Instant->SetToolTip(pxEt(L"Runs VU1 Instantly (When MTVU is disabled). Provides a modest speed improvement. This is safe for most games, but a few games may exhibit graphical errors."
+	));
 
 	// ------------------------------------------------------------------------
 	// All other hacks Section:
@@ -225,6 +231,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 
 	*vuHacksPanel += m_check_vuFlagHack | StdExpand();
 	*vuHacksPanel += m_check_vuThread | StdExpand();
+	*vuHacksPanel += m_check_vu1Instant | StdExpand();
 	//*vuHacksPanel	+= 57; // Aligns left and right boxes in default language and font size
 
 	*miscHacksPanel	+= m_check_intc | StdExpand();
@@ -281,6 +288,7 @@ void Panels::SpeedHacksPanel::EnableStuff( AppConfig* configToUse )
 	m_check_intc->Enable(HacksEnabledAndNoPreset);
 	m_check_waitloop->Enable(HacksEnabledAndNoPreset);
 	m_check_fastCDVD->Enable(HacksEnabledAndNoPreset);
+	m_check_vu1Instant->Enable(hacksEnabled);
 
 	// Grayout MTVU on safest preset
 	m_check_vuThread->Enable(hacksEnabled && (!hasPreset || configToUse->PresetIndex != 0));
@@ -315,7 +323,7 @@ void Panels::SpeedHacksPanel::ApplyConfigToGui( AppConfig& configToApply, int fl
 	m_check_waitloop->SetValue(opts.WaitLoop);
 	m_check_fastCDVD->SetValue(opts.fastCDVD);
 	m_check_vuThread->SetValue(opts.vuThread);
-		
+	m_check_vu1Instant->SetValue(opts.vu1Instant);
 
 	// Then, lock(gray out)/unlock the widgets as necessary.
 	EnableStuff( &configToApply );
@@ -339,6 +347,7 @@ void Panels::SpeedHacksPanel::Apply()
 	opts.IntcStat			= m_check_intc->GetValue();
 	opts.vuFlagHack			= m_check_vuFlagHack->GetValue();
 	opts.vuThread			= m_check_vuThread->GetValue();
+	opts.vu1Instant			= m_check_vu1Instant->GetValue();
 
 	// If the user has a command line override specified, we need to disable it
 	// so that their changes take effect

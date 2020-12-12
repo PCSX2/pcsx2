@@ -30,6 +30,7 @@ __fi void vif0FLUSH()
 		vif0.waitforvu = true;
 		vif0.vifstalled.enabled = VifStallEnable(vif0ch);
 		vif0.vifstalled.value = VIF_TIMING_BREAK;
+		vif0Regs.stat.VEW = true;
 	}
 	return;
 }
@@ -158,7 +159,7 @@ __fi void vif0VUFinish()
 		vif0.waitforvu = false;
 		ExecuteVU(0);
 		//Make sure VIF0 isnt already scheduled to spin.
-		if(!(cpuRegs.interrupt & 0x1) && vif0ch.chcr.STR && !vif0Regs.stat.INT)
+		if(!(cpuRegs.interrupt & 0x1) && vif0ch.chcr.STR && !vif0Regs.stat.test(VIF0_STAT_VSS | VIF0_STAT_VIS | VIF0_STAT_VFS))
 			vif0Interrupt();
 	}
 	//DevCon.Warning("VU0 state cleared");
@@ -176,7 +177,7 @@ __fi void vif0Interrupt()
 
 	if(vif0.waitforvu)
 	{
-		//CPU_INT(DMAC_VIF0, 16);
+		CPU_INT(VIF_VU0_FINISH, 16);
 		return;
 	}
 
