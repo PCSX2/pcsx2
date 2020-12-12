@@ -23,7 +23,7 @@
 #include <fstream>
 #include <iomanip>
 #include <sstream>
-#include "resource.h"
+#include "resource_pad.h"
 #include "InputManager.h"
 #include "PADConfig.h"
 #include "PAD.h"

@@ -1990,9 +1990,6 @@
     <ClInclude Include="..\..\PAD\Windows\KeyboardQueue.h">
       <Filter>System\Ps2\PAD</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\PAD\Windows\resource.h">
-      <Filter>System\Ps2\PAD</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\PAD\Windows\Tooltips.h">
       <Filter>System\Ps2\PAD</Filter>
     </ClInclude>
@@ -2024,6 +2021,9 @@
       <Filter>System\Ps2\PAD</Filter>
     </ClInclude>
     <ClInclude Include="..\..\PAD\Windows\PAD.h">
+      <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PAD\Windows\resource_pad.h">
       <Filter>System\Ps2\PAD</Filter>
     </ClInclude>
   </ItemGroup>

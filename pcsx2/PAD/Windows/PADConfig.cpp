@@ -18,7 +18,7 @@
 #include "PrecompiledHeader.h"
 #include "Global.h"
 
-#include "resource.h"
+#include "resource_pad.h"
 #include "InputManager.h"
 #include "PADConfig.h"
 
