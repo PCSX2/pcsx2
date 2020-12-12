@@ -1023,9 +1023,12 @@ DWORD WINAPI MaximizeWindowThreadProc(void* lpParameter)
 
 void PADconfigure()
 {
+	HWND tmp = hWnd;
+	PADclose();
 	ScopedCoreThreadPause paused_core;
 	Configure();
 	paused_core.AllowResume();
+	PADopen(tmp);
 }
 
 #ifdef _MSC_VER
