@@ -36,6 +36,7 @@
 #include "KeyboardQueue.h"
 #include "svnrev.h"
 #include "DualShock3.h"
+#include "AppConfig.h"
 #include <timeapi.h>
 #include "Utilities/pxStreams.h"
 
@@ -476,24 +477,6 @@ char padReadKeyUpdated[4] = {0, 0, 0, 0};
 #define LOCK_DIRECTION 2
 #define LOCK_BUTTONS 4
 #define LOCK_BOTH 1
-
-#ifdef _MSC_VER
-struct EnterScopedSection
-{
-	CRITICAL_SECTION& m_cs;
-
-	EnterScopedSection(CRITICAL_SECTION& cs)
-		: m_cs(cs)
-	{
-		EnterCriticalSection(&m_cs);
-	}
-
-	~EnterScopedSection()
-	{
-		LeaveCriticalSection(&m_cs);
-	}
-};
-#endif
 
 void Update(unsigned int port, unsigned int slot)
 {

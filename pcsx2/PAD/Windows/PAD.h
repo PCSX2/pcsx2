@@ -44,7 +44,6 @@ typedef struct
 	unsigned char reserved[91];
 } PadDataS;
 
-
 void PADupdate(int pad);
 void PADshutdown();
 s32 PADinit();
