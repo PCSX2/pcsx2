@@ -1028,7 +1028,8 @@ void PADconfigure()
 	ScopedCoreThreadPause paused_core;
 	Configure();
 	paused_core.AllowResume();
-	PADopen(tmp);
+	if(tmp != nullptr)
+		PADopen(tmp);
 }
 
 #ifdef _MSC_VER
