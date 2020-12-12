@@ -264,6 +264,7 @@ keyEvent* PADkeyEvent()
 		}
 	}
 #endif
+#ifdef __unix__
 	if (g_ev_fifo.size() == 0)
 	{
 		// PAD_LOG("No events in queue, returning empty event\n");
@@ -274,12 +275,15 @@ keyEvent* PADkeyEvent()
 	}
 	s_event = g_ev_fifo.dequeue();
 
-//TODO: fix me for macOS
-#ifdef __linux__
 	AnalyzeKeyEvent(s_event);
 	// PAD_LOG("Returning Event. Event Type: %d, Key: %d\n", s_event.evt, s_event.key);
-#endif
 	return &s_event;
+#else // MacOS
+    s_event = event;
+    event.evt = 0;
+    event.key = 0;
+    return &s_event;
+#endif
 }
 
 #if defined(__unix__)
