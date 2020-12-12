@@ -16,63 +16,63 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-extern const wchar_t *padTypes[numPadTypes];
+extern const wchar_t* padTypes[numPadTypes];
 
 struct PadConfig
 {
-    PadType type;
+	PadType type;
 };
 
 struct GeneralConfig
 {
 public:
-    PadConfig padConfigs[2][4];
+	PadConfig padConfigs[2][4];
 
-    int deviceSelect[2][4];
+	int deviceSelect[2][4];
 
-    DeviceAPI keyboardApi;
-    DeviceAPI mouseApi;
+	DeviceAPI keyboardApi;
+	DeviceAPI mouseApi;
 
-    // Derived value, calculated by GetInput().
-    u8 configureOnBind;
-    bool bind;
+	// Derived value, calculated by GetInput().
+	u8 configureOnBind;
+	bool bind;
 
-    bool specialInputs[2][4];
+	bool specialInputs[2][4];
 
-    union
-    {
-        struct
-        {
-            u8 forceHide;
-            u8 mouseUnfocus;
-            u8 background;
-            u8 multipleBinding;
+	union
+	{
+		struct
+		{
+			u8 forceHide;
+			u8 mouseUnfocus;
+			u8 background;
+			u8 multipleBinding;
 
-            struct
-            {
-                u8 directInput;
-                u8 xInput;
-                u8 dualShock3;
-            } gameApis;
+			struct
+			{
+				u8 directInput;
+				u8 xInput;
+				u8 dualShock3;
+			} gameApis;
 
-            u8 multitap[2];
+			u8 multitap[2];
 
-            u8 debug;
+			u8 debug;
 
-            u8 GH2;
-        };
-        u8 bools[15];
-    };
+			u8 GH2;
+		};
+		u8 bools[15];
+	};
 
-    wchar_t lastSaveConfigPath[MAX_PATH + 1];
-    wchar_t lastSaveConfigFileName[MAX_PATH + 1];
+	wchar_t lastSaveConfigPath[MAX_PATH + 1];
+	wchar_t lastSaveConfigFileName[MAX_PATH + 1];
 };
 
 extern GeneralConfig config;
 
 void UnloadConfigs();
 
-int LoadSettings(int force = 0, wchar_t *file = 0);
+int LoadSettings(int force = 0, wchar_t* file = 0);
 
 // Refreshes the set of enabled devices.
 void RefreshEnabledDevices(int updateDeviceList = 0);

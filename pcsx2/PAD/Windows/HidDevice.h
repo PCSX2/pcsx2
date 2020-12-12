@@ -20,12 +20,12 @@
 
 struct HidDeviceInfo
 {
-    HIDP_CAPS caps;
-    wchar_t *path;
-    unsigned short vid;
-    unsigned short pid;
+	HIDP_CAPS caps;
+	wchar_t* path;
+	unsigned short vid;
+	unsigned short pid;
 };
 
-int FindHids(HidDeviceInfo **foundDevs, int vid, int pid);
+int FindHids(HidDeviceInfo** foundDevs, int vid, int pid);
 
 #endif

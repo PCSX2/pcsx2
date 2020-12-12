@@ -36,65 +36,70 @@ static keyEvent queuedEvents[EVENT_QUEUE_LEN];
 void QueueKeyEvent(int key, int event)
 {
 #ifdef _MSC_VER
-    if (!csInitialized) {
-        csInitialized = 1;
-        InitializeCriticalSection(&cSection);
-    }
-    EnterCriticalSection(&cSection);
+	if (!csInitialized)
+	{
+		csInitialized = 1;
+		InitializeCriticalSection(&cSection);
+	}
+	EnterCriticalSection(&cSection);
 #else
-    std::lock_guard<std::mutex> lock(cSection);
+	std::lock_guard<std::mutex> lock(cSection);
 #endif
 
-    // Don't queue events if escape is on top of queue.  This is just for safety
-    // purposes when a game is killing the emulator for whatever reason.
-    if (nextQueuedEvent == lastQueuedEvent ||
-        queuedEvents[nextQueuedEvent].key != VK_ESCAPE ||
-        queuedEvents[nextQueuedEvent].evt != KEYPRESS) {
-        // Clear queue on escape down, bringing escape to front.  May do something
-        // with shift/ctrl/alt and F-keys, later.
-        if (event == KEYPRESS && key == VK_ESCAPE) {
-            nextQueuedEvent = lastQueuedEvent;
-        }
+	// Don't queue events if escape is on top of queue.  This is just for safety
+	// purposes when a game is killing the emulator for whatever reason.
+	if (nextQueuedEvent == lastQueuedEvent ||
+		queuedEvents[nextQueuedEvent].key != VK_ESCAPE ||
+		queuedEvents[nextQueuedEvent].evt != KEYPRESS)
+	{
+		// Clear queue on escape down, bringing escape to front.  May do something
+		// with shift/ctrl/alt and F-keys, later.
+		if (event == KEYPRESS && key == VK_ESCAPE)
+		{
+			nextQueuedEvent = lastQueuedEvent;
+		}
 
-        queuedEvents[lastQueuedEvent].key = key;
-        queuedEvents[lastQueuedEvent].evt = event;
+		queuedEvents[lastQueuedEvent].key = key;
+		queuedEvents[lastQueuedEvent].evt = event;
 
-        lastQueuedEvent = (lastQueuedEvent + 1) % EVENT_QUEUE_LEN;
-        // If queue wrapped around, remove last element.
-        if (nextQueuedEvent == lastQueuedEvent) {
-            nextQueuedEvent = (nextQueuedEvent + 1) % EVENT_QUEUE_LEN;
-        }
-    }
+		lastQueuedEvent = (lastQueuedEvent + 1) % EVENT_QUEUE_LEN;
+		// If queue wrapped around, remove last element.
+		if (nextQueuedEvent == lastQueuedEvent)
+		{
+			nextQueuedEvent = (nextQueuedEvent + 1) % EVENT_QUEUE_LEN;
+		}
+	}
 #ifdef _MSC_VER
-    LeaveCriticalSection(&cSection);
+	LeaveCriticalSection(&cSection);
 #endif
 }
 
-int GetQueuedKeyEvent(keyEvent *event)
+int GetQueuedKeyEvent(keyEvent* event)
 {
-    if (lastQueuedEvent == nextQueuedEvent)
-        return 0;
+	if (lastQueuedEvent == nextQueuedEvent)
+		return 0;
 
 #ifdef _MSC_VER
-    EnterCriticalSection(&cSection);
+	EnterCriticalSection(&cSection);
 #else
-    std::lock_guard<std::mutex> lock(cSection);
+	std::lock_guard<std::mutex> lock(cSection);
 #endif
-    *event = queuedEvents[nextQueuedEvent];
-    nextQueuedEvent = (nextQueuedEvent + 1) % EVENT_QUEUE_LEN;
+	*event = queuedEvents[nextQueuedEvent];
+	nextQueuedEvent = (nextQueuedEvent + 1) % EVENT_QUEUE_LEN;
 #ifdef _MSC_VER
-    LeaveCriticalSection(&cSection);
+	LeaveCriticalSection(&cSection);
 #endif
-    return 1;
+	return 1;
 }
 
 void ClearKeyQueue()
 {
-    lastQueuedEvent = nextQueuedEvent;
+	lastQueuedEvent = nextQueuedEvent;
 #ifdef _MSC_VER
-    if (csInitialized) {
-        DeleteCriticalSection(&cSection);
-        csInitialized = 0;
-    }
+	if (csInitialized)
+	{
+		DeleteCriticalSection(&cSection);
+		csInitialized = 0;
+	}
 #endif
 }

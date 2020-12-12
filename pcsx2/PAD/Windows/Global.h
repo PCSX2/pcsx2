@@ -45,40 +45,40 @@ typedef int64_t __int64;
 #include <cstdarg>
 
 template <typename Array>
-void wsprintfW(Array &buf, const wchar_t *format, ...)
+void wsprintfW(Array& buf, const wchar_t* format, ...)
 {
-    va_list a;
-    va_start(a, format);
+	va_list a;
+	va_start(a, format);
 
-    vswprintf(buf, sizeof(buf) / sizeof(buf[0]), format, a);
+	vswprintf(buf, sizeof(buf) / sizeof(buf[0]), format, a);
 
-    va_end(a);
+	va_end(a);
 }
 
 template <typename Array>
-void wsprintf(Array &buf, const wchar_t *format, ...)
+void wsprintf(Array& buf, const wchar_t* format, ...)
 {
-    va_list a;
-    va_start(a, format);
+	va_list a;
+	va_start(a, format);
 
-    vswprintf(buf, sizeof(buf) / sizeof(buf[0]), format, a);
+	vswprintf(buf, sizeof(buf) / sizeof(buf[0]), format, a);
 
-    va_end(a);
+	va_end(a);
 }
 
-static inline int wcsicmp(const wchar_t *w1, const wchar_t *w2)
+static inline int wcsicmp(const wchar_t* w1, const wchar_t* w2)
 {
-    // I didn't find a way to put ignore case ...
-    return wcscmp(w1, w2);
+	// I didn't find a way to put ignore case ...
+	return wcscmp(w1, w2);
 }
 
 #include <sys/time.h>
 static inline unsigned int timeGetTime()
 {
-    struct timeval now;
-    gettimeofday(&now, NULL);
-    uint64_t ms = (now.tv_usec / 1000) + ((uint64_t)now.tv_sec * 1000);
-    return (ms & 0xFFFFFFFF); // MS code is u32 ...
+	struct timeval now;
+	gettimeofday(&now, NULL);
+	uint64_t ms = (now.tv_usec / 1000) + ((uint64_t)now.tv_sec * 1000);
+	return (ms & 0xFFFFFFFF); // MS code is u32 ...
 }
 
 #include "Utilities/Dependencies.h"
@@ -87,7 +87,7 @@ static inline unsigned int timeGetTime()
 
 #include <X11/Xutil.h>
 
-extern Display *GSdsp;
+extern Display* GSdsp;
 extern Window GSwin;
 
 #endif
@@ -134,4 +134,4 @@ extern Window GSwin;
 extern HINSTANCE hInst;
 #endif
 // Needed for config screen
-void GetNameAndVersionString(wchar_t *out);
+void GetNameAndVersionString(wchar_t* out);

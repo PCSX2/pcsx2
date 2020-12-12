@@ -2185,9 +2185,4 @@
       <Filter>AppHost\Resources</Filter>
     </Manifest>
   </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\PAD\Windows\frog.ico">
-      <Filter>System\Ps2\PAD</Filter>
-    </Image>
-  </ItemGroup>
 </Project>
