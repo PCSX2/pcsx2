@@ -43,7 +43,7 @@
 #define FORCE_UPDATE_WPARAM ((WPARAM)0x74328943)
 #define FORCE_UPDATE_LPARAM ((LPARAM)0x89437437)
 
-// LilyPad version.
+// PAD version.
 #define VERSION ((0 << 8) | 12 | (1 << 24))
 
 #ifdef __linux__
@@ -634,7 +634,6 @@ void Update(unsigned int port, unsigned int slot)
 		{
 			if (!anyDeviceActiveAndBound)
 			{
-				fprintf(stderr, "LilyPad: A device(%ls) has been attached with bound controls.\n", dev->displayName);
 				anyDeviceActiveAndBound = true;
 			}
 			currentDeviceActiveAndBound = true;
@@ -643,7 +642,7 @@ void Update(unsigned int port, unsigned int slot)
 	if (!currentDeviceActiveAndBound && activeWindow)
 	{
 		if (anyDeviceActiveAndBound)
-			fprintf(stderr, "LilyPad: Warning! No controls are bound to a currently attached device!\nPlease attach a controller that has been setup for use with LilyPad or go to the Plugin settings and setup new controls.\n");
+			Console.Warning("PAD: Warning! No controls are bound to a currently attached device!\nPlease attach a controller that has been setup for use with PAD or go to the Plugin settings and setup new controls.\n");
 		anyDeviceActiveAndBound = false;
 	}
 	dm->PostRead();
@@ -815,18 +814,13 @@ inline void SetVibrate(int port, int slot, int motor, u8 val)
 // Used in about and config screens.
 void GetNameAndVersionString(wchar_t* out)
 {
-#if defined(PCSX2_DEBUG)
-	wsprintfW(out, L"LilyPad Debug %i.%i.%i (%lld)", (VERSION >> 8) & 0xFF, VERSION & 0xFF, (VERSION >> 24) & 0xFF, SVN_REV);
-#else
-	wsprintfW(out, L"LilyPad %i.%i.%i (%lld)", (VERSION >> 8) & 0xFF, VERSION & 0xFF, (VERSION >> 24) & 0xFF, SVN_REV);
-#endif
+	wsprintfW(out, L"GamePad settings", (VERSION >> 8) & 0xFF, VERSION & 0xFF, (VERSION >> 24) & 0xFF, SVN_REV);
 }
 #endif
 
 
 void PADshutdown()
 {
-	DEBUG_TEXT_OUT("LilyPad shutdown.\n\n");
 	for (int i = 0; i < 8; i++)
 		pads[i & 1][i >> 1].initialized = 0;
 	portInitialized[0] = portInitialized[1] = 0;
@@ -1084,7 +1078,6 @@ s32 PADopen(void* pDsp)
 {
 	if (openCount++)
 		return 0;
-	DEBUG_TEXT_OUT("LilyPad opened\n\n");
 
 	miceEnabled = !config.mouseUnfocus;
 #ifdef _MSC_VER
@@ -1102,12 +1095,12 @@ s32 PADopen(void* pDsp)
 		{
 			openCount = 0;
 			MessageBoxA(GetActiveWindow(),
-						"Invalid Window handle passed to LilyPad.\n"
+						"Invalid Window handle passed to PAD.\n"
 						"\n"
 						"Either your emulator or gs plugin is buggy,\n"
 						"Despite the fact the emulator is about to\n"
-						"blame LilyPad for failing to initialize.",
-						"Non-LilyPad Error", MB_OK | MB_ICONERROR);
+						"blame PAD for failing to initialize.",
+						"Non-PAD Error", MB_OK | MB_ICONERROR);
 			return -1;
 		}
 		hWndTop = hWnd;
@@ -1191,7 +1184,6 @@ void PADclose()
 {
 	if (openCount && !--openCount)
 	{
-		DEBUG_TEXT_OUT("LilyPad closed\n\n");
 #ifdef _MSC_VER
 		updateQueued = 0;
 		hWndGSProc.Release();
@@ -1695,7 +1687,7 @@ s32 PADfreeze(int mode, freezeData* data)
 {
 	if (!data)
 	{
-		printf("LilyPad savestate null pointer!\n");
+		Console.Warning("PAD savestate null pointer!\n");
 		return -1;
 	}
 

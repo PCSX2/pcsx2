@@ -25,7 +25,7 @@ WndProcEater::WndProcEater()
 	extraProcs = 0;
 	numExtraProcs = 0;
 
-	hMutex = CreateMutex(0, 0, L"LilyPad");
+	hMutex = CreateMutex(0, 0, L"PAD");
 }
 
 WndProcEater::~WndProcEater() throw()
@@ -42,8 +42,6 @@ void WndProcEater::ReleaseExtraProc(ExtraWndProc proc)
 	// Probably isn't needed, but just in case...
 	if (hMutex)
 		WaitForSingleObject(hMutex, 100);
-
-	//printf( "(Lilypad) Regurgitating! -> 0x%x\n", proc );
 
 	for (int i = 0; i < numExtraProcs; i++)
 	{
@@ -68,7 +66,7 @@ void WndProcEater::Release()
 		ReleaseExtraProc(extraProcs[0].proc);
 	if (hWndEaten && IsWindow(hWndEaten))
 	{
-		RemoveProp(hWndEaten, L"LilyHaxxor");
+		RemoveProp(hWndEaten, L"PADHaxxor");
 		SetWindowLongPtr(hWndEaten, GWLP_WNDPROC, (LONG_PTR)eatenWndProc);
 		hWndEaten = 0;
 		eatenWndProc = 0;
@@ -124,7 +122,7 @@ LRESULT WndProcEater::_OverrideWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPAR
 
 static LRESULT CALLBACK OverrideWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
-	WndProcEater* obj = (WndProcEater*)GetProp(hWnd, L"LilyHaxxor");
+	WndProcEater* obj = (WndProcEater*)GetProp(hWnd, L"PADHaxxor");
 	return (obj == NULL) ?
 			   DefWindowProc(hWnd, uMsg, wParam, lParam) :
 			   obj->_OverrideWndProc(hWnd, uMsg, wParam, lParam);
@@ -135,10 +133,8 @@ bool WndProcEater::SetWndHandle(HWND hWnd)
 	if (hWnd == hWndEaten)
 		return true;
 
-	//printf( "(Lilypad) (Re)-Setting window handle! -> this=0x%08x, hWnd=0x%08x\n", this, hWnd );
-
 	Release();
-	SetProp(hWnd, L"LilyHaxxor", (HANDLE)this);
+	SetProp(hWnd, L"PADHaxxor", (HANDLE)this);
 
 	eatenWndProc = (WNDPROC)SetWindowLongPtr(hWnd, GWLP_WNDPROC, (LONG_PTR)OverrideWndProc);
 	hWndEaten = (eatenWndProc) ? hWnd : 0;
@@ -156,8 +152,6 @@ void WndProcEater::Eat(ExtraWndProc proc, DWORD flags)
 	// Probably isn't needed, but just in case...
 	if (hMutex)
 		WaitForSingleObject(hMutex, 100);
-
-	//printf( "(Lilypad) EatingWndProc! -> 0x%x\n", proc );
 
 	extraProcs = (ExtraWndProcInfo*)realloc(extraProcs, sizeof(ExtraWndProcInfo) * (numExtraProcs + 1));
 	extraProcs[numExtraProcs].proc = proc;
