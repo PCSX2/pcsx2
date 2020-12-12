@@ -20,7 +20,7 @@
 #include "DeviceEnumerator.h"
 #include "KeyboardQueue.h"
 
-#include "resource.h"
+#include "resource_pad.h"
 #include "InputManager.h"
 #include "WndProcEater.h"
 
