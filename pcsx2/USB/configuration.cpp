@@ -25,19 +25,19 @@
 std::map<std::pair<int, std::string>, std::string> changedAPIs;
 wxString iniFileUSB(L"USB.ini");
 static TSTDSTRING usb_path;
-TSTDSTRING IniPath;  // default path, just in case
+TSTDSTRING IniPath; // default path, just in case
 TSTDSTRING LogDir;
 CIniFile ciniFile;
 bool USBpathSet = false;
 
 void USBsetSettingsDir()
 {
-	if(!USBpathSet)
+	if (!USBpathSet)
 	{
 #ifdef _WIN32
-		IniPath = GetSettingsFolder().Combine( iniFileUSB ).GetFullPath(); // default path, just in case
+		IniPath = GetSettingsFolder().Combine(iniFileUSB).GetFullPath(); // default path, just in case
 #else
-		IniPath = std::string(GetSettingsFolder().Combine( iniFileUSB ).GetFullPath()); // default path, just in case
+		IniPath = std::string(GetSettingsFolder().Combine(iniFileUSB).GetFullPath()); // default path, just in case
 #endif
 		USBpathSet = true;
 	}
@@ -54,7 +54,7 @@ void USBsetLogDir(const char* dir)
 
 std::string GetSelectedAPI(const std::pair<int, std::string>& pair)
 {
-	USBsetSettingsDir();	
+	USBsetSettingsDir();
 	auto it = changedAPIs.find(pair);
 	if (it != changedAPIs.end())
 		return it->second;
@@ -63,7 +63,7 @@ std::string GetSelectedAPI(const std::pair<int, std::string>& pair)
 
 bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, TSTDSTRING& value)
 {
-	USBsetSettingsDir();	
+	USBsetSettingsDir();
 	CIniKey* key;
 #ifdef _WIN32
 	auto sect = ciniFile.GetSection(section);
@@ -85,7 +85,7 @@ bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TC
 
 bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, int32_t& value)
 {
-	USBsetSettingsDir();	
+	USBsetSettingsDir();
 	CIniKey* key;
 #ifdef _WIN32
 	auto sect = ciniFile.GetSection(section);
@@ -116,7 +116,7 @@ bool LoadSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TC
 
 bool SaveSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, const TSTDSTRING& value)
 {
-	USBsetSettingsDir();	
+	USBsetSettingsDir();
 #ifdef _WIN32
 	ciniFile.SetKeyValue(section, param, value);
 #else
@@ -127,7 +127,7 @@ bool SaveSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TC
 
 bool SaveSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TCHAR* param, int32_t value)
 {
-	USBsetSettingsDir();	
+	USBsetSettingsDir();
 #ifdef _WIN32
 	ciniFile.SetKeyValue(section, param, TSTDTOSTRING(value));
 #else
@@ -138,7 +138,7 @@ bool SaveSettingValue(const TSTDSTRING& ini, const TSTDSTRING& section, const TC
 
 void SaveConfig()
 {
-	USBsetSettingsDir();	
+	USBsetSettingsDir();
 #ifdef _WIN32
 	SaveSetting(L"MAIN", L"log", conf.Log);
 #else
@@ -168,7 +168,7 @@ void SaveConfig()
 #ifdef _WIN32
 	bool ret = ciniFile.Save(IniPath);
 #else
-	[[maybe_unused]]bool ret = ciniFile.Save(str_to_wstr(IniPath));
+	[[maybe_unused]] bool ret = ciniFile.Save(str_to_wstr(IniPath));
 #endif
 }
 
@@ -220,7 +220,6 @@ void LoadConfig()
 				const auto& apis = dev->ListAPIs();
 				if (!apis.empty())
 					api = *apis.begin();
-
 			}
 		}
 
@@ -245,7 +244,7 @@ void ClearSection(const TCHAR* section)
 
 void RemoveSection(const char* dev_type, int port, const std::string& key)
 {
-	USBsetSettingsDir();	
+	USBsetSettingsDir();
 	TSTDSTRING tkey;
 	tkey.assign(key.begin(), key.end());
 

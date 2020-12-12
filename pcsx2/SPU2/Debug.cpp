@@ -76,10 +76,10 @@ void ConLog(const char* fmt, ...)
 void V_VolumeSlide::DebugDump(FILE* dump, const char* title, const char* nameLR)
 {
 	fprintf(dump, "%s Volume for %s Channel:\t%x\n"
-				  "  - Value:     %x\n"
-				  "  - Mode:      %x\n"
-				  "  - Increment: %x\n",
-			title, nameLR, Reg_VOL, Value, Mode, Increment);
+	              "  - Value:     %x\n"
+	              "  - Mode:      %x\n"
+	              "  - Increment: %x\n",
+	        title, nameLR, Reg_VOL, Value, Mode, Increment);
 }
 
 void V_VolumeSlideLR::DebugDump(FILE* dump, const char* title)
@@ -173,28 +173,28 @@ void DoFullDump()
 				Cores[c].Voices[v].Volume.DebugDump(dump, "");
 
 				fprintf(dump, "  - ADSR Envelope: %x & %x\n"
-							  "     - Ar: %x\n"
-							  "     - Am: %x\n"
-							  "     - Dr: %x\n"
-							  "     - Sl: %x\n"
-							  "     - Sr: %x\n"
-							  "     - Sm: %x\n"
-							  "     - Rr: %x\n"
-							  "     - Rm: %x\n"
-							  "     - Phase: %x\n"
-							  "     - Value: %x\n",
-						Cores[c].Voices[v].ADSR.regADSR1,
-						Cores[c].Voices[v].ADSR.regADSR2,
-						Cores[c].Voices[v].ADSR.AttackRate,
-						Cores[c].Voices[v].ADSR.AttackMode,
-						Cores[c].Voices[v].ADSR.DecayRate,
-						Cores[c].Voices[v].ADSR.SustainLevel,
-						Cores[c].Voices[v].ADSR.SustainRate,
-						Cores[c].Voices[v].ADSR.SustainMode,
-						Cores[c].Voices[v].ADSR.ReleaseRate,
-						Cores[c].Voices[v].ADSR.ReleaseMode,
-						Cores[c].Voices[v].ADSR.Phase,
-						Cores[c].Voices[v].ADSR.Value);
+				              "     - Ar: %x\n"
+				              "     - Am: %x\n"
+				              "     - Dr: %x\n"
+				              "     - Sl: %x\n"
+				              "     - Sr: %x\n"
+				              "     - Sm: %x\n"
+				              "     - Rr: %x\n"
+				              "     - Rm: %x\n"
+				              "     - Phase: %x\n"
+				              "     - Value: %x\n",
+				        Cores[c].Voices[v].ADSR.regADSR1,
+				        Cores[c].Voices[v].ADSR.regADSR2,
+				        Cores[c].Voices[v].ADSR.AttackRate,
+				        Cores[c].Voices[v].ADSR.AttackMode,
+				        Cores[c].Voices[v].ADSR.DecayRate,
+				        Cores[c].Voices[v].ADSR.SustainLevel,
+				        Cores[c].Voices[v].ADSR.SustainRate,
+				        Cores[c].Voices[v].ADSR.SustainMode,
+				        Cores[c].Voices[v].ADSR.ReleaseRate,
+				        Cores[c].Voices[v].ADSR.ReleaseMode,
+				        Cores[c].Voices[v].ADSR.Phase,
+				        Cores[c].Voices[v].ADSR.Value);
 
 				fprintf(dump, "  - Pitch:     %x\n", Cores[c].Voices[v].Pitch);
 				fprintf(dump, "  - Modulated: %s\n", Cores[c].Voices[v].Modulated ? "Yes" : "No");

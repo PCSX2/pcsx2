@@ -285,7 +285,7 @@ void FLASHwrite32(u32 addr, u32 value, int size)
 				{
 					const u32 blocks = address / BLOCK_SIZE;
 					u32 pages = address - (blocks * BLOCK_SIZE);
-					[[maybe_unused]]const u32 bytes = pages % PAGE_SIZE;
+					[[maybe_unused]] const u32 bytes = pages % PAGE_SIZE;
 					pages = pages / PAGE_SIZE;
 					DEV9_LOG("*FLASH ADDR = 0x%08lX (%d:%d:%d) (addrbyte=%d) FINAL\n", address, blocks, pages, bytes, addrbyte);
 				}

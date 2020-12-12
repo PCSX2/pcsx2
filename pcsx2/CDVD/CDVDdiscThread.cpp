@@ -25,7 +25,7 @@
 const u32 sectors_per_read = 16;
 
 static_assert(sectors_per_read > 1 && !(sectors_per_read & (sectors_per_read - 1)),
-			  "sectors_per_read must by a power of 2");
+              "sectors_per_read must by a power of 2");
 
 struct SectorInfo
 {

@@ -139,12 +139,12 @@ int pcap_io_init(char* adapter)
 
 	/* Open the adapter */
 	if ((adhandle = pcap_open_live(adapter, // name of the device
-								   65536,   // portion of the packet to capture.
-											// 65536 grants that the whole packet will be captured on all the MACs.
-								   1,       // promiscuous for Xlink usage
-								   1,       // read timeout
-								   errbuf   // error buffer
-								   )) == NULL)
+	                               65536,   // portion of the packet to capture.
+	                                        // 65536 grants that the whole packet will be captured on all the MACs.
+	                               1,       // promiscuous for Xlink usage
+	                               1,       // read timeout
+	                               errbuf   // error buffer
+	                               )) == NULL)
 	{
 		fprintf(stderr, "%s", errbuf);
 		fprintf(stderr, "\nUnable to open the adapter. %s is not supported by pcap\n", adapter);

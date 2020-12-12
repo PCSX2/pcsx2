@@ -21,8 +21,8 @@ using namespace std;
 
 struct tap_adapter
 {
-	TCHAR *name;
-	TCHAR *guid;
+	TCHAR* name;
+	TCHAR* guid;
 };
 vector<tap_adapter>* GetTapAdapters();
 class TAPAdapter : public NetAdapter

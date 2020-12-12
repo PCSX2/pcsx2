@@ -54,15 +54,15 @@ bool IOCtlSrc::Reopen()
 
 	// SPTI only works if the device is opened with GENERIC_WRITE access.
 	m_device = CreateFile(m_filename.c_str(), GENERIC_READ | GENERIC_WRITE,
-						  FILE_SHARE_READ, nullptr, OPEN_EXISTING,
-						  FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
+	                      FILE_SHARE_READ, nullptr, OPEN_EXISTING,
+	                      FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
 	if (m_device == INVALID_HANDLE_VALUE)
 		return false;
 
 	DWORD unused;
 	// Required to read from layer 1 of Dual layer DVDs
 	DeviceIoControl(m_device, FSCTL_ALLOW_EXTENDED_DASD_IO, nullptr, 0, nullptr,
-					0, &unused, nullptr);
+	                0, &unused, nullptr);
 
 	if (ReadDVDInfo() || ReadCDInfo())
 		SetSpindleSpeed(false);
@@ -83,7 +83,7 @@ void IOCtlSrc::SetSpindleSpeed(bool restore_defaults) const
 
 	DWORD unused;
 	if (DeviceIoControl(m_device, IOCTL_CDROM_SET_SPEED, &s, sizeof(s),
-						nullptr, 0, &unused, nullptr))
+	                    nullptr, 0, &unused, nullptr))
 	{
 		if (!restore_defaults)
 			printf(" * CDVD: setSpindleSpeed success (%uKB/s)\n", speed);
@@ -123,7 +123,7 @@ bool IOCtlSrc::ReadSectors2048(u32 sector, u32 count, u8* buffer) const
 	if (!SetFilePointerEx(m_device, offset, nullptr, FILE_BEGIN))
 	{
 		fprintf(stderr, " * CDVD SetFilePointerEx failed: sector %u: error %u\n",
-				sector, GetLastError());
+		        sector, GetLastError());
 		return false;
 	}
 
@@ -134,12 +134,12 @@ bool IOCtlSrc::ReadSectors2048(u32 sector, u32 count, u8* buffer) const
 		if (bytes_read == bytes_to_read)
 			return true;
 		fprintf(stderr, " * CDVD ReadFile: sectors %u-%u: %u bytes read, %u bytes expected\n",
-				sector, sector + count - 1, bytes_read, bytes_to_read);
+		        sector, sector + count - 1, bytes_read, bytes_to_read);
 	}
 	else
 	{
 		fprintf(stderr, " * CDVD ReadFile failed: sectors %u-%u: error %u\n",
-				sector, sector + count - 1, GetLastError());
+		        sector, sector + count - 1, GetLastError());
 	}
 
 	return false;
@@ -187,7 +187,7 @@ bool IOCtlSrc::ReadSectors2352(u32 sector, u32 count, u8* buffer) const
 
 		DWORD unused;
 		if (DeviceIoControl(m_device, IOCTL_SCSI_PASS_THROUGH_DIRECT, &sptd,
-							sizeof(sptd), &sptd, sizeof(sptd), &unused, nullptr))
+		                    sizeof(sptd), &sptd, sizeof(sptd), &unused, nullptr))
 		{
 			if (sptd.info.DataTransferLength == 2352)
 				continue;
@@ -215,7 +215,7 @@ bool IOCtlSrc::ReadDVDInfo()
 	DVD_READ_STRUCTURE dvdrs{{0}, DvdPhysicalDescriptor, 0, 0};
 
 	if (!DeviceIoControl(m_device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs),
-						 buffer.data(), buffer.size(), &unused, nullptr))
+	                     buffer.data(), buffer.size(), &unused, nullptr))
 		return false;
 
 	auto& layer = *reinterpret_cast<DVD_LAYER_DESCRIPTOR*>(
@@ -236,7 +236,7 @@ bool IOCtlSrc::ReadDVDInfo()
 		// Dual layer, Parallel Track Path
 		dvdrs.LayerNumber = 1;
 		if (!DeviceIoControl(m_device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs),
-							 buffer.data(), buffer.size(), &unused, nullptr))
+		                     buffer.data(), buffer.size(), &unused, nullptr))
 			return false;
 		u32 layer1_start_sector = _byteswap_ulong(layer.StartingDataSector);
 		u32 layer1_end_sector = _byteswap_ulong(layer.EndDataSector);
@@ -267,7 +267,7 @@ bool IOCtlSrc::ReadCDInfo()
 
 	CDROM_TOC toc;
 	if (!DeviceIoControl(m_device, IOCTL_CDROM_READ_TOC_EX, &toc_ex,
-						 sizeof(toc_ex), &toc, sizeof(toc), &unused, nullptr))
+	                     sizeof(toc_ex), &toc, sizeof(toc), &unused, nullptr))
 		return false;
 
 	m_toc.clear();
@@ -284,7 +284,7 @@ bool IOCtlSrc::ReadCDInfo()
 
 	GET_LENGTH_INFORMATION info;
 	if (!DeviceIoControl(m_device, IOCTL_DISK_GET_LENGTH_INFO, nullptr, 0, &info,
-						 sizeof(info), &unused, nullptr))
+	                     sizeof(info), &unused, nullptr))
 		return false;
 
 	m_sectors = static_cast<u32>(info.Length.QuadPart / 2048);
@@ -300,7 +300,7 @@ bool IOCtlSrc::DiscReady()
 
 	DWORD unused;
 	if (DeviceIoControl(m_device, IOCTL_STORAGE_CHECK_VERIFY, nullptr, 0,
-						nullptr, 0, &unused, nullptr))
+	                    nullptr, 0, &unused, nullptr))
 	{
 		if (!m_sectors)
 			Reopen();

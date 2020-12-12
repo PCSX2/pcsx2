@@ -600,8 +600,8 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 	{
 		// Continue processing voice, even if it's "off". Or else we miss interrupts! (Fatal Frame engine died because of this.)
 		if (NEVER_SKIP_VOICES || (*GetMemPtr(vc.NextA & 0xFFFF8) >> 8 & 3) != 3 || vc.LoopStartA != (vc.NextA & ~7)    // not in a tight loop
-			|| (Cores[0].IRQEnable && (Cores[0].IRQA & ~7) == vc.LoopStartA)                                           // or should be interrupting regularly
-			|| (Cores[1].IRQEnable && (Cores[1].IRQA & ~7) == vc.LoopStartA) || !(thiscore.Regs.ENDX & 1 << voiceidx)) // or isn't currently flagged as having passed the endpoint
+		    || (Cores[0].IRQEnable && (Cores[0].IRQA & ~7) == vc.LoopStartA)                                           // or should be interrupting regularly
+		    || (Cores[1].IRQEnable && (Cores[1].IRQA & ~7) == vc.LoopStartA) || !(thiscore.Regs.ENDX & 1 << voiceidx)) // or isn't currently flagged as having passed the endpoint
 		{
 			UpdatePitch(coreidx, voiceidx);
 
@@ -906,9 +906,9 @@ __forceinline
 			p_cachestat_counter = 0;
 			if (MsgCache())
 				ConLog(" * SPU2 > CacheStats > Hits: %d  Misses: %d  Ignores: %d\n",
-					   g_counter_cache_hits,
-					   g_counter_cache_misses,
-					   g_counter_cache_ignores);
+				       g_counter_cache_hits,
+				       g_counter_cache_misses,
+				       g_counter_cache_ignores);
 
 			g_counter_cache_hits =
 				g_counter_cache_misses =

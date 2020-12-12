@@ -137,7 +137,7 @@ void keepAliveThread()
 	std::unique_lock<std::mutex> guard(s_keepalive_lock);
 
 	while (!s_keepalive_cv.wait_for(guard, std::chrono::seconds(30),
-									[]() { return !s_keepalive_is_open; }))
+	                                []() { return !s_keepalive_is_open; }))
 	{
 
 		//printf(" * keepAliveThread: polling drive.\n");

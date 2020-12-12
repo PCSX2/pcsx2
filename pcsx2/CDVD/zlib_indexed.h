@@ -168,7 +168,7 @@ local void free_index(struct access* index)
 /* Add an entry to the access point list.  If out of memory, deallocate the
    existing list and return NULL. */
 local struct access* addpoint(struct access* index, int bits,
-							  PX_off_t in, PX_off_t out, unsigned left, unsigned char* window)
+                              PX_off_t in, PX_off_t out, unsigned left, unsigned char* window)
 {
 	struct point* next;
 
@@ -300,10 +300,10 @@ local int build_index(FILE* in, PX_off_t span, struct access** built)
                access point after the last block by checking bit 6 of data_type
              */
 			if ((strm.data_type & 128) && !(strm.data_type & 64) &&
-				(totout == 0 || totout - last > span))
+			    (totout == 0 || totout - last > span))
 			{
 				index = addpoint(index, strm.data_type & 7, totin,
-								 totout, strm.avail_out, window);
+				                 totout, strm.avail_out, window);
 				if (index == NULL)
 				{
 					ret = Z_MEM_ERROR;
@@ -363,7 +363,7 @@ static inline PX_off_t getInOffset(zstate* state)
    was generated.  extract() may also return Z_ERRNO if there is an error on
    reading or seeking the input file. */
 local int extract(FILE* in, struct access* index, PX_off_t offset,
-				  unsigned char* buf, int len, zstate* state)
+                  unsigned char* buf, int len, zstate* state)
 {
 	int ret, skip;
 	struct point* here;

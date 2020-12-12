@@ -205,7 +205,7 @@ public:
 		return *registerDevice;
 	}
 
-	~RegisterDevice() { }
+	~RegisterDevice() {}
 
 	static void Register();
 	void Unregister();
@@ -222,11 +222,11 @@ public:
 			if(k.first.name == name)
 				return k.second;
 		return nullptr;*/
-		auto proxy = std::find_if(registerDeviceMap.begin(),
-								  registerDeviceMap.end(),
-								  [&name](const RegisterDeviceMap::value_type& val) -> bool {
-									  return val.second->TypeName() == name;
-								  });
+		auto proxy = std::find_if(
+			registerDeviceMap.begin(), registerDeviceMap.end(),
+			[&name](const RegisterDeviceMap::value_type& val) -> bool {
+				return val.second->TypeName() == name;
+			});
 		if (proxy != registerDeviceMap.end())
 			return proxy->second.get();
 		return nullptr;
@@ -243,11 +243,11 @@ public:
 
 	DeviceType Index(const std::string& name)
 	{
-		auto proxy = std::find_if(registerDeviceMap.begin(),
-								  registerDeviceMap.end(),
-								  [&name](RegisterDeviceMap::value_type& val) -> bool {
-									  return val.second->TypeName() == name;
-								  });
+		auto proxy = std::find_if(
+			registerDeviceMap.begin(), registerDeviceMap.end(),
+			[&name](RegisterDeviceMap::value_type& val) -> bool {
+				return val.second->TypeName() == name;
+			});
 		if (proxy != registerDeviceMap.end())
 			return proxy->first;
 		return DEVTYPE_NONE;

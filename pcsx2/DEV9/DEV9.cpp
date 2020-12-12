@@ -54,7 +54,7 @@ static __inline__ unsigned long long GetTickCount(void)
 {
 	unsigned long long int x;
 	__asm__ volatile("rdtsc"
-					 : "=A"(x));
+	                 : "=A"(x));
 	return x;
 }
 
@@ -64,7 +64,7 @@ static __inline__ unsigned long long GetTickCount(void)
 {
 	unsigned hi, lo;
 	__asm__ __volatile__("rdtsc"
-						 : "=a"(lo), "=d"(hi));
+	                     : "=a"(lo), "=d"(hi));
 	return ((unsigned long long)lo) | (((unsigned long long)hi) << 32);
 }
 

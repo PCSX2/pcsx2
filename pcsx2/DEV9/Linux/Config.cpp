@@ -43,22 +43,22 @@ void SaveConf()
 	xmlDocSetRootElement(doc, root_node);
 
 	xmlNewChild(root_node, NULL, BAD_CAST "Eth",
-				BAD_CAST config.Eth);
+	            BAD_CAST config.Eth);
 
 	xmlNewChild(root_node, NULL, BAD_CAST "Hdd",
-				BAD_CAST config.Hdd);
+	            BAD_CAST config.Hdd);
 
 	sprintf(buff, "%d", config.HddSize);
 	xmlNewChild(root_node, NULL, BAD_CAST "HddSize",
-				BAD_CAST buff);
+	            BAD_CAST buff);
 
 	sprintf(buff, "%d", config.ethEnable);
 	xmlNewChild(root_node, NULL, BAD_CAST "ethEnable",
-				BAD_CAST buff);
+	            BAD_CAST buff);
 
 	sprintf(buff, "%d", config.hddEnable);
 	xmlNewChild(root_node, NULL, BAD_CAST "hddEnable",
-				BAD_CAST buff);
+	            BAD_CAST buff);
 	/*
      * Dumping document to stdio or file
      */

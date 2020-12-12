@@ -34,7 +34,7 @@ public:
 	int Read(void* pDest, PX_off_t offset, int length);
 
 	static int CopyAvailable(void* pSrc, PX_off_t srcOffset, int srcSize,
-							 void* pDst, PX_off_t dstOffset, int maxCopySize)
+	                         void* pDst, PX_off_t dstOffset, int maxCopySize)
 	{
 		int available = CLAMP(maxCopySize, 0, (int)(srcOffset + srcSize - dstOffset));
 		memcpy(pDst, (char*)pSrc + (dstOffset - srcOffset), available);

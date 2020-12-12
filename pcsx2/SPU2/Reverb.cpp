@@ -91,14 +91,14 @@ StereoOut32 V_Core::DoReverb(const StereoOut32& Input)
 		if (Cores[i].IRQEnable && ((Cores[i].IRQA >= EffectsStartA) && (Cores[i].IRQA <= EffectsEndA)))
 		{
 			if ((Cores[i].IRQA == same_src) || (Cores[i].IRQA == diff_src) ||
-				(Cores[i].IRQA == same_dst) || (Cores[i].IRQA == diff_dst) ||
-				(Cores[i].IRQA == same_prv) || (Cores[i].IRQA == diff_prv) ||
+			    (Cores[i].IRQA == same_dst) || (Cores[i].IRQA == diff_dst) ||
+			    (Cores[i].IRQA == same_prv) || (Cores[i].IRQA == diff_prv) ||
 
-				(Cores[i].IRQA == comb1_src) || (Cores[i].IRQA == comb2_src) ||
-				(Cores[i].IRQA == comb3_src) || (Cores[i].IRQA == comb4_src) ||
+			    (Cores[i].IRQA == comb1_src) || (Cores[i].IRQA == comb2_src) ||
+			    (Cores[i].IRQA == comb3_src) || (Cores[i].IRQA == comb4_src) ||
 
-				(Cores[i].IRQA == apf1_dst) || (Cores[i].IRQA == apf1_src) ||
-				(Cores[i].IRQA == apf2_dst) || (Cores[i].IRQA == apf2_src))
+			    (Cores[i].IRQA == apf1_dst) || (Cores[i].IRQA == apf1_src) ||
+			    (Cores[i].IRQA == apf2_dst) || (Cores[i].IRQA == apf2_src))
 			{
 				//printf("Core %d IRQ Called (Reverb). IRQA = %x\n",i,addr);
 				SetIrqCall(i);

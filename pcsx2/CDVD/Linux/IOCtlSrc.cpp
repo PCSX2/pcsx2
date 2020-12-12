@@ -98,10 +98,10 @@ bool IOCtlSrc::ReadSectors2048(u32 sector, u32 count, u8* buffer) const
 
 	if (bytes_read == -1)
 		fprintf(stderr, " * CDVD read sectors %u-%u failed: %s\n",
-				sector, sector + count - 1, strerror(errno));
+		        sector, sector + count - 1, strerror(errno));
 	else
 		fprintf(stderr, " * CDVD read sectors %u-%u: %zd bytes read, %zd bytes expected\n",
-				sector, sector + count - 1, bytes_read, bytes_to_read);
+		        sector, sector + count - 1, bytes_read, bytes_to_read);
 	return false;
 }
 
@@ -121,7 +121,7 @@ bool IOCtlSrc::ReadSectors2352(u32 sector, u32 count, u8* buffer) const
 		if (ioctl(m_device, CDROMREADRAW, &data) == -1)
 		{
 			fprintf(stderr, " * CDVD CDROMREADRAW sector %u failed: %s\n",
-					lba, strerror(errno));
+			        lba, strerror(errno));
 			return false;
 		}
 		memcpy(buffer, data.buffer, CD_FRAMESIZE_RAW);
@@ -201,7 +201,7 @@ bool IOCtlSrc::ReadCDInfo()
 		entry.cdte_track = n;
 		if (ioctl(m_device, CDROMREADTOCENTRY, &entry) != -1)
 			m_toc.push_back({static_cast<u32>(entry.cdte_addr.lba), entry.cdte_track,
-							 entry.cdte_adr, entry.cdte_ctrl});
+			                 entry.cdte_adr, entry.cdte_ctrl});
 	}
 
 	// TODO: Do I need a fallback if this doesn't work?

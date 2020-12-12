@@ -39,10 +39,10 @@
 #include "Debug.h"
 
 int PaCallback(const void* inputBuffer, void* outputBuffer,
-			   unsigned long framesPerBuffer,
-			   const PaStreamCallbackTimeInfo* timeInfo,
-			   PaStreamCallbackFlags statusFlags,
-			   void* userData);
+               unsigned long framesPerBuffer,
+               const PaStreamCallbackTimeInfo* timeInfo,
+               PaStreamCallbackFlags statusFlags,
+               void* userData);
 
 class Portaudio : public SndOutModule
 {
@@ -78,10 +78,10 @@ private:
 	{
 	public:
 		virtual int ReadSamples(const void* inputBuffer, void* outputBuffer,
-								unsigned long framesPerBuffer,
-								const PaStreamCallbackTimeInfo* timeInfo,
-								PaStreamCallbackFlags statusFlags,
-								void* userData) = 0;
+		                        unsigned long framesPerBuffer,
+		                        const PaStreamCallbackTimeInfo* timeInfo,
+		                        PaStreamCallbackFlags statusFlags,
+		                        void* userData) = 0;
 	};
 
 	template <class T>
@@ -96,10 +96,10 @@ private:
 		}
 
 		virtual int ReadSamples(const void* inputBuffer, void* outputBuffer,
-								unsigned long framesPerBuffer,
-								const PaStreamCallbackTimeInfo* timeInfo,
-								PaStreamCallbackFlags statusFlags,
-								void* userData)
+		                        unsigned long framesPerBuffer,
+		                        const PaStreamCallbackTimeInfo* timeInfo,
+		                        PaStreamCallbackFlags statusFlags,
+		                        void* userData)
 		{
 			T* p1 = (T*)outputBuffer;
 
@@ -291,20 +291,20 @@ public:
 				infoPtr};
 
 			err = Pa_OpenStream(&stream,
-								nullptr, &outParams, SampleRate,
-								SndOutPacketSize,
-								paNoFlag,
-								PaCallback,
+			                    nullptr, &outParams, SampleRate,
+			                    SndOutPacketSize,
+			                    paNoFlag,
+			                    PaCallback,
 
-								nullptr);
+			                    nullptr);
 		}
 		else
 		{
 			err = Pa_OpenDefaultStream(&stream,
-									   0, actualUsedChannels, paInt32, 48000,
-									   SndOutPacketSize,
-									   PaCallback,
-									   nullptr);
+			                           0, actualUsedChannels, paInt32, 48000,
+			                           SndOutPacketSize,
+			                           PaCallback,
+			                           nullptr);
 		}
 		if (err != paNoError)
 		{
@@ -722,10 +722,10 @@ public:
 } static PA;
 
 int PaCallback(const void* inputBuffer, void* outputBuffer,
-			   unsigned long framesPerBuffer,
-			   const PaStreamCallbackTimeInfo* timeInfo,
-			   PaStreamCallbackFlags statusFlags,
-			   void* userData)
+               unsigned long framesPerBuffer,
+               const PaStreamCallbackTimeInfo* timeInfo,
+               PaStreamCallbackFlags statusFlags,
+               void* userData)
 {
 	return PA.ActualPaCallback->ReadSamples(inputBuffer, outputBuffer, framesPerBuffer, timeInfo, statusFlags, userData);
 }

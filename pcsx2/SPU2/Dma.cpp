@@ -139,7 +139,7 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 
 	if (MsgAutoDMA())
 		ConLog("* SPU2: DMA%c AutoDMA Transfer of %d bytes to %x (%02x %x %04x).\n",
-			   GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, (~Regs.ATTR) & 0x7fff);
+		       GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, (~Regs.ATTR) & 0x7fff);
 
 	InputDataProgress = 0;
 	if ((AutoDMACtrl & (Index + 1)) == 0)
@@ -449,8 +449,8 @@ void V_Core::DoDMAwrite(u16* pMem, u32 size)
 	{
 		if (MsgDMA())
 			ConLog("* SPU2: DMA%c Transfer of %d bytes to %x (%02x %x %04x). IRQE = %d IRQA = %x \n",
-				   GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, (~Regs.ATTR) & 0x7fff,
-				   Cores[0].IRQEnable, Cores[0].IRQA);
+			       GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, (~Regs.ATTR) & 0x7fff,
+			       Cores[0].IRQEnable, Cores[0].IRQA);
 
 		PlainDMAWrite(pMem, size);
 	}

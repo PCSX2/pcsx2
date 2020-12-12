@@ -491,7 +491,7 @@ __forceinline void UpdateSpdifMode()
 	if (OPM != PlayMode)
 	{
 		ConLog("* SPU2: Play Mode Set to %s (%d).\n",
-			   (PlayMode == 0) ? "Normal" : ((PlayMode == 1) ? "PCM Clone" : ((PlayMode == 2) ? "PCM Bypass" : "BitStream Bypass")), PlayMode);
+		       (PlayMode == 0) ? "Normal" : ((PlayMode == 1) ? "PCM Clone" : ((PlayMode == 2) ? "PCM Bypass" : "BitStream Bypass")), PlayMode);
 	}
 }
 
@@ -1859,13 +1859,13 @@ void StartVoices(int core, u32 value)
 
 			if (MsgKeyOnOff())
 				ConLog("* SPU2: KeyOn: C%dV%02d: SSA: %8x; M: %s%s%s%s; H: %04x; P: %04x V: %04x/%04x; ADSR: %04x%04x\n",
-					   core, vc, thisvc.StartA,
-					   (Cores[core].VoiceGates[vc].DryL) ? "+" : "-", (Cores[core].VoiceGates[vc].DryR) ? "+" : "-",
-					   (Cores[core].VoiceGates[vc].WetL) ? "+" : "-", (Cores[core].VoiceGates[vc].WetR) ? "+" : "-",
-					   *(u16*)GetMemPtr(thisvc.StartA),
-					   thisvc.Pitch,
-					   thisvc.Volume.Left.Value >> 16, thisvc.Volume.Right.Value >> 16,
-					   thisvc.ADSR.regADSR1, thisvc.ADSR.regADSR2);
+				       core, vc, thisvc.StartA,
+				       (Cores[core].VoiceGates[vc].DryL) ? "+" : "-", (Cores[core].VoiceGates[vc].DryR) ? "+" : "-",
+				       (Cores[core].VoiceGates[vc].WetL) ? "+" : "-", (Cores[core].VoiceGates[vc].WetR) ? "+" : "-",
+				       *(u16*)GetMemPtr(thisvc.StartA),
+				       thisvc.Pitch,
+				       thisvc.Volume.Left.Value >> 16, thisvc.Volume.Right.Value >> 16,
+				       thisvc.ADSR.regADSR1, thisvc.ADSR.regADSR2);
 		}
 	}
 }

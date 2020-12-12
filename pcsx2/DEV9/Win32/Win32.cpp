@@ -143,9 +143,9 @@ void DEV9configure()
 {
 	ScopedCoreThreadPause paused_core;
 	DialogBox(hInst,
-			  MAKEINTRESOURCE(IDD_CONFIG),
-			  GetActiveWindow(),
-			  (DLGPROC)ConfigureDlgProc);
+	          MAKEINTRESOURCE(IDD_CONFIG),
+	          GetActiveWindow(),
+	          (DLGPROC)ConfigureDlgProc);
 	//SysMessage("Nothing to Configure");
 	paused_core.AllowResume();
 }

@@ -88,8 +88,8 @@ s32 __fastcall SPU2Savestate::ThawIt(DataBlock& spud)
 			fprintf(stderr, "\tThe savestate you are trying to load is incorrect or corrupted.\n");
 
 		fprintf(stderr,
-				"\tAudio may not recover correctly.  Save your game to memorycard, reset,\n\n"
-				"\tand then continue from there.\n\n");
+		        "\tAudio may not recover correctly.  Save your game to memorycard, reset,\n\n"
+		        "\tand then continue from there.\n\n");
 
 		// Do *not* reset the cores.
 		// We'll need some "hints" as to how the cores should be initialized, and the

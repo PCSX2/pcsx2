@@ -41,10 +41,10 @@ void SysMessage(char* fmt, ...)
 	va_end(list);
 
 	GtkWidget* dialog = gtk_message_dialog_new(NULL,
-											   GTK_DIALOG_MODAL,
-											   GTK_MESSAGE_ERROR,
-											   GTK_BUTTONS_CLOSE,
-											   "%s", tmp);
+	                                           GTK_DIALOG_MODAL,
+	                                           GTK_MESSAGE_ERROR,
+	                                           GTK_BUTTONS_CLOSE,
+	                                           "%s", tmp);
 	gtk_dialog_run(GTK_DIALOG(dialog));
 	gtk_widget_hide(dialog);
 }
@@ -74,9 +74,9 @@ void OnInitDialog()
 	}
 	gtk_entry_set_text((GtkEntry*)gtk_builder_get_object(builder, "IDC_HDDFILE"), config.Hdd);
 	gtk_toggle_button_set_active((GtkToggleButton*)gtk_builder_get_object(builder, "IDC_ETHENABLED"),
-								 config.ethEnable);
+	                             config.ethEnable);
 	gtk_toggle_button_set_active((GtkToggleButton*)gtk_builder_get_object(builder, "IDC_HDDENABLED"),
-								 config.hddEnable);
+	                             config.hddEnable);
 
 	initialized = 1;
 }

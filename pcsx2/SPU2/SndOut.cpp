@@ -498,7 +498,7 @@ void SndBuffer::Write(const StereoOut32& Sample)
 		if (m_dsp_progress > 0)
 		{
 			memcpy(sndTempBuffer16, &sndTempBuffer16[ei],
-				   sizeof(sndTempBuffer16[0]) * m_dsp_progress);
+			       sizeof(sndTempBuffer16[0]) * m_dsp_progress);
 		}
 	}
 #endif

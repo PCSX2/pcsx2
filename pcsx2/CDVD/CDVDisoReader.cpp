@@ -256,7 +256,7 @@ s32 CALLBACK ISOgetTOC(void* toc)
 		}
 	}
 	else if ((type == CDVD_TYPE_CDDA) || (type == CDVD_TYPE_PS2CDDA) ||
-			 (type == CDVD_TYPE_PS2CD) || (type == CDVD_TYPE_PSCDDA) || (type == CDVD_TYPE_PSCD))
+	         (type == CDVD_TYPE_PS2CD) || (type == CDVD_TYPE_PSCDDA) || (type == CDVD_TYPE_PSCD))
 	{
 		// cd toc
 		// (could be replaced by 1 command that reads the full toc)

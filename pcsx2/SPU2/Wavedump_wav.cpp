@@ -55,10 +55,10 @@ namespace WaveDump
 				safe_delete(m_CoreWav[cidx][srcidx]);
 #ifdef __POSIX__
 				sprintf(wavfilename, "logs/spu2x-Core%ud-%s.wav",
-						cidx, m_tbl_CoreOutputTypeNames[srcidx]);
+				        cidx, m_tbl_CoreOutputTypeNames[srcidx]);
 #else
 				sprintf(wavfilename, "logs\\spu2x-Core%ud-%s.wav",
-						cidx, m_tbl_CoreOutputTypeNames[srcidx]);
+				        cidx, m_tbl_CoreOutputTypeNames[srcidx]);
 #endif
 
 				try

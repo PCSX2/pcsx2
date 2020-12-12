@@ -368,8 +368,8 @@ bool DoCDVDopen()
 
 	auto CurrentSourceType = enum_cast(m_CurrentSourceType);
 	int ret = CDVD->open(!m_SourceFilename[CurrentSourceType].IsEmpty() ?
-							 static_cast<const char*>(m_SourceFilename[CurrentSourceType].ToUTF8()) :
-							 (char*)NULL);
+                             static_cast<const char*>(m_SourceFilename[CurrentSourceType].ToUTF8()) :
+                             (char*)NULL);
 
 	if (ret == -1)
 		return false; // error! (handled by caller)
@@ -401,8 +401,8 @@ bool DoCDVDopen()
 	wxDateTime curtime(wxDateTime::GetTimeNow());
 
 	temp += pxsFmt(L" (%04d-%02d-%02d %02d-%02d-%02d)",
-				   curtime.GetYear(), curtime.GetMonth(), curtime.GetDay(),
-				   curtime.GetHour(), curtime.GetMinute(), curtime.GetSecond());
+	               curtime.GetYear(), curtime.GetMonth(), curtime.GetDay(),
+	               curtime.GetHour(), curtime.GetMinute(), curtime.GetSecond());
 #endif
 	temp += L".dump";
 

@@ -29,7 +29,7 @@ bool FileExists(std::string szPath)
 {
 	DWORD dwAttrib = GetFileAttributesA(szPath.c_str());
 	return (dwAttrib != INVALID_FILE_ATTRIBUTES &&
-			!(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
+	        !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY));
 }
 
 void SaveConf()
