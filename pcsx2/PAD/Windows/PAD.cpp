@@ -63,12 +63,7 @@ WndProcEater hWndButtonProc;
 
 // Keeps the various sources for Update polling (PADpoll, PADupdate, etc) from wreaking
 // havoc on each other...
-#ifdef __linux__
 static std::mutex updateLock;
-#else
-CRITICAL_SECTION updateLock;
-#endif
-
 // Used to toggle mouse listening.
 u8 miceEnabled;
 
@@ -521,11 +516,7 @@ void Update(unsigned int port, unsigned int slot)
 	}
 
 // Lock prior to timecheck code to avoid pesky race conditions.
-#ifdef __linux__
 	std::lock_guard<std::mutex> lock(updateLock);
-#else
-	EnterScopedSection padlock(updateLock);
-#endif
 
 	static unsigned int LastCheck = 0;
 	unsigned int t = timeGetTime();
