@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "PathUtils.h"
 
-#include "filesystem.hpp"
+#include "filesystem.h"
 #include <wx/utils.h>
 #include <wx/file.h>
 

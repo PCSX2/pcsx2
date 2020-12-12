@@ -28390,6 +28390,12 @@ Region = NTSC-J
 Serial = SLPM-66143
 Name   = Rebirth Moon
 Region = NTSC-J
+[patches = 1B139735]
+	author=PSI, Jelta
+	// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+	// This patch skips over the stack code, allowing the game to boot.
+	patch=1,EE,0023B0C8,word,10000003
+[/patches]
 ---------------------------------------------
 Serial = SLPM-66144
 Name   = D1 Grand Prix 2005
@@ -28988,6 +28994,12 @@ Region = NTSC-J
 Serial = SLPM-66296
 Name   = Yamiyo ni Sasayaku - Tantei Sagara Kyouichirou
 Region = NTSC-J
+[patches = 23A9A026]
+	author=PSI, Jelta
+	// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+	// This patch skips over the stack code, allowing the game to boot.
+	patch=1,EE,00156888,word,10000003
+[/patches]
 ---------------------------------------------
 Serial = SLPM-66297
 Name   = Separate Hearts [Limited Edition]
@@ -29332,6 +29344,12 @@ Region = NTSC-J
 Serial = SLPM-66400
 Name   = Samurai 7
 Region = NTSC-J
+[patches = 836F4606]
+	author=PSI, Jelta
+	// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+	// This patch skips over the stack code, allowing the game to boot.
+	patch=1,EE,00157F78,word,10000003
+[/patches]
 ---------------------------------------------
 Serial = SLPM-66401
 Name   = Wrestle Kingdom
@@ -29547,6 +29565,12 @@ Region = NTSC-J
 Serial = SLPM-66457
 Name   = Asobi ni Iku Yo! Chikyuu Pinchi no Konyaku Sengen
 Region = NTSC-J
+[patches = 87FFC318]
+	author=PSI, Jelta
+	// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+	// This patch skips over the stack code, allowing the game to boot.
+	patch=1,EE,001579D8,word,10000003
+[/patches]
 ---------------------------------------------
 Serial = SLPM-66458
 Name   = Acheter Fuuraiki
@@ -29702,6 +29726,12 @@ Region = NTSC-J
 Serial = SLPM-66495
 Name   = Joshikousei Game's High!
 Region = NTSC-J
+[patches = 9FEA4A95]
+	author=PSI, Jelta
+	// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+	// This patch skips over the stack code, allowing the game to boot.
+	patch=1,EE,00149F18,word,10000003
+[/patches]
 ---------------------------------------------
 Serial = SLPM-66496
 Name   = Tom Clancy's Splinter Cell - Chaos Theory
@@ -29967,6 +29997,12 @@ Region = NTSC-J
 Serial = SLPM-66565
 Name   = REC - DokiDoki Seiyuu Paradise
 Region = NTSC-J
+[patches = 17E04DE7]
+	author=PSI, Jelta
+	// Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+	// This patch skips over the stack code, allowing the game to boot.
+	patch=1,EE,001BAA28,word,10000003
+[/patches]
 ---------------------------------------------
 Serial = SLPM-66566
 Name   = Tenshou Gakuen Gekkou Hasumi

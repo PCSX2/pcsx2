@@ -80,7 +80,7 @@ set(UtilitiesHeaders
 	../../include/Utilities/wxAppWithHelpers.h
 	../../include/Utilities/wxBaseTools.h
 	../../include/Utilities/wxGuiTools.h
-	../../include/Utilities/filesystem.hpp
+	../../include/Utilities/filesystem.h
 	PrecompiledHeader.h
 	ThreadingInternal.h
 )
