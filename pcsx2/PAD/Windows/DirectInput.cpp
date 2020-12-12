@@ -76,7 +76,7 @@ IDirectInput8* GetDirectInput()
 {
 	if (!di8d.lpDI8)
 	{
-		if (FAILED(DirectInput8Create(hInst, 0x800, IID_IDirectInput8, (void**)&di8d.lpDI8, 0)))
+		if (FAILED(DirectInput8Create(GetModuleHandle(nullptr), 0x800, IID_IDirectInput8, (void**)&di8d.lpDI8, 0)))
 			return 0;
 	}
 	di8d.refCount++;

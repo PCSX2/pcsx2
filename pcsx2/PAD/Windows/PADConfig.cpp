@@ -350,13 +350,13 @@ void PADsetSettingsDir(const char* dir)
 	_wfopen_s(&temp, iniFileUSB, L"r");
 	if (!temp)
 	{ // File not found, possibly.
-		HRSRC res = FindResource(hInst, MAKEINTRESOURCE(IDR_INI1), RT_RCDATA);
+		HRSRC res = FindResource(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDR_INI1), RT_RCDATA);
 		if (!res)
 			return;
-		HGLOBAL data = LoadResource(hInst, res);
+		HGLOBAL data = LoadResource(GetModuleHandle(nullptr), res);
 		if (!data)
 			return;
-		size_t size = SizeofResource(hInst, res);
+		size_t size = SizeofResource(GetModuleHandle(nullptr), res);
 		u8* fdata = (u8*)LockResource(data);
 		_wfopen_s(&temp, iniFileUSB, L"w");
 		if (!temp)
@@ -1375,7 +1375,7 @@ void AddTooltip(UINT id, HWND hWnd)
 	HWND hWndTip = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL,
 								  TTS_ALWAYSTIP | TTS_NOPREFIX,
 								  CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-								  hWnd, NULL, hInst, NULL);
+								  hWnd, NULL, GetModuleHandle(nullptr), NULL);
 	if (hWndTip == NULL)
 		return;
 
@@ -2502,7 +2502,7 @@ void UpdatePadPages()
 			ZeroMemory(&psp, sizeof(psp));
 			psp.dwSize = sizeof(psp);
 			psp.dwFlags = PSP_USETITLE | PSP_PREMATURE;
-			psp.hInstance = hInst;
+			psp.hInstance = GetModuleHandle(nullptr);
 			psp.pfnDlgProc = DialogProc;
 			psp.lParam = port | (slot << 1);
 			psp.pszTitle = title;
@@ -3089,7 +3089,7 @@ void Configure()
 	ZeroMemory(&psp, sizeof(psp));
 	psp.dwSize = sizeof(psp);
 	psp.dwFlags = PSP_USETITLE | PSP_PREMATURE;
-	psp.hInstance = hInst;
+	psp.hInstance = GetModuleHandle(nullptr);
 	psp.pfnDlgProc = GeneralDialogProc;
 	psp.pszTitle = L"General";
 	psp.pszTemplate = MAKEINTRESOURCE(IDD_GENERAL);

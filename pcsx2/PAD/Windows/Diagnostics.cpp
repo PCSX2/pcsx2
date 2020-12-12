@@ -158,6 +158,6 @@ void Diagnose(int id, HWND hWnd)
 		else
 			dm->EnableDevice(i);
 	}
-	DialogBox(hInst, MAKEINTRESOURCE(IDD_DIAG), hWnd, DiagDialog);
+	DialogBox(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDD_DIAG), hWnd, DiagDialog);
 	ClearKeyQueue();
 }
