@@ -192,22 +192,22 @@ namespace PathDefs
 
 	fs::path GetSnapshots()
 	{
-		return (GetDocuments().parent_path() / "snapshots").make_preferred();
+		return (GetDocuments() / "snapshots").make_preferred();
 	}
 
 	fs::path GetBios()
 	{
-		return (GetDocuments().parent_path() / "bios").make_preferred();
+		return (GetDocuments() / "bios").make_preferred();
 	}
 
 	fs::path GetCheats()
 	{
-		return (GetDocuments().parent_path() / "cheats").make_preferred();
+		return (GetDocuments() / "cheats").make_preferred();
 	}
 
 	fs::path GetCheatsWS()
 	{
-		return (GetDocuments().parent_path() / "cheats_ws").make_preferred();
+		return (GetDocuments() / "cheats_ws").make_preferred();
 	}
 
 	fs::path GetDocs()
@@ -217,12 +217,12 @@ namespace PathDefs
 
 	fs::path GetSavestates()
 	{
-		return (GetDocuments().parent_path() / "sstates").make_preferred();
+		return (GetDocuments() / "sstates").make_preferred();
 	}
 
 	fs::path GetMemoryCards()
 	{
-		return (GetDocuments().parent_path() / "memcards").make_preferred();
+		return (GetDocuments() / "memcards").make_preferred();
 	}
 
 	fs::path GetPlugins()
@@ -248,7 +248,7 @@ namespace PathDefs
 
 	fs::path GetLogs()
 	{
-		return (GetDocuments().parent_path() / "logs").make_preferred();
+		return (GetDocuments() / "logs").make_preferred();
 	}
 
 	fs::path GetLangs()
