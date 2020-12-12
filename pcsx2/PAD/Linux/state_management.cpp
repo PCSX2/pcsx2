@@ -75,18 +75,6 @@ u8 QueryInfo::start_poll(int _port)
 void Pad::set_mode(int _mode)
 {
 	mode = _mode;
-
-#if 0
-    fprintf(stdout, "OnePad: set new pad mode=");
-    if (mode == MODE_DIGITAL)
-        fprintf(stdout, "DIGITAL\n");
-    else if (mode == MODE_ANALOG)
-        fprintf(stdout, "ANALOG\n");
-    else if (mode == MODE_DS2_NATIVE)
-        fprintf(stdout, "DS2 NATIVE\n");
-    else
-        fprintf(stdout, "??? 0x%x\n", mode);
-#endif
 }
 
 void Pad::set_vibrate(int motor, u8 val)
