@@ -232,7 +232,7 @@ __fi void vif1SetupTransfer()
 
 __fi void vif1VUFinish()
 {
-	if (VU0.VI[REG_VPU_STAT].UL & 0x400)
+	if (VU0.VI[REG_VPU_STAT].UL & 0x500)
 	{
 		CPU_INT(VIF_VU1_FINISH, 128);
 		return;

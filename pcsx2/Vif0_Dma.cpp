@@ -136,7 +136,7 @@ __fi void vif0SetupTransfer()
 
 __fi void vif0VUFinish()
 {
-	if (VU0.VI[REG_VPU_STAT].UL & 0x4)
+	if (VU0.VI[REG_VPU_STAT].UL & 0x5)
 	{
 		CPU_INT(VIF_VU0_FINISH, 128);
 		return;
