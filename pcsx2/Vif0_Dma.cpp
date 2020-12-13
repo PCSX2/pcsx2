@@ -312,6 +312,6 @@ void dmaVIF0()
 	//Using a delay as Beyond Good and Evil does the DMA twice with 2 different TADR's (no checks in the middle, all one block of code),
 	//the first bit it sends isnt required for it to work.
 	//Also being an end chain it ignores the second lot, this causes infinite loops ;p
-	// Chain Mode
-	CPU_INT(DMAC_VIF0, 4);
+	if (!vif0Regs.stat.test(VIF0_STAT_VSS | VIF0_STAT_VIS | VIF0_STAT_VFS))
+		CPU_INT(DMAC_VIF0, 4);
 }
