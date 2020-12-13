@@ -1291,30 +1291,6 @@ void GSRendererHW::Draw()
 
 	GIFRegTEX0 TEX0;
 
-	TEX0.TBP0 = context->FRAME.Block();
-	TEX0.TBW = context->FRAME.FBW;
-	TEX0.PSM = context->FRAME.PSM;
-
-	GSTextureCache::Target* rt = nullptr;
-	GSTexture* rt_tex = nullptr;
-	if (!no_rt)
-	{
-		rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true, fm);
-		rt_tex = rt->m_texture;
-	}
-
-	TEX0.TBP0 = context->ZBUF.Block();
-	TEX0.TBW = context->FRAME.FBW;
-	TEX0.PSM = context->ZBUF.PSM;
-
-	GSTextureCache::Target* ds = nullptr;
-	GSTexture* ds_tex = nullptr;
-	if (!no_ds)
-	{
-		ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, context->DepthWrite());
-		ds_tex = ds->m_texture;
-	}
-
 	m_src = nullptr;
 	m_texture_shuffle = false;
 
@@ -1487,6 +1463,31 @@ void GSRendererHW::Draw()
 			m_channel_shuffle = false;
 		}
 	}
+
+	TEX0.TBP0 = context->FRAME.Block();
+	TEX0.TBW = context->FRAME.FBW;
+	TEX0.PSM = context->FRAME.PSM;
+
+	GSTextureCache::Target* rt = nullptr;
+	GSTexture* rt_tex = nullptr;
+	if (!no_rt)
+	{
+		rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true, fm);
+		rt_tex = rt->m_texture;
+	}
+
+	TEX0.TBP0 = context->ZBUF.Block();
+	TEX0.TBW = context->FRAME.FBW;
+	TEX0.PSM = context->ZBUF.PSM;
+
+	GSTextureCache::Target* ds = nullptr;
+	GSTexture* ds_tex = nullptr;
+	if (!no_ds)
+	{
+		ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, context->DepthWrite());
+		ds_tex = ds->m_texture;
+	}
+
 	if (rt)
 	{
 		// Be sure texture shuffle detection is properly propagated
