@@ -14,7 +14,7 @@
  */
 
 #include "joystick.h"
-#include "../resources.h"
+#include "resources_pad.h"
 #include <signal.h> // sigaction
 
 //////////////////////////
