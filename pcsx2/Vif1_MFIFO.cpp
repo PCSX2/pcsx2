@@ -322,6 +322,7 @@ void vifMFIFOInterrupt()
 			VIF_LOG("VIF1 MFIFO Stalled qwc = %x done = %x inprogress = %x", vif1ch.qwc, vif1.done, vif1.inprogress & 0x10);
 			//Used to check if the MFIFO was empty, there's really no need if it's finished what it needed.
 			if((vif1ch.qwc > 0 || !vif1.done)) {
+				vif1Regs.stat.VPS = VPS_DECODING; //If there's more data you need to say it's decoding the next VIF CMD (Onimusha - Blade Warriors)
 				VIF_LOG("VIF1 MFIFO Stalled");
 				return;
 			}
