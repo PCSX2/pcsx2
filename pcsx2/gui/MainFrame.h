@@ -115,9 +115,9 @@ protected:
 	wxMenu& m_menuConfig;
 	wxMenu& m_menuWindow;
 
-	wxMenu&	m_menuCapture;
-	wxMenu&	m_submenuVideoCapture;
-	wxMenu&	m_submenuScreenshot;
+	wxMenu& m_menuCapture;
+	wxMenu& m_submenuVideoCapture;
+	wxMenu& m_submenuScreenshot;
 
 #ifndef DISABLE_RECORDING
 	wxMenu& m_menuRecording;
@@ -193,7 +193,7 @@ protected:
 	void OnActivate(wxActivateEvent& evt);
 
 	void Menu_SysSettings_Click(wxCommandEvent& event);
-	void Menu_NetworkSettings_Click(wxCommandEvent &event);
+	void Menu_NetworkSettings_Click(wxCommandEvent& event);
 	void Menu_AudioSettings_Click(wxCommandEvent& event);
 	void Menu_USBSettings_Click(wxCommandEvent& event);
 	void Menu_PADSettings_Click(wxCommandEvent& event);
@@ -260,10 +260,10 @@ protected:
 	void Menu_Recording_New_Click(wxCommandEvent& event);
 	void Menu_Recording_Play_Click(wxCommandEvent& event);
 	void Menu_Recording_Stop_Click(wxCommandEvent& event);
-	void Menu_Recording_TogglePause_Click(wxCommandEvent &event);
-	void Menu_Recording_FrameAdvance_Click(wxCommandEvent &event);
-	void Menu_Recording_ToggleRecordingMode_Click(wxCommandEvent &event);
-	void Menu_Recording_VirtualPad_Open_Click(wxCommandEvent &event);
+	void Menu_Recording_TogglePause_Click(wxCommandEvent& event);
+	void Menu_Recording_FrameAdvance_Click(wxCommandEvent& event);
+	void Menu_Recording_ToggleRecordingMode_Click(wxCommandEvent& event);
+	void Menu_Recording_VirtualPad_Open_Click(wxCommandEvent& event);
 #endif
 
 	void _DoBootCdvd();

@@ -403,10 +403,10 @@ void MainEmuFrame::CreatePcsx2Menu()
 	m_GameSettingsSubmenu.Append(MenuId_Debug_CreateBlockdump, _("Create &Blockdump"), _("Creates a block dump for debugging purposes."), wxITEM_CHECK);
 
 	m_menuSys.AppendSeparator();
-	//  Implement custom hotkeys (F3) with translatable string intact + not blank in GUI. 
+	//  Implement custom hotkeys (F3) with translatable string intact + not blank in GUI.
 	wxMenuItem* MainLoadStateLabel = m_menuSys.Append(MenuId_Sys_LoadStates, _("&Load state"), &m_LoadStatesSubmenu);
 	AppendShortcutToMenuOption(*MainLoadStateLabel, wxGetApp().GlobalAccels->findKeycodeWithCommandId("States_DefrostCurrentSlot").toTitleizedString());
-	//  Implement custom hotkeys (F1) with translatable string intact + not blank in GUI. 
+	//  Implement custom hotkeys (F1) with translatable string intact + not blank in GUI.
 	wxMenuItem* MainSaveStateLabel = m_menuSys.Append(MenuId_Sys_SaveStates, _("&Save state"), &m_SaveStatesSubmenu);
 	AppendShortcutToMenuOption(*MainSaveStateLabel, wxGetApp().GlobalAccels->findKeycodeWithCommandId("States_FreezeCurrentSlot").toTitleizedString());
 
@@ -445,7 +445,7 @@ void MainEmuFrame::CreateConfigMenu()
 	m_menuConfig.Append(MenuId_Config_McdSettings, _("&Memory Cards..."));
 	m_menuConfig.Append(MenuId_Config_BIOS, _("&Plugin/BIOS Selector..."));
 	m_menuConfig.Append(MenuId_Config_SPU2, _("&Audio Settings..."));
-	m_menuConfig.Append(MenuId_Config_DEV9,			_("&Network and HDD Settings...") );
+	m_menuConfig.Append(MenuId_Config_DEV9, _("&Network and HDD Settings..."));
 	m_menuConfig.Append(MenuId_Config_USB, _("&USB Settings..."));
 	m_menuConfig.Append(MenuId_Config_PAD, _("&GamePad Settings..."));
 
@@ -478,11 +478,11 @@ void MainEmuFrame::CreateWindowsMenu()
 void MainEmuFrame::CreateCaptureMenu()
 {
 	m_menuCapture.Append(MenuId_Capture_Video, _("Video"), &m_submenuVideoCapture);
-	//  Implement custom hotkeys (F12) with translatable string intact + not blank in GUI. 
+	//  Implement custom hotkeys (F12) with translatable string intact + not blank in GUI.
 	wxMenuItem* MainVideoCaptureLabel = m_submenuVideoCapture.Append(MenuId_Capture_Video_Record, _("Start Screenrecorder"));
 	AppendShortcutToMenuOption(*MainVideoCaptureLabel, wxGetApp().GlobalAccels->findKeycodeWithCommandId("Sys_RecordingToggle").toTitleizedString());
 	m_submenuVideoCapture.Append(MenuId_Capture_Video_Stop, _("Stop Screenrecorder"))->Enable(false);
-	//  Implement custom hotkeys (F8) + (Shift + F8) + (Ctrl + Shift + F8) with translatable string intact + not blank in GUI. 
+	//  Implement custom hotkeys (F8) + (Shift + F8) + (Ctrl + Shift + F8) with translatable string intact + not blank in GUI.
 	m_menuCapture.Append(MenuId_Capture_Screenshot, _("Screenshot"), &m_submenuScreenshot);
 	wxMenuItem* MainScreenShotLabel = m_submenuScreenshot.Append(MenuId_Capture_Screenshot_Screenshot, _("Take Screenshot"));
 	AppendShortcutToMenuOption(*MainScreenShotLabel, wxGetApp().GlobalAccels->findKeycodeWithCommandId("Sys_TakeSnapshot").toTitleizedString());
@@ -813,13 +813,13 @@ void MainEmuFrame::CommitPreset_noTrigger()
 
 void MainEmuFrame::AppendShortcutToMenuOption(wxMenuItem& item, wxString keyCodeStr)
 {
-    if (&item == nullptr)
-    {
-        return;
-    }
-    wxString text = item.GetItemLabel();
-    const size_t tabPos = text.rfind(L'\t');
-    item.SetItemLabel(text.Mid(0, tabPos) + L"\t" + keyCodeStr);
+	if (&item == nullptr)
+	{
+		return;
+	}
+	wxString text = item.GetItemLabel();
+	const size_t tabPos = text.rfind(L'\t');
+	item.SetItemLabel(text.Mid(0, tabPos) + L"\t" + keyCodeStr);
 }
 
 #ifndef DISABLE_RECORDING

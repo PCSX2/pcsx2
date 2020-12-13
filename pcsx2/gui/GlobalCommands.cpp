@@ -390,7 +390,7 @@ namespace Implementations
 	void Sys_TakeSnapshot()
 	{
 		if (GSmakeSnapshot(g_Conf->Folders.Snapshots.ToUTF8()))
-		   OSDlog(ConsoleColors::Color_Black, true, "Snapshot taken");
+			OSDlog(ConsoleColors::Color_Black, true, "Snapshot taken");
 	}
 
 	void Sys_RenderToggle()
@@ -865,7 +865,6 @@ void AcceleratorDictionary::Map(const KeyAcceleratorCode& _acode, const char* se
 	KeyAcceleratorCode acode = _acode;
 	wxString overrideStr;
 	wxAcceleratorEntry codeParser; //Provides string parsing capabilities
-	wxString ye = GetUiKeysFilename();
 	wxFileConfig cfg(L"", L"", L"", GetUiKeysFilename(), wxCONFIG_USE_GLOBAL_FILE);
 	if (cfg.Read(wxString::FromUTF8(searchfor), &overrideStr))
 	{
@@ -1013,9 +1012,9 @@ void Pcsx2App::InitDefaultGlobalAccelerators()
 	GlobalAccels->Map(AAC(WXK_F4), "Framelimiter_MasterToggle");
 	GlobalAccels->Map(AAC(WXK_F4).Shift(), "Frameskip_Toggle");
 
-// Doesn't read from the ini file at this point because `AppConfig::GetUiKeysFilename` is blank at this point!
-// Used for custom hotkeys in the GUI.
-// It will read from the PCSX2_keys.ini in the ini folder based on PCSX2_keys.ini.default which get overridden
+	// Doesn't read from the ini file at this point because `AppConfig::GetUiKeysFilename` is blank at this point!
+	// Used for custom hotkeys in the GUI.
+	// It will read from the PCSX2_keys.ini in the ini folder based on PCSX2_keys.ini.default which get overridden
 	GlobalAccels->Map(AAC(WXK_TAB), "Framelimiter_TurboToggle");
 	GlobalAccels->Map(AAC(WXK_TAB).Shift(), "Framelimiter_SlomoToggle");
 
@@ -1024,12 +1023,12 @@ void Pcsx2App::InitDefaultGlobalAccelerators()
 
 	GlobalAccels->Map(AAC(WXK_ESCAPE), "Sys_SuspendResume");
 
-	GlobalAccels->Map(AAC( WXK_F8 ),"Sys_TakeSnapshot");
-	GlobalAccels->Map(AAC( WXK_F8 ).Shift(),	"Sys_TakeSnapshot");
-	GlobalAccels->Map(AAC( WXK_F8 ).Shift().Cmd(),"Sys_TakeSnapshot");
-	GlobalAccels->Map(AAC( WXK_F9 ), "Sys_RenderswitchToggle");
+	GlobalAccels->Map(AAC(WXK_F8), "Sys_TakeSnapshot");
+	GlobalAccels->Map(AAC(WXK_F8).Shift(), "Sys_TakeSnapshot");
+	GlobalAccels->Map(AAC(WXK_F8).Shift().Cmd(), "Sys_TakeSnapshot");
+	GlobalAccels->Map(AAC(WXK_F9), "Sys_RenderswitchToggle");
 
-//	GlobalAccels->Map(AAC(WXK_F10),	"Sys_LoggingToggle");
-//	GlobalAccels->Map(AAC(WXK_F11),	"Sys_FreezeGS");
-	GlobalAccels->Map(AAC(WXK_F12),	"Sys_RecordingToggle");
+	//	GlobalAccels->Map(AAC(WXK_F10),	"Sys_LoggingToggle");
+	//	GlobalAccels->Map(AAC(WXK_F11),	"Sys_FreezeGS");
+	GlobalAccels->Map(AAC(WXK_F12), "Sys_RecordingToggle");
 }
