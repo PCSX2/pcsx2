@@ -470,15 +470,15 @@ foreach(result_file IN ITEMS
 endforeach()
 
 add_custom_command(
-    OUTPUT ${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/resources.h
+    OUTPUT ${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/resources_pad.h
     COMMAND glib-compile-resources --sourcedir "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res" --generate-header
-    --c-name PAD_res "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res/PAD-res.xml" --target=${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/resources.h
+    --c-name PAD_res "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res/PAD-res.xml" --target=${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/resources_pad.h
     DEPENDS ${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res/PAD-res.xml ${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res/game_controller_db.txt)
 
 add_custom_command(
-    OUTPUT ${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/resources.cpp
+    OUTPUT ${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/resources_pad.cpp
     COMMAND glib-compile-resources --sourcedir "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res" --generate-source
-    --c-name PAD_res "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res/PAD-res.xml" --target=${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/resources.cpp
+    --c-name PAD_res "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res/PAD-res.xml" --target=${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/resources_pad.cpp
     DEPENDS ${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res/PAD-res.xml ${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/res/game_controller_db.txt)
 
 
@@ -497,7 +497,7 @@ set(pcsx2PADSources
     PAD/Linux/wx_dialog/JoystickConfiguration.cpp
     PAD/Linux/ini.cpp
     PAD/Linux/linux.cpp
-    PAD/Linux/resources.cpp
+    ${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/resources_pad.cpp
     )
 
 # PAD/Linux headers
@@ -513,7 +513,7 @@ set(pcsx2PADHeaders
     PAD/Linux/wx_dialog/opPanel.h
     PAD/Linux/wx_dialog/GamepadConfiguration.h
     PAD/Linux/wx_dialog/JoystickConfiguration.h
-    PAD/Linux/resources.h
+    ${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/resources_pad.h
     # images
     ${PADImgHeader}/analog.h
     ${PADImgHeader}/circle.h
