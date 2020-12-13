@@ -177,7 +177,6 @@ void AppCoreThread::Resume()
 
 	GetCorePlugins().Init();
 	SPU2init();
-    PADinit();
 	_parent::Resume();
 }
 
