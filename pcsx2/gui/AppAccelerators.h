@@ -30,29 +30,35 @@ struct KeyAcceleratorCode
 	{
 		struct
 		{
-			u16		keycode;
-			u16		win:1,		// win32 only.
-					cmd:1,		// ctrl in win32, Command in Mac
-					alt:1,
-					shift:1;
+			u16 keycode;
+			u16 win : 1, // win32 only.
+				cmd : 1, // ctrl in win32, Command in Mac
+				alt : 1,
+				shift : 1;
 		};
-		u32  val32;
+		u32 val32;
 	};
 
-	KeyAcceleratorCode() : val32( 0 ) {}
-	KeyAcceleratorCode( const wxKeyEvent& evt );
-	
+	KeyAcceleratorCode()
+		: val32(0)
+	{
+	}
+	KeyAcceleratorCode(const wxKeyEvent& evt);
+
 	//grab event attributes only
-	KeyAcceleratorCode( const wxAcceleratorEntry& right)
+	KeyAcceleratorCode(const wxAcceleratorEntry& right)
 	{
 		val32 = 0;
 		keycode = right.GetKeyCode();
-		if( right.GetFlags() & wxACCEL_ALT )	Alt();
-		if( right.GetFlags() & wxACCEL_CMD )	Cmd();
-		if( right.GetFlags() & wxACCEL_SHIFT )	Shift();
+		if (right.GetFlags() & wxACCEL_ALT)
+			Alt();
+		if (right.GetFlags() & wxACCEL_CMD)
+			Cmd();
+		if (right.GetFlags() & wxACCEL_SHIFT)
+			Shift();
 	}
 
-	KeyAcceleratorCode( wxKeyCode code )
+	KeyAcceleratorCode(wxKeyCode code)
 	{
 		val32 = 0;
 		keycode = code;
@@ -133,15 +139,15 @@ struct KeyAcceleratorCode
 
 struct GlobalCommandDescriptor
 {
-	const char*		Id;					// Identifier string
-	void			(*Invoke)();		// Do it!!  Do it NOW!!!
+	const char* Id;   // Identifier string
+	void (*Invoke)(); // Do it!!  Do it NOW!!!
 
-	const wxChar*	Fullname;			// Name displayed in pulldown menus
-	const wxChar*	Tooltip;			// text displayed in toolbar tooltips and menu status bars.
+	const wxChar* Fullname; // Name displayed in pulldown menus
+	const wxChar* Tooltip;  // text displayed in toolbar tooltips and menu status bars.
 
-	bool			AlsoApplyToGui;		// Indicates that the GUI should be updated if possible.
+	bool AlsoApplyToGui; // Indicates that the GUI should be updated if possible.
 
-	wxString        keycodeString;
+	wxString keycodeString;
 };
 
 // --------------------------------------------------------------------------------------
@@ -152,28 +158,26 @@ class CommandDictionary : public std::unordered_map<std::string, const GlobalCom
 	typedef std::unordered_map<std::string, const GlobalCommandDescriptor*> _parent;
 
 protected:
-
 public:
 	using _parent::operator[];
 	virtual ~CommandDictionary() = default;
 };
 
 // --------------------------------------------------------------------------------------
-//  
+//
 // --------------------------------------------------------------------------------------
 class AcceleratorDictionary : public std::unordered_map<int, const GlobalCommandDescriptor*>
 {
 	typedef std::unordered_map<int, const GlobalCommandDescriptor*> _parent;
 
 protected:
-
 public:
 	using _parent::operator[];
 
 	virtual ~AcceleratorDictionary() = default;
-	void Map( const KeyAcceleratorCode& acode, const char *searchfor );
+	void Map(const KeyAcceleratorCode& acode, const char* searchfor);
 	// Searches the dictionary _by the value (command ID string)_ and returns
 	// the associated KeyAcceleratorCode.  Do not expect constant time lookup
 	// Returns a blank KeyAcceleratorCode if nothing is found
-	KeyAcceleratorCode findKeycodeWithCommandId(const char *commandId);
+	KeyAcceleratorCode findKeycodeWithCommandId(const char* commandId);
 };
