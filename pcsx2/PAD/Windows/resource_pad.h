@@ -2,6 +2,7 @@
 // fichier Include Microsoft Visual C++.
 // Utilis� par PAD.rc
 //
+// clang-format off
 #define IDD_GENERAL 0x366
 #define IDD_CONFIG 0x369
 #define IDD_CONFIG_GUITAR 0x36A
@@ -154,3 +155,4 @@
 #define _APS_NEXT_SYMED_VALUE 101
 #endif
 #endif
+// clang-format on
