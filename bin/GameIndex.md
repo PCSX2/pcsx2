@@ -44,28 +44,13 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
     - VIF1StallHack
     - GIFFIFOHack
     - ScarfaceIbitHack
-    - CrashTagTeamRaci
-    - VU0KickstartHack
-    - VuAddSubHack
-    - FpuCompareHack
-    - FpuMulHack
-    - FpuNegDivHack
-    - XGKickHack
-    - IPUWaitHack
-    - EETimingHack
-    - SkipMPEGHack
-    - OPHFlagHack
-    - DMABusyHack
-    - VIFFIFOHack
-    - VIF1StallHack
-    - GIFFIFOHack
-    - ScarfaceIbitHack
     - CrashTagTeamRacingIbitHack
     - VU0KickstartHack
   # The value of the speedhacks is assumed to be an integer,
-  # but at the time of writing there is only one speedhack option and its effectively a boolean (0/1)
+  # but at the time of writing speedhacks are effectively booleans (0/1)
   speedHacks:
     mvuFlagSpeedHack: 0
+    InstantVU1SpeedHack: 0
   memcardFilters:
     - "SERIAL-123"
     - "SERIAL-456"
@@ -174,6 +159,9 @@ These values are in a key-value format, where the value is assumed to be an inte
 - `mvuFlagSpeedHack`
   - Accepted Values - `0` / `1`
   - Katamari Damacy have weird speed bug when this speed hack is enabled (and it is by default)
+- `InstantVU1SpeedHack`
+  - Accepted Values - `0` / `1`
+  - Games such as Parappa the Rapper 2 need VU1 to sync, so you can force disable the speedhack here
 
 ## Memory Card Filter Override
 

@@ -41,33 +41,35 @@ wxString strgametitle;
 
 struct PatchTextTable
 {
-	int code;
-	const wxChar* text;
-	PATCHTABLEFUNC* func;
+	int				code;
+	const wxChar*	text;
+	PATCHTABLEFUNC*	func;
 };
 
 static const PatchTextTable commands_patch[] =
-	{
-		{1, L"author", PatchFunc::author},
-		{2, L"comment", PatchFunc::comment},
-		{3, L"patch", PatchFunc::patch},
-		{0, wxEmptyString, NULL} // Array Terminator
+{
+	{ 1, L"author",		PatchFunc::author},
+	{ 2, L"comment",	PatchFunc::comment },
+	{ 3, L"patch",		PatchFunc::patch },
+	{ 0, wxEmptyString, NULL } // Array Terminator
 };
 
 static const PatchTextTable dataType[] =
-	{
-		{1, L"byte", NULL},
-		{2, L"short", NULL},
-		{3, L"word", NULL},
-		{4, L"double", NULL},
-		{5, L"extended", NULL},
-		{0, wxEmptyString, NULL}};
+{
+	{ 1, L"byte", NULL },
+	{ 2, L"short", NULL },
+	{ 3, L"word", NULL },
+	{ 4, L"double", NULL },
+	{ 5, L"extended", NULL },
+	{ 0, wxEmptyString, NULL }
+};
 
 static const PatchTextTable cpuCore[] =
-	{
-		{1, L"EE", NULL},
-		{2, L"IOP", NULL},
-		{0, wxEmptyString, NULL}};
+{
+	{ 1, L"EE", NULL },
+	{ 2, L"IOP", NULL },
+	{ 0, wxEmptyString,  NULL }
+};
 
 // IniFile Functions.
 

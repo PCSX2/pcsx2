@@ -231,13 +231,13 @@ struct tlbs
 
 #define _PC_       cpuRegs.pc       // The next PC to be executed - only used in this header and R3000A.h
 
-#define _Funct_			((cpuRegs.code      ) & 0x3F)  // The funct part of the instruction register
-#define _Rd_			((cpuRegs.code >> 11) & 0x1F)  // The rd part of the instruction register
-#define _Rt_			((cpuRegs.code >> 16) & 0x1F)  // The rt part of the instruction register
-#define _Rs_			((cpuRegs.code >> 21) & 0x1F)  // The rs part of the instruction register
-#define _Sa_			((cpuRegs.code >>  6) & 0x1F)  // The sa part of the instruction register
-#define _Im_			((u16)cpuRegs.code) // The immediate part of the instruction register
-#define _InstrucTarget_ (cpuRegs.code & 0x03ffffff)    // The target part of the instruction register
+#define _Funct_          ((cpuRegs.code      ) & 0x3F)  // The funct part of the instruction register
+#define _Rd_             ((cpuRegs.code >> 11) & 0x1F)  // The rd part of the instruction register
+#define _Rt_             ((cpuRegs.code >> 16) & 0x1F)  // The rt part of the instruction register
+#define _Rs_             ((cpuRegs.code >> 21) & 0x1F)  // The rs part of the instruction register
+#define _Sa_             ((cpuRegs.code >>  6) & 0x1F)  // The sa part of the instruction register
+#define _Im_             ((u16)cpuRegs.code) // The immediate part of the instruction register
+#define _InstrucTarget_  (cpuRegs.code & 0x03ffffff)    // The target part of the instruction register
 
 #define _Imm_	((s16)cpuRegs.code) // sign-extended immediate
 #define _ImmU_	(cpuRegs.code&0xffff) // zero-extended immediate
