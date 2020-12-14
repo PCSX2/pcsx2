@@ -962,7 +962,16 @@ void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r
 {
 	u32 bp = off.bp();
 	u32 psm = off.psm();
-	//u32 bw = off->bw;
+	u32 bw = off.bw();
+
+	GL_CACHE("TC: InvalidateLocalMem off(0x%x, %u, %s) r(%d, %d => %d, %d)",
+		bp,
+		bw,
+		psm_str(psm),
+		r.x,
+		r.y,
+		r.z,
+		r.w);
 
 	if (GSConfig.HWDisableReadbacks)
 	{
