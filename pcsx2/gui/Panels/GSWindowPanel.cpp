@@ -69,8 +69,8 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel(wxWindow* parent)
 	m_check_SizeLock = new pxCheckBox(this, _("Disable window resize border"));
 	m_check_HideMouse = new pxCheckBox(this, _("Always hide mouse cursor"));
 	m_check_CloseGS = new pxCheckBox(this, _("Hide window when paused"));
-	//  Implement custom hotkeys (Alt + Enter) with translatable string intact + not blank in GUI.
-	m_check_Fullscreen = new pxCheckBox(this, _("Start in fullscreen mode by default") + wxString("  (") + wxGetApp().GlobalAccels->findKeycodeWithCommandId("FullscreenToggle").toTitleizedString() + wxString(")"));
+	// Implement custom hotkeys (Alt + Enter) with translatable string intact + not blank in GUI.
+	m_check_Fullscreen = new pxCheckBox(this, _("Start in fullscreen mode by default") + wxString(" (") + wxGetApp().GlobalAccels->findKeycodeWithCommandId("FullscreenToggle").toTitleizedString() + wxString(")"));
 	m_check_DclickFullscreen = new pxCheckBox(this, _("Double-click toggles fullscreen mode"));
 
 	m_combo_FMVAspectRatioSwitch->SetToolTip(pxEt(L"Off: Disables temporary aspect ratio switch. (It will use the above setting from Aspect Ratio instead of FMV Aspect Ratio Override.)\n\n"
@@ -106,8 +106,8 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel(wxWindow* parent)
 	//s_AspectRatio.AddGrowableCol( 0 );
 	s_AspectRatio.AddGrowableCol(1);
 
-	//  Implement custom hotkeys (F6) with translatable string intact + not blank in GUI.
-	s_AspectRatio += Label(_("Aspect Ratio:") + wxString("  ") + fmt::format("({})", wxGetApp().GlobalAccels->findKeycodeWithCommandId("GSwindow_CycleAspectRatio").toTitleizedString())) | pxMiddle;
+	// Implement custom hotkeys (F6) with translatable string intact + not blank in GUI.
+	s_AspectRatio += Label(_("Aspect Ratio:") + wxString(" ") + fmt::format("({})", wxGetApp().GlobalAccels->findKeycodeWithCommandId("GSwindow_CycleAspectRatio").toTitleizedString())) | pxMiddle;
 	s_AspectRatio += m_combo_AspectRatio | pxAlignRight;
 	s_AspectRatio += Label(_("FMV Aspect Ratio Override:")) | pxMiddle;
 	s_AspectRatio += m_combo_FMVAspectRatioSwitch | pxAlignRight;
