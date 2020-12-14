@@ -35,10 +35,35 @@ void TraceLogFilters::LoadSave( IniInterface& ini )
 	IniEntry( IOP.bitset );
 }
 
+const wxChar* const tbl_SpeedhackNames[] =
+	{
+		L"mvuFlag",
+		L"InstantVU1"};
+
+const __fi wxChar* EnumToString(SpeedhackId id)
+{
+	return tbl_SpeedhackNames[id];
+}
+
+void Pcsx2Config::SpeedhackOptions::Set(SpeedhackId id, bool enabled)
+{
+	EnumAssert(id);
+	switch (id)
+	{
+		case Speedhack_mvuFlag:
+			vuFlagHack = enabled;
+			break;
+		case Speedhack_InstantVU1:
+			vu1Instant = enabled;
+			break;
+			jNO_DEFAULT;
+	}
+}
+
 Pcsx2Config::SpeedhackOptions::SpeedhackOptions()
 {
 	DisableAll();
-	
+
 	// Set recommended speedhacks to enabled by default. They'll still be off globally on resets.
 	WaitLoop = true;
 	IntcStat = true;
@@ -48,25 +73,25 @@ Pcsx2Config::SpeedhackOptions::SpeedhackOptions()
 
 Pcsx2Config::SpeedhackOptions& Pcsx2Config::SpeedhackOptions::DisableAll()
 {
-	bitset			= 0;
-	EECycleRate		= 0;
-	EECycleSkip		= 0;
-	
+	bitset = 0;
+	EECycleRate = 0;
+	EECycleSkip = 0;
+
 	return *this;
 }
 
-void Pcsx2Config::SpeedhackOptions::LoadSave( IniInterface& ini )
+void Pcsx2Config::SpeedhackOptions::LoadSave(IniInterface& ini)
 {
-	ScopedIniGroup path( ini, L"Speedhacks" );
+	ScopedIniGroup path(ini, L"Speedhacks");
 
-	IniBitfield( EECycleRate );
-	IniBitfield( EECycleSkip );
-	IniBitBool( fastCDVD );
-	IniBitBool( IntcStat );
-	IniBitBool( WaitLoop );
-	IniBitBool( vuFlagHack );
-	IniBitBool( vuThread );
-	IniBitBool( vu1Instant );
+	IniBitfield(EECycleRate);
+	IniBitfield(EECycleSkip);
+	IniBitBool(fastCDVD);
+	IniBitBool(IntcStat);
+	IniBitBool(WaitLoop);
+	IniBitBool(vuFlagHack);
+	IniBitBool(vuThread);
+	IniBitBool(vu1Instant);
 }
 
 void Pcsx2Config::ProfilerOptions::LoadSave( IniInterface& ini )

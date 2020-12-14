@@ -104,9 +104,9 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 		for (std::string& fix : node["gameFixes"].as<std::vector<std::string>>(std::vector<std::string>()))
 		{
 			bool fixValidated = false;
-			for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; ++id)
+			for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; id++)
 			{
-				std::string validFix = wxString(EnumToString(id)).Append(L"Hack").ToStdString();
+				std::string validFix = fmt::format("{}Hack", wxString(EnumToString(id)));
 				if (validFix == fix)
 				{
 					fixValidated = true;
@@ -123,21 +123,30 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 			}
 		}
 
+		// Validate speed hacks, invalid ones will be dropped!
 		if (YAML::Node speedHacksNode = node["speedHacks"])
 		{
 			for (const auto& entry : speedHacksNode)
 			{
-				// Validate speedhacks, invalid ones will be skipped!
 				std::string speedHack = entry.first.as<std::string>();
-
-				// NOTE - currently only 1 speedhack!
-				if (speedHack != "mvuFlagSpeedHack")
+				bool speedHackValidated = false;
+				for (SpeedhackId id = SpeedhackId_FIRST; id < pxEnumEnd; id++)
+				{
+					std::string validSpeedHack = fmt::format("{}SpeedHack", wxString(EnumToString(id)));
+					if (validSpeedHack == speedHack)
+					{
+						speedHackValidated = true;
+						break;
+					}
+				}
+				if (speedHackValidated)
+				{
+					gameEntry.speedHacks[speedHack] = entry.second.as<int>();
+				}
+				else
 				{
 					Console.Error(fmt::format("[GameDB] Invalid speedhack: '{}', specified for serial: '{}'. Dropping!", speedHack, serial));
-					continue;
 				}
-
-				gameEntry.speedHacks[speedHack] = entry.second.as<int>();
 			}
 		}
 

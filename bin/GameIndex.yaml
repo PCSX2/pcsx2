@@ -1238,6 +1238,8 @@ SCES-50408:
   name: "PaRappa the Rapper 2"
   region: "PAL-M5"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 0  # Fixes noodles.
 SCES-50409:
   name: "MotoGP 2"
   region: "PAL-M5"
@@ -3108,6 +3110,8 @@ SCPS-15016:
 SCPS-15017:
   name: "PaRappa the Rapper 2"
   region: "NTSC-J"
+  speedHacks:
+    InstantVU1SpeedHack: 0  # Fixes noodles.
 SCPS-15018:
   name: "Train Simulator Real, The - Yamanote Sen"
   region: "NTSC-J"
@@ -3605,6 +3609,8 @@ SCPS-19153:
 SCPS-19201:
   name: "PaRappa the Rapper 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
+  speedHacks:
+    InstantVU1SpeedHack: 0  # Fixes noodles.
 SCPS-19202:
   name: "Extermination [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -4390,6 +4396,8 @@ SCUS-97167:
   name: "PaRappa the Rapper 2"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 0  # Fixes noodles.
 SCUS-97169:
   name: "Drakan - The Ancients' Gates [Demo]"
   region: "NTSC-U"
@@ -4519,6 +4527,8 @@ SCUS-97206:
 SCUS-97208:
   name: "Hot Shots Golf 3 & PaRappa the Rapper 2 [Demo]"
   region: "NTSC-U"
+  speedHacks:
+    InstantVU1SpeedHack: 0  # Fixes noodles on Parappa 2.
 SCUS-97209:
   name: "Ratchet & Clank [E3 Demo]"
   region: "NTSC-U"
@@ -5958,6 +5968,8 @@ SLED-52476:
 SLED-52488:
   name: "Suffering, The [Demo]"
   region: "PAL-E"
+  speedHacks:
+    InstantVU1SpeedHack: 1  # Fixes SPS.
 SLED-52597:
   name: "Burnout 3 - Takedown [Demo]"
   region: "PAL-E"
@@ -6795,6 +6807,8 @@ SLES-50382:
   name: "Silent Hill 2"
   region: "PAL-M6"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 0  # Fixes hang on FMV's when CDVD timing is accurate.
 SLES-50383:
   name: "Metal Gear Solid 2 - Sons of Liberty"
   region: "PAL-M3"
@@ -6928,6 +6942,8 @@ SLES-50446:
   name: "Shadow Man - 2econd Coming"
   region: "PAL-M4"
   compat: 4
+  speedHacks:
+    InstantVU1SpeedHack: 0  # Fixes SPS.
 SLES-50447:
   name: "All-Star Baseball 2003"
   region: "PAL-E"
@@ -7187,6 +7203,8 @@ SLES-50606:
 SLES-50608:
   name: "Shadow Man - 2econd Coming"
   region: "PAL-G"
+  speedHacks:
+    InstantVU1SpeedHack: 0  # Fixes SPS.
 SLES-50613:
   name: "Woody Woodpecker"
   region: "PAL-M5"
@@ -8270,6 +8288,8 @@ SLES-51144:
   name: "Shox - Rally Reinvented"
   region: "PAL-M7"
   compat: 5
+  gameFixes:
+    - VU0KickstartHack # Fixes SPS.
 SLES-51145:
   name: "Monopoly Party"
   region: "PAL-M5"
@@ -8295,6 +8315,8 @@ SLES-51156:
   name: "Silent Hill 2 - Director's Cut"
   region: "PAL-M5"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 0  # Fixes hang on FMV's when CDVD timing is accurate.
 SLES-51157:
   name: "Silent Scope 3"
   region: "PAL-M5"
@@ -8477,9 +8499,13 @@ SLES-51250:
   name: "Shox - Rally Reinvented"
   region: "PAL-E"
   compat: 5
+  gameFixes:
+    - VU0KickstartHack # Fixes SPS.
 SLES-51251:
   name: "Shox - Rally Reinvented"
   region: "PAL-E"
+  gameFixes:
+    - VU0KickstartHack # Fixes SPS.
 SLES-51252:
   name: "Lord of the Rings, The - The Two Towers"
   region: "PAL-M3"
@@ -9243,6 +9269,8 @@ SLES-51690:
 SLES-51693:
   name: "Suffering, The"
   region: "PAL-E-F-G"
+  speedHacks:
+    InstantVU1SpeedHack: 1  # Fixes SPS.
 SLES-51696:
   name: "Dragon's Lair 3D - Special Edition"
   region: "PAL-M5"
@@ -9885,6 +9913,8 @@ SLES-52001:
   name: "Mission Impossible - Operation Surma"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - VU0KickstartHack # Fixes crashes and broken graphics.
 SLES-52002:
   name: "Rogue Ops"
   region: "PAL-M6"
@@ -10598,6 +10628,8 @@ SLES-52439:
   name: "Suffering, The"
   region: "PAL-E-I-S"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 1  # Fixes SPS.
 SLES-52440:
   name: "Harry Potter and the Prisoner of Azkaban"
   region: "PAL-M7"
@@ -10791,6 +10823,8 @@ SLES-52527:
 SLES-52531:
   name: "Suffering, The"
   region: "PAL-G"
+  speedHacks:
+    InstantVU1SpeedHack: 1  # Fixes SPS.
 SLES-52532:
   name: "Aces of War"
   region: "PAL-E"
@@ -12822,6 +12856,8 @@ SLES-53525:
 SLES-53526:
   name: "Suffering, The - Ties that Bind"
   region: "PAL-E-F"
+  speedHacks:
+    InstantVU1SpeedHack: 1  # Fixes SPS.
   memcardFilters:
     - "SLES-53526"
     - "SLES-53527"
@@ -12833,6 +12869,8 @@ SLES-53526:
 SLES-53527:
   name: "Suffering, The - Ties that Bind"
   region: "PAL-E-I-S"
+  speedHacks:
+    InstantVU1SpeedHack: 1  # Fixes SPS.
   memcardFilters:
     - "SLES-53526"
     - "SLES-53527"
@@ -12844,6 +12882,8 @@ SLES-53527:
 SLES-53528:
   name: "Suffering, The - Ties that Bind"
   region: "PAL-G"
+  speedHacks:
+    InstantVU1SpeedHack: 1  # Fixes SPS.
   memcardFilters:
     - "SLES-53526"
     - "SLES-53527"
@@ -13119,6 +13159,8 @@ SLES-53624:
 SLES-53626:
   name: "Suffering, The - Ties that Bind"
   region: "PAL-E-G"
+  speedHacks:
+    InstantVU1SpeedHack: 1  # Fixes SPS.
   memcardFilters:
     - "SLES-53526"
     - "SLES-53527"
@@ -18205,12 +18247,16 @@ SLPM-60273:
 SLPM-61009:
   name: "Silent Hill 2 (Red Ribbon) [Trial]"
   region: "NTSC-J"
+  speedHacks:
+    InstantVU1SpeedHack: 0  # Fixes hang on FMV's when CDVD timing is accurate.
 SLPM-61010:
   name: "Devil May Cry [Trial Version]"
   region: "NTSC-J"
 SLPM-61011:
   name: "Silent Hill 2 (Black Ribbon) [Video Trial]"
   region: "NTSC-J"
+  speedHacks:
+    InstantVU1SpeedHack: 0  # Fixes hang on FMV's when CDVD timing is accurate.
 SLPM-61051:
   name: "Dengeki PS2 D61"
   region: "NTSC-J"
@@ -20032,6 +20078,8 @@ SLPM-62736:
 SLPM-62737:
   name: "Rally Shox & Freestyle Motorcross [EA Best Hits]"
   region: "NTSC-J"
+  gameFixes:
+    - VU0KickstartHack # Fixes SPS.
 SLPM-62739:
   name: "Suro Genjin"
   region: "NTSC-J"
@@ -20339,6 +20387,8 @@ SLPM-65051:
   name: "Silent Hill 2"
   region: "NTSC-J"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 0  # Fixes hang on FMV's when CDVD timing is accurate.
 SLPM-65052:
   name: "Guitar Freaks 4th Mix & Drummania 3rd Mix"
   region: "NTSC-J"
@@ -20499,6 +20549,8 @@ SLPM-65098:
   name: "Silent Hill 2 - Saigo no Uta"
   region: "NTSC-J"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 0  # Fixes hang on FMV's when CDVD timing is accurate.
 SLPM-65100:
   name: "Onimusha 2"
   region: "NTSC-J"
@@ -21158,6 +21210,8 @@ SLPM-65340:
 SLPM-65341:
   name: "Silent Hill 2 - Saigo No Uta [Konami The Best]"
   region: "NTSC-J"
+  speedHacks:
+    InstantVU1SpeedHack: 0  # Fixes hang on FMV's when CDVD timing is accurate.
 SLPM-65342:
   name: "Kyoufu Shinbun (Heisei) Kaiki! Shinrei File"
   region: "NTSC-J"
@@ -21694,6 +21748,8 @@ SLPM-65527:
 SLPM-65529:
   name: "Mission Impossible - Operation Surma"
   region: "NTSC-J"
+  gameFixes:
+    - VU0KickstartHack # Fixes crashes and broken graphics.
 SLPM-65530:
   name: "J-League Pro Soccer Club - Tsukuku 2004"
   region: "NTSC-J"
@@ -22009,6 +22065,8 @@ SLPM-65630:
 SLPM-65631:
   name: "Silent Hill 2 [Konami The Best]"
   region: "NTSC-J"
+  speedHacks:
+    InstantVU1SpeedHack: 0  # Fixes hang on FMV's when CDVD timing is accurate.
 SLPM-65632:
   name: "Virtua Fighter Cyber Generation - Ambition of the Judgement Six"
   region: "NTSC-J"
@@ -23540,6 +23598,13 @@ SLPM-66142:
 SLPM-66143:
   name: "Rebirth Moon"
   region: "NTSC-J"
+  patches:
+    1B139735:
+      content: |-
+        author=PSI, Jelta
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,0023B0C8,word,10000003
 SLPM-66144:
   name: "D1 Grand Prix 2005"
   region: "NTSC-J"
@@ -24028,6 +24093,13 @@ SLPM-66295:
 SLPM-66296:
   name: "Yamiyo ni Sasayaku - Tantei Sagara Kyouichirou"
   region: "NTSC-J"
+  patches:
+    23A9A026:
+      content: |-
+        author=PSI, Jelta
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,00156888,word,10000003
 SLPM-66297:
   name: "Separate Hearts [Limited Edition]"
   region: "NTSC-J"
@@ -24324,6 +24396,13 @@ SLPM-66399:
 SLPM-66400:
   name: "Samurai 7"
   region: "NTSC-J"
+  patches:
+    836F4606:
+      content: |-
+        author=PSI, Jelta
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,00157F78,word,10000003
 SLPM-66401:
   name: "Wrestle Kingdom"
   region: "NTSC-J"
@@ -24496,6 +24575,13 @@ SLPM-66456:
 SLPM-66457:
   name: "Asobi ni Iku Yo! Chikyuu Pinchi no Konyaku Sengen"
   region: "NTSC-J"
+  patches:
+    87FFC318:
+      content: |-
+        author=PSI, Jelta
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,001579D8,word,10000003
 SLPM-66458:
   name: "Acheter Fuuraiki"
   region: "NTSC-J"
@@ -24618,6 +24704,13 @@ SLPM-66494:
 SLPM-66495:
   name: "Joshikousei Game's High!"
   region: "NTSC-J"
+  patches:
+    9FEA4A95:
+      content: |-
+        author=PSI, Jelta
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,00149F18,word,10000003
 SLPM-66496:
   name: "Tom Clancy's Splinter Cell - Chaos Theory"
   region: "NTSC-J"
@@ -24826,6 +24919,13 @@ SLPM-66564:
 SLPM-66565:
   name: "REC - DokiDoki Seiyuu Paradise"
   region: "NTSC-J"
+  patches:
+    17E04DE7:
+      content: |-
+        author=PSI, Jelta
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,001BAA28,word,10000003
 SLPM-66566:
   name: "Tenshou Gakuen Gekkou Hasumi"
   region: "NTSC-J"
@@ -31656,8 +31756,6 @@ SLUS-20217:
   name: "Arctic Thunder"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - SkipMPEGHack
 SLUS-20218:
   name: "Stunt GP"
   region: "NTSC-U"
@@ -31716,6 +31814,8 @@ SLUS-20228:
   name: "Silent Hill 2"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 0  # Fixes hang on FMV's when CDVD timing is accurate.
 SLUS-20229:
   name: "Jonny Moseley - Mad Trix"
   region: "NTSC-U"
@@ -32440,6 +32540,8 @@ SLUS-20400:
   name: "Mission Impossible - Operation Surma"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - VU0KickstartHack # Fixes crashes and broken graphics.
 SLUS-20402:
   name: "Britney's Dance Beat"
   region: "NTSC-U"
@@ -32479,6 +32581,8 @@ SLUS-20413:
   name: "Shadow Man - 2econd Coming"
   region: "NTSC-U"
   compat: 4
+  speedHacks:
+    InstantVU1SpeedHack: 0  # Fixes SPS.
 SLUS-20414:
   name: "Legaia 2 - Duel Saga"
   region: "NTSC-U"
@@ -32977,6 +33081,8 @@ SLUS-20533:
   name: "Shox"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - VU0KickstartHack # Fixes SPS.
 SLUS-20534:
   name: "Cabela's Big Game Hunter"
   region: "NTSC-U"
@@ -33403,6 +33509,8 @@ SLUS-20636:
   name: "Suffering, The"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 1  # Fixes SPS.
 SLUS-20637:
   name: "Chessmaster (Online)"
   region: "NTSC-U"
@@ -35706,6 +35814,8 @@ SLUS-21189:
   name: "Suffering, The - Ties That Bind"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 1  # Fixes SPS.
   memcardFilters:
     - "SLUS-21189"
     - "SLUS-20636"
