@@ -273,7 +273,7 @@ wchar_t* GetCommandStringW(u8 command, int port, int slot)
 	{
 		if (padtype == GuitarPad && (command == 0x20 || command == 0x22))
 		{
-			HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], 0x10F0 + command);
+			HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], 0x40F0 + command);
 			int res = GetWindowTextW(hWnd, temp, 20);
 			if ((unsigned int)res - 1 <= 18)
 				return temp;
@@ -288,7 +288,7 @@ wchar_t* GetCommandStringW(u8 command, int port, int slot)
 	/* Get text from the buttons. */
 	if (command >= 0x0F && command <= 0x2D)
 	{
-		HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], 0x10F0 + command);
+		HWND hWnd = GetDlgItem(hWnds[port][slot][padtype], 0x40F0 + command);
 		if (!hWnd || ((padtype == Dualshock2Pad || padtype == neGconPad) && command >= 0x14 && command <= 0x17))
 		{
 			wchar_t* strings[] = {
@@ -1854,10 +1854,10 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 
 					if (quickSetup)
 					{
-						HWND hWndS = GetDlgItem(hWnds[port][slot][padtype], selected + 0x10F0);
+						HWND hWndS = GetDlgItem(hWnds[port][slot][padtype], selected + 0x40F0);
 						for (selected++; selected <= (ID_ANALOG - (ID_SELECT - 0x10)); selected++)
 						{
-							HWND hWndS = GetDlgItem(hWnds[port][slot][padtype], selected + 0x10F0);
+							HWND hWndS = GetDlgItem(hWnds[port][slot][padtype], selected + 0x40F0);
 							if (hWndS)
 							{
 								break;
@@ -2240,7 +2240,7 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 						HWND hWndS;
 						for (selected = 0x10; selected <= (ID_ANALOG - (ID_SELECT - 0x10)); selected++)
 						{
-							hWndS = GetDlgItem(hWnds[port][slot][padtype], selected + 0x10F0);
+							hWndS = GetDlgItem(hWnds[port][slot][padtype], selected + 0x40F0);
 							if (hWndS)
 							{
 								break;
