@@ -69,27 +69,27 @@ struct KeyAcceleratorCode
 		val32 = value;
 	}
 
-	KeyAcceleratorCode& Shift()
+	KeyAcceleratorCode& Shift(bool enabled = true)
 	{
-		shift = true;
+		shift = enabled;
 		return *this;
 	}
 
-	KeyAcceleratorCode& Alt()
+	KeyAcceleratorCode& Alt(bool enabled = true)
 	{
-		alt = true;
+		alt = enabled;
 		return *this;
 	}
 
-	KeyAcceleratorCode& Win()
+	KeyAcceleratorCode& Win(bool enabled = true)
 	{
-		win = true;
+		win = enabled;
 		return *this;
 	}
 
-	KeyAcceleratorCode& Cmd()
+	KeyAcceleratorCode& Cmd(bool enabled = true)
 	{
-		cmd = true;
+		cmd = enabled;
 		return *this;
 	}
 
