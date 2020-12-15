@@ -309,6 +309,13 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState) {
 	// Because the VU's can now run in sections and not whole programs at once
 	// we need to set the current block so it gets the right program back
 	quick.block = mVU.prog.cur->block[startPC / 8];
+
+	// Sanity check, in case for some reason the program compilation aborted half way through
+	if (quick.block == nullptr)
+	{
+		void* entryPoint = mVUblockFetch(mVU, startPC, pState);
+		return entryPoint;
+	}
 	return mVUentryGet(mVU, quick.block, startPC, pState);
 }
 
