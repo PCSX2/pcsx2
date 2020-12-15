@@ -82,6 +82,8 @@ private:
 	bool switchToReplay = false;
 	// Used to stop recording frames from incrementing during a reset
 	bool frameLock = false;
+	bool IsFinishedReplaying() const;
+	void EndVideoCapture() const;
 };
 
 extern InputRecordingControls g_InputRecordingControls;

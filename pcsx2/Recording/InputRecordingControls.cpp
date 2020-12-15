@@ -20,7 +20,7 @@
 #include "App.h"
 #include "Counters.h"
 #include "DebugTools/Debug.h"
-#include "GSFrame.h"
+#include "MainFrame.h"
 #include "MemoryTypes.h"
 
 #include "InputRecording.h"
@@ -79,10 +79,12 @@ void InputRecordingControls::HandleFrameAdvanceAndPausing()
 		switchToReplay = false;
 	}
 
-	if ((g_InputRecording.IsReplaying() &&
-		 g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames()) ||
-		g_InputRecording.GetFrameCounter() == INT_MAX)
+	bool endCapture = false;
+	if (IsFinishedReplaying() || g_InputRecording.GetFrameCounter() == INT_MAX)
+	{
 		pauseEmulation = true;
+		endCapture = true;
+	}
 
 	// If we haven't yet advanced atleast a single frame from when we paused, setup things to be paused
 	if (frameAdvancing && frameAdvanceMarker < g_InputRecording.GetFrameCounter())
@@ -96,6 +98,8 @@ void InputRecordingControls::HandleFrameAdvanceAndPausing()
 	{
 		emulationCurrentlyPaused = true;
 		CoreThread.PauseSelf();
+		if (endCapture)
+			EndVideoCapture();
 	}
 }
 
@@ -111,10 +115,10 @@ void InputRecordingControls::ResumeCoreThreadIfStarted()
 
 void InputRecordingControls::FrameAdvance()
 {
-	if (g_InputRecording.IsReplaying() &&
-		g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
+	if (IsFinishedReplaying())
 	{
 		g_InputRecording.SetToRecordMode();
+		EndVideoCapture();
 		return;
 	}
 	frameAdvanceMarker = g_InputRecording.GetFrameCounter();
@@ -152,10 +156,10 @@ void InputRecordingControls::PauseImmediately()
 
 void InputRecordingControls::Resume()
 {
-	if (g_InputRecording.IsReplaying() &&
-		g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
+	if (IsFinishedReplaying())
 	{
 		g_InputRecording.SetToRecordMode();
+		EndVideoCapture();
 		return;
 	}
 	pauseEmulation = false;
@@ -174,11 +178,10 @@ void InputRecordingControls::DisableFrameAdvance()
 
 void InputRecordingControls::TogglePause()
 {
-	if (pauseEmulation &&
-		g_InputRecording.IsReplaying() &&
-		g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
+	if (pauseEmulation && IsFinishedReplaying())
 	{
 		g_InputRecording.SetToRecordMode();
+		EndVideoCapture();
 		return;
 	}
 	pauseEmulation = !pauseEmulation;
@@ -209,5 +212,23 @@ void InputRecordingControls::Lock(u32 frame)
 	//Ensures that g_frameCount can be used to resume emulation after a fast/full boot
 	if (!g_InputRecording.GetInputRecordingData().FromSaveState())
 		g_FrameCount = frame + 1;
+}
+
+bool InputRecordingControls::IsFinishedReplaying() const
+{
+	return g_InputRecording.IsReplaying() &&
+			g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames();
+}
+
+void InputRecordingControls::EndVideoCapture() const
+{
+	if (MainEmuFrame* mainFrame = GetMainFramePtr())
+	{
+		if (mainFrame->IsCapturing())
+		{
+			mainFrame->VideoCaptureToggle();
+			inputRec::log("Video Capture Completed");
+		}
+	}
 }
 #endif

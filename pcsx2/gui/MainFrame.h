@@ -136,7 +136,6 @@ protected:
 #endif
 
 	PerPluginMenuInfo m_PluginMenuPacks[PluginId_Count];
-
 	bool m_capturingVideo;
 
 	virtual void DispatchEvent(const PluginEventType& plugin_evt);
@@ -172,6 +171,8 @@ public:
 	void AppendKeycodeNamesToMenuOptions();
 	void UpdateStatusBar();
 	void VideoCaptureToggle();
+	bool IsCapturing() const noexcept { return m_capturingVideo; }
+
 #ifndef DISABLE_RECORDING
 	void initializeRecordingMenuItem(MenuIdentifiers menuId, wxString keyCodeStr, bool enable = true);
 	void enableRecordingMenuItem(MenuIdentifiers menuId, bool enable);
