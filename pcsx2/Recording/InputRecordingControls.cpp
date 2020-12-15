@@ -60,8 +60,7 @@ void InputRecordingControls::HandleFrameAdvanceAndPausing()
 	else if (frameCountTracker != g_FrameCount)
 	{
 		frameCountTracker = g_FrameCount;
-		if (g_InputRecording.GetFrameCounter() < INT_MAX)
-			g_InputRecording.IncrementFrameCounter();
+		g_InputRecording.IncrementFrameCounter();
 	}
 	else
 	{

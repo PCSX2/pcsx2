@@ -97,58 +97,58 @@ void InputRecording::ControllerInterrupt(u8& data, u8& port, u16& bufCount, u8 b
 
 	if (bufCount == 1)
 		fInterruptFrame = data == READ_DATA_AND_VIBRATE_FIRST_BYTE;
-	else if (bufCount == 2 && buf[bufCount] != READ_DATA_AND_VIBRATE_SECOND_BYTE)
-		fInterruptFrame = false;
-
-	// We do not want to record or save the first two bytes in the data returned from the PAD plugin
-	else if (fInterruptFrame && bufCount >= 3 && frameCounter >= 0 && frameCounter < INT_MAX)
+	else if (bufCount == 2)
+	{
+		if (buf[bufCount] != READ_DATA_AND_VIBRATE_SECOND_BYTE)
+			fInterruptFrame = false;
+	}
+	else if (fInterruptFrame)
 	{
 		u8& bufVal = buf[bufCount];
 		const u16 bufIndex = bufCount - 3;
-
 		if (state == InputRecordingMode::Replaying)
 		{
-			u8 tmp = 0;
-			if (inputRecordingData.ReadKeyBuffer(tmp, frameCounter, port, bufIndex))
+			if (frameCounter >= 0 && frameCounter < INT_MAX)
 			{
-				// Overwrite value originally provided by the PAD plugin
-				bufVal = tmp;
+				if (!inputRecordingData.ReadKeyBuffer(bufVal, frameCounter, port, bufIndex))
+					inputRec::consoleLog(fmt::format("[REC]: Failed to read input data at frame {}", frameCounter));
+
+				// Update controller data state for future VirtualPad / logging usage.
+				padData[port]->UpdateControllerData(bufIndex, bufVal);
+				
+				if (virtualPads[port]->IsShown())
+					virtualPads[port]->UpdateControllerData(bufIndex, padData[port]);
 			}
 		}
-
-		// Update controller data state for future VirtualPad / logging usage.
-		padData[port]->UpdateControllerData(bufIndex, bufVal);
-
-		if (virtualPads[port] &&
-			virtualPads[port]->IsShown() &&
-			virtualPads[port]->UpdateControllerData(bufIndex, padData[port]) &&
-			state != InputRecordingMode::Replaying)
+		else
 		{
+			// Update controller data state for future VirtualPad / logging usage.
+			padData[port]->UpdateControllerData(bufIndex, bufVal);
+
+			// Commit the byte to the movie file if we are recording
+			if (state == InputRecordingMode::Recording)
+			{
+				if (frameCounter >= 0)
+				{
+					// If the VirtualPad updated the PadData, we have to update the buffer
+					// before committing it to the recording / sending it to the game
+					if (virtualPads[port]->IsShown() && virtualPads[port]->UpdateControllerData(bufIndex, padData[port]))
+						bufVal = padData[port]->PollControllerData(bufIndex);
+
+					if (incrementUndo)
+					{
+						inputRecordingData.IncrementUndoCount();
+						incrementUndo = false;
+					}
+
+					if (frameCounter < INT_MAX && !inputRecordingData.WriteKeyBuffer(frameCounter, port, bufIndex, bufVal))
+						inputRec::consoleLog(fmt::format("[REC]: Failed to write input data at frame {}", frameCounter));
+				}
+			}
 			// If the VirtualPad updated the PadData, we have to update the buffer
-			// before committing it to the recording / sending it to the game
-			// - Do not do this if we are in replay mode!
-			bufVal = padData[port]->PollControllerData(bufIndex);
-		}
-
-		// If we have reached the end of the pad data, log it out
-		if (bufIndex == PadData::END_INDEX_CONTROLLER_BUFFER)
-		{
-			padData[port]->LogPadData(port);
-			// As well as re-render the virtual pad UI, if applicable
-			// - Don't render if it's minimized
-			if (virtualPads[port] && virtualPads[port]->IsShown() && !virtualPads[port]->IsIconized())
-				virtualPads[port]->Redraw();
-		}
-
-		// Finally, commit the byte to the movie file if we are recording
-		if (state == InputRecordingMode::Recording)
-		{
-			if (incrementUndo)
-			{
-				inputRecordingData.IncrementUndoCount();
-				incrementUndo = false;
-			}
-			inputRecordingData.WriteKeyBuffer(frameCounter, port, bufIndex, bufVal);
+			// before sending it to the game
+			else if (virtualPads[port]->IsShown() && virtualPads[port]->UpdateControllerData(bufIndex, padData[port]))
+				bufVal = padData[port]->PollControllerData(bufIndex);
 		}
 	}
 }
@@ -170,12 +170,31 @@ u32 InputRecording::GetStartingFrame()
 
 void InputRecording::IncrementFrameCounter()
 {
-	frameCounter++;
-	if (state == InputRecordingMode::Recording)
+	if (frameCounter < INT_MAX)
 	{
-		GetInputRecordingData().SetTotalFrames(frameCounter);
-		if (frameCounter == inputRecordingData.GetTotalFrames())
-			incrementUndo = false;
+		frameCounter++;
+		switch (state)
+		{
+		case InputRecordingMode::Recording:
+			GetInputRecordingData().SetTotalFrames(frameCounter);
+			[[fallthrough]];
+		case InputRecordingMode::Replaying:
+			if (frameCounter == inputRecordingData.GetTotalFrames())
+				incrementUndo = false;
+		}
+	}
+	g_InputRecording.LogAndRedraw();
+}
+
+void InputRecording::LogAndRedraw()
+{
+	for (u8 port = 0; port < 2; port++)
+	{
+		padData[port]->LogPadData(port);
+		// As well as re-render the virtual pad UI, if applicable
+		// - Don't render if it's minimized
+		if (virtualPads[port]->IsShown() && !virtualPads[port]->IsIconized())
+			virtualPads[port]->Redraw();
 	}
 }
 
