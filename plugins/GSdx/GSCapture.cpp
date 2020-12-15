@@ -568,6 +568,9 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 
 bool GSCapture::EndCapture()
 {
+	if (!m_capturing)
+		return false;
+
 	std::lock_guard<std::recursive_mutex> lock(m_lock);
 
 #ifdef _WIN32

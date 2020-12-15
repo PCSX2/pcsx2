@@ -110,10 +110,8 @@ bool WavRecordEnabled = false;
 static WavOutFile* m_wavrecord = nullptr;
 static Mutex WavRecordMutex;
 
-void RecordStart(const std::string* filename)
+int RecordStart(const std::string* filename)
 {
-	WavRecordEnabled = false;
-
 	try
 	{
 		ScopedLock lock(WavRecordMutex);
@@ -123,6 +121,7 @@ void RecordStart(const std::string* filename)
 		else
 			m_wavrecord = new WavOutFile("audio_recording.wav", 48000, 16, 2);
 		WavRecordEnabled = true;
+		return 1;
 	}
 	catch (std::runtime_error&)
 	{
@@ -131,6 +130,7 @@ void RecordStart(const std::string* filename)
 			SysMessage("SPU2-X couldn't open file for recording: %s.\nWavfile capture disabled.", filename->c_str());
 		else
 			SysMessage("SPU2-X couldn't open file for recording: audio_recording.wav.\nWavfile capture disabled.");
+		return 0;
 	}
 }
 

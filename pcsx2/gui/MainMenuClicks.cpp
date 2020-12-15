@@ -886,7 +886,9 @@ void MainEmuFrame::VideoCaptureToggle()
 			std::string filename;
 			if (GSsetupRecording(filename))
 			{
-				SPU2setupRecording(true, &filename);
+				// Note: Add a dialog box here (or in the function) that prompts the user to answer whether a failed
+				// SPU2 recording setup should still lead to the visuals being recorded.
+				SPU2setupRecording(&filename);
 				m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, false);
 				m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, true);
 			}
@@ -899,9 +901,13 @@ void MainEmuFrame::VideoCaptureToggle()
 		else
 		{
 			// the GS doesn't support recording.
-			SPU2setupRecording(true, nullptr);
-			m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, false);
-			m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, true);
+			if (SPU2setupRecording(nullptr))
+			{
+				m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, false);
+				m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, true);
+			}
+			else
+				m_capturingVideo = false;
 		}
 
 		if (needsMainFrameEnable)
@@ -912,7 +918,7 @@ void MainEmuFrame::VideoCaptureToggle()
 		// stop recording
 		if (GSendRecording)
 			GSendRecording();
-		SPU2setupRecording(false, nullptr);
+		SPU2endRecording();
 		m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, true);
 		m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, false);
 	}

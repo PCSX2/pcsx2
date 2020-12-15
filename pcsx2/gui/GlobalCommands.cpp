@@ -471,18 +471,15 @@ namespace Implementations
 				// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens.
 				std::string filename;
 				if (GSsetupRecording(filename))
-					SPU2setupRecording(true, &filename);
-				else
-				{
-					// recording dialog canceled by the user. align our state
+					// Note: Add a dialog box here (or in the function) that prompts the user to answer whether a failed
+					// SPU2 recording setup should still lead to the visuals being recorded.
+					SPU2setupRecording(&filename);
+				else // recording dialog canceled by the user. align our state
 					g_Pcsx2Recording = false;
-				}
 			}
+			// the GS doesn't support recording
 			else
-			{
-				// the GS doesn't support recording
-				SPU2setupRecording(true, nullptr);
-			}
+				g_Pcsx2Recording = SPU2setupRecording(nullptr);
 
 			if (GetMainFramePtr() && needsMainFrameEnable)
 				GetMainFramePtr()->Enable();
@@ -492,7 +489,7 @@ namespace Implementations
 			// stop recording
 			if (GSendRecording)
 				GSendRecording();
-			SPU2setupRecording(false, nullptr);
+			SPU2endRecording();
 		}
 	}
 
