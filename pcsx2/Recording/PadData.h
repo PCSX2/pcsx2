@@ -22,7 +22,6 @@ class PadData
 public:
 	/// Constants
 	static const u8 ANALOG_VECTOR_NEUTRAL = 127;
-	static const u16 END_INDEX_CONTROLLER_BUFFER = 17;
 
 	enum class BufferIndex
 	{

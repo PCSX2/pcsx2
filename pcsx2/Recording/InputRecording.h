@@ -89,6 +89,8 @@ public:
 	void Stop();
 	// Initialze VirtualPad window
 	void setVirtualPadPtr(VirtualPad* ptr, int const port);
+	// Logs the padData and redraws the virtualPad windows of active pads
+	void LogAndRedraw();
 	// Resets a recording if the base savestate could not be loaded at the start
 	void FailedSavestate();
 
