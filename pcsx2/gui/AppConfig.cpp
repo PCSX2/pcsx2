@@ -173,7 +173,9 @@ namespace PathDefs
 
 	wxDirName GetProgramDataDir()
 	{
-#ifndef GAMEINDEX_DIR_COMPILATION
+#ifdef __APPLE__
+		return wxDirName(wxStandardPaths::Get().GetResourcesDir());
+#elif !defined(GAMEINDEX_DIR_COMPILATION)
 		return AppRoot();
 #else
 		// Each linux distributions have his rules for path so we give them the possibility to
