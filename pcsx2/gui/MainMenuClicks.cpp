@@ -599,6 +599,7 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent& event)
 	if (checked)
 	{
 		GetMenuBar()->Insert(TopLevelMenu_InputRecording, &m_menuRecording, _("&Input Record"));
+		g_InputRecording.InitVirtualPadWindows(this);
 		SysConsole.recordingConsole.Enabled = true;
 		// Enable Recording Keybindings
 		if (GSFrame* gsFrame = wxGetApp().GetGsFramePtr())
@@ -948,8 +949,10 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent &e
 void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent& event)
 {
 	const bool initiallyPaused = g_InputRecordingControls.IsPaused();
+
 	if (!initiallyPaused)
 		g_InputRecordingControls.PauseImmediately();
+
 	NewRecordingFrame* newRecordingFrame = wxGetApp().GetNewRecordingFramePtr();
 	if (newRecordingFrame)
 	{
@@ -971,8 +974,10 @@ void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent& event)
 void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent& event)
 {
 	const bool initiallyPaused = g_InputRecordingControls.IsPaused();
+
 	if (!initiallyPaused)
 		g_InputRecordingControls.PauseImmediately();
+
 	wxFileDialog openFileDialog(this, _("Select P2M2 record file."), L"", L"",
 								L"p2m2 file(*.p2m2)|*.p2m2", wxFD_OPEN);
 	if (openFileDialog.ShowModal() == wxID_CANCEL)
@@ -989,6 +994,7 @@ void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent& event)
 			g_InputRecordingControls.Resume();
 		return;
 	}
+	
 	if (!g_InputRecording.GetInputRecordingData().FromSaveState())
 		StartInputRecording();
 }
@@ -1036,6 +1042,6 @@ void MainEmuFrame::Menu_Recording_ToggleRecordingMode_Click(wxCommandEvent& even
 
 void MainEmuFrame::Menu_Recording_VirtualPad_Open_Click(wxCommandEvent& event)
 {
-	wxGetApp().GetVirtualPadPtr(event.GetId() - MenuId_Recording_VirtualPad_Port0)->Show();
+	g_InputRecording.ShowVirtualPad(event.GetId() - MenuId_Recording_VirtualPad_Port0);
 }
 #endif

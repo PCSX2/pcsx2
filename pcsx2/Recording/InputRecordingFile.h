@@ -69,10 +69,10 @@ public:
 	// Increment the number of undo actions and commit it to the recording file
 	void IncrementUndoCount();
 	// Open an existing recording file
-	bool OpenExisting(const wxString path);
+	bool OpenExisting(const wxString& path);
 	// Create and open a brand new input recording, either starting from a save-state or from
 	// booting the game
-	bool OpenNew(const wxString path, bool fromSaveState);
+	bool OpenNew(const wxString& path, bool fromSaveState);
 	// Reads the current frame's input data from the file in order to intercept and overwrite
 	// the current frame's value from the emulator
 	bool ReadKeyBuffer(u8 &result, const uint &frame, const uint port, const uint bufIndex);

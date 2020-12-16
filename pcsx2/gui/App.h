@@ -29,8 +29,7 @@
 #include "DriveList.h"
 
 #ifndef DISABLE_RECORDING
-#	include "Recording/VirtualPad/VirtualPad.h"
-#	include "Recording/NewRecordingFrame.h"
+#include "Recording/NewRecordingFrame.h"
 #endif
 
 class DisassemblyDialog;
@@ -551,7 +550,6 @@ protected:
 	wxWindowID			m_id_Disassembler;
 
 #ifndef DISABLE_RECORDING
-	wxWindowID			m_id_VirtualPad[2];
 	wxWindowID			m_id_NewRecordingFrame;
 #endif
 
@@ -580,7 +578,6 @@ public:
 	DisassemblyDialog*	GetDisassemblyPtr() const	{ return (DisassemblyDialog*)wxWindow::FindWindowById(m_id_Disassembler); }
 
 #ifndef DISABLE_RECORDING
-	VirtualPad*			GetVirtualPadPtr(int port) const	{ return (VirtualPad*)wxWindow::FindWindowById(m_id_VirtualPad[port]); }
 	NewRecordingFrame*	GetNewRecordingFramePtr() const		{ return (NewRecordingFrame*)wxWindow::FindWindowById(m_id_NewRecordingFrame); }
 #endif
 
