@@ -73,7 +73,7 @@ FunctionEnd
 Function TempFilesOut
   SetOutPath "$TEMP\PCSX2 ${APP_VERSION}"
     File ..\bin\pcsx2.exe
-    File ..\bin\GameIndex.dbf
+    File ..\bin\GameIndex.yaml
     File ..\bin\cheats_ws.zip
     File ..\bin\PCSX2_keys.ini.default
   SetOutPath "$TEMP\PCSX2 ${APP_VERSION}\Docs"
