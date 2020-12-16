@@ -70,7 +70,7 @@ if(PACKAGE_MODE)
     if(NOT DISABLE_CHEATS_ZIP)
         INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/cheats_ws.zip" DESTINATION "${GAMEINDEX_DIR}")
     endif()
-    INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/GameIndex.dbf" DESTINATION "${GAMEINDEX_DIR}")
+    INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/GameIndex.yaml" DESTINATION "${GAMEINDEX_DIR}")
 
     # set categories depending on system/distribution in pcsx2.desktop
     if(openSUSE)
