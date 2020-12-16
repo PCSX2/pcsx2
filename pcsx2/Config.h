@@ -99,6 +99,12 @@ enum class LimiterModeType : u8
 	Slomo,
 };
 
+enum AudioCaptureSetting : u8
+{
+	Audio_Mono,
+	Audio_Stereo
+};
+
 // Template function for casting enumerations to their underlying type
 template <typename Enumeration>
 typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)

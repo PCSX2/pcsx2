@@ -1636,6 +1636,9 @@
     <ClCompile Include="gui\pxWindowTextWriter.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
+    <ClCompile Include="SPU2\WavFile.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2736,6 +2739,9 @@
     <ClInclude Include="gui\wxGuiTools.h" />
     <ClInclude Include="gui\pxStaticText.h">
       <Filter>AppHost</Filter>
+    </ClInclude>
+    <ClInclude Include="SPU2\WavFile.h">
+      <Filter>System\Ps2\SPU2</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

@@ -214,6 +214,7 @@ public:
 	struct CaptureOptions
 	{
 		bool EnableAudio;
+		AudioCaptureSetting	ChannelConfig;
 
 		CaptureOptions();
 

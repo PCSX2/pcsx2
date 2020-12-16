@@ -67,10 +67,11 @@ protected:
 	wxMenu& m_menuConfig;
 	wxMenu& m_menuWindow;
 
-	wxMenu& m_menuCapture;
-	wxMenu& m_submenuVideoCapture;
+	wxMenu&	m_menuCapture;
+	wxMenu&	m_submenuVideoCapture;
+	wxMenu& m_submenuAudioCapture;
 	wxMenu& m_submenuIPC;
-	wxMenu& m_submenuScreenshot;
+	wxMenu&	m_submenuScreenshot;
 
 #ifndef DISABLE_RECORDING
 	wxMenu& m_menuRecording;
@@ -102,6 +103,7 @@ public:
 
 	bool IsPaused() const { return GetMenuBar()->IsChecked(MenuId_Sys_SuspendResume); }
 	void UpdateCdvdSrcSelection();
+	void UpdateAudioCaptureSelections();
 	void RemoveCdvdMenu();
 	void EnableMenuItem(int id, bool enable);
 	void CheckMenuItem(int id, bool checked);
@@ -208,7 +210,8 @@ protected:
 	void Menu_ShowGSDump(wxCommandEvent& event);
 
 	void Menu_Capture_Video_ToggleCapture_Click(wxCommandEvent& event);
-	void Menu_Capture_Video_IncludeAudio_Click(wxCommandEvent& event);
+	void Menu_Capture_Audio_Include_Click(wxCommandEvent& event);
+	void Menu_Capture_Audio_ChannelType_Click(wxCommandEvent& event);
 	void Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent& event);
 	void Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& event);
 
