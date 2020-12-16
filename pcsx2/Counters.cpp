@@ -477,6 +477,15 @@ static __fi void frameLimit()
 
 static __fi void VSyncStart(u32 sCycle)
 {
+#ifndef DISABLE_RECORDING
+	if (g_Conf->EmuOptions.EnableRecordingTools)
+	{
+		// It is imperative that any frame locking that must happen occurs before Vsync is started
+		// Not doing so would sacrifice a frame of a savestate-based recording when loading any savestate
+		g_InputRecordingControls.HandleFrameCountLocking();
+	}
+#endif
+
 	frameLimit(); // limit FPS
 	gsPostVsyncStart(); // MUST be after framelimit; doing so before causes funk with frame times!
 
@@ -531,12 +540,17 @@ static __fi void GSVSync()
 
 static __fi void VSyncEnd(u32 sCycle)
 {
+#ifndef DISABLE_RECORDING
+	if (g_Conf->EmuOptions.EnableRecordingTools)
+	{
+		g_InputRecordingControls.HandleFrameAdvanceAndPausing();
+	}
+#endif
+
 	if(EmuConfig.Trace.Enabled && EmuConfig.Trace.EE.m_EnableAll)
 		SysTrace.EE.Counters.Write( "    ================  EE COUNTER VSYNC END (frame: %d)  ================", g_FrameCount );
 
 	g_FrameCount++;
-
-
 
 	hwIntcIrq(INTC_VBLANK_E);  // HW Irq
 	psxVBlankEnd(); // psxCounters vBlank End
@@ -616,12 +630,6 @@ __fi void rcntUpdate_vSync()
 	}
 	else	// VSYNC end / VRENDER begin
 	{
-#ifndef DISABLE_RECORDING
-		if (g_Conf->EmuOptions.EnableRecordingTools)
-		{
-			g_InputRecordingControls.HandleFrameAdvanceAndPausing();
-		}
-#endif
 		VSyncStart(vsyncCounter.sCycle);
 
 		vsyncCounter.sCycle += vSyncInfo.Render;
