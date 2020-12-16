@@ -63,16 +63,26 @@ void SaveStateBase::InputRecordingFreeze()
 
 InputRecording g_InputRecording;
 
-InputRecording::InputRecording()
+InputRecording::InputRecordingPad::InputRecordingPad()
 {
-	// NOTE - No multi-tap support, only two controllers
-	padData[CONTROLLER_PORT_ONE] = new PadData();
-	padData[CONTROLLER_PORT_TWO] = new PadData();
+	padData = new PadData;
 }
 
-void InputRecording::setVirtualPadPtr(VirtualPad* ptr, int const port)
+InputRecording::InputRecordingPad::~InputRecordingPad()
 {
-	virtualPads[port] = ptr;
+	delete padData;
+}
+
+void InputRecording::InitVirtualPadWindows(wxWindow* parent)
+{
+	for (int port = 0; port < 2; ++port)
+		if (!pads[port].virtualPad)
+			pads[port].virtualPad = new VirtualPad(parent, port, g_Conf->inputRecording);
+}
+
+void InputRecording::ShowVirtualPad(const int port)
+{
+	pads[port].virtualPad->Show();
 }
 
 void InputRecording::RecordingReset()
@@ -114,16 +124,16 @@ void InputRecording::ControllerInterrupt(u8& data, u8& port, u16& bufCount, u8 b
 					inputRec::consoleLog(fmt::format("Failed to read input data at frame {}", frameCounter));
 
 				// Update controller data state for future VirtualPad / logging usage.
-				padData[port]->UpdateControllerData(bufIndex, bufVal);
+				pads[port].padData->UpdateControllerData(bufIndex, bufVal);
 				
-				if (virtualPads[port]->IsShown())
-					virtualPads[port]->UpdateControllerData(bufIndex, padData[port]);
+				if (pads[port].virtualPad->IsShown())
+					pads[port].virtualPad->UpdateControllerData(bufIndex, pads[port].padData);
 			}
 		}
 		else
 		{
 			// Update controller data state for future VirtualPad / logging usage.
-			padData[port]->UpdateControllerData(bufIndex, bufVal);
+			pads[port].padData->UpdateControllerData(bufIndex, bufVal);
 
 			// Commit the byte to the movie file if we are recording
 			if (state == InputRecordingMode::Recording)
@@ -132,8 +142,8 @@ void InputRecording::ControllerInterrupt(u8& data, u8& port, u16& bufCount, u8 b
 				{
 					// If the VirtualPad updated the PadData, we have to update the buffer
 					// before committing it to the recording / sending it to the game
-					if (virtualPads[port]->IsShown() && virtualPads[port]->UpdateControllerData(bufIndex, padData[port]))
-						bufVal = padData[port]->PollControllerData(bufIndex);
+					if (pads[port].virtualPad->IsShown() && pads[port].virtualPad->UpdateControllerData(bufIndex, pads[port].padData))
+						bufVal = pads[port].padData->PollControllerData(bufIndex);
 
 					if (incrementUndo)
 					{
@@ -147,8 +157,8 @@ void InputRecording::ControllerInterrupt(u8& data, u8& port, u16& bufCount, u8 b
 			}
 			// If the VirtualPad updated the PadData, we have to update the buffer
 			// before sending it to the game
-			else if (virtualPads[port]->IsShown() && virtualPads[port]->UpdateControllerData(bufIndex, padData[port]))
-				bufVal = padData[port]->PollControllerData(bufIndex);
+			else if (pads[port].virtualPad->IsShown() && pads[port].virtualPad->UpdateControllerData(bufIndex, pads[port].padData))
+				bufVal = pads[port].padData->PollControllerData(bufIndex);
 		}
 	}
 }
@@ -190,11 +200,11 @@ void InputRecording::LogAndRedraw()
 {
 	for (u8 port = 0; port < 2; port++)
 	{
-		padData[port]->LogPadData(port);
+		pads[port].padData->LogPadData(port);
 		// As well as re-render the virtual pad UI, if applicable
 		// - Don't render if it's minimized
-		if (virtualPads[port]->IsShown() && !virtualPads[port]->IsIconized())
-			virtualPads[port]->Redraw();
+		if (pads[port].virtualPad->IsShown() && !pads[port].virtualPad->IsIconized())
+			pads[port].virtualPad->Redraw();
 	}
 }
 
@@ -239,16 +249,16 @@ wxString InputRecording::RecordingModeTitleSegment()
 void InputRecording::SetToRecordMode()
 {
 	state = InputRecordingMode::Recording;
-	virtualPads[CONTROLLER_PORT_ONE]->SetReadOnlyMode(false);
-	virtualPads[CONTROLLER_PORT_TWO]->SetReadOnlyMode(false);
+	pads[CONTROLLER_PORT_ONE].virtualPad->SetReadOnlyMode(false);
+	pads[CONTROLLER_PORT_TWO].virtualPad->SetReadOnlyMode(false);
 	inputRec::log("Record mode ON");
 }
 
 void InputRecording::SetToReplayMode()
 {
 	state = InputRecordingMode::Replaying;
-	virtualPads[CONTROLLER_PORT_ONE]->SetReadOnlyMode(true);
-	virtualPads[CONTROLLER_PORT_TWO]->SetReadOnlyMode(true);
+	pads[CONTROLLER_PORT_ONE].virtualPad->SetReadOnlyMode(true);
+	pads[CONTROLLER_PORT_TWO].virtualPad->SetReadOnlyMode(true);
 	inputRec::log("Replay mode ON");
 }
 
@@ -327,25 +337,25 @@ void InputRecording::FailedSavestate()
 void InputRecording::Stop()
 {
 	state = InputRecordingMode::NotActive;
-	virtualPads[CONTROLLER_PORT_ONE]->SetReadOnlyMode(false);
-	virtualPads[CONTROLLER_PORT_TWO]->SetReadOnlyMode(false);
+	pads[CONTROLLER_PORT_ONE].virtualPad->SetReadOnlyMode(false);
+	pads[CONTROLLER_PORT_TWO].virtualPad->SetReadOnlyMode(false);
 	incrementUndo = false;
 	if (inputRecordingData.Close())
 		inputRec::log("Input recording stopped");
 }
 
-bool InputRecording::Create(wxString FileName, bool fromSaveState, wxString authorName)
+bool InputRecording::Create(wxString fileName, const bool fromSaveState, wxString authorName)
 {
-	if (!inputRecordingData.OpenNew(FileName, fromSaveState))
+	if (!inputRecordingData.OpenNew(fileName, fromSaveState))
 		return false;
 
 	initialLoad = true;
 	state = InputRecordingMode::Recording;
 	if (fromSaveState)
 	{
-		if (wxFileExists(FileName + "_SaveState.p2s"))
-			wxCopyFile(FileName + "_SaveState.p2s", FileName + "_SaveState.p2s.bak", true);
-		StateCopy_SaveToFile(FileName + "_SaveState.p2s");
+		if (wxFileExists(fileName + "_SaveState.p2s"))
+			wxCopyFile(fileName + "_SaveState.p2s", fileName + "_SaveState.p2s.bak", true);
+		StateCopy_SaveToFile(fileName + "_SaveState.p2s");
 	}
 	else
 		sApp.SysExecute(g_Conf->CdvdSource);
