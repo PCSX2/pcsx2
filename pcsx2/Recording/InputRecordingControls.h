@@ -20,14 +20,21 @@
 class InputRecordingControls
 {
 public:
-	// Intended to be called at the end of each frame, but will no-op if the frame count has not
-	// truly incremented
+	// Intended to be called at the end of each frame, but will no-op if frame lock is active
 	//
-	// Increments the input recording's frame counter and will pause emulation if:
+	// Will pause emulation if:
 	// - The InputRecordingControls::FrameAdvance was hit on the previous frame
 	// - Emulation was explicitly paused using InputRecordingControls::TogglePause
 	// - We are replaying an input recording and have hit the end
 	void HandleFrameAdvanceAndPausing();
+
+	// When loading a recording file or booting with a recording active, lock will be enabled.
+	// Emulation will be forced into and remain in a paused state until the transition in progress
+	// has completed - signaled when g_framecount and frameCountTracker are equal
+	//
+	// Additonally, this function will ensure emulation stays paused after loading a savestate
+	void HandleFrameCountLocking();
+
 	// Called much more frequently than HandleFrameAdvanceAndPausing, instead of being per frame
 	// this hooks into pcsx2's main App event handler as it has to be able to resume emulation
 	// when drawing frames has compltely stopped
