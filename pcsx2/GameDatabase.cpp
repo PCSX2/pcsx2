@@ -95,10 +95,17 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 		gameEntry.name = node["name"].as<std::string>("");
 		gameEntry.region = node["region"].as<std::string>("");
 		gameEntry.compat = static_cast<GameDatabaseSchema::Compatibility>(node["compat"].as<int>(enum_cast(gameEntry.compat)));
-		gameEntry.eeRoundMode = static_cast<GameDatabaseSchema::RoundMode>(node["eeRoundMode"].as<int>(enum_cast(gameEntry.eeRoundMode)));
-		gameEntry.vuRoundMode = static_cast<GameDatabaseSchema::RoundMode>(node["vuRoundMode"].as<int>(enum_cast(gameEntry.vuRoundMode)));
-		gameEntry.eeClampMode = static_cast<GameDatabaseSchema::ClampMode>(node["eeClampMode"].as<int>(enum_cast(gameEntry.eeClampMode)));
-		gameEntry.vuClampMode = static_cast<GameDatabaseSchema::ClampMode>(node["vuClampMode"].as<int>(enum_cast(gameEntry.vuClampMode)));
+		// Safely grab round mode and clamp modes from the YAML, otherwise default t
+		if (YAML::Node roundModeNode = node["roundModes"])
+		{
+			gameEntry.eeRoundMode = static_cast<GameDatabaseSchema::RoundMode>(roundModeNode["eeRoundMode"].as<int>(enum_cast(gameEntry.eeRoundMode)));
+			gameEntry.vuRoundMode = static_cast<GameDatabaseSchema::RoundMode>(roundModeNode["vuRoundMode"].as<int>(enum_cast(gameEntry.vuRoundMode)));
+		}
+		if (YAML::Node clampModeNode = node["clampModes"])
+		{
+			gameEntry.eeClampMode = static_cast<GameDatabaseSchema::ClampMode>(clampModeNode["eeClampMode"].as<int>(enum_cast(gameEntry.eeClampMode)));
+			gameEntry.vuClampMode = static_cast<GameDatabaseSchema::ClampMode>(clampModeNode["vuClampMode"].as<int>(enum_cast(gameEntry.vuClampMode)));
+		}
 
 		// Validate game fixes, invalid ones will be dropped!
 		for (std::string& fix : node["gameFixes"].as<std::vector<std::string>>(std::vector<std::string>()))
