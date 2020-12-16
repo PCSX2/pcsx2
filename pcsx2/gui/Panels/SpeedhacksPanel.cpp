@@ -218,24 +218,22 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	*vuHacksPanel += m_check_vuFlagHack | StdExpand();
 	*vuHacksPanel += m_check_vuThread | StdExpand();
 	*vuHacksPanel += m_check_vu1Instant | StdExpand();
-	//*vuHacksPanel	+= 57; // Aligns left and right boxes in default language and font size
 
-	*miscHacksPanel	+= m_check_intc | StdExpand();
-	*miscHacksPanel	+= m_check_waitloop | StdExpand();
-	*miscHacksPanel	+= m_check_fastCDVD | StdExpand();
+	*miscHacksPanel += m_check_intc | StdExpand();
+	*miscHacksPanel += m_check_waitloop | StdExpand();
+	*miscHacksPanel += m_check_fastCDVD | StdExpand();
 
 	s_table = new wxFlexGridSizer( 3, 2, 0, 0 );
 	s_table->Add(m_eeRateSliderPanel, StdExpand());
 	s_table->Add(m_eeSkipSliderPanel, StdExpand());
 	s_table->Add(miscHacksPanel, StdExpand());
 	s_table->Add(vuHacksPanel, StdExpand());
-	s_table->Add(new wxStaticText(this, -1, ""), StdExpand());
+	s_table->Add(new wxStaticText(this, -1, ""));
 	s_table->Add(m_button_Defaults, StdButton());
 
 	m_sizer = new wxBoxSizer(wxVERTICAL);
 	m_sizer->Add(m_check_Enable, StdExpand());
-	m_sizer->Add(new wxStaticLine(this), StdExpand());
-	m_sizer->Add(s_table, StdExpand());
+	m_sizer->Add(s_table);
 
 	SetSizer(m_sizer);
 	// ------------------------------------------------------------------------
