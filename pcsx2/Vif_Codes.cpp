@@ -262,8 +262,18 @@ static __fi void _vifCode_MPG(int idx, u32 addr, const u32 *data, int size) {
 	vifExecQueue(idx);
 
 	if (idx && THREAD_VU1) {
-		vu1Thread.WriteMicroMem(addr, (u8*)data, size*4);
-		vifX.tag.addr = size * 4;
+		if ((addr + size * 4) > vuMemSize)
+		{
+			vu1Thread.WriteMicroMem(addr, (u8*)data, vuMemSize - addr);
+			size -= (vuMemSize - addr) / 4;
+			vu1Thread.WriteMicroMem(0, (u8*)data, size * 4);
+			vifX.tag.addr = size * 4;
+		}
+		else
+		{
+			vu1Thread.WriteMicroMem(addr, (u8*)data, size * 4);
+			vifX.tag.addr += size * 4;
+		}
 		return;
 	}
 
