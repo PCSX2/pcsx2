@@ -32,14 +32,21 @@ class NewRecordingFrame : public wxDialog
 {
 public:
 	NewRecordingFrame(wxWindow* parent);
+	int ShowModal(const bool isCoreThreadOpen);
 
 	wxString GetFile() const;
 	wxString GetAuthor() const;
 	int GetFrom() const;
 
+protected:
+	void OnFileDirChange(wxFileDirPickerEvent& event);
+	void OnFileChanged(wxFileDirPickerEvent& event);
+	void EnableOkBox();
+
 private:
 	wxStaticText* m_fileLabel;
 	wxFilePickerCtrl* m_filePicker;
+	bool m_fileBrowsed;
 	wxStaticText* m_authorLabel;
 	wxTextCtrl* m_authorInput;
 	wxStaticText* m_fromLabel;

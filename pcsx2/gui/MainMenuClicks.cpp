@@ -956,9 +956,9 @@ void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent& event)
 	NewRecordingFrame* newRecordingFrame = wxGetApp().GetNewRecordingFramePtr();
 	if (newRecordingFrame)
 	{
-		if (newRecordingFrame->ShowModal() != wxID_CANCEL)
+		if (newRecordingFrame->ShowModal(CoreThread.IsOpen()) != wxID_CANCEL)
 		{
-			if (g_InputRecording.Create(newRecordingFrame->GetFile(), !newRecordingFrame->GetFrom(), newRecordingFrame->GetAuthor()))
+			if (g_InputRecording.Create(newRecordingFrame->GetFile(), newRecordingFrame->GetFrom(), newRecordingFrame->GetAuthor()))
 			{
 				if (!g_InputRecording.GetInputRecordingData().FromSaveState())
 					StartInputRecording();
