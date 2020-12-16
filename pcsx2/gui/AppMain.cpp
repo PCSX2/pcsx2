@@ -417,6 +417,7 @@ wxMessageOutput* Pcsx2AppTraits::CreateMessageOutput()
 //  Pcsx2StandardPaths
 // --------------------------------------------------------------------------------------
 #ifdef wxUSE_STDPATHS
+#ifndef __APPLE__ // macOS uses wx's defaults
 class Pcsx2StandardPaths : public wxStandardPaths
 {
 public:
@@ -457,11 +458,16 @@ public:
 #endif
 
 };
+#endif // ifdef __APPLE__
 
 wxStandardPaths& Pcsx2AppTraits::GetStandardPaths()
 {
+#ifdef __APPLE__
+	return _parent::GetStandardPaths();
+#else
 	static Pcsx2StandardPaths stdPaths;
 	return stdPaths;
+#endif
 }
 #endif
 
