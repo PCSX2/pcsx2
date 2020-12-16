@@ -33,13 +33,10 @@ NewRecordingFrame::NewRecordingFrame(wxWindow* parent)
 
 	m_filePicker = new wxFilePickerCtrl(panel, MenuIds_New_Recording_Frame_File, wxEmptyString, "File", L"p2m2 file(*.p2m2)|*.p2m2", wxDefaultPosition, wxDefaultSize, wxFLP_SAVE | wxFLP_OVERWRITE_PROMPT | wxFLP_USE_TEXTCTRL);
 	m_authorInput = new wxTextCtrl(panel, MenuIds_New_Recording_Frame_Author, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	wxArrayString choices;
-	choices.Add("Current Frame");
-	choices.Add("Power-On");
-	m_fromChoice = new wxChoice(panel, MenuIds_New_Recording_Frame_From, wxDefaultPosition, wxDefaultSize, choices);
-	m_fromChoice->SetSelection(0);
+	m_fromChoice = new wxChoice(panel, MenuIds_New_Recording_Frame_From, wxDefaultPosition, wxDefaultSize, NULL);
 
-	m_startRecording = new wxButton(panel, wxID_OK, _("Ok"), wxDefaultPosition, wxDefaultSize);
+	m_startRecording = new wxButton(panel, wxID_OK, _("Browse Required"), wxDefaultPosition, wxDefaultSize);
+	m_startRecording->Enable(false);
 	m_cancelRecording = new wxButton(panel, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize);
 
 	fgs->Add(m_fileLabel, 1);
@@ -58,6 +55,45 @@ NewRecordingFrame::NewRecordingFrame(wxWindow* parent)
 	panel->SetSizer(container);
 	panel->GetSizer()->Fit(this);
 	Centre();
+
+	m_fileBrowsed = false;
+	m_filePicker->GetPickerCtrl()->Bind(wxEVT_FILEPICKER_CHANGED, &NewRecordingFrame::OnFileDirChange, this);
+	m_filePicker->Bind(wxEVT_FILEPICKER_CHANGED, &NewRecordingFrame::OnFileChanged, this);
+}
+
+int NewRecordingFrame::ShowModal(const bool isCoreThreadOpen)
+{
+	static const char* choices[2] = {"Boot", "Current Frame"};
+	m_fromChoice->Set(wxArrayString(1 + isCoreThreadOpen, &choices[0]));
+	m_fromChoice->SetSelection(isCoreThreadOpen);
+	return wxDialog::ShowModal();
+}
+
+void NewRecordingFrame::OnFileDirChange(wxFileDirPickerEvent& event)
+{
+	m_filePicker->wxFileDirPickerCtrlBase::OnFileDirChange(event);
+	m_fileBrowsed = true;
+	EnableOkBox();
+}
+
+void NewRecordingFrame::OnFileChanged(wxFileDirPickerEvent& event)
+{
+	EnableOkBox();
+}
+
+void NewRecordingFrame::EnableOkBox()
+{
+	if (m_filePicker->GetPath().length() == 0)
+	{
+		m_fileBrowsed = false;
+		m_startRecording->SetLabel(_("Browse Required"));
+		m_startRecording->Enable(false);
+	}
+	else if (m_fileBrowsed)
+	{
+		m_startRecording->SetLabel(_("Start"));
+		m_startRecording->Enable(true);
+	}
 }
 
 wxString NewRecordingFrame::GetFile() const
