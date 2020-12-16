@@ -152,7 +152,7 @@ namespace PathDefs
 	{
 		switch( mode )
 		{
-#ifdef XDG_STD
+#if defined(XDG_STD) || defined(__APPLE__) // Expected location for this kind of stuff on macOS
 			// Move all user data file into central configuration directory (XDG_CONFIG_DIR)
 			case DocsFolder_User:	return GetUserLocalDataDir();
 #else
