@@ -101,7 +101,7 @@ void SysCoreThread::Start()
 		return;
 	GetCorePlugins().Init();
 	SPU2init();
-    PADinit();
+	PADinit();
 	DEV9init();
 	USBinit();
 	_parent::Start();
@@ -317,7 +317,7 @@ void SysCoreThread::OnSuspendInThread()
 	USBclose();
 	DoCDVDclose();
 	FWclose();
-    PADclose();
+	PADclose();
 	SPU2close();
 }
 
@@ -332,7 +332,7 @@ void SysCoreThread::OnResumeInThread(bool isSuspended)
 	}
 	FWopen();
 	SPU2open((void*)pDsp);
-    PADopen((void*)pDsp);
+	PADopen((void*)pDsp);
 }
 
 
@@ -349,7 +349,7 @@ void SysCoreThread::OnCleanupInThread()
 	vu1Thread.WaitVU();
 	USBclose();
 	SPU2close();
-    PADclose();
+	PADclose();
 	DEV9close();
 	DoCDVDclose();
 	FWclose();
@@ -357,7 +357,7 @@ void SysCoreThread::OnCleanupInThread()
 	GetCorePlugins().Shutdown();
 	USBshutdown();
 	SPU2shutdown();
-    PADshutdown();
+	PADshutdown();
 	DEV9shutdown();
 
 	_mm_setcsr(m_mxcsr_saved.bitmask);
