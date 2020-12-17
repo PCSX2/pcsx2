@@ -41,7 +41,7 @@ SectionIn RO
   Delete "$DESKTOP\${APP_NAME}.lnk"
   Delete "$SMPROGRAMS\${APP_NAME}.lnk"
 
-  Delete "$INSTDIR\GameIndex.dbf"
+  Delete "$INSTDIR\GameIndex.yaml"
   Delete "$INSTDIR\cheats_ws.zip"
   Delete "$INSTDIR\PCSX2_keys.ini.default"
   Delete "$INSTDIR\pcsx2.exe"
