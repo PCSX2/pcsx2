@@ -45,9 +45,6 @@
 #define FORCE_UPDATE_WPARAM ((WPARAM)0x74328943)
 #define FORCE_UPDATE_LPARAM ((LPARAM)0x89437437)
 
-// PAD version.
-#define VERSION ((1 << 8) | 12 | (1 << 24))
-
 #ifdef __linux__
 Display* GSdsp;
 Window GSwin;
@@ -789,7 +786,7 @@ inline void SetVibrate(int port, int slot, int motor, u8 val)
 // Used in about and config screens.
 void GetNameAndVersionString(wchar_t* out)
 {
-	wsprintfW(out, L"GamePad settings", (VERSION >> 8) & 0xFF, VERSION & 0xFF, (VERSION >> 24) & 0xFF, SVN_REV);
+	wsprintfW(out, L"GamePad");
 }
 #endif
 
