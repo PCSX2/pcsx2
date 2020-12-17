@@ -515,7 +515,7 @@ namespace usb_pad
 				mapping->devName = devName;
 				mapping->hidPath = devName;
 			}
-			//TODO get real dev name, probably from registry (see lilypad)
+			//TODO get real dev name, probably from registry (see PAD Windows)
 			if (!mapping->devName.length())
 				mapping->devName = devName;
 

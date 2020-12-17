@@ -47,7 +47,7 @@ option(DISABLE_SETCAP "Do not set files capabilities")
 option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
 option(EXTRA_PLUGINS "Build various 'extra' plugins")
 option(PORTAUDIO_API "Build portaudio support on spu2x" ON)
-option(SDL2_API "Use SDL2 on spu2x and onepad (wxWidget mustn't be built with SDL1.2 support" ON)
+option(SDL2_API "Use SDL2 on SPU2 and PAD Linux (wxWidget mustn't be built with SDL1.2 support" ON)
 option(GTK2_API "Use GTK2 api (legacy)")
 
 if(PACKAGE_MODE)

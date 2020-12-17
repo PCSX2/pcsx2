@@ -321,8 +321,6 @@ namespace Implementations
 			// the content stays on screen. Try to prevent that by first exiting fullscreen,
 			// but don't update the internal PCSX2 state/config, and PCSX2 will restore
 			// fullscreen correctly when emulation resumes according to its state/config.
-			// This is similar to what LilyPad's "Safe fullscreen exit on escape" hack does,
-			// and thus hopefully makes LilyPad's hack redundant.
 			gsframe->ShowFullScreen(false, false);
 		}
 
@@ -352,11 +350,10 @@ namespace Implementations
 			{
 				// aborting suspend request
 				// Note: if we didn't want to suspend emulation for this confirmation dialog,
-				// and if LilyPad has "Safe fullscreen exit on ESC", then pressing ESC would
-				// have exited fullscreen without PCSX2 knowing about it, and since it's not
-				// suspended it would not re-init the fullscreen state if the confirmation is
-				// aborted. On such case we'd have needed to set the gsframe fullscreen mode
-				// here according to g_Conf->GSWindow.IsFullscreen
+				// then pressing ESC would have exited fullscreen without PCSX2 knowing about it,
+				// and since it's not suspended it would not re-init the fullscreen state if the
+				// confirmation is aborted. On such case we'd have needed to set the gsframe
+				// fullscreen mode here according to g_Conf->GSWindow.IsFullscreen
 				CoreThread.Resume();
 				return;
 			}
