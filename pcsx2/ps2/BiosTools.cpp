@@ -51,6 +51,7 @@ static_assert( sizeof(romdir) == DIRENTRY_SIZE, "romdir struct not packed to 16 
 
 u32 BiosVersion;
 u32 BiosChecksum;
+u32 BiosRegion;
 bool NoOSD;
 wxString BiosDescription;
 const BiosDebugInformation* CurrentBiosInformation;
@@ -72,7 +73,7 @@ Exception::BiosLoadFailed::BiosLoadFailed( const wxString& filename )
 
 // This method throws a BadStream exception if the bios information chould not be obtained.
 //  (indicating that the file is invalid, incomplete, corrupted, or plain naughty).
-static void LoadBiosVersion( pxInputStream& fp, u32& version, wxString& description, wxString& zoneStr )
+static void LoadBiosVersion( pxInputStream& fp, u32& version, wxString& description, u32& region, wxString& zoneStr )
 {
 	uint i;
 	romdir rd;
@@ -111,14 +112,14 @@ static void LoadBiosVersion( pxInputStream& fp, u32& version, wxString& descript
 
 			switch(romver[4])
 			{
-				case 'T': zone = "T10K";	break;
-				case 'X': zone = "Test";	break;
-				case 'J': zone = "Japan";	break;
-				case 'A': zone = "USA";		break;
-				case 'E': zone = "Europe";	break;
-				case 'H': zone = "HK";		break;
-				case 'P': zone = "Free";	break;
-				case 'C': zone = "China";	break;
+				case 'T': zone = "T10K";	region = 0;	break;
+				case 'X': zone = "Test";	region = 1;	break;
+				case 'J': zone = "Japan";	region = 2;	break;
+				case 'A': zone = "USA";		region = 3;	break;
+				case 'E': zone = "Europe";	region = 4;	break;
+				case 'H': zone = "HK";		region = 5;	break;
+				case 'P': zone = "Free";	region = 6;	break;
+				case 'C': zone = "China";	region = 7;	break;
 			}
 
 			char vermaj[3] = { romver[0], romver[1], 0 };
@@ -167,10 +168,10 @@ static void LoadBiosVersion( pxInputStream& fp, u32& version, wxString& descript
 	}
 }
 
-static void LoadBiosVersion( pxInputStream& fp, u32& version, wxString& description )
+static void LoadBiosVersion( pxInputStream& fp, u32& version, wxString& description, u32& region )
 {
 	wxString zoneStr;
-	LoadBiosVersion( fp,version, description, zoneStr );
+	LoadBiosVersion( fp,version, description, region, zoneStr );
 }
 
 template< size_t _size >
@@ -295,7 +296,7 @@ void LoadBIOS()
 		ChecksumIt( BiosChecksum, eeMem->ROM );
 
 		pxInputStream memfp( Bios, new wxMemoryInputStream( eeMem->ROM, sizeof(eeMem->ROM) ) );
-		LoadBiosVersion( memfp, BiosVersion, BiosDescription, biosZone );
+		LoadBiosVersion( memfp, BiosVersion, BiosDescription, BiosRegion, biosZone );
 
 		Console.SetTitle( pxsFmt( L"Running BIOS (%s v%u.%u)",
 			WX_STR(biosZone), BiosVersion >> 8, BiosVersion & 0xff
@@ -341,7 +342,8 @@ bool IsBIOS(const wxString& filename, wxString& description)
 
 	try {
 		u32 version;
-		LoadBiosVersion( inway, version, description );
+		u32 region;
+		LoadBiosVersion( inway, version, description, region );
 		return true;
 	} catch( Exception::BadStream& ) { }
 
