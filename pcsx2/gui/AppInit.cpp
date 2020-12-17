@@ -649,12 +649,6 @@ void Pcsx2App::CleanupOnExit()
 		Console.Indent().Error(ex.FormatDiagnosticMessage());
 	}
 
-	// Notice: deleting the plugin manager (unloading plugins) here causes Lilypad to crash,
-	// likely due to some pending message in the queue that references lilypad procs.
-	// We don't need to unload plugins anyway tho -- shutdown is plenty safe enough for
-	// closing out all the windows.  So just leave it be and let the plugins get unloaded
-	// during the wxApp destructor. -- air
-
 	// FIXME: performing a wxYield() here may fix that problem. -- air
 
 	pxDoAssert = pxAssertImpl_LogIt;

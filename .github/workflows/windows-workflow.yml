@@ -12,8 +12,7 @@ on:
       - .clang-format
       - debian-packager/
       - bin/PCSX2_keys.ini.default
-      - "plugins/onepad/**"
-      - "plugins/onepad_legacy/**"
+      - "pcsx2/PAD/Linux/**"
   pull_request:
     branches:
       - master
@@ -23,8 +22,7 @@ on:
       - .clang-format
       - debian-packager/
       - bin/PCSX2_keys.ini.default
-      - "plugins/onepad/**"
-      - "plugins/onepad_legacy/**"
+      - "pcsx2/PAD/Linux/**"
 
 jobs:
   build:

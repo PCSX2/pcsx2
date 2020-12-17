@@ -2,14 +2,12 @@
 # You should first copy PCSX2_keys.ini.default to the inis folder, then
 # rename it to PCSX2_keys.ini, and then edit it.
 
-# Important: keys which are defined at the input plugin (LilyPad) will override
-# shortcuts at this file.
+# Important: PAD bindings will override shortcuts at this file.
 
 # IMPORTANT: GSdx has fixed shortcuts. Make sure your shortcuts don't conflict.
 # Also, they will affect GSdx also when alt/ctrl/shift are pressed, so it's
 # best to completely avoid them at this file. GSdx uses:
 # F5         - Deinterlace modes
-# F7         - Internal "TV-like" shaders
 # PAGE_UP    - FXAA antialiasing (HW and SW)
 # PAGE_DOWN  - Cycles through dither modes (HW) 
 # DELETE     - Software Antialiasing (AA1)
