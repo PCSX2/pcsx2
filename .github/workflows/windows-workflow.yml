@@ -12,7 +12,7 @@ on:
       - .clang-format
       - debian-packager/
       - bin/PCSX2_keys.ini.default
-      - "pcsx2/PAD/Windows/**"
+      - "pcsx2/PAD/Linux/**"
   pull_request:
     branches:
       - master
@@ -22,7 +22,7 @@ on:
       - .clang-format
       - debian-packager/
       - bin/PCSX2_keys.ini.default
-      - "pcsx2/PAD/Windows/**"
+      - "pcsx2/PAD/Linux/**"
 
 jobs:
   build:
