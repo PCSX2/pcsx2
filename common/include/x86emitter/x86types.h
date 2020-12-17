@@ -338,7 +338,7 @@ public:
     /// Checks if mapping the ID directly would be a good idea
     bool canMapIDTo(int otherSize) const
     {
-        if ((otherSize == 1) == GetOperandSize() == 1)
+        if ((otherSize == 1) == (GetOperandSize() == 1))
             return true;
         return isIDSameInAllSizes();
     }
