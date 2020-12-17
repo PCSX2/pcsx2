@@ -434,18 +434,6 @@ void MainEmuFrame::_DoBootCdvd()
 		}
 	}
 	
-	if (!g_Conf->EmuOptions.FullBootConfig && g_Conf->EmuOptions.UseBOOT2Injection)
-	{
-		g_Conf->EmuOptions.UseBOOT2Injection = false;
-		g_Conf->EmuOptions.FullBootConfig = true;
-
-		wxString message;
-		message.Printf(_("For the first run of this version of the emulator, you will be forced to boot to your BIOS. You are required to configure the BIOS language before proceeding. Once this has been done you can Fast Boot normally."));
-		Msgbox::Alert(message, _("BIOS Configuration"));
-	}
-	else
-		g_Conf->EmuOptions.FullBootConfig = true;
-	
 	sApp.SysExecute(g_Conf->CdvdSource);
 }
 

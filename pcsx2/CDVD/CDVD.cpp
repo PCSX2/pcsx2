@@ -136,6 +136,34 @@ NVMLayout* getNvmLayout()
 	return nvmLayout;
 }
 
+static void cdvdCreateNewNVM(const wxString& filename)
+{
+	wxFFile fp(filename, L"wb");
+	if (!fp.IsOpened())
+		throw Exception::CannotCreateStream(filename);
+
+	u8 zero[1024] = { 0 };
+	fp.Write(zero, sizeof(zero));
+
+	// Write NVM ILink area with dummy data (Age of Empires 2)
+	// Also write language data defaulting to English (Guitar Hero 2)
+
+	NVMLayout* nvmLayout = getNvmLayout();
+	u8 ILinkID_Data[8] = { 0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86 };
+
+	fp.Seek(*(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, ilinkId)));
+	fp.Write(ILinkID_Data, sizeof(ILinkID_Data));
+
+	u8 biosLanguage[16];
+	memcpy(biosLanguage, &biosLangDefaults[BiosRegion][0], 16);
+	// Config sections first 16 bytes are generally blank expect the last byte which is PS1 mode stuff
+	// So let's ignore that and just write the PS2 mode stuff
+	fp.Seek(*(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, config1)) + 0x10);
+	fp.Write(biosLanguage, sizeof(biosLanguage));
+
+	fp.Close();
+}
+
 // Throws Exception::CannotCreateStream if the file cannot be opened for reading, or cannot
 // be created for some reason.
 static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
@@ -152,23 +180,29 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 	{
 		Console.Warning("NVM File Not Found, creating substitute...");
 
-		wxFFile fp(fname, L"wb");
+		cdvdCreateNewNVM(fname);
+	}
+	else
+	{
+		u8 LanguageParams[16];
+		u8 zero[16] = { 0 };
+		NVMLayout* nvmLayout = getNvmLayout();
+
+		wxFFile fp(fname, L"r+b");
 		if (!fp.IsOpened())
 			throw Exception::CannotCreateStream(fname);
 
-		u8 zero[1024] = { 0 };
-		fp.Write(zero, sizeof(zero));
+		fp.Seek(*(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, config1)) + 0x10);
+		fp.Read(LanguageParams, 16);
 
-		// Write NVM ILink area with dummy data (Age of Empires 2)
-		// Also write language data defaulting to English (Guitar Hero 2)
+		fp.Close();
 
-		NVMLayout* nvmLayout = getNvmLayout();
-		u8 ILinkID_Data[8] =  { 0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86 };
+		if (memcmp(LanguageParams, zero, sizeof(LanguageParams)) == 0)
+		{
+			Console.Warning("Language Parameters missing, filling in defaults");
 
-		fp.Seek(*(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, ilinkId)));
-		fp.Write(ILinkID_Data, sizeof(ILinkID_Data));
-
-		g_SkipBiosHack = false;
+			cdvdCreateNewNVM(fname);
+		}
 	}
 
 	wxFFile fp(fname, L"r+b");
