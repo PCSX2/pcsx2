@@ -1369,6 +1369,14 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 		int64_t orderForDirectories = 1;
 		int64_t orderForLegacyFiles = -1;
 
+		const auto getOptionalNodeAttribute = []( const YAML::Node& node, const char* attribName, auto def ) {
+			auto result = std::move(def);
+			if ( node.IsDefined() ) {
+				result = node[attribName].as<decltype(def)>( def );
+			}
+			return result;
+		};
+
 		wxString fileName;
 		bool hasNext = dir.GetFirst( &fileName );
 		while ( hasNext ) {
@@ -1386,9 +1394,9 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 				const YAML::Node& node = index[ fileNameUTF8.data() ];
 
 				// orderForLegacyFiles will decrement even if it ends up being unused, but that's fine
-				auto key = std::make_pair( true, node["order"].as<unsigned int>( orderForLegacyFiles-- ) );
-				EnumeratedFileEntry entry { fileName, node["timeCreated"].as<time_t>( creationTime.GetTicks() ),
-											node["timeModified"].as<time_t>( modificationTime.GetTicks() ), true };
+				auto key = std::make_pair( true, getOptionalNodeAttribute( node, "order", orderForLegacyFiles-- ) );
+				EnumeratedFileEntry entry { fileName, getOptionalNodeAttribute( node, "timeCreated", creationTime.GetTicks() ),
+											getOptionalNodeAttribute( node, "timeModified", modificationTime.GetTicks() ), true };
 				sortContainer.try_emplace( std::move(key), std::move(entry) );
 			}
 			else {
@@ -1403,8 +1411,8 @@ std::vector<FolderMemoryCard::EnumeratedFileEntry> FolderMemoryCard::GetOrderedF
 
 				// orderForDirectories will increment even if it ends up being unused, but that's fine
 				auto key = std::make_pair( false, orderForDirectories++ );
-				EnumeratedFileEntry entry { fileName, node["timeCreated"].as<time_t>( creationTime.GetTicks() ),
-											node["timeModified"].as<time_t>( modificationTime.GetTicks() ), false };
+				EnumeratedFileEntry entry { fileName, getOptionalNodeAttribute( node, "timeCreated", creationTime.GetTicks() ),
+											getOptionalNodeAttribute( node, "timeModified", modificationTime.GetTicks() ), false };
 				sortContainer.try_emplace( std::move(key), std::move(entry) );
 			}
 
