@@ -31,10 +31,6 @@ InputRecordingControls g_InputRecordingControls;
 
 void InputRecordingControls::CheckPauseStatus()
 {
-	// We do not want to increment/advance anything while the frame lock mechanism is active
-	if (frameLock)
-		return;
-
 	if (frameAdvancing)
 	{
 		frameAdvancing = false;
