@@ -482,7 +482,7 @@ static __fi void VSyncStart(u32 sCycle)
 	{
 		// It is imperative that any frame locking that must happen occurs before Vsync is started
 		// Not doing so would sacrifice a frame of a savestate-based recording when loading any savestate
-		g_InputRecordingControls.HandleFrameCountLocking();
+		g_InputRecordingControls.HandlePausingAndLocking();
 	}
 #endif
 
@@ -543,7 +543,7 @@ static __fi void VSyncEnd(u32 sCycle)
 #ifndef DISABLE_RECORDING
 	if (g_Conf->EmuOptions.EnableRecordingTools)
 	{
-		g_InputRecordingControls.HandleFrameAdvanceAndPausing();
+		g_InputRecordingControls.CheckPauseStatus();
 	}
 #endif
 
