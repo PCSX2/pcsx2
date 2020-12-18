@@ -5992,8 +5992,10 @@ SLED-53719:
   name: "Pro Evolution Soccer 5 [Demo]"
   region: "PAL-E"
 SLED-53723:
-  name: "Peter Jackson's king Kong [Demo]"
+  name: "Peter Jackson's King Kong [Demo]"
   region: "PAL-E"
+  gameFixes:
+    - VU0KickstartHack # Fixes bad polygons on characters.
 SLED-53745:
   name: "Total Overdose [Demo]"
   region: "PAL-M5"
@@ -13322,12 +13324,18 @@ SLES-53703:
   name: "King Kong, Peter Jackson's - The Official Game of the Movie"
   region: "PAL-M10"
   compat: 5
+  gameFixes:
+    - VU0KickstartHack # Fixes bad polygons on characters.
 SLES-53704:
   name: "King Kong, Peter Jackson's - The Official Game of the Movie"
   region: "PAL-R"
+  gameFixes:
+    - VU0KickstartHack # Fixes bad polygons on characters.
 SLES-53705:
   name: "King Kong, Peter Jackson's - The Official Game of the Movie"
   region: "PAL-PL-E"
+  gameFixes:
+    - VU0KickstartHack # Fixes bad polygons on characters.
 SLES-53706:
   name: "Disney's The Chronicles of Narnia - The Lion, The Witch, and The Wardrobe"
   region: "PAL-E"
@@ -23810,6 +23818,8 @@ SLPM-66210:
 SLPM-66211:
   name: "King Kong, Peter Jackson's - The Official Game of the Movie"
   region: "NTSC-J"
+  gameFixes:
+    - VU0KickstartHack # Fixes bad polygons on characters.
 SLPM-66212:
   name: "Sega Rally 2006"
   region: "NTSC-J"
@@ -36386,6 +36396,8 @@ SLUS-21311:
   name: "King Kong, Peter Jackson's - The Official Game of the Movie"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - VU0KickstartHack # Fixes bad polygons on characters.
 SLUS-21312:
   name: "Wallace & Gromit - The Curse of the Were-Rabbit"
   region: "NTSC-U"
