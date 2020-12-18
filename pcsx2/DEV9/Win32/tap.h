@@ -29,6 +29,7 @@ class TAPAdapter : public NetAdapter
 {
 	HANDLE htap;
 	OVERLAPPED read, write;
+	HANDLE cancel;
 	bool isActive = false;
 
 public:
@@ -39,5 +40,6 @@ public:
 	virtual bool recv(NetPacket* pkt);
 	//sends the packet and deletes it when done (if successful).rv :true success
 	virtual bool send(NetPacket* pkt);
+	virtual void close();
 	virtual ~TAPAdapter();
 };

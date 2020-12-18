@@ -73,6 +73,7 @@ void TermNet()
 	if (RxRunning)
 	{
 		RxRunning = false;
+		nif->close();
 		emu_printf("Waiting for RX-net thread to terminate..");
 		rx_thread.join();
 		emu_printf(".done\n");
