@@ -119,19 +119,15 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 {
 	const wxSizerFlags sliderFlags( wxSizerFlags().Border( wxLEFT | wxRIGHT, 8 ).Expand() );
 
-	m_check_Enable = new pxCheckBox( this, _("Enable speedhacks"),
-		pxE( L"Speedhacks usually improve emulation speed, but can cause glitches, broken audio, and false FPS readings.  When having emulation problems, disable this panel first."
+	m_check_Enable = new pxCheckBox(
+		this, _("Enable speedhacks"),
+		pxE( L"Speedhacks usually improve emulation speed"", but can cause glitches, broken audio, and false FPS readings.  When having emulation problems, disable this panel first."
 		)
 	);
 	m_check_Enable->SetToolTip(_("A safe and easy way to make sure that all speedhacks are completely disabled.")).SetSubPadding( 1 );
 
-	wxPanelWithHelpers* left	= new wxPanelWithHelpers( this, wxVERTICAL );
-	wxPanelWithHelpers* right	= new wxPanelWithHelpers( this, wxVERTICAL );
 
-	left->SetMinWidth( 350 );
-	right->SetMinWidth( 350 );
-
-	m_button_Defaults = new wxButton( right, wxID_DEFAULT, _("Restore Defaults") );
+	m_button_Defaults = new wxButton( this, wxID_DEFAULT, _("Restore Defaults") );
 
 	// ------------------------------------------------------------------------
 	// EE Cyclerate Hack Section:
@@ -140,7 +136,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	// Cycle stealing works by 'fast-forwarding' the EE by an arbitrary number of cycles whenever VU1 micro-programs
 	// are run, which works as a rough-guess skipping of what would normally be idle time spent running on the EE.
 
-	m_eeRateSliderPanel = new wxPanelWithHelpers( left, wxVERTICAL, _("EE Cyclerate [Not Recommended]") );
+	m_eeRateSliderPanel = new wxPanelWithHelpers( this, wxVERTICAL, _("EE Cyclerate [Not Recommended]") );
 
 	m_slider_eeRate = new wxSlider( m_eeRateSliderPanel, wxID_ANY, 0, -3, 3,
 		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL | wxSL_AUTOTICKS | wxSL_LABELS );
@@ -153,7 +149,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	// ------------------------------------------------------------------------
 	// EE Cycle Skipping Hack Section:
 
-	m_eeSkipSliderPanel = new wxPanelWithHelpers( right, wxVERTICAL, _("EE Cycle Skipping [Not Recommended]") );
+	m_eeSkipSliderPanel = new wxPanelWithHelpers( this, wxVERTICAL, _("EE Cycle Skipping [Not Recommended]") );
 
 	m_slider_eeSkip = new wxSlider(m_eeSkipSliderPanel, wxID_ANY, 0, 0, 3, wxDefaultPosition, wxDefaultSize,
 		wxHORIZONTAL | wxSL_AUTOTICKS | wxSL_LABELS );
@@ -168,7 +164,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	// ------------------------------------------------------------------------
 	// microVU Hacks Section:
 
-	wxPanelWithHelpers* vuHacksPanel = new wxPanelWithHelpers( right, wxVERTICAL, _("microVU Hacks") );
+	wxPanelWithHelpers* vuHacksPanel = new wxPanelWithHelpers( this, wxVERTICAL, _("microVU Hacks") );
 
 	m_check_vuFlagHack = new pxCheckBox( vuHacksPanel, _("mVU Flag Hack"),
 		_("Good Speedup and High Compatibility; may cause bad graphics... [Recommended]" ) );
@@ -191,7 +187,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	// ------------------------------------------------------------------------
 	// All other hacks Section:
 
-	wxPanelWithHelpers* miscHacksPanel = new wxPanelWithHelpers( left, wxVERTICAL, _("Other Hacks") );
+	wxPanelWithHelpers* miscHacksPanel = new wxPanelWithHelpers( this, wxVERTICAL, _("Other Hacks") );
 
 	m_check_intc = new pxCheckBox( miscHacksPanel, _("Enable INTC Spin Detection"),
 		_("Huge speedup for some games, with almost no compatibility side effects. [Recommended]") );
@@ -212,16 +208,6 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	m_check_fastCDVD->SetToolTip( pxEt( L"Check HDLoader compatibility lists for known games that have issues with this (often marked as needing 'mode 1' or 'slow DVD')."
 	) );
 
-	// ------------------------------------------------------------------------
-	//  Layout and Size ---> (!!)
-
-	//wxFlexGridSizer& DefEnableSizer( *new wxFlexGridSizer( 3, 0, 12 ) );
-	//DefEnableSizer.AddGrowableCol( 1, 1 );
-	//DefEnableSizer.AddGrowableCol( 2, 10 );
-	//DefEnableSizer.AddGrowableCol( 1, 1 );
-	//DefEnableSizer	+= m_button_Defaults	| StdSpace().Align( wxALIGN_LEFT );
-	//DefEnableSizer	+= pxStretchSpacer(1);
-	//DefEnableSizer	+= m_check_Enable		| StdExpand().Align( wxALIGN_RIGHT );
 
 	*m_eeRateSliderPanel += m_slider_eeRate | sliderFlags;
 	*m_eeRateSliderPanel += m_msg_eeRate | sliderFlags;
@@ -232,31 +218,24 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	*vuHacksPanel += m_check_vuFlagHack | StdExpand();
 	*vuHacksPanel += m_check_vuThread | StdExpand();
 	*vuHacksPanel += m_check_vu1Instant | StdExpand();
-	//*vuHacksPanel	+= 57; // Aligns left and right boxes in default language and font size
 
-	*miscHacksPanel	+= m_check_intc | StdExpand();
-	*miscHacksPanel	+= m_check_waitloop | StdExpand();
-	*miscHacksPanel	+= m_check_fastCDVD | StdExpand();
+	*miscHacksPanel += m_check_intc | StdExpand();
+	*miscHacksPanel += m_check_waitloop | StdExpand();
+	*miscHacksPanel += m_check_fastCDVD | StdExpand();
 
-	*left	+= m_eeRateSliderPanel | StdExpand();
-	*left	+= miscHacksPanel	| StdExpand();
+	s_table = new wxFlexGridSizer( 3, 2, 0, 0 );
+	s_table->Add(m_eeRateSliderPanel, StdExpand());
+	s_table->Add(m_eeSkipSliderPanel, StdExpand());
+	s_table->Add(miscHacksPanel, StdExpand());
+	s_table->Add(vuHacksPanel, StdExpand());
+	s_table->Add(new wxStaticText(this, -1, ""));
+	s_table->Add(m_button_Defaults, StdButton());
 
-	*right	+= m_eeSkipSliderPanel | StdExpand();
-	*right	+= vuHacksPanel		| StdExpand();
-	*right	+= StdPadding;
-	*right	+= m_button_Defaults| StdButton();
+	m_sizer = new wxBoxSizer(wxVERTICAL);
+	m_sizer->Add(m_check_Enable, StdExpand());
+	m_sizer->Add(s_table);
 
-	s_table = new wxFlexGridSizer( 2 );
-	s_table->AddGrowableCol( 0, 1 );
-	s_table->AddGrowableCol( 1, 1 );
-	*s_table+= left				| pxExpand;
-	*s_table+= right			| pxExpand;
-
-	*this	+= m_check_Enable | StdExpand();
-	*this	+= new wxStaticLine( this )	| pxExpand.Border(wxLEFT | wxRIGHT, 20);
-	*this	+= StdPadding;
-	*this	+= s_table					| pxExpand;
-
+	SetSizer(m_sizer);
 	// ------------------------------------------------------------------------
 
 	Bind(wxEVT_SCROLL_CHANGED, &SpeedHacksPanel::EECycleRate_Scroll, this, m_slider_eeRate->GetId());
@@ -296,7 +275,7 @@ void Panels::SpeedHacksPanel::EnableStuff( AppConfig* configToUse )
 	// Layout necessary to ensure changed slider text gets re-aligned properly
 	// and to properly gray/ungray pxStaticText stuff (I suspect it causes a
 	// paint event to be sent on Windows)
-	TrigLayout();
+	Layout();
 }
 
 void Panels::SpeedHacksPanel::AppStatusEvent_OnSettingsApplied()
@@ -327,8 +306,6 @@ void Panels::SpeedHacksPanel::ApplyConfigToGui( AppConfig& configToApply, int fl
 
 	// Then, lock(gray out)/unlock the widgets as necessary.
 	EnableStuff( &configToApply );
-
-	//Console.WriteLn("SpeedHacksPanel::ApplyConfigToGui: EnabledPresets: %s", configToApply.EnablePresets?"true":"false");
 }
 
 // Apply the values from the widgets to the config,
@@ -378,7 +355,7 @@ void Panels::SpeedHacksPanel::EECycleRate_Scroll(wxScrollEvent &event)
 {
 	SetEEcycleSliderMsg();
 
-	TrigLayout();
+	Layout();
 
 	event.Skip();
 }
@@ -387,34 +364,7 @@ void Panels::SpeedHacksPanel::VUCycleRate_Scroll(wxScrollEvent &event)
 {
 	SetVUcycleSliderMsg();
 
-	TrigLayout();
+	Layout();
 
 	event.Skip();
-}
-
-void Panels::SpeedHacksPanel::TrigLayout()
-{
-	// Reset the size information so wxWidgets can compute best value
-	wxSize reset(-1, -1);
-	m_eeRateSliderPanel->SetMinSize(reset);
-	m_eeSkipSliderPanel->SetMinSize(reset);
-
-	// Take into account the current shape
-	Layout();
-
-	// Get the height of both slider boxes
-	int ee_min = m_eeRateSliderPanel->GetSize().GetHeight();
-	int vu_min = m_eeSkipSliderPanel->GetSize().GetHeight();
-	wxSize max_min(-1, std::max(ee_min, vu_min));
-
-	// Align the small slider box on the big one.
-	m_eeRateSliderPanel->SetMinSize(max_min);
-	m_eeSkipSliderPanel->SetMinSize(max_min);
-	Layout();
-
-	// Propagate the info to parent so main windows is resized accordingly
-	wxWindow* win = this;
-	do {
-		win->Fit();
-	} while (win = win->GetParent());
 }
