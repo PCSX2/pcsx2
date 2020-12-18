@@ -73,7 +73,15 @@ void mVUinit(microVU& mVU, uint vuIndex) {
 
 // Resets Rec Data
 void mVUreset(microVU& mVU, bool resetReserve) {
-
+	if (THREAD_VU1)
+	{
+		// If MTVU is toggled on during gameplay we need to flush the running VU1 program, else it gets in a mess
+		if (VU0.VI[REG_VPU_STAT].UL & 0x100)
+		{
+			CpuVU1->Execute(vu1RunCycles);
+		}
+		VU0.VI[REG_VPU_STAT].UL &= ~0x100;
+	}
 	// Restore reserve to uncommitted state
 	if (resetReserve) mVU.cache_reserve->Reset();
 
