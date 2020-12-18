@@ -46,15 +46,8 @@ void SaveStateBase::InputRecordingFreeze()
 		// marker has not been set (which comes from the save-state), we initialize it.
 		if (g_InputRecording.IsInitialLoad())
 			g_InputRecording.SetupInitialState(g_FrameCount);
-		else if (g_InputRecording.IsActive())
-		{
-			// Explicitly set the frame change tracking variable as to not
-			// detect saving or loading a savestate as a frame being drawn
-			g_InputRecordingControls.SetFrameCountTracker(g_FrameCount);
-
-			if (IsLoading())
-				g_InputRecording.SetFrameCounter(g_FrameCount);
-		}
+		else if (g_InputRecording.IsActive() && IsLoading())
+			g_InputRecording.SetFrameCounter(g_FrameCount);
 	}
 #endif
 }
@@ -186,7 +179,7 @@ void InputRecording::IncrementFrameCounter()
 		switch (state)
 		{
 		case InputRecordingMode::Recording:
-			GetInputRecordingData().SetTotalFrames(frameCounter);
+			inputRecordingData.SetTotalFrames(frameCounter);
 			[[fallthrough]];
 		case InputRecordingMode::Replaying:
 			if (frameCounter == inputRecordingData.GetTotalFrames())
@@ -264,11 +257,11 @@ void InputRecording::SetToReplayMode()
 
 void InputRecording::SetFrameCounter(u32 newGFrameCount)
 {
-	if (newGFrameCount > startingFrame + (u32)g_InputRecording.GetInputRecordingData().GetTotalFrames())
+	if (newGFrameCount > startingFrame + (u32)inputRecordingData.GetTotalFrames())
 	{
 		inputRec::consoleLog("Warning, you've loaded PCSX2 emulation to a point after the end of the original recording. This should be avoided.");
 		inputRec::consoleLog("Savestate's framecount has been ignored.");
-		frameCounter = g_InputRecording.GetInputRecordingData().GetTotalFrames();
+		frameCounter = inputRecordingData.GetTotalFrames();
 		if (state == InputRecordingMode::Replaying)
 			SetToRecordMode();
 		incrementUndo = false;
@@ -283,7 +276,7 @@ void InputRecording::SetFrameCounter(u32 newGFrameCount)
 		}
 		else if (newGFrameCount == 0 && state == InputRecordingMode::Recording)
 			SetToReplayMode();
-		frameCounter = static_cast<s32>(newGFrameCount - startingFrame);
+		frameCounter = newGFrameCount - (s32)startingFrame;
 		incrementUndo = true;
 	}
 }
@@ -316,7 +309,6 @@ void InputRecording::SetupInitialState(u32 newStartingFrame)
 		SetToReplayMode();
 	}
 
-	g_InputRecordingControls.DisableFrameAdvance();
 	if (inputRecordingData.FromSaveState())
 		inputRec::consoleLog(fmt::format("Internal Starting Frame: {}", startingFrame));
 	frameCounter = 0;
