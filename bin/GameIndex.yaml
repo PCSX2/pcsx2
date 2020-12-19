@@ -18087,6 +18087,16 @@ SLPM-55063:
 SLPM-55064:
   name: "Hakuouki"
   region: "NTSC-J"
+SLPM-55065:
+  name: "Kamiyo Gakuen Makorouku Kurunugia"
+  region: "NTSC-J"
+  patches:
+    938DF440:
+      content: |-
+        author=PSI, Jelta
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,00131A64,word,10000003
 SLPM-55081:
   name: "Drag-on Dragoon 2 - Fuuin no Kurenai (Ultimate Hits)"
   region: "NTSC-J"
@@ -20859,8 +20869,18 @@ SLPM-65224:
 SLPM-65226:
   name: "Savage Skies"
   region: "NTSC-J"
-  # Comments from old GameIndex.dbf for this Game
-  #  This game needs the EE cache to work which is only supported in "interpreter" mode.
+  patches:
+    6911C604:
+      content: |-
+        author=PSI, 5ch
+        // The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end.
+        // The second function causes stack corruption as it allocates over the buffer, which is still transferring data.
+        // This works on real hardware due to the data cache - the transfer will remain safe in main memory, and the stack corruption only happens in cache.
+        // This patch inserts a bc0f instruction right after the transfer starts, forcing the game to wait for the transfer to end ASAP.
+        patch=0,EE,00163128,word,4100ffff
+        patch=0,EE,0016312c,word,00000000
+        patch=0,EE,00163130,word,03e00008
+        patch=0,EE,00163134,word,27bd0030
 SLPM-65227:
   name: "J-League Pro Soccer Club - Tsukuku! 3"
   region: "NTSC-J"
@@ -22437,6 +22457,15 @@ SLPM-65751:
 SLPM-65752:
   name: "Neo Contra"
   region: "NTSC-J"
+  patches:
+    A70549D6:
+      content: |-
+        comment=Patch by Prafull, Jelta
+        // New patch fixes most issues.
+        patch=0,EE,003A95B8,word,00000000
+        // Fix hang at Level 4.
+        patch=0,EE,0037B264,word,03e00008
+        patch=0,EE,0037B268,word,00000000
 SLPM-65753:
   name: "Kessen [Koei Collection Series]"
   region: "NTSC-J"
@@ -24357,6 +24386,13 @@ SLPM-66380:
 SLPM-66381:
   name: "Mitsu x Mitsu Drops - Love x Love Honey Life"
   region: "NTSC-J"
+  patches:
+    A37C886C:
+      content: |-
+        author=PSI, Jelta
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,00157318,word,10000003
 SLPM-66382:
   name: "Tenshou Gakuen Kensousoku [Tokudame Price]"
   region: "NTSC-J"
@@ -24573,6 +24609,13 @@ SLPM-66452:
 SLPM-66453:
   name: "Hiiro no Kakera [Limited Edition]"
   region: "NTSC-J"
+  patches:
+    1E65AEEF:
+      content: |-
+        author=PSI, Jelta
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,00160478,word,10000003
 SLPM-66454:
   name: "Hiiro no Kakera"
   region: "NTSC-J"
@@ -25340,6 +25383,13 @@ SLPM-66686:
 SLPM-66687:
   name: "Hiiro no Kakera - Ano Sora no Shita de"
   region: "NTSC-J"
+  patches:
+    8365E603:
+      content: |-
+        author=PSI, Jelta
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,001D1ED8,word,10000003
 SLPM-66688:
   name: "Harukanaru Jikuu no Kade 3 [Koei the Best]"
   region: "NTSC-J"
