@@ -20859,8 +20859,18 @@ SLPM-65224:
 SLPM-65226:
   name: "Savage Skies"
   region: "NTSC-J"
-  # Comments from old GameIndex.dbf for this Game
-  #  This game needs the EE cache to work which is only supported in "interpreter" mode.
+  patches:
+    6911C604:
+      content: |-
+        author=PSI, 5ch
+        // The game allocates a VIF DMA buffer on the stack and sends it, returns from the function, then calls another function to wait for the transfer to end.
+        // The second function causes stack corruption as it allocates over the buffer, which is still transferring data.
+        // This works on real hardware due to the data cache - the transfer will remain safe in main memory, and the stack corruption only happens in cache.
+        // This patch inserts a bc0f instruction right after the transfer starts, forcing the game to wait for the transfer to end ASAP.
+        patch=0,EE,00163128,word,4100ffff
+        patch=0,EE,0016312c,word,00000000
+        patch=0,EE,00163130,word,03e00008
+        patch=0,EE,00163134,word,27bd0030
 SLPM-65227:
   name: "J-League Pro Soccer Club - Tsukuku! 3"
   region: "NTSC-J"
@@ -22437,6 +22447,15 @@ SLPM-65751:
 SLPM-65752:
   name: "Neo Contra"
   region: "NTSC-J"
+  patches:
+    A70549D6:
+      content: |-
+        comment=Patch by Prafull, Jelta
+        // New patch fixes most issues.
+        patch=0,EE,003A95B8,word,00000000
+        // Fix hang at Level 4.
+        patch=0,EE,0037B264,word,03e00008
+        patch=0,EE,0037B268,word,00000000
 SLPM-65753:
   name: "Kessen [Koei Collection Series]"
   region: "NTSC-J"
