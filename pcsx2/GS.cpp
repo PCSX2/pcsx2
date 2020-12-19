@@ -139,7 +139,7 @@ __fi void gsWrite8(u32 mem, u8 value)
 		// make any sense, given that the real hardware's CSR circuit probably has no
 		// real "memory" where it saves anything.  (for example, you can't write to
 		// and change the GS revision or ID portions -- they're all hard wired.) --air
-	
+
 		case GS_CSR: // GS_CSR
 			gsCSRwrite( tGS_CSR((u32)value) );			break;
 		case GS_CSR + 1: // GS_CSR
@@ -302,26 +302,51 @@ void __fastcall gsWrite128_generic( u32 mem, const mem128_t* value )
 __fi u8 gsRead8(u32 mem)
 {
 	GIF_LOG("GS read 8 from %8.8lx  value: %8.8lx", mem, *(u8*)PS2GS_BASE(mem));
-	return *(u8*)PS2GS_BASE(mem);
+
+	switch (mem & ~0xF)
+	{
+		case GS_SIGLBLID:
+			return *(u8*)PS2GS_BASE(mem);
+		default: // Only SIGLBLID and CSR are readable, everything else mirrors CSR
+			return *(u8*)PS2GS_BASE(GS_CSR + (mem & 0xF));
+	}
 }
 
 __fi u16 gsRead16(u32 mem)
 {
 	GIF_LOG("GS read 16 from %8.8lx  value: %8.8lx", mem, *(u16*)PS2GS_BASE(mem));
-	return *(u16*)PS2GS_BASE(mem);
+	switch (mem & ~0xF)
+	{
+		case GS_SIGLBLID:
+			return *(u16*)PS2GS_BASE(mem);
+		default: // Only SIGLBLID and CSR are readable, everything else mirrors CSR
+			return *(u16*)PS2GS_BASE(GS_CSR + (mem & 0xF));
+	}
 }
 
 __fi u32 gsRead32(u32 mem)
 {
 	GIF_LOG("GS read 32 from %8.8lx  value: %8.8lx", mem, *(u32*)PS2GS_BASE(mem));
-	return *(u32*)PS2GS_BASE(mem);
+	switch (mem & ~0xF)
+	{
+		case GS_SIGLBLID:
+			return *(u32*)PS2GS_BASE(mem);
+		default: // Only SIGLBLID and CSR are readable, everything else mirrors CSR
+			return *(u32*)PS2GS_BASE(GS_CSR + (mem & 0xF));
+	}
 }
 
 __fi u64 gsRead64(u32 mem)
 {
 	// fixme - PS2GS_BASE(mem+4) = (g_RealGSMem+(mem + 4 & 0x13ff))
 	GIF_LOG("GS read 64 from %8.8lx  value: %8.8lx_%8.8lx", mem, *(u32*)PS2GS_BASE(mem+4), *(u32*)PS2GS_BASE(mem) );
-	return *(u64*)PS2GS_BASE(mem);
+	switch (mem & ~0xF)
+	{
+		case GS_SIGLBLID:
+			return *(u64*)PS2GS_BASE(mem);
+		default: // Only SIGLBLID and CSR are readable, everything else mirrors CSR
+			return *(u64*)PS2GS_BASE(GS_CSR + (mem & 0xF));
+	}
 }
 
 void gsIrq() {
