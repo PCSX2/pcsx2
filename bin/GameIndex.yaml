@@ -13903,6 +13903,8 @@ SLES-53979:
 SLES-53982:
   name: "Fight Night Round 3"
   region: "PAL-E-F"
+  gameFixes:
+  - GIFFIFOHack # Fixes corrupt textures.
 SLES-53984:
   name: "Ice Age 2 - The Meltdown"
   region: "PAL-M6"
@@ -36799,6 +36801,8 @@ SLUS-21383:
   name: "Fight Night - Round 3"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+  - GIFFIFOHack # Fixes corrupt textures.
 SLUS-21384:
   name: "Cabela's Alaskan Adventures"
   region: "NTSC-U"
