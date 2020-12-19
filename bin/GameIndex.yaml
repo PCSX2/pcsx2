@@ -18087,6 +18087,16 @@ SLPM-55063:
 SLPM-55064:
   name: "Hakuouki"
   region: "NTSC-J"
+SLPM-55065:
+  name: "Kamiyo Gakuen Makorouku Kurunugia"
+  region: "NTSC-J"
+  patches:
+    938DF440:
+      content: |-
+        author=PSI, Jelta
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,00131A64,word,10000003
 SLPM-55081:
   name: "Drag-on Dragoon 2 - Fuuin no Kurenai (Ultimate Hits)"
   region: "NTSC-J"
@@ -24376,6 +24386,13 @@ SLPM-66380:
 SLPM-66381:
   name: "Mitsu x Mitsu Drops - Love x Love Honey Life"
   region: "NTSC-J"
+  patches:
+    A37C886C:
+      content: |-
+        author=PSI, Jelta
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,00157318,word,10000003
 SLPM-66382:
   name: "Tenshou Gakuen Kensousoku [Tokudame Price]"
   region: "NTSC-J"
@@ -24592,6 +24609,13 @@ SLPM-66452:
 SLPM-66453:
   name: "Hiiro no Kakera [Limited Edition]"
   region: "NTSC-J"
+  patches:
+    1E65AEEF:
+      content: |-
+        author=PSI, Jelta
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,00160478,word,10000003
 SLPM-66454:
   name: "Hiiro no Kakera"
   region: "NTSC-J"
@@ -25359,6 +25383,13 @@ SLPM-66686:
 SLPM-66687:
   name: "Hiiro no Kakera - Ano Sora no Shita de"
   region: "NTSC-J"
+  patches:
+    8365E603:
+      content: |-
+        author=PSI, Jelta
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,001D1ED8,word,10000003
 SLPM-66688:
   name: "Harukanaru Jikuu no Kade 3 [Koei the Best]"
   region: "NTSC-J"
