@@ -308,12 +308,10 @@ bool TAPAdapter::recv(NetPacket* pkt)
 			{
 				CancelIo(htap);
 				//Wait for the I/O subsystem to acknowledge our cancellation
-				result = GetOverlappedResult(htap, &read,
-											 &read_size, TRUE);
+				result = GetOverlappedResult(htap, &read, &read_size, TRUE);
 			}
 			else
-				result = GetOverlappedResult(htap, &read,
-											 &read_size, FALSE);
+				result = GetOverlappedResult(htap, &read, &read_size, FALSE);
 
 			if (!result)
 			{
@@ -360,8 +358,8 @@ bool TAPAdapter::send(NetPacket* pkt)
 		if (dwError == ERROR_IO_PENDING)
 		{
 			WaitForSingleObject(write.hEvent, INFINITE);
-			result = GetOverlappedResult(htap, &write,
-										 &writen, FALSE);
+			result = GetOverlappedResult(htap, &write, &writen, FALSE);
+
 			if (!result)
 			{
 			}
