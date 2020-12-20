@@ -218,6 +218,7 @@ namespace usb_pad
 		LONG GetAxisValueFromOffset(int axis, const DIJOYSTATE2& j);
 		bool GetControl(int port, int id);
 		float GetAxisControl(int port, ControlID id);
+		int32_t GetAxisControlUnfiltered(int port, ControlID id);
 		void CreateFFB(int port, LPDIRECTINPUTDEVICE8 device, DWORD axis);
 		bool FindFFDevice(int port);
 		bool UpdateFFBSettings(int port, LPDIRECTINPUTDEVICE8 device);
