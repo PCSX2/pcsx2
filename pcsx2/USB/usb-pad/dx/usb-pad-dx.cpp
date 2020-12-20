@@ -57,8 +57,34 @@ namespace usb_pad
 				pad_copy_data(mType, buf, mWheelData);
 				return 5;
 			}
-
-			if (mType == WT_KEYBOARDMANIA_CONTROLLER)
+			else if (mType == WT_GAMETRAK_CONTROLLER)
+			{
+				mWheelData.buttons |= GetControl(mPort, CID_HATLEFT) << 4;
+				mWheelData.clutch = GetAxisControlUnfiltered(mPort, CID_STEERING) >> 4;
+				mWheelData.throttle = GetAxisControlUnfiltered(mPort, CID_STEERING_R) >> 4;
+				mWheelData.brake = GetAxisControlUnfiltered(mPort, CID_THROTTLE) >> 4;
+				mWheelData.hatswitch = GetAxisControlUnfiltered(mPort, CID_BRAKE) >> 4;
+				mWheelData.hat_horz = GetAxisControlUnfiltered(mPort, CID_HATUP) >> 4;
+				mWheelData.hat_vert = GetAxisControlUnfiltered(mPort, CID_HATDOWN) >> 4;
+				pad_copy_data(mType, buf, mWheelData);
+				return 16;
+			}
+			else if (mType >= WT_REALPLAY_RACING && mType <= WT_REALPLAY_POOL)
+			{
+				for (int i = 0; i < 8; i++)
+				{
+					if (GetControl(mPort, i))
+					{
+						mWheelData.buttons |= 1 << i;
+					}
+				}
+				mWheelData.clutch = GetAxisControlUnfiltered(mPort, CID_SQUARE) >> 4;
+				mWheelData.throttle = GetAxisControlUnfiltered(mPort, CID_TRIANGLE) >> 4;
+				mWheelData.brake = GetAxisControlUnfiltered(mPort, CID_CROSS) >> 4;
+				pad_copy_data(mType, buf, mWheelData);
+				return 19;
+			}
+			else if (mType == WT_KEYBOARDMANIA_CONTROLLER)
 			{
 				for (int i = 0; i < 31; i++)
 				{

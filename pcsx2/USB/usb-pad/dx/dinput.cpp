@@ -1002,6 +1002,24 @@ namespace usb_pad
 			return ReadAxisFiltered(port, id);
 		}
 
+		int32_t GetAxisControlUnfiltered(int port, ControlID id)
+		{
+			InputMapped im;
+			if (!GetInputMap(port, id, im))
+				return 0;
+
+			assert(im.index < g_pJoysticks.size());
+			if (im.index >= g_pJoysticks.size())
+				return 0;
+
+			LONG value = 0;
+			if (im.type == MT_AXIS)
+			{
+				value = g_pJoysticks[im.index]->GetAxis(im.mapped);
+			}
+			return value;
+		}
+
 		//set left/right ffb torque
 		HRESULT SetConstantForce(int port, LONG magnitude)
 		{

@@ -1468,6 +1468,14 @@ namespace usb_pad
 			{
 				return DialogBoxParam(h.hInst, MAKEINTRESOURCE(IDD_DLG_KEYBOARDMANIA), h.hWnd, DxDialogProc, (LPARAM)&s);
 			}
+			if (strcmp(dev_type, GametrakDevice::TypeName()) == 0)
+			{
+				return DialogBoxParam(h.hInst, MAKEINTRESOURCE(IDD_DLG_GAMETRAK), h.hWnd, DxDialogProc, (LPARAM)&s);
+			}
+			if (strcmp(dev_type, RealPlayDevice::TypeName()) == 0)
+			{
+				return DialogBoxParam(h.hInst, MAKEINTRESOURCE(IDD_DLG_REALPLAY), h.hWnd, DxDialogProc, (LPARAM)&s);
+			}
 			return DialogBoxParam(h.hInst, MAKEINTRESOURCE(IDD_DIALOG1), h.hWnd, DxDialogProc, (LPARAM)&s);
 		}
 

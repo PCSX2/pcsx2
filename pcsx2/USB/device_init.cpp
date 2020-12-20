@@ -36,6 +36,10 @@ void RegisterDevice::Register()
 	inst.Add(DEVTYPE_HIDMOUSE, new DeviceProxy<usb_hid::HIDMouseDevice>());
 	inst.Add(DEVTYPE_RBKIT, new DeviceProxy<usb_pad::RBDrumKitDevice>());
 	inst.Add(DEVTYPE_BUZZ, new DeviceProxy<usb_pad::BuzzDevice>());
+#ifdef _WIN32
+	inst.Add(DEVTYPE_GAMETRAK, new DeviceProxy<usb_pad::GametrakDevice>());
+	inst.Add(DEVTYPE_REALPLAY, new DeviceProxy<usb_pad::RealPlayDevice>());
+#endif
 	inst.Add(DEVTYPE_EYETOY, new DeviceProxy<usb_eyetoy::EyeToyWebCamDevice>());
 	inst.Add(DEVTYPE_BEATMANIA_DADADA, new DeviceProxy<usb_hid::BeatManiaDevice>());
 	inst.Add(DEVTYPE_SEGA_SEAMIC, new DeviceProxy<usb_pad::SeamicDevice>());
