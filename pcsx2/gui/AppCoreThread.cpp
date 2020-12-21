@@ -662,7 +662,7 @@ void AppCoreThread::DoCpuExecute()
 
 		// [TODO] : Debugger Hook!
 
-		if (++m_except_threshold > 6)
+		if (ex.fatal || ++m_except_threshold > 6)
 		{
 			// If too many TLB Misses occur, we're probably going to crash and
 			// the game is probably running miserably.

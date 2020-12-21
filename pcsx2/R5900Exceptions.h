@@ -30,6 +30,7 @@ class BaseR5900Exception : public Exception::Ps2Generic
 
 public:
 	cpuRegisters cpuState;
+	bool fatal = false;
 
 public:
 	u32 GetPc() const { return cpuState.pc; }

@@ -409,7 +409,11 @@ static __ri void vtlb_Miss(u32 addr,u32 mode)
 	}
 
 	if (IsDevBuild || EmuConfig.Cpu.Recompiler.ThrowAddressExceptions)
-		Cpu->ThrowCpuException( R5900Exception::TLBMiss( addr, !!mode ) );
+	{
+		R5900Exception::TLBMiss ex(addr, !!mode);
+		ex.fatal = EmuConfig.Cpu.Recompiler.ThrowAddressExceptions;
+		Cpu->ThrowCpuException(ex);
+	}
 	else
 	{
 		static int spamStop = 0;

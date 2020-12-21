@@ -96,12 +96,18 @@ __aligned16 u32 dummyValue[4];
 
 void __fastcall throwReadAddressErrorException(u32 addr)
 {
-	Cpu->ThrowCpuException(::R5900Exception::AddressError(addr, false));
+	R5900Exception::AddressError ex(addr, false);
+	ex.fatal = true;
+
+	Cpu->ThrowCpuException(ex);
 }
 
 void __fastcall throwWriteAddressErrorException(u32 addr)
 {
-	Cpu->ThrowCpuException(::R5900Exception::AddressError(addr, true));
+	R5900Exception::AddressError ex(addr, true);
+	ex.fatal = true;
+
+	Cpu->ThrowCpuException(ex);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////
