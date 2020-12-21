@@ -408,7 +408,7 @@ static __ri void vtlb_Miss(u32 addr,u32 mode)
 		throw Exception::CancelInstruction();
 	}
 
-	if( IsDevBuild )
+	if (IsDevBuild || EmuConfig.Cpu.Recompiler.ThrowAddressExceptions)
 		Cpu->ThrowCpuException( R5900Exception::TLBMiss( addr, !!mode ) );
 	else
 	{

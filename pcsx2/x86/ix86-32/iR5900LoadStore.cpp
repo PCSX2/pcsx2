@@ -17,6 +17,7 @@
 #include "PrecompiledHeader.h"
 
 #include "Common.h"
+#include "R5900Exceptions.h"
 #include "R5900OpcodeTables.h"
 #include "iR5900LoadStore.h"
 #include "iR5900.h"
@@ -93,10 +94,21 @@ using namespace Interpreter::OpcodeImpl;
 
 __aligned16 u32 dummyValue[4];
 
+void __fastcall throwReadAddressErrorException(u32 addr)
+{
+	Cpu->ThrowCpuException(::R5900Exception::AddressError(addr, false));
+}
+
+void __fastcall throwWriteAddressErrorException(u32 addr)
+{
+	Cpu->ThrowCpuException(::R5900Exception::AddressError(addr, true));
+}
+
 //////////////////////////////////////////////////////////////////////////////////////////
 //
 void recLoad64( u32 bits, bool sign )
 {
+	const u32 alignment = bits / 8;
 	pxAssume( bits == 64 || bits == 128 );
 
 	// Load arg2 with the destination.
@@ -113,6 +125,13 @@ void recLoad64( u32 bits, bool sign )
 		if (bits == 128)
 			srcadr &= ~0x0f;
 
+		if (EmuConfig.Cpu.Recompiler.ThrowAddressExceptions && (srcadr & (alignment - 1)))
+		{
+			iFlushCall(FLUSH_PC);
+			xMOV(arg1regd, srcadr);
+			xFastCall((void*)throwReadAddressErrorException, arg1regd);
+		}
+
 		_eeOnLoadWrite(_Rt_);
 		_deleteEEreg(_Rt_, 0);
 
@@ -127,6 +146,21 @@ void recLoad64( u32 bits, bool sign )
 		if (bits == 128)		// force 16 byte alignment on 128 bit reads
 			xAND(arg1regd, ~0x0F);
 
+		if (EmuConfig.Cpu.Recompiler.ThrowAddressExceptions)
+		{
+			xTEST(arg1regd, alignment - 1);
+			xForwardJZ32 skipException;
+
+			// flush PC for the error message, preserve calculated address
+			xPUSH(arg1regd);
+			iFlushCall(FLUSH_PC);
+			xPOP(arg1regd);
+
+			xFastCall((void*)throwReadAddressErrorException, arg1regd);
+
+			skipException.SetTarget();
+		}
+
 		_eeOnLoadWrite(_Rt_);
 		_deleteEEreg(_Rt_, 0);
 		iFlushCall(FLUSH_FULLVTLB);
@@ -139,6 +173,7 @@ void recLoad64( u32 bits, bool sign )
 //
 void recLoad32( u32 bits, bool sign )
 {
+	const u32 alignment = bits / 8;
 	pxAssume( bits <= 32 );
 
 	// 8/16/32 bit modes return the loaded value in EAX.
@@ -146,6 +181,13 @@ void recLoad32( u32 bits, bool sign )
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+
+		if (EmuConfig.Cpu.Recompiler.ThrowAddressExceptions && (srcadr & (alignment - 1)))
+		{
+			iFlushCall(FLUSH_PC);
+			xMOV(arg1regd, srcadr);
+			xFastCall((void*)throwReadAddressErrorException, arg1regd);
+		}
 
 		_eeOnLoadWrite(_Rt_);
 		_deleteEEreg(_Rt_, 0);
@@ -158,6 +200,21 @@ void recLoad32( u32 bits, bool sign )
 		_eeMoveGPRtoR(arg1regd, _Rs_);
 		if (_Imm_ != 0)
 			xADD(arg1regd, _Imm_ );
+
+		if (EmuConfig.Cpu.Recompiler.ThrowAddressExceptions)
+		{
+			xTEST(arg1regd, alignment - 1);
+			xForwardJZ32 skipException;
+
+			// flush PC for the error message, preserve calculated address
+			xPUSH(arg1regd);
+			iFlushCall(FLUSH_PC);
+			xPOP(arg1regd);
+
+			xFastCall((void*)throwReadAddressErrorException, arg1regd);
+
+			skipException.SetTarget();
+		}
 
 		_eeOnLoadWrite(_Rt_);
 		_deleteEEreg(_Rt_, 0);
@@ -185,6 +242,7 @@ void recLoad32( u32 bits, bool sign )
 
 void recStore(u32 bits)
 {
+	const u32 alignment = bits / 8;
         // Performance note: Const prop for the store address is good, always.
         // Constprop for the value being stored is not really worthwhile (better to use register
         // allocation -- simpler code and just as fast)
@@ -211,6 +269,13 @@ void recStore(u32 bits)
                 if (bits == 128)
 					dstadr &= ~0x0f;
 
+				if (EmuConfig.Cpu.Recompiler.ThrowAddressExceptions && bits != 128 && (dstadr & (alignment - 1)))
+				{
+					iFlushCall(FLUSH_PC);
+					xMOV(arg1regd, dstadr);
+					xFastCall((void*)throwWriteAddressErrorException, arg1regd);
+				}
+
                 vtlb_DynGenWrite_Const( bits, dstadr );
         }
         else
@@ -220,6 +285,21 @@ void recStore(u32 bits)
                         xADD(arg1regd, _Imm_);
                 if (bits == 128)
                         xAND(arg1regd, ~0x0F);
+
+				if (EmuConfig.Cpu.Recompiler.ThrowAddressExceptions && bits != 128)
+				{
+					xTEST(arg1regd, alignment - 1);
+					xForwardJZ32 skipException;
+
+					// flush PC for the error message, preserve calculated address
+					xPUSH(arg1regd);
+					iFlushCall(FLUSH_PC);
+					xPOP(arg1regd);
+
+					xFastCall((void*)throwWriteAddressErrorException, arg1regd);
+
+					skipException.SetTarget();
+				}
 
                 iFlushCall(FLUSH_FULLVTLB);
 
