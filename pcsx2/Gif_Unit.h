@@ -27,6 +27,7 @@ struct GS_Packet;
 extern void Gif_MTGS_Wait(bool isMTVU);
 extern void Gif_FinishIRQ();
 extern bool Gif_HandlerAD(u8* pMem);
+extern bool Gif_HandlerAD_MTVU(u8* pMem);
 extern bool Gif_HandlerAD_Debug(u8* pMem);
 extern void Gif_AddBlankGSPacket(u32 size, GIF_PATH path);
 extern void Gif_AddGSPacketMTVU     (GS_Packet& gsPack, GIF_PATH path);
@@ -358,37 +359,29 @@ struct Gif_Path {
 		if (curOffset > buffLimit) {
 			RealignPacket();
 		}
-		if (IsDevBuild) { // We check the packet to see if it actually
-			for(;;) {     // needed to be processed by pcsx2...
-				if (curOffset + 16 > curSize) break;
-				gifTag.setTag(&buffer[curOffset], 1);
+		for(;;) {     // needed to be processed by pcsx2...
+			if (curOffset + 16 > curSize) break;
+			gifTag.setTag(&buffer[curOffset], 1);
 				
-				if(!gifTag.hasAD && curOffset + 16 + gifTag.len > curSize) break;
-				incTag(curOffset, gsPack.size, 16); // Tag Size
+			if(!gifTag.hasAD && curOffset + 16 + gifTag.len > curSize) break;
+			incTag(curOffset, gsPack.size, 16); // Tag Size
 				
-				if (gifTag.hasAD) { // Only can be true if GIF_FLG_PACKED
-					while(gifTag.nLoop) {
-						if (curOffset + 16 > curSize) break; // Exit Early
-						if (gifTag.curReg() == GIF_REG_A_D) {
-							pxAssert(!Gif_HandlerAD_Debug(&buffer[curOffset]));
-						}
-						incTag(curOffset, gsPack.size, 16); // 1 QWC
-						gifTag.packedStep();
+			if (gifTag.hasAD) { // Only can be true if GIF_FLG_PACKED
+				while(gifTag.nLoop) {
+					if (curOffset + 16 > curSize) break; // Exit Early
+					if (gifTag.curReg() == GIF_REG_A_D) {
+						pxAssert(!Gif_HandlerAD_MTVU(&buffer[curOffset]));
 					}
+					incTag(curOffset, gsPack.size, 16); // 1 QWC
+					gifTag.packedStep();
 				}
-				else incTag(curOffset, gsPack.size, gifTag.len); // Data length
-				if (curOffset >= curSize) break;
-				if (gifTag.tag.EOP)       break;
 			}
-			pxAssert(curOffset == curSize);
-			gifTag.isValid = false;
+			else incTag(curOffset, gsPack.size, gifTag.len); // Data length
+			if (curOffset >= curSize) break;
+			if (gifTag.tag.EOP)       break;
 		}
-		else {
-			// We assume every packet is a full GS Packet
-			// And we don't process anything on pcsx2 side
-			gsPack.size += curSize - curOffset;
-			curOffset    = curSize;
-		}
+		pxAssert(curOffset == curSize);
+		gifTag.isValid = false;
 	}
 
 	// MTVU: Gets called after VU1 execution on MTVU thread
