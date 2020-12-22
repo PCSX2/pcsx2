@@ -294,6 +294,63 @@ u32 VU_Thread::Get_vuCycles()
 			vuCycles[3].load(std::memory_order_acquire)) >> 2;
 }
 
+void VU_Thread::Get_GSChanges()
+{
+	u32 interrupts = gsInterrupts.load(std::memory_order_acquire);
+
+	// If there's no interrupts, return early, just saves on waiting for some atomics and whatnot
+	if (!interrupts)
+		return;
+
+	u32 clearedInterrupts = gsToClear.load(std::memory_order_acquire);
+
+	if (interrupts == clearedInterrupts)
+		return;
+
+	interrupts &= ~clearedInterrupts;
+	bool triggerInt = false;
+	u32 finalInterrupts = 0;
+
+	if (interrupts & 2)
+	{
+		const u64 signal = gsSignal.load(std::memory_order_acquire);
+		const u32 signalMsk = (u32)(signal >> 32);
+		const u32 signalData = (u32)signal;
+		CSRreg.SIGNAL = true;
+		GSSIGLBLID.SIGID = (GSSIGLBLID.SIGID & ~signalMsk) | (signalData & signalMsk);
+
+		if (!GSIMR.SIGMSK)
+			triggerInt = true;
+
+		finalInterrupts |= 2;
+	}
+	if (interrupts & 1)
+	{
+		CSRreg.FINISH = true;
+
+		if (!gifRegs.stat.APATH)
+			Gif_FinishIRQ();
+
+		finalInterrupts |= 1;
+	}
+
+	if (interrupts & 4)
+	{
+		const u64 label = gsLabel.load(std::memory_order_acquire);
+		const u32 labelMsk = (u32)(label >> 32);
+		const u32 labelData = (u32)label;
+		GSSIGLBLID.LBLID = (GSSIGLBLID.LBLID & ~labelMsk) | (labelData & labelMsk);
+
+		finalInterrupts |= 4;
+	}
+
+	clearedInterrupts |= finalInterrupts;
+	gsToClear.store(clearedInterrupts);
+
+	if (triggerInt)
+		gsIrq();
+}
+
 void VU_Thread::KickStart(bool forceKick)
 {
 	if ((forceKick && !semaEvent.Count())
@@ -321,7 +378,10 @@ void VU_Thread::WaitVU()
 void VU_Thread::ExecuteVU(u32 vu_addr, u32 vif_top, u32 vif_itop)
 {
 	MTVU_LOG("MTVU - ExecuteVU!");
+	Get_GSChanges(); // Clear any pending interrupts
 	ReserveSpace(4);
+	gsToClear.store(0);
+	gsInterrupts.store(0);
 	Write(MTVU_VU_EXECUTE);
 	Write(vu_addr);
 	Write(vif_top);
@@ -332,6 +392,7 @@ void VU_Thread::ExecuteVU(u32 vu_addr, u32 vif_top, u32 vif_itop)
 	u32 cycles = std::min(Get_vuCycles(), 3000u);
 	cpuRegs.cycle += cycles * EmuConfig.Speedhacks.EECycleSkip;
 	VU0.cycle += cycles * EmuConfig.Speedhacks.EECycleSkip;
+	Get_GSChanges();
 }
 
 void VU_Thread::VifUnpack(vifStruct& _vif, VIFregisters& _vifRegs, u8* data, u32 size)
