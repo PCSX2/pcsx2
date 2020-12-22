@@ -291,6 +291,7 @@ void MainEmuFrame::ConnectMenus()
 	// Capture
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Video_ToggleCapture_Click, this, MenuId_Capture_Video_Record);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Video_ToggleCapture_Click, this, MenuId_Capture_Video_Stop);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Video_IncludeAudio_Click, this, MenuId_Capture_Video_IncludeAudio);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click, this, MenuId_Capture_Screenshot_Screenshot);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click, this, MenuId_Capture_Screenshot_Screenshot_As);
 
@@ -492,9 +493,14 @@ void MainEmuFrame::CreateCaptureMenu()
 {
 	m_menuCapture.Append(MenuId_Capture_Video, _("Video"), &m_submenuVideoCapture);
 	// Implement custom hotkeys (F12) with translatable string intact + not blank in GUI.
-	wxMenuItem* sysVideoCaptureItem = m_submenuVideoCapture.Append(MenuId_Capture_Video_Record, _("Start Screenrecorder"));
+	wxMenuItem* sysVideoCaptureItem = m_submenuVideoCapture.Append(MenuId_Capture_Video_Record, _("Start Video Capture"));
 	AppendShortcutToMenuOption(*sysVideoCaptureItem, wxGetApp().GlobalAccels->findKeycodeWithCommandId("Sys_RecordingToggle").toTitleizedString());
-	m_submenuVideoCapture.Append(MenuId_Capture_Video_Stop, _("Stop Screenrecorder"))->Enable(false);
+	sysVideoCaptureItem = m_submenuVideoCapture.Append(MenuId_Capture_Video_Stop, _("Stop Video Capture"));
+	sysVideoCaptureItem->Enable(false);
+	AppendShortcutToMenuOption(*sysVideoCaptureItem, wxGetApp().GlobalAccels->findKeycodeWithCommandId("Sys_RecordingToggle").toTitleizedString());
+	m_submenuVideoCapture.AppendSeparator();
+	m_submenuVideoCapture.Append(MenuId_Capture_Video_IncludeAudio, _("Include Audio"),
+		_("Enables/disables the creation of a synchronized wav audio file when capturing video footage."), wxITEM_CHECK);
 	// Implement custom hotkeys (F8) + (Shift + F8) + (Ctrl + Shift + F8) with translatable string intact + not blank in GUI.
 	// Fixme: GlobalCommands.cpp L1029-L1031 is having issues because FrameForGS already maps the hotkey first.
 	// Fixme: When you uncomment L1029-L1031 on that file; Linux says that Ctrl is already used for something else and will append (Shift + F8) while Windows will (Ctrl + Shift + F8)
@@ -809,6 +815,7 @@ void MainEmuFrame::ApplyConfigToGui(AppConfig& configToApply, int flags)
 		menubar.Check(MenuId_EnableCheats, configToApply.EmuOptions.EnableCheats);
 		menubar.Check(MenuId_IPC_Enable, configToApply.EmuOptions.EnableIPC);
 		menubar.Check(MenuId_EnableWideScreenPatches, configToApply.EmuOptions.EnableWideScreenPatches);
+		menubar.Check(MenuId_Capture_Video_IncludeAudio, configToApply.AudioCapture.EnableAudio);
 #ifndef DISABLE_RECORDING
 		menubar.Check(MenuId_EnableInputRecording, configToApply.EmuOptions.EnableRecordingTools);
 #endif

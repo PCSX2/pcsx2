@@ -680,8 +680,9 @@ void AppConfig::LoadSave( IniInterface& ini )
 	GSWindow		.LoadSave( ini );
 	Framerate		.LoadSave( ini );
 #ifndef DISABLE_RECORDING
-	inputRecording.loadSave(ini);
+	inputRecording	.loadSave( ini );
 #endif
+	AudioCapture	.LoadSave( ini );
 	Templates		.LoadSave( ini );
 
 	ini.Flush();
@@ -953,6 +954,18 @@ void AppConfig::FramerateOptions::LoadSave( IniInterface& ini )
 
 	IniEntry( SkipOnLimit );
 	IniEntry( SkipOnTurbo );
+}
+
+AppConfig::CaptureOptions::CaptureOptions()
+{
+	EnableAudio = true;
+}
+
+void AppConfig::CaptureOptions::LoadSave(IniInterface& ini)
+{
+	ScopedIniGroup path(ini, L"Capture");
+
+	IniEntry( EnableAudio );
 }
 
 AppConfig::UiTemplateOptions::UiTemplateOptions()
