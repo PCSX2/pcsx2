@@ -285,6 +285,15 @@ public:
 #endif
 	};
 
+	struct CaptureOptions
+	{
+		bool					EnableAudio;
+
+		CaptureOptions();
+
+		void LoadSave(IniInterface& conf);
+	};
+
 public:
 	wxPoint		MainGuiPosition;
 
@@ -361,6 +370,7 @@ public:
 	InputRecordingOptions   inputRecording;
 #endif
 	UiTemplateOptions		Templates;
+	CaptureOptions			AudioCapture;
 	
 	// PCSX2-core emulation options, which are passed to the emu core prior to initiating
 	// an emulation session.  Note these are the options saved into the GUI ini file and

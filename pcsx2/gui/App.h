@@ -193,6 +193,7 @@ enum MenuIdentifiers
 	MenuId_Capture_Video,
 	MenuId_Capture_Video_Record,
 	MenuId_Capture_Video_Stop,
+	MenuId_Capture_Video_IncludeAudio,
 	MenuId_Capture_Screenshot,
 	MenuId_Capture_Screenshot_Screenshot,
 	MenuId_Capture_Screenshot_Screenshot_As,

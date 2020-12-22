@@ -254,6 +254,7 @@ protected:
 	void Menu_ShowAboutBox(wxCommandEvent& event);
 
 	void Menu_Capture_Video_ToggleCapture_Click(wxCommandEvent& event);
+	void Menu_Capture_Video_IncludeAudio_Click(wxCommandEvent& event);
 	void Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent& event);
 	void Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& event);
 
