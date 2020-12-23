@@ -57,6 +57,22 @@ void SaveStateBase::mtvuFreeze()
 		unsigned int v = vu1Thread.vuCycles[i].load();
 		Freeze(v);
 	}
+	u32 gsInterrupts;
+	u64 gsSignals;
+
+	gsInterrupts = vu1Thread.gsToClear.load();
+	Freeze(gsInterrupts);
+	vu1Thread.gsToClear.store(gsInterrupts);
+	gsInterrupts = vu1Thread.gsInterrupts.load();
+	Freeze(gsInterrupts);
+	vu1Thread.gsInterrupts.store(gsInterrupts);
+	gsSignals = vu1Thread.gsSignal.load();
+	Freeze(gsSignals);
+	vu1Thread.gsSignal.store(gsSignals);
+	gsSignals = vu1Thread.gsLabel.load();
+	Freeze(gsSignals);
+	vu1Thread.gsLabel.store(gsSignals);
+
 	Freeze(vu1Thread.vuCycleIdx);
 }
 
