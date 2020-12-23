@@ -300,6 +300,11 @@ void GSRendererHW::VSync(u32 field, bool registers_written)
 	{
 		m_tc->RemoveAll();
 
+		// Reset RT size.
+		const bool custom_res = !GetUpscaleMultiplier();
+		m_width = custom_res ? m_custom_width : default_rt_size.x;
+		m_height = custom_res ? m_custom_height : default_rt_size.y;
+
 		m_reset = false;
 	}
 
