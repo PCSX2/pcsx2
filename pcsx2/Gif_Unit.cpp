@@ -24,23 +24,37 @@
 Gif_Unit gifUnit;
 
 // Returns true on stalling SIGNAL
-bool Gif_HandlerAD(u8* pMem) {
-	u32  reg  = pMem[8];
+bool Gif_HandlerAD(u8* pMem)
+{
+	u32 reg = pMem[8];
 	u32* data = (u32*)pMem;
-	if (reg == 0x50) {
+	if (reg == 0x50)
+	{
 		vif1.BITBLTBUF._u64 = *(u64*)pMem;
 	}
-	else if (reg == 0x52) {
+	else if (reg == 0x52)
+	{
 		vif1.TRXREG._u64 = *(u64*)pMem;
 	}
-	else if (reg == 0x53) { // TRXDIR
-		if ((pMem[0] & 3) == 1) { // local -> host
+	else if (reg == 0x53)
+	{ // TRXDIR
+		if ((pMem[0] & 3) == 1)
+		{                // local -> host
 			u8 bpp = 32; // Onimusha does TRXDIR without BLTDIVIDE first, assume 32bit
-			switch(vif1.BITBLTBUF.SPSM & 7) {
-				case 0: bpp = 32; break;
-				case 1: bpp = 24; break;
-				case 2: bpp = 16; break;
-				case 3: bpp = 8;  break;
+			switch (vif1.BITBLTBUF.SPSM & 7)
+			{
+				case 0:
+					bpp = 32;
+					break;
+				case 1:
+					bpp = 24;
+					break;
+				case 2:
+					bpp = 16;
+					break;
+				case 3:
+					bpp = 8;
+					break;
 				default: // 4 is 4 bit but this is forbidden
 					Console.Error("Illegal format for GS upload: SPSM=0%02o", vif1.BITBLTBUF.SPSM);
 					break;
@@ -50,147 +64,213 @@ bool Gif_HandlerAD(u8* pMem) {
 			vif1.GSLastDownloadSize = vif1.TRXREG.RRW * vif1.TRXREG.RRH * bpp >> 7;
 		}
 	}
-	else if (reg == 0x60) { // SIGNAL
-		if (CSRreg.SIGNAL) { // Time to ignore all subsequent drawing operations.
+	else if (reg == 0x60)
+	{ // SIGNAL
+		if (CSRreg.SIGNAL)
+		{ // Time to ignore all subsequent drawing operations.
 			GUNIT_WARN(Color_Orange, "GIF Handler - Stalling SIGNAL");
-			if(!gifUnit.gsSIGNAL.queued) {
-				gifUnit.gsSIGNAL.queued  = true;
+			if (!gifUnit.gsSIGNAL.queued)
+			{
+				gifUnit.gsSIGNAL.queued = true;
 				gifUnit.gsSIGNAL.data[0] = data[0];
 				gifUnit.gsSIGNAL.data[1] = data[1];
 				return true; // Stalling SIGNAL
 			}
 		}
-		else {
+		else
+		{
 			GUNIT_WARN("GIF Handler - SIGNAL");
-			GSSIGLBLID.SIGID = (GSSIGLBLID.SIGID&~data[1])|(data[0]&data[1]);
-			if (!GSIMR.SIGMSK) gsIrq();
+			GSSIGLBLID.SIGID = (GSSIGLBLID.SIGID & ~data[1]) | (data[0] & data[1]);
+			if (!GSIMR.SIGMSK)
+				gsIrq();
 			CSRreg.SIGNAL = true;
 		}
 	}
-	else if (reg == 0x61) { // FINISH
+	else if (reg == 0x61)
+	{ // FINISH
 		GUNIT_WARN("GIF Handler - FINISH");
 		CSRreg.FINISH = true;
 	}
-	else if (reg == 0x62) { // LABEL
+	else if (reg == 0x62)
+	{ // LABEL
 		GUNIT_WARN("GIF Handler - LABEL");
-		GSSIGLBLID.LBLID = (GSSIGLBLID.LBLID&~data[1])|(data[0]&data[1]);
+		GSSIGLBLID.LBLID = (GSSIGLBLID.LBLID & ~data[1]) | (data[0] & data[1]);
 	}
-	else if (reg >= 0x63 && reg != 0x7f) {
+	else if (reg >= 0x63 && reg != 0x7f)
+	{
 		//DevCon.Warning("GIF Handler - Write to unknown register! [reg=%x]", reg);
 	}
 	return false;
 }
 
-bool Gif_HandlerAD_MTVU(u8* pMem) {
-	u32  reg = pMem[8];
+bool Gif_HandlerAD_MTVU(u8* pMem)
+{
+	u32 reg = pMem[8];
 	u32* data = (u32*)pMem;
 	vu1Thread.gsInterrupts &= ~vu1Thread.gsToClear;
 	vu1Thread.gsToClear = 0;
-	if (reg == 0x50) { Console.Error("GIF Handler Debug - BITBLTBUF"); return 1; }
-	else if (reg == 0x52) { Console.Error("GIF Handler Debug - TRXREG");    return 1; }
-	else if (reg == 0x53) { Console.Error("GIF Handler Debug - TRXDIR");    return 1; }
-	else if (reg == 0x60) { // SIGNAL
-		if (CSRreg.SIGNAL) { // Time to ignore all subsequent drawing operations.
-			Console.Error("GIF Handler MTVU - Double SIGNAL Not Handled");    return 1;
+	if (reg == 0x50)
+	{
+		Console.Error("GIF Handler Debug - BITBLTBUF");
+		return 1;
+	}
+	else if (reg == 0x52)
+	{
+		Console.Error("GIF Handler Debug - TRXREG");
+		return 1;
+	}
+	else if (reg == 0x53)
+	{
+		Console.Error("GIF Handler Debug - TRXDIR");
+		return 1;
+	}
+	else if (reg == 0x60)
+	{ // SIGNAL
+		if (CSRreg.SIGNAL)
+		{ // Time to ignore all subsequent drawing operations.
+			Console.Error("GIF Handler MTVU - Double SIGNAL Not Handled");
+			return 1;
 		}
-		else {
+		else
+		{
 			GUNIT_WARN("GIF Handler - SIGNAL");
 			vu1Thread.gsSignal = ((u64)data[1] << 32) | data[0];
 			vu1Thread.gsInterrupts |= 2;
-			
 		}
 	}
-	else if (reg == 0x61) { // FINISH
+	else if (reg == 0x61)
+	{ // FINISH
 		GUNIT_WARN("GIF Handler - FINISH");
 		vu1Thread.gsInterrupts |= 1;
 	}
-	else if (reg == 0x62) { // LABEL
+	else if (reg == 0x62)
+	{ // LABEL
 		GUNIT_WARN("GIF Handler - LABEL");
 		vu1Thread.gsLabel = ((u64)data[1] << 32) | data[0];
 		vu1Thread.gsInterrupts |= 4;
 	}
-	else if (reg >= 0x63 && reg != 0x7f) {
+	else if (reg >= 0x63 && reg != 0x7f)
+	{
 		DevCon.Warning("GIF Handler Debug - Write to unknown register! [reg=%x]", reg);
 	}
 	return 0;
 }
 
 // Returns true if pcsx2 needed to process the packet...
-bool Gif_HandlerAD_Debug(u8* pMem) {
-	u32   reg = pMem[8];
-	if   (reg == 0x50) { Console.Error("GIF Handler Debug - BITBLTBUF"); return 1; }
-	else if (reg == 0x52) { Console.Error("GIF Handler Debug - TRXREG");    return 1; }
-	else if (reg == 0x53) { Console.Error("GIF Handler Debug - TRXDIR");    return 1; }
-	else if (reg == 0x60) { Console.Error("GIF Handler Debug - SIGNAL");    return 1; }
-	else if (reg == 0x61) { Console.Error("GIF Handler Debug - FINISH");    return 1; }
-	else if (reg == 0x62) { Console.Error("GIF Handler Debug - LABEL");     return 1; }
-	else if (reg >= 0x63 && reg != 0x7f) {
+bool Gif_HandlerAD_Debug(u8* pMem)
+{
+	u32 reg = pMem[8];
+	if (reg == 0x50)
+	{
+		Console.Error("GIF Handler Debug - BITBLTBUF");
+		return 1;
+	}
+	else if (reg == 0x52)
+	{
+		Console.Error("GIF Handler Debug - TRXREG");
+		return 1;
+	}
+	else if (reg == 0x53)
+	{
+		Console.Error("GIF Handler Debug - TRXDIR");
+		return 1;
+	}
+	else if (reg == 0x60)
+	{
+		Console.Error("GIF Handler Debug - SIGNAL");
+		return 1;
+	}
+	else if (reg == 0x61)
+	{
+		Console.Error("GIF Handler Debug - FINISH");
+		return 1;
+	}
+	else if (reg == 0x62)
+	{
+		Console.Error("GIF Handler Debug - LABEL");
+		return 1;
+	}
+	else if (reg >= 0x63 && reg != 0x7f)
+	{
 		DevCon.Warning("GIF Handler Debug - Write to unknown register! [reg=%x]", reg);
 	}
 	return 0;
 }
 
-void Gif_FinishIRQ() {
-	if (CSRreg.FINISH && !GSIMR.FINISHMSK && !gifUnit.gsFINISH.gsFINISHFired) {
+void Gif_FinishIRQ()
+{
+	if (CSRreg.FINISH && !GSIMR.FINISHMSK && !gifUnit.gsFINISH.gsFINISHFired)
+	{
 		gsIrq();
 		gifUnit.gsFINISH.gsFINISHFired = true;
 	}
 }
 
 // Used in MTVU mode... MTVU will later complete a real packet
-void Gif_AddGSPacketMTVU(GS_Packet& gsPack, GIF_PATH path) {
+void Gif_AddGSPacketMTVU(GS_Packet& gsPack, GIF_PATH path)
+{
 	GetMTGS().SendSimpleGSPacket(GS_RINGTYPE_MTVU_GSPACKET, 0, 0, path);
 }
 
-void Gif_AddCompletedGSPacket(GS_Packet& gsPack, GIF_PATH path) {
+void Gif_AddCompletedGSPacket(GS_Packet& gsPack, GIF_PATH path)
+{
 	//DevCon.WriteLn("Adding Completed Gif Packet [size=%x]", gsPack.size);
-	if (COPY_GS_PACKET_TO_MTGS) {
-		GetMTGS().PrepDataPacket(path, gsPack.size/16);
-		MemCopy_WrappedDest((u128*)&gifUnit.gifPath[path].buffer[gsPack.offset], RingBuffer.m_Ring, 
-							GetMTGS().m_packet_writepos, RingBufferSize, gsPack.size/16);
+	if (COPY_GS_PACKET_TO_MTGS)
+	{
+		GetMTGS().PrepDataPacket(path, gsPack.size / 16);
+		MemCopy_WrappedDest((u128*)&gifUnit.gifPath[path].buffer[gsPack.offset], RingBuffer.m_Ring,
+							GetMTGS().m_packet_writepos, RingBufferSize, gsPack.size / 16);
 		GetMTGS().SendDataPacket();
 	}
-	else {
+	else
+	{
 		pxAssertDev(!gsPack.readAmount, "Gif Unit - gsPack.readAmount only valid for MTVU path 1!");
 		gifUnit.gifPath[path].readAmount.fetch_add(gsPack.size);
-		GetMTGS().SendSimpleGSPacket(GS_RINGTYPE_GSPACKET,  gsPack.offset, gsPack.size, path);
+		GetMTGS().SendSimpleGSPacket(GS_RINGTYPE_GSPACKET, gsPack.offset, gsPack.size, path);
 	}
 }
 
-void Gif_AddBlankGSPacket(u32 size, GIF_PATH path) {
+void Gif_AddBlankGSPacket(u32 size, GIF_PATH path)
+{
 	//DevCon.WriteLn("Adding Blank Gif Packet [size=%x]", size);
 	gifUnit.gifPath[path].readAmount.fetch_add(size);
 	GetMTGS().SendSimpleGSPacket(GS_RINGTYPE_GSPACKET, ~0u, size, path);
 }
 
-void Gif_MTGS_Wait(bool isMTVU) {
+void Gif_MTGS_Wait(bool isMTVU)
+{
 	GetMTGS().WaitGS(false, true, isMTVU);
 }
 
-void SaveStateBase::gifPathFreeze(u32 path) {
+void SaveStateBase::gifPathFreeze(u32 path)
+{
 
 	Gif_Path& gifPath = gifUnit.gifPath[path];
-	pxAssertDev(!gifPath.readAmount,           "Gif Path readAmount should be 0!");
-	pxAssertDev(!gifPath.gsPack.readAmount,     "GS Pack readAmount should be 0!");
+	pxAssertDev(!gifPath.readAmount, "Gif Path readAmount should be 0!");
+	pxAssertDev(!gifPath.gsPack.readAmount, "GS Pack readAmount should be 0!");
 	pxAssertDev(!gifPath.GetPendingGSPackets(), "MTVU GS Pack Queue should be 0!");
 
-	if (!gifPath.isMTVU()) { // FixMe: savestate freeze bug (Gust games) with MTVU enabled
-		if (IsSaving()) { // Move all the buffered data to the start of buffer
+	if (!gifPath.isMTVU())
+	{ // FixMe: savestate freeze bug (Gust games) with MTVU enabled
+		if (IsSaving())
+		{                            // Move all the buffered data to the start of buffer
 			gifPath.RealignPacket(); // May add readAmount which we need to clear on load
 		}
 	}
 	u8* bufferPtr = gifPath.buffer; // Backup current buffer ptr
 	Freeze(gifPath.mtvu.fakePackets);
-	FreezeMem(&gifPath,  sizeof(gifPath) - sizeof(gifPath.mtvu));
+	FreezeMem(&gifPath, sizeof(gifPath) - sizeof(gifPath.mtvu));
 	FreezeMem(bufferPtr, gifPath.curSize);
 	gifPath.buffer = bufferPtr;
-	if(!IsSaving()) {
-		gifPath.readAmount        = 0;
+	if (!IsSaving())
+	{
+		gifPath.readAmount = 0;
 		gifPath.gsPack.readAmount = 0;
 	}
 }
 
-void SaveStateBase::gifFreeze() {
+void SaveStateBase::gifFreeze()
+{
 	bool mtvuMode = THREAD_VU1;
 	pxAssert(vu1Thread.IsDone());
 	GetMTGS().WaitGS();
@@ -203,8 +283,10 @@ void SaveStateBase::gifFreeze() {
 	gifPathFreeze(GIF_PATH_1);
 	gifPathFreeze(GIF_PATH_2);
 	gifPathFreeze(GIF_PATH_3);
-	if (!IsSaving()) {
-		if (mtvuMode != THREAD_VU1) {
+	if (!IsSaving())
+	{
+		if (mtvuMode != THREAD_VU1)
+		{
 			DevCon.Warning("gifUnit: MTVU Mode has switched between save/load state");
 			// ToDo: gifUnit.SwitchMTVU(mtvuMode);
 		}
