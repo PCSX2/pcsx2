@@ -16,47 +16,46 @@
 #include "PrecompiledHeader.h"
 #include "GSDirtyRect.h"
 
-GSDirtyRect::GSDirtyRect()
-	: psm(PSM_PSMCT32)
+GSDirtyRect::GSDirtyRect() :
+	r(GSVector4i::zero()),
+	psm(PSM_PSMCT32),
+	bw(1)
 {
-	left = top = right = bottom = 0;
 }
 
-GSDirtyRect::GSDirtyRect(const GSVector4i& r, u32 psm)
-	: psm(psm)
+GSDirtyRect::GSDirtyRect(const GSVector4i& r, const u32 psm, const u32 bw) :
+	r(r),
+	psm(psm),
+	bw(bw)
 {
-	left = r.left;
-	top = r.top;
-	right = r.right;
-	bottom = r.bottom;
 }
 
 const GSVector4i GSDirtyRect::GetDirtyRect(const GIFRegTEX0& TEX0) const
 {
-	GSVector4i r;
+	GSVector4i _r;
 
-	const GSVector2i src = GSLocalMemory::m_psm[psm].bs;
+	const GSVector2i& src = GSLocalMemory::m_psm[psm].bs;
 
 	if (psm != TEX0.PSM)
 	{
-		const GSVector2i dst = GSLocalMemory::m_psm[TEX0.PSM].bs;
-
-		r.left = left * dst.x / src.x;
-		r.top = top * dst.y / src.y;
-		r.right = right * dst.x / src.x;
-		r.bottom = bottom * dst.y / src.y;
+		const GSVector2i& dst = GSLocalMemory::m_psm[TEX0.PSM].bs;
+		_r.left = (r.left * dst.x) / src.x;
+		_r.top = (r.top * dst.y) / src.y;
+		_r.right = (r.right * dst.x) / src.x;
+		_r.bottom = (r.bottom * dst.y) / src.y;
+		_r = _r.ralign<Align_Outside>(src);
 	}
 	else
 	{
-		r = GSVector4i(left, top, right, bottom).ralign<Align_Outside>(src);
+		_r = r.ralign<Align_Outside>(src);
 	}
 
-	return r;
+	return _r;
 }
 
 //
 
-const GSVector4i GSDirtyRectList::GetDirtyRectAndClear(const GIFRegTEX0& TEX0, const GSVector2i& size)
+const GSVector4i GSDirtyRectList::GetDirtyRect(const GIFRegTEX0& TEX0, const GSVector2i& size) const
 {
 	if (!empty())
 	{
@@ -67,12 +66,17 @@ const GSVector4i GSDirtyRectList::GetDirtyRectAndClear(const GIFRegTEX0& TEX0, c
 			r = r.runion(dirty_rect.GetDirtyRect(TEX0));
 		}
 
-		clear();
-
 		const GSVector2i bs = GSLocalMemory::m_psm[TEX0.PSM].bs;
 
 		return r.ralign<Align_Outside>(bs).rintersect(GSVector4i(0, 0, size.x, size.y));
 	}
 
 	return GSVector4i::zero();
+}
+
+const GSVector4i GSDirtyRectList::GetDirtyRectAndClear(const GIFRegTEX0& TEX0, const GSVector2i& size)
+{
+	const GSVector4i r = GetDirtyRect(TEX0, size);
+	clear();
+	return r;
 }
