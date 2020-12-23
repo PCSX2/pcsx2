@@ -107,8 +107,7 @@ bool Gif_HandlerAD_MTVU(u8* pMem)
 {
 	u32 reg = pMem[8];
 	u32* data = (u32*)pMem;
-	vu1Thread.gsInterrupts &= ~vu1Thread.gsToClear;
-	vu1Thread.gsToClear = 0;
+
 	if (reg == 0x50)
 	{
 		Console.Error("GIF Handler Debug - BITBLTBUF");
@@ -126,6 +125,7 @@ bool Gif_HandlerAD_MTVU(u8* pMem)
 	}
 	else if (reg == 0x60)
 	{ // SIGNAL
+
 		if (CSRreg.SIGNAL)
 		{ // Time to ignore all subsequent drawing operations.
 			Console.Error("GIF Handler MTVU - Double SIGNAL Not Handled");
@@ -135,19 +135,19 @@ bool Gif_HandlerAD_MTVU(u8* pMem)
 		{
 			GUNIT_WARN("GIF Handler - SIGNAL");
 			vu1Thread.gsSignal = ((u64)data[1] << 32) | data[0];
-			vu1Thread.gsInterrupts |= 2;
+			vu1Thread.gsSignalCnt++;
 		}
 	}
 	else if (reg == 0x61)
 	{ // FINISH
 		GUNIT_WARN("GIF Handler - FINISH");
-		vu1Thread.gsInterrupts |= 1;
+		vu1Thread.gsFinish = 1;
 	}
 	else if (reg == 0x62)
 	{ // LABEL
 		GUNIT_WARN("GIF Handler - LABEL");
 		vu1Thread.gsLabel = ((u64)data[1] << 32) | data[0];
-		vu1Thread.gsInterrupts |= 4;
+		vu1Thread.gsLabelCnt++;
 	}
 	else if (reg >= 0x63 && reg != 0x7f)
 	{

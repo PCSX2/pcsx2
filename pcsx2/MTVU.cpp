@@ -62,23 +62,29 @@ void SaveStateBase::mtvuFreeze()
 		unsigned int v = vu1Thread.vuCycles[i].load();
 		Freeze(v);
 	}
-	u32 gsInterrupts;
+	u32 gsFinishInt;
 	u64 gsSignals;
+	u32 gsSignalsCnt;
 
-	gsInterrupts = vu1Thread.gsToClear.load();
-	Freeze(gsInterrupts);
-	vu1Thread.gsToClear.store(gsInterrupts);
-	gsInterrupts = vu1Thread.gsInterrupts.load();
-	Freeze(gsInterrupts);
-	vu1Thread.gsInterrupts.store(gsInterrupts);
+	gsFinishInt = vu1Thread.gsFinish.load();
+	Freeze(gsFinishInt);
+	vu1Thread.gsFinish.store(gsFinishInt);
 	gsSignals = vu1Thread.gsSignal.load();
 	Freeze(gsSignals);
 	vu1Thread.gsSignal.store(gsSignals);
+	gsSignalsCnt = vu1Thread.gsSignalCnt.load();
+	Freeze(gsSignalsCnt);
+	vu1Thread.gsSignalCnt.store(gsSignalsCnt);
 	gsSignals = vu1Thread.gsLabel.load();
 	Freeze(gsSignals);
 	vu1Thread.gsLabel.store(gsSignals);
+	gsSignalsCnt = vu1Thread.gsLabelCnt.load();
+	Freeze(gsSignalsCnt);
+	vu1Thread.gsLabelCnt.store(gsSignalsCnt);
 
 	Freeze(vu1Thread.vuCycleIdx);
+	Freeze(vu1Thread.lastLabel);
+	Freeze(vu1Thread.lastSignal);
 }
 
 VU_Thread::VU_Thread(BaseVUmicroCPU*& _vuCPU, VURegs& _vuRegs)
@@ -103,6 +109,8 @@ void VU_Thread::Reset()
 	ScopedLock lock(mtxBusy);
 
 	vuCycleIdx = 0;
+	lastLabel = 0;
+	lastSignal = 0;
 	isBusy = false;
 	m_ato_write_pos = 0;
 	m_write_pos = 0;
@@ -112,6 +120,8 @@ void VU_Thread::Reset()
 	memzero(vifRegs);
 	for (size_t i = 0; i < 4; ++i)
 		vu1Thread.vuCycles[i] = 0;
+	vu1Thread.gsSignal = 0;
+	vu1Thread.gsLabel = 0;
 }
 
 void VU_Thread::ExecuteTaskInThread()
@@ -336,59 +346,54 @@ u32 VU_Thread::Get_vuCycles()
 
 void VU_Thread::Get_GSChanges()
 {
-	u32 interrupts = gsInterrupts.load(std::memory_order_acquire);
-
-	// If there's no interrupts, return early, just saves on waiting for some atomics and whatnot
-	if (!interrupts)
-		return;
-
-	u32 clearedInterrupts = gsToClear.load(std::memory_order_acquire);
-
-	if (interrupts == clearedInterrupts)
-		return;
-
-	interrupts &= ~clearedInterrupts;
-	bool triggerInt = false;
-	u32 finalInterrupts = 0;
-
-	if (interrupts & 2)
+	u32 finishInt = gsFinish.load(std::memory_order_acquire);
+	u64 signalCnt = gsSignalCnt.load(std::memory_order_acquire);
+	u64 labelCnt = gsLabelCnt.load(std::memory_order_acquire);
+	
+	if (signalCnt != lastSignal)
 	{
+		GUNIT_WARN("SIGNAL firing");
 		const u64 signal = gsSignal.load(std::memory_order_acquire);
 		const u32 signalMsk = (u32)(signal >> 32);
 		const u32 signalData = (u32)signal;
-		CSRreg.SIGNAL = true;
-		GSSIGLBLID.SIGID = (GSSIGLBLID.SIGID & ~signalMsk) | (signalData & signalMsk);
+		lastSignal = signalCnt;
+		if (CSRreg.SIGNAL)
+		{
+			GUNIT_WARN("Queue SIGNAL");
+			gifUnit.gsSIGNAL.queued = true;
+			//DevCon.Warning("Firing pending signal");
+			gifUnit.gsSIGNAL.data[0] = signalData;
+			gifUnit.gsSIGNAL.data[1] = signalMsk;
+		}
+		else
+		{
+			CSRreg.SIGNAL = true;
+			GSSIGLBLID.SIGID = (GSSIGLBLID.SIGID & ~signalMsk) | (signalData & signalMsk);
 
-		if (!GSIMR.SIGMSK)
-			triggerInt = true;
-
-		finalInterrupts |= 2;
+			if (!GSIMR.SIGMSK)
+				gsIrq();
+		}
 	}
-	if (interrupts & 1)
+	if (finishInt)
 	{
+		GUNIT_WARN("Finish firing");
 		CSRreg.FINISH = true;
+		gifUnit.gsFINISH.gsFINISHFired = false;
 
 		if (!gifRegs.stat.APATH)
 			Gif_FinishIRQ();
 
-		finalInterrupts |= 1;
+		gsFinish.store(0);
 	}
-
-	if (interrupts & 4)
+	if (labelCnt != lastLabel)
 	{
+		GUNIT_WARN("LABEL firing");
 		const u64 label = gsLabel.load(std::memory_order_acquire);
 		const u32 labelMsk = (u32)(label >> 32);
 		const u32 labelData = (u32)label;
+		lastLabel = labelCnt;
 		GSSIGLBLID.LBLID = (GSSIGLBLID.LBLID & ~labelMsk) | (labelData & labelMsk);
-
-		finalInterrupts |= 4;
 	}
-
-	clearedInterrupts |= finalInterrupts;
-	gsToClear.store(clearedInterrupts);
-
-	if (triggerInt)
-		gsIrq();
 }
 
 void VU_Thread::KickStart(bool forceKick)
@@ -422,8 +427,6 @@ void VU_Thread::ExecuteVU(u32 vu_addr, u32 vif_top, u32 vif_itop)
 	MTVU_LOG("MTVU - ExecuteVU!");
 	Get_GSChanges(); // Clear any pending interrupts
 	ReserveSpace(4);
-	gsToClear.store(0);
-	gsInterrupts.store(0);
 	Write(MTVU_VU_EXECUTE);
 	Write(vu_addr);
 	Write(vif_top);
