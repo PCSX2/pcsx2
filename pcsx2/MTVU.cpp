@@ -22,12 +22,13 @@
 __aligned16 VU_Thread vu1Thread(CpuVU1, VU1);
 
 #define MTVU_ALWAYS_KICK 0
-#define MTVU_SYNC_MODE   0
+#define MTVU_SYNC_MODE 0
 
 // Rounds up a size in bytes for size in u32's
 static __fi u32 size_u32(u32 x) { return (x + 3) >> 2; }
 
-enum MTVU_EVENT {
+enum MTVU_EVENT
+{
 	MTVU_VU_EXECUTE,     // Execute VU program
 	MTVU_VU_WRITE_MICRO, // Write to VU micro-mem
 	MTVU_VU_WRITE_DATA,  // Write to VU data-mem
@@ -43,8 +44,10 @@ static void MTVU_Unpack(void* data, VIFregisters& vifRegs)
 {
 	u16 wl = vifRegs.cycle.wl > 0 ? vifRegs.cycle.wl : 256;
 	bool isFill = vifRegs.cycle.cl < wl;
-	if (newVifDynaRec) dVifUnpack<1>((u8*)data, isFill);
-	else              _nVifUnpack(1, (u8*)data, vifRegs.mode, isFill);
+	if (newVifDynaRec)
+		dVifUnpack<1>((u8*)data, isFill);
+	else
+		_nVifUnpack(1, (u8*)data, vifRegs.mode, isFill);
 }
 
 // Called on Saving/Loading states...
@@ -52,8 +55,10 @@ void SaveStateBase::mtvuFreeze()
 {
 	FreezeTag("MTVU");
 	pxAssert(vu1Thread.IsDone());
-	if (!IsSaving()) vu1Thread.Reset();
-	for (size_t i = 0; i < 4; ++i) {
+	if (!IsSaving())
+		vu1Thread.Reset();
+	for (size_t i = 0; i < 4; ++i)
+	{
 		unsigned int v = vu1Thread.vuCycles[i].load();
 		Freeze(v);
 	}
@@ -76,8 +81,9 @@ void SaveStateBase::mtvuFreeze()
 	Freeze(vu1Thread.vuCycleIdx);
 }
 
-VU_Thread::VU_Thread(BaseVUmicroCPU*& _vuCPU, VURegs& _vuRegs) :
-		vuCPU(_vuCPU), vuRegs(_vuRegs)
+VU_Thread::VU_Thread(BaseVUmicroCPU*& _vuCPU, VURegs& _vuRegs)
+	: vuCPU(_vuCPU)
+	, vuRegs(_vuRegs)
 {
 	m_name = L"MTVU";
 	Reset();
@@ -85,7 +91,8 @@ VU_Thread::VU_Thread(BaseVUmicroCPU*& _vuCPU, VURegs& _vuRegs) :
 
 VU_Thread::~VU_Thread()
 {
-	try {
+	try
+	{
 		pxThread::Cancel();
 	}
 	DESTRUCTOR_CATCHALL
@@ -95,12 +102,12 @@ void VU_Thread::Reset()
 {
 	ScopedLock lock(mtxBusy);
 
-	vuCycleIdx   = 0;
-	isBusy       = false;
+	vuCycleIdx = 0;
+	isBusy = false;
 	m_ato_write_pos = 0;
-	m_write_pos     = 0;
-	m_ato_read_pos  = 0;
-	m_read_pos      = 0;
+	m_write_pos = 0;
+	m_ato_read_pos = 0;
+	m_read_pos = 0;
 	memzero(vif);
 	memzero(vifRegs);
 	for (size_t i = 0; i < 4; ++i)
@@ -109,42 +116,51 @@ void VU_Thread::Reset()
 
 void VU_Thread::ExecuteTaskInThread()
 {
-	PCSX2_PAGEFAULT_PROTECT {
+	PCSX2_PAGEFAULT_PROTECT
+	{
 		ExecuteRingBuffer();
-	} PCSX2_PAGEFAULT_EXCEPT;
+	}
+	PCSX2_PAGEFAULT_EXCEPT;
 }
 
 void VU_Thread::ExecuteRingBuffer()
 {
-	for(;;) {
+	for (;;)
+	{
 		semaEvent.WaitWithoutYield();
 		ScopedLockBool lock(mtxBusy, isBusy);
-		while (m_ato_read_pos.load(std::memory_order_relaxed) != GetWritePos()) {
+		while (m_ato_read_pos.load(std::memory_order_relaxed) != GetWritePos())
+		{
 			u32 tag = Read();
-			switch (tag) {
-				case MTVU_VU_EXECUTE: {
+			switch (tag)
+			{
+				case MTVU_VU_EXECUTE:
+				{
 					vuRegs.cycle = 0;
-					s32 addr     = Read();
-					vifRegs.top  = Read();
+					s32 addr = Read();
+					vifRegs.top = Read();
 					vifRegs.itop = Read();
 
-					if (addr != -1) vuRegs.VI[REG_TPC].UL = addr;
+					if (addr != -1)
+						vuRegs.VI[REG_TPC].UL = addr;
 					vuCPU->SetStartPC(vuRegs.VI[REG_TPC].UL << 3);
 					vuCPU->Execute(vu1RunCycles);
 					gifUnit.gifPath[GIF_PATH_1].FinishGSPacketMTVU();
 					semaXGkick.Post(); // Tell MTGS a path1 packet is complete
 					vuCycles[vuCycleIdx].store(vuRegs.cycle, std::memory_order_release);
-					vuCycleIdx  = (vuCycleIdx + 1) & 3;
+					vuCycleIdx = (vuCycleIdx + 1) & 3;
 					break;
 				}
-				case MTVU_VU_WRITE_MICRO: {
+				case MTVU_VU_WRITE_MICRO:
+				{
 					u32 vu_micro_addr = Read();
 					u32 size = Read();
 					vuCPU->Clear(vu_micro_addr, size);
 					Read(&vuRegs.Micro[vu_micro_addr], size);
 					break;
 				}
-				case MTVU_VU_WRITE_DATA: {
+				case MTVU_VU_WRITE_DATA:
+				{
 					u32 vu_data_addr = Read();
 					u32 size = Read();
 					Read(&vuRegs.Mem[vu_data_addr], size);
@@ -156,7 +172,8 @@ void VU_Thread::ExecuteRingBuffer()
 				case MTVU_VIF_WRITE_ROW:
 					Read(&vif.MaskRow, sizeof(vif.MaskRow));
 					break;
-				case MTVU_VIF_UNPACK: {
+				case MTVU_VIF_UNPACK:
+				{
 					u32 vif_copy_size = (uptr)&vif.StructEnd - (uptr)&vif.tag;
 					Read(&vif.tag, vif_copy_size);
 					ReadRegs(&vifRegs);
@@ -168,7 +185,7 @@ void VU_Thread::ExecuteRingBuffer()
 				case MTVU_NULL_PACKET:
 					m_read_pos = 0;
 					break;
-				jNO_DEFAULT;
+					jNO_DEFAULT;
 			}
 
 			CommitReadPos();
@@ -180,16 +197,19 @@ void VU_Thread::ExecuteRingBuffer()
 // Should only be called by ReserveSpace()
 __ri void VU_Thread::WaitOnSize(s32 size)
 {
-	for(;;) {
-		s32 readPos  = GetReadPos();
-		if (readPos <= m_write_pos) break; // MTVU is reading in back of write_pos
+	for (;;)
+	{
+		s32 readPos = GetReadPos();
+		if (readPos <= m_write_pos)
+			break; // MTVU is reading in back of write_pos
 		// FIXME greg: there is a bug somewhere in the queue pointer
 		// management. It creates a deadlock/corruption in SotC intro (before
 		// the first menu). I added a 4KB safety net which seem to avoid to
 		// trigger the bug.
 		// Note: a wait lock instead of a yield also helps to avoid the bug.
-		if (readPos >  m_write_pos + size + _4kb) break; // Enough free front space
-		{ // Let MTVU run to free up buffer space
+		if (readPos > m_write_pos + size + _4kb)
+			break; // Enough free front space
+		{          // Let MTVU run to free up buffer space
 			KickStart();
 			// Locking might trigger a full flush of the ring buffer. Yield
 			// will be more aggressive, and only flush the minimal size.
@@ -205,10 +225,11 @@ __ri void VU_Thread::WaitOnSize(s32 size)
 void VU_Thread::ReserveSpace(s32 size)
 {
 	pxAssert(m_write_pos < buffer_size);
-	pxAssert(size      < buffer_size);
+	pxAssert(size < buffer_size);
 	pxAssert(size > 0);
 
-	if (m_write_pos + size > (buffer_size - 1)) {
+	if (m_write_pos + size > (buffer_size - 1))
+	{
 		WaitOnSize(1); // Size of MTVU_NULL_PACKET
 		Write(MTVU_NULL_PACKET);
 		// Reset local write pointer/position
@@ -242,8 +263,10 @@ __fi void VU_Thread::CommitWritePos()
 {
 	m_ato_write_pos.store(m_write_pos, std::memory_order_release);
 
-	if (MTVU_ALWAYS_KICK) KickStart();
-	if (MTVU_SYNC_MODE)   WaitVU();
+	if (MTVU_ALWAYS_KICK)
+		KickStart();
+	if (MTVU_SYNC_MODE)
+		WaitVU();
 }
 
 __fi void VU_Thread::CommitReadPos()
@@ -307,7 +330,8 @@ u32 VU_Thread::Get_vuCycles()
 	return (vuCycles[0].load(std::memory_order_acquire) +
 			vuCycles[1].load(std::memory_order_acquire) +
 			vuCycles[2].load(std::memory_order_acquire) +
-			vuCycles[3].load(std::memory_order_acquire)) >> 2;
+			vuCycles[3].load(std::memory_order_acquire)) >>
+		   2;
 }
 
 void VU_Thread::Get_GSChanges()
@@ -369,8 +393,8 @@ void VU_Thread::Get_GSChanges()
 
 void VU_Thread::KickStart(bool forceKick)
 {
-	if ((forceKick && !semaEvent.Count())
-	|| (!isBusy.load(std::memory_order_acquire) && GetReadPos() != m_ato_write_pos.load(std::memory_order_relaxed))) semaEvent.Post();
+	if ((forceKick && !semaEvent.Count()) || (!isBusy.load(std::memory_order_acquire) && GetReadPos() != m_ato_write_pos.load(std::memory_order_relaxed)))
+		semaEvent.Post();
 }
 
 bool VU_Thread::IsDone()
@@ -381,8 +405,10 @@ bool VU_Thread::IsDone()
 void VU_Thread::WaitVU()
 {
 	MTVU_LOG("MTVU - WaitVU!");
-	for(;;) {
-		if (IsDone()) break;
+	for (;;)
+	{
+		if (IsDone())
+			break;
 		//DevCon.WriteLn("WaitVU()");
 		pxAssert(THREAD_VU1);
 		KickStart();
