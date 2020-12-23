@@ -273,9 +273,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	if (src == NULL)
 #endif
 	{
-		u32 bp = TEX0.TBP0;
-		u32 psm = TEX0.PSM;
-		u32 bw = TEX0.TBW;
+		const u32 bp = TEX0.TBP0;
+		const u32 psm = TEX0.PSM;
+		const u32 bw = TEX0.TBW;
 
 		// Arc the Lad finds the wrong surface here when looking for a depth stencil.
 		// Since we're currently not caching depth stencils (check ToDo in CreateSource) we should not look for it here.
@@ -1767,7 +1767,7 @@ void GSTextureCache::Surface::UpdateAge()
 bool GSTextureCache::Surface::Inside(u32 bp, u32 bw, u32 psm, const GSVector4i& rect)
 {
 	// Valid only for color formats.
-	u32 const end_block = GSLocalMemory::m_psm[psm].info.bn(rect.z - 1, rect.w - 1, bp, bw);
+	const u32 end_block = GSLocalMemory::m_psm[psm].info.bn(rect.z - 1, rect.w - 1, bp, bw);
 	return bp >= m_TEX0.TBP0 && end_block <= m_end_block;
 }
 
@@ -2444,7 +2444,7 @@ GSTextureCache::SurfaceOffset GSTextureCache::ComputeSurfaceOffset(const Surface
 		return { false };  // A and B do not overlap.
 
 	// Key parameter is valid.
-	auto it = m_surface_offset_cache.find(sok);
+	const auto it = m_surface_offset_cache.find(sok);
 	if (it != m_surface_offset_cache.end())
 		return it->second;  // Cache HIT.
 	
