@@ -928,11 +928,7 @@ namespace usb_pad
 
 						case IDOK:
 						{
-							INVERTFORCES[s->port] = SendDlgItemMessage(hWnd, IDC_CHECK1, BM_GETCHECK, 0, 0);
-							BYPASSCAL = SendDlgItemMessage(hWnd, IDC_CHECK2, BM_GETCHECK, 0, 0);
-							useRamp = !!SendDlgItemMessage(hWnd, IDC_CHECK3, BM_GETCHECK, 0, 0);
-							GAINZ[s->port][0] = SendMessage(GetDlgItem(hWnd, IDC_SLIDER4), TBM_GETPOS, 0, 0);
-							FFMULTI[s->port][0] = SendMessage(GetDlgItem(hWnd, IDC_SLIDER5), TBM_GETPOS, 0, 0);
+							ApplySettings(s->port);
 							SaveDInputConfig(s->port, s->dev_type);
 							SaveConfig(); // Force save to ini file
 							//Seems to create some dead locks
@@ -957,6 +953,7 @@ namespace usb_pad
 						case IDC_BUTTON1:
 						{
 							//MessageBeep(MB_ICONEXCLAMATION);
+							ApplySettings(s->port);
 							TestForce(s->port);
 						}
 						break;
@@ -1206,6 +1203,15 @@ namespace usb_pad
 			return FALSE;
 		}
 
+		void ApplySettings(int port)
+		{
+			INVERTFORCES[port] = SendDlgItemMessage(hWnd, IDC_CHECK1, BM_GETCHECK, 0, 0);
+			BYPASSCAL = SendDlgItemMessage(hWnd, IDC_CHECK2, BM_GETCHECK, 0, 0);
+			useRamp = !!SendDlgItemMessage(hWnd, IDC_CHECK3, BM_GETCHECK, 0, 0);
+			GAINZ[port][0] = SendMessage(GetDlgItem(hWnd, IDC_SLIDER4), TBM_GETPOS, 0, 0);
+			FFMULTI[port][0] = SendMessage(GetDlgItem(hWnd, IDC_SLIDER5), TBM_GETPOS, 0, 0);	
+		}
+
 		void SaveDInputConfig(int port, const char* dev_type)
 		{
 			SaveSetting(TEXT("dinput"), TEXT("BYPASSCAL"), BYPASSCAL);
@@ -1264,7 +1270,7 @@ namespace usb_pad
 
 			LoadSetting(section, TEXT("INVERTFORCES"), INVERTFORCES[port]);
 			if (!LoadSetting(section, TEXT("GAINZ"), GAINZ[port][0]))
-				GAINZ[port][0] = 10000;
+				GAINZ[port][0] = DI_FFNOMINALMAX;
 
 			if (!LoadSetting(section, TEXT("FFMULTI"), FFMULTI[port][0]))
 				FFMULTI[port][0] = 0;
