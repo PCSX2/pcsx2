@@ -1043,11 +1043,11 @@ namespace usb_pad
 			// Gain value may have changed, so update it for the constant force effect
 			UpdateFFBSettings(port, dev);
 
-			SetConstantForce(port, DI_FFNOMINALMAX / 2);
+			SetConstantForce(port, DI_FFNOMINALMAX / 3);
 			Sleep(500);
-			SetConstantForce(port, -DI_FFNOMINALMAX / 2);
+			SetConstantForce(port, -DI_FFNOMINALMAX / 3);
 			Sleep(1000);
-			SetConstantForce(port, DI_FFNOMINALMAX / 2);
+			SetConstantForce(port, DI_FFNOMINALMAX / 3);
 			Sleep(500);
 			SetConstantForce(port, 0);
 
