@@ -411,8 +411,8 @@ namespace usb_pad
 		api = wstr_to_str(tmp);	
 #else
 		if (!LoadSetting(nullptr, port, usb_mic::SingstarDevice::TypeName(), N_DEVICE_API, api))
-#endif
 			return nullptr;
+#endif
 
 		USBDevice* mic = usb_mic::SingstarDevice::CreateDevice(port, api);
 		if (!mic)

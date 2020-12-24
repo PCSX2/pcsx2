@@ -692,7 +692,7 @@ namespace usb_mic
 					else
 						p->actual_length = ret;
 
-#if defined(_DEBUG) && _MSC_VER > 1800
+#if 0 //defined(_DEBUG) && _MSC_VER > 1800
 					if (!file)
 					{
 						char name[1024] = {0};
