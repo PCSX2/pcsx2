@@ -364,6 +364,8 @@ namespace usb_pad
 			if (!device)
 				return;
 
+			UpdateFFBSettings(port, device);
+
 			try
 			{
 				rgdwAxes[0] = axis;
@@ -381,7 +383,7 @@ namespace usb_pad
 				eff.dwSize = sizeof(DIEFFECT);
 				eff.dwFlags = DIEFF_CARTESIAN | DIEFF_OBJECTOFFSETS;
 				eff.dwSamplePeriod = 0;
-				eff.dwGain = MIN(MAX(GAINZ[port][0], 0), 10000);
+				eff.dwGain = DI_FFNOMINALMAX;
 				eff.dwTriggerButton = DIEB_NOTRIGGER;
 				eff.dwTriggerRepeatInterval = 0;
 				eff.cAxes = countof(rgdwAxes);
@@ -432,6 +434,15 @@ namespace usb_pad
 			{
 				g_pEffectConstant[port]->SetParameters(&eff, DIEP_START | DIEP_GAIN | DIEP_AXES | DIEP_DIRECTION);
 			}
+		}
+
+		void UpdateFFBSettings(int port, LPDIRECTINPUTDEVICE8 device)
+		{
+			DIPROPDWORD prop { sizeof(prop), sizeof(prop.diph) };
+			prop.diph.dwObj = 0;
+			prop.diph.dwHow = DIPH_DEVICE;
+			prop.dwData = std::clamp(GAINZ[port][0], 0, DI_FFNOMINALMAX);
+			device->SetProperty(DIPROP_FFGAIN, &prop.diph);
 		}
 
 		BOOL CALLBACK EnumJoysticksCallback(const DIDEVICEINSTANCE* pdidInstance,
@@ -1024,11 +1035,13 @@ namespace usb_pad
 
 		void TestForce(int port)
 		{
-
 			InputMapped im;
 			LPDIRECTINPUTDEVICE8 dev = nullptr;
 			if (GetInputMap(port, CID_STEERING, im))
 				dev = g_pJoysticks[im.index]->GetDevice();
+
+			// Gain value may have changed, so update it for the constant force effect
+			UpdateFFBSettings(port, dev);
 
 			SetConstantForce(port, DI_FFNOMINALMAX / 2);
 			Sleep(500);
