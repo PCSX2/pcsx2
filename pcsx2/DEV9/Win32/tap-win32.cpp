@@ -312,13 +312,6 @@ bool TAPAdapter::recv(NetPacket* pkt)
 			}
 			else
 				result = GetOverlappedResult(htap, &read, &read_size, FALSE);
-
-			if (!result)
-			{
-			}
-		}
-		else
-		{
 		}
 	}
 
@@ -359,13 +352,6 @@ bool TAPAdapter::send(NetPacket* pkt)
 		{
 			WaitForSingleObject(write.hEvent, INFINITE);
 			result = GetOverlappedResult(htap, &write, &writen, FALSE);
-
-			if (!result)
-			{
-			}
-		}
-		else
-		{
 		}
 	}
 
