@@ -1077,9 +1077,7 @@ s32 PADopen(void* pDsp)
 						"Non-PAD Error", MB_OK | MB_ICONERROR);
 			return -1;
 		}
-		hWndTop = hWnd;
-		while (GetWindowLong(hWndTop, GWL_STYLE) & WS_CHILD)
-			hWndTop = GetParent(hWndTop);
+		hWndTop = GetAncestor(hWnd, GA_ROOT);
 
 		if (!hWndGSProc.SetWndHandle(hWnd))
 		{

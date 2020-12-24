@@ -46,7 +46,6 @@ namespace usb_pad
 		static std::atomic<int> refCount(0);
 		static bool useRamp = false;
 
-		HWND hWin = NULL;
 		DWORD pid = 0;
 		DWORD old = 0;
 
@@ -903,12 +902,6 @@ namespace usb_pad
 			return NULL;
 		}
 
-		void GetID(TCHAR* name)
-		{
-			hWin = ::FindWindow(name, NULL);
-			::GetWindowThreadProcessId(hWin, &pid);
-		}
-
 		bool FindFFDevice(int port)
 		{
 			InputMapped im;
@@ -942,6 +935,8 @@ namespace usb_pad
 		//use direct input
 		void InitDI(int port, const char* dev_type)
 		{
+			HWND hWin = nullptr;
+
 			if (gsWnd)
 			{
 				hWin = gsWnd;
@@ -955,7 +950,8 @@ namespace usb_pad
 				}
 			}
 
-			InitDirectInput(hWin, port);
+			// DirectInput needs a top-level window
+			InitDirectInput(GetAncestor(hWin, GA_ROOT), port);
 			LoadDInputConfig(port, dev_type);
 			FindFFDevice(port);
 		}
