@@ -40,9 +40,6 @@ namespace usb_pad
 {
 	namespace dx
 	{
-
-		extern int32_t BYPASSCAL;
-
 		//dinput control mappings
 
 		static const DWORD PRECMULTI = 100; //floating point precision multiplier, 100 - two digit precision after comma
