@@ -202,9 +202,8 @@ namespace usb_pad
 		void FreeDirectInput();
 		void PollDevices();
 		float ReadAxis(const InputMapped& im);
-		float ReadAxis(int port, ControlID axisid);
+		float ReadAxis(int port, int axisid);
 		float FilterControl(float input, LONG linear, LONG offset, LONG dead);
-		bool KeyDown(DWORD KeyID);
 		void TestForce(int port);
 		LONG GetAxisValueFromOffset(int axis, const DIJOYSTATE2& j);
 		bool GetControl(int port, int id);

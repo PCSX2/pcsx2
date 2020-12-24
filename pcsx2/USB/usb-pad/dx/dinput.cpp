@@ -1003,10 +1003,10 @@ namespace usb_pad
 		}
 
 		//set left/right ffb torque
-		void SetConstantForce(int port, LONG magnitude)
+		HRESULT SetConstantForce(int port, LONG magnitude)
 		{
-			if (!FFB[port])
-				return;
+			if (!FFB[port] || !g_pEffectConstant[port])
+				return DIERR_NOTINITIALIZED;
 
 			if (INVERTFORCES[port])
 				cfw.lMagnitude = -magnitude;
@@ -1016,8 +1016,7 @@ namespace usb_pad
 			if (FFMULTI[port][0] > 0)
 				cfw.lMagnitude *= 1 + FFMULTI[port][0];
 
-			if (g_pEffectConstant[port])
-				g_pEffectConstant[port]->SetParameters(&eff, DIEP_TYPESPECIFICPARAMS | DIEP_START);
+			return g_pEffectConstant[port]->SetParameters(&eff, DIEP_TYPESPECIFICPARAMS | DIEP_START);
 		}
 
 		void TestForce(int port)
@@ -1030,7 +1029,8 @@ namespace usb_pad
 			// Gain value may have changed, so update it for the constant force effect
 			UpdateFFBSettings(port, dev);
 
-			SetConstantForce(port, DI_FFNOMINALMAX / 3);
+			if (FAILED(SetConstantForce(port, DI_FFNOMINALMAX / 3)))
+				return;
 			Sleep(500);
 			SetConstantForce(port, -DI_FFNOMINALMAX / 3);
 			Sleep(1000);
