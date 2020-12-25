@@ -374,8 +374,8 @@ bool MainEmuFrame::_DoSelectIsoBrowser(wxString& result)
 
 	wxArrayString isoFilterTypes;
 
-	isoFilterTypes.Add(pxsFmt(_("All Supported (%s)"), WX_STR((isoSupportedLabel + L" .dump" + L" .gz" + L" .cso"))));
-	isoFilterTypes.Add(isoSupportedList + L";*.dump" + L";*.gz" + L";*.cso");
+	isoFilterTypes.Add(pxsFmt(_("All Supported (%s)"), WX_STR((isoSupportedLabel + L" .dump" + L" .gz" + L" .cso" + L" .chd"))));
+	isoFilterTypes.Add(isoSupportedList + L";*.dump" + L";*.gz" + L";*.cso" + L";*.chd");
 
 	isoFilterTypes.Add(pxsFmt(_("Disc Images (%s)"), WX_STR(isoSupportedLabel)));
 	isoFilterTypes.Add(isoSupportedList);
@@ -383,8 +383,8 @@ bool MainEmuFrame::_DoSelectIsoBrowser(wxString& result)
 	isoFilterTypes.Add(pxsFmt(_("Blockdumps (%s)"), L".dump"));
 	isoFilterTypes.Add(L"*.dump");
 
-	isoFilterTypes.Add(pxsFmt(_("Compressed (%s)"), L".gz .cso"));
-	isoFilterTypes.Add(L"*.gz;*.cso");
+	isoFilterTypes.Add(pxsFmt(_("Compressed (%s)"), L".gz .cso .chd"));
+	isoFilterTypes.Add(L"*.gz;*.cso;*.chd");
 
 	isoFilterTypes.Add(_("All Files (*.*)"));
 	isoFilterTypes.Add(L"*.*");

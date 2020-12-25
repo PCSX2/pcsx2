@@ -1312,6 +1312,9 @@
     <ClCompile Include="..\..\gui\Dialogs\GSDumpDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\CDVD\ChdFileReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
