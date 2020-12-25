@@ -73,7 +73,7 @@ namespace usb_pad
 
 					if (fd < 0)
 					{
-						Console.Warning("Unable to open device");
+						Console.Warning("Evdev: Unable to open device: %s", path.c_str());
 						continue;
 					}
 
@@ -164,7 +164,7 @@ namespace usb_pad
 
 					if (fd < 0)
 					{
-						Console.Warning("Unable to open device");
+						Console.Warning("Evdev: Unable to open device: %s", path.c_str());
 						continue;
 					}
 
