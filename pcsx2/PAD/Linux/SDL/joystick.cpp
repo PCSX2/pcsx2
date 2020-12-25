@@ -90,7 +90,7 @@ void JoystickInfo::Rumble(unsigned type, unsigned pad)
 
 		if (SDL_GameControllerRumble(m_controller, big_motor[type], small_motor[type], s_effect_duration_ms) != 0)
 		{
-			fprintf(stderr, "ERROR: Rumble is not working! %s, type is %u\n", SDL_GetError(), type);
+			Console.Error("ERROR: Rumble is not working! %s, type is %u", SDL_GetError(), type);
 		}
 	}
 	else
@@ -98,7 +98,7 @@ void JoystickInfo::Rumble(unsigned type, unsigned pad)
 		int id = m_effects_id[type];
 		if (SDL_HapticRunEffect(m_haptic, id, 1) != 0)
 		{
-			fprintf(stderr, "ERROR: Effect is not working! %s, id is %d\n", SDL_GetError(), id);
+			Console.Error("ERROR: Effect is not working! %s, id is %d", SDL_GetError(), id);
 		}
 	}
 }
@@ -173,7 +173,7 @@ JoystickInfo::JoystickInfo(int id)
 
 	if (joy == nullptr)
 	{
-		fprintf(stderr, "PAD: failed to open joystick %d\n", id);
+		Console.Error("PAD: failed to open joystick %d", id);
 		return;
 	}
 
@@ -184,7 +184,7 @@ JoystickInfo::JoystickInfo(int id)
 
 	if (m_controller == nullptr)
 	{
-		fprintf(stderr, "PAD: Joystick (%s,GUID:%s) isn't yet supported by the SDL2 game controller API\n"
+		Console.Error("PAD: Joystick (%s,GUID:%s) isn't yet supported by the SDL2 game controller API\n"
 						"You can use SDL2 Gamepad Tool (https://www.generalarcade.com/gamepadtool/) or Steam to configure your joystick\n"
 						"The mapping can be stored in PAD.ini as 'SDL2 = <...mapping description...>'\n"
 						"Please post the new generated mapping to (https://github.com/gabomdq/SDL_GameControllerDB) so it can be added to the database.",
@@ -246,14 +246,14 @@ JoystickInfo::JoystickInfo(int id)
 			eid = SDL_HapticNewEffect(m_haptic, &effects[0]);
 			if (eid < 0)
 			{
-				fprintf(stderr, "ERROR: Effect is not uploaded! %s\n", SDL_GetError());
+				Console.Error("ERROR: Effect is not uploaded! %s", SDL_GetError());
 				m_haptic = nullptr;
 				break;
 			}
 		}
 	}
 
-	fprintf(stdout, "PAD: controller (%s) detected%s, GUID:%s\n",
+	Console.WriteLn("PAD: controller (%s) detected%s, GUID:%s",
 			devname, m_haptic ? " with rumble support" : "", guid);
 
 	m_no_error = true;
@@ -289,7 +289,7 @@ bool JoystickInfo::TestForce(float strength = 0.60)
 	// Make the haptic pad rumble 60% strength for half a second, shoudld be enough for user to see if it works or not
 	if (!rumble_enabled)
 	{
-		fprintf(stderr, "ERROR: Rumble is not working! %s\n", SDL_GetError());
+		Console.Error("ERROR: Rumble is not working! %s", SDL_GetError());
 		return false;
 	}
 
