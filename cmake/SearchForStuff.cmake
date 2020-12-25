@@ -288,3 +288,6 @@ if(NOT USE_SYSTEM_YAML)
         message(FATAL_ERROR "No bundled yaml-cpp was found")
     endif()
 endif()
+
+add_subdirectory(3rdparty/libchdr/libchdr EXCLUDE_FROM_ALL)
+include_directories(3rdparty/libchdr/libchdr/include)

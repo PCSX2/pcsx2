@@ -248,6 +248,7 @@
     <ClCompile Include="..\..\CDVD\BlockdumpFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\CDVDdiscReader.cpp" />
     <ClCompile Include="..\..\CDVD\CDVDdiscThread.cpp" />
+    <ClCompile Include="..\..\CDVD\ChdFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\ChunksCache.cpp" />
     <ClCompile Include="..\..\CDVD\CompressedFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\CsoFileReader.cpp" />
@@ -948,6 +949,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\yaml-cpp\yaml.vcxproj">
       <Project>{48329442-e41b-4a1f-8364-36eee1b71343}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\3rdparty\libchdr\libchdr.vcxproj">
+      <Project>{a0d2b3ad-1f72-4ee3-8b5c-f2c358da35f0}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\zlib\zlib.vcxproj">
       <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
