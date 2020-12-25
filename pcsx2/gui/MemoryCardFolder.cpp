@@ -1035,7 +1035,7 @@ void FolderMemoryCard::FlushFileEntries( const u32 dirCluster, const u32 remaini
 					FlushFileEntries( entry->entry.data.cluster, entry->entry.data.length, subDirPath, dirRef );
 				}
 			} else if ( entry->IsFile() ) {
-				const MemoryCardFileMetadataReference* fileRef = AddFileEntryToMetadataQuickAccess( entry, parent );
+				AddFileEntryToMetadataQuickAccess( entry, parent );
 
 				if ( entry->entry.data.length == 0 ) {
 					// empty files need to be explicitly created, as there will be no data cluster referencing it later
@@ -1057,7 +1057,7 @@ void FolderMemoryCard::FlushFileEntries( const u32 dirCluster, const u32 remaini
 				}
 
 				if ( m_performFileWrites ) {
-					FileAccessHelper::WriteIndex( m_folderName.GetFullPath() + dirPath, fileRef );
+					FileAccessHelper::WriteIndex( m_folderName.GetFullPath() + dirPath, entry, parent );
 				}
 			}
 		}
@@ -1570,9 +1570,18 @@ void FileAccessHelper::WriteMetadata( wxFileName folderName, const MemoryCardFil
 	}
 }
 
-void FileAccessHelper::WriteIndex( wxFileName folderName, const MemoryCardFileMetadataReference* fileRef )
+void FileAccessHelper::WriteIndex( wxFileName folderName, MemoryCardFileEntry* const entry, MemoryCardFileMetadataReference* const parent )
 {
-	fileRef->GetPath( &folderName );
+	parent->GetPath( &folderName );
+	char cleanName[sizeof( entry->entry.data.name )];
+	memcpy( cleanName, (const char*)entry->entry.data.name, sizeof( cleanName ) );
+	bool localCleaned = FileAccessHelper::CleanMemcardFilename( cleanName );
+
+	if ( entry->IsDir() ) {
+		folderName.AppendDir( wxString::FromAscii( cleanName ) );
+	} else if ( entry->IsFile() ) {
+		folderName.SetName( wxString::FromAscii( cleanName ) );
+	}
 
 	const wxCharTypeBuffer fileName( folderName.GetName().ToUTF8() );
 	folderName.SetName( L"_pcsx2_index" );
@@ -1591,9 +1600,9 @@ void FileAccessHelper::WriteIndex( wxFileName folderName, const MemoryCardFileMe
 	}
 
 	// Update timestamps basing on internal data
-	const auto* entry = &fileRef->entry->entry.data;
-	entryNode["timeCreated"] = entry->timeCreated.ToTime();
-	entryNode["timeModified"] = entry->timeModified.ToTime();
+	const auto* e = &entry->entry.data;
+	entryNode["timeCreated"] = e->timeCreated.ToTime();
+	entryNode["timeModified"] = e->timeModified.ToTime();
 
 	// Write out the changes
 	wxFFile indexFile;
