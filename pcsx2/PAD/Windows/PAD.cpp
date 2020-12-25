@@ -87,30 +87,6 @@ unsigned char inBuf[50];
 #define MODE_ANALOG 0x73
 #define MODE_DS2_NATIVE 0x79
 
-#ifdef _MSC_VER
-int IsWindowMaximized(HWND hWnd)
-{
-	RECT rect;
-	if (GetWindowRect(hWnd, &rect))
-	{
-		POINT p;
-		p.x = rect.left;
-		p.y = rect.top;
-		MONITORINFO info;
-		memset(&info, 0, sizeof(info));
-		info.cbSize = sizeof(info);
-		HMONITOR hMonitor;
-		if ((hMonitor = MonitorFromPoint(p, MONITOR_DEFAULTTOPRIMARY)) &&
-			GetMonitorInfo(hMonitor, &info) &&
-			memcmp(&info.rcMonitor, &rect, sizeof(rect)) == 0)
-		{
-			return 1;
-		}
-	}
-	return 0;
-}
-#endif
-
 void DEBUG_TEXT_OUT(const char* text)
 {
 	if (!config.debug)
@@ -1003,19 +979,6 @@ ExtraWndProcResult HideCursorProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 	return CONTINUE_BLISSFULLY_AND_RELEASE_PROC;
 }
 
-char restoreFullScreen = 0;
-// This hack sends ALT+ENTER to the window to toggle fullscreen.
-// PCSX2 doesn't need it (it exits full screen on ESC on its own).
-DWORD WINAPI MaximizeWindowThreadProc(void* lpParameter)
-{
-	Sleep(100);
-	keybd_event(VK_LMENU, MapVirtualKey(VK_LMENU, MAPVK_VK_TO_VSC), 0, 0);
-	keybd_event(VK_RETURN, MapVirtualKey(VK_RETURN, MAPVK_VK_TO_VSC), 0, 0);
-	Sleep(10);
-	keybd_event(VK_RETURN, MapVirtualKey(VK_RETURN, MAPVK_VK_TO_VSC), KEYEVENTF_KEYUP, 0);
-	keybd_event(VK_LMENU, MapVirtualKey(VK_LMENU, MAPVK_VK_TO_VSC), KEYEVENTF_KEYUP, 0);
-	return 0;
-}
 #endif
 
 void PADconfigure()
@@ -1028,25 +991,6 @@ void PADconfigure()
 	if(tmp != nullptr)
 		PADopen(tmp);
 }
-
-#ifdef _MSC_VER
-DWORD WINAPI RenameWindowThreadProc(void* lpParameter)
-{
-	wchar_t newTitle[200];
-	if (hWndTop)
-	{
-		int len = GetWindowTextW(hWndTop, newTitle, 200);
-		if (len > 0 && len < 199)
-		{
-			wchar_t* end;
-			if (end = wcsstr(newTitle, L" | State "))
-				*end = 0;
-			SetWindowTextW(hWndTop, newTitle);
-		}
-	}
-	return 0;
-}
-#endif
 
 s32 PADopen(void* pDsp)
 {
@@ -1107,16 +1051,6 @@ s32 PADopen(void* pDsp)
 		windowThreadId = GetWindowThreadProcessId(hWndTop, 0);
 	}
 
-	if (restoreFullScreen)
-	{
-		if (!IsWindowMaximized(hWndTop))
-		{
-			HANDLE hThread = CreateThread(0, 0, MaximizeWindowThreadProc, hWndTop, 0, 0);
-			if (hThread)
-				CloseHandle(hThread);
-		}
-		restoreFullScreen = 0;
-	}
 #endif
 	for (int port = 0; port < 2; port++)
 	{
