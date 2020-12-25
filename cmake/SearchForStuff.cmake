@@ -89,6 +89,7 @@ endif()
 
 find_package(wxWidgets COMPONENTS base core adv)
 find_package(ZLIB)
+find_package(CHD)
 
 ## Use pcsx2 package to find module
 include(FindLibc)
@@ -209,6 +210,11 @@ endif()
 
 if(ZLIB_FOUND)
 	include_directories(${ZLIB_INCLUDE_DIRS})
+endif()
+
+if(CHD_FOUND)
+  include_directories(${CHD_INCLUDE_DIR})
+  add_subdirectory(${CHD_ROOT_DIR})
 endif()
 
 find_package(HarfBuzz)
