@@ -537,7 +537,7 @@ vifOp(vifCode_STCol) {
 	}
 	pass2 {
 		u32 ret = _vifCode_STColRow<idx>(data, &vifX.MaskCol._u32[vifX.tag.addr]);
-		if (idx && THREAD_VU1) { vu1Thread.WriteCol(vifX); }
+		if (idx) { vu1Thread.WriteCol(vifX); }
 		return ret;
 	}
 	pass3 { VifCodeLog("STCol"); }
@@ -554,7 +554,7 @@ vifOp(vifCode_STRow) {
 	}
 	pass2 {
 		u32 ret = _vifCode_STColRow<idx>(data, &vifX.MaskRow._u32[vifX.tag.addr]);
-		if (idx && THREAD_VU1) { vu1Thread.WriteRow(vifX); }
+		if (idx) { vu1Thread.WriteRow(vifX); }
 		return ret;
 	}
 	pass3 { VifCodeLog("STRow"); }
