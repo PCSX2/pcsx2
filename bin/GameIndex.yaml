@@ -12676,6 +12676,9 @@ SLES-53446:
   name: "Arcade USA"
   region: "PAL-E"
   compat: 5
+SLES-53450:
+  name: "Gaelic Games Football"
+  region: "PAL-E"
 SLES-53452:
   name: "Trixie in Toyland"
   region: "PAL-E"
