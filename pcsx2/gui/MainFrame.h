@@ -174,6 +174,8 @@ public:
 #ifndef DISABLE_RECORDING
 	void initializeRecordingMenuItem(MenuIdentifiers menuId, wxString keyCodeStr, bool enable = true);
 	void enableRecordingMenuItem(MenuIdentifiers menuId, bool enable);
+	void StartInputRecording();
+	void StopInputRecording();
 #endif
 
 protected:

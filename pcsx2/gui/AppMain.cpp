@@ -662,6 +662,11 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 		// Saved state load failed prior to the system getting corrupted (ie, file not found
 		// or some zipfile error) -- so log it and resume emulation.
 		Console.Warning( ex.FormatDiagnosticMessage() );
+#ifndef DISABLE_RECORDING
+		if (g_InputRecording.IsInitialLoad())
+			g_InputRecording.FailedSavestate();
+#endif
+
 		CoreThread.Resume();
 	}
 	// ----------------------------------------------------------------------------

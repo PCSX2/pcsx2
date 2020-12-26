@@ -76,8 +76,8 @@ public:
 	// Set the running frame counter for the input recording to an arbitrary value
 	void SetFrameCounter(u32 newGFrameCount);
 
-	// Store the starting internal PCSX2 g_FrameCount value
-	void SetStartingFrame(u32 newStartingFrame);
+	// Sets up all values and prints console logs pertaining to the start of a recording
+	void SetupInitialState(u32 newStartingFrame);
 
 	/// Functions called from GUI
 
@@ -89,6 +89,8 @@ public:
 	void Stop();
 	// Initialze VirtualPad window
 	void setVirtualPadPtr(VirtualPad* ptr, int const port);
+	// Resets a recording if the base savestate could not be loaded at the start
+	void FailedSavestate();
 
 private:
 	enum class InputRecordingMode

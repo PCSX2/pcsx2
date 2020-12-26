@@ -612,8 +612,7 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent& event)
 	else
 	{
 		//Properly close any currently loaded recording file before disabling
-		if (g_InputRecording.IsActive())
-			Menu_Recording_Stop_Click(event);
+		StopInputRecording();
 		GetMenuBar()->Remove(TopLevelMenu_InputRecording);
 		// Always turn controller logs off, but never turn it on by default
 		SysConsole.controlInfo.Enabled = checked;
@@ -954,22 +953,19 @@ void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent& event)
 	NewRecordingFrame* newRecordingFrame = wxGetApp().GetNewRecordingFramePtr();
 	if (newRecordingFrame)
 	{
-		if (newRecordingFrame->ShowModal() == wxID_CANCEL)
+		if (newRecordingFrame->ShowModal() != wxID_CANCEL)
 		{
-			if (!initiallyPaused)
-				g_InputRecordingControls.Resume();
-			return;
+			if (g_InputRecording.Create(newRecordingFrame->GetFile(), !newRecordingFrame->GetFrom(), newRecordingFrame->GetAuthor()))
+			{
+				if (!g_InputRecording.GetInputRecordingData().FromSaveState())
+					StartInputRecording();
+				return;
+			}
 		}
-		if (!g_InputRecording.Create(newRecordingFrame->GetFile(), !newRecordingFrame->GetFrom(), newRecordingFrame->GetAuthor()))
-		{
-			if (!initiallyPaused)
-				g_InputRecordingControls.Resume();
-			return;
-		}
+		
+		if (!initiallyPaused)
+			g_InputRecordingControls.Resume();
 	}
-	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
-	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
-	sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, g_InputRecording.IsActive());
 }
 
 void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent& event)
@@ -986,30 +982,38 @@ void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent& event)
 		return;
 	}
 
-	wxString path = openFileDialog.GetPath();
-	const bool recordingLoaded = g_InputRecording.IsActive();
-	if (!g_InputRecording.Play(path))
+	StopInputRecording();
+	if (!g_InputRecording.Play(openFileDialog.GetPath()))
 	{
-		if (recordingLoaded)
-			Menu_Recording_Stop_Click(event);
 		if (!initiallyPaused)
 			g_InputRecordingControls.Resume();
 		return;
 	}
-	if (!recordingLoaded)
-	{
-		m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
-		m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
-	}
-	sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, g_InputRecording.IsActive());
+	if (!g_InputRecording.GetInputRecordingData().FromSaveState())
+		StartInputRecording();
 }
 
 void MainEmuFrame::Menu_Recording_Stop_Click(wxCommandEvent& event)
 {
-	g_InputRecording.Stop();
-	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(true);
-	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(false);
-	sMainFrame.enableRecordingMenuItem(MenuId_Recording_ToggleRecordingMode, g_InputRecording.IsActive());
+	StopInputRecording();
+}
+
+void MainEmuFrame::StartInputRecording()
+{
+	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
+	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
+	m_menuRecording.FindChildItem(MenuId_Recording_ToggleRecordingMode)->Enable(true);
+}
+
+void MainEmuFrame::StopInputRecording()
+{
+	if (g_InputRecording.IsActive())
+	{
+		g_InputRecording.Stop();
+		m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(true);
+		m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(false);
+		m_menuRecording.FindChildItem(MenuId_Recording_ToggleRecordingMode)->Enable(false);
+	}
 }
 
 void MainEmuFrame::Menu_Recording_TogglePause_Click(wxCommandEvent& event)
