@@ -276,7 +276,8 @@ void InputRecording::SetupInitialState(u32 newStartingFrame)
 				inputRec::consoleLog("Input recording was possibly constructed for a different game.");
 
 		incrementUndo = true;
-		inputRec::consoleMultiLog({fmt::format("Replaying input recording - [{}]", std::string(inputRecordingData.GetFilename())),
+		inputRec::log("Replaying input recording");
+		inputRec::consoleMultiLog({fmt::format("File: {}", std::string(inputRecordingData.GetFilename())),
 								   fmt::format("PCSX2 Version Used: {}", std::string(inputRecordingData.GetHeader().emu)),
 								   fmt::format("Recording File Version: {}", inputRecordingData.GetHeader().version),
 								   fmt::format("Associated Game Name or ISO Filename: {}", std::string(inputRecordingData.GetHeader().gameName)),
