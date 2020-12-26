@@ -22,19 +22,11 @@
 #include <fstream>
 #include <algorithm>
 
-std::string strToLower(std::string str)
+std::string strToUpper(std::string str)
 {
 	std::transform(str.begin(), str.end(), str.begin(),
-				   [](unsigned char c) { return std::tolower(c); });
+				   [](unsigned char c) { return std::toupper(c); });
 	return str;
-}
-
-bool compareStrNoCase(const std::string str1, const std::string str2)
-{
-	return std::equal(str1.begin(), str1.end(), str2.begin(),
-					  [](char a, char b) {
-						  return tolower(a) == tolower(b);
-					  });
 }
 
 std::string GameDatabaseSchema::GameEntry::memcardFiltersAsString() const
@@ -55,7 +47,7 @@ std::string GameDatabaseSchema::GameEntry::memcardFiltersAsString() const
 
 bool GameDatabaseSchema::GameEntry::findPatch(const std::string crc, Patch& patch) const
 {
-	std::string crcLower = strToLower(crc);
+	std::string crcLower = strToUpper(crc);
 	Console.WriteLn(fmt::format("[GameDB] Searching for patch with CRC '{}'", crc));
 	if (patches.count(crcLower) == 1)
 	{
@@ -163,7 +155,7 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 		{
 			for (const auto& entry : patches)
 			{
-				std::string crc = strToLower(entry.first.as<std::string>());
+				std::string crc = strToUpper(entry.first.as<std::string>());
 				if (gameEntry.patches.count(crc) == 1)
 				{
 					Console.Error(fmt::format("[GameDB] Duplicate CRC '{}' found for serial: '{}'. Skipping, CRCs are case-insensitive!", crc, serial));
@@ -194,7 +186,7 @@ GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::entryFromYaml(const std::str
 
 GameDatabaseSchema::GameEntry YamlGameDatabaseImpl::findGame(const std::string serial)
 {
-	std::string serialLower = strToLower(serial);
+	std::string serialLower = strToUpper(serial);
 	Console.WriteLn(fmt::format("[GameDB] Searching for '{}' in GameDB", serialLower));
 	if (gameDb.count(serialLower) == 1)
 	{
@@ -235,7 +227,7 @@ bool YamlGameDatabaseImpl::initDatabase(std::ifstream& stream)
 				// this is because the application may pass a lowercase CRC or serial along
 				//
 				// However, YAML's keys are as expected case-sensitive, so we have to explicitly do our own duplicate checking
-				std::string serial = strToLower(entry.first.as<std::string>());
+				std::string serial = strToUpper(entry.first.as<std::string>());
 				if (gameDb.count(serial) == 1)
 				{
 					Console.Error(fmt::format("[GameDB] Duplicate serial '{}' found in GameDB. Skipping, Serials are case-insensitive!", serial));

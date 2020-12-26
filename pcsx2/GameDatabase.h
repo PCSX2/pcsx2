@@ -105,5 +105,4 @@ private:
 };
 
 extern IGameDatabase* AppHost_GetGameDatabase();
-extern std::string strToLower(std::string str);
-extern bool compareStrNoCase(const std::string str1, const std::string str2);
+extern std::string strToUpper(std::string str);
