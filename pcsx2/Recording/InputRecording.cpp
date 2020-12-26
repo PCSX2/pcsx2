@@ -111,7 +111,7 @@ void InputRecording::ControllerInterrupt(u8& data, u8& port, u16& bufCount, u8 b
 			if (frameCounter >= 0 && frameCounter < INT_MAX)
 			{
 				if (!inputRecordingData.ReadKeyBuffer(bufVal, frameCounter, port, bufIndex))
-					inputRec::consoleLog(fmt::format("[REC]: Failed to read input data at frame {}", frameCounter));
+					inputRec::consoleLog(fmt::format("Failed to read input data at frame {}", frameCounter));
 
 				// Update controller data state for future VirtualPad / logging usage.
 				padData[port]->UpdateControllerData(bufIndex, bufVal);
@@ -142,7 +142,7 @@ void InputRecording::ControllerInterrupt(u8& data, u8& port, u16& bufCount, u8 b
 					}
 
 					if (frameCounter < INT_MAX && !inputRecordingData.WriteKeyBuffer(frameCounter, port, bufIndex, bufVal))
-						inputRec::consoleLog(fmt::format("[REC]: Failed to write input data at frame {}", frameCounter));
+						inputRec::consoleLog(fmt::format("Failed to write input data at frame {}", frameCounter));
 				}
 			}
 			// If the VirtualPad updated the PadData, we have to update the buffer
