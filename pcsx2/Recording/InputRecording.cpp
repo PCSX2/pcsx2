@@ -45,7 +45,7 @@ void SaveStateBase::InputRecordingFreeze()
 		// that starts from a savestate (not power-on) and the starting (pcsx2 internal) frame
 		// marker has not been set (which comes from the save-state), we initialize it.
 		if (g_InputRecording.IsInitialLoad())
-			g_InputRecording.SetStartingFrame(g_FrameCount);
+			g_InputRecording.SetupInitialState(g_FrameCount);
 		else if (g_InputRecording.IsActive())
 		{
 			// Explicitly set the frame change tracking variable as to not
@@ -81,7 +81,7 @@ void InputRecording::RecordingReset()
 	// that starts from power-on and the starting (pcsx2 internal) frame
 	// marker has not been set, we initialize it.
 	if (g_InputRecording.IsInitialLoad())
-		g_InputRecording.SetStartingFrame(0);
+		g_InputRecording.SetupInitialState(0);
 	else if (g_InputRecording.IsActive())
 	{
 		g_InputRecording.SetFrameCounter(0);
@@ -259,14 +259,49 @@ void InputRecording::SetFrameCounter(u32 newGFrameCount)
 	}
 }
 
-void InputRecording::SetStartingFrame(u32 newStartingFrame)
+void InputRecording::SetupInitialState(u32 newStartingFrame)
 {
 	startingFrame = newStartingFrame;
+	if (state != InputRecordingMode::Replaying)
+	{
+		inputRec::log("Started new input recording");
+		inputRec::consoleLog(fmt::format("Filename {}", std::string(inputRecordingData.GetFilename())));
+		SetToRecordMode();
+	}
+	else
+	{
+		// Check if the current game matches with the one used to make the original recording
+		if (!g_Conf->CurrentIso.IsEmpty())
+			if (resolveGameName() != inputRecordingData.GetHeader().gameName)
+				inputRec::consoleLog("Input recording was possibly constructed for a different game.");
+
+		incrementUndo = true;
+		inputRec::consoleMultiLog({fmt::format("Replaying input recording - [{}]", std::string(inputRecordingData.GetFilename())),
+								   fmt::format("PCSX2 Version Used: {}", std::string(inputRecordingData.GetHeader().emu)),
+								   fmt::format("Recording File Version: {}", inputRecordingData.GetHeader().version),
+								   fmt::format("Associated Game Name or ISO Filename: {}", std::string(inputRecordingData.GetHeader().gameName)),
+								   fmt::format("Author: {}", inputRecordingData.GetHeader().author),
+								   fmt::format("Total Frames: {}", inputRecordingData.GetTotalFrames()),
+								   fmt::format("Undo Count: {}", inputRecordingData.GetUndoCount())});
+		SetToReplayMode();
+	}
+
+	g_InputRecordingControls.DisableFrameAdvance();
 	if (inputRecordingData.FromSaveState())
 		inputRec::consoleLog(fmt::format("Internal Starting Frame: {}", startingFrame));
 	frameCounter = 0;
 	initialLoad = false;
 	g_InputRecordingControls.Lock(startingFrame);
+}
+
+void InputRecording::FailedSavestate()
+{
+	inputRec::consoleLog(fmt::format("{}_SaveState.p2s is not compatible with this version of PCSX2", inputRecordingData.GetFilename()));
+	inputRec::consoleLog(fmt::format("Original PCSX2 version used: {}", inputRecordingData.GetHeader().emu));
+	inputRecordingData.Close();
+	initialLoad = false;
+	state = InputRecordingMode::NotActive;
+	g_InputRecordingControls.Resume();
 }
 
 void InputRecording::Stop()
@@ -285,6 +320,7 @@ bool InputRecording::Create(wxString FileName, bool fromSaveState, wxString auth
 		return false;
 
 	initialLoad = true;
+	state = InputRecordingMode::Recording;
 	if (fromSaveState)
 	{
 		if (wxFileExists(FileName + "_SaveState.p2s"))
@@ -305,21 +341,15 @@ bool InputRecording::Create(wxString FileName, bool fromSaveState, wxString auth
 	inputRecordingData.GetHeader().SetGameName(resolveGameName());
 	// Write header contents
 	inputRecordingData.WriteHeader();
-	SetToRecordMode();
-	g_InputRecordingControls.DisableFrameAdvance();
-	inputRec::log("Started new input recording");
-	inputRec::consoleLog(fmt::format("Filename {}", std::string(FileName)));
 	return true;
 }
 
 bool InputRecording::Play(wxString fileName)
 {
-	if (IsActive())
-		Stop();
-
 	if (!inputRecordingData.OpenExisting(fileName))
 		return false;
 
+	state = InputRecordingMode::Replaying;
 	// Either load the savestate, or restart the game
 	if (inputRecordingData.FromSaveState())
 	{
@@ -344,23 +374,6 @@ bool InputRecording::Play(wxString fileName)
 		initialLoad = true;
 		sApp.SysExecute(g_Conf->CdvdSource);
 	}
-
-	// Check if the current game matches with the one used to make the original recording
-	if (!g_Conf->CurrentIso.IsEmpty())
-		if (resolveGameName() != inputRecordingData.GetHeader().gameName)
-			inputRec::consoleLog("Input recording was possibly constructed for a different game.");
-
-	incrementUndo = true;
-	SetToReplayMode();
-	inputRec::log("Playing input recording");
-	g_InputRecordingControls.DisableFrameAdvance();
-	inputRec::consoleMultiLog({fmt::format("Replaying input recording - [{}]", std::string(inputRecordingData.GetFilename())),
-							   fmt::format("PCSX2 Version Used: {}", std::string(inputRecordingData.GetHeader().emu)),
-							   fmt::format("Recording File Version: {}", inputRecordingData.GetHeader().version),
-							   fmt::format("Associated Game Name or ISO Filename: {}", std::string(inputRecordingData.GetHeader().gameName)),
-							   fmt::format("Author: {}", inputRecordingData.GetHeader().author),
-							   fmt::format("Total Frames: {}", inputRecordingData.GetTotalFrames()),
-							   fmt::format("Undo Count: {}", inputRecordingData.GetUndoCount())});
 	return true;
 }
 
