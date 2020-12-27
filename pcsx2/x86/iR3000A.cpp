@@ -1055,7 +1055,7 @@ void psxDynarecCheckBreakpoint()
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true);
-	GetCoreThread().PauseSelf();
+	GetCoreThread().PauseSelfDebug();
 	iopBreakpoint = true;
 }
 
@@ -1066,7 +1066,7 @@ void psxDynarecMemcheck()
 		return;
 
 	CBreakPoints::SetBreakpointTriggered(true);
-	GetCoreThread().PauseSelf();
+	GetCoreThread().PauseSelfDebug();
 	iopBreakpoint = true;
 }
 
