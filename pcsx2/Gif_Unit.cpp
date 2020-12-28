@@ -105,6 +105,7 @@ bool Gif_HandlerAD(u8* pMem)
 
 bool Gif_HandlerAD_MTVU(u8* pMem)
 {
+	// Note: Atomic communication is with MTVU.cpp Get_GSChanges
 	u32 reg = pMem[8];
 	u32* data = (u32*)pMem;
 
@@ -125,29 +126,26 @@ bool Gif_HandlerAD_MTVU(u8* pMem)
 	}
 	else if (reg == 0x60)
 	{ // SIGNAL
-
-		if (CSRreg.SIGNAL)
-		{ // Time to ignore all subsequent drawing operations.
+		GUNIT_WARN("GIF Handler - SIGNAL");
+		if (vu1Thread.gsInterrupts.load(std::memory_order_acquire) & VU_Thread::InterruptFlagSignal)
 			Console.Error("GIF Handler MTVU - Double SIGNAL Not Handled");
-			return 1;
-		}
-		else
-		{
-			GUNIT_WARN("GIF Handler - SIGNAL");
-			vu1Thread.gsSignal = ((u64)data[1] << 32) | data[0];
-			vu1Thread.gsSignalCnt++;
-		}
+		vu1Thread.gsSignal.store(((u64)data[1] << 32) | data[0], std::memory_order_relaxed);
+		vu1Thread.gsInterrupts.fetch_or(VU_Thread::InterruptFlagSignal, std::memory_order_release);
 	}
 	else if (reg == 0x61)
 	{ // FINISH
 		GUNIT_WARN("GIF Handler - FINISH");
-		vu1Thread.gsFinish = 1;
+		u32 old = vu1Thread.gsInterrupts.fetch_or(VU_Thread::InterruptFlagFinish, std::memory_order_relaxed);
+		if (old & VU_Thread::InterruptFlagFinish)
+			Console.Error("GIF Handler MTVU - Double FINISH Not Handled");
 	}
 	else if (reg == 0x62)
 	{ // LABEL
 		GUNIT_WARN("GIF Handler - LABEL");
-		vu1Thread.gsLabel = ((u64)data[1] << 32) | data[0];
-		vu1Thread.gsLabelCnt++;
+		if (vu1Thread.gsLabel.load(std::memory_order_acquire) & VU_Thread::InterruptFlagLabel)
+			Console.Error("GIF Handler MTVU - Double LABEL Not Handled");
+		vu1Thread.gsLabel.store(((u64)data[1] << 32) | data[0], std::memory_order_relaxed);
+		vu1Thread.gsInterrupts.fetch_or(VU_Thread::InterruptFlagLabel, std::memory_order_release);
 	}
 	else if (reg >= 0x63 && reg != 0x7f)
 	{

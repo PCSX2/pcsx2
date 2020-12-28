@@ -44,16 +44,19 @@ class VU_Thread : public pxThread {
 public:
 	__aligned16  vifStruct        vif;
 	__aligned16  VIFregisters     vifRegs;
-	__aligned(4) Semaphore semaXGkick;
-	__aligned(4) std::atomic<unsigned int> vuCycles[4]; // Used for VU cycle stealing hack
-	__aligned(4) u32 vuCycleIdx;  // Used for VU cycle stealing hack
-	__aligned(4) u32 lastSignal;
-	__aligned(4) u32 lastLabel;
-	__aligned(4) std::atomic<unsigned int> gsFinish; // Used for GS Signal, Finish etc
-	__aligned(4) std::atomic<u32> gsLabelCnt; // Used for GS Label command
-	__aligned(4) std::atomic<u32> gsSignalCnt; // Used for GS Signal command
-	__aligned(4) std::atomic<u64> gsLabel; // Used for GS Label command
-	__aligned(4) std::atomic<u64> gsSignal; // Used for GS Signal command
+	Semaphore semaXGkick;
+	std::atomic<unsigned int> vuCycles[4]; // Used for VU cycle stealing hack
+	u32 vuCycleIdx;  // Used for VU cycle stealing hack
+
+	enum InterruptFlag {
+		InterruptFlagFinish = 1 << 0,
+		InterruptFlagSignal = 1 << 1,
+		InterruptFlagLabel  = 1 << 2,
+	};
+
+	std::atomic<u32> gsInterrupts; // Used for GS Signal, Finish etc
+	std::atomic<u64> gsLabel; // Used for GS Label command
+	std::atomic<u64> gsSignal; // Used for GS Signal command
 
 	VU_Thread(BaseVUmicroCPU*& _vuCPU, VURegs& _vuRegs);
 	virtual ~VU_Thread();
