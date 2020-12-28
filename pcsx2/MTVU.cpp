@@ -477,6 +477,7 @@ void VU_Thread::WriteCol(vifStruct& _vif)
 	Write(MTVU_VIF_WRITE_COL);
 	Write(&_vif.MaskCol, sizeof(_vif.MaskCol));
 	CommitWritePos();
+	KickStart();
 }
 
 void VU_Thread::WriteRow(vifStruct& _vif)
@@ -486,4 +487,5 @@ void VU_Thread::WriteRow(vifStruct& _vif)
 	Write(MTVU_VIF_WRITE_ROW);
 	Write(&_vif.MaskRow, sizeof(_vif.MaskRow));
 	CommitWritePos();
+	KickStart();
 }
