@@ -766,7 +766,7 @@ SCAJ-20159:
   name: "Soul Calibur III"
   region: "NTSC-Ch-E-J"
   gameFixes:
-    - EETimingHack # Fixes bad colours on charcter select when in Progressive Scan
+    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
 SCAJ-20160:
   name: "Yoshitsuneki"
   region: "NTSC-Unk"
@@ -1175,7 +1175,7 @@ SCES-50034:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Crash On Load
+    - VU0KickstartHack # Fixes Crash On Load.
 SCES-50105:
   name: "Sky Odyssey"
   region: "PAL-M5"
@@ -1184,7 +1184,7 @@ SCES-50139:
   region: "PAL-M7"
   compat: 5
   roundModes:
-    eeRoundMode: 0  # Fixes crash when using the Subaru
+    eeRoundMode: 0  # Fixes crash when using the Subaru.
   gameFixes:
     - EETimingHack # Fix in-game Freeze.
 SCES-50240:
@@ -1538,14 +1538,14 @@ SCES-51176:
   name: "Disney's Treasure Planet"
   region: "PAL-M4"
   clampModes:
-    vuClampMode: 3  # Fixes SPS when the solar surfer's engines are inactive
+    vuClampMode: 3  # Fixes SPS when the solar surfer's engines are inactive.
   gameFixes:
     - EETimingHack # Fixes hang before going ingame.
 SCES-51177:
   name: "Disney's Treasure Planet"
   region: "PAL"
   clampModes:
-    vuClampMode: 3  # Fixes SPS when the solar surfer's engines are inactive
+    vuClampMode: 3  # Fixes SPS when the solar surfer's engines are inactive.
   gameFixes:
     - EETimingHack # Fixes hang before going ingame.
 SCES-51179:
@@ -2028,7 +2028,7 @@ SCES-53202:
   region: "PAL-M5"
   compat: 5
   clampModes:
-    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
+    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove.
 SCES-53247:
   name: "WRC Rally Evolved"
   region: "PAL-M8"
@@ -2718,7 +2718,7 @@ SCKA-20049:
   name: "Tekken 5"
   region: "NTSC-K"
   clampModes:
-    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
+    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove.
 SCKA-20050:
   name: "Tales of Legendia"
   region: "NTSC-K"
@@ -2761,7 +2761,7 @@ SCKA-20059:
   region: "NTSC-K"
   compat: 5
   gameFixes:
-    - EETimingHack # Fixes bad colours on charcter select when in Progressive Scan
+    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
 SCKA-20060:
   name: "Ratchet - Deadlocked"
   region: "NTSC-K"
@@ -2830,7 +2830,7 @@ SCKA-20081:
   name: "Tekken 5 [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
   clampModes:
-    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
+    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove.
 SCKA-20086:
   name: "Shin Onimusha - Dawn of Dreams [Disc1of2]"
   region: "NTSC-K"
@@ -2893,9 +2893,9 @@ SCKA-30001:
   name: "Gran Turismo 4"
   region: "NTSC-K"
   clampModes:
-    vuClampMode: 2  # Text in GT mode works
+    vuClampMode: 2  # Text in GT mode works.
   # Comments from old GameIndex.dbf for this Game
-  # eeClampMode = 3  Text in races works
+  # eeClampMode = 3  Text in races works.
 SCKA-30002:
   name: "God of War"
   region: "NTSC-K"
@@ -3692,7 +3692,7 @@ SCPS-19303:
 SCPS-19304:
   name: "Gran Turismo 4 - Prologue [PlayStation 2 The Best]"
   region: "NTSC-J"
-  memcardFilters: #vuClampMode = 2  Text in GT mode works.
+  memcardFilters: 
     - "SCAJ-20066"
     - "SCAJ-30006"
     - "SCAJ-30007"
@@ -3704,6 +3704,7 @@ SCPS-19304:
     - "SCPS-15009"
     - "SCPS-55007"
   # Comments from old GameIndex.dbf for this Game
+  # vuClampMode = 2  Text in GT mode works.
   # eeClampMode = 3  Text in races works.
 SCPS-19305:
   name: "Siren [PlayStation 2 The Best]"
@@ -4436,7 +4437,7 @@ SCUS-97179:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Car Models
+    - VU0KickstartHack # Fixes Bad Car Models.
 SCUS-97181:
   name: "Official U.S. PlayStation Magazine Demo Disc 055"
   region: "NTSC-U"
@@ -8406,9 +8407,9 @@ SLES-51208:
   name: "Rocky"
   region: "PAL-M5"
   clampModes:
-    eeClampMode: 0  # Fixes boxers not appearing/disappearing
+    eeClampMode: 0  # Fixes boxers not appearing/disappearing.
   gameFixes:
-    - VIF1StallHack # Fixes freezes
+    - VIF1StallHack # Fixes freezes.
 SLES-51209:
   name: "Haven - Call of the King"
   region: "PAL-M5"
@@ -8831,7 +8832,7 @@ SLES-51390:
   name: "FightBox"
   region: "PAL-E"
   clampModes:
-    vuClampMode: 0  # Fixes missing 3D
+    vuClampMode: 0  # Fixes missing 3D.
 SLES-51391:
   name: "RTL Skispringen 2003"
   region: "PAL-E-G"
@@ -9082,9 +9083,9 @@ SLES-51579:
   name: "Yu-Gi-Oh! - The Duelists of the Roses"
   region: "PAL-E"
   roundModes:
-    eeRoundMode: 2  # Partially Fixes battle annimation.
+    eeRoundMode: 2  # Partially fixes battle animation.
   clampModes:
-    eeClampMode: 2  # Partially Fixes battle annimation.
+    eeClampMode: 2  # Partially fixes battle animation.
 SLES-51580:
   name: "London Racer World Challenge"
   region: "PAL-M4"
@@ -10722,9 +10723,9 @@ SLES-52480:
   name: "Yu-Gi-Oh! - The Duelists of the Roses"
   region: "PAL-M4"
   roundModes:
-    eeRoundMode: 2  # Partially Fixes battle annimation.
+    eeRoundMode: 2  # Partially fixes battle animation.
   clampModes:
-    eeClampMode: 2  # Partially Fixes battle annimation.
+    eeClampMode: 2  # Partially fixes battle animation.
 SLES-52481:
   name: "Hot Wheels - Stunt Track Challenge"
   region: "PAL-E"
@@ -11919,27 +11920,27 @@ SLES-53028:
   name: "Hitman - Blood Money"
   region: "PAL-E"
   clampModes:
-    vuClampMode: 0  # Fixes bump mapping issues
+    vuClampMode: 0  # Fixes bump mapping issues.
 SLES-53029:
   name: "Hitman - Blood Money"
   region: "PAL-F"
   clampModes:
-    vuClampMode: 0  # Fixes bump mapping issues
+    vuClampMode: 0  # Fixes bump mapping issues.
 SLES-53030:
   name: "Hitman - Blood Money"
   region: "PAL-G"
   clampModes:
-    vuClampMode: 0  # Fixes bump mapping issues
+    vuClampMode: 0  # Fixes bump mapping issues.
 SLES-53031:
   name: "Hitman - Blood Money"
   region: "PAL-I"
   clampModes:
-    vuClampMode: 0  # Fixes bump mapping issues
+    vuClampMode: 0  # Fixes bump mapping issues.
 SLES-53032:
   name: "Hitman - Blood Money"
   region: "PAL-S"
   clampModes:
-    vuClampMode: 0  # Fixes bump mapping issues
+    vuClampMode: 0  # Fixes bump mapping issues.
 SLES-53035:
   name: "Masters of the Universe - He-Man - Defender of Greyskull"
   region: "PAL-E"
@@ -12494,7 +12495,7 @@ SLES-53363:
   region: "PAL-M3"
   compat: 5
   roundModes:
-    eeRoundMode: 0  # Fixes commands not being visible
+    eeRoundMode: 0  # Fixes commands not being visible.
 SLES-53364:
   name: "7 Sins"
   region: "PAL-G"
@@ -12583,8 +12584,8 @@ SLES-53402:
   region: "PAL-E"
   compat: 5
   roundModes:
-    eeRoundMode: 2  # Positive rounding fixes white models
-    vuRoundMode: 2  # Positive rounding fixes white models
+    eeRoundMode: 2  # Positive rounding fixes white models.
+    vuRoundMode: 2  # Positive rounding fixes white models.
 SLES-53403:
   name: "Demolition Girl"
   region: "PAL-E"
@@ -12676,9 +12677,6 @@ SLES-53446:
   name: "Arcade USA"
   region: "PAL-E"
   compat: 5
-SLES-53450:
-  name: "Gaelic Games Football"
-  region: "PAL-E"
 SLES-53452:
   name: "Trixie in Toyland"
   region: "PAL-E"
@@ -12841,12 +12839,12 @@ SLES-53521:
   region: "PAL-M4"
   roundModes:
     vuRoundMode: 0  # Fixes Red SPS while ingame.
-    eeRoundMode: 0  # Partially fixes wrong ennemies eye rendering.
+    eeRoundMode: 0  # Partially fixes wrong enemies eye rendering.
   clampModes:
     vuClampMode: 3  # Fixes White SPS while ingame.
     eeClampMode: 3  # Fixes White SPS while ingame.
   gameFixes:
-    - EETimingHack # Fixes garbled character annimation.
+    - EETimingHack # Fixes garbled character animation.
 SLES-53523:
   name: "Gun"
   region: "PAL-M4"
@@ -13757,7 +13755,7 @@ SLES-53904:
   region: "PAL-M5"
   gameFixes:
     - GIFFIFOHack # Fixes corrupted graphics in the menus.
-    - VU0KickstartHack # Fixes TLB misses and collision bugs
+    - VU0KickstartHack # Fixes TLB misses and collision bugs.
 SLES-53906:
   name: "50cent - Bulletproof"
   region: "PAL-F"
@@ -15098,7 +15096,7 @@ SLES-54569:
   region: "PAL-E"
   compat: 5
   gameFixes:
-    - XGKickHack # Fixes blank textures
+    - XGKickHack # Fixes blank textures.
 SLES-54579:
   name: "Flintstones, The - Bedrock Racing"
   region: "PAL-PL-P"
@@ -18288,12 +18286,12 @@ SLPM-61117:
   region: "NTSC-J"
   roundModes:
     vuRoundMode: 0  # Fixes Red SPS while ingame.
-    eeRoundMode: 0  # Partially fixes wrong ennemies eye rendering.
+    eeRoundMode: 0  # Partially fixes wrong enemies eye rendering.
   clampModes:
     vuClampMode: 3  # Fixes White SPS while ingame.
     eeClampMode: 3  # Fixes White SPS while ingame.
   gameFixes:
-    - EETimingHack # Fixes garbled character annimation.
+    - EETimingHack # Fixes garbled character animation.
 SLPM-61120:
   name: "Drag-on Dragoon 2 - Fuuin no Kurenai [Trial Version]"
   region: "NTSC-J"
@@ -18303,7 +18301,7 @@ SLPM-61133:
   name: "Soul Calibur III [Trial Version]"
   region: "NTSC-J"
   gameFixes:
-    - EETimingHack # Fixes bad colours on charcter select when in Progressive Scan
+    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
 SLPM-61135:
   name: "Naruto - Narutimett Hero 3 [Trial Version]"
   region: "NTSC-J"
@@ -20403,9 +20401,9 @@ SLPM-65050:
   name: "Yu-Gi-Oh! Shin Duel Monsters 2"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 2  # Partially Fixes battle annimation.
+    eeRoundMode: 2  # Partially fixes battle animation.
   clampModes:
-    eeClampMode: 2  # Partially Fixes battle annimation.
+    eeClampMode: 2  # Partially fixes battle animation.
 SLPM-65051:
   name: "Silent Hill 2"
   region: "NTSC-J"
@@ -20862,9 +20860,9 @@ SLPM-65222:
   name: "Yu-Gi-Oh! 2 [Konami The Best]"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 2  # Partially Fixes battle annimation.
+    eeRoundMode: 2  # Partially fixes battle animation.
   clampModes:
-    eeClampMode: 2  # Partially Fixes battle annimation.
+    eeClampMode: 2  # Partially fixes battle animation.
 SLPM-65223:
   name: "Triangle Again"
   region: "NTSC-J"
@@ -21592,9 +21590,9 @@ SLPM-65463:
   name: "Rocky"
   region: "NTSC-J"
   clampModes:
-    eeClampMode: 0  # Fixes boxers not appearing/disappearing
+    eeClampMode: 0  # Fixes boxers not appearing/disappearing.
   gameFixes:
-    - VIF1StallHack # Fixes freezes
+    - VIF1StallHack # Fixes freezes.
 SLPM-65464:
   name: "Wind - A Breath of Heart"
   region: "NTSC-J"
@@ -22146,9 +22144,9 @@ SLPM-65647:
   name: "Yu-Gi-Oh! 2 (Konami Dendou Collection)"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 2  # Partially Fixes battle annimation.
+    eeRoundMode: 2  # Partially fixes battle animation.
   clampModes:
-    eeClampMode: 2  # Partially Fixes battle annimation.
+    eeClampMode: 2  # Partially fixes battle animation.
 SLPM-65648:
   name: "Medal of Honor - Frontline [EA Best Hits]"
   region: "NTSC-J"
@@ -23240,12 +23238,12 @@ SLPM-66008:
   region: "NTSC-J"
   roundModes:
     vuRoundMode: 0  # Fixes Red SPS while ingame.
-    eeRoundMode: 0  # Partially fixes wrong ennemies eye rendering.
+    eeRoundMode: 0  # Partially fixes wrong enemies eye rendering.
   clampModes:
     vuClampMode: 3  # Fixes White SPS while ingame.
     eeClampMode: 3  # Fixes White SPS while ingame.
   gameFixes:
-    - EETimingHack # Fixes garbled character annimation.
+    - EETimingHack # Fixes garbled character animation.
 SLPM-66009:
   name: "World Soccer Winning Eleven 9 - Bonus Pack"
   region: "NTSC-J"
@@ -26200,7 +26198,7 @@ SLPM-66961:
   name: "Black [EA-SY! 1980]"
   region: "NTSC-J"
   clampModes:
-    vuClampMode: 3  # Fixes SPS
+    vuClampMode: 3  # Fixes SPS.
 SLPM-66962:
   name: "Burnout 3 - Takedown [EA-SY! 1980]"
   region: "NTSC-J"
@@ -26401,7 +26399,7 @@ SLPM-67546:
   name: "Lord of the Rings - The Two Towers"
   region: "NTSC-K"
   clampModes:
-    vuClampMode: 3  # fix white shiny weapons
+    vuClampMode: 3  # Fix white shiny weapons.
 SLPM-67552:
   name: "Tomak - Save the Earth Again [Complete Edition]"
   region: "NTSC-K"
@@ -28045,7 +28043,7 @@ SLPS-25099:
   name: "World Rally Championship"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 0  # Fixes crash when using the Subaru
+    eeRoundMode: 0  # Fixes crash when using the Subaru.
 SLPS-25100:
   name: "Tekken 4"
   region: "NTSC-J"
@@ -28474,7 +28472,7 @@ SLPS-25244:
   name: "Max Payne"
   region: "NTSC-J"
   clampModes:
-    eeClampMode: 3  # Fixes crashes
+    eeClampMode: 3  # Fixes crashes.
 SLPS-25245:
   name: "True Love Story - Summer Days and Yet"
   region: "NTSC-J"
@@ -28607,7 +28605,7 @@ SLPS-25295:
   region: "NTSC-J"
   compat: 5
   gameFixes:
-    - EETimingHack # For black textures on chars.
+    - EETimingHack # For black textures on characters.
 SLPS-25296:
   name: "Super Robot Wars - Scramble Commander"
   region: "NTSC-J"
@@ -29314,7 +29312,7 @@ SLPS-25510:
   region: "NTSC-J"
   compat: 5
   clampModes:
-    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
+    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove.
 SLPS-25511:
   name: "Rasetsu Alternative"
   region: "NTSC-J"
@@ -29518,7 +29516,7 @@ SLPS-25577:
   region: "NTSC-J"
   compat: 5
   gameFixes:
-    - EETimingHack # Fixes bad colours on charcter select when in Progressive Scan
+    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
 SLPS-25578:
   name: "K-1 World Grand Prix 2005"
   region: "NTSC-J"
@@ -30783,7 +30781,7 @@ SLPS-73223:
   name: "Tekken 5 [PlayStation 2 The Best]"
   region: "NTSC-J"
   clampModes:
-    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
+    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove.
 SLPS-73224:
   name: "Xenosaga Episode II - Jenseits von Gut und Bose [PlayStation 2 The Best] [Disc1of2]"
   region: "NTSC-J"
@@ -31262,7 +31260,7 @@ SLUS-20058:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Crash On Load
+    - VU0KickstartHack # Fixes crash on load.
 SLUS-20062:
   name: "Grand Theft Auto III"
   region: "NTSC-U"
@@ -32676,7 +32674,7 @@ SLUS-20419:
   name: "World Rally Championship"
   region: "NTSC-U"
   roundModes:
-    eeRoundMode: 0  # Fixes crash when using the Subaru
+    eeRoundMode: 0  # Fixes crash when using the Subaru.
 SLUS-20420:
   name: "Star Wars - Bounty Hunter"
   region: "NTSC-U"
@@ -33072,9 +33070,9 @@ SLUS-20515:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 2  # Partially Fixes battle annimation.
+    eeRoundMode: 2  # Partially fixes battle animation.
   clampModes:
-    eeClampMode: 2  # Partially Fixes battle annimation.
+    eeClampMode: 2  # Partially fixes battle animation.
 SLUS-20516:
   name: "Shrek - Super Party"
   region: "NTSC-U"
@@ -33242,9 +33240,9 @@ SLUS-20559:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    eeClampMode: 0  # Fixes boxers not appearing/disappearing
+    eeClampMode: 0  # Fixes boxers not appearing/disappearing.
   gameFixes:
-    - VIF1StallHack # Fixes freezes
+    - VIF1StallHack # Fixes freezes.
 SLUS-20560:
   name: "Galerians - Ash"
   region: "NTSC-U"
@@ -34591,7 +34589,7 @@ SLUS-20891:
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VU0KickstartHack # Fixes character SPS.
   memcardFilters:
     - "SLUS-20488"
 SLUS-20892:
@@ -35013,12 +35011,12 @@ SLUS-20983:
   compat: 5
   roundModes:
     vuRoundMode: 0  # Fixes Red SPS while ingame.
-    eeRoundMode: 0  # Partially fixes wrong ennemies eye rendering.
+    eeRoundMode: 0  # Partially fixes wrong enemies eye rendering.
   clampModes:
     vuClampMode: 3  # Fixes White SPS while ingame.
     eeClampMode: 3  # Fixes White SPS while ingame.
   gameFixes:
-    - EETimingHack # Fixes garbled character annimation.
+    - EETimingHack # Fixes garbled character animation.
   patches:
     675CEB8F:
       content: |-
@@ -35341,7 +35339,7 @@ SLUS-21054:
   name: "Disney's Treasure Planet (Disney Classics)"
   region: "NTSC-U"
   clampModes:
-    vuClampMode: 3  # Fixes SPS when the solar surfer's engines are inactive
+    vuClampMode: 3  # Fixes SPS when the solar surfer's engines are inactive.
   gameFixes:
     - EETimingHack # Fixes hang before going ingame.
 SLUS-21056:
@@ -35358,7 +35356,7 @@ SLUS-21059:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
+    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove.
 SLUS-21060:
   name: "WWE SmackDown! vs. RAW"
   region: "NTSC-U"
@@ -35492,7 +35490,7 @@ SLUS-21095:
   compat: 5
   gameFixes:
     - GIFFIFOHack # Fixes corrupted graphics in the menus.
-    - VU0KickstartHack # Fixes TLB misses and collision bugs
+    - VU0KickstartHack # Fixes TLB misses and collision bugs.
 SLUS-21096:
   name: "Ape Escape - Pumped & Primed"
   region: "NTSC-U"
@@ -35757,7 +35755,7 @@ SLUS-21160:
   name: "Tekken 5 [Demo]"
   region: "NTSC-U"
   clampModes:
-    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove
+    eeClampMode: 2  # Fixes camera and stops constant coin noises on Pirates Cove.
 SLUS-21161:
   name: "Fight Night - Round 2"
   region: "NTSC-U"
@@ -35998,7 +35996,7 @@ SLUS-21216:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - EETimingHack # Fixes bad colours on charcter select when in Progressive Scan
+    - EETimingHack # Fixes bad colours on character select when in Progressive Scan.
 SLUS-21217:
   name: "Incredibles, The - Rise of the Underminers"
   region: "NTSC-U"
@@ -36247,7 +36245,7 @@ SLUS-21264:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    vuClampMode: 2  # Fix black textures on characters
+    vuClampMode: 2  # Fix black textures on characters.
   gameFixes:
     - SkipMPEGHack # Fixes hang after EA intro (IPU).
 SLUS-21265:
@@ -36767,7 +36765,7 @@ SLUS-21376:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    vuClampMode: 3  # Fixes SPS
+    vuClampMode: 3  # Fixes SPS.
   patches:
     5C891FF1:
       content: |-
@@ -37988,7 +37986,7 @@ SLUS-21689:
   region: "NTSC-U"
   compat: 4
   gameFixes:
-    - VU0KickstartHack # Fixes SPS
+    - VU0KickstartHack # Fixes SPS.
 SLUS-21690:
   name: "Alone in the Dark"
   region: "NTSC-U"
@@ -39478,7 +39476,7 @@ SLUS-29180:
   name: "Black [Demo]"
   region: "NTSC-U"
   clampModes:
-    vuClampMode: 3  # Fixes SPS
+    vuClampMode: 3  # Fixes SPS.
 SLUS-29185:
   name: "Driver - Parallel Lines [Demo]"
   region: "NTSC-U"
