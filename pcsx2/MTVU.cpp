@@ -336,25 +336,14 @@ void VU_Thread::Get_GSChanges()
 	u32 interrupts = gsInterrupts.load(std::memory_order_relaxed);
 	if (!interrupts)
 		return;
-
-	// We don't support stacking multiple of the same type of interrupt, so the faster we read the required data and clear the flag the less likely we'll run into issues with that
-	u64 signal, label;
-	if (interrupts & (InterruptFlagSignal | InterruptFlagLabel))
-	{
-		// label and signal access other variables so the load must have acquire semantics
-		std::atomic_thread_fence(std::memory_order_acquire);
-		signal = gsSignal.load(std::memory_order_relaxed);
-		label = gsLabel.load(std::memory_order_relaxed);
-		// Also need release semantics on the clear
-		gsInterrupts.fetch_and(~interrupts, std::memory_order_release);
-	}
-	else
-	{
-		gsInterrupts.fetch_and(~interrupts, std::memory_order_relaxed);
-	}
 	
 	if (interrupts & InterruptFlagSignal)
 	{
+		std::atomic_thread_fence(std::memory_order_acquire);
+		const u64 signal = gsSignal.load(std::memory_order_relaxed);
+		// If load of signal was moved after clearing the flag, the other thread could write a new value before we load without noticing the double signal
+		// Prevent that with release semantics
+		gsInterrupts.fetch_and(~InterruptFlagSignal, std::memory_order_release);
 		GUNIT_WARN("SIGNAL firing");
 		const u32 signalMsk = (u32)(signal >> 32);
 		const u32 signalData = (u32)signal;
@@ -377,6 +366,7 @@ void VU_Thread::Get_GSChanges()
 	}
 	if (interrupts & InterruptFlagFinish)
 	{
+		gsInterrupts.fetch_and(~InterruptFlagFinish, std::memory_order_relaxed);
 		GUNIT_WARN("Finish firing");
 		CSRreg.FINISH = true;
 		gifUnit.gsFINISH.gsFINISHFired = false;
@@ -386,6 +376,11 @@ void VU_Thread::Get_GSChanges()
 	}
 	if (interrupts & InterruptFlagLabel)
 	{
+		gsInterrupts.fetch_and(~InterruptFlagLabel, std::memory_order_acquire);
+		// If other thread updates gsLabel for a second interrupt, that's okay.  Worst case we think there's a label interrupt but gsLabel is 0
+		// We do not want the exchange of gsLabel to move ahead of clearing the flag, or the other thread could add more work before we clear the flag, resulting in an update with the flag unset
+		// acquire semantics should supply that guarantee
+		const u64 label = gsLabel.exchange(0, std::memory_order_relaxed);
 		GUNIT_WARN("LABEL firing");
 		const u32 labelMsk = (u32)(label >> 32);
 		const u32 labelData = (u32)label;

@@ -142,9 +142,19 @@ bool Gif_HandlerAD_MTVU(u8* pMem)
 	else if (reg == 0x62)
 	{ // LABEL
 		GUNIT_WARN("GIF Handler - LABEL");
-		if (vu1Thread.gsLabel.load(std::memory_order_acquire) & VU_Thread::InterruptFlagLabel)
-			Console.Error("GIF Handler MTVU - Double LABEL Not Handled");
-		vu1Thread.gsLabel.store(((u64)data[1] << 32) | data[0], std::memory_order_relaxed);
+		// It's okay to coalesce label updates
+		u32 labelData = data[0];
+		u32 labelMsk = data[1];
+		u64 existing = 0;
+		u64 wanted = ((u64)labelMsk << 32) | labelData;
+		while (!vu1Thread.gsLabel.compare_exchange_weak(existing, wanted, std::memory_order_relaxed))
+		{
+			u32 existingData = (u32)existing;
+			u32 existingMsk = (u32)(existing >> 32);
+			u32 wantedData = (existingData & ~labelMsk) | (labelData & labelMsk);
+			u32 wantedMsk = existingMsk | labelMsk;
+			wanted = ((u64)wantedMsk << 32) | wantedData;
+		}
 		vu1Thread.gsInterrupts.fetch_or(VU_Thread::InterruptFlagLabel, std::memory_order_release);
 	}
 	else if (reg >= 0x63 && reg != 0x7f)
