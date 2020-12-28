@@ -1,6 +1,6 @@
 #pragma once
 #include "AsyncFileReader.h"
-#include <chd.h>
+#include <libchdr/chd.h>
 
 class ChdFileReader : public AsyncFileReader
 {

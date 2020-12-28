@@ -1056,7 +1056,6 @@ set(pcsx2FinalLibs
     ${PCAP_LIBRARY}
     ${LIBSAMPLERATE_LIBRARIES}
     ${LIBXML2_LIBRARIES}
-    ${CHD_LIBRARIES}
     ${Platform_Libs}
 )
 
@@ -1096,8 +1095,6 @@ foreach(res_file IN ITEMS
 				r1Pressed r2Pressed r3Pressed rightPressed selectPressed squarePressed startPressed trianglePressed upPressed)
     add_custom_command(OUTPUT  "${res_rec_vp_src}/${res_file}.h" COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${res_rec_vp_src}/${res_file}.png" "${res_rec_vp_src}/${res_file}" )
 endforeach()
-
-set(pcsx2FinalLibs ${pcsx2FinalLibs})
 
 if(USE_VTUNE)
     set(pcsx2FinalLibs ${pcsx2FinalLibs} ${VTUNE_LIBRARIES})
