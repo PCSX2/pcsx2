@@ -102,6 +102,9 @@ include(FindPulseAudio)
 ## Use CheckLib package to find module
 include(CheckLib)
 if(Linux)
+    find_package(Wayland)
+    find_package(WaylandProtocols)
+
     check_lib(EGL EGL EGL/egl.h)
     check_lib(X11_XCB X11-xcb X11/Xlib-xcb.h)
     check_lib(AIO aio libaio.h)
@@ -152,6 +155,11 @@ if(UNIX)
         set(GTK2_LIBRARIES ${GTK3_LIBRARIES})
     elseif(GTK2_FOUND)
         include_directories(${GTK2_INCLUDE_DIRS})
+	endif()
+
+	if(WAYLAND_FOUND)
+		include_directories(${WAYLAND_INCLUDE_DIRS})
+		add_definitions(${WAYLAND_DEFINITIONS})
 	endif()
 
 	if(X11_FOUND)

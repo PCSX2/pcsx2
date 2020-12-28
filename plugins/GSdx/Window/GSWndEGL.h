@@ -26,7 +26,7 @@
 #include <EGL/eglext.h>
 
 #define GS_EGL_X11 1
-#define GS_EGL_WL 0
+#define GS_EGL_WL 1
 
 class GSWndEGL : public GSWndGL
 {
@@ -80,7 +80,7 @@ public:
 
 	// Static to allow to query supported the platform
 	// before object creation
-	static int SelectPlatform();
+	static int SelectPlatform(void *display_handle);
 };
 
 #if GS_EGL_X11
@@ -94,7 +94,7 @@ class GSWndEGL_X11 : public GSWndEGL
 	Display  *m_NativeDisplay;
 	Window    m_NativeWindow;
 
-	public:
+public:
 	GSWndEGL_X11();
 	virtual ~GSWndEGL_X11() {};
 
@@ -113,18 +113,24 @@ class GSWndEGL_X11 : public GSWndEGL
 
 #if GS_EGL_WL
 
-// Which include ?
 #include <wayland-client.h>
-#include <wayland-server.h>
-#include <wayland-client-protocol.h>
 #include <wayland-egl.h>
+#include <wayland-xdg-shell-client-protocol.h>
 
 class GSWndEGL_WL : public GSWndEGL
 {
 	wl_display    *m_NativeDisplay;
 	wl_egl_window *m_NativeWindow;
 
-	public:
+	wl_registry   *m_wl_registry;
+	wl_compositor *m_wl_compositor;
+	xdg_wm_base   *m_xdg_wm_base;
+
+	wl_surface    *m_wl_surface;
+	xdg_surface   *m_xdg_surface;
+	xdg_toplevel  *m_xdg_toplevel;
+
+public:
 	GSWndEGL_WL();
 	virtual ~GSWndEGL_WL() {};
 
@@ -137,6 +143,13 @@ class GSWndEGL_WL : public GSWndEGL
 	void DestroyNativeResources() final;
 
 	bool SetWindowText(const char* title) final;
+
+	// wayland listeners
+	void RegistryAddGlobal(wl_registry *registry, uint32_t name, const char *interface, uint32_t version);
+	void RegistryRemoveGlobal(wl_registry *registry, uint32_t name);
+	void XDGSurfaceConfigure(xdg_surface *xdg_surface, uint32_t serial);
+	void XDGToplevelConfigure(xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, wl_array *states);
+	void XDGToplevelClose(xdg_toplevel *xdg_toplevel);
 };
 
 #endif

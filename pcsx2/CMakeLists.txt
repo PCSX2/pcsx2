@@ -1009,6 +1009,7 @@ if(Linux)
 	set(Platform_Libs
 		${LIBUDEV_LIBRARIES}
 		${X11_LIBRARIES}
+		${WAYLAND_LIBRARIES}
 		)
 endif()
 

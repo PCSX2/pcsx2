@@ -53,6 +53,9 @@
 #ifdef __WXGTK__
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
+#ifdef GDK_WINDOWING_WAYLAND
+#include <gdk/gdkwayland.h>
+#endif
 #endif
 
 // Safe to remove these lines when this is handled properly.
@@ -1007,16 +1010,35 @@ void Pcsx2App::OpenGsPanel()
 	gtk_widget_set_double_buffered(child_window, false); // Disable the widget double buffer, you will use the opengl one
 
 	GdkWindow* draw_window = gtk_widget_get_window(child_window);
+	GdkDisplay* display = gdk_window_get_display(draw_window);
 
-#if GTK_MAJOR_VERSION < 3
-	Window Xwindow = GDK_WINDOW_XWINDOW(draw_window);
-#else
-	Window Xwindow = GDK_WINDOW_XID(draw_window);
+#ifdef GDK_WINDOWING_WAYLAND
+	if (GDK_IS_WAYLAND_DISPLAY(display))
+	{
+		// TODO
+		pDsp[0] = NULL;
+		pDsp[1] = NULL;
+	}
+	else
 #endif
-	Display* XDisplay = GDK_WINDOW_XDISPLAY(draw_window);
+#ifdef GDK_WINDOWING_X11
+	if (GDK_IS_X11_DISPLAY(display))
+	{
+#if GTK_MAJOR_VERSION < 3
+		Window Xwindow = GDK_WINDOW_XWINDOW(draw_window);
+#else
+		Window Xwindow = GDK_WINDOW_XID(draw_window);
+#endif
+		Display* XDisplay = GDK_WINDOW_XDISPLAY(draw_window);
 
-	pDsp[0] = (uptr)XDisplay;
-	pDsp[1] = (uptr)Xwindow;
+		pDsp[0] = (uptr)XDisplay;
+		pDsp[1] = (uptr)Xwindow;
+	}
+	else
+#endif
+	{
+		pxAssertDev(false, "Unknown GDK display type. Can't initialize GS Plugin.");
+	}
 #else
 	pDsp[0] = (uptr)gsFrame->GetViewport()->GetHandle();
 	pDsp[1] = NULL;

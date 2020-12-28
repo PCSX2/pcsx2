@@ -220,6 +220,11 @@ else()
     LIST(APPEND GSdxHeaders
         Window/GSWndEGL.h
         )
+
+    include(Wayland)
+    WAYLAND_ADD_PROTOCOL_CLIENT(GSdxSources
+                                "${WAYLAND_PROTOCOLS_DIR}/stable/xdg-shell/xdg-shell.xml"
+                                xdg-shell)
 endif()
 
 
@@ -230,6 +235,7 @@ set(GSdxFinalSources
 
 set(GSdxFinalLibs
     ${X11_LIBRARIES}
+    ${WAYLAND_LIBRARIES}
     ${OPENGL_LIBRARIES}
     ${EGL_LIBRARIES}
     ${X11_XCB_LIBRARIES}

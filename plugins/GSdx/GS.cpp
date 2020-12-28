@@ -235,7 +235,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 #if defined(__unix__)
 					// Note: EGL code use GLX otherwise maybe it could be also compatible with Windows
 					// Yes OpenGL code isn't complicated enough !
-					switch (GSWndEGL::SelectPlatform()) {
+					switch (GSWndEGL::SelectPlatform(dsp)) {
 #if GS_EGL_X11
 						case EGL_PLATFORM_X11_KHR:
 							wnds.push_back(std::make_shared<GSWndEGL_X11>());
