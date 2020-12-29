@@ -589,8 +589,7 @@ bool GSFrame::ShowFullScreen(bool show, bool updateConfig)
 	return retval;
 }
 
-
-void GSFrame::CoreThread_OnResumed()
+void GSFrame::UpdateTitleUpdateFreq()
 {
 #ifndef DISABLE_RECORDING
 	if (g_Conf->EmuOptions.EnableRecordingTools)
@@ -604,8 +603,15 @@ void GSFrame::CoreThread_OnResumed()
 #else
 	m_timer_UpdateTitle.Start(TitleBarUpdateMs);
 #endif
-	
-	if( !IsShown() ) Show();
+}
+
+void GSFrame::CoreThread_OnResumed()
+{
+	UpdateTitleUpdateFreq();
+	if (!IsShown())
+	{
+		Show();
+	}
 }
 
 void GSFrame::CoreThread_OnSuspended()
