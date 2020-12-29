@@ -56,7 +56,13 @@ void SaveStateBase::mtvuFreeze()
 	FreezeTag("MTVU");
 	pxAssert(vu1Thread.IsDone());
 	if (!IsSaving())
+	{
 		vu1Thread.Reset();
+		vu1Thread.WriteCol(vif1);
+		vu1Thread.WriteRow(vif1);
+		vu1Thread.WriteMicroMem(0, VU1.Micro, 0x4000);
+		vu1Thread.WriteDataMem(0, VU1.Mem, 0x4000);
+	}
 	for (size_t i = 0; i < 4; ++i)
 	{
 		unsigned int v = vu1Thread.vuCycles[i].load();
