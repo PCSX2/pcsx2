@@ -40,7 +40,8 @@ u32 Cycles;
 
 int PlayMode;
 
-bool has_to_call_irq = false;
+bool has_to_call_irq[2] = { false, false };
+bool has_to_call_irq_dma[2] = { false, false };
 
 bool psxmode = false;
 
@@ -48,10 +49,14 @@ void SetIrqCall(int core)
 {
 	// reset by an irq disable/enable cycle, behaviour found by
 	// test programs that bizarrely only fired one interrupt
-	if (Spdif.Info & 4 << core)
-		return;
-	Spdif.Info |= 4 << core;
-	has_to_call_irq = true;
+	has_to_call_irq[core] = true;
+}
+
+void SetIrqCallDMA(int core)
+{
+	// reset by an irq disable/enable cycle, behaviour found by
+	// test programs that bizarrely only fired one interrupt
+	has_to_call_irq_dma[core] = true;
 }
 
 __forceinline s16* GetMemPtr(u32 addr)
@@ -340,6 +345,7 @@ bool V_Voice::Start()
 	ADSR.Phase = 1;
 	SCurrent = 28;
 	LoopMode = 0;
+	SP = 0;
 	LoopFlags = 0;
 	NextA = StartA | 1;
 	Prev1 = 0;
@@ -395,60 +401,93 @@ __forceinline void TimeUpdate(u32 cClocks)
 	else
 		TickInterval = 768; // Reset to default, in case the user hotswitched from async to something else.
 
+	//Update DMA4 interrupt delay counter
+	if (Cores[0].DMAICounter > 0 && (cClocks - Cores[0].LastClock) > 0)
+	{
+		const u32 amt = std::min(cClocks - Cores[0].LastClock, (u32)Cores[0].DMAICounter);
+		Cores[0].DMAICounter -= amt;
+		Cores[0].LastClock = cClocks;
+		Cores[0].MADR += amt * 2;
+		if (Cores[0].DMAICounter <= 0)
+		{
+			if (Cores[0].IsDMARead)
+				Cores[0].FinishDMAread();
+
+			for (int i = 0; i < 2; i++)
+			{
+				if (has_to_call_irq_dma[i])
+				{
+					//ConLog("* SPU2: Irq Called (%04x) at cycle %d.\n", Spdif.Info, Cycles);
+					has_to_call_irq_dma[i] = false;
+					if (!(Spdif.Info & (4 << i)))
+					{
+						Spdif.Info |= (4 << i);
+						if (!SPU2_dummy_callback)
+							spu2Irq();
+					}
+				}
+			}
+
+			//ConLog("counter set and callback!\n");
+			Cores[0].DMAICounter = 0;
+			if (!SPU2_dummy_callback)
+				spu2DMA4Irq();
+			else
+				SPU2interruptDMA4();
+		}
+	}
+
+	//Update DMA7 interrupt delay counter
+	if (Cores[1].DMAICounter > 0 && (cClocks - Cores[1].LastClock) > 0)
+	{
+		const u32 amt = std::min(cClocks - Cores[1].LastClock, (u32)Cores[1].DMAICounter);
+		Cores[1].DMAICounter -= amt;
+		Cores[1].LastClock = cClocks;
+		Cores[1].MADR += amt * 2;
+		if (Cores[1].DMAICounter <= 0)
+		{
+			if (Cores[1].IsDMARead)
+				Cores[1].FinishDMAread();
+
+			for (int i = 0; i < 2; i++)
+			{
+				if (has_to_call_irq_dma[i])
+				{
+					//ConLog("* SPU2: Irq Called (%04x) at cycle %d.\n", Spdif.Info, Cycles);
+					has_to_call_irq_dma[i] = false;
+					if (!(Spdif.Info & (4 << i)))
+					{
+						Spdif.Info |= (4 << i);
+						if (!SPU2_dummy_callback)
+							spu2Irq();
+					}
+				}
+			}
+
+			Cores[1].DMAICounter = 0;
+			//ConLog( "* SPU2 > DMA 7 Callback!  %d\n", Cycles );
+			if (!SPU2_dummy_callback)
+				spu2DMA7Irq();
+			else
+				SPU2interruptDMA7();
+		}
+	}
+
 	//Update Mixing Progress
 	while (dClocks >= TickInterval)
 	{
-		if (has_to_call_irq)
+		for (int i = 0; i < 2; i++)
 		{
-			//ConLog("* SPU2: Irq Called (%04x) at cycle %d.\n", Spdif.Info, Cycles);
-			has_to_call_irq = false;
-			if (!SPU2_dummy_callback)
-				spu2Irq();
-		}
-
-		//Update DMA4 interrupt delay counter
-		if (Cores[0].DMAICounter > 0)
-		{
-			Cores[0].DMAICounter -= TickInterval;
-			if (Cores[0].DMAICounter <= 0)
+			if (has_to_call_irq[i])
 			{
-				if (Cores[0].IsDMARead)
-					Cores[0].FinishDMAread();
-
-				//ConLog("counter set and callback!\n");
-				Cores[0].MADR = Cores[0].TADR;
-				Cores[0].DMAICounter = 0;
-				if (!SPU2_dummy_callback)
-					spu2DMA4Irq();
-				else
-					SPU2interruptDMA4();
-			}
-			else
-			{
-				Cores[0].MADR += TickInterval << 1;
-			}
-		}
-
-		//Update DMA7 interrupt delay counter
-		if (Cores[1].DMAICounter > 0)
-		{
-			Cores[1].DMAICounter -= TickInterval;
-			if (Cores[1].DMAICounter <= 0)
-			{
-				if (Cores[1].IsDMARead)
-					Cores[1].FinishDMAread();
-
-				Cores[1].MADR = Cores[1].TADR;
-				Cores[1].DMAICounter = 0;
-				//ConLog( "* SPU2 > DMA 7 Callback!  %d\n", Cycles );
-				if (!SPU2_dummy_callback)
-					spu2DMA7Irq();
-				else
-					SPU2interruptDMA7();
-			}
-			else
-			{
-				Cores[1].MADR += TickInterval << 1;
+				//ConLog("* SPU2: Irq Called (%04x) at cycle %d.\n", Spdif.Info, Cycles);
+				has_to_call_irq[i] = false;
+				if (!(Spdif.Info & (4 << i)))
+				{
+					Spdif.Info |= (4 << i);
+					if (!SPU2_dummy_callback)
+						spu2Irq();
+				}
 			}
 		}
 

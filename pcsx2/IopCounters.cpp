@@ -146,7 +146,7 @@ void psxRcntInit()
 	psxCounters[4].interrupt = 0x08000;
 	psxCounters[5].interrupt = 0x10000;
 
-	psxCounters[6].rate = 768 * 12;
+	psxCounters[6].rate = 768; // One SPU tick
 	psxCounters[6].CycleT = psxCounters[6].rate;
 	psxCounters[6].mode = 0x8;
 
