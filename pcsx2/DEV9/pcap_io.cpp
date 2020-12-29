@@ -41,9 +41,7 @@
 pcap_t* adhandle;
 pcap_dumper_t* dump_pcap;
 char errbuf[PCAP_ERRBUF_SIZE];
-mac_address virtual_mac = {0x00, 0x04, 0x1F, 0x82, 0x30, 0x31}; // first three recognized by Xlink as Sony PS2
 mac_address broadcast_mac = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-mac_address host_mac = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 #endif
 int pcap_io_running = 0;
 extern u8 eeprom[];
@@ -114,7 +112,7 @@ int GetMACAddress(char* adapter, mac_address* addr)
 	return retval;
 }
 
-int pcap_io_init(char* adapter)
+int pcap_io_init(char* adapter, mac_address virtual_mac)
 {
 #ifndef _WIN32
 	struct bpf_program fp;
@@ -122,20 +120,6 @@ int pcap_io_init(char* adapter)
 	int dlt;
 	char* dlt_name;
 	emu_printf("Opening adapter '%s'...", adapter);
-	u16 checksum;
-	GetMACAddress(adapter, &host_mac);
-
-	//Lets take the hosts last 2 bytes to make it unique on Xlink
-	virtual_mac.bytes[4] = host_mac.bytes[4];
-	virtual_mac.bytes[5] = host_mac.bytes[5];
-
-	for (int ii = 0; ii < 6; ii++)
-		eeprom[ii] = virtual_mac.bytes[ii];
-
-	//The checksum seems to be all the values of the mac added up in 16bit chunks
-	checksum = (dev9.eeprom[0] + dev9.eeprom[1] + dev9.eeprom[2]) & 0xffff;
-
-	dev9.eeprom[3] = checksum;
 
 	/* Open the adapter */
 	if ((adhandle = pcap_open_live(adapter, // name of the device
@@ -345,13 +329,31 @@ char* pcap_io_get_dev_desc(int num)
 
 
 PCAPAdapter::PCAPAdapter()
+	: NetAdapter()
 {
+#ifndef _WIN32
 	if (config.ethEnable == 0)
 		return;
-	if (pcap_io_init(config.Eth) == -1)
+
+	mac_address hostMAC;
+	mac_address newMAC;
+
+	GetMACAddress(config.Eth, &hostMAC);
+	memcpy(&newMAC, ps2MAC, 6);
+
+	//Lets take the hosts last 2 bytes to make it unique on Xlink
+	newMAC.bytes[5] = hostMAC.bytes[4];
+	newMAC.bytes[4] = hostMAC.bytes[5];
+
+	SetMACAddress((u8*)&newMAC);
+
+	if (pcap_io_init(config.Eth, newMAC) == -1)
 	{
 		SysMessage("Can't open Device '%s'\n", config.Eth);
 	}
+#else
+	SysMessage("pcap not supported on windows\n");
+#endif
 }
 bool PCAPAdapter::blocks()
 {
