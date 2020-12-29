@@ -176,7 +176,7 @@ SCAJ-20003:
   name: "Warrior in Argus"
   region: "NTSC-J"
 SCAJ-20004:
-  name: "dot Hack Vol.3"
+  name: ".hack//Outbreak Part 3"
   region: "NTSC-Unk"
   memcardFilters:
     - "SCPS-55029"
@@ -225,7 +225,7 @@ SCAJ-20012:
   name: "Venus & Braves"
   region: "NTSC-Unk"
 SCAJ-20013:
-  name: "Moto GP 3"
+  name: "MotoGP 3"
   region: "NTSC-Unk"
 SCAJ-20014:
   name: "Time Splitter"
@@ -262,7 +262,7 @@ SCAJ-20023:
   clampModes:
     vuClampMode: 2  # Respawn issues, SPS.
 SCAJ-20024:
-  name: "dot Hack Vol.4"
+  name: ".hack//Quarantine Part 4"
   region: "NTSC-Unk"
   memcardFilters:
     - "SCPS-55029"
@@ -341,7 +341,7 @@ SCAJ-20048:
   name: "R - Racing Evolution"
   region: "NTSC-Unk"
 SCAJ-20050:
-  name: "Fatal Frame 2 - Crimson Butterfly"
+  name: "Fatal Frame II - Crimson Butterfly"
   region: "NTSC-Unk"
 SCAJ-20055:
   name: "Battle Gear 3"
@@ -1485,7 +1485,7 @@ SCES-50971:
   region: "PAL-S"
   compat: 5
 SCES-50982:
-  name: "Moto GP 3"
+  name: "MotoGP 3"
   region: "PAL-M5"
   compat: 5
 SCES-50987:
@@ -1969,7 +1969,7 @@ SCES-52883:
   region: "PAL-M7"
   compat: 2
 SCES-52892:
-  name: "Moto GP 4"
+  name: "MotoGP 4"
   region: "PAL-M5"
   compat: 5
 SCES-52893:
@@ -2632,7 +2632,7 @@ SCKA-20022:
   # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
 SCKA-20023:
-  name: "Fatal Frame 2"
+  name: "Fatal Frame II"
   region: "NTSC-K"
   compat: 5
 SCKA-20025:
@@ -3846,7 +3846,7 @@ SCPS-19332:
   name: "Minna no Tennis [PlayStation 2 The Best]"
   region: "NTSC-J"
 SCPS-51001:
-  name: "Moto GP 2"
+  name: "MotoGP 2"
   region: "NTSC-J"
 SCPS-51004:
   name: "Bravo Music"
@@ -3989,7 +3989,7 @@ SCPS-55028:
   name: "Popolocrois Story - Hajime no Bouken"
   region: "NTSC-J"
 SCPS-55029:
-  name: "dot Hack - Vol.1"
+  name: ".hack//Infection Part 1"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -4028,7 +4028,7 @@ SCPS-55041:
   name: "Memories Off"
   region: "NTSC-J"
 SCPS-55042:
-  name: "dot Hack - Vol.2"
+  name: ".hack//Mutation Part 2"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -6662,7 +6662,7 @@ SLES-50267:
         patch=0,EE,00100eb0,word,03e00008
         patch=0,EE,00100eb4,word,24020001
 SLES-50268:
-  name: "SpyHunter"
+  name: "Spy Hunter"
   region: "PAL-M5"
 SLES-50273:
   name: "Legion - The Legend of Excalibur"
@@ -7317,11 +7317,11 @@ SLES-50703:
   name: "Maximo"
   region: "PAL-M5"
 SLES-50704:
-  name: "Godai - Elemental Force"
+  name: "GoDai - Elemental Force"
   region: "PAL-F-G"
   compat: 5
 SLES-50705:
-  name: "Godai - Elemental Force"
+  name: "GoDai - Elemental Force"
   region: "PAL-I-S"
 SLES-50706:
   name: "Army Men - Real Time Strategy"
@@ -7814,7 +7814,7 @@ SLES-50882:
   name: "Mary-Kate and Ashley - Sweet 16"
   region: "PAL-E"
 SLES-50886:
-  name: "Transworld Surf"
+  name: "TransWorld Surf"
   region: "PAL-M5"
 SLES-50891:
   name: "Legaia 2 - Duel Saga"
@@ -8011,12 +8011,12 @@ SLES-51011:
   region: "PAL-M4"
   compat: 5
 SLES-51013:
-  name: "Blade 2"
+  name: "Blade II"
   region: "PAL-E"
   gameFixes:
     - GIFFIFOHack # Fixes flickering HUD. (originally was EE Timing Hack but required since r4821)
 SLES-51014:
-  name: "Blade 2"
+  name: "Blade II"
   region: "PAL-F"
   gameFixes:
     - GIFFIFOHack # Fixes flickering HUD. (originally was EE Timing Hack but required since r4821)
@@ -8268,7 +8268,7 @@ SLES-51132:
   roundModes:
     vuRoundMode: 0  # Crashes without.
 SLES-51133:
-  name: "Red Faction 2"
+  name: "Red Faction II"
   region: "PAL-M3"
   compat: 5
 SLES-51134:
@@ -8596,7 +8596,7 @@ SLES-51284:
   name: "Contra - Shattered Soldier"
   region: "PAL-M3"
 SLES-51285:
-  name: "Spongebob Squarepants - Revenge of the Flying Dutchman"
+  name: "Spongebob SquarePants - Revenge of the Flying Dutchman"
   region: "PAL-E"
   compat: 5
 SLES-51286:
@@ -8981,7 +8981,7 @@ SLES-51479:
   name: "Def Jam Vendetta"
   region: "PAL-E"
 SLES-51481:
-  name: "NBA Street 2"
+  name: "NBA Street Vol. 2"
   region: "PAL-E-F"
   compat: 5
   clampModes:
@@ -9295,16 +9295,16 @@ SLES-51707:
   name: "Secret Weapons Over Normandy"
   region: "PAL-E"
 SLES-51708:
-  name: "Secret Weapons over Normandy"
+  name: "Secret Weapons Over Normandy"
   region: "PAL-F"
 SLES-51709:
-  name: "Secret Weapons over Normandy"
+  name: "Secret Weapons Over Normandy"
   region: "PAL-G"
 SLES-51710:
-  name: "Secret Weapons over Normandy"
+  name: "Secret Weapons Over Normandy"
   region: "PAL-I"
 SLES-51711:
-  name: "Secret Weapons over Normandy"
+  name: "Secret Weapons Over Normandy"
   region: "PAL-S"
 SLES-51712:
   name: "Snowboard Racer 2"
@@ -9529,7 +9529,7 @@ SLES-51840:
   name: "NHL Hitz Pro"
   region: "PAL-E"
 SLES-51841:
-  name: "SpyHunter 2"
+  name: "Spy Hunter 2"
   region: "PAL-M5"
 SLES-51842:
   name: "Road Kill"
@@ -9652,7 +9652,7 @@ SLES-51881:
   name: "Mercedes Bens World Racing"
   region: "PAL-F-G"
 SLES-51883:
-  name: "Scooby Doo! Mystery Mayhem"
+  name: "Scooby-Doo! Mystery Mayhem"
   region: "PAL-M3"
 SLES-51885:
   name: "MegaMan X7"
@@ -9661,7 +9661,7 @@ SLES-51885:
   clampModes:
     eeClampMode: 3  # For camera issues in some scenes.
 SLES-51886:
-  name: "Lethal Skies 2"
+  name: "Lethal Skies II"
   region: "PAL-E"
 SLES-51887:
   name: "Tiger Woods PGA Tour 2004"
@@ -9842,7 +9842,7 @@ SLES-51967:
   gameFixes:
     - EETimingHack # Fixes broken textures.
 SLES-51968:
-  name: "Spongebob Squarepants - Battle for Bikini Bottom"
+  name: "Spongebob SquarePants - Battle for Bikini Bottom"
   region: "PAL-E"
 SLES-51970:
   name: "Spongebob Schwammkopf - Schlacht um Bikini Bottom"
@@ -10144,7 +10144,7 @@ SLES-52152:
   name: "Terminator 3 - Rise of the Machines"
   region: "PAL-E"
 SLES-52153:
-  name: "Driver 3"
+  name: "Driv3r"
   region: "PAL-E-S"
 SLES-52155:
   name: "EyeToy - L'Eredita"
@@ -10221,7 +10221,7 @@ SLES-52230:
   gameFixes:
     - OPHFlagHack # Fixes some hanging throughout the game.
 SLES-52237:
-  name: "dot Hack - Part 1 - Infection"
+  name: ".hack//Infection Part 1"
   region: "PAL-M5"
   memcardFilters:
     - "SLES-52237"
@@ -10550,7 +10550,7 @@ SLES-52386:
   name: "World Championship Snooker 2004"
   region: "PAL-E"
 SLES-52387:
-  name: "SpyHunter 2"
+  name: "Spy Hunter 2"
   region: "PAL-M5"
 SLES-52388:
   name: "Transformers Armada - Prelude to Energon [Special Edition]"
@@ -10671,7 +10671,7 @@ SLES-52466:
   name: "Ribbit King"
   region: "PAL-M5"
 SLES-52467:
-  name: "dot Hack - Part 2 - Mutation"
+  name: ".hack//Mutation Part 2"
   region: "PAL-M5"
   compat: 5
   memcardFilters:
@@ -10680,7 +10680,7 @@ SLES-52467:
     - "SLES-52468"
     - "SLES-52469"
 SLES-52468:
-  name: "dot Hack - Part 4 - Quarantine"
+  name: ".hack//Quarantine Part 4"
   region: "PAL-M5"
   compat: 5
   memcardFilters:
@@ -10689,7 +10689,7 @@ SLES-52468:
     - "SLES-52468"
     - "SLES-52469"
 SLES-52469:
-  name: "dot Hack - Part 3 - Outbreak"
+  name: ".hack//Outbreak Part 3"
   region: "PAL-M5"
   compat: 5
   memcardFilters:
@@ -10809,7 +10809,7 @@ SLES-52521:
   name: "Adibou & Les Voleurs d'Energie"
   region: "PAL-M6"
 SLES-52523:
-  name: "Cocoto - Platform Jumper"
+  name: "Cocoto - Platform Jumper: Griffin's Story"
   region: "PAL-M5"
 SLES-52525:
   name: "Mouse Trophy"
@@ -11506,7 +11506,7 @@ SLES-52854:
   region: "PAL-E"
   compat: 5
 SLES-52857:
-  name: "Fairly Odd Parents, The - Shadow Showdown"
+  name: "Fairly OddParents, The - Shadow Showdown"
   region: "PAL-E"
 SLES-52858:
   name: "Cocoto Kart Racer"
@@ -11574,14 +11574,14 @@ SLES-52894:
   name: "Bard's Tale, The"
   region: "PAL-E"
 SLES-52895:
-  name: "Spongebob Squarepants - The Movie"
+  name: "Spongebob SquarePants - The Movie"
   region: "PAL-E"
   compat: 5
 SLES-52896:
-  name: "Spongebob Squarepants - The Movie"
+  name: "Spongebob SquarePants - The Movie"
   region: "PAL-F-G"
 SLES-52897:
-  name: "Spongebob Squarepants - The Movie"
+  name: "Spongebob SquarePants - The Movie"
   region: "PAL-I"
 SLES-52898:
   name: "King of Fighters - Maximum Impact"
@@ -11773,10 +11773,10 @@ SLES-52984:
   name: "Panzer Front Ausf B"
   region: "PAL-E"
 SLES-52985:
-  name: "Spongebob Squarepants - The Movie"
+  name: "Spongebob SquarePants - The Movie"
   region: "PAL-G"
 SLES-52986:
-  name: "Spongebob Squarepants - The Movie"
+  name: "Spongebob SquarePants - The Movie"
   region: "PAL-S"
 SLES-52988:
   name: "MegaMan X8"
@@ -12087,7 +12087,7 @@ SLES-53099:
   roundModes:
     vuRoundMode: 0
 SLES-53100:
-  name: "Scooby Doo! Unmasked"
+  name: "Scooby-Doo! Unmasked"
   region: "PAL-M4"
 SLES-53104:
   name: "Tom Clancy's Rainbow Six - Lockdown"
@@ -12492,7 +12492,7 @@ SLES-53364:
   name: "7 Sins"
   region: "PAL-G"
 SLES-53366:
-  name: "Killer 7"
+  name: "Killer7"
   region: "PAL-M3"
   compat: 5
 SLES-53367:
@@ -12757,14 +12757,14 @@ SLES-53492:
   name: "Total Overdose"
   region: "PAL-M5"
 SLES-53494:
-  name: "Spongebob Squarepants - Lights, Camera, PANTS!"
+  name: "Spongebob SquarePants - Lights, Camera, PANTS!"
   region: "PAL-E"
   compat: 5
 SLES-53495:
   name: "Nickelodeon Bob L'éponge - Silence on Tourne!"
   region: "PAL-F"
 SLES-53496:
-  name: "Spongebob Squarepants - Lights, Camera, PANTS!"
+  name: "Spongebob SquarePants - Lights, Camera, PANTS!"
   region: "PAL-I"
 SLES-53497:
   name: "Nickelodeon SpongeBob Schwammkopf - Film ab!"
@@ -13047,7 +13047,7 @@ SLES-53561:
   clampModes:
     eeClampMode: 3  # Fixes the inability to take the bottle in the trophy case in Chapter 2: Hattrick vs Galloway.
 SLES-53563:
-  name: "Spongebob Squarepants and Friends - Untie!"
+  name: "Spongebob SquarePants and Friends - Untie!"
   region: "PAL-M6"
 SLES-53564:
   name: "Darkwatch"
@@ -13149,7 +13149,7 @@ SLES-53621:
   region: "PAL-M5"
   compat: 5
 SLES-53623:
-  name: "Spongebob Squarepants - Battle for Bikini Bottom"
+  name: "Spongebob SquarePants - Battle for Bikini Bottom"
   region: "PAL-F"
 SLES-53624:
   name: "Disney-Pixar's Cars"
@@ -13255,7 +13255,7 @@ SLES-53667:
         comment=- Language selection is done through the BIOS configuration.
         comment=- Implementation requires Full boot - 'Boot CDVD (full)'.
 SLES-53668:
-  name: "Micro Machines v4"
+  name: "Micro Machines V4"
   region: "PAL-M5"
 SLES-53672:
   name: "Ultimate Spider-Man [Limited]"
@@ -14857,7 +14857,7 @@ SLES-54464:
   region: "PAL-E"
   compat: 5
 SLES-54465:
-  name: "CSI 3 - Dimensions of Murder"
+  name: "CSI: 3 Dimensions of Murder"
   region: "PAL-M5"
 SLES-54466:
   name: "Test Drive Unlimited"
@@ -15916,7 +15916,7 @@ SLES-54964:
   roundModes:
     vuRoundMode: 0  # Crashes without.
 SLES-54971:
-  name: "Hot Wheels - Beat That!"
+  name: "Hot Wheels: Beat That!"
   region: "PAL-M4"
 SLES-54972:
   name: "Wild Arms 5"
@@ -16231,7 +16231,7 @@ SLES-55126:
   name: "Artlist Collection - The Dog Island"
   region: "PAL-M6"
 SLES-55129:
-  name: "Jumper - Griffin's Story"
+  name: "Jumper: Griffin's Story"
   region: "PAL-M5"
 SLES-55131:
   name: "Roller Coaster Funfare"
@@ -16524,10 +16524,10 @@ SLES-55266:
   region: "PAL-M5"
   compat: 5
 SLES-55271:
-  name: "Spongebob Squarepants Featuring Nicktoons - Globs of Doom"
+  name: "Spongebob SquarePants Featuring Nicktoons - Globs of Doom"
   region: "PAL-E-F"
 SLES-55272:
-  name: "Spongebob Squarepants Featuring Nicktoons - Globs of Doom"
+  name: "Spongebob SquarePants Featuring Nicktoons - Globs of Doom"
   region: "PAL-M3"
 SLES-55274:
   name: "Diabolik - The Original Sin"
@@ -17578,7 +17578,7 @@ SLKA-25133:
   region: "NTSC-K"
   compat: 5
 SLKA-25134:
-  name: "NBA Street v3"
+  name: "NBA Street V3"
   region: "NTSC-K"
 SLKA-25135:
   name: "Kunoichi"
@@ -22125,7 +22125,7 @@ SLPM-65648:
   name: "Medal of Honor - Frontline [EA Best Hits]"
   region: "NTSC-J"
 SLPM-65649:
-  name: "NBA Street 2 [EA Best Hits]"
+  name: "NBA Street Vol. 2 [EA Best Hits]"
   region: "NTSC-J"
 SLPM-65650:
   name: "Harry Potter and The Sorcerer's Stone [EA Best Hits]"
@@ -22400,7 +22400,7 @@ SLPM-65740:
   name: "J-League Winning Eleven 8 - Asia Championship"
   region: "NTSC-J"
 SLPM-65741:
-  name: "Driver 3"
+  name: "Driv3r"
   region: "NTSC-J"
 SLPM-65742:
   name: "Cool Girl [Konami the Best]"
@@ -23039,7 +23039,7 @@ SLPM-65946:
   region: "NTSC-J"
   compat: 5
 SLPM-65947:
-  name: "Killer 7"
+  name: "Killer7"
   region: "NTSC-J"
 SLPM-65948:
   name: "Enthusia Professional Racing"
@@ -23270,7 +23270,7 @@ SLPM-66020:
   name: "Psi-Ops - The Mindgate Conspiracy"
   region: "NTSC-J"
 SLPM-66021:
-  name: "NBA Street v3"
+  name: "NBA Street V3"
   region: "NTSC-J"
 SLPM-66022:
   name: "Kaido Touge no Densetsu"
@@ -25559,7 +25559,7 @@ SLPM-66743:
   name: "Shinkyouku Soukai Polyphonica"
   region: "NTSC-J"
 SLPM-66744:
-  name: "Killer 7 [CapKore]"
+  name: "Killer7 [CapKore]"
   region: "NTSC-J"
 SLPM-66745:
   name: "Shadow of Rome [CapKore]"
@@ -26786,7 +26786,7 @@ SLPS-20038:
   name: "Grappler Baki - Baki Saidai no Tournament"
   region: "NTSC-J"
 SLPS-20040:
-  name: "Moto GP"
+  name: "MotoGP"
   region: "NTSC-J"
   gameFixes:
     - VU0KickstartHack # Fixes Crash On Load
@@ -28090,7 +28090,7 @@ SLPS-25120:
   name: "Gundam Gihren's Ambition"
   region: "NTSC-J"
 SLPS-25121:
-  name: "dot Hack Vol.1"
+  name: ".hack//Infection Part 1"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -28154,7 +28154,7 @@ SLPS-25142:
   name: "Tiger Woods PGA Tour 2002"
   region: "NTSC-J"
 SLPS-25143:
-  name: "dot Hack Vol.2 - Mutation"
+  name: ".hack//Mutation Part 2"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -28197,7 +28197,7 @@ SLPS-25156:
   name: "King of Fighters 2000, The"
   region: "NTSC-J"
 SLPS-25158:
-  name: "dot Hack - Vol.3 - Erosion Pollution"
+  name: ".hack//Outbreak Part 3"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -28331,7 +28331,7 @@ SLPS-25201:
   name: "Reveal Fantasia"
   region: "NTSC-J"
 SLPS-25202:
-  name: "dot Hack - Vol.4 - Zettai Houi"
+  name: ".hack//Quarantine Part 4"
   region: "NTSC-J"
   memcardFilters:
     - "SCPS-55029"
@@ -28347,7 +28347,7 @@ SLPS-25202:
     - "SLPS-73232"
     - "SLPS-73233"
 SLPS-25204:
-  name: "Moto GP3"
+  name: "MotoGP3"
   region: "NTSC-J"
 SLPS-25205:
   name: "Ys I-II - Eternal Story [Limited Edition]"
@@ -29340,7 +29340,7 @@ SLPS-25526:
   name: "Medical 91"
   region: "NTSC-J"
 SLPS-25527:
-  name: "dot Hack - Fragment"
+  name: ".hack//Fragment"
   region: "NTSC-J"
   compat: 5
 SLPS-25528:
@@ -30683,7 +30683,7 @@ SLPS-73111:
   name: "Taiko no Tatsujin Super Animehit [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPS-73201:
-  name: "Fatal Frame 2 - Crimson Butterfly [PlayStation 2 The Best]"
+  name: "Fatal Frame II - Crimson Butterfly [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPS-73202:
   name: "Armored Core - Nexus [PlayStation 2 The Best] [Disc 1]"
@@ -30956,7 +30956,7 @@ SLPS-73255:
   name: "Fatal Frame [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
 SLPS-73256:
-  name: "Fatal Frame 2 - Crimson Butterfly [PlayStation 2 the Best - Reprint]"
+  name: "Fatal Frame II - Crimson Butterfly [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
 SLPS-73257:
   name: "Fatal Frame III - The Tormented [PlayStation 2 the Best - Reprint]"
@@ -31239,7 +31239,7 @@ SLUS-20056:
   gameFixes:
     - VIF1StallHack # Fixes loading hang.
 SLUS-20058:
-  name: "Moto GP"
+  name: "MotoGP"
   region: "NTSC-U"
   compat: 5
   gameFixes:
@@ -31604,7 +31604,7 @@ SLUS-20167:
         patch=1,EE,0072C1E1,byte,00000061
         patch=1,EE,007226F7,byte,00000061
 SLUS-20168:
-  name: "Triple Play 2002"
+  name: "Triple Play Baseball"
   region: "NTSC-U"
 SLUS-20169:
   name: "Ephemeral Fantasia"
@@ -31622,7 +31622,7 @@ SLUS-20172:
   region: "NTSC-U"
   compat: 5
 SLUS-20173:
-  name: "Unison"
+  name: "Unison: Rebels of Rhythm & Dance"
   region: "NTSC-U"
 SLUS-20174:
   name: "Rumble Racing"
@@ -31644,7 +31644,7 @@ SLUS-20178:
   region: "NTSC-U"
   compat: 5
 SLUS-20179:
-  name: "X-Files - Resist or Serve"
+  name: "X-Files, The - Resist or Serve"
   region: "NTSC-U"
   compat: 5
 SLUS-20181:
@@ -31700,7 +31700,7 @@ SLUS-20197:
   region: "NTSC-U"
   compat: 5
 SLUS-20198:
-  name: "Fire Blade"
+  name: "FireBlade"
   region: "NTSC-U"
   compat: 5
 SLUS-20199:
@@ -31912,7 +31912,7 @@ SLUS-20239:
   name: "Driven"
   region: "NTSC-U"
 SLUS-20240:
-  name: "Conflict Zone"
+  name: "Conflict Zone: Modern War Strategy"
   region: "NTSC-U"
   compat: 5
 SLUS-20241:
@@ -32002,7 +32002,7 @@ SLUS-20266:
   region: "NTSC-U"
   compat: 5
 SLUS-20267:
-  name: "dot Hack - Part 1 - Infection"
+  name: ".hack//Infection Part 1"
   region: "NTSC-U"
   compat: 5
   memcardFilters:
@@ -32096,7 +32096,7 @@ SLUS-20284:
         // Fixed by rearranging COP2 instructions.
         patch=1,EE,002131bc,word,00000000
 SLUS-20285:
-  name: "Moto GP 2"
+  name: "MotoGP 2"
   region: "NTSC-U"
   compat: 5
 SLUS-20286:
@@ -32107,7 +32107,7 @@ SLUS-20287:
   region: "NTSC-U"
   compat: 5
 SLUS-20288:
-  name: "Godai - Elemental Force"
+  name: "GoDai - Elemental Force"
   region: "NTSC-U"
   compat: 5
 SLUS-20291:
@@ -32214,7 +32214,7 @@ SLUS-20316:
   region: "NTSC-U"
   compat: 5
 SLUS-20318:
-  name: "King's Field IV"
+  name: "King's Field IV: The Ancient City"
   region: "NTSC-U"
   compat: 5
   patches:
@@ -32308,7 +32308,7 @@ SLUS-20339:
   region: "NTSC-U"
   compat: 5
 SLUS-20340:
-  name: "RPG Maker 2"
+  name: "RPG Maker II"
   region: "NTSC-U"
   compat: 5
 SLUS-20341:
@@ -32347,7 +32347,7 @@ SLUS-20348:
   clampModes:
     vuClampMode: 0  # Fixes missing game board.
 SLUS-20349:
-  name: "Scooby Doo! Night of 100 Frights"
+  name: "Scooby-Doo! Night of 100 Frights"
   region: "NTSC-U"
   compat: 5
 SLUS-20352:
@@ -32365,7 +32365,7 @@ SLUS-20355:
   region: "NTSC-U"
   compat: 5
 SLUS-20356:
-  name: "Transworld Surf"
+  name: "Transworld SURF"
   region: "NTSC-U"
   compat: 5
 SLUS-20357:
@@ -32376,7 +32376,7 @@ SLUS-20358:
   region: "NTSC-U"
   compat: 5
 SLUS-20360:
-  name: "Blade 2"
+  name: "Blade II"
   region: "NTSC-U"
   compat: 5
   gameFixes:
@@ -32436,7 +32436,7 @@ SLUS-20371:
   region: "NTSC-U"
   compat: 5
 SLUS-20373:
-  name: "Men in Black 2 - Alien Escape"
+  name: "Men in Black II - Alien Escape"
   region: "NTSC-U"
   compat: 5
   gameFixes:
@@ -32450,7 +32450,7 @@ SLUS-20375:
   region: "NTSC-U"
   compat: 5
 SLUS-20376:
-  name: "Mad Maestro"
+  name: "Mad Maestro!"
   region: "NTSC-U"
   compat: 5
 SLUS-20377:
@@ -32477,7 +32477,7 @@ SLUS-20380:
   name: "Jurassic Park - Operation Genesis"
   region: "NTSC-U"
 SLUS-20381:
-  name: "MX Superfly"
+  name: "MX SuperFly"
   region: "NTSC-U"
   compat: 5
 SLUS-20382:
@@ -32488,7 +32488,7 @@ SLUS-20383:
   region: "NTSC-U"
   compat: 5
 SLUS-20384:
-  name: "Skygunner"
+  name: "SkyGunner"
   region: "NTSC-U"
   compat: 5
 SLUS-20385:
@@ -32555,7 +32555,7 @@ SLUS-20394:
         patch=1,EE,201018d8,extended,24040007
         patch=1,EE,201018e4,extended,24040006
 SLUS-20395:
-  name: "GTC Africa"
+  name: "Global Touring Challenge: Africa"
   region: "NTSC-U"
 SLUS-20397:
   name: "Tenchu 3 - Wrath of Heaven"
@@ -32693,7 +32693,7 @@ SLUS-20424:
   region: "NTSC-U"
   compat: 5
 SLUS-20425:
-  name: "Spongebob Squarepants - Revenge of the Flying Dutchman"
+  name: "Spongebob SquarePants - Revenge of the Flying Dutchman"
   region: "NTSC-U"
   compat: 5
 SLUS-20428:
@@ -32772,7 +32772,7 @@ SLUS-20441:
   region: "NTSC-U"
   compat: 5
 SLUS-20442:
-  name: "Red Faction 2"
+  name: "Red Faction II"
   region: "NTSC-U"
   compat: 5
 SLUS-20443:
@@ -33032,7 +33032,7 @@ SLUS-20506:
   region: "NTSC-U"
   compat: 5
 SLUS-20507:
-  name: "Legends of Wrestling 2"
+  name: "Legends of Wrestling II"
   region: "NTSC-U"
   compat: 3
 SLUS-20508:
@@ -33048,7 +33048,7 @@ SLUS-20510:
   region: "NTSC-U"
   compat: 5
 SLUS-20511:
-  name: "Hunter the Reckoning - Wayward"
+  name: "Hunter - The Reckoning - Wayward"
   region: "NTSC-U"
   compat: 5
 SLUS-20513:
@@ -33086,7 +33086,7 @@ SLUS-20521:
   region: "NTSC-U"
   compat: 5
 SLUS-20522:
-  name: "King of Route 66"
+  name: "King of Route 66, The"
   region: "NTSC-U"
   compat: 5
 SLUS-20523:
@@ -33256,7 +33256,7 @@ SLUS-20561:
   region: "NTSC-U"
   compat: 5
 SLUS-20562:
-  name: "dot Hack - Part 2 - Mutation"
+  name: ".hack//Mutation Part 2"
   region: "NTSC-U"
   compat: 5
   memcardFilters:
@@ -33265,7 +33265,7 @@ SLUS-20562:
     - "SLUS-20563"
     - "SLUS-20564"
 SLUS-20563:
-  name: "dot Hack - Part 3 - Outbreak"
+  name: ".hack//Outbreak Part 3"
   region: "NTSC-U"
   compat: 5
   memcardFilters:
@@ -33372,7 +33372,7 @@ SLUS-20586:
   region: "NTSC-U"
   compat: 5
 SLUS-20587:
-  name: "Driver 3"
+  name: "Driv3r"
   region: "NTSC-U"
   compat: 5
 SLUS-20588:
@@ -33518,7 +33518,7 @@ SLUS-20622:
     - "SLUS-20622"
     - "SLUS-20228"
 SLUS-20623:
-  name: "Winning Eleven 6"
+  name: "World Soccer: Winning Eleven 6 International"
   region: "NTSC-U"
 SLUS-20624:
   name: "Simpsons, The - Hit & Run"
@@ -33527,7 +33527,7 @@ SLUS-20624:
   gameFixes:
     - FpuNegDivHack # Lens flare appears even when behind objects.
 SLUS-20625:
-  name: "Moto GP 3"
+  name: "MotoGP 3"
   region: "NTSC-U"
 SLUS-20626:
   name: "Deer Hunter"
@@ -33579,7 +33579,7 @@ SLUS-20637:
   region: "NTSC-U"
   compat: 5
 SLUS-20638:
-  name: "Backyard Wrestling - Don't Try This At Home"
+  name: "Backyard Wrestling - Don't Try This at Home"
   region: "NTSC-U"
   compat: 5
 SLUS-20639:
@@ -33641,7 +33641,7 @@ SLUS-20650:
   name: "MVP Baseball 2003"
   region: "NTSC-U"
 SLUS-20651:
-  name: "NBA Street 2"
+  name: "NBA Street Vol. 2"
   region: "NTSC-U"
   compat: 5
   clampModes:
@@ -33655,7 +33655,7 @@ SLUS-20653:
   region: "NTSC-U"
   compat: 5
 SLUS-20655:
-  name: "Hobbit, The"
+  name: "Hobbit, The: The Prelude to the Lord of the Rings"
   region: "NTSC-U"
   compat: 5
 SLUS-20656:
@@ -33663,7 +33663,7 @@ SLUS-20656:
   region: "NTSC-U"
   compat: 5
 SLUS-20657:
-  name: "McFarlane Evil Prophecy"
+  name: "McFarlane's Evil Prophecy"
   region: "NTSC-U"
   compat: 5
 SLUS-20658:
@@ -33674,7 +33674,7 @@ SLUS-20659:
   name: "Piglet's Big Game"
   region: "NTSC-U"
 SLUS-20661:
-  name: "Fairly Odd Parents, The - Breakin' Da Rules"
+  name: "Fairly OddParents, The - Breakin' Da Rules"
   region: "NTSC-U"
 SLUS-20662:
   name: "Gallop Racer 2003 - A New Breed"
@@ -33730,7 +33730,7 @@ SLUS-20673:
   region: "NTSC-U"
   compat: 5
 SLUS-20674:
-  name: "Virtual On Marz"
+  name: "Cyber Troopers: Virtual-On Marz"
   region: "NTSC-U"
   compat: 5
 SLUS-20675:
@@ -33758,7 +33758,7 @@ SLUS-20681:
   region: "NTSC-U"
   compat: 5
 SLUS-20682:
-  name: "K1 World Grand Prix"
+  name: "K-1 World Grand Prix"
   region: "NTSC-U"
   compat: 5
 SLUS-20683:
@@ -33836,7 +33836,7 @@ SLUS-20702:
   region: "NTSC-U"
   compat: 5
 SLUS-20703:
-  name: "Air Force - Delta Strike"
+  name: "Airforce: Delta Strike"
   region: "NTSC-U"
   compat: 5
 SLUS-20704:
@@ -33879,7 +33879,7 @@ SLUS-20714:
   region: "NTSC-U"
   compat: 5
 SLUS-20715:
-  name: "WWII Paratroopers"
+  name: "Combat Elite: WWII Paratroopers"
   region: "NTSC-U"
 SLUS-20716:
   name: "Teenage Mutant Ninja Turtles"
@@ -33911,7 +33911,7 @@ SLUS-20723:
   region: "NTSC-U"
   compat: 4
 SLUS-20724:
-  name: "Firefighter FD 18"
+  name: "Firefighter F.D. 18"
   region: "NTSC-U"
   compat: 5
 SLUS-20725:
@@ -33970,7 +33970,7 @@ SLUS-20734:
   region: "NTSC-U"
   compat: 5
 SLUS-20735:
-  name: "Lethal Skies 2"
+  name: "Lethal Skies II"
   region: "NTSC-U"
   compat: 5
 SLUS-20736:
@@ -34107,7 +34107,7 @@ SLUS-20765:
   region: "NTSC-U"
   compat: 5
 SLUS-20766:
-  name: "Fatal Frame 2 - Crimson Butterfly"
+  name: "Fatal Frame II - Crimson Butterfly"
   region: "NTSC-U"
   compat: 5
 SLUS-20767:
@@ -34191,7 +34191,7 @@ SLUS-20788:
   region: "NTSC-U"
   compat: 5
 SLUS-20789:
-  name: "Jeopardy"
+  name: "Jeopardy!"
   region: "NTSC-U"
   compat: 5
 SLUS-20790:
@@ -34236,7 +34236,7 @@ SLUS-20798:
   name: "Starcraft - Ghost"
   region: "NTSC-U"
 SLUS-20799:
-  name: "Terminator, The - Rise of the Machines"
+  name: "Terminator 3: Rise of the Machines"
   region: "NTSC-U"
   compat: 5
 SLUS-20800:
@@ -34312,7 +34312,7 @@ SLUS-20821:
   region: "NTSC-U"
   compat: 5
 SLUS-20822:
-  name: "Galactic Wrestling"
+  name: "Galactic Wrestling: Featuring Ultimate Muscle - The Kinnikuman Legacy"
   region: "NTSC-U"
   compat: 5
 SLUS-20823:
@@ -34361,7 +34361,7 @@ SLUS-20837:
   name: "Ribbit King"
   region: "NTSC-U"
 SLUS-20838:
-  name: "All-Star Baseball 2005"
+  name: "All-Star Baseball 2005 featuring Derek Jeter"
   region: "NTSC-U"
 SLUS-20839:
   name: "King of Fighters 2000 & 2001 [Disc2of2]"
@@ -34400,7 +34400,7 @@ SLUS-20847:
   region: "NTSC-U"
   compat: 5
 SLUS-20848:
-  name: "LifeLine - Voice Action Adventure"
+  name: "Life Line - Voice Action Adventure"
   region: "NTSC-U"
   compat: 4
 SLUS-20849:
@@ -34540,7 +34540,7 @@ SLUS-20879:
   region: "NTSC-U"
   compat: 5
 SLUS-20880:
-  name: "Fairly Odd Parents, The - Shadow Showdown"
+  name: "Fairly OddParents, The - Shadow Showdown"
   region: "NTSC-U"
   compat: 5
 SLUS-20881:
@@ -34643,7 +34643,7 @@ SLUS-20903:
   region: "NTSC-U"
   compat: 5
 SLUS-20904:
-  name: "SpongeBob Squarepants - The Movie"
+  name: "SpongeBob SquarePants - The Movie"
   region: "NTSC-U"
   compat: 5
 SLUS-20905:
@@ -34841,7 +34841,7 @@ SLUS-20946:
   region: "NTSC-U"
   compat: 5
 SLUS-20947:
-  name: "Winback 2nd Operation"
+  name: "WinBack 2: Project Poseidon"
   region: "NTSC-U"
   compat: 5
 SLUS-20948:
@@ -34919,7 +34919,7 @@ SLUS-20963:
   region: "NTSC-U"
   compat: 5
 SLUS-20964:
-  name: "Devil May Cry 3"
+  name: "Devil May Cry 3: Dante's Awakening"
   region: "NTSC-U"
   compat: 5
   roundModes:
@@ -34941,7 +34941,7 @@ SLUS-20967:
   clampModes:
     eeClampMode: 3
 SLUS-20968:
-  name: "Karaoke Revolution 2"
+  name: "Karaoke Revolution Volume 2"
   region: "NTSC-U"
 SLUS-20969:
   name: "S.L.A.I. - Steel Lancer Arena International - Phantom Crash"
@@ -34978,7 +34978,7 @@ SLUS-20976:
   region: "NTSC-U"
   compat: 4
 SLUS-20977:
-  name: "Virtua Fighter Cyber Generation"
+  name: "Virtua Quest" # aka "Virtua Fighter Cyber Generation"
   region: "NTSC-U"
   compat: 5
 SLUS-20978:
@@ -34996,7 +34996,7 @@ SLUS-20980:
   gameFixes:
     - EETimingHack
 SLUS-20981:
-  name: "Teenage Mutant Ninja Turtles 2"
+  name: "Teenage Mutant Ninja Turtles 2: Battle Nexus"
   region: "NTSC-U"
   compat: 5
 SLUS-20982:
@@ -35393,7 +35393,7 @@ SLUS-21069:
   name: "American Chopper"
   region: "NTSC-U"
 SLUS-21070:
-  name: "Final Fantasy XI - Chains of Promathia"
+  name: "Final Fantasy XI: Chains of Promathia"
   region: "NTSC-U"
 SLUS-21071:
   name: "Nightmare of Druaga"
@@ -35446,7 +35446,7 @@ SLUS-21082:
   region: "NTSC-U"
   compat: 5
 SLUS-21083:
-  name: "LEGO Star Wars"
+  name: "LEGO Star Wars: The Video Game"
   region: "NTSC-U"
   compat: 5
 SLUS-21084:
@@ -35587,7 +35587,7 @@ SLUS-21118:
   gameFixes:
     - GIFFIFOHack # Fixes garbage graphics.
 SLUS-21119:
-  name: "Kessen 3"
+  name: "Kessen III"
   region: "NTSC-U"
   compat: 5
 SLUS-21120:
@@ -35610,7 +35610,7 @@ SLUS-21125:
   region: "NTSC-U"
   compat: 5
 SLUS-21126:
-  name: "NBA Street v3"
+  name: "NBA Street V3"
   region: "NTSC-U"
   compat: 5
 SLUS-21127:
@@ -35705,7 +35705,7 @@ SLUS-21148:
   region: "NTSC-U"
   compat: 5
 SLUS-21149:
-  name: "Yourself Fitness"
+  name: "Yourself! Fitness"
   region: "NTSC-U"
 SLUS-21150:
   name: "Beat Down - Fists of Vengeance"
@@ -35727,7 +35727,7 @@ SLUS-21153:
   region: "NTSC-U"
   compat: 5
 SLUS-21154:
-  name: "Killer 7"
+  name: "Killer7"
   region: "NTSC-U"
   compat: 5
 SLUS-21155:
@@ -35746,7 +35746,7 @@ SLUS-21158:
   name: "Rugby 2005"
   region: "NTSC-U"
 SLUS-21159:
-  name: "Moto GP 4"
+  name: "MotoGP 4"
   region: "NTSC-U"
   compat: 5
 SLUS-21160:
@@ -35836,7 +35836,7 @@ SLUS-21179:
   region: "NTSC-U"
   compat: 5
 SLUS-21180:
-  name: "Onimusha - Dawn of Dreams [Disc1]"
+  name: "Onimusha: Dawn of Dreams [Disc1of2]"
   region: "NTSC-U"
   compat: 5
   patches:
@@ -35845,7 +35845,7 @@ SLUS-21180:
         comment=Patch by Shadow Lady
         patch=0,EE,00104170,word,00000000
 SLUS-21181:
-  name: "D.I.C.E."
+  name: "D.I.C.E.: DNA Integrated Cybernetic Enterprises"
   region: "NTSC-U"
   compat: 5
 SLUS-21182:
@@ -36034,7 +36034,7 @@ SLUS-21224:
   roundModes:
     vuRoundMode: 2  # Fixes cut-off numbers and restores missing whitespace inside combo meter.
 SLUS-21225:
-  name: "Bratz - Rock Angels"
+  name: "Bratz - Rock Angelz"
   region: "NTSC-U"
 SLUS-21226:
   name: "Velocity"
@@ -36096,7 +36096,7 @@ SLUS-21234:
         // Avoid hang at start.
         patch=1,EE,003fd608,word,00000000
 SLUS-21235:
-  name: "MLB 2k6"
+  name: "Major League Baseball 2K6"
   region: "NTSC-U"
   compat: 5
   patches:
@@ -36170,7 +36170,7 @@ SLUS-21248:
   clampModes:
     vuClampMode: 3  # Fixes broken polygons on trees.
 SLUS-21249:
-  name: "Yourself Fitness - Lifestyle"
+  name: "Yourself! Fitness - Lifestyle"
   region: "NTSC-U"
 SLUS-21250:
   name: "Full Spectrum Warrior - Ten Hammers"
@@ -36183,7 +36183,7 @@ SLUS-21251:
   region: "NTSC-U"
   compat: 5
 SLUS-21252:
-  name: "SpongeBob Squarepants - Lights, Camera, PANTS!"
+  name: "SpongeBob SquarePants - Lights, Camera, PANTS!"
   region: "NTSC-U"
   compat: 4
 SLUS-21253:
@@ -36297,7 +36297,7 @@ SLUS-21273:
   region: "NTSC-U"
   compat: 5
 SLUS-21274:
-  name: "Outrun 2006 - Coast 2 Coast"
+  name: "OutRun 2006: Coast 2 Coast"
   region: "NTSC-U"
   compat: 5
 SLUS-21275:
@@ -36689,7 +36689,7 @@ SLUS-21361:
   roundModes:
     eeRoundMode: 0
 SLUS-21362:
-  name: "Onimusha - Dawn of Dreams [Disc2]"
+  name: "Onimusha - Dawn of Dreams [Disc2of2]"
   region: "NTSC-U"
   compat: 5
   memcardFilters:
@@ -36704,7 +36704,7 @@ SLUS-21363:
   region: "NTSC-U"
   compat: 5
 SLUS-21364:
-  name: "One Piece - Pirates Carnival"
+  name: "One Piece - Pirates' Carnival"
   region: "NTSC-U"
   compat: 5
 SLUS-21365:
@@ -36796,7 +36796,7 @@ SLUS-21381:
   clampModes:
     vuClampMode: 2
 SLUS-21382:
-  name: "Franklin - A Birthday Surprise"
+  name: "Franklin the Turtle - A Birthday Surprise"
   region: "NTSC-U"
 SLUS-21383:
   name: "Fight Night - Round 3"
@@ -36821,7 +36821,7 @@ SLUS-21387:
   region: "NTSC-U"
   compat: 5
 SLUS-21388:
-  name: "Sopranos, The"
+  name: "Sopranos, The: Road to Respect"
   region: "NTSC-U"
   compat: 5
 SLUS-21389:
@@ -36881,11 +36881,11 @@ SLUS-21401:
   region: "NTSC-U"
   compat: 4
 SLUS-21402:
-  name: "Micro Machines v4"
+  name: "Micro Machines V4"
   region: "NTSC-U"
   compat: 5
 SLUS-21403:
-  name: "Backyard Baseball '07"
+  name: "Backyard Sports: Baseball 2007"
   region: "NTSC-U"
 SLUS-21404:
   name: "Final Fantasy XI - Treasures of Aht Urhgan"
@@ -36904,7 +36904,7 @@ SLUS-21407:
   clampModes:
     vuClampMode: 3  # Missing geometry with microVU.
 SLUS-21408:
-  name: "FIFA World Cup '06"
+  name: "FIFA World Cup Germany '06"
   region: "NTSC-U"
   compat: 5
 SLUS-21409:
@@ -36929,7 +36929,7 @@ SLUS-21413:
   region: "NTSC-U"
   compat: 5
 SLUS-21414:
-  name: "Delta Force - Team Sabre"
+  name: "Delta Force: Black Hawk Down - Team Sabre"
   region: "NTSC-U"
   compat: 5
 SLUS-21415:
@@ -37087,7 +37087,7 @@ SLUS-21449:
   region: "NTSC-U"
   compat: 5
 SLUS-21450:
-  name: "Super Trucks Racing 2"
+  name: "Super PickUps"
   region: "NTSC-U"
 SLUS-21451:
   name: "Grim Adventures of Billy & Mandy, The"
@@ -37149,7 +37149,7 @@ SLUS-21462:
     - "SLUS-20878"
     - "SLUS-21080"
 SLUS-21463:
-  name: "Tom Clancy's Ghost Recon 2"
+  name: "College Hoops 2K7"
   region: "NTSC-U"
 SLUS-21464:
   name: "Winning Eleven - Pro Evolution Soccer 2007"
@@ -37168,7 +37168,7 @@ SLUS-21467:
   region: "NTSC-U"
   compat: 5
 SLUS-21468:
-  name: "Peanuts All-Star"
+  name: "Charlie Brown's All-Stars [Cancelled]"
   region: "NTSC-U"
 SLUS-21469:
   name: "Nicktoons - Battle for Volcano Island"
@@ -37333,7 +37333,7 @@ SLUS-21498:
   gameFixes:
     - OPHFlagHack
 SLUS-21499:
-  name: "Evolution GT"
+  name: "Corvette Evolution GT"
   region: "NTSC-U"
   compat: 5
 SLUS-21500:
@@ -37359,7 +37359,7 @@ SLUS-21538:
   name: "Eureka Seven - Vol.2 - The New Vision"
   region: "NTSC-U"
 SLUS-21539:
-  name: "Greg Hastings Tournament Paintball Max'd"
+  name: "Greg Hastings' Tournament Paintball Max'd"
   region: "NTSC-U"
   compat: 5
 SLUS-21540:
@@ -37511,7 +37511,7 @@ SLUS-21579:
   name: "Barbie in The 12 Dancing Princesses"
   region: "NTSC-U"
 SLUS-21580:
-  name: "Pimp my Ride"
+  name: "MTV Pimp my Ride"
   region: "NTSC-U"
 SLUS-21581:
   name: "UEFA Champions League 2006-2007"
@@ -37539,7 +37539,7 @@ SLUS-21586:
   roundModes:
     vuRoundMode: 2  # Fixes cut-off numbers and restores missing whitespace inside combo meter.
 SLUS-21587:
-  name: "Made Man"
+  name: "Made Man: Confessions of the Family Blood"
   region: "NTSC-U"
   compat: 5
 SLUS-21588:
@@ -37711,7 +37711,7 @@ SLUS-21622:
   region: "NTSC-U"
   compat: 5
 SLUS-21623:
-  name: "BIGS, The"
+  name: "Bigs, The"
   region: "NTSC-U"
   compat: 5
 SLUS-21624:
@@ -37733,7 +37733,7 @@ SLUS-21627:
   region: "NTSC-U"
   compat: 5
 SLUS-21628:
-  name: "Hot Wheels - Beat That"
+  name: "Hot Wheels: Beat That!"
   region: "NTSC-U"
   compat: 5
 SLUS-21629:
@@ -37778,7 +37778,7 @@ SLUS-21636:
   region: "NTSC-U"
   compat: 5
 SLUS-21637:
-  name: "Disney-Pixar's Cars - Mater-National"
+  name: "Disney-Pixar's Cars: Mater-National Championship"
   region: "NTSC-U"
   compat: 5
 SLUS-21638:
@@ -37849,14 +37849,14 @@ SLUS-21653:
   region: "NTSC-U"
   compat: 5
 SLUS-21654:
-  name: "Kane & Lynch - Dead Men Sneak Preview"
+  name: "Kane & Lynch: Dead Men [Sneak Preview]"
   region: "NTSC-U"
 SLUS-21655:
-  name: "CSI 3 - Dimensions of Murder"
+  name: "CSI: 3 Dimensions of Murder"
   region: "NTSC-U"
   compat: 5
 SLUS-21656:
-  name: "World Superbikes '07"
+  name: "Hannspree Ten Kate Honda SBK: World Superbikes '07"
   region: "NTSC-U"
 SLUS-21658:
   name: "Need for Speed - ProStreet"
@@ -38054,13 +38054,13 @@ SLUS-21709:
   gameFixes:
     - EETimingHack # For stripes on FMVs and crashes on scenes.
 SLUS-21710:
-  name: "PopCap Hits Volume 1"
+  name: "PopCap Hits! Volume 1"
   region: "NTSC-U"
   compat: 5
   gameFixes:
     - EETimingHack # Fixes random crashing throughout the game.
 SLUS-21711:
-  name: "Biathlon 2008"
+  name: "RTL Biathlon 2008"
   region: "NTSC-U"
 SLUS-21712:
   name: "History Channel - Battle for the Pacific"
@@ -38144,7 +38144,7 @@ SLUS-21729:
         // My theory is on a deep timing issue.
         patch=0,EE,003cc1a0,word,00000000
 SLUS-21730:
-  name: "Jumper"
+  name: "Jumper: Griffin's Story"
   region: "NTSC-U"
   compat: 5
 SLUS-21731:
@@ -38216,12 +38216,18 @@ SLUS-21744:
         // Normally this would require EE data cache, but this patch NOPs out the bad writes. This is likely anti-emulation code.
         patch=1,EE,003cb014,word,00000000
         patch=1,EE,003cb124,word,00000000
+SLUS-21745:
+  name: "NBA 2K9"
+  region: "NTSC-U"
 SLUS-21746:
   name: "Call of Duty: World at War - Final Fronts"
   region: "NTSC-U"
   compat: 5
 SLUS-21748:
   name: "MLB Power Pros 2008"
+  region: "NTSC-U"
+SLUS-21749:
+  name: "Garfield: Lasagna World Tour"
   region: "NTSC-U"
 SLUS-21750:
   name: "Hannah Montana - Spotlight World Tour"
@@ -38291,7 +38297,7 @@ SLUS-21765:
   region: "NTSC-U"
   compat: 5
 SLUS-21766:
-  name: "Pipemania"
+  name: "Pipe Mania"
   region: "NTSC-U"
   compat: 5
 SLUS-21767:
@@ -38299,7 +38305,7 @@ SLUS-21767:
   region: "NTSC-U"
   compat: 5
 SLUS-21768:
-  name: "PopCap Hits Vol.2"
+  name: "PopCap Hits! Vol.2"
   region: "NTSC-U"
   compat: 5
   gameFixes:
@@ -38373,11 +38379,14 @@ SLUS-21783:
   region: "NTSC-U"
   compat: 5
 SLUS-21785:
-  name: "LEGO Batman"
+  name: "LEGO Batman: The Videogame"
   region: "NTSC-U"
   compat: 5
+SLUS-21786:
+  name: "Summer Athletics: The Ultimate Challenge"
+  region: "NTSC-U"
 SLUS-21787:
-  name: "TNA Impact!"
+  name: "TNA Impact! Total Nonstop Action Wrestling"
   region: "NTSC-U"
   compat: 5
   gameFixes:
@@ -38396,15 +38405,21 @@ SLUS-21790:
   name: "Shrek's Carnival Craze"
   region: "NTSC-U"
   compat: 5
+SLUS-21791:
+  name: "Bratz: Girlz Really Rock" # Also has french
+  region: "NTSC-U"
 SLUS-21793:
   name: "DT Carnage"
   region: "NTSC-U"
   compat: 3
 SLUS-21794:
-  name: "Go, Diego, Go!: Great Dinosaur Rescue"
+  name: "Go, Diego, Go! Great Dinosaur Rescue"
   region: "NTSC-U"
 SLUS-21795:
   name: "Totally Spies! Totally Party"
+  region: "NTSC-U"
+SLUS-21796:
+  name: "Dora the Explorer: Dora Saves the Snow Princess"
   region: "NTSC-U"
 SLUS-21797:
   name: "Tak - Guardians Of Gross"
@@ -38430,6 +38445,9 @@ SLUS-21802:
   name: "Naked Brothers Band - The Video Game"
   region: "NTSC-U"
   compat: 5
+SLUS-21803:
+  name: "Warriors Orochi 2"
+  region: "NTSC-U"
 SLUS-21804:
   name: "Avatar - The Last Airbender - Into the Inferno"
   region: "NTSC-U"
@@ -38486,11 +38504,11 @@ SLUS-21817:
   region: "NTSC-U"
   compat: 5
 SLUS-21818:
-  name: "Spongebob Squarepants Featuring Nicktoons - Globs of Doom"
+  name: "Spongebob SquarePants Featuring Nicktoons - Globs of Doom"
   region: "NTSC-U"
   compat: 5
 SLUS-21819:
-  name: "High School Musical 3"
+  name: "High School Musical 3: Senior Year Dance!"
   region: "NTSC-U"
   compat: 5
 SLUS-21820:
@@ -38590,7 +38608,7 @@ SLUS-21849:
   region: "NTSC-U"
   compat: 5
 SLUS-21850:
-  name: "Baja 1000"
+  name: "Score International Baja 1000: The Official Game"
   region: "NTSC-U"
   compat: 5
 SLUS-21851:
@@ -38649,7 +38667,7 @@ SLUS-21867:
   region: "NTSC-U"
   compat: 5
 SLUS-21868:
-  name: "Nobunagas Ambition - Iron Triangle"
+  name: "Nobunaga's Ambition: Iron Triangle"
   region: "NTSC-U"
   compat: 5
 SLUS-21869:
@@ -38663,7 +38681,7 @@ SLUS-21871:
   name: "Major League Baseball 2K9"
   region: "NTSC-U"
 SLUS-21872:
-  name: "Pimp my Ride - Street Racing"
+  name: "MTV Pimp my Ride - Street Racing"
   region: "NTSC-U"
 SLUS-21873:
   name: "Dynasty Warriors - Gundam 2"
@@ -38757,6 +38775,12 @@ SLUS-21896:
   name: "Secret Saturdays, The: Beasts of the 5th Sun"
   region: "NTSC-U"
   compat: 5
+SLUS-21897:
+  name: "Shin Megami Tensei - Devil Summoner 2 - Raidou Kuzunoha vs. King Abaddon"
+  region: "NTSC-U"
+  memcardFilters: # Allows import of save from Devil Summoner 1.
+    - "SLUS-21897"
+    - "SLUS-21431"
 SLUS-21898:
   name: "Band Hero"
   region: "NTSC-U"
@@ -38845,12 +38869,18 @@ SLUS-21918:
 SLUS-21919:
   name: "Backyard Football 2010"
   region: "NTSC-U"
+SLUS-21920:
+  name: "Disney Sing It: Pop Hits"
+  region: "NTSC-U"
 SLUS-21921:
   name: "Ben 10: Alien Force - Vilgax Attacks"
   region: "NTSC-U"
   compat: 5
 SLUS-21923:
   name: "Dora the Explorer: Dora Saves the Crystal Kingdom"
+  region: "NTSC-U"
+SLUS-21924:
+  name: "Guitar Hero: Van Halen"
   region: "NTSC-U"
 SLUS-21926:
   name: "Ni Hao, Kai-Lan: Super Game Day"
@@ -38921,16 +38951,34 @@ SLUS-21942:
 SLUS-21944:
   name: "Dora's Big Birthday Adventure"
   region: "NTSC-U"
+SLUS-21945:
+  name: "Major League Baseball 2K11"
+  region: "NTSC-U"
 SLUS-21946:
   name: "Madden NFL 12"
   region: "NTSC-U"
   compat: 5
   clampModes:
     vuClampMode: 3  # Missing geometry with microVU.
+SLUS-21947:
+  name: "FIFA Soccer 12"
+  region: "NTSC-U"
 SLUS-21948:
   name: "Pro Evolution Soccer 2012"
   region: "NTSC-U"
   compat: 5
+SLUS-21949:
+  name: "Netflix Streaming Disc"
+  region: "NTSC-U" # Brazil / Portuguese
+SLUS-21950:
+  name: "NBA 2K12"
+  region: "NTSC-U"
+SLUS-21951:
+  name: "Major League Baseball 2K12"
+  region: "NTSC-U"
+SLUS-21954:
+  name: "FIFA 13"
+  region: "NTSC-U" # Latin America with En,Fr,Es
 SLUS-21955:
   name: "Pro Evolution Soccer 2013"
   region: "NTSC-U"
@@ -38943,6 +38991,9 @@ SLUS-27030:
 SLUS-27034:
   name: "Disney Sing It! High School Musical 3: Senior Year"
   region: "NTSC-U"
+SLUS-27093:
+  name: "FIFA 14"
+  region: "NTSC-U" # Brazil with En,Fr,Es
 SLUS-28002:
   name: "Red Faction [Trade Demo]"
   region: "NTSC-U"
@@ -39010,7 +39061,10 @@ SLUS-28031:
   name: "Auto Modellista - Public Beta Volume 2.0"
   region: "NTSC-U"
 SLUS-28032:
-  name: "dot Hack - Part 2 - Mutation [Trade Demo]"
+  name: ".hack//Mutation Part 2 [Trade Demo]"
+  region: "NTSC-U"
+SLUS-28034:
+  name: "Disgaea: Hour of Darkness [Trade Demo]"
   region: "NTSC-U"
 SLUS-28037:
   name: "Kya - Dark Lineage [Trade Demo]"
@@ -39044,6 +39098,9 @@ SLUS-28050:
 SLUS-28051:
   name: "Samurai Western [Trade Demo]"
   region: "NTSC-U"
+SLUS-28052:
+  name: "Shin Megami Tensei: Digital Devil Saga 2 [Trade Demo]"
+  region: "NTSC-U"
 SLUS-28053:
   name: "Magna Carta [Trade Demo]"
   region: "NTSC-U"
@@ -39053,11 +39110,14 @@ SLUS-28054:
 SLUS-28056:
   name: "State of Emergency 2 [Trade Demo]"
   region: "NTSC-U"
+SLUS-28059:
+  name: "Metal Saga [Trade Demo]"
+  region: "NTSC-U"
 SLUS-28061:
   name: "Steambot Chronicles [Trade Demo]"
   region: "NTSC-U"
 SLUS-28062:
-  name: "Shin Megami Tensei: Digital Devil Saga 2 [Trade Demo]"
+  name: "Dance Factory [Trade Demo]"
   region: "NTSC-U"
 SLUS-28063:
   name: "Rule of Rose [Trade Demo]"
@@ -39066,7 +39126,16 @@ SLUS-28064:
   name: "Shin Megami Tensei - Devil Summoner [Trade Demo]"
   region: "NTSC-U"
 SLUS-28065:
-  name: "Odin Sphere [Demo]"
+  name: "Odin Sphere [Trade Demo]"
+  region: "NTSC-U"
+SLUS-28067:
+  name: "Shin Megami Tensei: Persona 3 [Trade Demo]"
+  region: "NTSC-U"
+SLUS-28068:
+  name: "Shin Megami Tensei: Persona 3 FES [Trade Demo]"
+  region: "NTSC-U"
+SLUS-28069:
+  name: "Shin Megami Tensei: Persona 4 [Trade Demo]"
   region: "NTSC-U"
 SLUS-29001:
   name: "ESPN Winter Games Snowboarding [Demo]"
@@ -39105,11 +39174,14 @@ SLUS-29012:
 SLUS-29013:
   name: "Victorious Boxers - Ippo's Road to Glory [Demo]"
   region: "NTSC-U"
+SLUS-29014:
+  name: "Half-Life [Demo]"
+  region: "NTSC-U"
 SLUS-29015:
   name: "Dark Summit [Demo]"
   region: "NTSC-U"
 SLUS-29016:
-  name: "ESPN International Winter Sports [Demo]"
+  name: "X-Games Winter SnoCross + ESPN International Winter Sports 2002 + Winter X Games Snowboarding 2002 [Demo]"
   region: "NTSC-U"
 SLUS-29017:
   name: "AirBlade [Demo]"
@@ -39130,7 +39202,7 @@ SLUS-29025:
   name: "R.A.D. - Robot Alchemic Drive [Demo]"
   region: "NTSC-U"
 SLUS-29026:
-  name: "MX Superfly [Demo]"
+  name: "MX SuperFly [Demo]"
   region: "NTSC-U"
 SLUS-29027:
   name: "Red Faction II [Demo]"
@@ -39139,7 +39211,7 @@ SLUS-29029:
   name: "Summoner 2 [Demo]"
   region: "NTSC-U"
 SLUS-29030:
-  name: "Fire Blade [Demo]"
+  name: "FireBlade [Demo]"
   region: "NTSC-U"
 SLUS-29032:
   name: "Egg Mania - Eggstreme Madness [Demo]"
@@ -39279,7 +39351,7 @@ SLUS-29086:
   clampModes:
     vuClampMode: 2  # Missing geometry with microVU.
 SLUS-29087:
-  name: "Square Enix Sampler Disc Vol.1"
+  name: "Square Enix Sampler Disc Vol.1: Drakengard Playable Demo"
   region: "NTSC-U"
 SLUS-29088:
   name: "Champions of Norrath - Realms of EverQuest [Demo]"
@@ -39302,7 +39374,7 @@ SLUS-29096:
   name: "Final Night 2004 [Demo]"
   region: "NTSC-U"
 SLUS-29098:
-  name: "Square Enix Sampler Disc Vol.2"
+  name: "Square Enix Sampler Disc Vol.2: Front Mission 4 Playable Demo"
   region: "NTSC-U"
 SLUS-29100:
   name: "Ribbit King [Demo]"
@@ -39355,6 +39427,9 @@ SLUS-29126:
   name: "Champions - Return to Arms [Demo]" # aka "Champions of Norrath 2 [Demo]"
   region: "NTSC-U"
   compat: 4
+SLUS-29127:
+  name: "FIFA Soccer 2005 [Demo]" 
+  region: "NTSC-U"
 SLUS-29129:
   name: "25 to Life [Public Beta Vol.1.0]"
   region: "NTSC-U"
@@ -39370,11 +39445,14 @@ SLUS-29132:
 SLUS-29134:
   name: "Namco Transmission Demo Disc Vol.2"
   region: "NTSC-U"
+SLUS-29135:
+  name: "NCAA March Madness 2005 [Demo]"
+  region: "NTSC-U"
 SLUS-29137:
   name: "Mercenaries [Demo]"
   region: "NTSC-U"
 SLUS-29138:
-  name: "Punisher [Demo]"
+  name: "Punisher, The [Demo]"
   region: "NTSC-U"
 SLUS-29139:
   name: "Shadow of Rome [Demo]"
@@ -39383,7 +39461,7 @@ SLUS-29140:
   name: "MX vs. ATV Unleashed [Demo]"
   region: "NTSC-U"
 SLUS-29141:
-  name: "NBA Street v3 [Demo]"
+  name: "NBA Street V3 [Demo]"
   region: "NTSC-U"
 SLUS-29145:
   name: "Final Night - Round 2 [Demo]"
@@ -39450,14 +39528,17 @@ SLUS-29170:
 SLUS-29171:
   name: "Final Fantasy XII [Demo]"
   region: "NTSC-U"
+SLUS-29172:
+  name: "Battlefield 2: Modern Combat [Demo]"
+  region: "NTSC-U"
 SLUS-29173:
   name: "Sims 2, The [Demo]"
   region: "NTSC-U"
 SLUS-29174:
-  name: "Namco Transmission Demo Disc Vol.3.1"
+  name: "Namco Transmission Demo Disc Vol. 3.1"
   region: "NTSC-U"
 SLUS-29175:
-  name: "Namco Transmission Demo Disc Vol.3.2"
+  name: "Namco Transmission Demo Disc Vol. 3.2"
   region: "NTSC-U"
 SLUS-29178:
   name: "TOCA Race Driver 3 [Demo]"
@@ -39470,6 +39551,9 @@ SLUS-29180:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 3  # Fixes SPS.
+SLUS-29183:
+  name: "Fight Night: Round 3 [Demo]"
+  region: "NTSC-U"
 SLUS-29185:
   name: "Driver - Parallel Lines [Demo]"
   region: "NTSC-U"
@@ -39508,6 +39592,21 @@ SLUS-29197:
   region: "NTSC-U"
 SLUS-29198:
   name: "Guitar Hero II [Demo]"
+  region: "NTSC-U"
+SLUS-29199:
+  name: ".hack//G.U. Vol. 1//Rebirth"
+  region: "NTSC-U"
+SLUS-29200:
+  name: "FIFA Soccer 08 [Demo]"
+  region: "NTSC-U"
+SLUS-80421:
+  name: "Resident Evil 2 [Demo]"
+  region: "NTSC-U"
+SLUS-90009:
+  name: "Resident Evil 2 [Trade Demo]"
+  region: "NTSC-U"
+SLUS-97405:
+  name: "ATV Offroad Fury 3 [Greatest Hits]"
   region: "NTSC-U"
 SLUS-97657:
   name: "MLB 11: The Show"
