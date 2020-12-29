@@ -401,6 +401,7 @@ struct V_Core
 	s8 NoiseClk;       // Noise Clock
 	u16 AutoDMACtrl;   // AutoDMA Status
 	s32 DMAICounter;   // DMA Interrupt Counter
+	u32 LastClock;     // DMA Interrupt Clock Cycle Counter
 	u32 InputDataLeft; // Input Buffer
 	u32 InputPosRead;
 	u32 InputPosWrite;
@@ -549,6 +550,7 @@ extern s16* _spu2mem;
 extern int PlayMode;
 
 extern void SetIrqCall(int core);
+extern void SetIrqCallDMA(int core);
 extern void StartVoices(int core, u32 value);
 extern void StopVoices(int core, u32 value);
 extern void InitADSR();

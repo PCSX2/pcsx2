@@ -146,6 +146,7 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 	{
 		TSA = 0x2000 + (Index << 10);
 		DMAICounter = size;
+		LastClock = lClocks;
 	}
 	else if (size >= 512)
 	{
@@ -169,13 +170,17 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 #endif
 			// Klonoa 2
 			if (size == 512)
+			{
 				DMAICounter = size;
+				LastClock = lClocks;
+			}
 		}
 
 		AdmaInProgress = 1;
 	}
 	else
 	{
+		LastClock = lClocks;
 		InputDataLeft = 0;
 		DMAICounter = 1;
 	}
@@ -271,7 +276,7 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 		// 0x2800?  Hard to know for sure (almost no games depend on this)
 
 		memcpy(GetMemPtr(0), &pMem[buff1size], buff2end * 2);
-		TDA = (buff2end + 1) & 0xfffff;
+		TDA = (buff2end) & 0xfffff;
 
 		// Flag interrupt?  If IRQA occurs between start and dest, flag it.
 		// Important: Test both core IRQ settings for either DMA!
@@ -292,7 +297,7 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 			if (Cores[i].IRQEnable && (Cores[i].IRQA > TSA || Cores[i].IRQA <= TDA))
 			{
 				//ConLog("DMAwrite Core %d: IRQ Called (IRQ passed). IRQA = %x Cycles = %d\n", i, Cores[i].IRQA, Cycles );
-				SetIrqCall(i);
+				SetIrqCallDMA(i);
 			}
 		}
 #else
@@ -307,7 +312,7 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 		// Buffer doesn't wrap/overflow!
 		// Just set the TDA and check for an IRQ...
 
-		TDA = (buff1end + 1) & 0xfffff;
+		TDA = (buff1end) & 0xfffff;
 
 		// Flag interrupt?  If IRQA occurs between start and dest, flag it.
 		// Important: Test both core IRQ settings for either DMA!
@@ -318,7 +323,7 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 			if (Cores[i].IRQEnable && (Cores[i].IRQA > TSA && Cores[i].IRQA <= TDA))
 			{
 				//ConLog("DMAwrite Core %d: IRQ Called (IRQ passed). IRQA = %x Cycles = %d\n", i, Cores[i].IRQA, Cycles );
-				SetIrqCall(i);
+				SetIrqCallDMA(i);
 			}
 		}
 #else
@@ -328,7 +333,7 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 		}
 #endif
 	}
-
+	LastClock = lClocks;
 	TSA = TDA;
 	DMAICounter = size;
 	TADR = MADR + (size << 1);
@@ -369,7 +374,7 @@ void V_Core::FinishDMAread()
 		{
 			if (Cores[i].IRQEnable && (Cores[i].IRQA > TSA || Cores[i].IRQA <= TDA))
 			{
-				SetIrqCall(i);
+				SetIrqCallDMA(i);
 			}
 		}
 	}
@@ -387,7 +392,7 @@ void V_Core::FinishDMAread()
 		{
 			if (Cores[i].IRQEnable && (Cores[i].IRQA > TSA && Cores[i].IRQA <= TDA))
 			{
-				SetIrqCall(i);
+				SetIrqCallDMA(i);
 			}
 		}
 	}
@@ -402,9 +407,10 @@ void V_Core::DoDMAread(u16* pMem, u32 size)
 	DMARPtr = pMem;
 	ReadSize = size;
 	IsDMARead = true;
-
+	LastClock = lClocks;
 	DMAICounter = size;
 	Regs.STATX &= ~0x80;
+	Regs.STATX |= 0x400;
 	//Regs.ATTR |= 0x30;
 	TADR = MADR + (size << 1);
 }
@@ -418,7 +424,7 @@ void V_Core::DoDMAwrite(u16* pMem, u32 size)
 		Regs.STATX &= ~0x80;
 		//Regs.ATTR |= 0x30;
 		DMAICounter = 1;
-
+		LastClock = lClocks;
 		return;
 	}
 
@@ -449,11 +455,12 @@ void V_Core::DoDMAwrite(u16* pMem, u32 size)
 	{
 		if (MsgDMA())
 			ConLog("* SPU2: DMA%c Transfer of %d bytes to %x (%02x %x %04x). IRQE = %d IRQA = %x \n",
-				   GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, (~Regs.ATTR) & 0x7fff,
-				   Cores[0].IRQEnable, Cores[0].IRQA);
+				   GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, Regs.ATTR & 0x7fff,
+				   Cores[Index].IRQEnable, Cores[Index].IRQA);
 
 		PlainDMAWrite(pMem, size);
 	}
 	Regs.STATX &= ~0x80;
+	Regs.STATX |= 0x400;
 	//Regs.ATTR |= 0x30;
 }
