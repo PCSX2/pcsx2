@@ -107,6 +107,7 @@ public:
 	bool Show( bool shown=true );
 
 	bool ShowFullScreen(bool show, bool updateConfig = true);
+	void UpdateTitleUpdateFreq();
 
 protected:
 	void OnCloseWindow( wxCloseEvent& evt );

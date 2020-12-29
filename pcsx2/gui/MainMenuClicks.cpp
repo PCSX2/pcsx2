@@ -631,6 +631,11 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent& event)
 	}
 
 	g_Conf->EmuOptions.EnableRecordingTools = checked;
+	// Update GS Title Frequency
+	if (GSFrame* gsFrame = wxGetApp().GetGsFramePtr())
+	{
+		gsFrame->UpdateTitleUpdateFreq();
+	}
 	// Enable Recording Logs
 	ConsoleLogFrame* progLog = wxGetApp().GetProgramLog();
 	progLog->UpdateLogList();
