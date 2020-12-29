@@ -259,6 +259,7 @@ HANDLE TAPOpen(const char* device_guid)
 
 
 TAPAdapter::TAPAdapter()
+	: NetAdapter()
 {
 	if (config.ethEnable == 0)
 		return;
