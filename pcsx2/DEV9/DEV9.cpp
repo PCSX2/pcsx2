@@ -370,6 +370,36 @@ u16 DEV9read16(u32 addr)
 		case SPD_R_INTR_STAT:
 			return dev9.irqcause;
 
+		case SPD_R_PIO_DATA:
+
+			/*if(dev9.eeprom_dir!=1)
+			{
+				hard=0;
+				break;
+			}*/
+
+			if (dev9.eeprom_state == EEPROM_TDATA)
+			{
+				if (dev9.eeprom_command == 2) //read
+				{
+					if (dev9.eeprom_bit == 0xFF)
+						hard = 0;
+					else
+						hard = ((dev9.eeprom[dev9.eeprom_address] << dev9.eeprom_bit) & 0x8000) >> 11;
+					dev9.eeprom_bit++;
+					if (dev9.eeprom_bit == 16)
+					{
+						dev9.eeprom_address++;
+						dev9.eeprom_bit = 0;
+					}
+				}
+				else
+					hard = 0;
+			}
+			else
+				hard = 0;
+			return hard;
+
 		case DEV9_R_REV:
 			hard = 0x0030; // expansion bay
 			break;
@@ -587,6 +617,72 @@ void DEV9write16(u32 addr, u16 value)
 				dev9Irq(1);
 			}
 			break;
+
+		case SPD_R_PIO_DIR:
+			//DEV9_LOG("SPD_R_PIO_DIR 16bit write %x\n", value);
+
+			if ((value & 0xc0) != 0xc0)
+				return;
+
+			if ((value & 0x30) == 0x20)
+			{
+				dev9.eeprom_state = 0;
+			}
+			dev9.eeprom_dir = (value >> 4) & 3;
+
+			return;
+
+		case SPD_R_PIO_DATA:
+			//DEV9_LOG("SPD_R_PIO_DATA 16bit write %x\n", value);
+
+			if ((value & 0xc0) != 0xc0)
+				return;
+
+			switch (dev9.eeprom_state)
+			{
+				case EEPROM_READY:
+					dev9.eeprom_command = 0;
+					dev9.eeprom_state++;
+					break;
+				case EEPROM_OPCD0:
+					dev9.eeprom_command = (value >> 4) & 2;
+					dev9.eeprom_state++;
+					dev9.eeprom_bit = 0xFF;
+					break;
+				case EEPROM_OPCD1:
+					dev9.eeprom_command |= (value >> 5) & 1;
+					dev9.eeprom_state++;
+					break;
+				case EEPROM_ADDR0:
+				case EEPROM_ADDR1:
+				case EEPROM_ADDR2:
+				case EEPROM_ADDR3:
+				case EEPROM_ADDR4:
+				case EEPROM_ADDR5:
+					dev9.eeprom_address =
+						(dev9.eeprom_address & (63 ^ (1 << (dev9.eeprom_state - EEPROM_ADDR0)))) |
+						((value >> (dev9.eeprom_state - EEPROM_ADDR0)) & (0x20 >> (dev9.eeprom_state - EEPROM_ADDR0)));
+					dev9.eeprom_state++;
+					break;
+				case EEPROM_TDATA:
+				{
+					if (dev9.eeprom_command == 1) //write
+					{
+						dev9.eeprom[dev9.eeprom_address] =
+							(dev9.eeprom[dev9.eeprom_address] & (63 ^ (1 << dev9.eeprom_bit))) |
+							((value >> dev9.eeprom_bit) & (0x8000 >> dev9.eeprom_bit));
+						dev9.eeprom_bit++;
+						if (dev9.eeprom_bit == 16)
+						{
+							dev9.eeprom_address++;
+							dev9.eeprom_bit = 0;
+						}
+					}
+				}
+				break;
+			}
+
+			return;
 
 		default:
 
