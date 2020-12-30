@@ -1010,19 +1010,21 @@ void Pcsx2App::OpenGsPanel()
 	gtk_widget_set_double_buffered(child_window, false); // Disable the widget double buffer, you will use the opengl one
 
 	GdkWindow* draw_window = gtk_widget_get_window(child_window);
-	GdkDisplay* display = gdk_window_get_display(draw_window);
+
+	// For Wayland ShowFullScreen must be called before GetPluginDisplayProperties
+	// so that the viewport's wl_surface is created before we access it.
+	gsFrame->ShowFullScreen( g_Conf->GSWindow.IsFullscreen );
 
 #ifdef GDK_WINDOWING_WAYLAND
-	if (GDK_IS_WAYLAND_DISPLAY(display))
+	if (GDK_IS_WAYLAND_WINDOW(draw_window))
 	{
-		// TODO
-		pDsp[0] = NULL;
-		pDsp[1] = NULL;
+		pDsp[0] = (uptr)gsFrame->GetPluginDisplayPropertiesWaylandEGL();
+		pDsp[1] = (uptr)NULL;
 	}
 	else
 #endif
 #ifdef GDK_WINDOWING_X11
-	if (GDK_IS_X11_DISPLAY(display))
+	if (GDK_IS_X11_WINDOW(draw_window))
 	{
 #if GTK_MAJOR_VERSION < 3
 		Window Xwindow = GDK_WINDOW_XWINDOW(draw_window);
@@ -1041,10 +1043,10 @@ void Pcsx2App::OpenGsPanel()
 	}
 #else
 	pDsp[0] = (uptr)gsFrame->GetViewport()->GetHandle();
-	pDsp[1] = NULL;
-#endif
+	pDsp[1] = (uptr)NULL;
 
 	gsFrame->ShowFullScreen( g_Conf->GSWindow.IsFullscreen );
+#endif
 
 #ifndef DISABLE_RECORDING
 	// Enable New & Play after the first game load of the session
@@ -1063,11 +1065,21 @@ void Pcsx2App::CloseGsPanel()
 	if (AppRpc_TryInvoke(&Pcsx2App::CloseGsPanel))
 		return;
 
-	if (CloseViewportWithPlugins)
+	if (GSFrame* gsFrame = GetGsFramePtr())
 	{
-		if (GSFrame* gsFrame = GetGsFramePtr())
-			if (GSPanel* woot = gsFrame->GetViewport())
-				woot->Destroy();
+#if defined(__WXGTK__) && defined(GDK_WINDOWING_WAYLAND)
+		if (GDK_IS_WAYLAND_WINDOW(gtk_widget_get_window(gsFrame->GetViewport()->GetHandle())))
+		{
+			PluginDisplayPropertiesWayland* props_wl = *(PluginDisplayPropertiesWayland **)pDsp;
+			gsFrame->DestroyPluginDisplayPropertiesWayland(props_wl);
+			pDsp[0] = (uptr)nullptr;
+			pDsp[1] = (uptr)nullptr;
+		}
+#endif
+
+		if (CloseViewportWithPlugins)
+			if (GSPanel* viewport = gsFrame->GetViewport())
+				viewport->Destroy();
 	}
 }
 

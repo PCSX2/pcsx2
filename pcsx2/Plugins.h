@@ -452,5 +452,9 @@ extern "C" const PS2E_LibraryAPI* FileMcd_InitAPI( const PS2E_EmulatorInfo* emui
 
 // Per ChickenLiver, this is being used to pass the GS plugins window handle to the Pad plugins.
 // So a rename to pDisplay is in the works, but it will not, in fact, be removed.
+//
+// Contents:
+// X11:     { Display*, Window }
+// Wayland: { PluginDisplayPropertiesWayland*, NULL }
+// Windows: { HWND, NULL }
 extern uptr pDsp[2];
-

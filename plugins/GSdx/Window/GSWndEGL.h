@@ -30,6 +30,7 @@
 
 class GSWndEGL : public GSWndGL
 {
+	void *m_native_display;
 	void *m_native_window;
 
 	EGLDisplay m_eglDisplay;
@@ -58,7 +59,7 @@ public:
 
 	virtual void *CreateNativeDisplay() = 0;
 	virtual void *CreateNativeWindow(int w, int h) = 0; // GSopen1/PSX API
-	virtual void *AttachNativeWindow(void *handle) = 0;
+	virtual void AttachNativeWindow(void *handle, void **out_native_display, void **out_native_window) = 0;
 	virtual void DestroyNativeResources() = 0;
 
 	GSVector4i GetClientRect();
@@ -103,7 +104,7 @@ public:
 
 	void *CreateNativeDisplay() final;
 	void *CreateNativeWindow(int w, int h) final;
-	void *AttachNativeWindow(void *handle) final;
+	void AttachNativeWindow(void *handle, void **out_native_display, void **out_native_window) final;
 	void DestroyNativeResources() final;
 
 	bool SetWindowText(const char* title) final;
@@ -122,11 +123,13 @@ class GSWndEGL_WL : public GSWndEGL
 	wl_display    *m_NativeDisplay;
 	wl_egl_window *m_NativeWindow;
 
-	wl_registry   *m_wl_registry;
-	wl_compositor *m_wl_compositor;
-	xdg_wm_base   *m_xdg_wm_base;
+	wl_registry      *m_wl_registry;
+	wl_compositor    *m_wl_compositor;
+	wl_subcompositor *m_wl_subcompositor;
+	xdg_wm_base      *m_xdg_wm_base;
 
 	wl_surface    *m_wl_surface;
+	wl_subsurface *m_wl_subsurface;
 	xdg_surface   *m_xdg_surface;
 	xdg_toplevel  *m_xdg_toplevel;
 
@@ -139,7 +142,7 @@ public:
 
 	void *CreateNativeDisplay() final;
 	void *CreateNativeWindow(int w, int h) final;
-	void *AttachNativeWindow(void *handle) final;
+	void AttachNativeWindow(void *handle, void **out_native_display, void **out_native_window) final;
 	void DestroyNativeResources() final;
 
 	bool SetWindowText(const char* title) final;
@@ -150,6 +153,15 @@ public:
 	void XDGSurfaceConfigure(xdg_surface *xdg_surface, uint32_t serial);
 	void XDGToplevelConfigure(xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, wl_array *states);
 	void XDGToplevelClose(xdg_toplevel *xdg_toplevel);
+};
+
+// When the GS window handle is a Wayland window,
+// the first entry of pDsp will point to one of these.
+struct PluginDisplayPropertiesWayland {
+	wl_display* display; // NOTE: This display is not owned by this struct.
+	wl_egl_window* egl_window;
+	wl_surface* surface;
+	wl_subsurface* subsurface;
 };
 
 #endif

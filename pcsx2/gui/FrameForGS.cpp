@@ -831,6 +831,23 @@ void GSFrame::OnResize( wxSizeEvent& evt )
 	{
 		gsPanel->DoResize();
 		gsPanel->SetFocus();
+
+#if defined(__WXGTK__) && defined(GDK_WINDOWING_WAYLAND)
+		if (GDK_IS_WAYLAND_WINDOW(gtk_widget_get_window(gsPanel->GetHandle()))
+			&& pDsp != nullptr)
+		{
+			int x, y, w, h;
+			gsPanel->GetPosition(&x, &y);
+			gsPanel->GetClientSize(&w, &h);
+			int scale = gsPanel->GetContentScaleFactor();
+
+			PluginDisplayPropertiesWayland props = **(PluginDisplayPropertiesWayland **)pDsp;
+			if (props.egl_window)
+				wl_egl_window_resize(props.egl_window, w * scale, h * scale, 0, 0);
+			if (props.subsurface)
+				wl_subsurface_set_position(props.subsurface, x, y);
+		}
+#endif
 	}
 
 	//wxPoint hudpos = wxPoint(-10,-10) + (GetClientSize() - m_hud->GetSize());
@@ -839,3 +856,138 @@ void GSFrame::OnResize( wxSizeEvent& evt )
 	// if we skip, the panel is auto-sized to fit our window anyway, which we do not want!
 	//evt.Skip();
 }
+
+#if defined(__WXGTK__) && defined(GDK_WINDOWING_WAYLAND)
+
+struct WaylandGlobals
+{
+	wl_compositor *compositor;
+	wl_subcompositor *subcompositor;
+};
+
+static void gs_wl_registry_add_global(void *data, wl_registry *registry, uint32_t name, const char *interface, uint32_t version)
+{
+	WaylandGlobals *globals = (WaylandGlobals *)data;
+
+	if (strcmp(interface, wl_compositor_interface.name) == 0) {
+		globals->compositor = (wl_compositor *)wl_registry_bind(registry, name, &wl_compositor_interface, 4);
+	}
+	if (strcmp(interface, wl_subcompositor_interface.name) == 0) {
+		globals->subcompositor = (wl_subcompositor *)wl_registry_bind(registry, name, &wl_subcompositor_interface, 1);
+	}
+}
+
+static void gs_wl_registry_remove_global(void *data, wl_registry *registry, uint32_t name)
+{
+}
+
+static const wl_registry_listener gs_wl_registry_listener = {
+	gs_wl_registry_add_global,
+	gs_wl_registry_remove_global,
+};
+
+PluginDisplayPropertiesWayland* GSFrame::GetPluginDisplayPropertiesWaylandEGL()
+{
+	GdkWindow *draw_window = gtk_widget_get_window(this->GetViewport()->GetHandle());
+
+	// retrieve the wl_display and parent wl_surface from GTK - we don't own these
+	wl_display* display = gdk_wayland_display_get_wl_display(gdk_window_get_display(draw_window));
+	wl_surface* parent_surface = gdk_wayland_window_get_wl_surface(draw_window);
+
+	wl_registry* registry = wl_display_get_registry(display);
+	if (registry == nullptr) {
+		Console.Error("EGL Wayland: wl_display_get_registry failed");
+		return nullptr;
+	}
+
+	// retrieve wl_compositor and wl_subcompositor from the registry
+	WaylandGlobals globals { nullptr, nullptr, };
+	wl_registry_add_listener(registry, &gs_wl_registry_listener, &globals);
+	wl_display_roundtrip(display);
+	if (globals.compositor == nullptr) {
+		Console.Error("EGL Wayland: wl_compositor global not present");
+		wl_registry_destroy(registry);
+		return nullptr;
+	}
+	if (globals.compositor == nullptr) {
+		Console.Error("EGL Wayland: wl_subcompositor global not present");
+		wl_registry_destroy(registry);
+		return nullptr;
+	}
+	wl_registry_destroy(registry);
+
+	// create a surface for the GS plugin to render to
+	wl_surface *child_surface = wl_compositor_create_surface(globals.compositor);
+	if (child_surface == nullptr) {
+		Console.Error("EGL Wayland: wl_compositor_create_surface failed");
+		wl_compositor_destroy(globals.compositor);
+		wl_subcompositor_destroy(globals.subcompositor);
+		return nullptr;
+	}
+
+	// give the child surface an empty input region so input goes to the parent surface.
+	wl_region *region = wl_compositor_create_region(globals.compositor);
+	if (region == nullptr) {
+		Console.Error("EGL Wayland: wl_compositor_create_region failed");
+		wl_compositor_destroy(globals.compositor);
+		wl_subcompositor_destroy(globals.subcompositor);
+		wl_surface_destroy(child_surface);
+		return nullptr;
+	}
+	wl_surface_set_input_region(child_surface, region);
+	wl_region_destroy(region);
+	wl_compositor_destroy(globals.compositor);
+
+	// configure the child surface as a subsurface in desync mode
+	// so that it can commit independently of the parent surface
+	wl_subsurface *subsurface = wl_subcompositor_get_subsurface(globals.subcompositor, child_surface, parent_surface);
+	if (subsurface == nullptr) {
+		Console.Error("EGL Wayland: wl_subcompositor_get_subsurface failed");
+		wl_subcompositor_destroy(globals.subcompositor);
+		wl_surface_destroy(child_surface);
+		return nullptr;
+	}
+	wl_subsurface_set_desync(subsurface);
+	wl_subcompositor_destroy(globals.subcompositor);
+
+	int w, h;
+	this->GetViewport()->GetClientSize(&w, &h);
+	int scale = this->GetViewport()->GetContentScaleFactor();
+
+	wl_egl_window *egl_window = wl_egl_window_create(child_surface, w * scale, h * scale);
+	if (egl_window == nullptr) {
+		Console.Error("EGL Wayland: wl_egl_window_create failed");
+		wl_subsurface_destroy(subsurface);
+		wl_surface_destroy(child_surface);
+		return nullptr;
+	}
+
+	// pass the wl_egl_window we created to the GS plugin for drawing.
+	PluginDisplayPropertiesWayland *props_wl = new PluginDisplayPropertiesWayland;
+	props_wl->display = display;
+	props_wl->egl_window = egl_window;
+	props_wl->surface = child_surface;
+	props_wl->subsurface = subsurface;
+	return props_wl;
+}
+
+void GSFrame::DestroyPluginDisplayPropertiesWayland(PluginDisplayPropertiesWayland* props_wl)
+{
+	if (props_wl == nullptr)
+		return;
+
+	if (props_wl->egl_window != nullptr)
+		wl_egl_window_destroy(props_wl->egl_window);
+
+	if (props_wl->subsurface != nullptr)
+		wl_subsurface_destroy(props_wl->subsurface);
+
+	if (props_wl->surface != nullptr)
+		wl_surface_destroy(props_wl->surface);
+
+	// we do not free props_wl->display since it comes from the GUI toolkit.
+
+	delete props_wl;
+}
+
+#endif
