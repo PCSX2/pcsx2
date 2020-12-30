@@ -533,6 +533,7 @@ struct V_Core
 	void AutoDMAReadBuffer(int mode);
 	void StartADMAWrite(u16* pMem, u32 sz);
 	void PlainDMAWrite(u16* pMem, u32 sz);
+	void FinishDMAwrite();
 };
 
 extern V_Core Cores[2];

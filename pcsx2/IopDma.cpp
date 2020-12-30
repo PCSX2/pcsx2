@@ -43,7 +43,7 @@ static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore)
 	//Console.Status("cycles sent to SPU2 %x\n", psxRegs.cycle - psxCounters[6].sCycleT);
 
 	psxCounters[6].sCycleT = psxRegs.cycle;
-	psxCounters[6].CycleT = size * 2;
+	psxCounters[6].CycleT = size * 4;
 
 	psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
 	psxNextsCounter = psxRegs.cycle;
