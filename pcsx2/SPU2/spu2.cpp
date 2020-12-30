@@ -134,7 +134,6 @@ void SPU2interruptDMA4()
 	FileLog("[%10d] SPU2 interruptDMA4\n", Cycles);
 	Cores[0].Regs.STATX |= 0x80;
 	Cores[0].Regs.STATX &= ~0x400;
-	Cores[0].Regs.ATTR &= ~0x30;
 }
 
 void SPU2interruptDMA7()
@@ -142,7 +141,6 @@ void SPU2interruptDMA7()
 	FileLog("[%10d] SPU2 interruptDMA7\n", Cycles);
 	Cores[1].Regs.STATX |= 0x80;
 	Cores[1].Regs.STATX &= ~0x400;
-	Cores[1].Regs.ATTR &= ~0x30;
 }
 
 void SPU2readDMA7Mem(u16* pMem, u32 size)

@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "Global.h"
 #include "Dma.h"
+#include "IopCommon.h"
 
 #include "spu2.h" // temporary until I resolve cyclePtr/TimeUpdate dependencies.
 
@@ -139,14 +140,14 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 
 	if (MsgAutoDMA())
 		ConLog("* SPU2: DMA%c AutoDMA Transfer of %d bytes to %x (%02x %x %04x).\n",
-			   GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, (~Regs.ATTR) & 0x7fff);
+			   GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, (~Regs.ATTR) & 0xffff);
 
 	InputDataProgress = 0;
 	if ((AutoDMACtrl & (Index + 1)) == 0)
 	{
 		TSA = 0x2000 + (Index << 10);
-		DMAICounter = size;
-		LastClock = lClocks;
+		DMAICounter = size * 4;
+		LastClock = *cyclePtr;
 	}
 	else if (size >= 512)
 	{
@@ -171,8 +172,8 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 			// Klonoa 2
 			if (size == 512)
 			{
-				DMAICounter = size;
-				LastClock = lClocks;
+				DMAICounter = size * 4;
+				LastClock = *cyclePtr;
 			}
 		}
 
@@ -180,9 +181,10 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 	}
 	else
 	{
-		LastClock = lClocks;
+		size = sz;
 		InputDataLeft = 0;
-		DMAICounter = 1;
+		DMAICounter = size * 4;
+		LastClock = *cyclePtr;
 	}
 	TADR = MADR + (size << 1);
 }
@@ -206,6 +208,37 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 
 void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 {
+	if (cyclePtr != nullptr)
+		TimeUpdate(*cyclePtr);
+	TSA &= 0xfffff;
+	ReadSize = size;
+	IsDMARead = false;
+	LastClock = *cyclePtr;
+	DMAICounter = std::min(ReadSize, (u32)0x100) * 4;
+	Regs.STATX &= ~0x80;
+	Regs.STATX |= 0x400;
+	TADR = MADR + (size << 1);
+
+	if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > DMAICounter)
+	{
+		psxCounters[6].sCycleT = psxRegs.cycle;
+		psxCounters[6].CycleT = DMAICounter;
+
+		psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
+		psxNextsCounter = psxRegs.cycle;
+		if (psxCounters[6].CycleT < psxNextCounter)
+			psxNextCounter = psxCounters[6].CycleT;
+	}
+
+	if (MsgDMA())
+		ConLog("* SPU2: DMA%c Write Transfer of %d bytes to %x (%02x %x %04x). IRQE = %d IRQA = %x \n",
+			GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, Regs.ATTR & 0xffff,
+			Cores[Index].IRQEnable, Cores[Index].IRQA);
+}
+
+void V_Core::FinishDMAwrite()
+{
+	
 	// Perform an alignment check.
 	// Not really important.  Everything should work regardless,
 	// but it could be indicative of an emulation foopah elsewhere.
@@ -220,18 +253,18 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 
 		if (TSA & 7)
 		{
-			ConLog("* SPU2 DMA Write > Misaligned target. Core: %d  IOP: %p  TSA: 0x%x  Size: 0x%x\n", Index, (void*)pMem, TSA, size);
+			ConLog("* SPU2 DMA Write > Misaligned target. Core: %d  IOP: %p  TSA: 0x%x  Size: 0x%x\n", Index, (void*)DMAPtr, TSA, ReadSize);
 		}
 	}
 
 	if (Index == 0)
-		DMA4LogWrite(pMem, size << 1);
+		DMA4LogWrite(DMAPtr, ReadSize << 1);
 	else
-		DMA7LogWrite(pMem, size << 1);
+		DMA7LogWrite(DMAPtr, ReadSize << 1);
 
 	TSA &= 0xfffff;
 
-	u32 buff1end = TSA + size;
+	u32 buff1end = TSA + std::min(ReadSize, (u32)0x100);
 	u32 buff2end = 0;
 	if (buff1end > 0x100000)
 	{
@@ -258,7 +291,7 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 	// It starts at TSA and goes to buff1end.
 
 	const u32 buff1size = (buff1end - TSA);
-	memcpy(GetMemPtr(TSA), pMem, buff1size * 2);
+	memcpy(GetMemPtr(TSA), DMAPtr, buff1size * 2);
 
 	u32 TDA;
 
@@ -274,8 +307,7 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 
 		// Emulation Grayarea: Should addresses wrap around to zero, or wrap around to
 		// 0x2800?  Hard to know for sure (almost no games depend on this)
-
-		memcpy(GetMemPtr(0), &pMem[buff1size], buff2end * 2);
+		memcpy(GetMemPtr(0), &DMAPtr[buff1size], buff2end * 2);
 		TDA = (buff2end) & 0xfffff;
 
 		// Flag interrupt?  If IRQA occurs between start and dest, flag it.
@@ -333,15 +365,32 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 		}
 #endif
 	}
-	LastClock = lClocks;
+	
 	TSA = TDA;
-	DMAICounter = size;
-	TADR = MADR + (size << 1);
+	DMAPtr += std::min(ReadSize, (u32)0x100);
+	ReadSize -= std::min(ReadSize, (u32)0x100);
+	if (ReadSize == 0)
+		DMAICounter = 0;
+	else
+	{
+		DMAICounter = std::min(ReadSize, (u32)0x100) * 4;
+
+		if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > DMAICounter)
+		{
+			psxCounters[6].sCycleT = psxRegs.cycle;
+			psxCounters[6].CycleT = DMAICounter;
+
+			psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
+			psxNextsCounter = psxRegs.cycle;
+			if (psxCounters[6].CycleT < psxNextCounter)
+				psxNextCounter = psxCounters[6].CycleT;
+		}
+	}
 }
 
 void V_Core::FinishDMAread()
 {
-	u32 buff1end = TSA + ReadSize;
+	u32 buff1end = TSA + std::min(ReadSize, (u32)0x100);
 	u32 buff2end = 0;
 	if (buff1end > 0x100000)
 	{
@@ -354,17 +403,15 @@ void V_Core::FinishDMAread()
 	// Note on TSA's position after our copy finishes:
 	// IRQA should be measured by the end of the writepos+0x20.  But the TDA
 	// should be written back at the precise endpoint of the xfer.
-
 	u32 TDA;
 
 	if (buff2end > 0)
 	{
 		// second branch needs cleared:
 		// It starts at the beginning of memory and moves forward to buff2end
-
 		memcpy(&DMARPtr[buff1size], GetMemPtr(0), buff2end * 2);
 
-		TDA = (buff2end + 0x20) & 0xfffff;
+		TDA = (buff2end) & 0xfffff;
 
 		// Flag interrupt?  If IRQA occurs between start and dest, flag it.
 		// Important: Test both core IRQ settings for either DMA!
@@ -383,7 +430,7 @@ void V_Core::FinishDMAread()
 		// Buffer doesn't wrap/overflow!
 		// Just set the TDA and check for an IRQ...
 
-		TDA = (buff1end + 0x20) & 0xfffff;
+		TDA = (buff1end) & 0xfffff;
 
 		// Flag interrupt?  If IRQA occurs between start and dest, flag it.
 		// Important: Test both core IRQ settings for either DMA!
@@ -398,21 +445,61 @@ void V_Core::FinishDMAread()
 	}
 
 	TSA = TDA;
-	IsDMARead = false;
+	DMARPtr += std::min(ReadSize, (u32)0x100);
+	ReadSize -= std::min(ReadSize, (u32)0x100);
+	if (ReadSize == 0)
+	{
+		IsDMARead = false;
+		DMAICounter = 0;
+	}
+	else
+	{
+		DMAICounter = std::min(ReadSize, (u32)0x100) * 4;
+
+		if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > DMAICounter)
+		{
+			psxCounters[6].sCycleT = psxRegs.cycle;
+			psxCounters[6].CycleT = DMAICounter;
+
+			psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
+			psxNextsCounter = psxRegs.cycle;
+			if (psxCounters[6].CycleT < psxNextCounter)
+				psxNextCounter = psxCounters[6].CycleT;
+		}
+	}
 }
 
 void V_Core::DoDMAread(u16* pMem, u32 size)
 {
-	TSA &= 0xfffff;
+	if (cyclePtr != nullptr)
+		TimeUpdate(*cyclePtr);
+
 	DMARPtr = pMem;
+	TSA &= 0xfffff;
 	ReadSize = size;
 	IsDMARead = true;
-	LastClock = lClocks;
-	DMAICounter = size;
+	LastClock = *cyclePtr;
+	DMAICounter = std::min(ReadSize, (u32)0x100) * 4;
 	Regs.STATX &= ~0x80;
 	Regs.STATX |= 0x400;
 	//Regs.ATTR |= 0x30;
 	TADR = MADR + (size << 1);
+
+	if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > DMAICounter)
+	{
+		psxCounters[6].sCycleT = psxRegs.cycle;
+		psxCounters[6].CycleT = DMAICounter;
+
+		psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
+		psxNextsCounter = psxRegs.cycle;
+		if (psxCounters[6].CycleT < psxNextCounter)
+			psxNextCounter = psxCounters[6].CycleT;
+	}
+
+	if (MsgDMA())
+		ConLog("* SPU2: DMA%c Read Transfer of %d bytes from %x (%02x %x %04x). IRQE = %d IRQA = %x \n",
+			GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, Regs.ATTR & 0xffff,
+			Cores[Index].IRQEnable, Cores[Index].IRQA);
 }
 
 void V_Core::DoDMAwrite(u16* pMem, u32 size)
@@ -423,8 +510,8 @@ void V_Core::DoDMAwrite(u16* pMem, u32 size)
 	{
 		Regs.STATX &= ~0x80;
 		//Regs.ATTR |= 0x30;
-		DMAICounter = 1;
-		LastClock = lClocks;
+		DMAICounter = 1 * 4;
+		LastClock = *cyclePtr;
 		return;
 	}
 
@@ -453,14 +540,8 @@ void V_Core::DoDMAwrite(u16* pMem, u32 size)
 	}
 	else
 	{
-		if (MsgDMA())
-			ConLog("* SPU2: DMA%c Transfer of %d bytes to %x (%02x %x %04x). IRQE = %d IRQA = %x \n",
-				   GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, Regs.ATTR & 0x7fff,
-				   Cores[Index].IRQEnable, Cores[Index].IRQA);
-
 		PlainDMAWrite(pMem, size);
 	}
 	Regs.STATX &= ~0x80;
 	Regs.STATX |= 0x400;
-	//Regs.ATTR |= 0x30;
 }

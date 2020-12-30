@@ -402,16 +402,21 @@ __forceinline void TimeUpdate(u32 cClocks)
 		TickInterval = 768; // Reset to default, in case the user hotswitched from async to something else.
 
 	//Update DMA4 interrupt delay counter
-	if (Cores[0].DMAICounter > 0 && (cClocks - Cores[0].LastClock) > 0)
+	if (Cores[0].DMAICounter > 0 && (*cyclePtr - Cores[0].LastClock) > 0)
 	{
-		const u32 amt = std::min(cClocks - Cores[0].LastClock, (u32)Cores[0].DMAICounter);
+		const u32 amt = std::min(*cyclePtr - Cores[0].LastClock, (u32)Cores[0].DMAICounter);
 		Cores[0].DMAICounter -= amt;
-		Cores[0].LastClock = cClocks;
-		Cores[0].MADR += amt * 2;
+		Cores[0].LastClock = *cyclePtr;
+		Cores[0].MADR += amt / 2;
 		if (Cores[0].DMAICounter <= 0)
 		{
-			if (Cores[0].IsDMARead)
-				Cores[0].FinishDMAread();
+			if (((Cores[0].AutoDMACtrl & 1) != 1))
+			{
+				if (Cores[0].IsDMARead)
+					Cores[0].FinishDMAread();
+				else
+					Cores[0].FinishDMAwrite();
+			}
 
 			for (int i = 0; i < 2; i++)
 			{
@@ -427,27 +432,33 @@ __forceinline void TimeUpdate(u32 cClocks)
 					}
 				}
 			}
-
-			//ConLog("counter set and callback!\n");
-			Cores[0].DMAICounter = 0;
-			if (!SPU2_dummy_callback)
-				spu2DMA4Irq();
-			else
-				SPU2interruptDMA4();
+			if (!Cores[0].DMAICounter)
+			{
+				Cores[0].MADR = Cores[0].TADR;
+				if (!SPU2_dummy_callback)
+					spu2DMA4Irq();
+				else
+					SPU2interruptDMA4();
+			}
 		}
 	}
 
 	//Update DMA7 interrupt delay counter
-	if (Cores[1].DMAICounter > 0 && (cClocks - Cores[1].LastClock) > 0)
+	if (Cores[1].DMAICounter > 0 && (*cyclePtr - Cores[1].LastClock) > 0)
 	{
-		const u32 amt = std::min(cClocks - Cores[1].LastClock, (u32)Cores[1].DMAICounter);
+		const u32 amt = std::min(*cyclePtr - Cores[1].LastClock, (u32)Cores[1].DMAICounter);
 		Cores[1].DMAICounter -= amt;
-		Cores[1].LastClock = cClocks;
-		Cores[1].MADR += amt * 2;
+		Cores[1].LastClock = *cyclePtr;
+		Cores[1].MADR += amt / 2;
 		if (Cores[1].DMAICounter <= 0)
 		{
-			if (Cores[1].IsDMARead)
-				Cores[1].FinishDMAread();
+			if (((Cores[1].AutoDMACtrl & 2) != 2))
+			{
+				if (Cores[1].IsDMARead)
+					Cores[1].FinishDMAread();
+				else
+					Cores[1].FinishDMAwrite();
+			}
 
 			for (int i = 0; i < 2; i++)
 			{
@@ -464,12 +475,14 @@ __forceinline void TimeUpdate(u32 cClocks)
 				}
 			}
 
-			Cores[1].DMAICounter = 0;
-			//ConLog( "* SPU2 > DMA 7 Callback!  %d\n", Cycles );
-			if (!SPU2_dummy_callback)
-				spu2DMA7Irq();
-			else
-				SPU2interruptDMA7();
+			if (!Cores[1].DMAICounter)
+			{
+				Cores[1].MADR = Cores[1].TADR;
+				if (!SPU2_dummy_callback)
+					spu2DMA7Irq();
+				else
+					SPU2interruptDMA7();
+			}
 		}
 	}
 
@@ -1232,9 +1245,7 @@ static void __fastcall RegWrite_Core(u16 value)
 			thiscore.Mute = 0;
 			//thiscore.CoreEnabled=(value>>15) & 0x01; //1 bit
 			// no clue
-			if (value >> 15)
-				thiscore.Regs.STATX = 0;
-			thiscore.Regs.ATTR = value & 0x7fff;
+			thiscore.Regs.ATTR = value & 0xffff;
 
 			if (fxenable && !thiscore.FxEnable && (thiscore.EffectsStartA != thiscore.ExtEffectsStartA || thiscore.EffectsEndA != thiscore.ExtEffectsEndA))
 			{
@@ -1244,11 +1255,10 @@ static void __fastcall RegWrite_Core(u16 value)
 				thiscore.RevBuffers.NeedsUpdated = true;
 			}
 
-			if (oldDmaMode != thiscore.DmaMode)
-			{
-				// FIXME... maybe: if this mode was cleared in the middle of a DMA, should we interrupt it?
-				thiscore.Regs.STATX &= ~0x400; // ready to transfer
-			}
+			if (!thiscore.DmaMode)
+				thiscore.Regs.STATX &= ~0x80;
+			else if(!oldDmaMode)
+				thiscore.Regs.STATX |= 0x80;
 
 			if (value & 0x000E)
 			{
