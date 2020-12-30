@@ -37,6 +37,8 @@ If you prefer Chocolatey or using the installer, consult pandoc's official docum
 
 Run the following, this assumes you have access to bash, either by virtue of running on linux or through something like `git-bash` on Windows.
 
+You'll likely want to update the tag for documentation source links in all markdown file's metadata block, this is not currently scripted at the time of writing.
+
 ```bash
 > ./gen-docs.sh
 ```

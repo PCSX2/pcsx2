@@ -1,17 +1,11 @@
-# GameDB Documentation
+---
+title: "PCSX2 - GameDB Documentation"
+date: "2020"
+footer-left: "[Document Source](https://github.com/PCSX2/pcsx2/blob/v1.6.0/pcsx2/Docs/GameIndex.md)"
+urlcolor: "cyan"
+...
 
-- [YAML Game Format](#yaml-game-format)
-- [A Note on Case Sensitivity](#a-note-on-case-sensitivity)
-- [Rounding Modes](#rounding-modes)
-  - [Options](#options)
-- [Clamping Modes](#clamping-modes)
-  - [Options](#options-1)
-- [Game Fixes](#game-fixes)
-  - [Options](#options-2)
-- [SpeedHacks](#speedhacks)
-  - [Options](#options-3)
-- [Memory Card Filter Override](#memory-card-filter-override)
-- [Patches](#patches)
+# GameDB Documentation
 
 ## YAML Game Format
 
