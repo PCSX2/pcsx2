@@ -37,8 +37,6 @@ If you prefer Chocolatey or using the installer, consult pandoc's official docum
 
 Run the following, this assumes you have access to bash, either by virtue of running on linux or through something like `git-bash` on Windows.
 
-You'll likely want to update the tag for documentation source links in all markdown file's metadata block, this is not currently scripted at the time of writing.
-
 ```bash
 > ./gen-docs.sh
 ```
@@ -48,5 +46,3 @@ You'll likely want to update the tag for documentation source links in all markd
 ### Customizing Output
 
 For generating the PDF's this popular template is used and has many features that could be useful https://github.com/Wandmalfarbe/pandoc-latex-template#usage reference it's documentation to take advantage of those if desired.
-
-TODO commit with +x `git update-index --chmod=+x .\gen-docs.sh`

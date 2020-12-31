@@ -1,7 +1,7 @@
 ---
 title: "PCSX2 - Configuration Guide"
 date: "2020"
-footer-left: "[Document Source](https://github.com/PCSX2/pcsx2/blob/v1.6.0/pcsx2/Docs/Configuration_Guide/Configuration_Guide.md)"
+footer-left: "[Document Source](https://github.com/PCSX2/pcsx2/blob/{LATEST-GIT-TAG}/pcsx2/Docs/Configuration_Guide/Configuration_Guide.md)"
 urlcolor: "cyan"
 ...
 
