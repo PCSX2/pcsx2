@@ -30,6 +30,10 @@
 #include "Recording/InputRecording.h"
 #endif
 
+#ifdef WIN32
+#include "DiscordSDK/DiscordSDK.h"
+#endif
+
 #include <wx/cmdline.h>
 #include <wx/intl.h>
 #include <wx/stdpaths.h>
@@ -83,6 +87,10 @@ void Pcsx2App::OpenMainFrame()
 	m_id_NewRecordingFrame = newRecordingFrame->GetId();
 	if (g_Conf->EmuOptions.EnableRecordingTools)
 		g_InputRecording.InitVirtualPadWindows(mainFrame);
+#endif
+
+#ifdef WIN32
+	InitDiscordSDK();
 #endif
 
 	if (g_Conf->EmuOptions.Debugger.ShowDebuggerOnStart)

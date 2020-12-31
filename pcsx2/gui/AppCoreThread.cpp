@@ -36,6 +36,7 @@
 #include "R5900Exceptions.h"
 #include "Sio.h"
 #ifdef _WIN32
+#include "DiscordSDK/DiscordSDK.h"
 #include "PAD/Windows/PAD.h"
 #else
 #include "PAD/Linux/PAD.h"
@@ -511,6 +512,10 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	consoleTitle += L" [" + gameCRC.MakeUpper() + L"]" + gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
 	if (ingame)
 		Console.SetTitle(consoleTitle);
+
+#ifdef WIN32
+	UpdateDiscordSDK(ingame ? gameName.ToStdString() : "In the PS2 BIOS", gameSerial.ToStdString());
+#endif
 
 	gsUpdateFrequency(fixup);
 }

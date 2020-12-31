@@ -31,6 +31,7 @@
 #include "DEV9/DEV9.h"
 #include "USB/USB.h"
 #ifdef _WIN32
+#include "DiscordSDK/DiscordSDK.h"
 #include "PAD/Windows/PAD.h"
 #else
 #include "PAD/Linux/PAD.h"
@@ -252,6 +253,9 @@ void SysCoreThread::VsyncInThread()
 {
 	ApplyLoadedPatches(PPT_CONTINUOUSLY);
 	ApplyLoadedPatches(PPT_COMBINED_0_1);
+#ifdef WIN32
+	CallbackDiscordSDK();
+#endif
 }
 
 void SysCoreThread::GameStartingInThread()

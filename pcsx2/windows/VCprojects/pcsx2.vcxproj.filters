@@ -217,6 +217,9 @@
     <Filter Include="System\Ps2\PAD">
       <UniqueIdentifier>{e1cbcaf6-9f65-4f14-9e89-27dd0f10e047}</UniqueIdentifier>
     </Filter>
+    <Filter Include="AppHost\DiscordSDK">
+      <UniqueIdentifier>{fa2d0e44-58b9-475a-aed6-0b9c62687efe}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -1265,6 +1268,9 @@
     <ClCompile Include="..\..\PAD\Windows\PADRawInput.cpp">
       <Filter>System\Ps2\PAD</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\DiscordSDK\DiscordSDK.cpp">
+      <Filter>AppHost\DiscordSDK</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -2025,6 +2031,9 @@
     </ClInclude>
     <ClInclude Include="..\..\PAD\Windows\resource_pad.h">
       <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DiscordSDK\DiscordSDK.h">
+      <Filter>AppHost\DiscordSDK</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
