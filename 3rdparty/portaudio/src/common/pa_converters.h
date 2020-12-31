@@ -1,7 +1,7 @@
 #ifndef PA_CONVERTERS_H
 #define PA_CONVERTERS_H
 /*
- * $Id: pa_converters.h 1097 2006-08-26 08:27:53Z rossb $
+ * $Id$
  * Portable Audio I/O Library sample conversion mechanism
  *
  * Based on the Open Source API proposed by Ross Bencina
@@ -59,7 +59,7 @@ struct PaUtilTriangularDitherGenerator;
 
 /** Choose an available sample format which is most appropriate for
  representing the requested format. If the requested format is not available
- higher quality formats are considered before lower quality formates.
+ higher quality formats are considered before lower quality formats.
  @param availableFormats A variable containing the logical OR of all available
  formats.
  @param format The desired format.
@@ -211,7 +211,7 @@ typedef struct{
     PaUtil_SelectConverter() uses this table to lookup the appropriate
     conversion functions. The fields of this structure are initialized
     with default conversion functions. Fields may be NULL, indicating that
-    no conversion function is available. User code may substitue optimised
+    no conversion function is available. User code may substitute optimised
     conversion functions by assigning different function pointers to
     these fields.
 
@@ -242,7 +242,7 @@ typedef struct{
 /** A table of pointers to all required zeroer functions.
     PaUtil_SelectZeroer() uses this table to lookup the appropriate
     conversion functions. The fields of this structure are initialized
-    with default conversion functions. User code may substitue optimised
+    with default conversion functions. User code may substitute optimised
     conversion functions by assigning different function pointers to
     these fields.
 

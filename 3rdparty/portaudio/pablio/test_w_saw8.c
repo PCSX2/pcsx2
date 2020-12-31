@@ -1,5 +1,5 @@
 /*
- * $Id: test_w_saw8.c 1083 2006-08-23 07:30:49Z rossb $
+ * $Id$
  * test_w_saw8.c
  * Generate stereo 8 bit sawtooth waveforms.
  *
@@ -105,7 +105,7 @@ int main(void)
     return 0;
 
 error:
-    fprintf( stderr, "An error occured while using PABLIO\n" );
+    fprintf( stderr, "An error occurred while using PABLIO\n" );
     fprintf( stderr, "Error number: %d\n", err );
     fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
     return -1;

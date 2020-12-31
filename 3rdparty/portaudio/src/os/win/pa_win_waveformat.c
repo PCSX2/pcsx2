@@ -38,6 +38,9 @@
 
 #include <windows.h>
 #include <mmsystem.h>
+#if defined(WINAPI_FAMILY) && (WINAPI_FAMILY == WINAPI_FAMILY_APP)
+    #include <mmreg.h> /* for WAVEFORMATEX */
+#endif
 
 #include "portaudio.h"
 #include "pa_win_waveformat.h"
@@ -46,6 +49,7 @@
 #if !defined(WAVE_FORMAT_EXTENSIBLE)
 #define  WAVE_FORMAT_EXTENSIBLE         0xFFFE
 #endif
+
 
 static GUID pawin_ksDataFormatSubtypeGuidBase = 
 	{ (USHORT)(WAVE_FORMAT_PCM), 0x0000, 0x0010, 0x80, 0x00, 0x00, 0xaa, 0x00, 0x38, 0x9b, 0x71 };
@@ -94,14 +98,15 @@ void PaWin_InitializeWaveFormatExtensible( PaWinWaveFormat *waveFormat,
 	waveFormatEx->wBitsPerSample = bytesPerSample * 8;
 	waveFormatEx->cbSize = 22;
 
-	*((WORD*)&waveFormat->fields[PAWIN_INDEXOF_WVALIDBITSPERSAMPLE]) =
-			waveFormatEx->wBitsPerSample;
+    memcpy(&waveFormat->fields[PAWIN_INDEXOF_WVALIDBITSPERSAMPLE],
+        &waveFormatEx->wBitsPerSample, sizeof(WORD));
 
-	*((DWORD*)&waveFormat->fields[PAWIN_INDEXOF_DWCHANNELMASK]) = channelMask;
-		
+    memcpy(&waveFormat->fields[PAWIN_INDEXOF_DWCHANNELMASK],
+        &channelMask, sizeof(DWORD));
+
     guid = pawin_ksDataFormatSubtypeGuidBase;
     guid.Data1 = (USHORT)waveFormatTag;
-    *((GUID*)&waveFormat->fields[PAWIN_INDEXOF_SUBFORMAT]) = guid;
+    memcpy(&waveFormat->fields[PAWIN_INDEXOF_SUBFORMAT], &guid, sizeof(GUID));
 }
 
 PaWinWaveFormatChannelMask PaWin_DefaultChannelMask( int numChannels )
@@ -129,7 +134,7 @@ PaWinWaveFormatChannelMask PaWin_DefaultChannelMask( int numChannels )
         /* case 7: */
 		case 8:
             /* RoBi: PAWIN_SPEAKER_7POINT1_SURROUND fits normal surround sound setups better than PAWIN_SPEAKER_7POINT1, f.i. NVidia HDMI Audio
-               output is silent on channels 5&6 with NVidia drivers, and channel 7&8 with Micrsoft HD Audio driver using PAWIN_SPEAKER_7POINT1. 
+               output is silent on channels 5&6 with NVidia drivers, and channel 7&8 with Microsoft HD Audio driver using PAWIN_SPEAKER_7POINT1. 
                With PAWIN_SPEAKER_7POINT1_SURROUND both setups work OK. */
 			return PAWIN_SPEAKER_7POINT1_SURROUND;
 	}
@@ -144,7 +149,7 @@ PaWinWaveFormatChannelMask PaWin_DefaultChannelMask( int numChannels )
     /* Note that Alec Rogers proposed the following as an alternate method to 
         generate the default channel mask, however it doesn't seem to be an improvement
         over the above, since some drivers will matrix outputs mapping to non-present
-        speakers accross multiple physical speakers.
+        speakers across multiple physical speakers.
 
         if(nChannels==1) {
             pwfFormat->dwChannelMask = SPEAKER_FRONT_CENTER;

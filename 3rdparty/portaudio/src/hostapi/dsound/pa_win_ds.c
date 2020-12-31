@@ -1,5 +1,5 @@
 /*
- * $Id: pa_win_ds.c 1945 2015-01-21 06:24:32Z rbencina $
+ * $Id$
  * Portable Audio I/O Library DirectSound implementation
  *
  * Authors: Phil Burk, Robert Marsanyi & Ross Bencina
@@ -58,7 +58,7 @@
 
 
 /*
-  Use the earliest version of DX required, no need to polute the namespace
+  Use the earliest version of DX required, no need to pollute the namespace
 */
 #ifdef PAWIN_USE_DIRECTSOUNDFULLDUPLEXCREATE
 #define DIRECTSOUND_VERSION 0x0800
@@ -408,16 +408,6 @@ static char *DuplicateDeviceNameString( PaUtilAllocationGroup *allocations, cons
     
     if( src != NULL )
     {
-#if !defined(_UNICODE) && !defined(UNICODE)
-        size_t len = WideCharToMultiByte(CP_ACP, 0, src, -1, NULL, 0, NULL, NULL);
-
-        result = (char*)PaUtil_GroupAllocateMemory( allocations, (long)(len + 1) );
-        if( result ) {
-            if (WideCharToMultiByte(CP_ACP, 0, src, -1, result, (int)len, NULL, NULL) == 0) {
-                result = 0;
-            }
-        }
-#else
         size_t len = WideCharToMultiByte(CP_UTF8, 0, src, -1, NULL, 0, NULL, NULL);
 
         result = (char*)PaUtil_GroupAllocateMemory( allocations, (long)(len + 1) );
@@ -426,7 +416,6 @@ static char *DuplicateDeviceNameString( PaUtilAllocationGroup *allocations, cons
                 result = 0;
             }
         }
-#endif
     }
     else
     {
@@ -667,7 +656,7 @@ static GUID pawin_IID_IKsPropertySet =
     property, and the other is using DSPROPERTY_DIRECTSOUNDDEVICE_ENUMERATE.
     I tried both methods and only the second worked. I found two postings on the
     net from people who had the same problem with the first method, so I think the method used here is 
-    more common/likely to work. The probem is that IKsPropertySet_Get returns S_OK
+    more common/likely to work. The problem is that IKsPropertySet_Get returns S_OK
     but the fields of the device description are not filled in.
 
     The mechanism we use works by registering an enumeration callback which is called for 
@@ -757,7 +746,7 @@ static double defaultSampleRateSearchOrder_[] =
 /************************************************************************************
 ** Extract capabilities from an output device, and add it to the device info list
 ** if successful. This function assumes that there is enough room in the
-** device info list to accomodate all entries.
+** device info list to accommodate all entries.
 **
 ** The device will not be added to the device list if any errors are encountered.
 */
@@ -904,6 +893,9 @@ static PaError AddOutputDeviceInfoFromDirectSound(
                             case DSSPEAKER_STEREO:           count = 2; break;
                             case DSSPEAKER_SURROUND:         count = 4; break;
                             case DSSPEAKER_5POINT1:          count = 6; break;
+#ifndef DSSPEAKER_7POINT1
+#define DSSPEAKER_7POINT1 0x00000007
+#endif
                             case DSSPEAKER_7POINT1:          count = 8; break;
 #ifndef DSSPEAKER_7POINT1_SURROUND
 #define DSSPEAKER_7POINT1_SURROUND 0x00000008
@@ -1011,7 +1003,7 @@ static PaError AddOutputDeviceInfoFromDirectSound(
 /************************************************************************************
 ** Extract capabilities from an input device, and add it to the device info list
 ** if successful. This function assumes that there is enough room in the
-** device info list to accomodate all entries.
+** device info list to accommodate all entries.
 **
 ** The device will not be added to the device list if any errors are encountered.
 */
@@ -2136,7 +2128,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
         }
         else
         {
-            CalculateBufferSettings( &stream->hostBufferSizeFrames, &pollingPeriodFrames,
+            CalculateBufferSettings( (unsigned long*)&stream->hostBufferSizeFrames, &pollingPeriodFrames,
                     /* isFullDuplex = */ (inputParameters && outputParameters),
                     suggestedInputLatencyFrames,
                     suggestedOutputLatencyFrames, 
@@ -2252,7 +2244,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
 
         /*  create half duplex buffers. also used for full-duplex streams which didn't 
             succeed when using the full duplex API. that could happen because
-            DX8 or greater isnt installed, the i/o devices aren't the same 
+            DX8 or greater isn't installed, the i/o devices aren't the same 
             physical device. etc.
         */
 
@@ -2795,7 +2787,7 @@ PA_THREAD_FUNC ProcessingThreadProc( void *pArg )
 
 #else
 
-    /* tick using WaitForSingleObject timout */
+    /* tick using WaitForSingleObject timeout */
     while ( WaitForSingleObject( stream->processingCompleted, timerPeriodMs ) == WAIT_TIMEOUT )
     {
         TimerCallback( 0, 0, (DWORD_PTR)pArg, 0, 0 );

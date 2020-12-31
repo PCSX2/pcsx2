@@ -8,16 +8,16 @@ The library provides functions that allow your software to acquire and output re
 
 @section start_here Start here
 
-- @ref api_overview<br>
+- @ref api_overview <br>
 A top-down view of the PortAudio API, its capabilities, functions and data structures
 
-- @ref tutorial_start<br> 
+- @ref tutorial_start <br> 
 Get started writing code with PortAudio tutorials
 
 - @ref examples_src "Examples"<br>
 Simple example programs demonstrating PortAudio usage
 
-- @ref License<br>
+- @ref License <br>
 PortAudio is licenced under the MIT Expat open source licence. We make a non-binding request for you to contribute your changes back to the project.
 
 
@@ -34,12 +34,9 @@ Documentation for non-portable platform-specific host API extensions
 
 - <a href="http://www.portaudio.com">The PortAudio website</a>
 
-- <a href="http://music.columbia.edu/mailman/listinfo/portaudio/">Our mailing list for users and developers</a><br>
+- <a href="http://www.portaudio.com/contacts.html">Our mailing list for users and developers</a><br>
 
-- <a href="http://www.assembla.com/spaces/portaudio/wiki">The PortAudio wiki</a>
-
-- @ref java_binding<br>
-Documentation for the Java JNI interface to PortAudio
+- <a href="https://github.com/PortAudio/portaudio/wiki">The PortAudio wiki</a>
 
 @section developer_resources Developer Resources
 
@@ -47,12 +44,16 @@ Documentation for the Java JNI interface to PortAudio
 - @ref srcguide
 @endif
 
-- <a href="http://www.assembla.com/spaces/portaudio/wiki">Our wiki and issue tracking system</a>
+- <a href="https://github.com/PortAudio/portaudio/">Our repository on GitHub</a>
 
-- <a href="http://www.portaudio.com/docs/proposals/014-StyleGuide.html">Coding guidelines</a>
+- <a href="https://github.com/PortAudio/portaudio/wiki/DeveloperGuidelines">Developer guidelines</a>
 
-If you're interested in helping out with PortAudio development we're more than happy for you to be involved. Just drop by the PortAudio mailing list and ask how you can help. Or <a href="http://www.assembla.com/spaces/portaudio/tickets">check out the starter tickets</a>.
+- <a href="https://github.com/PortAudio/portaudio/wiki/ImplementationStyleGuidelines">Implementation style guidelines</a>
 
+If you're interested in helping out with PortAudio development we're more than happy for you to be involved.
+Just drop by the PortAudio mailing list and ask how you can help.
+Or check out these <a href="https://github.com/PortAudio/portaudio/issues?q=is%3Aopen+is%3Aissue+label%3A%22good+first+issue%22">
+recommended starter issues</a>.
 
 @section older_api_versions Older API Versions
 

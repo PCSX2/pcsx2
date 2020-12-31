@@ -55,7 +55,7 @@ extern "C"
 */
 typedef struct PaWinUtilComInitializationResult{
     int state;
-    int initializingThreadId;
+    DWORD initializingThreadId;
 } PaWinUtilComInitializationResult;
 
 

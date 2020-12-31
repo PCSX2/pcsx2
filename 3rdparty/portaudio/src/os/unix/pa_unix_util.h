@@ -1,5 +1,5 @@
 /*
- * $Id: pa_unix_util.h 1241 2007-07-23 20:08:31Z aknudsen $
+ * $Id$
  * Portable Audio I/O Library
  * UNIX platform-specific support functions
  *
@@ -157,7 +157,7 @@ typedef struct
 
 /** Initialize global threading state.
  */
-PaError PaUnixThreading_Initialize();
+PaError PaUnixThreading_Initialize( void );
 
 /** Perish, passing on eventual error code.
  *
@@ -182,7 +182,7 @@ PaError PaUnixThreading_Initialize();
 /** Spawn a thread.
  *
  * Intended for spawning the callback thread from the main thread. This function can even block (for a certain
- * time or indefinitely) untill notified by the callback thread (using PaUnixThread_NotifyParent), which can be
+ * time or indefinitely) until notified by the callback thread (using PaUnixThread_NotifyParent), which can be
  * useful in order to make sure that callback has commenced before returning from Pa_StartStream.
  * @param threadFunc: The function to be executed in the child thread.
  * @param waitForChild: If not 0, wait for child thread to call PaUnixThread_NotifyParent. Less than 0 means
@@ -195,7 +195,7 @@ PaError PaUnixThread_New( PaUnixThread* self, void* (*threadFunc)( void* ), void
 
 /** Terminate thread.
  *
- * @param wait: If true, request that background thread stop and wait untill it does, else cancel it.
+ * @param wait: If true, request that background thread stop and wait until it does, else cancel it.
  * @param exitResult: If non-null this will upon return contain the exit status of the thread.
  */
 PaError PaUnixThread_Terminate( PaUnixThread* self, int wait, PaError* exitResult );

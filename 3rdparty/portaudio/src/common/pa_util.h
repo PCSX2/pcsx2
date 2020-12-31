@@ -1,7 +1,7 @@
 #ifndef PA_UTIL_H
 #define PA_UTIL_H
 /*
- * $Id: pa_util.h 1584 2011-02-02 18:58:17Z rossb $
+ * $Id$
  * Portable Audio I/O Library implementation utilities header
  * common implementation utilities and interfaces
  *
@@ -65,7 +65,7 @@ struct PaUtilHostApiRepresentation;
  host api specific extension functions which aren't passed a rep pointer
  by pa_front.c.
 
- @param hostApi A pointer to a host API represenation pointer. Apon success
+ @param hostApi A pointer to a host API representation pointer. Upon success
  this will receive the requested representation pointer.
 
  @param type A valid host API type identifier.
@@ -79,7 +79,7 @@ PaError PaUtil_GetHostApiRepresentation( struct PaUtilHostApiRepresentation **ho
 
 
 /** Convert a PortAudio device index into a host API specific device index.
- @param hostApiDevice Pointer to a device index, on success this will recieve the
+ @param hostApiDevice Pointer to a device index, on success this will receive the
  converted device index value.
  @param device The PortAudio device index to convert.
  @param hostApi The host api which the index should be converted for.
@@ -121,7 +121,7 @@ void PaUtil_SetLastHostErrorInfo( PaHostApiTypeId hostApiType, long errorCode,
 void *PaUtil_AllocateMemory( long size );
 
 
-/** Realease block if non-NULL. block may be NULL */
+/** Release block if non-NULL. block may be NULL */
 void PaUtil_FreeMemory( void *block );
 
 

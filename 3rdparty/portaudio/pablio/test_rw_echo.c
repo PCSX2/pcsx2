@@ -1,5 +1,5 @@
 /*
- * $Id: test_rw_echo.c 1083 2006-08-23 07:30:49Z rossb $
+ * $Id$
  * test_rw_echo.c
  * Echo delayed input to output.
  *
@@ -122,7 +122,7 @@ int main(void)
     return 0;
 
 error:
-    fprintf( stderr, "An error occured while using PortAudio\n" );
+    fprintf( stderr, "An error occurred while using PortAudio\n" );
     fprintf( stderr, "Error number: %d\n", err );
     fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
     return -1;

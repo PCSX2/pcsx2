@@ -1,5 +1,5 @@
 /*
- * $Id: pa_stream.c 1339 2008-02-15 07:50:33Z rossb $
+ * $Id$
  * Portable Audio I/O Library
  * stream interface
  *

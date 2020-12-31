@@ -1,7 +1,7 @@
 #ifndef PA_ENDIANNESS_H
 #define PA_ENDIANNESS_H
 /*
- * $Id: pa_endianness.h 1324 2008-01-27 02:03:30Z bjornroche $
+ * $Id$
  * Portable Audio I/O Library current platform endianness macros
  *
  * Based on the Open Source API proposed by Ross Bencina
@@ -54,7 +54,7 @@
  example.
 
  A PA_VALIDATE_ENDIANNESS macro is provided to compare the compile time
- and runtime endiannes and raise an assertion if they don't match.
+ and runtime endianness and raise an assertion if they don't match.
 */
 
 
@@ -65,7 +65,7 @@ extern "C"
 
 /* If this is an apple, we need to do detect endianness this way */
 #if defined(__APPLE__)
-    /* we need to do some endian detection that is sensitive to harware arch */
+    /* we need to do some endian detection that is sensitive to hardware arch */
     #if defined(__LITTLE_ENDIAN__)
        #if !defined( PA_LITTLE_ENDIAN )
           #define PA_LITTLE_ENDIAN
@@ -83,7 +83,7 @@ extern "C"
     #endif
 #else
     /* this is not an apple, so first check the existing defines, and, failing that,
-       detect well-known architechtures. */
+       detect well-known architectures. */
 
     #if defined(PA_LITTLE_ENDIAN) || defined(PA_BIG_ENDIAN)
         /* endianness define has been set externally, such as by autoconf */

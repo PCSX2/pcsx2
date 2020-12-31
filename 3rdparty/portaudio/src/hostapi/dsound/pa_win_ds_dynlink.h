@@ -56,7 +56,7 @@
 #endif
 
 /*
-  Use the earliest version of DX required, no need to polute the namespace
+  Use the earliest version of DX required, no need to pollute the namespace
 */
 #ifdef PAWIN_USE_DIRECTSOUNDFULLDUPLEXCREATE
 #define DIRECTSOUND_VERSION 0x0800

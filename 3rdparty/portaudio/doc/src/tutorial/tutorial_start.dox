@@ -15,11 +15,12 @@ Once you've downloaded PortAudio you'll need to compile it, which of course, dep
    - \ref compile_windows
    - \ref compile_windows_mingw
    - \ref compile_windows_asio_msvc
-   - \ref compile_cmake
  - Mac OS X
    - \ref compile_mac_coreaudio
  - POSIX
    - \ref compile_linux
+
+You can also use CMake to generate project files for PortAudio on Windows, OS X or Linux or include PortAudio easily in your own CMake project. See \ref compile_cmake.
 
 Many platforms with GCC/make can use the simple ./configure && make combination and simply use the resulting libraries in their code.
 
@@ -36,7 +37,9 @@ Below are the steps to writing a PortAudio application using the callback techni
 
 In addition to this "Callback" architecture, V19 also supports a "Blocking I/O" model which uses read and write calls which may be more familiar to non-audio programmers. Note that at this time, not all APIs support this functionality.
 
-In this tutorial, we'll show how to use the callback architecture to play a sawtooth wave. Much of the tutorial is taken from the file paex_saw.c, which is part of the PortAudio distribution. When you're done with this tutorial, you'll be armed with the basic knowledge you need to write an audio program. If you need more sample code, look in the "examples" and "test" directory of the PortAudio distribution. Another great source of info is the portaudio.h Doxygen page, which documents the entire V19 API. Also see the page for <a href="http://www.assembla.com/spaces/portaudio/wiki/Tips">tips on programming PortAudio</a> on the PortAudio wiki.
+In this tutorial, we'll show how to use the callback architecture to play a sawtooth wave. Much of the tutorial is taken from the file paex_saw.c, which is part of the PortAudio distribution. When you're done with this tutorial, you'll be armed with the basic knowledge you need to write an audio program. If you need more sample code, look in the "examples" and "test" directory of the PortAudio distribution. Another great source of info is the portaudio.h Doxygen page, which documents the entire V19 API.
+Also see the page for <a href="https://github.com/PortAudio/portaudio/wiki/Tips">tips on programming PortAudio</a>
+on the PortAudio wiki.
 
 @section tut_start4 Programming Tutorial Contents
 

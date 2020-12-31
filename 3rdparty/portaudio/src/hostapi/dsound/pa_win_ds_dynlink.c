@@ -210,7 +210,7 @@ void PaWinDs_TerminateDSoundEntryPoints(void)
 {
     if( paWinDsDSoundEntryPoints.hInstance_ != NULL )
     {
-        /* ensure that we crash reliably if the entry points arent initialised */
+        /* ensure that we crash reliably if the entry points aren't initialised */
         paWinDsDSoundEntryPoints.DirectSoundCreate = 0;
         paWinDsDSoundEntryPoints.DirectSoundEnumerateW = 0;
         paWinDsDSoundEntryPoints.DirectSoundEnumerateA = 0;

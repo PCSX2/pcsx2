@@ -55,7 +55,7 @@ TODO:
     o- inline dither code
     o- implement Dither only (no-clip) versions
     o- implement int8 and uint8 versions
-    o- test thouroughly
+    o- test thoroughly
 
     o- the packed 24 bit functions could benefit from unrolling and avoiding
         byte and word sized register access.
@@ -116,7 +116,7 @@ TODO:
 
 /*
 	-EMT64/AMD64 uses different asm
-	-VC2005 doesnt allow _WIN64 with inline assembly either!
+	-VC2005 doesn't allow _WIN64 with inline assembly either!
  */
 void PaUtil_InitializeX86PlainConverters( void )
 {

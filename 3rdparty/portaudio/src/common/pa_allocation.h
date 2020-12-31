@@ -1,7 +1,7 @@
 #ifndef PA_ALLOCATION_H
 #define PA_ALLOCATION_H
 /*
- * $Id: pa_allocation.h 1339 2008-02-15 07:50:33Z rossb $
+ * $Id$
  * Portable Audio I/O Library allocation context header
  * memory allocation context for tracking allocation groups
  *
@@ -49,7 +49,7 @@
  of memory which are allocated at the same time (such as during initialization)
  and need to be deallocated at the same time. The allocation group maintains
  a list of allocated blocks, and can free all allocations at once. This
- can be usefull for cleaning up after a partially initialized object fails.
+ can be useful for cleaning up after a partially initialized object fails.
 
  The allocation group implementation is built on top of the lower
  level allocation functions defined in pa_util.h
