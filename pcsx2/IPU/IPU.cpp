@@ -204,6 +204,16 @@ __fi u32 ipuRead32(u32 mem)
 
 	switch (mem)
 	{
+		ipucase(IPU_CMD) : // IPU_CMD
+		{
+			if (ipu_cmd.CMD != SCE_IPU_FDEC && ipu_cmd.CMD != SCE_IPU_VDEC)
+			{
+				if (getBits32((u8*)&ipuRegs.cmd.DATA, 0))
+					ipuRegs.cmd.DATA = BigEndian(ipuRegs.cmd.DATA);
+			}
+			return ipuRegs.cmd.DATA;
+		}
+
 		ipucase(IPU_CTRL): // IPU_CTRL
 		{
 			ipuRegs.ctrl.IFC = g_BP.IFC;
@@ -247,9 +257,17 @@ __fi u64 ipuRead64(u32 mem)
 	switch (mem)
 	{
 		ipucase(IPU_CMD): // IPU_CMD
+		{
+			if (ipu_cmd.CMD != SCE_IPU_FDEC && ipu_cmd.CMD != SCE_IPU_VDEC)
+			{
+				if (getBits32((u8*)&ipuRegs.cmd.DATA, 0))
+					ipuRegs.cmd.DATA = BigEndian(ipuRegs.cmd.DATA);
+			}
+			
 			if (ipuRegs.cmd.DATA & 0xffffff)
 				IPU_LOG("read64: IPU_CMD=BUSY=%x, DATA=%08X", ipuRegs.cmd.BUSY ? 1 : 0, ipuRegs.cmd.DATA);
-			break;
+			return ipuRegs.cmd._u64;
+		}
 
 		ipucase(IPU_CTRL):
 			DevCon.Warning("reading 64bit IPU ctrl");
@@ -980,6 +998,6 @@ __noinline void IPUWorker()
 
 	// success
 	ipuRegs.ctrl.BUSY = 0;
-	ipu_cmd.current = 0xffffffff;
+	//ipu_cmd.current = 0xffffffff;
 	hwIntcIrq(INTC_IPU);
 }
