@@ -308,7 +308,7 @@ void Pcsx2App::PadKeyDispatch( const keyEvent& ev )
 	// outside of the window so the app isn't aware of the current key state.
 	m_kevt.m_shiftDown = wxGetKeyState(WXK_SHIFT);
 	m_kevt.m_controlDown = wxGetKeyState(WXK_CONTROL);
-	m_kevt.m_altDown = wxGetKeyState(WXK_MENU) || wxGetKeyState(WXK_ALT);
+	m_kevt.m_altDown = wxGetKeyState(WXK_ALT);
 
 	m_kevt.m_keyCode = vkey? vkey : ev.key;
 
