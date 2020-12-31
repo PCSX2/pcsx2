@@ -297,6 +297,22 @@ public:
 								PaCallback,
 
 								nullptr);
+
+			if (err == paInvalidSampleRate && SampleRate == 48000)
+			{
+				DevCon.Warning("Failed to create device at 48khz, trying 96khz");
+				SampleRate = 96000;
+				err = Pa_OpenStream(&stream,
+					nullptr, &outParams, SampleRate,
+					SndOutPacketSize,
+					paNoFlag,
+					PaCallback,
+
+					nullptr);
+			}
+
+			if (err == paInvalidSampleRate && SampleRate == 96000) // It didn't work, so lets just put the samplerate back
+				SampleRate = 48000;
 		}
 		else
 		{
@@ -308,6 +324,8 @@ public:
 		}
 		if (err != paNoError)
 		{
+			if(err == paInvalidSampleRate)
+				Console.Warning("Failed to create Port Audio Device %dkhz, Please use Exclusive Mode", SampleRate / 1000);
 			fprintf(stderr, "* SPU2: PortAudio error: %s\n", Pa_GetErrorText(err));
 			Pa_Terminate();
 			return -1;
