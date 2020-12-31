@@ -25,8 +25,7 @@
 #include <gtk/gtk.h>
 #ifdef GDK_WINDOWING_WAYLAND
 #include <gdk/gdkwayland.h>
-#include <wayland-client.h>
-#include <wayland-egl.h>
+#include "wayland-gsdisplay.h"
 #endif
 // undef Xlib macros that conflict with our symbols
 #undef DisableScreenSaver
@@ -91,17 +90,6 @@ protected:
 
 	void UpdateScreensaver();
 };
-
-#if defined(__WXGTK__) && defined(GDK_WINDOWING_WAYLAND)
-// When the GS window handle is a Wayland window,
-// the first entry of pDsp will point to one of these.
-struct PluginDisplayPropertiesWayland {
-	wl_display* display; // NOTE: This display is not owned by this struct.
-	wl_egl_window* egl_window;
-	wl_surface* surface;
-	wl_subsurface* subsurface;
-};
-#endif
 
 // --------------------------------------------------------------------------------------
 //  GSFrame
