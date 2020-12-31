@@ -51,7 +51,7 @@ extern "C" {
     specified device. Returns 0 if the query fails for any reason.
 
     @param wcharDevicePath A system level PnP interface path, supplied as a WCHAR unicode string.
-    Declard as void* to avoid introducing a dependency on wchar_t here.
+    Declared as void* to avoid introducing a dependency on wchar_t here.
 
     @param isInput A flag specifying whether to query for input (non-zero) or output (zero) channels.
 */

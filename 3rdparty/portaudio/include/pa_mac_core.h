@@ -112,20 +112,20 @@ AudioDeviceID PaMacCore_GetStreamOutputDevice( PaStream* s );
  * Returns a statically allocated string with the device's name
  * for the given channel. NULL will be returned on failure.
  *
- * This function's implemenation is not complete!
+ * This function's implementation is not complete!
  *
  * @param device The PortAudio device index.
  * @param channel The channel number who's name is requested.
  * @return a statically allocated string with the name of the device.
  *         Because this string is statically allocated, it must be
- *         coppied if it is to be saved and used by the user after
+ *         copied if it is to be saved and used by the user after
  *         another call to this function.
  *
  */
 const char *PaMacCore_GetChannelName( int device, int channelIndex, bool input );
 
     
-/** Retrieve the range of legal native buffer sizes for the specificed device, in sample frames.
+/** Retrieve the range of legal native buffer sizes for the specified device, in sample frames.
  
  @param device The global index of the PortAudio device about which the query is being made.
  @param minBufferSizeFrames A pointer to the location which will receive the minimum buffer size value.
@@ -158,7 +158,7 @@ PaError PaMacCore_GetBufferSizeRange( PaDeviceIndex device,
  * are supported by the device. */
 #define paMacCoreFailIfConversionRequired (0x02)
 
-/** These flags set the SR conversion quality, if required. The wierd ordering
+/** These flags set the SR conversion quality, if required. The weird ordering
  * allows Maximum Quality to be the default.*/
 #define paMacCoreConversionQualityMin    (0x0100)
 #define paMacCoreConversionQualityMedium (0x0200)

@@ -81,7 +81,7 @@
 #define INPUT_ELEMENT  (1)
 #define OUTPUT_ELEMENT (0)
 
-/* Normal level of debugging: fine for most apps that don't mind the occational warning being printf'ed */
+/* Normal level of debugging: fine for most apps that don't mind the occasional warning being printf'ed */
 /*
  */
 #define MAC_CORE_DEBUG
@@ -91,7 +91,7 @@
 # define DBUG(MSG)
 #endif
 
-/* Verbose Debugging: useful for developement */
+/* Verbose Debugging: useful for development */
 /*
 #define MAC_CORE_VERBOSE_DEBUG
 */
@@ -183,7 +183,7 @@ PaError setBestSampleRateForDevice( const AudioDeviceID device,
    is available, it uses the smallest available size.
    actualFramesPerBuffer will be set to the actual value on successful return.
    OK to pass NULL to actualFramesPerBuffer.
-   The logic is very simmilar too setBestSampleRate only failure here is
+   The logic is very similar too setBestSampleRate only failure here is
    not usually catastrophic.
 */
 PaError setBestFramesPerBuffer( const AudioDeviceID device,
@@ -206,9 +206,9 @@ OSStatus xrunCallback(
     void* inClientData ) ;
 
 /** returns zero on success or a unix style error code. */
-int initializeXRunListenerList();
+int initializeXRunListenerList( void );
 /** returns zero on success or a unix style error code. */
-int destroyXRunListenerList();
+int destroyXRunListenerList( void );
 
 /**Returns the list, so that it can be passed to CorAudio.*/
 void *addToXRunListenerList( void *stream );

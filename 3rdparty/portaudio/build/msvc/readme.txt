@@ -24,7 +24,7 @@ This DLL contains all 5 current Win32 PA APIS (MME/DS/ASIO/WASAPI/WDMKS)
   Service pack 5:         
      Latest known URL:  
      http://msdn2.microsoft.com/en-us/vstudio/aa718363.aspx 
-	 Yes there EXISTS a service pack 6 , but the processor pack (below) isnt compatible with it.
+	 Yes there EXISTS a service pack 6 , but the processor pack (below) isn't compatible with it.
 	 
   Processor Pack(only works with above SP5)
      Latest known URL:

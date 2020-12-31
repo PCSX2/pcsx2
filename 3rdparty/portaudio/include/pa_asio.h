@@ -1,7 +1,7 @@
 #ifndef PA_ASIO_H
 #define PA_ASIO_H
 /*
- * $Id: pa_asio.h 1667 2011-05-02 15:49:20Z rossb $
+ * $Id$
  * PortAudio Portable Real-Time Audio Library
  * ASIO specific extensions
  *
@@ -52,7 +52,7 @@ extern "C"
 #endif /* __cplusplus */
 
 
-/** Retrieve legal native buffer sizes for the specificed device, in sample frames.
+/** Retrieve legal native buffer sizes for the specified device, in sample frames.
 
  @param device The global index of the device about which the query is being made.
  @param minBufferSizeFrames A pointer to the location which will receive the minimum buffer size value.
@@ -112,7 +112,7 @@ PaError PaAsio_GetOutputChannelName( PaDeviceIndex device, int channelIndex,
  @param stream The stream to operate on.
  @param sampleRate The new sample rate. 
 
- Note that this function may fail if the stream is alredy running and the 
+ Note that this function may fail if the stream is already running and the 
  ASIO driver does not support switching the sample rate of a running stream.
 
  Returns paIncompatibleStreamHostApi if stream is not a paASIO stream.

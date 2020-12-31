@@ -1,5 +1,5 @@
 /*
- * $Id: pa_converters.c 1748 2011-09-01 22:08:32Z philburk $
+ * $Id$
  * Portable Audio I/O Library sample conversion mechanism
  *
  * Based on the Open Source API proposed by Ross Bencina
@@ -1325,7 +1325,7 @@ static void Int16_To_Float32(
 
     while( count-- )
     {
-        float samp = *src * const_1_div_32768_; /* FIXME: i'm concerned about this being asymetrical with float->int16 -rb */
+        float samp = *src * const_1_div_32768_; /* FIXME: i'm concerned about this being asymmetrical with float->int16 -rb */
         *dest = samp;
 
         src += sourceStride;

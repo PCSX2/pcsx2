@@ -204,13 +204,13 @@ case "${host_os}" in
 
         AC_DEFINE(PA_USE_COREAUDIO,1)
 
-        CFLAGS="$CFLAGS -I\$(top_srcdir)/src/os/unix -Werror"
+        CFLAGS="$CFLAGS -I\$(top_srcdir)/src/os/unix -Wno-deprecated -Werror"
         LIBS="-framework CoreAudio -framework AudioToolbox -framework AudioUnit -framework Carbon"
 
         if test "x$enable_mac_universal" = "xyes" ; then
            case `xcodebuild -version | sed -n 's/Xcode \(.*\)/\1/p'` in
 
-           [12]*|3.0|3.1)
+           3.0|3.1)
               dnl In pre-3.2 versions of Xcode, xcodebuild doesn't
               dnl support -sdk, so we can't use that to look for
               dnl SDKs.  However, in those versions of Xcode, the
@@ -249,15 +249,33 @@ case "${host_os}" in
               elif xcodebuild -version -sdk macosx10.9 Path >/dev/null 2>&1 ; then
                  mac_version_min="-mmacosx-version-min=10.4"
                  mac_sysroot="-isysroot `xcodebuild -version -sdk macosx10.9 Path`"
+              elif xcodebuild -version -sdk macosx10.10 Path >/dev/null 2>&1 ; then
+                 mac_version_min="-mmacosx-version-min=10.4"
+                 mac_sysroot="-isysroot `xcodebuild -version -sdk macosx10.10 Path`"
+              elif xcodebuild -version -sdk macosx10.11 Path >/dev/null 2>&1 ; then
+                 mac_version_min="-mmacosx-version-min=10.4"
+                 mac_sysroot="-isysroot `xcodebuild -version -sdk macosx10.11 Path`"
+              elif xcodebuild -version -sdk macosx10.12 Path >/dev/null 2>&1 ; then
+                 mac_version_min="-mmacosx-version-min=10.4"
+                 mac_sysroot="-isysroot `xcodebuild -version -sdk macosx10.12 Path`"
+              elif xcodebuild -version -sdk macosx10.13 Path >/dev/null 2>&1 ; then
+                 mac_version_min="-mmacosx-version-min=10.4"
+                 mac_sysroot="-isysroot `xcodebuild -version -sdk macosx10.13 Path`"
+              elif xcodebuild -version -sdk macosx10.14 Path >/dev/null 2>&1 ; then
+                 mac_version_min="-mmacosx-version-min=10.4"
+                 mac_sysroot="-isysroot `xcodebuild -version -sdk macosx10.14 Path`"
+              elif xcodebuild -version -sdk macosx10.15 Path >/dev/null 2>&1 ; then
+                 mac_version_min="-mmacosx-version-min=10.4"
+                 mac_sysroot="-isysroot `xcodebuild -version -sdk macosx10.15 Path`"
               else
-                 AC_MSG_ERROR([Couldn't find 10.5, 10.6, 10.7, 10.8 or 10.9 SDK])
+                 AC_MSG_ERROR([Could not find 10.5 to 10.13 SDK.])
               fi
            esac
 
            dnl Pick which architectures to build for based on what
            dnl the compiler supports.
            mac_arches=""
-           for arch in i386 x86_64 ppc ppc64
+           for arch in x86_64
            do
               save_CFLAGS="$CFLAGS"
               CFLAGS="$CFLAGS -arch $arch"
@@ -307,18 +325,18 @@ case "${host_os}" in
             DLL_LIBS="${DLL_LIBS} -lwinmm -lm -lole32 -luuid"
             CFLAGS="$CFLAGS -ffast-math -fomit-frame-pointer -I\$(top_srcdir)/src/hostapi/asio -I$ASIODIR/host/pc -I$ASIODIR/common -I$ASIODIR/host -UPA_USE_ASIO -DPA_USE_ASIO=1 -DWINDOWS"
 
-            dnl Setting the windows version flags below resolves a conflict between Interlocked* 
-            dnl definitions in mingw winbase.h and Interlocked* hacks in ASIO SDK combase.h 
+            dnl Setting the windows version flags below resolves a conflict between Interlocked*
+            dnl definitions in mingw winbase.h and Interlocked* hacks in ASIO SDK combase.h
             dnl combase.h is included by asiodrvr.h
-            dnl PortAudio does not actually require Win XP (winver 501) APIs 
+            dnl PortAudio does not actually require Win XP (winver 501) APIs
             CFLAGS="$CFLAGS -D_WIN32_WINNT=0x0501 -DWINVER=0x0501"
-            
+
             CXXFLAGS="$CFLAGS"
         fi
 
         if [[ "x$with_wdmks" = "xyes" ]]; then
             DXDIR="$with_dxdir"
-            add_objects src/hostapi/wdmks/pa_win_wdmks.o src/common/pa_ringbuffer.o src/os/win/pa_win_hostapis.o src/os/win/pa_win_util.o src/os/win/pa_win_wdmks_util.o src/os/win/pa_win_waveformat.o
+            add_objects src/hostapi/wdmks/pa_win_wdmks.o src/common/pa_ringbuffer.o src/os/win/pa_win_hostapis.o src/os/win/pa_win_util.o src/os/win/pa_win_wdmks_utils.o src/os/win/pa_win_waveformat.o
             LIBS="${LIBS} -lwinmm -lm -luuid -lsetupapi -lole32"
             DLL_LIBS="${DLL_LIBS} -lwinmm -lm -L$DXDIR/lib -luuid -lsetupapi -lole32"
             #VC98="\"/c/Program Files/Microsoft Visual Studio/VC98/Include\""
@@ -337,7 +355,7 @@ case "${host_os}" in
             add_objects src/hostapi/wasapi/pa_win_wasapi.o src/common/pa_ringbuffer.o src/os/win/pa_win_hostapis.o src/os/win/pa_win_util.o src/os/win/pa_win_coinitialize.o src/os/win/pa_win_waveformat.o
             LIBS="${LIBS} -lwinmm -lm -lole32 -luuid"
             DLL_LIBS="${DLL_LIBS} -lwinmm -lole32"
-            CFLAGS="$CFLAGS -I\$(top_srcdir)/src/hostapi/wasapi/mingw-include -UPA_USE_WASAPI -DPA_USE_WASAPI=1"
+            CFLAGS="$CFLAGS -UPA_USE_WASAPI -DPA_USE_WASAPI=1"
         fi
         ;;
 
@@ -371,7 +389,7 @@ case "${host_os}" in
         dnl The _REENTRANT option for pthread safety. Perhaps not necessary but it 'll do no harm.
         dnl
         THREAD_CFLAGS="-D_REENTRANT"
-    
+
         OTHER_OBJS="pa_sgi/pa_sgi.o src/os/unix/pa_unix_hostapis.o src/os/unix/pa_unix_util.o"
 
         dnl SGI books say -lpthread should be the last of the libs mentioned.
@@ -385,7 +403,7 @@ case "${host_os}" in
         dnl Unix configuration
 
         CFLAGS="$CFLAGS -I\$(top_srcdir)/src/os/unix"
-        
+
         AC_CHECK_LIB(pthread, pthread_create,[have_pthread="yes"],
                 AC_MSG_ERROR([libpthread not found!]))
 

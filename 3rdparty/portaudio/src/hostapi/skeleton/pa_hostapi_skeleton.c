@@ -1,5 +1,5 @@
 /*
- * $Id: pa_hostapi_skeleton.c 1668 2011-05-02 17:07:11Z rossb $
+ * $Id$
  * Portable Audio I/O Library skeleton implementation
  * demonstrates how to use the common functions to implement support
  * for a host API
@@ -413,7 +413,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
     else
     {
         inputChannelCount = 0;
-        inputSampleFormat = hostInputSampleFormat = paInt16; /* Surpress 'uninitialised var' warnings. */
+        inputSampleFormat = hostInputSampleFormat = paInt16; /* Suppress 'uninitialised var' warnings. */
     }
 
     if( outputParameters )
@@ -442,7 +442,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
     else
     {
         outputChannelCount = 0;
-        outputSampleFormat = hostOutputSampleFormat = paInt16; /* Surpress 'uninitialized var' warnings. */
+        outputSampleFormat = hostOutputSampleFormat = paInt16; /* Suppress 'uninitialized var' warnings. */
     }
 
     /*

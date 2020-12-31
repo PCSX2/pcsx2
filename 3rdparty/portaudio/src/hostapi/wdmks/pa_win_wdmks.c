@@ -1,5 +1,5 @@
 /*
-* $Id: pa_win_wdmks.c 1945 2015-01-21 06:24:32Z rbencina $
+* $Id$
 * PortAudio Windows WDM-KS interface
 *
 * Author: Andrew Baldwin, Robert Bielik (WaveRT)
@@ -94,7 +94,9 @@ of a device for the duration of active stream using those devices
 #endif
 
 #include <windows.h>
+#ifndef __GNUC__ /* Fix for ticket #257: MinGW-w64: Inclusion of <winioctl.h> triggers multiple redefinition errors. */
 #include <winioctl.h>
+#endif
 #include <process.h>
 
 #include <math.h>
@@ -161,9 +163,15 @@ Default is to use the pin category.
 #define DYNAMIC_GUID(data) {data}
 //#define _NTRTL_ /* Turn off default definition of DEFINE_GUIDEX */
 //#undef DEFINE_GUID
-//#define DEFINE_GUID(n,data) EXTERN_C const GUID n = {data}
-//#define DEFINE_GUID_THUNK(n,data) DEFINE_GUID(n,data)
-//#define DEFINE_GUIDEX(n) DEFINE_GUID_THUNK(n, STATIC_##n)
+//#ifdef __clang__ /* clang-cl: avoid too many arguments error */
+//  #define DEFINE_GUID(n, ...) EXTERN_C const GUID n = {__VA_ARGS__}
+//  #define DEFINE_GUID_THUNK(n, ...) DEFINE_GUID(n, __VA_ARGS__)
+//  #define DEFINE_GUIDEX(n) DEFINE_GUID_THUNK(n, STATIC_##n)
+//#else
+//  #define DEFINE_GUID(n, data) EXTERN_C const GUID n = {data}
+//  #define DEFINE_GUID_THUNK(n, data) DEFINE_GUID(n, data)
+//  #define DEFINE_GUIDEX(n) DEFINE_GUID_THUNK(n, STATIC_##n)
+//#endif /* __clang__ */
 #endif
 
 #include <setupapi.h>
@@ -1055,8 +1063,9 @@ static const KSTOPOLOGY_CONNECTION* FindStartConnectionFrom(ULONG startPin, PaWi
         }
     }
 
+    /* Some devices may report topologies that leave pins unconnected. This may be by design or driver installation
+       issues. Pass the error condition back to caller. */
     PA_DEBUG(("FindStartConnectionFrom: returning NULL\n"));
-    assert(FALSE);
     return 0;
 }
 
@@ -1075,8 +1084,8 @@ static const KSTOPOLOGY_CONNECTION* FindStartConnectionTo(ULONG startPin, PaWinW
         }
     }
 
+    /* Unconnected pin. Inform caller. */
     PA_DEBUG(("FindStartConnectionTo: returning NULL\n"));
-    assert(FALSE);
     return 0;
 }
 
@@ -1968,8 +1977,8 @@ static PaWinWdmPin* PinNew(PaWinWdmFilter* parentFilter, unsigned long pinId, Pa
                                 }
                                 else
                                 {
-                                    /* Should never come here! */
-                                    assert(FALSE);
+                                    /* Unconnected pin */
+                                    goto error;
                                 }
                             }
                         }
@@ -2841,6 +2850,10 @@ PaError FilterInitializePins( PaWinWdmFilter* filter )
         {
             filter->pins[pinId] = newPin;
             ++filter->validPinCount;
+        }
+        else
+        {
+            filter->pins[pinId] = 0;
         }
     }
 
@@ -4367,7 +4380,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
     else
     {
         userInputChannels = 0;
-        inputSampleFormat = hostInputSampleFormat = paInt16; /* Supress 'uninitialised var' warnings. */
+        inputSampleFormat = paInt16; /* Suppress 'uninitialised var' warnings. */
     }
 
     if( outputParameters )
@@ -4402,7 +4415,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
     else
     {
         userOutputChannels = 0;
-        outputSampleFormat = hostOutputSampleFormat = paInt16; /* Supress 'uninitialized var' warnings. */
+        outputSampleFormat = paInt16; /* Suppress 'uninitialized var' warnings. */
     }
 
     /* validate platform specific flags */
@@ -4587,6 +4600,8 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
     }
     else
     {
+        hostInputSampleFormat = (PaSampleFormat)0; /* Avoid uninitialized variable warning */
+
         stream->capture.pPin = NULL;
         stream->capture.bytesPerFrame = 0;
     }
@@ -4711,6 +4726,8 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
     }
     else
     {
+        hostOutputSampleFormat = (PaSampleFormat)0; /* Avoid uninitialized variable warning */
+
         stream->render.pPin = NULL;
         stream->render.bytesPerFrame = 0;
     }
@@ -6535,6 +6552,7 @@ static PaError PaPinCaptureSubmitHandler_WaveCyclic(PaProcessThreadInfo* pInfo, 
     assert(packet != 0);
     PA_HP_TRACE((pInfo->stream->hLog, "Capture submit: %u", eventIndex));
     packet->Header.DataUsed = 0; /* Reset for reuse */
+    packet->Header.OptionsFlags = 0; /* Reset for reuse. Required for e.g. Focusrite Scarlett 2i4 (1st Gen) see #310 */
     ResetEvent(packet->Signal.hEvent);
     result = PinRead(pInfo->stream->capture.pPin->handle, packet);
     ++pInfo->pending;

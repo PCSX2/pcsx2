@@ -1,5 +1,5 @@
 /*
- * $Id: pa_unix_oss.c 1894 2013-06-08 19:30:41Z gineera $
+ * $Id$
  * PortAudio Portable Real-Time Audio Library
  * Latest Version at: http://www.portaudio.com
  * OSS implementation by:
@@ -466,7 +466,7 @@ static PaError QueryDevice( char *deviceName, PaOSSHostApiRepresentation *ossApi
 
     /* douglas:
        we have to do this querying in a slightly different order. apparently
-       some sound cards will give you different info based on their settins.
+       some sound cards will give you different info based on their settings.
        e.g. a card might give you stereo at 22kHz but only mono at 44kHz.
        the correct order for OSS is: format, channels, sample rate
     */
@@ -1335,7 +1335,7 @@ static PaError PaOssStream_WaitForFrames( PaOssStream *stream, unsigned long *fr
 #ifdef PTHREAD_CANCELED
         pthread_testcancel();
 #else
-        /* avoid indefinite waiting on thread not supporting cancelation */
+        /* avoid indefinite waiting on thread not supporting cancellation */
         if( stream->callbackStop || stream->callbackAbort )
         {
             PA_DEBUG(( "Cancelling PaOssStream_WaitForFrames\n" ));
@@ -1369,7 +1369,7 @@ static PaError PaOssStream_WaitForFrames( PaOssStream *stream, unsigned long *fr
 #ifdef PTHREAD_CANCELED
         pthread_testcancel();
 #else
-        /* avoid indefinite waiting on thread not supporting cancelation */
+        /* avoid indefinite waiting on thread not supporting cancellation */
         if( stream->callbackStop || stream->callbackAbort )
         {
             PA_DEBUG(( "Cancelling PaOssStream_WaitForFrames\n" ));
@@ -1640,7 +1640,7 @@ static void *PaOSS_AudioThreadProc( void *userData )
 #ifdef PTHREAD_CANCELED
         pthread_testcancel();
 #else
-        if( stream->callbackAbort ) /* avoid indefinite waiting on thread not supporting cancelation */
+        if( stream->callbackAbort ) /* avoid indefinite waiting on thread not supporting cancellation */
         {
             PA_DEBUG(( "Aborting callback thread\n" ));
             break;
@@ -1681,7 +1681,7 @@ static void *PaOSS_AudioThreadProc( void *userData )
                 callbackResult = paComplete;
             }
 
-            if( stream->callbackAbort ) /* avoid indefinite waiting on thread not supporting cancelation */
+            if( stream->callbackAbort ) /* avoid indefinite waiting on thread not supporting cancellation */
             {
                 PA_DEBUG(( "Aborting callback thread\n" ));
                 break;
@@ -1793,7 +1793,7 @@ static PaError CloseStream( PaStream* s )
  *
  * Aspect StreamState: After returning, the stream shall be in the Active state, implying that an eventual
  * callback will be repeatedly called in a separate thread. If a separate thread is started this function
- * will block untill it has started processing audio, otherwise audio processing is started directly.
+ * will block until it has started processing audio, otherwise audio processing is started directly.
  */
 static PaError StartStream( PaStream *s )
 {

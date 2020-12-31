@@ -121,7 +121,7 @@ static bool ensureChannelNameSize( int size )
    return true;
 }
 /*
- * Function declared in pa_mac_core.h. retrives channel names.
+ * Function declared in pa_mac_core.h. retrieves channel names.
  */
 const char *PaMacCore_GetChannelName( int device, int channelIndex, bool input )
 {
@@ -1173,8 +1173,13 @@ static PaError OpenAndSetupOneAudioUnit(
                                    const double sampleRate,
                                    void *refCon )
 {
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6
+    AudioComponentDescription desc;
+    AudioComponent comp;
+#else
     ComponentDescription desc;
     Component comp;
+#endif
     /*An Apple TN suggests using CAStreamBasicDescription, but that is C++*/
     AudioStreamBasicDescription desiredFormat;
     OSStatus result = noErr;
@@ -1245,7 +1250,11 @@ static PaError OpenAndSetupOneAudioUnit(
     desc.componentFlags        = 0;
     desc.componentFlagsMask    = 0;
     /* -- find the component -- */
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6
+    comp = AudioComponentFindNext( NULL, &desc );
+#else
     comp = FindNextComponent( NULL, &desc );
+#endif
     if( !comp )
     {
        DBUG( ( "AUHAL component not found." ) );
@@ -1254,7 +1263,11 @@ static PaError OpenAndSetupOneAudioUnit(
        return paUnanticipatedHostError;
     }
     /* -- open it -- */
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6
+    result = AudioComponentInstanceNew( comp, audioUnit );
+#else
     result = OpenAComponent( comp, audioUnit );
+#endif
     if( result )
     {
        DBUG( ( "Failed to open AUHAL component." ) );
@@ -1345,7 +1358,7 @@ static PaError OpenAndSetupOneAudioUnit(
     /*  set device format first, but only touch the device if the user asked */
     if( inStreamParams ) {
        /*The callback never calls back if we don't set the FPB */
-       /*This seems wierd, because I would think setting anything on the device
+       /*This seems weird, because I would think setting anything on the device
          would be disruptive.*/
        paResult = setBestFramesPerBuffer( *audioDevice, FALSE,
                                           requestedFramesPerBuffer,
@@ -1363,7 +1376,7 @@ static PaError OpenAndSetupOneAudioUnit(
     }
     if( outStreamParams && !inStreamParams ) {
        /*The callback never calls back if we don't set the FPB */
-       /*This seems wierd, because I would think setting anything on the device
+       /*This seems weird, because I would think setting anything on the device
          would be disruptive.*/
        paResult = setBestFramesPerBuffer( *audioDevice, TRUE,
                                           requestedFramesPerBuffer,
@@ -1607,7 +1620,12 @@ static PaError OpenAndSetupOneAudioUnit(
 #undef ERR_WRAP
 
     error:
+
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6
+       AudioComponentInstanceDispose( *audioUnit );
+#else
        CloseComponent( *audioUnit );
+#endif
        *audioUnit = NULL;
        if( result )
           return PaMacCore_SetError( result, line, 1 );
@@ -1740,7 +1758,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
     else
     {
         inputChannelCount = 0;
-        inputSampleFormat = hostInputSampleFormat = paFloat32; /* Surpress 'uninitialised var' warnings. */
+        inputSampleFormat = hostInputSampleFormat = paFloat32; /* Suppress 'uninitialised var' warnings. */
     }
 
     if( outputParameters )
@@ -1770,7 +1788,7 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
     else
     {
         outputChannelCount = 0;
-        outputSampleFormat = hostOutputSampleFormat = paFloat32; /* Surpress 'uninitialized var' warnings. */
+        outputSampleFormat = hostOutputSampleFormat = paFloat32; /* Suppress 'uninitialized var' warnings. */
     }
 
     /* validate platform specific flags */
@@ -1921,14 +1939,13 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
         
        /*
         * If input and output devs are different or we are doing SR conversion,
-        * we also need a
-        * ring buffer to store inpt data while waiting for output
-        * data.
+        * we also need a ring buffer to store input data while waiting for
+        * output data.
         */
        if( (stream->outputUnit && (stream->inputUnit != stream->outputUnit))
            || stream->inputSRConverter )
        {
-          /* May want the ringSize ot initial position in
+          /* May want the ringSize or initial position in
              ring buffer to depend somewhat on sample rate change */
 
           void *data;
@@ -1951,7 +1968,15 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
           }
 
           /* now we can initialize the ring buffer */
-          PaUtil_InitializeRingBuffer( &stream->inputRingBuffer, szfl*inputParameters->channelCount, ringSize, data ) ;
+          result = PaUtil_InitializeRingBuffer( &stream->inputRingBuffer, szfl*inputParameters->channelCount, ringSize, data );
+          if( result != 0 )
+          {
+              /* The only reason this should fail is if ringSize is not a power of 2, which we do not anticipate happening. */
+              result = paUnanticipatedHostError;
+              free(data);
+              goto error;
+          }
+
           /* advance the read point a little, so we are reading from the
              middle of the buffer */
           if( stream->outputUnit )
@@ -1973,12 +1998,11 @@ static PaError OpenStream( struct PaUtilHostApiRepresentation *hostApi,
                                          stream->outputFramesPerBuffer,
                                          sampleRate );
        result = initializeBlioRingBuffers( &stream->blio,
-              inputParameters?inputParameters->sampleFormat:0 ,
-              outputParameters?outputParameters->sampleFormat:0 ,
-              MAX(stream->inputFramesPerBuffer,stream->outputFramesPerBuffer),
+              inputParameters ? inputParameters->sampleFormat : 0,
+              outputParameters ? outputParameters->sampleFormat : 0,
               ringSize,
-              inputParameters?inputChannelCount:0 ,
-              outputParameters?outputChannelCount:0 ) ;
+              inputParameters ? inputChannelCount : 0,
+              outputParameters ? outputChannelCount : 0 ) ;
        if( result != paNoError )
           goto error;
         
@@ -2158,8 +2182,8 @@ static OSStatus AudioIOProc( void *inRefCon,
     
    /* -----------------------------------------------------------------*\
       This output may be useful for debugging,
-      But printing durring the callback is a bad enough idea that
-      this is not enabled by enableing the usual debugging calls.
+      But printing during the callback is a bad enough idea that
+      this is not enabled by enabling the usual debugging calls.
    \* -----------------------------------------------------------------*/
    /*
    static int renderCount = 0;
@@ -2277,9 +2301,10 @@ static OSStatus AudioIOProc( void *inRefCon,
                     INPUT_ELEMENT,
                     inNumberFrames,
                     &stream->inputAudioBufferList );
-      /* FEEDBACK: I'm not sure what to do when this call fails. There's nothing in the PA API to
-       * do about failures in the callback system. */
-      assert( !err );
+      if(err != noErr)
+      {
+        goto stop_stream;
+      }
 
       PaUtil_SetInputFrameCount( &(stream->bufferProcessor), frames );
       PaUtil_SetInterleavedInputChannels( &(stream->bufferProcessor),
@@ -2359,7 +2384,7 @@ static OSStatus AudioIOProc( void *inRefCon,
                              &size,
                              (void *)&data );
                if( err == RING_BUFFER_EMPTY )
-               { /*the ring buffer callback underflowed */
+               { /* the ring buffer callback underflowed */
                   err = 0;
                   bzero( ((char *)data) + size, sizeof(data)-size );
                   /* The ring buffer can underflow normally when the stream is stopping.
@@ -2370,8 +2395,11 @@ static OSStatus AudioIOProc( void *inRefCon,
                   }
                }
                ERR( err );
-               assert( !err );
-               
+               if(err != noErr)
+               {
+                 goto stop_stream;
+               }
+
                PaUtil_SetInputFrameCount( &(stream->bufferProcessor), frames );
                PaUtil_SetInterleavedInputChannels( &(stream->bufferProcessor),
                                    0,
@@ -2477,9 +2505,12 @@ static OSStatus AudioIOProc( void *inRefCon,
          if( err == -10874 )
             inNumberFrames /= 2;
       } while( err == -10874 && inNumberFrames > 1 );
-      /* FEEDBACK: I'm not sure what to do when this call fails */
       ERR( err );
-      assert( !err );
+      if(err != noErr)
+      {
+          goto stop_stream;
+      }
+
       if( stream->inputSRConverter || stream->outputUnit )
       {
          /* If this is duplex or we use a converter, put the data
@@ -2522,11 +2553,11 @@ static OSStatus AudioIOProc( void *inRefCon,
           * chunks, and let the BufferProcessor deal with the rest.
           *
           */
-         /*This might be too big or small depending on SR conversion*/
+         /* This might be too big or small depending on SR conversion. */
          float data[ chan * inNumberFrames ];
          OSStatus err;
          do
-         { /*Run the buffer processor until we are out of data*/
+         { /* Run the buffer processor until we are out of data. */
             UInt32 size;
             long f;
 
@@ -2539,7 +2570,11 @@ static OSStatus AudioIOProc( void *inRefCon,
                           (void *)data );
             if( err != RING_BUFFER_EMPTY )
                ERR( err );
-            assert( err == 0 || err == RING_BUFFER_EMPTY );
+            if( err != noErr && err != RING_BUFFER_EMPTY )
+            {
+                goto stop_stream;
+            }
+
 
             f = size / ( chan * sizeof(float) );
             PaUtil_SetInputFrameCount( &(stream->bufferProcessor), f );
@@ -2562,23 +2597,23 @@ static OSStatus AudioIOProc( void *inRefCon,
       }
    }
 
-   switch( callbackResult )
-   {
-   case paContinue: break;
-   case paComplete:
-   case paAbort:
-      stream->state = CALLBACK_STOPPED ;
-      if( stream->outputUnit )
-         AudioOutputUnitStop(stream->outputUnit);
-      if( stream->inputUnit )
-         AudioOutputUnitStop(stream->inputUnit);
-      break;
-   }
+    // Should we return successfully or fall through to stopping the stream?
+    if( callbackResult == paContinue )
+    {
+        PaUtil_EndCpuLoadMeasurement( &stream->cpuLoadMeasurer, framesProcessed );
+        return noErr;
+    }
 
-   PaUtil_EndCpuLoadMeasurement( &stream->cpuLoadMeasurer, framesProcessed );
-   return noErr;
+stop_stream:
+    stream->state = CALLBACK_STOPPED ;
+    if( stream->outputUnit )
+        AudioOutputUnitStop(stream->outputUnit);
+    if( stream->inputUnit )
+        AudioOutputUnitStop(stream->inputUnit);
+
+    PaUtil_EndCpuLoadMeasurement( &stream->cpuLoadMeasurer, framesProcessed );
+    return noErr;
 }
-
 
 /*
     When CloseStream() is called, the multi-api layer ensures that
@@ -2587,7 +2622,7 @@ static OSStatus AudioIOProc( void *inRefCon,
 static PaError CloseStream( PaStream* s )
 {
     /* This may be called from a failed OpenStream.
-       Therefore, each piece of info is treated seperately. */
+       Therefore, each piece of info is treated separately. */
     PaError result = paNoError;
     PaMacCoreStream *stream = (PaMacCoreStream*)s;
 
@@ -2628,13 +2663,21 @@ static PaError CloseStream( PaStream* s )
        }
        if( stream->outputUnit && stream->outputUnit != stream->inputUnit ) {
           AudioUnitUninitialize( stream->outputUnit );
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6
+          AudioComponentInstanceDispose( stream->outputUnit );
+#else
           CloseComponent( stream->outputUnit );
+#endif
        }
        stream->outputUnit = NULL;
        if( stream->inputUnit )
        {
           AudioUnitUninitialize( stream->inputUnit );
+#if MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_6
+          AudioComponentInstanceDispose( stream->inputUnit );
+#else
           CloseComponent( stream->inputUnit );
+#endif
           stream->inputUnit = NULL;
        }
        if( stream->inputRingBuffer.buffer )
@@ -2707,18 +2750,10 @@ static ComponentResult BlockWhileAudioUnitIsRunning( AudioUnit audioUnit, AudioU
     return noErr;
 }
 
-static PaError StopStream( PaStream *s )
+static PaError FinishStoppingStream( PaMacCoreStream *stream )
 {
-    PaMacCoreStream *stream = (PaMacCoreStream*)s;
     OSStatus result = noErr;
     PaError paErr;
-    VVDBUG(("StopStream()\n"));
-
-    VDBUG( ("Waiting for BLIO.\n") );
-    waitUntilBlioWriteBufferIsFlushed( &stream->blio );
-    VDBUG( ( "Stopping stream.\n" ) );
-
-    stream->state = STOPPING;
 
 #define ERR_WRAP(mac_err) do { result = mac_err ; if ( result != noErr ) return ERR(result) ; } while(0)
     /* -- stop and reset -- */
@@ -2770,12 +2805,34 @@ static PaError StopStream( PaStream *s )
 #undef ERR_WRAP
 }
 
+/* Block until buffer is empty then stop the stream. */
+static PaError StopStream( PaStream *s )
+{
+    PaError paErr;
+    PaMacCoreStream *stream = (PaMacCoreStream*)s;
+    VVDBUG(("StopStream()\n"));
+
+    /* Tell WriteStream to stop filling the buffer. */
+    stream->state = STOPPING;
+
+    if( stream->userOutChan > 0 ) /* Does this stream do output? */
+    {
+        size_t maxHostFrames = MAX( stream->inputFramesPerBuffer, stream->outputFramesPerBuffer );
+        VDBUG( ("Waiting for write buffer to be drained.\n") );
+        paErr = waitUntilBlioWriteBufferIsEmpty( &stream->blio, stream->sampleRate,
+                                                maxHostFrames );
+        VDBUG( ( "waitUntilBlioWriteBufferIsEmpty returned %d\n", paErr ) );
+    }
+    return FinishStoppingStream( stream );
+}
+
+/* Immediately stop the stream. */
 static PaError AbortStream( PaStream *s )
 {
-    VVDBUG(("AbortStream()->StopStream()\n"));
-    VDBUG( ( "Aborting stream.\n" ) );
-    /* We have nothing faster than StopStream. */
-    return StopStream(s);
+    PaMacCoreStream *stream = (PaMacCoreStream*)s;
+    VDBUG( ( "AbortStream()\n" ) );
+    stream->state = STOPPING;
+    return FinishStoppingStream( stream );
 }
 
 

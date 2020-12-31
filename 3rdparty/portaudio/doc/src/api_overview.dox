@@ -112,7 +112,7 @@ Many of the tests in the /tests directory of the PortAudio distribution implemen
 
 @subsection read_write_io_method The Read/Write I/O Method
 
-As an alternative to the callback I/O method, PortAudio provides a synchronous read/write interface for acquiring and playing audio. This can be useful for applications that don't require the lowest possibly latency, or don't warrant the increased complexity of synchronising with an asynchronous callback funciton. This I/O method is also useful when calling PortAudio from programming languages that don't support asynchronous callbacks. 
+As an alternative to the callback I/O method, PortAudio provides a synchronous read/write interface for acquiring and playing audio. This can be useful for applications that don't require the lowest possibly latency, or don't warrant the increased complexity of synchronising with an asynchronous callback function. This I/O method is also useful when calling PortAudio from programming languages that don't support asynchronous callbacks. 
 
 To open a Stream in read/write mode you pass a NULL stream callback function pointer to Pa_OpenStream().
 

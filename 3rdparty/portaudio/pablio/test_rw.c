@@ -1,5 +1,5 @@
 /*
- * $Id: test_rw.c 1083 2006-08-23 07:30:49Z rossb $
+ * $Id$
  * test_rw.c
  * Read input from one stream and write it to another.
  *
@@ -98,7 +98,7 @@ int main(void)
 
 error:
     Pa_Terminate();
-    fprintf( stderr, "An error occured while using the portaudio stream\n" );
+    fprintf( stderr, "An error occurred while using the portaudio stream\n" );
     fprintf( stderr, "Error number: %d\n", err );
     fprintf( stderr, "Error message: %s\n", Pa_GetErrorText( err ) );
     return -1;
