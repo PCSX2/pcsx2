@@ -29,12 +29,16 @@
 // Bitfield Structures
 //
 
-struct tIPU_CMD
+union tIPU_CMD
 {
-	u32 DATA;
-	u32 BUSY;
-	
-	void SetBusy(bool busy=true)
+	struct
+	{
+		u32 DATA;
+		u32 BUSY;
+	};
+	u64 _u64;
+
+	void SetBusy(bool busy = true)
 	{
 		BUSY = busy ? 0x80000000 : 0;
 	}
