@@ -893,6 +893,9 @@ __forceinline
 
 	SndBuffer::Write(Out);
 
+	if(SampleRate == 96000) // Double up samples for 96khz (Port Audio Non-Exclusive)
+		SndBuffer::Write(Out);
+
 	// Update AutoDMA output positioning
 	OutPos++;
 	if (OutPos >= 0x200)
