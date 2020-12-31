@@ -1,7 +1,7 @@
 ---
 title: "PCSX2 - Frequently Asked Questions"
 date: "2020"
-footer-left: "[Document Source](https://github.com/PCSX2/pcsx2/blob/v1.6.0/pcsx2/Docs/PCSX2_FAQ.md)"
+footer-left: "[Document Source](https://github.com/PCSX2/pcsx2/blob/{LATEST-GIT-TAG}/pcsx2/Docs/PCSX2_FAQ.md)"
 urlcolor: "cyan"
 ...
 
