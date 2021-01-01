@@ -23,6 +23,12 @@
 #define ADD_XYZW			((_XYZW_SS && modXYZW) ? (_X ? 3 : (_Y ? 2 : (_Z ? 1 : 0))) : 0)
 #define SHIFT_XYZW(gprReg)	{ if (_XYZW_SS && modXYZW && !_W) { xSHL(gprReg, ADD_XYZW); } }
 
+
+const __aligned16 u32 sse4_compvals[2][4] = {
+   { 0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff }, //1111
+   { 0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff }, //1111
+};
+
 // Note: If modXYZW is true, then it adjusts XYZW for Single Scalar operations
 static void mVUupdateFlags(mV, const xmm& reg, const xmm& regT1in = xEmptyReg, const xmm& regT2in = xEmptyReg, bool modXYZW = 1) {
 	const x32&  mReg   = gprT1;
@@ -67,6 +73,19 @@ static void mVUupdateFlags(mV, const xmm& reg, const xmm& regT1in = xEmptyReg, c
 	if (mFLAG.doFlag) { SHIFT_XYZW(gprT2); }
 	xOR(mReg, gprT2);
 
+	if (sFLAG.doFlag) {
+		//Calculate overflow
+		xMOVAPS(regT1, regT2);
+		xAND.PS(regT1, ptr128[&sse4_compvals[1][0]]); // Remove sign flags (we don't care)
+		xPMIN.UD(regT1, ptr128[&sse4_compvals[0][0]]); // Get the minimum value, FLT_MAX = overflow
+		xCMPEQ.PS(regT1, ptr128[&sse4_compvals[0][0]]); // Compare if T1 == FLT_MAX
+		xMOVMSKPS(gprT2, regT1); // Grab sign bits  for equal results
+		xAND(gprT2, AND_XYZW);   // Grab "Is Zero" bits from the previous calculation
+		xTEST(gprT2, 0xF);
+		xForwardJump32 oJMP(Jcc_Zero);
+			xOR(sReg, 0x820000);
+		oJMP.SetTarget();
+	}
 	//-------------------------Write back flags------------------------------
 
 	if (mFLAG.doFlag) mVUallocMFLAGb(mVU, mReg, mFLAG.write); // Set Mac Flag

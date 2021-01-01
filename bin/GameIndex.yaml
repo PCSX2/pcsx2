@@ -13405,15 +13405,6 @@ SLES-53744:
 SLES-53746:
   name: "Superman Returns"
   region: "PAL-E"
-  patches:
-    E8F7BAB6:
-      content: |-
-        author=kozarovv
-        // Fix sps and various graphical issues by Using iaddiu instead of FSAND
-        // require preload frame data and crc hack atleast minimum for GSDX HW
-        patch=1,EE,00639Ef0,word,10050208
-        patch=1,EE,0063a068,word,10080208
-        patch=1,EE,0063D488,word,10020208
 SLES-53747:
   name: "Ed, Edd, 'n Eddy - The Misadventure"
   region: "PAL-E"
@@ -14587,28 +14578,12 @@ SLES-54348:
 SLES-54349:
   name: "Superman Returns"
   region: "PAL-I"
-  patches:
-    E7F7B6BD:
-      content: |-
-        author=kozarovv
-        // Use iaddiu instead of FSAND.
-        patch=1,EE,00639ef0,word,10050208
-        patch=1,EE,0063a068,word,10080208
 SLES-54350:
   name: "Superman Returns"
   region: "PAL-G"
 SLES-54351:
   name: "Superman Returns"
   region: "PAL-S"
-  patches:
-    EDF0A0A7:
-      content: |-
-        author=kozarovv
-        // Fix sps and various graphical issues by Using iaddiu instead of FSAND
-        // require preload frame data and crc hack atleast minimum for GSDX HW
-        patch=1,EE,00639Ef0,word,10050208
-        patch=1,EE,0063a068,word,10080208
-        patch=1,EE,0063D488,word,10020208
 SLES-54354:
   name: "Final Fantasy XII"
   region: "PAL-E"
@@ -36972,15 +36947,6 @@ SLUS-21434:
   name: "Superman Returns - The Video Game"
   region: "NTSC-U"
   compat: 4
-  patches:
-    E1BF5DCA:
-      content: |-
-        author=kozarovv
-        // Fix sps and various graphical issues by Using iaddiu instead of FSAND
-        // require preload frame data and crc hack atleast minimum for GSDX HW
-        patch=1,EE,00639E70,word,10050208
-        patch=1,EE,00639FE8,word,10080208
-        patch=1,EE,0063D408,word,10020208
 SLUS-21435:
   name: "One Piece - Grand Adventure"
   region: "NTSC-U"
