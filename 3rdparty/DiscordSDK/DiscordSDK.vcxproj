@@ -70,6 +70,24 @@
       <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</MinimalRebuild>
       <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">false</MinimalRebuild>
     </ClCompile>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">xcopy /Y "$(ProjectDir)Libraries\Win64\discord_game_sdk.dll" "$(SolutionDir)bin"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">xcopy /Y "$(ProjectDir)Libraries\Win64\discord_game_sdk.dll" "$(SolutionDir)bin"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|x64'">xcopy /Y "$(ProjectDir)Libraries\Win64\discord_game_sdk.dll" "$(SolutionDir)bin"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">xcopy /Y "$(ProjectDir)Libraries\Win32\discord_game_sdk.dll" "$(SolutionDir)bin"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">xcopy /Y "$(ProjectDir)Libraries\Win32\discord_game_sdk.dll" "$(SolutionDir)bin"</Command>
+    </PostBuildEvent>
+    <PostBuildEvent>
+      <Command Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">xcopy /Y "$(ProjectDir)Libraries\Win32\discord_game_sdk.dll" "$(SolutionDir)bin"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="Source\achievement_manager.cpp" />
