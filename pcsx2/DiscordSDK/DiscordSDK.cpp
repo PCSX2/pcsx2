@@ -20,6 +20,7 @@
 #include "discord.h" // Discord's own header for the SDK
 
 #include "App.h"
+#include <ctime>
 
 #ifdef WIN32
 
@@ -43,6 +44,10 @@ void UpdateDiscordSDK(std::string state, std::string details)
     activity.SetState(state.c_str());
     activity.SetDetails(details.c_str());
     activity.GetAssets().SetLargeImage("pcsx2");
+    discord::Timestamp start;
+    time(&start);
+    activity.GetTimestamps().SetStart(start);
+
     core->ActivityManager().UpdateActivity(activity, [](discord::Result result)
         {
             if (static_cast<int>(result))
