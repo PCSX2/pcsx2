@@ -62,7 +62,6 @@ void InitDiscordSDK()
         return;
 
     const auto result = discord::Core::Create(CLIENT_ID, DiscordCreateFlags_Default, &core);
-    UpdateDiscordSDK("In the menus", "");
 }
 
 #endif
