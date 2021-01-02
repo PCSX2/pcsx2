@@ -288,7 +288,6 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		bool found_t = false;
 		for (auto t : m_dst[RenderTarget])
 		{
-			const bool t_clean = t->m_dirty.empty();
 			if (t->m_used)
 			{
 				// Typical bug (MGS3 blue cloud):
@@ -299,6 +298,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				//
 				// Solution: consider the RT as 32 bits if the alpha was used in the past
 				u32 t_psm = (t->m_dirty_alpha) ? t->m_TEX0.PSM & ~0x1 : t->m_TEX0.PSM;
+
+				const bool t_clean = t->m_dirty.empty();
+				const bool t_wraps = t->m_end_block > GSTextureCache::MAX_BP;
 
 				if (t_clean && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t_psm))
 				{
@@ -327,7 +329,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					found_t = true;
 					break;
 				}
-				else if (texture_inside_rt && bw == t->m_TEX0.TBW && psm == PSM_PSMCT32 && t->m_TEX0.PSM == psm && t->m_TEX0.TBP0 < bp && t->m_end_block >= bp) {
+				else if (texture_inside_rt && bw == t->m_TEX0.TBW && psm == PSM_PSMCT32 && t->m_TEX0.PSM == psm &&
+					((t->m_TEX0.TBP0 < bp && t->m_end_block >= bp) || t_wraps))
+				{
 					// BW equality needed because CreateSource does not handle BW conversion.
 					// Only PSMCT32 to limit false hits.
 					// PSM equality needed because CreateSource does not handle PSM conversion.
@@ -338,7 +342,13 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					// Fixes Xenosaga 3 last dungeon graphic bug.
 					// Fixes Pause menu in The Getaway.
 
-					const SurfaceOffset so = ComputeSurfaceOffset(bp, bw, psm, r, t);
+					SurfaceOffset so = ComputeSurfaceOffset(bp, bw, psm, r, t);
+					if (!so.is_valid && t_wraps)
+					{
+						// Improves Beyond Good & Evil shadow.
+						const u32 bp_unwrap = bp + GSTextureCache::MAX_BP + 0x1;
+						so = ComputeSurfaceOffset(bp_unwrap, bw, psm, r, t);
+					}
 					if (so.is_valid)
 					{
 						dst = t;
@@ -1747,7 +1757,7 @@ GSTextureCache::Surface::Surface(GSRenderer* r, u8* temp)
 	, m_shared_texture(false)
 	, m_end_block(0)
 {
-	m_TEX0.TBP0 = 0x3fff;
+	m_TEX0.TBP0 = GSTextureCache::MAX_BP;
 }
 
 GSTextureCache::Surface::~Surface()
