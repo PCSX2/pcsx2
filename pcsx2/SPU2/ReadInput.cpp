@@ -78,8 +78,8 @@ StereoOut32 V_Core::ReadInput_HiFi()
 #endif
 			AdmaInProgress = 1;
 
-			TSA = (Index << 10) + InputPosRead;
-
+			ActiveTSA = (Index << 10) + InputPosRead;
+			TSA = ActiveTSA;
 			if (InputDataLeft < 0x200)
 			{
 				FileLog("[%10d] %s AutoDMA%c block end.\n", (Index == 1) ? "CDDA" : "SPDIF", Cycles, GetDmaIndexChar());
@@ -142,7 +142,7 @@ StereoOut32 V_Core::ReadInput()
 
 	InputPosRead++;
 
-	if (AutoDMACtrl & (Index + 1) && (InputPosRead == 0x180 || InputPosRead == 0x80))
+	if (((AutoDMACtrl & (Index + 1)) || AdmaInProgress) && (InputPosRead == 0x100 || InputPosRead == 0x200))
 	{
 		AdmaInProgress = 0;
 		if (InputDataLeft >= 0x200)
@@ -152,11 +152,12 @@ StereoOut32 V_Core::ReadInput()
 			AutoDMAReadBuffer(0);
 
 			AdmaInProgress = 1;
-			TSA = (Index << 10) + InputPosRead;
-
+			ActiveTSA = (Index << 10) + InputPosRead;
+			TSA = ActiveTSA;
 			if (InputDataLeft < 0x200)
 			{
-				AutoDMACtrl |= ~3;
+				if((AutoDMACtrl & (Index + 1)))
+					AutoDMACtrl |= ~3;
 
 				if (IsDevBuild)
 				{

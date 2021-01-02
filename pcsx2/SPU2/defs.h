@@ -391,6 +391,7 @@ struct V_Core
 
 	u32 IRQA; // Interrupt Address
 	u32 TSA;  // DMA Transfer Start Address
+	u32 ActiveTSA; // Active DMA TSA - Required for NFL 2k5 which overwrites it mid transfer
 
 	bool IRQEnable; // Interrupt Enable
 	bool FxEnable;  // Effect Enable
@@ -506,17 +507,19 @@ struct V_Core
 
 	__forceinline u16 DmaRead()
 	{
-		const u16 ret = (u16)spu2M_Read(TSA);
-		++TSA;
-		TSA &= 0xfffff;
+		const u16 ret = (u16)spu2M_Read(ActiveTSA);
+		++ActiveTSA;
+		ActiveTSA &= 0xfffff;
+		TSA = ActiveTSA;
 		return ret;
 	}
 
 	__forceinline void DmaWrite(u16 value)
 	{
-		spu2M_Write(TSA, value);
-		++TSA;
-		TSA &= 0xfffff;
+		spu2M_Write(ActiveTSA, value);
+		++ActiveTSA;
+		ActiveTSA &= 0xfffff;
+		TSA = ActiveTSA;
 	}
 
 	void LogAutoDMA(FILE* fp);

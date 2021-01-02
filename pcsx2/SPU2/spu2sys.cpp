@@ -24,6 +24,7 @@
 #include "Global.h"
 #include "Dma.h"
 #include "IopDma.h"
+#include "IopCommon.h"
 
 #include "spu2.h" // needed until I figure out a nice solution for irqcallback dependencies.
 
@@ -410,7 +411,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 		Cores[0].MADR += amt / 2;
 		if (Cores[0].DMAICounter <= 0)
 		{
-			if (((Cores[0].AutoDMACtrl & 1) != 1))
+			if (((Cores[0].AutoDMACtrl & 1) != 1) && Cores[0].ReadSize)
 			{
 				if (Cores[0].IsDMARead)
 					Cores[0].FinishDMAread();
@@ -424,7 +425,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 				{
 					//ConLog("* SPU2: Irq Called (%04x) at cycle %d.\n", Spdif.Info, Cycles);
 					has_to_call_irq_dma[i] = false;
-					if (!(Spdif.Info & (4 << i)))
+					if (!(Spdif.Info & (4 << i)) && Cores[i].IRQEnable)
 					{
 						Spdif.Info |= (4 << i);
 						if (!SPU2_dummy_callback)
@@ -441,6 +442,19 @@ __forceinline void TimeUpdate(u32 cClocks)
 					SPU2interruptDMA4();
 			}
 		}
+		else
+		{
+			if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > Cores[0].DMAICounter)
+			{
+				psxCounters[6].sCycleT = psxRegs.cycle;
+				psxCounters[6].CycleT = Cores[0].DMAICounter;
+
+				psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
+				psxNextsCounter = psxRegs.cycle;
+				if (psxCounters[6].CycleT < psxNextCounter)
+					psxNextCounter = psxCounters[6].CycleT;
+			}
+		}
 	}
 
 	//Update DMA7 interrupt delay counter
@@ -452,7 +466,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 		Cores[1].MADR += amt / 2;
 		if (Cores[1].DMAICounter <= 0)
 		{
-			if (((Cores[1].AutoDMACtrl & 2) != 2))
+			if (((Cores[1].AutoDMACtrl & 2) != 2) && Cores[1].ReadSize)
 			{
 				if (Cores[1].IsDMARead)
 					Cores[1].FinishDMAread();
@@ -466,7 +480,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 				{
 					//ConLog("* SPU2: Irq Called (%04x) at cycle %d.\n", Spdif.Info, Cycles);
 					has_to_call_irq_dma[i] = false;
-					if (!(Spdif.Info & (4 << i)))
+					if (!(Spdif.Info & (4 << i)) && Cores[i].IRQEnable)
 					{
 						Spdif.Info |= (4 << i);
 						if (!SPU2_dummy_callback)
@@ -484,6 +498,19 @@ __forceinline void TimeUpdate(u32 cClocks)
 					SPU2interruptDMA7();
 			}
 		}
+		else
+		{
+			if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > Cores[1].DMAICounter)
+			{
+				psxCounters[6].sCycleT = psxRegs.cycle;
+				psxCounters[6].CycleT = Cores[1].DMAICounter;
+
+				psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
+				psxNextsCounter = psxRegs.cycle;
+				if (psxCounters[6].CycleT < psxNextCounter)
+					psxNextCounter = psxCounters[6].CycleT;
+			}
+		}
 	}
 
 	//Update Mixing Progress
@@ -495,7 +522,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 			{
 				//ConLog("* SPU2: Irq Called (%04x) at cycle %d.\n", Spdif.Info, Cycles);
 				has_to_call_irq[i] = false;
-				if (!(Spdif.Info & (4 << i)))
+				if (!(Spdif.Info & (4 << i)) && Cores[i].IRQEnable)
 				{
 					Spdif.Info |= (4 << i);
 					if (!SPU2_dummy_callback)
@@ -755,12 +782,13 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 
 			case 0x1da6:
 				TSA = map_spu1to2(value);
-				//ConLog("SPU2 Setting TSA to %x \n", TSA);
+				ConLog("SPU2 Setting TSA to %x \n", TSA);
 				break;
 
 			case 0x1da8: // Spu Write to Memory
 				//ConLog("SPU direct DMA Write. Current TSA = %x\n", TSA);
-				if (Cores[0].IRQEnable && (Cores[0].IRQA <= Cores[0].TSA))
+				Cores[0].ActiveTSA = Cores[0].TSA;
+				if (Cores[0].IRQEnable && (Cores[0].IRQA <= Cores[0].ActiveTSA))
 				{
 					SetIrqCall(0);
 					if (!SPU2_dummy_callback)
@@ -1029,6 +1057,7 @@ u16 V_Core::ReadRegPS1(u32 mem)
 				//ConLog("SPU2 TSA read: 0x1da6 = %x , (TSA = %x)\n", value, TSA);
 				break;
 			case 0x1da8:
+				ActiveTSA = TSA;
 				value = DmaRead();
 				show = false;
 				break;
@@ -1217,10 +1246,10 @@ static void __fastcall RegWrite_Core(u16 value)
 
 			// Performance Note: The PS2 Bios uses this extensively right before booting games,
 			// causing massive slowdown if we don't shortcut it here.
-
+			thiscore.ActiveTSA = thiscore.TSA;
 			for (int i = 0; i < 2; i++)
 			{
-				if (Cores[i].IRQEnable && (Cores[i].IRQA == thiscore.TSA))
+				if (Cores[i].IRQEnable && (Cores[i].IRQA == thiscore.ActiveTSA))
 				{
 					SetIrqCall(i);
 				}
@@ -1255,10 +1284,12 @@ static void __fastcall RegWrite_Core(u16 value)
 				thiscore.RevBuffers.NeedsUpdated = true;
 			}
 
-			if (!thiscore.DmaMode)
+			if (!thiscore.DmaMode && !(thiscore.Regs.STATX & 0x400))
 				thiscore.Regs.STATX &= ~0x80;
-			else if(!oldDmaMode)
+			else if(!oldDmaMode && thiscore.DmaMode)
 				thiscore.Regs.STATX |= 0x80;
+
+			thiscore.ActiveTSA = thiscore.TSA;
 
 			if (value & 0x000E)
 			{
@@ -1488,11 +1519,6 @@ static void __fastcall RegWrite_Core(u16 value)
 				return;
 			}
 			thiscore.AutoDMACtrl = value;
-
-			if (value == 0)
-			{
-				thiscore.AdmaInProgress = 0;
-			}
 			break;
 
 		default:
