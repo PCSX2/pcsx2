@@ -146,7 +146,7 @@ void psxRcntInit()
 	psxCounters[4].interrupt = 0x08000;
 	psxCounters[5].interrupt = 0x10000;
 
-	psxCounters[6].rate = 768; // One SPU tick
+	psxCounters[6].rate = 768 * 12; // 12 SPU ticks. 768 would be ideal but some games slow down internally for some reason
 	psxCounters[6].CycleT = psxCounters[6].rate;
 	psxCounters[6].mode = 0x8;
 
@@ -509,6 +509,7 @@ void psxRcntUpdate()
 		psxCounters[6].sCycleT = psxRegs.cycle;
 		psxCounters[6].CycleT = psxCounters[6].rate;
 		SPU2async(difference);
+		c = psxCounters[6].CycleT;
 	}
 	else
 		c -= difference;
