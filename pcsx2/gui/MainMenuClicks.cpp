@@ -651,15 +651,6 @@ void MainEmuFrame::Menu_EnableDiscordSDK_Click(wxCommandEvent&)
 {
 	g_Conf->EmuOptions.DiscordSDK = GetMenuBar()->IsChecked(MenuId_EnableDiscordSDK);
 	AppSaveSettings();
-
-	if (g_Conf->EmuOptions.DiscordSDK)
-	{
-		InitDiscordSDK();
-	}
-	else
-	{
-		DestroyDiscordSDK();
-	}
 }
 #endif
 

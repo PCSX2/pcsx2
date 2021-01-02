@@ -405,7 +405,7 @@ void MainEmuFrame::CreatePcsx2Menu()
 	m_GameSettingsSubmenu.Append(MenuId_EnableHostFs, _("Enable &Host Filesystem"),
 								 wxEmptyString, wxITEM_CHECK);
 #ifdef WIN32
-	m_GameSettingsSubmenu.Append(MenuId_EnableDiscordSDK, _("Show Game on Discord"),
+	m_GameSettingsSubmenu.Append(MenuId_EnableDiscordSDK, _("Show Game on Discord (Requires PCSX2 Restart)"),
 		wxEmptyString, wxITEM_CHECK);
 #endif
 

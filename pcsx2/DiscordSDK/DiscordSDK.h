@@ -20,6 +20,5 @@
 void CallbackDiscordSDK();
 void UpdateDiscordSDK(std::string state, std::string details);
 void InitDiscordSDK();
-void DestroyDiscordSDK();
 
 #endif

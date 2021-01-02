@@ -60,10 +60,4 @@ void InitDiscordSDK()
     UpdateDiscordSDK("In the menus", "");
 }
 
-void DestroyDiscordSDK()
-{
-    memset(core, 0, sizeof(core));
-    core = nullptr;
-}
-
 #endif
