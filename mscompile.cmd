@@ -15,11 +15,11 @@ REM If not, see <http://www.gnu.org/licenses/>.
 
 CLS
 ECHO Select your Visual Studio version:
-ECHO 1. Microsoft Visual Studio 2015
+ECHO 1. Microsoft Visual Studio 2019
 ECHO Q. Exit the script.
 CHOICE /C 1Q /T 10 /D 1 /M "Visual Studio version: "
 IF ERRORLEVEL 2 GOTO END
-IF ERRORLEVEL 1 SET "VCVARPATH=%VS140COMNTOOLS%..\..\VC\vcvarsall.bat"
+IF ERRORLEVEL 1 SET "VCVARPATH=%VS160COMNTOOLS%..\..\VC\Auxiliary\Build\vcvarsall.bat"
 
 ECHO.
 ECHO Select the desired configuration:
@@ -32,9 +32,9 @@ ECHO 6. Debug   64bit (WIP)
 ECHO Q. Exit the script.
 CHOICE /C 123456Q /T 10 /D 1 /M "Configuration: "
 IF ERRORLEVEL 7 GOTO END
-IF ERRORLEVEL 6 SET "SELARCH=amd64" && SET "SELCONF=DebugAll"
-IF ERRORLEVEL 5 SET "SELARCH=amd64" && SET "SELCONF=DevelAll"
-IF ERRORLEVEL 4 SET "SELARCH=amd64" && SET "SELCONF=ReleaseAll"
+IF ERRORLEVEL 6 SET "SELARCH=x64" && SET "SELCONF=DebugAll"
+IF ERRORLEVEL 5 SET "SELARCH=x64" && SET "SELCONF=DevelAll"
+IF ERRORLEVEL 4 SET "SELARCH=x64" && SET "SELCONF=ReleaseAll"
 IF ERRORLEVEL 3 SET "SELARCH=x86" && SET "SELCONF=DebugAll"
 IF ERRORLEVEL 2 SET "SELARCH=x86" && SET "SELCONF=DevelAll"
 IF ERRORLEVEL 1 SET "SELARCH=x86" && SET "SELCONF=ReleaseAll"
@@ -48,6 +48,7 @@ ECHO Using:
 cl 2>&1 | findstr "Version"
 ECHO.
 
+SET Platform=
 SET "LOGOPTIONS=/v:m /fl1 /fl2 /flp1:logfile="%~dpn0-%SELARCH%-%SELCONF%-errors.log";errorsonly /flp2:logfile="%~dpn0-%SELARCH%-%SELCONF%-warnings.log";warningsonly"
 msbuild "%~dp0\buildbot.xml" /m %LOGOPTIONS% /t:%SELCONF%
 GOTO END
