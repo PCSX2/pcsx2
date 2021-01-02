@@ -138,14 +138,17 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 {
 	int size = (sz) & (~511);
 
+	if (cyclePtr != nullptr)
+		TimeUpdate(*cyclePtr);
+
 	if (MsgAutoDMA())
 		ConLog("* SPU2: DMA%c AutoDMA Transfer of %d bytes to %x (%02x %x %04x).\n",
-			   GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, (~Regs.ATTR) & 0xffff);
+			   GetDmaIndexChar(), size << 1, ActiveTSA, DMABits, AutoDMACtrl, (~Regs.ATTR) & 0xffff);
 
 	InputDataProgress = 0;
 	if ((AutoDMACtrl & (Index + 1)) == 0)
 	{
-		TSA = 0x2000 + (Index << 10);
+		ActiveTSA = 0x2000 + (Index << 10);
 		DMAICounter = size * 4;
 		LastClock = *cyclePtr;
 	}
@@ -189,60 +192,8 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 	TADR = MADR + (size << 1);
 }
 
-// HACKFIX: The BIOS breaks if we check the IRQA for both cores when issuing DMA writes.  The
-// breakage is a null psxRegs.pc being loaded form some memory address (haven't traced it deeper
-// yet).  We get around it by only checking the current core's IRQA, instead of doing the
-// *correct* thing and checking both.  This might break some games, but having a working BIOS
-// is more important for now, until a proper fix can be uncovered.
-//
-// This problem might be caused by bad DMA timings in the IOP or a lack of proper IRQ
-// handling by the Effects Processor.  After those are implemented, let's hope it gets
-// magically fixed?
-//
-// Note: This appears to affect DMA Writes only, so DMA Read DMAs are left intact (both core
-// IRQAs are tested).  Very few games use DMA reads tho, so it could just be a case of "works
-// by the grace of not being used."
-//
-// Update: This hack is no longer needed when we don't do a core reset. Guess the null pc was in spu2 memory?
-#define NO_BIOS_HACKFIX 1 // set to 1 to disable the hackfix
-
 void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 {
-	if (cyclePtr != nullptr)
-		TimeUpdate(*cyclePtr);
-	TSA &= 0xfffff;
-	ReadSize = size;
-	IsDMARead = false;
-	LastClock = *cyclePtr;
-	DMAICounter = std::min(ReadSize, (u32)0x100) * 4;
-	Regs.STATX &= ~0x80;
-	Regs.STATX |= 0x400;
-	TADR = MADR + (size << 1);
-
-	if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > DMAICounter)
-	{
-		psxCounters[6].sCycleT = psxRegs.cycle;
-		psxCounters[6].CycleT = DMAICounter;
-
-		psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
-		psxNextsCounter = psxRegs.cycle;
-		if (psxCounters[6].CycleT < psxNextCounter)
-			psxNextCounter = psxCounters[6].CycleT;
-	}
-
-	if (MsgDMA())
-		ConLog("* SPU2: DMA%c Write Transfer of %d bytes to %x (%02x %x %04x). IRQE = %d IRQA = %x \n",
-			GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, Regs.ATTR & 0xffff,
-			Cores[Index].IRQEnable, Cores[Index].IRQA);
-}
-
-void V_Core::FinishDMAwrite()
-{
-	
-	// Perform an alignment check.
-	// Not really important.  Everything should work regardless,
-	// but it could be indicative of an emulation foopah elsewhere.
-
 	if (MsgToConsole())
 	{
 		// Don't need this anymore. Target may still be good to know though.
@@ -251,20 +202,45 @@ void V_Core::FinishDMAwrite()
 			ConLog("* SPU2 DMA Write > Misaligned source. Core: %d  IOP: %p  TSA: 0x%x  Size: 0x%x\n", Index, (void*)pMem, TSA, size);
 		}*/
 
-		if (TSA & 7)
+		if (ActiveTSA & 7)
 		{
-			ConLog("* SPU2 DMA Write > Misaligned target. Core: %d  IOP: %p  TSA: 0x%x  Size: 0x%x\n", Index, (void*)DMAPtr, TSA, ReadSize);
+			ConLog("* SPU2 DMA Write > Misaligned target. Core: %d  IOP: %p  TSA: 0x%x  Size: 0x%x\n", Index, (void*)DMAPtr, ActiveTSA, ReadSize);
 		}
 	}
 
+	if (cyclePtr != nullptr)
+		TimeUpdate(*cyclePtr);
+
+	ReadSize = size;
+	IsDMARead = false;
+	DMAICounter = 0;
+	LastClock = *cyclePtr;
+	Regs.STATX &= ~0x80;
+	Regs.STATX |= 0x400;
+	TADR = MADR + (size << 1);
+
+	if (MsgDMA())
+		ConLog("* SPU2: DMA%c Write Transfer of %d bytes to %x (%02x %x %04x). IRQE = %d IRQA = %x \n",
+			GetDmaIndexChar(), size << 1, ActiveTSA, DMABits, AutoDMACtrl, Regs.ATTR & 0xffff,
+			Cores[Index].IRQEnable, Cores[Index].IRQA);
+
+	FinishDMAwrite();
+
+	if (ReadSize == 0) //DMA Finished right away so we need a DMAICounter size to trigger the interrupt
+		DMAICounter = size * 4;
+}
+
+void V_Core::FinishDMAwrite()
+{
+	if (ActiveTSA != TSA)
+		ConLog("Write WTF TSA %x Active %x\n", TSA, ActiveTSA);
 	if (Index == 0)
 		DMA4LogWrite(DMAPtr, ReadSize << 1);
 	else
 		DMA7LogWrite(DMAPtr, ReadSize << 1);
 
-	TSA &= 0xfffff;
-
-	u32 buff1end = TSA + std::min(ReadSize, (u32)0x100);
+	u32 buff1end = ActiveTSA + std::min(ReadSize, (u32)0x100 + std::abs(DMAICounter / 4));
+	u32 start = ActiveTSA;
 	u32 buff2end = 0;
 	if (buff1end > 0x100000)
 	{
@@ -272,7 +248,7 @@ void V_Core::FinishDMAwrite()
 		buff1end = 0x100000;
 	}
 
-	const int cacheIdxStart = TSA / pcm_WordsPerBlock;
+	const int cacheIdxStart = ActiveTSA / pcm_WordsPerBlock;
 	const int cacheIdxEnd = (buff1end + pcm_WordsPerBlock - 1) / pcm_WordsPerBlock;
 	PcmCacheEntry* cacheLine = &pcm_cache_data[cacheIdxStart];
 	PcmCacheEntry& cacheEnd = pcm_cache_data[cacheIdxEnd];
@@ -284,14 +260,14 @@ void V_Core::FinishDMAwrite()
 	} while (cacheLine != &cacheEnd);
 
 	//ConLog( "* SPU2: Cache Clear Range!  TSA=0x%x, TDA=0x%x (low8=0x%x, high8=0x%x, len=0x%x)\n",
-	//	TSA, buff1end, flagTSA, flagTDA, clearLen );
+	//	ActiveTSA, buff1end, flagTSA, flagTDA, clearLen );
 
 
 	// First Branch needs cleared:
 	// It starts at TSA and goes to buff1end.
 
-	const u32 buff1size = (buff1end - TSA);
-	memcpy(GetMemPtr(TSA), DMAPtr, buff1size * 2);
+	const u32 buff1size = (buff1end - ActiveTSA);
+	memcpy(GetMemPtr(ActiveTSA), DMAPtr, buff1size * 2);
 
 	u32 TDA;
 
@@ -304,17 +280,20 @@ void V_Core::FinishDMAwrite()
 		// memory below 0x2800 (registers and such)
 		//const u32 endpt2 = (buff2end + roundUp) / indexer_scalar;
 		//memset( pcm_cache_flags, 0, endpt2 );
+		TDA = buff1end;
 
+		DMAPtr += TDA - ActiveTSA;
+		ReadSize -= TDA - ActiveTSA;
+		ActiveTSA = 0;
 		// Emulation Grayarea: Should addresses wrap around to zero, or wrap around to
 		// 0x2800?  Hard to know for sure (almost no games depend on this)
-		memcpy(GetMemPtr(0), &DMAPtr[buff1size], buff2end * 2);
+		memcpy(GetMemPtr(0), DMAPtr, buff2end * 2);
 		TDA = (buff2end) & 0xfffff;
 
 		// Flag interrupt?  If IRQA occurs between start and dest, flag it.
 		// Important: Test both core IRQ settings for either DMA!
 		// Note: Because this buffer wraps, we use || instead of &&
 
-#if NO_BIOS_HACKFIX
 		for (int i = 0; i < 2; i++)
 		{
 			// Start is exclusive and end is inclusive... maybe? The end is documented to be inclusive,
@@ -326,49 +305,34 @@ void V_Core::FinishDMAwrite()
 			// understanding would trigger the interrupt early causing it to switch buffers again immediately
 			// and an interrupt never fires again, leaving the voices looping the same samples forever.
 
-			if (Cores[i].IRQEnable && (Cores[i].IRQA > TSA || Cores[i].IRQA <= TDA))
+			if (Cores[i].IRQEnable && (Cores[i].IRQA > start || Cores[i].IRQA <= TDA))
 			{
 				//ConLog("DMAwrite Core %d: IRQ Called (IRQ passed). IRQA = %x Cycles = %d\n", i, Cores[i].IRQA, Cycles );
 				SetIrqCallDMA(i);
 			}
 		}
-#else
-		if ((IRQEnable && (IRQA > TSA || IRQA <= TDA))
-		{
-			SetIrqCall(Index);
-		}
-#endif
 	}
 	else
 	{
 		// Buffer doesn't wrap/overflow!
 		// Just set the TDA and check for an IRQ...
 
-		TDA = (buff1end) & 0xfffff;
+		TDA = buff1end;
 
 		// Flag interrupt?  If IRQA occurs between start and dest, flag it.
 		// Important: Test both core IRQ settings for either DMA!
-
-#if NO_BIOS_HACKFIX
 		for (int i = 0; i < 2; i++)
 		{
-			if (Cores[i].IRQEnable && (Cores[i].IRQA > TSA && Cores[i].IRQA <= TDA))
+			if (Cores[i].IRQEnable && (Cores[i].IRQA > ActiveTSA && Cores[i].IRQA <= TDA))
 			{
 				//ConLog("DMAwrite Core %d: IRQ Called (IRQ passed). IRQA = %x Cycles = %d\n", i, Cores[i].IRQA, Cycles );
 				SetIrqCallDMA(i);
 			}
 		}
-#else
-		if (IRQEnable && (IRQA > TSA) && (IRQA <= TDA))
-		{
-			SetIrqCall(Index);
-		}
-#endif
 	}
-	
-	TSA = TDA;
-	DMAPtr += std::min(ReadSize, (u32)0x100);
-	ReadSize -= std::min(ReadSize, (u32)0x100);
+
+	DMAPtr += TDA - ActiveTSA;
+	ReadSize -= TDA - ActiveTSA;
 	if (ReadSize == 0)
 		DMAICounter = 0;
 	else
@@ -386,11 +350,17 @@ void V_Core::FinishDMAwrite()
 				psxNextCounter = psxCounters[6].CycleT;
 		}
 	}
+	ActiveTSA = TDA;
+	ActiveTSA &= 0xfffff;
+	TSA = ActiveTSA;
 }
 
 void V_Core::FinishDMAread()
 {
-	u32 buff1end = TSA + std::min(ReadSize, (u32)0x100);
+	if (ActiveTSA != TSA)
+		ConLog("Read WTF TSA %x Active %x\n", TSA, ActiveTSA);
+	u32 buff1end = ActiveTSA + std::min(ReadSize, (u32)0x100 + std::abs(DMAICounter / 4));
+	u32 start = ActiveTSA;
 	u32 buff2end = 0;
 	if (buff1end > 0x100000)
 	{
@@ -398,8 +368,8 @@ void V_Core::FinishDMAread()
 		buff1end = 0x100000;
 	}
 
-	const u32 buff1size = (buff1end - TSA);
-	memcpy(DMARPtr, GetMemPtr(TSA), buff1size * 2);
+	const u32 buff1size = (buff1end - ActiveTSA);
+	memcpy(DMARPtr, GetMemPtr(ActiveTSA), buff1size * 2);
 	// Note on TSA's position after our copy finishes:
 	// IRQA should be measured by the end of the writepos+0x20.  But the TDA
 	// should be written back at the precise endpoint of the xfer.
@@ -407,9 +377,16 @@ void V_Core::FinishDMAread()
 
 	if (buff2end > 0)
 	{
+
+		TDA = buff1end;
+
+		DMARPtr += TDA - ActiveTSA;
+		ReadSize -= TDA - ActiveTSA;
+		ActiveTSA = 0;
+
 		// second branch needs cleared:
 		// It starts at the beginning of memory and moves forward to buff2end
-		memcpy(&DMARPtr[buff1size], GetMemPtr(0), buff2end * 2);
+		memcpy(DMARPtr, GetMemPtr(0), buff2end * 2);
 
 		TDA = (buff2end) & 0xfffff;
 
@@ -419,7 +396,7 @@ void V_Core::FinishDMAread()
 
 		for (int i = 0; i < 2; i++)
 		{
-			if (Cores[i].IRQEnable && (Cores[i].IRQA > TSA || Cores[i].IRQA <= TDA))
+			if (Cores[i].IRQEnable && (Cores[i].IRQA > start || Cores[i].IRQA <= TDA))
 			{
 				SetIrqCallDMA(i);
 			}
@@ -430,23 +407,23 @@ void V_Core::FinishDMAread()
 		// Buffer doesn't wrap/overflow!
 		// Just set the TDA and check for an IRQ...
 
-		TDA = (buff1end) & 0xfffff;
+		TDA = buff1end;
 
 		// Flag interrupt?  If IRQA occurs between start and dest, flag it.
 		// Important: Test both core IRQ settings for either DMA!
 
 		for (int i = 0; i < 2; i++)
 		{
-			if (Cores[i].IRQEnable && (Cores[i].IRQA > TSA && Cores[i].IRQA <= TDA))
+			if (Cores[i].IRQEnable && (Cores[i].IRQA > ActiveTSA && Cores[i].IRQA <= TDA))
 			{
 				SetIrqCallDMA(i);
 			}
 		}
 	}
 
-	TSA = TDA;
-	DMARPtr += std::min(ReadSize, (u32)0x100);
-	ReadSize -= std::min(ReadSize, (u32)0x100);
+	
+	DMARPtr += TDA - ActiveTSA;
+	ReadSize -= TDA - ActiveTSA;
 	if (ReadSize == 0)
 	{
 		IsDMARead = false;
@@ -467,6 +444,9 @@ void V_Core::FinishDMAread()
 				psxNextCounter = psxCounters[6].CycleT;
 		}
 	}
+	ActiveTSA = TDA;
+	ActiveTSA &= 0xfffff;
+	TSA = ActiveTSA;
 }
 
 void V_Core::DoDMAread(u16* pMem, u32 size)
@@ -475,7 +455,7 @@ void V_Core::DoDMAread(u16* pMem, u32 size)
 		TimeUpdate(*cyclePtr);
 
 	DMARPtr = pMem;
-	TSA &= 0xfffff;
+	ActiveTSA = TSA & 0xfffff;
 	ReadSize = size;
 	IsDMARead = true;
 	LastClock = *cyclePtr;
@@ -498,7 +478,7 @@ void V_Core::DoDMAread(u16* pMem, u32 size)
 
 	if (MsgDMA())
 		ConLog("* SPU2: DMA%c Read Transfer of %d bytes from %x (%02x %x %04x). IRQE = %d IRQA = %x \n",
-			GetDmaIndexChar(), size << 1, TSA, DMABits, AutoDMACtrl, Regs.ATTR & 0xffff,
+			GetDmaIndexChar(), size << 1, ActiveTSA, DMABits, AutoDMACtrl, Regs.ATTR & 0xffff,
 			Cores[Index].IRQEnable, Cores[Index].IRQA);
 }
 
@@ -529,13 +509,12 @@ void V_Core::DoDMAwrite(u16* pMem, u32 size)
 		}
 	}
 
-	TSA &= 0xfffff;
+	ActiveTSA = TSA & 0xfffff;
 
 	bool adma_enable = ((AutoDMACtrl & (Index + 1)) == (Index + 1));
 
 	if (adma_enable)
 	{
-		TSA &= 0x1fff;
 		StartADMAWrite(pMem, size);
 	}
 	else

@@ -134,6 +134,7 @@ void SPU2interruptDMA4()
 	FileLog("[%10d] SPU2 interruptDMA4\n", Cycles);
 	Cores[0].Regs.STATX |= 0x80;
 	Cores[0].Regs.STATX &= ~0x400;
+	Cores[0].TSA = Cores[0].ActiveTSA;
 }
 
 void SPU2interruptDMA7()
@@ -141,6 +142,7 @@ void SPU2interruptDMA7()
 	FileLog("[%10d] SPU2 interruptDMA7\n", Cycles);
 	Cores[1].Regs.STATX |= 0x80;
 	Cores[1].Regs.STATX &= ~0x400;
+	Cores[1].TSA = Cores[1].ActiveTSA;
 }
 
 void SPU2readDMA7Mem(u16* pMem, u32 size)
@@ -538,6 +540,14 @@ u16 SPU2read(u32 rmem)
 
 	if (omem == 0x1f9001AC)
 	{
+		Cores[core].ActiveTSA = Cores[core].TSA;
+		for (int i = 0; i < 2; i++)
+		{
+			if (Cores[i].IRQEnable && (Cores[i].IRQA == Cores[core].ActiveTSA))
+			{
+				SetIrqCall(i);
+			}
+		}
 		ret = Cores[core].DmaRead();
 	}
 	else

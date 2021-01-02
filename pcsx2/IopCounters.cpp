@@ -506,9 +506,9 @@ void psxRcntUpdate()
 
 	if (difference >= psxCounters[6].CycleT)
 	{
-		SPU2async(difference);
 		psxCounters[6].sCycleT = psxRegs.cycle;
 		psxCounters[6].CycleT = psxCounters[6].rate;
+		SPU2async(difference);
 	}
 	else
 		c -= difference;
