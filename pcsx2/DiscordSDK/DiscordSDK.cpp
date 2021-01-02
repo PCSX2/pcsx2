@@ -61,7 +61,7 @@ void InitDiscordSDK()
     if (g_Conf->EmuOptions.DiscordSDK == false)
         return;
 
-    const auto result = discord::Core::Create(CLIENT_ID, DiscordCreateFlags_Default, &core);
+    discord::Core::Create(CLIENT_ID, DiscordCreateFlags_Default, &core);
 }
 
 #endif
