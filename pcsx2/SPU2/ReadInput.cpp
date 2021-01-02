@@ -142,7 +142,7 @@ StereoOut32 V_Core::ReadInput()
 
 	InputPosRead++;
 
-	if (((AutoDMACtrl & (Index + 1)) || AdmaInProgress) && (InputPosRead == 0x100 || InputPosRead == 0x200))
+	if ((AutoDMACtrl & (Index + 1)) && (InputPosRead == 0x100 || InputPosRead == 0x200))
 	{
 		AdmaInProgress = 0;
 		if (InputDataLeft >= 0x200)
