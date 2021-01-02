@@ -1519,6 +1519,12 @@ static void __fastcall RegWrite_Core(u16 value)
 				return;
 			}
 			thiscore.AutoDMACtrl = value;
+			if (value == 0 && thiscore.AdmaInProgress && (thiscore.Regs.STATX & 0x400))
+			{
+				thiscore.InputDataProgress = 0;
+				thiscore.ReadSize = 0;
+				thiscore.DMAICounter = 1;
+			}
 			break;
 
 		default:
