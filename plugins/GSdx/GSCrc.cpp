@@ -27,8 +27,6 @@ CRC::Game CRC::m_games[] =
 {
 	// Note: IDs 0x7ACF7E03, 0x7D4EA48F, 0x37C53760 - shouldn't be added as it's from the multiloaders when packing games.
 	{0x00000000, NoTitle, NoRegion, 0},
-	{0xF46142D3, ArTonelico2, NoRegion, 0},
-	{0xC38067F4, ArTonelico2, NoRegion, 0}, // project metafalica 1.0
 	{0xF95F37EE, ArTonelico2, US, 0},
 	{0x68CE6801, ArTonelico2, JP, 0},
 	{0xCE2C1DBF, ArTonelico2, EU, 0},
@@ -150,7 +148,6 @@ CRC::Game CRC::m_games[] =
 	{0x32A1C752, GT4, US, 0}, // GT4 Online Beta
 	{0x2A84A1E2, GT4, US, 0}, // Mazda MX-5 Edition
 	{0x0087EEC4, GT4, NoRegion, 0}, // JP and US versions have the same CRC - GT4 Online Beta
-	{0xC164550A, WildArms5, JPUNDUB, 0},
 	{0xC1640D2C, WildArms5, US, 0},
 	{0x0FCF8FE4, WildArms5, EU, 0},
 	{0x2294D322, WildArms5, JP, 0},
@@ -223,8 +220,6 @@ CRC::Game CRC::m_games[] =
 	{0xF442260C, MajokkoALaMode2, JP, 0},
 	{0xA616A6C2, TalesOfAbyss, US, 0},
 	{0x14FE77F7, TalesOfAbyss, US, 0},
-	{0x045D77E9, TalesOfAbyss, JPUNDUB, 0},
-	{0x14FD77F7, TalesOfAbyss, JPUNDUB, 0},
 	{0xAA5EC3A3, TalesOfAbyss, JP, 0},
 	{0xFB236A46, SonicUnleashed, US, 0},
 	{0x8C913264, SonicUnleashed, EU, 0},
@@ -232,7 +227,6 @@ CRC::Game CRC::m_games[] =
 	{0x23A97857, StarOcean3, US, 0},
 	{0xBEC32D49, StarOcean3, JP, 0},
 	{0x8192A241, StarOcean3, JP, 0}, // NTSC JP special directors cut limited extra sugar on top edition (the special one :p)
-	// it's the US version with speach files from JP... {0x23A97857, StarOcean3, JPUNDUB, 0},
 	{0xCC96CE93, ValkyrieProfile2, US, 0},
 	{0x774DE8E2, ValkyrieProfile2, JP, 0},
 	{0x04CCB600, ValkyrieProfile2, EU, 0},
