@@ -288,7 +288,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 	PSSetShader(i->second, m_ps_cb);
 }
 
-void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix)
+void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 blend_factor)
 {
 	auto i = std::as_const(m_om_dss).find(dssel);
 
@@ -347,11 +347,10 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 
 		memset(&bd, 0, sizeof(bd));
 
-		bd.RenderTarget[0].BlendEnable = bsel.abe;
-
-		if(bsel.abe)
+		if (bsel.alpha_blend)
 		{
 			HWBlend blend = GetBlend(bsel.blend_index);
+			bd.RenderTarget[0].BlendEnable = TRUE;
 			bd.RenderTarget[0].BlendOp = (D3D11_BLEND_OP)blend.op;
 			bd.RenderTarget[0].SrcBlend = (D3D11_BLEND)blend.src;
 			bd.RenderTarget[0].DestBlend = (D3D11_BLEND)blend.dst;
@@ -380,5 +379,5 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 		j = m_om_bs.find(bsel);
 	}
 
-	OMSetBlendState(j->second, (float)(int)afix / 0x80);
+	OMSetBlendState(j->second, (float)(int)blend_factor / 0x80);
 }
