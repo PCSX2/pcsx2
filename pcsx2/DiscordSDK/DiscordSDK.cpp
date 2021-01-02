@@ -13,9 +13,13 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "DiscordSDK.h" // Our template for this cpp
 #include "PrecompiledHeader.h"
+
+#include "DiscordSDK.h" // Our template for this cpp
+
 #include "discord.h" // Discord's own header for the SDK
+
+#include "App.h"
 
 #ifdef WIN32
 
@@ -24,7 +28,7 @@ discord::Core* core{};
 
 void CallbackDiscordSDK()
 {
-    if (core == nullptr)
+    if (core == nullptr || g_Conf->EmuOptions.DiscordSDK == false)
         return;
 
     ::core->RunCallbacks();
@@ -32,7 +36,7 @@ void CallbackDiscordSDK()
 
 void UpdateDiscordSDK(std::string state, std::string details)
 {
-    if (core == nullptr)
+    if (core == nullptr || g_Conf->EmuOptions.DiscordSDK == false)
         return;
 
     discord::Activity activity{};
@@ -49,6 +53,9 @@ void UpdateDiscordSDK(std::string state, std::string details)
 
 void InitDiscordSDK() 
 {
+    if (g_Conf->EmuOptions.DiscordSDK == false)
+        return;
+
     const auto result = discord::Core::Create(CLIENT_ID, DiscordCreateFlags_Default, &core);
     UpdateDiscordSDK("In the menus", "");
 }

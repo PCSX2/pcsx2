@@ -214,7 +214,9 @@ protected:
 	void Menu_EnableRecordingTools_Click(wxCommandEvent& event);
 #endif
 	void Menu_EnableHostFs_Click(wxCommandEvent& event);
-
+#ifdef WIN32
+	void Menu_EnableDiscordSDK_Click(wxCommandEvent& event);
+#endif
 	void Menu_BootCdvd_Click(wxCommandEvent& event);
 	void Menu_FastBoot_Click(wxCommandEvent& event);
 

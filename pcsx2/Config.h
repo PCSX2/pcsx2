@@ -485,6 +485,9 @@ struct Pcsx2Config
 
 			ConsoleToStdio		:1,
 			HostFs				:1,
+#ifdef WIN32
+			DiscordSDK			:1,
+#endif
 			FullBootConfig		:1;
 	BITFIELD_END
 

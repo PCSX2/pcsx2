@@ -24,6 +24,7 @@
 #include "DEV9/DEV9.h"
 #include "USB/USB.h"
 #ifdef _WIN32
+#include "DiscordSDK/DiscordSDK.h"
 #include "PAD/Windows/PAD.h"
 #else
 #include "PAD/Linux/PAD.h"
@@ -644,6 +645,23 @@ void MainEmuFrame::Menu_EnableHostFs_Click(wxCommandEvent&)
 	g_Conf->EmuOptions.HostFs = GetMenuBar()->IsChecked(MenuId_EnableHostFs);
 	AppSaveSettings();
 }
+
+#ifdef WIN32
+void MainEmuFrame::Menu_EnableDiscordSDK_Click(wxCommandEvent&)
+{
+	g_Conf->EmuOptions.DiscordSDK = GetMenuBar()->IsChecked(MenuId_EnableDiscordSDK);
+	AppSaveSettings();
+
+	if (g_Conf->EmuOptions.DiscordSDK)
+	{
+		InitDiscordSDK();
+	}
+	else
+	{
+		DestroyDiscordSDK();
+	}
+}
+#endif
 
 void MainEmuFrame::Menu_OpenELF_Click(wxCommandEvent&)
 {

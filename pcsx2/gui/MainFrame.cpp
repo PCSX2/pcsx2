@@ -231,6 +231,9 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableRecordingTools_Click, this, MenuId_EnableInputRecording);
 #endif
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableHostFs_Click, this, MenuId_EnableHostFs);
+#ifdef WIN32
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableDiscordSDK_Click, this, MenuId_EnableDiscordSDK);
+#endif
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_SysShutdown_Click, this, MenuId_Sys_Shutdown);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Exit_Click, this, MenuId_Exit);
 
@@ -401,6 +404,10 @@ void MainEmuFrame::CreatePcsx2Menu()
 
 	m_GameSettingsSubmenu.Append(MenuId_EnableHostFs, _("Enable &Host Filesystem"),
 								 wxEmptyString, wxITEM_CHECK);
+#ifdef WIN32
+	m_GameSettingsSubmenu.Append(MenuId_EnableDiscordSDK, _("Show Game on Discord"),
+		wxEmptyString, wxITEM_CHECK);
+#endif
 
 	m_menuSys.AppendSeparator();
 
@@ -783,6 +790,9 @@ void MainEmuFrame::ApplyConfigToGui(AppConfig& configToApply, int flags)
 		menubar.Check(MenuId_EnableInputRecording, configToApply.EmuOptions.EnableRecordingTools);
 #endif
 		menubar.Check(MenuId_EnableHostFs, configToApply.EmuOptions.HostFs);
+#ifdef WIN32
+		menubar.Check(MenuId_EnableDiscordSDK, configToApply.EmuOptions.DiscordSDK);
+#endif
 		menubar.Check(MenuId_Debug_CreateBlockdump, configToApply.EmuOptions.CdvdDumpBlocks);
 #if defined(__unix__)
 		menubar.Check(MenuId_Console_Stdio, configToApply.EmuOptions.ConsoleToStdio);

@@ -127,6 +127,9 @@ enum MenuIdentifiers
 	MenuId_EnableInputRecording,
 	MenuId_EnableLuaTools,
 	MenuId_EnableHostFs,
+#ifdef WIN32
+	MenuId_EnableDiscordSDK,
+#endif
 
 	MenuId_State_Load,
 	MenuId_State_LoadFromFile,

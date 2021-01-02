@@ -448,6 +448,9 @@ Pcsx2Config::Pcsx2Config()
 	McdFolderAutoManage = true;
 	EnablePatches = true;
 	BackupSavestate = true;
+#ifdef WIN32
+	DiscordSDK = true;
+#endif
 }
 
 void Pcsx2Config::LoadSave( IniInterface& ini )
@@ -466,6 +469,9 @@ void Pcsx2Config::LoadSave( IniInterface& ini )
 #endif
 	IniBitBool( ConsoleToStdio );
 	IniBitBool( HostFs );
+#ifdef WIN32
+	IniBitBool( DiscordSDK );
+#endif
 	IniBitBool( FullBootConfig );
 
 	IniBitBool( BackupSavestate );
