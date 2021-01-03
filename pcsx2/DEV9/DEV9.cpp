@@ -269,7 +269,7 @@ s32 DEV9open(void* pDsp)
 		ghc::filesystem::path path(GetSettingsFolder().ToUTF8().data());
 		hddPath = path / hddPath;
 	}
-	
+
 	if (config.hddEnable)
 	{
 		if (dev9.ata->Open(hddPath) != 0)
@@ -876,7 +876,7 @@ void DEV9write16(u32 addr, u16 value)
 				dev9.fifo_bytes_write = 0;
 				dev9.fifo_bytes_read = 0;
 				dev9.xfr_ctrl &= ~SPD_XFR_WRITE; //?
-				dev9.if_ctrl |= SPD_IF_READ; //?
+				dev9.if_ctrl |= SPD_IF_READ;     //?
 
 				FIFOIntr();
 			}

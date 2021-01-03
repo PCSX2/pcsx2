@@ -260,6 +260,7 @@ void ATA::CreateHDDinfo(int sizeMb)
 	//Command set/feature enabled/supported (See word 82)
 	WriteUInt16(identifyData, &index, (u16)((fetSmartEnabled << 0) | (fetSecurityEnabled << 1) | (fetWriteCacheEnabled << 5) | (fetHostProtectedAreaEnabled << 10) | (1 << 14))); //Fixed      //word 85
 	//Command set/feature enabled/supported (See word 83)
+	// clang-format off
 	WriteUInt16(identifyData, &index, (u16)(
 		/*(1 << 8) |						//SET MAX */
 		((lba48Supported ? 1 : 0) << 10) |	//Fixed
@@ -270,6 +271,7 @@ void ATA::CreateHDDinfo(int sizeMb)
 	WriteUInt16(identifyData, &index, (u16)(
 		(1) |								//Fixed
 		((1) << 1)));						//Fixed      //word 87
+	// clang-format on
 	//UDMA modes
 	/*
 	 * bits 0-7: ultraword modes supported (0,1,2,4,5,6,7)

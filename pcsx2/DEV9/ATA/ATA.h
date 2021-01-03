@@ -31,7 +31,7 @@ class ATA
 public:
 	//Transfer
 	bool dmaReady = false;
-	int nsector = 0; //sector count
+	int nsector = 0;     //sector count
 	int nsectorLeft = 0; //sectors left to transfer
 private:
 	const bool lba48Supported = false;
@@ -51,7 +51,7 @@ private:
 
 	u8 curMultipleSectorsSetting = 128;
 
-	u8 identifyData[512] = { 0 };
+	u8 identifyData[512] = {0};
 
 	//LBA48 in use?
 	bool lba48 = false;
@@ -143,7 +143,7 @@ private:
 	int pioPtr;
 	int pioEnd;
 	u8 pioBuffer[512];
-	
+
 	int sectorsPerInterrupt;
 	void (ATA::*pioDRQEndTransferFunc)() = nullptr;
 	//PIO Buffer
@@ -175,7 +175,7 @@ public:
 	u16 ATAreadPIO();
 	//ATAwritePIO;
 
- private:
+private:
 	//Info
 	void CreateHDDinfo(int sizeMb);
 	void CreateHDDinfoCsum();
@@ -231,7 +231,7 @@ public:
 	void PostCmdDMADataFromHost();
 	void HDD_ReadDMA(bool isLBA48);
 	void HDD_WriteDMA(bool isLBA48);
-	
+
 	void PreCmdExecuteDeviceDiag();
 	void PostCmdExecuteDeviceDiag();
 	void HDD_ExecuteDeviceDiag();
@@ -273,4 +273,3 @@ public:
 	static void WriteUInt64(u8* data, int* index, u64 value);
 	static void WritePaddedString(u8* data, int* index, std::string value, u32 len);
 };
-

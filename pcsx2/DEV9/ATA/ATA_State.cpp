@@ -310,7 +310,7 @@ void ATA::Async(uint cycles)
 		if (waitingCmd != nullptr) //Are we waiting to continue a command?
 		{
 			//Log_Info("Running waiting command");
-			void(ATA::*cmd)() = waitingCmd;
+			void (ATA::*cmd)() = waitingCmd;
 			waitingCmd = nullptr;
 			(this->*cmd)();
 		}
