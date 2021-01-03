@@ -38,7 +38,7 @@ void ATA::IO_Thread()
 			ioType = 0;
 		else if (ioWrite)
 			ioType = 1;
-		
+
 		ioWaitHandle.unlock();
 
 		//Read or Write
