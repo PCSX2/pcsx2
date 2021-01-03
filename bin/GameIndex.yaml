@@ -11222,9 +11222,11 @@ SLES-52711:
   patches:
     958e5086:
       content: |-
-        comment=Patch by Prafull
-        // Sheep screen freeze fix.
-        patch=1,EE,001c83a4,word,00000000
+        comment=Patch by refraction
+        // Game has a bug in it, where it's supposed to wait for the GS transfers/drawing to finish
+        // in order to reverse the FIFO to download data from the GS, but they got the condition backwards
+        // so their code was waiting for it to NOT finish. Lucky it even worked on a PS2.
+        patch=1,EE,001c83a4,word,1462fffa
 SLES-52713:
   name: "NBA Live 2005"
   region: "PAL-M3"
