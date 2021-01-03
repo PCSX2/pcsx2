@@ -1522,8 +1522,8 @@ static void __fastcall RegWrite_Core(u16 value)
 			if (value == 0 && thiscore.AdmaInProgress && (thiscore.Regs.STATX & 0x400))
 			{
 				thiscore.InputDataProgress = 0;
-				thiscore.ReadSize = 0;
-				thiscore.DMAICounter = 1;
+				thiscore.Regs.STATX &= ~0x400; // Set DMA as not busy transferring
+				// No need to end the DMA here, the IOP seems to handle that
 			}
 			break;
 
