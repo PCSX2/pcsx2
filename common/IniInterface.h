@@ -37,13 +37,13 @@ protected:
 public:
 	virtual ~IniInterface();
 	explicit IniInterface();
-	explicit IniInterface(wxConfigBase &config);
-	explicit IniInterface(wxConfigBase *config);
+	explicit IniInterface(wxConfigBase& config);
+	explicit IniInterface(wxConfigBase* config);
 
 	void SetPath(const wxString &path);
 	void Flush();
 
-	wxConfigBase &GetConfig()
+	wxConfigBase& GetConfig()
 	{
 		pxAssert(m_Config);
 		return *m_Config;
@@ -66,15 +66,15 @@ public:
 	virtual bool EntryBitBool(const wxString &var, bool value, const bool defvalue = false) = 0;
 	virtual int EntryBitfield(const wxString &var, int value, const int defvalue = 0) = 0;
 
-	virtual void Entry(const wxString &var, double& value, const double defvalue = 0.0) = 0;
+	virtual void Entry(const wxString& var, double& value, const double defvalue = 0.0) = 0;
 
-	virtual void Entry(const wxString &var, wxPoint &value, const wxPoint defvalue = wxDefaultPosition) = 0;
-	virtual void Entry(const wxString &var, wxSize &value, const wxSize defvalue = wxDefaultSize) = 0;
-	virtual void Entry(const wxString &var, wxRect &value, const wxRect defvalue = wxDefaultRect) = 0;
-	virtual void Entry(const wxString &var, wxRect &value, const wxRect defvalue = wxDefaultRect) = 0;
+	virtual void Entry(const wxString& var, wxPoint& value, const wxPoint defvalue = wxDefaultPosition) = 0;
+	virtual void Entry(const wxString& var, wxSize& value, const wxSize defvalue = wxDefaultSize) = 0;
+	virtual void Entry(const wxString& var, wxRect& value, const wxRect defvalue = wxDefaultRect) = 0;
+	virtual void Entry(const wxString& var, wxRect& value, const wxRect defvalue = wxDefaultRect) = 0;
 
 	template <typename T>
-	void EnumEntry(const wxString &var, T &value, const wxChar *const *enumArray = NULL, const T defvalue = (T)0)
+	void EnumEntry(const wxString& var, T& value, const wxChar* const* enumArray = NULL, const T defvalue = (T)0)
 	{
 		int tstore = (int)value;
 		auto defaultvalue = enum_cast(defvalue);
@@ -165,7 +165,7 @@ public:
 	void Entry(const wxString& var, wxDirName& value, const wxDirName defvalue = wxDirName(), bool isAllowRelative = false) override;
 	void Entry(const wxString& var, fs::path& value, const fs::path defvalue = fs::path(), bool isAllowRelative = false) override;
 	void Entry(const wxString& var, wxFileName& value, const wxFileName defvalue = wxFileName(), bool isAllowRelative = false) override;
-	void Entry(const wxString& var, int& value, const int defvalue = 0 override);
+	void Entry(const wxString& var, int& value, const int defvalue = 0) override;
 	void Entry(const wxString& var, uint& value, const uint defvalue = 0) override;
 	void Entry(const wxString& var, bool& value, const bool defvalue = false) override;
 

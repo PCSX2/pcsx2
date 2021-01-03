@@ -15,10 +15,12 @@
 
 #include "PrecompiledHeader.h"
 #include "MainFrame.h"
-#include "common/IniInterface.h"
+#include "common/PathUtils.h"
 #include "Dialogs/ModalPopups.h"
-
+#include "yaml-cpp/yaml.h"
+#include "AppConfig.h"
 #include <wx/stdpaths.h>
+
 
 #ifdef __WXMSW__
 #include "wx/msw/regconf.h"
@@ -26,276 +28,310 @@
 
 DocsModeType			DocsFolderMode = DocsFolder_User;
 bool					UseDefaultSettingsFolder = true;
+bool					runWizard  = true; // This should default to true unless the stream says otherwise. If this doesn't get flipped somethings wrong and setup required
+bool					conf_install = false;
+std::vector<std::string> ErrorFolders;
+
+std::string data;
+std::string usermodePath;
+
+fs::path CustomDocumentsFolder;
+fs::path SettingsFolder;
+
+std::string InstallFolder;
+fs::path PluginsFolder;
+
+YAML::Node stream;
+FolderUtils folderUtils;
 
 
-wxDirName				CustomDocumentsFolder;
-wxDirName				SettingsFolder;
-
-wxDirName				InstallFolder;
+const std::string PermissionFolders[] =
+	{
+		"settings",
+		"memcards",
+		"sstates",
+		"snapshots",
+		"logs",
+		"cheats_ws",
+#ifdef PCSX2_DEVBUILD
+		"dumps",
+#endif
+};
 
 // The UserLocalData folder can be redefined depending on whether or not PCSX2 is in
 // "portable install" mode or not.  when PCSX2 has been configured for portable install, the
 // UserLocalData folder is the current working directory.
-//
-InstallationModeType		InstallationMode;
+InstallationModeType			InstallationMode;
 
-static wxFileName GetPortableIniPath()
+static fs::path GetPortableYamlPath()
 {
-	wxString programFullPath = wxStandardPaths::Get().GetExecutablePath();
-	wxDirName programDir( wxFileName(programFullPath).GetPath() );
-
-	return programDir + "portable.ini";
+	fs::path programDir = Path::GetExecutableDirectory();
+	return Path::Combine( programDir, "portable.yaml" );
 }
 
 static wxString GetMsg_PortableModeRights()
 {
-	return pxE( L"Please ensure that these folders are created and that your user account is granted write permissions to them -- or re-run PCSX2 with elevated (administrator) rights, which should grant PCSX2 the ability to create the necessary folders itself.  If you do not have elevated rights on this computer, then you will need to switch to User Documents mode (click button below)."
-	);
+	return pxE( L"Please ensure that these folders are created and that your user account is granted write permissions to them -- or re-run PCSX2 with elevated (administrator) rights, which should grant PCSX2 the ability to create the necessary folders itself.  If you do not have elevated rights on this computer, then you will need to switch to User Documents mode (click button below).");
 };
 
-bool Pcsx2App::TestUserPermissionsRights( const wxDirName& testFolder, wxString& createFailedStr, wxString& accessFailedStr )
+bool Pcsx2App::TestUserPermissionsRights(const std::string& testFolder)
 {
-	// We need to individually verify read/write permission for each PCSX2 user documents folder.
-	// If any of the folders are not writable, then the user should be informed asap via
-	// friendly and courteous dialog box!
 
-	const wxDirName PermissionFolders[] = 
+	std::string createme, accessme;
+
+
+	for (int i = 0; i < 5; ++i)
 	{
-		PathDefs::Base::Settings(),
-		PathDefs::Base::MemoryCards(),
-		PathDefs::Base::Savestates(),
-		PathDefs::Base::Snapshots(),
-		PathDefs::Base::Logs(),
-		PathDefs::Base::CheatsWS(),
-		#ifdef PCSX2_DEVBUILD
-		PathDefs::Base::Dumps(),
-		#endif
-	};
+		fs::path folder = Path::Combine(testFolder, PermissionFolders[i]);
 
-	FastFormatUnicode createme, accessme;
-
-	for (uint i=0; i<ArraySize(PermissionFolders); ++i)
-	{
-		wxDirName folder( testFolder + PermissionFolders[i] );
-
-		if (!folder.Mkdir())
-			createme += L"\t" + folder.ToString() + L"\n";
-
-		if (!folder.IsWritable())
-			accessme += L"\t" + folder.ToString() + L"\n";
+		if (!folderUtils.DoesExist(folder))
+			if (!folderUtils.CreateFolder(folder))
+				ErrorFolders.push_back(folder);
 	}
 
-	if (!accessme.IsEmpty())
+	for (int i = 0; i < ErrorFolders.size(); i++)
 	{
-		accessFailedStr = (wxString)_("The following folders exist, but are not writable:") + L"\n" + accessme;
-	}
-	
-	if (!createme.IsEmpty())
-	{
-		createFailedStr = (wxString)_("The following folders are missing and cannot be created:") + L"\n" + createme;
+		Console.WriteLn((wxString)_("The following folder is missing and cannot be created:") + L"\n" + ErrorFolders[i]);
 	}
 
-	return (createFailedStr.IsEmpty() && accessFailedStr.IsEmpty());
+	if (ErrorFolders.empty())
+		return false;
+
+	else
+		return true;
+}
+
+static void DoFirstTimeWizard()
+{
+	// first time startup, so give the user the choice of user mode:
+	while (true)
+	{
+		// PCSX2's FTWizard allows improptu restarting of the wizard without cancellation.
+		// This is typically used to change the user's language selection.
+
+		FirstTimeWizard wiz(NULL);
+		if (wiz.RunWizard(wiz.GetFirstPage()))
+			break;
+		if (wiz.GetReturnCode() != pxID_RestartWizard)
+			throw Exception::StartupAborted(L"User canceled FirstTime Wizard.");
+
+		Console.WriteLn(Color_StrongBlack, "Restarting First Time Wizard!");
+	}
 }
 
 // Portable installations are assumed to be run in either administrator rights mode, or run
 // from "insecure media" such as a removable flash drive.  In these cases, the default path for
 // PCSX2 user documents becomes ".", which is the current working directory.
 //
-// Portable installation mode is typically enabled via the presence of an INI file in the
+// Portable installation mode is typically enabled via the presence of a portable file in the
 // same directory that PCSX2 is installed to.
 //
-wxConfigBase* Pcsx2App::TestForPortableInstall()
+bool Pcsx2App::TestForPortableInstall()
 {
-	InstallationMode = InstallMode_Registered;
+	InstallationMode = InstallMode_Portable;
 
-	const wxFileName portableIniFile( GetPortableIniPath() );
-	const wxDirName portableDocsFolder( portableIniFile.GetPath() );
+	fs::path portableYamlFile = GetPortableYamlPath();
+	std::string portableDocsFolder = portableYamlFile.parent_path();
 
-	if (Startup.PortableMode || portableIniFile.FileExists())
+	bool isPortable = Load(portableYamlFile);
+
+	if (isPortable)
 	{
-		wxString FilenameStr = portableIniFile.GetFullPath();
 		if (Startup.PortableMode)
-			Console.WriteLn( L"(UserMode) Portable mode requested via commandline switch!" );
+			Console.WriteLn(L"(UserMode) Portable mode requested via commandline switch!");
 		else
-			Console.WriteLn( L"(UserMode) Found portable install ini @ %s", WX_STR(FilenameStr) );
-
-		// Just because the portable ini file exists doesn't mean we can actually run in portable
+		{
+			wxString temp = portableYamlFile.string();
+			Console.WriteLn(L"(UserMode) Found portable install yaml @ %s", WX_STR(temp));
+		}
+		// Just because the portable yaml file exists doesn't mean we can actually run in portable
 		// mode.  In order to determine our read/write permissions to the PCSX2, we must try to
 		// modify the configured documents folder, and catch any ensuing error.
 
-		std::unique_ptr<wxFileConfig> conf_portable( OpenFileConfig( portableIniFile.GetFullPath() ) );
-		conf_portable->SetRecordDefaults(false);
-
-		while( true )
+		if (!TestUserPermissionsRights(portableDocsFolder))
 		{
-			wxString accessFailedStr, createFailedStr;
-			if (TestUserPermissionsRights( portableDocsFolder, createFailedStr, accessFailedStr )) break;
-		
-			wxDialogWithHelpers dialog( NULL, AddAppName(_("Portable mode error - %s")) );
-
-			wxTextCtrl* scrollText = new wxTextCtrl(
-				&dialog, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
-				wxTE_READONLY | wxTE_MULTILINE | wxTE_WORDWRAP
-			);
-
-			if (!createFailedStr.IsEmpty())
-				scrollText->AppendText( createFailedStr + L"\n" );
-
-			if (!accessFailedStr.IsEmpty())
-				scrollText->AppendText( accessFailedStr + L"\n" );
-
-			dialog += dialog.Heading( _("PCSX2 has been installed as a portable application but cannot run due to the following errors:" ) );
-			dialog += scrollText | pxExpand.Border(wxALL, 16);
-			dialog += 6;
-			dialog += dialog.Text( GetMsg_PortableModeRights() );
-			
-			// [TODO] : Add url for platform-relevant user permissions tutorials?  (low priority)
-
-			wxWindowID result = pxIssueConfirmation( dialog,
-				MsgButtons().Retry().Cancel().Custom(_("Switch to User Documents Mode"), "switchmode")
-			);
-			
-			switch (result)
-			{
-				case wxID_CANCEL:
-					throw Exception::StartupAborted( L"User canceled portable mode due to insufficient user access/permissions." );
-
-				case wxID_RETRY:
-					// do nothing (continues while loop)
-				break;
-				
-				case pxID_CUSTOM:
-					wxDialogWithHelpers dialog2( NULL, AddAppName(_("%s is switching to local install mode.")) );
-					dialog2 += dialog2.Heading( _("Try to remove the file called \"portable.ini\" from your installation directory manually." ) );
-					dialog2 += 6;
-					pxIssueConfirmation( dialog2, MsgButtons().OK() );
-					
-					return NULL;
-			}
-
+			Console.WriteLn(L"Install Mode Activated");
+			return false;
 		}
-	
-		// Success -- all user-based folders have write access.  PCSX2 should be able to run error-free!
-		// Force-set the custom documents mode, and set the 
 
+		// Success -- all user-based folders have write access.  PCSX2 should be able to run error-free!
+		// Force-set the custom documents mode, and set the
+		runWizard = stream["RunWizard"].as<bool>();
 		InstallationMode = InstallMode_Portable;
 		DocsFolderMode = DocsFolder_Custom;
 		CustomDocumentsFolder = portableDocsFolder;
-		return conf_portable.release();
-	}
-	
-	return NULL;
-}
 
+
+	    //  Run the First Time Wizard!
+		// ----------------------------
+		// Wizard is only run once.  The status of the wizard having been run is stored in
+		// the installation yaml file, which can be either the portable install (useful for admins)
+		// or the registry/user local documents position.		
+		if (runWizard)
+		{
+			DoFirstTimeWizard();	
+			stream["RunWizard"] = false;	
+			Save(GetPortableYamlPath()); // Save Portable Yaml
+			
+			// Save user's new general settings
+			AppConfig_OnChangedSettingsFolder(true);
+			AppSaveSettings();
+		}
+		
+		return isPortable;
+	}
+	else
+	{
+		return false;
+	}
+}
 // Reset RunWizard so the FTWizard is run again on next PCSX2 start.
 void Pcsx2App::WipeUserModeSettings()
-{	
+{
 	if (InstallationMode == InstallMode_Portable)
 	{
-		// Remove the portable.ini entry "RunWizard" conforming to this instance of PCSX2.
-		wxFileName portableIniFile( GetPortableIniPath() );
-		std::unique_ptr<wxFileConfig> conf_portable( OpenFileConfig( portableIniFile.GetFullPath() ) );
-		conf_portable->DeleteEntry(L"RunWizard");
+		// Remove the portable file entry "RunWizard" conforming to this instance of PCSX2.
+		std::string portableYamlFile(GetPortableYamlPath());
+		bool test = Load(portableYamlFile);
+		stream["RunWizard"] = true;
+		Save(portableYamlFile);
 	}
-	else 
+	else
 	{
 		// Remove the registry entry "RunWizard" conforming to this instance of PCSX2.
-		std::unique_ptr<wxConfigBase> conf_install( OpenInstallSettingsFile() );
-		conf_install->DeleteEntry(L"RunWizard");
+		conf_install = OpenInstallSettingsFile();
+		stream["RunWizard"] = true;
+		Save(usermodePath);
 	}
 }
 
-static void DoFirstTimeWizard()
+bool Pcsx2App::Load(fs::path fileName)
 {
-	// first time startup, so give the user the choice of user mode:
-	while(true)
+	if (fs::exists(fileName))
 	{
-		// PCSX2's FTWizard allows improptu restarting of the wizard without cancellation.
-		// This is typically used to change the user's language selection.
-
-		FirstTimeWizard wiz( NULL );
-		if( wiz.RunWizard( wiz.GetFirstPage() ) ) break;
-		if (wiz.GetReturnCode() != pxID_RestartWizard)
-			throw Exception::StartupAborted( L"User canceled FirstTime Wizard." );
-
-		Console.WriteLn( Color_StrongBlack, "Restarting First Time Wizard!" );
+		try
+		{
+			stream = YAML::LoadFile(fileName);
+			std::ostringstream os;
+			os << stream;
+			data = os.str();
+			return true;
+		}
+		catch (const std::exception& e)
+		{
+			DevCon.Warning("ERROR: ", e.what());
+			data = "";
+			return false;
+		}
+	}
+	else
+	{
+		return false;
 	}
 }
 
-wxConfigBase* Pcsx2App::OpenInstallSettingsFile()
+YAML::Node Pcsx2App::Save(fs::path fileName)
 {
-	std::unique_ptr<wxConfigBase> conf_install;
-
-#ifdef __WXMSW__
-	conf_install = std::unique_ptr<wxConfigBase>(new wxRegConfig());
-#else
-	// FIXME!!  Linux / Mac
-	// Where the heck should this information be stored?
-
-	wxDirName usrlocaldir( PathDefs::GetUserLocalDataDir() );
-	//wxDirName usrlocaldir( wxStandardPaths::Get().GetDataDir() );
-	if( !usrlocaldir.Exists() )
+	if (!folderUtils.DoesExist(fileName.parent_path().make_preferred()))
 	{
-		Console.WriteLn( L"Creating UserLocalData folder: " + usrlocaldir.ToString() );
-		usrlocaldir.Mkdir();
+		folderUtils.CreateFolder(fileName.parent_path().make_preferred());
 	}
 
-	wxFileName usermodefile( GetAppName() + L"-reg.ini" );
-	usermodefile.SetPath( usrlocaldir.ToString() );
-	conf_install = std::unique_ptr<wxConfigBase>(OpenFileConfig( usermodefile.GetFullPath() ));
-#endif
+	if (!stream)
+	{
+		try
+		{
+			stream = YAML::Load(fileName.make_preferred());
+		}
+		catch (const std::exception& e)
+		{
+			DevCon.Warning("ERROR: ", e.what());
+		}
+	}
+	std::ofstream fout(fileName.make_preferred());
+	fout << stream;
 
-	return conf_install.release();
+	return stream;
 }
 
+bool Pcsx2App::OpenInstallSettingsFile()
+{
+	// Implementation Notes:
+	//
+	// As of 0.9.8 and beyond, PCSX2's versioning should be strong enough to base yaml and
+	// plugin compatibility on version information alone.  This in turn allows us to ditch
+	// the old system (CWD-based yaml file mess) in favor of a system that simply stores
+	// most core application-level settings in the registry.
+
+	InstallationMode = InstallationModeType::InstallMode_Registered;
+	fs::path usrlocaldir = PathDefs::GetUserLocalDataDir();
+
+	InstallFolder = (wxFileName(wxStandardPaths::Get().GetExecutablePath())).GetPath().ToStdString();
+
+	std::string usermodeFile = (GetAppName().ToStdString() + "-reg.yaml");
+	usermodePath = Path::Combine(usrlocaldir, usermodeFile); 
+
+	if (!folderUtils.DoesExist(usermodePath))
+	{
+		CustomDocumentsFolder = PathDefs::AppRoot();
+
+		// Install Mode, genereate a new stream and manually write data to new file if it doesn't.
+		stream["DocumentsFolderMode"] = (int)DocsFolderMode;
+		stream["CustomDocumentsFolder"] = CustomDocumentsFolder.string();
+		stream["UseDefaultSettingsFolder"] = UseDefaultSettingsFolder;
+		stream["SettingsFolder"] = SettingsFolder.string();
+		stream["Install_Dir"] = InstallFolder;
+		stream["RunWizard"] = false;
+		Save(usermodePath);
+		DoFirstTimeWizard();
+		// Save user's new settings
+		AppConfig_OnChangedSettingsFolder(true);
+		AppSaveSettings();
+	}
+	else
+	{
+		Load(usermodePath);
+		runWizard = stream["RunWizard"].as<bool>();
+		if (stream["RunWizard"].as<bool>())
+		{
+			DoFirstTimeWizard(); // covering the case the file was edited to true manually
+			stream["RunWizard"] = false;
+			Save(usermodePath);
+		}
+
+		DocsFolderMode = (DocsModeType)stream["DocumentsFolderMode"].as<int>();
+		CustomDocumentsFolder = stream["CustomDocumentsFolder"].as<std::string>();
+		UseDefaultSettingsFolder = stream["UseDefaultSettingsFolder"].as<bool>();
+		SettingsFolder = stream["SettingsFolder"].as<std::string>();
+		InstallFolder = stream["Install_Dir"].as<std::string>();
+	}
+	return true;
+}
 
 void Pcsx2App::ForceFirstTimeWizardOnNextRun()
 {
-	std::unique_ptr<wxConfigBase> conf_install;
+	conf_install = TestForPortableInstall();
 
-	conf_install = std::unique_ptr<wxConfigBase>(TestForPortableInstall());
 	if (!conf_install)
-		conf_install = std::unique_ptr<wxConfigBase>(OpenInstallSettingsFile());
+		conf_install = OpenInstallSettingsFile();
 
-	conf_install->Write( L"RunWizard", true );
+	stream["RunWizard"] = true;
 }
 
 void Pcsx2App::EstablishAppUserMode()
 {
-	std::unique_ptr<wxConfigBase> conf_install;
+	// TODO - stop mutating the yaml directly, serialize and deserialize!
 
-	conf_install = std::unique_ptr<wxConfigBase>(TestForPortableInstall());
+	conf_install = TestForPortableInstall();
+
 	if (!conf_install)
-		conf_install = std::unique_ptr<wxConfigBase>(OpenInstallSettingsFile());
+		conf_install = OpenInstallSettingsFile();
 
-	conf_install->SetRecordDefaults(false);
-
-	//  Run the First Time Wizard!
-	// ----------------------------
-	// Wizard is only run once.  The status of the wizard having been run is stored in
-	// the installation ini file, which can be either the portable install (useful for admins)
-	// or the registry/user local documents position.
-
-	bool runWiz;
-	conf_install->Read( L"RunWizard", &runWiz, true );
-
-	App_LoadInstallSettings( conf_install.get() );
-
-	if( !Startup.ForceWizard && !runWiz )
+	if (!runWizard)
 	{
-		AppConfig_OnChangedSettingsFolder( false );
+		//No first time wizard. No save
+		AppConfig_OnChangedSettingsFolder(false);
 		return;
 	}
-
-	DoFirstTimeWizard();
-
-	// Save user's new settings
-	App_SaveInstallSettings( conf_install.get() );
-	AppConfig_OnChangedSettingsFolder( true );
-	AppSaveSettings();
-
-	// Wizard completed successfully, so let's not torture the user with this crap again!
-	conf_install->Write( L"RunWizard", false );
+	return;
 }
-
