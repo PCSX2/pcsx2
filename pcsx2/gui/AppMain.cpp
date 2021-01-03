@@ -721,7 +721,6 @@ void AppApplySettings( const AppConfig* oldconf )
 	fs::create_directories(g_Conf->Folders.Snapshots);
 	fs::create_directories(g_Conf->Folders.Cheats);
 	fs::create_directories(g_Conf->Folders.CheatsWS);
-	fs::create_directories(g_Conf->Folders.Langs);
 
 
 	g_Conf->EmuOptions.BiosFilename = g_Conf->FullpathToBios();

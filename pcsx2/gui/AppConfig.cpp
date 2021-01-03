@@ -225,7 +225,7 @@ namespace PathDefs
 
 	fs::path GetLangs()
 	{
-		return (GetDocuments() / "Langs").make_preferred();
+		return (PathDefs::AppRoot() / "Langs").make_preferred();
 	}
 
 	std::string Get( FoldersEnum_t folderidx )
