@@ -35,8 +35,6 @@
 
 #include <linux/videodev2.h>
 
-GtkWidget* new_combobox(const char* label, GtkWidget* vbox); // src/linux/config-gtk.cpp
-
 #define CLEAR(x) memset(&(x), 0, sizeof(x))
 
 namespace usb_eyetoy

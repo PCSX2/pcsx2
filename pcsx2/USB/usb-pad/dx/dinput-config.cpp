@@ -1316,7 +1316,7 @@ namespace usb_pad
 			INVERTFORCES[port] = SendDlgItemMessage(hWnd, IDC_CHECK1, BM_GETCHECK, 0, 0);
 			useRamp = !!SendDlgItemMessage(hWnd, IDC_CHECK3, BM_GETCHECK, 0, 0);
 			GAINZ[port][0] = SendMessage(GetDlgItem(hWnd, IDC_SLIDER4), TBM_GETPOS, 0, 0);
-			FFMULTI[port][0] = SendMessage(GetDlgItem(hWnd, IDC_SLIDER5), TBM_GETPOS, 0, 0);	
+			FFMULTI[port][0] = SendMessage(GetDlgItem(hWnd, IDC_SLIDER5), TBM_GETPOS, 0, 0);
 		}
 
 		void SaveDInputConfig(int port, const char* dev_type)
@@ -1460,11 +1460,11 @@ namespace usb_pad
 			struct DXDlgSettings s;
 			s.port = port;
 			s.dev_type = dev_type;
-			if (strcmp(dev_type, "buzz_device") == 0)
+			if (strcmp(dev_type, BuzzDevice::TypeName()) == 0)
 			{
 				return DialogBoxParam(h.hInst, MAKEINTRESOURCE(IDD_DLG_BUZZ), h.hWnd, DxDialogProc, (LPARAM)&s);
 			}
-			if (strcmp(dev_type, "keyboardmania") == 0)
+			if (strcmp(dev_type, KeyboardmaniaDevice::TypeName()) == 0)
 			{
 				return DialogBoxParam(h.hInst, MAKEINTRESOURCE(IDD_DLG_KEYBOARDMANIA), h.hWnd, DxDialogProc, (LPARAM)&s);
 			}
