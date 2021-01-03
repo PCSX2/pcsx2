@@ -444,8 +444,6 @@ __fi void mVUinitFirstPass(microVU& mVU, uptr pState, u8* thisPtr) {
 	mVUregs.blockType		= 0;
 	mVUregs.viBackUp		= 0;
 	mVUregs.flagInfo		= 0;
-	mVUregs.fullFlags0		= 0;
-	mVUregs.fullFlags1		= 0;
 	mVUsFlagHack			= CHECK_VU_FLAGHACK;
 	mVUinitConstValues(mVU);
 }

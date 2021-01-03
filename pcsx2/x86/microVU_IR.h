@@ -47,8 +47,6 @@ union __aligned16 microRegInfo {
 			u32 quick32[2];
 		};
 
-		u32 fullFlags0; // clip * 6 | mac * 12 | status * 12
-		u8  fullFlags1; // clip * 6
 		u8  vi15v;		// 'vi15' constant is valid
 		u16 vi15;		// Constant Prop Info for vi15
 

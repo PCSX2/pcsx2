@@ -76,8 +76,7 @@ public:
 	microBlock* add(microBlock* pBlock) {
 		microBlock* thisBlock = search(&pBlock->pState);
 		if (!thisBlock) {
-			u8  doFF    = doFullFlagOpt && (pBlock->pState.flagInfo&1);
-			u8  fullCmp = pBlock->pState.needExactMatch || doFF;
+			u8  fullCmp = pBlock->pState.needExactMatch;
 			if (fullCmp) fListI++; else qListI++;
 
 			microBlockLink*& blockList = fullCmp ? fBlockList : qBlockList;
@@ -100,8 +99,7 @@ public:
 		return thisBlock;
 	}
 	__ri microBlock* search(microRegInfo* pState) {
-		u8  doFF = doFullFlagOpt && (pState->flagInfo&1);
-		if (pState->needExactMatch || doFF) { // Needs Detailed Search (Exact Match of Pipeline State)
+		if (pState->needExactMatch) { // Needs Detailed Search (Exact Match of Pipeline State)
 			for(microBlockLink* linkI = fBlockList; linkI != NULL; linkI = linkI->next) {
 				if (mVUquickSearch((void*)pState, (void*)&linkI->block.pState, sizeof(microRegInfo)))
 					return &linkI->block;

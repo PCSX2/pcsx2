@@ -521,8 +521,6 @@ __ri int mVUbranchCheck(mV) {
 
 			mVUregs.needExactMatch |= 7; // This might not be necessary, but w/e...
 			mVUregs.flagInfo   = 0;
-			mVUregs.fullFlags0 = 0;
-			mVUregs.fullFlags1 = 0;
 			DevCon.Warning("microVU%d: %s in %s delay slot! [%04x]  - If game broken report to PCSX2 Team", mVU.index,
 							branchSTR[mVUlow.branch&0xf], branchSTR[branchType&0xf], xPC);
 			return 1;

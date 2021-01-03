@@ -303,14 +303,6 @@ static const bool doCFlagInsts = true; // Set to true to enable multiple clip   
 // Setting one of these to 0 acts as if there is only 1 instance of the
 // corresponding flag, which may be useful when debugging flag pipeline bugs.
 
-static const int doFullFlagOpt = false; // Set above to false to enable full flag optimization
-// This attempts to eliminate some flag shuffling at the end of blocks, but
-// can end up creating more recompiled code. The max amount of times this optimization
-// is performed per block can be set by changing the doFullFlagOpt value to be that limit.
-// i.e. setting doFullFlagOpt to 2 will recompile the current block at-most 2 times with
-// the full flag optimization.
-// Note: This optimization doesn't really seem to be benefitial and is buggy...
-
 // Branch in Branch Delay Slots
 static const bool doBranchInDelaySlot = true; // Set to true to enable evil-branches
 // This attempts to emulate the correct behavior for branches in branch delay
