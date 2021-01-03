@@ -70,13 +70,12 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
 	xPSHUF.D(xmmPQ, xmmPQ, 0xe1);
 
 	if (isVU1) {
-		xPSHUF.D(xmmPQ, xmmPQ, pInst ? 0x1b : 0x4e);
+		if (pInst) { xPSHUF.D(xmmPQ, xmmPQ, 0xb4); } // Swap Pending/Active P
+		xPSHUF.D(xmmPQ, xmmPQ, 0xC6); // 3 0 1 2
 		xMOVSS(ptr32[&mVU.regs().VI[REG_P].UL], xmmPQ);
-		xPSHUF.D(xmmPQ, xmmPQ, pInst ? 0x1b : 0x4e);
-
-		xPSHUF.D(xmmPQ, xmmPQ, 0x1b);
+		xPSHUF.D(xmmPQ, xmmPQ, 0x87); // 0 2 1 3
 		xMOVSS(ptr32[&mVU.regs().pending_p], xmmPQ);
-		xPSHUF.D(xmmPQ, xmmPQ, 0x1b);
+		xPSHUF.D(xmmPQ, xmmPQ, 0x27); // 3 2 1 0
 	}
 
 	// Save MAC, Status and CLIP Flag Instances
@@ -169,13 +168,12 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 	xPSHUF.D(xmmPQ, xmmPQ, 0xe1);
 
 	if (isVU1) {
-		xPSHUF.D(xmmPQ, xmmPQ, pInst ? 0x1b : 0x4e);
+		if (pInst) { xPSHUF.D(xmmPQ, xmmPQ, 0xb4); } // Swap Pending/Active P
+		xPSHUF.D(xmmPQ, xmmPQ, 0xC6); // 3 0 1 2
 		xMOVSS(ptr32[&mVU.regs().VI[REG_P].UL], xmmPQ);
-		xPSHUF.D(xmmPQ, xmmPQ, pInst ? 0x1b : 0x4e);
-
-		xPSHUF.D(xmmPQ, xmmPQ, 0x1b);
+		xPSHUF.D(xmmPQ, xmmPQ, 0x87); // 0 2 1 3
 		xMOVSS(ptr32[&mVU.regs().pending_p], xmmPQ);
-		xPSHUF.D(xmmPQ, xmmPQ, 0x1b);
+		xPSHUF.D(xmmPQ, xmmPQ, 0x27); // 3 2 1 0
 	}
 
 	// Save MAC, Status and CLIP Flag Instances
@@ -233,6 +231,7 @@ void mVUsetupBranch(mV, microFlagCycles& mFC) {
 
 	// Shuffle P/Q regs since every block starts at instance #0
 	if (mVU.p || mVU.q) { xPSHUF.D(xmmPQ, xmmPQ, shufflePQ); }
+	mVU.p = 0, mVU.q = 0;
 }
 
 void normBranchCompile(microVU& mVU, u32 branchPC) {
@@ -309,6 +308,7 @@ void normBranch(mV, microFlagCycles& mFC) {
 		for (size_t i = 0; i < (sizeof(microRegInfo) - 4) / 4; i++, lpS++, cpS++) {
 			xMOV(ptr32[lpS], cpS[0]);
 		}
+		mVUsetupBranch(mVU, mFC);
 		mVUendProgram(mVU, &mFC, 3);
 		iPC = branchAddr(mVU) / 4;
 		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
