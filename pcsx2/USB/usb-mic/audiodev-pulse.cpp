@@ -19,8 +19,6 @@
 #include "USB/dynlink/pulse.h"
 #endif
 
-GtkWidget* new_combobox(const char* label, GtkWidget* vbox); // src/linux/config-gtk.cpp
-
 namespace usb_mic
 {
 	namespace audiodev_pulse

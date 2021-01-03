@@ -109,7 +109,6 @@ namespace usb_pad
 		{
 			return {};
 		}
-		static void Initialize();
 	};
 
 	class SeamicDevice
@@ -475,27 +474,30 @@ namespace usb_pad
 	static const int HATS_8TO4[] = {PAD_HAT_N, PAD_HAT_E, PAD_HAT_S, PAD_HAT_W};
 
 #define PAD_VID 0x046D
-#define PAD_PID 0xCA03 //black MOMO
+#define PAD_MOMO 0xCA03    //black MOMO
 #define GENERIC_PID 0xC294 //actually Driving Force aka PID that most logitech wheels initially report
 #define PID_DF 0xC294
 #define PID_DFP 0xC298 //SELECT + R3 + RIGHT SHIFT PADDLE (R1) ???
 #define PID_DFGT 0xC29A
 #define PID_FORMULA 0xC202 //Yellow Wingman Formula
-#define PID_FGP 0xC20E //Formula GP (maybe GT FORCE LPRC-1000)
-#define PID_FFGP 0xC293 // Formula Force GP
-#define PID_GTF 0xC293 // as is Formula Force GP
-#define PID_G25 0xC299 // OutRun 2 (jp) supports it apparently
+#define PID_FGP 0xC20E     //Formula GP (maybe GT FORCE LPRC-1000)
+#define PID_FFGP 0xC293    // Formula Force GP
+#define PID_GTF 0xC293     // as is Formula Force GP
+#define PID_G25 0xC299     // OutRun 2 (jp) supports it apparently
+#define PID_G27 0xC29B
 #define MAX_BUTTONS 32
 #define MAX_AXES 7 //random 7: axes + hatswitch
 #define MAX_JOYS 32
+#define PAD_LG_FFB_WHITELIST \
+    PAD_MOMO, PID_DF, PID_DFP, PID_DFGT, PID_FORMULA, PID_FGP, PID_FFGP, PID_GTF, PID_G25, PID_G27
 
 	/**
   linux hid-lg4ff.c
   http://www.spinics.net/lists/linux-input/msg16570.html
-  Every Logitech wheel reports itself as generic Logitech Driving Force wheel (VID 046d, PID c294). This is done to ensure that the 
-  wheel will work on every USB HID-aware system even when no Logitech driver is available. It however limits the capabilities of the 
-  wheel - range is limited to 200 degrees, G25/G27 don't report the clutch pedal and there is only one combined axis for throttle and 
-  brake. The switch to native mode is done via hardware-specific command which is different for each wheel. When the wheel 
+  Every Logitech wheel reports itself as generic Logitech Driving Force wheel (VID 046d, PID c294). This is done to ensure that the
+  wheel will work on every USB HID-aware system even when no Logitech driver is available. It however limits the capabilities of the
+  wheel - range is limited to 200 degrees, G25/G27 don't report the clutch pedal and there is only one combined axis for throttle and
+  brake. The switch to native mode is done via hardware-specific command which is different for each wheel. When the wheel
   receives such command, it simulates reconnect and reports to the OS with its actual PID.
   Currently not emulating reattachment. Any games that expect to?
 **/

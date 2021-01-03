@@ -108,7 +108,6 @@ namespace usb_pad
 					}
 				}
 			}
-		//quit:
 			closedir(dirp);
 			return false;
 		}
@@ -151,7 +150,7 @@ namespace usb_pad
 					str.clear();
 					str.str("");
 					str << EVDEV_DIR << dp->d_name;
-					std::string path = str.str();
+					const std::string path = str.str();
 
 					auto it = std::find_if(list_cache.begin(), list_cache.end(),
 										   [&path](evdev_device& dev) {
@@ -168,14 +167,14 @@ namespace usb_pad
 						continue;
 					}
 
-					//list_cache.push_back(std::make_pair(std::string(dp->d_name), path));
-
 					res = ioctl(fd, EVIOCGNAME(sizeof(buf)), buf);
 					if (res < 0)
 						Console.Warning("EVIOCGNAME");
 					else
 					{
-						list_cache.push_back({buf, dp->d_name, path});
+						evdev_device dev{buf, dp->d_name, path, {}};
+						res = ioctl(fd, EVIOCGID, &dev.input_id);
+						list_cache.push_back(dev);
 					}
 
 					close(fd);
@@ -183,7 +182,6 @@ namespace usb_pad
 			}
 
 			list.assign(list_cache.begin(), list_cache.end());
-		//quit:
 			closedir(dirp);
 		}
 
@@ -220,7 +218,7 @@ namespace usb_pad
 				//case ABS_Y: mWheelData.clutch = NORM(value, 0xFF); break; //no wheel on PS2 has one, afaik
 				//case ABS_RX: mWheelData.axis_rx = NORM(event.value, 0xFF); break;
 				case ABS_RY:
-				//treat_me_like_ABS_RY:
+					//treat_me_like_ABS_RY:
 					mWheelData.throttle = 0xFF;
 					mWheelData.brake = 0xFF;
 					if (value < 0)
@@ -230,18 +228,10 @@ namespace usb_pad
 					break;
 				case 0x80 | JOY_THROTTLE:
 				case ABS_Z:
-					/*if (mIsGamepad)
-				mWheelData.brake = 0xFF - NORM(value, 0xFF);
-			else*/
 					mWheelData.throttle = device.cfg.inverted[1] ? NORM(value, 0xFF) : 0xFF - NORM(value, 0xFF);
 					break;
 				case 0x80 | JOY_BRAKE:
 				case ABS_RZ:
-					/*if (mIsGamepad)
-				mWheelData.throttle = 0xFF - NORM(value, 0xFF);
-			else if (mIsDualAnalog)
-				goto treat_me_like_ABS_RY;
-			else*/
 					mWheelData.brake = device.cfg.inverted[2] ? NORM(value, 0xFF) : 0xFF - NORM(value, 0xFF);
 					break;
 
@@ -323,9 +313,8 @@ namespace usb_pad
 									break;
 
 								value = AxisCorrect(device.abs_correct[event.code], event.value);
-								/*if (event.code == 0)
-								event.code, device.axis_map[event.code] & ~0x80, event.value, value);
-						*/
+								//if (event.code == 0)
+								//	event.code, device.axis_map[event.code] & ~0x80, event.value, value);
 								SetAxis(device, event.code, value);
 							}
 							break;
@@ -333,7 +322,7 @@ namespace usb_pad
 							{
 								code = device.btn_map[event.code] != (uint16_t)-1 ? device.btn_map[event.code] : event.code;
 
-								if (mType == WT_BUZZ_CONTROLLER)
+								if (mType == WT_BUZZ_CONTROLLER || mType == WT_KEYBOARDMANIA_CONTROLLER)
 								{
 									if (device.btn_map[event.code] != (uint16_t)-1)
 									{
@@ -568,7 +557,7 @@ namespace usb_pad
 				}
 
 				if (joypath.empty() || !file_exists(joypath))
-					goto quit;
+					return 1;
 
 				int fd = -1;
 				if ((fd = open(joypath.c_str(), O_RDWR | O_NONBLOCK)) < 0)
@@ -584,16 +573,6 @@ namespace usb_pad
 					int pid, vid;
 					if ((mUseRawFF = FindHidraw(evphys, hid_dev, &vid, &pid)))
 					{
-
-						// For safety, only allow Logitech (classic ffb) devices
-						if (vid != 0x046D /* Logitech */ /*|| info.bustype != BUS_USB*/
-							|| pid == 0xc262             /* G920 hid mode */
-							|| pid == 0xc261             /* G920 xbox mode */
-						)
-						{
-							mUseRawFF = 0;
-						}
-
 						// check if still using hidraw and run the thread
 						if (mUseRawFF && !mWriterThreadIsRunning)
 						{
@@ -637,13 +616,6 @@ namespace usb_pad
 					continue;
 				}
 
-				/*unsigned int version;
-		if (ioctl(mHandle, EVIOCGVERSION, &version) < 0)
-		{
-			SysMessage("%s: Get version failed: %s\n", APINAME, strerror(errno));
-			return false;
-		}*/
-
 				int max_buttons = JOY_STEERING;
 				switch (mType)
 				{
@@ -651,8 +623,13 @@ namespace usb_pad
 						LoadBuzzMappings(mDevType, mPort, it.id, device.cfg);
 						max_buttons = 20;
 						break;
+					case WT_KEYBOARDMANIA_CONTROLLER:
+						max_buttons = 31;
+						LoadMappings(mDevType, mPort, it.id, max_buttons, 0, device.cfg);
+						break;
 					default:
-						LoadMappings(mDevType, mPort, it.id, device.cfg);
+						max_buttons = JOY_STEERING;
+						LoadMappings(mDevType, mPort, it.id, max_buttons, 3, device.cfg);
 						if (!LoadSetting(mDevType, mPort, APINAME, N_GAIN_ENABLED, b_gain))
 							b_gain = 1;
 						if (!LoadSetting(mDevType, mPort, APINAME, N_GAIN, gain))
@@ -715,12 +692,6 @@ namespace usb_pad
 					}
 				}
 
-#ifndef NDEBUG
-				for (int i = 0; i < ABS_MAX; ++i)
-				{
-				}
-#endif
-
 				for (int i = BTN_JOYSTICK; i < KEY_MAX; ++i)
 				{
 					if (test_bit(i, keybit))
@@ -763,10 +734,6 @@ namespace usb_pad
 			}
 
 			return 0;
-
-		quit:
-			Close();
-			return 1;
 		}
 
 		int EvDevPad::Close()
@@ -776,9 +743,12 @@ namespace usb_pad
 
 			if (mHidHandle != -1)
 			{
-				uint8_t reset[7] = {0};
-				reset[0] = 0xF3; //stop forces
-				write(mHidHandle, reset, sizeof(reset));
+				if (mType <= WT_GT_FORCE)
+				{
+					uint8_t reset[7] = {0};
+					reset[0] = 0xF3; //stop forces
+					write(mHidHandle, reset, sizeof(reset));
+				}
 				close(mHidHandle);
 			}
 

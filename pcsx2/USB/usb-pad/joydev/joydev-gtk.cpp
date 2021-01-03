@@ -32,10 +32,10 @@ namespace usb_pad
 #define JOYTYPE "joytype"
 #define CFG "cfg"
 
-		static bool GetEventName(const char* dev_type, int map, int event, const char** name)
+		static bool GetEventName(const char* dev_type, int map, int event, bool is_button, const char** name)
 		{
 			static char buf[256] = {0};
-			if (map < evdev::JOY_STEERING)
+			if (is_button)
 			{
 				snprintf(buf, sizeof(buf), "Button %d", event);
 			}

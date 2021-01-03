@@ -73,7 +73,6 @@ namespace usb_pad
 					close(fd);
 				}
 			}
-		//quit:
 			closedir(dirp);
 		}
 
@@ -381,7 +380,7 @@ namespace usb_pad
 					continue;
 				}
 
-				LoadMappings(mDevType, mPort, device.name, device.cfg);
+				LoadMappings(mDevType, mPort, device.name, 3, 16, device.cfg);
 
 				// Axis Mapping
 				if (ioctl(device.cfg.fd, JSIOCGAXMAP, device.axis_map) < 0)
@@ -394,16 +393,17 @@ namespace usb_pad
 					if (ioctl(device.cfg.fd, JSIOCGAXES, &(count)) >= 0)
 					{
 						for (int i = 0; i < count; ++i)
-
-						for (int k = 0; k < count; k++)
 						{
-							for (int i = JOY_STEERING; i < JOY_MAPS_COUNT; i++)
+							for (int k = 0; k < count; k++)
 							{
-								if (k == device.cfg.controls[i])
+								for (int i = JOY_STEERING; i < JOY_MAPS_COUNT; i++)
 								{
-									device.axis_map[k] = 0x80 | i;
-									if (i == JOY_STEERING)
-										has_steering = true;
+									if (k == device.cfg.controls[i])
+									{
+										device.axis_map[k] = 0x80 | i;
+										if (i == JOY_STEERING)
+											has_steering = true;
+									}
 								}
 							}
 						}

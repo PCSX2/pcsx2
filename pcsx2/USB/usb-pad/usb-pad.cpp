@@ -52,6 +52,7 @@ namespace usb_pad
 		"Logitech Buzz(tm) Controller V1",
 		"",
 		"Logitech"};
+
 	static const USBDescStrings kbm_desc_strings = {
 		"",
 		"USB Multipurpose Controller",
@@ -93,7 +94,7 @@ namespace usb_pad
 
 	std::list<std::string> KeyboardmaniaDevice::ListAPIs()
 	{
-		return PadDevice::ListAPIs();
+		return {"evdev"};
 	}
 
 	const TCHAR* KeyboardmaniaDevice::LongAPIName(const std::string& name)
@@ -319,7 +320,6 @@ namespace usb_pad
 			s->pad->Close();
 	}
 
-
 	void pad_reset_data(generic_data_t* d)
 	{
 		memset(d, 0, sizeof(generic_data_t));
@@ -540,6 +540,28 @@ namespace usb_pad
 #endif
 	}
 
+	static void pad_init(PADState* s, int port, Pad* pad)
+	{
+		s->f.dev_subtype = pad->Type();
+		s->pad = pad;
+		s->port = port;
+
+		s->dev.speed = USB_SPEED_FULL;
+		s->dev.klass.handle_attach = usb_desc_attach;
+		s->dev.klass.handle_reset = pad_handle_reset;
+		s->dev.klass.handle_control = pad_handle_control;
+		s->dev.klass.handle_data = pad_handle_data;
+		s->dev.klass.unrealize = pad_handle_destroy;
+		s->dev.klass.open = pad_open;
+		s->dev.klass.close = pad_close;
+		s->dev.klass.usb_desc = &s->desc;
+		s->dev.klass.product_desc = nullptr;
+
+		usb_desc_init(&s->dev);
+		usb_ep_init(&s->dev);
+		pad_handle_reset((USBDevice*)s);
+	}
+
 	USBDevice* PadDevice::CreateDevice(int port)
 	{
 		std::string varApi;
@@ -554,13 +576,13 @@ namespace usb_pad
 		if (!proxy)
 		{
 			Console.WriteLn("USB: PAD: Invalid input API.\n");
-			return NULL;
+			return nullptr;
 		}
 
 		Pad* pad = proxy->CreateObject(port, TypeName());
 
 		if (!pad)
-			return NULL;
+			return nullptr;
 
 		pad->Type((PS2WheelTypes)GetSelectedSubtype(std::make_pair(port, TypeName())));
 		PADState* s = new PADState();
@@ -610,23 +632,7 @@ namespace usb_pad
 		if (usb_desc_parse_config(config_desc, config_desc_len, s->desc_dev) < 0)
 			goto fail;
 
-		s->f.dev_subtype = pad->Type();
-		s->pad = pad;
-		s->dev.speed = USB_SPEED_FULL;
-		s->dev.klass.handle_attach = usb_desc_attach;
-		s->dev.klass.handle_reset = pad_handle_reset;
-		s->dev.klass.handle_control = pad_handle_control;
-		s->dev.klass.handle_data = pad_handle_data;
-		s->dev.klass.unrealize = pad_handle_destroy;
-		s->dev.klass.open = pad_open;
-		s->dev.klass.close = pad_close;
-		s->dev.klass.usb_desc = &s->desc;
-		s->dev.klass.product_desc = s->desc.str[2]; //not really used
-		s->port = port;
-
-		usb_desc_init(&s->dev);
-		usb_ep_init(&s->dev);
-		pad_handle_reset((USBDevice*)s);
+		pad_init(s, port, pad);
 
 		return (USBDevice*)s;
 
@@ -682,13 +688,13 @@ namespace usb_pad
 		if (!proxy)
 		{
 			Console.WriteLn("RBDK: Invalid input API.\n");
-			return NULL;
+			return nullptr;
 		}
 
 		Pad* pad = proxy->CreateObject(port, TypeName());
 
 		if (!pad)
-			return NULL;
+			return nullptr;
 
 		pad->Type(WT_ROCKBAND1_DRUMKIT);
 		PADState* s = new PADState();
@@ -701,23 +707,7 @@ namespace usb_pad
 		if (usb_desc_parse_config(rb1_config_descriptor, sizeof(rb1_config_descriptor), s->desc_dev) < 0)
 			goto fail;
 
-		s->f.dev_subtype = pad->Type();
-		s->pad = pad;
-		s->port = port;
-		s->dev.speed = USB_SPEED_FULL;
-		s->dev.klass.handle_attach = usb_desc_attach;
-		s->dev.klass.handle_reset = pad_handle_reset;
-		s->dev.klass.handle_control = pad_handle_control;
-		s->dev.klass.handle_data = pad_handle_data;
-		s->dev.klass.unrealize = pad_handle_destroy;
-		s->dev.klass.open = pad_open;
-		s->dev.klass.close = pad_close;
-		s->dev.klass.usb_desc = &s->desc;
-		s->dev.klass.product_desc = s->desc.str[2];
-
-		usb_desc_init(&s->dev);
-		usb_ep_init(&s->dev);
-		pad_handle_reset((USBDevice*)s);
+		pad_init(s, port, pad);
 
 		return (USBDevice*)s;
 
@@ -774,23 +764,7 @@ namespace usb_pad
 		if (usb_desc_parse_config(buzz_config_descriptor, sizeof(buzz_config_descriptor), s->desc_dev) < 0)
 			goto fail;
 
-		s->f.dev_subtype = pad->Type();
-		s->pad = pad;
-		s->port = port;
-		s->dev.speed = USB_SPEED_FULL;
-		s->dev.klass.handle_attach = usb_desc_attach;
-		s->dev.klass.handle_reset = pad_handle_reset;
-		s->dev.klass.handle_control = pad_handle_control;
-		s->dev.klass.handle_data = pad_handle_data;
-		s->dev.klass.unrealize = pad_handle_destroy;
-		s->dev.klass.open = pad_open;
-		s->dev.klass.close = pad_close;
-		s->dev.klass.usb_desc = &s->desc;
-		s->dev.klass.product_desc = s->desc.str[2];
-
-		usb_desc_init(&s->dev);
-		usb_ep_init(&s->dev);
-		pad_handle_reset((USBDevice*)s);
+		pad_init(s, port, pad);
 
 		return (USBDevice*)s;
 
@@ -828,13 +802,13 @@ namespace usb_pad
 		if (!proxy)
 		{
 			Console.WriteLn("usb-pad: %s: Invalid input API.", TypeName());
-			return NULL;
+			return nullptr;
 		}
 
 		Pad* pad = proxy->CreateObject(port, TypeName());
 
 		if (!pad)
-			return NULL;
+			return nullptr;
 
 		pad->Type(WT_KEYBOARDMANIA_CONTROLLER);
 		PADState* s = new PADState();
@@ -847,23 +821,7 @@ namespace usb_pad
 		if (usb_desc_parse_config(kbm_config_descriptor, sizeof(kbm_config_descriptor), s->desc_dev) < 0)
 			goto fail;
 
-		s->f.dev_subtype = pad->Type();
-		s->pad = pad;
-		s->port = port;
-		s->dev.speed = USB_SPEED_FULL;
-		s->dev.klass.handle_attach = usb_desc_attach;
-		s->dev.klass.handle_reset = pad_handle_reset;
-		s->dev.klass.handle_control = pad_handle_control;
-		s->dev.klass.handle_data = pad_handle_data;
-		s->dev.klass.unrealize = pad_handle_destroy;
-		s->dev.klass.open = pad_open;
-		s->dev.klass.close = pad_close;
-		s->dev.klass.usb_desc = &s->desc;
-		s->dev.klass.product_desc = s->desc.str[2];
-
-		usb_desc_init(&s->dev);
-		usb_ep_init(&s->dev);
-		pad_handle_reset((USBDevice*)s);
+		pad_init(s, port, pad);
 
 		return (USBDevice*)s;
 
