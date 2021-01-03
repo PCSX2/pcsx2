@@ -37,8 +37,8 @@ bool FileExists(std::wstring szPath)
 
 void SaveConf()
 {
-	const std::wstring file(GetSettingsFolder().Combine(wxString("DEV9.cfg")).GetFullPath());
-	DeleteFile(file.c_str());
+	const std::string file(GetSettingsFolder() / "DEV9.cfg");
+	DeleteFileA(file.c_str());
 
 	//Create file with UT16 BOM to allow PrivateProfile to save unicode data
 	int bom = 0xFEFF;
@@ -85,7 +85,7 @@ void SaveConf()
 
 void LoadConf()
 {
-	const std::wstring file(GetSettingsFolder().Combine(wxString("DEV9.cfg")).GetFullPath());
+	const std::string file(GetSettingsFolder() / "DEV9.cfg");
 	if (FileExists(file.c_str()) == false)
 		return;
 

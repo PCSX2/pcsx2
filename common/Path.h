@@ -205,30 +205,3 @@ public:
 	const wxFileName& GetFilename() const { return *this; }
 	wxFileName& GetFilename() { return *this; }
 };
-
-// --------------------------------------------------------------------------------------
-//  Path Namespace
-// --------------------------------------------------------------------------------------
-// Cross-platform utilities for manipulation of paths and filenames.  Mostly these fall
-// back on wxWidgets APIs internally, but are still helpful because some of wx's file stuff
-// has minor glitches, or requires sloppy wxFileName typecasting.
-//
-namespace Path
-{
-	extern bool IsRelative(const wxString& path);
-	extern s64 GetFileSize(const wxString& path);
-
-	extern wxString Normalize(const wxString& srcpath);
-	extern wxString Normalize(const wxDirName& srcpath);
-	extern wxString MakeAbsolute(const wxString& srcpath);
-
-	extern wxString Combine(const wxString& srcPath, const wxString& srcFile);
-	extern wxString Combine(const wxDirName& srcPath, const wxFileName& srcFile);
-	extern wxString Combine(const wxString& srcPath, const wxDirName& srcFile);
-	extern wxString ReplaceExtension(const wxString& src, const wxString& ext);
-	extern wxString ReplaceFilename(const wxString& src, const wxString& newfilename);
-	extern wxString GetFilename(const wxString& src);
-	extern wxString GetDirectory(const wxString& src);
-	extern wxString GetFilenameWithoutExt(const wxString& src);
-	extern wxString GetRootDirectory(const wxString& src);
-} // namespace Path

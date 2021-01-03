@@ -104,7 +104,21 @@ IniLoader::IniLoader()
 {
 }
 
-void IniLoader::Entry(const wxString& var, wxString& value, const wxString defvalue)
+void IniLoader::Entry(const std::string &var, std::string &value, const std::string defvalue)
+{
+	wxString dest;
+	if (m_Config)
+	{
+		m_Config->Read(var, &dest, defvalue);
+		value = dest.ToStdString();
+	}
+	else
+	{
+		value = defvalue;
+	}
+}
+
+void IniLoader::Entry(const wxString &var, wxString &value, const wxString defvalue)
 {
 	if (m_Config)
 		m_Config->Read(var, &value, defvalue);
@@ -131,7 +145,39 @@ void IniLoader::Entry(const wxString& var, wxDirName& value, const wxDirName def
 	}
 }
 
-void IniLoader::Entry(const wxString& var, wxFileName& value, const wxFileName defvalue, bool isAllowRelative)
+void IniLoader::Entry(const wxString& var, fs::path& value, const fs::path defvalue, bool isAllowRelative)
+{
+	wxString dest;
+	if (m_Config)
+	{
+		m_Config->Read(var, &dest, wxEmptyString);
+	}
+	if (dest.IsEmpty())
+	{
+		value = defvalue;
+	}
+	else
+	{
+		value = dest.ToStdString();
+		if (isAllowRelative)
+		{
+			value = g_fullBaseDirName.ToString().ToStdString() / value;
+		}
+		if (value.is_absolute())
+		{
+			try
+			{
+				value = fs::canonical(value);
+			}
+			catch (fs::filesystem_error ex)
+			{
+				value = defvalue;
+			}
+		}
+	}
+}
+
+void IniLoader::Entry(const wxString &var, wxFileName &value, const wxFileName defvalue, bool isAllowRelative)
 {
 	wxString dest(defvalue.GetFullPath());
 	if (m_Config)
@@ -288,7 +334,15 @@ IniSaver::IniSaver()
 {
 }
 
-void IniSaver::Entry(const wxString& var, wxString& value, const wxString defvalue)
+void IniSaver::Entry(const std::string &var, std::string &value, const std::string defvalue)
+{
+	wxString saver(value);
+	if (!m_Config)
+		return;
+	m_Config->Write(var, saver);
+}
+
+void IniSaver::Entry(const wxString &var, wxString &value, const wxString defvalue)
 {
 	if (!m_Config)
 		return;
@@ -307,10 +361,21 @@ void IniSaver::Entry(const wxString& var, wxDirName& value, const wxDirName defv
 	if (isAllowRelative)
 		res = wxDirName::MakeAutoRelativeTo(res, g_fullBaseDirName.ToString());
 
+     m_Config->Write(var, res.ToString());
+}
 
-	/*if( value == defvalue )
-		m_Config->Write( var, wxString() );
-	else*/
+void IniSaver::Entry(const wxString &var, fs::path &value, const fs::path defvalue, bool isAllowRelative)
+{
+	if (!m_Config)
+		return;
+	wxDirName res(value.wstring());
+
+	if (res.IsAbsolute())
+		res.Normalize();
+
+	if (isAllowRelative)
+		res = wxDirName::MakeAutoRelativeTo(res, g_fullBaseDirName.ToString());
+
 	m_Config->Write(var, res.ToString());
 }
 

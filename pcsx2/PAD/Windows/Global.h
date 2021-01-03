@@ -81,9 +81,9 @@ static inline unsigned int timeGetTime()
 	return (ms & 0xFFFFFFFF); // MS code is u32 ...
 }
 
-#include "Utilities/Dependencies.h"
-#include "Utilities/StringHelpers.h"
-#include "Utilities/Path.h"
+#include "common/Dependencies.h"
+#include "common/StringHelpers.h"
+#include "common/Path.h"
 
 #include <X11/Xutil.h>
 

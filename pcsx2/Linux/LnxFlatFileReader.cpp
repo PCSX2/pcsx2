@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
+#include "common/PathUtils.h"
 
 FlatFileReader::FlatFileReader(bool shareWrite) : shareWrite(shareWrite)
 {
@@ -95,5 +96,5 @@ void FlatFileReader::Close(void)
 
 uint FlatFileReader::GetBlockCount(void) const
 {
-	return (int)(Path::GetFileSize(m_filename) / m_blocksize);
+	return (int)(Path::GetFileSize(m_filename.ToStdString()) / m_blocksize);
 }

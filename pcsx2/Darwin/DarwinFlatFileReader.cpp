@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
+#include "PathUtils.h"
 
 #if defined(__APPLE__)
 #warning Tested on FreeBSD, not OS X. Be very afraid.
@@ -124,5 +125,5 @@ void FlatFileReader::Close(void)
 
 uint FlatFileReader::GetBlockCount(void) const
 {
-	return (int)(Path::GetFileSize(m_filename) / m_blocksize);
+	return (int)(Path::GetFileSize(static_cast<std::string>(m_filename)) / m_blocksize);
 }

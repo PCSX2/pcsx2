@@ -208,9 +208,7 @@ void Pcsx2App::SysApplySettings()
 
 	CDVD_SourceType cdvdsrc(g_Conf->CdvdSource);
 	if (cdvdsrc != CDVDsys_GetSourceType() || (cdvdsrc == CDVD_SourceType::Iso && (CDVDsys_GetFile(cdvdsrc) != g_Conf->CurrentIso)))
-	{
 		CoreThread.ResetCdvd();
-	}
 
 	CDVDsys_SetFile(CDVD_SourceType::Iso, g_Conf->CurrentIso);
 }
@@ -495,7 +493,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 		else
 		{
 			// No ws cheat files found at the cheats_ws folder, try the ws cheats zip file.
-			wxString cheats_ws_archive = Path::Combine(PathDefs::GetProgramDataDir(), wxFileName(L"cheats_ws.zip"));
+			wxString cheats_ws_archive = (PathDefs::GetProgramDataDir() / "cheats_ws.zip");
 			int numberDbfCheatsLoaded = LoadPatchesFromZip(GameInfo::gameCRC, cheats_ws_archive);
 			PatchesCon->WriteLn(Color_Green, "(Wide Screen Cheats DB) Patches Loaded: %d", numberDbfCheatsLoaded);
 			gameWsHacks.Printf(L" [%d widescreen hacks]", numberDbfCheatsLoaded);

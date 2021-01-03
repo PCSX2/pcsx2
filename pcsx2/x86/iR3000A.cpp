@@ -231,7 +231,7 @@ static void iIopDumpBlock(int startpc, u8* ptr)
 	Console.WriteLn("dump1 %x:%x, %x", startpc, psxpc, psxRegs.cycle);
 	g_Conf->Folders.Logs.Mkdir();
 
-	wxString filename(Path::Combine(g_Conf->Folders.Logs, wxsFormat(L"psxdump%.8X.txt", startpc)));
+	wxString filename((g_Conf->Folders.Logs / wxsFormat(L"psxdump%.8X.txt", startpc)));
 	AsciiFile f(filename, L"w");
 
 	f.Printf("Dump PSX register data: 0x%x\n\n", (uptr)&psxRegs);
@@ -1390,6 +1390,7 @@ static void __fastcall iopRecRecompile(const u32 startpc)
 				}
 				break;
 
+				break;
 			case 1: // regimm
 				if (_Rt_ == 0 || _Rt_ == 1 || _Rt_ == 16 || _Rt_ == 17)
 				{
@@ -1400,6 +1401,7 @@ static void __fastcall iopRecRecompile(const u32 startpc)
 						s_nEndBlock = i + 8;
 					goto StartRecomp;
 				}
+
 				break;
 
 			case 2: // J
@@ -1410,6 +1412,7 @@ static void __fastcall iopRecRecompile(const u32 startpc)
 
 			// branches
 			case 4: case 5: case 6: case 7:
+
 				s_branchTo = _Imm_ * 4 + i + 4;
 				if (s_branchTo > startpc && s_branchTo < i)
 					s_nEndBlock = s_branchTo;
@@ -1567,3 +1570,4 @@ R3000Acpu psxRec = {
 	recGetCacheReserve,
 	recSetCacheReserve
 };
+

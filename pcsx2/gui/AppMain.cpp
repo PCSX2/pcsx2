@@ -345,7 +345,7 @@ class Pcsx2StandardPaths : public wxStandardPaths
 public:
 	wxString GetResourcesDir() const
 	{
-		return Path::Combine( GetDataDir(), L"Langs" );
+		return ( GetDataDir().ToStdString() / "Langs" );
 	}
 
 #ifdef __POSIX__
@@ -359,18 +359,18 @@ public:
 		// Note: GetUserLocalDataDir() on linux return $HOME/.pcsx2 unfortunately it does not follow the XDG standard
 		// So we re-implement it, to follow the standard.
 		wxDirName user_local_dir;
-		wxDirName default_config_dir = (wxDirName)Path::Combine( L".config", pxGetAppName() );
+		wxDirName default_config_dir = (wxDirName)( ".config" / pxGetAppName().ToStdString() );
 		wxString xdg_home_value;
 		if( wxGetEnv(L"XDG_CONFIG_HOME", &xdg_home_value) ) {
 			if ( xdg_home_value.IsEmpty() ) {
 				// variable exist but it is empty. So use the default value
-				user_local_dir = (wxDirName)Path::Combine( GetUserConfigDir() , default_config_dir);
+				user_local_dir = (wxDirName)( GetUserConfigDir().ToStdString() / default_config_dir.ToString().ToStdString() );
 			} else {
-				user_local_dir = (wxDirName)Path::Combine( xdg_home_value, pxGetAppName());
+				user_local_dir = (wxDirName)( xdg_home_value.ToStdString() / pxGetAppName().ToStdString());
 			}
 		} else {
 			// variable do not exist
-			user_local_dir = (wxDirName)Path::Combine( GetUserConfigDir() , default_config_dir);
+			user_local_dir = (wxDirName)( GetUserConfigDir().ToStdString() / default_config_dir.ToString().ToStdString() );
 		}
 
 		cache_dir = user_local_dir.ToString();
@@ -716,11 +716,13 @@ void AppApplySettings( const AppConfig* oldconf )
 	// Ensure existence of necessary documents folders.
 	// Other parts of PCSX2 rely on them.
 
-	g_Conf->Folders.MemoryCards.Mkdir();
-	g_Conf->Folders.Savestates.Mkdir();
-	g_Conf->Folders.Snapshots.Mkdir();
-	g_Conf->Folders.Cheats.Mkdir();
-	g_Conf->Folders.CheatsWS.Mkdir();
+	fs::create_directories(g_Conf->Folders.MemoryCards);
+	fs::create_directories(g_Conf->Folders.Savestates);
+	fs::create_directories(g_Conf->Folders.Snapshots);
+	fs::create_directories(g_Conf->Folders.Cheats);
+	fs::create_directories(g_Conf->Folders.CheatsWS);
+	fs::create_directories(g_Conf->Folders.Langs);
+
 
 	g_Conf->EmuOptions.BiosFilename = g_Conf->FullpathToBios();
 
@@ -736,7 +738,7 @@ void AppApplySettings( const AppConfig* oldconf )
 	// Memcards generally compress very well via NTFS compression.
 
 	#ifdef __WXMSW__
-	NTFS_CompressFile( g_Conf->Folders.MemoryCards.ToString(), g_Conf->McdCompressNTFS );
+	NTFS_CompressFile( g_Conf->Folders.MemoryCards.string(), g_Conf->McdCompressNTFS );
 	#endif
 	sApp.DispatchEvent( AppStatus_SettingsApplied );
 
@@ -1067,7 +1069,11 @@ void SysUpdateIsoSrcFile( const wxString& newIsoFile )
 
 void SysUpdateDiscSrcDrive( const wxString& newDiscDrive )
 {
-	g_Conf->Folders.RunDisc = newDiscDrive;
+#if defined(_WIN32)
+	g_Conf->Folders.RunDisc = newDiscDrive.ToStdString();
+#else
+	g_Conf->Folders.RunDisc = newDiscDrive.ToStdString();
+#endif
 	AppSaveSettings();
 	sMainFrame.UpdateCdvdSrcSelection();
 }

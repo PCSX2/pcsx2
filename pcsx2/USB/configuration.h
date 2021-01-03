@@ -66,6 +66,7 @@ void RemoveSection(const char* dev_type, int port, const std::string& key);
 
 extern TSTDSTRING IniPath;
 extern TSTDSTRING LogDir;
+extern std::string iniFile;
 extern std::map<std::pair<int /*port*/, std::string /*devname*/>, std::string> changedAPIs;
 extern std::map<std::pair<int /*port*/, std::string /*devname*/>, int> changedSubtype;
 std::string GetSelectedAPI(const std::pair<int /*port*/, std::string /*devname*/>& pair);

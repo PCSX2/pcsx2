@@ -143,11 +143,11 @@ static wxString ApplyTemplate(const wxString& name, const wxDirName& base,
 
 	wxString fname(filename);
 	if (first > 0)
-		fname = Path::GetFilename(fname); // without path
+		fname = Path::GetFilename(fname.ToStdString()); // without path
 
 	tem.Replace(key, fname);
 	if (first > 0)
-		tem = Path::Combine(base, tem); // ignores appRoot if tem is absolute
+		tem = (base.ToString().ToStdString() / tem.ToStdString()); // ignores appRoot if tem is absolute
 
 	return tem;
 }

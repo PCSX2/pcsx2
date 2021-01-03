@@ -190,7 +190,7 @@ static int _LoadPatchFiles(const wxDirName& folderName, wxString& fileSpec, cons
 		{
 			PatchesCon->WriteLn(Color_Green, L"Found %s file: '%s'", WX_STR(friendlyName), WX_STR(buffer));
 			int before = Patch.size();
-			f.Open(Path::Combine(dir.GetName(), buffer));
+			f.Open(wxString(dir.GetName().ToStdString() / buffer.ToStdString()));
 			inifile_process(f);
 			f.Close();
 			int loaded = Patch.size() - before;
@@ -250,9 +250,9 @@ int LoadPatchesFromDir(wxString name, const wxDirName& folderName, const wxStrin
 	// This comment _might_ be buggy. This function (LoadPatchesFromDir) loads from an explicit folder.
 	// This folder can be cheats or cheats_ws at either the default location or a custom one.
 	// This check only tests the default cheats folder, so the message it produces is possibly misleading.
-	if (folderName.ToString().IsSameAs(PathDefs::GetCheats().ToString()) && numberFoundPatchFiles == 0)
+	if (folderName.ToString().IsSameAs(PathDefs::GetCheats().string()) && numberFoundPatchFiles == 0)
 	{
-		wxString pathName = Path::Combine(folderName, name.MakeUpper() + L".pnach");
+		wxString pathName = wxString(folderName.ToString().ToStdString() / (name.MakeUpper().ToStdString() + ".pnach"));
 		PatchesCon->WriteLn(Color_Gray, L"Not found %s file: %s", WX_STR(friendlyName), WX_STR(pathName));
 	}
 

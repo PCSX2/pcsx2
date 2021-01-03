@@ -34,11 +34,11 @@ void DMALogOpen()
 {
 	if (!DMALog())
 		return;
-	DMA4LogFile = OpenBinaryLog(DMA4LogFileName);
-	DMA7LogFile = OpenBinaryLog(DMA7LogFileName);
-	ADMA4LogFile = OpenBinaryLog(L"adma4.raw");
-	ADMA7LogFile = OpenBinaryLog(L"adma7.raw");
-	ADMAOutLogFile = OpenBinaryLog(L"admaOut.raw");
+	DMA4LogFile = OpenBinaryLog(DMA4LogFileName.ToStdString());
+	DMA7LogFile = OpenBinaryLog(DMA7LogFileName.ToStdString());
+	ADMA4LogFile = OpenBinaryLog("adma4.raw");
+	ADMA7LogFile = OpenBinaryLog("adma7.raw");
+	ADMAOutLogFile = OpenBinaryLog("admaOut.raw");
 }
 
 void DMA4LogWrite(void* lpData, u32 ulSize)

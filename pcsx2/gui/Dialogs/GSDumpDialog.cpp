@@ -126,7 +126,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	GetDumpsList();
 
 	m_fs_watcher.SetOwner(this);
-	m_fs_watcher.Add(wxFileName(g_Conf->Folders.Snapshots.ToAscii()));
+	m_fs_watcher.Add(wxFileName(g_Conf->Folders.Snapshots));
 	wxEvtHandler::Connect(wxEVT_FSWATCHER, wxFileSystemWatcherEventHandler(Dialogs::GSDumpDialog::PathChanged));
 
 	Bind(wxEVT_LIST_ITEM_SELECTED, &Dialogs::GSDumpDialog::SelectedDump, this, ID_DUMP_LIST);
@@ -145,7 +145,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 void Dialogs::GSDumpDialog::GetDumpsList()
 {
 	m_dump_list->ClearAll();
-	wxDir snaps(g_Conf->Folders.Snapshots.ToAscii());
+	wxDir snaps(g_Conf->Folders.Snapshots);
 	wxString filename;
 	bool cont = snaps.GetFirst(&filename, "*.gs", wxDIR_DEFAULT);
 	int i = 0, h = 0, j = 0;
@@ -164,8 +164,8 @@ void Dialogs::GSDumpDialog::GetDumpsList()
 
 void Dialogs::GSDumpDialog::SelectedDump(wxListEvent& evt)
 {
-	wxString filename_preview = g_Conf->Folders.Snapshots.ToAscii() + ("/" + evt.GetText()) + ".png";
-	wxString filename = g_Conf->Folders.Snapshots.ToAscii() + ("/" + evt.GetText()) + ".gs";
+	wxString filename_preview = g_Conf->Folders.Snapshots + ("/" + evt.GetText()) + ".png";
+	wxString filename = g_Conf->Folders.Snapshots + ("/" + evt.GetText()) + ".gs";
 	if (wxFileExists(filename_preview))
 	{
 		auto img = wxImage(filename_preview);

@@ -78,9 +78,11 @@ oprofile_data/
 /bin/*ReplayLoader
 /bin/PCSX2-linux.sh
 /bin/GS*.txt
+/bin/portable.yaml
 /bin/bios
 /bin/dumps
 /bin/help
+/bin/settings
 /bin/inis
 /bin/logs
 /bin/memcards

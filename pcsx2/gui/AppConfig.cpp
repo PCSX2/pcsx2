@@ -150,7 +150,7 @@ namespace PathDefs
 			// Move all user data file into central configuration directory (XDG_CONFIG_DIR)
 			case DocsFolder_User:	return GetUserLocalDataDir();
 #else
-			case DocsFolder_User:	return (wxDirName)Path::Combine( wxStandardPaths::Get().GetDocumentsDir(), pxGetAppName() );
+			case DocsFolder_User:	return (wxDirName)( wxStandardPaths::Get().GetDocumentsDir() / pxGetAppName() );
 #endif
 			case DocsFolder_Custom: return CustomDocumentsFolder;
 
@@ -457,10 +457,10 @@ wxString GetUiKeysFilename()
 }
 
 
-wxString AppConfig::FullpathToBios() const				{ return Path::Combine( Folders.Bios, BaseFilenames.Bios ); }
+wxString AppConfig::FullpathToBios() const				{ return ( Folders.Bios / BaseFilenames.Bios ); }
 wxString AppConfig::FullpathToMcd( uint slot ) const
 {
-	return Path::Combine( Folders.MemoryCards, Mcd[slot].Filename );
+	return ( Folders.MemoryCards / Mcd[slot].Filename );
 }
 
 bool IsPortable()
@@ -747,7 +747,7 @@ void AppConfig::FilenameOptions::LoadSave( IniInterface& ini )
 	//when saving in portable mode, we just save the non-full-path filename
  	//  --> on load they'll be initialized with default (relative) paths (works for bios)
 	//note: this will break if converting from install to portable, and custom folders are used. We can live with that.
-	bool needRelativeName = ini.IsSaving() && IsPortable();
+	needRelativeName = ini.IsSaving() && IsPortable();
 
 	if( needRelativeName ) { 
 		wxFileName bios_filename = wxFileName( Bios.GetFullName() );
@@ -892,23 +892,6 @@ void AppConfig::CaptureOptions::LoadSave(IniInterface& ini)
 	ScopedIniGroup path(ini, L"Capture");
 
 	IniEntry( EnableAudio );
-}
-
-AppConfig::UiTemplateOptions::UiTemplateOptions()
-{
-	LimiterUnlimited	= L"Max";
-	LimiterTurbo		= L"Turbo";
-	LimiterSlowmo		= L"Slowmo";
-	LimiterNormal		= L"Normal";
-	OutputFrame			= L"Frame";
-	OutputField			= L"Field";
-	OutputProgressive	= L"Progressive";
-	OutputInterlaced	= L"Interlaced";
-	Paused				= L"<PAUSED> ";
-	TitleTemplate		= L"Slot: ${slot} | Speed: ${speed} (${vfps}) | ${videomode} | Limiter: ${limiter} | ${gsdx} | ${omodei} | ${cpuusage}";
-#ifndef DISABLE_RECORDING
-	RecordingTemplate	= L"Slot: ${slot} | Frame: ${frame}/${maxFrame} | Rec. Mode: ${mode} | Speed: ${speed} (${vfps}) | Limiter: ${limiter}";
-#endif
 }
 
 void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)
@@ -1072,7 +1055,7 @@ void RelocateLogfile()
 {
 	g_Conf->Folders.Logs.Mkdir();
 
-	wxString newlogname( Path::Combine( g_Conf->Folders.Logs.ToString(), L"emuLog.txt" ) );
+	wxString newlogname( ( g_Conf->Folders.Logs.ToString() / L"emuLog.txt" ) );
 
 	if( (emuLog != NULL) && (emuLogName != newlogname) )
 	{

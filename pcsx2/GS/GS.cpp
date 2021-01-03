@@ -629,7 +629,7 @@ void GSvsync(int field)
 	}
 }
 
-uint32 GSmakeSnapshot(char* path)
+uint32 GSmakeSnapshot(const char* path)
 {
 	try
 	{

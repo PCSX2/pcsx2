@@ -373,8 +373,8 @@ namespace Implementations
 
 	void Sys_TakeSnapshot()
 	{
-		if (GSmakeSnapshot(g_Conf->Folders.Snapshots.ToUTF8().data()))
-			OSDlog(ConsoleColors::Color_Black, true, "Snapshot taken");
+		if (GSmakeSnapshot(g_Conf->Folders.Snapshots.c_str()))
+		   OSDlog(ConsoleColors::Color_Black, true, "Snapshot taken");
 	}
 
 	void Sys_RenderToggle()
@@ -432,7 +432,7 @@ namespace Implementations
 				name += L"_" + part2;
 
 			gsText.Printf(L"%s.%d.gs", WX_STR(name), StatesC);
-			Text = Path::Combine(g_Conf->Folders.Savestates, gsText);
+			Text = (g_Conf->Folders.Savestates / gsText);
 		}
 		else
 		{
@@ -863,7 +863,7 @@ void AcceleratorDictionary::Map(const KeyAcceleratorCode& _acode, const char* se
 	KeyAcceleratorCode acode = _acode;
 	wxString overrideStr;
 	wxAcceleratorEntry codeParser; //Provides string parsing capabilities
-	wxFileConfig cfg(L"", L"", L"", GetUiKeysFilename(), wxCONFIG_USE_GLOBAL_FILE);
+	wxFileConfig cfg(L"", L"", L"", GetUiKeysFilename().string(), wxCONFIG_USE_GLOBAL_FILE);
 	if (cfg.Read(wxString::FromUTF8(searchfor), &overrideStr))
 	{
 		// needs a '\t' prefix (originally used for wxMenu accelerators parsing)...

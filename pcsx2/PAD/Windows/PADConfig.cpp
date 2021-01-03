@@ -336,8 +336,8 @@ void PADsetSettingsDir(const char* dir)
 	//swprintf_s( iniFileUSB, L"%S", (dir==NULL) ? "inis" : dir );
 
 	//uint targlen = MultiByteToWideChar(CP_ACP, 0, dir, -1, NULL, 0);
-	wxString iniName = "PAD.ini";
-	MultiByteToWideChar(CP_UTF8, 0, std::string(GetSettingsFolder().Combine(iniName).GetFullPath()).c_str(), -1, iniFileUSB, MAX_PATH * 2);
+	std::string iniName = "PAD.ini";
+	MultiByteToWideChar(CP_UTF8, 0, wxString(GetSettingsFolder() / iniName).c_str(), -1, iniFileUSB, MAX_PATH * 2);
 
 	createIniDir = false;
 

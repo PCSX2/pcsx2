@@ -186,7 +186,6 @@ public:
 	struct FilenameOptions
 	{
 		wxFileName Bios;
-
 		void LoadSave( IniInterface& conf );
 	};
 
@@ -259,22 +258,22 @@ public:
 #endif
 
 	struct UiTemplateOptions {
-		UiTemplateOptions();
 		void LoadSave(IniInterface& conf);
 
-		wxString LimiterUnlimited;
-		wxString LimiterTurbo;
-		wxString LimiterSlowmo;
-		wxString LimiterNormal;
-		wxString OutputFrame;
-		wxString OutputField;
-		wxString OutputProgressive;
-		wxString OutputInterlaced;
-		wxString Paused;
-		wxString TitleTemplate;
-#ifndef DISABLE_RECORDING
-		wxString RecordingTemplate;
-#endif
+
+		std::string LimiterUnlimited	= "Max";
+		std::string LimiterTurbo		= "Turbo";
+		std::string LimiterSlowmo		= "Slowmo";
+		std::string LimiterNormal		= "Normal";
+		std::string OutputFrame			= "Frame";
+		std::string OutputField			= "Field";
+		std::string OutputProgressive	= "Progressive";
+		std::string OutputInterlaced	= "Interlaced";
+		std::string Paused				= "<PAUSED> ";
+		std::string TitleTemplate		= "Slot: ${slot} | Speed: ${speed} (${vfps}) | ${videomode} | Limiter: ${limiter} | ${gsdx} | ${omodei} | ${cpuusage}";
+		#ifndef DISABLE_RECORDING
+		std::string RecordingTemplate	= "Slot: ${slot} | Frame: ${frame}/${maxFrame} | Rec. Mode: ${mode} | Speed: ${speed} (${vfps}) | Limiter: ${limiter}";
+		#endif
 	};
 
 	struct CaptureOptions
@@ -341,12 +340,12 @@ public:
 
 	bool		AskOnBoot;
 
-	wxString				CurrentIso;
-    wxString				CurrentBlockdump;
-	wxString				CurrentELF;
-	wxString				CurrentIRX;
+	std::string				CurrentIso;
+	std::string				CurrentBlockdump;
+	std::string				CurrentELF;
+	std::string				CurrentIRX;
 	CDVD_SourceType			CdvdSource;
-	wxString				CurrentGameArgs;
+	std::string				CurrentGameArgs;
 
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
 	// slots (3 each)
