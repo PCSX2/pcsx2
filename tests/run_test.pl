@@ -367,7 +367,7 @@ sub generate_cfg {
     untie @vm;
 
     # Disable sound emulation (avoid spurious "ALSA lib pcm.c:7843:(snd_pcm_recover) underrun occurred")
-    tie my @spu, 'Tie::File', File::Spec->catfile($out_dir, "spu2-x.ini") or die "Fail to tie $!\n";
+    tie my @spu, 'Tie::File', File::Spec->catfile($out_dir, "SPU2.ini") or die "Fail to tie $!\n";
     for (@spu) {
         s/Output_Module=.*/Output_Module=nullout/;
     }
