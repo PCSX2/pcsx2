@@ -377,8 +377,6 @@ void MainEmuFrame::CreatePcsx2Menu()
 	m_menuSys.Append(MenuId_Config_FastBoot, _("Fast Boot"),
 					 _("Skips PS2 splash screens when booting from ISO or DVD media"), wxITEM_CHECK);
 
-	m_menuSys.AppendCheckItem(MenuId_Debug_CreateBlockdump, _("Create &Blockdump"), _("Creates a block dump for debugging purposes."));
-
 	m_menuSys.Append(MenuId_GameSettingsSubMenu, _("&Game Settings"), &m_GameSettingsSubmenu);
 
 	m_GameSettingsSubmenu.Append(MenuId_EnablePatches, _("Automatic &Gamefixes"),
@@ -401,6 +399,8 @@ void MainEmuFrame::CreatePcsx2Menu()
 
 	m_GameSettingsSubmenu.Append(MenuId_EnableHostFs, _("Enable &Host Filesystem"),
 								 wxEmptyString, wxITEM_CHECK);
+
+	m_GameSettingsSubmenu.Append(MenuId_Debug_CreateBlockdump, _("Create &Blockdump"), _("Creates a block dump for debugging purposes."), wxITEM_CHECK);
 
 	m_menuSys.AppendSeparator();
 
