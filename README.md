@@ -3,6 +3,7 @@
 ![Windows Build](https://github.com/PCSX2/pcsx2/workflows/Windows%20Build/badge.svg)
 ![Linux Build](https://github.com/PCSX2/pcsx2/workflows/Linux%20Build/badge.svg)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/6310/badge.svg)](https://scan.coverity.com/projects/6310)
+[![Discord Server](https://img.shields.io/discord/309643527816609793)](https://discord.com/invite/TCz3t9k)
 
 PCSX2 is a free and open-source PlayStation 2 (PS2) emulator. Its purpose is to emulate the PS2's hardware, using a combination of MIPS CPU [Interpreters](<https://en.wikipedia.org/wiki/Interpreter_(computing)>), [Recompilers](https://en.wikipedia.org/wiki/Dynamic_recompilation) and a [Virtual Machine](https://en.wikipedia.org/wiki/Virtual_machine) which manages hardware states and PS2 system memory. This allows you to play PS2 games on your PC, with many additional features and benefits.
 
