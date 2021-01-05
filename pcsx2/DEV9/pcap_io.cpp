@@ -352,7 +352,7 @@ PCAPAdapter::PCAPAdapter()
 		SysMessage("Can't open Device '%s'\n", config.Eth);
 	}
 #else
-	SysMessage("pcap not supported on windows\n");
+	Console.Error("pcap not supported on windows\n");
 #endif
 }
 bool PCAPAdapter::blocks()
