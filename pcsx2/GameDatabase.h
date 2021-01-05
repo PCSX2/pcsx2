@@ -77,6 +77,7 @@ public:
 		std::vector<std::string> memcardFilters;
 		std::unordered_map<std::string, Patch> patches;
 
+		// Returns the list of memory card serials as a `/` delimited string
 		std::string memcardFiltersAsString() const;
 		bool findPatch(const std::string crc, Patch& patch) const;
 	};

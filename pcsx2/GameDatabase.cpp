@@ -18,6 +18,7 @@
 #include "GameDatabase.h"
 
 #include "fmt/core.h"
+#include "fmt/ranges.h"
 #include "yaml-cpp/yaml.h"
 #include <fstream>
 #include <algorithm>
@@ -39,18 +40,7 @@ bool compareStrNoCase(const std::string str1, const std::string str2)
 
 std::string GameDatabaseSchema::GameEntry::memcardFiltersAsString() const
 {
-	if (memcardFilters.empty())
-		return "";
-
-	std::string filters;
-	for (u32 i = 0; i < memcardFilters.size(); i++)
-	{
-		std::string f = memcardFilters.at(i);
-		filters.append(f);
-		if (i != memcardFilters.size() - 1)
-			filters.append(",");
-	}
-	return filters;
+	return fmt::to_string(fmt::join(memcardFilters, "/"));
 }
 
 bool GameDatabaseSchema::GameEntry::findPatch(const std::string crc, Patch& patch) const
