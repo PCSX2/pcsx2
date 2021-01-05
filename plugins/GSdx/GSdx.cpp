@@ -244,8 +244,8 @@ void GSdxApp::Init()
 	m_gs_max_anisotropy.push_back(GSSetting(16, "16x", ""));
 
 	m_gs_dithering.push_back(GSSetting(0, "Off", ""));
-	m_gs_dithering.push_back(GSSetting(1, "Scaled", ""));
 	m_gs_dithering.push_back(GSSetting(2, "Unscaled", "Default"));
+	m_gs_dithering.push_back(GSSetting(1, "Scaled", ""));
 
 	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Nearest), "Nearest", ""));
 	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Forced_But_Sprite), "Bilinear", "Forced excluding sprite"));
@@ -339,7 +339,7 @@ void GSdxApp::Init()
 	m_default_configuration["force_texture_clear"]                        = "0";
 	m_default_configuration["fxaa"]                                       = "0";
 	m_default_configuration["interlace"]                                  = "7";
-	m_default_configuration["large_framebuffer"]                          = "0";
+	m_default_configuration["conservative_framebuffer"]                   = "1"; 
 	m_default_configuration["linear_present"]                             = "1";
 	m_default_configuration["MaxAnisotropy"]                              = "0";
 	m_default_configuration["mipmap"]                                     = "1";

@@ -285,8 +285,8 @@ void populate_hw_table(GtkWidget* hw_table)
 {
 	GtkWidget* hack_enable_check = CreateCheckBox("Enable User Hacks", "UserHacks");
 	GtkWidget* acc_date_check = CreateCheckBox("Accurate DATE", "accurate_date");
-	GtkWidget* paltex_check = CreateCheckBox("Allow 8 bits textures", "paltex");
-	GtkWidget* large_fb_check = CreateCheckBox("Large Framebuffer", "large_framebuffer");
+	GtkWidget* paltex_check = CreateCheckBox("GPU Palette Conversion", "paltex");
+	GtkWidget* conservative_fb_check = CreateCheckBox("Conservative Buffer Allocation", "conservative_framebuffer");
 
 	GtkWidget* fsaa_label = left_label("Internal Resolution:");
 	GtkWidget* fsaa_combo_box = CreateComboBoxFromVector(theApp.m_gs_upscale_multiplier, "upscale_multiplier");
@@ -310,7 +310,7 @@ void populate_hw_table(GtkWidget* hw_table)
 	gtk_widget_set_tooltip_text(hack_enable_check, "Enable the HW hack option panel");
 	AddTooltip(acc_date_check, IDC_ACCURATE_DATE);
 	AddTooltip(paltex_check, IDC_PALTEX);
-	AddTooltip(large_fb_check, IDC_LARGE_FB);
+	AddTooltip(conservative_fb_check, IDC_CONSERVATIVE_FB);
 	AddTooltip(crc_label, crc_combo_box, IDC_CRC_LEVEL);
 	AddTooltip(af_label, af_combo_box, IDC_AFCOMBO);
 	AddTooltip(mipmap_label, IDC_MIPMAP_HW);
@@ -319,7 +319,7 @@ void populate_hw_table(GtkWidget* hw_table)
 
 	s_table_line = 0;
 	InsertWidgetInTable(hw_table, hack_enable_check, acc_date_check);
-	InsertWidgetInTable(hw_table, paltex_check, large_fb_check);
+	InsertWidgetInTable(hw_table, paltex_check, conservative_fb_check);
 	InsertWidgetInTable(hw_table, fsaa_label, fsaa_combo_box);
 	InsertWidgetInTable(hw_table, af_label, af_combo_box);
 	InsertWidgetInTable(hw_table, dither_label, dither_combo_box);

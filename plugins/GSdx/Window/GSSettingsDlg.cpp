@@ -104,7 +104,7 @@ void GSSettingsDlg::OnInit()
 
 	CheckDlgButton(m_hWnd, IDC_ACCURATE_DATE, theApp.GetConfigB("accurate_date"));
 	CheckDlgButton(m_hWnd, IDC_PALTEX, theApp.GetConfigB("paltex"));
-	CheckDlgButton(m_hWnd, IDC_LARGE_FB, theApp.GetConfigB("large_framebuffer"));
+	CheckDlgButton(m_hWnd, IDC_CONSERVATIVE_FB, theApp.GetConfigB("conservative_framebuffer"));
 	CheckDlgButton(m_hWnd, IDC_MIPMAP_SW, theApp.GetConfigB("mipmap"));
 	CheckDlgButton(m_hWnd, IDC_AA1, theApp.GetConfigB("aa1"));
 	CheckDlgButton(m_hWnd, IDC_AUTO_FLUSH_SW, theApp.GetConfigB("autoflush_sw"));
@@ -128,7 +128,7 @@ void GSSettingsDlg::OnInit()
 	AddTooltip(IDC_SWTHREADS);
 	AddTooltip(IDC_SWTHREADS_EDIT);
 	AddTooltip(IDC_AUTO_FLUSH_SW);
-	AddTooltip(IDC_LARGE_FB);
+	AddTooltip(IDC_CONSERVATIVE_FB);
 
 	UpdateControls();
 }
@@ -249,7 +249,7 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 
 			theApp.SetConfig("accurate_date", (int)IsDlgButtonChecked(m_hWnd, IDC_ACCURATE_DATE));
 			theApp.SetConfig("paltex", (int)IsDlgButtonChecked(m_hWnd, IDC_PALTEX));
-			theApp.SetConfig("large_framebuffer", (int)IsDlgButtonChecked(m_hWnd, IDC_LARGE_FB));
+			theApp.SetConfig("conservative_framebuffer", (int)IsDlgButtonChecked(m_hWnd, IDC_CONSERVATIVE_FB));
 			theApp.SetConfig("UserHacks", (int)IsDlgButtonChecked(m_hWnd, IDC_HACKS_ENABLED));
 
 			theApp.SetConfig("aa1", (int)IsDlgButtonChecked(m_hWnd, IDC_AA1));
@@ -334,7 +334,7 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_HW), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_MIPMAP_HW_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL), hw);
-		EnableWindow(GetDlgItem(m_hWnd, IDC_LARGE_FB), integer_scaling > 1 && hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_CONSERVATIVE_FB), integer_scaling > 1 && hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_CRC_LEVEL_TEXT), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_UPSCALE_MULTIPLIER_TEXT), hw);

@@ -41,7 +41,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 {
 	m_mipmap = theApp.GetConfigI("mipmap_hw");
 	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
-	m_large_framebuffer  = theApp.GetConfigB("large_framebuffer");
+	m_conservative_framebuffer = theApp.GetConfigB("conservative_framebuffer");
 	m_accurate_date = theApp.GetConfigB("accurate_date");
 
 	if (theApp.GetConfigB("UserHacks")) {
@@ -125,8 +125,13 @@ void GSRendererHW::SetScaling()
 	// int fb_height = (fb_width < 1024) ? 1280 : 1024;
 	//
 	// Until performance issue is properly fixed, let's keep an option to reduce the framebuffer size.
-	int fb_height = m_large_framebuffer ? 1280 :
-		(fb_width < 1024) ? std::max(512, crtc_size.y) : 1024;
+	//
+	// m_large_framebuffer has been inverted to m_conservative_framebuffer, it isn't an option that benefits being enabled all the time for everyone.
+	int fb_height = 1280;
+	if (m_conservative_framebuffer)
+	{
+		fb_height = fb_width < 1024 ? std::max(512, crtc_size.y) : 1024;
+	}
 
 	int upscaled_fb_w = fb_width * m_upscale_multiplier;
 	int upscaled_fb_h = fb_height * m_upscale_multiplier;

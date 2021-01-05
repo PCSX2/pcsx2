@@ -90,11 +90,11 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_OSD_LOG:
 			return "Prints log messages from the Function keys onscreen.";
 		case IDC_OSD_MONITOR:
-			return "Continuously prints the FPS and the EE, GS and VU(if the MTVU speedhack is enabled) percentages onscreen.";
+			return "Continuously prints/overlays the FPS counter and the EE ('CPU-usage') ,\nGS ('GPU-usage') and VU(if the MTVU speedhack is enabled) percentages onscreen.";
 		case IDC_PALTEX:
-			return "Enabled: GPU will handle 4/8 bits textures while CPU does the rest.\n"
-				"Disabled: CPU will have full control and directly convert the textures to 32 bits.\n\n"
-				"It is basically a trade-off between GPU/CPU vs CPU alone.";
+			return "Enabled: GPU converts colormap-textures.\n"
+				"Disabled: CPU converts colormap-textures.\n\n"
+				"It is a trade-off between GPU and CPU.";
 		case IDC_ACCURATE_DATE:
 			return "Implement a more accurate algorithm to compute GS destination alpha testing.\n"
 				"It improves shadow and transparency rendering.\n\n"
@@ -191,14 +191,14 @@ const char* dialog_message(int ID, bool* updateText) {
 				"Full (Slow):\nCompletely emulates the mipmapping function of the GS, might significantly impact performance.";
 		case IDC_FAST_TC_INV:
 			return "By default, the texture cache handles partial invalidations. Unfortunately it is very costly to compute CPU wise."
-				"\n\nThis hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load.\n\nIt helps snowblind engine games.";
-		case IDC_LARGE_FB:
-			return "Reserves a larger framebuffer to prevent FMV flickers.\n"
-				"Increases GPU/memory requirements.\n"
-				"Enabling this can amplify stuttering due to low RAM/VRAM.\n\n"
-				"Note: It should be disabled for Armored Core, Destroy All Humans, Gran Turismo and possibly others.\n"
-				"This option does not improve the graphics or the FPS.";
-		// Windows only options.
+				   "\n\nThis hack replaces the partial invalidation with a complete deletion of the texture to reduce the CPU load.\n\nIt helps snowblind engine games.";
+		case IDC_CONSERVATIVE_FB:
+			return "Disabled: Reserves a larger framebuffer to prevent FMV flickers.\n"
+				   "Increases GPU/memory requirements.\n"
+				   "Disabling this can amplify stuttering due to low RAM/VRAM.\n\n"
+				   "Note: It should be enabled for Armored Core, Destroy All Humans, Gran Turismo and possibly others.\n"
+				   "This option does not improve the graphics or the FPS.";
+			// Windows only options.
 #ifdef _WIN32
 		case IDC_ACCURATE_BLEND_UNIT_D3D11:
 			return "Control the accuracy level of the GS blending unit emulation.\n\n"

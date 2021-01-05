@@ -22,7 +22,7 @@
 #define IDC_SHADEBUTTON                 2017
 // Hardware Renderer Settings:
 #define IDC_PALTEX                      2030
-#define IDC_LARGE_FB                    2031
+#define IDC_CONSERVATIVE_FB             2031
 #define IDC_UPSCALE_MULTIPLIER          2032
 #define IDC_UPSCALE_MULTIPLIER_TEXT     2033
 #define IDC_AFCOMBO_TEXT                2034
