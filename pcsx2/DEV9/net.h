@@ -17,6 +17,9 @@
 #include <stdlib.h>
 #include <string.h> //uh isnt memcpy @ stdlib ?
 
+// first three recognized by Xlink as Sony PS2
+const u8 defaultMAC[6] = {0x00, 0x04, 0x1F, 0x82, 0x30, 0x31};
+
 struct NetPacket
 {
 	NetPacket() { size = 0; }
@@ -37,8 +40,7 @@ extern mtfifo<NetPacket*> tx_fifo;
 class NetAdapter
 {
 protected:
-	// first three recognized by Xlink as Sony PS2
-	u8 ps2MAC[6] = {0x00, 0x04, 0x1F, 0x82, 0x30, 0x31};
+	u8 ps2MAC[6];
 
 public:
 	NetAdapter();

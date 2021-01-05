@@ -86,16 +86,18 @@ void TermNet()
 NetAdapter::NetAdapter()
 {
 	//Ensure eeprom matches our default 
-	SetMACAddress(ps2MAC);
+	SetMACAddress(nullptr);
 }
 
 void NetAdapter::SetMACAddress(u8* mac)
 {
-	if (ps2MAC != mac)
+	if (mac == nullptr)
+		memcpy(ps2MAC, defaultMAC, 6);
+	else
 		memcpy(ps2MAC, mac, 6);
 
 	for (int i = 0; i < 3; i++)
-		dev9.eeprom[i] = ((u16*)mac)[i];
+		dev9.eeprom[i] = ((u16*)ps2MAC)[i];
 
 	//The checksum seems to be all the values of the mac added up in 16bit chunks
 	dev9.eeprom[3] = (dev9.eeprom[0] + dev9.eeprom[1] + dev9.eeprom[2]) & 0xffff;
