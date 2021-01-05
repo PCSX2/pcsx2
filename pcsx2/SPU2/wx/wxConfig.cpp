@@ -35,6 +35,7 @@ MixerTab::MixerTab(wxWindow* parent)
 	interpolation_entries.Add("Cubic (Artificial highs)");
 	interpolation_entries.Add("Hermite (Better highs)");
 	interpolation_entries.Add("Catmull-Rom (PS2-like/slow)");
+	interpolation_entries.Add("Gaussian (SPU native)");
 
 	m_inter_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, interpolation_entries);
 
