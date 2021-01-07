@@ -47,9 +47,9 @@ void ATA::WritePaddedString(u8* data, int* index, std::string value, u32 len)
 void ATA::CreateHDDinfo(int sizeMb)
 {
 	const u16 sectorSize = 512;
-	DEV9_LOG_VERB("HddSize : %i\n", config.HddSize);
+	DevCon.WriteLn("HddSize : %i", config.HddSize);
 	const u64 nbSectors = ((u64)(sizeMb / sectorSize) * 1024 * 1024);
-	DEV9_LOG_VERB("nbSectors : %i\n", nbSectors);
+	DevCon.WriteLn("nbSectors : %i", nbSectors);
 
 	memset(&identifyData, 0, sizeof(identifyData));
 	//Defualt CHS translation
@@ -390,5 +390,5 @@ void ATA::CreateHDDinfoCsum() //Is this correct?
 	for (int i = 0; i < (512); i++)
 		counter += identifyData[i];
 
-	DEV9_LOG_VERB("%s\n", counter);
+	DevCon.WriteLn("%i", counter);
 }

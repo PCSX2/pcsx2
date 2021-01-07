@@ -51,11 +51,11 @@ void ATA::PostCmdPIODataToHost()
 //FromHost
 u16 ATA::ATAreadPIO()
 {
-	DEV9_LOG_VERB("*ATA_R_DATA 16bit read, pio_count %i,  pio_size %i\n", pioPtr, pioEnd);
+	DevCon.WriteLn("*ATA_R_DATA 16bit read, pio_count %i,  pio_size %i", pioPtr, pioEnd);
 	if (pioPtr < pioEnd)
 	{
 		const u16 ret = *(u16*)&pioBuffer[pioPtr * 2];
-		DEV9_LOG_VERB("*ATA_R_DATA returned value is  %x\n", ret);
+		DevCon.WriteLn("*ATA_R_DATA returned value is  %x", ret);
 		pioPtr++;
 		if (pioPtr >= pioEnd) //Fnished transfer (Changed from MegaDev9)
 			PostCmdPIODataToHost();
@@ -70,7 +70,7 @@ void ATA::HDD_IdentifyDevice()
 {
 	if (!PreCmd())
 		return;
-	DEV9_LOG_VERB("HddidentifyDevice\n");
+	DevCon.WriteLn("HddidentifyDevice");
 
 	//IDE transfer start
 	CreateHDDinfo(config.HddSize);

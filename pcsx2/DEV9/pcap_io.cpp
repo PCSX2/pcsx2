@@ -119,7 +119,7 @@ int pcap_io_init(char* adapter, mac_address virtual_mac)
 	char filter[1024] = "ether broadcast or ether dst ";
 	int dlt;
 	char* dlt_name;
-	emu_printf("Opening adapter '%s'...", adapter);
+	Console.WriteLn("Opening adapter '%s'...", adapter);
 
 	/* Open the adapter */
 	if ((adhandle = pcap_open_live(adapter, // name of the device
@@ -130,8 +130,8 @@ int pcap_io_init(char* adapter, mac_address virtual_mac)
 								   errbuf   // error buffer
 								   )) == NULL)
 	{
-		fprintf(stderr, "%s", errbuf);
-		fprintf(stderr, "\nUnable to open the adapter. %s is not supported by pcap\n", adapter);
+		Console.Error("%s", errbuf);
+		Console.Error("Unable to open the adapter. %s is not supported by pcap", adapter);
 		return -1;
 	}
 	char virtual_mac_str[18];
@@ -141,13 +141,13 @@ int pcap_io_init(char* adapter, mac_address virtual_mac)
 
 	if (pcap_compile(adhandle, &fp, filter, 1, PCAP_NETMASK_UNKNOWN) == -1)
 	{
-		fprintf(stderr, "Error calling pcap_compile: %s\n", pcap_geterr(adhandle));
+		Console.Error("Error calling pcap_compile: %s", pcap_geterr(adhandle));
 		return -1;
 	}
 
 	if (pcap_setfilter(adhandle, &fp) == -1)
 	{
-		fprintf(stderr, "Error setting filter: %s\n", pcap_geterr(adhandle));
+		Console.Error("Error setting filter: %s", pcap_geterr(adhandle));
 		return -1;
 	}
 
@@ -155,7 +155,7 @@ int pcap_io_init(char* adapter, mac_address virtual_mac)
 	dlt = pcap_datalink(adhandle);
 	dlt_name = (char*)pcap_datalink_val_to_name(dlt);
 
-	fprintf(stderr, "Device uses DLT %d: %s\n", dlt, dlt_name);
+	Console.Error("Device uses DLT %d: %s", dlt, dlt_name);
 	switch (dlt)
 	{
 		case DLT_EN10MB:
@@ -171,7 +171,7 @@ int pcap_io_init(char* adapter, mac_address virtual_mac)
 	dump_pcap = pcap_dump_open(adhandle, plfile.c_str());
 
 	pcap_io_running = 1;
-	emu_printf("Ok.\n");
+	Console.WriteLn("Adapter Ok.");
 #endif
 	return 0;
 }
