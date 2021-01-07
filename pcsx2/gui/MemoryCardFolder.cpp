@@ -560,7 +560,7 @@ MemoryCardFileMetadataReference* FolderMemoryCard::AddFileEntryToMetadataQuickAc
 		ref->entry = entry;
 		ref->consecutiveCluster = clusterNumber;
 		++clusterNumber;
-	} while ( ( fileCluster = m_fat.data[0][0][fileCluster] ) != ( LastDataCluster | DataClusterInUseMask ) );
+	} while ( ( fileCluster = m_fat.data[0][0][fileCluster & NextDataClusterMask]) != ( LastDataCluster | DataClusterInUseMask ) );
 
 	return &m_fileMetadataQuickAccess[firstFileCluster & NextDataClusterMask];
 }
