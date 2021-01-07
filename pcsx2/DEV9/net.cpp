@@ -74,9 +74,9 @@ void TermNet()
 	{
 		RxRunning = false;
 		nif->close();
-		emu_printf("Waiting for RX-net thread to terminate..");
+		Console.WriteLn("Waiting for RX-net thread to terminate..");
 		rx_thread.join();
-		emu_printf(".done\n");
+		Console.WriteLn("Done");
 
 		delete nif;
 		nif = nullptr;

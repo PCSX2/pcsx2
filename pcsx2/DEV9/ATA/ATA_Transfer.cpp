@@ -67,7 +67,7 @@ void ATA::IO_Read()
 
 	if (lba == -1)
 	{
-		DEV9_LOG_ERROR("Invalid LBA");
+		Console.Error("ATA: Invalid LBA");
 		pxAssert(false);
 		abort();
 	}
@@ -76,7 +76,7 @@ void ATA::IO_Read()
 	hddImage.seekg(pos, std::ios::beg);
 	if (hddImage.fail())
 	{
-		DEV9_LOG_ERROR("Read error");
+		Console.Error("ATA: File read error");
 		pxAssert(false);
 		abort();
 	}
@@ -103,7 +103,7 @@ bool ATA::IO_Write()
 	hddImage.write((char*)data, len);
 	if (hddImage.fail())
 	{
-		DEV9_LOG_ERROR("Write error");
+		Console.Error("ATA: File write error");
 		pxAssert(false);
 		abort();
 	}

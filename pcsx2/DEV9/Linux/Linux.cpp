@@ -237,7 +237,7 @@ s32 _DEV9open()
 	NetAdapter* na = GetNetAdapter();
 	if (!na)
 	{
-		emu_printf("Failed to GetNetAdapter()\n");
+		Console.Error("Failed to GetNetAdapter()");
 		config.ethEnable = false;
 	}
 	else

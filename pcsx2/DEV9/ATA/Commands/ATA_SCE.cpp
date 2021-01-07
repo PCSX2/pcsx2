@@ -20,7 +20,7 @@
 
 void ATA::HDD_SCE()
 {
-	DEV9_LOG_INFO("DEV9 : SONY-SPECIFIC SECURITY CONTROL COMMAND %x\n", regFeature);
+	DevCon.WriteLn("DEV9 : SONY-SPECIFIC SECURITY CONTROL COMMAND %x", regFeature);
 
 	switch (regFeature)
 	{
@@ -28,7 +28,7 @@ void ATA::HDD_SCE()
 			SCE_IDENTIFY_DRIVE();
 			break;
 		default:
-			DEV9_LOG_ERROR("DEV9 : Unknown SCE command %x\n", regFeature);
+			Console.Error("ATA: Unknown SCE command %x", regFeature);
 			CmdNoDataAbort();
 			return;
 	}

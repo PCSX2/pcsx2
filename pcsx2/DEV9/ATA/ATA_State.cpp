@@ -89,7 +89,7 @@ void ATA::Close()
 	{
 		if (!IsQueueEmpty())
 		{
-			DEV9_LOG_ERROR("Write queue not empty");
+			Console.Error("ATA: Write queue not empty");
 			pxAssert(false);
 			abort(); //All data must be written at this point
 		}
@@ -143,7 +143,7 @@ void ATA::ResetEnd(bool hard)
 
 void ATA::ATA_HardReset()
 {
-	DEV9_LOG_VERB("*ATA_HARD RESET\n");
+	DevCon.WriteLn("*ATA_HARD RESET");
 	ResetBegin();
 	ResetEnd(true);
 }
@@ -155,12 +155,12 @@ u16 ATA::Read16(u32 addr)
 		case ATA_R_DATA:
 			return ATAreadPIO();
 		case ATA_R_ERROR:
-			DEV9_LOG_VERB("*ATA_R_ERROR 16bit read at address %x, value %x, Active %s\n", addr, regError, (GetSelectedDevice() == 0) ? "True" : "False");
+			DevCon.WriteLn("*ATA_R_ERROR 16bit read at address %x, value %x, Active %s", addr, regError, (GetSelectedDevice() == 0) ? "True" : "False");
 			if (GetSelectedDevice() != 0)
 				return 0;
 			return regError;
 		case ATA_R_NSECTOR:
-			DEV9_LOG_VERB("*ATA_R_NSECTOR 16bit read at address %x, value %x, Active %s\n", addr, nsector, (GetSelectedDevice() == 0) ? "True" : "False");
+			DevCon.WriteLn("*ATA_R_NSECTOR 16bit read at address %x, value %x, Active %s", addr, nsector, (GetSelectedDevice() == 0) ? "True" : "False");
 			if (GetSelectedDevice() != 0)
 				return 0;
 			if (!regControlHOBRead)
@@ -168,7 +168,7 @@ u16 ATA::Read16(u32 addr)
 			else
 				return regNsectorHOB;
 		case ATA_R_SECTOR:
-			DEV9_LOG_VERB("*ATA_R_NSECTOR 16bit read at address %x, value %x, Active %s\n", addr, regSector, (GetSelectedDevice() == 0) ? "True" : "False");
+			DevCon.WriteLn("*ATA_R_NSECTOR 16bit read at address %x, value %x, Active %s", addr, regSector, (GetSelectedDevice() == 0) ? "True" : "False");
 			if (GetSelectedDevice() != 0)
 				return 0;
 			if (!regControlHOBRead)
@@ -176,7 +176,7 @@ u16 ATA::Read16(u32 addr)
 			else
 				return regSectorHOB;
 		case ATA_R_LCYL:
-			DEV9_LOG_VERB("*ATA_R_LCYL 16bit read at address %x, value %x, Active %s\n", addr, regLcyl, (GetSelectedDevice() == 0) ? "True" : "False");
+			DevCon.WriteLn("*ATA_R_LCYL 16bit read at address %x, value %x, Active %s", addr, regLcyl, (GetSelectedDevice() == 0) ? "True" : "False");
 			if (GetSelectedDevice() != 0)
 				return 0;
 			if (!regControlHOBRead)
@@ -184,7 +184,7 @@ u16 ATA::Read16(u32 addr)
 			else
 				return regLcylHOB;
 		case ATA_R_HCYL:
-			DEV9_LOG_VERB("*ATA_R_HCYL 16bit read at address % x, value % x, Active %s\n", addr, regHcyl, (GetSelectedDevice() == 0) ? " True " : " False ");
+			DevCon.WriteLn("*ATA_R_HCYL 16bit read at address % x, value % x, Active %s", addr, regHcyl, (GetSelectedDevice() == 0) ? " True " : " False ");
 			if (GetSelectedDevice() != 0)
 				return 0;
 			if (!regControlHOBRead)
@@ -192,21 +192,21 @@ u16 ATA::Read16(u32 addr)
 			else
 				return regHcylHOB;
 		case ATA_R_SELECT:
-			DEV9_LOG_VERB("*ATA_R_SELECT 16bit read at address % x, value % x, Active %s\n", addr, regSelect, (GetSelectedDevice() == 0) ? " True " : " False ");
+			DevCon.WriteLn("*ATA_R_SELECT 16bit read at address % x, value % x, Active %s", addr, regSelect, (GetSelectedDevice() == 0) ? " True " : " False ");
 			return regSelect;
 		case ATA_R_STATUS:
-			DEV9_LOG_VERB("*ATA_R_STATUS (Fallthough to ATA_R_ALT_STATUS)\n");
+			DevCon.WriteLn("*ATA_R_STATUS (Fallthough to ATA_R_ALT_STATUS)");
 			//Clear irqcause
 			dev9.irqcause &= ~ATA_INTR_INTRQ;
 			[[fallthrough]];
 		case ATA_R_ALT_STATUS:
-			DEV9_LOG_VERB("*ATA_R_ALT_STATUS 16bit read at address % x, value % x, Active %s\n", addr, regStatus, (GetSelectedDevice() == 0) ? " True " : " False ");
+			DevCon.WriteLn("*ATA_R_ALT_STATUS 16bit read at address % x, value % x, Active %s", addr, regStatus, (GetSelectedDevice() == 0) ? " True " : " False ");
 			//raise IRQ?
 			if (GetSelectedDevice() != 0)
 				return 0;
 			return regStatus;
 		default:
-			DEV9_LOG_ERROR("*Unknown 16bit read at address %x\n", addr);
+			Console.Error("ATA: Unknown 16bit read at address %x", addr);
 			return 0xff;
 	}
 }
@@ -215,49 +215,49 @@ void ATA::Write16(u32 addr, u16 value)
 {
 	if (addr != ATA_R_CMD && (regStatus & (ATA_STAT_BUSY | ATA_STAT_DRQ)) != 0)
 	{
-		DEV9_LOG_ERROR("*DEVICE BUSY, DROPPING WRITE\n");
+		Console.Error("ATA: DEVICE BUSY, DROPPING WRITE");
 		return;
 	}
 	switch (addr)
 	{
 		case ATA_R_FEATURE:
-			DEV9_LOG_VERB("*ATA_R_FEATURE 16bit write at address %x, value %x\n", addr, value);
+			DevCon.WriteLn("*ATA_R_FEATURE 16bit write at address %x, value %x", addr, value);
 			ClearHOB();
 			regFeatureHOB = regFeature;
 			regFeature = (u8)value;
 			break;
 		case ATA_R_NSECTOR:
-			DEV9_LOG_VERB("*ATA_R_NSECTOR 16bit write at address %x, value %x\n", addr, value);
+			DevCon.WriteLn("*ATA_R_NSECTOR 16bit write at address %x, value %x", addr, value);
 			ClearHOB();
 			regNsectorHOB = regNsector;
 			regNsector = (u8)value;
 			break;
 		case ATA_R_SECTOR:
-			DEV9_LOG_VERB("*ATA_R_SECTOR 16bit write at address %x, value %x\n", addr, value);
+			DevCon.WriteLn("*ATA_R_SECTOR 16bit write at address %x, value %x", addr, value);
 			ClearHOB();
 			regSectorHOB = regSector;
 			regSector = (u8)value;
 			break;
 		case ATA_R_LCYL:
-			DEV9_LOG_VERB("*ATA_R_LCYL 16bit write at address %x, value %x\n", addr, value);
+			DevCon.WriteLn("*ATA_R_LCYL 16bit write at address %x, value %x", addr, value);
 			ClearHOB();
 			regLcylHOB = regLcyl;
 			regLcyl = (u8)value;
 			break;
 		case ATA_R_HCYL:
-			DEV9_LOG_VERB("*ATA_R_HCYL 16bit write at address %x, value %x\n", addr, value);
+			DevCon.WriteLn("*ATA_R_HCYL 16bit write at address %x, value %x", addr, value);
 			ClearHOB();
 			regHcylHOB = regHcyl;
 			regHcyl = (u8)value;
 			break;
 		case ATA_R_SELECT:
-			DEV9_LOG_VERB("*ATA_R_SELECT 16bit write at address %x, value %x\n", addr, value);
+			DevCon.WriteLn("*ATA_R_SELECT 16bit write at address %x, value %x", addr, value);
 			regSelect = (u8)value;
 			//bus->ifs[0].select = (val & ~0x10) | 0xa0;
 			//bus->ifs[1].select = (val | 0x10) | 0xa0;
 			break;
 		case ATA_R_CONTROL:
-			DEV9_LOG_VERB("*ATA_R_CONTROL 16bit write at address %x, value %x\n", addr, value);
+			DevCon.WriteLn("*ATA_R_CONTROL 16bit write at address %x, value %x", addr, value);
 			//dev9Ru16(ATA_R_CONTROL) = value;
 			if ((value & 0x2) != 0)
 			{
@@ -270,7 +270,7 @@ void ATA::Write16(u32 addr, u16 value)
 
 			if ((value & 0x4) != 0)
 			{
-				DEV9_LOG_VERB("*ATA_R_CONTROL RESET\n");
+				DevCon.WriteLn("*ATA_R_CONTROL RESET");
 				ResetBegin();
 				ResetEnd(false);
 			}
@@ -279,14 +279,14 @@ void ATA::Write16(u32 addr, u16 value)
 
 			break;
 		case ATA_R_CMD:
-			DEV9_LOG_VERB("*ATA_R_CMD 16bit write at address %x, value %x\n", addr, value);
+			DevCon.WriteLn("*ATA_R_CMD 16bit write at address %x, value %x", addr, value);
 			regCommand = value;
 			regControlHOBRead = false;
 			dev9.irqcause &= ~ATA_INTR_INTRQ;
 			IDE_ExecCmd(value);
 			break;
 		default:
-			DEV9_LOG_ERROR("*UNKOWN 16bit write at address %x, value %x\n", addr, value);
+			Console.Error("ATA: UNKOWN 16bit write at address %x, value %x", addr, value);
 			break;
 	}
 }
@@ -358,7 +358,7 @@ s64 ATA::HDD_GetLBA()
 		regStatus |= (u8)ATA_STAT_ERR;
 		regError |= (u8)ATA_ERR_ABORT;
 
-		DEV9_LOG_ERROR("DEV9 ERROR : tried to get LBA address while LBA mode disabled\n");
+		Console.Error("ATA: Tried to get LBA address while LBA mode disabled");
 		//(c.Nh + h).Ns+(s-1)
 		//s64 CHSasLBA = ((regLcyl + (regHcyl << 8)) * curHeads + (regSelect & 0x0F)) * curSectors + (regSector - 1);
 		return -1;
@@ -391,7 +391,7 @@ void ATA::HDD_SetLBA(s64 sectorNum)
 		regStatus |= ATA_STAT_ERR;
 		regError |= ATA_ERR_ABORT;
 
-		DEV9_LOG_ERROR("DEV9 ERROR : tried to get LBA address while LBA mode disabled\n");
+		Console.Error("ATA: Tried to set LBA address while LBA mode disabled");
 	}
 }
 
@@ -416,7 +416,7 @@ bool ATA::HDD_CanAccess(int* sectors)
 	if (lba == -1)
 		return false;
 
-	DEV9_LOG_VERB("LBA :%i\n", lba);
+	DevCon.WriteLn("LBA :%i", lba);
 	posStart = lba;
 
 	if (posStart > maxLBA)

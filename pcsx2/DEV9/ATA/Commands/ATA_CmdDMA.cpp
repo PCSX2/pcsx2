@@ -92,8 +92,7 @@ void ATA::ATAreadDMA8Mem(u8* pMem, int size)
 	{
 		if (size == 0)
 			return;
-
-		DEV9_LOG_VERB("DMA read, size %i, transferred %i, total size %i\n", size, rdTransferred, nsector * 512);
+		DevCon.WriteLn("DMA read, size %i, transferred %i, total size %i", size, rdTransferred, nsector * 512);
 
 		//read
 		memcpy(pMem, &readBuffer[rdTransferred], size);
@@ -116,7 +115,7 @@ void ATA::ATAwriteDMA8Mem(u8* pMem, int size)
 	if ((udmaMode >= 0) &&
 		(dev9.if_ctrl & SPD_IF_ATA_DMAEN) != 0)
 	{
-		DEV9_LOG_VERB("DMA write, size %i, transferred %i, total size %i\n", size, wrTransferred, nsector * 512);
+		DevCon.WriteLn("DMA write, size %i, transferred %i, total size %i", size, wrTransferred, nsector * 512);
 
 		//write
 		memcpy(&currentWrite[wrTransferred], pMem, size);
@@ -140,7 +139,7 @@ void ATA::HDD_ReadDMA(bool isLBA48)
 {
 	if (!PreCmd())
 		return;
-	DEV9_LOG_VERB("HDD_ReadDMA\n");
+	DevCon.WriteLn("HDD_ReadDMA");
 
 	IDE_CmdLBA48Transform(isLBA48);
 
@@ -160,7 +159,7 @@ void ATA::HDD_WriteDMA(bool isLBA48)
 {
 	if (!PreCmd())
 		return;
-	DEV9_LOG_VERB("HDD_WriteDMA\n");
+	DevCon.WriteLn("HDD_WriteDMA");
 
 	IDE_CmdLBA48Transform(isLBA48);
 
