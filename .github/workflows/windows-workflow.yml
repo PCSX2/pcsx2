@@ -42,11 +42,11 @@ jobs:
 
     steps:
       # NOTE - useful for debugging
-      # - name: Dump GitHub context
-      #   env:
-      #     GITHUB_CONTEXT: ${{ toJson(github) }}
-      #   run: |
-      #     echo "$GITHUB_CONTEXT"
+      - name: Dump GitHub context
+        env:
+          GITHUB_CONTEXT: ${{ toJson(github) }}
+        run: |
+          echo "$GITHUB_CONTEXT"
 
       - name: Checkout Repository
         uses: actions/checkout@v2
@@ -67,22 +67,6 @@ jobs:
         if: steps.cache-submodules.outputs.cache-hit != 'true'
         run: git submodule update --init --recursive --jobs 2
 
-      - name: Prepare Artifact Git Info
-        shell: bash
-        run: |
-          echo "##[set-output name=branch;]${GITHUB_REF#refs/heads/}"
-          ARTIFACT_NAME="commit-$(git rev-parse --short "$GITHUB_SHA")"
-          if [ ${{ github.event_name == 'pull_request' }} ]; then
-            echo "##[set-output name=short-sha;]$(git rev-parse --short "${{ github.event.pull_request.head.sha }}")"
-            if [ ! -z "${{ github.event.pull_request.number }}" ]; then
-              ARTIFACT_NAME="pr-${{ github.event.pull_request.number }}-commit-$(git rev-parse --short "${{ github.event.pull_request.head.sha }}")"
-            fi
-          else
-            echo "##[set-output name=short-sha;]$(git rev-parse --short "$GITHUB_SHA")"
-          fi
-          echo "##[set-output name=artifact-metadata;]${ARTIFACT_NAME}"
-        id: git-vars
-
       - name: Verify VS Project Files
         shell: powershell
         run: .\.github\workflows\scripts\windows\validate-vs-filters.ps1
@@ -95,10 +79,45 @@ jobs:
       - name: Build PCSX2
         run: msbuild "buildbot.xml" /m /v:n /t:ReleaseAll /p:Platform=${{ matrix.platform }}
 
+      - name: Prepare Artifact Metadata
+        id: artifact-metadata
+        shell: bash
+        run: |
+          ARCH=$([ "${{ matrix.platform }}" == Win32 ] && echo "32bit" || echo "64bit")
+          ARTIFACT_NAME=""
+          if [ ${{ github.event_name }} == "pull_request" ]; then
+            PR_SHA=$(git rev-parse --short "${{ github.event.pull_request.head.sha }}")
+            ARTIFACT_NAME="PCSX2-${ARCH}"
+            if [ ! -z "${{ github.event.pull_request.number }}" ]; then
+              PR_NUM=${{ github.event.pull_request.number }}
+              ARTIFACT_NAME="${ARTIFACT_NAME}-pr[${PR_NUM}]"
+            fi
+            ARTIFACT_NAME="${ARTIFACT_NAME}-sha[${PR_SHA}]"
+            if [ ! -z "${{ github.event.pull_request.title }}" ]; then
+              PR_TITLE=$(echo "${{ github.event.pull_request.title }}" | tr -cd '[a-zA-Z0-9[:space:]]_-')
+              ARTIFACT_NAME="${ARTIFACT_NAME}-title["${PR_TITLE}""
+            fi
+          else
+            SHA=$(git rev-parse --short "$GITHUB_SHA")
+            ARTIFACT_NAME="PCSX2-${ARCH}-sha[${SHA}"
+          fi
+          TRIMMED_ARTIFACT_NAME=$(printf "%.199s]" "$ARTIFACT_NAME")
+          echo "name=$TRIMMED_ARTIFACT_NAME"
+          echo "##[set-output name=name;]${TRIMMED_ARTIFACT_NAME}"
+
+      - name: Prepare Artifact Folder
+        shell: bash
+        working-directory: ./bin
+        run: |
+          shopt -s extglob dotglob
+          mkdir "${{ steps.artifact-metadata.outputs.name }}"
+          mv !("${{ steps.artifact-metadata.outputs.name }}") "${{ steps.artifact-metadata.outputs.name }}"
+          shopt -u dotglob
+
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         continue-on-error: true
         with:
-          name: PCSX2-${{ matrix.platform }}-${{ steps.git-vars.outputs.artifact-metadata }}
+          name: ${{ steps.artifact-metadata.outputs.name }}
           path: bin
           retention-days: 30 # https://docs.github.com/en/free-pro-team@latest/actions/reference/usage-limits-billing-and-administration#artifact-and-log-retention-policy
