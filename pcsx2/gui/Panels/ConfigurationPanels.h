@@ -303,6 +303,7 @@ namespace Panels
 	{
 	protected:
 		pxCheckBox*			m_check_SynchronousGS;
+		wxSpinCtrl*			m_spinner_VsyncQueue;
 		wxButton*			m_restore_defaults;
 		FrameSkipPanel*		m_span;
 		FramelimiterPanel*	m_fpan;

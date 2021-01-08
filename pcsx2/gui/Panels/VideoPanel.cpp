@@ -291,10 +291,13 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 		_t("For troubleshooting potential bugs in the MTGS only, as it is potentially very slow.")
 	);
 
+	m_spinner_VsyncQueue = new wxSpinCtrl(left);
+	m_spinner_VsyncQueue->SetRange(0, 3);
+
 	m_restore_defaults = new wxButton(right, wxID_DEFAULT, _("Restore Defaults"));
 
-	m_check_SynchronousGS->SetToolTip( pxEt( L"Enable this if you think MTGS thread sync is causing crashes or graphical errors. For debugging to see if GS is running at the correct speed.")
-	) ;
+	m_spinner_VsyncQueue->SetToolTip( pxEt(L"Setting this to a lower value improves input lag, a value around 2 or 3 will slightly improve framerates. (Default is 2)"));
+	m_check_SynchronousGS->SetToolTip( pxEt( L"Enable this if you think MTGS thread sync is causing crashes or graphical errors. For debugging to see if GS is running at the correct speed."));
 
 	//GSWindowSettingsPanel* winpan = new GSWindowSettingsPanel( left );
 	//winpan->AddFrame(_("Display/Window"));
@@ -306,6 +309,7 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 	m_fpan->AddFrame(_("Framelimiter"));
 
 	wxFlexGridSizer* s_table = new wxFlexGridSizer( 2 );
+	wxGridSizer* s_vsyncs = new wxGridSizer( 2 );
 	s_table->AddGrowableCol( 0, 1 );
 	s_table->AddGrowableCol( 1, 1 );
 
@@ -315,6 +319,11 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 
 	*left		+= m_fpan		| pxExpand;
 	*left		+= 5;
+	
+	*s_vsyncs	+= Label(_("Vsyncs in MTGS Queue:")) | StdExpand();
+	*s_vsyncs	+= m_spinner_VsyncQueue | pxBorder(wxTOP, -2).Right();
+	*left		+= s_vsyncs | StdExpand();
+	*left		+= 2;
 	*left		+= m_check_SynchronousGS | StdExpand();
 
 	*s_table	+= left		| StdExpand();
@@ -347,6 +356,7 @@ void Panels::VideoPanel::OnOpenWindowSettings( wxCommandEvent& evt )
 void Panels::VideoPanel::Apply()
 {
 	g_Conf->EmuOptions.GS.SynchronousMTGS	= m_check_SynchronousGS->GetValue();
+	g_Conf->EmuOptions.GS.VsyncQueueSize = m_spinner_VsyncQueue->GetValue();
 }
 
 void Panels::VideoPanel::AppStatusEvent_OnSettingsApplied()
@@ -357,7 +367,7 @@ void Panels::VideoPanel::AppStatusEvent_OnSettingsApplied()
 void Panels::VideoPanel::ApplyConfigToGui( AppConfig& configToApply, int flags ){
 	
 	m_check_SynchronousGS->SetValue( configToApply.EmuOptions.GS.SynchronousMTGS );
-
+	m_spinner_VsyncQueue->SetValue( configToApply.EmuOptions.GS.VsyncQueueSize );
 	m_check_SynchronousGS->Enable(!configToApply.EnablePresets);
 
 	if( flags & AppConfig::APPLY_FLAG_MANUALLY_PROPAGATE )
