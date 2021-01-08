@@ -453,11 +453,6 @@ void SysMtgsThread::ExecuteTaskInThread()
 							GSvsync(((u32&)RingBuffer.Regs[0x1000]) & 0x2000);
 							gsFrameSkip();
 
-							// if we're not using GSOpen2, then the GS window is on this thread (MTGS thread),
-							// so we need to call PADupdate from here.
-							if (GSopen2 == NULL)
-								PADupdate(0);
-
 							m_QueuedFrameCount.fetch_sub(1);
 							if (m_VsyncSignalListener.exchange(false))
 								m_sem_Vsync.Post();

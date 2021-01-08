@@ -29,7 +29,11 @@
 #include "VUmicro.h"
 
 #include "ps2/HwInternal.h"
-
+#ifdef _WIN32
+#include "PAD/Windows/PAD.h"
+#else
+#include "PAD/Linux/PAD.h"
+#endif
 #include "Sio.h"
 
 #ifndef DISABLE_RECORDING
@@ -421,6 +425,7 @@ static __fi void frameLimitUpdateCore()
 {
 	GetCoreThread().VsyncInThread();
 	Cpu->CheckExecutionState();
+	PADupdate(0);
 }
 
 // Framelimiter - Measures the delta time between calls and stalls until a
