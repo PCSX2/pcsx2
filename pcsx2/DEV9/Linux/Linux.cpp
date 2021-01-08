@@ -13,6 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
+
 #include <stdio.h>
 
 #include <gtk/gtk.h>
