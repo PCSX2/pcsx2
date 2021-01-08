@@ -325,10 +325,10 @@ void BreakpointWindow::addBreakpoint()
 		else if (enabled) result = MEMCHECK_BREAK;
 		else result = MEMCHECK_IGNORE;
 
-		CBreakPoints::AddMemCheck(address, address + size, (MemCheckCondition)cond, result);
+		CBreakPoints::AddMemCheck(cpu->getCpuType(), address, address + size, (MemCheckCondition)cond, result);
 	} else {
 		// add breakpoint
-		CBreakPoints::AddBreakPoint(address,false);
+		CBreakPoints::AddBreakPoint(cpu->getCpuType(), address,false);
 
 		if (condition[0] != 0)
 		{
@@ -336,12 +336,12 @@ void BreakpointWindow::addBreakpoint()
 			cond.debug = cpu;
 			strcpy(cond.expressionString,condition);
 			cond.expression = compiledCondition;
-			CBreakPoints::ChangeBreakPointAddCond(address,cond);
+			CBreakPoints::ChangeBreakPointAddCond(cpu->getCpuType(), address,cond);
 		}
 
 		if (!enabled)
 		{
-			CBreakPoints::ChangeBreakPoint(address,false);
+			CBreakPoints::ChangeBreakPoint(cpu->getCpuType(), address,false);
 		}
 	}
 }

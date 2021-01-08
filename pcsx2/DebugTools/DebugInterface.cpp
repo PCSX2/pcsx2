@@ -232,6 +232,11 @@ bool DebugInterface::parseExpression(PostfixExpression& exp, u64& dest)
 // R5900DebugInterface
 //
 
+BreakPointCpu R5900DebugInterface::getCpuType()
+{
+	return BREAKPOINT_EE;
+}
+
 u32 R5900DebugInterface::read8(u32 address)
 {
 	if (!isValidAddress(address))
@@ -627,6 +632,11 @@ u32 R5900DebugInterface::getCycles()
 // R3000DebugInterface
 //
 
+
+BreakPointCpu R3000DebugInterface::getCpuType()
+{
+	return BREAKPOINT_IOP;
+}
 
 u32 R3000DebugInterface::read8(u32 address)
 {

@@ -1147,7 +1147,8 @@ protected:
 
 		CoreThread.ResetQuick();
 		symbolMap.Clear();
-		CBreakPoints::SetSkipFirst(0);
+		CBreakPoints::SetSkipFirst(BREAKPOINT_EE, 0);
+		CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, 0);
 
 		CDVDsys_SetFile(CDVD_SourceType::Iso, g_Conf->CurrentIso );
 		if( m_UseCDVDsrc )

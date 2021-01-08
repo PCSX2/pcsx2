@@ -19,6 +19,12 @@
 
 enum { EECAT_GPR, EECAT_CP0, EECAT_FPR, EECAT_FCR, EECAT_VU0F, EECAT_VU0I, EECAT_COUNT };
 enum { IOPCAT_GPR, IOPCAT_COUNT };
+enum BreakPointCpu
+{
+	BREAKPOINT_EE = 0x01,
+	BREAKPOINT_IOP = 0x02,
+	BREAKPOINT_IOP_AND_EE = 0x03
+};
 
 class DebugInterface
 {
@@ -51,6 +57,7 @@ public:
 	virtual std::string disasm(u32 address, bool simplify) = 0;
 	virtual bool isValidAddress(u32 address) = 0;
 	virtual u32 getCycles() = 0;
+	virtual BreakPointCpu getCpuType() = 0;
 	
 	bool initExpression(const char* exp, PostfixExpression& dest);
 	bool parseExpression(PostfixExpression& exp, u64& dest);
@@ -90,6 +97,7 @@ public:
 	virtual std::string disasm(u32 address, bool simplify);
 	virtual bool isValidAddress(u32 address);
 	virtual u32 getCycles();
+	virtual BreakPointCpu getCpuType();
 };
 
 
@@ -122,6 +130,7 @@ public:
 	virtual std::string disasm(u32 address, bool simplify);
 	virtual bool isValidAddress(u32 address);
 	virtual u32 getCycles();
+	virtual BreakPointCpu getCpuType();
 };
 
 extern R5900DebugInterface r5900Debug;

@@ -19,6 +19,8 @@
 
 #include "Sio.h"
 #include "Sif.h"
+#include "../DebugTools/Breakpoints.h"
+#include "R5900OpcodeTables.h"
 
 using namespace R3000A;
 
@@ -40,6 +42,8 @@ s32 iopBreak = 0;
 // tracks the IOP's current sync status with the EE.  When it dips below zero,
 // control is returned to the EE.
 s32 iopCycleEE = -1;
+
+bool iopBreakpoint = 0;
 
 // Used to signal to the EE when important actions that need IOP-attention have
 // happened (hsyncs, vsyncs, IOP exceptions, etc).  IOP runs code whenever this
@@ -247,3 +251,45 @@ void iopTestIntc()
 		psxSetNextBranchDelta( 2 );
 }
 
+inline bool psxIsBranchOrJump(u32 addr)
+{
+	u32 op = iopMemRead32(addr);
+	const R5900::OPCODE& opcode = R5900::GetInstruction(op);
+
+	return (opcode.flags & IS_BRANCH) != 0;
+}
+
+// The next two functions return 0 if no breakpoint is needed,
+// 1 if it's needed on the current pc, 2 if it's needed in the delay slot
+// 3 if needed in both
+
+int psxIsBreakpointNeeded(u32 addr)
+{
+	int bpFlags = 0;
+	if (CBreakPoints::IsAddressBreakPoint(BREAKPOINT_IOP, addr))
+		bpFlags += 1;
+
+	// there may be a breakpoint in the delay slot
+	if (psxIsBranchOrJump(addr) && CBreakPoints::IsAddressBreakPoint(BREAKPOINT_IOP, addr + 4))
+		bpFlags += 2;
+
+	return bpFlags;
+}
+
+int psxIsMemcheckNeeded(u32 pc)
+{
+	if (CBreakPoints::GetNumMemchecks() == 0)
+		return 0;
+
+	u32 addr = pc;
+	if (psxIsBranchOrJump(addr))
+		addr += 4;
+
+	u32 op = iopMemRead32(addr);
+	const R5900::OPCODE& opcode = R5900::GetInstruction(op);
+
+	if (opcode.flags & IS_MEMORY)
+		return addr == pc ? 1 : 2;
+
+	return 0;
+}

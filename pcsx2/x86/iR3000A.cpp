@@ -23,6 +23,8 @@
 #include "iR3000A.h"
 #include "BaseblockEx.h"
 #include "System/RecTypes.h"
+#include "System/SysThreads.h"
+#include "R5900OpcodeTables.h"
 
 #include <time.h>
 
@@ -36,6 +38,7 @@
 #include "AppConfig.h"
 
 #include "Utilities/Perf.h"
+#include "../DebugTools/Breakpoints.h"
 
 using namespace x86Emitter;
 
@@ -433,6 +436,11 @@ void _psxFlushCall(int flushtype)
 	_freeX86reg( eax );
 	_freeX86reg( ecx );
 	_freeX86reg( edx );
+
+	if ((flushtype & FLUSH_PC)/*&& !g_cpuFlushedPC*/) {
+		xMOV(ptr32[&psxRegs.pc], psxpc);
+		//g_cpuFlushedPC = true;
+	}
 
 	if( flushtype & FLUSH_CACHED_REGS )
 		_psxFlushConstRegs();
@@ -1030,10 +1038,166 @@ void rpsxBREAK()
 	//if (!psxbranch) psxbranch = 2;
 }
 
+void psxDynarecCheckBreakpoint()
+{
+	u32 pc = psxRegs.pc;
+	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_IOP, pc) == pc)
+		return;
+
+	int bpFlags = psxIsBreakpointNeeded(pc);
+	bool hit = false;
+	//check breakpoint at current pc
+	if (bpFlags & 1) {
+		auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_IOP, pc);
+		if (cond == NULL || cond->Evaluate()) {
+			hit = true;
+		}
+	}
+	//check breakpoint in delay slot
+	if (bpFlags & 2) {
+		auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_IOP, pc + 4);
+		if (cond == NULL || cond->Evaluate())
+			hit = true;
+	}
+
+	if (!hit)
+		return;
+
+	CBreakPoints::SetBreakpointTriggered(true);
+	GetCoreThread().PauseSelfDebug();
+	iopBreakpoint = true;
+}
+
+void psxDynarecMemcheck()
+{
+	u32 pc = psxRegs.pc;
+	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_IOP, pc) == pc)
+		return;
+
+	CBreakPoints::SetBreakpointTriggered(true);
+	GetCoreThread().PauseSelfDebug();
+	iopBreakpoint = true;
+}
+
+void __fastcall psxDynarecMemLogcheck(u32 start, bool store)
+{
+	if (store)
+		DevCon.WriteLn("Hit store breakpoint @0x%x", start);
+	else
+		DevCon.WriteLn("Hit load breakpoint @0x%x", start);
+}
+
+void psxRecMemcheck(u32 op, u32 bits, bool store)
+{
+	_psxFlushCall(FLUSH_EVERYTHING | FLUSH_PC);
+
+	// compute accessed address
+	_psxMoveGPRtoR(ecx, (op >> 21) & 0x1F);
+	if ((s16)op != 0)
+		xADD(ecx, (s16)op);
+	if (bits == 128)
+		xAND(ecx, ~0x0F);
+
+	xFastCall((void*)standardizeBreakpointAddressIop, ecx);
+	xMOV(ecx, eax);
+	xMOV(edx, eax);
+	xADD(edx, bits / 8);
+
+	// ecx = access address
+	// edx = access address+size
+
+	auto checks = CBreakPoints::GetMemChecks();
+	for (size_t i = 0; i < checks.size(); i++)
+	{
+		if (checks[i].cpu != BREAKPOINT_IOP)
+			continue;
+		if (checks[i].result == 0)
+			continue;
+		if ((checks[i].cond & MEMCHECK_WRITE) == 0 && store)
+			continue;
+		if ((checks[i].cond & MEMCHECK_READ) == 0 && !store)
+			continue;
+
+		// logic: memAddress < bpEnd && bpStart < memAddress+memSize
+
+		xMOV(eax, standardizeBreakpointAddress(BREAKPOINT_IOP, checks[i].end));
+		xCMP(ecx, eax);				// address < end
+		xForwardJGE8 next1;			// if address >= end then goto next1
+
+		xMOV(eax, standardizeBreakpointAddress(BREAKPOINT_IOP, checks[i].start));
+		xCMP(eax, edx);				// start < address+size
+		xForwardJGE8 next2;			// if start >= address+size then goto next2
+
+									// hit the breakpoint
+		if (checks[i].result & MEMCHECK_LOG) {
+			xMOV(edx, store);
+			xFastCall((void*)psxDynarecMemLogcheck, ecx, edx);
+		}
+		if (checks[i].result & MEMCHECK_BREAK) {
+			xFastCall((void*)psxDynarecMemcheck);
+		}
+
+		next1.SetTarget();
+		next2.SetTarget();
+	}
+	// get out of here
+	xCMP(ptr8[&iopBreakpoint], 0);
+	xJNE(iopExitRecompiledCode);
+}
+
+void psxEncodeBreakpoint()
+{
+	if (psxIsBreakpointNeeded(psxpc) != 0)
+	{
+		_psxFlushCall(FLUSH_EVERYTHING | FLUSH_PC);
+		xFastCall((void*)psxDynarecCheckBreakpoint);
+		// get out of here
+		xCMP(ptr8[&iopBreakpoint], 0);
+		xJNE(iopExitRecompiledCode);
+	}
+}
+
+void psxEncodeMemcheck()
+{
+	int needed = psxIsMemcheckNeeded(psxpc);
+	if (needed == 0)
+		return;
+
+	u32 op = iopMemRead32(needed == 2 ? psxpc + 4 : psxpc);
+	const R5900::OPCODE& opcode = R5900::GetInstruction(op);
+
+	bool store = (opcode.flags & IS_STORE) != 0;
+	switch (opcode.flags & MEMTYPE_MASK)
+	{
+	case MEMTYPE_BYTE:
+		psxRecMemcheck(op, 8, store);
+		break;
+	case MEMTYPE_HALF:
+		psxRecMemcheck(op, 16, store);
+		break;
+	case MEMTYPE_WORD:
+		psxRecMemcheck(op, 32, store);
+		break;
+	case MEMTYPE_DWORD:
+		psxRecMemcheck(op, 64, store);
+		break;
+	case MEMTYPE_QWORD:
+		psxRecMemcheck(op, 128, store);
+		break;
+	}
+}
+
 void psxRecompileNextInstruction(int delayslot)
 {
 	// pblock isn't used elsewhere in this function.
 	//BASEBLOCK* pblock = PSX_GETBLOCK(psxpc);
+
+	// add breakpoint
+	if (!delayslot)
+	{
+		psxEncodeBreakpoint();
+		psxEncodeMemcheck();
+	}
 
 	if( IsDebugBuild ) {
 		xNOP();
