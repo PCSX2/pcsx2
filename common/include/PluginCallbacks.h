@@ -1266,7 +1266,7 @@ typedef void(PS2E_CALLBACK *_PS2E_GetLastError)(char *const *msg_diag, wchar_t *
 // NOTE: The read/write functions CANNOT use XMM/MMX regs
 // If you want to use them, need to save and restore current ones
 typedef s32  (CALLBACK* _SPU2init)(char *configpath);
-typedef s32  (CALLBACK* _SPU2open)(void *pDisplay);
+typedef s32  (CALLBACK* _SPU2open)();
 typedef void (CALLBACK* _SPU2close)();
 typedef void (CALLBACK* _SPU2shutdown)();
 typedef void (CALLBACK* _SPU2write)(u32 mem, u16 value);

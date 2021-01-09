@@ -20,8 +20,6 @@
 
 #include "Utilities/StringHelpers.h"
 
-extern uptr gsWindowHandle;
-
 void SysMessage(const char* fmt, ...)
 {
 	va_list list;
@@ -32,8 +30,7 @@ void SysMessage(const char* fmt, ...)
 	vsprintf_s(tmp, fmt, list);
 	va_end(list);
 	swprintf_s(wtmp, L"%S", tmp);
-	MessageBox((!!gsWindowHandle) ? (HWND)gsWindowHandle : GetActiveWindow(), wtmp,
-			   L"SPU2 System Message", MB_OK | MB_SETFOREGROUND);
+	MessageBox(GetActiveWindow(), wtmp, L"SPU2 System Message", MB_OK | MB_SETFOREGROUND);
 }
 
 void SysMessage(const wchar_t* fmt, ...)
@@ -43,8 +40,7 @@ void SysMessage(const wchar_t* fmt, ...)
 	wxString wtmp;
 	wtmp.PrintfV(fmt, list);
 	va_end(list);
-	MessageBox((!!gsWindowHandle) ? (HWND)gsWindowHandle : GetActiveWindow(), wtmp,
-			   L"SPU2 System Message", MB_OK | MB_SETFOREGROUND);
+	MessageBox(GetActiveWindow(), wtmp, L"SPU2 System Message", MB_OK | MB_SETFOREGROUND);
 }
 
 //////
