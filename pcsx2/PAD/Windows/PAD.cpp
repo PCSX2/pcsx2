@@ -45,10 +45,7 @@
 #define FORCE_UPDATE_WPARAM ((WPARAM)0x74328943)
 #define FORCE_UPDATE_LPARAM ((LPARAM)0x89437437)
 
-#ifdef __linux__
-Display* GSdsp;
-Window GSwin;
-#else
+#ifdef _MSC_VER
 HWND hWnd;
 HWND hWndTop;
 
@@ -510,13 +507,13 @@ void Update(unsigned int port, unsigned int slot)
 	{
 		s[i & 1][i >> 1] = pads[i & 1][i >> 1].lockedSum;
 	}
-#ifdef __linux__
 	InitInfo info = {
-		0, 0, GSdsp, GSwin};
-#else
-	InitInfo info = {
-		0, 0, hWndTop, &hWndGSProc};
+		0, 0,
+#ifdef _MSC_VER
+		hWndTop,
+		&hWndGSProc
 #endif
+	};
 	dm->Update(&info);
 	static int rapidFire = 0;
 	rapidFire++;
@@ -983,16 +980,20 @@ ExtraWndProcResult HideCursorProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 
 void PADconfigure()
 {
-	HWND tmp = hWnd;
 	PADclose();
 	ScopedCoreThreadPause paused_core;
 	Configure();
 	paused_core.AllowResume();
-	if(tmp != nullptr)
+	if (hWnd != nullptr)
+	{
+		NativeWindowHandle tmp;
+		tmp.kind = NativeWindowHandle::Win32;
+		tmp.win32 = hWnd;
 		PADopen(tmp);
+	}
 }
 
-s32 PADopen(void* pDsp)
+s32 PADopen(const NativeWindowHandle& gsWindowHandle)
 {
 	if (openCount++)
 		return 0;
@@ -1001,13 +1002,9 @@ s32 PADopen(void* pDsp)
 #ifdef _MSC_VER
 	if (!hWnd)
 	{
-		if (IsWindow((HWND)pDsp))
+		if (gsWindowHandle.kind == NativeWindowHandle::Win32)
 		{
-			hWnd = (HWND)pDsp;
-		}
-		else if (pDsp && !IsBadReadPtr(pDsp, 4) && IsWindow(*(HWND*)pDsp))
-		{
-			hWnd = *(HWND*)pDsp;
+			hWnd = gsWindowHandle.win32;
 		}
 		else
 		{
@@ -1076,10 +1073,6 @@ s32 PADopen(void* pDsp)
 // activeWindow = GetActiveWindow() == hWnd;
 
 // activeWindow = (GetAncestor(hWnd, GA_ROOT) == GetAncestor(GetForegroundWindow(), GA_ROOT));
-#else
-	// Not used so far
-	GSdsp = *(Display**)pDsp;
-	GSwin = (Window) * (((uptr*)pDsp) + 1);
 #endif
 	activeWindow = 1;
 	UpdateEnabledDevices();

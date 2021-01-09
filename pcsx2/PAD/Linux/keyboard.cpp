@@ -160,14 +160,21 @@ void AnalyzeKeyEvent(keyEvent& evt)
 				if (!s_grab_input)
 				{
 					s_grab_input = true;
-					XGrabPointer(GSdsp, GSwin, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, GSwin, None, CurrentTime);
-					XGrabKeyboard(GSdsp, GSwin, True, GrabModeAsync, GrabModeAsync, CurrentTime);
+					if (PAD_gsWindowHandle.kind == NativeWindowHandle::X11) {
+						Display* display = PAD_gsWindowHandle.x11.display;
+						Window window = PAD_gsWindowHandle.x11.window;
+						XGrabPointer(display, window, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, window, None, CurrentTime);
+						XGrabKeyboard(display, window, True, GrabModeAsync, GrabModeAsync, CurrentTime);
+					}
 				}
 				else
 				{
 					s_grab_input = false;
-					XUngrabPointer(GSdsp, CurrentTime);
-					XUngrabKeyboard(GSdsp, CurrentTime);
+					if (PAD_gsWindowHandle.kind == NativeWindowHandle::X11) {
+						Display* display = PAD_gsWindowHandle.x11.display;
+						XUngrabPointer(display, CurrentTime);
+						XUngrabKeyboard(display, CurrentTime);
+					}
 				}
 			}
 
@@ -268,18 +275,14 @@ void AnalyzeKeyEvent(keyEvent& evt)
 	}
 }
 
-void UpdateKeyboardInput()
+static void UpdateKeyboardInput_X11(Display* display, Window window)
 {
 	keyEvent evt = {0};
 	XEvent E = {0};
 
-	// Keyboard input send by PCSX2
-	g_ev_fifo.consume_all(AnalyzeKeyEvent);
-
-	// keyboard input
-	while (XPending(GSdsp) > 0)
+	while (XPending(display) > 0)
 	{
-		XNextEvent(GSdsp, &E);
+		XNextEvent(display, &E);
 
 		// Change the format of the structure to be compatible with GSOpen2
 		// mode (event come from pcsx2 not X)
@@ -298,6 +301,19 @@ void UpdateKeyboardInput()
 		}
 
 		AnalyzeKeyEvent(evt);
+	}
+}
+
+void UpdateKeyboardInput()
+{
+	// Keyboard input send by PCSX2
+	g_ev_fifo.consume_all(AnalyzeKeyEvent);
+
+	// keyboard input
+	switch (PAD_gsWindowHandle.kind) {
+		case NativeWindowHandle::X11:
+			UpdateKeyboardInput_X11(PAD_gsWindowHandle.x11.display, PAD_gsWindowHandle.x11.window);
+			break;
 	}
 }
 
@@ -320,74 +336,5 @@ bool PollForNewKeyboardKeys(u32& pkey)
 	}
 
 	return false;
-}
-
-#else
-LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	static bool lbutton = false, rbutton = false;
-	for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
-	{
-		g_key_status.keyboard_state_acces(pad);
-	}
-
-	switch (msg)
-	{
-		case WM_KEYDOWN:
-			if (lParam & 0x40000000)
-				return TRUE;
-
-			for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
-			{
-				for (int i = 0; i < MAX_KEYS; i++)
-				{
-					assert(0);
-#if 0
-                    if (wParam == get_key(pad, i)) {
-                        g_key_status.press(pad, i);
-                        break;
-                    }
-#endif
-				}
-			}
-
-			event.evt = KEYPRESS;
-			event.key = wParam;
-			break;
-
-		case WM_KEYUP:
-			for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
-			{
-				for (int i = 0; i < MAX_KEYS; i++)
-				{
-					assert(0);
-#if 0
-                    if (wParam == get_key(pad, i)) {
-                        g_key_status.release(pad, i);
-                        break;
-                    }
-#endif
-				}
-			}
-
-
-			event.evt = KEYRELEASE;
-			event.key = wParam;
-			break;
-
-		case WM_DESTROY:
-		case WM_QUIT:
-			event.evt = KEYPRESS;
-			event.key = VK_ESCAPE;
-			return GSwndProc(hWnd, msg, wParam, lParam);
-
-		default:
-			return GSwndProc(hWnd, msg, wParam, lParam);
-	}
-
-	for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
-		g_key_status.commit_status(pad);
-
-	return TRUE;
 }
 #endif

@@ -23,8 +23,7 @@
 #include "wx_dialog/dialog.h"
 
 #ifndef __APPLE__
-Display* GSdsp;
-Window GSwin;
+NativeWindowHandle PAD_gsWindowHandle;
 #endif
 
 static void SysMessage(const char* fmt, ...)
@@ -43,13 +42,11 @@ static void SysMessage(const char* fmt, ...)
 	dialog.ShowModal();
 }
 
-s32 _PADopen(void* pDsp)
+s32 _PADopen(const NativeWindowHandle& gsWindowHandle)
 {
 #ifndef __APPLE__
-	GSdsp = *(Display**)pDsp;
-	GSwin = (Window) * (((u32*)pDsp) + 1);
+	PAD_gsWindowHandle = gsWindowHandle;
 #endif
-
 	return 0;
 }
 
@@ -85,11 +82,13 @@ void PADupdate(int pad)
 	// be fired after a couple of minute.
 	// Emulate an user activity
 	static int count = 0;
-	count++;
-	if ((count & 0xFFF) == 0)
-	{
-		// 1 call every 4096 Vsync is enough
-		XResetScreenSaver(GSdsp);
+	if (PAD_gsWindowHandle.kind == NativeWindowHandle::X11) {
+		count++;
+		if ((count & 0xFFF) == 0)
+		{
+			// 1 call every 4096 Vsync is enough
+			XResetScreenSaver(PAD_gsWindowHandle.x11.display);
+		}
 	}
 #endif
 

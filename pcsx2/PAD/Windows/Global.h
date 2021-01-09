@@ -84,12 +84,6 @@ static inline unsigned int timeGetTime()
 #include "Utilities/Dependencies.h"
 #include "Utilities/StringHelpers.h"
 #include "Utilities/Path.h"
-
-#include <X11/Xutil.h>
-
-extern Display* GSdsp;
-extern Window GSwin;
-
 #endif
 
 #ifndef _CRT_SECURE_NO_DEPRECATE

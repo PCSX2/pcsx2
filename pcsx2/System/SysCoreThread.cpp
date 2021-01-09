@@ -332,7 +332,7 @@ void SysCoreThread::OnResumeInThread(bool isSuspended)
 	}
 	FWopen();
 	SPU2open();
-	PADopen((void*)pDsp);
+	PADopen(g_gsWindowHandle);
 }
 
 

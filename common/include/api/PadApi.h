@@ -37,9 +37,8 @@
 // Basic functions.
 EXPORT_C_(s32)
 PADinit(u32 flags);
-// pDisplay normally is passed a handle to the GS plugins window.
 EXPORT_C_(s32)
-PADopen(void *pDisplay);
+PADopen(const NativeWindowHandle& gsWindowHandle);
 EXPORT_C_(void)
 PADclose();
 EXPORT_C_(void)
