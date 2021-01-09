@@ -16,12 +16,11 @@
 #ifndef __GSLINUX_H__
 #define __GSLINUX_H__
 
-#include <gtk/gtk.h>
-#include <X11/Xlib.h>
 #include <X11/keysym.h>
+#include "NativeWindowHandle.h"
 
-extern int GSOpenWindow(void *pDsp, const char *Title);
-extern int GSOpenWindow2(void *pDsp, u32 flags);
+extern int GSOpenWindow(NativeWindowHandle *pGSWindowHandle, const char *Title);
+extern int GSOpenWindow2(NativeWindowHandle *pGSWindowHandle, u32 flags);
 extern void GSCloseWindow();
 extern void GSProcessMessages();
 extern void HandleKeyEvent(keyEvent *ev);

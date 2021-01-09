@@ -30,6 +30,7 @@
 
 class GSWndEGL : public GSWndGL
 {
+	void *m_native_display;
 	void *m_native_window;
 
 	EGLDisplay m_eglDisplay;
@@ -53,12 +54,13 @@ public:
 	virtual ~GSWndEGL() {};
 
 	bool Create(const std::string& title, int w, int h) final;
-	bool Attach(void* handle, bool managed = true) final;
+	bool Attach(const NativeWindowHandle& handle) final;
 	void Detach() final;
 
 	virtual void *CreateNativeDisplay() = 0;
 	virtual void *CreateNativeWindow(int w, int h) = 0; // GSopen1/PSX API
-	virtual void *AttachNativeWindow(void *handle) = 0;
+	virtual void AttachNativeWindow(const NativeWindowHandle& native_window, void** out_native_display, void** out_native_window) = 0;
+	virtual NativeWindowHandle GetNativeWindowHandle() = 0;
 	virtual void DestroyNativeResources() = 0;
 
 	GSVector4i GetClientRect();
@@ -74,13 +76,6 @@ public:
 	void Show() final {};
 	void Hide() final {};
 	void HideFrame() final {}; // DX9 API
-
-	virtual void* GetDisplay() = 0; // GSopen1 API
-	virtual void* GetHandle() = 0; // DX API
-
-	// Static to allow to query supported the platform
-	// before object creation
-	static int SelectPlatform();
 };
 
 #if GS_EGL_X11
@@ -94,16 +89,17 @@ class GSWndEGL_X11 : public GSWndEGL
 	Display  *m_NativeDisplay;
 	Window    m_NativeWindow;
 
-	public:
+public:
 	GSWndEGL_X11();
 	virtual ~GSWndEGL_X11() {};
 
-	void* GetDisplay() final { return (void*)m_NativeDisplay;}
-	void* GetHandle() final {return (void*)&m_NativeWindow;}
+	// Static to allow querying platform support before object creation
+	static bool SupportsWindow(const NativeWindowHandle& native_window);
 
 	void *CreateNativeDisplay() final;
 	void *CreateNativeWindow(int w, int h) final;
-	void *AttachNativeWindow(void *handle) final;
+	void AttachNativeWindow(const NativeWindowHandle& native_window, void** out_native_display, void** out_native_window) final;
+	NativeWindowHandle GetNativeWindowHandle() final;
 	void DestroyNativeResources() final;
 
 	bool SetWindowText(const char* title) final;
@@ -124,16 +120,17 @@ class GSWndEGL_WL : public GSWndEGL
 	wl_display    *m_NativeDisplay;
 	wl_egl_window *m_NativeWindow;
 
-	public:
+public:
 	GSWndEGL_WL();
 	virtual ~GSWndEGL_WL() {};
 
-	void* GetDisplay() final { return (void*)m_NativeDisplay;}
-	void* GetHandle() final {return (void*)m_NativeWindow;}
+	// Static to allow querying platform support before object creation
+	static bool SupportsWindow(const NativeWindowHandle& native_window);
 
 	void *CreateNativeDisplay() final;
 	void *CreateNativeWindow(int w, int h) final;
-	void *AttachNativeWindow(void *handle) final;
+	void AttachNativeWindow(const NativeWindowHandle& native_window, void** out_native_display, void** out_native_window) final;
+	NativeWindowHandle GetNativeWindowHandle() final;
 	void DestroyNativeResources() final;
 
 	bool SetWindowText(const char* title) final;

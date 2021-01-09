@@ -24,23 +24,25 @@
 #include "stdafx.h"
 #include "GSdx.h"
 #include "GSVector.h"
+#include "NativeWindowHandle.h"
 
 class GSWnd
 {
 protected:
-	bool m_managed; // set true when we're attached to a 3rdparty window that's amanged by the emulator
+	// set to true when we have created and manage our own window.
+	// false when we're attached to a window that is managed by the emulator.
+	bool m_managed;
 
 public:
 	GSWnd() : m_managed(false) {};
 	virtual ~GSWnd() {};
 
 	virtual bool Create(const std::string& title, int w, int h) = 0;
-	virtual bool Attach(void* handle, bool managed = true) = 0;
+	virtual bool Attach(const NativeWindowHandle& handle) = 0;
 	virtual void Detach() = 0;
-	bool IsManaged() const {return m_managed;}
+	virtual NativeWindowHandle GetNativeWindowHandle() = 0;
+	bool IsManaged() const { return m_managed ;}
 
-	virtual void* GetDisplay() = 0;
-	virtual void* GetHandle() = 0;
 	virtual GSVector4i GetClientRect() = 0;
 	virtual bool SetWindowText(const char* title) = 0;
 
@@ -77,11 +79,10 @@ public:
 	virtual ~GSWndGL() {};
 
 	virtual bool Create(const std::string& title, int w, int h) = 0;
-	virtual bool Attach(void* handle, bool managed = true) = 0;
+	virtual bool Attach(const NativeWindowHandle& handle) = 0;
 	virtual void Detach() = 0;
+	virtual NativeWindowHandle GetNativeWindowHandle() = 0;
 
-	virtual void* GetDisplay() = 0;
-	virtual void* GetHandle() = 0;
 	virtual GSVector4i GetClientRect() = 0;
 	virtual bool SetWindowText(const char* title) = 0;
 

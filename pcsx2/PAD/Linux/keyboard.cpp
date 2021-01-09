@@ -163,7 +163,7 @@ void AnalyzeKeyEvent(keyEvent& evt)
 					if (PAD_gsWindowHandle.kind == NativeWindowHandle::X11) {
 						Display* display = PAD_gsWindowHandle.x11.display;
 						Window window = PAD_gsWindowHandle.x11.window;
-						XGrabPointer(display, window, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, window, None, CurrentTime);
+						XGrabPointer(display, window, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, window, 0, CurrentTime);
 						XGrabKeyboard(display, window, True, GrabModeAsync, GrabModeAsync, CurrentTime);
 					}
 				}

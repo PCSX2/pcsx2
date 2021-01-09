@@ -213,24 +213,28 @@ void SysMtgsThread::OpenPlugin()
 
 	if (GSopen2 != NULL)
 	{
-		result = GSopen2((void*)pDsp, 1 | (renderswitch ? 4 : 0));
+		result = GSopen2(&g_gsWindowHandle, 1 | (renderswitch ? 4 : 0));
 	}
 	else
 	{
-		result = GSopen((void*)pDsp, "PCSX2", renderswitch ? 2 : 1);
+		result = GSopen(&g_gsWindowHandle, "PCSX2", renderswitch ? 2 : 1);
 
-		// DEPRECATED: We should ask GS to write to g_gsWindowHandle directly.
+		// DEPRECATED: g_gsWindowHandle should be used instead of pDsp
 		if (result == 0) // 0 indicates success
 		{
-			// Fill in g_gsWindowHandle based on pDsp
-#ifdef _WIN32
-			g_gsWindowHandle.kind = NativeWindowHandle::WIN32;
-			g_gsWindowHandle.win32 = (HWND)pDsp[0];
-#else
-			g_gsWindowHandle.kind = NativeWindowHandle::X11;
-			g_gsWindowHandle.x11.display = (Display*)pDsp[0];
-			g_gsWindowHandle.x11.window = (Window)pDsp[1];
+			switch (g_gsWindowHandle.kind) {
+#if defined(__unix__)
+				case NativeWindowHandle::X11:
+					pDsp[0] = (uptr)g_gsWindowHandle.x11.display;
+					pDsp[1] = (uptr)g_gsWindowHandle.x11.window;
+					break;
+#elif defined(_WIN32)
+				case NativeWindowHandle::WIN32:
+					pDsp[0] = (uptr)pGSWindowHandle->win32;
+					pDsp[1] = (uptr)nullptr;
+					break;
 #endif
+			}
 		}
 	}
 

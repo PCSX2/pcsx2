@@ -189,10 +189,9 @@ EXPORT_C GSclose()
 	}
 }
 
-static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads = -1)
+static int _GSopen(bool old_api, NativeWindowHandle* win_handle, const char* title, GSRendererType renderer, int threads = -1)
 {
 	GSDevice* dev = NULL;
-	bool old_api = *dsp == NULL;
 
 	// Fresh start up or config file changed
 	if(renderer == GSRendererType::Undefined)
@@ -235,20 +234,14 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 #if defined(__unix__)
 					// Note: EGL code use GLX otherwise maybe it could be also compatible with Windows
 					// Yes OpenGL code isn't complicated enough !
-					switch (GSWndEGL::SelectPlatform()) {
 #if GS_EGL_X11
-						case EGL_PLATFORM_X11_KHR:
-							wnds.push_back(std::make_shared<GSWndEGL_X11>());
-							break;
+					if (GSWndEGL_X11::SupportsWindow(*win_handle))
+						wnds.push_back(std::make_shared<GSWndEGL_X11>());
 #endif
 #if GS_EGL_WL
-						case EGL_PLATFORM_WAYLAND_KHR:
-							wnds.push_back(std::make_shared<GSWndEGL_WL>());
-							break;
+					if (GSWndEGL_WL::SupportsWindow(*win_handle))
+						wnds.push_back(std::make_shared<GSWndEGL_WL>());
 #endif
-						default:
-							break;
-					}
 #elif defined(__APPLE__)
 					// No windows available for macOS at the moment
 #else
@@ -268,11 +261,6 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 			int w = theApp.GetConfigI("ModeWidth");
 			int h = theApp.GetConfigI("ModeHeight");
-#if defined(__unix__)
-			void *win_handle = (void*)((uptr*)(dsp)+1);
-#else
-			void *win_handle = *dsp;
-#endif
 
 			for(auto& wnd : wnds)
 			{
@@ -280,22 +268,17 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 				{
 					if (old_api)
 					{
-						// old-style API expects us to create and manage our own window:
+						// The old GSopen API will pass us a null window handle. In this case,
+						// we are expected to create our own window and store it in win_handle.
 						wnd->Create(title, w, h);
 
 						wnd->Show();
 
-#ifdef _WIN32
-						*dsp = wnd->GetHandle();
-						*((uptr*)dsp + 1) = (uptr)nullptr;
-#else
-						*dsp = wnd->GetDisplay();
-						*((uptr*)dsp + 1) = (uptr)wnd->GetHandle();
-#endif
+						*win_handle = wnd->GetNativeWindowHandle();
 					}
 					else
 					{
-						wnd->Attach(win_handle, false);
+						wnd->Attach(*win_handle);
 					}
 
 					window = wnd; // Previous code will throw if window isn't supported
@@ -427,7 +410,7 @@ EXPORT_C_(void) GSosdMonitor(const char *key, const char *value, uint32 color)
 	if(s_gs && s_gs->m_dev) s_gs->m_dev->m_osd.Monitor(key, value);
 }
 
-EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
+EXPORT_C_(int) GSopen2(NativeWindowHandle* dsp, uint32 flags)
 {
 	static bool stored_toggle_state = false;
 	const bool toggle_state = !!(flags & 4);
@@ -470,7 +453,7 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 	}
 	stored_toggle_state = toggle_state;
 
-	int retval = _GSopen(dsp, "", current_renderer);
+	int retval = _GSopen(false, dsp, "", current_renderer);
 
 	if (s_gs != NULL)
 		s_gs->SetAspectRatio(0);	 // PCSX2 manages the aspect ratios
@@ -480,7 +463,7 @@ EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
 	return retval;
 }
 
-EXPORT_C_(int) GSopen(void** dsp, const char* title, int mt)
+EXPORT_C_(int) GSopen(NativeWindowHandle* dsp, const char* title, int mt)
 {
 	GSRendererType renderer = GSRendererType::Default;
 
@@ -500,9 +483,8 @@ EXPORT_C_(int) GSopen(void** dsp, const char* title, int mt)
 		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
 	}
 
-	*dsp = NULL;
-
-	int retval = _GSopen(dsp, title, renderer);
+	*dsp = {};
+	int retval = _GSopen(true, dsp, title, renderer);
 
 	if(retval == 0 && s_gs)
 	{
@@ -1023,9 +1005,9 @@ EXPORT_C GSReplay(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
 
 	s_vsync = theApp.GetConfigI("vsync");
 
-	HWND hWnd = nullptr;
+	NativeWindowHandle win_handle = {};
 
-	_GSopen((void**)&hWnd, "", renderer);
+	_GSopen(true, &win_handle, "", renderer);
 
 	uint32 crc;
 	file->Read(&crc, 4);
@@ -1091,7 +1073,7 @@ EXPORT_C GSReplay(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
 	Sleep(100);
 
 	std::vector<uint8> buff;
-	while(IsWindowVisible(hWnd))
+	while(IsWindowVisible(win_handle.win32))
 	{
 		for(auto &p : packets)
 		{
@@ -1380,8 +1362,8 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 
 	long frame_number = 0;
 
-	void* hWnd = NULL;
-	int err = _GSopen((void**)&hWnd, "", m_renderer);
+	NativeWindowHandle win_handle = {};
+	int err = _GSopen(true, &win_handle, "", m_renderer);
 	if (err != 0) {
 		fprintf(stderr, "Error failed to GSopen\n");
 		return;

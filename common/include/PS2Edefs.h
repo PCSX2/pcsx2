@@ -47,6 +47,7 @@
 */
 
 #include "Pcsx2Defs.h"
+#include "NativeWindowHandle.h"
 
 ///////////////////////////////////////////////////////////////////////
 
@@ -135,7 +136,7 @@ extern "C" {
 // basic funcs
 
 s32 CALLBACK GSinit();
-s32 CALLBACK GSopen(void *pDsp, const char *Title, int multithread);
+s32 CALLBACK GSopen(NativeWindowHandle *pGSWindowHandle, const char *Title, int multithread);
 void CALLBACK GSclose();
 void CALLBACK GSshutdown();
 void CALLBACK GSsetSettingsDir(const char *dir);
@@ -196,8 +197,8 @@ typedef char *(CALLBACK *_PS2EgetLibName)(void);
 // If you want to use them, need to save and restore current ones
 typedef void(CALLBACK *_GSosdLog)(const char *utf8, u32 color);
 typedef void(CALLBACK *_GSosdMonitor)(const char *key, const char *value, u32 color);
-typedef s32(CALLBACK *_GSopen)(void *pDsp, const char *Title, int multithread);
-typedef s32(CALLBACK *_GSopen2)(void *pDsp, u32 flags);
+typedef s32(CALLBACK *_GSopen)(NativeWindowHandle *pGSWindowHandle, const char *Title, int multithread);
+typedef s32(CALLBACK *_GSopen2)(NativeWindowHandle *pGSWindowHandle, u32 flags);
 typedef void(CALLBACK *_GSvsync)(int field);
 typedef void(CALLBACK *_GSgifTransfer)(const u32 *pMem, u32 size);
 typedef void(CALLBACK *_GSgifTransfer1)(u32 *pMem, u32 addr);
