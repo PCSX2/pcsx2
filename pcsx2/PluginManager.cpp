@@ -259,6 +259,7 @@ static void CALLBACK GS_Legacy_GSreadFIFO2(u64* pMem, int qwc) {
 }
 
 uptr pDsp[2];
+NativeWindowHandle g_gsWindowHandle;
 
 // ----------------------------------------------------------------------------
 // Important: Contents of this array must match the order of the contents of the

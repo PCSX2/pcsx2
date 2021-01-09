@@ -212,9 +212,27 @@ void SysMtgsThread::OpenPlugin()
 	int result;
 
 	if (GSopen2 != NULL)
+	{
 		result = GSopen2((void*)pDsp, 1 | (renderswitch ? 4 : 0));
+	}
 	else
+	{
 		result = GSopen((void*)pDsp, "PCSX2", renderswitch ? 2 : 1);
+
+		// DEPRECATED: We should ask GS to write to g_gsWindowHandle directly.
+		if (result == 0) // 0 indicates success
+		{
+			// Fill in g_gsWindowHandle based on pDsp
+#ifdef _WIN32
+			g_gsWindowHandle.kind = NativeWindowHandle::WIN32;
+			g_gsWindowHandle.win32 = (HWND)pDsp[0];
+#else
+			g_gsWindowHandle.kind = NativeWindowHandle::X11;
+			g_gsWindowHandle.x11.display = (Display*)pDsp[0];
+			g_gsWindowHandle.x11.window = (Window)pDsp[1];
+#endif
+		}
+	}
 
 
 	GSsetVsync(EmuConfig.GS.GetVsync());

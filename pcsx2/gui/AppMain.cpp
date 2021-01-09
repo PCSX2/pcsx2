@@ -947,7 +947,7 @@ void Pcsx2App::OpenGsPanel()
 	GSFrame* gsFrame = GetGsFramePtr();
 	if( gsFrame == NULL )
 	{
-		gsFrame = new GSFrame(GetAppName() );
+		gsFrame = new GSFrame(GetAppName());
 		m_id_GsFrame = gsFrame->GetId();
 
 		switch( wxGetApp().Overrides.GsWindowMode )
@@ -989,40 +989,26 @@ void Pcsx2App::OpenGsPanel()
 	
 	pxAssertDev( !GetCorePlugins().IsOpen( PluginId_GS ), "GS Plugin must be closed prior to opening a new Gs Panel!" );
 
-#ifdef __WXGTK__
-	// The x window/display are actually very deeper in the widget. You need both display and window
-	// because unlike window there are unrelated. One could think it would be easier to send directly the GdkWindow.
-	// Unfortunately there is a race condition between gui and gs threads when you called the
-	// GDK_WINDOW_* macro. To be safe I think it is best to do here. It only cost a slight
-	// extension (fully compatible) of the plugins API. -- Gregory
+	// ShowFullScreen must be called before GetNativeWindowHandle
+	// so that the viewport's window is created before we access it.
+	gsFrame->ShowFullScreen(g_Conf->GSWindow.IsFullscreen);
 
-	// GTK_PIZZA is an internal interface of wx, therefore they decide to
-	// remove it on wx 3. I tryed to replace it with gtk_widget_get_window but
-	// unfortunately it creates a gray box in the middle of the window on some
-	// users.
+	g_gsWindowHandle = gsFrame->GetNativeWindowHandle();
 
-	GtkWidget *child_window = GTK_WIDGET(gsFrame->GetViewport()->GetHandle());
-
-	gtk_widget_realize(child_window); // create the widget to allow to use GDK_WINDOW_* macro
-	gtk_widget_set_double_buffered(child_window, false); // Disable the widget double buffer, you will use the opengl one
-
-	GdkWindow* draw_window = gtk_widget_get_window(child_window);
-
-#if GTK_MAJOR_VERSION < 3
-	Window Xwindow = GDK_WINDOW_XWINDOW(draw_window);
-#else
-	Window Xwindow = GDK_WINDOW_XID(draw_window);
+	// DEPRECATED
+	switch (g_gsWindowHandle.kind) {
+#if defined(__unix__)
+		case NativeWindowHandle::X11:
+			pDsp[0] = (uptr)g_gsWindowHandle.x11.display;
+			pDsp[1] = (uptr)g_gsWindowHandle.x11.window;
+			break;
+#elif defined(_WIN32)
+		case NativeWindowHandle::WIN32:
+			pDsp[0] = (uptr)g_gsWindowHandle.win32;
+			pDsp[1] = (uptr)nullptr;
+			break;
 #endif
-	Display* XDisplay = GDK_WINDOW_XDISPLAY(draw_window);
-
-	pDsp[0] = (uptr)XDisplay;
-	pDsp[1] = (uptr)Xwindow;
-#else
-	pDsp[0] = (uptr)gsFrame->GetViewport()->GetHandle();
-	pDsp[1] = NULL;
-#endif
-
-	gsFrame->ShowFullScreen( g_Conf->GSWindow.IsFullscreen );
+	}
 
 #ifndef DISABLE_RECORDING
 	// Enable New & Play after the first game load of the session
@@ -1043,9 +1029,14 @@ void Pcsx2App::CloseGsPanel()
 
 	if (CloseViewportWithPlugins)
 	{
-		if (GSFrame* gsFrame = GetGsFramePtr())
-			if (GSPanel* woot = gsFrame->GetViewport())
-				woot->Destroy();
+		if (GSFrame* gsFrame = GetGsFramePtr()) {
+			gsFrame->Destroy();
+			g_gsWindowHandle = {};
+
+			// DEPRECATED
+			pDsp[0] = (uptr)nullptr;
+			pDsp[1] = (uptr)nullptr;
+		}
 	}
 }
 
