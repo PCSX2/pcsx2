@@ -332,7 +332,9 @@ bool SysThreadBase::StateCheckInThread()
 			if (m_ExecMode != ExecMode_Closing)
 			{
 				if (g_CDVDReset)
-					DoCDVDopen();
+					//AppCoreThread deals with Reseting CDVD
+					OnResumeInThread(false);
+					
 				g_CDVDReset = false;
 				break;
 			}
