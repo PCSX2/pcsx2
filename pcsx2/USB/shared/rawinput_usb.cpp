@@ -178,17 +178,14 @@ namespace shared
 					skipInput = !wParam;
 					break;
 				case WM_ACTIVATE:
-					DevCon.WriteLn("******      WM_ACTIVATE        ****** %p %d\n", hWnd, LOWORD(wParam) != WA_INACTIVE);
 					skipInput = LOWORD(wParam) == WA_INACTIVE;
 					if (LOWORD(wParam) == WA_INACTIVE)
 						CursorRelease();
 					break;
 				case WM_SETFOCUS:
-					DevCon.WriteLn("******      WM_SETFOCUS        ****** %p\n", hWnd);
 					skipInput = false;
 					break;
 				case WM_KILLFOCUS:
-					DevCon.WriteLn("******      WM_KILLFOCUS        ****** %p\n", hWnd);
 					skipInput = true;
 					break;
 				case WM_SIZE:
