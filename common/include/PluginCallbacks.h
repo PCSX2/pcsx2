@@ -1327,7 +1327,7 @@ typedef void (CALLBACK* _CDVDnewDiskCB)(void (*callback)());
 // NOTE: The read/write functions CANNOT use XMM/MMX regs
 // If you want to use them, need to save and restore current ones
 typedef s32  (CALLBACK* _DEV9init)(char *configpath);
-typedef s32  (CALLBACK* _DEV9open)(void *pDisplay);
+typedef s32  (CALLBACK* _DEV9open)();
 typedef void (CALLBACK* _DEV9close)();
 typedef void (CALLBACK* _DEV9shutdown)();
 typedef u8   (CALLBACK* _DEV9read8)(u32 mem);

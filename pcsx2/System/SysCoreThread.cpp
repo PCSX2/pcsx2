@@ -327,7 +327,7 @@ void SysCoreThread::OnResumeInThread(bool isSuspended)
 	if (isSuspended)
 	{
 		DoCDVDopen();
-		DEV9open((void*)pDsp);
+		DEV9open();
 		USBopen((void*)pDsp);
 	}
 	FWopen();
