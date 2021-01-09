@@ -733,7 +733,6 @@ void Panels::MemoryCardListPanel_Simple::UiDeleteCard(McdSlotItem& card)
 	{
 
 		wxFileName fullpath(m_FolderPicker->GetPath() + card.Filename.GetFullName());
-		card.IsEnabled = false;
 		Apply();
 
 		if (fullpath.FileExists())
@@ -810,11 +809,24 @@ bool Panels::MemoryCardListPanel_Simple::UiDuplicateCard(McdSlotItem& src, McdSl
 		break;
 	}
 
-
+		wxFileName srcfile(Path::ToWxString(Path::Combine(m_FolderPicker->GetPath().ToString().ToStdString(), src.Filename)));
+		wxFileName destfile(Path::ToWxString(Path::Combine(m_FolderPicker->GetPath().ToString().ToStdString(), dest.Filename)));
+		ScopedBusyCursor doh( Cursor_ReallyBusy );
+		
+		if( !(    ( srcfile.FileExists() && wxCopyFile( srcfile.GetFullPath(), destfile.GetFullPath(), true ) )
 			   || ( !srcfile.FileExists() && CopyDirectory( srcfile.GetFullPath(), destfile.GetFullPath() ) ) ) )
 		{
 			wxString heading;
 			heading.Printf( pxE( L"Failed: Destination memory card '%s' is in use." ),
+				WX_STR(destfile.GetFullPath()), dest.Slot
+			);
+
+		wxString content;
+
+		Msgbox::Alert(heading + L"\n\n" + content, _("Copy failed!"));
+
+		return false;
+	}
 
 		// Destination memcard isEnabled state is the same now as the source's
 		wxString success;
@@ -1147,6 +1159,10 @@ void Panels::MemoryCardListPanel_Simple::ReadFilesAtMcdFolder()
 	for (uint i = 0; i < memcardList.size(); i++)
 	{
 		McdSlotItem currentCardFile;
+		bool isOk=EnumerateMemoryCard( currentCardFile, memcardList[i], m_FolderPicker->GetPath() );
+		if( isOk && !isFileAssignedAndVisibleOnList( wxFileName(currentCardFile.Filename.wstring()) ) )
+		{
+			currentCardFile.Slot = -1;
 			currentCardFile.IsEnabled = false;
 			m_allFilesystemCards.push_back(currentCardFile);
 		}
