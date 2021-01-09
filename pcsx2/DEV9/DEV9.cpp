@@ -138,12 +138,15 @@ void __Log(int level, const char* fmt, ...)
 
 void LogInit()
 {
-	const std::string LogFile(s_strLogPath + "/dev9Log.txt");
-	if (logFile)
-	{
-		DEV9Log.WriteToFile = true;
-		DEV9Log.Open(LogFile);
-	}
+	const char* logName = "dev9Log.txt";
+
+	//GHC uses UTF8 on all platforms
+	ghc::filesystem::path path(GetLogFolder().ToUTF8().data());
+	path /= logName;
+	std::string strPath = path.u8string();
+
+	DEV9Log.WriteToFile = true;
+	DEV9Log.Open(strPath.c_str());
 }
 
 s32 DEV9init()
@@ -239,7 +242,14 @@ s32 DEV9open(void* pDsp)
 {
 	DEV9_LOG("DEV9open\n");
 	LoadConf();
+#ifdef _WIN32
+	//Convert to utf8
+	char mbHdd[sizeof(config.Hdd)] = {0};
+	WideCharToMultiByte(CP_UTF8, 0, config.Hdd, -1, mbHdd, sizeof(mbHdd) - 1, nullptr, nullptr);
+	DEV9_LOG("open r+: %s\n", mbHdd);
+#else
 	DEV9_LOG("open r+: %s\n", config.Hdd);
+#endif
 	config.HddSize = 8 * 1024;
 
 #ifdef ENABLE_ATA

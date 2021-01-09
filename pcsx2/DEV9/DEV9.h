@@ -58,12 +58,20 @@ void rx_process(NetPacket* pk);
 bool rx_fifo_can_rx();
 
 #define ETH_DEF "eth0"
+#ifdef _WIN32
+#define HDD_DEF L"DEV9hdd.raw"
+#else
 #define HDD_DEF "DEV9hdd.raw"
+#endif
 
 typedef struct
 {
 	char Eth[256];
+#ifdef _WIN32
+	wchar_t Hdd[256];
+#else
 	char Hdd[256];
+#endif
 	int HddSize;
 
 	int hddEnable;

@@ -18,6 +18,8 @@
 //#include <windows.h>
 //#include <windowsx.h>
 
+#include <filesystem>
+
 #include "..\Config.h"
 #include "resource.h"
 #include "..\DEV9.h"
@@ -73,7 +75,7 @@ void OnInitDialog(HWND hW)
 		}
 	}
 
-	SetWindowTextA(GetDlgItem(hW, IDC_HDDFILE), config.Hdd);
+	SetWindowText(GetDlgItem(hW, IDC_HDDFILE), config.Hdd);
 
 	Button_SetCheck(GetDlgItem(hW, IDC_ETHENABLED), config.ethEnable);
 	Button_SetCheck(GetDlgItem(hW, IDC_HDDENABLED), config.hddEnable);
@@ -106,7 +108,7 @@ void OnOk(HWND hW)
 		strcpy(config.Eth, ptr);
 	}
 
-	GetWindowTextA(GetDlgItem(hW, IDC_HDDFILE), config.Hdd, 256);
+	GetWindowText(GetDlgItem(hW, IDC_HDDFILE), config.Hdd, 256);
 
 	config.ethEnable = Button_GetCheck(GetDlgItem(hW, IDC_ETHENABLED));
 	config.hddEnable = Button_GetCheck(GetDlgItem(hW, IDC_HDDENABLED));
