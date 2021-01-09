@@ -1350,7 +1350,7 @@ typedef s32  (CALLBACK* _DEV9test)();
 // NOTE: The read/write functions CANNOT use XMM/MMX regs
 // If you want to use them, need to save and restore current ones
 typedef s32  (CALLBACK* _USBinit)(char *configpath);
-typedef s32  (CALLBACK* _USBopen)(void *pDisplay);
+typedef s32  (CALLBACK* _USBopen)(const NativeWindowHandle &gsWindowHandle);
 typedef void (CALLBACK* _USBclose)();
 typedef void (CALLBACK* _USBshutdown)();
 typedef u8   (CALLBACK* _USBread8)(u32 mem);

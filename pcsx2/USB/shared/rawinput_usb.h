@@ -29,7 +29,7 @@ namespace shared
 			virtual void ParseRawInput(PRAWINPUT pRawInput) = 0;
 		};
 
-		int Initialize(void* hWnd);
+		int Initialize(HWND hWnd);
 		void Uninitialize();
 
 		void RegisterCallback(ParseRawInputCB* cb);

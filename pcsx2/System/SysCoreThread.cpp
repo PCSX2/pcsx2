@@ -328,7 +328,7 @@ void SysCoreThread::OnResumeInThread(bool isSuspended)
 	{
 		DoCDVDopen();
 		DEV9open();
-		USBopen((void*)pDsp);
+		USBopen(g_gsWindowHandle);
 	}
 	FWopen();
 	SPU2open();

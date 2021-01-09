@@ -47,8 +47,6 @@ typedef struct USBKeyboardState {
 	int keyboard_grabbed;
 } USBKeyboardState;
 
-extern HWND gsWnd;
-
 #define VK_BASED
 
 #ifdef VK_BASED

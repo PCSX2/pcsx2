@@ -14,8 +14,11 @@
  */
 
 #pragma once
+
+#include "NativeWindowHandle.h"
+
 namespace shared
 {
-	void Initialize(void* ptr);
+	void Initialize(const NativeWindowHandle& window_handle);
 	void Uninitialize(/*void *ptr*/);
 }; // namespace shared

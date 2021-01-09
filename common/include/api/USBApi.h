@@ -37,9 +37,8 @@ typedef int (*USBhandler)(void);
 // Basic functions.
 EXPORT_C_(s32)
 USBinit();
-// pDisplay normally is passed a handle to the GS plugins window.
 EXPORT_C_(s32)
-USBopen(void *pDisplay);
+USBopen(const NativeWindowHandle &gsWindowHandle);
 EXPORT_C_(void)
 USBclose();
 EXPORT_C_(void)

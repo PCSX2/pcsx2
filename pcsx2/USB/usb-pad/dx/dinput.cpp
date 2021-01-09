@@ -14,6 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "NativeWindowHandle.h"
 #include <math.h>
 #include <dinput.h>
 #include "dx.h"
@@ -35,8 +36,7 @@
 		}                   \
 	}
 
-//dialog window stuff
-extern HWND gsWnd;
+extern NativeWindowHandle USB_gsWindowHandle;
 
 namespace usb_pad
 {
@@ -935,9 +935,9 @@ namespace usb_pad
 		{
 			HWND hWin = nullptr;
 
-			if (gsWnd)
+			if (USB_gsWindowHandle.win32)
 			{
-				hWin = gsWnd;
+				hWin = USB_gsWindowHandle.win32;
 			}
 			else
 			{
