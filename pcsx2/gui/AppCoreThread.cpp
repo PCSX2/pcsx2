@@ -585,8 +585,11 @@ void AppCoreThread::OnResumeInThread(bool isSuspended)
 	{
 		CDVDsys_ChangeSource(g_Conf->CdvdSource);
 		cdvdCtrlTrayOpen();
+		DoCDVDopen();
 		m_resetCdvd = false;
 	}
+	else if (isSuspended)
+		DoCDVDopen();
 
 	_parent::OnResumeInThread(isSuspended);
 	PostCoreStatus(CoreThread_Resumed);
