@@ -250,7 +250,7 @@ int LoadPatchesFromDir(wxString name, const wxDirName& folderName, const wxStrin
 	// This comment _might_ be buggy. This function (LoadPatchesFromDir) loads from an explicit folder.
 	// This folder can be cheats or cheats_ws at either the default location or a custom one.
 	// This check only tests the default cheats folder, so the message it produces is possibly misleading.
-	if (folderName.ToString().IsSameAs(PathDefs::GetCheats().string()) && numberFoundPatchFiles == 0)
+	if (folderName.ToString().IsSameAs(Path::ToWxString(PathDefs::GetCheats())) && numberFoundPatchFiles == 0)
 	{
 		wxString pathName = wxString(folderName.ToString().ToStdString() / (name.MakeUpper().ToStdString() + ".pnach"));
 		PatchesCon->WriteLn(Color_Gray, L"Not found %s file: %s", WX_STR(friendlyName), WX_STR(pathName));

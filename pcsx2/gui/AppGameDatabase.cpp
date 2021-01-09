@@ -53,13 +53,13 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file)
 
 	if (!fs::exists(file))
 	{
-		Console.Error(L"[GameDB] Database Not Found! [%s]", WX_STR(wxString(file.wstring())));
+		Console.Error(L"[GameDB] Database Not Found! [%s]", WX_STR(Path::ToWxString(file)));
 		return *this;
 	}
 
 	const u64 qpc_Start = GetCPUTicks();
 
-	std::ifstream fileStream = getFileAsStream(wxString(file.wstring()));
+	std::ifstream fileStream = getFileAsStream(Path::ToWxString(file));
 	if (!this->initDatabase(fileStream))
 	{
 		Console.Error(L"[GameDB] Database could not be loaded successfully");

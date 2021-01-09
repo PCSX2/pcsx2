@@ -43,7 +43,7 @@ Panels::DocsFolderPickerPanel::DocsFolderPickerPanel( wxWindow* parent, bool isF
 	{
 		RadioPanelItem(
 			_("User Documents (recommended)"),
-			_("Location: ") + PathDefs::GetDocuments(DocsFolder_User).string()
+			_("Location: ") + Path::ToWxString(PathDefs::GetDocuments(DocsFolder_User))
 		),
 
 		RadioPanelItem(

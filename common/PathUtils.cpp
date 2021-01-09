@@ -17,6 +17,8 @@
 #include "Path.h"
 #include "PathUtils.h"
 #include <wx/file.h>
+#include <wx/stdpaths.h>
+#include <wx/filename.h>
 #include "ghc/filesystem.h"
 #include <wx/utils.h>
 
@@ -162,19 +164,9 @@ std::string Path::GetDirectory(const std::string &src)
 	return src;
 }
 
-// TODO - blindly copy-pasted from stackoverflow, this is probably not PERFECT!
 fs::path Path::GetExecutableDirectory()
 {
-    fs::path exePath;
-#ifdef _WIN32
-    wchar_t path[MAX_PATH] = {0};
-    GetModuleFileName(NULL, path, MAX_PATH);
-    exePath = std::wstring(path);
-#else
-    char result[PATH_MAX];
-    ssize_t count = readlink("/proc/self/exe", result, PATH_MAX);
-    exePath = std::string(result, (count > 0) ? count : 0);
-#endif
+	fs::path exePath(wxStandardPaths::Get().GetExecutablePath().ToStdString());
     return exePath.parent_path();
 }
 
@@ -228,4 +220,22 @@ void pxExplore(const wxString& path)
 void pxExplore(const char* path)
 {
 	pxExplore(fromUTF8(path));
+}
+
+wxString Path::ToWxString(const fs::path& path)
+{
+#ifdef _WIN32
+	return wxString(path.wstring());
+#else
+	return wxString(path.string());
+#endif
+}
+
+fs::path Path::FromWxString(const wxString& path)
+{
+#ifdef _WIN32
+	return fs::path(path.ToStdWstring());
+#else
+	return fs::path(path.ToStdString());
+#endif
 }

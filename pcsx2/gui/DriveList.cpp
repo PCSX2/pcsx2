@@ -59,7 +59,7 @@ void DriveListManager::RefreshList()
 		dli->itemPtr = m_Menu->AppendRadioItem(wxID_ANY, i);
 
 		// Check the last used drive item
-		if (g_Conf->Folders.RunDisc.string() == dli->driveLetter)
+		if (Path::ToWxString(g_Conf->Folders.RunDisc) == dli->driveLetter)
 		{
 			dli->itemPtr->Check(true);
 			itemChecked = true;

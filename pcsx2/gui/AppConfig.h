@@ -65,8 +65,6 @@ extern fs::path		SettingsFolder;				// dictates where the settings folder comes 
 extern std::string		InstallFolder;
 extern fs::path		PluginsFolder;
 
-extern FolderUtils		folderUtils;
-
 extern fs::path  GetSettingsFolder();
 extern fs::path  GetVmSettingsFilename();
 extern fs::path  GetUiSettingsFilename();

@@ -284,7 +284,7 @@ void Dialogs::BaseConfigurationDialog::OnScreenshot_Click( wxCommandEvent& evt )
 	filenameDefault.Printf( L"%s_%s%s.png", pxGetAppName().Lower().c_str(), GetDialogName().c_str(), pagename.c_str() );
 	filenameDefault.Replace( L"/", L"-" );
 
-	wxString filename( wxFileSelector( _("Save dialog screenshots to..."), g_Conf->Folders.Snapshots.string(),
+	wxString filename( wxFileSelector( _("Save dialog screenshots to..."), Path::ToWxString(g_Conf->Folders.Snapshots),
 		filenameDefault, L"png", wxEmptyString, wxFD_SAVE | wxFD_OVERWRITE_PROMPT, this ) );
 
 	if( !filename.IsEmpty() )

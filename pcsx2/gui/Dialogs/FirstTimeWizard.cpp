@@ -211,7 +211,7 @@ void FirstTimeWizard::OnPageChanging( wxWizardEvent& evt )
 
 		if( page == 0 )
 		{
-			if( wxFile::Exists(GetUiSettingsFilename().string()) || wxFile::Exists(GetVmSettingsFilename().string()) )
+			if( wxFile::Exists(Path::ToWxString(GetUiSettingsFilename())) || wxFile::Exists(Path::ToWxString(GetVmSettingsFilename())) )
 			{
 				// Asks the user if they want to import or overwrite the existing settings.
 

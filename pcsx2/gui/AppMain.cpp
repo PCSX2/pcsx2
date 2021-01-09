@@ -737,7 +737,7 @@ void AppApplySettings( const AppConfig* oldconf )
 	// Memcards generally compress very well via NTFS compression.
 
 	#ifdef __WXMSW__
-	NTFS_CompressFile( g_Conf->Folders.MemoryCards.string(), g_Conf->McdCompressNTFS );
+	NTFS_CompressFile( Path::ToWxString(g_Conf->Folders.MemoryCards), g_Conf->McdCompressNTFS );
 	#endif
 	sApp.DispatchEvent( AppStatus_SettingsApplied );
 

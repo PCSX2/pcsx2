@@ -23,5 +23,7 @@ namespace Path
 	extern std::string GetRootDirectory(const wxString& src);
 	extern fs::path GetExecutableDirectory();
 	extern fs::path getPath(fs::path p, bool isPortable);
+	extern wxString ToWxString(const fs::path& path);
+	extern fs::path FromWxString(const wxString& path);
 } // namespace Path
 
