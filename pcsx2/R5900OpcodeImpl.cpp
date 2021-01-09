@@ -1027,15 +1027,47 @@ void SYSCALL()
 			{
 				// TODO: Only supports 7 format arguments. Need to read from the stack for more.
 				// Is there a function which collects PS2 arguments?
-				sysConLog(
-					ShiftJIS_ConvertString((char*)PSM(cpuRegs.GPR.n.a0.UL[0])),
+				char* fmt = (char*)PSM(cpuRegs.GPR.n.a0.UL[0]);
+
+				u64 regs[7] = {
 					cpuRegs.GPR.n.a1.UL[0],
 					cpuRegs.GPR.n.a2.UL[0],
 					cpuRegs.GPR.n.a3.UL[0],
 					cpuRegs.GPR.n.t0.UL[0],
 					cpuRegs.GPR.n.t1.UL[0],
 					cpuRegs.GPR.n.t2.UL[0],
-					cpuRegs.GPR.n.t3.UL[0]
+					cpuRegs.GPR.n.t3.UL[0],
+				};
+
+				// Pretty much what this does is find instances of string arguments and remaps them.
+				// Instead of the addresse(s) being relative to the PS2 address space, make them relative to program memory.
+				// (This fixes issue #2865) 
+				int curRegArg = 0;
+				for (int i = 0; 1; i++)
+				{
+					if (fmt[i] == '\0')
+						break;
+
+					if (fmt[i] == '%')
+					{
+						// The extra check here is to be compatible with "%%s"
+						if (i == 0 || fmt[i - 1] != '%') {
+							if (fmt[i + 1] == 's') {
+								regs[curRegArg] = (u64)PSM(regs[curRegArg]); // PS2 Address -> PCSX2 Address
+							}
+							curRegArg++;
+						}
+					}
+				}
+
+				sysConLog(fmt,
+					regs[0],
+					regs[1],
+					regs[2],
+					regs[3],
+					regs[4],
+					regs[5],
+					regs[6]
 				);
 			}
 			break;
