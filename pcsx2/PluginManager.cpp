@@ -258,7 +258,6 @@ static void CALLBACK GS_Legacy_GSreadFIFO2(u64* pMem, int qwc) {
 	while(qwc--) GSreadFIFO(pMem);
 }
 
-uptr pDsp[2];
 NativeWindowHandle g_gsWindowHandle;
 
 // ----------------------------------------------------------------------------
