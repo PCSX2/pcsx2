@@ -167,7 +167,7 @@ void SysCoreThread::ApplySettings(const Pcsx2Config& src)
 	if (src == EmuConfig)
 		return;
 
-	if (!pxAssertDev(IsPaused(), "CoreThread is not paused; settings cannot be applied."))
+	if (!pxAssertDev(IsPaused() | IsSelf(), "CoreThread is not paused; settings cannot be applied."))
 		return;
 
 	m_resetRecompilers = (src.Cpu != EmuConfig.Cpu) || (src.Gamefixes != EmuConfig.Gamefixes) || (src.Speedhacks != EmuConfig.Speedhacks);
