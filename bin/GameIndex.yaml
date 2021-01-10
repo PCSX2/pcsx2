@@ -32611,6 +32611,19 @@ SLUS-20419:
   region: "NTSC-U"
   roundModes:
     eeRoundMode: 0  # Fixes crash when using the Subaru.
+  gameFixes:
+    - XGKickHack # Fixes SPS while ingame (with following patch)
+  patches:
+    5838E074:
+      content: |-
+        author=kozarovv
+        // Rearrange XGKick timing to fix SPS
+        patch=1,EE,0020efa0,word,8000033c
+        patch=1,EE,0020efd8,word,80004efc
+        patch=1,EE,0020f040,word,8000033c
+        patch=1,EE,0020f0b0,word,80004efc
+        patch=1,EE,0020f118,word,8000033c
+        patch=1,EE,0020f188,word,80004efc     
 SLUS-20420:
   name: "Star Wars - Bounty Hunter"
   region: "NTSC-U"
