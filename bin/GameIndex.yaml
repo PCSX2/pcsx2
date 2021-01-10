@@ -16846,6 +16846,8 @@ SLES-55470:
 SLES-55472:
   name: "Guitar Hero - Metalica"
   region: "PAL-M5"
+  roundModes:
+    vuRoundMode: 0  # Crashes without.
 SLES-55474:
   name: "Shin Megami Tensei: Persona 4"
   region: "PAL-E"
@@ -38500,6 +38502,8 @@ SLUS-21843:
   name: "Guitar Hero - Metallica"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    vuRoundMode: 0  # Crashes without.
 SLUS-21844:
   name: "Bolt"
   region: "NTSC-U"
