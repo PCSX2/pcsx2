@@ -75,8 +75,8 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			)
 		},
 		{
-			_("Ignore DMAC writes when it is busy."),
-			pxEt( L"Known to affect following games:\n * Mana Khemia 1 (Going \"off campus\")\n"
+			_("Handle DMAC writes when it is busy."),
+			pxEt( L"Known to affect following games:\n * Mana Khemia 1 (Going \"off campus\"), Metal Saga (Intro FMV), Pilot Down Behind Enemy Lines\n"
 			)
 		},
 		{
