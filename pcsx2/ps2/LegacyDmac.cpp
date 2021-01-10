@@ -316,6 +316,53 @@ __fi u32 dmacRead32( u32 mem )
 template< uint page >
 __fi bool dmacWrite32( u32 mem, mem32_t& value )
 {
+	// DMA Writes are invalid to everything except the STR on CHCR when it is busy
+	// However this isn't completely confirmed and this might vary depending on if
+	// using chain or normal modes, DMA's may be handled internally.
+	// Metal Saga requires the QWC during IPU_FROM to be written but not MADR
+	// similar happens with Mana Khemia.
+	// In other cases such as Pilot Down Behind Enemy Lines, it seems to expect the DMA
+	// to have finished before it writes the new information, otherwise the game breaks.
+	if (CHECK_DMABUSYHACK && (mem & 0xf0) && mem >= 0x10008000 && mem <= 0x1000E000)
+	{
+		if ((psHu32(mem & ~0xff) & 0x100) && dmacRegs.ctrl.DMAE && !psHu8(DMAC_ENABLER + 2))
+		{
+			DevCon.Warning("Gamefix: Write to DMA addr %x while STR is busy!", mem);
+			while (psHu32(mem & ~0xff) & 0x100)
+			{
+				switch ((mem >> 8) & 0xFF)
+				{
+					case 0x80: // VIF0
+						vif0Interrupt();
+						break;
+					case 0x90: // VIF1
+						vif1Interrupt();
+						break;
+					case 0xA0: // GIF
+						gifInterrupt();
+						break;
+					case 0xB0: // IPUFROM
+						[[fallthrough]];
+					case 0xB4: // IPUTO
+						if ((mem & 0xff) == 0x20)
+							goto allow_write; // I'm so sorry
+						else
+							return false;
+						break;
+					case 0xD0: // SPRFROM
+						SPRFROMinterrupt();
+						break;
+					case 0xD4: // SPRTO
+						SPRTOinterrupt();
+						break;
+					default:
+						return false;
+				}
+			}
+		}
+		allow_write:;
+	}
+
 	iswitch(mem) {
 		icase(D0_CHCR) // dma0 - vif0
 		{
@@ -575,17 +622,6 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 			{
 				if (!QueuedDMA.empty()) StartQueuedDMA();
 			}
-			return false;
-		}
-	}
-
-	// DMA Writes are invalid to everything except the STR on CHCR when it is busy
-	// There's timing problems with many games. Gamefix time!
-	if( CHECK_DMABUSYHACK && (mem & 0xf0) )
-	{
-		if((psHu32(mem & ~0xff) & 0x100) && dmacRegs.ctrl.DMAE && !psHu8(DMAC_ENABLER+2))
-		{
-			DevCon.Warning("Gamefix: Write to DMA addr %x while STR is busy! Ignoring", mem);
 			return false;
 		}
 	}

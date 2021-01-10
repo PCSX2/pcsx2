@@ -12071,16 +12071,10 @@ SLES-53098:
 SLES-53099:
   name: "Pilot Down - Behind Enemy Lines"
   region: "PAL-M5"
+  gameFixes:
+    - DMABusyHack # Game has weird DMA handling, this allows required DMA's to finish.
   roundModes:
     vuRoundMode: 0
-  patches:
-    53BB63A0:
-      content: |-
-        author=kozarovv
-        // Patch allow sending VU1 mpg successfully. This fix missing graphic. Thanks to PSI for figuring what is wrong.
-        // Game need at least -2 EE cyclerate + MTVU on my pc to get full speed.
-        // To fix shadows set VU rounding to nearest - thx Atomic83
-        patch=1,EE,00426140,word,00000000
 SLES-53100:
   name: "Scooby Doo! Unmasked"
   region: "PAL-M4"
