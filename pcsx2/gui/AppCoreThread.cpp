@@ -553,7 +553,7 @@ void AppCoreThread::ApplySettings(const Pcsx2Config& src)
 	if (fixup == EmuConfig)
 		return;
 
-	if (m_ExecMode >= ExecMode_Opened)
+	if (m_ExecMode >= ExecMode_Opened && !IsSelf())
 	{
 		ScopedCoreThreadPause paused_core;
 		_parent::ApplySettings(fixup);
