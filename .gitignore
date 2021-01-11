@@ -56,6 +56,10 @@ Devel
 
 oprofile_data/
 
+# clangd
+/.cache/
+compile_commands.json
+
 # Recording Specific Ignores (pcsx2-rr)
 *.p2s
 *.p2m2
