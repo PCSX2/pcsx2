@@ -247,6 +247,7 @@
     <ClCompile Include="..\..\CDVD\ChunksCache.cpp" />
     <ClCompile Include="..\..\CDVD\CompressedFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\CsoFileReader.cpp" />
+    <ClCompile Include="..\..\CDVD\ChdFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\GzippedFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\OutputIsoFile.cpp" />
     <ClCompile Include="..\..\CDVD\Linux\DriveUtility.cpp">
@@ -616,6 +617,7 @@
     <ClInclude Include="..\..\CDVD\CompressedFileReader.h" />
     <ClInclude Include="..\..\CDVD\CompressedFileReaderUtils.h" />
     <ClInclude Include="..\..\CDVD\CsoFileReader.h" />
+    <ClInclude Include="..\..\CDVD\ChdFileReader.h" />
     <ClInclude Include="..\..\CDVD\GzippedFileReader.h" />
     <ClInclude Include="..\..\CDVD\zlib_indexed.h" />
     <ClInclude Include="..\..\DebugTools\Breakpoints.h" />
@@ -904,6 +906,9 @@
   <ItemGroup>
     <ProjectReference Include="..\..\..\3rdparty\fmt\fmt.vcxproj">
       <Project>{449ad25e-424a-4714-babc-68706cdcc33b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\3rdparty\libchdr\libchdr.vcxproj">
+      <Project>{1eb22a0e-97fa-44f0-b0cb-c1a2f00fa97c}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\libsamplerate\libsamplerate.vcxproj">
       <Project>{47afdbef-f15f-4bc0-b436-5be443c3f80f}</Project>

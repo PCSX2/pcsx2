@@ -1,0 +1,5 @@
+{
+   global: chd_*;
+   local: *;
+};
+

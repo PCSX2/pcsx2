@@ -16,12 +16,16 @@
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
 #include "CompressedFileReader.h"
+#include "ChdFileReader.h"
 #include "CsoFileReader.h"
 #include "GzippedFileReader.h"
 
 // CompressedFileReader factory.
 AsyncFileReader* CompressedFileReader::GetNewReader(const wxString& fileName)
 {
+	if (ChdFileReader::CanHandle(fileName)) {
+		return new ChdFileReader();
+	}
 	if (GzippedFileReader::CanHandle(fileName))
 	{
 		return new GzippedFileReader();

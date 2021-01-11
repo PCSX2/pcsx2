@@ -211,6 +211,12 @@ if(ZLIB_FOUND)
 	include_directories(${ZLIB_INCLUDE_DIRS})
 endif()
 
+add_subdirectory(${CMAKE_SOURCE_DIR}/3rdparty/flac-1.3.3 EXCLUDE_FROM_ALL)
+add_subdirectory(${CMAKE_SOURCE_DIR}/3rdparty/lzma-19.00 EXCLUDE_FROM_ALL)
+add_subdirectory(${CMAKE_SOURCE_DIR}/3rdparty/zlib EXCLUDE_FROM_ALL)
+add_subdirectory(${CMAKE_SOURCE_DIR}/3rdparty/libchdr/libchdr EXCLUDE_FROM_ALL)
+include_directories(${CMAKE_SOURCE_DIR}/3rdparty/libchdr/libchdr/include)
+
 find_package(HarfBuzz)
 
 if(HarfBuzz_FOUND)
