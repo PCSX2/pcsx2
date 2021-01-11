@@ -38,7 +38,7 @@
 EXPORT_C_(s32)
 CDVDinit();
 EXPORT_C_(s32)
-CDVDopen(void *pDisplay, const char *pTitleFilename);
+CDVDopen(const char *pTitleFilename);
 EXPORT_C_(void)
 CDVDclose();
 EXPORT_C_(void)
