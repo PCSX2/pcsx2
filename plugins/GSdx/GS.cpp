@@ -1507,4 +1507,33 @@ EXPORT_C GSReplay(const char* lpszCmdLine, int renderer)
 	GSclose();
 	GSshutdown();
 }
+
+/// Replay a GSDump and save the frames to outputTemplate
+/// Use %d in outputTemplate for the frame number (1-based)
+/// Should end in `.png`
+EXPORT_C GSReplayDumpFrames(const char* lpszCmdLine, int renderer, const char* outputTemplate)
+{
+	GSReplayer replayer;
+	if (!replayer.Initialize(lpszCmdLine, renderer, /*repack_dump=*/false))
+		return;
+
+	// Init vsync stuff
+	GSvsync(1);
+
+	using Packet = GSReplayer::Packet;
+	using PacketType = GSReplayer::PacketType;
+	Packet packet;
+	int frame_number = 0;
+	while (replayer.LoadNextPacket(packet))
+	{
+		if (packet.type == PacketType::VSync)
+		{
+			frame_number++;
+			char filename[PATH_MAX];
+			snprintf(filename, PATH_MAX, outputTemplate, frame_number);
+			GSmakeSnapshot(filename);
+		}
+		replayer.Play(packet);
+	}
+}
 #endif

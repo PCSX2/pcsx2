@@ -21,16 +21,19 @@
 #include <dlfcn.h>
 #include <cstdlib>
 #include <cstdio>
+#include <cstring>
 #include <string>
+#include <unistd.h>
 
 static void* handle;
+static const char* progName;
 
 void help()
 {
-	fprintf(stderr, "Loader gs file\n");
-	fprintf(stderr, "ARG1 GSdx plugin\n");
-	fprintf(stderr, "ARG2 .gs file\n");
-	fprintf(stderr, "ARG3 Ini directory\n");
+	fprintf(stderr, "Usage: %s [-p GSdx plugin] [-c INI directory] [-o png output template] [-r sw|hw] input.gs\n", progName);
+	fprintf(stderr, "PNG output template can contain a %%d to indicate the frame number\n");
+	fprintf(stderr, "GSdx plugin and INI directory can also be supplied via the GSDUMP_SO and GSDUMP_CONF environment variables\n");
+	fprintf(stderr, "If no renderer is supplied, the default specified in the ini will be used\n");
 	if (handle) {
 		dlclose(handle);
 	}
@@ -48,17 +51,58 @@ char* read_env(const char* var) {
 
 int main ( int argc, char *argv[] )
 {
-	if (argc < 1) help();
+	progName = argv[0];
+	const char* plugin = nullptr;
+	const char* gs = nullptr;
+	const char* ini = nullptr;
+	const char* output = nullptr;
+	int renderer = 0;
 
-	char* plugin;
-	char* gs;
-	if (argc > 2) {
-		plugin = argv[1];
-		gs = argv[2];
-	} else {
-		plugin = read_env("GSDUMP_SO");
-		gs = argv[1];
+	int c;
+	while ((c = getopt(argc, argv, "p:o:c:r:")) != -1)
+	{
+		switch (c)
+		{
+			case 'p':
+				plugin = optarg;
+				break;
+			case 'o':
+				output = optarg;
+				break;
+			case 'c':
+				ini = optarg;
+				break;
+			case 'r':
+				if (0 == strcmp(optarg, "sw"))
+					renderer = 13;
+				else if (0 == strcmp(optarg, "gl") || 0 == strcmp(optarg, "hw"))
+					renderer = 12;
+				else
+				{
+					fprintf(stderr, "Unknown renderer %s", optarg);
+					help();
+				}
+				break;
+			case '?':
+				if (strchr("pocr", optopt) != nullptr)
+					fprintf(stderr, "Option -%c requires an argument\n", optopt);
+				else if (isprint(optopt))
+					fprintf(stderr, "Unknown option -%c\n", optopt);
+				else
+					fprintf(stderr, "Unknown option character '\\x%x'\n", optopt);
+				help();
+		}
 	}
+	if (argc - optind != 1)
+	{
+		if (argc - optind > 1)
+			fprintf(stderr, "Additional unrecognized arguments\n");
+		help();
+	}
+	gs = argv[optind];
+
+	if (!plugin)
+		plugin = read_env("GSDUMP_SO");
 
 	handle = dlopen(plugin, RTLD_LAZY|RTLD_GLOBAL);
 	if (handle == NULL) {
@@ -68,19 +112,20 @@ int main ( int argc, char *argv[] )
 
 	__attribute__((stdcall)) void (*GSsetSettingsDir_ptr)(const char*);
 	__attribute__((stdcall)) void (*GSReplay_ptr)(const char*, int);
+	__attribute__((stdcall)) void (*GSReplayDumpFrames_ptr)(const char*, int, const char*);
 
 	GSsetSettingsDir_ptr = reinterpret_cast<decltype(GSsetSettingsDir_ptr)>(dlsym(handle, "GSsetSettingsDir"));
 	GSReplay_ptr = reinterpret_cast<decltype(GSReplay_ptr)>(dlsym(handle, "GSReplay"));
+	GSReplayDumpFrames_ptr = reinterpret_cast<decltype(GSReplayDumpFrames_ptr)>(dlsym(handle, "GSReplayDumpFrames"));
 
-	if (argc == 2) {
-		char *ini = read_env("GSDUMP_CONF");
-
+	if (!ini)
+		ini = getenv("GSDUMP_CONF");
+	if (ini)
+	{
 		GSsetSettingsDir_ptr(ini);
-
-	} else if (argc == 4) {
-		GSsetSettingsDir_ptr(argv[3]);
-
-	} else if ( argc == 3) {
+	}
+	else
+	{
 #ifdef XDG_STD
 		char *val = read_env("HOME");
 
@@ -94,7 +139,10 @@ int main ( int argc, char *argv[] )
 #endif
 	}
 
-	GSReplay_ptr(gs, 12);
+	if (output)
+		GSReplayDumpFrames_ptr(gs, renderer, output);
+	else
+		GSReplay_ptr(gs, renderer);
 
 	if (handle) {
 		dlclose(handle);
