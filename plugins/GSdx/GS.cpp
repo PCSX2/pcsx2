@@ -285,7 +285,13 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 						wnd->Show();
 
+#ifdef _WIN32
+						*dsp = wnd->GetHandle();
+						*((uptr*)dsp + 1) = (uptr)nullptr;
+#else
 						*dsp = wnd->GetDisplay();
+						*((uptr*)dsp + 1) = (uptr)wnd->GetHandle();
+#endif
 					}
 					else
 					{
