@@ -444,28 +444,24 @@ namespace usb_eyetoy
 
 		int DirectShow::Close()
 		{
-			if (sourcefilter != nullptr)
+			if (sourcefilter)
 			{
 				this->Stop();
 				pControl->Stop();
 
-				sourcefilter->Release();
-				pSourceConfig->Release();
-				samplegrabberfilter->Release();
-				samplegrabber->Release();
-				nullrenderer->Release();
-				sourcefilter = nullptr;
+				safe_release(sourcefilter);
+				safe_release(pSourceConfig);
+				safe_release(samplegrabberfilter);
+				safe_release(samplegrabber);
+				safe_release(nullrenderer);
 			}
 
-			pGraphBuilder->Release();
-			pGraph->Release();
-			pControl->Release();
+			safe_release(pGraphBuilder);
+			safe_release(pGraph);
+			safe_release(pControl);
 
-			if (mpeg_buffer.start != nullptr)
-			{
-				free(mpeg_buffer.start);
-				mpeg_buffer.start = nullptr;
-			}
+			free(mpeg_buffer.start);
+			mpeg_buffer.start = nullptr;
 			return 0;
 		};
 
