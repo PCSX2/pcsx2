@@ -81,6 +81,11 @@ declare -a PCSX2_PACKAGES=(
   "zlib1g-dev"
 )
 
+declare -a GSDUMP_PACKAGES=(
+  "xvfb"
+  "imagemagick"
+)
+
 # - https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md
 ARCH=""
 echo "${PLATFORM}"
@@ -127,3 +132,12 @@ sudo apt-get -y install libgcc-s1:i386
 fi
 echo "Will install the following packages for pcsx2 - ${PCSX2_PACKAGES_STR}"
 sudo apt-get -y install ${PCSX2_PACKAGES_STR}
+
+if [ ! -z "$GSDUMP" ]; then
+  GSDUMP_PACKAGES_STR=""
+  for i in "${GSDUMP_PACKAGES[@]}"; do
+    GSDUMP_PACKAGES_STR="${GSDUMP_PACKAGES_STR} ${i}"
+  done
+  echo "Will install the following packages for processing gsdumps - ${GSDUMP_PACKAGES_STR}"
+  sudo apt-get -y install "${GSDUMP_PACKAGES_STR[@]}"
+fi
