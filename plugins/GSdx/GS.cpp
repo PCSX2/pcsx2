@@ -899,6 +899,202 @@ EXPORT_C GSsetExclusive(int enabled)
 	}
 }
 
+class GSReplayer {
+	GSReplayer(GSReplayer&&) = delete;
+
+	uint32 crc;
+	uint8 regs[0x2000];
+	std::unique_ptr<GSDumpFile> file;
+	std::vector<uint8> buff;
+public:
+#ifdef _WIN32
+	HWND hWnd = nullptr;
+#else
+	void* hWnd = nullptr;
+#endif
+
+	enum class PacketType: uint8 { Transfer, VSync, ReadFIFO2, Registers };
+	enum class TransferType: uint8 { Path1Old, Path2, Path3, Path1New };
+	struct Packet
+	{
+		PacketType type;
+		uint8 param;
+		uint32 size, addr;
+		std::vector<uint8> buff;
+	};
+
+	GSReplayer() = default;
+
+	bool Initialize(const char* filename, int renderer, bool repack_dump)
+	{
+		GLLoader::in_replayer = true;
+		// Required by multithread driver
+#ifdef __unix__
+		XInitThreads();
+#endif
+
+		GSinit();
+
+		GSRendererType m_renderer;
+
+		if (renderer > 0)
+		{
+			m_renderer = static_cast<GSRendererType>(renderer);
+		}
+		else
+		{
+			m_renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
+
+			if (m_renderer != GSRendererType::OGL_HW && m_renderer != GSRendererType::OGL_SW)
+			{
+				fprintf(stderr, "wrong renderer selected %d\n", static_cast<int>(m_renderer));
+				return false;
+			}
+		}
+
+		GSsetBaseMem(regs);
+
+		s_vsync = theApp.GetConfigI("vsync");
+
+		int err = _GSopen((void**)&hWnd, "", m_renderer);
+		if (err != 0) {
+			fprintf(stderr, "Error failed to GSopen\n");
+			return false;
+		}
+		if (s_gs->m_wnd == nullptr)
+			return false;
+
+		// Read .gs content
+
+		std::string f(filename);
+		bool is_xz = (f.size() >= 4) && (f.compare(f.size()-3, 3, ".xz") == 0);
+		if (is_xz)
+			f.replace(f.end()-6, f.end(), "_repack.gs");
+		else
+			f.replace(f.end()-3, f.end(), "_repack.gs");
+
+		if (is_xz)
+			file = std::make_unique<GSDumpLzma>(filename, repack_dump ? f.c_str() : nullptr);
+		else
+			file = std::make_unique<GSDumpRaw>(filename, repack_dump ? f.c_str() : nullptr);
+
+		file->Read(&crc, sizeof(crc));
+		GSsetGameCRC(crc, 0);
+
+		GSFreezeData fd;
+		file->Read(&fd.size, 4);
+		fd.data = new uint8[fd.size];
+		file->Read(fd.data, fd.size);
+
+		GSfreeze(FREEZE_LOAD, &fd);
+		delete[] fd.data;
+
+		file->Read(regs, 0x2000);
+
+		return true;
+	}
+
+	bool LoadNextPacket(Packet& p)
+	{
+		if (!file->Read(&p.type, sizeof(p.type)))
+			return false;
+
+		switch (p.type)
+		{
+			case PacketType::Transfer:
+				file->Read(&p.param, 1);
+				file->Read(&p.size, 4);
+
+				switch(static_cast<TransferType>(p.param))
+				{
+					case TransferType::Path1Old:
+						p.buff.resize(0x4000);
+						p.addr = 0x4000 - p.size;
+						file->Read(&p.buff[p.addr], p.size);
+						break;
+					case TransferType::Path2:
+					case TransferType::Path3:
+					case TransferType::Path1New:
+						p.buff.resize(p.size);
+						file->Read(&p.buff[0], p.size);
+						break;
+				}
+
+				break;
+
+			case PacketType::VSync:
+				file->Read(&p.param, sizeof(p.param));
+
+				break;
+
+			case PacketType::ReadFIFO2:
+				file->Read(&p.size, 4);
+
+				break;
+
+			case PacketType::Registers:
+				p.buff.resize(0x2000);
+
+				file->Read(&p.buff[0], 0x2000);
+
+				break;
+		}
+
+		return true;
+	}
+
+	void DoneWithFile()
+	{
+		file = nullptr;
+	}
+
+	void Play(Packet& p)
+	{
+		switch (p.type)
+		{
+			case PacketType::Transfer:
+				switch (static_cast<TransferType>(p.param))
+				{
+					case TransferType::Path1Old:
+						GSgifTransfer1(&p.buff[0], p.addr);
+						break;
+					case TransferType::Path2:
+						GSgifTransfer2(&p.buff[0], p.size / 16);
+						break;
+					case TransferType::Path3:
+						GSgifTransfer3(&p.buff[0], p.size / 16);
+						break;
+					case TransferType::Path1New:
+						GSgifTransfer(&p.buff[0], p.size / 16);
+						break;
+				}
+
+				break;
+
+			case PacketType::VSync:
+
+				GSvsync(p.param);
+
+				break;
+
+			case PacketType::ReadFIFO2:
+
+				if (buff.size() < p.size)
+					buff.resize(p.size);
+
+				GSreadFIFO2(&buff[0], p.size / 16);
+
+				break;
+
+			case PacketType::Registers:
+
+				memcpy(regs, &p.buff[0], 0x2000);
+
+				break;
+		}
+	}
+};
+
 #ifdef _WIN32
 
 #include <io.h>
@@ -992,116 +1188,26 @@ EXPORT_C GSReplay(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
 
 	Console console{"GSdx", true};
 
-	const std::string f{lpszCmdLine};
-	const bool is_xz = f.size() >= 4 && f.compare(f.size() - 3, 3, ".xz") == 0;
+	GSReplayer replayer;
 
-	auto file = is_xz
-		? std::unique_ptr<GSDumpFile>{std::make_unique<GSDumpLzma>(lpszCmdLine, nullptr)}
-		: std::unique_ptr<GSDumpFile>{std::make_unique<GSDumpRaw>(lpszCmdLine, nullptr)};
+	if (!replayer.Initialize(lpszCmdLine, static_cast<int>(renderer), false))
+		return;
 
-	GSinit();
-
-	std::array<uint8, 0x2000> regs;
-	GSsetBaseMem(regs.data());
-
-	s_vsync = theApp.GetConfigI("vsync");
-
-	HWND hWnd = nullptr;
-
-	_GSopen((void**)&hWnd, "", renderer);
-
-	uint32 crc;
-	file->Read(&crc, 4);
-	GSsetGameCRC(crc, 0);
-
-	{
-		GSFreezeData fd;
-		file->Read(&fd.size, 4);
-		std::vector<uint8> freeze_data(fd.size);
-		fd.data = freeze_data.data();
-		file->Read(fd.data, fd.size);
-		GSfreeze(FREEZE_LOAD, &fd);
-	}
-
-	file->Read(regs.data(), 0x2000);
+	using Packet = GSReplayer::Packet;
+	using PacketType = GSReplayer::PacketType;
+	std::vector<Packet> packets;
+	Packet packet;
+	while (replayer.LoadNextPacket(packet))
+		packets.emplace_back(std::move(packet));
+	replayer.DoneWithFile();
 
 	GSvsync(1);
 
-	struct Packet {uint8 type, param; uint32 size, addr; std::vector<uint8> buff;};
-
-	auto read_packet = [&file](uint8 type) {
-		Packet p;
-		p.type = type;
-
-		switch(p.type) {
-		case 0:
-			file->Read(&p.param, 1);
-			file->Read(&p.size, 4);
-			switch(p.param) {
-			case 0:
-				p.buff.resize(0x4000);
-				p.addr = 0x4000 - p.size;
-				file->Read(&p.buff[p.addr], p.size);
-				break;
-			case 1:
-			case 2:
-			case 3:
-				p.buff.resize(p.size);
-				file->Read(p.buff.data(), p.size);
-				break;
-			}
-			break;
-		case 1:
-			file->Read(&p.param, 1);
-			break;
-		case 2:
-			file->Read(&p.size, 4);
-			break;
-		case 3:
-			p.buff.resize(0x2000);
-			file->Read(p.buff.data(), 0x2000);
-			break;
-		}
-
-		return p;
-	};
-
-	std::list<Packet> packets;
-	uint8 type;
-	while(file->Read(&type, 1))
-		packets.push_back(read_packet(type));
-
 	Sleep(100);
 
-	std::vector<uint8> buff;
-	while(IsWindowVisible(hWnd))
-	{
-		for(auto &p : packets)
-		{
-			switch(p.type)
-			{
-			case 0:
-				switch(p.param)
-				{
-				case 0: GSgifTransfer1(p.buff.data(), p.addr); break;
-				case 1: GSgifTransfer2(p.buff.data(), p.size / 16); break;
-				case 2: GSgifTransfer3(p.buff.data(), p.size / 16); break;
-				case 3: GSgifTransfer(p.buff.data(), p.size / 16); break;
-				}
-				break;
-			case 1:
-				GSvsync(p.param);
-				break;
-			case 2:
-				if(buff.size() < p.size) buff.resize(p.size);
-				GSreadFIFO2(p.buff.data(), p.size / 16);
-				break;
-			case 3:
-				memcpy(regs.data(), p.buff.data(), 0x2000);
-				break;
-			}
-		}
-	}
+	while (IsWindowVisible(replayer.hWnd))
+		for (Packet& p : packets)
+			replayer.Play(packet);
 
 	Sleep(100);
 
@@ -1326,134 +1432,36 @@ inline unsigned long timeGetTime()
 // Note
 EXPORT_C GSReplay(const char* lpszCmdLine, int renderer)
 {
-	GLLoader::in_replayer = true;
-	// Required by multithread driver
-#ifndef __APPLE__
-	XInitThreads();
-#endif
-
-	GSinit();
-
-	GSRendererType m_renderer;
-	// Allow to easyly switch between SW/HW renderer -> this effectively removes the ability to select the renderer by function args
-	m_renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
-
-	if (m_renderer != GSRendererType::OGL_HW && m_renderer != GSRendererType::OGL_SW)
-	{
-		fprintf(stderr, "wrong renderer selected %d\n", static_cast<int>(m_renderer));
-		return;
-	}
-
-	struct Packet {uint8 type, param; uint32 size, addr; std::vector<uint8> buff;};
-
-	std::list<Packet*> packets;
-	std::vector<uint8> buff;
-	uint8 regs[0x2000];
-
-	GSsetBaseMem(regs);
-
 	s_vsync = theApp.GetConfigI("vsync");
 	int finished = theApp.GetConfigI("linux_replay");
 	bool repack_dump = (finished < 0);
 
-	if (theApp.GetConfigI("dump")) {
+	GSReplayer replayer;
+	if (!replayer.Initialize(lpszCmdLine, renderer, repack_dump))
+		return;
+
+	if (theApp.GetConfigI("dump"))
+	{
 		fprintf(stderr, "Dump is enabled. Replay will be disabled\n");
 		finished = 1;
 	}
 
 	long frame_number = 0;
 
-	void* hWnd = NULL;
-	int err = _GSopen((void**)&hWnd, "", m_renderer);
-	if (err != 0) {
-		fprintf(stderr, "Error failed to GSopen\n");
-		return;
+	using Packet = GSReplayer::Packet;
+	using PacketType = GSReplayer::PacketType;
+	std::vector<Packet> packets;
+	Packet packet;
+	while (replayer.LoadNextPacket(packet))
+	{
+		if (packet.type == PacketType::VSync)
+			frame_number++;
+		packets.emplace_back(std::move(packet));
+
+		if (repack_dump && frame_number > -finished)
+			break;
 	}
-	if (s_gs->m_wnd == NULL) return;
-
-	{ // Read .gs content
-		std::string f(lpszCmdLine);
-		bool is_xz = (f.size() >= 4) && (f.compare(f.size()-3, 3, ".xz") == 0);
-		if (is_xz)
-			f.replace(f.end()-6, f.end(), "_repack.gs");
-		else
-			f.replace(f.end()-3, f.end(), "_repack.gs");
-
-		GSDumpFile* file = is_xz
-			? (GSDumpFile*) new GSDumpLzma(lpszCmdLine, repack_dump ? f.c_str() : nullptr)
-			: (GSDumpFile*) new GSDumpRaw(lpszCmdLine, repack_dump ? f.c_str() : nullptr);
-
-		uint32 crc;
-		file->Read(&crc, 4);
-		GSsetGameCRC(crc, 0);
-
-		GSFreezeData fd;
-		file->Read(&fd.size, 4);
-		fd.data = new uint8[fd.size];
-		file->Read(fd.data, fd.size);
-
-		GSfreeze(FREEZE_LOAD, &fd);
-		delete [] fd.data;
-
-		file->Read(regs, 0x2000);
-
-		uint8 type;
-		while(file->Read(&type, 1))
-		{
-			Packet* p = new Packet();
-
-			p->type = type;
-
-			switch(type)
-			{
-			case 0:
-				file->Read(&p->param, 1);
-				file->Read(&p->size, 4);
-
-				switch(p->param)
-				{
-				case 0:
-					p->buff.resize(0x4000);
-					p->addr = 0x4000 - p->size;
-					file->Read(&p->buff[p->addr], p->size);
-					break;
-				case 1:
-				case 2:
-				case 3:
-					p->buff.resize(p->size);
-					file->Read(&p->buff[0], p->size);
-					break;
-				}
-
-				break;
-
-			case 1:
-				file->Read(&p->param, 1);
-				frame_number++;
-
-				break;
-
-			case 2:
-				file->Read(&p->size, 4);
-
-				break;
-
-			case 3:
-				p->buff.resize(0x2000);
-
-				file->Read(&p->buff[0], 0x2000);
-
-				break;
-			}
-
-			packets.push_back(p);
-
-			if (repack_dump && frame_number > -finished)
-				break;
-		}
-
-		delete file;
-	}
+	replayer.DoneWithFile();
 
 	sleep(2);
 
@@ -1465,45 +1473,11 @@ EXPORT_C GSReplay(const char* lpszCmdLine, int renderer)
 
 	while(finished > 0)
 	{
-		for(auto i = packets.begin(); i != packets.end(); i++)
+		for(Packet& packet : packets)
 		{
-			Packet* p = *i;
-
-			switch(p->type)
-			{
-				case 0:
-
-					switch(p->param)
-					{
-						case 0: GSgifTransfer1(&p->buff[0], p->addr); break;
-						case 1: GSgifTransfer2(&p->buff[0], p->size / 16); break;
-						case 2: GSgifTransfer3(&p->buff[0], p->size / 16); break;
-						case 3: GSgifTransfer(&p->buff[0], p->size / 16); break;
-					}
-
-					break;
-
-				case 1:
-
-					GSvsync(p->param);
-					frame_number++;
-
-					break;
-
-				case 2:
-
-					if(buff.size() < p->size) buff.resize(p->size);
-
-					GSreadFIFO2(&buff[0], p->size / 16);
-
-					break;
-
-				case 3:
-
-					memcpy(regs, &p->buff[0], 0x2000);
-
-					break;
-			}
+			replayer.Play(packet);
+			if (packet.type == PacketType::VSync)
+				frame_number++;
 		}
 
 		if (finished >= 200) {
@@ -1525,11 +1499,6 @@ EXPORT_C GSReplay(const char* lpszCmdLine, int renderer)
 			(float)g_uniform_upload_byte/(float)total_frame_nb
 		   );
 #endif
-
-	for(auto i = packets.begin(); i != packets.end(); i++)
-	{
-		delete *i;
-	}
 
 	packets.clear();
 
