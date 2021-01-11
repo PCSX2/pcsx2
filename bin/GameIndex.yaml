@@ -20170,6 +20170,9 @@ SLPM-64502:
 SLPM-64504:
   name: "Maximo"
   region: "NTSC-K"
+SLPM-64513:
+  name: "Crash Bandicoot: Return of the Demon King"
+  region: "NTSC-K"
 SLPM-64522:
   name: "La Pucelle"
   region: "NTSC-K"
