@@ -659,10 +659,10 @@
     <ClCompile Include="..\..\gui\CpuUsageProviderMSW.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\FrameForGS.cpp">
+    <ClCompile Include="..\..\gui\GlobalCommands.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\GlobalCommands.cpp">
+    <ClCompile Include="..\..\gui\GSFrame.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
     <ClCompile Include="..\..\gui\i18n.cpp">

@@ -609,8 +609,8 @@ set(pcsx2GuiSources
 	gui/Debugger/DebugEvents.cpp
 	gui/DriveList.cpp
 	gui/ExecutorThread.cpp
-	gui/FrameForGS.cpp
 	gui/GlobalCommands.cpp
+	gui/GSFrame.cpp
 	gui/i18n.cpp
 	gui/IsoDropTarget.cpp
 	gui/MainFrame.cpp
