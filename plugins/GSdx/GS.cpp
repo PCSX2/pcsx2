@@ -1324,7 +1324,7 @@ inline unsigned long timeGetTime()
 }
 
 // Note
-EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
+EXPORT_C GSReplay(const char* lpszCmdLine, int renderer)
 {
 	GLLoader::in_replayer = true;
 	// Required by multithread driver

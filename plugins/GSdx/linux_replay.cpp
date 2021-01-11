@@ -67,7 +67,7 @@ int main ( int argc, char *argv[] )
 	}
 
 	__attribute__((stdcall)) void (*GSsetSettingsDir_ptr)(const char*);
-	__attribute__((stdcall)) void (*GSReplay_ptr)(char*, int);
+	__attribute__((stdcall)) void (*GSReplay_ptr)(const char*, int);
 
 	GSsetSettingsDir_ptr = reinterpret_cast<decltype(GSsetSettingsDir_ptr)>(dlsym(handle, "GSsetSettingsDir"));
 	GSReplay_ptr = reinterpret_cast<decltype(GSReplay_ptr)>(dlsym(handle, "GSReplay"));

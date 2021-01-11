@@ -21,7 +21,7 @@
 #include "stdafx.h"
 #include "GSLzma.h"
 
-GSDumpFile::GSDumpFile(char* filename, const char* repack_filename) {
+GSDumpFile::GSDumpFile(const char* filename, const char* repack_filename) {
 	m_fp = fopen(filename, "rb");
 	if (m_fp == nullptr) {
 		fprintf(stderr, "failed to open %s\n", filename);
@@ -54,7 +54,7 @@ GSDumpFile::~GSDumpFile() {
 }
 
 /******************************************************************/
-GSDumpLzma::GSDumpLzma(char* filename, const char* repack_filename) : GSDumpFile(filename, repack_filename) {
+GSDumpLzma::GSDumpLzma(const char* filename, const char* repack_filename) : GSDumpFile(filename, repack_filename) {
 
 	memset(&m_strm, 0, sizeof(lzma_stream));
 
@@ -150,7 +150,7 @@ GSDumpLzma::~GSDumpLzma() {
 
 /******************************************************************/
 
-GSDumpRaw::GSDumpRaw(char* filename, const char* repack_filename) : GSDumpFile(filename, repack_filename) {
+GSDumpRaw::GSDumpRaw(const char* filename, const char* repack_filename) : GSDumpFile(filename, repack_filename) {
 	m_buff_size = 0;
 	m_area      = NULL;
 	m_inbuf     = NULL;
