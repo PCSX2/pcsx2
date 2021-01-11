@@ -1073,7 +1073,7 @@ public:
 
 			case PacketType::VSync:
 
-				GSvsync(p.param);
+				GSvsync(*(int*)(regs + 4096) & 0x2000 ? 1 : 0);
 
 				break;
 
