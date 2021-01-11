@@ -39,9 +39,8 @@
 // If you want to use them, need to save and restore current ones
 EXPORT_C_(s32)
 FWinit();
-// pDisplay normally is passed a handle to the GS plugins window.
 EXPORT_C_(s32)
-FWopen(void *pDisplay);
+FWopen();
 EXPORT_C_(void)
 FWclose();
 EXPORT_C_(void)

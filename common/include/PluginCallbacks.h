@@ -1374,7 +1374,7 @@ typedef void (CALLBACK* _USBabout)();
 
 //FW
 typedef s32  (CALLBACK* _FWinit)(char *configpath);
-typedef s32  (CALLBACK* _FWopen)(void *pDisplay);
+typedef s32  (CALLBACK* _FWopen)();
 typedef void (CALLBACK* _FWclose)();
 typedef void (CALLBACK* _FWshutdown)();
 typedef u32  (CALLBACK* _FWread32)(u32 mem);
