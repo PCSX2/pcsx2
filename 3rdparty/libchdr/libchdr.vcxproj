@@ -62,7 +62,7 @@
       <AdditionalIncludeDirectories>$(SolutionDir)\3rdparty\flac-1.3.3\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)\3rdparty\lzma-19.00\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)\3rdparty\zlib\;$(ProjectDir)\libchdr\include\libchdr\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <LanguageStandard>Default</LanguageStandard>
+      <LanguageStandard>stdcpp17</LanguageStandard>
       <Optimization Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">MaxSpeed</Optimization>
       <FavorSizeOrSpeed Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Speed</FavorSizeOrSpeed>
       <OmitFramePointers Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">true</OmitFramePointers>
@@ -74,7 +74,8 @@
       <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">false</MinimalRebuild>
     </ClCompile>
     <Lib>
-      <AdditionalDependencies>libFLAC.lib;lzma.lib</AdditionalDependencies>
+      <AdditionalDependencies Condition="$(Configuration.Contains(Release))">libFLAC.lib;lzma.lib</AdditionalDependencies>
+	  <AdditionalDependencies Condition="$(Configuration.Contains(Debug))">libFLAC-dbg.lib;lzma-dbg.lib</AdditionalDependencies>
       <AdditionalLibraryDirectories>$(TargetDir);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
