@@ -1924,6 +1924,8 @@ SCES-52677:
   name: "Network Access Disc & Hardware - Online Arena"
   region: "PAL-M7"
   compat: 5
+  speedHacks:
+    InstantVU1SpeedHack: 1  # Fixes not rendering most the screen
   patches:
     default:
       content: |-
