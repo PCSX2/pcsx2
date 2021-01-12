@@ -15,7 +15,7 @@
 
 #pragma once
 #include <stdlib.h>
-#include <string.h> //uh isnt memcpy @ stdlib ?
+#include <string>
 
 // first three recognized by Xlink as Sony PS2
 const u8 defaultMAC[6] = {0x00, 0x04, 0x1F, 0x82, 0x30, 0x31};
@@ -36,6 +36,26 @@ struct NetPacket
 extern mtfifo<NetPacket*> rx_fifo;
 extern mtfifo<NetPacket*> tx_fifo;
 */
+
+enum struct NetApi : int
+{
+	Unset = 0,
+	PCAP_Bridged = 1,
+	PCAP_Switched = 2,
+	TAP = 3,
+};
+
+struct AdapterEntry
+{
+	NetApi type;
+#ifdef _WIN32
+	std::wstring name;
+	std::wstring guid;
+#else
+	std::string name;
+	std::string guid;
+#endif
+};
 
 class NetAdapter
 {
@@ -58,3 +78,6 @@ protected:
 void tx_put(NetPacket* ptr);
 void InitNet();
 void TermNet();
+
+const char* NetApiToString(NetApi api);
+const wchar_t* NetApiToWstring(NetApi api);

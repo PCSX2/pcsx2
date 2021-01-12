@@ -19,6 +19,7 @@
 
 #include <string>
 #include "ghc/filesystem.h"
+#include "fmt/format.h"
 
 #include "..\Config.h"
 #include "resource.h"
@@ -33,6 +34,7 @@
 extern HINSTANCE hInst;
 //HANDLE handleDEV9Thread = NULL;
 //DWORD dwThreadId, dwThrdParam;
+std::vector<AdapterEntry> adapters;
 
 void SysMessage(char* fmt, ...)
 {
@@ -47,31 +49,29 @@ void SysMessage(char* fmt, ...)
 
 void OnInitDialog(HWND hW)
 {
-	char* dev;
 	//int i;
 
 	LoadConf();
 
 	ComboBox_AddString(GetDlgItem(hW, IDC_BAYTYPE), "Expansion");
 	ComboBox_AddString(GetDlgItem(hW, IDC_BAYTYPE), "PC Card");
-	for (int i = 0; i < pcap_io_get_dev_num(); i++)
+
+	std::vector<AdapterEntry> tapAdapters = TAPAdapter::GetAdapters();
+	std::vector<AdapterEntry> pcapAdapters = PCAPAdapter::GetAdapters();
+
+	adapters.reserve(tapAdapters.size() + pcapAdapters.size());
+	adapters.insert(adapters.end(), tapAdapters.begin(), tapAdapters.end());
+	adapters.insert(adapters.end(), pcapAdapters.begin(), pcapAdapters.end());
+
+	for (size_t i = 0; i < adapters.size(); i++)
 	{
-		dev = pcap_io_get_dev_desc(i);
-		int itm = ComboBox_AddString(GetDlgItem(hW, IDC_ETHDEV), dev);
-		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV), itm, _strdup(pcap_io_get_dev_name(i)));
-		if (strcmp(pcap_io_get_dev_name(i), config.Eth) == 0)
-		{
-			ComboBox_SetCurSel(GetDlgItem(hW, IDC_ETHDEV), itm);
-		}
-	}
-	vector<tap_adapter>* al = GetTapAdapters();
-	for (size_t i = 0; i < al->size(); i++)
-	{
-		int itm = ComboBox_AddString(GetDlgItem(hW, IDC_ETHDEV), al[0][i].name);
+		std::wstring dev = fmt::format(L"{}: {}", (wchar_t*)NetApiToWstring(adapters[i].type), adapters[i].name.c_str());
+		int itm = ComboBox_AddString(GetDlgItem(hW, IDC_ETHDEV), dev.c_str());
+		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV), itm, i);
 		char guid_char[256];
-		wcstombs(guid_char, al[0][i].guid, wcslen(al[0][i].guid) + 1);
-		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV), itm, _strdup(guid_char));
-		if (strcmp(guid_char, config.Eth) == 0)
+		wcstombs(guid_char, adapters[i].guid.c_str(), wcslen(adapters[i].guid.c_str()) + 1);
+		//TODO, also check type
+		if (config.EthApi == adapters[i].type && strcmp(guid_char, config.Eth) == 0)
 		{
 			ComboBox_SetCurSel(GetDlgItem(hW, IDC_ETHDEV), itm);
 		}
@@ -177,14 +177,17 @@ void OnOk(HWND hW)
 		{
 			//user not planning on using
 			//ethernet anyway
+			config.EthApi = NetApi::Unset;
 			strcpy(config.Eth, ETH_DEF);
 		}
 	}
 	else
 	{
 		//adapter is selected
-		char* ptr = (char*)ComboBox_GetItemData(GetDlgItem(hW, IDC_ETHDEV), i);
-		strcpy(config.Eth, ptr);
+		config.EthApi = adapters[i].type;
+		char guid_char[256];
+		wcstombs(guid_char, adapters[i].guid.c_str(), wcslen(adapters[i].guid.c_str()) + 1);
+		strcpy(config.Eth, guid_char);
 	}
 
 	GetWindowText(GetDlgItem(hW, IDC_HDDFILE), config.Hdd, 256);
@@ -229,6 +232,7 @@ void OnOk(HWND hW)
 
 	SaveConf();
 
+	adapters.clear();
 	EndDialog(hW, TRUE);
 }
 
@@ -245,6 +249,7 @@ BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			switch (LOWORD(wParam))
 			{
 				case IDCANCEL:
+					adapters.clear();
 					EndDialog(hW, FALSE);
 					return TRUE;
 				case IDOK:

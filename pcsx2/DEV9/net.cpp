@@ -22,6 +22,10 @@
 #endif
 #include "net.h"
 #include "DEV9.h"
+#ifdef _WIN32
+#include "Win32/tap.h"
+#endif
+#include "pcap_io.h"
 
 #ifdef _WIN32
 #include "Win32\tap.h"
@@ -55,16 +59,27 @@ void tx_put(NetPacket* pkt)
 
 NetAdapter* GetNetAdapter()
 {
+	NetAdapter* na = nullptr;
+
+	switch (config.EthApi)
+	{
 #ifdef _WIN32
-	NetAdapter* na = static_cast<NetAdapter*>(new TAPAdapter());
+		case NetApi::TAP:
+			na = static_cast<NetAdapter*>(new TAPAdapter());
+			break;
 #else
-	NetAdapter* na = static_cast<NetAdapter*>(new PCAPAdapter());
+		case NetApi::PCAP_Switched:
+			na = static_cast<NetAdapter*>(new PCAPAdapter());
+			break;
+		default:
+			return 0;
 #endif
+	}
 
 	if (!na->isInitialised())
 	{
 		delete na;
-		return nullptr;
+		return 0;
 	}
 	return na;
 }
@@ -113,9 +128,40 @@ void TermNet()
 	}
 }
 
+const char* NetApiToString(NetApi api)
+{
+	switch (api)
+	{
+		case NetApi::PCAP_Bridged:
+			return "PCAP (Bridged)";
+		case NetApi::PCAP_Switched:
+			return "PCAP (Switched)";
+		case NetApi::TAP:
+			return "TAP";
+		default:
+			return "UNK";
+	}
+}
+
+const wchar_t* NetApiToWstring(NetApi api)
+{
+	switch (api)
+	{
+		case NetApi::PCAP_Bridged:
+			return L"PCAP (Bridged)";
+		case NetApi::PCAP_Switched:
+			return L"PCAP (Switched)";
+		case NetApi::TAP:
+			return L"TAP";
+		default:
+			return L"UNK";
+	}
+}
+
+
 NetAdapter::NetAdapter()
 {
-	//Ensure eeprom matches our default 
+	//Ensure eeprom matches our default
 	SetMACAddress(nullptr);
 }
 

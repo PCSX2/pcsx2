@@ -393,3 +393,32 @@ PCAPAdapter::~PCAPAdapter()
 {
 	pcap_io_close();
 }
+
+std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
+{
+	std::vector<AdapterEntry> nic;
+
+	#ifndef _WIN32
+	pcap_if_t* alldevs;
+	pcap_if_t* d;
+
+	if (pcap_findalldevs(&alldevs, errbuf) == -1)
+	{
+		return nic;
+	}
+
+	d = alldevs;
+	while (d != NULL)
+	{
+		AdapterEntry entry;
+		entry.type = NetApi::PCAP_Switched;
+		entry.name = std::string(d->name);
+		entry.guid = std::string(d->name);
+
+		nic.push_back(entry);
+		d = d->next;
+	}
+
+	#endif
+	return nic;
+}

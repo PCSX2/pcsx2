@@ -59,6 +59,7 @@ bool rx_fifo_can_rx();
 typedef struct
 {
 	char Eth[256];
+	NetApi EthApi;
 #ifdef _WIN32
 	wchar_t Hdd[256];
 #else

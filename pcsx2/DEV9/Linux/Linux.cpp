@@ -23,6 +23,8 @@
 #include <sys/types.h>
 #include <pwd.h>
 #include <string.h>
+#include <vector>
+#include "fmt/format.h"
 
 #include <string>
 #include "ghc/filesystem.h"
@@ -37,10 +39,10 @@
 #include "../ATA/HddCreate.h"
 
 static GtkBuilder* builder = nullptr;
+std::vector<AdapterEntry> adapters;
 
 void OnInitDialog()
 {
-	char* dev;
 	gint idx = 0;
 	static int initialized = 0;
 
@@ -51,11 +53,15 @@ void OnInitDialog()
 
 	gtk_combo_box_text_append_text((GtkComboBoxText*)gtk_builder_get_object(builder, "IDC_BAYTYPE"), "Expansion");
 	gtk_combo_box_text_append_text((GtkComboBoxText*)gtk_builder_get_object(builder, "IDC_BAYTYPE"), "PC Card");
-	for (int i = 0; i < pcap_io_get_dev_num(); i++)
+
+	adapters = PCAPAdapter::GetAdapters();
+
+	for (size_t i = 0; i < adapters.size(); i++)
 	{
-		dev = pcap_io_get_dev_name(i);
-		gtk_combo_box_text_append_text((GtkComboBoxText*)gtk_builder_get_object(builder, "IDC_ETHDEV"), dev);
-		if (strcmp(dev, config.Eth) == 0)
+		std::string dev = fmt::format("{}: {}", (char*)NetApiToString(adapters[i].type), adapters[i].name.c_str());
+
+		gtk_combo_box_text_append_text((GtkComboBoxText*)gtk_builder_get_object(builder, "IDC_ETHDEV"), dev.c_str());
+		if (config.EthApi == adapters[i].type && strcmp(adapters[i].guid.c_str(), config.Eth) == 0)
 		{
 			gtk_combo_box_set_active((GtkComboBox*)gtk_builder_get_object(builder, "IDC_ETHDEV"), idx);
 		}
@@ -135,9 +141,12 @@ void OnSlide(GtkRange* range, gpointer usr_data)
 
 void OnOk()
 {
-	char* ptr = gtk_combo_box_text_get_active_text((GtkComboBoxText*)gtk_builder_get_object(builder, "IDC_ETHDEV"));
-	if (ptr != nullptr)
-		strcpy(config.Eth, ptr);
+	int ethIndex = gtk_combo_box_get_active((GtkComboBox*)gtk_builder_get_object(builder, "IDC_ETHDEV"));
+	if (ethIndex != -1)
+	{
+		strcpy(config.Eth, adapters[ethIndex].guid.c_str());
+		config.EthApi = adapters[ethIndex].type;
+	}
 
 	strcpy(config.Hdd, gtk_entry_get_text((GtkEntry*)gtk_builder_get_object(builder, "IDC_HDDFILE")));
 	config.HddSize = gtk_spin_button_get_value((GtkSpinButton*)gtk_builder_get_object(builder, "IDC_HDDSIZE_SPIN")) * 1024;
