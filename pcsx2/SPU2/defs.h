@@ -399,7 +399,9 @@ struct V_Core
 	bool AdmaInProgress;
 
 	s8 DMABits;        // DMA related?
-	s8 NoiseClk;       // Noise Clock
+	u8 NoiseClk;       // Noise Clock
+	u32 NoiseCnt;      // Noise Counter
+	u32 NoiseOut;      // Noise Output
 	u16 AutoDMACtrl;   // AutoDMA Status
 	s32 DMAICounter;   // DMA Interrupt Counter
 	u32 LastClock;     // DMA Interrupt Clock Cycle Counter
