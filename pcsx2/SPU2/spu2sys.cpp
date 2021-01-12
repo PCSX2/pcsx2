@@ -130,6 +130,8 @@ void V_Core::Init(int index)
 	Mute = false;
 	DMABits = 0;
 	NoiseClk = 0;
+	NoiseCnt = 0;
+	NoiseOut = 0;
 	AutoDMACtrl = 0;
 	InputDataLeft = 0;
 	InputPosRead = 0;
