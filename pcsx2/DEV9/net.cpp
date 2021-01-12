@@ -67,13 +67,12 @@ NetAdapter* GetNetAdapter()
 		case NetApi::TAP:
 			na = static_cast<NetAdapter*>(new TAPAdapter());
 			break;
-#else
+#endif
 		case NetApi::PCAP_Switched:
 			na = static_cast<NetAdapter*>(new PCAPAdapter());
 			break;
 		default:
 			return 0;
-#endif
 	}
 
 	if (!na->isInitialised())
