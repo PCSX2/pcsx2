@@ -167,6 +167,11 @@ int pcap_io_get_dev_num();
 char* pcap_io_get_dev_desc(int num);
 char* pcap_io_get_dev_name(int num);
 
+#ifdef _WIN32
+bool load_pcap();
+void unload_pcap();
+#endif
+
 #ifdef __cplusplus
 }
 #endif

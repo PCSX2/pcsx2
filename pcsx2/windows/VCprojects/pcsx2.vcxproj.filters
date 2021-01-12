@@ -1102,6 +1102,9 @@
     <ClCompile Include="..\..\DEV9\pcap_io.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\DEV9\Win32\pcap_io_win32.cpp">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\DEV9\smap.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
