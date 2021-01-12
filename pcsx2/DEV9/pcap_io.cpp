@@ -45,16 +45,14 @@ extern u8 eeprom[];
 
 char namebuff[256];
 
-
-
-// Fetches the MAC address and prints it
-int GetMACAddress(char* adapter, mac_address* addr)
-{
-	int retval = 0;
 #ifdef _WIN32
-	static IP_ADAPTER_ADDRESSES AdapterInfo[128];
+int GetAdapterFromPcapName(char* adapter, PIP_ADAPTER_ADDRESSES retAdapterInfo)
+{
+	const int guidindex = strlen("\\Device\\NPF_");
 
-	static PIP_ADAPTER_ADDRESSES pAdapterInfo;
+	IP_ADAPTER_ADDRESSES AdapterInfo[128];
+
+	PIP_ADAPTER_ADDRESSES pAdapterInfo;
 	ULONG dwBufLen = sizeof(AdapterInfo);
 
 	DWORD dwStatus = GetAdaptersAddresses(
@@ -68,29 +66,31 @@ int GetMACAddress(char* adapter, mac_address* addr)
 
 	pAdapterInfo = AdapterInfo;
 
-	char adapter_desc[128] = "";
-
-	// Must get friendly description from the cryptic adapter name
-	for (int ii = 0; ii < pcap_io_get_dev_num(); ii++)
-		if (0 == strcmp(pcap_io_get_dev_name(ii), adapter))
-		{
-			strcpy(adapter_desc, pcap_io_get_dev_desc(ii));
-			break;
-		}
-
-	wchar_t wadapter[128];
-	std::mbstowcs(wadapter, adapter_desc, 128);
-
 	do
 	{
-		if (0 == wcscmp(pAdapterInfo->Description, wadapter))
+		if (0 == strcmp(pAdapterInfo->AdapterName, &adapter[guidindex]))
 		{
-			memcpy(addr, pAdapterInfo->PhysicalAddress, 6);
+			*retAdapterInfo = *pAdapterInfo;
 			return 1;
 		}
 
 		pAdapterInfo = pAdapterInfo->Next;
 	} while (pAdapterInfo);
+
+	return 0;
+}
+#endif
+
+// Fetches the MAC address and prints it
+int GetMACAddress(char* adapter, mac_address* addr)
+{
+	int retval = 0;
+#ifdef _WIN32
+	IP_ADAPTER_ADDRESSES adapterInfo;
+
+	if (GetAdapterFromPcapName(adapter, &adapterInfo))
+		memcpy(addr, adapterInfo.PhysicalAddress, 6);
+
 #elif defined(__linux__)
 	struct ifreq ifr;
 	int fd = socket(AF_INET, SOCK_DGRAM, 0);

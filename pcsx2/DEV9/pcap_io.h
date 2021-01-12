@@ -160,10 +160,10 @@ int pcap_io_init(char *adapter);
 int pcap_io_send(void* packet, int plen);
 int pcap_io_recv(void* packet, int max_len);
 void pcap_io_close();
-*/
 int pcap_io_get_dev_num();
 char* pcap_io_get_dev_desc(int num);
 char* pcap_io_get_dev_name(int num);
+*/
 
 #ifdef _WIN32
 bool load_pcap();
