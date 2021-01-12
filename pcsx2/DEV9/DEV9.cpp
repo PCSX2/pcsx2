@@ -1095,7 +1095,8 @@ void ApplyConfigIfRunning(Config oldConfig)
 		if (oldConfig.ethEnable)
 		{
 			//Reload Net if adapter changed
-			if (strcmp(oldConfig.Eth, config.Eth) != 0)
+			if (strcmp(oldConfig.Eth, config.Eth) != 0 ||
+				oldConfig.EthApi != config.EthApi)
 			{
 				TermNet();
 				InitNet();

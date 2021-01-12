@@ -19,12 +19,6 @@
 #include "..\net.h"
 using namespace std;
 
-struct tap_adapter
-{
-	TCHAR *name;
-	TCHAR *guid;
-};
-vector<tap_adapter>* GetTapAdapters();
 class TAPAdapter : public NetAdapter
 {
 	HANDLE htap;
@@ -42,4 +36,5 @@ public:
 	virtual bool send(NetPacket* pkt);
 	virtual void close();
 	virtual ~TAPAdapter();
+	static std::vector<AdapterEntry> GetAdapters();
 };

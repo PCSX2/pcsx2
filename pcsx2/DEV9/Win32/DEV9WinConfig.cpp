@@ -50,6 +50,7 @@ void SaveConf()
 	wchar_t wEth[sizeof(config.Eth)] = {0};
 	mbstowcs(wEth, config.Eth, sizeof(config.Eth) - 1);
 	WritePrivateProfileString(L"DEV9", L"Eth", wEth, file.c_str());
+	WritePrivateProfileInt(L"DEV9", L"EthApi", (int)config.EthApi, file.c_str());
 	WritePrivateProfileString(L"DEV9", L"Hdd", config.Hdd, file.c_str());
 
 	WritePrivateProfileInt(L"DEV9", L"HddSize", config.HddSize, file.c_str());
@@ -67,6 +68,7 @@ void LoadConf()
 	mbstowcs(wEth, ETH_DEF, sizeof(config.Eth) - 1);
 	GetPrivateProfileString(L"DEV9", L"Eth", wEth, wEth, sizeof(config.Eth), file.c_str());
 	wcstombs(config.Eth, wEth, sizeof(config.Eth) - 1);
+	config.EthApi = (NetApi)GetPrivateProfileInt(L"DEV9", L"EthApi", (int)NetApi::TAP, file.c_str());
 
 	GetPrivateProfileString(L"DEV9", L"Hdd", HDD_DEF, config.Hdd, sizeof(config.Hdd), file.c_str());
 

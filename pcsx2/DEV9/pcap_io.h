@@ -182,4 +182,5 @@ public:
 	//sends the packet and deletes it when done (if successful).rv :true success
 	virtual bool send(NetPacket* pkt);
 	virtual ~PCAPAdapter();
+	static std::vector<AdapterEntry> GetAdapters();
 };
