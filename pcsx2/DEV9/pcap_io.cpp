@@ -36,7 +36,7 @@
 #endif
 
 pcap_t* adhandle;
-pcap_dumper_t* dump_pcap;
+pcap_dumper_t* dump_pcap = nullptr;
 char errbuf[PCAP_ERRBUF_SIZE];
 mac_address broadcast_mac = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
@@ -163,8 +163,10 @@ int pcap_io_init(char* adapter, mac_address virtual_mac)
 			return -1;
 	}
 
+#ifdef DEBUG
 	const std::string plfile(s_strLogPath + "/pkt_log.pcap");
 	dump_pcap = pcap_dump_open(adhandle, plfile.c_str());
+#endif
 
 	pcap_io_running = 1;
 	Console.WriteLn("Adapter Ok.");
