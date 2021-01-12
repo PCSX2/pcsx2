@@ -32,10 +32,10 @@ public:
 		DESTRUCTOR_CATCHALL
 	}
 
-	AppGameDatabase& LoadFromFile(const wxString& file(PathDefs::GetProgramDataDir() / "GameIndex.yaml"));
+	AppGameDatabase& LoadFromFile(const fs::path& file = PathDefs::GetProgramDataDir() / "GameIndex.yaml");
 
 private:
-	std::ifstream getFileAsStream(const wxString& file);
+	std::ifstream getFileAsStream(const fs::path& file);
 };
 
 static wxString compatToStringWX(GameDatabaseSchema::Compatibility compat)

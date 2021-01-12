@@ -63,8 +63,8 @@ InstallationModeType			InstallationMode;
 
 static fs::path GetPortableYamlPath()
 {
-	fs::path programDir = Path::GetExecutableDirectory();
-	return ( programDir / "portable.yaml" );
+	fs::path programDir = Path::GetExecutableDirectory() / "portable.yaml";
+	return programDir.make_preferred();
 }
 
 static wxString GetMsg_PortableModeRights()
@@ -203,13 +203,25 @@ void Pcsx2App::WipeUserModeSettings()
 	}
 }
 
+static std::ifstream& getFileAsStream(const fs::path& file)
+{
+
+#ifdef _WIN32
+	static std::ifstream in(file.wstring());
+	return in;
+#else
+	static std::ifstream in(file);
+	return in;
+#endif
+}
+
 bool Pcsx2App::Load(fs::path fileName)
 {
 	if (fs::exists(fileName))
 	{
 		try
 		{
-			stream = YAML::LoadFile(fileName);
+			stream = YAML::Load(getFileAsStream(fileName));
 			std::ostringstream os;
 			os << stream;
 			data = os.str();

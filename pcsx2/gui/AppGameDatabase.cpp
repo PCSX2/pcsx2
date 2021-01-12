@@ -22,18 +22,18 @@
 #include "fmt/core.h"
 #include <fstream>
 
-std::ifstream AppGameDatabase::getFileAsStream(const wxString& file)
+std::ifstream AppGameDatabase::getFileAsStream(const fs::path& file)
 {
 #ifdef _WIN32
-	return std::ifstream(file.wc_str());
+	return std::ifstream(file.wstring());
 #else
-	return std::ifstream(file.c_str());
+	return std::ifstream(file.string());
 #endif
 }
 
-AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file)
+AppGameDatabase& AppGameDatabase::LoadFromFile(const fs::path& _file)
 {
-	fs::path file(_file.ToStdWstring());
+	fs::path file = _file;
 	if (file.is_relative())
 	{
 		// InstallFolder is the preferred base directory for the DB file, but the registry can point to previous
@@ -59,7 +59,7 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file)
 
 	const u64 qpc_Start = GetCPUTicks();
 
-	std::ifstream fileStream = getFileAsStream(Path::ToWxString(file));
+	std::ifstream fileStream = getFileAsStream(file);
 	if (!this->initDatabase(fileStream))
 	{
 		Console.Error(L"[GameDB] Database could not be loaded successfully");
