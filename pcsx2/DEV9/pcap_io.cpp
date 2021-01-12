@@ -326,17 +326,25 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 		mbstowcs(wEth, d->name, sizeof(config.Eth) - 1);
 		entry.guid = std::wstring(wEth);
 
-		//NPCAP 1.10 is using an version of pcap that dosn't
-		//allow us to set it to use UTF8
-		//see https://github.com/nmap/npcap/issues/276
-		//But use MultiByteToWideChar so we can later switch to UTF8
-		int len_desc = strlen(d->description) + 1;
-		int len_buf = MultiByteToWideChar(CP_ACP, 0, d->description, len_desc, nullptr, 0);
+		IP_ADAPTER_ADDRESSES adapterInfo;
 
-		wchar_t* buf = new wchar_t[len_buf];
-		MultiByteToWideChar(CP_ACP, 0, d->description, len_desc, buf, len_buf);
-		entry.name = std::wstring(buf);
-		delete[] buf;
+		if (GetAdapterFromPcapName(d->name, &adapterInfo))
+			entry.name = std::wstring(adapterInfo.FriendlyName);
+		else
+		{
+			//have to use description
+			//NPCAP 1.10 is using an version of pcap that dosn't
+			//allow us to set it to use UTF8
+			//see https://github.com/nmap/npcap/issues/276
+			//But use MultiByteToWideChar so we can later switch to UTF8
+			int len_desc = strlen(d->description) + 1;
+			int len_buf = MultiByteToWideChar(CP_ACP, 0, d->description, len_desc, nullptr, 0);
+
+			wchar_t* buf = new wchar_t[len_buf];
+			MultiByteToWideChar(CP_ACP, 0, d->description, len_desc, buf, len_buf);
+			entry.name = std::wstring(buf);
+			delete[] buf;
+		}
 #else
 		entry.name = std::string(d->name);
 		entry.guid = std::string(d->name);
