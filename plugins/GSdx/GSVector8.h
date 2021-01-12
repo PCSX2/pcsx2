@@ -24,6 +24,50 @@
 class alignas(32) GSVector8
 {
 public:
+	constexpr static __m256 cxpr_setr_ps(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1)
+	{
+#ifdef __GNUC__
+		return __m256{x0, y0, z0, w0, x1, y1, z1, w1};
+#else
+		__m256 m = {};
+		m.m256_f32[0] = x0;
+		m.m256_f32[1] = y0;
+		m.m256_f32[2] = z0;
+		m.m256_f32[3] = w0;
+		m.m256_f32[4] = x1;
+		m.m256_f32[5] = y1;
+		m.m256_f32[6] = z1;
+		m.m256_f32[7] = w1;
+		return m;
+#endif
+	}
+	constexpr static __m256 cxpr_set1_ps(float x)
+	{
+		return cxpr_setr_ps(x, x, x, x, x, x, x, x);
+	}
+
+	constexpr static __m256 cxpr_setr_epi32(uint32 x0, uint32 y0, uint32 z0, uint32 w0, uint32 x1, uint32 y1, uint32 z1, uint32 w1)
+	{
+#ifdef __GNUC__
+		return (__m256)__v8su{x0, y0, z0, w0, x1, y1, z1, w1};
+#else
+		union { __m256 m; uint32 u[8]; } t = {};
+		t.u[0] = x0;
+		t.u[1] = y0;
+		t.u[2] = z0;
+		t.u[3] = w0;
+		t.u[4] = x1;
+		t.u[5] = y1;
+		t.u[6] = z1;
+		t.u[7] = w1;
+		return t.m;
+#endif
+	}
+	constexpr static __m256 cxpr_set1_epi32(uint32 x)
+	{
+		return cxpr_setr_epi32(x, x, x, x, x, x, x, x);
+	}
+
 	union
 	{
 		struct {float x0, y0, z0, w0, x1, y1, z1, w1;};
@@ -42,24 +86,20 @@ public:
 		__m128 m0, m1;
 	};
 
-	static GSVector8 m_half;
-	static GSVector8 m_one;
-	static GSVector8 m_x7fffffff;
-	static GSVector8 m_x80000000;
-	static GSVector8 m_x4b000000;
-	static GSVector8 m_x4f800000;
-	static GSVector8 m_max;
-	static GSVector8 m_min;
+	static const GSVector8 m_half;
+	static const GSVector8 m_one;
+	static const GSVector8 m_x7fffffff;
+	static const GSVector8 m_x80000000;
+	static const GSVector8 m_x4b000000;
+	static const GSVector8 m_x4f800000;
+	static const GSVector8 m_max;
+	static const GSVector8 m_min;
 
-	static void InitVectors();
+	GSVector8() = default;
 
-	__forceinline GSVector8() 
+	constexpr GSVector8(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1)
+		: m(cxpr_setr_ps(x0, y0, z0, w0, x1, y1, z1, w1))
 	{
-	}
-
-	__forceinline GSVector8(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1)
-	{
-		m = _mm256_set_ps(w1, z1, y1, x1, w0, z0, y0, x0);
 	}
 
 	__forceinline GSVector8(int x0, int y0, int z0, int w0, int x1, int y1, int z1, int w1)
@@ -80,10 +120,7 @@ public:
 		#endif
 	}
 
-	__forceinline GSVector8(const GSVector8& v)
-	{
-		m = v.m;
-	}
+	constexpr GSVector8(const GSVector8& v) = default;
 
 	__forceinline explicit GSVector8(float f)
 	{
@@ -110,9 +147,9 @@ public:
 		*this = m;
 	}
 
-	__forceinline explicit GSVector8(__m256 m)
+	constexpr explicit GSVector8(__m256 m)
+		: m(m)
 	{
-		this->m = m;
 	}
 
 	#if _M_SSE >= 0x501
