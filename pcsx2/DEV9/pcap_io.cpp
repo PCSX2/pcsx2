@@ -35,14 +35,11 @@
 #define PCAP_NETMASK_UNKNOWN 0xffffffff
 #endif
 
-#ifdef _WIN32
-#define mac_address char*
-#else
 pcap_t* adhandle;
 pcap_dumper_t* dump_pcap;
 char errbuf[PCAP_ERRBUF_SIZE];
 mac_address broadcast_mac = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
-#endif
+
 int pcap_io_running = 0;
 extern u8 eeprom[];
 
@@ -114,7 +111,6 @@ int GetMACAddress(char* adapter, mac_address* addr)
 
 int pcap_io_init(char* adapter, mac_address virtual_mac)
 {
-#ifndef _WIN32
 	struct bpf_program fp;
 	char filter[1024] = "ether broadcast or ether dst ";
 	int dlt;
@@ -172,7 +168,6 @@ int pcap_io_init(char* adapter, mac_address virtual_mac)
 
 	pcap_io_running = 1;
 	Console.WriteLn("Adapter Ok.");
-#endif
 	return 0;
 }
 
@@ -190,7 +185,6 @@ int gettimeofday(struct timeval* tv, void* tz)
 
 int pcap_io_send(void* packet, int plen)
 {
-#ifndef _WIN32
 	if (pcap_io_running <= 0)
 		return -1;
 
@@ -204,13 +198,10 @@ int pcap_io_send(void* packet, int plen)
 	}
 
 	return pcap_sendpacket(adhandle, (u_char*)packet, plen);
-#endif
-	return 0;
 }
 
 int pcap_io_recv(void* packet, int max_len)
 {
-#ifndef _WIN32
 	static struct pcap_pkthdr* header;
 	static const u_char* pkt_data1;
 
@@ -226,26 +217,22 @@ int pcap_io_recv(void* packet, int max_len)
 
 		return header->len;
 	}
-#endif
 
 	return -1;
 }
 
 void pcap_io_close()
 {
-#ifndef _WIN32
 	if (dump_pcap)
 		pcap_dump_close(dump_pcap);
 	if (adhandle)
 		pcap_close(adhandle);
 	pcap_io_running = 0;
-#endif
 }
 
 int pcap_io_get_dev_num()
 {
 	int i = 0;
-#ifndef _WIN32
 	pcap_if_t* alldevs;
 	pcap_if_t* d;
 
@@ -263,13 +250,11 @@ int pcap_io_get_dev_num()
 
 	pcap_freealldevs(alldevs);
 
-#endif
 	return i;
 }
 
 char* pcap_io_get_dev_name(int num)
 {
-#ifndef _WIN32
 	pcap_if_t* alldevs;
 	pcap_if_t* d;
 	int i = 0;
@@ -293,13 +278,11 @@ char* pcap_io_get_dev_name(int num)
 	}
 
 	pcap_freealldevs(alldevs);
-#endif
 	return NULL;
 }
 
 char* pcap_io_get_dev_desc(int num)
 {
-#ifndef _WIN32
 	pcap_if_t* alldevs;
 	pcap_if_t* d;
 	int i = 0;
@@ -323,7 +306,6 @@ char* pcap_io_get_dev_desc(int num)
 	}
 
 	pcap_freealldevs(alldevs);
-#endif
 	return NULL;
 }
 
@@ -331,9 +313,13 @@ char* pcap_io_get_dev_desc(int num)
 PCAPAdapter::PCAPAdapter()
 	: NetAdapter()
 {
-#ifndef _WIN32
 	if (config.ethEnable == 0)
 		return;
+
+#ifdef _WIN32
+	if (!load_pcap())
+		return;
+#endif
 
 	mac_address hostMAC;
 	mac_address newMAC;
@@ -351,9 +337,6 @@ PCAPAdapter::PCAPAdapter()
 	{
 		SysMessage("Can't open Device '%s'\n", config.Eth);
 	}
-#else
-	Console.Error("pcap not supported on windows\n");
-#endif
 }
 bool PCAPAdapter::blocks()
 {
@@ -398,7 +381,11 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 {
 	std::vector<AdapterEntry> nic;
 
-	#ifndef _WIN32
+#ifdef _WIN32
+	if (!load_pcap())
+		return nic;
+#endif
+
 	pcap_if_t* alldevs;
 	pcap_if_t* d;
 
@@ -412,13 +399,31 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 	{
 		AdapterEntry entry;
 		entry.type = NetApi::PCAP_Switched;
+#ifdef _WIN32
+		//guid
+		wchar_t wEth[sizeof(config.Eth)] = {0};
+		mbstowcs(wEth, d->name, sizeof(config.Eth) - 1);
+		entry.guid = std::wstring(wEth);
+
+		//NPCAP 1.10 is using an version of pcap that dosn't
+		//allow us to set it to use UTF8
+		//see https://github.com/nmap/npcap/issues/276
+		//But use MultiByteToWideChar so we can later switch to UTF8
+		int len_desc = strlen(d->description) + 1;
+		int len_buf = MultiByteToWideChar(CP_ACP, 0, d->description, len_desc, nullptr, 0);
+
+		wchar_t* buf = new wchar_t[len_buf];
+		MultiByteToWideChar(CP_ACP, 0, d->description, len_desc, buf, len_buf);
+		entry.name = std::wstring(buf);
+		delete[] buf;
+#else
 		entry.name = std::string(d->name);
 		entry.guid = std::string(d->name);
+#endif
 
 		nic.push_back(entry);
 		d = d->next;
 	}
 
-	#endif
 	return nic;
 }
