@@ -125,18 +125,6 @@ EXPORT_C_(int) GSinit()
 	theApp.Init();
 
 	GSUtil::Init();
-	GSBlock::InitVectors();
-	GSClut::InitVectors();
-	GSRendererSW::InitVectors();
-	GSVector4i::InitVectors();
-	GSVector4::InitVectors();
-#if _M_SSE >= 0x500
-	GSVector8::InitVectors();
-#endif
-#if _M_SSE >= 0x501
-	GSVector8i::InitVectors();
-#endif
-	GSVertexTrace::InitVectors();
 
 	if (g_const == nullptr)
 		return -1;

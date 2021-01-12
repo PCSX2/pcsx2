@@ -22,6 +22,42 @@
 class alignas(16) GSVector4
 {
 public:
+	constexpr static __m128 cxpr_setr_ps(float x, float y, float z, float w)
+	{
+#ifdef __GNUC__
+		return __m128{x, y, z, w};
+#else
+		__m128 m = {};
+		m.m128_f32[0] = x;
+		m.m128_f32[1] = y;
+		m.m128_f32[2] = z;
+		m.m128_f32[3] = w;
+		return m;
+#endif
+	}
+	constexpr static __m128 cxpr_set1_ps(float x)
+	{
+		return cxpr_setr_ps(x, x, x, x);
+	}
+
+	constexpr static __m128 cxpr_setr_epi32(uint32 x, uint32 y, uint32 z, uint32 w)
+	{
+#ifdef __GNUC__
+		return (__m128)(__v4su{x, y, z, w});
+#else
+		__m128 m = {};
+		m.m128_u32[0] = x;
+		m.m128_u32[1] = y;
+		m.m128_u32[2] = z;
+		m.m128_u32[3] = w;
+		return m;
+#endif
+	}
+	constexpr static __m128 cxpr_set1_epi32(uint32 x)
+	{
+		return cxpr_setr_epi32(x, x, x, x);
+	}
+
 	union
 	{
 		struct {float x, y, z, w;};
@@ -40,28 +76,24 @@ public:
 		__m128 m;
 	};
 
-	static GSVector4 m_ps0123;
-	static GSVector4 m_ps4567;
-	static GSVector4 m_half;
-	static GSVector4 m_one;
-	static GSVector4 m_two;
-	static GSVector4 m_four;
-	static GSVector4 m_x4b000000;
-	static GSVector4 m_x4f800000;
-	static GSVector4 m_max;
-	static GSVector4 m_min;
+	static const GSVector4 m_ps0123;
+	static const GSVector4 m_ps4567;
+	static const GSVector4 m_half;
+	static const GSVector4 m_one;
+	static const GSVector4 m_two;
+	static const GSVector4 m_four;
+	static const GSVector4 m_x4b000000;
+	static const GSVector4 m_x4f800000;
+	static const GSVector4 m_max;
+	static const GSVector4 m_min;
 
-	static void InitVectors();
-
-	__forceinline GSVector4()
-	{
-	}
+	GSVector4() = default;
 
 	constexpr GSVector4(const GSVector4&) = default;
 
-	__forceinline GSVector4(float x, float y, float z, float w)
+	constexpr GSVector4(float x, float y, float z, float w)
+		: m(cxpr_setr_ps(x, y, z, w))
 	{
-		m = _mm_set_ps(w, z, y, x);
 	}
 
 	__forceinline GSVector4(float x, float y)
@@ -97,9 +129,9 @@ public:
 		m = _mm_cvtepi32_ps(_mm_loadl_epi64((__m128i*)&v));
 	}
 
-	__forceinline explicit GSVector4(__m128 m)
+	constexpr explicit GSVector4(__m128 m)
+		: m(m)
 	{
-		this->m = m;
 	}
 
 	__forceinline explicit GSVector4(float f)

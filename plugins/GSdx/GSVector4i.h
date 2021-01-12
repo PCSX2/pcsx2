@@ -21,10 +21,41 @@
 
 class alignas(16) GSVector4i
 {
-	static GSVector4i m_xff[17];
-	static GSVector4i m_x0f[17];
+	static const GSVector4i m_xff[17];
+	static const GSVector4i m_x0f[17];
 
 public:
+	constexpr static __m128i cxpr_setr_epi32(uint32 x, uint32 y, uint32 z, uint32 w)
+	{
+#ifdef __GNUC__
+		return (__m128i)(__v4su{x, y, z, w});
+#else
+		__m128i m = {};
+		m.m128i_u32[0] = x;
+		m.m128i_u32[1] = y;
+		m.m128i_u32[2] = z;
+		m.m128i_u32[3] = w;
+		return m;
+#endif
+	}
+	constexpr static __m128i cxpr_set1_epi32(uint32 x)
+	{
+		return cxpr_setr_epi32(x, x, x, x);
+	}
+	constexpr static __m128i cxpr_setr_epi8(uint8 b0, uint8 b1, uint8 b2, uint8 b3, uint8 b4, uint8 b5, uint8 b6, uint8 b7, uint8 b8, uint8 b9, uint8 b10, uint8 b11, uint8 b12, uint8 b13, uint8 b14, uint8 b15)
+	{
+#ifdef __GNUC__
+		return (__m128i)__v16qu{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15};
+#else
+		__m128i m = {};
+		m.m128i_u8[0]  = b0;  m.m128i_u8[1]  = b1;  m.m128i_u8[2]  = b2;  m.m128i_u8[3]  = b3;
+		m.m128i_u8[4]  = b4;  m.m128i_u8[5]  = b5;  m.m128i_u8[6]  = b6;  m.m128i_u8[7]  = b7;
+		m.m128i_u8[8]  = b8;  m.m128i_u8[9]  = b9;  m.m128i_u8[10] = b10; m.m128i_u8[11] = b11;
+		m.m128i_u8[12] = b12; m.m128i_u8[13] = b13; m.m128i_u8[14] = b14; m.m128i_u8[15] = b15;
+		return m;
+#endif
+	}
+
 	union
 	{
 		struct {int x, y, z, w;};
@@ -43,28 +74,13 @@ public:
 		__m128i m;
 	};
 
-	static void InitVectors();
-
-	__forceinline GSVector4i()
+	constexpr GSVector4i(): m(cxpr_set1_epi32(0))
 	{
-		x = 0;
-		y = 0;
-		z = 0;
-		w = 0;
 	}
 
-	__forceinline GSVector4i(int x, int y, int z, int w)
+	constexpr GSVector4i(int x, int y, int z, int w)
+		: m(cxpr_setr_epi32(x, y, z, w))
 	{
-		// 4 gprs
-
-		// m = _mm_set_epi32(w, z, y, x);
-
-		// 2 gprs
-
-		GSVector4i xz = load(x).upl32(load(z));
-		GSVector4i yw = load(y).upl32(load(w));
-
-		*this = xz.upl32(yw);
 	}
 
 	__forceinline GSVector4i(int x, int y)
@@ -77,9 +93,9 @@ public:
 		m = _mm_set_epi16(s7, s6, s5, s4, s3, s2, s1, s0);
 	}
 
-	__forceinline GSVector4i(char b0, char b1, char b2, char b3, char b4, char b5, char b6, char b7, char b8, char b9, char b10, char b11, char b12, char b13, char b14, char b15)
+	constexpr GSVector4i(char b0, char b1, char b2, char b3, char b4, char b5, char b6, char b7, char b8, char b9, char b10, char b11, char b12, char b13, char b14, char b15)
+		: m(cxpr_setr_epi8(b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15))
 	{
-		m = _mm_set_epi8(b15, b14, b13, b12, b11, b10, b9, b8, b7, b6, b5, b4, b3, b2, b1, b0);
 	}
 
 	__forceinline GSVector4i(const GSVector4i& v)
@@ -92,14 +108,15 @@ public:
 		m = _mm_loadl_epi64((__m128i*)&v);
 	}
 
+	// MSVC has bad codegen for the constexpr version when applied to non-constexpr things (https://godbolt.org/z/h8qbn7), so leave the non-constexpr version default
 	__forceinline explicit GSVector4i(int i)
 	{
 		*this = i;
 	}
 
-	__forceinline explicit GSVector4i(__m128i m)
+	constexpr explicit GSVector4i(__m128i m)
+		: m(m)
 	{
-		this->m = m;
 	}
 
 	__forceinline explicit GSVector4i(const GSVector4& v, bool truncate = true);
