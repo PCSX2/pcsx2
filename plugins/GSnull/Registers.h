@@ -25,7 +25,7 @@ extern "C" {
 #endif
 #define GSdefs
 #include "PS2Edefs.h"
-#include "PS2Etypes.h"
+#include "Pcsx2Defs.h"
 #ifdef __cplusplus
 }
 #endif

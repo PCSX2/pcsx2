@@ -136,7 +136,6 @@ void PADshutdown();
 s32 PADopen(void* pDsp);
 void PADsetLogDir(const char* dir);
 void PADclose();
-u32 PADquery();
 s32 PADsetSlot(u8 port, u8 slot);
 s32 PADfreeze(int mode, freezeData* data);
 u8 PADstartPoll(int pad);

@@ -98,7 +98,6 @@ void ClearMcdEjectTimeoutNow()
 static bool IsMtapPresent( uint port )
 {
 	return EmuConfig.MultitapEnabled( port );
-	//return (0 != PADqueryMtap(port+1));
 }
 
 void sioInit()

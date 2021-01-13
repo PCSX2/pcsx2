@@ -138,11 +138,6 @@ void PADclose()
 	_PADclose();
 }
 
-u32 PADquery()
-{
-	return 3; // both
-}
-
 s32 PADsetSlot(u8 port, u8 slot)
 {
 	port--;
