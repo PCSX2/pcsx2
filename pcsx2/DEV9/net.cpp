@@ -177,3 +177,20 @@ void NetAdapter::SetMACAddress(u8* mac)
 	//The checksum seems to be all the values of the mac added up in 16bit chunks
 	dev9.eeprom[3] = (dev9.eeprom[0] + dev9.eeprom[1] + dev9.eeprom[2]) & 0xffff;
 }
+
+bool NetAdapter::VerifyPkt(NetPacket* pkt, int read_size)
+{
+	if ((memcmp(pkt->buffer, ps2MAC, 6) != 0) && (memcmp(pkt->buffer, &broadcastMAC, 6) != 0))
+	{
+		//ignore strange packets
+		return false;
+	}
+
+	if (memcmp(pkt->buffer + 6, ps2MAC, 6) == 0)
+	{
+		//avoid pcap looping packets
+		return false;
+	}
+	pkt->size = read_size;
+	return true;
+}

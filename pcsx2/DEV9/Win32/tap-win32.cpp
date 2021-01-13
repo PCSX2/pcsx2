@@ -310,7 +310,6 @@ bool TAPAdapter::isInitialised()
 {
 	return (htap != NULL);
 }
-u8 broadcast_adddrrrr[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 //gets a packet.rv :true success
 bool TAPAdapter::recv(NetPacket* pkt)
 {
@@ -340,23 +339,8 @@ bool TAPAdapter::recv(NetPacket* pkt)
 		}
 	}
 
-
 	if (result)
-	{
-		if ((memcmp(pkt->buffer, dev9.eeprom, 6) != 0) && (memcmp(pkt->buffer, &broadcast_adddrrrr, 6) != 0))
-		{
-			//ignore strange packets
-			return false;
-		}
-
-		if (memcmp(pkt->buffer + 6, dev9.eeprom, 6) == 0)
-		{
-			//avoid pcap looping packets
-			return false;
-		}
-		pkt->size = read_size;
-		return true;
-	}
+		return VerifyPkt(pkt, read_size);
 	else
 		return false;
 }
