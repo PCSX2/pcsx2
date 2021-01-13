@@ -38,7 +38,6 @@
 pcap_t* adhandle;
 pcap_dumper_t* dump_pcap = nullptr;
 char errbuf[PCAP_ERRBUF_SIZE];
-mac_address broadcast_mac = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
 
 int pcap_io_running = 0;
 extern u8 eeprom[];
@@ -279,8 +278,7 @@ bool PCAPAdapter::recv(NetPacket* pkt)
 	}
 	else
 	{
-		pkt->size = size;
-		return true;
+		return VerifyPkt(pkt, size);
 	}
 }
 //sends the packet .rv :true success

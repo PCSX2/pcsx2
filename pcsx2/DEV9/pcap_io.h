@@ -148,9 +148,6 @@ typedef struct _full_arp_packet
 
 #define ARP_REQUEST 0x0100 //values are big-endian
 
-extern mac_address virtual_mac;
-extern mac_address broadcast_mac;
-
 #define mac_compare(a, b) (memcmp(&(a), &(b), 6))
 #define ip_compare(a, b) (memcmp(&(a), &(b), 4))
 

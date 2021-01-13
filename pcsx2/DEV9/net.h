@@ -61,6 +61,7 @@ class NetAdapter
 {
 protected:
 	u8 ps2MAC[6];
+	const u8 broadcastMAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
 
 public:
 	NetAdapter();
@@ -73,6 +74,7 @@ public:
 
 protected:
 	void SetMACAddress(u8* mac);
+	bool VerifyPkt(NetPacket* pkt, int read_size);
 };
 
 void tx_put(NetPacket* ptr);
