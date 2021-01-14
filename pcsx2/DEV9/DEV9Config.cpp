@@ -43,10 +43,10 @@ void SaveDnsHosts()
 		ScopedIniGroup iniEntry(ini, groupName);
 		ConfigHost entry = config.EthHosts[i];
 
-		wxString url(entry.Url);
+		wxString url(fromUTF8(entry.Url));
 		ini.Entry(L"Url", url);
 		//TODO UTF8(?)
-		wxString desc(entry.Desc);
+		wxString desc(fromUTF8(entry.Desc));
 		ini.Entry(L"Desc", desc);
 
 		char addrBuff[INET_ADDRSTRLEN];

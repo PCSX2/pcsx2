@@ -65,7 +65,7 @@ Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 
 	//  Implement custom hotkeys (Shift + Tab) with translatable string intact + not blank in GUI. 
 
-	s_spins += Label(_("Slow Motion Adjust:") + wxString(" ") + fmt::format("({})", wxGetApp().GlobalAccels->findKeycodeWithCommandId("Framelimiter_SlomoToggle").toTitleizedString())) | StdExpand();
+	s_spins += Label(_("Slow Motion Adjust:") + wxString::Format(" (%s)", wxGetApp().GlobalAccels->findKeycodeWithCommandId("Framelimiter_SlomoToggle").toTitleizedString())) | StdExpand();
 	s_spins += 5;
 	s_spins += m_spin_SlomoPct						| pxBorder(wxTOP, 3);
 	s_spins += Label(L"%")							| StdExpand();
@@ -73,7 +73,7 @@ Panels::FramelimiterPanel::FramelimiterPanel( wxWindow* parent )
 
 	//  Implement custom hotkeys (Tab) with translatable string intact + not blank in GUI. 
 
-	s_spins += Label(_("Turbo Adjust:") + wxString(" ") + fmt::format("({})", wxGetApp().GlobalAccels->findKeycodeWithCommandId("Framelimiter_TurboToggle").toTitleizedString())) | StdExpand();
+	s_spins += Label(_("Turbo Adjust:") + wxString::Format(" (%s)", wxGetApp().GlobalAccels->findKeycodeWithCommandId("Framelimiter_TurboToggle").toTitleizedString())) | StdExpand();
 	s_spins += 5;
 	s_spins += m_spin_TurboPct						| pxBorder(wxTOP, 3);
 	s_spins += Label(L"%") 							| StdExpand();
@@ -176,11 +176,11 @@ Panels::FrameSkipPanel::FrameSkipPanel( wxWindow* parent )
 		),
 		//  Implement custom hotkeys (Tab) with translatable string intact + not blank in GUI.  
 		RadioPanelItem(
-			_("Skip only on Turbo, to enable press") + fmt::format("{} ({})", " ", wxGetApp().GlobalAccels->findKeycodeWithCommandId("Framelimiter_TurboToggle").toTitleizedString())
+			_("Skip only on Turbo, to enable press") + wxString::Format(" (%s)", wxGetApp().GlobalAccels->findKeycodeWithCommandId("Framelimiter_TurboToggle").toTitleizedString())
 		),
 		//  Implement custom hotkeys (Shift + F4) with translatable string intact + not blank in GUI.  
 		RadioPanelItem(
-			_("Constant skipping") + fmt::format("{} ({})", " ", wxGetApp().GlobalAccels->findKeycodeWithCommandId("Frameskip_Toggle").toTitleizedString()),
+			_("Constant skipping") + wxString::Format(" (%s)", wxGetApp().GlobalAccels->findKeycodeWithCommandId("Frameskip_Toggle").toTitleizedString()),
 			wxEmptyString,
 			_("Normal and Turbo limit rates skip frames.  Slow motion mode will still disable frameskipping.")
 		),

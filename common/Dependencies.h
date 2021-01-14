@@ -270,6 +270,7 @@ extern const wxChar* __fastcall pxExpandMsg(const wxChar* message);
 extern const wxChar* __fastcall pxGetTranslation(const wxChar* message);
 extern bool pxIsEnglish(int id);
 
+extern wxString fromUTF8(const std::string& str);
 extern wxString fromUTF8(const char* src);
 extern wxString fromAscii(const char* src);
 

@@ -228,8 +228,9 @@ static void LoadIrx( const std::string& filename, u8* dest )
 	s64 filesize = 0;
 	try
 	{
-		wxFile irx(filename);
-		if( (filesize=Path::GetFileSize( filename ) ) <= 0 ) {
+		wxString wname = fromUTF8(filename);
+		wxFile irx(wname);
+		if( (filesize=Path::GetFileSize( wname ) ) <= 0 ) {
 			Console.Warning("IRX Warning: %s could not be read", filename.c_str());
 			return;
 		}

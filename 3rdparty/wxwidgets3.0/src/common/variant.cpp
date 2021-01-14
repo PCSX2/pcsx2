@@ -981,11 +981,13 @@ wxVariant::wxVariant(const wxScopedWCharBuffer& val, const wxString& name)
 }
 
 #if wxUSE_STD_STRING
+#ifndef _WIN32 // PCSX2: std::string conversion removal
 wxVariant::wxVariant(const std::string& val, const wxString& name)
 {
     m_refData = new wxVariantDataString(wxString(val));
     m_name = name;
 }
+#endif
 
 wxVariant::wxVariant(const wxStdWideString& val, const wxString& name)
 {
