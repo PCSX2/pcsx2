@@ -229,7 +229,7 @@ void CtrlMemSearch::Search(wxCommandEvent& evt)
 	wxString searchString = txtSearch->GetValue();
 	if (m_SearchThread->m_type == SEARCHTYPE::STRING)
 	{
-		m_SearchThread->m_value_string = searchString;
+		m_SearchThread->m_value_string = searchString.ToUTF8();
 	}
 	else if (chkHexadecimal->IsChecked())
 	{
