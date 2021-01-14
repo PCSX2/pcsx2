@@ -259,14 +259,14 @@ void Panels::DirPickerPanel::AppStatusEvent_OnSettingsApplied()
 
 void Panels::DirPickerPanel::Apply()
 {
-	std::string path( GetPath().ToString().ToStdString() );
+	fs::path path( GetPath().ToString().ToStdWstring() );
 
 	if (!fs::exists(path))
 	{
 		wxDialogWithHelpers dialog( NULL, _("Create folder?") );
 		dialog += dialog.Heading(AddAppName(_("A configured folder does not exist.  Should %s try to create it?")));
 		dialog += 12;
-		dialog += dialog.Heading( path );
+		dialog += dialog.Heading( Path::ToWxString(path) );
 
 		if( wxID_CANCEL == pxIssueConfirmation( dialog, MsgButtons().Custom(_("Create"), "create").Cancel(), L"CreateNewFolder" ) )
 			throw Exception::CannotApplySettings( this );
