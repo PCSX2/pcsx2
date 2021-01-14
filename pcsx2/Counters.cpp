@@ -425,7 +425,6 @@ static __fi void frameLimitUpdateCore()
 {
 	GetCoreThread().VsyncInThread();
 	Cpu->CheckExecutionState();
-	PADupdate(0);
 }
 
 // Framelimiter - Measures the delta time between calls and stalls until a
