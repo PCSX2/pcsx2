@@ -314,7 +314,7 @@ static int loadGameSettings(Pcsx2Config& dest, const GameDatabaseSchema::GameEnt
 	// TODO - config - this could be simplified with maps instead of bitfields and enums
 	for (SpeedhackId id = SpeedhackId_FIRST; id < pxEnumEnd; id++)
 	{
-		std::string key = fmt::format("{}SpeedHack", wxString(EnumToString(id)));
+		std::string key = fmt::format("{}SpeedHack", wxString(EnumToString(id)).ToUTF8());
 
 		// Gamefixes are already guaranteed to be valid, any invalid ones are dropped
 		if (game.speedHacks.count(key) == 1)
@@ -331,7 +331,7 @@ static int loadGameSettings(Pcsx2Config& dest, const GameDatabaseSchema::GameEnt
 	// TODO - config - this could be simplified with maps instead of bitfields and enums
 	for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; id++)
 	{
-		std::string key = fmt::format("{}Hack", wxString(EnumToString(id)));
+		std::string key = fmt::format("{}Hack", wxString(EnumToString(id)).ToUTF8());
 
 		// Gamefixes are already guaranteed to be valid, any invalid ones are dropped
 		if (std::find(game.gameFixes.begin(), game.gameFixes.end(), key) != game.gameFixes.end())
@@ -452,7 +452,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	{
 		if (IGameDatabase* GameDB = AppHost_GetGameDatabase())
 		{
-			GameDatabaseSchema::GameEntry game = GameDB->findGame(std::string(curGameKey));
+			GameDatabaseSchema::GameEntry game = GameDB->findGame(std::string(curGameKey.ToUTF8()));
 			if (game.isValid)
 			{
 				GameInfo::gameName = fromUTF8(game.name);

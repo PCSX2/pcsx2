@@ -19,6 +19,7 @@
 #include "WavFile.h"
 #else
 #include "soundtouch/source/SoundStretch/WavFile.h"
+#include "common/StringUtil.h"
 #endif
 
 static WavOutFile* _new_WavOutFile(const char* destfile)
@@ -117,7 +118,11 @@ bool RecordStart(const std::string* filename)
 		ScopedLock lock(WavRecordMutex);
 		safe_delete(m_wavrecord);
 		if (filename)
+#ifdef _WIN32
+			m_wavrecord = new WavOutFile(_wfopen(StringUtil::UTF8StringToWideString(*filename).c_str(), L"wb"), 48000, 16, 2);
+#else
 			m_wavrecord = new WavOutFile(filename->c_str(), 48000, 16, 2);
+#endif
 		else
 			m_wavrecord = new WavOutFile("audio_recording.wav", 48000, 16, 2);
 		WavRecordEnabled = true;

@@ -235,7 +235,7 @@ void GSUIElementHolder::Save()
 				break;
 			case UIElem::Type::File:
 			case UIElem::Type::Directory:
-				theApp.SetConfig(elem.config, static_cast<wxFileDirPickerCtrlBase*>(elem.control)->GetPath());
+				theApp.SetConfig(elem.config, static_cast<wxFileDirPickerCtrlBase*>(elem.control)->GetPath().ToUTF8());
 				break;
 		}
 	}
