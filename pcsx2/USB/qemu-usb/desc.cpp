@@ -491,6 +491,7 @@ int usb_desc_parse_config(const uint8_t* data, int len, USBDescDevice& dev)
 					ep.bRefresh = d->u.endpoint.bRefresh;
 					ep.bSynchAddress = d->u.endpoint.bSynchAddress;
 					ep.extra = data + pos + d->bLength;
+					pos += ep.extra[0];
 				}
 				iface->eps.push_back(ep);
 			}
