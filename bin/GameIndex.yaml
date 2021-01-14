@@ -32577,6 +32577,14 @@ SLUS-20412:
   name: "Hot Wheels - Velocity X"
   region: "NTSC-U"
   compat: 5
+  patches:
+    E7273BFA:
+      content: |-
+        comment=COP2 DIV Rearrangement to fix SPS
+        patch=0,EE,0023DB00,word,4BE0A39C
+        patch=0,EE,0023DB04,word,4A6F03BC
+        patch=0,EE,0023DB0C,word,4BE0ABDC
+        patch=0,EE,0023DB10,word,4A7003BC
 SLUS-20413:
   name: "Shadow Man - 2econd Coming"
   region: "NTSC-U"
