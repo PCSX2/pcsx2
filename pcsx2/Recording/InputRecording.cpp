@@ -457,8 +457,8 @@ wxString InputRecording::resolveGameName()
 			GameDatabaseSchema::GameEntry game = gameDB->findGame(std::string(gameKey));
 			if (game.isValid)
 			{
-				gameName = game.name;
-				gameName += L" (" + game.region + L")";
+				gameName = fromUTF8(game.name);
+				gameName += L" (" + fromUTF8(game.region) + L")";
 			}
 		}
 	}

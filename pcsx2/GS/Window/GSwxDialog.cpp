@@ -36,9 +36,9 @@ namespace
 		for (const GSSetting& setting : s)
 		{
 			if (!setting.note.empty())
-				arr.Add(setting.name + " (" + setting.note + ")");
+				arr.Add(fromUTF8(setting.name + " (" + setting.note + ")"));
 			else
-				arr.Add(setting.name);
+				arr.Add(fromUTF8(setting.name));
 		}
 	}
 
@@ -204,8 +204,8 @@ void GSUIElementHolder::Load()
 			case UIElem::Type::Directory:
 			{
 				auto* picker = static_cast<wxFileDirPickerCtrlBase*>(elem.control);
-				picker->SetInitialDirectory(theApp.GetConfigS(elem.config));
-				picker->SetPath(theApp.GetConfigS(elem.config));
+				picker->SetInitialDirectory(fromUTF8(theApp.GetConfigS(elem.config)));
+				picker->SetPath(fromUTF8(theApp.GetConfigS(elem.config)));
 				break;
 			}
 		}
