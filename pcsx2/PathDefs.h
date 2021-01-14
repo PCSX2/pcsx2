@@ -64,7 +64,7 @@ namespace PathDefs
 	extern fs::path GetDocs();
 	extern fs::path AppRoot();
 
-	extern std::string Get( FoldersEnum_t folderidx );
+	extern fs::path Get( FoldersEnum_t folderidx );
 
 	// Base folder names used to extend out the documents/approot folder base into a complete
 	// path.  These are typically for internal AppConfig use only, barring a few special cases.

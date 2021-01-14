@@ -187,9 +187,8 @@ public:
 	// ------------------------------------------------------------------------
 	struct FilenameOptions
 	{
-		std::string Bios;
+		fs::path Bios;
 		bool needRelativeName = false;
-
 		void LoadSave( IniInterface& conf );
 	};
 
@@ -376,8 +375,8 @@ public:
 public:
 	AppConfig();
 
-	std::string FullpathToBios() const;
-	std::string FullpathToMcd( uint slot ) const;
+	fs::path FullpathToBios() const;
+	fs::path FullpathToMcd( uint slot ) const;
 
 	void LoadSave( IniInterface& ini );
 	void LoadSaveRootItems( IniInterface& ini );

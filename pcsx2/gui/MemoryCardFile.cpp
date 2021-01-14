@@ -280,7 +280,7 @@ void FileMemoryCard::Open()
 				continue;
 		}
 
-		wxFileName fname(g_Conf->FullpathToMcd(slot));
+		wxFileName fname(Path::ToWxString(g_Conf->FullpathToMcd(slot)));
 		wxString str(fname.GetFullPath());
 		bool cont = false;
 
@@ -608,7 +608,7 @@ void FileMcd_EmuOpen()
 		{
 			MemoryCardType type = MemoryCardType::MemoryCard_File; // default to file if we can't find anything at the path so it gets auto-generated
 
-			const wxString path = g_Conf->FullpathToMcd(slot);
+			const wxString path = Path::ToWxString(g_Conf->FullpathToMcd(slot));
 			if (wxFileExists(path))
 			{
 				type = MemoryCardType::MemoryCard_File;

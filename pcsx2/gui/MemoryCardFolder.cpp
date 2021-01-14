@@ -89,9 +89,8 @@ bool FolderMemoryCard::IsFormatted() const
 	return m_superBlock.raw[0x16] == 0x6F;
 }
 
-void FolderMemoryCard::Open(const bool enableFiltering, const wxString& filter)
-{
-	Open(g_Conf->FullpathToMcd(m_slot), g_Conf->Mcd[m_slot], 0, enableFiltering, filter, false);
+void FolderMemoryCard::Open( const bool enableFiltering, const wxString& filter ) {
+	Open( Path::ToWxString(g_Conf->FullpathToMcd( m_slot )), g_Conf->Mcd[m_slot], 0, enableFiltering, filter, false );
 }
 
 void FolderMemoryCard::Open(const wxString& fullPath, const AppConfig::McdOptions& mcdOptions, const u32 sizeInClusters, const bool enableFiltering, const wxString& filter, bool simulateFileWrites)
