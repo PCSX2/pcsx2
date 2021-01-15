@@ -211,12 +211,28 @@ bool IOCtlSrc::ReadDVDInfo()
 	// least 18 bytes of the layer descriptor or else the ioctl will fail. The
 	// media specific information seems to be empty, so there's no point reading
 	// any more than that.
-	std::array<u8, 22> buffer;
+	
+	// UPDATE 15 Jan 2021
+	// Okay so some drives seem to have descriptors BIGGER than 22 bytes!
+	// This causes the read to fail with INVALID_PARAMETER.
+	// So lets just give it 32 bytes to play with, it seems happy enough with that.
+	// Refraction
+	std::array<u8, 32> buffer;
 	DVD_READ_STRUCTURE dvdrs{{0}, DvdPhysicalDescriptor, 0, 0};
 
 	if (!DeviceIoControl(m_device, IOCTL_DVD_READ_STRUCTURE, &dvdrs, sizeof(dvdrs),
 						 buffer.data(), buffer.size(), &unused, nullptr))
+	{
+		if ((GetLastError() == ERROR_INVALID_FUNCTION) || (GetLastError() == ERROR_NOT_SUPPORTED))
+		{
+			Console.Warning("IOCTL_DVD_READ_STRUCTURE not supported");
+		}
+		else if(GetLastError() != ERROR_UNRECOGNIZED_MEDIA) // ERROR_UNRECOGNIZED_MEDIA means probably a CD or no disc
+		{
+			Console.Warning("IOCTL Unknown Error %d", GetLastError());
+		}
 		return false;
+	}
 
 	auto& layer = *reinterpret_cast<DVD_LAYER_DESCRIPTOR*>(
 		reinterpret_cast<DVD_DESCRIPTOR_HEADER*>(buffer.data())->Data);
