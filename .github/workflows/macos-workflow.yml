@@ -60,7 +60,7 @@ jobs:
           PLATFORM: ${{ matrix.platform }}
         run: |
           brew install sound-touch portaudio wxmac gtk+3 sdl2 libsamplerate
-          brew --cask install xquartz # We use its OpenGL headers
+          brew install --cask xquartz # We use its OpenGL headers
 
       - name: Generate CMake Files
         run: cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_PO=FALSE -B build .
