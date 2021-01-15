@@ -145,6 +145,7 @@ void V_Core::Init(int index)
 	MADR = 0;
 	TADR = 0;
 	KeyOn = 0;
+	OutPos = 0;
 
 	psxmode = false;
 	psxSoundDataTransferControl = 0;
@@ -402,6 +403,34 @@ __forceinline void TimeUpdate(u32 cClocks)
 	else
 		TickInterval = 768; // Reset to default, in case the user hotswitched from async to something else.
 
+	//Update Mixing Progress
+	while (dClocks >= TickInterval)
+	{
+		for (int i = 0; i < 2; i++)
+		{
+			if (has_to_call_irq[i])
+			{
+				//ConLog("* SPU2: Irq Called (%04x) at cycle %d.\n", Spdif.Info, Cycles);
+				has_to_call_irq[i] = false;
+				if (!(Spdif.Info & (4 << i)) && Cores[i].IRQEnable)
+				{
+					Spdif.Info |= (4 << i);
+					if (!SPU2_dummy_callback)
+						spu2Irq();
+				}
+			}
+		}
+
+		dClocks -= TickInterval;
+		lClocks += TickInterval;
+		Cycles++;
+
+		// Note: IOP does not use MMX regs, so no need to save them.
+		//SaveMMXRegs();
+		Mix();
+		//RestoreMMXRegs();
+	}
+
 	//Update DMA4 interrupt delay counter
 	if (Cores[0].DMAICounter > 0 && (*cyclePtr - Cores[0].LastClock) > 0)
 	{
@@ -511,34 +540,6 @@ __forceinline void TimeUpdate(u32 cClocks)
 					psxNextCounter = psxCounters[6].CycleT;
 			}
 		}
-	}
-
-	//Update Mixing Progress
-	while (dClocks >= TickInterval)
-	{
-		for (int i = 0; i < 2; i++)
-		{
-			if (has_to_call_irq[i])
-			{
-				//ConLog("* SPU2: Irq Called (%04x) at cycle %d.\n", Spdif.Info, Cycles);
-				has_to_call_irq[i] = false;
-				if (!(Spdif.Info & (4 << i)) && Cores[i].IRQEnable)
-				{
-					Spdif.Info |= (4 << i);
-					if (!SPU2_dummy_callback)
-						spu2Irq();
-				}
-			}
-		}
-
-		dClocks -= TickInterval;
-		lClocks += TickInterval;
-		Cycles++;
-
-		// Note: IOP does not use MMX regs, so no need to save them.
-		//SaveMMXRegs();
-		Mix();
-		//RestoreMMXRegs();
 	}
 }
 
