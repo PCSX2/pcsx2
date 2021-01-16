@@ -40,9 +40,15 @@ pcap_dumper_t* dump_pcap = nullptr;
 char errbuf[PCAP_ERRBUF_SIZE];
 
 int pcap_io_running = 0;
+bool pcap_io_switched;
+
 extern u8 eeprom[];
 
 char namebuff[256];
+
+ip_address ps2_ip;
+mac_address ps2_mac;
+mac_address host_mac;
 
 #ifdef _WIN32
 int GetAdapterFromPcapName(char* adapter, PIP_ADAPTER_ADDRESSES retAdapterInfo)
@@ -108,7 +114,7 @@ int GetMACAddress(char* adapter, mac_address* addr)
 	return retval;
 }
 
-int pcap_io_init(char* adapter, mac_address virtual_mac)
+int pcap_io_init(char* adapter, bool switched, mac_address virtual_mac)
 {
 	struct bpf_program fp;
 	char filter[1024] = "ether broadcast or ether dst ";
@@ -116,11 +122,13 @@ int pcap_io_init(char* adapter, mac_address virtual_mac)
 	char* dlt_name;
 	Console.WriteLn("Opening adapter '%s'...", adapter);
 
+	pcap_io_switched = switched;
+
 	/* Open the adapter */
 	if ((adhandle = pcap_open_live(adapter, // name of the device
 								   65536,   // portion of the packet to capture.
 											// 65536 grants that the whole packet will be captured on all the MACs.
-								   1,       // promiscuous for Xlink usage
+								   switched ? 1 : 0,
 								   1,       // read timeout
 								   errbuf   // error buffer
 								   )) == NULL)
@@ -129,21 +137,24 @@ int pcap_io_init(char* adapter, mac_address virtual_mac)
 		Console.Error("Unable to open the adapter. %s is not supported by pcap", adapter);
 		return -1;
 	}
-	char virtual_mac_str[18];
-	sprintf(virtual_mac_str, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", virtual_mac.bytes[0], virtual_mac.bytes[1], virtual_mac.bytes[2], virtual_mac.bytes[3], virtual_mac.bytes[4], virtual_mac.bytes[5]);
-	strcat(filter, virtual_mac_str);
-	//	fprintf(stderr, "Trying pcap filter: %s\n", filter);
-
-	if (pcap_compile(adhandle, &fp, filter, 1, PCAP_NETMASK_UNKNOWN) == -1)
+	if (switched)
 	{
-		Console.Error("Error calling pcap_compile: %s", pcap_geterr(adhandle));
-		return -1;
-	}
+		char virtual_mac_str[18];
+		sprintf(virtual_mac_str, "%.2x:%.2x:%.2x:%.2x:%.2x:%.2x", virtual_mac.bytes[0], virtual_mac.bytes[1], virtual_mac.bytes[2], virtual_mac.bytes[3], virtual_mac.bytes[4], virtual_mac.bytes[5]);
+		strcat(filter, virtual_mac_str);
+		//	fprintf(stderr, "Trying pcap filter: %s\n", filter);
 
-	if (pcap_setfilter(adhandle, &fp) == -1)
-	{
-		Console.Error("Error setting filter: %s", pcap_geterr(adhandle));
-		return -1;
+		if (pcap_compile(adhandle, &fp, filter, 1, PCAP_NETMASK_UNKNOWN) == -1)
+		{
+			Console.Error("Error calling pcap_compile: %s", pcap_geterr(adhandle));
+			return -1;
+		}
+
+		if (pcap_setfilter(adhandle, &fp) == -1)
+		{
+			Console.Error("Error setting filter: %s", pcap_geterr(adhandle));
+			return -1;
+		}
 	}
 
 
@@ -189,6 +200,20 @@ int pcap_io_send(void* packet, int plen)
 	if (pcap_io_running <= 0)
 		return -1;
 
+	if (!pcap_io_switched)
+	{
+		if (((ethernet_header*)packet)->protocol == 0x0008) //IP
+		{
+			ps2_ip = ((ip_header*)((u8*)packet + sizeof(ethernet_header)))->src;
+		}
+		if (((ethernet_header*)packet)->protocol == 0x0608) //ARP
+		{
+			ps2_ip = ((arp_packet*)((u8*)packet + sizeof(ethernet_header)))->p_src;
+			((arp_packet*)((u8*)packet + sizeof(ethernet_header)))->h_src = host_mac;
+		}
+		((ethernet_header*)packet)->src = host_mac;
+	}
+
 	if (dump_pcap)
 	{
 		static struct pcap_pkthdr ph;
@@ -212,6 +237,29 @@ int pcap_io_recv(void* packet, int max_len)
 	if ((pcap_next_ex(adhandle, &header, &pkt_data1)) > 0)
 	{
 		memcpy(packet, pkt_data1, header->len);
+
+		if (!pcap_io_switched)
+		{
+			{
+				if (((ethernet_header*)packet)->protocol == 0x0008)
+				{
+					ip_header* iph = ((ip_header*)((u8*)packet + sizeof(ethernet_header)));
+					if (ip_compare(iph->dst, ps2_ip) == 0)
+					{
+						((ethernet_header*)packet)->dst = ps2_mac;
+					}
+				}
+				if (((ethernet_header*)packet)->protocol == 0x0608)
+				{
+					arp_packet* aph = ((arp_packet*)((u8*)packet + sizeof(ethernet_header)));
+					if (ip_compare(aph->p_dst, ps2_ip) == 0)
+					{
+						((ethernet_header*)packet)->dst = ps2_mac;
+						((arp_packet*)((u8*)packet + sizeof(ethernet_header)))->h_dst = ps2_mac;
+					}
+				}
+			}
+		}
 
 		if (dump_pcap)
 			pcap_dump((u_char*)dump_pcap, header, (u_char*)packet);
@@ -254,8 +302,10 @@ PCAPAdapter::PCAPAdapter()
 	newMAC.bytes[4] = hostMAC.bytes[5];
 
 	SetMACAddress((u8*)&newMAC);
+	host_mac = hostMAC;
+	ps2_mac = newMAC; //Needed outside of this class
 
-	if (pcap_io_init(config.Eth, newMAC) == -1)
+	if (pcap_io_init(config.Eth, config.EthApi == NetApi::PCAP_Switched, newMAC) == -1)
 	{
 		SysMessage("Can't open Device '%s'\n", config.Eth);
 	}
@@ -350,6 +400,8 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 		entry.guid = std::string(d->name);
 #endif
 
+		nic.push_back(entry);
+		entry.type = NetApi::PCAP_Bridged;
 		nic.push_back(entry);
 		d = d->next;
 	}
