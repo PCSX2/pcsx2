@@ -594,9 +594,9 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	IniEntry( Toolbar_ImageSize );
 	IniEntry( Toolbar_ShowLabels );
 
-	wxFileName res(CurrentIso);
+	wxFileName res(Path::ToWxString(CurrentIso));
 	ini.Entry( L"CurrentIso", res, res, ini.IsLoading() || IsPortable() );
-	CurrentIso = res.GetFullPath();
+	CurrentIso = res.GetFullPath().ToStdWstring();
 
 	IniEntry( CurrentBlockdump );
 	IniEntry( CurrentELF );
@@ -1212,7 +1212,7 @@ static void LoadUiSettings()
 	g_Conf = std::make_unique<AppConfig>();
 	g_Conf->LoadSave( loader );
 
-	if( !wxFile::Exists( g_Conf->CurrentIso ) )
+	if( !Path::DoesExist( g_Conf->CurrentIso ) )
 	{
 		g_Conf->CurrentIso.clear();
 	}
@@ -1265,11 +1265,10 @@ static void SaveUiSettings()
 	if (!fs::exists(g_Conf->Folders.RunDisc))
 		g_Conf->Folders.RunDisc.clear();
 
-	sApp.GetRecentIsoManager().Add( g_Conf->CurrentIso );
+	sApp.GetRecentIsoManager().Add( Path::ToWxString(g_Conf->CurrentIso) );
 
 	std::unique_ptr<wxFileConfig> uiini(OpenFileConfig(Path::ToWxString(GetUiSettingsFilename())));
 	IniSaver saver(uiini.get());
-	std::string path = saver.GetConfig().GetPath();
 	g_Conf->LoadSave( saver );
 	ConLog_LoadSaveSettings( saver );
 	SysTraceLog_LoadSaveSettings( saver );

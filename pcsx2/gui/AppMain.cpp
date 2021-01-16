@@ -960,7 +960,7 @@ protected:
 	bool				m_UseCDVDsrc;
 	bool				m_UseELFOverride;
 	CDVD_SourceType		m_cdvdsrc_type;
-	wxString			m_elf_override;
+	fs::path			m_elf_override;
 
 public:
 	virtual ~SysExecEvent_Execute() = default;
@@ -983,7 +983,7 @@ public:
 	{
 	}
 
-	SysExecEvent_Execute( CDVD_SourceType srctype, const wxString& elf_override )
+	SysExecEvent_Execute( CDVD_SourceType srctype, const fs::path& elf_override )
 		: m_UseCDVDsrc(true)
 		, m_UseELFOverride(true)
 		, m_cdvdsrc_type(srctype)
@@ -1002,17 +1002,15 @@ protected:
 		symbolMap.Clear();
 		CBreakPoints::SetSkipFirst(BREAKPOINT_EE, 0);
 		CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, 0);
-		// This function below gets called again from AppCoreThread.cpp and will pass the current ISO regardless if we
-		// are starting an ELF. In terms of symbol loading this doesn't matter because AppCoreThread.cpp doesn't clear the symbol map
-		// and we _only_ read symbols if the map is empty
-		CDVDsys_SetFile(CDVD_SourceType::Iso, m_UseELFOverride ? m_elf_override : g_Conf->CurrentIso );
+
+		CDVDsys_SetFile(CDVD_SourceType::Iso, m_UseELFOverride ? Path::ToWxString(m_elf_override) : Path::ToWxString(g_Conf->CurrentIso) );
 		if( m_UseCDVDsrc )
 			CDVDsys_ChangeSource( m_cdvdsrc_type );
 		else if( CDVD == NULL )
 			CDVDsys_ChangeSource(CDVD_SourceType::NoDisc);
 
 		if( m_UseELFOverride && !CoreThread.HasActiveMachine() )
-			CoreThread.SetElfOverride( m_elf_override );
+			CoreThread.SetElfOverride( Path::ToWxString(m_elf_override) );
 
 		CoreThread.Resume();
 	}
@@ -1028,7 +1026,7 @@ void Pcsx2App::SysExecute()
 // Executes the specified cdvd source and optional elf file.  This command performs a
 // full closure of any existing VM state and starts a fresh VM with the requested
 // sources.
-void Pcsx2App::SysExecute( CDVD_SourceType cdvdsrc, const wxString& elf_override )
+void Pcsx2App::SysExecute( CDVD_SourceType cdvdsrc, const fs::path& elf_override )
 {
 	SysExecutorThread.PostEvent( new SysExecEvent_Execute(cdvdsrc, elf_override) );
 #ifndef DISABLE_RECORDING
@@ -1061,7 +1059,7 @@ void SysStatus( const wxString& text )
 // Applies a new active iso source file
 void SysUpdateIsoSrcFile( const wxString& newIsoFile )
 {
-	g_Conf->CurrentIso = newIsoFile;
+	g_Conf->CurrentIso = fs::path(newIsoFile.ToStdWstring());
 	sMainFrame.UpdateStatusBar();
 	sMainFrame.UpdateCdvdSrcSelection();
 }

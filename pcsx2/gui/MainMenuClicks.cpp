@@ -207,7 +207,7 @@ wxWindowID SwapOrReset_Iso(wxWindow* owner, IScopedCoreThread& core_control, con
 	}
 	wxWindowID result = wxID_CANCEL;
 
-	if ((g_Conf->CdvdSource == CDVD_SourceType::Iso) && (isoFilename == g_Conf->CurrentIso))
+	if ((g_Conf->CdvdSource == CDVD_SourceType::Iso) && (isoFilename == Path::ToWxString(g_Conf->CurrentIso)))
 	{
 		core_control.AllowResume();
 		return result;
@@ -430,7 +430,7 @@ bool MainEmuFrame::_DoSelectIsoBrowser(wxString& result)
 	if (ctrl.ShowModal() != wxID_CANCEL)
 	{
 		result = ctrl.GetPath();
-		g_Conf->Folders.RunIso = wxFileName(result).GetPath().ToStdString();
+		g_Conf->Folders.RunIso = fs::path(result.ToStdWstring());
 		return true;
 	}
 
@@ -465,16 +465,16 @@ void MainEmuFrame::_DoBootCdvd()
 
 	if (g_Conf->CdvdSource == CDVD_SourceType::Iso)
 	{
- 		bool selector = g_Conf->CurrentIso.empty();
+		bool selector = g_Conf->CurrentIso.empty();
 
-		if (!selector && !wxFileExists(g_Conf->CurrentIso))
+		if (!selector && !Path::DoesExist(g_Conf->CurrentIso))
 		{
 			// User has an iso selected from a previous run, but it doesn't exist anymore.
 			// Issue a courtesy popup and then an Iso Selector to choose a new one.
 
 			wxDialogWithHelpers dialog(this, _("ISO file not found!"));
 			dialog += dialog.Heading(
-				_("An error occurred while trying to open the file:") + wxString(L"\n\n") + g_Conf->CurrentIso + L"\n\n" +
+				_("An error occurred while trying to open the file:") + wxString(L"\n\n") + Path::ToWxString(g_Conf->CurrentIso) + L"\n\n" +
 				_("Error: The configured ISO file does not exist.  Click OK to select a new ISO source for CDVD."));
 
 			pxIssueConfirmation(dialog, MsgButtons().OK());

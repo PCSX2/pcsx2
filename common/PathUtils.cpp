@@ -139,14 +139,14 @@ std::string Path::ReplaceExtension(const wxString &src, const wxString &ext)
 {
 	wxFileName jojo(src);
 	jojo.SetExt(ext);
-	return jojo.GetFullPath().ToStdString();
+	return std::string(jojo.GetFullPath().ToUTF8());
 }
 
 std::string Path::ReplaceFilename(const wxString &src, const wxString &newfilename)
 {
 	wxFileName jojo(src);
 	jojo.SetFullName(newfilename);
-	return jojo.GetFullPath().ToStdString();
+	return std::string(jojo.GetFullPath().ToUTF8());
 }
 
 std::string Path::GetFilename(const std::string &src)

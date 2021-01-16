@@ -83,9 +83,8 @@ void MainEmuFrame::UpdateStatusBar()
 			temp += "Fast Boot - ";
 
 		if (g_Conf->CdvdSource == CDVD_SourceType::Iso)
-			temp += "Load: '" + wxFileName(g_Conf->CurrentIso).GetFullName() + "' ";
+			temp += "Load: '" + wxFileName(Path::ToWxString(g_Conf->CurrentIso)).GetFullName() + "' ";
 	}
-
 	m_statusbar.SetStatusText(temp, 0);
 	m_statusbar.SetStatusText(CDVD_SourceLabels[enum_cast(g_Conf->CdvdSource)], 1);
 

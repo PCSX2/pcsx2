@@ -207,10 +207,10 @@ void Pcsx2App::SysApplySettings()
 	CoreThread.ApplySettings(g_Conf->EmuOptions);
 
 	CDVD_SourceType cdvdsrc(g_Conf->CdvdSource);
-	if (cdvdsrc != CDVDsys_GetSourceType() || (cdvdsrc == CDVD_SourceType::Iso && (CDVDsys_GetFile(cdvdsrc) != g_Conf->CurrentIso)))
+	if (cdvdsrc != CDVDsys_GetSourceType() || (cdvdsrc == CDVD_SourceType::Iso && (CDVDsys_GetFile(cdvdsrc) != Path::ToWxString(g_Conf->CurrentIso))))
 		CoreThread.ResetCdvd();
 
-	CDVDsys_SetFile(CDVD_SourceType::Iso, g_Conf->CurrentIso);
+	CDVDsys_SetFile(CDVD_SourceType::Iso, Path::ToWxString(g_Conf->CurrentIso));
 }
 
 void AppCoreThread::OnResumeReady()

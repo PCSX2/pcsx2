@@ -527,7 +527,7 @@ public:
 
 	void SysApplySettings();
 	void SysExecute();
-	void SysExecute(CDVD_SourceType cdvdsrc, const wxString& elf_override = wxEmptyString);
+	void SysExecute(CDVD_SourceType cdvdsrc, const fs::path& elf_override = wxEmptyString);
 	void LogicalVsync();
 
 	SysMainMemory& GetVmReserve();
