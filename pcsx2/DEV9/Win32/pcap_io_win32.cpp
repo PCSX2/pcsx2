@@ -24,6 +24,7 @@ HMODULE hpcap = nullptr;
 	if (fp_##name == nullptr)                                \
 	{                                                        \
 		FreeLibrary(hpcap);                                  \
+		Console.Error("%s not found", #name);                \
 		hpcap = nullptr;                                     \
 		return false;                                        \
 	}
@@ -80,11 +81,11 @@ HMODULE hpcap = nullptr;
 
 FUNCTION_SHIM_5_ARG(pcap_t*, pcap_open_live, const char*, int, int, int, char*)
 FUNCTION_SHIM_2_ARG(pcap_t*, pcap_open_dead, int, int)
-FUNCTION_SHIM_3_ARG(pcap_t*, pcap_open_dead_with_tstamp_precision, int, int, u_int)
-FUNCTION_SHIM_3_ARG(pcap_t*, pcap_open_offline_with_tstamp_precision, const char*, u_int, char*)
+//FUNCTION_SHIM_3_ARG(pcap_t*, pcap_open_dead_with_tstamp_precision, int, int, u_int)
+//FUNCTION_SHIM_3_ARG(pcap_t*, pcap_open_offline_with_tstamp_precision, const char*, u_int, char*)
 FUNCTION_SHIM_2_ARG(pcap_t*, pcap_open_offline, const char*, char*)
 #ifdef _WIN32
-FUNCTION_SHIM_3_ARG(pcap_t*, pcap_hopen_offline_with_tstamp_precision, intptr_t, u_int, char*)
+//FUNCTION_SHIM_3_ARG(pcap_t*, pcap_hopen_offline_with_tstamp_precision, intptr_t, u_int, char*)
 FUNCTION_SHIM_2_ARG(pcap_t*, pcap_hopen_offline, intptr_t, char*)
 #else
 pcap_t* pcap_fopen_offline_with_tstamp_precision(FILE*, u_int, char*);
@@ -102,9 +103,9 @@ FUNCTION_SHIM_2_ARG(int, pcap_setfilter, pcap_t*, struct bpf_program*)
 FUNCTION_SHIM_2_ARG(int, pcap_setdirection, pcap_t*, pcap_direction_t)
 FUNCTION_SHIM_2_ARG(int, pcap_getnonblock, pcap_t*, char*)
 FUNCTION_SHIM_3_ARG(int, pcap_setnonblock, pcap_t*, int, char*)
-FUNCTION_SHIM_3_ARG(int, pcap_inject, pcap_t*, const void*, size_t)
+//FUNCTION_SHIM_3_ARG(int, pcap_inject, pcap_t*, const void*, size_t)
 FUNCTION_SHIM_3_ARG(int, pcap_sendpacket, pcap_t*, const u_char*, int)
-FUNCTION_SHIM_1_ARG(const char*, pcap_statustostr, int)
+//FUNCTION_SHIM_1_ARG(const char*, pcap_statustostr, int)
 FUNCTION_SHIM_1_ARG(const char*, pcap_strerror, int)
 FUNCTION_SHIM_1_ARG(char*, pcap_geterr, pcap_t*)
 FUNCTION_SHIM_2_ARG(void, pcap_perror, pcap_t*, const char*)
@@ -113,14 +114,14 @@ FUNCTION_SHIM_6_ARG(int, pcap_compile_nopcap, int, int, struct bpf_program*, con
 FUNCTION_SHIM_1_ARG(void, pcap_freecode, struct bpf_program*)
 FUNCTION_SHIM_3_ARG(int, pcap_offline_filter, const struct bpf_program*, const struct pcap_pkthdr*, const u_char*)
 FUNCTION_SHIM_1_ARG(int, pcap_datalink, pcap_t*)
-FUNCTION_SHIM_1_ARG(int, pcap_datalink_ext, pcap_t*)
+//FUNCTION_SHIM_1_ARG(int, pcap_datalink_ext, pcap_t*)
 FUNCTION_SHIM_2_ARG(int, pcap_list_datalinks, pcap_t*, int**)
 FUNCTION_SHIM_2_ARG(int, pcap_set_datalink, pcap_t*, int)
 FUNCTION_SHIM_1_ARG(void, pcap_free_datalinks, int*)
 FUNCTION_SHIM_1_ARG(int, pcap_datalink_name_to_val, const char*)
 FUNCTION_SHIM_1_ARG(const char*, pcap_datalink_val_to_name, int)
 FUNCTION_SHIM_1_ARG(const char*, pcap_datalink_val_to_description, int)
-FUNCTION_SHIM_1_ARG(const char*, pcap_datalink_val_to_description_or_dlt, int)
+//FUNCTION_SHIM_1_ARG(const char*, pcap_datalink_val_to_description_or_dlt, int)
 FUNCTION_SHIM_1_ARG(int, pcap_snapshot, pcap_t*)
 FUNCTION_SHIM_1_ARG(int, pcap_is_swapped, pcap_t*)
 FUNCTION_SHIM_1_ARG(int, pcap_major_version, pcap_t*)
@@ -131,19 +132,19 @@ FUNCTION_SHIM_1_ARG(FILE*, pcap_file, pcap_t*)
 FUNCTION_SHIM_1_ARG(int, pcap_fileno, pcap_t*)
 //
 #ifdef _WIN32
-FUNCTION_SHIM_0_ARG(int, pcap_wsockinit)
+//FUNCTION_SHIM_0_ARG(int, pcap_wsockinit)
 #endif
 //
 FUNCTION_SHIM_2_ARG(pcap_dumper_t*, pcap_dump_open, pcap_t*, const char*)
 #ifdef _WIN32
-FUNCTION_SHIM_2_ARG(pcap_dumper_t*, pcap_dump_hopen, pcap_t*, intptr_t)
+//FUNCTION_SHIM_2_ARG(pcap_dumper_t*, pcap_dump_hopen, pcap_t*, intptr_t)
 #else
 //pcap_dumper_t* pcap_dump_fopen(pcap_t*, FILE* fp);
 #endif
-FUNCTION_SHIM_2_ARG(pcap_dumper_t*, pcap_dump_open_append, pcap_t*, const char*)
+//FUNCTION_SHIM_2_ARG(pcap_dumper_t*, pcap_dump_open_append, pcap_t*, const char*)
 FUNCTION_SHIM_1_ARG(FILE*, pcap_dump_file, pcap_dumper_t*)
 FUNCTION_SHIM_1_ARG(long, pcap_dump_ftell, pcap_dumper_t*)
-FUNCTION_SHIM_1_ARG(int64_t, pcap_dump_ftell64, pcap_dumper_t*)
+//FUNCTION_SHIM_1_ARG(int64_t, pcap_dump_ftell64, pcap_dumper_t*)
 FUNCTION_SHIM_1_ARG(int, pcap_dump_flush, pcap_dumper_t*)
 FUNCTION_SHIM_1_ARG(void, pcap_dump_close, pcap_dumper_t*)
 FUNCTION_SHIM_3_ARG(void, pcap_dump, u_char*, const struct pcap_pkthdr*, const u_char*)
@@ -197,11 +198,11 @@ bool load_pcap()
 	//pcap.h
 	LOAD_FUNCTION(pcap_open_live);
 	LOAD_FUNCTION(pcap_open_dead);
-	LOAD_FUNCTION(pcap_open_dead_with_tstamp_precision);
-	LOAD_FUNCTION(pcap_open_offline_with_tstamp_precision);
+	//LOAD_FUNCTION(pcap_open_dead_with_tstamp_precision);
+	//LOAD_FUNCTION(pcap_open_offline_with_tstamp_precision);
 	LOAD_FUNCTION(pcap_open_offline);
 #ifdef _WIN32
-	LOAD_FUNCTION(pcap_hopen_offline_with_tstamp_precision);
+	//LOAD_FUNCTION(pcap_hopen_offline_with_tstamp_precision);
 	LOAD_FUNCTION(pcap_hopen_offline);
 #else
 	//pcap_fopen_offline_with_tstamp_precision
@@ -219,9 +220,11 @@ bool load_pcap()
 	LOAD_FUNCTION(pcap_setdirection);
 	LOAD_FUNCTION(pcap_getnonblock);
 	LOAD_FUNCTION(pcap_setnonblock);
-	LOAD_FUNCTION(pcap_inject);
+	//pcap_inject is in winPcap's headers, but not exported
+	//LOAD_FUNCTION(pcap_inject);
 	LOAD_FUNCTION(pcap_sendpacket);
-	LOAD_FUNCTION(pcap_statustostr);
+	//pcap_statustostr is in winPcap's headers, but not exported
+	//LOAD_FUNCTION(pcap_statustostr);
 	LOAD_FUNCTION(pcap_strerror);
 	LOAD_FUNCTION(pcap_geterr);
 	LOAD_FUNCTION(pcap_perror);
@@ -230,37 +233,38 @@ bool load_pcap()
 	LOAD_FUNCTION(pcap_freecode);
 	LOAD_FUNCTION(pcap_offline_filter);
 	LOAD_FUNCTION(pcap_datalink);
-	LOAD_FUNCTION(pcap_datalink_ext);
+	//pcap_datalink_ext is in winPcap's headers, but not exported
+	//LOAD_FUNCTION(pcap_datalink_ext);
 	LOAD_FUNCTION(pcap_list_datalinks);
 	LOAD_FUNCTION(pcap_set_datalink);
 	LOAD_FUNCTION(pcap_free_datalinks);
 	LOAD_FUNCTION(pcap_datalink_name_to_val);
 	LOAD_FUNCTION(pcap_datalink_val_to_name);
 	LOAD_FUNCTION(pcap_datalink_val_to_description);
-	LOAD_FUNCTION(pcap_datalink_val_to_description_or_dlt);
+	//LOAD_FUNCTION(pcap_datalink_val_to_description_or_dlt);
 	LOAD_FUNCTION(pcap_snapshot);
 	LOAD_FUNCTION(pcap_is_swapped);
 	LOAD_FUNCTION(pcap_major_version);
 	LOAD_FUNCTION(pcap_minor_version);
-	LOAD_FUNCTION(pcap_bufsize);
+	//LOAD_FUNCTION(pcap_bufsize);
 	//
 	LOAD_FUNCTION(pcap_file);
 	LOAD_FUNCTION(pcap_fileno);
 	//
 #ifdef _WIN32
-	LOAD_FUNCTION(pcap_wsockinit);
+	//LOAD_FUNCTION(pcap_wsockinit);
 #endif
 
 	LOAD_FUNCTION(pcap_dump_open);
 #ifdef _WIN32
-	LOAD_FUNCTION(pcap_dump_hopen);
+	//LOAD_FUNCTION(pcap_dump_hopen);
 #else
 	//ppcap_dump_fopen
 #endif
-	LOAD_FUNCTION(pcap_dump_open_append);
+	//LOAD_FUNCTION(pcap_dump_open_append);
 	LOAD_FUNCTION(pcap_dump_file);
 	LOAD_FUNCTION(pcap_dump_ftell);
-	LOAD_FUNCTION(pcap_dump_ftell64);
+	//LOAD_FUNCTION(pcap_dump_ftell64);
 	LOAD_FUNCTION(pcap_dump_flush);
 	LOAD_FUNCTION(pcap_dump_close);
 	LOAD_FUNCTION(pcap_dump);
