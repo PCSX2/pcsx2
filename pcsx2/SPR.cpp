@@ -104,7 +104,16 @@ int  _SPR0chain()
 
 	if(spr0ch.madr >= dmacRegs.rbor.ADDR && spr0ch.madr < (dmacRegs.rbor.ADDR + dmacRegs.rbsr.RMSK + 16u))
 	{
-			partialqwc = spr0ch.qwc;
+		if (dmacRegs.rbsr.RMSK == 0) // Shortcut when MFIFO isn't set up with a size (Hitman series)
+		{
+			spr0ch.madr += spr0ch.qwc << 4;
+			spr0ch.sadr += spr0ch.qwc << 4;
+			spr0ch.sadr &= 0x3FFF; // Limited to 16K
+			spr0ch.qwc = 0;
+		}
+		else
+		{
+			partialqwc = std::min(spr0ch.qwc, 0x400 - ((spr0ch.sadr & 0x3fff) >> 4));
 
 			if ((spr0ch.madr & ~dmacRegs.rbsr.RMSK) != dmacRegs.rbor.ADDR)
 				Console.WriteLn("SPR MFIFO Write outside MFIFO area");
@@ -117,24 +126,24 @@ int  _SPR0chain()
 			spr0ch.sadr += partialqwc << 4;
 			spr0ch.sadr &= 0x3FFF; // Limited to 16K
 			spr0ch.qwc -= partialqwc;
-
-			spr0finished = true;
+		}
+		spr0finished = true;
 	}
 	else
 	{
 
-			// Taking an arbitary small value for games which like to check the QWC/MADR instead of STR, so get most of
-			// the cycle delay out of the way before the end.
-			partialqwc = spr0ch.qwc;
-			memcpy_from_spr((u8*)pMem, spr0ch.sadr, partialqwc*16);
+		// Taking an arbitary small value for games which like to check the QWC/MADR instead of STR, so get most of
+		// the cycle delay out of the way before the end.
+		partialqwc = std::min(spr0ch.qwc, 0x400 - ((spr0ch.sadr & 0x3fff) >> 4));
+		memcpy_from_spr((u8*)pMem, spr0ch.sadr, partialqwc*16);
 
-			// Clear VU mem also!
-			TestClearVUs(spr0ch.madr, partialqwc, true);
+		// Clear VU mem also!
+		TestClearVUs(spr0ch.madr, partialqwc, true);
 
-			spr0ch.madr += partialqwc << 4;
-			spr0ch.sadr += partialqwc << 4;
-			spr0ch.sadr &= 0x3FFF; // Limited to 16K
-			spr0ch.qwc -= partialqwc;
+		spr0ch.madr += partialqwc << 4;
+		spr0ch.sadr += partialqwc << 4;
+		spr0ch.sadr &= 0x3FFF; // Limited to 16K
+		spr0ch.qwc -= partialqwc;
 
 	}
 
@@ -175,6 +184,9 @@ void _SPR0interleave()
 		spr0ch.qwc = std::min(tqwc, qwc);
 		qwc -= spr0ch.qwc;
 		pMem = SPRdmaGetAddr(spr0ch.madr, true);
+
+		if(spr0ch.qwc > (0x400 - ((spr0ch.sadr & 0x3fff) >> 4)))
+			DevCon.Warning("Warning! Interleave on SPR0 going outside of SPR memory!");
 
 		switch (dmacRegs.ctrl.MFD)
  		{
@@ -364,7 +376,7 @@ int  _SPR1chain()
 	int partialqwc = 0;
 	// Taking an arbitary small value for games which like to check the QWC/MADR instead of STR, so get most of
 	// the cycle delay out of the way before the end.
-	partialqwc = spr1ch.qwc;
+	partialqwc = std::min(spr1ch.qwc, 0x400u);
 
 	SPR1transfer(pMem, partialqwc);
 	spr1ch.madr += partialqwc * 16;
