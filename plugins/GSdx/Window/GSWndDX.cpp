@@ -141,12 +141,12 @@ bool GSWndDX::Create(const std::string& title, int w, int h)
 	return true;
 }
 
-bool GSWndDX::Attach(void* handle, bool managed)
+bool GSWndDX::Attach(const NativeWindowHandle& handle)
 {
 	// TODO: subclass
 
-	m_hWnd = (HWND)handle;
-	m_managed = managed;
+	m_hWnd = handle.win32;
+	m_managed = false;
 
 	return true;
 }
@@ -163,6 +163,11 @@ void GSWndDX::Detach()
 
 	m_hWnd = NULL;
 	m_managed = true;
+}
+
+NativeWindowHandle GSWndDX::GetNativeWindowHandle()
+{
+	return { NativeWindowHandle::Win32, m_hWnd };
 }
 
 GSVector4i GSWndDX::GetClientRect()

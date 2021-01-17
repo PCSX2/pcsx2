@@ -258,7 +258,7 @@ static void CALLBACK GS_Legacy_GSreadFIFO2(u64* pMem, int qwc) {
 	while(qwc--) GSreadFIFO(pMem);
 }
 
-uptr pDsp[2];
+NativeWindowHandle g_gsWindowHandle;
 
 // ----------------------------------------------------------------------------
 // Important: Contents of this array must match the order of the contents of the
@@ -847,7 +847,7 @@ void SysCorePlugins::Open()
 	ForPlugins([&] (const PluginInfo * pi) {
 		Open( pi->id );
 		// If GS doesn't support GSopen2, need to wait until call to GSopen
-		// returns to populate pDsp.  If it does, can initialize other plugins
+		// returns to populate g_gsWindowHandle. If it does, can initialize other plugins
 		// at same time as GS, as long as GSopen2 does not subclass its window.
 #ifdef __linux__
 		// On linux, application have also a channel (named display) to communicate with the

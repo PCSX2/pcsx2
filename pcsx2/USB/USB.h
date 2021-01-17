@@ -38,7 +38,7 @@ s32 USBinit();
 void USBasync(u32 cycles);
 void USBshutdown();
 void USBclose();
-s32 USBopen(void* pDsp);
+s32 USBopen(const NativeWindowHandle& gsWindowHandle);
 s32 USBfreeze(int mode, freezeData* data);
 
 u8 USBread8(u32 addr);
@@ -57,7 +57,4 @@ void USBsetRAM(void* mem);
 extern FILE* usbLog;
 s64 get_clock();
 
-/* usb-pad-raw.cpp */
-#if _WIN32
-extern HWND gsWnd;
-#endif
+extern NativeWindowHandle USB_gsWindowHandle;

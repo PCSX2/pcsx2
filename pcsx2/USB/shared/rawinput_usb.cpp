@@ -200,14 +200,13 @@ namespace shared
 			return CONTINUE_BLISSFULLY;
 		}
 
-		int Initialize(void* ptr)
+		int Initialize(HWND hWnd)
 		{
 			skipInput = false;
 			// Reinitialized without USBclose, like when disc swapping
 			if (inited)
 				return 1;
 
-			HWND hWnd = static_cast<HWND>(ptr);
 			if (!InitHid())
 				return 0;
 

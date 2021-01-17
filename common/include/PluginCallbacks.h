@@ -105,32 +105,10 @@
 //    hardly has any impact on performance on modern CPUs), compile with different versions
 //    of your MSVC/GCC compiler, or use different versions of LibC or MSVCRT. :)
 
+#include "NativeWindowHandle.h"
 
 #ifndef BOOL
 typedef int BOOL;
-#endif
-
-// --------------------------------------------------------------------------------------
-//  PS2E_HWND  -  OS-independent window handle
-// --------------------------------------------------------------------------------------
-// HWND is our only operating system dependent type.  For it to be defined as accurately
-// as possible, this header file needs to be included after whatever window/GUI platform
-// headers you need (wxWidgets, Windows.h, GTK, etc).
-//
-// We could be lazy with this typedef, because window handles are always a (void*) on all
-// platforms that matter to us (windows, gtk, OSX).  But Windows has some type strictness
-// on its HWND define that could be useful, and well it's probably good practice to use
-// platform available defines when they exist.
-//
-#if defined(_WX_DEFS_H_)
-typedef WXWidget PS2E_HWND;
-#elif defined(_WINDEF_)
-// For Windows let's use HWND, since it has some type strictness applied to it.
-typedef HWND PS2E_HWND;
-#else
-// Unsupported platform... use void* as a best guess.  Should work fine for almost
-// any GUI platform, and certainly works for any currently supported one.
-typedef void *PS2E_HWND;
 #endif
 
 // --------------------------------------------------------------------------------------
@@ -441,7 +419,7 @@ typedef struct _PS2E_VersionInfo
 //
 typedef struct _PS2E_SessionInfo
 {
-    PS2E_HWND window;
+    NativeWindowHandle *window;
 
     u32 *CycleEE;  // current EE cycle count
     u32 *CycleIOP; // current IOP cycle count
@@ -1288,7 +1266,7 @@ typedef void(PS2E_CALLBACK *_PS2E_GetLastError)(char *const *msg_diag, wchar_t *
 // NOTE: The read/write functions CANNOT use XMM/MMX regs
 // If you want to use them, need to save and restore current ones
 typedef s32  (CALLBACK* _SPU2init)(char *configpath);
-typedef s32  (CALLBACK* _SPU2open)(void *pDisplay);
+typedef s32  (CALLBACK* _SPU2open)();
 typedef void (CALLBACK* _SPU2close)();
 typedef void (CALLBACK* _SPU2shutdown)();
 typedef void (CALLBACK* _SPU2write)(u32 mem, u16 value);
@@ -1349,7 +1327,7 @@ typedef void (CALLBACK* _CDVDnewDiskCB)(void (*callback)());
 // NOTE: The read/write functions CANNOT use XMM/MMX regs
 // If you want to use them, need to save and restore current ones
 typedef s32  (CALLBACK* _DEV9init)(char *configpath);
-typedef s32  (CALLBACK* _DEV9open)(void *pDisplay);
+typedef s32  (CALLBACK* _DEV9open)();
 typedef void (CALLBACK* _DEV9close)();
 typedef void (CALLBACK* _DEV9shutdown)();
 typedef u8   (CALLBACK* _DEV9read8)(u32 mem);
@@ -1372,7 +1350,7 @@ typedef s32  (CALLBACK* _DEV9test)();
 // NOTE: The read/write functions CANNOT use XMM/MMX regs
 // If you want to use them, need to save and restore current ones
 typedef s32  (CALLBACK* _USBinit)(char *configpath);
-typedef s32  (CALLBACK* _USBopen)(void *pDisplay);
+typedef s32  (CALLBACK* _USBopen)(const NativeWindowHandle &gsWindowHandle);
 typedef void (CALLBACK* _USBclose)();
 typedef void (CALLBACK* _USBshutdown)();
 typedef u8   (CALLBACK* _USBread8)(u32 mem);
@@ -1396,7 +1374,7 @@ typedef void (CALLBACK* _USBabout)();
 
 //FW
 typedef s32  (CALLBACK* _FWinit)(char *configpath);
-typedef s32  (CALLBACK* _FWopen)(void *pDisplay);
+typedef s32  (CALLBACK* _FWopen)();
 typedef void (CALLBACK* _FWclose)();
 typedef void (CALLBACK* _FWshutdown)();
 typedef u32  (CALLBACK* _FWread32)(u32 mem);

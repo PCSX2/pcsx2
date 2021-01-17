@@ -19,7 +19,12 @@
 #include "AppCommon.h"
 #include "CpuUsageProvider.h"
 #include <memory>
+#include "NativeWindowHandle.h"
 
+#ifdef __WXGTK__
+#include <gdk/gdkx.h>
+#include <gtk/gtk.h>
+#endif
 
 enum LimiterModeType
 {
@@ -107,6 +112,10 @@ public:
 	bool Show( bool shown=true );
 
 	bool ShowFullScreen(bool show, bool updateConfig = true);
+
+	// Used to share a window handle between the GUI and components.
+	// The pointers in this struct become invalid when the GSFrame is Destroyed.
+	NativeWindowHandle GetNativeWindowHandle();
 
 protected:
 	void OnCloseWindow( wxCloseEvent& evt );

@@ -106,11 +106,11 @@ void LoadGSState(const wxString& file)
 	// Always set gsIrq callback -- GS States are always exclusionary of MTGS mode
 	GSirqCallback( gsIrq );
 
-	ret = GSopen(&pDsp, "PCSX2", 0);
+	ret = GSopen(&g_gsWindowHandle, "PCSX2", 0);
 	if (ret != 0)
 		throw Exception::PluginOpenError( PluginId_GS );
 
-	ret = PADopen((void *)&pDsp);
+	ret = PADopen(g_gsWindowHandle);
 
 	f.Freeze(g_nLeftGSFrames);
 	f.gsFreeze();

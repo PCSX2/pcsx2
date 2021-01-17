@@ -24,43 +24,6 @@
 
 #if defined(__unix__)
 
-// static method
-int GSWndEGL::SelectPlatform()
-{
-	// Check the supported extension
-	const char *client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
-	if (!client_extensions) {
-		fprintf(stderr, "EGL: Client extension not supported\n");
-		return 0;
-	}
-	fprintf(stdout, "EGL: Supported extensions: %s\n", client_extensions);
-
-	// Check platform extensions are supported (Note: there are core in 1.5)
-	if (!strstr(client_extensions, "EGL_EXT_platform_base")) {
-		fprintf(stderr, "EGL: Dynamic platform selection isn't supported\n");
-		return 0;
-	}
-
-	// Finally we can select the platform
-#if GS_EGL_X11
-	if (strstr(client_extensions, "EGL_EXT_platform_x11")) {
-		fprintf(stdout, "EGL: select X11 platform\n");
-		return EGL_PLATFORM_X11_KHR;
-	}
-#endif
-#if GS_EGL_WL
-	if (strstr(client_extensions, "EGL_EXT_platform_wayland")) {
-		fprintf(stdout, "EGL: select Wayland platform\n");
-		return EGL_PLATFORM_WAYLAND_KHR;
-	}
-#endif
-
-	fprintf(stderr, "EGL: no compatible platform found\n");
-
-	return 0;
-}
-
-
 GSWndEGL::GSWndEGL(int platform)
 	: m_native_window(nullptr), m_platform(platform)
 {
@@ -167,14 +130,12 @@ void GSWndEGL::BindAPI()
 	}
 }
 
-bool GSWndEGL::Attach(void* handle, bool managed)
+bool GSWndEGL::Attach(const NativeWindowHandle& native_window)
 {
-	m_managed = managed;
+	m_managed = false;
 
-	m_native_window = AttachNativeWindow(handle);
-
+	AttachNativeWindow(native_window, &m_native_display, &m_native_window);
 	OpenEGLDisplay();
-
 	FullContextInit();
 
 	return true;
@@ -205,10 +166,10 @@ bool GSWndEGL::Create(const std::string& title, int w, int h)
 
 	m_managed = true;
 
+	m_native_display = CreateNativeDisplay();
 	OpenEGLDisplay();
 
 	m_native_window = CreateNativeWindow(w, h);
-
 	FullContextInit();
 
 	return true;
@@ -260,13 +221,8 @@ void GSWndEGL::CloseEGLDisplay()
 
 void GSWndEGL::OpenEGLDisplay()
 {
-	// We only need a native display when we manage the window ourself.
-	// By default, EGL will create its own native display. This way the driver knows
-	// that display will be thread safe and so it can enable multithread optimization.
-	void *native_display = (m_managed) ? CreateNativeDisplay() : nullptr;
-
 	// Create an EGL display from the native display
-	m_eglDisplay = eglGetPlatformDisplay(m_platform, native_display, nullptr);
+	m_eglDisplay = eglGetPlatformDisplay(m_platform, m_native_display, nullptr);
 	if (m_eglDisplay == EGL_NO_DISPLAY) {
 		fprintf(stderr,"EGL: Failed to open a display! (0x%x)\n", eglGetError() );
 		throw GSDXRecoverableError();
@@ -282,6 +238,36 @@ void GSWndEGL::OpenEGLDisplay()
 // X11 platform
 //////////////////////////////////////////////////////////////////////
 #if GS_EGL_X11
+
+// static method
+bool GSWndEGL_X11::SupportsWindow(const NativeWindowHandle& display_handle)
+{
+	// Validate that this is an X11 window handle.
+	if (display_handle.kind != NativeWindowHandle::X11)
+		return false;
+
+	// Check the supported extension
+	const char *client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+	if (!client_extensions) {
+		fprintf(stderr, "EGL: Client extension not supported\n");
+		return false;
+	}
+	fprintf(stdout, "EGL: Supported extensions: %s\n", client_extensions);
+
+	// Check platform extensions are supported (Note: there are core in 1.5)
+	if (!strstr(client_extensions, "EGL_EXT_platform_base")) {
+		fprintf(stderr, "EGL: Dynamic platform selection isn't supported\n");
+		return false;
+	}
+
+	// Finally we can select the platform
+	if (!strstr(client_extensions, "EGL_EXT_platform_x11")) {
+		fprintf(stderr, "EGL: no compatible platform found\n");
+		return false;
+	}
+
+	return true;
+}
 
 GSWndEGL_X11::GSWndEGL_X11()
 	: GSWndEGL(EGL_PLATFORM_X11_KHR), m_NativeDisplay(nullptr), m_NativeWindow(0)
@@ -333,10 +319,23 @@ void *GSWndEGL_X11::CreateNativeWindow(int w, int h)
 	return (void*)&m_NativeWindow;
 }
 
-void *GSWndEGL_X11::AttachNativeWindow(void *handle)
+void GSWndEGL_X11::AttachNativeWindow(const NativeWindowHandle& native_window, void** out_native_display, void** out_native_window)
 {
-	m_NativeWindow = *(Window*)handle;
-	return handle;
+	Window *window_ptr = const_cast<Window*>(&native_window.x11.window);
+	m_NativeWindow = (Window)*window_ptr;
+
+	// We only need a native display when we manage the window ourself.
+	// By default, EGL will create its own native display. This way the driver knows
+	// that display will be thread safe and so it can enable multithread optimization.
+	m_NativeDisplay = nullptr;
+
+	*out_native_display = m_NativeDisplay;
+	*out_native_window = window_ptr;
+}
+
+NativeWindowHandle GSWndEGL_X11::GetNativeWindowHandle()
+{
+	return { NativeWindowHandle::X11, { m_NativeDisplay, m_NativeWindow } };
 }
 
 void GSWndEGL_X11::DestroyNativeResources()
@@ -367,6 +366,12 @@ bool GSWndEGL_X11::SetWindowText(const char* title)
 //////////////////////////////////////////////////////////////////////
 #if GS_EGL_WL
 
+// static method
+bool GSWndEGL_WL::SupportsWindow(const NativeWindowHandle& display_handle)
+{
+	return false;
+}
+
 GSWndEGL_WL::GSWndEGL_WL()
 	: GSWndEGL(EGL_PLATFORM_WAYLAND_KHR), m_NativeDisplay(nullptr), m_NativeWindow(nullptr)
 {
@@ -385,10 +390,15 @@ void *GSWndEGL_WL::CreateNativeWindow(int w, int h)
 	return nullptr;
 }
 
-void *GSWndEGL_WL::AttachNativeWindow(void *handle)
+void GSWndEGL_WL::AttachNativeWindow(const NativeWindowHandle& handle, void** out_native_display, void** out_native_window)
 {
-	m_NativeWindow = (wl_egl_window*)handle;
-	return handle;
+	*out_native_display = nullptr;
+	*out_native_window = nullptr;
+}
+
+NativeWindowHandle GSWndEGL_WL::GetNativeWindowHandle()
+{
+	return {};
 }
 
 void GSWndEGL_WL::DestroyNativeResources()

@@ -19,13 +19,6 @@
 #include "../hidproxy.h"
 #include "../../qemu-usb/input-keymap-linux-to-qcode.h"
 
-#ifdef USING_X11
-#include <X11/Xlib.h>
-#include <X11/extensions/Xfixes.h>
-extern Display* g_GSdsp;
-extern Window g_GSwin;
-#endif
-
 namespace usb_hid
 {
 	namespace evdev
@@ -201,31 +194,6 @@ namespace usb_hid
 							break;
 							case EV_KEY:
 							{
-
-#ifdef USING_X11 //FIXME not thread-safe
-								if (event.code == KEY_LEFTSHIFT || event.code == KEY_RIGHTSHIFT)
-									shift = (event.value > 0);
-
-								if (event.code == KEY_F12 && (event.value == 1) && shift)
-								{
-									if (!grabbed)
-									{
-										grabbed = true;
-										XGrabPointer(g_GSdsp, g_GSwin, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, g_GSwin, None, CurrentTime);
-										XGrabKeyboard(g_GSdsp, g_GSwin, True, GrabModeAsync, GrabModeAsync, CurrentTime);
-										// Hides globally :(
-										XFixesHideCursor(g_GSdsp, g_GSwin);
-									}
-									else
-									{
-										grabbed = false;
-										XUngrabPointer(g_GSdsp, CurrentTime);
-										XUngrabKeyboard(g_GSdsp, CurrentTime);
-										XFixesShowCursor(g_GSdsp, g_GSwin);
-									}
-								}
-#endif
-
 								if (mHIDState->kind == HID_KEYBOARD && mHIDState->kbd.eh_entry)
 								{
 

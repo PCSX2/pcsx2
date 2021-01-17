@@ -562,8 +562,8 @@
     </ClCompile>
     <ClCompile Include="..\..\gui\CpuUsageProviderMSW.cpp" />
     <ClCompile Include="..\..\gui\ExecutorThread.cpp" />
-    <ClCompile Include="..\..\gui\FrameForGS.cpp" />
     <ClCompile Include="..\..\gui\GlobalCommands.cpp" />
+    <ClCompile Include="..\..\gui\GSFrame.cpp" />
     <ClCompile Include="..\..\gui\i18n.cpp" />
     <ClCompile Include="..\..\gui\IsoDropTarget.cpp" />
     <ClCompile Include="..\..\gui\MainFrame.cpp" />

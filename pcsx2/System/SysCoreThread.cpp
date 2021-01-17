@@ -327,12 +327,12 @@ void SysCoreThread::OnResumeInThread(bool isSuspended)
 	if (isSuspended)
 	{
 		DoCDVDopen();
-		DEV9open((void*)pDsp);
-		USBopen((void*)pDsp);
+		DEV9open();
+		USBopen(g_gsWindowHandle);
 	}
 	FWopen();
-	SPU2open((void*)pDsp);
-	PADopen((void*)pDsp);
+	SPU2open();
+	PADopen(g_gsWindowHandle);
 }
 
 

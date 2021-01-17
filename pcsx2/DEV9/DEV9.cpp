@@ -84,8 +84,6 @@ u8 eeprom[] = {
 };
 // clang-format on
 
-u32* iopPC;
-
 #ifdef _WIN32
 HANDLE hEeprom;
 HANDLE mapping;
@@ -115,14 +113,7 @@ void __Log(char* fmt, ...)
 	if (ticks == -1)
 		ticks = nticks;
 
-	if (iopPC != NULL)
-	{
-		DEV9Log.Write("[%10d + %4d, IOP PC = %08x] ", nticks, nticks - ticks, *iopPC);
-	}
-	else
-	{
-		DEV9Log.Write("[%10d + %4d] ", nticks, nticks - ticks);
-	}
+	DEV9Log.Write("[%10d + %4d] ", nticks, nticks - ticks);
 	ticks = nticks;
 
 	va_start(list, fmt);
@@ -228,14 +219,12 @@ void DEV9shutdown()
 #endif
 }
 
-s32 DEV9open(void* pDsp)
+s32 DEV9open()
 {
 	DEV9_LOG("DEV9open\n");
 	LoadConf();
 	DEV9_LOG("open r+: %s\n", config.Hdd);
 	config.HddSize = 8 * 1024;
-
-	iopPC = (u32*)pDsp;
 
 #ifdef ENABLE_ATA
 	ata_init();

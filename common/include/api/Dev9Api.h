@@ -40,9 +40,8 @@ typedef int (*DEV9handler)(void);
 EXPORT_C_(s32)
 DEV9init();
 
-// pDisplay normally is passed a handle to the GS plugins window.
 EXPORT_C_(s32)
-DEV9open(void *pDisplay);
+DEV9open();
 EXPORT_C_(void)
 DEV9close();
 EXPORT_C_(void)

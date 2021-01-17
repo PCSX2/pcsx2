@@ -26,7 +26,7 @@ extern bool SPU2_dummy_callback;
 s32 SPU2init();
 s32 SPU2reset();
 s32 SPU2ps1reset();
-s32 SPU2open(void* pDsp);
+s32 SPU2open();
 void SPU2close();
 void SPU2shutdown();
 void SPU2write(u32 mem, u16 value);

@@ -212,10 +212,9 @@ void SysMtgsThread::OpenPlugin()
 	int result;
 
 	if (GSopen2 != NULL)
-		result = GSopen2((void*)pDsp, 1 | (renderswitch ? 4 : 0));
+		result = GSopen2(&g_gsWindowHandle, 1 | (renderswitch ? 4 : 0));
 	else
-		result = GSopen((void*)pDsp, "PCSX2", renderswitch ? 2 : 1);
-
+		result = GSopen(&g_gsWindowHandle, "PCSX2", renderswitch ? 2 : 1);
 
 	GSsetVsync(EmuConfig.GS.GetVsync());
 

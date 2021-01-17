@@ -33,9 +33,8 @@
 
 EXPORT_C_(s32)
 SPU2init();
-// pDisplay normally is passed a handle to the GS plugins window.
 EXPORT_C_(s32)
-SPU2open(void *pDisplay);
+SPU2open();
 EXPORT_C_(void)
 SPU2close();
 EXPORT_C_(void)

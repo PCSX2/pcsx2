@@ -47,7 +47,7 @@ typedef struct
 void PADupdate(int pad);
 void PADshutdown();
 s32 PADinit();
-s32 PADopen(void* pDsp);
+s32 PADopen(const NativeWindowHandle& gsWindowHandle);
 void PADclose();
 u8 PADstartPoll(int pad);
 u8 PADpoll(u8 value);

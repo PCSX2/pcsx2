@@ -40,9 +40,8 @@ typedef struct _GSdriverInfo
 // Basic functions.
 EXPORT_C_(s32)
 GSinit();
-// pDisplay normally is passed a handle to the GS plugins window.
 EXPORT_C_(s32)
-GSopen(void *pDisplay, char *Title, bool multithread);
+GSopen(NativeWindowHandle *pGSWindowHandle, char *Title, bool multithread);
 EXPORT_C_(void)
 GSclose();
 EXPORT_C_(void)

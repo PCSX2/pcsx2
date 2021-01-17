@@ -191,7 +191,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 		swapchain_description.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
 		const HRESULT result = m_factory->CreateSwapChainForHwnd(
-			m_dev, reinterpret_cast<HWND>(m_wnd->GetHandle()),
+			m_dev, m_wnd->GetNativeWindowHandle().win32,
 			&swapchain_description, nullptr, nullptr, &m_swapchain
 		);
 

@@ -16,37 +16,21 @@
 #include "GS.h"
 #include "GSLinux.h"
 
-Display *display;
-int screen;
-GtkScrolledWindow *win;
-
-int GSOpenWindow(void *pDsp, const char *Title)
+int GSOpenWindow(NativeWindowHandle *pGSWindowHandle, const char *Title)
 {
-    display = XOpenDisplay(0);
-    screen = DefaultScreen(display);
-
-    if (pDsp != NULL)
-        *(Display **)pDsp = display;
-    else
-        return -1;
-
-    return 0;
+    // TODO: Implement if necessary; X11 and Wayland.
+    *pGSWindowHandle = {};
+    return -1;
 }
 
-int GSOpenWindow2(void *pDsp, u32 flags)
+int GSOpenWindow2(NativeWindowHandle *pGSWindowHandle, u32 flags)
 {
-    if (pDsp != NULL)
-        win = *(GtkScrolledWindow **)pDsp;
-    else
-        return -1;
-
+    // no-op since the window already exists (GSopen2).
     return 0;
 }
 
 void GSCloseWindow()
 {
-    if (display != NULL)
-        XCloseDisplay(display);
 }
 
 void GSProcessMessages()

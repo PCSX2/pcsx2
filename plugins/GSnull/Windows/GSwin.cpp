@@ -16,7 +16,7 @@
 #include "../GS.h"
 
 HINSTANCE HInst;
-HWND GShwnd = NULL;
+NativeWindowHandle GSWindowHandle;
 
 LRESULT CALLBACK MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -33,30 +33,34 @@ LRESULT CALLBACK MsgProc(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
     return 0;
 }
 
-int GSOpenWindow(void *pDsp, const char *Title)
+int GSOpenWindow(NativeWindowHandle *pGSWindowHandle, const char *Title)
 {
     WNDCLASSEX wc = {sizeof(WNDCLASSEX), CS_CLASSDC, MsgProc, 0L, 0L,
                      GetModuleHandle(NULL), NULL, NULL, NULL, NULL,
                      "PS2EMU_GSNULL", NULL};
     RegisterClassEx(&wc);
 
-    GShwnd = CreateWindowEx(WS_EX_CLIENTEDGE, "PS2EMU_GSNULL", Title,
-                            WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, 240, 120, NULL, NULL, wc.hInstance, NULL);
+    HWND GShwnd = CreateWindowEx(WS_EX_CLIENTEDGE, "PS2EMU_GSNULL", Title,
+                                 WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT,
+                                 240, 120, NULL, NULL, wc.hInstance, NULL);
 
     if (GShwnd == NULL) {
         GSLog::WriteLn("Failed to create window. Exiting...");
         return -1;
     }
 
-    if (pDsp != NULL)
-        *(uptr *)pDsp = (uptr)GShwnd;
+    GSWindowHandle.kind = NativeWindowHandle::Win32;
+    GSWindowHandle.win32 = GShwnd;
+
+    *pGSWindowHandle = GSWindowHandle;
 
     return 0;
 }
 
 void GSCloseWindow()
 {
-    DestroyWindow(GShwnd);
+    DestroyWindow(GSWindowHandle.win32);
+    GSWindowHandle.win32 = (HWND)nullptr;
 }
 
 void GSProcessMessages()

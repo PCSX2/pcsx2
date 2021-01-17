@@ -120,13 +120,13 @@ GSshutdown()
 }
 
 EXPORT_C_(s32)
-GSopen(void *pDsp, const char *Title, int multithread)
+GSopen(NativeWindowHandle *pGSWindowHandle, const char *Title, int multithread)
 {
     int err = 0;
     GSLog::WriteLn("GS open.");
     //assert( GSirq != NULL );
 
-    err = GSOpenWindow(pDsp, Title);
+    err = GSOpenWindow(pGSWindowHandle, Title);
     gs.MultiThreaded = multithread;
 
     ResetRegs();
@@ -138,11 +138,11 @@ GSopen(void *pDsp, const char *Title, int multithread)
 
 #ifdef USE_GSOPEN2
 EXPORT_C_(s32)
-GSopen2(void *pDsp, u32 flags)
+GSopen2(NativeWindowHandle *pGSWindowHandle, u32 flags)
 {
     GSLog::WriteLn("GS open2.");
 
-    GSOpenWindow2(pDsp, flags);
+    GSOpenWindow2(pGSWindowHandle, flags);
 
     gs.MultiThreaded = true;
 

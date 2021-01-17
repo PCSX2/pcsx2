@@ -17,8 +17,9 @@
 
 #include <windows.h>
 #include <windowsx.h>
+#include "NativeWindowHandle.h"
 
-extern int GSOpenWindow(void *pDsp, const char *Title);
+extern int GSOpenWindow(NativeWindowHandle *pGSWindowHandle, const char *Title);
 extern void GSCloseWindow();
 extern void GSProcessMessages();
 extern void HandleKeyEvent(keyEvent *ev);

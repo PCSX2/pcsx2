@@ -22,7 +22,7 @@
 #include "../GS.h"
 
 HINSTANCE hInst;
-extern HWND GShwnd;
+extern NativeWindowHandle GSWindowHandle;
 
 void SysMessage(char *fmt, ...)
 {
@@ -32,7 +32,7 @@ void SysMessage(char *fmt, ...)
     va_start(list, fmt);
     vsprintf(tmp, fmt, list);
     va_end(list);
-    MessageBox((GShwnd != NULL) ? GShwnd : GetActiveWindow(), tmp, "GS Plugin Msg", 0);
+    MessageBox((GSWindowHandle.win32 != NULL) ? GSWindowHandle.win32 : GetActiveWindow(), tmp, "GS Plugin Msg", 0);
 }
 
 BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)

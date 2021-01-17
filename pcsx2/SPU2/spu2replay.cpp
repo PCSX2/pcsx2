@@ -239,7 +239,7 @@ void s2r_replay(HWND hwnd, HINSTANCE hinst, LPSTR filename, int nCmdShow)
 	SPU2init();
 	SPU2_dummy_callback = true;
 	SPU2setClockPtr(&CurrentIOPCycle);
-	SPU2open(&hwnd);
+	SPU2open();
 
 	CurrentIOPCycle = 0;
 

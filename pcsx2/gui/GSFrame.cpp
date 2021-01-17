@@ -556,10 +556,60 @@ GSFrame::GSFrame( const wxString& title)
 	Bind(wxEVT_TIMER, &GSFrame::OnUpdateTitle, this, m_timer_UpdateTitle.GetId());
 }
 
+NativeWindowHandle GSFrame::GetNativeWindowHandle()
+{
+	NativeWindowHandle handle;
+
+#ifdef __WXGTK__
+	// The x window/display are actually very deeper in the widget. You need both display and window
+	// because unlike window there are unrelated. One could think it would be easier to send directly the GdkWindow.
+	// Unfortunately there is a race condition between gui and gs threads when you called the
+	// GDK_WINDOW_* macro. To be safe I think it is best to do here. It only cost a slight
+	// extension (fully compatible) of the plugins API. -- Gregory
+
+	// GTK_PIZZA is an internal interface of wx, therefore they decide to
+	// remove it on wx 3. I tryed to replace it with gtk_widget_get_window but
+	// unfortunately it creates a gray box in the middle of the window on some
+	// users.
+
+	GtkWidget *child_window = GTK_WIDGET(GetViewport()->GetHandle());
+
+	gtk_widget_realize(child_window); // create the widget to allow to use GDK_WINDOW_* macro
+	gtk_widget_set_double_buffered(child_window, false); // Disable the widget double buffer, you will use the opengl one
+
+	GdkWindow* draw_window = gtk_widget_get_window(child_window);
+
+#ifdef GDK_WINDOWING_X11
+	if (GDK_IS_X11_WINDOW(draw_window))
+	{
+#if GTK_MAJOR_VERSION < 3
+		Window Xwindow = GDK_WINDOW_XWINDOW(draw_window);
+#else
+		Window Xwindow = GDK_WINDOW_XID(draw_window);
+#endif
+		Display* XDisplay = GDK_WINDOW_XDISPLAY(draw_window);
+
+		handle.kind = NativeWindowHandle::X11;
+		handle.x11.window = Xwindow;
+		handle.x11.display = XDisplay;
+	}
+	else
+#endif
+	{
+		pxAssertDev(false, "Unknown GDK display type. Can't initialize GS Plugin.");
+	}
+#elif defined(_WIN32)
+	handle.kind = NativeWindowHandle::Win32;
+	handle.win32 = GetViewport()->GetHandle();
+#endif
+
+	return handle;
+}
+
 void GSFrame::OnCloseWindow(wxCloseEvent& evt)
 {
 	sApp.OnGsFrameClosed( GetId() );
-	Hide();		// and don't close it.
+	Hide();		// and don't destroy it.
 }
 
 bool GSFrame::ShowFullScreen(bool show, bool updateConfig)

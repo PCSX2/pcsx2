@@ -67,15 +67,7 @@ int64_t usb_bit_time;
 s64 clocks = 0;
 s64 remaining = 0;
 
-#if _WIN32
-HWND gsWnd = nullptr;
-#elif defined(__linux__)
-#include "gtk.h"
-#include <gdk/gdkx.h>
-#include <X11/X.h>
-Display* g_GSdsp;
-Window g_GSwin;
-#endif
+NativeWindowHandle USB_gsWindowHandle;
 
 Config::Config()
 	: Log(0)
@@ -92,9 +84,9 @@ void Reset()
 
 void OpenDevice(int port)
 {
-	//TODO Pass pDsp to open probably so dinput can bind to this HWND
+	//TODO Pass gsWindowHandle to open probably so dinput can bind to this HWND
 	if (usb_device[port] && usb_device[port]->klass.open)
-		usb_device[port]->klass.open(usb_device[port] /*, pDsp*/);
+		usb_device[port]->klass.open(usb_device[port] /*, gsWindowHandle */);
 }
 
 static void CloseDevice(int port)
@@ -244,38 +236,19 @@ void USBshutdown()
 	usb_opened = false;
 }
 
-s32 USBopen(void* pDsp)
+s32 USBopen(const NativeWindowHandle& gsWindowHandle)
 {
-
 	if (conf.Log && !usbLog)
 	{
 		usbLog = fopen("logs/usbLog.txt", "a");
 		//if(usbLog) setvbuf(usbLog, NULL,  _IONBF, 0);
 	}
 
-#if _WIN32
-
-	HWND hWnd = 0;
-	if (IsWindow((HWND)pDsp))
-	{
-		hWnd = (HWND)pDsp;
-	}
-	else if (pDsp && !IsBadReadPtr(pDsp, 4) && IsWindow(*(HWND*)pDsp))
-	{
-		hWnd = *(HWND*)pDsp;
-	}
-
-	gsWnd = hWnd;
-	pDsp = gsWnd;
-#elif defined(__linux__)
-
-	g_GSdsp = (Display*)((uptr*)pDsp)[0];
-	g_GSwin = (Window)((uptr*)pDsp)[1];
-#endif
+	USB_gsWindowHandle = gsWindowHandle;
 
 	try
 	{
-		shared::Initialize(pDsp);
+		shared::Initialize(gsWindowHandle);
 	}
 	catch (std::runtime_error& e)
 	{
@@ -284,11 +257,11 @@ s32 USBopen(void* pDsp)
 
 	if (!usb_device[0] && !usb_device[1])
 	{
-		CreateDevices(); //TODO Pass pDsp to init?
+		CreateDevices(); //TODO Pass gsWindowHandle to init?
 	}
 
-	OpenDevice(0 /*, pDsp */);
-	OpenDevice(1 /*, pDsp */);
+	OpenDevice(0 /*, gsWindowHandle */);
+	OpenDevice(1 /*, gsWindowHandle */);
 	usb_opened = true;
 	return 0;
 }
