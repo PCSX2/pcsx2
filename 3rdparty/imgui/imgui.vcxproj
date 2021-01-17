@@ -10,7 +10,6 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
-    <WholeProgramOptimization Condition="$(Configuration.Contains(Release))">true</WholeProgramOptimization>
     <UseDebugLibraries Condition="$(Configuration.Contains(Debug))">true</UseDebugLibraries>
     <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
   </PropertyGroup>
@@ -33,6 +32,7 @@
       <PreprocessorDefinitions>%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\glad\include;$(ProjectDir)imgui;$(ProjectDir)include;$(ProjectDir)src;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

@@ -10,7 +10,6 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
-    <WholeProgramOptimization Condition="$(Configuration.Contains(Release))">true</WholeProgramOptimization>
     <UseDebugLibraries Condition="$(Configuration.Contains(Debug))">true</UseDebugLibraries>
     <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
   </PropertyGroup>
@@ -36,6 +35,7 @@
       <DisableSpecificWarnings>4996;4127</DisableSpecificWarnings>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <TreatWarningAsError>true</TreatWarningAsError>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

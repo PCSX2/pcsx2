@@ -11,7 +11,6 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
-    <WholeProgramOptimization Condition="$(Configuration.Contains(Release))">true</WholeProgramOptimization>
     <UseDebugLibraries Condition="$(Configuration.Contains(Debug))">true</UseDebugLibraries>
     <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
   </PropertyGroup>
@@ -71,6 +70,7 @@
       <!-- SH 2/3 flashlight, explicitly set here don't change -->
       <!-- https://github.com/PCSX2/pcsx2/commit/16431653e4d92fda4069031897e24fbe4688d36a -->
       <FloatingPointModel>Precise</FloatingPointModel>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <LargeAddressAware>Yes</LargeAddressAware>

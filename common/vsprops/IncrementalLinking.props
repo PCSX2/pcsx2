@@ -11,6 +11,8 @@
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>false</EnableCOMDATFolding>
+      <LinkTimeCodeGeneration />
+      <OptimizeReferences>false</OptimizeReferences>
     </Link>
   </ItemDefinitionGroup>
 </Project>

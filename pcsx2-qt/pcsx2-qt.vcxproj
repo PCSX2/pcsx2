@@ -11,7 +11,6 @@
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>Unicode</CharacterSet>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
-    <WholeProgramOptimization Condition="$(Configuration.Contains(Release))">true</WholeProgramOptimization>
     <UseDebugLibraries Condition="$(Configuration.Contains(Debug))">true</UseDebugLibraries>
     <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
   </PropertyGroup>
@@ -25,7 +24,7 @@
     <Import Condition="$(Configuration.Contains(Debug))" Project="$(SolutionDir)common\vsprops\CodeGen_Debug.props" />
     <Import Condition="$(Configuration.Contains(Devel))" Project="$(SolutionDir)common\vsprops\CodeGen_Devel.props" />
     <Import Condition="$(Configuration.Contains(Release))" Project="$(SolutionDir)common\vsprops\CodeGen_Release.props" />
-    <Import Condition="!$(Configuration.Contains(Release))" Project="$(SolutionDir)common\vsprops\IncrementalLinking.props" />
+    <Import Project="$(SolutionDir)common\vsprops\IncrementalLinking.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -69,6 +68,7 @@
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <ConformanceMode>true</ConformanceMode>
       <AdditionalOptions>/Zc:__cplusplus /Zo /utf-8%(AdditionalOptions)</AdditionalOptions>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

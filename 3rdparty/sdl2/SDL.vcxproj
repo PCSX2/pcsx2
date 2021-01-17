@@ -11,7 +11,6 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
-    <WholeProgramOptimization Condition="$(Configuration.Contains(Release))">true</WholeProgramOptimization>
     <UseDebugLibraries Condition="$(Configuration.Contains(Debug))">true</UseDebugLibraries>
     <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
   </PropertyGroup>
@@ -34,6 +33,7 @@
       <WarningLevel>Level3</WarningLevel>
       <PreprocessorDefinitions>_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)SDL\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>version.lib;%(AdditionalDependencies)</AdditionalDependencies>

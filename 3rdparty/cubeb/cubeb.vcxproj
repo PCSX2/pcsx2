@@ -11,7 +11,6 @@
     <ConfigurationType>StaticLibrary</ConfigurationType>
     <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
     <CharacterSet>MultiByte</CharacterSet>
-    <WholeProgramOptimization Condition="$(Configuration.Contains(Release))">true</WholeProgramOptimization>
     <UseDebugLibraries Condition="$(Configuration.Contains(Debug))">true</UseDebugLibraries>
     <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
   </PropertyGroup>
@@ -35,6 +34,7 @@
       <PreprocessorDefinitions>USE_WASAPI;USE_WINMM;OUTSIDE_SPEEX;FLOATING_POINT;RANDOM_PREFIX=speex;EXPORT=;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(ProjectDir)include;$(ProjectDir)cubeb\include;$(ProjectDir)cubeb\src;$(ProjectDir)cubeb\subprojects;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp14</LanguageStandard>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
