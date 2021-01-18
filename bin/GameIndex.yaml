@@ -12542,9 +12542,13 @@ SLES-53393:
   name: "Spartan Total Warrior"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - VU0KickstartHack # Fixes Character SPS.
 SLES-53396:
   name: "Spartan Total Warrior"
   region: "PAL-M3"
+  gameFixes:
+    - VU0KickstartHack # Fixes Character SPS.
 SLES-53398:
   name: "Zombie Zone"
   region: "PAL-E"
@@ -24531,6 +24535,8 @@ SLPM-66443:
 SLPM-66444:
   name: "Spartan - Total Warrior"
   region: "NTSC-J"
+  gameFixes:
+    - VU0KickstartHack # Fixes Character SPS.
 SLPM-66445:
   name: "Persona 3"
   region: "NTSC-J"
@@ -35925,6 +35931,8 @@ SLUS-21212:
   name: "Spartan - Total Warrior"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - VU0KickstartHack # Fixes Character SPS.
 SLUS-21213:
   name: "Madden NFL '06"
   region: "NTSC-U"
