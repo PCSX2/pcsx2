@@ -574,9 +574,11 @@ public:
 
 	bool OpenInstallSettingsFile();
 	bool TestForPortableInstall();
-    
-    bool Load(fs::path fN);
-    YAML::Node Save(fs::path fN);
+
+	bool Load(const fs::path& fN);
+	void Save(const fs::path& fN);
+	std::ifstream getFileAsInputStream(const fs::path& file);
+	std::ofstream getFileAsOutputStream(const fs::path& file);
 
 	bool HasPendingSaves() const;
 	void StartPendingSave();
