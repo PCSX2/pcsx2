@@ -558,11 +558,12 @@ void AppConfig::LoadSaveMemcards( IniInterface& ini )
 
 	for( uint slot=0; slot<2; ++slot )
 	{
-		wxString Filename = Path::ToWxString(Mcd[slot].Filename);
+		fs::path Filename = Mcd[slot].Filename;
 		ini.Entry( pxsFmt( L"Slot%u_Enable", slot+1 ),
 			Mcd[slot].Enabled, Mcd[slot].Enabled );
 		ini.Entry( pxsFmt( L"Slot%u_Filename", slot+1 ),
 			Filename, Filename );
+		Mcd[slot].Filename = Filename;
 	}
 
 	for( uint slot=2; slot<8; ++slot )

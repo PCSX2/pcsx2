@@ -632,7 +632,8 @@ void Panels::MemoryCardListPanel_Simple::DoRefresh()
 		//	continue;
 
 		//wxFileName fullpath( m_FolderPicker->GetPath() + g_Conf->Mcd[slot].Filename.GetFullName() );
-		wxFileName fullpath(Path::ToWxString(m_FolderPicker->GetPath().ToString().ToStdString() / m_Cards[slot].Filename.string()));
+		fs::path temp(m_FolderPicker->GetPath().ToString().ToStdWstring());
+		wxFileName fullpath(Path::ToWxString((temp / m_Cards[slot].Filename)));
 
 		EnumerateMemoryCard(m_Cards[slot], fullpath, m_FolderPicker->GetPath());
 		m_Cards[slot].Slot = slot;
