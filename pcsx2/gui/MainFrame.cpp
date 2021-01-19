@@ -770,10 +770,10 @@ void MainEmuFrame::ApplyCoreStatus()
 			label = _("Boot CDVD");
 			break;
 		case CDVD_SourceType::NoDisc:
-			label = _("Boot Bios");
+			label = _("Boot BIOS");
 			break;
 		default:
-			label = _("Boot Bios");
+			label = _("Boot BIOS");
 			break;
 	}
 
