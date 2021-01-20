@@ -173,9 +173,9 @@ JoystickInfo::JoystickInfo(int id)
 	if (m_controller == nullptr)
 	{
 		fprintf(stderr, "PAD: Joystick (%s,GUID:%s) isn't yet supported by the SDL2 game controller API\n"
-						"Fortunately you can use AntiMicro (https://github.com/AntiMicro/antimicro) or Steam to configure your joystick\n"
+						"You can use SDL2 Gamepad Tool (https://www.generalarcade.com/gamepadtool/) or Steam to configure your joystick\n"
 						"The mapping can be stored in PAD.ini as 'SDL2 = <...mapping description...>'\n"
-						"Please report it to us (https://github.com/PCSX2/pcsx2/issues) so we can add your joystick to our internal database.",
+						"Please post the new generated mapping to (https://github.com/gabomdq/SDL_GameControllerDB) so it can be added to the database.",
 				devname, guid);
 
 #if SDL_MINOR_VERSION >= 4 // Version before 2.0.4 are bugged, JoystickClose crashes randomly

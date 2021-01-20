@@ -57,7 +57,7 @@ void __LogToConsole(const char* fmt, ...)
 	if (padLog != NULL)
 		vfprintf(padLog, fmt, list);
 
-	printf("OnePAD: ");
+	printf("PAD: ");
 	vprintf(fmt, list);
 	va_end(list);
 }
