@@ -345,7 +345,7 @@ class Pcsx2StandardPaths : public wxStandardPaths
 public:
 	wxString GetResourcesDir() const
 	{
-		return ( GetDataDir().ToStdString() / "Langs" );
+		return Path::ToWxString(Path::FromWxString(GetDataDir()) / "Langs" );
 	}
 
 #ifdef __POSIX__
@@ -354,23 +354,30 @@ public:
 		// I got memory corruption inside wxGetEnv when I heavily toggle the GS renderer (F9). It seems wxGetEnv
 		// isn't thread safe? To avoid any issue on this read only variable, I cache the result.
 		static wxString cache_dir;
-		if (!cache_dir.IsEmpty()) return cache_dir;
+		if (!cache_dir.IsEmpty())
+			return cache_dir;
 
 		// Note: GetUserLocalDataDir() on linux return $HOME/.pcsx2 unfortunately it does not follow the XDG standard
 		// So we re-implement it, to follow the standard.
 		wxDirName user_local_dir;
-		wxDirName default_config_dir = (wxDirName)( ".config" / pxGetAppName().ToStdString() );
+		wxDirName default_config_dir = wxDirName(Path::ToWxString(".config" / Path::FromWxString(pxGetAppName())));
 		wxString xdg_home_value;
-		if( wxGetEnv(L"XDG_CONFIG_HOME", &xdg_home_value) ) {
-			if ( xdg_home_value.IsEmpty() ) {
+		if (wxGetEnv(L"XDG_CONFIG_HOME", &xdg_home_value))
+		{
+			if (xdg_home_value.IsEmpty())
+			{
 				// variable exist but it is empty. So use the default value
-				user_local_dir = (wxDirName)( GetUserConfigDir().ToStdString() / default_config_dir.ToString().ToStdString() );
-			} else {
-				user_local_dir = (wxDirName)( xdg_home_value.ToStdString() / pxGetAppName().ToStdString());
+				user_local_dir = wxDirName(Path::ToWxString(Path::FromWxString(GetUserConfigDir()) / Path::FromWxString(default_config_dir.ToString())));
 			}
-		} else {
+			else
+			{
+				user_local_dir = wxDirName(Path::ToWxString(Path::FromWxString(xdg_home_value) / Path::FromWxString(pxGetAppName())));
+			}
+		}
+		else
+		{
 			// variable do not exist
-			user_local_dir = (wxDirName)( GetUserConfigDir().ToStdString() / default_config_dir.ToString().ToStdString() );
+			user_local_dir = wxDirName(Path::ToWxString(Path::FromWxString(GetUserConfigDir()) / Path::FromWxString(default_config_dir.ToString())));
 		}
 
 		cache_dir = user_local_dir.ToString();
@@ -378,7 +385,6 @@ public:
 		return cache_dir;
 	}
 #endif
-
 };
 #endif // ifdef __APPLE__
 
@@ -1059,18 +1065,14 @@ void SysStatus( const wxString& text )
 // Applies a new active iso source file
 void SysUpdateIsoSrcFile( const wxString& newIsoFile )
 {
-	g_Conf->CurrentIso = fs::path(newIsoFile.ToStdWstring());
+	g_Conf->CurrentIso = Path::FromWxString(newIsoFile);
 	sMainFrame.UpdateStatusBar();
 	sMainFrame.UpdateCdvdSrcSelection();
 }
 
 void SysUpdateDiscSrcDrive( const wxString& newDiscDrive )
 {
-#if defined(_WIN32)
-	g_Conf->Folders.RunDisc = newDiscDrive.ToStdString();
-#else
-	g_Conf->Folders.RunDisc = newDiscDrive.ToStdString();
-#endif
+	g_Conf->Folders.RunDisc = Path::FromWxString(newDiscDrive);
 	AppSaveSettings();
 	sMainFrame.UpdateCdvdSrcSelection();
 }

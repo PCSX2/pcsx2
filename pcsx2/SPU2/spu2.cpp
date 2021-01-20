@@ -178,7 +178,7 @@ s32 SPU2init()
 #ifdef SPU2_LOG
 	if (AccessLog())
 	{
-		spu2Log = OpenLog(AccessLogFileName.ToStdString());
+		spu2Log = OpenLog(Path::FromWxString(AccessLogFileName));
 		setvbuf(spu2Log, nullptr, _IONBF, 0);
 		FileLog("SPU2init\n");
 	}

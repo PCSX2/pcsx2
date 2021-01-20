@@ -259,7 +259,7 @@ void Panels::DirPickerPanel::AppStatusEvent_OnSettingsApplied()
 
 void Panels::DirPickerPanel::Apply()
 {
-	fs::path path( GetPath().ToString().ToStdWstring() );
+	fs::path path = Path::FromWxString(GetPath().ToString());
 
 	if (!fs::exists(path))
 	{

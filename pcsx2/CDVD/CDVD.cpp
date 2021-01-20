@@ -102,8 +102,7 @@ static void cdvdGetMechaVer(u8* ver)
 	if (mecfile.IsDir())
 		throw Exception::CannotCreateStream(fname);
 
-
-	if (Path::GetFileSize(fname.ToStdString()) < 4)
+	if (Path::GetFileSize(Path::FromWxString(fname)) < 4)
 	{
 		Console.Warning("MEC File Not Found, creating substitute...");
 
@@ -176,7 +175,7 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 	if (nvmfile.IsDir())
 		throw Exception::CannotCreateStream(fname);
 
-	if (Path::GetFileSize(fname.ToStdString()) < 1024)
+	if (Path::GetFileSize(Path::FromWxString(fname)) < 1024)
 	{
 		Console.Warning("NVM File Not Found, creating substitute...");
 
@@ -367,7 +366,7 @@ static MutexRecursive Mutex_NewDiskCB;
 static __fi ElfObject* loadElf(const wxString filename)
 {
 	if (filename.StartsWith(L"host"))
-		return new ElfObject(filename.After(':'), Path::GetFileSize(filename.After(':').ToStdString()));
+		return new ElfObject(filename.After(':'), Path::GetFileSize(Path::FromWxString(filename.After(':'))));
 
 	// Mimic PS2 behavior!
 	// Much trial-and-error with changing the ISOFS and BOOT2 contents of an image have shown that

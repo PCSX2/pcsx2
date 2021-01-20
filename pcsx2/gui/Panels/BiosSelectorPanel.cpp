@@ -137,7 +137,7 @@ void Panels::BiosSelectorPanel::Apply()
 			.SetUserMsg(pxE(L"Please select a valid BIOS.  If you are unable to make a valid selection then press Cancel to close the Configuration panel."));
 	}
 
-	g_Conf->BaseFilenames.Bios = fs::path((*m_BiosList)[(sptr)m_ComboBox->GetClientData(sel)].ToStdWstring());
+	g_Conf->BaseFilenames.Bios = Path::FromWxString((*m_BiosList)[(sptr)m_ComboBox->GetClientData(sel)]);
 }
 
 void Panels::BiosSelectorPanel::AppStatusEvent_OnSettingsApplied()

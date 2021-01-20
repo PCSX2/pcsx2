@@ -76,7 +76,7 @@ DocsModeType Panels::DocsFolderPickerPanel::GetDocsMode() const
 void Panels::DocsFolderPickerPanel::Apply()
 {
 	DocsFolderMode			= (DocsModeType) m_radio_UserMode->GetSelection();
-	CustomDocumentsFolder	= m_dirpicker_custom->GetPath().ToString().ToStdString();
+	CustomDocumentsFolder	= Path::FromWxString(m_dirpicker_custom->GetPath().ToString());
 }
 
 void Panels::DocsFolderPickerPanel::AppStatusEvent_OnSettingsApplied()

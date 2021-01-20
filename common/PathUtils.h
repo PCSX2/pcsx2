@@ -10,7 +10,7 @@ namespace fs = ghc::filesystem;
 namespace Path
 {
 	extern bool IsRelative(const std::string& path);
-	extern s64 GetFileSize(const std::string& path);
+	extern s64 GetFileSize(const fs::path& path);
 
 	extern wxString Normalize(const wxString& srcpath);
 	extern wxString Normalize(const wxDirName& srcpath);
@@ -20,7 +20,7 @@ namespace Path
 	extern std::string GetFilename(const std::string& src);
 	extern std::string GetDirectory(const std::string& src);
 	extern wxString GetFilenameWithoutExt(const wxString& src);
-	extern std::string GetRootDirectory(const wxString& src);
+	extern fs::path GetRootDirectory(const wxString& src);
 	extern fs::path GetExecutableDirectory();
 	extern fs::path getPath(fs::path p, bool isPortable);
 	extern wxString ToWxString(const fs::path& path);

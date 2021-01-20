@@ -190,7 +190,8 @@ static int _LoadPatchFiles(const wxDirName& folderName, wxString& fileSpec, cons
 		{
 			PatchesCon->WriteLn(Color_Green, L"Found %s file: '%s'", WX_STR(friendlyName), WX_STR(buffer));
 			int before = Patch.size();
-			f.Open(wxString(dir.GetName().ToStdString() / buffer.ToStdString()));
+			fs::path path = Path::FromWxString(dir.GetName()) / Path::FromWxString(buffer);
+			f.Open(Path::ToWxString(path));
 			inifile_process(f);
 			f.Close();
 			int loaded = Patch.size() - before;
@@ -252,7 +253,8 @@ int LoadPatchesFromDir(wxString name, const wxDirName& folderName, const wxStrin
 	// This check only tests the default cheats folder, so the message it produces is possibly misleading.
 	if (folderName.ToString().IsSameAs(Path::ToWxString(PathDefs::GetCheats())) && numberFoundPatchFiles == 0)
 	{
-		wxString pathName = wxString(folderName.ToString().ToStdString() / (name.MakeUpper().ToStdString() + ".pnach"));
+		fs::path filename = Path::FromWxString(name.MakeUpper()).replace_extension("pnach");
+		wxString pathName = Path::ToWxString(Path::FromWxString(folderName.ToString()) / filename);
 		PatchesCon->WriteLn(Color_Gray, L"Not found %s file: %s", WX_STR(friendlyName), WX_STR(pathName));
 	}
 

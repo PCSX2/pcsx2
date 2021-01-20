@@ -568,7 +568,7 @@ public:
 	void CleanupRestartable();
 	void CleanupResources();
 	void WipeUserModeSettings();
-	bool TestUserPermissionsRights(const std::string& testFolder);
+	bool TestUserPermissionsRights(const fs::path& testFolder);
 	void EstablishAppUserMode();
 	void ForceFirstTimeWizardOnNextRun();
 

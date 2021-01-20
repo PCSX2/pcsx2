@@ -190,7 +190,7 @@ void RecentIsoManager::InsertIntoMenu( int id )
 	if (this->m_firstIdForMenuItems_or_wxID_ANY != wxID_ANY)
 		wxid = this->m_firstIdForMenuItems_or_wxID_ANY + id;
 
-	wxString filename = Path::GetFilename(curitem.Filename.ToStdString());
+	wxString filename = Path::GetFilename(Path::FromWxString(curitem.Filename));
 	// & is used to specify the keyboard shortcut key in menu labels. && must
 	// be used to display an &.
 	filename.Replace("&", "&&", true);

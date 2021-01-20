@@ -16,6 +16,8 @@
 #ifndef DEBUG_H_INCLUDED
 #define DEBUG_H_INCLUDED
 
+#include "Utilities/PathUtils.h"
+
 extern FILE* spu2Log;
 
 extern void FileLog(const char* fmt, ...);
@@ -23,9 +25,9 @@ extern void ConLog(const char* fmt, ...);
 
 extern void DoFullDump();
 
-extern FILE* OpenBinaryLog(const std::string& logfile);
-extern FILE* OpenLog(const std::string& logfile);
-extern FILE* OpenDump(const std::string& logfile);
+extern FILE* OpenBinaryLog(const fs::path& logfile);
+extern FILE* OpenLog(const fs::path& logfile);
+extern FILE* OpenDump(const fs::path& logfile);
 
 namespace WaveDump
 {

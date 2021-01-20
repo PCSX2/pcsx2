@@ -27,7 +27,7 @@ std::ifstream AppGameDatabase::getFileAsStream(const fs::path& file)
 #ifdef _WIN32
 	return std::ifstream(file.wstring());
 #else
-	return std::ifstream(file.string());
+	return std::ifstream(file);
 #endif
 }
 
@@ -46,7 +46,7 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const fs::path& _file)
 		//           So the games DB was really the only one that suffers from residues of prior installs.
 
 		//wxDirName dir = InstallFolder;
-		fs::path dir(wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath().ToStdWstring());
+		fs::path dir = Path::FromWxString(wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath());
 		file = (dir.parent_path() / file);
 	}
 

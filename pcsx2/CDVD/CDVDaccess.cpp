@@ -383,9 +383,11 @@ bool DoCDVDopen()
 		somepick = L"Untitled";
 
 	if (g_Conf->CurrentBlockdump.empty())
-			g_Conf->CurrentBlockdump = wxGetCwd();
+	{
+		g_Conf->CurrentBlockdump = wxGetCwd();
+	}
 
-	wxString temp(g_Conf->CurrentBlockdump / somepick.ToStdString());
+	wxString temp = Path::ToWxString(g_Conf->CurrentBlockdump / Path::FromWxString(somepick));
 
 #ifdef ENABLE_TIMESTAMPS
 	wxDateTime curtime(wxDateTime::GetTimeNow());

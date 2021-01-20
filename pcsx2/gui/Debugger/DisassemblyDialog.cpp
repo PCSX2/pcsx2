@@ -59,7 +59,7 @@ DebuggerHelpDialog::DebuggerHelpDialog(wxWindow* parent)
 
 	auto fileName = (PathDefs::GetDocs() / "debugger.txt");
 
-	wxTextFile file(fileName);
+	wxTextFile file(Path::ToWxString(fileName));
 	wxString text(L"");
 
 	if (file.Open())

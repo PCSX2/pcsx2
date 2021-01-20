@@ -51,14 +51,14 @@ void SysMessage(const wchar_t* fmt, ...)
 
 #include "common/PathUtils.h"
 
-std::string CfgFile("SPU2.ini");
+fs::path CfgFile("SPU2.ini");
 bool pathSet = false;
 
 void initIni()
 {
 	if (!pathSet)
 	{
-		CfgFile = (GetSettingsFolder().string() / CfgFile);
+		CfgFile = GetSettingsFolder() / CfgFile;
 		pathSet = true;
 	}
 }
@@ -69,7 +69,7 @@ void CfgSetSettingsDir(const char* dir)
 }
 
 
-/*| Config File Format: |����������������������*\
+/*| Config File Format: |¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯*\
 +--+---------------------+------------------------+
 |												  |
 | Option=Value									  |
@@ -88,7 +88,7 @@ void CfgWriteBool(const TCHAR* Section, const TCHAR* Name, bool Value)
 {
 	initIni();
 	const TCHAR* Data = Value ? L"TRUE" : L"FALSE";
-	WritePrivateProfileString(Section, Name, Data, wxString(CfgFile));
+	WritePrivateProfileString(Section, Name, Data, Path::ToWxString(CfgFile));
 }
 
 void CfgWriteInt(const TCHAR* Section, const TCHAR* Name, int Value)
@@ -96,7 +96,7 @@ void CfgWriteInt(const TCHAR* Section, const TCHAR* Name, int Value)
 	initIni();
 	TCHAR Data[32];
 	_itow(Value, Data, 10);
-	WritePrivateProfileString(Section, Name, Data, wxString(CfgFile));
+	WritePrivateProfileString(Section, Name, Data, Path::ToWxString(CfgFile));
 }
 
 void CfgWriteFloat(const TCHAR* Section, const TCHAR* Name, float Value)
@@ -104,7 +104,7 @@ void CfgWriteFloat(const TCHAR* Section, const TCHAR* Name, float Value)
 	initIni();
 	TCHAR Data[32];
 	_swprintf(Data, L"%f", Value);
-	WritePrivateProfileString(Section, Name, Data, wxString(CfgFile));
+	WritePrivateProfileString(Section, Name, Data, Path::ToWxString(CfgFile));
 }
 
 /*void CfgWriteStr(const TCHAR* Section, const TCHAR* Name, const TCHAR *Data)
@@ -115,7 +115,7 @@ WritePrivateProfileString( Section, Name, Data, CfgFile );
 void CfgWriteStr(const TCHAR* Section, const TCHAR* Name, const wxString& Data)
 {
 	initIni();
-	WritePrivateProfileString(Section, Name, Data, wxString(CfgFile));
+	WritePrivateProfileString(Section, Name, Data, Path::ToWxString(CfgFile));
 }
 
 /*****************************************************************************/
@@ -125,7 +125,7 @@ bool CfgReadBool(const TCHAR* Section, const TCHAR* Name, bool Default)
 	initIni();
 	TCHAR Data[255] = {0};
 
-	GetPrivateProfileString(Section, Name, L"", Data, 255, wxString(CfgFile));
+	GetPrivateProfileString(Section, Name, L"", Data, 255, Path::ToWxString(CfgFile));
 	Data[254] = 0;
 	if (wcslen(Data) == 0)
 	{
@@ -151,7 +151,7 @@ int CfgReadInt(const TCHAR* Section, const TCHAR* Name, int Default)
 {
 	initIni();
 	TCHAR Data[255] = {0};
-	GetPrivateProfileString(Section, Name, L"", Data, 255, wxString(CfgFile));
+	GetPrivateProfileString(Section, Name, L"", Data, 255, Path::ToWxString(CfgFile));
 	Data[254] = 0;
 
 	if (wcslen(Data) == 0)
@@ -167,7 +167,7 @@ float CfgReadFloat(const TCHAR* Section, const TCHAR* Name, float Default)
 {
 	initIni();
 	TCHAR Data[255] = {0};
-	GetPrivateProfileString(Section, Name, L"", Data, 255, wxString(CfgFile));
+	GetPrivateProfileString(Section, Name, L"", Data, 255, Path::ToWxString(CfgFile));
 	Data[254] = 0;
 
 	if (wcslen(Data) == 0)
@@ -182,7 +182,7 @@ float CfgReadFloat(const TCHAR* Section, const TCHAR* Name, float Default)
 void CfgReadStr(const TCHAR* Section, const TCHAR* Name, TCHAR* Data, int DataSize, const TCHAR* Default)
 {
 	initIni();
-	GetPrivateProfileString(Section, Name, L"", Data, DataSize, wxString(CfgFile));
+	GetPrivateProfileString(Section, Name, L"", Data, DataSize, Path::ToWxString(CfgFile));
 
 	if (wcslen(Data) == 0)
 	{
@@ -195,7 +195,7 @@ void CfgReadStr(const TCHAR* Section, const TCHAR* Name, wxString& Data, const T
 {
 	initIni();
 	wchar_t workspace[512];
-	GetPrivateProfileString(Section, Name, L"", workspace, ArraySize(workspace), wxString(CfgFile));
+	GetPrivateProfileString(Section, Name, L"", workspace, ArraySize(workspace), Path::ToWxString(CfgFile));
 
 	Data = workspace;
 
@@ -213,7 +213,7 @@ bool CfgFindName(const TCHAR* Section, const TCHAR* Name)
 	initIni();
 	// Only load 24 characters.  No need to load more.
 	TCHAR Data[24] = {0};
-	GetPrivateProfileString(Section, Name, L"", Data, 24, wxString(CfgFile));
+	GetPrivateProfileString(Section, Name, L"", Data, 24, Path::ToWxString(CfgFile));
 	Data[23] = 0;
 
 	if (wcslen(Data) == 0)

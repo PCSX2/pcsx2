@@ -17,6 +17,7 @@
 #include "Global.h"
 #include "Dma.h"
 #include "IopCommon.h"
+#include "Utilities/PathUtils.h"
 
 #include "spu2.h" // temporary until I resolve cyclePtr/TimeUpdate dependencies.
 
@@ -34,8 +35,8 @@ void DMALogOpen()
 {
 	if (!DMALog())
 		return;
-	DMA4LogFile = OpenBinaryLog(DMA4LogFileName.ToStdString());
-	DMA7LogFile = OpenBinaryLog(DMA7LogFileName.ToStdString());
+	DMA4LogFile = OpenBinaryLog(Path::FromWxString(DMA4LogFileName));
+	DMA7LogFile = OpenBinaryLog(Path::FromWxString(DMA7LogFileName));
 	ADMA4LogFile = OpenBinaryLog("adma4.raw");
 	ADMA7LogFile = OpenBinaryLog("adma7.raw");
 	ADMAOutLogFile = OpenBinaryLog("admaOut.raw");
