@@ -1026,7 +1026,7 @@ void Pcsx2App::InitDefaultGlobalAccelerators()
 	GlobalAccels->Map(AAC(WXK_ESCAPE), "Sys_SuspendResume");
 
 	// Fixme: GS Dumps could need a seperate label and hotkey binding or less interlinked with normal screenshots/snapshots , which messes with overloading lots of different mappings, commented the other GlobalAccels for this reason. GSdx hardcodes keybindings.
-	 GlobalAccels->Map(AAC(WXK_F8), "Sys_TakeSnapshot");
+	GlobalAccels->Map(AAC(WXK_F8), "Sys_TakeSnapshot");
 	// GlobalAccels->Map(AAC(WXK_F8).Shift(), "Sys_TakeSnapshot");
 	// GlobalAccels->Map(AAC(WXK_F8).Shift().Cmd(), "Sys_TakeSnapshot");
 	GlobalAccels->Map(AAC(WXK_F9), "Sys_RenderswitchToggle");
