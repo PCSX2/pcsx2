@@ -406,7 +406,6 @@ struct V_Core
 	s32 DMAICounter;   // DMA Interrupt Counter
 	u32 LastClock;     // DMA Interrupt Clock Cycle Counter
 	u32 InputDataLeft; // Input Buffer
-	u32 InputPosRead;
 	u32 InputPosWrite;
 	u32 InputDataProgress;
 

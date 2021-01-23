@@ -134,7 +134,6 @@ void V_Core::Init(int index)
 	NoiseOut = 0;
 	AutoDMACtrl = 0;
 	InputDataLeft = 0;
-	InputPosRead = 0;
 	InputPosWrite = 0;
 	InputDataProgress = 0;
 	ReverbX = 0;
