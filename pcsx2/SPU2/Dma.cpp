@@ -97,7 +97,7 @@ void V_Core::LogAutoDMA(FILE* fp)
 
 void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not split stereo
 {
-	int spos = ActiveTSA & 0x100;// ((InputPosRead + 0xff) & 0x100); //starting position of the free buffer
+	int spos = ActiveTSA & 0x100; // Starting position passed by TSA
 
 	if (spos == (OutPos & 0x100))
 		return;
@@ -173,9 +173,6 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 				AutoDMAReadBuffer(Index, 0);
 			}
 #else
-			if (((PlayMode & 4) == 4) && (Index == 0))
-				Cores[0].InputPosRead = 0;
-
 			AutoDMAReadBuffer(0);
 #endif
 
