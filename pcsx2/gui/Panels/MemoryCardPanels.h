@@ -16,16 +16,11 @@
 #pragma once
 
 #include "gui/AppCommon.h"
+#include "MemoryCardPanelColumns.h"
 
 #include <wx/dnd.h>
 #include <wx/listctrl.h>
 
-struct ListViewColumnInfo
-{
-	const wxChar*		name;
-	int					width;
-	wxListColumnFormat	align;
-};
 
 // --------------------------------------------------------------------------------------
 //  McdListItem / IMcdList
@@ -120,7 +115,8 @@ public:
 	virtual void SetCardCount( int length )=0;
 	virtual void SetMcdProvider( IMcdList* face );
 
-	virtual void LoadSaveColumns( IniInterface& ini );
+	virtual void LoadColumns();
+	virtual void SaveColumns();
 	virtual const ListViewColumnInfo& GetDefaultColumnInfo( uint idx ) const=0;
 
 	virtual IMcdList& GetMcdProvider();

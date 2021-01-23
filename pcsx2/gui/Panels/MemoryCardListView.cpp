@@ -20,6 +20,7 @@
 #include "gui/Dialogs/ConfigurationDialog.h"
 
 #include "common/IniInterface.h"
+#include "fmt/core.h"
 
 using namespace pxSizerFlags;
 using namespace Panels;
@@ -40,22 +41,37 @@ IMcdList& BaseMcdListView::GetMcdProvider()
 	return *m_CardProvider;
 }
 
-void BaseMcdListView::LoadSaveColumns( IniInterface& ini )
+void BaseMcdListView::LoadColumns()
 {
-	FastFormatUnicode label;
-	uint colcnt = GetColumnCount();
-	for( uint col=0; col<colcnt; ++col )
+	for (uint col = 0; col < GetColumnCount(); col++)
 	{
+		// Generate Key
 		const ListViewColumnInfo& cinfo = GetDefaultColumnInfo(col);
-		label.Clear();
-		label.Write( L"ColumnWidth_%ls", cinfo.name );
+		std::string key = fmt::format("ColumnWidth_{}", cinfo.key);
+
+		if (g_Conf->MemoryCardListPanel.columnWidths.count(key) != 1)
+		{
+			// If nothing is saved in the settings, use the default
+			SetColumnWidth(col, cinfo.width);
+		}
+		else
+		{
+			// Otherwise, use the value in the settings
+			SetColumnWidth(col, g_Conf->MemoryCardListPanel.columnWidths[key]);
+		}
+	}
+}
+
+void BaseMcdListView::SaveColumns()
+{
+	for (uint col = 0; col < GetColumnCount(); col++)
+	{
+		// Generate Key
+		const ListViewColumnInfo& cinfo = GetDefaultColumnInfo(col);
+		std::string key = fmt::format("ColumnWidth_{}", cinfo.key);
 
 		int width = GetColumnWidth(col);
-
-		ini.Entry( label, width, cinfo.width );
-		
-		if (ini.IsLoading())
-			SetColumnWidth(col, width);
+		g_Conf->MemoryCardListPanel.columnWidths[key] = width;
 	}
 }
 
@@ -92,24 +108,11 @@ void MemoryCardListView_Simple::CreateColumns()
 	}
 }
 
-const ListViewColumnInfo& MemoryCardListView_Simple::GetDefaultColumnInfo( uint idx ) const
+const ListViewColumnInfo& MemoryCardListView_Simple::GetDefaultColumnInfo(uint idx) const
 {
-	static const ListViewColumnInfo columns[] =
-	{
-		{ _("PS2 Port")		, 160 , wxLIST_FORMAT_LEFT	},
-		//{ _("Port status")	, 80  , wxLIST_FORMAT_LEFT	},
-		{ _("Memory card")	, 145 , wxLIST_FORMAT_LEFT	},
-		{ _("Card size")	, 60  , wxLIST_FORMAT_LEFT	},
-		{ _("Usable / Formatted")	, 115  , wxLIST_FORMAT_LEFT	},
-		{ _("Type")			  , 45  , wxLIST_FORMAT_LEFT	},
-		{ _("Last Modified"), 90 , wxLIST_FORMAT_LEFT	},
-		{ _("Created on")	, 80 , wxLIST_FORMAT_LEFT	},
-	};
-
-	pxAssertDev( idx < ArraySize(columns), "ListView column index is out of bounds." );
-	return columns[idx];
+	pxAssertDev(idx < LIST_VIEW_DEFAULT_COLUMN_INFO.size(), "ListView column index is out of bounds.");
+	return LIST_VIEW_DEFAULT_COLUMN_INFO.at(idx);
 }
-
 
 void MemoryCardListView_Simple::SetCardCount( int length )
 {

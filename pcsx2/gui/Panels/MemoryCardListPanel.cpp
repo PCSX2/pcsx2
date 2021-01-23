@@ -255,21 +255,15 @@ void Panels::BaseMcdListPanel::CreateLayout()
 
 	if (m_listview)
 	{
-		IniLoader loader;
-		ScopedIniGroup group(loader, L"MemoryCardListPanel");
-		m_listview->LoadSaveColumns(loader);
+		m_listview->LoadColumns();
 	}
 }
 
 void Panels::BaseMcdListPanel::Apply()
 {
-	// Save column widths to the configuration file.  Since these are used *only* by this
-	// dialog, we use a direct local ini save approach, instead of going through g_conf.
 	if (m_listview)
 	{
-		IniSaver saver;
-		ScopedIniGroup group(saver, L"MemoryCardListPanel");
-		m_listview->LoadSaveColumns(saver);
+		m_listview->SaveColumns();
 	}
 }
 

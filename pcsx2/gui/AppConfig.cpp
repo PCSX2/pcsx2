@@ -19,6 +19,7 @@
 #include "MainFrame.h"
 
 #include "MemoryCardFile.h"
+#include "gui/Panels/MemoryCardPanelColumns.h"
 
 #include "common/IniInterface.h"
 
@@ -27,6 +28,7 @@
 #include "DebugTools/Debug.h"
 #include <memory>
 #include <algorithm>
+#include "fmt/core.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // PathDefs Namespace -- contains default values for various pcsx2 path names and locations.
@@ -633,6 +635,7 @@ void AppConfig::LoadSave( IniInterface& ini )
 	// Process various sub-components:
 	ProgLogBox		.LoadSave( ini, L"ProgramLog" );
 
+	MemoryCardListPanel.LoadSave(ini);
 	Folders			.LoadSave( ini );
 	BaseFilenames	.LoadSave( ini );
 	GSWindow		.LoadSave( ini );
@@ -667,6 +670,20 @@ void AppConfig::ConsoleLogOptions::LoadSave( IniInterface& ini, const wxChar* lo
 	IniEntry( DisplaySize );
 	IniEntry( FontSize );
 	IniEntry( Theme );
+}
+
+void AppConfig::MemoryCardListPanelOptions::LoadSave(IniInterface& ini)
+{
+	ScopedIniGroup path( ini, L"MemoryCardListPanel" );
+
+	// TODO - config - once we switch to YAML, we could just iterate through what's in the file
+	// instead of having to have everything hard-coded...
+	for (auto const& columnInfo : LIST_VIEW_DEFAULT_COLUMN_INFO)
+	{
+		const int defValue = columnInfo.width;
+		const std::string key = fmt::format("ColumnWidth_{}", columnInfo.key);
+		ini.Entry(key, columnWidths, defValue);
+	}
 }
 
 void AppConfig::FolderOptions::ApplyDefaults()
@@ -1097,7 +1114,7 @@ void AppConfig_OnChangedSettingsFolder( bool overwrite )
 	fs::create_directories(PathDefs::GetDocuments());
 	fs::create_directories(GetSettingsFolder());
 
-	const wxString iniFilename( GetUiSettingsFilename() );
+	const wxString iniFilename(Path::ToWxString(GetUiSettingsFilename()));
 
 	if( overwrite )
 	{
