@@ -48,9 +48,6 @@ StereoOut32 V_Core::ReadInput_HiFi()
 		retval.Right >>= 4;
 	}
 
-	// Why does CDDA mode check for InputPos == 0x100? In the old code, SPDIF mode did not but CDDA did.
-	//  One of these seems wrong, they should be the same.  Since standard ADMA checks too I'm assuming that as default. -- air
-
 	if ((OutPos == 0xFF || OutPos == 0x1FF))
 	{
 		if (InputDataLeft >= 0x200)
@@ -103,9 +100,9 @@ StereoOut32 V_Core::ReadInput()
 	DebugCores[Index].admaWaveformR[OutPos % 0x100] = retval.Right;
 #endif
 
-	if ((OutPos == 0xFF || OutPos == 0x1FF))
+	if (OutPos == 0xFF || OutPos == 0x1FF || OutPos == 0x7F || OutPos == 0x17F)
 	{
-		if (InputDataLeft >= 0x200)
+		if (InputDataLeft >= 0x100)
 		{
 			//u8 k=InputDataLeft>=InputDataProgress;
 			int oldOutPos = OutPos;
@@ -113,7 +110,7 @@ StereoOut32 V_Core::ReadInput()
 			AutoDMAReadBuffer(0);
 			OutPos = oldOutPos;
 			AdmaInProgress = 1;
-			if (InputDataLeft < 0x200)
+			if (InputDataLeft < 0x100)
 			{
 				if ((AutoDMACtrl & (Index + 1)))
 					AutoDMACtrl |= ~3;
