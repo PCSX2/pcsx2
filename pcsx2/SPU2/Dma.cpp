@@ -97,8 +97,10 @@ void V_Core::LogAutoDMA(FILE* fp)
 
 void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not split stereo
 {
-	int spos = ((InputPosRead + 0xff) & 0x100); //starting position of the free buffer
+	int spos = ActiveTSA & 0x100;// ((InputPosRead + 0xff) & 0x100); //starting position of the free buffer
 
+	if (spos == (OutPos & 0x100))
+		return;
 	LogAutoDMA(Index ? ADMA7LogFile : ADMA4LogFile);
 
 	// HACKFIX!! DMAPtr can be invalid after a savestate load, so the savestate just forces it
@@ -129,6 +131,9 @@ void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not spl
 		MADR += 0x200;
 		InputDataLeft -= 0x100;
 		InputDataProgress += 0x100;
+		ActiveTSA += 0x100;
+		ActiveTSA &= ~0x200;
+		TSA = ActiveTSA;
 	}
 	// See ReadInput at mixer.cpp for explanation on the commented out lines
 	//
@@ -155,6 +160,7 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 	else if (size >= 512)
 	{
 		InputDataLeft = size;
+		AutoDMACtrl &= 3;
 		if (AdmaInProgress == 0)
 		{
 #ifdef PCM24_S1_INTERLEAVE
@@ -172,15 +178,18 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 
 			AutoDMAReadBuffer(0);
 #endif
+
+			AdmaInProgress = 1;
+
 			// Klonoa 2
-			if (size == 512)
+			if (!InputDataLeft)
 			{
 				DMAICounter = size * 4;
 				LastClock = *cyclePtr;
+				AdmaInProgress = 0;
+				AutoDMACtrl |= ~3;
 			}
 		}
-
-		AdmaInProgress = 1;
 	}
 	else
 	{
@@ -357,8 +366,6 @@ void V_Core::FinishDMAwrite()
 
 void V_Core::FinishDMAread()
 {
-	if (ActiveTSA != TSA)
-		ConLog("Read WTF TSA %x Active %x\n", TSA, ActiveTSA);
 	u32 buff1end = ActiveTSA + std::min(ReadSize, (u32)0x100 + std::abs(DMAICounter / 4));
 	u32 start = ActiveTSA;
 	u32 buff2end = 0;
@@ -520,7 +527,7 @@ void V_Core::DoDMAwrite(u16* pMem, u32 size)
 	else
 	{
 		PlainDMAWrite(pMem, size);
+		Regs.STATX &= ~0x80;
+		Regs.STATX |= 0x400;
 	}
-	Regs.STATX &= ~0x80;
-	Regs.STATX |= 0x400;
 }
