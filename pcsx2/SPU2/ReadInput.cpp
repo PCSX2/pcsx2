@@ -123,7 +123,7 @@ StereoOut32 V_Core::ReadInput()
 	if ((Index != 1) || ((PlayMode & 2) == 0))
 	{
 		for (int i = 0; i < 2; i++)
-			if (Cores[i].IRQEnable && 0x2000 + (Index << 10) + InputPosRead == (Cores[i].IRQA & 0xfffffdff))
+			if (Cores[i].IRQEnable && 0x2000 + (Index << 10) + OutPos == (Cores[i].IRQA & 0xfffffdff))
 				SetIrqCall(i);
 
 		//retval = StereoOut32(
@@ -131,8 +131,8 @@ StereoOut32 V_Core::ReadInput()
 		//	(s32)ADMATempBuffer[InputPosRead+0x200]
 		//);
 		retval = StereoOut32(
-			(s32)(*GetMemPtr(0x2000 + (Index << 10) + InputPosRead)),
-			(s32)(*GetMemPtr(0x2200 + (Index << 10) + InputPosRead)));
+			(s32)(*GetMemPtr(0x2000 + (Index << 10) + OutPos)),
+			(s32)(*GetMemPtr(0x2200 + (Index << 10) + OutPos)));
 	}
 
 #ifdef PCSX2_DEVBUILD
@@ -142,21 +142,19 @@ StereoOut32 V_Core::ReadInput()
 
 	InputPosRead++;
 
-	if ((AutoDMACtrl & (Index + 1)) && (InputPosRead == 0x100 || InputPosRead == 0x200))
+	if ((OutPos == 0xFF || OutPos == 0x1FF))
 	{
-		AdmaInProgress = 0;
 		if (InputDataLeft >= 0x200)
 		{
 			//u8 k=InputDataLeft>=InputDataProgress;
-
+			int oldOutPos = OutPos;
+			OutPos = (OutPos + 1) & 0x1FF;
 			AutoDMAReadBuffer(0);
-
+			OutPos = oldOutPos;
 			AdmaInProgress = 1;
-			ActiveTSA = (Index << 10) + InputPosRead;
-			TSA = ActiveTSA;
 			if (InputDataLeft < 0x200)
 			{
-				if((AutoDMACtrl & (Index + 1)))
+				if ((AutoDMACtrl & (Index + 1)))
 					AutoDMACtrl |= ~3;
 
 				if (IsDevBuild)
@@ -168,24 +166,10 @@ StereoOut32 V_Core::ReadInput()
 							ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");
 					}
 				}
-
+				AdmaInProgress = 0;
 				InputDataLeft = 0;
-				// Hack, kinda. We call the interrupt early here, since PCSX2 doesn't like them delayed.
-				//DMAICounter   = 1;
-				if (Index == 0)
-				{
-					if (!SPU2_dummy_callback)
-						spu2DMA4Irq();
-					else
-						SPU2interruptDMA4();
-				}
-				else
-				{
-					if (!SPU2_dummy_callback)
-						spu2DMA7Irq();
-					else
-						SPU2interruptDMA7();
-				}
+				DMAICounter = 0x200 * 4;
+				LastClock = *cyclePtr;
 			}
 		}
 	}

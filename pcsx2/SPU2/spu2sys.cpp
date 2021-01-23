@@ -1522,11 +1522,11 @@ static void __fastcall RegWrite_Core(u16 value)
 				return;
 			}
 			thiscore.AutoDMACtrl = value;
-			if (value == 0 && thiscore.AdmaInProgress && (thiscore.Regs.STATX & 0x400))
+			if (value == 0 && thiscore.AdmaInProgress)
 			{
+				// Kill the current transfer so it doesn't continue
 				thiscore.AdmaInProgress = 0;
-				thiscore.Regs.STATX &= ~0x400; // Set DMA as not busy transferring
-				// No need to end the DMA here, the IOP seems to handle that
+				thiscore.InputDataLeft = 0;
 			}
 			break;
 
