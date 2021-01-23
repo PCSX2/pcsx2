@@ -16,7 +16,7 @@
 #ifndef DEBUG_H_INCLUDED
 #define DEBUG_H_INCLUDED
 
-#include "Utilities/PathUtils.h"
+#include "common/PathUtils.h"
 
 extern FILE* spu2Log;
 

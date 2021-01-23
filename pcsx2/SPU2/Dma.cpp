@@ -17,7 +17,7 @@
 #include "Global.h"
 #include "Dma.h"
 #include "IopCommon.h"
-#include "Utilities/PathUtils.h"
+#include "common/PathUtils.h"
 
 #include "spu2.h" // temporary until I resolve cyclePtr/TimeUpdate dependencies.
 

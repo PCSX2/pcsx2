@@ -149,7 +149,7 @@ std::string Path::ReplaceFilename(const wxString &src, const wxString &newfilena
 
 std::string Path::GetFilename(const std::string &src)
 {
-	return ghc::filesystem::absolute(src);
+	return fs::path(src).filename();
 }
 
 wxString Path::GetFilenameWithoutExt(const wxString& src)
