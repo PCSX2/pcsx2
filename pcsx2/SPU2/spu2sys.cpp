@@ -475,7 +475,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 		}
 		else
 		{
-			if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > Cores[0].DMAICounter)
+			if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > (u32)Cores[0].DMAICounter)
 			{
 				psxCounters[6].sCycleT = psxRegs.cycle;
 				psxCounters[6].CycleT = Cores[0].DMAICounter;
@@ -531,7 +531,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 		}
 		else
 		{
-			if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > Cores[1].DMAICounter)
+			if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > (u32)Cores[1].DMAICounter)
 			{
 				psxCounters[6].sCycleT = psxRegs.cycle;
 				psxCounters[6].CycleT = Cores[1].DMAICounter;
