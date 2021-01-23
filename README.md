@@ -2,6 +2,7 @@
 
 ![Windows Build](https://github.com/PCSX2/pcsx2/workflows/Windows%20Build/badge.svg)
 ![Linux Build](https://github.com/PCSX2/pcsx2/workflows/Linux%20Build/badge.svg)
+[![Codacy Badge](https://app.codacy.com/project/badge/Grade/1f7c0d75fec74d6daa6adb084e5b4f71)](https://www.codacy.com/gh/PCSX2/pcsx2/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=PCSX2/pcsx2&amp;utm_campaign=Badge_Grade)
 [![Coverity Scan Build Status](https://scan.coverity.com/projects/6310/badge.svg)](https://scan.coverity.com/projects/6310)
 [![Discord Server](https://img.shields.io/discord/309643527816609793)](https://discord.com/invite/TCz3t9k)
 
