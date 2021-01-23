@@ -1507,14 +1507,6 @@ u8 PADpoll(u8 value)
 	}
 }
 
-// returns: 1 if supports pad1
-//			2 if supports pad2
-//			3 if both are supported
-u32 PADquery()
-{
-	return 3;
-}
-
 keyEvent* PADkeyEvent()
 {
 	// If running both pads, ignore every other call.  So if two keys pressed in same interval...
@@ -1669,34 +1661,6 @@ s32 PADfreeze(int mode, freezeData* data)
 	else
 		return -1;
 	return 0;
-}
-
-u32 PADreadPort1(PadDataS* pads)
-{
-	PADstartPoll(1);
-	PADpoll(0x42);
-	memcpy(pads, query.response + 1, 7);
-	pads->controllerType = pads[0].controllerType >> 4;
-	memset(pads + 7, 0, sizeof(PadDataS) - 7);
-	return 0;
-}
-
-u32 PADreadPort2(PadDataS* pads)
-{
-	PADstartPoll(2);
-	PADpoll(0x42);
-	memcpy(pads, query.response + 1, 7);
-	pads->controllerType = pads->controllerType >> 4;
-	memset(pads + 7, 0, sizeof(PadDataS) - 7);
-	return 0;
-}
-
-s32 PADqueryMtap(u8 port)
-{
-	port--;
-	if (port > 1)
-		return 0;
-	return config.multitap[port];
 }
 
 s32 PADsetSlot(u8 port, u8 slot)

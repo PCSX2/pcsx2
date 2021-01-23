@@ -23,7 +23,7 @@
 #include "VKey.h"
 #include "DirectInput.h"
 #include "DeviceEnumerator.h"
-#include "PS2Etypes.h"
+#include "Pcsx2Defs.h"
 
 // All for getting GUIDs of XInput devices....
 #include <wbemidl.h>
