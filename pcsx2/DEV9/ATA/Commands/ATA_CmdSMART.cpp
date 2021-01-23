@@ -97,7 +97,7 @@ void ATA::SMART_SetAutoSaveAttribute()
 void ATA::SMART_ExecuteOfflineImmediate()
 {
 	PreCmd();
-	int n = 0;
+	[[maybe_unused]] int n = 0;
 	switch (regSector)
 	{
 		case 0: /* off-line routine */
