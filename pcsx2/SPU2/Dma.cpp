@@ -338,7 +338,7 @@ void V_Core::FinishDMAwrite()
 	{
 		DMAICounter = std::min(ReadSize, (u32)0x100) * 4;
 
-		if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > DMAICounter)
+		if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
 		{
 			psxCounters[6].sCycleT = psxRegs.cycle;
 			psxCounters[6].CycleT = DMAICounter;
@@ -430,7 +430,7 @@ void V_Core::FinishDMAread()
 	{
 		DMAICounter = std::min(ReadSize, (u32)0x100) * 4;
 
-		if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > DMAICounter)
+		if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
 		{
 			psxCounters[6].sCycleT = psxRegs.cycle;
 			psxCounters[6].CycleT = DMAICounter;
@@ -462,7 +462,7 @@ void V_Core::DoDMAread(u16* pMem, u32 size)
 	//Regs.ATTR |= 0x30;
 	TADR = MADR + (size << 1);
 
-	if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > DMAICounter)
+	if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
 	{
 		psxCounters[6].sCycleT = psxRegs.cycle;
 		psxCounters[6].CycleT = DMAICounter;
