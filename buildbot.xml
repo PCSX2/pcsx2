@@ -20,8 +20,11 @@
       CreateHardLinksForPublishFilesIfPossible=$(CreateHardLinksIfPossible);
     </CompileFastPlz>
   </PropertyGroup>
+  <PropertyGroup>
+    <RetainDebuggingArtifacts Condition="'$(RetainDebuggingArtifacts)' == ''">false</RetainDebuggingArtifacts>
+  </PropertyGroup>
   <!-- Add all the custom targets here. -->
-  <Target Name="CleanBloat" AfterTargets="InternalBuild">
+  <Target Name="CleanBloat" AfterTargets="InternalBuild" Condition="'$(RetainDebuggingArtifacts)' == 'false'">
     <ItemGroup>
       <BloatToDelete Include="$(MSBuildProjectDirectory)\bin\**\*.bsc"/>
       <BloatToDelete Include="$(MSBuildProjectDirectory)\bin\**\*.exp"/>
