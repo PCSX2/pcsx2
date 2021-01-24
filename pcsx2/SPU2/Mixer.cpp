@@ -581,18 +581,7 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 
 		CalculateADSR(thiscore, voiceidx);
 		Value = MulShr32(Value, vc.ADSR.Value);
-
-		// Store Value for eventual modulation later
-		// Pseudonym's Crest calculation idea. Actually calculates a crest, unlike the old code which was just peak.
-		if (vc.PV1 < vc.NextCrest)
-		{
-			vc.OutX = MulShr32(vc.NextCrest, vc.ADSR.Value);
-			vc.NextCrest = -0x8000;
-		}
-		if (vc.PV1 > vc.PV2)
-		{
-			vc.NextCrest = vc.PV1;
-		}
+		vc.OutX = Value;
 
 		if (IsDevBuild)
 			DebugCores[coreidx].Voices[voiceidx].displayPeak = std::max(DebugCores[coreidx].Voices[voiceidx].displayPeak, (s32)vc.OutX);
