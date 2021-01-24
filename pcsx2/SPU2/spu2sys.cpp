@@ -438,7 +438,9 @@ __forceinline void TimeUpdate(u32 cClocks)
 		const u32 amt = std::min(*cyclePtr - Cores[0].LastClock, (u32)Cores[0].DMAICounter);
 		Cores[0].DMAICounter -= amt;
 		Cores[0].LastClock = *cyclePtr;
-		Cores[0].MADR += amt / 2;
+		if(!Cores[0].AdmaInProgress)
+			Cores[0].MADR += amt / 2;
+
 		if (Cores[0].DMAICounter <= 0)
 		{
 			if (((Cores[0].AutoDMACtrl & 1) != 1) && Cores[0].ReadSize)
@@ -463,7 +465,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 					}
 				}
 			}
-			if (!Cores[0].DMAICounter)
+			if (Cores[0].DMAICounter <= 0)
 			{
 				Cores[0].MADR = Cores[0].TADR;
 				if (!SPU2_dummy_callback)
@@ -493,7 +495,8 @@ __forceinline void TimeUpdate(u32 cClocks)
 		const u32 amt = std::min(*cyclePtr - Cores[1].LastClock, (u32)Cores[1].DMAICounter);
 		Cores[1].DMAICounter -= amt;
 		Cores[1].LastClock = *cyclePtr;
-		Cores[1].MADR += amt / 2;
+		if (!Cores[1].AdmaInProgress)
+			Cores[1].MADR += amt / 2;
 		if (Cores[1].DMAICounter <= 0)
 		{
 			if (((Cores[1].AutoDMACtrl & 2) != 2) && Cores[1].ReadSize)
@@ -519,7 +522,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 				}
 			}
 
-			if (!Cores[1].DMAICounter)
+			if (Cores[1].DMAICounter <= 0)
 			{
 				Cores[1].MADR = Cores[1].TADR;
 				if (!SPU2_dummy_callback)
@@ -1521,11 +1524,12 @@ static void __fastcall RegWrite_Core(u16 value)
 				return;
 			}
 			thiscore.AutoDMACtrl = value;
-			if (value == 0 && thiscore.AdmaInProgress)
+			if (!(value & 0x3) && thiscore.AdmaInProgress)
 			{
 				// Kill the current transfer so it doesn't continue
 				thiscore.AdmaInProgress = 0;
 				thiscore.InputDataLeft = 0;
+				thiscore.DMAICounter = 0;
 			}
 			break;
 

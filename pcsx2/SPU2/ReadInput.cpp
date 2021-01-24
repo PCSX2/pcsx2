@@ -70,7 +70,6 @@ StereoOut32 V_Core::ReadInput_HiFi()
 							ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");
 					}
 				}
-				AdmaInProgress = 0;
 				InputDataLeft = 0;
 				DMAICounter = 0x200 * 4;
 				LastClock = *cyclePtr;
@@ -99,22 +98,20 @@ StereoOut32 V_Core::ReadInput()
 	DebugCores[Index].admaWaveformL[OutPos % 0x100] = retval.Left;
 	DebugCores[Index].admaWaveformR[OutPos % 0x100] = retval.Right;
 #endif
-
-	if (OutPos == 0xFF || OutPos == 0x1FF || OutPos == 0x7F || OutPos == 0x17F)
+	
+	if (OutPos == 0x100 || OutPos == 0x0 || OutPos == 0x80 || OutPos == 0x180)
 	{
+		if (OutPos == 0x100)
+			InputPosWrite = 0;
+		else if (OutPos == 0)
+			InputPosWrite = 0x100;
+
 		if (InputDataLeft >= 0x100)
 		{
-			//u8 k=InputDataLeft>=InputDataProgress;
-			int oldOutPos = OutPos;
-			OutPos = (OutPos + 1) & 0x1FF;
 			AutoDMAReadBuffer(0);
-			OutPos = oldOutPos;
 			AdmaInProgress = 1;
 			if (InputDataLeft < 0x100)
 			{
-				if ((AutoDMACtrl & (Index + 1)))
-					AutoDMACtrl |= ~3;
-
 				if (IsDevBuild)
 				{
 					FileLog("[%10d] AutoDMA%c block end.\n", Cycles, GetDmaIndexChar());
@@ -124,12 +121,15 @@ StereoOut32 V_Core::ReadInput()
 							ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");
 					}
 				}
-				AdmaInProgress = 0;
+				
 				InputDataLeft = 0;
 				DMAICounter = 0x200 * 4;
 				LastClock = *cyclePtr;
 			}
 		}
+		else
+			if ((AutoDMACtrl & (Index + 1)))
+				AutoDMACtrl |= ~3;
 	}
 	return retval;
 }

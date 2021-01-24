@@ -97,14 +97,14 @@ void V_Core::LogAutoDMA(FILE* fp)
 
 void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not split stereo
 {
-	int spos = ActiveTSA & 0x100; // Starting position passed by TSA
-	bool leftbuffer = !(ActiveTSA & 0x80);
-	if (spos == (OutPos & 0x100))
-	{
-		//ConLog("Ignoring buffer update Pos %x OutPos %x\n", spos, OutPos);
+	int spos = InputPosWrite & 0x100; // Starting position passed by TSA
+	bool leftbuffer = !(InputPosWrite & 0x80);
+
+	if (InputPosWrite == 0xFFFF) // Data request not made yet
 		return;
-	}
-	
+
+	AutoDMACtrl &= 0x3;
+
 	int size = std::min(InputDataLeft, (u32)0x200);
 	if (!leftbuffer)
 		size = 0x100;
@@ -117,7 +117,6 @@ void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not spl
 	if (mode)
 	{
 		if (DMAPtr != nullptr)
-			//memcpy((ADMATempBuffer+(spos<<1)),DMAPtr+InputDataProgress,0x400);
 			memcpy(GetMemPtr(0x2000 + (Index << 10) + spos), DMAPtr + InputDataProgress, size);
 		MADR += size;
 		InputDataLeft -= 0x200;
@@ -131,20 +130,19 @@ void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not spl
 				spos |= 0x200;
 			else
 				spos &= ~0x200;
-			//ConLog("Filling %s buffer\n", leftbuffer ? "Left" : "Right");
+
 			if (DMAPtr != nullptr)
-				//memcpy((ADMATempBuffer+spos),DMAPtr+InputDataProgress,0x200);
 				memcpy(GetMemPtr(0x2000 + (Index << 10) + spos), DMAPtr + InputDataProgress, 0x200);
 			MADR += 0x200;
 			InputDataLeft -= 0x100;
 			InputDataProgress += 0x100;
 			leftbuffer = !leftbuffer;
 			size -= 0x100;
-			ActiveTSA += 0x80;
-			ActiveTSA &= ~0x200;
-			TSA = ActiveTSA;
+			InputPosWrite += 0x80;
 		}
 	}
+	if (!(InputPosWrite & 0x80))
+		InputPosWrite = 0xFFFF;
 }
 
 void V_Core::StartADMAWrite(u16* pMem, u32 sz)
@@ -159,6 +157,7 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 			   GetDmaIndexChar(), size << 1, ActiveTSA, DMABits, AutoDMACtrl, (~Regs.ATTR) & 0xffff, OutPos);
 
 	InputDataProgress = 0;
+	TADR = MADR + (size << 1);
 	if ((AutoDMACtrl & (Index + 1)) == 0)
 	{
 		ActiveTSA = 0x2000 + (Index << 10);
@@ -168,8 +167,7 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 	else if (size >= 256)
 	{
 		InputDataLeft = size;
-		AutoDMACtrl &= 3;
-		if (AdmaInProgress == 0)
+		if (InputPosWrite != 0xFFFF)
 		{
 #ifdef PCM24_S1_INTERLEAVE
 			if ((Index == 1) && ((PlayMode & 8) == 8))
@@ -184,16 +182,15 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 			AutoDMAReadBuffer(0);
 #endif
 
-			AdmaInProgress = 1;
 
 			if (!InputDataLeft)
 			{
 				DMAICounter = size * 4;
 				LastClock = *cyclePtr;
-				AdmaInProgress = 0;
 				AutoDMACtrl |= ~3;
 			}
 		}
+		AdmaInProgress = 1;
 	}
 	else
 	{
@@ -202,7 +199,6 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 		DMAICounter = size * 4;
 		LastClock = *cyclePtr;
 	}
-	TADR = MADR + (size << 1);
 }
 
 void V_Core::PlainDMAWrite(u16* pMem, u32 size)
@@ -245,8 +241,6 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 
 void V_Core::FinishDMAwrite()
 {
-	if (ActiveTSA != TSA)
-		ConLog("Write WTF TSA %x Active %x\n", TSA, ActiveTSA);
 	if (Index == 0)
 		DMA4LogWrite(DMAPtr, ReadSize << 1);
 	else
