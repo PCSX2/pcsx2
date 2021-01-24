@@ -65,6 +65,9 @@ jobs:
           vs-version: 16.7
 
       - name: Build PCSX2
+        env:
+          # Set to 'true' to retain the .pdb / .exp / .lib, etc files which can be useful for repro'ing issues that only occur in the compiled .exe
+          RetainDebuggingArtifacts: "false"
         run: msbuild "buildbot.xml" /m /v:n /t:ReleaseAll /p:Platform=${{ matrix.platform }}
 
       - name: Prepare Artifact Metadata
