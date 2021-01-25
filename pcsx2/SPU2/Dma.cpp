@@ -133,7 +133,7 @@ void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not spl
 
 			if (DMAPtr != nullptr)
 				memcpy(GetMemPtr(0x2000 + (Index << 10) + spos), DMAPtr + InputDataProgress, 0x200);
-			MADR += 0x200;
+			InputDataTransferred += 0x200;
 			InputDataLeft -= 0x100;
 			InputDataProgress += 0x100;
 			leftbuffer = !leftbuffer;
