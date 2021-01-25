@@ -82,28 +82,39 @@ StereoOut32 V_Core::ReadInput_HiFi()
 StereoOut32 V_Core::ReadInput()
 {
 	StereoOut32 retval;
-
-	if ((Index != 1) || ((PlayMode & 2) == 0))
+	s16 ReadIndex = OutPos;
+	if ((Index == 1) || ((PlayMode & 2) == 0))
 	{
 		for (int i = 0; i < 2; i++)
-			if (Cores[i].IRQEnable && 0x2000 + (Index << 10) + OutPos == (Cores[i].IRQA & 0xfffffdff))
+			if (Cores[i].IRQEnable && 0x2000 + (Index << 10) + ReadIndex == (Cores[i].IRQA & 0xfffffdff))
 				SetIrqCall(i);
 
 		retval = StereoOut32(
-			(s32)(*GetMemPtr(0x2000 + (Index << 10) + OutPos)),
-			(s32)(*GetMemPtr(0x2200 + (Index << 10) + OutPos)));
+			(s32)(*GetMemPtr(0x2000 + (Index << 10) + ReadIndex)),
+			(s32)(*GetMemPtr(0x2200 + (Index << 10) + ReadIndex)));
 	}
 
 #ifdef PCSX2_DEVBUILD
 	DebugCores[Index].admaWaveformL[OutPos % 0x100] = retval.Left;
 	DebugCores[Index].admaWaveformR[OutPos % 0x100] = retval.Right;
 #endif
-	
-	if (OutPos == 0x100 || OutPos == 0x0 || OutPos == 0x80 || OutPos == 0x180)
+
+	// Simulate MADR increase, GTA VC tracks the MADR address for calculating a certain point in the buffer
+	if (InputDataTransferred)
 	{
-		if (OutPos == 0x100)
+		u32 amount = std::min(InputDataTransferred, (u32)0x180);
+		MADR += amount;
+		InputDataTransferred -= amount;
+	}
+
+	if (PlayMode == 2 && Index == 0) //Bitstream bypass refills twice as quickly (GTA VC)
+		ReadIndex = (ReadIndex * 2) & 0x1FF;
+
+	if (ReadIndex == 0x100 || ReadIndex == 0x0 || ReadIndex == 0x80 || ReadIndex == 0x180)
+	{
+		if (ReadIndex == 0x100)
 			InputPosWrite = 0;
-		else if (OutPos == 0)
+		else if (ReadIndex == 0)
 			InputPosWrite = 0x100;
 
 		if (InputDataLeft >= 0x100)
@@ -123,7 +134,7 @@ StereoOut32 V_Core::ReadInput()
 				}
 				
 				InputDataLeft = 0;
-				DMAICounter = 0x200 * 4;
+				DMAICounter = InputDataTransferred * 4;
 				LastClock = *cyclePtr;
 			}
 		}

@@ -134,8 +134,9 @@ void V_Core::Init(int index)
 	NoiseOut = 0;
 	AutoDMACtrl = 0;
 	InputDataLeft = 0;
-	InputPosWrite = 0;
+	InputPosWrite = 0x100;
 	InputDataProgress = 0;
+	InputDataTransferred = 0;
 	ReverbX = 0;
 	LastEffect.Left = 0;
 	LastEffect.Right = 0;
@@ -1530,6 +1531,7 @@ static void __fastcall RegWrite_Core(u16 value)
 				thiscore.AdmaInProgress = 0;
 				thiscore.InputDataLeft = 0;
 				thiscore.DMAICounter = 0;
+				thiscore.InputDataTransferred = 0;
 			}
 			break;
 
