@@ -34,9 +34,11 @@ StereoOut32 V_Core::ReadInput_HiFi()
 	if (psxmode)
 		ConLog("ReadInput_HiFi!!!!!\n");
 
+	s16 ReadIndex = (OutPos * 2) & 0x1FF;
+
 	StereoOut32 retval(
-		(s32&)(*GetMemPtr(0x2000 + (Index << 10) + OutPos)),
-		(s32&)(*GetMemPtr(0x2200 + (Index << 10) + OutPos)));
+		(s32&)(*GetMemPtr(0x2000 + (Index << 10) + ReadIndex)),
+		(s32&)(*GetMemPtr(0x2200 + (Index << 10) + ReadIndex)));
 
 	if (Index == 1)
 	{
@@ -48,33 +50,36 @@ StereoOut32 V_Core::ReadInput_HiFi()
 		retval.Right >>= 4;
 	}
 
-	if ((OutPos == 0xFF || OutPos == 0x1FF))
+	if (ReadIndex == 0x100 || ReadIndex == 0x0 || ReadIndex == 0x80 || ReadIndex == 0x180)
 	{
-		if (InputDataLeft >= 0x200)
+		if (ReadIndex == 0x100)
+			InputPosWrite = 0;
+		else if (ReadIndex == 0)
+			InputPosWrite = 0x100;
+
+		if (InputDataLeft >= 0x100)
 		{
-			int oldOutPos = OutPos;
-			OutPos = (OutPos + 1) & 0x1FF;
 			AutoDMAReadBuffer(0);
-			OutPos = oldOutPos;
 			AdmaInProgress = 1;
-
-			if (InputDataLeft < 0x200)
+			if (InputDataLeft < 0x100)
 			{
-				FileLog("[%10d] %s AutoDMA%c block end.\n", (Index == 1) ? "CDDA" : "SPDIF", Cycles, GetDmaIndexChar());
-
 				if (IsDevBuild)
 				{
+					FileLog("[%10d] AutoDMA%c block end.\n", Cycles, GetDmaIndexChar());
 					if (InputDataLeft > 0)
 					{
 						if (MsgAutoDMA())
 							ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");
 					}
 				}
+
 				InputDataLeft = 0;
-				DMAICounter = 0x200 * 4;
+				DMAICounter = InputDataTransferred * 4;
 				LastClock = *cyclePtr;
 			}
 		}
+		else if ((AutoDMACtrl & (Index + 1)))
+			AutoDMACtrl |= ~3;
 	}
 	return retval;
 }
@@ -83,12 +88,14 @@ StereoOut32 V_Core::ReadInput()
 {
 	StereoOut32 retval;
 	s16 ReadIndex = OutPos;
-	if ((Index == 1) || ((PlayMode & 2) == 0))
-	{
-		for (int i = 0; i < 2; i++)
-			if (Cores[i].IRQEnable && 0x2000 + (Index << 10) + ReadIndex == (Cores[i].IRQA & 0xfffffdff))
-				SetIrqCall(i);
 
+	for (int i = 0; i < 2; i++)
+		if (Cores[i].IRQEnable && (0x2000 + (Index << 10) + ReadIndex) == (Cores[i].IRQA & 0xfffffdff))
+			SetIrqCall(i);
+
+	// PlayMode & 2 is Bypass Mode, so it doesn't go through the SPU
+	if (Index == 1 || (Index == 0 && (PlayMode & 2) == 0))
+	{
 		retval = StereoOut32(
 			(s32)(*GetMemPtr(0x2000 + (Index << 10) + ReadIndex)),
 			(s32)(*GetMemPtr(0x2200 + (Index << 10) + ReadIndex)));
@@ -132,15 +139,14 @@ StereoOut32 V_Core::ReadInput()
 							ConLog("WARNING: adma buffer didn't finish with a whole block!!\n");
 					}
 				}
-				
+
 				InputDataLeft = 0;
 				DMAICounter = InputDataTransferred * 4;
 				LastClock = *cyclePtr;
 			}
 		}
-		else
-			if ((AutoDMACtrl & (Index + 1)))
-				AutoDMACtrl |= ~3;
+		else if ((AutoDMACtrl & (Index + 1)))
+			AutoDMACtrl |= ~3;
 	}
 	return retval;
 }
