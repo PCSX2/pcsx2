@@ -742,6 +742,7 @@ Pcsx2App::Pcsx2App()
 		_("Save &As...");
 		_("&Help");
 		_("&Home");
+		_("&Window");
 
 		_("Show about dialog.")
 	}
