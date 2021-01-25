@@ -322,6 +322,14 @@ set(pcsx2DEV9Sources
 	DEV9/ATA/Commands/ATA_CmdPIOData.cpp
 	DEV9/ATA/Commands/ATA_CmdSMART.cpp
 	DEV9/ATA/Commands/ATA_SCE.cpp
+	DEV9/PacketReader/ARP/ARP_Packet.cpp
+	DEV9/PacketReader/IP/UDP/DHCP/DHCP_Options.cpp
+	DEV9/PacketReader/IP/UDP/DHCP/DHCP_Packet.cpp
+	DEV9/PacketReader/IP/UDP/UDP_Packet.cpp
+	DEV9/PacketReader/IP/IP_Options.cpp
+	DEV9/PacketReader/IP/IP_Packet.cpp
+	DEV9/PacketReader/EthernetFrame.cpp
+	DEV9/PacketReader/NetLib.cpp
 	DEV9/ATA/ATA_Info.cpp
 	DEV9/ATA/ATA_State.cpp
 	DEV9/ATA/ATA_Transfer.cpp
@@ -340,6 +348,17 @@ set(pcsx2DEV9Sources
 set(pcsx2DEV9Headers
 	DEV9/ATA/ATA.h
 	DEV9/ATA/HddCreate.h
+	DEV9/PacketReader/ARP/ARP_Packet.h
+	DEV9/PacketReader/IP/UDP/DHCP/DHCP_Options.h
+	DEV9/PacketReader/IP/UDP/DHCP/DHCP_Packet.h
+	DEV9/PacketReader/IP/UDP/UDP_Packet.h
+	DEV9/PacketReader/IP/IP_Address.h
+	DEV9/PacketReader/IP/IP_Options.h
+	DEV9/PacketReader/IP/IP_Packet.h
+	DEV9/PacketReader/IP/IP_Payload.h
+	DEV9/PacketReader/EthernetFrame.h
+	DEV9/PacketReader/NetLib.h
+	DEV9/PacketReader/Payload.h
 	DEV9/DEV9.h
 	DEV9/net.h
 	DEV9/pcap_io.h

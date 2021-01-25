@@ -223,6 +223,21 @@
     <Filter Include="System\Ps2\PAD">
       <UniqueIdentifier>{e1cbcaf6-9f65-4f14-9e89-27dd0f10e047}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\DEV9\PacketReader">
+      <UniqueIdentifier>{57c4be94-9a2c-469b-9b02-b3b324857fc5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\PacketReader\IP">
+      <UniqueIdentifier>{a0723e13-c839-464d-8cfa-6c440ae03537}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\PacketReader\IP\UDP">
+      <UniqueIdentifier>{db2fc75d-6552-4991-9155-885abd8796e4}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\PacketReader\IP\UDP\DHCP">
+      <UniqueIdentifier>{58517402-69dd-48f2-8837-7a58544945da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\PacketReader\ARP">
+      <UniqueIdentifier>{12c15e0b-4647-4ce2-9bc4-89e6e9e8f531}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -1093,6 +1108,30 @@
     <ClCompile Include="..\..\DEV9\ATA\HddCreate.cpp">
       <Filter>System\Ps2\DEV9\ATA</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\DEV9\PacketReader\ARP\ARP_Packet.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\ARP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\PacketReader\IP\UDP\DHCP\DHCP_Options.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\UDP\DHCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\PacketReader\IP\UDP\DHCP\DHCP_Packet.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\UDP\DHCP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\PacketReader\IP\UDP\UDP_Packet.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\UDP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\PacketReader\IP\IP_Options.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\IP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\PacketReader\IP\IP_Packet.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader\IP</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\PacketReader\EthernetFrame.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\DEV9\PacketReader\NetLib.cpp">
+      <Filter>System\Ps2\DEV9\PacketReader</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\DEV9\DEV9.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
@@ -1832,6 +1871,39 @@
     </ClInclude>
     <ClInclude Include="..\..\DEV9\ATA\HddCreate.h">
       <Filter>System\Ps2\DEV9\ATA</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\PacketReader\ARP\ARP_Packet.h">
+      <Filter>System\Ps2\DEV9\PacketReader\ARP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\PacketReader\IP\UDP\DHCP\DHCP_Options.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\UDP\DHCP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\PacketReader\IP\UDP\DHCP\DHCP_Packet.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\UDP\DHCP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\PacketReader\IP\UDP\UDP_Packet.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP\UDP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\PacketReader\IP\IP_Address.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\PacketReader\IP\IP_Options.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\PacketReader\IP\IP_Packet.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\PacketReader\IP\IP_Payload.h">
+      <Filter>System\Ps2\DEV9\PacketReader\IP</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\PacketReader\EthernetFrame.h">
+      <Filter>System\Ps2\DEV9\PacketReader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\PacketReader\NetLib.h">
+      <Filter>System\Ps2\DEV9\PacketReader</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\DEV9\PacketReader\Payload.h">
+      <Filter>System\Ps2\DEV9\PacketReader</Filter>
     </ClInclude>
     <ClInclude Include="..\..\DEV9\Config.h">
       <Filter>System\Ps2\DEV9</Filter>
