@@ -1048,25 +1048,18 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				m_require_full_barrier = true;
 				DATE_GL45 = true;
 			}
-			else
+			else if (m_accurate_date)
 			{
 				// Note: Fast level (DATE_one) was removed as it's less accurate.
-				if (m_accurate_date)
+				GL_PERF("DATE: Full AD with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+				if (GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture)
 				{
-					GL_PERF("DATE: Full AD with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
-					if (GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture)
-					{
-						DATE_GL42 = true;
-					}
-					else
-					{
-						m_require_full_barrier = true;
-						DATE_GL45 = true;
-					}
+					DATE_GL42 = true;
 				}
 				else
 				{
-					GL_PERF("DATE: Off AD with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+					m_require_full_barrier = true;
+					DATE_GL45 = true;
 				}
 			}
 		}
