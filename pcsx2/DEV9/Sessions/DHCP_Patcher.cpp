@@ -103,6 +103,7 @@ namespace Sessions
 			//No modifications
 			delete dhcppkt;
 			delete udppkt;
+			return nullptr;
 		}
 
 
