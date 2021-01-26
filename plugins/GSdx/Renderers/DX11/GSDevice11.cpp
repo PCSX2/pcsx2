@@ -1353,7 +1353,7 @@ void GSDevice11::OMSetBlendState(ID3D11BlendState* bs, float bf)
 		m_state.bs = bs;
 		m_state.bf = bf;
 
-		float BlendFactor[] = {bf, bf, bf, 0};
+		const float BlendFactor[] = {bf, bf, bf, 0};
 
 		m_ctx->OMSetBlendState(bs, BlendFactor, 0xffffffff);
 	}
