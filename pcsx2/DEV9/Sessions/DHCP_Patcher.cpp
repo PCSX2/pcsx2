@@ -91,8 +91,7 @@ namespace Sessions
 		IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(payload);
 		UDP_Packet* udppkt = new UDP_Packet(ipPayload->data, ipPayload->GetLength());
 
-		//if (udppkt->destinationPort == 68 && udppkt->sourcePort == 67)
-		if (udppkt->destinationPort == 67 && udppkt->sourcePort == 67)
+		if (udppkt->destinationPort == 68 && udppkt->sourcePort == 67)
 		{
 			Console.Error("DHCP recv;");
 			PayloadPtr payload = *static_cast<PayloadPtr*>(udppkt->GetPayload());
