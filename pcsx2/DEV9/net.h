@@ -16,6 +16,7 @@
 #pragma once
 #include <stdlib.h>
 #include <string.h> //uh isnt memcpy @ stdlib ?
+#include "Sessions/DHCP_Patcher.h"
 
 // first three recognized by Xlink as Sony PS2
 const u8 defaultMAC[6] = {0x00, 0x04, 0x1F, 0x82, 0x30, 0x31};
@@ -30,7 +31,7 @@ struct NetPacket
 	}
 
 	int size;
-	char buffer[2048 - sizeof(int)]; //1536 is realy needed, just pad up to 2048 bytes :)
+	u8 buffer[2048 - sizeof(int)]; //1536 is realy needed, just pad up to 2048 bytes :)
 };
 /*
 extern mtfifo<NetPacket*> rx_fifo;
@@ -41,6 +42,9 @@ class NetAdapter
 {
 protected:
 	u8 ps2MAC[6];
+
+private:
+	Sessions::DHCP_Patcher dhcpPatcher;
 
 public:
 	NetAdapter();
@@ -53,6 +57,8 @@ public:
 
 protected:
 	void SetMACAddress(u8* mac);
+	void InspectSentPacket(NetPacket* pkt);
+	void InspectRecvPacket(NetPacket* pkt);
 };
 
 void tx_put(NetPacket* ptr);

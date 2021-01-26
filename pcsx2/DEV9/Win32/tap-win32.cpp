@@ -352,6 +352,9 @@ bool TAPAdapter::recv(NetPacket* pkt)
 			return false;
 		}
 		pkt->size = read_size;
+
+		InspectRecvPacket(pkt);
+
 		return true;
 	}
 	else
@@ -360,6 +363,8 @@ bool TAPAdapter::recv(NetPacket* pkt)
 //sends the packet .rv :true success
 bool TAPAdapter::send(NetPacket* pkt)
 {
+	InspectSentPacket(pkt);
+
 	DWORD writen;
 	BOOL result = WriteFile(htap,
 							pkt->buffer,

@@ -330,6 +330,7 @@ set(pcsx2DEV9Sources
 	DEV9/PacketReader/IP/IP_Packet.cpp
 	DEV9/PacketReader/EthernetFrame.cpp
 	DEV9/PacketReader/NetLib.cpp
+	DEV9/Sessions/DHCP_Patcher.cpp
 	DEV9/ATA/ATA_Info.cpp
 	DEV9/ATA/ATA_State.cpp
 	DEV9/ATA/ATA_Transfer.cpp
@@ -359,6 +360,7 @@ set(pcsx2DEV9Headers
 	DEV9/PacketReader/EthernetFrame.h
 	DEV9/PacketReader/NetLib.h
 	DEV9/PacketReader/Payload.h
+	DEV9/Sessions/DHCP_Patcher.h
 	DEV9/DEV9.h
 	DEV9/net.h
 	DEV9/pcap_io.h
