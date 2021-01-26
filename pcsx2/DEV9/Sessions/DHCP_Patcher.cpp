@@ -46,6 +46,7 @@ namespace Sessions
 
 			//No modifications
 			delete dhcppkt;
+			delete udppkt;
 			return nullptr;
 		}
 
@@ -82,7 +83,7 @@ namespace Sessions
 		//	}
 		//}
 
-
+		delete udppkt;
 		return nullptr;
 	}
 
@@ -97,17 +98,11 @@ namespace Sessions
 			PayloadPtr payload = *static_cast<PayloadPtr*>(udppkt->GetPayload());
 			DHCP_Packet* dhcppkt = new DHCP_Packet(payload.data, payload.GetLength());
 
-			IP_Address gateway{192, 168, 1, 47};
+			//udppkt->SetPayload(dhcppkt, true);
 
-			udppkt->destinationPort = 68;
-			dhcppkt->hops++;
-
-			dhcppkt->gatewayIP = gateway;
-
-			udppkt->SetPayload(dhcppkt, true);
-
-			return udppkt;
-			//delete dhcppkt;
+			//No modifications
+			delete dhcppkt;
+			delete udppkt;
 		}
 
 
@@ -280,7 +275,7 @@ namespace Sessions
 		//	dhcppkt->options.push_back(opEnd);
 
 		//And done
+		delete udppkt;
 		return nullptr;
-		//return dhcppkt;
 	}
 } // namespace Sessions
