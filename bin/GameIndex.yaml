@@ -26,6 +26,26 @@
 # ---------------------------------------------
 # -- Game List
 # ---------------------------------------------
+3828BB66:
+  name: "Jak 3 [July 2004 Internal]"
+  region: "NTSC"
+  gameFixes:
+    - VU0KickstartHack # Fixes Character SPS.
+4FF025AF:
+  name: "Jak II: Renegade [July 2003 Preview]"
+  region: "PAL"
+  gameFixes:
+    - VU0KickstartHack # Fixes Character SPS.
+A6630572:
+  name: "Jak 3 [September 2004 Preview]"
+  region: "PAL"
+  gameFixes:
+    - VU0KickstartHack # Fixes Character SPS.
+C71BAB1E:
+  name: "Jak II: Renegade [August 2003 Review]"
+  region: "PAL"
+  gameFixes:
+    - VU0KickstartHack # Fixes Character SPS.
 GUST-00009:
   name: "Mana Khemia: Alchemists of Al-Revis [Premium Box]"
   region: "NTSC-J"
