@@ -354,11 +354,13 @@ bool V_Voice::Start()
 	NextA = StartA | 1;
 	Prev1 = 0;
 	Prev2 = 0;
+	PendingLoopStart = false;
 
 	PV1 = PV2 = 0;
 	PV3 = PV4 = 0;
 	NextCrest = -0x8000;
 	PlayCycle = Cycles;
+	LoopCycle = Cycles - 1; // Get it out of the start range as to not confuse it
 	return true;
 }
 
@@ -1201,13 +1203,39 @@ static void __fastcall RegWrite_VoiceAddr(u16 value)
 			break;
 
 		case 2:
-			thisvoice.LoopStartA = ((u32)(value & 0x0F) << 16) | (thisvoice.LoopStartA & 0xFFF8);
-			thisvoice.LoopMode = 1;
+			{
+				u32* LoopReg;
+				if ((Cycles - thisvoice.PlayCycle) < 4)
+				{
+					LoopReg = &thisvoice.PendingLoopStartA;
+					thisvoice.PendingLoopStart = true;
+				}
+				else
+				{
+					LoopReg = &thisvoice.LoopStartA;
+					thisvoice.LoopMode = 1;
+				}
+
+				*LoopReg = ((u32)(value & 0x0F) << 16) | (*LoopReg & 0xFFF8);
+			}
 			break;
 
 		case 3:
-			thisvoice.LoopStartA = (thisvoice.LoopStartA & 0x0F0000) | (value & 0xFFF8);
-			thisvoice.LoopMode = 1;
+			{
+				u32* LoopReg;
+				if ((Cycles - thisvoice.PlayCycle) < 4)
+				{
+					LoopReg = &thisvoice.PendingLoopStartA;
+					thisvoice.PendingLoopStart = true;
+				}
+				else
+				{
+					LoopReg = &thisvoice.LoopStartA;
+					thisvoice.LoopMode = 1;
+				}
+				
+				*LoopReg = (*LoopReg & 0x0F0000) | (value & 0xFFF8);
+			}
 			break;
 
 			// Note that there's no proof that I know of that writing to NextA is
@@ -1927,12 +1955,12 @@ void SPU2_FastWrite(u32 rmem, u16 value)
 
 void StartVoices(int core, u32 value)
 {
-	ConLog("KeyOn Write %x\n", value);
-
 	// Optimization: Games like to write zero to the KeyOn reg a lot, so shortcut
 	// this loop if value is zero.
 	if (value == 0)
 		return;
+
+	ConLog("KeyOn Write %x\n", value);
 
 	Cores[core].KeyOn |= value;
 	Cores[core].Regs.ENDX &= ~value;
@@ -1964,10 +1992,10 @@ void StartVoices(int core, u32 value)
 
 void StopVoices(int core, u32 value)
 {
-	ConLog("KeyOff Write %x\n", value);
-
 	if (value == 0)
 		return;
+
+	ConLog("KeyOff Write %x\n", value);
 
 	for (u8 vc = 0; vc < V_Core::NumVoices; vc++)
 	{

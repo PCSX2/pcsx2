@@ -136,6 +136,10 @@ public:
 struct V_Voice
 {
 	u32 PlayCycle; // SPU2 cycle where the Playing started
+	u32 LoopCycle; // SPU2 cycle where it last set its own Loop
+
+	u32 PendingLoopStartA;
+	bool PendingLoopStart;
 
 	V_VolumeSlideLR Volume;
 
