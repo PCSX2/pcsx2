@@ -393,6 +393,8 @@ CRC::Game CRC::m_games[] =
 	{0x2A7FD3B4, Jak1, JP, TextureInsideRt}, // Demo, Taikenba
 	{0x2479F4A9, Jak2, EU, TextureInsideRt},
 	{0xF41C1B29, Jak2, EU, TextureInsideRt}, // Demo
+	{0x4FF025AF, Jak2, EU, TextureInsideRt}, // Jak II Preview [FIREWIRE.IRX]
+	{0xC71BAB1E, Jak2, EU, TextureInsideRt}, // Jak II Review [FIREWIRE.IRX] 
 	{0x9184AAF1, Jak2, US, TextureInsideRt},
 	{0xA2034C69, Jak2, US, TextureInsideRt}, // Demo
 	{0x25FE4D23, Jak2, KO, TextureInsideRt},
@@ -401,8 +403,10 @@ CRC::Game CRC::m_games[] =
 	{0x12804727, Jak3, EU, TextureInsideRt},
 	{0xE59E10BF, Jak3, EU, TextureInsideRt},
 	{0xCA68E4D5, Jak3, EU, TextureInsideRt}, // Demo
+	{0xA6630572, Jak3, EU, TextureInsideRt}, // Jak 3 Preview [DISKINFO.BIN]
 	{0x644CFD03, Jak3, US, TextureInsideRt},
 	{0xD401BC20, Jak3, US, TextureInsideRt}, // Demo
+	{0x3828BB66, Jak3, US, TextureInsideRt}, // Jak 3 Internal [DISKINFO.BIN]
 	{0xD1368EAE, Jak3, KO, TextureInsideRt},
 	{0x23F8D35B, Jak3, NoRegion, TextureInsideRt}, // EU Preview, EU Review, US Internal test build
 	{0xDF659E77, JakX, EU, TextureInsideRt}, // Jak X: Combat Racing
