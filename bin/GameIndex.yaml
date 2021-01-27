@@ -13922,6 +13922,19 @@ SLES-53998:
 SLES-53999:
   name: "King of Fighters, The - Neo Wave"
   region: "PAL-E"
+  patches:
+    F5090D15:
+      content: |-
+        author=kozarovv
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,080f7913
+        patch=1,EE,003de444,word,0803ff00
+        patch=1,EE,003de448,word,4bea497d
 SLES-54002:
   name: "FlatOut 2"
   region: "PAL-M5"
@@ -14701,6 +14714,19 @@ SLES-54394:
 SLES-54395:
   name: "NeoGeo Battle Coliseum"
   region: "PAL-E"
+  patches:
+    FE883E27:
+      content: |-
+        author=kozarovv
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,08051f9f
+        patch=1,EE,00147e74,word,0803ff00
+        patch=1,EE,00147e78,word,4bea497d
 SLES-54396:
   name: "Cricket 07"
   region: "PAL-E"
@@ -14764,6 +14790,19 @@ SLES-54436:
 SLES-54437:
   name: "King of Fighters XI"
   region: "PAL-E"
+  patches:
+    542210E4:
+      content: |-
+        author=kozarovv
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,080980cb
+        patch=1,EE,00260324,word,0803ff00
+        patch=1,EE,00260328,word,4bea497d
 SLES-54439:
   name: "Okami"
   region: "PAL-M3"
@@ -16531,6 +16570,26 @@ SLES-55278:
 SLES-55280:
   name: "King of Fighters '98 - Ultimate Match"
   region: "PAL-E"
+  patches:
+    E7516A6E:
+      content: |-
+        author=kozarovv
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,0810e6e3
+        patch=1,EE,00439b84,word,0803ff00
+        patch=1,EE,00439b88,word,4bea497d
+        // Additional patch for fighters depth, required on "boat" stage.
+        patch=1,EE,000ffc20,word,0000202d
+        patch=1,EE,000ffc24,word,3442a833
+        patch=1,EE,000ffc28,word,08077ed2
+        patch=1,EE,000ffc2c,word,ae020098
+        patch=1,EE,001Dfb40,word,0803ff08
+        patch=1,EE,001dfb44,word,3c0200ff
 SLES-55281:
   name: "Nickelodeon Dora the Explorer - Dora Saves the Snow Princess"
   region: "PAL-M3"
@@ -29069,6 +29128,19 @@ SLPS-25447:
 SLPS-25448:
   name: "King of Fighters '94, The - Rebout [Special Pack]"
   region: "NTSC-J"
+  patches:
+    E74F7C39:
+      content: |-
+        author=kozarovv
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,080836b3
+        patch=1,EE,0020dac4,word,0803ff00
+        patch=1,EE,0020dac8,word,4bea497d
 SLPS-25449:
   name: "King of Fighters '94, The - Rebout"
   region: "NTSC-J"
@@ -29308,6 +29380,19 @@ SLPS-25525:
   name: "King of Fighters, The - NeoWave"
   region: "NTSC-J"
   compat: 5
+  patches:
+    0109B59E:
+      content: |-
+        author=kozarovv
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,080f66db
+        patch=1,EE,003d9b64,word,0803ff00
+        patch=1,EE,003d9b68,word,4bea497d
 SLPS-25526:
   name: "Medical 91"
   region: "NTSC-J"
@@ -29796,6 +29881,19 @@ SLPS-25660:
   name: "King of Fighters XI, The"
   region: "NTSC-J"
   compat: 5
+  patches:
+    E4BB51C1:
+      content: |-
+        author=kozarovv
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,080c274f
+        patch=1,EE,00309d34,word,0803ff00
+        patch=1,EE,00309d38,word,4bea497d
 SLPS-25661:
   name: "King of Fighters, The - Nests"
   region: "NTSC-J"
@@ -30182,6 +30280,26 @@ SLPS-25782:
 SLPS-25783:
   name: "King of Fighters '98, The - Ultimate Match"
   region: "NTSC-J"
+  patches:
+    FD714FCB:
+      content: |-
+        author=kozarovv
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,0813cf8b
+        patch=1,EE,004f3e24,word,0803ff00
+        patch=1,EE,004f3e28,word,4bea497d
+        // Additional patch for fighters depth, required on "boat" stage.
+        patch=1,EE,000ffc20,word,ac40009c
+        patch=1,EE,000ffc24,word,3463a833
+        patch=1,EE,000ffc28,word,080a75fc
+        patch=1,EE,000ffc2c,word,ac430098
+        patch=1,EE,0029d7e8,word,0803ff08
+        patch=1,EE,0029d7ec,word,3c0300ff
 SLPS-25784:
   name: "Another Century's Episode 3 - The Final"
   region: "NTSC-J"
@@ -30513,6 +30631,19 @@ SLPS-25914:
 SLPS-25915:
   name: "King of Fighters 2002, The - Unlimited Match"
   region: "NTSC-J"
+  patches:
+    0A70CB4C:
+      content: |-
+        author=kozarovv
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,08139d9b
+        patch=1,EE,004e7664,word,0803ff00
+        patch=1,EE,004e7668,word,4bea497d
 SLPS-25917:
   name: "Sacred Blaze"
   region: "NTSC-J"
@@ -30561,6 +30692,19 @@ SLPS-25961:
 SLPS-25983:
   name: "King of Fighters 2002, The - Unlimited Match"
   region: "NTSC-J"
+  patches:
+    439656F5:
+      content: |-
+        author=kozarovv
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,081079b3
+        patch=1,EE,0041e6c4,word,0803ff00
+        patch=1,EE,0041e6c8,word,4bea497d
 SLPS-29001:
   name: "Xenosaga Episode 1 - Der Wille zur Macht [Premium Box]"
   region: "NTSC-J"
@@ -35031,9 +35175,35 @@ SLUS-20994:
 SLUS-20995:
   name: "King of Fighters 2002 & 2003 [Disc1of2]"
   region: "NTSC-U"
+  patches:
+    7F74D8D0:
+      content: |-
+        author=kozarovv
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,0805ce3b
+        patch=1,EE,001738e4,word,0803ff00
+        patch=1,EE,001738e8,word,4bea497d
 SLUS-20996:
   name: "King of Fighters 2002 & 2003 [Disc2of2]"
   region: "NTSC-U"
+  patches:
+    0334185F:
+      content: |-
+        author=kozarovv
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,080c60bf
+        patch=1,EE,003182F4,word,0803ff00
+        patch=1,EE,003182F8,word,4bea497d
 SLUS-20997:
   name: "Midway Arcade Treasures 2"
   region: "NTSC-U"
@@ -37925,6 +38095,19 @@ SLUS-21687:
   name: "King of Fighters XI, The"
   region: "NTSC-U"
   compat: 5
+  patches:
+    581A4DAA:
+      content: |-
+        author=kozarovv
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,08087ea3
+        patch=1,EE,0021fa84,word,0803ff00
+        patch=1,EE,0021fa88,word,4bea497d
 SLUS-21688:
   name: "MotoGP '07"
   region: "NTSC-U"
@@ -38004,6 +38187,19 @@ SLUS-21707:
 SLUS-21708:
   name: "NeoGeo Battle Coliseum"
   region: "NTSC-U"
+  patches:
+    3724DA5C:
+      content: |-
+        author=kozarovv
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,0804f553
+        patch=1,EE,0013d544,word,0803ff00
+        patch=1,EE,0013d548,word,4bea497d
 SLUS-21709:
   name: "Obscure - The Aftermath"
   region: "NTSC-U"
@@ -38438,6 +38634,26 @@ SLUS-21816:
   name: "King Of Fighters 98 - Ultimate Match"
   region: "NTSC-U"
   compat: 5
+  patches:
+    E5A904B3:
+      content: |-
+        author=kozarovv
+        // Fix for Depth precision.
+        // Game fills upper 16bits of depth with 0xFFFF.
+        // This results in a really high 32 bit value which is then converted to float
+        // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
+        patch=1,EE,000ffc00,word,f88a0000
+        patch=1,EE,000ffc04,word,a080000b
+        patch=1,EE,000ffc08,word,0810e003
+        patch=1,EE,00438004,word,0803ff00
+        patch=1,EE,00438008,word,4bea497d
+        // Additional patch for fighters depth, required on "boat" stage.
+        patch=1,EE,000ffc20,word,ac40009c
+        patch=1,EE,000ffc24,word,3463a833
+        patch=1,EE,000ffc28,word,080778cc
+        patch=1,EE,000ffc2c,word,ac430098
+        patch=1,EE,001de328,word,0803ff08
+        patch=1,EE,001de32c,word,3c0300ff
 SLUS-21817:
   name: "SBK Superbike World Championship"
   region: "NTSC-U"
