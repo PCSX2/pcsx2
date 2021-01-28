@@ -22,6 +22,8 @@
 #include "stdafx.h"
 #include "GSdx.h"
 #include "GSCaptureDlg.h"
+#include <codecvt>
+#include <locale>
 
 #define BeginEnumSysDev(clsid, pMoniker) \
 	{CComPtr<ICreateDevEnum> pDevEnum4$##clsid; \
@@ -37,9 +39,9 @@
 
 void GSCaptureDlg::InvalidFile()
 {
-	char tmp[512];
-	sprintf_s(tmp, "GSdx couldn't open file for capturing: %s.\nCapture aborted.", m_filename.c_str());
-	MessageBox(GetActiveWindow(), tmp, "GSdx System Message", MB_OK | MB_SETFOREGROUND);
+	wchar_t tmp[512];
+	swprintf_s(tmp, L"GSdx couldn't open file for capturing: %s.\nCapture aborted.", m_filename.c_str());
+	MessageBox(GetActiveWindow(), tmp, L"GSdx System Message", MB_OK | MB_SETFOREGROUND);
 }
 
 GSCaptureDlg::GSCaptureDlg()
@@ -103,7 +105,8 @@ void GSCaptureDlg::OnInit()
 
 	SetTextAsInt(IDC_WIDTH, m_width);
 	SetTextAsInt(IDC_HEIGHT, m_height);
-	SetText(IDC_FILENAME, m_filename.c_str());
+	std::wstring tmp = std::wstring(m_filename.begin(), m_filename.end());
+	SetText(IDC_FILENAME, tmp.c_str());
 
 	m_codecs.clear();
 
@@ -169,7 +172,7 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 	{
 		if (code == BN_CLICKED)
 		{
-			char buff[MAX_PATH] = { 0 };
+			wchar_t buff[MAX_PATH] = { 0 };
 
 			OPENFILENAME ofn;
 			memset(&ofn, 0, sizeof(ofn));
@@ -178,14 +181,18 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			ofn.hwndOwner = m_hWnd;
 			ofn.lpstrFile = buff;
 			ofn.nMaxFile = countof(buff);
-			ofn.lpstrFilter = "Avi files (*.avi)\0*.avi\0";
+			ofn.lpstrFilter = L"Avi files (*.avi)\0*.avi\0";
 			ofn.Flags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
 
-			strcpy(ofn.lpstrFile, m_filename.c_str());
+			std::wstring tmp = std::wstring(m_filename.begin(), m_filename.end());
+			wcscpy(ofn.lpstrFile, tmp.c_str());
 			if (GetSaveFileName(&ofn))
 			{
-				m_filename = ofn.lpstrFile;
-				SetText(IDC_FILENAME, m_filename.c_str());
+				tmp = ofn.lpstrFile;
+				using convert_type = std::codecvt_utf8<wchar_t>;
+				std::wstring_convert<convert_type, wchar_t> converter;
+				m_filename = converter.to_bytes(tmp);
+				SetText(IDC_FILENAME, tmp.c_str());
 			}
 
 			return true;

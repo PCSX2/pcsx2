@@ -24,14 +24,14 @@
 
 #ifdef _WIN32
 
-static void win_error(const char* msg, bool fatal = true)
+static void win_error(const wchar_t* msg, bool fatal = true)
 {
     DWORD errorID = ::GetLastError();
 	if (errorID)
 		fprintf(stderr, "WIN API ERROR:%ld\t", errorID);
 
 	if (fatal) {
-		MessageBox(NULL, msg, "ERROR", MB_OK | MB_ICONEXCLAMATION);
+		MessageBox(NULL, msg, L"ERROR", MB_OK | MB_ICONEXCLAMATION);
 		throw GSDXRecoverableError();
 	} else {
 		fprintf(stderr, "ERROR:%s\n", msg);
@@ -65,7 +65,7 @@ void GSWndWGL::CreateContext(int major, int minor)
 {
 	if (!m_NativeDisplay || !m_NativeWindow)
 	{
-		win_error("Wrong display/window", false);
+		win_error(L"Wrong display/window", false);
 		exit(1);
 	}
 
@@ -74,7 +74,7 @@ void GSWndWGL::CreateContext(int major, int minor)
 	// GL2 context are quite easy but we need GL3 which is another painful story...
 	m_context = wglCreateContext(m_NativeDisplay);
 	if (!m_context)
-		win_error("Failed to create a 2.0 context");
+		win_error(L"Failed to create a 2.0 context");
 
 	// FIXME test it
 	// Note: albeit every tutorial said that we need an opengl context to use the GL function wglCreateContextAttribsARB
@@ -102,11 +102,11 @@ void GSWndWGL::CreateContext(int major, int minor)
 
 	PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
 	if (!wglCreateContextAttribsARB)
-		win_error("Failed to init wglCreateContextAttribsARB function pointer");
+		win_error(L"Failed to init wglCreateContextAttribsARB function pointer");
 
 	HGLRC context30 = wglCreateContextAttribsARB(m_NativeDisplay, NULL, context_attribs);
 	if (!context30) {
-		win_error("Failed to create a 3.x context with standard flags", false);
+		win_error(L"Failed to create a 3.x context with standard flags", false);
 		// retry with more compatible option for (Mesa on Windows, OpenGL on WINE)
 		context_attribs[2*2+1] = 0;
 
@@ -117,7 +117,7 @@ void GSWndWGL::CreateContext(int major, int minor)
 	wglDeleteContext(m_context);
 
 	if (!context30)
-		win_error("Failed to create a 3.x context with compatible flags");
+		win_error(L"Failed to create a 3.x context with compatible flags");
 
 	m_context = context30;
 	fprintf(stdout, "3.x GL context successfully created\n");
@@ -215,20 +215,20 @@ void GSWndWGL::OpenWGLDisplay()
 
 	m_NativeDisplay = GetDC(m_NativeWindow);
 	if (!m_NativeDisplay)
-		win_error("(1) Can't Create A GL Device Context.");
+		win_error(L"(1) Can't Create A GL Device Context.");
 
 	PixelFormat = ChoosePixelFormat(m_NativeDisplay, &pfd);
 	if (!PixelFormat)
-		win_error("(2) Can't Find A Suitable PixelFormat.");
+		win_error(L"(2) Can't Find A Suitable PixelFormat.");
 
 	if (!SetPixelFormat(m_NativeDisplay, PixelFormat, &pfd))
-		win_error("(3) Can't Set The PixelFormat.", false);
+		win_error(L"(3) Can't Set The PixelFormat.", false);
 }
 
 void GSWndWGL::CloseWGLDisplay()
 {
 	if (m_NativeDisplay && !ReleaseDC(m_NativeWindow, m_NativeDisplay))
-		win_error("Release Device Context Failed.");
+		win_error(L"Release Device Context Failed.");
 
 	m_NativeDisplay = NULL;
 }
@@ -252,7 +252,7 @@ bool GSWndWGL::Create(const std::string& title, int w, int h)
 	wc.hInstance = theApp.GetModuleHandle();
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-	wc.lpszClassName = "GSWndOGL";
+	wc.lpszClassName = L"GSWndOGL";
 
 	if (!GetClassInfo(wc.hInstance, wc.lpszClassName, &wc))
 	{
@@ -290,7 +290,8 @@ bool GSWndWGL::Create(const std::string& title, int w, int h)
 
 	AdjustWindowRect(r, style, FALSE);
 
-	m_NativeWindow = CreateWindow(wc.lpszClassName, title.c_str(), style, r.left, r.top, r.width(), r.height(), NULL, NULL, wc.hInstance, (LPVOID)this);
+	std::wstring tmp = std::wstring(title.begin(), title.end());
+	m_NativeWindow = CreateWindow(wc.lpszClassName, tmp.c_str(), style, r.left, r.top, r.width(), r.height(), NULL, NULL, wc.hInstance, (LPVOID)this);
 
 	if (m_NativeWindow == NULL) return false;
 
@@ -375,7 +376,7 @@ void GSWndWGL::HideFrame()
 // Returns FALSE if the window has no title, or if th window title is under the strict
 // management of the emulator.
 
-bool GSWndWGL::SetWindowText(const char* title)
+bool GSWndWGL::SetWindowText(const wchar_t* title)
 {
 	if (!m_managed) return false;
 

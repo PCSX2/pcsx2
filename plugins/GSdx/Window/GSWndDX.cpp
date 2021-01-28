@@ -96,7 +96,7 @@ bool GSWndDX::Create(const std::string& title, int w, int h)
 	// TODO: wc.hIcon = ;
 	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
 	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-	wc.lpszClassName = "GSWndDX";
+	wc.lpszClassName = L"GSWndDX";
 
 	if(!GetClassInfo(wc.hInstance, wc.lpszClassName, &wc))
 	{
@@ -132,8 +132,8 @@ bool GSWndDX::Create(const std::string& title, int w, int h)
 	r.bottom = r.top + h;
 
 	AdjustWindowRect(r, style, FALSE);
-
-	m_hWnd = CreateWindow(wc.lpszClassName, title.c_str(), style, r.left, r.top, r.width(), r.height(), NULL, NULL, wc.hInstance, (LPVOID)this);
+	std::wstring tmp = std::wstring(title.begin(), title.end());
+	m_hWnd = CreateWindow(wc.lpszClassName, tmp.c_str(), style, r.left, r.top, r.width(), r.height(), NULL, NULL, wc.hInstance, (LPVOID)this);
 
 	if (!m_hWnd)
 		throw GSDXRecoverableError();
@@ -177,7 +177,7 @@ GSVector4i GSWndDX::GetClientRect()
 // Returns FALSE if the window has no title, or if th window title is under the strict
 // management of the emulator.
 
-bool GSWndDX::SetWindowText(const char* title)
+bool GSWndDX::SetWindowText(const wchar_t* title)
 {
 	if(!m_managed) return false;
 

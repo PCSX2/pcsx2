@@ -43,10 +43,10 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD ul_reason_for_call, LPVOID lpReserv
 	return TRUE;
 }
 
-bool GSdxApp::LoadResource(int id, std::vector<char>& buff, const char* type)
+bool GSdxApp::LoadResource(int id, std::vector<char>& buff, const wchar_t* type)
 {
 	buff.clear();
-	HRSRC hRsrc = FindResource((HMODULE)s_hModule, MAKEINTRESOURCE(id), type != NULL ? type : RT_RCDATA);
+	HRSRC hRsrc = FindResource((HMODULE)s_hModule, MAKEINTRESOURCE(id), type != NULL ? type : (LPWSTR)RT_RCDATA);
 	if(!hRsrc) return false;
 	HGLOBAL hGlobal = ::LoadResource((HMODULE)s_hModule, hRsrc);
 	if(!hGlobal) return false;

@@ -497,7 +497,8 @@ void GSDevice11::BeforeDraw()
 		if (tex->Equal(m_state.rt_texture) || tex->Equal(m_state.rt_ds))
 		{
 #ifdef _DEBUG
-			OutputDebugString(format("WARNING: FB read detected on slot %i, copying...", i).c_str());
+			std::wstring tmp(L"WARNING: FB read detected on slot " + std::to_wstring(i) + L", copying...");
+			OutputDebugString(tmp.c_str());
 #endif
 			GSTexture* cp = nullptr;
 
@@ -518,7 +519,8 @@ void GSDevice11::AfterDraw()
 	while (_BitScanForward(&i, m_state.ps_sr_bitfield))
 	{
 #ifdef _DEBUG
-		OutputDebugString(format("WARNING: Cleaning up copied texture on slot %i", i).c_str());
+		std::wstring tmp(L"WARNING: Cleaning up copied texture on slot " + std::to_wstring(i));
+		OutputDebugString(tmp.c_str());
 #endif
 		Recycle(m_state.ps_sr_texture[i]);
 		PSSetShaderResource(i, NULL);
