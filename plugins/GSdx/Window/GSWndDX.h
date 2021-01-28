@@ -43,7 +43,7 @@ public:
 	void* GetDisplay() {return m_hWnd;}
 	void* GetHandle() {return m_hWnd;}
 	GSVector4i GetClientRect();
-	bool SetWindowText(const char* title);
+	bool SetWindowText(const wchar_t* title);
 
 	void Show();
 	void Hide();

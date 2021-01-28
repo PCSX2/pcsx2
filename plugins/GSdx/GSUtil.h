@@ -52,7 +52,7 @@ public:
 #endif
 };
 
-void GSmkdir(const char* dir);
+void GSmkdir(const wchar_t* dir);
 std::string GStempdir();
 
 const char* psm_str(int psm);

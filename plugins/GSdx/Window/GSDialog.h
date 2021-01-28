@@ -48,7 +48,7 @@ public:
 	std::string GetText(UINT id);
 	int GetTextAsInt(UINT id);
 
-	void SetText(UINT id, const char* str);
+	void SetText(UINT id, const wchar_t* str);
 	void SetTextAsInt(UINT id, int i);
 
 	void ComboBoxInit(UINT id, const std::vector<GSSetting>& settings, int32_t selectionValue, int32_t maxValue = INT32_MAX);
@@ -57,7 +57,7 @@ public:
 	bool ComboBoxGetSelData(UINT id, INT_PTR& data);
 	void ComboBoxFixDroppedWidth(UINT id);
 
-	void OpenFileDialog(UINT id, const char *title);
+	void OpenFileDialog(UINT id, const wchar_t *title);
 
 	void AddTooltip(UINT id);
 

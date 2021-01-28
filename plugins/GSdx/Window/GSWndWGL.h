@@ -54,7 +54,7 @@ public:
 	void* GetDisplay() {return m_NativeWindow;}
 	void* GetHandle() {return m_NativeWindow;}
 	GSVector4i GetClientRect();
-	bool SetWindowText(const char* title);
+	bool SetWindowText(const wchar_t* title);
 
 	void AttachContext();
 	void DetachContext();

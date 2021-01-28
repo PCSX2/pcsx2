@@ -942,7 +942,8 @@ public:
 
 			AllocConsole();
 
-			SetConsoleTitle(m_title.c_str());
+			std::wstring tmp = std::wstring(m_title.begin(), m_title.end());
+			SetConsoleTitle(tmp.c_str());
 
 			m_console = GetStdHandle(STD_OUTPUT_HANDLE);
 

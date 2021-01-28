@@ -21,6 +21,8 @@
 
 #include "stdafx.h"
 #include "GSUtil.h"
+#include <locale>
+#include <codecvt>
 
 #ifdef _WIN32
 #include "Renderers/DX11/GSDevice11.h"
@@ -267,7 +269,7 @@ bool GSUtil::CheckDXGI()
 {
 	if (0 == s_DXGI)
 	{
-		HMODULE hmod = LoadLibrary("dxgi.dll");
+		HMODULE hmod = LoadLibrary(L"dxgi.dll");
 		s_DXGI = hmod ? 1 : -1;
 		if (hmod)
 			FreeLibrary(hmod);
@@ -283,7 +285,7 @@ bool GSUtil::CheckD3D11()
 
 	if (0 == s_D3D11)
 	{
-		HMODULE hmod = LoadLibrary("d3d11.dll");
+		HMODULE hmod = LoadLibrary(L"d3d11.dll");
 		s_D3D11 = hmod ? 1 : -1;
 		if (hmod)
 			FreeLibrary(hmod);
@@ -328,7 +330,7 @@ GSRendererType GSUtil::GetBestRenderer()
 
 #endif
 
-void GSmkdir(const char* dir)
+void GSmkdir(const wchar_t* dir)
 {
 #ifdef _WIN32
 	if (!CreateDirectory(dir, nullptr)) {
@@ -347,9 +349,13 @@ void GSmkdir(const char* dir)
 std::string GStempdir()
 {
 #ifdef _WIN32
-	char path[MAX_PATH + 1];
+	wchar_t path[MAX_PATH + 1];
 	GetTempPath(MAX_PATH, path);
-	return {path};
+	std::wstring tmp(path);
+	using convert_type = std::codecvt_utf8<wchar_t>;
+	std::wstring_convert<convert_type, wchar_t> converter;
+
+	return converter.to_bytes(tmp);
 #else
 	return "/tmp";
 #endif

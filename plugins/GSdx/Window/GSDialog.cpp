@@ -90,7 +90,7 @@ INT_PTR CALLBACK GSDialog::DialogProc(HWND hWnd, UINT message, WPARAM wParam, LP
 // correct size.
 UINT GSDialog::GetTooltipStructSize()
 {
-	DLLGETVERSIONPROC dllGetVersion = (DLLGETVERSIONPROC)GetProcAddress(GetModuleHandle("ComCtl32.dll"), "DllGetVersion");
+	DLLGETVERSIONPROC dllGetVersion = (DLLGETVERSIONPROC)GetProcAddress(GetModuleHandle(L"ComCtl32.dll"), "DllGetVersion");
 	if (dllGetVersion) {
 		DLLVERSIONINFO2 dllversion = { 0 };
 		dllversion.info1.cbSize = sizeof(DLLVERSIONINFO2);
@@ -129,15 +129,16 @@ std::string GSDialog::GetText(UINT id)
 {
 	std::string s;
 
-	char* buff = NULL;
+	wchar_t* buff = NULL;
 
 	for(int size = 256, limit = 65536; size < limit; size <<= 1)
 	{
-		buff = new char[size];
+		buff = new wchar_t[size];
 
 		if(GetDlgItemText(m_hWnd, id, buff, size))
 		{
-			s = buff;
+			std::wstring tmp(buff);
+			s = std::string(tmp.begin(), tmp.end());
 			size = limit;
 		}
 
@@ -152,15 +153,15 @@ int GSDialog::GetTextAsInt(UINT id)
 	return atoi(GetText(id).c_str());
 }
 
-void GSDialog::SetText(UINT id, const char* str)
+void GSDialog::SetText(UINT id, const wchar_t* str)
 {
 	SetDlgItemText(m_hWnd, id, str);
 }
 
 void GSDialog::SetTextAsInt(UINT id, int i)
 {
-	char buff[32] = {0};
-	itoa(i, buff, 10);
+	wchar_t buff[32] = {0};
+	_itow(i, buff, 10);
 	SetText(id, buff);
 }
 
@@ -259,13 +260,13 @@ void GSDialog::ComboBoxFixDroppedWidth(UINT id)
 
 			if(len > 0)
 			{
-				char* buff = new char[len + 1];
+				wchar_t* buff = new wchar_t[len + 1];
 
 				SendMessage(hWnd, CB_GETLBTEXT, i, (LPARAM)buff);
 
 				SIZE size;
 				
-				if(GetTextExtentPoint32(hDC, buff, strlen(buff), &size))
+				if(GetTextExtentPoint32(hDC, buff, wcslen(buff), &size))
 				{
 					size.cx += 10;
 
@@ -285,9 +286,9 @@ void GSDialog::ComboBoxFixDroppedWidth(UINT id)
 	}
 }
 
-void GSDialog::OpenFileDialog(UINT id, const char *title)
+void GSDialog::OpenFileDialog(UINT id, const wchar_t *title)
 {
-	char filename[512];
+	wchar_t filename[512];
 	OPENFILENAME ofn = { 0 };
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	ofn.hwndOwner = m_hWnd;
@@ -300,7 +301,7 @@ void GSDialog::OpenFileDialog(UINT id, const char *title)
 	// GetOpenFileName changes the current directory, so we need to save and
 	// restore the current directory or everything using relative paths will
 	// break.
-	char current_directory[512];
+	wchar_t current_directory[512];
 	GetCurrentDirectory(512, current_directory);
 
 	if (GetOpenFileName(&ofn))

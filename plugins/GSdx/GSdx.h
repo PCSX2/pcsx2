@@ -49,7 +49,7 @@ public:
 	bool WriteIniString(const char* lpAppName, const char* lpKeyName, const char* pString, const char* lpFileName);
 	int GetIniInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName);
 
-	bool LoadResource(int id, std::vector<char>& buff, const char* type = nullptr);
+	bool LoadResource(int id, std::vector<char>& buff, const wchar_t* type = nullptr);
 
 	void SetConfig(const char* entry, const char* value);
 	void SetConfig(const char* entry, int value);
