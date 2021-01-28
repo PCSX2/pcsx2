@@ -376,12 +376,15 @@ void GSWndWGL::HideFrame()
 // Returns FALSE if the window has no title, or if th window title is under the strict
 // management of the emulator.
 
-bool GSWndWGL::SetWindowText(const wchar_t* title)
+bool GSWndWGL::SetWindowText(const char* title)
 {
 	if (!m_managed) return false;
 
+	const size_t tmp_size = strlen(title) + 1;
+	std::wstring tmp(tmp_size, L'#');
+	mbstowcs(&tmp[0], title, tmp_size);
 	// Used by GSReplay.
-	::SetWindowText(m_NativeWindow, title);
+	::SetWindowText(m_NativeWindow, tmp.c_str());
 
 	return true;
 }
