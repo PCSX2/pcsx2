@@ -197,7 +197,7 @@ GSSource : public CBaseFilter, private CCritSec, public IGSSource
 public:
 
 	GSSource(int w, int h, float fps, IUnknown* pUnk, HRESULT& hr, int colorspace)
-		: CBaseFilter(NAME("GSSource"), pUnk, this, __uuidof(this), &hr)
+		: CBaseFilter("GSSource", pUnk, this, __uuidof(this), &hr)
 		, m_output(NULL)
 		, m_size(w, h)
 		, m_atpf((REFERENCE_TIME)(10000000.0f / fps))
