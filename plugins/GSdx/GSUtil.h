@@ -52,7 +52,11 @@ public:
 #endif
 };
 
+#ifdef _WIN32
 void GSmkdir(const wchar_t* dir);
+#else
+void GSmkdir(const char* dir);
+#endif
 std::string GStempdir();
 
 const char* psm_str(int psm);

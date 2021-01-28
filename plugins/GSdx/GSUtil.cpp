@@ -330,9 +330,9 @@ GSRendererType GSUtil::GetBestRenderer()
 
 #endif
 
+#ifdef _WIN32
 void GSmkdir(const wchar_t* dir)
 {
-#ifdef _WIN32
 	if (!CreateDirectory(dir, nullptr)) {
 		DWORD errorID = ::GetLastError();
 		if (errorID != ERROR_ALREADY_EXISTS) {
@@ -340,6 +340,8 @@ void GSmkdir(const wchar_t* dir)
 		}
 	}
 #else
+void GSmkdir(const char* dir)
+{
 	int err = mkdir(dir, 0777);
 	if (!err && errno != EEXIST)
 		fprintf(stderr, "Failed to create directory: %s\n", dir);
