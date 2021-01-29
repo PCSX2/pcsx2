@@ -848,6 +848,11 @@ void MainEmuFrame::Menu_ShowAboutBox(wxCommandEvent& event)
 	AppOpenDialog<AboutBoxDialog>(this);
 }
 
+void MainEmuFrame::Menu_ShowGSDump(wxCommandEvent& event)
+{
+	AppOpenDialog<GSDumpDialog>(this);
+}
+
 void MainEmuFrame::Menu_Capture_Video_Record_Click(wxCommandEvent& event)
 {
 	ScopedCoreThreadPause paused_core;

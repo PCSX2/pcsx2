@@ -251,6 +251,7 @@ protected:
 	void Menu_Github(wxCommandEvent& event);
 	void Menu_Wiki(wxCommandEvent& event);
 	void Menu_ShowAboutBox(wxCommandEvent& event);
+	void Menu_ShowGSDump(wxCommandEvent& event);
 
 	void Menu_Capture_Video_Record_Click(wxCommandEvent& event);
 	void Menu_Capture_Video_Stop_Click(wxCommandEvent& event);
