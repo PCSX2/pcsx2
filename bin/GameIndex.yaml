@@ -1613,6 +1613,7 @@ SCES-51607:
   compat: 5
   gameFixes:
     - VU0KickstartHack # Fixes Character SPS.
+    - EETimingHack # Fixes DMA errors 
   memcardFilters: # Reads Ratchet 1 data.
     - "SCES-51607"
     - "SCES-50916"
@@ -9662,6 +9663,8 @@ SLES-51887:
 SLES-51888:
   name: "RTL Ski Jumping 2004"
   region: "PAL-E-G"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS 
 SLES-51890:
   name: "Buffy the Vampire Slayer - Chaos Bleeds"
   region: "PAL-M4"
@@ -12353,6 +12356,8 @@ SLES-53301:
 SLES-53303:
   name: "Ski Jumping 2006"
   region: "PAL-E-G"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS 
 SLES-53309:
   name: "Transformers [Director's Cut]"
   region: "PAL-M5"
@@ -16692,9 +16697,13 @@ SLES-55376:
 SLES-55378:
   name: "RTL Biathlon 2009"
   region: "PAL-E-G"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS in game 
 SLES-55379:
   name: "RTL Biathlon 2009"
   region: "PAL-E-G"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS in game 
 SLES-55380:
   name: "Sonic Unleashed"
   region: "PAL-M5"
