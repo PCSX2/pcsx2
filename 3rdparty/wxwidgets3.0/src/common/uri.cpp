@@ -113,25 +113,31 @@ int wxURI::DecodeEscape(wxString::const_iterator& i)
     return (hi << 4) | lo;
 }
 
-/* static */
 wxString wxURI::Unescape(const wxString& uri)
 {
+    // URIs can contain escaped 8-bit characters that have to be decoded using
+    // UTF-8 (see RFC 3986), however in our (probably broken...) case we can
+    // also end up with not escaped Unicode characters in the URI string which
+    // can't be decoded as UTF-8. So what we do here is to encode all Unicode
+    // characters as UTF-8 only to decode them back below. This is obviously
+    // inefficient but there doesn't seem to be anything else to do, other than
+    // not allowing to mix Unicode characters with escapes in the first place,
+    // but this seems to be done in a lot of places, unfortunately.
+    const wxScopedCharBuffer& uriU8(uri.utf8_str());
+    const size_t len = uriU8.length();
+
     // the unescaped version can't be longer than the original one
-    wxCharBuffer buf(uri.length());
-    char *p = buf.data();
+    wxCharBuffer buf(uriU8.length());
+    char* p = buf.data();
 
-    for ( wxString::const_iterator i = uri.begin(); i != uri.end(); ++i, ++p )
+    const char* const end = uriU8.data() + len;
+    for (const char* s = uriU8.data(); s != end; ++s, ++p)
     {
-        char c = *i;
-        if ( c == '%' )
+        char c = *s;
+        if (c == '%' && s < end - 2 && IsHex(s[1]) && IsHex(s[2]))
         {
-            int n = wxURI::DecodeEscape(i);
-            if ( n == -1 )
-                return wxString();
-
-            wxASSERT_MSG( n >= 0 && n <= 0xff, "unexpected character value" );
-
-            c = static_cast<char>(n);
+            c = (CharToHex(s[1]) << 4) | CharToHex(s[2]);
+            s += 2;
         }
 
         *p = c;
@@ -139,17 +145,7 @@ wxString wxURI::Unescape(const wxString& uri)
 
     *p = '\0';
 
-    // by default assume that the URI is in UTF-8, this is the most common
-    // practice
-    wxString s = wxString::FromUTF8(buf);
-    if ( s.empty() )
-    {
-        // if it isn't, use latin-1 as a fallback -- at least this always
-        // succeeds
-        s = wxCSConv(wxFONTENCODING_ISO8859_1).cMB2WC(buf);
-    }
-
-    return s;
+    return wxString::FromUTF8(buf);
 }
 
 void wxURI::AppendNextEscaped(wxString& s, const char *& p)
