@@ -26,43 +26,53 @@ class FirstTimeWizard : public wxWizard
 	typedef wxWizard _parent;
 
 protected:
-	wxWizardPageSimple&		m_page_intro;
-	wxWizardPageSimple&		m_page_plugins;
-	wxWizardPageSimple&		m_page_bios;
+	wxWizardPageSimple& m_page_intro;
+	wxWizardPageSimple& m_page_plugins;
+	wxWizardPageSimple& m_page_bios;
 
-	wxPanelWithHelpers&				m_panel_Intro;
-	Panels::PluginSelectorPanel&	m_panel_PluginSel;
-	Panels::BiosSelectorPanel&		m_panel_BiosSel;
+	wxPanelWithHelpers& m_panel_Intro;
+	Panels::PluginSelectorPanel& m_panel_PluginSel;
+	Panels::BiosSelectorPanel& m_panel_BiosSel;
 
 public:
-	FirstTimeWizard( wxWindow* parent );
+	FirstTimeWizard(wxWindow* parent);
 	virtual ~FirstTimeWizard() = default;
 
-	wxWizardPage *GetFirstPage() const { return &m_page_intro; }
+	wxWizardPage* GetFirstPage() const { return &m_page_intro; }
 
 	void ForceEnumPlugins()
 	{
 		m_panel_PluginSel.OnShown();
 	}
-	
+
 	int ShowModal();
 
 protected:
-	virtual void OnPageChanging( wxWizardEvent& evt );
-	virtual void OnPageChanged( wxWizardEvent& evt );
-	virtual void OnDoubleClicked( wxCommandEvent& evt );
+	virtual void OnPageChanging(wxWizardEvent& evt);
+	virtual void OnPageChanged(wxWizardEvent& evt);
+	virtual void OnDoubleClicked(wxCommandEvent& evt);
 
-	void OnRestartWizard( wxCommandEvent& evt );
+	void OnRestartWizard(wxCommandEvent& evt);
 };
 
 
 namespace Dialogs
 {
-	class AboutBoxDialog: public wxDialogWithHelpers
+	class AboutBoxDialog : public wxDialogWithHelpers
 	{
 	public:
-		AboutBoxDialog( wxWindow* parent=NULL );
+		AboutBoxDialog(wxWindow* parent = NULL);
 		virtual ~AboutBoxDialog() = default;
+
+		static wxString GetNameStatic() { return L"AboutBox"; }
+		wxString GetDialogName() const { return GetNameStatic(); }
+	};
+
+	class GSDumpDialog : public wxDialogWithHelpers
+	{
+	public:
+		GSDumpDialog(wxWindow* parent = NULL);
+		virtual ~GSDumpDialog() = default;
 
 		static wxString GetNameStatic() { return L"AboutBox"; }
 		wxString GetDialogName() const { return GetNameStatic(); }
@@ -76,29 +86,29 @@ namespace Dialogs
 		Panels::LanguageSelectionPanel* m_panel_langsel;
 
 	public:
-		PickUserModeDialog( wxWindow* parent );
+		PickUserModeDialog(wxWindow* parent);
 		virtual ~PickUserModeDialog() = default;
 
 	protected:
-		void OnOk_Click( wxCommandEvent& evt );
+		void OnOk_Click(wxCommandEvent& evt);
 	};
 
 
 	class ImportSettingsDialog : public wxDialogWithHelpers
 	{
 	public:
-		ImportSettingsDialog( wxWindow* parent );
+		ImportSettingsDialog(wxWindow* parent);
 		virtual ~ImportSettingsDialog() = default;
 
 	protected:
-		void OnImport_Click( wxCommandEvent& evt );
-		void OnOverwrite_Click( wxCommandEvent& evt );
+		void OnImport_Click(wxCommandEvent& evt);
+		void OnOverwrite_Click(wxCommandEvent& evt);
 	};
 
 	class AssertionDialog : public wxDialogWithHelpers
 	{
 	public:
-		AssertionDialog( const wxString& text, const wxString& stacktrace );
+		AssertionDialog(const wxString& text, const wxString& stacktrace);
 		virtual ~AssertionDialog() = default;
 	};
 
@@ -112,7 +122,7 @@ namespace Dialogs
 		static wxString GetNameStatic() { return L"IPCSettings"; }
 		wxString GetDialogName() const { return GetNameStatic(); }
 	};
-}
+} // namespace Dialogs
 
-wxWindowID pxIssueConfirmation( wxDialogWithHelpers& confirmDlg, const MsgButtons& buttons );
-wxWindowID pxIssueConfirmation( wxDialogWithHelpers& confirmDlg, const MsgButtons& buttons, const wxString& disablerKey );
+wxWindowID pxIssueConfirmation(wxDialogWithHelpers& confirmDlg, const MsgButtons& buttons);
+wxWindowID pxIssueConfirmation(wxDialogWithHelpers& confirmDlg, const MsgButtons& buttons, const wxString& disablerKey);
