@@ -27,6 +27,8 @@
 #include "resource.h"
 #include "GSSetting.h"
 #include <algorithm>
+#include <locale>
+#include <codecvt>
 
 GSSettingsDlg::GSSettingsDlg()
 	: GSDialog(IDD_CONFIG)
@@ -394,8 +396,13 @@ void GSShaderDlg::OnInit()
 
 	// External FX shader
 	CheckDlgButton(m_hWnd, IDC_SHADER_FX, theApp.GetConfigB("shaderfx"));
-	SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_SETTEXT, 0, (LPARAM)theApp.GetConfigS("shaderfx_glsl").c_str());
-	SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_SETTEXT, 0, (LPARAM)theApp.GetConfigS("shaderfx_conf").c_str());
+
+	std::string tmp = theApp.GetConfigS("shaderfx_glsl");
+	std::wstring wsTmp(tmp.begin(), tmp.end());
+	SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_SETTEXT, 0, (LPARAM)wsTmp.c_str());
+	tmp = theApp.GetConfigS("shaderfx_conf");
+	wsTmp = std::wstring(tmp.begin(), tmp.end());
+	SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_SETTEXT, 0, (LPARAM)wsTmp.c_str());
 
 	// FXAA shader
 	CheckDlgButton(m_hWnd, IDC_FXAA, theApp.GetConfigB("fxaa"));
@@ -519,11 +526,14 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 			const int shader_fx_conf_length = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXTLENGTH, 0, 0);
 			const int length = std::max(shader_fx_length, shader_fx_conf_length) + 1;
 			std::unique_ptr<char[]> buffer(new char[length]);
+			char* output = new char[length];
 
 			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer.get());
-			theApp.SetConfig("shaderfx_glsl", buffer.get()); // Not really glsl only ;)
+			wcstombs(output, (wchar_t*)buffer.get(), length);
+			theApp.SetConfig("shaderfx_glsl", output); // Not really glsl only ;)
 			SendMessage(GetDlgItem(m_hWnd, IDC_SHADER_FX_CONF_EDIT), WM_GETTEXT, (WPARAM)length, (LPARAM)buffer.get());
-			theApp.SetConfig("shaderfx_conf", buffer.get());
+			wcstombs(output, (wchar_t*)buffer.get(), length);
+			theApp.SetConfig("shaderfx_conf", output);
 
 			EndDialog(m_hWnd, id);
 		} break;
