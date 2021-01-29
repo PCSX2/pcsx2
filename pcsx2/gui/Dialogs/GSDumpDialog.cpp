@@ -20,6 +20,10 @@
 
 #include "Dialogs/ModalPopups.h"
 
+
+#include "Utilities/EmbeddedImage.h"
+#include "Resources/NoIcon.h"
+
 #include <wx/mstream.h>
 #include <wx/listctrl.h>
 #include <wx/filepicker.h>
@@ -40,43 +44,22 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	const float scale = MSW_GetDPIScale();
 	SetMinWidth(scale * 460);
 
-#ifdef _WIN32
-	const int padding = 15;
-#else
-	const int padding = 8;
-#endif
-
-
 	wxFlexGridSizer& general(*new wxFlexGridSizer(2, StdPadding, StdPadding));
 	wxBoxSizer& dump_info(*new wxBoxSizer(wxVERTICAL));
+	wxBoxSizer& dump_preview(*new wxBoxSizer(wxVERTICAL));
 	wxFlexGridSizer& debugger(*new wxFlexGridSizer(2, StdPadding, StdPadding));
+	wxBoxSizer& dumps(*new wxBoxSizer(wxHORIZONTAL));
 	wxBoxSizer& dbg_tree(*new wxBoxSizer(wxVERTICAL));
 	wxBoxSizer& dbg_actions(*new wxBoxSizer(wxVERTICAL));
 	wxBoxSizer& gif(*new wxBoxSizer(wxVERTICAL));
+	wxBoxSizer& dumps_list(*new wxBoxSizer(wxVERTICAL));
 
-	// dump list
-	//general += new wxListView(this, wxID_ANY);
-
-	// dump directory
-	//general += new wxDirPickerCtrl(this, wxID_ANY);
-	//general += padding;
-
-	// renderer override
+	//dump_info += new wxFilePickerCtrl(this, wxID_ANY);
 	dump_info += new wxRadioButton(this, wxID_ANY, _("None"));
 	dump_info += new wxRadioButton(this, wxID_ANY, _("D3D11 HW"));
 	dump_info += new wxRadioButton(this, wxID_ANY, _("OGL HW"));
 	dump_info += new wxRadioButton(this, wxID_ANY, _("OGL SW"));
-	dump_info += padding;
-
-	// dump screenshot
-	//
-	// wxImage img = EmbeddedImage<res_Logo>().Get();
-	// img.Rescale(img.GetWidth() * scale, img.GetHeight() * scale, wxIMAGE_QUALITY_HIGH);
-	// auto bitmap_logo = new wxStaticBitmap(this, wxID_ANY, wxBitmap(img));
-
-	// launch dump
 	dump_info += new wxButton(this, wxID_ANY, _("Run"));
-	dump_info += padding;
 
 
 
@@ -97,7 +80,20 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	debugger += dbg_tree;
 	debugger += dbg_actions;
 
-	general += new wxListView(this, wxID_ANY);
+	dumps_list += new wxStaticText(this, wxID_ANY, _("GS Dumps List"));
+	dumps_list += new wxListView(this, wxID_ANY, wxDefaultPosition, wxSize(250, 200));
+
+	dump_preview += new wxStaticText(this, wxID_ANY, _("Preview"));
+	wxImage img = EmbeddedImage<res_NoIcon>().Get();
+	img.Rescale(250 * scale, 200 * scale, wxIMAGE_QUALITY_HIGH);
+	dump_preview += new wxStaticBitmap(this, wxID_ANY, wxBitmap(img));
+
+
+	dumps += dumps_list;
+	dumps += dump_info;
+	dumps += dump_preview;
+
+	general += dumps;
 	general += dump_info;
 	general += debugger;
 	general += gif;
