@@ -29,7 +29,7 @@ static const int LATENCY_MIN = 3;
 static const int LATENCY_MIN_TS = 15;
 
 // MIXING
-int Interpolation = 4;
+int Interpolation = 5;
 /* values:
 		0: no interpolation (use nearest)
 		1. linear interpolation
@@ -84,7 +84,7 @@ int dplLevel = 0;
 
 void ReadSettings()
 {
-	Interpolation = CfgReadInt(L"MIXING", L"Interpolation", 4);
+	Interpolation = CfgReadInt(L"MIXING", L"Interpolation", 5);
 
 	EffectsDisabled = CfgReadBool(L"MIXING", L"Disable_Effects", false);
 	postprocess_filter_dealias = CfgReadBool(L"MIXING", L"DealiasFilter", false);
