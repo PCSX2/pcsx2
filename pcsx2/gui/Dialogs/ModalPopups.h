@@ -72,7 +72,7 @@ namespace Dialogs
 	{
 	public:
 		GSDumpDialog(wxWindow* parent = NULL);
-		virtual ~GSDumpDialog();
+		virtual ~GSDumpDialog() = default;
 
 		static wxString GetNameStatic()
 		{
@@ -85,6 +85,7 @@ namespace Dialogs
 
 	protected:
 		wxListView* m_dump_list;
+		wxStaticBitmap* m_preview_image;
 		void GetDumpsList();
 		void SelectedDump(wxListEvent& evt);
 		enum
