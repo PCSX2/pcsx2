@@ -24,6 +24,9 @@
 #include "Utilities/EmbeddedImage.h"
 #include "Resources/NoIcon.h"
 
+#include "PathDefs.h"
+#include "AppConfig.h"
+
 #include <wx/mstream.h>
 #include <wx/listctrl.h>
 #include <wx/filepicker.h>
@@ -31,6 +34,7 @@
 #include <wx/button.h>
 #include <wx/treectrl.h>
 #include <wx/checkbox.h>
+#include <wx/dir.h>
 
 using namespace pxSizerFlags;
 
@@ -40,6 +44,7 @@ using namespace pxSizerFlags;
 
 Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	: wxDialogWithHelpers(parent, _("GSDumpGov"), pxDialogFlags())
+	, m_dump_list(new wxListView(this, wxID_ANY, wxDefaultPosition, wxSize(250, 200)))
 {
 	const float scale = MSW_GetDPIScale();
 	SetMinWidth(scale * 460);
@@ -54,7 +59,6 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	wxBoxSizer& gif(*new wxBoxSizer(wxVERTICAL));
 	wxBoxSizer& dumps_list(*new wxBoxSizer(wxVERTICAL));
 
-	//dump_info += new wxFilePickerCtrl(this, wxID_ANY);
 	dump_info += new wxRadioButton(this, wxID_ANY, _("None"));
 	dump_info += new wxRadioButton(this, wxID_ANY, _("D3D11 HW"));
 	dump_info += new wxRadioButton(this, wxID_ANY, _("OGL HW"));
@@ -80,8 +84,10 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	debugger += dbg_tree;
 	debugger += dbg_actions;
 
+	GetDumpsList();
+
 	dumps_list += new wxStaticText(this, wxID_ANY, _("GS Dumps List"));
-	dumps_list += new wxListView(this, wxID_ANY, wxDefaultPosition, wxSize(250, 200));
+	dumps_list += m_dump_list;
 
 	dump_preview += new wxStaticText(this, wxID_ANY, _("Preview"));
 	wxImage img = EmbeddedImage<res_NoIcon>().Get();
@@ -101,4 +107,32 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	*this += general;
 
 	SetSizerAndFit(GetSizer());
+
+	Bind(wxEVT_LIST_ITEM_SELECTED, &Dialogs::GSDumpDialog::SelectedDump, this, ID_DUMP_LIST);
+}
+
+void Dialogs::GSDumpDialog::GetDumpsList()
+{
+	wxDir snaps(g_Conf->Folders.Snapshots.GetFilename().GetName());
+	wxString filename;
+	bool cont = snaps.GetFirst(&filename, "*.gs", wxDIR_DEFAULT);
+	int i = 0;
+	while (cont)
+	{
+		m_dump_list->InsertItem(i, filename.c_str());
+		i++;
+		cont = snaps.GetNext(&filename);
+	}
+}
+
+Dialogs::GSDumpDialog::~GSDumpDialog()
+{
+	// we can't use smart pointers because of wxWidgets operator overload so we
+	// do the next best thing and handle the manual memory management ourselves
+	delete m_dump_list;
+}
+
+void Dialogs::GSDumpDialog::SelectedDump(wxListEvent& evt)
+{
+	//evt->GetText();
 }
