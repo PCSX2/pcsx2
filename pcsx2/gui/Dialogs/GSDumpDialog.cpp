@@ -23,6 +23,7 @@
 
 #include "Utilities/EmbeddedImage.h"
 #include "Resources/NoIcon.h"
+#include "GS.h"
 
 #include "PathDefs.h"
 #include "AppConfig.h"
@@ -47,6 +48,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	: wxDialogWithHelpers(parent, _("GSDumpGov"), pxDialogFlags())
 	, m_dump_list(new wxListView(this, ID_DUMP_LIST, wxDefaultPosition, wxSize(250, 200)))
 	, m_preview_image(new wxStaticBitmap(this, wxID_ANY, wxBitmap(EmbeddedImage<res_NoIcon>().Get())))
+	, m_selected_dump(new wxString(""))
 {
 	const float scale = MSW_GetDPIScale();
 	SetMinWidth(scale * 460);
@@ -65,7 +67,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	dump_info += new wxRadioButton(this, wxID_ANY, _("D3D11 HW"));
 	dump_info += new wxRadioButton(this, wxID_ANY, _("OGL HW"));
 	dump_info += new wxRadioButton(this, wxID_ANY, _("OGL SW"));
-	dump_info += new wxButton(this, wxID_ANY, _("Run"));
+	dump_info += new wxButton(this, ID_RUN_DUMP, _("Run"));
 
 
 
@@ -109,6 +111,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	SetSizerAndFit(GetSizer());
 
 	Bind(wxEVT_LIST_ITEM_SELECTED, &Dialogs::GSDumpDialog::SelectedDump, this, ID_DUMP_LIST);
+	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::RunDump, this, ID_RUN_DUMP);
 }
 
 void Dialogs::GSDumpDialog::GetDumpsList()
@@ -128,15 +131,26 @@ void Dialogs::GSDumpDialog::GetDumpsList()
 
 void Dialogs::GSDumpDialog::SelectedDump(wxListEvent& evt)
 {
-	wxString filename = g_Conf->Folders.Snapshots.ToAscii() + ("/" + evt.GetText()) + ".png";
-	if (wxFileExists(filename))
+	wxString filename_preview = g_Conf->Folders.Snapshots.ToAscii() + ("/" + evt.GetText()) + ".png";
+	wxString filename = g_Conf->Folders.Snapshots.ToAscii() + ("/" + evt.GetText()) + ".gs";
+	if (wxFileExists(filename_preview))
 	{
-		auto img = wxImage(filename);
+		auto img = wxImage(filename_preview);
 		img.Rescale(250 * MSW_GetDPIScale(), 200 * MSW_GetDPIScale(), wxIMAGE_QUALITY_HIGH);
 		m_preview_image->SetBitmap(wxBitmap(img));
+		delete m_selected_dump;
+		m_selected_dump = new wxString(filename);
 	}
 	else
 	{
 		m_preview_image->SetBitmap(EmbeddedImage<res_NoIcon>().Get());
+	}
+}
+
+void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
+{
+	if (GSReplay != NULL)
+	{
+		GSReplay("test", 0);
 	}
 }

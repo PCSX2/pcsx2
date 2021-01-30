@@ -157,6 +157,7 @@ _GSosdLog          GSosdLog;
 _GSosdMonitor      GSosdMonitor;
 _GSopen            GSopen;
 _GSopen2           GSopen2;
+_GSReplay		   GSReplay;
 _GSgifTransfer     GSgifTransfer;
 _GSgifTransfer1    GSgifTransfer1;
 _GSgifTransfer2    GSgifTransfer2;
@@ -315,6 +316,7 @@ static const LegacyApi_OptMethod s_MethMessOpt_GS[] =
 	{	"GSosdLog",			(vMeth**)&GSosdLog			},
 	{	"GSosdMonitor",		(vMeth**)&GSosdMonitor		},
 	{	"GSopen2",			(vMeth**)&GSopen2			},
+	{	"GSReplay",			(vMeth**)&GSReplay			},
 	{	"GSreset",			(vMeth**)&GSreset			},
 	{	"GSsetupRecording",	(vMeth**)&GSsetupRecording	},
 	{	"GSendRecording",	(vMeth**)&GSendRecording	},
