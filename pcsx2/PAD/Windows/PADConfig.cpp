@@ -46,10 +46,10 @@ HWND hWndProp = 0;
 int selected = 0;
 bool quickSetup = false;
 
-// Older versions of PCSX2 don't always create the ini dir on startup, so PAD does it
-// for it.  But if PCSX2 sets the ini path with a call to setSettingsDir, then it means
+// Older versions of PCSX2 don't always create the settings dir on startup, so PAD does it
+// for it.  But if PCSX2 sets the settings path with a call to setSettingsDir, then it means
 // we shouldn't make our own.
-bool createIniDir = true;
+bool createSettingsDir = true;
 
 HWND hWnds[2][4][numPadTypes];
 HWND hWndGeneral = 0;
@@ -328,21 +328,21 @@ wchar_t* GetCommandStringW(u8 command, int port, int slot)
 	return L"";
 }
 
-static wchar_t iniFileUSB[MAX_PATH * 2] = L"inis/PAD.ini";
+static wchar_t padSettings[MAX_PATH * 2] = L"settings/PAD.ini";
 
 // we disregard dir and use global settings instead, we should probably clean that up someday...
 void PADsetSettingsDir(const char* dir)
 {
-	//swprintf_s( iniFileUSB, L"%S", (dir==NULL) ? "inis" : dir );
+	//swprintf_s( padSettings, L"%S", (dir==NULL) ? "inis" : dir );
 
 	//uint targlen = MultiByteToWideChar(CP_ACP, 0, dir, -1, NULL, 0);
 	std::string iniName = "PAD.ini";
-	MultiByteToWideChar(CP_UTF8, 0, (GetSettingsFolder() / iniName).c_str(), -1, iniFileUSB, MAX_PATH * 2);
+	MultiByteToWideChar(CP_UTF8, 0, (GetSettingsFolder() / iniName).c_str(), -1, padSettings, MAX_PATH * 2);
 
-	createIniDir = false;
+	createSettingsDir = false;
 
 	FILE* temp = nullptr;
-	_wfopen_s(&temp, iniFileUSB, L"r");
+	_wfopen_s(&temp, padSettings, L"r");
 	if (!temp)
 	{ // File not found, possibly.
 		HRSRC res = FindResource(GetModuleHandle(nullptr), MAKEINTRESOURCE(IDR_INI1), RT_RCDATA);
@@ -353,7 +353,7 @@ void PADsetSettingsDir(const char* dir)
 			return;
 		size_t size = SizeofResource(GetModuleHandle(nullptr), res);
 		u8* fdata = (u8*)LockResource(data);
-		_wfopen_s(&temp, iniFileUSB, L"w");
+		_wfopen_s(&temp, padSettings, L"w");
 		if (!temp)
 			return;
 		fwrite(fdata, 1, size, temp);
@@ -931,7 +931,7 @@ int SaveSettings(wchar_t* file = 0)
 	// Need this either way for saving path.
 	if (!file)
 	{
-		file = iniFileUSB;
+		file = padSettings;
 	}
 	else
 	{
@@ -946,8 +946,8 @@ int SaveSettings(wchar_t* file = 0)
 	}
 	DeleteFileW(file);
 
-	WritePrivateProfileStringW(L"General Settings", L"Last Config Path", config.lastSaveConfigPath, iniFileUSB);
-	WritePrivateProfileStringW(L"General Settings", L"Last Config Name", config.lastSaveConfigFileName, iniFileUSB);
+	WritePrivateProfileStringW(L"General Settings", L"Last Config Path", config.lastSaveConfigPath, padSettings);
+	WritePrivateProfileStringW(L"General Settings", L"Last Config Name", config.lastSaveConfigFileName, padSettings);
 
 	// Just check first, last, and all pad bindings.  Should be more than enough.  No real need to check
 	// config path.
@@ -1048,10 +1048,10 @@ int LoadSettings(int force, wchar_t* file)
 	if (dm && !force)
 		return 0;
 
-	if (createIniDir)
+	if (createSettingsDir)
 	{
-		PADsetSettingsDir("inis");
-		createIniDir = false;
+		PADsetSettingsDir("settings");
+		createSettingsDir = false;
 	}
 
 	// Could just do ClearDevices() instead, but if I ever add any extra stuff,
@@ -1061,8 +1061,8 @@ int LoadSettings(int force, wchar_t* file)
 
 	if (!file)
 	{
-		file = iniFileUSB;
-		GetPrivateProfileStringW(L"General Settings", L"Last Config Path", L"inis", config.lastSaveConfigPath, sizeof(config.lastSaveConfigPath), file);
+		file = padSettings;
+		GetPrivateProfileStringW(L"General Settings", L"Last Config Path", L"settings", config.lastSaveConfigPath, sizeof(config.lastSaveConfigPath), file);
 		GetPrivateProfileStringW(L"General Settings", L"Last Config Name", L"PAD.pad", config.lastSaveConfigFileName, sizeof(config.lastSaveConfigFileName), file);
 	}
 	else
@@ -1074,8 +1074,8 @@ int LoadSettings(int force, wchar_t* file)
 			wcscpy(config.lastSaveConfigPath, file);
 			wcscpy(config.lastSaveConfigFileName, c + 1);
 			*c = '\\';
-			WritePrivateProfileStringW(L"General Settings", L"Last Config Path", config.lastSaveConfigPath, iniFileUSB);
-			WritePrivateProfileStringW(L"General Settings", L"Last Config Name", config.lastSaveConfigFileName, iniFileUSB);
+			WritePrivateProfileStringW(L"General Settings", L"Last Config Path", config.lastSaveConfigPath, padSettings);
+			WritePrivateProfileStringW(L"General Settings", L"Last Config Name", config.lastSaveConfigFileName, padSettings);
 		}
 	}
 
@@ -1170,7 +1170,7 @@ int LoadSettings(int force, wchar_t* file)
 				if (c)
 				{
 					if (len < 8)
-					{ // If ini file is imported from older version, make sure bindings aren't applied to "Unplugged" padtype.
+					{ // If settings file is imported from older version, make sure bindings aren't applied to "Unplugged" padtype.
 						oldIni = true;
 						if (config.padConfigs[port][slot].type != 0)
 						{
@@ -2768,9 +2768,9 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 					case IDNO:
 						break;
 					case IDYES:
-						char iniLocation[MAX_PATH * 2] = "inis/PAD.ini";
-						remove(iniLocation);
-						createIniDir = true;
+						char settingsLocation[MAX_PATH * 2] = "settings/PAD.ini";
+						remove(settingsLocation);
+						createSettingsDir = true;
 						LoadSettings(1);
 						GeneralDialogProc(hWnd, WM_INITDIALOG, 0, 0);
 						PropSheet_Changed(hWndProp, hWnd);

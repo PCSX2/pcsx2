@@ -220,8 +220,8 @@ void OnBrowse(HWND hW)
 	memcpy(wbuff, HDD_DEF, sizeof(HDD_DEF));
 
 	//GHC uses UTF8 on all platforms
-	fs::path inis = GetSettingsFolder();
-	wstring w_inis = inis.wstring();
+	fs::path settings = GetSettingsFolder();
+	wstring w_settings = settings.wstring();
 
 	OPENFILENAMEW ofn;
 	ZeroMemory(&ofn, sizeof(ofn));
@@ -234,7 +234,7 @@ void OnBrowse(HWND hW)
 	ofn.nFilterIndex = 1;
 	ofn.lpstrFileTitle = NULL;
 	ofn.nMaxFileTitle = 0;
-	ofn.lpstrInitialDir = w_inis.c_str();
+	ofn.lpstrInitialDir = w_settings.c_str();
 	ofn.Flags = OFN_PATHMUSTEXIST | OFN_NOCHANGEDIR;
 
 	if (GetOpenFileName(&ofn))
@@ -254,7 +254,7 @@ void OnBrowse(HWND hW)
 				(LPARAM)filesizeGb);
 		}
 
-		if (hddFile.parent_path() == inis)
+		if (hddFile.parent_path() == settings)
 			hddFile = hddFile.filename();
 		Edit_SetText(GetDlgItem(hW, IDC_HDDFILE), hddFile.wstring().c_str());
 	}
