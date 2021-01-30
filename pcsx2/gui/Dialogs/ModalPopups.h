@@ -86,11 +86,14 @@ namespace Dialogs
 	protected:
 		wxListView* m_dump_list;
 		wxStaticBitmap* m_preview_image;
+		wxString* m_selected_dump;
 		void GetDumpsList();
 		void SelectedDump(wxListEvent& evt);
+		void RunDump(wxCommandEvent& event);
 		enum
 		{
-			ID_DUMP_LIST
+			ID_DUMP_LIST,
+			ID_RUN_DUMP
 		};
 	};
 
