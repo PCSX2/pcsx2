@@ -72,10 +72,25 @@ namespace Dialogs
 	{
 	public:
 		GSDumpDialog(wxWindow* parent = NULL);
-		virtual ~GSDumpDialog() = default;
+		virtual ~GSDumpDialog();
 
-		static wxString GetNameStatic() { return L"AboutBox"; }
-		wxString GetDialogName() const { return GetNameStatic(); }
+		static wxString GetNameStatic()
+		{
+			return L"AboutBox";
+		}
+		wxString GetDialogName() const
+		{
+			return GetNameStatic();
+		}
+
+	protected:
+		wxListView* m_dump_list;
+		void GetDumpsList();
+		void SelectedDump(wxListEvent& evt);
+		enum
+		{
+			ID_DUMP_LIST
+		};
 	};
 
 
