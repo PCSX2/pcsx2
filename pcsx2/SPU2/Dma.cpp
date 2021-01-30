@@ -181,14 +181,6 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 #else
 			AutoDMAReadBuffer(0);
 #endif
-
-
-			if (!InputDataLeft)
-			{
-				DMAICounter = size * 4;
-				LastClock = *cyclePtr;
-				AutoDMACtrl |= ~3;
-			}
 		}
 		AdmaInProgress = 1;
 	}
