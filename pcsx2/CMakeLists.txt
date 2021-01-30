@@ -279,6 +279,7 @@ set(pcsx2SPU2Headers
 	SPU2/defs.h
 	SPU2/Dma.h
 	SPU2/Global.h
+	SPU2/interpolate_table.h
 	SPU2/Lowpass.h
 	SPU2/Mixer.h
 	SPU2/spu2.h

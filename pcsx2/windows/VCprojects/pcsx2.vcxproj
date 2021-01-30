@@ -687,6 +687,7 @@
     <ClInclude Include="..\..\SPU2\Config.h" />
     <ClInclude Include="..\..\SPU2\Global.h" />
     <ClInclude Include="..\..\SPU2\spu2replay.h" />
+    <ClInclude Include="..\..\SPU2\interpolate_table.h" />
     <ClInclude Include="..\..\SPU2\Lowpass.h" />
     <ClInclude Include="..\..\SPU2\SndOut.h" />
     <ClInclude Include="..\..\SPU2\Linux\Alsa.h" />
