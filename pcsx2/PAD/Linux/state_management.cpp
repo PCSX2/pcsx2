@@ -176,6 +176,26 @@ u8 pad_poll(u8 value)
 
 	Pad* pad = &pads[query.port][query.slot];
 
+	int padNum = -1;
+	if (query.port == 0 && query.slot == 0 && s_vgamePad.size() > 0)
+		padNum = 0;
+	if (query.port == 0 && query.slot == 1 && s_vgamePad.size() > 2)
+		padNum = 2;
+	if (query.port == 0 && query.slot == 2 && s_vgamePad.size() > 3)
+		padNum = 3;
+	if (query.port == 0 && query.slot == 3 && s_vgamePad.size() > 4)
+		padNum = 4;
+	if (query.port == 1 && query.slot == 0 && s_vgamePad.size() > 1)
+		padNum = 1;
+	if (query.port == 1 && query.slot == 1 && s_vgamePad.size() > 5)
+		padNum = 5;
+	if (query.port == 1 && query.slot == 2 && s_vgamePad.size() > 6)
+		padNum = 6;
+	if (query.port == 1 && query.slot == 3 && s_vgamePad.size() > 7)
+		padNum = 7;
+	if (padNum == -1)
+		return 0;
+
 	if (query.lastByte == 0)
 	{
 		query.lastByte++;
@@ -231,7 +251,7 @@ u8 pad_poll(u8 value)
 					b1=b1 & 0x1f;
 #endif
 
-				uint16_t buttons = g_key_status.get(query.port);
+				uint16_t buttons = g_key_status.get(padNum);
 
 				query.numBytes = 5;
 
@@ -242,28 +262,28 @@ u8 pad_poll(u8 value)
 				{ // ANALOG || DS2 native
 					query.numBytes = 9;
 
-					query.response[5] = g_key_status.get(query.port, PAD_R_RIGHT);
-					query.response[6] = g_key_status.get(query.port, PAD_R_UP);
-					query.response[7] = g_key_status.get(query.port, PAD_L_RIGHT);
-					query.response[8] = g_key_status.get(query.port, PAD_L_UP);
+					query.response[5] = g_key_status.get(padNum, PAD_R_RIGHT);
+					query.response[6] = g_key_status.get(padNum, PAD_R_UP);
+					query.response[7] = g_key_status.get(padNum, PAD_L_RIGHT);
+					query.response[8] = g_key_status.get(padNum, PAD_L_UP);
 
 					if (pad->mode != MODE_ANALOG)
 					{ // DS2 native
 						query.numBytes = 21;
 
-						query.response[9] = !test_bit(buttons, 13) ? g_key_status.get(query.port, PAD_RIGHT) : 0;
-						query.response[10] = !test_bit(buttons, 15) ? g_key_status.get(query.port, PAD_LEFT) : 0;
-						query.response[11] = !test_bit(buttons, 12) ? g_key_status.get(query.port, PAD_UP) : 0;
-						query.response[12] = !test_bit(buttons, 14) ? g_key_status.get(query.port, PAD_DOWN) : 0;
+						query.response[9] = !test_bit(buttons, 13) ? g_key_status.get(padNum, PAD_RIGHT) : 0;
+						query.response[10] = !test_bit(buttons, 15) ? g_key_status.get(padNum, PAD_LEFT) : 0;
+						query.response[11] = !test_bit(buttons, 12) ? g_key_status.get(padNum, PAD_UP) : 0;
+						query.response[12] = !test_bit(buttons, 14) ? g_key_status.get(padNum, PAD_DOWN) : 0;
 
-						query.response[13] = !test_bit(buttons, 4) ? g_key_status.get(query.port, PAD_TRIANGLE) : 0;
-						query.response[14] = !test_bit(buttons, 5) ? g_key_status.get(query.port, PAD_CIRCLE) : 0;
-						query.response[15] = !test_bit(buttons, 6) ? g_key_status.get(query.port, PAD_CROSS) : 0;
-						query.response[16] = !test_bit(buttons, 7) ? g_key_status.get(query.port, PAD_SQUARE) : 0;
-						query.response[17] = !test_bit(buttons, 2) ? g_key_status.get(query.port, PAD_L1) : 0;
-						query.response[18] = !test_bit(buttons, 3) ? g_key_status.get(query.port, PAD_R1) : 0;
-						query.response[19] = !test_bit(buttons, 0) ? g_key_status.get(query.port, PAD_L2) : 0;
-						query.response[20] = !test_bit(buttons, 1) ? g_key_status.get(query.port, PAD_R2) : 0;
+						query.response[13] = !test_bit(buttons, 4) ? g_key_status.get(padNum, PAD_TRIANGLE) : 0;
+						query.response[14] = !test_bit(buttons, 5) ? g_key_status.get(padNum, PAD_CIRCLE) : 0;
+						query.response[15] = !test_bit(buttons, 6) ? g_key_status.get(padNum, PAD_CROSS) : 0;
+						query.response[16] = !test_bit(buttons, 7) ? g_key_status.get(padNum, PAD_SQUARE) : 0;
+						query.response[17] = !test_bit(buttons, 2) ? g_key_status.get(padNum, PAD_L1) : 0;
+						query.response[18] = !test_bit(buttons, 3) ? g_key_status.get(padNum, PAD_R1) : 0;
+						query.response[19] = !test_bit(buttons, 0) ? g_key_status.get(padNum, PAD_L2) : 0;
+						query.response[20] = !test_bit(buttons, 1) ? g_key_status.get(padNum, PAD_R2) : 0;
 					}
 				}
 

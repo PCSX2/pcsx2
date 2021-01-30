@@ -15,7 +15,7 @@
 
 #pragma once
 
-#define GAMEPAD_NUMBER 2 // numbers of gamepad
+#define GAMEPAD_NUMBER 8 // numbers of gamepad
 
 #include <wx/string.h>
 #include <wx/tokenzr.h>
