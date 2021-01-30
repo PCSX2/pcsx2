@@ -29,7 +29,7 @@ int AutoDMAPlayRate[2] = {0, 0};
 // Default settings.
 
 // MIXING
-int Interpolation = 4;
+int Interpolation = 5;
 /* values:
 		0: no interpolation (use nearest)
 		1. linear interpolation
@@ -84,7 +84,7 @@ void ReadSettings()
 	if (!pathSet)
 		initIni();
 
-	Interpolation = CfgReadInt(L"MIXING", L"Interpolation", 4);
+	Interpolation = CfgReadInt(L"MIXING", L"Interpolation", 5);
 	EffectsDisabled = CfgReadBool(L"MIXING", L"Disable_Effects", false);
 	postprocess_filter_dealias = CfgReadBool(L"MIXING", L"DealiasFilter", false);
 	FinalVolume = ((float)CfgReadInt(L"MIXING", L"FinalVolume", 100)) / 100;
