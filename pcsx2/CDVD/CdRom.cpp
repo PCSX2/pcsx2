@@ -663,9 +663,9 @@ void cdrWrite0(u8 rt)
 
 void setPs1CDVDSpeed(int speed)
 {
-	//DevCon.WriteLn("SPEED: " + speed);
+	//Console.Warning(L"SPEED: %dX", speed);
 	cdReadTime = (PSXCLK / (75 * speed));
-	//DevCon.WriteLn("cdReadTime: " + unsigned(cdReadTime));
+	//Console.Warning(L"cdReadTime: %d", unsigned(cdReadTime));
 }
 
 u8 cdrRead1(void)

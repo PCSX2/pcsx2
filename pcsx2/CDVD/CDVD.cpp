@@ -1475,25 +1475,13 @@ static __fi void cdvdWrite0F(u8 rt)
 }
 
 static __fi void cdvdWrite14(u8 rt)
-{ // PS1 MODE?? // This should be done in the SBUS_F240 bit 19 write in HwWrite.cpp
-	//u32 cycle = psxRegs.cycle;
-
-	//if (rt == 0xFE)
-		//Console.Warning("*PCSX2*: go PS1 mode DISC SPEED = FAST");
-	//else
-		//Console.Warning("*PCSX2*: go PS1 mode DISC SPEED = %dX", rt);
-
-	//psxReset();
-	//PSXCLK = 33868800;
-	//setPsxSpeed();
-	// psxmode: todo: we should recalculate video timings for iop and ee. how to do that best?
-	// unlike regular ps2 games, the video mode for ps1driver isn't going through the GS set mode syscall
-	// so.. something like this? :
-	//gsSetVideoMode(GS_VideoMode::NTSC);
-	//gsSetVideoMode(GS_VideoMode::DVD_NTSC);
-	//psxHu32(0x1f801450) = 0x8;
-	//psxHu32(0x1f801078) = 1;
-	//psxRegs.cycle = cycle;
+{
+	// Rama Or WISI guessed that "2" literally meant 2x but we can get 0x02 or 0xfe for "Standard" or "Fast" it appears. It is unsure what those values are meant to be
+	// Tests with ref suggest this register is write only? - Weirdbeard
+	if (rt == 0xFE)
+		Console.Warning("*PCSX2*: Unimplemented PS1 mode DISC SPEED = FAST");
+	else
+		Console.Warning("*PCSX2*: Unimplemented PS1 mode DISC SPEED = STANDARD");
 }
 
 static __fi void fail_pol_cal()
@@ -2190,9 +2178,9 @@ void cdvdWrite(u8 key, u8 rt)
 		case 0x0F:
 			cdvdWrite0F(rt);
 			break;
-		//case 0x14:
-		//	cdvdWrite14(rt);
-		//	break;
+		case 0x14:
+			cdvdWrite14(rt);
+			break;
 		case 0x16:
 			cdvdWrite16(rt);
 			break;
