@@ -406,7 +406,7 @@ mVUop(mVU_ESADD) {
 }
 
 mVUop(mVU_ESIN) {
-	pass1 { mVUanalyzeEFU2(mVU, _Fs_, 29); }
+	pass1 { mVUanalyzeEFU1(mVU, _Fs_, _Fsf_, 29); }
 	pass2 {
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, (1 << (3 - _Fsf_)));
 		const xmm& t1 = mVU.regAlloc->allocReg();
