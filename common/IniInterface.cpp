@@ -79,10 +79,12 @@ void IniInterface::SetPath(const wxString& path)
 		m_Config->SetPath(path);
 }
 
-void IniInterface::Flush()
+bool IniInterface::Flush()
 {
 	if (m_Config)
-		m_Config->Flush();
+		return m_Config->Flush();
+	else
+		return false;
 }
 
 
@@ -113,18 +115,14 @@ void IniLoader::Entry(const std::string &var, std::string &value, const std::str
 		value = dest.ToStdString();
 	}
 	else
-	{
 		value = defvalue;
-	}
 }
 
 void IniLoader::Entry(const std::string& key, std::map<std::string, int>& var, const int defValue)
 {
 	int value = defValue;
 	if (m_Config)
-	{
 		m_Config->Read(Path::ToWxString(key), &value, defValue);
-	}
 	var[key] = value;
 }
 
@@ -159,27 +157,21 @@ void IniLoader::Entry(const wxString& var, fs::path& value, const fs::path defva
 {
 	wxString dest;
 	if (m_Config)
-	{
 		m_Config->Read(var, &dest, wxEmptyString);
-	}
 	if (dest.IsEmpty())
-	{
 		value = defvalue;
-	}
 	else
 	{
-        value = Path::FromWxString(dest);
+		value = Path::FromWxString(dest).make_preferred();
 		if (isAllowRelative)
-		{
-			value = Path::FromWxString(g_fullBaseDirName.ToString()).relative_path();
-		}
+			value = fs::canonical(Path::FromWxString(dest));
 		if (value.is_absolute())
 		{
 			try
 			{
-				value = fs::canonical(value);
+				value = fs::absolute(value);
 			}
-			catch (fs::filesystem_error ex)
+			catch (const fs::filesystem_error& ex)
 			{
 				value = defvalue;
 			}
@@ -383,20 +375,17 @@ void IniSaver::Entry(const wxString& var, wxDirName& value, const wxDirName defv
 	if (isAllowRelative)
 		res = wxDirName::MakeAutoRelativeTo(res, g_fullBaseDirName.ToString());
 
-     m_Config->Write(var, res.ToString());
+	m_Config->Write(var, res.ToString());
 }
 
 void IniSaver::Entry(const wxString &var, fs::path &value, const fs::path defvalue, bool isAllowRelative)
 {
 	if (!m_Config)
 		return;
-	wxDirName res(value.wstring());
+	wxDirName res(Path::ToWxString(value));
 
 	if (res.IsAbsolute())
 		res.Normalize();
-
-	if (isAllowRelative)
-		res = wxDirName::MakeAutoRelativeTo(res, g_fullBaseDirName.ToString());
 
 	m_Config->Write(var, res.ToString());
 }

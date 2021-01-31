@@ -544,7 +544,11 @@ void App_LoadSaveInstallSettings( IniInterface& ini )
 	ini.Entry( L"Install_Dir",				InstallF,				(wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath()) );
 	SetFullBaseDir( wxDirName(InstallF) );
 
-	ini.Flush();
+	if (!ini.Flush())
+	{
+		Console.Error(L"You don\'t have permissions to write settings");
+		return;
+	}
 }
 
 void App_LoadInstallSettings( wxConfigBase* ini )
@@ -646,7 +650,11 @@ void AppConfig::LoadSave( IniInterface& ini )
 	AudioCapture.LoadSave( ini );
 	Templates		.LoadSave( ini );
 
-	ini.Flush();
+	if (!ini.Flush())
+	{
+		Console.Error(L"You don\'t have permissions to write settings");
+		return;
+	}
 }
 
 // ------------------------------------------------------------------------
@@ -737,14 +745,15 @@ void AppConfig::FolderOptions::LoadSave( IniInterface& ini )
 	//when saving in portable mode, we save relative paths if possible
 	 //  --> on load, these relative paths will be expanded relative to the exe folder.
 	bool rel = ( ini.IsLoading() || IsPortable() );
-	
-	Snapshots = Path::getPath(Snapshots, IsPortable());
-	Savestates = Path::getPath(Savestates, IsPortable());
-	MemoryCards = Path::getPath(MemoryCards, IsPortable());
-	Logs = Path::getPath(Logs, IsPortable());
-	Langs = Path::getPath(Langs, IsPortable());
-	Cheats = Path::getPath(Cheats, IsPortable());
-	CheatsWS = Path::getPath(CheatsWS, IsPortable());
+
+	//Bios = Path::getPath(Bios, PathDefs::GetDocuments(), IsPortable());
+	Snapshots = Path::getPath(Snapshots, PathDefs::GetDocuments(), IsPortable());
+	Savestates = Path::getPath(Savestates, PathDefs::GetDocuments(), IsPortable());
+	MemoryCards = Path::getPath(MemoryCards, PathDefs::GetDocuments(), IsPortable());
+	Logs = Path::getPath(Logs, PathDefs::GetDocuments(), IsPortable());
+	Langs = Path::getPath(Langs, PathDefs::GetDocuments(), IsPortable());
+	Cheats = Path::getPath(Cheats, PathDefs::GetDocuments(), IsPortable());
+	CheatsWS = Path::getPath(CheatsWS, PathDefs::GetDocuments(), IsPortable());
 
 	IniEntryDirFile( Bios,  rel);
 	IniEntryDirFile( Snapshots,  rel );
