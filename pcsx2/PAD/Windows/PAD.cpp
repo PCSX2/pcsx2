@@ -971,16 +971,6 @@ ExtraWndProcResult StatusWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 	}
 	return CONTINUE_BLISSFULLY;
 }
-
-// All that's needed to force hiding the cursor in the proper thread.
-// Could have a special case elsewhere, but this make sure it's called
-// only once, rather than repeatedly.
-ExtraWndProcResult HideCursorProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam, LRESULT* output)
-{
-	ShowCursor(0);
-	return CONTINUE_BLISSFULLY_AND_RELEASE_PROC;
-}
-
 #endif
 
 void PADconfigure()
@@ -1043,11 +1033,6 @@ s32 PADopen(void* pDsp)
 				openCount = 0;
 				return -1;
 			}
-		}
-
-		if (config.forceHide)
-		{
-			hWndGSProc.Eat(HideCursorProc, 0);
 		}
 
 		windowThreadId = GetWindowThreadProcessId(hWndTop, 0);

@@ -26,7 +26,6 @@ LPWSTR pad_dialog_message(int ID, bool* updateText)
 		// General tab
 		case IDC_M_WM:
 		case IDC_M_RAW:
-		case IDC_M_DI:
 			return L"Enables mouse inputs to be used as pad controls.\n\n"
 				   L"The mouse needs to be in focus to be used for playing. By default this is not the case as the \"Start without mouse focus\" checkbox is enabled. "
 				   L"Either disable this checkbox or enable/disable the mouse while playing by assigning a key to the \"Mouse\" button on the Pad tabs.\n\n"
