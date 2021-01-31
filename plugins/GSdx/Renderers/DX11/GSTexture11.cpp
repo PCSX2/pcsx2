@@ -20,6 +20,7 @@
  */
 
 #include "stdafx.h"
+#include "fstream"
 #include "GSTexture11.h"
 #include "GSPng.h"
 
@@ -101,6 +102,76 @@ void GSTexture11::Unmap()
 		UINT subresource = m_layer;
 		m_ctx->Unmap(m_texture, subresource);
 	}
+}
+
+bool GSTexture11::SaveDDS(const std::string& fn)
+{
+	CComPtr<ID3D11Texture2D> res;
+	D3D11_TEXTURE2D_DESC desc;
+
+	m_texture->GetDesc(&desc);
+
+	desc.Usage = D3D11_USAGE_STAGING;
+	desc.BindFlags = 0;
+	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
+
+	HRESULT hr = m_dev->CreateTexture2D(&desc, nullptr, &res);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	m_ctx->CopyResource(res, m_texture);
+
+	res->GetDesc(&desc);
+
+	D3D11_MAPPED_SUBRESOURCE sm;
+
+	hr = m_ctx->Map(res, 0, D3D11_MAP_READ, 0, &sm);
+	if (FAILED(hr))
+	{
+		return false;
+	}
+
+	std::ofstream _out(fn, std::ios::binary);
+
+	int _zero = 0x00;
+	int const _dataSize = desc.Height * desc.Width * 4;
+
+	uint32_t _output[] = {0x7C, 0x02100F, desc.Height, desc.Width, 0x800, 0x01, 0x01};
+	uint32_t _output2[] = {0x20, 0x41, 0x00, 0x20, 0xFF, 0xFF00, 0xFF0000, 0xFF000000, 0x1000};
+
+	std::vector<unsigned char> _imgData;
+	_imgData.resize(_dataSize);
+
+	memcpy(_imgData.data(), sm.pData, _dataSize);
+
+	for (int i = 3; i < _dataSize; i += 4)
+	{
+		unsigned char const _factor = 2;
+		int _value = std::min(_imgData.at(i) * _factor, 255);
+
+		_imgData.at(i) = static_cast<unsigned char>(_value);
+	}
+
+	_out << "DDS ";
+	_out.write(reinterpret_cast<char*>(&_output), 4 * 7);
+
+	for (int o = 0; o < 11; o++)
+		_out.write(reinterpret_cast<char*>(&_zero), 4);
+
+	_out.write(reinterpret_cast<char*>(&_output2), 4 * 9);
+
+	for (int o = 0; o < 4; o++)
+		_out.write(reinterpret_cast<char*>(&_zero), 4);
+
+	_out.write(reinterpret_cast<char*>(_imgData.data()), _dataSize);
+	_out.close();
+
+	_imgData.clear();
+	m_ctx->Unmap(res, 0);
+
+	return true;
 }
 
 bool GSTexture11::Save(const std::string& fn)

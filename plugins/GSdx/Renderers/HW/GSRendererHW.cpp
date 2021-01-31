@@ -20,9 +20,131 @@
  */
 
 #include "stdafx.h"
+#include "DDS.h"
 #include "GSRendererHW.h"
 
+#include <iomanip>
+#include <filesystem>
+
+#include <crcpp/CRCpp.h>
+#include <mIni/mIni.h>
+
+// Used as a three-way flag. Made to combat the 0x00000000 CRC at the beginning. 
+int _iniParse = 1;
+
+// 2 maps are made to hold everything saved and everything replaced to avoid
+// constant runtime.
+std::map<uint32_t, bool> _saveMap;
+std::map<uint32_t, GSTexture*> _texMap;
+
+// Some games (Ex. Kingdom Hearts 2) transform it's 3D textures down no matter what, which makes it look deformed.
+// To combat this, there is a "special" mode which will make some changes to the texture. I really could not find
+// a better way to look them decent, so I was SOL.
+std::map<uint32_t, std::string> _iniStandard;
+std::map<uint32_t, std::string> _iniSpecial;
+
 const float GSRendererHW::SSR_UV_TOLERANCE = 1e-3f;
+
+int GSRendererHW::TryParseIni()
+{
+	if (m_crc == 0)
+		return 1;
+
+	else if (m_enable_textures && m_replace_textures)
+	{
+		std::string _dir = "txtconfig\\";
+		std::stringstream stream;
+
+		stream << std::setfill('0') << std::setw(sizeof(m_crc) * 2)
+			   << std::hex << m_crc;
+
+		std::string _crcText = stream.str();
+		std::transform(_crcText.begin(), _crcText.end(), _crcText.begin(), ::toupper);
+
+		_dir.append(_crcText);
+		_dir.append(".ini");
+
+		mINI::INIFile _iniFile(_dir.c_str());
+		mINI::INIStructure _iniData;
+
+		printf("GSdx: Creating necessary folders if they do not exist.\n");
+
+		std::string _pathSys = "textures\\@DUMP\\";
+
+		_pathSys.append(_crcText.c_str());
+		std::filesystem::create_directories(_pathSys);
+
+		bool const _rc = _iniFile.read(_iniData);
+
+		if (_rc)
+		{
+			printf("GSdx: Found the texture configuration file! Processing...\n");
+			printf("GSdx: Capturing textures...\n");
+
+			if (_iniData.has("ProcessSTD"))
+			{
+				auto _elems = _iniData.get("ProcessSTD");
+
+				for (auto _e : _elems)
+				{
+					auto key = _e.first;
+					auto value = _e.second;
+
+					std::istringstream converter(key);
+
+					uint32_t integer;
+					converter >> std::hex >> integer;
+
+					_iniStandard.insert(std::pair<uint32_t, std::string>(integer, value));
+				}
+
+				_elems.clear();
+				printf("GSdx: Textures have been captured!\n");
+			}
+
+			else
+				printf("GSdx: Texture definition table [ProcessSTD] is not found!\n");
+
+			printf("GSdx: Capturing textures that need special treatment.\n");
+			if (_iniData.has("ProcessSPC"))
+			{
+				auto _elems = _iniData.get("ProcessSPC");
+
+				for (auto _e : _elems)
+				{
+					auto key = _e.first;
+					auto value = _e.second;
+
+					std::istringstream converter(key);
+
+					uint32_t integer;
+					converter >> std::hex >> integer;
+
+					_iniSpecial.insert(std::pair<uint32_t, std::string>(integer, value));
+				}
+
+				_elems.clear();
+				printf("GSdx: Textures (Special) have been captured!\n");
+			}
+
+			else
+				printf("GSdx: Texture definition table [ProcessSPC] is not found!\n");
+
+			printf("GSdx: All done!\n");
+			return 0;
+		}
+
+		else
+		{
+			printf("GSdx: The config file for this game cannot be found or is invalid. Texture replacements are disabled.\n");
+			m_enable_textures = 0;
+			m_replace_textures = 0;
+			m_dump_textures = 1;
+		}
+	}
+
+	return -1;
+}
 
 GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	: m_width(default_rt_size.x)
@@ -39,10 +161,14 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_channel_shuffle(false)
 	, m_lod(GSVector2i(0,0))
 {
+	frame_iterator = 0;
 	m_mipmap = theApp.GetConfigI("mipmap_hw");
 	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
 	m_conservative_framebuffer = theApp.GetConfigB("conservative_framebuffer");
 	m_accurate_date = theApp.GetConfigB("accurate_date");
+	m_enable_textures = theApp.GetConfigB("enable_texture_func");
+	m_dump_textures = theApp.GetConfigB("dump_textures");
+	m_replace_textures = theApp.GetConfigB("replace_textures");
 
 	if (theApp.GetConfigB("UserHacks")) {
 		m_userhacks_enabled_gs_mem_clear = !theApp.GetConfigB("UserHacks_Disable_Safe_Features");
@@ -75,6 +201,12 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 		m_userhacks_align_sprite_X       = false;
 		m_userHacks_merge_sprite         = false;
 	}
+
+	// Initialize the lists used.
+	_texMap = {};
+	_saveMap = {};
+	_iniStandard = {};
+	_iniSpecial = {};
 
 	m_dump_root = root_hw;
 }
@@ -274,6 +406,20 @@ void GSRendererHW::Reset()
 
 	m_reset = true;
 
+	// On reset, release all of the textures parsed.
+	// I do not know how well this works, but it seems
+	// to work well.
+	for (auto const& x : _texMap)
+		delete x.second;
+
+	_texMap = {};
+	_saveMap = {};
+	_iniStandard = {};
+	_iniSpecial = {};
+
+	// Set the parse flag to 1 to cause a re-parse.
+	_iniParse = 1;
+
 	GSRenderer::Reset();
 }
 
@@ -303,6 +449,20 @@ void GSRendererHW::VSync(int field)
 void GSRendererHW::ResetDevice()
 {
 	m_tc->RemoveAll();
+
+	// On reset, release all of the textures parsed.
+	// I do not know how well this works, but it seems
+	// to work well.
+	for (auto const& x : _texMap)
+		delete x.second;
+
+	_texMap = {};
+	_saveMap = {};
+	_iniStandard = {};
+	_iniSpecial = {};
+
+	// Set the parse flag to 1 to cause a re-parse.
+	_iniParse = 1;
 
 	GSRenderer::ResetDevice();
 }
@@ -1135,6 +1295,28 @@ void GSRendererHW::RoundSpriteOffset()
 
 void GSRendererHW::Draw()
 {
+	// If the mode is set to dumping, and the ini data has been processed;
+	if ((!m_enable_textures || m_dump_textures) && _iniParse != 1)
+	{
+		// If the ini was parsed successfully;
+		if (_iniParse == 0)
+		{
+			for (auto const& x : _texMap)
+				delete x.second;
+
+			_texMap = {};
+			_saveMap = {};
+			_iniStandard = {};
+			_iniSpecial = {};
+		}
+
+		_iniParse = 1;
+	}
+
+	// If replacing textures and the ini has not been processed;
+	if (_iniParse == 1 && (m_replace_textures && m_enable_textures))
+		_iniParse = TryParseIni();
+
 	if(m_dev->IsLost() || IsBadFrame()) {
 		GL_INS("Warning skipping a draw call (%d)", s_n);
 		return;
@@ -1508,11 +1690,173 @@ void GSRendererHW::Draw()
 		}
 	}
 
-	//
+	// Declare soe temporary variables.
+	bool _isDumping = false;
+	bool _isReplacing = false;
+	bool _flagSpc = false;
 
-	DrawPrims(rt_tex, ds_tex, m_src);
+	std::string _path = "";
+	uint32_t _currentChecksum = 0;
 
-	//
+	// This is a whole fucking mess.
+	// I sold my soul to the devil for this.
+	// I should get a refund...
+
+	if (m_enable_textures)
+	{ // If texture functions are enabled;
+		if (m_src && !m_src->m_from_target)
+		{ // If the texture is not a screenshot of the frame;
+			struct stat _statBuf = {};
+
+			// Specify the path we will read from.
+			_path = "textures\\";
+			std::stringstream _convStream;
+
+			// Reset all of the parameters each frame.
+			_isReplacing = false;
+			_isDumping = false;
+			_flagSpc = false;
+
+			// Indicates if a file path is found.
+			bool _fileCaptured = false;
+
+			if (m_src->m_palette_obj) { // If a palette of the texture exists;
+
+				// Capture the palette.
+				auto _palette = m_src->m_palette_obj.get();
+
+				// Calculate a CRC32 value from the palette CLUT (Proved to be the most reliable way, error rate of 1 in 10K).
+				_currentChecksum = CRCpp::Calculate(_palette->m_clut, _palette->m_pal * 4, CRCpp::CRC_32());
+
+				if (m_replace_textures) { // If replacing;
+					if (_iniStandard.find(_currentChecksum) != _iniStandard.end())
+					{                                                 // If a replacement exists for this element;
+						_path.append(_iniStandard[_currentChecksum]); // Get the replacement's path.
+						_fileCaptured = true;                         // File path is captured. Go forward.
+					}
+
+					else if (_iniSpecial.find(_currentChecksum) != _iniSpecial.end())
+					{                                                // If a replacement exists for this element that needs special care;
+						_path.append(_iniSpecial[_currentChecksum]); // Get the replacement's path.
+						_flagSpc = true;                             // Signify that this needs special care.
+						_fileCaptured = true;						 // File path is captured. Go forward.
+					}
+
+					if (_fileCaptured) { // If a path is captured;
+						if (_texMap.find(_currentChecksum) == _texMap.end()) { // If the texture is not already parsed;
+							if (stat(_path.c_str(), &_statBuf) == 0)
+							{														  // If the captured path actually exists;
+								DDS::DDSFile _ddsFile = DDS::CatchDDS(_path.c_str()); // Parse the DDS file in the path.
+
+								if (_ddsFile.Data.size() > 0)
+								{                                                                                          // If we have data from DDS;
+									GSTexture* _tex = m_dev->CreateTexture(_ddsFile.Header.Width, _ddsFile.Header.Height); // Create a GSTexture.
+
+									// This loop is for adjusting the DDS' alpha to
+									// comply with PS2 Standards, since it is adjusted again
+									// on DrawPrims. If I do not do this, full opaque images
+									// look broken.
+
+									for (uint32_t i = 0; i < _ddsFile.Data.size(); i += 0x04)
+										_ddsFile.Data.at(0x03 + i) = _ddsFile.Data.at(0x03 + i) / 2;
+
+									// Update the created GSTexture with the data from the DDS.
+
+									auto const _data = _ddsFile.Data;
+									int const _pitch = _ddsFile.Header.Width * 4;
+									GSVector4i const _rect = GSVector4i(0, 0, _ddsFile.Header.Width, _ddsFile.Header.Height);
+
+									_tex->Update(_rect, _data.data(), _pitch, 0);
+
+									// Insert the texture to an array, this should prevent us from
+									// parsing the texture over and over again, preventing
+									// performance bottlenecks.
+									_texMap.insert(std::pair<uint32_t, GSTexture*>(_currentChecksum, _tex));
+
+									_isReplacing = true; // Signify replacement.
+								}
+
+								_ddsFile.Data.clear();
+							}
+						}
+
+						else                     // If we have parsed the texture before;
+							_isReplacing = true; // Signify replacement.
+					}
+				}
+
+				else if (frame_iterator == 0 && m_dump_textures) { // If dumping;
+					_path.append("\\@DUMP\\"); // Signify dumping directory.
+					_statBuf = {};             // Clear the stat buffer.
+
+					// This hole code block parses the game checksum
+					// and adds it to the dumping path.
+
+					std::string _tempStr;
+
+					_convStream.str("");
+					_convStream.clear();
+					_convStream.seekg(0, std::ios::beg);
+
+					_convStream << std::setfill('0') << std::setw(8) << std::hex << m_crc;
+
+					_tempStr = _convStream.str();
+					std::transform(_tempStr.begin(), _tempStr.end(), _tempStr.begin(), ::toupper);
+
+					_path.append(_tempStr);
+					_path.append("\\");
+
+					// This code block does the same as above, but for the
+					// image checksu instead.
+
+					_convStream.str("");
+					_convStream.clear();
+					_convStream.seekg(0, std::ios::beg);
+
+					_convStream << std::setfill('0') << std::setw(8) << std::hex << _currentChecksum;
+
+					_tempStr = _convStream.str();
+					transform(_tempStr.begin(), _tempStr.end(), _tempStr.begin(), ::toupper);
+
+					_path.append(_tempStr);
+					_path.append(".dds");
+
+					if (_saveMap.find(_currentChecksum) == _saveMap.end())					 // If the file hasn't been dumped before;
+						_saveMap.insert(std::pair<uint32_t, bool>(_currentChecksum, false)); // Signify that the file has been dumped incompletely.
+
+					if (stat(_path.c_str(), &_statBuf) != 0) // If the file is not found;
+						_isDumping = true;                   // Signify dumping.
+
+					else if (!_saveMap[_currentChecksum] && m_src->m_complete) {  // If the file has been dumped before, but it is now complete;
+						_saveMap[_currentChecksum] = true;
+						_isDumping = true; // Signify dumping.
+					}
+				}
+			}
+		}
+	}
+
+	// The textures have to be replaced on DrawPrims.
+	// Do not ask why.
+
+	if (_isReplacing)
+		DrawPrims(rt_tex, ds_tex, m_src, _texMap[_currentChecksum], _flagSpc);
+
+	else
+		DrawPrims(rt_tex, ds_tex, m_src, nullptr, false);
+
+	if (_isDumping)
+	{
+		m_src->m_texture->SaveDDS(_path);
+
+		if (!_saveMap[_currentChecksum] && m_src->m_complete)
+			_saveMap[_currentChecksum] = true;
+	}
+
+	frame_iterator++;
+
+	if (frame_iterator > 60)
+		frame_iterator = 0;
 
 	context->TEST = TEST;
 	context->FRAME = FRAME;

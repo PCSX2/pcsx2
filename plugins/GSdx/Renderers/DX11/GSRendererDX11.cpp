@@ -761,7 +761,7 @@ void GSRendererDX11::ResetStates()
 	m_om_dssel.key = 0;
 }
 
-void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
+void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex, GSTexture* inp, bool pnt)
 {
 	GSTexture* hdr_rt = NULL;
 
@@ -821,10 +821,17 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 				// Leave the check in to make sure other DATE cases are triggered correctly.
 				// fprintf(stderr, "%d: DATE: Slow with alpha %d-%d not supported\n", s_n, m_vt.m_alpha.min, m_vt.m_alpha.max);
 			}
-			else if (m_accurate_date)
+			else
 			{
-				// fprintf(stderr, "%d: DATE: Fast AD with alpha %d-%d\n", s_n, m_vt.m_alpha.min, m_vt.m_alpha.max);
-				DATE_one = true;
+				if (m_accurate_date)
+				{
+					// fprintf(stderr, "%d: DATE: Fast AD with alpha %d-%d\n", s_n, m_vt.m_alpha.min, m_vt.m_alpha.max);
+					DATE_one = true;
+				}
+				else
+				{
+					// fprintf(stderr, "%d: "DATE: Off AD with alpha %d-%d\n", s_n, m_vt.m_alpha.min, m_vt.m_alpha.max);
+				}
 			}
 		}
 		else if (!m_om_bsel.wa && !m_context->TEST.ATE)
@@ -1048,8 +1055,14 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	else
 		dev->OMSetRenderTargets(rt, ds, &scissor);
 
-	dev->PSSetShaderResource(0, tex ? tex->m_texture : NULL);
-	dev->PSSetShaderResource(1, tex ? tex->m_palette : NULL);
+	if (inp != nullptr)
+		dev->PSSetShaderResource(0, inp);
+
+	else
+	{
+		dev->PSSetShaderResource(0, tex ? tex->m_texture : NULL);
+		dev->PSSetShaderResource(1, tex ? tex->m_palette : NULL);
+	}
 
 	SetupIA(sx, sy);
 

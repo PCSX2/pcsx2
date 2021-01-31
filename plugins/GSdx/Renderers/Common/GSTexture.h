@@ -49,6 +49,7 @@ public:
 	virtual bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) = 0;
 	virtual void Unmap() = 0;
 	virtual void GenerateMipmap() {}
+	virtual bool SaveDDS(const std::string& fn) = 0;
 	virtual bool Save(const std::string& fn) = 0;
 	virtual uint32 GetID() { return 0; }
 

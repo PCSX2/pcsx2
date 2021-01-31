@@ -53,6 +53,7 @@ protected:
 	virtual GSTexture* GetFeedbackOutput() { return nullptr; }
 
 public:
+	bool m_enable_textures, m_dump_textures, m_replace_textures;
 	std::shared_ptr<GSWnd> m_wnd;
 	GSDevice* m_dev;
 

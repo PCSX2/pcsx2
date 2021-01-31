@@ -62,12 +62,13 @@ public:
 	class Palette
 	{
 	private:
-		uint32* m_clut;
-		uint16 m_pal;
 		GSTexture* m_tex_palette;
 		const GSRenderer* m_renderer;
 
 	public:
+		uint32* m_clut;
+		uint16 m_pal;
+
 		Palette(const GSRenderer* renderer, uint16 pal, bool need_gs_texture);
 		~Palette();
 

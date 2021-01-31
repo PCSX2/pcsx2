@@ -562,7 +562,7 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 	}
 }
 
-void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
+void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex, GSTexture* inp, bool pnt)
 {
 	GSDeviceOGL* dev         = (GSDeviceOGL*)m_dev;
 
@@ -714,6 +714,9 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	m_ps_sel.ltf = bilinear && shader_emulated_sampler;
 	m_ps_sel.point_sampler = GLLoader::vendor_id_amd && (!bilinear || shader_emulated_sampler);
 
+	if (inp != nullptr && pnt)
+		m_ps_sel.point_sampler = 1;
+
 	int w = tex->m_texture->GetWidth();
 	int h = tex->m_texture->GetHeight();
 
@@ -775,9 +778,21 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		}
 	}
 
+	if (inp != nullptr && pnt)
+	{
+		m_ps_ssel.biln = 1;
+		m_ps_ssel.aniso = 1;
+		m_ps_sel.automatic_lod = 0;
+	}
+
 	// Setup Texture ressources
 	dev->SetupSampler(m_ps_ssel);
-	dev->PSSetShaderResources(tex->m_texture, tex->m_palette);
+
+	if (inp != nullptr)
+		dev->PSSetShaderResources(inp, tex->m_palette);
+
+	else
+		dev->PSSetShaderResources(tex->m_texture, tex->m_palette);
 }
 
 GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
@@ -947,7 +962,7 @@ void GSRendererOGL::ResetStates()
 	m_om_dssel.key = 0;
 }
 
-void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex)
+void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex, GSTexture* inp, bool pnt)
 {
 #ifdef ENABLE_OGL_DEBUG
 	GSVector4i area_out = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
@@ -1048,18 +1063,25 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 				m_require_full_barrier = true;
 				DATE_GL45 = true;
 			}
-			else if (m_accurate_date)
+			else
 			{
 				// Note: Fast level (DATE_one) was removed as it's less accurate.
-				GL_PERF("DATE: Full AD with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
-				if (GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture)
+				if (m_accurate_date)
 				{
-					DATE_GL42 = true;
+					GL_PERF("DATE: Full AD with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
+					if (GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture)
+					{
+						DATE_GL42 = true;
+					}
+					else
+					{
+						m_require_full_barrier = true;
+						DATE_GL45 = true;
+					}
 				}
 				else
 				{
-					m_require_full_barrier = true;
-					DATE_GL45 = true;
+					GL_PERF("DATE: Off AD with alpha %d-%d", m_vt.m_alpha.min, m_vt.m_alpha.max);
 				}
 			}
 		}
@@ -1230,8 +1252,9 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 
 	if (tex) {
-		EmulateTextureSampler(tex);
-	} else {
+		EmulateTextureSampler(tex, inp, pnt);
+	}
+	else {
 		m_ps_sel.tfx = 4;
 	}
 

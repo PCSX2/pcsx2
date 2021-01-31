@@ -1,4 +1,3 @@
-// clang-format off
 // Microsoft Visual C++ generated resource script.
 //
 #include "resource.h"
@@ -78,21 +77,22 @@ IDR_FXAA_FX             RCDATA                  "res\\fxaa.fx"
 
 IDR_SHADEBOOST_FX       RCDATA                  "res\\shadeboost.fx"
 
-IDR_CONVERT_GLSL        RCDATA                  "res\\glsl\\convert.glsl";
+IDR_CONVERT_GLSL        RCDATA                  "res\\glsl\\convert.glsl"
 
-IDR_INTERLACE_GLSL      RCDATA                  "res\\glsl\\interlace.glsl";
+IDR_INTERLACE_GLSL      RCDATA                  "res\\glsl\\interlace.glsl"
 
-IDR_MERGE_GLSL          RCDATA                  "res\\glsl\\merge.glsl";
+IDR_MERGE_GLSL          RCDATA                  "res\\glsl\\merge.glsl"
 
-IDR_SHADEBOOST_GLSL     RCDATA                  "res\\glsl\\shadeboost.glsl";
+IDR_SHADEBOOST_GLSL     RCDATA                  "res\\glsl\\shadeboost.glsl"
 
-IDR_COMMON_GLSL         RCDATA                  "res\\glsl\\common_header.glsl";
+IDR_COMMON_GLSL         RCDATA                  "res\\glsl\\common_header.glsl"
 
-IDR_TFX_VGS_GLSL        RCDATA                  "res\\glsl\\tfx_vgs.glsl";
+IDR_TFX_VGS_GLSL        RCDATA                  "res\\glsl\\tfx_vgs.glsl"
 
-IDR_TFX_FS_GLSL         RCDATA                  "res\\glsl\\tfx_fs.glsl";
+IDR_TFX_FS_GLSL         RCDATA                  "res\\glsl\\tfx_fs.glsl"
 
-IDR_FONT_ROBOTO         RCDATA                  "res\\fonts-roboto\\Roboto-Regular.ttf";
+IDR_FONT_ROBOTO         RCDATA                  "res\\fonts-roboto\\Roboto-Regular.ttf"
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -116,19 +116,14 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "Advanced Settings & Hacks"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    // Rendering Hacks:
     GROUPBOX        "Rendering Hacks",IDC_STATIC,7,7,196,114,0,WS_EX_TRANSPARENT
-    // Column one - HW Hacks
     CONTROL         "Auto Flush",IDC_AUTO_FLUSH_HW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,19,55,8
     CONTROL         "Disable Depth Emulation",IDC_TC_DEPTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,32,92,8
     CONTROL         "Disable Safe Features",IDC_SAFE_FEATURES,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,45,85,8
-    // Column two - HW hacks
     CONTROL         "Fast Texture Invalidation",IDC_FAST_TC_INV,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,106,19,93,8
     CONTROL         "Frame Buffer Conversion",IDC_CPU_FB_CONVERSION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,106,32,93,8
     CONTROL         "Memory Wrapping",IDC_MEMORY_WRAPPING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,106,45,75,8
     CONTROL         "Preload Frame Data",IDC_PRELOAD_GS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,106,58,80,8
-    // Columns end
-    //
     RTEXT           "Half-screen Fix:",IDC_HALF_SCREEN_TS_TEXT,14,73,62,8
     COMBOBOX        IDC_HALF_SCREEN_TS,80,70,116,63,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Trilinear Filtering:",IDC_TRI_FILTER_TEXT,16,88,60,8
@@ -138,7 +133,6 @@ BEGIN
     CONTROL         "",IDC_SKIPDRAWOFFSET,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,0,0,11,14
     EDITTEXT        IDC_SKIPDRAWHACKEDIT,138,100,58,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_SKIPDRAWHACK,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,0,0,11,14
-    // Upscaling Hacks:
     GROUPBOX        "Upscaling Hacks",IDC_STATIC,7,124,196,75,0,WS_EX_TRANSPARENT
     CONTROL         "Align Sprite",IDC_ALIGN_SPRITE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,136,55,8
     CONTROL         "Merge Sprite",IDC_MERGE_PP_SPRITE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,71,136,55,8
@@ -154,7 +148,6 @@ BEGIN
     RTEXT           "Y:",IDC_TCOFFSETY_TEXT,139,181,10,8
     EDITTEXT        IDC_TCOFFSETY2,152,178,44,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_TCOFFSETY,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,0,0,11,14
-    // OpenGL Advanced Settings:
     GROUPBOX        "OpenGL Advanced Settings",IDC_STATIC,7,202,196,61,0,WS_EX_TRANSPARENT
     RTEXT           "Geometry Shader:",IDC_GEOMETRY_SHADER_TEXT,14,216,62,8
     COMBOBOX        IDC_GEOMETRY_SHADER_OVERRIDE,80,213,116,63,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
@@ -162,7 +155,6 @@ BEGIN
     COMBOBOX        IDC_IMAGE_LOAD_STORE,80,228,116,63,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     RTEXT           "Sparse Texture:",IDC_SPARSE_TEXTURE_TEXT,14,246,62,8
     COMBOBOX        IDC_SPARSE_TEXTURE,80,243,116,63,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    // General Settings:
     DEFPUSHBUTTON   "OK",IDOK,52,269,50,14
     DEFPUSHBUTTON   "Cancel",IDCANCEL,108,269,50,14
 END
@@ -202,10 +194,8 @@ STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSM
 CAPTION "OSD Configuration"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    // Enable/Disable
     CONTROL         "Enable Statistics Monitor",IDC_OSD_MONITOR,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,16,7,88,10
     CONTROL         "Enable Log",IDC_OSD_LOG,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,112,7,54,10
-    // Font Settings
     GROUPBOX        "Font",IDC_STATIC,7,20,196,100,0,WS_EX_TRANSPARENT
     LTEXT           "Size:",IDC_OSD_SIZE_TEXT,16,34,25,8
     EDITTEXT        IDC_OSD_SIZE_EDIT,112,31,83,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
@@ -222,15 +212,13 @@ BEGIN
     LTEXT           "Opacity:",IDC_OSD_OPACITY_TEXT,16,104,50,8
     CONTROL         "",IDC_OSD_OPACITY_SLIDER,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,107,100,76,15
     RTEXT           "100",IDC_OSD_OPACITY_AMOUNT,184,104,12,8
-    // Log Settings
     GROUPBOX        "Log Messages",IDC_STATIC,7,125,196,52,0,WS_EX_TRANSPARENT
     LTEXT           "Timeout (seconds):",IDC_OSD_TIMEOUT_TEXT,16,139,75,8
     EDITTEXT        IDC_OSD_TIMEOUT_EDIT,112,135,83,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "", IDC_OSD_TIMEOUT,"msctls_updown32", UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,0,0,11,14
+    CONTROL         "",IDC_OSD_TIMEOUT,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,0,0,11,14
     LTEXT           "Max:",IDC_OSD_MAX_LOG_TEXT,16,158,25,8
     EDITTEXT        IDC_OSD_MAX_LOG_EDIT,112,155,83,14,ES_RIGHT | ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "", IDC_OSD_MAX_LOG,"msctls_updown32", UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,0,0,11,14
-    // OK/CANCEL
+    CONTROL         "",IDC_OSD_MAX_LOG,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,0,0,11,14
     DEFPUSHBUTTON   "OK",IDOK,52,183,50,14
     DEFPUSHBUTTON   "Cancel",IDCANCEL,108,183,50,14
 END
@@ -252,12 +240,11 @@ BEGIN
     COMBOBOX        IDC_COLORSPACE,102,47,48,32,CBS_DROPDOWNLIST | WS_TABSTOP
 END
 
-IDD_CONFIG DIALOGEX 0, 0, 242, 360
+IDD_CONFIG DIALOGEX 0, 0, 243, 422
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "GSdx Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    // General Settings:
     CONTROL         IDB_LOGO11,IDC_LOGO11,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
     CONTROL         IDB_LOGOGL,IDC_LOGOGL,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
     CONTROL         IDB_NULL,IDC_NULL,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
@@ -269,38 +256,42 @@ BEGIN
     COMBOBOX        IDC_INTERLACE,70,85,166,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Texture Filtering:",IDC_FILTER_TEXT,6,102,79,8
     COMBOBOX        IDC_FILTER,70,100,166,63,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "OSD Configuration",IDC_OSDBUTTON,10,323,108,14
-    PUSHBUTTON      "Shader Configuration",IDC_SHADEBUTTON,124,323,108,14
-    DEFPUSHBUTTON   "OK",IDOK,68,343,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,124,343,50,14
-    // Hardware Renderer Settings:
-    GROUPBOX        "Hardware Renderer Settings",IDC_STATIC,6,116,230,154,BS_CENTER
+    PUSHBUTTON      "OSD Configuration",IDC_OSDBUTTON,11,385,108,14
+    PUSHBUTTON      "Shader Configuration",IDC_SHADEBUTTON,125,385,108,14
+    DEFPUSHBUTTON   "OK",IDOK,69,405,50,14
+    PUSHBUTTON      "Cancel",IDCANCEL,125,405,50,14
+    GROUPBOX        "Hardware Renderer Settings",IDC_STATIC,6,116,230,216,BS_CENTER
     CONTROL         "Accurate DATE",IDC_ACCURATE_DATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,126,63,10
     CONTROL         "GPU Palette Conversion",IDC_PALTEX,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,142,87,10
-    CONTROL         "Conservative Buffer Allocation",IDC_CONSERVATIVE_FB,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,104,142,110,10
-    LTEXT           "Internal Resolution:",IDC_UPSCALE_MULTIPLIER_TEXT,22,158,79,8
-    COMBOBOX        IDC_UPSCALE_MULTIPLIER,104,156,127,98,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Anisotropic Filtering:",IDC_AFCOMBO_TEXT,22,174,79,8
-    COMBOBOX        IDC_AFCOMBO,104,172,127,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Dithering (PgDn):",IDC_DITHERING_TEXT,22,190,79,8
-    COMBOBOX        IDC_DITHERING,104,188,127,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Mipmapping (Ins):",IDC_MIPMAP_HW_TEXT,22,206,79,8
-    COMBOBOX        IDC_MIPMAP_HW,104,204,127,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "CRC Hack Level:",IDC_CRC_LEVEL_TEXT,22,222,79,8
-    COMBOBOX        IDC_CRC_LEVEL,104,220,127,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Blending Accuracy:",IDC_ACCURATE_BLEND_UNIT_TEXT,22,238,79,8
-    COMBOBOX        IDC_ACCURATE_BLEND_UNIT,104,236,127,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_ACCURATE_BLEND_UNIT_D3D11,104,236,127,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Enable HW Hacks",IDC_HACKS_ENABLED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,254,71,10
-    PUSHBUTTON      "Advanced Settings and Hacks",IDC_HACKSBUTTON,104,252,127,14
-    // Software Renderer Settings:
-    GROUPBOX        "Software Renderer Settings",IDC_STATIC,6,273,230,44,BS_CENTER
-    CONTROL         "Auto Flush",IDC_AUTO_FLUSH_SW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,285,90,10
-    CONTROL         "Edge Anti-aliasing (Del)",IDC_AA1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,124,285,90,10
-    LTEXT           "Rendering threads:",IDC_SWTHREADS_TEXT,124,301,65,8
-    EDITTEXT        IDC_SWTHREADS_EDIT,197,299,34,13,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "Conservative Buffer Allocation",IDC_CONSERVATIVE_FB,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,104,142,110,10
+    GROUPBOX        "Software Renderer Settings",IDC_STATIC,8,334,230,44,BS_CENTER
+    CONTROL         "Auto Flush",IDC_AUTO_FLUSH_SW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,348,90,10
+    CONTROL         "Edge Anti-aliasing (Del)",IDC_AA1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,124,348,90,10
+    LTEXT           "Rendering threads:",IDC_SWTHREADS_TEXT,124,364,65,8
+    EDITTEXT        IDC_SWTHREADS_EDIT,198,362,34,13,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_SWTHREADS,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS,0,0,11,14
-    CONTROL         "Mipmapping",IDC_MIPMAP_SW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,299,90,10
+    CONTROL         "Mipmapping",IDC_MIPMAP_SW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,362,90,10
+    GROUPBOX        "Texture Manuplation Functions",IDC_STATIC,11,156,221,52,BS_CENTER
+    CONTROL         "Enable Manuplation Functions (F10)",IDC_ENABLE_TEX,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,58,172,124,10
+    CONTROL         "Replace Textures (F11)",IDC_LOAD_TEX,"Button",BS_AUTORADIOBUTTON,22,188,91,10
+    CONTROL         "Dump Textures (F11)",IDC_SAVE_TEX,"Button",BS_AUTORADIOBUTTON,133,188,84,10
+    COMBOBOX        IDC_ACCURATE_BLEND_UNIT_D3D11,105,294,127,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Internal Resolution:",IDC_UPSCALE_MULTIPLIER_TEXT,22,216,79,8
+    COMBOBOX        IDC_UPSCALE_MULTIPLIER,105,214,127,98,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Anisotropic Filtering:",IDC_AFCOMBO_TEXT,22,232,79,8
+    COMBOBOX        IDC_AFCOMBO,105,230,127,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Dithering (PgDn):",IDC_DITHERING_TEXT,22,248,79,8
+    COMBOBOX        IDC_DITHERING,105,246,127,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Mipmapping (Ins):",IDC_MIPMAP_HW_TEXT,22,264,79,8
+    COMBOBOX        IDC_MIPMAP_HW,105,262,127,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "CRC Hack Level:",IDC_CRC_LEVEL_TEXT,22,280,79,8
+    COMBOBOX        IDC_CRC_LEVEL,105,278,127,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Blending Accuracy:",IDC_ACCURATE_BLEND_UNIT_TEXT,22,296,79,8
+    COMBOBOX        IDC_ACCURATE_BLEND_UNIT,105,294,127,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Enable HW Hacks",IDC_HACKS_ENABLED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,312,71,10
+    PUSHBUTTON      "Advanced Settings and Hacks",IDC_HACKSBUTTON,104,310,127,14
 END
 
 
@@ -332,15 +323,12 @@ BEGIN
         LEFTMARGIN, 6
         RIGHTMARGIN, 242
         TOPMARGIN, 7
-        BOTTOMMARGIN, 244
     END
 
     IDD_OSD, DIALOG
     BEGIN
         LEFTMARGIN, 6
-        RIGHTMARGIN, 242
         TOPMARGIN, 7
-        BOTTOMMARGIN, 244
     END
 
     IDD_CAPTURE, DIALOG
@@ -354,14 +342,14 @@ BEGIN
     IDD_CONFIG, DIALOG
     BEGIN
         LEFTMARGIN, 6
-        RIGHTMARGIN, 237
+        RIGHTMARGIN, 238
         VERTGUIDE, 11
         VERTGUIDE, 22
         VERTGUIDE, 101
         VERTGUIDE, 105
         VERTGUIDE, 232
         TOPMARGIN, 6
-        BOTTOMMARGIN, 367
+        BOTTOMMARGIN, 360
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -406,6 +394,17 @@ BEGIN
     END
 END
 
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// AFX_DIALOG_LAYOUT
+//
+
+IDD_CONFIG AFX_DIALOG_LAYOUT
+BEGIN
+    0
+END
+
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -425,4 +424,4 @@ END
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-// clang-format on
+

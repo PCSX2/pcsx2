@@ -179,6 +179,17 @@ const char* dialog_message(int ID, bool* updateText) {
 		case IDC_LINEAR_PRESENT:
 			return "Use bilinear filtering when Upscaling/Downscaling the image to the screen. Disable it if you want a sharper/pixelated output.";
 		// Exclusive for Hardware Renderer
+		case IDC_ENABLE_TEX:
+			return "Enables texture dumping/replacing functionality.\n"
+				   "Cannot be used with 8-bit Textures enabled.\n";
+		case IDC_SAVE_TEX:
+			return "Dumps textures from the GS Memory.\n"
+				   "Inaccurate with Turbo active, may impact the\n"
+				   "performance significantly [Dumps happen once every 60 frames].";
+		case IDC_LOAD_TEX:
+			return "Loads textures from a designated folder\n"
+				   "and replaces the textures on the renderer. It has no\n"
+				   "effect on EE or GS memory and has minimal performance impact. Go wild.";
 		case IDC_PRELOAD_GS:
 			return "Uploads GS data when rendering a new frame to reproduce some effects accurately.\n"
 				"Fixes black screen issues in games like Armored Core: Last Raven.";

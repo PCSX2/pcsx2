@@ -573,6 +573,8 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 #if defined(__unix__) || defined(__APPLE__)
 #define VK_F5 XK_F5
 #define VK_F6 XK_F6
+#define VK_F10 XK_F10
+#define VK_F11 XK_F11
 #define VK_DELETE XK_Delete
 #define VK_INSERT XK_Insert
 #define VK_PRIOR XK_Prior
@@ -590,6 +592,22 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 		case VK_F6:
 			if( m_wnd->IsManaged() )
 				m_aspectratio = (m_aspectratio + s_aspect_ratio_nb + step) % s_aspect_ratio_nb;
+			return;
+		case VK_F10:
+			m_enable_textures = !m_enable_textures;
+			theApp.SetConfig("paltex", 0);
+			theApp.SetConfig("enable_texture_func", m_enable_textures);
+			printf("GSdx: Texture functionality is now %s.\n", m_enable_textures ? "enabled" : "disabled");
+			return;
+		case VK_F11:
+			if (m_enable_textures)
+			{
+				m_replace_textures = !m_replace_textures;
+				m_dump_textures = !m_dump_textures;
+				theApp.SetConfig("replace_textures", m_replace_textures);
+				theApp.SetConfig("dump_textures", m_dump_textures);
+				printf("GSdx: Texture functionality mode set to: %s\n", m_dump_textures ? "Dump Mode" : "Replace Mode");
+			}
 			return;
 		case VK_DELETE:
 			m_aa1 = !m_aa1;

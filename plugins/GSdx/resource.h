@@ -2,7 +2,6 @@
 // Microsoft Visual C++ generated include file.
 // Used by GSdx.rc
 //
-// General Dialog:
 #define IDD_CONFIG                      2001
 #define IDB_NULL                        2002
 #define IDB_LOGO11                      2003
@@ -20,7 +19,6 @@
 #define IDC_HACKSBUTTON                 2015
 #define IDC_OSDBUTTON                   2016
 #define IDC_SHADEBUTTON                 2017
-// Hardware Renderer Settings:
 #define IDC_PALTEX                      2030
 #define IDC_CONSERVATIVE_FB             2031
 #define IDC_UPSCALE_MULTIPLIER          2032
@@ -38,14 +36,15 @@
 #define IDC_ACCURATE_BLEND_UNIT_TEXT    2044
 #define IDC_DITHERING                   2045
 #define IDC_DITHERING_TEXT              2046
-// Software Renderer Settings:
+#define IDC_SAVE_TEX                    2047
+#define IDC_LOAD_TEX                    2048
+#define IDC_ENABLE_TEX                  2049
 #define IDC_MIPMAP_SW                   2060
 #define IDC_AA1                         2061
 #define IDC_SWTHREADS_TEXT              2062
 #define IDC_SWTHREADS                   2063
 #define IDC_SWTHREADS_EDIT              2064
 #define IDC_AUTO_FLUSH_SW               2065
-// Capture:
 #define IDD_CAPTURE                     2090
 #define IDC_FILENAME                    2091
 #define IDC_CODECS                      2092
@@ -54,7 +53,6 @@
 #define IDC_HEIGHT                      2095
 #define IDC_CONFIGURE                   2096
 #define IDC_COLORSPACE                  2097
-// Hardware Hacks:
 #define IDC_WILDHACK                    2100
 #define IDC_OFFSETHACK                  2101
 #define IDC_OFFSETHACK_TEXT             2102
@@ -85,7 +83,6 @@
 #define IDC_SKIPDRAWOFFSETEDIT          2127
 #define IDC_HALF_SCREEN_TS              2128
 #define IDC_HALF_SCREEN_TS_TEXT         2129
-// Shader:
 #define IDC_SHADEBOOST                  2140
 #define IDC_FXAA                        2141
 #define IDC_SATURATION_SLIDER           2142
@@ -106,7 +103,6 @@
 #define IDC_SHADER_FX_CONF_TEXT         2157
 #define IDC_TVSHADER                    2158
 #define IDC_LINEAR_PRESENT              2159
-// OSD:
 #define IDC_OSD_LOG                     2170
 #define IDC_OSD_MONITOR                 2171
 #define IDC_OSD_COLOR_RED_SLIDER        2172
@@ -130,7 +126,7 @@
 #define IDC_OSD_MAX_LOG_TEXT            2190
 #define IDC_OSD_SIZE_TEXT               2191
 #define IDC_OSD_OPACITY_TEXT            2192
-// OpenGL Advanced Settings:
+#define IDC_RADIO2                      2196
 #define IDC_GEOMETRY_SHADER_OVERRIDE    2200
 #define IDC_GEOMETRY_SHADER_TEXT        2201
 #define IDC_IMAGE_LOAD_STORE            2202
@@ -161,9 +157,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        10019
+#define _APS_NEXT_RESOURCE_VALUE        10020
 #define _APS_NEXT_COMMAND_VALUE         32771
-#define _APS_NEXT_CONTROL_VALUE         2194
+#define _APS_NEXT_CONTROL_VALUE         2197
 #define _APS_NEXT_SYMED_VALUE           5000
 #endif
 #endif

@@ -352,6 +352,9 @@ void GSdxApp::Init()
 #else
 	m_default_configuration["osd_fontname"]                               = "/usr/share/fonts/truetype/my_favorite_font_e_g_DejaVu Sans.ttf";
 #endif
+	m_default_configuration["enable_texture_func"]						  = "0";
+	m_default_configuration["dump_textures"]							  = "1";
+	m_default_configuration["replace_textures"]							  = "0";
 	m_default_configuration["osd_color_r"]                                = "0";
 	m_default_configuration["osd_color_g"]                                = "160";
 	m_default_configuration["osd_color_b"]                                = "255";

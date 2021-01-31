@@ -62,7 +62,7 @@ public:
 	GSRendererDX11();
 	virtual ~GSRendererDX11() {}
 
-	void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) final;
+	void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex, GSTexture* inp = nullptr, bool pnt = false) final;
 
 	bool CreateDevice(GSDevice* dev);
 };

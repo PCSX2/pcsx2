@@ -237,6 +237,9 @@
     <ClCompile Include="Window\GSSettingsDlg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="DDS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Renderers\OpenGL\GLLoader.h">
@@ -473,6 +476,9 @@
     <ClInclude Include="Renderers\Common\GSFastList.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="DDS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="GSdx.def" />
@@ -531,5 +537,8 @@
     <Image Include="res\logo-null.bmp">
       <Filter>Resource Files</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Font Include="res\fonts-roboto\Roboto-Regular.ttf" />
   </ItemGroup>
 </Project>

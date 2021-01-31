@@ -21,6 +21,7 @@
 
 #include "stdafx.h"
 #include <limits.h>
+#include "fstream"
 #include "GSTextureOGL.h"
 #include "GLState.h"
 #include "GSPng.h"
@@ -551,6 +552,86 @@ void GSTextureOGL::CommitPages(const GSVector2i& region, bool commit)
 
 	m_mem_usage = (m_committed_size.x * m_committed_size.y) << m_int_shift;
 	GLState::available_vram -= m_mem_usage;
+}
+
+bool GSTextureOGL::SaveDDS(const std::string& fn)
+{
+	// Collect the texture data
+	uint32 pitch = 4 * m_committed_size.x;
+	uint32 buf_size = pitch * m_committed_size.y * 2; // Note *2 for security (depth/stencil)
+	std::unique_ptr<uint8[]> image(new uint8[buf_size]);
+
+	if (IsBackbuffer())
+		glReadPixels(0, 0, m_committed_size.x, m_committed_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image.get());
+
+	else if (IsDss())
+	{
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
+
+		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_texture_id, 0);
+		glReadPixels(0, 0, m_committed_size.x, m_committed_size.y, GL_DEPTH_COMPONENT, GL_UNSIGNED_INT, image.get());
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	}
+
+	else if (m_format == GL_R32I)
+		glGetTextureImage(m_texture_id, 0, GL_RED_INTEGER, GL_INT, buf_size, image.get());
+
+	else
+	{
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
+
+		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
+
+		if (m_format == GL_RGBA8)
+			glReadPixels(0, 0, m_committed_size.x, m_committed_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image.get());
+		else if (m_format == GL_R16UI)
+			glReadPixels(0, 0, m_committed_size.x, m_committed_size.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, image.get());
+		else if (m_format == GL_R8)
+			glReadPixels(0, 0, m_committed_size.x, m_committed_size.y, GL_RED, GL_UNSIGNED_BYTE, image.get());
+
+		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	}
+
+	std::ofstream _out(fn, std::ios::binary);
+
+	int _zero = 0x00;
+	int const _dataSize = pitch * m_committed_size.y;
+
+	int _output[] = {0x7C, 0x02100F, m_committed_size.y, m_committed_size.x, 0x800, 0x01, 0x01};
+	int _output2[] = {0x20, 0x41, 0x00, 0x20, 0xFF, 0xFF00, 0xFF0000, 0xFF000000, 0x1000};
+
+	std::vector<unsigned char> _imgData;
+	_imgData.resize(_dataSize);
+
+	memcpy(_imgData.data(), image.get(), _dataSize);
+	image.release();
+
+	for (int i = 3; i < _dataSize; i += 4)
+	{
+		unsigned char const _factor = 2;
+		int _value = std::min(_imgData.at(i) * _factor, 255);
+
+		_imgData.at(i) = static_cast<unsigned char>(_value);
+	}
+
+	_out << "DDS ";
+	_out.write(reinterpret_cast<char*>(&_output), 4 * 7);
+
+	for (int o = 0; o < 11; o++)
+		_out.write(reinterpret_cast<char*>(&_zero), 4);
+
+	_out.write(reinterpret_cast<char*>(&_output2), 4 * 9);
+
+	for (int o = 0; o < 4; o++)
+		_out.write(reinterpret_cast<char*>(&_zero), 4);
+
+	_out.write(reinterpret_cast<char*>(_imgData.data()), pitch * m_committed_size.y);
+	_out.close();
+
+	_imgData.clear();
+
+	return true;
 }
 
 bool GSTextureOGL::Save(const std::string& fn)

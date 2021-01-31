@@ -28,6 +28,7 @@
 class GSRendererHW : public GSRenderer
 {
 private:
+	int frame_iterator;
 	int m_width;
 	int m_height;
 	int m_custom_width;
@@ -146,7 +147,8 @@ protected:
 	GSVector4i m_r;
 	GSTextureCache::Source* m_src;
 
-	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) = 0;
+	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex, GSTexture* inp = nullptr, bool pnt = false) = 0;
+	int TryParseIni();
 
 	int m_userhacks_round_sprite_offset;
 	int m_userHacks_HPO;
