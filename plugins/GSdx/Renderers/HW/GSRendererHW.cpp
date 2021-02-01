@@ -45,13 +45,11 @@ std::map<uint32_t, std::string> _iniSpecial;
 
 const float GSRendererHW::SSR_UV_TOLERANCE = 1e-3f;
 
-int GSRendererHW::TryParseIni()
-{
+int GSRendererHW::TryParseIni() {
 	if (m_crc == 0)
 		return 1;
 
-	else if (m_enable_textures && m_replace_textures)
-	{
+	else if (m_enable_textures && m_replace_textures) {
 		std::string _dir = "txtconfig\\";
 		std::stringstream stream;
 
@@ -76,17 +74,14 @@ int GSRendererHW::TryParseIni()
 
 		bool const _rc = _iniFile.read(_iniData);
 
-		if (_rc)
-		{
+		if (_rc) {
 			printf("GSdx: Found the texture configuration file! Processing...\n");
 			printf("GSdx: Capturing textures...\n");
 
-			if (_iniData.has("ProcessSTD"))
-			{
+			if (_iniData.has("ProcessSTD")) {
 				auto _elems = _iniData.get("ProcessSTD");
 
-				for (auto _e : _elems)
-				{
+				for (auto _e : _elems) {
 					auto key = _e.first;
 					auto value = _e.second;
 
@@ -106,8 +101,7 @@ int GSRendererHW::TryParseIni()
 				printf("GSdx: Texture definition table [ProcessSTD] is not found!\n");
 
 			printf("GSdx: Capturing textures that need special treatment.\n");
-			if (_iniData.has("ProcessSPC"))
-			{
+			if (_iniData.has("ProcessSPC")) {
 				auto _elems = _iniData.get("ProcessSPC");
 
 				for (auto _e : _elems)
@@ -134,8 +128,7 @@ int GSRendererHW::TryParseIni()
 			return 0;
 		}
 
-		else
-		{
+		else {
 			printf("GSdx: The config file for this game cannot be found or is invalid. Texture replacements are disabled.\n");
 			m_enable_textures = 0;
 			m_replace_textures = 0;
@@ -1690,7 +1683,7 @@ void GSRendererHW::Draw()
 		}
 	}
 
-	// Declare soe temporary variables.
+	// Declare some temporary variables.
 	bool _isDumping = false;
 	bool _isReplacing = false;
 	bool _flagSpc = false;
@@ -1702,10 +1695,8 @@ void GSRendererHW::Draw()
 	// I sold my soul to the devil for this.
 	// I should get a refund...
 
-	if (m_enable_textures)
-	{ // If texture functions are enabled;
-		if (m_src && !m_src->m_from_target)
-		{ // If the texture is not a screenshot of the frame;
+	if (m_enable_textures) { // If texture functions are enabled;
+		if (m_src && !m_src->m_from_target) { // If the texture is not a screenshot of the frame;
 			struct stat _statBuf = {};
 
 			// Specify the path we will read from.
@@ -1734,14 +1725,12 @@ void GSRendererHW::Draw()
 				_currentChecksum = crc32(_tmpCRC, _clut.data(), _len);
 
 				if (m_replace_textures) { // If replacing;
-					if (_iniStandard.find(_currentChecksum) != _iniStandard.end())
-					{                                                 // If a replacement exists for this element;
+					if (_iniStandard.find(_currentChecksum) != _iniStandard.end()) { // If a replacement exists for this element;
 						_path.append(_iniStandard[_currentChecksum]); // Get the replacement's path.
 						_fileCaptured = true;                         // File path is captured. Go forward.
 					}
 
-					else if (_iniSpecial.find(_currentChecksum) != _iniSpecial.end())
-					{                                                // If a replacement exists for this element that needs special care;
+					else if (_iniSpecial.find(_currentChecksum) != _iniSpecial.end()) { // If a replacement exists for this element that needs special care;
 						_path.append(_iniSpecial[_currentChecksum]); // Get the replacement's path.
 						_flagSpc = true;                             // Signify that this needs special care.
 						_fileCaptured = true;						 // File path is captured. Go forward.
@@ -1749,12 +1738,10 @@ void GSRendererHW::Draw()
 
 					if (_fileCaptured) { // If a path is captured;
 						if (_texMap.find(_currentChecksum) == _texMap.end()) { // If the texture is not already parsed;
-							if (stat(_path.c_str(), &_statBuf) == 0)
-							{														  // If the captured path actually exists;
+							if (stat(_path.c_str(), &_statBuf) == 0) { // If the captured path actually exists;
 								DDS::DDSFile _ddsFile = DDS::CatchDDS(_path.c_str()); // Parse the DDS file in the path.
 
-								if (_ddsFile.Data.size() > 0)
-								{                                                                                          // If we have data from DDS;
+								if (_ddsFile.Data.size() > 0) { // If we have data from DDS;
 									GSTexture* _tex = m_dev->CreateTexture(_ddsFile.Header.Width, _ddsFile.Header.Height); // Create a GSTexture.
 
 									// This loop is for adjusting the DDS' alpha to
@@ -1812,7 +1799,7 @@ void GSRendererHW::Draw()
 					_path.append("\\");
 
 					// This code block does the same as above, but for the
-					// image checksu instead.
+					// image checksum instead.
 
 					_convStream.str("");
 					_convStream.clear();
@@ -1850,8 +1837,7 @@ void GSRendererHW::Draw()
 	else
 		DrawPrims(rt_tex, ds_tex, m_src, nullptr, false);
 
-	if (_isDumping)
-	{
+	if (_isDumping) {
 		m_src->m_texture->SaveDDS(_path);
 
 		if (!_saveMap[_currentChecksum] && m_src->m_complete)
