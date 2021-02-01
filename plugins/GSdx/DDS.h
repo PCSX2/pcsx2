@@ -6,8 +6,7 @@
 
 namespace DDS
 {
-	struct DDSHeader
-	{
+	struct DDSHeader {
 		uint32_t Magic;
 		uint32_t Offset;
 		uint32_t Format;
@@ -15,11 +14,12 @@ namespace DDS
 		uint32_t Width;
 		char Unknown01[0x08];
 		uint32_t MipmapCount;
-		char Unknown02[0x60];
+		char Unknown02[0x3C];
+		uint32_t ColorFlag;
+		char Unknown03[0x20];
 	};
 
-	struct DDSFile
-	{
+	struct DDSFile {
 		DDSHeader Header;
 		std::vector<unsigned char> Data;
 	};

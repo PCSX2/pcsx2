@@ -1,8 +1,7 @@
 #include "stdafx.h"
 #include <DDS.h>
 
-DDS::DDSFile DDS::CatchDDS(const char* fileName)
-{
+DDS::DDSFile DDS::CatchDDS(const char* fileName) {
 	std::fstream binaryIo;
 
 	char* _headerData = new char[0x80];
@@ -15,10 +14,11 @@ DDS::DDSFile DDS::CatchDDS(const char* fileName)
 
 	_header = reinterpret_cast<DDSHeader*>(_headerData);
 
-	if (_header->Magic == 0x20534444)
-	{
+	if (_header->Magic == 0x20534444) {
 		int const _len = _header->Height * _header->Width * 4;
+
 		std::vector<unsigned char> _tmpData;
+		std::vector<unsigned char> _tmpFix;
 
 		_tmpData.resize(_len);
 
@@ -27,6 +27,17 @@ DDS::DDSFile DDS::CatchDDS(const char* fileName)
 
 		_returnFile.Header = *_header;
 		_returnFile.Data = _tmpData;
+
+		if (_header->ColorFlag == 0x00FF0000) {
+			for (int i = 0; i < _len; i += 4) {
+				_tmpFix.push_back(_tmpData[i + 2]);
+				_tmpFix.push_back(_tmpData[i + 1]);
+				_tmpFix.push_back(_tmpData[i + 0]);
+				_tmpFix.push_back(_tmpData[i + 3]);
+			}
+
+			_returnFile.Data = _tmpFix;
+		}
 
 		return _returnFile;
 	}
