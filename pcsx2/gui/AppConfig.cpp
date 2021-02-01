@@ -456,7 +456,7 @@ fs::path GetUiKeysFilename()
 
 fs::path AppConfig::FullpathToBios() const
 {
-	return Folders.Bios / BaseFilenames.Bios;
+	return Folders.Bios / BaseFilenames.Bios.filename();
 }
 
 fs::path AppConfig::FullpathToMcd(uint slot) const
