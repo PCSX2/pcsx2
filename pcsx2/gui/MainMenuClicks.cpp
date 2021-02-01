@@ -1016,7 +1016,7 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent& even
 	{
 		return;
 	}
-	GSmakeSnapshot(g_Conf->Folders.Snapshots.c_str());
+	GSmakeSnapshot(g_Conf->Folders.Snapshots.c_str()); // TODO: Add unicode handles for GS
 }
 
 void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& event)

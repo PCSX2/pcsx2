@@ -179,7 +179,6 @@ fs::path Path::getPath(const fs::path& p, const fs::path& b, bool isPort)
 		return fs::absolute(p);
 	}
 }
-
 // returns the base/root directory of the given path.
 // Example /this/that/something.txt -> dest == "/"
 fs::path Path::GetRootDirectory(const wxString &src)

@@ -374,7 +374,7 @@ namespace Implementations
 	void Sys_TakeSnapshot()
 	{
 		if (GSmakeSnapshot(g_Conf->Folders.Snapshots.c_str()))
-		   OSDlog(ConsoleColors::Color_Black, true, "Snapshot taken");
+			OSDlog(ConsoleColors::Color_Black, true, "Snapshot taken"); // TODO: Add unicode handles for GS
 	}
 
 	void Sys_RenderToggle()

@@ -927,7 +927,6 @@ int WritePrivateProfileInt(wchar_t* s1, wchar_t* s2, int v, wchar_t* ini)
 
 int SaveSettings(wchar_t* file = 0)
 {
-
 	// Need this either way for saving path.
 	if (!file)
 	{

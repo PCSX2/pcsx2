@@ -92,7 +92,6 @@ bool Pcsx2App::TestUserPermissionsRights(const fs::path& testFolder)
 
 	if (ErrorFolders.empty())
 		return false;
-
 	else
 		return true;
 }
@@ -190,9 +189,7 @@ bool Pcsx2App::TestForPortableInstall()
 		return isPortable;
 	}
 	else
-	{
 		return false;
-	}
 }
 // Reset RunWizard so the FTWizard is run again on next PCSX2 start.
 void Pcsx2App::WipeUserModeSettings()
