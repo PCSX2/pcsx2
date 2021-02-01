@@ -23,10 +23,10 @@
 #include "DDS.h"
 #include "GSRendererHW.h"
 
+#include <zlib.h>
 #include <iomanip>
 #include <filesystem>
 
-#include <crcpp/CRCpp.h>
 #include <mIni/mIni.h>
 
 // Used as a three-way flag. Made to combat the 0x00000000 CRC at the beginning. 
@@ -1724,9 +1724,14 @@ void GSRendererHW::Draw()
 
 				// Capture the palette.
 				auto _palette = m_src->m_palette_obj.get();
+				auto _len = _palette->m_pal;
 
-				// Calculate a CRC32 value from the palette CLUT (Proved to be the most reliable way, error rate of 1 in 10K).
-				_currentChecksum = CRCpp::Calculate(_palette->m_clut, _palette->m_pal * 4, CRCpp::CRC_32());
+				// Capture the CLUT data as Bytef for zlib/crc32
+				std::vector<Bytef> _clut(_palette->m_clut, _palette->m_clut + _len);
+
+				// Calculate a CRC32 value from the palette CLUT data.
+				auto _tmpCRC = crc32(0, Z_NULL, 0);
+				_currentChecksum = crc32(_tmpCRC, _clut.data(), _len);
 
 				if (m_replace_textures) { // If replacing;
 					if (_iniStandard.find(_currentChecksum) != _iniStandard.end())
