@@ -249,6 +249,7 @@ endif()
 
 if(APPLE)
     find_library(APPKIT_LIBRARY AppKit)
+	set(CMAKE_OSX_DEPLOYMENT_TARGET "10.15")
     set(GSdxFinalFlags ${GSdxFinalFlags} -fobjc-arc)
     set(GSdxFinalLibs ${GSdxFinalLibs} ${APPKIT_LIBRARY} -fobjc-link-runtime)
 endif()
