@@ -1708,13 +1708,13 @@ void GSRendererHW::Draw()
 				if (m_replace_textures) { // If replacing;
 					if (_stdTextures.find(_currentChecksum) != _stdTextures.end()) { // If a replacement exists for this element;
 						_path.append(_stdTextures[_currentChecksum]); // Get the replacement's path.
-						_fileCaptured = true;                         // File path is captured. Go forward.
+						_fileCaptured = true; // File path is captured. Go forward.
 					}
 
 					else if (_spcTextures.find(_currentChecksum) != _spcTextures.end()) { // If a replacement exists for this element that needs special care;
 						_path.append(_spcTextures[_currentChecksum]); // Get the replacement's path.
-						_flagSpc = true;                             // Signify that this needs special care.
-						_fileCaptured = true;						 // File path is captured. Go forward.
+						_flagSpc = true; // Signify that this needs special care.
+						_fileCaptured = true; // File path is captured. Go forward.
 					}
 
 					if (_fileCaptured) { // If a path is captured;
@@ -1744,6 +1744,7 @@ void GSRendererHW::Draw()
 									// Insert the texture to an array, this should prevent us from
 									// parsing the texture over and over again, preventing
 									// performance bottlenecks.
+
 									_texMap.insert(std::pair<uint32_t, GSTexture*>(_currentChecksum, _tex));
 
 									_isReplacing = true; // Signify replacement.
@@ -1753,14 +1754,14 @@ void GSRendererHW::Draw()
 							}
 						}
 
-						else                     // If we have parsed the texture before;
+						else // If we have parsed the texture before;
 							_isReplacing = true; // Signify replacement.
 					}
 				}
 
 				else if (frame_iterator == 0 && m_dump_textures) { // If dumping;
 					_path.append("\\@DUMP\\"); // Signify dumping directory.
-					_statBuf = {};             // Clear the stat buffer.
+					_statBuf = {}; // Clear the stat buffer.
 
 					// This hole code block parses the game checksum
 					// and adds it to the dumping path.
@@ -1794,11 +1795,11 @@ void GSRendererHW::Draw()
 					_path.append(_tempStr);
 					_path.append(".dds");
 
-					if (_saveMap.find(_currentChecksum) == _saveMap.end())					 // If the file hasn't been dumped before;
+					if (_saveMap.find(_currentChecksum) == _saveMap.end()) // If the file hasn't been dumped before;
 						_saveMap.insert(std::pair<uint32_t, bool>(_currentChecksum, false)); // Signify that the file has been dumped incompletely.
 
 					if (stat(_path.c_str(), &_statBuf) != 0) // If the file is not found;
-						_isDumping = true;                   // Signify dumping.
+						_isDumping = true; // Signify dumping.
 
 					else if (!_saveMap[_currentChecksum] && m_src->m_complete) {  // If the file has been dumped before, but it is now complete;
 						_saveMap[_currentChecksum] = true;
