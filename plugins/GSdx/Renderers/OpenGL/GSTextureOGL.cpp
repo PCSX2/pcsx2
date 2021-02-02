@@ -598,8 +598,8 @@ bool GSTextureOGL::SaveDDS(const std::string& fn)
 	int _zero = 0x00;
 	int const _dataSize = pitch * m_committed_size.y;
 
-	int _output[] = {0x7C, 0x02100F, m_committed_size.y, m_committed_size.x, 0x800, 0x01, 0x01};
-	int _output2[] = {0x20, 0x41, 0x00, 0x20, 0xFF, 0xFF00, 0xFF0000, 0xFF000000, 0x1000};
+	uint32 _output[] = {0x7C, 0x02100F, m_committed_size.y, m_committed_size.x, 0x800, 0x01, 0x01};
+	uint32 _output2[] = {0x20, 0x41, 0x00, 0x20, 0xFF, 0xFF00, 0xFF0000, 0xFF000000, 0x1000};
 
 	std::vector<unsigned char> _imgData;
 	_imgData.resize(_dataSize);
