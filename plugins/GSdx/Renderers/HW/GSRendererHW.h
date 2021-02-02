@@ -148,7 +148,7 @@ protected:
 	GSTextureCache::Source* m_src;
 
 	virtual void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex, GSTexture* inp = nullptr, bool pnt = false) = 0;
-	int TryParseIni();
+	int TryParseYaml();
 
 	int m_userhacks_round_sprite_offset;
 	int m_userHacks_HPO;

@@ -22,15 +22,14 @@
 #include "stdafx.h"
 #include "DDS.h"
 #include "GSRendererHW.h"
+#include "yaml-cpp/yaml.h"
 
 #include <zlib.h>
 #include <iomanip>
 #include <filesystem>
 
-#include <mIni/mIni.h>
-
 // Used as a three-way flag. Made to combat the 0x00000000 CRC at the beginning. 
-int _iniParse = 1;
+int _yamlParse = 1;
 
 // 2 maps are made to hold everything saved and everything replaced to avoid
 // constant runtime.
@@ -40,12 +39,12 @@ std::map<uint32_t, GSTexture*> _texMap;
 // Some games (Ex. Kingdom Hearts 2) transform it's 3D textures down no matter what, which makes it look deformed.
 // To combat this, there is a "special" mode which will make some changes to the texture. I really could not find
 // a better way to look them decent, so I was SOL.
-std::map<uint32_t, std::string> _iniStandard;
-std::map<uint32_t, std::string> _iniSpecial;
+std::map<uint32_t, std::string> _stdTextures;
+std::map<uint32_t, std::string> _spcTextures;
 
 const float GSRendererHW::SSR_UV_TOLERANCE = 1e-3f;
 
-int GSRendererHW::TryParseIni() {
+int GSRendererHW::TryParseYaml() {
 	if (m_crc == 0)
 		return 1;
 
@@ -60,10 +59,9 @@ int GSRendererHW::TryParseIni() {
 		std::transform(_crcText.begin(), _crcText.end(), _crcText.begin(), ::toupper);
 
 		_dir.append(_crcText);
-		_dir.append(".ini");
+		_dir.append(".yaml");
 
-		mINI::INIFile _iniFile(_dir.c_str());
-		mINI::INIStructure _iniData;
+		YAML::Node _yamlFile = YAML::LoadFile(_dir.c_str());
 
 		printf("GSdx: Creating necessary folders if they do not exist.\n");
 
@@ -72,57 +70,40 @@ int GSRendererHW::TryParseIni() {
 		_pathSys.append(_crcText.c_str());
 		std::filesystem::create_directories(_pathSys);
 
-		bool const _rc = _iniFile.read(_iniData);
-
-		if (_rc) {
+		if (_yamlFile) {
 			printf("GSdx: Found the texture configuration file! Processing...\n");
-			printf("GSdx: Capturing textures...\n");
 
-			if (_iniData.has("ProcessSTD")) {
-				auto _elems = _iniData.get("ProcessSTD");
+			printf("GSdx: Capturing textures [Standard]...\n");
+			
+			if (_yamlFile["ProcessSTD"]) {
+				auto _table = _yamlFile["ProcessSTD"];
 
-				for (auto _e : _elems) {
-					auto key = _e.first;
-					auto value = _e.second;
-
-					std::istringstream converter(key);
-
-					uint32_t integer;
-					converter >> std::hex >> integer;
-
-					_iniStandard.insert(std::pair<uint32_t, std::string>(integer, value));
+				for (auto elem : _table) {
+					auto _pair = std::pair<uint32_t, std::string>(elem.first.as<uint32_t>(), elem.second.as<std::string>());
+					_stdTextures.insert(_pair);
 				}
-
-				_elems.clear();
-				printf("GSdx: Textures have been captured!\n");
 			}
-
+			
 			else
-				printf("GSdx: Texture definition table [ProcessSTD] is not found!\n");
+				printf("GSdx: Texture definition table [Standard] is not found!\n");
+						
 
-			printf("GSdx: Capturing textures that need special treatment.\n");
-			if (_iniData.has("ProcessSPC")) {
-				auto _elems = _iniData.get("ProcessSPC");
+			printf("GSdx: Capturing textures [Special]...\n");
 
-				for (auto _e : _elems)
+			if (_yamlFile["ProcessSPC"])
+			{
+				auto _table = _yamlFile["ProcessSPC"];
+
+				for (auto elem : _table)
 				{
-					auto key = _e.first;
-					auto value = _e.second;
-
-					std::istringstream converter(key);
-
-					uint32_t integer;
-					converter >> std::hex >> integer;
-
-					_iniSpecial.insert(std::pair<uint32_t, std::string>(integer, value));
+					auto _pair = std::pair<uint32_t, std::string>(elem.first.as<uint32_t>(), elem.second.as<std::string>());
+					_spcTextures.insert(_pair);
 				}
-
-				_elems.clear();
-				printf("GSdx: Textures (Special) have been captured!\n");
 			}
 
 			else
-				printf("GSdx: Texture definition table [ProcessSPC] is not found!\n");
+				printf("GSdx: Texture definition table [Special] is not found!\n");
+
 
 			printf("GSdx: All done!\n");
 			return 0;
@@ -198,8 +179,8 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	// Initialize the lists used.
 	_texMap = {};
 	_saveMap = {};
-	_iniStandard = {};
-	_iniSpecial = {};
+	_stdTextures = {};
+	_spcTextures = {};
 
 	m_dump_root = root_hw;
 }
@@ -407,11 +388,11 @@ void GSRendererHW::Reset()
 
 	_texMap = {};
 	_saveMap = {};
-	_iniStandard = {};
-	_iniSpecial = {};
+	_stdTextures = {};
+	_spcTextures = {};
 
 	// Set the parse flag to 1 to cause a re-parse.
-	_iniParse = 1;
+	_yamlParse = 1;
 
 	GSRenderer::Reset();
 }
@@ -451,11 +432,11 @@ void GSRendererHW::ResetDevice()
 
 	_texMap = {};
 	_saveMap = {};
-	_iniStandard = {};
-	_iniSpecial = {};
+	_stdTextures = {};
+	_spcTextures = {};
 
 	// Set the parse flag to 1 to cause a re-parse.
-	_iniParse = 1;
+	_yamlParse = 1;
 
 	GSRenderer::ResetDevice();
 }
@@ -1288,27 +1269,27 @@ void GSRendererHW::RoundSpriteOffset()
 
 void GSRendererHW::Draw()
 {
-	// If the mode is set to dumping, and the ini data has been processed;
-	if ((!m_enable_textures || m_dump_textures) && _iniParse != 1)
+	// If the mode is set to dumping, and the yaml data has been processed;
+	if ((!m_enable_textures || m_dump_textures) && _yamlParse != 1)
 	{
-		// If the ini was parsed successfully;
-		if (_iniParse == 0)
+		// If the yaml was parsed successfully;
+		if (_yamlParse == 0)
 		{
 			for (auto const& x : _texMap)
 				delete x.second;
 
 			_texMap = {};
 			_saveMap = {};
-			_iniStandard = {};
-			_iniSpecial = {};
+			_stdTextures = {};
+			_spcTextures = {};
 		}
 
-		_iniParse = 1;
+		_yamlParse = 1;
 	}
 
-	// If replacing textures and the ini has not been processed;
-	if (_iniParse == 1 && (m_replace_textures && m_enable_textures))
-		_iniParse = TryParseIni();
+	// If replacing textures and the yaml has not been processed;
+	if (_yamlParse == 1 && (m_replace_textures && m_enable_textures))
+		_yamlParse = TryParseYaml();
 
 	if(m_dev->IsLost() || IsBadFrame()) {
 		GL_INS("Warning skipping a draw call (%d)", s_n);
@@ -1725,13 +1706,13 @@ void GSRendererHW::Draw()
 				_currentChecksum = crc32(_tmpCRC, _clut.data(), _len);
 
 				if (m_replace_textures) { // If replacing;
-					if (_iniStandard.find(_currentChecksum) != _iniStandard.end()) { // If a replacement exists for this element;
-						_path.append(_iniStandard[_currentChecksum]); // Get the replacement's path.
+					if (_stdTextures.find(_currentChecksum) != _stdTextures.end()) { // If a replacement exists for this element;
+						_path.append(_stdTextures[_currentChecksum]); // Get the replacement's path.
 						_fileCaptured = true;                         // File path is captured. Go forward.
 					}
 
-					else if (_iniSpecial.find(_currentChecksum) != _iniSpecial.end()) { // If a replacement exists for this element that needs special care;
-						_path.append(_iniSpecial[_currentChecksum]); // Get the replacement's path.
+					else if (_spcTextures.find(_currentChecksum) != _spcTextures.end()) { // If a replacement exists for this element that needs special care;
+						_path.append(_spcTextures[_currentChecksum]); // Get the replacement's path.
 						_flagSpc = true;                             // Signify that this needs special care.
 						_fileCaptured = true;						 // File path is captured. Go forward.
 					}
