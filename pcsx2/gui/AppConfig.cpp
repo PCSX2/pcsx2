@@ -1064,6 +1064,7 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
 	EmuOptions.EnablePatches		= true;
 	EmuOptions.GS					= default_Pcsx2Config.GS;
 	EmuOptions.GS.FrameLimitEnable	= original_GS.FrameLimitEnable;	//Frame limiter is not modified by presets
+	EmuOptions.GS.VsyncEnable		= original_GS.VsyncEnable;
 	
 	EmuOptions.Cpu					= default_Pcsx2Config.Cpu;
 	EmuOptions.Gamefixes			= default_Pcsx2Config.Gamefixes;
