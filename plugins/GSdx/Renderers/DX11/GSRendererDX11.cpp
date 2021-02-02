@@ -821,17 +821,11 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 				// Leave the check in to make sure other DATE cases are triggered correctly.
 				// fprintf(stderr, "%d: DATE: Slow with alpha %d-%d not supported\n", s_n, m_vt.m_alpha.min, m_vt.m_alpha.max);
 			}
-			else
+
+			else if (m_accurate_date)
 			{
-				if (m_accurate_date)
-				{
-					// fprintf(stderr, "%d: DATE: Fast AD with alpha %d-%d\n", s_n, m_vt.m_alpha.min, m_vt.m_alpha.max);
-					DATE_one = true;
-				}
-				else
-				{
-					// fprintf(stderr, "%d: "DATE: Off AD with alpha %d-%d\n", s_n, m_vt.m_alpha.min, m_vt.m_alpha.max);
-				}
+				// fprintf(stderr, "%d: DATE: Fast AD with alpha %d-%d\n", s_n, m_vt.m_alpha.min, m_vt.m_alpha.max);
+				DATE_one = true;
 			}
 		}
 		else if (!m_om_bsel.wa && !m_context->TEST.ATE)
