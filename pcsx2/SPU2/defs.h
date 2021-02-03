@@ -598,6 +598,8 @@ struct PcmCacheEntry
 {
 	bool Validated;
 	s16 Sampledata[pcm_DecodedSamplesPerBlock];
+	s32 Prev1;
+	s32 Prev2;
 };
 
 extern PcmCacheEntry* pcm_cache_data;

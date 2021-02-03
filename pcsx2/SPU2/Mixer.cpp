@@ -217,7 +217,7 @@ static __forceinline s32 GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
 		PcmCacheEntry& cacheLine = pcm_cache_data[cacheIdx];
 		vc.SBuffer = cacheLine.Sampledata;
 
-		if (cacheLine.Validated)
+		if (cacheLine.Validated && vc.Prev1 == cacheLine.Prev1 && vc.Prev2 == cacheLine.Prev2)
 		{
 			// Cached block!  Read from the cache directly.
 			// Make sure to propagate the prev1/prev2 ADPCM:
@@ -234,7 +234,11 @@ static __forceinline s32 GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
 		{
 			// Only flag the cache if it's a non-dynamic memory range.
 			if (vc.NextA >= SPU2_DYN_MEMLINE)
+			{
 				cacheLine.Validated = true;
+				cacheLine.Prev1 = vc.Prev1;
+				cacheLine.Prev2 = vc.Prev2;
+			}
 
 			if (IsDevBuild)
 			{
