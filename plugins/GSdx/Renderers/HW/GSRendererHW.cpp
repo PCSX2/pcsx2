@@ -22,11 +22,11 @@
 #include "stdafx.h"
 #include "DDS.h"
 #include "GSRendererHW.h"
+#include "ghc/filesystem.h"
 #include "yaml-cpp/yaml.h"
 
 #include <zlib.h>
 #include <iomanip>
-#include <filesystem>
 
 // Used as a three-way flag. Made to combat the 0x00000000 CRC at the beginning. 
 int _yamlParse = 1;
@@ -68,7 +68,7 @@ int GSRendererHW::TryParseYaml() {
 		std::string _pathSys = "textures\\@DUMP\\";
 
 		_pathSys.append(_crcText.c_str());
-		std::filesystem::create_directories(_pathSys);
+		ghc::filesystem::create_directories(_pathSys);
 
 		if (_yamlFile) {
 			printf("GSdx: Found the texture configuration file! Processing...\n");

@@ -52,6 +52,7 @@ if(PACKAGE_MODE)
 endif()
 
 if(APPLE)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET "10.14")
     option(OSX_USE_DEFAULT_SEARCH_PATH "Don't prioritize system library paths" OFF)
     option(SKIP_POSTPROCESS_BUNDLE "Skip postprocessing bundle for redistributability" OFF)
 endif()
