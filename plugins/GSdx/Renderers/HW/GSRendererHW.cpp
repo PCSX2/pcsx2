@@ -49,70 +49,73 @@ int GSRendererHW::TryParseYaml() {
 	if (m_crc == 0)
 		return 1;
 
-	else if (m_enable_textures && m_replace_textures) {
-		std::string _dir = "txtconfig\\";
+	else if (m_enable_textures)
+	{
+		struct stat _statBuf = {};
 		std::string _crcText = GSUtil::GetHEX32String(m_crc);
 
-		_dir.append(_crcText);
-		_dir.append(".yaml");
+		if (m_replace_textures)
+		{
+			std::string _dir = "txtconfig\\";
 
-		YAML::Node _yamlFile = YAML::LoadFile(_dir);
+			_dir.append(_crcText);
+			_dir.append(".yaml");
 
-		printf("GSdx: Creating necessary folders if they do not exist.\n");
-
-		std::string _pathSys = "textures\\@DUMP\\";
-
-		_pathSys.append(_crcText);
-		ghc::filesystem::create_directories(_pathSys);
-
-		if (_yamlFile) {
-			printf("GSdx: Found the texture configuration file! Processing...\n");
-
-			printf("GSdx: Capturing textures [Standard]...\n");
-			
-			if (_yamlFile["ProcessSTD"]) {
-				auto _table = _yamlFile["ProcessSTD"];
-
-				for (auto elem : _table) {
-					auto _pair = std::pair<uint32_t, std::string>(elem.first.as<uint32_t>(), elem.second.as<std::string>());
-					_stdTextures.insert(_pair);
-				}
-			}
-			
-			else
-				printf("GSdx: Texture definition table [Standard] is not found!\n");
-						
-
-			printf("GSdx: Capturing textures [Special]...\n");
-
-			if (_yamlFile["ProcessSPC"])
+			if (stat(_dir.c_str(), &_statBuf) == 0)
 			{
-				auto _table = _yamlFile["ProcessSPC"];
+				YAML::Node _yamlFile = YAML::LoadFile(_dir);
 
-				for (auto elem : _table)
+				printf("GSdx: Found the texture configuration file! Processing...\n");
+				printf("GSdx: Capturing textures [Standard]...\n");
+
+				if (_yamlFile["ProcessSTD"])
 				{
-					auto _pair = std::pair<uint32_t, std::string>(elem.first.as<uint32_t>(), elem.second.as<std::string>());
-					_spcTextures.insert(_pair);
+					auto _table = _yamlFile["ProcessSTD"];
+
+					for (auto elem : _table)
+					{
+						auto _pair = std::pair<uint32_t, std::string>(elem.first.as<uint32_t>(), elem.second.as<std::string>());
+						_stdTextures.insert(_pair);
+					}
 				}
+
+				else
+					printf("GSdx: Texture definition table [Standard] is not found!\n");
+
+
+				printf("GSdx: Capturing textures [Special]...\n");
+
+				if (_yamlFile["ProcessSPC"])
+				{
+					auto _table = _yamlFile["ProcessSPC"];
+
+					for (auto elem : _table)
+					{
+						auto _pair = std::pair<uint32_t, std::string>(elem.first.as<uint32_t>(), elem.second.as<std::string>());
+						_spcTextures.insert(_pair);
+					}
+				}
+
+				else
+					printf("GSdx: Texture definition table [Special] is not found!\n");
+
+
+				printf("GSdx: All done!\n");
+				return 0;
 			}
 
 			else
-				printf("GSdx: Texture definition table [Special] is not found!\n");
+			{
+				printf("GSdx: The config file for this game cannot be found or is invalid. Texture replacements are disabled.\n");
 
+				m_enable_textures = 0;
+				m_replace_textures = 0;
+				m_dump_textures = 1;
 
-			printf("GSdx: All done!\n");
-			return 0;
-		}
-
-		else {
-			printf("GSdx: The config file for this game cannot be found or is invalid. Texture replacements are disabled.\n");
-			m_enable_textures = 0;
-			m_replace_textures = 0;
-			m_dump_textures = 1;
+				return -1;
+			}
 		}
 	}
-
-	return -1;
 }
 
 GSRendererHW::GSRendererHW(GSTextureCache* tc)
@@ -1264,6 +1267,17 @@ void GSRendererHW::RoundSpriteOffset()
 
 void GSRendererHW::Draw()
 {
+	if (m_dump_textures && m_enable_textures)
+	{
+		std::string _crcText = GSUtil::GetHEX32String(m_crc);
+		std::string _pathSys = "textures\\@DUMP\\";
+
+		_pathSys.append(_crcText);
+
+		if (ghc::filesystem::create_directories(_pathSys))
+			printf("GSdx: Creating necessary folders if they do not exist.\n");
+	}
+
 	// If the mode is set to dumping, and the yaml data has been processed;
 	if ((!m_enable_textures || m_dump_textures) && _yamlParse != 1)
 	{
@@ -1793,18 +1807,6 @@ void GSRendererHW::Draw()
 	else
 		DrawPrims(rt_tex, ds_tex, m_src, nullptr, false);
 
-	if (_isDumping) {
-		m_src->m_texture->SaveDDS(_path);
-
-		if (!_saveMap[_currentChecksum] && m_src->m_complete)
-			_saveMap[_currentChecksum] = true;
-	}
-
-	frame_iterator++;
-
-	if (frame_iterator > 60)
-		frame_iterator = 0;
-
 	context->TEST = TEST;
 	context->FRAME = FRAME;
 	context->ZBUF = ZBUF;
@@ -1875,6 +1877,20 @@ void GSRendererHW::Draw()
 			s_dump = 0;
 		}
 	}
+
+	if (_isDumping)
+	{
+		m_src->Update(m_src->m_valid_rect, 0);
+		m_src->m_texture->SaveDDS(_path);
+
+		if (!_saveMap[_currentChecksum] && m_src->m_complete)
+			_saveMap[_currentChecksum] = true;
+	}
+
+	frame_iterator++;
+
+	if (frame_iterator > 60)
+		frame_iterator = 0;
 
 	#ifdef DISABLE_HW_TEXTURE_CACHE
 	if (rt)
