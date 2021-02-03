@@ -21,6 +21,7 @@
 
 #include "stdafx.h"
 #include "DDS.h"
+#include "GSUtil.h"
 #include "GSRendererHW.h"
 #include "ghc/filesystem.h"
 #include "yaml-cpp/yaml.h"
@@ -50,24 +51,18 @@ int GSRendererHW::TryParseYaml() {
 
 	else if (m_enable_textures && m_replace_textures) {
 		std::string _dir = "txtconfig\\";
-		std::stringstream stream;
-
-		stream << std::setfill('0') << std::setw(sizeof(m_crc) * 2)
-			   << std::hex << m_crc;
-
-		std::string _crcText = stream.str();
-		std::transform(_crcText.begin(), _crcText.end(), _crcText.begin(), ::toupper);
+		std::string _crcText = GSUtil::GetHEX32String(m_crc);
 
 		_dir.append(_crcText);
 		_dir.append(".yaml");
 
-		YAML::Node _yamlFile = YAML::LoadFile(_dir.c_str());
+		YAML::Node _yamlFile = YAML::LoadFile(_dir);
 
 		printf("GSdx: Creating necessary folders if they do not exist.\n");
 
 		std::string _pathSys = "textures\\@DUMP\\";
 
-		_pathSys.append(_crcText.c_str());
+		_pathSys.append(_crcText);
 		ghc::filesystem::create_directories(_pathSys);
 
 		if (_yamlFile) {
@@ -1682,7 +1677,6 @@ void GSRendererHW::Draw()
 
 			// Specify the path we will read from.
 			_path = "textures\\";
-			std::stringstream _convStream;
 
 			// Reset all of the parameters each frame.
 			_isReplacing = false;
@@ -1702,7 +1696,7 @@ void GSRendererHW::Draw()
 				std::vector<Bytef> _clut(_palette->m_clut, _palette->m_clut + _len);
 
 				// Calculate a CRC32 value from the palette CLUT data.
-				auto _tmpCRC = crc32(0, Z_NULL, 0);
+				auto const _tmpCRC = crc32(0, Z_NULL, 0);
 				_currentChecksum = crc32(_tmpCRC, _clut.data(), _len);
 
 				if (m_replace_textures) { // If replacing;
@@ -1723,7 +1717,7 @@ void GSRendererHW::Draw()
 								DDS::DDSFile _ddsFile = DDS::CatchDDS(_path.c_str()); // Parse the DDS file in the path.
 
 								if (_ddsFile.Data.size() > 0) { // If we have data from DDS;
-									GSTexture* _tex = m_dev->CreateTexture(_ddsFile.Header.Width, _ddsFile.Header.Height); // Create a GSTexture.
+									GSTexture* _tex = m_dev->CreateTexture(_ddsFile.Header.dwWidth, _ddsFile.Header.dwHeight); // Create a GSTexture.
 
 									// This loop is for adjusting the DDS' alpha to
 									// comply with PS2 Standards, since it is adjusted again
@@ -1736,8 +1730,8 @@ void GSRendererHW::Draw()
 									// Update the created GSTexture with the data from the DDS.
 
 									auto const _data = _ddsFile.Data;
-									int const _pitch = _ddsFile.Header.Width * 4;
-									GSVector4i const _rect = GSVector4i(0, 0, _ddsFile.Header.Width, _ddsFile.Header.Height);
+									int const _pitch = _ddsFile.Header.dwWidth * 4;
+									GSVector4i const _rect = GSVector4i(0, 0, _ddsFile.Header.dwWidth, _ddsFile.Header.dwHeight);
 
 									_tex->Update(_rect, _data.data(), _pitch, 0);
 
@@ -1766,33 +1760,13 @@ void GSRendererHW::Draw()
 					// This hole code block parses the game checksum
 					// and adds it to the dumping path.
 
-					std::string _tempStr;
-
-					_convStream.str("");
-					_convStream.clear();
-					_convStream.seekg(0, std::ios::beg);
-
-					_convStream << std::setfill('0') << std::setw(8) << std::hex << m_crc;
-
-					_tempStr = _convStream.str();
-					std::transform(_tempStr.begin(), _tempStr.end(), _tempStr.begin(), ::toupper);
-
-					_path.append(_tempStr);
+					_path.append(GSUtil::GetHEX32String(m_crc));
 					_path.append("\\");
 
 					// This code block does the same as above, but for the
 					// image checksum instead.
 
-					_convStream.str("");
-					_convStream.clear();
-					_convStream.seekg(0, std::ios::beg);
-
-					_convStream << std::setfill('0') << std::setw(8) << std::hex << _currentChecksum;
-
-					_tempStr = _convStream.str();
-					transform(_tempStr.begin(), _tempStr.end(), _tempStr.begin(), ::toupper);
-
-					_path.append(_tempStr);
+					_path.append(GSUtil::GetHEX32String(_currentChecksum));
 					_path.append(".dds");
 
 					if (_saveMap.find(_currentChecksum) == _saveMap.end()) // If the file hasn't been dumped before;

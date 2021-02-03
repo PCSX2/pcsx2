@@ -41,6 +41,8 @@ public:
 	static bool HasSharedBits(uint32 sbp, uint32 spsm, uint32 dbp, uint32 dpsm);
 	static bool HasCompatibleBits(uint32 spsm, uint32 dpsm);
 
+	static std::string GetHEX32String(uint32_t input);
+
 	static bool CheckSSE();
 	static CRCHackLevel GetRecommendedCRCHackLevel(GSRendererType type);
 

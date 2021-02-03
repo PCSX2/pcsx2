@@ -3,7 +3,6 @@
 
 DDS::DDSFile DDS::CatchDDS(const char* fileName) {
 	std::fstream binaryIo;
-
 	char* _headerData = new char[0x80];
 
 	DDSHeader* _header;
@@ -14,8 +13,12 @@ DDS::DDSFile DDS::CatchDDS(const char* fileName) {
 
 	_header = reinterpret_cast<DDSHeader*>(_headerData);
 
-	if (_header->Magic == 0x20534444) {
-		int const _len = _header->Height * _header->Width * 4;
+	if (_header->dwMagic == 0x20534444 && 
+	   (_header->ddspf.dwFlags & 0x40) == 0x40 &&
+		_header->ddspf.dwRGBBitCount == 32 &&
+	   (_header->dwCaps & 0x1000) == 0x1000)
+	{
+		int const _len = _header->dwHeight * _header->dwWidth * 4;
 
 		std::vector<unsigned char> _tmpData;
 		std::vector<unsigned char> _tmpFix;
@@ -28,12 +31,12 @@ DDS::DDSFile DDS::CatchDDS(const char* fileName) {
 		_returnFile.Header = *_header;
 		_returnFile.Data = _tmpData;
 
-		if (_header->ColorFlag == 0x00FF0000) {
+		if (_header->ddspf.dwRBitMask == 0x00FF0000) {
 			for (int i = 0; i < _len; i += 4) {
-				_tmpFix.push_back(_tmpData[i + 2]);
-				_tmpFix.push_back(_tmpData[i + 1]);
-				_tmpFix.push_back(_tmpData[i + 0]);
-				_tmpFix.push_back(_tmpData[i + 3]);
+				_tmpFix.push_back(_tmpData.at(i + 2));
+				_tmpFix.push_back(_tmpData.at(i + 1));
+				_tmpFix.push_back(_tmpData.at(i + 0));
+				_tmpFix.push_back(_tmpData.at(i + 3));
 			}
 
 			_returnFile.Data = _tmpFix;

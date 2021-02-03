@@ -21,6 +21,7 @@
 
 #include "stdafx.h"
 #include "GSUtil.h"
+#include <iomanip>
 
 #ifdef _WIN32
 #include "Renderers/DX11/GSDevice11.h"
@@ -32,6 +33,20 @@
 #endif
 
 Xbyak::util::Cpu g_cpu;
+
+std::string GSUtil::GetHEX32String(uint32_t input)
+{
+	std::string _tempStr;
+	std::stringstream _convStream;
+
+	_convStream.seekg(0, std::ios::beg);
+	_convStream << std::setfill('0') << std::setw(8) << std::hex << input;
+
+	_tempStr = _convStream.str();
+	std::transform(_tempStr.begin(), _tempStr.end(), _tempStr.begin(), ::toupper);
+
+	return _tempStr;
+}
 
 const char* GSUtil::GetLibName()
 {

@@ -6,17 +6,34 @@
 
 namespace DDS
 {
+	struct DDSFormat
+	{
+		uint32_t dwSize;
+		uint32_t dwFlags;
+		uint32_t dwFourCC;
+		uint32_t dwRGBBitCount;
+		uint32_t dwRBitMask;
+		uint32_t dwGBitMask;
+		uint32_t dwBBitMask;
+		uint32_t dwABitMask;
+	};
+
 	struct DDSHeader {
-		uint32_t Magic;
-		uint32_t Offset;
-		uint32_t Format;
-		uint32_t Height;
-		uint32_t Width;
-		char Unknown01[0x08];
-		uint32_t MipmapCount;
-		char Unknown02[0x3C];
-		uint32_t ColorFlag;
-		char Unknown03[0x20];
+		uint32_t dwMagic;
+		uint32_t dwSize;
+		uint32_t dwFlags;
+		uint32_t dwHeight;
+		uint32_t dwWidth;
+		uint32_t dwPitch;
+		uint32_t dwDepth;
+		uint32_t dwMipCount;
+		uint32_t dwReserved1[11];
+		DDSFormat ddspf;
+		uint32_t dwCaps;
+		uint32_t dwCaps2;
+		uint32_t dwCaps3;
+		uint32_t dwCaps4;
+		uint32_t dwReserved2;
 	};
 
 	struct DDSFile {
