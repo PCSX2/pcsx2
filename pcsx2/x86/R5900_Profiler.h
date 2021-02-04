@@ -370,7 +370,7 @@ struct eeProfiler {
 		// Compact the 4GB virtual address to a 512KB virtual address
 		if (x86caps.hasBMI2) {
 			xPEXT(ebx, ecx, ptr[&memMask]);
-			xADD(ptr32[(ebx*4) + memStats], 1);
+			xADD(ptr32[(rbx*4) + memStats], 1);
 		}
 	}
 
