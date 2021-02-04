@@ -77,6 +77,7 @@ struct ConfigDEV9
 	int AutoGateway;
 	int AutoDNS1;
 	int AutoDNS2;
+	int EthLogDNS;
 	std::vector<ConfigHost> EthHosts;
 #ifdef _WIN32
 	wchar_t Hdd[256];

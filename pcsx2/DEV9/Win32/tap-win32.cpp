@@ -608,14 +608,18 @@ bool TAPAdapter::recv(NetPacket* pkt)
 		}
 	}
 
-	if (result)
-		return VerifyPkt(pkt, read_size);
+	if (result && VerifyPkt(pkt, read_size))
+	{
+		InspectRecv(pkt);
+		return true;
+	}
 	else
 		return false;
 }
 //sends the packet .rv :true success
 bool TAPAdapter::send(NetPacket* pkt)
 {
+	InspectSend(pkt);
 	if (NetAdapter::send(pkt))
 		return true;
 

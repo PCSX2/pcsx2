@@ -196,6 +196,9 @@
     <Filter Include="System\Ps2\DEV9\PacketReader\IP\UDP\DNS">
       <UniqueIdentifier>{229bf045-e378-4ec5-bdf8-43938762511e}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\DEV9\Sessions">
+      <UniqueIdentifier>{64b05697-98cd-48ed-b5a5-cb0f6044ca15}</UniqueIdentifier>
+    </Filter>
     <Filter Include="System\Ps2\USB">
       <UniqueIdentifier>{df9de75c-2272-4f73-b2a0-4f9f492ba1e9}</UniqueIdentifier>
     </Filter>
@@ -1185,6 +1188,9 @@
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
     <ClCompile Include="DEV9\InternalServers\DHCP_Server.cpp">
+      <Filter>System\Ps2\DEV9\InternalServers</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\InternalServers\DNS_Logger.cpp">
       <Filter>System\Ps2\DEV9\InternalServers</Filter>
     </ClCompile>
     <ClCompile Include="DEV9\InternalServers\DNS_Server.cpp">
@@ -2237,6 +2243,9 @@
       <Filter>System\Ps2\DEV9</Filter>
     </ClInclude>
     <ClInclude Include="DEV9\InternalServers\DHCP_Server.h">
+      <Filter>System\Ps2\DEV9\InternalServers</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\InternalServers\DNS_Logger.h">
       <Filter>System\Ps2\DEV9\InternalServers</Filter>
     </ClInclude>
     <ClInclude Include="DEV9\InternalServers\DNS_Server.h">

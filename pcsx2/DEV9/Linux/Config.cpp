@@ -90,6 +90,10 @@ void SaveConf()
 	xmlNewChild(root_node, NULL, BAD_CAST "AutoDNS2",
 				BAD_CAST buff);
 
+	sprintf(buff, "%d", config.EthLogDNS);
+	xmlNewChild(root_node, NULL, BAD_CAST "EthLogDNS",
+				BAD_CAST buff);
+
 	xmlNewChild(root_node, NULL, BAD_CAST "Hdd",
 				BAD_CAST config.Hdd);
 
@@ -200,6 +204,10 @@ void LoadConf()
 			if (0 == strcmp((const char*)cur_node->name, "AutoDNS2"))
 			{
 				config.AutoDNS2 = atoi((const char*)xmlNodeGetContent(cur_node));
+			}
+			if (0 == strcmp((const char*)cur_node->name, "EthLogDNS"))
+			{
+				config.EthLogDNS = atoi((const char*)xmlNodeGetContent(cur_node));
 			}
 			if (0 == strcmp((const char*)cur_node->name, "Hdd"))
 			{

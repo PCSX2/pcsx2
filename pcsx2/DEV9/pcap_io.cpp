@@ -412,18 +412,18 @@ bool PCAPAdapter::isInitialised()
 bool PCAPAdapter::recv(NetPacket* pkt)
 {
 	int size = pcap_io_recv(pkt->buffer, sizeof(pkt->buffer));
-	if (size <= 0)
+	if (size > 0 && VerifyPkt(pkt, size))
 	{
-		return false;
+		InspectRecv(pkt);
+		return true;
 	}
 	else
-	{
-		return VerifyPkt(pkt, size);
-	}
+		return false;
 }
 //sends the packet .rv :true success
 bool PCAPAdapter::send(NetPacket* pkt)
 {
+	InspectSend(pkt);
 	if (NetAdapter::send(pkt))
 		return true;
 
