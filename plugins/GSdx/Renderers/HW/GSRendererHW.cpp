@@ -23,8 +23,12 @@
 #include "DDS.h"
 #include "GSUtil.h"
 #include "GSRendererHW.h"
+#include "GSLocalMemory.h"
 #include "ghc/filesystem.h"
 #include "yaml-cpp/yaml.h"
+
+#include <iostream>
+#include <fstream>
 
 #include <zlib.h>
 #include <iomanip>
@@ -32,9 +36,8 @@
 // Used as a three-way flag. Made to combat the 0x00000000 CRC at the beginning. 
 int _yamlParse = 1;
 
-// 2 maps are made to hold everything saved and everything replaced to avoid
+// A map is made to hold everything replaced to avoid
 // constant runtime.
-std::map<uint32_t, bool> _saveMap;
 std::map<uint32_t, GSTexture*> _texMap;
 
 // Some games (Ex. Kingdom Hearts 2) transform it's 3D textures down no matter what, which makes it look deformed.
@@ -176,7 +179,6 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 
 	// Initialize the lists used.
 	_texMap = {};
-	_saveMap = {};
 	_stdTextures = {};
 	_spcTextures = {};
 
@@ -385,7 +387,6 @@ void GSRendererHW::Reset()
 		delete x.second;
 
 	_texMap = {};
-	_saveMap = {};
 	_stdTextures = {};
 	_spcTextures = {};
 
@@ -429,7 +430,6 @@ void GSRendererHW::ResetDevice()
 		delete x.second;
 
 	_texMap = {};
-	_saveMap = {};
 	_stdTextures = {};
 	_spcTextures = {};
 
@@ -1288,7 +1288,6 @@ void GSRendererHW::Draw()
 				delete x.second;
 
 			_texMap = {};
-			_saveMap = {};
 			_stdTextures = {};
 			_spcTextures = {};
 		}
@@ -1783,16 +1782,8 @@ void GSRendererHW::Draw()
 					_path.append(GSUtil::GetHEX32String(_currentChecksum));
 					_path.append(".dds");
 
-					if (_saveMap.find(_currentChecksum) == _saveMap.end()) // If the file hasn't been dumped before;
-						_saveMap.insert(std::pair<uint32_t, bool>(_currentChecksum, false)); // Signify that the file has been dumped incompletely.
-
 					if (stat(_path.c_str(), &_statBuf) != 0) // If the file is not found;
 						_isDumping = true; // Signify dumping.
-
-					else if (!_saveMap[_currentChecksum] && m_src->m_complete) {  // If the file has been dumped before, but it is now complete;
-						_saveMap[_currentChecksum] = true;
-						_isDumping = true; // Signify dumping.
-					}
 				}
 			}
 		}
@@ -1880,11 +1871,22 @@ void GSRendererHW::Draw()
 
 	if (_isDumping)
 	{
-		m_src->Update(m_src->m_valid_rect, 0);
-		m_src->m_texture->SaveDDS(_path);
+		int height = (1 << m_context->TEX0.TH);
+		int width = (1 << m_context->TEX0.TW);
 
-		if (!_saveMap[_currentChecksum] && m_src->m_complete)
-			_saveMap[_currentChecksum] = true;
+		int pitch = width * 4;
+		int size = pitch * height;
+		void* bits = _aligned_malloc(size, 32);
+
+		uint8* p = (uint8*)bits;
+		m_mem.ReadTexture(m_mem.GetOffset(m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM), GSVector4i(0, 0, width, height), p, pitch, m_src->m_TEXA);
+
+		GSTexture* _m = m_dev->CreateTexture(width, height);
+
+		_m->Update(GSVector4i(0, 0, width, height), bits, pitch);
+		_m->SaveDDS(_path);
+
+		_aligned_free(bits);
 	}
 
 	frame_iterator++;
