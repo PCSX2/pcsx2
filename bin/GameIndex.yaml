@@ -7727,6 +7727,12 @@ SLES-50846:
 SLES-50848:
   name: "Speed Kings"
   region: "PAL-M5"
+  patches:
+    4C133D9D:
+      content: |-
+        author=Prafull
+        // Fixes hang before going ingame.
+        patch=1,EE,0022ee34,word,00000000
 SLES-50849:
   name: "Urban Freestyle Soccer"
   region: "PAL-M5"
@@ -33340,6 +33346,12 @@ SLUS-20584:
   name: "Speed Kings"
   region: "NTSC-U"
   compat: 3
+  patches:
+    C90920FC:
+      content: |-
+        author=Prafull
+        // Fixes hang before going ingame.
+        patch=1,EE,0022b4a4,word,00000000
 SLUS-20585:
   name: "Powerpuff Girls, The - Relish Rampage"
   region: "NTSC-U"
