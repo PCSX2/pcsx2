@@ -24,33 +24,20 @@
 #include "../keyboard.h"
 #include "../PAD.h"
 
-static const s32 Lx_check_id = wxID_HIGHEST + 100 + 1;
-static const s32 Ly_check_id = wxID_HIGHEST + 100 + 2;
-static const s32 Ljoy_check_id = wxID_HIGHEST + 100 + 3;
-
-static const s32 Rx_check_id = wxID_HIGHEST + 100 + 4;
-static const s32 Ry_check_id = wxID_HIGHEST + 100 + 5;
-static const s32 Rjoy_check_id = wxID_HIGHEST + 100 + 6;
-
 class JoystickConfiguration : public wxDialog
 {
-	wxCheckBox *m_cb_reverse_Lx, *m_cb_reverse_Ly, *m_cb_reverse_Rx, *m_cb_reverse_Ry,
-		*m_cb_mouse_Ljoy, // Use mouse for left joystick
-		*m_cb_mouse_Rjoy; // Use mouse for right joystick
+	wxCheckBox *m_cb_reverse_x, *m_cb_reverse_y,
+		*m_cb_mouse_joy; // Use mouse for joystick
 
 	u32 m_pad_id;
 	// isForLeftJoystick -> true is for Left Joystick, false is for Right Joystick
-	bool m_init_reverse_Lx, m_init_reverse_Ly, m_init_reverse_Rx, m_init_reverse_Ry,
-		m_init_mouse_Ljoy, m_init_mouse_Rjoy, m_isForLeftJoystick;
+	bool m_isForLeftJoystick;
 
 	// Methods
 	void repopulate();
-	void reset();
 
 	// Events
 	void OnCheckboxChange(wxCommandEvent&);
-	void OnOk(wxCommandEvent&);
-	void OnCancel(wxCommandEvent&);
 
 public:
 	JoystickConfiguration(int, bool, wxWindow*);
