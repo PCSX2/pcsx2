@@ -470,7 +470,9 @@ void GSRendererDX11::EmulateBlending()
 			m_om_bsel.abe = 0;
 		}
 
-		// Breath of Fire Dragon Quarter, Strawberry Shortcake, Super Robot Wars.
+		// Breath of Fire Dragon Quarter, Strawberry Shortcake, Super Robot Wars, Cartoon Network Racing.
+		// fprintf(stderr, "%d: PABE mode ENABLED\n", s_n);
+		m_ps_sel.pabe = 1;
 	}
 
 	m_om_bsel.blend_index = uint8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
