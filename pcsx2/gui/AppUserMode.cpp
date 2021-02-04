@@ -72,9 +72,7 @@ static wxString GetMsg_PortableModeRights()
 
 bool Pcsx2App::TestUserPermissionsRights(const fs::path& testFolder)
 {
-
 	std::string createme, accessme;
-
 
 	for (int i = 0; i < 5; ++i)
 	{
@@ -91,9 +89,9 @@ bool Pcsx2App::TestUserPermissionsRights(const fs::path& testFolder)
 	}
 
 	if (ErrorFolders.empty())
-		return false;
-	else
 		return true;
+	else
+		return false;
 }
 
 static void DoFirstTimeWizard()

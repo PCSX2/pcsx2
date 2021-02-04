@@ -89,6 +89,7 @@ oprofile_data/
 /bin/plugins
 /bin/snaps
 /bin/sstates
+/bin/portable*.yaml
 /deps
 /ipch
 
