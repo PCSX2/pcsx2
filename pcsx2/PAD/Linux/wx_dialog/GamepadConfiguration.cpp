@@ -105,6 +105,8 @@ void GamepadConfiguration::OnSliderReleased(wxCommandEvent& event)
 {
 	wxSlider* sl_tmp = (wxSlider*)event.GetEventObject();
 	int sl_id = sl_tmp->GetId();
+	if (!sl_tmp->IsEnabled()) // wxCocoa sends events even when the button is disabled
+		return;
 
 	if (sl_id == rumble_slider_id)
 	{
@@ -112,7 +114,7 @@ void GamepadConfiguration::OnSliderReleased(wxCommandEvent& event)
 
 		// convert in a float value between 0 and 1, and run rumble feedback.
 		// 0 to 1 scales to 0x0 to 0x7FFF
-		s_vgamePad[m_pad_id]->TestForce(m_sl_rumble_intensity->GetValue() / 0x7FFF);
+		s_vgamePad[m_pad_id]->TestForce(m_sl_rumble_intensity->GetValue() / (float)0x7FFF);
 	}
 	else if (sl_id == joy_slider_id)
 	{
