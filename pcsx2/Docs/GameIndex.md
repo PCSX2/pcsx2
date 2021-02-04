@@ -37,6 +37,7 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
     - VIFFIFOHack
     - VIF1StallHack
     - GIFFIFOHack
+    - GoemonTlbHack
     - ScarfaceIbitHack
     - CrashTagTeamRacingIbitHack
     - VU0KickstartHack
@@ -135,8 +136,8 @@ These values are case-sensitive so take care.  If you incorrectly specify a Game
   - SOCOM II HUD and Spy Hunter loading hang.
 - `GIFFIFOHack`
   - Enables the GIF FIFO. Needed for Wallace & Grommit, Hot Wheels, DJ Hero.
-- `FMVinSoftwareHack`
-  - Silent Hill 2-3. Fixes FMVs that are obscured when using hardware rendering by switching to software rendering.
+- `GoemonTlbHack`
+  - Preload TLB hack to avoid tlb miss on Goemon.
 - `ScarfaceIbitHack`
   - VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
 - `CrashTagTeamRacingIbitHack`

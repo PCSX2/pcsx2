@@ -20254,6 +20254,8 @@ SLPM-65014:
   name: "Bouken Jidai Katsugeki - Goemon"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - GoemonTlbHack
 SLPM-65015:
   name: "Kessen 2"
   region: "NTSC-J"
