@@ -237,6 +237,57 @@ NetAdapter::~NetAdapter()
 	}
 }
 
+void NetAdapter::InspectSend(NetPacket* pkt)
+{
+	if (config.EthLogDNS)
+	{
+		EthernetFrame frame(pkt);
+		if (frame.protocol == (u16)EtherType::IPv4)
+		{
+			PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
+			IP_Packet ippkt(payload->data, payload->GetLength());
+
+			if (ippkt.protocol == (u16)IP_Type::UDP)
+			{
+				IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(ippkt.GetPayload());
+				UDP_Packet udppkt(ipPayload->data, ipPayload->GetLength());
+
+				if (udppkt.destinationPort == 53)
+				{
+					Console.WriteLn("DEV9: DNS: Packet Sent To %i.%i.%i.%i",
+									ippkt.destinationIP.bytes[0], ippkt.destinationIP.bytes[1], ippkt.destinationIP.bytes[2], ippkt.destinationIP.bytes[3]);
+					dnsLogger.InspectSend(&udppkt);
+				}
+			}
+		}
+	}
+}
+void NetAdapter::InspectRecv(NetPacket* pkt)
+{
+	if (config.EthLogDNS)
+	{
+		EthernetFrame frame(pkt);
+		if (frame.protocol == (u16)EtherType::IPv4)
+		{
+			PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
+			IP_Packet ippkt(payload->data, payload->GetLength());
+
+			if (ippkt.protocol == (u16)IP_Type::UDP)
+			{
+				IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(ippkt.GetPayload());
+				UDP_Packet udppkt(ipPayload->data, ipPayload->GetLength());
+
+				if (udppkt.sourcePort == 53)
+				{
+					Console.WriteLn("DEV9: DNS: Packet Sent From %i.%i.%i.%i",
+									ippkt.sourceIP.bytes[0], ippkt.sourceIP.bytes[1], ippkt.sourceIP.bytes[2], ippkt.sourceIP.bytes[3]);
+					dnsLogger.InspectRecv(&udppkt);
+				}
+			}
+		}
+	}
+}
+
 void NetAdapter::SetMACAddress(u8* mac)
 {
 	if (mac == nullptr)
@@ -332,6 +383,7 @@ bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 		memcpy(frame.destinationMAC, ps2MAC, 6);
 		frame.protocol = (u16)EtherType::IPv4;
 		frame.WritePacket(pkt);
+		InspectRecv(pkt);
 		return true;
 	}
 	

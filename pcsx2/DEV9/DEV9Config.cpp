@@ -105,7 +105,7 @@ void LoadDnsHosts()
 		else
 			ini.Entry(L"Enabled", entry.Enabled, false);
 
-		if (entry.Enabled)
+		if (config.EthLogDNS && entry.Enabled)
 			Console.WriteLn("DEV9: Host entry %i: url %s mapped to %s", i, entry.Url.c_str(), tmp.ToStdString().c_str());
 
 		config.EthHosts.push_back(entry);

@@ -76,6 +76,7 @@ void SaveConf()
 	WritePrivateProfileString(L"DEV9", L"DNS2", addrBuff, file.c_str());
 	WritePrivateProfileInt(L"DEV9", L"AutoDNS2", config.AutoDNS2, file.c_str());
 
+	WritePrivateProfileInt(L"DEV9", L"EthLogDNS", config.EthLogDNS, file.c_str());
 
 	WritePrivateProfileString(L"DEV9", L"Hdd", config.Hdd, file.c_str());
 	WritePrivateProfileInt(L"DEV9", L"HddSize", config.HddSize, file.c_str());
@@ -123,6 +124,7 @@ void LoadConf()
 	InetPton(AF_INET, addrBuff, &config.DNS2);
 	config.AutoDNS2 = GetPrivateProfileInt(L"DEV9", L"AutoDNS2", config.AutoDNS2, file.c_str());
 
+	config.EthLogDNS = GetPrivateProfileInt(L"DEV9", L"EthLogDNS", config.EthLogDNS, file.c_str());
 
 	GetPrivateProfileString(L"DEV9", L"Hdd", HDD_DEF, config.Hdd, sizeof(config.Hdd), file.c_str());
 	config.HddSize = GetPrivateProfileInt(L"DEV9", L"HddSize", config.HddSize, file.c_str());

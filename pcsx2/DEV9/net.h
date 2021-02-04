@@ -33,6 +33,7 @@
 
 #include "PacketReader/IP/IP_Address.h"
 #include "InternalServers/DHCP_Server.h"
+#include "InternalServers/DNS_Logger.h"
 #include "InternalServers/DNS_Server.h"
 
 struct ConfigDEV9;
@@ -98,6 +99,7 @@ private:
 	bool internalRxHasData = false;
 
 	InternalServers::DHCP_Server dhcpServer = InternalServers::DHCP_Server([&] { InternalSignalReceived(); });
+	InternalServers::DNS_Logger dnsLogger;
 	InternalServers::DNS_Server dnsServer = InternalServers::DNS_Server([&] { InternalSignalReceived(); });
 
 public:
@@ -113,6 +115,9 @@ public:
 protected:
 	void SetMACAddress(u8* mac);
 	bool VerifyPkt(NetPacket* pkt, int read_size);
+
+	void InspectRecv(NetPacket* pkt);
+	void InspectSend(NetPacket* pkt);
 
 #ifdef _WIN32
 	void InitInternalServer(PIP_ADAPTER_ADDRESSES adapter);
