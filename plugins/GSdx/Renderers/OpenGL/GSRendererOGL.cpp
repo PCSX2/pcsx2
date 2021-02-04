@@ -410,11 +410,7 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 	bool sw_blending         = false;
 
 	// No blending so early exit
-	if (!(PRIM->ABE || PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS)) {
-#ifdef ENABLE_OGL_DEBUG
-		if (m_env.PABE.PABE)
-			GL_INS("ERROR: ENV PABE without ABE!");
-#endif
+	if (!(PRIM->ABE || m_env.PABE.PABE || (PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS))) {
 		dev->OMSetBlendState();
 		return;
 	}
