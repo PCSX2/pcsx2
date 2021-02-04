@@ -39,12 +39,7 @@ int _yamlParse = 1;
 // A map is made to hold everything replaced to avoid
 // constant runtime.
 std::map<uint32_t, GSTexture*> _texMap;
-
-// Some games (Ex. Kingdom Hearts 2) transform it's 3D textures down no matter what, which makes it look deformed.
-// To combat this, there is a "special" mode which will make some changes to the texture. I really could not find
-// a better way to look them decent, so I was SOL.
-std::map<uint32_t, std::string> _stdTextures;
-std::map<uint32_t, std::string> _spcTextures;
+std::map<uint32_t, std::string> _repTextures;
 
 const float GSRendererHW::SSR_UV_TOLERANCE = 1e-3f;
 
@@ -69,39 +64,21 @@ int GSRendererHW::TryParseYaml() {
 				YAML::Node _yamlFile = YAML::LoadFile(_dir);
 
 				printf("GSdx: Found the texture configuration file! Processing...\n");
-				printf("GSdx: Capturing textures [Standard]...\n");
+				printf("GSdx: Capturing textures...\n");
 
-				if (_yamlFile["ProcessSTD"])
+				if (_yamlFile["ProcessTEX"])
 				{
-					auto _table = _yamlFile["ProcessSTD"];
+					auto _table = _yamlFile["ProcessTEX"];
 
 					for (auto elem : _table)
 					{
 						auto _pair = std::pair<uint32_t, std::string>(elem.first.as<uint32_t>(), elem.second.as<std::string>());
-						_stdTextures.insert(_pair);
+						_repTextures.insert(_pair);
 					}
 				}
 
 				else
-					printf("GSdx: Texture definition table [Standard] is not found!\n");
-
-
-				printf("GSdx: Capturing textures [Special]...\n");
-
-				if (_yamlFile["ProcessSPC"])
-				{
-					auto _table = _yamlFile["ProcessSPC"];
-
-					for (auto elem : _table)
-					{
-						auto _pair = std::pair<uint32_t, std::string>(elem.first.as<uint32_t>(), elem.second.as<std::string>());
-						_spcTextures.insert(_pair);
-					}
-				}
-
-				else
-					printf("GSdx: Texture definition table [Special] is not found!\n");
-
+					printf("GSdx: Texture definition table is not found!\n");
 
 				printf("GSdx: All done!\n");
 				return 0;
@@ -179,8 +156,8 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 
 	// Initialize the lists used.
 	_texMap = {};
-	_stdTextures = {};
-	_spcTextures = {};
+	_repTextures = {};
+
 
 	m_dump_root = root_hw;
 }
@@ -387,8 +364,8 @@ void GSRendererHW::Reset()
 		delete x.second;
 
 	_texMap = {};
-	_stdTextures = {};
-	_spcTextures = {};
+	_repTextures = {};
+
 
 	// Set the parse flag to 1 to cause a re-parse.
 	_yamlParse = 1;
@@ -430,8 +407,8 @@ void GSRendererHW::ResetDevice()
 		delete x.second;
 
 	_texMap = {};
-	_stdTextures = {};
-	_spcTextures = {};
+	_repTextures = {};
+
 
 	// Set the parse flag to 1 to cause a re-parse.
 	_yamlParse = 1;
@@ -1288,8 +1265,8 @@ void GSRendererHW::Draw()
 				delete x.second;
 
 			_texMap = {};
-			_stdTextures = {};
-			_spcTextures = {};
+			_repTextures = {};
+		
 		}
 
 		_yamlParse = 1;
@@ -1675,7 +1652,6 @@ void GSRendererHW::Draw()
 	// Declare some temporary variables.
 	bool _isDumping = false;
 	bool _isReplacing = false;
-	bool _flagSpc = false;
 
 	std::string _path = "";
 	uint32_t _currentChecksum = 0;
@@ -1690,11 +1666,6 @@ void GSRendererHW::Draw()
 
 			// Specify the path we will read from.
 			_path = "textures\\";
-
-			// Reset all of the parameters each frame.
-			_isReplacing = false;
-			_isDumping = false;
-			_flagSpc = false;
 
 			// Indicates if a file path is found.
 			bool _fileCaptured = false;
@@ -1713,14 +1684,8 @@ void GSRendererHW::Draw()
 				_currentChecksum = crc32(_tmpCRC, _clut.data(), _len);
 
 				if (m_replace_textures) { // If replacing;
-					if (_stdTextures.find(_currentChecksum) != _stdTextures.end()) { // If a replacement exists for this element;
-						_path.append(_stdTextures[_currentChecksum]); // Get the replacement's path.
-						_fileCaptured = true; // File path is captured. Go forward.
-					}
-
-					else if (_spcTextures.find(_currentChecksum) != _spcTextures.end()) { // If a replacement exists for this element that needs special care;
-						_path.append(_spcTextures[_currentChecksum]); // Get the replacement's path.
-						_flagSpc = true; // Signify that this needs special care.
+					if (_repTextures.find(_currentChecksum) != _repTextures.end()) { // If a replacement exists for this element;
+						_path.append(_repTextures[_currentChecksum]); // Get the replacement's path.
 						_fileCaptured = true; // File path is captured. Go forward.
 					}
 
@@ -1793,10 +1758,10 @@ void GSRendererHW::Draw()
 	// Do not ask why.
 
 	if (_isReplacing)
-		DrawPrims(rt_tex, ds_tex, m_src, _texMap[_currentChecksum], _flagSpc);
+		DrawPrims(rt_tex, ds_tex, m_src, _texMap[_currentChecksum]);
 
 	else
-		DrawPrims(rt_tex, ds_tex, m_src, nullptr, false);
+		DrawPrims(rt_tex, ds_tex, m_src);
 
 	context->TEST = TEST;
 	context->FRAME = FRAME;
