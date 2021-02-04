@@ -420,14 +420,9 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 	}
 
 	if (m_env.PABE.PABE) {
-		GL_INS("ERROR: ENV PABE not supported!");
-		if (m_sw_blending >= ACC_BLEND_MEDIUM) {
-			// m_ps_sel.pabe = 1;
-			m_require_full_barrier |= (ALPHA.C == 1);
-			sw_blending = true;
-		}
-		// Breath of Fire Dragon Quarter, Strawberry Shortcake, Super Robot Wars.
-		//ASSERT(0);
+		// Breath of Fire Dragon Quarter, Strawberry Shortcake, Super Robot Wars, Cartoon Network Racing.
+		GL_INS("PABE mode ENABLED");
+		m_ps_sel.pabe = 1;
 	}
 
 	// Compute the blending equation to detect special case

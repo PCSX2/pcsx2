@@ -984,7 +984,7 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 		+ format("#define PS_HDR %d\n", sel.hdr)
 		+ format("#define PS_DITHER %d\n", sel.dither)
 		+ format("#define PS_ZCLAMP %d\n", sel.zclamp)
-		// + format("#define PS_PABE %d\n", sel.pabe)
+		+ format("#define PS_PABE %d\n", sel.pabe)
 	;
 
 	if (GLLoader::buggy_sso_dual_src)

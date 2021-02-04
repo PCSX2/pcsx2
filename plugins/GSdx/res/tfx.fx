@@ -48,6 +48,7 @@
 #define PS_BLEND_B 0
 #define PS_BLEND_C 0
 #define PS_BLEND_D 0
+#define PS_PABE 0
 #define PS_DITHER 0
 #define PS_ZCLAMP 0
 #endif
@@ -684,6 +685,10 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 		float3 D = (PS_BLEND_D == 0) ? Cs : ((PS_BLEND_D == 1) ? Cd : (float3)0.0f);
 
 		Cv = (PS_BLEND_A == PS_BLEND_B) ? D : trunc(((A - B) * C) + D);
+
+		// PABE
+		if (PS_PABE)
+			Cv = (Color.a >= 128.0f) ? Cv : Color.rgb;
 
 		// Dithering
 		ps_dither(Cv, pos_xy);
