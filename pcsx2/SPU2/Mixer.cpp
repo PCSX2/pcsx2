@@ -380,9 +380,9 @@ __forceinline static s32 HermiteInterpolate(
 
 	s32 val = ((2 * y1 + m0 + m1 - 2 * y2) * mu) >> 12;       // 16.0
 	val = ((val - 3 * y1 - 2 * m0 - m1 + 3 * y2) * mu) >> 12; // 16.0
-	val = ((val + m0) * mu) >> 11;                            // 16.0
+	val = ((val + m0) * mu) >> 12;                            // 16.0
 
-	return (val + (y1 << 1));
+	return (val + (y1));
 }
 
 __forceinline static s32 CatmullRomInterpolate(
@@ -407,7 +407,7 @@ __forceinline static s32 CatmullRomInterpolate(
 	val = ((a2 + val) * mu) >> 12;
 	val = ((a1 + val) * mu) >> 12;
 
-	return (a0 + val);
+	return (a0 + val) >> 1;
 }
 
 __forceinline static s32 CubicInterpolate(
@@ -424,9 +424,9 @@ __forceinline static s32 CubicInterpolate(
 
 	s32 val = ((a0)*mu) >> 12;
 	val = ((val + a1) * mu) >> 12;
-	val = ((val + a2) * mu) >> 11;
+	val = ((val + a2) * mu) >> 12;
 
-	return (val + (y1 << 1));
+	return (val + y1);
 }
 
 // Returns a 16 bit result in Value.
@@ -454,9 +454,9 @@ static __forceinline s32 GetVoiceValues(V_Core& thiscore, uint voiceidx)
 	switch (InterpType)
 	{
 		case 0:
-			return vc.PV1 << 1;
+			return vc.PV1;
 		case 1:
-			return (vc.PV1 << 1) - (((vc.PV2 - vc.PV1) * vc.SP) >> 11);
+			return (vc.PV1) - (((vc.PV2 - vc.PV1) * mu) >> 12);
 
 		case 2:
 			return CubicInterpolate(vc.PV4, vc.PV3, vc.PV2, vc.PV1, mu);
@@ -603,7 +603,7 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 		// use a full 64-bit multiply/result here.
 
 		CalculateADSR(thiscore, voiceidx);
-		Value = MulShr32(Value, vc.ADSR.Value);
+		Value = ApplyVolume(Value, vc.ADSR.Value);
 		vc.OutX = Value;
 
 		if (IsDevBuild)
