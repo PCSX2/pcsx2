@@ -355,6 +355,7 @@ set(pcsx2DEV9Sources
 	DEV9/ATA/ATA_Transfer.cpp
 	DEV9/ATA/HddCreate.cpp
 	DEV9/InternalServers/DHCP_Server.cpp
+	DEV9/InternalServers/DNS_Logger.cpp
 	DEV9/InternalServers/DNS_Server.cpp
 	DEV9/PacketReader/IP/UDP/DHCP/DHCP_Options.cpp
 	DEV9/PacketReader/IP/UDP/DHCP/DHCP_Packet.cpp
@@ -380,6 +381,7 @@ set(pcsx2DEV9Headers
 	DEV9/ATA/HddCreate.h
 	DEV9/DEV9.h
 	DEV9/InternalServers/DHCP_Server.cpp
+	DEV9/InternalServers/DNS_Logger.h
 	DEV9/InternalServers/DNS_Server.h
 	DEV9/net.h
 	DEV9/PacketReader/IP/UDP/DHCP/DHCP_Options.h
