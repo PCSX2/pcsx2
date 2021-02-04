@@ -17,7 +17,7 @@
 
 GamepadConfiguration::GamepadConfiguration(int pad, wxWindow* parent)
 	: wxDialog(parent, wxID_ANY, _T("Gamepad"), wxDefaultPosition, wxDefaultSize,
-			   wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN)
+	           wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN)
 {
 	m_pad_id = pad;
 
@@ -34,11 +34,11 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow* parent)
 
 	wxStaticBoxSizer* rumble_box = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Rumble intensity"));
 	m_sl_rumble_intensity = new wxSlider(this, rumble_slider_id, 0, 0, 0x7FFF, wxDefaultPosition, wxDefaultSize,
-										 wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
+	                                     wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
 
 	wxStaticBoxSizer* joy_box = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Joystick sensibility"));
 	m_sl_joystick_sensibility = new wxSlider(this, joy_slider_id, 0, 0, 200, wxDefaultPosition, wxDefaultSize,
-											 wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
+	                                         wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
 
 	gamepad_box->Add(m_joy_map, wxSizerFlags().Expand().Border(wxALL, 5));
 	gamepad_box->Add(m_cb_rumble, wxSizerFlags().Expand());
@@ -59,26 +59,26 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow* parent)
 }
 
 /**
-    Initialize the frame
-    Check if a gamepad is detected
-    Check if the gamepad support rumbles
-*/
+ * Initialize the frame
+ * Check if a gamepad is detected
+ * Check if the gamepad support rumbles
+ */
 void GamepadConfiguration::InitGamepadConfiguration()
 {
 	repopulate(); // Set label and fit simulated key array
 	/*
-     * Check if there exist at least one pad available
-     * if the pad id is 0, you need at least 1 gamepad connected,
-     * if the pad id is 1, you need at least 2 gamepads connected,
-     * Prevent to use a none initialized value on s_vgamePad (core dump)
-    */
+	 * Check if there exist at least one pad available
+	 * if the pad id is 0, you need at least 1 gamepad connected,
+	 * if the pad id is 1, you need at least 2 gamepads connected,
+	 * Prevent to use a none initialized value on s_vgamePad (core dump)
+	 */
 	if (s_vgamePad.size() >= m_pad_id + 1)
 	{
 		/*
-         * Determine if the device can use rumble
-         * Use TestForce with a very low strength (can't be felt)
-         * May be better to create a new function in order to check only that
-        */
+		 * Determine if the device can use rumble
+		 * Use TestForce with a very low strength (can't be felt)
+		 * May be better to create a new function in order to check only that
+		 */
 
 		// Bad idea. Some connected devices might support rumble but not all connected devices.
 		//        if (!s_vgamePad[m_pad_id]->TestForce(0.001f)) {
@@ -100,7 +100,7 @@ void GamepadConfiguration::InitGamepadConfiguration()
  * Slider event, called when the use release the slider button
  * @FIXME The current solution can't change the joystick sensibility and the rumble intensity
  *        for a specific gamepad. The same value is used for both
-*/
+ */
 void GamepadConfiguration::OnSliderReleased(wxCommandEvent& event)
 {
 	wxSlider* sl_tmp = (wxSlider*)event.GetEventObject();
@@ -124,7 +124,7 @@ void GamepadConfiguration::OnSliderReleased(wxCommandEvent& event)
 
 /**
  * Checkbox event, called when the value of the checkbox change
-*/
+ */
 void GamepadConfiguration::OnCheckboxChange(wxCommandEvent& event)
 {
 	wxCheckBox* cb_tmp = (wxCheckBox*)event.GetEventObject(); // get the slider object
@@ -145,7 +145,7 @@ void GamepadConfiguration::OnCheckboxChange(wxCommandEvent& event)
 	}
 }
 
-/*
+/**
  * Checkbox event, called when the value of the choice box change
  */
 void GamepadConfiguration::OnChoiceChange(wxCommandEvent& event)

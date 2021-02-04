@@ -22,7 +22,7 @@ static const s32 joy_check_id = wxID_HIGHEST + 100 + 3;
 // Constructor of JoystickConfiguration
 JoystickConfiguration::JoystickConfiguration(int pad, bool left, wxWindow* parent)
 	: wxDialog(parent, wxID_ANY, _T("Joystick configuration"), wxDefaultPosition, wxDefaultSize,
-			   wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN)
+	           wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN)
 {
 	m_pad_id = pad;
 	m_isForLeftJoystick = left;
@@ -52,18 +52,18 @@ JoystickConfiguration::JoystickConfiguration(int pad, bool left, wxWindow* paren
 }
 
 /**
-    Initialize the frame
-    Check if a gamepad is detected
-*/
+ * Initialize the frame
+ * Check if a gamepad is detected
+ */
 void JoystickConfiguration::InitJoystickConfiguration()
 {
 	repopulate(); // Set label and fit simulated key array
 	/*
-     * Check if there exist at least one pad available
-     * if the pad id is 0, you need at least 1 gamepad connected,
-     * if the pad id is 1, you need at least 2 gamepads connected,
-     * Prevent to use a none initialized value on s_vgamePad (core dump)
-    */
+	 * Check if there exist at least one pad available
+	 * if the pad id is 0, you need at least 1 gamepad connected,
+	 * if the pad id is 1, you need at least 2 gamepads connected,
+	 * Prevent to use a none initialized value on s_vgamePad (core dump)
+	 */
 	if (s_vgamePad.size() < m_pad_id + 1)
 	{
 		if (s_vgamePad.empty())
@@ -79,7 +79,7 @@ void JoystickConfiguration::InitJoystickConfiguration()
 
 /**
  * Checkbox event, called when the value of the checkbox change
-*/
+ */
 void JoystickConfiguration::OnCheckboxChange(wxCommandEvent& event)
 {
 	wxCheckBox* cb_tmp = (wxCheckBox*)event.GetEventObject(); // get the slider object
