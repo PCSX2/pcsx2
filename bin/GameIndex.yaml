@@ -7732,6 +7732,7 @@ SLES-50848:
       content: |-
         author=Prafull
         // Fixes hang before going ingame.
+        // Needed due to lack of VIF FIFO in PCSX2.
         patch=1,EE,0022ee34,word,00000000
 SLES-50849:
   name: "Urban Freestyle Soccer"
@@ -33351,6 +33352,7 @@ SLUS-20584:
       content: |-
         author=Prafull
         // Fixes hang before going ingame.
+        // Needed due to lack of VIF FIFO in PCSX2.
         patch=1,EE,0022b4a4,word,00000000
 SLUS-20585:
   name: "Powerpuff Girls, The - Relish Rampage"
