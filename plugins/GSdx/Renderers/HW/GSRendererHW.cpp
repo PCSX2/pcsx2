@@ -1671,17 +1671,19 @@ void GSRendererHW::Draw()
 			bool _fileCaptured = false;
 
 			if (m_src->m_palette_obj) { // If a palette of the texture exists;
-
-				// Capture the palette.
-				auto _palette = m_src->m_palette_obj.get();
-				auto _len = _palette->m_pal;
+				// Capture the data to checksum.
+				auto _pal = m_src->m_palette_obj.get();
+				auto _pLen = _pal->m_pal;
 
 				// Capture the CLUT data as Bytef for zlib/crc32
-				std::vector<Bytef> _clut(_palette->m_clut, _palette->m_clut + _len);
+				std::vector<Bytef> _clut(_pal->m_clut, _pal->m_clut + _pLen);
 
 				// Calculate a CRC32 value from the palette CLUT data.
 				auto const _tmpCRC = crc32(0, Z_NULL, 0);
-				_currentChecksum = crc32(_tmpCRC, _clut.data(), _len);
+				_currentChecksum = crc32(_tmpCRC, _clut.data(), _pLen);
+
+				// Cleat the used CLUT data to avoid leaking.
+				_clut.clear();
 
 				if (m_replace_textures) { // If replacing;
 					if (_repTextures.find(_currentChecksum) != _repTextures.end()) { // If a replacement exists for this element;
@@ -1763,6 +1765,51 @@ void GSRendererHW::Draw()
 	else
 		DrawPrims(rt_tex, ds_tex, m_src);
 
+	if (_isDumping)
+	{
+		auto const _h = (1 << m_context->TEX0.TH);
+		auto const _w = (1 << m_context->TEX0.TW);
+		auto const _pitch = _w * 4;
+
+		auto const _rect = GSVector4i(0, 0, _w, _h);
+
+		auto const _length = _pitch * _h;
+		void* _data = _aligned_malloc(_length, 32);
+
+		auto _offset = m_mem.GetOffset(m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM);
+		auto _pointer = static_cast<uint8*>(_data);
+
+		switch (m_mem.m_psm[m_context->TEX0.PSM].bpp)
+		{
+			default:
+				break;
+			case 4:
+				m_mem.ReadTexture4(_offset, _rect, _pointer, _pitch, m_src->m_TEXA);
+				break;
+			case 8:
+				m_mem.ReadTexture(_offset, _rect, _pointer, _pitch, m_src->m_TEXA);
+				break;
+			case 16:
+				m_mem.ReadTexture16(_offset, _rect, _pointer, _pitch, m_src->m_TEXA);
+				break;
+			case 32:
+				m_mem.ReadTexture32(_offset, _rect, _pointer, _pitch, m_src->m_TEXA);
+				break;
+		};
+
+		GSTexture* _tex = m_dev->CreateTexture(_w, _h);
+
+		_tex->Update(_rect, _data, _pitch);
+		_tex->SaveDDS(_path);
+
+		_aligned_free(_data);
+	}
+
+	frame_iterator++;
+
+	if (frame_iterator > 60)
+		frame_iterator = 0;
+
 	context->TEST = TEST;
 	context->FRAME = FRAME;
 	context->ZBUF = ZBUF;
@@ -1833,31 +1880,6 @@ void GSRendererHW::Draw()
 			s_dump = 0;
 		}
 	}
-
-	if (_isDumping)
-	{
-		int height = (1 << m_context->TEX0.TH);
-		int width = (1 << m_context->TEX0.TW);
-
-		int pitch = width * 4;
-		int size = pitch * height;
-		void* bits = _aligned_malloc(size, 32);
-
-		uint8* p = (uint8*)bits;
-		m_mem.ReadTexture(m_mem.GetOffset(m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM), GSVector4i(0, 0, width, height), p, pitch, m_src->m_TEXA);
-
-		GSTexture* _m = m_dev->CreateTexture(width, height);
-
-		_m->Update(GSVector4i(0, 0, width, height), bits, pitch);
-		_m->SaveDDS(_path);
-
-		_aligned_free(bits);
-	}
-
-	frame_iterator++;
-
-	if (frame_iterator > 60)
-		frame_iterator = 0;
 
 	#ifdef DISABLE_HW_TEXTURE_CACHE
 	if (rt)
