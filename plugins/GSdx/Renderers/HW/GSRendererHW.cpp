@@ -1756,7 +1756,7 @@ void GSRendererHW::Draw()
 		}
 	}
 
-	// The textures have to be replaced on DrawPrims.
+	// The textures have to be replaced inside of DrawPrims.
 	// Do not ask why.
 
 	if (_isReplacing)
@@ -1769,6 +1769,7 @@ void GSRendererHW::Draw()
 	{
 		auto const _h = (1 << m_context->TEX0.TH);
 		auto const _w = (1 << m_context->TEX0.TW);
+
 		auto const _pitch = _w * 4;
 
 		auto const _rect = GSVector4i(0, 0, _w, _h);
@@ -1778,30 +1779,27 @@ void GSRendererHW::Draw()
 
 		auto _offset = m_mem.GetOffset(m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM);
 		auto _pointer = static_cast<uint8*>(_data);
+		
+		m_mem.ReadTexture(_offset, _rect, _pointer, _pitch, m_src->m_TEXA);
 
-		switch (m_mem.m_psm[m_context->TEX0.PSM].bpp)
-		{
-			default:
-				break;
-			case 4:
-				m_mem.ReadTexture4(_offset, _rect, _pointer, _pitch, m_src->m_TEXA);
-				break;
-			case 8:
-				m_mem.ReadTexture(_offset, _rect, _pointer, _pitch, m_src->m_TEXA);
-				break;
-			case 16:
-				m_mem.ReadTexture16(_offset, _rect, _pointer, _pitch, m_src->m_TEXA);
-				break;
-			case 32:
-				m_mem.ReadTexture32(_offset, _rect, _pointer, _pitch, m_src->m_TEXA);
-				break;
-		};
-
-		GSTexture* _tex = m_dev->CreateTexture(_w, _h);
-
+		auto _tex = m_dev->CreateTexture(_w, _h);
 		_tex->Update(_rect, _data, _pitch);
-		_tex->SaveDDS(_path);
 
+		if (m_context->CLAMP.MAXU > 0 || m_context->CLAMP.MINU > 0)
+		{
+			auto const _u = m_context->CLAMP.MAXU > 0 ? m_context->CLAMP.MAXU : m_context->CLAMP.MINU;
+			auto const _v = m_context->CLAMP.MAXV > 0 ? m_context->CLAMP.MAXV : m_context->CLAMP.MINV;
+
+			auto const _uvRect = GSVector4i(0, 0, _u, _v);
+			auto _texSave = m_dev->CreateTexture(_w, _h);
+
+			m_dev->CopyRect(_tex, _texSave, _uvRect);
+			_texSave->SaveDDS(_path);
+		}
+
+		else
+			_tex->SaveDDS(_path);
+			
 		_aligned_free(_data);
 	}
 
