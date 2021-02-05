@@ -13,6 +13,7 @@ assignees: ''
 
 **Reason**
 <!-- Give a reason why you want this feature. -->
+<!-- We are not accepting feature requests related to the libretro core as it's being maintained separately at this time. -->
 <!-- How does this feature help your enjoyment of the emulator? -->
 <!-- What does it provide that isn't being provided currently? -->
 <!-- How will it make things easier for you? -->
