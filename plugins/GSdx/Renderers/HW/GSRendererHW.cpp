@@ -1733,8 +1733,8 @@ void GSRendererHW::Draw()
 
 										// Correct the origin UV information to be a multiple of 2.
 
-										_u += _u % 2;
-										_v += _v % 2;
+										_u += 16 - _u % 16;
+										_v += 16 - _v % 16;
 
 										// Calculate the relation between the canvas and the
 										// origin UV information.
@@ -1840,7 +1840,7 @@ void GSRendererHW::Draw()
 			auto const _v = m_context->CLAMP.MAXV > 0 ? m_context->CLAMP.MAXV : m_context->CLAMP.MINV;
 
 			auto const _uvRect = GSVector4i(0, 0, _u, _v);
-			auto _texSave = m_dev->CreateTexture(_u + (_u % 2), _v + (_v % 2));
+			auto _texSave = m_dev->CreateTexture(_u + 16 - (_u % 16), _v + 16 - (_v % 16));
 
 			m_dev->CopyRect(_tex, _texSave, _uvRect);
 			_texSave->SaveDDS(_path);
