@@ -1749,6 +1749,8 @@ void GSRendererHW::Draw()
 					_path.append(GSUtil::GetHEX32String(_currentChecksum));
 					_path.append(".dds");
 
+					printf("GSdx: Dumping texture with ID: 0x%X\n", _currentChecksum);
+
 					if (stat(_path.c_str(), &_statBuf) != 0) // If the file is not found;
 						_isDumping = true; // Signify dumping.
 				}
@@ -1791,7 +1793,7 @@ void GSRendererHW::Draw()
 			auto const _v = m_context->CLAMP.MAXV > 0 ? m_context->CLAMP.MAXV : m_context->CLAMP.MINV;
 
 			auto const _uvRect = GSVector4i(0, 0, _u, _v);
-			auto _texSave = m_dev->CreateTexture(_w, _h);
+			auto _texSave = m_dev->CreateTexture(_u + (_u % 2), _v + (_v % 2));
 
 			m_dev->CopyRect(_tex, _texSave, _uvRect);
 			_texSave->SaveDDS(_path);
