@@ -1697,7 +1697,7 @@ void GSRendererHW::Draw()
 								DDS::DDSFile _ddsFile = DDS::CatchDDS(_path.c_str()); // Parse the DDS file in the path.
 
 								if (_ddsFile.Data.size() > 0) { // If we have data from DDS;
-									GSTexture* _tex = m_dev->CreateTexture(_ddsFile.Header.dwWidth, _ddsFile.Header.dwHeight); // Create a GSTexture.
+									auto _tex = m_dev->CreateTexture(_ddsFile.Header.dwWidth, _ddsFile.Header.dwHeight); // Create a GSTexture.
 
 									// This loop is for adjusting the DDS' alpha to
 									// comply with PS2 Standards, since it is adjusted again
@@ -1710,16 +1710,63 @@ void GSRendererHW::Draw()
 									// Update the created GSTexture with the data from the DDS.
 
 									auto const _data = _ddsFile.Data;
-									int const _pitch = _ddsFile.Header.dwWidth * 4;
-									GSVector4i const _rect = GSVector4i(0, 0, _ddsFile.Header.dwWidth, _ddsFile.Header.dwHeight);
+									auto const _pitch = _ddsFile.Header.dwWidth * 4;
 
+									auto const _rect = GSVector4i(0, 0, _ddsFile.Header.dwWidth, _ddsFile.Header.dwHeight);
 									_tex->Update(_rect, _data.data(), _pitch, 0);
+
+									// This part is complicated. Since we fix the textures
+									// that use UV for their size information, we cannot do
+									// a straight replacement like we do for textures that use
+									// actual size registers.
+									//
+									// To mitigate this, we need to calculate a canvas size for
+									// the replacements and apply the texture we read from the
+									// directory unto the canvas we created.
+
+									if (m_context->CLAMP.MAXU > 0 || m_context->CLAMP.MINU > 0)
+									{
+										// Get the origin UV Information.
+
+										auto _u = m_context->CLAMP.MAXU > 0 ? m_context->CLAMP.MAXU : m_context->CLAMP.MINU;
+										auto _v = m_context->CLAMP.MAXV > 0 ? m_context->CLAMP.MAXV : m_context->CLAMP.MINV;
+
+										// Correct the origin UV information to be a multiple of 2.
+
+										_u += _u % 2;
+										_v += _v % 2;
+
+										// Calculate the relation between the canvas and the
+										// origin UV information.
+
+										auto const _wt = (1 << m_context->TEX0.TW) / _u;
+										auto const _ht = (1 << m_context->TEX0.TH) / _v;
+										
+										// Generate the new canvas size for the replacement.
+
+										auto _w = _wt * _ddsFile.Header.dwWidth;
+										auto _h = _ht * _ddsFile.Header.dwHeight;
+
+										_w = pow(2, ceil(log(_w) / log(2)));
+										_h = pow(2, ceil(log(_h) / log(2)));
+
+										// Generate the canvas and applied the parsed texture
+										// to the generated canvas.
+
+										auto _texFIX = m_dev->CreateTexture(_w, _h); // Create a GSTexture.
+										m_dev->CopyRect(_tex, _texFIX, _rect);
+
+										// Insert the fixed texture into the list.
+
+										_texMap.insert(std::pair<uint32_t, GSTexture*>(_currentChecksum, _texFIX));
+									}
 
 									// Insert the texture to an array, this should prevent us from
 									// parsing the texture over and over again, preventing
 									// performance bottlenecks.
 
-									_texMap.insert(std::pair<uint32_t, GSTexture*>(_currentChecksum, _tex));
+									else
+										_texMap.insert(std::pair<uint32_t, GSTexture*>(_currentChecksum, _tex));
 
 									_isReplacing = true; // Signify replacement.
 								}
@@ -1749,10 +1796,10 @@ void GSRendererHW::Draw()
 					_path.append(GSUtil::GetHEX32String(_currentChecksum));
 					_path.append(".dds");
 
-					printf("GSdx: Dumping texture with ID: 0x%X\n", _currentChecksum);
-
-					if (stat(_path.c_str(), &_statBuf) != 0) // If the file is not found;
+					if (stat(_path.c_str(), &_statBuf) != 0) { // If the file is not found;
+						printf("GSdx: Dumping texture with ID: 0x%X\n", _currentChecksum);
 						_isDumping = true; // Signify dumping.
+					}
 				}
 			}
 		}
