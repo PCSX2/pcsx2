@@ -22,6 +22,11 @@
 #endif
 #include "net.h"
 #include "DEV9.h"
+#include "PacketReader/EthernetFrame.h"
+#include "PacketReader/ARP/ARP_Packet.h"
+#include "PacketReader/IP/IP_Packet.h"
+#include "PacketReader/IP/UDP/UDP_Packet.h"
+#include "PacketReader/IP/UDP/DHCP/DHCP_Packet.h"
 
 NetAdapter* nif;
 std::thread rx_thread;
@@ -101,4 +106,111 @@ void NetAdapter::SetMACAddress(u8* mac)
 
 	//The checksum seems to be all the values of the mac added up in 16bit chunks
 	dev9.eeprom[3] = (dev9.eeprom[0] + dev9.eeprom[1] + dev9.eeprom[2]) & 0xffff;
+}
+
+using namespace PacketReader;
+using namespace PacketReader::ARP;
+using namespace PacketReader::IP;
+using namespace PacketReader::IP::UDP;
+using namespace PacketReader::IP::UDP::DHCP;
+
+void NetAdapter::InspectSentPacket(NetPacket* pkt)
+{
+	EthernetFrame frame(pkt);
+	if (frame.protocol == (u16)EtherType::IPv4)
+	{
+		PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
+		IP_Packet* ippkt = new IP_Packet(payload->data, payload->GetLength());
+
+		if (ippkt->protocol == (u16)IP_Type::UDP)
+		{
+			//Pass to DHCP patcher
+			IP_Payload* newPayload = dhcpPatcher.InspectSent(ippkt->GetPayload());
+
+			if (newPayload == nullptr)
+			{
+				delete ippkt;
+				return;
+			}
+
+			//Assign back
+			ippkt->SetPayload(newPayload, true);
+			frame.SetPayload(ippkt, false);
+			//Write back Packet
+			frame.WritePacket(pkt);
+			//Check readback
+			Console.Error("DHCP Patch Sent Done");
+		}
+		delete ippkt;
+	}
+	else if (frame.protocol == (u16)EtherType::ARP)
+	{
+		Console.Error("ARP Sent;");
+		PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
+		ARP_Packet arp(payload->data, payload->GetLength());
+		Console.Error("");
+	}
+}
+
+
+//void InspectRecvPacketTest(NetPacket* pkt)
+//{
+//	EthernetFrame frame(pkt);
+//	if (frame.protocol == (u16)EtherType::IPv4)
+//	{
+//		PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
+//		IP_Packet* ippkt = new IP_Packet(payload->data, payload->GetLength());
+//
+//		if (ippkt->protocol == (u16)IP_Type::UDP)
+//		{
+//			IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(ippkt->GetPayload());
+//			UDP_Packet* udppkt = new UDP_Packet(ipPayload->data, ipPayload->GetLength());
+//
+//			if (udppkt->destinationPort == 68 && udppkt->sourcePort == 67)
+//			{
+//				PayloadPtr* payload = static_cast<PayloadPtr*>(udppkt->GetPayload());
+//				DHCP_Packet* dhcppkt = new DHCP_Packet(payload->data, payload->GetLength());
+//				delete dhcppkt;
+//			}
+//			delete udppkt;
+//		}
+//		delete ippkt;
+//	}
+//}
+
+void NetAdapter::InspectRecvPacket(NetPacket* pkt)
+{
+	EthernetFrame frame(pkt);
+	if (frame.protocol == (u16)EtherType::IPv4)
+	{
+		PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
+		IP_Packet* ippkt = new IP_Packet(payload->data, payload->GetLength());
+
+		if (ippkt->protocol == (u16)IP_Type::UDP)
+		{
+			//Pass to DHCP patcher
+			IP_Payload* newPayload = dhcpPatcher.InspectRecv(ippkt->GetPayload());
+
+			if (newPayload == nullptr)
+			{
+				delete ippkt;
+				return;
+			}
+
+			//Assign back
+			ippkt->SetPayload(newPayload, true);
+			frame.SetPayload(ippkt, false);
+			//Write back Packet
+			frame.WritePacket(pkt);
+			//Check readback
+			Console.Error("DHCP Patch Recv Done");
+		}
+		delete ippkt;
+	}
+	else if (frame.protocol == (u16)EtherType::ARP)
+	{
+		Console.Error("ARP Recv;");
+		PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
+		ARP_Packet arp(payload->data, payload->GetLength());
+	}
 }
