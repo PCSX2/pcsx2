@@ -372,38 +372,3 @@ UINT DEV9ThreadProc() {
 
 	return 0;
 }*/
-NetAdapter* GetNetAdapter()
-{
-	NetAdapter* na = static_cast<NetAdapter*>(new TAPAdapter());
-
-	if (!na->isInitialised())
-	{
-		delete na;
-		return 0;
-	}
-	return na;
-}
-s32 _DEV9open()
-{
-	//handleDEV9Thread = CreateThread (NULL, 0, (LPTHREAD_START_ROUTINE) DEV9ThreadProc, &dwThrdParam, CREATE_SUSPENDED, &dwThreadId);
-	//SetThreadPriority(handleDEV9Thread,THREAD_PRIORITY_HIGHEST);
-	//ResumeThread (handleDEV9Thread);
-	NetAdapter* na = GetNetAdapter();
-	if (!na)
-	{
-		Console.Error("Failed to GetNetAdapter()");
-		config.ethEnable = false;
-	}
-	else
-	{
-		InitNet(na);
-	}
-	return 0;
-}
-
-void _DEV9close()
-{
-	//TerminateThread(handleDEV9Thread,0);
-	//handleDEV9Thread = NULL;
-	TermNet();
-}

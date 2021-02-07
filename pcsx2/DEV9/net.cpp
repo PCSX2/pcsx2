@@ -23,6 +23,11 @@
 #include "net.h"
 #include "DEV9.h"
 
+#ifdef _WIN32
+#include "Win32\tap.h"
+#endif
+#include "pcap_io.h"
+
 NetAdapter* nif;
 std::thread rx_thread;
 
@@ -48,9 +53,34 @@ void tx_put(NetPacket* pkt)
 	//pkt must be copied if its not processed by here, since it can be allocated on the callers stack
 }
 
-void InitNet(NetAdapter* ad)
+NetAdapter* GetNetAdapter()
 {
-	nif = ad;
+#ifdef _WIN32
+	NetAdapter* na = static_cast<NetAdapter*>(new TAPAdapter());
+#else
+	NetAdapter* na = static_cast<NetAdapter*>(new PCAPAdapter());
+#endif
+
+	if (!na->isInitialised())
+	{
+		delete na;
+		return nullptr;
+	}
+	return na;
+}
+
+void InitNet()
+{
+	NetAdapter* na = GetNetAdapter();
+
+	if (!na)
+	{
+		Console.Error("Failed to GetNetAdapter()");
+		config.ethEnable = false;
+		return;
+	}
+
+	nif = na;
 	RxRunning = true;
 
 	rx_thread = std::thread(NetRxThread);

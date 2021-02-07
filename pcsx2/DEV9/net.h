@@ -56,5 +56,5 @@ protected:
 };
 
 void tx_put(NetPacket* ptr);
-void InitNet(NetAdapter* adapter);
+void InitNet();
 void TermNet();

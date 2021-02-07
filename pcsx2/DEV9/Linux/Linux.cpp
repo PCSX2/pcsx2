@@ -219,35 +219,3 @@ void DEV9configure()
 	gtk_widget_hide(GTK_WIDGET(dlg));
 	paused_core.AllowResume();
 }
-
-NetAdapter* GetNetAdapter()
-{
-	NetAdapter* na;
-	na = new PCAPAdapter();
-
-	if (!na->isInitialised())
-	{
-		delete na;
-		return 0;
-	}
-	return na;
-}
-s32 _DEV9open()
-{
-	NetAdapter* na = GetNetAdapter();
-	if (!na)
-	{
-		Console.Error("Failed to GetNetAdapter()");
-		config.ethEnable = false;
-	}
-	else
-	{
-		InitNet(na);
-	}
-	return 0;
-}
-
-void _DEV9close()
-{
-	TermNet();
-}
