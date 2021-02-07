@@ -186,6 +186,8 @@ void OnOk()
 void DEV9configure()
 {
 	ScopedCoreThreadPause paused_core;
+	Config oldConfig = config;
+
 	gtk_init(NULL, NULL);
 	GError* error = NULL;
 	if (builder == nullptr)
@@ -217,5 +219,8 @@ void DEV9configure()
 			break;
 	}
 	gtk_widget_hide(GTK_WIDGET(dlg));
+
+	ApplyConfigIfRunning(oldConfig);
+
 	paused_core.AllowResume();
 }

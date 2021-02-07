@@ -723,6 +723,7 @@ u32 DEV9read32(u32 addr);
 void DEV9write8(u32 addr, u8 value);
 void DEV9write16(u32 addr, u16 value);
 void DEV9write32(u32 addr, u32 value);
+void ApplyConfigIfRunning(Config oldConfig);
 
 #ifdef _WIN32
 #pragma warning(error : 4013)
