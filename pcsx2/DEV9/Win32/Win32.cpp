@@ -358,11 +358,16 @@ BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 void DEV9configure()
 {
 	ScopedCoreThreadPause paused_core;
+	Config oldConfig = config;
+
 	DialogBox(hInst,
 			  MAKEINTRESOURCE(IDD_CONFIG),
 			  GetActiveWindow(),
 			  (DLGPROC)ConfigureDlgProc);
 	//SysMessage("Nothing to Configure");
+
+	ApplyConfigIfRunning(oldConfig);
+
 	paused_core.AllowResume();
 }
 
