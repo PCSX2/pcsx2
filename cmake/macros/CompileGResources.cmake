@@ -150,7 +150,7 @@ function(COMPILE_GRESOURCES output xml_out)
 
     # Generate gresources XML target.
     list(APPEND CG_CMAKE_SCRIPT_ARGS "-D")
-    list(APPEND CG_CMAKE_SCRIPT_ARGS "GXML_OUTPUT=${Q}${CG_XML_FILE_PATH}${Q}")
+    list(APPEND CG_CMAKE_SCRIPT_ARGS "GXML_OUTPUT=${CG_XML_FILE_PATH}")
     if(CG_ARG_COMPRESS_ALL)
         list(APPEND CG_CMAKE_SCRIPT_ARGS "-D")
         list(APPEND CG_CMAKE_SCRIPT_ARGS "GXML_COMPRESS_ALL=True")
@@ -182,7 +182,7 @@ function(COMPILE_GRESOURCES output xml_out)
          "GXML_RESOURCES=${Q}${CG_ARG_RESOURCES}${Q}")
     list(APPEND CG_CMAKE_SCRIPT_ARGS "-P")
     list(APPEND CG_CMAKE_SCRIPT_ARGS
-         "${Q}${GCR_CMAKE_MACRO_DIR}/BuildTargetScript.cmake${Q}")
+         "${GCR_CMAKE_MACRO_DIR}/BuildTargetScript.cmake")
 
     get_filename_component(CG_XML_FILE_PATH_ONLY_NAME
                            "${CG_XML_FILE_PATH}" NAME)
