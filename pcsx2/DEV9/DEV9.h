@@ -135,10 +135,6 @@ EXTERN dev9Struct dev9;
 
 EXTERN int ThreadRun;
 
-s32 _DEV9open();
-void _DEV9close();
-//void DEV9thread();
-
 //Yes these are meant to be a lowercase extern
 extern std::string s_strIniPath;
 extern std::string s_strLogPath;

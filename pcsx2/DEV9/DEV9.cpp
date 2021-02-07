@@ -219,7 +219,10 @@ s32 DEV9open(void* pDsp)
 			config.hddEnable = false;
 	}
 
-	return _DEV9open();
+	if (config.ethEnable)
+		InitNet();
+
+	return 0;
 }
 
 void DEV9close()
@@ -227,7 +230,7 @@ void DEV9close()
 	DevCon.WriteLn("DEV9close");
 
 	dev9.ata->Close();
-	_DEV9close();
+	TermNet();
 }
 
 int DEV9irqHandler(void)
