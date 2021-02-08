@@ -50,199 +50,210 @@
 //#include "PS2Edefs.h"
 
 #if !defined(_MSC_VER) || !defined(UNICODE)
-static void SysMessage(const char *fmt, ...);
-static void __forceinline PluginNullConfigure(std::string desc, s32 &log);
+static void SysMessage(const char* fmt, ...);
+static void __forceinline PluginNullConfigure(std::string desc, s32& log);
 #else
-static void SysMessage(const wchar_t *fmt, ...);
-static void __forceinline PluginNullConfigure(std::wstring desc, s32 &log);
+static void SysMessage(const wchar_t* fmt, ...);
+static void __forceinline PluginNullConfigure(std::wstring desc, s32& log);
 #endif
 
-enum FileMode {
-    READ_FILE = 0,
-    WRITE_FILE
+enum FileMode
+{
+	READ_FILE = 0,
+	WRITE_FILE
 };
 
 struct PluginLog
 {
-    bool WriteToFile, WriteToConsole;
-    FILE *LogFile;
+	bool WriteToFile, WriteToConsole;
+	FILE* LogFile;
 
-    bool Open(std::string logname)
-    {
-        LogFile = px_fopen(logname, "w");
+	bool Open(std::string logname)
+	{
+		LogFile = px_fopen(logname, "w");
 
-        if (LogFile) {
-            setvbuf(LogFile, NULL, _IONBF, 0);
-            return true;
-        }
-        return false;
-    }
+		if (LogFile)
+		{
+			setvbuf(LogFile, NULL, _IONBF, 0);
+			return true;
+		}
+		return false;
+	}
 
-    void Close()
-    {
-        if (LogFile) {
-            fclose(LogFile);
-            LogFile = NULL;
-        }
-    }
+	void Close()
+	{
+		if (LogFile)
+		{
+			fclose(LogFile);
+			LogFile = NULL;
+		}
+	}
 
-    void Write(const char *fmt, ...)
-    {
-        if (LogFile == NULL)
-            return;
+	void Write(const char* fmt, ...)
+	{
+		if (LogFile == NULL)
+			return;
 
-        va_list list;
-        if (WriteToFile) {
-            va_start(list, fmt);
-            vfprintf(LogFile, fmt, list);
-            va_end(list);
-        }
-        if (WriteToConsole) {
-            va_start(list, fmt);
-            vfprintf(stdout, fmt, list);
-            va_end(list);
-        }
-    }
+		va_list list;
+		if (WriteToFile)
+		{
+			va_start(list, fmt);
+			vfprintf(LogFile, fmt, list);
+			va_end(list);
+		}
+		if (WriteToConsole)
+		{
+			va_start(list, fmt);
+			vfprintf(stdout, fmt, list);
+			va_end(list);
+		}
+	}
 
-    void WriteLn(const char *fmt, ...)
-    {
-        if (LogFile == NULL)
-            return;
+	void WriteLn(const char* fmt, ...)
+	{
+		if (LogFile == NULL)
+			return;
 
-        va_list list;
-        if (WriteToFile) {
-            va_start(list, fmt);
-            vfprintf(LogFile, fmt, list);
-            va_end(list);
-            fprintf(LogFile, "\n");
-        }
-        if (WriteToConsole) {
-            va_start(list, fmt);
-            vfprintf(stdout, fmt, list);
-            va_end(list);
-            fprintf(stdout, "\n");
-        }
-    }
+		va_list list;
+		if (WriteToFile)
+		{
+			va_start(list, fmt);
+			vfprintf(LogFile, fmt, list);
+			va_end(list);
+			fprintf(LogFile, "\n");
+		}
+		if (WriteToConsole)
+		{
+			va_start(list, fmt);
+			vfprintf(stdout, fmt, list);
+			va_end(list);
+			fprintf(stdout, "\n");
+		}
+	}
 
 #if !defined(_MSC_VER) || !defined(UNICODE)
-    void Message(const char *fmt, ...)
-    {
-        va_list list;
-        char buf[256];
+	void Message(const char* fmt, ...)
+	{
+		va_list list;
+		char buf[256];
 
-        if (LogFile == NULL)
-            return;
+		if (LogFile == NULL)
+			return;
 
-        va_start(list, fmt);
-        vsprintf(buf, fmt, list);
-        va_end(list);
+		va_start(list, fmt);
+		vsprintf(buf, fmt, list);
+		va_end(list);
 
-        SysMessage(buf);
-    }
+		SysMessage(buf);
+	}
 #else
-    void Message(const wchar_t *fmt, ...)
-    {
-        va_list list;
-        wchar_t buf[256];
+	void Message(const wchar_t* fmt, ...)
+	{
+		va_list list;
+		wchar_t buf[256];
 
-        if (LogFile == NULL)
-            return;
+		if (LogFile == NULL)
+			return;
 
-        va_start(list, fmt);
-        vswprintf(buf, 256, fmt, list);
-        va_end(list);
+		va_start(list, fmt);
+		vswprintf(buf, 256, fmt, list);
+		va_end(list);
 
-        SysMessage(buf);
-    }
+		SysMessage(buf);
+	}
 #endif
 };
 
 struct PluginConf
 {
-    FILE *ConfFile;
-    char *PluginName;
+	FILE* ConfFile;
+	char* PluginName;
 
-    bool Open(std::string name, FileMode mode = READ_FILE)
-    {
-        if (mode == READ_FILE) {
-            ConfFile = px_fopen(name, "r");
-        } else {
-            ConfFile = px_fopen(name, "w");
-        }
+	bool Open(std::string name, FileMode mode = READ_FILE)
+	{
+		if (mode == READ_FILE)
+		{
+			ConfFile = px_fopen(name, "r");
+		}
+		else
+		{
+			ConfFile = px_fopen(name, "w");
+		}
 
-        if (ConfFile == NULL)
-            return false;
+		if (ConfFile == NULL)
+			return false;
 
-        return true;
-    }
+		return true;
+	}
 
-    void Close()
-    {
-        if (ConfFile) {
-            fclose(ConfFile);
-            ConfFile = NULL;
-        }
-    }
+	void Close()
+	{
+		if (ConfFile)
+		{
+			fclose(ConfFile);
+			ConfFile = NULL;
+		}
+	}
 
-    int ReadInt(const std::string &item, int defval)
-    {
-        int value = defval;
-        std::string buf = item + " = %d\n";
+	int ReadInt(const std::string& item, int defval)
+	{
+		int value = defval;
+		std::string buf = item + " = %d\n";
 
-        if (ConfFile)
-            if (fscanf(ConfFile, buf.c_str(), &value) < 0)
-                fprintf(stderr, "Error reading %s\n", item.c_str());
+		if (ConfFile)
+			if (fscanf(ConfFile, buf.c_str(), &value) < 0)
+				fprintf(stderr, "Error reading %s\n", item.c_str());
 
-        return value;
-    }
+		return value;
+	}
 
-    void WriteInt(std::string item, int value)
-    {
-        std::string buf = item + " = %d\n";
+	void WriteInt(std::string item, int value)
+	{
+		std::string buf = item + " = %d\n";
 
-        if (ConfFile)
-            fprintf(ConfFile, buf.c_str(), value);
-    }
+		if (ConfFile)
+			fprintf(ConfFile, buf.c_str(), value);
+	}
 };
 
 #if defined(__unix__)
-static void SysMessage(const char *fmt, ...)
+static void SysMessage(const char* fmt, ...)
 {
-    va_list list;
-    char msg[512];
+	va_list list;
+	char msg[512];
 
-    va_start(list, fmt);
-    vsprintf(msg, fmt, list);
-    va_end(list);
+	va_start(list, fmt);
+	vsprintf(msg, fmt, list);
+	va_end(list);
 
-    if (msg[strlen(msg) - 1] == '\n')
-        msg[strlen(msg) - 1] = 0;
+	if (msg[strlen(msg) - 1] == '\n')
+		msg[strlen(msg) - 1] = 0;
 
-    if (!wxIsMainThread())
-    {
-        std::mutex dialogMutex;
-        std::condition_variable dialogCV;
-        bool dialogClosed = false;
+	if (!wxIsMainThread())
+	{
+		std::mutex dialogMutex;
+		std::condition_variable dialogCV;
+		bool dialogClosed = false;
 
-        wxTheApp->CallAfter([&] {
-            wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
-            dialog.ShowModal();
+		wxTheApp->CallAfter([&] {
+			wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
+			dialog.ShowModal();
 
-            {
-                std::lock_guard dialogLock1(dialogMutex);
-                dialogClosed = true;
-            }
-            dialogCV.notify_all();
-        });
-        //Block until done
-        std::unique_lock dialogLock2(dialogMutex);
-        dialogCV.wait(dialogLock2, [&] { return dialogClosed; });
-    }
-    else
-    {
-        wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
-        dialog.ShowModal();
-    }
+			{
+				std::lock_guard dialogLock1(dialogMutex);
+				dialogClosed = true;
+			}
+			dialogCV.notify_all();
+		});
+		//Block until done
+		std::unique_lock dialogLock2(dialogMutex);
+		dialogCV.wait(dialogLock2, [&] { return dialogClosed; });
+	}
+	else
+	{
+		wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
+		dialog.ShowModal();
+	}
 }
 
 #define ENTRY_POINT /* We don't need no stinkin' entry point! */
@@ -250,36 +261,36 @@ static void SysMessage(const char *fmt, ...)
 
 #elif defined(__WXMAC__) || defined(__APPLE__)
 
-static void SysMessage(const char *fmt, ...)
+static void SysMessage(const char* fmt, ...)
 {
-    va_list list;
-    char msg[512];
+	va_list list;
+	char msg[512];
 
-    va_start(list, fmt);
-    vsprintf(msg, fmt, list);
-    va_end(list);
+	va_start(list, fmt);
+	vsprintf(msg, fmt, list);
+	va_end(list);
 
-    if (msg[strlen(msg) - 1] == '\n')
-        msg[strlen(msg) - 1] = 0;
+	if (msg[strlen(msg) - 1] == '\n')
+		msg[strlen(msg) - 1] = 0;
 
-    // TODO OSX can we use WX MessageBox here or should Cocoa MessageBox used?
+	// TODO OSX can we use WX MessageBox here or should Cocoa MessageBox used?
 }
 
-static void SysMessage(const wchar_t *fmt, ...)
+static void SysMessage(const wchar_t* fmt, ...)
 {
-    va_list list;
-    wchar_t msg[512];
+	va_list list;
+	wchar_t msg[512];
 
-    va_start(list, fmt);
-    //vsprintf(msg, fmt, list);
-    va_end(list);
+	va_start(list, fmt);
+	//vsprintf(msg, fmt, list);
+	va_end(list);
 
-    // TODO OSX can we use WX MessageBox here or should Cocoa MessageBox used?
+	// TODO OSX can we use WX MessageBox here or should Cocoa MessageBox used?
 }
 
-static void __forceinline PluginNullConfigure(std::string desc, int &log)
+static void __forceinline PluginNullConfigure(std::string desc, int& log)
 {
-    SysMessage("This space is intentionally left blank.");
+	SysMessage("This space is intentionally left blank.");
 }
 
 #define ENTRY_POINT /* We don't need no stinkin' entry point! */ // TODO OSX WTF is this anyway?
@@ -291,56 +302,56 @@ static void __forceinline PluginNullConfigure(std::string desc, int &log)
 
 #ifndef UNICODE
 
-static void __forceinline SysMessage(const char *fmt, ...)
+static void __forceinline SysMessage(const char* fmt, ...)
 {
-    va_list list;
-    char tmp[512];
-    va_start(list, fmt);
-    vsprintf(tmp, fmt, list);
-    va_end(list);
-    MessageBox(GetActiveWindow(), tmp, "Message", MB_SETFOREGROUND | MB_OK);
+	va_list list;
+	char tmp[512];
+	va_start(list, fmt);
+	vsprintf(tmp, fmt, list);
+	va_end(list);
+	MessageBox(GetActiveWindow(), tmp, "Message", MB_SETFOREGROUND | MB_OK);
 }
 
-static void __forceinline PluginNullConfigure(std::string desc, s32 &log)
+static void __forceinline PluginNullConfigure(std::string desc, s32& log)
 {
-    /* To do: Write a dialog box that displays a dialog box with the text in desc,
+	/* To do: Write a dialog box that displays a dialog box with the text in desc,
 	   and a check box that says "Logging", checked if log !=0, and set log to
 	   1 if it is checked on return, and 0 if it isn't. */
-    SysMessage("This space is intentionally left blank.");
+	SysMessage("This space is intentionally left blank.");
 }
 
 #else
 
-static void __forceinline SysMessage(const wchar_t *fmt, ...)
+static void __forceinline SysMessage(const wchar_t* fmt, ...)
 {
-    va_list list;
-    wchar_t tmp[512];
-    va_start(list, fmt);
-    vswprintf(tmp, 512, fmt, list);
-    va_end(list);
-    MessageBox(GetActiveWindow(), tmp, L"Message", MB_SETFOREGROUND | MB_OK);
+	va_list list;
+	wchar_t tmp[512];
+	va_start(list, fmt);
+	vswprintf(tmp, 512, fmt, list);
+	va_end(list);
+	MessageBox(GetActiveWindow(), tmp, L"Message", MB_SETFOREGROUND | MB_OK);
 }
 
-static void __forceinline PluginNullConfigure(std::string desc, s32 &log)
+static void __forceinline PluginNullConfigure(std::string desc, s32& log)
 {
-    /* To do: Write a dialog box that displays a dialog box with the text in desc,
+	/* To do: Write a dialog box that displays a dialog box with the text in desc,
 	and a check box that says "Logging", checked if log !=0, and set log to
 	1 if it is checked on return, and 0 if it isn't. */
-    SysMessage(L"This space is intentionally left blank.");
+	SysMessage(L"This space is intentionally left blank.");
 }
 
 #endif
 
 #define ENTRY_POINT                                     \
-    HINSTANCE hInst;                                    \
+	HINSTANCE hInst;                                    \
                                                         \
-    BOOL APIENTRY DllMain(HANDLE hModule, /* DLL INIT*/ \
-                          DWORD dwReason,               \
-                          LPVOID lpReserved)            \
-    {                                                   \
-        hInst = (HINSTANCE)hModule;                     \
-        return TRUE; /* very quick :)*/                 \
-    }
+	BOOL APIENTRY DllMain(HANDLE hModule, /* DLL INIT*/ \
+						  DWORD dwReason,               \
+						  LPVOID lpReserved)            \
+	{                                                   \
+		hInst = (HINSTANCE)hModule;                     \
+		return TRUE; /* very quick :)*/                 \
+	}
 
 #endif
 #endif // PS2EEXT_H_INCLUDED
