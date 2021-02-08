@@ -51,14 +51,18 @@ mac_address ps2_mac;
 mac_address host_mac;
 
 #ifdef _WIN32
-int GetAdapterFromPcapName(char* adapter, PIP_ADAPTER_ADDRESSES retAdapterInfo)
+//IP_ADAPTER_ADDRESSES is a structure that contains ptrs to data in other regions
+//of the buffer, se we need to return both so the caller can free the buffer
+//after it's finished reading the needed data from IP_ADAPTER_ADDRESSES
+bool GetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, PIP_ADAPTER_ADDRESSES* buffer)
 {
 	const int guidindex = strlen("\\Device\\NPF_");
 
-	IP_ADAPTER_ADDRESSES AdapterInfo[128];
+	int neededSize = 128;
+	PIP_ADAPTER_ADDRESSES AdapterInfo = new IP_ADAPTER_ADDRESSES[neededSize];
+	ULONG dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
 
 	PIP_ADAPTER_ADDRESSES pAdapterInfo;
-	ULONG dwBufLen = sizeof(AdapterInfo);
 
 	DWORD dwStatus = GetAdaptersAddresses(
 		AF_UNSPEC,
@@ -66,23 +70,42 @@ int GetAdapterFromPcapName(char* adapter, PIP_ADAPTER_ADDRESSES retAdapterInfo)
 		NULL,
 		AdapterInfo,
 		&dwBufLen);
+
+	if (dwStatus == ERROR_BUFFER_OVERFLOW)
+	{
+		DevCon.WriteLn("GetWin32Adapter() buffer too small, resizing");
+		delete[] AdapterInfo;
+		neededSize = dwBufLen / sizeof(IP_ADAPTER_ADDRESSES) + 1;
+		AdapterInfo = new IP_ADAPTER_ADDRESSES[neededSize];
+		dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
+		DevCon.WriteLn("New size %i", neededSize);
+
+		DWORD dwStatus = GetAdaptersAddresses(
+			AF_UNSPEC,
+			GAA_FLAG_INCLUDE_PREFIX,
+			NULL,
+			AdapterInfo,
+			&dwBufLen);
+	}
 	if (dwStatus != ERROR_SUCCESS)
-		return 0;
+		return false;
 
 	pAdapterInfo = AdapterInfo;
 
 	do
 	{
-		if (0 == strcmp(pAdapterInfo->AdapterName, &adapter[guidindex]))
+		if (0 == strcmp(pAdapterInfo->AdapterName, &name[guidindex]))
 		{
-			*retAdapterInfo = *pAdapterInfo;
-			return 1;
+			*adapter = *pAdapterInfo;
+			*buffer = AdapterInfo;
+			return true;
 		}
 
 		pAdapterInfo = pAdapterInfo->Next;
 	} while (pAdapterInfo);
 
-	return 0;
+	delete[] AdapterInfo;
+	return false;
 }
 #endif
 
@@ -92,9 +115,14 @@ int GetMACAddress(char* adapter, mac_address* addr)
 	int retval = 0;
 #ifdef _WIN32
 	IP_ADAPTER_ADDRESSES adapterInfo;
+	PIP_ADAPTER_ADDRESSES buffer;
 
-	if (GetAdapterFromPcapName(adapter, &adapterInfo))
+	if (GetWin32Adapter(adapter, &adapterInfo, &buffer))
+	{
 		memcpy(addr, adapterInfo.PhysicalAddress, 6);
+		delete[] buffer;
+		retval = 1;
+	}
 
 #elif defined(__linux__)
 	struct ifreq ifr;
@@ -377,9 +405,13 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 		entry.guid = std::wstring(wEth);
 
 		IP_ADAPTER_ADDRESSES adapterInfo;
+		PIP_ADAPTER_ADDRESSES buffer;
 
-		if (GetAdapterFromPcapName(d->name, &adapterInfo))
+		if (GetWin32Adapter(d->name, &adapterInfo, &buffer))
+		{
 			entry.name = std::wstring(adapterInfo.FriendlyName);
+			delete[] buffer;
+		}
 		else
 		{
 			//have to use description
