@@ -122,7 +122,7 @@ void InitNet()
 #endif
 }
 
-void ReconfigureLiveNet(Config* oldConfig)
+void ReconfigureLiveNet(ConfigDEV9* oldConfig)
 {
 	//Eth
 	if (config.ethEnable)

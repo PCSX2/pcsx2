@@ -34,7 +34,7 @@
 #include "PacketReader/IP/IP_Address.h"
 #include "InternalServers/DHCP_Server.h"
 
-struct Config;
+struct ConfigDEV9;
 
 // first three recognized by Xlink as Sony PS2
 const u8 defaultMAC[6] = {0x00, 0x04, 0x1F, 0x82, 0x30, 0x31};
@@ -128,7 +128,7 @@ private:
 
 void tx_put(NetPacket* ptr);
 void InitNet();
-void ReconfigureLiveNet(Config* oldConfig);
+void ReconfigureLiveNet(ConfigDEV9* oldConfig);
 void TermNet();
 
 const char* NetApiToString(NetApi api);
