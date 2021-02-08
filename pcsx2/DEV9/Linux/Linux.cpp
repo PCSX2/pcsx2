@@ -38,24 +38,6 @@
 
 static GtkBuilder* builder = nullptr;
 
-void SysMessage(char* fmt, ...)
-{
-	va_list list;
-	char tmp[512];
-
-	va_start(list, fmt);
-	vsprintf(tmp, fmt, list);
-	va_end(list);
-
-	GtkWidget* dialog = gtk_message_dialog_new(NULL,
-											   GTK_DIALOG_MODAL,
-											   GTK_MESSAGE_ERROR,
-											   GTK_BUTTONS_CLOSE,
-											   "%s", tmp);
-	gtk_dialog_run(GTK_DIALOG(dialog));
-	gtk_widget_hide(dialog);
-}
-
 void OnInitDialog()
 {
 	char* dev;

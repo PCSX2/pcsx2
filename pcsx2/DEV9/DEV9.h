@@ -143,7 +143,10 @@ void _DEV9close();
 extern std::string s_strIniPath;
 extern std::string s_strLogPath;
 
+#ifdef _WIN32
+//Use own SysMessage for narrow char support
 void SysMessage(char* fmt, ...);
+#endif
 
 #define DEV9_R_REV 0x1f80146e
 
