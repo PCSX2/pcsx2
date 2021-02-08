@@ -437,7 +437,7 @@ static __forceinline s32 GetVoiceValues(V_Core& thiscore, uint voiceidx)
 {
 	V_Voice& vc(thiscore.Voices[voiceidx]);
 
-	while (vc.SP > 0)
+	while (vc.SP >= 0)
 	{
 		if (InterpType >= 2)
 		{
