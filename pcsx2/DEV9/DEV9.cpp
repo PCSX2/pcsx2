@@ -1075,7 +1075,7 @@ void DEV9setLogDir(const char* dir)
 	s_strLogPath = (dir == NULL) ? "logs" : dir;
 }
 
-void ApplyConfigIfRunning(Config oldConfig)
+void ApplyConfigIfRunning(ConfigDEV9 oldConfig)
 {
 	if (!isRunning)
 		return;
