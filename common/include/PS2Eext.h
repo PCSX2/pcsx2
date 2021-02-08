@@ -20,6 +20,9 @@
 #include <string>
 #include <cstdarg>
 
+#include <mutex>
+#include <condition_variable>
+
 #if defined(_MSC_VER)
 #ifndef _WIN32_WINNT
 #define _WIN32_WINNT 0x0600
@@ -215,8 +218,31 @@ static void SysMessage(const char *fmt, ...)
     if (msg[strlen(msg) - 1] == '\n')
         msg[strlen(msg) - 1] = 0;
 
-    wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
-    dialog.ShowModal();
+    if (!wxIsMainThread())
+    {
+        std::mutex dialogMutex;
+        std::condition_variable dialogCV;
+        bool dialogClosed = false;
+
+        wxTheApp->CallAfter([&] {
+            wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
+            dialog.ShowModal();
+
+            {
+                std::lock_guard dialogLock1(dialogMutex);
+                dialogClosed = true;
+            }
+            dialogCV.notify_all();
+        });
+        //Block until done
+        std::unique_lock dialogLock2(dialogMutex);
+        dialogCV.wait(dialogLock2, [&] { return dialogClosed; });
+    }
+    else
+    {
+        wxMessageDialog dialog(nullptr, msg, "Info", wxOK);
+        dialog.ShowModal();
+    }
 }
 
 #define ENTRY_POINT /* We don't need no stinkin' entry point! */
