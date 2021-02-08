@@ -74,7 +74,7 @@ jobs:
 
       - name: Cache Submodules
         id: cache-submodules
-        uses: actions/cache@v2
+        uses: actions/cache@v2.1.4
         with:
           key: submodules-${{ hashFiles('./.gitmodules') }}
           path: |
@@ -97,7 +97,7 @@ jobs:
           message("::set-output name=timestamp::${current_date}")
 
       - name: ccache cache files
-        uses: actions/cache@v2
+        uses: actions/cache@v2.1.4
         with:
           path: .ccache
           key: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}${{ matrix.detail }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
