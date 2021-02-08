@@ -45,6 +45,7 @@ char errbuf[PCAP_ERRBUF_SIZE];
 
 int pcap_io_running = 0;
 bool pcap_io_switched;
+bool pcap_io_blocking;
 
 extern u8 eeprom[];
 
@@ -219,6 +220,14 @@ int pcap_io_init(char* adapter, bool switched, mac_address virtual_mac)
 		}
 	}
 
+	if (pcap_setnonblock(adhandle, 1, errbuf) == -1)
+	{
+		Console.Error("DEV9: Error setting non-blocking: %s", pcap_geterr(adhandle));
+		Console.Error("DEV9: Continuing in blocking mode");
+		pcap_io_blocking = true;
+	}
+	else
+		pcap_io_blocking = false;
 
 	dlt = pcap_datalink(adhandle);
 	dlt_name = (char*)pcap_datalink_val_to_name(dlt);
@@ -370,6 +379,12 @@ PCAPAdapter::PCAPAdapter()
 	host_mac = hostMAC;
 	ps2_mac = newMAC; //Needed outside of this class
 
+	if (pcap_io_init(config.Eth, config.EthApi == NetApi::PCAP_Switched, newMAC) == -1)
+	{
+		Console.Error("Can't open Device '%s'\n", config.Eth);
+		return;
+	}
+
 #ifdef _WIN32
 	IP_ADAPTER_ADDRESSES adapter;
 	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
@@ -394,15 +409,11 @@ PCAPAdapter::PCAPAdapter()
 		InitInternalServer(nullptr);
 	}
 #endif
-
-	if (pcap_io_init(config.Eth, config.EthApi == NetApi::PCAP_Switched, newMAC) == -1)
-	{
-		Console.Error("Can't open Device '%s'\n", config.Eth);
-	}
 }
 bool PCAPAdapter::blocks()
 {
-	return true;
+	pxAssert(pcap_io_running);
+	return pcap_io_blocking;
 }
 bool PCAPAdapter::isInitialised()
 {
@@ -411,6 +422,9 @@ bool PCAPAdapter::isInitialised()
 //gets a packet.rv :true success
 bool PCAPAdapter::recv(NetPacket* pkt)
 {
+	if (!pcap_io_blocking && NetAdapter::recv(pkt))
+		return true;
+
 	int size = pcap_io_recv(pkt->buffer, sizeof(pkt->buffer));
 	if (size > 0 && VerifyPkt(pkt, size))
 	{
