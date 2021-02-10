@@ -1723,6 +1723,8 @@ void GSRendererHW::Draw()
 									// To mitigate this, we need to calculate a canvas size for
 									// the replacements and apply the texture we read from the
 									// directory unto the canvas we created.
+									//
+									// I wished for the sweet embrace of death many times because of this.
 
 									if (m_context->CLAMP.MAXU > 0 || m_context->CLAMP.MINU > 0)
 									{
@@ -1731,16 +1733,18 @@ void GSRendererHW::Draw()
 										auto _u = m_context->CLAMP.MAXU > 0 ? m_context->CLAMP.MAXU : m_context->CLAMP.MINU;
 										auto _v = m_context->CLAMP.MAXV > 0 ? m_context->CLAMP.MAXV : m_context->CLAMP.MINV;
 
-										// Correct the origin UV information to be a multiple of 2.
+										// Correct the origin UV information to be a multiple of 32.
+										// Why a multiple of 32? Who knows! Textures come out garbled
+										// if I use 2, 8 or 16. So 32 it is.
 
-										_u += 16 - _u % 16;
-										_v += 16 - _v % 16;
+										_u += 32 - (_u % 32);
+										_v += 32 - (_v % 32);
 
 										// Calculate the relation between the canvas and the
 										// origin UV information.
 
-										auto const _wt = (1 << m_context->TEX0.TW) / _u;
-										auto const _ht = (1 << m_context->TEX0.TH) / _v;
+										int const _wt = (1 << m_context->TEX0.TW) / _u;
+										int const _ht = (1 << static_cast<uint32>(m_context->TEX0.TH)) / _v;
 										
 										// Generate the new canvas size for the replacement.
 
@@ -1753,10 +1757,46 @@ void GSRendererHW::Draw()
 										// Generate the canvas and applied the parsed texture
 										// to the generated canvas.
 
-										auto _texFIX = m_dev->CreateTexture(_w, _h); // Create a GSTexture.
+										auto _texFIX = m_dev->CreateTexture(_w, _h);
 										m_dev->CopyRect(_tex, _texFIX, _rect);
 
 										// Insert the fixed texture into the list.
+
+										_texMap.insert(std::pair<uint32_t, GSTexture*>(_currentChecksum, _texFIX));
+									}
+
+									// Some games say 'Fuck you!' to the size system entirely,
+									// apparently.
+									//
+									// I do not know how they get their sizes, at all. But I found
+									// that I can tap into the write rectangle of the source to get
+									// an acceptable texture. The downshot of this is, of course, that
+									// some textures may not be dumped correctly. 
+									//
+									// But hey! It works! So, too bad!
+									
+									// P.S. We basically do what we do for the UV stuff, but with m_write
+									// dimensions.
+
+									else if (m_context->TEX0.TW == 1024 && m_context->TEX0.TH == 1024)
+									{
+										auto _fW = m_src->m_write.rect->right;
+										auto _fH = m_src->m_write.rect->bottom;
+
+										_fW += 32 - (_fW % 32);
+										_fH += 32 - (_fH % 32);
+
+										int const _wt = (1 << m_context->TEX0.TW) / _fW;
+										int const _ht = (1 << static_cast<uint32>(m_context->TEX0.TH)) / _fH;
+
+										auto _w = _wt * _ddsFile.Header.dwWidth;
+										auto _h = _ht * _ddsFile.Header.dwHeight;
+
+										_w = pow(2, ceil(log(_w) / log(2)));
+										_h = pow(2, ceil(log(_h) / log(2)));
+
+										auto _texFIX = m_dev->CreateTexture(_w, _h);
+										m_dev->CopyRect(_tex, _texFIX, _rect);
 
 										_texMap.insert(std::pair<uint32_t, GSTexture*>(_currentChecksum, _texFIX));
 									}
@@ -1781,7 +1821,7 @@ void GSRendererHW::Draw()
 				}
 
 				else if (frame_iterator == 0 && m_dump_textures) { // If dumping;
-					_path.append("\\@DUMP\\"); // Signify dumping directory.
+					_path.append("@DUMP\\"); // Signify dumping directory.
 					_statBuf = {}; // Clear the stat buffer.
 
 					// This hole code block parses the game checksum
@@ -1814,41 +1854,88 @@ void GSRendererHW::Draw()
 	else
 		DrawPrims(rt_tex, ds_tex, m_src);
 
+	// This is the bane of my existence.
+	// Yes, this is hacky. Yes, this does not
+	// work for all games. But hey, the PS2 has
+	// no standards now, does it?
+
 	if (_isDumping)
 	{
+		// Get the dimensions from the registers.
 		auto const _h = (1 << m_context->TEX0.TH);
 		auto const _w = (1 << m_context->TEX0.TW);
 
+		// Fetch the pitch and create a rectangle for the texture.
 		auto const _pitch = _w * 4;
-
 		auto const _rect = GSVector4i(0, 0, _w, _h);
 
+		// Calculate the data length and allocate memory for it.
 		auto const _length = _pitch * _h;
 		void* _data = _aligned_malloc(_length, 32);
 
+		// Get the offset to the texture, as well as a pointer to the
+		// allocated memory for the image data.
 		auto _offset = m_mem.GetOffset(m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM);
 		auto _pointer = static_cast<uint8*>(_data);
 		
+		// Capture the texture data.
 		m_mem.ReadTexture(_offset, _rect, _pointer, _pitch, m_src->m_TEXA);
 
+		// This fixes textures with no alpha information.
+		// Why must I do this? Well, I don't know! For some
+		// reason, ReadTexture returns a blank image if no
+		// alpha information exists.
+		if (m_context->TEX0.TCC == 0)
+			for (int i = 3; i < _length; i += 4)
+				_pointer[i] = 255;
+
+		// Create the texture to be dumped and apply
+		// the captured data to it.
 		auto _tex = m_dev->CreateTexture(_w, _h);
 		_tex->Update(_rect, _data, _pitch);
 
+		// Some games use a big ass canvas with UV parameters for their
+		// texture dimensions. If this is the case for this texture,
+		// we have to fix it.
+
 		if (m_context->CLAMP.MAXU > 0 || m_context->CLAMP.MINU > 0)
 		{
+			// Sometimes it uses the MAX, sometimes it uses the MIN, sometimes it's both.
 			auto const _u = m_context->CLAMP.MAXU > 0 ? m_context->CLAMP.MAXU : m_context->CLAMP.MINU;
 			auto const _v = m_context->CLAMP.MAXV > 0 ? m_context->CLAMP.MAXV : m_context->CLAMP.MINV;
 
+			// Create and correct the output rect to be a multiple of 32.
+			// Why 32? I do not know. And I honestly do not want to know.
+
 			auto const _uvRect = GSVector4i(0, 0, _u, _v);
-			auto _texSave = m_dev->CreateTexture(_u + 16 - (_u % 16), _v + 16 - (_v % 16));
+			auto _texSave = m_dev->CreateTexture(_u + 32 - (_u % 32), _v + 32 - (_v % 32));
+
+			// Copy the data from the big ass canvas to the corrected size and save it.
+			m_dev->CopyRect(_tex, _texSave, _uvRect);
+			_texSave->SaveDDS(_path);
+		}
+
+		// Some games want me to suffer. This is not a good idea.
+		// But hey, it is the only thing I could come up with. Perhaps
+		// someone smarter than me will fix it. If so: PLEASE do.
+
+		else if (_w == 1024 && _h == 1024)
+		{
+			auto const _fW = m_src->m_write.rect->right;
+			auto const _fH  = m_src->m_write.rect->bottom;
+
+			auto const _uvRect = GSVector4i(0, 0, _fW, _fH);
+			auto _texSave = m_dev->CreateTexture(_fW + 32 - (_fW % 32), _fH + 32 - (_fH % 32));
 
 			m_dev->CopyRect(_tex, _texSave, _uvRect);
 			_texSave->SaveDDS(_path);
 		}
 
+		// No correction needed, save the texture as-is.
 		else
 			_tex->SaveDDS(_path);
-			
+
+		// I do not want leaks to happen.
 		_aligned_free(_data);
 	}
 
