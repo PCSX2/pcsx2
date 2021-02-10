@@ -743,9 +743,10 @@ namespace usb_mic
 			if (padev->mPaused /*|| dur > 5000*/ || (!padata && nbytes /* hole */))
 			{
 				ret = pa_stream_drop(p);
-				if (ret != PA_OK)
 				return;
 			}
+
+			std::lock_guard<std::mutex> lock(padev->mMutex);
 
 			padev->mInBuffer.write((uint8_t*)padata, nbytes);
 
@@ -781,7 +782,6 @@ namespace usb_mic
 					break; //TODO happens?
 				padev->mInBuffer.read<float>(samples);
 			}
-			std::lock_guard<std::mutex> lock(padev->mMutex);
 
 			size_t output_samples = output_frames_gen * padev->GetChannels();
 			float* pSrc = rebuf.data();
