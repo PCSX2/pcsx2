@@ -1043,6 +1043,9 @@ void SaveStateBase::rcntFreeze()
 	Freeze( vsyncCounter );
 	Freeze( nextCounter );
 	Freeze( nextsCounter );
+	Freeze( vSyncInfo );
+	Freeze( gsVideoMode );
+	Freeze( gsIsInterlaced );
 
 	if( IsLoading() )
 	{
