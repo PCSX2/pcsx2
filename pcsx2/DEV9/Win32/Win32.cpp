@@ -70,11 +70,9 @@ void OnInitDialog(HWND hW)
 		ComboBox_SetItemData(GetDlgItem(hW, IDC_ETHDEV), itm, i);
 		char guid_char[256];
 		wcstombs(guid_char, adapters[i].guid.c_str(), wcslen(adapters[i].guid.c_str()) + 1);
-		//TODO, also check type
+
 		if (config.EthApi == adapters[i].type && strcmp(guid_char, config.Eth) == 0)
-		{
 			ComboBox_SetCurSel(GetDlgItem(hW, IDC_ETHDEV), itm);
-		}
 	}
 
 	SetWindowText(GetDlgItem(hW, IDC_HDDFILE), config.Hdd);

@@ -62,9 +62,8 @@ void OnInitDialog()
 
 		gtk_combo_box_text_append_text((GtkComboBoxText*)gtk_builder_get_object(builder, "IDC_ETHDEV"), dev.c_str());
 		if (config.EthApi == adapters[i].type && strcmp(adapters[i].guid.c_str(), config.Eth) == 0)
-		{
 			gtk_combo_box_set_active((GtkComboBox*)gtk_builder_get_object(builder, "IDC_ETHDEV"), idx);
-		}
+
 		idx++;
 	}
 
