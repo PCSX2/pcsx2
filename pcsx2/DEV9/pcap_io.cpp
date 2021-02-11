@@ -14,6 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
+#include <memory>
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -54,12 +55,12 @@ mac_address host_mac;
 //IP_ADAPTER_ADDRESSES is a structure that contains ptrs to data in other regions
 //of the buffer, se we need to return both so the caller can free the buffer
 //after it's finished reading the needed data from IP_ADAPTER_ADDRESSES
-bool GetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, PIP_ADAPTER_ADDRESSES* buffer)
+bool GetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer)
 {
 	const int guidindex = strlen("\\Device\\NPF_");
 
 	int neededSize = 128;
-	PIP_ADAPTER_ADDRESSES AdapterInfo = new IP_ADAPTER_ADDRESSES[neededSize];
+	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
 	ULONG dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
 
 	PIP_ADAPTER_ADDRESSES pAdapterInfo;
@@ -68,15 +69,14 @@ bool GetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, PIP_ADAPTE
 		AF_UNSPEC,
 		GAA_FLAG_INCLUDE_PREFIX,
 		NULL,
-		AdapterInfo,
+		AdapterInfo.get(),
 		&dwBufLen);
 
 	if (dwStatus == ERROR_BUFFER_OVERFLOW)
 	{
 		DevCon.WriteLn("GetWin32Adapter() buffer too small, resizing");
-		delete[] AdapterInfo;
 		neededSize = dwBufLen / sizeof(IP_ADAPTER_ADDRESSES) + 1;
-		AdapterInfo = new IP_ADAPTER_ADDRESSES[neededSize];
+		AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
 		dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
 		DevCon.WriteLn("New size %i", neededSize);
 
@@ -84,27 +84,25 @@ bool GetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, PIP_ADAPTE
 			AF_UNSPEC,
 			GAA_FLAG_INCLUDE_PREFIX,
 			NULL,
-			AdapterInfo,
+			AdapterInfo.get(),
 			&dwBufLen);
 	}
 	if (dwStatus != ERROR_SUCCESS)
 		return false;
 
-	pAdapterInfo = AdapterInfo;
+	pAdapterInfo = AdapterInfo.get();
 
 	do
 	{
 		if (0 == strcmp(pAdapterInfo->AdapterName, &name[guidindex]))
 		{
 			*adapter = *pAdapterInfo;
-			*buffer = AdapterInfo;
+			buffer->swap(AdapterInfo);
 			return true;
 		}
 
 		pAdapterInfo = pAdapterInfo->Next;
 	} while (pAdapterInfo);
-
-	delete[] AdapterInfo;
 	return false;
 }
 #endif
@@ -115,12 +113,11 @@ int GetMACAddress(char* adapter, mac_address* addr)
 	int retval = 0;
 #ifdef _WIN32
 	IP_ADAPTER_ADDRESSES adapterInfo;
-	PIP_ADAPTER_ADDRESSES buffer;
+	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
 
 	if (GetWin32Adapter(adapter, &adapterInfo, &buffer))
 	{
 		memcpy(addr, adapterInfo.PhysicalAddress, 6);
-		delete[] buffer;
 		retval = 1;
 	}
 
@@ -405,13 +402,10 @@ std::vector<AdapterEntry> PCAPAdapter::GetAdapters()
 		entry.guid = std::wstring(wEth);
 
 		IP_ADAPTER_ADDRESSES adapterInfo;
-		PIP_ADAPTER_ADDRESSES buffer;
+		std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
 
 		if (GetWin32Adapter(d->name, &adapterInfo, &buffer))
-		{
 			entry.name = std::wstring(adapterInfo.FriendlyName);
-			delete[] buffer;
-		}
 		else
 		{
 			//have to use description
