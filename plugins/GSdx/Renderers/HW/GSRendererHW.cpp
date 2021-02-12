@@ -1862,35 +1862,42 @@ void GSRendererHW::Draw()
 	if (_isDumping)
 	{
 		// Get the dimensions from the registers.
+
 		auto const _h = (1 << m_context->TEX0.TH);
 		auto const _w = (1 << m_context->TEX0.TW);
 
 		// Fetch the pitch and create a rectangle for the texture.
+
 		auto const _pitch = _w * 4;
 		auto const _rect = GSVector4i(0, 0, _w, _h);
 
 		// Calculate the data length and allocate memory for it.
+
 		auto const _length = _pitch * _h;
 		void* _data = _aligned_malloc(_length, 32);
 
 		// Get the offset to the texture, as well as a pointer to the
 		// allocated memory for the image data.
+
 		auto _offset = m_mem.GetOffset(m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM);
 		auto _pointer = static_cast<uint8*>(_data);
 		
 		// Capture the texture data.
+
 		m_mem.ReadTexture(_offset, _rect, _pointer, _pitch, m_src->m_TEXA);
 
 		// This fixes textures with no alpha information.
 		// Why must I do this? Well, I don't know! For some
 		// reason, ReadTexture returns a blank image if no
 		// alpha information exists.
+
 		if (m_context->TEX0.TCC == 0)
 			for (int i = 3; i < _length; i += 4)
 				_pointer[i] = 255;
 
 		// Create the texture to be dumped and apply
 		// the captured data to it.
+
 		auto _tex = m_dev->CreateTexture(_w, _h);
 		_tex->Update(_rect, _data, _pitch);
 
