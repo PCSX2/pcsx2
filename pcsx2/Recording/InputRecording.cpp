@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "AppSaveStates.h"
+#include "Counters.h"
 
 #ifndef DISABLE_RECORDING
 
@@ -23,7 +24,6 @@
 
 #include "AppGameDatabase.h"
 #include "DebugTools/Debug.h"
-#include "Counters.h"
 
 #include "InputRecording.h"
 #include "InputRecordingControls.h"
