@@ -46,6 +46,73 @@ void V_Core::Reverb_AdvanceBuffer()
 	}
 }
 
+
+
+static constexpr u32 NUM_TAPS = 39;
+// 39 tap filter, the 0's could be optimized out
+static constexpr std::array<s32, NUM_TAPS> filter_coefs = {
+	-1,
+	0,
+	2,
+	0,
+	-10,
+	0,
+	35,
+	0,
+	-103,
+	0,
+	266,
+	0,
+	-616,
+	0,
+	1332,
+	0,
+	-2960,
+	0,
+	10246,
+	16384,
+	10246,
+	0,
+	-2960,
+	0,
+	1332,
+	0,
+	-616,
+	0,
+	266,
+	0,
+	-103,
+	0,
+	35,
+	0,
+	-10,
+	0,
+	2,
+	0,
+	-1,
+};
+
+s32 V_Core::ReverbDownsample(bool right)
+{
+	s32 out = 0;
+
+	for (u32 i = 0; i < NUM_TAPS; i++)
+	{
+		out += RevbDownBuf[right][((RevbSampleBufPos - NUM_TAPS) + i) & 63] * filter_coefs[i];
+	}
+
+	out >>= 15;
+	Clampify(out, INT16_MIN, INT16_MAX);
+
+	return out;
+}
+
+
+s32 V_Core::ReverbUpsample()
+{
+	return 0;
+}
+
 /////////////////////////////////////////////////////////////////////////////////////////
 
 StereoOut32 V_Core::DoReverb(const StereoOut32& Input)
@@ -54,6 +121,11 @@ StereoOut32 V_Core::DoReverb(const StereoOut32& Input)
 	{
 		return StereoOut32::Empty;
 	}
+
+	RevbSampleBufPos++;
+
+	RevbDownBuf[0][RevbSampleBufPos & 63] = Input.Left;
+	RevbDownBuf[1][RevbSampleBufPos & 63] = Input.Right;
 
 	bool R = Cycles & 1;
 
@@ -112,7 +184,7 @@ StereoOut32 V_Core::DoReverb(const StereoOut32& Input)
 	s32 in, same, diff, apf1, apf2, out;
 
 #define MUL(x, y) ((x) * (y) >> 15)
-	in = MUL(R ? Revb.IN_COEF_R : Revb.IN_COEF_L, R ? Input.Right : Input.Left);
+	in = MUL(R ? Revb.IN_COEF_R : Revb.IN_COEF_L, ReverbDownsample(R));
 
 	same = MUL(Revb.IIR_VOL, in + MUL(Revb.WALL_VOL, _spu2mem[same_src]) - _spu2mem[same_prv]) + _spu2mem[same_prv];
 	diff = MUL(Revb.IIR_VOL, in + MUL(Revb.WALL_VOL, _spu2mem[diff_src]) - _spu2mem[diff_prv]) + _spu2mem[diff_prv];
