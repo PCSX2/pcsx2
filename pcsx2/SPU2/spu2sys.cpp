@@ -222,6 +222,10 @@ void V_Core::Init(int index)
 	Regs.ENDX = 0xffffff; // PS2 confirmed
 
 	RevBuffers.NeedsUpdated = true;
+	RevbSampleBufPos = 0;
+	memset(RevbDownBuf, 0, sizeof(RevbDownBuf));
+	memset(RevbUpBuf, 0, sizeof(RevbUpBuf));
+
 	UpdateEffectsBufferSize();
 }
 
