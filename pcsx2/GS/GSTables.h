@@ -17,14 +17,26 @@
 
 #include "GS_types.h"
 
-extern const uint8 blockTable32[4][8];
-extern const uint8 blockTable32Z[4][8];
-extern const uint8 blockTable16[8][4];
-extern const uint8 blockTable16S[8][4];
-extern const uint8 blockTable16Z[8][4];
-extern const uint8 blockTable16SZ[8][4];
-extern const uint8 blockTable8[4][8];
-extern const uint8 blockTable4[8][4];
+/// Table for storing swizzling of blocks within a page
+struct alignas(64) GSBlockSwizzleTable
+{
+	// Some swizzles are 4x8 and others are 8x4.  An 8x8 table can store either at the cost of 2x size
+	uint8 value[8][8];
+
+	constexpr uint8 lookup(int x, int y) const
+	{
+		return value[y & 7][x & 7];
+	}
+};
+
+extern const GSBlockSwizzleTable blockTable32;
+extern const GSBlockSwizzleTable blockTable32Z;
+extern const GSBlockSwizzleTable blockTable16;
+extern const GSBlockSwizzleTable blockTable16S;
+extern const GSBlockSwizzleTable blockTable16Z;
+extern const GSBlockSwizzleTable blockTable16SZ;
+extern const GSBlockSwizzleTable blockTable8;
+extern const GSBlockSwizzleTable blockTable4;
 extern const uint8 columnTable32[8][8];
 extern const uint8 columnTable16[8][16];
 extern const uint8 columnTable8[16][16];
