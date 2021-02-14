@@ -28,12 +28,8 @@
 #include "DualShock3.h"
 #include "PAD.h"
 
-#include <Shlwapi.h>
-
 // Needed to know if raw input is available.  It requires XP or higher.
 #include "PADRawInput.h"
-#include <commdlg.h>
-#include <timeapi.h>
 #include "AppConfig.h"
 
 //max len 24 wchar_t

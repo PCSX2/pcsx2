@@ -17,6 +17,7 @@
 #define HID_DEVICE_H
 
 #include <hidsdi.h>
+#include <setupapi.h>
 
 struct HidDeviceInfo
 {

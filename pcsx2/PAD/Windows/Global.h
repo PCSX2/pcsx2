@@ -92,38 +92,11 @@ extern Window GSwin;
 
 #endif
 
-#ifndef _CRT_SECURE_NO_DEPRECATE
-#define _CRT_SECURE_NO_DEPRECATE
-#endif
-
-#ifdef _MSC_VER
-#define _WIN32_WINNT 0x0600
-#define NOMINMAX
-#include <algorithm>
-#include <windows.h>
-
-#ifdef PCSX2_DEBUG
-#define _CRTDBG_MAPALLOC
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-#else
-#include <stdlib.h>
-#endif
-
-#else
-
-#include <stdlib.h>
-#include <mutex>
-
-#endif
-
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-
 #ifdef _MSC_VER
 #include <commctrl.h>
+#include <commdlg.h>
+#include <Shlwapi.h>
+#include <timeapi.h>
 // Only needed for DBT_DEVNODES_CHANGED
 #include <Dbt.h>
 #endif
