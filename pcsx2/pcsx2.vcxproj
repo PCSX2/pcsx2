@@ -321,7 +321,6 @@
     <ClCompile Include="PAD\Windows\Diagnostics.cpp" />
     <ClCompile Include="PAD\Windows\DirectInput.cpp" />
     <ClCompile Include="PAD\Windows\DualShock3.cpp" />
-    <ClCompile Include="PAD\Windows\Global.cpp" />
     <ClCompile Include="PAD\Windows\HidDevice.cpp" />
     <ClCompile Include="PAD\Windows\InputManager.cpp" />
     <ClCompile Include="PAD\Windows\KeyboardQueue.cpp" />

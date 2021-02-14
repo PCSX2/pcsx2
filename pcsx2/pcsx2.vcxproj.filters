@@ -1379,9 +1379,6 @@
     <ClCompile Include="PAD\Windows\DualShock3.cpp">
       <Filter>System\Ps2\PAD</Filter>
     </ClCompile>
-    <ClCompile Include="PAD\Windows\Global.cpp">
-      <Filter>System\Ps2\PAD</Filter>
-    </ClCompile>
     <ClCompile Include="PAD\Windows\HidDevice.cpp">
       <Filter>System\Ps2\PAD</Filter>
     </ClCompile>
