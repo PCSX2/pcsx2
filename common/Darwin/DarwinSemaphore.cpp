@@ -62,13 +62,12 @@ Threading::Semaphore::Semaphore()
 	// other platforms explicitly make a thread-private (unshared) semaphore
 	// here. But it seems Mach doesn't support that.
 	MACH_CHECK(semaphore_create(mach_task_self(), (semaphore_t*)&m_sema, SYNC_POLICY_FIFO, 0));
-	__atomic_store_n(&m_counter, 0, __ATOMIC_SEQ_CST);
+	__atomic_store_n(&m_counter, 0, __ATOMIC_RELEASE);
 }
 
 Threading::Semaphore::~Semaphore()
 {
 	MACH_CHECK(semaphore_destroy(mach_task_self(), (semaphore_t)m_sema));
-	__atomic_store_n(&m_counter, 0, __ATOMIC_SEQ_CST);
 }
 
 void Threading::Semaphore::Reset()
@@ -80,24 +79,23 @@ void Threading::Semaphore::Reset()
 
 void Threading::Semaphore::Post()
 {
-	MACH_CHECK(semaphore_signal(m_sema));
-	__atomic_add_fetch(&m_counter, 1, __ATOMIC_SEQ_CST);
+	if (__atomic_fetch_add(&m_counter, 1, __ATOMIC_RELEASE) < 0)
+		MACH_CHECK(semaphore_signal(m_sema));
 }
 
 void Threading::Semaphore::Post(int multiple)
 {
 	for (int i = 0; i < multiple; ++i)
 	{
-		MACH_CHECK(semaphore_signal(m_sema));
+		Post();
 	}
-	__atomic_add_fetch(&m_counter, multiple, __ATOMIC_SEQ_CST);
 }
 
 void Threading::Semaphore::WaitWithoutYield()
 {
 	pxAssertMsg(!wxThread::IsMain(), "Unyielding semaphore wait issued from the main/gui thread.  Please use Wait() instead.");
-	MACH_CHECK(semaphore_wait(m_sema));
-	__atomic_sub_fetch(&m_counter, 1, __ATOMIC_SEQ_CST);
+	if (__atomic_sub_fetch(&m_counter, 1, __ATOMIC_ACQUIRE) < 0)
+		MACH_CHECK(semaphore_wait(m_sema));
 }
 
 bool Threading::Semaphore::WaitWithoutYield(const wxTimeSpan& timeout)
@@ -108,6 +106,9 @@ bool Threading::Semaphore::WaitWithoutYield(const wxTimeSpan& timeout)
 	// signal has worken it up. The best official "documentation" for
 	// semaphore_timedwait() is the way it's used in Grand Central Dispatch,
 	// which is open-source.
+
+	if (__atomic_sub_fetch(&m_counter, 1, __ATOMIC_ACQUIRE) >= 0)
+		return true;
 
 	// on x86 platforms, mach_absolute_time() returns nanoseconds
 	// TODO(aktau): on iOS a scale value from mach_timebase_info will be necessary
@@ -122,7 +123,8 @@ bool Threading::Semaphore::WaitWithoutYield(const wxTimeSpan& timeout)
 		if (now > deadline)
 		{
 			// timed out by definition
-			return false;
+			kr = KERN_OPERATION_TIMED_OUT;
+			break;
 		}
 
 		u64 timeleft = deadline - now;
@@ -141,15 +143,20 @@ bool Threading::Semaphore::WaitWithoutYield(const wxTimeSpan& timeout)
 
 	if (kr == KERN_OPERATION_TIMED_OUT)
 	{
-		return false;
+		int orig = __atomic_load_n(&m_counter, __ATOMIC_RELAXED);
+		while (orig < 0)
+		{
+			if (__atomic_compare_exchange_n(&m_counter, &orig, orig + 1, true, __ATOMIC_ACQUIRE, __ATOMIC_RELAXED))
+				return false;
+		}
+		// Semaphore was signalled between our wait expiring and now, keep kernel sema in sync
+		kr = semaphore_wait(m_sema);
 	}
 
 	// while it's entirely possible to have KERN_FAILURE here, we should
 	// probably assert so we can study and correct the actual error here
 	// (the thread dying while someone is wainting for it).
 	MACH_CHECK(kr);
-
-	__atomic_sub_fetch(&m_counter, 1, __ATOMIC_SEQ_CST);
 	return true;
 }
 
@@ -250,6 +257,6 @@ void Threading::Semaphore::WaitNoCancel(const wxTimeSpan& timeout)
 
 int Threading::Semaphore::Count()
 {
-	return __atomic_load_n(&m_counter, __ATOMIC_SEQ_CST);
+	return __atomic_load_n(&m_counter, __ATOMIC_RELAXED);
 }
 #endif
