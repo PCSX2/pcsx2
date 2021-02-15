@@ -497,7 +497,7 @@ struct V_Core
 	s32 RevbGetIndexer(s32 offset);
 
 	s32 ReverbDownsample(bool right);
-	s32 ReverbUpsample();
+	StereoOut32 ReverbUpsample();
 
 	StereoOut32 ReadInput();
 	StereoOut32 ReadInput_HiFi();
