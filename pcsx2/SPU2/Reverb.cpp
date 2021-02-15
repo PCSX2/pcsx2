@@ -92,7 +92,7 @@ static constexpr std::array<s32, NUM_TAPS> filter_coefs = {
 	-1,
 };
 
-s32 V_Core::ReverbDownsample(bool right)
+s32 __forceinline V_Core::ReverbDownsample(bool right)
 {
 	s32 out = 0;
 
@@ -108,9 +108,25 @@ s32 V_Core::ReverbDownsample(bool right)
 }
 
 
-s32 V_Core::ReverbUpsample()
+StereoOut32 __forceinline V_Core::ReverbUpsample()
 {
-	return 0;
+	s32 ls = 0, rs = 0;
+
+	for (u32 i = 0; i < NUM_TAPS; i++)
+	{
+		ls += RevbUpBuf[0][((RevbSampleBufPos - NUM_TAPS) + i) & 63] * filter_coefs[i];
+	}
+	for (u32 i = 0; i < NUM_TAPS; i++)
+	{
+		rs += RevbUpBuf[1][((RevbSampleBufPos - NUM_TAPS) + i) & 63] * filter_coefs[i];
+	}
+
+	ls >>= 14;
+	Clampify(ls, INT16_MIN, INT16_MAX);
+	rs >>= 14;
+	Clampify(rs, INT16_MIN, INT16_MAX);
+
+	return StereoOut32(ls, rs);
 }
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -121,8 +137,6 @@ StereoOut32 V_Core::DoReverb(const StereoOut32& Input)
 	{
 		return StereoOut32::Empty;
 	}
-
-	RevbSampleBufPos++;
 
 	RevbDownBuf[0][RevbSampleBufPos & 63] = Input.Left;
 	RevbDownBuf[1][RevbSampleBufPos & 63] = Input.Right;
@@ -205,7 +219,10 @@ StereoOut32 V_Core::DoReverb(const StereoOut32& Input)
 		_spu2mem[apf2_dst] = clamp_mix(apf2);
 	}
 
-	(R ? LastEffect.Right : LastEffect.Left) = -clamp_mix(out);
+	RevbUpBuf[0][RevbSampleBufPos & 63] = R ? 0 : clamp_mix(out);
+	RevbUpBuf[1][RevbSampleBufPos & 63] = R ? clamp_mix(out) : 0;
 
-	return LastEffect;
+	RevbSampleBufPos++;
+
+	return ReverbUpsample();
 }
