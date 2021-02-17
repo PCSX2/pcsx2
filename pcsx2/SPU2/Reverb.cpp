@@ -96,10 +96,14 @@ s32 __forceinline V_Core::ReverbDownsample(bool right)
 {
 	s32 out = 0;
 
-	for (u32 i = 0; i < NUM_TAPS; i++)
+	// Skipping the 0 coefs.
+	for (u32 i = 0; i < NUM_TAPS; i += 2)
 	{
 		out += RevbDownBuf[right][((RevbSampleBufPos - NUM_TAPS) + i) & 63] * filter_coefs[i];
 	}
+
+	// We also skipped the middle so add that in.
+	out += RevbDownBuf[right][((RevbSampleBufPos - NUM_TAPS) + 19) & 63] * filter_coefs[19];
 
 	out >>= 15;
 	Clampify(out, INT16_MIN, INT16_MAX);
