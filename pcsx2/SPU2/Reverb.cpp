@@ -112,17 +112,26 @@ s32 __forceinline V_Core::ReverbDownsample(bool right)
 }
 
 
-StereoOut32 __forceinline V_Core::ReverbUpsample()
+StereoOut32 __forceinline V_Core::ReverbUpsample(bool phase)
 {
 	s32 ls = 0, rs = 0;
 
-	for (u32 i = 0; i < NUM_TAPS; i++)
+	if (phase)
 	{
-		ls += RevbUpBuf[0][((RevbSampleBufPos - NUM_TAPS) + i) & 63] * filter_coefs[i];
+		ls += RevbUpBuf[0][(((RevbSampleBufPos - NUM_TAPS) >> 1) + 9) & 63] * filter_coefs[19];
+		rs += RevbUpBuf[1][(((RevbSampleBufPos - NUM_TAPS) >> 1) + 9) & 63] * filter_coefs[19];
 	}
-	for (u32 i = 0; i < NUM_TAPS; i++)
+	else
 	{
-		rs += RevbUpBuf[1][((RevbSampleBufPos - NUM_TAPS) + i) & 63] * filter_coefs[i];
+
+		for (u32 i = 0; i < (NUM_TAPS >> 1) + 1; i++)
+		{
+			ls += RevbUpBuf[0][(((RevbSampleBufPos - NUM_TAPS) >> 1) + i) & 63] * filter_coefs[i * 2];
+		}
+		for (u32 i = 0; i < (NUM_TAPS >> 1) + 1; i++)
+		{
+			rs += RevbUpBuf[1][(((RevbSampleBufPos - NUM_TAPS) >> 1) + i) & 63] * filter_coefs[i * 2];
+		}
 	}
 
 	ls >>= 14;
@@ -223,10 +232,9 @@ StereoOut32 V_Core::DoReverb(const StereoOut32& Input)
 		_spu2mem[apf2_dst] = clamp_mix(apf2);
 	}
 
-	RevbUpBuf[0][RevbSampleBufPos & 63] = R ? 0 : clamp_mix(out);
-	RevbUpBuf[1][RevbSampleBufPos & 63] = R ? clamp_mix(out) : 0;
+	RevbUpBuf[R][(RevbSampleBufPos >> 1) & 63] = clamp_mix(out);
 
 	RevbSampleBufPos++;
 
-	return ReverbUpsample();
+	return ReverbUpsample(RevbSampleBufPos & 1);
 }
