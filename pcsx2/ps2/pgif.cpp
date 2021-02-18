@@ -478,7 +478,6 @@ u32 getUpdPgpuStatReg()
         PGpuStatReg |= 0x20000000;
 #endif
         //Or maybe bit 29 of the GPU STATUS reg, should copy the state of bit 4 of the PGIF_CTRL reg?
-        PGpuStatReg &= ~0x10000000;     //If a read (GPI->CPU) is to be done, then obviously, the GPU can't receive data.
         PGpuStatReg &= ~0x04000000;     //Same with receiving GP0() commands.
         if (pgifDatRbC.count > 0)       //Data FIFO has data.
             PGpuStatReg |= 0x08000000;  //Could skip the second check, but that could cause buffer underflow on direct read.
