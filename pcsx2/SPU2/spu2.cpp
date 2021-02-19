@@ -193,6 +193,9 @@ s32 SPU2reset()
 	memset(spu2regs, 0, 0x010000);
 	memset(_spu2mem, 0, 0x200000);
 	memset(_spu2mem + 0x2800, 7, 0x10); // from BIOS reversal. Locks the voices so they don't run free.
+
+	Spdif.Info = 0; // Reset IRQ Status if it got set in a previously run game
+
 	Cores[0].Init(0);
 	Cores[1].Init(1);
 	return 0;
