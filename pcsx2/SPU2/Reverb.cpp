@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Global.h"
+#include <array>
 
 __forceinline s32 V_Core::RevbGetIndexer(s32 offset)
 {
@@ -106,7 +107,7 @@ s32 __forceinline V_Core::ReverbDownsample(bool right)
 	out += RevbDownBuf[right][((RevbSampleBufPos - NUM_TAPS) + 19) & 63] * filter_coefs[19];
 
 	out >>= 15;
-	Clampify(out, INT16_MIN, INT16_MAX);
+	Clampify(out, (s32)INT16_MIN, (s32)INT16_MAX);
 
 	return out;
 }
@@ -135,9 +136,9 @@ StereoOut32 __forceinline V_Core::ReverbUpsample(bool phase)
 	}
 
 	ls >>= 14;
-	Clampify(ls, INT16_MIN, INT16_MAX);
+	Clampify(ls, (s32)INT16_MIN, (s32)INT16_MAX);
 	rs >>= 14;
-	Clampify(rs, INT16_MIN, INT16_MAX);
+	Clampify(rs, (s32)INT16_MIN, (s32)INT16_MAX);
 
 	return StereoOut32(ls, rs);
 }
