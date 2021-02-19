@@ -1000,4 +1000,10 @@ __noinline void IPUWorker()
 	ipuRegs.ctrl.BUSY = 0;
 	//ipu_cmd.current = 0xffffffff;
 	hwIntcIrq(INTC_IPU);
+
+	// Fill the FIFO ready for the next command
+	if (ipu1ch.chcr.STR && cpuRegs.eCycle[4] == 0x9999)
+	{
+		CPU_INT(DMAC_TO_IPU, 32);
+	}
 }
