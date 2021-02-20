@@ -32733,6 +32733,14 @@ SLUS-20434:
   name: "Myst III - Exile"
   region: "NTSC-U"
   compat: 5
+  patches:
+    75DB04A3:
+      content: |-
+        // Gives the IPU more time to process the textures
+        // CPU does a wait loop then starts copying the output of the IPU
+        patch=0,EE,001f0030,word,24027fff
+  gameFixes:
+    - EETimingHack # Speeds up IPU DMA's
 SLUS-20435:
   name: "Armored Core 3"
   region: "NTSC-U"
