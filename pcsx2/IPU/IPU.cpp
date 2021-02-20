@@ -366,6 +366,14 @@ __fi bool ipuWrite64(u32 mem, u64 value)
 
 static void ipuBCLR(u32 val)
 {
+	// The Input FIFO shouldn't be cleared when the DMA is running, however if it is the DMA should drain
+	// as it is constantly fighting it....
+	while(ipu1ch.chcr.STR)
+	{
+		ipu_fifo.in.clear();
+		ipu1Interrupt();
+	}
+	
 	ipu_fifo.in.clear();
 
 	memzero(g_BP);
@@ -452,7 +460,7 @@ static __fi bool ipuVDEC(u32 val)
 
 				case 1://Macroblock Type
 					decoder.frame_pred_frame_dct = 1;
-					decoder.coding_type = ipuRegs.ctrl.PCT;
+					decoder.coding_type = ipuRegs.ctrl.PCT > 0 ? ipuRegs.ctrl.PCT : 1; // Kaiketsu Zorro Mezase doesn't set a Picture type, seems happy with I
 					ipuRegs.cmd.DATA = get_macroblock_modes();
 					break;
 
