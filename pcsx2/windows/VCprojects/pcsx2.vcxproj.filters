@@ -1779,6 +1779,9 @@
     <ClInclude Include="..\..\SPU2\Mixer.h">
       <Filter>System\Ps2\SPU2</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\SPU2\interpolate_table.h">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\SPU2\Lowpass.h">
       <Filter>System\Ps2\SPU2</Filter>
     </ClInclude>
