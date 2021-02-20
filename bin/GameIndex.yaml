@@ -8995,13 +8995,6 @@ SLES-51495:
   name: "SX Superstar"
   region: "PAL-M4"
   compat: 5
-  patches:
-    96B76E56:
-      content: |-
-        comment=Patches by Nachbrenner
-        // Fix IPU busy!
-        patch=0,EE,003300b0,word,03e00008
-        patch=0,EE,003300b4,word,00000000
 SLES-51496:
   name: "Breath of Fire: Dragon Quarter"
   region: "PAL-M5"
