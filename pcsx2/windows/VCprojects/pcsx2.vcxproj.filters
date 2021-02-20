@@ -979,9 +979,6 @@
     <ClCompile Include="..\..\SPU2\spu2freeze.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\SPU2\spu2replay.cpp">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\SPU2\spu2sys.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
@@ -1777,9 +1774,6 @@
       <Filter>System\Ps2\SPU2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\SPU2\spu2.h">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\SPU2\spu2replay.h">
       <Filter>System\Ps2\SPU2</Filter>
     </ClInclude>
     <ClInclude Include="..\..\SPU2\Mixer.h">

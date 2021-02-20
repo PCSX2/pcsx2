@@ -118,19 +118,9 @@ StereoOut32 V_Core::ReadInput()
 		if (!InputDataTransferred && !InputDataLeft)
 		{
 			if (Index == 0)
-			{
-				if (!SPU2_dummy_callback)
-					spu2DMA4Irq();
-				else
-					SPU2interruptDMA4();
-			}
+				spu2DMA4Irq();
 			else
-			{
-				if (!SPU2_dummy_callback)
-					spu2DMA7Irq();
-				else
-					SPU2interruptDMA7();
-			}
+				spu2DMA7Irq();
 		}
 	}
 

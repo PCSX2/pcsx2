@@ -21,8 +21,6 @@
 
 extern Threading::MutexRecursive mtx_SPU2Status;
 
-extern bool SPU2_dummy_callback;
-
 s32 SPU2init();
 s32 SPU2reset();
 s32 SPU2ps1reset();
@@ -58,16 +56,9 @@ void SPU2interruptDMA4();
 void SPU2interruptDMA7();
 void SPU2readDMA7Mem(u16* pMem, u32 size);
 void SPU2writeDMA7Mem(u16* pMem, u32 size);
-#include "spu2replay.h"
 
 extern u8 callirq;
 
-extern s16* input_data;
-extern u32 input_data_ptr;
-
-extern double srate_pv;
-
-extern int recording;
 extern u32 lClocks;
 extern u32* cyclePtr;
 
