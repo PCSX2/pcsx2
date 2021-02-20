@@ -327,8 +327,6 @@ void recMOVZtemp_const()
 	g_cpuConstRegs[_Rd_].UD[0] = g_cpuConstRegs[_Rs_].UD[0];
 }
 
-//static PCSX2_ALIGNED16(u32 s_zero[4]) = {0,0,0xffffffff, 0xffffffff};
-
 void recMOVZtemp_consts(int info)
 {
 	xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);

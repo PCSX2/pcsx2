@@ -73,32 +73,11 @@ typedef struct _keyEvent
 
 ///////////////////////////////////////////////////////////////////////
 
-#if defined(GSdefs) || defined(SIOdefs)
-#define COMMONdefs
-#endif
-
 // PS2EgetLibType returns (may be OR'd)
 #define PS2E_LT_GS 0x01
-#define PS2E_LT_SIO 0x80
 
 // PS2EgetLibVersion2 (high 16 bits)
 #define PS2E_GS_VERSION 0x0006
-#define PS2E_SIO_VERSION 0x0001
-#ifdef COMMONdefs
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-u32 CALLBACK PS2EgetLibType(void);
-u32 CALLBACK PS2EgetLibVersion2(u32 type);
-const char *CALLBACK PS2EgetLibName(void);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif
 
 // key values:
 /* key values must be OS dependant:
@@ -108,19 +87,6 @@ const char *CALLBACK PS2EgetLibName(void);
 
 // for 64bit compilers
 typedef char __keyEvent_Size__[(sizeof(keyEvent) == 8) ? 1 : -1];
-
-// plugin types
-#define SIO_TYPE_MTAP 0x00000004
-#define SIO_TYPE_RM 0x00000040
-#define SIO_TYPE_MC 0x00000100
-
-typedef int(CALLBACK *SIOchangeSlotCB)(int slot);
-
-typedef struct _GSdriverInfo
-{
-    char name[8];
-    void *common;
-} GSdriverInfo;
 
 #ifdef __cplusplus
 extern "C" {
