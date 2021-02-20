@@ -37,6 +37,7 @@
 
 #include <cstring>
 #include <wx/msgdlg.h>
+#include <wx/app.h>
 
 #define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
 
