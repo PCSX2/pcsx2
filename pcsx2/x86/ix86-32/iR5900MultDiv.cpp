@@ -555,8 +555,6 @@ void recMADD()
 	xMOV(ptr[&cpuRegs.HI.UL[1]], edx);
 }
 
-//static PCSX2_ALIGNED16(u32 s_MaddMask[]) = { 0x80000000, 0, 0x80000000, 0 };
-
 void recMADDU()
 {
 	if( GPR_IS_CONST2(_Rs_, _Rt_) ) {
@@ -692,8 +690,6 @@ void recMADD1()
 	xCDQ();
 	xMOV(ptr[&cpuRegs.HI.UL[3]], edx);
 }
-
-//static PCSX2_ALIGNED16(u32 s_MaddMask[]) = { 0x80000000, 0, 0x80000000, 0 };
 
 void recMADDU1()
 {

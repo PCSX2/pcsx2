@@ -18,15 +18,9 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Include", "Include", "{0FADC26C-0E9D-4DD7-84B1-BF4F7754E90C}"
 	ProjectSection(SolutionItems) = preProject
 		common\include\afxresmw.h = common\include\afxresmw.h
-		common\include\Pcsx2Api.h = common\include\Pcsx2Api.h
 		common\include\Pcsx2Defs.h = common\include\Pcsx2Defs.h
 		common\include\Pcsx2Types.h = common\include\Pcsx2Types.h
 		common\include\PluginCallbacks.h = common\include\PluginCallbacks.h
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "wx", "wx", "{62BF822E-6A12-49A8-BE8C-C55A9BCA24DA}"
-	ProjectSection(SolutionItems) = preProject
-		common\include\wx\folderdesc.txt = common\include\wx\folderdesc.txt
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{2D6F0A62-A247-4CCF-947F-FCD54BE16103}"
@@ -513,7 +507,6 @@ Global
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{0FADC26C-0E9D-4DD7-84B1-BF4F7754E90C} = {88F517F9-CE1C-4005-9BDF-4481FEB55053}
-		{62BF822E-6A12-49A8-BE8C-C55A9BCA24DA} = {0FADC26C-0E9D-4DD7-84B1-BF4F7754E90C}
 		{18E42F6F-3A62-41EE-B42F-79366C4F1E95} = {703FD00B-D7A0-41E3-BD03-CEC86B385DAF}
 		{E9B51944-7E6D-4BCD-83F2-7BBD5A46182D} = {78EBE642-7A4D-4EA7-86BE-5639C6646C38}
 		{2F6C0388-20CB-4242-9F6C-A6EBB6A83F47} = {78EBE642-7A4D-4EA7-86BE-5639C6646C38}

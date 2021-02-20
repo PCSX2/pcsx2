@@ -16,9 +16,6 @@
 #ifndef __PCSX2DEFS_H__
 #define __PCSX2DEFS_H__
 
-// Indicate that this is the wx port to the plugins.
-#define WX_PCSX2
-
 #ifdef __CYGWIN__
 #define __linux__
 #endif
@@ -120,30 +117,6 @@ static const u8 IsDebugBuild = 0;
 static const int __pagesize = PCSX2_PAGESIZE;
 
 // --------------------------------------------------------------------------------------
-// Structure Packing (__packed)
-// --------------------------------------------------------------------------------------
-// Current Method:
-// Use a combination of embedded compiler-specific #pragma mess in conjunction with a
-// __packed macro.  The former appeases the MSVC gods, the latter appeases the GCC gods.
-// The end result looks something like this:
-//
-// #ifdef _MSC_VER
-// #   pragma pack(1)
-// #endif
-//
-// struct SomeKindaFail {
-//     u8   neat;
-//     u32  unaligned32;
-// } __packed;
-//
-// MSVC 2008 and better support __pragma, however there's no way to support that in
-// a way that's backwards compatible to VS 2005, without still including the old-style
-// #pragma mess.  So there's really not much point (yet) in using it.  I've included macros
-// that utilize __pragma (commented out below) which can be deployed at a time when we
-// are ok with the idea of completely breaking backwards compat with VC2005/prior.
-//
-
-// --------------------------------------------------------------------------------------
 //  Microsoft Visual Studio
 // --------------------------------------------------------------------------------------
 #ifdef _MSC_VER
@@ -160,12 +133,6 @@ static const int __pagesize = PCSX2_PAGESIZE;
 #define __aligned16 __declspec(align(16))
 #define __aligned32 __declspec(align(32))
 #define __pagealigned __declspec(align(PCSX2_PAGESIZE))
-
-// Deprecated; use __align instead.
-#define PCSX2_ALIGNED(alig, x) __declspec(align(alig)) x
-#define PCSX2_ALIGNED_EXTERN(alig, x) extern __declspec(align(alig)) x
-#define PCSX2_ALIGNED16(x) __declspec(align(16)) x
-#define PCSX2_ALIGNED16_EXTERN(x) extern __declspec(align(16)) x
 
 #define __noinline __declspec(noinline)
 
@@ -190,11 +157,6 @@ static const int __pagesize = PCSX2_PAGESIZE;
 #define __aligned16 __attribute__((aligned(16)))
 #define __aligned32 __attribute__((aligned(32)))
 #define __pagealigned __attribute__((aligned(PCSX2_PAGESIZE)))
-// Deprecated; use __align instead.
-#define PCSX2_ALIGNED(alig, x) x __attribute((aligned(alig)))
-#define PCSX2_ALIGNED16(x) x __attribute((aligned(16)))
-#define PCSX2_ALIGNED_EXTERN(alig, x) extern x __attribute((aligned(alig)))
-#define PCSX2_ALIGNED16_EXTERN(x) extern x __attribute((aligned(16)))
 
 #define __assume(cond) ((void)0) // GCC has no equivalent for __assume
 #define CALLBACK __attribute__((stdcall))
