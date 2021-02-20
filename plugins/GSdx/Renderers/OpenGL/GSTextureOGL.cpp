@@ -317,7 +317,7 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read, 
 	static int every_512 = 0;
 	GLState::available_vram -= m_mem_usage;
 	if ((GLState::available_vram < 0) && (every_512 % 512 == 0)) {
-		fprintf(stderr, "Available VRAM is very low (%lld), a crash is expected ! Disable Larger framebuffer or reduce upscaling!\n", GLState::available_vram);
+		fprintf(stderr, "Available VRAM is very low (%lld), a crash is expected! Enable conservative buffer allocation or reduce upscaling!\n", GLState::available_vram);
 		every_512++;
 		// Pull emergency break
 		throw std::bad_alloc();
