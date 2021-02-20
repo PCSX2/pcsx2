@@ -254,7 +254,6 @@ set(pcsx2SPU2Sources
 	SPU2/SndOut.cpp
 	SPU2/SndOut_SDL.cpp
 	SPU2/spu2freeze.cpp
-	SPU2/spu2replay.cpp
 	SPU2/spu2sys.cpp
 	SPU2/Timestretcher.cpp
 	SPU2/Wavedump_wav.cpp
@@ -286,7 +285,6 @@ set(pcsx2SPU2Headers
 	SPU2/regs.h
 	SPU2/SndOut.h
 	SPU2/spdif.h
-	SPU2/spu2replay.h
 	SPU2/WavFile.h
 	SPU2/Linux/Alsa.h
 	SPU2/Linux/Config.h

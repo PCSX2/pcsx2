@@ -429,8 +429,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 				if (!(Spdif.Info & (4 << i)) && Cores[i].IRQEnable)
 				{
 					Spdif.Info |= (4 << i);
-					if (!SPU2_dummy_callback)
-						spu2Irq();
+					spu2Irq();
 				}
 			}
 		}
@@ -479,18 +478,14 @@ __forceinline void TimeUpdate(u32 cClocks)
 					if (!(Spdif.Info & (4 << i)) && Cores[i].IRQEnable)
 					{
 						Spdif.Info |= (4 << i);
-						if (!SPU2_dummy_callback)
-							spu2Irq();
+						spu2Irq();
 					}
 				}
 			}
 			if (Cores[0].DMAICounter <= 0)
 			{
 				Cores[0].MADR = Cores[0].TADR;
-				if (!SPU2_dummy_callback)
-					spu2DMA4Irq();
-				else
-					SPU2interruptDMA4();
+				spu2DMA4Irq();
 			}
 		}
 		else
@@ -535,8 +530,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 					if (!(Spdif.Info & (4 << i)) && Cores[i].IRQEnable)
 					{
 						Spdif.Info |= (4 << i);
-						if (!SPU2_dummy_callback)
-							spu2Irq();
+						spu2Irq();
 					}
 				}
 			}
@@ -544,10 +538,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 			if (Cores[1].DMAICounter <= 0)
 			{
 				Cores[1].MADR = Cores[1].TADR;
-				if (!SPU2_dummy_callback)
-					spu2DMA7Irq();
-				else
-					SPU2interruptDMA7();
+				spu2DMA7Irq();
 			}
 		}
 		else
@@ -815,8 +806,7 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 				if (Cores[0].IRQEnable && (Cores[0].IRQA <= Cores[0].ActiveTSA))
 				{
 					SetIrqCall(0);
-					if (!SPU2_dummy_callback)
-						spu2Irq();
+					spu2Irq();
 				}
 				DmaWrite(value);
 				show = false;
