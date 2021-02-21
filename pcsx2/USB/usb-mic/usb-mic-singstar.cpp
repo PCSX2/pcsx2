@@ -585,6 +585,11 @@ namespace usb_mic
 					int16_t* dst = nullptr;
 					std::vector<int16_t> dst_alloc(0); //TODO
 					size_t len = p->iov.size;
+
+					// send only 1ms (bInterval) of samples
+					if (s->f.srate[0] == 48000 || s->f.srate[0] == 8000)
+						len = std::min(p->iov.size, outChns * sizeof(int16_t) * s->f.srate[0] / 1000);
+
 					//Divide 'len' bytes between 2 channels of 16 bits
 					uint32_t max_frames = len / (outChns * sizeof(uint16_t));
 
