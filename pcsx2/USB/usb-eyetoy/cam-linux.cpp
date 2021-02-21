@@ -54,6 +54,7 @@ namespace usb_eyetoy
 
 		buffer_t mpeg_buffer;
 		std::mutex mpeg_mutex;
+		bool mirroring_enabled = true;
 
 		static int xioctl(int fh, unsigned long int request, void* arg)
 		{
@@ -78,7 +79,7 @@ namespace usb_eyetoy
 			if (pixelformat == V4L2_PIX_FMT_YUYV)
 			{
 				unsigned char* mpegData = (unsigned char*)calloc(1, 320 * 240 * 2);
-				int mpegLen = jo_write_mpeg(mpegData, ptr, 320, 240, JO_YUYV, JO_FLIP_X, JO_NONE);
+				int mpegLen = jo_write_mpeg(mpegData, ptr, 320, 240, JO_YUYV, mirroring_enabled ? JO_FLIP_X : JO_NONE, JO_NONE);
 				store_mpeg_frame(mpegData, mpegLen);
 				free(mpegData);
 			}
@@ -87,7 +88,7 @@ namespace usb_eyetoy
 				int width, height, actual_comps;
 				unsigned char* rgbData = jpgd::decompress_jpeg_image_from_memory(ptr, size, &width, &height, &actual_comps, 3);
 				unsigned char* mpegData = (unsigned char*)calloc(1, 320 * 240 * 2);
-				int mpegLen = jo_write_mpeg(mpegData, rgbData, 320, 240, JO_RGB24, JO_FLIP_X, JO_NONE);
+				int mpegLen = jo_write_mpeg(mpegData, rgbData, 320, 240, JO_RGB24, mirroring_enabled ? JO_FLIP_X : JO_NONE, JO_NONE);
 				free(rgbData);
 				store_mpeg_frame(mpegData, mpegLen);
 				free(mpegData);
@@ -483,6 +484,11 @@ namespace usb_eyetoy
 			mpeg_mutex.unlock();
 			return len2;
 		};
+
+		void V4L2::SetMirroring(bool state)
+		{
+			mirroring_enabled = state;
+		}
 
 		static void deviceChanged(GtkComboBox* widget, gpointer data)
 		{
