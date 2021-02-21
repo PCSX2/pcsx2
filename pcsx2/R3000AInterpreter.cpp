@@ -17,6 +17,7 @@
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
 #include "App.h" // For host irx injection hack
+#include "../DebugTools/Breakpoints.h"
 
 using namespace R3000A;
 
@@ -123,11 +124,34 @@ void psxJALR()
 	doBranch(_u32(_rRs_));
 }
 
+void psxBreakpoint()
+{
+	u32 pc = psxRegs.pc;
+	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_IOP, pc) != 0)
+		return;
+
+	auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_IOP, pc);
+	if (cond && !cond->Evaluate())
+		return;
+
+	CBreakPoints::SetBreakpointTriggered(true);
+	GetCoreThread().PauseSelfDebug();
+	throw Exception::ExitCpuExecute();
+}
+
 ///////////////////////////////////////////
 // These macros are used to assemble the repassembler functions
 
 static __fi void execI()
 {
+	// Called for every instruction.
+	// Enabling the define below will probably, no, will cause the interpretor to be slower.
+//#define EXTRA_DEBUG
+#ifdef EXTRA_DEBUG
+	if (psxIsBreakpointNeeded(psxRegs.pc))
+		psxBreakpoint();
+#endif
+
 	// Inject IRX hack
 	if (psxRegs.pc == 0x1630 && g_Conf->CurrentIRX.Length() > 3) {
 		if (iopMemRead32(0x20018) == 0x1F) {
