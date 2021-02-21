@@ -48,25 +48,15 @@ namespace
 
 	Uint16 samples = desiredSamples;
 
-	std::unique_ptr<StereoOut_SDL[]> buffer;
-
 	void callback_fillBuffer(void* userdata, Uint8* stream, int len)
 	{
-		Uint16 sdl_samples = samples;
-
-#if SDL_MAJOR_VERSION >= 2
-		memset(stream, 0, len);
-		// As of SDL 2.0.4 the buffer is too small to contains all samples
-		// len is 2048, samples is 1024 and sizeof(StereoOut_SDL) is 4
-		sdl_samples = len / sizeof(StereoOut_SDL);
-#endif
+		StereoOut16 *out = (StereoOut16 *)stream;
 
 		// Length should always be samples in bytes.
-		assert(len / sizeof(StereoOut_SDL) == sdl_samples);
+		assert(len / sizeof(StereoOut_SDL) == samples);
 
-		for (Uint16 i = 0; i < sdl_samples; i += SndOutPacketSize)
-			SndBuffer::ReadSamples(&buffer[i]);
-		SDL_MixAudio(stream, (Uint8*)buffer.get(), len, SDL_MIX_MAXVOLUME);
+		for (Uint16 i = 0; i < samples; i += SndOutPacketSize)
+			SndBuffer::ReadSamples(&out[i]);
 	}
 } // namespace
 
@@ -118,9 +108,6 @@ struct SDLAudioMod : public SndOutModule
 		std::cerr << "Opened SDL audio driver: " << SDL_GetCurrentAudioDriver() << std::endl;
 #endif
 
-		/* This is so ugly. It is hilariously ugly. I didn't use a vector to save reallocs. */
-		if (samples != spec.samples || buffer == nullptr)
-			buffer = std::unique_ptr<StereoOut_SDL[]>(new StereoOut_SDL[spec.samples]);
 		if (samples != spec.samples)
 		{
 			fprintf(stderr, "SPU2: SDL failed to get desired samples (%d) got %d samples instead\n", samples, spec.samples);
