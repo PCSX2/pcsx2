@@ -123,6 +123,286 @@ public:
 		uint32 word = (page << shift) + m_pixelSwizzle[offsetIdx];
 		return word;
 	}
+
+	/// Loop over all pages in the given rect, calling `fn` on each
+	/// Requires bp to be page-aligned (bp % 0x20 == 0)
+	template <typename Fn>
+	void loopAlignedPages(const GSVector4i& rect, uint32 bp, uint32 bw, Fn fn) const
+	{
+		int shiftX = m_pageShiftX;
+		int shiftY = m_pageShiftY;
+		int bwPages = bw >> (shiftX - 6);
+		int pgXStart = (rect.x >> shiftX);
+		int pgXEnd = (rect.z + m_pageMask.x) >> shiftX;
+		// For non-last rows, pages > this will be covered by the next row
+		int trimmedXEnd = pgXStart + std::min(pgXEnd - pgXStart, bwPages);
+		int pgYStart = (rect.y >> shiftY);
+		int pgYEnd = (rect.w + m_pageMask.y) >> shiftY;
+		int bpPg = bp >> 5;
+
+		auto call = [&](int xyOff)
+		{
+			fn((bpPg + xyOff) % MAX_PAGES);
+		};
+
+		int yOff;
+		for (yOff = pgYStart * bwPages; yOff < (pgYEnd - 1) * bwPages; yOff += bwPages)
+			for (int x = pgXStart; x < trimmedXEnd; x++)
+				call(x + yOff);
+		// Last row needs full x
+		for (int x = pgXStart; x < pgXEnd; x++)
+			call(x + yOff);
+	}
+
+private:
+	struct alignas(16) TextureAligned
+	{
+		int ox1, oy1, ox2, oy2; ///< Block-aligned outer rect (smallest rectangle containing the original that is block-aligned)
+		int ix1, iy1, ix2, iy2; ///< Page-aligned inner rect (largest rectangle inside original that is page-aligned)
+	};
+
+	/// Helper for loop functions
+	TextureAligned _align(const GSVector4i& rect) const
+	{
+		GSVector4i outer = rect.ralign_presub<Align_Outside>(m_blockMask);
+		GSVector4i inner = outer.ralign_presub<Align_Inside>(m_pageMask);
+#if _M_SSE >= 0x501
+		GSVector4i shift = GSVector4i(m_blockShiftX, m_blockShiftY).xyxy();
+		outer = outer.srav32(shift);
+		inner = inner.srav32(shift);
+		return {
+			outer.x,
+			outer.y,
+			outer.z,
+			outer.w,
+			inner.x,
+			inner.y,
+			inner.z,
+			inner.w,
+		};
+#else
+		GSVector4i outerX = outer.sra32(m_blockShiftX);
+		GSVector4i outerY = outer.sra32(m_blockShiftY);
+		GSVector4i innerX = inner.sra32(m_blockShiftX);
+		GSVector4i innerY = inner.sra32(m_blockShiftY);
+		return {
+			outerX.x,
+			outerY.y,
+			outerX.z,
+			outerY.w,
+			innerX.x,
+			innerY.y,
+			innerX.z,
+			innerY.w,
+		};
+#endif
+	}
+public:
+
+	/// Loop over all the pages in the given rect, calling `fn` on each
+	template <typename Fn>
+	void loopPages(const GSVector4i& rect, uint32 bp, uint32 bw, Fn fn) const
+	{
+		const int blockOff = bp & 0x1f;
+		const int invBlockOff = 32 - blockOff;
+		const int bwPages = bw >> (m_pageShiftX - 6);
+		const int bpPg = bp >> 5;
+		if (!blockOff) // Aligned?
+		{
+			loopAlignedPages(rect, bp, bw, fn);
+			return;
+		}
+
+		TextureAligned a = _align(rect);
+
+		const int shiftX = m_pageShiftX - m_blockShiftX;
+		const int shiftY = m_pageShiftY - m_blockShiftY;
+		const int blkW = 1 << shiftX;
+		const int blkH = 1 << shiftY;
+
+		const int pgXStart = a.ox1 >> shiftX;
+		const int pgXEnd = (a.ox2 >> shiftX) + 1;
+
+		/// A texture page can span two GS pages if bp is not page-aligned
+		/// This function checks if a rect in the texture touches the given page
+		auto rectUsesPage = [&](int x1, int x2, int y1, int y2, bool lowPage) -> bool
+		{
+			for (int y = y1; y < y2; y++)
+				for (int x = x1; x < x2; x++)
+					if ((m_blockSwizzle->lookup(x, y) < invBlockOff) == lowPage)
+						return true;
+			return false;
+		};
+
+		/// Do the given coordinates stay within the boundaries of one page?
+		auto staysWithinOnePage = [](int o1, int o2, int i1, int i2) -> bool
+		{
+			// Inner rect being inside out indicates staying within one page
+			if (i2 < i1)
+				return true;
+			// If there's no inner rect, stays in one page if only one side of the page line is used
+			if (i2 == i1)
+				return o1 == i1 || o2 == i1;
+			return false;
+		};
+
+		const bool onePageX = staysWithinOnePage(a.ox1, a.ox2, a.ix1, a.ix2);
+		/// Adjusts start/end values for lines that don't touch their first/last page
+		/// (e.g. if the texture only touches the bottom-left corner of its top-right page, depending on the bp, it may not have any pixels that actually use the last page in the row)
+		auto adjustStartEnd = [&](int& start, int& end, int y1, int y2)
+		{
+			int startAdj1, startAdj2, endAdj1, endAdj2;
+			if (onePageX)
+			{
+				startAdj1 = endAdj1 = a.ox1;
+				startAdj2 = endAdj2 = a.ox2;
+			}
+			else
+			{
+				startAdj1 = (a.ox1 == a.ix1) ? 0    : a.ox1;
+				startAdj2 = (a.ox1 == a.ix1) ? blkW : a.ix1;
+				endAdj1   = (a.ox2 == a.ix2) ? 0    : a.ix2;
+				endAdj2   = (a.ox2 == a.ix2) ? blkW : a.ox2;
+			}
+
+			if (!rectUsesPage(startAdj1, startAdj2, y1, y2, true))
+				start++;
+			if (!rectUsesPage(endAdj1, endAdj2, y1, y2, false))
+				end--;
+		};
+
+		if (staysWithinOnePage(a.oy1, a.oy2, a.iy1, a.iy2))
+		{
+			adjustStartEnd(pgXStart, pgXEnd, a.oy1, a.oy2);
+			for (int x = pgXStart; x <= pgXEnd; x++)
+			{
+				fn((bpPg + x) % MAX_PAGES);
+			}
+			return;
+		}
+
+		int midRowPgXStart = pgXStart, midRowPgXEnd = pgXEnd;
+		adjustStartEnd(midRowPgXStart, midRowPgXEnd, 0, blkH);
+
+		int lineBP = bpPg + (a.oy1 >> shiftY) * bwPages;
+		int nextMin = 0;
+		auto doLine = [&](int startOff, int endOff)
+		{
+			int start = std::max(nextMin, lineBP + startOff);
+			int end = lineBP + endOff;
+			nextMin = end + 1;
+			lineBP += bwPages;
+			for (int pos = start; pos <= end; pos++)
+				fn(pos % MAX_PAGES);
+		};
+		if (a.oy1 != a.iy1)
+		{
+			int firstRowPgXStart = pgXStart, firstRowPgXEnd = pgXEnd;
+			adjustStartEnd(firstRowPgXStart, firstRowPgXEnd, a.oy1, a.iy1);
+			doLine(firstRowPgXStart, firstRowPgXEnd);
+		}
+		for (int y = a.iy1; y < a.iy2; y += blkH)
+			doLine(midRowPgXStart, midRowPgXEnd);
+		if (a.oy2 != a.iy2)
+		{
+			int lastRowPgXStart = pgXStart, lastRowPgXEnd = pgXEnd;
+			adjustStartEnd(lastRowPgXStart, lastRowPgXEnd, a.iy2, a.oy2);
+			doLine(lastRowPgXStart, lastRowPgXEnd);
+		}
+	}
+
+	/// Loop over all the blocks in the given rect, calling `fn` on each
+	template <typename Fn>
+	void loopBlocks(const GSVector4i& rect, uint32 bp, uint32 bw, Fn fn) const
+	{
+		TextureAligned a = _align(rect);
+		int bwPagesx32 = 32 * (bw >> (m_pageShiftX - 6));
+
+		int shiftX = m_pageShiftX - m_blockShiftX;
+		int shiftY = m_pageShiftY - m_blockShiftY;
+		int blkW = 1 << shiftX;
+		int blkH = 1 << shiftY;
+		int ox1PageOff = (a.ox1 >> shiftX) * 32;
+
+		auto partialPage = [&](uint32 bp, int x1, int x2, int y1, int y2)
+		{
+			for (int y = y1; y < y2; y++)
+				for (int x = x1; x < x2; x++)
+					fn((bp + m_blockSwizzle->lookup(x, y)) % MAX_BLOCKS);
+		};
+		auto fullPage = [&](uint32 bp)
+		{
+			for (int i = 0; i < 32; i++)
+				fn((bp + i) % MAX_BLOCKS);
+		};
+
+		/// For use with dimensions big enough to touch/cross page boundaries
+		auto lineHelper = [&](uint32 page, uint32 pageAdd, int add, int o1, int o2, int i1, int i2, auto partial, auto full)
+		{
+			if (o1 != i1)
+			{
+				partial(page, o1, i1);
+				page += pageAdd;
+			}
+			for (int i = i1; i < i2; i += add)
+			{
+				full(page, i, i + add);
+				page += pageAdd;
+			}
+			if (o2 != i2)
+				partial(page, i2, o2);
+		};
+
+		/// [ox1, ox2) touches/crosses page boundaries, [y1, y2) is not the height of a full page
+		auto partialLineLargeX = [&](uint32 bp, int y1, int y2)
+		{
+			auto partial = [&](uint32 page, int x1, int x2)
+			{
+				partialPage(page, x1, x2, y1, y2);
+			};
+			lineHelper(bp + ox1PageOff, 32, blkW, a.ox1, a.ox2, a.ix1, a.ix2, partial, partial);
+		};
+		/// [ox1, ox2) touches/crosses page boundaries, [y1, y2) is the height of a full page
+		auto fullLineLargeX = [&](uint32 bp, int y1, int y2)
+		{
+			lineHelper(bp + ox1PageOff, 32, blkW, a.ox1, a.ox2, a.ix1, a.ix2,
+				[&](uint32 page, int x1, int x2)
+				{
+					partialPage(page, x1, x2, y1, y2);
+				},
+				[&](uint32 page, int, int)
+				{
+					fullPage(page);
+				});
+		};
+		/// [ox1, ox2) stayes within a page
+		auto lineSmallX = [&](uint32 bp, int y1, int y2)
+		{
+			partialPage(bp + ox1PageOff, a.ox1, a.ox2, y1, y2);
+		};
+
+		/// [oy1, oy2) touches/crosses page boundaries
+		auto mainLargeY = [&](auto partialLine, auto fullLine)
+		{
+			lineHelper(bp, bwPagesx32, blkH, a.oy1, a.oy2, a.iy1, a.iy2, partialLine, fullLine);
+		};
+
+		// Note: inner rectangle can end up inside-out (x2 < x1) when input rectangle was all within one page
+		if (a.iy2 < a.iy1)
+		{
+			if (a.ix2 < a.ix1)
+				lineSmallX(bp, a.oy1, a.oy2);
+			else
+				partialLineLargeX(bp, a.oy1, a.oy2);
+		}
+		else
+		{
+			if (a.ix2 < a.ix1)
+				mainLargeY(lineSmallX, lineSmallX);
+			else
+				mainLargeY(partialLineLargeX, fullLineLargeX);
+		}
+	}
 };
 
 class GSLocalMemory : public GSAlignedClass<32>
