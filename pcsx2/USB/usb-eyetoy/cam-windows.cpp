@@ -355,6 +355,7 @@ namespace usb_eyetoy
 
 		buffer_t mpeg_buffer{};
 		std::mutex mpeg_mutex;
+		bool mirroring_enabled = true;
 
 		void store_mpeg_frame(unsigned char* data, unsigned int len)
 		{
@@ -369,7 +370,7 @@ namespace usb_eyetoy
 			if (bitsperpixel == 24)
 			{
 				unsigned char* mpegData = (unsigned char*)calloc(1, 320 * 240 * 2);
-				int mpegLen = jo_write_mpeg(mpegData, data, 320, 240, JO_RGB24, JO_FLIP_X, JO_FLIP_Y);
+				int mpegLen = jo_write_mpeg(mpegData, data, 320, 240, JO_BGR24, mirroring_enabled ? JO_FLIP_X : JO_NONE, JO_FLIP_Y);
 				store_mpeg_frame(mpegData, mpegLen);
 				free(mpegData);
 			}
@@ -475,6 +476,11 @@ namespace usb_eyetoy
 			mpeg_mutex.unlock();
 			return len2;
 		};
+
+		void DirectShow::SetMirroring(bool state)
+		{
+			mirroring_enabled = state;
+		}
 
 		BOOL CALLBACK DirectShowDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{

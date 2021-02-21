@@ -5,6 +5,7 @@ extern "C" {
 typedef enum {
 	JO_RGBX,
 	JO_RGB24,
+	JO_BGR24,
 	JO_YUYV,
 } jo_mpeg_format_t;
 

@@ -183,6 +183,7 @@ unsigned long jo_write_mpeg(unsigned char *mpeg_buf, const unsigned char *raw, i
 	unsigned char *head = mpeg_buf;
 	jo_bits_t bits = {mpeg_buf};
 
+	jo_writeBits(&bits, 0x00, 8);
 	for (int vblock = 0; vblock < (height+15)/16; vblock++) {
 		for (int hblock = 0; hblock < (width+15)/16; hblock++) {
 			if (vblock == 0 && hblock == 0) {
@@ -206,11 +207,7 @@ unsigned long jo_write_mpeg(unsigned char *mpeg_buf, const unsigned char *raw, i
 					if (flipy) y = height - 1 - y;
 					const unsigned char *c = raw + y*width*4+x*4;
 					float r, g, b;
-					if (flipx && flipy) {
-						r = c[2], g = c[1], b = c[0];
-					} else {
-						r = c[0], g = c[1], b = c[2];
-					}
+					r = c[0], g = c[1], b = c[2];
 					Y[i] = (0.299f*r + 0.587f*g + 0.114f*b) * (219.f/255) + 16;
 					CBx[i] = (-0.299f*r - 0.587f*g + 0.886f*b) * (224.f/255) + 128;
 					CRx[i] = (0.701f*r - 0.587f*g - 0.114f*b) * (224.f/255) + 128;
@@ -222,7 +219,7 @@ unsigned long jo_write_mpeg(unsigned char *mpeg_buf, const unsigned char *raw, i
 					CR[i] = (CRx[j] + CRx[j+1] + CRx[j+16] + CRx[j+17]) * 0.25f;
 				}
 			} else
-			if (format == JO_RGB24) {
+			if (format == JO_BGR24 || format == JO_RGB24) {
 				for (int i=0; i<256; ++i) {
 					int y = vblock*16+(i/16);
 					int x = hblock*16+(i&15);
@@ -232,7 +229,7 @@ unsigned long jo_write_mpeg(unsigned char *mpeg_buf, const unsigned char *raw, i
 					if (flipy) y = height - 1 - y;
 					const unsigned char *c = raw + y*width*3+x*3;
 					float r, g, b;
-					if (flipx && flipy) {
+					if (format == JO_BGR24) {
 						r = c[2], g = c[1], b = c[0];
 					} else {
 						r = c[0], g = c[1], b = c[2];

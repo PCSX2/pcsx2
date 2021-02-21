@@ -28,6 +28,7 @@ namespace usb_eyetoy
 		virtual int Open() = 0;
 		virtual int Close() = 0;
 		virtual int GetImage(uint8_t* buf, int len) = 0;
+		virtual void SetMirroring(bool state) = 0;
 		virtual int Reset() = 0;
 
 		virtual int Port() { return mPort; }

@@ -88,6 +88,7 @@ namespace usb_eyetoy
 			int Open();
 			int Close();
 			int GetImage(uint8_t* buf, int len);
+			void SetMirroring(bool state);
 			int Reset() { return 0; };
 
 			static const TCHAR* Name()

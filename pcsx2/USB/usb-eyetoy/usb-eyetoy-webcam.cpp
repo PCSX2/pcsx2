@@ -22,13 +22,6 @@
 
 namespace usb_eyetoy
 {
-
-	static const USBDescStrings desc_strings = {
-		"",
-		"Sony corporation",
-		"EyeToy USB camera Namtai",
-	};
-
 	typedef struct EYETOYState
 	{
 		USBDevice dev;
@@ -51,6 +44,12 @@ namespace usb_eyetoy
 
 	static EYETOYState* static_state;
 
+	static const USBDescStrings desc_strings = {
+		"",
+		"Sony corporation",
+		"EyeToy USB camera Namtai",
+	};
+
 	/*
 	Manufacturer:   OmniVision Technologies, Inc.
 	Product ID:     0x8519
@@ -61,7 +60,7 @@ namespace usb_eyetoy
 	Number of Configurations:   1
 	Manufacturer String:   1 "Sony corporation"
 	Product String:   2 "EyeToy USB camera Namtai"
-*/
+	*/
 
 	static const uint8_t eyetoy_dev_descriptor[] = {
 		0x12,          /* bLength */
@@ -80,7 +79,6 @@ namespace usb_eyetoy
 		0x01,          /* bNumConfigurations */
 	};
 
-	/* XXX: patch interrupt size */
 	static const uint8_t eyetoy_config_descriptor[] = {
 		0x09,       // bLength
 		0x02,       // bDescriptorType (Configuration)
@@ -344,22 +342,21 @@ namespace usb_eyetoy
 				break;
 
 			case VendorDeviceOutRequest | 0x1: //Write register
-				if (!(index >= R51x_I2C_SADDR_3 && index <= R518_I2C_CTL))
-				{
-				}
-
 				switch (index)
 				{
-					case OV519_R51_RESET1:
-						if (data[0] & 0x8)
+					case OV519_RA0_FORMAT:
+						if (data[0] == 0x42)
 						{
-							// reset video FIFO
-							//s->videodev->SetSize(s->regs[OV519_R10_H_SIZE] << 4, s->regs[OV519_R11_V_SIZE] << 3);
+							Console.WriteLn("EyeToy : configured for MPEG format");
 						}
-						break;
-					case OV519_R10_H_SIZE:
-						break;
-					case OV519_R11_V_SIZE:
+						else if (data[0] == 0x33)
+						{
+							Console.WriteLn("EyeToy : configured for JPEG format; Unimplemented");
+						}
+						else
+						{
+							Console.WriteLn("EyeToy : configured for unknown format");
+						}
 						break;
 					case R518_I2C_CTL:
 						if (data[0] == 1) // Commit I2C write
@@ -375,6 +372,12 @@ namespace usb_eyetoy
 							else if (reg < sizeof(s->i2c_regs))
 							{
 								s->i2c_regs[reg] = val;
+							}
+							if (reg == 0x12)
+							{
+								const bool mirroring_enabled = val & 0x40;
+								s->videodev->SetMirroring(mirroring_enabled);
+								Console.WriteLn("EyeToy : mirroring %s", mirroring_enabled ? "ON" : "OFF");
 							}
 						}
 						else if (s->regs[R518_I2C_CTL] == 0x03 && data[0] == 0x05)
@@ -416,31 +419,24 @@ namespace usb_eyetoy
 			case USB_TOKEN_IN:
 				if (devep == 1)
 				{
-
 					memset(data, 0xff, sizeof(data));
 
 					if (s->frame_step == 0)
 					{
-
 						s->mpeg_frame_size = s->videodev->GetImage(s->mpeg_frame_data, 320 * 240 * 2);
 						if (s->mpeg_frame_size == 0)
 						{
 							goto send_packet;
 						}
 
-						s->mpeg_frame_offset = 0;
-						uint8_t header1[] = {
-							0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
-						memcpy(data, header1, sizeof(header1));
-						uint8_t header2[] = {
-							0x69, 0x70, 0x75, 0x6D, 0x00, 0x00, 0x00, 0x00, 0x40, 0x01, 0xF0, 0x00, 0x01, 0x00, 0x00, 0x00,
-							0x00};
-						memcpy(data + sizeof(header1), header2, sizeof(header2));
+						uint8_t header[] = {
+							0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
+							0x69, 0x70, 0x75, 0x6D, 0x00, 0x00, 0x00, 0x00, 0x40, 0x01, 0xF0, 0x00, 0x01, 0x00, 0x00, 0x00};
+						memcpy(data, header, sizeof(header));
 
-						int data_pk = max_ep_size - sizeof(header1) - sizeof(header2);
-						memcpy(data + sizeof(header1) + sizeof(header2), s->mpeg_frame_data + s->mpeg_frame_offset, data_pk);
+						int data_pk = max_ep_size - sizeof(header);
+						memcpy(data + sizeof(header), s->mpeg_frame_data, data_pk);
 						s->mpeg_frame_offset = data_pk;
-
 						s->frame_step++;
 					}
 					else if (s->mpeg_frame_offset < s->mpeg_frame_size)
@@ -450,7 +446,6 @@ namespace usb_eyetoy
 							data_pk = max_ep_size;
 						memcpy(data, s->mpeg_frame_data + s->mpeg_frame_offset, data_pk);
 						s->mpeg_frame_offset += data_pk;
-
 						s->frame_step++;
 					}
 					else
@@ -556,8 +551,6 @@ namespace usb_eyetoy
 		s->frame_step = 0;
 		s->mpeg_frame_data = (unsigned char*)calloc(1, 320 * 240 * 4); // TODO: 640x480 ?
 		s->mpeg_frame_offset = 0;
-		s->regs[OV519_R10_H_SIZE] = 320 >> 4;
-		s->regs[OV519_R11_V_SIZE] = 240 >> 3;
 
 		static_state = s;
 		return (USBDevice*)s;

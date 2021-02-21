@@ -32,6 +32,7 @@
 #define OV519_R16_DIVIDER 0x16
 #define OV519_R20_DFR 0x20
 #define OV519_R25_FORMAT 0x25
+#define OV519_RA0_FORMAT 0xA0
 
 /* OV519 System Controller register numbers */
 #define OV519_R51_RESET1 0x51
