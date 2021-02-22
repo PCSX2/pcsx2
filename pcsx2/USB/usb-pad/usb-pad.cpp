@@ -160,22 +160,6 @@ namespace usb_pad
 					return PAD_BUTTON_COUNT; //Aka invalid
 			}
 		}
-		else if (type == WT_GENERIC)
-		{
-			switch (inBtn)
-			{
-				case PAD_R1:
-					return PAD_R2;
-				case PAD_R2:
-					return PAD_R1;
-				case PAD_L1:
-					return PAD_L2;
-				case PAD_L2:
-					return PAD_L1;
-				default:
-					return inBtn;
-			}
-		}
 
 		return inBtn;
 	}
