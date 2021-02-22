@@ -2419,7 +2419,7 @@ SCES-54552:
         // Fixes Vedan Myna area out of bounds glitch.
         patch=1,EE,00124898,word,3442fffe
 SCES-54560:
-  name: "Sing-Star R&B"
+  name: "Alpine Ski Racing 2007"
   region: "PAL-E"
 SCES-54570:
   name: "Sing-Star Pop Hits"
@@ -2460,6 +2460,12 @@ SCES-54748:
 SCES-54749:
   name: "Buzz! Junior - Dino Den"
   region: "PAL-M8"
+SCES-54760:
+  name: "SingStar R&B"
+  region: "PAL-E"
+SCES-54761:
+  name: "SingStar R&B"
+  region: "PAL-S"
 SCES-54762:
   name: "SingStar R&B"
   region: "PAL-G"
