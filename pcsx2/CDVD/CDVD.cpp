@@ -1545,6 +1545,14 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 						cdvd.Result[5] = 0x30; //min
 						break;
 
+					case 0xEF: // read console temperature (1:3)
+						// This returns a fixed value of 30.5 C
+						SetResultSize(3);
+						cdvd.Result[0] = 0; // returns 0 on success
+						cdvd.Result[1] = 0x0F; // last 8 bits for integer
+						cdvd.Result[2] = 0x05; // leftmost bit for integer, other 7 bits for decimal place
+						break;
+
 					default:
 						SetResultSize(1);
 						cdvd.Result[0] = 0x80;
