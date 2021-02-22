@@ -2424,6 +2424,12 @@ SCES-54570:
 SCES-54571:
   name: "Sing-Star Pop Hits"
   region: "PAL-G"
+SCES-54573:
+  name: "Sing-Star Pop Hits"
+  region: "PAL-S"
+SCES-54573:
+  name: "Sing-Star Pop Hits"
+  region: "PAL-SC"
 SCES-54597:
   name: "Buzz! The Mega Quiz"
   region: "PAL-M3"
