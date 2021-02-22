@@ -2418,9 +2418,6 @@ SCES-54552:
         author=kozarovv
         // Fixes Vedan Myna area out of bounds glitch.
         patch=1,EE,00124898,word,3442fffe
-SCES-54560:
-  name: "Alpine Ski Racing 2007"
-  region: "PAL-E"
 SCES-54570:
   name: "Sing-Star Pop Hits"
   region: "PAL-E"
