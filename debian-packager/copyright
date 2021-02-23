@@ -8,11 +8,11 @@ Copyright:
  2010-2012 Miguel Colon <debian.micove@gmail.com>
 License: LGPL-3
 
-Files: pcsx2/* common/* plugins/GSnull/*
+Files: pcsx2/* common/*
 Copyright: 2002-2012 PCSX2 Dev Team
 License: LGPL-3+
 
-Files: pcsx2/Mdec.cpp pcsx2/Mdec.h pcsx2/RDebug/deci2_drfp.cpp pcsx2/IPU/mpeg2lib/* pcsx2/cheatscpp.h common/include/api/* plugins/GSnull/Registers.h plugins/GSnull/Linux/Linux* plugins/GSnull/Linux/Config*
+Files: pcsx2/Mdec.cpp pcsx2/Mdec.h pcsx2/RDebug/deci2_drfp.cpp pcsx2/IPU/mpeg2lib/* pcsx2/cheatscpp.h common/include/api/*
 Copyright: 2002-2012 PCSX2 Dev Team
 License: GPL-2+
 

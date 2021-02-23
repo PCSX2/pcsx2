@@ -28,7 +28,7 @@ PARSE_EXTS=true
 # file types to parse. Only effective when PARSE_EXTS is true.
  FILE_EXTS=".c .h .cpp .hpp .inl"
 
-ALLOWED_ROOT_DIR="./plugins/GSnull ./common"
+ALLOWED_ROOT_DIR="./common"
 
 ##################################################################
 # There should be no need to change anything below this line.
