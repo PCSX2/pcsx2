@@ -86,6 +86,9 @@ FrameAdvance                      =	SPACE
 TogglePause                       =	Shift-P
 InputRecordingModeToggle          =	Shift-R
 
+# Note - This is disabled if no input recording is active
+GoToFirstFrame                    =	Shift-L
+
 # Save State Management
 # Note - These are disabled if 'System > Enable Recording Tools' is disabled
 States_SaveSlot0                  =	Shift-KP_0
