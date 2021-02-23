@@ -461,6 +461,10 @@ void MainEmuFrame::Menu_CdvdSource_Click(wxCommandEvent& event)
 	}
 
 	SwapOrReset_CdvdSrc(this, newsrc);
+#ifndef DISABLE_RECORDING
+	if (!g_InputRecording.IsActive())
+#endif
+		ApplyCDVDStatus();
 }
 
 void MainEmuFrame::Menu_BootCdvd_Click(wxCommandEvent& event)
@@ -1020,6 +1024,24 @@ void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent& event)
 		StartInputRecording();
 }
 
+void MainEmuFrame::ApplyFirstFrameStatus()
+{
+	wxMenuItem* cdvd_menu = m_menuSys.FindChildItem(MenuId_Boot_CDVD);
+
+	wxString keyCodeStr;
+	if (GSFrame* gsFrame = wxGetApp().GetGsFramePtr())
+		if (GSPanel* viewport = gsFrame->GetViewport())
+			keyCodeStr = '\t' + viewport->GetAssociatedKeyCode(("GoToFirstFrame"));
+
+	cdvd_menu->SetItemLabel(L"Restart Recording" + keyCodeStr);
+	if (g_InputRecording.GetInputRecordingData().FromSaveState())
+		cdvd_menu->SetHelp(L"Loads the savestate that accompanies the active input recording");
+	else
+		cdvd_menu->SetHelp(L"Reboots Emulation");
+		
+	UpdateStatusBar();
+}
+
 void MainEmuFrame::Menu_Recording_Stop_Click(wxCommandEvent& event)
 {
 	StopInputRecording();
@@ -1030,6 +1052,7 @@ void MainEmuFrame::StartInputRecording()
 	m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(false);
 	m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(true);
 	m_menuRecording.FindChildItem(MenuId_Recording_ToggleRecordingMode)->Enable(true);
+	ApplyFirstFrameStatus();
 }
 
 void MainEmuFrame::StopInputRecording()
@@ -1040,6 +1063,7 @@ void MainEmuFrame::StopInputRecording()
 		m_menuRecording.FindChildItem(MenuId_Recording_New)->Enable(true);
 		m_menuRecording.FindChildItem(MenuId_Recording_Stop)->Enable(false);
 		m_menuRecording.FindChildItem(MenuId_Recording_ToggleRecordingMode)->Enable(false);
+		ApplyCDVDStatus();
 	}
 }
 
