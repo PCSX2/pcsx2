@@ -16595,23 +16595,26 @@ SLES-55280:
   patches:
     E7516A6E:
       content: |-
-        author=kozarovv
+        author=refraction
         // Fix for Depth precision.
         // Game fills upper 16bits of depth with 0xFFFF.
         // This results in a really high 32 bit value which is then converted to float
         // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
-        patch=1,EE,000ffc00,word,f88a0000
-        patch=1,EE,000ffc04,word,a080000b
-        patch=1,EE,000ffc08,word,0810e6e3
-        patch=1,EE,00439b84,word,0803ff00
-        patch=1,EE,00439b88,word,4bea497d
-        // Additional patch for fighters depth, required on "boat" stage.
-        patch=1,EE,000ffc20,word,0000202d
-        patch=1,EE,000ffc24,word,3442a833
-        patch=1,EE,000ffc28,word,08077ed2
-        patch=1,EE,000ffc2c,word,ae020098
-        patch=1,EE,001Dfb40,word,0803ff08
-        patch=1,EE,001dfb44,word,3c0200ff
+        // Modifies GIF Packets to use 24bit Z and fill in FOG (unused in game).
+        // Menu is still broken only in 50hz mode, 60hz is mostly fine.
+        patch=1,EE,00100cc8,word,24050004
+        patch=1,EE,004492ec,word,3c020041
+        patch=1,EE,004492f0,word,34453413
+        patch=1,EE,00438a3c,word,3c021341
+        patch=1,EE,00438a44,word,34423413
+        patch=1,EE,001699d0,word,34853413
+        patch=1,EE,001699cc,word,3c040041
+        patch=1,EE,00438a30,word,24020004
+        patch=1,EE,00438b98,word,3c020043
+        patch=1,EE,00438b9c,word,34424343
+        patch=1,EE,001dfa60,word,24034343
+        patch=1,EE,00178614,word,24064343
+        patch=1,EE,0015e5b8,word,240a4343
 SLES-55281:
   name: "Nickelodeon Dora the Explorer - Dora Saves the Snow Princess"
   region: "PAL-M3"
@@ -30320,23 +30323,26 @@ SLPS-25783:
   patches:
     FD714FCB:
       content: |-
-        author=kozarovv
+        author=refraction, kozarovv
         // Fix for Depth precision.
         // Game fills upper 16bits of depth with 0xFFFF.
         // This results in a really high 32 bit value which is then converted to float
         // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
-        patch=1,EE,000ffc00,word,f88a0000
-        patch=1,EE,000ffc04,word,a080000b
-        patch=1,EE,000ffc08,word,0813cf8b
-        patch=1,EE,004f3e24,word,0803ff00
-        patch=1,EE,004f3e28,word,4bea497d
-        // Additional patch for fighters depth, required on "boat" stage.
-        patch=1,EE,000ffc20,word,ac40009c
-        patch=1,EE,000ffc24,word,3463a833
-        patch=1,EE,000ffc28,word,080a75fc
-        patch=1,EE,000ffc2c,word,ac430098
-        patch=1,EE,0029d7e8,word,0803ff08
-        patch=1,EE,0029d7ec,word,3c0300ff
+        // Modifies GIF Packets to use 24bit Z and fill in FOG (unused in game).
+        patch=1,EE,00100cc8,word,24050004
+        patch=1,EE,00229720,word,3c050041
+        patch=1,EE,00229724,word,34a63413
+        patch=1,EE,004f2d68,word,24020004
+        patch=1,EE,004f2d7c,word,3c021341
+        patch=1,EE,004f2d84,word,34423413
+        patch=1,EE,0021e804,word,24084343
+        patch=1,EE,0023761c,word,24084343
+        patch=1,EE,00237f8c,word,24084343
+        patch=1,EE,0029d6d0,word,24084343
+        patch=1,EE,00503108,word,3c030041
+        patch=1,EE,0050310c,word,34633413
+        patch=1,EE,004f2ee8,word,3c020043
+        patch=1,EE,004f2ef0,word,34424343
 SLPS-25784:
   name: "Another Century's Episode 3 - The Final"
   region: "NTSC-J"
@@ -38707,23 +38713,26 @@ SLUS-21816:
   patches:
     E5A904B3:
       content: |-
-        author=kozarovv
+        author=refraction
         // Fix for Depth precision.
         // Game fills upper 16bits of depth with 0xFFFF.
         // This results in a really high 32 bit value which is then converted to float
         // because both hw and sw renderers lack double precision the lower 16 bits of the initial 32 bit value lose precision.
-        patch=1,EE,000ffc00,word,f88a0000
-        patch=1,EE,000ffc04,word,a080000b
-        patch=1,EE,000ffc08,word,0810e003
-        patch=1,EE,00438004,word,0803ff00
-        patch=1,EE,00438008,word,4bea497d
-        // Additional patch for fighters depth, required on "boat" stage.
-        patch=1,EE,000ffc20,word,ac40009c
-        patch=1,EE,000ffc24,word,3463a833
-        patch=1,EE,000ffc28,word,080778cc
-        patch=1,EE,000ffc2c,word,ac430098
-        patch=1,EE,001de328,word,0803ff08
-        patch=1,EE,001de32c,word,3c0300ff
+        // Modifies GIF Packets to use 24bit Z and fill in FOG (unused in game).
+        patch=1,EE,00100cc8,word,24050004
+        patch=1,EE,00168b7c,word,3c050041
+        patch=1,EE,00168b80,word,34a63413
+        patch=1,EE,00436f48,word,24020004
+        patch=1,EE,00436f54,word,3c021341
+        patch=1,EE,00436f5c,word,34423413
+        patch=1,EE,001de210,word,24084343
+        patch=1,EE,00177524,word,24084343
+        patch=1,EE,00176BF4,word,24084343
+        patch=1,EE,0015D890,word,24084343
+        patch=1,EE,004475c4,word,3c030041
+        patch=1,EE,004475c8,word,346c3413
+        patch=1,EE,004370b0,word,3c020043
+        patch=1,EE,004370b4,word,34424343
 SLUS-21817:
   name: "SBK Superbike World Championship"
   region: "NTSC-U"
