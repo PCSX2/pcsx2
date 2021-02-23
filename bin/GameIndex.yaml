@@ -2419,16 +2419,16 @@ SCES-54552:
         // Fixes Vedan Myna area out of bounds glitch.
         patch=1,EE,00124898,word,3442fffe
 SCES-54570:
-  name: "Sing-Star Pop Hits"
+  name: "SingStar Pop Hits"
   region: "PAL-E"
 SCES-54571:
   name: "Sing-Star Pop Hits"
   region: "PAL-G"
 SCES-54572:
-  name: "Sing-Star Pop Hits"
+  name: "SingStar Pop Hits"
   region: "PAL-S"
 SCES-54573:
-  name: "Sing-Star Pop Hits"
+  name: "SingStar Pop Hits"
   region: "PAL-SC"
 SCES-54597:
   name: "Buzz! The Mega Quiz"
