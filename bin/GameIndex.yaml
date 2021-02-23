@@ -16610,8 +16610,12 @@ SLES-55280:
         patch=1,EE,000ffc24,word,3442a833
         patch=1,EE,000ffc28,word,08077ed2
         patch=1,EE,000ffc2c,word,ae020098
-        patch=1,EE,001Dfb40,word,0803ff08
-        patch=1,EE,001dfb44,word,3c0200ff
+        patch=1,EE,e0020000,extended,0052f1e0
+        patch=1,EE,201dfb40,extended,0803ff08
+        patch=1,EE,201dfb44,extended,3c0200ff
+        patch=1,EE,e0020001,extended,0052f1e0
+        patch=1,EE,201dfb40,extended,0000202d
+        patch=1,EE,201dfb44,extended,ae020098
 SLES-55281:
   name: "Nickelodeon Dora the Explorer - Dora Saves the Snow Princess"
   region: "PAL-M3"
@@ -30335,8 +30339,12 @@ SLPS-25783:
         patch=1,EE,000ffc24,word,3463a833
         patch=1,EE,000ffc28,word,080a75fc
         patch=1,EE,000ffc2c,word,ac430098
-        patch=1,EE,0029d7e8,word,0803ff08
-        patch=1,EE,0029d7ec,word,3c0300ff
+        patch=1,EE,e0020000,extended,0069cc20
+        patch=1,EE,2029d7e8,extended,0803ff08
+        patch=1,EE,2029d7ec,extended,3c0300ff
+        patch=1,EE,e0020001,extended,0069cc20
+        patch=1,EE,2029d7e8,extended,0803ff08
+        patch=1,EE,2029d7ec,extended,3c0300ff
 SLPS-25784:
   name: "Another Century's Episode 3 - The Final"
   region: "NTSC-J"
@@ -38722,8 +38730,12 @@ SLUS-21816:
         patch=1,EE,000ffc24,word,3463a833
         patch=1,EE,000ffc28,word,080778cc
         patch=1,EE,000ffc2c,word,ac430098
-        patch=1,EE,001de328,word,0803ff08
-        patch=1,EE,001de32c,word,3c0300ff
+        patch=1,EE,e0020000,extended,0052b8e0
+        patch=1,EE,201de328,extended,0803ff08
+        patch=1,EE,201de32c,extended,3c0300ff
+        patch=1,EE,e0020001,extended,0052b8e0
+        patch=1,EE,201de328,extended,ac40009c
+        patch=1,EE,201de32c,extended,ac430098
 SLUS-21817:
   name: "SBK Superbike World Championship"
   region: "NTSC-U"
