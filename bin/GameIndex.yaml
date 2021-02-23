@@ -113,6 +113,9 @@ PBPX-95524:
   # Comments from old GameIndex.dbf for this Game
   # eeClampMode = 3  Text in races works.
   # vuClampMode = 2  Text in GT mode works.
+PCPX-96311:
+  name: "Gran Turismo 3 Trial Disk Volume 1"
+  region: "NTSC-J"
 PCPX-96616:
   name: "PurePure 2 Volume 2"
   region: "NTSC-J"
@@ -124,6 +127,9 @@ PCPX-96649:
     vuClampMode: 2  # Text in GT mode works.
   # Comments from old GameIndex.dbf for this Game
   # eeClampMode = 3  Text in races works.
+PCPX-96660:
+  name: "Tourist Trophy [Demo]"
+  region: "NTSC-J"
 SCAJ-10001:
   name: "Makai Senki Disgaea"
   region: "NTSC-Unk"
