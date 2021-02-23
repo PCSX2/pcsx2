@@ -186,7 +186,6 @@ void InputRecording::IncrementFrameCounter()
 				incrementUndo = false;
 		}
 	}
-	g_InputRecording.LogAndRedraw();
 }
 
 void InputRecording::LogAndRedraw()
