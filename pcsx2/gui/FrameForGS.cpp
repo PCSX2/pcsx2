@@ -141,16 +141,21 @@ void GSPanel::InitRecordingAccelerators()
 
 	GetMainFramePtr()->initializeRecordingMenuItem(
 		MenuId_Recording_FrameAdvance,
-		m_Accels->findKeycodeWithCommandId("FrameAdvance").toTitleizedString());
+		GetAssociatedKeyCode("FrameAdvance"));
 	GetMainFramePtr()->initializeRecordingMenuItem(
 		MenuId_Recording_TogglePause,
-		m_Accels->findKeycodeWithCommandId("TogglePause").toTitleizedString());
+		GetAssociatedKeyCode("TogglePause"));
 	GetMainFramePtr()->initializeRecordingMenuItem(
 		MenuId_Recording_ToggleRecordingMode,
-		m_Accels->findKeycodeWithCommandId("InputRecordingModeToggle").toTitleizedString(),
+		GetAssociatedKeyCode("InputRecordingModeToggle"),
 		g_InputRecording.IsActive());
 
 	inputRec::consoleLog("Initialized Input Recording Key Bindings");
+}
+
+wxString GSPanel::GetAssociatedKeyCode(const char* id)
+{
+	return m_Accels->findKeycodeWithCommandId(id).toTitleizedString();
 }
 
 void GSPanel::RemoveRecordingAccelerators()

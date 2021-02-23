@@ -163,7 +163,9 @@ public:
 	void CreateConfigMenu();
 	void CreateWindowsMenu();
 	void CreateCaptureMenu();
+#ifndef DISABLE_RECORDING
 	void CreateRecordMenu();
+#endif
 	void CreateHelpMenu();
 
 	bool Destroy();
@@ -186,6 +188,8 @@ protected:
 	//Apply here is from config to GUI.
 	void ApplySettings();
 	void ApplyCoreStatus();
+	void ApplySuspendStatus();
+	void ApplyCDVDStatus();
 
 	void InitLogBoxPosition(AppConfig::ConsoleLogOptions& conf);
 
@@ -262,6 +266,7 @@ protected:
 	void Menu_Recording_New_Click(wxCommandEvent& event);
 	void Menu_Recording_Play_Click(wxCommandEvent& event);
 	void Menu_Recording_Stop_Click(wxCommandEvent& event);
+	void ApplyFirstFrameStatus();
 	void Menu_Recording_TogglePause_Click(wxCommandEvent& event);
 	void Menu_Recording_FrameAdvance_Click(wxCommandEvent& event);
 	void Menu_Recording_ToggleRecordingMode_Click(wxCommandEvent& event);
