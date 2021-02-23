@@ -1767,7 +1767,7 @@ SCES-52156:
   name: "Ghosthunter - Hunter on the spectres"
   region: "PAL-M3"
 SCES-52268:
-  name: "Sing-Star"
+  name: "SingStar"
   region: "PAL-E"
 SCES-52299:
   name: "SingStar"
@@ -1903,10 +1903,10 @@ SCES-52530:
   name: "Crisis Zone"
   region: "PAL-M5"
 SCES-52564:
-  name: "Sing-Star"
+  name: "SingStar"
   region: "PAL-F"
 SCES-52565:
-  name: "Sing-Star"
+  name: "SingStar"
   region: "PAL-G"
 SCES-52566:
   name: "SingStar"
@@ -1950,16 +1950,16 @@ SCES-52763:
   name: "DJ Decks & FX Vol.1"
   region: "PAL-G"
 SCES-52826:
-  name: "Sing-Star Party"
+  name: "SingStar Party"
   region: "PAL-E"
 SCES-52827:
   name: "SingStar Party"
   region: "PAL-I"
 SCES-52828:
-  name: "Sing-Star NRJ Music Tour"
+  name: "SingStar NRJ Music Tour"
   region: "PAL-F"
 SCES-52829:
-  name: "Sing-Star Party"
+  name: "SingStar Party"
   region: "PAL-G"
 SCES-52830:
   name: "SingStar Party"
@@ -2009,13 +2009,13 @@ SCES-53179:
   name: "SingStar Pop"
   region: "PAL-F"
 SCES-53180:
-  name: "Sing-Star - The Dome"
+  name: "SingStar - The Dome"
   region: "PAL-G"
 SCES-53181:
   name: "SingStar"
   region: "PAL-I"
 SCES-53182:
-  name: "Sing-Star Pop"
+  name: "SingStar Pop"
   region: "PAL-S"
 SCES-53183:
   name: "SingStar Pop"
@@ -2134,28 +2134,28 @@ SCES-53565:
   name: "SingStar Pop"
   region: "PAL-Unk"
 SCES-53602:
-  name: "Sing-Star '80s"
+  name: "SingStar '80s"
   region: "PAL-E"
 SCES-53603:
-  name: "Sing-Star '80s"
+  name: "SingStar '80s"
   region: "PAL-F"
 SCES-53604:
-  name: "Sing-Star '80s"
+  name: "SingStar '80s"
   region: "PAL-G"
 SCES-53605:
-  name: "Sing-Star '80s"
+  name: "SingStar '80s"
   region: "PAL-I"
 SCES-53606:
-  name: "Sing-Star '80s"
+  name: "SingStar '80s"
   region: "PAL-S"
 SCES-53607:
-  name: "Sing-Star '80s"
+  name: "SingStar '80s"
   region: "PAL-DU"
 SCES-53609:
-  name: "Sing-Star '80s"
+  name: "SingStar '80s"
   region: "PAL-SW"
 SCES-53610:
-  name: "Sing-Star '80s"
+  name: "SingStar '80s"
   region: "PAL-PL"
 SCES-53642:
   name: "Ape Escape 3"
@@ -2237,10 +2237,10 @@ SCES-53895:
   name: "SingStar Rocks!"
   region: "PAL-S"
 SCES-53897:
-  name: "Sing-Star Rocks!"
+  name: "SingStar Rocks!"
   region: "PAL-F"
 SCES-53898:
-  name: "Sing-Star Rocks!"
+  name: "SingStar Rocks!"
   region: "PAL-I"
 SCES-53925:
   name: "Buzz! The Big Quiz"
@@ -2303,7 +2303,7 @@ SCES-54129:
   name: "SingStar"
   region: "PAL-S"
 SCES-54131:
-  name: "Sing-Star Anthems"
+  name: "SingStar Anthems"
   region: "PAL-E"
   compat: 3
 SCES-54145:
@@ -2311,7 +2311,7 @@ SCES-54145:
   region: "PAL-M10"
   compat: 5
 SCES-54191:
-  name: "Sing-Star Legends"
+  name: "SingStar Legends"
   region: "PAL-E"
 SCES-54197:
   name: "SingStar Legends"
@@ -2418,15 +2418,18 @@ SCES-54552:
         author=kozarovv
         // Fixes Vedan Myna area out of bounds glitch.
         patch=1,EE,00124898,word,3442fffe
-SCES-54560:
-  name: "Sing-Star R&B"
-  region: "PAL-E"
 SCES-54570:
-  name: "Sing-Star Pop Hits"
+  name: "SingStar Pop Hits"
   region: "PAL-E"
 SCES-54571:
-  name: "Sing-Star Pop Hits"
+  name: "SingStar Pop Hits"
   region: "PAL-G"
+SCES-54572:
+  name: "SingStar Pop Hits"
+  region: "PAL-S"
+SCES-54573:
+  name: "SingStar Pop Hits"
+  region: "PAL-SC"
 SCES-54597:
   name: "Buzz! The Mega Quiz"
   region: "PAL-M3"
@@ -2460,6 +2463,12 @@ SCES-54748:
 SCES-54749:
   name: "Buzz! Junior - Dino Den"
   region: "PAL-M8"
+SCES-54760:
+  name: "SingStar R&B"
+  region: "PAL-E"
+SCES-54761:
+  name: "SingStar R&B"
+  region: "PAL-S"
 SCES-54762:
   name: "SingStar R&B"
   region: "PAL-G"
