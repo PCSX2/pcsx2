@@ -811,28 +811,28 @@ void pt(const char* str){
 	printf("%02i:%02i:%02i%s", current->tm_hour, current->tm_min, current->tm_sec, str);
 }
 
-EXPORT_C_(int) GSsetupRecording(std::string& filename)
+EXPORT_C_(bool) GSsetupRecording(std::string& filename)
 {
 	if (s_gs == NULL) {
 		printf("GSdx: no s_gs for recording\n");
-		return 0;
+		return false;
 	}
 #if defined(__unix__) || defined(__APPLE__)
 	if (!theApp.GetConfigB("capture_enabled")) {
 		printf("GSdx: Recording is disabled\n");
-		return 0;
+		return false;
 	}
 #endif
 	printf("GSdx: Recording start command\n");
 	if (s_gs->BeginCapture(filename))
 	{
 		pt(" - Capture started\n");
-		return 1;
+		return true;
 	}
 	else
 	{
 		pt(" - Capture cancelled\n");
-		return 0;
+		return false;
 	}
 }
 

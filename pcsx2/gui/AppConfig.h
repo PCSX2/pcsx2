@@ -287,7 +287,7 @@ public:
 
 	struct CaptureOptions
 	{
-		bool					EnableAudio;
+		bool EnableAudio;
 
 		CaptureOptions();
 
