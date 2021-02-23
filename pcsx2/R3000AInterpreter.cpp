@@ -17,6 +17,8 @@
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
 #include "App.h" // For host irx injection hack
+
+#include "R5900OpcodeTables.h"
 #include "../DebugTools/Breakpoints.h"
 
 using namespace R3000A;
@@ -124,19 +126,85 @@ void psxJALR()
 	doBranch(_u32(_rRs_));
 }
 
-void psxBreakpoint()
+void psxBreakpoint(bool memcheck)
 {
 	u32 pc = psxRegs.pc;
 	if (CBreakPoints::CheckSkipFirst(BREAKPOINT_IOP, pc) != 0)
 		return;
 
-	auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_IOP, pc);
-	if (cond && !cond->Evaluate())
-		return;
+	if (!memcheck)
+	{
+		auto cond = CBreakPoints::GetBreakPointCondition(BREAKPOINT_IOP, pc);
+		if (cond && !cond->Evaluate())
+			return;
+	}
 
 	CBreakPoints::SetBreakpointTriggered(true);
 	GetCoreThread().PauseSelfDebug();
 	throw Exception::ExitCpuExecute();
+}
+
+void psxMemcheck(u32 op, u32 bits, bool store)
+{
+	// compute accessed address
+	u32 start = psxRegs.GPR.r[(op >> 21) & 0x1F];
+	if ((s16)op != 0)
+		start += (s16)op;
+	if (bits == 128)
+		start &= ~0x0F;
+
+	start = standardizeBreakpointAddress(BREAKPOINT_IOP, start);
+	u32 end = start + bits / 8;
+
+	auto checks = CBreakPoints::GetMemChecks();
+	for (size_t i = 0; i < checks.size(); i++)
+	{
+		auto& check = checks[i];
+
+		if (check.cpu != BREAKPOINT_IOP)
+			continue;
+		if (check.result == 0)
+			continue;
+		if ((check.cond & MEMCHECK_WRITE) == 0 && store)
+			continue;
+		if ((check.cond & MEMCHECK_READ) == 0 && !store)
+			continue;
+
+		if (start < check.end && check.start < end)
+			psxBreakpoint(true);
+	}
+}
+
+void psxCheckMemcheck()
+{
+	u32 pc = psxRegs.pc;
+	int needed = psxIsMemcheckNeeded(pc);
+	if (needed == 0)
+		return;
+	
+	u32 op = iopMemRead32(needed == 2 ? pc + 4 : pc);
+	// Yeah, we use the R5900 opcode table for the R3000
+	const R5900::OPCODE& opcode = R5900::GetInstruction(op);
+
+	bool store = (opcode.flags & IS_STORE) != 0;
+	switch (opcode.flags & MEMTYPE_MASK)
+	{
+	case MEMTYPE_BYTE:
+		psxMemcheck(op, 8, store);
+		break;
+	case MEMTYPE_HALF:
+		psxMemcheck(op, 16, store);
+		break;
+	case MEMTYPE_WORD:
+		psxMemcheck(op, 32, store);
+		break;
+	case MEMTYPE_DWORD:
+		psxMemcheck(op, 64, store);
+		break;
+	case MEMTYPE_QWORD:
+		psxMemcheck(op, 128, store);
+		break;
+	}
 }
 
 ///////////////////////////////////////////
@@ -144,12 +212,14 @@ void psxBreakpoint()
 
 static __fi void execI()
 {
-	// Called for every instruction.
+	// This function is called for every instruction.
 	// Enabling the define below will probably, no, will cause the interpretor to be slower.
 //#define EXTRA_DEBUG
 #ifdef EXTRA_DEBUG
 	if (psxIsBreakpointNeeded(psxRegs.pc))
-		psxBreakpoint();
+		psxBreakpoint(false);
+
+	psxCheckMemcheck();
 #endif
 
 	// Inject IRX hack
@@ -166,7 +236,7 @@ static __fi void execI()
 
 	psxRegs.pc+= 4;
 	psxRegs.cycle++;
-	
+
 	if ((psxHu32(HW_ICFG) & (1 << 3)))
 	{
 		//One of the Iop to EE delta clocks to be set in PS1 mode.
