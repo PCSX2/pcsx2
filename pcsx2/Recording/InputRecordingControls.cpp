@@ -54,6 +54,7 @@ void InputRecordingControls::CheckPauseStatus()
 			pauseEmulation = true;
 		}
 	}
+	g_InputRecording.LogAndRedraw();
 }
 
 void InputRecordingControls::HandlePausingAndLocking()
