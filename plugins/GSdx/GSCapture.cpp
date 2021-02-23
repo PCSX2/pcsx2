@@ -404,7 +404,7 @@ GSCapture::~GSCapture()
 	EndCapture();
 }
 
-int GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float aspect, std::string& filename)
+bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float aspect, std::string& filename)
 {
 	printf("Recommended resolution: %d x %d, DAR for muxing: %.4f\n", recommendedResolution.x, recommendedResolution.y, aspect);
 	std::lock_guard<std::recursive_mutex> lock(m_lock);
@@ -418,7 +418,7 @@ int GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float a
 	GSCaptureDlg dlg;
 
 	if (IDOK != dlg.DoModal())
-		return 0;
+		return false;
 
 	{
 		const int start = dlg.m_filename.length() - 4;
@@ -438,11 +438,9 @@ int GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float a
 		else
 		{
 			dlg.InvalidFile();
-			return 0;
+			return false;
 		}
 	}
-
-	;
 
 	m_size.x = (dlg.m_width + 7) & ~7;
 	m_size.y = (dlg.m_height + 7) & ~7;
@@ -458,7 +456,7 @@ int GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float a
 	|| FAILED(hr = cgb->SetFiltergraph(m_graph))
 	|| FAILED(hr = cgb->SetOutputFileName(&MEDIASUBTYPE_Avi, std::wstring(dlg.m_filename.begin(), dlg.m_filename.end()).c_str(), &mux, NULL)))
 	{
-		return 0;
+		return false;
 	}
 
 	m_src = new GSSource(m_size.x, m_size.y, fps, NULL, hr, dlg.m_colorspace);
@@ -466,22 +464,22 @@ int GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float a
 	if (dlg.m_enc==0)
 	{
 		if (FAILED(hr = m_graph->AddFilter(m_src, L"Source")))
-			return 0;
+			return false;
 		if (FAILED(hr = m_graph->ConnectDirect(GetFirstPin(m_src, PINDIR_OUTPUT), GetFirstPin(mux, PINDIR_INPUT), NULL)))
-			return 0;
+			return false;
 	}
 	else
 	{
 		if(FAILED(hr = m_graph->AddFilter(m_src, L"Source"))
 		|| FAILED(hr = m_graph->AddFilter(dlg.m_enc, L"Encoder")))
 		{
-			return 0;
+			return false;
 		}
 
 		if(FAILED(hr = m_graph->ConnectDirect(GetFirstPin(m_src, PINDIR_OUTPUT), GetFirstPin(dlg.m_enc, PINDIR_INPUT), NULL))
 		|| FAILED(hr = m_graph->ConnectDirect(GetFirstPin(dlg.m_enc, PINDIR_OUTPUT), GetFirstPin(mux, PINDIR_INPUT), NULL)))
 		{
-			return 0;
+			return false;
 		}
 	}
 
@@ -510,7 +508,7 @@ int GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float a
 
 	m_capturing = true;
 	filename = dlg.m_filename.erase(dlg.m_filename.length() - 3, 3) + "wav";
-	return 1;
+	return true;
 #elif defined(__unix__)
 	// Note I think it doesn't support multiple depth creation
 	GSmkdir(m_out_dir.c_str());
@@ -527,7 +525,7 @@ int GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float a
 
 	m_capturing = true;
 	filename = m_out_dir + "/audio_recording.wav";
-	return 1;
+	return true;
 #endif
 }
 

@@ -134,8 +134,8 @@ void CALLBACK GSsetGameCRC(int crc, int gameoptions);
 void CALLBACK GSsetFrameSkip(int frameskip);
 
 // Starts recording GS frame data
-// returns a non zero value if successful
-int CALLBACK GSsetupRecording(std::string& filename);
+// returns true if successful
+bool CALLBACK GSsetupRecording(std::string& filename);
 
 // Stops recording GS frame data
 void CALLBACK GSendRecording();
@@ -185,7 +185,7 @@ typedef void(CALLBACK *_GSsetGameCRC)(int, int);
 typedef void(CALLBACK *_GSsetFrameSkip)(int frameskip);
 typedef void(CALLBACK *_GSsetVsync)(int enabled);
 typedef void(CALLBACK *_GSsetExclusive)(int isExclusive);
-typedef int(CALLBACK* _GSsetupRecording)(std::string&);
+typedef bool(CALLBACK* _GSsetupRecording)(std::string&);
 typedef void(CALLBACK* _GSendRecording)();
 typedef void(CALLBACK *_GSreset)();
 typedef void(CALLBACK *_GSwriteCSR)(u32 value);

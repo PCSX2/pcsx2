@@ -680,9 +680,9 @@ void AppConfig::LoadSave( IniInterface& ini )
 	GSWindow		.LoadSave( ini );
 	Framerate		.LoadSave( ini );
 #ifndef DISABLE_RECORDING
-	inputRecording	.loadSave( ini );
+	inputRecording.loadSave(ini);
 #endif
-	AudioCapture	.LoadSave( ini );
+	AudioCapture.LoadSave( ini );
 	Templates		.LoadSave( ini );
 
 	ini.Flush();

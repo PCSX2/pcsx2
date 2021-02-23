@@ -579,7 +579,7 @@ void SPU2write(u32 rmem, u16 value)
 }
 
 // returns a non zero value if successful
-int SPU2setupRecording(const std::string* filename)
+bool SPU2setupRecording(const std::string* filename)
 {
 	return RecordStart(filename);
 }

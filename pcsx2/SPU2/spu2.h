@@ -31,8 +31,8 @@ void SPU2write(u32 mem, u16 value);
 u16 SPU2read(u32 mem);
 
 // extended funcs
-// returns a non zero value if successful
-int SPU2setupRecording(const std::string* filename);
+// returns true if successful
+bool SPU2setupRecording(const std::string* filename);
 void SPU2endRecording();
 
 void SPU2setClockPtr(u32* ptr);
