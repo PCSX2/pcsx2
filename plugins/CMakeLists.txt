@@ -10,6 +10,3 @@ if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSdx" AND GSdx)
 	add_subdirectory(GSdx)
 endif()
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins/GSnull" AND GSnull)
-	add_subdirectory(GSnull)
-endif()
