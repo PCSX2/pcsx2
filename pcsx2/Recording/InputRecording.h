@@ -88,10 +88,12 @@ public:
 	bool Play(wxString filename);
 	// Stop the active input recording
 	void Stop();
-// Displays the VirtualPad window for the chosen pad
+	// Displays the VirtualPad window for the chosen pad
 	void ShowVirtualPad(const int port);
 	// Logs the padData and redraws the virtualPad windows of active pads
 	void LogAndRedraw();
+	// Resets emulation to the beginning of a recording
+	bool GoToFirstFrame();
 	// Resets a recording if the base savestate could not be loaded at the start
 	void FailedSavestate();
 

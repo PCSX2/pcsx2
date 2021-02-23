@@ -541,6 +541,17 @@ namespace Implementations
 		}
 	}
 
+	void GoToFirstFrame()
+	{
+		if (g_Conf->EmuOptions.EnableRecordingTools && g_InputRecording.IsActive())
+		{
+			if (!g_InputRecording.GoToFirstFrame())
+			{
+				sMainFrame.StopInputRecording();
+			}
+		}
+	}
+
 	void States_SaveSlot(int slot)
 	{
 		States_SetCurrentSlot(slot);
@@ -838,6 +849,8 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 		{"FrameAdvance", Implementations::FrameAdvance, NULL, NULL, false},
 		{"TogglePause", Implementations::TogglePause, NULL, NULL, false},
 		{"InputRecordingModeToggle", Implementations::InputRecordingModeToggle, NULL, NULL, false},
+		{"GoToFirstFrame", Implementations::GoToFirstFrame, NULL, NULL, false},
+
 		{"States_SaveSlot0", Implementations::States_SaveSlot0, NULL, NULL, false},
 		{"States_SaveSlot1", Implementations::States_SaveSlot1, NULL, NULL, false},
 		{"States_SaveSlot2", Implementations::States_SaveSlot2, NULL, NULL, false},
@@ -848,6 +861,7 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 		{"States_SaveSlot7", Implementations::States_SaveSlot7, NULL, NULL, false},
 		{"States_SaveSlot8", Implementations::States_SaveSlot8, NULL, NULL, false},
 		{"States_SaveSlot9", Implementations::States_SaveSlot9, NULL, NULL, false},
+
 		{"States_LoadSlot0", Implementations::States_LoadSlot0, NULL, NULL, false},
 		{"States_LoadSlot1", Implementations::States_LoadSlot1, NULL, NULL, false},
 		{"States_LoadSlot2", Implementations::States_LoadSlot2, NULL, NULL, false},

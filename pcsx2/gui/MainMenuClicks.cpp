@@ -465,8 +465,18 @@ void MainEmuFrame::Menu_CdvdSource_Click(wxCommandEvent& event)
 
 void MainEmuFrame::Menu_BootCdvd_Click(wxCommandEvent& event)
 {
-	g_Conf->EmuOptions.UseBOOT2Injection = g_Conf->EnableFastBoot;
-	_DoBootCdvd();
+#ifndef DISABLE_RECORDING
+	if (g_InputRecording.IsActive())
+	{
+		if (!g_InputRecording.GoToFirstFrame())
+			StopInputRecording();
+	}
+	else
+#endif
+	{
+		g_Conf->EmuOptions.UseBOOT2Injection = g_Conf->EnableFastBoot;
+		_DoBootCdvd();
+	}
 }
 
 void MainEmuFrame::Menu_FastBoot_Click(wxCommandEvent& event)

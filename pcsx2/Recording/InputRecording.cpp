@@ -20,8 +20,6 @@
 
 #ifndef DISABLE_RECORDING
 
-#include <vector>
-
 #include "AppGameDatabase.h"
 #include "DebugTools/Debug.h"
 
@@ -395,6 +393,26 @@ bool InputRecording::Play(wxString fileName)
 		initialLoad = true;
 		sApp.SysExecute(g_Conf->CdvdSource);
 	}
+	return true;
+}
+
+bool InputRecording::GoToFirstFrame()
+{
+	if (inputRecordingData.FromSaveState())
+	{
+		if (!wxFileExists(inputRecordingData.GetFilename() + "_SaveState.p2s"))
+		{
+			inputRec::consoleLog(fmt::format("[REC]: Could not locate savestate file at location - {}_SaveState.p2s\n",
+												inputRecordingData.GetFilename()));
+			return false;
+		}
+		StateCopy_LoadFromFile(inputRecordingData.GetFilename() + "_SaveState.p2s");
+	}
+	else
+		sApp.SysExecute(g_Conf->CdvdSource);
+
+	if (IsRecording())
+		SetToReplayMode();
 	return true;
 }
 
