@@ -178,11 +178,15 @@ wxWindowID SwapOrReset_Iso(wxWindow* owner, IScopedCoreThread& core_control, con
 		core_control.DisallowResume();
 		wxDialogWithHelpers dialog(owner, _("Confirm ISO image change"));
 
-		dialog += dialog.Heading(descpart1);
-		dialog += dialog.GetCharHeight();
+		dialog += dialog.Heading(descpart1); // New lines already applied
 		dialog += dialog.Text(isoFilename);
 		dialog += dialog.GetCharHeight();
 		dialog += dialog.Heading(_("Do you want to swap discs or boot the new image (via system reset)?"));
+
+#ifndef DISABLE_RECORDING
+		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
+			dialog += dialog.Text(_("\n(Warning: The savestate accompanying the active input recording\nmay not be compatible with the new source)"));
+#endif
 
 		result = pxIssueConfirmation(dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
 		if (result == wxID_CANCEL)
@@ -235,6 +239,11 @@ wxWindowID SwapOrReset_Disc(wxWindow* owner, IScopedCoreThread& core, const wxSt
 		dialog += dialog.GetCharHeight();
 		dialog += dialog.Heading(_("Do you want to swap discs or boot the new disc (via system reset)?"));
 
+#ifndef DISABLE_RECORDING
+		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
+			dialog += dialog.Text(_("\n(Warning: The savestate accompanying the active input recording\nmay not be compatible with the new source)"));
+#endif
+
 		result = pxIssueConfirmation(dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
 		if (result == wxID_CANCEL)
 		{
@@ -276,6 +285,11 @@ wxWindowID SwapOrReset_CdvdSrc(wxWindow* owner, CDVD_SourceType newsrc)
 
 		dialog += dialog.Heading(changeMsg + L"\n\n" +
 								 _("Do you want to swap discs or boot the new image (system reset)?"));
+
+#ifndef DISABLE_RECORDING
+		if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
+			dialog += dialog.Text(_("\n(Warning: The savestate accompanying the active input recording\nmay not be compatible with the new source)"));
+#endif
 
 		result = pxIssueConfirmation(dialog, MsgButtons().Reset().Cancel().Custom(_("Swap Disc"), "swap"));
 
@@ -772,11 +786,42 @@ void MainEmuFrame::Menu_SuspendResume_Click(wxCommandEvent& event)
 
 void MainEmuFrame::Menu_SysShutdown_Click(wxCommandEvent& event)
 {
-	if (m_capturingVideo)
-		VideoCaptureToggle();
-	UI_DisableSysShutdown();
-	Console.SetTitle("PCSX2 Program Log");
-	CoreThread.Reset();
+	bool doShutdown = true;
+#ifndef DISABLE_RECORDING
+	if (!g_InputRecording.IsActive())
+	{
+		if (g_InputRecordingControls.IsPaused())
+			g_InputRecordingControls.Resume();
+	}
+	else
+	{
+		const bool initiallyPaused = g_InputRecordingControls.IsPaused();
+		if (!initiallyPaused)
+			g_InputRecordingControls.Pause();
+		wxWindowID result = wxID_CANCEL;
+		wxDialogWithHelpers dialog(this, _("Shutdown & Close Input Recording"));
+		dialog += dialog.Heading(L"\nShutting down emulation will close the active input recording file.\nProceed?");
+		result = pxIssueConfirmation(dialog, MsgButtons().Close().Cancel());
+		if (result == wxID_CLOSE)
+		{
+			StopInputRecording();
+			g_InputRecordingControls.Resume();
+		}
+		else if (!initiallyPaused)
+		{
+			g_InputRecordingControls.Resume();
+			doShutdown = false;
+		}
+	}
+#endif
+	if (doShutdown)
+	{
+		if (m_capturingVideo)
+			VideoCaptureToggle();
+		UI_DisableSysShutdown();
+		Console.SetTitle("PCSX2 Program Log");
+		CoreThread.Reset();
+	}
 }
 
 void MainEmuFrame::Menu_ConfigPlugin_Click(wxCommandEvent& event)
