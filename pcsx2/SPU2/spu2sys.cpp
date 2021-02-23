@@ -729,40 +729,40 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 			case 0x1d90: //         Channel FM (pitch lfo) mode (0-15)
 				SPU2_FastWrite(REG_S_PMON, value);
 				if (value != 0)
-					ConLog("spu2x warning: wants to set Pitch Modulation reg1 to %x \n", value);
+					ConLog("SPU2 warning: wants to set Pitch Modulation reg1 to %x \n", value);
 				break;
 
 			case 0x1d92: //         Channel FM (pitch lfo) mode (16-23)
 				SPU2_FastWrite(REG_S_PMON + 2, value);
 				if (value != 0)
-					ConLog("spu2x warning: wants to set Pitch Modulation reg2 to %x \n", value);
+					ConLog("SPU2 warning: wants to set Pitch Modulation reg2 to %x \n", value);
 				break;
 
 
 			case 0x1d94: //         Channel Noise mode (0-15)
 				SPU2_FastWrite(REG_S_NON, value);
 				if (value != 0)
-					ConLog("spu2x warning: wants to set Channel Noise mode reg1 to %x\n", value);
+					ConLog("SPU2 warning: wants to set Channel Noise mode reg1 to %x\n", value);
 				break;
 
 			case 0x1d96: //         Channel Noise mode (16-23)
 				SPU2_FastWrite(REG_S_NON + 2, value);
 				if (value != 0)
-					ConLog("spu2x warning: wants to set Channel Noise mode reg2 to %x\n", value);
+					ConLog("SPU2 warning: wants to set Channel Noise mode reg2 to %x\n", value);
 				break;
 
 			case 0x1d98: //         1F801D98h - Voice 0..23 Reverb mode aka Echo On (EON) (R/W)
 				//Regs.VMIXEL = value & 0xFFFF;
 				SPU2_FastWrite(REG_S_VMIXEL, value);
 				SPU2_FastWrite(REG_S_VMIXER, value);
-				//ConLog("spu2x warning: setting reverb mode reg1 to %x \n", Regs.VMIXEL);
+				//ConLog("SPU2 warning: setting reverb mode reg1 to %x \n", Regs.VMIXEL);
 				break;
 
 			case 0x1d9a: //         1F801D98h + 2 - Voice 0..23 Reverb mode aka Echo On (EON) (R/W)
 				//Regs.VMIXEL = value << 16;
 				SPU2_FastWrite(REG_S_VMIXEL + 2, value);
 				SPU2_FastWrite(REG_S_VMIXER + 2, value);
-				//ConLog("spu2x warning: setting reverb mode reg2 to %x \n", Regs.VMIXEL);
+				//ConLog("SPU2 warning: setting reverb mode reg2 to %x \n", Regs.VMIXEL);
 				break;
 
 			// this was wrong? // edit: appears so!
@@ -777,12 +777,12 @@ void V_Core::WriteRegPS1(u32 mem, u16 value)
 			//break;
 			case 0x1d9c: // Voice 0..15 ON/OFF (status) (ENDX) (R) // writeable but hw overrides it shortly after
 				//Regs.ENDX &= 0xff0000;
-				ConLog("spu2x warning: wants to set ENDX reg1 to %x \n", value);
+				ConLog("SPU2 warning: wants to set ENDX reg1 to %x \n", value);
 				break;
 
 			case 0x1d9e: //         // Voice 15..23 ON/OFF (status) (ENDX) (R) // writeable but hw overrides it shortly after
 				//Regs.ENDX &= 0xffff;
-				ConLog("spu2x warning: wants to set ENDX reg2 to %x \n", value);
+				ConLog("SPU2 warning: wants to set ENDX reg2 to %x \n", value);
 				break;
 
 			case 0x1da2: //         Reverb work area start

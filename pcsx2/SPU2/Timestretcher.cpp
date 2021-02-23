@@ -93,7 +93,7 @@ int targetIPS = 750;
 //  Dynamic tuning can have a slight negative effect on the behavior of the algorithm, so it's preferred to have it off.
 //Currently it looks like it's around 750/sec on all systems when playing at 100% speed (50/60fps),
 //  and proportional to that speed otherwise.
-//If changes are made to SPU2X which affects this number (but it's still the same on all systems), then just change targetIPS.
+//If changes are made to SPU2 which affects this number (but it's still the same on all systems), then just change targetIPS.
 //If we find out that some systems are very different, we can turn on dynamic tuning by uncommenting the next line.
 //#define NEWSTRETCHER_USE_DYNAMIC_TUNING
 
