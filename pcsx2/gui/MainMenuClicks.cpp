@@ -485,10 +485,7 @@ void MainEmuFrame::Menu_BootCdvd_Click(wxCommandEvent& event)
 {
 #ifndef DISABLE_RECORDING
 	if (g_InputRecording.IsActive())
-	{
-		if (!g_InputRecording.GoToFirstFrame())
-			StopInputRecording();
-	}
+		g_InputRecording.GoToFirstFrame(this);
 	else
 #endif
 	{
@@ -1058,7 +1055,7 @@ void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent& event)
 	}
 
 	StopInputRecording();
-	if (!g_InputRecording.Play(openFileDialog.GetPath()))
+	if (!g_InputRecording.Play(this, openFileDialog.GetPath()))
 	{
 		if (!initiallyPaused)
 			g_InputRecordingControls.Resume();

@@ -315,7 +315,7 @@ void InputRecording::SetupInitialState(u32 newStartingFrame)
 
 void InputRecording::FailedSavestate()
 {
-	inputRec::consoleLog(fmt::format("{}_SaveState.p2s is not compatible with this version of PCSX2", inputRecordingData.GetFilename()));
+	inputRec::consoleLog(fmt::format("{} is not compatible with this version of PCSX2", savestate));
 	inputRec::consoleLog(fmt::format("Original PCSX2 version used: {}", inputRecordingData.GetHeader().emu));
 	inputRecordingData.Close();
 	initialLoad = false;
@@ -342,9 +342,10 @@ bool InputRecording::Create(wxString fileName, const bool fromSaveState, wxStrin
 	state = InputRecordingMode::Recording;
 	if (fromSaveState)
 	{
-		if (wxFileExists(fileName + "_SaveState.p2s"))
-			wxCopyFile(fileName + "_SaveState.p2s", fileName + "_SaveState.p2s.bak", true);
-		StateCopy_SaveToFile(fileName + "_SaveState.p2s");
+		savestate = fileName + "_SaveState.p2s";
+		if (wxFileExists(savestate))
+			wxCopyFile(savestate, savestate + ".bak", true);
+		StateCopy_SaveToFile(savestate);
 	}
 	else
 		sApp.SysExecute(g_Conf->CdvdSource);
@@ -363,12 +364,11 @@ bool InputRecording::Create(wxString fileName, const bool fromSaveState, wxStrin
 	return true;
 }
 
-bool InputRecording::Play(wxString fileName)
+bool InputRecording::Play(wxWindow* parent, wxString filename)
 {
-	if (!inputRecordingData.OpenExisting(fileName))
+	if (!inputRecordingData.OpenExisting(filename))
 		return false;
 
-	state = InputRecordingMode::Replaying;
 	// Either load the savestate, or restart the game
 	if (inputRecordingData.FromSaveState())
 	{
@@ -378,42 +378,69 @@ bool InputRecording::Play(wxString fileName)
 			inputRecordingData.Close();
 			return false;
 		}
-		if (!wxFileExists(inputRecordingData.GetFilename() + "_SaveState.p2s"))
+
+		savestate = inputRecordingData.GetFilename() + "_SaveState.p2s";
+		if (!wxFileExists(savestate))
 		{
-			inputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}_SaveState.p2s",
-											 inputRecordingData.GetFilename().ToStdString()));
-			inputRecordingData.Close();
-			return false;
+			wxFileDialog loadStateDialog(parent, _("Select the savestate that will accompany this recording"), L"", L"",
+										 L"Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
+			if (loadStateDialog.ShowModal() == wxID_CANCEL)
+			{
+				inputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}", savestate));
+				inputRec::log("Savestate load failed");
+				inputRecordingData.Close();
+				return false;
+			}
+
+			savestate = loadStateDialog.GetPath();
+			inputRec::consoleLog(fmt::format("Base savestate set to {}", savestate));
 		}
+		state = InputRecordingMode::Replaying;
 		initialLoad = true;
-		StateCopy_LoadFromFile(inputRecordingData.GetFilename() + "_SaveState.p2s");
+		StateCopy_LoadFromFile(savestate);
 	}
 	else
 	{
+		state = InputRecordingMode::Replaying;
 		initialLoad = true;
 		sApp.SysExecute(g_Conf->CdvdSource);
 	}
 	return true;
 }
 
-bool InputRecording::GoToFirstFrame()
+void InputRecording::GoToFirstFrame(wxWindow* parent)
 {
 	if (inputRecordingData.FromSaveState())
 	{
-		if (!wxFileExists(inputRecordingData.GetFilename() + "_SaveState.p2s"))
+		if (!wxFileExists(savestate))
 		{
-			inputRec::consoleLog(fmt::format("[REC]: Could not locate savestate file at location - {}_SaveState.p2s\n",
-												inputRecordingData.GetFilename()));
-			return false;
+			const bool initiallyPaused = g_InputRecordingControls.IsPaused();
+
+			if (!initiallyPaused)
+				g_InputRecordingControls.PauseImmediately();
+
+			inputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}\n", savestate));
+			wxFileDialog loadStateDialog(parent, _("Select a savestate to accompany the recording with"), L"", L"",
+										 L"Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
+			int result = loadStateDialog.ShowModal();
+			if (!initiallyPaused)
+				g_InputRecordingControls.Resume();
+
+			if (result == wxID_CANCEL)
+			{
+				inputRec::log("Savestate load cancelled");
+				return;
+			}
+			savestate = loadStateDialog.GetPath();
+			inputRec::consoleLog(fmt::format ("Base savestate swapped to {}", savestate));
 		}
-		StateCopy_LoadFromFile(inputRecordingData.GetFilename() + "_SaveState.p2s");
+		StateCopy_LoadFromFile(savestate);
 	}
 	else
 		sApp.SysExecute(g_Conf->CdvdSource);
 
 	if (IsRecording())
 		SetToReplayMode();
-	return true;
 }
 
 wxString InputRecording::resolveGameName()
