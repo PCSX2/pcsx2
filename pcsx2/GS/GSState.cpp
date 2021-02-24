@@ -1650,182 +1650,88 @@ void GSState::Move()
 
 	// TODO: unroll inner loops (width has special size requirement, must be multiples of 1 << n, depending on the format)
 
-	GSOffset* RESTRICT spo = m_mem.GetOffset(m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM);
-	GSOffset* RESTRICT dpo = m_mem.GetOffset(m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM);
+	GSOffset spo = m_mem.GetOffset(m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM);
+	GSOffset dpo = m_mem.GetOffset(m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM);
+
+	auto copy = [&](auto&& pxCopyFn)
+	{
+		if (xinc > 0)
+		{
+			for (int y = 0; y < h; y++, sy += yinc, dy += yinc)
+			{
+				GSOffset::PAHelper s = spo.paMulti(sx, sy);
+				GSOffset::PAHelper d = dpo.paMulti(dx, dy);
+
+				for (int x = 0; x < w; x++)
+				{
+					pxCopyFn(d.value(), s.value());
+					s.incX();
+					d.incX();
+				}
+			}
+		}
+		else
+		{
+			for (int y = 0; y < h; y++, sy += yinc, dy += yinc)
+			{
+				GSOffset::PAHelper s = spo.paMulti(sx, sy);
+				GSOffset::PAHelper d = dpo.paMulti(dx, dy);
+
+				for (int x = 0; x < w; x++)
+				{
+					pxCopyFn(d.value(), s.value());
+					s.decX();
+					d.decX();
+				}
+			}
+		}
+	};
 
 	if (spsm.trbpp == dpsm.trbpp && spsm.trbpp >= 16)
 	{
-		int* RESTRICT scol = &spo->pixel.col[0][sx];
-		int* RESTRICT dcol = &dpo->pixel.col[0][dx];
-
 		if (spsm.trbpp == 32)
 		{
-			if (xinc > 0)
+			copy([&](uint32 doff, uint32 soff)
 			{
-				for (int y = 0; y < h; y++, sy += yinc, dy += yinc)
-				{
-					uint32* RESTRICT s = &m_mem.m_vm32[spo->pixel.row[sy]];
-					uint32* RESTRICT d = &m_mem.m_vm32[dpo->pixel.row[dy]];
-
-					for (int x = 0; x < w; x++)
-						d[dcol[x]] = s[scol[x]];
-				}
-			}
-			else
-			{
-				for (int y = 0; y < h; y++, sy += yinc, dy += yinc)
-				{
-					uint32* RESTRICT s = &m_mem.m_vm32[spo->pixel.row[sy]];
-					uint32* RESTRICT d = &m_mem.m_vm32[dpo->pixel.row[dy]];
-
-					for (int x = 0; x > -w; x--)
-						d[dcol[x]] = s[scol[x]];
-				}
-			}
+				m_mem.m_vm32[doff] = m_mem.m_vm32[soff];
+			});
 		}
 		else if (spsm.trbpp == 24)
 		{
-			if (xinc > 0)
+			copy([&](uint32 doff, uint32 soff)
 			{
-				for (int y = 0; y < h; y++, sy += yinc, dy += yinc)
-				{
-					uint32* RESTRICT s = &m_mem.m_vm32[spo->pixel.row[sy]];
-					uint32* RESTRICT d = &m_mem.m_vm32[dpo->pixel.row[dy]];
-
-					for (int x = 0; x < w; x++)
-						d[dcol[x]] = (d[dcol[x]] & 0xff000000) | (s[scol[x]] & 0x00ffffff);
-				}
-			}
-			else
-			{
-				for (int y = 0; y < h; y++, sy += yinc, dy += yinc)
-				{
-					uint32* RESTRICT s = &m_mem.m_vm32[spo->pixel.row[sy]];
-					uint32* RESTRICT d = &m_mem.m_vm32[dpo->pixel.row[dy]];
-
-					for (int x = 0; x > -w; x--)
-						d[dcol[x]] = (d[dcol[x]] & 0xff000000) | (s[scol[x]] & 0x00ffffff);
-				}
-			}
+				uint32& d = m_mem.m_vm32[doff];
+				d = (d & 0xff000000) | (m_mem.m_vm32[soff] & 0x00ffffff);
+			});
 		}
 		else // if(spsm.trbpp == 16)
 		{
-			if (xinc > 0)
+			copy([&](uint32 doff, uint32 soff)
 			{
-				for (int y = 0; y < h; y++, sy += yinc, dy += yinc)
-				{
-					uint16* RESTRICT s = &m_mem.m_vm16[spo->pixel.row[sy]];
-					uint16* RESTRICT d = &m_mem.m_vm16[dpo->pixel.row[dy]];
-
-					for (int x = 0; x < w; x++)
-						d[dcol[x]] = s[scol[x]];
-				}
-			}
-			else
-			{
-				for (int y = 0; y < h; y++, sy += yinc, dy += yinc)
-				{
-					uint16* RESTRICT s = &m_mem.m_vm16[spo->pixel.row[sy]];
-					uint16* RESTRICT d = &m_mem.m_vm16[dpo->pixel.row[dy]];
-
-					for (int x = 0; x > -w; x--)
-						d[dcol[x]] = s[scol[x]];
-				}
-			}
+				m_mem.m_vm16[doff] = m_mem.m_vm16[soff];
+			});
 		}
 	}
 	else if (m_env.BITBLTBUF.SPSM == PSM_PSMT8 && m_env.BITBLTBUF.DPSM == PSM_PSMT8)
 	{
-		if (xinc > 0)
+		copy([&](uint32 doff, uint32 soff)
 		{
-			for (int y = 0; y < h; y++, sy += yinc, dy += yinc)
-			{
-				uint8* RESTRICT s = &m_mem.m_vm8[spo->pixel.row[sy]];
-				uint8* RESTRICT d = &m_mem.m_vm8[dpo->pixel.row[dy]];
-
-				int* RESTRICT scol = &spo->pixel.col[sy & 7][sx];
-				int* RESTRICT dcol = &dpo->pixel.col[dy & 7][dx];
-
-				for (int x = 0; x < w; x++)
-					d[dcol[x]] = s[scol[x]];
-			}
-		}
-		else
-		{
-			for (int y = 0; y < h; y++, sy += yinc, dy += yinc)
-			{
-				uint8* RESTRICT s = &m_mem.m_vm8[spo->pixel.row[sy]];
-				uint8* RESTRICT d = &m_mem.m_vm8[dpo->pixel.row[dy]];
-
-				int* RESTRICT scol = &spo->pixel.col[sy & 7][sx];
-				int* RESTRICT dcol = &dpo->pixel.col[dy & 7][dx];
-
-				for (int x = 0; x > -w; x--)
-					d[dcol[x]] = s[scol[x]];
-			}
-		}
+			m_mem.m_vm8[doff] = m_mem.m_vm8[soff];
+		});
 	}
 	else if (m_env.BITBLTBUF.SPSM == PSM_PSMT4 && m_env.BITBLTBUF.DPSM == PSM_PSMT4)
 	{
-		if (xinc > 0)
+		copy([&](uint32 doff, uint32 soff)
 		{
-			for (int y = 0; y < h; y++, sy += yinc, dy += yinc)
-			{
-				uint32 sbase = spo->pixel.row[sy];
-				uint32 dbase = dpo->pixel.row[dy];
-
-				int* RESTRICT scol = &spo->pixel.col[sy & 7][sx];
-				int* RESTRICT dcol = &dpo->pixel.col[dy & 7][dx];
-
-				for (int x = 0; x < w; x++)
-					m_mem.WritePixel4(dbase + dcol[x], m_mem.ReadPixel4(sbase + scol[x]));
-			}
-		}
-		else
-		{
-			for (int y = 0; y < h; y++, sy += yinc, dy += yinc)
-			{
-				uint32 sbase = spo->pixel.row[sy];
-				uint32 dbase = dpo->pixel.row[dy];
-
-				int* RESTRICT scol = &spo->pixel.col[sy & 7][sx];
-				int* RESTRICT dcol = &dpo->pixel.col[dy & 7][dx];
-
-				for (int x = 0; x > -w; x--)
-					m_mem.WritePixel4(dbase + dcol[x], m_mem.ReadPixel4(sbase + scol[x]));
-			}
-		}
+			m_mem.WritePixel4(doff, m_mem.ReadPixel4(soff));
+		});
 	}
 	else
 	{
-		if (xinc > 0)
+		copy([&](uint32 doff, uint32 soff)
 		{
-			for (int y = 0; y < h; y++, sy += yinc, dy += yinc)
-			{
-				uint32 sbase = spo->pixel.row[sy];
-				uint32 dbase = dpo->pixel.row[dy];
-
-				int* RESTRICT scol = &spo->pixel.col[sy & 7][sx];
-				int* RESTRICT dcol = &dpo->pixel.col[dy & 7][dx];
-
-				for (int x = 0; x < w; x++)
-					(m_mem.*dpsm.wpa)(dbase + dcol[x], (m_mem.*spsm.rpa)(sbase + scol[x]));
-			}
-		}
-		else
-		{
-			for (int y = 0; y < h; y++, sy += yinc, dy += yinc)
-			{
-				uint32 sbase = spo->pixel.row[sy];
-				uint32 dbase = dpo->pixel.row[dy];
-
-				int* RESTRICT scol = &spo->pixel.col[sy & 7][sx];
-				int* RESTRICT dcol = &dpo->pixel.col[dy & 7][dx];
-
-				for (int x = 0; x > -w; x--)
-					(m_mem.*dpsm.wpa)(dbase + dcol[x], (m_mem.*spsm.rpa)(sbase + scol[x]));
-			}
-		}
+			(m_mem.*dpsm.wpa)(doff, (m_mem.*spsm.rpa)(soff));
+		});
 	}
 }
 

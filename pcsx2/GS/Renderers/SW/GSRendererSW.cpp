@@ -409,17 +409,20 @@ void GSRendererSW::Draw()
 
 	// GSScanlineGlobalData& gd = sd->global;
 
-	uint32* fb_pages = NULL;
-	uint32* zb_pages = NULL;
+	GSOffset::PageLooper* fb_pages = NULL;
+	GSOffset::PageLooper* zb_pages = NULL;
+	GSOffset::PageLooper _fb_pages, _zb_pages;
 
 	if (sd->global.sel.fb)
 	{
-		fb_pages = m_context->offset.fb->GetPages(r);
+		_fb_pages = m_context->offset.fb.pageLooperForRect(r);
+		fb_pages = &_fb_pages;
 	}
 
 	if (sd->global.sel.zb)
 	{
-		zb_pages = m_context->offset.zb->GetPages(r);
+		_zb_pages = m_context->offset.zb.pageLooperForRect(r);
+		zb_pages = &_zb_pages;
 	}
 
 	// check if there is an overlap between this and previous targets
@@ -438,7 +441,7 @@ void GSRendererSW::Draw()
 
 	// addref source and target pages
 
-	sd->UsePages(fb_pages, m_context->offset.fb->psm, zb_pages, m_context->offset.zb->psm);
+	sd->UsePages(fb_pages, m_context->offset.fb.psm(), zb_pages, m_context->offset.zb.psm());
 
 	//
 
@@ -641,26 +644,26 @@ void GSRendererSW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 		fflush(s_fp);
 	}
 
-	GSOffset* off = m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM);
-
-	off->GetPages(r, m_tmp_pages);
+	GSOffset off = m_mem.GetOffset(BITBLTBUF.DBP, BITBLTBUF.DBW, BITBLTBUF.DPSM);
+	GSOffset::PageLooper pages = off.pageLooperForRect(r);
 
 	// check if the changing pages either used as a texture or a target
 
 	if (!m_rl->IsSynced())
 	{
-		for (uint32* RESTRICT p = m_tmp_pages; *p != GSOffset::EOP; p++)
+		pages.loopPagesWithBreak([&](uint32 page)
 		{
-			if (m_fzb_pages[*p] | m_tex_pages[*p])
+			if (m_fzb_pages[page] | m_tex_pages[page])
 			{
 				Sync(6);
 
-				break;
+				return false;
 			}
-		}
+			return true;
+		});
 	}
 
-	m_tc->InvalidatePages(m_tmp_pages, off->psm); // if texture update runs on a thread and Sync(5) happens then this must come later
+	m_tc->InvalidatePages(pages, off.psm()); // if texture update runs on a thread and Sync(5) happens then this must come later
 }
 
 void GSRendererSW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut)
@@ -673,76 +676,91 @@ void GSRendererSW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 
 	if (!m_rl->IsSynced())
 	{
-		GSOffset* off = m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM);
+		GSOffset off = m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM);
+		GSOffset::PageLooper pages = off.pageLooperForRect(r);
 
-		off->GetPages(r, m_tmp_pages);
-
-		for (uint32* RESTRICT p = m_tmp_pages; *p != GSOffset::EOP; p++)
+		pages.loopPagesWithBreak([&](uint32 page)
 		{
-			if (m_fzb_pages[*p])
+			if (m_fzb_pages[page])
 			{
 				Sync(7);
 
-				break;
+				return false;
 			}
-		}
+			return true;
+		});
 	}
 }
 
-void GSRendererSW::UsePages(const uint32* pages, const int type)
+void GSRendererSW::UsePages(const GSOffset::PageLooper& pages, const int type)
 {
-	for (const uint32* p = pages; *p != GSOffset::EOP; p++)
+	pages.loopPages([=](uint32 page)
 	{
 		switch (type)
 		{
 			case 0:
-				ASSERT((m_fzb_pages[*p] & 0xFFFF) < USHRT_MAX);
-				m_fzb_pages[*p] += 1;
+				ASSERT((m_fzb_pages[page] & 0xFFFF) < USHRT_MAX);
+				m_fzb_pages[page] += 1;
 				break;
 			case 1:
-				ASSERT((m_fzb_pages[*p] >> 16) < USHRT_MAX);
-				m_fzb_pages[*p] += 0x10000;
+				ASSERT((m_fzb_pages[page] >> 16) < USHRT_MAX);
+				m_fzb_pages[page] += 0x10000;
 				break;
 			case 2:
-				ASSERT(m_tex_pages[*p] < USHRT_MAX);
-				m_tex_pages[*p] += 1;
+				ASSERT(m_tex_pages[page] < USHRT_MAX);
+				m_tex_pages[page] += 1;
 				break;
 			default:
 				break;
 		}
-	}
+	});
 }
 
-void GSRendererSW::ReleasePages(const uint32* pages, const int type)
+void GSRendererSW::ReleasePages(const GSOffset::PageLooper& pages, const int type)
 {
-	for (const uint32* p = pages; *p != GSOffset::EOP; p++)
+	pages.loopPages([=](uint32 page)
 	{
 		switch (type)
 		{
 			case 0:
-				ASSERT((m_fzb_pages[*p] & 0xFFFF) > 0);
-				m_fzb_pages[*p] -= 1;
+				ASSERT((m_fzb_pages[page] & 0xFFFF) > 0);
+				m_fzb_pages[page] -= 1;
 				break;
 			case 1:
-				ASSERT((m_fzb_pages[*p] >> 16) > 0);
-				m_fzb_pages[*p] -= 0x10000;
+				ASSERT((m_fzb_pages[page] >> 16) > 0);
+				m_fzb_pages[page] -= 0x10000;
 				break;
 			case 2:
-				ASSERT(m_tex_pages[*p] > 0);
-				m_tex_pages[*p] -= 1;
+				ASSERT(m_tex_pages[page] > 0);
+				m_tex_pages[page] -= 1;
 				break;
 			default:
 				break;
 		}
-	}
+	});
 }
 
-bool GSRendererSW::CheckTargetPages(const uint32* fb_pages, const uint32* zb_pages, const GSVector4i& r)
+bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const GSOffset::PageLooper* zb_pages, const GSVector4i& r)
 {
 	bool synced = m_rl->IsSynced();
 
 	bool fb = fb_pages != NULL;
 	bool zb = zb_pages != NULL;
+
+	GSOffset::PageLooper _fb_pages, _zb_pages;
+	auto requirePages = [&]
+	{
+		if (fb_pages == NULL)
+		{
+			_fb_pages = m_context->offset.fb.pageLooperForRect(r);
+			fb_pages = &_fb_pages;
+		}
+		if (zb_pages == NULL)
+		{
+			_zb_pages = m_context->offset.zb.pageLooperForRect(r);
+			zb_pages = &_zb_pages;
+		}
+	};
 
 	bool res = false;
 
@@ -753,17 +771,14 @@ bool GSRendererSW::CheckTargetPages(const uint32* fb_pages, const uint32* zb_pag
 		m_fzb = m_context->offset.fzb4;
 		m_fzb_bbox = r;
 
-		if (fb_pages == NULL) fb_pages = m_context->offset.fb->GetPages(r);
-		if (zb_pages == NULL) zb_pages = m_context->offset.zb->GetPages(r);
-
 		memset(m_fzb_cur_pages, 0, sizeof(m_fzb_cur_pages));
 
 		uint32 used = 0;
 
-		for (const uint32* p = fb_pages; *p != GSOffset::EOP; p++)
-		{
-			uint32 i = *p;
+		requirePages();
 
+		fb_pages->loopPages([&](uint32 i)
+		{
 			uint32 row = i >> 5;
 			uint32 col = 1 << (i & 31);
 
@@ -771,12 +786,10 @@ bool GSRendererSW::CheckTargetPages(const uint32* fb_pages, const uint32* zb_pag
 
 			used |= m_fzb_pages[i];
 			used |= m_tex_pages[i];
-		}
+		});
 
-		for (const uint32* p = zb_pages; *p != GSOffset::EOP; p++)
+		zb_pages->loopPages([&](uint32 i)
 		{
-			uint32 i = *p;
-
 			uint32 row = i >> 5;
 			uint32 col = 1 << (i & 31);
 
@@ -784,7 +797,7 @@ bool GSRendererSW::CheckTargetPages(const uint32* fb_pages, const uint32* zb_pag
 
 			used |= m_fzb_pages[i];
 			used |= m_tex_pages[i];
-		}
+		});
 
 		if (!synced)
 		{
@@ -816,15 +829,12 @@ bool GSRendererSW::CheckTargetPages(const uint32* fb_pages, const uint32* zb_pag
 		{
 			// drawing area is larger than previous time, check new parts only to avoid false positives (m_fzb_cur_pages guards)
 
-			if (fb_pages == NULL) fb_pages = m_context->offset.fb->GetPages(r);
-			if (zb_pages == NULL) zb_pages = m_context->offset.zb->GetPages(r);
+			requirePages();
 
 			uint32 used = 0;
 
-			for (const uint32* p = fb_pages; *p != GSOffset::EOP; p++)
+			fb_pages->loopPages([&](uint32 i)
 			{
-				uint32 i = *p;
-
 				uint32 row = i >> 5;
 				uint32 col = 1 << (i & 31);
 
@@ -834,12 +844,10 @@ bool GSRendererSW::CheckTargetPages(const uint32* fb_pages, const uint32* zb_pag
 
 					used |= m_fzb_pages[i];
 				}
-			}
+			});
 
-			for (const uint32* p = zb_pages; *p != GSOffset::EOP; p++)
+			zb_pages->loopPages([&](uint32 i)
 			{
-				uint32 i = *p;
-
 				uint32 row = i >> 5;
 				uint32 col = 1 << (i & 31);
 
@@ -849,7 +857,7 @@ bool GSRendererSW::CheckTargetPages(const uint32* fb_pages, const uint32* zb_pag
 
 					used |= m_fzb_pages[i];
 				}
-			}
+			});
 
 			if (!synced)
 			{
@@ -873,9 +881,9 @@ bool GSRendererSW::CheckTargetPages(const uint32* fb_pages, const uint32* zb_pag
 
 			if (fb && !res)
 			{
-				for (const uint32* p = fb_pages; *p != GSOffset::EOP; p++)
+				fb_pages->loopPagesWithBreak([&](uint32 page)
 				{
-					if (m_fzb_pages[*p] & 0xffff0000)
+					if (m_fzb_pages[page] & 0xffff0000)
 					{
 						if (LOG)
 						{
@@ -885,16 +893,17 @@ bool GSRendererSW::CheckTargetPages(const uint32* fb_pages, const uint32* zb_pag
 
 						res = true;
 
-						break;
+						return false;
 					}
-				}
+					return true;
+				});
 			}
 
 			if (zb && !res)
 			{
-				for (const uint32* p = zb_pages; *p != GSOffset::EOP; p++)
+				zb_pages->loopPagesWithBreak([&](uint32 page)
 				{
-					if (m_fzb_pages[*p] & 0x0000ffff)
+					if (m_fzb_pages[page] & 0x0000ffff)
 					{
 						if (LOG)
 						{
@@ -904,15 +913,13 @@ bool GSRendererSW::CheckTargetPages(const uint32* fb_pages, const uint32* zb_pag
 
 						res = true;
 
-						break;
+						return false;
 					}
-				}
+					return true;
+				});
 			}
 		}
 	}
-
-	if (!fb && fb_pages != NULL) delete[] fb_pages;
-	if (!zb && zb_pages != NULL) delete[] zb_pages;
 
 	return res;
 }
@@ -923,19 +930,22 @@ bool GSRendererSW::CheckSourcePages(SharedData* sd)
 	{
 		for (size_t i = 0; sd->m_tex[i].t != NULL; i++)
 		{
-			sd->m_tex[i].t->m_offset->GetPages(sd->m_tex[i].r, m_tmp_pages);
+			GSOffset::PageLooper pages = sd->m_tex[i].t->m_offset.pageLooperForRect(sd->m_tex[i].r);
 
-			uint32* pages = m_tmp_pages; // sd->m_tex[i].t->m_pages.n;
-
-			for (const uint32* p = pages; *p != GSOffset::EOP; p++)
+			bool ret = false;
+			pages.loopPagesWithBreak([&](uint32 pages)
 			{
 				// TODO: 8H 4HL 4HH texture at the same place as the render target (24 bit, or 32-bit where the alpha channel is masked, Valkyrie Profile 2)
 
-				if (m_fzb_pages[*p]) // currently being drawn to? => sync
+				if (m_fzb_pages[pages]) // currently being drawn to? => sync
 				{
-					return true;
+					ret = true;
+					return false;
 				}
-			}
+				return true;
+			});
+			if (ret)
+				return true;
 		}
 	}
 
@@ -954,10 +964,8 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 	gd.vm = m_mem.m_vm8;
 
-	gd.fbr = context->offset.fb->pixel.row;
-	gd.zbr = context->offset.zb->pixel.row;
-	gd.fbc = context->offset.fb->pixel.col[0];
-	gd.zbc = context->offset.zb->pixel.col[0];
+	gd.fbo = context->offset.fb;
+	gd.zbo = context->offset.zb;
 	gd.fzbr = context->offset.fzb4->row;
 	gd.fzbc = context->offset.fzb4->col;
 
@@ -1423,8 +1431,6 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 GSRendererSW::SharedData::SharedData(GSRendererSW* parent)
 	: m_parent(parent)
-	, m_fb_pages(NULL)
-	, m_zb_pages(NULL)
 	, m_fpsm(0)
 	, m_zpsm(0)
 	, m_using_pages(false)
@@ -1460,7 +1466,7 @@ GSRendererSW::SharedData::~SharedData()
 
 //static TransactionScope::Lock s_lock;
 
-void GSRendererSW::SharedData::UsePages(const uint32* fb_pages, int fpsm, const uint32* zb_pages, int zpsm)
+void GSRendererSW::SharedData::UsePages(const GSOffset::PageLooper* fb_pages, int fpsm, const GSOffset::PageLooper* zb_pages, int zpsm)
 {
 	if (m_using_pages)
 		return;
@@ -1468,24 +1474,26 @@ void GSRendererSW::SharedData::UsePages(const uint32* fb_pages, int fpsm, const 
 	{
 		//TransactionScope scope(s_lock);
 
-		if (global.sel.fb && fb_pages != NULL)
+		if (global.sel.fb)
 		{
-			m_parent->UsePages(fb_pages, 0);
+			m_parent->UsePages(*fb_pages, 0);
 		}
 
-		if (global.sel.zb && zb_pages != NULL)
+		if (global.sel.zb)
 		{
-			m_parent->UsePages(zb_pages, 1);
+			m_parent->UsePages(*zb_pages, 1);
 		}
 
 		for (size_t i = 0; m_tex[i].t != NULL; i++)
 		{
-			m_parent->UsePages(m_tex[i].t->m_pages.n, 2);
+			m_parent->UsePages(m_tex[i].t->m_pages, 2);
 		}
 	}
 
-	m_fb_pages = fb_pages;
-	m_zb_pages = zb_pages;
+	if (fb_pages)
+		m_fb_pages = *fb_pages;
+	if (zb_pages)
+		m_zb_pages = *zb_pages;
 	m_fpsm = fpsm;
 	m_zpsm = zpsm;
 
@@ -1512,15 +1520,9 @@ void GSRendererSW::SharedData::ReleasePages()
 
 		for (size_t i = 0; m_tex[i].t != NULL; i++)
 		{
-			m_parent->ReleasePages(m_tex[i].t->m_pages.n, 2);
+			m_parent->ReleasePages(m_tex[i].t->m_pages, 2);
 		}
 	}
-
-	delete[] m_fb_pages;
-	delete[] m_zb_pages;
-
-	m_fb_pages = NULL;
-	m_zb_pages = NULL;
 
 	m_using_pages = false;
 }

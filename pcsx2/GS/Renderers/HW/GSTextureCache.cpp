@@ -797,14 +797,11 @@ void GSTextureCache::InvalidateVideoMemType(int type, uint32 bp)
 
 // Goal: invalidate data sent to the GPU when the source (GS memory) is modified
 // Called each time you want to write to the GS memory
-void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, bool target)
+void GSTextureCache::InvalidateVideoMem(const GSOffset& off, const GSVector4i& rect, bool target)
 {
-	if (!off)
-		return; // Fixme. Crashes Dual Hearts, maybe others as well. Was fine before r1549.
-
-	uint32 bp = off->bp;
-	uint32 bw = off->bw;
-	uint32 psm = off->psm;
+	uint32 bp = off.bp();
+	uint32 bw = off.bw();
+	uint32 psm = off.psm();
 
 	if (!target)
 	{
@@ -871,18 +868,12 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 		}
 	}
 
-	GSVector4i r;
-
-	uint32* pages = (uint32*)m_temp;
-
-	off->GetPages(rect, pages, &r);
-
 	bool found = false;
 
-	for (const uint32* p = pages; *p != GSOffset::EOP; p++)
-	{
-		uint32 page = *p;
+	GSVector4i r = rect.ralign<Align_Outside>((bp & 31) == 0 ? GSLocalMemory::m_psm[psm].pgs : GSLocalMemory::m_psm[psm].bs);
 
+	off.loopPages(rect, [&](uint32 page)
+	{
 		auto& list = m_src.m_map[page];
 		for (auto i = list.begin(); i != list.end();)
 		{
@@ -937,7 +928,7 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 				}
 			}
 		}
-	}
+	});
 
 	if (!target)
 		return;
@@ -1045,10 +1036,10 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 
 // Goal: retrive the data from the GPU to the GS memory.
 // Called each time you want to read from the GS memory
-void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
+void GSTextureCache::InvalidateLocalMem(const GSOffset& off, const GSVector4i& r)
 {
-	uint32 bp = off->bp;
-	uint32 psm = off->psm;
+	uint32 bp = off.bp();
+	uint32 psm = off.psm();
 	//uint32 bw = off->bw;
 
 	// No depth handling please.
@@ -1777,8 +1768,7 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 			m_p2t = r->m_mem.GetPage2TileMap(m_TEX0);
 		}
 
-		GSOffset* off = m_renderer->m_context->offset.tex;
-		m_pages_as_bit = off->GetPagesAsBits(m_TEX0);
+		m_pages = m_renderer->m_context->offset.tex.pageLooperForRect(GSVector4i(0, 0, 1 << TEX0.TW, 1 << TEX0.TH));
 	}
 }
 
@@ -1808,23 +1798,23 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 		m_complete = true; // lame, but better than nothing
 	}
 
-	const GSOffset* off = m_renderer->m_context->offset.tex;
+	const GSOffset& off = m_renderer->m_context->offset.tex;
+	GSOffset::BNHelper bn = off.bnMulti(r.left, r.top);
 
 	uint32 blocks = 0;
 
 	if (m_repeating)
 	{
-		for (int y = r.top; y < r.bottom; y += bs.y)
+		for (int y = r.top; y < r.bottom; y += bs.y, bn.nextBlockY())
 		{
-			uint32 base = off->block.row[y >> 3u];
-
-			for (int x = r.left, i = (y << 7) + x; x < r.right; x += bs.x, i += bs.x)
+			for (int x = r.left; x < r.right; bn.nextBlockX(), x += bs.x)
 			{
-				uint32 block = base + off->block.col[x >> 3u];
+				int i = (bn.blkY() << 7) + bn.blkX();
+				uint32 block = bn.valueNoWrap();
 
 				if (block < MAX_BLOCKS || m_wrap_gs_mem)
 				{
-					uint32 addr = (i >> 3u) % MAX_BLOCKS;
+					uint32 addr = i % MAX_BLOCKS;
 
 					uint32 row = addr >> 5u;
 					uint32 col = 1 << (addr & 31u);
@@ -1843,13 +1833,11 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 	}
 	else
 	{
-		for (int y = r.top; y < r.bottom; y += bs.y)
+		for (int y = r.top; y < r.bottom; y += bs.y, bn.nextBlockY())
 		{
-			uint32 base = off->block.row[y >> 3u];
-
-			for (int x = r.left; x < r.right; x += bs.x)
+			for (int x = r.left; x < r.right; x += bs.x, bn.nextBlockX())
 			{
-				uint32 block = base + off->block.col[x >> 3u];
+				uint32 block = bn.valueNoWrap();
 
 				if (block < MAX_BLOCKS || m_wrap_gs_mem)
 				{
@@ -1951,7 +1939,7 @@ void GSTextureCache::Source::Flush(uint32 count, int layer)
 
 	GSLocalMemory& mem = m_renderer->m_mem;
 
-	const GSOffset* off = m_renderer->m_context->offset.tex;
+	const GSOffset& off = m_renderer->m_context->offset.tex;
 
 	GSLocalMemory::readTexture rtx = psm.rtx;
 
@@ -2079,7 +2067,7 @@ void GSTextureCache::Target::Update()
 
 	GSTexture* t = m_renderer->m_dev->CreateTexture(w, h);
 
-	const GSOffset* off = m_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
+	GSOffset off = m_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
 
 	GSTexture::GSMap m;
 
@@ -2130,7 +2118,7 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
 
 // GSTextureCache::SourceMap
 
-void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, GSOffset* off)
+void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, const GSOffset& off)
 {
 	m_surfaces.insert(s);
 
@@ -2147,26 +2135,10 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, GSOffset*
 	}
 
 	// The source pointer will be stored/duplicated in all m_map[array of pages]
-	for (size_t i = 0; i < countof(m_pages); i++)
+	s->m_pages.loopPages([this, s](uint32 page)
 	{
-		if (uint32 p = s->m_pages_as_bit[i])
-		{
-			auto* m = &m_map[i << 5];
-			auto* e = &s->m_erase_it[i << 5];
-
-			unsigned long j;
-
-			while (_BitScanForward(&j, p))
-			{
-				// FIXME: this statement could be optimized to a single ASM instruction (instead of 4)
-				// Either BTR (AKA bit test and reset). Depends on the previous instruction.
-				// Or BLSR (AKA Reset Lowest Set Bit). No dependency but require BMI1 (basically a recent CPU)
-				p ^= 1U << j;
-
-				e[j] = m[j].InsertFront(s);
-			}
-		}
-	}
+		s->m_erase_it[page] = m_map[page].InsertFront(s);
+	});
 }
 
 void GSTextureCache::SourceMap::RemoveAll()
@@ -2197,26 +2169,10 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 	}
 	else
 	{
-		for (size_t i = 0; i < countof(m_pages); i++)
+		s->m_pages.loopPages([this, s](uint32 page)
 		{
-			if (uint32 p = s->m_pages_as_bit[i])
-			{
-				auto* m = &m_map[i << 5];
-				const auto* e = &s->m_erase_it[i << 5];
-
-				unsigned long j;
-
-				while (_BitScanForward(&j, p))
-				{
-					// FIXME: this statement could be optimized to a single ASM instruction (instead of 4)
-					// Either BTR (AKA bit test and reset). Depends on the previous instruction.
-					// Or BLSR (AKA Reset Lowest Set Bit). No dependency but require BMI1 (basically a recent CPU)
-					p ^= 1U << j;
-
-					m[j].EraseIndex(e[j]);
-				}
-			}
-		}
+			m_map[page].EraseIndex(s->m_erase_it[page]);
+		});
 	}
 
 	delete s;
