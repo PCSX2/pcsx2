@@ -41,10 +41,14 @@ void __fastcall WriteCP0Status(u32 value) {
 	//DMA_LOG("COP0 Status write = 0x%08x", value);
 
 	cpuRegs.CP0.n.Status.val = value;
-    cpuUpdateOperationMode();
     cpuSetNextEventDelta(4);
 }
 
+void __fastcall WriteCP0Config(u32 value) {
+	// Protect the read-only ICacheSize (IC) and DataCacheSize (DC) bits
+	cpuRegs.CP0.n.Config = value & ~0xFC0;
+	cpuRegs.CP0.n.Config |= 0x440;
+}
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // Performance Counters Update Stuff!
@@ -470,6 +474,10 @@ void MTC0()
 
 		case 12:
 			WriteCP0Status(cpuRegs.GPR.r[_Rt_].UL[0]);
+		break;
+
+		case 16:
+			WriteCP0Config(cpuRegs.GPR.r[_Rt_].UL[0]);
 		break;
 
 		case 24:
