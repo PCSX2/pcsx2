@@ -33,6 +33,7 @@
 wxBEGIN_EVENT_TABLE(DisassemblyDialog, wxFrame)
    EVT_COMMAND( wxID_ANY, debEVT_SETSTATUSBARTEXT, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_UPDATELAYOUT, DisassemblyDialog::onDebuggerEvent )
+   EVT_COMMAND( wxID_ANY, debEVT_GOTOADDRESS, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_GOTOINMEMORYVIEW, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_REFERENCEMEMORYVIEW, DisassemblyDialog::onDebuggerEvent )
    EVT_COMMAND( wxID_ANY, debEVT_RUNTOPOS, DisassemblyDialog::onDebuggerEvent )
@@ -482,6 +483,21 @@ void DisassemblyDialog::onDebuggerEvent(wxCommandEvent& evt)
 		if (currentCpu != NULL)
 			currentCpu->GetSizer()->Layout();
 		topSizer->Layout();
+		update();
+	} else if (type == debEVT_GOTOADDRESS)
+	{
+		DebugInterface* cpu = reinterpret_cast<DebugInterface*>(evt.GetClientData());
+		u64 addr;
+		if (!executeExpressionWindow(this, cpu, addr))
+			return;
+
+		if (currentCpu != NULL) {
+			// GetInt() is 0 when called by the disassembly view, 1 when called by the memory view
+			if (!evt.GetInt())
+				currentCpu->getDisassembly()->gotoAddress(addr);
+			else
+				currentCpu->getMemoryView()->gotoAddress(addr);
+		}
 		update();
 	} else if (type == debEVT_GOTOINMEMORYVIEW)
 	{

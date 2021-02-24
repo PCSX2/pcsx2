@@ -45,6 +45,7 @@ wxEND_EVENT_TABLE()
 enum MemoryViewMenuIdentifiers
 {
 	ID_MEMVIEW_GOTOINDISASM = 1,
+	ID_MEMVIEW_GOTOADDRESS,
 	ID_MEMVIEW_COPYADDRESS,
 	ID_MEMVIEW_FOLLOWADDRESS,
 	ID_MEMVIEW_DISPLAYVALUE_8,
@@ -82,6 +83,7 @@ CtrlMemView::CtrlMemView(wxWindow* parent, DebugInterface* _cpu)
 	underlineFont.SetPixelSize(wxSize(charWidth,rowHeight));
 
 	menu.Append(ID_MEMVIEW_GOTOINDISASM,		L"Go to in Disasm");
+	menu.Append(ID_MEMVIEW_GOTOADDRESS,			L"Go to address");
 	menu.Append(ID_MEMVIEW_COPYADDRESS,			L"Copy address");
 	menu.Append(ID_MEMVIEW_FOLLOWADDRESS,		L"Follow address");
 	menu.AppendSeparator();
@@ -326,7 +328,10 @@ void CtrlMemView::onPopupClick(wxCommandEvent& evt)
 		}
 		break;
 	case ID_MEMVIEW_GOTOINDISASM:
-		postEvent(debEVT_GOTOINDISASM,curAddress);
+		postEvent(debEVT_GOTOINDISASM,1);
+		break;
+	case ID_MEMVIEW_GOTOADDRESS:
+		postEvent(debEVT_GOTOADDRESS, curAddress);
 		break;
 	case ID_MEMVIEW_FOLLOWADDRESS:
 		gotoAddress(cpu->read32(curAddress), true);

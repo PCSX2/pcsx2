@@ -62,6 +62,7 @@ enum DisassemblyMenuIdentifiers
 	ID_DISASM_SETPCTOHERE,
 	ID_DISASM_TOGGLEBREAKPOINT,
 	ID_DISASM_FOLLOWBRANCH,
+	ID_DISASM_GOTOADDRESS,
 	ID_DISASM_GOTOINMEMORYVIEW,
 	ID_DISASM_KILLFUNCTION,
 	ID_DISASM_RENAMEFUNCTION,
@@ -168,6 +169,7 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 	menu.Append(ID_DISASM_TOGGLEBREAKPOINT,			L"Toggle Breakpoint");
 	menu.Append(ID_DISASM_FOLLOWBRANCH,				L"Follow Branch");
 	menu.AppendSeparator();
+	menu.Append(ID_DISASM_GOTOADDRESS,				L"Go to Address");
 	menu.Append(ID_DISASM_GOTOINMEMORYVIEW,			L"Go to in Memory View");
 	menu.AppendSeparator();
 	menu.Append(ID_DISASM_ADDFUNCTION,				L"Add Function Here");
@@ -669,6 +671,9 @@ void CtrlDisassemblyView::onPopupClick(wxCommandEvent& evt)
 			wxTheClipboard->Close();
 		}
 		break;
+	case ID_DISASM_GOTOADDRESS:
+		postEvent(debEVT_GOTOADDRESS, 0);
+		break;
 	case ID_DISASM_GOTOINMEMORYVIEW:
 		postEvent(debEVT_GOTOINMEMORYVIEW,curAddress);
 		break;
@@ -684,6 +689,9 @@ void CtrlDisassemblyView::onPopupClick(wxCommandEvent& evt)
 		break;
 	case ID_DISASM_RUNTOHERE:
 		postEvent(debEVT_RUNTOPOS,curAddress);
+		break;
+	case ID_DISASM_TOGGLEBREAKPOINT:
+		toggleBreakpoint(false);
 		break;
 	case ID_DISASM_DISASSEMBLETOFILE:
 		disassembleToFile();
