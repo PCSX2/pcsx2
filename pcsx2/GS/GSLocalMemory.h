@@ -21,38 +21,6 @@
 #include "GSBlock.h"
 #include "GSClut.h"
 
-class GSOffset : public GSAlignedClass<32>
-{
-public:
-	struct alignas(32) Block
-	{
-		short row[256]; // yn (n = 0 8 16 ...)
-		short* col; // blockOffset*
-	};
-
-	struct alignas(32) Pixel
-	{
-		int row[4096]; // yn (n = 0 1 2 ...) NOTE: this wraps around above 2048, only transfers should address the upper half (dark cloud 2 inventing)
-		int* col[8]; // rowOffset*
-	};
-
-	union { uint32 hash; struct { uint32 bp:14, bw:6, psm:6; }; };
-
-	Block block;
-	Pixel pixel;
-
-	std::array<uint32*, 256> pages_as_bit; // texture page coverage based on the texture size. Lazy allocated
-
-	GSOffset(uint32 bp, uint32 bw, uint32 psm);
-	virtual ~GSOffset();
-
-	enum { EOP = 0xffffffff };
-
-	uint32* GetPages(const GSVector4i& rect, uint32* pages = NULL, GSVector4i* bbox = NULL);
-	void* GetPagesAsBits(const GSVector4i& rect, void* pages);
-	uint32* GetPagesAsBits(const GIFRegTEX0& TEX0);
-};
-
 struct GSPixelOffset
 {
 	// 16 bit offsets (m_vm16[...])
@@ -75,7 +43,8 @@ struct GSPixelOffset4
 
 class GSSwizzleInfo;
 
-class GSOffsetNew {
+class GSOffset
+{
 	/// Table for storing swizzling of blocks within a page
 	const GSBlockSwizzleTable* m_blockSwizzle;
 	/// Table for storing swizzling of pixels within a page (size: uint32[PageHeight][PageWidth])
@@ -88,12 +57,12 @@ class GSOffsetNew {
 	uint8 m_blockShiftY; ///< Amount to rshift y value by to get block y offset
 	int m_bp;   ///< Offset's base pointer (same measurement as GS)
 	int m_bwPg; ///< Offset's buffer width in pages (not equal to bw in GS for 8 and 4-bit textures)
-	int m_psm;  ///< Offset's pixel storage mode (just for storage, not used by any of the GSOffsetNew algorithms)
+	int m_psm;  ///< Offset's pixel storage mode (just for storage, not used by any of the GSOffset algorithms)
 public:
-	GSOffsetNew() = default;
-	constexpr GSOffsetNew(const GSSwizzleInfo& swz, uint32 bp, uint32 bw, uint32 psm);
+	GSOffset() = default;
+	constexpr GSOffset(const GSSwizzleInfo& swz, uint32 bp, uint32 bw, uint32 psm);
 	/// Help the optimizer by using this method instead of GSLocalMemory::GetOffset when the PSM is known
-	constexpr static GSOffsetNew fromKnownPSM(uint32 bp, uint32 bw, GS_PSM psm);
+	constexpr static GSOffset fromKnownPSM(uint32 bp, uint32 bw, GS_PSM psm);
 
 	uint32 bp()  const { return m_bp; }
 	uint32 bw()  const { return m_bwPg << (m_pageShiftX - 6); }
@@ -104,7 +73,7 @@ public:
 	/// Helper class for efficiently getting the numbers of multiple blocks in a scanning pattern (increment x then y)
 	class BNHelper
 	{
-		const GSBlockSwizzleTable* m_blockSwizzle; ///< Block swizzle table from GSOffsetNew
+		const GSBlockSwizzleTable* m_blockSwizzle; ///< Block swizzle table from GSOffset
 		int m_baseBP;    ///< bp for start of current row (to return to the origin x when advancing y)
 		int m_bp;        ///< bp for current position
 		int m_baseBlkX;  ///< x of origin in blocks (to return to the origin x when advancing y)
@@ -114,7 +83,7 @@ public:
 		int m_pageMaskY; ///< mask for y value of block coordinate to get position within page (to detect page crossing)
 		int m_addY;      ///< Amount to add to bp to advance one page in y direction
 	public:
-		BNHelper(const GSOffsetNew& off, int x, int y)
+		BNHelper(const GSOffset& off, int x, int y)
 		{
 			m_blockSwizzle = off.m_blockSwizzle;
 			int yAmt = ((y >> (off.m_pageShiftY - 5)) & ~0x1f) * off.m_bwPg;
@@ -209,7 +178,7 @@ public:
 		int m_shift;      ///< Amount to lshift page number to get element offset for the start of that page
 	public:
 		PAHelper() = default;
-		PAHelper(const GSOffsetNew& off, int x, int y)
+		PAHelper(const GSOffset& off, int x, int y)
 		{
 			m_pixelSwizzle = off.m_pixelSwizzle + ((y & off.m_pageMask.y) << off.m_pageShiftX);
 			m_pageBase = (off.m_bp >> 5) + (y >> off.m_pageShiftY) * off.m_bwPg;
@@ -264,7 +233,7 @@ public:
 	}
 
 	/// Helper class for looping over the pages in a rect
-	/// Create with GSOffsetNew::pageLooperForRect
+	/// Create with GSOffset::pageLooperForRect
 	class PageLooper
 	{
 		int firstRowPgXStart, firstRowPgXEnd; ///< Offset of start/end pages of the first line from x=0 page (only line for textures that don't cross page boundaries)
@@ -274,7 +243,7 @@ public:
 		int yInc; ///< Amount to add to bp when increasing y by one page
 		int yCnt; ///< Number of pages the rect covers in the y direction
 
-		friend class GSOffsetNew;
+		friend class GSOffset;
 
 	public:
 		/// Loop over pages, fn can return `false` to break the loop
@@ -333,7 +302,7 @@ public:
 
 class GSSwizzleInfo
 {
-	friend class GSOffsetNew;
+	friend class GSOffset;
 	/// Table for storing swizzling of blocks within a page
 	const GSBlockSwizzleTable* m_blockSwizzle;
 	/// Table for storing swizzling of pixels within a page
@@ -367,31 +336,31 @@ public:
 	/// Get the block number of the given pixel
 	uint32 bn(int x, int y, uint32 bp, uint32 bw) const
 	{
-		return GSOffsetNew(*this, bp, bw, 0).bn(x, y);
+		return GSOffset(*this, bp, bw, 0).bn(x, y);
 	}
 
 	/// Get the address of the given pixel
 	uint32 pa(int x, int y, uint32 bp, uint32 bw) const
 	{
-		return GSOffsetNew(*this, bp, bw, 0).pa(x, y);
+		return GSOffset(*this, bp, bw, 0).pa(x, y);
 	}
 
 	/// Loop over all the pages in the given rect, calling `fn` on each
 	template <typename Fn>
 	void loopPages(const GSVector4i& rect, uint32 bp, uint32 bw, Fn&& fn) const
 	{
-		GSOffsetNew(*this, bp, bw, 0).loopPages(rect, std::forward<Fn>(fn));
+		GSOffset(*this, bp, bw, 0).loopPages(rect, std::forward<Fn>(fn));
 	}
 
 	/// Loop over all the blocks in the given rect, calling `fn` on each
 	template <typename Fn>
 	void loopBlocks(const GSVector4i& rect, uint32 bp, uint32 bw, Fn&& fn) const
 	{
-		GSOffsetNew(*this, bp, bw, 0).loopBlocks(rect, std::forward<Fn>(fn));
+		GSOffset(*this, bp, bw, 0).loopBlocks(rect, std::forward<Fn>(fn));
 	}
 };
 
-constexpr inline GSOffsetNew::GSOffsetNew(const GSSwizzleInfo& swz, uint32 bp, uint32 bw, uint32 psm)
+constexpr inline GSOffset::GSOffset(const GSSwizzleInfo& swz, uint32 bp, uint32 bw, uint32 psm)
 	: m_blockSwizzle(swz.m_blockSwizzle)
 	, m_pixelSwizzle(swz.m_pixelSwizzle + ((bp & 0x1f) << (swz.m_pageShiftX + swz.m_pageShiftY)))
 	, m_pageMask(swz.m_pageMask), m_blockMask(swz.m_blockMask)
@@ -417,7 +386,7 @@ public:
 	typedef uint32 (GSLocalMemory::*readTexelAddr)(uint32 addr, const GIFRegTEXA& TEXA) const;
 	typedef void (GSLocalMemory::*writeImage)(int& tx, int& ty, const uint8* src, int len, GIFRegBITBLTBUF& BITBLTBUF, GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG);
 	typedef void (GSLocalMemory::*readImage)(int& tx, int& ty, uint8* dst, int len, GIFRegBITBLTBUF& BITBLTBUF, GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG) const;
-	typedef void (GSLocalMemory::*readTexture)(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	typedef void (GSLocalMemory::*readTexture)(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
 	typedef void (GSLocalMemory::*readTextureBlock)(uint32 bp, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA) const;
 
 	struct alignas(128) psm_t
@@ -520,7 +489,7 @@ public:
 	GSLocalMemory();
 	virtual ~GSLocalMemory();
 
-	GSOffset* GetOffset(uint32 bp, uint32 bw, uint32 psm);
+	GSOffset GetOffset(uint32 bp, uint32 bw, uint32 psm);
 	GSPixelOffset* GetPixelOffset(const GIFRegFRAME& FRAME, const GIFRegZBUF& ZBUF);
 	GSPixelOffset4* GetPixelOffset4(const GIFRegFRAME& FRAME, const GIFRegZBUF& ZBUF);
 	std::vector<GSVector2i>* GetPage2TileMap(const GIFRegTEX0& TEX0);
@@ -985,75 +954,35 @@ public:
 		WriteFrame16(PixelAddress16SZ(x, y, bp, bw), c);
 	}
 
-	__forceinline void WritePixel32(uint8* RESTRICT src, uint32 pitch, GSOffset* off, const GSVector4i& r)
+	void WritePixel32(uint8* RESTRICT src, uint32 pitch, const GSOffset& off, const GSVector4i& r)
 	{
-		src -= r.left * sizeof(uint32);
-
-		for (int y = r.top; y < r.bottom; y++, src += pitch)
-		{
-			uint32* RESTRICT s = (uint32*)src;
-			uint32* RESTRICT d = &m_vm32[off->pixel.row[y]];
-			int* RESTRICT col = off->pixel.col[0];
-
-			for (int x = r.left; x < r.right; x++)
-			{
-				d[col[x]] = s[x];
-			}
-		}
+		off.loopPixels(r, m_vm32, (uint32*)src, pitch, [&](uint32* dst, uint32* src) { *dst = *src; });
 	}
 
-	__forceinline void WritePixel24(uint8* RESTRICT src, uint32 pitch, GSOffset* off, const GSVector4i& r)
+	void WritePixel24(uint8* RESTRICT src, uint32 pitch, const GSOffset& off, const GSVector4i& r)
 	{
-		src -= r.left * sizeof(uint32);
-
-		for (int y = r.top; y < r.bottom; y++, src += pitch)
+		off.loopPixels(r, m_vm32, (uint32*)src, pitch,
+		[&](uint32* dst, uint32* src)
 		{
-			uint32* RESTRICT s = (uint32*)src;
-			uint32* RESTRICT d = &m_vm32[off->pixel.row[y]];
-			int* RESTRICT col = off->pixel.col[0];
-
-			for (int x = r.left; x < r.right; x++)
-			{
-				d[col[x]] = (d[col[x]] & 0xff000000) | (s[x] & 0x00ffffff);
-			}
-		}
+			*dst = (*dst & 0xff000000) | (*src & 0x00ffffff);
+		});
 	}
 
-	__forceinline void WritePixel16(uint8* RESTRICT src, uint32 pitch, GSOffset* off, const GSVector4i& r)
+	void WritePixel16(uint8* RESTRICT src, uint32 pitch, const GSOffset& off, const GSVector4i& r)
 	{
-		src -= r.left * sizeof(uint16);
-
-		for (int y = r.top; y < r.bottom; y++, src += pitch)
-		{
-			uint16* RESTRICT s = (uint16*)src;
-			uint16* RESTRICT d = &m_vm16[off->pixel.row[y]];
-			int* RESTRICT col = off->pixel.col[0];
-
-			for (int x = r.left; x < r.right; x++)
-			{
-				d[col[x]] = s[x];
-			}
-		}
+		off.loopPixels(r, m_vm16, (uint16*)src, pitch, [&](uint16* dst, uint16* src) { *dst = *src; });
 	}
 
-	__forceinline void WriteFrame16(uint8* RESTRICT src, uint32 pitch, GSOffset* off, const GSVector4i& r)
+	void WriteFrame16(uint8* RESTRICT src, uint32 pitch, const GSOffset& off, const GSVector4i& r)
 	{
-		src -= r.left * sizeof(uint32);
-
-		for (int y = r.top; y < r.bottom; y++, src += pitch)
+		off.loopPixels(r, m_vm16, (uint32*)src, pitch,
+		[&](uint16* dst, uint32* src)
 		{
-			uint32* RESTRICT s = (uint32*)src;
-			uint16* RESTRICT d = &m_vm16[off->pixel.row[y]];
-			int* RESTRICT col = off->pixel.col[0];
+			uint32 rb = *src & 0x00f800f8;
+			uint32 ga = *src & 0x8000f800;
 
-			for (int x = r.left; x < r.right; x++)
-			{
-				uint32 rb = s[x] & 0x00f800f8;
-				uint32 ga = s[x] & 0x8000f800;
-
-				d[col[x]] = (uint16)((ga >> 16) | (rb >> 9) | (ga >> 6) | (rb >> 3));
-			}
-		}
+			*dst = (uint16)((ga >> 16) | (rb >> 9) | (ga >> 6) | (rb >> 3));
+		});
 	}
 
 	__forceinline uint32 ReadTexel32(uint32 addr, const GIFRegTEXA& TEXA) const
@@ -1191,17 +1120,17 @@ public:
 
 	// * => 32
 
-	void ReadTexture32(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTextureGPU24(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture24(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture16(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture8(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture4(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture8H(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture4HL(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture4HH(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture32(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTextureGPU24(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture24(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture16(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture8(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture4(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture8H(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture4HL(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture4HH(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
 
-	void ReadTexture(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
 
 	void ReadTextureBlock32(uint32 bp, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA) const;
 	void ReadTextureBlock24(uint32 bp, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA) const;
@@ -1214,11 +1143,11 @@ public:
 
 	// pal ? 8 : 32
 
-	void ReadTexture8P(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture4P(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture8HP(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture4HLP(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
-	void ReadTexture4HHP(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture8P(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture4P(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture8HP(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture4HLP(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture4HHP(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
 
 	void ReadTextureBlock8P(uint32 bp, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA) const;
 	void ReadTextureBlock4P(uint32 bp, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA) const;
@@ -1229,31 +1158,31 @@ public:
 	//
 
 	template <typename T>
-	void ReadTexture(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	void ReadTexture(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
 
 	//
 
 	void SaveBMP(const std::string& fn, uint32 bp, uint32 bw, uint32 psm, int w, int h);
 };
 
-constexpr inline GSOffsetNew GSOffsetNew::fromKnownPSM(uint32 bp, uint32 bw, GS_PSM psm)
+constexpr inline GSOffset GSOffset::fromKnownPSM(uint32 bp, uint32 bw, GS_PSM psm)
 {
 	switch (psm)
 	{
-		case PSM_PSMCT32:  return GSOffsetNew(GSLocalMemory::swizzle32,   bp, bw, psm);
-		case PSM_PSMCT24:  return GSOffsetNew(GSLocalMemory::swizzle32,   bp, bw, psm);
-		case PSM_PSMCT16:  return GSOffsetNew(GSLocalMemory::swizzle16,   bp, bw, psm);
-		case PSM_PSMCT16S: return GSOffsetNew(GSLocalMemory::swizzle16S,  bp, bw, psm);
-		case PSM_PSGPU24:  return GSOffsetNew(GSLocalMemory::swizzle16,   bp, bw, psm);
-		case PSM_PSMT8:    return GSOffsetNew(GSLocalMemory::swizzle8,    bp, bw, psm);
-		case PSM_PSMT4:    return GSOffsetNew(GSLocalMemory::swizzle4,    bp, bw, psm);
-		case PSM_PSMT8H:   return GSOffsetNew(GSLocalMemory::swizzle32,   bp, bw, psm);
-		case PSM_PSMT4HL:  return GSOffsetNew(GSLocalMemory::swizzle32,   bp, bw, psm);
-		case PSM_PSMT4HH:  return GSOffsetNew(GSLocalMemory::swizzle32,   bp, bw, psm);
-		case PSM_PSMZ32:   return GSOffsetNew(GSLocalMemory::swizzle32Z,  bp, bw, psm);
-		case PSM_PSMZ24:   return GSOffsetNew(GSLocalMemory::swizzle32Z,  bp, bw, psm);
-		case PSM_PSMZ16:   return GSOffsetNew(GSLocalMemory::swizzle16Z,  bp, bw, psm);
-		case PSM_PSMZ16S:  return GSOffsetNew(GSLocalMemory::swizzle16SZ, bp, bw, psm);
+		case PSM_PSMCT32:  return GSOffset(GSLocalMemory::swizzle32,   bp, bw, psm);
+		case PSM_PSMCT24:  return GSOffset(GSLocalMemory::swizzle32,   bp, bw, psm);
+		case PSM_PSMCT16:  return GSOffset(GSLocalMemory::swizzle16,   bp, bw, psm);
+		case PSM_PSMCT16S: return GSOffset(GSLocalMemory::swizzle16S,  bp, bw, psm);
+		case PSM_PSGPU24:  return GSOffset(GSLocalMemory::swizzle16,   bp, bw, psm);
+		case PSM_PSMT8:    return GSOffset(GSLocalMemory::swizzle8,    bp, bw, psm);
+		case PSM_PSMT4:    return GSOffset(GSLocalMemory::swizzle4,    bp, bw, psm);
+		case PSM_PSMT8H:   return GSOffset(GSLocalMemory::swizzle32,   bp, bw, psm);
+		case PSM_PSMT4HL:  return GSOffset(GSLocalMemory::swizzle32,   bp, bw, psm);
+		case PSM_PSMT4HH:  return GSOffset(GSLocalMemory::swizzle32,   bp, bw, psm);
+		case PSM_PSMZ32:   return GSOffset(GSLocalMemory::swizzle32Z,  bp, bw, psm);
+		case PSM_PSMZ24:   return GSOffset(GSLocalMemory::swizzle32Z,  bp, bw, psm);
+		case PSM_PSMZ16:   return GSOffset(GSLocalMemory::swizzle16Z,  bp, bw, psm);
+		case PSM_PSMZ16S:  return GSOffset(GSLocalMemory::swizzle16SZ, bp, bw, psm);
 	}
-	return GSOffsetNew(GSLocalMemory::swizzle32, bp, bw, psm);
+	return GSOffset(GSLocalMemory::swizzle32, bp, bw, psm);
 }
