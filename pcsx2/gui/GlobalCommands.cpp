@@ -545,10 +545,8 @@ namespace Implementations
 	{
 		if (g_Conf->EmuOptions.EnableRecordingTools && g_InputRecording.IsActive())
 		{
-			if (!g_InputRecording.GoToFirstFrame())
-			{
-				sMainFrame.StopInputRecording();
-			}
+			// Assumes that gui is active, as you can't access recording options without it
+			g_InputRecording.GoToFirstFrame(GetMainFramePtr());
 		}
 	}
 

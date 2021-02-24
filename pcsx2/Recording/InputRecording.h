@@ -85,7 +85,8 @@ public:
 	// Create a new input recording file
 	bool Create(wxString filename, const bool fromSaveState, wxString authorName);
 	// Play an existing input recording from a file
-	bool Play(wxString filename);
+	// Calls a file dialog if it fails to locate the default base savestate
+	bool Play(wxWindow* parent, wxString filename);
 	// Stop the active input recording
 	void Stop();
 	// Displays the VirtualPad window for the chosen pad
@@ -93,7 +94,8 @@ public:
 	// Logs the padData and redraws the virtualPad windows of active pads
 	void LogAndRedraw();
 	// Resets emulation to the beginning of a recording
-	bool GoToFirstFrame();
+	// Calls a file dialog if it fails to locate the base savestate
+	void GoToFirstFrame(wxWindow* parent);
 	// Resets a recording if the base savestate could not be loaded at the start
 	void FailedSavestate();
 
@@ -123,6 +125,7 @@ private:
 	s32 frameCounter = 0;
 	bool incrementUndo = false;
 	InputRecordingMode state = InputRecording::InputRecordingMode::NotActive;
+	wxString savestate;
 
 	// Array of usable pads (currently, only 2)
 	struct InputRecordingPad
