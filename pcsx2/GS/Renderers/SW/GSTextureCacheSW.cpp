@@ -62,21 +62,18 @@ GSTextureCacheSW::Texture* GSTextureCacheSW::Lookup(const GIFRegTEX0& TEX0, cons
 
 	m_textures.insert(t);
 
-	for (const uint32* p = t->m_pages.n; *p != GSOffset::EOP; p++)
+	t->m_pages.loopPages([&](uint32 page)
 	{
-		const uint32 page = *p;
 		t->m_erase_it[page] = m_map[page].InsertFront(t);
-	}
+	});
 
 	return t;
 }
 
-void GSTextureCacheSW::InvalidatePages(const uint32* pages, uint32 psm)
+void GSTextureCacheSW::InvalidatePages(const GSOffset::PageLooper& pages, uint32 psm)
 {
-	for (const uint32* p = pages; *p != GSOffset::EOP; p++)
+	pages.loopPages([&](uint32 page)
 	{
-		const uint32 page = *p;
-
 		for (Texture* t : m_map[page])
 		{
 			if (GSUtil::HasSharedBits(psm, t->m_sharedbits))
@@ -98,7 +95,7 @@ void GSTextureCacheSW::InvalidatePages(const uint32* pages, uint32 psm)
 				t->m_complete = false;
 			}
 		}
-	}
+	});
 }
 
 void GSTextureCacheSW::RemoveAll()
@@ -124,11 +121,10 @@ void GSTextureCacheSW::IncAge()
 		{
 			i = m_textures.erase(i);
 
-			for (const uint32* p = t->m_pages.n; *p != GSOffset::EOP; p++)
+			t->m_pages.loopPages([&](uint32 page)
 			{
-				const uint32 page = *p;
 				m_map[page].EraseIndex(t->m_erase_it[page]);
-			}
+			});
 
 			delete t;
 		}
@@ -162,9 +158,7 @@ GSTextureCacheSW::Texture::Texture(GSState* state, uint32 tw0, const GIFRegTEX0&
 	m_sharedbits = GSUtil::HasSharedBitsPtr(m_TEX0.PSM);
 
 	m_offset = m_state->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
-
-	m_pages.n = m_offset->GetPages(GSVector4i(0, 0, 1 << TEX0.TW, 1 << TEX0.TH));
-	memcpy(m_pages.bm, m_offset->GetPagesAsBits(TEX0), sizeof(m_pages.bm));
+	m_pages = m_offset.pageLooperForRect(GSVector4i(0, 0, 1 << TEX0.TW, 1 << TEX0.TH));
 
 	m_repeating = m_TEX0.IsRepeating(); // repeating mode always works, it is just slightly slower
 
@@ -176,8 +170,6 @@ GSTextureCacheSW::Texture::Texture(GSState* state, uint32 tw0, const GIFRegTEX0&
 
 GSTextureCacheSW::Texture::~Texture()
 {
-	delete[] m_pages.n;
-
 	if (m_buff)
 	{
 		_aligned_free(m_buff);
@@ -223,7 +215,7 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 
 	GSLocalMemory& mem = m_state->m_mem;
 
-	const GSOffset* RESTRICT off = m_offset;
+	GSOffset off = m_offset;
 
 	uint32 blocks = 0;
 
@@ -235,22 +227,20 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 
 	int block_pitch = pitch * bs.y;
 
-	r = r.srl32(3);
+	shift += off.blockShiftX();
+	int bottom = r.bottom >> off.blockShiftY();
+	int right = r.right >> off.blockShiftX();
 
-	bs.x >>= 3;
-	bs.y >>= 3;
-
-	shift += 3;
+	GSOffset::BNHelper bn = off.bnMulti(r.left, r.top);
 
 	if (m_repeating)
 	{
-		for (int y = r.top; y < r.bottom; y += bs.y, dst += block_pitch)
+		for (; bn.blkY() < bottom; bn.nextBlockY(), dst += block_pitch)
 		{
-			uint32 base = off->block.row[y];
-
-			for (int x = r.left, i = (y << 7) + x; x < r.right; x += bs.x, i += bs.x)
+			for (; bn.blkX() < right; bn.nextBlockX())
 			{
-				uint32 block = (base + off->block.col[x]) % MAX_BLOCKS;
+				int i = (bn.blkY() << 7) + bn.blkX();
+				uint32 block = bn.value();
 
 				uint32 row = i >> 5;
 				uint32 col = 1 << (i & 31);
@@ -259,7 +249,7 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 				{
 					m_valid[row] |= col;
 
-					(mem.*rtxbP)(block, &dst[x << shift], pitch, m_TEXA);
+					(mem.*rtxbP)(block, &dst[bn.blkX() << shift], pitch, m_TEXA);
 
 					blocks++;
 				}
@@ -268,13 +258,11 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 	}
 	else
 	{
-		for (int y = r.top; y < r.bottom; y += bs.y, dst += block_pitch)
+		for (; bn.blkY() < bottom; bn.nextBlockY(), dst += block_pitch)
 		{
-			uint32 base = off->block.row[y];
-
-			for (int x = r.left; x < r.right; x += bs.x)
+			for (; bn.blkX() < right; bn.nextBlockX())
 			{
-				uint32 block = (base + off->block.col[x]) % MAX_BLOCKS;
+				uint32 block = bn.value();
 
 				uint32 row = block >> 5;
 				uint32 col = 1 << (block & 31);
@@ -283,7 +271,7 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 				{
 					m_valid[row] |= col;
 
-					(mem.*rtxbP)(block, &dst[x << shift], pitch, m_TEXA);
+					(mem.*rtxbP)(block, &dst[bn.blkX() << shift], pitch, m_TEXA);
 
 					blocks++;
 				}

@@ -125,7 +125,7 @@ public:
 		GIFRegTEX0 m_layer_TEX0[7]; // Detect already loaded value
 		// Keep a GSTextureCache::SourceMap::m_map iterator to allow fast erase
 		std::array<uint16, MAX_PAGES> m_erase_it;
-		uint32* m_pages_as_bit;
+		GSOffset::PageLooper m_pages;
 
 	public:
 		Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, uint8* temp, bool dummy_container = false);
@@ -189,7 +189,7 @@ public:
 			memset(m_pages, 0, sizeof(m_pages));
 		}
 
-		void Add(Source* s, const GIFRegTEX0& TEX0, GSOffset* off);
+		void Add(Source* s, const GIFRegTEX0& TEX0, const GSOffset& off);
 		void RemoveAll();
 		void RemovePartial();
 		void RemoveAt(Source* s);
@@ -249,8 +249,8 @@ public:
 
 	void InvalidateVideoMemType(int type, uint32 bp);
 	void InvalidateVideoMemSubTarget(GSTextureCache::Target* rt);
-	void InvalidateVideoMem(GSOffset* off, const GSVector4i& r, bool target = true);
-	void InvalidateLocalMem(GSOffset* off, const GSVector4i& r);
+	void InvalidateVideoMem(const GSOffset& off, const GSVector4i& r, bool target = true);
+	void InvalidateLocalMem(const GSOffset& off, const GSVector4i& r);
 
 	void IncAge();
 	bool UserHacks_HalfPixelOffset;

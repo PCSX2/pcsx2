@@ -127,10 +127,8 @@ struct alignas(32) GSScanlineGlobalData // per batch variables, this is like a p
 	uint32* clut;
 	GSVector4i* dimx;
 
-	const int* fbr;
-	const int* zbr;
-	const int* fbc;
-	const int* zbc;
+	GSOffset fbo;
+	GSOffset zbo;
 	const GSVector2i* fzbr;
 	const GSVector2i* fzbc;
 

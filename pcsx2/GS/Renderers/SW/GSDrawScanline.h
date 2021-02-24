@@ -38,20 +38,20 @@ protected:
 	GSCodeGeneratorFunctionMap<GSDrawScanlineCodeGenerator, uint64, DrawScanlinePtr> m_ds_map;
 
 	template <class T, bool masked>
-	void DrawRectT(const int* RESTRICT row, const int* RESTRICT col, const GSVector4i& r, uint32 c, uint32 m);
+	void DrawRectT(const GSOffset& off, const GSVector4i& r, uint32 c, uint32 m);
 
 	template <class T, bool masked>
-	__forceinline void FillRect(const int* RESTRICT row, const int* RESTRICT col, const GSVector4i& r, uint32 c, uint32 m);
+	__forceinline void FillRect(const GSOffset& off, const GSVector4i& r, uint32 c, uint32 m);
 
 #if _M_SSE >= 0x501
 
 	template <class T, bool masked>
-	__forceinline void FillBlock(const int* RESTRICT row, const int* RESTRICT col, const GSVector4i& r, const GSVector8i& c, const GSVector8i& m);
+	__forceinline void FillBlock(const GSOffset& off, const GSVector4i& r, const GSVector8i& c, const GSVector8i& m);
 
 #else
 
 	template <class T, bool masked>
-	__forceinline void FillBlock(const int* RESTRICT row, const int* RESTRICT col, const GSVector4i& r, const GSVector4i& c, const GSVector4i& m);
+	__forceinline void FillBlock(const GSOffset& off, const GSVector4i& r, const GSVector4i& c, const GSVector4i& m);
 
 #endif
 
