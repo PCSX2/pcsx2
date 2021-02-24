@@ -212,7 +212,12 @@ void recMTC0()
 		{
 			case 12:
 				iFlushCall(FLUSH_INTERPRETER);
-				xFastCall((void*)WriteCP0Status, g_cpuConstRegs[_Rt_].UL[0] );
+				xFastCall((void*)WriteCP0Status, g_cpuConstRegs[_Rt_].UL[0]);
+			break;
+
+			case 16:
+				iFlushCall(FLUSH_INTERPRETER);
+				xFastCall((void*)WriteCP0Config, g_cpuConstRegs[_Rt_].UL[0]);
 			break;
 
 			case 9:
@@ -263,6 +268,12 @@ void recMTC0()
 				iFlushCall(FLUSH_INTERPRETER);
 				_eeMoveGPRtoR(ecx, _Rt_);
 				xFastCall((void*)WriteCP0Status, ecx );
+			break;
+
+			case 16:
+				iFlushCall(FLUSH_INTERPRETER);
+				_eeMoveGPRtoR(ecx, _Rt_);
+				xFastCall((void*)WriteCP0Config, ecx);
 			break;
 
 			case 9:
