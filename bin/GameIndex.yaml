@@ -6332,14 +6332,6 @@ SLES-50126:
   name: "Quake III - Revolution"
   region: "PAL-M3"
   compat: 5
-  patches:
-    2064ACE6:
-      content: |-
-        comment=Patch by leilei
-        // Removes intro and end credits FMVs.
-        // Fixes hanging caused by FMVs.
-        patch=1,EE,0072C161,byte,00000061
-        patch=1,EE,00722677,byte,00000061
 SLES-50127:
   name: "Quake III - Revolution"
   region: "PAL-E"
@@ -31754,14 +31746,6 @@ SLUS-20167:
   name: "Quake III - Revolution"
   region: "NTSC-U"
   compat: 5
-  patches:
-    A56A0525:
-      content: |-
-        comment=Patch by leilei
-        // Removes intro and end credits FMVs.
-        // Fixes hanging caused by FMVs.
-        patch=1,EE,0072C1E1,byte,00000061
-        patch=1,EE,007226F7,byte,00000061
 SLUS-20168:
   name: "Triple Play Baseball"
   region: "NTSC-U"
