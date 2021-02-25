@@ -70,7 +70,7 @@ FUNCTION_SHIM_1_ARG(int, pcap_snapshot, pcap_t*)
 FUNCTION_SHIM_1_ARG(int, pcap_is_swapped, pcap_t*)
 FUNCTION_SHIM_1_ARG(int, pcap_major_version, pcap_t*)
 FUNCTION_SHIM_1_ARG(int, pcap_minor_version, pcap_t*)
-FUNCTION_SHIM_1_ARG(int, pcap_bufsize, pcap_t*)
+//FUNCTION_SHIM_1_ARG(int, pcap_bufsize, pcap_t*)
 //
 FUNCTION_SHIM_1_ARG(FILE*, pcap_file, pcap_t*)
 FUNCTION_SHIM_1_ARG(int, pcap_fileno, pcap_t*)
