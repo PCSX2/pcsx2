@@ -132,7 +132,7 @@ extern void PatchesVerboseReset();
 // extern int  AddPatch(int Mode, int Place, int Address, int Size, u64 data);
 // extern void ResetPatch(void);
 
-//Swaps endianess of InputNum
-//ex. 01020304 -> 04030201
-//Could be made more portable if we remove the patch_data_type bar
-extern u64 SwapEndian(u64 InputNum, patch_data_type);
+// Swaps endianess of InputNum
+// ex. 01020304 -> 04030201
+// BitLength is length of InputNum in bits, ex. double,64  word,32  short,16
+extern u64 SwapEndian(u64 InputNum, u8 BitLength);

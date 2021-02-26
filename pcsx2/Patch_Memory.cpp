@@ -422,19 +422,19 @@ void _ApplyPatch(IniPatch *p)
 
 		case SHORT_LE_T:
 			if (memRead16(p->addr) != (u16)p->data)
-				memWrite16(p->addr, (u16) SwapEndian(p->data,SHORT_LE_T));
+				memWrite16(p->addr, (u16) SwapEndian(p->data,16));
 			break;
 
 		case WORD_LE_T:
 			if (memRead32(p->addr) != (u32)p->data)
-				memWrite32(p->addr, (u32) SwapEndian( p->data , WORD_LE_T ) );
+				memWrite32(p->addr, (u32) SwapEndian( p->data , 32 ) );
 			break;
 
 		case DOUBLE_LE_T:
 			u64 memle;
 			memRead64(p->addr, &memle);
 			if (mem != p->data)
-				memWrite64(p->addr, SwapEndian(p->data, DOUBLE_LE_T ) );
+				memWrite64(p->addr, SwapEndian(p->data, 64 ) );
 			break;
 
 		default:
@@ -467,17 +467,17 @@ void _ApplyPatch(IniPatch *p)
 	}
 }
 
-u64 SwapEndian(u64 InputNum, patch_data_type Type)
+u64 SwapEndian(u64 InputNum, u8 BitLength)
 {
-	if (Type == DOUBLE_LE_T) //DOUBLE_LE_T
+	if (BitLength == 64) // DOUBLE_LE_T
 	{
 		InputNum = (InputNum & 0x00000000FFFFFFFF) << 32 | (InputNum & 0xFFFFFFFF00000000) >> 32; //Swaps 4 bytes
 	}
-	if ((Type == WORD_LE_T)||(Type==DOUBLE_LE_T)) //WORD_LE_T
+	if ((BitLength == 32)||(BitLength==64)) // WORD_LE_T
 	{
 		InputNum = (InputNum & 0x0000FFFF0000FFFF) << 16 | (InputNum & 0xFFFF0000FFFF0000) >> 16; // Swaps 2 bytes
 	}
-	InputNum = (InputNum & 0x00FF00FF00FF00FF) << 8 | (InputNum & 0xFF00FF00FF00FF00) >> 8;   //Swaps 1 byte
+	InputNum = (InputNum & 0x00FF00FF00FF00FF) << 8 | (InputNum & 0xFF00FF00FF00FF00) >> 8;   // Swaps 1 byte
 	return InputNum;
 }
 
