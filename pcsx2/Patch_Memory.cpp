@@ -394,6 +394,8 @@ void _ApplyPatch(IniPatch *p)
 	case CPU_EE:
 		switch (p->type)
 		{
+		u64 mem;
+		u64 ledata;
 		case BYTE_T:
 			if (memRead8(p->addr) != (u8)p->data)
 				memWrite8(p->addr, (u8)p->data);
@@ -410,7 +412,6 @@ void _ApplyPatch(IniPatch *p)
 			break;
 
 		case DOUBLE_T:
-			u64 mem;
 			memRead64(p->addr, &mem);
 			if (mem != p->data)
 				memWrite64(p->addr, &p->data);
@@ -421,20 +422,22 @@ void _ApplyPatch(IniPatch *p)
 			break;
 
 		case SHORT_LE_T:
-			if (memRead16(p->addr) != (u16)p->data)
-				memWrite16(p->addr, (u16) SwapEndian(p->data,16));
+			ledata = SwapEndian(p->data, 16);
+			if (memRead16(p->addr) != (u16)ledata)
+				memWrite16(p->addr, (u16)ledata);
 			break;
 
 		case WORD_LE_T:
-			if (memRead32(p->addr) != (u32)p->data)
-				memWrite32(p->addr, (u32) SwapEndian( p->data , 32 ) );
+			ledata = SwapEndian(p->data, 32);
+			if (memRead32(p->addr) != (u32)ledata)
+				memWrite32(p->addr, (u32) ledata );
 			break;
 
 		case DOUBLE_LE_T:
-			u64 memle;
-			memRead64(p->addr, &memle);
-			if (mem != p->data)
-				memWrite64(p->addr, SwapEndian(p->data, 64 ) );
+			ledata = SwapEndian(p->data, 64);
+			memRead64(p->addr, &mem);
+			if (mem != ledata)
+				memWrite64(p->addr, ledata );
 			break;
 
 		default:
