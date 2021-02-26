@@ -387,6 +387,9 @@ void handle_extended_t(IniPatch *p)
 // Patch.cpp itself declares this prototype, so make sure to keep in sync.
 void _ApplyPatch(IniPatch *p)
 {
+	u64 mem = 0;
+	u64 ledata = 0;
+
 	if (p->enabled == 0) return;
 
 	switch (p->cpu)
@@ -394,8 +397,7 @@ void _ApplyPatch(IniPatch *p)
 	case CPU_EE:
 		switch (p->type)
 		{
-		u64 mem;
-		u64 ledata;
+		
 		case BYTE_T:
 			if (memRead8(p->addr) != (u8)p->data)
 				memWrite8(p->addr, (u8)p->data);
