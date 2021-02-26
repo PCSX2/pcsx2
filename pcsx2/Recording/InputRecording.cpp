@@ -294,7 +294,7 @@ void InputRecording::SetupInitialState(u32 newStartingFrame)
 	if (state != InputRecordingMode::Replaying)
 	{
 		inputRec::log("Started new input recording");
-		inputRec::consoleLog(fmt::format("Filename {}", std::string(inputRecordingData.GetFilename())));
+		inputRec::consoleLog(fmt::format("Filename {}", inputRecordingData.GetFilename()));
 		SetToRecordMode();
 	}
 	else
@@ -306,7 +306,7 @@ void InputRecording::SetupInitialState(u32 newStartingFrame)
 
 		incrementUndo = true;
 		inputRec::log("Replaying input recording");
-		inputRec::consoleMultiLog({fmt::format("File: {}", std::string(inputRecordingData.GetFilename())),
+		inputRec::consoleMultiLog({fmt::format("File: {}", inputRecordingData.GetFilename()),
 								   fmt::format("PCSX2 Version Used: {}", std::string(inputRecordingData.GetHeader().emu)),
 								   fmt::format("Recording File Version: {}", inputRecordingData.GetHeader().version),
 								   fmt::format("Associated Game Name or ISO Filename: {}", std::string(inputRecordingData.GetHeader().gameName)),
@@ -416,11 +416,11 @@ wxString InputRecording::resolveGameName()
 	{
 		if (IGameDatabase* gameDB = AppHost_GetGameDatabase())
 		{
-			GameDatabaseSchema::GameEntry game = gameDB->findGame(std::string(gameKey));
+			GameDatabaseSchema::GameEntry game = gameDB->findGame(std::string(gameKey.ToUTF8()));
 			if (game.isValid)
 			{
-				gameName = game.name;
-				gameName += L" (" + game.region + L")";
+				gameName = fromUTF8(game.name);
+				gameName += L" (" + fromUTF8(game.region) + L")";
 			}
 		}
 	}

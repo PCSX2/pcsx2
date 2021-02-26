@@ -30,6 +30,11 @@ __fi wxString fromUTF8(const char *src)
     return wxString(src, wxMBConvUTF8());
 }
 
+wxString fromUTF8(const std::string& str)
+{
+    return wxString(str.c_str(), wxMBConvUTF8(), str.length());
+}
+
 __fi wxString fromAscii(const char *src)
 {
     return wxString::FromAscii(src);

@@ -120,7 +120,7 @@ void RecordStart(std::wstring* filename)
 		safe_delete(m_wavrecord);
 #ifdef _WIN32
 		if (filename)
-			m_wavrecord = new WavOutFile((*filename) + "wav", 48000, 16, 2);
+			m_wavrecord = new WavOutFile((wxString(*filename) + L"wav").c_str(), 48000, 16, 2);
 		else
 			m_wavrecord = new WavOutFile("audio_recording.wav", 48000, 16, 2);
 #elif defined(__unix__)

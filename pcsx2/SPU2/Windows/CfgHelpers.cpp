@@ -96,7 +96,7 @@ void CfgWriteInt(const TCHAR* Section, const TCHAR* Name, int Value)
 	initIni();
 	TCHAR Data[32];
 	_itow(Value, Data, 10);
-	WritePrivateProfileString(Section, Name, Data, CfgFile);
+	WritePrivateProfileString(Section, Name, Data, CfgFile.wc_str());
 }
 
 void CfgWriteFloat(const TCHAR* Section, const TCHAR* Name, float Value)
@@ -104,7 +104,7 @@ void CfgWriteFloat(const TCHAR* Section, const TCHAR* Name, float Value)
 	initIni();
 	TCHAR Data[32];
 	_swprintf(Data, L"%f", Value);
-	WritePrivateProfileString(Section, Name, Data, CfgFile);
+	WritePrivateProfileString(Section, Name, Data, CfgFile.wc_str());
 }
 
 /*void CfgWriteStr(const TCHAR* Section, const TCHAR* Name, const TCHAR *Data)
@@ -115,7 +115,7 @@ WritePrivateProfileString( Section, Name, Data, CfgFile );
 void CfgWriteStr(const TCHAR* Section, const TCHAR* Name, const wxString& Data)
 {
 	initIni();
-	WritePrivateProfileString(Section, Name, Data, CfgFile);
+	WritePrivateProfileString(Section, Name, Data.wc_str(), CfgFile.wc_str());
 }
 
 /*****************************************************************************/

@@ -1275,6 +1275,6 @@ void OSDlog(ConsoleColors color, bool console, const std::string& str)
 void OSDmonitor(ConsoleColors color, const std::string key, const std::string value) {
 	if(!GSosdMonitor) return;
 
-	GSosdMonitor(wxString(key).utf8_str(), wxString(value).utf8_str(), wxGetApp().GetProgramLog()->GetRGBA(color));
+	GSosdMonitor(key.c_str(), value.c_str(), wxGetApp().GetProgramLog()->GetRGBA(color));
 }
 

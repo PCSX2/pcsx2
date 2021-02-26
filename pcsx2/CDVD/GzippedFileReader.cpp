@@ -238,7 +238,7 @@ void GzippedFileReader::AsyncPrefetchReset()
 
 void GzippedFileReader::AsyncPrefetchOpen()
 {
-	hOverlappedFile = CreateFile(
+	hOverlappedFile = CreateFileW(
 		m_filename,
 		GENERIC_READ,
 		FILE_SHARE_READ,
