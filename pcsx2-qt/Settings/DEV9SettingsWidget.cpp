@@ -32,12 +32,14 @@
 #ifdef _WIN32
 #include "DEV9/Win32/tap.h"
 #endif
+#include "DEV9/sockets.h"
 
 static const char* s_api_name[] = {
 	QT_TRANSLATE_NOOP("DEV9SettingsWidget", " "),
 	QT_TRANSLATE_NOOP("DEV9SettingsWidget", "PCAP Bridged"),
 	QT_TRANSLATE_NOOP("DEV9SettingsWidget", "PCAP Switched"),
 	QT_TRANSLATE_NOOP("DEV9SettingsWidget", "TAP"),
+	QT_TRANSLATE_NOOP("DEV9SettingsWidget", "Sockets"),
 	nullptr,
 };
 
@@ -145,6 +147,8 @@ DEV9SettingsWidget::DEV9SettingsWidget(SettingsDialog* dialog, QWidget* parent)
 	for (const AdapterEntry& adapter : TAPAdapter::GetAdapters())
 		AddAdapter(adapter);
 #endif
+	for (const AdapterEntry& adapter : SocketAdapter::GetAdapters())
+		AddAdapter(adapter); 
 
 	std::sort(m_api_list.begin(), m_api_list.end());
 	for (auto& list : m_adapter_list)
@@ -399,6 +403,9 @@ void DEV9SettingsWidget::onEthDeviceTypeChanged(int index)
 		case Pcsx2Config::DEV9Options::NetApi::PCAP_Bridged:
 		case Pcsx2Config::DEV9Options::NetApi::PCAP_Switched:
 			m_adapter_options = PCAPAdapter::GetAdapterOptions();
+			break;
+		case Pcsx2Config::DEV9Options::NetApi::Sockets:
+			m_adapter_options = SocketAdapter::GetAdapterOptions();
 			break;
 		default:
 			m_adapter_options = AdapterOptions::None;

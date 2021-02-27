@@ -651,6 +651,7 @@ struct Pcsx2Config
 			PCAP_Bridged = 1,
 			PCAP_Switched = 2,
 			TAP = 3,
+			Sockets = 4,
 		};
 		static const char* NetApiNames[];
 

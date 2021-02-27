@@ -28,6 +28,7 @@
 #include "Win32/tap.h"
 #endif
 #include "pcap_io.h"
+#include "sockets.h"
 
 #include "PacketReader/EthernetFrame.h"
 #include "PacketReader/IP/IP_Packet.h"
@@ -87,6 +88,9 @@ NetAdapter* GetNetAdapter()
 		case Pcsx2Config::DEV9Options::NetApi::PCAP_Bridged:
 		case Pcsx2Config::DEV9Options::NetApi::PCAP_Switched:
 			na = static_cast<NetAdapter*>(new PCAPAdapter());
+			break;
+		case Pcsx2Config::DEV9Options::NetApi::Sockets:
+			na = static_cast<NetAdapter*>(new SocketAdapter());
 			break;
 		default:
 			return 0;
