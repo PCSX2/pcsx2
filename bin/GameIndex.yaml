@@ -32982,12 +32982,20 @@ SLUS-20469:
   patches:
     6D1276AB:
       content: |-
-        // Reduces JPEG quality to its minimum for save file thumbnails. This prevents
-        // the game from calling its own exit function, which was strangely its safety
-        // mechanism for when a captured thumbnail exceeded 4 KB in size.
+        // Repeatedly decrements JPEG quality until the generated save file thumbnail is
+        // within the 4 KB limit. Replaces the game's previous escape mechanism, which
+        // was simply to exit the game completely.
         comment=Save Point Crash Prevention
         author=pandubz, PSI, turtleli
-        patch=1,EE,20289db0,extended,24040000
+        patch=1,EE,00289dac,word,2413001e
+        patch=1,EE,00289db0,word,8f85af40
+        patch=1,EE,00289db4,word,26640000
+        patch=1,EE,00289db8,word,0c093746
+        patch=1,EE,00289dbc,word,00b02821
+        patch=1,EE,00289dc0,word,28421001
+        patch=1,EE,00289dc4,word,1040fffa
+        patch=1,EE,00289dc8,word,2673ffff
+        patch=1,EE,00289dcc,word,00000000
 SLUS-20470:
   name: "EverQuest - Online Adventures"
   region: "NTSC-U"
