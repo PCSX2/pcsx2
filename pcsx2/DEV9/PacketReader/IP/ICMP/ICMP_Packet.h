@@ -53,4 +53,17 @@ namespace PacketReader::IP::ICMP
 		virtual bool VerifyChecksum(IP_Address srcIP, IP_Address dstIP);
 		virtual void CalculateChecksum(IP_Address srcIP, IP_Address dstIP);
 	};
+
+	//Helper Classes
+	//Do we want this? or do we do the same as with options?
+	class ICMP_HeaderDataIdentifier
+	{
+	public:
+		u16 identifier;
+		u16 sequenceNumber;
+
+		ICMP_HeaderDataIdentifier(u16 id, u16 seq);
+		ICMP_HeaderDataIdentifier(u8* headerData);
+		void WriteHeaderData(u8* headerData);
+	};
 } // namespace PacketReader::IP::ICMP

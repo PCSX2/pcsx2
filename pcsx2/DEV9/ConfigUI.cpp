@@ -31,6 +31,7 @@
 #include "Config.h"
 #include "DEV9.h"
 #include "pcap_io.h"
+#include "sockets.h"
 #include "net.h"
 #include "PacketReader/IP/IP_Address.h"
 #include "gui/AppCoreThread.h"
@@ -138,6 +139,9 @@ public:
 		for (const AdapterEntry& adapter : TAPAdapter::GetAdapters())
 			addAdapter(adapter);
 #endif
+		for (const AdapterEntry& adapter : SocketAdapter::GetAdapters())
+			addAdapter(adapter);
+
 		std::sort(m_api_list.begin(), m_api_list.end());
 		for (auto& list : m_adapter_list)
 			std::sort(list.begin(), list.end(), [](const AdapterEntry& a, AdapterEntry& b){ return a.name < b.name; });
@@ -308,6 +312,9 @@ public:
 				case Pcsx2Config::DEV9Options::NetApi::PCAP_Bridged:
 				case Pcsx2Config::DEV9Options::NetApi::PCAP_Switched:
 					adapterOptions = PCAPAdapter::GetAdapterOptions();
+					break;
+				case Pcsx2Config::DEV9Options::NetApi::Sockets:
+					adapterOptions = SocketAdapter::GetAdapterOptions();
 					break;
 				default:
 					break;

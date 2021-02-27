@@ -208,6 +208,15 @@
     <Filter Include="System\Ps2\DEV9\Sessions">
       <UniqueIdentifier>{64b05697-98cd-48ed-b5a5-cb0f6044ca15}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\DEV9\Sessions\ICMP_Session">
+      <UniqueIdentifier>{18d51d37-34bc-489c-b84f-31362bbb9243}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\Sessions\TCP_Session">
+      <UniqueIdentifier>{7e1e6046-08a0-456e-8e03-47bb3813d9b0}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="System\Ps2\DEV9\Sessions\UDP_Session">
+      <UniqueIdentifier>{7b86e42b-816a-4d08-9de8-fa308d2b8d88}</UniqueIdentifier>
+    </Filter>
     <Filter Include="System\Ps2\USB">
       <UniqueIdentifier>{df9de75c-2272-4f73-b2a0-4f9f492ba1e9}</UniqueIdentifier>
     </Filter>
@@ -1274,10 +1283,34 @@
     <ClCompile Include="DEV9\pcap_io.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
+    <ClCompile Include="DEV9\Sessions\BaseSession.cpp">
+      <Filter>System\Ps2\DEV9\Sessions</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\Sessions\ICMP_Session\ICMP_Session.cpp">
+      <Filter>System\Ps2\DEV9\Sessions\ICMP_Session</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\Sessions\TCP_Session\TCP_Session.cpp">
+      <Filter>System\Ps2\DEV9\Sessions\TCP_Session</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\Sessions\TCP_Session\TCP_Session_In.cpp">
+      <Filter>System\Ps2\DEV9\Sessions\TCP_Session</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\Sessions\TCP_Session\TCP_Session_Out.cpp">
+      <Filter>System\Ps2\DEV9\Sessions\TCP_Session</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\Sessions\UDP_Session\UDP_FixedPort.cpp">
+      <Filter>System\Ps2\DEV9\Sessions\UDP_Session</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\Sessions\UDP_Session\UDP_Session.cpp">
+      <Filter>System\Ps2\DEV9\Sessions\UDP_Session</Filter>
+    </ClCompile>
     <ClCompile Include="DEV9\Win32\pcap_io_win32.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
     <ClCompile Include="DEV9\smap.cpp">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClCompile>
+    <ClCompile Include="DEV9\sockets.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
     <ClCompile Include="DEV9\net.cpp">
@@ -2365,10 +2398,34 @@
     <ClInclude Include="DEV9\pcap_io.h">
       <Filter>System\Ps2\DEV9</Filter>
     </ClInclude>
+    <ClInclude Include="DEV9\Sessions\BaseSession.h">
+      <Filter>System\Ps2\DEV9\Sessions</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\Sessions\ICMP_Session\ICMP_Session.h">
+      <Filter>System\Ps2\DEV9\Sessions\ICMP_Session</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\Sessions\TCP_Session\TCP_Session.h">
+      <Filter>System\Ps2\DEV9\Sessions\TCP_Session</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\Sessions\UDP_Session\UDP_FixedPort.h">
+      <Filter>System\Ps2\DEV9\Sessions\UDP_Session</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\Sessions\UDP_Session\UDP_BaseSession.h">
+      <Filter>System\Ps2\DEV9\Sessions\UDP_Session</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\Sessions\UDP_Session\UDP_Session.h">
+      <Filter>System\Ps2\DEV9\Sessions\UDP_Session</Filter>
+    </ClInclude>
     <ClInclude Include="DEV9\SimpleQueue.h">
       <Filter>System\Ps2\DEV9</Filter>
     </ClInclude>
     <ClInclude Include="DEV9\smap.h">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\sockets.h">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClInclude>
+    <ClInclude Include="DEV9\ThreadSafeMap.h">
       <Filter>System\Ps2\DEV9</Filter>
     </ClInclude>
     <ClInclude Include="DEV9\Win32\pcap_io_win32_funcs.h">

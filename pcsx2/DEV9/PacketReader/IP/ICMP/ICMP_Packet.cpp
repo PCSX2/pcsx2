@@ -121,4 +121,22 @@ namespace PacketReader::IP::ICMP
 
 		return (csumCal == 0);
 	}
+
+	ICMP_HeaderDataIdentifier::ICMP_HeaderDataIdentifier(u16 id, u16 seq)
+		: identifier{id}
+		, sequenceNumber{seq}
+	{
+	}
+	ICMP_HeaderDataIdentifier::ICMP_HeaderDataIdentifier(u8* headerData)
+	{
+		int offset = 0;
+		NetLib::ReadUInt16(headerData, &offset, &identifier);
+		NetLib::ReadUInt16(headerData, &offset, &sequenceNumber);
+	}
+	void ICMP_HeaderDataIdentifier::WriteHeaderData(u8* headerData)
+	{
+		int offset = 0;
+		NetLib::WriteUInt16(headerData, &offset, identifier);
+		NetLib::WriteUInt16(headerData, &offset, sequenceNumber);
+	}
 } // namespace PacketReader::IP::ICMP
