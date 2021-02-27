@@ -3244,17 +3244,6 @@ SCPS-15050:
   name: "Flipnic"
   region: "NTSC-J"
   compat: 5
-  patches:
-    25433CBD:
-      content: |-
-        comment=Patches by Nachbrenner
-        // Fix D3_CHCR (might be redundant).
-        patch=0,EE,0011c1b8,word,00000000
-        // Skip sceIpuSync.
-        patch=0,EE,00208eb0,word,03e00008
-        patch=0,EE,00208eb4,word,00000000
-        // Fix sceIpuRestartDMA.
-        patch=0,EE,00208e04,word,00000000
 SCPS-15051:
   name: "MLB 2003"
   region: "NTSC-J"
@@ -8028,13 +8017,6 @@ SLES-51023:
   name: "LMA Manager 2003"
   region: "PAL-E"
   compat: 5
-  patches:
-    5C313124:
-      content: |-
-        comment=Patches by Shadow Lady
-        // IPU menus.
-        patch=0,EE,002328a8,word,00000000
-        patch=0,EE,00338570,word,00000000
 SLES-51024:
   name: "Roger Lemerre: La Sélection des Champions 2003"
   region: "PAL-F"
