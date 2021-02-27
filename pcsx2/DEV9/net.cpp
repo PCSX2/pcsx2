@@ -158,6 +158,9 @@ const wchar_t* NetApiToWstring(NetApi api)
 	}
 }
 
+const PacketReader::IP::IP_Address NetAdapter::internalIP{192, 0, 2, 1};
+const u8 NetAdapter::broadcastMAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+const u8 NetAdapter::internalMAC[6] = {0x76, 0x6D, 0xF4, 0x63, 0x30, 0x31};
 
 NetAdapter::NetAdapter()
 {
