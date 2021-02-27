@@ -431,14 +431,14 @@ void _ApplyPatch(IniPatch *p)
 		case WORD_LE_T:
 			ledata = SwapEndian(p->data, 32);
 			if (memRead32(p->addr) != (u32)ledata)
-				memWrite32(p->addr,(u32)ledata);
+				memWrite32(p->addr, (u32)ledata);
 			break;
 
 		case DOUBLE_LE_T:
 			ledata = SwapEndian(p->data, 64);
 			memRead64(p->addr, &mem);
 			if (mem != ledata)
-				memWrite64(p->addr,ledata);
+				memWrite64(p->addr, ledata);
 			break;
 
 		default:
