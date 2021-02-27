@@ -17,6 +17,8 @@
 #include <stdlib.h>
 #include <string>
 
+#include "PacketReader/IP/IP_Address.h"
+
 // first three recognized by Xlink as Sony PS2
 const u8 defaultMAC[6] = {0x00, 0x04, 0x1F, 0x82, 0x30, 0x31};
 
@@ -59,9 +61,13 @@ struct AdapterEntry
 
 class NetAdapter
 {
+public:
+	static const PacketReader::IP::IP_Address internalIP;
+
 protected:
 	u8 ps2MAC[6];
-	const u8 broadcastMAC[6] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+	static const u8 broadcastMAC[6];
+	static const u8 internalMAC[6];
 
 public:
 	NetAdapter();
