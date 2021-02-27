@@ -6162,23 +6162,10 @@ SLES-50046:
   name: "F1 Racing Championship"
   region: "PAL-F-G"
   compat: 2
-  patches:
-    EDD7E0FF:
-      content: |-
-        author=Nachbrenner
-        // Skip Videos.
-        patch=0,EE,0024ddc0,word,24020001
 SLES-50047:
   name: "F1 Racing Championship"
   region: "PAL-M3"
   compat: 5
-  patches:
-    3063bd41:
-      content: |-
-        author=Prafull
-        // Fixes IPU issues causing a hang at loading menu.
-        patch=1,EE,00258e34,word,00000000
-        patch=1,EE,00217484,word,00000000
 SLES-50048:
   name: "Donald Duck - Quack Attack"
   region: "PAL-M5"
@@ -6529,8 +6516,6 @@ SLES-50212:
   name: "Paris-Dakar Rally"
   region: "PAL-E"
   compat: 5
-  gameFixes:
-    - SkipMPEGHack
 SLES-50213:
   name: "NFL Quarterback Club 2002"
   region: "PAL-E"
@@ -11195,8 +11180,6 @@ SLES-52693:
 SLES-52694:
   name: "BDFL Manager 2005"
   region: "PAL-G"
-  gameFixes:
-    - SkipMPEGHack
 SLES-52695:
   name: "Roger Lemerre - La Selection des Champions"
   region: "PAL-F"
@@ -26865,13 +26848,6 @@ SLPS-20041:
 SLPS-20042:
   name: "F1 Racing Championship"
   region: "NTSC-J"
-  patches:
-    32F1FA12:
-      content: |-
-        author=Prafull
-        // Fixes IPU issues causing a hang at loading menu.
-        patch=1,EE,00251f94,word,00000000 //0440fffa
-        patch=1,EE,0020e7a4,word,00000000 //1440fffa
 SLPS-20043:
   name: "Lake Masters Fishing EX"
   region: "NTSC-J"
