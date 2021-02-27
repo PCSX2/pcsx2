@@ -113,6 +113,11 @@ void V_Core::AutoDMAReadBuffer(int mode) //mode: 0= split stereo; 1 = do not spl
 	// HACKFIX!! DMAPtr can be invalid after a savestate load, so the savestate just forces it
 	// to nullptr and we ignore it here.  (used to work in old VM editions of PCSX2 with fixed
 	// addressing, but new PCSX2s have dynamic memory addressing).
+	if (DMAPtr == nullptr)
+	{
+		DMAPtr = (u16*)iopPhysMem(MADR);
+		InputDataProgress = 0;
+	}
 
 	if (mode)
 	{
@@ -233,6 +238,11 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 
 void V_Core::FinishDMAwrite()
 {
+	if (DMAPtr == nullptr)
+	{
+		DMAPtr = (u16*)iopPhysMem(MADR);
+	}
+
 	if (Index == 0)
 		DMA4LogWrite(DMAPtr, ReadSize << 1);
 	else
@@ -365,6 +375,11 @@ void V_Core::FinishDMAread()
 		buff1end = 0x100000;
 	}
 
+	if (DMAPtr == nullptr)
+	{
+		DMAPtr = (u16*)iopPhysMem(MADR);
+	}
+
 	const u32 buff1size = (buff1end - ActiveTSA);
 	memcpy(DMARPtr, GetMemPtr(ActiveTSA), buff1size * 2);
 	// Note on TSA's position after our copy finishes:
@@ -418,7 +433,6 @@ void V_Core::FinishDMAread()
 		}
 	}
 
-	
 	DMARPtr += TDA - ActiveTSA;
 	ReadSize -= TDA - ActiveTSA;
 	if (ReadSize == 0)
