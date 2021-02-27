@@ -397,7 +397,6 @@ void _ApplyPatch(IniPatch *p)
 	case CPU_EE:
 		switch (p->type)
 		{
-		
 		case BYTE_T:
 			if (memRead8(p->addr) != (u8)p->data)
 				memWrite8(p->addr, (u8)p->data);
