@@ -387,6 +387,9 @@ void handle_extended_t(IniPatch *p)
 // Patch.cpp itself declares this prototype, so make sure to keep in sync.
 void _ApplyPatch(IniPatch *p)
 {
+	u64 mem = 0;
+	u64 ledata = 0;
+
 	if (p->enabled == 0) return;
 
 	switch (p->cpu)
@@ -410,7 +413,6 @@ void _ApplyPatch(IniPatch *p)
 			break;
 
 		case DOUBLE_T:
-			u64 mem;
 			memRead64(p->addr, &mem);
 			if (mem != p->data)
 				memWrite64(p->addr, &p->data);
@@ -418,6 +420,25 @@ void _ApplyPatch(IniPatch *p)
 
 		case EXTENDED_T:
 			handle_extended_t(p);
+			break;
+
+		case SHORT_LE_T:
+			ledata = SwapEndian(p->data, 16);
+			if (memRead16(p->addr) != (u16)ledata)
+				memWrite16(p->addr, (u16)ledata);
+			break;
+
+		case WORD_LE_T:
+			ledata = SwapEndian(p->data, 32);
+			if (memRead32(p->addr) != (u32)ledata)
+				memWrite32(p->addr, (u32)ledata);
+			break;
+
+		case DOUBLE_LE_T:
+			ledata = SwapEndian(p->data, 64);
+			memRead64(p->addr, &mem);
+			if (mem != ledata)
+				memWrite64(p->addr, ledata);
 			break;
 
 		default:
@@ -449,3 +470,18 @@ void _ApplyPatch(IniPatch *p)
 		break;
 	}
 }
+
+u64 SwapEndian(u64 InputNum, u8 BitLength)
+{
+	if (BitLength == 64) // DOUBLE_LE_T
+	{
+		InputNum = (InputNum & 0x00000000FFFFFFFF) << 32 | (InputNum & 0xFFFFFFFF00000000) >> 32; //Swaps 4 bytes
+	}
+	if ((BitLength == 32)||(BitLength==64)) // WORD_LE_T
+	{
+		InputNum = (InputNum & 0x0000FFFF0000FFFF) << 16 | (InputNum & 0xFFFF0000FFFF0000) >> 16; // Swaps 2 bytes
+	}
+	InputNum = (InputNum & 0x00FF00FF00FF00FF) << 8 | (InputNum & 0xFF00FF00FF00FF00) >> 8;   // Swaps 1 byte
+	return InputNum;
+}
+

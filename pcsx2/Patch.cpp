@@ -61,6 +61,9 @@ static const PatchTextTable dataType[] =
 	{ 3, L"word", NULL },
 	{ 4, L"double", NULL },
 	{ 5, L"extended", NULL },
+	{ 6, L"leshort", NULL},
+	{ 7, L"leword", NULL},
+	{ 8, L"ledouble", NULL},
 	{ 0, wxEmptyString, NULL }
 };
 
