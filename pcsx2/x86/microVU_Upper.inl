@@ -73,18 +73,20 @@ static void mVUupdateFlags(mV, const xmm& reg, const xmm& regT1in = xEmptyReg, c
 	if (mFLAG.doFlag) { SHIFT_XYZW(gprT2); }
 	xOR(mReg, gprT2);
 
+	//-------------------------Overflow Flags-----------------------------------
 	if (sFLAG.doFlag) {
 		//Calculate overflow
 		xMOVAPS(regT1, regT2);
 		xAND.PS(regT1, ptr128[&sse4_compvals[1][0]]); // Remove sign flags (we don't care)
-		xPMIN.UD(regT1, ptr128[&sse4_compvals[0][0]]); // Get the minimum value, FLT_MAX = overflow
-		xCMPEQ.PS(regT1, ptr128[&sse4_compvals[0][0]]); // Compare if T1 == FLT_MAX
+		xCMPNLT.PS(regT1, ptr128[&sse4_compvals[0][0]]); // Compare if T1 == FLT_MAX
 		xMOVMSKPS(gprT2, regT1); // Grab sign bits  for equal results
-		xAND(gprT2, AND_XYZW);   // Grab "Is Zero" bits from the previous calculation
-		xTEST(gprT2, 0xF);
+		xAND(gprT2, AND_XYZW);   // Grab "Is FLT_MAX" bits from the previous calculation
 		xForwardJump32 oJMP(Jcc_Zero);
 			xOR(sReg, 0x820000);
 		oJMP.SetTarget();
+
+		xSHL(gprT2, 8 + ADD_XYZW); // Add the results to the MAC Flag
+		xOR(mReg, gprT2);
 	}
 	//-------------------------Write back flags------------------------------
 
