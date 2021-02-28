@@ -4079,12 +4079,20 @@ SCPS-55901:
   patches:
     A3D63039:
       content: |-
-        // Reduces JPEG quality to its minimum for save file thumbnails. This prevents
-        // the game from calling its own exit function, which was strangely its safety
-        // mechanism for when a captured thumbnail exceeded 4 KB in size.
+        // Repeatedly decrements JPEG quality until the generated save file thumbnail is
+        // within the 4 KB limit. Replaces the game's previous escape mechanism, which
+        // was simply to exit the game completely.
         comment=Save Point Crash Prevention
         author=pandubz, PSI, turtleli
-        patch=1,EE,20285f48,extended,24040000
+        patch=1,EE,00285f44,word,2413001e
+        patch=1,EE,00285f48,word,8f85ab00
+        patch=1,EE,00285f4c,word,26640000
+        patch=1,EE,00285f50,word,0c0935a8
+        patch=1,EE,00285f54,word,00b02821
+        patch=1,EE,00285f58,word,28421001
+        patch=1,EE,00285f5c,word,1040fffa
+        patch=1,EE,00285f60,word,2673ffff
+        patch=1,EE,00285f64,word,00000000
 SCPS-55902:
   name: "Gran Turismo - Concept 2002 Tokyo-Geneva"
   region: "NTSC-J"
@@ -30710,12 +30718,20 @@ SLPS-29001:
   patches:
     A3D63039:
       content: |-
-        // Reduces JPEG quality to its minimum for save file thumbnails. This prevents
-        // the game from calling its own exit function, which was strangely its safety
-        // mechanism for when a captured thumbnail exceeded 4 KB in size.
+        // Repeatedly decrements JPEG quality until the generated save file thumbnail is
+        // within the 4 KB limit. Replaces the game's previous escape mechanism, which
+        // was simply to exit the game completely.
         comment=Save Point Crash Prevention
         author=pandubz, PSI, turtleli
-        patch=1,EE,20285f48,extended,24040000
+        patch=1,EE,00285f44,word,2413001e
+        patch=1,EE,00285f48,word,8f85ab00
+        patch=1,EE,00285f4c,word,26640000
+        patch=1,EE,00285f50,word,0c0935a8
+        patch=1,EE,00285f54,word,00b02821
+        patch=1,EE,00285f58,word,28421001
+        patch=1,EE,00285f5c,word,1040fffa
+        patch=1,EE,00285f60,word,2673ffff
+        patch=1,EE,00285f64,word,00000000
 SLPS-29002:
   name: "Xenosaga Episode 1 - Der Wille zur Macht"
   region: "NTSC-J"
@@ -30723,12 +30739,20 @@ SLPS-29002:
   patches:
     A3D63039:
       content: |-
-        // Reduces JPEG quality to its minimum for save file thumbnails. This prevents
-        // the game from calling its own exit function, which was strangely its safety
-        // mechanism for when a captured thumbnail exceeded 4 KB in size.
+        // Repeatedly decrements JPEG quality until the generated save file thumbnail is
+        // within the 4 KB limit. Replaces the game's previous escape mechanism, which
+        // was simply to exit the game completely.
         comment=Save Point Crash Prevention
         author=pandubz, PSI, turtleli
-        patch=1,EE,20285f48,extended,24040000
+        patch=1,EE,00285f44,word,2413001e
+        patch=1,EE,00285f48,word,8f85ab00
+        patch=1,EE,00285f4c,word,26640000
+        patch=1,EE,00285f50,word,0c0935a8
+        patch=1,EE,00285f54,word,00b02821
+        patch=1,EE,00285f58,word,28421001
+        patch=1,EE,00285f5c,word,1040fffa
+        patch=1,EE,00285f60,word,2673ffff
+        patch=1,EE,00285f64,word,00000000
 SLPS-29003:
   name: "Lord of the Rings - The Two Towers [Collector's Box]"
   region: "NTSC-J"
@@ -31184,12 +31208,20 @@ SLPS-73901:
   patches:
     A3D63039:
       content: |-
-        // Reduces JPEG quality to its minimum for save file thumbnails. This prevents
-        // the game from calling its own exit function, which was strangely its safety
-        // mechanism for when a captured thumbnail exceeded 4 KB in size.
+        // Repeatedly decrements JPEG quality until the generated save file thumbnail is
+        // within the 4 KB limit. Replaces the game's previous escape mechanism, which
+        // was simply to exit the game completely.
         comment=Save Point Crash Prevention
         author=pandubz, PSI, turtleli
-        patch=1,EE,20285f48,extended,24040000
+        patch=1,EE,00285f44,word,2413001e
+        patch=1,EE,00285f48,word,8f85ab00
+        patch=1,EE,00285f4c,word,26640000
+        patch=1,EE,00285f50,word,0c0935a8
+        patch=1,EE,00285f54,word,00b02821
+        patch=1,EE,00285f58,word,28421001
+        patch=1,EE,00285f5c,word,1040fffa
+        patch=1,EE,00285f60,word,2673ffff
+        patch=1,EE,00285f64,word,00000000
 SLUS-20001:
   name: "Tekken Tag Tournament"
   region: "NTSC-U"
