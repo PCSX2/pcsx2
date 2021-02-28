@@ -144,6 +144,12 @@ protected:
 	static inline char* MakeFailIPC(char* ret_buffer, uint32_t size);
 
 	/**
+	 * Initializes an open socket for IPC communication.
+	 * return value: -1 if a fatal failure happened, 0 otherwise. 
+	 */
+	int StartSocket();
+
+	/**
 	 * Converts an uint to an char* in little endian 
 	 * res_array: the array to modify 
 	 * res: the value to convert
