@@ -7070,6 +7070,8 @@ SLES-50539:
 SLES-50540:
   name: "Simpsons Road Rage"
   region: "PAL-E"
+  gameFixes:
+    - VU0KickstartHack # Fixes Bad Character Models.
 SLES-50541:
   name: "Capcom vs. SNK 2 - Mark of the Millennium"
   region: "PAL-E"
@@ -7193,6 +7195,8 @@ SLES-50620:
 SLES-50628:
   name: "Simpsons Road Rage"
   region: "PAL-M5"
+  gameFixes:
+    - VU0KickstartHack # Fixes Bad Character Models.
 SLES-50630:
   name: "Dragon Rage"
   region: "PAL-E"
@@ -31594,6 +31598,8 @@ SLUS-20138:
 SLUS-20139:
   name: "Simpsons, The - Road Rage"
   region: "NTSC-U"
+  gameFixes:
+    - VU0KickstartHack # Fixes Bad Character Models.
 SLUS-20140:
   name: "NHL Hitz 2002"
   region: "NTSC-U"
@@ -32269,6 +32275,8 @@ SLUS-20305:
   name: "Simpsons, The - Road Rage"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - VU0KickstartHack # Fixes Bad Character Models.
 SLUS-20306:
   name: "Contra - Shattered Soldier"
   region: "NTSC-U"
