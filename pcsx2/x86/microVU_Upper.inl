@@ -85,7 +85,7 @@ static void mVUupdateFlags(mV, const xmm& reg, const xmm& regT1in = xEmptyReg, c
 			xOR(sReg, 0x820000);
 		oJMP.SetTarget();
 
-		xSHL(gprT2, 8 + ADD_XYZW); // Add the results to the MAC Flag
+		xSHL(gprT2, 12 + ADD_XYZW); // Add the results to the MAC Flag
 		xOR(mReg, gprT2);
 	}
 	//-------------------------Write back flags------------------------------
