@@ -1650,10 +1650,14 @@ void GSState::Move()
 
 	// TODO: unroll inner loops (width has special size requirement, must be multiples of 1 << n, depending on the format)
 
-	GSOffset spo = m_mem.GetOffset(m_env.BITBLTBUF.SBP, m_env.BITBLTBUF.SBW, m_env.BITBLTBUF.SPSM);
-	GSOffset dpo = m_mem.GetOffset(m_env.BITBLTBUF.DBP, m_env.BITBLTBUF.DBW, m_env.BITBLTBUF.DPSM);
+	int sbp = m_env.BITBLTBUF.SBP;
+	int sbw = m_env.BITBLTBUF.SBW;
+	int dbp = m_env.BITBLTBUF.DBP;
+	int dbw = m_env.BITBLTBUF.DBW;
+	GSOffset spo = m_mem.GetOffset(sbp, sbw, m_env.BITBLTBUF.SPSM);
+	GSOffset dpo = m_mem.GetOffset(dbp, dbw, m_env.BITBLTBUF.DPSM);
 
-	auto copy = [&](auto&& pxCopyFn)
+	auto copy = [&](const GSOffset& dpo, const GSOffset& spo, auto&& pxCopyFn)
 	{
 		if (xinc > 0)
 		{
@@ -1691,14 +1695,14 @@ void GSState::Move()
 	{
 		if (spsm.trbpp == 32)
 		{
-			copy([&](uint32 doff, uint32 soff)
+			copy(dpo.assertSizesMatch(GSLocalMemory::swizzle32), spo.assertSizesMatch(GSLocalMemory::swizzle32), [&](uint32 doff, uint32 soff)
 			{
 				m_mem.m_vm32[doff] = m_mem.m_vm32[soff];
 			});
 		}
 		else if (spsm.trbpp == 24)
 		{
-			copy([&](uint32 doff, uint32 soff)
+			copy(dpo.assertSizesMatch(GSLocalMemory::swizzle32), spo.assertSizesMatch(GSLocalMemory::swizzle32), [&](uint32 doff, uint32 soff)
 			{
 				uint32& d = m_mem.m_vm32[doff];
 				d = (d & 0xff000000) | (m_mem.m_vm32[soff] & 0x00ffffff);
@@ -1706,7 +1710,7 @@ void GSState::Move()
 		}
 		else // if(spsm.trbpp == 16)
 		{
-			copy([&](uint32 doff, uint32 soff)
+			copy(dpo.assertSizesMatch(GSLocalMemory::swizzle16), spo.assertSizesMatch(GSLocalMemory::swizzle16), [&](uint32 doff, uint32 soff)
 			{
 				m_mem.m_vm16[doff] = m_mem.m_vm16[soff];
 			});
@@ -1714,21 +1718,21 @@ void GSState::Move()
 	}
 	else if (m_env.BITBLTBUF.SPSM == PSM_PSMT8 && m_env.BITBLTBUF.DPSM == PSM_PSMT8)
 	{
-		copy([&](uint32 doff, uint32 soff)
+		copy(GSOffset::fromKnownPSM(dbp, dbw, PSM_PSMT8), GSOffset::fromKnownPSM(sbp, sbw, PSM_PSMT8), [&](uint32 doff, uint32 soff)
 		{
 			m_mem.m_vm8[doff] = m_mem.m_vm8[soff];
 		});
 	}
 	else if (m_env.BITBLTBUF.SPSM == PSM_PSMT4 && m_env.BITBLTBUF.DPSM == PSM_PSMT4)
 	{
-		copy([&](uint32 doff, uint32 soff)
+		copy(GSOffset::fromKnownPSM(dbp, dbw, PSM_PSMT4), GSOffset::fromKnownPSM(sbp, sbw, PSM_PSMT4), [&](uint32 doff, uint32 soff)
 		{
 			m_mem.WritePixel4(doff, m_mem.ReadPixel4(soff));
 		});
 	}
 	else
 	{
-		copy([&](uint32 doff, uint32 soff)
+		copy(dpo, spo, [&](uint32 doff, uint32 soff)
 		{
 			(m_mem.*dpsm.wpa)(doff, (m_mem.*spsm.rpa)(soff));
 		});

@@ -298,6 +298,10 @@ public:
 	{
 		pageLooperForRect(rect).loopPages(std::forward<Fn>(fn));
 	}
+
+	/// Use compile-time dimensions from `swz` as a performance optimization
+	/// Also asserts if your assumption was wrong
+	constexpr GSOffset assertSizesMatch(const GSSwizzleInfo& swz) const;
 };
 
 class GSSwizzleInfo
@@ -370,6 +374,20 @@ constexpr inline GSOffset::GSOffset(const GSSwizzleInfo& swz, uint32 bp, uint32 
 	, m_bwPg(bw >> (m_pageShiftX - 6))
 	, m_psm(psm)
 {
+}
+
+constexpr GSOffset GSOffset::assertSizesMatch(const GSSwizzleInfo& swz) const
+{
+	GSOffset o = *this;
+#define MATCH(x) ASSERT(o.x == swz.x); o.x = swz.x;
+	MATCH(m_pageMask)
+	MATCH(m_blockMask)
+	MATCH(m_pageShiftX)
+	MATCH(m_pageShiftY)
+	MATCH(m_blockShiftX)
+	MATCH(m_blockShiftY)
+#undef MATCH
+	return o;
 }
 
 class GSLocalMemory : public GSAlignedClass<32>
@@ -478,7 +496,10 @@ public:
 	GSLocalMemory();
 	virtual ~GSLocalMemory();
 
-	GSOffset GetOffset(uint32 bp, uint32 bw, uint32 psm);
+	GSOffset GetOffset(uint32 bp, uint32 bw, uint32 psm) const
+	{
+		return GSOffset(m_psm[psm].info, bp, bw, psm);
+	}
 	GSPixelOffset* GetPixelOffset(const GIFRegFRAME& FRAME, const GIFRegZBUF& ZBUF);
 	GSPixelOffset4* GetPixelOffset4(const GIFRegFRAME& FRAME, const GIFRegZBUF& ZBUF);
 	std::vector<GSVector2i>* GetPage2TileMap(const GIFRegTEX0& TEX0);
