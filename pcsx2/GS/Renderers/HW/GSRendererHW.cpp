@@ -1826,7 +1826,7 @@ void GSRendererHW::OI_GsMemClear()
 			// Based on WritePixel32
 			for (int y = r.top; y < r.bottom; y++)
 			{
-				GSOffset::PAHelper pa = off.paMulti(r.left, y);
+				GSOffset::PAHelper pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(r.left, y);
 
 				for (; pa.x() < r.right; pa.incX())
 				{
@@ -1839,7 +1839,7 @@ void GSRendererHW::OI_GsMemClear()
 			// Based on WritePixel24
 			for (int y = r.top; y < r.bottom; y++)
 			{
-				GSOffset::PAHelper pa = off.paMulti(r.left, y);
+				GSOffset::PAHelper pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(r.left, y);
 
 				for (; pa.x() < r.right; pa.incX())
 				{
@@ -1854,7 +1854,7 @@ void GSRendererHW::OI_GsMemClear()
 			// Based on WritePixel16
 			for(int y = r.top; y < r.bottom; y++)
 			{
-				GSOffset::PAHelper pa = off.paMulti(r.left, y);
+				GSOffset::PAHelper pa = off.assertSizesMatch(GSLocalMemory::swizzle16).paMulti(r.left, y);
 
 				for(int x = r.left; x < r.right; x++)
 				{
