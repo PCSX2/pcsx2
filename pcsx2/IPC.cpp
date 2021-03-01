@@ -401,6 +401,16 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 				buf_cnt += 1;
 				break;
 			}
+			case MsgLoadState:
+			{
+				if (!m_vm->HasActiveMachine())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size))
+					goto error;
+				StateCopy_LoadFromSlot(FromArray<u8>(&buf[buf_cnt], 0), false);
+				buf_cnt += 1;
+				break;
+			}
 			default:
 			{
 			error:
