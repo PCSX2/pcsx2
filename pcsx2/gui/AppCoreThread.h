@@ -41,7 +41,8 @@ enum ScopedCoreResumeType
 namespace GameInfo
 {
 	extern wxString gameName;
-};
+	extern wxString gameSerial;
+}; // namespace GameInfo
 
 
 // --------------------------------------------------------------------------------------
