@@ -276,7 +276,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		uint32 bw = TEX0.TBW;
 		int tw = 1 << TEX0.TW;
 		int th = 1 << TEX0.TH;
-		uint32 bp_end = psm_s.bn(tw - 1, th - 1, bp, bw); // Valid only for color formats
+		uint32 bp_end = psm_s.info.bn(tw - 1, th - 1, bp, bw); // Valid only for color formats
 
 		// Arc the Lad finds the wrong surface here when looking for a depth stencil.
 		// Since we're currently not caching depth stencils (check ToDo in CreateSource) we should not look for it here.
@@ -376,7 +376,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 						{
 							if (candidate_x_offset == 0 && candidate_y_offset == 0)
 								continue;
-							uint32 candidate_bp = psm_s.bn(candidate_x_offset, candidate_y_offset, t->m_TEX0.TBP0, bw);
+							uint32 candidate_bp = psm_s.info.bn(candidate_x_offset, candidate_y_offset, t->m_TEX0.TBP0, bw);
 							if (bp == candidate_bp && bp_end <= t->m_end_block)
 							{
 								// SWEEP HIT: <x,y> offset found
@@ -847,7 +847,7 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 		// we are screwed.
 		if (m_renderer->m_game.title == CRC::HauntingGround)
 		{
-			uint32 end_block = GSLocalMemory::m_psm[psm].bn(rect.z - 1, rect.w - 1, bp, bw); // Valid only for color formats
+			uint32 end_block = GSLocalMemory::m_psm[psm].info.bn(rect.z - 1, rect.w - 1, bp, bw); // Valid only for color formats
 			auto type = RenderTarget;
 
 			for (auto t : m_dst[type])
@@ -1724,14 +1724,14 @@ void GSTextureCache::Surface::UpdateAge()
 bool GSTextureCache::Surface::Inside(uint32 bp, uint32 bw, uint32 psm, const GSVector4i& rect)
 {
 	// Valid only for color formats.
-	uint32 const end_block = GSLocalMemory::m_psm[psm].bn(rect.z - 1, rect.w - 1, bp, bw);
+	uint32 const end_block = GSLocalMemory::m_psm[psm].info.bn(rect.z - 1, rect.w - 1, bp, bw);
 	return bp >= m_TEX0.TBP0 && end_block <= m_end_block;
 }
 
 bool GSTextureCache::Surface::Overlaps(uint32 bp, uint32 bw, uint32 psm, const GSVector4i& rect)
 {
 	// Valid only for color formats.
-	uint32 const end_block = GSLocalMemory::m_psm[psm].bn(rect.z - 1, rect.w - 1, bp, bw);
+	uint32 const end_block = GSLocalMemory::m_psm[psm].info.bn(rect.z - 1, rect.w - 1, bp, bw);
 	return (m_TEX0.TBP0 <= bp        && bp        <= m_end_block)
 	    || (m_TEX0.TBP0 <= end_block && end_block <= m_end_block);
 }
@@ -2123,7 +2123,7 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
 	m_valid = m_valid.runion(rect);
 
 	// Block of the bottom right texel of the validity rectangle, last valid block of the texture
-	m_end_block = GSLocalMemory::m_psm[m_TEX0.PSM].bn(m_valid.z - 1, m_valid.w - 1, m_TEX0.TBP0, m_TEX0.TBW); // Valid only for color formats
+	m_end_block = GSLocalMemory::m_psm[m_TEX0.PSM].info.bn(m_valid.z - 1, m_valid.w - 1, m_TEX0.TBP0, m_TEX0.TBW); // Valid only for color formats
 
 	// GL_CACHE("UpdateValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
 }
