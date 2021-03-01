@@ -36,6 +36,7 @@
 
 #include "Common.h"
 #include "Memory.h"
+#include "gui/AppSaveStates.h"
 #include "System/SysThreads.h"
 #include "svnrev.h"
 #include "IPC.h"
@@ -388,6 +389,16 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 					goto error;
 				memcpy(&ret_buffer[ret_cnt], version, 256);
 				ret_cnt += 256;
+				break;
+			}
+			case MsgSaveState:
+			{
+				if (!m_vm->HasActiveMachine())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 1, ret_cnt, 0, buf_size))
+					goto error;
+				StateCopy_SaveToSlot(FromArray<u8>(&buf[buf_cnt], 0));
+				buf_cnt += 1;
 				break;
 			}
 			default:
