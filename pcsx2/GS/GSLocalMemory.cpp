@@ -2101,6 +2101,169 @@ void GSLocalMemory::SaveBMP(const std::string& fn, uint32 bp, uint32 bw, uint32 
 
 // GSOffset
 
+namespace
+{
+	/// Helper for GSOffsetNew::pageLooperForRect
+	struct alignas(16) TextureAligned
+	{
+		int ox1, oy1, ox2, oy2; ///< Block-aligned outer rect (smallest rectangle containing the original that is block-aligned)
+		int ix1, iy1, ix2, iy2; ///< Page-aligned inner rect (largest rectangle inside original that is page-aligned)
+	};
+
+	/// Helper for GSOffsetNew::pageLooperForRect
+	TextureAligned align(const GSVector4i& rect, const GSVector2i& blockMask, const GSVector2i& pageMask, int blockShiftX, int blockShiftY)
+	{
+		GSVector4i outer = rect.ralign_presub<Align_Outside>(blockMask);
+		GSVector4i inner = outer.ralign_presub<Align_Inside>(pageMask);
+#if _M_SSE >= 0x501
+		GSVector4i shift = GSVector4i(blockShiftX, blockShiftY).xyxy();
+		outer = outer.srav32(shift);
+		inner = inner.srav32(shift);
+		return {
+			outer.x,
+			outer.y,
+			outer.z,
+			outer.w,
+			inner.x,
+			inner.y,
+			inner.z,
+			inner.w,
+		};
+#else
+		GSVector4i outerX = outer.sra32(blockShiftX);
+		GSVector4i outerY = outer.sra32(blockShiftY);
+		GSVector4i innerX = inner.sra32(blockShiftX);
+		GSVector4i innerY = inner.sra32(blockShiftY);
+		return {
+			outerX.x,
+			outerY.y,
+			outerX.z,
+			outerY.w,
+			innerX.x,
+			innerY.y,
+			innerX.z,
+			innerY.w,
+		};
+#endif
+	}
+
+} // namespace
+
+GSOffsetNew::PageLooper GSOffsetNew::pageLooperForRect(const GSVector4i& rect) const
+{
+	// Plan:
+	// - Split texture into tiles on page lines
+	// - When bp is not page-aligned, each page-sized tile of texture may touch the page on either side of it
+	//   e.g. if bp is 1 on PSMCT32, the top left tile uses page 1 if the rect covers the bottom right block, and uses page 0 if the rect covers any block other than the bottom right
+	// - Center tiles (ones that aren't first or last) cover all blocks that the first and last do in a row
+	//   Therefore, if the first tile in a row touches the higher of its two pages, subsequent non-last tiles will at least touch the higher of their pages as well (and same for center to last, etc)
+	//   Therefore, with the exception of row covering two pages in a z swizzle (which could touch e.g. pages 1 and 3 but not 2), all rows touch contiguous pages
+	//   For now, we won't deal with that case as it's rare (only possible with a thin, unaligned rect on an unaligned bp on a z swizzle), and the worst issue looping too many pages could cause is unneccessary cache invalidation
+	//   If code is added later to deal with the case, you'll need to change loopPagesWithBreak's block deduplication code, as it currently works by forcing the page number to increase monotonically which could cause blocks to be missed if e.g. the first row touches 1 and 3, and the second row touches 2 and 4
+	// - Based on the above assumption, we calculate the range of pages a row could touch with full coverage, then add one to the start if the first tile doesn't touch its lower page, and subtract one from the end if the last tile doesn't touch its upper page
+	// - This is done separately for the first and last rows in the y axis, as they may not have the same coverage as a row in the middle
+
+	PageLooper out;
+	const int topPg = rect.top >> m_pageShiftY;
+	const int botPg = (rect.bottom + m_pageMask.y) >> m_pageShiftY;
+	const int blockOff = m_bp & 0x1f;
+	const int invBlockOff = 32 - blockOff;
+	const bool aligned = blockOff == 0;
+
+	out.bp = (m_bp >> 5) + topPg * m_bwPg;
+	out.yInc = m_bwPg;
+	out.yCnt = botPg - topPg;
+	out.firstRowPgXStart = out.midRowPgXStart = out.lastRowPgXStart = rect.left >> m_pageShiftX;
+	out.firstRowPgXEnd = out.midRowPgXEnd = out.lastRowPgXEnd = ((rect.right + m_pageMask.x) >> m_pageShiftX) + !aligned;
+	// Page-aligned bp is easy, all tiles touch their lower page but not the upper
+	if (aligned)
+		return out;
+
+	TextureAligned a = align(rect, m_blockMask, m_pageMask, m_blockShiftX, m_blockShiftY);
+
+	const int shiftX = m_pageShiftX - m_blockShiftX;
+	const int shiftY = m_pageShiftY - m_blockShiftY;
+	const int blkW = 1 << shiftX;
+	const int blkH = 1 << shiftY;
+
+	/// Does the given rect in the texture touch the given page?
+	auto rectUsesPage = [&](int x1, int x2, int y1, int y2, bool lowPage) -> bool
+	{
+		for (int y = y1; y < y2; y++)
+			for (int x = x1; x < x2; x++)
+				if ((m_blockSwizzle->lookup(x, y) < invBlockOff) == lowPage)
+					return true;
+		return false;
+	};
+
+	/// Do the given coordinates stay within the boundaries of one page?
+	auto staysWithinOnePage = [](int o1, int o2, int i1, int i2) -> bool
+	{
+		// Inner rect being inside out indicates staying within one page
+		if (i2 < i1)
+			return true;
+		// If there's no inner rect, stays in one page if only one side of the page line is used
+		if (i2 == i1)
+			return o1 == i1 || o2 == i1;
+		return false;
+	};
+
+	const bool onePageX = staysWithinOnePage(a.ox1, a.ox2, a.ix1, a.ix2);
+	/// Adjusts start/end values for lines that don't touch their first/last page
+	/// (e.g. if the texture only touches the bottom-left corner of its top-right page, depending on the bp, it may not have any pixels that actually use the last page in the row)
+	auto adjustStartEnd = [&](int& start, int& end, int y1, int y2)
+	{
+		int startAdj1, startAdj2, endAdj1, endAdj2;
+		if (onePageX)
+		{
+			startAdj1 = endAdj1 = a.ox1;
+			startAdj2 = endAdj2 = a.ox2;
+		}
+		else
+		{
+			startAdj1 = (a.ox1 == a.ix1) ? 0    : a.ox1;
+			startAdj2 = (a.ox1 == a.ix1) ? blkW : a.ix1;
+			endAdj1   = (a.ox2 == a.ix2) ? 0    : a.ix2;
+			endAdj2   = (a.ox2 == a.ix2) ? blkW : a.ox2;
+		}
+
+		if (!rectUsesPage(startAdj1, startAdj2, y1, y2, true))
+			start++;
+		if (!rectUsesPage(endAdj1, endAdj2, y1, y2, false))
+			end--;
+	};
+
+	// If y stays within one page, loop functions will only look at the `first` fields
+	if (staysWithinOnePage(a.oy1, a.oy2, a.iy1, a.iy2))
+	{
+		adjustStartEnd(out.firstRowPgXStart, out.firstRowPgXEnd, a.oy1, a.oy2);
+		return out;
+	}
+
+	// Mid rows (if any) will always have full range of y
+	adjustStartEnd(out.midRowPgXStart, out.midRowPgXEnd, 0, blkH);
+	// For first and last rows, either copy mid if they are full height or separately calculate them with their smaller ranges
+	if (a.oy1 != a.iy1)
+	{
+		adjustStartEnd(out.firstRowPgXStart, out.firstRowPgXEnd, a.oy1, a.iy1);
+	}
+	else
+	{
+		out.firstRowPgXStart = out.midRowPgXStart;
+		out.firstRowPgXEnd   = out.midRowPgXEnd;
+	}
+	if (a.oy2 != a.iy2)
+	{
+		adjustStartEnd(out.lastRowPgXStart, out.lastRowPgXEnd, a.iy2, a.oy2);
+	}
+	else
+	{
+		out.lastRowPgXStart = out.midRowPgXStart;
+		out.lastRowPgXEnd   = out.midRowPgXEnd;
+	}
+	return out;
+}
+
 GSOffset::GSOffset(uint32 _bp, uint32 _bw, uint32 _psm)
 {
 	hash = _bp | (_bw << 14) | (_psm << 20);
