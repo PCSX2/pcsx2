@@ -55,6 +55,7 @@ namespace GameInfo
 {
 	wxString gameName;
 	wxString gameSerial;
+	wxString gameCRC;
 }; // namespace GameInfo
 
 // --------------------------------------------------------------------------------------
@@ -412,7 +413,6 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 		fixup.GS.VsyncEnable = VsyncMode::Off;
 	}
 
-	wxString gameCRC;
 	wxString gamePatch;
 	wxString gameFixes;
 	wxString gameCheats;
@@ -427,7 +427,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	// settings as if the game is already running (title, loadeding patches, etc).
 	bool ingame = (ElfCRC && (g_GameLoading || g_GameStarted));
 	if (ingame)
-		gameCRC.Printf(L"%8.8x", ElfCRC);
+		GameInfo::gameCRC.Printf(L"%8.8x", ElfCRC);
 	if (ingame && !DiscSerial.IsEmpty())
 		GameInfo::gameSerial = L" [" + DiscSerial + L"]";
 
@@ -455,7 +455,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 
 			if (fixup.EnablePatches)
 			{
-				if (int patches = LoadPatchesFromGamesDB(gameCRC, game))
+				if (int patches = LoadPatchesFromGamesDB(GameInfo::gameCRC, game))
 				{
 					gamePatch.Printf(L" [%d Patches]", patches);
 					PatchesCon->WriteLn(Color_Green, "(GameDB) Patches Loaded: %d", patches);
@@ -471,7 +471,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	else
 		sioSetGameSerial(curGameKey);
 
-	if (GameInfo::gameName.IsEmpty() && GameInfo::gameSerial.IsEmpty() && gameCRC.IsEmpty())
+	if (GameInfo::gameName.IsEmpty() && GameInfo::gameSerial.IsEmpty() && GameInfo::gameCRC.IsEmpty())
 	{
 		// if all these conditions are met, it should mean that we're currently running BIOS code.
 		// Chances are the BiosChecksum value is still zero or out of date, however -- because
@@ -481,20 +481,20 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	}
 
 	//Till the end of this function, entry CRC will be 00000000
-	if (!gameCRC.Length())
+	if (!GameInfo::gameCRC.Length())
 	{
 		Console.WriteLn(Color_Gray, "Patches: No CRC found, using 00000000 instead.");
-		gameCRC = L"00000000";
+		GameInfo::gameCRC = L"00000000";
 	}
 
 	// regular cheat patches
 	if (fixup.EnableCheats)
-		gameCheats.Printf(L" [%d Cheats]", LoadPatchesFromDir(gameCRC, GetCheatsFolder(), L"Cheats"));
+		gameCheats.Printf(L" [%d Cheats]", LoadPatchesFromDir(GameInfo::gameCRC, GetCheatsFolder(), L"Cheats"));
 
 	// wide screen patches
 	if (fixup.EnableWideScreenPatches)
 	{
-		if (int numberLoadedWideScreenPatches = LoadPatchesFromDir(gameCRC, GetCheatsWsFolder(), L"Widescreen hacks"))
+		if (int numberLoadedWideScreenPatches = LoadPatchesFromDir(GameInfo::gameCRC, GetCheatsWsFolder(), L"Widescreen hacks"))
 		{
 			gameWsHacks.Printf(L" [%d widescreen hacks]", numberLoadedWideScreenPatches);
 			Console.WriteLn(Color_Gray, "Found widescreen patches in the cheats_ws folder --> skipping cheats_ws.zip");
@@ -503,7 +503,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 		{
 			// No ws cheat files found at the cheats_ws folder, try the ws cheats zip file.
 			wxString cheats_ws_archive = Path::Combine(PathDefs::GetProgramDataDir(), wxFileName(L"cheats_ws.zip"));
-			int numberDbfCheatsLoaded = LoadPatchesFromZip(gameCRC, cheats_ws_archive);
+			int numberDbfCheatsLoaded = LoadPatchesFromZip(GameInfo::gameCRC, cheats_ws_archive);
 			PatchesCon->WriteLn(Color_Green, "(Wide Screen Cheats DB) Patches Loaded: %d", numberDbfCheatsLoaded);
 			gameWsHacks.Printf(L" [%d widescreen hacks]", numberDbfCheatsLoaded);
 		}
@@ -513,7 +513,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	// to most users - with region, version, etc, so don't overwrite it with patch info. That's OK. Those
 	// users which want to know the status of the patches at the bios can check the console content.
 	wxString consoleTitle = GameInfo::gameName + GameInfo::gameSerial;
-	consoleTitle += L" [" + gameCRC.MakeUpper() + L"]" + gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
+	consoleTitle += L" [" + GameInfo::gameCRC.MakeUpper() + L"]" + gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
 	if (ingame)
 		Console.SetTitle(consoleTitle);
 

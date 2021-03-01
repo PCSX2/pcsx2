@@ -96,6 +96,7 @@ protected:
 		MsgLoadState = 0xA,     /**< Loads a savestate. */
 		MsgTitle = 0xB,         /**< Returns the game title. */
 		MsgID = 0xC,            /**< Returns the game ID. */
+		MsgUUID = 0xD,          /**< Returns the game UUID. */
 		MsgUnimplemented = 0xFF /**< Unimplemented IPC message. */
 	};
 
