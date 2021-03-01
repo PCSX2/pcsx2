@@ -438,6 +438,19 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 				ret_cnt += 256;
 				break;
 			}
+			case MsgUUID:
+			{
+				if (!m_vm->HasActiveMachine())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 256, buf_size))
+					goto error;
+				char uuid[256] = {};
+				sprintf(uuid, "%s", GameInfo::gameCRC);
+				uuid[255] = 0x00;
+				memcpy(&ret_buffer[ret_cnt], uuid, 256);
+				ret_cnt += 256;
+				break;
+			}
 			default:
 			{
 			error:
