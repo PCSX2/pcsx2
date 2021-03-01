@@ -54,7 +54,8 @@ typedef void (AppCoreThread::*FnPtr_CoreThreadMethod)();
 namespace GameInfo
 {
 	wxString gameName;
-};
+	wxString gameSerial;
+}; // namespace GameInfo
 
 // --------------------------------------------------------------------------------------
 //  SysExecEvent_InvokeCoreThreadMethod
@@ -412,7 +413,6 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	}
 
 	wxString gameCRC;
-	wxString gameSerial;
 	wxString gamePatch;
 	wxString gameFixes;
 	wxString gameCheats;
@@ -429,7 +429,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	if (ingame)
 		gameCRC.Printf(L"%8.8x", ElfCRC);
 	if (ingame && !DiscSerial.IsEmpty())
-		gameSerial = L" [" + DiscSerial + L"]";
+		GameInfo::gameSerial = L" [" + DiscSerial + L"]";
 
 	const wxString newGameKey(ingame ? SysGetDiscID() : SysGetBiosDiscID());
 	const bool verbose(newGameKey != curGameKey && ingame);
@@ -471,7 +471,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	else
 		sioSetGameSerial(curGameKey);
 
-	if (GameInfo::gameName.IsEmpty() && gameSerial.IsEmpty() && gameCRC.IsEmpty())
+	if (GameInfo::gameName.IsEmpty() && GameInfo::gameSerial.IsEmpty() && gameCRC.IsEmpty())
 	{
 		// if all these conditions are met, it should mean that we're currently running BIOS code.
 		// Chances are the BiosChecksum value is still zero or out of date, however -- because
@@ -512,7 +512,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	// When we're booting, the bios loader will set a a title which would be more interesting than this
 	// to most users - with region, version, etc, so don't overwrite it with patch info. That's OK. Those
 	// users which want to know the status of the patches at the bios can check the console content.
-	wxString consoleTitle = GameInfo::gameName + gameSerial;
+	wxString consoleTitle = GameInfo::gameName + GameInfo::gameSerial;
 	consoleTitle += L" [" + gameCRC.MakeUpper() + L"]" + gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
 	if (ingame)
 		Console.SetTitle(consoleTitle);

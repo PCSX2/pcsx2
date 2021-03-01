@@ -425,6 +425,19 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 				ret_cnt += 256;
 				break;
 			}
+			case MsgID:
+			{
+				if (!m_vm->HasActiveMachine())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 256, buf_size))
+					goto error;
+				char id[256] = {};
+				sprintf(id, "%s", GameInfo::gameSerial);
+				id[255] = 0x00;
+				memcpy(&ret_buffer[ret_cnt], id, 256);
+				ret_cnt += 256;
+				break;
+			}
 			default:
 			{
 			error:
