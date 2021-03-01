@@ -419,7 +419,7 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 256, buf_size))
 					goto error;
 				char title[256] = {};
-				sprintf(title, "%s", GameInfo::gameName);
+				sprintf(title, "%s", GameInfo::gameName.ToUTF8().data());
 				title[255] = 0x00;
 				memcpy(&ret_buffer[ret_cnt], title, 256);
 				ret_cnt += 256;
@@ -432,7 +432,7 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 256, buf_size))
 					goto error;
 				char id[256] = {};
-				sprintf(id, "%s", GameInfo::gameSerial);
+				sprintf(id, "%s", GameInfo::gameSerial.ToUTF8().data());
 				id[255] = 0x00;
 				memcpy(&ret_buffer[ret_cnt], id, 256);
 				ret_cnt += 256;
@@ -445,7 +445,7 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 256, buf_size))
 					goto error;
 				char uuid[256] = {};
-				sprintf(uuid, "%s", GameInfo::gameCRC);
+				sprintf(uuid, "%s", GameInfo::gameCRC.ToUTF8().data());
 				uuid[255] = 0x00;
 				memcpy(&ret_buffer[ret_cnt], uuid, 256);
 				ret_cnt += 256;
