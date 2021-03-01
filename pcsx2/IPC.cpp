@@ -37,6 +37,7 @@
 #include "Common.h"
 #include "Memory.h"
 #include "gui/AppSaveStates.h"
+#include "gui/AppCoreThread.h"
 #include "System/SysThreads.h"
 #include "svnrev.h"
 #include "IPC.h"
@@ -409,6 +410,19 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 					goto error;
 				StateCopy_LoadFromSlot(FromArray<u8>(&buf[buf_cnt], 0), false);
 				buf_cnt += 1;
+				break;
+			}
+			case MsgTitle:
+			{
+				if (!m_vm->HasActiveMachine())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 256, buf_size))
+					goto error;
+				char title[256] = {};
+				sprintf(title, "%s", GameInfo::gameName);
+				title[255] = 0x00;
+				memcpy(&ret_buffer[ret_cnt], title, 256);
+				ret_cnt += 256;
 				break;
 			}
 			default:

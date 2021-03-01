@@ -38,6 +38,11 @@ enum ScopedCoreResumeType
 ,	ScopedCore_SkipResume
 };
 
+namespace GameInfo
+{
+	extern wxString gameName;
+};
+
 
 // --------------------------------------------------------------------------------------
 //  BaseSysExecEvent_ScopedCore
