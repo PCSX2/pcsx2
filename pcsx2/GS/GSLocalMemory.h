@@ -406,7 +406,6 @@ public:
 		uint16 bpp, trbpp, pal, fmt;
 		GSVector2i bs, pgs;
 		int* rowOffset[8];
-		short* blockOffset;
 		uint8 msk, depth;
 	};
 
@@ -441,15 +440,6 @@ protected:
 	static int rowOffset8[2][4096];
 	static int rowOffset4[2][4096];
 
-	static short blockOffset32[256];
-	static short blockOffset32Z[256];
-	static short blockOffset16[256];
-	static short blockOffset16S[256];
-	static short blockOffset16Z[256];
-	static short blockOffset16SZ[256];
-	static short blockOffset8[256];
-	static short blockOffset4[256];
-
 public:
 	static constexpr GSSwizzleInfo swizzle32{{8, 8}, &blockTable32, pageOffset32};
 	static constexpr GSSwizzleInfo swizzle32Z{{8, 8}, &blockTable32Z, pageOffset32Z};
@@ -480,7 +470,6 @@ protected:
 
 	//
 
-	std::unordered_map<uint32, GSOffset*> m_omap;
 	std::unordered_map<uint32, GSPixelOffset*> m_pomap;
 	std::unordered_map<uint32, GSPixelOffset4*> m_po4map;
 	std::unordered_map<uint64, std::vector<GSVector2i>*> m_p2tmap;
