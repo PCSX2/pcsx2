@@ -93,6 +93,7 @@ protected:
 		MsgWrite64 = 7,         /**< Write 64 bit value to memory. */
 		MsgVersion = 8,         /**< Returns PCSX2 version. */
 		MsgSaveState = 9,       /**< Saves a savestate. */
+		MsgLoadState = 0xA,     /**< Loads a savestate. */
 		MsgUnimplemented = 0xFF /**< Unimplemented IPC message. */
 	};
 
