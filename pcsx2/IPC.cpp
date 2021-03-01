@@ -138,19 +138,7 @@ char* SocketIPC::MakeFailIPC(char* ret_buffer, uint32_t size = 5)
 
 int SocketIPC::StartSocket()
 {
-#ifdef _WIN32
-	// socket timeout
-	DWORD tv = 10 * 1000; // 10 seconds
-#else
-	// socket timeout
-	struct timeval tv;
-	tv.tv_sec = 10;
-	tv.tv_usec = 0;
-#endif
-
 	m_msgsock = accept(m_sock, 0, 0);
-	setsockopt(m_msgsock, SOL_SOCKET, SO_RCVTIMEO, (const char*)&tv, sizeof tv);
-	setsockopt(m_msgsock, SOL_SOCKET, SO_SNDTIMEO, (const char*)&tv, sizeof tv);
 
 	if (m_msgsock == -1)
 	{
@@ -225,17 +213,20 @@ void SocketIPC::ExecuteTaskInThread()
 		SocketIPC::IPCBuffer res;
 
 		// we remove 4 bytes to get the message size out of the IPC command
-		// size in ParseCommand
-		if (receive_length == 0)
-			res = IPCBuffer{5, MakeFailIPC(m_ret_buffer)};
-		else
+		// size in ParseCommand.
+		// also, if we got a failed command, let's reset the state so we don't
+		// end up deadlocking by getting out of sync, eg when a client
+		// disconnects
+		if (receive_length != 0)
+		{
 			res = ParseCommand(&m_ipc_buffer[4], m_ret_buffer, (u32)end_length - 4);
 
-		// if we cannot send back our answer restart the socket
-		if (write_portable(m_msgsock, res.buffer, res.size) < 0)
-		{
-			if (StartSocket() < 0)
-				return;
+			// if we cannot send back our answer restart the socket
+			if (write_portable(m_msgsock, res.buffer, res.size) < 0)
+			{
+				if (StartSocket() < 0)
+					return;
+			}
 		}
 	}
 	return;
