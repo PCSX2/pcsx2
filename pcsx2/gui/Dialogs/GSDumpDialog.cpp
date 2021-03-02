@@ -149,8 +149,47 @@ void Dialogs::GSDumpDialog::SelectedDump(wxListEvent& evt)
 
 void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 {
-	if (GSReplay != NULL)
+	GSinit();
+	GSsetBaseMem(/*dump regs*/);
+	if (GSopen(new IntPtr(&hWnd), "", rendererOverride) != 0)
+		return;
+	GSsetGameCRC(dump.CRC, 0);
+	if (GSfreeze(0, /*freeze_dump*/) == -1)
 	{
-		GSReplay("test", 0);
+		DumpTooOld = true;
+		Running = false;
 	}
+	GSVSync(1);
+	GSreset();
+	GSsetBaseMem(/*dump regs*/);
+	GSfreeze(0, /*freeze_dump*/);
+
+
+	while (Running)
+	{
+		/* First listen to keys:
+		   case 0x1B: Running = false; break; // VK_ESCAPE;
+           case 0x77: GSmakeSnapshot(""); break; // VK_F8;
+		*/
+
+		/* if DebugMode handle buttons, else:*/
+
+		/*
+		   while (gs_idx < dump.Data.Count)
+           {
+               GSData itm = dump.Data[gs_idx++];
+               CurrentGIFPacket = itm;
+               Step(itm, pointer);
+
+               if (gs_idx < dump.Data.Count && dump.Data[gs_idx].id == GSType.VSync)
+                  break;
+               }
+
+               gs_idx = 0;
+			}
+		*/
+	}
+
+	GSclose();
+	GSshutdown();
 }
