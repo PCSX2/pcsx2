@@ -423,7 +423,6 @@ public:
 		readTextureBlock rtxb, rtxbP;
 		uint16 bpp, trbpp, pal, fmt;
 		GSVector2i bs, pgs;
-		int* rowOffset[8];
 		uint8 msk, depth;
 	};
 
@@ -448,15 +447,6 @@ protected:
 	static uint32 pageOffset16SZ[32][64][64];
 	static uint32 pageOffset8[32][64][128];
 	static uint32 pageOffset4[32][128][128];
-
-	static int rowOffset32[4096];
-	static int rowOffset32Z[4096];
-	static int rowOffset16[4096];
-	static int rowOffset16S[4096];
-	static int rowOffset16Z[4096];
-	static int rowOffset16SZ[4096];
-	static int rowOffset8[2][4096];
-	static int rowOffset4[2][4096];
 
 public:
 	static constexpr GSSwizzleInfo swizzle32{{8, 8}, &blockTable32, pageOffset32};
