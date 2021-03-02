@@ -41,14 +41,26 @@ struct GSPixelOffset4
 	uint32 fbp, zbp, fpsm, zpsm, bw;
 };
 
+struct alignas(128) GSPageOffsetRow
+{
+	// Maximum page width is 128, but store mirror for unaligned simd loads
+	uint32 value[256];
+};
+
+template <int Height, int Width>
+struct GSPageOffsetTable
+{
+	GSPageOffsetRow value[Height];
+};
+
 class GSSwizzleInfo;
 
 class GSOffset
 {
 	/// Table for storing swizzling of blocks within a page
 	const GSBlockSwizzleTable* m_blockSwizzle;
-	/// Table for storing swizzling of pixels within a page (size: uint32[PageHeight][PageWidth])
-	const uint32* m_pixelSwizzle;
+	/// Table for storing swizzling of pixels within a page
+	const GSPageOffsetRow* m_pixelSwizzle;
 	GSVector2i m_pageMask;  ///< Mask for getting the offset of a pixel that's within a page (may also be used as page dimensions - 1)
 	GSVector2i m_blockMask; ///< Mask for getting the offset of a pixel that's within a block (may also be used as block dimensions - 1)
 	uint8 m_pageShiftX;  ///< Amount to rshift x value by to get page x offset
@@ -169,23 +181,24 @@ public:
 	/// Helper class for efficiently getting the addresses of multiple pixels in a line (along the x axis)
 	class PAHelper
 	{
-		/// Pixel swizzle array offset to the beginning of the current line
-		const uint32* m_pixelSwizzle;
-		int m_pageMaskX;  ///< Mask for getting offset within a page
-		int m_pageBase;   ///< Page number for origin x
-		int m_x;          ///< Current x position
-		int m_pageShiftX; ///< Amount to rshift x value to get page offset
-		int m_shift;      ///< Amount to lshift page number to get element offset for the start of that page
+		/// Pixel swizzle array
+		const GSPageOffsetRow* m_pixelSwizzle;
+		int m_pageMaskX; ///< Mask for getting offset within a page
+		int m_base;      ///< Address for origin x
+		int m_x;         ///< Current x position
+		int m_shift;     ///< Amount to lshift x to get offset due to page after clearing with pageMaskX
+		int m_mask;      ///< Mask to stay in bounds
 	public:
 		PAHelper() = default;
 		PAHelper(const GSOffset& off, int x, int y)
 		{
-			m_pixelSwizzle = off.m_pixelSwizzle + ((y & off.m_pageMask.y) << off.m_pageShiftX);
-			m_pageBase = (off.m_bp >> 5) + (y >> off.m_pageShiftY) * off.m_bwPg;
+			m_pixelSwizzle = off.m_pixelSwizzle + (y & off.m_pageMask.y);
+			m_base = off.m_bp << (off.m_pageShiftX + off.m_pageShiftY - 5);
+			m_base += ((y & ~off.m_pageMask.y) * off.m_bwPg) << off.m_pageShiftX;
 			m_pageMaskX = off.m_pageMask.x;
+			m_shift = off.m_pageShiftY;
 			m_x = x;
-			m_pageShiftX = off.m_pageShiftX;
-			m_shift = off.m_pageShiftX + off.m_pageShiftY;
+			m_mask = (MAX_PAGES << (off.m_pageShiftX + off.m_pageShiftY)) - 1;
 		}
 
 		/// Get current x value
@@ -197,8 +210,8 @@ public:
 		/// Get current pixel address
 		uint32 value() const
 		{
-			int page = (m_pageBase + (m_x >> m_pageShiftX)) % MAX_PAGES;
-			return (page << m_shift) + m_pixelSwizzle[m_x & m_pageMaskX];
+			int x = (m_x & ~m_pageMaskX) << m_shift;
+			return (m_base + x + m_pixelSwizzle->value[m_x & m_pageMaskX]) & m_mask;
 		}
 	};
 
@@ -310,7 +323,7 @@ class GSSwizzleInfo
 	/// Table for storing swizzling of blocks within a page
 	const GSBlockSwizzleTable* m_blockSwizzle;
 	/// Table for storing swizzling of pixels within a page
-	const uint32* m_pixelSwizzle;
+	const GSPageOffsetRow* m_pixelSwizzle;
 	GSVector2i m_pageMask;  ///< Mask for getting the offset of a pixel that's within a page (may also be used as page dimensions - 1)
 	GSVector2i m_blockMask; ///< Mask for getting the offset of a pixel that's within a block (may also be used as block dimensions - 1)
 	uint8 m_pageShiftX;  ///< Amount to rshift x value by to get page offset
@@ -325,9 +338,9 @@ public:
 	/// @param PageHeight Height of page in pixels
 	/// @param blockSize Size of block in pixels
 	template <int PageWidth, int PageHeight>
-	constexpr GSSwizzleInfo(GSVector2i blockSize, const GSBlockSwizzleTable* blockSwizzle, const uint32 (&pxSwizzle)[32][PageHeight][PageWidth])
+	constexpr GSSwizzleInfo(GSVector2i blockSize, const GSBlockSwizzleTable* blockSwizzle, const GSPageOffsetTable<PageHeight, PageWidth>* pxSwizzle)
 		: m_blockSwizzle(blockSwizzle)
-		, m_pixelSwizzle(&pxSwizzle[0][0][0])
+		, m_pixelSwizzle(pxSwizzle->value)
 		, m_pageMask{PageWidth - 1, PageHeight - 1}
 		, m_blockMask{blockSize.x - 1, blockSize.y - 1}
 		, m_pageShiftX(ilog2(PageWidth)), m_pageShiftY(ilog2(PageHeight))
@@ -366,7 +379,7 @@ public:
 
 constexpr inline GSOffset::GSOffset(const GSSwizzleInfo& swz, uint32 bp, uint32 bw, uint32 psm)
 	: m_blockSwizzle(swz.m_blockSwizzle)
-	, m_pixelSwizzle(swz.m_pixelSwizzle + ((bp & 0x1f) << (swz.m_pageShiftX + swz.m_pageShiftY)))
+	, m_pixelSwizzle(swz.m_pixelSwizzle)
 	, m_pageMask(swz.m_pageMask), m_blockMask(swz.m_blockMask)
 	, m_pageShiftX(swz.m_pageShiftX), m_pageShiftY(swz.m_pageShiftY)
 	, m_blockShiftX(swz.m_blockShiftX), m_blockShiftY(swz.m_blockShiftY)
@@ -439,24 +452,24 @@ public:
 protected:
 	bool m_use_fifo_alloc;
 
-	static uint32 pageOffset32[32][32][64];
-	static uint32 pageOffset32Z[32][32][64];
-	static uint32 pageOffset16[32][64][64];
-	static uint32 pageOffset16S[32][64][64];
-	static uint32 pageOffset16Z[32][64][64];
-	static uint32 pageOffset16SZ[32][64][64];
-	static uint32 pageOffset8[32][64][128];
-	static uint32 pageOffset4[32][128][128];
+	static GSPageOffsetTable<32, 64> pageOffset32;
+	static GSPageOffsetTable<32, 64> pageOffset32Z;
+	static GSPageOffsetTable<64, 64> pageOffset16;
+	static GSPageOffsetTable<64, 64> pageOffset16S;
+	static GSPageOffsetTable<64, 64> pageOffset16Z;
+	static GSPageOffsetTable<64, 64> pageOffset16SZ;
+	static GSPageOffsetTable<64, 128> pageOffset8;
+	static GSPageOffsetTable<128, 128> pageOffset4;
 
 public:
-	static constexpr GSSwizzleInfo swizzle32{{8, 8}, &blockTable32, pageOffset32};
-	static constexpr GSSwizzleInfo swizzle32Z{{8, 8}, &blockTable32Z, pageOffset32Z};
-	static constexpr GSSwizzleInfo swizzle16{{16, 8}, &blockTable16, pageOffset16};
-	static constexpr GSSwizzleInfo swizzle16S{{16, 8}, &blockTable16S, pageOffset16S};
-	static constexpr GSSwizzleInfo swizzle16Z{{16, 8}, &blockTable16Z, pageOffset16Z};
-	static constexpr GSSwizzleInfo swizzle16SZ{{16, 8}, &blockTable16SZ, pageOffset16SZ};
-	static constexpr GSSwizzleInfo swizzle8{{16, 16}, &blockTable8, pageOffset8};
-	static constexpr GSSwizzleInfo swizzle4{{32, 16}, &blockTable4, pageOffset4};
+	static constexpr GSSwizzleInfo swizzle32{{8, 8}, &blockTable32, &pageOffset32};
+	static constexpr GSSwizzleInfo swizzle32Z{{8, 8}, &blockTable32Z, &pageOffset32Z};
+	static constexpr GSSwizzleInfo swizzle16{{16, 8}, &blockTable16, &pageOffset16};
+	static constexpr GSSwizzleInfo swizzle16S{{16, 8}, &blockTable16S, &pageOffset16S};
+	static constexpr GSSwizzleInfo swizzle16Z{{16, 8}, &blockTable16Z, &pageOffset16Z};
+	static constexpr GSSwizzleInfo swizzle16SZ{{16, 8}, &blockTable16SZ, &pageOffset16SZ};
+	static constexpr GSSwizzleInfo swizzle8{{16, 16}, &blockTable8, &pageOffset8};
+	static constexpr GSSwizzleInfo swizzle4{{32, 16}, &blockTable4, &pageOffset4};
 
 protected:
 	__forceinline static uint32 Expand24To32(uint32 c, const GIFRegTEXA& TEXA)
@@ -583,46 +596,6 @@ public:
 	uint8* BlockPtr16SZ(int x, int y, uint32 bp, uint32 bw) const
 	{
 		return &m_vm8[BlockNumber16SZ(x, y, bp, bw) << 8];
-	}
-
-	static uint32 PixelAddressOrg32(int x, int y, uint32 bp, uint32 bw)
-	{
-		return (BlockNumber32(x, y, bp, bw) << 6) + columnTable32[y & 7][x & 7];
-	}
-
-	static uint32 PixelAddressOrg16(int x, int y, uint32 bp, uint32 bw)
-	{
-		return (BlockNumber16(x, y, bp, bw) << 7) + columnTable16[y & 7][x & 15];
-	}
-
-	static uint32 PixelAddressOrg16S(int x, int y, uint32 bp, uint32 bw)
-	{
-		return (BlockNumber16S(x, y, bp, bw) << 7) + columnTable16[y & 7][x & 15];
-	}
-
-	static uint32 PixelAddressOrg8(int x, int y, uint32 bp, uint32 bw)
-	{
-		return (BlockNumber8(x, y, bp, bw) << 8) + columnTable8[y & 15][x & 15];
-	}
-
-	static uint32 PixelAddressOrg4(int x, int y, uint32 bp, uint32 bw)
-	{
-		return (BlockNumber4(x, y, bp, bw) << 9) + columnTable4[y & 15][x & 31];
-	}
-
-	static uint32 PixelAddressOrg32Z(int x, int y, uint32 bp, uint32 bw)
-	{
-		return (BlockNumber32Z(x, y, bp, bw) << 6) + columnTable32[y & 7][x & 7];
-	}
-
-	static uint32 PixelAddressOrg16Z(int x, int y, uint32 bp, uint32 bw)
-	{
-		return (BlockNumber16Z(x, y, bp, bw) << 7) + columnTable16[y & 7][x & 15];
-	}
-
-	static uint32 PixelAddressOrg16SZ(int x, int y, uint32 bp, uint32 bw)
-	{
-		return (BlockNumber16SZ(x, y, bp, bw) << 7) + columnTable16[y & 7][x & 15];
 	}
 
 	static __forceinline uint32 PixelAddress32(int x, int y, uint32 bp, uint32 bw)

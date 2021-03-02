@@ -41,20 +41,35 @@ static void foreachBlock(const GSOffset& off, GSLocalMemory* mem, const GSVector
 
 //
 
-uint32 GSLocalMemory::pageOffset32[32][32][64];
-uint32 GSLocalMemory::pageOffset32Z[32][32][64];
-uint32 GSLocalMemory::pageOffset16[32][64][64];
-uint32 GSLocalMemory::pageOffset16S[32][64][64];
-uint32 GSLocalMemory::pageOffset16Z[32][64][64];
-uint32 GSLocalMemory::pageOffset16SZ[32][64][64];
-uint32 GSLocalMemory::pageOffset8[32][64][128];
-uint32 GSLocalMemory::pageOffset4[32][128][128];
+GSPageOffsetTable<32, 64> GSLocalMemory::pageOffset32;
+GSPageOffsetTable<32, 64> GSLocalMemory::pageOffset32Z;
+GSPageOffsetTable<64, 64> GSLocalMemory::pageOffset16;
+GSPageOffsetTable<64, 64> GSLocalMemory::pageOffset16S;
+GSPageOffsetTable<64, 64> GSLocalMemory::pageOffset16Z;
+GSPageOffsetTable<64, 64> GSLocalMemory::pageOffset16SZ;
+GSPageOffsetTable<64, 128> GSLocalMemory::pageOffset8;
+GSPageOffsetTable<128, 128> GSLocalMemory::pageOffset4;
 
 //
 
 GSLocalMemory::psm_t GSLocalMemory::m_psm[64];
 
 //
+
+template <int PageHeight, int PageWidth, int ColHeight, int ColWidth, typename Col>
+static void setupPageOffsetTable(GSPageOffsetTable<PageHeight, PageWidth>& table, const GSBlockSwizzleTable& block, Col (&col)[ColHeight][ColWidth])
+{
+	int blockSize = ColHeight * ColWidth;
+	for (int y = 0; y < PageHeight; y++)
+	{
+		for (int x = 0; x < 256; x++)
+		{
+			int colOff = col[y % ColHeight][x % ColWidth];
+			int blockOff = block.lookup(x / ColWidth, y / ColHeight);
+			table.value[y].value[x] = blockOff * blockSize + colOff;
+		}
+	}
+}
 
 GSLocalMemory::GSLocalMemory()
 	: m_clut(this)
@@ -86,32 +101,14 @@ GSLocalMemory::GSLocalMemory()
 
 	memset(m_vm8, 0, m_vmsize);
 
-	for (int bp = 0; bp < 32; bp++)
-	{
-		for (int y = 0; y < 32; y++) for (int x = 0; x < 64; x++)
-		{
-			pageOffset32[bp][y][x] = PixelAddressOrg32(x, y, bp, 0);
-			pageOffset32Z[bp][y][x] = PixelAddressOrg32Z(x, y, bp, 0);
-		}
-
-		for (int y = 0; y < 64; y++) for (int x = 0; x < 64; x++)
-		{
-			pageOffset16[bp][y][x] = PixelAddressOrg16(x, y, bp, 0);
-			pageOffset16S[bp][y][x] = PixelAddressOrg16S(x, y, bp, 0);
-			pageOffset16Z[bp][y][x] = PixelAddressOrg16Z(x, y, bp, 0);
-			pageOffset16SZ[bp][y][x] = PixelAddressOrg16SZ(x, y, bp, 0);
-		}
-
-		for (int y = 0; y < 64; y++) for (int x = 0; x < 128; x++)
-		{
-			pageOffset8[bp][y][x] = PixelAddressOrg8(x, y, bp, 0);
-		}
-
-		for (int y = 0; y < 128; y++) for (int x = 0; x < 128; x++)
-		{
-			pageOffset4[bp][y][x] = PixelAddressOrg4(x, y, bp, 0);
-		}
-	}
+	setupPageOffsetTable(pageOffset32,   blockTable32,   columnTable32);
+	setupPageOffsetTable(pageOffset32Z,  blockTable32Z,  columnTable32);
+	setupPageOffsetTable(pageOffset16,   blockTable16,   columnTable16);
+	setupPageOffsetTable(pageOffset16S,  blockTable16S,  columnTable16);
+	setupPageOffsetTable(pageOffset16Z,  blockTable16Z,  columnTable16);
+	setupPageOffsetTable(pageOffset16SZ, blockTable16SZ, columnTable16);
+	setupPageOffsetTable(pageOffset8,    blockTable8,    columnTable8);
+	setupPageOffsetTable(pageOffset4,    blockTable4,    columnTable4);
 
 	for (size_t i = 0; i < countof(m_psm); i++)
 	{
