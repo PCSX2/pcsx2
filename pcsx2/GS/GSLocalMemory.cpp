@@ -50,15 +50,6 @@ uint32 GSLocalMemory::pageOffset16SZ[32][64][64];
 uint32 GSLocalMemory::pageOffset8[32][64][128];
 uint32 GSLocalMemory::pageOffset4[32][128][128];
 
-int GSLocalMemory::rowOffset32[4096];
-int GSLocalMemory::rowOffset32Z[4096];
-int GSLocalMemory::rowOffset16[4096];
-int GSLocalMemory::rowOffset16S[4096];
-int GSLocalMemory::rowOffset16Z[4096];
-int GSLocalMemory::rowOffset16SZ[4096];
-int GSLocalMemory::rowOffset8[2][4096];
-int GSLocalMemory::rowOffset4[2][4096];
-
 //
 
 GSLocalMemory::psm_t GSLocalMemory::m_psm[64];
@@ -122,48 +113,6 @@ GSLocalMemory::GSLocalMemory()
 		}
 	}
 
-	for (size_t x = 0; x < countof(rowOffset32); x++)
-	{
-		rowOffset32[x] = (int)PixelAddress32(x & 0x7ff, 0, 0, 32) - (int)PixelAddress32(0, 0, 0, 32);
-	}
-
-	for (size_t x = 0; x < countof(rowOffset32Z); x++)
-	{
-		rowOffset32Z[x] = (int)PixelAddress32Z(x & 0x7ff, 0, 0, 32) - (int)PixelAddress32Z(0, 0, 0, 32);
-	}
-
-	for (size_t x = 0; x < countof(rowOffset16); x++)
-	{
-		rowOffset16[x] = (int)PixelAddress16(x & 0x7ff, 0, 0, 32) - (int)PixelAddress16(0, 0, 0, 32);
-	}
-
-	for (size_t x = 0; x < countof(rowOffset16S); x++)
-	{
-		rowOffset16S[x] = (int)PixelAddress16S(x & 0x7ff, 0, 0, 32) - (int)PixelAddress16S(0, 0, 0, 32);
-	}
-
-	for (size_t x = 0; x < countof(rowOffset16Z); x++)
-	{
-		rowOffset16Z[x] = (int)PixelAddress16Z(x & 0x7ff, 0, 0, 32) - (int)PixelAddress16Z(0, 0, 0, 32);
-	}
-
-	for (size_t x = 0; x < countof(rowOffset16SZ); x++)
-	{
-		rowOffset16SZ[x] = (int)PixelAddress16SZ(x & 0x7ff, 0, 0, 32) - (int)PixelAddress16SZ(0, 0, 0, 32);
-	}
-
-	for (size_t x = 0; x < countof(rowOffset8[0]); x++)
-	{
-		rowOffset8[0][x] = (int)PixelAddress8(x & 0x7ff, 0, 0, 32) - (int)PixelAddress8(0, 0, 0, 32);
-		rowOffset8[1][x] = (int)PixelAddress8(x & 0x7ff, 2, 0, 32) - (int)PixelAddress8(0, 2, 0, 32);
-	}
-
-	for (size_t x = 0; x < countof(rowOffset4[0]); x++)
-	{
-		rowOffset4[0][x] = (int)PixelAddress4(x & 0x7ff, 0, 0, 32) - (int)PixelAddress4(0, 0, 0, 32);
-		rowOffset4[1][x] = (int)PixelAddress4(x & 0x7ff, 2, 0, 32) - (int)PixelAddress4(0, 2, 0, 32);
-	}
-
 	for (size_t i = 0; i < countof(m_psm); i++)
 	{
 		m_psm[i].info = GSLocalMemory::swizzle32;
@@ -184,8 +133,6 @@ GSLocalMemory::GSLocalMemory()
 		m_psm[i].pal = 0;
 		m_psm[i].bs = GSVector2i(8, 8);
 		m_psm[i].pgs = GSVector2i(64, 32);
-		for (int j = 0; j < 8; j++)
-			m_psm[i].rowOffset[j] = rowOffset32;
 		m_psm[i].msk = 0xff;
 		m_psm[i].depth = 0;
 	}
@@ -389,16 +336,6 @@ GSLocalMemory::GSLocalMemory()
 	m_psm[PSM_PSMT4].pgs = GSVector2i(128, 128);
 	m_psm[PSM_PSMZ16].pgs = m_psm[PSM_PSMZ16S].pgs = GSVector2i(64, 64);
 
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSGPU24].rowOffset[i] = rowOffset16;
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSMCT16].rowOffset[i] = rowOffset16;
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSMCT16S].rowOffset[i] = rowOffset16S;
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSMT8].rowOffset[i] = rowOffset8[((i + 2) >> 2) & 1];
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSMT4].rowOffset[i] = rowOffset4[((i + 2) >> 2) & 1];
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSMZ32].rowOffset[i] = rowOffset32Z;
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSMZ24].rowOffset[i] = rowOffset32Z;
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSMZ16].rowOffset[i] = rowOffset16Z;
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSMZ16S].rowOffset[i] = rowOffset16SZ;
-
 	m_psm[PSM_PSMCT24].msk = 0x3f;
 	m_psm[PSM_PSMZ24].msk = 0x3f;
 	m_psm[PSM_PSMT8H].msk = 0xc0;
@@ -473,8 +410,8 @@ GSPixelOffset* GSLocalMemory::GetPixelOffset(const GIFRegFRAME& FRAME, const GIF
 
 	for (int i = 0; i < 2048; i++)
 	{
-		off->col[i].x = m_psm[fpsm].rowOffset[0][i] << fs;
-		off->col[i].y = m_psm[zpsm].rowOffset[0][i] << zs;
+		off->col[i].x = (m_psm[fpsm].info.pa(i, 0, 0, 32) - m_psm[fpsm].info.pa(0, 0, 0, 32)) << fs;
+		off->col[i].y = (m_psm[zpsm].info.pa(i, 0, 0, 32) - m_psm[zpsm].info.pa(0, 0, 0, 32)) << zs;
 	}
 
 	m_pomap[hash] = off;
@@ -526,8 +463,8 @@ GSPixelOffset4* GSLocalMemory::GetPixelOffset4(const GIFRegFRAME& FRAME, const G
 
 	for (int i = 0; i < 512; i++)
 	{
-		off->col[i].x = m_psm[fpsm].rowOffset[0][i * 4] << fs;
-		off->col[i].y = m_psm[zpsm].rowOffset[0][i * 4] << zs;
+		off->col[i].x = (m_psm[fpsm].info.pa(i * 4, 0, 0, 32) - m_psm[fpsm].info.pa(0, 0, 0, 32)) << fs;
+		off->col[i].y = (m_psm[zpsm].info.pa(i * 4, 0, 0, 32) - m_psm[zpsm].info.pa(0, 0, 0, 32)) << zs;
 	}
 
 	m_po4map[hash] = off;
@@ -1166,12 +1103,29 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const uint8* src, int len, GIF
 
 	uint32 bp = BITBLTBUF.DBP;
 	uint32 bw = BITBLTBUF.DBW;
-	psm_t* psm = &m_psm[BITBLTBUF.DPSM];
 
 	int x = tx;
 	int y = ty;
 	int sx = (int)TRXPOS.DSAX;
 	int ex = sx + (int)TRXREG.RRW;
+
+	auto copy = [&](int len, const GSOffset& off, auto&& fn)
+	{
+		GSOffset::PAHelper pa = off.paMulti(x, y);
+
+		for (; len > 0; len--)
+		{
+			fn(pa);
+			pa.incX();
+			if (pa.x() >= ex)
+			{
+				y++;
+				pa = off.paMulti(sx, y);
+			}
+		}
+
+		x = pa.x();
+	};
 
 	GSOffset off = GetOffset(bp, bw, BITBLTBUF.DPSM);
 
@@ -1179,184 +1133,77 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const uint8* src, int len, GIF
 	{
 		case PSM_PSMCT32:
 		case PSM_PSMZ32:
-
-			len /= 4;
-
-			while (len > 0)
+			copy(len / 4, off.assertSizesMatch(swizzle32), [&](GSOffset::PAHelper& pa)
 			{
-				uint32 addr = off.assertSizesMatch(swizzle32).pa(0, y);
-				int* offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x++, pd++)
-				{
-					WritePixel32(addr + offset[x], *pd);
-				}
-
-				if (x >= ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				WritePixel32(pa.value(), *pd);
+				pd++;
+			});
 			break;
 
 		case PSM_PSMCT24:
 		case PSM_PSMZ24:
-
-			len /= 3;
-
-			while (len > 0)
+			copy(len / 3, off.assertSizesMatch(swizzle32), [&](GSOffset::PAHelper& pa)
 			{
-				uint32 addr = off.assertSizesMatch(swizzle32).pa(0, y);
-				int* offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x++, pb += 3)
-				{
-					WritePixel24(addr + offset[x], *(uint32*)pb);
-				}
-
-				if (x >= ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				WritePixel24(pa.value(), *(uint32*)pb);
+				pb += 3;
+			});
 			break;
 
 		case PSM_PSMCT16:
 		case PSM_PSMCT16S:
 		case PSM_PSMZ16:
 		case PSM_PSMZ16S:
-
-			len /= 2;
-
-			while (len > 0)
+			copy(len / 2, off.assertSizesMatch(swizzle16), [&](GSOffset::PAHelper& pa)
 			{
-				uint32 addr = off.assertSizesMatch(swizzle16).pa(0, y);
-				int* offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x++, pw++)
-				{
-					WritePixel16(addr + offset[x], *pw);
-				}
-
-				if (x >= ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				WritePixel16(pa.value(), *pw);
+				pw++;
+			});
 			break;
 
 		case PSM_PSMT8:
-
-			while (len > 0)
+			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8), [&](GSOffset::PAHelper& pa)
 			{
-				uint32 addr = GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8).pa(0, y);
-				int* offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x++, pb++)
-				{
-					WritePixel8(addr + offset[x], *pb);
-				}
-
-				if (x >= ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				WritePixel8(pa.value(), *pb);
+				pb++;
+			});
 			break;
 
 		case PSM_PSMT4:
-
-			while (len > 0)
+			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4), [&](GSOffset::PAHelper& pa)
 			{
-				uint32 addr = GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4).pa(0, y);
-				int* offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x += 2, pb++)
-				{
-					WritePixel4(addr + offset[x + 0], *pb & 0xf);
-					WritePixel4(addr + offset[x + 1], *pb >> 4);
-				}
-
-				if (x >= ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				WritePixel4(pa.value(), *pb & 0xf);
+				pa.incX();
+				WritePixel4(pa.value(), *pb >> 4);
+				pb++;
+			});
 			break;
 
 		case PSM_PSMT8H:
-
-			while (len > 0)
+			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8H), [&](GSOffset::PAHelper& pa)
 			{
-				uint32 addr = GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8H).pa(0, y);
-				int* offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x++, pb++)
-				{
-					WritePixel8H(addr + offset[x], *pb);
-				}
-
-				if (x >= ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				WritePixel8H(pa.value(), *pb);
+				pb++;
+			});
 			break;
 
 		case PSM_PSMT4HL:
-
-			while (len > 0)
+			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HL), [&](GSOffset::PAHelper& pa)
 			{
-				uint32 addr = GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HL).pa(0, y);
-				int* offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x += 2, pb++)
-				{
-					WritePixel4HL(addr + offset[x + 0], *pb & 0xf);
-					WritePixel4HL(addr + offset[x + 1], *pb >> 4);
-				}
-
-				if (x >= ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				WritePixel4HL(pa.value(), *pb & 0xf);
+				pa.incX();
+				WritePixel4HL(pa.value(), *pb >> 4);
+				pb++;
+			});
 			break;
 
 		case PSM_PSMT4HH:
-
-			while (len > 0)
+			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HH), [&](GSOffset::PAHelper& pa)
 			{
-				uint32 addr = GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HH).pa(0, y);
-				int* offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x += 2, pb++)
-				{
-					WritePixel4HH(addr + offset[x + 0], *pb & 0xf);
-					WritePixel4HH(addr + offset[x + 1], *pb >> 4);
-				}
-
-				if (x >= ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				WritePixel4HH(pa.value(), *pb & 0xf);
+				pa.incX();
+				WritePixel4HH(pa.value(), *pb >> 4);
+				pb++;
+			});
 			break;
 	}
 
@@ -1384,6 +1231,24 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, uint8* dst, int len, GIFRegBITB
 	int sx = (int)TRXPOS.SSAX;
 	int ex = sx + (int)TRXREG.RRW;
 
+	auto copy = [&](int len, const GSOffset& off, auto&& fn)
+	{
+		GSOffset::PAHelper pa = off.paMulti(x, y);
+
+		for (; len > 0; len--)
+		{
+			fn(pa);
+			pa.incX();
+			if (pa.x() >= ex)
+			{
+				y++;
+				pa = off.paMulti(sx, y);
+			}
+		}
+
+		x = pa.x();
+	};
+
 	GSOffset off = GetOffset(bp, bw, BITBLTBUF.SPSM);
 
 	// printf("spsm=%d x=%d ex=%d y=%d len=%d\n", BITBLTBUF.SPSM, x, ex, y, len);
@@ -1392,235 +1257,119 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, uint8* dst, int len, GIFRegBITB
 	{
 		case PSM_PSMCT32:
 		case PSM_PSMZ32:
-
+		{
 			// MGS1 intro, fade effect between two scenes (airplane outside-inside transition)
 
 			len /= 4;
 
+			GSOffset::PAHelper pa = off.assertSizesMatch(swizzle32).paMulti(x, y);
+
 			while (len > 0)
 			{
-				int* RESTRICT offset = psm->rowOffset[y & 7];
-				uint32* RESTRICT ps = &m_vm32[off.assertSizesMatch(swizzle32).pa(0, y)];
-
-				for (; len > 0 && x < ex && (x & 7); len--, x++, pd++)
+				for (; len > 0 && pa.x() < ex && (pa.x() & 7); len--, pa.incX(), pd++)
 				{
-					*pd = ps[offset[x]];
+					*pd = m_vm32[pa.value()];
 				}
 
 				// aligned to a column
 
-				for (int ex8 = ex - 8; len >= 8 && x <= ex8; len -= 8, x += 8, pd += 8)
+				for (int ex8 = ex - 8; len >= 8 && pa.x() <= ex8; len -= 8, pd += 8)
 				{
-					int off = offset[x];
+					uint32* ps = m_vm32 + pa.value();
 
-					GSVector4i::store<false>(&pd[0], GSVector4i::load(&ps[off + 0], &ps[off + 4]));
-					GSVector4i::store<false>(&pd[4], GSVector4i::load(&ps[off + 8], &ps[off + 12]));
+					GSVector4i::store<false>(&pd[0], GSVector4i::load(ps + 0, ps + 4));
+					GSVector4i::store<false>(&pd[4], GSVector4i::load(ps + 8, ps + 12));
 
-					for (int i = 0; i < 8; i++)
-						ASSERT(pd[i] == ps[offset[x + i]]);
+					for (int i = 0; i < 8; i++, pa.incX())
+						ASSERT(pd[i] == m_vm32[pa.value()]);
 				}
 
-				for (; len > 0 && x < ex; len--, x++, pd++)
+				for (; len > 0 && pa.x() < ex; len--, pa.incX(), pd++)
 				{
-					*pd = ps[offset[x]];
+					*pd = m_vm32[pa.value()];
 				}
 
-				if (x == ex)
+				if (pa.x() == ex)
 				{
-					x = sx;
 					y++;
+					pa = off.assertSizesMatch(swizzle32).paMulti(sx, y);
 				}
 			}
 
+			x = pa.x();
 			break;
+		}
 
 		case PSM_PSMCT24:
 		case PSM_PSMZ24:
-
-			len /= 3;
-
-			while (len > 0)
+			copy(len / 3, off.assertSizesMatch(swizzle32), [&](GSOffset::PAHelper& pa)
 			{
-				int* RESTRICT offset = psm->rowOffset[y & 7];
-				uint32* RESTRICT ps = &m_vm32[off.assertSizesMatch(swizzle32).pa(0, y)];
-
-				for (; len > 0 && x < ex; len--, x++, pb += 3)
-				{
-					uint32 c = ps[offset[x]];
-
-					pb[0] = (uint8)(c);
-					pb[1] = (uint8)(c >> 8);
-					pb[2] = (uint8)(c >> 16);
-				}
-
-				if (x == ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				uint32 c = m_vm32[pa.value()];
+				pb[0] = (uint8)(c);
+				pb[1] = (uint8)(c >> 8);
+				pb[2] = (uint8)(c >> 16);
+				pb += 3;
+			});
 			break;
 
 		case PSM_PSMCT16:
 		case PSM_PSMCT16S:
 		case PSM_PSMZ16:
 		case PSM_PSMZ16S:
-
-			len /= 2;
-
-			while (len > 0)
+			copy(len / 2, off.assertSizesMatch(swizzle16), [&](GSOffset::PAHelper& pa)
 			{
-				int* RESTRICT offset = psm->rowOffset[y & 7];
-				uint16* RESTRICT ps = &m_vm16[off.assertSizesMatch(swizzle16).pa(0, y)];
-
-				for (int ex4 = ex - 4; len >= 4 && x <= ex4; len -= 4, x += 4, pw += 4)
-				{
-					pw[0] = ps[offset[x + 0]];
-					pw[1] = ps[offset[x + 1]];
-					pw[2] = ps[offset[x + 2]];
-					pw[3] = ps[offset[x + 3]];
-				}
-
-				for (; len > 0 && x < ex; len--, x++, pw++)
-				{
-					*pw = ps[offset[x]];
-				}
-
-				if (x == ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				*pw = m_vm16[pa.value()];
+				pw++;
+			});
 			break;
 
 		case PSM_PSMT8:
-
-			while (len > 0)
+			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8), [&](GSOffset::PAHelper& pa)
 			{
-				int* RESTRICT offset = psm->rowOffset[y & 7];
-				uint8* RESTRICT ps = &m_vm8[GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8).pa(0, y)];
-
-				for (int ex4 = ex - 4; len >= 4 && x <= ex4; len -= 4, x += 4, pb += 4)
-				{
-					pb[0] = ps[offset[x + 0]];
-					pb[1] = ps[offset[x + 1]];
-					pb[2] = ps[offset[x + 2]];
-					pb[3] = ps[offset[x + 3]];
-				}
-
-				for (; len > 0 && x < ex; len--, x++, pb++)
-				{
-					*pb = ps[offset[x]];
-				}
-
-				if (x == ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				*pb = m_vm8[pa.value()];
+				pb++;
+			});
 			break;
 
 		case PSM_PSMT4:
-
-			while (len > 0)
+			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4), [&](GSOffset::PAHelper& pa)
 			{
-				uint32 addr = GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4).pa(0, y);
-				int* RESTRICT offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x += 2, pb++)
-				{
-					*pb = (uint8)(ReadPixel4(addr + offset[x + 0]) | (ReadPixel4(addr + offset[x + 1]) << 4));
-				}
-
-				if (x == ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				uint8 low = ReadPixel4(pa.value());
+				pa.incX();
+				uint8 high = ReadPixel4(pa.value());
+				*pb = low | (high << 4);
+				pb++;
+			});
 			break;
 
 		case PSM_PSMT8H:
-
-			while (len > 0)
+			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8H), [&](GSOffset::PAHelper& pa)
 			{
-				int* RESTRICT offset = psm->rowOffset[y & 7];
-				uint32* RESTRICT ps = &m_vm32[GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8H).pa(0, y)];
-
-				for (int ex4 = ex - 4; len >= 4 && x <= ex4; len -= 4, x += 4, pb += 4)
-				{
-					pb[0] = (uint8)(ps[offset[x + 0]] >> 24);
-					pb[1] = (uint8)(ps[offset[x + 1]] >> 24);
-					pb[2] = (uint8)(ps[offset[x + 2]] >> 24);
-					pb[3] = (uint8)(ps[offset[x + 3]] >> 24);
-				}
-
-				for (; len > 0 && x < ex; len--, x++, pb++)
-				{
-					*pb = (uint8)(ps[offset[x]] >> 24);
-				}
-
-				if (x == ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				*pb = (uint8)(m_vm32[pa.value()] >> 24);
+				pb++;
+			});
 			break;
 
 		case PSM_PSMT4HL:
-
-			while (len > 0)
+			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HL), [&](GSOffset::PAHelper& pa)
 			{
-				int* offset = psm->rowOffset[y & 7];
-				uint32* RESTRICT ps = &m_vm32[GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HL).pa(0, y)];
-
-				for (; len > 0 && x < ex; len--, x += 2, pb++)
-				{
-					uint32 c0 = (ps[offset[x + 0]] >> 24) & 0x0f;
-					uint32 c1 = (ps[offset[x + 1]] >> 20) & 0xf0;
-
-					*pb = (uint8)(c0 | c1);
-				}
-
-				if (x == ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				uint32 c0 = m_vm32[pa.value()] >> 24 & 0x0f;
+				pa.incX();
+				uint32 c1 = m_vm32[pa.value()] >> 20 & 0xf0;
+				*pb = (uint8)(c0 | c1);
+				pb++;
+			});
 			break;
 
 		case PSM_PSMT4HH:
-
-			while (len > 0)
+			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HH), [&](GSOffset::PAHelper& pa)
 			{
-				int* RESTRICT offset = psm->rowOffset[y & 7];
-				uint32* RESTRICT ps = &m_vm32[GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HH).pa(0, y)];
-
-				for (; len > 0 && x < ex; len--, x += 2, pb++)
-				{
-					uint32 c0 = (ps[offset[x + 0]] >> 28) & 0x0f;
-					uint32 c1 = (ps[offset[x + 1]] >> 24) & 0xf0;
-
-					*pb = (uint8)(c0 | c1);
-				}
-
-				if (x == ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				uint32 c0 = m_vm32[pa.value()] >> 28 & 0x0f;
+				pa.incX();
+				uint32 c1 = m_vm32[pa.value()] >> 24 & 0xf0;
+				*pb = (uint8)(c0 | c1);
+				pb++;
+			});
 			break;
 	}
 
