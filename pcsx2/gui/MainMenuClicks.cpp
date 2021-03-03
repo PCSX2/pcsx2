@@ -53,6 +53,11 @@ void MainEmuFrame::Menu_SysSettings_Click(wxCommandEvent& event)
 	AppOpenDialog<SysConfigDialog>(this);
 }
 
+void MainEmuFrame::Menu_IPC_Settings_Click(wxCommandEvent& event)
+{
+	AppOpenDialog<IPCDialog>(this);
+}
+
 void MainEmuFrame::Menu_AudioSettings_Click(wxCommandEvent& event)
 {
 	SPU2configure();
@@ -65,7 +70,7 @@ void MainEmuFrame::Menu_McdSettings_Click(wxCommandEvent& event)
 	AppOpenModalDialog<McdConfigDialog>(wxEmptyString, this);
 }
 
-void MainEmuFrame::Menu_NetworkSettings_Click(wxCommandEvent &event)
+void MainEmuFrame::Menu_NetworkSettings_Click(wxCommandEvent& event)
 {
 	DEV9configure();
 }
@@ -80,7 +85,7 @@ void MainEmuFrame::Menu_PADSettings_Click(wxCommandEvent& event)
 	PADconfigure();
 }
 
-void MainEmuFrame::Menu_WindowSettings_Click(wxCommandEvent &event)
+void MainEmuFrame::Menu_WindowSettings_Click(wxCommandEvent& event)
 {
 	wxCommandEvent evt(pxEvt_SetSettingsPage);
 	evt.SetString(L"GS Window");
@@ -433,7 +438,7 @@ void MainEmuFrame::_DoBootCdvd()
 			return;
 		}
 	}
-	
+
 	sApp.SysExecute(g_Conf->CdvdSource);
 }
 
@@ -564,9 +569,9 @@ void MainEmuFrame::Menu_EnableCheats_Click(wxCommandEvent&)
 	AppSaveSettings();
 }
 
-void MainEmuFrame::Menu_EnableIPC_Click(wxCommandEvent&)
+void MainEmuFrame::Menu_IPC_Enable_Click(wxCommandEvent&)
 {
-	g_Conf->EmuOptions.EnableIPC = GetMenuBar()->IsChecked(MenuId_EnableIPC);
+	g_Conf->EmuOptions.EnableIPC = GetMenuBar()->IsChecked(MenuId_IPC_Enable);
 	AppApplySettings();
 	AppSaveSettings();
 }
@@ -930,7 +935,7 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent& even
 	GSmakeSnapshot(g_Conf->Folders.Snapshots.ToAscii());
 }
 
-void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent &event)
+void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& event)
 {
 	if (!CoreThread.IsOpen())
 		return;
@@ -970,7 +975,7 @@ void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent& event)
 				return;
 			}
 		}
-		
+
 		if (!initiallyPaused)
 			g_InputRecordingControls.Resume();
 	}
@@ -999,7 +1004,7 @@ void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent& event)
 			g_InputRecordingControls.Resume();
 		return;
 	}
-	
+
 	if (!g_InputRecording.GetInputRecordingData().FromSaveState())
 		StartInputRecording();
 }

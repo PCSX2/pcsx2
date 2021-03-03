@@ -101,6 +101,17 @@ namespace Dialogs
 		AssertionDialog( const wxString& text, const wxString& stacktrace );
 		virtual ~AssertionDialog() = default;
 	};
+
+	class IPCDialog : public wxDialogWithHelpers
+	{
+	public:
+		IPCDialog(wxWindow* parent = NULL);
+		virtual ~IPCDialog() = default;
+
+		void OnConfirm(wxCommandEvent& evt);
+		static wxString GetNameStatic() { return L"IPCSettings"; }
+		wxString GetDialogName() const { return GetNameStatic(); }
+	};
 }
 
 wxWindowID pxIssueConfirmation( wxDialogWithHelpers& confirmDlg, const MsgButtons& buttons );
