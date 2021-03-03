@@ -56,7 +56,8 @@ SocketIPC::SocketIPC(SysCoreThread* vm, unsigned int slot)
 		return;
 	}
 
-	if ((m_sock = socket(AF_INET, SOCK_STREAM, 0)) == INVALID_SOCKET)
+	m_sock = socket(AF_INET, SOCK_STREAM, 0);
+	if ((m_sock == INVALID_SOCKET) || slot > 65536)
 	{
 		Console.WriteLn(Color_Red, "IPC: Cannot open socket! Shutting down...");
 		return;
