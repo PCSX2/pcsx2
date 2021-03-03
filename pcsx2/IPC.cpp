@@ -42,7 +42,7 @@
 #include "svnrev.h"
 #include "IPC.h"
 
-SocketIPC::SocketIPC(SysCoreThread* vm, unsigned int slot = DEFAULT_PORT)
+SocketIPC::SocketIPC(SysCoreThread* vm, unsigned int slot)
 	: pxThread("IPC_Socket")
 {
 #ifdef _WIN32
@@ -85,11 +85,11 @@ SocketIPC::SocketIPC(SysCoreThread* vm, unsigned int slot = DEFAULT_PORT)
 	char* tmp_socket;
 
 	if (runtime_dir == NULL)
-		m_socket_name = tmp_socket = (char*)"/tmp/pcsx2.sock";
+		m_socket_name = tmp_socket = (char*)"/tmp/" IPC_EMULATOR_NAME ".sock";
 	else
-		m_socket_name = tmp_socket = strcat(runtime_dir, "/pcsx2.sock");
+		m_socket_name = tmp_socket = strcat(runtime_dir, "/" IPC_EMULATOR_NAME ".sock");
 
-	if (slot != DEFAULT_PORT)
+	if (slot != IPC_DEFAULT_SLOT)
 	{
 		// maximum size of .%u
 		char slot_ending[34];
