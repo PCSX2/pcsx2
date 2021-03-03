@@ -37,7 +37,7 @@ protected:
 #ifdef _WIN32
 	// windows claim to have support for AF_UNIX sockets but that is a blatant lie,
 	// their SDK won't even run their own examples, so we go on TCP sockets.
-#define PORT 28011
+#define DEFAULT_PORT 28011
 	SOCKET m_sock = INVALID_SOCKET;
 	// the message socket used in thread's accept().
 	SOCKET m_msgsock = INVALID_SOCKET;
@@ -200,7 +200,7 @@ public:
 	bool m_end = true;
 
 	/* Initializers */
-	SocketIPC(SysCoreThread* vm);
+	SocketIPC(SysCoreThread* vm, unsigned int slot = DEFAULT_PORT);
 	virtual ~SocketIPC();
 
 }; // class SocketIPC
