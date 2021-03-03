@@ -43,9 +43,6 @@ Dialogs::IPCDialog::IPCDialog(wxWindow* parent)
 	wxTextCtrl* ipc_slot = new wxTextCtrl(this, wxID_ANY, wxString::Format(wxT("%u"), IPCSettings::slot), wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
 	ipc_slot->Bind(wxEVT_TEXT_ENTER, &Dialogs::IPCDialog::OnConfirm, this);
 
-	wxButton* confirm = new wxButton(this, wxID_OK);
-	confirm->SetDefault();
-
 	*this += new wxStaticText(this, wxID_ANY, _("IPC Slot"));
 	*this += ipc_slot;
 	*this += confirm;
@@ -57,5 +54,6 @@ void Dialogs::IPCDialog::OnConfirm(wxCommandEvent& evt)
 	if (textbox)
 	{
 		IPCSettings::slot = (unsigned int)atoi(textbox->GetValue().ToUTF8().data());
+		Destroy();
 	}
 }
