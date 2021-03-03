@@ -45,7 +45,6 @@ Dialogs::IPCDialog::IPCDialog(wxWindow* parent)
 
 	*this += new wxStaticText(this, wxID_ANY, _("IPC Slot"));
 	*this += ipc_slot;
-	*this += confirm;
 }
 
 void Dialogs::IPCDialog::OnConfirm(wxCommandEvent& evt)
