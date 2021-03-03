@@ -299,6 +299,7 @@
     <ClCompile Include="..\..\gui\Debugger\DebugEvents.cpp" />
     <ClCompile Include="..\..\gui\Debugger\DebuggerLists.cpp" />
     <ClCompile Include="..\..\gui\Debugger\DisassemblyDialog.cpp" />
+    <ClCompile Include="..\..\gui\Dialogs\IPCDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\McdConfigDialog.cpp" />
     <ClCompile Include="..\..\gui\DriveList.cpp" />
     <ClCompile Include="..\..\gui\Panels\MemoryCardListView.cpp" />
