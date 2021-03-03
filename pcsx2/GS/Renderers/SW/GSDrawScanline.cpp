@@ -2942,11 +2942,11 @@ void GSDrawScanline::FillRect(const GSOffset& off, const GSVector4i& r, uint32 c
 
 	for (int y = r.y; y < r.w; y++)
 	{
-		GSOffset::PAHelper pa = off.paMulti(y);
+		auto pa = off.paMulti(vm, 0, y);
 
 		for (int x = r.x; x < r.z; x++)
 		{
-			T& d = vm[pa.value(x)];
+			T& d = *pa.value(x);
 			d = (T)(!masked ? c : (c | (d & m)));
 		}
 	}
@@ -2992,9 +2992,11 @@ void GSDrawScanline::FillBlock(const GSOffset& off, const GSVector4i& r, const G
 
 	for (int y = r.y; y < r.w; y += 8)
 	{
+		auto pa = off.paMulti(vm, 0, y);
+
 		for (int x = r.x; x < r.z; x += 8 * 4 / sizeof(T))
 		{
-			GSVector4i* RESTRICT p = (GSVector4i*)&vm[off.pa(x, y)];
+			GSVector4i* RESTRICT p = (GSVector4i*)pa.value(x);
 
 			for (int i = 0; i < 16; i += 4)
 			{
