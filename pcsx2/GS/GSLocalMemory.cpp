@@ -41,35 +41,20 @@ static void foreachBlock(const GSOffset& off, GSLocalMemory* mem, const GSVector
 
 //
 
-GSPageOffsetTable<32, 64> GSLocalMemory::pageOffset32;
-GSPageOffsetTable<32, 64> GSLocalMemory::pageOffset32Z;
-GSPageOffsetTable<64, 64> GSLocalMemory::pageOffset16;
-GSPageOffsetTable<64, 64> GSLocalMemory::pageOffset16S;
-GSPageOffsetTable<64, 64> GSLocalMemory::pageOffset16Z;
-GSPageOffsetTable<64, 64> GSLocalMemory::pageOffset16SZ;
-GSPageOffsetTable<64, 128> GSLocalMemory::pageOffset8;
-GSPageOffsetTable<128, 128> GSLocalMemory::pageOffset4;
+constexpr GSSwizzleInfo GSLocalMemory::swizzle32;
+constexpr GSSwizzleInfo GSLocalMemory::swizzle32Z;
+constexpr GSSwizzleInfo GSLocalMemory::swizzle16;
+constexpr GSSwizzleInfo GSLocalMemory::swizzle16S;
+constexpr GSSwizzleInfo GSLocalMemory::swizzle16Z;
+constexpr GSSwizzleInfo GSLocalMemory::swizzle16SZ;
+constexpr GSSwizzleInfo GSLocalMemory::swizzle8;
+constexpr GSSwizzleInfo GSLocalMemory::swizzle4;
 
 //
 
 GSLocalMemory::psm_t GSLocalMemory::m_psm[64];
 
 //
-
-template <int PageHeight, int PageWidth, int ColHeight, int ColWidth, typename Col>
-static void setupPageOffsetTable(GSPageOffsetTable<PageHeight, PageWidth>& table, const GSBlockSwizzleTable& block, Col (&col)[ColHeight][ColWidth])
-{
-	int blockSize = ColHeight * ColWidth;
-	for (int y = 0; y < PageHeight; y++)
-	{
-		for (int x = 0; x < 256; x++)
-		{
-			int colOff = col[y % ColHeight][x % ColWidth];
-			int blockOff = block.lookup(x / ColWidth, y / ColHeight);
-			table.value[y].value[x] = blockOff * blockSize + colOff;
-		}
-	}
-}
 
 GSLocalMemory::GSLocalMemory()
 	: m_clut(this)
@@ -100,15 +85,6 @@ GSLocalMemory::GSLocalMemory()
 	m_vm32 = (uint32*)m_vm8;
 
 	memset(m_vm8, 0, m_vmsize);
-
-	setupPageOffsetTable(pageOffset32,   blockTable32,   columnTable32);
-	setupPageOffsetTable(pageOffset32Z,  blockTable32Z,  columnTable32);
-	setupPageOffsetTable(pageOffset16,   blockTable16,   columnTable16);
-	setupPageOffsetTable(pageOffset16S,  blockTable16S,  columnTable16);
-	setupPageOffsetTable(pageOffset16Z,  blockTable16Z,  columnTable16);
-	setupPageOffsetTable(pageOffset16SZ, blockTable16SZ, columnTable16);
-	setupPageOffsetTable(pageOffset8,    blockTable8,    columnTable8);
-	setupPageOffsetTable(pageOffset4,    blockTable4,    columnTable4);
 
 	for (size_t i = 0; i < countof(m_psm); i++)
 	{
@@ -1108,20 +1084,19 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const uint8* src, int len, GIF
 
 	auto copy = [&](int len, const GSOffset& off, auto&& fn)
 	{
-		GSOffset::PAHelper pa = off.paMulti(x, y);
+		GSOffset::PAHelper pa = off.paMulti(y);
 
 		for (; len > 0; len--)
 		{
 			fn(pa);
-			pa.incX();
-			if (pa.x() >= ex)
+			x++;
+			if (x >= ex)
 			{
 				y++;
-				pa = off.paMulti(sx, y);
+				x = sx;
+				pa = off.paMulti(y);
 			}
 		}
-
-		x = pa.x();
 	};
 
 	GSOffset off = GetOffset(bp, bw, BITBLTBUF.DPSM);
@@ -1132,7 +1107,7 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const uint8* src, int len, GIF
 		case PSM_PSMZ32:
 			copy(len / 4, off.assertSizesMatch(swizzle32), [&](GSOffset::PAHelper& pa)
 			{
-				WritePixel32(pa.value(), *pd);
+				WritePixel32(pa.value(x), *pd);
 				pd++;
 			});
 			break;
@@ -1141,7 +1116,7 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const uint8* src, int len, GIF
 		case PSM_PSMZ24:
 			copy(len / 3, off.assertSizesMatch(swizzle32), [&](GSOffset::PAHelper& pa)
 			{
-				WritePixel24(pa.value(), *(uint32*)pb);
+				WritePixel24(pa.value(x), *(uint32*)pb);
 				pb += 3;
 			});
 			break;
@@ -1152,7 +1127,7 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const uint8* src, int len, GIF
 		case PSM_PSMZ16S:
 			copy(len / 2, off.assertSizesMatch(swizzle16), [&](GSOffset::PAHelper& pa)
 			{
-				WritePixel16(pa.value(), *pw);
+				WritePixel16(pa.value(x), *pw);
 				pw++;
 			});
 			break;
@@ -1160,7 +1135,7 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const uint8* src, int len, GIF
 		case PSM_PSMT8:
 			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8), [&](GSOffset::PAHelper& pa)
 			{
-				WritePixel8(pa.value(), *pb);
+				WritePixel8(pa.value(x), *pb);
 				pb++;
 			});
 			break;
@@ -1168,9 +1143,8 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const uint8* src, int len, GIF
 		case PSM_PSMT4:
 			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4), [&](GSOffset::PAHelper& pa)
 			{
-				WritePixel4(pa.value(), *pb & 0xf);
-				pa.incX();
-				WritePixel4(pa.value(), *pb >> 4);
+				WritePixel4(pa.value(x++), *pb & 0xf);
+				WritePixel4(pa.value(x), *pb >> 4);
 				pb++;
 			});
 			break;
@@ -1178,7 +1152,7 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const uint8* src, int len, GIF
 		case PSM_PSMT8H:
 			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8H), [&](GSOffset::PAHelper& pa)
 			{
-				WritePixel8H(pa.value(), *pb);
+				WritePixel8H(pa.value(x), *pb);
 				pb++;
 			});
 			break;
@@ -1186,9 +1160,8 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const uint8* src, int len, GIF
 		case PSM_PSMT4HL:
 			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HL), [&](GSOffset::PAHelper& pa)
 			{
-				WritePixel4HL(pa.value(), *pb & 0xf);
-				pa.incX();
-				WritePixel4HL(pa.value(), *pb >> 4);
+				WritePixel4HL(pa.value(x++), *pb & 0xf);
+				WritePixel4HL(pa.value(x), *pb >> 4);
 				pb++;
 			});
 			break;
@@ -1196,9 +1169,8 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const uint8* src, int len, GIF
 		case PSM_PSMT4HH:
 			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HH), [&](GSOffset::PAHelper& pa)
 			{
-				WritePixel4HH(pa.value(), *pb & 0xf);
-				pa.incX();
-				WritePixel4HH(pa.value(), *pb >> 4);
+				WritePixel4HH(pa.value(x++), *pb & 0xf);
+				WritePixel4HH(pa.value(x), *pb >> 4);
 				pb++;
 			});
 			break;
@@ -1230,20 +1202,19 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, uint8* dst, int len, GIFRegBITB
 
 	auto copy = [&](int len, const GSOffset& off, auto&& fn)
 	{
-		GSOffset::PAHelper pa = off.paMulti(x, y);
+		GSOffset::PAHelper pa = off.paMulti(y);
 
 		for (; len > 0; len--)
 		{
 			fn(pa);
-			pa.incX();
-			if (pa.x() >= ex)
+			x++;
+			if (x >= ex)
 			{
 				y++;
-				pa = off.paMulti(sx, y);
+				x = sx;
+				pa = off.paMulti(y);
 			}
 		}
-
-		x = pa.x();
 	};
 
 	GSOffset off = GetOffset(bp, bw, BITBLTBUF.SPSM);
@@ -1259,49 +1230,48 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, uint8* dst, int len, GIFRegBITB
 
 			len /= 4;
 
-			GSOffset::PAHelper pa = off.assertSizesMatch(swizzle32).paMulti(x, y);
+			GSOffset::PAHelper pa = off.assertSizesMatch(swizzle32).paMulti(y);
 
 			while (len > 0)
 			{
-				for (; len > 0 && pa.x() < ex && (pa.x() & 7); len--, pa.incX(), pd++)
+				for (; len > 0 && x < ex && (x & 7); len--, x++, pd++)
 				{
-					*pd = m_vm32[pa.value()];
+					*pd = m_vm32[pa.value(x)];
 				}
 
 				// aligned to a column
 
-				for (int ex8 = ex - 8; len >= 8 && pa.x() <= ex8; len -= 8, pd += 8)
+				for (int ex8 = ex - 8; len >= 8 && x <= ex8; len -= 8, x += 8, pd += 8)
 				{
-					uint32* ps = m_vm32 + pa.value();
+					uint32* ps = m_vm32 + pa.value(x);
 
 					GSVector4i::store<false>(&pd[0], GSVector4i::load(ps + 0, ps + 4));
 					GSVector4i::store<false>(&pd[4], GSVector4i::load(ps + 8, ps + 12));
 
-					for (int i = 0; i < 8; i++, pa.incX())
-						ASSERT(pd[i] == m_vm32[pa.value()]);
+					for (int i = 0; i < 8; i++)
+						ASSERT(pd[i] == m_vm32[pa.value(x + i)]);
 				}
 
-				for (; len > 0 && pa.x() < ex; len--, pa.incX(), pd++)
+				for (; len > 0 && x < ex; len--, x++, pd++)
 				{
-					*pd = m_vm32[pa.value()];
+					*pd = m_vm32[pa.value(x)];
 				}
 
-				if (pa.x() == ex)
+				if (x == ex)
 				{
 					y++;
-					pa = off.assertSizesMatch(swizzle32).paMulti(sx, y);
+					x = sx;
+					pa = off.assertSizesMatch(swizzle32).paMulti(y);
 				}
 			}
-
-			x = pa.x();
-			break;
 		}
+		break;
 
 		case PSM_PSMCT24:
 		case PSM_PSMZ24:
 			copy(len / 3, off.assertSizesMatch(swizzle32), [&](GSOffset::PAHelper& pa)
 			{
-				uint32 c = m_vm32[pa.value()];
+				uint32 c = m_vm32[pa.value(x)];
 				pb[0] = (uint8)(c);
 				pb[1] = (uint8)(c >> 8);
 				pb[2] = (uint8)(c >> 16);
@@ -1315,7 +1285,7 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, uint8* dst, int len, GIFRegBITB
 		case PSM_PSMZ16S:
 			copy(len / 2, off.assertSizesMatch(swizzle16), [&](GSOffset::PAHelper& pa)
 			{
-				*pw = m_vm16[pa.value()];
+				*pw = m_vm16[pa.value(x)];
 				pw++;
 			});
 			break;
@@ -1323,7 +1293,7 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, uint8* dst, int len, GIFRegBITB
 		case PSM_PSMT8:
 			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8), [&](GSOffset::PAHelper& pa)
 			{
-				*pb = m_vm8[pa.value()];
+				*pb = m_vm8[pa.value(x)];
 				pb++;
 			});
 			break;
@@ -1331,9 +1301,8 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, uint8* dst, int len, GIFRegBITB
 		case PSM_PSMT4:
 			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4), [&](GSOffset::PAHelper& pa)
 			{
-				uint8 low = ReadPixel4(pa.value());
-				pa.incX();
-				uint8 high = ReadPixel4(pa.value());
+				uint8 low = ReadPixel4(pa.value(x++));
+				uint8 high = ReadPixel4(pa.value(x));
 				*pb = low | (high << 4);
 				pb++;
 			});
@@ -1342,7 +1311,7 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, uint8* dst, int len, GIFRegBITB
 		case PSM_PSMT8H:
 			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8H), [&](GSOffset::PAHelper& pa)
 			{
-				*pb = (uint8)(m_vm32[pa.value()] >> 24);
+				*pb = (uint8)(m_vm32[pa.value(x)] >> 24);
 				pb++;
 			});
 			break;
@@ -1350,9 +1319,8 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, uint8* dst, int len, GIFRegBITB
 		case PSM_PSMT4HL:
 			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HL), [&](GSOffset::PAHelper& pa)
 			{
-				uint32 c0 = m_vm32[pa.value()] >> 24 & 0x0f;
-				pa.incX();
-				uint32 c1 = m_vm32[pa.value()] >> 20 & 0xf0;
+				uint32 c0 = m_vm32[pa.value(x++)] >> 24 & 0x0f;
+				uint32 c1 = m_vm32[pa.value(x)] >> 20 & 0xf0;
 				*pb = (uint8)(c0 | c1);
 				pb++;
 			});
@@ -1361,9 +1329,8 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, uint8* dst, int len, GIFRegBITB
 		case PSM_PSMT4HH:
 			copy(len, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HH), [&](GSOffset::PAHelper& pa)
 			{
-				uint32 c0 = m_vm32[pa.value()] >> 28 & 0x0f;
-				pa.incX();
-				uint32 c1 = m_vm32[pa.value()] >> 24 & 0xf0;
+				uint32 c0 = m_vm32[pa.value(x++)] >> 28 & 0x0f;
+				uint32 c1 = m_vm32[pa.value(x)] >> 24 & 0xf0;
 				*pb = (uint8)(c0 | c1);
 				pb++;
 			});

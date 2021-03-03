@@ -41,38 +41,66 @@ struct GSPixelOffset4
 	uint32 fbp, zbp, fpsm, zpsm, bw;
 };
 
-struct alignas(128) GSPageOffsetRow
-{
-	// Maximum page width is 128, but store mirror for unaligned simd loads
-	uint32 value[256];
-};
+class GSOffset;
 
-template <int Height, int Width>
-struct GSPageOffsetTable
+class GSSwizzleInfo
 {
-	GSPageOffsetRow value[Height];
-};
-
-class GSSwizzleInfo;
-
-class GSOffset
-{
+	friend class GSOffset;
 	/// Table for storing swizzling of blocks within a page
 	const GSBlockSwizzleTable* m_blockSwizzle;
-	/// Table for storing swizzling of pixels within a page
-	const GSPageOffsetRow* m_pixelSwizzle;
+	/// Table for storing swizzling of pixels within a page in the y dimension
+	const int* m_pixelSwizzleCol;
+	/// Array of tables for storing swizzling of pixels in the x dimension
+	const GSPixelRowOffsetTable* const* m_pixelSwizzleRow;
 	GSVector2i m_pageMask;  ///< Mask for getting the offset of a pixel that's within a page (may also be used as page dimensions - 1)
 	GSVector2i m_blockMask; ///< Mask for getting the offset of a pixel that's within a block (may also be used as block dimensions - 1)
-	uint8 m_pageShiftX;  ///< Amount to rshift x value by to get page x offset
-	uint8 m_pageShiftY;  ///< Amount to rshift y value by to get page y offset
-	uint8 m_blockShiftX; ///< Amount to rshift x value by to get block x offset
-	uint8 m_blockShiftY; ///< Amount to rshift y value by to get block y offset
+	int m_pixelRowMask;     ///< Mask for getting the offset in m_pixelSwizzleRow for a given y value
+	uint8 m_pageShiftX;  ///< Amount to rshift x value by to get page offset
+	uint8 m_pageShiftY;  ///< Amount to rshift y value by to get page offset
+	uint8 m_blockShiftX; ///< Amount to rshift x value by to get offset in block
+	uint8 m_blockShiftY; ///< Amount to rshift y value by to get offset in block
+	static constexpr uint8 ilog2(uint32 i) { return i < 2 ? 0 : 1 + ilog2(i >> 1); }
+
+public:
+	GSSwizzleInfo() = default;
+
+	/// @param blockSize Size of block in pixels
+	template <int PageWidth, int PageHeight, int BlocksWide, int BlocksHigh, int PixelRowMask>
+	constexpr GSSwizzleInfo(GSSwizzleTableList<PageHeight, PageWidth, BlocksHigh, BlocksWide, PixelRowMask> list)
+		: m_blockSwizzle(&list.block)
+		, m_pixelSwizzleCol(list.col.value)
+		, m_pixelSwizzleRow(list.row.rows)
+		, m_pageMask{PageWidth - 1, PageHeight - 1}
+		, m_blockMask{(PageWidth / BlocksWide) - 1, (PageHeight / BlocksHigh) - 1}
+		, m_pixelRowMask(PixelRowMask)
+		, m_pageShiftX(ilog2(PageWidth)), m_pageShiftY(ilog2(PageHeight))
+		, m_blockShiftX(ilog2(PageWidth / BlocksWide)), m_blockShiftY(ilog2(PageHeight / BlocksHigh))
+	{
+		static_assert(1 << ilog2(PageWidth) == PageWidth, "PageWidth must be a power of 2");
+		static_assert(1 << ilog2(PageHeight) == PageHeight, "PageHeight must be a power of 2");
+	}
+
+	/// Get the block number of the given pixel
+	uint32 bn(int x, int y, uint32 bp, uint32 bw) const;
+
+	/// Get the address of the given pixel
+	uint32 pa(int x, int y, uint32 bp, uint32 bw) const;
+};
+
+class GSOffset : GSSwizzleInfo
+{
 	int m_bp;   ///< Offset's base pointer (same measurement as GS)
 	int m_bwPg; ///< Offset's buffer width in pages (not equal to bw in GS for 8 and 4-bit textures)
 	int m_psm;  ///< Offset's pixel storage mode (just for storage, not used by any of the GSOffset algorithms)
 public:
 	GSOffset() = default;
-	constexpr GSOffset(const GSSwizzleInfo& swz, uint32 bp, uint32 bw, uint32 psm);
+	constexpr GSOffset(const GSSwizzleInfo& swz, uint32 bp, uint32 bw, uint32 psm)
+		: GSSwizzleInfo(swz)
+		, m_bp(bp)
+		, m_bwPg(bw >> (m_pageShiftX - 6))
+		, m_psm(psm)
+	{
+	}
 	/// Help the optimizer by using this method instead of GSLocalMemory::GetOffset when the PSM is known
 	constexpr static GSOffset fromKnownPSM(uint32 bp, uint32 bw, GS_PSM psm);
 
@@ -182,49 +210,37 @@ public:
 	class PAHelper
 	{
 		/// Pixel swizzle array
-		const GSPageOffsetRow* m_pixelSwizzle;
-		int m_pageMaskX; ///< Mask for getting offset within a page
-		int m_base;      ///< Address for origin x
-		int m_x;         ///< Current x position
-		int m_shift;     ///< Amount to lshift x to get offset due to page after clearing with pageMaskX
-		int m_mask;      ///< Mask to stay in bounds
+		const GSPixelRowOffsetTable* m_pixelSwizzleRow;
+		int m_base;
+
 	public:
 		PAHelper() = default;
-		PAHelper(const GSOffset& off, int x, int y)
+		PAHelper(const GSOffset& off, int y)
 		{
-			m_pixelSwizzle = off.m_pixelSwizzle + (y & off.m_pageMask.y);
+			m_pixelSwizzleRow = off.m_pixelSwizzleRow[y & off.m_pixelRowMask];
 			m_base = off.m_bp << (off.m_pageShiftX + off.m_pageShiftY - 5);
 			m_base += ((y & ~off.m_pageMask.y) * off.m_bwPg) << off.m_pageShiftX;
-			m_pageMaskX = off.m_pageMask.x;
-			m_shift = off.m_pageShiftY;
-			m_x = x;
-			m_mask = (MAX_PAGES << (off.m_pageShiftX + off.m_pageShiftY)) - 1;
+			m_base &= (MAX_PAGES << (off.m_pageShiftX + off.m_pageShiftY)) - 1;
+			m_base += off.m_pixelSwizzleCol[y & off.m_pageMask.y];
 		}
 
-		/// Get current x value
-		int x() const { return m_x; }
-		/// Increment x value
-		void incX() { m_x++; }
-		/// Decrement x value
-		void decX() { m_x--; }
 		/// Get current pixel address
-		uint32 value() const
+		uint32 value(size_t x) const
 		{
-			int x = (m_x & ~m_pageMaskX) << m_shift;
-			return (m_base + x + m_pixelSwizzle->value[m_x & m_pageMaskX]) & m_mask;
+			return m_base + (*m_pixelSwizzleRow)[x];
 		}
 	};
 
 	/// Get the address of the given pixel
 	uint32 pa(int x, int y) const
 	{
-		return PAHelper(*this, x, y).value();
+		return PAHelper(*this, y).value(x);
 	}
 
 	/// Get a helper class for efficiently calculating multiple pixel addresses in a line (along the x axis)
-	PAHelper paMulti(int x, int y) const
+	PAHelper paMulti(int y) const
 	{
-		return PAHelper(*this, x, y);
+		return PAHelper(*this, y);
 	}
 
 	/// Loop over the pixels in the given rectangle
@@ -236,11 +252,10 @@ public:
 
 		for (int y = r.top; y < r.bottom; y++, px = reinterpret_cast<Src*>(reinterpret_cast<uint8*>(px) + pitch))
 		{
-			PAHelper pa = paMulti(r.left, y);
-			while (pa.x() < r.right)
+			PAHelper pa = paMulti(y);
+			for (int x = r.left; x < r.right; x++)
 			{
-				fn(vm + pa.value(), px + pa.x());
-				pa.incX();
+				fn(vm + pa.value(x), px + x);
 			}
 		}
 	}
@@ -314,93 +329,30 @@ public:
 
 	/// Use compile-time dimensions from `swz` as a performance optimization
 	/// Also asserts if your assumption was wrong
-	constexpr GSOffset assertSizesMatch(const GSSwizzleInfo& swz) const;
-};
-
-class GSSwizzleInfo
-{
-	friend class GSOffset;
-	/// Table for storing swizzling of blocks within a page
-	const GSBlockSwizzleTable* m_blockSwizzle;
-	/// Table for storing swizzling of pixels within a page
-	const GSPageOffsetRow* m_pixelSwizzle;
-	GSVector2i m_pageMask;  ///< Mask for getting the offset of a pixel that's within a page (may also be used as page dimensions - 1)
-	GSVector2i m_blockMask; ///< Mask for getting the offset of a pixel that's within a block (may also be used as block dimensions - 1)
-	uint8 m_pageShiftX;  ///< Amount to rshift x value by to get page offset
-	uint8 m_pageShiftY;  ///< Amount to rshift y value by to get page offset
-	uint8 m_blockShiftX; ///< Amount to rshift x value by to get offset in block
-	uint8 m_blockShiftY; ///< Amount to rshift y value by to get offset in block
-	static constexpr uint8 ilog2(uint32 i) { return i < 2 ? 0 : 1 + ilog2(i>>1); }
-public:
-	GSSwizzleInfo() = default;
-
-	/// @param PageWidth Width of page in pixels
-	/// @param PageHeight Height of page in pixels
-	/// @param blockSize Size of block in pixels
-	template <int PageWidth, int PageHeight>
-	constexpr GSSwizzleInfo(GSVector2i blockSize, const GSBlockSwizzleTable* blockSwizzle, const GSPageOffsetTable<PageHeight, PageWidth>* pxSwizzle)
-		: m_blockSwizzle(blockSwizzle)
-		, m_pixelSwizzle(pxSwizzle->value)
-		, m_pageMask{PageWidth - 1, PageHeight - 1}
-		, m_blockMask{blockSize.x - 1, blockSize.y - 1}
-		, m_pageShiftX(ilog2(PageWidth)), m_pageShiftY(ilog2(PageHeight))
-		, m_blockShiftX(ilog2(blockSize.x)), m_blockShiftY(ilog2(blockSize.y))
+	constexpr GSOffset assertSizesMatch(const GSSwizzleInfo& swz) const
 	{
-		static_assert(1 << ilog2(PageWidth) == PageWidth, "PageWidth must be a power of 2");
-		static_assert(1 << ilog2(PageHeight) == PageHeight, "PageHeight must be a power of 2");
-	}
-
-	/// Get the block number of the given pixel
-	uint32 bn(int x, int y, uint32 bp, uint32 bw) const
-	{
-		return GSOffset(*this, bp, bw, 0).bn(x, y);
-	}
-
-	/// Get the address of the given pixel
-	uint32 pa(int x, int y, uint32 bp, uint32 bw) const
-	{
-		return GSOffset(*this, bp, bw, 0).pa(x, y);
-	}
-
-	/// Loop over all the pages in the given rect, calling `fn` on each
-	template <typename Fn>
-	void loopPages(const GSVector4i& rect, uint32 bp, uint32 bw, Fn&& fn) const
-	{
-		GSOffset(*this, bp, bw, 0).loopPages(rect, std::forward<Fn>(fn));
-	}
-
-	/// Loop over all the blocks in the given rect, calling `fn` on each
-	template <typename Fn>
-	void loopBlocks(const GSVector4i& rect, uint32 bp, uint32 bw, Fn&& fn) const
-	{
-		GSOffset(*this, bp, bw, 0).loopBlocks(rect, std::forward<Fn>(fn));
+		GSOffset o = *this;
+#define MATCH(x) ASSERT(o.x == swz.x); o.x = swz.x;
+		MATCH(m_pageMask)
+		MATCH(m_blockMask)
+		MATCH(m_pixelRowMask)
+		MATCH(m_pageShiftX)
+		MATCH(m_pageShiftY)
+		MATCH(m_blockShiftX)
+		MATCH(m_blockShiftY)
+#undef MATCH
+		return o;
 	}
 };
 
-constexpr inline GSOffset::GSOffset(const GSSwizzleInfo& swz, uint32 bp, uint32 bw, uint32 psm)
-	: m_blockSwizzle(swz.m_blockSwizzle)
-	, m_pixelSwizzle(swz.m_pixelSwizzle)
-	, m_pageMask(swz.m_pageMask), m_blockMask(swz.m_blockMask)
-	, m_pageShiftX(swz.m_pageShiftX), m_pageShiftY(swz.m_pageShiftY)
-	, m_blockShiftX(swz.m_blockShiftX), m_blockShiftY(swz.m_blockShiftY)
-	, m_bp(bp)
-	, m_bwPg(bw >> (m_pageShiftX - 6))
-	, m_psm(psm)
+inline uint32 GSSwizzleInfo::bn(int x, int y, uint32 bp, uint32 bw) const
 {
+	return GSOffset(*this, bp, bw, 0).bn(x, y);
 }
 
-constexpr GSOffset GSOffset::assertSizesMatch(const GSSwizzleInfo& swz) const
+inline uint32 GSSwizzleInfo::pa(int x, int y, uint32 bp, uint32 bw) const
 {
-	GSOffset o = *this;
-#define MATCH(x) ASSERT(o.x == swz.x); o.x = swz.x;
-	MATCH(m_pageMask)
-	MATCH(m_blockMask)
-	MATCH(m_pageShiftX)
-	MATCH(m_pageShiftY)
-	MATCH(m_blockShiftX)
-	MATCH(m_blockShiftY)
-#undef MATCH
-	return o;
+	return GSOffset(*this, bp, bw, 0).pa(x, y);
 }
 
 class GSLocalMemory : public GSAlignedClass<32>
@@ -452,24 +404,15 @@ public:
 protected:
 	bool m_use_fifo_alloc;
 
-	static GSPageOffsetTable<32, 64> pageOffset32;
-	static GSPageOffsetTable<32, 64> pageOffset32Z;
-	static GSPageOffsetTable<64, 64> pageOffset16;
-	static GSPageOffsetTable<64, 64> pageOffset16S;
-	static GSPageOffsetTable<64, 64> pageOffset16Z;
-	static GSPageOffsetTable<64, 64> pageOffset16SZ;
-	static GSPageOffsetTable<64, 128> pageOffset8;
-	static GSPageOffsetTable<128, 128> pageOffset4;
-
 public:
-	static constexpr GSSwizzleInfo swizzle32{{8, 8}, &blockTable32, &pageOffset32};
-	static constexpr GSSwizzleInfo swizzle32Z{{8, 8}, &blockTable32Z, &pageOffset32Z};
-	static constexpr GSSwizzleInfo swizzle16{{16, 8}, &blockTable16, &pageOffset16};
-	static constexpr GSSwizzleInfo swizzle16S{{16, 8}, &blockTable16S, &pageOffset16S};
-	static constexpr GSSwizzleInfo swizzle16Z{{16, 8}, &blockTable16Z, &pageOffset16Z};
-	static constexpr GSSwizzleInfo swizzle16SZ{{16, 8}, &blockTable16SZ, &pageOffset16SZ};
-	static constexpr GSSwizzleInfo swizzle8{{16, 16}, &blockTable8, &pageOffset8};
-	static constexpr GSSwizzleInfo swizzle4{{32, 16}, &blockTable4, &pageOffset4};
+	static constexpr GSSwizzleInfo swizzle32   {swizzleTables32};
+	static constexpr GSSwizzleInfo swizzle32Z  {swizzleTables32Z};
+	static constexpr GSSwizzleInfo swizzle16   {swizzleTables16};
+	static constexpr GSSwizzleInfo swizzle16S  {swizzleTables16S};
+	static constexpr GSSwizzleInfo swizzle16Z  {swizzleTables16Z};
+	static constexpr GSSwizzleInfo swizzle16SZ {swizzleTables16SZ};
+	static constexpr GSSwizzleInfo swizzle8    {swizzleTables8};
+	static constexpr GSSwizzleInfo swizzle4    {swizzleTables4};
 
 protected:
 	__forceinline static uint32 Expand24To32(uint32 c, const GIFRegTEXA& TEXA)
