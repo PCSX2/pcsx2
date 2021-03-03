@@ -907,26 +907,22 @@ void GSRendererHW::SwSpriteRender()
 
 	for (int y = 0; y < h; y++, ++sy, ++dy)
 	{
-		GSOffset::PAHelper spa = texture_mapping_enabled ? spo.paMulti(sx, sy) : GSOffset::PAHelper();
-		GSOffset::PAHelper dpa = dpo.paMulti(dx, dy);
+		GSOffset::PAHelper spa = texture_mapping_enabled ? spo.paMulti(sy) : GSOffset::PAHelper();
+		GSOffset::PAHelper dpa = dpo.paMulti(dy);
 
 		ASSERT(w % 2 == 0);
 
 		for (int x = 0; x < w; x += 2)
 		{
-			uint32 di = dpa.value();
-			dpa.incX();
-			ASSERT(di + 1 == dpa.value()); // Destination pixel pair is adjacent in memory
-			dpa.incX();
+			uint32 di = dpa.value(dx + x);
+			ASSERT(di + 1 == dpa.value(dx + x + 1)); // Destination pixel pair is adjacent in memory
 
 			GSVector4i sc;
 			if (texture_mapping_enabled)
 			{
-				uint32 si = spa.value();
-				spa.incX();
+				uint32 si = spa.value(sx + x);
 				// Read 2 source pixel colors
-				ASSERT((si + 1) == spa.value()); // Source pixel pair is adjacent in memory
-				spa.incX();
+				ASSERT((si + 1) == spa.value(sx + x + 1)); // Source pixel pair is adjacent in memory
 				sc = GSVector4i::loadl(&m_mem.m_vm32[si]).u8to16(); // 0x00AA00BB00GG00RR00aa00bb00gg00rr
 
 				// Apply TFX
@@ -1827,11 +1823,11 @@ void GSRendererHW::OI_GsMemClear()
 			// Based on WritePixel32
 			for (int y = r.top; y < r.bottom; y++)
 			{
-				GSOffset::PAHelper pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(r.left, y);
+				GSOffset::PAHelper pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(y);
 
-				for (; pa.x() < r.right; pa.incX())
+				for (int x = r.left; x < r.right; x++)
 				{
-					m_mem.m_vm32[pa.value()] = 0; // Here the constant color
+					m_mem.m_vm32[pa.value(x)] = 0; // Here the constant color
 				}
 			}
 		}
@@ -1840,11 +1836,11 @@ void GSRendererHW::OI_GsMemClear()
 			// Based on WritePixel24
 			for (int y = r.top; y < r.bottom; y++)
 			{
-				GSOffset::PAHelper pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(r.left, y);
+				GSOffset::PAHelper pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(y);
 
-				for (; pa.x() < r.right; pa.incX())
+				for (int x = r.left; x < r.right; x++)
 				{
-					m_mem.m_vm32[pa.value()] &= 0xff000000; // Clear the color
+					m_mem.m_vm32[pa.value(x)] &= 0xff000000; // Clear the color
 				}
 			}
 		}
@@ -1855,11 +1851,11 @@ void GSRendererHW::OI_GsMemClear()
 			// Based on WritePixel16
 			for(int y = r.top; y < r.bottom; y++)
 			{
-				GSOffset::PAHelper pa = off.assertSizesMatch(GSLocalMemory::swizzle16).paMulti(r.left, y);
+				GSOffset::PAHelper pa = off.assertSizesMatch(GSLocalMemory::swizzle16).paMulti(y);
 
 				for(int x = r.left; x < r.right; x++)
 				{
-					m_mem.m_vm16[pa.value()] = 0; // Here the constant color
+					m_mem.m_vm16[pa.value(x)] = 0; // Here the constant color
 				}
 			}
 #endif

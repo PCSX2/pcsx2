@@ -197,13 +197,14 @@ template <int n>
 void GSClut::WriteCLUT32_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
 	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT32);
-	GSOffset::PAHelper pa = off.paMulti(TEXCLUT.COU << 4, TEXCLUT.COV);
+	GSOffset::PAHelper pa = off.paMulti(TEXCLUT.COV);
 
+	int x = TEXCLUT.COU << 4;
 	uint16* RESTRICT clut = m_clut + ((TEX0.CSA & 15) << 4);
 
-	for (int i = 0; i < n; pa.incX(), i++)
+	for (int i = 0; i < n; x++, i++)
 	{
-		uint32 c = m_mem->m_vm32[pa.value()];
+		uint32 c = m_mem->m_vm32[pa.value(x)];
 
 		clut[i] = (uint16)(c & 0xffff);
 		clut[i + 256] = (uint16)(c >> 16);
@@ -214,13 +215,14 @@ template <int n>
 void GSClut::WriteCLUT16_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
 	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT16);
-	GSOffset::PAHelper pa = off.paMulti(TEXCLUT.COU << 4, TEXCLUT.COV);
+	GSOffset::PAHelper pa = off.paMulti(TEXCLUT.COV);
 
+	int x = TEXCLUT.COU << 4;
 	uint16* RESTRICT clut = m_clut + (TEX0.CSA << 4);
 
-	for (int i = 0; i < n; pa.incX(), i++)
+	for (int i = 0; i < n; x++, i++)
 	{
-		clut[i] = m_mem->m_vm16[pa.value()];
+		clut[i] = m_mem->m_vm16[pa.value(x)];
 	}
 }
 
@@ -228,13 +230,14 @@ template <int n>
 void GSClut::WriteCLUT16S_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
 	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT16S);
-	GSOffset::PAHelper pa = off.paMulti(TEXCLUT.COU << 4, TEXCLUT.COV);
+	GSOffset::PAHelper pa = off.paMulti(TEXCLUT.COV);
 
+	int x = TEXCLUT.COU << 4;
 	uint16* RESTRICT clut = m_clut + (TEX0.CSA << 4);
 
-	for (int i = 0; i < n; pa.incX(), i++)
+	for (int i = 0; i < n; x++, i++)
 	{
-		clut[i] = m_mem->m_vm16[pa.value()];
+		clut[i] = m_mem->m_vm16[pa.value(x)];
 	}
 }
 
