@@ -42,7 +42,7 @@
 #include "svnrev.h"
 #include "IPC.h"
 
-SocketIPC::SocketIPC(SysCoreThread* vm)
+SocketIPC::SocketIPC(SysCoreThread* vm, unsigned int slot = DEFAULT_PORT)
 	: pxThread("IPC_Socket")
 {
 #ifdef _WIN32
@@ -66,7 +66,7 @@ SocketIPC::SocketIPC(SysCoreThread* vm)
 	server.sin_family = AF_INET;
 	// localhost only
 	server.sin_addr.s_addr = inet_addr("127.0.0.1");
-	server.sin_port = htons(PORT);
+	server.sin_port = htons(slot);
 
 	if (bind(m_sock, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
 	{
@@ -75,8 +75,6 @@ SocketIPC::SocketIPC(SysCoreThread* vm)
 	}
 
 #else
-	// XXX: go back whenever we want to have multiple IPC instances with
-	// multiple emulators running and make this a folder
 #ifdef __APPLE__
 	char* runtime_dir = std::getenv("TMPDIR");
 #else
@@ -84,10 +82,21 @@ SocketIPC::SocketIPC(SysCoreThread* vm)
 #endif
 	// fallback in case macOS or other OSes don't implement the XDG base
 	// spec
+	char* tmp_socket;
+
 	if (runtime_dir == NULL)
-		m_socket_name = (char*)"/tmp/pcsx2.sock";
+		m_socket_name = tmp_socket = (char*)"/tmp/pcsx2.sock";
 	else
-		m_socket_name = strcat(runtime_dir, "/pcsx2.sock");
+		m_socket_name = tmp_socket = strcat(runtime_dir, "/pcsx2.sock");
+
+	if (slot != DEFAULT_PORT)
+	{
+		// maximum size of .%u
+		char slot_ending[34];
+		sprintf(slot_ending, ".%u", slot);
+		m_socket_name = strcat(tmp_socket, slot_ending);
+		free(tmp_socket);
+	}
 
 	struct sockaddr_un server;
 
