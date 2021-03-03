@@ -51,6 +51,11 @@
 
 bool g_CDVDReset = false;
 
+namespace IPCSettings
+{
+	unsigned int slot = IPC_DEFAULT_SLOT;
+};
+
 // --------------------------------------------------------------------------------------
 //  SysCoreThread *External Thread* Implementations
 //    (Called from outside the context of this thread)
@@ -270,7 +275,7 @@ void SysCoreThread::GameStartingInThread()
 	if (EmuConfig.EnableIPC && m_IpcState == OFF)
 	{
 		m_IpcState = ON;
-		m_socketIpc = std::make_unique<SocketIPC>(this);
+		m_socketIpc = std::make_unique<SocketIPC>(this, IPCSettings::slot);
 	}
 	if (m_IpcState == ON && m_socketIpc->m_end)
 		m_socketIpc->Start();

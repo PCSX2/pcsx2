@@ -82,20 +82,17 @@ SocketIPC::SocketIPC(SysCoreThread* vm, unsigned int slot)
 #endif
 	// fallback in case macOS or other OSes don't implement the XDG base
 	// spec
-	char* tmp_socket;
-
 	if (runtime_dir == NULL)
-		m_socket_name = tmp_socket = (char*)"/tmp/" IPC_EMULATOR_NAME ".sock";
+		m_socket_name = (char*)"/tmp/" IPC_EMULATOR_NAME ".sock";
 	else
-		m_socket_name = tmp_socket = strcat(runtime_dir, "/" IPC_EMULATOR_NAME ".sock");
+		m_socket_name = strcat(runtime_dir, "/" IPC_EMULATOR_NAME ".sock");
 
 	if (slot != IPC_DEFAULT_SLOT)
 	{
 		// maximum size of .%u
 		char slot_ending[34];
 		sprintf(slot_ending, ".%u", slot);
-		m_socket_name = strcat(tmp_socket, slot_ending);
-		free(tmp_socket);
+		m_socket_name = strcat(m_socket_name, slot_ending);
 	}
 
 	struct sockaddr_un server;

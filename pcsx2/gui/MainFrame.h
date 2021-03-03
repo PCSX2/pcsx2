@@ -117,6 +117,7 @@ protected:
 
 	wxMenu& m_menuCapture;
 	wxMenu& m_submenuVideoCapture;
+	wxMenu& m_submenuIPC;
 	wxMenu& m_submenuScreenshot;
 
 #ifndef DISABLE_RECORDING
@@ -208,7 +209,8 @@ protected:
 	void Menu_EnableBackupStates_Click(wxCommandEvent& event);
 	void Menu_EnablePatches_Click(wxCommandEvent& event);
 	void Menu_EnableCheats_Click(wxCommandEvent& event);
-	void Menu_EnableIPC_Click(wxCommandEvent& event);
+	void Menu_IPC_Enable_Click(wxCommandEvent& event);
+	void Menu_IPC_Settings_Click(wxCommandEvent& event);
 	void Menu_EnableWideScreenPatches_Click(wxCommandEvent& event);
 #ifndef DISABLE_RECORDING
 	void Menu_EnableRecordingTools_Click(wxCommandEvent& event);

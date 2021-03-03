@@ -64,22 +64,22 @@ public:
 	};
 
 protected:
-	std::atomic<ExecutionMode>	m_ExecMode;
+	std::atomic<ExecutionMode> m_ExecMode;
 
 	// This lock is used to avoid simultaneous requests to Suspend/Resume/Pause from
 	// contending threads.
-	MutexRecursive		m_ExecModeMutex;
+	MutexRecursive m_ExecModeMutex;
 
 	// Used to wake up the thread from sleeping when it's in a suspended state.
-	Semaphore			m_sem_Resume;
+	Semaphore m_sem_Resume;
 
 	// Used to synchronize inline changes from paused to suspended status.
-	Semaphore			m_sem_ChangingExecMode;
+	Semaphore m_sem_ChangingExecMode;
 
 	// Locked whenever the thread is not in a suspended state (either closed or paused).
 	// Issue a Wait against this mutex for performing actions that require the thread
 	// to be suspended.
-	Mutex				m_RunningLock;
+	Mutex m_RunningLock;
 
 public:
 	explicit SysThreadBase();
@@ -111,7 +111,7 @@ public:
 	ExecutionMode GetExecutionMode() const { return m_ExecMode.load(); }
 	Mutex& ExecutionModeMutex() { return m_ExecModeMutex; }
 
-	virtual void Suspend( bool isBlocking = true );
+	virtual void Suspend(bool isBlocking = true);
 	virtual void Resume();
 	virtual void Pause(bool debug = false);
 	virtual void PauseSelf();
@@ -139,14 +139,14 @@ protected:
 	// prior to suspending the thread (ie, when Suspend() has been called on a separate
 	// thread, requesting this thread suspend itself temporarily).  After this is called,
 	// the thread enters a waiting state on the m_sem_Resume semaphore.
-	virtual void OnSuspendInThread()=0;
+	virtual void OnSuspendInThread() = 0;
 
 	// Extending classes should implement this, but should not call it.  The parent class
 	// handles invocation by the following guidelines: Called *in thread* from StateCheckInThread()
 	// prior to pausing the thread (ie, when Pause() has been called on a separate thread,
 	// requesting this thread pause itself temporarily).  After this is called, the thread
 	// enters a waiting state on the m_sem_Resume semaphore.
-	virtual void OnPauseInThread()=0;
+	virtual void OnPauseInThread() = 0;
 
 	// Extending classes should implement this, but should not call it.  The parent class
 	// handles invocation by the following guidelines: Called from StateCheckInThread() after the
@@ -154,7 +154,7 @@ protected:
 	// Parameter:
 	//   isSuspended - set to TRUE if the thread is returning from a suspended state, or
 	//     FALSE if it's returning from a paused state.
-	virtual void OnResumeInThread( bool isSuspended )=0;
+	virtual void OnResumeInThread(bool isSuspended) = 0;
 };
 
 
@@ -166,16 +166,16 @@ class SysCoreThread : public SysThreadBase
 	typedef SysThreadBase _parent;
 
 protected:
-	bool			m_resetRecompilers;
-	bool			m_resetProfilers;
-	bool			m_resetVsyncTimers;
-	bool			m_resetVirtualMachine;
+	bool m_resetRecompilers;
+	bool m_resetProfilers;
+	bool m_resetVsyncTimers;
+	bool m_resetVirtualMachine;
 
 	// Stores the state of the socket IPC thread.
 	std::unique_ptr<SocketIPC> m_socketIpc;
 
 	// Current state of the IPC thread
-	enum StateIPC 
+	enum StateIPC
 	{
 		OFF,
 		ON
@@ -188,9 +188,9 @@ protected:
 	// occurs while trying to upload a new state into the VM.
 	std::atomic<bool> m_hasActiveMachine;
 
-	wxString		m_elf_override;
+	wxString m_elf_override;
 
-	SSE_MXCSR		m_mxcsr_saved;
+	SSE_MXCSR m_mxcsr_saved;
 
 public:
 	explicit SysCoreThread();
@@ -201,20 +201,20 @@ public:
 	virtual void OnResumeReady();
 	virtual void Reset();
 	virtual void ResetQuick();
-	virtual void Cancel( bool isBlocking=true );
-	virtual bool Cancel( const wxTimeSpan& timeout );
+	virtual void Cancel(bool isBlocking = true);
+	virtual bool Cancel(const wxTimeSpan& timeout);
 
 	virtual bool StateCheckInThread();
 	virtual void VsyncInThread();
 	virtual void GameStartingInThread();
 
-	virtual void ApplySettings( const Pcsx2Config& src );
-	virtual void UploadStateCopy( const VmStateBuffer& copy );
+	virtual void ApplySettings(const Pcsx2Config& src);
+	virtual void UploadStateCopy(const VmStateBuffer& copy);
 
 	virtual bool HasActiveMachine() const { return m_hasActiveMachine; }
 
 	virtual const wxString& GetElfOverride() const { return m_elf_override; }
-	virtual void SetElfOverride( const wxString& elf );
+	virtual void SetElfOverride(const wxString& elf);
 
 protected:
 	void _reset_stuff_as_needed();
@@ -223,12 +223,12 @@ protected:
 	virtual void OnStart();
 	virtual void OnSuspendInThread();
 	virtual void OnPauseInThread() {}
-	virtual void OnResumeInThread( bool IsSuspended );
+	virtual void OnResumeInThread(bool IsSuspended);
 	virtual void OnCleanupInThread();
 	virtual void ExecuteTaskInThread();
 	virtual void DoCpuReset();
 	virtual void DoCpuExecute();
-	
+
 	void _StateCheckThrows();
 };
 
@@ -250,7 +250,7 @@ public:
 	IEventListener_SysState() {}
 	virtual ~IEventListener_SysState() = default;
 
-	virtual void DispatchEvent( const SysStateUnlockedParams& status )
+	virtual void DispatchEvent(const SysStateUnlockedParams& status)
 	{
 		SysStateAction_OnUnlocked();
 	}
@@ -267,3 +267,8 @@ protected:
 extern SysCoreThread& GetCoreThread();
 
 extern bool g_CDVDReset;
+
+namespace IPCSettings
+{
+	extern unsigned int slot;
+};
