@@ -206,41 +206,80 @@ public:
 				fn(bn.value());
 	}
 
+	/// Calculate the pixel address at the given y position with x of 0
+	int pixelAddressZeroX(int y) const
+	{
+		int base = m_bp << (m_pageShiftX + m_pageShiftY - 5);   // Offset from base pointer
+		base += ((y & ~m_pageMask.y) * m_bwPg) << m_pageShiftX; // Offset from pages in y direction
+		// TODO: Old GSOffset masked here but is that useful?  Probably should mask at end or not at all...
+		base &= (MAX_PAGES << (m_pageShiftX + m_pageShiftY)) - 1; // Mask
+		base += m_pixelSwizzleCol[y & m_pageMask.y]; // Add offset from y within page
+		return base;
+	}
+
 	/// Helper class for efficiently getting the addresses of multiple pixels in a line (along the x axis)
 	class PAHelper
 	{
 		/// Pixel swizzle array
-		const GSPixelRowOffsetTable* m_pixelSwizzleRow;
+		const int* m_pixelSwizzleRow;
 		int m_base;
 
 	public:
 		PAHelper() = default;
-		PAHelper(const GSOffset& off, int y)
+		PAHelper(const GSOffset& off, int x, int y)
 		{
-			m_pixelSwizzleRow = off.m_pixelSwizzleRow[y & off.m_pixelRowMask];
-			m_base = off.m_bp << (off.m_pageShiftX + off.m_pageShiftY - 5);
-			m_base += ((y & ~off.m_pageMask.y) * off.m_bwPg) << off.m_pageShiftX;
-			m_base &= (MAX_PAGES << (off.m_pageShiftX + off.m_pageShiftY)) - 1;
-			m_base += off.m_pixelSwizzleCol[y & off.m_pageMask.y];
+			m_pixelSwizzleRow = off.m_pixelSwizzleRow[y & off.m_pixelRowMask]->value + x;
+			m_base = off.pixelAddressZeroX(y);
 		}
 
-		/// Get current pixel address
-		uint32 value(size_t x) const
+		/// Get pixel reference for the given x offset from the one used to create the PAHelper
+		uint32 value(int x) const
 		{
-			return m_base + (*m_pixelSwizzleRow)[x];
+			return m_base + m_pixelSwizzleRow[x];
+		}
+	};
+
+	/// Helper class for efficiently getting the addresses of multiple pixels in a line (along the x axis)
+	/// Slightly more efficient than PAHelper by pre-adding the base offset to the VM pointer
+	template <typename VM>
+	class PAPtrHelper
+	{
+		/// Pixel swizzle array
+		const int* m_pixelSwizzleRow;
+		VM* m_base;
+
+	public:
+		PAPtrHelper() = default;
+		PAPtrHelper(const GSOffset& off, VM* vm, int x, int y)
+		{
+			m_pixelSwizzleRow = off.m_pixelSwizzleRow[y & off.m_pixelRowMask]->value + x;
+			m_base = &vm[off.pixelAddressZeroX(y)];
+		}
+
+		/// Get pixel reference for the given x offset from the one used to create the PAPtrHelper
+		VM* value(int x) const
+		{
+			return m_base + m_pixelSwizzleRow[x];
 		}
 	};
 
 	/// Get the address of the given pixel
 	uint32 pa(int x, int y) const
 	{
-		return PAHelper(*this, y).value(x);
+		return PAHelper(*this, 0, y).value(x);
 	}
 
 	/// Get a helper class for efficiently calculating multiple pixel addresses in a line (along the x axis)
-	PAHelper paMulti(int y) const
+	PAHelper paMulti(int x, int y) const
 	{
-		return PAHelper(*this, y);
+		return PAHelper(*this, x, y);
+	}
+
+	/// Get a helper class for efficiently calculating multiple pixel addresses in a line (along the x axis)
+	template <typename VM>
+	PAPtrHelper<VM> paMulti(VM* vm, int x, int y) const
+	{
+		return PAPtrHelper(*this, vm, x, y);
 	}
 
 	/// Loop over the pixels in the given rectangle
@@ -252,10 +291,10 @@ public:
 
 		for (int y = r.top; y < r.bottom; y++, px = reinterpret_cast<Src*>(reinterpret_cast<uint8*>(px) + pitch))
 		{
-			PAHelper pa = paMulti(y);
+			PAPtrHelper<VM> pa = paMulti(vm, 0, y);
 			for (int x = r.left; x < r.right; x++)
 			{
-				fn(vm + pa.value(x), px + x);
+				fn(pa.value(x), px + x);
 			}
 		}
 	}
@@ -739,9 +778,14 @@ public:
 		m_vm32[addr] = c;
 	}
 
+	__forceinline static void WritePixel24(uint32* addr, uint32 c)
+	{
+		*addr = (*addr & 0xff000000) | (c & 0x00ffffff);
+	}
+
 	__forceinline void WritePixel24(uint32 addr, uint32 c)
 	{
-		m_vm32[addr] = (m_vm32[addr] & 0xff000000) | (c & 0x00ffffff);
+		WritePixel24(m_vm32 + addr, c);
 	}
 
 	__forceinline void WritePixel16(uint32 addr, uint32 c)
@@ -762,19 +806,34 @@ public:
 		m_vm8[addr] = (uint8)((m_vm8[addr] & (0xf0 >> shift)) | ((c & 0x0f) << shift));
 	}
 
+	__forceinline static void WritePixel8H(uint32* addr, uint32 c)
+	{
+		*addr = (*addr & 0x00ffffff) | (c << 24);
+	}
+
 	__forceinline void WritePixel8H(uint32 addr, uint32 c)
 	{
-		m_vm32[addr] = (m_vm32[addr] & 0x00ffffff) | (c << 24);
+		WritePixel8H(m_vm32 + addr, c);
+	}
+
+	__forceinline static void WritePixel4HL(uint32* addr, uint32 c)
+	{
+		*addr = (*addr & 0xf0ffffff) | ((c & 0x0f) << 24);
 	}
 
 	__forceinline void WritePixel4HL(uint32 addr, uint32 c)
 	{
-		m_vm32[addr] = (m_vm32[addr] & 0xf0ffffff) | ((c & 0x0f) << 24);
+		WritePixel4HL(m_vm32 + addr, c);
+	}
+
+	__forceinline static void WritePixel4HH(uint32* addr, uint32 c)
+	{
+		*addr = (*addr & 0x0fffffff) | ((c & 0x0f) << 28);
 	}
 
 	__forceinline void WritePixel4HH(uint32 addr, uint32 c)
 	{
-		m_vm32[addr] = (m_vm32[addr] & 0x0fffffff) | ((c & 0x0f) << 28);
+		WritePixel4HH(m_vm32 + addr, c);
 	}
 
 	__forceinline void WriteFrame16(uint32 addr, uint32 c)

@@ -907,23 +907,23 @@ void GSRendererHW::SwSpriteRender()
 
 	for (int y = 0; y < h; y++, ++sy, ++dy)
 	{
-		GSOffset::PAHelper spa = texture_mapping_enabled ? spo.paMulti(sy) : GSOffset::PAHelper();
-		GSOffset::PAHelper dpa = dpo.paMulti(dy);
+		auto spa = texture_mapping_enabled ? spo.paMulti(m_mem.m_vm32, sx, sy) : GSOffset::PAPtrHelper<uint32>();
+		auto dpa = dpo.paMulti(m_mem.m_vm32, dx, dy);
 
 		ASSERT(w % 2 == 0);
 
 		for (int x = 0; x < w; x += 2)
 		{
-			uint32 di = dpa.value(dx + x);
-			ASSERT(di + 1 == dpa.value(dx + x + 1)); // Destination pixel pair is adjacent in memory
+			uint32* di = dpa.value(x);
+			ASSERT(*di + 1 == *dpa.value(x + 1)); // Destination pixel pair is adjacent in memory
 
 			GSVector4i sc;
 			if (texture_mapping_enabled)
 			{
-				uint32 si = spa.value(sx + x);
+				uint32* si = spa.value(x);
 				// Read 2 source pixel colors
-				ASSERT((si + 1) == spa.value(sx + x + 1)); // Source pixel pair is adjacent in memory
-				sc = GSVector4i::loadl(&m_mem.m_vm32[si]).u8to16(); // 0x00AA00BB00GG00RR00aa00bb00gg00rr
+				ASSERT((*si + 1) == *spa.value(x + 1)); // Source pixel pair is adjacent in memory
+				sc = GSVector4i::loadl(si).u8to16(); // 0x00AA00BB00GG00RR00aa00bb00gg00rr
 
 				// Apply TFX
 				ASSERT(tex0_tfx == 0 || tex0_tfx == 1);
@@ -944,7 +944,7 @@ void GSRendererHW::SwSpriteRender()
 			if (alpha_blending_enabled || fb_mask_enabled)
 			{
 				// Read 2 destination pixel colors
-				dc0 = GSVector4i::loadl(&m_mem.m_vm32[di]).u8to16(); // 0x00AA00BB00GG00RR00aa00bb00gg00rr
+				dc0 = GSVector4i::loadl(di).u8to16(); // 0x00AA00BB00GG00RR00aa00bb00gg00rr
 			}
 
 			if (alpha_blending_enabled)
@@ -999,7 +999,7 @@ void GSRendererHW::SwSpriteRender()
 
 			// Store 2 pixel colors
 			dc = dc.pu16(GSVector4i::zero()); // 0x0000000000000000AABBGGRRaabbggrr
-			GSVector4i::storel(&m_mem.m_vm32[di], dc);
+			GSVector4i::storel(di, dc);
 		}
 	}
 }
@@ -1823,11 +1823,11 @@ void GSRendererHW::OI_GsMemClear()
 			// Based on WritePixel32
 			for (int y = r.top; y < r.bottom; y++)
 			{
-				GSOffset::PAHelper pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(y);
+				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.m_vm32, 0, y);
 
 				for (int x = r.left; x < r.right; x++)
 				{
-					m_mem.m_vm32[pa.value(x)] = 0; // Here the constant color
+					*pa.value(x) = 0; // Here the constant color
 				}
 			}
 		}
@@ -1836,11 +1836,11 @@ void GSRendererHW::OI_GsMemClear()
 			// Based on WritePixel24
 			for (int y = r.top; y < r.bottom; y++)
 			{
-				GSOffset::PAHelper pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(y);
+				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.m_vm32, 0, y);
 
 				for (int x = r.left; x < r.right; x++)
 				{
-					m_mem.m_vm32[pa.value(x)] &= 0xff000000; // Clear the color
+					*pa.value(x) &= 0xff000000; // Clear the color
 				}
 			}
 		}
@@ -1851,11 +1851,11 @@ void GSRendererHW::OI_GsMemClear()
 			// Based on WritePixel16
 			for(int y = r.top; y < r.bottom; y++)
 			{
-				GSOffset::PAHelper pa = off.assertSizesMatch(GSLocalMemory::swizzle16).paMulti(y);
+				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle16).paMulti(m_mem.m_vm16, 0, y);
 
 				for(int x = r.left; x < r.right; x++)
 				{
-					m_mem.m_vm16[pa.value(x)] = 0; // Here the constant color
+					*pa.value(x) = 0; // Here the constant color
 				}
 			}
 #endif
