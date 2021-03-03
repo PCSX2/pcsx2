@@ -1663,14 +1663,12 @@ void GSState::Move()
 		{
 			for (int y = 0; y < h; y++, sy += yinc, dy += yinc)
 			{
-				GSOffset::PAHelper s = spo.paMulti(sx, sy);
-				GSOffset::PAHelper d = dpo.paMulti(dx, dy);
+				GSOffset::PAHelper s = spo.paMulti(sy);
+				GSOffset::PAHelper d = dpo.paMulti(dy);
 
 				for (int x = 0; x < w; x++)
 				{
-					pxCopyFn(d.value(), s.value());
-					s.incX();
-					d.incX();
+					pxCopyFn(d.value(dx + x), s.value(sx + x));
 				}
 			}
 		}
@@ -1678,14 +1676,12 @@ void GSState::Move()
 		{
 			for (int y = 0; y < h; y++, sy += yinc, dy += yinc)
 			{
-				GSOffset::PAHelper s = spo.paMulti(sx, sy);
-				GSOffset::PAHelper d = dpo.paMulti(dx, dy);
+				GSOffset::PAHelper s = spo.paMulti(sy);
+				GSOffset::PAHelper d = dpo.paMulti(dy);
 
 				for (int x = 0; x < w; x++)
 				{
-					pxCopyFn(d.value(), s.value());
-					s.decX();
-					d.decX();
+					pxCopyFn(d.value(dx - x), s.value(sx - x));
 				}
 			}
 		}
