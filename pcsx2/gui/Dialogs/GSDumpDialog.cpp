@@ -22,11 +22,13 @@
 
 
 #include "Utilities/EmbeddedImage.h"
+#include "Utilities/pxStreams.h"
 #include "Resources/NoIcon.h"
 #include "GS.h"
 
 #include "PathDefs.h"
 #include "AppConfig.h"
+#include "Plugins.h"
 
 #include <wx/mstream.h>
 #include <wx/listctrl.h>
@@ -37,6 +39,7 @@
 #include <wx/checkbox.h>
 #include <wx/dir.h>
 #include <wx/image.h>
+#include <wx/wfstream.h>
 
 using namespace pxSizerFlags;
 
@@ -149,23 +152,48 @@ void Dialogs::GSDumpDialog::SelectedDump(wxListEvent& evt)
 
 void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 {
-	GSinit();
-	GSsetBaseMem(/*dump regs*/);
-	if (GSopen(new IntPtr(&hWnd), "", rendererOverride) != 0)
+	pxInputStream dump_file(m_selected_dump, new wxFFileInputStream(m_selected_dump));
+
+	if (!dump_file.IsOk())
 		return;
-	GSsetGameCRC(dump.CRC, 0);
-	if (GSfreeze(0, /*freeze_dump*/) == -1)
+
+	char freeze_data[sizeof(int) * 2];
+	u32 crc = 0, ss = 0;
+	// TODO: get that from the GUI
+	int renderer_override = 0;
+	char regs[8192];
+
+	dump_file.Read(&crc, 4);
+	dump_file.Read(&ss, 4);
+
+	char state_data[ss];
+	dump_file.Read(&state_data, ss);
+	dump_file.Read(&regs, 8192);
+
+	int ssi = ss;
+	GSFreezeData fd = {ssi, state_data};
+
+
+	GSinit();
+	GSsetBaseMem((void*)regs);
+	if (GSopen2((void*)pDsp, renderer_override) != 0)
+		return;
+
+	GSsetGameCRC((int)crc, 0);
+
+
+	if (GSfreeze(0, fd) == -1)
 	{
-		DumpTooOld = true;
-		Running = false;
+		//DumpTooOld = true;
+		//Running = false;
 	}
 	GSVSync(1);
 	GSreset();
-	GSsetBaseMem(/*dump regs*/);
-	GSfreeze(0, /*freeze_dump*/);
+	GSsetBaseMem((void*)regs);
+	GSfreeze(0, fd);
 
 
-	while (Running)
+	while (0!=1)
 	{
 		/* First listen to keys:
 		   case 0x1B: Running = false; break; // VK_ESCAPE;
