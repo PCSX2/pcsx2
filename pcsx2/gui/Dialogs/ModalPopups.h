@@ -87,6 +87,8 @@ namespace Dialogs
 		wxListView* m_dump_list;
 		wxStaticBitmap* m_preview_image;
 		wxString* m_selected_dump;
+		wxCheckBox* m_debug_mode;
+		wxRadioBox* m_renderer_overrides;
 		void GetDumpsList();
 		void SelectedDump(wxListEvent& evt);
 		void RunDump(wxCommandEvent& event);
@@ -117,6 +119,18 @@ namespace Dialogs
 			int length;
 			GSTransferPath path;
 		};
+		enum ButtonState
+		{
+			Step,
+			RunCursor,
+			RunVSync
+		};
+		struct GSEvent
+		{
+			ButtonState btn;
+			int index;
+		};
+		std::vector<GSEvent> m_button_events;
 		void ProcessDumpEvent(GSData event, char* regs);
 	};
 
