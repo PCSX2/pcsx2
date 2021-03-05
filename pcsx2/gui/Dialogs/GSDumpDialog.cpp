@@ -479,6 +479,171 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 	wxTreeItemId rootId = m_gif_packet->AddRoot("root");
 	switch (dump.id)
 	{
+			case Transfer:
+			{
+				wxTreeItemId trootId;
+				switch (dump.path)
+				{
+					case Path1Old:
+					{
+						wxString s;
+						s.Printf("Transfer Path Path1Old");
+						trootId = m_gif_packet->AppendItem(rootId, s);
+						break;
+					}
+					case Path1New:
+					{
+						wxString s;
+						s.Printf("Transfer Path Path1New");
+						trootId = m_gif_packet->AppendItem(rootId, s);
+						break;
+					}
+					case Path2:
+					{
+						wxString s;
+						s.Printf("Transfer Path Path2");
+						trootId = m_gif_packet->AppendItem(rootId, s);
+						break;
+					}
+					case Path3:
+					{
+						wxString s;
+						s.Printf("Transfer Path Path3");
+						trootId = m_gif_packet->AppendItem(rootId, s);
+						break;
+					}
+				}
+				u64 tag = *dump.data;
+				u64 regs = *(dump.data+8);
+				u8 nloop = tag & ((u64)(1 << 15) - 1);
+				u8 eop = (tag >> 15) & 1;
+				u8 pre = (tag >> 46) & 1;
+				u8 prim = (tag >> 47) & ((u64)(1 << 11) - 1);
+				//t.prim = GIFPrim.ExtractGIFPrim((uint)GetBit(t.TAG, 47, 11));
+				GifFlag flg = (GifFlag)((tag >> 58) & 3);
+				u8 nreg = (tag >> 60) & ((u64)(1 << 4) - 1);
+				if (nreg == 0)
+					nreg = 16;
+
+				wxString snloop, seop, sflg, spre, sprim, snreg, sreg;
+				std::vector<wxString> infos = {snloop, seop, sflg, spre, sprim, snreg, sreg};
+				wxString a, b, c, d, e, f, g, h, i;
+				std::vector<wxString> prim_infos = {a, b, c, d, e, f, g, h, i};
+
+
+				infos[0].Printf("nloop = %u", nloop);
+				infos[1].Printf("eop = %u", eop);
+				switch (flg)
+				{
+					case GIF_FLG_PACKED:
+						infos[2].Printf("flg = GIF_FLG_PACKED");
+						break;
+					case GIF_FLG_REGLIST:
+						infos[2].Printf("flg = GIF_FLG_REGLIST");
+						break;
+					case GIF_FLG_IMAGE:
+						infos[2].Printf("flg = GIF_FLG_IMAGE");
+						break;
+					case GIF_FLG_IMAGE2:
+						infos[2].Printf("flg = GIF_FLG_IMAGE2");
+						break;
+				}
+				infos[3].Printf("pre = %u", pre);
+				infos[4].Printf("Prim");
+				infos[5].Printf("nreg = %u", nreg);
+				infos[6].Printf("reg");
+
+				wxTreeItemId primId;
+				wxTreeItemId regId;
+				for (int i = 0; i < 7; i++)
+				{
+					wxTreeItemId res = m_gif_packet->AppendItem(trootId, infos[i]);
+					switch (i)
+					{
+						case 4:
+							primId = res;
+							break;
+						case 6:
+							regId = res;
+							break;
+					}
+				}
+
+				switch ((GsPrim)(tag & ((u64)(1 << 3) - 1)))
+				{
+					case GS_POINTLIST:
+						prim_infos[0].Printf("Primitive Type = GS_POINTLIST");
+						break;
+					case GS_LINELIST:
+						prim_infos[0].Printf("Primitive Type = GS_LINELIST");
+						break;
+					case GS_LINESTRIP:
+						prim_infos[0].Printf("Primitive Type = GS_LINESTRIP");
+						break;
+					case GS_TRIANGLELIST:
+						prim_infos[0].Printf("Primitive Type = GS_TRIANGLELIST");
+						break;
+					case GS_TRIANGLESTRIP:
+						prim_infos[0].Printf("Primitive Type = GS_TRIANGLESTRIP");
+						break;
+					case GS_TRIANGLEFAN:
+						prim_infos[0].Printf("Primitive Type = GS_TRIANGLEFAN");
+						break;
+					case GS_SPRITE:
+						prim_infos[0].Printf("Primitive Type = GS_SPRITE");
+						break;
+					case GS_INVALID:
+						prim_infos[0].Printf("Primitive Type = GS_INVALID");
+						break;
+				}
+				switch ((GsIIP)((tag >> 3) & 1))
+				{
+					case FlatShading:
+						prim_infos[1].Printf("IIP = FlatShading");
+						break;
+					case Gouraud:
+						prim_infos[1].Printf("IIP = Gouraud");
+						break;
+				}
+				prim_infos[2].Printf("TME = %s", (bool)((tag >> 4) & 1) ? "True" : "False");
+				prim_infos[3].Printf("FGE = %s", (bool)((tag >> 5) & 1) ? "True" : "False");
+				prim_infos[4].Printf("FGE = %s", (bool)((tag >> 6) & 1) ? "True" : "False");
+				prim_infos[5].Printf("AA1 = %s", (bool)((tag >> 7) & 1) ? "True" : "False");
+
+				switch ((GsFST)((tag >> 3) & 1))
+				{
+					case STQValue:
+						prim_infos[6].Printf("FST = STQValue");
+						break;
+					case UVValue:
+						prim_infos[6].Printf("FST = UVValue");
+						break;
+				}
+				switch ((GsCTXT)((tag >> 9) & 1))
+				{
+					case Context1:
+						prim_infos[7].Printf("CTXT = Context1");
+						break;
+					case Context2:
+						prim_infos[7].Printf("CTXT = Context2");
+						break;
+				}
+				switch ((GsFIX)((tag >> 10) & 1))
+				{
+					case Unfixed:
+						prim_infos[8].Printf("FIX = Unfixed");
+						break;
+					case Fixed:
+						prim_infos[8].Printf("FIX = Fixed");
+						break;
+				}
+
+				for (auto& el : prim_infos)
+					m_gif_packet->AppendItem(primId, el);
+
+				//m_gif_packet->AppendItem(trootId, s);
+				break;
+			}
 			case VSync:
 			{
 				wxString s;
