@@ -276,6 +276,8 @@ namespace Dialogs
 		void ProcessDumpEvent(GSData event, char* regs);
 		void GenPacketList(std::vector<GSData>& dump);
 		void GenPacketInfo(GSData& dump);
+		void ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data, bool packed);
+		void ParseTreePrim(wxTreeItemId& id, u32 prim);
 	};
 
 

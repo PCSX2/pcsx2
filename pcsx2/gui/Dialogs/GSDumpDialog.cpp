@@ -449,9 +449,6 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 
 				wxString snloop, seop, sflg, spre, sprim, snreg, sreg;
 				std::vector<wxString> infos = {snloop, seop, sflg, spre, sprim, snreg, sreg};
-				wxString a, b, c, d, e, f, g, h, i;
-				std::vector<wxString> prim_infos = {a, b, c, d, e, f, g, h, i};
-
 
 				infos[0].Printf("nloop = %u", nloop);
 				infos[1].Printf("eop = %u", eop);
@@ -469,7 +466,7 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 					switch (i)
 					{
 						case 4:
-							primId = res;
+							ParseTreePrim(res, prim);
 							break;
 						case 6:
 							regId = res;
@@ -477,23 +474,9 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 					}
 				}
 
-				prim_infos[0].Printf("Primitive Type = %s", GsPrimNames[(prim & ((u64)(1 << 3) - 1))]);
-				prim_infos[1].Printf("IIP = %s", GsIIPNames[((prim >> 3) & 1)]);
-				prim_infos[2].Printf("TME = %s", (bool)((prim >> 4) & 1) ? "True" : "False");
-				prim_infos[3].Printf("FGE = %s", (bool)((prim >> 5) & 1) ? "True" : "False");
-				prim_infos[4].Printf("FGE = %s", (bool)((prim >> 6) & 1) ? "True" : "False");
-				prim_infos[5].Printf("AA1 = %s", (bool)((prim >> 7) & 1) ? "True" : "False");
-				prim_infos[6].Printf("FST = %s", GsFSTNames[((prim >> 3) & 1)]);
-				prim_infos[7].Printf("CTXT = %s", GsCTXTNames[((prim >> 9) & 1)]);
-				prim_infos[8].Printf("FIX = %s", GsFIXNames[((prim >> 10) & 1)]);
-
-				for (auto& el : prim_infos)
-					m_gif_packet->AppendItem(primId, el);
-
 				std::vector<u8> arr_regs;
 				for (int i = 0; i < nreg; i++)
 					arr_regs.push_back((regs >> (i*4)) & ((u64)(1 << 4) - 1));
-
 
 				//m_gif_packet->AppendItem(trootId, s);
 				break;
@@ -524,4 +507,76 @@ void Dialogs::GSDumpDialog::ParsePacket(wxTreeEvent& event)
 {
 	int id = wxAtoi(m_gif_list->GetItemText(event.GetItem()).BeforeFirst('-'));
 	GenPacketInfo(m_dump_packets[id]);
+}
+
+void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data, bool packed)
+{
+	wxTreeItemId rootId = m_gif_packet->AppendItem(id, wxString(GIFRegName(reg)));
+	switch (reg)
+	{
+		case PRIM:
+		{
+			ParseTreePrim(rootId, data.lo);
+			break;
+		}
+		case RGBAQ:
+			break;
+		case ST:
+			break;
+		case UV:
+			break;
+		case XYZF2:
+		case XYZF3:
+			break;
+		case XYZ2:
+		case XYZ3:
+			break;
+		case TEX0_1:
+		case TEX0_2:
+		{
+			wxString a, b, c, d, e, f, g, h, i, j, k, l;
+			std::vector<wxString> tex_infos = {a, b, c, d, e, f, g, h, i, j, k, l};
+
+			tex_infos[0].Printf("TBP0 = %u", (data.lo & ((u64)(1 << 14) - 1)));
+			tex_infos[1].Printf("TBW = %s", ((data.lo >> 14) & ((u64)(1 << 6) - 1)));
+			tex_infos[2].Printf("PSM = %s", ((data.lo >> 20) & ((u64)(1 << 6) - 1)));
+			tex_infos[3].Printf("TW = %s", ((data.lo >> 26) & ((u64)(1 << 4) - 1)));
+			tex_infos[4].Printf("TH = %s", ((data.lo >> 30) & ((u64)(1 << 4) - 1)));
+			tex_infos[5].Printf("TCC = %s", ((data.lo >> 34) & ((u64)(1 << 1) - 1)));
+			tex_infos[6].Printf("TFX = %s", ((data.lo >> 35) & ((u64)(1 << 2) - 1)));
+			tex_infos[7].Printf("CBP = %s", ((data.lo >> 37) & ((u64)(1 << 14) - 1)));
+			tex_infos[8].Printf("CPSM = %s", ((data.lo >> 51) & ((u64)(1 << 4) - 1)));
+			tex_infos[9].Printf("CSM = %s", ((data.lo >> 55) & ((u64)(1 << 1) - 1)));
+			tex_infos[10].Printf("CSA = %s", ((data.lo >> 56) & ((u64)(1 << 5) - 1)));
+			tex_infos[11].Printf("CLD = %s", ((data.lo >> 61) & ((u64)(1 << 3) - 1)));
+
+			for (auto& el : tex_infos)
+				m_gif_packet->AppendItem(rootId, el);
+
+			break;
+		}
+		case FOG:
+			break;
+		case AD:
+			break;
+	}
+}
+
+void Dialogs::GSDumpDialog::ParseTreePrim(wxTreeItemId& id, u32 prim)
+{
+	wxString a, b, c, d, e, f, g, h, i;
+	std::vector<wxString> prim_infos = {a, b, c, d, e, f, g, h, i};
+
+	prim_infos[0].Printf("Primitive Type = %s", GsPrimNames[(prim & ((u64)(1 << 3) - 1))]);
+	prim_infos[1].Printf("IIP = %s", GsIIPNames[((prim >> 3) & 1)]);
+	prim_infos[2].Printf("TME = %s", (bool)((prim >> 4) & 1) ? "True" : "False");
+	prim_infos[3].Printf("FGE = %s", (bool)((prim >> 5) & 1) ? "True" : "False");
+	prim_infos[4].Printf("FGE = %s", (bool)((prim >> 6) & 1) ? "True" : "False");
+	prim_infos[5].Printf("AA1 = %s", (bool)((prim >> 7) & 1) ? "True" : "False");
+	prim_infos[6].Printf("FST = %s", GsFSTNames[((prim >> 3) & 1)]);
+	prim_infos[7].Printf("CTXT = %s", GsCTXTNames[((prim >> 9) & 1)]);
+	prim_infos[8].Printf("FIX = %s", GsFIXNames[((prim >> 10) & 1)]);
+
+	for (auto& el : prim_infos)
+		m_gif_packet->AppendItem(id, el);
 }
