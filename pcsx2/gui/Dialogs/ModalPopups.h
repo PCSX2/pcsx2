@@ -214,6 +214,13 @@ namespace Dialogs
 			"Path1New",
 			"Dummy"
 		};
+		enum GifFlag : u8
+		{
+			GIF_FLG_PACKED = 0,
+			GIF_FLG_REGLIST = 1,
+			GIF_FLG_IMAGE = 2,
+			GIF_FLG_IMAGE2 = 3
+		};
 		static constexpr const char* GifFlagNames[] = {
 			"GIF_FLG_PACKED",
 			"GIF_FLG_REGLIST",
