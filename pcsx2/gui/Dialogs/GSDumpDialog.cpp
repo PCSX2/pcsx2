@@ -40,6 +40,7 @@
 #include <wx/dir.h>
 #include <wx/image.h>
 #include <wx/wfstream.h>
+#include <functional>
 
 using namespace pxSizerFlags;
 
@@ -407,31 +408,16 @@ void Dialogs::GSDumpDialog::GenPacketList(std::vector<GSData>& dump)
 	wxTreeItemId rootId = m_gif_list->AppendItem(mainrootId, "0 - VSync");
 	for (auto& element : dump)
 	{
-		switch (element.id)
-		{
-			case Transfer:
+			wxString s;
+			([&] { return element.id == Transfer; })() ? (s.Printf("%d - %s - %s - %d byte", i, GSTypeNames[element.id], GSTransferPathNames[element.path], element.length)) : 
+									s.Printf("%d - %s - %d byte", i, GSTypeNames[element.id], element.length);
+			if (element.id == VSync)
 			{
-				wxString s;
-				s.Printf("%d - Transfer - %s - %d byte", i, GSTransferPathNames[element.path], element.length);
-				m_gif_list->AppendItem(rootId, s);
-				break;
-			}
-			case VSync:
-			{
-				wxString s;
-				s.Printf("%d - VSync - %d byte", i, element.length);
 				m_gif_list->SetItemText(rootId, s);
 				rootId = m_gif_list->AppendItem(mainrootId, "VSync");
-				break;
 			}
-			default:
-			{
-				wxString s;
-				s.Printf("%d - %s - %d byte", i, GSTypeNames[element.id], element.length);
+			else 
 				m_gif_list->AppendItem(rootId, s);
-				break;
-			}
-		}
 		i++;
 	}
 	m_gif_list->Delete(rootId);
@@ -455,8 +441,7 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 				u8 nloop = tag & ((u64)(1 << 15) - 1);
 				u8 eop = (tag >> 15) & 1;
 				u8 pre = (tag >> 46) & 1;
-				u8 prim = (tag >> 47) & ((u64)(1 << 11) - 1);
-				//t.prim = GIFPrim.ExtractGIFPrim((uint)GetBit(t.TAG, 47, 11));
+				u32 prim = (tag >> 47) & ((u64)(1 << 11) - 1);
 				u8 flg = ((tag >> 58) & 3);
 				u8 nreg = (tag >> 60) & ((u64)(1 << 4) - 1);
 				if (nreg == 0)
@@ -492,18 +477,23 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 					}
 				}
 
-				prim_infos[0].Printf("Primitive Type = %s", GsPrimNames[(tag & ((u64)(1 << 3) - 1))]);
-				prim_infos[1].Printf("IIP = %s", GsIIPNames[((tag >> 3) & 1)]);
-				prim_infos[2].Printf("TME = %s", (bool)((tag >> 4) & 1) ? "True" : "False");
-				prim_infos[3].Printf("FGE = %s", (bool)((tag >> 5) & 1) ? "True" : "False");
-				prim_infos[4].Printf("FGE = %s", (bool)((tag >> 6) & 1) ? "True" : "False");
-				prim_infos[5].Printf("AA1 = %s", (bool)((tag >> 7) & 1) ? "True" : "False");
-				prim_infos[6].Printf("FST = %s", GsFSTNames[((tag >> 3) & 1)]);
-				prim_infos[7].Printf("CTXT = %s", GsCTXTNames[((tag >> 9) & 1)]);
-				prim_infos[8].Printf("FIX = %s", GsFIXNames[((tag >> 10) & 1)]);
+				prim_infos[0].Printf("Primitive Type = %s", GsPrimNames[(prim & ((u64)(1 << 3) - 1))]);
+				prim_infos[1].Printf("IIP = %s", GsIIPNames[((prim >> 3) & 1)]);
+				prim_infos[2].Printf("TME = %s", (bool)((prim >> 4) & 1) ? "True" : "False");
+				prim_infos[3].Printf("FGE = %s", (bool)((prim >> 5) & 1) ? "True" : "False");
+				prim_infos[4].Printf("FGE = %s", (bool)((prim >> 6) & 1) ? "True" : "False");
+				prim_infos[5].Printf("AA1 = %s", (bool)((prim >> 7) & 1) ? "True" : "False");
+				prim_infos[6].Printf("FST = %s", GsFSTNames[((prim >> 3) & 1)]);
+				prim_infos[7].Printf("CTXT = %s", GsCTXTNames[((prim >> 9) & 1)]);
+				prim_infos[8].Printf("FIX = %s", GsFIXNames[((prim >> 10) & 1)]);
 
 				for (auto& el : prim_infos)
 					m_gif_packet->AppendItem(primId, el);
+
+				std::vector<u8> arr_regs;
+				for (int i = 0; i < nreg; i++)
+					arr_regs.push_back((regs >> (i*4)) & ((u64)(1 << 4) - 1));
+
 
 				//m_gif_packet->AppendItem(trootId, s);
 				break;
@@ -532,7 +522,6 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 
 void Dialogs::GSDumpDialog::ParsePacket(wxTreeEvent& event)
 {
-	//m_gif_list.GetL   event.GetItem();
 	int id = wxAtoi(m_gif_list->GetItemText(event.GetItem()).BeforeFirst('-'));
 	GenPacketInfo(m_dump_packets[id]);
 }
