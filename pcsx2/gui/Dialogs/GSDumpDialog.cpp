@@ -50,21 +50,19 @@ using namespace pxSizerFlags;
 
 Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	: wxDialogWithHelpers(parent, _("GSDumpGov"), pxDialogFlags())
-	, m_dump_list(new wxListView(this, ID_DUMP_LIST, wxDefaultPosition, wxSize(250, 200)))
+	, m_dump_list(new wxListView(this, ID_DUMP_LIST, wxDefaultPosition, wxSize(500, 400), wxLC_NO_HEADER | wxLC_REPORT))
 	, m_preview_image(new wxStaticBitmap(this, wxID_ANY, wxBitmap(EmbeddedImage<res_NoIcon>().Get())))
 	, m_selected_dump(new wxString(""))
 	, m_debug_mode(new wxCheckBox(this, wxID_ANY, _("Debug Mode")))
 	, m_renderer_overrides(new wxRadioBox())
-	, m_gif_list(new wxTreeCtrl(this, ID_SEL_PACKET, wxDefaultPosition, wxSize(250, 200), wxTR_HIDE_ROOT | wxTR_HAS_BUTTONS))
-	, m_gif_packet(new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(250, 200), wxTR_HIDE_ROOT | wxTR_HAS_BUTTONS))
+	, m_gif_list(new wxTreeCtrl(this, ID_SEL_PACKET, wxDefaultPosition, wxSize(500, 400), wxTR_HIDE_ROOT | wxTR_HAS_BUTTONS | wxTR_LINES_AT_ROOT))
+	, m_gif_packet(new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(500, 400), wxTR_HIDE_ROOT | wxTR_HAS_BUTTONS | wxTR_LINES_AT_ROOT))
 {
-	const float scale = MSW_GetDPIScale();
-	SetMinWidth(scale * 460);
-
+	//TODO: figure out how to fix sliders so the destructor doesn't segfault
 	wxFlexGridSizer& general(*new wxFlexGridSizer(2, StdPadding, StdPadding));
 	wxBoxSizer& dump_info(*new wxBoxSizer(wxVERTICAL));
 	wxBoxSizer& dump_preview(*new wxBoxSizer(wxVERTICAL));
-	wxFlexGridSizer& debugger(*new wxFlexGridSizer(2, StdPadding, StdPadding));
+	wxFlexGridSizer& debugger(*new wxFlexGridSizer(3, StdPadding, StdPadding));
 	wxBoxSizer& dumps(*new wxBoxSizer(wxHORIZONTAL));
 	wxBoxSizer& dbg_tree(*new wxBoxSizer(wxVERTICAL));
 	wxBoxSizer& dbg_actions(*new wxBoxSizer(wxVERTICAL));
@@ -135,8 +133,12 @@ void Dialogs::GSDumpDialog::GetDumpsList()
 	wxDir snaps(g_Conf->Folders.Snapshots.ToAscii());
 	wxString filename;
 	bool cont = snaps.GetFirst(&filename, "*.gs", wxDIR_DEFAULT);
-	int i = 0;
+	int i = 0, h = 0, j = 0;
 	m_dump_list->AppendColumn("Dumps");
+	// set the column size to be exactly of the size of our list
+	m_dump_list->GetSize(&h, &j);
+	m_dump_list->SetColumnWidth(0, h);
+
 	while (cont)
 	{
 		m_dump_list->InsertItem(i, filename.substr(0, filename.find_last_of(".")));
@@ -540,6 +542,7 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 				break;
 			}
 	}
+	m_gif_packet->ExpandAll();
 }
 
 void Dialogs::GSDumpDialog::ParsePacket(wxTreeEvent& event)
