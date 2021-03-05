@@ -139,6 +139,44 @@ namespace Dialogs
 			RunCursor,
 			RunVSync
 		};
+		enum GifFlag : u8
+		{
+			GIF_FLG_PACKED = 0,
+			GIF_FLG_REGLIST = 1,
+			GIF_FLG_IMAGE = 2,
+			GIF_FLG_IMAGE2 = 3
+		};
+		enum GsPrim : u8
+		{
+			GS_POINTLIST = 0,
+			GS_LINELIST = 1,
+			GS_LINESTRIP = 2,
+			GS_TRIANGLELIST = 3,
+			GS_TRIANGLESTRIP = 4,
+			GS_TRIANGLEFAN = 5,
+			GS_SPRITE = 6,
+			GS_INVALID = 7,
+		};
+		enum GsIIP : u8
+		{
+			FlatShading = 0,
+			Gouraud = 1
+		};
+		enum GsFST : u8
+		{
+			STQValue = 0,
+			UVValue = 1
+		};
+		enum GsCTXT : u8
+		{
+			Context1 = 0,
+			Context2 = 1
+		};
+		enum GsFIX : u8
+		{
+			Unfixed = 0,
+			Fixed = 1
+		};
 		struct GSEvent
 		{
 			ButtonState btn;
