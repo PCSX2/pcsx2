@@ -20,6 +20,8 @@
 #include "Panels/ConfigurationPanels.h"
 
 #include <wx/wizard.h>
+#include <wx/treectrl.h>
+
 
 class FirstTimeWizard : public wxWizard
 {
@@ -89,6 +91,8 @@ namespace Dialogs
 		wxString* m_selected_dump;
 		wxCheckBox* m_debug_mode;
 		wxRadioBox* m_renderer_overrides;
+		wxTreeCtrl* m_gif_list;
+		wxTreeCtrl* m_gif_packet;
 		void GetDumpsList();
 		void SelectedDump(wxListEvent& evt);
 		void RunDump(wxCommandEvent& event);
@@ -140,6 +144,7 @@ namespace Dialogs
 		};
 		std::vector<GSEvent> m_button_events;
 		void ProcessDumpEvent(GSData event, char* regs);
+		void GenPacketList(std::vector<GSData>& dump);
 	};
 
 
