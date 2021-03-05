@@ -52,6 +52,8 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	, m_dump_list(new wxListView(this, ID_DUMP_LIST, wxDefaultPosition, wxSize(250, 200)))
 	, m_preview_image(new wxStaticBitmap(this, wxID_ANY, wxBitmap(EmbeddedImage<res_NoIcon>().Get())))
 	, m_selected_dump(new wxString(""))
+	, m_debug_mode(new wxCheckBox(this, wxID_ANY, _("Debug Mode")))
+	, m_renderer_overrides(new wxRadioBox())
 {
 	const float scale = MSW_GetDPIScale();
 	SetMinWidth(scale * 460);
@@ -66,10 +68,13 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	wxBoxSizer& gif(*new wxBoxSizer(wxVERTICAL));
 	wxBoxSizer& dumps_list(*new wxBoxSizer(wxVERTICAL));
 
-	dump_info += new wxRadioButton(this, wxID_ANY, _("None"));
-	dump_info += new wxRadioButton(this, wxID_ANY, _("D3D11 HW"));
-	dump_info += new wxRadioButton(this, wxID_ANY, _("OGL HW"));
-	dump_info += new wxRadioButton(this, wxID_ANY, _("OGL SW"));
+	wxArrayString rdoverrides;
+	rdoverrides.Add("None");
+	rdoverrides.Add("D3D11 HW");
+	rdoverrides.Add("OGL HW");
+	rdoverrides.Add("OGL SW");
+	m_renderer_overrides->Create(this, wxID_ANY, "Renderer overrides", wxDefaultPosition, wxSize(300, 120), rdoverrides, 2);
+	dump_info += m_renderer_overrides;
 	dump_info += new wxButton(this, ID_RUN_DUMP, _("Run"));
 
 
@@ -77,7 +82,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	// debugger
 	dbg_tree += new wxStaticText(this, wxID_ANY, _("GIF Packets"));
 	dbg_tree += new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(250, 200));
-	dbg_actions += new wxCheckBox(this, wxID_ANY, _("Debug Mode"));
+	dbg_actions += m_debug_mode;
 	dbg_actions += new wxButton(this, wxID_ANY, _("Go to Start"));
 	dbg_actions += new wxButton(this, wxID_ANY, _("Step"));
 	dbg_actions += new wxButton(this, wxID_ANY, _("Run to Selection"));
@@ -160,8 +165,8 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 
 	char freeze_data[sizeof(int) * 2];
 	u32 crc = 0, ss = 0;
-	// TODO: get that from the GUI
-	int renderer_override = 0;
+	// XXX: check the numbers are correct
+	int renderer_override = m_renderer_overrides->GetSelection();
 	char regs[8192];
 
 	dump_file.Read(&crc, 4);
@@ -240,25 +245,67 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 	GSfreeze(0, &fd);
 
 	size_t i = 0;
+	int RunTo = 0;
+	size_t debug_idx = 0;
 
 	while (0!=1)
 	{
-		/* First listen to keys:
-		   case 0x1B: Running = false; break; // VK_ESCAPE;
-           case 0x77: GSmakeSnapshot(""); break; // VK_F8;
-		*/
 
-		/* if DebugMode handle buttons, else:*/
-
-		while (i < dump.size())
+		if (m_debug_mode->GetValue())
 		{
-			ProcessDumpEvent(dump[i++], regs);
+			if (m_button_events.size() > 0)
+			{
+				switch (m_button_events[0].index)
+				{
+					case Step:
+						if (debug_idx >= dump.size())
+							debug_idx = 0;
+						RunTo = debug_idx;
+						break;
+					case RunCursor:
+						RunTo = m_button_events[0].index;
+						if (debug_idx > RunTo)
+							debug_idx = 0;
+						break;
+					case RunVSync:
+						if (debug_idx >= dump.size())
+							debug_idx = 1;
+						auto it = std::find_if(dump.begin() + debug_idx, dump.end(), [](const GSData& gs) { return gs.id == Registers; });
+						if (it != std::end(dump))
+							RunTo = std::distance(dump.begin(), it);
+						break;
+				}
+				m_button_events.erase(m_button_events.begin());
 
-			if (dump[i].id == VSync)
-				break;
+				if (debug_idx <= RunTo)
+				{
+					while (debug_idx <= RunTo)
+					{
+						ProcessDumpEvent(dump[debug_idx++], regs);
+					}
+					auto it = std::find_if(dump.begin() + debug_idx, dump.end(), [](const GSData& gs) { return gs.id == Registers; });
+					if (it != std::end(dump))
+						ProcessDumpEvent(*it, regs);
+
+					debug_idx--;
+				}
+
+				// do vsync
+				ProcessDumpEvent(GSData{VSync, 0, 0, Dummy}, regs);
+			}
 		}
-		if (i >= dump.size())
-			i = 0;
+		else
+		{
+			while (i < dump.size())
+			{
+				ProcessDumpEvent(dump[i++], regs);
+
+				if (dump[i].id == VSync)
+					break;
+			}
+			if (i >= dump.size())
+				i = 0;
+		}
 	}
 
 	GSclose();
