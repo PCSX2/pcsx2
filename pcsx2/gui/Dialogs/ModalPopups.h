@@ -100,6 +100,7 @@ namespace Dialogs
 		void StepPacket(wxCommandEvent& event);
 		void ToCursor(wxCommandEvent& event);
 		void ToVSync(wxCommandEvent& event);
+		void ParsePacket(wxTreeEvent& event);
 		enum
 		{
 			ID_DUMP_LIST,
@@ -107,7 +108,8 @@ namespace Dialogs
 			ID_RUN_START,
 			ID_RUN_STEP,
 			ID_RUN_CURSOR,
-			ID_RUN_VSYNC
+			ID_RUN_VSYNC,
+			ID_SEL_PACKET
 		};
 		enum GSType : u8
 		{
@@ -143,8 +145,10 @@ namespace Dialogs
 			int index;
 		};
 		std::vector<GSEvent> m_button_events;
+		std::vector<GSData> m_dump_packets;
 		void ProcessDumpEvent(GSData event, char* regs);
 		void GenPacketList(std::vector<GSData>& dump);
+		void GenPacketInfo(GSData& dump);
 	};
 
 
