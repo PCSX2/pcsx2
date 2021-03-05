@@ -475,9 +475,47 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 					}
 				}
 
-				std::vector<u8> arr_regs;
-				for (int i = 0; i < nreg; i++)
-					arr_regs.push_back((regs >> (i*4)) & ((u64)(1 << 4) - 1));
+				int p = 16;
+				switch ((GifFlag)flg)
+				{
+					case GIF_FLG_PACKED:
+					{
+						for (int j = 0; j < nloop; j++)
+						{
+							for (int i = 0; i < nreg; i++)
+							{
+								u128 reg_data;
+								reg_data.lo = (u64)(*(dump.data + p));
+								reg_data.hi = (u64)(*(dump.data + p + 8));
+								ParseTreeReg(regId, (GIFReg)((regs >> (i * 4)) & ((u64)(1 << 4) - 1)), reg_data, true);
+								p += 16;
+							}
+						}
+						break;
+					}
+					case GIF_FLG_REGLIST:
+					{
+						for (int j = 0; j < nloop; j++)
+						{
+							for (int i = 0; i < nreg; i++)
+							{
+								u128 reg_data;
+								reg_data.lo = (u64)(*(dump.data + p));
+								ParseTreeReg(regId, (GIFReg)((regs >> (i * 4)) & ((u64)(1 << 4) - 1)), reg_data, false);
+								p += 8;
+							}
+						}
+						break;
+					}
+					case GIF_FLG_IMAGE:
+					case GIF_FLG_IMAGE2:
+					{
+						wxString z;
+						s.Printf("IMAGE %d bytes", nloop * 16);
+						m_gif_packet->AppendItem(regId, z);
+						break;
+					}
+				}
 
 				//m_gif_packet->AppendItem(trootId, s);
 				break;
@@ -527,18 +565,18 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 
 			if (packed)
 			{
-				rgb_infos[0].Printf("R = %u", (data.lo & ((u64)(1 << 8) - 1)));
-				rgb_infos[1].Printf("G = %u", ((data.lo >> 32) & ((u64)(1 << 8) - 1)));
-				rgb_infos[2].Printf("B = %u", (data.hi & ((u64)(1 << 8) - 1)));
-				rgb_infos[3].Printf("A = %u", ((data.hi >> 32) & ((u64)(1 << 8) - 1)));
+				rgb_infos[0].Printf("R = %u", (u32)(data.lo & ((u64)(1 << 8) - 1)));
+				rgb_infos[1].Printf("G = %u", (u32)((data.lo >> 32) & ((u64)(1 << 8) - 1)));
+				rgb_infos[2].Printf("B = %u", (u32)(data.hi & ((u64)(1 << 8) - 1)));
+				rgb_infos[3].Printf("A = %u", (u32)((data.hi >> 32) & ((u64)(1 << 8) - 1)));
 				rgb_infos[4].Printf("Q = %u", m_stored_q);
 			}
 			else
 			{
-				rgb_infos[0].Printf("R = %u", (data.lo & ((u64)(1 << 8) - 1)));
-				rgb_infos[1].Printf("G = %u", ((data.lo >> 8) & ((u64)(1 << 8) - 1)));
-				rgb_infos[2].Printf("B = %u", ((data.lo >> 16) & ((u64)(1 << 8) - 1)));
-				rgb_infos[3].Printf("A = %u", ((data.lo >> 24) & ((u64)(1 << 8) - 1)));
+				rgb_infos[0].Printf("R = %u", (u32)(data.lo & ((u64)(1 << 8) - 1)));
+				rgb_infos[1].Printf("G = %u", (u32)((data.lo >> 8) & ((u64)(1 << 8) - 1)));
+				rgb_infos[2].Printf("B = %u", (u32)((data.lo >> 16) & ((u64)(1 << 8) - 1)));
+				rgb_infos[3].Printf("A = %u", (u32)((data.lo >> 24) & ((u64)(1 << 8) - 1)));
 				rgb_infos[4].Printf("Q = %u", (u32)(*(&data.lo + 4)));
 			}
 
@@ -567,11 +605,11 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 		{
 			wxString s, t;
 			u32 v;
-			s.Printf("U = %u", (data.lo & ((u64)(1 << 14) - 1)) / 16);
+			s.Printf("U = %u", (u32)(data.lo & ((u64)(1 << 14) - 1)) / 16);
 			if (packed)
-				v = ((data.lo >> 32) & ((u64)(1 << 14) - 1)) / 16;
+				v = (u32)((data.lo >> 32) & ((u64)(1 << 14) - 1)) / 16;
 			else 
-				v = ((data.lo >> 16) & ((u64)(1 << 14) - 1)) / 16;
+				v = (u32)((data.lo >> 16) & ((u64)(1 << 14) - 1)) / 16;
 			t.Printf("V = %u", v);
 			m_gif_packet->AppendItem(rootId, s);
 			m_gif_packet->AppendItem(rootId, t);
@@ -587,17 +625,17 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 			std::vector<wxString> xyzf_infos = {a, b, c, d};
 			if (packed)
 			{
-				xyzf_infos[0].Printf("X = %u", (data.lo & ((u64)(1 << 16) - 1)) / 16);
-				xyzf_infos[1].Printf("Y = %u", ((data.lo >> 32) & ((u64)(1 << 16) - 1)) / 16);
-				xyzf_infos[2].Printf("Z = %u", ((data.hi >> 4) & ((u64)(1 << 24) - 1)));
-				xyzf_infos[3].Printf("F = %u", ((data.hi >> 36) & ((u64)(1 << 8) - 1)));
+				xyzf_infos[0].Printf("X = %u", (u32)(data.lo & ((u64)(1 << 16) - 1)) / 16);
+				xyzf_infos[1].Printf("Y = %u", (u32)((data.lo >> 32) & ((u64)(1 << 16) - 1)) / 16);
+				xyzf_infos[2].Printf("Z = %u", (u32)((data.hi >> 4) & ((u64)(1 << 24) - 1)));
+				xyzf_infos[3].Printf("F = %u", (u32)((data.hi >> 36) & ((u64)(1 << 8) - 1)));
 			}
 			else
 			{
-				xyzf_infos[0].Printf("X = %u", (data.lo & ((u64)(1 << 16) - 1)) / 16);
-				xyzf_infos[1].Printf("Y = %u", ((data.lo >> 16) & ((u64)(1 << 16) - 1)) / 16);
-				xyzf_infos[2].Printf("Z = %u", ((data.lo >> 32) & ((u64)(1 << 24) - 1)));
-				xyzf_infos[3].Printf("F = %u", ((data.lo >> 56) & ((u64)(1 << 8) - 1)));
+				xyzf_infos[0].Printf("X = %u", (u32)(data.lo & ((u64)(1 << 16) - 1)) / 16);
+				xyzf_infos[1].Printf("Y = %u", (u32)((data.lo >> 16) & ((u64)(1 << 16) - 1)) / 16);
+				xyzf_infos[2].Printf("Z = %u", (u32)((data.lo >> 32) & ((u64)(1 << 24) - 1)));
+				xyzf_infos[3].Printf("F = %u", (u32)((data.lo >> 56) & ((u64)(1 << 8) - 1)));
 			}
 
 			for (auto& el : xyzf_infos)
@@ -614,14 +652,14 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 			std::vector<wxString> xyz_infos = {a, b, c};
 			if (packed)
 			{
-				xyz_infos[0].Printf("X = %u", (data.lo & ((u64)(1 << 16) - 1)) / 16);
-				xyz_infos[1].Printf("Y = %u", ((data.lo >> 32) & ((u64)(1 << 16) - 1)) / 16);
+				xyz_infos[0].Printf("X = %u", (u32)(data.lo & ((u64)(1 << 16) - 1)) / 16);
+				xyz_infos[1].Printf("Y = %u", (u32)((data.lo >> 32) & ((u64)(1 << 16) - 1)) / 16);
 				xyz_infos[2].Printf("Z = %u", (u32)(*(&data.hi)));
 			}
 			else
 			{
-				xyz_infos[0].Printf("X = %u", (data.lo & ((u64)(1 << 16) - 1)) / 16);
-				xyz_infos[1].Printf("Y = %u", ((data.lo >> 16) & ((u64)(1 << 16) - 1)) / 16);
+				xyz_infos[0].Printf("X = %u", (u32)(data.lo & ((u64)(1 << 16) - 1)) / 16);
+				xyz_infos[1].Printf("Y = %u", (u32)((data.lo >> 16) & ((u64)(1 << 16) - 1)) / 16);
 				xyz_infos[2].Printf("Z = %u", (u32)(*(&data.lo)+4));
 			}
 
@@ -635,18 +673,18 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 			wxString a, b, c, d, e, f, g, h, i, j, k, l;
 			std::vector<wxString> tex_infos = {a, b, c, d, e, f, g, h, i, j, k, l};
 
-			tex_infos[0].Printf("TBP0 = %u", (data.lo & ((u64)(1 << 14) - 1)));
-			tex_infos[1].Printf("TBW = %u", ((data.lo >> 14) & ((u64)(1 << 6) - 1)));
-			tex_infos[2].Printf("PSM = %u", ((data.lo >> 20) & ((u64)(1 << 6) - 1)));
-			tex_infos[3].Printf("TW = %u", ((data.lo >> 26) & ((u64)(1 << 4) - 1)));
-			tex_infos[4].Printf("TH = %u", ((data.lo >> 30) & ((u64)(1 << 4) - 1)));
-			tex_infos[5].Printf("TCC = %u", ((data.lo >> 34) & ((u64)(1 << 1) - 1)));
-			tex_infos[6].Printf("TFX = %u", ((data.lo >> 35) & ((u64)(1 << 2) - 1)));
-			tex_infos[7].Printf("CBP = %u", ((data.lo >> 37) & ((u64)(1 << 14) - 1)));
-			tex_infos[8].Printf("CPSM = %u", ((data.lo >> 51) & ((u64)(1 << 4) - 1)));
-			tex_infos[9].Printf("CSM = %u", ((data.lo >> 55) & ((u64)(1 << 1) - 1)));
-			tex_infos[10].Printf("CSA = %u", ((data.lo >> 56) & ((u64)(1 << 5) - 1)));
-			tex_infos[11].Printf("CLD = %u", ((data.lo >> 61) & ((u64)(1 << 3) - 1)));
+			tex_infos[0].Printf("TBP0 = %u", (u32)(data.lo & ((u64)(1 << 14) - 1)));
+			tex_infos[1].Printf("TBW = %u", (u32)((data.lo >> 14) & ((u64)(1 << 6) - 1)));
+			tex_infos[2].Printf("PSM = %u", (u32)((data.lo >> 20) & ((u64)(1 << 6) - 1)));
+			tex_infos[3].Printf("TW = %u", (u32)((data.lo >> 26) & ((u64)(1 << 4) - 1)));
+			tex_infos[4].Printf("TH = %u", (u32)((data.lo >> 30) & ((u64)(1 << 4) - 1)));
+			tex_infos[5].Printf("TCC = %u", (u32)((data.lo >> 34) & ((u64)(1 << 1) - 1)));
+			tex_infos[6].Printf("TFX = %u", (u32)((data.lo >> 35) & ((u64)(1 << 2) - 1)));
+			tex_infos[7].Printf("CBP = %u", (u32)((data.lo >> 37) & ((u64)(1 << 14) - 1)));
+			tex_infos[8].Printf("CPSM = %u", (u32)((data.lo >> 51) & ((u64)(1 << 4) - 1)));
+			tex_infos[9].Printf("CSM = %u", (u32)((data.lo >> 55) & ((u64)(1 << 1) - 1)));
+			tex_infos[10].Printf("CSA = %u", (u32)((data.lo >> 56) & ((u64)(1 << 5) - 1)));
+			tex_infos[11].Printf("CLD = %u", (u32)((data.lo >> 61) & ((u64)(1 << 3) - 1)));
 
 			for (auto& el : tex_infos)
 				m_gif_packet->AppendItem(rootId, el);
@@ -656,9 +694,9 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 		{
 			wxString s;
 			if (packed)
-				s.Printf("F = %u", ((data.hi >> 36) & ((u64)(1 << 8) - 1)));
+				s.Printf("F = %u", (u32)((data.hi >> 36) & ((u64)(1 << 8) - 1)));
 			else
-				s.Printf("F = %u", ((data.lo >> 56) & ((u64)(1 << 8) - 1)));
+				s.Printf("F = %u", (u32)((data.lo >> 56) & ((u64)(1 << 8) - 1)));
 			m_gif_packet->AppendItem(rootId, s);
 			break;
 		}
