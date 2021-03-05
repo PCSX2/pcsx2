@@ -54,6 +54,8 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	, m_selected_dump(new wxString(""))
 	, m_debug_mode(new wxCheckBox(this, wxID_ANY, _("Debug Mode")))
 	, m_renderer_overrides(new wxRadioBox())
+	, m_gif_list(new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(250, 200), wxTR_HIDE_ROOT | wxTR_HAS_BUTTONS))
+	, m_gif_packet(new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(250, 200), wxTR_HIDE_ROOT | wxTR_HAS_BUTTONS))
 {
 	const float scale = MSW_GetDPIScale();
 	SetMinWidth(scale * 460);
@@ -81,7 +83,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 
 	// debugger
 	dbg_tree += new wxStaticText(this, wxID_ANY, _("GIF Packets"));
-	dbg_tree += new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(250, 200));
+	dbg_tree += m_gif_list;
 	dbg_actions += m_debug_mode;
 	dbg_actions += new wxButton(this, ID_RUN_START, _("Go to Start"));
 	dbg_actions += new wxButton(this, ID_RUN_STEP, _("Step"));
@@ -90,7 +92,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 
 	// gif
 	gif += new wxStaticText(this, wxID_ANY, _("Packet Content"));
-	gif += new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(250, 200));
+	gif += m_gif_packet;
 
 
 	debugger += dbg_tree;
@@ -185,7 +187,7 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 	freezeData fd = {0, (s8*)state_data};
 	std::vector<GSData> dump;
 
-	while (dump_file.Tell() <= dump_file.Length())
+	while (dump_file.Tell() < dump_file.Length())
 	{
 		GSType id = Transfer;
 		dump_file.Read(&id, 1);
@@ -229,6 +231,11 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 			}
 		}
 	}
+
+	if (m_debug_mode->GetValue())
+		GenPacketList(dump);
+
+	return;
 
 	GSinit();
 	GSsetBaseMem((void*)regs);
@@ -389,4 +396,77 @@ void Dialogs::GSDumpDialog::ToVSync(wxCommandEvent& event)
 void Dialogs::GSDumpDialog::ToStart(wxCommandEvent& event)
 {
 	m_button_events.push_back(GSEvent{RunCursor, 0});
+}
+
+void Dialogs::GSDumpDialog::GenPacketList(std::vector<GSData>& dump)
+{
+	int i = 0;
+	m_gif_list->DeleteAllItems();
+	wxTreeItemId mainrootId = m_gif_list->AddRoot("root");
+	wxTreeItemId rootId = m_gif_list->AppendItem(mainrootId, "VSync");
+	for (auto& element : dump)
+	{
+		switch (element.id)
+		{
+			case Transfer:
+			{
+				switch (element.path)
+				{
+					case Path1Old:
+					{
+						wxString s;
+						s.Printf("%d - Transfer - Path1Old - %d byte", i, element.length);
+						m_gif_list->AppendItem(rootId, s);
+						break;
+					}
+					case Path1New:
+					{
+						wxString s;
+						s.Printf("%d - Transfer - Path1New - %d byte", i, element.length);
+						m_gif_list->AppendItem(rootId, s);
+						break;
+					}
+					case Path2:
+					{
+						wxString s;
+						s.Printf("%d - Transfer - Path2 - %d byte", i, element.length);
+						m_gif_list->AppendItem(rootId, s);
+						break;
+					}
+					case Path3:
+					{
+						wxString s;
+						s.Printf("%d - Transfer - Path3 - %d byte", i, element.length);
+						m_gif_list->AppendItem(rootId, s);
+						break;
+					}
+				}
+				break;
+			}
+			case VSync:
+			{
+				wxString s;
+				s.Printf("%d - VSync - %d byte", i, element.length);
+				m_gif_list->SetItemText(rootId, s);
+				rootId = m_gif_list->AppendItem(mainrootId, "VSync");
+				break;
+			}
+			case ReadFIFO2:
+			{
+				wxString s;
+				s.Printf("%d - ReadFIFO2 - %d byte", i, element.length);
+				m_gif_list->AppendItem(rootId, s);
+				break;
+			}
+			case Registers:
+			{
+				wxString s;
+				s.Printf("%d - Registers - %d byte", i, element.length);
+				m_gif_list->AppendItem(rootId, s);
+				break;
+			}
+		}
+		i++;
+	}
+	m_gif_list->Delete(rootId);
 }
