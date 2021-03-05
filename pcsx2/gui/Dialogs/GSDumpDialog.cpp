@@ -54,7 +54,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	, m_selected_dump(new wxString(""))
 	, m_debug_mode(new wxCheckBox(this, wxID_ANY, _("Debug Mode")))
 	, m_renderer_overrides(new wxRadioBox())
-	, m_gif_list(new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(250, 200), wxTR_HIDE_ROOT | wxTR_HAS_BUTTONS))
+	, m_gif_list(new wxTreeCtrl(this, ID_SEL_PACKET, wxDefaultPosition, wxSize(250, 200), wxTR_HIDE_ROOT | wxTR_HAS_BUTTONS))
 	, m_gif_packet(new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(250, 200), wxTR_HIDE_ROOT | wxTR_HAS_BUTTONS))
 {
 	const float scale = MSW_GetDPIScale();
@@ -126,6 +126,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::StepPacket, this, ID_RUN_STEP);
 	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::ToCursor, this, ID_RUN_CURSOR);
 	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::ToVSync, this, ID_RUN_VSYNC);
+	Bind(wxEVT_TREE_SEL_CHANGED, &Dialogs::GSDumpDialog::ParsePacket, this, ID_SEL_PACKET);
 }
 
 void Dialogs::GSDumpDialog::GetDumpsList()
@@ -185,7 +186,7 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 
 	int ssi = ss;
 	freezeData fd = {0, (s8*)state_data};
-	std::vector<GSData> dump;
+	m_dump_packets.clear();
 
 	while (dump_file.Tell() < dump_file.Length())
 	{
@@ -202,23 +203,23 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 				char* transfer_data = (char*)malloc(size);
 				dump_file.Read(transfer_data, size);
 				GSData data = {id, transfer_data, size, id_transfer};
-				dump.push_back(data);
+				m_dump_packets.push_back(data);
 				break;
 			}
 			case VSync:
 			{
 				u8 vsync = 0;
 				dump_file.Read(&vsync, 1);
-				GSData data = {id, (char*)&vsync, 1, Dummy};
-				dump.push_back(data);
+				GSData data = {id, (char*)vsync, 1, Dummy};
+				m_dump_packets.push_back(data);
 				break;
 			}
 			case ReadFIFO2:
 			{
 				u32 fifo = 0;
 				dump_file.Read(&fifo, 4);
-				GSData data = {id, (char*)&fifo, 4, Dummy};
-				dump.push_back(data);
+				GSData data = {id, (char*)fifo, 4, Dummy};
+				m_dump_packets.push_back(data);
 				break;
 			}
 			case Registers:
@@ -226,14 +227,14 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 				char regs_tmp[8192];
 				dump_file.Read(&regs, 8192);
 				GSData data = {id, regs_tmp, 8192, Dummy};
-				dump.push_back(data);
+				m_dump_packets.push_back(data);
 				break;
 			}
 		}
 	}
 
 	if (m_debug_mode->GetValue())
-		GenPacketList(dump);
+		GenPacketList(m_dump_packets);
 
 	return;
 
@@ -268,7 +269,7 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 				switch (m_button_events[0].index)
 				{
 					case Step:
-						if (debug_idx >= dump.size())
+						if (debug_idx >= m_dump_packets.size())
 							debug_idx = 0;
 						RunTo = debug_idx;
 						break;
@@ -278,11 +279,11 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 							debug_idx = 0;
 						break;
 					case RunVSync:
-						if (debug_idx >= dump.size())
+						if (debug_idx >= m_dump_packets.size())
 							debug_idx = 1;
-						auto it = std::find_if(dump.begin() + debug_idx, dump.end(), [](const GSData& gs) { return gs.id == Registers; });
-						if (it != std::end(dump))
-							RunTo = std::distance(dump.begin(), it);
+						auto it = std::find_if(m_dump_packets.begin() + debug_idx, m_dump_packets.end(), [](const GSData& gs) { return gs.id == Registers; });
+						if (it != std::end(m_dump_packets))
+							RunTo = std::distance(m_dump_packets.begin(), it);
 						break;
 				}
 				m_button_events.erase(m_button_events.begin());
@@ -291,10 +292,10 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 				{
 					while (debug_idx <= RunTo)
 					{
-						ProcessDumpEvent(dump[debug_idx++], regs);
+						ProcessDumpEvent(m_dump_packets[debug_idx++], regs);
 					}
-					auto it = std::find_if(dump.begin() + debug_idx, dump.end(), [](const GSData& gs) { return gs.id == Registers; });
-					if (it != std::end(dump))
+					auto it = std::find_if(m_dump_packets.begin() + debug_idx, m_dump_packets.end(), [](const GSData& gs) { return gs.id == Registers; });
+					if (it != std::end(m_dump_packets))
 						ProcessDumpEvent(*it, regs);
 
 					debug_idx--;
@@ -306,14 +307,14 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 		}
 		else
 		{
-			while (i < dump.size())
+			while (i < m_dump_packets.size())
 			{
-				ProcessDumpEvent(dump[i++], regs);
+				ProcessDumpEvent(m_dump_packets[i++], regs);
 
-				if (dump[i].id == VSync)
+				if (m_dump_packets[i].id == VSync)
 					break;
 			}
-			if (i >= dump.size())
+			if (i >= m_dump_packets.size())
 				i = 0;
 		}
 	}
@@ -403,7 +404,7 @@ void Dialogs::GSDumpDialog::GenPacketList(std::vector<GSData>& dump)
 	int i = 0;
 	m_gif_list->DeleteAllItems();
 	wxTreeItemId mainrootId = m_gif_list->AddRoot("root");
-	wxTreeItemId rootId = m_gif_list->AppendItem(mainrootId, "VSync");
+	wxTreeItemId rootId = m_gif_list->AppendItem(mainrootId, "0 - VSync");
 	for (auto& element : dump)
 	{
 		switch (element.id)
@@ -469,4 +470,40 @@ void Dialogs::GSDumpDialog::GenPacketList(std::vector<GSData>& dump)
 		i++;
 	}
 	m_gif_list->Delete(rootId);
+}
+
+
+void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
+{
+	m_gif_packet->DeleteAllItems();
+	wxTreeItemId rootId = m_gif_packet->AddRoot("root");
+	switch (dump.id)
+	{
+			case VSync:
+			{
+				wxString s;
+				s.Printf("Field = %d", (u8)dump.data);
+				m_gif_packet->AppendItem(rootId, s);
+				break;
+			}
+			case ReadFIFO2:
+			{
+				wxString s;
+				s.Printf("ReadFIFO2: Size = %d byte", dump.length);
+				m_gif_packet->AppendItem(rootId, s);
+				break;
+			}
+			case Registers:
+			{
+				m_gif_packet->AppendItem(rootId, "Registers");
+				break;
+			}
+	}
+}
+
+void Dialogs::GSDumpDialog::ParsePacket(wxTreeEvent& event)
+{
+	//m_gif_list.GetL   event.GetItem();
+	int id = wxAtoi(m_gif_list->GetItemText(event.GetItem()).BeforeFirst('-'));
+	GenPacketInfo(m_dump_packets[id]);
 }
