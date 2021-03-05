@@ -118,6 +118,12 @@ namespace Dialogs
 			ReadFIFO2 = 2,
 			Registers = 3
 		};
+		static constexpr const char* GSTypeNames[] = {
+			"Transfer",
+			"VSync",
+			"ReadFIFO2",
+			"Registers"
+		};
 		enum GSTransferPath : u8
 		{
 			Path1Old = 0,
@@ -139,43 +145,145 @@ namespace Dialogs
 			RunCursor,
 			RunVSync
 		};
-		enum GifFlag : u8
-		{
-			GIF_FLG_PACKED = 0,
-			GIF_FLG_REGLIST = 1,
-			GIF_FLG_IMAGE = 2,
-			GIF_FLG_IMAGE2 = 3
+		static constexpr const char* GSTransferPathNames[] = {
+			"Path1Old",
+			"Path2",
+			"Path3",
+			"Path1New",
+			"Dummy"
 		};
-		enum GsPrim : u8
-		{
-			GS_POINTLIST = 0,
-			GS_LINELIST = 1,
-			GS_LINESTRIP = 2,
-			GS_TRIANGLELIST = 3,
-			GS_TRIANGLESTRIP = 4,
-			GS_TRIANGLEFAN = 5,
-			GS_SPRITE = 6,
-			GS_INVALID = 7,
+		static constexpr const char* GifFlagNames[] = {
+			"GIF_FLG_PACKED",
+			"GIF_FLG_REGLIST",
+			"GIF_FLG_IMAGE",
+			"GIF_FLG_IMAGE2"
 		};
-		enum GsIIP : u8
-		{
-			FlatShading = 0,
-			Gouraud = 1
+		static constexpr const char* GsPrimNames[] = {
+			"GS_POINTLIST",
+			"GS_LINELIST",
+			"GS_LINESTRIP",
+			"GS_TRIANGLELIST",
+			"GS_TRIANGLESTRIP",
+			"GS_TRIANGLEFAN",
+			"GS_SPRITE",
+			"GS_INVALID"
 		};
-		enum GsFST : u8
-		{
-			STQValue = 0,
-			UVValue = 1
+		static constexpr const char* GsIIPNames[] = {
+			"FlatShading",
+			"Gouraud"
 		};
-		enum GsCTXT : u8
-		{
-			Context1 = 0,
-			Context2 = 1
+		static constexpr const char* GsFSTNames[] = {
+			"STQValue",
+			"UVValue"
 		};
-		enum GsFIX : u8
-		{
-			Unfixed = 0,
-			Fixed = 1
+		static constexpr const char* GsCTXTNames[] = {
+			"Context1",
+			"Context2"
+		};
+		static constexpr const char* GsFIXNames[] = {
+			"Unfixed",
+			"Fixed"
+		};
+		static constexpr const char* GIFRegDescriptorNames[] = {
+			"PRIM",
+			"RGBAQ",
+			"ST",
+			"UV",
+			"XYZF2",
+			"XYZ2",
+			"TEX0_1",
+			"TEX0_2",
+			"CLAMP_1",
+			"CLAMP_2",
+			"FOG",
+			"",
+			"XYZF3",
+			"XYZ3",
+			"AD",
+			"NOP",
+			"",
+			"",
+			"",
+			"",
+			"TEX1_1",
+			"TEX1_2",
+			"TEX2_1",
+			"TEX2_2",
+			"XYOFFSET_1",
+			"XYOFFSET_2",
+			"PRMODECONT",
+			"PRMODE",
+			"TEXCLUT",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"SCANMSK",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"MIPTBP1_1",
+			"MIPTBP1_2",
+			"MIPTBP2_1",
+			"MIPTBP2_2",
+			"",
+			"",
+			"",
+			"TEXA",
+			"",
+			"FOGCOL",
+			"",
+			"TEXFLUSH",
+			"SCISSOR_1",
+			"SCISSOR_2",
+			"ALPHA_1",
+			"ALPHA_2",
+			"DIMX",
+			"DTHE",
+			"COLCLAMP",
+			"TEST_1",
+			"TEST_2",
+			"PABE",
+			"FBA_1",
+			"FBA_2",
+			"FRAME_1",
+			"FRAME_2",
+			"ZBUF_1",
+			"ZBUF_2",
+			"BITBLTBUF",
+			"TRXPOS",
+			"TRXREG",
+			"TRXDIR",
+			"HWREG",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"",
+			"SIGNAL",
+			"FINISH",
+			"LABEL",
 		};
 		struct GSEvent
 		{
