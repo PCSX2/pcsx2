@@ -152,7 +152,8 @@ void Dialogs::GSDumpDialog::SelectedDump(wxListEvent& evt)
 
 void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 {
-	pxInputStream dump_file(m_selected_dump, new wxFFileInputStream(m_selected_dump));
+	//TODO: switch all of that to a pxThread
+	pxInputStream dump_file(*m_selected_dump, new wxFFileInputStream(*m_selected_dump));
 
 	if (!dump_file.IsOk())
 		return;
@@ -166,13 +167,62 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 	dump_file.Read(&crc, 4);
 	dump_file.Read(&ss, 4);
 
-	char state_data[ss];
-	dump_file.Read(&state_data, ss);
+
+	char* state_data = (char*)malloc(sizeof(char) * ss);
+	dump_file.Read(state_data, ss);
 	dump_file.Read(&regs, 8192);
 
 	int ssi = ss;
-	GSFreezeData fd = {ssi, state_data};
+	freezeData fd = {0, (s8*)state_data};
+	std::vector<GSData> dump;
 
+	while (dump_file.Tell() <= dump_file.Length())
+	{
+		GSType id = Transfer;
+		dump_file.Read(&id, 1);
+		switch (id)
+		{
+			case Transfer:
+			{
+				GSTransferPath id_transfer;
+				dump_file.Read(&id_transfer, 1);
+				s32 size = 0;
+				dump_file.Read(&size, 4);
+				char* transfer_data = (char*)malloc(size);
+				dump_file.Read(transfer_data, size);
+				GSTransfer data = {{id, transfer_data}, id_transfer};
+				dump.push_back(data);
+				break;
+			}
+			case VSync:
+			{
+				u8 vsync = 0;
+				dump_file.Read(&vsync, 1);
+				GSData data = {id, (char*)&vsync};
+				dump.push_back(data);
+				break;
+			}
+			case ReadFIFO2:
+			{
+				u32 fifo = 0;
+				dump_file.Read(&fifo, 4);
+				GSData data = {id, (char*)&fifo};
+				dump.push_back(data);
+				break;
+			}
+			case Registers:
+			{
+				char regs_tmp[8192];
+				dump_file.Read(&regs, 8192);
+				GSData data = {id, regs_tmp};
+				dump.push_back(data);
+				break;
+			}
+			default:
+				break;
+		}
+
+	}
 
 	GSinit();
 	GSsetBaseMem((void*)regs);
@@ -182,15 +232,15 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 	GSsetGameCRC((int)crc, 0);
 
 
-	if (GSfreeze(0, fd) == -1)
+	if (GSfreeze(0, &fd) == -1)
 	{
 		//DumpTooOld = true;
 		//Running = false;
 	}
-	GSVSync(1);
+	GSvsync(1);
 	GSreset();
 	GSsetBaseMem((void*)regs);
-	GSfreeze(0, fd);
+	GSfreeze(0, &fd);
 
 
 	while (0!=1)
