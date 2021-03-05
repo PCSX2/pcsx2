@@ -107,17 +107,17 @@ namespace Dialogs
 			Path1Old = 0,
 			Path2 = 1,
 			Path3 = 2,
-			Path1New = 3
+			Path1New = 3,
+			Dummy = 4
 		};
 		struct GSData
 		{
 			GSType id;
 			char* data;
-		};
-		struct GSTransfer : GSData
-		{
+			int length;
 			GSTransferPath path;
 		};
+		void ProcessDumpEvent(GSData event, char* regs);
 	};
 
 

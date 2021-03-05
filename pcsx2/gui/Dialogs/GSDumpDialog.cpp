@@ -190,7 +190,7 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 				dump_file.Read(&size, 4);
 				char* transfer_data = (char*)malloc(size);
 				dump_file.Read(transfer_data, size);
-				GSTransfer data = {{id, transfer_data}, id_transfer};
+				GSData data = {id, transfer_data, size, id_transfer};
 				dump.push_back(data);
 				break;
 			}
@@ -198,7 +198,7 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 			{
 				u8 vsync = 0;
 				dump_file.Read(&vsync, 1);
-				GSData data = {id, (char*)&vsync};
+				GSData data = {id, (char*)&vsync, 1, Dummy};
 				dump.push_back(data);
 				break;
 			}
@@ -206,7 +206,7 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 			{
 				u32 fifo = 0;
 				dump_file.Read(&fifo, 4);
-				GSData data = {id, (char*)&fifo};
+				GSData data = {id, (char*)&fifo, 4, Dummy};
 				dump.push_back(data);
 				break;
 			}
@@ -214,14 +214,11 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 			{
 				char regs_tmp[8192];
 				dump_file.Read(&regs, 8192);
-				GSData data = {id, regs_tmp};
+				GSData data = {id, regs_tmp, 8192, Dummy};
 				dump.push_back(data);
 				break;
 			}
-			default:
-				break;
 		}
-
 	}
 
 	GSinit();
@@ -270,4 +267,59 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 
 	GSclose();
 	GSshutdown();
+}
+
+void Dialogs::GSDumpDialog::ProcessDumpEvent(GSData event, char* regs)
+{
+    switch (event.id)
+	{
+		case Transfer:
+		{
+			switch (event.path)
+			{
+				case Path1Old:
+				{
+					u32* data = (u32*)malloc(16384);
+					int addr = 16384 - event.length;
+					memcpy(data, event.data + addr, event.length);
+					GSgifTransfer1(data, addr);
+					free(data);
+					break;
+				}
+				case Path1New:
+				{
+					GSgifTransfer((u32*)event.data, event.length / 16);
+					break;
+				}
+				case Path2:
+				{
+					GSgifTransfer2((u32*)event.data, event.length / 16);
+					break;
+				}
+				case Path3:
+				{
+					GSgifTransfer3((u32*)event.data, event.length / 16);
+					break;
+				}
+			}
+			break;
+		}
+		case VSync:
+		{
+			GSvsync((*((int*)(regs + 4096)) & 0x2000) > 0 ? (u8)1 : (u8)0);
+			break;
+		}
+		case ReadFIFO2:
+		{
+			u64* arr = (u64*)malloc(*((int*)event.data));
+			GSreadFIFO2(arr, *((int*)event.data));
+			free(arr);
+			break;
+		}
+		case Registers:
+		{	
+			memcpy(regs, event.data, 8192);
+			break;
+		}
+	}
 }
