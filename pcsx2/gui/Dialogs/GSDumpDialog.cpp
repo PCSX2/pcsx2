@@ -239,6 +239,7 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 	GSsetBaseMem((void*)regs);
 	GSfreeze(0, &fd);
 
+	size_t i = 0;
 
 	while (0!=1)
 	{
@@ -249,20 +250,15 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 
 		/* if DebugMode handle buttons, else:*/
 
-		/*
-		   while (gs_idx < dump.Data.Count)
-           {
-               GSData itm = dump.Data[gs_idx++];
-               CurrentGIFPacket = itm;
-               Step(itm, pointer);
+		while (i < dump.size())
+		{
+			ProcessDumpEvent(dump[i++], regs);
 
-               if (gs_idx < dump.Data.Count && dump.Data[gs_idx].id == GSType.VSync)
-                  break;
-               }
-
-               gs_idx = 0;
-			}
-		*/
+			if (dump[i].id == VSync)
+				break;
+		}
+		if (i >= dump.size())
+			i = 0;
 	}
 
 	GSclose();
