@@ -95,6 +95,29 @@ namespace Dialogs
 			ID_DUMP_LIST,
 			ID_RUN_DUMP
 		};
+		enum GSType : u8
+		{
+			Transfer = 0,
+			VSync = 1,
+			ReadFIFO2 = 2,
+			Registers = 3
+		};
+		enum GSTransferPath : u8
+		{
+			Path1Old = 0,
+			Path2 = 1,
+			Path3 = 2,
+			Path1New = 3
+		};
+		struct GSData
+		{
+			GSType id;
+			char* data;
+		};
+		struct GSTransfer : GSData
+		{
+			GSTransferPath path;
+		};
 	};
 
 
