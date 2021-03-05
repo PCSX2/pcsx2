@@ -83,10 +83,10 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	dbg_tree += new wxStaticText(this, wxID_ANY, _("GIF Packets"));
 	dbg_tree += new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(250, 200));
 	dbg_actions += m_debug_mode;
-	dbg_actions += new wxButton(this, wxID_ANY, _("Go to Start"));
-	dbg_actions += new wxButton(this, wxID_ANY, _("Step"));
-	dbg_actions += new wxButton(this, wxID_ANY, _("Run to Selection"));
-	dbg_actions += new wxButton(this, wxID_ANY, _("Go to next VSync"));
+	dbg_actions += new wxButton(this, ID_RUN_START, _("Go to Start"));
+	dbg_actions += new wxButton(this, ID_RUN_STEP, _("Step"));
+	dbg_actions += new wxButton(this, ID_RUN_CURSOR, _("Run to Selection"));
+	dbg_actions += new wxButton(this, ID_RUN_VSYNC, _("Go to next VSync"));
 
 	// gif
 	gif += new wxStaticText(this, wxID_ANY, _("Packet Content"));
@@ -120,6 +120,10 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 
 	Bind(wxEVT_LIST_ITEM_SELECTED, &Dialogs::GSDumpDialog::SelectedDump, this, ID_DUMP_LIST);
 	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::RunDump, this, ID_RUN_DUMP);
+	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::ToStart, this, ID_RUN_START);
+	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::StepPacket, this, ID_RUN_STEP);
+	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::ToCursor, this, ID_RUN_CURSOR);
+	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::ToVSync, this, ID_RUN_VSYNC);
 }
 
 void Dialogs::GSDumpDialog::GetDumpsList()
@@ -250,7 +254,6 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 
 	while (0!=1)
 	{
-
 		if (m_debug_mode->GetValue())
 		{
 			if (m_button_events.size() > 0)
@@ -365,4 +368,25 @@ void Dialogs::GSDumpDialog::ProcessDumpEvent(GSData event, char* regs)
 			break;
 		}
 	}
+}
+
+void Dialogs::GSDumpDialog::StepPacket(wxCommandEvent& event)
+{
+	m_button_events.push_back(GSEvent{Step, 0});
+}
+
+void Dialogs::GSDumpDialog::ToCursor(wxCommandEvent& event)
+{
+	// TODO: modify 0 to wxTreeCtrl index
+	m_button_events.push_back(GSEvent{RunCursor, 0});
+}
+
+void Dialogs::GSDumpDialog::ToVSync(wxCommandEvent& event)
+{
+	m_button_events.push_back(GSEvent{RunVSync, 0});
+}
+
+void Dialogs::GSDumpDialog::ToStart(wxCommandEvent& event)
+{
+	m_button_events.push_back(GSEvent{RunCursor, 0});
 }
