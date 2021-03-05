@@ -478,8 +478,6 @@ void MainEmuFrame::CreateConfigMenu()
 	m_menuConfig.Append(MenuId_Config_DEV9, _("&Network and HDD Settings..."));
 	m_menuConfig.Append(MenuId_Config_USB, _("&USB Settings..."));
 	m_menuConfig.Append(MenuId_Config_PAD, _("&GamePad Settings..."));
-	m_menuConfig.Append(MenuId_GSDump, _("&GS Dump"));
-
 	m_menuConfig.AppendSeparator();
 
 	m_menuConfig.Append(MenuId_Config_GS, _("&Video (GS)"), m_PluginMenuPacks[PluginId_GS]);
@@ -498,6 +496,7 @@ void MainEmuFrame::CreateConfigMenu()
 void MainEmuFrame::CreateWindowsMenu()
 {
 	m_menuWindow.Append(MenuId_Debug_Open, _("&Show Debug"), wxEmptyString, wxITEM_CHECK);
+	m_menuWindow.Append(MenuId_GSDump, _("Show &GS Debugger"), wxEmptyString, wxITEM_CHECK);
 
 	m_menuWindow.Append(&m_MenuItem_Console);
 #if defined(__unix__)
