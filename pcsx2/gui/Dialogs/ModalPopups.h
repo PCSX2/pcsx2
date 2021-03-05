@@ -273,6 +273,7 @@ namespace Dialogs
 		};
 		std::vector<GSEvent> m_button_events;
 		std::vector<GSData> m_dump_packets;
+		u32 m_stored_q = 1;
 		void ProcessDumpEvent(GSData event, char* regs);
 		void GenPacketList(std::vector<GSData>& dump);
 		void GenPacketInfo(GSData& dump);
