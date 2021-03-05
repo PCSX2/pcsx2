@@ -92,10 +92,18 @@ namespace Dialogs
 		void GetDumpsList();
 		void SelectedDump(wxListEvent& evt);
 		void RunDump(wxCommandEvent& event);
+		void ToStart(wxCommandEvent& event);
+		void StepPacket(wxCommandEvent& event);
+		void ToCursor(wxCommandEvent& event);
+		void ToVSync(wxCommandEvent& event);
 		enum
 		{
 			ID_DUMP_LIST,
-			ID_RUN_DUMP
+			ID_RUN_DUMP,
+			ID_RUN_START,
+			ID_RUN_STEP,
+			ID_RUN_CURSOR,
+			ID_RUN_VSYNC
 		};
 		enum GSType : u8
 		{
