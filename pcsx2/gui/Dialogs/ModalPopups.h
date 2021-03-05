@@ -22,6 +22,68 @@
 #include <wx/wizard.h>
 #include <wx/treectrl.h>
 
+#define GSDUMP_GIFREG \
+X(PRIM,0x00) \
+X(RGBAQ,0x01) \
+X(ST,0x02) \
+X(UV,0x03) \
+X(XYZF2,0x04) \
+X(XYZ2,0x05) \
+X(TEX0_1,0x06) \
+X(TEX0_2,0x07) \
+X(CLAMP_1,0x08) \
+X(CLAMP_2,0x09) \
+X(FOG,0x0a) \
+X(XYZF3,0x0c) \
+X(XYZ3,0x0d) \
+X(AD,0x0e) \
+X(NOP,0x0f) \
+X(TEX1_1,0x14) \
+X(TEX1_2,0x15) \
+X(TEX2_1,0x16) \
+X(TEX2_2,0x17) \
+X(XYOFFSET_1,0x18) \
+X(XYOFFSET_2,0x19) \
+X(PRMODECONT,0x1a) \
+X(PRMODE,0x1b) \
+X(TEXCLUT,0x1c) \
+X(SCANMSK,0x22) \
+X(MIPTBP1_1,0x34) \
+X(MIPTBP1_2,0x35) \
+X(MIPTBP2_1,0x36) \
+X(MIPTBP2_2,0x37) \
+X(TEXA,0x3b) \
+X(FOGCOL,0x3d) \
+X(TEXFLUSH,0x3f) \
+X(SCISSOR_1,0x40) \
+X(SCISSOR_2,0x41) \
+X(ALPHA_1,0x42) \
+X(ALPHA_2,0x43) \
+X(DIMX,0x44) \
+X(DTHE,0x45) \
+X(COLCLAMP,0x46) \
+X(TEST_1,0x47) \
+X(TEST_2,0x48) \
+X(PABE,0x49) \
+X(FBA_1,0x4a) \
+X(FBA_2,0x4b) \
+X(FRAME_1,0x4c) \
+X(FRAME_2,0x4d) \
+X(ZBUF_1,0x4e) \
+X(ZBUF_2,0x4f) \
+X(BITBLTBUF,0x50) \
+X(TRXPOS,0x51) \
+X(TRXREG,0x52) \
+X(TRXDIR,0x53) \
+X(HWREG,0x54) \
+X(SIGNAL,0x60) \
+X(FINISH,0x61) \
+X(LABEL,0x62)
+
+#define X(name, value) name = value,
+
+#define GSDUMP_GIFREG_NAME GIFReg
+#define GSDUMP_GIFREG_TYPE u8
 
 class FirstTimeWizard : public wxWizard
 {
@@ -184,107 +246,26 @@ namespace Dialogs
 			"Unfixed",
 			"Fixed"
 		};
-		static constexpr const char* GIFRegDescriptorNames[] = {
-			"PRIM",
-			"RGBAQ",
-			"ST",
-			"UV",
-			"XYZF2",
-			"XYZ2",
-			"TEX0_1",
-			"TEX0_2",
-			"CLAMP_1",
-			"CLAMP_2",
-			"FOG",
-			"",
-			"XYZF3",
-			"XYZ3",
-			"AD",
-			"NOP",
-			"",
-			"",
-			"",
-			"",
-			"TEX1_1",
-			"TEX1_2",
-			"TEX2_1",
-			"TEX2_2",
-			"XYOFFSET_1",
-			"XYOFFSET_2",
-			"PRMODECONT",
-			"PRMODE",
-			"TEXCLUT",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"SCANMSK",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"MIPTBP1_1",
-			"MIPTBP1_2",
-			"MIPTBP2_1",
-			"MIPTBP2_2",
-			"",
-			"",
-			"",
-			"TEXA",
-			"",
-			"FOGCOL",
-			"",
-			"TEXFLUSH",
-			"SCISSOR_1",
-			"SCISSOR_2",
-			"ALPHA_1",
-			"ALPHA_2",
-			"DIMX",
-			"DTHE",
-			"COLCLAMP",
-			"TEST_1",
-			"TEST_2",
-			"PABE",
-			"FBA_1",
-			"FBA_2",
-			"FRAME_1",
-			"FRAME_2",
-			"ZBUF_1",
-			"ZBUF_2",
-			"BITBLTBUF",
-			"TRXPOS",
-			"TRXREG",
-			"TRXDIR",
-			"HWREG",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"",
-			"SIGNAL",
-			"FINISH",
-			"LABEL",
+
+		// the actual type is defined above thanks to preprocessing magic
+		enum GSDUMP_GIFREG_NAME : GSDUMP_GIFREG_TYPE
+		{
+			GSDUMP_GIFREG
 		};
+
+#undef X
+		constexpr auto GIFRegName(GSDUMP_GIFREG_NAME e) noexcept
+		{
+#define X(name, value)               \
+	case (GSDUMP_GIFREG_NAME::name): \
+		return #name;
+			switch (e)
+			{
+				GSDUMP_GIFREG
+			}
+#undef X
+			return "UNKNOWN";
+		}
 		struct GSEvent
 		{
 			ButtonState btn;
