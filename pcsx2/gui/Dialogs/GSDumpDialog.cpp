@@ -61,6 +61,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	, m_step(new wxButton(this, ID_RUN_START, _("Step")))
 	, m_selection(new wxButton(this, ID_RUN_START, _("Run to Selection")))
 	, m_vsync(new wxButton(this, ID_RUN_START, _("Go to next VSync")))
+	, m_thread(std::make_unique<GSThread>(this))
 {
 	//TODO: figure out how to fix sliders so the destructor doesn't segfault
 	wxFlexGridSizer& general(*new wxFlexGridSizer(2, StdPadding, StdPadding));
@@ -183,7 +184,8 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 	m_step->Enable();
 	m_selection->Enable();
 	m_vsync->Enable();
-	m_thread = std::make_unique<GSThread>(this);
+	GetCorePlugins().Shutdown();
+	m_thread->Start();
 	return;
 }
 
@@ -613,15 +615,12 @@ void Dialogs::GSDumpDialog::CheckDebug(wxCommandEvent& event)
 
 Dialogs::GSDumpDialog::GSThread::GSThread(GSDumpDialog* dlg)
 	: pxThread("GSDump")
+	, m_root_window(dlg)
 {
-	m_root_window = dlg;
-	// we start the thread
-	Start();
 }
 
 Dialogs::GSDumpDialog::GSThread::~GSThread()
 {
-	// destroy the thread
 	try
 	{
 		pxThread::Cancel();
@@ -629,12 +628,28 @@ Dialogs::GSDumpDialog::GSThread::~GSThread()
 	DESTRUCTOR_CATCHALL
 }
 
+void Dialogs::GSDumpDialog::GSThread::OnStop()
+{
+	m_root_window->m_debug_mode->Disable();
+	m_root_window->m_start->Disable();
+	m_root_window->m_step->Disable();
+	m_root_window->m_selection->Disable();
+	m_root_window->m_vsync->Disable();
+	m_root_window->m_gif_list->DeleteAllItems();
+	m_root_window->m_gif_packet->DeleteAllItems();
+	m_root_window->m_gif_list->Refresh();
+	m_root_window->m_button_events.clear();
+}
+
 void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 {
 	pxInputStream dump_file(*m_root_window->m_selected_dump, new wxFFileInputStream(*m_root_window->m_selected_dump));
 
 	if (!dump_file.IsOk())
+	{
+		OnStop();
 		return;
+	}
 
 	char freeze_data[sizeof(int) * 2];
 	u32 crc = 0, ss = 0;
@@ -702,21 +717,21 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	if (m_root_window->m_debug_mode->GetValue())
 		m_root_window->GenPacketList(m_root_window->m_dump_packets);
 
-	return;
-
-	GSinit();
+	GetCorePlugins().Init();
 	GSsetBaseMem((void*)regs);
 	if (GSopen2((void*)pDsp, renderer_override) != 0)
+	{
+		OnStop();
 		return;
+	}
 
 	GSsetGameCRC((int)crc, 0);
 
+	//OnStop();
+	return;
 
 	if (GSfreeze(0, &fd) == -1)
-	{
-		//DumpTooOld = true;
-		//Running = false;
-	}
+		m_running = false;
 	GSvsync(1);
 	GSreset();
 	GSsetBaseMem((void*)regs);
@@ -726,7 +741,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	int RunTo = 0;
 	size_t debug_idx = 0;
 
-	while (0 != 1)
+	while (m_running)
 	{
 		if (m_root_window->m_debug_mode->GetValue())
 		{
@@ -785,6 +800,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 		}
 	}
 
-	GSclose();
-	GSshutdown();
+	GetCorePlugins().Shutdown();
+	OnStop();
+	return;
 }
