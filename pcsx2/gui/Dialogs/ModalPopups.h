@@ -155,6 +155,11 @@ namespace Dialogs
 		wxRadioBox* m_renderer_overrides;
 		wxTreeCtrl* m_gif_list;
 		wxTreeCtrl* m_gif_packet;
+		wxButton* m_start;
+		wxButton* m_step;
+		wxButton* m_selection;
+		wxButton* m_vsync;
+
 		void GetDumpsList();
 		void SelectedDump(wxListEvent& evt);
 		void RunDump(wxCommandEvent& event);
@@ -163,6 +168,7 @@ namespace Dialogs
 		void ToCursor(wxCommandEvent& event);
 		void ToVSync(wxCommandEvent& event);
 		void ParsePacket(wxTreeEvent& event);
+		void CheckDebug(wxCommandEvent& event);
 		enum
 		{
 			ID_DUMP_LIST,
@@ -171,7 +177,8 @@ namespace Dialogs
 			ID_RUN_STEP,
 			ID_RUN_CURSOR,
 			ID_RUN_VSYNC,
-			ID_SEL_PACKET
+			ID_SEL_PACKET,
+			ID_DEBUG_MODE
 		};
 		enum GSType : u8
 		{
