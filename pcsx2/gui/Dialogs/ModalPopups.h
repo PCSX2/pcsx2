@@ -187,7 +187,7 @@ namespace Dialogs
 			ReadFIFO2 = 2,
 			Registers = 3
 		};
-		static constexpr const char* GSTypeNames[] = {
+		static constexpr const char* GSTypeNames[256] = {
 			"Transfer",
 			"VSync",
 			"ReadFIFO2",
@@ -214,7 +214,7 @@ namespace Dialogs
 			RunCursor,
 			RunVSync
 		};
-		static constexpr const char* GSTransferPathNames[] = {
+		static constexpr const char* GSTransferPathNames[256] = {
 			"Path1Old",
 			"Path2",
 			"Path3",
@@ -228,13 +228,13 @@ namespace Dialogs
 			GIF_FLG_IMAGE = 2,
 			GIF_FLG_IMAGE2 = 3
 		};
-		static constexpr const char* GifFlagNames[] = {
+		static constexpr const char* GifFlagNames[256] = {
 			"GIF_FLG_PACKED",
 			"GIF_FLG_REGLIST",
 			"GIF_FLG_IMAGE",
 			"GIF_FLG_IMAGE2"
 		};
-		static constexpr const char* GsPrimNames[] = {
+		static constexpr const char* GsPrimNames[256] = {
 			"GS_POINTLIST",
 			"GS_LINELIST",
 			"GS_LINESTRIP",
@@ -244,22 +244,70 @@ namespace Dialogs
 			"GS_SPRITE",
 			"GS_INVALID"
 		};
-		static constexpr const char* GsIIPNames[] = {
+		static constexpr const char* GsIIPNames[256] = {
 			"FlatShading",
 			"Gouraud"
 		};
-		static constexpr const char* GsFSTNames[] = {
+		static constexpr const char* GsFSTNames[256] = {
 			"STQValue",
 			"UVValue"
 		};
-		static constexpr const char* GsCTXTNames[] = {
+		static constexpr const char* GsCTXTNames[256] = {
 			"Context1",
 			"Context2"
 		};
-		static constexpr const char* GsFIXNames[] = {
+		static constexpr const char* GsFIXNames[256] = {
 			"Unfixed",
 			"Fixed"
 		};
+		static constexpr const char* TEXTCCNames[256] = {
+			"RGB",
+			"RGBA"
+		};
+		static constexpr const char* TEXTFXNames[256] = {
+			"MODULATE",
+			"DECAL",
+			"HIGHLIGHT",
+			"HIGHLIGHT2"
+		};
+		static constexpr const char* TEXCSMNames[256] = {
+			"CSM1",
+			"CSM2"
+		};
+		// a GNU extension exists to initialize array at given indices which would be 
+		// exactly what we need here but, obviously, MSVC is at it again to make our 
+		// life harder than sandpaper on your skin, so we make do
+		// clang-format off
+		static constexpr const char* TEXCPSMNames[256] = {
+			"PSMCT32",
+			"",
+			"PSMCT16",
+			"","","","","","","",
+			"PSMCT16S"
+		};
+		static constexpr const char* TEXPSMNames[256] = {
+			"PSMCT32",
+			"PSMCT24",
+		    "PSMCT16",
+			"","","","","","","",
+			"PSMCT16S",
+			"","","","","","","","",
+			"PSMT8",
+			"PSMT4",
+			"","","","","","",
+			"PSMT8H",
+			"","","","","","","","",
+			"PSMT4HL",
+			"","","","","","","",
+			"PSMT4HH",
+			"","","",
+			"PSMZ32",
+			"PSMZ24",
+			"PSMZ16",
+			"","","","","","","",
+			"PSMZ16S"
+		};
+        // clang-format on
 
 		// the actual type is defined above thanks to preprocessing magic
 		enum GSDUMP_GIFREG_NAME : GSDUMP_GIFREG_TYPE
@@ -287,7 +335,7 @@ namespace Dialogs
 		};
 		std::vector<GSEvent> m_button_events;
 		std::vector<GSData> m_dump_packets;
-		u32 m_stored_q = 1;
+		float m_stored_q = 1.0;
 		void ProcessDumpEvent(GSData event, char* regs);
 		void GenPacketList(std::vector<GSData>& dump);
 		void GenPacketInfo(GSData& dump);
