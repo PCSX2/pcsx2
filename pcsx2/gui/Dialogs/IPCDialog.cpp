@@ -49,10 +49,10 @@ Dialogs::IPCDialog::IPCDialog(wxWindow* parent)
 
 void Dialogs::IPCDialog::OnConfirm(wxCommandEvent& evt)
 {
-	wxTextCtrl* textbox = dynamic_cast<wxTextCtrl*>(evt.GetEventObject());
-	if (textbox)
+	wxTextCtrl* obj = static_cast<wxTextCtrl*>(evt.GetEventObject());
+	if (obj != nullptr)
 	{
-		IPCSettings::slot = (unsigned int)atoi(textbox->GetValue().ToUTF8().data());
+		IPCSettings::slot = (unsigned int)atoi(obj->GetValue().ToUTF8().data());
 		Destroy();
 	}
 }
