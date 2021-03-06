@@ -1307,6 +1307,8 @@
       <Filter>System\Ps2\PAD</Filter>
     </ClCompile>
     <ClCompile Include="..\..\gui\Dialogs\IPCDialog.cpp">
+      <Filter>AppHost\Dialogs</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\gui\Dialogs\GSDumpDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
@@ -2239,13 +2241,9 @@
       <Filter>AppHost\Resources</Filter>
     </Manifest>
   </ItemGroup>
-<<<<<<< HEAD
-</Project>
-=======
   <ItemGroup>
     <Image Include="..\..\gui\Resources\NoIcon.png">
       <Filter>AppHost\Resources</Filter>
     </Image>
   </ItemGroup>
 </Project>
->>>>>>> 9c167ad79... GSDump: initial windows port
