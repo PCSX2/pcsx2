@@ -178,169 +178,13 @@ void Dialogs::GSDumpDialog::SelectedDump(wxListEvent& evt)
 
 void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 {
-
 	m_debug_mode->Enable();
 	m_start->Enable();
 	m_step->Enable();
 	m_selection->Enable();
 	m_vsync->Enable();
-	//TODO: switch all of that to a pxThread
-	pxInputStream dump_file(*m_selected_dump, new wxFFileInputStream(*m_selected_dump));
-
-	if (!dump_file.IsOk())
-		return;
-
-	char freeze_data[sizeof(int) * 2];
-	u32 crc = 0, ss = 0;
-	// XXX: check the numbers are correct
-	int renderer_override = m_renderer_overrides->GetSelection();
-	char regs[8192];
-
-	dump_file.Read(&crc, 4);
-	dump_file.Read(&ss, 4);
-
-
-	char* state_data = (char*)malloc(sizeof(char) * ss);
-	dump_file.Read(state_data, ss);
-	dump_file.Read(&regs, 8192);
-
-	int ssi = ss;
-	freezeData fd = {0, (s8*)state_data};
-	m_dump_packets.clear();
-
-	while (dump_file.Tell() < dump_file.Length())
-	{
-		GSType id = Transfer;
-		dump_file.Read(&id, 1);
-		switch (id)
-		{
-			case Transfer:
-			{
-				GSTransferPath id_transfer;
-				dump_file.Read(&id_transfer, 1);
-				s32 size = 0;
-				dump_file.Read(&size, 4);
-				char* transfer_data = (char*)malloc(size);
-				dump_file.Read(transfer_data, size);
-				GSData data = {id, transfer_data, size, id_transfer};
-				m_dump_packets.push_back(data);
-				break;
-			}
-			case VSync:
-			{
-				u8 vsync = 0;
-				dump_file.Read(&vsync, 1);
-				GSData data = {id, (char*)vsync, 1, Dummy};
-				m_dump_packets.push_back(data);
-				break;
-			}
-			case ReadFIFO2:
-			{
-				u32 fifo = 0;
-				dump_file.Read(&fifo, 4);
-				GSData data = {id, (char*)fifo, 4, Dummy};
-				m_dump_packets.push_back(data);
-				break;
-			}
-			case Registers:
-			{
-				char regs_tmp[8192];
-				dump_file.Read(&regs, 8192);
-				GSData data = {id, regs_tmp, 8192, Dummy};
-				m_dump_packets.push_back(data);
-				break;
-			}
-		}
-	}
-
-	if (m_debug_mode->GetValue())
-		GenPacketList(m_dump_packets);
-
+	m_thread = std::make_unique<GSThread>(this);
 	return;
-
-	GSinit();
-	GSsetBaseMem((void*)regs);
-	if (GSopen2((void*)pDsp, renderer_override) != 0)
-		return;
-
-	GSsetGameCRC((int)crc, 0);
-
-
-	if (GSfreeze(0, &fd) == -1)
-	{
-		//DumpTooOld = true;
-		//Running = false;
-	}
-	GSvsync(1);
-	GSreset();
-	GSsetBaseMem((void*)regs);
-	GSfreeze(0, &fd);
-
-	size_t i = 0;
-	int RunTo = 0;
-	size_t debug_idx = 0;
-
-	while (0!=1)
-	{
-		if (m_debug_mode->GetValue())
-		{
-			if (m_button_events.size() > 0)
-			{
-				switch (m_button_events[0].index)
-				{
-					case Step:
-						if (debug_idx >= m_dump_packets.size())
-							debug_idx = 0;
-						RunTo = debug_idx;
-						break;
-					case RunCursor:
-						RunTo = m_button_events[0].index;
-						if (debug_idx > RunTo)
-							debug_idx = 0;
-						break;
-					case RunVSync:
-						if (debug_idx >= m_dump_packets.size())
-							debug_idx = 1;
-						auto it = std::find_if(m_dump_packets.begin() + debug_idx, m_dump_packets.end(), [](const GSData& gs) { return gs.id == Registers; });
-						if (it != std::end(m_dump_packets))
-							RunTo = std::distance(m_dump_packets.begin(), it);
-						break;
-				}
-				m_button_events.erase(m_button_events.begin());
-
-				if (debug_idx <= RunTo)
-				{
-					while (debug_idx <= RunTo)
-					{
-						ProcessDumpEvent(m_dump_packets[debug_idx++], regs);
-					}
-					auto it = std::find_if(m_dump_packets.begin() + debug_idx, m_dump_packets.end(), [](const GSData& gs) { return gs.id == Registers; });
-					if (it != std::end(m_dump_packets))
-						ProcessDumpEvent(*it, regs);
-
-					debug_idx--;
-				}
-
-				// do vsync
-				ProcessDumpEvent(GSData{VSync, 0, 0, Dummy}, regs);
-			}
-		}
-		else
-		{
-			while (i < m_dump_packets.size())
-			{
-				ProcessDumpEvent(m_dump_packets[i++], regs);
-
-				if (m_dump_packets[i].id == VSync)
-					break;
-			}
-			if (i >= m_dump_packets.size())
-				i = 0;
-		}
-	}
-
-	GSclose();
-	GSshutdown();
 }
 
 void Dialogs::GSDumpDialog::ProcessDumpEvent(GSData event, char* regs)
@@ -405,8 +249,7 @@ void Dialogs::GSDumpDialog::StepPacket(wxCommandEvent& event)
 
 void Dialogs::GSDumpDialog::ToCursor(wxCommandEvent& event)
 {
-	// TODO: modify 0 to wxTreeCtrl index
-	m_button_events.push_back(GSEvent{RunCursor, 0});
+	m_button_events.push_back(GSEvent{RunCursor, wxAtoi(m_gif_list->GetItemText(m_gif_list->GetFocusedItem()).BeforeFirst('-'))});
 }
 
 void Dialogs::GSDumpDialog::ToVSync(wxCommandEvent& event)
@@ -766,4 +609,182 @@ void Dialogs::GSDumpDialog::CheckDebug(wxCommandEvent& event)
 		m_gif_packet->DeleteAllItems();
 		m_gif_list->Refresh();
 	}
+}
+
+Dialogs::GSDumpDialog::GSThread::GSThread(GSDumpDialog* dlg)
+	: pxThread("GSDump")
+{
+	m_root_window = dlg;
+	// we start the thread
+	Start();
+}
+
+Dialogs::GSDumpDialog::GSThread::~GSThread()
+{
+	// destroy the thread
+	try
+	{
+		pxThread::Cancel();
+	}
+	DESTRUCTOR_CATCHALL
+}
+
+void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
+{
+	pxInputStream dump_file(*m_root_window->m_selected_dump, new wxFFileInputStream(*m_root_window->m_selected_dump));
+
+	if (!dump_file.IsOk())
+		return;
+
+	char freeze_data[sizeof(int) * 2];
+	u32 crc = 0, ss = 0;
+	// XXX: check the numbers are correct
+	int renderer_override = m_root_window->m_renderer_overrides->GetSelection();
+	char regs[8192];
+
+	dump_file.Read(&crc, 4);
+	dump_file.Read(&ss, 4);
+
+
+	char* state_data = (char*)malloc(sizeof(char) * ss);
+	dump_file.Read(state_data, ss);
+	dump_file.Read(&regs, 8192);
+
+	int ssi = ss;
+	freezeData fd = {0, (s8*)state_data};
+	m_root_window->m_dump_packets.clear();
+
+	while (dump_file.Tell() < dump_file.Length())
+	{
+		GSType id = Transfer;
+		dump_file.Read(&id, 1);
+		switch (id)
+		{
+			case Transfer:
+			{
+				GSTransferPath id_transfer;
+				dump_file.Read(&id_transfer, 1);
+				s32 size = 0;
+				dump_file.Read(&size, 4);
+				char* transfer_data = (char*)malloc(size);
+				dump_file.Read(transfer_data, size);
+				GSData data = {id, transfer_data, size, id_transfer};
+				m_root_window->m_dump_packets.push_back(data);
+				break;
+			}
+			case VSync:
+			{
+				u8 vsync = 0;
+				dump_file.Read(&vsync, 1);
+				GSData data = {id, (char*)vsync, 1, Dummy};
+				m_root_window->m_dump_packets.push_back(data);
+				break;
+			}
+			case ReadFIFO2:
+			{
+				u32 fifo = 0;
+				dump_file.Read(&fifo, 4);
+				GSData data = {id, (char*)fifo, 4, Dummy};
+				m_root_window->m_dump_packets.push_back(data);
+				break;
+			}
+			case Registers:
+			{
+				char regs_tmp[8192];
+				dump_file.Read(&regs, 8192);
+				GSData data = {id, regs_tmp, 8192, Dummy};
+				m_root_window->m_dump_packets.push_back(data);
+				break;
+			}
+		}
+	}
+
+	if (m_root_window->m_debug_mode->GetValue())
+		m_root_window->GenPacketList(m_root_window->m_dump_packets);
+
+	return;
+
+	GSinit();
+	GSsetBaseMem((void*)regs);
+	if (GSopen2((void*)pDsp, renderer_override) != 0)
+		return;
+
+	GSsetGameCRC((int)crc, 0);
+
+
+	if (GSfreeze(0, &fd) == -1)
+	{
+		//DumpTooOld = true;
+		//Running = false;
+	}
+	GSvsync(1);
+	GSreset();
+	GSsetBaseMem((void*)regs);
+	GSfreeze(0, &fd);
+
+	size_t i = 0;
+	int RunTo = 0;
+	size_t debug_idx = 0;
+
+	while (0 != 1)
+	{
+		if (m_root_window->m_debug_mode->GetValue())
+		{
+			if (m_root_window->m_button_events.size() > 0)
+			{
+				switch (m_root_window->m_button_events[0].index)
+				{
+					case Step:
+						if (debug_idx >= m_root_window->m_dump_packets.size())
+							debug_idx = 0;
+						RunTo = debug_idx;
+						break;
+					case RunCursor:
+						RunTo = m_root_window->m_button_events[0].index;
+						if (debug_idx > RunTo)
+							debug_idx = 0;
+						break;
+					case RunVSync:
+						if (debug_idx >= m_root_window->m_dump_packets.size())
+							debug_idx = 1;
+						auto it = std::find_if(m_root_window->m_dump_packets.begin() + debug_idx, m_root_window->m_dump_packets.end(), [](const GSData& gs) { return gs.id == Registers; });
+						if (it != std::end(m_root_window->m_dump_packets))
+							RunTo = std::distance(m_root_window->m_dump_packets.begin(), it);
+						break;
+				}
+				m_root_window->m_button_events.erase(m_root_window->m_button_events.begin());
+
+				if (debug_idx <= RunTo)
+				{
+					while (debug_idx <= RunTo)
+					{
+						m_root_window->ProcessDumpEvent(m_root_window->m_dump_packets[debug_idx++], regs);
+					}
+					auto it = std::find_if(m_root_window->m_dump_packets.begin() + debug_idx, m_root_window->m_dump_packets.end(), [](const GSData& gs) { return gs.id == Registers; });
+					if (it != std::end(m_root_window->m_dump_packets))
+						m_root_window->ProcessDumpEvent(*it, regs);
+
+					debug_idx--;
+				}
+
+				// do vsync
+				m_root_window->ProcessDumpEvent(GSData{VSync, 0, 0, Dummy}, regs);
+			}
+		}
+		else
+		{
+			while (i < m_root_window->m_dump_packets.size())
+			{
+				m_root_window->ProcessDumpEvent(m_root_window->m_dump_packets[i++], regs);
+
+				if (m_root_window->m_dump_packets[i].id == VSync)
+					break;
+			}
+			if (i >= m_root_window->m_dump_packets.size())
+				i = 0;
+		}
+	}
+
+	GSclose();
+	GSshutdown();
 }
