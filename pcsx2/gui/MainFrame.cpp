@@ -480,7 +480,7 @@ void MainEmuFrame::CreateConfigMenu()
 void MainEmuFrame::CreateWindowsMenu()
 {
 	m_menuWindow.Append(MenuId_Debug_Open, _("&Show Debug"), wxEmptyString, wxITEM_CHECK);
-	m_menuWindow.Append(MenuId_GSDump, _("Show &GS Debugger"), wxEmptyString, wxITEM_CHECK);
+	m_menuWindow.Append(MenuId_GSDump, _("Show &GS Debugger"));
 
 	m_menuWindow.Append(&m_MenuItem_Console);
 #if defined(__unix__)

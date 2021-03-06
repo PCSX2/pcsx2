@@ -53,10 +53,14 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	, m_dump_list(new wxListView(this, ID_DUMP_LIST, wxDefaultPosition, wxSize(500, 400), wxLC_NO_HEADER | wxLC_REPORT))
 	, m_preview_image(new wxStaticBitmap(this, wxID_ANY, wxBitmap(EmbeddedImage<res_NoIcon>().Get())))
 	, m_selected_dump(new wxString(""))
-	, m_debug_mode(new wxCheckBox(this, wxID_ANY, _("Debug Mode")))
+	, m_debug_mode(new wxCheckBox(this, ID_DEBUG_MODE, _("Debug Mode")))
 	, m_renderer_overrides(new wxRadioBox())
 	, m_gif_list(new wxTreeCtrl(this, ID_SEL_PACKET, wxDefaultPosition, wxSize(500, 400), wxTR_HIDE_ROOT | wxTR_HAS_BUTTONS | wxTR_LINES_AT_ROOT))
 	, m_gif_packet(new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(500, 400), wxTR_HIDE_ROOT | wxTR_HAS_BUTTONS | wxTR_LINES_AT_ROOT))
+	, m_start(new wxButton(this, ID_RUN_START, _("Go to Start")))
+	, m_step(new wxButton(this, ID_RUN_START, _("Step")))
+	, m_selection(new wxButton(this, ID_RUN_START, _("Run to Selection")))
+	, m_vsync(new wxButton(this, ID_RUN_START, _("Go to next VSync")))
 {
 	//TODO: figure out how to fix sliders so the destructor doesn't segfault
 	wxFlexGridSizer& general(*new wxFlexGridSizer(2, StdPadding, StdPadding));
@@ -79,15 +83,21 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	dump_info += new wxButton(this, ID_RUN_DUMP, _("Run"));
 
 
+	m_debug_mode->Disable();
+	m_start->Disable();
+	m_step->Disable();
+	m_selection->Disable();
+	m_vsync->Disable();
+
 
 	// debugger
 	dbg_tree += new wxStaticText(this, wxID_ANY, _("GIF Packets"));
 	dbg_tree += m_gif_list;
 	dbg_actions += m_debug_mode;
-	dbg_actions += new wxButton(this, ID_RUN_START, _("Go to Start"));
-	dbg_actions += new wxButton(this, ID_RUN_STEP, _("Step"));
-	dbg_actions += new wxButton(this, ID_RUN_CURSOR, _("Run to Selection"));
-	dbg_actions += new wxButton(this, ID_RUN_VSYNC, _("Go to next VSync"));
+	dbg_actions += m_start;
+	dbg_actions += m_step;
+	dbg_actions += m_selection;
+	dbg_actions += m_vsync;
 
 	// gif
 	gif += new wxStaticText(this, wxID_ANY, _("Packet Content"));
@@ -126,6 +136,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::ToCursor, this, ID_RUN_CURSOR);
 	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::ToVSync, this, ID_RUN_VSYNC);
 	Bind(wxEVT_TREE_SEL_CHANGED, &Dialogs::GSDumpDialog::ParsePacket, this, ID_SEL_PACKET);
+	Bind(wxEVT_CHECKBOX, &Dialogs::GSDumpDialog::CheckDebug, this, ID_DEBUG_MODE);
 }
 
 void Dialogs::GSDumpDialog::GetDumpsList()
@@ -167,6 +178,12 @@ void Dialogs::GSDumpDialog::SelectedDump(wxListEvent& evt)
 
 void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 {
+
+	m_debug_mode->Enable();
+	m_start->Enable();
+	m_step->Enable();
+	m_selection->Enable();
+	m_vsync->Enable();
 	//TODO: switch all of that to a pxThread
 	pxInputStream dump_file(*m_selected_dump, new wxFFileInputStream(*m_selected_dump));
 
@@ -438,14 +455,14 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 				wxString s;
 				s.Printf("Transfer Path %s", GSTransferPathNames[dump.path]);
 				trootId = m_gif_packet->AppendItem(rootId, s);
-				u64 tag = *dump.data;
-				u64 regs = *(dump.data+8);
+				u64 tag = *(u64*)(dump.data);
+				u64 regs = *(u64*)(dump.data + 8);
 				u8 nloop = tag & ((u64)(1 << 15) - 1);
 				u8 eop = (tag >> 15) & 1;
 				u8 pre = (tag >> 46) & 1;
 				u32 prim = (tag >> 47) & ((u64)(1 << 11) - 1);
 				u8 flg = ((tag >> 58) & 3);
-				u8 nreg = (tag >> 60) & ((u64)(1 << 4) - 1);
+				u32 nreg = (u32)((tag >> 60) & ((u64)(1 << 4) - 1));
 				if (nreg == 0)
 					nreg = 16;
 
@@ -487,8 +504,8 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 							for (int i = 0; i < nreg; i++)
 							{
 								u128 reg_data;
-								reg_data.lo = (u64)(*(dump.data + p));
-								reg_data.hi = (u64)(*(dump.data + p + 8));
+								reg_data.lo =  *(u64*)(dump.data + p);
+								reg_data.hi =  *(u64*)(dump.data + p + 8);
 								ParseTreeReg(regId, (GIFReg)((regs >> (i * 4)) & ((u64)(1 << 4) - 1)), reg_data, true);
 								p += 16;
 							}
@@ -502,7 +519,7 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 							for (int i = 0; i < nreg; i++)
 							{
 								u128 reg_data;
-								reg_data.lo = (u64)(*(dump.data + p));
+								reg_data.lo =  *(u64*)(dump.data + p);
 								ParseTreeReg(regId, (GIFReg)((regs >> (i * 4)) & ((u64)(1 << 4) - 1)), reg_data, false);
 								p += 8;
 							}
@@ -580,7 +597,7 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 				rgb_infos[1].Printf("G = %u", (u32)((data.lo >> 8) & ((u64)(1 << 8) - 1)));
 				rgb_infos[2].Printf("B = %u", (u32)((data.lo >> 16) & ((u64)(1 << 8) - 1)));
 				rgb_infos[3].Printf("A = %u", (u32)((data.lo >> 24) & ((u64)(1 << 8) - 1)));
-				rgb_infos[4].Printf("Q = %u", (u32)(*(&data.lo + 4)));
+				rgb_infos[4].Printf("Q = %u", *(u32*)(&data.lo + 4));
 			}
 
 			for (auto& el : rgb_infos)
@@ -591,12 +608,12 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 		{
 			wxString s, t;
 			std::vector<wxString> st_infos = {s, t};
-			st_infos[0].Printf("S = %u", (u32)(*(&data.lo)));
-			st_infos[1].Printf("T = %u", (u32)(*(&data.lo + 4)));
+			st_infos[0].Printf("S = %u", *(u32*)(&data.lo));
+			st_infos[1].Printf("T = %u", *(u32*)(&data.lo + 4));
 			if (packed)
 			{
 				wxString q;
-				m_stored_q = (u32)(*(&data.hi + 4));
+				m_stored_q = *(u32*)(&data.hi + 4);
 				q.Printf("Q = %u", m_stored_q);
 				st_infos.push_back(q);
 			}
@@ -657,13 +674,13 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 			{
 				xyz_infos[0].Printf("X = %u", (u32)(data.lo & ((u64)(1 << 16) - 1)) / 16);
 				xyz_infos[1].Printf("Y = %u", (u32)((data.lo >> 32) & ((u64)(1 << 16) - 1)) / 16);
-				xyz_infos[2].Printf("Z = %u", (u32)(*(&data.hi)));
+				xyz_infos[2].Printf("Z = %u", *(u32*)(&data.hi));
 			}
 			else
 			{
 				xyz_infos[0].Printf("X = %u", (u32)(data.lo & ((u64)(1 << 16) - 1)) / 16);
 				xyz_infos[1].Printf("Y = %u", (u32)((data.lo >> 16) & ((u64)(1 << 16) - 1)) / 16);
-				xyz_infos[2].Printf("Z = %u", (u32)(*(&data.lo)+4));
+				xyz_infos[2].Printf("Z = %u", *(u32*)(&data.lo)+4);
 			}
 
 			for (auto& el : xyz_infos)
@@ -710,10 +727,11 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 			if ((GIFReg)nreg == AD)
 			{
 				s.Printf("NOP");
-				m_gif_packet->AppendItem(rootId, s);
+				m_gif_packet->AppendItem(id, s);
 			}
 			else
-				ParseTreeReg(rootId, nreg, data, packed);
+				ParseTreeReg(id, nreg, data, packed);
+			m_gif_packet->Delete(rootId);
 			break;
 		}
 	}
@@ -736,4 +754,16 @@ void Dialogs::GSDumpDialog::ParseTreePrim(wxTreeItemId& id, u32 prim)
 
 	for (auto& el : prim_infos)
 		m_gif_packet->AppendItem(id, el);
+}
+
+void Dialogs::GSDumpDialog::CheckDebug(wxCommandEvent& event)
+{
+	if (m_debug_mode->GetValue())
+		GenPacketList(m_dump_packets);
+	else
+	{
+		m_gif_list->DeleteAllItems();
+		m_gif_packet->DeleteAllItems();
+		m_gif_list->Refresh();
+	}
 }
