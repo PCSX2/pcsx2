@@ -167,7 +167,6 @@ typedef void(CALLBACK *_GSosdMonitor)(const char *key, const char *value, u32 co
 typedef s32(CALLBACK *_GSopen)(void *pDsp, const char *Title, int multithread);
 typedef s32(CALLBACK *_GSopen2)(void *pDsp, u32 flags);
 typedef void(CALLBACK *_GSvsync)(int field);
-typedef s32(CALLBACK* _GSfreeze)(int mode, freezeData* data);
 typedef void(CALLBACK *_GSgifTransfer)(const u32 *pMem, u32 size);
 typedef void(CALLBACK *_GSgifTransfer1)(u32 *pMem, u32 addr);
 typedef void(CALLBACK *_GSgifTransfer2)(u32 *pMem, u32 size);
@@ -203,7 +202,6 @@ extern _GSosdLog GSosdLog;
 extern _GSosdMonitor GSosdMonitor;
 extern _GSopen GSopen;
 extern _GSopen2 GSopen2;
-extern _GSfreeze GSfreeze;
 extern _GSvsync GSvsync;
 extern _GSgifTransfer GSgifTransfer;
 extern _GSgifTransfer1 GSgifTransfer1;

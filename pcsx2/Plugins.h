@@ -379,7 +379,7 @@ public:
 	virtual void FreezeOut( PluginsEnum_t pid, pxOutputStream& outfp );
 	virtual void FreezeIn( PluginsEnum_t pid, pxInputStream& infp );
 	virtual void Freeze( PluginsEnum_t pid, SaveStateBase& state );
-	virtual bool DoFreeze( PluginsEnum_t pid, int mode, freezeData* data );
+	virtual bool DoFreeze( PluginsEnum_t pid, int mode, freezeData* data, bool bypass_tsafety=false );
 
 	virtual bool KeyEvent( const keyEvent& evt );
 	virtual void Configure( PluginsEnum_t pid );
