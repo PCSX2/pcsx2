@@ -293,6 +293,19 @@ namespace Dialogs
 		void GenPacketInfo(GSData& dump);
 		void ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data, bool packed);
 		void ParseTreePrim(wxTreeItemId& id, u32 prim);
+		class GSThread : public pxThread
+		{
+		protected:
+			// parent thread
+			typedef pxThread _parent;
+			void ExecuteTaskInThread();
+			GSDumpDialog* m_root_window;
+
+		public:
+			GSThread(GSDumpDialog* dlg);
+			virtual ~GSThread();
+		};
+		std::unique_ptr<GSThread> m_thread;
 	};
 
 
