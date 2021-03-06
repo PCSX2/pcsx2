@@ -666,7 +666,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	dump_file.Read(&regs, 8192);
 
 	int ssi = ss;
-	freezeData fd = {0, (s8*)state_data};
+	freezeData fd = {ss, (s8*)state_data};
 	m_root_window->m_dump_packets.clear();
 
 	while (dump_file.Tell() < dump_file.Length())
@@ -727,15 +727,12 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 
 	GSsetGameCRC((int)crc, 0);
 
-	//OnStop();
-	return;
-
-	if (GSfreeze(0, &fd) == -1)
+	if (!GetCorePlugins().DoFreeze(PluginId_GS, 0, &fd, true))
 		m_running = false;
 	GSvsync(1);
 	GSreset();
 	GSsetBaseMem((void*)regs);
-	GSfreeze(0, &fd);
+	GetCorePlugins().DoFreeze(PluginId_GS, 0, &fd, true);
 
 	size_t i = 0;
 	int RunTo = 0;
@@ -788,7 +785,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 		}
 		else
 		{
-			while (i < m_root_window->m_dump_packets.size())
+			while (i < (m_root_window->m_dump_packets.size()-1))
 			{
 				m_root_window->ProcessDumpEvent(m_root_window->m_dump_packets[i++], regs);
 

@@ -157,7 +157,6 @@ _GSosdLog          GSosdLog;
 _GSosdMonitor      GSosdMonitor;
 _GSopen            GSopen;
 _GSopen2           GSopen2;
-_GSfreeze          GSfreeze;
 _GSgifTransfer     GSgifTransfer;
 _GSgifTransfer1    GSgifTransfer1;
 _GSgifTransfer2    GSgifTransfer2;
@@ -1040,9 +1039,9 @@ bool SysCorePlugins::Shutdown()
 
 // For internal use only, unless you're the MTGS.  Then it's for you too!
 // Returns false if the plugin returned an error.
-bool SysCorePlugins::DoFreeze( PluginsEnum_t pid, int mode, freezeData* data )
+bool SysCorePlugins::DoFreeze( PluginsEnum_t pid, int mode, freezeData* data, bool bypass_tsafety )
 {
-	if( (pid == PluginId_GS) && !GetMTGS().IsSelf() )
+	if( (pid == PluginId_GS) && !GetMTGS().IsSelf() && !bypass_tsafety )
 	{
 		// GS needs some thread safety love...
 
