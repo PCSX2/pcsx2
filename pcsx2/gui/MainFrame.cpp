@@ -394,9 +394,9 @@ void MainEmuFrame::CreatePcsx2Menu()
 	m_GameSettingsSubmenu.Append(MenuId_EnableCheats, _("Enable &Cheats"),
 								 _("Use cheats otherwise known as pnachs from the cheats folder."), wxITEM_CHECK);
 
-	m_GameSettingsSubmenu.Append(MenuId_IPC_Enable, _("Configure &IPC"), &m_submenuIPC);
+	m_GameSettingsSubmenu.Append(MenuId_IPC, _("Configure &IPC"), &m_submenuIPC);
 
-	m_submenuIPC.Append(MenuId_IPC, _("&Enable IPC"),
+	m_submenuIPC.Append(MenuId_IPC_Enable, _("&Enable IPC"),
 						wxEmptyString, wxITEM_CHECK);
 
 	m_submenuIPC.Append(MenuId_IPC_Settings, _("IPC &Settings"));
