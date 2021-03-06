@@ -312,8 +312,7 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 				if (nreg == 0)
 					nreg = 16;
 
-				wxString snloop, seop, sflg, spre, sprim, snreg, sreg;
-				std::vector<wxString> infos = {snloop, seop, sflg, spre, sprim, snreg, sreg};
+				std::vector<wxString> infos(7);
 				m_stored_q = 1.0;
 
 				infos[0].Printf("nloop = %u", nloop);
@@ -426,8 +425,7 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 		}
 		case RGBAQ:
 		{
-			wxString a, b, c, d, e;
-			std::vector<wxString> rgb_infos = {a, b, c, d, e};
+			std::vector<wxString> rgb_infos(5);
 
 			if (packed)
 			{
@@ -452,8 +450,7 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 		}
 		case ST:
 		{
-			wxString s, t;
-			std::vector<wxString> st_infos = {s, t};
+			std::vector<wxString> st_infos(2);
 			st_infos[0].Printf("S = %f", *(float*)(&data.lo));
 			st_infos[1].Printf("T = %f", *(float*)(&data.lo + 4));
 			if (packed)
@@ -487,8 +484,7 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 			if (packed && (reg == XYZF2) && ((data.lo >> 47) & ((u64)(1 << 1) - 1)) == 1)
 				m_gif_packet->SetItemText(rootId, GIFRegName(XYZF3));
 
-			wxString a, b, c, d;
-			std::vector<wxString> xyzf_infos = {a, b, c, d};
+			std::vector<wxString> xyzf_infos(4);
 			if (packed)
 			{
 				xyzf_infos[0].Printf("X = %f", (float)(data.lo & ((u64)(1 << 16) - 1)) / 16.0);
@@ -514,8 +510,7 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 			if (packed && (reg == XYZ2) && ((data.lo >> 47) & ((u64)(1 << 1) - 1)) == 1)
 				m_gif_packet->SetItemText(rootId, GIFRegName(XYZ3));
 
-			wxString a, b, c;
-			std::vector<wxString> xyz_infos = {a, b, c};
+			std::vector<wxString> xyz_infos(3);
 			if (packed)
 			{
 				xyz_infos[0].Printf("X = %f", (float)(data.lo & ((u64)(1 << 16) - 1)) / 16.0);
@@ -536,8 +531,7 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 		case TEX0_1:
 		case TEX0_2:
 		{
-			wxString a, b, c, d, e, f, g, h, i, j, k, l;
-			std::vector<wxString> tex_infos = {a, b, c, d, e, f, g, h, i, j, k, l};
+			std::vector<wxString> tex_infos(12);
 
 			tex_infos[0].Printf("TBP0 = %u", (u32)(data.lo & ((u64)(1 << 14) - 1)));
 			tex_infos[1].Printf("TBW = %u", (u32)((data.lo >> 14) & ((u64)(1 << 6) - 1)));
@@ -587,8 +581,7 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 
 void Dialogs::GSDumpDialog::ParseTreePrim(wxTreeItemId& id, u32 prim)
 {
-	wxString a, b, c, d, e, f, g, h, i;
-	std::vector<wxString> prim_infos = {a, b, c, d, e, f, g, h, i};
+	std::vector<wxString> prim_infos(9);
 
 	prim_infos[0].Printf("Primitive Type = %s", GsPrimNames[(prim & ((u64)(1 << 3) - 1))]);
 	prim_infos[1].Printf("IIP = %s", GsIIPNames[((prim >> 3) & 1)]);
