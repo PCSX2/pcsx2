@@ -122,7 +122,7 @@ enum MenuIdentifiers
 	MenuId_GameSettingsSubMenu,
 	MenuId_EnablePatches,
 	MenuId_EnableCheats,
-    MenuId_GSDump,
+	MenuId_GSDump,
 	MenuId_EnableWideScreenPatches,
 	MenuId_EnableInputRecording,
 	MenuId_EnableLuaTools,
