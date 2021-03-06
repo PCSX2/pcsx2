@@ -135,6 +135,8 @@ int GetMACAddress(char* adapter, mac_address* addr)
 		SysMessage("Could not get MAC address for adapter: %s", adapter);
 	}
 	close(fd);
+#else
+	SysMessage("Could not get MAC address for adapter, OS not supported");
 #endif
 	return retval;
 }
