@@ -337,7 +337,7 @@ PCAPAdapter::PCAPAdapter()
 }
 bool PCAPAdapter::blocks()
 {
-	return false;
+	return true;
 }
 bool PCAPAdapter::isInitialised()
 {
