@@ -389,7 +389,7 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 			case VSync:
 			{
 				wxString s;
-				s.Printf("Field = %d", *(u8*)(dump.data));
+				s.Printf("Field = %d", (u32)(dump.data));
 				m_gif_packet->AppendItem(rootId, s);
 				break;
 			}
@@ -693,7 +693,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 			{
 				u8 vsync = 0;
 				dump_file.Read(&vsync, 1);
-				GSData data = {id, (char*)&vsync, 1, Dummy};
+				GSData data = {id, (char*)vsync, 1, Dummy};
 				m_root_window->m_dump_packets.push_back(data);
 				break;
 			}
@@ -719,6 +719,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	if (m_root_window->m_debug_mode->GetValue())
 		m_root_window->GenPacketList(m_root_window->m_dump_packets);
 
+	//return;
 	GetCorePlugins().Init();
 	GSsetBaseMem((void*)regs);
 	if (GSopen2((void*)pDsp, renderer_override) != 0)
