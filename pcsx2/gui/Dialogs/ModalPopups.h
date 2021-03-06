@@ -299,7 +299,9 @@ namespace Dialogs
 			// parent thread
 			typedef pxThread _parent;
 			void ExecuteTaskInThread();
+			void OnStop();
 			GSDumpDialog* m_root_window;
+			bool m_running = true;
 
 		public:
 			GSThread(GSDumpDialog* dlg);
