@@ -221,6 +221,8 @@ void Dialogs::GSDumpDialog::ProcessDumpEvent(GSData event, char* regs)
 					GSgifTransfer3((u32*)event.data, event.length / 16);
 					break;
 				}
+				default:
+					break;
 			}
 			break;
 		}
@@ -346,7 +348,7 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 					{
 						for (int j = 0; j < nloop; j++)
 						{
-							for (int i = 0; i < nreg; i++)
+							for (u32 i = 0; i < nreg; i++)
 							{
 								u128 reg_data;
 								reg_data.lo =  *(u64*)(dump.data + p);
@@ -361,7 +363,7 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 					{
 						for (int j = 0; j < nloop; j++)
 						{
-							for (int i = 0; i < nreg; i++)
+							for (u32 i = 0; i < nreg; i++)
 							{
 								u128 reg_data;
 								reg_data.lo =  *(u64*)(dump.data + p);
@@ -387,7 +389,7 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 			case VSync:
 			{
 				wxString s;
-				s.Printf("Field = %d", (u8)dump.data);
+				s.Printf("Field = %d", *(u8*)(dump.data));
 				m_gif_packet->AppendItem(rootId, s);
 				break;
 			}
@@ -579,6 +581,8 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 			m_gif_packet->Delete(rootId);
 			break;
 		}
+		default:
+			break;
 	}
 }
 
@@ -651,7 +655,6 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 		return;
 	}
 
-	char freeze_data[sizeof(int) * 2];
 	u32 crc = 0, ss = 0;
 	// XXX: check the numbers are correct
 	int renderer_override = m_root_window->m_renderer_overrides->GetSelection();
@@ -665,8 +668,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	dump_file.Read(state_data, ss);
 	dump_file.Read(&regs, 8192);
 
-	int ssi = ss;
-	freezeData fd = {ss, (s8*)state_data};
+	freezeData fd = {(int)ss, (s8*)state_data};
 	m_root_window->m_dump_packets.clear();
 
 	while (dump_file.Tell() < dump_file.Length())
@@ -691,7 +693,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 			{
 				u8 vsync = 0;
 				dump_file.Read(&vsync, 1);
-				GSData data = {id, (char*)vsync, 1, Dummy};
+				GSData data = {id, (char*)&vsync, 1, Dummy};
 				m_root_window->m_dump_packets.push_back(data);
 				break;
 			}
@@ -735,7 +737,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	GetCorePlugins().DoFreeze(PluginId_GS, 0, &fd, true);
 
 	size_t i = 0;
-	int RunTo = 0;
+	size_t RunTo = 0;
 	size_t debug_idx = 0;
 
 	while (m_running)
