@@ -22,6 +22,7 @@
 
 #include <wx/wizard.h>
 #include <wx/treectrl.h>
+#include <wx/fswatcher.h>
 
 // clang-format off
 #define GSDUMP_GIFREG(X) \
@@ -160,6 +161,7 @@ namespace Dialogs
 		wxButton* m_step;
 		wxButton* m_selection;
 		wxButton* m_vsync;
+		wxFileSystemWatcher m_fs_watcher;
 
 		void GetDumpsList();
 		void SelectedDump(wxListEvent& evt);
@@ -170,6 +172,7 @@ namespace Dialogs
 		void ToVSync(wxCommandEvent& event);
 		void ParsePacket(wxTreeEvent& event);
 		void CheckDebug(wxCommandEvent& event);
+		void PathChanged(wxFileSystemWatcherEvent& event);
 		enum
 		{
 			ID_DUMP_LIST,
