@@ -18,6 +18,7 @@
 #include "App.h"
 #include "ConfigurationDialog.h"
 #include "Panels/ConfigurationPanels.h"
+#include "Utilities/pxStreams.h"
 
 #include <wx/wizard.h>
 #include <wx/treectrl.h>
@@ -150,7 +151,7 @@ namespace Dialogs
 	protected:
 		wxListView* m_dump_list;
 		wxStaticBitmap* m_preview_image;
-		wxString* m_selected_dump;
+		wxString m_selected_dump;
 		wxCheckBox* m_debug_mode;
 		wxRadioBox* m_renderer_overrides;
 		wxTreeCtrl* m_gif_list;
@@ -335,6 +336,7 @@ namespace Dialogs
 		};
 		std::vector<GSEvent> m_button_events;
 		std::vector<GSData> m_dump_packets;
+
 		float m_stored_q = 1.0;
 		void ProcessDumpEvent(GSData event, char* regs);
 		void GenPacketList(std::vector<GSData>& dump);
@@ -352,6 +354,7 @@ namespace Dialogs
 			bool m_running = true;
 
 		public:
+			std::unique_ptr<pxInputStream> m_dump_file;
 			GSThread(GSDumpDialog* dlg);
 			virtual ~GSThread();
 		};
