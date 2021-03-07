@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2020  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -158,9 +158,7 @@ void Dialogs::GSDumpDialog::SelectedDump(wxListEvent& evt)
 		m_selected_dump = new wxString(filename);
 	}
 	else
-	{
 		m_preview_image->SetBitmap(EmbeddedImage<res_NoIcon>().Get());
-	}
 }
 
 void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
@@ -193,30 +191,22 @@ void Dialogs::GSDumpDialog::ProcessDumpEvent(GSData event, char* regs)
 					break;
 				}
 				case Path1New:
-				{
 					GSgifTransfer((u32*)event.data, event.length / 16);
 					break;
-				}
 				case Path2:
-				{
 					GSgifTransfer2((u32*)event.data, event.length / 16);
 					break;
-				}
 				case Path3:
-				{
 					GSgifTransfer3((u32*)event.data, event.length / 16);
 					break;
-				}
 				default:
 					break;
 			}
 			break;
 		}
 		case VSync:
-		{
 			GSvsync((*((int*)(regs + 4096)) & 0x2000) > 0 ? (u8)1 : (u8)0);
 			break;
-		}
 		case ReadFIFO2:
 		{
 			u64* arr = (u64*)malloc(*((int*)event.data));
@@ -225,10 +215,8 @@ void Dialogs::GSDumpDialog::ProcessDumpEvent(GSData event, char* regs)
 			break;
 		}
 		case Registers:
-		{	
 			memcpy(regs, event.data, 8192);
 			break;
-		}
 	}
 }
 
@@ -260,9 +248,9 @@ void Dialogs::GSDumpDialog::GenPacketList(std::vector<GSData>& dump)
 	wxTreeItemId rootId = m_gif_list->AppendItem(mainrootId, "0 - VSync");
 	for (auto& element : dump)
 	{
-		wxString s;
-		([&] { return element.id == Transfer; })() ? (s.Printf("%d - %s - %s - %d byte", i, GSTypeNames[element.id], GSTransferPathNames[element.path], element.length)) : 
-									s.Printf("%d - %s - %d byte", i, GSTypeNames[element.id], element.length);
+		wxString s, t;
+		element.id == Transfer ? t.Printf(" - %s", GSTransferPathNames[element.path]) : t.Printf("");
+		s.Printf("%d - %s%s - %d byte", i, GSTypeNames[element.id], t, element.length);
 		if (element.id == VSync)
 		{
 			m_gif_list->SetItemText(rootId, s);
@@ -281,114 +269,110 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 	wxTreeItemId rootId = m_gif_packet->AddRoot("root");
 	switch (dump.id)
 	{
-			case Transfer:
+		case Transfer:
+		{
+			wxTreeItemId trootId;
+			wxString s;
+			s.Printf("Transfer Path %s", GSTransferPathNames[dump.path]);
+			trootId = m_gif_packet->AppendItem(rootId, s);
+			u64 tag = *(u64*)(dump.data);
+			u64 regs = *(u64*)(dump.data + 8);
+			u32 nloop = tag & ((1 << 15) - 1);
+			u8 eop = (tag >> 15) & 1;
+			u8 pre = (tag >> 46) & 1;
+			u32 prim = (tag >> 47) & ((1 << 11) - 1);
+			u8 flg = ((tag >> 58) & 3);
+			u32 nreg = (u32)((tag >> 60) & ((1 << 4) - 1));
+			if (nreg == 0)
+				nreg = 16;
+
+			std::vector<wxString> infos(7);
+			m_stored_q = 1.0;
+
+			infos[0].Printf("nloop = %u", nloop);
+			infos[1].Printf("eop = %u", eop);
+			infos[2].Printf("flg = %s", GifFlagNames[flg]);
+			infos[3].Printf("pre = %u", pre);
+			infos[4].Printf("Prim");
+			infos[5].Printf("nreg = %u", nreg);
+			infos[6].Printf("reg");
+
+			wxTreeItemId primId;
+			wxTreeItemId regId;
+			for (int i = 0; i < 7; i++)
 			{
-				wxTreeItemId trootId;
-				wxString s;
-				s.Printf("Transfer Path %s", GSTransferPathNames[dump.path]);
-				trootId = m_gif_packet->AppendItem(rootId, s);
-				u64 tag = *(u64*)(dump.data);
-				u64 regs = *(u64*)(dump.data + 8);
-				u8 nloop = tag & ((u64)(1 << 15) - 1);
-				u8 eop = (tag >> 15) & 1;
-				u8 pre = (tag >> 46) & 1;
-				u32 prim = (tag >> 47) & ((u64)(1 << 11) - 1);
-				u8 flg = ((tag >> 58) & 3);
-				u32 nreg = (u32)((tag >> 60) & ((u64)(1 << 4) - 1));
-				if (nreg == 0)
-					nreg = 16;
-
-				std::vector<wxString> infos(7);
-				m_stored_q = 1.0;
-
-				infos[0].Printf("nloop = %u", nloop);
-				infos[1].Printf("eop = %u", eop);
-				infos[2].Printf("flg = %s", GifFlagNames[flg]);
-				infos[3].Printf("pre = %u", pre);
-				infos[4].Printf("Prim");
-				infos[5].Printf("nreg = %u", nreg);
-				infos[6].Printf("reg");
-
-				wxTreeItemId primId;
-				wxTreeItemId regId;
-				for (int i = 0; i < 7; i++)
+				wxTreeItemId res = m_gif_packet->AppendItem(trootId, infos[i]);
+				switch (i)
 				{
-					wxTreeItemId res = m_gif_packet->AppendItem(trootId, infos[i]);
-					switch (i)
-					{
-						case 4:
-							ParseTreePrim(res, prim);
-							break;
-						case 6:
-							regId = res;
-							break;
-					}
+					case 4:
+						ParseTreePrim(res, prim);
+						break;
+					case 6:
+						regId = res;
+						break;
 				}
+			}
 
-				int p = 16;
-				switch ((GifFlag)flg)
+			int p = 16;
+			switch ((GifFlag)flg)
+			{
+				case GIF_FLG_PACKED:
 				{
-					case GIF_FLG_PACKED:
+					for (u32 j = 0; j < nloop; j++)
 					{
-						for (int j = 0; j < nloop; j++)
+						for (u32 i = 0; i < nreg; i++)
 						{
-							for (u32 i = 0; i < nreg; i++)
-							{
-								u128 reg_data;
-								reg_data.lo =  *(u64*)(dump.data + p);
-								reg_data.hi =  *(u64*)(dump.data + p + 8);
-								ParseTreeReg(regId, (GIFReg)((regs >> (i * 4)) & ((u64)(1 << 4) - 1)), reg_data, true);
-								p += 16;
-							}
+							u128 reg_data;
+							reg_data.lo =  *(u64*)(dump.data + p);
+							reg_data.hi =  *(u64*)(dump.data + p + 8);
+							ParseTreeReg(regId, (GIFReg)((regs >> (i * 4)) & ((u64)(1 << 4) - 1)), reg_data, true);
+							p += 16;
 						}
-						break;
 					}
-					case GIF_FLG_REGLIST:
-					{
-						for (int j = 0; j < nloop; j++)
-						{
-							for (u32 i = 0; i < nreg; i++)
-							{
-								u128 reg_data;
-								reg_data.lo =  *(u64*)(dump.data + p);
-								ParseTreeReg(regId, (GIFReg)((regs >> (i * 4)) & ((u64)(1 << 4) - 1)), reg_data, false);
-								p += 8;
-							}
-						}
-						break;
-					}
-					case GIF_FLG_IMAGE:
-					case GIF_FLG_IMAGE2:
-					{
-						wxString z;
-						s.Printf("IMAGE %d bytes", nloop * 16);
-						m_gif_packet->AppendItem(regId, z);
-						break;
-					}
+					break;
 				}
-
-				//m_gif_packet->AppendItem(trootId, s);
-				break;
+				case GIF_FLG_REGLIST:
+				{
+					for (u32 j = 0; j < nloop; j++)
+					{
+						for (u32 i = 0; i < nreg; i++)
+						{
+							u128 reg_data;
+							reg_data.lo =  *(u64*)(dump.data + p);
+							ParseTreeReg(regId, (GIFReg)((regs >> (i * 4)) & ((u64)(1 << 4) - 1)), reg_data, false);
+							p += 8;
+						}
+					}
+					break;
+				}
+				case GIF_FLG_IMAGE:
+				case GIF_FLG_IMAGE2:
+				{
+					wxString z;
+					s.Printf("IMAGE %d bytes", nloop * 16);
+					m_gif_packet->AppendItem(regId, z);
+					break;
+				}
 			}
-			case VSync:
-			{
-				wxString s;
-				s.Printf("Field = %llu", (u64)(dump.data));
-				m_gif_packet->AppendItem(rootId, s);
-				break;
-			}
-			case ReadFIFO2:
-			{
-				wxString s;
-				s.Printf("ReadFIFO2: Size = %d byte", dump.length);
-				m_gif_packet->AppendItem(rootId, s);
-				break;
-			}
-			case Registers:
-			{
-				m_gif_packet->AppendItem(rootId, "Registers");
-				break;
-			}
+			break;
+		}
+		case VSync:
+		{
+			wxString s;
+			s.Printf("Field = %llu", (u64)(dump.data));
+			m_gif_packet->AppendItem(rootId, s);
+			break;
+		}
+		case ReadFIFO2:
+		{
+			wxString s;
+			s.Printf("ReadFIFO2: Size = %d byte", dump.length);
+			m_gif_packet->AppendItem(rootId, s);
+			break;
+		}
+		case Registers:
+			m_gif_packet->AppendItem(rootId, "Registers");
+			break;
 	}
 	m_gif_packet->ExpandAll();
 }
@@ -405,10 +389,8 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 	switch (reg)
 	{
 		case PRIM:
-		{
 			ParseTreePrim(rootId, data.lo);
 			break;
-		}
 		case RGBAQ:
 		{
 			std::vector<wxString> rgb_infos(5);
@@ -697,7 +679,9 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	if (m_root_window->m_debug_mode->GetValue())
 		m_root_window->GenPacketList(m_root_window->m_dump_packets);
 
-	return;
+	//return here to debug pre gs
+	//return;
+
 	GetCorePlugins().Init();
 	GSsetBaseMem((void*)regs);
 	if (GSopen2((void*)pDsp, renderer_override) != 0)
