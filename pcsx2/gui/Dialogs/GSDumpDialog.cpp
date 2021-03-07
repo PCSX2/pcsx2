@@ -184,7 +184,7 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 	return;
 }
 
-void Dialogs::GSDumpDialog::ProcessDumpEvent(GSData& event, char* regs)
+void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSData& event, char* regs)
 {
     switch (event.id)
 	{
@@ -249,13 +249,13 @@ void Dialogs::GSDumpDialog::ToStart(wxCommandEvent& event)
 	m_button_events.push_back(GSEvent{RunCursor, 0});
 }
 
-void Dialogs::GSDumpDialog::GenPacketList(std::vector<GSData>& dump)
+void Dialogs::GSDumpDialog::GenPacketList()
 {
 	int i = 0;
 	m_gif_list->DeleteAllItems();
 	wxTreeItemId mainrootId = m_gif_list->AddRoot("root");
 	wxTreeItemId rootId = m_gif_list->AppendItem(mainrootId, "0 - VSync");
-	for (auto& element : dump)
+	for (auto& element : m_dump_packets)
 	{
 		wxString s, t;
 		element.id == Transfer ? t.Printf(" - %s", GSTransferPathNames[element.path]) : t.Printf("");
@@ -577,7 +577,7 @@ void Dialogs::GSDumpDialog::ParseTreePrim(wxTreeItemId& id, u32 prim)
 void Dialogs::GSDumpDialog::CheckDebug(wxCommandEvent& event)
 {
 	if (m_debug_mode->GetValue())
-		GenPacketList(m_dump_packets);
+		GenPacketList();
 	else
 	{
 		m_gif_list->DeleteAllItems();
@@ -675,7 +675,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	}
 
 	if (m_root_window->m_debug_mode->GetValue())
-		m_root_window->GenPacketList(m_root_window->m_dump_packets);
+		m_root_window->GenPacketList();
 
 	//return here to debug pre gs
 	//return;
@@ -743,20 +743,19 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 				}
 
 				// do vsync
-				GSData vsync_end = {VSync, 0, 0, Dummy};
-				m_root_window->ProcessDumpEvent(vsync_end, regs);
+				m_root_window->ProcessDumpEvent({VSync, 0, 0, Dummy}, regs);
 			}
 		}
 		else
 		{
-			while (i < (m_root_window->m_dump_packets.size()-1))
+			while (i < (m_root_window->m_dump_packets.size()))
 			{
 				m_root_window->ProcessDumpEvent(m_root_window->m_dump_packets[i++], regs);
 
-				if (m_root_window->m_dump_packets[i].id == VSync)
+				if (i >= m_root_window->m_dump_packets.size() || m_root_window->m_dump_packets[i].id == VSync)
 					break;
 			}
-			if (i >= m_root_window->m_dump_packets.size()-1)
+			if (i >= m_root_window->m_dump_packets.size())
 				i = 0;
 		}
 	}
