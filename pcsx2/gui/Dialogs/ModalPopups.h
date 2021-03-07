@@ -211,8 +211,10 @@ namespace Dialogs
 		{
 			GSType id;
 			std::unique_ptr<char[]> data;
-			int length;
-			GSTransferPath path;
+			int length = 0;
+			GSTransferPath path = Dummy;
+			GSData(GSType type_id);
+			GSData(pxInputStream* dump_file);
 		};
 		enum ButtonState
 		{

@@ -220,6 +220,31 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 	return;
 }
 
+Dialogs::GSDumpDialog::GSData::GSData(GSType type_id)
+	: id(type_id) {}
+
+Dialogs::GSDumpDialog::GSData::GSData(pxInputStream* dump_file)
+{
+	dump_file->Read(&id, 1);
+	switch (id)
+	{
+		case Transfer:
+			dump_file->Read(&path, 1);
+			dump_file->Read(&length, 4);
+			break;
+		case VSync:
+			length = 1;
+			break;
+		case ReadFIFO2:
+			length = 4;
+			break;
+		case Registers:
+			length = 8192;
+	}
+	data = std::make_unique<char[]>(length);
+	dump_file->Read(data.get(), length);
+}
+
 void Dialogs::GSDumpDialog::CheckDebug(wxCommandEvent& event)
 {
 	if (m_debug_mode->GetValue())
@@ -726,45 +751,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	m_root_window->m_dump_packets.clear();
 
 	while (m_dump_file->Tell() < m_dump_file->Length())
-	{
-		GSType id = Transfer;
-		m_dump_file->Read(&id, 1);
-		switch (id)
-		{
-			case Transfer:
-			{
-				GSTransferPath id_transfer;
-				m_dump_file->Read(&id_transfer, 1);
-				s32 size = 0;
-				m_dump_file->Read(&size, 4);
-				std::unique_ptr<char[]> transfer_data(new char[size]);
-				m_dump_file->Read(transfer_data.get(), size);
-				m_root_window->m_dump_packets.push_back({id, std::move(transfer_data), size, id_transfer});
-				break;
-			}
-			case VSync:
-			{
-				std::unique_ptr<char[]> vsync(new char[1]);
-				m_dump_file->Read(vsync.get(), 1);
-				m_root_window->m_dump_packets.push_back({id, std::move(vsync), 1, Dummy});
-				break;
-			}
-			case ReadFIFO2:
-			{
-				std::unique_ptr<char[]> fifo(new char[4]);
-				m_dump_file->Read(fifo.get(), 4);
-				m_root_window->m_dump_packets.push_back({id, std::move(fifo), 4, Dummy});
-				break;
-			}
-			case Registers:
-			{
-				std::unique_ptr<char[]> regs_tmp(new char[8192]);
-				m_dump_file->Read(regs_tmp.get(), 8192);
-				m_root_window->m_dump_packets.push_back({id, std::move(regs_tmp), 8192, Dummy});
-				break;
-			}
-		}
-	}
+		m_root_window->m_dump_packets.emplace_back(m_dump_file.get());
 
 	GetCorePlugins().Init();
 	sApp.OpenGsPanel();
@@ -845,18 +832,15 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 				}
 
 				// do vsync
-				m_root_window->ProcessDumpEvent({VSync, 0, 0, Dummy}, regs);
+				m_root_window->ProcessDumpEvent(GSData(VSync), regs);
 			}
 		}
-		else
+		else if (m_root_window->m_dump_packets.size())
 		{
-			while (i < (m_root_window->m_dump_packets.size()))
-			{
+			do
 				m_root_window->ProcessDumpEvent(m_root_window->m_dump_packets[i++], regs);
+			while (i < m_root_window->m_dump_packets.size() && m_root_window->m_dump_packets[i].id != VSync);
 
-				if (i >= m_root_window->m_dump_packets.size() || m_root_window->m_dump_packets[i].id == VSync)
-					break;
-			}
 			if (i >= m_root_window->m_dump_packets.size())
 				i = 0;
 		}
