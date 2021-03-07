@@ -22,7 +22,6 @@
 
 
 #include "Utilities/EmbeddedImage.h"
-#include "Utilities/pxStreams.h"
 #include "Resources/NoIcon.h"
 #include "GS.h"
 
@@ -52,7 +51,6 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	: wxDialogWithHelpers(parent, _("GSDumpGov"), pxDialogFlags())
 	, m_dump_list(new wxListView(this, ID_DUMP_LIST, wxDefaultPosition, wxSize(400, 300), wxLC_NO_HEADER | wxLC_REPORT | wxLC_SINGLE_SEL))
 	, m_preview_image(new wxStaticBitmap(this, wxID_ANY, wxBitmap(EmbeddedImage<res_NoIcon>().Get()), wxDefaultPosition, wxSize(400,250)))
-	, m_selected_dump(new wxString(""))
 	, m_debug_mode(new wxCheckBox(this, ID_DEBUG_MODE, _("Debug Mode")))
 	, m_renderer_overrides(new wxRadioBox())
 	, m_gif_list(new wxTreeCtrl(this, ID_SEL_PACKET, wxDefaultPosition, wxSize(400, 300), wxTR_HIDE_ROOT | wxTR_HAS_BUTTONS | wxTR_LINES_AT_ROOT))
@@ -154,11 +152,10 @@ void Dialogs::GSDumpDialog::SelectedDump(wxListEvent& evt)
 		auto img = wxImage(filename_preview);
 		img.Rescale(400,250, wxIMAGE_QUALITY_HIGH);
 		m_preview_image->SetBitmap(wxBitmap(img));
-		delete m_selected_dump;
-		m_selected_dump = new wxString(filename);
 	}
 	else
 		m_preview_image->SetBitmap(EmbeddedImage<res_NoIcon>().Get());
+	m_selected_dump = wxString(filename);
 }
 
 void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
@@ -169,6 +166,16 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 	m_selection->Enable();
 	m_vsync->Enable();
 	GetCorePlugins().Shutdown();
+
+	m_thread->m_dump_file = std::make_unique<pxInputStream>(m_selected_dump, new wxFFileInputStream(m_selected_dump));
+
+	if (!(m_thread->m_dump_file)->IsOk())
+	{
+		wxString s;
+		s.Printf(_("Failed to load the dump %s !"), m_selected_dump);
+		wxMessageBox(s, _("GSDumpGov"), wxICON_ERROR);
+		return;
+	}
 	m_thread->Start();
 	return;
 }
@@ -603,48 +610,41 @@ void Dialogs::GSDumpDialog::GSThread::OnStop()
 	m_root_window->m_gif_packet->DeleteAllItems();
 	m_root_window->m_gif_list->Refresh();
 	m_root_window->m_button_events.clear();
+	m_dump_file->Close();
 }
 
 void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 {
-	pxInputStream dump_file(*m_root_window->m_selected_dump, new wxFFileInputStream(*m_root_window->m_selected_dump));
-
-	if (!dump_file.IsOk())
-	{
-		OnStop();
-		return;
-	}
-
 	u32 crc = 0, ss = 0;
 	// XXX: check the numbers are correct
 	const int renderer_override = m_root_window->m_renderer_overrides->GetSelection();
 	char regs[8192];
 
-	dump_file.Read(&crc, 4);
-	dump_file.Read(&ss, 4);
+	m_dump_file->Read(&crc, 4);
+	m_dump_file->Read(&ss, 4);
 
 
 	char* state_data = (char*)malloc(sizeof(char) * ss);
-	dump_file.Read(state_data, ss);
-	dump_file.Read(&regs, 8192);
+	m_dump_file->Read(state_data, ss);
+	m_dump_file->Read(&regs, 8192);
 
 	freezeData fd = {(int)ss, (s8*)state_data};
 	m_root_window->m_dump_packets.clear();
 
-	while (dump_file.Tell() < dump_file.Length())
+	while (	m_dump_file->Tell() < m_dump_file->Length())
 	{
 		GSType id = Transfer;
-		dump_file.Read(&id, 1);
+		m_dump_file->Read(&id, 1);
 		switch (id)
 		{
 			case Transfer:
 			{
 				GSTransferPath id_transfer;
-				dump_file.Read(&id_transfer, 1);
+				m_dump_file->Read(&id_transfer, 1);
 				s32 size = 0;
-				dump_file.Read(&size, 4);
+				m_dump_file->Read(&size, 4);
 				char* transfer_data = (char*)malloc(size);
-				dump_file.Read(transfer_data, size);
+				m_dump_file->Read(transfer_data, size);
 				GSData data = {id, transfer_data, size, id_transfer};
 				m_root_window->m_dump_packets.push_back(data);
 				break;
@@ -652,7 +652,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 			case VSync:
 			{
 				u8 vsync = 0;
-				dump_file.Read(&vsync, 1);
+				m_dump_file->Read(&vsync, 1);
 				GSData data = {id, (char*)vsync, 1, Dummy};
 				m_root_window->m_dump_packets.push_back(data);
 				break;
@@ -660,7 +660,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 			case ReadFIFO2:
 			{
 				u32 fifo = 0;
-				dump_file.Read(&fifo, 4);
+				m_dump_file->Read(&fifo, 4);
 				GSData data = {id, (char*)fifo, 4, Dummy};
 				m_root_window->m_dump_packets.push_back(data);
 				break;
@@ -668,7 +668,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 			case Registers:
 			{
 				char regs_tmp[8192];
-				dump_file.Read(&regs, 8192);
+				m_dump_file->Read(&regs, 8192);
 				GSData data = {id, regs_tmp, 8192, Dummy};
 				m_root_window->m_dump_packets.push_back(data);
 				break;
@@ -757,7 +757,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 				if (m_root_window->m_dump_packets[i].id == VSync)
 					break;
 			}
-			if (i >= m_root_window->m_dump_packets.size())
+			if (i >= m_root_window->m_dump_packets.size()-1)
 				i = 0;
 		}
 	}
