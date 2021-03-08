@@ -69,14 +69,14 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	, m_thread(std::make_unique<GSThread>(this))
 	, m_run(new wxButton(this, ID_RUN_DUMP, _("Run"), wxDefaultPosition, wxSize(150, 100)))
 {
-	wxBoxSizer& dump_info(*new wxBoxSizer(wxVERTICAL));
-	wxBoxSizer& dump_preview(*new wxBoxSizer(wxVERTICAL));
-	wxFlexGridSizer& debugger(*new wxFlexGridSizer(3, StdPadding, StdPadding));
-	wxBoxSizer& dumps(*new wxBoxSizer(wxHORIZONTAL));
-	wxBoxSizer& dbg_tree(*new wxBoxSizer(wxVERTICAL));
-	wxBoxSizer& dbg_actions(*new wxBoxSizer(wxVERTICAL));
-	wxBoxSizer& gif(*new wxBoxSizer(wxVERTICAL));
-	wxBoxSizer& dumps_list(*new wxBoxSizer(wxVERTICAL));
+	wxBoxSizer* dump_info = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* dump_preview = new wxBoxSizer(wxVERTICAL);
+	wxFlexGridSizer* debugger = new wxFlexGridSizer(3, StdPadding, StdPadding);
+	wxBoxSizer* dumps = new wxBoxSizer(wxHORIZONTAL);
+	wxBoxSizer* dbg_tree = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* dbg_actions = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* gif = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* dumps_list = new wxBoxSizer(wxVERTICAL);
 
 	wxArrayString rdoverrides;
 	rdoverrides.Add("None");
@@ -85,30 +85,30 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	rdoverrides.Add("OGL HW");
 	m_renderer_overrides->Create(this, wxID_ANY, "Renderer overrides", wxDefaultPosition, wxDefaultSize, rdoverrides, 1);
 
-	dbg_tree += new wxStaticText(this, wxID_ANY, _("GIF Packets"));
-	dbg_tree += m_gif_list | StdExpand();
-	dbg_actions += m_debug_mode;
-	dbg_actions += m_start | StdExpand();
-	dbg_actions += m_step | StdExpand();
-	dbg_actions += m_selection | StdExpand();
-	dbg_actions += m_vsync | StdExpand();
-	gif += new wxStaticText(this, wxID_ANY, _("Packet Content"));
-	gif += m_gif_packet | StdExpand();
+	dbg_tree->Add(new wxStaticText(this, wxID_ANY, _("GIF Packets")));
+	dbg_tree->Add(m_gif_list, StdExpand());
+	dbg_actions->Add(m_debug_mode);
+	dbg_actions->Add(m_start, StdExpand());
+	dbg_actions->Add(m_step, StdExpand());
+	dbg_actions->Add(m_selection, StdExpand());
+	dbg_actions->Add(m_vsync, StdExpand());
+	gif->Add(new wxStaticText(this, wxID_ANY, _("Packet Content")));
+	gif->Add(m_gif_packet, StdExpand());
 
-	dumps_list += new wxStaticText(this, wxID_ANY, _("GS Dumps List")) | StdExpand();
-	dumps_list += m_dump_list | StdExpand();
-	dump_info += m_renderer_overrides | StdExpand();
-	dump_info += m_run | StdExpand();
-	dump_preview += new wxStaticText(this, wxID_ANY, _("Preview")) | StdExpand();
-	dump_preview += m_preview_image | StdCenter();
+	dumps_list->Add(new wxStaticText(this, wxID_ANY, _("GS Dumps List")), StdExpand());
+	dumps_list->Add(m_dump_list, StdExpand());
+	dump_info->Add(m_renderer_overrides, StdExpand());
+	dump_info->Add(m_run, StdExpand());
+	dump_preview->Add(new wxStaticText(this, wxID_ANY, _("Preview")), StdExpand());
+	dump_preview->Add(m_preview_image, StdCenter());
 
-	dumps += dumps_list;
-	dumps += dump_info;
-	dumps += dump_preview;
+	dumps->Add(dumps_list);
+	dumps->Add(dump_info);
+	dumps->Add(dump_preview);
 
-	debugger += dbg_tree;
-	debugger += dbg_actions;
-	debugger += gif;
+	debugger->Add(dbg_tree);
+	debugger->Add(dbg_actions);
+	debugger->Add(gif);
 	
 	*this += dumps;
 	*this += debugger;
