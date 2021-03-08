@@ -120,18 +120,226 @@
                       <packing>
                         <property name="left_attach">1</property>
                         <property name="top_attach">0</property>
+                        <property name="width">2</property>
                       </packing>
                     </child>
                     <child>
                       <object class="GtkLabel" id="label4">
                         <property name="visible">True</property>
                         <property name="can_focus">False</property>
+                        <property name="halign">start</property>
                         <property name="label" translatable="yes">Ethernet Device: </property>
                       </object>
                       <packing>
                         <property name="left_attach">0</property>
                         <property name="top_attach">0</property>
                       </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">Intercept DHCP:</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">1</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="IDC_CHECK_DHCP">
+                        <property name="label" translatable="yes">Enabled</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="draw_indicator">True</property>
+                        <signal name="toggled" handler="OnInterceptChanged" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">1</property>
+                        <property name="width">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">PS2 Address:</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">Subnet Mask:</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">Gateway Address:</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">DNS1 Address:</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkLabel">
+                        <property name="visible">True</property>
+                        <property name="can_focus">False</property>
+                        <property name="halign">start</property>
+                        <property name="label" translatable="yes">DNS2 Address:</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">0</property>
+                        <property name="top_attach">6</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="IDC_IPADDRESS_IP">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="max_length">15</property>
+                        <property name="text" translatable="yes">0.0.0.0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">2</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="IDC_IPADDRESS_SUBNET">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="max_length">15</property>
+                        <property name="text" translatable="yes">0.0.0.0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="IDC_IPADDRESS_GATEWAY">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="max_length">15</property>
+                        <property name="text" translatable="yes">0.0.0.0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="IDC_IPADDRESS_DNS1">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="max_length">15</property>
+                        <property name="text" translatable="yes">0.0.0.0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkEntry" id="IDC_IPADDRESS_DNS2">
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="max_length">15</property>
+                        <property name="text" translatable="yes">0.0.0.0</property>
+                      </object>
+                      <packing>
+                        <property name="left_attach">1</property>
+                        <property name="top_attach">6</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="IDC_CHECK_SUBNET">
+                        <property name="label" translatable="yes">Auto</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="draw_indicator">True</property>
+                        <signal name="toggled" handler="OnAutoMaskChanged" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">3</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="IDC_CHECK_GATEWAY">
+                        <property name="label" translatable="yes">Auto</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="draw_indicator">True</property>
+                        <signal name="toggled" handler="OnAutoGatewayChanged" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">4</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="IDC_CHECK_DNS1">
+                        <property name="label" translatable="yes">Auto</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="draw_indicator">True</property>
+                        <signal name="toggled" handler="OnAutoDNS1Changed" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">5</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <object class="GtkCheckButton" id="IDC_CHECK_DNS2">
+                        <property name="label" translatable="yes">Auto</property>
+                        <property name="visible">True</property>
+                        <property name="can_focus">True</property>
+                        <property name="receives_default">False</property>
+                        <property name="draw_indicator">True</property>
+                        <signal name="toggled" handler="OnAutoDNS2Changed" swapped="no"/>
+                      </object>
+                      <packing>
+                        <property name="left_attach">2</property>
+                        <property name="top_attach">6</property>
+                      </packing>
+                    </child>
+                    <child>
+                      <placeholder/>
                     </child>
                   </object>
                   <packing>

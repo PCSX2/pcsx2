@@ -32,6 +32,7 @@
 #endif
 
 #include "PacketReader/IP/IP_Address.h"
+#include "InternalServers/DHCP_Server.h"
 
 struct Config;
 
@@ -92,6 +93,8 @@ private:
 	std::mutex internalRxMutex;
 	std::condition_variable internalRxCV;
 	bool internalRxHasData = false;
+
+	InternalServers::DHCP_Server dhcpServer = InternalServers::DHCP_Server([&] { InternalSignalReceived(); });
 
 public:
 	NetAdapter();

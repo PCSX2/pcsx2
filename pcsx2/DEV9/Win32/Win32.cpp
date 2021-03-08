@@ -26,10 +26,13 @@
 #include "..\DEV9.h"
 #include "..\pcap_io.h"
 #include "..\net.h"
+#include "..\PacketReader\IP\IP_Address.h"
 #include "tap.h"
 #include "AppCoreThread.h"
 
 #include "../ATA/HddCreate.h"
+
+using PacketReader::IP::IP_Address;
 
 extern HINSTANCE hInst;
 //HANDLE handleDEV9Thread = NULL;
@@ -45,6 +48,101 @@ void SysMessage(char* fmt, ...)
 	vsprintf(tmp, fmt, list);
 	va_end(list);
 	MessageBoxA(0, tmp, "Dev9 Msg", 0);
+}
+
+void IPControl_SetValue(HWND hwndCtl, IP_Address value)
+{
+	int tmp = MAKEIPADDRESS(value.bytes[0], value.bytes[1], value.bytes[2], value.bytes[3]);
+	SendMessage(hwndCtl, IPM_SETADDRESS, (WPARAM)0, (LPARAM)tmp);
+}
+IP_Address IPControl_GetValue(HWND hwndCtl)
+{
+	int tmp;
+	SendMessage(hwndCtl, IPM_GETADDRESS, (WPARAM)0, (LPARAM)&tmp);
+	IP_Address ret;
+	ret.bytes[0] = FIRST_IPADDRESS(tmp);
+	ret.bytes[1] = SECOND_IPADDRESS(tmp);
+	ret.bytes[2] = THIRD_IPADDRESS(tmp);
+	ret.bytes[3] = FOURTH_IPADDRESS(tmp);
+	return ret;
+}
+
+void IPControl_Enable(HWND hwndCtl, bool enabled, IP_Address value)
+{
+	if (enabled)
+	{
+		EnableWindow(hwndCtl, true);
+		IPControl_SetValue(hwndCtl, value);
+	}
+	else
+	{
+		EnableWindow(hwndCtl, false);
+		IPControl_SetValue(hwndCtl, {0});
+	}
+}
+
+void AutoMaskChanged(HWND hW)
+{
+	IPControl_Enable(GetDlgItem(hW, IDC_IPADDRESS_SUBNET), !Button_GetCheck(GetDlgItem(hW, IDC_CHECK_SUBNET)), config.Mask);
+}
+
+void AutoGatewayChanged(HWND hW)
+{
+	IPControl_Enable(GetDlgItem(hW, IDC_IPADDRESS_GATEWAY), !Button_GetCheck(GetDlgItem(hW, IDC_CHECK_GATEWAY)), config.Gateway);
+}
+
+void AutoDNS1Changed(HWND hW)
+{
+	IPControl_Enable(GetDlgItem(hW, IDC_IPADDRESS_DNS1), !Button_GetCheck(GetDlgItem(hW, IDC_CHECK_DNS1)), config.DNS1);
+}
+
+void AutoDNS2Changed(HWND hW)
+{
+	IPControl_Enable(GetDlgItem(hW, IDC_IPADDRESS_DNS2), !Button_GetCheck(GetDlgItem(hW, IDC_CHECK_DNS2)), config.DNS1);
+}
+
+void InterceptChanged(HWND hW)
+{
+	if (Button_GetCheck(GetDlgItem(hW, IDC_CHECK_DHCP)))
+	{
+		EnableWindow(GetDlgItem(hW, IDC_IPADDRESS_IP), true);
+		IPControl_SetValue(GetDlgItem(hW, IDC_IPADDRESS_IP), config.PS2IP);
+
+		Button_Enable(GetDlgItem(hW, IDC_CHECK_SUBNET), true);
+		Button_Enable(GetDlgItem(hW, IDC_CHECK_GATEWAY), true);
+		Button_Enable(GetDlgItem(hW, IDC_CHECK_DNS1), true);
+		Button_Enable(GetDlgItem(hW, IDC_CHECK_DNS2), true);
+
+		Button_SetCheck(GetDlgItem(hW, IDC_CHECK_SUBNET), config.AutoMask);
+		Button_SetCheck(GetDlgItem(hW, IDC_CHECK_GATEWAY), config.AutoGateway);
+		Button_SetCheck(GetDlgItem(hW, IDC_CHECK_DNS1), config.AutoDNS1);
+		Button_SetCheck(GetDlgItem(hW, IDC_CHECK_DNS2), config.AutoDNS2);
+
+		AutoMaskChanged(hW);
+		AutoGatewayChanged(hW);
+		AutoDNS1Changed(hW);
+		AutoDNS2Changed(hW);
+	}
+	else
+	{
+		EnableWindow(GetDlgItem(hW, IDC_IPADDRESS_IP), false);
+		IPControl_SetValue(GetDlgItem(hW, IDC_IPADDRESS_IP), {0});
+
+		Button_Enable(GetDlgItem(hW, IDC_CHECK_SUBNET), false);
+		Button_Enable(GetDlgItem(hW, IDC_CHECK_GATEWAY), false);
+		Button_Enable(GetDlgItem(hW, IDC_CHECK_DNS1), false);
+		Button_Enable(GetDlgItem(hW, IDC_CHECK_DNS2), false);
+
+		Button_SetCheck(GetDlgItem(hW, IDC_CHECK_SUBNET), true);
+		Button_SetCheck(GetDlgItem(hW, IDC_CHECK_GATEWAY), true);
+		Button_SetCheck(GetDlgItem(hW, IDC_CHECK_DNS1), true);
+		Button_SetCheck(GetDlgItem(hW, IDC_CHECK_DNS2), true);
+
+		IPControl_Enable(GetDlgItem(hW, IDC_IPADDRESS_SUBNET), false, config.Mask);
+		IPControl_Enable(GetDlgItem(hW, IDC_IPADDRESS_GATEWAY), false, config.Gateway);
+		IPControl_Enable(GetDlgItem(hW, IDC_IPADDRESS_DNS1), false, config.DNS1);
+		IPControl_Enable(GetDlgItem(hW, IDC_IPADDRESS_DNS2), false, config.DNS1);
+	}
 }
 
 void OnInitDialog(HWND hW)
@@ -74,6 +172,9 @@ void OnInitDialog(HWND hW)
 		if (config.EthApi == adapters[i].type && strcmp(guid_char, config.Eth) == 0)
 			ComboBox_SetCurSel(GetDlgItem(hW, IDC_ETHDEV), itm);
 	}
+
+	Button_SetCheck(GetDlgItem(hW, IDC_CHECK_DHCP), config.InterceptDHCP);
+	InterceptChanged(hW);
 
 	SetWindowText(GetDlgItem(hW, IDC_HDDFILE), config.Hdd);
 
@@ -188,6 +289,28 @@ void OnOk(HWND hW)
 		strcpy(config.Eth, guid_char);
 	}
 
+	config.InterceptDHCP = Button_GetCheck(GetDlgItem(hW, IDC_CHECK_DHCP));
+	if (config.InterceptDHCP)
+	{
+		config.PS2IP = IPControl_GetValue(GetDlgItem(hW, IDC_IPADDRESS_IP));
+
+		config.AutoMask = Button_GetCheck(GetDlgItem(hW, IDC_CHECK_SUBNET));
+		if (!config.AutoMask)
+			config.Mask = IPControl_GetValue(GetDlgItem(hW, IDC_IPADDRESS_SUBNET));
+
+		config.AutoGateway = Button_GetCheck(GetDlgItem(hW, IDC_CHECK_GATEWAY));
+		if (!config.AutoGateway)
+			config.Gateway = IPControl_GetValue(GetDlgItem(hW, IDC_IPADDRESS_GATEWAY));
+
+		config.AutoDNS1 = Button_GetCheck(GetDlgItem(hW, IDC_CHECK_DNS1));
+		if (!config.AutoDNS1)
+			config.DNS1 = IPControl_GetValue(GetDlgItem(hW, IDC_IPADDRESS_DNS1));
+
+		config.AutoDNS2 = Button_GetCheck(GetDlgItem(hW, IDC_CHECK_DNS2));
+		if (!config.AutoDNS2)
+			config.DNS2 = IPControl_GetValue(GetDlgItem(hW, IDC_IPADDRESS_DNS2));
+	}
+
 	GetWindowText(GetDlgItem(hW, IDC_HDDFILE), config.Hdd, 256);
 
 	if (Edit_GetTextLength(GetDlgItem(hW, IDC_HDDSIZE_TEXT)) == 0)
@@ -258,6 +381,21 @@ BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					}
 
 					OnOk(hW);
+					return TRUE;
+				case IDC_CHECK_DHCP:
+					InterceptChanged(hW);
+					return TRUE;
+				case IDC_CHECK_SUBNET:
+					AutoMaskChanged(hW);
+					return TRUE;
+				case IDC_CHECK_GATEWAY:
+					AutoGatewayChanged(hW);
+					return TRUE;
+				case IDC_CHECK_DNS1:
+					AutoDNS1Changed(hW);
+					return TRUE;
+				case IDC_CHECK_DNS2:
+					AutoDNS2Changed(hW);
 					return TRUE;
 				case IDC_BROWSE:
 					OnBrowse(hW);

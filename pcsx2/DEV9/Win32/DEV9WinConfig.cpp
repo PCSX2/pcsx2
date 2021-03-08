@@ -19,9 +19,10 @@
 
 #include <fstream>
 
-//#include <winsock2.h>
 #include "..\DEV9.h"
 #include "AppConfig.h"
+
+#include "ws2tcpip.h"
 
 BOOL WritePrivateProfileInt(LPCWSTR lpAppName, LPCWSTR lpKeyName, int intvar, LPCWSTR lpFileName)
 {
@@ -47,13 +48,37 @@ void SaveConf()
 	nfile.write((char*)L"[DEV9]", 14);
 	nfile.close();
 
+	wchar_t addrBuff[INET_ADDRSTRLEN] = {0};
 	wchar_t wEth[sizeof(config.Eth)] = {0};
 	mbstowcs(wEth, config.Eth, sizeof(config.Eth) - 1);
 	WritePrivateProfileString(L"DEV9", L"Eth", wEth, file.c_str());
-	WritePrivateProfileInt(L"DEV9", L"EthApi", (int)config.EthApi, file.c_str());
-	WritePrivateProfileString(L"DEV9", L"Hdd", config.Hdd, file.c_str());
 
+	WritePrivateProfileInt(L"DEV9", L"EthApi", (int)config.EthApi, file.c_str());
+	WritePrivateProfileInt(L"DEV9", L"InterceptDHCP", config.InterceptDHCP, file.c_str());
+
+	InetNtop(AF_INET, &config.PS2IP, addrBuff, INET_ADDRSTRLEN);
+	WritePrivateProfileString(L"DEV9", L"PS2IP", addrBuff, file.c_str());
+
+	InetNtop(AF_INET, &config.Mask, addrBuff, INET_ADDRSTRLEN);
+	WritePrivateProfileString(L"DEV9", L"Subnet", addrBuff, file.c_str());
+	WritePrivateProfileInt(L"DEV9", L"AutoSubnet", config.AutoMask, file.c_str());
+
+	InetNtop(AF_INET, &config.Gateway, addrBuff, INET_ADDRSTRLEN);
+	WritePrivateProfileString(L"DEV9", L"Gateway", addrBuff, file.c_str());
+	WritePrivateProfileInt(L"DEV9", L"AutoGateway", config.AutoGateway, file.c_str());
+
+	InetNtop(AF_INET, &config.DNS1, addrBuff, INET_ADDRSTRLEN);
+	WritePrivateProfileString(L"DEV9", L"DNS1", addrBuff, file.c_str());
+	WritePrivateProfileInt(L"DEV9", L"AutoDNS1", config.AutoDNS1, file.c_str());
+
+	InetNtop(AF_INET, &config.DNS2, addrBuff, INET_ADDRSTRLEN);
+	WritePrivateProfileString(L"DEV9", L"DNS2", addrBuff, file.c_str());
+	WritePrivateProfileInt(L"DEV9", L"AutoDNS2", config.AutoDNS2, file.c_str());
+
+
+	WritePrivateProfileString(L"DEV9", L"Hdd", config.Hdd, file.c_str());
 	WritePrivateProfileInt(L"DEV9", L"HddSize", config.HddSize, file.c_str());
+
 	WritePrivateProfileInt(L"DEV9", L"ethEnable", config.ethEnable, file.c_str());
 	WritePrivateProfileInt(L"DEV9", L"hddEnable", config.hddEnable, file.c_str());
 }
@@ -64,15 +89,38 @@ void LoadConf()
 	if (FileExists(file.c_str()) == false)
 		return;
 
+	wchar_t addrBuff[INET_ADDRSTRLEN] = {0};
 	wchar_t wEth[sizeof(config.Eth)] = {0};
 	mbstowcs(wEth, ETH_DEF, sizeof(config.Eth) - 1);
 	GetPrivateProfileString(L"DEV9", L"Eth", wEth, wEth, sizeof(config.Eth), file.c_str());
 	wcstombs(config.Eth, wEth, sizeof(config.Eth) - 1);
+
 	config.EthApi = (NetApi)GetPrivateProfileInt(L"DEV9", L"EthApi", (int)NetApi::TAP, file.c_str());
+	config.InterceptDHCP = GetPrivateProfileInt(L"DEV9", L"InterceptDHCP", config.InterceptDHCP, file.c_str());
+
+	GetPrivateProfileString(L"DEV9", L"PS2IP", L"0.0.0.0", addrBuff, INET_ADDRSTRLEN, file.c_str());
+	InetPton(AF_INET, addrBuff, &config.PS2IP);
+
+	GetPrivateProfileString(L"DEV9", L"Subnet", L"0.0.0.0", addrBuff, INET_ADDRSTRLEN, file.c_str());
+	InetPton(AF_INET, addrBuff, &config.Mask);
+	config.AutoMask = GetPrivateProfileInt(L"DEV9", L"AutoSubnet", config.AutoMask, file.c_str());
+
+	GetPrivateProfileString(L"DEV9", L"Gateway", L"0.0.0.0", addrBuff, INET_ADDRSTRLEN, file.c_str());
+	InetPton(AF_INET, addrBuff, &config.Gateway);
+	config.AutoGateway = GetPrivateProfileInt(L"DEV9", L"AutoGateway", config.AutoGateway, file.c_str());
+
+	GetPrivateProfileString(L"DEV9", L"DNS1", L"0.0.0.0", addrBuff, INET_ADDRSTRLEN, file.c_str());
+	InetPton(AF_INET, addrBuff, &config.DNS1);
+	config.AutoDNS1 = GetPrivateProfileInt(L"DEV9", L"AutoDNS1", config.AutoDNS1, file.c_str());
+
+	GetPrivateProfileString(L"DEV9", L"DNS2", L"0.0.0.0", addrBuff, INET_ADDRSTRLEN, file.c_str());
+	InetPton(AF_INET, addrBuff, &config.DNS2);
+	config.AutoDNS2 = GetPrivateProfileInt(L"DEV9", L"AutoDNS2", config.AutoDNS2, file.c_str());
+
 
 	GetPrivateProfileString(L"DEV9", L"Hdd", HDD_DEF, config.Hdd, sizeof(config.Hdd), file.c_str());
-
 	config.HddSize = GetPrivateProfileInt(L"DEV9", L"HddSize", config.HddSize, file.c_str());
+
 	config.ethEnable = GetPrivateProfileInt(L"DEV9", L"ethEnable", config.ethEnable, file.c_str());
 	config.hddEnable = GetPrivateProfileInt(L"DEV9", L"hddEnable", config.hddEnable, file.c_str());
 }

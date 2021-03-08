@@ -275,6 +275,9 @@ void NetAdapter::InitInternalServer(ifaddrs* adapter)
 	if (adapter == nullptr)
 		Console.Error("DEV9: InitInternalServer() got nullptr for adapter");
 
+	if (config.InterceptDHCP)
+		dhcpServer.Init(adapter);
+
 	if (blocks())
 	{
 		internalRxThreadRunning.store(true);
@@ -290,10 +293,26 @@ void NetAdapter::ReloadInternalServer(ifaddrs* adapter)
 {
 	if (adapter == nullptr)
 		Console.Error("DEV9: ReloadInternalServer() got nullptr for adapter");
+
+	if (config.InterceptDHCP)
+		dhcpServer.Init(adapter);
 }
 
 bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 {
+	IP_Payload* updpkt = dhcpServer.Recv();
+	if (updpkt != nullptr)
+	{
+		IP_Packet* ippkt = new IP_Packet(updpkt);
+		ippkt->destinationIP = {255, 255, 255, 255};
+		ippkt->sourceIP = internalIP;
+		EthernetFrame frame(ippkt);
+		memcpy(frame.sourceMAC, internalMAC, 6);
+		memcpy(frame.destinationMAC, ps2MAC, 6);
+		frame.protocol = (u16)EtherType::IPv4;
+		frame.WritePacket(pkt);
+		return true;
+	}
 	return false;
 }
 
@@ -304,6 +323,19 @@ bool NetAdapter::InternalServerSend(NetPacket* pkt)
 	{
 		PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
 		IP_Packet ippkt(payload->data, payload->GetLength());
+
+		if (ippkt.protocol == (u16)IP_Type::UDP)
+		{
+			IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(ippkt.GetPayload());
+			UDP_Packet udppkt(ipPayload->data, ipPayload->GetLength());
+
+			if (udppkt.destinationPort == 67)
+			{
+				//Send DHCP
+				if (config.InterceptDHCP)
+					return dhcpServer.Send(&udppkt);
+			}
+		}
 
 		if (ippkt.destinationIP == internalIP)
 		{
