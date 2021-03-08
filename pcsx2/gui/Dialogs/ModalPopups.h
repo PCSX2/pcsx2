@@ -161,6 +161,7 @@ namespace Dialogs
 		wxButton* m_step;
 		wxButton* m_selection;
 		wxButton* m_vsync;
+		wxButton* m_run;
 		wxFileSystemWatcher m_fs_watcher;
 
 		void GetDumpsList();
