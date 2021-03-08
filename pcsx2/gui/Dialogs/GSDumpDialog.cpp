@@ -78,6 +78,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	wxBoxSizer* gif = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* dumps_list = new wxBoxSizer(wxVERTICAL);
 
+	m_run->SetDefault();
 	wxArrayString rdoverrides;
 	rdoverrides.Add("None");
 	rdoverrides.Add("OGL SW");
@@ -126,6 +127,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	wxEvtHandler::Connect(wxEVT_FSWATCHER, wxFileSystemWatcherEventHandler(Dialogs::GSDumpDialog::PathChanged));
 
 	Bind(wxEVT_LIST_ITEM_SELECTED, &Dialogs::GSDumpDialog::SelectedDump, this, ID_DUMP_LIST);
+	Bind(wxEVT_LIST_ITEM_ACTIVATED, &Dialogs::GSDumpDialog::RunDump, this, ID_DUMP_LIST);
 	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::RunDump, this, ID_RUN_DUMP);
 	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::ToStart, this, ID_RUN_START);
 	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::StepPacket, this, ID_RUN_STEP);

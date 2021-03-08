@@ -882,7 +882,7 @@ void SysCorePlugins::_generalclose( PluginsEnum_t pid )
 
 void SysCorePlugins::ClosePlugin_GS()
 {
-	if( GetMTGS().IsSelf() )
+	if( GetMTGS().IsSelf() || GSDump::isRunning )
 		_generalclose( PluginId_GS );
 	else
 	{
