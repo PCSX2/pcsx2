@@ -354,7 +354,6 @@ namespace Dialogs
 			void ExecuteTaskInThread();
 			void OnStop();
 			GSDumpDialog* m_root_window;
-			bool m_running = true;
 
 		public:
 			std::unique_ptr<pxInputStream> m_dump_file;
@@ -412,3 +411,8 @@ namespace Dialogs
 
 wxWindowID pxIssueConfirmation(wxDialogWithHelpers& confirmDlg, const MsgButtons& buttons);
 wxWindowID pxIssueConfirmation(wxDialogWithHelpers& confirmDlg, const MsgButtons& buttons, const wxString& disablerKey);
+
+namespace GSDump
+{
+	extern bool isRunning;
+}
