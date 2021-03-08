@@ -427,7 +427,7 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 				rgb_infos[1].Printf("G = %u", (u32)((data.lo >> 32) & ((u64)(1 << 8) - 1)));
 				rgb_infos[2].Printf("B = %u", (u32)(data.hi & ((u64)(1 << 8) - 1)));
 				rgb_infos[3].Printf("A = %u", (u32)((data.hi >> 32) & ((u64)(1 << 8) - 1)));
-				rgb_infos[4].Printf("Q = %u", m_stored_q);
+				rgb_infos[4].Printf("Q = %f", m_stored_q);
 			}
 			else
 			{
@@ -435,7 +435,7 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 				rgb_infos[1].Printf("G = %u", (u32)((data.lo >> 8) & ((u64)(1 << 8) - 1)));
 				rgb_infos[2].Printf("B = %u", (u32)((data.lo >> 16) & ((u64)(1 << 8) - 1)));
 				rgb_infos[3].Printf("A = %u", (u32)((data.lo >> 24) & ((u64)(1 << 8) - 1)));
-				rgb_infos[4].Printf("Q = %u", *(u32*)(&data.lo + 4));
+				rgb_infos[4].Printf("Q = %f", *(float*)(&data.lo + 4));
 			}
 
 			for (auto& el : rgb_infos)
