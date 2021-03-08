@@ -17,6 +17,15 @@
 
 #include <stdio.h>
 #include <windows.h>
+#include <winsock2.h>
+#include <ws2ipdef.h>
+#include <iphlpapi.h>
+
+#include <Netcfgx.h>
+#include <comdef.h>
+#include <atlbase.h>
+#include <devguid.h>
+
 #include <tchar.h>
 #include "tap.h"
 #include "..\dev9.h"
@@ -268,7 +277,279 @@ HANDLE TAPOpen(const char* device_guid)
 	return handle;
 }
 
+PIP_ADAPTER_ADDRESSES FindAdapterViaIndex(PIP_ADAPTER_ADDRESSES adapterList, int ifIndex)
+{
+	PIP_ADAPTER_ADDRESSES currentAdapter = adapterList;
+	do
+	{
+		if (currentAdapter->IfIndex == ifIndex)
+			break;
 
+		currentAdapter = currentAdapter->Next;
+	} while (currentAdapter);
+	return currentAdapter;
+}
+
+//IP_ADAPTER_ADDRESSES is a structure that contains ptrs to data in other regions
+//of the buffer, se we need to return both so the caller can free the buffer
+//after it's finished reading the needed data from IP_ADAPTER_ADDRESSES
+bool TAPGetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, std::unique_ptr<IP_ADAPTER_ADDRESSES[]>* buffer)
+{
+	int neededSize = 256;
+	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
+	ULONG dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
+
+	PIP_ADAPTER_ADDRESSES pAdapterInfo;
+
+	//GAA_FLAG_INCLUDE_ALL_INTERFACES needed to get Tap when bridged
+	DWORD dwStatus = GetAdaptersAddresses(
+		AF_UNSPEC,
+		GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS | GAA_FLAG_INCLUDE_ALL_INTERFACES,
+		NULL,
+		AdapterInfo.get(),
+		&dwBufLen);
+
+	if (dwStatus == ERROR_BUFFER_OVERFLOW)
+	{
+		DevCon.WriteLn("DEV9: GetWin32Adapter() buffer too small, resizing");
+		//
+		neededSize = dwBufLen / sizeof(IP_ADAPTER_ADDRESSES) + 1;
+		AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
+		dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
+		DevCon.WriteLn("DEV9: New size %i", neededSize);
+
+		dwStatus = GetAdaptersAddresses(
+			AF_UNSPEC,
+			GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS | GAA_FLAG_INCLUDE_ALL_INTERFACES,
+			NULL,
+			AdapterInfo.get(),
+			&dwBufLen);
+	}
+
+	if (dwStatus != ERROR_SUCCESS)
+		return 0;
+
+	pAdapterInfo = AdapterInfo.get();
+
+	do
+	{
+		if (0 == strcmp(pAdapterInfo->AdapterName, name))
+			break;
+
+		pAdapterInfo = pAdapterInfo->Next;
+	} while (pAdapterInfo);
+
+	if (pAdapterInfo == nullptr)
+		return false;
+
+	//If we are bridged, then we won't show up without GAA_FLAG_INCLUDE_ALL_INTERFACES
+	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> AdapterInfoReduced = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
+	dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
+
+	dwStatus = GetAdaptersAddresses(
+		AF_UNSPEC,
+		GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
+		NULL,
+		AdapterInfoReduced.get(),
+		&dwBufLen);
+
+	if (dwStatus != ERROR_SUCCESS)
+		return 0;
+
+	//If we find our adapter in the reduced list, we are not bridged
+	if (FindAdapterViaIndex(AdapterInfoReduced.get(), pAdapterInfo->IfIndex) != nullptr)
+	{
+		*adapter = *pAdapterInfo;
+		buffer->swap(AdapterInfo);
+		return true;
+	}
+
+	//We must be bridged
+	Console.WriteLn("DEV9: Current adapter is probably bridged");
+	Console.WriteLn(L"DEV9: Adapter Display name: %s", pAdapterInfo->FriendlyName);
+
+	//We will need to find the bridge adapter that out adapter is
+	//as the IP information of the tap adapter is null
+	//connected to, the method used to do this is undocumented and windows 8+
+
+	//Only solution found is detailed in this MSDN fourm post by Jeffrey Tippet[MSFT], with a sectin copyied below
+	//Some adjustments to the method where required before this would work on my system.
+	//https://social.msdn.microsoft.com/Forums/vstudio/en-US/6dc9097e-0c33-427c-8e1b-9e2c81fad367/how-to-detect-if-network-interface-is-part-of-ethernet-bridge-?forum=wdk
+	/* To detect the newer LWF driver, it's trickier, since the binding over the NIC would be to the generic IM platform.
+	 * Knowing that a NIC is bound to the generic IM platform tells you that it's being used for some fancy thing,
+	 * but it doesn't tell you whether it's a bridge or an LBFO team or something more exotic.
+	 * The way to distinguish exactly which flavor of ms_implat you have is to look at which LWF driver is bound to the *virtual miniport* above the IM driver.
+	 * This is two steps then.
+	 * 
+	 * 1. Given a physical NIC, you first want to determine which virtual NIC is layered over it.
+	 * 2. Given a virtual NIC, you want to determine whether ms_bridge is bound to it.
+	 * 
+	 * To get the first part, look through the interface stack table (GetIfStackTable). Search the stack table for any entry where the lower is the IfIndex of the physical NIC.
+	 * For any such entry (there will probably be a few), check if that entry's upper IfIndex is the IfIndex for a virtual miniport with component ID "COMPOSITEBUS\MS_IMPLAT_MP".
+	 * If you find such a thing, that means the physical NIC is a member of a bridge/LBFO/something-else-fancy.
+	 * If you don't find it, then you know the NIC isn't part of the bridge that comes with Windows 8 / Windows 10.
+	 * 
+	 * To get the second part, just use the same INetCfg code above on the *virtual* NIC's component. If the ms_bridge component is bound to the virtual NIC,
+	 * then that virtual NIC is doing bridging. Otherwise, it's doing something else (like LBFO).
+	 */
+
+	//Step 1
+	//Find any rows that how our adapter as the lower index
+	//check if the upper adapter has a non-null address
+	//If not, we repeat the search with the upper adapter
+	//If multiple rows have our adapter, we check all of them
+	std::vector<NET_IFINDEX> potentialBridges;
+	std::vector<NET_IFINDEX> searchList;
+	searchList.push_back(pAdapterInfo->IfIndex);
+	int checkCount = 1;
+
+	PMIB_IFSTACK_TABLE table;
+	GetIfStackTable(&table);
+	//Note that we append to the collection during iteration
+	for (size_t vi = 0; vi < searchList.size(); vi++)
+	{
+		int targetIndex = searchList[vi];
+
+		for (ULONG i = 0; i < table->NumEntries; i++)
+		{
+			MIB_IFSTACK_ROW row = table->Table[i];
+			if (row.LowerLayerInterfaceIndex == targetIndex)
+			{
+				PIP_ADAPTER_ADDRESSES potentialAdapter = FindAdapterViaIndex(AdapterInfoReduced.get(), row.HigherLayerInterfaceIndex);
+				if (potentialAdapter != nullptr)
+				{
+					Console.WriteLn("DEV9: %s is possible bridge (Check 1 passed)", potentialAdapter->Description);
+					potentialBridges.push_back(row.HigherLayerInterfaceIndex);
+				}
+				else
+					searchList.push_back(row.HigherLayerInterfaceIndex);
+				break;
+			}
+		}
+	}
+	//Cleanup
+	FreeMibTable(table);
+	AdapterInfoReduced = nullptr;
+
+	//Step 2
+	HRESULT cohr = S_OK;
+	//Init COM
+	cohr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	if (!SUCCEEDED(cohr))
+		return false;
+
+	PIP_ADAPTER_ADDRESSES bridgeAdapter = nullptr;
+
+	//Create Instance of INetCfg
+	HRESULT hr = S_OK;
+	CComPtr<INetCfg> netcfg;
+	hr = netcfg.CoCreateInstance(CLSID_CNetCfg, nullptr, CLSCTX_INPROC_SERVER);
+	if (SUCCEEDED(hr))
+	{
+		hr = netcfg->Initialize(nullptr);
+		if (SUCCEEDED(hr))
+		{
+			//Get the bridge component
+			//The bridged adapter should have this bound
+			CComPtr<INetCfgComponent> bridge;
+			hr = netcfg->FindComponent(L"ms_bridge", &bridge);
+
+			if (SUCCEEDED(hr))
+			{
+				//Get a List of network adapters via INetCfg
+				CComPtr<IEnumNetCfgComponent> components;
+				hr = netcfg->EnumComponents(&GUID_DEVCLASS_NET, &components);
+				if (SUCCEEDED(hr))
+				{
+					//Search possible bridge adapters
+					for (size_t i = 0; i < potentialBridges.size(); i++)
+					{
+						//We need to match the adapter index to an INetCfgComponent
+						//We do this by matching IP_ADAPTER_ADDRESSES.AdapterName
+						//with the INetCfgComponent Instance GUID
+						PIP_ADAPTER_ADDRESSES cAdapterInfo = FindAdapterViaIndex(AdapterInfo.get(), potentialBridges[i]);
+
+						if (cAdapterInfo == nullptr || cAdapterInfo->AdapterName == nullptr)
+							continue;
+
+						//Convert Name to GUID
+						wchar_t wName[40] = {0};
+						mbstowcs(wName, cAdapterInfo->AdapterName, 39);
+						GUID nameGuid;
+						hr = IIDFromString(wName, &nameGuid);
+						if (!SUCCEEDED(hr))
+							continue;
+
+						//Loop through components
+						CComPtr<INetCfgComponent> component;
+						while (true)
+						{
+							component.Release(); //CComPtr must be release any held component or else we assert
+							if (components->Next(1, &component, nullptr) != S_OK)
+								break;
+
+							GUID comInstGuid;
+							hr = component->GetInstanceGuid(&comInstGuid);
+
+							if (SUCCEEDED(hr) && IsEqualGUID(nameGuid, comInstGuid))
+							{
+								CComHeapPtr<WCHAR> comId;
+								hr = component->GetId(&comId);
+								if (!SUCCEEDED(hr))
+									continue;
+
+								//The bridge adapter for Win8+ has this ComponentID
+								//However not every adapter with this componentID is a bridge
+								if (wcscmp(L"compositebus\\ms_implat_mp", comId) == 0)
+								{
+									CComHeapPtr<WCHAR> dispName;
+									hr = component->GetDisplayName(&dispName);
+									if (SUCCEEDED(hr))
+										Console.WriteLn(L"DEV9: %s is possible bridge (Check 2 passed)", dispName);
+
+									//Check if adapter has the ms_bridge component bound to it.
+									CComPtr<INetCfgComponentBindings> bindings;
+									hr = bridge->QueryInterface<INetCfgComponentBindings>(&bindings);
+									if (!SUCCEEDED(hr))
+										continue;
+
+									hr = bindings->IsBoundTo(component);
+									if (hr != S_OK)
+										continue;
+
+									dispName.Free();
+									hr = component->GetDisplayName(&dispName);
+									if (SUCCEEDED(hr))
+										Console.WriteLn(L"DEV9: %s is bridge (Check 3 passed)", dispName);
+
+									bridgeAdapter = cAdapterInfo;
+									break;
+								}
+							}
+						}
+						components->Reset();
+						if (bridgeAdapter != nullptr)
+							break;
+					}
+				}
+			}
+			netcfg->Uninitialize();
+		}
+	}
+
+	netcfg.Release(); //Release before CoUninitialize();
+	if (cohr == S_OK)
+		CoUninitialize();
+
+	if (bridgeAdapter != nullptr)
+	{
+		*adapter = *bridgeAdapter;
+		buffer->swap(AdapterInfo);
+		return true;
+	}
+
+	return false;
+}
 
 TAPAdapter::TAPAdapter()
 	: NetAdapter()
@@ -298,6 +579,13 @@ TAPAdapter::TAPAdapter()
 	newMAC[4] = hostMAC[5];
 
 	SetMACAddress(newMAC);
+
+	IP_ADAPTER_ADDRESSES adapter;
+	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
+	if (TAPGetWin32Adapter(config.Eth, &adapter, &buffer))
+		InitInternalServer(&adapter);
+	else
+		InitInternalServer(nullptr);
 
 	isActive = true;
 }
@@ -347,6 +635,9 @@ bool TAPAdapter::recv(NetPacket* pkt)
 //sends the packet .rv :true success
 bool TAPAdapter::send(NetPacket* pkt)
 {
+	if (NetAdapter::send(pkt))
+		return true;
+
 	DWORD writen;
 	BOOL result = WriteFile(htap,
 							pkt->buffer,
