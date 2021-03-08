@@ -24,6 +24,7 @@
 #include "Plugins.h"
 #include "GS.h"
 #include "AppConfig.h"
+#include "gui/Dialogs/ModalPopups.h"
 
 using namespace Threading;
 
@@ -328,7 +329,7 @@ bool AppCorePlugins::Shutdown()
 
 void AppCorePlugins::Close()
 {
-	if (!NeedsClose())
+	if (!(NeedsClose() || GSDump::isRunning))
 		return;
 
 	PostPluginStatus(CorePlugins_Closing);
