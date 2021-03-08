@@ -67,6 +67,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	, m_selection(new wxButton(this, ID_RUN_START, _("Run to Selection"), wxDefaultPosition, wxSize(150, 50)))
 	, m_vsync(new wxButton(this, ID_RUN_START, _("Go to next VSync"), wxDefaultPosition, wxSize(150, 50)))
 	, m_thread(std::make_unique<GSThread>(this))
+	, m_run(new wxButton(this, ID_RUN_DUMP, _("Run"), wxDefaultPosition, wxSize(150, 100)))
 {
 	wxBoxSizer& dump_info(*new wxBoxSizer(wxVERTICAL));
 	wxBoxSizer& dump_preview(*new wxBoxSizer(wxVERTICAL));
@@ -97,7 +98,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	dumps_list += new wxStaticText(this, wxID_ANY, _("GS Dumps List")) | StdExpand();
 	dumps_list += m_dump_list | StdExpand();
 	dump_info += m_renderer_overrides | StdExpand();
-	dump_info += new wxButton(this, ID_RUN_DUMP, _("Run"), wxDefaultPosition, wxSize(150,100)) | StdExpand();
+	dump_info += m_run | StdExpand();
 	dump_preview += new wxStaticText(this, wxID_ANY, _("Preview")) | StdExpand();
 	dump_preview += m_preview_image | StdCenter();
 
@@ -176,6 +177,7 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 	m_step->Enable();
 	m_selection->Enable();
 	m_vsync->Enable();
+	m_run->Disable();
 	GetCorePlugins().Shutdown();
 
 	m_thread->m_dump_file = std::make_unique<pxInputStream>(m_selected_dump, new wxFFileInputStream(m_selected_dump));
@@ -626,6 +628,7 @@ void Dialogs::GSDumpDialog::GSThread::OnStop()
 	m_root_window->m_gif_list->Refresh();
 	m_root_window->m_button_events.clear();
 	m_root_window->m_debug_mode->SetValue(false);
+	m_root_window->m_run->Enable();
 	m_dump_file->Close();
 }
 
