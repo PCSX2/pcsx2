@@ -55,7 +55,7 @@ using namespace pxSizerFlags;
 // --------------------------------------------------------------------------------------
 
 Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
-	: wxDialogWithHelpers(parent, _("GS Debugger"), pxDialogFlags())
+	: wxDialogWithHelpers(parent, _("GS Debugger"), pxDialogFlags().SetMinimize())
 	, m_dump_list(new wxListView(this, ID_DUMP_LIST, wxDefaultPosition, wxSize(400, 300), wxLC_NO_HEADER | wxLC_REPORT | wxLC_SINGLE_SEL))
 	, m_preview_image(new wxStaticBitmap(this, wxID_ANY, wxBitmap(EmbeddedImage<res_NoIcon>().Get()), wxDefaultPosition, wxSize(400,250)))
 	, m_debug_mode(new wxCheckBox(this, ID_DEBUG_MODE, _("Debug Mode")))
@@ -63,9 +63,9 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	, m_gif_list(new wxTreeCtrl(this, ID_SEL_PACKET, wxDefaultPosition, wxSize(400, 300), wxTR_HIDE_ROOT | wxTR_HAS_BUTTONS | wxTR_LINES_AT_ROOT))
 	, m_gif_packet(new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(400, 300), wxTR_HIDE_ROOT | wxTR_HAS_BUTTONS | wxTR_LINES_AT_ROOT))
 	, m_start(new wxButton(this, ID_RUN_START, _("Go to Start"), wxDefaultPosition, wxSize(150,50)))
-	, m_step(new wxButton(this, ID_RUN_START, _("Step"), wxDefaultPosition, wxSize(150, 50)))
-	, m_selection(new wxButton(this, ID_RUN_START, _("Run to Selection"), wxDefaultPosition, wxSize(150, 50)))
-	, m_vsync(new wxButton(this, ID_RUN_START, _("Go to next VSync"), wxDefaultPosition, wxSize(150, 50)))
+	, m_step(new wxButton(this, ID_RUN_STEP, _("Step"), wxDefaultPosition, wxSize(150, 50)))
+	, m_selection(new wxButton(this, ID_RUN_CURSOR, _("Run to Selection"), wxDefaultPosition, wxSize(150, 50)))
+	, m_vsync(new wxButton(this, ID_RUN_VSYNC, _("Go to next VSync"), wxDefaultPosition, wxSize(150, 50)))
 	, m_thread(std::make_unique<GSThread>(this))
 	, m_run(new wxButton(this, ID_RUN_DUMP, _("Run"), wxDefaultPosition, wxSize(150, 100)))
 {
@@ -187,10 +187,6 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 	}
 	m_run->Disable();
 	m_debug_mode->Enable();
-	m_start->Enable();
-	m_step->Enable();
-	m_selection->Enable();
-	m_vsync->Enable();
 	m_thread->Start();
 	return;
 }
@@ -594,12 +590,22 @@ void Dialogs::GSDumpDialog::ParseTreePrim(wxTreeItemId& id, u32 prim)
 void Dialogs::GSDumpDialog::CheckDebug(wxCommandEvent& event)
 {
 	if (m_debug_mode->GetValue())
+	{
 		GenPacketList();
+		m_start->Enable();
+		m_step->Enable();
+		m_selection->Enable();
+		m_vsync->Enable();
+	}
 	else
 	{
 		m_gif_list->DeleteAllItems();
 		m_gif_packet->DeleteAllItems();
 		m_gif_list->Refresh();
+		m_start->Disable();
+		m_step->Disable();
+		m_selection->Disable();
+		m_vsync->Disable();
 	}
 }
 
@@ -745,7 +751,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	GetCorePlugins().DoFreeze(PluginId_GS, 0, &fd, true);
 
 	size_t i = 0;
-	size_t RunTo = 0;
+	size_t run_to = 0;
 	size_t debug_idx = 0;
 
 	while (GSDump::isRunning)
@@ -754,35 +760,35 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 		{
 			if (m_root_window->m_button_events.size() > 0)
 			{
-				switch (m_root_window->m_button_events[0].index)
+				switch (m_root_window->m_button_events[0].btn)
 				{
 					case Step:
 						if (debug_idx >= m_root_window->m_dump_packets.size())
 							debug_idx = 0;
-						RunTo = debug_idx;
+						run_to = debug_idx;
 						break;
 					case RunCursor:
-						RunTo = m_root_window->m_button_events[0].index;
-						if (debug_idx > RunTo)
+						run_to = m_root_window->m_button_events[0].index;
+						if (debug_idx > run_to)
 							debug_idx = 0;
 						break;
 					case RunVSync:
 						if (debug_idx >= m_root_window->m_dump_packets.size())
 							debug_idx = 1;
-						auto it = std::find_if(m_root_window->m_dump_packets.begin() + debug_idx, m_root_window->m_dump_packets.end(), [](const GSData& gs) { return gs.id == Registers; });
+						auto it = std::find_if(m_root_window->m_dump_packets.begin() + debug_idx + 1, m_root_window->m_dump_packets.end(), [](const GSData& gs) { return gs.id == Registers; });
 						if (it != std::end(m_root_window->m_dump_packets))
-							RunTo = std::distance(m_root_window->m_dump_packets.begin(), it);
+							run_to = std::distance(m_root_window->m_dump_packets.begin(), it);
 						break;
 				}
 				m_root_window->m_button_events.erase(m_root_window->m_button_events.begin());
 
-				if (debug_idx <= RunTo)
+				if (debug_idx <= run_to)
 				{
-					while (debug_idx <= RunTo)
+					while (debug_idx <= run_to)
 					{
 						m_root_window->ProcessDumpEvent(m_root_window->m_dump_packets[debug_idx++], regs);
 					}
-					auto it = std::find_if(m_root_window->m_dump_packets.begin() + debug_idx, m_root_window->m_dump_packets.end(), [](const GSData& gs) { return gs.id == Registers; });
+					auto it = std::find_if(m_root_window->m_dump_packets.begin() + debug_idx + 1, m_root_window->m_dump_packets.end(), [](const GSData& gs) { return gs.id == Registers; });
 					if (it != std::end(m_root_window->m_dump_packets))
 						m_root_window->ProcessDumpEvent(*it, regs);
 
