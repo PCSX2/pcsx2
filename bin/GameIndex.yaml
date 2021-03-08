@@ -1580,6 +1580,8 @@ SCES-51463:
   name: "Ghosthunter"
   region: "PAL-M6"
   compat: 5
+  gameFixes:
+    - VU0KickstartHack # Fixes Missing Graphics.
 SCES-51480:
   name: "Twisted Metal - Black - Online"
   region: "PAL-M5"
@@ -22333,6 +22335,8 @@ SLPM-65700:
 SLPM-65701:
   name: "Ghost Hunter"
   region: "NTSC-J"
+  gameFixes:
+    - VU0KickstartHack # Fixes Missing Graphics.
 SLPM-65702:
   name: "Sangokushi Senki [Koei Collection Series]"
   region: "NTSC-J"
@@ -35235,6 +35239,8 @@ SLUS-20993:
   name: "Ghosthunter"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - VU0KickstartHack # Fixes Missing Graphics.
 SLUS-20994:
   name: "Full Metal Alchemist and The Broken Angel"
   region: "NTSC-U"
