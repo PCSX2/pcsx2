@@ -68,7 +68,6 @@
 #undef ECX
 #include <wx/osx/private.h>		// needed to implement the app!
 #endif
-
 wxIMPLEMENT_APP(Pcsx2App);
 
 std::unique_ptr<AppConfig> g_Conf;
