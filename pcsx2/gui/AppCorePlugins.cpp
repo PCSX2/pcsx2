@@ -328,8 +328,6 @@ bool AppCorePlugins::Shutdown()
 
 void AppCorePlugins::Close()
 {
-	AffinityAssert_AllowFrom_CoreThread();
-
 	if (!NeedsClose())
 		return;
 
