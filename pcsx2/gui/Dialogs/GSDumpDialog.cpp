@@ -633,8 +633,24 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 {
 	GSDump::isRunning = true;
 	u32 crc = 0, ss = 0;
-	// XXX: check the numbers are correct
-	const int renderer_override = m_root_window->m_renderer_overrides->GetSelection();
+	s8 renderer_override = 0;
+	switch (m_root_window->m_renderer_overrides->GetSelection())
+	{
+		// OGL SW
+		case 1:
+			renderer_override = 13;
+			break;
+		// D3D11 HW
+		case 2:
+			renderer_override = 3;
+			break;
+		// OGL HW
+		case 3:
+			renderer_override = 12;
+			break;
+		default:
+			break;
+	}
 	char regs[8192];
 
 	m_dump_file->Read(&crc, 4);
@@ -709,7 +725,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	}
 
 	GSsetBaseMem((void*)regs);
-	if (GSopen2((void*)pDsp, renderer_override) != 0)
+	if (GSopen2((void*)pDsp, (renderer_override<<24)) != 0)
 	{
 		OnStop();
 		return;
