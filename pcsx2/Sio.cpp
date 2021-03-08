@@ -30,6 +30,8 @@
 #	include "Recording/InputRecording.h"
 #endif
 
+#include "des.h"
+
 _sio sio;
 _mcd mcds[2][4];
 _mcd *mcd;
@@ -329,17 +331,201 @@ SIO_WRITE MemcardResponse()
 	}
 }
 
+// keysource and key are self generated values
+uint8_t keysource[] = { 0xf5, 0x80, 0x95, 0x3c, 0x4c, 0x84, 0xa9, 0xc0 };
+uint8_t key[16] = { 0x06, 0x46, 0x7a, 0x6c, 0x5b, 0x9b, 0x82, 0x77, 0x39, 0x0f, 0x78, 0xb7, 0xf2, 0xc6, 0xa5, 0x20 };
+uint8_t iv[8];
+uint8_t seed[8];
+uint8_t nonce[8];
+uint8_t MechaChallenge1[8];
+uint8_t MechaChallenge2[8];
+uint8_t MechaChallenge3[8];
+uint8_t MechaResponse1[8];
+uint8_t MechaResponse2[8];
+uint8_t MechaResponse3[8];
+
+static void desEncrypt(void *key, void *data)
+{
+	DesContext dc;
+	desInit(&dc, (uint8_t *) key, 8);
+	desEncryptBlock(&dc, (uint8_t *) data, (uint8_t *) data);
+}
+
+static void desDecrypt(void *key, void *data)
+{
+	DesContext dc;
+	desInit(&dc, (uint8_t *) key, 8);
+	desDecryptBlock(&dc, (uint8_t *) data, (uint8_t *) data);
+}
+
+static void doubleDesEncrypt(void *key, void *data)
+{
+	desEncrypt(key, data);
+	desDecrypt(&((uint8_t *) key)[8], data);
+	desEncrypt(key, data);
+}
+
+static void doubleDesDecrypt(void *key, void *data)
+{
+	desDecrypt(key, data);
+	desEncrypt(&((uint8_t *) key)[8], data);
+	desDecrypt(key, data);
+}
+
+static void xor_bit(const void* a, const void* b, void* Result, size_t Length)
+{
+	size_t i;
+	for (i = 0; i < Length; i++) {
+		((uint8_t*)Result)[i] = ((uint8_t*)a)[i] ^ ((uint8_t*)b)[i];
+	}
+}
+
+void generateIvSeedNonce()
+{
+	for (int i = 0; i < 8; i++)
+	{
+		iv[i] = rand();
+		seed[i] = keysource[i] ^ iv[i];
+		nonce[i] = rand();
+	}
+}
+
+void generateResponse()
+{
+	uint8_t ChallengeIV[8] = { /* SHA256: e7b02f4f8d99a58b96dbca4db81c5d666ea7c46fbf6e1d5c045eaba0ee25416a */ };
+	FILE *f = fopen("civ.bin", "rb");
+	if (f)
+	{
+		fread(ChallengeIV, 1, sizeof(ChallengeIV), f);
+		fclose(f);
+	}
+
+	doubleDesDecrypt(key, MechaChallenge1);
+	uint8_t random[8];
+	xor_bit(MechaChallenge1, ChallengeIV, random, 8);
+
+	// MechaChallenge2 and MechaChallenge3 let's the card verify the console
+
+	xor_bit(nonce, ChallengeIV, MechaResponse1, 8);
+	doubleDesEncrypt(key, MechaResponse1);
+
+	xor_bit(random, MechaResponse1, MechaResponse2, 8);
+	doubleDesEncrypt(key, MechaResponse2);
+
+	uint8_t CardKey[] = { 'M', 'e', 'c', 'h', 'a', 'P', 'w', 'n' };
+	xor_bit(CardKey, MechaResponse2, MechaResponse3, 8);
+	doubleDesEncrypt(key, MechaResponse3);
+}
+
 SIO_WRITE memcardAuth(u8 data)
 {
 	static bool doXorCheck = false;
 	static u8 xorResult = 0;
+	static uint8_t *buff = 0;
+
+	if (buff)
+		*buff-- = data;
+
+	if(sio.bufCount == 10)
+		buff = 0;
 
 	if(sio.bufCount == 2)
 	{
 		switch(data)
 		{
-		case 0x01: case 0x02: case 0x04: 
-		case 0x0F: case 0x11: case 0x13:
+		case 0x01: // get iv
+			generateIvSeedNonce();
+			doXorCheck = false;
+			xorResult = 0;
+			sio.buf[3] = 0x2B;
+			sio.buf[12] = 0;
+			for (int i = 0; i < 8; i++)
+			{
+				sio.buf[4 + i] = iv[7 - i];
+				sio.buf[12] ^= sio.buf[4 + i];
+			}
+			sio.buf[sio.bufSize] = mcd->term;
+			break;
+
+		case 0x02: // get seed
+			doXorCheck = false;
+			xorResult = 0;
+			sio.buf[3] = 0x2B;
+			sio.buf[12] = 0;
+			for (int i = 0; i < 8; i++)
+			{
+				sio.buf[4 + i] = seed[7 - i];
+				sio.buf[12] ^= sio.buf[4 + i];
+			}
+			sio.buf[sio.bufSize] = mcd->term;
+			break;
+
+		case 0x04: // get nonce
+			doXorCheck = false;
+			xorResult = 0;
+			sio.buf[3] = 0x2B;
+			sio.buf[12] = 0;
+			for (int i = 0; i < 8; i++)
+			{
+				sio.buf[4 + i] = nonce[7 - i];
+				sio.buf[12] ^= sio.buf[4 + i];
+			}
+			sio.buf[sio.bufSize] = mcd->term;
+			break;
+
+		case 0x06:
+			buff = &MechaChallenge3[7];
+			doXorCheck = false;
+			MemcardResponse();
+			break;
+		case 0x07:
+			buff = &MechaChallenge2[7];
+			doXorCheck = false;
+			MemcardResponse();
+			break;
+		case 0x0B:
+			buff = &MechaChallenge1[7];
+			doXorCheck = false;
+			MemcardResponse();
+			break;
+
+		case 0x0F: // CardResponse1
+			generateResponse();
+			doXorCheck = false;
+			xorResult = 0;
+			sio.buf[3] = 0x2B;
+			sio.buf[12] = 0;
+			for (int i = 0; i < 8; i++)
+			{
+				sio.buf[4 + i] = MechaResponse1[7 - i];
+				sio.buf[12] ^= sio.buf[4 + i];
+			}
+			sio.buf[sio.bufSize] = mcd->term;
+			break;
+		case 0x11: // CardResponse2
+			doXorCheck = false;
+			xorResult = 0;
+			sio.buf[3] = 0x2B;
+			sio.buf[12] = 0;
+			for (int i = 0; i < 8; i++)
+			{
+				sio.buf[4 + i] = MechaResponse2[7 - i];
+				sio.buf[12] ^= sio.buf[4 + i];
+			}
+			sio.buf[sio.bufSize] = mcd->term;
+			break;
+		case 0x13: // CardResponse3
+			doXorCheck = false;
+			xorResult = 0;
+			sio.buf[3] = 0x2B;
+			sio.buf[12] = 0;
+			for (int i = 0; i < 8; i++)
+			{
+				sio.buf[4 + i] = MechaResponse3[7 - i];
+				sio.buf[12] ^= sio.buf[4 + i];
+			}
+			sio.buf[sio.bufSize] = mcd->term;
+			break;
 			doXorCheck = true;
 			xorResult = 0;
 			sio.buf[3] = 0x2B;
@@ -347,6 +533,68 @@ SIO_WRITE memcardAuth(u8 data)
 			break;
 
 		default:
+			doXorCheck = false;
+			MemcardResponse();
+			break;
+		}
+	}
+	else if(doXorCheck)
+	{
+		switch(sio.bufCount)
+		{
+		case 3: break;
+		case 12: sio.buf[12] = xorResult; break;
+		default: xorResult ^= data; break;
+		};
+	}
+}
+
+SIO_WRITE memcardCrypt(u8 data)
+{
+	static bool doXorCheck = false;
+	static u8 xorResult = 0;
+	static u8 buf[9];
+	static u8 offset = 0;
+	static bool receive = false;
+
+	if (receive && offset < 9)
+		buf[offset++] = data;
+
+	if(sio.bufCount == 2)
+	{
+		switch(data)
+		{
+		case 0x40:
+		case 0x50:
+		case 0x42:
+		case 0x52:
+			receive = false;
+			doXorCheck = true;
+			xorResult = 0;
+			sio.buf[3] = 0x2B;
+			sio.buf[sio.bufSize] = mcd->term;
+			break;
+
+		case 0x41:
+		case 0x51:
+			receive = true;
+			offset = 0;
+			doXorCheck = false;
+			MemcardResponse();
+			break;
+
+		case 0x43:
+		case 0x53:
+			receive = false;
+			doXorCheck = false;
+			xorResult = 0;
+			sio.buf[3] = 0x2B;
+			memcpy(&sio.buf[4], buf, 9);
+			sio.buf[sio.bufSize] = mcd->term;
+			break;
+
+		default:
+			receive = false;
 			doXorCheck = false;
 			MemcardResponse();
 			break;
@@ -716,6 +964,11 @@ SIO_WRITE sioWriteMemcard(u8 data)
 			siomode = SIO_MEMCARD_AUTH;
 			break;
 
+		case 0xF1: // Auth stuff
+		case 0xF2: // Auth stuff
+			siomode = SIO_MEMCARD_CRYPT;
+			break;
+
 		case 0x11: // On Boot/Probe
 		case 0x12: // On Write/Delete/Recheck?
 			sio2.packet.recvVal3 = 0x8C;
@@ -910,6 +1163,7 @@ static void sioWrite8inl(u8 data)
 	case SIO_INFRARED: sioWriteInfraRed(data); break;
 	case SIO_MEMCARD: sioWriteMemcard(data); break;
 	case SIO_MEMCARD_AUTH: memcardAuth(data); break;
+	case SIO_MEMCARD_CRYPT: memcardCrypt(data); break;
 	case SIO_MEMCARD_ERASE: memcardErase(data); break;
 	case SIO_MEMCARD_WRITE: memcardWrite(data); break;
 	case SIO_MEMCARD_READ: memcardRead(data); break;
