@@ -178,7 +178,6 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 	m_selection->Enable();
 	m_vsync->Enable();
 	m_run->Disable();
-	GetCorePlugins().Shutdown();
 
 	m_thread->m_dump_file = std::make_unique<pxInputStream>(m_selected_dump, new wxFFileInputStream(m_selected_dump));
 
@@ -807,13 +806,14 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 		{
 			if (!window->IsShown())
 			{
+				GetCorePlugins().Close();
+				GetCorePlugins().Shutdown();
 				sApp.CloseGsPanel();
 				GSDump::isRunning = false;
 			}
 		}
 	}
 
-	GetCorePlugins().Close(); 
 	OnStop();
 	return;
 }
