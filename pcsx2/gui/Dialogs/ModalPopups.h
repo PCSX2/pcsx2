@@ -341,6 +341,7 @@ namespace Dialogs
 		};
 		std::vector<GSEvent> m_button_events;
 		std::vector<GSData> m_dump_packets;
+		std::vector<wxTreeItemId> m_gif_items;
 
 		float m_stored_q = 1.0;
 		void ProcessDumpEvent(const GSData& event, char* regs);
@@ -358,6 +359,7 @@ namespace Dialogs
 			GSDumpDialog* m_root_window;
 
 		public:
+			size_t m_debug_index;
 			std::unique_ptr<pxInputStream> m_dump_file;
 			GSThread(GSDumpDialog* dlg);
 			virtual ~GSThread();
