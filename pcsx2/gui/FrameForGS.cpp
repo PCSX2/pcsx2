@@ -28,6 +28,8 @@
 #include "PAD/Linux/PAD.h"
 #endif
 
+#include "gui/Dialogs/ModalPopups.h"
+
 #include "ConsoleLogger.h"
 
 #ifndef DISABLE_RECORDING
@@ -782,7 +784,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	title.Replace(L"${omodei}",		omodei);
 	title.Replace(L"${gsdx}",		fromUTF8(gsDest));
 	title.Replace(L"${videomode}",	ReportVideoMode());
-	if (CoreThread.IsPaused())
+	if (CoreThread.IsPaused() && !GSDump::isRunning)
 		title = templates.Paused + title;
 
 	SetTitle(title);

@@ -28,6 +28,8 @@
 #include "PathDefs.h"
 #include "AppConfig.h"
 #include "Plugins.h"
+#include "GSFrame.h"
+#include "Counters.h"
 
 #include <wx/mstream.h>
 #include <wx/listctrl.h>
@@ -40,6 +42,11 @@
 #include <wx/image.h>
 #include <wx/wfstream.h>
 #include <functional>
+
+namespace GSDump
+{
+	bool isRunning = false;
+}
 
 using namespace pxSizerFlags;
 
@@ -215,8 +222,14 @@ void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSData& event, char* regs)
 			break;
 		}
 		case VSync:
+		{
 			GSvsync((*((int*)(regs + 4096)) & 0x2000) > 0 ? (u8)1 : (u8)0);
+			g_FrameCount++;
+			Pcsx2App* app = (Pcsx2App*)wxApp::GetInstance();
+			if (app)
+				app->FpsManager.DoFrame();
 			break;
+		}
 		case ReadFIFO2:
 		{
 			std::unique_ptr<char[]> arr(new char[*((int*)event.data.get())]);
@@ -612,11 +625,13 @@ void Dialogs::GSDumpDialog::GSThread::OnStop()
 	m_root_window->m_gif_packet->DeleteAllItems();
 	m_root_window->m_gif_list->Refresh();
 	m_root_window->m_button_events.clear();
+	m_root_window->m_debug_mode->SetValue(false);
 	m_dump_file->Close();
 }
 
 void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 {
+	GSDump::isRunning = true;
 	u32 crc = 0, ss = 0;
 	// XXX: check the numbers are correct
 	const int renderer_override = m_root_window->m_renderer_overrides->GetSelection();
@@ -681,6 +696,18 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	//return;
 
 	GetCorePlugins().Init();
+	sApp.OpenGsPanel();
+
+	// to gather the gs frame object we have to be a bit hacky since sApp is not syntax complete
+	Pcsx2App* app = (Pcsx2App*)wxApp::GetInstance();
+	GSFrame* window = nullptr;
+	if (app)
+	{
+		app->FpsManager.Reset();
+		window = app->GetGsFramePtr();
+		g_FrameCount = 0;
+	}
+
 	GSsetBaseMem((void*)regs);
 	if (GSopen2((void*)pDsp, renderer_override) != 0)
 	{
@@ -691,7 +718,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	GSsetGameCRC((int)crc, 0);
 
 	if (!GetCorePlugins().DoFreeze(PluginId_GS, 0, &fd, true))
-		m_running = false;
+		GSDump::isRunning = false;
 	GSvsync(1);
 	GSreset();
 	GSsetBaseMem((void*)regs);
@@ -701,7 +728,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	size_t RunTo = 0;
 	size_t debug_idx = 0;
 
-	while (m_running)
+	while (GSDump::isRunning)
 	{
 		if (m_root_window->m_debug_mode->GetValue())
 		{
@@ -758,9 +785,17 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 			if (i >= m_root_window->m_dump_packets.size())
 				i = 0;
 		}
+		if (window)
+		{
+			if (!window->IsShown())
+			{
+				sApp.CloseGsPanel();
+				GSDump::isRunning = false;
+			}
+		}
 	}
 
-	GetCorePlugins().Shutdown();
+	GetCorePlugins().Close(); 
 	OnStop();
 	return;
 }
