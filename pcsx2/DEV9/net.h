@@ -17,6 +17,20 @@
 #include <stdlib.h>
 #include <string>
 
+#include <functional>
+#include <thread>
+#include <atomic>
+#include <mutex>
+#include <condition_variable>
+
+#ifdef _WIN32
+#include <winsock2.h>
+#include <iphlpapi.h>
+#elif defined(__POSIX__)
+#include <sys/types.h>
+#include <ifaddrs.h>
+#endif
+
 #include "PacketReader/IP/IP_Address.h"
 
 // first three recognized by Xlink as Sony PS2
@@ -69,18 +83,39 @@ protected:
 	static const u8 broadcastMAC[6];
 	static const u8 internalMAC[6];
 
+private:
+	std::thread internalRxThread;
+	std::atomic<bool> internalRxThreadRunning{false};
+
+	std::mutex internalRxMutex;
+	std::condition_variable internalRxCV;
+	bool internalRxHasData = false;
+
 public:
 	NetAdapter();
 	virtual bool blocks() = 0;
 	virtual bool isInitialised() = 0;
-	virtual bool recv(NetPacket* pkt) = 0; //gets a packet
-	virtual bool send(NetPacket* pkt) = 0; //sends the packet and deletes it when done
-	virtual void close() {}
-	virtual ~NetAdapter() {}
+	virtual bool recv(NetPacket* pkt); //gets a packet
+	virtual bool send(NetPacket* pkt); //sends the packet and deletes it when done
+	virtual void close(){};
+	virtual ~NetAdapter();
 
 protected:
 	void SetMACAddress(u8* mac);
 	bool VerifyPkt(NetPacket* pkt, int read_size);
+
+#ifdef _WIN32
+	void InitInternalServer(PIP_ADAPTER_ADDRESSES adapter);
+#elif defined(__POSIX__)
+	void InitInternalServer(ifaddrs* adapter);
+#endif
+
+private:
+	bool InternalServerRecv(NetPacket* pkt);
+	bool InternalServerSend(NetPacket* pkt);
+
+	void InternalSignalReceived();
+	void InternalServerThread();
 };
 
 void tx_put(NetPacket* ptr);

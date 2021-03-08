@@ -178,6 +178,9 @@
     <Filter Include="System\Ps2\DEV9\ATA\Commands">
       <UniqueIdentifier>{9e9b52d7-7b1c-44b2-82d8-1e0d8085e7e0}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\DEV9\InternalServers">
+      <UniqueIdentifier>{93da3d51-9457-4fde-b374-c2fbe4780f59}</UniqueIdentifier>
+    </Filter>
     <Filter Include="System\Ps2\DEV9\PacketReader">
       <UniqueIdentifier>{57c4be94-9a2c-469b-9b02-b3b324857fc5}</UniqueIdentifier>
     </Filter>
