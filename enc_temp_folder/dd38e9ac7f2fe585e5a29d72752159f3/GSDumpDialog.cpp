@@ -625,6 +625,7 @@ void Dialogs::GSDumpDialog::GSThread::OnStop()
 	m_root_window->m_vsync->Disable();
 	m_root_window->m_gif_list->DeleteAllItems();
 	m_root_window->m_gif_packet->DeleteAllItems();
+	m_root_window->m_gif_list->Refresh();
 	m_root_window->m_button_events.clear();
 	m_root_window->m_debug_mode->SetValue(false);
 	m_root_window->m_run->Enable();
