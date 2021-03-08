@@ -55,7 +55,7 @@ using namespace pxSizerFlags;
 // --------------------------------------------------------------------------------------
 
 Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
-	: wxDialogWithHelpers(parent, _("GSDumpGov"), pxDialogFlags())
+	: wxDialogWithHelpers(parent, _("GS Debugger"), pxDialogFlags())
 	, m_dump_list(new wxListView(this, ID_DUMP_LIST, wxDefaultPosition, wxSize(400, 300), wxLC_NO_HEADER | wxLC_REPORT | wxLC_SINGLE_SEL))
 	, m_preview_image(new wxStaticBitmap(this, wxID_ANY, wxBitmap(EmbeddedImage<res_NoIcon>().Get()), wxDefaultPosition, wxSize(400,250)))
 	, m_debug_mode(new wxCheckBox(this, ID_DEBUG_MODE, _("Debug Mode")))
@@ -823,5 +823,8 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 
 void Dialogs::GSDumpDialog::PathChanged(wxFileSystemWatcherEvent& event)
 {
-	GetDumpsList();
+	int type = event.GetChangeType();
+
+	if (type == wxFSW_EVENT_CREATE || type == wxFSW_EVENT_DELETE || type == wxFSW_EVENT_RENAME)
+		GetDumpsList();
 }
