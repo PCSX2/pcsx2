@@ -28,6 +28,7 @@
 #include "PS2Edefs.h"
 #include "PS2Eext.h"
 #include "net.h"
+#include "PacketReader/IP/IP_Address.h"
 #include "ATA/ATA.h"
 
 #ifdef _WIN32
@@ -60,6 +61,16 @@ struct Config
 {
 	char Eth[256];
 	NetApi EthApi;
+	bool InterceptDHCP;
+	PacketReader::IP::IP_Address PS2IP;
+	PacketReader::IP::IP_Address Mask;
+	PacketReader::IP::IP_Address Gateway;
+	PacketReader::IP::IP_Address DNS1;
+	PacketReader::IP::IP_Address DNS2;
+	int AutoMask;
+	int AutoGateway;
+	int AutoDNS1;
+	int AutoDNS2;
 #ifdef _WIN32
 	wchar_t Hdd[256];
 #else

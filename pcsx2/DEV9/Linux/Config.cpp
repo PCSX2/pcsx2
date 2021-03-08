@@ -16,8 +16,8 @@
 #include "PrecompiledHeader.h"
 
 #include <stdlib.h>
+#include <arpa/inet.h>
 
-//#include <winsock2.h>
 #include "../DEV9.h"
 #include "AppConfig.h"
 
@@ -48,6 +48,46 @@ void SaveConf()
 
 	sprintf(buff, "%d", (int)config.EthApi);
 	xmlNewChild(root_node, NULL, BAD_CAST "EthApi",
+				BAD_CAST buff);
+
+	sprintf(buff, "%d", config.InterceptDHCP);
+	xmlNewChild(root_node, NULL, BAD_CAST "InterceptDHCP",
+				BAD_CAST buff);
+
+	inet_ntop(AF_INET, &config.PS2IP, buff, 256);
+	xmlNewChild(root_node, NULL, BAD_CAST "PS2IP",
+				BAD_CAST buff);
+
+	inet_ntop(AF_INET, &config.Mask, buff, 256);
+	xmlNewChild(root_node, NULL, BAD_CAST "Subnet",
+				BAD_CAST buff);
+
+	sprintf(buff, "%d", config.AutoMask);
+	xmlNewChild(root_node, NULL, BAD_CAST "AutoSubnet",
+				BAD_CAST buff);
+
+	inet_ntop(AF_INET, &config.Gateway, buff, 256);
+	xmlNewChild(root_node, NULL, BAD_CAST "Gateway",
+				BAD_CAST buff);
+
+	sprintf(buff, "%d", config.AutoGateway);
+	xmlNewChild(root_node, NULL, BAD_CAST "AutoGateway",
+				BAD_CAST buff);
+
+	inet_ntop(AF_INET, &config.DNS1, buff, 256);
+	xmlNewChild(root_node, NULL, BAD_CAST "DNS1",
+				BAD_CAST buff);
+
+	sprintf(buff, "%d", config.AutoDNS1);
+	xmlNewChild(root_node, NULL, BAD_CAST "AutoDNS1",
+				BAD_CAST buff);
+
+	inet_ntop(AF_INET, &config.DNS2, buff, 256);
+	xmlNewChild(root_node, NULL, BAD_CAST "DNS2",
+				BAD_CAST buff);
+
+	sprintf(buff, "%d", config.AutoDNS2);
+	xmlNewChild(root_node, NULL, BAD_CAST "AutoDNS2",
 				BAD_CAST buff);
 
 	xmlNewChild(root_node, NULL, BAD_CAST "Hdd",
@@ -94,6 +134,7 @@ void LoadConf()
 		return;
 
 	memset(&config, 0, sizeof(config));
+	config.EthApi = NetApi::PCAP_Switched;
 
 	// Read the files
 	xmlDoc* doc = NULL;
@@ -106,7 +147,6 @@ void LoadConf()
 		SysMessage("Unable to parse configuration file! Suggest deleting it and starting over.");
 	}
 
-	bool foundEthType = false;
 	for (cur_node = xmlDocGetRootElement(doc)->children; cur_node; cur_node = cur_node->next)
 	{
 		if (cur_node->type == XML_ELEMENT_NODE)
@@ -118,8 +158,47 @@ void LoadConf()
 			}
 			if (0 == strcmp((const char*)cur_node->name, "EthApi"))
 			{
-				foundEthType = true;
 				config.EthApi = (NetApi)atoi((const char*)xmlNodeGetContent(cur_node));
+			}
+			if (0 == strcmp((const char*)cur_node->name, "InterceptDHCP"))
+			{
+				config.InterceptDHCP = atoi((const char*)xmlNodeGetContent(cur_node));
+			}
+			if (0 == strcmp((const char*)cur_node->name, "PS2IP"))
+			{
+				inet_pton(AF_INET, (const char*)xmlNodeGetContent(cur_node), &config.PS2IP);
+			}
+			if (0 == strcmp((const char*)cur_node->name, "Subnet"))
+			{
+				inet_pton(AF_INET, (const char*)xmlNodeGetContent(cur_node), &config.Mask);
+			}
+			if (0 == strcmp((const char*)cur_node->name, "AutoSubnet"))
+			{
+				config.AutoMask = atoi((const char*)xmlNodeGetContent(cur_node));
+			}
+			if (0 == strcmp((const char*)cur_node->name, "Gateway"))
+			{
+				inet_pton(AF_INET, (const char*)xmlNodeGetContent(cur_node), &config.Gateway);
+			}
+			if (0 == strcmp((const char*)cur_node->name, "AutoGateway"))
+			{
+				config.AutoGateway = atoi((const char*)xmlNodeGetContent(cur_node));
+			}
+			if (0 == strcmp((const char*)cur_node->name, "DNS1"))
+			{
+				inet_pton(AF_INET, (const char*)xmlNodeGetContent(cur_node), &config.DNS1);
+			}
+			if (0 == strcmp((const char*)cur_node->name, "AutoDNS1"))
+			{
+				config.AutoDNS1 = atoi((const char*)xmlNodeGetContent(cur_node));
+			}
+			if (0 == strcmp((const char*)cur_node->name, "DNS2"))
+			{
+				inet_pton(AF_INET, (const char*)xmlNodeGetContent(cur_node), &config.DNS2);
+			}
+			if (0 == strcmp((const char*)cur_node->name, "AutoDNS2"))
+			{
+				config.AutoDNS2 = atoi((const char*)xmlNodeGetContent(cur_node));
 			}
 			if (0 == strcmp((const char*)cur_node->name, "Hdd"))
 			{
@@ -139,9 +218,6 @@ void LoadConf()
 			}
 		}
 	}
-
-	if (!foundEthType)
-		config.EthApi = NetApi::PCAP_Switched;
 
 	//    free(configFile);
 	xmlFreeDoc(doc);
