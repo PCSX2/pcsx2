@@ -142,7 +142,7 @@ namespace Dialogs
 
 		static wxString GetNameStatic()
 		{
-			return L"GSDumpGov";
+			return L"GS Debugger";
 		}
 		wxString GetDialogName() const
 		{
