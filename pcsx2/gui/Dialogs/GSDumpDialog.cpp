@@ -48,6 +48,8 @@ namespace GSDump
 	bool isRunning = false;
 }
 
+wxDEFINE_EVENT(EVT_CLOSE_DUMP, wxCommandEvent);
+
 using namespace pxSizerFlags;
 
 // --------------------------------------------------------------------------------------
@@ -135,6 +137,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::ToVSync, this, ID_RUN_VSYNC);
 	Bind(wxEVT_TREE_SEL_CHANGED, &Dialogs::GSDumpDialog::ParsePacket, this, ID_SEL_PACKET);
 	Bind(wxEVT_CHECKBOX, &Dialogs::GSDumpDialog::CheckDebug, this, ID_DEBUG_MODE);
+	Bind(EVT_CLOSE_DUMP, &Dialogs::GSDumpDialog::CloseDump, this);
 }
 
 void Dialogs::GSDumpDialog::GetDumpsList()
@@ -172,6 +175,31 @@ void Dialogs::GSDumpDialog::SelectedDump(wxListEvent& evt)
 	m_selected_dump = wxString(filename);
 }
 
+void Dialogs::GSDumpDialog::PathChanged(wxFileSystemWatcherEvent& event)
+{
+	int type = event.GetChangeType();
+
+	if (type == wxFSW_EVENT_CREATE || type == wxFSW_EVENT_DELETE || type == wxFSW_EVENT_RENAME)
+		GetDumpsList();
+}
+
+void Dialogs::GSDumpDialog::CloseDump(wxCommandEvent& event)
+{
+	m_debug_mode->Disable();
+	m_start->Disable();
+	m_step->Disable();
+	m_selection->Disable();
+	m_vsync->Disable();
+	m_gif_list->DeleteAllItems();
+	m_gif_packet->DeleteAllItems();
+	m_debug_mode->SetValue(false);
+	m_run->Enable();
+}
+
+// --------------------------------------------------------------------------------------
+//  GSDumpDialog GUI Buttons
+// --------------------------------------------------------------------------------------
+
 void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 {
 	if (!m_run->IsEnabled())
@@ -187,59 +215,32 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 	}
 	m_run->Disable();
 	m_debug_mode->Enable();
+	m_thread->m_renderer = m_renderer_overrides->GetSelection();
 	m_thread->Start();
 	return;
 }
 
-void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSData& event, char* regs)
+void Dialogs::GSDumpDialog::CheckDebug(wxCommandEvent& event)
 {
-    switch (event.id)
+	if (m_debug_mode->GetValue())
 	{
-		case Transfer:
-		{
-			switch (event.path)
-			{
-				case Path1Old:
-				{
-					std::unique_ptr<char[]> data(new char[16384]);
-					int addr = 16384 - event.length;
-					memcpy(data.get(), event.data.get() + addr, event.length);
-					GSgifTransfer1((u32*)data.get(), addr);
-					break;
-				}
-				case Path1New:
-					GSgifTransfer((u32*)event.data.get(), event.length / 16);
-					break;
-				case Path2:
-					GSgifTransfer2((u32*)event.data.get(), event.length / 16);
-					break;
-				case Path3:
-					GSgifTransfer3((u32*)event.data.get(), event.length / 16);
-					break;
-				default:
-					break;
-			}
-			break;
-		}
-		case VSync:
-		{
-			GSvsync((*((int*)(regs + 4096)) & 0x2000) > 0 ? (u8)1 : (u8)0);
-			g_FrameCount++;
-			Pcsx2App* app = (Pcsx2App*)wxApp::GetInstance();
-			if (app)
-				app->FpsManager.DoFrame();
-			break;
-		}
-		case ReadFIFO2:
-		{
-			std::unique_ptr<char[]> arr(new char[*((int*)event.data.get())]);
-			GSreadFIFO2((u64*)arr.get(), *((int*)event.data.get()));
-			break;
-		}
-		case Registers:
-			memcpy(regs, event.data.get(), 8192);
-			break;
+		GenPacketList();
+		m_start->Enable();
+		m_step->Enable();
+		m_selection->Enable();
+		m_vsync->Enable();
 	}
+	else
+	{
+		m_gif_list->DeleteAllItems();
+		m_gif_packet->DeleteAllItems();
+		m_gif_list->Refresh();
+		m_start->Disable();
+		m_step->Disable();
+		m_selection->Disable();
+		m_vsync->Disable();
+	}
+	m_thread->m_debug = m_debug_mode->GetValue();
 }
 
 void Dialogs::GSDumpDialog::StepPacket(wxCommandEvent& event)
@@ -274,6 +275,10 @@ void Dialogs::GSDumpDialog::ToStart(wxCommandEvent& event)
 	m_gif_list->SelectItem(m_gif_items[0]);
 	m_button_events.push_back(GSEvent{RunCursor, 0});
 }
+
+// --------------------------------------------------------------------------------------
+//  GSDumpDialog Packet Parsing
+// --------------------------------------------------------------------------------------
 
 void Dialogs::GSDumpDialog::GenPacketList()
 {
@@ -421,8 +426,7 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 
 void Dialogs::GSDumpDialog::ParsePacket(wxTreeEvent& event)
 {
-	int id = wxAtoi(m_gif_list->GetItemText(event.GetItem()).BeforeFirst('-'));
-	GenPacketInfo(m_dump_packets[id]);
+	GenPacketInfo(m_dump_packets[wxAtoi(m_gif_list->GetItemText(event.GetItem()).BeforeFirst('-'))]);
 }
 
 void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data, bool packed)
@@ -607,27 +611,60 @@ void Dialogs::GSDumpDialog::ParseTreePrim(wxTreeItemId& id, u32 prim)
 		m_gif_packet->AppendItem(id, el);
 }
 
-void Dialogs::GSDumpDialog::CheckDebug(wxCommandEvent& event)
+void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSData& event, char* regs)
 {
-	if (m_debug_mode->GetValue())
+	switch (event.id)
 	{
-		GenPacketList();
-		m_start->Enable();
-		m_step->Enable();
-		m_selection->Enable();
-		m_vsync->Enable();
-	}
-	else
-	{
-		m_gif_list->DeleteAllItems();
-		m_gif_packet->DeleteAllItems();
-		m_gif_list->Refresh();
-		m_start->Disable();
-		m_step->Disable();
-		m_selection->Disable();
-		m_vsync->Disable();
+		case Transfer:
+		{
+			switch (event.path)
+			{
+				case Path1Old:
+				{
+					std::unique_ptr<char[]> data(new char[16384]);
+					int addr = 16384 - event.length;
+					memcpy(data.get(), event.data.get() + addr, event.length);
+					GSgifTransfer1((u32*)data.get(), addr);
+					break;
+				}
+				case Path1New:
+					GSgifTransfer((u32*)event.data.get(), event.length / 16);
+					break;
+				case Path2:
+					GSgifTransfer2((u32*)event.data.get(), event.length / 16);
+					break;
+				case Path3:
+					GSgifTransfer3((u32*)event.data.get(), event.length / 16);
+					break;
+				default:
+					break;
+			}
+			break;
+		}
+		case VSync:
+		{
+			GSvsync((*((int*)(regs + 4096)) & 0x2000) > 0 ? (u8)1 : (u8)0);
+			g_FrameCount++;
+			Pcsx2App* app = (Pcsx2App*)wxApp::GetInstance();
+			if (app)
+				app->FpsManager.DoFrame();
+			break;
+		}
+		case ReadFIFO2:
+		{
+			std::unique_ptr<char[]> arr(new char[*((int*)event.data.get())]);
+			GSreadFIFO2((u64*)arr.get(), *((int*)event.data.get()));
+			break;
+		}
+		case Registers:
+			memcpy(regs, event.data.get(), 8192);
+			break;
 	}
 }
+
+// --------------------------------------------------------------------------------------
+//  GSThread  Implementation
+// --------------------------------------------------------------------------------------
 
 Dialogs::GSDumpDialog::GSThread::GSThread(GSDumpDialog* dlg)
 	: pxThread("GSDump")
@@ -646,17 +683,11 @@ Dialogs::GSDumpDialog::GSThread::~GSThread()
 
 void Dialogs::GSDumpDialog::GSThread::OnStop()
 {
-	m_root_window->m_debug_mode->Disable();
-	m_root_window->m_start->Disable();
-	m_root_window->m_step->Disable();
-	m_root_window->m_selection->Disable();
-	m_root_window->m_vsync->Disable();
-	m_root_window->m_gif_list->DeleteAllItems();
-	m_root_window->m_gif_packet->DeleteAllItems();
 	m_root_window->m_button_events.clear();
-	m_root_window->m_debug_mode->SetValue(false);
-	m_root_window->m_run->Enable();
 	m_dump_file->Close();
+
+	wxCommandEvent event(EVT_CLOSE_DUMP);
+	wxPostEvent(m_root_window, event);
 }
 
 void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
@@ -664,7 +695,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	GSDump::isRunning = true;
 	u32 crc = 0, ss = 0;
 	s8 renderer_override = 0;
-	switch (m_root_window->m_renderer_overrides->GetSelection())
+	switch (m_renderer)
 	{
 		// OGL SW
 		case 1:
@@ -694,7 +725,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	freezeData fd = {(int)ss, (s8*)state_data.get()};
 	m_root_window->m_dump_packets.clear();
 
-	while (	m_dump_file->Tell() < m_dump_file->Length())
+	while (m_dump_file->Tell() < m_dump_file->Length())
 	{
 		GSType id = Transfer;
 		m_dump_file->Read(&id, 1);
@@ -735,12 +766,6 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 		}
 	}
 
-	if (m_root_window->m_debug_mode->GetValue())
-		m_root_window->GenPacketList();
-
-	//return here to debug pre gs
-	//return;
-
 	GetCorePlugins().Init();
 	sApp.OpenGsPanel();
 
@@ -776,7 +801,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 
 	while (GSDump::isRunning)
 	{
-		if (m_root_window->m_debug_mode->GetValue())
+		if (m_debug)
 		{
 			if (m_root_window->m_button_events.size() > 0)
 			{
@@ -849,12 +874,4 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 
 	OnStop();
 	return;
-}
-
-void Dialogs::GSDumpDialog::PathChanged(wxFileSystemWatcherEvent& event)
-{
-	int type = event.GetChangeType();
-
-	if (type == wxFSW_EVENT_CREATE || type == wxFSW_EVENT_DELETE || type == wxFSW_EVENT_RENAME)
-		GetDumpsList();
 }
