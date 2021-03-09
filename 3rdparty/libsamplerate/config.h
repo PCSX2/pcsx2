@@ -193,10 +193,11 @@
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "0.1.9"
+#define VERSION "0.2.1"
 
-
-
+#define ENABLE_SINC_FAST_CONVERTER
+#define ENABLE_SINC_MEDIUM_CONVERTER
+#define ENABLE_SINC_BEST_CONVERTER
 /* Extra Win32 hacks. */
 
 /*
