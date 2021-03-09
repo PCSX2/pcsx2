@@ -1,21 +1,27 @@
 /*
-** Copyright (c) 2002-2016, Erik de Castro Lopo <erikd@mega-nerd.com>
+** Copyright (c) 2002-2021, Erik de Castro Lopo <erikd@mega-nerd.com>
 ** All rights reserved.
 **
 ** This code is released under 2-clause BSD license. Please see the
-** file at : https://github.com/erikd/libsamplerate/blob/master/COPYING
+** file at : https://github.com/libsndfile/libsamplerate/blob/master/COPYING
 */
 
+
+
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
-#include "config.h"
-#include "float_cast.h"
 #include "common.h"
+#include "config.h"
 
-static int linear_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
-static void linear_reset (SRC_PRIVATE *psrc) ;
+
+static SRC_ERROR linear_vari_process (SRC_STATE *state, SRC_DATA *data) ;
+static void linear_reset (SRC_STATE *state) ;
+static SRC_STATE *linear_copy (SRC_STATE *state) ;
+static void linear_close (SRC_STATE *state) ;
 
 /*========================================================================================
 */
@@ -26,18 +32,26 @@ static void linear_reset (SRC_PRIVATE *psrc) ;
 
 typedef struct
 {	int		linear_magic_marker ;
-	int		channels ;
-	int		reset ;
+	bool	dirty ;
 	long	in_count, in_used ;
 	long	out_count, out_gen ;
-	float	last_value [1] ;
+	float	*last_value ;
 } LINEAR_DATA ;
+
+static SRC_STATE_VT linear_state_vt =
+{
+	linear_vari_process,
+	linear_vari_process,
+	linear_reset,
+	linear_copy,
+	linear_close
+} ;
 
 /*----------------------------------------------------------------------------------------
 */
 
-static int
-linear_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
+static SRC_ERROR
+linear_vari_process (SRC_STATE *state, SRC_DATA *data)
 {	LINEAR_DATA *priv ;
 	double		src_ratio, input_index, rem ;
 	int			ch ;
@@ -45,41 +59,41 @@ linear_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 	if (data->input_frames <= 0)
 		return SRC_ERR_NO_ERROR ;
 
-	if (psrc->private_data == NULL)
+	if (state->private_data == NULL)
 		return SRC_ERR_NO_PRIVATE ;
 
-	priv = (LINEAR_DATA*) psrc->private_data ;
+	priv = (LINEAR_DATA*) state->private_data ;
 
-	if (priv->reset)
+	if (!priv->dirty)
 	{	/* If we have just been reset, set the last_value data. */
-		for (ch = 0 ; ch < priv->channels ; ch++)
+		for (ch = 0 ; ch < state->channels ; ch++)
 			priv->last_value [ch] = data->data_in [ch] ;
-		priv->reset = 0 ;
+		priv->dirty = true ;
 		} ;
 
-	priv->in_count = data->input_frames * priv->channels ;
-	priv->out_count = data->output_frames * priv->channels ;
+	priv->in_count = data->input_frames * state->channels ;
+	priv->out_count = data->output_frames * state->channels ;
 	priv->in_used = priv->out_gen = 0 ;
 
-	src_ratio = psrc->last_ratio ;
+	src_ratio = state->last_ratio ;
 
 	if (is_bad_src_ratio (src_ratio))
 		return SRC_ERR_BAD_INTERNAL_STATE ;
 
-	input_index = psrc->last_position ;
+	input_index = state->last_position ;
 
 	/* Calculate samples before first sample in input array. */
 	while (input_index < 1.0 && priv->out_gen < priv->out_count)
 	{
-		if (priv->in_used + priv->channels * (1.0 + input_index) >= priv->in_count)
+		if (priv->in_used + state->channels * (1.0 + input_index) >= priv->in_count)
 			break ;
 
-		if (priv->out_count > 0 && fabs (psrc->last_ratio - data->src_ratio) > SRC_MIN_RATIO_DIFF)
-			src_ratio = psrc->last_ratio + priv->out_gen * (data->src_ratio - psrc->last_ratio) / priv->out_count ;
+		if (priv->out_count > 0 && fabs (state->last_ratio - data->src_ratio) > SRC_MIN_RATIO_DIFF)
+			src_ratio = state->last_ratio + priv->out_gen * (data->src_ratio - state->last_ratio) / priv->out_count ;
 
-		for (ch = 0 ; ch < priv->channels ; ch++)
+		for (ch = 0 ; ch < state->channels ; ch++)
 		{	data->data_out [priv->out_gen] = (float) (priv->last_value [ch] + input_index *
-										(data->data_in [ch] - priv->last_value [ch])) ;
+										((double) data->data_in [ch] - priv->last_value [ch])) ;
 			priv->out_gen ++ ;
 			} ;
 
@@ -88,23 +102,25 @@ linear_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 		} ;
 
 	rem = fmod_one (input_index) ;
-	priv->in_used += priv->channels * lrint (input_index - rem) ;
+	priv->in_used += state->channels * lrint (input_index - rem) ;
 	input_index = rem ;
 
 	/* Main processing loop. */
-	while (priv->out_gen < priv->out_count && priv->in_used + priv->channels * input_index < priv->in_count)
+	while (priv->out_gen < priv->out_count && priv->in_used + state->channels * input_index < priv->in_count)
 	{
-		if (priv->out_count > 0 && fabs (psrc->last_ratio - data->src_ratio) > SRC_MIN_RATIO_DIFF)
-			src_ratio = psrc->last_ratio + priv->out_gen * (data->src_ratio - psrc->last_ratio) / priv->out_count ;
+		if (priv->out_count > 0 && fabs (state->last_ratio - data->src_ratio) > SRC_MIN_RATIO_DIFF)
+			src_ratio = state->last_ratio + priv->out_gen * (data->src_ratio - state->last_ratio) / priv->out_count ;
 
-		if (SRC_DEBUG && priv->in_used < priv->channels && input_index < 1.0)
-		{	printf ("Whoops!!!!   in_used : %ld     channels : %d     input_index : %f\n", priv->in_used, priv->channels, input_index) ;
+#if SRC_DEBUG
+		if (priv->in_used < state->channels && input_index < 1.0)
+		{	printf ("Whoops!!!!   in_used : %ld     channels : %d     input_index : %f\n", priv->in_used, state->channels, input_index) ;
 			exit (1) ;
 			} ;
+#endif
 
-		for (ch = 0 ; ch < priv->channels ; ch++)
-		{	data->data_out [priv->out_gen] = (float) (data->data_in [priv->in_used - priv->channels + ch] + input_index *
-						(data->data_in [priv->in_used + ch] - data->data_in [priv->in_used - priv->channels + ch])) ;
+		for (ch = 0 ; ch < state->channels ; ch++)
+		{	data->data_out [priv->out_gen] = (float) (data->data_in [priv->in_used - state->channels + ch] + input_index *
+						((double) data->data_in [priv->in_used + ch] - data->data_in [priv->in_used - state->channels + ch])) ;
 			priv->out_gen ++ ;
 			} ;
 
@@ -112,26 +128,26 @@ linear_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 		input_index += 1.0 / src_ratio ;
 		rem = fmod_one (input_index) ;
 
-		priv->in_used += priv->channels * lrint (input_index - rem) ;
+		priv->in_used += state->channels * lrint (input_index - rem) ;
 		input_index = rem ;
 		} ;
 
 	if (priv->in_used > priv->in_count)
-	{	input_index += (priv->in_used - priv->in_count) / priv->channels ;
+	{	input_index += (priv->in_used - priv->in_count) / state->channels ;
 		priv->in_used = priv->in_count ;
 		} ;
 
-	psrc->last_position = input_index ;
+	state->last_position = input_index ;
 
 	if (priv->in_used > 0)
-		for (ch = 0 ; ch < priv->channels ; ch++)
-			priv->last_value [ch] = data->data_in [priv->in_used - priv->channels + ch] ;
+		for (ch = 0 ; ch < state->channels ; ch++)
+			priv->last_value [ch] = data->data_in [priv->in_used - state->channels + ch] ;
 
 	/* Save current ratio rather then target ratio. */
-	psrc->last_ratio = src_ratio ;
+	state->last_ratio = src_ratio ;
 
-	data->input_frames_used = priv->in_used / priv->channels ;
-	data->output_frames_gen = priv->out_gen / priv->channels ;
+	data->input_frames_used = priv->in_used / state->channels ;
+	data->output_frames_gen = priv->out_gen / state->channels ;
 
 	return SRC_ERR_NO_ERROR ;
 } /* linear_vari_process */
@@ -139,7 +155,7 @@ linear_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 /*------------------------------------------------------------------------------
 */
 
-const char*
+LIBSAMPLERATE_DLL_PRIVATE const char*
 linear_get_name (int src_enum)
 {
 	if (src_enum == SRC_LINEAR)
@@ -148,7 +164,7 @@ linear_get_name (int src_enum)
 	return NULL ;
 } /* linear_get_name */
 
-const char*
+LIBSAMPLERATE_DLL_PRIVATE const char*
 linear_get_description (int src_enum)
 {
 	if (src_enum == SRC_LINEAR)
@@ -157,53 +173,129 @@ linear_get_description (int src_enum)
 	return NULL ;
 } /* linear_get_descrition */
 
-int
-linear_set_converter (SRC_PRIVATE *psrc, int src_enum)
-{	LINEAR_DATA *priv = NULL ;
+static LINEAR_DATA *
+linear_data_new (int channels)
+{
+	assert (channels > 0) ;
 
-	if (src_enum != SRC_LINEAR)
-		return SRC_ERR_BAD_CONVERTER ;
+	LINEAR_DATA *priv = (LINEAR_DATA *) calloc (1, sizeof (LINEAR_DATA)) ;
+	if (priv)
+	{
+		priv->linear_magic_marker = LINEAR_MAGIC_MARKER ;
+		priv->last_value = (float *) calloc (channels, sizeof (float)) ;
+		if (!priv->last_value)
+		{
+			free (priv) ;
+			priv = NULL ;
+		}
+	}
 
-	if (psrc->private_data != NULL)
-	{	free (psrc->private_data) ;
-		psrc->private_data = NULL ;
-		} ;
+	return priv ;
+}
 
-	if (psrc->private_data == NULL)
-	{	priv = calloc (1, sizeof (*priv) + psrc->channels * sizeof (float)) ;
-		psrc->private_data = priv ;
-		} ;
+LIBSAMPLERATE_DLL_PRIVATE SRC_STATE *
+linear_state_new (int channels, SRC_ERROR *error)
+{
+	assert (channels > 0) ;
+	assert (error != NULL) ;
 
-	if (priv == NULL)
-		return SRC_ERR_MALLOC_FAILED ;
+	SRC_STATE *state = (SRC_STATE *) calloc (1, sizeof (SRC_STATE)) ;
+	if (!state)
+	{
+		*error = SRC_ERR_MALLOC_FAILED ;
+		return NULL ;
+	}
 
-	priv->linear_magic_marker = LINEAR_MAGIC_MARKER ;
-	priv->channels = psrc->channels ;
+	state->channels = channels ;
+	state->mode = SRC_MODE_PROCESS ;
 
-	psrc->const_process = linear_vari_process ;
-	psrc->vari_process = linear_vari_process ;
-	psrc->reset = linear_reset ;
+	state->private_data = linear_data_new (state->channels) ;
+	if (!state->private_data)
+	{
+		free (state) ;
+		*error = SRC_ERR_MALLOC_FAILED ;
+		return NULL ;
+	}
 
-	linear_reset (psrc) ;
+	state->vt = &linear_state_vt ;
 
-	return SRC_ERR_NO_ERROR ;
-} /* linear_set_converter */
+	linear_reset (state) ;
+
+	*error = SRC_ERR_NO_ERROR ;
+
+	return state ;
+}
 
 /*===================================================================================
 */
 
 static void
-linear_reset (SRC_PRIVATE *psrc)
+linear_reset (SRC_STATE *state)
 {	LINEAR_DATA *priv = NULL ;
 
-	priv = (LINEAR_DATA*) psrc->private_data ;
+	priv = (LINEAR_DATA*) state->private_data ;
 	if (priv == NULL)
 		return ;
 
-	priv->channels = psrc->channels ;
-	priv->reset = 1 ;
-	memset (priv->last_value, 0, sizeof (priv->last_value [0]) * priv->channels) ;
+	priv->dirty = false ;
+	memset (priv->last_value, 0, sizeof (priv->last_value [0]) * state->channels) ;
 
 	return ;
 } /* linear_reset */
 
+SRC_STATE *
+linear_copy (SRC_STATE *state)
+{
+	assert (state != NULL) ;
+
+	if (state->private_data == NULL)
+		return NULL ;
+
+	SRC_STATE *to = (SRC_STATE *) calloc (1, sizeof (SRC_STATE)) ;
+	if (!to)
+		return NULL ;
+	memcpy (to, state, sizeof (SRC_STATE)) ;
+
+	LINEAR_DATA* from_priv = (LINEAR_DATA*) state->private_data ;
+	LINEAR_DATA *to_priv = (LINEAR_DATA *) calloc (1, sizeof (LINEAR_DATA)) ;
+	if (!to_priv)
+	{
+		free (to) ;
+		return NULL ;
+	}
+
+	memcpy (to_priv, from_priv, sizeof (LINEAR_DATA)) ;
+	to_priv->last_value = (float *) malloc (sizeof (float) * state->channels) ;
+	if (!to_priv->last_value)
+	{
+		free (to) ;
+		free (to_priv) ;
+		return NULL ;
+	}
+	memcpy (to_priv->last_value, from_priv->last_value, sizeof (float) * state->channels) ;
+
+	to->private_data = to_priv ;
+
+	return to ;
+} /* linear_copy */
+
+static void
+linear_close (SRC_STATE *state)
+{
+	if (state)
+	{
+		LINEAR_DATA *linear = (LINEAR_DATA *) state->private_data ;
+		if (linear)
+		{
+			if (linear->last_value)
+			{
+				free (linear->last_value) ;
+				linear->last_value = NULL ;
+			}
+			free (linear) ;
+			linear = NULL ;
+		}
+		free (state) ;
+		state = NULL ;
+	}
+} /* linear_close */

@@ -1,3 +1,35 @@
+Unreleased
+  * Switch to GCC's visibility for hiding more implementation details
+  * Check GNU ld instead of gcc for exported symbols control logic in
+    configure.ac
+
+Version 0.2.1 (2021-01-23)
+  * Fix incorrect passing of -version-info to libtool, causing a
+    regression on versioned file name of the shared library (#140).
+  * Fix time resolution on GNU/Hurd for throughput_test
+  * Update AUTHORS and release manager details
+
+Version 0.2.0 (2021-01-21)
+  * API:
+    * Add `src_clone()` function to clone a SRC_STATE* handle
+  * Cleanup Autotools build system.
+  * Require C99 compiler
+  * Move `sndfile-resample` to sndfile-tools package
+  * Add missing `src_get_channels`() export to windows def file
+  * Fix macOS compile errors and modernize audio api on that platform
+  * Add Octave scripts to generate filter coefficients
+  * Fix two potential undefined behaviours
+  * Fix a buffer out-of-bounds read error in src/src_sinc.c
+  * Improve multichan_throughput_test
+  * Replace buggy implementationg of Duffs device by regular loop
+  * CMake:
+    * Fix CMake generated shared library ABI compliance with Autotools build 
+  * Documentation:
+    * Move site to new URL: http://libsndfile.github.io/libsamplerate/
+    * Convert documentation pages from HTML to Markdown
+    * Use GitHub's Jekyll static site generator to generate static HTML pages
+      for site
+
 Version 0.1.9 (2016-09-23)
   * Relicense under 2 clause BSD license.
   * Minor bug fixes and upates.
