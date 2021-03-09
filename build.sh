@@ -238,7 +238,7 @@ for ARG in "$@"; do
             echo
             echo "** Distribution Compatibilities **"
             echo "--sdl12         : Build with SDL1.2 (requires if wx is linked against SDL1.2)"
-            echo "--no-portaudio  : Skip portaudio for spu2x."
+            echo "--no-portaudio  : Skip portaudio for SPU2."
             echo "--use-system-yaml  : Use the system version of yaml-cpp, if available."
             echo
             echo "** Expert Developer option **"
