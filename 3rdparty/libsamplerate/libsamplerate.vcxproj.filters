@@ -27,9 +27,6 @@
     <ClInclude Include="fastest_coeffs.h">
       <Filter>Headers</Filter>
     </ClInclude>
-    <ClInclude Include="float_cast.h">
-      <Filter>Headers</Filter>
-    </ClInclude>
     <ClInclude Include="high_qual_coeffs.h">
       <Filter>Headers</Filter>
     </ClInclude>

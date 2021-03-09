@@ -1,21 +1,24 @@
 /*
-** Copyright (c) 2002-2016, Erik de Castro Lopo <erikd@mega-nerd.com>
+** Copyright (c) 2002-2021, Erik de Castro Lopo <erikd@mega-nerd.com>
 ** All rights reserved.
 **
 ** This code is released under 2-clause BSD license. Please see the
-** file at : https://github.com/erikd/libsamplerate/blob/master/COPYING
+** file at : https://github.com/libsndfile/libsamplerate/blob/master/COPYING
 */
 
+#include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
-#include "config.h"
-#include "float_cast.h"
 #include "common.h"
+#include "config.h"
 
-static int zoh_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data) ;
-static void zoh_reset (SRC_PRIVATE *psrc) ;
+static SRC_ERROR zoh_vari_process (SRC_STATE *state, SRC_DATA *data) ;
+static void zoh_reset (SRC_STATE *state) ;
+static SRC_STATE *zoh_copy (SRC_STATE *state) ;
+static void zoh_close (SRC_STATE *state) ;
 
 /*========================================================================================
 */
@@ -24,18 +27,26 @@ static void zoh_reset (SRC_PRIVATE *psrc) ;
 
 typedef struct
 {	int		zoh_magic_marker ;
-	int		channels ;
-	int		reset ;
+	bool	dirty ;
 	long	in_count, in_used ;
 	long	out_count, out_gen ;
-	float	last_value [1] ;
+	float	*last_value ;
 } ZOH_DATA ;
+
+static SRC_STATE_VT zoh_state_vt =
+{
+	zoh_vari_process,
+	zoh_vari_process,
+	zoh_reset,
+	zoh_copy,
+	zoh_close
+} ;
 
 /*----------------------------------------------------------------------------------------
 */
 
-static int
-zoh_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
+static SRC_ERROR
+zoh_vari_process (SRC_STATE *state, SRC_DATA *data)
 {	ZOH_DATA 	*priv ;
 	double		src_ratio, input_index, rem ;
 	int			ch ;
@@ -43,39 +54,39 @@ zoh_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 	if (data->input_frames <= 0)
 		return SRC_ERR_NO_ERROR ;
 
-	if (psrc->private_data == NULL)
+	if (state->private_data == NULL)
 		return SRC_ERR_NO_PRIVATE ;
 
-	priv = (ZOH_DATA*) psrc->private_data ;
+	priv = (ZOH_DATA*) state->private_data ;
 
-	if (priv->reset)
+	if (!priv->dirty)
 	{	/* If we have just been reset, set the last_value data. */
-		for (ch = 0 ; ch < priv->channels ; ch++)
+		for (ch = 0 ; ch < state->channels ; ch++)
 			priv->last_value [ch] = data->data_in [ch] ;
-		priv->reset = 0 ;
+		priv->dirty = true ;
 		} ;
 
-	priv->in_count = data->input_frames * priv->channels ;
-	priv->out_count = data->output_frames * priv->channels ;
+	priv->in_count = data->input_frames * state->channels ;
+	priv->out_count = data->output_frames * state->channels ;
 	priv->in_used = priv->out_gen = 0 ;
 
-	src_ratio = psrc->last_ratio ;
+	src_ratio = state->last_ratio ;
 
 	if (is_bad_src_ratio (src_ratio))
 		return SRC_ERR_BAD_INTERNAL_STATE ;
 
-	input_index = psrc->last_position ;
+	input_index = state->last_position ;
 
 	/* Calculate samples before first sample in input array. */
 	while (input_index < 1.0 && priv->out_gen < priv->out_count)
 	{
-		if (priv->in_used + priv->channels * input_index >= priv->in_count)
+		if (priv->in_used + state->channels * input_index >= priv->in_count)
 			break ;
 
-		if (priv->out_count > 0 && fabs (psrc->last_ratio - data->src_ratio) > SRC_MIN_RATIO_DIFF)
-			src_ratio = psrc->last_ratio + priv->out_gen * (data->src_ratio - psrc->last_ratio) / priv->out_count ;
+		if (priv->out_count > 0 && fabs (state->last_ratio - data->src_ratio) > SRC_MIN_RATIO_DIFF)
+			src_ratio = state->last_ratio + priv->out_gen * (data->src_ratio - state->last_ratio) / priv->out_count ;
 
-		for (ch = 0 ; ch < priv->channels ; ch++)
+		for (ch = 0 ; ch < state->channels ; ch++)
 		{	data->data_out [priv->out_gen] = priv->last_value [ch] ;
 			priv->out_gen ++ ;
 			} ;
@@ -85,17 +96,17 @@ zoh_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 		} ;
 
 	rem = fmod_one (input_index) ;
-	priv->in_used += priv->channels * lrint (input_index - rem) ;
+	priv->in_used += state->channels * lrint (input_index - rem) ;
 	input_index = rem ;
 
 	/* Main processing loop. */
-	while (priv->out_gen < priv->out_count && priv->in_used + priv->channels * input_index <= priv->in_count)
+	while (priv->out_gen < priv->out_count && priv->in_used + state->channels * input_index <= priv->in_count)
 	{
-		if (priv->out_count > 0 && fabs (psrc->last_ratio - data->src_ratio) > SRC_MIN_RATIO_DIFF)
-			src_ratio = psrc->last_ratio + priv->out_gen * (data->src_ratio - psrc->last_ratio) / priv->out_count ;
+		if (priv->out_count > 0 && fabs (state->last_ratio - data->src_ratio) > SRC_MIN_RATIO_DIFF)
+			src_ratio = state->last_ratio + priv->out_gen * (data->src_ratio - state->last_ratio) / priv->out_count ;
 
-		for (ch = 0 ; ch < priv->channels ; ch++)
-		{	data->data_out [priv->out_gen] = data->data_in [priv->in_used - priv->channels + ch] ;
+		for (ch = 0 ; ch < state->channels ; ch++)
+		{	data->data_out [priv->out_gen] = data->data_in [priv->in_used - state->channels + ch] ;
 			priv->out_gen ++ ;
 			} ;
 
@@ -103,26 +114,26 @@ zoh_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 		input_index += 1.0 / src_ratio ;
 		rem = fmod_one (input_index) ;
 
-		priv->in_used += priv->channels * lrint (input_index - rem) ;
+		priv->in_used += state->channels * lrint (input_index - rem) ;
 		input_index = rem ;
 		} ;
 
 	if (priv->in_used > priv->in_count)
-	{	input_index += (priv->in_used - priv->in_count) / priv->channels ;
+	{	input_index += (priv->in_used - priv->in_count) / state->channels ;
 		priv->in_used = priv->in_count ;
 		} ;
 
-	psrc->last_position = input_index ;
+	state->last_position = input_index ;
 
 	if (priv->in_used > 0)
-		for (ch = 0 ; ch < priv->channels ; ch++)
-			priv->last_value [ch] = data->data_in [priv->in_used - priv->channels + ch] ;
+		for (ch = 0 ; ch < state->channels ; ch++)
+			priv->last_value [ch] = data->data_in [priv->in_used - state->channels + ch] ;
 
 	/* Save current ratio rather then target ratio. */
-	psrc->last_ratio = src_ratio ;
+	state->last_ratio = src_ratio ;
 
-	data->input_frames_used = priv->in_used / priv->channels ;
-	data->output_frames_gen = priv->out_gen / priv->channels ;
+	data->input_frames_used = priv->in_used / state->channels ;
+	data->output_frames_gen = priv->out_gen / state->channels ;
 
 	return SRC_ERR_NO_ERROR ;
 } /* zoh_vari_process */
@@ -130,7 +141,7 @@ zoh_vari_process (SRC_PRIVATE *psrc, SRC_DATA *data)
 /*------------------------------------------------------------------------------
 */
 
-const char*
+LIBSAMPLERATE_DLL_PRIVATE const char*
 zoh_get_name (int src_enum)
 {
 	if (src_enum == SRC_ZERO_ORDER_HOLD)
@@ -139,7 +150,7 @@ zoh_get_name (int src_enum)
 	return NULL ;
 } /* zoh_get_name */
 
-const char*
+LIBSAMPLERATE_DLL_PRIVATE const char*
 zoh_get_description (int src_enum)
 {
 	if (src_enum == SRC_ZERO_ORDER_HOLD)
@@ -148,53 +159,129 @@ zoh_get_description (int src_enum)
 	return NULL ;
 } /* zoh_get_descrition */
 
-int
-zoh_set_converter (SRC_PRIVATE *psrc, int src_enum)
-{	ZOH_DATA *priv = NULL ;
+static ZOH_DATA *
+zoh_data_new (int channels)
+{
+	assert (channels > 0) ;
 
-	if (src_enum != SRC_ZERO_ORDER_HOLD)
-		return SRC_ERR_BAD_CONVERTER ;
+	ZOH_DATA *priv = (ZOH_DATA *) calloc (1, sizeof (ZOH_DATA)) ;
+	if (priv)
+	{
+		priv->zoh_magic_marker = ZOH_MAGIC_MARKER ;
+		priv->last_value = (float *) calloc (channels, sizeof (float)) ;
+		if (!priv->last_value)
+		{
+			free (priv) ;
+			priv = NULL ;
+		}
+	}
 
-	if (psrc->private_data != NULL)
-	{	free (psrc->private_data) ;
-		psrc->private_data = NULL ;
-		} ;
+	return priv ;
+}
 
-	if (psrc->private_data == NULL)
-	{	priv = calloc (1, sizeof (*priv) + psrc->channels * sizeof (float)) ;
-		psrc->private_data = priv ;
-		} ;
+LIBSAMPLERATE_DLL_PRIVATE SRC_STATE *
+zoh_state_new (int channels, SRC_ERROR *error)
+{
+	assert (channels > 0) ;
+	assert (error != NULL) ;
 
-	if (priv == NULL)
-		return SRC_ERR_MALLOC_FAILED ;
+	SRC_STATE *state = (SRC_STATE *) calloc (1, sizeof (SRC_STATE)) ;
+	if (!state)
+	{
+		*error = SRC_ERR_MALLOC_FAILED ;
+		return NULL ;
+	}
 
-	priv->zoh_magic_marker = ZOH_MAGIC_MARKER ;
-	priv->channels = psrc->channels ;
+	state->channels = channels ;
+	state->mode = SRC_MODE_PROCESS ;
 
-	psrc->const_process = zoh_vari_process ;
-	psrc->vari_process = zoh_vari_process ;
-	psrc->reset = zoh_reset ;
+	state->private_data = zoh_data_new (state->channels) ;
+	if (!state->private_data)
+	{
+		free (state) ;
+		*error = SRC_ERR_MALLOC_FAILED ;
+		return NULL ;
+	}
 
-	zoh_reset (psrc) ;
+	state->vt = &zoh_state_vt ;
 
-	return SRC_ERR_NO_ERROR ;
-} /* zoh_set_converter */
+	zoh_reset (state) ;
+
+	*error = SRC_ERR_NO_ERROR ;
+
+	return state ;
+}
 
 /*===================================================================================
 */
 
 static void
-zoh_reset (SRC_PRIVATE *psrc)
+zoh_reset (SRC_STATE *state)
 {	ZOH_DATA *priv ;
 
-	priv = (ZOH_DATA*) psrc->private_data ;
+	priv = (ZOH_DATA*) state->private_data ;
 	if (priv == NULL)
 		return ;
 
-	priv->channels = psrc->channels ;
-	priv->reset = 1 ;
-	memset (priv->last_value, 0, sizeof (priv->last_value [0]) * priv->channels) ;
+	priv->dirty = false ;
+	memset (priv->last_value, 0, sizeof (float) * state->channels) ;
 
 	return ;
 } /* zoh_reset */
 
+static SRC_STATE *
+zoh_copy (SRC_STATE *state)
+{
+	assert (state != NULL) ;
+
+	if (state->private_data == NULL)
+		return NULL ;
+
+	SRC_STATE *to = (SRC_STATE *) calloc (1, sizeof (SRC_STATE)) ;
+	if (!to)
+		return NULL ;
+	memcpy (to, state, sizeof (SRC_STATE)) ;
+
+	ZOH_DATA* from_priv = (ZOH_DATA*) state->private_data ;
+	ZOH_DATA *to_priv = (ZOH_DATA *) calloc (1, sizeof (ZOH_DATA)) ;
+	if (!to_priv)
+	{
+		free (to) ;
+		return NULL ;
+	}
+
+	memcpy (to_priv, from_priv, sizeof (ZOH_DATA)) ;
+	to_priv->last_value = (float *) malloc (sizeof (float) * state->channels) ;
+	if (!to_priv->last_value)
+	{
+		free (to) ;
+		free (to_priv) ;
+		return NULL ;
+	}
+	memcpy (to_priv->last_value, from_priv->last_value, sizeof (float) * state->channels) ;
+
+	to->private_data = to_priv ;
+
+	return to ;
+} /* zoh_copy */
+
+static void
+zoh_close (SRC_STATE *state)
+{
+	if (state)
+	{
+		ZOH_DATA *zoh = (ZOH_DATA *) state->private_data ;
+		if (zoh)
+		{
+			if (zoh->last_value)
+			{
+				free (zoh->last_value) ;
+				zoh->last_value = NULL ;
+			}
+			free (zoh) ;
+			zoh = NULL ;
+		}
+		free (state) ;
+		state = NULL ;
+	}
+} /* zoh_close */
