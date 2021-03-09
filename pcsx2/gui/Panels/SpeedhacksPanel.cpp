@@ -242,6 +242,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	Bind(wxEVT_SCROLL_CHANGED, &SpeedHacksPanel::VUCycleRate_Scroll, this, m_slider_eeSkip->GetId());
 	Bind(wxEVT_CHECKBOX, &SpeedHacksPanel::OnEnable_Toggled, this, m_check_Enable->GetId());
 	Bind(wxEVT_BUTTON, &SpeedHacksPanel::Defaults_Click, this, wxID_DEFAULT);
+	Bind(wxEVT_CHECKBOX, &SpeedHacksPanel::VUThread_Enable, this, m_check_vuThread->GetId());
 }
 
 // Doesn't modify values - only locks(gray out)/unlocks as necessary.
@@ -267,10 +268,14 @@ void Panels::SpeedHacksPanel::EnableStuff( AppConfig* configToUse )
 	m_check_intc->Enable(HacksEnabledAndNoPreset);
 	m_check_waitloop->Enable(HacksEnabledAndNoPreset);
 	m_check_fastCDVD->Enable(HacksEnabledAndNoPreset);
-	m_check_vu1Instant->Enable(hacksEnabled);
 
 	// Grayout MTVU on safest preset
 	m_check_vuThread->Enable(hacksEnabled && (!hasPreset || configToUse->PresetIndex != 0));
+
+	// Disables the Instant VU1 checkbox when MTVU is checked in the GUI as reflected in the code.
+	// Makes Instant VU1 toggleable when MTVU is unchecked in the GUI.
+	// Some may think that having MTVU + Instant VU1 checked, can have bad side-effects when it doesn't.
+	m_check_vu1Instant->Enable(hacksEnabled && !m_check_vuThread->GetValue());
 
 	// Layout necessary to ensure changed slider text gets re-aligned properly
 	// and to properly gray/ungray pxStaticText stuff (I suspect it causes a
@@ -367,4 +372,10 @@ void Panels::SpeedHacksPanel::VUCycleRate_Scroll(wxScrollEvent &event)
 	Layout();
 
 	event.Skip();
+}
+
+void Panels::SpeedHacksPanel::VUThread_Enable(wxCommandEvent& evt)
+{
+	m_check_vu1Instant->Enable(!m_check_vuThread->GetValue());
+	Layout();
 }
