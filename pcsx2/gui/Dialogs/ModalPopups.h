@@ -349,6 +349,7 @@ namespace Dialogs
 		void GenPacketInfo(GSData& dump);
 		void ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data, bool packed);
 		void ParseTreePrim(wxTreeItemId& id, u32 prim);
+		void CloseDump(wxCommandEvent& event);
 		class GSThread : public pxThread
 		{
 		protected:
@@ -359,6 +360,8 @@ namespace Dialogs
 			GSDumpDialog* m_root_window;
 
 		public:
+			int m_renderer = 0;
+			bool m_debug = false;
 			size_t m_debug_index;
 			std::unique_ptr<pxInputStream> m_dump_file;
 			GSThread(GSDumpDialog* dlg);
