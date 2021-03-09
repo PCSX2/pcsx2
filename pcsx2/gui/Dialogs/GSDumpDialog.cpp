@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -727,43 +727,29 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 
 	while (m_dump_file->Tell() < m_dump_file->Length())
 	{
-		GSType id = Transfer;
+		GSType id;
+		GSTransferPath id_transfer = Dummy;
 		m_dump_file->Read(&id, 1);
+		s32 size = 0;
 		switch (id)
 		{
 			case Transfer:
-			{
-				GSTransferPath id_transfer;
 				m_dump_file->Read(&id_transfer, 1);
-				s32 size = 0;
 				m_dump_file->Read(&size, 4);
-				std::unique_ptr<char[]> transfer_data(new char[size]);
-				m_dump_file->Read(transfer_data.get(), size);
-				m_root_window->m_dump_packets.push_back({id, std::move(transfer_data), size, id_transfer});
 				break;
-			}
 			case VSync:
-			{
-				std::unique_ptr<char[]> vsync(new char[1]);
-				m_dump_file->Read(vsync.get(), 1);
-				m_root_window->m_dump_packets.push_back({id, std::move(vsync), 1, Dummy});
+				size = 1;
 				break;
-			}
 			case ReadFIFO2:
-			{
-				std::unique_ptr<char[]> fifo(new char[4]);
-				m_dump_file->Read(fifo.get(), 4);
-				m_root_window->m_dump_packets.push_back({id, std::move(fifo), 4, Dummy});
+				size = 4;
 				break;
-			}
 			case Registers:
-			{
-				std::unique_ptr<char[]> regs_tmp(new char[8192]);
-				m_dump_file->Read(regs_tmp.get(), 8192);
-				m_root_window->m_dump_packets.push_back({id, std::move(regs_tmp), 8192, Dummy});
+				size = 8192;
 				break;
-			}
 		}
+		std::unique_ptr<char[]> data(new char[size]);
+		m_dump_file->Read(data.get(), size);
+		m_root_window->m_dump_packets.push_back({id, std::move(data), size, id_transfer});
 	}
 
 	GetCorePlugins().Init();
@@ -848,15 +834,12 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 				m_root_window->ProcessDumpEvent({VSync, 0, 0, Dummy}, regs);
 			}
 		}
-		else
+		else if (m_root_window->m_dump_packets.size())
 		{
-			while (i < (m_root_window->m_dump_packets.size()))
-			{
+			do
 				m_root_window->ProcessDumpEvent(m_root_window->m_dump_packets[i++], regs);
+			while (i < m_root_window->m_dump_packets.size() && m_root_window->m_dump_packets[i].id != VSync);
 
-				if (i >= m_root_window->m_dump_packets.size() || m_root_window->m_dump_packets[i].id == VSync)
-					break;
-			}
 			if (i >= m_root_window->m_dump_packets.size())
 				i = 0;
 		}
