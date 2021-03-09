@@ -6,9 +6,8 @@
 ** file at : https://github.com/libsndfile/libsamplerate/blob/master/COPYING
 */
 
-#ifdef HAVE_CONFIG_H
-#include "config.h"
-#endif
+
+
 
 #include <assert.h>
 #include <stdio.h>
@@ -17,6 +16,7 @@
 #include <math.h>
 
 #include "common.h"
+#include "config.h"
 
 #define	SINC_MAGIC_MARKER	MAKE_MAGIC (' ', 's', 'i', 'n', 'c', ' ')
 
