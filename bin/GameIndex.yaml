@@ -3581,8 +3581,14 @@ SCPS-17011:
   name: "Nike - Gran Turismo [Limited Edition - 11 inch]"
   region: "NTSC-J"
 SCPS-17013:
-  name: "Rogue Galaxy [Directors Cut]"
+  name: "Rogue Galaxy [Director's Cut]"
   region: "NTSC-J"
+  patches:
+    CDEE4B19:
+      content: |-
+        author=kozarovv
+        // Fixes Vedan Myna out of bounds glitch.
+        patch=1,EE,00124898,word,3442fffe
 SCPS-19101:
   name: "Mosquito [PlayStation 2 The Best]"
   region: "NTSC-J"
