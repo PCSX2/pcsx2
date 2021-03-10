@@ -23,8 +23,6 @@
 #define IPU_INT_TO( cycles )  if(!(cpuRegs.interrupt & (1<<4))) CPU_INT( DMAC_TO_IPU, cycles )
 #define IPU_INT_FROM( cycles )  CPU_INT( DMAC_FROM_IPU, cycles )
 
-#define IPU_FORCEINLINE __fi
-
 //
 // Bitfield Structures
 //
@@ -299,7 +297,6 @@ extern void IPUCMD_WRITE(u32 val);
 extern void ipuSoftReset();
 extern void IPUProcessInterrupt();
 
-extern u8 getBits128(u8 *address, bool advance);
 extern u8 getBits64(u8 *address, bool advance);
 extern u8 getBits32(u8 *address, bool advance);
 extern u8 getBits16(u8 *address, bool advance);

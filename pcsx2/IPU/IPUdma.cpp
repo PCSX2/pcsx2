@@ -19,10 +19,6 @@
 #include "IPU/IPUdma.h"
 #include "mpeg2lib/Mpeg.h"
 
-#include "Vif.h"
-#include "Gif.h"
-#include "Vif_Dma.h"
-
 static IPUStatus IPU1Status;
 static tIPU_DMA g_nDMATransfer;
 
@@ -269,9 +265,6 @@ __fi void dmaIPU0() // fromIPU
 	// but because our IPU is too quick, it messes up the sync between the DMA and IPU.
 	// So this will do until (if) we sort the timing out of IPU, shouldn't cause any problems for games for now.
 	IPU_INT_FROM( 160 );
-
-
-	
 }
 
 __fi void dmaIPU1() // toIPU
@@ -314,8 +307,6 @@ __fi void dmaIPU1() // toIPU
 			IPU1dma();
 	}
 }
-
-extern void GIFdma();
 
 void ipu0Interrupt()
 {
@@ -369,7 +360,7 @@ void ipu0Interrupt()
 	DMA_LOG("IPU0 DMA End");
 }
 
-IPU_FORCEINLINE void ipu1Interrupt()
+__fi void ipu1Interrupt()
 {
 	IPU_LOG("ipu1Interrupt %x:", cpuRegs.cycle);
 

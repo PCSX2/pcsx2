@@ -21,9 +21,6 @@
 #include "yuv2rgb.h"
 #include "mpeg2lib/Mpeg.h"
 
-#include "Vif.h"
-#include "Gif.h"
-#include "Vif_Dma.h"
 #include <limits.h>
 #include "AppConfig.h"
 
