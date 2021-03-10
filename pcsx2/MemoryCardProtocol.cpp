@@ -28,7 +28,9 @@ MemoryCardProtocol g_MemoryCardProtocol;
 
 // keysource and key are self generated values
 uint8_t keysource[] = { 0xf5, 0x80, 0x95, 0x3c, 0x4c, 0x84, 0xa9, 0xc0 };
-uint8_t key[16] = { 0x06, 0x46, 0x7a, 0x6c, 0x5b, 0x9b, 0x82, 0x77, 0x39, 0x0f, 0x78, 0xb7, 0xf2, 0xc6, 0xa5, 0x20 };
+uint8_t dex_key[16] = { 0x17, 0x39, 0xd3, 0xbc, 0xd0, 0x2c, 0x18, 0x07, 0x4b, 0x17, 0xf0, 0xea, 0xc4, 0x66, 0x30, 0xf9 };
+uint8_t cex_key[16] = { 0x06, 0x46, 0x7a, 0x6c, 0x5b, 0x9b, 0x82, 0x77, 0x39, 0x0f, 0x78, 0xb7, 0xf2, 0xc6, 0xa5, 0x20 };
+uint8_t *key = dex_key;
 uint8_t iv[8];
 uint8_t seed[8];
 uint8_t nonce[8];
@@ -714,16 +716,25 @@ void MemoryCardProtocol::AuthCrypt()
 	}
 }
 
-void MemoryCardProtocol::AuthF3()
+void MemoryCardProtocol::AuthReset()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
+
+	key = dex_key;
 	The2bTerminator(5);
 }
 
-void MemoryCardProtocol::AuthF7()
+void MemoryCardProtocol::AuthKeySelect()
 {
 	MC_LOG.WriteLn("%s", __FUNCTION__);
 	PS1_FAIL();
+
+	const u8 data = fifoIn.front();
+	fifoIn.pop_front();
+	if (data == 1)
+	{
+		key = cex_key;
+	}
 	The2bTerminator(5);
 }

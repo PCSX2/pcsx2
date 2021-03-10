@@ -74,8 +74,8 @@ namespace MemcardCommand
 	static constexpr u8 AUTH_XOR = 0xf0;
 	static constexpr u8 AUTH_CRYPT1 = 0xf1;
 	static constexpr u8 AUTH_CRYPT2 = 0xf2;
-	static constexpr u8 AUTH_F3 = 0xf3;
-	static constexpr u8 AUTH_F7 = 0xf7;
+	static constexpr u8 AUTH_RESET = 0xf3;
+	static constexpr u8 AUTH_KEY_SELECT = 0xf7;
 } // namespace MemcardCommand
 
 enum class Sio0Interrupt

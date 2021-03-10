@@ -58,8 +58,8 @@ public:
 	void UnknownBoot();
 	void AuthXor();
 	void AuthCrypt();
-	void AuthF3();
-	void AuthF7();
+	void AuthReset();
+	void AuthKeySelect();
 };
 
 extern MemoryCardProtocol g_MemoryCardProtocol;
