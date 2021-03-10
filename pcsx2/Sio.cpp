@@ -333,7 +333,9 @@ SIO_WRITE MemcardResponse()
 
 // keysource and key are self generated values
 uint8_t keysource[] = { 0xf5, 0x80, 0x95, 0x3c, 0x4c, 0x84, 0xa9, 0xc0 };
-uint8_t key[16] = { 0x06, 0x46, 0x7a, 0x6c, 0x5b, 0x9b, 0x82, 0x77, 0x39, 0x0f, 0x78, 0xb7, 0xf2, 0xc6, 0xa5, 0x20 };
+uint8_t dex_key[16] = { 0x17, 0x39, 0xd3, 0xbc, 0xd0, 0x2c, 0x18, 0x07, 0x4b, 0x17, 0xf0, 0xea, 0xc4, 0x66, 0x30, 0xf9 };
+uint8_t cex_key[16] = { 0x06, 0x46, 0x7a, 0x6c, 0x5b, 0x9b, 0x82, 0x77, 0x39, 0x0f, 0x78, 0xb7, 0xf2, 0xc6, 0xa5, 0x20 };
+uint8_t *key = dex_key;
 uint8_t iv[8];
 uint8_t seed[8];
 uint8_t nonce[8];
@@ -407,6 +409,7 @@ void generateResponse()
 	// MechaChallenge2 and MechaChallenge3 let's the card verify the console
 
 	xor_bit(nonce, ChallengeIV, MechaResponse1, 8);
+
 	doubleDesEncrypt(key, MechaResponse1);
 
 	xor_bit(random, MechaResponse1, MechaResponse2, 8);
@@ -608,6 +611,18 @@ SIO_WRITE memcardCrypt(u8 data)
 		case 12: sio.buf[12] = xorResult; break;
 		default: xorResult ^= data; break;
 		};
+	}
+}
+
+SIO_WRITE memcardKeySelect(u8 data)
+{
+	if(sio.bufCount == 2)
+	{
+		if (data == 1)
+		{
+			key = cex_key;
+		}
+		MemcardResponse();
 	}
 }
 
@@ -969,6 +984,15 @@ SIO_WRITE sioWriteMemcard(u8 data)
 			siomode = SIO_MEMCARD_CRYPT;
 			break;
 
+		case 0xF7: // Auth stuff
+			siomode = SIO_MEMCARD_KEY_SELECT;
+			break;
+		case 0xF3: // Reset
+			key = dex_key;
+			MemcardResponse();
+			siomode = SIO_DUMMY;
+			break;
+
 		case 0x11: // On Boot/Probe
 		case 0x12: // On Write/Delete/Recheck?
 			sio2.packet.recvVal3 = 0x8C;
@@ -976,8 +1000,6 @@ SIO_WRITE sioWriteMemcard(u8 data)
 
 		case 0x81: // Checked right after copy/delete
 		case 0xBF: // Wtf?? On game booting?
-		case 0xF3: // Reset?
-		case 0xF7: // No idea
 			MemcardResponse();
 			siomode = SIO_DUMMY;
 			break;
@@ -1164,6 +1186,7 @@ static void sioWrite8inl(u8 data)
 	case SIO_MEMCARD: sioWriteMemcard(data); break;
 	case SIO_MEMCARD_AUTH: memcardAuth(data); break;
 	case SIO_MEMCARD_CRYPT: memcardCrypt(data); break;
+	case SIO_MEMCARD_KEY_SELECT: memcardKeySelect(data); break;
 	case SIO_MEMCARD_ERASE: memcardErase(data); break;
 	case SIO_MEMCARD_WRITE: memcardWrite(data); break;
 	case SIO_MEMCARD_READ: memcardRead(data); break;
