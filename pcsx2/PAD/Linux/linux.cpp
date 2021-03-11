@@ -19,7 +19,6 @@
 #include "keyboard.h"
 #include "state_management.h"
 
-#include <string.h>
 #include "wx_dialog/dialog.h"
 
 #ifndef __APPLE__

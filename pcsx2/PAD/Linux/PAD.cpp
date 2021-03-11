@@ -16,10 +16,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
-#include <string.h>
 #include <stdarg.h>
 
-#include "Utilities/pxStreams.h"
 #include "keyboard.h"
 #include "PAD.h"
 #include "state_management.h"
@@ -30,9 +28,6 @@
 
 #ifdef __linux__
 #include <unistd.h>
-#endif
-#ifdef _MSC_VER
-#define snprintf sprintf_s
 #endif
 
 const u32 revision = 3;

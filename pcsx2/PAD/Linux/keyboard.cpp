@@ -32,16 +32,6 @@
 extern keyEvent event;
 extern MtQueue<keyEvent> g_ev_fifo;
 
-#ifdef _WIN32
-char* KeysymToChar(int keysym)
-{
-	LPWORD temp;
-
-	ToAscii((UINT)keysym, NULL, NULL, temp, NULL);
-	return (char*)temp;
-}
-#endif
-
 /// g_key_status.press but with proper handling for analog buttons
 static void PressButton(u32 pad, u32 button)
 {
@@ -325,74 +315,5 @@ bool PollForNewKeyboardKeys(u32& pkey)
 	}
 
 	return false;
-}
-
-#else
-LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	static bool lbutton = false, rbutton = false;
-	for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
-	{
-		g_key_status.keyboard_state_acces(pad);
-	}
-
-	switch (msg)
-	{
-		case WM_KEYDOWN:
-			if (lParam & 0x40000000)
-				return TRUE;
-
-			for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
-			{
-				for (int i = 0; i < MAX_KEYS; i++)
-				{
-					assert(0);
-#if 0
-                    if (wParam == get_key(pad, i)) {
-                        g_key_status.press(pad, i);
-                        break;
-                    }
-#endif
-				}
-			}
-
-			event.evt = KEYPRESS;
-			event.key = wParam;
-			break;
-
-		case WM_KEYUP:
-			for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
-			{
-				for (int i = 0; i < MAX_KEYS; i++)
-				{
-					assert(0);
-#if 0
-                    if (wParam == get_key(pad, i)) {
-                        g_key_status.release(pad, i);
-                        break;
-                    }
-#endif
-				}
-			}
-
-
-			event.evt = KEYRELEASE;
-			event.key = wParam;
-			break;
-
-		case WM_DESTROY:
-		case WM_QUIT:
-			event.evt = KEYPRESS;
-			event.key = VK_ESCAPE;
-			return GSwndProc(hWnd, msg, wParam, lParam);
-
-		default:
-			return GSwndProc(hWnd, msg, wParam, lParam);
-	}
-
-	for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
-		g_key_status.commit_status(pad);
-
-	return TRUE;
 }
 #endif

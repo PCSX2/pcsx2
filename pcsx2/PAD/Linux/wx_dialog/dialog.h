@@ -28,7 +28,6 @@
 #include <wx/graphics.h>
 #include <wx/timer.h>
 
-#include <string>
 #include <sstream>
 
 #include "../GamePad.h"
