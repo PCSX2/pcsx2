@@ -67,7 +67,7 @@ void PollForJoystickInput(int cpad)
 
 	gamePad->UpdateGamePadState();
 
-	for (int i = 0; i < MAX_KEYS; i++)
+	for (u32 i = 0; i < MAX_KEYS; i++)
 	{
 		s32 value = gamePad->GetInput((gamePadValues)i);
 		if (value != 0)
@@ -97,14 +97,14 @@ void PADupdate(int pad)
 
 	// Poll keyboard/mouse event. There is currently no way to separate pad0 from pad1 event.
 	// So we will populate both pad in the same time
-	for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++)
+	for (u32 cpad = 0; cpad < GAMEPAD_NUMBER; cpad++)
 	{
 		g_key_status.keyboard_state_acces(cpad);
 	}
 	UpdateKeyboardInput();
 
 	// Get joystick state + Commit
-	for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++)
+	for (u32 cpad = 0; cpad < GAMEPAD_NUMBER; cpad++)
 	{
 		g_key_status.joystick_state_acces(cpad);
 

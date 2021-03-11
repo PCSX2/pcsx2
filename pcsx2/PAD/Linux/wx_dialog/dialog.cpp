@@ -404,7 +404,7 @@ PADDialog::PADDialog()
 
 	// create a new Notebook
 	m_tab_gamepad = new wxNotebook(this, wxID_ANY);
-	for (int i = 0; i < GAMEPAD_NUMBER; ++i)
+	for (u32 i = 0; i < GAMEPAD_NUMBER; ++i)
 	{
 		// Tabs panels
 		m_pan_tabs[i] = new opPanel(
@@ -449,7 +449,7 @@ PADDialog::PADDialog()
 
 	Bind(wxEVT_BUTTON, &PADDialog::OnButtonClicked, this);
 
-	for (int i = 0; i < GAMEPAD_NUMBER; ++i)
+	for (u32 i = 0; i < GAMEPAD_NUMBER; ++i)
 	{
 		for (int j = 0; j < NB_IMG; ++j)
 		{
@@ -504,7 +504,7 @@ void PADDialog::OnButtonClicked(wxCommandEvent& event)
 	}
 	else if (bt_id == Set_all)
 	{ // If the button ID is equals to the Set_all button ID
-		for (int i = 0; i < MAX_KEYS; ++i)
+		for (u32 i = 0; i < MAX_KEYS; ++i)
 		{
 			bt_tmp = m_bt_gamepad[gamepad_id][i];
 			switch (i)
@@ -632,7 +632,7 @@ void PADDialog::clear_key(int pad, int key)
 // Set button values
 void PADDialog::repopulate()
 {
-	for (int gamepad_id = 0; gamepad_id < GAMEPAD_NUMBER; ++gamepad_id)
+	for (u32 gamepad_id = 0; gamepad_id < GAMEPAD_NUMBER; ++gamepad_id)
 	{
 		// keyboard/mouse key
 		for (const auto& it : g_conf.keysym_map[gamepad_id])

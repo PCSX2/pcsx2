@@ -16,7 +16,7 @@
 #pragma once
 
 #include "Global.h"
-#include "controller.h"
+#include "Config.h"
 
 #ifdef SDL_BUILD
 #include <SDL.h>

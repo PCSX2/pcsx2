@@ -15,7 +15,8 @@
 
 #pragma once
 
-#define GAMEPAD_NUMBER 2 // numbers of gamepad
+static const u32 GAMEPAD_NUMBER = 2;
+static const u32 MAX_KEYS = 24;
 
 #include <stdio.h>
 #include <assert.h>
@@ -65,8 +66,6 @@ enum gamePadValues
 	PAD_R_DOWN,   // Right joystick (Down) ↓
 	PAD_R_LEFT    // Right joystick (Left) ←
 };
-
-static const u32 MAX_KEYS = 24;
 
 static const std::array<gamePadValues, MAX_KEYS> all_keys =
 {

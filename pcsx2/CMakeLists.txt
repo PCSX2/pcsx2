@@ -534,7 +534,7 @@ set(pcsx2PADSources
 # PAD/Linux headers
 set(pcsx2PADHeaders
     PAD/Linux/bitwise.h
-    PAD/Linux/controller.h
+    PAD/Linux/Config.h
     PAD/Linux/Device.h
 	PAD/Linux/Global.h
     PAD/Linux/SDL/joystick.h

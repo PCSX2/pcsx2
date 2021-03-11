@@ -14,10 +14,8 @@
  */
 
 #pragma once
-#include <string.h> // for memset
-#define MAX_KEYS 24
 
-extern bool IsAnalogKey(int index);
+#include "Global.h"
 
 class PADconf
 {
@@ -56,7 +54,7 @@ public:
 		packed_options = 0;
 		ff_intensity = 0x7FFF; // set it at max value by default
 		sensibility = 100;
-		for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
+		for (u32 pad = 0; pad < GAMEPAD_NUMBER; pad++)
 		{
 			keysym_map[pad].clear();
 		}

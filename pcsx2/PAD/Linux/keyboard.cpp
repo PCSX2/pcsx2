@@ -26,7 +26,7 @@
 #endif
 
 #include "keyboard.h"
-#include "controller.h"
+#include "Config.h"
 
 #include "mt_queue.h"
 extern keyEvent event;
@@ -71,7 +71,7 @@ static void PressButton(u32 pad, u32 button)
 
 void UpdateKeyboardInput()
 {
-	for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
+	for (u32 pad = 0; pad < GAMEPAD_NUMBER; pad++)
 	{
 		const auto& map = g_conf.keysym_map[pad];
 		// If we loop over all keys press/release based on current state,
@@ -130,7 +130,7 @@ void AnalyzeKeyEvent(keyEvent& evt)
 	int pad = 0;
 	int index = -1;
 
-	for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++)
+	for (u32 cpad = 0; cpad < GAMEPAD_NUMBER; cpad++)
 	{
 		int tmp_index = get_keyboard_key(cpad, key);
 		if (tmp_index != -1)
