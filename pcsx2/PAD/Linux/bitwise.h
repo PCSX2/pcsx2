@@ -13,6 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
 template <class T>
 static void __forceinline set_bit(T& value, int bit)
 {

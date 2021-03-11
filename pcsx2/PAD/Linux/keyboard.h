@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __KEYBOARD_H__
-#define __KEYBOARD_H__
+#pragma once
 
 #include "PS2Edefs.h"
 
@@ -41,6 +40,4 @@ extern Window GSwin;
 
 #elif defined(__APPLE__)
 #include <Carbon/Carbon.h>
-#endif
-
 #endif

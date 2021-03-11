@@ -15,9 +15,6 @@
 
 #pragma once
 
-#ifndef __GAMEPADCONFIGURATION_H__
-#define __GAMEPADCONFIGURATION_H__
-
 #include <wx/wx.h>
 
 #include "../Device.h"
@@ -49,4 +46,3 @@ public:
 	void InitGamepadConfiguration();
 };
 
-#endif // __GAMEPADCONFIGURATION_H__

@@ -13,8 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __KEYSTATUS_H__
-#define __KEYSTATUS_H__
+#pragma once
 
 #include "Global.h"
 
@@ -70,5 +69,3 @@ public:
 };
 
 extern KeyStatus g_key_status;
-
-#endif

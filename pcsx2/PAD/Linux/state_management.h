@@ -13,6 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
 #include "Global.h"
 
 #define MODE_DIGITAL 0x41

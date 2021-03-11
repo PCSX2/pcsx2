@@ -15,9 +15,6 @@
 
 #pragma once
 
-#ifndef __DIALOG_H__
-#define __DIALOG_H__
-
 #include <wx/wx.h>
 #include <wx/notebook.h>
 #include <wx/frame.h>
@@ -90,5 +87,3 @@ public:
 };
 
 extern void DisplayDialog(); // Main function
-
-#endif // __DIALOG_H__
