@@ -18,15 +18,8 @@
   * Pragmatically, event handing's going in here too.
   */
 
-#if defined(__unix__)
-#include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
-#elif defined(__APPLE__)
-#include <Carbon/Carbon.h>
-#endif
-
+#include "Global.h"
 #include "keyboard.h"
-#include "Config.h"
 
 #include "mt_queue.h"
 extern keyEvent event;
