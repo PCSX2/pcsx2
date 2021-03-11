@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "PAD.h"
+#include "Global.h"
 #include "controller.h"
 
 __forceinline void set_keyboard_key(int pad, int keysym, int index)
@@ -30,9 +30,4 @@ __forceinline int get_keyboard_key(int pad, int keysym)
 		return it->second;
 	else
 		return -1;
-}
-
-__forceinline bool IsAnalogKey(int index)
-{
-	return ((index >= PAD_L_UP) && (index <= PAD_R_LEFT));
 }

@@ -24,6 +24,10 @@
 #include "PAD.h"
 #include "state_management.h"
 
+#if defined(__unix__) || defined(__APPLE__)
+#include "GamePad.h"
+#endif
+
 #ifdef __linux__
 #include <unistd.h>
 #endif

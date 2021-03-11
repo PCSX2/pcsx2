@@ -26,6 +26,11 @@
 #endif
 
 #include "keyboard.h"
+#include "controller.h"
+
+#include "mt_queue.h"
+extern keyEvent event;
+extern MtQueue<keyEvent> g_ev_fifo;
 
 #ifdef _WIN32
 char* KeysymToChar(int keysym)

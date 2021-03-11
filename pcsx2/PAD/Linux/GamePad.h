@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "PAD.h"
+#include "Global.h"
 #include "controller.h"
 
 #ifdef SDL_BUILD

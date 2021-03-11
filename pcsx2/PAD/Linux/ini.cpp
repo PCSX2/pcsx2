@@ -13,12 +13,10 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
-
+#include "Global.h"
 #include "GamePad.h"
 #include "keyboard.h"
 #include "AppConfig.h"
-#include "PAD.h"
 
 void DefaultKeyboardValues()
 {

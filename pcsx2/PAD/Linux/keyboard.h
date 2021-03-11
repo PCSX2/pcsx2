@@ -16,7 +16,7 @@
 #ifndef __KEYBOARD_H__
 #define __KEYBOARD_H__
 
-#include "PAD.h"
+#include "Global.h"
 
 #if defined(__unix__) || defined(__APPLE__)
 
@@ -29,6 +29,7 @@
 extern void AnalyzeKeyEvent(keyEvent& evt);
 extern void UpdateKeyboardInput();
 extern bool PollForNewKeyboardKeys(u32& pkey);
+
 #ifndef __APPLE__
 extern Display* GSdsp;
 extern Window GSwin;

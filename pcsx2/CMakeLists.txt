@@ -537,6 +537,7 @@ set(pcsx2PADHeaders
     PAD/Linux/bitwise.h
     PAD/Linux/controller.h
     PAD/Linux/GamePad.h
+	PAD/Linux/Global.h
     PAD/Linux/SDL/joystick.h
     PAD/Linux/keyboard.h
     PAD/Linux/KeyStatus.h

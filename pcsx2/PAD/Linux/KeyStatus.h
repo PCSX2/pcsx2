@@ -16,7 +16,7 @@
 #ifndef __KEYSTATUS_H__
 #define __KEYSTATUS_H__
 
-#include "PAD.h"
+#include "Global.h"
 
 typedef struct
 {

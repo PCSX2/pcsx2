@@ -13,9 +13,9 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "Global.h"
 #include "AppCoreThread.h"
 #include "GamePad.h"
-#include "PAD.h"
 #include "keyboard.h"
 #include "state_management.h"
 

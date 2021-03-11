@@ -31,9 +31,9 @@
 #include <string>
 #include <sstream>
 
-#include "PAD/Linux/GamePad.h"
-#include "PAD/Linux/keyboard.h"
-#include "PAD/Linux/PAD.h"
+#include "../GamePad.h"
+#include "../keyboard.h"
+#include "../Global.h"
 #include "opPanel.h"
 
 #include "GamepadConfiguration.h"
@@ -41,7 +41,7 @@
 
 // Allow to found quickly button id
 // e.g L2 → 0, triangle → 4, ...
-// see PAD.h for more details about gamepad button id
+// see Global.h for more details about gamepad button id
 
 enum gui_buttons
 {

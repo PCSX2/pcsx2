@@ -14,6 +14,7 @@
  */
 
 #include "KeyStatus.h"
+#include "controller.h"
 
 void KeyStatus::Init()
 {
