@@ -1575,7 +1575,7 @@ void FileAccessHelper::WriteIndex( wxFileName folderName, MemoryCardFileEntry* c
 	parent->GetPath( &folderName );
 	char cleanName[sizeof( entry->entry.data.name )];
 	memcpy( cleanName, (const char*)entry->entry.data.name, sizeof( cleanName ) );
-	bool localCleaned = FileAccessHelper::CleanMemcardFilename( cleanName );
+	FileAccessHelper::CleanMemcardFilename( cleanName );
 
 	if ( entry->IsDir() ) {
 		folderName.AppendDir( wxString::FromAscii( cleanName ) );
