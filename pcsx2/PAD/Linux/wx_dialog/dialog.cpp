@@ -159,7 +159,7 @@ static std::string KeyName(int pad, int key, int keysym)
 		case kVK_JIS_Eisu:            return "英数";
 		case kVK_JIS_Kana:            return "かな";
 		default: return "Key " + std::to_string(keysym);
-		// clang-format on
+			// clang-format on
 	}
 }
 #else
@@ -191,7 +191,7 @@ static std::string KeyName(int pad, int key, int keysym)
 PADDialog::PADDialog()
 	: wxDialog(NULL,                                  // Parent
 			   wxID_ANY,                              // ID
-			   _T("GamePad configuration"),            // Title
+			   _T("GamePad configuration"),           // Title
 			   wxDefaultPosition,                     // Position
 			   wxSize(DEFAULT_WIDTH, DEFAULT_HEIGHT), // Width + Lenght
 			   // Style
@@ -460,9 +460,9 @@ PADDialog::PADDialog()
 
 void PADDialog::InitDialog()
 {
-	EnumerateDevices();// activate gamepads
-	PADLoadConfig();                        // Load configuration from the ini file
-	repopulate();                           // Set label and fit simulated key array
+	EnumerateDevices(); // activate gamepads
+	PADLoadConfig();    // Load configuration from the ini file
+	repopulate();       // Set label and fit simulated key array
 }
 
 /****************************************/

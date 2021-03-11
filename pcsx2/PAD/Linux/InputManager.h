@@ -23,11 +23,11 @@ class Device;
 class InputDeviceManager
 {
 public:
-    InputDeviceManager();
-    ~InputDeviceManager();
-    void Update();
+	InputDeviceManager();
+	~InputDeviceManager();
+	void Update();
 
-    std::vector<std::unique_ptr<Device>> devices;
+	std::vector<std::unique_ptr<Device>> devices;
 };
 
 extern std::unique_ptr<InputDeviceManager> device_manager;

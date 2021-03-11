@@ -273,10 +273,10 @@ keyEvent* PADkeyEvent()
 	// PAD_LOG("Returning Event. Event Type: %d, Key: %d\n", s_event.evt, s_event.key);
 	return &s_event;
 #else // MacOS
-    s_event = event;
-    event.evt = 0;
-    event.key = 0;
-    return &s_event;
+	s_event = event;
+	event.evt = 0;
+	event.key = 0;
+	return &s_event;
 #endif
 }
 

@@ -100,7 +100,7 @@ public:
 	std::string m_device_name;
 	DeviceAPI api;
 	DeviceType type;
-	
+
 protected:
 	int m_deadzone;
 	bool m_no_error;

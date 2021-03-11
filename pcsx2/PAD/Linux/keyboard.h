@@ -15,7 +15,8 @@
 
 #pragma once
 
-#include "PS2Edefs.h"
+#include "Pcsx2Defs.h"
+#include "App.h"
 
 #if defined(__unix__) || defined(__APPLE__)
 
@@ -29,7 +30,7 @@
 extern void AnalyzeKeyEvent(keyEvent& evt);
 extern void UpdateKeyboardInput();
 extern bool PollForNewKeyboardKeys(u32& pkey);
-#endif 
+#endif
 
 #if defined(__unix__)
 #include <gtk/gtk.h>

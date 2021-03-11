@@ -17,7 +17,7 @@
 
 GamepadConfiguration::GamepadConfiguration(int pad, wxWindow* parent)
 	: wxDialog(parent, wxID_ANY, _T("Gamepad"), wxDefaultPosition, wxDefaultSize,
-	           wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN)
+			   wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN)
 {
 	m_pad_id = pad;
 
@@ -34,11 +34,11 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow* parent)
 
 	wxStaticBoxSizer* rumble_box = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Rumble intensity"));
 	m_sl_rumble_intensity = new wxSlider(this, rumble_slider_id, 0, 0, 0x7FFF, wxDefaultPosition, wxDefaultSize,
-	                                     wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
+										 wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
 
 	wxStaticBoxSizer* joy_box = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Joystick sensibility"));
 	m_sl_joystick_sensibility = new wxSlider(this, joy_slider_id, 0, 0, 200, wxDefaultPosition, wxDefaultSize,
-	                                         wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
+											 wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
 
 	gamepad_box->Add(m_joy_map, wxSizerFlags().Expand().Border(wxALL, 5));
 	gamepad_box->Add(m_cb_rumble, wxSizerFlags().Expand());

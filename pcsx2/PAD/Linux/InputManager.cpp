@@ -37,7 +37,8 @@ InputDeviceManager::~InputDeviceManager()
 void PollForJoystickInput(int cpad)
 {
 	int index = Device::uid_to_index(cpad);
-	if (index < 0) return;
+	if (index < 0)
+		return;
 
 	auto& gamePad = device_manager->devices[index];
 

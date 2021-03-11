@@ -45,4 +45,3 @@ public:
 	GamepadConfiguration(int, wxWindow*);
 	void InitGamepadConfiguration();
 };
-
