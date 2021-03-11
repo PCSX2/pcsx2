@@ -460,7 +460,7 @@ PADDialog::PADDialog()
 
 void PADDialog::InitDialog()
 {
-	GamePad::EnumerateGamePads(s_vgamePad); // activate gamepads
+	EnumerateDevices();// activate gamepads
 	PADLoadConfig();                        // Load configuration from the ini file
 	repopulate();                           // Set label and fit simulated key array
 }

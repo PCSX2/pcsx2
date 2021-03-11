@@ -112,7 +112,7 @@ void Pad::rumble(unsigned port)
 		{
 			currentVibrate[motor] = nextVibrate[motor];
 
-			GamePad::DoRumble(motor, port);
+			Device::DoRumble(motor, port);
 		}
 	}
 }

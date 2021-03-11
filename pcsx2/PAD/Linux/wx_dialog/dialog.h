@@ -30,7 +30,7 @@
 
 #include <sstream>
 
-#include "../Device.h"
+#include "../InputManager.h"
 #include "../keyboard.h"
 #include "../Global.h"
 #include "opPanel.h"

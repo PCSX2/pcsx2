@@ -54,18 +54,18 @@ s32 _PADopen(void* pDsp)
 
 void _PADclose()
 {
-	s_vgamePad.clear();
+	device_manager->devices.clear();
 }
 
 void PollForJoystickInput(int cpad)
 {
-	int index = GamePad::uid_to_index(cpad);
+	int index = Device::uid_to_index(cpad);
 	if (index < 0)
 		return;
 
-	auto& gamePad = s_vgamePad[index];
+	auto& gamePad = device_manager->devices[index];
 
-	gamePad->UpdateGamePadState();
+	gamePad->UpdateDeviceState();
 
 	for (u32 i = 0; i < MAX_KEYS; i++)
 	{

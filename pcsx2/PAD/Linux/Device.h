@@ -16,36 +16,51 @@
 #pragma once
 
 #include "Global.h"
+#include "InputManager.h"
 
 #ifdef SDL_BUILD
 #include <SDL.h>
 #endif
 
-class GamePad
+enum DeviceAPI
+{
+	NO_API = 0,
+	KEYBOARD_API = 16,
+	SDL_AUTO = 17
+};
+
+enum DeviceType
+{
+	NO_DEVICE = 0,
+	KEYBOARD = 1,
+	MOUSE = 2,
+	OTHER = 3
+};
+
+class Device
 {
 public:
-	GamePad()
-		: m_deadzone(1500)
+	Device()
+		: m_unique_id(0)
+		, m_device_name("")
+		, api(NO_API)
+		, type(NO_DEVICE)
+		, m_deadzone(1500)
 		, m_no_error(false)
 	{
 	}
 
-	virtual ~GamePad()
+	virtual ~Device()
 	{
 	}
 
-	GamePad(const GamePad&);            // copy constructor
-	GamePad& operator=(const GamePad&); // assignment
-
-	/*
-     * Find every interesting devices and create right structure for them(depend on backend)
-     */
-	static void EnumerateGamePads(std::vector<std::unique_ptr<GamePad>>& vgamePad);
+	Device(const Device&);            // copy constructor
+	Device& operator=(const Device&); // assignment
 
 	/*
      * Update state of every attached devices
      */
-	virtual void UpdateGamePadState() = 0;
+	virtual void UpdateDeviceState() = 0;
 
 	/*
      * Causes devices to rumble
@@ -81,9 +96,12 @@ public:
 		return m_no_error;
 	}
 
+	size_t m_unique_id;
+	std::string m_device_name;
+	DeviceAPI api;
+	DeviceType type;
+	
 protected:
 	int m_deadzone;
 	bool m_no_error;
 };
-
-extern std::vector<std::unique_ptr<GamePad>> s_vgamePad;
