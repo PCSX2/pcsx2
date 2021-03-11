@@ -23,7 +23,7 @@
 #include "state_management.h"
 
 #if defined(__unix__) || defined(__APPLE__)
-#include "GamePad.h"
+#include "Device.h"
 #endif
 
 #ifdef __linux__

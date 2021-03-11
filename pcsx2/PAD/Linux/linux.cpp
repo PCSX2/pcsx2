@@ -15,7 +15,7 @@
 
 #include "Global.h"
 #include "AppCoreThread.h"
-#include "GamePad.h"
+#include "Device.h"
 #include "keyboard.h"
 #include "state_management.h"
 

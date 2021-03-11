@@ -21,7 +21,7 @@
 #include <wx/wx.h>
 
 #include "../Global.h"
-#include "../GamePad.h"
+#include "../Device.h"
 #include "../keyboard.h"
 
 class JoystickConfiguration : public wxDialog

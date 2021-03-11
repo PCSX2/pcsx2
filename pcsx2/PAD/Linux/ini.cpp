@@ -14,7 +14,7 @@
  */
 
 #include "Global.h"
-#include "GamePad.h"
+#include "Device.h"
 #include "keyboard.h"
 #include "AppConfig.h"
 

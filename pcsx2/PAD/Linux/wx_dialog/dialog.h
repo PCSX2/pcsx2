@@ -30,7 +30,7 @@
 
 #include <sstream>
 
-#include "../GamePad.h"
+#include "../Device.h"
 #include "../keyboard.h"
 #include "../Global.h"
 #include "opPanel.h"

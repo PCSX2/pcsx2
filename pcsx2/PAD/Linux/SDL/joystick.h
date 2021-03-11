@@ -19,7 +19,7 @@
 #include <SDL_haptic.h>
 
 #include "../Global.h"
-#include "../GamePad.h"
+#include "../Device.h"
 #include "../controller.h"
 
 #define NB_EFFECT 2 // Don't use more than two, ps2 only has one for big motor and one for small(like most systems)

@@ -20,7 +20,7 @@
 
 #include <wx/wx.h>
 
-#include "../GamePad.h"
+#include "../Device.h"
 #include "../keyboard.h"
 #include "../Global.h"
 

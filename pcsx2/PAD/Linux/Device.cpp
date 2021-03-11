@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "GamePad.h"
+#include "Device.h"
 #ifdef SDL_BUILD
 #include "SDL/joystick.h"
 #endif
