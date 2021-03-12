@@ -457,6 +457,7 @@ void DisassemblyFunction::generateBranchLines()
 		if (opInfo.isBranch && !opInfo.isBranchToRegister && !opInfo.isLinkedBranch && inFunction)
 		{
 			BranchLine line;
+			line.laneIndex = 0;
 			if (opInfo.branchTarget < funcPos)
 			{
 				line.first = opInfo.branchTarget;
@@ -471,7 +472,7 @@ void DisassemblyFunction::generateBranchLines()
 			lines.push_back(line);
 		}
 	}
-			
+
 	std::sort(lines.begin(),lines.end());
 	for (size_t i = 0; i < lines.size(); i++)
 	{
@@ -748,7 +749,7 @@ void DisassemblyMacro::setMacroLi(u32 _immediate, u8 _rt)
 	numOpcodes = 2;
 }
 
-void DisassemblyMacro::setMacroMemory(std::string _name, u32 _immediate, u8 _rt, int _dataSize)
+void DisassemblyMacro::setMacroMemory(const std::string& _name, u32 _immediate, u8 _rt, int _dataSize)
 {
 	type = MACRO_MEMORYIMM;
 	name = _name;
@@ -1021,7 +1022,7 @@ void DisassemblyData::createLines()
 }
 
 
-DisassemblyComment::DisassemblyComment(DebugInterface* _cpu, u32 _address, u32 _size, std::string _name, std::string _param)
+DisassemblyComment::DisassemblyComment(DebugInterface* _cpu, u32 _address, u32 _size, const std::string& _name, const std::string& _param)
 	: cpu(_cpu), address(_address), size(_size), name(_name), param(_param)
 {
 
