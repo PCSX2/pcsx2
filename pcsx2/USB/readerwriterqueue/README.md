@@ -7,21 +7,19 @@ you could use this queue completely from a single thread if you wish (but that w
 
 Note: If you need a general-purpose multi-producer, multi-consumer lock free queue, I have [one of those too][mpmc].
 
-
 ## Features
 
-- [Blazing fast][benchmarks]
-- Compatible with C++11 (supports moving objects instead of making copies)
-- Fully generic (templated container of any type) -- just like `std::queue`, you never need to allocate memory for elements yourself
+-   [Blazing fast][benchmarks]
+-   Compatible with C++11 (supports moving objects instead of making copies)
+-   Fully generic (templated container of any type) -- just like `std::queue`, you never need to allocate memory for elements yourself
   (which saves you the hassle of writing a lock-free memory manager to hold the elements you're queueing)
-- Allocates memory up front, in contiguous blocks
-- Provides a `try_enqueue` method which is guaranteed never to allocate memory (the queue starts with an initial capacity)
-- Also provides an `enqueue` method which can dynamically grow the size of the queue as needed
-- Also provides `try_emplace`/`emplace` convenience methods
-- Has a blocking version with `wait_dequeue`
-- Completely "wait-free" (no compare-and-swap loop). Enqueue and dequeue are always O(1) (not counting memory allocation)
-- On x86, the memory barriers compile down to no-ops, meaning enqueue and dequeue are just a simple series of loads and stores (and branches)
-
+-   Allocates memory up front, in contiguous blocks
+-   Provides a `try_enqueue` method which is guaranteed never to allocate memory (the queue starts with an initial capacity)
+-   Also provides an `enqueue` method which can dynamically grow the size of the queue as needed
+-   Also provides `try_emplace`/`emplace` convenience methods
+-   Has a blocking version with `wait_dequeue`
+-   Completely "wait-free" (no compare-and-swap loop). Enqueue and dequeue are always O(1) (not counting memory allocation)
+-   On x86, the memory barriers compile down to no-ops, meaning enqueue and dequeue are just a simple series of loads and stores (and branches)
 
 ## Use
 
@@ -90,7 +88,6 @@ means care must be taken to only call `wait_dequeue` if you're sure another elem
 will come along eventually, or if the queue has a static lifetime. This is because
 destroying the queue while a thread is waiting on it will invoke undefined behaviour.
 
-    
 ## Disclaimers
 
 The queue should only be used on platforms where aligned integer and pointer access is atomic; fortunately, that
@@ -106,14 +103,12 @@ Use this code at your own risk; in particular, lock-free programming is a patent
 well violate a pending patent (I haven't looked). It's worth noting that I came up with this algorithm and
 implementation from scratch, independent of any existing lock-free queues.
 
-
 ## More info
 
 See the [LICENSE.md][license] file for the license (simplified BSD).
 
 My [blog post][blog] introduces the context that led to this code, and may be of interest if you're curious
 about lock-free programming.
-
 
 [blog]: http://moodycamel.com/blog/2013/a-fast-lock-free-queue-for-c++
 [license]: LICENSE.md

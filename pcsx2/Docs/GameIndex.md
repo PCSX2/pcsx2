@@ -1,6 +1,6 @@
 ---
 title: "PCSX2 - GameDB Documentation"
-date: "2020"
+date: "2021"
 footer-left: "[Document Source](https://github.com/PCSX2/pcsx2/blob/{LATEST-GIT-TAG}/pcsx2/Docs/GameIndex.md)"
 urlcolor: "cyan"
 ...
@@ -70,8 +70,8 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
 Both the serial numbers for the games, and the CRC patches are at the moment not case-sensitive and will be looked up with their lowercase representations.  **However, stylistically, uppercase is preferred and may be enforced and migrated to in the future**.
 
 For example:
-- `SLUS-123` will be stored and looked up in the GameDB as `slus-123`
-- Likewise, a CRC with upper-case hex `23AF6876` will be stored and looked up as `23af6876`
+-   `SLUS-123` will be stored and looked up in the GameDB as `slus-123`
+-   Likewise, a CRC with upper-case hex `23AF6876` will be stored and looked up as `23af6876`
 
 However, YAML is case-sensitive and will allow multiple serials that only differ on casing.  To prevent mistakes, this will also throw a validation error and the first entry will be the one that wins.
 
@@ -83,80 +83,99 @@ The rounding modes are numerically based.
 
 These modes can be specified either on the **EE** (`eeRoundMode`) or **VU** (`vuRoundMode`)
 
-### Options
+### Options for rounding
 
-- `0` = **Nearest**
-- `1` = **Negative Infinity**
-- `2` = **Positive Infinity**
-- `3` = **Chop (Zero)**
-  - The is the common default
+-   `0` = **Nearest**
+-   `1` = **Negative Infinity**
+-   `2` = **Positive Infinity**
+-   `3` = **Chop (Zero)**
+-   The is the common default
 
 ## Clamping Modes
 
 The clamp modes are also numerically based.
-- `eeClampMode` refers to the EE's FPU co-processor
-- `vuClampMode` refers to the VU's and COP2 (VU0 Macro-mode)
+-   `eeClampMode` refers to the EE's FPU co-processor
+-   `vuClampMode` refers to the VU's and COP2 (VU0 Macro-mode)
 
-### Options
+### Options for clamping
 
-- `0` = **Disables** clamping completely
-- `1` = Clamp **Normally** (only clamp results)
-- `2` = Clamp **Extra** (clamp results as well as operands)
-- `3` = **Full Clamping** for FPU / Extra+Preserve Sign Clamping for VU
+-   `0` = **Disables** clamping completely
+-   `1` = Clamp **Normally** (only clamp results)
+-   `2` = Clamp **Extra** (clamp results as well as operands)
+-   `3` = **Full Clamping** for FPU / Extra+Preserve Sign Clamping for VU
 
 ## Game Fixes
 
 These values are case-sensitive so take care.  If you incorrectly specify a GameFix, you will get a validation error on startup.  Any invalid game-fixes will be dropped from the game's list of fixes.
 
-### Options
+### Options for Game Fixes
 
-- `VuAddSubHack`
-  - Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
-- `FpuCompareHack`
-  - Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
-- `FpuMulHack`
-  - Tales of Destiny hangs.
-- `FpuNegDivHack`
-  - Gundam games messed up camera-view. Dakar 2's sky showing over 3D. Others...
-- `XGKickHack`
-  - Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace
-- `IPUWaitHack`
-  - FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
-- `EETimingHack`
-  - General purpose timing hack.
-- `SkipMPEGHack`
-  - Finds sceMpegIsEnd pattern in games and then recompiles code to say the videos are finished.
-- `OPHFlagHack`
-  - Bleach Bankais and others.
-- `DMABusyHack`
-  - Mana Khemia, Metal Saga. Denies writes to the DMAC when it's busy.
-- `VIFFIFOHack`
-  - Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
-- `VIF1StallHack`
-  - SOCOM II HUD and Spy Hunter loading hang.
-- `GIFFIFOHack`
-  - Enables the GIF FIFO. Needed for Wallace & Grommit, Hot Wheels, DJ Hero.
-- `GoemonTlbHack`
-  - Preload TLB hack to avoid tlb miss on Goemon.
-- `ScarfaceIbitHack`
-  - VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
-- `CrashTagTeamRacingIbitHack`
-  - VU I bit Hack avoid constant recompilation (Crash Tag Team Racing).
-- `VU0KickstartHack`
-  - Let VU0 run ahead to fix some timing issues
+-   `VuAddSubHack`
+    -   Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
+
+-   `FpuCompareHack`
+    -   Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
+
+-   `FpuMulHack`
+    -   Tales of Destiny hangs.
+
+-   `FpuNegDivHack`
+    -   Gundam games messed up camera-view. Dakar 2's sky showing over 3D. Others...
+
+-   `XGKickHack`
+    -   Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace.
+
+-   `IPUWaitHack`
+    -   FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
+
+-   `EETimingHack`
+    -   General purpose timing hack.
+
+-   `SkipMPEGHack`
+    -   Finds sceMpegIsEnd pattern in games and then recompiles code to say the videos are finished.
+
+-   `OPHFlagHack`
+    -   Bleach Bankais and others.
+
+-   `DMABusyHack`
+    -   Mana Khemia, Metal Saga. Denies writes to the DMAC when it's busy.
+
+-   `VIFFIFOHack`
+    -   Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
+
+-   `VIF1StallHack`
+    -   SOCOM II HUD and Spy Hunter loading hang.
+
+-   `GIFFIFOHack`
+    -   Enables the GIF FIFO. Needed for Wallace & Grommit, Hot Wheels, DJ Hero.
+
+-   `GoemonTlbHack`
+    -   Preload TLB hack to avoid tlb miss on Goemon.
+
+-   `ScarfaceIbitHack`
+    -   VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
+
+-   `CrashTagTeamRacingIbitHack`
+    -   VU I bit Hack avoid constant recompilation (Crash Tag Team Racing).
+
+-   `VU0KickstartHack`
+    -   Let VU0 run ahead to fix some timing issues
 
 ## SpeedHacks
 
 These values are in a key-value format, where the value is assumed to be an integer.
 
-### Options
+### Options for SpeedHacks
 
-- `mvuFlagSpeedHack`
-  - Accepted Values - `0` / `1`
-  - Katamari Damacy have weird speed bug when this speed hack is enabled (and it is by default)
-- `InstantVU1SpeedHack`
-  - Accepted Values - `0` / `1`
-  - Games such as Parappa the Rapper 2 need VU1 to sync, so you can force disable the speedhack here
+-   `mvuFlagSpeedHack`
+-   Accepted Values - `0` / `1`
+-   Katamari Damacy have weird speed bug when this speed hack is enabled (and it is by default)
+
+<!-- [list-item-spacing] Missing new line after list item->
+
+-   `InstantVU1SpeedHack`
+-   Accepted Values - `0` / `1`
+-   Games such as Parappa the Rapper 2 need VU1 to sync, so you can force disable the speedhack here
 
 ## Memory Card Filter Override
 

@@ -1,7 +1,7 @@
 # Documentation Artifacts
 
-- Source Directory: `/pcsx2/pcsx2/Docs`
-- Release Directory: `/pcsx2/bin/Docs`
+-   Source Directory: `/pcsx2/pcsx2/Docs`
+-   Release Directory: `/pcsx2/bin/Docs`
 
 Docs should be written in the source directory first in an easily editable format. Currently, Markdown is the preferred format due to its simple markup and easy portability. GitHub's built-in preview functions are a huge benefit as well.
 
@@ -13,10 +13,11 @@ Visual Studio Code is a cross platform text editor/development platform that can
 
 To generate the documentation artifacts into the release directory, you will require the following:
 
-- `pandoc`
-  - Converts from Markdown to PDF
-- `miktex` or something similar that provides `pdflatex`
-  - this is what generates the PDF file
+-   `pandoc`
+    - Converts from Markdown to PDF
+
+-   `miktex` or something similar that provides `pdflatex`
+    - this is what generates the PDF file
 
 #### Linux / MacOS
 
