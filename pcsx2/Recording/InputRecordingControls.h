@@ -90,6 +90,10 @@ private:
 	bool frameLock = false;
 	// The frame value to use as the frame lock reset point
 	u32 frameLockTracker = 0;
+	
+	bool IsFinishedReplaying() const;
+	// Calls mainEmuFrame's videoCaptureToggle to end a capture if active
+	void StopCapture() const;
 };
 
 extern InputRecordingControls g_InputRecordingControls;
