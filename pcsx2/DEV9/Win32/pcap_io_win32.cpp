@@ -91,7 +91,7 @@ bool load_pcap()
 		len = GetDllDirectory(len, oldDllDir);
 		if (len == 0)
 		{
-			delete oldDllDir;
+			delete[] oldDllDir;
 			return false;
 		}
 	}
@@ -104,7 +104,7 @@ bool load_pcap()
 
 	//Reset DllDirectory
 	SetDllDirectory(oldDllDir);
-	delete oldDllDir;
+	delete[] oldDllDir;
 
 	//Did we succeed?
 	if (hpcap == nullptr)
