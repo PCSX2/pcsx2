@@ -1,4 +1,3 @@
----
 name: Bug report
 about: Found a problem? Help us improve.
 title: "[BUG] Title"
@@ -72,10 +71,10 @@ assignees: ''
 <!-- If your issue is graphical in nature and you think screenshots will help illustrate your issue, you may do that here. -->
 
 **System Info (please complete the following information):**
- - PCSX2 Revision: <!-- e.g. dev-525 -->
- - OS: <!-- e.g. Windows 10 -->
- - CPU: <!-- e.g. i5-7600 -->
- - GPU: <!-- e.g. GTX 1070 -->
+ -   PCSX2 Revision: <!-- e.g. dev-525 -->
+ -   OS: <!-- e.g. Windows 10 -->
+ -   CPU: <!-- e.g. i5-7600 -->
+ -   GPU: <!-- e.g. GTX 1070 -->
 
 **Logs and Dumps**
 <!-- Please feel free to attach any logs, block dumps, GSdump, etc here. -->
