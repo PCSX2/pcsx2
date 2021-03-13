@@ -168,6 +168,7 @@ if(NOT WIN32 AND QT_BUILD)
 	find_package(CURL REQUIRED)
 endif()
 
+add_subdirectory(3rdparty/des)
 add_subdirectory(3rdparty/lzma EXCLUDE_FROM_ALL)
 add_subdirectory(3rdparty/libchdr EXCLUDE_FROM_ALL)
 
