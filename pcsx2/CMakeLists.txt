@@ -195,8 +195,7 @@ set(pcsx2Sources
 	VU1microInterp.cpp
 	VUflags.cpp
 	VUmicroMem.cpp
-	VUops.cpp
-	des.cpp)
+	VUops.cpp)
 
 # Main pcsx2 header
 set(pcsx2Headers
@@ -255,8 +254,7 @@ set(pcsx2Headers
 	vtlb.h
 	VUflags.h
 	VUmicro.h
-	VUops.h
-	des.h)
+	VUops.h)
 
 # CDVD sources
 set(pcsx2CDVDSources
@@ -1606,6 +1604,7 @@ endif()
 
 target_link_libraries(PCSX2_FLAGS INTERFACE
 	common
+	des
 	imgui
 	fmt::fmt
 	ryml
@@ -1714,6 +1713,7 @@ target_include_directories(PCSX2_FLAGS INTERFACE
 	${CMAKE_BINARY_DIR}/common/include/
 	"${CMAKE_SOURCE_DIR}/3rdparty/jpgd/"
 	"${CMAKE_SOURCE_DIR}/3rdparty/xbyak/"
+	"${CMAKE_SOURCE_DIR}/3rdparty/des/"
 )
 
 if(COMMAND target_precompile_headers)
