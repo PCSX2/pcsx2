@@ -26,54 +26,50 @@ class alignas(32) GSVector8i
 	static const GSVector8i m_xff[33];
 	static const GSVector8i m_x0f[33];
 
-public:
-	constexpr static __m256i cxpr_setr_epi32(uint32 x0, uint32 y0, uint32 z0, uint32 w0, uint32 x1, uint32 y1, uint32 z1, uint32 w1)
+	constexpr static __m256i cxpr_setr_epi32(int x0, int y0, int z0, int w0, int x1, int y1, int z1, int w1)
 	{
 #ifdef __GNUC__
-		return (__m256i)__v8su{x0, y0, z0, w0, x1, y1, z1, w1};
+		return (__m256i)__v8si{x0, y0, z0, w0, x1, y1, z1, w1};
 #else
 		__m256i m = {};
-		m.m256i_u32[0] = x0;
-		m.m256i_u32[1] = y0;
-		m.m256i_u32[2] = z0;
-		m.m256i_u32[3] = w0;
-		m.m256i_u32[4] = x1;
-		m.m256i_u32[5] = y1;
-		m.m256i_u32[6] = z1;
-		m.m256i_u32[7] = w1;
+		m.m256i_i32[0] = x0;
+		m.m256i_i32[1] = y0;
+		m.m256i_i32[2] = z0;
+		m.m256i_i32[3] = w0;
+		m.m256i_i32[4] = x1;
+		m.m256i_i32[5] = y1;
+		m.m256i_i32[6] = z1;
+		m.m256i_i32[7] = w1;
 		return m;
 #endif
 	}
-	constexpr static __m256i cxpr_set1_epi32(uint32 x)
-	{
-		return cxpr_setr_epi32(x, x, x, x, x, x, x, x);
-	}
 	constexpr static __m256i cxpr_setr_epi8(
-		uint8 b0,  uint8 b1,  uint8 b2,  uint8 b3,  uint8 b4,  uint8 b5,  uint8 b6,  uint8 b7,
-		uint8 b8,  uint8 b9,  uint8 b10, uint8 b11, uint8 b12, uint8 b13, uint8 b14, uint8 b15,
-		uint8 b16, uint8 b17, uint8 b18, uint8 b19, uint8 b20, uint8 b21, uint8 b22, uint8 b23,
-		uint8 b24, uint8 b25, uint8 b26, uint8 b27, uint8 b28, uint8 b29, uint8 b30, uint8 b31)
+		char b0,  char b1,  char b2,  char b3,  char b4,  char b5,  char b6,  char b7,
+		char b8,  char b9,  char b10, char b11, char b12, char b13, char b14, char b15,
+		char b16, char b17, char b18, char b19, char b20, char b21, char b22, char b23,
+		char b24, char b25, char b26, char b27, char b28, char b29, char b30, char b31)
 	{
 #ifdef __GNUC__
-		return (__m256i)__v32qu
+		return (__m256i)__v32qi
 		{
 			b0,  b1,  b2,  b3,  b4,  b5,  b6,  b7,  b8,  b9,  b10, b11, b12, b13, b14, b15,
 			b16, b17, b18, b19, b20, b21, b22, b23, b24, b25, b26, b27, b28, b29, b30, b31,
 		};
 #else
 		__m256i m = {};
-		m.m256i_u8[0]  = b0;  m.m256i_u8[1]  = b1;  m.m256i_u8[2]  = b2;  m.m256i_u8[3]  = b3;
-		m.m256i_u8[4]  = b4;  m.m256i_u8[5]  = b5;  m.m256i_u8[6]  = b6;  m.m256i_u8[7]  = b7;
-		m.m256i_u8[8]  = b8;  m.m256i_u8[9]  = b9;  m.m256i_u8[10] = b10; m.m256i_u8[11] = b11;
-		m.m256i_u8[12] = b12; m.m256i_u8[13] = b13; m.m256i_u8[14] = b14; m.m256i_u8[15] = b15;
-		m.m256i_u8[16] = b16; m.m256i_u8[17] = b17; m.m256i_u8[18] = b18; m.m256i_u8[19] = b19;
-		m.m256i_u8[20] = b20; m.m256i_u8[21] = b21; m.m256i_u8[22] = b22; m.m256i_u8[23] = b23;
-		m.m256i_u8[24] = b24; m.m256i_u8[25] = b25; m.m256i_u8[26] = b26; m.m256i_u8[27] = b27;
-		m.m256i_u8[28] = b28; m.m256i_u8[29] = b29; m.m256i_u8[30] = b30; m.m256i_u8[31] = b31;
+		m.m256i_i8[0]  = b0;  m.m256i_i8[1]  = b1;  m.m256i_i8[2]  = b2;  m.m256i_i8[3]  = b3;
+		m.m256i_i8[4]  = b4;  m.m256i_i8[5]  = b5;  m.m256i_i8[6]  = b6;  m.m256i_i8[7]  = b7;
+		m.m256i_i8[8]  = b8;  m.m256i_i8[9]  = b9;  m.m256i_i8[10] = b10; m.m256i_i8[11] = b11;
+		m.m256i_i8[12] = b12; m.m256i_i8[13] = b13; m.m256i_i8[14] = b14; m.m256i_i8[15] = b15;
+		m.m256i_i8[16] = b16; m.m256i_i8[17] = b17; m.m256i_i8[18] = b18; m.m256i_i8[19] = b19;
+		m.m256i_i8[20] = b20; m.m256i_i8[21] = b21; m.m256i_i8[22] = b22; m.m256i_i8[23] = b23;
+		m.m256i_i8[24] = b24; m.m256i_i8[25] = b25; m.m256i_i8[26] = b26; m.m256i_i8[27] = b27;
+		m.m256i_i8[28] = b28; m.m256i_i8[29] = b29; m.m256i_i8[30] = b30; m.m256i_i8[31] = b31;
 		return m;
 #endif
 	}
 
+public:
 	union
 	{
 		struct {int x0, y0, z0, w0, x1, y1, z1, w1;};
@@ -94,15 +90,25 @@ public:
 
 	GSVector8i() = default;
 
+	static constexpr GSVector8i cxpr(int x0, int y0, int z0, int w0, int x1, int y1, int z1, int w1)
+	{
+		return GSVector8i(cxpr_setr_epi32(x0, y0, z0, w0, x1, y1, z1, w1));
+	}
+
+	static constexpr GSVector8i cxpr(int x)
+	{
+		return GSVector8i(cxpr_setr_epi32(x, x, x, x, x, x, x, x));
+	}
+
 	__forceinline explicit GSVector8i(const GSVector8& v, bool truncate = true);
 
 	__forceinline static GSVector8i cast(const GSVector8& v);
 	__forceinline static GSVector8i cast(const GSVector4& v);
 	__forceinline static GSVector8i cast(const GSVector4i& v);
 
-	constexpr GSVector8i(int x0, int y0, int z0, int w0, int x1, int y1, int z1, int w1)
-		: m(cxpr_setr_epi32(x0, y0, z0, w0, x1, y1, z1, w1))
+	__forceinline GSVector8i(int x0, int y0, int z0, int w0, int x1, int y1, int z1, int w1)
 	{
+		m = _mm256_set_epi32(x0, y0, z0, w0, x1, y1, z1, w1);
 	}
 
 	__forceinline GSVector8i(

@@ -21,7 +21,6 @@
 
 class alignas(16) GSVector4
 {
-public:
 	constexpr static __m128 cxpr_setr_ps(float x, float y, float z, float w)
 	{
 #ifdef __GNUC__
@@ -35,29 +34,22 @@ public:
 		return m;
 #endif
 	}
-	constexpr static __m128 cxpr_set1_ps(float x)
-	{
-		return cxpr_setr_ps(x, x, x, x);
-	}
 
-	constexpr static __m128 cxpr_setr_epi32(uint32 x, uint32 y, uint32 z, uint32 w)
+	constexpr static __m128 cxpr_setr_epi32(int x, int y, int z, int w)
 	{
 #ifdef __GNUC__
-		return (__m128)(__v4su{x, y, z, w});
+		return (__m128)(__v4si{x, y, z, w});
 #else
 		__m128 m = {};
-		m.m128_u32[0] = x;
-		m.m128_u32[1] = y;
-		m.m128_u32[2] = z;
-		m.m128_u32[3] = w;
+		m.m128_i32[0] = x;
+		m.m128_i32[1] = y;
+		m.m128_i32[2] = z;
+		m.m128_i32[3] = w;
 		return m;
 #endif
 	}
-	constexpr static __m128 cxpr_set1_epi32(uint32 x)
-	{
-		return cxpr_setr_epi32(x, x, x, x);
-	}
 
+public:
 	union
 	{
 		struct {float x, y, z, w;};
@@ -91,9 +83,29 @@ public:
 
 	constexpr GSVector4(const GSVector4&) = default;
 
-	constexpr GSVector4(float x, float y, float z, float w)
-		: m(cxpr_setr_ps(x, y, z, w))
+	constexpr static GSVector4 cxpr(float x, float y, float z, float w)
 	{
+		return GSVector4(cxpr_setr_ps(x, y, z, w));
+	}
+
+	constexpr static GSVector4 cxpr(float x)
+	{
+		return GSVector4(cxpr_setr_ps(x, x, x, x));
+	}
+
+	constexpr static GSVector4 cxpr(int x, int y, int z, int w)
+	{
+		return GSVector4(cxpr_setr_epi32(x, y, z, w));
+	}
+
+	constexpr static GSVector4 cxpr(int x)
+	{
+		return GSVector4(cxpr_setr_epi32(x, x, x, x));
+	}
+
+	__forceinline GSVector4(float x, float y, float z, float w)
+	{
+		m = _mm_set_ps(w, z, y, x);
 	}
 
 	__forceinline GSVector4(float x, float y)
@@ -112,12 +124,6 @@ public:
 	{
 		m = _mm_cvtepi32_ps(_mm_unpacklo_epi32(_mm_cvtsi32_si128(x), _mm_cvtsi32_si128(y)));
 	}
-
-	//Not currently used, just causes a compiler warning
-	/*__forceinline GSVector4(const GSVector4& v)
-	{
-		m = v.m;
-	}*/
 
 	__forceinline explicit GSVector4(const GSVector2& v)
 	{

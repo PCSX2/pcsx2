@@ -731,9 +731,9 @@ __forceinline void GSClut::ExpandCLUT64_T16(const GSVector4i& hi, const GSVector
 
 // TODO
 
-CONSTINIT const GSVector4i GSClut::m_bm(GSVector4i::cxpr_set1_epi32(0x00007c00));
-CONSTINIT const GSVector4i GSClut::m_gm(GSVector4i::cxpr_set1_epi32(0x000003e0));
-CONSTINIT const GSVector4i GSClut::m_rm(GSVector4i::cxpr_set1_epi32(0x0000001f));
+CONSTINIT const GSVector4i GSClut::m_bm = GSVector4i::cxpr(0x00007c00);
+CONSTINIT const GSVector4i GSClut::m_gm = GSVector4i::cxpr(0x000003e0);
+CONSTINIT const GSVector4i GSClut::m_rm = GSVector4i::cxpr(0x0000001f);
 
 void GSClut::Expand16(const uint16* RESTRICT src, uint32* RESTRICT dst, int w, const GIFRegTEXA& TEXA)
 {
