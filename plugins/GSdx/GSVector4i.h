@@ -24,38 +24,34 @@ class alignas(16) GSVector4i
 	static const GSVector4i m_xff[17];
 	static const GSVector4i m_x0f[17];
 
-public:
-	constexpr static __m128i cxpr_setr_epi32(uint32 x, uint32 y, uint32 z, uint32 w)
+	constexpr static __m128i cxpr_setr_epi32(int x, int y, int z, int w)
 	{
 #ifdef __GNUC__
-		return (__m128i)(__v4su{x, y, z, w});
+		return (__m128i)(__v4si{x, y, z, w});
 #else
 		__m128i m = {};
-		m.m128i_u32[0] = x;
-		m.m128i_u32[1] = y;
-		m.m128i_u32[2] = z;
-		m.m128i_u32[3] = w;
+		m.m128i_i32[0] = x;
+		m.m128i_i32[1] = y;
+		m.m128i_i32[2] = z;
+		m.m128i_i32[3] = w;
 		return m;
 #endif
 	}
-	constexpr static __m128i cxpr_set1_epi32(uint32 x)
-	{
-		return cxpr_setr_epi32(x, x, x, x);
-	}
-	constexpr static __m128i cxpr_setr_epi8(uint8 b0, uint8 b1, uint8 b2, uint8 b3, uint8 b4, uint8 b5, uint8 b6, uint8 b7, uint8 b8, uint8 b9, uint8 b10, uint8 b11, uint8 b12, uint8 b13, uint8 b14, uint8 b15)
+	constexpr static __m128i cxpr_setr_epi8(char b0, char b1, char b2, char b3, char b4, char b5, char b6, char b7, char b8, char b9, char b10, char b11, char b12, char b13, char b14, char b15)
 	{
 #ifdef __GNUC__
-		return (__m128i)__v16qu{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15};
+		return (__m128i)__v16qi{b0, b1, b2, b3, b4, b5, b6, b7, b8, b9, b10, b11, b12, b13, b14, b15};
 #else
 		__m128i m = {};
-		m.m128i_u8[0]  = b0;  m.m128i_u8[1]  = b1;  m.m128i_u8[2]  = b2;  m.m128i_u8[3]  = b3;
-		m.m128i_u8[4]  = b4;  m.m128i_u8[5]  = b5;  m.m128i_u8[6]  = b6;  m.m128i_u8[7]  = b7;
-		m.m128i_u8[8]  = b8;  m.m128i_u8[9]  = b9;  m.m128i_u8[10] = b10; m.m128i_u8[11] = b11;
-		m.m128i_u8[12] = b12; m.m128i_u8[13] = b13; m.m128i_u8[14] = b14; m.m128i_u8[15] = b15;
+		m.m128i_i8[0]  = b0;  m.m128i_i8[1]  = b1;  m.m128i_i8[2]  = b2;  m.m128i_i8[3]  = b3;
+		m.m128i_i8[4]  = b4;  m.m128i_i8[5]  = b5;  m.m128i_i8[6]  = b6;  m.m128i_i8[7]  = b7;
+		m.m128i_i8[8]  = b8;  m.m128i_i8[9]  = b9;  m.m128i_i8[10] = b10; m.m128i_i8[11] = b11;
+		m.m128i_i8[12] = b12; m.m128i_i8[13] = b13; m.m128i_i8[14] = b14; m.m128i_i8[15] = b15;
 		return m;
 #endif
 	}
 
+public:
 	union
 	{
 		struct {int x, y, z, w;};
@@ -74,13 +70,32 @@ public:
 		__m128i m;
 	};
 
-	constexpr GSVector4i(): m(cxpr_set1_epi32(0))
+	constexpr GSVector4i(): x(0), y(0), z(0), w(0)
 	{
 	}
 
-	constexpr GSVector4i(int x, int y, int z, int w)
-		: m(cxpr_setr_epi32(x, y, z, w))
+	constexpr static GSVector4i cxpr(int x, int y, int z, int w)
 	{
+		return GSVector4i(cxpr_setr_epi32(x, y, z, w));
+	}
+
+	constexpr static GSVector4i cxpr(int x)
+	{
+		return GSVector4i(cxpr_setr_epi32(x, x, x, x));
+	}
+
+	__forceinline GSVector4i(int x, int y, int z, int w)
+	{
+		// 4 gprs
+
+		// m = _mm_set_epi32(w, z, y, x);
+
+		// 2 gprs
+
+		GSVector4i xz = load(x).upl32(load(z));
+		GSVector4i yw = load(y).upl32(load(w));
+
+		*this = xz.upl32(yw);
 	}
 
 	__forceinline GSVector4i(int x, int y)
