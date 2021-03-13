@@ -245,6 +245,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 
 	breakRunButton = new wxButton(panel, wxID_ANY, L"Run");
 	Bind(wxEVT_BUTTON, &DisassemblyDialog::onBreakRunClicked, this, breakRunButton->GetId());
+	breakRunButton->Enable(false);
 	topRowSizer->Add(breakRunButton);
 
 	stepIntoButton = new wxButton( panel, wxID_ANY, L"Step Into");
@@ -606,6 +607,8 @@ void DisassemblyDialog::setDebugMode(bool debugMode, bool switchPC)
 
 	if (running)
 	{
+		breakRunButton->Enable(true);
+
 		if (currentCpu == NULL)
 		{
 			wxWindow* currentPage = middleBook->GetCurrentPage();
