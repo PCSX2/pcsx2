@@ -26,9 +26,9 @@
 
 static FILE* s_fp = LOG ? fopen("c:\\temp1\\_.txt", "w") : NULL;
 
-const GSVector4 GSRendererSW::m_pos_scale(1.0f / 16, 1.0f / 16, 1.0f, 128.0f);
+CONSTINIT const GSVector4 GSRendererSW::m_pos_scale(1.0f / 16, 1.0f / 16, 1.0f, 128.0f);
 #if _M_SSE >= 0x501
-const GSVector8 GSRendererSW::m_pos_scale2(1.0f / 16, 1.0f / 16, 1.0f, 128.0f, 1.0f / 16, 1.0f / 16, 1.0f, 128.0f);
+CONSTINIT const GSVector8 GSRendererSW::m_pos_scale2(1.0f / 16, 1.0f / 16, 1.0f, 128.0f, 1.0f / 16, 1.0f / 16, 1.0f, 128.0f);
 #endif
 
 GSRendererSW::GSRendererSW(int threads)

@@ -24,7 +24,7 @@
 #include "GSUtil.h"
 #include "GSState.h"
 
-const GSVector4 GSVertexTrace::s_minmax(FLT_MAX, -FLT_MAX, 0.f, 0.f);
+CONSTINIT const GSVector4 GSVertexTrace::s_minmax(FLT_MAX, -FLT_MAX, 0.f, 0.f);
 
 GSVertexTrace::GSVertexTrace(const GSState* state)
 	: m_accurate_stq(false), m_state(state), m_primclass(GS_INVALID_CLASS)
