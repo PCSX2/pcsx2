@@ -64,12 +64,12 @@ void RecordingMetadataDialog::OnConfirm(wxCommandEvent& event)
 
 std::string RecordingMetadataDialog::GetAuthor()
 {
-	return authorField->GetValue();
+	return authorField->GetValue().ToStdString();
 }
 
 std::string RecordingMetadataDialog::GetGameName()
 {
-	return gameNameField->GetValue();
+	return gameNameField->GetValue().ToStdString();
 }
 
 int RecordingMetadataDialog::GetUndoCount()

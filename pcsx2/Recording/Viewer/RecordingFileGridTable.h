@@ -41,7 +41,7 @@ public:
 	void CloseRecordingFile();
 
 	InputRecordingFileHeader GetRecordingFileHeader();
-	void UpdateRecordingFileHeader(const std::string author, const std::string gameName);
+	void UpdateRecordingFileHeader(const std::string& author, const std::string& gameName);
 
 	long GetUndoCount();
 	void SetUndoCount(long undoCount);
@@ -59,6 +59,7 @@ public:
 	bool IsFromSavestate();
 
 private:
+	int numColumns;
 	int controllerPort = 0;
 	bool changes = false;
 
@@ -88,7 +89,7 @@ private:
 
 	// Cache 1000 rows around current position to enable smooth scrolling / limit file IO
 	int bufferSize = 1000;
-	int bufferPos;
+	int bufferPos = 0;
 	// When we get 500 rows beyond the last bufferPos, evict the cache and update!
 	int bufferThreshold = 500;
 	std::map<uint, PadData> dataBuffer;

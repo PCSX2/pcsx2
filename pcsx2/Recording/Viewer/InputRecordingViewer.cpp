@@ -38,7 +38,7 @@ wxMenuItem* checkMenuItem(wxMenuItem* item, bool checked)
 }
 
 InputRecordingViewer::InputRecordingViewer(wxWindow* parent, AppConfig::InputRecordingOptions& options)
-	: wxFrame(parent, wxID_ANY, _("Recording Viewer"), wxDefaultPosition, wxDefaultSize)
+	: wxFrame(parent, wxID_ANY, _("Input Recording Viewer"), wxDefaultPosition, wxDefaultSize)
 	, options(options)
 {
 	// Init Menus

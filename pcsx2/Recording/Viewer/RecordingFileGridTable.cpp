@@ -19,6 +19,7 @@
 #include <regex>
 
 RecordingFileGridTable::RecordingFileGridTable(int numColumns)
+	: numColumns(numColumns)
 {
 }
 
@@ -61,7 +62,7 @@ bool RecordingFileGridTable::IsFromSavestate()
 
 int RecordingFileGridTable::GetNumberCols()
 {
-	return 20;
+	return numColumns;
 }
 
 std::pair<bool, int> getPressedAndPressure(std::string cellValue)
@@ -116,7 +117,7 @@ void RecordingFileGridTable::SetValue(int row, int col, const wxString& value)
 		singleValue = wxAtoi(value);
 		if (col >= 16 && col <= 19)
 		{
-			singleValue = singleValue != 0 || singleValue != 1 ? 0 : singleValue;
+			singleValue = singleValue == 0 || singleValue == 1 ? singleValue : 0;
 		}
 		else
 		{
@@ -314,7 +315,7 @@ InputRecordingFileHeader RecordingFileGridTable::GetRecordingFileHeader()
 	return activeFile.GetHeader();
 }
 
-void RecordingFileGridTable::UpdateRecordingFileHeader(const std::string author, const std::string gameName)
+void RecordingFileGridTable::UpdateRecordingFileHeader(const std::string& author, const std::string& gameName)
 {
 	// Check to see if any changes were made
 	// TODO - comparison func in InputRecordingFileHeader, not going to bother right now though since v2 is on the horizon

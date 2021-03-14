@@ -197,7 +197,6 @@ std::map<uint, PadData> InputRecordingFile::BulkReadPadData(long frameStart, lon
 	frameStart = frameStart < 0 ? 0 : frameStart;
 
 	// TODO - it would be nice to move to streams eventually
-	long seek = getRecordingBlockSeekPoint(frameStart) + controllerInputBytes * port;
 	
 	std::array<u8, controllerInputBytes> padBytes;
 
