@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -20,6 +20,7 @@
 #include "System.h"
 
 #include "PadData.h"
+#include <map>
 
 // NOTE / TODOs for Version 2
 // - Move fromSavestate, undoCount, and total frames into the header
@@ -33,6 +34,7 @@ struct InputRecordingFileHeader
 
 public:
 	void SetEmulatorVersion();
+	void SetEmulatorVersion(wxString version);
 	void Init();
 	void SetAuthor(wxString author);
 	void SetGameName(wxString cdrom);
@@ -68,6 +70,8 @@ public:
 	bool FromSaveState();
 	// Increment the number of undo actions and commit it to the recording file
 	void IncrementUndoCount();
+	bool IsFileOpen();
+	void SetUndoCount(long undoCount);
 	// Open an existing recording file
 	bool OpenExisting(const wxString& path);
 	// Create and open a brand new input recording, either starting from a save-state or from
@@ -76,12 +80,21 @@ public:
 	// Reads the current frame's input data from the file in order to intercept and overwrite
 	// the current frame's value from the emulator
 	bool ReadKeyBuffer(u8 &result, const uint &frame, const uint port, const uint bufIndex);
+	/**
+	 * @brief Reads and serializes a collection of frames at once
+	 * @param frameStart The frame to start collecting on, inclusive
+	 * @param frameEnd The frame to end collection, inclusive
+	 * @param port The controller port
+	 * @return A list of serialized PadData
+	*/
+	std::map<uint, PadData> BulkReadPadData(long frameStart, long frameEnd, const uint port);
 	// Updates the total frame counter and commit it to the recording file
 	void SetTotalFrames(long frames);
 	// Persist the input recording file header's current state to the file
 	bool WriteHeader();
 	// Writes the current frame's input data to the file so it can be replayed
-	bool WriteKeyBuffer(const uint &frame, const uint port, const uint bufIndex, const u8 &buf);
+	bool WriteKeyBuffer(const uint& frame, const uint port, const uint bufIndex, const u8& buf);
+	bool WriteFrame(const uint& frame, const uint port, const PadData& padData);
 
 private:
 	static const int controllerPortsSupported = 2;
@@ -95,6 +108,8 @@ private:
 	static const int seekpointTotalFrames = sizeof(InputRecordingFileHeader);
 	static const int seekpointUndoCount = sizeof(InputRecordingFileHeader) + 4;
 	static const int seekpointSaveStateHeader = seekpointUndoCount + 4;
+
+	bool fileOpen = false;
 
 	InputRecordingFileHeader header;
 	wxString filename = "";

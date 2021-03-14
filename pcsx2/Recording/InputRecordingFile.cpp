@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -33,6 +33,12 @@ void InputRecordingFileHeader::Init()
 void InputRecordingFileHeader::SetEmulatorVersion()
 {
 	wxString emuVersion = wxString::Format("%s-%d.%d.%d", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo);
+	SetEmulatorVersion(emuVersion);
+}
+
+void InputRecordingFileHeader::SetEmulatorVersion(wxString version)
+{
+	wxString emuVersion = wxString::Format("%s-%d.%d.%d", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo);
 	int max = ArraySize(emu) - 1;
 	strncpy(emu, emuVersion.c_str(), max);
 	emu[max] = 0;
@@ -61,6 +67,7 @@ bool InputRecordingFile::Close()
 	fclose(recordingFile);
 	recordingFile = nullptr;
 	filename = "";
+	fileOpen = false;
 	return true;
 }
 
@@ -92,6 +99,17 @@ bool InputRecordingFile::FromSaveState()
 void InputRecordingFile::IncrementUndoCount()
 {
 	undoCount++;
+	SetUndoCount(undoCount);
+}
+
+bool InputRecordingFile::IsFileOpen()
+{
+	return fileOpen;
+}
+
+void InputRecordingFile::SetUndoCount(long newUndoCount)
+{
+	undoCount = newUndoCount;
 	if (recordingFile == nullptr)
 	{
 		return;
@@ -131,14 +149,24 @@ bool InputRecordingFile::open(const wxString path, bool newRecording)
 bool InputRecordingFile::OpenNew(const wxString& path, bool fromSavestate)
 {
 	if (!open(path, true))
-		return false;
+	{
+		fileOpen = false;
+		return fileOpen;
+	}
+	fileOpen = true;
 	savestate.fromSavestate = fromSavestate;
-	return true;
+	return fileOpen;
 }
 
 bool InputRecordingFile::OpenExisting(const wxString& path)
 {
-	return open(path, false);
+	if (!open(path, false))
+	{
+		fileOpen = false;
+		return fileOpen;
+	}
+	fileOpen = true;
+	return fileOpen;
 }
 
 bool InputRecordingFile::ReadKeyBuffer(u8 &result, const uint &frame, const uint port, const uint bufIndex)
@@ -155,6 +183,41 @@ bool InputRecordingFile::ReadKeyBuffer(u8 &result, const uint &frame, const uint
 	}
 
 	return true;
+}
+
+std::map<uint, PadData> InputRecordingFile::BulkReadPadData(long frameStart, long frameEnd, const uint port)
+{
+	std::map<uint, PadData> data;
+
+	if (recordingFile == nullptr)
+	{
+		return data;
+	}
+
+	frameStart = frameStart < 0 ? 0 : frameStart;
+
+	// TODO - it would be nice to move to streams eventually
+	long seek = getRecordingBlockSeekPoint(frameStart) + controllerInputBytes * port;
+	
+	std::array<u8, controllerInputBytes> padBytes;
+
+	// TODO - there are probably issues here if the file is too small / the frame counters are invalid!
+	for (int frame = frameStart; frame < frameEnd; frame++)
+	{
+		long seek = getRecordingBlockSeekPoint(frame) + controllerInputBytes * port;
+		fseek(recordingFile, seek, SEEK_SET);
+		if (fread(&padBytes, 1, padBytes.size(), recordingFile))
+		{
+			PadData frameData;
+			for (int i = 0; i < padBytes.size(); i++)
+			{
+				frameData.UpdateControllerData(i, padBytes.at(i));
+			}
+			data.insert({frame, frameData});
+		}
+	}
+
+	return data;
 }
 
 void InputRecordingFile::SetTotalFrames(long frame)
@@ -182,6 +245,7 @@ bool InputRecordingFile::WriteHeader()
 	{
 		return false;
 	}
+	fflush(recordingFile);
 	return true;
 }
 
@@ -200,6 +264,24 @@ bool InputRecordingFile::WriteKeyBuffer(const uint &frame, const uint port, cons
 	}
 
 	fflush(recordingFile);
+	return true;
+}
+
+bool InputRecordingFile::WriteFrame(const uint &frame, const uint port, const PadData &padData)
+{
+	if (recordingFile == nullptr)
+	{
+		return false;
+	}
+
+	for (u16 i = 0; i < controllerInputBytes; i++)
+	{
+		bool ok = WriteKeyBuffer(frame, port, i, padData.PollControllerData(i));
+		if (!ok)
+		{
+			return ok;
+		}
+	}
 	return true;
 }
 
