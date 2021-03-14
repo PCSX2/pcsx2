@@ -1173,6 +1173,9 @@
     <ProjectReference Include="$(SolutionDir)3rdparty\baseclasses\baseclasses.vcxproj">
       <Project>{27f17499-a372-4408-8afa-4f9f4584fbd3}</Project>
     </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\des\des.vcxproj">
+      <Project>{eb12076d-4cef-4d9d-8f34-5d0043798051}</Project>
+    </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\fmt\fmt.vcxproj">
       <Project>{449ad25e-424a-4714-babc-68706cdcc33b}</Project>
     </ProjectReference>
