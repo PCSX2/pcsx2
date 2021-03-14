@@ -161,6 +161,7 @@ namespace Dialogs
 		wxButton* m_step;
 		wxButton* m_selection;
 		wxButton* m_vsync;
+		wxButton* m_settings;
 		wxButton* m_run;
 		long m_focused_dump;
 		wxFileSystemWatcher m_fs_watcher;
@@ -172,6 +173,7 @@ namespace Dialogs
 		void StepPacket(wxCommandEvent& event);
 		void ToCursor(wxCommandEvent& event);
 		void ToVSync(wxCommandEvent& event);
+		void OpenSettings(wxCommandEvent& event);
 		void ParsePacket(wxTreeEvent& event);
 		void CheckDebug(wxCommandEvent& event);
 		void PathChanged(wxFileSystemWatcherEvent& event);
@@ -184,7 +186,8 @@ namespace Dialogs
 			ID_RUN_CURSOR,
 			ID_RUN_VSYNC,
 			ID_SEL_PACKET,
-			ID_DEBUG_MODE
+			ID_DEBUG_MODE,
+			ID_SETTINGS
 		};
 		enum GSType : u8
 		{
