@@ -35,7 +35,6 @@ public:
 		Barnyard,
 		BigMuthaTruckers,
 		BrianLaraInternationalCricket,
-		Bully,
 		BurnoutDominator,
 		BurnoutRevenge,
 		BurnoutTakedown,

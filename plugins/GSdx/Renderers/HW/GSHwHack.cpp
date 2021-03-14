@@ -56,22 +56,6 @@ bool GSC_BigMuthaTruckers(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_Bully(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if ((Aggressive || !s_nativeres) && !fi.TME && (fi.FBP == 0x02300 || fi.FBP == 0x02800) && fi.FPSM == PSM_PSMCT24)
-		{
-			// ntsc 0x02300, pal 0x02800
-			// Don't enable hack on native res if crc is below aggressive.
-			// Previous value 6, ntsc didn't like it.
-			skip = 8; // Upscaling blur/ghosting
-		}
-	}
-
-	return true;
-}
-
 bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -1090,7 +1074,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::DeathByDegreesTekkenNinaWilliams] = GSC_DeathByDegreesTekkenNinaWilliams; // + Upscaling issues
 
 		// Upscaling hacks
-		lut[CRC::Bully] = GSC_Bully;
 		lut[CRC::DBZBT3] = GSC_DBZBT3;
 		lut[CRC::EvangelionJo] = GSC_EvangelionJo;
 		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
