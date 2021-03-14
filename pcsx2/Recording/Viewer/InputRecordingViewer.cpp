@@ -37,8 +37,9 @@ wxMenuItem* checkMenuItem(wxMenuItem* item, bool checked)
 	return item;
 }
 
-InputRecordingViewer::InputRecordingViewer(wxWindow* parent)
+InputRecordingViewer::InputRecordingViewer(wxWindow* parent, AppConfig::InputRecordingOptions& options)
 	: wxFrame(parent, wxID_ANY, _("Recording Viewer"), wxDefaultPosition, wxDefaultSize)
+	, options(options)
 {
 	// Init Menus
 	menuBar = new wxMenuBar();
@@ -63,11 +64,11 @@ InputRecordingViewer::InputRecordingViewer(wxWindow* parent)
 
 	viewMenu = new wxMenu();
 	wxMenu* columnMenu = new wxMenu();
-	showAnalogSticksMenuItem = checkMenuItem(columnMenu->Append(wxID_ANY, _("Analog Sticks"), _("Show/hide the analog stick columns"), wxITEM_CHECK), showAnalogSticks);
-	showFaceButtonsMenuItem = checkMenuItem(columnMenu->Append(wxID_ANY, _("Face Buttons"), _("Show/hide the face button columns"), wxITEM_CHECK), showFaceButtons);
-	showDirectionalPadMenuItem = checkMenuItem(columnMenu->Append(wxID_ANY, _("Directional Pad"), _("Show/hide the D-Pad columns"), wxITEM_CHECK), showDirectionalPad);
-	showShoulderButtonsMenuItem = checkMenuItem(columnMenu->Append(wxID_ANY, _("Shoulder Buttons"), _("Show/hide the shoulder button columns"), wxITEM_CHECK), showShoulderButtons);
-	showMiscButtonsMenuItem = checkMenuItem(columnMenu->Append(wxID_ANY, _("Miscellaneous Buttons"), _("Show/hide the remaining miscellaneous columns"), wxITEM_CHECK), showMiscButtons);
+	showAnalogSticksMenuItem = checkMenuItem(columnMenu->Append(wxID_ANY, _("Analog Sticks"), _("Show/hide the analog stick columns"), wxITEM_CHECK), options.ViewerShowAnalogSticks);
+	showFaceButtonsMenuItem = checkMenuItem(columnMenu->Append(wxID_ANY, _("Face Buttons"), _("Show/hide the face button columns"), wxITEM_CHECK), options.ViewerShowFaceButtons);
+	showDirectionalPadMenuItem = checkMenuItem(columnMenu->Append(wxID_ANY, _("Directional Pad"), _("Show/hide the D-Pad columns"), wxITEM_CHECK), options.ViewerShowDirectionalPad);
+	showShoulderButtonsMenuItem = checkMenuItem(columnMenu->Append(wxID_ANY, _("Shoulder Buttons"), _("Show/hide the shoulder button columns"), wxITEM_CHECK), options.ViewerShowShoulderButtons);
+	showMiscButtonsMenuItem = checkMenuItem(columnMenu->Append(wxID_ANY, _("Miscellaneous Buttons"), _("Show/hide the remaining miscellaneous columns"), wxITEM_CHECK), options.ViewerShowMiscButtons);
 	showColumnsSubmenu = enableMenuItem(viewMenu->AppendSubMenu(columnMenu, _("Show Columns"), _("Show/hide sections of controller data")), true);
 	viewMenu->AppendSeparator();
 	jumpToFrameMenuItem = enableMenuItem(viewMenu->Append(wxID_ANY, _("Jump to Frame"), _("Jump to a specific frame")), false);
@@ -104,6 +105,7 @@ InputRecordingViewer::InputRecordingViewer(wxWindow* parent)
 
 	// Bind Events
 	Bind(wxEVT_CLOSE_WINDOW, &InputRecordingViewer::OnCloseWindow, this);
+	Bind(wxEVT_MOVE, &InputRecordingViewer::OnMoveAround, this);
 
 	Bind(wxEVT_MENU, &InputRecordingViewer::OnOpenFile, this, openMenuItem->GetId());
 	Bind(wxEVT_MENU, &InputRecordingViewer::OnCloseFile, this, closeMenuItem->GetId());
@@ -145,6 +147,7 @@ InputRecordingViewer::InputRecordingViewer(wxWindow* parent)
 
 	CreateStatusBar(1);
 
+	SetPosition(options.ViewerPosition);
 	SetSizer(sizer);
 	SetMinSize(wxSize(500, 500));
 	Layout();
@@ -158,6 +161,16 @@ void InputRecordingViewer::OnCloseWindow(wxCloseEvent& event)
 	wxRemoveFile(tempFilePath);
 	ToggleMenuItems(false);
 	Hide();
+}
+
+void InputRecordingViewer::OnMoveAround(wxMoveEvent& event)
+{
+	if (IsBeingDeleted() || !IsVisible() || IsIconized())
+		return;
+
+	if (!IsMaximized())
+		options.ViewerPosition = GetPosition();
+	event.Skip();
 }
 
 void InputRecordingViewer::ToggleMenuItems(bool fileOpen)
@@ -191,23 +204,23 @@ void InputRecordingViewer::DisplayColumns()
 {
 	for (int i = 0; i < 4; i++)
 	{
-		showAnalogSticks ? recordingGrid->ShowCol(i) : recordingGrid->HideCol(i);
+		options.ViewerShowAnalogSticks ? recordingGrid->ShowCol(i) : recordingGrid->HideCol(i);
 	}
 	for (int i = 4; i < 8; i++)
 	{
-		showFaceButtons ? recordingGrid->ShowCol(i) : recordingGrid->HideCol(i);
+		options.ViewerShowFaceButtons ? recordingGrid->ShowCol(i) : recordingGrid->HideCol(i);
 	}
 	for (int i = 8; i < 12; i++)
 	{
-		showDirectionalPad ? recordingGrid->ShowCol(i) : recordingGrid->HideCol(i);
+		options.ViewerShowDirectionalPad ? recordingGrid->ShowCol(i) : recordingGrid->HideCol(i);
 	}
 	for (int i = 12; i < 16; i++)
 	{
-		showShoulderButtons ? recordingGrid->ShowCol(i) : recordingGrid->HideCol(i);
+		options.ViewerShowShoulderButtons ? recordingGrid->ShowCol(i) : recordingGrid->HideCol(i);
 	}
 	for (int i = 16; i < 20; i++)
 	{
-		showMiscButtons ? recordingGrid->ShowCol(i) : recordingGrid->HideCol(i);
+		options.ViewerShowMiscButtons ? recordingGrid->ShowCol(i) : recordingGrid->HideCol(i);
 	}
 }
 
@@ -370,31 +383,31 @@ void InputRecordingViewer::OnChangeBaseSavestate(wxCommandEvent& event)
 
 void InputRecordingViewer::OnShowAnalogSticks(wxCommandEvent& event)
 {
-	showAnalogSticks = showAnalogSticksMenuItem->IsChecked();
+	options.ViewerShowAnalogSticks = showAnalogSticksMenuItem->IsChecked();
 	DisplayColumns();
 }
 
 void InputRecordingViewer::OnShowFaceButtons(wxCommandEvent& event)
 {
-	showFaceButtons = showFaceButtonsMenuItem->IsChecked();
+	options.ViewerShowFaceButtons = showFaceButtonsMenuItem->IsChecked();
 	DisplayColumns();
 }
 
 void InputRecordingViewer::OnShowDirectionalPad(wxCommandEvent& event)
 {
-	showDirectionalPad = showDirectionalPadMenuItem->IsChecked();
+	options.ViewerShowDirectionalPad = showDirectionalPadMenuItem->IsChecked();
 	DisplayColumns();
 }
 
 void InputRecordingViewer::OnShowShoulderButtons(wxCommandEvent& event)
 {
-	showShoulderButtons = showShoulderButtonsMenuItem->IsChecked();
+	options.ViewerShowShoulderButtons = showShoulderButtonsMenuItem->IsChecked();
 	DisplayColumns();
 }
 
 void InputRecordingViewer::OnShowMiscButtons(wxCommandEvent& event)
 {
-	showMiscButtons = showMiscButtonsMenuItem->IsChecked();
+	options.ViewerShowMiscButtons = showMiscButtonsMenuItem->IsChecked();
 	DisplayColumns();
 }
 

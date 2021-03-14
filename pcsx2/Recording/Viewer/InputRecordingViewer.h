@@ -26,16 +26,10 @@
 class InputRecordingViewer : public wxFrame
 {
 public:
-	InputRecordingViewer(wxWindow* parent);
+	InputRecordingViewer(wxWindow* parent, AppConfig::InputRecordingOptions& options);
 
 private:
-	// -- Persisted in config files
-	bool showAnalogSticks = true;
-	bool showFaceButtons = true;
-	bool showDirectionalPad = true;
-	bool showShoulderButtons = true;
-	bool showMiscButtons = true;
-	// -------
+	AppConfig::InputRecordingOptions& options;
 
 	const int NUM_COLUMNS = 20;
 
@@ -49,6 +43,7 @@ private:
 	void DisplayColumns();
 
 	void OnCloseWindow(wxCloseEvent& event);
+	void OnMoveAround(wxMoveEvent& event);
 
 	// Menu items and handlers
 	wxMenuBar* menuBar;

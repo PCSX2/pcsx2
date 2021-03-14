@@ -80,7 +80,7 @@ void Pcsx2App::OpenMainFrame()
 	m_id_Disassembler = disassembly->GetId();
 
 #ifndef DISABLE_RECORDING
-	InputRecordingViewer* recordingViewerFrame = new InputRecordingViewer(mainFrame);
+	InputRecordingViewer* recordingViewerFrame = new InputRecordingViewer(mainFrame, g_Conf->inputRecording);
 	m_id_RecordingViewerFrame = recordingViewerFrame->GetId();
     
 	NewRecordingFrame* newRecordingFrame = new NewRecordingFrame(mainFrame);

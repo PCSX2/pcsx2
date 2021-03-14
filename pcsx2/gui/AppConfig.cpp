@@ -913,6 +913,12 @@ void AppConfig::GSWindowOptions::LoadSave( IniInterface& ini )
 #ifndef DISABLE_RECORDING
 AppConfig::InputRecordingOptions::InputRecordingOptions()
 	: VirtualPadPosition(wxDefaultPosition)
+	, ViewerPosition(wxDefaultPosition)
+	, ViewerShowAnalogSticks(true)
+	, ViewerShowFaceButtons(true)
+	, ViewerShowDirectionalPad(true)
+	, ViewerShowShoulderButtons(true)
+	, ViewerShowMiscButtons(true)
 {
 }
 
@@ -921,6 +927,12 @@ void AppConfig::InputRecordingOptions::loadSave(IniInterface& ini)
 	ScopedIniGroup path(ini, L"InputRecording");
 
 	IniEntry(VirtualPadPosition);
+	IniEntry(ViewerPosition);
+	IniEntry(ViewerShowAnalogSticks);
+	IniEntry(ViewerShowFaceButtons);
+	IniEntry(ViewerShowDirectionalPad);
+	IniEntry(ViewerShowShoulderButtons);
+	IniEntry(ViewerShowMiscButtons);
 }
 #endif
 
