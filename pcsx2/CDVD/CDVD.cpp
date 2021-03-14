@@ -1062,7 +1062,9 @@ void cdvdReset()
 	cdvdCtrlTrayClose();
 
 	{
-		FILE *f = fopen("eks.bin", "rb");
+		char filename[1024];
+		snprintf(filename, sizeof(filename), "%s/%s", EmuFolders::Bios.c_str(), "eks.bin");
+		FILE *f = fopen(filename, "rb");
 		if (f)
 		{
 			fread(g_EncryptedKeyStore, 1, sizeof(g_EncryptedKeyStore), f);
@@ -1071,7 +1073,9 @@ void cdvdReset()
 	}
 
 	{
-		FILE *f = fopen("cks.bin", "rb");
+		char filename[1024];
+		snprintf(filename, sizeof(filename), "%s/%s", EmuFolders::Bios.c_str(), "cks.bin");
+		FILE *f = fopen(filename, "rb");
 		if (f)
 		{
 			fread(g_cardKeyStore, 1, sizeof(g_cardKeyStore), f);
@@ -1080,7 +1084,9 @@ void cdvdReset()
 	}
 
 	{
-		FILE *f = fopen("kek.bin", "rb");
+		char filename[1024];
+		snprintf(filename, sizeof(filename), "%s/%s", EmuFolders::Bios.c_str(), "kek.bin");
+		FILE* f = fopen(filename, "rb");
 		if (f)
 		{
 			fread(g_KeyStoreKey, 1, sizeof(g_KeyStoreKey), f);
@@ -2487,7 +2493,7 @@ static MECHA_RESULT DecryptKelfHeader()
 
 	uint8_t HeaderSignature[8];
 	memset(HeaderSignature, 0, sizeof(HeaderSignature));
-	for (int i = 0; i < (headerSize & 0xFFFFFFF8); i += 8)
+	for (unsigned int i = 0; i < (headerSize & 0xFFFFFFF8); i += 8)
 	{
 		xor_bit(&cdvd.data_buffer[i], HeaderSignature, HeaderSignature, 8);
 		desEncrypt(g_keyStore.SignatureMasterKey, HeaderSignature);
