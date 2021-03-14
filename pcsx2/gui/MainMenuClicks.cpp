@@ -165,6 +165,11 @@ void MainEmuFrame::Menu_ResetAllSettings_Click(wxCommandEvent& event)
 //   (anything else) - Standard swap, no reset.  (hotswap!)
 wxWindowID SwapOrReset_Iso(wxWindow* owner, IScopedCoreThread& core_control, const wxString& isoFilename, const wxString& descpart1)
 {
+	if (GSDump::isRunning)
+	{
+		wxMessageBox("Please close the GS debugger first before playing a game", _("GS Debugger"), wxICON_ERROR);
+		return wxID_CANCEL;
+	}
 	wxWindowID result = wxID_CANCEL;
 
 	if ((g_Conf->CdvdSource == CDVD_SourceType::Iso) && (isoFilename == g_Conf->CurrentIso))
@@ -222,6 +227,11 @@ wxWindowID SwapOrReset_Iso(wxWindow* owner, IScopedCoreThread& core_control, con
 //   (anything else) - Standard swap, no reset.  (hotswap!)
 wxWindowID SwapOrReset_Disc(wxWindow* owner, IScopedCoreThread& core, const wxString driveLetter)
 {
+	if (GSDump::isRunning)
+	{
+		wxMessageBox("Please close the GS debugger first before playing a game", _("GS Debugger"), wxICON_ERROR);
+		return wxID_CANCEL;
+	}
 	wxWindowID result = wxID_CANCEL;
 
 	if ((g_Conf->CdvdSource == CDVD_SourceType::Disc) && (driveLetter == g_Conf->Folders.RunDisc.GetPath()))
@@ -270,6 +280,11 @@ wxWindowID SwapOrReset_Disc(wxWindow* owner, IScopedCoreThread& core, const wxSt
 
 wxWindowID SwapOrReset_CdvdSrc(wxWindow* owner, CDVD_SourceType newsrc)
 {
+	if (GSDump::isRunning)
+	{
+		wxMessageBox("Please close the GS debugger first before playing a game", _("GS Debugger"), wxICON_ERROR);
+		return wxID_CANCEL;
+	}
 	if (newsrc == g_Conf->CdvdSource)
 		return wxID_CANCEL;
 	wxWindowID result = wxID_CANCEL;
@@ -406,6 +421,11 @@ bool MainEmuFrame::_DoSelectELFBrowser()
 
 void MainEmuFrame::_DoBootCdvd()
 {
+	if (GSDump::isRunning)
+	{
+		wxMessageBox("Please close the GS debugger first before playing a game", _("GS Debugger"), wxICON_ERROR);
+		return;
+	}
 	ScopedCoreThreadPause paused_core;
 
 	if (g_Conf->CdvdSource == CDVD_SourceType::Iso)
@@ -823,6 +843,11 @@ void MainEmuFrame::Menu_SysShutdown_Click(wxCommandEvent& event)
 
 void MainEmuFrame::Menu_ConfigPlugin_Click(wxCommandEvent& event)
 {
+	if (GSDump::isRunning)
+	{
+		wxMessageBox("Please open the settings window from the main GS Debugger window", _("GS Debugger"), wxICON_ERROR);
+		return;
+	}
 	const int eventId = event.GetId() - MenuId_PluginBase_Settings;
 
 	PluginsEnum_t pid = (PluginsEnum_t)(eventId / PluginMenuId_Interval);

@@ -68,6 +68,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	, m_step(new wxButton(this, ID_RUN_STEP, _("Step"), wxDefaultPosition, wxSize(150, 50)))
 	, m_selection(new wxButton(this, ID_RUN_CURSOR, _("Run to Selection"), wxDefaultPosition, wxSize(150, 50)))
 	, m_vsync(new wxButton(this, ID_RUN_VSYNC, _("Go to next VSync"), wxDefaultPosition, wxSize(150, 50)))
+	, m_settings(new wxButton(this, ID_SETTINGS, _("Open GS Settings"), wxDefaultPosition, wxSize(150, 50)))
 	, m_thread(std::make_unique<GSThread>(this))
 	, m_run(new wxButton(this, ID_RUN_DUMP, _("Run"), wxDefaultPosition, wxSize(150, 100)))
 {
@@ -95,6 +96,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	dbg_actions->Add(m_step, StdExpand());
 	dbg_actions->Add(m_selection, StdExpand());
 	dbg_actions->Add(m_vsync, StdExpand());
+	dbg_actions->Add(m_settings, StdExpand());
 	gif->Add(new wxStaticText(this, wxID_ANY, _("Packet Content")));
 	gif->Add(m_gif_packet, StdExpand());
 
@@ -135,6 +137,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::StepPacket, this, ID_RUN_STEP);
 	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::ToCursor, this, ID_RUN_CURSOR);
 	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::ToVSync, this, ID_RUN_VSYNC);
+	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::OpenSettings, this, ID_SETTINGS);
 	Bind(wxEVT_TREE_SEL_CHANGED, &Dialogs::GSDumpDialog::ParsePacket, this, ID_SEL_PACKET);
 	Bind(wxEVT_CHECKBOX, &Dialogs::GSDumpDialog::CheckDebug, this, ID_DEBUG_MODE);
 	Bind(EVT_CLOSE_DUMP, &Dialogs::GSDumpDialog::CloseDump, this);
@@ -268,6 +271,11 @@ void Dialogs::GSDumpDialog::ToVSync(wxCommandEvent& event)
 			m_gif_list->SelectItem(m_gif_list->GetNextSibling(pkt));
 		m_button_events.push_back(GSEvent{RunVSync, 0});
 	}
+}
+
+void Dialogs::GSDumpDialog::OpenSettings(wxCommandEvent& event)
+{
+	GetCorePlugins().Configure(PluginId_GS);
 }
 
 void Dialogs::GSDumpDialog::ToStart(wxCommandEvent& event)
