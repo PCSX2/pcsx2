@@ -257,7 +257,7 @@ if((GCC_VERSION VERSION_EQUAL "9.0" OR GCC_VERSION VERSION_GREATER "9.0") AND GC
     This text being in a compile log in an open issue may cause it to be closed.")
 endif()
 
-find_package(fmt "7.0.3" QUIET)
+find_package(fmt "7.1.3" QUIET)
 if(NOT fmt_FOUND)
     if(EXISTS "${CMAKE_SOURCE_DIR}/3rdparty/fmt/fmt/CMakeLists.txt")
         message(STATUS "No system fmt was found. Using bundled")
