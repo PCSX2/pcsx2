@@ -28,6 +28,7 @@
 
 #ifndef DISABLE_RECORDING
 #include "Recording/InputRecording.h"
+#include "Recording/Viewer/InputRecordingViewer.h"
 #endif
 
 #include <wx/cmdline.h>
@@ -79,6 +80,9 @@ void Pcsx2App::OpenMainFrame()
 	m_id_Disassembler = disassembly->GetId();
 
 #ifndef DISABLE_RECORDING
+	InputRecordingViewer* recordingViewerFrame = new InputRecordingViewer(mainFrame);
+	m_id_RecordingViewerFrame = recordingViewerFrame->GetId();
+    
 	NewRecordingFrame* newRecordingFrame = new NewRecordingFrame(mainFrame);
 	m_id_NewRecordingFrame = newRecordingFrame->GetId();
 	if (g_Conf->EmuOptions.EnableRecordingTools)

@@ -30,6 +30,7 @@
 
 #ifndef DISABLE_RECORDING
 #include "Recording/NewRecordingFrame.h"
+#include "Recording/Viewer/InputRecordingViewer.h"
 #endif
 
 class DisassemblyDialog;
@@ -209,6 +210,7 @@ enum MenuIdentifiers
 	MenuId_Recording_ToggleRecordingMode,
 	MenuId_Recording_VirtualPad_Port0,
 	MenuId_Recording_VirtualPad_Port1,
+	MenuId_Recording_Viewer,
 #endif
 
 	// IPC Subsection
@@ -558,6 +560,7 @@ protected:
 
 #ifndef DISABLE_RECORDING
 	wxWindowID m_id_NewRecordingFrame;
+	wxWindowID m_id_RecordingViewerFrame;
 #endif
 
 	wxKeyEvent m_kevt;
@@ -589,6 +592,7 @@ public:
 	{
 		return (NewRecordingFrame*)wxWindow::FindWindowById(m_id_NewRecordingFrame);
 	}
+	InputRecordingViewer* GetRecordingViewerPtr() const { return (InputRecordingViewer*)wxWindow::FindWindowById(m_id_RecordingViewerFrame); }
 #endif
 
 	void enterDebugMode();

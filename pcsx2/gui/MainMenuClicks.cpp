@@ -43,6 +43,7 @@
 #include "Recording/InputRecording.h"
 #include "Recording/InputRecordingControls.h"
 #include "Recording/VirtualPad/VirtualPad.h"
+#include "Recording/Viewer/InputRecordingViewer.h"
 #endif
 
 
@@ -1161,5 +1162,11 @@ void MainEmuFrame::Menu_Recording_ToggleRecordingMode_Click(wxCommandEvent& even
 void MainEmuFrame::Menu_Recording_VirtualPad_Open_Click(wxCommandEvent& event)
 {
 	g_InputRecording.ShowVirtualPad(event.GetId() - MenuId_Recording_VirtualPad_Port0);
+}
+
+void MainEmuFrame::Menu_Recording_Viewer_Open_Click(wxCommandEvent& event)
+{
+	InputRecordingViewer* recordingViewer = wxGetApp().GetRecordingViewerPtr();
+	recordingViewer->Show();
 }
 #endif

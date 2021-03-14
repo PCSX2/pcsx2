@@ -272,6 +272,7 @@ protected:
 	void Menu_Recording_FrameAdvance_Click(wxCommandEvent& event);
 	void Menu_Recording_ToggleRecordingMode_Click(wxCommandEvent& event);
 	void Menu_Recording_VirtualPad_Open_Click(wxCommandEvent& event);
+	void Menu_Recording_Viewer_Open_Click(wxCommandEvent &event);
 #endif
 
 	void _DoBootCdvd();
