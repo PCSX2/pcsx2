@@ -33,6 +33,7 @@
 #include "DebugTools/Debug.h"
 #include "R3000A.h"
 #include "SPU2/spu2.h"
+#include "gui/Dialogs/ModalPopups.h"
 
 // renderswitch - tells GSdx to go into dx9 sw if "renderswitch" is set.
 bool renderswitch = false;
@@ -395,6 +396,8 @@ namespace Implementations
 
 	void Sys_RenderToggle()
 	{
+		if (GSDump::isRunning)
+			return;
 		if (renderswitch_delay == 0)
 		{
 			ScopedCoreThreadPause paused_core(new SysExecEvent_SaveSinglePlugin(PluginId_GS));
