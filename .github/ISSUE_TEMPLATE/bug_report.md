@@ -1,3 +1,4 @@
+---
 name: Bug report
 about: Found a problem? Help us improve.
 title: "[BUG] Title"
