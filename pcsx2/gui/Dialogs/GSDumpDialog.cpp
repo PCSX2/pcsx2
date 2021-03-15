@@ -70,7 +70,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	, m_vsync(new wxButton(this, ID_RUN_VSYNC, _("Go to next VSync"), wxDefaultPosition, wxSize(150, 50)))
 	, m_settings(new wxButton(this, ID_SETTINGS, _("Open GS Settings"), wxDefaultPosition, wxSize(150, 50)))
 	, m_thread(std::make_unique<GSThread>(this))
-	, m_run(new wxButton(this, ID_RUN_DUMP, _("Run"), wxDefaultPosition, wxSize(150, 100)))
+	, m_run(new wxButton(this, ID_RUN_DUMP, _("Run"), wxDefaultPosition, wxSize(150, 50)))
 {
 	wxBoxSizer* dump_info = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* dump_preview = new wxBoxSizer(wxVERTICAL);
@@ -96,13 +96,13 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	dbg_actions->Add(m_step, StdExpand());
 	dbg_actions->Add(m_selection, StdExpand());
 	dbg_actions->Add(m_vsync, StdExpand());
-	dbg_actions->Add(m_settings, StdExpand());
 	gif->Add(new wxStaticText(this, wxID_ANY, _("Packet Content")));
 	gif->Add(m_gif_packet, StdExpand());
 
 	dumps_list->Add(new wxStaticText(this, wxID_ANY, _("GS Dumps List")), StdExpand());
 	dumps_list->Add(m_dump_list, StdExpand());
 	dump_info->Add(m_renderer_overrides, StdExpand());
+	dump_info->Add(m_settings, StdExpand());
 	dump_info->Add(m_run, StdExpand());
 	dump_preview->Add(new wxStaticText(this, wxID_ANY, _("Preview")), StdExpand());
 	dump_preview->Add(m_preview_image, StdCenter());
