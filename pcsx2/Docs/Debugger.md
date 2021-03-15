@@ -8,23 +8,23 @@ urlcolor: "cyan"
 # Debugger Key Bindings
 
 ## Disassembly View
-- `Ctrl+G`   -   goto
-- `Ctrl+E`   -   edit breakpoint
-- `Ctrl+D`   -   enable/disable breakpoint
-- `Ctrl+B`   -   add breakpoint
-- `Right Arrow`   -   follow branch/position memory view to accessed address
-- `Left Arrow`   -   go back one branch level/goto pc
-- `Up Arrow`   -   move cursor up one line
-- `Down Arrow`   -   move cursor down one line
-- `Page Up`   -   move visible area up one page
-- `Page Down`   -   move visible area down one page
-- `F10`   -   step over
-- `F11`   -   step into
-- `Tab`   -   toggle display symbols
-- `Left Click`   -   select line/toggle breakpoint if line is already highlighted
-- `Right Click`   -   open context menu
+-   `Ctrl+G`   -   goto
+-   `Ctrl+E`   -   edit breakpoint
+-   `Ctrl+D`   -   enable/disable breakpoint
+-   `Ctrl+B`   -   add breakpoint
+-   `Right Arrow`   -   follow branch/position memory view to accessed address
+-   `Left Arrow`   -   go back one branch level/goto pc
+-   `Up Arrow`   -   move cursor up one line
+-   `Down Arrow`   -   move cursor down one line
+-   `Page Up`   -   move visible area up one page
+-   `Page Down`   -   move visible area down one page
+-   `F10`   -   step over
+-   `F11`   -   step into
+-   `Tab`   -   toggle display symbols
+-   `Left Click`   -   select line/toggle breakpoint if line is already highlighted
+-   `Right Click`   -   open context menu
 
-## Memory View:
+## Memory View
 
 -   `Ctrl+G`   -   goto
 -   `Ctrl+B`   -   add breakpoint
