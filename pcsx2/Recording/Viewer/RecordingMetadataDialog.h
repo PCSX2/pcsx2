@@ -20,11 +20,10 @@
 class RecordingMetadataDialog : public wxDialog
 {
 public:
-	RecordingMetadataDialog(wxWindow* parent, const std::string& author, const std::string& gameName, int undoCount);
+	RecordingMetadataDialog(wxWindow* parent, const std::string& author, const std::string& gameName);
 
 	std::string GetAuthor();
 	std::string GetGameName();
-	int GetUndoCount();
 
 	bool Ok() { return ok; }
 
@@ -33,15 +32,12 @@ private:
 
 	std::string m_author;
 	std::string m_gameName;
-	int m_undoCount;
 
 	wxStaticText* authorLabel;
 	wxStaticText* gameNameLabel;
-	wxStaticText* undoCountLabel;
 
 	wxTextCtrl* authorField;
 	wxTextCtrl* gameNameField;
-	wxSpinCtrl* undoCountField;
 
 	wxButton* confirmBtn;
 	wxButton* cancelBtn;

@@ -44,7 +44,6 @@ public:
 	void UpdateRecordingFileHeader(const std::string& author, const std::string& gameName);
 
 	long GetUndoCount();
-	void SetUndoCount(long undoCount);
 
 	bool AreChangesUnsaved();
 	void ClearUnsavedChanges();

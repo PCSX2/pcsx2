@@ -104,7 +104,7 @@ InputRecordingViewer::InputRecordingViewer(wxWindow* parent, AppConfig::InputRec
 	recordingGrid->SetColLabelSize(75);
 
 	// Bind Events
-	Bind(wxEVT_CLOSE_WINDOW, &InputRecordingViewer::OnCloseWindow, this);
+	Bind(wxEVT_CLOSE_WINDOW, &InputRecordingViewer::OnClose, this);
 	Bind(wxEVT_MOVE, &InputRecordingViewer::OnMoveAround, this);
 
 	Bind(wxEVT_MENU, &InputRecordingViewer::OnOpenFile, this, openMenuItem->GetId());
@@ -154,12 +154,12 @@ InputRecordingViewer::InputRecordingViewer(wxWindow* parent, AppConfig::InputRec
 	DisplayColumns();
 }
 
-void InputRecordingViewer::OnCloseWindow(wxCloseEvent& event)
+void InputRecordingViewer::OnClose(wxCloseEvent& event)
 {
-	recordingDataSource->CloseRecordingFile();
-	recordingGrid->ForceRefresh();
-	wxRemoveFile(tempFilePath);
-	ToggleMenuItems(false);
+	if (fileOpened)
+	{
+		CloseActiveFile();
+	}
 	Hide();
 }
 
@@ -175,7 +175,7 @@ void InputRecordingViewer::OnMoveAround(wxMoveEvent& event)
 
 void InputRecordingViewer::ToggleMenuItems(bool fileOpen)
 {
-	openMenuItem->Enable(!fileOpen);
+	openMenuItem->Enable(true);
 	closeMenuItem->Enable(fileOpen);
 	saveMenuItem->Enable(fileOpen);
 	saveAsMenuItem->Enable(fileOpen);
@@ -224,8 +224,40 @@ void InputRecordingViewer::DisplayColumns()
 	}
 }
 
+void InputRecordingViewer::CloseActiveFile()
+{
+	recordingDataSource->CloseRecordingFile();
+	recordingGrid->ForceRefresh();
+	if (wxFileExists(tempFilePath))
+	{
+		wxRemoveFile(tempFilePath);
+	}
+	ToggleMenuItems(false);
+	fileOpened = false;
+}
+
 void InputRecordingViewer::OnOpenFile(wxCommandEvent& event)
 {
+	if (fileOpened)
+	{
+		int answer;
+		if (recordingDataSource->AreChangesUnsaved())
+		{
+			answer = wxMessageBox(_("Close active file without saving changes?"), _("Confirm"),
+								  wxYES_NO | wxCANCEL, this);
+		}
+		else
+		{
+			answer = wxMessageBox(_("Close active file?"), _("Confirm"),
+								  wxYES_NO | wxCANCEL, this);
+		}
+		if (answer != wxYES)
+		{
+			return;
+		}
+		CloseActiveFile();
+	}
+
 	wxFileDialog* openFileDialog =
 		new wxFileDialog(this, _("Open Input Recording File"), wxEmptyString, wxEmptyString, "p2m2 file(*.p2m2)|*.p2m2",
 						 wxFD_OPEN, wxDefaultPosition);
@@ -260,6 +292,7 @@ void InputRecordingViewer::OnOpenFile(wxCommandEvent& event)
 
 		// Enable various menu options
 		ToggleMenuItems(true);
+		fileOpened = true;
 	}
 }
 
@@ -274,13 +307,10 @@ void InputRecordingViewer::OnCloseFile(wxCommandEvent& event)
 			return;
 		}
 	}
-	recordingDataSource->CloseRecordingFile();
-	recordingGrid->ForceRefresh();
-	wxRemoveFile(tempFilePath);
-	ToggleMenuItems(false);
+	CloseActiveFile();
 }
 
-// TODO - a not on saving, currently we don't allow modifying the original save-state, so there are no concerns about it
+// TODO - a note on saving, currently we don't allow modifying the original save-state, so there are no concerns about it
 // When we do though, these save functions will need to expand!
 
 void InputRecordingViewer::OnSaveFile(wxCommandEvent& event)
@@ -363,11 +393,10 @@ void InputRecordingViewer::OnExport(wxCommandEvent& event)
 void InputRecordingViewer::OnChangeMetadata(wxCommandEvent& event)
 {
 	InputRecordingFileHeader currHeader = recordingDataSource->GetRecordingFileHeader();
-	RecordingMetadataDialog* custom = new RecordingMetadataDialog(this, currHeader.author, currHeader.gameName, recordingDataSource->GetUndoCount());
+	RecordingMetadataDialog* custom = new RecordingMetadataDialog(this, currHeader.author, currHeader.gameName);
 	if (custom->ShowModal() == wxID_OK)
 	{
 		recordingDataSource->UpdateRecordingFileHeader(custom->GetAuthor(), custom->GetGameName());
-		recordingDataSource->SetUndoCount(custom->GetUndoCount());
 	}
 }
 

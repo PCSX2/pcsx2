@@ -71,7 +71,6 @@ public:
 	// Increment the number of undo actions and commit it to the recording file
 	void IncrementUndoCount();
 	bool IsFileOpen();
-	void SetUndoCount(long undoCount);
 	// Open an existing recording file
 	bool OpenExisting(const wxString& path);
 	// Create and open a brand new input recording, either starting from a save-state or from
@@ -108,8 +107,6 @@ private:
 	static const int seekpointTotalFrames = sizeof(InputRecordingFileHeader);
 	static const int seekpointUndoCount = sizeof(InputRecordingFileHeader) + 4;
 	static const int seekpointSaveStateHeader = seekpointUndoCount + 4;
-
-	bool fileOpen = false;
 
 	InputRecordingFileHeader header;
 	wxString filename = "";

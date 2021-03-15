@@ -300,6 +300,7 @@ void RecordingFileGridTable::OpenRecordingFile(wxString filePath)
 	dataBuffer.clear();
 	wxGridTableMessage msg(this, wxGRIDTABLE_NOTIFY_ROWS_APPENDED, activeFile.GetTotalFrames(), 0);
 	GetView()->ProcessTableMessage(msg);
+	changes = false;
 }
 
 void RecordingFileGridTable::CloseRecordingFile()
@@ -308,6 +309,7 @@ void RecordingFileGridTable::CloseRecordingFile()
 	GetView()->ProcessTableMessage(msg);
 	activeFile.Close();
 	dataBuffer.clear();
+	changes = false;
 }
 
 InputRecordingFileHeader RecordingFileGridTable::GetRecordingFileHeader()
@@ -333,15 +335,4 @@ void RecordingFileGridTable::UpdateRecordingFileHeader(const std::string& author
 long RecordingFileGridTable::GetUndoCount()
 {
 	return activeFile.GetUndoCount();
-}
-
-void RecordingFileGridTable::SetUndoCount(long undoCount)
-{
-	if (activeFile.GetUndoCount() == undoCount)
-	{
-		return;
-	}
-	changes = true;
-	activeFile.SetUndoCount(undoCount);
-	activeFile.WriteHeader();
 }

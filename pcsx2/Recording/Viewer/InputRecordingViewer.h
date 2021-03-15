@@ -32,6 +32,8 @@ private:
 	AppConfig::InputRecordingOptions& options;
 
 	const int NUM_COLUMNS = 20;
+	
+	bool fileOpened = false;
 
 	wxString filePath;
 	wxString tempFilePath;
@@ -41,8 +43,9 @@ private:
 
 	void ToggleMenuItems(bool fileOpen);
 	void DisplayColumns();
+	void CloseActiveFile();
 
-	void OnCloseWindow(wxCloseEvent& event);
+	void OnClose(wxCloseEvent& event);
 	void OnMoveAround(wxMoveEvent& event);
 
 	// Menu items and handlers

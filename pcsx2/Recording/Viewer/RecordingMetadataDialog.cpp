@@ -19,10 +19,9 @@
 
 #include "RecordingMetadataDialog.h"
 
-RecordingMetadataDialog::RecordingMetadataDialog(wxWindow* parent, const std::string& author, const std::string& gameName, int undoCount)
+RecordingMetadataDialog::RecordingMetadataDialog(wxWindow* parent, const std::string& author, const std::string& gameName)
 	: m_author(author)
 	, m_gameName(gameName)
-	, m_undoCount(undoCount)
 	, wxDialog(parent, wxID_ANY, wxString("Change Recording Metadata"))
 {
 	wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
@@ -32,8 +31,6 @@ RecordingMetadataDialog::RecordingMetadataDialog(wxWindow* parent, const std::st
 	authorField = new wxTextCtrl(this, wxID_ANY, m_author);
 	gameNameLabel = new wxStaticText(this, wxID_ANY, _("Game Name"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
 	gameNameField = new wxTextCtrl(this, wxID_ANY, m_gameName);
-	undoCountLabel = new wxStaticText(this, wxID_ANY, _("Undo Count"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
-	undoCountField = new wxSpinCtrl(this, wxID_ANY, wxString::Format(wxT("%i"), m_undoCount), wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, LONG_MAX);
 
 	wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
 	confirmBtn = new wxButton(this, wxID_OK);
@@ -43,8 +40,6 @@ RecordingMetadataDialog::RecordingMetadataDialog(wxWindow* parent, const std::st
 	widgetSizer->Add(authorField, 0, wxALL, 5);
 	widgetSizer->Add(gameNameLabel, 0, wxALL, 5);
 	widgetSizer->Add(gameNameField, 0, wxALL, 5);
-	widgetSizer->Add(undoCountLabel, 0, wxALL, 5);
-	widgetSizer->Add(undoCountField, 0, wxALL, 5);
 	buttonSizer->Add(confirmBtn, 0, wxALL, 5);
 	buttonSizer->Add(cancelBtn, 0, wxALL, 5);
 	widgetSizer->Add(buttonSizer, 0, wxALL, 5);
@@ -70,9 +65,4 @@ std::string RecordingMetadataDialog::GetAuthor()
 std::string RecordingMetadataDialog::GetGameName()
 {
 	return gameNameField->GetValue().ToStdString();
-}
-
-int RecordingMetadataDialog::GetUndoCount()
-{
-	return undoCountField->GetValue();
 }
