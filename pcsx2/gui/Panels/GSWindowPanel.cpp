@@ -107,7 +107,7 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel(wxWindow* parent)
 	s_AspectRatio.AddGrowableCol(1);
 
 	// Implement custom hotkeys (F6) with translatable string intact + not blank in GUI.
-	s_AspectRatio += Label(_("Aspect Ratio:") + wxString(" ") + fmt::format("({})", wxGetApp().GlobalAccels->findKeycodeWithCommandId("GSwindow_CycleAspectRatio").toTitleizedString())) | pxMiddle;
+	s_AspectRatio += Label(_("Aspect Ratio:") + wxString(" ") + fmt::format("({})", wxGetApp().GlobalAccels->findKeycodeWithCommandId("GSwindow_CycleAspectRatio").toTitleizedString().mb_str())) | pxMiddle;
 	s_AspectRatio += m_combo_AspectRatio | pxAlignRight;
 	s_AspectRatio += Label(_("FMV Aspect Ratio Override:")) | pxMiddle;
 	s_AspectRatio += m_combo_FMVAspectRatioSwitch | pxAlignRight;
