@@ -135,7 +135,7 @@ public:
 		m = _mm_cvtepi32_ps(_mm_loadl_epi64((__m128i*)&v));
 	}
 
-	constexpr explicit GSVector4(__m128 m)
+	__forceinline constexpr explicit GSVector4(__m128 m)
 		: m(m)
 	{
 	}

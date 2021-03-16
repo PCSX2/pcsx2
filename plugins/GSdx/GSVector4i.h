@@ -70,7 +70,7 @@ public:
 		__m128i m;
 	};
 
-	constexpr GSVector4i(): x(0), y(0), z(0), w(0)
+	__forceinline constexpr GSVector4i(): x(0), y(0), z(0), w(0)
 	{
 	}
 
@@ -129,7 +129,7 @@ public:
 		*this = i;
 	}
 
-	constexpr explicit GSVector4i(__m128i m)
+	__forceinline constexpr explicit GSVector4i(__m128i m)
 		: m(m)
 	{
 	}
