@@ -300,6 +300,9 @@
     <None Include="..\..\Recording\Viewer\RecordingMetadataDialog.h">
       <Filter>Recording\Viewer</Filter>
     </None>
+    <None Include="..\..\Recording\Viewer\RecordingViewerColumn.h">
+      <Filter>Recording\Viewer</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Patch.cpp">
@@ -1373,6 +1376,9 @@
       <Filter>Recording\Viewer</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Recording\Viewer\RecordingFileGridTable.cpp">
+      <Filter>Recording\Viewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\Viewer\RecordingViewerColumn.cpp">
       <Filter>Recording\Viewer</Filter>
     </ClCompile>
   </ItemGroup>

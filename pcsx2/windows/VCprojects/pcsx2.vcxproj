@@ -88,6 +88,7 @@
   <ItemGroup>
     <None Include="..\..\PAD\Windows\Default.ini" />
     <None Include="..\..\Recording\Viewer\RecordingMetadataDialog.h" />
+    <None Include="..\..\Recording\Viewer\RecordingViewerColumn.h" />
     <None Include="..\..\Utilities\folderdesc.txt" />
     <None Include="..\..\Docs\License.txt" />
     <None Include="..\..\x86\microVU_Alloc.inl" />
@@ -345,6 +346,7 @@
     <ClCompile Include="..\..\Recording\Utilities\InputRecordingLogger.cpp" />
     <ClCompile Include="..\..\Recording\Viewer\RecordingFileGridTable.cpp" />
     <ClCompile Include="..\..\Recording\Viewer\RecordingMetadataDialog.cpp" />
+    <ClCompile Include="..\..\Recording\Viewer\RecordingViewerColumn.cpp" />
     <ClCompile Include="..\..\SPU2\DplIIdecoder.cpp" />
     <ClCompile Include="..\..\SPU2\debug.cpp" />
     <ClCompile Include="..\..\SPU2\RegLog.cpp" />

@@ -261,11 +261,52 @@ public:
 	{
 		wxPoint VirtualPadPosition;
 		wxPoint ViewerPosition;
-		bool ViewerShowAnalogSticks;
-		bool ViewerShowFaceButtons;
-		bool ViewerShowDirectionalPad;
-		bool ViewerShowShoulderButtons;
-		bool ViewerShowMiscButtons;
+		// TODO - YAML - can be simplified to a native map
+		// Analog Sticks
+		int ViewerLeftAnalogXIndex;
+		bool ViewerLeftAnalogXShown;
+		int ViewerLeftAnalogYIndex;
+		bool ViewerLeftAnalogYShown;
+		int ViewerRightAnalogXIndex;
+		bool ViewerRightAnalogXShown;
+		int ViewerRightAnalogYIndex;
+		bool ViewerRightAnalogYShown;
+		// Face Buttons
+		int ViewerSquareIndex;
+		bool ViewerSquareShown;
+		int ViewerCrossIndex;
+		bool ViewerCrossShown;
+		int ViewerCircleIndex;
+		bool ViewerCircleShown;
+		int ViewerTriangleIndex;
+		bool ViewerTriangleShown;
+		// Shoulder Buttons
+		int ViewerR1Index;
+		bool ViewerR1Shown;
+		int ViewerR2Index;
+		bool ViewerR2Shown;
+		int ViewerL1Index;
+		bool ViewerL1Shown;
+		int ViewerL2Index;
+		bool ViewerL2Shown;
+		// D-Pad
+		int ViewerLeftIndex;
+		bool ViewerLeftShown;
+		int ViewerDownIndex;
+		bool ViewerDownShown;
+		int ViewerRightIndex;
+		bool ViewerRightShown;
+		int ViewerUpIndex;
+		bool ViewerUpShown;
+		// Misc
+		int ViewerR3Index;
+		bool ViewerR3Shown;
+		int ViewerL3Index;
+		bool ViewerL3Shown;
+		int ViewerSelectIndex;
+		bool ViewerSelectShown;
+		int ViewerStartIndex;
+		bool ViewerStartShown;
 
 		InputRecordingOptions();
 		void loadSave(IniInterface& conf);

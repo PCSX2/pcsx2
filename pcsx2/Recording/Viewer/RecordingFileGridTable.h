@@ -18,12 +18,13 @@
 #include <wx/wx.h>
 #include <wx/grid.h>
 
+#include "RecordingViewerColumn.h"
 #include "Recording/InputRecordingFile.h"
 
 class RecordingFileGridTable : public wxGridTableBase
 {
 public:
-	RecordingFileGridTable(int numColumns);
+	RecordingFileGridTable(const std::map<int, RecordingViewerColumn>& gridColumns);
 
 	wxString GetValue(int row, int col) override;
 	wxString GetColLabelValue(int col) override;
@@ -39,10 +40,10 @@ public:
 
 	void OpenRecordingFile(wxString filePath);
 	void CloseRecordingFile();
+	void UpdateGridColumns(const std::map<int, RecordingViewerColumn>& gridColumns);
 
 	InputRecordingFileHeader GetRecordingFileHeader();
 	void UpdateRecordingFileHeader(const std::string& author, const std::string& gameName);
-
 	long GetUndoCount();
 
 	bool AreChangesUnsaved();
@@ -58,31 +59,9 @@ public:
 	bool IsFromSavestate();
 
 private:
-	int numColumns;
+	std::map<int, RecordingViewerColumn> gridColumns;
 	int controllerPort = 0;
 	bool changes = false;
-
-	const std::vector<std::string> columnLabels = {
-		"Left\nAnalog X",
-		"Left\nAnalog Y",
-		"Right\nAnalog X",
-		"Right\nAnalog Y",
-		"Square",
-		"Cross",
-		"Circle",
-		"Triangle",
-		"Left",
-		"Down",
-		"Right",
-		"Up",
-		"R1",
-		"R2",
-		"L1",
-		"L2",
-		"R3",
-		"L3",
-		"Select",
-		"Start"};
 
 	InputRecordingFile activeFile;
 

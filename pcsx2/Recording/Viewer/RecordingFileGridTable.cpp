@@ -18,8 +18,8 @@
 #include "RecordingFileGridTable.h"
 #include <regex>
 
-RecordingFileGridTable::RecordingFileGridTable(int numColumns)
-	: numColumns(numColumns)
+RecordingFileGridTable::RecordingFileGridTable(const std::map<int, RecordingViewerColumn>& gridColumns)
+	: gridColumns(gridColumns)
 {
 }
 
@@ -62,7 +62,7 @@ bool RecordingFileGridTable::IsFromSavestate()
 
 int RecordingFileGridTable::GetNumberCols()
 {
-	return numColumns;
+	return gridColumns.size();
 }
 
 std::pair<bool, int> getPressedAndPressure(std::string cellValue)
@@ -163,36 +163,36 @@ void RecordingFileGridTable::SetValue(int row, int col, const wxString& value)
 			padData.trianglePressure = multiValueCell.second;
 			break;
 		case 8:
-			padData.leftPressed = multiValueCell.first;
-			padData.leftPressure = multiValueCell.second;
-			break;
-		case 9:
-			padData.downPressed = multiValueCell.first;
-			padData.downPressure = multiValueCell.second;
-			break;
-		case 10:
-			padData.rightPressed = multiValueCell.first;
-			padData.rightPressure = multiValueCell.second;
-			break;
-		case 11:
-			padData.upPressed = multiValueCell.first;
-			padData.upPressure = multiValueCell.second;
-			break;
-		case 12:
 			padData.r1Pressed = multiValueCell.first;
 			padData.r1Pressure = multiValueCell.second;
 			break;
-		case 13:
+		case 9:
 			padData.r2Pressed = multiValueCell.first;
 			padData.r2Pressure = multiValueCell.second;
 			break;
-		case 14:
+		case 10:
 			padData.l1Pressed = multiValueCell.first;
 			padData.l1Pressure = multiValueCell.second;
 			break;
-		case 15:
+		case 11:
 			padData.l2Pressed = multiValueCell.first;
 			padData.l2Pressure = multiValueCell.second;
+			break;
+		case 12:
+			padData.leftPressed = multiValueCell.first;
+			padData.leftPressure = multiValueCell.second;
+			break;
+		case 13:
+			padData.downPressed = multiValueCell.first;
+			padData.downPressure = multiValueCell.second;
+			break;
+		case 14:
+			padData.rightPressed = multiValueCell.first;
+			padData.rightPressure = multiValueCell.second;
+			break;
+		case 15:
+			padData.upPressed = multiValueCell.first;
+			padData.upPressure = multiValueCell.second;
 			break;
 		case 16:
 			padData.r3 = singleValue;
@@ -226,7 +226,7 @@ wxString RecordingFileGridTable::GetColLabelValue(int col)
 	{
 		return "?";
 	}
-	return columnLabels.at(col);
+	return wxString(gridColumns.at(col).label);
 }
 
 wxString RecordingFileGridTable::GetValue(int row, int col)
@@ -266,21 +266,21 @@ wxString RecordingFileGridTable::GetValue(int row, int col)
 		case 7:
 			return wxString::Format("%d (%d)", padData.trianglePressed, padData.trianglePressure);
 		case 8:
-			return wxString::Format("%d (%d)", padData.leftPressed, padData.leftPressure);
-		case 9:
-			return wxString::Format("%d (%d)", padData.downPressed, padData.downPressure);
-		case 10:
-			return wxString::Format("%d (%d)", padData.rightPressed, padData.rightPressure);
-		case 11:
-			return wxString::Format("%d (%d)", padData.upPressed, padData.upPressure);
-		case 12:
 			return wxString::Format("%d (%d)", padData.r1Pressed, padData.r1Pressure);
-		case 13:
+		case 9:
 			return wxString::Format("%d (%d)", padData.r2Pressed, padData.r2Pressure);
-		case 14:
+		case 10:
 			return wxString::Format("%d (%d)", padData.l1Pressed, padData.l1Pressure);
-		case 15:
+		case 11:
 			return wxString::Format("%d (%d)", padData.l2Pressed, padData.l2Pressure);
+		case 12:
+			return wxString::Format("%d (%d)", padData.leftPressed, padData.leftPressure);
+		case 13:
+			return wxString::Format("%d (%d)", padData.downPressed, padData.downPressure);
+		case 14:
+			return wxString::Format("%d (%d)", padData.rightPressed, padData.rightPressure);
+		case 15:
+			return wxString::Format("%d (%d)", padData.upPressed, padData.upPressure);
 		case 16:
 			return wxString::Format("%d", padData.r3);
 		case 17:
@@ -310,6 +310,11 @@ void RecordingFileGridTable::CloseRecordingFile()
 	activeFile.Close();
 	dataBuffer.clear();
 	changes = false;
+}
+
+void RecordingFileGridTable::UpdateGridColumns(const std::map<int, RecordingViewerColumn>& gridColumns)
+{
+	this->gridColumns = gridColumns;
 }
 
 InputRecordingFileHeader RecordingFileGridTable::GetRecordingFileHeader()

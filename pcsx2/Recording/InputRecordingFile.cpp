@@ -36,25 +36,28 @@ void InputRecordingFileHeader::SetEmulatorVersion()
 	SetEmulatorVersion(emuVersion);
 }
 
+template <size_t charCount>
+void strcpy_safe(char (&output)[charCount], const char* pSrc)
+{
+	// Copy the string — don’t copy too many bytes.
+	strncpy(output, pSrc, charCount);
+	// Ensure null-termination.
+	output[charCount - 1] = 0;
+}
+
 void InputRecordingFileHeader::SetEmulatorVersion(wxString version)
 {
-	int max = ArraySize(emu) - 1;
-	strncpy(emu, version.c_str(), max);
-	emu[max] = 0;
+	strcpy_safe(emu, version.c_str());
 }
 
 void InputRecordingFileHeader::SetAuthor(wxString _author)
 {
-	int max = ArraySize(author) - 1;
-	strncpy(author, _author.c_str(), max);
-	author[max] = 0;
+	strcpy_safe(author, _author.c_str());
 }
 
 void InputRecordingFileHeader::SetGameName(wxString _gameName)
 {
-	int max = ArraySize(gameName) - 1;
-	strncpy(gameName, _gameName.c_str(), max);
-	gameName[max] = 0;
+	strcpy_safe(gameName, _gameName.c_str());
 }
 
 bool InputRecordingFile::Close()

@@ -845,6 +845,7 @@ set(pcsx2RecordingSources
 	${rec_viewer_src}/InputRecordingViewer.cpp
 	${rec_viewer_src}/RecordingFileGridTable.cpp
 	${rec_viewer_src}/RecordingMetadataDialog.cpp
+	${rec_viewer_src}/RecordingViewerColumn.cpp
 	${rec_vp_src}/VirtualPad.cpp
 	${rec_vp_src}/VirtualPadData.cpp
 	${rec_vp_src}/VirtualPadResources.cpp
@@ -861,6 +862,7 @@ set(pcsx2RecordingHeaders
 	${rec_viewer_src}/InputRecordingViewer.h
 	${rec_viewer_src}/RecordingFileGridTable.h
 	${rec_viewer_src}/RecordingMetadataDialog.h
+	${rec_viewer_src}/RecordingViewerColumn.h
 	${rec_vp_src}/VirtualPad.h
 	${rec_vp_src}/VirtualPadData.h
 	${rec_vp_src}/VirtualPadResources.h

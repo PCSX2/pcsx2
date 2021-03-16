@@ -22,6 +22,7 @@
 
 #include "Recording/InputRecordingFile.h"
 #include "RecordingFileGridTable.h"
+#include "RecordingViewerColumn.h"
 
 class InputRecordingViewer : public wxFrame
 {
@@ -32,6 +33,8 @@ private:
 	AppConfig::InputRecordingOptions& options;
 
 	const int NUM_COLUMNS = 20;
+	// displayIndex : RecordingViewerColumn
+	std::map<int, RecordingViewerColumn> gridColumns;
 	
 	bool fileOpened = false;
 
@@ -42,7 +45,8 @@ private:
 	wxGrid* recordingGrid;
 
 	void ToggleMenuItems(bool fileOpen);
-	void DisplayColumns();
+	void InitColumns();
+	void RefreshColumns();
 	void CloseActiveFile();
 
 	void OnClose(wxCloseEvent& event);
@@ -74,23 +78,12 @@ private:
 	void OnChangeBaseSavestate(wxCommandEvent& event);
 
 	wxMenu* viewMenu;
-	wxMenuItem* showColumnsSubmenu;
-	wxMenuItem* showAnalogSticksMenuItem;
-	wxMenuItem* showFaceButtonsMenuItem;
-	wxMenuItem* showDirectionalPadMenuItem;
-	wxMenuItem* showShoulderButtonsMenuItem;
-	wxMenuItem* showMiscButtonsMenuItem;
-
+	wxMenuItem* configColumnsMenuItem;
 	wxMenuItem* jumpToFrameMenuItem;
-
 	wxMenuItem* controllerPortSubmenu;
 	wxMenuItem* portOneMenuItem;
 	wxMenuItem* portTwoMenuItem;
-	void OnShowAnalogSticks(wxCommandEvent& event);
-	void OnShowFaceButtons(wxCommandEvent& event);
-	void OnShowDirectionalPad(wxCommandEvent& event);
-	void OnShowShoulderButtons(wxCommandEvent& event);
-	void OnShowMiscButtons(wxCommandEvent& event);
+	void OnConfigColumns(wxCommandEvent& event);
 	void OnJumpToFrame(wxCommandEvent& event);
 	void OnSelectPortOne(wxCommandEvent& event);
 	void OnSelectPortTwo(wxCommandEvent& event);

@@ -18,6 +18,7 @@
 #include <wx/dc.h>
 #include <wx/grid.h>
 #include <wx/numdlg.h>
+#include <wx/rearrangectrl.h>
 #include <wx/renderer.h>
 
 #include "App.h"
@@ -63,13 +64,7 @@ InputRecordingViewer::InputRecordingViewer(wxWindow* parent, AppConfig::InputRec
 	menuBar->Append(editMenu, _("Edit"));
 
 	viewMenu = new wxMenu();
-	wxMenu* columnMenu = new wxMenu();
-	showAnalogSticksMenuItem = checkMenuItem(columnMenu->Append(wxID_ANY, _("Analog Sticks"), _("Show/hide the analog stick columns"), wxITEM_CHECK), options.ViewerShowAnalogSticks);
-	showFaceButtonsMenuItem = checkMenuItem(columnMenu->Append(wxID_ANY, _("Face Buttons"), _("Show/hide the face button columns"), wxITEM_CHECK), options.ViewerShowFaceButtons);
-	showDirectionalPadMenuItem = checkMenuItem(columnMenu->Append(wxID_ANY, _("Directional Pad"), _("Show/hide the D-Pad columns"), wxITEM_CHECK), options.ViewerShowDirectionalPad);
-	showShoulderButtonsMenuItem = checkMenuItem(columnMenu->Append(wxID_ANY, _("Shoulder Buttons"), _("Show/hide the shoulder button columns"), wxITEM_CHECK), options.ViewerShowShoulderButtons);
-	showMiscButtonsMenuItem = checkMenuItem(columnMenu->Append(wxID_ANY, _("Miscellaneous Buttons"), _("Show/hide the remaining miscellaneous columns"), wxITEM_CHECK), options.ViewerShowMiscButtons);
-	showColumnsSubmenu = enableMenuItem(viewMenu->AppendSubMenu(columnMenu, _("Show Columns"), _("Show/hide sections of controller data")), true);
+	configColumnsMenuItem = enableMenuItem(viewMenu->Append(wxID_ANY, _("Config Columns"), _("Change the order and displaying of columns")), true);
 	viewMenu->AppendSeparator();
 	jumpToFrameMenuItem = enableMenuItem(viewMenu->Append(wxID_ANY, _("Jump to Frame"), _("Jump to a specific frame")), false);
 	viewMenu->AppendSeparator();
@@ -90,8 +85,11 @@ InputRecordingViewer::InputRecordingViewer(wxWindow* parent, AppConfig::InputRec
 	// TODO - implement Data menu and event handlers
 	// menuBar->Append(dataMenu, _("Data"));
 
+	// Initialize Grid Column Order
+	InitColumns();
+
 	// Init Widgets
-	recordingDataSource = new RecordingFileGridTable(NUM_COLUMNS);
+	recordingDataSource = new RecordingFileGridTable(gridColumns);
 	recordingGrid = new wxGrid(this, wxID_ANY);
 	recordingGrid->SetTable(recordingDataSource, true);
 	recordingGrid->EnableDragColSize(false);
@@ -120,11 +118,7 @@ InputRecordingViewer::InputRecordingViewer(wxWindow* parent, AppConfig::InputRec
 	// Bind(wxEVT_MENU, &InputRecordingViewer::OnChangeRecordingType, this, changeRecordingTypeMenuItem->GetId());
 	// Bind(wxEVT_MENU, &InputRecordingViewer::OnChangeBaseSavestate, this, changeBaseSavestateMenuItem->GetId());
 
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnShowAnalogSticks, this, showAnalogSticksMenuItem->GetId());
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnShowFaceButtons, this, showFaceButtonsMenuItem->GetId());
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnShowDirectionalPad, this, showDirectionalPadMenuItem->GetId());
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnShowShoulderButtons, this, showShoulderButtonsMenuItem->GetId());
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnShowMiscButtons, this, showMiscButtonsMenuItem->GetId());
+	Bind(wxEVT_MENU, &InputRecordingViewer::OnConfigColumns, this, configColumnsMenuItem->GetId());
 	Bind(wxEVT_MENU, &InputRecordingViewer::OnJumpToFrame, this, jumpToFrameMenuItem->GetId());
 	Bind(wxEVT_MENU, &InputRecordingViewer::OnSelectPortOne, this, portOneMenuItem->GetId());
 	Bind(wxEVT_MENU, &InputRecordingViewer::OnSelectPortTwo, this, portTwoMenuItem->GetId());
@@ -151,7 +145,7 @@ InputRecordingViewer::InputRecordingViewer(wxWindow* parent, AppConfig::InputRec
 	SetSizer(sizer);
 	SetMinSize(wxSize(500, 500));
 	Layout();
-	DisplayColumns();
+	RefreshColumns();
 }
 
 void InputRecordingViewer::OnClose(wxCloseEvent& event)
@@ -175,7 +169,6 @@ void InputRecordingViewer::OnMoveAround(wxMoveEvent& event)
 
 void InputRecordingViewer::ToggleMenuItems(bool fileOpen)
 {
-	openMenuItem->Enable(true);
 	closeMenuItem->Enable(fileOpen);
 	saveMenuItem->Enable(fileOpen);
 	saveAsMenuItem->Enable(fileOpen);
@@ -200,28 +193,23 @@ void InputRecordingViewer::ToggleMenuItems(bool fileOpen)
 	removeFramesMenuItem->Enable(fileOpen);
 }
 
-void InputRecordingViewer::DisplayColumns()
+void InputRecordingViewer::InitColumns()
 {
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < NUM_COLUMNS; i++)
 	{
-		options.ViewerShowAnalogSticks ? recordingGrid->ShowCol(i) : recordingGrid->HideCol(i);
+		appendColumn(i, gridColumns, options);
 	}
-	for (int i = 4; i < 8; i++)
+}
+
+void InputRecordingViewer::RefreshColumns()
+{
+	recordingDataSource->UpdateGridColumns(gridColumns);
+	for (auto& columnEntry : gridColumns)
 	{
-		options.ViewerShowFaceButtons ? recordingGrid->ShowCol(i) : recordingGrid->HideCol(i);
+		columnEntry.second.shown ? recordingGrid->ShowCol(columnEntry.first) : recordingGrid->HideCol(columnEntry.first);
 	}
-	for (int i = 8; i < 12; i++)
-	{
-		options.ViewerShowDirectionalPad ? recordingGrid->ShowCol(i) : recordingGrid->HideCol(i);
-	}
-	for (int i = 12; i < 16; i++)
-	{
-		options.ViewerShowShoulderButtons ? recordingGrid->ShowCol(i) : recordingGrid->HideCol(i);
-	}
-	for (int i = 16; i < 20; i++)
-	{
-		options.ViewerShowMiscButtons ? recordingGrid->ShowCol(i) : recordingGrid->HideCol(i);
-	}
+	saveColumnsToConfig(gridColumns, options);
+	recordingGrid->ForceRefresh();
 }
 
 void InputRecordingViewer::CloseActiveFile()
@@ -410,34 +398,39 @@ void InputRecordingViewer::OnChangeBaseSavestate(wxCommandEvent& event)
 	// TODO
 }
 
-void InputRecordingViewer::OnShowAnalogSticks(wxCommandEvent& event)
+void InputRecordingViewer::OnConfigColumns(wxCommandEvent& event)
 {
-	options.ViewerShowAnalogSticks = showAnalogSticksMenuItem->IsChecked();
-	DisplayColumns();
-}
+	wxArrayString items;
+	wxArrayInt order;
+	for (auto& columnEntry : gridColumns)
+	{
+		items.push_back(columnEntry.second.label);
+		order.push_back(columnEntry.second.shown ? columnEntry.first : ~columnEntry.first);
+	}
+	wxRearrangeDialog dlg(NULL,
+						  "You can also uncheck the items you don't like at all.",
+						  "Sort the items in order of preference",
+						  order, items);
 
-void InputRecordingViewer::OnShowFaceButtons(wxCommandEvent& event)
-{
-	options.ViewerShowFaceButtons = showFaceButtonsMenuItem->IsChecked();
-	DisplayColumns();
-}
-
-void InputRecordingViewer::OnShowDirectionalPad(wxCommandEvent& event)
-{
-	options.ViewerShowDirectionalPad = showDirectionalPadMenuItem->IsChecked();
-	DisplayColumns();
-}
-
-void InputRecordingViewer::OnShowShoulderButtons(wxCommandEvent& event)
-{
-	options.ViewerShowShoulderButtons = showShoulderButtonsMenuItem->IsChecked();
-	DisplayColumns();
-}
-
-void InputRecordingViewer::OnShowMiscButtons(wxCommandEvent& event)
-{
-	options.ViewerShowMiscButtons = showMiscButtonsMenuItem->IsChecked();
-	DisplayColumns();
+	if (dlg.ShowModal() == wxID_OK)
+	{
+		std::map<int, RecordingViewerColumn> newGridColumns;
+		order = dlg.GetOrder();
+		for (size_t i = 0; i < order.size(); i++)
+		{
+			// wxWidget's dialog here will return a helpful list where unchecked items are two's complemented
+			// However, we don't actually remove them, we hide them, so i have to add them back!
+			int oldIndex = order[i];
+			if (order[i] < 0)
+			{
+				oldIndex = abs(oldIndex + 1);
+			}
+			newGridColumns[i] = gridColumns.at(oldIndex);
+			newGridColumns.at(i).shown = order[i] >= 0;
+		}
+		gridColumns = newGridColumns;
+		RefreshColumns();
+	}
 }
 
 void InputRecordingViewer::OnJumpToFrame(wxCommandEvent& event)
