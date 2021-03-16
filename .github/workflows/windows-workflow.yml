@@ -23,6 +23,12 @@ on:
       - debian-packager/
       - bin/PCSX2_keys.ini.default
       - "pcsx2/PAD/Linux/**"
+  workflow_dispatch:
+    inputs:
+      retainDebugArtifacts:
+        description: 'Retain debug artifacts (.pdb/.exp/.lib) for an easier debugging experience'
+        required: true
+        default: 'false'
 
 jobs:
   build:
@@ -67,7 +73,7 @@ jobs:
       - name: Build PCSX2
         env:
           # Set to 'true' to retain the .pdb / .exp / .lib, etc files which can be useful for repro'ing issues that only occur in the compiled .exe
-          RetainDebuggingArtifacts: "false"
+          RetainDebuggingArtifacts: "${{ github.event.inputs.retainDebugArtifacts == 'true' }}"
         run: msbuild "buildbot.xml" /m /v:n /t:ReleaseAll /p:Platform=${{ matrix.platform }}
 
       - name: Prepare Artifact Metadata
