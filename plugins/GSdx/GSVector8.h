@@ -164,7 +164,7 @@ public:
 		*this = m;
 	}
 
-	constexpr explicit GSVector8(__m256 m)
+	__forceinline constexpr explicit GSVector8(__m256 m)
 		: m(m)
 	{
 	}
