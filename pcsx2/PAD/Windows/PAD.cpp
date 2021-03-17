@@ -154,7 +154,7 @@ struct ButtonSum
 	Stick sticks[2];
 };
 
-#define PAD_SAVE_STATE_VERSION 6
+#define PAD_SAVE_STATE_VERSION 5
 
 // Freeze data, for a single pad.  Basically has all pad state that
 // a PS2 can set.
