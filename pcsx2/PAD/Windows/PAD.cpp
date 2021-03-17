@@ -1484,7 +1484,8 @@ u8 PADpoll(u8 value)
 				{
 					pad->umask[query.lastByte - 3] = value;
 				}
-				else if (query.lastByte == 5)
+
+				if (query.lastByte == 5)
 				{
 					if (!(value & 1))
 					{
