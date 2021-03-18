@@ -132,6 +132,6 @@ extern void States_DefrostCurrentSlot();
 extern void States_FreezeCurrentSlot();
 extern void States_CycleSlotForward();
 extern void States_CycleSlotBackward();
-extern void States_SetCurrentSlot(int slot);
+extern void States_SetCurrentSlot(int slot_num);
 extern int States_GetCurrentSlot();
 extern void States_updateLoadBackupMenuItem();

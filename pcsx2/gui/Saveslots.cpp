@@ -139,20 +139,23 @@ int States_GetCurrentSlot()
 	return StatesC;
 }
 
-void States_SetCurrentSlot(int slot)
+void States_SetCurrentSlot(int slot_num)
 {
-	StatesC = std::min(std::max(slot, 0), StateSlotsCount);
+	StatesC = std::min(std::max(slot_num, 0), StateSlotsCount);
+	for (Saveslot& slot : saveslot_cache)
+	{
+		sMainFrame.CheckMenuItem(slot.load_item_id, slot.slot_num == slot_num);
+		sMainFrame.CheckMenuItem(slot.save_item_id, slot.slot_num == slot_num);
+	}
 	OnSlotChanged();
 }
 
 void States_CycleSlotForward()
 {
-	StatesC = (StatesC + 1) % StateSlotsCount;
-	OnSlotChanged();
+	States_SetCurrentSlot((StatesC + 1) % StateSlotsCount);
 }
 
 void States_CycleSlotBackward()
 {
-	StatesC = (StatesC + StateSlotsCount - 1) % StateSlotsCount;
-	OnSlotChanged();
+	States_SetCurrentSlot((StatesC + StateSlotsCount - 1) % StateSlotsCount);
 }

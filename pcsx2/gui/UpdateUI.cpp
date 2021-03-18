@@ -86,6 +86,7 @@ static void _SaveLoadStuff(bool enabled)
 			slot.crc = ElfCRC;
 
 			sMainFrame.EnableMenuItem(slot.load_item_id, !slot.empty);
+			sMainFrame.CheckMenuItem(slot.load_item_id, slot.slot_num == States_GetCurrentSlot());
 			sMainFrame.SetMenuItemLabel(slot.load_item_id, slot.SlotName());
 			sMainFrame.SetMenuItemLabel(slot.save_item_id, slot.SlotName());
 		}
