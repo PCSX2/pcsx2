@@ -26,11 +26,10 @@ Device* dev;
 
 INT_PTR CALLBACK DiagDialog(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM lParam)
 {
-	int i;
 	HWND hWndList = GetDlgItem(hWnd, IDC_DIAG_LIST);
-	static int fullRefresh;
 	if (dev)
 	{
+		static int fullRefresh;
 		switch (uMsg)
 		{
 			case WM_INITDIALOG:
@@ -49,7 +48,7 @@ INT_PTR CALLBACK DiagDialog(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM 
 				LVITEM item;
 				item.mask = LVIF_TEXT;
 				item.iSubItem = 0;
-				for (i = 0; i < dev->numVirtualControls; i++)
+				for (int i = 0; i < dev->numVirtualControls; i++)
 				{
 					item.pszText = dev->GetVirtualControlName(dev->virtualControls + i);
 					item.iItem = i;
@@ -71,7 +70,7 @@ INT_PTR CALLBACK DiagDialog(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM 
 				if (!dev->active)
 				{
 					item.pszText = L"N/A";
-					for (i = 0; i < dev->numVirtualControls; i++)
+					for (int i = 0; i < dev->numVirtualControls; i++)
 					{
 						item.iItem = i;
 						ListView_SetItem(hWndList, &item);
@@ -80,7 +79,7 @@ INT_PTR CALLBACK DiagDialog(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM 
 				}
 				else
 				{
-					for (i = 0; i < dev->numVirtualControls; i++)
+					for (int i = 0; i < dev->numVirtualControls; i++)
 					{
 						if (fullRefresh || dev->virtualControlState[i] != dev->oldVirtualControlState[i])
 						{
@@ -99,10 +98,6 @@ INT_PTR CALLBACK DiagDialog(HWND hWnd, unsigned int uMsg, WPARAM wParam, LPARAM 
 								{
 									sign = L"-";
 									val = -val;
-								}
-								if ((c->uid & UID_AXIS) && val)
-								{
-									val = val;
 								}
 								val = (int)floor(0.5 + val * 1000.0 / (double)FULLY_DOWN);
 								wsprintfW(temp, L"%s%i.%03i", sign, val / 1000, val % 1000);
