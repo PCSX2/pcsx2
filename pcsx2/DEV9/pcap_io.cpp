@@ -427,6 +427,29 @@ bool PCAPAdapter::send(NetPacket* pkt)
 		return true;
 	}
 }
+
+void PCAPAdapter::reloadSettings()
+{
+#ifdef _WIN32
+	IP_ADAPTER_ADDRESSES adapter;
+	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
+	if (PCAPGetWin32Adapter(config.Eth, &adapter, &buffer))
+		ReloadInternalServer(&adapter);
+	else
+		ReloadInternalServer(nullptr);
+#elif defined(__POSIX__)
+	ifaddrs adapter;
+	ifaddrs* buffer;
+	if (PCAPGetIfAdapter(config.Eth, &adapter, &buffer))
+	{
+		ReloadInternalServer(&adapter);
+		freeifaddrs(buffer);
+	}
+	else
+		ReloadInternalServer(nullptr);
+#endif
+}
+
 PCAPAdapter::~PCAPAdapter()
 {
 	pcap_io_close();

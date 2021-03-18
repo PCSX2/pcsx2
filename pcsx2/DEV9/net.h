@@ -33,6 +33,8 @@
 
 #include "PacketReader/IP/IP_Address.h"
 
+struct Config;
+
 // first three recognized by Xlink as Sony PS2
 const u8 defaultMAC[6] = {0x00, 0x04, 0x1F, 0x82, 0x30, 0x31};
 
@@ -97,6 +99,7 @@ public:
 	virtual bool isInitialised() = 0;
 	virtual bool recv(NetPacket* pkt); //gets a packet
 	virtual bool send(NetPacket* pkt); //sends the packet and deletes it when done
+	virtual void reloadSettings() = 0;
 	virtual void close(){};
 	virtual ~NetAdapter();
 
@@ -106,8 +109,10 @@ protected:
 
 #ifdef _WIN32
 	void InitInternalServer(PIP_ADAPTER_ADDRESSES adapter);
+	void ReloadInternalServer(PIP_ADAPTER_ADDRESSES adapter);
 #elif defined(__POSIX__)
 	void InitInternalServer(ifaddrs* adapter);
+	void ReloadInternalServer(ifaddrs* adapter);
 #endif
 
 private:
@@ -120,6 +125,7 @@ private:
 
 void tx_put(NetPacket* ptr);
 void InitNet();
+void ReconfigureLiveNet(Config* oldConfig);
 void TermNet();
 
 const char* NetApiToString(NetApi api);
