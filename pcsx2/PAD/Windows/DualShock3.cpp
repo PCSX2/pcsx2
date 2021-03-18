@@ -199,13 +199,12 @@ struct DS3Command
 
 int CharToAxis(unsigned char c)
 {
-	int v = (int)c + ((unsigned int)c >> 7);
 	return ((c - 128) * FULLY_DOWN) >> 7;
 }
 
 int CharToButton(unsigned char c)
 {
-	int v = (int)c + ((unsigned int)c >> 7);
+	const int v = (int)c + ((unsigned int)c >> 7);
 	return (v * FULLY_DOWN) >> 8;
 }
 
