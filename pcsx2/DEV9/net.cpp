@@ -121,6 +121,31 @@ void InitNet()
 #endif
 }
 
+void ReconfigureLiveNet(Config* oldConfig)
+{
+	//Eth
+	if (config.ethEnable)
+	{
+		if (oldConfig->ethEnable)
+		{
+			//Reload Net if adapter changed
+			if (strcmp(oldConfig->Eth, config.Eth) != 0 ||
+				oldConfig->EthApi != config.EthApi)
+			{
+				TermNet();
+				InitNet();
+				return;
+			}
+			else
+				nif->reloadSettings();
+		}
+		else
+			InitNet();
+	}
+	else if (oldConfig->ethEnable)
+		TermNet();
+}
+
 void TermNet()
 {
 	if (RxRunning)
@@ -255,6 +280,16 @@ void NetAdapter::InitInternalServer(ifaddrs* adapter)
 		internalRxThreadRunning.store(true);
 		internalRxThread = std::thread(&NetAdapter::InternalServerThread, this);
 	}
+}
+
+#ifdef _WIN32
+void NetAdapter::ReloadInternalServer(PIP_ADAPTER_ADDRESSES adapter)
+#elif defined(__POSIX__)
+void NetAdapter::ReloadInternalServer(ifaddrs* adapter)
+#endif
+{
+	if (adapter == nullptr)
+		Console.Error("DEV9: ReloadInternalServer() got nullptr for adapter");
 }
 
 bool NetAdapter::InternalServerRecv(NetPacket* pkt)

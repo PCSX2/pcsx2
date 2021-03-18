@@ -56,7 +56,7 @@ bool rx_fifo_can_rx();
 #define HDD_MIN_GB 8
 #define HDD_MAX_GB 120
 
-typedef struct
+struct Config
 {
 	char Eth[256];
 	NetApi EthApi;
@@ -69,7 +69,7 @@ typedef struct
 
 	int hddEnable;
 	int ethEnable;
-} Config;
+};
 
 EXTERN Config config;
 

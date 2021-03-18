@@ -181,6 +181,7 @@ public:
 	virtual bool recv(NetPacket* pkt);
 	//sends the packet and deletes it when done (if successful).rv :true success
 	virtual bool send(NetPacket* pkt);
+	virtual void reloadSettings();
 	virtual ~PCAPAdapter();
 	static std::vector<AdapterEntry> GetAdapters();
 };

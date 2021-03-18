@@ -665,6 +665,17 @@ bool TAPAdapter::send(NetPacket* pkt)
 	else
 		return false;
 }
+
+void TAPAdapter::reloadSettings()
+{
+	IP_ADAPTER_ADDRESSES adapter;
+	std::unique_ptr<IP_ADAPTER_ADDRESSES[]> buffer;
+	if (TAPGetWin32Adapter(config.Eth, &adapter, &buffer))
+		ReloadInternalServer(&adapter);
+	else
+		ReloadInternalServer(nullptr);
+}
+
 void TAPAdapter::close()
 {
 	SetEvent(cancel);

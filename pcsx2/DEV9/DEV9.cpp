@@ -1090,26 +1090,10 @@ void ApplyConfigIfRunning(Config oldConfig)
 		return;
 
 	//Eth
-	if (config.ethEnable)
-	{
-		if (oldConfig.ethEnable)
-		{
-			//Reload Net if adapter changed
-			if (strcmp(oldConfig.Eth, config.Eth) != 0 ||
-				oldConfig.EthApi != config.EthApi)
-			{
-				TermNet();
-				InitNet();
-			}
-		}
-		else
-			InitNet();
-	}
-	else if (oldConfig.ethEnable)
-		TermNet();
+	ReconfigureLiveNet(&oldConfig);
 
-		//Hdd
-		//Hdd Validate Path
+	//Hdd
+	//Hdd Validate Path
 #ifdef _WIN32
 	ghc::filesystem::path hddPath(std::wstring(config.Hdd));
 #else
