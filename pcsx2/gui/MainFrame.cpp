@@ -43,7 +43,8 @@ wxMenu* MainEmuFrame::MakeStatesSubMenu(int baseid, int loadBackupId) const
 	for (int i = 0; i < 10; i++)
 	{
 		// Will be changed once an iso is loaded.
-		mnuSubstates->Append(baseid + i + 1, wxsFormat(_("Slot %d"), i));
+		wxMenuItem* m = mnuSubstates->Append(baseid + i + 1, wxsFormat(_("Slot %d"), i), wxEmptyString, wxITEM_CHECK);
+		m->Check(i == 0); // 0 is the default selected slot
 	}
 
 	if (loadBackupId >= 0)
