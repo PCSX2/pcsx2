@@ -62,9 +62,7 @@ extern bool				UseDefaultSettingsFolder;	// when TRUE, pcsx2 derives the setting
 
 extern fs::path		CustomDocumentsFolder;		// allows the specification of a custom home folder for PCSX2 documents files.
 extern fs::path		SettingsFolder;				// dictates where the settings folder comes from, *if* UseDefaultSettingsFolder is FALSE.
-
 extern fs::path		InstallFolder;
-extern fs::path		PluginsFolder;
 
 extern fs::path  GetSettingsFolder();
 extern fs::path  GetVmSettingsFilename();
@@ -151,6 +149,7 @@ public:
 		BITFIELD32()
 			bool
 				UseDefaultBios:1,
+				UseDefaultPlugins: 1,
 				UseDefaultSnapshots:1,
 				UseDefaultSavestates:1,
 				UseDefaultMemoryCards:1,
@@ -162,6 +161,7 @@ public:
 
 		fs::path
 			Bios,
+			Plugins,
 			Snapshots,
 			Savestates,
 			MemoryCards,

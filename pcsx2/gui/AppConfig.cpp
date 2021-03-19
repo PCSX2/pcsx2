@@ -715,55 +715,55 @@ AppConfig::FolderOptions::FolderOptions()
 	, Logs			( PathDefs::GetLogs() )
 	, Cheats		( PathDefs::GetCheats() )
 	, CheatsWS      ( PathDefs::GetCheatsWS() )
-
-	, RunIso(PathDefs::GetDocuments()) // raw default is always the Documents folder.
-	, RunELF(PathDefs::GetDocuments()) // raw default is always the Documents folder.
+	// raw default is always the Documents folder.
+	, RunIso(PathDefs::GetDocuments())
+	, RunELF(PathDefs::GetDocuments())
 	, RunDisc(PathDefs::GetDocuments())
 {
 	bitset = 0xffffffff;
 }
 
-void AppConfig::FolderOptions::LoadSave( IniInterface& ini )
+void AppConfig::FolderOptions::LoadSave(IniInterface& ini)
 {
-	ScopedIniGroup path( ini, L"Folders" );
+	ScopedIniGroup path(ini, L"Folders");
 
-	if( ini.IsSaving() )
+	if (ini.IsSaving())
 	{
 		ApplyDefaults();
 	}
 
-	IniBitBool( UseDefaultBios );
-	IniBitBool( UseDefaultSnapshots );
-	IniBitBool( UseDefaultSavestates );
-	IniBitBool( UseDefaultMemoryCards );
-	IniBitBool( UseDefaultLogs );
-	IniBitBool( UseDefaultLangs );
-	IniBitBool( UseDefaultCheats );
-	IniBitBool( UseDefaultCheatsWS );
+	IniBitBool(UseDefaultBios);
+	IniBitBool(UseDefaultPlugins);
+	IniBitBool(UseDefaultSnapshots);
+	IniBitBool(UseDefaultSavestates);
+	IniBitBool(UseDefaultMemoryCards);
+	IniBitBool(UseDefaultLogs);
+	IniBitBool(UseDefaultLangs);
+	IniBitBool(UseDefaultCheats);
+	IniBitBool(UseDefaultCheatsWS);
 
-	//when saving in portable mode, we save relative paths if possible
-	 //  --> on load, these relative paths will be expanded relative to the exe folder.
-	bool rel = ( ini.IsLoading() || IsPortable() );
+	fs::path optional_base = IsPortable() ? PathDefs::AppRoot() : "";
 
-	IniEntryDirFile(Bios, Bios, PathDefs::AppRoot(), false);
-	IniEntryDirFile(Snapshots, Snapshots, PathDefs::AppRoot(), rel );
-	IniEntryDirFile( Savestates, Savestates, PathDefs::AppRoot(), rel );
-	IniEntryDirFile( MemoryCards, MemoryCards, PathDefs::AppRoot(), false );
-	IniEntryDirFile( Logs, Logs, PathDefs::AppRoot(), rel );
-	IniEntryDirFile( Langs, Langs, PathDefs::AppRoot(), rel );
-	IniEntryDirFile( Cheats, Cheats, PathDefs::AppRoot(), rel );
-	IniEntryDirFile( CheatsWS, CheatsWS, PathDefs::AppRoot(), rel );
+	IniFileDirectory(Bios, optional_base);
+	IniFileDirectory(Plugins, optional_base);
+	IniFileDirectory(Snapshots, optional_base);
+	IniFileDirectory(Savestates, optional_base);
+	IniFileDirectory(MemoryCards, optional_base);
+	IniFileDirectory(Logs, optional_base);
+	IniFileDirectory(Langs, optional_base);
+	IniFileDirectory(Cheats, optional_base);
+	IniFileDirectory(CheatsWS, optional_base);
 
-	IniEntryDirFile( RunIso, RunIso, PathDefs::AppRoot(), rel );
-	IniEntryDirFile( RunELF, RunELF, PathDefs::AppRoot(), rel );
-	IniEntryDirFile( RunDisc, RunDisc, PathDefs::AppRoot(), rel );
+	IniFileDirectory(RunIso, optional_base);
+	IniFileDirectory(RunELF, optional_base);
+	IniFileDirectory(RunDisc, optional_base);
 
-	if( ini.IsLoading() )
+	if (ini.IsLoading())
 	{
 		ApplyDefaults();
 
-		for( int i=0; i<FolderId_COUNT; ++i )
-			operator[]( (FoldersEnum_t)i );
+		for (int i = 0; i < FolderId_COUNT; ++i)
+			operator[]((FoldersEnum_t)i);
 	}
 }
 

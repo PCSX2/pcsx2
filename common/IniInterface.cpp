@@ -153,32 +153,39 @@ void IniLoader::Entry(const wxString& var, wxDirName& value, const wxDirName def
 	}
 }
 
-void IniLoader::Entry(const wxString& var, fs::path& value, fs::path base, const fs::path defvalue, bool isAllowRelative)
+void IniLoader::Entry(const wxString& var, fs::path& value, fs::path defvalue)
 {
-	wxString dest;
+	wxString tempPath;
 	if (m_Config)
-		m_Config->Read(var, &dest, wxEmptyString);
-	if (!Path::DoesExist(value))
-		value = defvalue;
-	else
-	{
-		fs::path Temp = Path::FromWxString(dest);
-		if (isAllowRelative)
-			value = Path::Combine(base, Temp);
-			//value = fs::canonical(Temp);
+		m_Config->Read(var, &tempPath, wxEmptyString);
 
-		if (!Temp.is_absolute())
-		{
-			try
-			{
-				Temp = fs::canonical(Temp);
-			}
-			catch (const fs::filesystem_error& ex)
-			{
-				value = defvalue;
-			}
-		}
-		value = Temp;
+	// If we found nothing in the config, use the default
+	if (tempPath.IsEmpty())
+	{
+		value = defvalue;
+		return;
+	}
+
+	value = Path::FromWxString(tempPath);
+}
+
+void IniLoader::Entry(const wxString& var, fs::path& value, fs::path defvalue, fs::path optional_base)
+{
+	wxString tempPath;
+	if (m_Config)
+		m_Config->Read(var, &tempPath, wxEmptyString);
+
+	// If we found nothing in the config, use the default
+	if (tempPath.IsEmpty())
+	{
+		value = defvalue;
+		return;
+	}
+
+	value = Path::FromWxString(tempPath);
+	if (value.is_relative())
+	{
+		value = optional_base / value;
 	}
 }
 
@@ -381,21 +388,37 @@ void IniSaver::Entry(const wxString& var, wxDirName& value, const wxDirName defv
 	m_Config->Write(var, res.ToString());
 }
 
-void IniSaver::Entry(const wxString &var, fs::path &value, fs::path base, const fs::path defvalue, bool isAllowRelative)
+void IniSaver::Entry(const wxString &var, fs::path &value, const fs::path defvalue)
 {
 	if (!m_Config)
 		return;
-	fs::path res(value);
 
-	if (isAllowRelative)
-		res = fs::relative(value, base);
+		m_Config->Write(var, Path::ToWxString(value));
+}
 
-	else
-		fs::absolute(res);
+void IniSaver::Entry(const wxString &var, fs::path &value, const fs::path defvalue, fs::path optional_base)
+{
+	if (!m_Config)
+		return;
 
-	wxString saver = Path::ToWxString(res);
-
-	m_Config->Write(var, saver);
+		// Including logic in the IniInterface that does magic to the values passed in because it's too difficult to handle values
+		// that require a different loading/saving scheme currently.
+		//
+		// It's assumed that `optional_base` will only be provided if we are in portable mode
+		// 
+		// Directories returned as a relative path IF:
+		// - We are running in Portable Mode
+		// - The directory is a subdirectory of the executable's directory
+		// OTHERWISE
+		// - We return an absolute path
+		if (!optional_base.empty() && Path::IsDirectoryWithinDirectory(optional_base, value))
+		{
+			m_Config->Write(var, Path::ToWxString(fs::relative(value, optional_base)));
+		}
+		else
+		{
+			m_Config->Write(var, Path::ToWxString(fs::absolute(value)));
+		}
 }
 
 void IniSaver::Entry(const wxString& var, wxFileName& value, const wxFileName defvalue, bool isAllowRelative)

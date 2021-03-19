@@ -28,17 +28,15 @@
 
 DocsModeType			DocsFolderMode = DocsFolder_User;
 bool					UseDefaultSettingsFolder = true;
-bool					runWizard  = true; // This should default to true unless the stream says otherwise. If this doesn't get flipped somethings wrong and setup required
-bool					conf_install = false;
+bool 					runWizard  = true; // This should default to true unless the stream says otherwise. If this doesn't get flipped somethings wrong and setup required
+
 std::vector<std::string> ErrorFolders;
 
 std::string usermodePath;
 
 fs::path CustomDocumentsFolder;
 fs::path SettingsFolder;
-
 fs::path InstallFolder;
-fs::path PluginsFolder;
 
 YAML::Node stream;
 
@@ -202,7 +200,7 @@ void Pcsx2App::WipeUserModeSettings()
 	else
 	{
 		// Remove the registry entry "RunWizard" conforming to this instance of PCSX2.
-		conf_install = OpenInstallSettingsFile();
+		bool conf_install = OpenInstallSettingsFile();
 		stream["RunWizard"] = true;
 		Save(usermodePath);
 	}
@@ -327,7 +325,7 @@ bool Pcsx2App::OpenInstallSettingsFile()
 
 void Pcsx2App::ForceFirstTimeWizardOnNextRun()
 {
-	conf_install = TestForPortableInstall();
+	bool conf_install = TestForPortableInstall();
 
 	if (!conf_install)
 		conf_install = OpenInstallSettingsFile();
@@ -339,7 +337,7 @@ void Pcsx2App::EstablishAppUserMode()
 {
 	// TODO - stop mutating the yaml directly, serialize and deserialize!
 
-	conf_install = TestForPortableInstall();
+	bool conf_install = TestForPortableInstall();
 
 	if (!conf_install)
 		conf_install = OpenInstallSettingsFile();

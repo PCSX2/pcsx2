@@ -107,6 +107,16 @@ bool Path::IsRelative(const std::string &path)
 	return fs::path(path).is_relative();
 }
 
+bool Path::IsDirectoryWithinDirectory(fs::path base, fs::path dir)
+{
+	fs::path relativePath = fs::relative(fs::absolute(dir), fs::absolute(base));
+	if (relativePath.empty())
+	{
+		return false;
+	}
+	return relativePath.string().rfind("..", 0) != 0;
+}
+
 s64 Path::GetFileSize(const fs::path &path)
 {
 	if (!fs::exists(path))
