@@ -25082,7 +25082,8 @@ SLPM-66585:
   region: "NTSC-J"
   compat: 5
   clampModes:
-    eeClampMode: 0  # Fixes black overlay ingame during dialog
+    eeClampMode: 3 # Fixes black overlay ingame during dialog.
+    vuClampMode: 3 # Fixes black overlay ingame during dialog.
 SLPM-66586:
   name: "Karutagura - Tamashii no Kunou [2800 Collection]"
   region: "NTSC-J"
