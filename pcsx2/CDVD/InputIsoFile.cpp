@@ -62,7 +62,7 @@ void InputIsoFile::BeginRead2(uint lsn)
 	{
 		// While this usually indicates that the ISO is corrupted, some games do attempt
 		// to read past the end of the disc, so don't error here.
-		DevCon.Warning("isoFile error: Block index is past the end of file! (%u >= %u).", lsn, m_blocks);
+		Console.WriteLn("isoFile error: Block index is past the end of file! (%u >= %u).", lsn, m_blocks);
 		return;
 	}
 
