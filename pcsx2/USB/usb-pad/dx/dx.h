@@ -204,13 +204,17 @@ namespace usb_pad
 		float ReadAxis(const InputMapped& im);
 		float ReadAxis(int port, int axisid);
 		float FilterControl(float input, LONG linear, LONG offset, LONG dead);
-		void TestForce(int port);
+
+		bool StartTestForce(int port);
+		bool UpdateTestForce(int port, unsigned int stage);
+		bool EndTestForce(int port);
+
 		LONG GetAxisValueFromOffset(int axis, const DIJOYSTATE2& j);
 		bool GetControl(int port, int id);
 		float GetAxisControl(int port, ControlID id);
 		void CreateFFB(int port, LPDIRECTINPUTDEVICE8 device, DWORD axis);
 		bool FindFFDevice(int port);
-		void UpdateFFBSettings(int port, LPDIRECTINPUTDEVICE8 device);
+		bool UpdateFFBSettings(int port, LPDIRECTINPUTDEVICE8 device);
 
 		void AddInputMap(int port, int cid, const InputMapped& im);
 		void RemoveInputMap(int port, int cid);

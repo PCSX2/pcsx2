@@ -429,13 +429,13 @@ namespace usb_pad
 			}
 		}
 
-		void UpdateFFBSettings(int port, LPDIRECTINPUTDEVICE8 device)
+		bool UpdateFFBSettings(int port, LPDIRECTINPUTDEVICE8 device)
 		{
 			DIPROPDWORD prop { sizeof(prop), sizeof(prop.diph) };
 			prop.diph.dwObj = 0;
 			prop.diph.dwHow = DIPH_DEVICE;
 			prop.dwData = std::clamp(GAINZ[port][0], 0, DI_FFNOMINALMAX);
-			device->SetProperty(DIPROP_FFGAIN, &prop.diph);
+			return SUCCEEDED(device->SetProperty(DIPROP_FFGAIN, &prop.diph));
 		}
 
 		BOOL CALLBACK EnumJoysticksCallback(const DIDEVICEINSTANCE* pdidInstance,
@@ -1019,7 +1019,7 @@ namespace usb_pad
 			return g_pEffectConstant[port]->SetParameters(&eff, DIEP_TYPESPECIFICPARAMS | DIEP_START);
 		}
 
-		void TestForce(int port)
+		bool StartTestForce(int port)
 		{
 			InputMapped im;
 			LPDIRECTINPUTDEVICE8 dev = nullptr;
@@ -1027,23 +1027,36 @@ namespace usb_pad
 				dev = g_pJoysticks[im.index]->GetDevice();
 
 			// Gain value may have changed, so update it for the constant force effect
-			UpdateFFBSettings(port, dev);
+			return UpdateFFBSettings(port, dev);
+		}
 
-			if (FAILED(SetConstantForce(port, DI_FFNOMINALMAX / 3)))
-				return;
-			Sleep(500);
-			SetConstantForce(port, -DI_FFNOMINALMAX / 3);
-			Sleep(1000);
-			SetConstantForce(port, DI_FFNOMINALMAX / 3);
-			Sleep(500);
-			SetConstantForce(port, 0);
-
-			if (dev)
-			{ //FIXME actually center, maybe
-				AutoCenter(dev, true);
-				Sleep(1500);
-				AutoCenter(dev, false);
+		bool UpdateTestForce(int port, unsigned int stage)
+		{
+			// FFB test ticks every 500ms and goes as follows:
+			// Turn right, wait 500ms, turn left, wait 1000ms, turn right, wait 500ms, end
+			if (stage == 0)
+			{
+				return SUCCEEDED(SetConstantForce(port, DI_FFNOMINALMAX / 3));
 			}
+			if (stage == 1)
+			{
+				return SUCCEEDED(SetConstantForce(port, -DI_FFNOMINALMAX / 3));
+			}
+			if (stage == 2)
+			{
+				// Do nothing, as we wait 1000ms
+				return true;
+			}
+			if (stage == 3)
+			{
+				return SUCCEEDED(SetConstantForce(port, DI_FFNOMINALMAX / 3));
+			}
+			return false;
+		}
+
+		bool EndTestForce(int port)
+		{
+			return SUCCEEDED(SetConstantForce(port, 0));
 		}
 
 	} // namespace dx
