@@ -53,6 +53,10 @@ namespace usb_pad
 		int32_t FFMULTI[2][1];
 		int32_t INVERTFORCES[2]{};
 
+		// FFB test
+		bool ffbTestRunning = false;
+		unsigned int ffbTestStage = 0;
+
 		bool dialogOpen = false;
 
 		HWND hKey;
@@ -685,6 +689,14 @@ namespace usb_pad
 			EndPaint(hWnd, &Ps);
 		}
 
+		void EndFFBTest()
+		{
+			if (std::exchange(ffbTestRunning, false))
+			{
+				KillTimer(hWnd, 23);
+			}
+		}
+
 		INT_PTR CALLBACK StaticProc(HWND hDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 		{
 			(*pFnPrevFunc)(hDlg, uMsg, wParam, lParam);
@@ -890,6 +902,16 @@ namespace usb_pad
 							ControlTest(s->port);
 							break;
 						}
+						case 23:
+						{
+							s = (DXDlgSettings*)GetWindowLongPtr(hDlg, GWLP_USERDATA);
+							if (!UpdateTestForce(s->port, ffbTestStage++))
+							{
+								EndTestForce(s->port);
+								EndFFBTest();
+							}
+							break;
+						}
 					}
 					break;
 				}
@@ -933,6 +955,7 @@ namespace usb_pad
 							//SendMessage(hWnd, WM_CLOSE, 0, 0);
 							//return TRUE;
 							dialogOpen = false;
+							EndFFBTest();
 							FreeDirectInput();
 							EndDialog(hWnd, TRUE);
 							return TRUE;
@@ -943,6 +966,7 @@ namespace usb_pad
 							//Seems to create some dead locks
 							//SendMessage(hWnd, WM_CLOSE, 0, 0);
 							dialogOpen = false;
+							EndFFBTest();
 							FreeDirectInput();
 							EndDialog(hWnd, FALSE);
 							return TRUE;
@@ -950,9 +974,20 @@ namespace usb_pad
 						break;
 						case IDC_BUTTON1:
 						{
-							//MessageBeep(MB_ICONEXCLAMATION);
-							ApplySettings(s->port);
-							TestForce(s->port);
+							if (!ffbTestRunning)
+							{
+								ApplySettings(s->port);
+								if (StartTestForce(s->port))
+								{
+									if (UpdateTestForce(s->port, 0))
+									{
+										// Start a timer to "tick" the FFB test every 500ms
+										ffbTestStage = 1;
+										SetTimer(hWnd, 23, 500, nullptr);
+										ffbTestRunning = true;
+									}
+								}
+							}
 						}
 						break;
 
@@ -1179,6 +1214,7 @@ namespace usb_pad
 				case WM_CLOSE:
 				{
 					dialogOpen = false;
+					EndFFBTest();
 					FreeDirectInput();
 					EndDialog(hWnd, 0);
 				}
