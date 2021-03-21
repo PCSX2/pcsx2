@@ -1265,11 +1265,7 @@ void GSState::GIFRegHandlerSCISSOR(const GIFReg* RESTRICT r)
 template <int i>
 void GSState::GIFRegHandlerALPHA(const GIFReg* RESTRICT r)
 {
-	ASSERT(r->ALPHA.A != 3);
-	ASSERT(r->ALPHA.B != 3);
-	ASSERT(r->ALPHA.C != 3);
-	ASSERT(r->ALPHA.D != 3);
-
+	GL_REG("ALPHA = 0x%x_%x", r->u32[1], r->u32[0]);
 	if (PRIM->CTXT == i && r->ALPHA != m_env.CTXT[i].ALPHA)
 	{
 		Flush();
@@ -1278,7 +1274,6 @@ void GSState::GIFRegHandlerALPHA(const GIFReg* RESTRICT r)
 	m_env.CTXT[i].ALPHA = (GSVector4i)r->ALPHA;
 
 	// A/B/C/D == 3? => 2
-
 	m_env.CTXT[i].ALPHA.u32[0] = ((~m_env.CTXT[i].ALPHA.u32[0] >> 1) | 0xAA) & m_env.CTXT[i].ALPHA.u32[0];
 }
 
