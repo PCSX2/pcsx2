@@ -18,6 +18,7 @@
 
 #include "IopCommon.h"
 #include "CDVDaccess.h"
+#include "CdXa.h"
 
 // Not used.
 typedef struct

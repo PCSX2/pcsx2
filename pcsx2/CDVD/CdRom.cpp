@@ -576,8 +576,23 @@ void cdrReadInterrupt()
 		return;
 	}
 
-	cdr.Stat = DataReady;
-
+	if (cdr.Mode & MODE_STRSND && cdr.Transfer[3] == 2)
+	{
+		xa_subheader *xa = (xa_subheader *)&cdr.Transfer[4];
+		if (xa->submode & SUBMODE_AUDIO)
+		{
+			if (xa->channum == cdr.Channel && xa->filenum == cdr.File)
+			{
+				DecodeADPCM(xa, &cdr.Transfer[4] + sizeof(xa_subheader));
+				Console.Warning("XA sector passed filter: filen: %02x channel: %02x submod: %02x coding: %02x", xa->filenum, xa->channum, xa->submode, xa->coding);
+			}
+		}
+	}
+	else
+	{
+		cdr.Stat = DataReady;
+	}
+	
 	CDVD_LOG(" %x:%x:%x", cdr.Transfer[0], cdr.Transfer[1], cdr.Transfer[2]);
 
 	cdr.SetSector[2]++;
