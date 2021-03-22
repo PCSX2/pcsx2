@@ -23,7 +23,8 @@
 // CompressedFileReader factory.
 AsyncFileReader* CompressedFileReader::GetNewReader(const wxString& fileName)
 {
-	if (ChdFileReader::CanHandle(fileName)) {
+	if (ChdFileReader::CanHandle(fileName))
+	{
 		return new ChdFileReader();
 	}
 	if (GzippedFileReader::CanHandle(fileName))
