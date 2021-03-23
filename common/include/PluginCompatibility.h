@@ -22,6 +22,14 @@
 #include <cstdio>
 
 #ifdef _WIN32
+inline std::string convert_utf16_to_utf8(const std::wstring& utf16_string)
+{
+    const int size = WideCharToMultiByte(CP_UTF8, 0, utf16_string.c_str(), utf16_string.size(), nullptr, 0, nullptr, nullptr);
+    std::string converted_string(size, 0);
+    WideCharToMultiByte(CP_UTF8, 0, utf16_string.c_str(), utf16_string.size(), converted_string.data(), converted_string.size(), nullptr, nullptr);
+    return converted_string;
+}
+
 inline std::wstring convert_utf8_to_utf16(const std::string &utf8_string)
 {
     int size = MultiByteToWideChar(CP_UTF8, 0, utf8_string.c_str(), -1, nullptr, 0);
