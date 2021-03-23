@@ -413,6 +413,27 @@ namespace ioman {
 		return 0;
 	}
 
+    int mkdir_HLE()
+    {
+        const std::string full_path = Ra0;
+
+        if (is_host(full_path))
+        {
+            const std::string path = full_path.substr(full_path.find(':') + 1);
+            int tmpError;
+#ifdef _WIN32
+            tmpError = ::mkdir(host_path(path).data());
+#else
+            tmpError = ::mkdir(host_path(path).data(), S_IRWXU|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH);
+#endif
+            v0 = HostFile::translate_error(tmpError);
+            pc = ra;
+            return 1;
+        }
+
+        return 0;
+    }
+
 	int read_HLE()
 	{
 		s32 fd = a0;
@@ -439,6 +460,21 @@ namespace ioman {
 
 		return 0;
 	}
+
+    int rmdir_HLE()
+    {
+        const std::string full_path = Ra0;
+
+        if (is_host(full_path))
+        {
+            const std::string path = full_path.substr(full_path.find(':') + 1);
+            v0 = HostFile::translate_error(::rmdir(host_path(path).data()));
+            pc = ra;
+            return 1;
+        }
+
+        return 0;
+    }
 
 	int write_HLE()
 	{
@@ -670,6 +706,8 @@ irxHLE irxImportHLE(const std::string &libname, u16 index)
 		EXPORT_H(  6, read)
 		EXPORT_H(  7, write)
 		EXPORT_H(  8, lseek)
+		EXPORT_H( 11, mkdir)
+		EXPORT_H( 12, rmdir)
 	END_MODULE
 
 	return 0;
