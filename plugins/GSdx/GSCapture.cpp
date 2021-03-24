@@ -424,15 +424,15 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 		const int start = dlg.m_filename.length() - 4;
 		if (start > 0)
 		{
-			std::string test = dlg.m_filename.substr(start);
+			std::wstring test = dlg.m_filename.substr(start);
 			std::transform(test.begin(), test.end(), test.begin(), (char(_cdecl*)(int))tolower);
-			if (test.compare(".avi") != 0)
-				dlg.m_filename += ".avi";
+			if (test.compare(L".avi") != 0)
+				dlg.m_filename += L".avi";
 		}
 		else
-			dlg.m_filename += ".avi";
+			dlg.m_filename += L".avi";
 
-		FILE* test = fopen(dlg.m_filename.c_str(), "w");
+		FILE* test = _wfopen(dlg.m_filename.c_str(), L"w");
 		if (test)
 			fclose(test);
 		else
@@ -507,7 +507,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	CComQIPtr<IGSSource>(m_src)->DeliverNewSegment();
 
 	m_capturing = true;
-	filename = dlg.m_filename.erase(dlg.m_filename.length() - 3, 3) + "wav";
+	filename = convert_utf16_to_utf8(dlg.m_filename.erase(dlg.m_filename.length() - 3, 3) + L"wav");
 	return true;
 #elif defined(__unix__)
 	// Note I think it doesn't support multiple depth creation

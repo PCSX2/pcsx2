@@ -22,8 +22,6 @@
 #include "stdafx.h"
 #include "GSdx.h"
 #include "GSCaptureDlg.h"
-#include <codecvt>
-#include <locale>
 
 #define BeginEnumSysDev(clsid, pMoniker) \
 	{CComPtr<ICreateDevEnum> pDevEnum4$##clsid; \
@@ -39,10 +37,8 @@
 
 void GSCaptureDlg::InvalidFile()
 {
-	wchar_t tmp[512];
-	std::wstring tmpstr(m_filename.begin(), m_filename.end());
-	swprintf_s(tmp, L"GSdx couldn't open file for capturing: %ls.\nCapture aborted.", tmpstr.c_str());
-	MessageBox(GetActiveWindow(), tmp, L"GSdx System Message", MB_OK | MB_SETFOREGROUND);
+	const std::wstring message = L"GSdx couldn't open file for capturing: " + m_filename + L".\nCapture aborted.";
+	MessageBox(GetActiveWindow(), message.c_str(), L"GSdx System Message", MB_OK | MB_SETFOREGROUND);
 }
 
 GSCaptureDlg::GSCaptureDlg()
@@ -50,7 +46,7 @@ GSCaptureDlg::GSCaptureDlg()
 {
 	m_width = theApp.GetConfigI("CaptureWidth");
 	m_height = theApp.GetConfigI("CaptureHeight");
-	m_filename = theApp.GetConfigS("CaptureFileName");
+	m_filename = convert_utf8_to_utf16(theApp.GetConfigS("CaptureFileName"));
 }
 
 int GSCaptureDlg::GetSelCodec(Codec& c)
@@ -106,8 +102,7 @@ void GSCaptureDlg::OnInit()
 
 	SetTextAsInt(IDC_WIDTH, m_width);
 	SetTextAsInt(IDC_HEIGHT, m_height);
-	std::wstring tmp = std::wstring(m_filename.begin(), m_filename.end());
-	SetText(IDC_FILENAME, tmp.c_str());
+	SetText(IDC_FILENAME, m_filename.c_str());
 
 	m_codecs.clear();
 
@@ -185,15 +180,11 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			ofn.lpstrFilter = L"Avi files (*.avi)\0*.avi\0";
 			ofn.Flags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
 
-			std::wstring tmp = std::wstring(m_filename.begin(), m_filename.end());
-			wcscpy(ofn.lpstrFile, tmp.c_str());
+			wcscpy(ofn.lpstrFile, m_filename.c_str());
 			if (GetSaveFileName(&ofn))
 			{
-				tmp = ofn.lpstrFile;
-				using convert_type = std::codecvt_utf8<wchar_t>;
-				std::wstring_convert<convert_type, wchar_t> converter;
-				m_filename = converter.to_bytes(tmp);
-				SetText(IDC_FILENAME, tmp.c_str());
+				m_filename = ofn.lpstrFile;
+				SetText(IDC_FILENAME, m_filename.c_str());
 			}
 
 			return true;
@@ -254,7 +245,7 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 
 		theApp.SetConfig("CaptureWidth", m_width);
 		theApp.SetConfig("CaptureHeight", m_height);
-		theApp.SetConfig("CaptureFileName", m_filename.c_str());
+		theApp.SetConfig("CaptureFileName", convert_utf16_to_utf8(m_filename).c_str());
 
 		if (ris != 2)
 			theApp.SetConfig("CaptureVideoCodecDisplayName", c.DisplayName);
