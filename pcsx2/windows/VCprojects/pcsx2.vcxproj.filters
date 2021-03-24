@@ -1315,6 +1315,9 @@
     <ClCompile Include="..\..\CDVD\ChdFileReader.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\CDVD\CdXa.cpp">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -2082,6 +2085,9 @@
     <ClInclude Include="..\..\PAD\Windows\resource_pad.h">
       <Filter>System\Ps2\PAD</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\CDVD\CdXa.h">
+      <Filter>System\Ps2\Iop\CDVD</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\wxResources.rc">
@@ -2243,10 +2249,5 @@
     <Manifest Include="..\PCSX2.manifest">
       <Filter>AppHost\Resources</Filter>
     </Manifest>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\gui\Resources\NoIcon.png">
-      <Filter>AppHost\Resources</Filter>
-    </Image>
   </ItemGroup>
 </Project>

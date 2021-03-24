@@ -248,6 +248,7 @@
     <ClCompile Include="..\..\CDVD\BlockdumpFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\CDVDdiscReader.cpp" />
     <ClCompile Include="..\..\CDVD\CDVDdiscThread.cpp" />
+    <ClCompile Include="..\..\CDVD\CdXa.cpp" />
     <ClCompile Include="..\..\CDVD\ChdFileReader.cpp" />
     <ClCompile Include="..\..\CDVD\ChunksCache.cpp" />
     <ClCompile Include="..\..\CDVD\CompressedFileReader.cpp" />
@@ -630,6 +631,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\AsyncFileReader.h" />
     <ClInclude Include="..\..\CDVD\CDVDdiscReader.h" />
+    <ClInclude Include="..\..\CDVD\CdXa.h" />
     <ClInclude Include="..\..\CDVD\ChunksCache.h" />
     <ClInclude Include="..\..\CDVD\CompressedFileReader.h" />
     <ClInclude Include="..\..\CDVD\CompressedFileReaderUtils.h" />

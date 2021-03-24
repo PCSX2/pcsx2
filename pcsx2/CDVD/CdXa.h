@@ -2,10 +2,14 @@
 #include "IopCommon.h"
 #include "PrecompiledHeader.h"
 
+enum Forms {FORM1, FORM2};
+
+// Taken from pcsx
 struct xa_subheader
 {
 	u8 filenum;
 	u8 channum;
+	// Used to detect if video, audio or general data. Used to detect what form. Might be better to use then numbits
 	u8 submode;
 	u8 coding;
 
@@ -32,8 +36,8 @@ struct xa_decode
 	s32 stereo;
 	s32 nsamples;
 	ADPCM_Decode left, right;
-	s16 pcm[2][16384];
+	std::vector<s16> pcm[2];
 };
 
 void DecodeADPCM(xa_subheader* header, xa_decode* decoded, u8* xaData);
-void DecodeChunck(u8* block_header, u8* xaData, u8* samples, ADPCM_Decode* decp, int nbits);
+void DecodeChunck(u8* block_header, xa_subheader* header, const u8* samples, ADPCM_Decode* decp, std::vector<s16>& dest);

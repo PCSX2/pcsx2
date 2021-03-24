@@ -151,7 +151,6 @@ int g_counter_cache_ignores = 0;
 #define XAFLAG_LOOP (1ul << 1)
 #define XAFLAG_LOOP_START (1ul << 2)
 
-// THIS IS WHERE XA NEEDS TO BE FILLED IN
 static __forceinline s32 GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
 {
 	V_Voice& vc(thiscore.Voices[voiceidx]);
@@ -888,8 +887,8 @@ __forceinline
 		Ext = clamp_mix(ApplyVolume(Ext, Cores[0].MasterVol));
 	}
 
-	Ext.Left += cdr.Xa.left.y0;
-	Ext.Right += cdr.Xa.right.y0;
+	Ext.Left += PlayXA(0);
+	Ext.Right += PlayXA(1);
 
 	// Commit Core 0 output to ram before mixing Core 1:
 	spu2M_WriteFast(0x800 + OutPos, Ext.Left);
