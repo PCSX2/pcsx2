@@ -125,9 +125,9 @@ bool GSDialog::OnCommand(HWND hWnd, UINT id, UINT code)
 	return false;
 }
 
-std::string GSDialog::GetText(UINT id)
+std::wstring GSDialog::GetText(UINT id)
 {
-	std::string s;
+	std::wstring s;
 
 	wchar_t* buff = NULL;
 
@@ -137,8 +137,7 @@ std::string GSDialog::GetText(UINT id)
 
 		if(GetDlgItemText(m_hWnd, id, buff, size))
 		{
-			std::wstring tmp(buff);
-			s = std::string(tmp.begin(), tmp.end());
+			s = buff;
 			size = limit;
 		}
 
@@ -150,7 +149,7 @@ std::string GSDialog::GetText(UINT id)
 
 int GSDialog::GetTextAsInt(UINT id)
 {
-	return atoi(GetText(id).c_str());
+	return _wtoi(GetText(id).c_str());
 }
 
 void GSDialog::SetText(UINT id, const wchar_t* str)
