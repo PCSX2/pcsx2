@@ -891,6 +891,9 @@
     <ClCompile Include="DebugTools\MipsStackWalk.cpp">
       <Filter>System\Ps2\Debug</Filter>
     </ClCompile>
+    <ClCompile Include="CDVD\ThreadedFileReader.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
     <ClCompile Include="CDVD\CsoFileReader.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
@@ -1959,6 +1962,9 @@
     </ClInclude>
     <ClInclude Include="DebugTools\MipsStackWalk.h">
       <Filter>System\Ps2\Debug</Filter>
+    </ClInclude>
+    <ClInclude Include="CDVD\ThreadedFileReader.h">
+      <Filter>System\ISO</Filter>
     </ClInclude>
     <ClInclude Include="CDVD\CsoFileReader.h">
       <Filter>System\ISO</Filter>
