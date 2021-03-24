@@ -34,7 +34,7 @@ static void win_error(const wchar_t* msg, bool fatal = true)
 		MessageBox(NULL, msg, L"ERROR", MB_OK | MB_ICONEXCLAMATION);
 		throw GSDXRecoverableError();
 	} else {
-		fprintf(stderr, "ERROR:%s\n", msg);
+		fprintf(stderr, "ERROR:%ls\n", msg);
 	}
 }
 
