@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Global.h"
+#include "CDVD/CdRom.h"
 
 // Games have turned out to be surprisingly sensitive to whether a parked, silent voice is being fully emulated.
 // With Silent Hill: Shattered Memories requiring full processing for no obvious reason, we've decided to
@@ -25,7 +26,7 @@ void ADMAOutLogWrite(void* lpData, u32 ulSize);
 
 #include "interpolate_table.h"
 
-static const s32 tbl_XA_Factor[16][2] =
+static const s32 tbl_SPU_Factor[16][2] =
 	{
 		{0, 0},
 		{60, 0},
@@ -78,15 +79,15 @@ __forceinline
 		GetClamped(sample.Right, -(0x7f00 << bitshift), 0x7f00 << bitshift));
 }
 
-static void __forceinline XA_decode_block(s16* buffer, const s16* block, s32& prev1, s32& prev2)
+static void __forceinline SPU_ADPCM_decode_block(s16* buffer, const s16* block, s32& prev1, s32& prev2)
 {
 	const s32 header = *block;
 	const s32 shift = (header & 0xF) + 16;
 	const int id = header >> 4 & 0xF;
 	if (id > 4 && MsgToConsole())
 		ConLog("* SPU2: Unknown ADPCM coefficients table id %d\n", id);
-	const s32 pred1 = tbl_XA_Factor[id][0];
-	const s32 pred2 = tbl_XA_Factor[id][1];
+	const s32 pred1 = tbl_SPU_Factor[id][0];
+	const s32 pred2 = tbl_SPU_Factor[id][1];
 
 	const s8* blockbytes = (s8*)&block[1];
 	const s8* blockend = &blockbytes[13];
@@ -150,6 +151,7 @@ int g_counter_cache_ignores = 0;
 #define XAFLAG_LOOP (1ul << 1)
 #define XAFLAG_LOOP_START (1ul << 2)
 
+// THIS IS WHERE XA NEEDS TO BE FILLED IN
 static __forceinline s32 GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
 {
 	V_Voice& vc(thiscore.Voices[voiceidx]);
@@ -250,7 +252,7 @@ static __forceinline s32 GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
 					g_counter_cache_misses++;
 			}
 
-			XA_decode_block(vc.SBuffer, memptr, vc.Prev1, vc.Prev2);
+			SPU_ADPCM_decode_block(vc.SBuffer, memptr, vc.Prev1, vc.Prev2);
 		}
 	}
 
@@ -885,6 +887,9 @@ __forceinline
 	{
 		Ext = clamp_mix(ApplyVolume(Ext, Cores[0].MasterVol));
 	}
+
+	Ext.Left += cdr.Xa.left.y0;
+	Ext.Right += cdr.Xa.right.y0;
 
 	// Commit Core 0 output to ram before mixing Core 1:
 	spu2M_WriteFast(0x800 + OutPos, Ext.Left);

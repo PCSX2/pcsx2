@@ -583,8 +583,8 @@ void cdrReadInterrupt()
 		{
 			if (xa->channum == cdr.Channel && xa->filenum == cdr.File)
 			{
-				DecodeADPCM(xa, &cdr.Transfer[4] + sizeof(xa_subheader));
-				Console.Warning("XA sector passed filter: filen: %02x channel: %02x submod: %02x coding: %02x", xa->filenum, xa->channum, xa->submode, xa->coding);
+				DecodeADPCM(xa, &cdr.Xa, &cdr.Transfer[4] + sizeof(xa_subheader));
+				//Console.Warning("XA sector passed filter: filen: %02x channel: %02x submod: %02x coding: %02x", xa->filenum, xa->channum, xa->submode, xa->coding);
 			}
 		}
 	}

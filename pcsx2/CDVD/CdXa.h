@@ -35,5 +35,5 @@ struct xa_decode
 	s16 pcm[2][16384];
 };
 
-void DecodeADPCM(xa_subheader* header, u8* xaData);
-//void DecodeChunck(ADPCM_Decode* decp, u8 filter, u8* blk, s16* samples, s32 last_sampleL, s32 last_sampleR);
+void DecodeADPCM(xa_subheader* header, xa_decode* decoded, u8* xaData);
+void DecodeChunck(u8* block_header, u8* xaData, u8* samples, ADPCM_Decode* decp, int nbits);

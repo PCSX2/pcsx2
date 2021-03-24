@@ -7,25 +7,18 @@
 #include <algorithm>
 #include <array>
 
-// No$ calls this pos_xa_adpcm_table. This is also the other neg one as well
+// No$ calls this pos_xa_adpcm_table. This is also the other neg one as well XA ADPCM only has 4 values on either side where SPU has 5
 static const s8 tbl_XA_Factor[16][2] = {
 	{0, 0},
 	{60, 0},
 	{115, -52},
-	{98, -55},
-	{122, -60} };
+	{98, -55} };
 
-void DecodeChuncka(ADPCM_Decode* decp, u8 filter, u8* blk, u16* samples, s16 last_sampleL, s16 last_sampleR)
+void DecodeChunck(u8* block_header, u8* xaData, u8* samples, ADPCM_Decode* decp, int nbits)
 {
 	for (u32 block = 0; block < cdr.Xa.nbits; block++)
 	{
-		const u16 header = filter;
-		const u8 filterID = header >> 4 & 0xF;
-
-		u8 filterPos = filter;
-		u8 filterNeg = tbl_XA_Factor[filterID][1];
-
-		u8* wordP = blk + 16; // After 16 byts or the "28 Word Data Bytes"
+		u8* wordP = samples; // After 16 byts or the "28 Word Data Bytes"
 
 		for (int i = 0; i < 28; i++)
 		{
@@ -34,10 +27,19 @@ void DecodeChuncka(ADPCM_Decode* decp, u8 filter, u8* blk, u16* samples, s16 las
 			std::memcpy(&word_data, &wordP[i * sizeof(u32)], sizeof(word_data));
 
 			u16 nibble = nibble = ((word_data >> 4) & 0xF); // I'm looking for the octect value of the binary
-			const u8 shift = 12 - (blk[4 + block * 2 + nibble]);
+			u8 shift = 12 - (*xaData & 0x0f);
+			s16 data = (*xaData << 12) >> shift; // shift left 12 shift right by calculated value to get 16 bit sample data out. nibble messes the equation up right now.
 
-			s16 data = (*blk << 12) >> shift; // shift left 12 shift right by calculated value to get 16 bit sample data out. nibble messes the equation up right now.
-			s32 pcm = data + (((filterPos * last_sampleL) + (filterNeg * last_sampleR) + 32) >> 6);
+			u8 filter = (*block_header & 0x04) >> 4;
+			u8 filterID = *block_header >> 4 & 0xF;
+
+			Console.Warning("Shift: %02d", shift);
+			Console.Warning("Filter: %02d", filter);
+
+			u8 filterPos = tbl_XA_Factor[filterID][0];
+			u8 filterNeg = tbl_XA_Factor[filterID][1];
+
+			s32 pcm = data + (((filterPos * decp->y0) + (filterNeg * decp->y1) + 32) >> 6); // decp needs be replaced with "old"
 
 			Clampify(pcm, -0x8000, 0x7fff);
 			*(samples++) = pcm;
@@ -84,18 +86,28 @@ static void DecodeBlock(s16* buffer, int pass, const s16* block, ADPCM_Decode pr
 
 void DecodeADPCM(xa_subheader* header, u8* xaData)
 {
-	for (u32 block = 0; block < 18; block++)
+	u8* block_header, * sound_datap, * sound_datap2;
+	u8 filterPos;
+	int i, j, k, nbits;
+	u16 data[4096];
+
+	nbits = (header->submode >> 5) & 0x1;
+
+	for (j = 0; j < 18; j++)
 	{
+		block_header = xaData + j * 128;
+		// 16 bytes after header
+		sound_datap = block_header + 16;
+
 		if (header->Stereo())
 		{
-			//DecodeChunck(&decoded.left, 0, xaData, data, cdr.Xa.left);
-			//DecodeChunck(&decoded.right, 1, xaData, data, cdr.Xa.right);
+			DecodeChunck(block_header, xaData, sound_datap, &decoded->left, nbits); // Note we access the positive table first
+			DecodeChunck(block_header, xaData, sound_datap, &decoded->right, nbits);
 		}
 		else
 		{
 			// Mono sound
-			//DecodeChunck(&decoded.left, xaData, data, cdr.Xa.Left);
-			//DecodeChunck(&decoded.left, xaData, data, cdr.Xa.Left);
+			DecodeChunck(block_header, xaData, sound_datap, &decoded->left, nbits); // Note we access the positive table first
 		}
 	}
 }
