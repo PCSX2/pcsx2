@@ -282,6 +282,7 @@
     <ClCompile Include="CDVD\CsoFileReader.cpp" />
     <ClCompile Include="CDVD\GzippedFileReader.cpp" />
     <ClCompile Include="CDVD\OutputIsoFile.cpp" />
+    <ClCompile Include="CDVD\ThreadedFileReader.cpp" />
     <ClCompile Include="CDVD\Linux\DriveUtility.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
@@ -732,6 +733,7 @@
     <ClInclude Include="CDVD\CompressedFileReaderUtils.h" />
     <ClInclude Include="CDVD\CsoFileReader.h" />
     <ClInclude Include="CDVD\GzippedFileReader.h" />
+    <ClInclude Include="CDVD\ThreadedFileReader.h" />
     <ClInclude Include="CDVD\zlib_indexed.h" />
     <ClInclude Include="DebugTools\Breakpoints.h" />
     <ClInclude Include="DebugTools\DebugInterface.h" />
