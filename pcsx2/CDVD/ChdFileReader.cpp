@@ -30,7 +30,7 @@ bool ChdFileReader::CanHandle(const wxString& fileName)
 	return true;
 }
 
-bool ChdFileReader::Open(const wxString& fileName)
+bool ChdFileReader::Open2(const wxString& fileName)
 {
 	m_filename = fileName;
 
@@ -119,65 +119,49 @@ bool ChdFileReader::Open(const wxString& fileName)
 	}
 
 	// const chd_header *header = chd_get_header(ChdFile);
-	sector_size = header->unitbytes;
-	sector_count = header->unitcount;
-	sectors_per_hunk = header->hunkbytes / sector_size;
-	hunk_buffer = new u8[header->hunkbytes];
-	current_hunk = -1;
+	file_size = static_cast<u64>(header->unitbytes) * header->unitcount;
+	hunk_size = header->hunkbytes;
+	// CHD likes to use full 2448 byte blocks, but keeps the +24 offset of source ISOs
+	// The rest of PCSX2 likes to use 2448 byte buffers, which can't fit that so trim blocks instead
+	m_internalBlockSize = header->unitbytes;
 
 	delete header;
 	return true;
 }
 
-int ChdFileReader::ReadSync(void* pBuffer, uint sector, uint count)
+ThreadedFileReader::Chunk ChdFileReader::ChunkForOffset(u64 offset)
 {
-	u8* dst = (u8*)pBuffer;
-	u32 hunk = sector / sectors_per_hunk;
-	u32 sector_in_hunk = sector % sectors_per_hunk;
-	chd_error error;
-
-	for (uint i = 0; i < count; i++)
+	Chunk chunk = {0};
+	if (offset >= file_size)
 	{
-		if (current_hunk != hunk)
-		{
-			error = chd_read(ChdFile, hunk, hunk_buffer);
-			if (error != CHDERR_NONE)
-			{
-				Console.Error(L"chd_read return error: %s", chd_error_string(error));
-				// return i * m_blocksize;
-			}
-			current_hunk = hunk;
-		}
-		memcpy(dst + i * m_blocksize, hunk_buffer + sector_in_hunk * sector_size, m_blocksize);
-		sector_in_hunk++;
-		if (sector_in_hunk >= sectors_per_hunk)
-		{
-			hunk++;
-			sector_in_hunk = 0;
-		}
+		chunk.chunkID = -1;
 	}
-	return m_blocksize * count;
-}
-
-void ChdFileReader::BeginRead(void* pBuffer, uint sector, uint count)
-{
-	// TODO: Check if libchdr can read asynchronously
-	async_read = ReadSync(pBuffer, sector, count);
-}
-
-int ChdFileReader::FinishRead()
-{
-	return async_read;
-}
-
-void ChdFileReader::Close()
-{
-	if (hunk_buffer != NULL)
+	else
 	{
-		//free(hunk_buffer);
-		delete[] hunk_buffer;
-		hunk_buffer = NULL;
+		chunk.chunkID = offset / hunk_size;
+		chunk.length = hunk_size;
+		chunk.offset = chunk.chunkID * hunk_size;
 	}
+	return chunk;
+}
+
+int ChdFileReader::ReadChunk(void *dst, s64 chunkID)
+{
+	if (chunkID < 0)
+		return -1;
+
+	chd_error error = chd_read(ChdFile, chunkID, dst);
+	if (error != CHDERR_NONE)
+	{
+		Console.Error(L"chd_read returned error: %s", chd_error_string(error));
+		return 0;
+	}
+
+	return hunk_size;
+}
+
+void ChdFileReader::Close2()
+{
 	if (ChdFile != NULL)
 	{
 		chd_close(ChdFile);
@@ -185,22 +169,12 @@ void ChdFileReader::Close()
 	}
 }
 
-uint ChdFileReader::GetBlockSize() const
-{
-	return m_blocksize;
-}
-
-void ChdFileReader::SetBlockSize(uint blocksize)
-{
-	m_blocksize = blocksize;
-}
-
 u32 ChdFileReader::GetBlockCount() const
 {
-	return sector_count;
+	return (file_size - m_dataoffset) / m_internalBlockSize;
 }
 ChdFileReader::ChdFileReader(void)
 {
+	m_blocksize = 2048;
 	ChdFile = NULL;
-	hunk_buffer = NULL;
 };
