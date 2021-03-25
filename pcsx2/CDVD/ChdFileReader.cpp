@@ -20,7 +20,6 @@
 
 #include <wx/dir.h>
 
-
 bool ChdFileReader::CanHandle(const wxString& fileName)
 {
 	if (!wxFileName::FileExists(fileName) || !fileName.Lower().EndsWith(L".chd"))
@@ -32,100 +31,92 @@ bool ChdFileReader::CanHandle(const wxString& fileName)
 
 bool ChdFileReader::Open2(const wxString& fileName)
 {
+	Close2();
+
 	m_filename = fileName;
 
 	chd_file* child = NULL;
 	chd_file* parent = NULL;
-	chd_header* header = new chd_header;
-	chd_header* parent_header = new chd_header;
+	chd_header header;
+	chd_header parent_header;
 
 	wxString chds[8];
 	chds[0] = fileName;
 	int chd_depth = 0;
 	chd_error error;
 
-	do
+	// TODO: Unicode correctness on Windows
+	while (CHDERR_REQUIRES_PARENT == (error = chd_open(chds[chd_depth].c_str(), CHD_OPEN_READ, NULL, &child)))
 	{
-		// Console.Error(L"chd_open checking: %s", static_cast<const char*>(chds[chd_depth]));
-		error = chd_open(static_cast<const char*>(chds[chd_depth]), CHD_OPEN_READ, NULL, &child);
-		if (error == CHDERR_REQUIRES_PARENT)
+		if (chd_depth >= static_cast<int>(ArraySize(chds) - 1))
 		{
-			if (chd_read_header(static_cast<const char*>(chds[chd_depth]), header) != CHDERR_NONE)
+			Console.Error(L"CDVD: chd_open hit recursion limit searching for parents");
+			return false;
+		}
+		if (chd_read_header(chds[chd_depth].c_str(), &header) != CHDERR_NONE)
+		{
+			Console.Error(L"CDVD: chd_open chd_read_header error: %s: %s", chd_error_string(error), WX_STR(chds[chd_depth]));
+			return false;
+		}
+		bool found_parent = false;
+		wxFileName wxfilename(chds[chd_depth]);
+		wxString dir_path = wxfilename.GetPath();
+		wxDir dir(dir_path);
+		if (dir.IsOpened())
+		{
+			wxString parent_fileName;
+			bool cont = dir.GetFirst(&parent_fileName, wxString("*.", wxfilename.GetExt()), wxDIR_FILES | wxDIR_HIDDEN);
+			for (; cont; cont = dir.GetNext(&parent_fileName))
 			{
-				Console.Error(L"chd_open chd_read_header error: %s: %s", chd_error_string(error), static_cast<const char*>(chds[chd_depth]));
-				delete header;
-				delete parent_header;
-				return false;
-			}
-			bool found_parent = false;
-			wxFileName wxfilename(chds[chd_depth]);
-			wxString dir_path = wxfilename.GetPath();
-			wxDir dir(dir_path);
-			if (dir.IsOpened())
-			{
-				wxString parent_fileName;
-				bool cont = dir.GetFirst(&parent_fileName, wxString("*.", wxfilename.GetExt()), wxDIR_FILES | wxDIR_HIDDEN);
-				while (cont)
+				parent_fileName = wxFileName(dir_path, parent_fileName).GetFullPath();
+				if (chd_read_header(parent_fileName.c_str(), &parent_header) == CHDERR_NONE &&
+					memcmp(parent_header.sha1, header.parentsha1, sizeof(parent_header.sha1)) == 0)
 				{
-					parent_fileName = wxFileName(dir_path, parent_fileName).GetFullPath();
-					if (chd_read_header(static_cast<const char*>(parent_fileName), parent_header) == CHDERR_NONE &&
-						memcmp(parent_header->sha1, header->parentsha1, sizeof(parent_header->sha1)) == 0)
-					{
-						found_parent = true;
-						chds[++chd_depth] = wxString(parent_fileName);
-						break;
-					}
-					cont = dir.GetNext(&parent_fileName);
+					found_parent = true;
+					chds[++chd_depth] = wxString(parent_fileName);
+					break;
 				}
 			}
-			if (!found_parent)
-			{
-				Console.Error(L"chd_open no parent for: %s", static_cast<const char*>(chds[chd_depth]));
-				break;
-			}
 		}
-	} while (error == CHDERR_REQUIRES_PARENT);
-	delete parent_header;
+		if (!found_parent)
+		{
+			Console.Error(L"CDVD: chd_open no parent for: %s", WX_STR(chds[chd_depth]));
+			break;
+		}
+	}
 
 	if (error != CHDERR_NONE)
 	{
-		Console.Error(L"chd_open return error: %s", chd_error_string(error));
-		delete header;
+		Console.Error(L"CDVD: chd_open return error: %s", chd_error_string(error));
 		return false;
 	}
 
-	// Console.Error(L"chd_opened parent: %d %s", chd_depth, static_cast<const char*>(chds[chd_depth]));
 	for (int d = chd_depth - 1; d >= 0; d--)
 	{
-		// parent = child;
-		// child = (chd_file**)malloc(sizeof(chd_file*));
 		parent = child;
 		child = NULL;
-		// Console.Error(L"chd_open opening chd: %d %s", d, static_cast<const char*>(chds[d]));
-		error = chd_open(static_cast<const char*>(chds[d]), CHD_OPEN_READ, parent, &child);
+		error = chd_open(chds[d].c_str(), CHD_OPEN_READ, parent, &child);
 		if (error != CHDERR_NONE)
 		{
-			Console.Error(L"chd_open return error: %s", chd_error_string(error));
-			delete header;
+			Console.Error(L"CDVD: chd_open return error: %s", chd_error_string(error));
+			if (parent)
+				chd_close(parent);
 			return false;
 		}
 	}
 	ChdFile = child;
-	if (chd_read_header(static_cast<const char*>(chds[0]), header) != CHDERR_NONE)
+	if (chd_read_header(chds[0].c_str(), &header) != CHDERR_NONE)
 	{
-		Console.Error(L"chd_open chd_read_header error: %s: %s", chd_error_string(error), static_cast<const char*>(chds[0]));
-		delete header;
+		Console.Error(L"CDVD: chd_open chd_read_header error: %s: %s", chd_error_string(error), WX_STR(chds[0]));
 		return false;
 	}
 
-	// const chd_header *header = chd_get_header(ChdFile);
-	file_size = static_cast<u64>(header->unitbytes) * header->unitcount;
-	hunk_size = header->hunkbytes;
+	file_size = static_cast<u64>(header.unitbytes) * header.unitcount;
+	hunk_size = header.hunkbytes;
 	// CHD likes to use full 2448 byte blocks, but keeps the +24 offset of source ISOs
 	// The rest of PCSX2 likes to use 2448 byte buffers, which can't fit that so trim blocks instead
-	m_internalBlockSize = header->unitbytes;
+	m_internalBlockSize = header.unitbytes;
 
-	delete header;
 	return true;
 }
 
@@ -153,7 +144,7 @@ int ChdFileReader::ReadChunk(void *dst, s64 chunkID)
 	chd_error error = chd_read(ChdFile, chunkID, dst);
 	if (error != CHDERR_NONE)
 	{
-		Console.Error(L"chd_read returned error: %s", chd_error_string(error));
+		Console.Error(L"CDVD: chd_read returned error: %s", chd_error_string(error));
 		return 0;
 	}
 
