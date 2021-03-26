@@ -57,7 +57,10 @@ wxString BiosDescription;
 const BiosDebugInformation* CurrentBiosInformation;
 
 const BiosDebugInformation biosVersions[] = {
-	// Note: The SCPH versions have not been verified
+	// Notes: 
+	// The SCPH versions have not been verified
+	// To find the thread array address, find the instruction 0xACA40004 or "sw a0,0x4(a1)"
+	// in the bios KERNEL module, the address to the thread array will be stored in a1
 	
 	// USA     v02.00(14/06/2004) SCPH70012
 	{ 0x00000200, 0xD778DB8D, 0x8001A640 },
@@ -67,6 +70,8 @@ const BiosDebugInformation biosVersions[] = {
 	{ 0x0000013C, 0x3A75B059, 0x8001A480 },
 	// Europe  v02.20(10/02/2006) SCPH77008
 	{ 0x00000214, 0xD7EDD771, 0x8001AC00 },
+	// Europe  v02.20(20/06/2005) SCPH75004
+	{ 0x00000214, 0x0E9C22D3, 0x8001AC00 },
 	// Europe  v02.00(16/06/2004) SCPH70008
 	{ 0x00000200, 0x3C6AA4F4, 0x8001A640 },
 	// Europe  v02.00(14/06/2004) SCPH70004
