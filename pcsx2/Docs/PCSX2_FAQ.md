@@ -1,9 +1,9 @@
----
+<!-- PDF METADATA STARTS ---
 title: "PCSX2 Frequently Asked Questions"
 date: "2021"
 footer-left: "[Document Source](https://github.com/PCSX2/pcsx2/blob/{LATEST-GIT-TAG}/pcsx2/Docs/PCSX2_FAQ.md)"
 urlcolor: "cyan"
-...
+... PDF METADATA ENDS -->
 
 # PCSX2 - Frequently Asked Questions
 

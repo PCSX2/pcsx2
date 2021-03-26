@@ -1,9 +1,9 @@
----
+<!-- PDF METADATA STARTS ---
 title: "PCSX2 - GameDB Documentation"
 date: "2021"
 footer-left: "[Document Source](https://github.com/PCSX2/pcsx2/blob/{LATEST-GIT-TAG}/pcsx2/Docs/GameIndex.md)"
 urlcolor: "cyan"
-...
+... PDF METADATA ENDS -->
 
 # GameDB Documentation
 
