@@ -1,9 +1,9 @@
----
+<!-- PDF METADATA STARTS ---
 title: "PCSX2 - Configuration Guide"
 date: "2020"
 footer-left: "[Document Source](https://github.com/PCSX2/pcsx2/blob/{LATEST-GIT-TAG}/pcsx2/Docs/Configuration_Guide/Configuration_Guide.md)"
 urlcolor: "cyan"
-...
+... PDF METADATA ENDS -->
 
 # PCSX2 First Time Setup and Configuration
 This guide will walk through the initial setup process of PCSX2 and the basics of configuration.
