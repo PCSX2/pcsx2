@@ -17,14 +17,6 @@
       <Configuration>Debug</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug SSE4|Win32">
-      <Configuration>Debug SSE4</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug SSE4|x64">
-      <Configuration>Debug SSE4</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
     <ProjectConfiguration Include="Release AVX2|Win32">
       <Configuration>Release AVX2</Configuration>
       <Platform>Win32</Platform>
@@ -39,14 +31,6 @@
     </ProjectConfiguration>
     <ProjectConfiguration Include="Release|x64">
       <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release SSE4|Win32">
-      <Configuration>Release SSE4</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release SSE4|x64">
-      <Configuration>Release SSE4</Configuration>
       <Platform>x64</Platform>
     </ProjectConfiguration>
   </ItemGroup>
@@ -67,8 +51,7 @@
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="PropertySheets">
     <Import Project="vsprops\ProjectRootDir.props" />
-    <Import Condition="'$(Configuration)'=='Release' Or '$(Configuration)'=='Debug'" Project="vsprops\sse2.props" />
-    <Import Condition="'$(Configuration)'=='Release SSE4' Or '$(Configuration)'=='Debug SSE4'" Project="vsprops\sse4.props" />
+    <Import Project="vsprops\sse4.props" />
     <Import Condition="'$(Configuration)'=='Release AVX2' Or '$(Configuration)'=='Debug AVX2'" Project="vsprops\avx2.props" />
     <Import Project="vsprops\common.props" />
     <Import Condition="$(Configuration.Contains(Debug))" Project="vsprops\debug.props" />
