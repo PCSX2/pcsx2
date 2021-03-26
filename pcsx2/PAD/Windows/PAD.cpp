@@ -171,7 +171,7 @@ struct PadFreezeData
 	u8 config;
 
 	u8 vibrate[8];
-	u8 umask[2];
+	u8 umask[3];
 
 	// Vibration indices.
 	u8 vibrateI[2];
@@ -813,7 +813,9 @@ void ResetPad(int port, int slot)
 	else
 		pads[port][slot].mode = MODE_DIGITAL;
 
-	pads[port][slot].umask[0] = pads[port][slot].umask[1] = 0xFF;
+	pads[port][slot].umask[0] = 0xFF;
+	pads[port][slot].umask[1] = 0xFF;
+	pads[port][slot].umask[2] = 0x03;
 	// Sets up vibrate variable.
 	ResetVibrate(port, slot);
 	pads[port][slot].initialized = 1;
@@ -1316,7 +1318,7 @@ u8 PADpoll(u8 value)
 				{
 					queryMaskMode[1] = pad->umask[0];
 					queryMaskMode[2] = pad->umask[1];
-					queryMaskMode[3] = 0x03;
+					queryMaskMode[3] = pad->umask[2];
 					// Not entirely sure about this.
 					//queryMaskMode[3] = 0x01 | (pad->mode == MODE_DS2_NATIVE)*2;
 					queryMaskMode[6] = 0x5A;
@@ -1478,11 +1480,12 @@ u8 PADpoll(u8 value)
 				break;
 			// SET_DS2_NATIVE_MODE
 			case 0x4F:
-				if (query.lastByte == 3 || query.lastByte == 4)
+				if (query.lastByte >2 && query.lastByte < 6)
 				{
 					pad->umask[query.lastByte - 3] = value;
 				}
-				else if (query.lastByte == 5)
+
+				if (query.lastByte == 5)
 				{
 					if (!(value & 1))
 					{

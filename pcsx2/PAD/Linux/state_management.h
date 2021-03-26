@@ -61,7 +61,7 @@ struct PadFreezeData
 	u8 config;
 
 	u8 vibrate[8];
-	u8 umask[2];
+	u8 umask[3];
 
 	// Vibration indices.
 	u8 vibrateI[2];

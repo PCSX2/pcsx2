@@ -26,7 +26,7 @@ static const u8 queryComb[7] = {0x5A, 0x00, 0x00, 0x02, 0x00, 0x01, 0x00};
 static const u8 queryMode[7] = {0x5A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
 static const u8 setNativeMode[7] = {0x5A, 0x00, 0x00, 0x00, 0x00, 0x00, 0x5A};
 
-static u8 queryMaskMode[7] = {0x5A, 0xFF, 0xFF, 0x00, 0x00, 0x00, 0x5A};
+static u8 queryMaskMode[7] = {0x5A, 0xFF, 0xFF, 0x03, 0x00, 0x00, 0x5A};
 
 static const u8 queryAct[2][7] = {
 	{0x5A, 0x00, 0x00, 0x01, 0x02, 0x00, 0x0A},
@@ -95,7 +95,9 @@ void Pad::reset()
 	memset(this, 0, sizeof(PadFreezeData));
 
 	set_mode(MODE_DIGITAL);
-	umask[0] = umask[1] = 0xFF;
+	umask[0] = 0xFF;
+	umask[1] = 0xFF;
+	umask[2] = 0x03;
 
 	// Sets up vibrate variable.
 	reset_vibrate();
@@ -322,7 +324,7 @@ u8 pad_poll(u8 value)
 				{
 					queryMaskMode[1] = pad->umask[0];
 					queryMaskMode[2] = pad->umask[1];
-					queryMaskMode[3] = 0x03;
+					queryMaskMode[3] = pad->umask[2];
 					// Not entirely sure about this.
 					//queryMaskMode[3] = 0x01 | (pad->mode == MODE_DS2_NATIVE)*2;
 					queryMaskMode[6] = 0x5A;
@@ -461,11 +463,12 @@ u8 pad_poll(u8 value)
 				break;
 
 			case CMD_SET_DS2_NATIVE_MODE:
-				if (query.lastByte == 3 || query.lastByte == 4)
+				if (query.lastByte > 2 && query.lastByte < 6)
 				{
 					pad->umask[query.lastByte - 3] = value;
 				}
-				else if (query.lastByte == 5)
+
+				if (query.lastByte == 5)
 				{
 					if (!(value & 1))
 						pad->set_mode(MODE_DIGITAL);
