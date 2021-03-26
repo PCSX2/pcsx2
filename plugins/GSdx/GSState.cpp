@@ -2734,11 +2734,7 @@ __forceinline void GSState::VertexKick(uint32 skip)
 
 	GSVector4i xy = v1.xxxx().u16to32().sub32(m_ofxy);
 
-#if _M_SSE >= 0x401
 	GSVector4i::storel(&m_vertex.xy[xy_tail & 3], xy.blend16<0xf0>(xy.sra32(4)).ps32());
-#else
-	GSVector4i::storel(&m_vertex.xy[xy_tail & 3], xy.upl64(xy.sra32(4).zwzw()).ps32());
-#endif
 
 	m_vertex.tail = ++tail;
 	m_vertex.xy_tail = ++xy_tail;

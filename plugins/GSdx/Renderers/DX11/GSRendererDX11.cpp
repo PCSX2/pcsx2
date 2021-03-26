@@ -944,12 +944,8 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 		m_ps_sel.fog = 1;
 
 		GSVector4 fc = GSVector4::rgba32(m_env.FOGCOL.u32[0]);
-#if _M_SSE >= 0x401
 		// Blend AREF to avoid to load a random value for alpha (dirty cache)
 		ps_cb.FogColor_AREF = fc.blend32<8>(ps_cb.FogColor_AREF);
-#else
-		ps_cb.FogColor_AREF = fc;
-#endif
 	}
 
 	// Warning must be done after EmulateZbuffer

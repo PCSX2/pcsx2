@@ -175,17 +175,8 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 	GSVector4i cmin = GSVector4i::xffffffff();
 	GSVector4i cmax = GSVector4i::zero();
 
-	#if _M_SSE >= 0x401
-
 	GSVector4i pmin = GSVector4i::xffffffff();
 	GSVector4i pmax = GSVector4i::zero();
-
-	#else
-
-	GSVector4 pmin = s_minmax.xxxx();
-	GSVector4 pmax = s_minmax.yyyy();
-	
-	#endif
 
 	const GSVertex* RESTRICT v = (GSVertex*)vertex;
 
@@ -233,21 +224,10 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 			GSVector4i xy = xyzf.upl16();
 			GSVector4i z = xyzf.yyyy();
 
-			#if _M_SSE >= 0x401
-
 			GSVector4i p = xy.blend16<0xf0>(z.uph32(xyzf));
 
 			pmin = pmin.min_u32(p);
 			pmax = pmax.max_u32(p);
-
-			#else
-
-			GSVector4 p = GSVector4(xy.upl64(z.srl32(1).upl32(xyzf.wwww())));
-
-			pmin = pmin.min(p);
-			pmax = pmax.max(p);
-
-			#endif
 		}
 		else if(primclass == GS_LINE_CLASS)
 		{
@@ -314,23 +294,11 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 			GSVector4i xy1 = xyzf1.upl16();
 			GSVector4i z1 = xyzf1.yyyy();
 
-			#if _M_SSE >= 0x401
-
 			GSVector4i p0 = xy0.blend16<0xf0>(z0.uph32(xyzf0));
 			GSVector4i p1 = xy1.blend16<0xf0>(z1.uph32(xyzf1));
 
 			pmin = pmin.min_u32(p0.min_u32(p1));
 			pmax = pmax.max_u32(p0.max_u32(p1));
-
-			#else
-
-			GSVector4 p0 = GSVector4(xy0.upl64(z0.srl32(1).upl32(xyzf0.wwww())));
-			GSVector4 p1 = GSVector4(xy1.upl64(z1.srl32(1).upl32(xyzf1.wwww())));
-
-			pmin = pmin.min(p0.min(p1));
-			pmax = pmax.max(p0.max(p1));
-
-			#endif
 		}
 		else if(primclass == GS_TRIANGLE_CLASS)
 		{
@@ -406,25 +374,12 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 			GSVector4i xy2 = xyzf2.upl16();
 			GSVector4i z2 = xyzf2.yyyy();
 
-			#if _M_SSE >= 0x401
-
 			GSVector4i p0 = xy0.blend16<0xf0>(z0.uph32(xyzf0));
 			GSVector4i p1 = xy1.blend16<0xf0>(z1.uph32(xyzf1));
 			GSVector4i p2 = xy2.blend16<0xf0>(z2.uph32(xyzf2));
 
 			pmin = pmin.min_u32(p2).min_u32(p0.min_u32(p1));
 			pmax = pmax.max_u32(p2).max_u32(p0.max_u32(p1));
-
-			#else
-
-			GSVector4 p0 = GSVector4(xy0.upl64(z0.srl32(1).upl32(xyzf0.wwww())));
-			GSVector4 p1 = GSVector4(xy1.upl64(z1.srl32(1).upl32(xyzf1.wwww())));
-			GSVector4 p2 = GSVector4(xy2.upl64(z2.srl32(1).upl32(xyzf2.wwww())));
-
-			pmin = pmin.min(p2).min(p0.min(p1));
-			pmax = pmax.max(p2).max(p0.max(p1));
-
-			#endif
 		}
 		else if(primclass == GS_SPRITE_CLASS)
 		{
@@ -491,23 +446,11 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 			GSVector4i xy1 = xyzf1.upl16();
 			GSVector4i z1 = xyzf1.yyyy();
 
-			#if _M_SSE >= 0x401
-
 			GSVector4i p0 = xy0.blend16<0xf0>(z0.uph32(xyzf1));
 			GSVector4i p1 = xy1.blend16<0xf0>(z1.uph32(xyzf1));
 
 			pmin = pmin.min_u32(p0.min_u32(p1));
 			pmax = pmax.max_u32(p0.max_u32(p1));
-
-			#else
-
-			GSVector4 p0 = GSVector4(xy0.upl64(z0.srl32(1).upl32(xyzf1.wwww())));
-			GSVector4 p1 = GSVector4(xy1.upl64(z1.srl32(1).upl32(xyzf1.wwww())));
-
-			pmin = pmin.min(p0.min(p1));
-			pmax = pmax.max(p0.max(p1));
-
-			#endif
 		}
 	}
 
@@ -516,12 +459,8 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 	// be true if depth isn't constant but close enough. It also imply that
 	// pmin.z & 1 == 0 and pax.z & 1 == 0
 
-	#if _M_SSE >= 0x401
-
 	pmin = pmin.blend16<0x30>(pmin.srl32(1));
 	pmax = pmax.blend16<0x30>(pmax.srl32(1));
-
-	#endif
 
 	GSVector4 o(context->XYOFFSET);
 	GSVector4 s(1.0f / 16, 1.0f / 16, 2.0f, 1.0f);
