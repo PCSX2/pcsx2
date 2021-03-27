@@ -101,16 +101,24 @@ union GSScanlineSelector
 		return prim == GS_SPRITE_CLASS && iip == 0 && tfx == TFX_NONE && abe == 0 && ztst <= 1 && atst <= 1 && date == 0 && fge == 0;
 	}
 
+	std::string to_string() const
+	{
+		char str[1024];
+		sprintf(str,
+			"fpsm:%d zpsm:%d ztst:%d ztest:%d atst:%d afail:%d iip:%d rfb:%d fb:%d zb:%d zw:%d "
+			"tfx:%d tcc:%d fst:%d ltf:%d tlu:%d wms:%d wmt:%d mmin:%d lcm:%d tw:%d "
+			"fba:%d cclamp:%d date:%d datm:%d "
+			"prim:%d abe:%d %d%d%d%d fge:%d dthe:%d notest:%d",
+			fpsm, zpsm, ztst, ztest, atst, afail, iip, rfb, fb, zb, zwrite,
+			tfx, tcc, fst, ltf, tlu, wms, wmt, mmin, lcm, tw,
+			fba, colclamp, date, datm,
+			prim, abe, aba, abb, abc, abd, fge, dthe, notest);
+		return str;
+	}
+
 	void Print() const
 	{
-		fprintf(stderr, "fpsm:%d zpsm:%d ztst:%d ztest:%d atst:%d afail:%d iip:%d rfb:%d fb:%d zb:%d zw:%d "
-		                "tfx:%d tcc:%d fst:%d ltf:%d tlu:%d wms:%d wmt:%d mmin:%d lcm:%d tw:%d "
-		                "fba:%d cclamp:%d date:%d datm:%d "
-		                "prim:%d abe:%d %d%d%d%d fge:%d dthe:%d notest:%d\n",
-		        fpsm, zpsm, ztst, ztest, atst, afail, iip, rfb, fb, zb, zwrite,
-		        tfx, tcc, fst, ltf, tlu, wms, wmt, mmin, lcm, tw,
-		        fba, colclamp, date, datm,
-		        prim, abe, aba, abb, abc, abd, fge, dthe, notest);
+		fprintf(stderr, "%s\n", to_string().c_str());
 	}
 };
 
