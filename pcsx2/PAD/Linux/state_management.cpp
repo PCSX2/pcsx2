@@ -467,16 +467,7 @@ u8 pad_poll(u8 value)
 				{
 					pad->umask[query.lastByte - 3] = value;
 				}
-
-				if (query.lastByte == 5)
-				{
-					if (!(value & 1))
-						pad->set_mode(MODE_DIGITAL);
-					else if (!(value & 2))
-						pad->set_mode(MODE_ANALOG);
-					else
-						pad->set_mode(MODE_DS2_NATIVE);
-				}
+				pad->set_mode(MODE_DS2_NATIVE);
 				break;
 
 			default:
