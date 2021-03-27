@@ -56,33 +56,10 @@ void mVUclamp1(const xmm& reg, const xmm& regT1, int xyzw, bool bClampE = 0) {
 // so we just use a temporary mem location for our backup for now... (non-sse4 version only)
 void mVUclamp2(microVU& mVU, const xmm& reg, const xmm& regT1in, int xyzw, bool bClampE = 0) {
 	if ((!clampE && CHECK_VU_SIGN_OVERFLOW) || (clampE && bClampE && CHECK_VU_SIGN_OVERFLOW)) {
-		if (x86caps.hasStreamingSIMD4Extensions) {
-			int i = (xyzw==1||xyzw==2||xyzw==4||xyzw==8) ? 0: 1;
-			xPMIN.SD(reg, ptr128[&sse4_maxvals[i][0]]);
-			xPMIN.UD(reg, ptr128[&sse4_minvals[i][0]]);
-			return;
-		}
-		//const xmm& regT1 = regT1b ? mVU.regAlloc->allocReg() : regT1in;
-		const xmm& regT1 = regT1in.IsEmpty() ? xmm((reg.Id + 1) % 8) : regT1in;
-		if (regT1 != regT1in) xMOVAPS(ptr128[mVU.xmmCTemp], regT1);
-		switch (xyzw) {
-			case 1: case 2: case 4: case 8:
-				xMOVAPS(regT1, reg);
-				xAND.PS(regT1, ptr128[mVUglob.signbit]);
-				xMIN.SS(reg,   ptr128[mVUglob.maxvals]);
-				xMAX.SS(reg,   ptr128[mVUglob.minvals]);
-				xOR.PS (reg,   regT1);
-				break;
-			default:
-				xMOVAPS(regT1, reg);
-				xAND.PS(regT1, ptr128[mVUglob.signbit]);
-				xMIN.PS(reg,   ptr128[mVUglob.maxvals]);
-				xMAX.PS(reg,   ptr128[mVUglob.minvals]);
-				xOR.PS (reg,   regT1);
-				break;
-		}
-		//if (regT1 != regT1in) mVU.regAlloc->clearNeeded(regT1);
-		if (regT1 != regT1in) xMOVAPS(regT1, ptr128[mVU.xmmCTemp]);
+		int i = (xyzw==1||xyzw==2||xyzw==4||xyzw==8) ? 0: 1;
+		xPMIN.SD(reg, ptr128[&sse4_maxvals[i][0]]);
+		xPMIN.UD(reg, ptr128[&sse4_minvals[i][0]]);
+		return;
 	}
 	else mVUclamp1(reg, regT1in, xyzw, bClampE);
 }

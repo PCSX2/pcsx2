@@ -684,7 +684,6 @@ void Panels::PluginSelectorPanel::OnEnumComplete( wxCommandEvent& evt )
 
 				int index_avx2 = -1;
 				int index_sse4 = -1;
-				int index_sse2 = -1;
 
 				for( int i = 0; i < count; i++ )
 				{
@@ -692,12 +691,10 @@ void Panels::PluginSelectorPanel::OnEnumComplete( wxCommandEvent& evt )
 					
 					if( x86caps.hasAVX2 && str.Contains("AVX2") ) index_avx2 = i;
 					if( x86caps.hasStreamingSIMD4Extensions && str.Contains("SSE4") ) index_sse4 = i;
-					if( str.Contains("SSE2") ) index_sse2 = i;
 				}
 
 				if( index_avx2 >= 0 ) m_ComponentBoxes->Get(pid).SetSelection( index_avx2 );
 				else if( index_sse4 >= 0 ) m_ComponentBoxes->Get(pid).SetSelection( index_sse4 );
-				else if( index_sse2 >= 0 ) m_ComponentBoxes->Get(pid).SetSelection( index_sse2 );
 				else m_ComponentBoxes->Get(pid).SetSelection( 0 );
 			}
 			else
