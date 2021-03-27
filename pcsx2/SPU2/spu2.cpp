@@ -47,30 +47,8 @@ u32* cyclePtr = nullptr;
 u32 lClocks = 0;
 //static bool cpu_detected = false;
 
-static bool CheckSSE()
-{
-	return true;
-
-#if 0
-	if( !cpu_detected )
-	{
-		cpudetectInit();
-		cpu_detected = true;
-	}
-	if( !x86caps.hasStreamingSIMDExtensions || !x86caps.hasStreamingSIMD2Extensions )
-	{
-		SysMessage( "Your CPU does not support SSE2 instructions.\nThe SPU2 plugin requires SSE2 to run." );
-		return false;
-	}
-	return true;
-#endif
-}
-
 void SPU2configure()
 {
-	if (!CheckSSE())
-		return;
-
 	ScopedCoreThreadPause paused_core;
 	configure();
 	paused_core.AllowResume();
