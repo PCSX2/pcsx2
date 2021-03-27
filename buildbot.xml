@@ -53,7 +53,7 @@
     </PropertyGroup>
     <ItemGroup>
       <ConfigCPU Include="Debug"/>
-      <!--ConfigCPU Include="Debug AVX2;Debug SSE4"/-->
+      <!--ConfigCPU Include="Debug AVX2;Debug"/-->
     </ItemGroup>
   </Target>
   <Target Name="DevelAll">
@@ -62,7 +62,7 @@
     </PropertyGroup>
     <ItemGroup>
       <ConfigCPU Include="Devel"/>
-      <!--ConfigCPU Include="Devel AVX2;Devel SSE4"/-->
+      <!--ConfigCPU Include="Devel AVX2;Devel"/-->
     </ItemGroup>
   </Target>
   <Target Name="ReleaseAll">
@@ -70,7 +70,7 @@
       <BaseConfiguration>Release</BaseConfiguration>
     </PropertyGroup>
     <ItemGroup>
-      <ConfigCPU Include="Release AVX2;Release SSE4"/>
+      <ConfigCPU Include="Release AVX2;Release"/>
     </ItemGroup>
   </Target>
 </Project>
