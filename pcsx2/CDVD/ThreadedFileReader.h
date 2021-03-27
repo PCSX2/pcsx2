@@ -71,8 +71,8 @@ private:
 	{
 		void* ptr = nullptr;
 		u64 offset = 0;
-		u32 size = 0;
-		std::atomic<bool> valid{false};
+		std::atomic<u32> size{0};
+		u32 cap = 0;
 	};
 	/// 2 buffers for readahead (current block, next block)
 	Buffer m_buffer[2];
@@ -98,8 +98,7 @@ private:
 	void Loop();
 
 	/// Load the given block into one of the `m_buffer` buffers if necessary and return a pointer to its contents if successful
-	/// Writes to `m_status` if `!isReadahead`
-	Buffer* GetBlockPtr(const Chunk& block, bool isReadahead = false);
+	Buffer* GetBlockPtr(const Chunk& block);
 	/// Decompress from offset to size into
 	bool Decompress(void* ptr, u64 offset, u32 size);
 	/// Cancel any inflight read and wait until the thread is no longer doing anything
