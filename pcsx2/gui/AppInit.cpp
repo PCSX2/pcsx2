@@ -46,13 +46,13 @@ void Pcsx2App::DetectCpuAndUserMode()
 	x86caps.CountCores();
 	x86caps.SIMD_EstablishMXCSRmask();
 
-	if (!x86caps.hasStreamingSIMD2Extensions)
+	if (!x86caps.hasStreamingSIMD4Extensions)
 	{
-		// This code will probably never run if the binary was correctly compiled for SSE2
-		// SSE2 is required for any decent speed and is supported by more than decade old x86 CPUs
+		// This code will probably never run if the binary was correctly compiled for SSE4
+		// SSE4 is required for any decent speed and is supported by more than decade old x86 CPUs
 		throw Exception::HardwareDeficiency()
-			.SetDiagMsg(L"Critical Failure: SSE2 Extensions not available.")
-			.SetUserMsg(_("SSE2 extensions are not available.  PCSX2 requires a cpu that supports the SSE2 instruction set."));
+			.SetDiagMsg(L"Critical Failure: SSE4 Extensions not available.")
+			.SetUserMsg(_("SSE4 extensions are not available.  PCSX2 requires a cpu that supports the SSE4 instruction set."));
 	}
 #endif
 
