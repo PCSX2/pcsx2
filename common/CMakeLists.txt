@@ -20,6 +20,7 @@ target_sources(common PRIVATE
 	FastJmp.cpp
 	IniInterface.cpp
 	Mutex.cpp
+	Misc.cpp
 	PathUtils.cpp
 	PrecompiledHeader.cpp
 	Perf.cpp

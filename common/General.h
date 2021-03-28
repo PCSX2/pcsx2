@@ -217,6 +217,11 @@ extern void InitCPUTicks();
 extern u64 GetTickFrequency();
 extern u64 GetCPUTicks();
 extern u64 GetPhysicalMemory();
+/// Spin for a short period of time (call while spinning waiting for a lock)
+/// Returns the approximate number of ns that passed
+extern u32 ShortSpin();
+/// Number of ns to spin for before sleeping a thread
+extern const u32 SPIN_TIME_NS;
 
 extern wxString GetOSVersionString();
 
