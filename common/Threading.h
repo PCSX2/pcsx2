@@ -28,6 +28,7 @@
 #endif
 #include "common/Pcsx2Defs.h"
 #include "common/TraceLog.h"
+#include "common/General.h"
 
 #undef Yield // release the burden of windows.h global namespace spam.
 
@@ -256,6 +257,20 @@ namespace Threading
 		bool WaitWithoutYield(const wxTimeSpan& timeout);
 		void WaitNoCancel();
 		void WaitNoCancel(const wxTimeSpan& timeout);
+		void WaitWithoutYieldWithSpin()
+		{
+			u32 waited = 0;
+			while (true)
+			{
+				if (TryWait())
+					return;
+				if (waited >= SPIN_TIME_NS)
+					break;
+				waited += ShortSpin();
+			}
+			WaitWithoutYield();
+		}
+		bool TryWait();
 		int Count();
 
 		void Wait();
@@ -285,6 +300,7 @@ namespace Threading
 		bool AcquireWithoutYield(const wxTimeSpan& timeout);
 
 		void Wait();
+		void WaitWithSpin();
 		bool Wait(const wxTimeSpan& timeout);
 		void WaitWithoutYield();
 		bool WaitWithoutYield(const wxTimeSpan& timeout);
