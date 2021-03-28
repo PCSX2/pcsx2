@@ -1,0 +1,15 @@
+# Runs steps to triage an incoming Pull Request, for example - applying labels.
+name: "Pull Request Triage"
+
+on:
+  pull_request_target:
+    branches:
+      - '*'
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/labeler@main
+      with:
+        repo-token: "${{ secrets.GITHUB_TOKEN }}"
