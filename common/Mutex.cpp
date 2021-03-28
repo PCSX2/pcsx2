@@ -262,6 +262,24 @@ void Threading::Mutex::Wait()
 	Release();
 }
 
+// Like wait but spins for a while before sleeping the thread
+void Threading::Mutex::WaitWithSpin()
+{
+	u32 waited = 0;
+	while (true)
+	{
+		if (TryAcquire())
+		{
+			Release();
+			return;
+		}
+		if (waited >= SPIN_TIME_NS)
+			break;
+		waited += ShortSpin();
+	}
+	Wait();
+}
+
 void Threading::Mutex::WaitWithoutYield()
 {
 	AcquireWithoutYield();

@@ -226,6 +226,14 @@ bool Threading::Semaphore::Wait(const wxTimeSpan& timeout)
 #endif
 }
 
+bool Threading::Semaphore::TryWait()
+{
+	int counter = __atomic_load_n(&m_counter, __ATOMIC_RELAXED);
+	while (counter > 0 && !__atomic_compare_exchange_n(&m_counter, &counter, counter - 1, true, __ATOMIC_ACQUIRE, __ATOMIC_RELAXED))
+		;
+	return counter > 0;
+}
+
 // Performs an uncancellable wait on a semaphore; restoring the thread's previous cancel state
 // after the wait has completed.  Useful for situations where the semaphore itself is stored on
 // the stack and passed to another thread via GUI message or such, avoiding complications where

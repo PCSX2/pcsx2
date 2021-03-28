@@ -165,6 +165,11 @@ void Threading::Semaphore::WaitNoCancel(const wxTimeSpan& timeout)
 	pthread_setcancelstate(oldstate, NULL);
 }
 
+bool Threading::Semaphore::TryWait()
+{
+	return sem_trywait(&m_sema) == 0;
+}
+
 int Threading::Semaphore::Count()
 {
 	int retval;
