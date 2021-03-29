@@ -93,7 +93,7 @@ SocketIPC::SocketIPC(SysCoreThread* vm, unsigned int slot)
 	}
 
 	if (slot != IPC_DEFAULT_SLOT)
-		m_socket_name += std::to_string(slot);
+		m_socket_name += "." + std::to_string(slot);
 
 	struct sockaddr_un server;
 
