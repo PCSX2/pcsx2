@@ -142,6 +142,19 @@ const char * const COP2_REG_CTL[32] ={
 
 const char * const COP2_VFnames[4] = { "x", "y", "z", "w" };
 
+//gs privileged registers
+const char * const GS_REG_PRIV[19] = {
+	"PMODE","SMODE1","SMODE2","SRFSH","SYNCH1","SYNCH2","SYNCV",
+	"DISPFB1","DISPLAY1","DISPFB2","DISPLAY2","EXTBUF","EXTDATA",
+	"EXTWRITE","BGCOLOR","CSR","IMR","BUSDIR","SIGLBLID",
+};
+
+//gs privileged register addresses relative to 12000000h
+const u32 GS_REG_PRIV_ADDR[19] = {
+	0x00,0x10,0x20,0x30,0x40,0x50,0x60,0x70,0x80,0x90,
+	0xa0,0xb0,0xc0,0xd0,0xE0,0x1000,0x1010,0x1040,0x1080
+};
+
 void P_COP2_Unknown( std::string& output );
 void P_COP2_SPECIAL2( std::string& output );
 void P_COP2_SPECIAL( std::string& output );

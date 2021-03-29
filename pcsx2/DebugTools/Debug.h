@@ -37,6 +37,8 @@ namespace R5900
 	extern const char * const COP2_REG_FP[32];
 	extern const char * const COP2_REG_CTL[32];
 	extern const char * const COP2_VFnames[4];
+	extern const char * const GS_REG_PRIV[19];
+	extern const u32 GS_REG_PRIV_ADDR[19];
 }
 
 namespace R3000A
