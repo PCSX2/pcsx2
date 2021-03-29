@@ -76,17 +76,22 @@ SocketIPC::SocketIPC(SysCoreThread* vm, unsigned int slot)
 	}
 
 #else
+	char* runtime_dir = nullptr;
 #ifdef __APPLE__
-	char* runtime_dir = std::getenv("TMPDIR");
+	runtime_dir = std::getenv("TMPDIR");
 #else
-	char* runtime_dir = std::getenv("XDG_RUNTIME_DIR");
+	runtime_dir = std::getenv("XDG_RUNTIME_DIR");
 #endif
 	// fallback in case macOS or other OSes don't implement the XDG base
 	// spec
-	if (runtime_dir == NULL)
+	if (runtime_dir == nullptr)
 		m_socket_name = (char*)"/tmp/" IPC_EMULATOR_NAME ".sock";
 	else
-		m_socket_name = strcat(runtime_dir, "/" IPC_EMULATOR_NAME ".sock");
+	{
+		m_socket_name = new char[strlen(runtime_dir) + strlen("/" IPC_EMULATOR_NAME ".sock") + 1];
+		strcpy(m_socket_name, runtime_dir);
+		strcat(m_socket_name, "/" IPC_EMULATOR_NAME ".sock");
+	}
 
 	if (slot != IPC_DEFAULT_SLOT)
 	{
