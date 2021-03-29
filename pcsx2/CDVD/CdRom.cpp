@@ -689,16 +689,19 @@ void setPs1CDVDSpeed(int speed)
 	//Console.Warning(L"cdReadTime: %d", unsigned(cdReadTime));
 }
 
-s32 PlayXA(int channel)
+s16 PlayXA(int channel)
 {
 	if (cdr.Xa.pcm[channel].size() > 0)
 	{
 		// Assume there's data?
-		s32 returnVal = (s32)cdr.Xa.pcm[channel].back();
+		const s16 returnVal = cdr.Xa.pcm[channel][0];
 
+		Console.Warning("Channel %02d", channel);
 		Console.Warning("Sample: %02x", returnVal);
 
-		cdr.Xa.pcm[channel].pop_back();
+		//cdr.Xa.pcm[channel].clear();
+
+		cdr.Xa.pcm[channel].erase(cdr.Xa.pcm[channel].begin() + 0);
 		return returnVal;
 	}
 	else

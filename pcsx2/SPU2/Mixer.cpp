@@ -887,17 +887,27 @@ __forceinline
 		Ext = clamp_mix(ApplyVolume(Ext, Cores[0].MasterVol));
 	}
 
-	Ext.Left += PlayXA(0);
-	Ext.Right += PlayXA(1);
-
 	// Commit Core 0 output to ram before mixing Core 1:
 	spu2M_WriteFast(0x800 + OutPos, Ext.Left);
 	spu2M_WriteFast(0xA00 + OutPos, Ext.Right);
 
 	WaveDump::WriteCore(0, CoreSrc_External, Ext);
 
-	Ext = ApplyVolume(Ext, Cores[1].ExtVol);
+	Ext = ApplyVolume(Ext, Cores[1].ExtVol);	
+
 	StereoOut32 Out(Cores[1].Mix(VoiceData[1], InputData[1], Ext));
+
+	// This is the best spot I can find for this. It avoids voice and ram.
+	/********************************************************************************************************
+	* The PSX supports two ADPCM formats: SPU-ADPCM (as described above),
+	* and XA-ADPCM. XA-ADPCM is decompressed by the CDROM Controller, and sent
+	* directly to the sound mixer, without needing to store the data in SPU RAM,
+	* nor needing to use a Voice channel. The actual decompression algorithm is the same for both formats.
+	* However, the XA nibbles are arranged in different order, and XA uses 2x28 nibbles per block (instead of 2x14),
+	* XA blocks can contain mono or stereo data, XA supports only two sample rates, and, XA doesn't support looping.
+	**************************************************************************************************************/
+	Out.Left += static_cast<s32>(PlayXA(0));
+	Out.Right += static_cast<s32>(PlayXA(1));
 
 	if (PlayMode & 8)
 	{

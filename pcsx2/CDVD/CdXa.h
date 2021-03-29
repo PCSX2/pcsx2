@@ -40,4 +40,4 @@ struct xa_decode
 };
 
 void DecodeADPCM(xa_subheader* header, xa_decode* decoded, u8* xaData);
-void DecodeChunck(u8* block_header, xa_subheader* header, u8* samples, ADPCM_Decode* decp, std::vector<s16>& dest);
+void DecodeChunck(u8* block_header, xa_subheader* header, const u8* samples, ADPCM_Decode* decp, int channel, std::vector<s16>& dest);

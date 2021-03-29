@@ -80,7 +80,7 @@ u8 cdrRead1(void);
 u8 cdrRead2(void);
 u8 cdrRead3(void);
 void setPs1CDVDSpeed(int speed);
-s32 PlayXA(int channel);
+s16 PlayXA(int channel);
 void cdrWrite0(u8 rt);
 void cdrWrite1(u8 rt);
 void cdrWrite2(u8 rt);
