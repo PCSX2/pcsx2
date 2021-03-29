@@ -435,6 +435,7 @@ extern u8   gsRead8(u32 mem);
 extern u16  gsRead16(u32 mem);
 extern u32  gsRead32(u32 mem);
 extern u64  gsRead64(u32 mem);
+extern u128 gsNonMirroredRead(u32 mem);
 
 void gsIrq();
 
