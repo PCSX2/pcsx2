@@ -27,6 +27,7 @@
 
 #include "Utilities/PersistentThread.h"
 #include "System/SysThreads.h"
+#include <string>
 #ifdef _WIN32
 #include <WinSock2.h>
 #include <windows.h>
@@ -48,7 +49,7 @@ protected:
 	SOCKET m_msgsock = INVALID_SOCKET;
 #else
 	// absolute path of the socket. Stored in XDG_RUNTIME_DIR, if unset /tmp
-	char* m_socket_name;
+	std::string m_socket_name;
 	int m_sock = 0;
 	// the message socket used in thread's accept().
 	int m_msgsock = 0;

@@ -85,21 +85,15 @@ SocketIPC::SocketIPC(SysCoreThread* vm, unsigned int slot)
 	// fallback in case macOS or other OSes don't implement the XDG base
 	// spec
 	if (runtime_dir == nullptr)
-		m_socket_name = (char*)"/tmp/" IPC_EMULATOR_NAME ".sock";
+		m_socket_name = "/tmp/" IPC_EMULATOR_NAME ".sock";
 	else
 	{
-		m_socket_name = new char[strlen(runtime_dir) + strlen("/" IPC_EMULATOR_NAME ".sock") + 1];
-		strcpy(m_socket_name, runtime_dir);
-		strcat(m_socket_name, "/" IPC_EMULATOR_NAME ".sock");
+		m_socket_name = runtime_dir;
+		m_socket_name += "/" IPC_EMULATOR_NAME ".sock";
 	}
 
 	if (slot != IPC_DEFAULT_SLOT)
-	{
-		// maximum size of .%u
-		char slot_ending[34];
-		sprintf(slot_ending, ".%u", slot);
-		m_socket_name = strcat(m_socket_name, slot_ending);
-	}
+		m_socket_name += std::to_string(slot);
 
 	struct sockaddr_un server;
 
@@ -110,11 +104,11 @@ SocketIPC::SocketIPC(SysCoreThread* vm, unsigned int slot)
 		return;
 	}
 	server.sun_family = AF_UNIX;
-	strcpy(server.sun_path, m_socket_name);
+	strcpy(server.sun_path, m_socket_name.c_str());
 
 	// we unlink the socket so that when releasing this thread the socket gets
 	// freed even if we didn't close correctly the loop
-	unlink(m_socket_name);
+	unlink(m_socket_name.c_str());
 	if (bind(m_sock, (struct sockaddr*)&server, sizeof(struct sockaddr_un)))
 	{
 		Console.WriteLn(Color_Red, "IPC: Error while binding to socket! Shutting down...");
@@ -250,7 +244,7 @@ SocketIPC::~SocketIPC()
 #ifdef _WIN32
 	WSACleanup();
 #else
-	unlink(m_socket_name);
+	unlink(m_socket_name.c_str());
 #endif
 	close_portable(m_sock);
 	close_portable(m_msgsock);
