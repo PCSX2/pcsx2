@@ -43,6 +43,7 @@ namespace GameInfo
 	extern wxString gameName;
 	extern wxString gameSerial;
 	extern wxString gameCRC;
+	extern wxString gameVersion;
 }; // namespace GameInfo
 
 

@@ -449,6 +449,19 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 				ret_cnt += 256;
 				break;
 			}
+			case MsgGameVersion:
+			{
+				if (!m_vm->HasActiveMachine())
+					goto error;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 256, buf_size))
+					goto error;
+				char version[256] = {};
+				sprintf(version, "%s", GameInfo::gameVersion.ToUTF8().data());
+				version[255] = 0x00;
+				memcpy(&ret_buffer[ret_cnt], version, 256);
+				ret_cnt += 256;
+				break;
+			}
 			default:
 			{
 			error:

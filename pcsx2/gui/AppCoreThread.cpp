@@ -56,6 +56,7 @@ namespace GameInfo
 	wxString gameName;
 	wxString gameSerial;
 	wxString gameCRC;
+	wxString gameVersion;
 }; // namespace GameInfo
 
 // --------------------------------------------------------------------------------------
