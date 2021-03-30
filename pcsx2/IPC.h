@@ -102,6 +102,7 @@ protected:
 		MsgTitle = 0xB,         /**< Returns the game title. */
 		MsgID = 0xC,            /**< Returns the game ID. */
 		MsgUUID = 0xD,          /**< Returns the game UUID. */
+		MsgGameVersion = 0xE,   /**< Returns the game verion. */
 		MsgUnimplemented = 0xFF /**< Unimplemented IPC message. */
 	};
 
