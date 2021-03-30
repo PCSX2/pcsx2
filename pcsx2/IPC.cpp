@@ -462,6 +462,27 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 				ret_cnt += 256;
 				break;
 			}
+			case MsgStatus:
+			{
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 4, buf_size))
+					goto error;
+				EmuStatus status;
+				switch (m_vm->HasActiveMachine())
+				{
+					case true:
+						if (CoreThread.IsClosing())
+							status = Paused;
+						else
+							status = Running;
+						break;
+					case false:
+						status = Shutdown;
+						break;
+				}
+				ToArray(ret_buffer, status, ret_cnt);
+				ret_cnt += 4;
+				break;
+			}
 			default:
 			{
 			error:
