@@ -61,6 +61,8 @@ public:
     }
     
 	virtual void close() = 0;
+    
+    virtual int read(void *buf) { return -IOP_EIO; }
 };
 
 typedef int (*irxHLE)(); // return 1 if handled, otherwise 0
