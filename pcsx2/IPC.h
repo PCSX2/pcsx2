@@ -103,9 +103,20 @@ protected:
 		MsgID = 0xC,            /**< Returns the game ID. */
 		MsgUUID = 0xD,          /**< Returns the game UUID. */
 		MsgGameVersion = 0xE,   /**< Returns the game verion. */
+		MsgStatus = 0xF,        /**< Returns the emulator status. */
 		MsgUnimplemented = 0xFF /**< Unimplemented IPC message. */
 	};
 
+	/**
+	 * Emulator status enum.
+	 * A list of possible emulator statuses.
+	 */
+	enum EmuStatus : uint32_t
+	{
+		Running = 0, /**< Game is running */
+		Paused = 1,  /**< Game is paused */
+		Shutdown = 2 /**< Game is shutdown */
+	};
 
 	/**
 	 * IPC message buffer. 
