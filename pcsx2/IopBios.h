@@ -55,7 +55,12 @@ class IOManDir {
 	// Don't think about it until we know the loaded ioman version.
 	// The dirent structure changed between versions.
 public:
-	virtual void close();
+    static int open(IOManDir **dir, const std::string &full_path)
+    {
+        return -IOP_ENODEV;
+    }
+    
+	virtual void close() = 0;
 };
 
 typedef int (*irxHLE)(); // return 1 if handled, otherwise 0

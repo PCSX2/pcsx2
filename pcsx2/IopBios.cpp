@@ -235,6 +235,42 @@ public:
 	}
 };
 
+class HostDir : public IOManDir
+{
+public:
+    DIR *dir;
+    
+    HostDir(DIR *native_dir)
+    {
+        dir = native_dir;
+    }
+    
+    virtual ~HostDir() = default;
+
+    static int open(IOManDir **dir, const std::string &full_path)
+    {
+        struct stat stats;
+        const std::string path = host_path(full_path.substr(full_path.find(':') + 1));
+        
+        if(!(::stat(path.c_str(), &stats) && S_ISDIR(stats.st_mode)))
+        {
+            *dir = new HostDir(::opendir(path.c_str()));
+            if (!*dir)
+                return -IOP_ENOMEM;
+
+            return 0;
+        } else
+            return -IOP_ENOMEM;
+    }
+    
+    virtual void close()
+    {
+        ::closedir(dir);
+        delete this;
+    }
+    
+};
+
 namespace ioman {
 	const int firstfd = 0x100;
 	const int maxfds = 0x100;
@@ -396,6 +432,47 @@ namespace ioman {
 
 		return 0;
 	}
+
+    int dopen_HLE()
+    {
+        IOManDir *dir = NULL;
+        const std::string path = Ra0;
+
+        int err = HostDir::open(&dir, path);
+
+        if (err != 0 || !dir)
+        {
+            if (err == 0)
+                err = -IOP_EIO;
+            if (dir)
+                dir->close();
+            v0 = err;
+        }
+        else
+        {
+            v0 = allocfd(dir);
+            if ((s32)v0 < 0)
+                dir->close();
+        }
+
+        pc = ra;
+        return 1;
+    }
+
+    int dclose_HLE()
+    {
+        s32 dir = a0;
+
+        if (getfd<IOManDir>(dir))
+        {
+            freefd(dir);
+            v0 = 0;
+            pc = ra;
+            return 1;
+        }
+
+        return 0;
+    }
 
 	int lseek_HLE()
 	{
@@ -708,6 +785,8 @@ irxHLE irxImportHLE(const std::string &libname, u16 index)
 		EXPORT_H(  8, lseek)
 		EXPORT_H( 11, mkdir)
 		EXPORT_H( 12, rmdir)
+		EXPORT_H( 13, dopen)
+		EXPORT_H( 14, dclose)
 	END_MODULE
 
 	return 0;
