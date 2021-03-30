@@ -33,6 +33,7 @@ class alignas(32) GSRasterizerData : public GSAlignedClass<32>
 	static int s_counter;
 
 public:
+	int scanline_mask;
 	GSVector4i scissor;
 	GSVector4i bbox;
 	GS_PRIM_CLASS primclass;
@@ -136,6 +137,7 @@ protected:
 	GSVector4 m_fscissor_y;
 	struct {GSVertexSW* buff; int count;} m_edge;
 	struct {int sum, actual, total;} m_pixels;
+	int m_scanline_mask;
 
 	typedef void (GSRasterizer::*DrawPrimPtr)(const GSVertexSW* v, int count);
 

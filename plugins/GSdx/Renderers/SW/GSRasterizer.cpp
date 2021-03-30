@@ -155,6 +155,7 @@ void GSRasterizer::Draw(GSRasterizerData* data)
 	bool scissor_test = !data->bbox.eq(data->bbox.rintersect(data->scissor));
 
 	m_scissor = data->scissor;
+	m_scanline_mask = data->scanline_mask;
 	m_fscissor_x = GSVector4(data->scissor).xzxz();
 	m_fscissor_y = GSVector4(data->scissor).ywyw();
 
@@ -1086,8 +1087,10 @@ void GSRasterizer::Flush(const GSVertexSW* vertex, const uint32* index, const GS
 				int pixels = e->_pad.i32[0];
 				int left = e->_pad.i32[1];
 				int top = e->_pad.i32[2];
-
-				DrawScanline(pixels, left, top, *e++);
+				if (!m_scanline_mask || m_scanline_mask == 3 && (top & 1) == 1 || m_scanline_mask == 2 && (top & 1) == 0)
+					DrawScanline(pixels, left, top, *e++);
+				else
+					*e++;
 			}
 			while(e < ee);
 		}
