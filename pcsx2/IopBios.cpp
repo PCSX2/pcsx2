@@ -20,6 +20,7 @@
 
 #include <ctype.h>
 #include <string.h>
+#include <sys/stat.h>
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -27,6 +28,22 @@
 
 // set this to 0 to disable rewriting 'host:' paths!
 #define USE_HOST_REWRITE 1
+
+typedef struct {
+    unsigned int mode;
+    unsigned int attr;
+    unsigned int size;
+    unsigned char ctime[8];
+    unsigned char atime[8];
+    unsigned char mtime[8];
+    unsigned int hisize;
+} fio_stat_t;
+
+typedef struct {
+    fio_stat_t stat;
+    char name[256];
+    unsigned int unknown;
+} fio_dirent_t;
 
 #if USE_HOST_REWRITE
 #	ifdef _WIN32
@@ -100,6 +117,14 @@ namespace R3000A {
 #define Ra2 (iopMemReadString(a2))
 #define Ra3 (iopMemReadString(a3))
 
+#define FIO_SO_IXOTH 0x0001
+#define FIO_SO_IWOTH 0x0002
+#define FIO_SO_IROTH 0x0004
+
+#define FIO_SO_IFLNK 0x0008
+#define FIO_SO_IFREG 0x0010
+#define FIO_SO_IFDIR 0x0020
+
 static std::string host_path(const std::string path)
 {
 // WIP code. Works well on win32, not so sure on unixes
@@ -130,6 +155,55 @@ static std::string host_path(const std::string path)
 #else
 	return path;
 #endif
+}
+
+static int host_stat(const std::string path, fio_stat_t *host_stats)
+{
+    struct stat file_stats;
+    
+    if (::stat(path.c_str(), &file_stats))
+        return IOP_ENOENT;
+    
+    host_stats->size = file_stats.st_size;
+    host_stats->hisize = 0;
+    
+    // Convert the mode.
+    host_stats->mode = (file_stats.st_mode & (FIO_SO_IROTH | FIO_SO_IWOTH | FIO_SO_IXOTH));
+#ifndef _WIN32
+    if (S_ISLNK(file_stats.st_mode)) { host_stats->mode |= FIO_SO_IFLNK; }
+#endif
+    if (S_ISREG(file_stats.st_mode)) { host_stats->mode |= FIO_SO_IFREG; }
+    if (S_ISDIR(file_stats.st_mode)) { host_stats->mode |= FIO_SO_IFDIR; }
+    
+    // Convert the creation time.
+    struct tm *loctime;
+    loctime = localtime(&(file_stats.st_ctime));
+    host_stats->ctime[6] = (unsigned char)loctime->tm_year;
+    host_stats->ctime[5] = (unsigned char)loctime->tm_mon + 1;
+    host_stats->ctime[4] = (unsigned char)loctime->tm_mday;
+    host_stats->ctime[3] = (unsigned char)loctime->tm_hour;
+    host_stats->ctime[2] = (unsigned char)loctime->tm_min;
+    host_stats->ctime[1] = (unsigned char)loctime->tm_sec;
+
+    // Convert the access time.
+    loctime = localtime(&(file_stats.st_atime));
+    host_stats->atime[6] = (unsigned char)loctime->tm_year;
+    host_stats->atime[5] = (unsigned char)loctime->tm_mon + 1;
+    host_stats->atime[4] = (unsigned char)loctime->tm_mday;
+    host_stats->atime[3] = (unsigned char)loctime->tm_hour;
+    host_stats->atime[2] = (unsigned char)loctime->tm_min;
+    host_stats->atime[1] = (unsigned char)loctime->tm_sec;
+
+    // Convert the last modified time.
+    loctime = localtime(&(file_stats.st_mtime));
+    host_stats->mtime[6] = (unsigned char)loctime->tm_year;
+    host_stats->mtime[5] = (unsigned char)loctime->tm_mon + 1;
+    host_stats->mtime[4] = (unsigned char)loctime->tm_mday;
+    host_stats->mtime[3] = (unsigned char)loctime->tm_hour;
+    host_stats->mtime[2] = (unsigned char)loctime->tm_min;
+    host_stats->mtime[1] = (unsigned char)loctime->tm_sec;
+    
+    return 0;
 }
 
 // TODO: sandbox option, other permissions
@@ -239,28 +313,44 @@ class HostDir : public IOManDir
 {
 public:
     DIR *dir;
+    std::string path;
     
-    HostDir(DIR *native_dir)
+    HostDir(DIR *native_dir, const std::string native_path)
     {
         dir = native_dir;
+        path = native_path;
     }
     
     virtual ~HostDir() = default;
 
-    static int open(IOManDir **dir, const std::string &full_path)
-    {
-        struct stat stats;
-        const std::string path = host_path(full_path.substr(full_path.find(':') + 1));
-        
-        if(!(::stat(path.c_str(), &stats) && S_ISDIR(stats.st_mode)))
-        {
-            *dir = new HostDir(::opendir(path.c_str()));
-            if (!*dir)
-                return -IOP_ENOMEM;
+	static int open(IOManDir** dir, const std::string& full_path)
+	{
+		const std::string relativePath = full_path.substr(full_path.find(':') + 1);
+		const std::string path = host_path(relativePath);
 
+		DIR *dirent = ::opendir(path.c_str());
+		if (!dirent)
+			return -IOP_ENOENT;   // Should return ENOTDIR if path is a file?
+
+		*dir = new HostDir(dirent, relativePath);
+		if (!*dir)
+			return -IOP_ENOMEM;
+
+		return 0;
+	}
+    
+    virtual int read(void *buf)
+    {
+        fio_dirent_t *hostcontent = (fio_dirent_t *)buf;
+        struct dirent *dire = ::readdir(dir);
+        
+        if (dire == NULL)
             return 0;
-        } else
-            return -IOP_ENOMEM;
+        
+        strcpy(hostcontent->name, dire->d_name);
+        host_stat(host_path(path + dire->d_name), &hostcontent->stat);
+        
+        return 1;
     }
     
     virtual void close()
@@ -467,6 +557,47 @@ namespace ioman {
         {
             freefd(dir);
             v0 = 0;
+            pc = ra;
+            return 1;
+        }
+
+        return 0;
+    }
+
+    int dread_HLE()
+    {
+        s32 fh = a0;
+        u32 data = a1;
+
+        if (IOManDir *dir = getfd<IOManDir>(fh))
+        {
+            std::unique_ptr<char[]> buf(new char[sizeof(fio_dirent_t)]);
+            v0 = dir->read(buf.get());
+
+            for (s32 i = 0; i < (s32)sizeof(fio_dirent_t); i++)
+                iopMemWrite8(data + i, buf[i]);
+
+            pc = ra;
+            return 1;
+        }
+
+        return 0;
+    }
+
+    int getStat_HLE()
+    {
+        const std::string path = Ra0;
+        u32 data = a1;
+
+        if (is_host(path))
+        {
+            const std::string full_path = host_path(path.substr(path.find(':') + 1));
+            std::unique_ptr<char[]> buf(new char[sizeof(fio_stat_t)]);
+            v0 = host_stat(full_path, (fio_stat_t *)buf.get());
+
+            for (s32 i = 0; i < (s32)sizeof(fio_stat_t); i++)
+                iopMemWrite8(data + i, buf[i]);
+
             pc = ra;
             return 1;
         }
@@ -787,6 +918,8 @@ irxHLE irxImportHLE(const std::string &libname, u16 index)
 		EXPORT_H( 12, rmdir)
 		EXPORT_H( 13, dopen)
 		EXPORT_H( 14, dclose)
+		EXPORT_H( 15, dread)
+		EXPORT_H( 16, getStat)
 	END_MODULE
 
 	return 0;
