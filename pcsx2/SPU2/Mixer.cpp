@@ -896,9 +896,9 @@ __forceinline
 	Ext = ApplyVolume(Ext, Cores[1].ExtVol);	
 
 	StereoOut32 Out(Cores[1].Mix(VoiceData[1], InputData[1], Ext));
-
+	
 	// This is the best spot I can find for this. It avoids voice and ram.
-	/********************************************************************************************************
+	/******************************************************************************************************** 
 	* The PSX supports two ADPCM formats: SPU-ADPCM (as described above),
 	* and XA-ADPCM. XA-ADPCM is decompressed by the CDROM Controller, and sent
 	* directly to the sound mixer, without needing to store the data in SPU RAM,
