@@ -70,7 +70,7 @@ void DecodeChunck(u8* block_header, xa_subheader* header, const u8* samples, ADP
 			decp->y1 = decp->y0;
 			decp->y0 = sam;
 
-			ringBuf[channel][pos[channel]] = sam;
+			ringBuf[channel][pos[channel] & 0xF] = sam;
 
 			//Console.Warning("Previous Sample: %02x", decp->y1);
 		}

@@ -722,26 +722,33 @@ void setPs1CDVDSpeed(int speed)
 	//Console.Warning(L"cdReadTime: %d", unsigned(cdReadTime));
 }
 
+// Uninitalized on start. Holds a multiple of 6 samples.
+int sixstep[2];
+
 s16 PlayXA(int channel)
 {
 	s16 returnVal = 0;
 
 	if (cdr.Xa.pcm[channel].size() > 0)
 	{
-		returnVal += zigZagInterpolation(channel, TableX[0]);
-		returnVal += zigZagInterpolation(channel, TableX[1]);
-		returnVal += zigZagInterpolation(channel, TableX[2]);
-		returnVal += zigZagInterpolation(channel, TableX[3]);
-		returnVal += zigZagInterpolation(channel, TableX[4]);
-		returnVal += zigZagInterpolation(channel, TableX[5]);
-		returnVal += zigZagInterpolation(channel, TableX[6]);
-		
-		//Console.Warning("Channel %02d", channel);
-		Console.Warning("Sample: %02x", returnVal);
+		for (int i = 0; i < 7; i++)
+		{
+			returnVal += zigZagInterpolation(channel, TableX[i]);
+			sixstep[channel] -= 1;
 
-		//cdr.Xa.pcm[channel].clear();
+			if (sixstep[channel] <= 0)
+			{
+				returnVal += 1;
+				// This correct? No$ suggests it's a multple of 6 not actually 6
+				sixstep[channel] = 6;
+			}
 
-		cdr.Xa.pcm[channel].erase(cdr.Xa.pcm[channel].begin() + 0);
+			//Console.Warning("Channel %02d", channel);
+			Console.Warning("Sample: %02x", returnVal);
+			//cdr.Xa.pcm[channel].clear();
+
+			cdr.Xa.pcm[channel].erase(cdr.Xa.pcm[channel].begin() + 0);
+		}
 	}
 	return returnVal;
 }
