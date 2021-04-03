@@ -497,7 +497,7 @@ void MainEmuFrame::CreateConfigMenu()
 void MainEmuFrame::CreateWindowsMenu()
 {
 	m_menuWindow.Append(MenuId_Debug_Open, _("&Show Debug"), wxEmptyString, wxITEM_CHECK);
-#ifdef PCSX2_DEVBUILD
+#if defined(PCSX2_DEVBUILD) || defined(PCSX2_CI)
 	m_menuWindow.Append(MenuId_GSDump, _("Show &GS Debugger"));
 #endif
 
