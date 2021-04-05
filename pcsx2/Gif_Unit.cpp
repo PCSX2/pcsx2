@@ -109,22 +109,7 @@ bool Gif_HandlerAD_MTVU(u8* pMem)
 	u32 reg = pMem[8];
 	u32* data = (u32*)pMem;
 
-	if (reg == 0x50)
-	{
-		Console.Error("GIF Handler Debug - BITBLTBUF");
-		return 1;
-	}
-	else if (reg == 0x52)
-	{
-		Console.Error("GIF Handler Debug - TRXREG");
-		return 1;
-	}
-	else if (reg == 0x53)
-	{
-		Console.Error("GIF Handler Debug - TRXDIR");
-		return 1;
-	}
-	else if (reg == 0x60)
+	if (reg == 0x60)
 	{ // SIGNAL
 		GUNIT_WARN("GIF Handler - SIGNAL");
 		if (vu1Thread.gsInterrupts.load(std::memory_order_acquire) & VU_Thread::InterruptFlagSignal)
