@@ -527,7 +527,6 @@ namespace usb_pad
 		{
 			GtkWidget *ro_frame, *rs_cb;
 			GtkWidget *right_vbox, *left_vbox;
-			GtkWidget* button;
 
 			ConfigData cfg{};
 			cfg.dev_type = dev_type;
@@ -614,7 +613,7 @@ namespace usb_pad
 				GtkWidget* hbox = gtk_hbox_new(false, 5);
 				gtk_container_add(GTK_CONTAINER(right_vbox), hbox);
 
-				button = gtk_button_new_with_label("Steering");
+				GtkWidget* button = gtk_button_new_with_label("Steering");
 				gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 5);
 				g_object_set_data(G_OBJECT(button), CONTROL, reinterpret_cast<gpointer>(JOY_STEERING));
 				g_object_set_data(G_OBJECT(button), CFG, &cfg);

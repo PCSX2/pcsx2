@@ -94,7 +94,7 @@ namespace usb_pad
 
 	std::list<std::string> KeyboardmaniaDevice::ListAPIs()
 	{
-		return {"evdev"};
+		return PadDevice::ListAPIs();
 	}
 
 	const TCHAR* KeyboardmaniaDevice::LongAPIName(const std::string& name)
