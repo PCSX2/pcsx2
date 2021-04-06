@@ -540,7 +540,7 @@ namespace usb_pad
 
 			cfg.use_hidraw_ff_pt = false;
 			bool is_evdev = (strncmp(apiname, "evdev", 5) == 0);
-			if (is_evdev) //TODO idk about joydev
+			if (is_evdev)
 			{
 				LoadSetting(dev_type, port, apiname, N_HIDRAW_FF_PT, cfg.use_hidraw_ff_pt);
 			}
@@ -716,7 +716,7 @@ namespace usb_pad
 
 					std::stringstream str;
 					str << it.name;
-					if (!strcmp(apiname, "evdev") && !it.id.empty())
+					if (!it.id.empty())
 						str << " [" << it.id << "]";
 
 					gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rs_cb), str.str().c_str());
