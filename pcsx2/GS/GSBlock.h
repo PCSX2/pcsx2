@@ -504,20 +504,21 @@ public:
 
 		const GSVector4i* s = (const GSVector4i*)src;
 
-		GSVector4i v0 = s[i * 4 + 0].shuffle8(m_r16mask);
-		GSVector4i v1 = s[i * 4 + 1].shuffle8(m_r16mask);
-		GSVector4i v2 = s[i * 4 + 2].shuffle8(m_r16mask);
-		GSVector4i v3 = s[i * 4 + 3].shuffle8(m_r16mask);
+		GSVector4i v0 = s[i * 4 + 0];
+		GSVector4i v1 = s[i * 4 + 1];
+		GSVector4i v2 = s[i * 4 + 2];
+		GSVector4i v3 = s[i * 4 + 3];
 
+		GSVector4i::sw16(v0, v1, v2, v3);
 		GSVector4i::sw32(v0, v1, v2, v3);
-		GSVector4i::sw64(v0, v1, v2, v3);
+		GSVector4i::sw16(v0, v2, v1, v3);
 
 		GSVector4i* d0 = (GSVector4i*)&dst[dstpitch * 0];
 		GSVector4i* d1 = (GSVector4i*)&dst[dstpitch * 1];
 
 		GSVector4i::store<true>(&d0[0], v0);
-		GSVector4i::store<true>(&d0[1], v2);
-		GSVector4i::store<true>(&d1[0], v1);
+		GSVector4i::store<true>(&d0[1], v1);
+		GSVector4i::store<true>(&d1[0], v2);
 		GSVector4i::store<true>(&d1[1], v3);
 
 #endif
