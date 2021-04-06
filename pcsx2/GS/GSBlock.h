@@ -25,18 +25,6 @@ class GSBlock
 	static const GSVector4i m_r8mask;
 	static const GSVector4i m_r4mask;
 
-#if _M_SSE >= 0x501
-	static const GSVector8i m_xxxa;
-	static const GSVector8i m_xxbx;
-	static const GSVector8i m_xgxx;
-	static const GSVector8i m_rxxx;
-#else
-	static const GSVector4i m_xxxa;
-	static const GSVector4i m_xxbx;
-	static const GSVector4i m_xgxx;
-	static const GSVector4i m_rxxx;
-#endif
-
 	static const GSVector4i m_uw8hmask0;
 	static const GSVector4i m_uw8hmask1;
 	static const GSVector4i m_uw8hmask2;
@@ -488,17 +476,11 @@ public:
 
 		GSVector8i mask = GSVector8i::broadcast128(m_r16mask);
 
-		GSVector8i v0 = s[i * 2 + 0].shuffle8(mask);
-		GSVector8i v1 = s[i * 2 + 1].shuffle8(mask);
+		GSVector8 v0 = GSVector8::cast(s[i * 2 + 0].shuffle8(mask).acbd());
+		GSVector8 v1 = GSVector8::cast(s[i * 2 + 1].shuffle8(mask).acbd());
 
-		GSVector8i::sw128(v0, v1);
-		GSVector8i::sw32(v0, v1);
-
-		v0 = v0.acbd();
-		v1 = v1.acbd();
-
-		GSVector8i::store<true>(&dst[dstpitch * 0], v0);
-		GSVector8i::store<true>(&dst[dstpitch * 1], v1);
+		GSVector8::store<true>(&dst[dstpitch * 0], v0.xzxz(v1));
+		GSVector8::store<true>(&dst[dstpitch * 1], v0.ywyw(v1));
 
 #else
 
@@ -1005,10 +987,38 @@ public:
 		return c | (AEM ? TA0.andnot(c == V::zero()) : TA0); // TA0 & (c != GSVector4i::zero())
 	}
 
+	/// Expands the 16bpp pixel duplicated across both halves of each dword to a 32bpp pixel
 	template <bool AEM, class V>
 	__forceinline static V Expand16to32(const V& c, const V& TA0, const V& TA1)
 	{
-		return ((c & m_rxxx) << 3) | ((c & m_xgxx) << 6) | ((c & m_xxbx) << 9) | (AEM ? TA0.blend8(TA1, c.sra16(15)).andnot(c == V::zero()) : TA0.blend(TA1, c.sra16(15)));
+		V rmask = V(0x000000f8);
+		V gmask = V(0x0000f800);
+		V bmask = V(0x00f80000);
+		return ((c << 3) & rmask) | ((c << 6) & gmask) | ((c << 9) & bmask) | (AEM ? TA0.blend8(TA1, c).andnot(c == V::zero()) : TA0.blend8(TA1, c));
+	}
+
+	/// Expands the 16bpp pixel in the low half of each dword to a 32bpp pixel
+	template <bool AEM, class V>
+	__forceinline static V Expand16Lto32(const V& c, const V& TA0, const V& TA1)
+	{
+		V rmask = V(0x000000f8);
+		V gmask = V(0x0000f800);
+		V bmask = V(0x00f80000);
+		V o = ((c << 3) & rmask) | ((c << 6) & gmask) | ((c << 9) & bmask);
+		V ta0 = AEM ? TA0.andnot(o == V::zero()) : TA0;
+		return o | ta0.blend8(TA1, c << 16);
+	}
+
+	/// Expands the 16bpp pixel in the high half of each dword to a 32bpp pixel
+	template <bool AEM, class V>
+	__forceinline static V Expand16Hto32(const V& c, const V& TA0, const V& TA1)
+	{
+		V rmask = V(0x000000f8);
+		V gmask = V(0x0000f800);
+		V bmask = V(0x00f80000);
+		V o = ((c >> 13) & rmask) | ((c >> 10) & gmask) | ((c >> 7) & bmask);
+		V ta0 = AEM ? TA0.andnot(o == V::zero()) : TA0;
+		return o | ta0.blend8(TA1, c);
 	}
 
 	template <bool AEM>
@@ -1636,32 +1646,53 @@ public:
 		GSVector8i TA0(TEXA.TA0 << 24);
 		GSVector8i TA1(TEXA.TA1 << 24);
 
-		GSVector8i mask = GSVector8i::broadcast128(m_r16mask);
-
 		for (int i = 0; i < 4; i++, dst += dstpitch * 2)
 		{
-			GSVector8i v0 = s[i * 2 + 0].shuffle8(mask);
-			GSVector8i v1 = s[i * 2 + 1].shuffle8(mask);
+			GSVector8i v0 = s[i * 2 + 0];
+			GSVector8i v1 = s[i * 2 + 1];
 
 			GSVector8i::sw128(v0, v1);
-			GSVector8i::sw32(v0, v1);
+			GSVector8i::sw64(v0, v1);
 
 			GSVector8i* d0 = (GSVector8i*)&dst[dstpitch * 0];
 			GSVector8i* d1 = (GSVector8i*)&dst[dstpitch * 1];
 
-			d0[0] = Expand16to32<AEM>(v0.upl16(v0), TA0, TA1);
-			d0[1] = Expand16to32<AEM>(v0.uph16(v0), TA0, TA1);
-			d1[0] = Expand16to32<AEM>(v1.upl16(v1), TA0, TA1);
-			d1[1] = Expand16to32<AEM>(v1.uph16(v1), TA0, TA1);
+			d0[0] = Expand16Lto32<AEM>(v0, TA0, TA1);
+			d0[1] = Expand16Hto32<AEM>(v0, TA0, TA1);
+			d1[0] = Expand16Lto32<AEM>(v1, TA0, TA1);
+			d1[1] = Expand16Hto32<AEM>(v1, TA0, TA1);
 		}
 
 #else
 
-		alignas(32) u16 block[16 * 8];
+		const GSVector4i* s = (const GSVector4i*)src;
 
-		ReadBlock16(src, (u8*)block, sizeof(block) / 8);
+		GSVector4i TA0(TEXA.TA0 << 24);
+		GSVector4i TA1(TEXA.TA1 << 24);
 
-		ExpandBlock16<AEM>(block, dst, dstpitch, TEXA);
+		for (int i = 0; i < 4; i++, dst += dstpitch * 2)
+		{
+			GSVector4i v0 = s[i * 4 + 0];
+			GSVector4i v1 = s[i * 4 + 1];
+			GSVector4i v2 = s[i * 4 + 2];
+			GSVector4i v3 = s[i * 4 + 3];
+
+			GSVector4i::sw64(v0, v1, v2, v3);
+
+			GSVector4i* d0 = (GSVector4i*)&dst[dstpitch * 0];
+
+			d0[0] = Expand16Lto32<AEM>(v0, TA0, TA1);
+			d0[1] = Expand16Lto32<AEM>(v1, TA0, TA1);
+			d0[2] = Expand16Hto32<AEM>(v0, TA0, TA1);
+			d0[3] = Expand16Hto32<AEM>(v1, TA0, TA1);
+
+			GSVector4i* d1 = (GSVector4i*)&dst[dstpitch * 1];
+
+			d1[0] = Expand16Lto32<AEM>(v2, TA0, TA1);
+			d1[1] = Expand16Lto32<AEM>(v3, TA0, TA1);
+			d1[2] = Expand16Hto32<AEM>(v2, TA0, TA1);
+			d1[3] = Expand16Hto32<AEM>(v3, TA0, TA1);
+		}
 
 #endif
 	}
