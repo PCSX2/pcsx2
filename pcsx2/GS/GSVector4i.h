@@ -2005,6 +2005,13 @@ public:
 
 	// clang-format on
 
+	/// Noop, here so broadcast128 can be used generically over all vectors
+	__forceinline static GSVector4i broadcast128(const GSVector4i& v)
+	{
+		return v;
+	}
+
+
 	__forceinline static GSVector4i zero() { return GSVector4i(_mm_setzero_si128()); }
 
 	__forceinline static GSVector4i xffffffff() { return zero() == zero(); }

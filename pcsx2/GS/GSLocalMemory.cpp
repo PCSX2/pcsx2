@@ -1442,7 +1442,7 @@ void GSLocalMemory::ReadTexture8(const GSOffset& off, const GSVector4i& r, u8* d
 
 void GSLocalMemory::ReadTexture4(const GSOffset& off, const GSVector4i& r, u8* dst, int dstpitch, const GIFRegTEXA& TEXA)
 {
-	const u64* pal = m_clut;
+	const u32* pal = m_clut;
 
 	foreachBlock(off.assertSizesMatch(swizzle4), this, r, dst, dstpitch, 32, [&](u8* read_dst, const u8* src)
 	{
