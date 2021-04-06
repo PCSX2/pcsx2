@@ -21,11 +21,7 @@
 
 class GSBlock
 {
-#if _M_SSE >= 0x501
-	static const GSVector8i m_r16mask;
-#else
 	static const GSVector4i m_r16mask;
-#endif
 	static const GSVector4i m_r8mask;
 	static const GSVector4i m_r4mask;
 
@@ -490,8 +486,10 @@ public:
 
 		const GSVector8i* s = (const GSVector8i*)src;
 
-		GSVector8i v0 = s[i * 2 + 0].shuffle8(m_r16mask);
-		GSVector8i v1 = s[i * 2 + 1].shuffle8(m_r16mask);
+		GSVector8i mask = GSVector8i::broadcast128(m_r16mask);
+
+		GSVector8i v0 = s[i * 2 + 0].shuffle8(mask);
+		GSVector8i v1 = s[i * 2 + 1].shuffle8(mask);
 
 		GSVector8i::sw128(v0, v1);
 		GSVector8i::sw32(v0, v1);
@@ -1637,10 +1635,12 @@ public:
 		GSVector8i TA0(TEXA.TA0 << 24);
 		GSVector8i TA1(TEXA.TA1 << 24);
 
+		GSVector8i mask = GSVector8i::broadcast128(m_r16mask);
+
 		for (int i = 0; i < 4; i++, dst += dstpitch * 2)
 		{
-			GSVector8i v0 = s[i * 2 + 0].shuffle8(m_r16mask);
-			GSVector8i v1 = s[i * 2 + 1].shuffle8(m_r16mask);
+			GSVector8i v0 = s[i * 2 + 0].shuffle8(mask);
+			GSVector8i v1 = s[i * 2 + 1].shuffle8(mask);
 
 			GSVector8i::sw128(v0, v1);
 			GSVector8i::sw32(v0, v1);
