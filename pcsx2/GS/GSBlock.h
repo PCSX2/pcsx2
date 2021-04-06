@@ -1795,6 +1795,68 @@ public:
 	{
 		//printf("ReadAndExpandBlock4_32\n");
 
+#if _M_SSE >= 0x501
+
+		const GSVector8i* s = (const GSVector8i*)src;
+
+		GSVector8i p0, p1, p2, p3;
+		LoadPalVecs(pal, p0, p1, p2, p3);
+		GSVector8i shuf = GSVector8i::broadcast128(m_palvec_mask);
+		GSVector8i mask(0x0f0f0f0f);
+
+		GSVector8i v0, v1;
+
+		for (int i = 0; i < 2; i++)
+		{
+			GSVector8i* d0 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 0);
+			GSVector8i* d1 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 1);
+			GSVector8i* d2 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 2);
+			GSVector8i* d3 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 3);
+
+			v0 = s[i * 4 + 0];
+			v1 = s[i * 4 + 1];
+
+			GSVector8i::sw128(v0, v1);
+			GSVector8i::sw64(v0, v1);
+
+			v0 = v0.shuffle8(shuf);
+			v1 = v1.shuffle8(shuf);
+
+			ReadClut4AndWrite(p0, p1, p2, p3, v0 & mask, d0, 1);
+			ReadClut4AndWrite(p0, p1, p2, p3, v1 & mask, d1, 1);
+			v0 = v0.cdab() >> 4;
+			v1 = v1.cdab() >> 4;
+			ReadClut4AndWrite(p0, p1, p2, p3, v0 & mask, d2, 1);
+			ReadClut4AndWrite(p0, p1, p2, p3, v1 & mask, d3, 1);
+
+			dst += dstpitch * 4;
+
+			d0 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 0);
+			d1 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 1);
+			d2 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 2);
+			d3 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 3);
+
+			v1 = s[i * 4 + 2];
+			v0 = s[i * 4 + 3];
+
+			GSVector8i::sw128(v0, v1);
+			GSVector8i::sw64(v0, v1);
+
+			v0 = v0.shuffle8(shuf);
+			v1 = v1.shuffle8(shuf);
+
+			ReadClut4AndWrite(p0, p1, p2, p3, v0 & mask, d0, 1);
+			ReadClut4AndWrite(p0, p1, p2, p3, v1 & mask, d1, 1);
+			v0 = v0.cdab() >> 4;
+			v1 = v1.cdab() >> 4;
+			ReadClut4AndWrite(p0, p1, p2, p3, v0 & mask, d2, 1);
+			ReadClut4AndWrite(p0, p1, p2, p3, v1 & mask, d3, 1);
+
+			dst += dstpitch * 4;
+		}
+
+#else
+
 		const GSVector4i* s = (const GSVector4i*)src;
 
 		GSVector4i p0, p1, p2, p3;
@@ -1861,6 +1923,8 @@ public:
 
 			dst += dstpitch * 4;
 		}
+
+#endif
 	}
 
 	// TODO: ReadAndExpandBlock4_16
