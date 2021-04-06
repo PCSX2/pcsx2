@@ -403,8 +403,6 @@ set(pcsx2USBSources
 	USB/shared/ringbuffer.cpp
 	USB/icon_buzz_24.cpp
 	USB/usb-msd/usb-msd-gtk.cpp
-	USB/usb-pad/joydev/joydev.cpp
-	USB/usb-pad/joydev/joydev-gtk.cpp
 	USB/usb-pad/evdev/shared-gtk.cpp
 	USB/usb-pad/evdev/evdev-ff.cpp
 	USB/usb-pad/evdev/evdev.cpp
@@ -468,7 +466,6 @@ set(pcsx2USBHeaders
 	USB/linux/util.h
 	USB/gtk.h
 	USB/icon_buzz_24.h
-	USB/usb-pad/joydev/joydev.h
 	USB/usb-pad/evdev/shared.h
 	USB/usb-pad/evdev/evdev.h
 	USB/usb-pad/evdev/evdev-ff.h
