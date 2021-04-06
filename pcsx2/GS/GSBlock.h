@@ -552,35 +552,74 @@ public:
 	{
 		//printf("ReadColumn4\n");
 
-		const GSVector4i* s = (const GSVector4i*)src;
+#if _M_SSE >= 0x501
 
-		GSVector4i v0 = s[i * 4 + 0].xzyw();
-		GSVector4i v1 = s[i * 4 + 1].xzyw();
-		GSVector4i v2 = s[i * 4 + 2].xzyw();
-		GSVector4i v3 = s[i * 4 + 3].xzyw();
+		const GSVector8i* s = (const GSVector8i*)src;
 
-		GSVector4i::sw64(v0, v1, v2, v3);
-		GSVector4i::sw4(v0, v2, v1, v3);
-		GSVector4i::sw8(v0, v1, v2, v3);
+		GSVector8i v0 = s[i * 2 + 0];
+		GSVector8i v1 = s[i * 2 + 1];
 
-		v0 = v0.shuffle8(m_r4mask);
-		v1 = v1.shuffle8(m_r4mask);
-		v2 = v2.shuffle8(m_r4mask);
-		v3 = v3.shuffle8(m_r4mask);
+		GSVector8i::sw32_inv(v0, v1);
+		GSVector8i::mix4(v0, v1);
 
 		if ((i & 1) == 0)
 		{
-			GSVector4i::sw16rh(v0, v1, v2, v3);
+			v0 = v0.xzyw();
+			v1 = v1.zxwy();
 		}
 		else
 		{
-			GSVector4i::sw16rl(v0, v1, v2, v3);
+			v0 = v0.zxwy();
+			v1 = v1.xzyw();
+		}
+
+		v0 = v0.acbd().shuffle8(GSVector8i::broadcast128(m_r4mask));
+		v1 = v1.acbd().shuffle8(GSVector8i::broadcast128(m_r4mask));
+
+		GSVector8i::storel(&dst[dstpitch * 0], v0);
+		GSVector8i::storeh(&dst[dstpitch * 1], v0);
+		GSVector8i::storel(&dst[dstpitch * 2], v1);
+		GSVector8i::storeh(&dst[dstpitch * 3], v1);
+
+#else
+
+		const GSVector4i* s = (const GSVector4i*)src;
+
+		GSVector4i v0 = s[i * 4 + 0];
+		GSVector4i v1 = s[i * 4 + 1];
+		GSVector4i v2 = s[i * 4 + 2];
+		GSVector4i v3 = s[i * 4 + 3];
+
+		GSVector4i::sw32_inv(v0, v1, v2, v3);
+		GSVector4i::mix4(v0, v1);
+		GSVector4i::mix4(v2, v3);
+
+		GSVector4 v0f = GSVector4::cast(v0);
+		GSVector4 v1f = GSVector4::cast(v1);
+		GSVector4 v2f = GSVector4::cast(v2);
+		GSVector4 v3f = GSVector4::cast(v3);
+
+		if ((i & 1) == 0)
+		{
+			v0 = GSVector4i::cast(v0f.xzxz(v2f)).shuffle8(m_r4mask);
+			v1 = GSVector4i::cast(v0f.ywyw(v2f)).shuffle8(m_r4mask);
+			v2 = GSVector4i::cast(v1f.zxzx(v3f)).shuffle8(m_r4mask);
+			v3 = GSVector4i::cast(v1f.wywy(v3f)).shuffle8(m_r4mask);
+		}
+		else
+		{
+			v0 = GSVector4i::cast(v0f.zxzx(v2f)).shuffle8(m_r4mask);
+			v1 = GSVector4i::cast(v0f.wywy(v2f)).shuffle8(m_r4mask);
+			v2 = GSVector4i::cast(v1f.xzxz(v3f)).shuffle8(m_r4mask);
+			v3 = GSVector4i::cast(v1f.ywyw(v3f)).shuffle8(m_r4mask);
 		}
 
 		GSVector4i::store<true>(&dst[dstpitch * 0], v0);
 		GSVector4i::store<true>(&dst[dstpitch * 1], v1);
 		GSVector4i::store<true>(&dst[dstpitch * 2], v2);
 		GSVector4i::store<true>(&dst[dstpitch * 3], v3);
+
+#endif
 	}
 
 	static void ReadColumn32(int y, const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch)
@@ -1727,25 +1766,28 @@ public:
 		const GSVector4i* s = (const GSVector4i*)src;
 
 		GSVector4i v0, v1, v2, v3;
-		GSVector4i mask = m_r4mask;
+		GSVector4 v0f, v1f, v2f, v3f;
 
 		for (int i = 0; i < 2; i++)
 		{
-			v0 = s[i * 8 + 0].xzyw();
-			v1 = s[i * 8 + 1].xzyw();
-			v2 = s[i * 8 + 2].xzyw();
-			v3 = s[i * 8 + 3].xzyw();
+			v0 = s[i * 8 + 0];
+			v1 = s[i * 8 + 1];
+			v2 = s[i * 8 + 2];
+			v3 = s[i * 8 + 3];
 
-			GSVector4i::sw64(v0, v1, v2, v3);
-			GSVector4i::sw4(v0, v2, v1, v3);
-			GSVector4i::sw8(v0, v1, v2, v3);
+			GSVector4i::sw32_inv(v0, v1, v2, v3);
+			GSVector4i::mix4(v0, v1);
+			GSVector4i::mix4(v2, v3);
 
-			v0 = v0.shuffle8(mask);
-			v1 = v1.shuffle8(mask);
-			v2 = v2.shuffle8(mask);
-			v3 = v3.shuffle8(mask);
+			v0f = GSVector4::cast(v0);
+			v1f = GSVector4::cast(v1);
+			v2f = GSVector4::cast(v2);
+			v3f = GSVector4::cast(v3);
 
-			GSVector4i::sw16rh(v0, v1, v2, v3);
+			v0 = GSVector4i::cast(v0f.xzxz(v2f)).shuffle8(m_r4mask);
+			v1 = GSVector4i::cast(v0f.ywyw(v2f)).shuffle8(m_r4mask);
+			v2 = GSVector4i::cast(v1f.zxzx(v3f)).shuffle8(m_r4mask);
+			v3 = GSVector4i::cast(v1f.wywy(v3f)).shuffle8(m_r4mask);
 
 			v0.gather64_8<>(pal, (GSVector4i*)dst);
 			dst += dstpitch;
@@ -1756,21 +1798,24 @@ public:
 			v3.gather64_8<>(pal, (GSVector4i*)dst);
 			dst += dstpitch;
 
-			v0 = s[i * 8 + 4].xzyw();
-			v1 = s[i * 8 + 5].xzyw();
-			v2 = s[i * 8 + 6].xzyw();
-			v3 = s[i * 8 + 7].xzyw();
+			v0 = s[i * 8 + 4];
+			v1 = s[i * 8 + 5];
+			v2 = s[i * 8 + 6];
+			v3 = s[i * 8 + 7];
 
-			GSVector4i::sw64(v0, v1, v2, v3);
-			GSVector4i::sw4(v0, v2, v1, v3);
-			GSVector4i::sw8(v0, v1, v2, v3);
+			GSVector4i::sw32_inv(v0, v1, v2, v3);
+			GSVector4i::mix4(v0, v1);
+			GSVector4i::mix4(v2, v3);
 
-			v0 = v0.shuffle8(mask);
-			v1 = v1.shuffle8(mask);
-			v2 = v2.shuffle8(mask);
-			v3 = v3.shuffle8(mask);
+			v0f = GSVector4::cast(v0);
+			v1f = GSVector4::cast(v1);
+			v2f = GSVector4::cast(v2);
+			v3f = GSVector4::cast(v3);
 
-			GSVector4i::sw16rl(v0, v1, v2, v3);
+			v0 = GSVector4i::cast(v0f.zxzx(v2f)).shuffle8(m_r4mask);
+			v1 = GSVector4i::cast(v0f.wywy(v2f)).shuffle8(m_r4mask);
+			v2 = GSVector4i::cast(v1f.xzxz(v3f)).shuffle8(m_r4mask);
+			v3 = GSVector4i::cast(v1f.ywyw(v3f)).shuffle8(m_r4mask);
 
 			v0.gather64_8<>(pal, (GSVector4i*)dst);
 			dst += dstpitch;

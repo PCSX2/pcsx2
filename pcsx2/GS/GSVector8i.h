@@ -1255,6 +1255,16 @@ public:
 
 	// TODO: swizzling
 
+	__forceinline static void mix4(GSVector8i& a, GSVector8i& b)
+	{
+		GSVector8i mask(_mm256_set1_epi32(0x0f0f0f0f));
+
+		GSVector8i c = (b << 4).blend(a, mask);
+		GSVector8i d = b.blend(a >> 4, mask);
+		a = c;
+		b = d;
+	}
+
 	__forceinline static void sw8(GSVector8i& a, GSVector8i& b)
 	{
 		GSVector8i c = a;
@@ -1281,6 +1291,8 @@ public:
 		a = c.upl32(d);
 		b = c.uph32(d);
 	}
+
+	__forceinline static void sw32_inv(GSVector8i& a, GSVector8i& b);
 
 	__forceinline static void sw64(GSVector8i& a, GSVector8i& b)
 	{
