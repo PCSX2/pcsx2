@@ -432,7 +432,7 @@ TEST(ReadAndExpandTest, Read4)
 	{
 		TestData expected = swizzle4(&columnTable4[0][0], data, true);
 		expected = expand4(expected.prepareExpand());
-		GSBlock::ReadAndExpandBlock4_32(data.block, data.output, 128, data.clut64);
+		GSBlock::ReadAndExpandBlock4_32(data.block, data.output, 128, data.clut32);
 		assertEqual(expected, data, "ReadAndExpand4", 16, 32, 32);
 	});
 }

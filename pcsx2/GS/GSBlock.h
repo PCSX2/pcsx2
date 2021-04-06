@@ -24,6 +24,7 @@ class GSBlock
 	static const GSVector4i m_r16mask;
 	static const GSVector4i m_r8mask;
 	static const GSVector4i m_r4mask;
+	static const GSVector4i m_palvec_mask;
 
 	static const GSVector4i m_avx2_r8mask1;
 	static const GSVector4i m_avx2_r8mask2;
@@ -1759,72 +1760,106 @@ public:
 
 	// TODO: ReadAndExpandBlock8_16
 
-	__forceinline static void ReadAndExpandBlock4_32(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u64* RESTRICT pal)
+	/// Load 16-element palette into four vectors, with each u32 split across the four vectors
+	template <typename V>
+	__forceinline static void LoadPalVecs(const u32* RESTRICT pal, V& p0, V& p1, V& p2, V& p3)
+	{
+		const GSVector4i* p = (const GSVector4i*)pal;
+		p0 = V::broadcast128(p[0]).shuffle8(V::broadcast128(m_palvec_mask));
+		p1 = V::broadcast128(p[1]).shuffle8(V::broadcast128(m_palvec_mask));
+		p2 = V::broadcast128(p[2]).shuffle8(V::broadcast128(m_palvec_mask));
+		p3 = V::broadcast128(p[3]).shuffle8(V::broadcast128(m_palvec_mask));
+		V::sw32(p0, p1, p2, p3);
+		V::sw64(p0, p1, p2, p3);
+		std::swap(p1, p2);
+	}
+
+	template <typename V>
+	__forceinline static void ReadClut4AndWrite(const V& p0, const V& p1, const V& p2, const V& p3, const V& src, V* dst, int dstride)
+	{
+		V r0 = p0.shuffle8(src);
+		V r1 = p1.shuffle8(src);
+		V r2 = p2.shuffle8(src);
+		V r3 = p3.shuffle8(src);
+
+		V::sw8(r0, r1, r2, r3);
+		V::sw16(r0, r1, r2, r3);
+
+		dst[dstride * 0] = r0;
+		dst[dstride * 1] = r2;
+		dst[dstride * 2] = r1;
+		dst[dstride * 3] = r3;
+	}
+
+	__forceinline static void ReadAndExpandBlock4_32(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
 	{
 		//printf("ReadAndExpandBlock4_32\n");
 
 		const GSVector4i* s = (const GSVector4i*)src;
 
+		GSVector4i p0, p1, p2, p3;
+		LoadPalVecs(pal, p0, p1, p2, p3);
+		GSVector4i mask(0x0f0f0f0f);
+
 		GSVector4i v0, v1, v2, v3;
-		GSVector4 v0f, v1f, v2f, v3f;
 
 		for (int i = 0; i < 2; i++)
 		{
+			GSVector4i* d0 = reinterpret_cast<GSVector4i*>(dst + dstpitch * 0);
+			GSVector4i* d1 = reinterpret_cast<GSVector4i*>(dst + dstpitch * 1);
+			GSVector4i* d2 = reinterpret_cast<GSVector4i*>(dst + dstpitch * 2);
+			GSVector4i* d3 = reinterpret_cast<GSVector4i*>(dst + dstpitch * 3);
+
 			v0 = s[i * 8 + 0];
 			v1 = s[i * 8 + 1];
 			v2 = s[i * 8 + 2];
 			v3 = s[i * 8 + 3];
 
-			GSVector4i::sw32_inv(v0, v1, v2, v3);
-			GSVector4i::mix4(v0, v1);
-			GSVector4i::mix4(v2, v3);
+			GSVector4i::sw64(v0, v1, v2, v3);
 
-			v0f = GSVector4::cast(v0);
-			v1f = GSVector4::cast(v1);
-			v2f = GSVector4::cast(v2);
-			v3f = GSVector4::cast(v3);
+			v0 = v0.shuffle8(m_palvec_mask);
+			v1 = v1.shuffle8(m_palvec_mask);
+			v2 = v2.shuffle8(m_palvec_mask);
+			v3 = v3.shuffle8(m_palvec_mask);
 
-			v0 = GSVector4i::cast(v0f.xzxz(v2f)).shuffle8(m_r4mask);
-			v1 = GSVector4i::cast(v0f.ywyw(v2f)).shuffle8(m_r4mask);
-			v2 = GSVector4i::cast(v1f.zxzx(v3f)).shuffle8(m_r4mask);
-			v3 = GSVector4i::cast(v1f.wywy(v3f)).shuffle8(m_r4mask);
+			ReadClut4AndWrite(p0, p1, p2, p3,  v0       & mask, d0 + 0, 2);
+			ReadClut4AndWrite(p0, p1, p2, p3, (v0 >> 4) & mask, d2 + 1, 2);
+			ReadClut4AndWrite(p0, p1, p2, p3,  v1       & mask, d0 + 1, 2);
+			ReadClut4AndWrite(p0, p1, p2, p3, (v1 >> 4) & mask, d2 + 0, 2);
+			ReadClut4AndWrite(p0, p1, p2, p3,  v2       & mask, d1 + 0, 2);
+			ReadClut4AndWrite(p0, p1, p2, p3, (v2 >> 4) & mask, d3 + 1, 2);
+			ReadClut4AndWrite(p0, p1, p2, p3,  v3       & mask, d1 + 1, 2);
+			ReadClut4AndWrite(p0, p1, p2, p3, (v3 >> 4) & mask, d3 + 0, 2);
 
-			v0.gather64_8<>(pal, (GSVector4i*)dst);
-			dst += dstpitch;
-			v1.gather64_8<>(pal, (GSVector4i*)dst);
-			dst += dstpitch;
-			v2.gather64_8<>(pal, (GSVector4i*)dst);
-			dst += dstpitch;
-			v3.gather64_8<>(pal, (GSVector4i*)dst);
-			dst += dstpitch;
+			dst += dstpitch * 4;
+
+			d0 = reinterpret_cast<GSVector4i*>(dst + dstpitch * 0);
+			d1 = reinterpret_cast<GSVector4i*>(dst + dstpitch * 1);
+			d2 = reinterpret_cast<GSVector4i*>(dst + dstpitch * 2);
+			d3 = reinterpret_cast<GSVector4i*>(dst + dstpitch * 3);
 
 			v0 = s[i * 8 + 4];
 			v1 = s[i * 8 + 5];
 			v2 = s[i * 8 + 6];
 			v3 = s[i * 8 + 7];
 
-			GSVector4i::sw32_inv(v0, v1, v2, v3);
-			GSVector4i::mix4(v0, v1);
-			GSVector4i::mix4(v2, v3);
+			GSVector4i::sw64(v0, v1, v2, v3);
 
-			v0f = GSVector4::cast(v0);
-			v1f = GSVector4::cast(v1);
-			v2f = GSVector4::cast(v2);
-			v3f = GSVector4::cast(v3);
+			v0 = v0.shuffle8(m_palvec_mask);
+			v1 = v1.shuffle8(m_palvec_mask);
+			v2 = v2.shuffle8(m_palvec_mask);
+			v3 = v3.shuffle8(m_palvec_mask);
 
-			v0 = GSVector4i::cast(v0f.zxzx(v2f)).shuffle8(m_r4mask);
-			v1 = GSVector4i::cast(v0f.wywy(v2f)).shuffle8(m_r4mask);
-			v2 = GSVector4i::cast(v1f.xzxz(v3f)).shuffle8(m_r4mask);
-			v3 = GSVector4i::cast(v1f.ywyw(v3f)).shuffle8(m_r4mask);
+			ReadClut4AndWrite(p0, p1, p2, p3,  v0       & mask, d0 + 1, 2);
+			ReadClut4AndWrite(p0, p1, p2, p3, (v0 >> 4) & mask, d2 + 0, 2);
+			ReadClut4AndWrite(p0, p1, p2, p3,  v1       & mask, d0 + 0, 2);
+			ReadClut4AndWrite(p0, p1, p2, p3, (v1 >> 4) & mask, d2 + 1, 2);
+			ReadClut4AndWrite(p0, p1, p2, p3,  v2       & mask, d1 + 1, 2);
+			ReadClut4AndWrite(p0, p1, p2, p3, (v2 >> 4) & mask, d3 + 0, 2);
+			ReadClut4AndWrite(p0, p1, p2, p3,  v3       & mask, d1 + 0, 2);
+			ReadClut4AndWrite(p0, p1, p2, p3, (v3 >> 4) & mask, d3 + 1, 2);
 
-			v0.gather64_8<>(pal, (GSVector4i*)dst);
-			dst += dstpitch;
-			v1.gather64_8<>(pal, (GSVector4i*)dst);
-			dst += dstpitch;
-			v2.gather64_8<>(pal, (GSVector4i*)dst);
-			dst += dstpitch;
-			v3.gather64_8<>(pal, (GSVector4i*)dst);
-			dst += dstpitch;
+			dst += dstpitch * 4;
 		}
 	}
 
