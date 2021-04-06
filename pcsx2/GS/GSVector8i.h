@@ -316,6 +316,12 @@ public:
 		return GSVector8i(_mm256_blend_epi16(m, a, mask));
 	}
 
+	template <int mask>
+	__forceinline GSVector8i blend32(const GSVector8i& a) const
+	{
+		return GSVector8i(_mm256_blend_epi32(m, a, mask));
+	}
+
 	__forceinline GSVector8i blend(const GSVector8i& a, const GSVector8i& mask) const
 	{
 		return GSVector8i(_mm256_or_si256(_mm256_andnot_si256(mask, m), _mm256_and_si256(mask, a)));

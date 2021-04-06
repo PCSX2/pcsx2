@@ -25,6 +25,9 @@ class GSBlock
 	static const GSVector4i m_r8mask;
 	static const GSVector4i m_r4mask;
 
+	static const GSVector4i m_avx2_r8mask1;
+	static const GSVector4i m_avx2_r8mask2;
+
 	static const GSVector4i m_uw8hmask0;
 	static const GSVector4i m_uw8hmask1;
 	static const GSVector4i m_uw8hmask2;
@@ -512,29 +515,33 @@ public:
 
 		//for(int j = 0; j < 64; j++) ((u8*)src)[j] = (u8)j;
 
-#if 0 //_M_SSE >= 0x501
+#if _M_SSE >= 0x501
 
 		const GSVector8i* s = (const GSVector8i*)src;
 
-		GSVector8i v0 = s[i * 2 + 0];
-		GSVector8i v1 = s[i * 2 + 1];
+		GSVector8i v0, v1;
 
-		GSVector8i::sw8(v0, v1);
-		GSVector8i::sw16(v0, v1);
-		GSVector8i::sw8(v0, v1);
-		GSVector8i::sw128(v0, v1);
-		GSVector8i::sw16(v0, v1);
+		if ((i & 1) == 0)
+		{
+			v0 = s[i * 2 + 0];
+			v1 = s[i * 2 + 1];
+		}
+		else
+		{
+			v1 = s[i * 2 + 0];
+			v0 = s[i * 2 + 1];
+		}
 
-		v0 = v0.acbd();
-		v1 = v1.acbd();
-		v1 = v1.yxwz();
+		GSVector8i v2 = v0.acbd().shuffle8(GSVector8i::broadcast128(m_avx2_r8mask1));
+		GSVector8i v3 = v1.acbd().shuffle8(GSVector8i::broadcast128(m_avx2_r8mask2));
+
+		v0 = v2.blend32<0xaa>(v3);
+		v1 = v3.blend32<0xaa>(v2);
 
 		GSVector8i::storel(&dst[dstpitch * 0], v0);
 		GSVector8i::storeh(&dst[dstpitch * 1], v0);
 		GSVector8i::storel(&dst[dstpitch * 2], v1);
 		GSVector8i::storeh(&dst[dstpitch * 3], v1);
-
-		// TODO: not sure if this is worth it, not in this form, there should be a shorter path
 
 #else
 

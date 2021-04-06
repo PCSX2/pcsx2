@@ -20,6 +20,9 @@ CONSTINIT const GSVector4i GSBlock::m_r16mask(0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6,
 CONSTINIT const GSVector4i GSBlock::m_r8mask(0, 4, 2, 6, 8, 12, 10, 14, 1, 5, 3, 7, 9, 13, 11, 15);
 CONSTINIT const GSVector4i GSBlock::m_r4mask(0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15);
 
+CONSTINIT const GSVector4i GSBlock::m_avx2_r8mask1(0, 4, 8, 12, 1, 5, 9, 13, 2, 6, 10, 14, 3, 7, 11, 15);
+CONSTINIT const GSVector4i GSBlock::m_avx2_r8mask2(1, 5, 9, 13, 0, 4, 8, 12, 3, 7, 11, 15, 2, 6, 10, 14);
+
 CONSTINIT const GSVector4i GSBlock::m_uw8hmask0(0, 0, 0, 0, 1, 1, 1, 1, 8, 8, 8, 8, 9, 9, 9, 9);
 CONSTINIT const GSVector4i GSBlock::m_uw8hmask1(2, 2, 2, 2, 3, 3, 3, 3, 10, 10, 10, 10, 11, 11, 11, 11);
 CONSTINIT const GSVector4i GSBlock::m_uw8hmask2(4, 4, 4, 4, 5, 5, 5, 5, 12, 12, 12, 12, 13, 13, 13, 13);
