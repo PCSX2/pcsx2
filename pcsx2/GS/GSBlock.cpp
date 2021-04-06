@@ -16,21 +16,9 @@
 #include "PrecompiledHeader.h"
 #include "GSBlock.h"
 
-CONSTINIT const GSVector4i GSBlock::m_r16mask(0, 1, 4, 5, 2, 3, 6, 7, 8, 9, 12, 13, 10, 11, 14, 15);
+CONSTINIT const GSVector4i GSBlock::m_r16mask(0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15);
 CONSTINIT const GSVector4i GSBlock::m_r8mask(0, 4, 2, 6, 8, 12, 10, 14, 1, 5, 3, 7, 9, 13, 11, 15);
 CONSTINIT const GSVector4i GSBlock::m_r4mask(0, 1, 4, 5, 8, 9, 12, 13, 2, 3, 6, 7, 10, 11, 14, 15);
-
-#if _M_SSE >= 0x501
-CONSTINIT const GSVector8i GSBlock::m_xxxa = GSVector8i::cxpr(0x00008000);
-CONSTINIT const GSVector8i GSBlock::m_xxbx = GSVector8i::cxpr(0x00007c00);
-CONSTINIT const GSVector8i GSBlock::m_xgxx = GSVector8i::cxpr(0x000003e0);
-CONSTINIT const GSVector8i GSBlock::m_rxxx = GSVector8i::cxpr(0x0000001f);
-#else
-CONSTINIT const GSVector4i GSBlock::m_xxxa = GSVector4i::cxpr(0x00008000);
-CONSTINIT const GSVector4i GSBlock::m_xxbx = GSVector4i::cxpr(0x00007c00);
-CONSTINIT const GSVector4i GSBlock::m_xgxx = GSVector4i::cxpr(0x000003e0);
-CONSTINIT const GSVector4i GSBlock::m_rxxx = GSVector4i::cxpr(0x0000001f);
-#endif
 
 CONSTINIT const GSVector4i GSBlock::m_uw8hmask0(0, 0, 0, 0, 1, 1, 1, 1, 8, 8, 8, 8, 9, 9, 9, 9);
 CONSTINIT const GSVector4i GSBlock::m_uw8hmask1(2, 2, 2, 2, 3, 3, 3, 3, 10, 10, 10, 10, 11, 11, 11, 11);
