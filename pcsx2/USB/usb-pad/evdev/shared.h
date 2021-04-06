@@ -201,9 +201,6 @@ namespace usb_pad
 			uint8_t axis_map[ABS_MAX + 1];
 			uint16_t btn_map[KEY_MAX + 1];
 			struct axis_correct abs_correct[ABS_MAX];
-			bool is_gamepad;    //xboxish gamepad
-			bool is_dualanalog; // tricky, have to read the AXIS_RZ somehow and
-								// determine if its unpressed value is zero
 		};
 
 		int GtkPadConfigure(int port, const char* dev_type, const char* title, const char* apiname, GtkWindow* parent, ApiCallbacks& apicbs);

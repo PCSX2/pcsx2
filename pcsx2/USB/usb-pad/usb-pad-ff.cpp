@@ -102,7 +102,7 @@ namespace usb_pad
 
 		static int warned = 0;
 		int caps = 0;
-		DevCon.WriteLn("FFB %02X, %02X, %02X, %02X : %02X, %02X, %02X, %02X\n",
+		DevCon.WriteLn("FFB %02X, %02X, %02X, %02X : %02X, %02X, %02X, %02X",
 				   ffdata->cmdslot, ffdata->type, ffdata->u.params[0], ffdata->u.params[1],
 				   ffdata->u.params[2], ffdata->u.params[3], ffdata->u.params[4], ffdata->padd0);
 
