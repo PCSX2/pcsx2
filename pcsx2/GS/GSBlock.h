@@ -1837,7 +1837,7 @@ public:
 	}
 
 	template <typename V>
-	__forceinline static void ReadClut4AndWrite(const V& p0, const V& p1, const V& p2, const V& p3, const V& src, V* dst, int dstride)
+	__forceinline static void ReadClut4(const V& p0, const V& p1, const V& p2, const V& p3, const V& src, V& d0, V& d1, V& d2, V& d3)
 	{
 		V r0 = p0.shuffle8(src);
 		V r1 = p1.shuffle8(src);
@@ -1847,10 +1847,16 @@ public:
 		V::sw8(r0, r1, r2, r3);
 		V::sw16(r0, r1, r2, r3);
 
-		dst[dstride * 0] = r0;
-		dst[dstride * 1] = r2;
-		dst[dstride * 2] = r1;
-		dst[dstride * 3] = r3;
+		d0 = r0;
+		d1 = r2;
+		d2 = r1;
+		d3 = r3;
+	}
+
+	template <typename V>
+	__forceinline static void ReadClut4AndWrite(const V& p0, const V& p1, const V& p2, const V& p3, const V& src, V* dst, int dstride)
+	{
+		ReadClut4(p0, p1, p2, p3, src, dst[dstride * 0], dst[dstride * 1], dst[dstride * 2], dst[dstride * 3]);
 	}
 
 	__forceinline static void ReadAndExpandBlock4_32(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
@@ -2047,28 +2053,32 @@ public:
 	__forceinline static void ReadAndExpandBlock4HL_32(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
 	{
 		//printf("ReadAndExpandBlock4HL_32\n");
+
 		const GSVector4i* s = (const GSVector4i*)src;
+
+		GSVector4i p0, p1, p2, p3;
+		LoadPalVecs(pal, p0, p1, p2, p3);
+		GSVector4i mask(0x0f0f0f0f);
 
 		GSVector4i v0, v1, v2, v3;
 
 		for (int i = 0; i < 4; i++)
 		{
-			v0 = s[i * 4 + 0];
-			v1 = s[i * 4 + 1];
-			v2 = s[i * 4 + 2];
-			v3 = s[i * 4 + 3];
+			GSVector4i* d0 = reinterpret_cast<GSVector4i*>(dst);
+			GSVector4i* d1 = reinterpret_cast<GSVector4i*>(dst + dstpitch);
+
+			v0 = s[i * 4 + 0] >> 24;
+			v1 = s[i * 4 + 1] >> 24;
+			v2 = s[i * 4 + 2] >> 24;
+			v3 = s[i * 4 + 3] >> 24;
 
 			GSVector4i::sw64(v0, v1, v2, v3);
 
-			((v0 >> 24) & 0xf).gather32_32<>(pal, (GSVector4i*)&dst[0]);
-			((v1 >> 24) & 0xf).gather32_32<>(pal, (GSVector4i*)&dst[16]);
+			GSVector4i all = v0.ps32(v1).pu16(v2.ps32(v3)) & mask;
 
-			dst += dstpitch;
+			ReadClut4(p0, p1, p2, p3, all, d0[0], d0[1], d1[0], d1[1]);
 
-			((v2 >> 24) & 0xf).gather32_32<>(pal, (GSVector4i*)&dst[0]);
-			((v3 >> 24) & 0xf).gather32_32<>(pal, (GSVector4i*)&dst[16]);
-
-			dst += dstpitch;
+			dst += dstpitch * 2;
 		}
 	}
 
@@ -2080,26 +2090,28 @@ public:
 
 		const GSVector4i* s = (const GSVector4i*)src;
 
+		GSVector4i p0, p1, p2, p3;
+		LoadPalVecs(pal, p0, p1, p2, p3);
+
 		GSVector4i v0, v1, v2, v3;
 
 		for (int i = 0; i < 4; i++)
 		{
-			v0 = s[i * 4 + 0];
-			v1 = s[i * 4 + 1];
-			v2 = s[i * 4 + 2];
-			v3 = s[i * 4 + 3];
+			GSVector4i* d0 = reinterpret_cast<GSVector4i*>(dst);
+			GSVector4i* d1 = reinterpret_cast<GSVector4i*>(dst + dstpitch);
+
+			v0 = s[i * 4 + 0] >> 28;
+			v1 = s[i * 4 + 1] >> 28;
+			v2 = s[i * 4 + 2] >> 28;
+			v3 = s[i * 4 + 3] >> 28;
 
 			GSVector4i::sw64(v0, v1, v2, v3);
 
-			(v0 >> 28).gather32_32<>(pal, (GSVector4i*)&dst[0]);
-			(v1 >> 28).gather32_32<>(pal, (GSVector4i*)&dst[16]);
+			GSVector4i all = v0.ps32(v1).pu16(v2.ps32(v3));
 
-			dst += dstpitch;
+			ReadClut4(p0, p1, p2, p3, all, d0[0], d0[1], d1[0], d1[1]);
 
-			(v2 >> 28).gather32_32<>(pal, (GSVector4i*)&dst[0]);
-			(v3 >> 28).gather32_32<>(pal, (GSVector4i*)&dst[16]);
-
-			dst += dstpitch;
+			dst += dstpitch * 2;
 		}
 	}
 
