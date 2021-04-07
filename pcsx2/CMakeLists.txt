@@ -815,6 +815,7 @@ set(pcsx2RecordingSources
 	${rec_src}/InputRecordingFile.cpp
 	${rec_src}/NewRecordingFrame.cpp
 	${rec_src}/PadData.cpp
+	${rec_src}/Utilities/InputRecordingLogger.cpp
 	${rec_vp_src}/VirtualPad.cpp
 	${rec_vp_src}/VirtualPadData.cpp
 	${rec_vp_src}/VirtualPadResources.cpp

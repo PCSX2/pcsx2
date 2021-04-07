@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -28,32 +28,7 @@
 
 namespace inputRec
 {
-	static void log(const std::string log)
-	{
-		if (log.empty())
-			return;
-
-		recordingConLog(fmt::format("[REC]: {}\n", log));
-
-		// NOTE - Color is not currently used for OSD logs
-		if (GSosdLog)
-			GSosdLog(log.c_str(), wxGetApp().GetProgramLog()->GetRGBA(ConsoleColors::Color_StrongMagenta));
-	}
-
-	static void consoleLog(const std::string log)
-	{
-		if (log.empty())
-			return;
-
-		recordingConLog(fmt::format("[REC]: {}\n", log));
-	}
-
-	static void consoleMultiLog(std::vector<std::string> logs)
-	{
-		std::string log;
-		for (std::string l : logs)
-			log.append(fmt::format("[REC]: {}\n", l));
-
-		recordingConLog(log);
-	}
+	extern void log(const std::string log);
+	extern void consoleLog(const std::string log);
+	extern void consoleMultiLog(std::vector<std::string> logs);
 } // namespace inputRec

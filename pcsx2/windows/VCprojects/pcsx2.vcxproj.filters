@@ -1309,6 +1309,9 @@
     <ClCompile Include="..\..\CDVD\ChdFileReader.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Recording\Utilities\InputRecordingLogger.cpp">
+      <Filter>Recording\Utilities</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -2237,10 +2240,5 @@
     <Manifest Include="..\PCSX2.manifest">
       <Filter>AppHost\Resources</Filter>
     </Manifest>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\gui\Resources\NoIcon.png">
-      <Filter>AppHost\Resources</Filter>
-    </Image>
   </ItemGroup>
 </Project>
