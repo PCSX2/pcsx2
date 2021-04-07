@@ -747,6 +747,52 @@ public:
 	{
 		//printf("ReadBlock4P\n");
 
+#if _M_SSE >= 0x501
+
+		const GSVector8i* s = (const GSVector8i*)src;
+
+		GSVector8i v0, v1;
+
+		GSVector8i shuf = GSVector8i::broadcast128(m_palvec_mask);
+		GSVector8i mask(0x0f0f0f0f);
+
+		for (int i = 0; i < 2; i++)
+		{
+			// col 0, 2
+
+			v0 = s[i * 4 + 0];
+			v1 = s[i * 4 + 1];
+
+			GSVector8i::sw8(v0, v1);
+			v0 = v0.xzyw().acbd().shuffle8(shuf);
+			v1 = v1.xzyw().acbd().shuffle8(shuf);
+
+			GSVector8i::store<true>(dst + dstpitch * 0, v0 & mask);
+			GSVector8i::store<true>(dst + dstpitch * 1, v1 & mask);
+			GSVector8i::store<true>(dst + dstpitch * 2, (v0.yxwz() >> 4) & mask);
+			GSVector8i::store<true>(dst + dstpitch * 3, (v1.yxwz() >> 4) & mask);
+
+			dst += dstpitch * 4;
+
+			// col 1, 3
+
+			v0 = s[i * 4 + 2];
+			v1 = s[i * 4 + 3];
+
+			GSVector8i::sw8(v0, v1);
+			v0 = v0.xzyw().acbd().shuffle8(shuf);
+			v1 = v1.xzyw().acbd().shuffle8(shuf);
+
+			GSVector8i::store<true>(dst + dstpitch * 0, v0.yxwz() & mask);
+			GSVector8i::store<true>(dst + dstpitch * 1, v1.yxwz() & mask);
+			GSVector8i::store<true>(dst + dstpitch * 2, (v0 >> 4) & mask);
+			GSVector8i::store<true>(dst + dstpitch * 3, (v1 >> 4) & mask);
+
+			dst += dstpitch * 4;
+		}
+
+#else
+
 		const GSVector4i* s = (const GSVector4i*)src;
 
 		GSVector4i v0, v1, v2, v3;
@@ -805,6 +851,8 @@ public:
 
 			dst += dstpitch * 2;
 		}
+
+#endif
 	}
 
 	__forceinline static void ReadBlock8HP(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch)
