@@ -2361,12 +2361,9 @@
       <Filter>AppHost\Resources</Filter>
     </Manifest>
   </ItemGroup>
-<<<<<<< HEAD
-=======
   <ItemGroup>
     <Image Include="..\..\gui\Resources\NoIcon.png">
       <Filter>AppHost\Resources</Filter>
     </Image>
   </ItemGroup>
->>>>>>> 9fde4768c (input-rec: Create new Viewer/Editor window)
 </Project>

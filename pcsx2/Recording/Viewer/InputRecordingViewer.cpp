@@ -43,100 +43,100 @@ InputRecordingViewer::InputRecordingViewer(wxWindow* parent, AppConfig::InputRec
 	, options(options)
 {
 	// Init Menus
-	menuBar = new wxMenuBar();
-	fileMenu = new wxMenu();
-	openMenuItem = enableMenuItem(fileMenu->Append(wxID_ANY, _("Open"), _("Open an Input Recording file to view/edit")), true);
-	closeMenuItem = enableMenuItem(fileMenu->Append(wxID_ANY, _("Close"), _("Close the current file")), false);
-	fileMenu->AppendSeparator();
-	saveMenuItem = enableMenuItem(fileMenu->Append(wxID_ANY, _("Save"), _("Save the current file, overwriting the original")), false);
-	saveAsMenuItem = enableMenuItem(fileMenu->Append(wxID_ANY, _("Save As"), _("Save the current file to a specified location")), false);
+	m_menu_bar = new wxMenuBar();
+	m_file_menu = new wxMenu();
+	m_open_menu_item = enableMenuItem(m_file_menu->Append(wxID_ANY, _("Open"), _("Open an Input Recording file to view/edit")), true);
+	m_close_menu_item = enableMenuItem(m_file_menu->Append(wxID_ANY, _("Close"), _("Close the current file")), false);
+	m_file_menu->AppendSeparator();
+	m_save_menu_item = enableMenuItem(m_file_menu->Append(wxID_ANY, _("Save"), _("Save the current file, overwriting the original")), false);
+	m_save_as_menu_item = enableMenuItem(m_file_menu->Append(wxID_ANY, _("Save As"), _("Save the current file to a specified location")), false);
 	// TODO - implement Exporting!
 	// fileMenu->AppendSeparator();
 	// importMenuItem = enableMenuItem(fileMenu->Append(wxID_ANY, _("Import From YAML"), _("Import recording data from a YAML file")), false);
 	// exportMenuItem = enableMenuItem(fileMenu->Append(wxID_ANY, _("Export As YAML"), _("Export recording data to a YAML file")), false);
-	menuBar->Append(fileMenu, _("File"));
+	m_menu_bar->Append(m_file_menu, _("File"));
 
-	editMenu = new wxMenu();
-	changeMetadataMenuItem = enableMenuItem(editMenu->Append(wxID_ANY, _("Change Metadata"), _("Change the recordings relevant metadata")), false);
+	m_edit_menu = new wxMenu();
+	m_change_metadata_menu_item = enableMenuItem(m_edit_menu->Append(wxID_ANY, _("Change Metadata"), _("Change the recordings relevant metadata")), false);
 	// TODO - implement these at a later date
 	// changeRecordingTypeMenuItem = enableMenuItem(editMenu->Append(wxID_ANY, _("Change Recording Type"), _("Change the recording's type (ie. power-on / save-state)")), false);
 	// changeBaseSavestateMenuItem = enableMenuItem(editMenu->Append(wxID_ANY, _("Change Base Savestate"), _("Change the base savestate for the recording")), false);
-	menuBar->Append(editMenu, _("Edit"));
+	m_menu_bar->Append(m_edit_menu, _("Edit"));
 
-	viewMenu = new wxMenu();
-	configColumnsMenuItem = enableMenuItem(viewMenu->Append(wxID_ANY, _("Config Columns"), _("Change the order and displaying of columns")), true);
-	viewMenu->AppendSeparator();
-	jumpToFrameMenuItem = enableMenuItem(viewMenu->Append(wxID_ANY, _("Jump to Frame"), _("Jump to a specific frame")), false);
-	viewMenu->AppendSeparator();
-	wxMenu* controllerMenu = new wxMenu();
-	portOneMenuItem = checkMenuItem(controllerMenu->Append(wxID_ANY, _("Port 1"), _("Select port 1"), wxITEM_CHECK), true);
-	portTwoMenuItem = checkMenuItem(controllerMenu->Append(wxID_ANY, _("Port 2"), _("Select port 2"), wxITEM_CHECK), false);
-	controllerPortSubmenu = enableMenuItem(viewMenu->AppendSubMenu(controllerMenu, _("Change Controller"), _("Switch which controller port is active")), false);
-	menuBar->Append(viewMenu, _("View"));
+	m_view_menu = new wxMenu();
+	m_config_columns_menu_item = enableMenuItem(m_view_menu->Append(wxID_ANY, _("Config Columns"), _("Change the order and displaying of columns")), true);
+	m_view_menu->AppendSeparator();
+	m_jump_to_frame_menu_item = enableMenuItem(m_view_menu->Append(wxID_ANY, _("Jump to Frame"), _("Jump to a specific frame")), false);
+	m_view_menu->AppendSeparator();
+	wxMenu* controller_menu = new wxMenu();
+	m_port_one_menu_item = checkMenuItem(controller_menu->Append(wxID_ANY, _("Port 1"), _("Select port 1"), wxITEM_CHECK), true);
+	m_port_two_menu_item = checkMenuItem(controller_menu->Append(wxID_ANY, _("Port 2"), _("Select port 2"), wxITEM_CHECK), false);
+	m_controller_port_submenu = enableMenuItem(m_view_menu->AppendSubMenu(controller_menu, _("Change Controller"), _("Switch which controller port is active")), false);
+	m_menu_bar->Append(m_view_menu, _("View"));
 
-	dataMenu = new wxMenu();
-	clearFrameMenuItem = enableMenuItem(dataMenu->Append(wxID_ANY, _("Clear Frame"), _("Clear the entire frame of data")), false);
-	defaultFrameMenuItem = enableMenuItem(dataMenu->Append(wxID_ANY, _("Default Frame"), _("Set the frame to the controllers default neutral values")), false);
-	duplicateFrameMenuItem = enableMenuItem(dataMenu->Append(wxID_ANY, _("Duplicate Frame"), _("Duplicate and insert the frame")), false);
-	insertFrameMenuItem = enableMenuItem(dataMenu->Append(wxID_ANY, _("Insert Frame"), _("Insert a new default frame")), false);
-	insertFramesMenuItem = enableMenuItem(dataMenu->Append(wxID_ANY, _("Insert Frame(s)"), _("Insert multiple default frames")), false);
-	removeFrameMenuItem = enableMenuItem(dataMenu->Append(wxID_ANY, _("Remove Frame"), _("Remove a frame")), false);
-	removeFramesMenuItem = enableMenuItem(dataMenu->Append(wxID_ANY, _("Remove Frame(s)"), _("Remove multiple frames")), false);
+	m_data_menu = new wxMenu();
+	m_clear_frame_menu_item = enableMenuItem(m_data_menu->Append(wxID_ANY, _("Clear Frame"), _("Clear the entire frame of data")), false);
+	m_default_frame_menu_item = enableMenuItem(m_data_menu->Append(wxID_ANY, _("Default Frame"), _("Set the frame to the controllers default neutral values")), false);
+	m_duplicate_frame_menu_item = enableMenuItem(m_data_menu->Append(wxID_ANY, _("Duplicate Frame"), _("Duplicate and insert the frame")), false);
+	m_insert_frame_menu_item = enableMenuItem(m_data_menu->Append(wxID_ANY, _("Insert Frame"), _("Insert a new default frame")), false);
+	m_insert_frames_menu_item = enableMenuItem(m_data_menu->Append(wxID_ANY, _("Insert Frame(s)"), _("Insert multiple default frames")), false);
+	m_remove_frame_menu_item = enableMenuItem(m_data_menu->Append(wxID_ANY, _("Remove Frame"), _("Remove a frame")), false);
+	m_remove_frames_menu_item = enableMenuItem(m_data_menu->Append(wxID_ANY, _("Remove Frame(s)"), _("Remove multiple frames")), false);
 	// TODO - implement Data menu and event handlers
 	// menuBar->Append(dataMenu, _("Data"));
 
 	// Initialize Grid Column Order
-	InitColumns();
+	initColumns();
 
 	// Init Widgets
-	recordingDataSource = new RecordingFileGridTable(gridColumns);
-	recordingGrid = new wxGrid(this, wxID_ANY);
-	recordingGrid->SetTable(recordingDataSource, true);
-	recordingGrid->EnableDragColSize(false);
-	recordingGrid->EnableDragRowSize(false);
-	recordingGrid->EnableDragGridSize(false);
-	recordingGrid->SetColSize(0, 100);
-	recordingGrid->SetColSize(1, 100);
-	recordingGrid->SetColSize(2, 100);
-	recordingGrid->SetColSize(3, 100);
-	recordingGrid->SetColLabelSize(75);
+	m_recording_data_source = new RecordingFileGridTable(m_grid_columns);
+	m_recording_grid = new wxGrid(this, wxID_ANY);
+	m_recording_grid->SetTable(m_recording_data_source, true);
+	m_recording_grid->EnableDragColSize(false);
+	m_recording_grid->EnableDragRowSize(false);
+	m_recording_grid->EnableDragGridSize(false);
+	m_recording_grid->SetColSize(0, 100);
+	m_recording_grid->SetColSize(1, 100);
+	m_recording_grid->SetColSize(2, 100);
+	m_recording_grid->SetColSize(3, 100);
+	m_recording_grid->SetColLabelSize(75);
 
 	// Bind Events
-	Bind(wxEVT_CLOSE_WINDOW, &InputRecordingViewer::OnClose, this);
-	Bind(wxEVT_MOVE, &InputRecordingViewer::OnMoveAround, this);
+	Bind(wxEVT_CLOSE_WINDOW, &InputRecordingViewer::onClose, this);
+	Bind(wxEVT_MOVE, &InputRecordingViewer::onMoveAround, this);
 
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnOpenFile, this, openMenuItem->GetId());
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnCloseFile, this, closeMenuItem->GetId());
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnSaveFile, this, saveMenuItem->GetId());
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnSaveAsFile, this, saveAsMenuItem->GetId());
+	Bind(wxEVT_MENU, &InputRecordingViewer::onOpenFile, this, m_open_menu_item->GetId());
+	Bind(wxEVT_MENU, &InputRecordingViewer::onCloseFile, this, m_close_menu_item->GetId());
+	Bind(wxEVT_MENU, &InputRecordingViewer::onSaveFile, this, m_save_menu_item->GetId());
+	Bind(wxEVT_MENU, &InputRecordingViewer::onSaveAsFile, this, m_save_as_menu_item->GetId());
 	// TODO - implement Exporting!
 	// Bind(wxEVT_MENU, &InputRecordingViewer::OnImport, this, importMenuItem->GetId());
 	// Bind(wxEVT_MENU, &InputRecordingViewer::OnExport, this, exportMenuItem->GetId());
 
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnChangeMetadata, this, changeMetadataMenuItem->GetId());
+	Bind(wxEVT_MENU, &InputRecordingViewer::onChangeMetadata, this, m_change_metadata_menu_item->GetId());
 	// TODO - implement!
 	// Bind(wxEVT_MENU, &InputRecordingViewer::OnChangeRecordingType, this, changeRecordingTypeMenuItem->GetId());
 	// Bind(wxEVT_MENU, &InputRecordingViewer::OnChangeBaseSavestate, this, changeBaseSavestateMenuItem->GetId());
 
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnConfigColumns, this, configColumnsMenuItem->GetId());
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnJumpToFrame, this, jumpToFrameMenuItem->GetId());
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnSelectPortOne, this, portOneMenuItem->GetId());
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnSelectPortTwo, this, portTwoMenuItem->GetId());
+	Bind(wxEVT_MENU, &InputRecordingViewer::onConfigColumns, this, m_config_columns_menu_item->GetId());
+	Bind(wxEVT_MENU, &InputRecordingViewer::onJumpToFrame, this, m_jump_to_frame_menu_item->GetId());
+	Bind(wxEVT_MENU, &InputRecordingViewer::onSelectPortOne, this, m_port_one_menu_item->GetId());
+	Bind(wxEVT_MENU, &InputRecordingViewer::onSelectPortTwo, this, m_port_two_menu_item->GetId());
 
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnClearFrame, this, clearFrameMenuItem->GetId());
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnDefaultFrame, this, defaultFrameMenuItem->GetId());
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnDuplicateFrame, this, duplicateFrameMenuItem->GetId());
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnInsertFrame, this, insertFrameMenuItem->GetId());
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnInsertFrames, this, insertFramesMenuItem->GetId());
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnRemoveFrame, this, removeFrameMenuItem->GetId());
-	Bind(wxEVT_MENU, &InputRecordingViewer::OnRemoveFrames, this, removeFramesMenuItem->GetId());
+	Bind(wxEVT_MENU, &InputRecordingViewer::onClearFrame, this, m_clear_frame_menu_item->GetId());
+	Bind(wxEVT_MENU, &InputRecordingViewer::onDefaultFrame, this, m_default_frame_menu_item->GetId());
+	Bind(wxEVT_MENU, &InputRecordingViewer::onDuplicateFrame, this, m_duplicate_frame_menu_item->GetId());
+	Bind(wxEVT_MENU, &InputRecordingViewer::onInsertFrame, this, m_insert_frame_menu_item->GetId());
+	Bind(wxEVT_MENU, &InputRecordingViewer::onInsertFrames, this, m_insert_frames_menu_item->GetId());
+	Bind(wxEVT_MENU, &InputRecordingViewer::onRemoveFrame, this, m_remove_frame_menu_item->GetId());
+	Bind(wxEVT_MENU, &InputRecordingViewer::onRemoveFrames, this, m_remove_frames_menu_item->GetId());
 
 	// Sizers
 	wxBoxSizer* sizer = new wxBoxSizer(wxVERTICAL);
-	sizer->Add(recordingGrid, 1, wxEXPAND, 0);
+	sizer->Add(m_recording_grid, 1, wxEXPAND, 0);
 	sizer->SetSizeHints(this);
 
-	SetMenuBar(menuBar);
+	SetMenuBar(m_menu_bar);
 	SetIcons(wxGetApp().GetIconBundle());
 
 	CreateStatusBar(1);
@@ -145,19 +145,19 @@ InputRecordingViewer::InputRecordingViewer(wxWindow* parent, AppConfig::InputRec
 	SetSizer(sizer);
 	SetMinSize(wxSize(500, 500));
 	Layout();
-	RefreshColumns();
+	refreshColumns();
 }
 
-void InputRecordingViewer::OnClose(wxCloseEvent& event)
+void InputRecordingViewer::onClose(wxCloseEvent& event)
 {
-	if (fileOpened)
+	if (m_file_opened)
 	{
-		CloseActiveFile();
+		closeActiveFile();
 	}
 	Hide();
 }
 
-void InputRecordingViewer::OnMoveAround(wxMoveEvent& event)
+void InputRecordingViewer::onMoveAround(wxMoveEvent& event)
 {
 	if (IsBeingDeleted() || !IsVisible() || IsIconized())
 		return;
@@ -167,69 +167,69 @@ void InputRecordingViewer::OnMoveAround(wxMoveEvent& event)
 	event.Skip();
 }
 
-void InputRecordingViewer::ToggleMenuItems(bool fileOpen)
+void InputRecordingViewer::toggleMenuItems(bool file_open)
 {
-	closeMenuItem->Enable(fileOpen);
-	saveMenuItem->Enable(fileOpen);
-	saveAsMenuItem->Enable(fileOpen);
+	m_close_menu_item->Enable(file_open);
+	m_save_menu_item->Enable(file_open);
+	m_save_as_menu_item->Enable(file_open);
 	// importMenuItem->Enable(fileOpen);
 	// exportMenuItem->Enable(fileOpen);
 
-	changeMetadataMenuItem->Enable(fileOpen);
+	m_change_metadata_menu_item->Enable(file_open);
 	// changeRecordingTypeMenuItem->Enable(fileOpen);
 	// changeBaseSavestateMenuItem->Enable(fileOpen);
 
-	jumpToFrameMenuItem->Enable(fileOpen);
-	controllerPortSubmenu->Enable(fileOpen);
-	portOneMenuItem->Check(fileOpen && recordingDataSource->GetControllerPort() == 1);
-	portTwoMenuItem->Check(fileOpen && recordingDataSource->GetControllerPort() == 2);
+	m_jump_to_frame_menu_item->Enable(file_open);
+	m_controller_port_submenu->Enable(file_open);
+	m_port_one_menu_item->Check(file_open && m_recording_data_source->getControllerPort() == 1);
+	m_port_two_menu_item->Check(file_open && m_recording_data_source->getControllerPort() == 2);
 
-	clearFrameMenuItem->Enable(fileOpen);
-	defaultFrameMenuItem->Enable(fileOpen);
-	duplicateFrameMenuItem->Enable(fileOpen);
-	insertFrameMenuItem->Enable(fileOpen);
-	insertFramesMenuItem->Enable(fileOpen);
-	removeFrameMenuItem->Enable(fileOpen);
-	removeFramesMenuItem->Enable(fileOpen);
+	m_clear_frame_menu_item->Enable(file_open);
+	m_default_frame_menu_item->Enable(file_open);
+	m_duplicate_frame_menu_item->Enable(file_open);
+	m_insert_frame_menu_item->Enable(file_open);
+	m_insert_frames_menu_item->Enable(file_open);
+	m_remove_frame_menu_item->Enable(file_open);
+	m_remove_frames_menu_item->Enable(file_open);
 }
 
-void InputRecordingViewer::InitColumns()
+void InputRecordingViewer::initColumns()
 {
 	for (int i = 0; i < NUM_COLUMNS; i++)
 	{
-		appendColumn(i, gridColumns, options);
+		appendColumn(i, m_grid_columns, options);
 	}
 }
 
-void InputRecordingViewer::RefreshColumns()
+void InputRecordingViewer::refreshColumns()
 {
-	recordingDataSource->UpdateGridColumns(gridColumns);
-	for (auto& columnEntry : gridColumns)
+	m_recording_data_source->updateGridColumns(m_grid_columns);
+	for (auto& columnEntry : m_grid_columns)
 	{
-		columnEntry.second.shown ? recordingGrid->ShowCol(columnEntry.first) : recordingGrid->HideCol(columnEntry.first);
+		columnEntry.second.m_shown ? m_recording_grid->ShowCol(columnEntry.first) : m_recording_grid->HideCol(columnEntry.first);
 	}
-	saveColumnsToConfig(gridColumns, options);
-	recordingGrid->ForceRefresh();
+	saveColumnsToConfig(m_grid_columns, options);
+	m_recording_grid->ForceRefresh();
 }
 
-void InputRecordingViewer::CloseActiveFile()
+void InputRecordingViewer::closeActiveFile()
 {
-	recordingDataSource->CloseRecordingFile();
-	recordingGrid->ForceRefresh();
-	if (wxFileExists(tempFilePath))
+	m_recording_data_source->closeRecordingFile();
+	m_recording_grid->ForceRefresh();
+	if (wxFileExists(m_temp_filepath))
 	{
-		wxRemoveFile(tempFilePath);
+		wxRemoveFile(m_temp_filepath);
 	}
-	ToggleMenuItems(false);
-	fileOpened = false;
+	toggleMenuItems(false);
+	m_file_opened = false;
 }
 
-void InputRecordingViewer::OnOpenFile(wxCommandEvent& event)
+void InputRecordingViewer::onOpenFile(wxCommandEvent& event)
 {
-	if (fileOpened)
+	if (m_file_opened)
 	{
 		int answer;
-		if (recordingDataSource->AreChangesUnsaved())
+		if (m_recording_data_source->areChangesUnsaved())
 		{
 			answer = wxMessageBox(_("Close active file without saving changes?"), _("Confirm"),
 								  wxYES_NO | wxCANCEL, this);
@@ -243,23 +243,23 @@ void InputRecordingViewer::OnOpenFile(wxCommandEvent& event)
 		{
 			return;
 		}
-		CloseActiveFile();
+		closeActiveFile();
 	}
 
-	wxFileDialog* openFileDialog =
+	wxFileDialog* open_file_dialog =
 		new wxFileDialog(this, _("Open Input Recording File"), wxEmptyString, wxEmptyString, "p2m2 file(*.p2m2)|*.p2m2",
 						 wxFD_OPEN, wxDefaultPosition);
 
-	if (openFileDialog->ShowModal() == wxID_OK)
+	if (open_file_dialog->ShowModal() == wxID_OK)
 	{
 		// TODO - utility function
-		filePath = openFileDialog->GetPath();
+		m_filepath = open_file_dialog->GetPath();
 		// wxWidget's removes the extension if it contains wildcards
 		// on wxGTK https://trac.wxwidgets.org/ticket/15285
-		if (!filePath.EndsWith(".p2m2"))
-			filePath = wxString::Format("%s.p2m2", filePath);
+		if (!m_filepath.EndsWith(".p2m2"))
+			m_filepath = wxString::Format("%s.p2m2", m_filepath);
 
-		if (!wxFileExists(filePath))
+		if (!wxFileExists(m_filepath))
 		{
 			wxMessageBox(_("Unable to Open Input Recording File"), "Input Recording Viewer Error", wxOK | wxICON_ERROR, this);
 			return;
@@ -268,25 +268,25 @@ void InputRecordingViewer::OnOpenFile(wxCommandEvent& event)
 		// Copy the file, as this is out working copy if edits are made
 		// The user can then choose to overwrite the existing file, or save elsewhere.
 		// At which time, we remove the temp file
-		tempFilePath = filePath + ".tmp";
-		if (!wxCopyFile(filePath, tempFilePath, true))
+		m_temp_filepath = m_filepath + ".tmp";
+		if (!wxCopyFile(m_filepath, m_temp_filepath, true))
 		{
 			wxMessageBox(_("Unable to Open Input Recording File"), "Input Recording Viewer Error", wxOK | wxICON_ERROR, this);
 			return;
 		}
 
-		recordingDataSource->OpenRecordingFile(tempFilePath);
-		recordingGrid->ForceRefresh();
+		m_recording_data_source->openRecordingFile(m_temp_filepath);
+		m_recording_grid->ForceRefresh();
 
 		// Enable various menu options
-		ToggleMenuItems(true);
-		fileOpened = true;
+		toggleMenuItems(true);
+		m_file_opened = true;
 	}
 }
 
-void InputRecordingViewer::OnCloseFile(wxCommandEvent& event)
+void InputRecordingViewer::onCloseFile(wxCommandEvent& event)
 {
-	if (recordingDataSource->AreChangesUnsaved())
+	if (m_recording_data_source->areChangesUnsaved())
 	{
 		int answer = wxMessageBox(_("Close without saving changes?"), _("Confirm"),
 								  wxYES_NO | wxCANCEL, this);
@@ -295,65 +295,65 @@ void InputRecordingViewer::OnCloseFile(wxCommandEvent& event)
 			return;
 		}
 	}
-	CloseActiveFile();
+	closeActiveFile();
 }
 
 // TODO - a note on saving, currently we don't allow modifying the original save-state, so there are no concerns about it
 // When we do though, these save functions will need to expand!
 
-void InputRecordingViewer::OnSaveFile(wxCommandEvent& event)
+void InputRecordingViewer::onSaveFile(wxCommandEvent& event)
 {
-	if (!wxCopyFile(tempFilePath, filePath + ".bak", true))
+	if (!wxCopyFile(m_temp_filepath, m_filepath + ".bak", true))
 	{
 		wxMessageBox(_("Unable to backup original recording before saving, aborting!"), "Input Recording Viewer Error", wxOK | wxICON_ERROR, this);
 		return;
 	}
 
 	// Overwrite existing file, this is just a simple rename
-	if (!wxCopyFile(tempFilePath, filePath, true))
+	if (!wxCopyFile(m_temp_filepath, m_filepath, true))
 	{
 		wxMessageBox(_("Unable to Save Input Recording File"), "Input Recording Viewer Error", wxOK | wxICON_ERROR, this);
 		return;
 	}
 
-	recordingDataSource->ClearUnsavedChanges();
+	m_recording_data_source->clearUnsavedChanges();
 }
 
-void InputRecordingViewer::OnSaveAsFile(wxCommandEvent& event)
+void InputRecordingViewer::onSaveAsFile(wxCommandEvent& event)
 {
-	wxFileDialog* openFileDialog =
+	wxFileDialog* open_file_dialog =
 		new wxFileDialog(this, _("Save Input Recording File"), wxEmptyString, wxEmptyString, "p2m2 file(*.p2m2)|*.p2m2",
 						 wxFD_SAVE | wxFD_OVERWRITE_PROMPT, wxDefaultPosition);
 
-	if (openFileDialog->ShowModal() == wxID_OK)
+	if (open_file_dialog->ShowModal() == wxID_OK)
 	{
-		wxString savePath = openFileDialog->GetPath();
+		wxString savePath = open_file_dialog->GetPath();
 		// wxWidget's removes the extension if it contains wildcards
 		// on wxGTK https://trac.wxwidgets.org/ticket/15285
 		if (!savePath.EndsWith(".p2m2"))
 			savePath = wxString::Format("%s.p2m2", savePath);
 
-		if (savePath == filePath)
+		if (savePath == m_filepath)
 		{
-			if (!wxCopyFile(tempFilePath, savePath + ".bak", true))
+			if (!wxCopyFile(m_temp_filepath, savePath + ".bak", true))
 			{
 				wxMessageBox(_("Unable to backup original recording before saving, aborting!"), "Input Recording Viewer Error", wxOK | wxICON_ERROR, this);
 				return;
 			}
 		}
 
-		if (!wxCopyFile(tempFilePath, savePath, true))
+		if (!wxCopyFile(m_temp_filepath, savePath, true))
 		{
 			wxMessageBox(_("Unable to Save Input Recording File"), "Input Recording Viewer Error", wxOK | wxICON_ERROR, this);
 			return;
 		}
 
 		// If it's a save-state recording, copy over the save-state as well
-		if (recordingDataSource->IsFromSavestate())
+		if (m_recording_data_source->isFromSavestate())
 		{
-			if (wxFileExists(filePath + "_SaveState.p2s"))
+			if (wxFileExists(m_filepath + "_SaveState.p2s"))
 			{
-				if (savePath != filePath && !wxCopyFile(filePath + "_SaveState.p2s", savePath + "_SaveState.p2s", true))
+				if (savePath != m_filepath && !wxCopyFile(m_filepath + "_SaveState.p2s", savePath + "_SaveState.p2s", true))
 				{
 					wxMessageBox(_("Unable to Save Input Recording's SaveState!"), "Input Recording Viewer Error", wxOK | wxICON_ERROR, this);
 				}
@@ -364,48 +364,48 @@ void InputRecordingViewer::OnSaveAsFile(wxCommandEvent& event)
 			}
 		}
 
-		recordingDataSource->ClearUnsavedChanges();
+		m_recording_data_source->clearUnsavedChanges();
 	}
 }
 
-void InputRecordingViewer::OnImport(wxCommandEvent& event)
+void InputRecordingViewer::onImport(wxCommandEvent& event)
 {
 	// TODO
 }
 
-void InputRecordingViewer::OnExport(wxCommandEvent& event)
+void InputRecordingViewer::onExport(wxCommandEvent& event)
 {
 	// TODO
 }
 
-void InputRecordingViewer::OnChangeMetadata(wxCommandEvent& event)
+void InputRecordingViewer::onChangeMetadata(wxCommandEvent& event)
 {
-	InputRecordingFileHeader currHeader = recordingDataSource->GetRecordingFileHeader();
-	RecordingMetadataDialog* custom = new RecordingMetadataDialog(this, currHeader.author, currHeader.gameName);
+	InputRecordingFileHeader current_header = m_recording_data_source->getRecordingFileHeader();
+	RecordingMetadataDialog* custom = new RecordingMetadataDialog(this, current_header.author, current_header.gameName);
 	if (custom->ShowModal() == wxID_OK)
 	{
-		recordingDataSource->UpdateRecordingFileHeader(custom->GetAuthor(), custom->GetGameName());
+		m_recording_data_source->updateRecordingFileHeader(custom->getAuthor(), custom->getGameName());
 	}
 }
 
-void InputRecordingViewer::OnChangeRecordingType(wxCommandEvent& event)
+void InputRecordingViewer::onChangeRecordingType(wxCommandEvent& event)
 {
 	// TODO
 }
 
-void InputRecordingViewer::OnChangeBaseSavestate(wxCommandEvent& event)
+void InputRecordingViewer::onChangeBaseSavestate(wxCommandEvent& event)
 {
 	// TODO
 }
 
-void InputRecordingViewer::OnConfigColumns(wxCommandEvent& event)
+void InputRecordingViewer::onConfigColumns(wxCommandEvent& event)
 {
 	wxArrayString items;
 	wxArrayInt order;
-	for (auto& columnEntry : gridColumns)
+	for (auto& columnEntry : m_grid_columns)
 	{
-		items.push_back(columnEntry.second.label);
-		order.push_back(columnEntry.second.shown ? columnEntry.first : ~columnEntry.first);
+		items.push_back(columnEntry.second.m_label);
+		order.push_back(columnEntry.second.m_shown ? columnEntry.first : ~columnEntry.first);
 	}
 	wxRearrangeDialog dlg(NULL,
 						  "You can also uncheck the items you don't like at all.",
@@ -425,69 +425,69 @@ void InputRecordingViewer::OnConfigColumns(wxCommandEvent& event)
 			{
 				oldIndex = abs(oldIndex + 1);
 			}
-			newGridColumns[i] = gridColumns.at(oldIndex);
-			newGridColumns.at(i).shown = order[i] >= 0;
+			newGridColumns[i] = m_grid_columns.at(oldIndex);
+			newGridColumns.at(i).m_shown = order[i] >= 0;
 		}
-		gridColumns = newGridColumns;
-		RefreshColumns();
+		m_grid_columns = newGridColumns;
+		refreshColumns();
 	}
 }
 
-void InputRecordingViewer::OnJumpToFrame(wxCommandEvent& event)
+void InputRecordingViewer::onJumpToFrame(wxCommandEvent& event)
 {
-	long frame = wxGetNumberFromUser(_("Enter Frame Number"), wxEmptyString, _("Jump To Frame"), 0, 0, recordingDataSource->GetNumberRows(), this);
+	long frame = wxGetNumberFromUser(_("Enter Frame Number"), wxEmptyString, _("Jump To Frame"), 0, 0, m_recording_data_source->GetNumberRows(), this);
 	frame = frame == 0 ? 0 : frame - 1;
-	recordingGrid->SelectRow(frame);
-	recordingGrid->MakeCellVisible(frame, 0);
+	m_recording_grid->SelectRow(frame);
+	m_recording_grid->MakeCellVisible(frame, 0);
 }
 
-void InputRecordingViewer::OnSelectPortOne(wxCommandEvent& event)
+void InputRecordingViewer::onSelectPortOne(wxCommandEvent& event)
 {
-	bool selected = portOneMenuItem->IsChecked();
-	portTwoMenuItem->Check(!selected);
-	recordingDataSource->SetControllerPort(1);
-	recordingGrid->ForceRefresh();
+	bool selected = m_port_one_menu_item->IsChecked();
+	m_port_two_menu_item->Check(!selected);
+	m_recording_data_source->setControllerPort(1);
+	m_recording_grid->ForceRefresh();
 }
 
-void InputRecordingViewer::OnSelectPortTwo(wxCommandEvent& event)
+void InputRecordingViewer::onSelectPortTwo(wxCommandEvent& event)
 {
-	bool selected = portTwoMenuItem->IsChecked();
-	portOneMenuItem->Check(!selected);
-	recordingDataSource->SetControllerPort(2);
-	recordingGrid->ForceRefresh();
+	bool selected = m_port_two_menu_item->IsChecked();
+	m_port_one_menu_item->Check(!selected);
+	m_recording_data_source->setControllerPort(2);
+	m_recording_grid->ForceRefresh();
 }
 
-void InputRecordingViewer::OnClearFrame(wxCommandEvent& event)
-{
-	// TODO
-}
-
-void InputRecordingViewer::OnDefaultFrame(wxCommandEvent& event)
+void InputRecordingViewer::onClearFrame(wxCommandEvent& event)
 {
 	// TODO
 }
 
-void InputRecordingViewer::OnDuplicateFrame(wxCommandEvent& event)
+void InputRecordingViewer::onDefaultFrame(wxCommandEvent& event)
 {
 	// TODO
 }
 
-void InputRecordingViewer::OnInsertFrame(wxCommandEvent& event)
+void InputRecordingViewer::onDuplicateFrame(wxCommandEvent& event)
 {
 	// TODO
 }
 
-void InputRecordingViewer::OnInsertFrames(wxCommandEvent& event)
+void InputRecordingViewer::onInsertFrame(wxCommandEvent& event)
 {
 	// TODO
 }
 
-void InputRecordingViewer::OnRemoveFrame(wxCommandEvent& event)
+void InputRecordingViewer::onInsertFrames(wxCommandEvent& event)
 {
 	// TODO
 }
 
-void InputRecordingViewer::OnRemoveFrames(wxCommandEvent& event)
+void InputRecordingViewer::onRemoveFrame(wxCommandEvent& event)
+{
+	// TODO
+}
+
+void InputRecordingViewer::onRemoveFrames(wxCommandEvent& event)
 {
 	// TODO
 }

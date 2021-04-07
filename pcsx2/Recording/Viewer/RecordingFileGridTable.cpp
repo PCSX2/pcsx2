@@ -18,59 +18,59 @@
 #include "RecordingFileGridTable.h"
 #include <regex>
 
-RecordingFileGridTable::RecordingFileGridTable(const std::map<int, RecordingViewerColumn>& gridColumns)
-	: gridColumns(gridColumns)
+RecordingFileGridTable::RecordingFileGridTable(const std::map<int, RecordingViewerColumn>& grid_columns)
+	: m_grid_columns(grid_columns)
 {
 }
 
 int RecordingFileGridTable::GetNumberRows()
 {
-	if (!activeFile.IsFileOpen())
+	if (!m_active_file.IsFileOpen())
 	{
 		return 0;
 	}
-	return activeFile.GetTotalFrames();
+	return m_active_file.GetTotalFrames();
 }
 
-bool RecordingFileGridTable::AreChangesUnsaved()
+bool RecordingFileGridTable::areChangesUnsaved()
 {
-	return changes;
+	return m_changes;
 }
 
-void RecordingFileGridTable::ClearUnsavedChanges()
+void RecordingFileGridTable::clearUnsavedChanges()
 {
-	changes = false;
+	m_changes = false;
 }
 
-int RecordingFileGridTable::GetControllerPort()
+int RecordingFileGridTable::getControllerPort()
 {
-	return controllerPort;
+	return m_controller_port;
 }
 
 
-void RecordingFileGridTable::SetControllerPort(int port)
+void RecordingFileGridTable::setControllerPort(int port)
 {
 	port = port == 0 ? port : port - 1;
-	controllerPort = port;
-	dataBuffer = activeFile.BulkReadPadData(bufferPos - bufferSize, bufferPos + bufferSize, controllerPort);
+	m_controller_port = port;
+	m_data_buffer = m_active_file.BulkReadPadData(m_buffer_pos - m_buffer_size, m_buffer_pos + m_buffer_size, m_controller_port);
 }
 
-bool RecordingFileGridTable::IsFromSavestate()
+bool RecordingFileGridTable::isFromSavestate()
 {
-	return activeFile.FromSaveState();
+	return m_active_file.FromSaveState();
 }
 
 int RecordingFileGridTable::GetNumberCols()
 {
-	return gridColumns.size();
+	return m_grid_columns.size();
 }
 
-std::pair<bool, int> getPressedAndPressure(std::string cellValue)
+std::pair<bool, int> getPressedAndPressure(std::string cell_value)
 {
 	std::regex regex("(\\d+)\\s*\\((\\d+)\\)");
 	std::smatch matches;
 
-	if (std::regex_search(cellValue, matches, regex))
+	if (std::regex_search(cell_value, matches, regex))
 	{
 		if (matches.size() != 3)
 		{
@@ -84,50 +84,50 @@ std::pair<bool, int> getPressedAndPressure(std::string cellValue)
 void RecordingFileGridTable::SetValue(int row, int col, const wxString& value)
 {
 	// Check if we have to refresh the cache
-	if (dataBuffer.empty() || row > (bufferPos + bufferThreshold) || row < (bufferPos - bufferThreshold))
+	if (m_data_buffer.empty() || row > (m_buffer_pos + m_buffer_threshold) || row < (m_buffer_pos - m_buffer_threshold))
 	{
-		dataBuffer = activeFile.BulkReadPadData(row - bufferSize, row + bufferSize, controllerPort);
-		bufferPos = row;
+		m_data_buffer = m_active_file.BulkReadPadData(row - m_buffer_size, row + m_buffer_size, m_controller_port);
+		m_buffer_pos = row;
 	}
 
-	if (dataBuffer.count(row) != 1)
+	if (m_data_buffer.count(row) != 1)
 	{
 		return;
 	}
 	// Get that entire frame's structure, we can modify it, then save the appropriate buffer
-	PadData padData = dataBuffer.at(row);
+	PadData pad_data = m_data_buffer.at(row);
 
-	int singleValue;
-	std::pair<bool, int> multiValueCell;
+	int single_value;
+	std::pair<bool, int> multi_value_cell;
 
 	if (col >= 4 && col <= 15)
 	{
-		multiValueCell = getPressedAndPressure(value.ToStdString());
-		if (multiValueCell.second < 0)
+		multi_value_cell = getPressedAndPressure(value.ToStdString());
+		if (multi_value_cell.second < 0)
 		{
-			multiValueCell.second = 0;
+			multi_value_cell.second = 0;
 		}
-		else if (multiValueCell.second > 255)
+		else if (multi_value_cell.second > 255)
 		{
-			multiValueCell.second = 255;
+			multi_value_cell.second = 255;
 		}
 	}
 	else
 	{
-		singleValue = wxAtoi(value);
+		single_value = wxAtoi(value);
 		if (col >= 16 && col <= 19)
 		{
-			singleValue = singleValue == 0 || singleValue == 1 ? singleValue : 0;
+			single_value = single_value == 0 || single_value == 1 ? single_value : 0;
 		}
 		else
 		{
-			if (singleValue < 0)
+			if (single_value < 0)
 			{
-				singleValue = 0;
+				single_value = 0;
 			}
-			else if (singleValue > 255)
+			else if (single_value > 255)
 			{
-				singleValue = 255;
+				single_value = 255;
 			}
 		}
 	}
@@ -135,88 +135,88 @@ void RecordingFileGridTable::SetValue(int row, int col, const wxString& value)
 	switch (col)
 	{
 		case 0:
-			padData.leftAnalogX = singleValue;
+			pad_data.leftAnalogX = single_value;
 			break;
 		case 1:
-			padData.leftAnalogY = singleValue;
+			pad_data.leftAnalogY = single_value;
 			break;
 		case 2:
-			padData.rightAnalogX = singleValue;
+			pad_data.rightAnalogX = single_value;
 			break;
 		case 3:
-			padData.rightAnalogY = singleValue;
+			pad_data.rightAnalogY = single_value;
 			break;
 		case 4:
-			padData.squarePressed = multiValueCell.first;
-			padData.squarePressure = multiValueCell.second;
+			pad_data.squarePressed = multi_value_cell.first;
+			pad_data.squarePressure = multi_value_cell.second;
 			break;
 		case 5:
-			padData.crossPressed = multiValueCell.first;
-			padData.crossPressure = multiValueCell.second;
+			pad_data.crossPressed = multi_value_cell.first;
+			pad_data.crossPressure = multi_value_cell.second;
 			break;
 		case 6:
-			padData.circlePressed = multiValueCell.first;
-			padData.circlePressure = multiValueCell.second;
+			pad_data.circlePressed = multi_value_cell.first;
+			pad_data.circlePressure = multi_value_cell.second;
 			break;
 		case 7:
-			padData.trianglePressed = multiValueCell.first;
-			padData.trianglePressure = multiValueCell.second;
+			pad_data.trianglePressed = multi_value_cell.first;
+			pad_data.trianglePressure = multi_value_cell.second;
 			break;
 		case 8:
-			padData.r1Pressed = multiValueCell.first;
-			padData.r1Pressure = multiValueCell.second;
+			pad_data.r1Pressed = multi_value_cell.first;
+			pad_data.r1Pressure = multi_value_cell.second;
 			break;
 		case 9:
-			padData.r2Pressed = multiValueCell.first;
-			padData.r2Pressure = multiValueCell.second;
+			pad_data.r2Pressed = multi_value_cell.first;
+			pad_data.r2Pressure = multi_value_cell.second;
 			break;
 		case 10:
-			padData.l1Pressed = multiValueCell.first;
-			padData.l1Pressure = multiValueCell.second;
+			pad_data.l1Pressed = multi_value_cell.first;
+			pad_data.l1Pressure = multi_value_cell.second;
 			break;
 		case 11:
-			padData.l2Pressed = multiValueCell.first;
-			padData.l2Pressure = multiValueCell.second;
+			pad_data.l2Pressed = multi_value_cell.first;
+			pad_data.l2Pressure = multi_value_cell.second;
 			break;
 		case 12:
-			padData.leftPressed = multiValueCell.first;
-			padData.leftPressure = multiValueCell.second;
+			pad_data.leftPressed = multi_value_cell.first;
+			pad_data.leftPressure = multi_value_cell.second;
 			break;
 		case 13:
-			padData.downPressed = multiValueCell.first;
-			padData.downPressure = multiValueCell.second;
+			pad_data.downPressed = multi_value_cell.first;
+			pad_data.downPressure = multi_value_cell.second;
 			break;
 		case 14:
-			padData.rightPressed = multiValueCell.first;
-			padData.rightPressure = multiValueCell.second;
+			pad_data.rightPressed = multi_value_cell.first;
+			pad_data.rightPressure = multi_value_cell.second;
 			break;
 		case 15:
-			padData.upPressed = multiValueCell.first;
-			padData.upPressure = multiValueCell.second;
+			pad_data.upPressed = multi_value_cell.first;
+			pad_data.upPressure = multi_value_cell.second;
 			break;
 		case 16:
-			padData.r3 = singleValue;
+			pad_data.r3 = single_value;
 			break;
 		case 17:
-			padData.l3 = singleValue;
+			pad_data.l3 = single_value;
 			break;
 		case 18:
-			padData.select = singleValue;
+			pad_data.select = single_value;
 			break;
 		case 19:
-			padData.start = singleValue;
+			pad_data.start = single_value;
 			break;
 		default:
 			return;
 	}
 
 	// Save the frame
-	activeFile.WriteFrame(row, controllerPort, padData);
+	m_active_file.WriteFrame(row, m_controller_port, pad_data);
 
 	// Refresh the cache for subsequent GetValues
-	dataBuffer = activeFile.BulkReadPadData(bufferPos - bufferSize, bufferPos + bufferSize, controllerPort);
+	m_data_buffer = m_active_file.BulkReadPadData(m_buffer_pos - m_buffer_size, m_buffer_pos + m_buffer_size, m_controller_port);
 
-	changes = true;
+	m_changes = true;
 	return;
 }
 
@@ -226,118 +226,118 @@ wxString RecordingFileGridTable::GetColLabelValue(int col)
 	{
 		return "?";
 	}
-	return wxString(gridColumns.at(col).label);
+	return wxString(m_grid_columns.at(col).m_label);
 }
 
 wxString RecordingFileGridTable::GetValue(int row, int col)
 {
-	if (!activeFile.IsFileOpen())
+	if (!m_active_file.IsFileOpen())
 		return "";
 
 	// Check if we have to refresh the cache
-	if (dataBuffer.empty() || row > (bufferPos + bufferThreshold) || row < (bufferPos - bufferThreshold))
+	if (m_data_buffer.empty() || row > (m_buffer_pos + m_buffer_threshold) || row < (m_buffer_pos - m_buffer_threshold))
 	{
-		dataBuffer = activeFile.BulkReadPadData(row - bufferSize, row + bufferSize, controllerPort);
-		bufferPos = row;
+		m_data_buffer = m_active_file.BulkReadPadData(row - m_buffer_size, row + m_buffer_size, m_controller_port);
+		m_buffer_pos = row;
 	}
 
-	if (dataBuffer.count(row) != 1)
+	if (m_data_buffer.count(row) != 1)
 	{
 		return "";
 	}
-	const PadData padData = dataBuffer.at(row);
+	const PadData pad_data = m_data_buffer.at(row);
 
 	switch (col)
 	{
 		case 0:
-			return wxString::Format("%d", padData.leftAnalogX);
+			return wxString::Format("%d", pad_data.leftAnalogX);
 		case 1:
-			return wxString::Format("%d", padData.leftAnalogY);
+			return wxString::Format("%d", pad_data.leftAnalogY);
 		case 2:
-			return wxString::Format("%d", padData.rightAnalogX);
+			return wxString::Format("%d", pad_data.rightAnalogX);
 		case 3:
-			return wxString::Format("%d", padData.rightAnalogY);
+			return wxString::Format("%d", pad_data.rightAnalogY);
 		case 4:
-			return wxString::Format("%d (%d)", padData.squarePressed, padData.squarePressure);
+			return wxString::Format("%d (%d)", pad_data.squarePressed, pad_data.squarePressure);
 		case 5:
-			return wxString::Format("%d (%d)", padData.crossPressed, padData.crossPressure);
+			return wxString::Format("%d (%d)", pad_data.crossPressed, pad_data.crossPressure);
 		case 6:
-			return wxString::Format("%d (%d)", padData.circlePressed, padData.circlePressure);
+			return wxString::Format("%d (%d)", pad_data.circlePressed, pad_data.circlePressure);
 		case 7:
-			return wxString::Format("%d (%d)", padData.trianglePressed, padData.trianglePressure);
+			return wxString::Format("%d (%d)", pad_data.trianglePressed, pad_data.trianglePressure);
 		case 8:
-			return wxString::Format("%d (%d)", padData.r1Pressed, padData.r1Pressure);
+			return wxString::Format("%d (%d)", pad_data.r1Pressed, pad_data.r1Pressure);
 		case 9:
-			return wxString::Format("%d (%d)", padData.r2Pressed, padData.r2Pressure);
+			return wxString::Format("%d (%d)", pad_data.r2Pressed, pad_data.r2Pressure);
 		case 10:
-			return wxString::Format("%d (%d)", padData.l1Pressed, padData.l1Pressure);
+			return wxString::Format("%d (%d)", pad_data.l1Pressed, pad_data.l1Pressure);
 		case 11:
-			return wxString::Format("%d (%d)", padData.l2Pressed, padData.l2Pressure);
+			return wxString::Format("%d (%d)", pad_data.l2Pressed, pad_data.l2Pressure);
 		case 12:
-			return wxString::Format("%d (%d)", padData.leftPressed, padData.leftPressure);
+			return wxString::Format("%d (%d)", pad_data.leftPressed, pad_data.leftPressure);
 		case 13:
-			return wxString::Format("%d (%d)", padData.downPressed, padData.downPressure);
+			return wxString::Format("%d (%d)", pad_data.downPressed, pad_data.downPressure);
 		case 14:
-			return wxString::Format("%d (%d)", padData.rightPressed, padData.rightPressure);
+			return wxString::Format("%d (%d)", pad_data.rightPressed, pad_data.rightPressure);
 		case 15:
-			return wxString::Format("%d (%d)", padData.upPressed, padData.upPressure);
+			return wxString::Format("%d (%d)", pad_data.upPressed, pad_data.upPressure);
 		case 16:
-			return wxString::Format("%d", padData.r3);
+			return wxString::Format("%d", pad_data.r3);
 		case 17:
-			return wxString::Format("%d", padData.l3);
+			return wxString::Format("%d", pad_data.l3);
 		case 18:
-			return wxString::Format("%d", padData.select);
+			return wxString::Format("%d", pad_data.select);
 		case 19:
-			return wxString::Format("%d", padData.start);
+			return wxString::Format("%d", pad_data.start);
 		default:
 			return "?";
 	}
 }
 
-void RecordingFileGridTable::OpenRecordingFile(wxString filePath)
+void RecordingFileGridTable::openRecordingFile(wxString filePath)
 {
-	activeFile.OpenExisting(filePath);
-	dataBuffer.clear();
-	wxGridTableMessage msg(this, wxGRIDTABLE_NOTIFY_ROWS_APPENDED, activeFile.GetTotalFrames(), 0);
+	m_active_file.OpenExisting(filePath);
+	m_data_buffer.clear();
+	wxGridTableMessage msg(this, wxGRIDTABLE_NOTIFY_ROWS_APPENDED, m_active_file.GetTotalFrames(), 0);
 	GetView()->ProcessTableMessage(msg);
-	changes = false;
+	m_changes = false;
 }
 
-void RecordingFileGridTable::CloseRecordingFile()
+void RecordingFileGridTable::closeRecordingFile()
 {
-	wxGridTableMessage msg(this, wxGRIDTABLE_NOTIFY_ROWS_DELETED, 0, activeFile.GetTotalFrames());
+	wxGridTableMessage msg(this, wxGRIDTABLE_NOTIFY_ROWS_DELETED, 0, m_active_file.GetTotalFrames());
 	GetView()->ProcessTableMessage(msg);
-	activeFile.Close();
-	dataBuffer.clear();
-	changes = false;
+	m_active_file.Close();
+	m_data_buffer.clear();
+	m_changes = false;
 }
 
-void RecordingFileGridTable::UpdateGridColumns(const std::map<int, RecordingViewerColumn>& gridColumns)
+void RecordingFileGridTable::updateGridColumns(const std::map<int, RecordingViewerColumn>& grid_columns)
 {
-	this->gridColumns = gridColumns;
+	this->m_grid_columns = grid_columns;
 }
 
-InputRecordingFileHeader RecordingFileGridTable::GetRecordingFileHeader()
+InputRecordingFileHeader RecordingFileGridTable::getRecordingFileHeader()
 {
-	return activeFile.GetHeader();
+	return m_active_file.GetHeader();
 }
 
-void RecordingFileGridTable::UpdateRecordingFileHeader(const std::string& author, const std::string& gameName)
+void RecordingFileGridTable::updateRecordingFileHeader(const std::string& author, const std::string& game_name)
 {
 	// Check to see if any changes were made
 	// TODO - comparison func in InputRecordingFileHeader, not going to bother right now though since v2 is on the horizon
-	InputRecordingFileHeader currHeader = activeFile.GetHeader();
-	if (author == currHeader.author && gameName == currHeader.gameName)
+	InputRecordingFileHeader current_header = m_active_file.GetHeader();
+	if (author == current_header.author && game_name == current_header.gameName)
 	{
 		return;
 	}
-	changes = true;
-	activeFile.GetHeader().SetAuthor(author);
-	activeFile.GetHeader().SetGameName(gameName);
-	activeFile.WriteHeader();
+	m_changes = true;
+	m_active_file.GetHeader().SetAuthor(author);
+	m_active_file.GetHeader().SetGameName(game_name);
+	m_active_file.WriteHeader();
 }
 
-long RecordingFileGridTable::GetUndoCount()
+long RecordingFileGridTable::getUndoCount()
 {
-	return activeFile.GetUndoCount();
+	return m_active_file.GetUndoCount();
 }

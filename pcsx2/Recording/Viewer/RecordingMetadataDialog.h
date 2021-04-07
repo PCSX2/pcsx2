@@ -20,27 +20,27 @@
 class RecordingMetadataDialog : public wxDialog
 {
 public:
-	RecordingMetadataDialog(wxWindow* parent, const std::string& author, const std::string& gameName);
+	RecordingMetadataDialog(wxWindow* parent, const std::string& author, const std::string& game_name);
 
-	std::string GetAuthor();
-	std::string GetGameName();
+	std::string getAuthor();
+	std::string getGameName();
 
-	bool Ok() { return ok; }
+	bool ok() { return m_ok; }
 
 private:
-	bool ok = false;
+	bool m_ok = false;
 
 	std::string m_author;
-	std::string m_gameName;
+	std::string m_game_name;
 
-	wxStaticText* authorLabel;
+	wxStaticText* m_author_label;
 	wxStaticText* gameNameLabel;
 
-	wxTextCtrl* authorField;
-	wxTextCtrl* gameNameField;
+	wxTextCtrl* m_author_field;
+	wxTextCtrl* m_game_name_field;
 
-	wxButton* confirmBtn;
-	wxButton* cancelBtn;
+	wxButton* m_confirm_btn;
+	wxButton* m_cancel_btn;
 
-	void OnConfirm(wxCommandEvent& event);
+	void onConfirm(wxCommandEvent& event);
 };

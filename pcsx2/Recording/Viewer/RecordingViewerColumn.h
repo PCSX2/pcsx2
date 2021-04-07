@@ -22,13 +22,13 @@
 
 struct RecordingViewerColumn
 {
-	int internalIndex;
-	std::string label;
-	bool shown;
+	int m_internal_index;
+	std::string m_label;
+	bool m_shown;
 	RecordingViewerColumn();
-	RecordingViewerColumn(int internalIndex, bool shown);
+	RecordingViewerColumn(int internal_index, bool shown);
 };
 
-extern const std::vector<std::string> columnLabels;
-extern void appendColumn(int internalIndex, std::map<int, RecordingViewerColumn>& gridColumns, AppConfig::InputRecordingOptions& options);
-extern void saveColumnsToConfig(const std::map<int, RecordingViewerColumn>& gridColumns, AppConfig::InputRecordingOptions& options);
+extern const std::vector<std::string> column_labels;
+extern void appendColumn(int internal_index, std::map<int, RecordingViewerColumn>& grid_columns, AppConfig::InputRecordingOptions& options);
+extern void saveColumnsToConfig(const std::map<int, RecordingViewerColumn>& grid_columns, AppConfig::InputRecordingOptions& options);

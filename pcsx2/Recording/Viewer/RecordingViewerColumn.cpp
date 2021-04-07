@@ -17,7 +17,7 @@
 
 #include "RecordingViewerColumn.h"
 
-const std::vector<std::string> columnLabels = {
+const std::vector<std::string> column_labels = {
 	"Left\nAnalog X",
 	"Left\nAnalog Y",
 	"Right\nAnalog X",
@@ -43,172 +43,172 @@ RecordingViewerColumn::RecordingViewerColumn()
 {
 }
 
-RecordingViewerColumn::RecordingViewerColumn(int internalIndex, bool shown)
-	: internalIndex(internalIndex)
-	, label(columnLabels.at(internalIndex))
-	, shown(shown)
+RecordingViewerColumn::RecordingViewerColumn(int internal_index, bool shown)
+	: m_internal_index(internal_index)
+	, m_label(column_labels.at(internal_index))
+	, m_shown(shown)
 {
 }
 
-void appendColumn(int internalIndex, std::map<int, RecordingViewerColumn>& gridColumns, AppConfig::InputRecordingOptions& options)
+void appendColumn(int internal_index, std::map<int, RecordingViewerColumn>& grid_columns, AppConfig::InputRecordingOptions& options)
 {
 	// TODO - AppConfig and .ini system doesn't have an easy way to just use string keys or collections so...another switch it is!
 	// Refactor ALL of this once we have a better config system
-	switch (internalIndex)
+	switch (internal_index)
 	{
 		case 0:
-			gridColumns[options.ViewerLeftAnalogXIndex] = RecordingViewerColumn(internalIndex, options.ViewerLeftAnalogXShown);
+			grid_columns[options.ViewerLeftAnalogXIndex] = RecordingViewerColumn(internal_index, options.ViewerLeftAnalogXShown);
 			break;
 		case 1:
-			gridColumns[options.ViewerLeftAnalogYIndex] = RecordingViewerColumn(internalIndex, options.ViewerLeftAnalogYShown);
+			grid_columns[options.ViewerLeftAnalogYIndex] = RecordingViewerColumn(internal_index, options.ViewerLeftAnalogYShown);
 			break;
 		case 2:
-			gridColumns[options.ViewerRightAnalogXIndex] = RecordingViewerColumn(internalIndex, options.ViewerRightAnalogXShown);
+			grid_columns[options.ViewerRightAnalogXIndex] = RecordingViewerColumn(internal_index, options.ViewerRightAnalogXShown);
 			break;
 		case 3:
-			gridColumns[options.ViewerRightAnalogYIndex] = RecordingViewerColumn(internalIndex, options.ViewerRightAnalogYShown);
+			grid_columns[options.ViewerRightAnalogYIndex] = RecordingViewerColumn(internal_index, options.ViewerRightAnalogYShown);
 			break;
 		case 4:
-			gridColumns[options.ViewerSquareIndex] = RecordingViewerColumn(internalIndex, options.ViewerSquareShown);
+			grid_columns[options.ViewerSquareIndex] = RecordingViewerColumn(internal_index, options.ViewerSquareShown);
 			break;
 		case 5:
-			gridColumns[options.ViewerCrossIndex] = RecordingViewerColumn(internalIndex, options.ViewerCrossShown);
+			grid_columns[options.ViewerCrossIndex] = RecordingViewerColumn(internal_index, options.ViewerCrossShown);
 			break;
 		case 6:
-			gridColumns[options.ViewerCircleIndex] = RecordingViewerColumn(internalIndex, options.ViewerCircleShown);
+			grid_columns[options.ViewerCircleIndex] = RecordingViewerColumn(internal_index, options.ViewerCircleShown);
 			break;
 		case 7:
-			gridColumns[options.ViewerTriangleIndex] = RecordingViewerColumn(internalIndex, options.ViewerTriangleShown);
+			grid_columns[options.ViewerTriangleIndex] = RecordingViewerColumn(internal_index, options.ViewerTriangleShown);
 			break;
 		case 8:
-			gridColumns[options.ViewerR1Index] = RecordingViewerColumn(internalIndex, options.ViewerR1Shown);
+			grid_columns[options.ViewerR1Index] = RecordingViewerColumn(internal_index, options.ViewerR1Shown);
 			break;
 		case 9:
-			gridColumns[options.ViewerR2Index] = RecordingViewerColumn(internalIndex, options.ViewerR2Shown);
+			grid_columns[options.ViewerR2Index] = RecordingViewerColumn(internal_index, options.ViewerR2Shown);
 			break;
 		case 10:
-			gridColumns[options.ViewerL1Index] = RecordingViewerColumn(internalIndex, options.ViewerL1Shown);
+			grid_columns[options.ViewerL1Index] = RecordingViewerColumn(internal_index, options.ViewerL1Shown);
 			break;
 		case 11:
-			gridColumns[options.ViewerL2Index] = RecordingViewerColumn(internalIndex, options.ViewerL2Shown);
+			grid_columns[options.ViewerL2Index] = RecordingViewerColumn(internal_index, options.ViewerL2Shown);
 			break;
 		case 12:
-			gridColumns[options.ViewerLeftIndex] = RecordingViewerColumn(internalIndex, options.ViewerLeftShown);
+			grid_columns[options.ViewerLeftIndex] = RecordingViewerColumn(internal_index, options.ViewerLeftShown);
 			break;
 		case 13:
-			gridColumns[options.ViewerDownIndex] = RecordingViewerColumn(internalIndex, options.ViewerDownShown);
+			grid_columns[options.ViewerDownIndex] = RecordingViewerColumn(internal_index, options.ViewerDownShown);
 			break;
 		case 14:
-			gridColumns[options.ViewerRightIndex] = RecordingViewerColumn(internalIndex, options.ViewerRightShown);
+			grid_columns[options.ViewerRightIndex] = RecordingViewerColumn(internal_index, options.ViewerRightShown);
 			break;
 		case 15:
-			gridColumns[options.ViewerUpIndex] = RecordingViewerColumn(internalIndex, options.ViewerUpShown);
+			grid_columns[options.ViewerUpIndex] = RecordingViewerColumn(internal_index, options.ViewerUpShown);
 			break;
 		case 16:
-			gridColumns[options.ViewerR3Index] = RecordingViewerColumn(internalIndex, options.ViewerR3Shown);
+			grid_columns[options.ViewerR3Index] = RecordingViewerColumn(internal_index, options.ViewerR3Shown);
 			break;
 		case 17:
-			gridColumns[options.ViewerL3Index] = RecordingViewerColumn(internalIndex, options.ViewerL3Shown);
+			grid_columns[options.ViewerL3Index] = RecordingViewerColumn(internal_index, options.ViewerL3Shown);
 			break;
 		case 18:
-			gridColumns[options.ViewerSelectIndex] = RecordingViewerColumn(internalIndex, options.ViewerSelectShown);
+			grid_columns[options.ViewerSelectIndex] = RecordingViewerColumn(internal_index, options.ViewerSelectShown);
 			break;
 		case 19:
-			gridColumns[options.ViewerStartIndex] = RecordingViewerColumn(internalIndex, options.ViewerStartShown);
+			grid_columns[options.ViewerStartIndex] = RecordingViewerColumn(internal_index, options.ViewerStartShown);
 			break;
 		default:
 			return;
 	}
 }
 
-void saveColumnsToConfig(const std::map<int, RecordingViewerColumn>& gridColumns, AppConfig::InputRecordingOptions& options)
+void saveColumnsToConfig(const std::map<int, RecordingViewerColumn>& grid_columns, AppConfig::InputRecordingOptions& options)
 {
 	// TODO - AppConfig and .ini system doesn't have an easy way to just use string keys or collections so...another switch it is!
 	// Refactor ALL of this once we have a better config system
-	for (auto& columnEntry : gridColumns)
+	for (auto& column_entry : grid_columns)
 	{
-		int columnIndex = columnEntry.first;
-		bool shown = columnEntry.second.shown;
-		switch (columnEntry.second.internalIndex)
+		int column_index = column_entry.first;
+		bool shown = column_entry.second.m_shown;
+		switch (column_entry.second.m_internal_index)
 		{
 			case 0:
-				options.ViewerLeftAnalogXIndex = columnIndex;
+				options.ViewerLeftAnalogXIndex = column_index;
 				options.ViewerLeftAnalogXShown = shown;
 				break;
 			case 1:
-				options.ViewerLeftAnalogYIndex = columnIndex;
+				options.ViewerLeftAnalogYIndex = column_index;
 				options.ViewerLeftAnalogYShown = shown;
 				break;
 			case 2:
-				options.ViewerRightAnalogXIndex = columnIndex;
+				options.ViewerRightAnalogXIndex = column_index;
 				options.ViewerRightAnalogXShown = shown;
 				break;
 			case 3:
-				options.ViewerRightAnalogYIndex = columnIndex;
+				options.ViewerRightAnalogYIndex = column_index;
 				options.ViewerRightAnalogYShown = shown;
 				break;
 			case 4:
-				options.ViewerSquareIndex = columnIndex;
+				options.ViewerSquareIndex = column_index;
 				options.ViewerSquareShown = shown;
 				break;
 			case 5:
-				options.ViewerCrossIndex = columnIndex;
+				options.ViewerCrossIndex = column_index;
 				options.ViewerCrossShown = shown;
 				break;
 			case 6:
-				options.ViewerCircleIndex = columnIndex;
+				options.ViewerCircleIndex = column_index;
 				options.ViewerCircleShown = shown;
 				break;
 			case 7:
-				options.ViewerTriangleIndex = columnIndex;
+				options.ViewerTriangleIndex = column_index;
 				options.ViewerTriangleShown = shown;
 				break;
 			case 8:
-				options.ViewerR1Index = columnIndex;
+				options.ViewerR1Index = column_index;
 				options.ViewerR1Shown = shown;
 				break;
 			case 9:
-				options.ViewerR2Index = columnIndex;
+				options.ViewerR2Index = column_index;
 				options.ViewerR2Shown = shown;
 				break;
 			case 10:
-				options.ViewerL1Index = columnIndex;
+				options.ViewerL1Index = column_index;
 				options.ViewerL1Shown = shown;
 				break;
 			case 11:
-				options.ViewerL2Index = columnIndex;
+				options.ViewerL2Index = column_index;
 				options.ViewerL2Shown = shown;
 				break;
 			case 12:
-				options.ViewerLeftIndex = columnIndex;
+				options.ViewerLeftIndex = column_index;
 				options.ViewerLeftShown = shown;
 				break;
 			case 13:
-				options.ViewerDownIndex = columnIndex;
+				options.ViewerDownIndex = column_index;
 				options.ViewerDownShown = shown;
 				break;
 			case 14:
-				options.ViewerRightIndex = columnIndex;
+				options.ViewerRightIndex = column_index;
 				options.ViewerRightShown = shown;
 				break;
 			case 15:
-				options.ViewerUpIndex = columnIndex;
+				options.ViewerUpIndex = column_index;
 				options.ViewerUpShown = shown;
 				break;
 			case 16:
-				options.ViewerR3Index = columnIndex;
+				options.ViewerR3Index = column_index;
 				options.ViewerR3Shown = shown;
 				break;
 			case 17:
-				options.ViewerL3Index = columnIndex;
+				options.ViewerL3Index = column_index;
 				options.ViewerL3Shown = shown;
 				break;
 			case 18:
-				options.ViewerSelectIndex = columnIndex;
+				options.ViewerSelectIndex = column_index;
 				options.ViewerSelectShown = shown;
 				break;
 			case 19:
-				options.ViewerStartIndex = columnIndex;
+				options.ViewerStartIndex = column_index;
 				options.ViewerStartShown = shown;
 				break;
 			default:

@@ -24,7 +24,7 @@
 class RecordingFileGridTable : public wxGridTableBase
 {
 public:
-	RecordingFileGridTable(const std::map<int, RecordingViewerColumn>& gridColumns);
+	RecordingFileGridTable(const std::map<int, RecordingViewerColumn>& grid_columns);
 
 	wxString GetValue(int row, int col) override;
 	wxString GetColLabelValue(int col) override;
@@ -38,37 +38,37 @@ public:
 	void SetValue(int row, int col, const wxString& value) override;
 	bool IsEmptyCell(int, int) override { return false; }
 
-	void OpenRecordingFile(wxString filePath);
-	void CloseRecordingFile();
-	void UpdateGridColumns(const std::map<int, RecordingViewerColumn>& gridColumns);
+	void openRecordingFile(wxString filePath);
+	void closeRecordingFile();
+	void updateGridColumns(const std::map<int, RecordingViewerColumn>& grid_columns);
 
-	InputRecordingFileHeader GetRecordingFileHeader();
-	void UpdateRecordingFileHeader(const std::string& author, const std::string& gameName);
-	long GetUndoCount();
+	InputRecordingFileHeader getRecordingFileHeader();
+	void updateRecordingFileHeader(const std::string& author, const std::string& game_name);
+	long getUndoCount();
 
-	bool AreChangesUnsaved();
-	void ClearUnsavedChanges();
+	bool areChangesUnsaved();
+	void clearUnsavedChanges();
 
-	int GetControllerPort();
+	int getControllerPort();
 	/**
 	 * @brief Set the active port to be viewed
 	 * @param port Controller port (not zero-based)
 	*/
-	void SetControllerPort(int port);
+	void setControllerPort(int port);
 
-	bool IsFromSavestate();
+	bool isFromSavestate();
 
 private:
-	std::map<int, RecordingViewerColumn> gridColumns;
-	int controllerPort = 0;
-	bool changes = false;
+	std::map<int, RecordingViewerColumn> m_grid_columns;
+	int m_controller_port = 0;
+	bool m_changes = false;
 
-	InputRecordingFile activeFile;
+	InputRecordingFile m_active_file;
 
 	// Cache 1000 rows around current position to enable smooth scrolling / limit file IO
-	int bufferSize = 1000;
-	int bufferPos = 0;
+	int m_buffer_size = 1000;
+	int m_buffer_pos = 0;
 	// When we get 500 rows beyond the last bufferPos, evict the cache and update!
-	int bufferThreshold = 500;
-	std::map<uint, PadData> dataBuffer;
+	int m_buffer_threshold = 500;
+	std::map<uint, PadData> m_data_buffer;
 };

@@ -21,48 +21,48 @@
 
 RecordingMetadataDialog::RecordingMetadataDialog(wxWindow* parent, const std::string& author, const std::string& gameName)
 	: m_author(author)
-	, m_gameName(gameName)
+	, m_game_name(gameName)
 	, wxDialog(parent, wxID_ANY, wxString("Change Recording Metadata"))
 {
-	wxBoxSizer* mainSizer = new wxBoxSizer(wxVERTICAL);
-	wxBoxSizer* widgetSizer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* main_sizer = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* widget_sizer = new wxBoxSizer(wxVERTICAL);
 
-	authorLabel = new wxStaticText(this, wxID_ANY, _("Author"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
-	authorField = new wxTextCtrl(this, wxID_ANY, m_author);
+	m_author_label = new wxStaticText(this, wxID_ANY, _("Author"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+	m_author_field = new wxTextCtrl(this, wxID_ANY, m_author);
 	gameNameLabel = new wxStaticText(this, wxID_ANY, _("Game Name"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
-	gameNameField = new wxTextCtrl(this, wxID_ANY, m_gameName);
+	m_game_name_field = new wxTextCtrl(this, wxID_ANY, m_game_name);
 
-	wxBoxSizer* buttonSizer = new wxBoxSizer(wxHORIZONTAL);
-	confirmBtn = new wxButton(this, wxID_OK);
-	cancelBtn = new wxButton(this, wxID_CLOSE);
+	wxBoxSizer* button_sizer = new wxBoxSizer(wxHORIZONTAL);
+	m_confirm_btn = new wxButton(this, wxID_OK);
+	m_cancel_btn = new wxButton(this, wxID_CLOSE);
 
-	widgetSizer->Add(authorLabel, 0, wxALL, 5);
-	widgetSizer->Add(authorField, 0, wxALL, 5);
-	widgetSizer->Add(gameNameLabel, 0, wxALL, 5);
-	widgetSizer->Add(gameNameField, 0, wxALL, 5);
-	buttonSizer->Add(confirmBtn, 0, wxALL, 5);
-	buttonSizer->Add(cancelBtn, 0, wxALL, 5);
-	widgetSizer->Add(buttonSizer, 0, wxALL, 5);
+	widget_sizer->Add(m_author_label, 0, wxALL, 5);
+	widget_sizer->Add(m_author_field, 0, wxALL, 5);
+	widget_sizer->Add(gameNameLabel, 0, wxALL, 5);
+	widget_sizer->Add(m_game_name_field, 0, wxALL, 5);
+	button_sizer->Add(m_confirm_btn, 0, wxALL, 5);
+	button_sizer->Add(m_cancel_btn, 0, wxALL, 5);
+	widget_sizer->Add(button_sizer, 0, wxALL, 5);
 
-	mainSizer->Add(widgetSizer, 0, wxALL, 20);
+	main_sizer->Add(widget_sizer, 0, wxALL, 20);
 
-	Bind(wxEVT_BUTTON, &RecordingMetadataDialog::OnConfirm, this, confirmBtn->GetId());
+	Bind(wxEVT_BUTTON, &RecordingMetadataDialog::onConfirm, this, m_confirm_btn->GetId());
 
-	SetSizerAndFit(mainSizer);
+	SetSizerAndFit(main_sizer);
 	SetEscapeId(wxID_CLOSE);
 }
 
-void RecordingMetadataDialog::OnConfirm(wxCommandEvent& event)
+void RecordingMetadataDialog::onConfirm(wxCommandEvent& event)
 {
 	EndModal(wxID_OK);
 }
 
-std::string RecordingMetadataDialog::GetAuthor()
+std::string RecordingMetadataDialog::getAuthor()
 {
-	return authorField->GetValue().ToStdString();
+	return m_author_field->GetValue().ToStdString();
 }
 
-std::string RecordingMetadataDialog::GetGameName()
+std::string RecordingMetadataDialog::getGameName()
 {
-	return gameNameField->GetValue().ToStdString();
+	return m_game_name_field->GetValue().ToStdString();
 }
