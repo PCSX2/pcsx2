@@ -449,6 +449,31 @@ public:
 #endif
 	}
 
+	/// Equivalent to blend with the given mask broadcasted across the vector
+	/// May be faster than blend in some cases
+	template <u32 mask>
+	__forceinline GSVector4i smartblend(const GSVector4i& a) const
+	{
+		if (mask == 0)
+			return *this;
+		if (mask == 0xffffffff)
+			return a;
+
+		if (mask == 0x0000ffff)
+			return blend16<0x55>(a);
+		if (mask == 0xffff0000)
+			return blend16<0xaa>(a);
+
+		for (int i = 0; i < 32; i += 8)
+		{
+			u8 byte = (mask >> i) & 0xff;
+			if (byte != 0xff && byte != 0)
+				return blend(a, GSVector4i(mask));
+		}
+
+		return blend8(a, GSVector4i(mask));
+	}
+
 	__forceinline GSVector4i blend(const GSVector4i& a, const GSVector4i& mask) const
 	{
 		return GSVector4i(_mm_or_si128(_mm_andnot_si128(mask, m), _mm_and_si128(mask, a)));

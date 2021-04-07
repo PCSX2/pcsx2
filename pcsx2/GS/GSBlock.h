@@ -855,53 +855,48 @@ public:
 #endif
 	}
 
-	__forceinline static void ReadBlock8HP(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch)
+	template <u32 shift, u32 mask>
+	__forceinline static void ReadBlockHP(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch)
 	{
 #if _M_SSE >= 0x501
-
-		u8* RESTRICT d0 = &dst[dstpitch * 0];
-		u8* RESTRICT d1 = &dst[dstpitch * 4];
 
 		const GSVector8i* s = (const GSVector8i*)src;
 
 		GSVector8i v0, v1, v2, v3;
 		GSVector4i v4, v5;
 
-		v0 = s[0].acbd();
-		v1 = s[1].acbd();
-		v2 = s[2].acbd();
-		v3 = s[3].acbd();
+		GSVector8i maskvec = GSVector8i(mask);
 
-		v0 = (v0 >> 24).ps32(v1 >> 24).pu16((v2 >> 24).ps32(v3 >> 24));
+		for (int i = 0; i < 2; i++)
+		{
+			v0 = s[i * 4 + 0].acbd();
+			v1 = s[i * 4 + 1].acbd();
+			v2 = s[i * 4 + 2].acbd();
+			v3 = s[i * 4 + 3].acbd();
 
-		v4 = v0.extract<0>();
-		v5 = v0.extract<1>();
+			v0 = (v0 >> shift).ps32(v1 >> shift).pu16((v2 >> shift).ps32(v3 >> shift));
 
-		GSVector4i::storel(&d0[dstpitch * 0], v4);
-		GSVector4i::storel(&d0[dstpitch * 1], v5);
-		GSVector4i::storeh(&d0[dstpitch * 2], v4);
-		GSVector4i::storeh(&d0[dstpitch * 3], v5);
+			if (mask != 0xffffffff)
+				v0 = v0 & maskvec;
 
-		v0 = s[4].acbd();
-		v1 = s[5].acbd();
-		v2 = s[6].acbd();
-		v3 = s[7].acbd();
+			v4 = v0.extract<0>();
+			v5 = v0.extract<1>();
 
-		v0 = (v0 >> 24).ps32(v1 >> 24).pu16((v2 >> 24).ps32(v3 >> 24));
+			GSVector4i::storel(&dst[dstpitch * 0], v4);
+			GSVector4i::storel(&dst[dstpitch * 1], v5);
+			GSVector4i::storeh(&dst[dstpitch * 2], v4);
+			GSVector4i::storeh(&dst[dstpitch * 3], v5);
 
-		v4 = v0.extract<0>();
-		v5 = v0.extract<1>();
-
-		GSVector4i::storel(&d1[dstpitch * 0], v4);
-		GSVector4i::storel(&d1[dstpitch * 1], v5);
-		GSVector4i::storeh(&d1[dstpitch * 2], v4);
-		GSVector4i::storeh(&d1[dstpitch * 3], v5);
+			dst += dstpitch * 4;
+		}
 
 #else
 
 		const GSVector4i* s = (const GSVector4i*)src;
 
 		GSVector4i v0, v1, v2, v3;
+
+		GSVector4i maskvec(mask);
 
 		for (int i = 0; i < 4; i++)
 		{
@@ -912,7 +907,10 @@ public:
 
 			GSVector4i::sw64(v0, v1, v2, v3);
 
-			v0 = ((v0 >> 24).ps32(v1 >> 24)).pu16((v2 >> 24).ps32(v3 >> 24));
+			v0 = ((v0 >> shift).ps32(v1 >> shift)).pu16((v2 >> shift).ps32(v3 >> shift));
+
+			if (mask != 0xffffffff)
+				v0 = v0 & maskvec;
 
 			GSVector4i::storel(dst, v0);
 
@@ -924,151 +922,21 @@ public:
 		}
 
 #endif
+	}
+
+	__forceinline static void ReadBlock8HP(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch)
+	{
+		ReadBlockHP<24, 0xffffffff>(src, dst, dstpitch);
 	}
 
 	__forceinline static void ReadBlock4HLP(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch)
 	{
-#if _M_SSE >= 0x501
-
-		u8* RESTRICT d0 = &dst[dstpitch * 0];
-		u8* RESTRICT d1 = &dst[dstpitch * 4];
-
-		const GSVector8i* s = (const GSVector8i*)src;
-
-		GSVector8i v0, v1, v2, v3;
-		GSVector4i v4, v5;
-		GSVector8i mask(0x0f0f0f0f);
-
-		v0 = s[0].acbd();
-		v1 = s[1].acbd();
-		v2 = s[2].acbd();
-		v3 = s[3].acbd();
-
-		v0 = (v0 >> 24).ps32(v1 >> 24).pu16((v2 >> 24).ps32(v3 >> 24)) & mask;
-
-		v4 = v0.extract<0>();
-		v5 = v0.extract<1>();
-
-		GSVector4i::storel(&d0[dstpitch * 0], v4);
-		GSVector4i::storel(&d0[dstpitch * 1], v5);
-		GSVector4i::storeh(&d0[dstpitch * 2], v4);
-		GSVector4i::storeh(&d0[dstpitch * 3], v5);
-
-		v0 = s[4].acbd();
-		v1 = s[5].acbd();
-		v2 = s[6].acbd();
-		v3 = s[7].acbd();
-
-		v0 = (v0 >> 24).ps32(v1 >> 24).pu16((v2 >> 24).ps32(v3 >> 24)) & mask;
-
-		v4 = v0.extract<0>();
-		v5 = v0.extract<1>();
-
-		GSVector4i::storel(&d1[dstpitch * 0], v4);
-		GSVector4i::storel(&d1[dstpitch * 1], v5);
-		GSVector4i::storeh(&d1[dstpitch * 2], v4);
-		GSVector4i::storeh(&d1[dstpitch * 3], v5);
-
-#else
-
-		const GSVector4i* s = (const GSVector4i*)src;
-
-		GSVector4i v0, v1, v2, v3;
-
-		GSVector4i mask(0x0f0f0f0f);
-
-		for (int i = 0; i < 4; i++)
-		{
-			v0 = s[i * 4 + 0];
-			v1 = s[i * 4 + 1];
-			v2 = s[i * 4 + 2];
-			v3 = s[i * 4 + 3];
-
-			GSVector4i::sw64(v0, v1, v2, v3);
-
-			v0 = ((v0 >> 24).ps32(v1 >> 24)).pu16((v2 >> 24).ps32(v3 >> 24)) & mask;
-
-			GSVector4i::storel(dst, v0);
-
-			dst += dstpitch;
-
-			GSVector4i::storeh(dst, v0);
-
-			dst += dstpitch;
-		}
-
-#endif
+		ReadBlockHP<24, 0x0f0f0f0f>(src, dst, dstpitch);
 	}
 
 	__forceinline static void ReadBlock4HHP(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch)
 	{
-#if _M_SSE >= 0x501
-
-		u8* RESTRICT d0 = &dst[dstpitch * 0];
-		u8* RESTRICT d1 = &dst[dstpitch * 4];
-
-		const GSVector8i* s = (const GSVector8i*)src;
-
-		GSVector8i v0, v1, v2, v3;
-		GSVector4i v4, v5;
-
-		v0 = s[0].acbd();
-		v1 = s[1].acbd();
-		v2 = s[2].acbd();
-		v3 = s[3].acbd();
-
-		v0 = (v0 >> 28).ps32(v1 >> 28).pu16((v2 >> 28).ps32(v3 >> 28));
-
-		v4 = v0.extract<0>();
-		v5 = v0.extract<1>();
-
-		GSVector4i::storel(&d0[dstpitch * 0], v4);
-		GSVector4i::storel(&d0[dstpitch * 1], v5);
-		GSVector4i::storeh(&d0[dstpitch * 2], v4);
-		GSVector4i::storeh(&d0[dstpitch * 3], v5);
-
-		v0 = s[4].acbd();
-		v1 = s[5].acbd();
-		v2 = s[6].acbd();
-		v3 = s[7].acbd();
-
-		v0 = (v0 >> 28).ps32(v1 >> 28).pu16((v2 >> 28).ps32(v3 >> 28));
-
-		v4 = v0.extract<0>();
-		v5 = v0.extract<1>();
-
-		GSVector4i::storel(&d1[dstpitch * 0], v4);
-		GSVector4i::storel(&d1[dstpitch * 1], v5);
-		GSVector4i::storeh(&d1[dstpitch * 2], v4);
-		GSVector4i::storeh(&d1[dstpitch * 3], v5);
-
-#else
-
-		const GSVector4i* s = (const GSVector4i*)src;
-
-		GSVector4i v0, v1, v2, v3;
-
-		for (int i = 0; i < 4; i++)
-		{
-			v0 = s[i * 4 + 0];
-			v1 = s[i * 4 + 1];
-			v2 = s[i * 4 + 2];
-			v3 = s[i * 4 + 3];
-
-			GSVector4i::sw64(v0, v1, v2, v3);
-
-			v0 = ((v0 >> 28).ps32(v1 >> 28)).pu16((v2 >> 28).ps32(v3 >> 28));
-
-			GSVector4i::storel(dst, v0);
-
-			dst += dstpitch;
-
-			GSVector4i::storeh(dst, v0);
-
-			dst += dstpitch;
-		}
-
-#endif
+		ReadBlockHP<28, 0xffffffff>(src, dst, dstpitch);
 	}
 
 	template <bool AEM, class V>
@@ -1232,77 +1100,74 @@ public:
 		}
 	}
 
-	__forceinline static void ExpandBlock8H_32(u32* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
+	template <u32 shift, u8 mask>
+	__forceinline static void ExpandBlockH_32(u32* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
 	{
 		for (int j = 0; j < 8; j++, dst += dstpitch)
 		{
 			const GSVector4i* s = (const GSVector4i*)src;
 
-			((GSVector4i*)dst)[0] = (s[j * 2 + 0] >> 24).gather32_32<>(pal);
-			((GSVector4i*)dst)[1] = (s[j * 2 + 1] >> 24).gather32_32<>(pal);
+			GSVector4i v0 = s[j * 2 + 0] >> shift;
+			GSVector4i v1 = s[j * 2 + 1] >> shift;
+			if (mask != 0xff)
+			{
+				v0 = v0 & mask;
+				v1 = v1 & mask;
+			}
+			((GSVector4i*)dst)[0] = v0.gather32_32<>(pal);
+			((GSVector4i*)dst)[1] = v1.gather32_32<>(pal);
 		}
+	}
+
+	template <u32 shift, u8 mask>
+	__forceinline static void ExpandBlockH_16(u32* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
+	{
+		for (int j = 0; j < 8; j++, dst += dstpitch)
+		{
+			const GSVector4i* s = (const GSVector4i*)src;
+
+			GSVector4i v0 = s[j * 2 + 0] >> shift;
+			GSVector4i v1 = s[j * 2 + 1] >> shift;
+			if (mask != 0xff)
+			{
+				v0 = v0 & mask;
+				v1 = v1 & mask;
+			}
+			v0 = v0.gather32_32<>(pal);
+			v1 = v1.gather32_32<>(pal);
+
+			((GSVector4i*)dst)[0] = v0.pu32(v1);
+		}
+	}
+
+	__forceinline static void ExpandBlock8H_32(u32* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
+	{
+		ExpandBlockH_32<24, 0xff>(src, dst, dstpitch, pal);
 	}
 
 	__forceinline static void ExpandBlock8H_16(u32* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
 	{
-		for (int j = 0; j < 8; j++, dst += dstpitch)
-		{
-
-			const GSVector4i* s = (const GSVector4i*)src;
-
-			GSVector4i v0 = (s[j * 2 + 0] >> 24).gather32_32<>(pal);
-			GSVector4i v1 = (s[j * 2 + 1] >> 24).gather32_32<>(pal);
-
-			((GSVector4i*)dst)[0] = v0.pu32(v1);
-		}
+		ExpandBlockH_16<24, 0xff>(src, dst, dstpitch, pal);
 	}
 
 	__forceinline static void ExpandBlock4HL_32(u32* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
 	{
-		for (int j = 0; j < 8; j++, dst += dstpitch)
-		{
-			const GSVector4i* s = (const GSVector4i*)src;
-
-			((GSVector4i*)dst)[0] = ((s[j * 2 + 0] >> 24) & 0xf).gather32_32<>(pal);
-			((GSVector4i*)dst)[1] = ((s[j * 2 + 1] >> 24) & 0xf).gather32_32<>(pal);
-		}
+		ExpandBlockH_32<24, 0x0f>(src, dst, dstpitch, pal);
 	}
 
 	__forceinline static void ExpandBlock4HL_16(u32* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
 	{
-		for (int j = 0; j < 8; j++, dst += dstpitch)
-		{
-			const GSVector4i* s = (const GSVector4i*)src;
-
-			GSVector4i v0 = ((s[j * 2 + 0] >> 24) & 0xf).gather32_32<>(pal);
-			GSVector4i v1 = ((s[j * 2 + 1] >> 24) & 0xf).gather32_32<>(pal);
-
-			((GSVector4i*)dst)[0] = v0.pu32(v1);
-		}
+		ExpandBlockH_16<24, 0x0f>(src, dst, dstpitch, pal);
 	}
 
 	__forceinline static void ExpandBlock4HH_32(u32* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
 	{
-		for (int j = 0; j < 8; j++, dst += dstpitch)
-		{
-			const GSVector4i* s = (const GSVector4i*)src;
-
-			((GSVector4i*)dst)[0] = (s[j * 2 + 0] >> 28).gather32_32<>(pal);
-			((GSVector4i*)dst)[1] = (s[j * 2 + 1] >> 28).gather32_32<>(pal);
-		}
+		ExpandBlockH_32<28, 0xff>(src, dst, dstpitch, pal);
 	}
 
 	__forceinline static void ExpandBlock4HH_16(u32* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
 	{
-		for (int j = 0; j < 8; j++, dst += dstpitch)
-		{
-			const GSVector4i* s = (const GSVector4i*)src;
-
-			GSVector4i v0 = (s[j * 2 + 0] >> 28).gather32_32<>(pal);
-			GSVector4i v1 = (s[j * 2 + 1] >> 28).gather32_32<>(pal);
-
-			((GSVector4i*)dst)[0] = v0.pu32(v1);
-		}
+		ExpandBlockH_16<28, 0xff>(src, dst, dstpitch, pal);
 	}
 
 	__forceinline static void UnpackAndWriteBlock24(const u8* RESTRICT src, int srcpitch, u8* RESTRICT dst)
@@ -1392,61 +1257,132 @@ public:
 #endif
 	}
 
-	__forceinline static void UnpackAndWriteBlock8H(const u8* RESTRICT src, int srcpitch, u8* RESTRICT dst)
+	template <u32 mask>
+	__forceinline static void UnpackAndWriteBlockH(const u8* RESTRICT src, int srcpitch, u8* RESTRICT dst)
 	{
+		GSVector4i v4, v5, v6, v7;
 
 #if _M_SSE >= 0x501
 
-		GSVector4i v4, v5, v6, v7;
-		GSVector8i v0, v1, v2, v3;
-		GSVector8i mask = GSVector8i::xff000000();
+		GSVector8i* d = reinterpret_cast<GSVector8i*>(dst);
 
-		for (int i = 0; i < 2; i++, src += srcpitch * 4)
+		for (int i = 0; i < 2; i++, src += srcpitch * 4, d += 4)
 		{
-			v4 = GSVector4i::loadl(&src[srcpitch * 0]);
-			v5 = GSVector4i::loadl(&src[srcpitch * 1]);
-			v6 = GSVector4i::loadl(&src[srcpitch * 2]);
-			v7 = GSVector4i::loadl(&src[srcpitch * 3]);
+			if (mask == 0xff000000)
+			{
+				v4 = GSVector4i::loadl(&src[srcpitch * 0]);
+				v5 = GSVector4i::loadl(&src[srcpitch * 1]);
+				v6 = GSVector4i::loadl(&src[srcpitch * 2]);
+				v7 = GSVector4i::loadl(&src[srcpitch * 3]);
 
-			v4 = v4.upl16(v5);
-			v5 = v6.upl16(v7);
+				v4 = v4.upl16(v5);
+				v5 = v6.upl16(v7);
+			}
+			else
+			{
+				v4 = GSVector4i::load(*(u32*)&src[srcpitch * 0]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 2]));
+				v5 = GSVector4i::load(*(u32*)&src[srcpitch * 1]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 3]));
 
-			v0 = GSVector8i::u8to32(v4) << 24;
-			v1 = GSVector8i::u8to32(v4.zwzw()) << 24;
-			v2 = GSVector8i::u8to32(v5) << 24;
-			v3 = GSVector8i::u8to32(v5.zwzw()) << 24;
+				if (mask == 0x0f000000)
+				{
+					v6 = v4.upl8(v4 >> 4);
+					v7 = v5.upl8(v5 >> 4);
+				}
+				else if (mask == 0xf0000000)
+				{
+					v6 = (v4 << 4).upl8(v4);
+					v7 = (v5 << 4).upl8(v5);
+				}
+				else
+				{
+					ASSERT(0);
+				}
 
-			((GSVector8i*)dst)[i * 4 + 0] = ((GSVector8i*)dst)[i * 4 + 0].blend(v0, mask);
-			((GSVector8i*)dst)[i * 4 + 1] = ((GSVector8i*)dst)[i * 4 + 1].blend(v1, mask);
-			((GSVector8i*)dst)[i * 4 + 2] = ((GSVector8i*)dst)[i * 4 + 2].blend(v2, mask);
-			((GSVector8i*)dst)[i * 4 + 3] = ((GSVector8i*)dst)[i * 4 + 3].blend(v3, mask);
+				v4 = v6.upl16(v7);
+				v5 = v6.uph16(v7);
+			}
+
+			GSVector8i v0 = GSVector8i::u8to32(v4) << 24;
+			GSVector8i v1 = GSVector8i::u8to32(v4.zwzw()) << 24;
+			GSVector8i v2 = GSVector8i::u8to32(v5) << 24;
+			GSVector8i v3 = GSVector8i::u8to32(v5.zwzw()) << 24;
+
+			d[0] = d[0].smartblend<mask>(v0);
+			d[1] = d[1].smartblend<mask>(v1);
+			d[2] = d[2].smartblend<mask>(v2);
+			d[3] = d[3].smartblend<mask>(v3);
 		}
 
 #else
 
-		GSVector4i v0, v1, v2, v3, v4;
-		GSVector4i mask = GSVector4i::xff000000();
+		GSVector4i v0, v1, v2, v3;
+
 		GSVector4i mask0 = m_uw8hmask0;
 		GSVector4i mask1 = m_uw8hmask1;
 		GSVector4i mask2 = m_uw8hmask2;
 		GSVector4i mask3 = m_uw8hmask3;
 
-		for (int i = 0; i < 4; i++, src += srcpitch * 2)
+		GSVector4i* d = reinterpret_cast<GSVector4i*>(dst);
+
+		for (int i = 0; i < 2; i++, src += srcpitch * 4, d += 8)
 		{
-			v4 = GSVector4i::load(src, src + srcpitch);
+			if (mask == 0xff000000)
+			{
+				v4 = GSVector4i::load(src + srcpitch * 0, src + srcpitch * 1);
+				v5 = GSVector4i::load(src + srcpitch * 2, src + srcpitch * 3);
+			}
+			else
+			{
+				v6 = GSVector4i::load(*(u32*)&src[srcpitch * 0]);
+				v7 = GSVector4i::load(*(u32*)&src[srcpitch * 1]);
+				v4 = v6.upl32(v7);
+				v6 = GSVector4i::load(*(u32*)&src[srcpitch * 2]);
+				v7 = GSVector4i::load(*(u32*)&src[srcpitch * 3]);
+				v5 = v6.upl32(v7);
+
+				if (mask == 0x0f000000)
+				{
+					v4 = v4.upl8(v4 >> 4);
+					v5 = v5.upl8(v5 >> 4);
+				}
+				else if (mask == 0xf0000000)
+				{
+					v4 = (v4 << 4).upl8(v4);
+					v5 = (v5 << 4).upl8(v5);
+				}
+				else
+				{
+					ASSERT(0);
+				}
+			}
 
 			v0 = v4.shuffle8(mask0);
 			v1 = v4.shuffle8(mask1);
 			v2 = v4.shuffle8(mask2);
 			v3 = v4.shuffle8(mask3);
 
-			((GSVector4i*)dst)[i * 4 + 0] = ((GSVector4i*)dst)[i * 4 + 0].blend8(v0, mask);
-			((GSVector4i*)dst)[i * 4 + 1] = ((GSVector4i*)dst)[i * 4 + 1].blend8(v1, mask);
-			((GSVector4i*)dst)[i * 4 + 2] = ((GSVector4i*)dst)[i * 4 + 2].blend8(v2, mask);
-			((GSVector4i*)dst)[i * 4 + 3] = ((GSVector4i*)dst)[i * 4 + 3].blend8(v3, mask);
+			d[0] = d[0].smartblend<mask>(v0);
+			d[1] = d[1].smartblend<mask>(v1);
+			d[2] = d[2].smartblend<mask>(v2);
+			d[3] = d[3].smartblend<mask>(v3);
+
+			v0 = v5.shuffle8(mask0);
+			v1 = v5.shuffle8(mask1);
+			v2 = v5.shuffle8(mask2);
+			v3 = v5.shuffle8(mask3);
+
+			d[4] = d[4].smartblend<mask>(v0);
+			d[5] = d[5].smartblend<mask>(v1);
+			d[6] = d[6].smartblend<mask>(v2);
+			d[7] = d[7].smartblend<mask>(v3);
 		}
 
 #endif
+	}
+
+	__forceinline static void UnpackAndWriteBlock8H(const u8* RESTRICT src, int srcpitch, u8* RESTRICT dst)
+	{
+		UnpackAndWriteBlockH<0xff000000>(src, srcpitch, dst);
 	}
 
 	__forceinline static void UnpackAndWriteBlock4HL(const u8* RESTRICT src, int srcpitch, u8* RESTRICT dst)
@@ -1461,144 +1397,12 @@ public:
 					s[i] = (columnTable32[j][i * 2] & 0x0f) | (columnTable32[j][i * 2 + 1] << 4);
 		}
 
-#if _M_SSE >= 0x501
-
-		GSVector4i v4, v5, v6, v7;
-		GSVector8i v0, v1, v2, v3;
-		GSVector8i mask(0x0f000000);
-
-		for (int i = 0; i < 2; i++, src += srcpitch * 4)
-		{
-			v4 = GSVector4i::load(*(u32*)&src[srcpitch * 0]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 2]));
-			v5 = GSVector4i::load(*(u32*)&src[srcpitch * 1]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 3]));
-
-			v6 = v4.upl8(v4 >> 4);
-			v7 = v5.upl8(v5 >> 4);
-
-			v4 = v6.upl16(v7);
-			v5 = v6.uph16(v7);
-
-			v0 = GSVector8i::u8to32(v4) << 24;
-			v1 = GSVector8i::u8to32(v4.zwzw()) << 24;
-			v2 = GSVector8i::u8to32(v5) << 24;
-			v3 = GSVector8i::u8to32(v5.zwzw()) << 24;
-
-			((GSVector8i*)dst)[i * 4 + 0] = ((GSVector8i*)dst)[i * 4 + 0].blend(v0, mask);
-			((GSVector8i*)dst)[i * 4 + 1] = ((GSVector8i*)dst)[i * 4 + 1].blend(v1, mask);
-			((GSVector8i*)dst)[i * 4 + 2] = ((GSVector8i*)dst)[i * 4 + 2].blend(v2, mask);
-			((GSVector8i*)dst)[i * 4 + 3] = ((GSVector8i*)dst)[i * 4 + 3].blend(v3, mask);
-		}
-
-#else
-
-		GSVector4i v0, v1, v2, v3, v4, v5;
-		GSVector4i mask = GSVector4i(0x0f000000);
-		GSVector4i mask0 = m_uw8hmask0;
-		GSVector4i mask1 = m_uw8hmask1;
-		GSVector4i mask2 = m_uw8hmask2;
-		GSVector4i mask3 = m_uw8hmask3;
-
-		for (int i = 0; i < 2; i++, src += srcpitch * 4)
-		{
-			v4 = GSVector4i::load(*(u32*)&src[srcpitch * 0]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 1]));
-			v5 = GSVector4i::load(*(u32*)&src[srcpitch * 2]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 3]));
-
-			v4 = v4.upl8(v4 >> 4);
-			v5 = v5.upl8(v5 >> 4);
-
-			v0 = v4.shuffle8(mask0);
-			v1 = v4.shuffle8(mask1);
-			v2 = v4.shuffle8(mask2);
-			v3 = v4.shuffle8(mask3);
-
-			((GSVector4i*)dst)[i * 8 + 0] = ((GSVector4i*)dst)[i * 8 + 0].blend(v0, mask);
-			((GSVector4i*)dst)[i * 8 + 1] = ((GSVector4i*)dst)[i * 8 + 1].blend(v1, mask);
-			((GSVector4i*)dst)[i * 8 + 2] = ((GSVector4i*)dst)[i * 8 + 2].blend(v2, mask);
-			((GSVector4i*)dst)[i * 8 + 3] = ((GSVector4i*)dst)[i * 8 + 3].blend(v3, mask);
-
-			v0 = v5.shuffle8(mask0);
-			v1 = v5.shuffle8(mask1);
-			v2 = v5.shuffle8(mask2);
-			v3 = v5.shuffle8(mask3);
-
-			((GSVector4i*)dst)[i * 8 + 4] = ((GSVector4i*)dst)[i * 8 + 4].blend(v0, mask);
-			((GSVector4i*)dst)[i * 8 + 5] = ((GSVector4i*)dst)[i * 8 + 5].blend(v1, mask);
-			((GSVector4i*)dst)[i * 8 + 6] = ((GSVector4i*)dst)[i * 8 + 6].blend(v2, mask);
-			((GSVector4i*)dst)[i * 8 + 7] = ((GSVector4i*)dst)[i * 8 + 7].blend(v3, mask);
-		}
-
-#endif
+		UnpackAndWriteBlockH<0x0f000000>(src, srcpitch, dst);
 	}
 
 	__forceinline static void UnpackAndWriteBlock4HH(const u8* RESTRICT src, int srcpitch, u8* RESTRICT dst)
 	{
-#if _M_SSE >= 0x501
-
-		GSVector4i v4, v5, v6, v7;
-		GSVector8i v0, v1, v2, v3;
-		GSVector8i mask = GSVector8i::xf0000000();
-
-		for (int i = 0; i < 2; i++, src += srcpitch * 4)
-		{
-			v4 = GSVector4i::load(*(u32*)&src[srcpitch * 0]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 2]));
-			v5 = GSVector4i::load(*(u32*)&src[srcpitch * 1]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 3]));
-
-			v6 = (v4 << 4).upl8(v4);
-			v7 = (v5 << 4).upl8(v5);
-
-			v4 = v6.upl16(v7);
-			v5 = v6.uph16(v7);
-
-			v0 = GSVector8i::u8to32(v4) << 24;
-			v1 = GSVector8i::u8to32(v4.zwzw()) << 24;
-			v2 = GSVector8i::u8to32(v5) << 24;
-			v3 = GSVector8i::u8to32(v5.zwzw()) << 24;
-
-			((GSVector8i*)dst)[i * 4 + 0] = ((GSVector8i*)dst)[i * 4 + 0].blend(v0, mask);
-			((GSVector8i*)dst)[i * 4 + 1] = ((GSVector8i*)dst)[i * 4 + 1].blend(v1, mask);
-			((GSVector8i*)dst)[i * 4 + 2] = ((GSVector8i*)dst)[i * 4 + 2].blend(v2, mask);
-			((GSVector8i*)dst)[i * 4 + 3] = ((GSVector8i*)dst)[i * 4 + 3].blend(v3, mask);
-		}
-
-#else
-
-		GSVector4i v0, v1, v2, v3, v4, v5;
-		GSVector4i mask = GSVector4i::xf0000000();
-		GSVector4i mask0 = m_uw8hmask0;
-		GSVector4i mask1 = m_uw8hmask1;
-		GSVector4i mask2 = m_uw8hmask2;
-		GSVector4i mask3 = m_uw8hmask3;
-
-		for (int i = 0; i < 2; i++, src += srcpitch * 4)
-		{
-			v4 = GSVector4i::load(*(u32*)&src[srcpitch * 0]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 1]));
-			v5 = GSVector4i::load(*(u32*)&src[srcpitch * 2]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 3]));
-
-			v4 = (v4 << 4).upl8(v4);
-			v5 = (v5 << 4).upl8(v5);
-
-			v0 = v4.shuffle8(mask0);
-			v1 = v4.shuffle8(mask1);
-			v2 = v4.shuffle8(mask2);
-			v3 = v4.shuffle8(mask3);
-
-			((GSVector4i*)dst)[i * 8 + 0] = ((GSVector4i*)dst)[i * 8 + 0].blend(v0, mask);
-			((GSVector4i*)dst)[i * 8 + 1] = ((GSVector4i*)dst)[i * 8 + 1].blend(v1, mask);
-			((GSVector4i*)dst)[i * 8 + 2] = ((GSVector4i*)dst)[i * 8 + 2].blend(v2, mask);
-			((GSVector4i*)dst)[i * 8 + 3] = ((GSVector4i*)dst)[i * 8 + 3].blend(v3, mask);
-
-			v0 = v5.shuffle8(mask0);
-			v1 = v5.shuffle8(mask1);
-			v2 = v5.shuffle8(mask2);
-			v3 = v5.shuffle8(mask3);
-
-			((GSVector4i*)dst)[i * 8 + 4] = ((GSVector4i*)dst)[i * 8 + 4].blend(v0, mask);
-			((GSVector4i*)dst)[i * 8 + 5] = ((GSVector4i*)dst)[i * 8 + 5].blend(v1, mask);
-			((GSVector4i*)dst)[i * 8 + 6] = ((GSVector4i*)dst)[i * 8 + 6].blend(v2, mask);
-			((GSVector4i*)dst)[i * 8 + 7] = ((GSVector4i*)dst)[i * 8 + 7].blend(v3, mask);
-		}
-
-#endif
+		UnpackAndWriteBlockH<0xf0000000>(src, srcpitch, dst);
 	}
 
 	template <bool AEM>
@@ -2078,38 +1882,39 @@ public:
 
 	// TODO: ReadAndExpandBlock8H_16
 
-	__forceinline static void ReadAndExpandBlock4HL_32(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
+	template <u32 shift, u32 mask>
+	__forceinline static void ReadAndExpandBlock4H_32(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
 	{
-		//printf("ReadAndExpandBlock4HL_32\n");
-
 #if _M_SSE >= 0x501
 
 		const GSVector8i* s = (const GSVector8i*)src;
 
 		GSVector8i p0, p1, p2, p3;
 		LoadPalVecs(pal, p0, p1, p2, p3);
-		GSVector8i mask(0x0f0f0f0f);
+		GSVector8i maskvec(mask);
 
 		GSVector8i v0, v1, v2, v3;
 
-		for (int i = 0; i < 2; i++)
+		for(int i = 0; i < 2; i++)
 		{
 			GSVector8i* d0 = reinterpret_cast<GSVector8i*>(dst);
 			GSVector8i* d1 = reinterpret_cast<GSVector8i*>(dst + dstpitch);
 			GSVector8i* d2 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 2);
 			GSVector8i* d3 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 3);
 
-			v0 = s[i * 4 + 0] >> 24;
-			v1 = s[i * 4 + 1] >> 24;
-			v2 = s[i * 4 + 2] >> 24;
-			v3 = s[i * 4 + 3] >> 24;
+			v0 = s[i * 4 + 0] >> shift;
+			v1 = s[i * 4 + 1] >> shift;
+			v2 = s[i * 4 + 2] >> shift;
+			v3 = s[i * 4 + 3] >> shift;
 
 			GSVector8i::sw128(v0, v1);
 			GSVector8i::sw64(v0, v1);
 			GSVector8i::sw128(v2, v3);
 			GSVector8i::sw64(v2, v3);
 
-			GSVector8i all = v0.ps32(v1).pu16(v2.ps32(v3)) & mask;
+			GSVector8i all = v0.ps32(v1).pu16(v2.ps32(v3));
+			if (mask != 0xffffffff)
+				all = all & mask;
 
 			ReadClut4(p0, p1, p2, p3, all, *d0, *d1, *d2, *d3);
 
@@ -2122,7 +1927,7 @@ public:
 
 		GSVector4i p0, p1, p2, p3;
 		LoadPalVecs(pal, p0, p1, p2, p3);
-		GSVector4i mask(0x0f0f0f0f);
+		GSVector4i maskvec(mask);
 
 		GSVector4i v0, v1, v2, v3;
 
@@ -2131,14 +1936,16 @@ public:
 			GSVector4i* d0 = reinterpret_cast<GSVector4i*>(dst);
 			GSVector4i* d1 = reinterpret_cast<GSVector4i*>(dst + dstpitch);
 
-			v0 = s[i * 4 + 0] >> 24;
-			v1 = s[i * 4 + 1] >> 24;
-			v2 = s[i * 4 + 2] >> 24;
-			v3 = s[i * 4 + 3] >> 24;
+			v0 = s[i * 4 + 0] >> shift;
+			v1 = s[i * 4 + 1] >> shift;
+			v2 = s[i * 4 + 2] >> shift;
+			v3 = s[i * 4 + 3] >> shift;
 
 			GSVector4i::sw64(v0, v1, v2, v3);
 
-			GSVector4i all = v0.ps32(v1).pu16(v2.ps32(v3)) & mask;
+			GSVector4i all = v0.ps32(v1).pu16(v2.ps32(v3));
+			if (mask != 0xffffffff)
+				all = all & mask;
 
 			ReadClut4(p0, p1, p2, p3, all, d0[0], d0[1], d1[0], d1[1]);
 
@@ -2148,74 +1955,18 @@ public:
 #endif
 	}
 
+	__forceinline static void ReadAndExpandBlock4HL_32(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
+	{
+		//printf("ReadAndExpandBlock4HL_32\n");
+		ReadAndExpandBlock4H_32<24, 0x0f0f0f0f>(src, dst, dstpitch, pal);
+	}
+
 	// TODO: ReadAndExpandBlock4HL_16
 
 	__forceinline static void ReadAndExpandBlock4HH_32(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
 	{
 		//printf("ReadAndExpandBlock4HH_32\n");
-
-#if _M_SSE >= 0x501
-
-		const GSVector8i* s = (const GSVector8i*)src;
-
-		GSVector8i p0, p1, p2, p3;
-		LoadPalVecs(pal, p0, p1, p2, p3);
-
-		GSVector8i v0, v1, v2, v3;
-
-		for (int i = 0; i < 2; i++)
-		{
-			GSVector8i* d0 = reinterpret_cast<GSVector8i*>(dst);
-			GSVector8i* d1 = reinterpret_cast<GSVector8i*>(dst + dstpitch);
-			GSVector8i* d2 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 2);
-			GSVector8i* d3 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 3);
-
-			v0 = s[i * 4 + 0] >> 28;
-			v1 = s[i * 4 + 1] >> 28;
-			v2 = s[i * 4 + 2] >> 28;
-			v3 = s[i * 4 + 3] >> 28;
-
-			GSVector8i::sw128(v0, v1);
-			GSVector8i::sw64(v0, v1);
-			GSVector8i::sw128(v2, v3);
-			GSVector8i::sw64(v2, v3);
-
-			GSVector8i all = v0.ps32(v1).pu16(v2.ps32(v3));
-
-			ReadClut4(p0, p1, p2, p3, all, *d0, *d1, *d2, *d3);
-
-			dst += dstpitch * 4;
-		}
-
-#else
-
-		const GSVector4i* s = (const GSVector4i*)src;
-
-		GSVector4i p0, p1, p2, p3;
-		LoadPalVecs(pal, p0, p1, p2, p3);
-
-		GSVector4i v0, v1, v2, v3;
-
-		for (int i = 0; i < 4; i++)
-		{
-			GSVector4i* d0 = reinterpret_cast<GSVector4i*>(dst);
-			GSVector4i* d1 = reinterpret_cast<GSVector4i*>(dst + dstpitch);
-
-			v0 = s[i * 4 + 0] >> 28;
-			v1 = s[i * 4 + 1] >> 28;
-			v2 = s[i * 4 + 2] >> 28;
-			v3 = s[i * 4 + 3] >> 28;
-
-			GSVector4i::sw64(v0, v1, v2, v3);
-
-			GSVector4i all = v0.ps32(v1).pu16(v2.ps32(v3));
-
-			ReadClut4(p0, p1, p2, p3, all, d0[0], d0[1], d1[0], d1[1]);
-
-			dst += dstpitch * 2;
-		}
-
-#endif
+		ReadAndExpandBlock4H_32<28, 0xffffffff>(src, dst, dstpitch, pal);
 	}
 
 	// TODO: ReadAndExpandBlock4HH_16
