@@ -331,6 +331,7 @@
     <ClCompile Include="..\..\PAD\Windows\WindowsMouse.cpp" />
     <ClCompile Include="..\..\PAD\Windows\WndProcEater.cpp" />
     <ClCompile Include="..\..\PAD\Windows\XInputEnum.cpp" />
+    <ClCompile Include="..\..\Recording\Utilities\InputRecordingLogger.cpp" />
     <ClCompile Include="..\..\SPU2\DplIIdecoder.cpp" />
     <ClCompile Include="..\..\SPU2\debug.cpp" />
     <ClCompile Include="..\..\SPU2\RegLog.cpp" />
