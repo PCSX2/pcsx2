@@ -1325,43 +1325,26 @@ public:
 		GSVector8i v0, v1, v2, v3;
 		GSVector8i mask = GSVector8i::xff000000();
 
-		v4 = GSVector4i::loadl(&src[srcpitch * 0]);
-		v5 = GSVector4i::loadl(&src[srcpitch * 1]);
-		v6 = GSVector4i::loadl(&src[srcpitch * 2]);
-		v7 = GSVector4i::loadl(&src[srcpitch * 3]);
+		for (int i = 0; i < 2; i++, src += srcpitch * 4)
+		{
+			v4 = GSVector4i::loadl(&src[srcpitch * 0]);
+			v5 = GSVector4i::loadl(&src[srcpitch * 1]);
+			v6 = GSVector4i::loadl(&src[srcpitch * 2]);
+			v7 = GSVector4i::loadl(&src[srcpitch * 3]);
 
-		v2 = GSVector8i::cast(v4.upl16(v5));
-		v3 = GSVector8i::cast(v6.upl16(v7));
+			v4 = v4.upl16(v5);
+			v5 = v6.upl16(v7);
 
-		v0 = v2.u8to32c() << 24;
-		v1 = v2.bbbb().u8to32c() << 24;
-		v2 = v3.u8to32c() << 24;
-		v3 = v3.bbbb().u8to32c() << 24;
+			v0 = GSVector8i::u8to32(v4) << 24;
+			v1 = GSVector8i::u8to32(v4.zwzw()) << 24;
+			v2 = GSVector8i::u8to32(v5) << 24;
+			v3 = GSVector8i::u8to32(v5.zwzw()) << 24;
 
-		((GSVector8i*)dst)[0] = ((GSVector8i*)dst)[0].blend8(v0, mask);
-		((GSVector8i*)dst)[1] = ((GSVector8i*)dst)[1].blend8(v1, mask);
-		((GSVector8i*)dst)[2] = ((GSVector8i*)dst)[2].blend8(v2, mask);
-		((GSVector8i*)dst)[3] = ((GSVector8i*)dst)[3].blend8(v3, mask);
-
-		src += srcpitch * 4;
-
-		v4 = GSVector4i::loadl(&src[srcpitch * 0]);
-		v5 = GSVector4i::loadl(&src[srcpitch * 1]);
-		v6 = GSVector4i::loadl(&src[srcpitch * 2]);
-		v7 = GSVector4i::loadl(&src[srcpitch * 3]);
-
-		v2 = GSVector8i::cast(v4.upl16(v5));
-		v3 = GSVector8i::cast(v6.upl16(v7));
-
-		v0 = v2.u8to32c() << 24;
-		v1 = v2.bbbb().u8to32c() << 24;
-		v2 = v3.u8to32c() << 24;
-		v3 = v3.bbbb().u8to32c() << 24;
-
-		((GSVector8i*)dst)[4] = ((GSVector8i*)dst)[4].blend8(v0, mask);
-		((GSVector8i*)dst)[5] = ((GSVector8i*)dst)[5].blend8(v1, mask);
-		((GSVector8i*)dst)[6] = ((GSVector8i*)dst)[6].blend8(v2, mask);
-		((GSVector8i*)dst)[7] = ((GSVector8i*)dst)[7].blend8(v3, mask);
+			((GSVector8i*)dst)[i * 4 + 0] = ((GSVector8i*)dst)[i * 4 + 0].blend(v0, mask);
+			((GSVector8i*)dst)[i * 4 + 1] = ((GSVector8i*)dst)[i * 4 + 1].blend(v1, mask);
+			((GSVector8i*)dst)[i * 4 + 2] = ((GSVector8i*)dst)[i * 4 + 2].blend(v2, mask);
+			((GSVector8i*)dst)[i * 4 + 3] = ((GSVector8i*)dst)[i * 4 + 3].blend(v3, mask);
+		}
 
 #else
 
@@ -1404,47 +1387,31 @@ public:
 
 #if _M_SSE >= 0x501
 
-		GSVector4i v4, v5, v6;
+		GSVector4i v4, v5, v6, v7;
 		GSVector8i v0, v1, v2, v3;
 		GSVector8i mask(0x0f000000);
 
-		v6 = GSVector4i(*(u32*)&src[srcpitch * 0], *(u32*)&src[srcpitch * 2], *(u32*)&src[srcpitch * 1], *(u32*)&src[srcpitch * 3]);
+		for (int i = 0; i < 2; i++, src += srcpitch * 4)
+		{
+			v4 = GSVector4i::load(*(u32*)&src[srcpitch * 0]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 2]));
+			v5 = GSVector4i::load(*(u32*)&src[srcpitch * 1]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 3]));
 
-		v4 = v6.upl8(v6 >> 4);
-		v5 = v6.uph8(v6 >> 4);
+			v6 = v4.upl8(v4 >> 4);
+			v7 = v5.upl8(v5 >> 4);
 
-		v2 = GSVector8i::cast(v4.upl16(v5));
-		v3 = GSVector8i::cast(v4.uph16(v5));
+			v4 = v6.upl16(v7);
+			v5 = v6.uph16(v7);
 
-		v0 = v2.u8to32c() << 24;
-		v1 = v2.bbbb().u8to32c() << 24;
-		v2 = v3.u8to32c() << 24;
-		v3 = v3.bbbb().u8to32c() << 24;
+			v0 = GSVector8i::u8to32(v4) << 24;
+			v1 = GSVector8i::u8to32(v4.zwzw()) << 24;
+			v2 = GSVector8i::u8to32(v5) << 24;
+			v3 = GSVector8i::u8to32(v5.zwzw()) << 24;
 
-		((GSVector8i*)dst)[0] = ((GSVector8i*)dst)[0].blend(v0, mask);
-		((GSVector8i*)dst)[1] = ((GSVector8i*)dst)[1].blend(v1, mask);
-		((GSVector8i*)dst)[2] = ((GSVector8i*)dst)[2].blend(v2, mask);
-		((GSVector8i*)dst)[3] = ((GSVector8i*)dst)[3].blend(v3, mask);
-
-		src += srcpitch * 4;
-
-		v6 = GSVector4i(*(u32*)&src[srcpitch * 0], *(u32*)&src[srcpitch * 2], *(u32*)&src[srcpitch * 1], *(u32*)&src[srcpitch * 3]);
-
-		v4 = v6.upl8(v6 >> 4);
-		v5 = v6.uph8(v6 >> 4);
-
-		v2 = GSVector8i::cast(v4.upl16(v5));
-		v3 = GSVector8i::cast(v4.uph16(v5));
-
-		v0 = v2.u8to32c() << 24;
-		v1 = v2.bbbb().u8to32c() << 24;
-		v2 = v3.u8to32c() << 24;
-		v3 = v3.bbbb().u8to32c() << 24;
-
-		((GSVector8i*)dst)[4] = ((GSVector8i*)dst)[4].blend(v0, mask);
-		((GSVector8i*)dst)[5] = ((GSVector8i*)dst)[5].blend(v1, mask);
-		((GSVector8i*)dst)[6] = ((GSVector8i*)dst)[6].blend(v2, mask);
-		((GSVector8i*)dst)[7] = ((GSVector8i*)dst)[7].blend(v3, mask);
+			((GSVector8i*)dst)[i * 4 + 0] = ((GSVector8i*)dst)[i * 4 + 0].blend(v0, mask);
+			((GSVector8i*)dst)[i * 4 + 1] = ((GSVector8i*)dst)[i * 4 + 1].blend(v1, mask);
+			((GSVector8i*)dst)[i * 4 + 2] = ((GSVector8i*)dst)[i * 4 + 2].blend(v2, mask);
+			((GSVector8i*)dst)[i * 4 + 3] = ((GSVector8i*)dst)[i * 4 + 3].blend(v3, mask);
+		}
 
 #else
 
@@ -1457,10 +1424,11 @@ public:
 
 		for (int i = 0; i < 2; i++, src += srcpitch * 4)
 		{
-			GSVector4i v(*(u32*)&src[srcpitch * 0], *(u32*)&src[srcpitch * 1], *(u32*)&src[srcpitch * 2], *(u32*)&src[srcpitch * 3]);
+			v4 = GSVector4i::load(*(u32*)&src[srcpitch * 0]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 1]));
+			v5 = GSVector4i::load(*(u32*)&src[srcpitch * 2]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 3]));
 
-			v4 = v.upl8(v >> 4);
-			v5 = v.uph8(v >> 4);
+			v4 = v4.upl8(v4 >> 4);
+			v5 = v5.upl8(v5 >> 4);
 
 			v0 = v4.shuffle8(mask0);
 			v1 = v4.shuffle8(mask1);
@@ -1488,50 +1456,33 @@ public:
 
 	__forceinline static void UnpackAndWriteBlock4HH(const u8* RESTRICT src, int srcpitch, u8* RESTRICT dst)
 	{
-
 #if _M_SSE >= 0x501
 
-		GSVector4i v4, v5, v6;
+		GSVector4i v4, v5, v6, v7;
 		GSVector8i v0, v1, v2, v3;
 		GSVector8i mask = GSVector8i::xf0000000();
 
-		v6 = GSVector4i(*(u32*)&src[srcpitch * 0], *(u32*)&src[srcpitch * 2], *(u32*)&src[srcpitch * 1], *(u32*)&src[srcpitch * 3]);
+		for (int i = 0; i < 2; i++, src += srcpitch * 4)
+		{
+			v4 = GSVector4i::load(*(u32*)&src[srcpitch * 0]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 2]));
+			v5 = GSVector4i::load(*(u32*)&src[srcpitch * 1]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 3]));
 
-		v4 = (v6 << 4).upl8(v6);
-		v5 = (v6 << 4).uph8(v6);
+			v6 = (v4 << 4).upl8(v4);
+			v7 = (v5 << 4).upl8(v5);
 
-		v2 = GSVector8i::cast(v4.upl16(v5));
-		v3 = GSVector8i::cast(v4.uph16(v5));
+			v4 = v6.upl16(v7);
+			v5 = v6.uph16(v7);
 
-		v0 = v2.u8to32c() << 24;
-		v1 = v2.bbbb().u8to32c() << 24;
-		v2 = v3.u8to32c() << 24;
-		v3 = v3.bbbb().u8to32c() << 24;
+			v0 = GSVector8i::u8to32(v4) << 24;
+			v1 = GSVector8i::u8to32(v4.zwzw()) << 24;
+			v2 = GSVector8i::u8to32(v5) << 24;
+			v3 = GSVector8i::u8to32(v5.zwzw()) << 24;
 
-		((GSVector8i*)dst)[0] = ((GSVector8i*)dst)[0].blend(v0, mask);
-		((GSVector8i*)dst)[1] = ((GSVector8i*)dst)[1].blend(v1, mask);
-		((GSVector8i*)dst)[2] = ((GSVector8i*)dst)[2].blend(v2, mask);
-		((GSVector8i*)dst)[3] = ((GSVector8i*)dst)[3].blend(v3, mask);
-
-		src += srcpitch * 4;
-
-		v6 = GSVector4i(*(u32*)&src[srcpitch * 0], *(u32*)&src[srcpitch * 2], *(u32*)&src[srcpitch * 1], *(u32*)&src[srcpitch * 3]);
-
-		v4 = (v6 << 4).upl8(v6);
-		v5 = (v6 << 4).uph8(v6);
-
-		v2 = GSVector8i::cast(v4.upl16(v5));
-		v3 = GSVector8i::cast(v4.uph16(v5));
-
-		v0 = v2.u8to32c() << 24;
-		v1 = v2.bbbb().u8to32c() << 24;
-		v2 = v3.u8to32c() << 24;
-		v3 = v3.bbbb().u8to32c() << 24;
-
-		((GSVector8i*)dst)[4] = ((GSVector8i*)dst)[4].blend(v0, mask);
-		((GSVector8i*)dst)[5] = ((GSVector8i*)dst)[5].blend(v1, mask);
-		((GSVector8i*)dst)[6] = ((GSVector8i*)dst)[6].blend(v2, mask);
-		((GSVector8i*)dst)[7] = ((GSVector8i*)dst)[7].blend(v3, mask);
+			((GSVector8i*)dst)[i * 4 + 0] = ((GSVector8i*)dst)[i * 4 + 0].blend(v0, mask);
+			((GSVector8i*)dst)[i * 4 + 1] = ((GSVector8i*)dst)[i * 4 + 1].blend(v1, mask);
+			((GSVector8i*)dst)[i * 4 + 2] = ((GSVector8i*)dst)[i * 4 + 2].blend(v2, mask);
+			((GSVector8i*)dst)[i * 4 + 3] = ((GSVector8i*)dst)[i * 4 + 3].blend(v3, mask);
+		}
 
 #else
 
@@ -1544,10 +1495,11 @@ public:
 
 		for (int i = 0; i < 2; i++, src += srcpitch * 4)
 		{
-			GSVector4i v(*(u32*)&src[srcpitch * 0], *(u32*)&src[srcpitch * 1], *(u32*)&src[srcpitch * 2], *(u32*)&src[srcpitch * 3]);
+			v4 = GSVector4i::load(*(u32*)&src[srcpitch * 0]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 1]));
+			v5 = GSVector4i::load(*(u32*)&src[srcpitch * 2]).upl32(GSVector4i::load(*(u32*)&src[srcpitch * 3]));
 
-			v4 = (v << 4).upl8(v);
-			v5 = (v << 4).uph8(v);
+			v4 = (v4 << 4).upl8(v4);
+			v5 = (v5 << 4).upl8(v5);
 
 			v0 = v4.shuffle8(mask0);
 			v1 = v4.shuffle8(mask1);
