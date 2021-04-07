@@ -1715,6 +1715,66 @@ public:
 	{
 		//printf("ReadAndExpandBlock8_32\n");
 
+#if _M_SSE >= 0x501
+
+		const GSVector8i* s = (const GSVector8i*)src;
+
+		GSVector8i v0, v1;
+		GSVector8i mask = GSVector8i::x000000ff();
+
+		for (int i = 0; i < 2; i++)
+		{
+			GSVector8i* d0 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 0);
+			GSVector8i* d1 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 1);
+			GSVector8i* d2 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 2);
+			GSVector8i* d3 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 3);
+
+			v0 = s[i * 4 + 0];
+			v1 = s[i * 4 + 1];
+
+			GSVector8i::sw128(v0, v1);
+			GSVector8i::sw64(v0, v1);
+
+			d0[0] = ((v0      ) & mask).gather32_32(pal);
+			d0[1] = ((v0 >> 16) & mask).gather32_32(pal);
+			d1[0] = ((v1      ) & mask).gather32_32(pal);
+			d1[1] = ((v1 >> 16) & mask).gather32_32(pal);
+			v0 = v0.cdab();
+			v1 = v1.cdab();
+			d2[0] = ((v0 >>  8) & mask).gather32_32(pal);
+			d2[1] = ((v0 >> 24)       ).gather32_32(pal);
+			d3[0] = ((v1 >>  8) & mask).gather32_32(pal);
+			d3[1] = ((v1 >> 24)       ).gather32_32(pal);
+
+			dst += dstpitch * 4;
+
+			d0 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 0);
+			d1 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 1);
+			d2 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 2);
+			d3 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 3);
+
+			v1 = s[i * 4 + 2];
+			v0 = s[i * 4 + 3];
+
+			GSVector8i::sw128(v0, v1);
+			GSVector8i::sw64(v0, v1);
+
+			d0[0] = ((v0      ) & mask).gather32_32(pal);
+			d0[1] = ((v0 >> 16) & mask).gather32_32(pal);
+			d1[0] = ((v1      ) & mask).gather32_32(pal);
+			d1[1] = ((v1 >> 16) & mask).gather32_32(pal);
+			v0 = v0.cdab();
+			v1 = v1.cdab();
+			d2[0] = ((v0 >>  8) & mask).gather32_32(pal);
+			d2[1] = ((v0 >> 24)       ).gather32_32(pal);
+			d3[0] = ((v1 >>  8) & mask).gather32_32(pal);
+			d3[1] = ((v1 >> 24)       ).gather32_32(pal);
+
+			dst += dstpitch * 4;
+		}
+
+#else
+
 		const GSVector4i* s = (const GSVector4i*)src;
 
 		GSVector4i v0, v1, v2, v3;
@@ -1756,6 +1816,8 @@ public:
 			v2.gather32_8<>(pal, (GSVector4i*)dst);
 			dst += dstpitch;
 		}
+
+#endif
 	}
 
 	// TODO: ReadAndExpandBlock8_16
@@ -1933,6 +1995,26 @@ public:
 	{
 		//printf("ReadAndExpandBlock8H_32\n");
 
+#if _M_SSE >= 0x501
+
+		const GSVector8i* s = (const GSVector8i*)src;
+		for (int i = 0; i < 4; i++)
+		{
+			GSVector8i v0 = s[i * 2 + 0];
+			GSVector8i v1 = s[i * 2 + 1];
+
+			GSVector8i::sw128(v0, v1);
+			GSVector8i::sw64(v0, v1);
+
+			*reinterpret_cast<GSVector8i*>(dst) = (v0 >> 24).gather32_32(pal);
+			dst += dstpitch;
+
+			*reinterpret_cast<GSVector8i*>(dst) = (v1 >> 24).gather32_32(pal);
+			dst += dstpitch;
+		}
+
+#else
+
 		const GSVector4i* s = (const GSVector4i*)src;
 
 		GSVector4i v0, v1, v2, v3;
@@ -1956,6 +2038,8 @@ public:
 
 			dst += dstpitch;
 		}
+
+#endif
 	}
 
 	// TODO: ReadAndExpandBlock8H_16
