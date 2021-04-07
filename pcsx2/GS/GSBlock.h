@@ -24,10 +24,13 @@ class GSBlock
 	static const GSVector4i m_r16mask;
 	static const GSVector4i m_r8mask;
 	static const GSVector4i m_r4mask;
+	static const GSVector4i m_w4mask;
 	static const GSVector4i m_palvec_mask;
 
 	static const GSVector4i m_avx2_r8mask1;
 	static const GSVector4i m_avx2_r8mask2;
+	static const GSVector4i m_avx2_w8mask1;
+	static const GSVector4i m_avx2_w8mask2;
 
 	static const GSVector4i m_uw8hmask0;
 	static const GSVector4i m_uw8hmask1;
@@ -216,23 +219,19 @@ public:
 		GSVector8i v0(v4, v5);
 		GSVector8i v1(v6, v7);
 
+		GSVector8i v2 = v0.blend32<0xaa>(v1).shuffle8(GSVector8i::broadcast128(m_avx2_w8mask1)).acbd();
+		GSVector8i v3 = v1.blend32<0xaa>(v0).shuffle8(GSVector8i::broadcast128(m_avx2_w8mask2)).acbd();
+
 		if ((i & 1) == 0)
 		{
-			v1 = v1.yxwz();
+			((GSVector8i*)dst)[i * 2 + 0] = v2;
+			((GSVector8i*)dst)[i * 2 + 1] = v3;
 		}
 		else
 		{
-			v0 = v0.yxwz();
+			((GSVector8i*)dst)[i * 2 + 0] = v3;
+			((GSVector8i*)dst)[i * 2 + 1] = v2;
 		}
-
-		GSVector8i::sw8(v0, v1);
-		GSVector8i::sw16(v0, v1);
-
-		v0 = v0.acbd();
-		v1 = v1.acbd();
-
-		((GSVector8i*)dst)[i * 2 + 0] = v0;
-		((GSVector8i*)dst)[i * 2 + 1] = v1;
 
 #else
 
@@ -273,6 +272,33 @@ public:
 
 		// TODO: pshufb
 
+#if _M_SSE >= 0x501
+
+		GSVector8i v0 = GSVector8i(GSVector4i::load<false>(&src[srcpitch * 0]), GSVector4i::load<false>(&src[srcpitch * 1]));
+		GSVector8i v1 = GSVector8i(GSVector4i::load<false>(&src[srcpitch * 2]), GSVector4i::load<false>(&src[srcpitch * 3]));
+
+		v0 = v0.shuffle8(GSVector8i::broadcast128(m_w4mask)).acbd();
+		v1 = v1.shuffle8(GSVector8i::broadcast128(m_w4mask)).acbd();
+
+		if ((i & 1) == 0)
+		{
+			v0 = v0.xzyw();
+			v1 = v1.ywxz();
+		}
+		else
+		{
+			v0 = v0.ywxz();
+			v1 = v1.xzyw();
+		}
+
+		GSVector8i::mix4(v0, v1);
+		GSVector8i::sw32(v0, v1);
+
+		((GSVector8i*)dst)[i * 2 + 0] = v0;
+		((GSVector8i*)dst)[i * 2 + 1] = v1;
+
+#else
+
 		GSVector4i v0 = GSVector4i::load<alignment != 0>(&src[srcpitch * 0]);
 		GSVector4i v1 = GSVector4i::load<alignment != 0>(&src[srcpitch * 1]);
 		GSVector4i v2 = GSVector4i::load<alignment != 0>(&src[srcpitch * 2]);
@@ -298,6 +324,8 @@ public:
 		((GSVector4i*)dst)[i * 4 + 1] = v1;
 		((GSVector4i*)dst)[i * 4 + 2] = v2;
 		((GSVector4i*)dst)[i * 4 + 3] = v3;
+
+#endif
 	}
 
 	template <int alignment, u32 mask>
