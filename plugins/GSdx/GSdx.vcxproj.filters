@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -189,40 +189,10 @@
     <ClCompile Include="Renderers\SW\GSTextureSW.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x64.avx.cpp">
+    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.all.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x64.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x86.avx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x86.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderers\SW\GSDrawScanlineCodeGenerator.x64.avx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderers\SW\GSDrawScanlineCodeGenerator.x64.avx2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderers\SW\GSDrawScanlineCodeGenerator.x64.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderers\SW\GSDrawScanlineCodeGenerator.x86.avx.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderers\SW\GSDrawScanlineCodeGenerator.x86.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderers\SW\GSDrawScanlineCodeGenerator.x86.avx2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x86.avx2.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x64.avx2.cpp">
+    <ClCompile Include="Renderers\SW\GSDrawScanlineCodeGenerator.all.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="GSDrawingContext.cpp">
@@ -299,6 +269,9 @@
     <ClInclude Include="Renderers\SW\GSDrawScanlineCodeGenerator.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Renderers\SW\GSDrawScanlineCodeGenerator.all.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="GSDump.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -348,6 +321,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\SW\GSSetupPrimCodeGenerator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderers\SW\GSSetupPrimCodeGenerator.all.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Renderers\OpenGL\GSShaderOGL.h">
@@ -447,6 +423,9 @@
       <Filter>Xbyak</Filter>
     </ClInclude>
     <ClInclude Include="xbyak\xbyak_mnemonic.h">
+      <Filter>Xbyak</Filter>
+    </ClInclude>
+    <ClInclude Include="xbyak\xbyak_smart.h">
       <Filter>Xbyak</Filter>
     </ClInclude>
     <ClInclude Include="xbyak\xbyak_util.h">
