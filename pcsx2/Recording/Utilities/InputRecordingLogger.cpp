@@ -19,7 +19,7 @@
 
 namespace inputRec
 {
-	void log(const std::string log)
+	void log(const std::string& log)
 	{
 		if (log.empty())
 			return;
@@ -31,7 +31,7 @@ namespace inputRec
 			GSosdLog(log.c_str(), wxGetApp().GetProgramLog()->GetRGBA(ConsoleColors::Color_StrongMagenta));
 	}
 
-	void consoleLog(const std::string log)
+	void consoleLog(const std::string& log)
 	{
 		if (log.empty())
 			return;
@@ -39,7 +39,7 @@ namespace inputRec
 		recordingConLog(fmt::format("[REC]: {}\n", log));
 	}
 
-	void consoleMultiLog(std::vector<std::string> logs)
+	void consoleMultiLog(const std::vector<std::string>& logs)
 	{
 		std::string log;
 		for (std::string l : logs)
