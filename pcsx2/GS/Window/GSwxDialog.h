@@ -26,6 +26,73 @@
 #include <wx/wrapsizer.h>
 #include <wx/statline.h>
 #include <wx/filepicker.h>
+#include <vector>
+
+class GSUIElementHolder
+{
+	class GSwxChoice : public wxChoice
+	{
+	public:
+		const std::vector<GSSetting>& settings;
+
+		GSwxChoice(
+			wxWindow* parent,
+			wxWindowID id,
+			const wxPoint& pos,
+			const wxSize& size,
+			const wxArrayString& choices,
+			const std::vector<GSSetting>* settings,
+			long style = 0,
+			const wxValidator& validator = wxDefaultValidator,
+			const wxString& name = wxChoiceNameStr)
+			: wxChoice(parent, id, pos, size, choices, style, validator, name)
+			, settings(*settings)
+		{
+		}
+	};
+
+	struct UIElem
+	{
+		enum class Type
+		{
+			CheckBox,
+			Choice,
+			Spin,
+			Slider,
+			File,
+			Directory,
+		};
+
+		Type type;
+		wxControl* control;
+		const char* config;
+		wxCheckBox* prereq;
+
+		UIElem(Type type, wxControl* control, const char* config, wxCheckBox* prereq)
+			: type(type), control(control), config(config), prereq(prereq)
+		{
+		}
+	};
+
+	wxWindow* m_window;
+	std::vector<UIElem> m_elems;
+
+	void addWithLabel(wxControl* control, UIElem::Type type, wxSizer* sizer, const char* label, const char* config_name, int tooltip, wxCheckBox* prereq, wxSizerFlags flags = wxSizerFlags().Centre().Expand().Left());
+
+public:
+	GSUIElementHolder(wxWindow* window);
+	wxCheckBox* addCheckBox(wxSizer* sizer, const char* label, const char* config_name, int tooltip = -1, wxCheckBox* prereq = nullptr);
+	wxChoice* addComboBoxAndLabel(wxSizer* sizer, const char* label, const char* config_name, const std::vector<GSSetting>* settings, int tooltip = -1, wxCheckBox* prereq = nullptr);
+	wxSpinCtrl* addSpin(wxSizer* sizer, const char* config_name, int min, int max, int initial, int tooltip = -1, wxCheckBox* prereq = nullptr);
+	wxSpinCtrl* addSpinAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip = -1, wxCheckBox* prereq = nullptr);
+	wxSlider* addSliderAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip = -1, wxCheckBox* prereq = nullptr);
+	wxFilePickerCtrl* addFilePickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip = -1, wxCheckBox* prereq = nullptr);
+	wxDirPickerCtrl* addDirPickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip = -1, wxCheckBox* prereq = nullptr);
+
+	void Load();
+	void Save();
+	void Update();
+};
 
 namespace GSSettingsDialog
 {
@@ -33,30 +100,23 @@ namespace GSSettingsDialog
 	class RendererTab : public wxPanel
 	{
 	public:
-		wxCheckBox *acc_date_check, *eight_bit_check, *framebuffer_check, *flush_check, *edge_check, *mipmap_check;
-		wxChoice *m_res_select, *m_anisotropic_select, *m_dither_select, *m_mipmap_select, *m_crc_select, *m_blend_select;
-		wxSpinCtrl* thread_spin;
+		GSUIElementHolder m_ui;
 
 		RendererTab(wxWindow* parent);
-		void Load();
-		void Save();
-		void Update();
+		void Load() { m_ui.Load(); m_ui.Update(); }
+		void Save() { m_ui.Save(); }
 		void CallUpdate(wxCommandEvent& event);
 	};
 
 	class HacksTab : public wxPanel
 	{
 	public:
-		wxCheckBox* hacks_check;
-		wxCheckBox *align_sprite_check, *fb_convert_check, *auto_flush_check, *mem_wrap_check, *dis_depth_check;
-		wxCheckBox *merge_sprite_check, *dis_safe_features_check, *preload_gs_check, *fast_inv_check, *wild_arms_check;
-
-		wxChoice *m_half_select, *m_tri_select, *m_gs_offset_hack_select, *m_round_hack_select;
-		wxSpinCtrl *skip_x_spin, *skip_y_spin, *tex_off_x_spin, *tex_off_y_spin;
+		GSUIElementHolder m_ui;
+		wxSpinCtrl *skip_x_spin, *skip_y_spin;
 
 		HacksTab(wxWindow* parent);
-		void Load();
-		void Save();
+		void Load() { m_ui.Load(); Update(); }
+		void Save() { m_ui.Save(); }
 		void Update();
 		void CallUpdate(wxCommandEvent& event);
 	};
@@ -64,13 +124,12 @@ namespace GSSettingsDialog
 	class DebugTab : public wxPanel
 	{
 	public:
-		wxCheckBox *glsl_debug_check, *gl_debug_check, *gs_dump_check, *gs_save_check, *gs_savef_check, *gs_savet_check, *gs_savez_check;
+		GSUIElementHolder m_ui;
 		wxSpinCtrl *start_dump_spin, *end_dump_spin;
-		wxChoice *m_geo_shader_select, *m_image_load_store_select, *m_sparse_select;
 
 		DebugTab(wxWindow* parent);
-		void Load();
-		void Save();
+		void Load() { m_ui.Load(); Update(); }
+		void Save() { m_ui.Save(); }
 		void Update();
 		void CallUpdate(wxCommandEvent& event);
 	};
@@ -78,52 +137,42 @@ namespace GSSettingsDialog
 	class RecTab : public wxPanel
 	{
 	public:
-		wxCheckBox* record_check;
-		wxSpinCtrl *res_x_spin, *res_y_spin, *thread_spin, *png_spin;
-		wxDirPickerCtrl* dir_select;
+		GSUIElementHolder m_ui;
 
 		RecTab(wxWindow* parent);
-		void Load();
-		void Save();
-		void Update();
+		void Load() { m_ui.Load(); m_ui.Update(); }
+		void Save() { m_ui.Save(); }
 		void CallUpdate(wxCommandEvent& event);
 	};
 
 	class PostTab : public wxPanel
 	{
 	public:
-		wxCheckBox *tex_filter_check, *fxaa_check, *shade_boost_check, *ext_shader_check;
-		wxSlider *sb_brightness_slider, *sb_contrast_slider, *sb_saturation_slider;
-		wxDirPickerCtrl *glsl_select, *config_select;
-		wxChoice* m_tv_select;
-		wxStaticBoxSizer *shade_boost_box, *ext_shader_box;
+		GSUIElementHolder m_ui;
 
 		PostTab(wxWindow* parent);
-		void Load();
-		void Save();
-		void Update();
+		void Load() { m_ui.Load(); m_ui.Update(); }
+		void Save() { m_ui.Save(); }
 		void CallUpdate(wxCommandEvent& event);
 	};
 
 	class OSDTab : public wxPanel
 	{
 	public:
-		wxCheckBox *monitor_check, *log_check;
-		wxSpinCtrl *size_spin, *timeout_spin, *max_spin;
-		wxSlider *red_slider, *green_slider, *blue_slider, *opacity_slider;
-		wxStaticBoxSizer *font_box, *log_box;
+		GSUIElementHolder m_ui;
 
 		OSDTab(wxWindow* parent);
-		void Load();
-		void Save();
-		void Update();
+		void Load() { m_ui.Load(); m_ui.Update(); }
+		void Save() { m_ui.Save(); }
 		void CallUpdate(wxCommandEvent& event);
 	};
 
 	class Dialog : public wxDialog
 	{
+		GSUIElementHolder m_ui;
+
 		wxBoxSizer* m_top_box;
-		wxChoice *m_renderer_select, *m_interlace_select, *m_texture_select, *m_adapter_select;
+		wxChoice* m_adapter_select;
 		RendererTab* m_renderer_panel;
 		HacksTab* m_hacks_panel;
 		DebugTab* m_debug_panel;
