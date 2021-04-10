@@ -28,7 +28,7 @@
 
 namespace inputRec
 {
-	extern void log(const std::string log);
-	extern void consoleLog(const std::string log);
-	extern void consoleMultiLog(std::vector<std::string> logs);
+	void log(const std::string& log);
+	void consoleLog(const std::string& log);
+	void consoleMultiLog(const std::vector<std::string>& logs);
 } // namespace inputRec
