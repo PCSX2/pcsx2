@@ -30,6 +30,8 @@ class GSTextureCache
 public:
 	enum {RenderTarget, DepthStencil};
 
+	constexpr static uint32 MAX_BP = 0x3fff;
+
 	class Surface : public GSAlignedClass<32>
 	{
 	protected:

@@ -22,7 +22,7 @@
 #include "stdafx.h"
 #include "GSRendererHW.h"
 
-const float GSRendererHW::SSR_UV_TOLERANCE = 1e-3f;
+const float GSRendererHW::SSR_UV_TOLERANCE = 1.0f;
 
 GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	: m_width(default_rt_size.x)
@@ -819,22 +819,30 @@ void GSRendererHW::SwSpriteRender()
 	bitbltbuf.DBW = m_context->FRAME.FBW;
 	bitbltbuf.DPSM = m_context->FRAME.PSM;
 
-	ASSERT(m_r.x == 0 && m_r.y == 0);  // No rendering region offset
-	ASSERT(!PRIM->TME || (abs(m_vt.m_min.t.x) <= SSR_UV_TOLERANCE && abs(m_vt.m_min.t.y) <= SSR_UV_TOLERANCE));  // No input texture offset, if any
-	ASSERT(!PRIM->TME || (abs(m_vt.m_max.t.x - m_r.z) <= SSR_UV_TOLERANCE && abs(m_vt.m_max.t.y - m_r.w) <= SSR_UV_TOLERANCE));  // No input texture min/mag, if any
-	ASSERT(!PRIM->TME || (m_vt.m_max.t.x <= (1 << m_context->TEX0.TW) && m_vt.m_max.t.y <= (1 << m_context->TEX0.TH)));  // No texture UV wrap, if any
+	const GSVector4i r = m_r;
+
+	const int tw = 1 << m_context->TEX0.TW;
+	const int th = 1 << m_context->TEX0.TH;
+	const float meas_tw = m_vt.m_max.t.x - m_vt.m_min.t.x;
+	const float meas_th = m_vt.m_max.t.y - m_vt.m_min.t.y;
+	ASSERT(!PRIM->TME || (abs(meas_tw - r.width()) <= SSR_UV_TOLERANCE && abs(meas_th - r.height()) <= SSR_UV_TOLERANCE));  // No input texture min/mag, if any.
+	ASSERT(!PRIM->TME || (abs(m_vt.m_min.t.x) <= SSR_UV_TOLERANCE && abs(m_vt.m_min.t.y) <= SSR_UV_TOLERANCE && abs(meas_tw - tw) <= SSR_UV_TOLERANCE && abs(meas_th - th) <= SSR_UV_TOLERANCE));  // No texture UV wrap, if any.
 
 	GIFRegTRXPOS trxpos = {};
 
-	trxpos.DSAX = 0;
-	trxpos.DSAY = 0;
-	trxpos.SSAX = 0;
-	trxpos.SSAY = 0;
+	trxpos.DSAX = r.x;
+	trxpos.DSAY = r.y;
+	trxpos.SSAX = static_cast<int>(m_vt.m_min.t.x / 2) * 2;  // Rounded down to closest even integer.
+	trxpos.SSAY = static_cast<int>(m_vt.m_min.t.y / 2) * 2;
+
+	ASSERT(r.x % 2 == 0 && r.y % 2 == 0);
 
 	GIFRegTRXREG trxreg = {};
+	
+	trxreg.RRW = r.width();
+	trxreg.RRH = r.height();
 
-	trxreg.RRW = m_r.z;
-	trxreg.RRH = m_r.w;
+	ASSERT(r.width() % 2 == 0 && r.height() % 2 == 0);
 
 	// SW rendering code, mainly taken from GSState::Move(), TRXPOS.DIR{X,Y} management excluded
 
@@ -870,8 +878,10 @@ void GSRendererHW::SwSpriteRender()
 
 	const uint8 tex0_tfx = m_context->TEX0.TFX;
 	const uint8 tex0_tcc = m_context->TEX0.TCC;
+	const uint8 alpha_a = m_context->ALPHA.A;
 	const uint8 alpha_b = m_context->ALPHA.B;
 	const uint8 alpha_c = m_context->ALPHA.C;
+	const uint8 alpha_d = m_context->ALPHA.D;
 	const uint8 alpha_fix = m_context->ALPHA.FIX;
 
 	for (int y = 0; y < h; y++, ++sy, ++dy)
@@ -916,31 +926,16 @@ void GSRendererHW::SwSpriteRender()
 			if (alpha_blending_enabled)
 			{
 				// Blending
-				ASSERT(m_context->ALPHA.A == 0);
-				ASSERT(alpha_b == 1 || alpha_b == 2);
-				ASSERT(m_context->ALPHA.D == 1);
-
-				// Flag C
-				GSVector4i sc_alpha_vec;
-
-				if (alpha_c == 2)
-					sc_alpha_vec = GSVector4i(alpha_fix).xxxx().ps32();
-				else
-					sc_alpha_vec = (alpha_c == 0 ? sc : dc0)
+				const GSVector4i A = alpha_a == 0 ? sc : alpha_a == 1 ? dc0 : GSVector4i::zero();
+				const GSVector4i B = alpha_b == 0 ? sc : alpha_b == 1 ? dc0 : GSVector4i::zero();
+				const GSVector4i C = alpha_c == 2 ? GSVector4i(alpha_fix).xxxx().ps32() :
+					(alpha_c == 0 ? sc : dc0)
 						.yyww()     // 0x00AA00BB00AA00BB00aa00bb00aa00bb
 						.srl32(16)  // 0x000000AA000000AA000000aa000000aa
 						.ps32()     // 0x00AA00AA00aa00aa00AA00AA00aa00aa
 						.xxyy();    // 0x00AA00AA00AA00AA00aa00aa00aa00aa
-
-				switch (alpha_b)
-				{
-				case 1:
-					dc = sc.sub16(dc0).mul16l(sc_alpha_vec).sra16(7).add16(dc0);  // (((Cs - Cd) * C) >> 7) + Cd, must use sra16 due to signed 16 bit values
-					break;
-				default:
-					dc = sc.mul16l(sc_alpha_vec).sra16(7).add16(dc0);  // (((Cs - 0) * C) >> 7) + Cd, must use sra16 due to signed 16 bit values
-					break;
-				}
+				const GSVector4i D = alpha_d == 0 ? sc : alpha_d == 1 ? dc0 : GSVector4i::zero();
+				dc = A.sub16(B).mul16l(C).sra16(7).add16(D);  // (((A - B) * C) >> 7) + D, must use sra16 due to signed 16 bit values.
 				// dc alpha channels (dc.u16[3], dc.u16[7]) dirty
 			}
 			else
@@ -971,14 +966,17 @@ void GSRendererHW::SwSpriteRender()
 	}
 }
 
-bool GSRendererHW::CanUseSwSpriteRender(bool allow_64x64_sprite)
+bool GSRendererHW::CanUseSwSpriteRender()
 {
-	const bool r_0_0_64_64 = allow_64x64_sprite ? (m_r == GSVector4i(0, 0, 64, 64)).alltrue() : false;
-	if (r_0_0_64_64 && !allow_64x64_sprite)  // Rendering region 64x64 support is enabled via parameter
-		return false;
-	const bool r_0_0_16_16 = (m_r == GSVector4i(0, 0, 16, 16)).alltrue();
-	if (!r_0_0_16_16 && !r_0_0_64_64)  // Rendering region is 16x16 or 64x64, without offset
-		return false;
+	const GSVector4i r = m_r;
+	if (r.x % 2 != 0 || r.y % 2 != 0)
+		return false;  // Even offset.
+	const int w = r.width();
+	const int h = r.height();
+	if (w % 2 != 0 || h % 2 != 0)
+		return false;  // Even size.
+	if (w > 64 || h > 64)
+		return false;  // Small draw.
 	if (PRIM->PRIM != GS_SPRITE
 		&& ((PRIM->IIP && m_vt.m_eq.rgba != 0xffff)
 			|| (PRIM->TME && !PRIM->FST && m_vt.m_eq.q != 0x1)
@@ -1005,13 +1003,16 @@ bool GSRendererHW::CanUseSwSpriteRender(bool allow_64x64_sprite)
 			return false;
 		if (IsMipMapDraw())  // No mipmapping
 			return false;
-		if (abs(m_vt.m_min.t.x) > SSR_UV_TOLERANCE || abs(m_vt.m_min.t.y) > SSR_UV_TOLERANCE)  // No horizontal nor vertical offset
-			return false;
-		if (abs(m_vt.m_max.t.x - m_r.z) > SSR_UV_TOLERANCE || abs(m_vt.m_max.t.y - m_r.w) > SSR_UV_TOLERANCE)  // No texture width or height mag/min
-			return false;
 		const int tw = 1 << m_context->TEX0.TW;
 		const int th = 1 << m_context->TEX0.TH;
-		if (m_vt.m_max.t.x > tw || m_vt.m_max.t.y > th)  // No UV wrapping
+		const float meas_tw = m_vt.m_max.t.x - m_vt.m_min.t.x;
+		const float meas_th = m_vt.m_max.t.y - m_vt.m_min.t.y;
+		if (abs(m_vt.m_min.t.x) > SSR_UV_TOLERANCE ||
+			abs(m_vt.m_min.t.y) > SSR_UV_TOLERANCE ||
+			abs(meas_tw - tw) > SSR_UV_TOLERANCE ||
+			abs(meas_th - th) > SSR_UV_TOLERANCE)  // No UV wrapping.
+			return false;
+		if (abs(meas_tw - w) > SSR_UV_TOLERANCE || abs(meas_th - h) > SSR_UV_TOLERANCE)  // No texture width or height mag/min.
 			return false;
 	}
 	
@@ -1615,6 +1616,10 @@ GSRendererHW::Hacks::Hacks()
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::Jak3, CRC::RegionCount, &GSRendererHW::OI_JakGames));
 	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::JakX, CRC::RegionCount, &GSRendererHW::OI_JakGames));
 
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BurnoutTakedown, CRC::RegionCount, &GSRendererHW::OI_BurnoutGames));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BurnoutRevenge, CRC::RegionCount, &GSRendererHW::OI_BurnoutGames));
+	m_oi_list.push_back(HackEntry<OI_Ptr>(CRC::BurnoutDominator, CRC::RegionCount, &GSRendererHW::OI_BurnoutGames));
+
 	m_oo_list.push_back(HackEntry<OO_Ptr>(CRC::MajokkoALaMode2, CRC::RegionCount, &GSRendererHW::OO_MajokkoALaMode2));
 
 	m_cu_list.push_back(HackEntry<CU_Ptr>(CRC::MajokkoALaMode2, CRC::RegionCount, &GSRendererHW::CU_MajokkoALaMode2));
@@ -1862,8 +1867,11 @@ bool GSRendererHW::OI_DBZBTGames(GSTexture* rt, GSTexture* ds, GSTextureCache::S
 	if (t && t->m_from_target)  // Avoid slow framebuffer readback
 		return true;
 
+	if (!((m_r == GSVector4i(0, 0, 16, 16)).alltrue() || (m_r == GSVector4i(0, 0, 64, 64)).alltrue()))
+		return true;  // Only 16x16 or 64x64 draws.
+
 	// Sprite rendering
-	if (!CanUseSwSpriteRender(true))
+	if (!CanUseSwSpriteRender())
 		return true;
 	
 	SwSpriteRender();
@@ -2084,60 +2092,49 @@ bool GSRendererHW::OI_SonicUnleashed(GSTexture* rt, GSTexture* ds, GSTextureCach
 
 bool GSRendererHW::OI_PointListPalette(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
-	if(m_vt.m_primclass == GS_POINT_CLASS && !PRIM->TME)
+	const size_t n_vertices = m_vertex.next;
+	const int w = m_r.width();
+	const int h = m_r.height();
+	if (m_vt.m_primclass == GS_POINT_CLASS
+		&& !PRIM->TME
+		&& PRIM->ABE
+		&& (n_vertices == 16 || n_vertices == 256)
+		&& m_context->FRAME.PSM == PSM_PSMCT32
+		&& w <= 64
+		&& h <= 64
+		&& m_context->ALPHA.A == 2
+		&& m_context->ALPHA.B == 2
+		&& m_context->ALPHA.C == 2
+		&& m_context->ALPHA.D == 0
+		&& m_context->ALPHA.FIX == 0)
 	{
-		uint32 FBP = m_context->FRAME.Block();
-		uint32 FBW = m_context->FRAME.FBW;
-
-		if(FBP >= 0x03f40 && (FBP & 0x1f) == 0)
+		const uint32 FBP = m_context->FRAME.Block();
+		const uint32 FBW = m_context->FRAME.FBW;
+		GL_INS("PointListPalette - m_r = %s, n_vertices = %zu, FBP = 0x%x", m_r.to_string_xyzw().c_str(), n_vertices, FBP);
+		GIFRegBITBLTBUF bitbltbuf = {};
+		bitbltbuf.DBP = m_context->FRAME.Block();
+		bitbltbuf.DBW = m_context->FRAME.FBW;
+		bitbltbuf.DPSM = m_context->FRAME.PSM;
+		InvalidateVideoMem(bitbltbuf, m_r);
+		const GSVertex* RESTRICT v = m_vertex.buff;
+		for (size_t i = 0; i < n_vertices; ++i, ++v)
 		{
-			if(m_vertex.next == 16)
+			const uint32 c = v->RGBAQ.u32[0];
+			const GIFRegXYZ xyz = v->XYZ;
+			const uint32 x = (m_context->XYOFFSET.OFX + xyz.X) / 16;
+			const uint32 y = (m_context->XYOFFSET.OFY + xyz.Y) / 16;
+			const uint32 pa = m_mem.PixelAddress32(x, y, FBP, FBW);
+			const uint32 bn = pa / (8 * 8);
+			if (bn > GSTextureCache::MAX_BP)
 			{
-				GSVertex* RESTRICT v = m_vertex.buff;
-
-				for(int i = 0; i < 16; i++, v++)
-				{
-					uint32 c = v->RGBAQ.u32[0];
-					uint32 a = c >> 24;
-
-					c = (a >= 0x80 ? 0xff000000 : (a << 25)) | (c & 0x00ffffff);
-
-					v->RGBAQ.u32[0] = c;
-
-					m_mem.WritePixel32(i & 7, i >> 3, c, FBP, FBW);
-				}
-
-				m_mem.m_clut.Invalidate();
-
-				return false;
+				GL_INS("ERROR - PointListPalette - Block pointer outside boundary, skipping pixel draw.");
+				continue;
 			}
-			else if(m_vertex.next == 256)
-			{
-				GSVertex* RESTRICT v = m_vertex.buff;
-
-				for(int i = 0; i < 256; i++, v++)
-				{
-					uint32 c = v->RGBAQ.u32[0];
-					uint32 a = c >> 24;
-
-					c = (a >= 0x80 ? 0xff000000 : (a << 25)) | (c & 0x00ffffff);
-
-					v->RGBAQ.u32[0] = c;
-
-					m_mem.WritePixel32(i & 15, i >> 4, c, FBP, FBW);
-				}
-
-				m_mem.m_clut.Invalidate();
-
-				return false;
-			}
-			else
-			{
-				ASSERT(0);
-			}
+			m_mem.WritePixel32(pa, c);
 		}
+		m_mem.m_clut.Invalidate();
+		return false;
 	}
-
 	return true;
 }
 
@@ -2206,13 +2203,33 @@ bool GSRendererHW::OI_ArTonelico2(GSTexture* rt, GSTexture* ds, GSTextureCache::
 
 bool GSRendererHW::OI_JakGames(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
-	if (!CanUseSwSpriteRender(false))
+	if (!(m_r == GSVector4i(0, 0, 16, 16)).alltrue())
+		return true;  // Only 16x16 draws.
+
+	if (!CanUseSwSpriteRender())
 		return true;
 
 	// Render 16x16 palette via CPU.
 	SwSpriteRender();
 
 	return false;  // Skip current draw.
+}
+
+bool GSRendererHW::OI_BurnoutGames(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
+{
+	if (!OI_PointListPalette(rt, ds, t))
+		return false;  // Render point list palette.
+
+	if (t && t->m_from_target)  // Avoid slow framebuffer readback
+		return true;
+
+	if (!CanUseSwSpriteRender())
+		return true;
+
+	// Render palette via CPU.
+	SwSpriteRender();
+
+	return false;
 }
 
 // OO (others output?) hacks: invalidate extra local memory after the draw call

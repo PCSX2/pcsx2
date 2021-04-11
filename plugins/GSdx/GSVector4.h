@@ -19,6 +19,9 @@
  *
  */
 
+#include <sstream>
+#include <string>
+
 class alignas(16) GSVector4
 {
 	constexpr static __m128 cxpr_setr_ps(float x, float y, float z, float w)
@@ -900,4 +903,11 @@ GSVector.h:2973:15: error:  shadows template parm 'int i'
 	}
 
 	#endif
+
+	std::string to_string_xyzw()
+	{
+		std::stringstream ss;
+		ss << "<" << x << "," << y << " => " << z << "," << w << ">";
+		return ss.str();
+	}
 };
