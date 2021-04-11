@@ -28,6 +28,7 @@ set(UtilitiesSources
 	Linux/LnxHostSys.cpp
 	Mutex.cpp
 	PathUtils.cpp
+	FileUtils.cpp
 	PrecompiledHeader.cpp
 	Perf.cpp
 	pxCheckBox.cpp
@@ -59,6 +60,7 @@ set(UtilitiesHeaders
 	../../include/Utilities/MakeUnique.h
 	../../include/Utilities/MemcpyFast.h
 	../../include/Utilities/MemsetFast.inl
+	../../include/Utilities/FileUtils.h
 	../../include/Utilities/Path.h
 	../../include/Utilities/PageFaultSource.h
 	../../include/Utilities/pxCheckBox.h
