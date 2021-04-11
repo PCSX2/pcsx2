@@ -33,7 +33,14 @@ static YAML::Node LoadYAMLFromFile( const wxString& fileName ) {
 	YAML::Node index;
 
 	wxFFile indexFile;
-	if ( indexFile.Open( fileName, L"r" ) ) {
+	bool result;
+	{
+		// Suppress "file does not exist" errors
+		wxLogNull noLog;
+		result = indexFile.Open( fileName, L"r" );
+	}
+
+	if ( result ) {
 		wxString fileContents;
 		if ( indexFile.ReadAll( &fileContents ) ) {
 			index = YAML::Load( fileContents.mbc_str() );
