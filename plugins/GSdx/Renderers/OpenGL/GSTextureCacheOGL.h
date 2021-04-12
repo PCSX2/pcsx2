@@ -28,7 +28,7 @@
 class GSTextureCacheOGL final : public GSTextureCache
 {
 protected:
-	int Get8bitFormat() { return GL_R8;}
+	int Get8bitFormat() { return GL_R8; }
 
 	void Read(Target* t, const GSVector4i& r);
 	void Read(Source* t, const GSVector4i& r);

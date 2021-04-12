@@ -26,7 +26,7 @@
 void GSWndGL::PopulateGlFunction()
 {
 	// Load mandatory function pointer
-#define GL_EXT_LOAD(ext)     *(void**)&(ext) = GetProcAddress(#ext, false)
+#define GL_EXT_LOAD(ext) *(void**)&(ext) = GetProcAddress(#ext, false)
 	// Load extra function pointer
 #define GL_EXT_LOAD_OPT(ext) *(void**)&(ext) = GetProcAddress(#ext, true)
 

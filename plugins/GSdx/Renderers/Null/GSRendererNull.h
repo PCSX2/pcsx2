@@ -28,7 +28,10 @@ class GSRendererNull : public GSRenderer
 	class GSVertexTraceNull : public GSVertexTrace
 	{
 	public:
-		GSVertexTraceNull(const GSState* state) : GSVertexTrace(state) {}
+		GSVertexTraceNull(const GSState* state)
+			: GSVertexTrace(state)
+		{
+		}
 	};
 
 protected:
@@ -42,8 +45,8 @@ protected:
 	}
 
 public:
-	GSRendererNull() 
-		: GSRenderer() 
+	GSRendererNull()
+		: GSRenderer()
 	{
 	}
 };

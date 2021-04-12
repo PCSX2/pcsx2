@@ -54,40 +54,40 @@ bool GSDevice11::SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode)
 
 	switch (level)
 	{
-	case D3D_FEATURE_LEVEL_10_0:
-		m_shader.model = "0x400";
-		m_shader.vs = "vs_4_0";
-		m_shader.gs = "gs_4_0";
-		m_shader.ps = "ps_4_0";
-		m_shader.cs = "cs_4_0";
-		break;
-	case D3D_FEATURE_LEVEL_10_1:
-		m_shader.model = "0x401";
-		m_shader.vs = "vs_4_1";
-		m_shader.gs = "gs_4_1";
-		m_shader.ps = "ps_4_1";
-		m_shader.cs = "cs_4_1";
-		break;
-	case D3D_FEATURE_LEVEL_11_0:
-		m_shader.model = "0x500";
-		m_shader.vs = "vs_5_0";
-		m_shader.gs = "gs_5_0";
-		m_shader.ps = "ps_5_0";
-		m_shader.cs = "cs_5_0";
-		break;
-	default:
-		ASSERT(0);
-		return false;
+		case D3D_FEATURE_LEVEL_10_0:
+			m_shader.model = "0x400";
+			m_shader.vs = "vs_4_0";
+			m_shader.gs = "gs_4_0";
+			m_shader.ps = "ps_4_0";
+			m_shader.cs = "cs_4_0";
+			break;
+		case D3D_FEATURE_LEVEL_10_1:
+			m_shader.model = "0x401";
+			m_shader.vs = "vs_4_1";
+			m_shader.gs = "gs_4_1";
+			m_shader.ps = "ps_4_1";
+			m_shader.cs = "cs_4_1";
+			break;
+		case D3D_FEATURE_LEVEL_11_0:
+			m_shader.model = "0x500";
+			m_shader.vs = "vs_5_0";
+			m_shader.gs = "gs_5_0";
+			m_shader.ps = "ps_5_0";
+			m_shader.cs = "cs_5_0";
+			break;
+		default:
+			ASSERT(0);
+			return false;
 	}
 
 	return true;
 }
 
-bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
+bool GSDevice11::Create(const std::shared_ptr<GSWnd>& wnd)
 {
 	bool nvidia_vendor = false;
 
-	if(!__super::Create(wnd))
+	if (!__super::Create(wnd))
 	{
 		return false;
 	}
@@ -160,8 +160,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 		const HRESULT result = D3D11CreateDevice(
 			adapter, driver_type, nullptr, flags,
 			supported_levels.data(), supported_levels.size(),
-			D3D11_SDK_VERSION, &m_dev, &level, &m_ctx
-		);
+			D3D11_SDK_VERSION, &m_dev, &level, &m_ctx);
 
 		if (FAILED(result))
 		{
@@ -189,8 +188,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 
 		const HRESULT result = m_factory->CreateSwapChainForHwnd(
 			m_dev, reinterpret_cast<HWND>(m_wnd->GetHandle()),
-			&swapchain_description, nullptr, nullptr, &m_swapchain
-		);
+			&swapchain_description, nullptr, nullptr, &m_swapchain);
 
 		if (FAILED(result))
 		{
@@ -199,7 +197,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 		}
 	}
 
-	if(!SetFeatureLevel(level, true))
+	if (!SetFeatureLevel(level, true))
 		return false;
 
 	// Set maximum texture size limit based on supported feature level.
@@ -208,7 +206,8 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	else
 		m_d3d_texsize = D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;
 
-	{	// HACK: check nVIDIA
+	{
+		// HACK: check nVIDIA
 		// Note: It can cause issues on several games such as SOTC, Fatal Frame, plus it adds border offset.
 		bool disable_safe_features = theApp.GetConfigB("UserHacks") && theApp.GetConfigB("UserHacks_Disable_Safe_Features");
 		m_hack_topleft_offset = (m_upscale_multiplier != 1 && nvidia_vendor && !disable_safe_features) ? -0.01f : 0.0f;
@@ -256,9 +255,9 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 
 	D3D_SHADER_MACRO* sm_convert_ptr = sm_convert.GetPtr();
 
-	for(size_t i = 0; i < countof(m_convert.ps); i++)
+	for (size_t i = 0; i < countof(m_convert.ps); i++)
 	{
-		CreateShader(shader, "convert.fx", nullptr, format("ps_main%d", i).c_str(), sm_convert_ptr, & m_convert.ps[i]);
+		CreateShader(shader, "convert.fx", nullptr, format("ps_main%d", i).c_str(), sm_convert_ptr, &m_convert.ps[i]);
 	}
 
 	memset(&dsd, 0, sizeof(dsd));
@@ -288,7 +287,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	hr = m_dev->CreateBuffer(&bd, NULL, &m_merge.cb);
 
 	theApp.LoadResource(IDR_MERGE_FX, shader);
-	for(size_t i = 0; i < countof(m_merge.ps); i++)
+	for (size_t i = 0; i < countof(m_merge.ps); i++)
 	{
 		CreateShader(shader, "merge.fx", nullptr, format("ps_main%d", i).c_str(), sm_model.GetPtr(), &m_merge.ps[i]);
 	}
@@ -317,7 +316,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	hr = m_dev->CreateBuffer(&bd, NULL, &m_interlace.cb);
 
 	theApp.LoadResource(IDR_INTERLACE_FX, shader);
-	for(size_t i = 0; i < countof(m_interlace.ps); i++)
+	for (size_t i = 0; i < countof(m_interlace.ps); i++)
 	{
 		CreateShader(shader, "interlace.fx", nullptr, format("ps_main%d", i).c_str(), sm_model.GetPtr(), &m_interlace.ps[i]);
 	}
@@ -435,18 +434,17 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd> &wnd)
 	GSVector2i tex_font = m_osd.get_texture_font_size();
 
 	m_font = std::unique_ptr<GSTexture>(
-		CreateSurface(GSTexture::Texture, tex_font.x, tex_font.y, DXGI_FORMAT_R8_UNORM)
-	);
+		CreateSurface(GSTexture::Texture, tex_font.x, tex_font.y, DXGI_FORMAT_R8_UNORM));
 
 	return true;
 }
 
 bool GSDevice11::Reset(int w, int h)
 {
-	if(!__super::Reset(w, h))
+	if (!__super::Reset(w, h))
 		return false;
 
-	if(m_swapchain)
+	if (m_swapchain)
 	{
 		DXGI_SWAP_CHAIN_DESC scd;
 
@@ -457,7 +455,7 @@ bool GSDevice11::Reset(int w, int h)
 
 		CComPtr<ID3D11Texture2D> backbuffer;
 
-		if(FAILED(m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backbuffer)))
+		if (FAILED(m_swapchain->GetBuffer(0, __uuidof(ID3D11Texture2D), (void**)&backbuffer)))
 		{
 			return false;
 		}
@@ -553,13 +551,15 @@ void GSDevice11::DrawIndexedPrimitive(int offset, int count)
 
 void GSDevice11::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 {
-	if (!t) return;
+	if (!t)
+		return;
 	m_ctx->ClearRenderTargetView(*(GSTexture11*)t, c.v);
 }
 
 void GSDevice11::ClearRenderTarget(GSTexture* t, uint32 c)
 {
-	if (!t) return;
+	if (!t)
+		return;
 	GSVector4 color = GSVector4::rgba32(c) * (1.0f / 255);
 
 	m_ctx->ClearRenderTargetView(*(GSTexture11*)t, color.v);
@@ -567,13 +567,15 @@ void GSDevice11::ClearRenderTarget(GSTexture* t, uint32 c)
 
 void GSDevice11::ClearDepth(GSTexture* t)
 {
-	if (!t) return;
+	if (!t)
+		return;
 	m_ctx->ClearDepthStencilView(*(GSTexture11*)t, D3D11_CLEAR_DEPTH, 0.0f, 0);
 }
 
 void GSDevice11::ClearStencil(GSTexture* t, uint8 c)
 {
-	if (!t) return;
+	if (!t)
+		return;
 	m_ctx->ClearDepthStencilView(*(GSTexture11*)t, D3D11_CLEAR_STENCIL, 0, c);
 }
 
@@ -597,24 +599,24 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, int format)
 
 	// mipmap = m_mipmap > 1 || m_filter != TriFiltering::None;
 	bool mipmap = m_mipmap > 1;
-	int layers = mipmap && format == DXGI_FORMAT_R8G8B8A8_UNORM ? (int)log2(std::max(w,h)) : 1;
+	int layers = mipmap && format == DXGI_FORMAT_R8G8B8A8_UNORM ? (int)log2(std::max(w, h)) : 1;
 
-	switch(type)
+	switch (type)
 	{
-	case GSTexture::RenderTarget:
-		desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
-		break;
-	case GSTexture::DepthStencil:
-		desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
-		break;
-	case GSTexture::Texture:
-		desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-		desc.MipLevels = layers;
-		break;
-	case GSTexture::Offscreen:
-		desc.Usage = D3D11_USAGE_STAGING;
-		desc.CPUAccessFlags |= D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
-		break;
+		case GSTexture::RenderTarget:
+			desc.BindFlags = D3D11_BIND_RENDER_TARGET | D3D11_BIND_SHADER_RESOURCE;
+			break;
+		case GSTexture::DepthStencil:
+			desc.BindFlags = D3D11_BIND_DEPTH_STENCIL | D3D11_BIND_SHADER_RESOURCE;
+			break;
+		case GSTexture::Texture:
+			desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
+			desc.MipLevels = layers;
+			break;
+		case GSTexture::Offscreen:
+			desc.Usage = D3D11_USAGE_STAGING;
+			desc.CPUAccessFlags |= D3D11_CPU_ACCESS_READ | D3D11_CPU_ACCESS_WRITE;
+			break;
 	}
 
 	GSTexture11* t = NULL;
@@ -623,18 +625,18 @@ GSTexture* GSDevice11::CreateSurface(int type, int w, int h, int format)
 
 	hr = m_dev->CreateTexture2D(&desc, NULL, &texture);
 
-	if(SUCCEEDED(hr))
+	if (SUCCEEDED(hr))
 	{
 		t = new GSTexture11(texture);
 
-		switch(type)
+		switch (type)
 		{
-		case GSTexture::RenderTarget:
-			ClearRenderTarget(t, 0);
-			break;
-		case GSTexture::DepthStencil:
-			ClearDepth(t);
-			break;
+			case GSTexture::RenderTarget:
+				ClearRenderTarget(t, 0);
+				break;
+			case GSTexture::DepthStencil:
+				ClearDepth(t);
+				break;
 		}
 	}
 	else
@@ -657,14 +659,14 @@ GSTexture* GSDevice11::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int
 {
 	GSTexture* dst = NULL;
 
-	if(format == 0)
+	if (format == 0)
 	{
 		format = DXGI_FORMAT_R8G8B8A8_UNORM;
 	}
 
 	ASSERT(format == DXGI_FORMAT_R8G8B8A8_UNORM || format == DXGI_FORMAT_R16_UINT || format == DXGI_FORMAT_R32_UINT);
 
-	if(GSTexture* rt = CreateRenderTarget(w, h, format))
+	if (GSTexture* rt = CreateRenderTarget(w, h, format))
 	{
 		GSVector4 dRect(0, 0, w, h);
 
@@ -672,7 +674,7 @@ GSTexture* GSDevice11::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int
 
 		dst = CreateOffscreen(w, h, format);
 
-		if(dst)
+		if (dst)
 		{
 			m_ctx->CopyResource(*(GSTexture11*)dst, *(GSTexture11*)rt);
 		}
@@ -691,7 +693,7 @@ void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)
 		return;
 	}
 
-	D3D11_BOX box = { (UINT)r.left, (UINT)r.top, 0U, (UINT)r.right, (UINT)r.bottom, 1U };
+	D3D11_BOX box = {(UINT)r.left, (UINT)r.top, 0U, (UINT)r.right, (UINT)r.bottom, 1U};
 
 	// DX api isn't happy if we pass a box for depth copy
 	// It complains that depth/multisample must be a full copy
@@ -750,16 +752,16 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 	StretchRect(sTex, sRect, dTex, dRect, m_convert.ps[ShaderConvert_COPY], nullptr, bs, false);
 }
 
-void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, ID3D11BlendState* bs , bool linear)
+void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ID3D11PixelShader* ps, ID3D11Buffer* ps_cb, ID3D11BlendState* bs, bool linear)
 {
-	if(!sTex || !dTex)
+	if (!sTex || !dTex)
 	{
 		ASSERT(0);
 		return;
 	}
 
-	bool draw_in_depth = (ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT32] || ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT24] ||
-		ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT16] || ps == m_convert.ps[ShaderConvert_RGB5A1_TO_FLOAT16]);
+	bool draw_in_depth = (ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT32] || ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT24]
+	                   || ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT16] || ps == m_convert.ps[ShaderConvert_RGB5A1_TO_FLOAT16]);
 
 	BeginScene();
 
@@ -767,7 +769,7 @@ void GSDevice11::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture*
 
 	// om
 
-	
+
 	if (draw_in_depth)
 		OMSetDepthStencilState(m_convert.dss_write, 0);
 	else
@@ -837,7 +839,8 @@ void GSDevice11::RenderOsd(GSTexture* dt)
 	OMSetBlendState(m_merge.bs, 0);
 	OMSetRenderTargets(dt, NULL);
 
-	if(m_osd.m_texture_dirty) {
+	if (m_osd.m_texture_dirty)
+	{
 		m_osd.upload_texture_atlas(m_font.get());
 	}
 
@@ -876,12 +879,12 @@ void GSDevice11::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, 
 
 	ClearRenderTarget(dTex, c);
 
-	if(sTex[1] && !slbg)
+	if (sTex[1] && !slbg)
 	{
 		StretchRect(sTex[1], sRect[1], dTex, dRect[1], m_merge.ps[0], NULL, true);
 	}
 
-	if(sTex[0])
+	if (sTex[0])
 	{
 		m_ctx->UpdateSubresource(m_merge.cb, 0, NULL, &c, 0, 0);
 
@@ -911,7 +914,8 @@ void GSDevice11::InitExternalFX()
 {
 	if (!ExShader_Compiled)
 	{
-		try {
+		try
+		{
 			std::string config_name(theApp.GetConfigS("shaderfx_conf"));
 			std::ifstream fconfig(config_name);
 			std::stringstream shader;
@@ -935,7 +939,8 @@ void GSDevice11::InitExternalFX()
 				fprintf(stderr, "GSdx: External shader '%s' not loaded and will be disabled!\n", shader_name.c_str());
 			}
 		}
-		catch (GSDXRecoverableError) {
+		catch (GSDXRecoverableError)
+		{
 			printf("GSdx: failed to compile external post-processing shader. \n");
 		}
 		ExShader_Compiled = true;
@@ -968,13 +973,15 @@ void GSDevice11::InitFXAA()
 {
 	if (!FXAA_Compiled)
 	{
-		try {
+		try
+		{
 			std::vector<char> shader;
 			theApp.LoadResource(IDR_FXAA_FX, shader);
 			ShaderMacro sm(m_shader.model);
 			CreateShader(shader, "fxaa.fx", nullptr, "ps_main", sm.GetPtr(), &m_fxaa.ps);
 		}
-		catch (GSDXRecoverableError) {
+		catch (GSDXRecoverableError)
+		{
 			printf("GSdx: failed to compile fxaa shader.\n");
 		}
 		FXAA_Compiled = true;
@@ -1066,7 +1073,7 @@ void GSDevice11::IASetVertexBuffer(const void* vertex, size_t stride, size_t cou
 {
 	void* ptr = NULL;
 
-	if(IAMapVertexBuffer(&ptr, stride, count))
+	if (IAMapVertexBuffer(&ptr, stride, count))
 	{
 		GSVector4i::storent(ptr, vertex, count * stride);
 
@@ -1078,7 +1085,7 @@ bool GSDevice11::IAMapVertexBuffer(void** vertex, size_t stride, size_t count)
 {
 	ASSERT(m_vertex.count == 0);
 
-	if(count * stride > m_vertex.limit * m_vertex.stride)
+	if (count * stride > m_vertex.limit * m_vertex.stride)
 	{
 		m_vb_old = m_vb;
 		m_vb = NULL;
@@ -1087,7 +1094,7 @@ bool GSDevice11::IAMapVertexBuffer(void** vertex, size_t stride, size_t count)
 		m_vertex.limit = std::max<int>(count * 3 / 2, 11000);
 	}
 
-	if(m_vb == NULL)
+	if (m_vb == NULL)
 	{
 		D3D11_BUFFER_DESC bd;
 
@@ -1102,12 +1109,13 @@ bool GSDevice11::IAMapVertexBuffer(void** vertex, size_t stride, size_t count)
 
 		hr = m_dev->CreateBuffer(&bd, NULL, &m_vb);
 
-		if(FAILED(hr)) return false;
+		if (FAILED(hr))
+			return false;
 	}
 
 	D3D11_MAP type = D3D11_MAP_WRITE_NO_OVERWRITE;
 
-	if(m_vertex.start + count > m_vertex.limit || stride != m_vertex.stride)
+	if (m_vertex.start + count > m_vertex.limit || stride != m_vertex.stride)
 	{
 		m_vertex.start = 0;
 
@@ -1116,7 +1124,7 @@ bool GSDevice11::IAMapVertexBuffer(void** vertex, size_t stride, size_t count)
 
 	D3D11_MAPPED_SUBRESOURCE m;
 
-	if(FAILED(m_ctx->Map(m_vb, 0, type, 0, &m)))
+	if (FAILED(m_ctx->Map(m_vb, 0, type, 0, &m)))
 	{
 		return false;
 	}
@@ -1138,7 +1146,7 @@ void GSDevice11::IAUnmapVertexBuffer()
 
 void GSDevice11::IASetVertexBuffer(ID3D11Buffer* vb, size_t stride)
 {
-	if(m_state.vb != vb || m_state.vb_stride != stride)
+	if (m_state.vb != vb || m_state.vb_stride != stride)
 	{
 		m_state.vb = vb;
 		m_state.vb_stride = stride;
@@ -1154,7 +1162,7 @@ void GSDevice11::IASetIndexBuffer(const void* index, size_t count)
 {
 	ASSERT(m_index.count == 0);
 
-	if(count > m_index.limit)
+	if (count > m_index.limit)
 	{
 		m_ib_old = m_ib;
 		m_ib = NULL;
@@ -1163,7 +1171,7 @@ void GSDevice11::IASetIndexBuffer(const void* index, size_t count)
 		m_index.limit = std::max<int>(count * 3 / 2, 11000);
 	}
 
-	if(m_ib == NULL)
+	if (m_ib == NULL)
 	{
 		D3D11_BUFFER_DESC bd;
 
@@ -1178,12 +1186,13 @@ void GSDevice11::IASetIndexBuffer(const void* index, size_t count)
 
 		hr = m_dev->CreateBuffer(&bd, NULL, &m_ib);
 
-		if(FAILED(hr)) return;
+		if (FAILED(hr))
+			return;
 	}
 
 	D3D11_MAP type = D3D11_MAP_WRITE_NO_OVERWRITE;
 
-	if(m_index.start + count > m_index.limit)
+	if (m_index.start + count > m_index.limit)
 	{
 		m_index.start = 0;
 
@@ -1192,7 +1201,7 @@ void GSDevice11::IASetIndexBuffer(const void* index, size_t count)
 
 	D3D11_MAPPED_SUBRESOURCE m;
 
-	if(SUCCEEDED(m_ctx->Map(m_ib, 0, type, 0, &m)))
+	if (SUCCEEDED(m_ctx->Map(m_ib, 0, type, 0, &m)))
 	{
 		memcpy((uint8*)m.pData + m_index.start * sizeof(uint32), index, count * sizeof(uint32));
 
@@ -1206,7 +1215,7 @@ void GSDevice11::IASetIndexBuffer(const void* index, size_t count)
 
 void GSDevice11::IASetIndexBuffer(ID3D11Buffer* ib)
 {
-	if(m_state.ib != ib)
+	if (m_state.ib != ib)
 	{
 		m_state.ib = ib;
 
@@ -1216,7 +1225,7 @@ void GSDevice11::IASetIndexBuffer(ID3D11Buffer* ib)
 
 void GSDevice11::IASetInputLayout(ID3D11InputLayout* layout)
 {
-	if(m_state.layout != layout)
+	if (m_state.layout != layout)
 	{
 		m_state.layout = layout;
 
@@ -1226,7 +1235,7 @@ void GSDevice11::IASetInputLayout(ID3D11InputLayout* layout)
 
 void GSDevice11::IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY topology)
 {
-	if(m_state.topology != topology)
+	if (m_state.topology != topology)
 	{
 		m_state.topology = topology;
 
@@ -1236,14 +1245,14 @@ void GSDevice11::IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY topology)
 
 void GSDevice11::VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb)
 {
-	if(m_state.vs != vs)
+	if (m_state.vs != vs)
 	{
 		m_state.vs = vs;
 
 		m_ctx->VSSetShader(vs, NULL, 0);
 	}
 
-	if(m_state.vs_cb != vs_cb)
+	if (m_state.vs_cb != vs_cb)
 	{
 		m_state.vs_cb = vs_cb;
 
@@ -1253,7 +1262,7 @@ void GSDevice11::VSSetShader(ID3D11VertexShader* vs, ID3D11Buffer* vs_cb)
 
 void GSDevice11::GSSetShader(ID3D11GeometryShader* gs, ID3D11Buffer* gs_cb)
 {
-	if(m_state.gs != gs)
+	if (m_state.gs != gs)
 	{
 		m_state.gs = gs;
 
@@ -1273,7 +1282,7 @@ void GSDevice11::PSSetShaderResources(GSTexture* sr0, GSTexture* sr1)
 	PSSetShaderResource(0, sr0);
 	PSSetShaderResource(1, sr1);
 
-	for(size_t i = 2; i < m_state.ps_sr_views.size(); i++)
+	for (size_t i = 2; i < m_state.ps_sr_views.size(); i++)
 	{
 		PSSetShaderResource(i, NULL);
 	}
@@ -1283,7 +1292,8 @@ void GSDevice11::PSSetShaderResource(int i, GSTexture* sr)
 {
 	ID3D11ShaderResourceView* srv = NULL;
 
-	if(sr) srv = *(GSTexture11*)sr;
+	if (sr)
+		srv = *(GSTexture11*)sr;
 
 	PSSetShaderResourceView(i, srv, sr);
 }
@@ -1292,7 +1302,7 @@ void GSDevice11::PSSetShaderResourceView(int i, ID3D11ShaderResourceView* srv, G
 {
 	ASSERT(i < (int)m_state.ps_sr_views.size());
 
-	if(m_state.ps_sr_views[i] != srv)
+	if (m_state.ps_sr_views[i] != srv)
 	{
 		m_state.ps_sr_views[i] = srv;
 		m_state.ps_sr_texture[i] = (GSTexture11*)sr;
@@ -1302,7 +1312,7 @@ void GSDevice11::PSSetShaderResourceView(int i, ID3D11ShaderResourceView* srv, G
 
 void GSDevice11::PSSetSamplerState(ID3D11SamplerState* ss0, ID3D11SamplerState* ss1)
 {
-	if(m_state.ps_ss[0] != ss0 || m_state.ps_ss[1] != ss1)
+	if (m_state.ps_ss[0] != ss0 || m_state.ps_ss[1] != ss1)
 	{
 		m_state.ps_ss[0] = ss0;
 		m_state.ps_ss[1] = ss1;
@@ -1311,14 +1321,14 @@ void GSDevice11::PSSetSamplerState(ID3D11SamplerState* ss0, ID3D11SamplerState* 
 
 void GSDevice11::PSSetShader(ID3D11PixelShader* ps, ID3D11Buffer* ps_cb)
 {
-	if(m_state.ps != ps)
+	if (m_state.ps != ps)
 	{
 		m_state.ps = ps;
 
 		m_ctx->PSSetShader(ps, NULL, 0);
 	}
 
-	if(m_state.ps_cb != ps_cb)
+	if (m_state.ps_cb != ps_cb)
 	{
 		m_state.ps_cb = ps_cb;
 
@@ -1334,7 +1344,7 @@ void GSDevice11::PSUpdateShaderState()
 
 void GSDevice11::OMSetDepthStencilState(ID3D11DepthStencilState* dss, uint8 sref)
 {
-	if(m_state.dss != dss || m_state.sref != sref)
+	if (m_state.dss != dss || m_state.sref != sref)
 	{
 		m_state.dss = dss;
 		m_state.sref = sref;
@@ -1345,7 +1355,7 @@ void GSDevice11::OMSetDepthStencilState(ID3D11DepthStencilState* dss, uint8 sref
 
 void GSDevice11::OMSetBlendState(ID3D11BlendState* bs, float bf)
 {
-	if(m_state.bs != bs || m_state.bf != bf)
+	if (m_state.bs != bs || m_state.bf != bf)
 	{
 		m_state.bs = bs;
 		m_state.bf = bf;
@@ -1364,10 +1374,10 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	if (!rt && !ds)
 		throw GSDXRecoverableError();
 
-	if(rt) rtv = *(GSTexture11*)rt;
-	if(ds) dsv = *(GSTexture11*)ds;
+	if (rt) rtv = *(GSTexture11*)rt;
+	if (ds) dsv = *(GSTexture11*)ds;
 
-	if(m_state.rt_view != rtv || m_state.dsv != dsv)
+	if (m_state.rt_view != rtv || m_state.dsv != dsv)
 	{
 		m_state.rt_view = rtv;
 		m_state.rt_texture = static_cast<GSTexture11*>(rt);
@@ -1378,7 +1388,7 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	}
 
 	GSVector2i size = rt ? rt->GetSize() : ds->GetSize();
-	if(m_state.viewport != size)
+	if (m_state.viewport != size)
 	{
 		m_state.viewport = size;
 
@@ -1397,7 +1407,7 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 
 	GSVector4i r = scissor ? *scissor : GSVector4i(size).zwxy();
 
-	if(!m_state.scissor.eq(r))
+	if (!m_state.scissor.eq(r))
 	{
 		m_state.scissor = r;
 
@@ -1436,14 +1446,14 @@ void GSDevice11::CreateShader(const std::vector<char>& source, const char* fn, I
 
 	hr = m_dev->CreateVertexShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(), NULL, vs);
 
-	if(FAILED(hr))
+	if (FAILED(hr))
 	{
 		throw GSDXRecoverableError();
 	}
 
 	hr = m_dev->CreateInputLayout(layout, count, shader->GetBufferPointer(), shader->GetBufferSize(), il);
 
-	if(FAILED(hr))
+	if (FAILED(hr))
 	{
 		throw GSDXRecoverableError();
 	}
@@ -1459,7 +1469,7 @@ void GSDevice11::CreateShader(const std::vector<char>& source, const char* fn, I
 
 	hr = m_dev->CreateGeometryShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(), NULL, gs);
 
-	if(FAILED(hr))
+	if (FAILED(hr))
 	{
 		throw GSDXRecoverableError();
 	}
@@ -1475,7 +1485,7 @@ void GSDevice11::CreateShader(const std::vector<char>& source, const char* fn, I
 
 	hr = m_dev->CreatePixelShader((void*)shader->GetBufferPointer(), shader->GetBufferSize(), NULL, ps);
 
-	if(FAILED(hr))
+	if (FAILED(hr))
 	{
 		throw GSDXRecoverableError();
 	}
@@ -1494,8 +1504,7 @@ void GSDevice11::CompileShader(const std::vector<char>& source, const char* fn, 
 	const HRESULT hr = D3DCompile(
 		source.data(), source.size(), fn, macro,
 		include, entry, shader_model.c_str(),
-		flags, 0, shader, &error
-	);
+		flags, 0, shader, &error);
 
 	if (error)
 		fprintf(stderr, "%s\n", (const char*)error->GetBufferPointer());
@@ -1508,25 +1517,25 @@ uint16 GSDevice11::ConvertBlendEnum(uint16 generic)
 {
 	switch (generic)
 	{
-	case SRC_COLOR       : return D3D11_BLEND_SRC_COLOR;
-	case INV_SRC_COLOR   : return D3D11_BLEND_INV_SRC_COLOR;
-	case DST_COLOR       : return D3D11_BLEND_DEST_COLOR;
-	case INV_DST_COLOR   : return D3D11_BLEND_INV_DEST_COLOR;
-	case SRC1_COLOR      : return D3D11_BLEND_SRC1_COLOR;
-	case INV_SRC1_COLOR  : return D3D11_BLEND_INV_SRC1_COLOR;
-	case SRC_ALPHA       : return D3D11_BLEND_SRC_ALPHA;
-	case INV_SRC_ALPHA   : return D3D11_BLEND_INV_SRC_ALPHA;
-	case DST_ALPHA       : return D3D11_BLEND_DEST_ALPHA;
-	case INV_DST_ALPHA   : return D3D11_BLEND_INV_DEST_ALPHA;
-	case SRC1_ALPHA      : return D3D11_BLEND_SRC1_ALPHA;
-	case INV_SRC1_ALPHA  : return D3D11_BLEND_INV_SRC1_ALPHA;
-	case CONST_COLOR     : return D3D11_BLEND_BLEND_FACTOR;
-	case INV_CONST_COLOR : return D3D11_BLEND_INV_BLEND_FACTOR;
-	case CONST_ONE       : return D3D11_BLEND_ONE;
-	case CONST_ZERO      : return D3D11_BLEND_ZERO;
-	case OP_ADD          : return D3D11_BLEND_OP_ADD;
-	case OP_SUBTRACT     : return D3D11_BLEND_OP_SUBTRACT;
-	case OP_REV_SUBTRACT : return D3D11_BLEND_OP_REV_SUBTRACT;
-	default              : ASSERT(0); return 0;
+		case SRC_COLOR:       return D3D11_BLEND_SRC_COLOR;
+		case INV_SRC_COLOR:   return D3D11_BLEND_INV_SRC_COLOR;
+		case DST_COLOR:       return D3D11_BLEND_DEST_COLOR;
+		case INV_DST_COLOR:   return D3D11_BLEND_INV_DEST_COLOR;
+		case SRC1_COLOR:      return D3D11_BLEND_SRC1_COLOR;
+		case INV_SRC1_COLOR:  return D3D11_BLEND_INV_SRC1_COLOR;
+		case SRC_ALPHA:       return D3D11_BLEND_SRC_ALPHA;
+		case INV_SRC_ALPHA:   return D3D11_BLEND_INV_SRC_ALPHA;
+		case DST_ALPHA:       return D3D11_BLEND_DEST_ALPHA;
+		case INV_DST_ALPHA:   return D3D11_BLEND_INV_DEST_ALPHA;
+		case SRC1_ALPHA:      return D3D11_BLEND_SRC1_ALPHA;
+		case INV_SRC1_ALPHA:  return D3D11_BLEND_INV_SRC1_ALPHA;
+		case CONST_COLOR:     return D3D11_BLEND_BLEND_FACTOR;
+		case INV_CONST_COLOR: return D3D11_BLEND_INV_BLEND_FACTOR;
+		case CONST_ONE:       return D3D11_BLEND_ONE;
+		case CONST_ZERO:      return D3D11_BLEND_ZERO;
+		case OP_ADD:          return D3D11_BLEND_OP_ADD;
+		case OP_SUBTRACT:     return D3D11_BLEND_OP_SUBTRACT;
+		case OP_REV_SUBTRACT: return D3D11_BLEND_OP_REV_SUBTRACT;
+		default:              ASSERT(0); return 0;
 	}
 }

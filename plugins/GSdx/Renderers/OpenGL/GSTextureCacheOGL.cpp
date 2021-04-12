@@ -76,18 +76,18 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 
 	GSVector4 src = GSVector4(r) * GSVector4(t->m_texture->GetScale()).xyxy() / GSVector4(t->m_texture->GetSize()).xyxy();
 
-	if(GSTexture* offscreen = m_renderer->m_dev->CopyOffscreen(t->m_texture, src, r.width(), r.height(), fmt, ps_shader))
+	if (GSTexture* offscreen = m_renderer->m_dev->CopyOffscreen(t->m_texture, src, r.width(), r.height(), fmt, ps_shader))
 	{
 		GSTexture::GSMap m;
 		GSVector4i r_offscreen(0, 0, r.width(), r.height());
 
-		if(offscreen->Map(m, &r_offscreen))
+		if (offscreen->Map(m, &r_offscreen))
 		{
 			// TODO: block level write
 
 			GSOffset* off = m_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
-			switch(TEX0.PSM)
+			switch (TEX0.PSM)
 			{
 				case PSM_PSMCT32:
 				case PSM_PSMZ32:
@@ -123,13 +123,15 @@ void GSTextureCacheOGL::Read(Source* t, const GSVector4i& r)
 	// FIXME Create a get function to avoid the useless copy
 	// Note: With openGL 4.5 you can use glGetTextureSubImage
 
-	if (GSTexture* offscreen  = m_renderer->m_dev->CreateOffscreen(r.width(), r.height())) {
+	if (GSTexture* offscreen = m_renderer->m_dev->CreateOffscreen(r.width(), r.height()))
+	{
 		m_renderer->m_dev->CopyRect(t->m_texture, offscreen, r);
 
 		GSTexture::GSMap m;
 		GSVector4i r_offscreen(0, 0, r.width(), r.height());
 
-		if (offscreen->Map(m, &r_offscreen)) {
+		if (offscreen->Map(m, &r_offscreen))
+		{
 			GSOffset* off = m_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
 			m_renderer->m_mem.WritePixel32(m.bits, m.pitch, off, r);

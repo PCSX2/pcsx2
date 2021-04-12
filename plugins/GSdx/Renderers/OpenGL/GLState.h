@@ -24,7 +24,8 @@
 #include "GSdx.h"
 #include "GSVector.h"
 
-namespace GLState {
+namespace GLState
+{
 	extern GLuint fbo; // frame buffer object
 	extern GSVector2i viewport;
 	extern GSVector4i scissor;
@@ -62,4 +63,4 @@ namespace GLState {
 	extern int64 available_vram;
 
 	extern void Clear();
-}
+} // namespace GLState

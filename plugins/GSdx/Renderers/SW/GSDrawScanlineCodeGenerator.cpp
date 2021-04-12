@@ -26,7 +26,7 @@
 #else
 void GSDrawScanlineCodeGenerator::Generate()
 {
-	if(m_cpu.has(util::Cpu::tAVX))
+	if (m_cpu.has(util::Cpu::tAVX))
 		Generate_AVX();
 	else
 		Generate_SSE();
@@ -40,21 +40,24 @@ GSDrawScanlineCodeGenerator::GSDrawScanlineCodeGenerator(void* param, uint64 key
 {
 	m_sel.key = key;
 
-	if(m_sel.breakpoint)
+	if (m_sel.breakpoint)
 		db(0xCC);
 
-	try {
+	try
+	{
 		Generate();
-	} catch (std::exception& e) {
+	}
+	catch (std::exception& e)
+	{
 		fprintf(stderr, "ERR:GSDrawScanlineCodeGenerator %s\n", e.what());
 	}
 }
 
 void GSDrawScanlineCodeGenerator::modulate16(const Xmm& a, const Operand& f, uint8 shift)
 {
-	if(m_cpu.has(util::Cpu::tAVX))
+	if (m_cpu.has(util::Cpu::tAVX))
 	{
-		if(shift == 0)
+		if (shift == 0)
 		{
 			vpmulhrsw(a, f);
 		}
@@ -63,11 +66,10 @@ void GSDrawScanlineCodeGenerator::modulate16(const Xmm& a, const Operand& f, uin
 			vpsllw(a, shift + 1);
 			vpmulhw(a, f);
 		}
-
 	}
 	else
 	{
-		if(shift == 0 && m_cpu.has(util::Cpu::tSSSE3))
+		if (shift == 0 && m_cpu.has(util::Cpu::tSSSE3))
 		{
 			pmulhrsw(a, f);
 		}
@@ -81,7 +83,7 @@ void GSDrawScanlineCodeGenerator::modulate16(const Xmm& a, const Operand& f, uin
 
 void GSDrawScanlineCodeGenerator::lerp16(const Xmm& a, const Xmm& b, const Xmm& f, uint8 shift)
 {
-	if(m_cpu.has(util::Cpu::tAVX))
+	if (m_cpu.has(util::Cpu::tAVX))
 	{
 		vpsubw(a, b);
 		modulate16(a, f, shift);
@@ -97,7 +99,7 @@ void GSDrawScanlineCodeGenerator::lerp16(const Xmm& a, const Xmm& b, const Xmm& 
 
 void GSDrawScanlineCodeGenerator::lerp16_4(const Xmm& a, const Xmm& b, const Xmm& f)
 {
-	if(m_cpu.has(util::Cpu::tAVX))
+	if (m_cpu.has(util::Cpu::tAVX))
 	{
 		vpsubw(a, b);
 		vpmullw(a, f);
@@ -115,7 +117,7 @@ void GSDrawScanlineCodeGenerator::lerp16_4(const Xmm& a, const Xmm& b, const Xmm
 
 void GSDrawScanlineCodeGenerator::mix16(const Xmm& a, const Xmm& b, const Xmm& temp)
 {
-	if(m_cpu.has(util::Cpu::tAVX))
+	if (m_cpu.has(util::Cpu::tAVX))
 	{
 		vpblendw(a, b, 0xaa);
 	}
@@ -127,13 +129,14 @@ void GSDrawScanlineCodeGenerator::mix16(const Xmm& a, const Xmm& b, const Xmm& t
 
 void GSDrawScanlineCodeGenerator::clamp16(const Xmm& a, const Xmm& temp)
 {
-	if(m_cpu.has(util::Cpu::tAVX))
+	if (m_cpu.has(util::Cpu::tAVX))
 	{
 		vpackuswb(a, a);
 
 #if _M_SSE >= 0x501
 		// Greg: why ?
-		if(m_cpu.has(util::Cpu::tAVX2)) {
+		if (m_cpu.has(util::Cpu::tAVX2))
+		{
 			ASSERT(a.isYMM());
 			vpermq(Ymm(a.getIdx()), Ymm(a.getIdx()), _MM_SHUFFLE(3, 1, 2, 0)); // this sucks
 		}
@@ -152,7 +155,7 @@ void GSDrawScanlineCodeGenerator::alltrue(const Xmm& test)
 {
 	uint32 mask = test.isYMM() ? 0xffffffff : 0xffff;
 
-	if(m_cpu.has(util::Cpu::tAVX))
+	if (m_cpu.has(util::Cpu::tAVX))
 	{
 		vpmovmskb(eax, test);
 		cmp(eax, mask);
@@ -168,7 +171,7 @@ void GSDrawScanlineCodeGenerator::alltrue(const Xmm& test)
 
 void GSDrawScanlineCodeGenerator::blend(const Xmm& a, const Xmm& b, const Xmm& mask)
 {
-	if(m_cpu.has(util::Cpu::tAVX))
+	if (m_cpu.has(util::Cpu::tAVX))
 	{
 		vpand(b, mask);
 		vpandn(mask, a);
@@ -185,7 +188,7 @@ void GSDrawScanlineCodeGenerator::blend(const Xmm& a, const Xmm& b, const Xmm& m
 
 void GSDrawScanlineCodeGenerator::blendr(const Xmm& b, const Xmm& a, const Xmm& mask)
 {
-	if(m_cpu.has(util::Cpu::tAVX))
+	if (m_cpu.has(util::Cpu::tAVX))
 	{
 		vpand(b, mask);
 		vpandn(mask, a);
@@ -201,15 +204,15 @@ void GSDrawScanlineCodeGenerator::blendr(const Xmm& b, const Xmm& a, const Xmm& 
 
 void GSDrawScanlineCodeGenerator::blend8(const Xmm& a, const Xmm& b)
 {
-	if(m_cpu.has(util::Cpu::tAVX))
+	if (m_cpu.has(util::Cpu::tAVX))
 		vpblendvb(a, a, b, xmm0);
-	else 
+	else
 		pblendvb(a, b);
 }
 
 void GSDrawScanlineCodeGenerator::blend8r(const Xmm& b, const Xmm& a)
 {
-	if(m_cpu.has(util::Cpu::tAVX))
+	if (m_cpu.has(util::Cpu::tAVX))
 	{
 		vpblendvb(b, a, b, xmm0);
 	}
@@ -225,15 +228,20 @@ void GSDrawScanlineCodeGenerator::split16_2x8(const Xmm& l, const Xmm& h, const 
 	// l = src & 0xFF; (1 left shift + 1 right shift)
 	// h = (src >> 8) & 0xFF; (1 right shift)
 
-	if(m_cpu.has(util::Cpu::tAVX))
+	if (m_cpu.has(util::Cpu::tAVX))
 	{
-		if (src == h) {
+		if (src == h)
+		{
 			vpsllw(l, src, 8);
 			vpsrlw(h, 8);
-		} else if (src == l) {
+		}
+		else if (src == l)
+		{
 			vpsrlw(h, src, 8);
 			vpsllw(l, 8);
-		} else {
+		}
+		else
+		{
 			vpsllw(l, src, 8);
 			vpsrlw(h, src, 8);
 		}
@@ -241,11 +249,16 @@ void GSDrawScanlineCodeGenerator::split16_2x8(const Xmm& l, const Xmm& h, const 
 	}
 	else
 	{
-		if (src == h) {
+		if (src == h)
+		{
 			movdqa(l, src);
-		} else if (src == l) {
+		}
+		else if (src == l)
+		{
 			movdqa(h, src);
-		} else {
+		}
+		else
+		{
 			movdqa(l, src);
 			movdqa(h, src);
 		}

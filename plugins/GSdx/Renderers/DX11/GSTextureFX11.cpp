@@ -38,7 +38,8 @@ bool GSDevice11::CreateTextureFX()
 
 	hr = m_dev->CreateBuffer(&bd, NULL, &m_vs_cb);
 
-	if(FAILED(hr)) return false;
+	if (FAILED(hr))
+		return false;
 
 	memset(&bd, 0, sizeof(bd));
 
@@ -48,7 +49,8 @@ bool GSDevice11::CreateTextureFX()
 
 	hr = m_dev->CreateBuffer(&bd, NULL, &m_gs_cb);
 
-	if (FAILED(hr)) return false;
+	if (FAILED(hr))
+		return false;
 
 	memset(&bd, 0, sizeof(bd));
 
@@ -58,7 +60,8 @@ bool GSDevice11::CreateTextureFX()
 
 	hr = m_dev->CreateBuffer(&bd, NULL, &m_ps_cb);
 
-	if(FAILED(hr)) return false;
+	if (FAILED(hr))
+		return false;
 
 	D3D11_SAMPLER_DESC sd;
 
@@ -75,7 +78,8 @@ bool GSDevice11::CreateTextureFX()
 
 	hr = m_dev->CreateSamplerState(&sd, &m_palette_ss);
 
-	if(FAILED(hr)) return false;
+	if (FAILED(hr))
+		return false;
 
 	// create layout
 
@@ -97,7 +101,7 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 {
 	auto i = std::as_const(m_vs).find(sel);
 
-	if(i == m_vs.end())
+	if (i == m_vs.end())
 	{
 		ShaderMacro sm(m_shader.model);
 
@@ -126,7 +130,7 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 		i = m_vs.find(sel);
 	}
 
-	if(m_vs_cb_cache.Update(cb))
+	if (m_vs_cb_cache.Update(cb))
 	{
 		ID3D11DeviceContext* ctx = m_ctx;
 
@@ -184,7 +188,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 {
 	auto i = std::as_const(m_ps).find(sel);
 
-	if(i == m_ps.end())
+	if (i == m_ps.end())
 	{
 		ShaderMacro sm(m_shader.model);
 
@@ -234,7 +238,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		i = m_ps.find(sel);
 	}
 
-	if(m_ps_cb_cache.Update(cb))
+	if (m_ps_cb_cache.Update(cb))
 	{
 		ID3D11DeviceContext* ctx = m_ctx;
 
@@ -243,16 +247,16 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 
 	CComPtr<ID3D11SamplerState> ss0, ss1;
 
-	if(sel.tfx != 4)
+	if (sel.tfx != 4)
 	{
-		if(!(sel.fmt < 3 && sel.wms < 3 && sel.wmt < 3))
+		if (!(sel.fmt < 3 && sel.wms < 3 && sel.wmt < 3))
 		{
 			ssel.ltf = 0;
 		}
 
 		auto i = std::as_const(m_ps_ss).find(ssel);
 
-		if(i != m_ps_ss.end())
+		if (i != m_ps_ss.end())
 		{
 			ss0 = i->second;
 		}
@@ -278,7 +282,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 			m_ps_ss[ssel] = ss0;
 		}
 
-		if(sel.fmt >= 3)
+		if (sel.fmt >= 3)
 		{
 			ss1 = m_palette_ss;
 		}
@@ -293,13 +297,13 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 {
 	auto i = std::as_const(m_om_dss).find(dssel);
 
-	if(i == m_om_dss.end())
+	if (i == m_om_dss.end())
 	{
 		D3D11_DEPTH_STENCIL_DESC dsd;
 
 		memset(&dsd, 0, sizeof(dsd));
 
-		if(dssel.date)
+		if (dssel.date)
 		{
 			dsd.StencilEnable = true;
 			dsd.StencilReadMask = 1;
@@ -314,7 +318,7 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 			dsd.BackFace.StencilDepthFailOp = D3D11_STENCIL_OP_KEEP;
 		}
 
-		if(dssel.ztst != ZTST_ALWAYS || dssel.zwe)
+		if (dssel.ztst != ZTST_ALWAYS || dssel.zwe)
 		{
 			static const D3D11_COMPARISON_FUNC ztst[] =
 			{
@@ -342,7 +346,7 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 
 	auto j = std::as_const(m_om_bs).find(bsel);
 
-	if(j == m_om_bs.end())
+	if (j == m_om_bs.end())
 	{
 		D3D11_BLEND_DESC bd;
 
@@ -350,7 +354,7 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 
 		bd.RenderTarget[0].BlendEnable = bsel.abe;
 
-		if(bsel.abe)
+		if (bsel.abe)
 		{
 			HWBlend blend = GetBlend(bsel.blend_index);
 			bd.RenderTarget[0].BlendOp = (D3D11_BLEND_OP)blend.op;
@@ -367,10 +371,10 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 			}
 		}
 
-		if(bsel.wr) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_RED;
-		if(bsel.wg) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_GREEN;
-		if(bsel.wb) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_BLUE;
-		if(bsel.wa) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_ALPHA;
+		if (bsel.wr) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_RED;
+		if (bsel.wg) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_GREEN;
+		if (bsel.wb) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_BLUE;
+		if (bsel.wa) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_ALPHA;
 
 		CComPtr<ID3D11BlendState> bs;
 

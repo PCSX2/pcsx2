@@ -21,7 +21,8 @@
 
 #pragma once
 
-template <class Vertex> class GSVertexList
+template <class Vertex>
+class GSVertexList
 {
 	void* m_base;
 	Vertex* m_v[3];
@@ -33,7 +34,7 @@ public:
 	{
 		m_base = _aligned_malloc(sizeof(Vertex) * countof(m_v), 32);
 
-		for(size_t i = 0; i < countof(m_v); i++)
+		for (size_t i = 0; i < countof(m_v); i++)
 		{
 			m_v[i] = &((Vertex*)m_base)[i];
 		}
@@ -58,13 +59,13 @@ public:
 
 	__forceinline void RemoveAt(int pos, int keep)
 	{
-		if(keep == 1)
+		if (keep == 1)
 		{
 			Vertex* tmp = m_v[pos + 0];
 			m_v[pos + 0] = m_v[pos + 1];
 			m_v[pos + 1] = tmp;
 		}
-		else if(keep == 2)
+		else if (keep == 2)
 		{
 			Vertex* tmp = m_v[pos + 0];
 			m_v[pos + 0] = m_v[pos + 1];

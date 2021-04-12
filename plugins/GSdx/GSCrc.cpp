@@ -129,7 +129,7 @@ CRC::Game CRC::m_games[] =
 	{0xC02C653E, GT4, CH, 0},
 	{0x7ABDBB5E, GT4, CH, 0}, // cutie comment
 	{0xAEAD1CA3, GT4, JP, 0},
-	{0xE906EA37, GT4, JP, 0}, // GT4 First Preview 
+	{0xE906EA37, GT4, JP, 0}, // GT4 First Preview
 	{0xCA6243B9, GT4, JP, 0}, // GT4 Prologue
 	{0xDD764BBE, GT4, JP, 0}, // GT4 Prologue
 	{0xE1258846, GT4, JP, 0}, // GT4 Prologue
@@ -357,7 +357,7 @@ CRC::Game CRC::m_games[] =
 	{0xEF06DBD6, SakuraWarsSoLongMyLove, JP, 0}, // cutie comment
 	{0xDD41054D, SakuraWarsSoLongMyLove, US, 0}, // cutie comment
 	{0xC2E3A7A4, SakuraWarsSoLongMyLove, KO, 0},
-	{0x4A4B623A, FightingBeautyWulong, JP,0}, // cutie comment
+	{0x4A4B623A, FightingBeautyWulong, JP, 0}, // cutie comment
 	{0x5AC7E79C, TouristTrophy, CH, 0}, // cutie comment
 	{0xFF9C0E93, TouristTrophy, US, 0},
 	{0xCA9AA903, TouristTrophy, EU, 0},
@@ -365,7 +365,7 @@ CRC::Game CRC::m_games[] =
 	{0x6FB69282, GodHand, US, 0},
 	{0x924C4AA6, GodHand, KO, 0},
 	{0xDE9722A5, GodHand, EU, 0},
-	{0x9637D496, KnightsOfTheTemple2, NoRegion, 0}, // // EU and JP versions have the same CRC 
+	{0x9637D496, KnightsOfTheTemple2, NoRegion, 0}, // // EU and JP versions have the same CRC
 	{0x4E811100, UltramanFightingEvolution, JP, 0}, // cutie comment
 	{0xF7F181C3, DeathByDegreesTekkenNinaWilliams, CH, 0}, // cutie comment
 	{0xF088FA5B, DeathByDegreesTekkenNinaWilliams, KO, 0},
@@ -378,7 +378,7 @@ CRC::Game CRC::m_games[] =
 	{0xAE4BEBD3, UrbanReign, EU, 0},
 	{0x48AC09BC, SteambotChronicles, EU, 0},
 	{0x9F391882, SteambotChronicles, US, 0},
-	{0xFEFCF9DE, SteambotChronicles, JP, 0}, // Ponkotsu Roman Daikatsugeki: Bumpy Trot 
+	{0xFEFCF9DE, SteambotChronicles, JP, 0}, // Ponkotsu Roman Daikatsugeki: Bumpy Trot
 	{0XE1BF5DCA, SuperManReturns, US, 0},
 	{0XE8F7BAB6, SuperManReturns, EU, 0},
 	{0x06A7506A, SacredBlaze, JP, 0},
@@ -441,17 +441,17 @@ CRC::Game CRC::m_games[] =
 	{0x972611BB, FIFA05, US, 0},
 	{0x972719A3, FIFA05, EU, 0},
 	{0xC5473413, HarryPotterATCOS, NoRegion, 0}, // EU and US versions have the same CRC - Chamber Of Secrets
-	{0xE1963055, HarryPotterATCOS, JP, 0 }, // Harry Potter to Himitsu no Heya
-	{0xE90BE9F8, HarryPotterATCOS, JP, 0 }, // Coca Cola original Version
-	{0xB38CC628, HarryPotterATGOF, US, 0 },
-	{0xCDE017A7, HarryPotterATGOF, KO, 0 },
-	{0xB18DC525, HarryPotterATGOF, EU, 0 },
-	{0x9C3A84F4, HarryPotterATHBP, US, 0 }, // Half-Blood Prince
-	{0xCB598BC2, HarryPotterATHBP, EU, 0 },
-	{0x51E019BC, HarryPotterATPOA, NoRegion, 0 }, // EU and US versions have the same CRC - Prisoner of Azkaban
-	{0x99A8B4FF, HarryPotterATPOA, KO, 0 },
-	{0xA8901AD6, HarryPotterATPOA, JP, 0 }, // Harry Potter to Azkaban no Shuujin
-	{0x51E417AA, HarryPotterATPOA, EU, 0 },
+	{0xE1963055, HarryPotterATCOS, JP, 0}, // Harry Potter to Himitsu no Heya
+	{0xE90BE9F8, HarryPotterATCOS, JP, 0}, // Coca Cola original Version
+	{0xB38CC628, HarryPotterATGOF, US, 0},
+	{0xCDE017A7, HarryPotterATGOF, KO, 0},
+	{0xB18DC525, HarryPotterATGOF, EU, 0},
+	{0x9C3A84F4, HarryPotterATHBP, US, 0}, // Half-Blood Prince
+	{0xCB598BC2, HarryPotterATHBP, EU, 0},
+	{0x51E019BC, HarryPotterATPOA, NoRegion, 0}, // EU and US versions have the same CRC - Prisoner of Azkaban
+	{0x99A8B4FF, HarryPotterATPOA, KO, 0},
+	{0xA8901AD6, HarryPotterATPOA, JP, 0}, // Harry Potter to Azkaban no Shuujin
+	{0x51E417AA, HarryPotterATPOA, EU, 0},
 	{0x4C01B1B0, HarryPotterOOTP, US, 0}, // Order Of The Phoenix
 	{0x01A9BF0E, HarryPotterOOTP, EU, 0},
 	{0x230CB71D, SoulReaver2, US, 0},
@@ -516,9 +516,9 @@ CRC::Game CRC::m_games[] =
 
 std::map<uint32, CRC::Game*> CRC::m_map;
 
-std::string ToLower( std::string str )
+std::string ToLower(std::string str)
 {
-	transform( str.begin(), str.end(), str.begin(), ::tolower);
+	transform(str.begin(), str.end(), str.begin(), ::tolower);
 	return str;
 }
 
@@ -536,18 +536,19 @@ bool IsCrcExcluded(std::string exclusionList, uint32 crc)
 CRC::Game CRC::Lookup(uint32 crc)
 {
 	printf("GSdx Lookup CRC:%08X\n", crc);
-	if(m_map.empty())
+	if (m_map.empty())
 	{
 		std::string exclusions = theApp.GetConfigS("CrcHacksExclusions");
 		if (exclusions.length() != 0)
- 			printf( "GSdx: CrcHacksExclusions: %s\n", exclusions.c_str() ); 
+			printf("GSdx: CrcHacksExclusions: %s\n", exclusions.c_str());
 		int crcDups = 0;
-		for(size_t i = 0; i < countof(m_games); i++)
+		for (size_t i = 0; i < countof(m_games); i++)
 		{
-			if( !IsCrcExcluded( exclusions, m_games[i].crc ) ){
-				if(m_map[m_games[i].crc]){
-					printf("[FIXME] GSdx: Duplicate CRC: 0x%08X: (game-id/region-id) %d/%d overrides %d/%d\n"
-						, m_games[i].crc, m_games[i].title, m_games[i].region, m_map[m_games[i].crc]->title, m_map[m_games[i].crc]->region);
+			if (!IsCrcExcluded(exclusions, m_games[i].crc))
+			{
+				if (m_map[m_games[i].crc])
+				{
+					printf("[FIXME] GSdx: Duplicate CRC: 0x%08X: (game-id/region-id) %d/%d overrides %d/%d\n", m_games[i].crc, m_games[i].title, m_games[i].region, m_map[m_games[i].crc]->title, m_map[m_games[i].crc]->region);
 					crcDups++;
 				}
 
@@ -556,13 +557,13 @@ CRC::Game CRC::Lookup(uint32 crc)
 			//else
 			//	printf( "GSdx: excluding CRC hack for 0x%08x\n", m_games[i].crc );
 		}
-		if(crcDups)
+		if (crcDups)
 			printf("[FIXME] GSdx: Duplicate CRC: Overall: %d\n", crcDups);
 	}
 
 	auto i = m_map.find(crc);
 
-	if(i != m_map.end())
+	if (i != m_map.end())
 	{
 		return *i->second;
 	}

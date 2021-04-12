@@ -24,14 +24,14 @@
 #include "GSCaptureDlg.h"
 
 #define BeginEnumSysDev(clsid, pMoniker) \
-	{CComPtr<ICreateDevEnum> pDevEnum4$##clsid; \
-	pDevEnum4$##clsid.CoCreateInstance(CLSID_SystemDeviceEnum); \
-	CComPtr<IEnumMoniker> pClassEnum4$##clsid; \
-	if(SUCCEEDED(pDevEnum4$##clsid->CreateClassEnumerator(clsid, &pClassEnum4$##clsid, 0)) \
-	&& pClassEnum4$##clsid) \
 	{ \
-		for(CComPtr<IMoniker> pMoniker; pClassEnum4$##clsid->Next(1, &pMoniker, 0) == S_OK; pMoniker = NULL) \
+		CComPtr<ICreateDevEnum> pDevEnum4$##clsid; \
+		pDevEnum4$##clsid.CoCreateInstance(CLSID_SystemDeviceEnum); \
+		CComPtr<IEnumMoniker> pClassEnum4$##clsid; \
+		if (SUCCEEDED(pDevEnum4$##clsid->CreateClassEnumerator(clsid, &pClassEnum4$##clsid, 0)) && pClassEnum4$##clsid) \
 		{ \
+			for (CComPtr<IMoniker> pMoniker; pClassEnum4$##clsid->Next(1, &pMoniker, 0) == S_OK; pMoniker = NULL) \
+			{
 
 #define EndEnumSysDev }}}
 
@@ -53,17 +53,19 @@ int GSCaptureDlg::GetSelCodec(Codec& c)
 {
 	INT_PTR data = 0;
 
-	if(ComboBoxGetSelData(IDC_CODECS, data))
+	if (ComboBoxGetSelData(IDC_CODECS, data))
 	{
-		if(data == 0) return 2;
+		if (data == 0)
+			return 2;
 
 		c = *(Codec*)data;
 
-		if(!c.filter)
+		if (!c.filter)
 		{
 			c.moniker->BindToObject(NULL, NULL, __uuidof(IBaseFilter), (void**)&c.filter);
 
-			if(!c.filter) return 0;
+			if (!c.filter)
+				return 0;
 		}
 
 		return 1;
@@ -124,12 +126,12 @@ void GSCaptureDlg::OnInit()
 
 		LPOLESTR str = NULL;
 
-		if(FAILED(moniker->GetDisplayName(NULL, NULL, &str)))
+		if (FAILED(moniker->GetDisplayName(NULL, NULL, &str)))
 			continue;
 
-		if(wcsstr(str, L"@device:dmo:")) prefix = L"(DMO) ";
-		else if(wcsstr(str, L"@device:sw:")) prefix = L"(DS) ";
-		else if(wcsstr(str, L"@device:cm:")) prefix = L"(VfW) ";
+		if      (wcsstr(str, L"@device:dmo:")) prefix = L"(DMO) ";
+		else if (wcsstr(str, L"@device:sw:"))  prefix = L"(DS) ";
+		else if (wcsstr(str, L"@device:cm:"))  prefix = L"(VfW) ";
 
 		c.DisplayName = str;
 
@@ -137,12 +139,12 @@ void GSCaptureDlg::OnInit()
 
 		CComPtr<IPropertyBag> pPB;
 
-		if(FAILED(moniker->BindToStorage(0, 0, IID_IPropertyBag, (void**)&pPB)))
+		if (FAILED(moniker->BindToStorage(0, 0, IID_IPropertyBag, (void**)&pPB)))
 			continue;
 
 		_variant_t var;
 
-		if(FAILED(pPB->Read(_bstr_t(_T("FriendlyName")), &var, NULL)))
+		if (FAILED(pPB->Read(_bstr_t(_T("FriendlyName")), &var, NULL)))
 			continue;
 
 		c.FriendlyName = prefix + var.bstrVal;
@@ -159,102 +161,102 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 {
 	switch (id)
 	{
-	case IDC_FILENAME:
-	{
-		EnableWindow(GetDlgItem(m_hWnd, IDOK), GetText(IDC_FILENAME).length() != 0);
-		return false;
-	}
-	case IDC_BROWSE:
-	{
-		if (code == BN_CLICKED)
+		case IDC_FILENAME:
 		{
-			wchar_t buff[MAX_PATH] = { 0 };
-
-			OPENFILENAME ofn;
-			memset(&ofn, 0, sizeof(ofn));
-
-			ofn.lStructSize = sizeof(ofn);
-			ofn.hwndOwner = m_hWnd;
-			ofn.lpstrFile = buff;
-			ofn.nMaxFile = countof(buff);
-			ofn.lpstrFilter = L"Avi files (*.avi)\0*.avi\0";
-			ofn.Flags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
-
-			wcscpy(ofn.lpstrFile, m_filename.c_str());
-			if (GetSaveFileName(&ofn))
-			{
-				m_filename = ofn.lpstrFile;
-				SetText(IDC_FILENAME, m_filename.c_str());
-			}
-
-			return true;
+			EnableWindow(GetDlgItem(m_hWnd, IDOK), GetText(IDC_FILENAME).length() != 0);
+			return false;
 		}
-		break;
-	}
-	case IDC_CONFIGURE:
-	{
-		if (code == BN_CLICKED)
+		case IDC_BROWSE:
 		{
-			Codec c;
-			if (GetSelCodec(c) == 1)
+			if (code == BN_CLICKED)
 			{
-				if (CComQIPtr<ISpecifyPropertyPages> pSPP = c.filter)
+				wchar_t buff[MAX_PATH] = {0};
+
+				OPENFILENAME ofn;
+				memset(&ofn, 0, sizeof(ofn));
+
+				ofn.lStructSize = sizeof(ofn);
+				ofn.hwndOwner = m_hWnd;
+				ofn.lpstrFile = buff;
+				ofn.nMaxFile = countof(buff);
+				ofn.lpstrFilter = L"Avi files (*.avi)\0*.avi\0";
+				ofn.Flags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
+
+				wcscpy(ofn.lpstrFile, m_filename.c_str());
+				if (GetSaveFileName(&ofn))
 				{
-					CAUUID caGUID;
-					memset(&caGUID, 0, sizeof(caGUID));
+					m_filename = ofn.lpstrFile;
+					SetText(IDC_FILENAME, m_filename.c_str());
+				}
 
-					if (SUCCEEDED(pSPP->GetPages(&caGUID)))
+				return true;
+			}
+			break;
+		}
+		case IDC_CONFIGURE:
+		{
+			if (code == BN_CLICKED)
+			{
+				Codec c;
+				if (GetSelCodec(c) == 1)
+				{
+					if (CComQIPtr<ISpecifyPropertyPages> pSPP = c.filter)
 					{
-						IUnknown* lpUnk = NULL;
-						pSPP.QueryInterface(&lpUnk);
-						OleCreatePropertyFrame(m_hWnd, 0, 0, c.FriendlyName.c_str(), 1, (IUnknown**)&lpUnk, caGUID.cElems, caGUID.pElems, 0, 0, NULL);
-						lpUnk->Release();
+						CAUUID caGUID;
+						memset(&caGUID, 0, sizeof(caGUID));
 
-						if (caGUID.pElems)
-							CoTaskMemFree(caGUID.pElems);
+						if (SUCCEEDED(pSPP->GetPages(&caGUID)))
+						{
+							IUnknown* lpUnk = NULL;
+							pSPP.QueryInterface(&lpUnk);
+							OleCreatePropertyFrame(m_hWnd, 0, 0, c.FriendlyName.c_str(), 1, (IUnknown**)&lpUnk, caGUID.cElems, caGUID.pElems, 0, 0, NULL);
+							lpUnk->Release();
+
+							if (caGUID.pElems)
+								CoTaskMemFree(caGUID.pElems);
+						}
+					}
+					else if (CComQIPtr<IAMVfwCompressDialogs> pAMVfWCD = c.filter)
+					{
+						if (pAMVfWCD->ShowDialog(VfwCompressDialog_QueryConfig, NULL) == S_OK)
+							pAMVfWCD->ShowDialog(VfwCompressDialog_Config, m_hWnd);
 					}
 				}
-				else if (CComQIPtr<IAMVfwCompressDialogs> pAMVfWCD = c.filter)
-				{
-					if (pAMVfWCD->ShowDialog(VfwCompressDialog_QueryConfig, NULL) == S_OK)
-						pAMVfWCD->ShowDialog(VfwCompressDialog_Config, m_hWnd);
-				}
+				return true;
 			}
-			return true;
+			break;
 		}
-		break;
-	}
-	case IDC_CODECS:
-	{
-		UpdateConfigureButton();
-		break;
-	}
-	case IDOK:
-	{
-		m_width = GetTextAsInt(IDC_WIDTH);
-		m_height = GetTextAsInt(IDC_HEIGHT);
-		m_filename = GetText(IDC_FILENAME);
-		ComboBoxGetSelData(IDC_COLORSPACE, m_colorspace);
+		case IDC_CODECS:
+		{
+			UpdateConfigureButton();
+			break;
+		}
+		case IDOK:
+		{
+			m_width = GetTextAsInt(IDC_WIDTH);
+			m_height = GetTextAsInt(IDC_HEIGHT);
+			m_filename = GetText(IDC_FILENAME);
+			ComboBoxGetSelData(IDC_COLORSPACE, m_colorspace);
 
-		Codec c;
-		int ris = GetSelCodec(c);
-		if (ris == 0)
-			return false;
+			Codec c;
+			int ris = GetSelCodec(c);
+			if (ris == 0)
+				return false;
 
-		m_enc = c.filter;
+			m_enc = c.filter;
 
-		theApp.SetConfig("CaptureWidth", m_width);
-		theApp.SetConfig("CaptureHeight", m_height);
-		theApp.SetConfig("CaptureFileName", convert_utf16_to_utf8(m_filename).c_str());
+			theApp.SetConfig("CaptureWidth", m_width);
+			theApp.SetConfig("CaptureHeight", m_height);
+			theApp.SetConfig("CaptureFileName", convert_utf16_to_utf8(m_filename).c_str());
 
-		if (ris != 2)
-			theApp.SetConfig("CaptureVideoCodecDisplayName", c.DisplayName);
-		else
-			theApp.SetConfig("CaptureVideoCodecDisplayName", "");
-		break;
-	}
-	default:
-		break;
+			if (ris != 2)
+				theApp.SetConfig("CaptureVideoCodecDisplayName", c.DisplayName);
+			else
+				theApp.SetConfig("CaptureVideoCodecDisplayName", "");
+			break;
+		}
+		default:
+			break;
 	}
 	return __super::OnCommand(hWnd, id, code);
 }

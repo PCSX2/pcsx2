@@ -31,7 +31,7 @@
 
 #include "targetver.h"
 
-#define WIN32_LEAN_AND_MEAN             // Exclude rarely-used stuff from Windows headers
+#define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
 
 #include <windows.h>
 #include <commctrl.h>
@@ -90,7 +90,7 @@ typedef int64 sint64;
 #include <cstring>
 #include <cassert>
 
-#if __GNUC__ > 5 || ( __GNUC__ == 5 && __GNUC_MINOR__ >= 4 )
+#if __GNUC__ > 5 || (__GNUC__ == 5 && __GNUC_MINOR__ >= 4)
 #include <codecvt>
 #include <locale>
 #endif
@@ -149,35 +149,35 @@ typedef int64 sint64;
 
 #ifdef _MSC_VER
 
-    #define EXPORT_C_(type) extern "C" type __stdcall
-    #define EXPORT_C EXPORT_C_(void)
+	#define EXPORT_C_(type) extern "C" type __stdcall
+	#define EXPORT_C EXPORT_C_(void)
 
-    #define ALIGN_STACK(n) alignas(n) int dummy__;
+	#define ALIGN_STACK(n) alignas(n) int dummy__;
 
 #else
 
-    #ifndef __fastcall
-        #define __fastcall __attribute__((fastcall))
-    #endif
+	#ifndef __fastcall
+		#define __fastcall __attribute__((fastcall))
+	#endif
 
-    #define EXPORT_C_(type) extern "C" __attribute__((stdcall,externally_visible,visibility("default"))) type
-    #define EXPORT_C EXPORT_C_(void)
+	#define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
+	#define EXPORT_C EXPORT_C_(void)
 
-    #ifdef __GNUC__
-        #define __forceinline __inline__ __attribute__((always_inline,unused))
-        // #define __forceinline __inline__ __attribute__((__always_inline__,__gnu_inline__))
-        #define __assume(c) do { if (!(c)) __builtin_unreachable(); } while(0)
+	#ifdef __GNUC__
+		#define __forceinline __inline__ __attribute__((always_inline,unused))
+		// #define __forceinline __inline__ __attribute__((__always_inline__, __gnu_inline__))
+		#define __assume(c) do { if (!(c)) __builtin_unreachable(); } while(0)
 
-        // GCC removes the variable as dead code and generates some warnings.
-        // Stack is automatically realigned due to SSE/AVX operations
-        #define ALIGN_STACK(n) (void)0;
+		// GCC removes the variable as dead code and generates some warnings.
+		// Stack is automatically realigned due to SSE/AVX operations
+		#define ALIGN_STACK(n) (void)0;
 
-    #else
+	#else
 
-        // TODO Check clang behavior
-        #define ALIGN_STACK(n) alignas(n) int dummy__;
+		// TODO Check clang behavior
+		#define ALIGN_STACK(n) alignas(n) int dummy__;
 
-    #endif
+	#endif
 
 
 #endif
@@ -186,23 +186,23 @@ typedef int64 sint64;
 
 #ifndef RESTRICT
 
-    #ifdef __INTEL_COMPILER
+	#ifdef __INTEL_COMPILER
 
-        #define RESTRICT restrict
+		#define RESTRICT restrict
 
-    #elif defined(_MSC_VER)
+	#elif defined(_MSC_VER)
 
-        #define RESTRICT __restrict
+		#define RESTRICT __restrict
 
-    #elif defined(__GNUC__)
+	#elif defined(__GNUC__)
 
-        #define RESTRICT __restrict__
+		#define RESTRICT __restrict__
 
-    #else
+	#else
 
-        #define RESTRICT
+		#define RESTRICT
 
-    #endif
+	#endif
 
 #endif
 
@@ -296,7 +296,8 @@ typedef int64 sint64;
 
 	#endif
 
-	static inline void _aligned_free(void* p) {
+	static inline void _aligned_free(void* p)
+	{
 		free(p);
 	}
 
@@ -361,45 +362,49 @@ extern void fifo_free(void* ptr, size_t size, size_t repeat);
 // Note: GL messages are present in common code, so in all renderers.
 
 #define GL_INSERT(type, code, sev, ...) \
-	do if (glDebugMessageInsert) glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, type, code, sev, -1, format(__VA_ARGS__).c_str()); while(0);
+	do \
+		if (glDebugMessageInsert) glDebugMessageInsert(GL_DEBUG_SOURCE_APPLICATION, type, code, sev, -1, format(__VA_ARGS__).c_str()); \
+	while(0);
 
 #if defined(_DEBUG)
-#define GL_CACHE(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xFEAD, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
+#  define GL_CACHE(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xFEAD, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
 #else
-#define GL_CACHE(...) (void)(0);
+#  define GL_CACHE(...) (void)(0);
 #endif
 
 #if defined(ENABLE_TRACE_REG) && defined(_DEBUG)
-#define GL_REG(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xB0B0, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
+#  define GL_REG(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xB0B0, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
 #else
-#define GL_REG(...) (void)(0);
+#  define GL_REG(...) (void)(0);
 #endif
 
 #if defined(ENABLE_EXTRA_LOG) && defined(_DEBUG)
-#define GL_DBG(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xD0D0, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
+#  define GL_DBG(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xD0D0, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
 #else
-#define GL_DBG(...) (void)(0);
+#  define GL_DBG(...) (void)(0);
 #endif
 
 #if defined(ENABLE_OGL_DEBUG)
-struct GLAutoPop {
-	~GLAutoPop() {
-		if (glPopDebugGroup)
-			glPopDebugGroup();
-	}
-};
+	struct GLAutoPop
+	{
+		~GLAutoPop()
+		{
+			if (glPopDebugGroup)
+				glPopDebugGroup();
+		}
+	};
 
-#define GL_PUSH_(...)	do if (glPushDebugGroup) glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, format(__VA_ARGS__).c_str()); while(0);
-#define GL_PUSH(...)	do if (glPushDebugGroup) glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, format(__VA_ARGS__).c_str()); while(0); GLAutoPop gl_auto_pop;
-#define GL_POP()        do if (glPopDebugGroup) glPopDebugGroup(); while(0);
-#define GL_INS(...)		GL_INSERT(GL_DEBUG_TYPE_ERROR, 0xDEAD, GL_DEBUG_SEVERITY_MEDIUM, __VA_ARGS__)
-#define GL_PERF(...)	GL_INSERT(GL_DEBUG_TYPE_PERFORMANCE, 0xFEE1, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
+	#define GL_PUSH_(...) do if (glPushDebugGroup) glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, format(__VA_ARGS__).c_str()); while(0);
+	#define GL_PUSH(...)  do if (glPushDebugGroup) glPushDebugGroup(GL_DEBUG_SOURCE_APPLICATION, 0xBAD, -1, format(__VA_ARGS__).c_str()); while(0); GLAutoPop gl_auto_pop;
+	#define GL_POP()      do if (glPopDebugGroup) glPopDebugGroup(); while(0);
+	#define GL_INS(...)   GL_INSERT(GL_DEBUG_TYPE_ERROR, 0xDEAD, GL_DEBUG_SEVERITY_MEDIUM, __VA_ARGS__)
+	#define GL_PERF(...)  GL_INSERT(GL_DEBUG_TYPE_PERFORMANCE, 0xFEE1, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
 #else
-#define GL_PUSH_(...) (void)(0);
-#define GL_PUSH(...) (void)(0);
-#define GL_POP()     (void)(0);
-#define GL_INS(...)  (void)(0);
-#define GL_PERF(...) (void)(0);
+	#define GL_PUSH_(...) (void)(0);
+	#define GL_PUSH(...) (void)(0);
+	#define GL_POP()     (void)(0);
+	#define GL_INS(...)  (void)(0);
+	#define GL_PERF(...) (void)(0);
 #endif
 
 // Helper path to dump texture

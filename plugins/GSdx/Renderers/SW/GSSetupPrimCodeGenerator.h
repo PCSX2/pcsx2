@@ -27,13 +27,16 @@
 
 class GSSetupPrimCodeGenerator : public GSCodeGenerator
 {
-	void operator = (const GSSetupPrimCodeGenerator&);
+	void operator=(const GSSetupPrimCodeGenerator&);
 
 	GSScanlineSelector m_sel;
 	GSScanlineLocalData& m_local;
 	bool m_rip;
 
-	struct {uint32 z:1, f:1, t:1, c:1;} m_en;
+	struct
+	{
+		uint32 z : 1, f : 1, t : 1, c : 1;
+	} m_en;
 
 #if _M_SSE < 0x501
 	void Generate_SSE();

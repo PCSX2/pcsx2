@@ -33,7 +33,7 @@ GSDumpBase::GSDumpBase(const std::string& fn)
 
 GSDumpBase::~GSDumpBase()
 {
-	if(m_gs)
+	if (m_gs)
 		fclose(m_gs);
 }
 
@@ -83,7 +83,7 @@ bool GSDumpBase::VSync(int field, bool last, const GSPrivRegSet* regs)
 	return (++m_frames & 1) == 0 && last && (m_extra_frames < 0);
 }
 
-void GSDumpBase::Write(const void *data, size_t size)
+void GSDumpBase::Write(const void* data, size_t size)
 {
 	if (!m_gs || size == 0)
 		return;
@@ -103,7 +103,7 @@ GSDump::GSDump(const std::string& fn, uint32 crc, const GSFreezeData& fd, const 
 	AddHeader(crc, fd, regs);
 }
 
-void GSDump::AppendRawData(const void *data, size_t size)
+void GSDump::AppendRawData(const void* data, size_t size)
 {
 	Write(data, size);
 }
@@ -122,7 +122,8 @@ GSDumpXz::GSDumpXz(const std::string& fn, uint32 crc, const GSFreezeData& fd, co
 {
 	m_strm = LZMA_STREAM_INIT;
 	lzma_ret ret = lzma_easy_encoder(&m_strm, 6 /*level*/, LZMA_CHECK_CRC64);
-	if (ret != LZMA_OK) {
+	if (ret != LZMA_OK)
+	{
 		fprintf(stderr, "GSDumpXz: Error initializing LZMA encoder ! (error code %u)\n", ret);
 		return;
 	}
@@ -141,7 +142,7 @@ GSDumpXz::~GSDumpXz()
 	lzma_end(&m_strm);
 }
 
-void GSDumpXz::AppendRawData(const void *data, size_t size)
+void GSDumpXz::AppendRawData(const void* data, size_t size)
 {
 	size_t old_size = m_in_buff.size();
 	m_in_buff.resize(old_size + size);
@@ -151,7 +152,7 @@ void GSDumpXz::AppendRawData(const void *data, size_t size)
 	// is enabled, it will freeze PCSX2. 1GB should be enough for long dump.
 	//
 	// Note: long dumps are currently not supported so this path won't be executed
-	if (m_in_buff.size() > 1024*1024*1024)
+	if (m_in_buff.size() > 1024 * 1024 * 1024)
 		Flush();
 }
 
@@ -175,15 +176,17 @@ void GSDumpXz::Flush()
 
 void GSDumpXz::Compress(lzma_action action, lzma_ret expected_status)
 {
-	std::vector<uint8> out_buff(1024*1024);
-	do {
+	std::vector<uint8> out_buff(1024 * 1024);
+	do
+	{
 		m_strm.next_out = out_buff.data();
 		m_strm.avail_out = out_buff.size();
 
 		lzma_ret ret = lzma_code(&m_strm, action);
 
-		if (ret != expected_status) {
-			fprintf (stderr, "GSDumpXz: Error %d\n", (int) ret);
+		if (ret != expected_status)
+		{
+			fprintf(stderr, "GSDumpXz: Error %d\n", (int)ret);
 			return;
 		}
 

@@ -35,24 +35,24 @@ public:
 		short row[256]; // yn (n = 0 8 16 ...)
 		short* col; // blockOffset*
 	};
-	
+
 	struct alignas(32) Pixel
 	{
 		int row[4096]; // yn (n = 0 1 2 ...) NOTE: this wraps around above 2048, only transfers should address the upper half (dark cloud 2 inventing)
 		int* col[8]; // rowOffset*
 	};
 
-	union {uint32 hash; struct {uint32 bp:14, bw:6, psm:6;};};
+	union { uint32 hash; struct { uint32 bp:14, bw:6, psm:6; }; };
 
 	Block block;
 	Pixel pixel;
 
-	std::array<uint32*,256> pages_as_bit; // texture page coverage based on the texture size. Lazy allocated
+	std::array<uint32*, 256> pages_as_bit; // texture page coverage based on the texture size. Lazy allocated
 
 	GSOffset(uint32 bp, uint32 bw, uint32 psm);
 	virtual ~GSOffset();
 
-	enum {EOP = 0xffffffff};
+	enum { EOP = 0xffffffff };
 
 	uint32* GetPages(const GSVector4i& rect, uint32* pages = NULL, GSVector4i* bbox = NULL);
 	void* GetPagesAsBits(const GSVector4i& rect, void* pages);
@@ -121,8 +121,8 @@ public:
 
 	static const int m_vmsize = 1024 * 1024 * 4;
 
-	uint8* m_vm8; 
-	uint16* m_vm16; 
+	uint8* m_vm8;
+	uint16* m_vm16;
 	uint32* m_vm32;
 
 	GSClut m_clut;
@@ -164,7 +164,10 @@ protected:
 
 	__forceinline static uint32 Expand16To32(uint16 c, const GIFRegTEXA& TEXA)
 	{
-		return (((c & 0x8000) ? TEXA.TA1 : (!TEXA.AEM | c) ? TEXA.TA0 : 0) << 24) | ((c & 0x7c00) << 9) | ((c & 0x03e0) << 6) | ((c & 0x001f) << 3);
+		return (((c & 0x8000) ? TEXA.TA1 : (!TEXA.AEM | c) ? TEXA.TA0 : 0) << 24)
+			| ((c & 0x7c00) << 9)
+			| ((c & 0x03e0) << 6)
+			| ((c & 0x001f) << 3);
 	}
 
 	// TODO
@@ -557,7 +560,8 @@ public:
 
 	__forceinline void WritePixel4(uint32 addr, uint32 c)
 	{
-		int shift = (addr & 1) << 2; addr >>= 1;
+		int shift = (addr & 1) << 2;
+		addr >>= 1;
 
 		m_vm8[addr] = (uint8)((m_vm8[addr] & (0xf0 >> shift)) | ((c & 0x0f) << shift));
 	}
@@ -620,7 +624,7 @@ public:
 		WritePixel8H(PixelAddress32(x, y, bp, bw), c);
 	}
 
-    __forceinline void WritePixel4HL(int x, int y, uint32 c, uint32 bp, uint32 bw)
+	__forceinline void WritePixel4HL(int x, int y, uint32 c, uint32 bp, uint32 bw)
 	{
 		WritePixel4HL(PixelAddress32(x, y, bp, bw), c);
 	}
@@ -674,13 +678,13 @@ public:
 	{
 		src -= r.left * sizeof(uint32);
 
-		for(int y = r.top; y < r.bottom; y++, src += pitch)
+		for (int y = r.top; y < r.bottom; y++, src += pitch)
 		{
 			uint32* RESTRICT s = (uint32*)src;
 			uint32* RESTRICT d = &m_vm32[off->pixel.row[y]];
 			int* RESTRICT col = off->pixel.col[0];
 
-			for(int x = r.left; x < r.right; x++)
+			for (int x = r.left; x < r.right; x++)
 			{
 				d[col[x]] = s[x];
 			}
@@ -691,13 +695,13 @@ public:
 	{
 		src -= r.left * sizeof(uint32);
 
-		for(int y = r.top; y < r.bottom; y++, src += pitch)
+		for (int y = r.top; y < r.bottom; y++, src += pitch)
 		{
 			uint32* RESTRICT s = (uint32*)src;
 			uint32* RESTRICT d = &m_vm32[off->pixel.row[y]];
 			int* RESTRICT col = off->pixel.col[0];
 
-			for(int x = r.left; x < r.right; x++)
+			for (int x = r.left; x < r.right; x++)
 			{
 				d[col[x]] = (d[col[x]] & 0xff000000) | (s[x] & 0x00ffffff);
 			}
@@ -708,13 +712,13 @@ public:
 	{
 		src -= r.left * sizeof(uint16);
 
-		for(int y = r.top; y < r.bottom; y++, src += pitch)
+		for (int y = r.top; y < r.bottom; y++, src += pitch)
 		{
 			uint16* RESTRICT s = (uint16*)src;
 			uint16* RESTRICT d = &m_vm16[off->pixel.row[y]];
 			int* RESTRICT col = off->pixel.col[0];
 
-			for(int x = r.left; x < r.right; x++)
+			for (int x = r.left; x < r.right; x++)
 			{
 				d[col[x]] = s[x];
 			}
@@ -725,13 +729,13 @@ public:
 	{
 		src -= r.left * sizeof(uint32);
 
-		for(int y = r.top; y < r.bottom; y++, src += pitch)
+		for (int y = r.top; y < r.bottom; y++, src += pitch)
 		{
 			uint32* RESTRICT s = (uint32*)src;
 			uint16* RESTRICT d = &m_vm16[off->pixel.row[y]];
 			int* RESTRICT col = off->pixel.col[0];
 
-			for(int x = r.left; x < r.right; x++)
+			for (int x = r.left; x < r.right; x++)
 			{
 				uint32 rb = s[x] & 0x00f800f8;
 				uint32 ga = s[x] & 0x8000f800;
@@ -848,19 +852,19 @@ public:
 
 	//
 
-	template<int psm, int bsx, int bsy, int alignment>
+	template <int psm, int bsx, int bsy, int alignment>
 	void WriteImageColumn(int l, int r, int y, int h, const uint8* src, int srcpitch, const GIFRegBITBLTBUF& BITBLTBUF);
 
-	template<int psm, int bsx, int bsy, int alignment>
+	template <int psm, int bsx, int bsy, int alignment>
 	void WriteImageBlock(int l, int r, int y, int h, const uint8* src, int srcpitch, const GIFRegBITBLTBUF& BITBLTBUF);
 
-	template<int psm, int bsx, int bsy>
+	template <int psm, int bsx, int bsy>
 	void WriteImageLeftRight(int l, int r, int y, int h, const uint8* src, int srcpitch, const GIFRegBITBLTBUF& BITBLTBUF);
 
-	template<int psm, int bsx, int bsy, int trbpp>
+	template <int psm, int bsx, int bsy, int trbpp>
 	void WriteImageTopBottom(int l, int r, int y, int h, const uint8* src, int srcpitch, const GIFRegBITBLTBUF& BITBLTBUF);
 
-	template<int psm, int bsx, int bsy, int trbpp>
+	template <int psm, int bsx, int bsy, int trbpp>
 	void WriteImage(int& tx, int& ty, const uint8* src, int len, GIFRegBITBLTBUF& BITBLTBUF, GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG);
 
 	void WriteImage24(int& tx, int& ty, const uint8* src, int len, GIFRegBITBLTBUF& BITBLTBUF, GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG);
@@ -913,10 +917,10 @@ public:
 
 	//
 
-	template<typename T> void ReadTexture(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
+	template <typename T>
+	void ReadTexture(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA);
 
 	//
 
 	void SaveBMP(const std::string& fn, uint32 bp, uint32 bw, uint32 psm, int w, int h);
 };
-

@@ -21,7 +21,8 @@
 
 #pragma once
 
-class GSShaderOGL {
+class GSShaderOGL
+{
 	GLuint m_pipeline;
 	std::unordered_map<uint32, GLuint> m_program;
 	const bool m_debug_shader;
@@ -37,7 +38,7 @@ class GSShaderOGL {
 	std::string GenGlslHeader(const std::string& entry, GLenum type, const std::string& macro);
 	std::vector<char> m_common_header;
 
-	public:
+public:
 	GSShaderOGL(bool debug);
 	~GSShaderOGL();
 

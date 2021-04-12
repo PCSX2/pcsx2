@@ -22,7 +22,8 @@
 #include "stdafx.h"
 #include "GLState.h"
 
-namespace GLState {
+namespace GLState
+{
 	GLuint fbo;
 	GSVector2i viewport;
 	GSVector4i scissor;
@@ -59,7 +60,8 @@ namespace GLState {
 
 	int64 available_vram;
 
-	void Clear() {
+	void Clear()
+	{
 		fbo = 0;
 		viewport = GSVector2i(0, 0);
 		scissor = GSVector4i(0, 0, 0, 0);
@@ -100,4 +102,4 @@ namespace GLState {
 		// (256MB are reserved for PBO/IBO/VBO/UBO buffers)
 		available_vram = (4096u - 256u) * 1024u * 1024u;
 	}
-}
+} // namespace GLState

@@ -31,29 +31,31 @@ protected:
 	bool m_managed; // set true when we're attached to a 3rdparty window that's amanged by the emulator
 
 public:
-	GSWnd() : m_managed(false) {};
-	virtual ~GSWnd() {};
+	GSWnd()
+		: m_managed(false)
+	{
+	}
+	virtual ~GSWnd() {}
 
 	virtual bool Create(const std::string& title, int w, int h) = 0;
 	virtual bool Attach(void* handle, bool managed = true) = 0;
 	virtual void Detach() = 0;
-	bool IsManaged() const {return m_managed;}
+	bool IsManaged() const { return m_managed; }
 
 	virtual void* GetDisplay() = 0;
 	virtual void* GetHandle() = 0;
 	virtual GSVector4i GetClientRect() = 0;
 	virtual bool SetWindowText(const char* title) = 0;
 
-	virtual void AttachContext() {};
-	virtual void DetachContext() {};
+	virtual void AttachContext() {}
+	virtual void DetachContext() {}
 
 	virtual void Show() = 0;
 	virtual void Hide() = 0;
 	virtual void HideFrame() = 0;
 
-	virtual void Flip() {};
-	virtual void SetVSync(int vsync) {};
-
+	virtual void Flip() {}
+	virtual void SetVSync(int vsync) {}
 };
 
 class GSWndGL : public GSWnd
@@ -73,8 +75,13 @@ protected:
 	virtual bool HasLateVsyncSupport() = 0;
 
 public:
-	GSWndGL() : m_ctx_attached(false), m_vsync_change_requested(false), m_vsync(0) {};
-	virtual ~GSWndGL() {};
+	GSWndGL()
+		: m_ctx_attached(false)
+		, m_vsync_change_requested(false)
+		, m_vsync(0)
+	{
+	}
+	virtual ~GSWndGL() {}
 
 	virtual bool Create(const std::string& title, int w, int h) = 0;
 	virtual bool Attach(void* handle, bool managed = true) = 0;

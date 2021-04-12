@@ -20,15 +20,16 @@
 
 #include <lzma.h>
 
-class GSDumpFile {
-	FILE*		m_repack_fp;
+class GSDumpFile
+{
+	FILE* m_repack_fp;
 
-	protected:
-	FILE*		m_fp;
+protected:
+	FILE* m_fp;
 
 	void Repack(void* ptr, size_t size);
 
-	public:
+public:
 	virtual bool IsEof() = 0;
 	virtual bool Read(void* ptr, size_t size) = 0;
 
@@ -36,21 +37,20 @@ class GSDumpFile {
 	virtual ~GSDumpFile();
 };
 
-class GSDumpLzma : public GSDumpFile {
-
+class GSDumpLzma : public GSDumpFile
+{
 	lzma_stream m_strm;
 
-	size_t		m_buff_size;
-	uint8_t*	m_area;
-	uint8_t*	m_inbuf;
+	size_t m_buff_size;
+	uint8_t* m_area;
+	uint8_t* m_inbuf;
 
-	size_t		m_avail;
-	size_t		m_start;
+	size_t m_avail;
+	size_t m_start;
 
 	void Decompress();
 
-	public:
-
+public:
 	GSDumpLzma(char* filename, const char* repack_filename);
 	virtual ~GSDumpLzma();
 
@@ -58,17 +58,16 @@ class GSDumpLzma : public GSDumpFile {
 	bool Read(void* ptr, size_t size) final;
 };
 
-class GSDumpRaw : public GSDumpFile {
+class GSDumpRaw : public GSDumpFile
+{
+	size_t m_buff_size;
+	uint8_t* m_area;
+	uint8_t* m_inbuf;
 
-	size_t		m_buff_size;
-	uint8_t*	m_area;
-	uint8_t*	m_inbuf;
+	size_t m_avail;
+	size_t m_start;
 
-	size_t		m_avail;
-	size_t		m_start;
-
-	public:
-
+public:
 	GSDumpRaw(char* filename, const char* repack_filename);
 	virtual ~GSDumpRaw() = default;
 

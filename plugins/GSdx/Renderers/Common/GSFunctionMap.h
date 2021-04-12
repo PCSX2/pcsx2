@@ -28,7 +28,8 @@
 
 #include "Renderers/SW/GSScanlineEnvironment.h"
 
-template<class KEY, class VALUE> class GSFunctionMap
+template <class KEY, class VALUE>
+class GSFunctionMap
 {
 protected:
 	struct ActivePtr
@@ -53,16 +54,17 @@ public:
 
 	virtual ~GSFunctionMap()
 	{
-		for(auto &i : m_map_active) delete i.second;
+		for (auto& i : m_map_active)
+			delete i.second;
 	}
 
-	VALUE operator [] (KEY key)
+	VALUE operator[](KEY key)
 	{
 		m_active = NULL;
 
 		auto it = m_map_active.find(key);
 
-		if(it != m_map_active.end())
+		if (it != m_map_active.end())
 		{
 			m_active = it->second;
 		}
@@ -88,9 +90,9 @@ public:
 
 	void UpdateStats(uint64 frame, uint64 ticks, int actual, int total)
 	{
-		if(m_active)
+		if (m_active)
 		{
-			if(m_active->frame != frame)
+			if (m_active->frame != frame)
 			{
 				m_active->frame = frame;
 				m_active->frames++;
@@ -108,11 +110,11 @@ public:
 	{
 		uint64 ttpf = 0;
 
-		for(const auto &i : m_map_active)
+		for (const auto& i : m_map_active)
 		{
 			ActivePtr* p = i.second;
 
-			if(p->frames)
+			if (p->frames)
 			{
 				ttpf += p->ticks / p->frames;
 			}
@@ -120,12 +122,12 @@ public:
 
 		printf("GS stats\n");
 
-		for (const auto &i : m_map_active)
+		for (const auto& i : m_map_active)
 		{
 			KEY key = i.first;
 			ActivePtr* p = i.second;
 
-			if(p->frames && ttpf)
+			if (p->frames && ttpf)
 			{
 				uint64 tpp = p->actual > 0 ? p->ticks / p->actual : 0;
 				uint64 tpf = p->frames > 0 ? p->ticks / p->frames : 0;
@@ -154,7 +156,7 @@ public:
 	}
 };
 
-template<class CG, class KEY, class VALUE>
+template <class CG, class KEY, class VALUE>
 class GSCodeGeneratorFunctionMap : public GSFunctionMap<KEY, VALUE>
 {
 	std::string m_name;
@@ -163,7 +165,7 @@ class GSCodeGeneratorFunctionMap : public GSFunctionMap<KEY, VALUE>
 	GSCodeBuffer m_cb;
 	size_t m_total_code_size;
 
-	enum {MAX_SIZE = 8192};
+	enum { MAX_SIZE = 8192 };
 
 public:
 	GSCodeGeneratorFunctionMap(const char* name, void* param)
@@ -186,7 +188,7 @@ public:
 
 		auto i = m_cgmap.find(key);
 
-		if(i != m_cgmap.end())
+		if (i != m_cgmap.end())
 		{
 			ret = i->second;
 		}
@@ -211,7 +213,7 @@ public:
 
 			m_cgmap[key] = ret;
 
-			#ifdef ENABLE_VTUNE
+#ifdef ENABLE_VTUNE
 
 			// vtune method registration
 
@@ -249,7 +251,7 @@ public:
 */
 			}
 
-			#endif
+#endif
 
 			delete cg;
 		}

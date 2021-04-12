@@ -28,13 +28,18 @@
 
 struct alignas(32) GSVertexHW9
 {
-	GSVector4 t; 
+	GSVector4 t;
 	GSVector4 p;
 
 	// t.z = union {struct {uint8 r, g, b, a;}; uint32 c0;};
 	// t.w = union {struct {uint8 ta0, ta1, res, f;}; uint32 c1;}
 
-	GSVertexHW9& operator = (GSVertexHW9& v) {t = v.t; p = v.p; return *this;}
+	GSVertexHW9& operator=(GSVertexHW9& v)
+	{
+		t = v.t;
+		p = v.p;
+		return *this;
+	}
 };
 
 #pragma pack(pop)

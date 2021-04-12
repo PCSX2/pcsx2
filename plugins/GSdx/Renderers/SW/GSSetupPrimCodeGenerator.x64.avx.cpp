@@ -46,11 +46,11 @@ void GSSetupPrimCodeGenerator::Generate_AVX()
 	if (!m_rip)
 		mov(t0, (size_t)&m_local);
 
-	if((m_en.z || m_en.f) && m_sel.prim != GS_SPRITE_CLASS || m_en.t || m_en.c && m_sel.iip)
+	if ((m_en.z || m_en.f) && m_sel.prim != GS_SPRITE_CLASS || m_en.t || m_en.c && m_sel.iip)
 	{
 		mov(rax, (size_t)g_const->m_shift_128b);
 
-		for(int i = 0; i < (m_sel.notest ? 2 : 5); i++)
+		for (int i = 0; i < (m_sel.notest ? 2 : 5); i++)
 		{
 			vmovaps(Xmm(3 + i), ptr[rax + i * 16]);
 		}
@@ -74,18 +74,18 @@ void GSSetupPrimCodeGenerator::Generate_AVX()
 
 void GSSetupPrimCodeGenerator::Depth_AVX()
 {
-	if(!m_en.z && !m_en.f)
+	if (!m_en.z && !m_en.f)
 	{
 		return;
 	}
 
-	if(m_sel.prim != GS_SPRITE_CLASS)
+	if (m_sel.prim != GS_SPRITE_CLASS)
 	{
 		// GSVector4 p = dscan.p;
 
 		vmovaps(xmm0, ptr[a2 + offsetof(GSVertexSW, p)]);
 
-		if(m_en.f)
+		if (m_en.f)
 		{
 			// GSVector4 df = p.wwww();
 
@@ -99,7 +99,7 @@ void GSSetupPrimCodeGenerator::Depth_AVX()
 			vpshufhw(xmm2, xmm2, _MM_SHUFFLE(2, 2, 0, 0));
 			vmovdqa(_rip_local(d4.f), xmm2);
 
-			for(int i = 0; i < (m_sel.notest ? 1 : 4); i++)
+			for (int i = 0; i < (m_sel.notest ? 1 : 4); i++)
 			{
 				// m_local.d[i].f = GSVector4i(df * m_shift[i]).xxzzlh();
 
@@ -113,7 +113,7 @@ void GSSetupPrimCodeGenerator::Depth_AVX()
 			}
 		}
 
-		if(m_en.z)
+		if (m_en.z)
 		{
 			// GSVector4 dz = p.zzzz();
 
@@ -124,7 +124,7 @@ void GSSetupPrimCodeGenerator::Depth_AVX()
 			vmulps(xmm1, xmm0, xmm3);
 			vmovdqa(_rip_local(d4.z), xmm1);
 
-			for(int i = 0; i < (m_sel.notest ? 1 : 4); i++)
+			for (int i = 0; i < (m_sel.notest ? 1 : 4); i++)
 			{
 				// m_local.d[i].z = dz * m_shift[i];
 
@@ -143,7 +143,7 @@ void GSSetupPrimCodeGenerator::Depth_AVX()
 		shl(eax, 6); // * sizeof(GSVertexSW)
 		add(rax, a0);
 
-		if(m_en.f)
+		if (m_en.f)
 		{
 			// m_local.p.f = GSVector4i(p).zzzzh().zzzz();
 			vmovaps(xmm0, ptr[rax + offsetof(GSVertexSW, p)]);
@@ -154,7 +154,7 @@ void GSSetupPrimCodeGenerator::Depth_AVX()
 			vmovdqa(_rip_local(p.f), xmm1);
 		}
 
-		if(m_en.z)
+		if (m_en.z)
 		{
 			// uint32 z is bypassed in t.w
 
@@ -167,7 +167,7 @@ void GSSetupPrimCodeGenerator::Depth_AVX()
 
 void GSSetupPrimCodeGenerator::Texture_AVX()
 {
-	if(!m_en.t)
+	if (!m_en.t)
 	{
 		return;
 	}
@@ -178,7 +178,7 @@ void GSSetupPrimCodeGenerator::Texture_AVX()
 
 	vmulps(xmm1, xmm0, xmm3);
 
-	if(m_sel.fst)
+	if (m_sel.fst)
 	{
 		// m_local.d4.stq = GSVector4i(t * 4.0f);
 
@@ -193,7 +193,7 @@ void GSSetupPrimCodeGenerator::Texture_AVX()
 		vmovaps(_rip_local(d4.stq), xmm1);
 	}
 
-	for(int j = 0, k = m_sel.fst ? 2 : 3; j < k; j++)
+	for (int j = 0, k = m_sel.fst ? 2 : 3; j < k; j++)
 	{
 		// GSVector4 ds = t.xxxx();
 		// GSVector4 dt = t.yyyy();
@@ -201,13 +201,13 @@ void GSSetupPrimCodeGenerator::Texture_AVX()
 
 		vshufps(xmm1, xmm0, xmm0, (uint8)_MM_SHUFFLE(j, j, j, j));
 
-		for(int i = 0; i < (m_sel.notest ? 1 : 4); i++)
+		for (int i = 0; i < (m_sel.notest ? 1 : 4); i++)
 		{
 			// GSVector4 v = ds/dt * m_shift[i];
 
 			vmulps(xmm2, xmm1, Xmm(4 + i));
 
-			if(m_sel.fst)
+			if (m_sel.fst)
 			{
 				// m_local.d[i].s/t = GSVector4i(v);
 
@@ -216,10 +216,10 @@ void GSSetupPrimCodeGenerator::Texture_AVX()
 				const size_t variableOffsetS = offsetof(GSScanlineLocalData, d[0].s) + (i * sizeof(GSScanlineLocalData::d[0]));
 				const size_t variableOffsetT = offsetof(GSScanlineLocalData, d[0].t) + (i * sizeof(GSScanlineLocalData::d[0]));
 
-				switch(j)
+				switch (j)
 				{
-				case 0: vmovdqa(_rip_local_v(d[i].s, variableOffsetS), xmm2); break;
-				case 1: vmovdqa(_rip_local_v(d[i].t, variableOffsetT), xmm2); break;
+					case 0: vmovdqa(_rip_local_v(d[i].s, variableOffsetS), xmm2); break;
+					case 1: vmovdqa(_rip_local_v(d[i].t, variableOffsetT), xmm2); break;
 				}
 			}
 			else
@@ -230,11 +230,11 @@ void GSSetupPrimCodeGenerator::Texture_AVX()
 				const size_t variableOffsetT = offsetof(GSScanlineLocalData, d[0].t) + (i * sizeof(GSScanlineLocalData::d[0]));
 				const size_t variableOffsetQ = offsetof(GSScanlineLocalData, d[0].q) + (i * sizeof(GSScanlineLocalData::d[0]));
 
-				switch(j)
+				switch (j)
 				{
-				case 0: vmovaps(_rip_local_v(d[i].s, variableOffsetS), xmm2); break;
-				case 1: vmovaps(_rip_local_v(d[i].t, variableOffsetT), xmm2); break;
-				case 2: vmovaps(_rip_local_v(d[i].q, variableOffsetQ), xmm2); break;
+					case 0: vmovaps(_rip_local_v(d[i].s, variableOffsetS), xmm2); break;
+					case 1: vmovaps(_rip_local_v(d[i].t, variableOffsetT), xmm2); break;
+					case 2: vmovaps(_rip_local_v(d[i].q, variableOffsetQ), xmm2); break;
 				}
 			}
 		}
@@ -243,12 +243,12 @@ void GSSetupPrimCodeGenerator::Texture_AVX()
 
 void GSSetupPrimCodeGenerator::Color_AVX()
 {
-	if(!m_en.c)
+	if (!m_en.c)
 	{
 		return;
 	}
 
-	if(m_sel.iip)
+	if (m_sel.iip)
 	{
 		// GSVector4 c = dscan.c;
 
@@ -270,7 +270,7 @@ void GSSetupPrimCodeGenerator::Color_AVX()
 		vshufps(xmm2, xmm0, xmm0, _MM_SHUFFLE(0, 0, 0, 0));
 		vshufps(xmm3, xmm0, xmm0, _MM_SHUFFLE(2, 2, 2, 2));
 
-		for(int i = 0; i < (m_sel.notest ? 1 : 4); i++)
+		for (int i = 0; i < (m_sel.notest ? 1 : 4); i++)
 		{
 			// GSVector4i r = GSVector4i(dr * m_shift[i]).ps32();
 
@@ -302,7 +302,7 @@ void GSSetupPrimCodeGenerator::Color_AVX()
 		vshufps(xmm2, xmm0, xmm0, _MM_SHUFFLE(1, 1, 1, 1));
 		vshufps(xmm3, xmm0, xmm0, _MM_SHUFFLE(3, 3, 3, 3));
 
-		for(int i = 0; i < (m_sel.notest ? 1 : 4); i++)
+		for (int i = 0; i < (m_sel.notest ? 1 : 4); i++)
 		{
 			// GSVector4i g = GSVector4i(dg * m_shift[i]).ps32();
 
@@ -330,15 +330,15 @@ void GSSetupPrimCodeGenerator::Color_AVX()
 
 		int last = 0;
 
-		switch(m_sel.prim)
+		switch (m_sel.prim)
 		{
-		case GS_POINT_CLASS: last = 0; break;
-		case GS_LINE_CLASS: last = 1; break;
+		case GS_POINT_CLASS:    last = 0; break;
+		case GS_LINE_CLASS:     last = 1; break;
 		case GS_TRIANGLE_CLASS: last = 2; break;
-		case GS_SPRITE_CLASS: last = 1; break;
+		case GS_SPRITE_CLASS:   last = 1; break;
 		}
 
-		if(!(m_sel.prim == GS_SPRITE_CLASS && (m_en.z || m_en.f))) // if this is a sprite, the last vertex was already loaded in Depth()
+		if (!(m_sel.prim == GS_SPRITE_CLASS && (m_en.z || m_en.f))) // if this is a sprite, the last vertex was already loaded in Depth()
 		{
 			mov(eax, ptr[a1 + sizeof(uint32) * last]);
 			shl(eax, 6); // * sizeof(GSVertexSW)
@@ -354,7 +354,7 @@ void GSSetupPrimCodeGenerator::Color_AVX()
 
 		// if(!tme) c = c.srl16(7);
 
-		if(m_sel.tfx == TFX_NONE)
+		if (m_sel.tfx == TFX_NONE)
 		{
 			vpsrlw(xmm0, 7);
 		}

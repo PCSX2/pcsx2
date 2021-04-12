@@ -27,27 +27,29 @@
 extern uint64 g_vertex_upload_byte;
 #endif
 
-struct GSInputLayoutOGL {
-	GLint   location;
-	GLint   size;
-	GLenum  type;
+struct GSInputLayoutOGL
+{
+	GLint location;
+	GLint size;
+	GLenum type;
 	GLboolean normalize;
 	GLsizei stride;
 	const GLvoid* offset;
 };
 
-template<int STRIDE>
-class GSBufferOGL {
+template <int STRIDE>
+class GSBufferOGL
+{
 	size_t m_start;
 	size_t m_count;
 	size_t m_limit;
 	size_t m_quarter_shift;
-	const  GLenum m_target;
+	const GLenum m_target;
 	GLuint m_buffer_name;
-	uint8*  m_buffer_ptr;
+	uint8* m_buffer_ptr;
 	GLsync m_fence[5];
 
-	public:
+public:
 	GSBufferOGL(GLenum target, size_t count)
 		: m_start(0)
 		, m_count(0)
@@ -60,7 +62,8 @@ class GSBufferOGL {
 		m_limit = 1u << (1u + (size_t)std::log2(count - 1u));
 		m_quarter_shift = (size_t)std::log2(m_limit * STRIDE) - 2;
 
-		for (size_t i = 0; i < 5; i++) {
+		for (size_t i = 0; i < 5; i++)
+		{
 			m_fence[i] = 0;
 		}
 
@@ -78,16 +81,19 @@ class GSBufferOGL {
 		const GLbitfield map_flags = common_flags | GL_MAP_FLUSH_EXPLICIT_BIT;
 		const GLbitfield create_flags = common_flags | GL_CLIENT_STORAGE_BIT;
 
-		glBufferStorage(m_target, STRIDE * m_limit, NULL, create_flags );
-		m_buffer_ptr = (uint8*) glMapBufferRange(m_target, 0, STRIDE * m_limit, map_flags);
-		if (!m_buffer_ptr) {
+		glBufferStorage(m_target, STRIDE * m_limit, NULL, create_flags);
+		m_buffer_ptr = (uint8*)glMapBufferRange(m_target, 0, STRIDE * m_limit, map_flags);
+		if (!m_buffer_ptr)
+		{
 			fprintf(stderr, "Failed to map buffer\n");
 			throw GSDXError();
 		}
 	}
 
-	~GSBufferOGL() {
-		for (size_t i = 0; i < 5; i++) {
+	~GSBufferOGL()
+	{
+		for (size_t i = 0; i < 5; i++)
+		{
 			glDeleteSync(m_fence[i]);
 		}
 		glDeleteBuffers(1, &m_buffer_name);
@@ -108,14 +114,16 @@ class GSBufferOGL {
 		size_t offset = m_start * STRIDE;
 		size_t length = m_count * STRIDE;
 
-		if (m_count > (m_limit - m_start) ) {
+		if (m_count > (m_limit - m_start))
+		{
 			size_t current_chunk = offset >> m_quarter_shift;
 #ifdef ENABLE_OGL_DEBUG_FENCE
 			fprintf(stderr, "%x: Wrap buffer\n", m_target);
 			fprintf(stderr, "%x: Insert a fence in chunk %zu\n", m_target, current_chunk);
 #endif
 			ASSERT(current_chunk > 0 && current_chunk < 5);
-			if (m_fence[current_chunk] == 0) {
+			if (m_fence[current_chunk] == 0)
+			{
 				m_fence[current_chunk] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
 			}
 
@@ -124,10 +132,12 @@ class GSBufferOGL {
 			offset = 0;
 
 			// Only check first chunk
-			if (m_fence[0]) {
+			if (m_fence[0])
+			{
 #ifdef ENABLE_OGL_DEBUG_FENCE
 				GLenum status = glClientWaitSync(m_fence[0], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
-				if (status != GL_ALREADY_SIGNALED) {
+				if (status != GL_ALREADY_SIGNALED)
+				{
 					fprintf(stderr, "%x: Sync Sync! Buffer too small\n", m_target);
 				}
 #else
@@ -141,13 +151,15 @@ class GSBufferOGL {
 		// Protect buffer with fences
 		size_t current_chunk = offset >> m_quarter_shift;
 		size_t next_chunk = (offset + length) >> m_quarter_shift;
-		for (size_t c = current_chunk + 1; c <= next_chunk; c++) {
+		for (size_t c = current_chunk + 1; c <= next_chunk; c++)
+		{
 #ifdef ENABLE_OGL_DEBUG_FENCE
-			fprintf(stderr, "%x: Insert a fence in chunk %d\n", m_target, c-1);
+			fprintf(stderr, "%x: Insert a fence in chunk %d\n", m_target, c - 1);
 #endif
 			ASSERT(c > 0 && c < 5);
-			m_fence[c-1] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
-			if (m_fence[c]) {
+			m_fence[c - 1] = glFenceSync(GL_SYNC_GPU_COMMANDS_COMPLETE, 0);
+			if (m_fence[c])
+			{
 #ifdef ENABLE_OGL_DEBUG_FENCE
 				GLenum status = glClientWaitSync(m_fence[c], GL_SYNC_FLUSH_COMMANDS_BIT, GL_TIMEOUT_IGNORED);
 #else
@@ -157,7 +169,8 @@ class GSBufferOGL {
 				m_fence[c] = 0;
 
 #ifdef ENABLE_OGL_DEBUG_FENCE
-				if (status != GL_ALREADY_SIGNALED) {
+				if (status != GL_ALREADY_SIGNALED)
+				{
 					fprintf(stderr, "%x: Sync Sync! Buffer too small\n", m_target);
 				}
 #endif
@@ -211,10 +224,10 @@ class GSBufferOGL {
 	}
 
 	size_t GetStart() { return m_start; }
-
 };
 
-class GSVertexBufferStateOGL {
+class GSVertexBufferStateOGL
+{
 	std::unique_ptr<GSBufferOGL<sizeof(GSVertexPT1)>> m_vb;
 	std::unique_ptr<GSBufferOGL<sizeof(uint32)>> m_ib;
 
@@ -223,10 +236,11 @@ class GSVertexBufferStateOGL {
 	std::vector<GSInputLayoutOGL> m_layout;
 
 	// No copy constructor please
-	GSVertexBufferStateOGL(const GSVertexBufferStateOGL& ) = delete;
+	GSVertexBufferStateOGL(const GSVertexBufferStateOGL&) = delete;
 
 public:
-	GSVertexBufferStateOGL(const std::vector<GSInputLayoutOGL>& layout) : m_topology(0), m_layout(layout)
+	GSVertexBufferStateOGL(const std::vector<GSInputLayoutOGL>& layout)
+		: m_topology(0), m_layout(layout)
 	{
 		glGenVertexArrays(1, &m_va);
 		glBindVertexArray(m_va);
@@ -250,15 +264,20 @@ public:
 
 	void set_internal_format()
 	{
-		for (const auto &l : m_layout) {
+		for (const auto& l : m_layout)
+		{
 			// Note this function need both a vertex array object and a GL_ARRAY_BUFFER buffer
 			glEnableVertexAttribArray(l.location);
-			switch (l.type) {
+			switch (l.type)
+			{
 				case GL_UNSIGNED_SHORT:
 				case GL_UNSIGNED_INT:
-					if (l.normalize) {
+					if (l.normalize)
+					{
 						glVertexAttribPointer(l.location, l.size, l.type, l.normalize, l.stride, l.offset);
-					} else {
+					}
+					else
+					{
 						// Rule: when shader use integral (not normalized) you must use glVertexAttribIPointer (note the extra I)
 						glVertexAttribIPointer(l.location, l.size, l.type, l.stride, l.offset);
 					}
@@ -280,19 +299,24 @@ public:
 
 	void DrawPrimitive(int offset, int count) { m_vb->Draw(m_topology, offset, count); }
 
-	void DrawIndexedPrimitive() { m_ib->Draw(m_topology, m_vb->GetStart() ); }
+	void DrawIndexedPrimitive() { m_ib->Draw(m_topology, m_vb->GetStart()); }
 
-	void DrawIndexedPrimitive(int offset, int count) { m_ib->Draw(m_topology, m_vb->GetStart(), offset, count ); }
+	void DrawIndexedPrimitive(int offset, int count) { m_ib->Draw(m_topology, m_vb->GetStart(), offset, count); }
 
 	void SetTopology(GLenum topology) { m_topology = topology; }
 
-	void* MapVB(size_t count) {
-		void *ptr;
-		while (true) {
-			try {
+	void* MapVB(size_t count)
+	{
+		void* ptr;
+		while (true)
+		{
+			try
+			{
 				ptr = m_vb->map(count);
 				break;
-			} catch (GSDXErrorGlVertexArrayTooSmall) {
+			}
+			catch (GSDXErrorGlVertexArrayTooSmall)
+			{
 				GL_INS("GL vertex buffer is too small");
 
 				m_vb.reset(new GSBufferOGL<sizeof(GSVertexPT1)>(GL_ARRAY_BUFFER, count));
@@ -304,12 +328,17 @@ public:
 		return ptr;
 	}
 	void UnmapVB() { m_vb->unmap(); }
-	void UploadVB(const void* vertices, size_t count) {
-		while (true) {
-			try {
+	void UploadVB(const void* vertices, size_t count)
+	{
+		while (true)
+		{
+			try
+			{
 				m_vb->upload(vertices, count);
 				break;
-			} catch (GSDXErrorGlVertexArrayTooSmall) {
+			}
+			catch (GSDXErrorGlVertexArrayTooSmall)
+			{
 				GL_INS("GL vertex buffer is too small");
 
 				m_vb.reset(new GSBufferOGL<sizeof(GSVertexPT1)>(GL_ARRAY_BUFFER, count));
@@ -319,12 +348,17 @@ public:
 		}
 	}
 
-	void UploadIB(const void* index, size_t count) {
-		while (true) {
-			try {
+	void UploadIB(const void* index, size_t count)
+	{
+		while (true)
+		{
+			try
+			{
 				m_ib->upload(index, count);
 				break;
-			} catch (GSDXErrorGlVertexArrayTooSmall) {
+			}
+			catch (GSDXErrorGlVertexArrayTooSmall)
+			{
 				GL_INS("GL index buffer is too small");
 
 				m_ib.reset(new GSBufferOGL<sizeof(uint32)>(GL_ELEMENT_ARRAY_BUFFER, count));
@@ -336,5 +370,4 @@ public:
 	{
 		glDeleteVertexArrays(1, &m_va);
 	}
-
 };

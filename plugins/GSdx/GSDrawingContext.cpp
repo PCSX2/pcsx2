@@ -29,24 +29,31 @@ static int findmax(int tl, int br, int limit, int wm, int minuv, int maxuv)
 
 	int uv = br;
 
-	if(wm == CLAMP_CLAMP)
+	if (wm == CLAMP_CLAMP)
 	{
-		if(uv > limit) uv = limit;
+		if (uv > limit)
+			uv = limit;
 	}
-	else if(wm == CLAMP_REPEAT)
+	else if (wm == CLAMP_REPEAT)
 	{
-		if(tl < 0) uv = limit; // wrap around
-		else if(uv > limit) uv = limit;
+		if (tl < 0)
+			uv = limit; // wrap around
+		else if (uv > limit)
+			uv = limit;
 	}
-	else if(wm == CLAMP_REGION_CLAMP)
+	else if (wm == CLAMP_REGION_CLAMP)
 	{
-		if(uv < minuv) uv = minuv;
-		if(uv > maxuv) uv = maxuv;
+		if (uv < minuv)
+			uv = minuv;
+		if (uv > maxuv)
+			uv = maxuv;
 	}
-	else if(wm == CLAMP_REGION_REPEAT)
+	else if (wm == CLAMP_REGION_REPEAT)
 	{
-		if(tl < 0) uv = minuv | maxuv; // wrap around, just use (any & mask) | fix
-		else uv = std::min(uv, minuv) | maxuv; // (any & mask) cannot be larger than mask, select br if that is smaller (not br & mask because there might be a larger value between tl and br when &'ed with the mask)
+		if (tl < 0)
+			uv = minuv | maxuv; // wrap around, just use (any & mask) | fix
+		else
+			uv = std::min(uv, minuv) | maxuv; // (any & mask) cannot be larger than mask, select br if that is smaller (not br & mask because there might be a larger value between tl and br when &'ed with the mask)
 	}
 
 	return uv;
@@ -54,7 +61,7 @@ static int findmax(int tl, int br, int limit, int wm, int minuv, int maxuv)
 
 static int reduce(int uv, int size)
 {
-	while(size > 3 && (1 << (size - 1)) >= uv + 1)
+	while (size > 3 && (1 << (size - 1)) >= uv + 1)
 	{
 		size--;
 	}
@@ -64,7 +71,7 @@ static int reduce(int uv, int size)
 
 static int extend(int uv, int size)
 {
-	while(size < 10 && (1 << size) < uv + 1)
+	while (size < 10 && (1 << size) < uv + 1)
 	{
 		size++;
 	}
@@ -74,7 +81,8 @@ static int extend(int uv, int size)
 
 GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4& st, bool linear, bool mipmap)
 {
-	if(mipmap) return TEX0; // no mipmaping allowed
+	if (mipmap)
+		return TEX0; // no mipmaping allowed
 
 	// find the optimal value for TW/TH by analyzing vertex trace and clamping values, extending only for region modes where uv may be outside
 
@@ -91,7 +99,7 @@ GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4& st, bool linear, 
 
 	GSVector4 uvf = st;
 
-	if(linear)
+	if (linear)
 	{
 		uvf += GSVector4(-0.5f, 0.5f).xxyy();
 	}
@@ -101,23 +109,23 @@ GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4& st, bool linear, 
 	uv.x = findmax(uv.x, uv.z, (1 << tw) - 1, wms, minu, maxu);
 	uv.y = findmax(uv.y, uv.w, (1 << th) - 1, wmt, minv, maxv);
 
-	if(tw + th >= 19) // smaller sizes aren't worth, they just create multiple entries in the textue cache and the saved memory is less
+	if (tw + th >= 19) // smaller sizes aren't worth, they just create multiple entries in the textue cache and the saved memory is less
 	{
 		tw = reduce(uv.x, tw);
 		th = reduce(uv.y, th);
 	}
 
-	if(wms == CLAMP_REGION_CLAMP || wms == CLAMP_REGION_REPEAT)
+	if (wms == CLAMP_REGION_CLAMP || wms == CLAMP_REGION_REPEAT)
 	{
 		tw = extend(uv.x, tw);
 	}
 
-	if(wmt == CLAMP_REGION_CLAMP || wmt == CLAMP_REGION_REPEAT)
+	if (wmt == CLAMP_REGION_CLAMP || wmt == CLAMP_REGION_REPEAT)
 	{
 		th = extend(uv.y, th);
 	}
 
-	if((theApp.GetCurrentRendererType() == GSRendererType::OGL_SW) && ((int)TEX0.TW != tw || (int)TEX0.TH != th))
+	if ((theApp.GetCurrentRendererType() == GSRendererType::OGL_SW) && ((int)TEX0.TW != tw || (int)TEX0.TH != th))
 	{
 		GL_DBG("FixedTEX0 %05x %d %d tw %d=>%d th %d=>%d st (%.0f,%.0f,%.0f,%.0f) uvmax %d,%d wm %d,%d (%d,%d,%d,%d)",
 			(int)TEX0.TBP0, (int)TEX0.TBW, (int)TEX0.PSM,

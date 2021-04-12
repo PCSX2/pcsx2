@@ -28,7 +28,7 @@ struct alignas(32) GSVertexSW
 	GSVector4 p, _pad, t, c;
 
 	__forceinline GSVertexSW() {}
-	__forceinline GSVertexSW(const GSVertexSW& v) {*this = v;}
+	__forceinline GSVertexSW(const GSVertexSW& v) { *this = v; }
 
 	__forceinline static GSVertexSW zero()
 	{
@@ -40,21 +40,21 @@ struct alignas(32) GSVertexSW
 
 		return v;
 	}
-	__forceinline void operator = (const GSVertexSW& v) 
+	__forceinline void operator=(const GSVertexSW& v)
 	{
-		p = v.p; 
+		p = v.p;
 		t = v.t;
-		c = v.c; 
-	}
-	
-	__forceinline void operator += (const GSVertexSW& v) 
-	{
-		p += v.p; 
-		t += v.t;
-		c += v.c; 
+		c = v.c;
 	}
 
-	__forceinline friend GSVertexSW operator + (const GSVertexSW& a, const GSVertexSW& b)
+	__forceinline void operator+=(const GSVertexSW& v)
+	{
+		p += v.p;
+		t += v.t;
+		c += v.c;
+	}
+
+	__forceinline friend GSVertexSW operator+(const GSVertexSW& a, const GSVertexSW& b)
 	{
 		GSVertexSW v;
 
@@ -65,7 +65,7 @@ struct alignas(32) GSVertexSW
 		return v;
 	}
 
-	__forceinline friend GSVertexSW operator - (const GSVertexSW& a, const GSVertexSW& b)
+	__forceinline friend GSVertexSW operator-(const GSVertexSW& a, const GSVertexSW& b)
 	{
 		GSVertexSW v;
 
@@ -76,7 +76,7 @@ struct alignas(32) GSVertexSW
 		return v;
 	}
 
-	__forceinline friend GSVertexSW operator * (const GSVertexSW& a, const GSVector4& b)
+	__forceinline friend GSVertexSW operator*(const GSVertexSW& a, const GSVector4& b)
 	{
 		GSVertexSW v;
 
@@ -87,7 +87,7 @@ struct alignas(32) GSVertexSW
 		return v;
 	}
 
-	__forceinline friend GSVertexSW operator / (const GSVertexSW& a, const GSVector4& b)
+	__forceinline friend GSVertexSW operator/(const GSVertexSW& a, const GSVector4& b)
 	{
 		GSVertexSW v;
 
@@ -114,21 +114,21 @@ struct alignas(32) GSVertexSW
 
 		int i;
 
-		if(v12.allfalse())
+		if (v12.allfalse())
 		{
 			test = (v01 ^ v02) & (v01 ^ v02.zwxy());
 			vtl = v0;
 			vbr = v1 + (v2 - v0);
 			i = 0;
 		}
-		else if(v02.allfalse())
+		else if (v02.allfalse())
 		{
 			test = (v01 ^ v12) & (v01 ^ v12.zwxy());
 			vtl = v1;
 			vbr = v0 + (v2 - v1);
 			i = 1;
 		}
-		else if(v01.allfalse())
+		else if (v01.allfalse())
 		{
 			test = (v02 ^ v12) & (v02 ^ v12.zwxy());
 			vtl = v2;
@@ -140,7 +140,7 @@ struct alignas(32) GSVertexSW
 			return false;
 		}
 
-		if(!test.alltrue())
+		if (!test.alltrue())
 		{
 			return false;
 		}
@@ -155,17 +155,17 @@ struct alignas(32) GSVertexSW
 		GSVector4 v45 = v4 == v5;
 		GSVector4 v35 = v3 == v5;
 
-		if(v34.allfalse())
+		if (v34.allfalse())
 		{
 			test = (v35 ^ v45) & (v35 ^ v45.zwxy()) & (vtl + v5 == v3 + v4) & (vbr == v5);
 			i = 5;
 		}
-		else if(v35.allfalse())
+		else if (v35.allfalse())
 		{
 			test = (v34 ^ v45) & (v34 ^ v45.zwxy()) & (vtl + v4 == v3 + v5) & (vbr == v4);
 			i = 4;
 		}
-		else if(v45.allfalse())
+		else if (v45.allfalse())
 		{
 			test = (v34 ^ v35) & (v34 ^ v35.zwxy()) & (vtl + v3 == v5 + v4) & (vbr == v3);
 			i = 3;
@@ -175,14 +175,14 @@ struct alignas(32) GSVertexSW
 			return false;
 		}
 
-		if(!test.alltrue())
+		if (!test.alltrue())
 		{
 			return false;
 		}
 
 		br = i;
 
-		#if _M_SSE >= 0x500
+#if _M_SSE >= 0x500
 
 		{
 			// p.z, p.w, t.z, t.w, c.x, c.y, c.z, c.w
@@ -198,8 +198,8 @@ struct alignas(32) GSVertexSW
 
 			return test.alltrue();
 		}
-		
-		#else
+
+#else
 
 		v0 = v[0].p.zwzw(v[0].t);
 		v1 = v[1].p.zwzw(v[1].t);
@@ -210,7 +210,7 @@ struct alignas(32) GSVertexSW
 
 		test = ((v0 == v1) & (v0 == v2)) & ((v0 == v3) & (v0 == v4)) & (v0 == v5);
 
-		if(!test.alltrue())
+		if (!test.alltrue())
 		{
 			return false;
 		}
@@ -224,14 +224,14 @@ struct alignas(32) GSVertexSW
 
 		test = ((v0 == v1) & (v0 == v2)) & ((v0 == v3) & (v0 == v4)) & (v0 == v5);
 
-		if(!test.alltrue())
+		if (!test.alltrue())
 		{
 			return false;
 		}
 
 		return true;
 
-		#endif
+#endif
 	}
 };
 
@@ -243,15 +243,15 @@ struct alignas(32) GSVertexSW2
 	GSVector8 tc;
 
 	__forceinline GSVertexSW2() {}
-	__forceinline GSVertexSW2(const GSVertexSW2& v) {*this = v;}
+	__forceinline GSVertexSW2(const GSVertexSW2& v) { *this = v; }
 
-	__forceinline void operator = (const GSVertexSW2& v) 
+	__forceinline void operator=(const GSVertexSW2& v)
 	{
-		p = v.p; 
+		p = v.p;
 		tc = v.tc;
 	}
 
-	__forceinline friend GSVertexSW2 operator - (const GSVertexSW2& a, const GSVertexSW2& b)
+	__forceinline friend GSVertexSW2 operator-(const GSVertexSW2& a, const GSVertexSW2& b)
 	{
 		GSVertexSW2 v;
 
@@ -263,4 +263,3 @@ struct alignas(32) GSVertexSW2
 };
 
 #endif
-

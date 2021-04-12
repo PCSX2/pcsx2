@@ -35,7 +35,7 @@ class GSRendererSW : public GSRenderer
 	{
 		struct alignas(16) TextureLevel
 		{
-			GSVector4i r; 
+			GSVector4i r;
 			GSTextureCacheSW::Texture* t;
 		};
 
@@ -47,7 +47,12 @@ class GSRendererSW : public GSRenderer
 		int m_zpsm;
 		bool m_using_pages;
 		TextureLevel m_tex[7 + 1]; // NULL terminated
-		enum {SyncNone, SyncSource, SyncTarget} m_syncpoint;
+		enum
+		{
+			SyncNone,
+			SyncSource,
+			SyncTarget
+		} m_syncpoint;
 
 	public:
 		SharedData(GSRendererSW* parent);
@@ -64,7 +69,7 @@ class GSRendererSW : public GSRenderer
 
 	ConvertVertexBufferPtr m_cvb[4][2][2][2];
 
-	template<uint32 primclass, uint32 tme, uint32 fst, uint32 q_div>
+	template <uint32 primclass, uint32 tme, uint32 fst, uint32 q_div>
 	void ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count);
 
 protected:

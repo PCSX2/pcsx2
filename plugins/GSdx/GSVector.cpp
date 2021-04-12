@@ -168,23 +168,25 @@ GSVector4i GSVector4i::fit(int arx, int ary) const
 {
 	GSVector4i r = *this;
 
-	if(arx > 0 && ary > 0)
+	if (arx > 0 && ary > 0)
 	{
 		int w = width();
 		int h = height();
 
-		if(w * ary > h * arx)
+		if (w * ary > h * arx)
 		{
 			w = h * arx / ary;
 			r.left = (r.left + r.right - w) >> 1;
-			if(r.left & 1) r.left++;
+			if (r.left & 1)
+				r.left++;
 			r.right = r.left + w;
 		}
 		else
 		{
 			h = w * ary / arx;
 			r.top = (r.top + r.bottom - h) >> 1;
-			if(r.top & 1) r.top++;
+			if (r.top & 1)
+				r.top++;
 			r.bottom = r.top + h;
 		}
 
@@ -204,7 +206,7 @@ GSVector4i GSVector4i::fit(int preset) const
 {
 	GSVector4i r;
 
-	if(preset > 0 && preset < (int)countof(s_ar))
+	if (preset > 0 && preset < (int)countof(s_ar))
 	{
 		r = fit(s_ar[preset][0], s_ar[preset][1]);
 	}

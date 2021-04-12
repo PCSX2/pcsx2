@@ -43,7 +43,7 @@ private:
 
 	static const float SSR_UV_TOLERANCE;
 
-	#pragma region hacks
+#pragma region hacks
 
 	typedef bool (GSRendererHW::*OI_Ptr)(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	typedef void (GSRendererHW::*OO_Ptr)();
@@ -73,7 +73,8 @@ private:
 
 	class Hacks
 	{
-		template<class T> class HackEntry
+		template <class T>
+		class HackEntry
 		{
 		public:
 			CRC::Title title;
@@ -88,18 +89,19 @@ private:
 			}
 		};
 
-		template<class T> class FunctionMap : public GSFunctionMap<uint32, T>
+		template <class T>
+		class FunctionMap : public GSFunctionMap<uint32, T>
 		{
-			std::list<HackEntry<T> >& m_tbl;
+			std::list<HackEntry<T>>& m_tbl;
 
 			T GetDefaultFunction(uint32 key)
 			{
 				CRC::Title title = (CRC::Title)(key & 0xffffff);
 				CRC::Region region = (CRC::Region)(key >> 24);
 
-				for(const auto &entry : m_tbl)
+				for (const auto& entry : m_tbl)
 				{
-					if(entry.title == title && (entry.region == CRC::RegionCount || entry.region == region))
+					if (entry.title == title && (entry.region == CRC::RegionCount || entry.region == region))
 					{
 						return entry.func;
 					}
@@ -109,12 +111,15 @@ private:
 			}
 
 		public:
-			FunctionMap(std::list<HackEntry<T> >& tbl) : m_tbl(tbl) {}
+			FunctionMap(std::list<HackEntry<T>>& tbl)
+				: m_tbl(tbl)
+			{
+			}
 		};
 
-		std::list<HackEntry<OI_Ptr> > m_oi_list;
-		std::list<HackEntry<OO_Ptr> > m_oo_list;
-		std::list<HackEntry<CU_Ptr> > m_cu_list;
+		std::list<HackEntry<OI_Ptr>> m_oi_list;
+		std::list<HackEntry<OO_Ptr>> m_oo_list;
+		std::list<HackEntry<CU_Ptr>> m_cu_list;
 
 		FunctionMap<OI_Ptr> m_oi_map;
 		FunctionMap<OO_Ptr> m_oo_map;
@@ -131,7 +136,7 @@ private:
 
 	} m_hacks;
 
-	#pragma endregion
+#pragma endregion
 
 	uint16 Interpolate_UV(float alpha, int t0, int t1);
 	float alpha0(int L, int X0, int X1);
@@ -139,7 +144,8 @@ private:
 	void SwSpriteRender();
 	bool CanUseSwSpriteRender(bool allow_64x64_sprite);
 
-	template <bool linear> void RoundSpriteOffset();
+	template <bool linear>
+	void RoundSpriteOffset();
 
 protected:
 	GSTextureCache* m_tc;
@@ -190,5 +196,5 @@ public:
 	void Draw();
 
 	// Called by the texture cache to know if current texture is useful
-	virtual bool IsDummyTexture() const { return false;}
+	virtual bool IsDummyTexture() const { return false; }
 };

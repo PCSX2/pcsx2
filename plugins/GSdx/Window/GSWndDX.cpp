@@ -37,7 +37,7 @@ LRESULT CALLBACK GSWndDX::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 {
 	GSWndDX* wnd = NULL;
 
-	if(message == WM_NCCREATE)
+	if (message == WM_NCCREATE)
 	{
 		wnd = (GSWndDX*)((LPCREATESTRUCT)lParam)->lpCreateParams;
 
@@ -50,7 +50,7 @@ LRESULT CALLBACK GSWndDX::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 		wnd = (GSWndDX*)GetWindowLongPtr(hWnd, GWLP_USERDATA);
 	}
 
-	if(wnd == NULL)
+	if (wnd == NULL)
 	{
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
@@ -60,20 +60,20 @@ LRESULT CALLBACK GSWndDX::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM
 
 LRESULT GSWndDX::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 {
-	switch(message)
+	switch (message)
 	{
-	case WM_CLOSE:
-		Hide();
-		// DestroyWindow(m_hWnd);
-		return 0;
-	case WM_DESTROY:
-		// This kills the emulator when GS is closed, which *really* isn't desired behavior,
-		// especially in STGS mode (worked in MTGS mode since it only quit the thread, but even
-		// that wasn't needed).
-		//PostQuitMessage(0);
-		return 0;
-	default:
-		break;
+		case WM_CLOSE:
+			Hide();
+			// DestroyWindow(m_hWnd);
+			return 0;
+		case WM_DESTROY:
+			// This kills the emulator when GS is closed, which *really* isn't desired behavior,
+			// especially in STGS mode (worked in MTGS mode since it only quit the thread, but even
+			// that wasn't needed).
+			//PostQuitMessage(0);
+			return 0;
+		default:
+			break;
 	}
 
 	return DefWindowProc((HWND)m_hWnd, message, wParam, lParam);
@@ -81,7 +81,7 @@ LRESULT GSWndDX::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 bool GSWndDX::Create(const std::string& title, int w, int h)
 {
-	if(m_hWnd)
+	if (m_hWnd)
 		throw GSDXRecoverableError();
 
 	m_managed = true;
@@ -98,9 +98,9 @@ bool GSWndDX::Create(const std::string& title, int w, int h)
 	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
 	wc.lpszClassName = L"GSWndDX";
 
-	if(!GetClassInfo(wc.hInstance, wc.lpszClassName, &wc))
+	if (!GetClassInfo(wc.hInstance, wc.lpszClassName, &wc))
 	{
-		if(!RegisterClass(&wc))
+		if (!RegisterClass(&wc))
 		{
 			throw GSDXRecoverableError();
 		}
@@ -114,12 +114,12 @@ bool GSWndDX::Create(const std::string& title, int w, int h)
 
 	bool remote = !!GetSystemMetrics(SM_REMOTESESSION);
 
-	if(w <= 0 || h <= 0 || remote)
+	if (w <= 0 || h <= 0 || remote)
 	{
 		w = r.width() / 3;
 		h = r.width() / 4;
 
-		if(!remote)
+		if (!remote)
 		{
 			w *= 2;
 			h *= 2;
@@ -153,7 +153,7 @@ bool GSWndDX::Attach(void* handle, bool managed)
 
 void GSWndDX::Detach()
 {
-	if(m_hWnd && m_managed)
+	if (m_hWnd && m_managed)
 	{
 		// close the window, since it's under GSdx care.  It's not taking messages anyway, and
 		// that means its big, ugly, and in the way.
@@ -179,7 +179,8 @@ GSVector4i GSWndDX::GetClientRect()
 
 bool GSWndDX::SetWindowText(const char* title)
 {
-	if(!m_managed) return false;
+	if (!m_managed)
+		return false;
 
 	const size_t tmp_size = strlen(title) + 1;
 	std::wstring tmp(tmp_size, L'#');
@@ -191,7 +192,8 @@ bool GSWndDX::SetWindowText(const char* title)
 
 void GSWndDX::Show()
 {
-	if(!m_managed) return;
+	if (!m_managed)
+		return;
 
 	SetForegroundWindow(m_hWnd);
 	ShowWindow(m_hWnd, SW_SHOWNORMAL);
@@ -200,16 +202,18 @@ void GSWndDX::Show()
 
 void GSWndDX::Hide()
 {
-	if(!m_managed) return;
+	if (!m_managed)
+		return;
 
 	ShowWindow(m_hWnd, SW_HIDE);
 }
 
 void GSWndDX::HideFrame()
 {
-	if(!m_managed) return;
+	if (!m_managed)
+		return;
 
-	SetWindowLong(m_hWnd, GWL_STYLE, GetWindowLong(m_hWnd, GWL_STYLE) & ~(WS_CAPTION|WS_THICKFRAME));
+	SetWindowLong(m_hWnd, GWL_STYLE, GetWindowLong(m_hWnd, GWL_STYLE) & ~(WS_CAPTION | WS_THICKFRAME));
 	SetWindowPos(m_hWnd, NULL, 0, 0, 0, 0, SWP_NOSIZE | SWP_NOMOVE | SWP_NOZORDER | SWP_NOACTIVATE);
 	SetMenu(m_hWnd, NULL);
 

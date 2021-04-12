@@ -27,13 +27,15 @@
 
 class GSRendererOGL final : public GSRendererHW
 {
-	enum PRIM_OVERLAP {
+	enum PRIM_OVERLAP
+	{
 		PRIM_OVERLAP_UNKNOW,
 		PRIM_OVERLAP_YES,
 		PRIM_OVERLAP_NO
 	};
 
-	enum ACC_BLEND {
+	enum ACC_BLEND
+	{
 		ACC_BLEND_NONE   = 0,
 		ACC_BLEND_BASIC  = 1,
 		ACC_BLEND_MEDIUM = 2,
@@ -42,46 +44,46 @@ class GSRendererOGL final : public GSRendererHW
 		ACC_BLEND_ULTRA  = 5
 	};
 
-	private:
-		PRIM_OVERLAP m_prim_overlap;
-		std::vector<size_t> m_drawlist;
+private:
+	PRIM_OVERLAP m_prim_overlap;
+	std::vector<size_t> m_drawlist;
 
-		TriFiltering UserHacks_tri_filter;
+	TriFiltering UserHacks_tri_filter;
 
-		GSDeviceOGL::VSConstantBuffer vs_cb;
-		GSDeviceOGL::PSConstantBuffer ps_cb;
+	GSDeviceOGL::VSConstantBuffer vs_cb;
+	GSDeviceOGL::PSConstantBuffer ps_cb;
 
-		bool m_require_one_barrier;
-		bool m_require_full_barrier;
+	bool m_require_one_barrier;
+	bool m_require_full_barrier;
 
-		GSDeviceOGL::VSSelector m_vs_sel;
-		GSDeviceOGL::GSSelector m_gs_sel;
-		GSDeviceOGL::PSSelector m_ps_sel;
+	GSDeviceOGL::VSSelector m_vs_sel;
+	GSDeviceOGL::GSSelector m_gs_sel;
+	GSDeviceOGL::PSSelector m_ps_sel;
 
-		GSDeviceOGL::PSSamplerSelector      m_ps_ssel;
-		GSDeviceOGL::OMColorMaskSelector    m_om_csel;
-		GSDeviceOGL::OMDepthStencilSelector m_om_dssel;
+	GSDeviceOGL::PSSamplerSelector      m_ps_ssel;
+	GSDeviceOGL::OMColorMaskSelector    m_om_csel;
+	GSDeviceOGL::OMDepthStencilSelector m_om_dssel;
 
-	private:
-		inline void ResetStates();
-		inline void SetupIA(const float& sx, const float& sy);
-		inline void EmulateTextureShuffleAndFbmask();
-		inline void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);
-		inline void EmulateBlending(bool& DATE_GL42, bool& DATE_GL45);
-		inline void EmulateTextureSampler(const GSTextureCache::Source* tex);
-		inline void EmulateZbuffer();
+private:
+	inline void ResetStates();
+	inline void SetupIA(const float& sx, const float& sy);
+	inline void EmulateTextureShuffleAndFbmask();
+	inline void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);
+	inline void EmulateBlending(bool& DATE_GL42, bool& DATE_GL45);
+	inline void EmulateTextureSampler(const GSTextureCache::Source* tex);
+	inline void EmulateZbuffer();
 
-	public:
-		GSRendererOGL();
-		virtual ~GSRendererOGL() {};
+public:
+	GSRendererOGL();
+	virtual ~GSRendererOGL() {}
 
-		bool CreateDevice(GSDevice* dev);
+	bool CreateDevice(GSDevice* dev);
 
-		void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) final;
+	void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) final;
 
-		PRIM_OVERLAP PrimitiveOverlap();
+	PRIM_OVERLAP PrimitiveOverlap();
 
-		void SendDraw();
+	void SendDraw();
 
-		bool IsDummyTexture() const final;
+	bool IsDummyTexture() const final;
 };

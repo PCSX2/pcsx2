@@ -28,28 +28,32 @@
 int GSWndEGL::SelectPlatform()
 {
 	// Check the supported extension
-	const char *client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
-	if (!client_extensions) {
+	const char* client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
+	if (!client_extensions)
+	{
 		fprintf(stderr, "EGL: Client extension not supported\n");
 		return 0;
 	}
 	fprintf(stdout, "EGL: Supported extensions: %s\n", client_extensions);
 
 	// Check platform extensions are supported (Note: there are core in 1.5)
-	if (!strstr(client_extensions, "EGL_EXT_platform_base")) {
+	if (!strstr(client_extensions, "EGL_EXT_platform_base"))
+	{
 		fprintf(stderr, "EGL: Dynamic platform selection isn't supported\n");
 		return 0;
 	}
 
 	// Finally we can select the platform
 #if GS_EGL_X11
-	if (strstr(client_extensions, "EGL_EXT_platform_x11")) {
+	if (strstr(client_extensions, "EGL_EXT_platform_x11"))
+	{
 		fprintf(stdout, "EGL: select X11 platform\n");
 		return EGL_PLATFORM_X11_KHR;
 	}
 #endif
 #if GS_EGL_WL
-	if (strstr(client_extensions, "EGL_EXT_platform_wayland")) {
+	if (strstr(client_extensions, "EGL_EXT_platform_wayland"))
+	{
 		fprintf(stdout, "EGL: select Wayland platform\n");
 		return EGL_PLATFORM_WAYLAND_KHR;
 	}
@@ -83,7 +87,7 @@ void GSWndEGL::CreateContext(int major, int minor)
 		EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR, EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR,
 		EGL_NONE
 	};
-	EGLint NullContextAttribs[] = { EGL_NONE };
+	EGLint NullContextAttribs[] = {EGL_NONE};
 	EGLint attrList[] = {
 		EGL_RED_SIZE, 8,
 		EGL_GREEN_SIZE, 8,
@@ -96,36 +100,37 @@ void GSWndEGL::CreateContext(int major, int minor)
 	BindAPI();
 
 	eglChooseConfig(m_eglDisplay, attrList, &eglConfig, 1, &numConfigs);
-	if ( numConfigs == 0 )
+	if (numConfigs == 0)
 	{
-		fprintf(stderr,"EGL: Failed to get a frame buffer config! (0x%x)\n", eglGetError() );
+		fprintf(stderr, "EGL: Failed to get a frame buffer config! (0x%x)\n", eglGetError());
 		throw GSDXRecoverableError();
 	}
 
 	m_eglSurface = eglCreatePlatformWindowSurface(m_eglDisplay, eglConfig, m_native_window, nullptr);
-	if ( m_eglSurface == EGL_NO_SURFACE )
+	if (m_eglSurface == EGL_NO_SURFACE)
 	{
-		fprintf(stderr,"EGL: Failed to get a window surface\n");
+		fprintf(stderr, "EGL: Failed to get a window surface\n");
 		throw GSDXRecoverableError();
 	}
 
 	m_eglContext = eglCreateContext(m_eglDisplay, eglConfig, EGL_NO_CONTEXT, contextAttribs);
 	EGLint status = eglGetError();
-	if (status == EGL_BAD_ATTRIBUTE || status == EGL_BAD_MATCH) {
+	if (status == EGL_BAD_ATTRIBUTE || status == EGL_BAD_MATCH)
+	{
 		// Radeon/Gallium don't support advance attribute. Fallback to random value
 		// Note: Intel gives an EGL_BAD_MATCH. I don't know why but let's by stubborn and retry.
 		fprintf(stderr, "EGL: warning your driver doesn't support advance openGL context attributes\n");
 		m_eglContext = eglCreateContext(m_eglDisplay, eglConfig, EGL_NO_CONTEXT, NullContextAttribs);
 		status = eglGetError();
 	}
-	if ( m_eglContext == EGL_NO_CONTEXT )
+	if (m_eglContext == EGL_NO_CONTEXT)
 	{
-		fprintf(stderr,"EGL: Failed to create the context\n");
-		fprintf(stderr,"EGL STATUS: %x\n", status);
+		fprintf(stderr, "EGL: Failed to create the context\n");
+		fprintf(stderr, "EGL STATUS: %x\n", status);
 		throw GSDXRecoverableError();
 	}
 
-	if ( !eglMakeCurrent(m_eglDisplay, m_eglSurface, m_eglSurface, m_eglContext) )
+	if (!eglMakeCurrent(m_eglDisplay, m_eglSurface, m_eglSurface, m_eglContext))
 	{
 		throw GSDXRecoverableError();
 	}
@@ -133,7 +138,8 @@ void GSWndEGL::CreateContext(int major, int minor)
 
 void GSWndEGL::AttachContext()
 {
-	if (!IsContextAttached()) {
+	if (!IsContextAttached())
+	{
 		// The setting of the API is local to a thread. This function
 		// can be called from 2 threads.
 		BindAPI();
@@ -146,7 +152,8 @@ void GSWndEGL::AttachContext()
 
 void GSWndEGL::DetachContext()
 {
-	if (IsContextAttached()) {
+	if (IsContextAttached())
+	{
 		//fprintf(stderr, "Detach the context\n");
 		eglMakeCurrent(m_eglDisplay, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
 		m_ctx_attached = false;
@@ -161,8 +168,9 @@ void GSWndEGL::BindAPI()
 {
 	eglBindAPI(EGL_OPENGL_API);
 	EGLenum api = eglQueryAPI();
-	if (api != EGL_OPENGL_API) {
-		fprintf(stderr,"EGL: Failed to bind the OpenGL API got 0x%x instead\n", api);
+	if (api != EGL_OPENGL_API)
+	{
+		fprintf(stderr, "EGL: Failed to bind the OpenGL API got 0x%x instead\n", api);
 		throw GSDXRecoverableError();
 	}
 }
@@ -198,7 +206,8 @@ void GSWndEGL::Detach()
 
 bool GSWndEGL::Create(const std::string& title, int w, int h)
 {
-	if(w <= 0 || h <= 0) {
+	if (w <= 0 || h <= 0)
+	{
 		w = theApp.GetConfigI("ModeWidth");
 		h = theApp.GetConfigI("ModeHeight");
 	}
@@ -217,7 +226,8 @@ bool GSWndEGL::Create(const std::string& title, int w, int h)
 void* GSWndEGL::GetProcAddress(const char* name, bool opt)
 {
 	void* ptr = (void*)eglGetProcAddress(name);
-	if (ptr == nullptr) {
+	if (ptr == nullptr)
+	{
 		if (theApp.GetConfigB("debug_opengl"))
 			fprintf(stderr, "Failed to find %s\n", name);
 
@@ -263,17 +273,19 @@ void GSWndEGL::OpenEGLDisplay()
 	// We only need a native display when we manage the window ourself.
 	// By default, EGL will create its own native display. This way the driver knows
 	// that display will be thread safe and so it can enable multithread optimization.
-	void *native_display = (m_managed) ? CreateNativeDisplay() : nullptr;
+	void* native_display = (m_managed) ? CreateNativeDisplay() : nullptr;
 
 	// Create an EGL display from the native display
 	m_eglDisplay = eglGetPlatformDisplay(m_platform, native_display, nullptr);
-	if (m_eglDisplay == EGL_NO_DISPLAY) {
-		fprintf(stderr,"EGL: Failed to open a display! (0x%x)\n", eglGetError() );
+	if (m_eglDisplay == EGL_NO_DISPLAY)
+	{
+		fprintf(stderr, "EGL: Failed to open a display! (0x%x)\n", eglGetError());
 		throw GSDXRecoverableError();
 	}
 
-	if (!eglInitialize(m_eglDisplay, nullptr, nullptr)) {
-		fprintf(stderr,"EGL: Failed to initialize the display! (0x%x)\n", eglGetError() );
+	if (!eglInitialize(m_eglDisplay, nullptr, nullptr))
+	{
+		fprintf(stderr, "EGL: Failed to initialize the display! (0x%x)\n", eglGetError());
 		throw GSDXRecoverableError();
 	}
 }
@@ -288,7 +300,7 @@ GSWndEGL_X11::GSWndEGL_X11()
 {
 }
 
-void *GSWndEGL_X11::CreateNativeDisplay()
+void* GSWndEGL_X11::CreateNativeDisplay()
 {
 	if (m_NativeDisplay == nullptr)
 		m_NativeDisplay = XOpenDisplay(nullptr);
@@ -296,7 +308,7 @@ void *GSWndEGL_X11::CreateNativeDisplay()
 	return (void*)m_NativeDisplay;
 }
 
-void *GSWndEGL_X11::CreateNativeWindow(int w, int h)
+void* GSWndEGL_X11::CreateNativeWindow(int w, int h)
 {
 	const int depth = 0, x = 0, y = 0, border_width = 1;
 #if 0
@@ -305,35 +317,37 @@ void *GSWndEGL_X11::CreateNativeWindow(int w, int h)
 	XMapWindow (m_NativeDisplay, m_NativeWindow);
 #endif
 
-	if (m_NativeDisplay == nullptr) {
+	if (m_NativeDisplay == nullptr)
+	{
 		fprintf(stderr, "EGL X11: display wasn't created before the window\n");
 		throw GSDXRecoverableError();
 	}
 
-	xcb_connection_t *c = XGetXCBConnection(m_NativeDisplay);
+	xcb_connection_t* c = XGetXCBConnection(m_NativeDisplay);
 
-	const xcb_setup_t *setup = xcb_get_setup(c);
+	const xcb_setup_t* setup = xcb_get_setup(c);
 
-	xcb_screen_t *screen = (xcb_setup_roots_iterator (setup)).data;
+	xcb_screen_t* screen = (xcb_setup_roots_iterator(setup)).data;
 
 	m_NativeWindow = xcb_generate_id(c);
 
-	if (m_NativeWindow == 0) {
+	if (m_NativeWindow == 0)
+	{
 		fprintf(stderr, "EGL X11: failed to create the native window\n");
 		throw GSDXRecoverableError();
 	}
 
-	xcb_create_window (c, depth, m_NativeWindow, screen->root, x, y, w, h,
-			border_width, InputOutput, screen->root_visual, 0, nullptr);
+	xcb_create_window(c, depth, m_NativeWindow, screen->root, x, y, w, h,
+		border_width, InputOutput, screen->root_visual, 0, nullptr);
 
-	xcb_map_window (c, m_NativeWindow);
+	xcb_map_window(c, m_NativeWindow);
 
 	xcb_flush(c);
 
 	return (void*)&m_NativeWindow;
 }
 
-void *GSWndEGL_X11::AttachNativeWindow(void *handle)
+void* GSWndEGL_X11::AttachNativeWindow(void* handle)
 {
 	m_NativeWindow = *(Window*)handle;
 	return handle;
@@ -341,7 +355,8 @@ void *GSWndEGL_X11::AttachNativeWindow(void *handle)
 
 void GSWndEGL_X11::DestroyNativeResources()
 {
-	if (m_NativeDisplay) {
+	if (m_NativeDisplay)
+	{
 		XCloseDisplay(m_NativeDisplay);
 		m_NativeDisplay = nullptr;
 	}
@@ -349,13 +364,14 @@ void GSWndEGL_X11::DestroyNativeResources()
 
 bool GSWndEGL_X11::SetWindowText(const char* title)
 {
-	if (!m_managed) return true;
+	if (!m_managed)
+		return true;
 
-	xcb_connection_t *c = XGetXCBConnection(m_NativeDisplay);
+	xcb_connection_t* c = XGetXCBConnection(m_NativeDisplay);
 
 	xcb_change_property(c, XCB_PROP_MODE_REPLACE, m_NativeWindow,
-			XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
-			strlen (title), title);
+		XCB_ATOM_WM_NAME, XCB_ATOM_STRING, 8,
+		strlen(title), title);
 
 	return true;
 }
@@ -372,7 +388,7 @@ GSWndEGL_WL::GSWndEGL_WL()
 {
 }
 
-void *GSWndEGL_WL::CreateNativeDisplay()
+void* GSWndEGL_WL::CreateNativeDisplay()
 {
 	if (m_NativeDisplay == nullptr)
 		m_NativeDisplay = wl_display_connect(NULL);
@@ -380,12 +396,12 @@ void *GSWndEGL_WL::CreateNativeDisplay()
 	return (void*)m_NativeDisplay;
 }
 
-void *GSWndEGL_WL::CreateNativeWindow(int w, int h)
+void* GSWndEGL_WL::CreateNativeWindow(int w, int h)
 {
 	return nullptr;
 }
 
-void *GSWndEGL_WL::AttachNativeWindow(void *handle)
+void* GSWndEGL_WL::AttachNativeWindow(void* handle)
 {
 	m_NativeWindow = (wl_egl_window*)handle;
 	return handle;
@@ -393,7 +409,8 @@ void *GSWndEGL_WL::AttachNativeWindow(void *handle)
 
 void GSWndEGL_WL::DestroyNativeResources()
 {
-	if (m_NativeDisplay) {
+	if (m_NativeDisplay)
+	{
 		wl_display_disconnect(m_NativeDisplay);
 		m_NativeDisplay = nullptr;
 	}

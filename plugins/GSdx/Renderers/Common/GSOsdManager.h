@@ -28,8 +28,10 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-class GSOsdManager {
-	struct glyph_info {
+class GSOsdManager
+{
+	struct glyph_info
+	{
 		int32 ax; // advance.x
 		int32 ay; // advance.y
 
@@ -48,15 +50,16 @@ class GSOsdManager {
 	std::map<std::pair<char32_t, char32_t>, FT_Pos> m_kern_info;
 
 	FT_Library m_library;
-	FT_Face    m_face;
-	FT_UInt    m_size;
+	FT_Face m_face;
+	FT_UInt m_size;
 
 	uint32 m_atlas_h;
 	uint32 m_atlas_w;
 	int32 m_max_width;
 	int32 m_onscreen_messages;
 
-	struct log_info {
+	struct log_info
+	{
 		std::u32string msg;
 		std::chrono::system_clock::time_point OnScreen;
 	};
@@ -76,8 +79,7 @@ class GSOsdManager {
 	uint32 m_color;
 	int m_max_onscreen_messages;
 
-	public:
-
+public:
 	GSOsdManager();
 	~GSOsdManager();
 
@@ -89,14 +91,13 @@ class GSOsdManager {
 	bool m_texture_dirty;
 	void upload_texture_atlas(GSTexture* t);
 
-	void Log(const char *utf8);
-	void Monitor(const char *key, const char *value);
+	void Log(const char* utf8);
+	void Monitor(const char* key, const char* value);
 
 	GSVector2i m_real_size;
 	size_t Size();
 	size_t GeneratePrimitives(GSVertexPT1* dst, size_t count);
-	
-	private:
-	
+
+private:
 	std::vector<char> resource_data_buffer;
 };

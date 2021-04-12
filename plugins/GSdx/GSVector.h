@@ -41,14 +41,15 @@ enum Round_Mode
 
 #pragma pack(push, 1)
 
-template<class T> class GSVector2T
+template <class T>
+class GSVector2T
 {
 public:
 	union
 	{
-		struct {T x, y;};
-		struct {T r, g;};
-		struct {T v[2];};
+		struct { T x, y; };
+		struct { T r, g; };
+		struct { T v[2]; };
 	};
 
 	GSVector2T()
@@ -67,12 +68,12 @@ public:
 		this->y = y;
 	}
 
-	bool operator == (const GSVector2T& v) const
+	bool operator==(const GSVector2T& v) const
 	{
 		return x == v.x && y == v.y;
 	}
 
-	bool operator != (const GSVector2T& v) const
+	bool operator!=(const GSVector2T& v) const
 	{
 		return x != v.x || y != v.y;
 	}

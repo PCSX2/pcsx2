@@ -38,21 +38,21 @@ GSTextureCacheSW::Texture* GSTextureCacheSW::Lookup(const GIFRegTEX0& TEX0, cons
 
 	auto& m = m_map[TEX0.TBP0 >> 5];
 
-	for(auto i = m.begin(); i != m.end(); ++i)
+	for (auto i = m.begin(); i != m.end(); ++i)
 	{
 		Texture* t = *i;
 
-		if(((TEX0.u32[0] ^ t->m_TEX0.u32[0]) | ((TEX0.u32[1] ^ t->m_TEX0.u32[1]) & 3)) != 0) // TBP0 TBW PSM TW TH
+		if (((TEX0.u32[0] ^ t->m_TEX0.u32[0]) | ((TEX0.u32[1] ^ t->m_TEX0.u32[1]) & 3)) != 0) // TBP0 TBW PSM TW TH
 		{
 			continue;
 		}
 
-		if((psm.trbpp == 16 || psm.trbpp == 24) && TEX0.TCC && TEXA != t->m_TEXA)
+		if ((psm.trbpp == 16 || psm.trbpp == 24) && TEX0.TCC && TEXA != t->m_TEXA)
 		{
 			continue;
 		}
 
-		if(tw0 != 0 && t->m_tw != tw0)
+		if (tw0 != 0 && t->m_tw != tw0)
 		{
 			continue;
 		}
@@ -68,7 +68,7 @@ GSTextureCacheSW::Texture* GSTextureCacheSW::Lookup(const GIFRegTEX0& TEX0, cons
 
 	m_textures.insert(t);
 
-	for(const uint32* p = t->m_pages.n; *p != GSOffset::EOP; p++)
+	for (const uint32* p = t->m_pages.n; *p != GSOffset::EOP; p++)
 	{
 		const uint32 page = *p;
 		t->m_erase_it[page] = m_map[page].InsertFront(t);
@@ -79,19 +79,19 @@ GSTextureCacheSW::Texture* GSTextureCacheSW::Lookup(const GIFRegTEX0& TEX0, cons
 
 void GSTextureCacheSW::InvalidatePages(const uint32* pages, uint32 psm)
 {
-	for(const uint32* p = pages; *p != GSOffset::EOP; p++)
+	for (const uint32* p = pages; *p != GSOffset::EOP; p++)
 	{
 		const uint32 page = *p;
-		
-		for(Texture* t : m_map[page])
+
+		for (Texture* t : m_map[page])
 		{
-			if(GSUtil::HasSharedBits(psm, t->m_sharedbits))
+			if (GSUtil::HasSharedBits(psm, t->m_sharedbits))
 			{
 				uint32* RESTRICT valid = t->m_valid;
 
-				if(t->m_repeating)
+				if (t->m_repeating)
 				{
-					for(const GSVector2i& j : t->m_p2t[page])
+					for (const GSVector2i& j : t->m_p2t[page])
 					{
 						valid[j.x] &= j.y;
 					}
@@ -109,11 +109,12 @@ void GSTextureCacheSW::InvalidatePages(const uint32* pages, uint32 psm)
 
 void GSTextureCacheSW::RemoveAll()
 {
-	for(auto i : m_textures) delete i;
+	for (auto i : m_textures)
+		delete i;
 
 	m_textures.clear();
 
-	for(auto& l : m_map)
+	for (auto& l : m_map)
 	{
 		l.clear();
 	}
@@ -121,15 +122,15 @@ void GSTextureCacheSW::RemoveAll()
 
 void GSTextureCacheSW::IncAge()
 {
-	for(auto i = m_textures.begin(); i != m_textures.end(); )
+	for (auto i = m_textures.begin(); i != m_textures.end();)
 	{
 		Texture* t = *i;
 
-		if(++t->m_age > 10)
+		if (++t->m_age > 10)
 		{
 			i = m_textures.erase(i);
 
-			for(const uint32* p = t->m_pages.n; *p != GSOffset::EOP; p++)
+			for (const uint32* p = t->m_pages.n; *p != GSOffset::EOP; p++)
 			{
 				const uint32 page = *p;
 				m_map[page].EraseIndex(t->m_erase_it[page]);
@@ -157,7 +158,7 @@ GSTextureCacheSW::Texture::Texture(GSState* state, uint32 tw0, const GIFRegTEX0&
 	m_TEX0 = TEX0;
 	m_TEXA = TEXA;
 
-	if(m_tw == 0)
+	if (m_tw == 0)
 	{
 		m_tw = std::max<int>(m_TEX0.TW, GSLocalMemory::m_psm[m_TEX0.PSM].pal == 0 ? 3 : 5); // makes one row 32 bytes at least, matches the smallest block size that is allocated for m_buff
 	}
@@ -173,7 +174,7 @@ GSTextureCacheSW::Texture::Texture(GSState* state, uint32 tw0, const GIFRegTEX0&
 
 	m_repeating = m_TEX0.IsRepeating(); // repeating mode always works, it is just slightly slower
 
-	if(m_repeating)
+	if (m_repeating)
 	{
 		m_p2t = m_state->m_mem.GetPage2TileMap(m_TEX0);
 	}
@@ -181,9 +182,9 @@ GSTextureCacheSW::Texture::Texture(GSState* state, uint32 tw0, const GIFRegTEX0&
 
 GSTextureCacheSW::Texture::~Texture()
 {
-	delete [] m_pages.n;
+	delete[] m_pages.n;
 
-	if(m_buff)
+	if (m_buff)
 	{
 		_aligned_free(m_buff);
 	}
@@ -191,7 +192,7 @@ GSTextureCacheSW::Texture::~Texture()
 
 bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 {
-	if(m_complete)
+	if (m_complete)
 	{
 		return true;
 	}
@@ -209,18 +210,18 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 
 	r = r.ralign<Align_Outside>(bs);
 
-	if(r.eq(GSVector4i(0, 0, tw, th)))
+	if (r.eq(GSVector4i(0, 0, tw, th)))
 	{
 		m_complete = true; // lame, but better than nothing
 	}
 
-	if(m_buff == NULL)
+	if (m_buff == NULL)
 	{
 		uint32 pitch = (1 << m_tw) << shift;
-		
+
 		m_buff = _aligned_malloc(pitch * th * 4, 32);
 
-		if(m_buff == NULL)
+		if (m_buff == NULL)
 		{
 			return false;
 		}
@@ -247,20 +248,20 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 
 	shift += 3;
 
-	if(m_repeating)
+	if (m_repeating)
 	{
-		for(int y = r.top; y < r.bottom; y += bs.y, dst += block_pitch)
+		for (int y = r.top; y < r.bottom; y += bs.y, dst += block_pitch)
 		{
 			uint32 base = off->block.row[y];
 
-			for(int x = r.left, i = (y << 7) + x; x < r.right; x += bs.x, i += bs.x)
+			for (int x = r.left, i = (y << 7) + x; x < r.right; x += bs.x, i += bs.x)
 			{
 				uint32 block = (base + off->block.col[x]) % MAX_BLOCKS;
 
 				uint32 row = i >> 5;
 				uint32 col = 1 << (i & 31);
 
-				if((m_valid[row] & col) == 0)
+				if ((m_valid[row] & col) == 0)
 				{
 					m_valid[row] |= col;
 
@@ -273,18 +274,18 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 	}
 	else
 	{
-		for(int y = r.top; y < r.bottom; y += bs.y, dst += block_pitch)
+		for (int y = r.top; y < r.bottom; y += bs.y, dst += block_pitch)
 		{
 			uint32 base = off->block.row[y];
 
-			for(int x = r.left; x < r.right; x += bs.x)
+			for (int x = r.left; x < r.right; x += bs.x)
 			{
 				uint32 block = (base + off->block.col[x]) % MAX_BLOCKS;
 
 				uint32 row = block >> 5;
 				uint32 col = 1 << (block & 31);
 
-				if((m_valid[row] & col) == 0)
+				if ((m_valid[row] & col) == 0)
 				{
 					m_valid[row] |= col;
 
@@ -296,7 +297,7 @@ bool GSTextureCacheSW::Texture::Update(const GSVector4i& rect)
 		}
 	}
 
-	if(blocks > 0)
+	if (blocks > 0)
 	{
 		m_state->m_perfmon.Put(GSPerfMon::Unswizzle, bs.x * bs.y * blocks << shift);
 	}
@@ -317,22 +318,22 @@ bool GSTextureCacheSW::Texture::Save(const std::string& fn, bool dds) const
 
 	GSTexture::GSMap m;
 
-	if(t.Map(m, NULL))
+	if (t.Map(m, NULL))
 	{
 		const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[m_TEX0.PSM];
 
 		const uint8* RESTRICT src = (uint8*)m_buff;
 		int pitch = 1 << (m_tw + (psm.pal == 0 ? 2 : 0));
 
-		for(int j = 0; j < h; j++, src += pitch, m.bits += m.pitch)
+		for (int j = 0; j < h; j++, src += pitch, m.bits += m.pitch)
 		{
-			if(psm.pal == 0)
+			if (psm.pal == 0)
 			{
 				memcpy(m.bits, src, sizeof(uint32) * w);
 			}
 			else
 			{
-				for(int i = 0; i < w; i++)
+				for (int i = 0; i < w; i++)
 				{
 					((uint32*)m.bits)[i] = clut[src[i]];
 				}
