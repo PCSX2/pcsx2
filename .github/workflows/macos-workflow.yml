@@ -60,6 +60,7 @@ jobs:
           PLATFORM: ${{ matrix.platform }}
         run: |
           export HOMEBREW_NO_INSTALL_CLEANUP=1
+          brew update
           brew install sound-touch portaudio wxmac gtk+3 sdl2 libsamplerate
           brew install --cask xquartz # We use its OpenGL headers
 
