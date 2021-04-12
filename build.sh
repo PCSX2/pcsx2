@@ -69,6 +69,13 @@ set_make()
     fi
 }
 
+# TODO: Need to figure out way to grab previous sessions build folder
+uninstall_package()
+{
+    cd $build
+    sudo $make uninstall
+}
+
 set_compiler()
 {
     if [ "$useClang" -eq 1 ]; then
@@ -172,6 +179,7 @@ flags="-DCMAKE_BUILD_PO=FALSE"
 
 installMode=0
 cleanBuild=0
+uninstall=0
 useClang=0
 useIcc=0
 
@@ -200,6 +208,7 @@ for ARG in "$@"; do
         --clang             ) useClang=1 ;;
         --intel             ) useIcc=1 ;;
         --cppcheck          ) cppcheck=1 ;;
+#        --uninstall         ) uninstall=1 ;;
         --install           ) flags="$flags -DPACKAGE_MODE=ON -DXDG_STD=TRUE -DCMAKE_BUILD_TYPE=Release"; build="$root/build_rel"; installMode=1; ;;
         --dev|--devel       ) flags="$flags -DCMAKE_BUILD_TYPE=Devel"   ; build="$root/build_dev";;
         --dbg|--debug       ) flags="$flags -DCMAKE_BUILD_TYPE=Debug"   ; build="$root/build_dbg";;
@@ -230,6 +239,7 @@ for ARG in "$@"; do
             echo "--debug         : Build PCSX2 as a Debug build."
             echo "--prof          : Build PCSX2 as a Profiler build (release + debug symbol)."
             echo "--release       : Build PCSX2 as a Release build."
+            echo "--install       : Build PCSX2 as a package."
             echo
             echo "--clean         : Do a clean build."
             echo "--clean-plugins : Do a clean build of plugins, but not of pcsx2."
@@ -322,16 +332,23 @@ if [ "$CoverityBuild" -eq 1 ] && command -v cov-build >/dev/null ; then
 fi
 
 ############################################################
+# Uninstall build
+############################################################
+if [ "$uninstall" -eq 1 ] ; then
+    uninstall
+fi
+
+############################################################
 # Install build
 ############################################################
-if [ "$installMode" -eq 1 ] ; then
+if [ "$installMode" -eq 1 ] || [ "$uninstall" -eq 0 ] ; then
     $make 2>&1 | tee -a "$log"
     sudo $make install 2>&1 | tee -a "$log"
 fi
 ############################################################
 # Portable build
 ############################################################
-if [ "$installMode" -eq 0 ] ; then
+if [ "$installMode" -eq 0 ] || [ "$uninstall" -eq 0 ] ; then
     $make 2>&1 | tee -a "$log"
     $make install 2>&1 | tee -a "$log"
 fi
