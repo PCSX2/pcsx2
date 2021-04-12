@@ -170,6 +170,7 @@ run_coverity()
 # Main script
 flags="-DCMAKE_BUILD_PO=FALSE"
 
+installMode=0
 cleanBuild=0
 useClang=0
 useIcc=0
@@ -199,6 +200,7 @@ for ARG in "$@"; do
         --clang             ) useClang=1 ;;
         --intel             ) useIcc=1 ;;
         --cppcheck          ) cppcheck=1 ;;
+        --install           ) flags="$flags -DPACKAGE_MODE=ON -DXDG_STD=TRUE -DCMAKE_BUILD_TYPE=Release"; build="$root/build_rel"; installMode=1; ;;
         --dev|--devel       ) flags="$flags -DCMAKE_BUILD_TYPE=Devel"   ; build="$root/build_dev";;
         --dbg|--debug       ) flags="$flags -DCMAKE_BUILD_TYPE=Debug"   ; build="$root/build_dbg";;
         --rel|--release     ) flags="$flags -DCMAKE_BUILD_TYPE=Release" ; build="$root/build_rel";;
@@ -320,9 +322,17 @@ if [ "$CoverityBuild" -eq 1 ] && command -v cov-build >/dev/null ; then
 fi
 
 ############################################################
-# Real build
+# Install build
 ############################################################
-$make 2>&1 | tee -a "$log"
-$make install 2>&1 | tee -a "$log"
-
+if [ "$installMode" -eq 1 ] ; then
+    $make 2>&1 | tee -a "$log"
+    sudo $make install 2>&1 | tee -a "$log"
+fi
+############################################################
+# Portable build
+############################################################
+if [ "$installMode" -eq 0 ] ; then
+    $make 2>&1 | tee -a "$log"
+    $make install 2>&1 | tee -a "$log"
+fi
 exit 0
