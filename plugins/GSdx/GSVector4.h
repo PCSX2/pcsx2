@@ -492,6 +492,8 @@ public:
 
 		return _mm_testz_ps(m, m) != 0;
 
+		#else
+
 		__m128i a = _mm_castps_si128(m);
 
 		return _mm_testz_si128(a, a) != 0;
