@@ -607,7 +607,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	// Initial menubar setup.  This needs to be done first so that the menu bar's visible size
 	// can be factored into the window size (which ends up being background+status+menus)
 
-	m_menubar.Append(&m_menuSys, _("&PCSX2"));
+	m_menubar.Append(&m_menuSys, _("&System"));
 	m_menubar.Append(&m_menuCDVD, _("CD&VD"));
 	m_menubar.Append(&m_menuConfig, _("&Config"));
 	m_menubar.Append(&m_menuWindow, _("&Window"));
