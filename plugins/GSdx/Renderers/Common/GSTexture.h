@@ -35,15 +35,32 @@ protected:
 	bool m_sparse;
 
 public:
-	struct GSMap {uint8* bits; int pitch;};
+	struct GSMap
+	{
+		uint8* bits;
+		int pitch;
+	};
 
-	enum {RenderTarget = 1, DepthStencil, Texture, Offscreen, Backbuffer, SparseRenderTarget, SparseDepthStencil};
+	enum
+	{
+		RenderTarget = 1,
+		DepthStencil,
+		Texture,
+		Offscreen,
+		Backbuffer,
+		SparseRenderTarget,
+		SparseDepthStencil
+	};
 
 public:
 	GSTexture();
 	virtual ~GSTexture() {}
 
-	virtual operator bool() {ASSERT(0); return false;}
+	virtual operator bool()
+	{
+		ASSERT(0);
+		return false;
+	}
 
 	virtual bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) = 0;
 	virtual bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0) = 0;
@@ -52,17 +69,17 @@ public:
 	virtual bool Save(const std::string& fn) = 0;
 	virtual uint32 GetID() { return 0; }
 
-	GSVector2 GetScale() const {return m_scale;}
-	void SetScale(const GSVector2& scale) {m_scale = scale;}
+	GSVector2 GetScale() const { return m_scale; }
+	void SetScale(const GSVector2& scale) { m_scale = scale; }
 
-	int GetWidth() const {return m_size.x;}
-	int GetHeight() const {return m_size.y;}
-	GSVector2i GetSize() const {return m_size;}
+	int GetWidth() const { return m_size.x; }
+	int GetHeight() const { return m_size.y; }
+	GSVector2i GetSize() const { return m_size; }
 
-	int GetType() const {return m_type;}
-	int GetFormat() const {return m_format;}
+	int GetType() const { return m_type; }
+	int GetFormat() const { return m_format; }
 
-	virtual void CommitPages(const GSVector2i& region, bool commit) {};
+	virtual void CommitPages(const GSVector2i& region, bool commit) {}
 	void CommitRegion(const GSVector2i& region);
 	void Commit();
 	void Uncommit();

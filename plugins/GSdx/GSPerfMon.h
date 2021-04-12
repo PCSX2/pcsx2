@@ -24,18 +24,25 @@
 class GSPerfMon
 {
 public:
-	enum timer_t 
+	enum timer_t
 	{
-		Main, 
-		Sync, 
-		WorkerDraw0, WorkerDraw1, WorkerDraw2, WorkerDraw3, WorkerDraw4, WorkerDraw5, WorkerDraw6, WorkerDraw7, 
-		WorkerDraw8, WorkerDraw9, WorkerDraw10, WorkerDraw11, WorkerDraw12, WorkerDraw13, WorkerDraw14, WorkerDraw15, 
+		Main,
+		Sync,
+		WorkerDraw0, WorkerDraw1, WorkerDraw2, WorkerDraw3, WorkerDraw4, WorkerDraw5, WorkerDraw6, WorkerDraw7,
+		WorkerDraw8, WorkerDraw9, WorkerDraw10, WorkerDraw11, WorkerDraw12, WorkerDraw13, WorkerDraw14, WorkerDraw15,
 		TimerLast,
 	};
-	
-	enum counter_t 
+
+	enum counter_t
 	{
-		Frame, Prim, Draw, Swizzle, Unswizzle, Fillrate, Quad, SyncPoint,
+		Frame,
+		Prim,
+		Draw,
+		Swizzle,
+		Unswizzle,
+		Fillrate,
+		Quad,
+		SyncPoint,
 		CounterLast,
 	};
 
@@ -52,11 +59,11 @@ protected:
 public:
 	GSPerfMon();
 
-	void SetFrame(uint64 frame) {m_frame = frame;}
-	uint64 GetFrame() {return m_frame;}
+	void SetFrame(uint64 frame) { m_frame = frame; }
+	uint64 GetFrame() { return m_frame; }
 
 	void Put(counter_t c, double val = 0);
-	double Get(counter_t c) {return m_stats[c];}
+	double Get(counter_t c) { return m_stats[c]; }
 	void Update();
 
 	void Start(int timer = Main);
@@ -70,6 +77,10 @@ class GSPerfMonAutoTimer
 	int m_timer;
 
 public:
-	GSPerfMonAutoTimer(GSPerfMon* pm, int timer = GSPerfMon::Main) {m_timer = timer; (m_pm = pm)->Start(m_timer);}
-	~GSPerfMonAutoTimer() {m_pm->Stop(m_timer);}
+	GSPerfMonAutoTimer(GSPerfMon* pm, int timer = GSPerfMon::Main)
+	{
+		m_timer = timer;
+		(m_pm = pm)->Start(m_timer);
+	}
+	~GSPerfMonAutoTimer() { m_pm->Stop(m_timer); }
 };

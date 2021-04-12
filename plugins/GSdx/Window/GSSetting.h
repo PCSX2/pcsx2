@@ -29,11 +29,11 @@ struct GSSetting
 	std::string name;
 	std::string note;
 
-	template< typename T>
-	explicit GSSetting(T value, const char* name, const char* note) :
-		value(static_cast<int32_t>(value)),
-		name(name),
-		note(note)
+	template <typename T>
+	explicit GSSetting(T value, const char* name, const char* note)
+		: value(static_cast<int32_t>(value))
+		, name(name)
+		, note(note)
 	{
 	}
 };
@@ -45,7 +45,8 @@ const char* dialog_message(int ID, bool* updateText = NULL);
 #endif
 
 #ifndef _WIN32
-enum {
+enum
+{
 	IDC_FILTER,
 	IDC_HALF_SCREEN_TS,
 	IDC_TRI_FILTER,

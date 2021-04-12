@@ -30,7 +30,7 @@
 
 class GSWndEGL : public GSWndGL
 {
-	void *m_native_window;
+	void* m_native_window;
 
 	EGLDisplay m_eglDisplay;
 	EGLSurface m_eglSurface;
@@ -50,15 +50,15 @@ class GSWndEGL : public GSWndGL
 
 public:
 	GSWndEGL(int platform);
-	virtual ~GSWndEGL() {};
+	virtual ~GSWndEGL(){};
 
 	bool Create(const std::string& title, int w, int h) final;
 	bool Attach(void* handle, bool managed = true) final;
 	void Detach() final;
 
-	virtual void *CreateNativeDisplay() = 0;
-	virtual void *CreateNativeWindow(int w, int h) = 0; // GSopen1/PSX API
-	virtual void *AttachNativeWindow(void *handle) = 0;
+	virtual void* CreateNativeDisplay() = 0;
+	virtual void* CreateNativeWindow(int w, int h) = 0; // GSopen1/PSX API
+	virtual void* AttachNativeWindow(void* handle) = 0;
 	virtual void DestroyNativeResources() = 0;
 
 	GSVector4i GetClientRect();
@@ -71,9 +71,9 @@ public:
 	void Flip() final;
 
 	// Deprecated API
-	void Show() final {};
-	void Hide() final {};
-	void HideFrame() final {}; // DX9 API
+	void Show() final {}
+	void Hide() final {}
+	void HideFrame() final {} // DX9 API
 
 	virtual void* GetDisplay() = 0; // GSopen1 API
 	virtual void* GetHandle() = 0; // DX API
@@ -91,19 +91,19 @@ public:
 
 class GSWndEGL_X11 : public GSWndEGL
 {
-	Display  *m_NativeDisplay;
-	Window    m_NativeWindow;
+	Display* m_NativeDisplay;
+	Window m_NativeWindow;
 
-	public:
+public:
 	GSWndEGL_X11();
-	virtual ~GSWndEGL_X11() {};
+	virtual ~GSWndEGL_X11(){};
 
-	void* GetDisplay() final { return (void*)m_NativeDisplay;}
-	void* GetHandle() final {return (void*)&m_NativeWindow;}
+	void* GetDisplay() final { return (void*)m_NativeDisplay; }
+	void* GetHandle() final { return (void*)&m_NativeWindow; }
 
-	void *CreateNativeDisplay() final;
-	void *CreateNativeWindow(int w, int h) final;
-	void *AttachNativeWindow(void *handle) final;
+	void* CreateNativeDisplay() final;
+	void* CreateNativeWindow(int w, int h) final;
+	void* AttachNativeWindow(void* handle) final;
 	void DestroyNativeResources() final;
 
 	bool SetWindowText(const char* title) final;
@@ -121,19 +121,19 @@ class GSWndEGL_X11 : public GSWndEGL
 
 class GSWndEGL_WL : public GSWndEGL
 {
-	wl_display    *m_NativeDisplay;
-	wl_egl_window *m_NativeWindow;
+	wl_display* m_NativeDisplay;
+	wl_egl_window* m_NativeWindow;
 
-	public:
+public:
 	GSWndEGL_WL();
-	virtual ~GSWndEGL_WL() {};
+	virtual ~GSWndEGL_WL(){};
 
-	void* GetDisplay() final { return (void*)m_NativeDisplay;}
-	void* GetHandle() final {return (void*)m_NativeWindow;}
+	void* GetDisplay() final { return (void*)m_NativeDisplay; }
+	void* GetHandle() final { return (void*)m_NativeWindow; }
 
-	void *CreateNativeDisplay() final;
-	void *CreateNativeWindow(int w, int h) final;
-	void *AttachNativeWindow(void *handle) final;
+	void* CreateNativeDisplay() final;
+	void* CreateNativeWindow(int w, int h) final;
+	void* AttachNativeWindow(void* handle) final;
 	void DestroyNativeResources() final;
 
 	bool SetWindowText(const char* title) final;

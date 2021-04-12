@@ -24,7 +24,8 @@
 #include "GSdx.h"
 #include "Utilities/boost_spsc_queue.hpp"
 
-template<class T, int CAPACITY> class GSJobQueue final
+template <class T, int CAPACITY>
+class GSJobQueue final
 {
 private:
 	std::thread m_thread;
@@ -37,12 +38,15 @@ private:
 	std::condition_variable m_empty;
 	std::condition_variable m_notempty;
 
-	void ThreadProc() {
+	void ThreadProc()
+	{
 		std::unique_lock<std::mutex> l(m_lock);
 
-		while (true) {
+		while (true)
+		{
 
-			while (m_queue.empty()) {
+			while (m_queue.empty())
+			{
 				if (m_exit)
 					return;
 
@@ -64,9 +68,9 @@ private:
 	}
 
 public:
-	GSJobQueue(std::function<void(T&)> func) :
-		m_func(func),
-		m_exit(false)
+	GSJobQueue(std::function<void(T&)> func)
+		: m_func(func)
+		, m_exit(false)
 	{
 		m_thread = std::thread(&GSJobQueue::ThreadProc, this);
 	}
@@ -87,8 +91,9 @@ public:
 		return m_queue.empty();
 	}
 
-	void Push(const T& item) {
-		while(!m_queue.push(item))
+	void Push(const T& item)
+	{
+		while (!m_queue.push(item))
 			std::this_thread::yield();
 
 		{
@@ -109,7 +114,8 @@ public:
 		assert(IsEmpty());
 	}
 
-	void operator() (T& item) {
+	void operator()(T& item)
+	{
 		m_func(item);
 	}
 };

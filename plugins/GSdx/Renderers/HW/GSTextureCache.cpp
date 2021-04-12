@@ -31,7 +31,8 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 	: m_renderer(r)
 	, m_palette_map(r)
 {
-	if (theApp.GetConfigB("UserHacks")) {
+	if (theApp.GetConfigB("UserHacks"))
+	{
 		UserHacks_HalfPixelOffset      = theApp.GetConfigI("UserHacks_HalfPixelOffset") == 1;
 		m_preload_frame                = theApp.GetConfigB("preload_frame_with_gs_data");
 		m_disable_partial_invalidation = theApp.GetConfigB("UserHacks_DisablePartialInvalidation");
@@ -39,7 +40,9 @@ GSTextureCache::GSTextureCache(GSRenderer* r)
 		m_cpu_fb_conversion            = theApp.GetConfigB("UserHacks_CPU_FB_Conversion");
 		m_texture_inside_rt            = theApp.GetConfigB("UserHacks_TextureInsideRt");
 		m_wrap_gs_mem                  = theApp.GetConfigB("wrap_gs_mem");
-	} else {
+	}
+	else
+	{
 		UserHacks_HalfPixelOffset      = false;
 		m_preload_frame                = false;
 		m_disable_partial_invalidation = false;
@@ -77,7 +80,8 @@ void GSTextureCache::RemovePartial()
 
 	for (int type = 0; type < 2; type++)
 	{
-		for (auto t : m_dst[type]) delete t;
+		for (auto t : m_dst[type])
+			delete t;
 
 		m_dst[type].clear();
 	}
@@ -87,9 +91,10 @@ void GSTextureCache::RemoveAll()
 {
 	m_src.RemoveAll();
 
-	for(int type = 0; type < 2; type++)
+	for (int type = 0; type < 2; type++)
 	{
-		for (auto t : m_dst[type]) delete t;
+		for (auto t : m_dst[type])
+			delete t;
 
 		m_dst[type].clear();
 	}
@@ -99,13 +104,17 @@ void GSTextureCache::RemoveAll()
 
 GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, const GSVector4i& r, bool palette)
 {
-	if (!m_can_convert_depth) {
+	if (!m_can_convert_depth)
+	{
 		GL_CACHE("LookupDepthSource not supported (0x%x, F:0x%x)", TEX0.TBP0, TEX0.PSM);
-		if (m_renderer->m_game.title == CRC::JackieChanAdv || m_renderer->m_game.title == CRC::SVCChaos) {
+		if (m_renderer->m_game.title == CRC::JackieChanAdv || m_renderer->m_game.title == CRC::SVCChaos)
+		{
 			// JackieChan and SVCChaos cause regressions when skipping the draw calls when depth is disabled/not supported.
 			// This way we make sure there are no regressions on D3D as well.
 			return LookupSource(TEX0, TEXA, r);
-		} else {
+		}
+		else
+		{
 			throw GSDXRecoverableError();
 		}
 	}
@@ -119,26 +128,32 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 	uint32 bp = TEX0.TBP0;
 	uint32 psm = TEX0.PSM;
 
-	for(auto t : m_dst[DepthStencil]) {
-		if(t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
+	for (auto t : m_dst[DepthStencil])
+	{
+		if (t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 		{
 			ASSERT(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
-			if (t->m_age == 0) {
+			if (t->m_age == 0)
+			{
 				// Perfect Match
 				dst = t;
 				break;
-			} else if (t->m_age == 1) {
+			}
+			else if (t->m_age == 1)
+			{
 				// Better than nothing (Full Spectrum Warrior)
 				dst = t;
 			}
 		}
 	}
 
-	if (!dst) {
+	if (!dst)
+	{
 		// Retry on the render target (Silent Hill 4)
-		for(auto t : m_dst[RenderTarget]) {
+		for (auto t : m_dst[RenderTarget])
+		{
 			// FIXME: do I need to allow m_age == 1 as a potential match (as DepthStencil) ???
-			if(!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
+			if (!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 			{
 				ASSERT(GSLocalMemory::m_psm[t->m_TEX0.PSM].depth);
 				dst = t;
@@ -147,10 +162,11 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		}
 	}
 
-	if (dst) {
+	if (dst)
+	{
 		GL_CACHE("TC depth: dst %s hit: %d (0x%x, %s)", to_string(dst->m_type),
-				dst->m_texture ? dst->m_texture->GetID() : 0,
-				TEX0.TBP0, psm_str(psm));
+			dst->m_texture ? dst->m_texture->GetID() : 0,
+			TEX0.TBP0, psm_str(psm));
 
 		// Create a shared texture source
 		src = new Source(m_renderer, TEX0, TEXA, m_temp, true);
@@ -167,12 +183,15 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		// texture cache list. It means that a new Source is created everytime we need it.
 		// If it is too expensive, one could cut memory allocation in Source constructor for this
 		// use case.
-		if (palette) {
+		if (palette)
+		{
 			AttachPaletteToSource(src, psm_s.pal, true);
 		}
 
 		m_src.m_surfaces.insert(src);
-	} else {
+	}
+	else
+	{
 		GL_CACHE("TC depth: ERROR miss (0x%x, %s)", TEX0.TBP0, psm_str(psm));
 		// Possible ? In this case we could call LookupSource
 		// Or just put a basic texture
@@ -182,10 +201,13 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		// Note: might worth to check previous frame
 		// Note: otherwise return NULL and skip the draw
 
-		if (m_renderer->m_game.title == CRC::JackieChanAdv || m_renderer->m_game.title == CRC::SVCChaos) {
+		if (m_renderer->m_game.title == CRC::JackieChanAdv || m_renderer->m_game.title == CRC::SVCChaos)
+		{
 			// JackieChan and SVCChaos cause regressions when skipping the draw calls so we reuse the old code for these two.
 			return LookupSource(TEX0, TEXA, r);
-		} else {
+		}
+		else
+		{
 			// Full Spectrum Warrior: first draw call of cut-scene rendering
 			// The game tries to emulate a texture shuffle with an old depth buffer
 			// (don't exists yet for us due to the cache)
@@ -205,7 +227,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	//const GSLocalMemory::psm_t& cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[TEX0.CPSM] : psm;
 
 	// Until DX is fixed
-	if(psm_s.pal > 0)
+	if (psm_s.pal > 0)
 		m_renderer->m_mem.m_clut.Read32(TEX0, TEXA);
 
 	const uint32* clut = m_renderer->m_mem.m_clut;
@@ -214,7 +236,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 	auto& m = m_src.m_map[TEX0.TBP0 >> 5];
 
-	for(auto i = m.begin(); i != m.end(); ++i)
+	for (auto i = m.begin(); i != m.end(); ++i)
 	{
 		Source* s = *i;
 
@@ -222,11 +244,12 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 			continue;
 
 		// Target are converted (AEM & palette) on the fly by the GPU. They don't need extra check
-		if (!s->m_target) {
+		if (!s->m_target)
+		{
 			// We request a palette texture (psm_s.pal). If the texture was
 			// converted by the CPU (!s->m_palette), we need to ensure
 			// palette content is the same.
-			if (psm_s.pal > 0 && !s->m_palette && !s->ClutMatch({ clut, psm_s.pal }))
+			if (psm_s.pal > 0 && !s->m_palette && !s->ClutMatch({clut, psm_s.pal}))
 				continue;
 
 			// We request a 24/16 bit RGBA texture. Alpha expansion was done by
@@ -248,9 +271,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 	int y_offset = 0;
 
 #ifdef DISABLE_HW_TEXTURE_CACHE
-	if( 0 )
+	if (0)
 #else
-	if(src == NULL)
+	if (src == NULL)
 #endif
 	{
 		uint32 bp = TEX0.TBP0;
@@ -259,7 +282,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		uint32 bw = TEX0.TBW;
 		int tw = 1 << TEX0.TW;
 		int th = 1 << TEX0.TH;
-		uint32 bp_end = psm_s.bn(tw - 1, th - 1, bp, bw);  // Valid only for color formats
+		uint32 bp_end = psm_s.bn(tw - 1, th - 1, bp, bw); // Valid only for color formats
 
 		// Arc the Lad finds the wrong surface here when looking for a depth stencil.
 		// Since we're currently not caching depth stencils (check ToDo in CreateSource) we should not look for it here.
@@ -269,8 +292,10 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 		bool texture_inside_rt = ShallSearchTextureInsideRt();
 
-		for(auto t : m_dst[RenderTarget]) {
-			if(t->m_used && t->m_dirty.empty()) {
+		for (auto t : m_dst[RenderTarget])
+		{
+			if (t->m_used && t->m_dirty.empty())
+			{
 				// Typical bug (MGS3 blue cloud):
 				// 1/ RT used as 32 bits => alpha channel written
 				// 2/ RT used as 24 bits => no update of alpha channel
@@ -280,7 +305,8 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 				// Solution: consider the RT as 32 bits if the alpha was used in the past
 				uint32 t_psm = (t->m_dirty_alpha) ? t->m_TEX0.PSM & ~0x1 : t->m_TEX0.PSM;
 
-				if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t_psm)) {
+				if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t_psm))
+				{
 					// It is a complex to convert the code in shader. As a reference, let's do it on the CPU, it will be slow but
 					// 1/ it just works :)
 					// 2/ even with upscaling
@@ -295,8 +321,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 						dst = t;
 
 					break;
-
-				} else if ((t->m_TEX0.TBW >= 16) && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0 + t->m_TEX0.TBW * 0x10, t->m_TEX0.PSM)) {
+				}
+				else if ((t->m_TEX0.TBW >= 16) && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0 + t->m_TEX0.TBW * 0x10, t->m_TEX0.PSM))
+				{
 					// Detect half of the render target (fix snow engine game)
 					// Target Page (8KB) have always a width of 64 pixels
 					// Half of the Target is TBW/2 pages * 8KB / (1 block * 256B) = 0x10
@@ -304,8 +331,9 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 					dst = t;
 
 					break;
-
-				} else if (texture_inside_rt && psm == PSM_PSMCT32 && t->m_TEX0.PSM == psm && t->m_TEX0.TBP0 < bp && t->m_end_block >= bp) {
+				}
+				else if (texture_inside_rt && psm == PSM_PSMCT32 && t->m_TEX0.PSM == psm && t->m_TEX0.TBP0 < bp && t->m_end_block >= bp)
+				{
 					// Only PSMCT32 to limit false hits
 
 					// Check if it is possible to hit with valid <x,y> offset on the given Target
@@ -346,7 +374,7 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 					// SWEEP SEARCH: <x,y> offset
 
-					TexInsideRtCacheEntry entry = { psm, bp, bp_end, bw, t->m_TEX0.TBP0, t->m_end_block, false, 0, 0 };
+					TexInsideRtCacheEntry entry = {psm, bp, bp_end, bw, t->m_TEX0.TBP0, t->m_end_block, false, 0, 0};
 
 					for (int candidate_x_offset = 0; candidate_x_offset < t->m_valid.z; ++candidate_x_offset)
 					{
@@ -404,23 +432,28 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 		//
 		// Sigh... They don't help us.
 
-		if (dst == NULL && m_can_convert_depth) {
+		if (dst == NULL && m_can_convert_depth)
+		{
 			// Let's try a trick to avoid to use wrongly a depth buffer
 			// Unfortunately, I don't have any Arc the Lad testcase
 			//
 			// 1/ Check only current frame, I guess it is only used as a postprocessing effect
-			for(auto t : m_dst[DepthStencil]) {
-				if(!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
+			for (auto t : m_dst[DepthStencil])
+			{
+				if (!t->m_age && t->m_used && t->m_dirty.empty() && GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 				{
 					GL_INS("TC: Warning depth format read as color format. Pixels will be scrambled");
 					// Let's fetch a depth format texture. Rational, it will avoid the texture allocation and the
 					// rescaling of the current function.
-					if (psm_s.bpp > 8) {
+					if (psm_s.bpp > 8)
+					{
 						GIFRegTEX0 depth_TEX0;
 						depth_TEX0.u32[0] = TEX0.u32[0] | (0x30u << 20u);
 						depth_TEX0.u32[1] = TEX0.u32[1];
 						return LookupDepthSource(depth_TEX0, TEXA, r);
-					} else {
+					}
+					else
+					{
 						return LookupDepthSource(TEX0, TEXA, r, true);
 					}
 				}
@@ -430,28 +463,33 @@ GSTextureCache::Source* GSTextureCache::LookupSource(const GIFRegTEX0& TEX0, con
 
 	bool new_source = false;
 
-	if(src == NULL)
+	if (src == NULL)
 	{
 #ifdef ENABLE_OGL_DEBUG
-		if (dst) {
+		if (dst)
+		{
 			GL_CACHE("TC: dst %s hit (%s): %d (0x%x, %s)", to_string(dst->m_type), half_right ? "half" : "full",
-						dst->m_texture ? dst->m_texture->GetID() : 0,
-						TEX0.TBP0, psm_str(TEX0.PSM));
-		} else {
+				dst->m_texture ? dst->m_texture->GetID() : 0,
+				TEX0.TBP0, psm_str(TEX0.PSM));
+		}
+		else
+		{
 			GL_CACHE("TC: src miss (0x%x, 0x%x, %s)", TEX0.TBP0, psm_s.pal > 0 ? TEX0.CBP : 0, psm_str(TEX0.PSM));
 		}
 #endif
 		src = CreateSource(TEX0, TEXA, dst, half_right, x_offset, y_offset);
 		new_source = true;
-
-	} else {
+	}
+	else
+	{
 		GL_CACHE("TC: src hit: %d (0x%x, 0x%x, %s)",
-					src->m_texture ? src->m_texture->GetID() : 0,
-					TEX0.TBP0, psm_s.pal > 0 ? TEX0.CBP : 0,
-					psm_str(TEX0.PSM));
+			src->m_texture ? src->m_texture->GetID() : 0,
+			TEX0.TBP0, psm_s.pal > 0 ? TEX0.CBP : 0,
+			psm_str(TEX0.PSM));
 	}
 
-	if (src->m_palette && !new_source && !src->ClutMatch({ clut, psm_s.pal })) {
+	if (src->m_palette && !new_source && !src->ClutMatch({clut, psm_s.pal}))
+	{
 		AttachPaletteToSource(src, psm_s.pal, true);
 	}
 
@@ -497,10 +535,11 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	Target* dst = NULL;
 
 	auto& list = m_dst[type];
-	for(auto i = list.begin(); i != list.end(); ++i) {
+	for (auto i = list.begin(); i != list.end(); ++i)
+	{
 		Target* t = *i;
 
-		if(bp == t->m_TEX0.TBP0)
+		if (bp == t->m_TEX0.TBP0)
 		{
 			list.MoveFront(i.Index());
 
@@ -513,32 +552,40 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		}
 	}
 
-	if (dst) {
+	if (dst)
+	{
 		GL_CACHE("TC: Lookup Target(%s) %dx%d, hit: %d (0x%x, %s)", to_string(type), w, h, dst->m_texture->GetID(), bp, psm_str(TEX0.PSM));
 
 		dst->Update();
 
 		dst->m_dirty_alpha |= (psm_s.trbpp == 32 && (fbmask & 0xFF000000) != 0xFF000000) || (psm_s.trbpp == 16);
-
-	} else if (m_can_convert_depth) {
+	}
+	else if (m_can_convert_depth)
+	{
 
 		int rev_type = (type == DepthStencil) ? RenderTarget : DepthStencil;
 
 		// Depth stencil/RT can be an older RT/DS but only check recent RT/DS to avoid to pick
 		// some bad data.
 		Target* dst_match = nullptr;
-		for(auto t : m_dst[rev_type]) {
-			if (bp == t->m_TEX0.TBP0) {
-				if (t->m_age == 0) {
+		for (auto t : m_dst[rev_type])
+		{
+			if (bp == t->m_TEX0.TBP0)
+			{
+				if (t->m_age == 0)
+				{
 					dst_match = t;
 					break;
-				} else if (t->m_age == 1) {
+				}
+				else if (t->m_age == 1)
+				{
 					dst_match = t;
 				}
 			}
 		}
 
-		if (dst_match) {
+		if (dst_match)
+		{
 			GSVector4 sRect(0, 0, 1, 1);
 			GSVector4 dRect(0, 0, w, h);
 
@@ -547,10 +594,13 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 			int shader;
 			bool fmt_16_bits = (psm_s.bpp == 16 && GSLocalMemory::m_psm[dst_match->m_TEX0.PSM].bpp == 16);
-			if (type == DepthStencil) {
+			if (type == DepthStencil)
+			{
 				GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, %s was %s)", w, h, bp, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
 				shader = (fmt_16_bits) ? ShaderConvert_RGB5A1_TO_FLOAT16 : ShaderConvert_RGBA8_TO_FLOAT32 + psm_s.fmt;
-			} else {
+			}
+			else
+			{
 				GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, %s was %s)", w, h, bp, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
 				shader = (fmt_16_bits) ? ShaderConvert_FLOAT16_TO_RGB5A1 : ShaderConvert_FLOAT32_TO_RGBA8;
 			}
@@ -558,7 +608,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		}
 	}
 
-	if(dst == NULL)
+	if (dst == NULL)
 	{
 		GL_CACHE("TC: Lookup Target(%s) %dx%d, miss (0x%x, %s)", to_string(type), w, h, bp, psm_str(TEX0.PSM));
 
@@ -576,7 +626,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 		// From a performance point of view, it might cost a little on big upscaling
 		// but normally few RT are miss so it must remain reasonable.
 		bool supported_fmt = m_can_convert_depth || psm_s.depth == 0;
-		if (m_preload_frame && TEX0.TBW > 0 && supported_fmt) {
+		if (m_preload_frame && TEX0.TBW > 0 && supported_fmt)
+		{
 			GL_INS("Preloading the RT DATA");
 			// RT doesn't have height but if we use a too big value, we will read outside of the GS memory.
 			int page0 = TEX0.TBP0 >> 5;
@@ -587,18 +638,20 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 			dst->m_dirty.push_back(GSDirtyRect(GSVector4i(0, 0, TEX0.TBW * 64, max_h), TEX0.PSM));
 			dst->Update();
-		} else {
+		}
+		else
+		{
 #ifdef ENABLE_OGL_DEBUG
 			switch (type) {
-			case RenderTarget: m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); break;
-			case DepthStencil: m_renderer->m_dev->ClearDepth(dst->m_texture); break;
-			default: break;
+				case RenderTarget: m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); break;
+				case DepthStencil: m_renderer->m_dev->ClearDepth(dst->m_texture); break;
+				default: break;
 			}
 #endif
 		}
 	}
 	ScaleTexture(dst->m_texture);
-	if(used)
+	if (used)
 	{
 		dst->m_used = true;
 	}
@@ -620,8 +673,10 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 #endif
 
 	// Let's try to find a perfect frame that contains valid data
-	for(auto t : m_dst[RenderTarget]) {
-		if(bp == t->m_TEX0.TBP0 && t->m_end_block >= bp) {
+	for (auto t : m_dst[RenderTarget])
+	{
+		if (bp == t->m_TEX0.TBP0 && t->m_end_block >= bp)
+		{
 			dst = t;
 
 			GL_CACHE("TC: Lookup Frame %dx%d, perfect hit: %d (0x%x -> 0x%x %s)", w, h, dst->m_texture->GetID(), bp, t->m_end_block, psm_str(TEX0.PSM));
@@ -631,9 +686,12 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	}
 
 	// 2nd try ! Try to find a frame that include the bp
-	if (dst == NULL) {
-		for(auto t : m_dst[RenderTarget]) {
-			if (t->m_TEX0.TBP0 < bp && bp <= t->m_end_block) {
+	if (dst == NULL)
+	{
+		for (auto t : m_dst[RenderTarget])
+		{
+			if (t->m_TEX0.TBP0 < bp && bp <= t->m_end_block)
+			{
 				dst = t;
 
 				GL_CACHE("TC: Lookup Frame %dx%d, inclusive hit: %d (0x%x, took 0x%x -> 0x%x %s)", w, h, t->m_texture->GetID(), bp, t->m_TEX0.TBP0, t->m_end_block, psm_str(TEX0.PSM));
@@ -644,9 +702,12 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	}
 
 	// 3rd try ! Try to find a frame that doesn't contain valid data (honestly I'm not sure we need to do it)
-	if (dst == NULL) {
-		for(auto t : m_dst[RenderTarget]) {
-			if(bp == t->m_TEX0.TBP0) {
+	if (dst == NULL)
+	{
+		for (auto t : m_dst[RenderTarget])
+		{
+			if (bp == t->m_TEX0.TBP0)
+			{
 				dst = t;
 
 				GL_CACHE("TC: Lookup Frame %dx%d, empty hit: %d (0x%x -> 0x%x %s)", w, h, dst->m_texture->GetID(), bp, t->m_end_block, psm_str(TEX0.PSM));
@@ -681,7 +742,7 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 	}
 #endif
 
-	if(dst == NULL)
+	if (dst == NULL)
 	{
 		GL_CACHE("TC: Lookup Frame %dx%d, miss (0x%x %s)", w, h, bp, psm_str(TEX0.PSM));
 
@@ -690,7 +751,8 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 		m_renderer->m_dev->ClearRenderTarget(dst->m_texture, 0); // new frame buffers after reset should be cleared, don't display memory garbage
 
-		if (m_preload_frame) {
+		if (m_preload_frame)
+		{
 			// Load GS data into frame. Game can directly uploads a background or the full image in
 			// "CTRC" buffer. It will also avoid various black screen issue in gs dump.
 			//
@@ -721,15 +783,15 @@ void GSTextureCache::InvalidateVideoMemType(int type, uint32 bp)
 		return;
 
 	auto& list = m_dst[type];
-	for(auto i = list.begin(); i != list.end(); ++i)
+	for (auto i = list.begin(); i != list.end(); ++i)
 	{
 		Target* t = *i;
 
-		if(bp == t->m_TEX0.TBP0)
+		if (bp == t->m_TEX0.TBP0)
 		{
 			GL_CACHE("TC: InvalidateVideoMemType: Remove Target(%s) %d (0x%x)", to_string(type),
-					t->m_texture ? t->m_texture->GetID() : 0,
-					t->m_TEX0.TBP0);
+				t->m_texture ? t->m_texture->GetID() : 0,
+				t->m_TEX0.TBP0);
 
 			list.erase(i);
 			delete t;
@@ -737,25 +799,25 @@ void GSTextureCache::InvalidateVideoMemType(int type, uint32 bp)
 			break;
 		}
 	}
-
 }
 
 // Goal: invalidate data sent to the GPU when the source (GS memory) is modified
 // Called each time you want to write to the GS memory
 void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, bool target)
 {
-	if(!off) return; // Fixme. Crashes Dual Hearts, maybe others as well. Was fine before r1549.
+	if (!off)
+		return; // Fixme. Crashes Dual Hearts, maybe others as well. Was fine before r1549.
 
 	uint32 bp = off->bp;
 	uint32 bw = off->bw;
 	uint32 psm = off->psm;
 
-	if(!target)
+	if (!target)
 	{
 		// Remove Source that have same BP as the render target (color&dss)
 		// rendering will dirty the copy
 		auto& list = m_src.m_map[bp >> 5];
-		for(auto i = list.begin(); i != list.end(); )
+		for (auto i = list.begin(); i != list.end();)
 		{
 			Source* s = *i;
 			++i;
@@ -768,17 +830,18 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 		}
 
 		uint32 bbp = bp + bw * 0x10;
-		if (bw >= 16 && bbp < 16384) {
+		if (bw >= 16 && bbp < 16384)
+		{
 			// Detect half of the render target (fix snow engine game)
 			// Target Page (8KB) have always a width of 64 pixels
 			// Half of the Target is TBW/2 pages * 8KB / (1 block * 256B) = 0x10
 			auto& list = m_src.m_map[bbp >> 5];
-			for(auto i = list.begin(); i != list.end(); )
+			for (auto i = list.begin(); i != list.end();)
 			{
 				Source* s = *i;
 				++i;
 
-				if(GSUtil::HasSharedBits(bbp, psm, s->m_TEX0.TBP0, s->m_TEX0.PSM))
+				if (GSUtil::HasSharedBits(bbp, psm, s->m_TEX0.TBP0, s->m_TEX0.PSM))
 				{
 					m_src.RemoveAt(s);
 				}
@@ -788,13 +851,15 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 		// Haunting ground write frame buffer 0x3000 and expect to write data to 0x3380
 		// Note: the game only does a 0 direct write. If some games expect some real data
 		// we are screwed.
-		if (m_renderer->m_game.title == CRC::HauntingGround) {
-			uint32 end_block = GSLocalMemory::m_psm[psm].bn(rect.z - 1, rect.w - 1, bp, bw);  // Valid only for color formats
+		if (m_renderer->m_game.title == CRC::HauntingGround)
+		{
+			uint32 end_block = GSLocalMemory::m_psm[psm].bn(rect.z - 1, rect.w - 1, bp, bw); // Valid only for color formats
 			auto type = RenderTarget;
 
-			for(auto t : m_dst[type])
+			for (auto t : m_dst[type])
 			{
-				if (t->m_TEX0.TBP0 > bp && t->m_end_block <= end_block) {
+				if (t->m_TEX0.TBP0 > bp && t->m_end_block <= end_block)
+				{
 					// Haunting ground expect to clean buffer B with a rendering into buffer A.
 					// Situation is quite messy as it would require to extract the data from the buffer A
 					// and to move in buffer B.
@@ -804,8 +869,8 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 					//
 					// So just clear the damn buffer and forget about it.
 					GL_CACHE("TC: Clear Sub Target(%s) %d (0x%x)", to_string(type),
-							t->m_texture ? t->m_texture->GetID() : 0,
-							t->m_TEX0.TBP0);
+						t->m_texture ? t->m_texture->GetID() : 0,
+						t->m_TEX0.TBP0);
 					m_renderer->m_dev->ClearRenderTarget(t->m_texture, 0);
 				}
 			}
@@ -820,23 +885,23 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 
 	bool found = false;
 
-	for(const uint32* p = pages; *p != GSOffset::EOP; p++)
+	for (const uint32* p = pages; *p != GSOffset::EOP; p++)
 	{
 		uint32 page = *p;
 
 		auto& list = m_src.m_map[page];
-		for(auto i = list.begin(); i != list.end(); )
+		for (auto i = list.begin(); i != list.end();)
 		{
 			Source* s = *i;
 			++i;
 
-			if(GSUtil::HasSharedBits(psm, s->m_TEX0.PSM))
+			if (GSUtil::HasSharedBits(psm, s->m_TEX0.PSM))
 			{
 				bool b = bp == s->m_TEX0.TBP0;
 
-				if(!s->m_target)
+				if (!s->m_target)
 				{
-					if(m_disable_partial_invalidation && s->m_repeating)
+					if (m_disable_partial_invalidation && s->m_repeating)
 					{
 						m_src.RemoveAt(s);
 					}
@@ -845,10 +910,10 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 						uint32* RESTRICT valid = s->m_valid;
 
 						// Invalidate data of input texture
-						if(s->m_repeating)
+						if (s->m_repeating)
 						{
 							// Note: very hot path on snowbling engine game
-							for(const GSVector2i& k : s->m_p2t[page])
+							for (const GSVector2i& k : s->m_p2t[page])
 							{
 								valid[k.x] &= k.y;
 							}
@@ -871,7 +936,7 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 					if (!b)
 						b = s->Overlaps(bp, bw, psm, rect);
 
-					if(b)
+					if (b)
 					{
 						m_src.RemoveAt(s);
 					}
@@ -880,12 +945,13 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 		}
 	}
 
-	if(!target) return;
+	if (!target)
+		return;
 
-	for(int type = 0; type < 2; type++)
+	for (int type = 0; type < 2; type++)
 	{
 		auto& list = m_dst[type];
-		for(auto i = list.begin(); i != list.end(); )
+		for (auto i = list.begin(); i != list.end();)
 		{
 			auto j = i++;
 			Target* t = *j;
@@ -897,13 +963,13 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 			// Major issues are expected if the game try to reuse the target
 			// If we dirty the RT, it will likely upload partially invalid data.
 			// (The color on the previous example)
-			if(GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
+			if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 			{
-				if(!found && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
+				if (!found && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
 				{
 					GL_CACHE("TC: Dirty Target(%s) %d (0x%x) r(%d,%d,%d,%d)", to_string(type),
-								t->m_texture ? t->m_texture->GetID() : 0,
-								t->m_TEX0.TBP0, r.x, r.y, r.z, r.w);
+						t->m_texture ? t->m_texture->GetID() : 0,
+						t->m_TEX0.TBP0, r.x, r.y, r.z, r.w);
 					t->m_dirty.push_back(GSDirtyRect(r, psm));
 					t->m_TEX0.TBW = bw;
 				}
@@ -911,12 +977,14 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 				{
 					list.erase(j);
 					GL_CACHE("TC: Remove Target(%s) %d (0x%x)", to_string(type),
-								t->m_texture ? t->m_texture->GetID() : 0,
-								t->m_TEX0.TBP0);
+						t->m_texture ? t->m_texture->GetID() : 0,
+						t->m_TEX0.TBP0);
 					delete t;
 					continue;
 				}
-			} else if (bp == t->m_TEX0.TBP0) {
+			}
+			else if (bp == t->m_TEX0.TBP0)
+			{
 				// EE writes the ALPHA channel. Mark it as invalid for
 				// the texture cache. Otherwise it will generate a wrong
 				// hit on the texture cache.
@@ -925,21 +993,22 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 			}
 
 			// GH: Try to detect texture write that will overlap with a target buffer
-			if(GSUtil::HasSharedBits(psm, t->m_TEX0.PSM)) {
+			if (GSUtil::HasSharedBits(psm, t->m_TEX0.PSM))
+			{
 				if (bp < t->m_TEX0.TBP0)
 				{
 					uint32 rowsize = bw * 8192;
 					uint32 offset = (uint32)((t->m_TEX0.TBP0 - bp) * 256);
 
-					if(rowsize > 0 && offset % rowsize == 0)
+					if (rowsize > 0 && offset % rowsize == 0)
 					{
 						int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
 
-						if(r.bottom > y)
+						if (r.bottom > y)
 						{
 							GL_CACHE("TC: Dirty After Target(%s) %d (0x%x)", to_string(type),
-									t->m_texture ? t->m_texture->GetID() : 0,
-									t->m_TEX0.TBP0);
+								t->m_texture ? t->m_texture->GetID() : 0,
+								t->m_TEX0.TBP0);
 							// TODO: do not add this rect above too
 							t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top - y, r.right, r.bottom - y), psm));
 							t->m_TEX0.TBW = bw;
@@ -955,17 +1024,19 @@ void GSTextureCache::InvalidateVideoMem(GSOffset* off, const GSVector4i& rect, b
 				// Ben 10 Alien Force : Vilgax Attacks uses a small temporary target for multiple textures (different bw)
 				// It is too complex to handle, and purpose of the code was to handle FMV (large bw). So let's skip small
 				// (128 pixels) target
-				if (bw > 2 && t->m_TEX0.TBW == bw && t->Inside(bp, bw, psm, rect) && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM)) {
+				if (bw > 2 && t->m_TEX0.TBW == bw && t->Inside(bp, bw, psm, rect) && GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
+				{
 					uint32 rowsize = bw * 8192u;
 					uint32 offset = (uint32)((bp - t->m_TEX0.TBP0) * 256);
 
-					if(rowsize > 0 && offset % rowsize == 0) {
+					if (rowsize > 0 && offset % rowsize == 0)
+					{
 						int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
 
 						GL_CACHE("TC: Dirty in the middle of Target(%s) %d (0x%x->0x%x) pos(%d,%d => %d,%d) bw:%u", to_string(type),
-								t->m_texture ? t->m_texture->GetID() : 0,
-								t->m_TEX0.TBP0, t->m_end_block,
-								r.left, r.top + y, r.right, r.bottom + y, bw);
+							t->m_texture ? t->m_texture->GetID() : 0,
+							t->m_TEX0.TBP0, t->m_end_block,
+							r.left, r.top + y, r.right, r.bottom + y, bw);
 
 						t->m_dirty.push_back(GSDirtyRect(GSVector4i(r.left, r.top + y, r.right, r.bottom + y), psm));
 						t->m_TEX0.TBW = bw;
@@ -987,11 +1058,15 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 	//uint32 bw = off->bw;
 
 	// No depth handling please.
-	if (psm == PSM_PSMZ32 || psm == PSM_PSMZ24 || psm == PSM_PSMZ16 || psm == PSM_PSMZ16S) {
+	if (psm == PSM_PSMZ32 || psm == PSM_PSMZ24 || psm == PSM_PSMZ16 || psm == PSM_PSMZ16S)
+	{
 		GL_INS("ERROR: InvalidateLocalMem depth format isn't supported (%d,%d to %d,%d)", r.x, r.y, r.z, r.w);
-		if (m_can_convert_depth) {
-			for(auto t : m_dst[DepthStencil]) {
-				if(GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM)) {
+		if (m_can_convert_depth)
+		{
+			for (auto t : m_dst[DepthStencil])
+			{
+				if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
+				{
 					if (GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
 						Read(t, r.rintersect(t->m_valid));
 				}
@@ -1004,11 +1079,11 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 	// It works for all the games mentioned below and fixes a couple of other ones as well
 	// (Busen0: Wizardry and Chaos Legion).
 	// Also in a few games the below code ran the Grandia3 case when it shouldn't :p
-	for(auto t : m_dst[RenderTarget])
+	for (auto t : m_dst[RenderTarget])
 	{
 		if (t->m_TEX0.PSM != PSM_PSMZ32 && t->m_TEX0.PSM != PSM_PSMZ24 && t->m_TEX0.PSM != PSM_PSMZ16 && t->m_TEX0.PSM != PSM_PSMZ16S)
 		{
-			if(GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
+			if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 			{
 				// GH Note: Read will do a StretchRect and then will sizzle data to the GS memory
 				// t->m_valid will do the full target texture whereas r.intersect(t->m_valid) will be limited
@@ -1020,16 +1095,21 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 
 				// note: r.rintersect breaks Wizardry and Chaos Legion
 				// Read(t, t->m_valid) works in all tested games but is very slow in GUST titles ><
-				if (GSTextureCache::m_disable_partial_invalidation) {
+				if (GSTextureCache::m_disable_partial_invalidation)
+				{
 					Read(t, r.rintersect(t->m_valid));
-				} else {
+				}
+				else
+				{
 					if (r.x == 0 && r.y == 0) // Full screen read?
 						Read(t, t->m_valid);
 					else // Block level read?
 						Read(t, r.rintersect(t->m_valid));
 				}
 			}
-		} else {
+		}
+		else
+		{
 			GL_INS("ERROR: InvalidateLocalMem target is a depth format");
 		}
 	}
@@ -1044,14 +1124,14 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 
 	//	if (t->m_TEX0.PSM != PSM_PSMZ32 && t->m_TEX0.PSM != PSM_PSMZ24 && t->m_TEX0.PSM != PSM_PSMZ16 && t->m_TEX0.PSM != PSM_PSMZ16S)
 	//	{
-	//		if(GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
+	//		if (GSUtil::HasSharedBits(bp, psm, t->m_TEX0.TBP0, t->m_TEX0.PSM))
 	//		{
-	//			if(GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
+	//			if (GSUtil::HasCompatibleBits(psm, t->m_TEX0.PSM))
 	//			{
 	//				Read(t, r.rintersect(t->m_valid));
 	//				return;
 	//			}
-	//			else if(psm == PSM_PSMCT32 && (t->m_TEX0.PSM == PSM_PSMCT16 || t->m_TEX0.PSM == PSM_PSMCT16S))
+	//			else if (psm == PSM_PSMCT32 && (t->m_TEX0.PSM == PSM_PSMCT16 || t->m_TEX0.PSM == PSM_PSMCT16S))
 	//			{
 	//				// ffx-2 riku changing to her default (shoots some reflecting glass at the end), 16-bit rt read as 32-bit
 	//				Read(t, GSVector4i(r.left, r.top, r.right, r.top + (r.bottom - r.top) * 2).rintersect(t->m_valid));
@@ -1075,18 +1155,18 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 	//		}
 
 	//		// Grandia3, FFX, FFX-2 pause menus. t->m_TEX0.TBP0 magic number checks because otherwise kills xs2 videos
-	//		if( (GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) && (bp > t->m_TEX0.TBP0) )
-	//			&& ((t->m_TEX0.TBP0 == 0) || (t->m_TEX0.TBP0==3328) || (t->m_TEX0.TBP0==3584) ))
+	//		if ((GSUtil::HasSharedBits(psm, t->m_TEX0.PSM) && (bp > t->m_TEX0.TBP0))
+	//			&& ((t->m_TEX0.TBP0 == 0) || (t->m_TEX0.TBP0==3328) || (t->m_TEX0.TBP0==3584)))
 	//		{
 	//			//printf("first : %d-%d child : %d-%d\n", psm, bp, t->m_TEX0.PSM, t->m_TEX0.TBP0);
 	//			uint32 rowsize = bw * 8192;
 	//			uint32 offset = (uint32)((bp - t->m_TEX0.TBP0) * 256);
 
-	//			if(rowsize > 0 && offset % rowsize == 0)
+	//			if (rowsize > 0 && offset % rowsize == 0)
 	//			{
 	//				int y = GSLocalMemory::m_psm[psm].pgs.y * offset / rowsize;
 
-	//				if(y < ymin && y < 512)
+	//				if (y < ymin && y < 512)
 	//				{
 	//					rt2 = t;
 	//					ymin = y;
@@ -1095,7 +1175,7 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 	//		}
 	//	}
 	//}
-	//if(rt2)
+	//if (rt2)
 	//{
 	//	Read(rt2, GSVector4i(r.left, r.top + ymin, r.right, r.bottom + ymin));
 	//}
@@ -1115,17 +1195,20 @@ void GSTextureCache::InvalidateVideoMemSubTarget(GSTextureCache::Target* rt)
 
 	auto& list = m_dst[RenderTarget];
 
-	for(auto i = list.begin(); i != list.end(); ) {
+	for (auto i = list.begin(); i != list.end();)
+	{
 		Target* t = *i;
 
-		if((t->m_TEX0.TBP0 > rt->m_TEX0.TBP0) && (t->m_end_block < rt->m_end_block) && (t->m_TEX0.TBW == rt->m_TEX0.TBW)
-				&& (t->m_TEX0.TBP0 < t->m_end_block)) {
+		if ((t->m_TEX0.TBP0 > rt->m_TEX0.TBP0) && (t->m_end_block < rt->m_end_block) && (t->m_TEX0.TBW == rt->m_TEX0.TBW) && (t->m_TEX0.TBP0 < t->m_end_block))
+		{
 			GL_INS("InvalidateVideoMemSubTarget: rt 0x%x -> 0x%x, sub rt 0x%x -> 0x%x",
-					rt->m_TEX0.TBP0, rt->m_end_block, t->m_TEX0.TBP0, t->m_end_block);
+				rt->m_TEX0.TBP0, rt->m_end_block, t->m_TEX0.TBP0, t->m_end_block);
 
 			i = list.erase(i);
 			delete t;
-		} else {
+		}
+		else
+		{
 			++i;
 		}
 	}
@@ -1136,18 +1219,22 @@ void GSTextureCache::IncAge()
 	int maxage = m_src.m_used ? 3 : 30;
 
 	// You can't use m_map[page] because Source* are duplicated on several pages.
-	for(auto i = m_src.m_surfaces.begin(); i != m_src.m_surfaces.end(); )
+	for (auto i = m_src.m_surfaces.begin(); i != m_src.m_surfaces.end();)
 	{
 		Source* s = *i;
 
-		if(s->m_shared_texture) {
+		if (s->m_shared_texture)
+		{
 			// Shared textures are temporary only added in the hash set but not in the texture
 			// cache list therefore you can't use RemoveAt
 			i = m_src.m_surfaces.erase(i);
 			delete s;
-		} else {
+		}
+		else
+		{
 			++i;
-			if (++s->m_age > maxage) {
+			if (++s->m_age > maxage)
+			{
 				m_src.RemoveAt(s);
 			}
 		}
@@ -1161,10 +1248,10 @@ void GSTextureCache::IncAge()
 	// Original maxage was 4 here, Xenosaga 2 needs at least 240, else it flickers on scene transitions.
 	maxage = 400; // ffx intro scene changes leave the old image untouched for a couple of frames and only then start using it
 
-	for(int type = 0; type < 2; type++)
+	for (int type = 0; type < 2; type++)
 	{
 		auto& list = m_dst[type];
-		for(auto i = list.begin(); i != list.end(); )
+		for (auto i = list.begin(); i != list.end();)
 		{
 			Target* t = *i;
 
@@ -1172,20 +1259,23 @@ void GSTextureCache::IncAge()
 			// probability that game will do it on the current RT.
 			// Variable is cleared here to avoid issue with game that uses a 16 bits
 			// render target
-			if (t->m_age > 0) {
+			if (t->m_age > 0)
+			{
 				// GoW2 uses the effect at the start of the frame
 				t->m_32_bits_fmt = false;
 			}
 
-			if(++t->m_age > maxage)
+			if (++t->m_age > maxage)
 			{
 				i = list.erase(i);
 				GL_CACHE("TC: Remove Target(%s): %d (0x%x) due to age", to_string(type),
-							t->m_texture ? t->m_texture->GetID() : 0,
-							t->m_TEX0.TBP0);
+					t->m_texture ? t->m_texture->GetID() : 0,
+					t->m_TEX0.TBP0);
 
 				delete t;
-			} else {
+			}
+			else
+			{
 				++i;
 			}
 		}
@@ -1226,7 +1316,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		src->m_texture->SetScale(scale);
 		src->m_end_block = dst->m_end_block;
 
-		if (psm.pal > 0) {
+		if (psm.pal > 0)
+		{
 			// Attach palette for GPU texture conversion
 			AttachPaletteToSource(src, psm.pal, true);
 		}
@@ -1265,18 +1356,21 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		int shader = dst->m_type != RenderTarget ? ShaderConvert_FLOAT32_TO_RGBA8 : ShaderConvert_COPY;
 		bool is_8bits = TEX0.PSM == PSM_PSMT8;
 
-		if (is_8bits) {
+		if (is_8bits)
+		{
 			GL_INS("Reading RT as a packed-indexed 8 bits format");
 			shader = ShaderConvert_RGBA_TO_8I;
 		}
 
 #ifdef ENABLE_OGL_DEBUG
-		if (TEX0.PSM == PSM_PSMT4) {
+		if (TEX0.PSM == PSM_PSMT4)
+		{
 			GL_INS("ERROR: Reading RT as a packed-indexed 4 bits format is not supported");
 		}
 #endif
 
-		if (GSLocalMemory::m_psm[TEX0.PSM].bpp > 8) {
+		if (GSLocalMemory::m_psm[TEX0.PSM].bpp > 8)
+		{
 			src->m_32_bits_fmt = dst->m_32_bits_fmt;
 		}
 
@@ -1293,7 +1387,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		int w = (int)(dst->m_texture->GetScale().x * tw);
 		int h = (int)(dst->m_texture->GetScale().y * th);
-		if (is_8bits) {
+		if (is_8bits)
+		{
 			// Unscale 8 bits textures, quality won't be nice but format is really awful
 			w = tw;
 			h = th;
@@ -1303,7 +1398,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		// pitch conversion
 
-		if(dst->m_TEX0.TBW != TEX0.TBW) // && dst->m_TEX0.PSM == TEX0.PSM
+		if (dst->m_TEX0.TBW != TEX0.TBW) // && dst->m_TEX0.PSM == TEX0.PSM
 		{
 			// This is so broken :p
 			////Better not do the code below, "fixes" like every game that ever gets here..
@@ -1330,10 +1425,10 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			//int dw = (int)TEX0.TBW << 6;
 			//int dh = 1 << TEX0.TH;
 
-			//if(sw != 0)
-			//for(int dy = 0; dy < dh; dy += blockHeight)
+			//if (sw != 0)
+			//for (int dy = 0; dy < dh; dy += blockHeight)
 			//{
-			//	for(int dx = 0; dx < dw; dx += blockWidth)
+			//	for (int dx = 0; dx < dw; dx += blockWidth)
 			//	{
 			//		int off = dy * dw / blockHeight + dx;
 
@@ -1349,11 +1444,11 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			//	}
 			//}
 		}
-		else if(tw < 1024)
+		else if (tw < 1024)
 		{
 			// FIXME: timesplitters blurs the render target by blending itself over a couple of times
 			hack = true;
-			//if(tw == 256 && th == 128 && (TEX0.TBP0 == 0 || TEX0.TBP0 == 0x00e00))
+			//if (tw == 256 && th == 128 && (TEX0.TBP0 == 0 || TEX0.TBP0 == 0x00e00))
 			//{
 			//	delete src;
 			//	return NULL;
@@ -1388,7 +1483,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// 2/ It doesn't support rescaling of the RT (tw = 1024)
 		// Maybe it will be more easy to just round the UV value in the Vertex Shader
 
-		if (!is_8bits) {
+		if (!is_8bits)
+		{
 			// 8 bits handling is special due to unscaling. It is better to not execute this code
 			if (w > dstsize.x)
 			{
@@ -1416,7 +1512,8 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// GH: by default (m_paltex == 0) GSdx converts texture to the 32 bit format
 		// However it is different here. We want to reuse a Render Target as a texture.
 		// Because the texture is already on the GPU, CPU can't convert it.
-		if (psm.pal > 0) {
+		if (psm.pal > 0)
+		{
 			AttachPaletteToSource(src, psm.pal, true);
 		}
 		// Disable linear filtering for various GS post-processing effect
@@ -1447,13 +1544,16 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 
 		if ((sRect == dRect).alltrue() && !shader)
 		{
-			if (half_right) {
+			if (half_right)
+			{
 				// You typically hit this code in snow engine game. Dstsize is the size of of Dx/GL RT
 				// which is arbitrary set to 1280 (biggest RT used by GS). h/w are based on the input texture
 				// so the only reliable way to find the real size of the target is to use the TBW value.
 				float real_width = dst->m_TEX0.TBW * 64u * dst->m_texture->GetScale().x;
-				m_renderer->m_dev->CopyRect(sTex, dTex, GSVector4i((int)(real_width/2.0f), 0, (int)real_width, h));
-			} else {
+				m_renderer->m_dev->CopyRect(sTex, dTex, GSVector4i((int)(real_width / 2.0f), 0, (int)real_width, h));
+			}
+			else
+			{
 				m_renderer->m_dev->CopyRect(sTex, dTex, GSVector4i(0, 0, w, h)); // <= likely wrong dstsize.x could be bigger than w
 			}
 		}
@@ -1463,14 +1563,15 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			sRect.z /= sTex->GetWidth();
 			sRect.w /= sTex->GetHeight();
 
-			if (half_right) {
-				sRect.x = sRect.z/2.0f;
+			if (half_right)
+			{
+				sRect.x = sRect.z / 2.0f;
 			}
 
 			m_renderer->m_dev->StretchRect(sTex, sRect, dTex, dRect, shader, linear);
 		}
 
-		if( src->m_texture )
+		if (src->m_texture)
 			src->m_texture->SetScale(scale);
 		else
 			ASSERT(0);
@@ -1481,25 +1582,25 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		float modx = 0.0f;
 		float mody = 0.0f;
 
-		if(UserHacks_HalfPixelOffset && hack)
+		if (UserHacks_HalfPixelOffset && hack)
 		{
 			switch(m_renderer->GetUpscaleMultiplier())
 			{
-			case 0: //Custom Resolution
-			{
-				const float offset = 0.2f;
-				modx = dst->m_texture->GetScale().x + offset;
-				mody = dst->m_texture->GetScale().y + offset;
-				dst->m_texture->LikelyOffset = true;
-				break;
-			}
-			case 2:  modx = 2.2f; mody = 2.2f; dst->m_texture->LikelyOffset = true;  break;
-			case 3:  modx = 3.1f; mody = 3.1f; dst->m_texture->LikelyOffset = true;  break;
-			case 4:  modx = 4.2f; mody = 4.2f; dst->m_texture->LikelyOffset = true;  break;
-			case 5:  modx = 5.3f; mody = 5.3f; dst->m_texture->LikelyOffset = true;  break;
-			case 6:  modx = 6.2f; mody = 6.2f; dst->m_texture->LikelyOffset = true;  break;
-			case 8:  modx = 8.2f; mody = 8.2f; dst->m_texture->LikelyOffset = true;  break;
-			default: modx = 0.0f; mody = 0.0f; dst->m_texture->LikelyOffset = false; break;
+				case 0: //Custom Resolution
+				{
+					const float offset = 0.2f;
+					modx = dst->m_texture->GetScale().x + offset;
+					mody = dst->m_texture->GetScale().y + offset;
+					dst->m_texture->LikelyOffset = true;
+					break;
+				}
+				case 2:  modx = 2.2f; mody = 2.2f; dst->m_texture->LikelyOffset = true;  break;
+				case 3:  modx = 3.1f; mody = 3.1f; dst->m_texture->LikelyOffset = true;  break;
+				case 4:  modx = 4.2f; mody = 4.2f; dst->m_texture->LikelyOffset = true;  break;
+				case 5:  modx = 5.3f; mody = 5.3f; dst->m_texture->LikelyOffset = true;  break;
+				case 6:  modx = 6.2f; mody = 6.2f; dst->m_texture->LikelyOffset = true;  break;
+				case 8:  modx = 8.2f; mody = 8.2f; dst->m_texture->LikelyOffset = true;  break;
+				default: modx = 0.0f; mody = 0.0f; dst->m_texture->LikelyOffset = false; break;
 			}
 		}
 
@@ -1513,9 +1614,11 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 			src->m_texture = m_renderer->m_dev->CreateTexture(tw, th, Get8bitFormat());
 			AttachPaletteToSource(src, psm.pal, true);
 		}
-		else {
+		else
+		{
 			src->m_texture = m_renderer->m_dev->CreateTexture(tw, th);
-			if (psm.pal > 0) {
+			if (psm.pal > 0)
+			{
 				AttachPaletteToSource(src, psm.pal, false);
 			}
 		}
@@ -1538,13 +1641,13 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int
 
 	t->m_type = type;
 
-	if(type == RenderTarget)
+	if (type == RenderTarget)
 	{
 		t->m_texture = m_renderer->m_dev->CreateSparseRenderTarget(w, h);
 
 		t->m_used = true; // FIXME
 	}
-	else if(type == DepthStencil)
+	else if (type == DepthStencil)
 	{
 		t->m_texture = m_renderer->m_dev->CreateSparseDepthStencil(w, h);
 	}
@@ -1557,24 +1660,28 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int
 void GSTextureCache::PrintMemoryUsage()
 {
 #ifdef ENABLE_OGL_DEBUG
-	uint32 tex    = 0;
+	uint32 tex = 0;
 	uint32 tex_rt = 0;
-	uint32 rt     = 0;
-	uint32 dss    = 0;
-	for(auto s : m_src.m_surfaces) {
-		if(s && !s->m_shared_texture) {
-			if(s->m_target)
+	uint32 rt = 0;
+	uint32 dss = 0;
+	for (auto s : m_src.m_surfaces)
+	{
+		if (s && !s->m_shared_texture)
+		{
+			if (s->m_target)
 				tex_rt += s->m_texture->GetMemUsage();
 			else
-				tex    += s->m_texture->GetMemUsage();
+				tex += s->m_texture->GetMemUsage();
 		}
 	}
-	for(auto t : m_dst[RenderTarget]) {
-		if(t)
+	for (auto t : m_dst[RenderTarget])
+	{
+		if (t)
 			rt += t->m_texture->GetMemUsage();
 	}
-	for(auto t : m_dst[DepthStencil]) {
-		if(t)
+	for (auto t : m_dst[DepthStencil])
+	{
+		if (t)
 			dss += t->m_texture->GetMemUsage();
 	}
 
@@ -1621,7 +1728,7 @@ bool GSTextureCache::Surface::Overlaps(uint32 bp, uint32 bw, uint32 psm, const G
 	// Valid only for color formats.
 	uint32 const end_block = GSLocalMemory::m_psm[psm].bn(rect.z - 1, rect.w - 1, bp, bw);
 	return (m_TEX0.TBP0 <= bp        && bp        <= m_end_block)
-		|| (m_TEX0.TBP0 <= end_block && end_block <= m_end_block);
+	    || (m_TEX0.TBP0 <= end_block && end_block <= m_end_block);
 }
 
 // GSTextureCache::Source
@@ -1640,15 +1747,17 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 	m_TEX0 = TEX0;
 	m_TEXA = TEXA;
 
-	if (dummy_container) {
+	if (dummy_container)
+	{
 		// Dummy container only contain a m_texture that is a pointer to another source.
 
 		m_write.rect = NULL;
 		m_write.count = 0;
 
 		m_repeating = false;
-
-	} else {
+	}
+	else
+	{
 		memset(m_layer_TEX0, 0, sizeof(m_layer_TEX0));
 
 		memset(m_valid, 0, sizeof(m_valid));
@@ -1658,7 +1767,7 @@ GSTextureCache::Source::Source(GSRenderer* r, const GIFRegTEX0& TEX0, const GIFR
 
 		m_repeating = m_TEX0.IsRepeating();
 
-		if(m_repeating)
+		if (m_repeating)
 		{
 			m_p2t = r->m_mem.GetPage2TileMap(m_TEX0);
 		}
@@ -1677,7 +1786,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 {
 	Surface::UpdateAge();
 
-	if(layer == 0 && (m_complete || m_target))
+	if (layer == 0 && (m_complete || m_target))
 	{
 		return;
 	}
@@ -1689,7 +1798,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 
 	GSVector4i r = rect.ralign<Align_Outside>(bs);
 
-	if(layer == 0 && r.eq(GSVector4i(0, 0, tw, th)))
+	if (layer == 0 && r.eq(GSVector4i(0, 0, tw, th)))
 	{
 		m_complete = true; // lame, but better than nothing
 	}
@@ -1698,24 +1807,24 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 
 	uint32 blocks = 0;
 
-	if(m_repeating)
+	if (m_repeating)
 	{
-		for(int y = r.top; y < r.bottom; y += bs.y)
+		for (int y = r.top; y < r.bottom; y += bs.y)
 		{
 			uint32 base = off->block.row[y >> 3u];
 
-			for(int x = r.left, i = (y << 7) + x; x < r.right; x += bs.x, i += bs.x)
+			for (int x = r.left, i = (y << 7) + x; x < r.right; x += bs.x, i += bs.x)
 			{
 				uint32 block = base + off->block.col[x >> 3u];
 
-				if(block < MAX_BLOCKS || m_wrap_gs_mem)
+				if (block < MAX_BLOCKS || m_wrap_gs_mem)
 				{
 					uint32 addr = (i >> 3u) % MAX_BLOCKS;
 
 					uint32 row = addr >> 5u;
 					uint32 col = 1 << (addr & 31u);
 
-					if((m_valid[row] & col) == 0)
+					if ((m_valid[row] & col) == 0)
 					{
 						m_valid[row] |= col;
 
@@ -1729,22 +1838,22 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 	}
 	else
 	{
-		for(int y = r.top; y < r.bottom; y += bs.y)
+		for (int y = r.top; y < r.bottom; y += bs.y)
 		{
 			uint32 base = off->block.row[y >> 3u];
 
-			for(int x = r.left; x < r.right; x += bs.x)
+			for (int x = r.left; x < r.right; x += bs.x)
 			{
 				uint32 block = base + off->block.col[x >> 3u];
 
-				if(block < MAX_BLOCKS || m_wrap_gs_mem)
+				if (block < MAX_BLOCKS || m_wrap_gs_mem)
 				{
 					block %= MAX_BLOCKS;
 
 					uint32 row = block >> 5u;
 					uint32 col = 1 << (block & 31u);
 
-					if((m_valid[row] & col) == 0)
+					if ((m_valid[row] & col) == 0)
 					{
 						m_valid[row] |= col;
 
@@ -1757,7 +1866,7 @@ void GSTextureCache::Source::Update(const GSVector4i& rect, int layer)
 		}
 	}
 
-	if(blocks > 0)
+	if (blocks > 0)
 	{
 		m_renderer->m_perfmon.Put(GSPerfMon::Unswizzle, bs.x * bs.y * blocks << (m_palette ? 2 : 0));
 
@@ -1790,18 +1899,18 @@ void GSTextureCache::Source::Write(const GSVector4i& r, int layer)
 {
 	m_write.rect[m_write.count++] = r;
 
-	while(m_write.count >= 2)
+	while (m_write.count >= 2)
 	{
 		GSVector4i& a = m_write.rect[m_write.count - 2];
 		GSVector4i& b = m_write.rect[m_write.count - 1];
 
-		if((a == b.zyxw()).mask() == 0xfff0)
+		if ((a == b.zyxw()).mask() == 0xfff0)
 		{
 			a.right = b.right; // extend right
 
 			m_write.count--;
 		}
-		else if((a == b.xwzy()).mask() == 0xff0f)
+		else if ((a == b.xwzy()).mask() == 0xff0f)
 		{
 			a.bottom = b.bottom; // extend down
 
@@ -1813,7 +1922,7 @@ void GSTextureCache::Source::Write(const GSVector4i& r, int layer)
 		}
 	}
 
-	if(m_write.count > 2)
+	if (m_write.count > 2)
 	{
 		Flush(1, layer);
 	}
@@ -1841,7 +1950,7 @@ void GSTextureCache::Source::Flush(uint32 count, int layer)
 
 	GSLocalMemory::readTexture rtx = psm.rtx;
 
-	if(m_palette)
+	if (m_palette)
 	{
 		pitch >>= 2;
 		rtx = psm.rtxP;
@@ -1849,11 +1958,11 @@ void GSTextureCache::Source::Flush(uint32 count, int layer)
 
 	uint8* buff = m_temp;
 
-	for(uint32 i = 0; i < count; i++)
+	for (uint32 i = 0; i < count; i++)
 	{
 		GSVector4i r = m_write.rect[i];
 
-		if((r > tr).mask() & 0xff00)
+		if ((r > tr).mask() & 0xff00)
 		{
 			(mem.*rtx)(off, r, buff, pitch, m_TEXA);
 
@@ -1863,7 +1972,7 @@ void GSTextureCache::Source::Flush(uint32 count, int layer)
 		{
 			GSTexture::GSMap m;
 
-			if(m_texture->Map(m, &r, layer))
+			if (m_texture->Map(m, &r, layer))
 			{
 				(mem.*rtx)(off, r, m.bits, m.pitch, m_TEXA);
 
@@ -1878,7 +1987,7 @@ void GSTextureCache::Source::Flush(uint32 count, int layer)
 		}
 	}
 
-	if(count < m_write.count)
+	if (count < m_write.count)
 	{
 		// Warning src and destination overlap. Memmove must be used instead of memcpy
 		memmove(&m_write.rect[0], &m_write.rect[count], (m_write.count - count) * sizeof(m_write.rect[0]));
@@ -1887,7 +1996,8 @@ void GSTextureCache::Source::Flush(uint32 count, int layer)
 	m_write.count -= count;
 }
 
-bool GSTextureCache::Source::ClutMatch(PaletteKey palette_key) {
+bool GSTextureCache::Source::ClutMatch(PaletteKey palette_key)
+{
 	return PaletteKeyEqual()(palette_key, m_palette_obj->GetPaletteKey());
 }
 
@@ -1927,15 +2037,19 @@ void GSTextureCache::Target::Update()
 
 	GSVector4i r = m_dirty.GetDirtyRectAndClear(m_TEX0, t_size);
 
-	if (r.rempty()) return;
+	if (r.rempty())
+		return;
 
 	// No handling please
-	if ((m_type == DepthStencil) && !m_depth_supported) {
+	if ((m_type == DepthStencil) && !m_depth_supported)
+	{
 		// do the most likely thing a direct write would do, clear it
 		GL_INS("ERROR: Update DepthStencil dummy");
 
 		return;
-	} else if (m_type == DepthStencil && m_renderer->m_game.title == CRC::FFX2) {
+	}
+	else if (m_type == DepthStencil && m_renderer->m_game.title == CRC::FFX2)
+	{
 		GL_INS("ERROR: bad invalidation detected, depth buffer will be cleared");
 		// FFX2 menu. Invalidation of the depth is wrongly done and only the first
 		// page is invalidated. Technically a CRC hack will be better but I don't expect
@@ -1964,9 +2078,9 @@ void GSTextureCache::Target::Update()
 
 	GSTexture::GSMap m;
 
-	if(t->Map(m))
+	if (t->Map(m))
 	{
-		m_renderer->m_mem.ReadTexture(off, r, m.bits,  m.pitch, TEXA);
+		m_renderer->m_mem.ReadTexture(off, r, m.bits, m.pitch, TEXA);
 
 		t->Unmap();
 	}
@@ -1982,13 +2096,13 @@ void GSTextureCache::Target::Update()
 	// m_renderer->m_perfmon.Put(GSPerfMon::Unswizzle, w * h * 4);
 
 	// Copy the new GS memory content into the destination texture.
-	if(m_type == RenderTarget)
+	if (m_type == RenderTarget)
 	{
 		GL_INS("ERROR: Update RenderTarget 0x%x bw:%d (%d,%d => %d,%d)", m_TEX0.TBP0, m_TEX0.TBW, r.x, r.y, r.z, r.w);
 
 		m_renderer->m_dev->StretchRect(t, m_texture, GSVector4(r) * GSVector4(m_texture->GetScale()).xyxy());
 	}
-	else if(m_type == DepthStencil)
+	else if (m_type == DepthStencil)
 	{
 		GL_INS("ERROR: Update DepthStencil 0x%x", m_TEX0.TBP0);
 
@@ -2004,7 +2118,7 @@ void GSTextureCache::Target::UpdateValidity(const GSVector4i& rect)
 	m_valid = m_valid.runion(rect);
 
 	// Block of the bottom right texel of the validity rectangle, last valid block of the texture
-	m_end_block = GSLocalMemory::m_psm[m_TEX0.PSM].bn(m_valid.z - 1, m_valid.w - 1, m_TEX0.TBP0, m_TEX0.TBW);  // Valid only for color formats
+	m_end_block = GSLocalMemory::m_psm[m_TEX0.PSM].bn(m_valid.z - 1, m_valid.w - 1, m_TEX0.TBP0, m_TEX0.TBW); // Valid only for color formats
 
 	// GL_CACHE("UpdateValidity (0x%x->0x%x) from R:%d,%d Valid: %d,%d", m_TEX0.TBP0, m_end_block, rect.z, rect.w, m_valid.z, m_valid.w);
 }
@@ -2015,7 +2129,7 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, GSOffset*
 {
 	m_surfaces.insert(s);
 
-	if(s->m_target)
+	if (s->m_target)
 	{
 		// TODO
 
@@ -2028,16 +2142,16 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, GSOffset*
 	}
 
 	// The source pointer will be stored/duplicated in all m_map[array of pages]
-	for(size_t i = 0; i < countof(m_pages); i++)
+	for (size_t i = 0; i < countof(m_pages); i++)
 	{
-		if(uint32 p = s->m_pages_as_bit[i])
+		if (uint32 p = s->m_pages_as_bit[i])
 		{
 			auto* m = &m_map[i << 5];
 			auto* e = &s->m_erase_it[i << 5];
 
 			unsigned long j;
 
-			while(_BitScanForward(&j, p))
+			while (_BitScanForward(&j, p))
 			{
 				// FIXME: this statement could be optimized to a single ASM instruction (instead of 4)
 				// Either BTR (AKA bit test and reset). Depends on the previous instruction.
@@ -2052,11 +2166,12 @@ void GSTextureCache::SourceMap::Add(Source* s, const GIFRegTEX0& TEX0, GSOffset*
 
 void GSTextureCache::SourceMap::RemoveAll()
 {
-	for (auto s : m_surfaces) delete s;
+	for (auto s : m_surfaces)
+		delete s;
 
 	m_surfaces.clear();
 
-	for(size_t i = 0; i < countof(m_map); i++)
+	for (size_t i = 0; i < countof(m_map); i++)
 	{
 		m_map[i].clear();
 	}
@@ -2067,8 +2182,8 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 	m_surfaces.erase(s);
 
 	GL_CACHE("TC: Remove Src Texture: %d (0x%x)",
-				s->m_texture ? s->m_texture->GetID() : 0,
-				s->m_TEX0.TBP0);
+			 s->m_texture ? s->m_texture->GetID() : 0,
+			 s->m_TEX0.TBP0);
 
 	if (s->m_target)
 	{
@@ -2077,16 +2192,16 @@ void GSTextureCache::SourceMap::RemoveAt(Source* s)
 	}
 	else
 	{
-		for(size_t i = 0; i < countof(m_pages); i++)
+		for (size_t i = 0; i < countof(m_pages); i++)
 		{
-			if(uint32 p = s->m_pages_as_bit[i])
+			if (uint32 p = s->m_pages_as_bit[i])
 			{
 				auto* m = &m_map[i << 5];
 				const auto* e = &s->m_erase_it[i << 5];
 
 				unsigned long j;
 
-				while(_BitScanForward(&j, p))
+				while (_BitScanForward(&j, p))
 				{
 					// FIXME: this statement could be optimized to a single ASM instruction (instead of 4)
 					// Either BTR (AKA bit test and reset). Depends on the previous instruction.
@@ -2118,26 +2233,32 @@ GSTextureCache::Palette::Palette(const GSRenderer* renderer, uint16 pal, bool ne
 	uint16 palette_size = pal * sizeof(uint32);
 	m_clut = (uint32*)_aligned_malloc(palette_size, 64);
 	memcpy(m_clut, (const uint32*)m_renderer->m_mem.m_clut, palette_size);
-	if (need_gs_texture) {
+	if (need_gs_texture)
+	{
 		InitializeTexture();
 	}
 }
 
-GSTextureCache::Palette::~Palette() {
+GSTextureCache::Palette::~Palette()
+{
 	m_renderer->m_dev->Recycle(m_tex_palette);
 	_aligned_free(m_clut);
 }
 
-GSTexture* GSTextureCache::Palette::GetPaletteGSTexture() {
+GSTexture* GSTextureCache::Palette::GetPaletteGSTexture()
+{
 	return m_tex_palette;
 }
 
-GSTextureCache::PaletteKey GSTextureCache::Palette::GetPaletteKey() {
-	return { m_clut, m_pal };
+GSTextureCache::PaletteKey GSTextureCache::Palette::GetPaletteKey()
+{
+	return {m_clut, m_pal};
 }
 
-void GSTextureCache::Palette::InitializeTexture() {
-	if (!m_tex_palette) {
+void GSTextureCache::Palette::InitializeTexture()
+{
+	if (!m_tex_palette)
+	{
 		// A palette texture is always created with dimensions 256x1 (also in the case that m_pal is 16, thus a 16x1 texture
 		// would be enough to store the CLUT data) because the coordinates that the shader uses for
 		// sampling such texture are always normalized by 255.
@@ -2157,14 +2278,16 @@ void GSTextureCache::Palette::InitializeTexture() {
 //    it is computed in 16 passes,
 // 2) The clut can contain many 0s, so as a way to increase the spread of hashing values for small changes in the input clut the hashing function
 //    is using addition in combination with logical XOR operator; The addition constants are large prime numbers, which may help in achieving what intended.
-std::size_t GSTextureCache::PaletteKeyHash::operator()(const PaletteKey &key) const {
+std::size_t GSTextureCache::PaletteKeyHash::operator()(const PaletteKey& key) const
+{
 	uint16 pal = key.pal;
 	const uint32* clut = key.clut;
 
 	ASSERT((pal & 15) == 0);
 
 	size_t clut_hash = 3831179159;
-	for (uint16 i = 0; i < pal; i += 16) {
+	for (uint16 i = 0; i < pal; i += 16)
+	{
 		clut_hash = (clut_hash + 1488000301) ^ (clut[i     ] +   33644011);
 		clut_hash = (clut_hash + 3831179159) ^ (clut[i +  1] +   47627467);
 		clut_hash = (clut_hash + 3659574209) ^ (clut[i +  2] +  577038523);
@@ -2190,8 +2313,10 @@ std::size_t GSTextureCache::PaletteKeyHash::operator()(const PaletteKey &key) co
 
 // GSTextureCache::PaletteKeyEqual
 
-bool GSTextureCache::PaletteKeyEqual::operator()(const PaletteKey &lhs, const PaletteKey &rhs) const {
-	if (lhs.pal != rhs.pal) {
+bool GSTextureCache::PaletteKeyEqual::operator()(const PaletteKey& lhs, const PaletteKey& rhs) const
+{
+	if (lhs.pal != rhs.pal)
+	{
 		return false;
 	}
 
@@ -2203,12 +2328,14 @@ bool GSTextureCache::PaletteKeyEqual::operator()(const PaletteKey &lhs, const Pa
 GSTextureCache::PaletteMap::PaletteMap(const GSRenderer* renderer)
 	: m_renderer(renderer)
 {
-	for (auto& map : m_maps) {
+	for (auto& map : m_maps)
+	{
 		map.reserve(MAX_SIZE);
 	}
 }
 
-std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalette(uint16 pal, bool need_gs_texture) {
+std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalette(uint16 pal, bool need_gs_texture)
+{
 	ASSERT(pal == 16 || pal == 256);
 
 	// Choose which hash map search into:
@@ -2219,13 +2346,15 @@ std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalet
 	const uint32* clut = (const uint32*)m_renderer->m_mem.m_clut;
 
 	// Create PaletteKey for searching into map (clut is actually not copied, so do not store this key into the map)
-	PaletteKey palette_key = { clut, pal };
+	PaletteKey palette_key = {clut, pal};
 
 	auto it1 = map.find(palette_key);
 
-	if (it1 != map.end()) {
+	if (it1 != map.end())
+	{
 		// Clut content match, HIT
-		if (need_gs_texture && !it1->second->GetPaletteGSTexture()) {
+		if (need_gs_texture && !it1->second->GetPaletteGSTexture())
+		{
 			// Generate GSTexture and upload clut content if needed and not done yet
 			it1->second->InitializeTexture();
 		}
@@ -2234,49 +2363,56 @@ std::shared_ptr<GSTextureCache::Palette> GSTextureCache::PaletteMap::LookupPalet
 
 	// No palette with matching clut content, MISS
 
-	if (map.size() > MAX_SIZE) {
+	if (map.size() > MAX_SIZE)
+	{
 		// If the map is too big, try to clean it by disposing and removing unused palettes, before adding the new one
 		GL_INS("WARNING, %u-bit PaletteMap (Size %u): Max size %u exceeded, clearing unused palettes.", pal * sizeof(uint32), map.size(), MAX_SIZE);
 
 		uint32 current_size = map.size();
 
-		for (auto it = map.begin(); it != map.end(); ) {
+		for (auto it = map.begin(); it != map.end();)
+		{
 			// If the palette is unused, there is only one shared pointers holding a reference to the unused Palette object,
 			// and this shared pointer is the one stored in the map itself
-			if (it->second.use_count() <= 1) {
+			if (it->second.use_count() <= 1)
+			{
 				// Palette is unused
 				it = map.erase(it); // Erase element from map
-				// The palette object should now be gone as the shared pointer to the object in the map is deleted
+									// The palette object should now be gone as the shared pointer to the object in the map is deleted
 			}
-			else {
+			else
+			{
 				++it;
 			}
 		}
 
 		uint32 cleared_palette_count = current_size - (uint32)map.size();
 
-		if (cleared_palette_count == 0) {
+		if (cleared_palette_count == 0)
+		{
 			GL_INS("ERROR, %u-bit PaletteMap (Size %u): Max size %u exceeded, could not clear any palette, negative performance impact.", pal * sizeof(uint32), map.size(), MAX_SIZE);
 		}
-		else {
+		else
+		{
 			map.reserve(MAX_SIZE); // Ensure map capacity is not modified by the clearing
 			GL_INS("INFO, %u-bit PaletteMap (Size %u): Cleared %u palettes.", pal * sizeof(uint32), map.size(), cleared_palette_count);
 		}
 	}
 
 	std::shared_ptr<Palette> palette = std::make_shared<Palette>(m_renderer, pal, need_gs_texture);
-	
+
 	map.emplace(palette->GetPaletteKey(), palette);
 
 	GL_CACHE("TC, %u-bit PaletteMap (Size %u): Added new palette.", pal * sizeof(uint32), map.size());
-	
+
 	return palette;
 }
 
-void GSTextureCache::PaletteMap::Clear() {
-	for (auto& map : m_maps) {
+void GSTextureCache::PaletteMap::Clear()
+{
+	for (auto& map : m_maps)
+	{
 		map.clear(); // Clear all the nodes of the map, deleting Palette objects managed by shared pointers as they should be unused elsewhere
 		map.reserve(MAX_SIZE); // Ensure map capacity is not modified by the clearing
 	}
 }
-

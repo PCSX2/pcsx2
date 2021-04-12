@@ -34,7 +34,7 @@ class GSShaderDlg : public GSDialog
 
 protected:
 	void OnInit();
-	bool OnMessage(UINT message, WPARAM wParam, LPARAM lParam);	
+	bool OnMessage(UINT message, WPARAM wParam, LPARAM lParam);
 
 public:
 	GSShaderDlg();
@@ -83,12 +83,17 @@ class GSSettingsDlg : public GSDialog
 		std::string name;
 		std::string id;
 		D3D_FEATURE_LEVEL level;
-		Adapter(const std::string &n, const std::string &i, const D3D_FEATURE_LEVEL &l) : name(n), id(i), level(l) {}
+		Adapter(const std::string& n, const std::string& i, const D3D_FEATURE_LEVEL& l)
+			: name(n)
+			, id(i)
+			, level(l)
+		{
+		}
 	};
 
 	std::vector<GSSetting> m_renderers;
 	std::vector<Adapter> m_d3d11_adapters;
-	std::vector<Adapter> *m_current_adapters;
+	std::vector<Adapter>* m_current_adapters;
 	std::string m_last_selected_adapter_id;
 
 	std::vector<Adapter> EnumerateD3D11Adapters();

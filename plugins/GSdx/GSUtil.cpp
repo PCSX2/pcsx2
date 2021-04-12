@@ -128,7 +128,7 @@ public:
 
 		memset(CompatibleBitsField, 0, sizeof(CompatibleBitsField));
 
-		for(int i = 0; i < 64; i++)
+		for (int i = 0; i < 64; i++)
 		{
 			CompatibleBitsField[i][i >> 5] |= 1 << (i & 0x1f);
 		}
@@ -211,7 +211,8 @@ bool GSUtil::CheckSSE()
 {
 	bool status = true;
 
-	struct ISA {
+	struct ISA
+	{
 		Xbyak::util::Cpu::Type type;
 		const char* name;
 	};
@@ -228,8 +229,10 @@ bool GSUtil::CheckSSE()
 #endif
 	};
 
-	for (size_t i = 0; i < countof(checks); i++) {
-		if(!g_cpu.has(checks[i].type)) {
+	for (size_t i = 0; i < countof(checks); i++)
+	{
+		if (!g_cpu.has(checks[i].type))
+		{
 			fprintf(stderr, "This CPU does not support %s\n", checks[i].name);
 
 			status = false;
@@ -284,12 +287,12 @@ bool GSUtil::CheckD3D11()
 	return s_D3D11 > 0;
 }
 
-D3D_FEATURE_LEVEL GSUtil::CheckDirect3D11Level(IDXGIAdapter *adapter, D3D_DRIVER_TYPE type)
+D3D_FEATURE_LEVEL GSUtil::CheckDirect3D11Level(IDXGIAdapter* adapter, D3D_DRIVER_TYPE type)
 {
 	HRESULT hr;
 	D3D_FEATURE_LEVEL level;
 
-	if(!CheckD3D11())
+	if (!CheckD3D11())
 		return (D3D_FEATURE_LEVEL)0;
 
 	hr = D3D11CreateDevice(adapter, type, NULL, 0, NULL, 0, D3D11_SDK_VERSION, NULL, &level, NULL);
@@ -323,9 +326,11 @@ GSRendererType GSUtil::GetBestRenderer()
 #ifdef _WIN32
 void GSmkdir(const wchar_t* dir)
 {
-	if (!CreateDirectory(dir, nullptr)) {
+	if (!CreateDirectory(dir, nullptr))
+	{
 		DWORD errorID = ::GetLastError();
-		if (errorID != ERROR_ALREADY_EXISTS) {
+		if (errorID != ERROR_ALREADY_EXISTS)
+		{
 			fprintf(stderr, "Failed to create directory: %ls error %u\n", dir, errorID);
 		}
 	}
@@ -355,7 +360,8 @@ std::string GStempdir()
 
 const char* psm_str(int psm)
 {
-	switch(psm) {
+	switch (psm)
+	{
 		// Normal color
 		case PSM_PSMCT32:  return "C_32";
 		case PSM_PSMCT24:  return "C_24";
@@ -375,7 +381,7 @@ const char* psm_str(int psm)
 		case PSM_PSMZ16:   return "Z_16";
 		case PSM_PSMZ16S:  return "Z_16S";
 
-		case PSM_PSGPU24:     return "PS24";
+		case PSM_PSGPU24:  return "PS24";
 
 		default:break;
 	}

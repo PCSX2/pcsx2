@@ -34,7 +34,7 @@ struct GSVertexShader11
 class GSDevice11 final : public GSDevice
 {
 public:
-	#pragma pack(push, 1)
+#pragma pack(push, 1)
 
 	struct alignas(32) VSConstantBuffer
 	{
@@ -58,7 +58,7 @@ public:
 			GSVector4i* a = (GSVector4i*)this;
 			GSVector4i* b = (GSVector4i*)cb;
 
-			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3])).alltrue())
+			if (!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2]) & (a[3] == b[3])).alltrue())
 			{
 				a[0] = b[0];
 				a[1] = b[1];
@@ -78,19 +78,25 @@ public:
 		{
 			struct
 			{
-				uint32 tme:1;
-				uint32 fst:1;
+				uint32 tme : 1;
+				uint32 fst : 1;
 
-				uint32 _free:30;
+				uint32 _free : 30;
 			};
 
 			uint32 key;
 		};
 
-		operator uint32() const {return key;}
+		operator uint32() const { return key; }
 
-		VSSelector() : key(0) {}
-		VSSelector(uint32 k) : key(k) {}
+		VSSelector()
+			: key(0)
+		{
+		}
+		VSSelector(uint32 k)
+			: key(k)
+		{
+		}
 	};
 
 	struct alignas(32) PSConstantBuffer
@@ -131,7 +137,7 @@ public:
 			GSVector4i* a = (GSVector4i*)this;
 			GSVector4i* b = (GSVector4i*)cb;
 
-			if(!((a[0] == b[0]) /*& (a[1] == b1)*/ & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4]) & (a[5] == b[5]) &
+			if (!((a[0] == b[0]) /*& (a[1] == b1)*/ & (a[2] == b[2]) & (a[3] == b[3]) & (a[4] == b[4]) & (a[5] == b[5]) &
 				(a[6] == b[6]) & (a[7] == b[7]) & (a[9] == b[9]) & // if WH matches HalfTexel does too
 				(a[10] == b[10]) & (a[11] == b[11]) & (a[12] == b[12]) & (a[13] == b[13])).alltrue())
 			{
@@ -178,22 +184,28 @@ public:
 		{
 			struct
 			{
-				uint32 iip:1;
-				uint32 prim:2;
-				uint32 point:1;
-				uint32 line:1;
-				uint32 cpu_sprite:1;
+				uint32 iip   : 1;
+				uint32 prim  : 2;
+				uint32 point : 1;
+				uint32 line  : 1;
+				uint32 cpu_sprite : 1;
 
-				uint32 _free:26;
+				uint32 _free : 26;
 			};
 
 			uint32 key;
 		};
 
-		operator uint32() {return key;}
+		operator uint32() { return key; }
 
-		GSSelector() : key(0) {}
-		GSSelector(uint32 k) : key(k) {}
+		GSSelector()
+			: key(0)
+		{
+		}
+		GSSelector(uint32 k)
+			: key(k)
+		{
+		}
 	};
 
 	struct PSSelector
@@ -204,63 +216,66 @@ public:
 			{
 				// *** Word 1
 				// Format
-				uint32 fmt:4;
-				uint32 dfmt:2;
-				uint32 depth_fmt:2;
+				uint32 fmt  : 4;
+				uint32 dfmt : 2;
+				uint32 depth_fmt : 2;
 				// Alpha extension/Correction
-				uint32 aem:1;
-				uint32 fba:1;
+				uint32 aem : 1;
+				uint32 fba : 1;
 				// Fog
-				uint32 fog:1;
+				uint32 fog : 1;
 				// Pixel test
-				uint32 atst:3;
+				uint32 atst : 3;
 				// Color sampling
-				uint32 fst:1;
-				uint32 tfx:3;
-				uint32 tcc:1;
-				uint32 wms:2;
-				uint32 wmt:2;
-				uint32 ltf:1;
+				uint32 fst : 1;
+				uint32 tfx : 3;
+				uint32 tcc : 1;
+				uint32 wms : 2;
+				uint32 wmt : 2;
+				uint32 ltf : 1;
 				// Shuffle and fbmask effect
-				uint32 shuffle:1;
-				uint32 read_ba:1;
-				uint32 fbmask:1;
+				uint32 shuffle : 1;
+				uint32 read_ba : 1;
+				uint32 fbmask  : 1;
 
 				// Blend and Colclip
-				uint32 hdr:1;
-				uint32 blend_a:2;
-				uint32 blend_b:2; // bit30/31
-				uint32 blend_c:2; // bit0
-				uint32 blend_d:2;
-				uint32 clr1:1;
-				uint32 colclip:1;
-				uint32 pabe:1;
+				uint32 hdr     : 1;
+				uint32 blend_a : 2;
+				uint32 blend_b : 2; // bit30/31
+				uint32 blend_c : 2; // bit0
+				uint32 blend_d : 2;
+				uint32 clr1    : 1;
+				uint32 colclip : 1;
+				uint32 pabe    : 1;
 
 				// Others ways to fetch the texture
-				uint32 channel:3;
+				uint32 channel : 3;
 
 				// Dithering
-				uint32 dither:2;
+				uint32 dither : 2;
 
 				// Depth clamp
-				uint32 zclamp:1;
+				uint32 zclamp : 1;
 
 				// Hack
-				uint32 tcoffsethack:1;
-				uint32 urban_chaos_hle:1;
-				uint32 tales_of_abyss_hle:1;
-				uint32 point_sampler:1;
-				uint32 invalid_tex0:1; // Lupin the 3rd
+				uint32 tcoffsethack : 1;
+				uint32 urban_chaos_hle : 1;
+				uint32 tales_of_abyss_hle : 1;
+				uint32 point_sampler : 1;
+				uint32 invalid_tex0 : 1; // Lupin the 3rd
 
-				uint32 _free:14;
+				uint32 _free : 14;
 			};
 
 			uint64 key;
 		};
 
-		operator uint64() {return key;}
+		operator uint64() { return key; }
 
-		PSSelector() : key(0) {}
+		PSSelector()
+			: key(0)
+		{
+		}
 	};
 
 	struct PSSamplerSelector
@@ -269,17 +284,20 @@ public:
 		{
 			struct
 			{
-				uint32 tau:1;
-				uint32 tav:1;
-				uint32 ltf:1;
+				uint32 tau : 1;
+				uint32 tav : 1;
+				uint32 ltf : 1;
 			};
 
 			uint32 key;
 		};
 
-		operator uint32() {return key & 0x7;}
+		operator uint32() { return key & 0x7; }
 
-		PSSamplerSelector() : key(0) {}
+		PSSamplerSelector()
+			: key(0)
+		{
+		}
 	};
 
 	struct OMDepthStencilSelector
@@ -288,19 +306,22 @@ public:
 		{
 			struct
 			{
-				uint32 ztst:2;
-				uint32 zwe:1;
-				uint32 date:1;
-				uint32 fba:1;
-				uint32 date_one:1;
+				uint32 ztst : 2;
+				uint32 zwe  : 1;
+				uint32 date : 1;
+				uint32 fba  : 1;
+				uint32 date_one : 1;
 			};
 
 			uint32 key;
 		};
 
-		operator uint32() {return key & 0x3f;}
+		operator uint32() { return key & 0x3f; }
 
-		OMDepthStencilSelector() : key(0) {}
+		OMDepthStencilSelector()
+			: key(0)
+		{
+		}
 	};
 
 	struct OMBlendSelector
@@ -310,44 +331,55 @@ public:
 			struct
 			{
 				// Color mask
-				uint32 wr:1;
-				uint32 wg:1;
-				uint32 wb:1;
-				uint32 wa:1;
+				uint32 wr : 1;
+				uint32 wg : 1;
+				uint32 wb : 1;
+				uint32 wa : 1;
 				// Alpha blending
-				uint32 blend_index:7;
-				uint32 abe:1;
-				uint32 accu_blend:1;
+				uint32 blend_index : 7;
+				uint32 abe : 1;
+				uint32 accu_blend : 1;
 			};
 
 			struct
 			{
 				// Color mask
-				uint32 wrgba:4;
+				uint32 wrgba : 4;
 			};
 
 			uint32 key;
 		};
 
-		operator uint32() {return key & 0x1fff;}
+		operator uint32() { return key & 0x1fff; }
 
-		OMBlendSelector() : key(0) {}
+		OMBlendSelector()
+			: key(0)
+		{
+		}
 	};
 
-	#pragma pack(pop)
+#pragma pack(pop)
 
 	class ShaderMacro
 	{
 		struct mcstr
 		{
-			const char* name, * def;
-			mcstr(const char* n, const char* d) : name(n), def(d) {}
+			const char *name, *def;
+			mcstr(const char* n, const char* d)
+				: name(n)
+				, def(d)
+			{
+			}
 		};
 
 		struct mstring
 		{
 			std::string name, def;
-			mstring(const char* n, std::string d) : name(n), def(d) {}
+			mstring(const char* n, std::string d)
+				: name(n)
+				, def(d)
+			{
+			}
 		};
 
 		std::vector<mstring> mlist;
@@ -379,7 +411,7 @@ private:
 	void RenderOsd(GSTexture* dt);
 	void BeforeDraw();
 	void AfterDraw();
-	
+
 	uint16 ConvertBlendEnum(uint16 generic) final;
 
 	CComPtr<IDXGIFactory2> m_factory;
@@ -456,13 +488,13 @@ private:
 		CComPtr<ID3D11Buffer> cb;
 	} m_shaderfx;
 
-	struct 
+	struct
 	{
 		CComPtr<ID3D11PixelShader> ps;
 		CComPtr<ID3D11Buffer> cb;
 	} m_fxaa;
 
-	struct 
+	struct
 	{
 		CComPtr<ID3D11PixelShader> ps;
 		CComPtr<ID3D11Buffer> cb;
@@ -494,7 +526,12 @@ private:
 	std::unique_ptr<GSTexture> m_font;
 
 protected:
-	struct {D3D_FEATURE_LEVEL level; std::string model, vs, gs, ps, cs;} m_shader;
+	struct
+	{
+		D3D_FEATURE_LEVEL level;
+		std::string model, vs, gs, ps, cs;
+	} m_shader;
+
 public:
 	GSDevice11();
 	virtual ~GSDevice11() {}
@@ -502,7 +539,7 @@ public:
 	bool SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode);
 	void GetFeatureLevel(D3D_FEATURE_LEVEL& level) const { level = m_shader.level; }
 
-	bool Create(const std::shared_ptr<GSWnd> &wnd);
+	bool Create(const std::shared_ptr<GSWnd>& wnd);
 	bool Reset(int w, int h);
 	void Flip();
 	void SetVSync(int vsync) final;
@@ -558,9 +595,9 @@ public:
 	void SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix);
 
-	ID3D11Device* operator->() {return m_dev;}
-	operator ID3D11Device*() {return m_dev;}
-	operator ID3D11DeviceContext*() {return m_ctx;}
+	ID3D11Device* operator->() { return m_dev; }
+	operator ID3D11Device*() { return m_dev; }
+	operator ID3D11DeviceContext*() { return m_ctx; }
 
 	void CreateShader(const std::vector<char>& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11VertexShader** vs, D3D11_INPUT_ELEMENT_DESC* layout, int count, ID3D11InputLayout** il);
 	void CreateShader(const std::vector<char>& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11GeometryShader** gs);
@@ -568,4 +605,3 @@ public:
 
 	void CompileShader(const std::vector<char>& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3DBlob** shader, std::string shader_model);
 };
-

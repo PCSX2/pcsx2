@@ -28,7 +28,11 @@
 class GSTextureCache
 {
 public:
-	enum {RenderTarget, DepthStencil};
+	enum
+	{
+		RenderTarget,
+		DepthStencil
+	};
 
 	class Surface : public GSAlignedClass<32>
 	{
@@ -43,7 +47,7 @@ public:
 		uint8* m_temp;
 		bool m_32_bits_fmt; // Allow to detect the casting of 32 bits as 16 bits texture
 		bool m_shared_texture;
-		uint32 m_end_block;  // Hint of the surface area.
+		uint32 m_end_block; // Hint of the surface area.
 
 	public:
 		Surface(GSRenderer* r, uint8* temp);
@@ -54,7 +58,8 @@ public:
 		bool Overlaps(uint32 bp, uint32 bw, uint32 psm, const GSVector4i& rect);
 	};
 
-	struct PaletteKey {
+	struct PaletteKey
+	{
 		const uint32* clut;
 		uint16 pal;
 	};
@@ -86,19 +91,25 @@ public:
 		void InitializeTexture();
 	};
 
-	struct PaletteKeyHash {
+	struct PaletteKeyHash
+	{
 		// Calculate hash
-		std::size_t operator()(const PaletteKey &key) const;
+		std::size_t operator()(const PaletteKey& key) const;
 	};
 
-	struct PaletteKeyEqual {
+	struct PaletteKeyEqual
+	{
 		// Compare pal value and clut contents
-		bool operator()(const PaletteKey &lhs, const PaletteKey &rhs) const;
+		bool operator()(const PaletteKey& lhs, const PaletteKey& rhs) const;
 	};
 
 	class Source : public Surface
 	{
-		struct {GSVector4i* rect; uint32 count;} m_write;
+		struct
+		{
+			GSVector4i* rect;
+			uint32 count;
+		} m_write;
 
 		void Write(const GSVector4i& r, int layer);
 		void Flush(uint32 count, int layer);
@@ -116,7 +127,7 @@ public:
 		// still be valid on future. However it ought to be good when the source is created
 		// so it can be used to access un-converted data for the current draw call.
 		GSTexture* m_from_target;
-		GIFRegTEX0 m_from_target_TEX0;  // TEX0 of the target texture, if any, else equal to texture TEX0
+		GIFRegTEX0 m_from_target_TEX0; // TEX0 of the target texture, if any, else equal to texture TEX0
 		GIFRegTEX0 m_layer_TEX0[7]; // Detect already loaded value
 		// Keep a GSTextureCache::SourceMap::m_map iterator to allow fast erase
 		std::array<uint16, MAX_PAGES> m_erase_it;
@@ -155,7 +166,7 @@ public:
 	private:
 		static const uint16 MAX_SIZE = 65535; // Max size of each map.
 		const GSRenderer* m_renderer;
-		
+
 		// Array of 2 maps, the first for 64B palettes and the second for 1024B palettes.
 		// Each map stores the key PaletteKey (clut copy, pal value) pointing to the relevant shared pointer to Palette object.
 		// There is one PaletteKey per Palette, and the hashing and comparison of PaletteKey is done with custom operators PaletteKeyHash and PaletteKeyEqual.
@@ -178,7 +189,11 @@ public:
 		uint32 m_pages[16]; // bitmap of all pages
 		bool m_used;
 
-		SourceMap() : m_used(false) {memset(m_pages, 0, sizeof(m_pages));}
+		SourceMap()
+			: m_used(false)
+		{
+			memset(m_pages, 0, sizeof(m_pages));
+		}
 
 		void Add(Source* s, const GIFRegTEX0& TEX0, GSOffset* off);
 		void RemoveAll();
@@ -249,7 +264,8 @@ public:
 
 	bool ShallSearchTextureInsideRt();
 
-	const char* to_string(int type) {
+	const char* to_string(int type)
+	{
 		return (type == DepthStencil) ? "Depth" : "Color";
 	}
 

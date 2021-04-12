@@ -42,14 +42,14 @@ bool GSTextureSW::Update(const GSVector4i& r, const void* data, int pitch, int l
 {
 	GSMap m;
 
-	if(m_data != NULL && Map(m, &r))
+	if (m_data != NULL && Map(m, &r))
 	{
 		uint8* RESTRICT src = (uint8*)data;
 		uint8* RESTRICT dst = m.bits;
 
 		int rowbytes = r.width() << 2;
 
-		for(int h = r.height(); h > 0; h--, src += pitch, dst += m.pitch)
+		for (int h = r.height(); h > 0; h--, src += pitch, dst += m.pitch)
 		{
 			memcpy(dst, src, rowbytes);
 		}
@@ -66,7 +66,7 @@ bool GSTextureSW::Map(GSMap& m, const GSVector4i* r, int layer)
 {
 	GSVector4i r2 = r != NULL ? *r : GSVector4i(0, 0, m_size.x, m_size.y);
 
-	if(m_data != NULL && r2.left >= 0 && r2.right <= m_size.x && r2.top >= 0 && r2.bottom <= m_size.y)
+	if (m_data != NULL && r2.left >= 0 && r2.right <= m_size.x && r2.top >= 0 && r2.bottom <= m_size.y)
 	{
 		if (!m_mapped.test_and_set(std::memory_order_acquire))
 		{

@@ -25,10 +25,10 @@
 
 class GSWndWGL : public GSWndGL
 {
-	HWND	 m_NativeWindow;
-	HDC		 m_NativeDisplay;
-	HGLRC	 m_context;
-	bool	 m_has_late_vsync;
+	HWND  m_NativeWindow;
+	HDC   m_NativeDisplay;
+	HGLRC m_context;
+	bool  m_has_late_vsync;
 
 	PFNWGLSWAPINTERVALEXTPROC m_swapinterval;
 
@@ -45,14 +45,14 @@ class GSWndWGL : public GSWndGL
 
 public:
 	GSWndWGL();
-	virtual ~GSWndWGL() {};
+	virtual ~GSWndWGL() {}
 
 	bool Create(const std::string& title, int w, int h);
 	bool Attach(void* handle, bool managed = true);
 	void Detach();
 
-	void* GetDisplay() {return m_NativeWindow;}
-	void* GetHandle() {return m_NativeWindow;}
+	void* GetDisplay() { return m_NativeWindow; }
+	void* GetHandle() { return m_NativeWindow; }
 	GSVector4i GetClientRect();
 	bool SetWindowText(const char* title);
 

@@ -34,11 +34,11 @@ static const int _dscan = _args + 12;
 
 void GSSetupPrimCodeGenerator::Generate_AVX2()
 {
-	if((m_en.z || m_en.f) && m_sel.prim != GS_SPRITE_CLASS || m_en.t || m_en.c && m_sel.iip)
+	if ((m_en.z || m_en.f) && m_sel.prim != GS_SPRITE_CLASS || m_en.t || m_en.c && m_sel.iip)
 	{
 		mov(edx, dword[esp + _dscan]);
 
-		for(int i = 0; i < (m_sel.notest ? 2 : 5); i++)
+		for (int i = 0; i < (m_sel.notest ? 2 : 5); i++)
 		{
 			vmovaps(Ymm(3 + i), ptr[g_const->m_shift_256b[i]]);
 		}
@@ -55,12 +55,12 @@ void GSSetupPrimCodeGenerator::Generate_AVX2()
 
 void GSSetupPrimCodeGenerator::Depth_AVX2()
 {
-	if(!m_en.z && !m_en.f)
+	if (!m_en.z && !m_en.f)
 	{
 		return;
 	}
 
-	if(m_sel.prim != GS_SPRITE_CLASS)
+	if (m_sel.prim != GS_SPRITE_CLASS)
 	{
 		// GSVector4 dp8 = dscan.p * GSVector4::broadcast32(&shift[0]);
 
@@ -68,14 +68,14 @@ void GSSetupPrimCodeGenerator::Depth_AVX2()
 
 		vmulps(ymm1, ymm0, ymm3);
 
-		if(m_en.z)
+		if (m_en.z)
 		{
 			// m_local.d8.p.z = dp8.extract32<2>();
 
 			vextractps(ptr[&m_local.d8.p.z], xmm1, 2);
 		}
 
-		if(m_en.f)
+		if (m_en.f)
 		{
 			// m_local.d8.p.f = GSVector4i(dp8).extract32<3>();
 
@@ -83,37 +83,41 @@ void GSSetupPrimCodeGenerator::Depth_AVX2()
 			vpextrd(ptr[&m_local.d8.p.f], xmm2, 3);
 		}
 
-		if(m_en.z)
+		if (m_en.z)
 		{
 			// GSVector8 dz = GSVector8(dscan.p).zzzz();
 
 			vshufps(ymm2, ymm0, ymm0, _MM_SHUFFLE(2, 2, 2, 2));
 		}
 
-		if(m_en.f)
+		if (m_en.f)
 		{
 			// GSVector8 df = GSVector8(dscan.p).wwww();
 
 			vshufps(ymm1, ymm0, ymm0, _MM_SHUFFLE(3, 3, 3, 3));
 		}
 
-		for(int i = 0; i < (m_sel.notest ? 1 : 8); i++)
+		for (int i = 0; i < (m_sel.notest ? 1 : 8); i++)
 		{
-			if(m_en.z)
+			if (m_en.z)
 			{
 				// m_local.d[i].z = dz * shift[1 + i];
 
-				if(i < 4) vmulps(ymm0, ymm2, Ymm(4 + i));
-				else vmulps(ymm0, ymm2, ptr[g_const->m_shift_256b[i + 1]]);
+				if (i < 4)
+					vmulps(ymm0, ymm2, Ymm(4 + i));
+				else
+					vmulps(ymm0, ymm2, ptr[g_const->m_shift_256b[i + 1]]);
 				vmovaps(ptr[&m_local.d[i].z], ymm0);
 			}
 
-			if(m_en.f)
+			if (m_en.f)
 			{
 				// m_local.d[i].f = GSVector8i(df * m_shift[i]).xxzzlh();
 
-				if(i < 4) vmulps(ymm0, ymm1, Ymm(4 + i));
-				else vmulps(ymm0, ymm1, ptr[g_const->m_shift_256b[i + 1]]);
+				if (i < 4)
+					vmulps(ymm0, ymm1, Ymm(4 + i));
+				else
+					vmulps(ymm0, ymm1, ptr[g_const->m_shift_256b[i + 1]]);
 				vcvttps2dq(ymm0, ymm0);
 				vpshuflw(ymm0, ymm0, _MM_SHUFFLE(2, 2, 0, 0));
 				vpshufhw(ymm0, ymm0, _MM_SHUFFLE(2, 2, 0, 0));
@@ -130,7 +134,7 @@ void GSSetupPrimCodeGenerator::Depth_AVX2()
 		shl(ecx, 6); // * sizeof(GSVertexSW)
 		add(ecx, ptr[esp + _vertex]);
 
-		if(m_en.f)
+		if (m_en.f)
 		{
 			// m_local.p.f = GSVector4i(vertex[index[1]].p).extract32<3>();
 
@@ -139,7 +143,7 @@ void GSSetupPrimCodeGenerator::Depth_AVX2()
 			vpextrd(ptr[&m_local.p.f], xmm0, 3);
 		}
 
-		if(m_en.z)
+		if (m_en.z)
 		{
 			// m_local.p.z = vertex[index[1]].t.u32[3]; // uint32 z is bypassed in t.w
 
@@ -151,7 +155,7 @@ void GSSetupPrimCodeGenerator::Depth_AVX2()
 
 void GSSetupPrimCodeGenerator::Texture_AVX2()
 {
-	if(!m_en.t)
+	if (!m_en.t)
 	{
 		return;
 	}
@@ -164,7 +168,7 @@ void GSSetupPrimCodeGenerator::Texture_AVX2()
 
 	vmulps(ymm1, ymm0, ymm3);
 
-	if(m_sel.fst)
+	if (m_sel.fst)
 	{
 		// m_local.d8.stq = GSVector8::cast(GSVector8i(dt8));
 
@@ -179,40 +183,42 @@ void GSSetupPrimCodeGenerator::Texture_AVX2()
 		vmovaps(ptr[&m_local.d8.stq], xmm1);
 	}
 
-	for(int j = 0, k = m_sel.fst ? 2 : 3; j < k; j++)
+	for (int j = 0, k = m_sel.fst ? 2 : 3; j < k; j++)
 	{
 		// GSVector8 dstq = dt.xxxx/yyyy/zzzz();
 
 		vshufps(ymm1, ymm0, ymm0, (uint8)_MM_SHUFFLE(j, j, j, j));
 
-		for(int i = 0; i < (m_sel.notest ? 1 : 8); i++)
+		for (int i = 0; i < (m_sel.notest ? 1 : 8); i++)
 		{
 			// GSVector8 v = dstq * shift[1 + i];
 
-			if(i < 4) vmulps(ymm2, ymm1, Ymm(4 + i));
-			else vmulps(ymm2, ymm1, ptr[g_const->m_shift_256b[i + 1]]);
+			if (i < 4)
+				vmulps(ymm2, ymm1, Ymm(4 + i));
+			else
+				vmulps(ymm2, ymm1, ptr[g_const->m_shift_256b[i + 1]]);
 
-			if(m_sel.fst)
+			if (m_sel.fst)
 			{
 				// m_local.d[i].s/t = GSVector8::cast(GSVector8i(v));
 
 				vcvttps2dq(ymm2, ymm2);
 
-				switch(j)
+				switch (j)
 				{
-				case 0: vmovdqa(ptr[&m_local.d[i].s], ymm2); break;
-				case 1: vmovdqa(ptr[&m_local.d[i].t], ymm2); break;
+					case 0: vmovdqa(ptr[&m_local.d[i].s], ymm2); break;
+					case 1: vmovdqa(ptr[&m_local.d[i].t], ymm2); break;
 				}
 			}
 			else
 			{
 				// m_local.d[i].s/t/q = v;
 
-				switch(j)
+				switch (j)
 				{
-				case 0: vmovaps(ptr[&m_local.d[i].s], ymm2); break;
-				case 1: vmovaps(ptr[&m_local.d[i].t], ymm2); break;
-				case 2: vmovaps(ptr[&m_local.d[i].q], ymm2); break;
+					case 0: vmovaps(ptr[&m_local.d[i].s], ymm2); break;
+					case 1: vmovaps(ptr[&m_local.d[i].t], ymm2); break;
+					case 2: vmovaps(ptr[&m_local.d[i].q], ymm2); break;
 				}
 			}
 		}
@@ -221,12 +227,12 @@ void GSSetupPrimCodeGenerator::Texture_AVX2()
 
 void GSSetupPrimCodeGenerator::Color_AVX2()
 {
-	if(!m_en.c)
+	if (!m_en.c)
 	{
 		return;
 	}
 
-	if(m_sel.iip)
+	if (m_sel.iip)
 	{
 		// GSVector8 dc(dscan.c);
 
@@ -248,19 +254,23 @@ void GSSetupPrimCodeGenerator::Color_AVX2()
 		vshufps(ymm2, ymm0, ymm0, _MM_SHUFFLE(0, 0, 0, 0));
 		vshufps(ymm3, ymm0, ymm0, _MM_SHUFFLE(2, 2, 2, 2));
 
-		for(int i = 0; i < (m_sel.notest ? 1 : 8); i++)
+		for (int i = 0; i < (m_sel.notest ? 1 : 8); i++)
 		{
 			// GSVector8i r = GSVector8i(dr * shift[1 + i]).ps32();
 
-			if(i < 4) vmulps(ymm0, ymm2, Ymm(4 + i));
-			else vmulps(ymm0, ymm2, ptr[g_const->m_shift_256b[i + 1]]);
+			if (i < 4)
+				vmulps(ymm0, ymm2, Ymm(4 + i));
+			else
+				vmulps(ymm0, ymm2, ptr[g_const->m_shift_256b[i + 1]]);
 			vcvttps2dq(ymm0, ymm0);
 			vpackssdw(ymm0, ymm0);
 
 			// GSVector4i b = GSVector8i(db * shift[1 + i]).ps32();
 
-			if(i < 4) vmulps(ymm1, ymm3, Ymm(4 + i));
-			else vmulps(ymm1, ymm3, ptr[g_const->m_shift_256b[i + 1]]);
+			if (i < 4)
+				vmulps(ymm1, ymm3, Ymm(4 + i));
+			else
+				vmulps(ymm1, ymm3, ptr[g_const->m_shift_256b[i + 1]]);
 			vcvttps2dq(ymm1, ymm1);
 			vpackssdw(ymm1, ymm1);
 
@@ -280,19 +290,23 @@ void GSSetupPrimCodeGenerator::Color_AVX2()
 		vshufps(ymm2, ymm0, ymm0, _MM_SHUFFLE(1, 1, 1, 1));
 		vshufps(ymm3, ymm0, ymm0, _MM_SHUFFLE(3, 3, 3, 3));
 
-		for(int i = 0; i < (m_sel.notest ? 1 : 8); i++)
+		for (int i = 0; i < (m_sel.notest ? 1 : 8); i++)
 		{
 			// GSVector8i g = GSVector8i(dg * shift[1 + i]).ps32();
 
-			if(i < 4) vmulps(ymm0, ymm2, Ymm(4 + i));
-			else vmulps(ymm0, ymm2, ptr[g_const->m_shift_256b[i + 1]]);
+			if (i < 4)
+				vmulps(ymm0, ymm2, Ymm(4 + i));
+			else
+				vmulps(ymm0, ymm2, ptr[g_const->m_shift_256b[i + 1]]);
 			vcvttps2dq(ymm0, ymm0);
 			vpackssdw(ymm0, ymm0);
 
 			// GSVector8i a = GSVector8i(da * shift[1 + i]).ps32();
 
-			if(i < 4) vmulps(ymm1, ymm3, Ymm(4 + i));
-			else vmulps(ymm1, ymm3, ptr[g_const->m_shift_256b[i + 1]]);
+			if (i < 4)
+				vmulps(ymm1, ymm3, Ymm(4 + i));
+			else
+				vmulps(ymm1, ymm3, ptr[g_const->m_shift_256b[i + 1]]);
 			vcvttps2dq(ymm1, ymm1);
 			vpackssdw(ymm1, ymm1);
 
@@ -308,15 +322,15 @@ void GSSetupPrimCodeGenerator::Color_AVX2()
 
 		int last = 0;
 
-		switch(m_sel.prim)
+		switch (m_sel.prim)
 		{
-		case GS_POINT_CLASS: last = 0; break;
-		case GS_LINE_CLASS: last = 1; break;
-		case GS_TRIANGLE_CLASS: last = 2; break;
-		case GS_SPRITE_CLASS: last = 1; break;
+			case GS_POINT_CLASS:    last = 0; break;
+			case GS_LINE_CLASS:     last = 1; break;
+			case GS_TRIANGLE_CLASS: last = 2; break;
+			case GS_SPRITE_CLASS:   last = 1; break;
 		}
 
-		if(!(m_sel.prim == GS_SPRITE_CLASS && (m_en.z || m_en.f))) // if this is a sprite, the last vertex was already loaded in Depth()
+		if (!(m_sel.prim == GS_SPRITE_CLASS && (m_en.z || m_en.f))) // if this is a sprite, the last vertex was already loaded in Depth()
 		{
 			mov(ecx, ptr[esp + _index]);
 			mov(ecx, ptr[ecx + sizeof(uint32) * last]);
@@ -334,7 +348,7 @@ void GSSetupPrimCodeGenerator::Color_AVX2()
 
 		// if(!tme) c = c.srl16(7);
 
-		if(m_sel.tfx == TFX_NONE)
+		if (m_sel.tfx == TFX_NONE)
 		{
 			vpsrlw(ymm0, 7);
 		}

@@ -35,7 +35,7 @@ using namespace Xbyak;
 
 class GSDrawScanlineCodeGenerator : public GSCodeGenerator
 {
-	void operator = (const GSDrawScanlineCodeGenerator&);
+	void operator=(const GSDrawScanlineCodeGenerator&);
 
 	GSScanlineSelector m_sel;
 	GSScanlineLocalData& m_local;
@@ -43,7 +43,7 @@ class GSDrawScanlineCodeGenerator : public GSCodeGenerator
 
 	void Generate();
 
-	#if _M_SSE >= 0x501
+#if _M_SSE >= 0x501
 
 	void Init();
 	void Step();
@@ -71,7 +71,7 @@ class GSDrawScanlineCodeGenerator : public GSCodeGenerator
 	void ReadTexel(int pixels, int mip_offset = 0);
 	void ReadTexel(const Ymm& dst, const Ymm& addr, uint8 i);
 
-	#else
+#else
 
 	void Generate_SSE();
 	void Init_SSE();
@@ -94,7 +94,7 @@ class GSDrawScanlineCodeGenerator : public GSCodeGenerator
 	void WriteZBuf_SSE();
 	void AlphaBlend_SSE();
 	void WriteFrame_SSE();
-	void ReadPixel_SSE(const Xmm& dst, const  RegLong& addr);
+	void ReadPixel_SSE(const Xmm& dst, const RegLong& addr);
 	void WritePixel_SSE(const Xmm& src, const RegLong& addr, const Reg8& mask, bool fast, int psm, int fz);
 	void WritePixel_SSE(const Xmm& src, const RegLong& addr, uint8 i, int psm);
 	void ReadTexel_SSE(int pixels, int mip_offset = 0);
@@ -121,13 +121,13 @@ class GSDrawScanlineCodeGenerator : public GSCodeGenerator
 	void WriteZBuf_AVX();
 	void AlphaBlend_AVX();
 	void WriteFrame_AVX();
-	void ReadPixel_AVX(const Xmm& dst, const  RegLong& addr);
+	void ReadPixel_AVX(const Xmm& dst, const RegLong& addr);
 	void WritePixel_AVX(const Xmm& src, const RegLong& addr, const Reg8& mask, bool fast, int psm, int fz);
 	void WritePixel_AVX(const Xmm& src, const RegLong& addr, uint8 i, int psm);
 	void ReadTexel_AVX(int pixels, int mip_offset = 0);
 	void ReadTexel_AVX(const Xmm& dst, const Xmm& addr, uint8 i);
 
-	#endif
+#endif
 
 	void modulate16(const Xmm& a, const Operand& f, uint8 shift);
 	void lerp16(const Xmm& a, const Xmm& b, const Xmm& f, uint8 shift);

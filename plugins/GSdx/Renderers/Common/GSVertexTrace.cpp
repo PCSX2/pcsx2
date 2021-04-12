@@ -68,7 +68,8 @@ void GSVertexTrace::Update(const void* vertex, const uint32* index, int v_count,
 	// Potential float overflow detected. Better uses the slower division instead
 	// Note: If Q is too big, 1/Q will end up as 0. 1e30 is a random number
 	// that feel big enough.
-	if (!fst && !m_accurate_stq && m_min.t.z > 1e30) {
+	if (!fst && !m_accurate_stq && m_min.t.z > 1e30)
+	{
 		fprintf(stderr, "Vertex Trace: float overflow detected ! min %e max %e\n", m_min.t.z, m_max.t.z);
 		m_accurate_stq = true;
 		(this->*m_fmm[m_accurate_stq][color][fst][tme][iip][primclass])(vertex, index, i_count);
@@ -79,18 +80,19 @@ void GSVertexTrace::Update(const void* vertex, const uint32* index, int v_count,
 	m_alpha.valid = false;
 
 	// I'm not sure of the cost. In doubt let's do it only when depth is enabled
-	if(m_state->m_context->TEST.ZTE == 1 && m_state->m_context->TEST.ZTST > ZTST_ALWAYS) {
+	if (m_state->m_context->TEST.ZTE == 1 && m_state->m_context->TEST.ZTST > ZTST_ALWAYS)
+	{
 		CorrectDepthTrace(vertex, v_count);
 	}
 
-	if(m_state->PRIM->TME)
+	if (m_state->PRIM->TME)
 	{
 		const GIFRegTEX1& TEX1 = m_state->m_context->TEX1;
 
 		m_filter.mmag = TEX1.IsMagLinear();
 		m_filter.mmin = TEX1.IsMinLinear();
 
-		if(TEX1.MXL == 0) // MXL == 0 => MMIN ignored, tested it on ps2
+		if (TEX1.MXL == 0) // MXL == 0 => MMIN ignored, tested it on ps2
 		{
 			m_filter.linear = m_filter.mmag;
 		}
@@ -98,13 +100,18 @@ void GSVertexTrace::Update(const void* vertex, const uint32* index, int v_count,
 		{
 			float K = (float)TEX1.K / 16;
 
-			if(TEX1.LCM == 0 && m_state->PRIM->FST == 0) // FST == 1 => Q is not interpolated
+			if (TEX1.LCM == 0 && m_state->PRIM->FST == 0) // FST == 1 => Q is not interpolated
 			{
 				// LOD = log2(1/|Q|) * (1 << L) + K
 
 				GSVector4::storel(&m_lod, m_max.t.uph(m_min.t).log2(3).neg() * (float)(1 << TEX1.L) + K);
 
-				if(m_lod.x > m_lod.y) {float tmp = m_lod.x; m_lod.x = m_lod.y; m_lod.y = tmp;}
+				if (m_lod.x > m_lod.y)
+				{
+					float tmp = m_lod.x;
+					m_lod.x = m_lod.y;
+					m_lod.y = tmp;
+				}
 			}
 			else
 			{
@@ -112,11 +119,11 @@ void GSVertexTrace::Update(const void* vertex, const uint32* index, int v_count,
 				m_lod.y = K;
 			}
 
-			if(m_lod.y <= 0)
+			if (m_lod.y <= 0)
 			{
 				m_filter.linear = m_filter.mmag;
 			}
-			else if(m_lod.x > 0)
+			else if (m_lod.x > 0)
 			{
 				m_filter.linear = m_filter.mmin;
 			}
@@ -149,25 +156,25 @@ void GSVertexTrace::Update(const void* vertex, const uint32* index, int v_count,
 	}
 }
 
-template<GS_PRIM_CLASS primclass, uint32 iip, uint32 tme, uint32 fst, uint32 color, uint32 accurate_stq>
+template <GS_PRIM_CLASS primclass, uint32 iip, uint32 tme, uint32 fst, uint32 color, uint32 accurate_stq>
 void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int count)
 {
 	const GSDrawingContext* context = m_state->m_context;
 
 	int n = 1;
 
-	switch(primclass)
+	switch (primclass)
 	{
-	case GS_POINT_CLASS:
-		n = 1;
-		break;
-	case GS_LINE_CLASS:
-	case GS_SPRITE_CLASS:
-		n = 2;
-		break;
-	case GS_TRIANGLE_CLASS:
-		n = 3;
-		break;
+		case GS_POINT_CLASS:
+			n = 1;
+			break;
+		case GS_LINE_CLASS:
+		case GS_SPRITE_CLASS:
+			n = 2;
+			break;
+		case GS_TRIANGLE_CLASS:
+			n = 3;
+			break;
 	}
 
 	GSVector4 tmin = s_minmax.xxxx();
@@ -180,21 +187,21 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 
 	const GSVertex* RESTRICT v = (GSVertex*)vertex;
 
-	for(int i = 0; i < count; i += n)
+	for (int i = 0; i < count; i += n)
 	{
-		if(primclass == GS_POINT_CLASS)
+		if (primclass == GS_POINT_CLASS)
 		{
 			GSVector4i c(v[index[i]].m[0]);
 
-			if(color)
+			if (color)
 			{
 				cmin = cmin.min_u8(c);
 				cmax = cmax.max_u8(c);
 			}
 
-			if(tme)
+			if (tme)
 			{
-				if(!fst)
+				if (!fst)
 				{
 					GSVector4 stq = GSVector4::cast(c);
 
@@ -229,14 +236,14 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 			pmin = pmin.min_u32(p);
 			pmax = pmax.max_u32(p);
 		}
-		else if(primclass == GS_LINE_CLASS)
+		else if (primclass == GS_LINE_CLASS)
 		{
 			GSVector4i c0(v[index[i + 0]].m[0]);
 			GSVector4i c1(v[index[i + 1]].m[0]);
 
-			if(color)
+			if (color)
 			{
-				if(iip)
+				if (iip)
 				{
 					cmin = cmin.min_u8(c0.min_u8(c1));
 					cmax = cmax.max_u8(c0.max_u8(c1));
@@ -248,14 +255,14 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 				}
 			}
 
-			if(tme)
+			if (tme)
 			{
-				if(!fst)
+				if (!fst)
 				{
 					GSVector4 stq0 = GSVector4::cast(c0);
 					GSVector4 stq1 = GSVector4::cast(c1);
 
-					if(accurate_stq)
+					if (accurate_stq)
 					{
 						GSVector4 q = stq0.wwww(stq1);
 
@@ -300,15 +307,15 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 			pmin = pmin.min_u32(p0.min_u32(p1));
 			pmax = pmax.max_u32(p0.max_u32(p1));
 		}
-		else if(primclass == GS_TRIANGLE_CLASS)
+		else if (primclass == GS_TRIANGLE_CLASS)
 		{
 			GSVector4i c0(v[index[i + 0]].m[0]);
 			GSVector4i c1(v[index[i + 1]].m[0]);
 			GSVector4i c2(v[index[i + 2]].m[0]);
 
-			if(color)
+			if (color)
 			{
-				if(iip)
+				if (iip)
 				{
 					cmin = cmin.min_u8(c2).min_u8(c0.min_u8(c1));
 					cmax = cmax.max_u8(c2).max_u8(c0.max_u8(c1));
@@ -320,15 +327,15 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 				}
 			}
 
-			if(tme)
+			if (tme)
 			{
-				if(!fst)
+				if (!fst)
 				{
 					GSVector4 stq0 = GSVector4::cast(c0);
 					GSVector4 stq1 = GSVector4::cast(c1);
 					GSVector4 stq2 = GSVector4::cast(c2);
 
-					if(accurate_stq)
+					if (accurate_stq)
 					{
 						GSVector4 q = stq0.wwww(stq1).xzww(stq2);
 
@@ -381,14 +388,14 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 			pmin = pmin.min_u32(p2).min_u32(p0.min_u32(p1));
 			pmax = pmax.max_u32(p2).max_u32(p0.max_u32(p1));
 		}
-		else if(primclass == GS_SPRITE_CLASS)
+		else if (primclass == GS_SPRITE_CLASS)
 		{
 			GSVector4i c0(v[index[i + 0]].m[0]);
 			GSVector4i c1(v[index[i + 1]].m[0]);
 
-			if(color)
+			if (color)
 			{
-				if(iip)
+				if (iip)
 				{
 					cmin = cmin.min_u8(c0.min_u8(c1));
 					cmax = cmax.max_u8(c0.max_u8(c1));
@@ -400,14 +407,14 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 				}
 			}
 
-			if(tme)
+			if (tme)
 			{
-				if(!fst)
+				if (!fst)
 				{
 					GSVector4 stq0 = GSVector4::cast(c0);
 					GSVector4 stq1 = GSVector4::cast(c1);
 
-					if(accurate_stq)
+					if (accurate_stq)
 					{
 						GSVector4 q = stq1.wwww();
 
@@ -468,9 +475,9 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 	m_min.p = (GSVector4(pmin) - o) * s;
 	m_max.p = (GSVector4(pmax) - o) * s;
 
-	if(tme)
+	if (tme)
 	{
-		if(fst)
+		if (fst)
 		{
 			s = GSVector4(1.0f / 16, 1.0f).xxyy();
 		}
@@ -488,7 +495,7 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 		m_max.t = GSVector4::zero();
 	}
 
-	if(color)
+	if (color)
 	{
 		m_min.c = cmin.zzzz().u8to32();
 		m_max.c = cmax.zzzz().u8to32();
@@ -518,21 +525,29 @@ void GSVertexTrace::CorrectDepthTrace(const void* vertex, int count)
 	uint32 z = v[0].XYZ.Z;
 
 	// ought to check only 1/2 for sprite
-	if (z & 1) {
+	if (z & 1)
+	{
 		// Check that first bit is always 1
-		for (int i = 0; i < count; i++) {
+		for (int i = 0; i < count; i++)
+		{
 			z &= v[i].XYZ.Z;
 		}
-	} else {
+	}
+	else
+	{
 		// Check that first bit is always 0
-		for (int i = 0; i < count; i++) {
+		for (int i = 0; i < count; i++)
+		{
 			z |= v[i].XYZ.Z;
 		}
 	}
 
-	if (z == v[0].XYZ.Z) {
+	if (z == v[0].XYZ.Z)
+	{
 		m_eq.z = 1;
-	} else {
+	}
+	else
+	{
 		m_eq.z = 0;
 	}
 }

@@ -36,10 +36,14 @@ GSTexture11::GSTexture11(ID3D11Texture2D* texture)
 	m_size.x = (int)m_desc.Width;
 	m_size.y = (int)m_desc.Height;
 
-	if(m_desc.BindFlags & D3D11_BIND_RENDER_TARGET) m_type = RenderTarget;
-	else if(m_desc.BindFlags & D3D11_BIND_DEPTH_STENCIL) m_type = DepthStencil;
-	else if(m_desc.BindFlags & D3D11_BIND_SHADER_RESOURCE) m_type = Texture;
-	else if(m_desc.Usage == D3D11_USAGE_STAGING) m_type = Offscreen;
+	if (m_desc.BindFlags & D3D11_BIND_RENDER_TARGET)
+		m_type = RenderTarget;
+	else if (m_desc.BindFlags & D3D11_BIND_DEPTH_STENCIL)
+		m_type = DepthStencil;
+	else if (m_desc.BindFlags & D3D11_BIND_SHADER_RESOURCE)
+		m_type = Texture;
+	else if (m_desc.Usage == D3D11_USAGE_STAGING)
+		m_type = Offscreen;
 
 	m_format = (int)m_desc.Format;
 
@@ -48,12 +52,12 @@ GSTexture11::GSTexture11(ID3D11Texture2D* texture)
 
 bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch, int layer)
 {
-	if(layer >= m_max_layer)
+	if (layer >= m_max_layer)
 		return true;
 
-	if(m_dev && m_texture)
+	if (m_dev && m_texture)
 	{
-		D3D11_BOX box = { (UINT)r.left, (UINT)r.top, 0U, (UINT)r.right, (UINT)r.bottom, 1U };
+		D3D11_BOX box = {(UINT)r.left, (UINT)r.top, 0U, (UINT)r.right, (UINT)r.bottom, 1U};
 		UINT subresource = layer; // MipSlice + (ArraySlice * MipLevels).
 
 		m_ctx->UpdateSubresource(m_texture, subresource, &box, data, pitch, 0);
@@ -66,21 +70,21 @@ bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch, int l
 
 bool GSTexture11::Map(GSMap& m, const GSVector4i* r, int layer)
 {
-	if(r != NULL)
+	if (r != NULL)
 	{
 		// ASSERT(0); // not implemented
 		return false;
 	}
 
-	if(layer >= m_max_layer)
+	if (layer >= m_max_layer)
 		return false;
 
-	if(m_texture && m_desc.Usage == D3D11_USAGE_STAGING)
+	if (m_texture && m_desc.Usage == D3D11_USAGE_STAGING)
 	{
 		D3D11_MAPPED_SUBRESOURCE map;
 		UINT subresource = layer;
 
-		if(SUCCEEDED(m_ctx->Map(m_texture, subresource, D3D11_MAP_READ_WRITE, 0, &map)))
+		if (SUCCEEDED(m_ctx->Map(m_texture, subresource, D3D11_MAP_READ_WRITE, 0, &map)))
 		{
 			m.bits = (uint8*)map.pData;
 			m.pitch = (int)map.RowPitch;
@@ -96,7 +100,7 @@ bool GSTexture11::Map(GSMap& m, const GSVector4i* r, int layer)
 
 void GSTexture11::Unmap()
 {
-	if(m_texture)
+	if (m_texture)
 	{
 		UINT subresource = m_layer;
 		m_ctx->Unmap(m_texture, subresource);
@@ -156,7 +160,7 @@ bool GSTexture11::Save(const std::string& fn)
 		{
 			for (uint32 x = 0; x < desc.Width; x++)
 			{
-				reinterpret_cast<uint32*>(d)[x] = static_cast<uint32>(ldexpf(reinterpret_cast<float*>(s)[x*2], 32));
+				reinterpret_cast<uint32*>(d)[x] = static_cast<uint32>(ldexpf(reinterpret_cast<float*>(s)[x * 2], 32));
 			}
 		}
 
@@ -175,14 +179,14 @@ bool GSTexture11::Save(const std::string& fn)
 #endif
 	switch (desc.Format)
 	{
-	case DXGI_FORMAT_A8_UNORM:
-		format = GSPng::R8I_PNG;
-		break;
-	case DXGI_FORMAT_R8G8B8A8_UNORM:
-		break;
-	default:
-		fprintf(stderr, "DXGI_FORMAT %d not saved to image\n", desc.Format);
-		return false;
+		case DXGI_FORMAT_A8_UNORM:
+			format = GSPng::R8I_PNG;
+			break;
+		case DXGI_FORMAT_R8G8B8A8_UNORM:
+			break;
+		default:
+			fprintf(stderr, "DXGI_FORMAT %d not saved to image\n", desc.Format);
+			return false;
 	}
 
 	D3D11_MAPPED_SUBRESOURCE sm;
@@ -207,9 +211,9 @@ GSTexture11::operator ID3D11Texture2D*()
 
 GSTexture11::operator ID3D11ShaderResourceView*()
 {
-	if(!m_srv && m_dev && m_texture)
+	if (!m_srv && m_dev && m_texture)
 	{
-		if(m_desc.Format == DXGI_FORMAT_R32G8X24_TYPELESS)
+		if (m_desc.Format == DXGI_FORMAT_R32G8X24_TYPELESS)
 		{
 			D3D11_SHADER_RESOURCE_VIEW_DESC srvd = {};
 
@@ -232,7 +236,7 @@ GSTexture11::operator ID3D11RenderTargetView*()
 {
 	ASSERT(m_dev);
 
-	if(!m_rtv && m_dev && m_texture)
+	if (!m_rtv && m_dev && m_texture)
 	{
 		m_dev->CreateRenderTargetView(m_texture, NULL, &m_rtv);
 	}
@@ -242,9 +246,9 @@ GSTexture11::operator ID3D11RenderTargetView*()
 
 GSTexture11::operator ID3D11DepthStencilView*()
 {
-	if(!m_dsv && m_dev && m_texture)
+	if (!m_dsv && m_dev && m_texture)
 	{
-		if(m_desc.Format == DXGI_FORMAT_R32G8X24_TYPELESS)
+		if (m_desc.Format == DXGI_FORMAT_R32G8X24_TYPELESS)
 		{
 			D3D11_DEPTH_STENCIL_VIEW_DESC dsvd = {};
 

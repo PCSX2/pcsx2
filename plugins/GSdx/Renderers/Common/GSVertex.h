@@ -34,11 +34,11 @@ struct alignas(32) GSVertex
 	{
 		struct
 		{
-			GIFRegST ST; // S:0, T:4
+			GIFRegST ST;       // S:0, T:4
 			GIFRegRGBAQ RGBAQ; // RGBA:8, Q:12
-			GIFRegXYZ XYZ; // XY:16, Z:20
-			union {uint32 UV; struct {uint16 U, V;};}; // UV:24
-			uint32 FOG; // FOG:28
+			GIFRegXYZ XYZ;     // XY:16, Z:20
+			union { uint32 UV; struct { uint16 U, V; }; }; // UV:24
+			uint32 FOG;        // FOG:28
 		};
 
 #if _M_SSE >= 0x500
@@ -50,11 +50,22 @@ struct alignas(32) GSVertex
 	GSVertex() = default; // Warning object is potentially used in hot path
 
 #if _M_SSE >= 0x500
-	GSVertex(const GSVertex& v) {mx = v.mx;}
-	void operator = (const GSVertex& v) {mx = v.mx;}
+	GSVertex(const GSVertex& v)
+	{
+		mx = v.mx;
+	}
+	void operator=(const GSVertex& v) { mx = v.mx; }
 #else
-	GSVertex(const GSVertex& v) {m[0] = v.m[0]; m[1] = v.m[1];}
-	void operator = (const GSVertex& v) {m[0] = v.m[0]; m[1] = v.m[1];}
+	GSVertex(const GSVertex& v)
+	{
+		m[0] = v.m[0];
+		m[1] = v.m[1];
+	}
+	void operator=(const GSVertex& v)
+	{
+		m[0] = v.m[0];
+		m[1] = v.m[1];
+	}
 #endif
 };
 
@@ -68,7 +79,7 @@ struct alignas(32) GSVertexPT1
 	GSVector4 p;
 	GSVector2 t;
 	char pad[4];
-	union {uint32 c; struct {uint8 r, g, b, a;};};
+	union { uint32 c; struct { uint8 r, g, b, a; }; };
 };
 
 struct GSVertexPT2

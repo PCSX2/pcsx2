@@ -28,11 +28,12 @@ extern uint64 g_uniform_upload_byte;
 #endif
 
 
-class GSUniformBufferOGL {
-	GLuint m_buffer;		// data object
-	GLuint m_index;		// GLSL slot
-	uint32 m_size;	    // size of the data
-	uint8* m_cache;       // content of the previous upload
+class GSUniformBufferOGL
+{
+	GLuint m_buffer; // data object
+	GLuint m_index;  // GLSL slot
+	uint32 m_size;   // size of the data
+	uint8* m_cache;  // content of the previous upload
 
 public:
 	GSUniformBufferOGL(const std::string& pretty_name, GLuint index, uint32 size)
@@ -49,7 +50,8 @@ public:
 
 	void bind()
 	{
-		if (GLState::ubo != m_buffer) {
+		if (GLState::ubo != m_buffer)
+		{
 			GLState::ubo = m_buffer;
 			glBindBuffer(GL_UNIFORM_BUFFER, m_buffer);
 		}
@@ -82,7 +84,8 @@ public:
 
 	void cache_upload(const void* src)
 	{
-		if (memcmp(m_cache, src, m_size) != 0) {
+		if (memcmp(m_cache, src, m_size) != 0)
+		{
 			memcpy(m_cache, src, m_size);
 			upload(src);
 		}
@@ -95,18 +98,19 @@ public:
 	}
 };
 
-#define UBO_BUFFER_SIZE (4*1024*1024)
+#define UBO_BUFFER_SIZE (4 * 1024 * 1024)
 
-class GSUniformBufferStorageOGL {
-	GLuint m_buffer;		// data object
-	GLuint m_index;		// GLSL slot
-	uint32 m_size;	    // size of the data
+class GSUniformBufferStorageOGL
+{
+	GLuint m_buffer; // data object
+	GLuint m_index;  // GLSL slot
+	uint32 m_size;   // size of the data
 	uint8* m_buffer_ptr;
 	uint32 m_offset;
 
 public:
-	GSUniformBufferStorageOGL(GLuint index, uint32 size) : m_index(index)
-												  , m_size(size), m_offset(0)
+	GSUniformBufferStorageOGL(GLuint index, uint32 size)
+		: m_index(index) , m_size(size) , m_offset(0)
 	{
 		glGenBuffers(1, &m_buffer);
 		bind();
@@ -116,7 +120,8 @@ public:
 
 	void bind()
 	{
-		if (GLState::ubo != m_buffer) {
+		if (GLState::ubo != m_buffer)
+		{
 			GLState::ubo = m_buffer;
 			glBindBuffer(GL_UNIFORM_BUFFER, m_buffer);
 		}
@@ -130,7 +135,7 @@ public:
 
 		GLsizei buffer_size = UBO_BUFFER_SIZE;
 		glBufferStorage(GL_UNIFORM_BUFFER, buffer_size, NULL, create_flags);
-		m_buffer_ptr = (uint8*) glMapBufferRange(GL_UNIFORM_BUFFER, 0, buffer_size, map_flags);
+		m_buffer_ptr = (uint8*)glMapBufferRange(GL_UNIFORM_BUFFER, 0, buffer_size, map_flags);
 		ASSERT(m_buffer_ptr);
 	}
 
@@ -159,7 +164,8 @@ public:
 			m_offset = 0;
 	}
 
-	~GSUniformBufferStorageOGL() {
+	~GSUniformBufferStorageOGL()
+	{
 		glDeleteBuffers(1, &m_buffer);
 	}
 };

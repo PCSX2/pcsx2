@@ -34,7 +34,8 @@ extern uint64 g_real_texture_upload_byte;
 extern uint64 g_vertex_upload_byte;
 #endif
 
-class GSDepthStencilOGL {
+class GSDepthStencilOGL
+{
 	bool m_depth_enable;
 	GLenum m_depth_func;
 	bool m_depth_mask;
@@ -44,8 +45,8 @@ class GSDepthStencilOGL {
 	GLenum m_stencil_spass_dpass_op;
 
 public:
-
-	GSDepthStencilOGL() : m_depth_enable(false)
+	GSDepthStencilOGL()
+		: m_depth_enable(false)
 		, m_depth_func(GL_ALWAYS)
 		, m_depth_mask(0)
 		, m_stencil_enable(false)
@@ -57,12 +58,21 @@ public:
 	void EnableDepth() { m_depth_enable = true; }
 	void EnableStencil() { m_stencil_enable = true; }
 
-	void SetDepth(GLenum func, bool mask) { m_depth_func = func; m_depth_mask = mask; }
-	void SetStencil(GLenum func, GLenum pass) { m_stencil_func = func; m_stencil_spass_dpass_op = pass; }
+	void SetDepth(GLenum func, bool mask)
+	{
+		m_depth_func = func;
+		m_depth_mask = mask;
+	}
+	void SetStencil(GLenum func, GLenum pass)
+	{
+		m_stencil_func = func;
+		m_stencil_spass_dpass_op = pass;
+	}
 
 	void SetupDepth()
 	{
-		if (GLState::depth != m_depth_enable) {
+		if (GLState::depth != m_depth_enable)
+		{
 			GLState::depth = m_depth_enable;
 			if (m_depth_enable)
 				glEnable(GL_DEPTH_TEST);
@@ -70,12 +80,15 @@ public:
 				glDisable(GL_DEPTH_TEST);
 		}
 
-		if (m_depth_enable) {
-			if (GLState::depth_func != m_depth_func) {
+		if (m_depth_enable)
+		{
+			if (GLState::depth_func != m_depth_func)
+			{
 				GLState::depth_func = m_depth_func;
 				glDepthFunc(m_depth_func);
 			}
-			if (GLState::depth_mask != m_depth_mask) {
+			if (GLState::depth_mask != m_depth_mask)
+			{
 				GLState::depth_mask = m_depth_mask;
 				glDepthMask((GLboolean)m_depth_mask);
 			}
@@ -84,7 +97,8 @@ public:
 
 	void SetupStencil()
 	{
-		if (GLState::stencil != m_stencil_enable) {
+		if (GLState::stencil != m_stencil_enable)
+		{
 			GLState::stencil = m_stencil_enable;
 			if (m_stencil_enable)
 				glEnable(GL_STENCIL_TEST);
@@ -92,13 +106,16 @@ public:
 				glDisable(GL_STENCIL_TEST);
 		}
 
-		if (m_stencil_enable) {
+		if (m_stencil_enable)
+		{
 			// Note: here the mask control which bitplane is considered by the operation
-			if (GLState::stencil_func != m_stencil_func) {
+			if (GLState::stencil_func != m_stencil_func)
+			{
 				GLState::stencil_func = m_stencil_func;
 				glStencilFunc(m_stencil_func, 1, 1);
 			}
-			if (GLState::stencil_pass != m_stencil_spass_dpass_op) {
+			if (GLState::stencil_pass != m_stencil_spass_dpass_op)
+			{
 				GLState::stencil_pass = m_stencil_spass_dpass_op;
 				glStencilOp(GL_KEEP, GL_KEEP, m_stencil_spass_dpass_op);
 			}
@@ -133,7 +150,7 @@ public:
 			GSVector4i* a = (GSVector4i*)this;
 			GSVector4i* b = (GSVector4i*)cb;
 
-			if(!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2])).alltrue())
+			if (!((a[0] == b[0]) & (a[1] == b[1]) & (a[2] == b[2])).alltrue())
 			{
 				a[0] = b[0];
 				a[1] = b[1];
@@ -152,17 +169,23 @@ public:
 		{
 			struct
 			{
-				uint32 int_fst:1;
-				uint32 _free:31;
+				uint32 int_fst : 1;
+				uint32 _free : 31;
 			};
 
 			uint32 key;
 		};
 
-		operator uint32() const {return key;}
+		operator uint32() const { return key; }
 
-		VSSelector() : key(0) {}
-		VSSelector(uint32 k) : key(k) {}
+		VSSelector()
+			: key(0)
+		{
+		}
+		VSSelector(uint32 k)
+			: key(k)
+		{
+		}
 	};
 
 	struct GSSelector
@@ -171,20 +194,26 @@ public:
 		{
 			struct
 			{
-				uint32 sprite:1;
-				uint32 point:1;
-				uint32 line:1;
+				uint32 sprite : 1;
+				uint32 point  : 1;
+				uint32 line   : 1;
 
-				uint32 _free:29;
+				uint32 _free : 29;
 			};
 
 			uint32 key;
 		};
 
-		operator uint32() const {return key;}
+		operator uint32() const { return key; }
 
-		GSSelector() : key(0) {}
-		GSSelector(uint32 k) : key(k) {}
+		GSSelector()
+			: key(0)
+		{
+		}
+		GSSelector(uint32 k)
+			: key(k)
+		{
+		}
 	};
 
 	struct alignas(32) PSConstantBuffer
@@ -263,74 +292,77 @@ public:
 			{
 				// *** Word 1
 				// Format
-				uint32 tex_fmt:4;
-				uint32 dfmt:2;
-				uint32 depth_fmt:2;
+				uint32 tex_fmt   : 4;
+				uint32 dfmt      : 2;
+				uint32 depth_fmt : 2;
 				// Alpha extension/Correction
-				uint32 aem:1;
-				uint32 fba:1;
+				uint32 aem : 1;
+				uint32 fba : 1;
 				// Fog
-				uint32 fog:1;
+				uint32 fog : 1;
 				// Flat/goround shading
-				uint32 iip:1;
+				uint32 iip : 1;
 				// Pixel test
-				uint32 date:3;
-				uint32 atst:3;
+				uint32 date : 3;
+				uint32 atst : 3;
 				// Color sampling
-				uint32 fst:1; // Investigate to do it on the VS
-				uint32 tfx:3;
-				uint32 tcc:1;
-				uint32 wms:2;
-				uint32 wmt:2;
-				uint32 ltf:1;
+				uint32 fst : 1; // Investigate to do it on the VS
+				uint32 tfx : 3;
+				uint32 tcc : 1;
+				uint32 wms : 2;
+				uint32 wmt : 2;
+				uint32 ltf : 1;
 				// Shuffle and fbmask effect
-				uint32 shuffle:1;
-				uint32 read_ba:1;
-				uint32 write_rg:1;
-				uint32 fbmask:1;
+				uint32 shuffle  : 1;
+				uint32 read_ba  : 1;
+				uint32 write_rg : 1;
+				uint32 fbmask   : 1;
 
 				//uint32 _free1:0;
 
 				// *** Word 2
 				// Blend and Colclip
-				uint32 blend_a:2;
-				uint32 blend_b:2;
-				uint32 blend_c:2;
-				uint32 blend_d:2;
-				uint32 clr1:1; // useful?
-				uint32 hdr:1;
-				uint32 colclip:1;
-				uint32 pabe:1;
+				uint32 blend_a : 2;
+				uint32 blend_b : 2;
+				uint32 blend_c : 2;
+				uint32 blend_d : 2;
+				uint32 clr1    : 1; // useful?
+				uint32 hdr     : 1;
+				uint32 colclip : 1;
+				uint32 pabe    : 1;
 
 				// Others ways to fetch the texture
-				uint32 channel:3;
+				uint32 channel : 3;
 
 				// Dithering
-				uint32 dither:2;
+				uint32 dither : 2;
 
 				// Depth clamp
-				uint32 zclamp:1;
+				uint32 zclamp : 1;
 
 				// Hack
-				uint32 tcoffsethack:1;
-				uint32 urban_chaos_hle:1;
-				uint32 tales_of_abyss_hle:1;
-				uint32 tex_is_fb:1; // Jak Shadows
-				uint32 automatic_lod:1;
-				uint32 manual_lod:1;
-				uint32 point_sampler:1;
-				uint32 invalid_tex0:1; // Lupin the 3rd
+				uint32 tcoffsethack : 1;
+				uint32 urban_chaos_hle : 1;
+				uint32 tales_of_abyss_hle : 1;
+				uint32 tex_is_fb : 1; // Jak Shadows
+				uint32 automatic_lod : 1;
+				uint32 manual_lod : 1;
+				uint32 point_sampler : 1;
+				uint32 invalid_tex0 : 1; // Lupin the 3rd
 
-				uint32 _free2:6;
+				uint32 _free2 : 6;
 			};
 
 			uint64 key;
 		};
 
 		// FIXME is the & useful ?
-		operator uint64() const {return key;}
+		operator uint64() const { return key; }
 
-		PSSelector() : key(0) {}
+		PSSelector()
+			: key(0)
+		{
+		}
 	};
 
 	struct PSSamplerSelector
@@ -339,22 +371,28 @@ public:
 		{
 			struct
 			{
-				uint32 tau:1;
-				uint32 tav:1;
-				uint32 biln:1;
-				uint32 triln:3;
-				uint32 aniso:1;
+				uint32 tau   : 1;
+				uint32 tav   : 1;
+				uint32 biln  : 1;
+				uint32 triln : 3;
+				uint32 aniso : 1;
 
-				uint32 _free:25;
+				uint32 _free : 25;
 			};
 
 			uint32 key;
 		};
 
-		operator uint32() {return key;}
+		operator uint32() { return key; }
 
-		PSSamplerSelector() : key(0) {}
-		PSSamplerSelector(uint32 k) : key(k) {}
+		PSSamplerSelector()
+			: key(0)
+		{
+		}
+		PSSamplerSelector(uint32 k)
+			: key(k)
+		{
+		}
 	};
 
 	struct OMDepthStencilSelector
@@ -363,22 +401,28 @@ public:
 		{
 			struct
 			{
-				uint32 ztst:2;
-				uint32 zwe:1;
-				uint32 date:1;
-				uint32 date_one:1;
+				uint32 ztst : 2;
+				uint32 zwe  : 1;
+				uint32 date : 1;
+				uint32 date_one : 1;
 
-				uint32 _free:27;
+				uint32 _free : 27;
 			};
 
 			uint32 key;
 		};
 
 		// FIXME is the & useful ?
-		operator uint32() {return key;}
+		operator uint32() { return key; }
 
-		OMDepthStencilSelector() : key(0) {}
-		OMDepthStencilSelector(uint32 k) : key(k) {}
+		OMDepthStencilSelector()
+			: key(0)
+		{
+		}
+		OMDepthStencilSelector(uint32 k)
+			: key(k)
+		{
+		}
 	};
 
 	struct OMColorMaskSelector
@@ -387,26 +431,29 @@ public:
 		{
 			struct
 			{
-				uint32 wr:1;
-				uint32 wg:1;
-				uint32 wb:1;
-				uint32 wa:1;
+				uint32 wr : 1;
+				uint32 wg : 1;
+				uint32 wb : 1;
+				uint32 wa : 1;
 
-				uint32 _free:28;
+				uint32 _free : 28;
 			};
 
 			struct
 			{
-				uint32 wrgba:4;
+				uint32 wrgba : 4;
 			};
 
 			uint32 key;
 		};
 
 		// FIXME is the & useful ?
-		operator uint32() {return key & 0xf;}
+		operator uint32() { return key & 0xf; }
 
-		OMColorMaskSelector() : key(0xF) {}
+		OMColorMaskSelector()
+			: key(0xF)
+		{
+		}
 		OMColorMaskSelector(uint32 c) { wrgba = c; }
 	};
 
@@ -416,7 +463,7 @@ public:
 		GSVector4i ChannelShuffle;
 		GSVector4i EMOD_AC;
 
-		MiscConstantBuffer() {memset(this, 0, sizeof(*this));}
+		MiscConstantBuffer() { memset(this, 0, sizeof(*this)); }
 	};
 
 	static int m_shader_inst;
@@ -436,61 +483,69 @@ private:
 	std::vector<char> m_shader_tfx_vgs;
 	std::vector<char> m_shader_tfx_fs;
 
-	GLuint m_fbo;				// frame buffer container
-	GLuint m_fbo_read;			// frame buffer container only for reading
+	GLuint m_fbo; // frame buffer container
+	GLuint m_fbo_read; // frame buffer container only for reading
 
-	GSVertexBufferStateOGL* m_va;// state of the vertex buffer/array
+	GSVertexBufferStateOGL* m_va; // state of the vertex buffer/array
 
-	struct {
-		GLuint ps[2];				 // program object
-		GSUniformBufferOGL* cb;		 // uniform buffer object
+	struct
+	{
+		GLuint ps[2]; // program object
+		GSUniformBufferOGL* cb; // uniform buffer object
 	} m_merge_obj;
 
-	struct {
-		GLuint ps[4];				// program object
-		GSUniformBufferOGL* cb;		// uniform buffer object
+	struct
+	{
+		GLuint ps[4]; // program object
+		GSUniformBufferOGL* cb; // uniform buffer object
 	} m_interlace;
 
-	struct {
-		GLuint vs;		// program object
-		GLuint ps[ShaderConvert_Count];	// program object
-		GLuint ln;		// sampler object
-		GLuint pt;		// sampler object
+	struct
+	{
+		GLuint vs; // program object
+		GLuint ps[ShaderConvert_Count]; // program object
+		GLuint ln; // sampler object
+		GLuint pt; // sampler object
 		GSDepthStencilOGL* dss;
 		GSDepthStencilOGL* dss_write;
 		GSUniformBufferOGL* cb;
 	} m_convert;
 
-	struct {
+	struct
+	{
 		GLuint ps;
-		GSUniformBufferOGL *cb;
+		GSUniformBufferOGL* cb;
 	} m_fxaa;
 
-	struct {
+	struct
+	{
 		GLuint ps;
 		GSUniformBufferOGL* cb;
 	} m_shaderfx;
 
-	struct {
+	struct
+	{
 		GSDepthStencilOGL* dss;
 		GSTexture* t;
 	} m_date;
 
-	struct {
+	struct
+	{
 		GLuint ps;
 	} m_shadeboost;
 
-	struct {
+	struct
+	{
 		uint16 last_query;
-		GLuint timer_query[1<<16];
+		GLuint timer_query[1 << 16];
 
 		GLuint timer() { return timer_query[last_query]; }
 	} m_profiler;
 
-	GLuint m_vs[1<<1];
-	GLuint m_gs[1<<3];
-	GLuint m_ps_ss[1<<7];
-	GSDepthStencilOGL* m_om_dss[1<<5];
+	GLuint m_vs[1 << 1];
+	GLuint m_gs[1 << 3];
+	GLuint m_ps_ss[1 << 7];
+	GSDepthStencilOGL* m_om_dss[1 << 5];
 	std::unordered_map<uint64, GLuint> m_ps;
 	GLuint m_apitrace;
 
@@ -530,9 +585,9 @@ public:
 	void GenerateProfilerData();
 
 	// Used by OpenGL, so the same calling convention is required.
-	static void APIENTRY DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar *gl_message, const void* userParam);
+	static void APIENTRY DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar* gl_message, const void* userParam);
 
-	bool Create(const std::shared_ptr<GSWnd> &wnd);
+	bool Create(const std::shared_ptr<GSWnd>& wnd);
 	bool Reset(int w, int h);
 	void Flip();
 	void SetVSync(int vsync);

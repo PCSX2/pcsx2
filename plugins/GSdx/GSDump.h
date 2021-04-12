@@ -52,9 +52,9 @@ class GSDumpBase
 
 protected:
 	void AddHeader(uint32 crc, const GSFreezeData& fd, const GSPrivRegSet* regs);
-	void Write(const void *data, size_t size);
+	void Write(const void* data, size_t size);
 
-	virtual void AppendRawData(const void *data, size_t size) = 0;
+	virtual void AppendRawData(const void* data, size_t size) = 0;
 	virtual void AppendRawData(uint8 c) = 0;
 
 public:
@@ -68,7 +68,7 @@ public:
 
 class GSDump final : public GSDumpBase
 {
-	void AppendRawData(const void *data, size_t size) final;
+	void AppendRawData(const void* data, size_t size) final;
 	void AppendRawData(uint8 c) final;
 
 public:
@@ -84,7 +84,7 @@ class GSDumpXz final : public GSDumpBase
 
 	void Flush();
 	void Compress(lzma_action action, lzma_ret expected_status);
-	void AppendRawData(const void *data, size_t size);
+	void AppendRawData(const void* data, size_t size);
 	void AppendRawData(uint8 c);
 
 public:

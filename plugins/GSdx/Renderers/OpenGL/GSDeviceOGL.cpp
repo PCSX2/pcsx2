@@ -41,12 +41,12 @@ uint64 g_vertex_upload_byte = 0;
 uint64 g_uniform_upload_byte = 0;
 #endif
 
-static const uint32 g_merge_cb_index      = 10;
-static const uint32 g_interlace_cb_index  = 11;
-static const uint32 g_fx_cb_index         = 14;
-static const uint32 g_convert_index       = 15;
-static const uint32 g_vs_cb_index         = 20;
-static const uint32 g_ps_cb_index         = 21;
+static const uint32 g_merge_cb_index     = 10;
+static const uint32 g_interlace_cb_index = 11;
+static const uint32 g_fx_cb_index        = 14;
+static const uint32 g_convert_index      = 15;
+static const uint32 g_vs_cb_index        = 20;
+static const uint32 g_ps_cb_index        = 21;
 
 bool  GSDeviceOGL::m_debug_gl_call = false;
 int   GSDeviceOGL::m_shader_inst = 0;
@@ -72,7 +72,7 @@ GSDeviceOGL::GSDeviceOGL()
 	memset(&m_date, 0, sizeof(m_date));
 	memset(&m_shadeboost, 0, sizeof(m_shadeboost));
 	memset(&m_om_dss, 0, sizeof(m_om_dss));
-	memset(&m_profiler, 0 , sizeof(m_profiler));
+	memset(&m_profiler, 0, sizeof(m_profiler));
 	GLState::Clear();
 
 	m_mipmap = theApp.GetConfigI("mipmap");
@@ -82,21 +82,22 @@ GSDeviceOGL::GSDeviceOGL()
 		m_filter = TriFiltering::None;
 
 	// Reset the debug file
-	#ifdef ENABLE_OGL_DEBUG
+#ifdef ENABLE_OGL_DEBUG
 	if (theApp.GetCurrentRendererType() == GSRendererType::OGL_SW)
-		m_debug_gl_file = fopen("GSdx_opengl_debug_sw.txt","w");
+		m_debug_gl_file = fopen("GSdx_opengl_debug_sw.txt", "w");
 	else
-		m_debug_gl_file = fopen("GSdx_opengl_debug_hw.txt","w");
-	#endif
+		m_debug_gl_file = fopen("GSdx_opengl_debug_hw.txt", "w");
+#endif
 
-	m_debug_gl_call =  theApp.GetConfigB("debug_opengl");
+	m_debug_gl_call = theApp.GetConfigB("debug_opengl");
 
 	m_disable_hw_gl_draw = theApp.GetConfigB("disable_hw_gl_draw");
 }
 
 GSDeviceOGL::~GSDeviceOGL()
 {
-	if (m_debug_gl_file) {
+	if (m_debug_gl_file)
+	{
 		fclose(m_debug_gl_file);
 		m_debug_gl_file = NULL;
 	}
@@ -143,7 +144,8 @@ GSDeviceOGL::~GSDeviceOGL()
 
 	glDeleteSamplers(countof(m_ps_ss), m_ps_ss);
 
-	for (uint32 key = 0; key < countof(m_om_dss); key++) delete m_om_dss[key];
+	for (uint32 key = 0; key < countof(m_om_dss); key++)
+		delete m_om_dss[key];
 
 	PboPool::Destroy();
 
@@ -154,27 +156,30 @@ GSDeviceOGL::~GSDeviceOGL()
 
 void GSDeviceOGL::GenerateProfilerData()
 {
-	if (m_profiler.last_query < 3) {
+	if (m_profiler.last_query < 3)
+	{
 		glDeleteQueries(1 << 16, m_profiler.timer_query);
 		return;
 	}
 
 	// Wait latest quey to get valid result
 	GLuint available = 0;
-	while (!available) {
+	while (!available)
+	{
 		glGetQueryObjectuiv(m_profiler.timer(), GL_QUERY_RESULT_AVAILABLE, &available);
 	}
 
 	GLuint64 time_start;
 	GLuint64 time_end;
 	std::vector<double> times;
-	double ms       = 0.000001;
+	double ms = 0.000001;
 
-	int replay      = theApp.GetConfigI("linux_replay");
+	int replay = theApp.GetConfigI("linux_replay");
 	int first_query = replay > 1 ? m_profiler.last_query / replay : 0;
 
 	glGetQueryObjectui64v(m_profiler.timer_query[first_query], GL_QUERY_RESULT, &time_start);
-	for (uint32 q = first_query + 1; q < m_profiler.last_query; q++) {
+	for (uint32 q = first_query + 1; q < m_profiler.last_query; q++)
+	{
 		glGetQueryObjectui64v(m_profiler.timer_query[q], GL_QUERY_RESULT, &time_end);
 		uint64 t = time_end - time_start;
 		times.push_back((double)t * ms);
@@ -187,22 +192,26 @@ void GSDeviceOGL::GenerateProfilerData()
 
 	glDeleteQueries(1 << 16, m_profiler.timer_query);
 
-	double frames    = times.size();
-	double mean      = 0.0;
-	double sd        = 0.0;
+	double frames = times.size();
+	double mean = 0.0;
+	double sd = 0.0;
 
 	auto minmax_time = std::minmax_element(times.begin(), times.end());
 
-	for (auto t : times) mean += t;
+	for (auto t : times)
+		mean += t;
 	mean = mean / frames;
 
-	for (auto t : times) sd += pow(t-mean, 2);
+	for (auto t : times)
+		sd += pow(t - mean, 2);
 	sd = sqrt(sd / frames);
 
 	uint32 time_repartition[16] = {0};
-	for (auto t : times) {
-		uint32 slot = (uint32)(t/2.0);
-		if (slot >= countof(time_repartition)) {
+	for (auto t : times)
+	{
+		uint32 slot = (uint32)(t / 2.0);
+		if (slot >= countof(time_repartition))
+		{
 			slot = countof(time_repartition) - 1;
 		}
 		time_repartition[slot]++;
@@ -215,13 +224,16 @@ void GSDeviceOGL::GenerateProfilerData()
 	fprintf(stderr, "SD   %4.2f ms\n", sd);
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Frame Repartition\n");
-	for (uint32 i = 0; i < countof(time_repartition); i ++) {
-		fprintf(stderr, "%3u ms => %3u ms\t%4u\n", 2 * i, 2 * (i+1), time_repartition[i]);
+	for (uint32 i = 0; i < countof(time_repartition); i++)
+	{
+		fprintf(stderr, "%3u ms => %3u ms\t%4u\n", 2 * i, 2 * (i + 1), time_repartition[i]);
 	}
 
 	FILE* csv = fopen("GSdx_profile.csv", "w");
-	if (csv) {
-		for (size_t i = 0; i < times.size(); i++) {
+	if (csv)
+	{
+		for (size_t i = 0; i < times.size(); i++)
+		{
 			fprintf(csv, "%zu,%lf\n", i, times[i]);
 		}
 
@@ -239,12 +251,13 @@ GSTexture* GSDeviceOGL::CreateSurface(int type, int w, int h, int fmt)
 	// NOTE: I'm not sure RenderTarget always need to be cleared. It could be costly for big upscale.
 	// FIXME: it will be more logical to do it in FetchSurface. This code is only called at first creation
 	//  of the texture. However we could reuse a deleted texture.
-	if (m_force_texture_clear == 0) {
+	if (m_force_texture_clear == 0)
+	{
 		// Clear won't be done if the texture isn't committed. Commit the full texture to ensure
 		// correct behavior of force clear option (debug option)
 		t->Commit();
 
-		switch(type)
+		switch (type)
 		{
 			case GSTexture::RenderTarget:
 				ClearRenderTarget(t, 0);
@@ -267,13 +280,14 @@ GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, int format)
 	GSTexture* t = GSDevice::FetchSurface(type, w, h, format);
 
 
-	if (m_force_texture_clear) {
+	if (m_force_texture_clear)
+	{
 		// Clear won't be done if the texture isn't committed. Commit the full texture to ensure
 		// correct behavior of force clear option (debug option)
 		t->Commit();
 
 		GSVector4 red(1.0f, 0.0f, 0.0f, 1.0f);
-		switch(type)
+		switch (type)
 		{
 			case GSTexture::RenderTarget:
 				ClearRenderTarget(t, 0);
@@ -295,14 +309,15 @@ GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, int format)
 	return t;
 }
 
-bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
+bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd>& wnd)
 {
 	std::vector<char> shader;
 	// ****************************************************************
 	// Debug helper
 	// ****************************************************************
 #ifdef ENABLE_OGL_DEBUG
-	if (theApp.GetConfigB("debug_opengl")) {
+	if (theApp.GetConfigB("debug_opengl"))
+	{
 		glDebugMessageCallback((GLDEBUGPROC)DebugOutputToFile, NULL);
 		glEnable(GL_DEBUG_OUTPUT_SYNCHRONOUS_ARB);
 
@@ -340,7 +355,8 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
 
 		// Some timers to help profiling
-		if (GLLoader::in_replayer) {
+		if (GLLoader::in_replayer)
+		{
 			glCreateQueries(GL_TIMESTAMP, 1 << 16, m_profiler.timer_query);
 		}
 	}
@@ -353,9 +369,9 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 
 		static_assert(sizeof(GSVertexPT1) == sizeof(GSVertex), "wrong GSVertex size");
 		std::vector<GSInputLayoutOGL> il_convert = {
-			{0, 2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(0) }  ,
+			{0, 2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)( 0) } ,
 			{1, 2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(16) } ,
-			{2, 4 , GL_UNSIGNED_BYTE  , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(8) }  ,
+			{2, 4 , GL_UNSIGNED_BYTE  , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)( 8) } ,
 			{3, 1 , GL_FLOAT          , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(12) } ,
 			{4, 2 , GL_UNSIGNED_SHORT , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(16) } ,
 			{5, 1 , GL_UNSIGNED_INT   , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(20) } ,
@@ -371,7 +387,8 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 	{
 		GL_PUSH("GSDeviceOGL::Sampler");
 
-		for (uint32 key = 0; key < countof(m_ps_ss); key++) {
+		for (uint32 key = 0; key < countof(m_ps_ss); key++)
+		{
 			m_ps_ss[key] = CreateSampler(PSSamplerSelector(key));
 		}
 	}
@@ -396,7 +413,8 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 		vs = m_shader->Compile("convert.glsl", "vs_main", GL_VERTEX_SHADER, shader.data());
 
 		m_convert.vs = vs;
-		for(size_t i = 0; i < countof(m_convert.ps); i++) {
+		for (size_t i = 0; i < countof(m_convert.ps); i++)
+		{
 			ps = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
 			std::string pretty_name = "Convert pipe " + std::to_string(i);
 			m_convert.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
@@ -425,7 +443,8 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 
 		theApp.LoadResource(IDR_MERGE_GLSL, shader);
 
-		for(size_t i = 0; i < countof(m_merge_obj.ps); i++) {
+		for (size_t i = 0; i < countof(m_merge_obj.ps); i++)
+		{
 			ps = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
 			std::string pretty_name = "Merge pipe " + std::to_string(i);
 			m_merge_obj.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
@@ -442,7 +461,8 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 
 		theApp.LoadResource(IDR_INTERLACE_GLSL, shader);
 
-		for(size_t i = 0; i < countof(m_interlace.ps); i++) {
+		for (size_t i = 0; i < countof(m_interlace.ps); i++)
+		{
 			ps = m_shader->Compile("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
 			std::string pretty_name = "Interlace pipe " + std::to_string(i);
 			m_interlace.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
@@ -533,14 +553,19 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 	// Get Available Memory
 	// ****************************************************************
 	GLint vram[4] = {0};
-	if (GLLoader::vendor_id_amd) {
+	if (GLLoader::vendor_id_amd)
+	{
 		// Full vram, remove a small margin for others buffer
 		glGetIntegerv(GL_TEXTURE_FREE_MEMORY_ATI, vram);
-	} else if (GLExtension::Has("GL_NVX_gpu_memory_info")) {
+	}
+	else if (GLExtension::Has("GL_NVX_gpu_memory_info"))
+	{
 		// GL_GPU_MEMORY_INFO_TOTAL_AVAILABLE_MEMORY_NVX <= give full memory
 		// Available vram
 		glGetIntegerv(GL_GPU_MEMORY_INFO_CURRENT_AVAILABLE_VIDMEM_NVX, vram);
-	} else {
+	}
+	else
+	{
 		fprintf(stdout, "No extenstion supported to get available memory. Use default value !\n");
 	}
 
@@ -558,13 +583,12 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd> &wnd)
 	GSVector2i tex_font = m_osd.get_texture_font_size();
 
 	m_font = std::unique_ptr<GSTexture>(
-		new GSTextureOGL(GSTextureOGL::Texture, tex_font.x, tex_font.y, GL_R8, m_fbo_read, false)
-	);
+		new GSTextureOGL(GSTextureOGL::Texture, tex_font.x, tex_font.y, GL_R8, m_fbo_read, false));
 
 	// ****************************************************************
 	// Finish window setup and backbuffer
 	// ****************************************************************
-	if(!GSDevice::Create(wnd))
+	if (!GSDevice::Create(wnd))
 		return false;
 
 	GSVector4i rect = wnd->GetClientRect();
@@ -608,7 +632,8 @@ void GSDeviceOGL::CreateTextureFX()
 	// enough but buffer is polluted with noise. Clear will be limited
 	// to the mask.
 	glStencilMask(0xFF);
-	for (uint32 key = 0; key < countof(m_om_dss); key++) {
+	for (uint32 key = 0; key < countof(m_om_dss); key++)
+	{
 		m_om_dss[key] = CreateDepthStencil(OMDepthStencilSelector(key));
 	}
 
@@ -618,7 +643,7 @@ void GSDeviceOGL::CreateTextureFX()
 
 bool GSDeviceOGL::Reset(int w, int h)
 {
-	if(!GSDevice::Reset(w, h))
+	if (!GSDevice::Reset(w, h))
 		return false;
 
 	// Opengl allocate the backbuffer with the window. The render is done in the backbuffer when
@@ -638,7 +663,8 @@ void GSDeviceOGL::Flip()
 {
 	m_wnd->Flip();
 
-	if (GLLoader::in_replayer) {
+	if (GLLoader::in_replayer)
+	{
 		glQueryCounter(m_profiler.timer(), GL_TIMESTAMP);
 		m_profiler.last_query++;
 	}
@@ -686,7 +712,8 @@ void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 {
-	if (!t) return;
+	if (!t)
+		return;
 
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
 	if (T->HasBeenCleaned() && !T->IsBackbuffer())
@@ -707,18 +734,20 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 	uint32 old_color_mask = GLState::wrgba;
 	OMSetColorMaskState();
 
-	if (T->IsBackbuffer()) {
+	if (T->IsBackbuffer())
+	{
 		OMSetFBO(0);
 
 		// glDrawBuffer(GL_BACK); // this is the default when there is no FB
 		// 0 will select the first drawbuffer ie GL_BACK
 		glClearBufferfv(GL_COLOR, 0, c.v);
-	} else {
+	}
+	else
+	{
 		OMSetFBO(m_fbo);
 		OMAttachRt(T);
 
 		glClearBufferfv(GL_COLOR, 0, c.v);
-
 	}
 
 	OMSetColorMaskState(OMColorMaskSelector(old_color_mask));
@@ -730,7 +759,8 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
 {
-	if (!t) return;
+	if (!t)
+		return;
 
 	GSVector4 color = GSVector4::rgba32(c) * (1.0f / 255);
 	ClearRenderTarget(t, color);
@@ -738,13 +768,15 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
 
 void GSDeviceOGL::ClearDepth(GSTexture* t)
 {
-	if (!t) return;
+	if (!t)
+		return;
 
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
 
 	GL_PUSH("Clear Depth %d", T->GetID());
 
-	if (0 && GLLoader::found_GL_ARB_clear_texture) {
+	if (0 && GLLoader::found_GL_ARB_clear_texture)
+	{
 		// I don't know what the driver does but it creates
 		// some slowdowns on Harry Potter PS
 		// Maybe it triggers some texture relocations, or maybe
@@ -754,7 +786,9 @@ void GSDeviceOGL::ClearDepth(GSTexture* t)
 
 		// Don't bother with Depth_Stencil insanity
 		T->Clear(NULL);
-	} else {
+	}
+	else
+	{
 		OMSetFBO(m_fbo);
 		// RT must be detached, if RT is too small, depth won't be fully cleared
 		// AT tolenico 2 map clip bug
@@ -764,9 +798,12 @@ void GSDeviceOGL::ClearDepth(GSTexture* t)
 		// TODO: check size of scissor before toggling it
 		glDisable(GL_SCISSOR_TEST);
 		float c = 0.0f;
-		if (GLState::depth_mask) {
+		if (GLState::depth_mask)
+		{
 			glClearBufferfv(GL_DEPTH, 0, &c);
-		} else {
+		}
+		else
+		{
 			glDepthMask(true);
 			glClearBufferfv(GL_DEPTH, 0, &c);
 			glDepthMask(false);
@@ -777,7 +814,8 @@ void GSDeviceOGL::ClearDepth(GSTexture* t)
 
 void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 {
-	if (!t) return;
+	if (!t)
+		return;
 
 	GSTextureOGL* T = static_cast<GSTextureOGL*>(t);
 
@@ -800,15 +838,19 @@ GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 	glCreateSamplers(1, &sampler);
 
 	// Bilinear filtering
-	if (sel.biln) {
+	if (sel.biln)
+	{
 		glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	} else {
+	}
+	else
+	{
 		glSamplerParameteri(sampler, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 		glSamplerParameteri(sampler, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
 	}
 
-	switch (static_cast<GS_MIN_FILTER>(sel.triln)) {
+	switch (static_cast<GS_MIN_FILTER>(sel.triln))
+	{
 		case GS_MIN_FILTER::Nearest:
 			// Nop based on biln
 			break;
@@ -846,7 +888,8 @@ GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 	glSamplerParameteri(sampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
 	int anisotropy = theApp.GetConfigI("MaxAnisotropy");
-	if (anisotropy && sel.aniso) {
+	if (anisotropy && sel.aniso)
+	{
 		if (GLExtension::Has("GL_ARB_texture_filter_anisotropic"))
 			glSamplerParameterf(sampler, GL_TEXTURE_MAX_ANISOTROPY, (float)anisotropy);
 		else if (GLExtension::Has("GL_EXT_texture_filter_anisotropic"))
@@ -874,7 +917,7 @@ GSDepthStencilOGL* GSDeviceOGL::CreateDepthStencil(OMDepthStencilSelector dssel)
 			dss->SetStencil(GL_EQUAL, GL_KEEP);
 	}
 
-	if(dssel.ztst != ZTST_ALWAYS || dssel.zwe)
+	if (dssel.ztst != ZTST_ALWAYS || dssel.zwe)
 	{
 		static const GLenum ztst[] =
 		{
@@ -911,7 +954,8 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& area)
 
 void GSDeviceOGL::RecycleDateTexture()
 {
-	if (m_date.t) {
+	if (m_date.t)
+	{
 		//static_cast<GSTextureOGL*>(m_date.t)->Save(format("/tmp/date_adv_%04ld.csv", GSState::s_n));
 
 		Recycle(m_date.t);
@@ -1009,7 +1053,8 @@ void GSDeviceOGL::SelfShaderTestRun(const std::string& dir, const std::string& f
 
 #ifdef __linux__
 	// Nouveau actually
-	if (GLLoader::mesa_driver) {
+	if (GLLoader::mesa_driver)
+	{
 		if (freopen(out.c_str(), "w", stderr) == NULL)
 			fprintf(stderr, "Failed to redirect stderr\n");
 	}
@@ -1021,7 +1066,8 @@ void GSDeviceOGL::SelfShaderTestRun(const std::string& dir, const std::string& f
 
 #ifdef __linux__
 	// Nouveau actually
-	if (GLLoader::mesa_driver) {
+	if (GLLoader::mesa_driver)
+	{
 		if (freopen("/dev/tty", "w", stderr) == NULL)
 			fprintf(stderr, "Failed to restore stderr\n");
 	}
@@ -1031,12 +1077,12 @@ void GSDeviceOGL::SelfShaderTestRun(const std::string& dir, const std::string& f
 void GSDeviceOGL::SelfShaderTestPrint(const std::string& test, int& nb_shader)
 {
 	fprintf(stderr, "%-25s\t\t%d shaders:\t%d instructions (M %4.2f)\t%d registers (M %4.2f)\n",
-			test.c_str(), nb_shader,
-			m_shader_inst, (float)m_shader_inst/(float)nb_shader,
-			m_shader_reg, (float)m_shader_reg/(float)nb_shader);
+		test.c_str(), nb_shader,
+		m_shader_inst, (float)m_shader_inst / (float)nb_shader,
+		m_shader_reg, (float)m_shader_reg / (float)nb_shader);
 
 	m_shader_inst = 0;
-	m_shader_reg  = 0;
+	m_shader_reg = 0;
 	nb_shader = 0;
 }
 
@@ -1050,26 +1096,29 @@ void GSDeviceOGL::SelfShaderTest()
 
 	std::string test;
 	m_shader_inst = 0;
-	m_shader_reg  = 0;
+	m_shader_reg = 0;
 	int nb_shader = 0;
 
 	test = "SW_Blending";
-	for (int colclip = 0; colclip < 2; colclip++) {
-		for (int fmt = 0; fmt < 3; fmt++) {
-			for (int i = 0; i < 3; i++) {
+	for (int colclip = 0; colclip < 2; colclip++)
+	{
+		for (int fmt = 0; fmt < 3; fmt++)
+		{
+			for (int i = 0; i < 3; i++)
+			{
 				PSSelector sel;
 				sel.tfx = 4;
 
 				int ib = (i + 1) % 3;
 				sel.blend_a = i;
-				sel.blend_b = ib;;
+				sel.blend_b = ib;
 				sel.blend_c = i;
 				sel.blend_d = i;
 				sel.colclip = colclip;
-				sel.dfmt    = fmt;
+				sel.dfmt = fmt;
 
 				std::string file = format("Shader_Blend_%d_%d_%d_%d__Cclip_%d__Dfmt_%d.glsl.asm",
-						i, ib, i, i, colclip, fmt);
+					i, ib, i, i, colclip, fmt);
 				SelfShaderTestRun(test, file, sel, nb_shader);
 			}
 		}
@@ -1077,7 +1126,8 @@ void GSDeviceOGL::SelfShaderTest()
 	SelfShaderTestPrint(test, nb_shader);
 
 	test = "Alpha_Test";
-	for (int atst = 0; atst < 5; atst++) {
+	for (int atst = 0; atst < 5; atst++)
+	{
 		PSSelector sel;
 		sel.tfx = 4;
 
@@ -1088,7 +1138,8 @@ void GSDeviceOGL::SelfShaderTest()
 	SelfShaderTestPrint(test, nb_shader);
 
 	test = "Fbmask__Fog__Shuffle__Read_ba";
-	for (int read_ba = 0; read_ba < 2; read_ba++) {
+	for (int read_ba = 0; read_ba < 2; read_ba++)
+	{
 		PSSelector sel;
 		sel.tfx = 4;
 
@@ -1103,7 +1154,8 @@ void GSDeviceOGL::SelfShaderTest()
 	SelfShaderTestPrint(test, nb_shader);
 
 	test = "Date";
-	for (int date = 1; date < 7; date++) {
+	for (int date = 1; date < 7; date++)
+	{
 		PSSelector sel;
 		sel.tfx = 4;
 
@@ -1114,7 +1166,8 @@ void GSDeviceOGL::SelfShaderTest()
 	SelfShaderTestPrint(test, nb_shader);
 
 	test = "FBA";
-	for (int fmt = 0; fmt < 3; fmt++) {
+	for (int fmt = 0; fmt < 3; fmt++)
+	{
 		PSSelector sel;
 		sel.tfx = 4;
 
@@ -1141,15 +1194,18 @@ void GSDeviceOGL::SelfShaderTest()
 	SelfShaderTestPrint(test, nb_shader);
 
 	test = "Tfx__Tcc";
-	for (int channel = 0; channel < 5; channel++) {
-		for (int tfx = 0; tfx < 5; tfx++) {
-			for (int tcc = 0; tcc < 2; tcc++) {
+	for (int channel = 0; channel < 5; channel++)
+	{
+		for (int tfx = 0; tfx < 5; tfx++)
+		{
+			for (int tcc = 0; tcc < 2; tcc++)
+			{
 				PSSelector sel;
 				sel.fst = 1;
 
 				sel.channel = channel;
-				sel.tfx     = tfx;
-				sel.tcc     = tcc;
+				sel.tfx = tfx;
+				sel.tcc = tcc;
 				std::string file = format("Shader_Tfx_%d__Tcc_%d__Channel_%d.glsl.asm", tfx, tcc, channel);
 				SelfShaderTestRun(test, file, sel, nb_shader);
 			}
@@ -1158,17 +1214,24 @@ void GSDeviceOGL::SelfShaderTest()
 	SelfShaderTestPrint(test, nb_shader);
 
 	test = "Texture_Sampling";
-	for (int depth = 0; depth < 4; depth++) {
-		for (int fmt = 0; fmt < 16; fmt++) {
-			if ((fmt & 3) == 3) continue;
+	for (int depth = 0; depth < 4; depth++)
+	{
+		for (int fmt = 0; fmt < 16; fmt++)
+		{
+			if ((fmt & 3) == 3)
+				continue;
 
-			for (int ltf = 0; ltf < 2; ltf++) {
-				for (int aem = 0; aem < 2; aem++) {
-					for (int wms = 1; wms < 4; wms++) {
-						for (int wmt = 1; wmt < 4; wmt++) {
+			for (int ltf = 0; ltf < 2; ltf++)
+			{
+				for (int aem = 0; aem < 2; aem++)
+				{
+					for (int wms = 1; wms < 4; wms++)
+					{
+						for (int wmt = 1; wmt < 4; wmt++)
+						{
 							PSSelector sel;
-							sel.tfx  = 1;
-							sel.tcc  = 1;
+							sel.tfx = 1;
+							sel.tcc = 1;
 							sel.fst = 1;
 
 							sel.depth_fmt = depth;
@@ -1178,7 +1241,7 @@ void GSDeviceOGL::SelfShaderTest()
 							sel.wms       = wms;
 							sel.wmt       = wmt;
 							std::string file = format("Shader_Ltf_%d__Aem_%d__TFmt_%d__Wms_%d__Wmt_%d__DepthFmt_%d.glsl.asm",
-									ltf, aem, fmt, wms, wmt, depth);
+								ltf, aem, fmt, wms, wmt, depth);
 							SelfShaderTestRun(test, file, sel, nb_shader);
 						}
 					}
@@ -1255,11 +1318,11 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 	dTex->CommitRegion(GSVector2i(r.z, r.w));
 
 	ASSERT(GLExtension::Has("GL_ARB_copy_image") && glCopyImageSubData);
-	glCopyImageSubData( sid, GL_TEXTURE_2D,
-			0, r.x, r.y, 0,
-			did, GL_TEXTURE_2D,
-			0, 0, 0, 0,
-			r.width(), r.height(), 1);
+	glCopyImageSubData(sid, GL_TEXTURE_2D,
+		0, r.x, r.y, 0,
+		did, GL_TEXTURE_2D,
+		0, 0, 0, 0,
+		r.width(), r.height(), 1);
 }
 
 void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, int shader, bool linear)
@@ -1286,14 +1349,14 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, int bs, OMColorMaskSelector cms, bool linear)
 {
-	if(!sTex || !dTex)
+	if (!sTex || !dTex)
 	{
 		ASSERT(0);
 		return;
 	}
 
 	bool draw_in_depth = (ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT32] || ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT24] ||
-		ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT16] || ps == m_convert.ps[ShaderConvert_RGB5A1_TO_FLOAT16]);
+	                      ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT16] || ps == m_convert.ps[ShaderConvert_RGB5A1_TO_FLOAT16]);
 
 	// Performance optimization. It might be faster to use a framebuffer blit for standard case
 	// instead to emulate it with shader
@@ -1352,7 +1415,8 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// 2/ in case some GSdx code expect thing in dx order.
 	// Only flipping the backbuffer is transparent (I hope)...
 	GSVector4 flip_sr = sRect;
-	if (static_cast<GSTextureOGL*>(dTex)->IsBackbuffer()) {
+	if (static_cast<GSTextureOGL*>(dTex)->IsBackbuffer())
+	{
 		flip_sr.y = sRect.w;
 		flip_sr.w = sRect.y;
 	}
@@ -1398,7 +1462,8 @@ void GSDeviceOGL::RenderOsd(GSTexture* dt)
 	OMSetBlendState((uint8)GSDeviceOGL::m_MERGE_BLEND);
 	OMSetRenderTargets(dt, NULL);
 
-	if(m_osd.m_texture_dirty) {
+	if (m_osd.m_texture_dirty)
+	{
 		m_osd.upload_texture_atlas(m_font.get());
 	}
 
@@ -1434,14 +1499,16 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 	ClearRenderTarget(dTex, c);
 
 	// Upload constant to select YUV algo
-	if (feedback_write_2 || feedback_write_1) {
+	if (feedback_write_2 || feedback_write_1)
+	{
 		// Write result to feedback loop
 		m_misc_cb_cache.EMOD_AC.x = EXTBUF.EMODA;
 		m_misc_cb_cache.EMOD_AC.y = EXTBUF.EMODC;
 		m_convert.cb->cache_upload(&m_misc_cb_cache);
 	}
 
-	if (sTex[1] && (PMODE.SLBG == 0 || feedback_write_2_but_blend_bg)) {
+	if (sTex[1] && (PMODE.SLBG == 0 || feedback_write_2_but_blend_bg))
+	{
 		// 2nd output is enabled and selected. Copy it to destination so we can blend it with 1st output
 		// Note: value outside of dRect must contains the background color (c)
 		StretchRect(sTex[1], sRect[1], dTex, dRect[1], ShaderConvert_COPY);
@@ -1455,16 +1522,20 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 	if (feedback_write_2_but_blend_bg)
 		ClearRenderTarget(dTex, c);
 
-	if (sTex[0]) {
+	if (sTex[0])
+	{
 		if (PMODE.AMOD == 1) // Keep the alpha from the 2nd output
 			OMSetColorMaskState(OMColorMaskSelector(0x7));
 
 		// 1st output is enabled. It must be blended
-		if (PMODE.MMOD == 1) {
+		if (PMODE.MMOD == 1)
+		{
 			// Blend with a constant alpha
 			m_merge_obj.cb->cache_upload(&c.v);
 			StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[1], m_MERGE_BLEND, OMColorMaskSelector());
-		} else {
+		}
+		else
+		{
 			// Blend with 2 * input alpha
 			StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[0], m_MERGE_BLEND, OMColorMaskSelector());
 		}
@@ -1498,8 +1569,10 @@ void GSDeviceOGL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool
 void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 {
 	// Lazy compile
-	if (!m_fxaa.ps) {
-		if (!GLLoader::found_GL_ARB_gpu_shader5) { // GL4.0 extension
+	if (!m_fxaa.ps)
+	{
+		if (!GLLoader::found_GL_ARB_gpu_shader5) // GL4.0 extension
+		{
 			return;
 		}
 
@@ -1528,12 +1601,14 @@ void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 {
 	// Lazy compile
-	if (!m_shaderfx.ps) {
-		if (!GLLoader::found_GL_ARB_gpu_shader5) { // GL4.0 extension
+	if (!m_shaderfx.ps)
+	{
+		if (!GLLoader::found_GL_ARB_gpu_shader5) // GL4.0 extension
+		{
 			return;
 		}
 
-		std::string   config_name(theApp.GetConfigS("shaderfx_conf"));
+		std::string config_name(theApp.GetConfigS("shaderfx_conf"));
 		std::ifstream fconfig(config_name);
 		std::stringstream config;
 		config << "#extension GL_ARB_gpu_shader5 : require\n";
@@ -1542,10 +1617,11 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 		else
 			fprintf(stderr, "Warning failed to load '%s'. External Shader might be wrongly configured\n", config_name.c_str());
 
-		std::string   shader_name(theApp.GetConfigS("shaderfx_glsl"));
+		std::string shader_name(theApp.GetConfigS("shaderfx_glsl"));
 		std::ifstream fshader(shader_name);
 		std::stringstream shader;
-		if (!fshader.good()) {
+		if (!fshader.good())
+		{
 			fprintf(stderr, "Error failed to load '%s'. External Shader will be disabled !\n", shader_name.c_str());
 			return;
 		}
@@ -1606,7 +1682,8 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 	// om
 
 	OMSetDepthStencilState(m_date.dss);
-	if (GLState::blend) {
+	if (GLState::blend)
+	{
 		glDisable(GL_BLEND);
 	}
 	OMSetRenderTargets(NULL, ds, &GLState::scissor);
@@ -1624,7 +1701,8 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 
 	DrawPrimitive();
 
-	if (GLState::blend) {
+	if (GLState::blend)
+	{
 		glEnable(GL_BLEND);
 	}
 
@@ -1655,9 +1733,11 @@ void GSDeviceOGL::PSSetShaderResource(int i, GSTexture* sr)
 {
 	ASSERT(i < (int)countof(GLState::tex_unit));
 	// Note: Nvidia debgger doesn't support the id 0 (ie the NULL texture)
-	if (sr) {
+	if (sr)
+	{
 		GLuint id = static_cast<GSTextureOGL*>(sr)->GetID();
-		if (GLState::tex_unit[i] != id) {
+		if (GLState::tex_unit[i] != id)
+		{
 			GLState::tex_unit[i] = id;
 			glBindTextureUnit(i, id);
 		}
@@ -1672,7 +1752,8 @@ void GSDeviceOGL::PSSetShaderResources(GSTexture* sr0, GSTexture* sr1)
 
 void GSDeviceOGL::PSSetSamplerState(GLuint ss)
 {
-	if (GLState::ps_ss != ss) {
+	if (GLState::ps_ss != ss)
+	{
 		GLState::ps_ss = ss;
 		glBindSampler(0, ss);
 	}
@@ -1681,14 +1762,18 @@ void GSDeviceOGL::PSSetSamplerState(GLuint ss)
 void GSDeviceOGL::OMAttachRt(GSTextureOGL* rt)
 {
 	GLuint id;
-	if (rt) {
+	if (rt)
+	{
 		rt->WasAttached();
 		id = rt->GetID();
-	} else {
+	}
+	else
+	{
 		id = 0;
 	}
 
-	if (GLState::rt != id) {
+	if (GLState::rt != id)
+	{
 		GLState::rt = id;
 		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, id, 0);
 	}
@@ -1697,14 +1782,18 @@ void GSDeviceOGL::OMAttachRt(GSTextureOGL* rt)
 void GSDeviceOGL::OMAttachDs(GSTextureOGL* ds)
 {
 	GLuint id;
-	if (ds) {
+	if (ds)
+	{
 		ds->WasAttached();
 		id = ds->GetID();
-	} else {
+	}
+	else
+	{
 		id = 0;
 	}
 
-	if (GLState::ds != id) {
+	if (GLState::ds != id)
+	{
 		GLState::ds = id;
 		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, id, 0);
 	}
@@ -1712,7 +1801,8 @@ void GSDeviceOGL::OMAttachDs(GSTextureOGL* ds)
 
 void GSDeviceOGL::OMSetFBO(GLuint fbo)
 {
-	if (GLState::fbo != fbo) {
+	if (GLState::fbo != fbo)
+	{
 		GLState::fbo = fbo;
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, fbo);
 	}
@@ -1726,7 +1816,8 @@ void GSDeviceOGL::OMSetDepthStencilState(GSDepthStencilOGL* dss)
 
 void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
 {
-	if (sel.wrgba != GLState::wrgba) {
+	if (sel.wrgba != GLState::wrgba)
+	{
 		GLState::wrgba = sel.wrgba;
 
 		glColorMaski(0, sel.wr, sel.wg, sel.wb, sel.wa);
@@ -1735,37 +1826,45 @@ void GSDeviceOGL::OMSetColorMaskState(OMColorMaskSelector sel)
 
 void GSDeviceOGL::OMSetBlendState(uint8 blend_index, uint8 blend_factor, bool is_blend_constant, bool accumulation_blend)
 {
-	if (blend_index) {
-		if (!GLState::blend) {
+	if (blend_index)
+	{
+		if (!GLState::blend)
+		{
 			GLState::blend = true;
 			glEnable(GL_BLEND);
 		}
 
-		if (is_blend_constant && GLState::bf != blend_factor) {
+		if (is_blend_constant && GLState::bf != blend_factor)
+		{
 			GLState::bf = blend_factor;
 			float bf = (float)blend_factor / 128.0f;
 			glBlendColor(bf, bf, bf, bf);
 		}
 
 		HWBlend b = GetBlend(blend_index);
-		if (accumulation_blend) {
+		if (accumulation_blend)
+		{
 			b.src = GL_ONE;
 			b.dst = GL_ONE;
 		}
 
-		if (GLState::eq_RGB != b.op) {
+		if (GLState::eq_RGB != b.op)
+		{
 			GLState::eq_RGB = b.op;
 			glBlendEquationSeparate(b.op, GL_FUNC_ADD);
 		}
 
-		if (GLState::f_sRGB != b.src || GLState::f_dRGB != b.dst) {
+		if (GLState::f_sRGB != b.src || GLState::f_dRGB != b.dst)
+		{
 			GLState::f_sRGB = b.src;
 			GLState::f_dRGB = b.dst;
 			glBlendFuncSeparate(b.src, b.dst, GL_ONE, GL_ZERO);
 		}
-
-	} else {
-		if (GLState::blend) {
+	}
+	else
+	{
+		if (GLState::blend)
+		{
 			GLState::blend = false;
 			glDisable(GL_BLEND);
 		}
@@ -1777,11 +1876,15 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	GSTextureOGL* RT = static_cast<GSTextureOGL*>(rt);
 	GSTextureOGL* DS = static_cast<GSTextureOGL*>(ds);
 
-	if (rt == NULL || !RT->IsBackbuffer()) {
+	if (rt == NULL || !RT->IsBackbuffer())
+	{
 		OMSetFBO(m_fbo);
-		if (rt) {
+		if (rt)
+		{
 			OMAttachRt(RT);
-		} else {
+		}
+		else
+		{
 			OMAttachRt();
 		}
 
@@ -1790,15 +1893,16 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 			OMAttachDs(DS);
 		else
 			OMAttachDs();
-
-	} else {
+	}
+	else
+	{
 		// Render in the backbuffer
 		OMSetFBO(0);
 	}
 
 
 	GSVector2i size = rt ? rt->GetSize() : ds ? ds->GetSize() : GLState::viewport;
-	if(GLState::viewport != size)
+	if (GLState::viewport != size)
 	{
 		GLState::viewport = size;
 		// FIXME ViewportIndexedf or ViewportIndexedfv (GL4.1)
@@ -1807,7 +1911,7 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 
 	GSVector4i r = scissor ? *scissor : GSVector4i(size).zwxy();
 
-	if(!GLState::scissor.eq(r))
+	if (!GLState::scissor.eq(r))
 	{
 		GLState::scissor = r;
 		// FIXME ScissorIndexedv (GL4.1)
@@ -1818,11 +1922,13 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 void GSDeviceOGL::SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb)
 {
 	GL_PUSH("UBO");
-	if(m_vs_cb_cache.Update(vs_cb)) {
+	if (m_vs_cb_cache.Update(vs_cb))
+	{
 		m_vs_cb->upload(vs_cb);
 	}
 
-	if(m_ps_cb_cache.Update(ps_cb)) {
+	if (m_ps_cb_cache.Update(ps_cb))
+	{
 		m_ps_cb->upload(ps_cb);
 	}
 }
@@ -1838,10 +1944,13 @@ void GSDeviceOGL::SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, 
 	GLuint ps;
 	auto i = m_ps.find(psel);
 
-	if (i == m_ps.end()) {
+	if (i == m_ps.end())
+	{
 		ps = CompilePS(psel);
 		m_ps[psel] = ps;
-	} else {
+	}
+	else
+	{
 		ps = i->second;
 	}
 
@@ -1852,9 +1961,12 @@ void GSDeviceOGL::SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, 
 		static PSSelector old_psel;
 		static GLuint old_ps = 0;
 		std::string msg("");
-#define CHECK_STATE(p) if (psel.p != old_psel.p) msg.append(" ").append(#p);
+#define CHECK_STATE(p) \
+	if (psel.p != old_psel.p) \
+		msg.append(" ").append(#p);
 
-		if (old_ps != ps) {
+		if (old_ps != ps)
+		{
 
 			CHECK_STATE(tex_fmt);
 			CHECK_STATE(dfmt);
@@ -1917,12 +2029,13 @@ void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel)
 }
 
 // Note: used as a callback of DebugMessageCallback. Don't change the signature
-void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar *gl_message, const void* userParam)
+void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar* gl_message, const void* userParam)
 {
 	std::string message(gl_message, gl_length >= 0 ? gl_length : strlen(gl_message));
 	std::string type, severity, source;
 	static int sev_counter = 0;
-	switch(gl_type) {
+	switch (gl_type)
+	{
 		case GL_DEBUG_TYPE_ERROR_ARB               : type = "Error"; break;
 		case GL_DEBUG_TYPE_DEPRECATED_BEHAVIOR_ARB : type = "Deprecated bhv"; break;
 		case GL_DEBUG_TYPE_UNDEFINED_BEHAVIOR_ARB  : type = "Undefined bhv"; break;
@@ -1933,19 +2046,22 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 		case GL_DEBUG_TYPE_POP_GROUP               : return; // Don't print message injected by myself
 		default                                    : type = "TTT"; break;
 	}
-	switch(gl_severity) {
+	switch (gl_severity)
+	{
 		case GL_DEBUG_SEVERITY_HIGH_ARB   : severity = "High"; sev_counter++; break;
 		case GL_DEBUG_SEVERITY_MEDIUM_ARB : severity = "Mid"; break;
 		case GL_DEBUG_SEVERITY_LOW_ARB    : severity = "Low"; break;
-		default                           : if (id == 0xFEAD)
-												severity = "Cache";
-											else if (id == 0xB0B0)
-												severity = "REG";
-											else if (id == 0xD0D0)
-												severity = "EXTRA";
-											break;
+		default:
+			if (id == 0xFEAD)
+				severity = "Cache";
+			else if (id == 0xB0B0)
+				severity = "REG";
+			else if (id == 0xD0D0)
+				severity = "EXTRA";
+			break;
 	}
-	switch(gl_source) {
+	switch (gl_source)
+	{
 		case GL_DEBUG_SOURCE_API_ARB             : source = "API"; break;
 		case GL_DEBUG_SOURCE_WINDOW_SYSTEM_ARB   : source = "WINDOW"; break;
 		case GL_DEBUG_SOURCE_SHADER_COMPILER_ARB : source = "COMPILER"; break;
@@ -1957,30 +2073,35 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 
 #ifdef _DEBUG
 	// Don't spam noisy information on the terminal
-	if (gl_severity != GL_DEBUG_SEVERITY_NOTIFICATION) {
-		fprintf(stderr,"T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), GSState::s_n, severity.c_str(), message.c_str());
+	if (gl_severity != GL_DEBUG_SEVERITY_NOTIFICATION)
+	{
+		fprintf(stderr, "T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), GSState::s_n, severity.c_str(), message.c_str());
 	}
 #else
 	// Print nouveau shader compiler info
-	if (GSState::s_n == 0) {
+	if (GSState::s_n == 0)
+	{
 		int t, local, gpr, inst, byte;
 		int status = sscanf(message.c_str(), "type: %d, local: %d, gpr: %d, inst: %d, bytes: %d",
-				&t, &local, &gpr, &inst, &byte);
-		if (status == 5) {
+			&t, &local, &gpr, &inst, &byte);
+		if (status == 5)
+		{
 			m_shader_inst += inst;
-			m_shader_reg  += gpr;
-			fprintf(stderr,"T:%s\t\tS:%s\t=> %s\n", type.c_str(), severity.c_str(), message.c_str());
+			m_shader_reg += gpr;
+			fprintf(stderr, "T:%s\t\tS:%s\t=> %s\n", type.c_str(), severity.c_str(), message.c_str());
 		}
 	}
 #endif
 
 	if (m_debug_gl_file)
-		fprintf(m_debug_gl_file,"T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), GSState::s_n, severity.c_str(), message.c_str());
+		fprintf(m_debug_gl_file, "T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), GSState::s_n, severity.c_str(), message.c_str());
 
 #ifdef _DEBUG
-	if (sev_counter >= 5) {
+	if (sev_counter >= 5)
+	{
 		// Close the file to flush the content on disk before exiting.
-		if (m_debug_gl_file) {
+		if (m_debug_gl_file)
+		{
 			fclose(m_debug_gl_file);
 			m_debug_gl_file = NULL;
 		}
@@ -1993,25 +2114,25 @@ uint16 GSDeviceOGL::ConvertBlendEnum(uint16 generic)
 {
 	switch (generic)
 	{
-	case SRC_COLOR       : return GL_SRC_COLOR;
-	case INV_SRC_COLOR   : return GL_ONE_MINUS_SRC_COLOR;
-	case DST_COLOR       : return GL_DST_COLOR;
-	case INV_DST_COLOR   : return GL_ONE_MINUS_DST_COLOR;
-	case SRC1_COLOR      : return GL_SRC1_COLOR;
-	case INV_SRC1_COLOR  : return GL_ONE_MINUS_SRC1_COLOR;
-	case SRC_ALPHA       : return GL_SRC_ALPHA;
-	case INV_SRC_ALPHA   : return GL_ONE_MINUS_SRC_ALPHA;
-	case DST_ALPHA       : return GL_DST_ALPHA;
-	case INV_DST_ALPHA   : return GL_ONE_MINUS_DST_ALPHA;
-	case SRC1_ALPHA      : return GL_SRC1_ALPHA;
-	case INV_SRC1_ALPHA  : return GL_ONE_MINUS_SRC1_ALPHA;
-	case CONST_COLOR     : return GL_CONSTANT_COLOR;
-	case INV_CONST_COLOR : return GL_ONE_MINUS_CONSTANT_COLOR;
-	case CONST_ONE       : return GL_ONE;
-	case CONST_ZERO      : return GL_ZERO;
-	case OP_ADD          : return GL_FUNC_ADD;
-	case OP_SUBTRACT     : return GL_FUNC_SUBTRACT;
-	case OP_REV_SUBTRACT : return GL_FUNC_REVERSE_SUBTRACT;
-	default              : ASSERT(0); return 0;
+		case SRC_COLOR       : return GL_SRC_COLOR;
+		case INV_SRC_COLOR   : return GL_ONE_MINUS_SRC_COLOR;
+		case DST_COLOR       : return GL_DST_COLOR;
+		case INV_DST_COLOR   : return GL_ONE_MINUS_DST_COLOR;
+		case SRC1_COLOR      : return GL_SRC1_COLOR;
+		case INV_SRC1_COLOR  : return GL_ONE_MINUS_SRC1_COLOR;
+		case SRC_ALPHA       : return GL_SRC_ALPHA;
+		case INV_SRC_ALPHA   : return GL_ONE_MINUS_SRC_ALPHA;
+		case DST_ALPHA       : return GL_DST_ALPHA;
+		case INV_DST_ALPHA   : return GL_ONE_MINUS_DST_ALPHA;
+		case SRC1_ALPHA      : return GL_SRC1_ALPHA;
+		case INV_SRC1_ALPHA  : return GL_ONE_MINUS_SRC1_ALPHA;
+		case CONST_COLOR     : return GL_CONSTANT_COLOR;
+		case INV_CONST_COLOR : return GL_ONE_MINUS_CONSTANT_COLOR;
+		case CONST_ONE       : return GL_ONE;
+		case CONST_ZERO      : return GL_ZERO;
+		case OP_ADD          : return GL_FUNC_ADD;
+		case OP_SUBTRACT     : return GL_FUNC_SUBTRACT;
+		case OP_REV_SUBTRACT : return GL_FUNC_REVERSE_SUBTRACT;
+		default              : ASSERT(0); return 0;
 	}
 }

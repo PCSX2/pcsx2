@@ -45,49 +45,49 @@ void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 
 	switch (m_vt.m_primclass)
 	{
-	case GS_POINT_CLASS:
-		if (unscale_pt_ln)
-		{
-			m_gs_sel.point = 1;
-			gs_cb.PointSize = GSVector2(16.0f * sx, 16.0f * sy);
-		}
+		case GS_POINT_CLASS:
+			if (unscale_pt_ln)
+			{
+				m_gs_sel.point = 1;
+				gs_cb.PointSize = GSVector2(16.0f * sx, 16.0f * sy);
+			}
 
-		t = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
-		break;
+			t = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;
+			break;
 
-	case GS_LINE_CLASS:
-		if (unscale_pt_ln)
-		{
-			m_gs_sel.line = 1;
-			gs_cb.PointSize = GSVector2(16.0f * sx, 16.0f * sy);
-		}
+		case GS_LINE_CLASS:
+			if (unscale_pt_ln)
+			{
+				m_gs_sel.line = 1;
+				gs_cb.PointSize = GSVector2(16.0f * sx, 16.0f * sy);
+			}
 
-		t = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
-		break;
-
-	case GS_SPRITE_CLASS:
-		// Lines: GPU conversion.
-		// Triangles: CPU conversion.
-		if (!m_vt.m_accurate_stq && m_vertex.next > 32)  // <=> 16 sprites (based on Shadow Hearts)
-		{
 			t = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
-		}
-		else
-		{
-			m_gs_sel.cpu_sprite = 1;
-			Lines2Sprites();
+			break;
 
+		case GS_SPRITE_CLASS:
+			// Lines: GPU conversion.
+			// Triangles: CPU conversion.
+			if (!m_vt.m_accurate_stq && m_vertex.next > 32) // <=> 16 sprites (based on Shadow Hearts)
+			{
+				t = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;
+			}
+			else
+			{
+				m_gs_sel.cpu_sprite = 1;
+				Lines2Sprites();
+
+				t = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
+			}
+
+			break;
+
+		case GS_TRIANGLE_CLASS:
 			t = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-		}
+			break;
 
-		break;
-
-	case GS_TRIANGLE_CLASS:
-		t = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST;
-		break;
-
-	default:
-		__assume(0);
+		default:
+			__assume(0);
 	}
 
 	void* ptr = NULL;
@@ -102,7 +102,8 @@ void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 
 			for (unsigned int i = 0; i < m_vertex.next; i++)
 			{
-				if (PRIM->TME && PRIM->FST) d[i].UV &= 0x3FEF3FEF;
+				if (PRIM->TME && PRIM->FST)
+					d[i].UV &= 0x3FEF3FEF;
 			}
 		}
 
@@ -188,7 +189,7 @@ void GSRendererDX11::EmulateTextureShuffleAndFbmask()
 		default:
 			break;
 	}
-	
+
 
 	// Uncomment to disable texture shuffle emulation.
 	// m_texture_shuffle = false;
@@ -401,7 +402,6 @@ void GSRendererDX11::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache:
 					// fprintf(stderr, "%d: Green channel (wrong mask) (fbmask %x)\n", s_n, m_context->FRAME.FBMSK >> 24);
 					m_ps_sel.channel = ChannelFetch_GREEN;
 				}
-
 			}
 			else if (green)
 			{
@@ -452,7 +452,7 @@ void GSRendererDX11::EmulateBlending()
 {
 	// Partial port of OGL SW blending. Currently only works for accumulation and non recursive blend.
 	const GIFRegALPHA& ALPHA = m_context->ALPHA;
-	bool sw_blending         = false;
+	bool sw_blending = false;
 
 	// No blending so early exit
 	if (!(PRIM->ABE || m_env.PABE.PABE || (PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS)))
@@ -491,7 +491,8 @@ void GSRendererDX11::EmulateBlending()
 		case ACC_BLEND_BASIC_D3D11:
 			sw_blending |= accumulation_blend || blend_non_recursive;
 			[[fallthrough]];
-		default: break;
+		default:
+			break;
 	}
 
 	// Color clip
@@ -532,7 +533,8 @@ void GSRendererDX11::EmulateBlending()
 		{
 			m_om_bsel.accu_blend = 1;
 
-			if (ALPHA.A == 2) {
+			if (ALPHA.A == 2)
+			{
 				// The blend unit does a reverse subtraction so it means
 				// the shader must output a positive value.
 				// Replace 0 - Cs by Cs - 0
@@ -568,8 +570,8 @@ void GSRendererDX11::EmulateTextureSampler(const GSTextureCache::Source* tex)
 {
 	// Warning fetch the texture PSM format rather than the context format. The latter could have been corrected in the texture cache for depth.
 	//const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[m_context->TEX0.PSM];
-	const GSLocalMemory::psm_t &psm = GSLocalMemory::m_psm[tex->m_TEX0.PSM];
-	const GSLocalMemory::psm_t &cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[m_context->TEX0.CPSM] : psm;
+	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[tex->m_TEX0.PSM];
+	const GSLocalMemory::psm_t& cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[m_context->TEX0.CPSM] : psm;
 
 	const uint8 wms = m_context->CLAMP.WMS;
 	const uint8 wmt = m_context->CLAMP.WMT;
@@ -619,7 +621,6 @@ void GSRendererDX11::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		GSVector4 half_offset = RealignTargetTextureCoordinate(tex);
 		vs_cb.Texture_Scale_Offset.z = half_offset.x;
 		vs_cb.Texture_Scale_Offset.w = half_offset.y;
-
 	}
 	else if (tex->m_target)
 	{
@@ -684,7 +685,6 @@ void GSRendererDX11::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 		// Note 4 bits indexes are converted to 8 bits
 		m_ps_sel.fmt = 3 << 2;
-
 	}
 	else
 	{
@@ -930,7 +930,7 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	m_ps_sel.fba = m_context->FBA.FBA;
 	m_ps_sel.dither = m_dithering > 0 && m_ps_sel.dfmt == 2 && m_env.DTHE.DTHE;
 
-	if(m_ps_sel.dither)
+	if (m_ps_sel.dither)
 	{
 		m_ps_sel.dither = m_dithering;
 		ps_cb.DitherMatrix[0] = GSVector4(m_env.DIMX.DM00, m_env.DIMX.DM10, m_env.DIMX.DM20, m_env.DIMX.DM30);
@@ -1091,7 +1091,7 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 		bool b = m_om_bsel.wb;
 		bool a = m_om_bsel.wa;
 
-		switch(m_context->TEST.AFAIL)
+		switch (m_context->TEST.AFAIL)
 		{
 			case AFAIL_KEEP: z = r = g = b = a = false; break; // none
 			case AFAIL_FB_ONLY: z = false; break; // rgba

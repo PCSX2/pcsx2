@@ -176,15 +176,15 @@ protected:
 
 	struct
 	{
-		GSVertex* buff; 
+		GSVertex* buff;
 		size_t head, tail, next, maxcount; // head: first vertex, tail: last vertex + 1, next: last indexed + 1
 		size_t xy_tail;
 		uint64 xy[4];
-	} m_vertex; 
+	} m_vertex;
 
 	struct
 	{
-		uint32* buff; 
+		uint32* buff;
 		size_t tail;
 	} m_index;
 
@@ -195,7 +195,7 @@ protected:
 
 	void GrowVertexBuffer();
 
-	template<uint32 prim, bool auto_flush>
+	template <uint32 prim, bool auto_flush>
 	void VertexKick(uint32 skip);
 
 	// following functions need m_vt to be initialized
@@ -269,16 +269,19 @@ public:
 	void InitReadFIFO(uint8* mem, int len);
 
 	void SoftReset(uint32 mask);
-	void WriteCSR(uint32 csr) {m_regs->CSR.u32[1] = csr;}
+	void WriteCSR(uint32 csr) { m_regs->CSR.u32[1] = csr; }
 	void ReadFIFO(uint8* mem, int size);
 	template<int index> void Transfer(const uint8* mem, uint32 size);
 	int Freeze(GSFreezeData* fd, bool sizeonly);
 	int Defrost(const GSFreezeData* fd);
-	void GetLastTag(uint32* tag) {*tag = m_path3hack; m_path3hack = 0;}
+	void GetLastTag(uint32* tag)
+	{
+		*tag = m_path3hack;
+		m_path3hack = 0;
+	}
 	virtual void SetGameCRC(uint32 crc, int options);
 	void SetFrameSkip(int skip);
 	void SetRegsMem(uint8* basemem);
 	void SetIrqCallback(void (*irq)());
 	void SetMultithreaded(bool mt = true);
 };
-

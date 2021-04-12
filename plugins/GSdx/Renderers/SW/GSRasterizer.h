@@ -46,7 +46,7 @@ public:
 	int pixels;
 	int counter;
 
-	GSRasterizerData() 
+	GSRasterizerData()
 		: scissor(GSVector4i::zero())
 		, bbox(GSVector4i::zero())
 		, primclass(GS_INVALID_CLASS)
@@ -62,9 +62,10 @@ public:
 		counter = s_counter++;
 	}
 
-	virtual ~GSRasterizerData() 
+	virtual ~GSRasterizerData()
 	{
-		if(buff != NULL) _aligned_free(buff);
+		if (buff != NULL)
+			_aligned_free(buff);
 	}
 };
 
@@ -72,7 +73,7 @@ class IDrawScanline : public GSAlignedClass<32>
 {
 public:
 	typedef void (*SetupPrimPtr)(const GSVertexSW* vertex, const uint32* index, const GSVertexSW& dscan);
-	typedef void (__fastcall *DrawScanlinePtr)(int pixels, int left, int top, const GSVertexSW& scan);
+	typedef void(__fastcall* DrawScanlinePtr)(int pixels, int left, int top, const GSVertexSW& scan);
 	typedef void (IDrawScanline::*DrawRectPtr)(const GSVector4i& r, const GSVertexSW& v); // TODO: jit
 
 protected:
@@ -82,7 +83,13 @@ protected:
 	DrawRectPtr m_dr;
 
 public:
-	IDrawScanline() : m_sp(NULL), m_ds(NULL), m_de(NULL), m_dr(NULL) {}
+	IDrawScanline()
+		: m_sp(NULL)
+		, m_ds(NULL)
+		, m_de(NULL)
+		, m_dr(NULL)
+	{
+	}
 	virtual ~IDrawScanline() {}
 
 	virtual void BeginDraw(const GSRasterizerData* data) = 0;
@@ -90,10 +97,10 @@ public:
 
 #ifdef ENABLE_JIT_RASTERIZER
 
-	__forceinline void SetupPrim(const GSVertexSW* vertex, const uint32* index, const GSVertexSW& dscan) {m_sp(vertex, index, dscan);}
-	__forceinline void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan) {m_ds(pixels, left, top, scan);}
-	__forceinline void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan) {m_de(pixels, left, top, scan);}
-	__forceinline void DrawRect(const GSVector4i& r, const GSVertexSW& v) {(this->*m_dr)(r, v);}
+	__forceinline void SetupPrim(const GSVertexSW* vertex, const uint32* index, const GSVertexSW& dscan) { m_sp(vertex, index, dscan); }
+	__forceinline void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan) { m_ds(pixels, left, top, scan); }
+	__forceinline void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan) { m_de(pixels, left, top, scan); }
+	__forceinline void DrawRect(const GSVector4i& r, const GSVertexSW& v) { (this->*m_dr)(r, v); }
 
 #else
 
@@ -101,13 +108,13 @@ public:
 	virtual void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan) = 0;
 	virtual void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan) = 0;
 	virtual void DrawRect(const GSVector4i& r, const GSVertexSW& v) = 0;
-	
+
 #endif
 
 	virtual void PrintStats() = 0;
 
-	__forceinline bool HasEdge() const {return m_de != NULL;}
-	__forceinline bool IsSolidRect() const {return m_dr != NULL;}
+	__forceinline bool HasEdge() const { return m_de != NULL; }
+	__forceinline bool IsSolidRect() const { return m_dr != NULL; }
 };
 
 class IRasterizer : public GSAlignedClass<32>
@@ -134,22 +141,22 @@ protected:
 	GSVector4i m_scissor;
 	GSVector4 m_fscissor_x;
 	GSVector4 m_fscissor_y;
-	struct {GSVertexSW* buff; int count;} m_edge;
-	struct {int sum, actual, total;} m_pixels;
+	struct { GSVertexSW* buff; int count; } m_edge;
+	struct { int sum, actual, total; } m_pixels;
 
 	typedef void (GSRasterizer::*DrawPrimPtr)(const GSVertexSW* v, int count);
 
-	template<bool scissor_test>
+	template <bool scissor_test>
 	void DrawPoint(const GSVertexSW* vertex, int vertex_count, const uint32* index, int index_count);
 	void DrawLine(const GSVertexSW* vertex, const uint32* index);
 	void DrawTriangle(const GSVertexSW* vertex, const uint32* index);
 	void DrawSprite(const GSVertexSW* vertex, const uint32* index);
 
-	#if _M_SSE >= 0x501
+#if _M_SSE >= 0x501
 	__forceinline void DrawTriangleSection(int top, int bottom, GSVertexSW2& edge, const GSVertexSW2& dedge, const GSVertexSW2& dscan, const GSVector4& p0);
-	#else
+#else
 	__forceinline void DrawTriangleSection(int top, int bottom, GSVertexSW& edge, const GSVertexSW& dedge, const GSVertexSW& dscan, const GSVector4& p0);
-	#endif
+#endif
 
 	void DrawEdge(const GSVertexSW& v0, const GSVertexSW& v1, const GSVertexSW& dv, int orientation, int side);
 
@@ -173,9 +180,9 @@ public:
 
 	void Queue(const std::shared_ptr<GSRasterizerData>& data);
 	void Sync() {}
-	bool IsSynced() const {return true;}
+	bool IsSynced() const { return true; }
 	int GetPixels(bool reset);
-	void PrintStats() {m_ds->PrintStats();}
+	void PrintStats() { m_ds->PrintStats(); }
 };
 
 class GSRasterizerList : public IRasterizer
@@ -195,23 +202,24 @@ protected:
 public:
 	virtual ~GSRasterizerList();
 
-	template<class DS> static IRasterizer* Create(int threads, GSPerfMon* perfmon)
+	template <class DS>
+	static IRasterizer* Create(int threads, GSPerfMon* perfmon)
 	{
 		threads = std::max<int>(threads, 0);
 
-		if(threads == 0)
+		if (threads == 0)
 		{
 			return new GSRasterizer(new DS(), 0, 1, perfmon);
 		}
 
 		GSRasterizerList* rl = new GSRasterizerList(threads, perfmon);
 
-		for(int i = 0; i < threads; i++)
+		for (int i = 0; i < threads; i++)
 		{
 			rl->m_r.push_back(std::unique_ptr<GSRasterizer>(new GSRasterizer(new DS(), i, threads, perfmon)));
-			auto &r = *rl->m_r[i];
+			auto& r = *rl->m_r[i];
 			rl->m_workers.push_back(std::unique_ptr<GSWorker>(new GSWorker(
-				[&r](std::shared_ptr<GSRasterizerData> &item) { r.Draw(item.get()); })));
+				[&r](std::shared_ptr<GSRasterizerData>& item) { r.Draw(item.get()); })));
 		}
 
 		return rl;

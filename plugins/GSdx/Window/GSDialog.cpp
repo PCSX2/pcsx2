@@ -41,7 +41,7 @@ INT_PTR CALLBACK GSDialog::DialogProc(HWND hWnd, UINT message, WPARAM wParam, LP
 {
 	GSDialog* dlg = NULL;
 
-	if(message == WM_INITDIALOG)
+	if (message == WM_INITDIALOG)
 	{
 		dlg = (GSDialog*)lParam;
 		SetWindowLongPtr(hWnd, GWLP_USERDATA, (LONG_PTR)dlg);
@@ -91,11 +91,13 @@ INT_PTR CALLBACK GSDialog::DialogProc(HWND hWnd, UINT message, WPARAM wParam, LP
 UINT GSDialog::GetTooltipStructSize()
 {
 	DLLGETVERSIONPROC dllGetVersion = (DLLGETVERSIONPROC)GetProcAddress(GetModuleHandle(L"ComCtl32.dll"), "DllGetVersion");
-	if (dllGetVersion) {
-		DLLVERSIONINFO2 dllversion = { 0 };
+	if (dllGetVersion)
+	{
+		DLLVERSIONINFO2 dllversion = {0};
 		dllversion.info1.cbSize = sizeof(DLLVERSIONINFO2);
 
-		if (dllGetVersion((DLLVERSIONINFO*)&dllversion) == S_OK) {
+		if (dllGetVersion((DLLVERSIONINFO*)&dllversion) == S_OK)
+		{
 			// Minor, then major version.
 			DWORD version = MAKELONG(dllversion.info1.dwMinorVersion, dllversion.info1.dwMajorVersion);
 			DWORD tooltip_v3 = MAKELONG(0, 6);
@@ -115,7 +117,7 @@ bool GSDialog::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 bool GSDialog::OnCommand(HWND hWnd, UINT id, UINT code)
 {
-	if(id == IDOK || id == IDCANCEL)
+	if (id == IDOK || id == IDCANCEL)
 	{
 		EndDialog(m_hWnd, id);
 
@@ -131,17 +133,17 @@ std::wstring GSDialog::GetText(UINT id)
 
 	wchar_t* buff = NULL;
 
-	for(int size = 256, limit = 65536; size < limit; size <<= 1)
+	for (int size = 256, limit = 65536; size < limit; size <<= 1)
 	{
 		buff = new wchar_t[size];
 
-		if(GetDlgItemText(m_hWnd, id, buff, size))
+		if (GetDlgItemText(m_hWnd, id, buff, size))
 		{
 			s = buff;
 			size = limit;
 		}
 
-		delete [] buff;
+		delete[] buff;
 	}
 
 	return s;
@@ -177,15 +179,15 @@ void GSDialog::ComboBoxInit(UINT id, const std::vector<GSSetting>& settings, int
 	if (std::none_of(settings.begin(), settings.end(), is_present))
 		selectionValue = settings.front().value;
 
-	for(size_t i = 0; i < settings.size(); i++)
+	for (size_t i = 0; i < settings.size(); i++)
 	{
 		const GSSetting& s = settings[i];
 
-		if(s.value <= maxValue)
+		if (s.value <= maxValue)
 		{
 			std::string str(s.name);
 
-			if(!s.note.empty())
+			if (!s.note.empty())
 			{
 				str = str + " (" + s.note + ")";
 			}
@@ -229,7 +231,7 @@ bool GSDialog::ComboBoxGetSelData(UINT id, INT_PTR& data)
 
 	const int item = (int)SendMessage(hWnd, CB_GETCURSEL, 0, 0);
 
-	if(item >= 0)
+	if (item >= 0)
 	{
 		data = SendMessage(hWnd, CB_GETITEMDATA, item, 0);
 
@@ -245,7 +247,7 @@ void GSDialog::ComboBoxFixDroppedWidth(UINT id)
 
 	int count = (int)SendMessage(hWnd, CB_GETCOUNT, 0, 0);
 
-	if(count > 0)
+	if (count > 0)
 	{
 		HDC hDC = GetDC(hWnd);
 
@@ -253,42 +255,43 @@ void GSDialog::ComboBoxFixDroppedWidth(UINT id)
 
 		int width = (int)SendMessage(hWnd, CB_GETDROPPEDWIDTH, 0, 0);
 
-		for(int i = 0; i < count; i++)
+		for (int i = 0; i < count; i++)
 		{
 			int len = (int)SendMessage(hWnd, CB_GETLBTEXTLEN, i, 0);
 
-			if(len > 0)
+			if (len > 0)
 			{
 				wchar_t* buff = new wchar_t[len + 1];
 
 				SendMessage(hWnd, CB_GETLBTEXT, i, (LPARAM)buff);
 
 				SIZE size;
-				
-				if(GetTextExtentPoint32(hDC, buff, wcslen(buff), &size))
+
+				if (GetTextExtentPoint32(hDC, buff, wcslen(buff), &size))
 				{
 					size.cx += 10;
 
-					if(size.cx > width) width = size.cx;
+					if (size.cx > width)
+						width = size.cx;
 				}
 
-				delete [] buff;
+				delete[] buff;
 			}
 		}
 
 		ReleaseDC(hWnd, hDC);
 
-		if(width > 0)
+		if (width > 0)
 		{
 			SendMessage(hWnd, CB_SETDROPPEDWIDTH, width, 0);
 		}
 	}
 }
 
-void GSDialog::OpenFileDialog(UINT id, const wchar_t *title)
+void GSDialog::OpenFileDialog(UINT id, const wchar_t* title)
 {
 	wchar_t filename[512];
-	OPENFILENAME ofn = { 0 };
+	OPENFILENAME ofn = {0};
 	ofn.lStructSize = sizeof(OPENFILENAME);
 	ofn.hwndOwner = m_hWnd;
 	ofn.Flags = OFN_EXPLORER | OFN_FILEMUSTEXIST;
@@ -307,7 +310,6 @@ void GSDialog::OpenFileDialog(UINT id, const wchar_t *title)
 		SendMessage(GetDlgItem(m_hWnd, id), WM_SETTEXT, 0, (LPARAM)filename);
 
 	SetCurrentDirectory(current_directory);
-
 }
 
 void GSDialog::AddTooltip(UINT id)
@@ -331,7 +333,7 @@ void GSDialog::AddTooltip(UINT id)
 	if (hwndTip == NULL)
 		return;
 
-	TOOLINFO toolInfo = { 0 };
+	TOOLINFO toolInfo = {0};
 	toolInfo.cbSize = tooltipStructSize;
 	toolInfo.hwnd = m_hWnd;
 	toolInfo.uFlags = TTF_IDISHWND | TTF_SUBCLASS;

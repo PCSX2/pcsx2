@@ -27,7 +27,7 @@
 #define GL_BUFFER_0    (0)
 
 #ifndef GL_CONTEXT_FLAG_NO_ERROR_BIT_KHR
-#define GL_CONTEXT_FLAG_NO_ERROR_BIT_KHR  0x00000008
+#define GL_CONTEXT_FLAG_NO_ERROR_BIT_KHR 0x00000008
 #endif
 
 // FIX compilation issue with Mesa 10
@@ -54,12 +54,12 @@
 
 // Added in GL4.6. Code should be updated but driver support...
 #ifndef GL_TEXTURE_MAX_ANISOTROPY_EXT
-#define GL_TEXTURE_MAX_ANISOTROPY_EXT     0x84FE
+#define GL_TEXTURE_MAX_ANISOTROPY_EXT 0x84FE
 #endif
 
 // Believe me or not, they forgot to add the interaction with DSA...
 #ifndef GL_EXT_direct_state_access
-typedef void (APIENTRYP PFNGLTEXTUREPAGECOMMITMENTEXTPROC) (GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLboolean commit);
+typedef void(APIENTRYP PFNGLTEXTUREPAGECOMMITMENTEXTPROC)(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLboolean commit);
 #endif
 
 // **********************  End of the extra header ******************* //
@@ -115,18 +115,20 @@ typedef void (APIENTRYP PFNGLTEXTUREPAGECOMMITMENTEXTPROC) (GLuint texture, GLin
 
 // It should be done by ENABLE_GL_VERSION_1_4 but it conflicts with the old gl.h
 #if defined(__unix__) || defined(__APPLE__)
-extern   PFNGLBLENDFUNCSEPARATEPROC             glBlendFuncSeparate;
+extern PFNGLBLENDFUNCSEPARATEPROC glBlendFuncSeparate;
 #endif
-extern   PFNGLTEXTUREPAGECOMMITMENTEXTPROC      glTexturePageCommitmentEXT;
+extern PFNGLTEXTUREPAGECOMMITMENTEXTPROC glTexturePageCommitmentEXT;
 
 #include "PFN_GLLOADER_HPP.h"
 
-namespace GLExtension {
+namespace GLExtension
+{
 	extern bool Has(const std::string& ext);
 	extern void Set(const std::string& ext, bool v = true);
-}
+} // namespace GLExtension
 
-namespace GLLoader {
+namespace GLLoader
+{
 	void check_gl_requirements();
 
 	extern bool vendor_id_amd;
@@ -145,4 +147,4 @@ namespace GLLoader {
 
 	extern bool found_compatible_GL_ARB_sparse_texture2;
 	extern bool found_compatible_sparse_depth;
-}
+} // namespace GLLoader

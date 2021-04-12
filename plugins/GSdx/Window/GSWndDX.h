@@ -40,8 +40,8 @@ public:
 	bool Attach(void* handle, bool managed = true);
 	void Detach();
 
-	void* GetDisplay() {return m_hWnd;}
-	void* GetHandle() {return m_hWnd;}
+	void* GetDisplay() { return m_hWnd; }
+	void* GetHandle() { return m_hWnd; }
 	GSVector4i GetClientRect();
 	bool SetWindowText(const char* title);
 
