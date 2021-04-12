@@ -868,6 +868,8 @@ GSVector.h:2973:15: error:  shadows template parm 'int i'
 		return GSVector4(_mm_cmple_ps(v1, v2));
 	}
 
+	// clang-format off
+
 	#define VECTOR4_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn) \
 		__forceinline GSVector4 xs##ys##zs##ws() const { return GSVector4(_mm_shuffle_ps(m, m, _MM_SHUFFLE(wn, zn, yn, xn))); } \
 		__forceinline GSVector4 xs##ys##zs##ws(const GSVector4& v) const { return GSVector4(_mm_shuffle_ps(m, v.m, _MM_SHUFFLE(wn, zn, yn, xn))); } \
@@ -894,6 +896,8 @@ GSVector.h:2973:15: error:  shadows template parm 'int i'
 	VECTOR4_SHUFFLE_1(y, 1)
 	VECTOR4_SHUFFLE_1(z, 2)
 	VECTOR4_SHUFFLE_1(w, 3)
+
+	// clang-format on
 
 #if _M_SSE >= 0x501
 

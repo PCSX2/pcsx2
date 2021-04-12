@@ -19,6 +19,8 @@
  *
  */
 
+// clang-format off
+
 #include "stdafx.h"
 #include "GSTables.h"
 

@@ -21,6 +21,9 @@
 
 #pragma once
 
+// This file is filled with stuff that breaks clang-format
+// clang-format off
+
 #define PLUGIN_VERSION 0
 
 #define VM_SIZE 4194304u

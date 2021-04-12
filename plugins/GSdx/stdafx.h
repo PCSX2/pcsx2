@@ -117,6 +117,9 @@ typedef int64 sint64;
 #include <unordered_map>
 #include <unordered_set>
 
+// Don't un-indent our ifdefs
+// clang-format off
+
 #ifdef _WIN32
 
 	// Note use GL/glcorearb.h on the future

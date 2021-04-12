@@ -1512,6 +1512,8 @@ public:
 		return (v1 < v2) | (v1 == v2);
 	}
 
+	// clang-format off
+
 	// x = v[31:0] / v[159:128]
 	// y = v[63:32] / v[191:160]
 	// z = v[95:64] / v[223:192]
@@ -1599,6 +1601,8 @@ public:
 	VECTOR8i_PERMUTE64_1(b, 1)
 	VECTOR8i_PERMUTE64_1(c, 2)
 	VECTOR8i_PERMUTE64_1(d, 3)
+
+	// clang-format on
 
 	__forceinline GSVector8i permute32(const GSVector8i& mask) const
 	{

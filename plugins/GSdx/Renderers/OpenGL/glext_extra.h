@@ -31,6 +31,8 @@
 **   https://github.com/KhronosGroup/OpenGL-Registry
 */
 
+// clang-format off
+
 #ifdef __cplusplus
 extern "C" {
 #endif
