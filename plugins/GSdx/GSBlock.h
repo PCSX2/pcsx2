@@ -1364,7 +1364,7 @@ public:
 				for(int i = 0; i < 4; i++) s[i] = (columnTable32[j][i*2] & 0x0f) | (columnTable32[j][i*2+1] << 4);
 		}
 
-		GSVector4i v4, v5, v6, v7;
+		GSVector4i v4, v5, v6;
 
 		#if _M_SSE >= 0x501
 
@@ -1451,7 +1451,7 @@ public:
 
 	__forceinline static void UnpackAndWriteBlock4HH(const uint8* RESTRICT src, int srcpitch, uint8* RESTRICT dst)
 	{
-		GSVector4i v4, v5, v6, v7;
+		GSVector4i v4, v5, v6;
 
 		#if _M_SSE >= 0x501
 
