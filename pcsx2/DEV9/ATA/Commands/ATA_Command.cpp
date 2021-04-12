@@ -58,6 +58,9 @@ void ATA::IDE_ExecCmd(u16 value)
 			//0xCB
 			//0x25 = HDDreadDMA48;
 			//0x35 = HDDwriteDMA48;*/
+		case 0xE1:
+			HDD_IdleImmediate();
+			break;
 		case 0xE3:
 			HDD_Idle();
 			break;
@@ -165,7 +168,6 @@ void ATA::IDE_CmdLBA48Transform(bool islba48)
 //MEDIA LOCK
 //MEDIA UNLOCK
 //STANDBY IMMEDIAYTE
-//IDLE IMMEDIATE
 //STANBY
 
 //CHECK POWER MODE

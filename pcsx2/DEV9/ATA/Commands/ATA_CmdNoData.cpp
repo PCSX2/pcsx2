@@ -230,3 +230,11 @@ void ATA::HDD_Idle()
 	DevCon.WriteLn("HDD_Idle for %is", idleTime);
 	PostCmdNoData();
 }
+
+void ATA::HDD_IdleImmediate()
+{
+	if (!PreCmd())
+		return;
+	DevCon.WriteLn("HDD_IdleImmediate");
+	PostCmdNoData();
+}
