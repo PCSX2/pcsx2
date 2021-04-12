@@ -29,6 +29,9 @@
 #ifndef XBYAK_XBYAK_UTIL_H_
 #define XBYAK_XBYAK_UTIL_H_
 
+// We want to keep this file similar to the original xbyak
+// clang-format off
+
 /**
 	utility class and functions for Xbyak
 	Xbyak::util::Clock ; rdtsc timer

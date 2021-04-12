@@ -26,6 +26,9 @@
 * THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+// We want to keep this file similar to the original xbyak
+// clang-format off
+
 #pragma once
 #ifndef XBYAK_XBYAK_H_
 #define XBYAK_XBYAK_H_

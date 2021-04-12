@@ -1952,6 +1952,8 @@ public:
 		return (v1 < v2) | (v1 == v2);
 	}
 
+	// clang-format off
+
 	#define VECTOR4i_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn) \
 		__forceinline GSVector4i xs##ys##zs##ws() const {return GSVector4i(_mm_shuffle_epi32(m, _MM_SHUFFLE(wn, zn, yn, xn)));} \
 		__forceinline GSVector4i xs##ys##zs##ws##l() const {return GSVector4i(_mm_shufflelo_epi16(m, _MM_SHUFFLE(wn, zn, yn, xn)));} \
@@ -1980,6 +1982,8 @@ public:
 	VECTOR4i_SHUFFLE_1(y, 1)
 	VECTOR4i_SHUFFLE_1(z, 2)
 	VECTOR4i_SHUFFLE_1(w, 3)
+
+	// clang-format on
 
 	__forceinline static GSVector4i zero() { return GSVector4i(_mm_setzero_si128()); }
 

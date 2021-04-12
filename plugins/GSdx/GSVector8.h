@@ -800,11 +800,12 @@ public:
 		return GSVector8(_mm256_cmp_ps(v1, v2, _CMP_LE_OQ));
 	}
 
+	// clang-format off
+
 	// x = v[31:0] / v[159:128]
 	// y = v[63:32] / v[191:160]
 	// z = v[95:64] / v[223:192]
 	// w = v[127:96] / v[255:224]
-
 
 	#define VECTOR8_SHUFFLE_4(xs, xn, ys, yn, zs, zn, ws, wn) \
 		__forceinline GSVector8 xs##ys##zs##ws() const { return GSVector8(_mm256_shuffle_ps(m, m, _MM_SHUFFLE(wn, zn, yn, xn))); } \
@@ -891,6 +892,8 @@ public:
 	VECTOR8_PERMUTE64_1(b, 1)
 	VECTOR8_PERMUTE64_1(c, 2)
 	VECTOR8_PERMUTE64_1(d, 3)
+
+	// clang-format on
 
 	__forceinline GSVector8 permute32(const GSVector8i& mask) const
 	{
