@@ -2785,7 +2785,7 @@ __forceinline void GSState::VertexKick(uint32 skip)
 		v2 = GSVector4i::loadl(&m_vertex.xy[(xy_tail + 3) & 3]); // T-1
 		v3 = GSVector4i::loadl(&m_vertex.xy[(xy_tail - m) & 3]); // H
 
-		GSVector4 cross;
+		//GSVector4 cross;
 
 		switch (prim)
 		{
