@@ -99,7 +99,7 @@ void ATA::IDE_ExecCmd(u16 value)
 
 void ATA::HDD_Unk()
 {
-	Console.Error("ATA: Unknown cmd %x", regCommand);
+	Console.Error("DEV9: ATA: Unknown cmd %x", regCommand);
 
 	PreCmd();
 

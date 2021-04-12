@@ -20,7 +20,7 @@
 
 void ATA::HDD_Smart()
 {
-	DevCon.WriteLn("HDD_Smart");
+	DevCon.WriteLn("DEV9: HDD_Smart");
 
 	if ((regStatus & ATA_STAT_READY) == 0)
 		return;
@@ -54,22 +54,22 @@ void ATA::HDD_Smart()
 			SMART_ReturnStatus();
 			return;
 		case 0xD1: //SMART_READ_THRESH
-			Console.Error("ATA: SMART_READ_THRESH Not Impemented");
+			Console.Error("DEV9: ATA: SMART_READ_THRESH Not Implemented");
 			CmdNoDataAbort();
 			return;
 		case 0xD0: //SMART_READ_DATA
-			Console.Error("ATA: SMART_READ_DATA Not Impemented");
+			Console.Error("DEV9: ATA: SMART_READ_DATA Not Implemented");
 			CmdNoDataAbort();
 			return;
 		case 0xD5: //SMART_READ_LOG
-			Console.Error("ATA: SMART_READ_LOG Not Impemented");
+			Console.Error("DEV9: ATA: SMART_READ_LOG Not Implemented");
 			CmdNoDataAbort();
 			return;
 		case 0xD4: //SMART_EXECUTE_OFFLINE
 			SMART_ExecuteOfflineImmediate();
 			return;
 		default:
-			Console.Error("ATA: Unknown SMART command %x", regFeature);
+			Console.Error("DEV9: ATA: Unknown SMART command %x", regFeature);
 			CmdNoDataAbort();
 			return;
 	}
@@ -87,7 +87,7 @@ void ATA::SMART_SetAutoSaveAttribute()
 			smartAutosave = true;
 			break;
 		default:
-			Console.Error("ATA: Unknown SMART_ATTR_AUTOSAVE command %s", regSector);
+			Console.Error("DEV9: ATA: Unknown SMART_ATTR_AUTOSAVE command %s", regSector);
 			CmdNoDataAbort();
 			return;
 	}
