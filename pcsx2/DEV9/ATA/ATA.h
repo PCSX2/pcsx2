@@ -246,6 +246,7 @@ private:
 	void HDD_SetMultipleMode();
 	void HDD_Nop();
 	void HDD_Idle();
+	void HDD_IdleImmediate();
 
 	void DRQCmdPIODataToHost(u8* buff, int buffLen, int buffIndex, int size, bool sendIRQ);
 	void PostCmdPIODataToHost();
