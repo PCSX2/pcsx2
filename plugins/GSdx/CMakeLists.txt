@@ -89,12 +89,7 @@ set(GSdxSources
     Renderers/SW/GSRasterizer.cpp
     Renderers/SW/GSRendererSW.cpp
     Renderers/SW/GSSetupPrimCodeGenerator.cpp
-    Renderers/SW/GSSetupPrimCodeGenerator.x64.cpp
-    Renderers/SW/GSSetupPrimCodeGenerator.x64.avx.cpp
-    Renderers/SW/GSSetupPrimCodeGenerator.x64.avx2.cpp
-    Renderers/SW/GSSetupPrimCodeGenerator.x86.cpp
-    Renderers/SW/GSSetupPrimCodeGenerator.x86.avx.cpp
-    Renderers/SW/GSSetupPrimCodeGenerator.x86.avx2.cpp
+    Renderers/SW/GSSetupPrimCodeGenerator.all.cpp
     Renderers/SW/GSTextureCacheSW.cpp
     Renderers/SW/GSTextureSW.cpp
     Renderers/OpenGL/GLLoader.cpp
@@ -159,6 +154,7 @@ set(GSdxHeaders
     Renderers/SW/GSRendererSW.h
     Renderers/SW/GSScanlineEnvironment.h
     Renderers/SW/GSSetupPrimCodeGenerator.h
+    Renderers/SW/GSSetupPrimCodeGenerator.all.h
     Renderers/SW/GSTextureCacheSW.h
     Renderers/SW/GSTextureSW.h
     Renderers/SW/GSVertexSW.h
@@ -177,6 +173,7 @@ set(GSdxHeaders
     Window/GSSettingsDlg.h
     Window/GSWnd.h
     xbyak/xbyak.h
+    xbyak/xbyak_smart.h
     xbyak/xbyak_mnemonic.h
     xbyak/xbyak_util.h
     )

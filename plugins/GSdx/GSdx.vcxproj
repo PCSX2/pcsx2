@@ -118,12 +118,7 @@
     <ClCompile Include="Window\GSSetting.cpp" />
     <ClCompile Include="Window\GSSettingsDlg.cpp" />
     <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.cpp" />
-    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x64.avx.cpp" />
-    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x64.avx2.cpp" />
-    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x64.cpp" />
-    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x86.avx.cpp" />
-    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x86.avx2.cpp" />
-    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.x86.cpp" />
+    <ClCompile Include="Renderers\SW\GSSetupPrimCodeGenerator.all.cpp" />
     <ClCompile Include="Renderers\OpenGL\GSShaderOGL.cpp" />
     <ClCompile Include="GSState.cpp" />
     <ClCompile Include="GSTables.cpp" />
@@ -191,6 +186,7 @@
     <ClInclude Include="Window\GSSetting.h" />
     <ClInclude Include="Window\GSSettingsDlg.h" />
     <ClInclude Include="Renderers\SW\GSSetupPrimCodeGenerator.h" />
+    <ClInclude Include="Renderers\SW\GSSetupPrimCodeGenerator.all.h" />
     <ClInclude Include="Renderers\OpenGL\GSShaderOGL.h" />
     <ClInclude Include="GSState.h" />
     <ClInclude Include="GSTables.h" />
@@ -227,6 +223,7 @@
     <ClInclude Include="targetver.h" />
     <ClInclude Include="xbyak\xbyak.h" />
     <ClInclude Include="xbyak\xbyak_mnemonic.h" />
+    <ClInclude Include="xbyak\xbyak_smart.h" />
     <ClInclude Include="xbyak\xbyak_util.h" />
   </ItemGroup>
   <ItemGroup>
