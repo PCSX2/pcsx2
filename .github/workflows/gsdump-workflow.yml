@@ -1,0 +1,97 @@
+name: GSDump Comparer
+on: 
+  push:
+    branches:
+      - master
+    paths:
+      - .github
+      - plugins/GSdx
+  pull_request:
+    branches:
+      - master
+    paths:
+      - .github
+      - plugins/GSdx
+jobs:
+  check:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        include:
+          - renderer: sw
+            platform: x86
+            compiler: gcc
+          - renderer: gl
+            platform: x86
+            compiler: gcc
+    name: ${{ matrix.renderer }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+
+      - name: Checkout Submodules
+        run: git submodule update --init --recursive --jobs 2
+
+      - name: Checkout GSDumps
+        uses: actions/checkout@v2
+        with:
+          repository: tellowkrinkle/gsdumps
+          path: gsdumps
+
+      # -- SETUP CCACHE - https://cristianadam.eu/20200113/speeding-up-c-plus-plus-github-actions-using-ccache/
+      - name: Prepare cache timestamp
+        id: cache_timestamp
+        shell: cmake -P {0}
+        run: |
+          string(TIMESTAMP current_date "%Y-%m-%d-%H;%M;%S" UTC)
+          message("::set-output name=timestamp::${current_date}")
+
+      # Note: We re-save this every time, even if it wasn't updated.  Fix when https://github.com/actions/cache/pull/498 merges
+      - name: Cache images
+        uses: actions/cache@v2
+        with:
+          path: images
+          key: images-${{ matrix.renderer }}-${{ steps.cache_timestamp.outputs.timestamp }}
+          restore-keys: images-${{ matrix.renderer }}-
+
+      - name: ccache cache files
+        uses: actions/cache@v2
+        with:
+          path: .ccache
+          key: ccache-${{ steps.cache_timestamp.outputs.timestamp }}
+          restore-keys: ccache-
+            
+      - name: Install Packages
+        env:
+          GSDUMP: "ON"
+          PLATFORM: ${{ matrix.platform }}
+          COMPILER: ${{ matrix.compiler }}
+        run: ./.github/workflows/scripts/linux/install-packages.sh
+
+      - name: Generate CMake
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          COMPILER: ${{ matrix.compiler }}
+          ADDITIONAL_CMAKE_ARGS: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
+        run: ./.github/workflows/scripts/linux/generate-cmake.sh
+
+      - name: Build
+        working-directory: ./build
+        run: ../.github/workflows/scripts/linux/compile-gsdx.sh
+
+      - name: Run
+        env:
+          RENDERER: ${{ matrix.renderer }}
+          GSDUMP_SO: build/plugins/GSdx/libGSdx.so
+        run: ./.github/workflows/scripts/linux/gsdump-comparer.sh
+
+      - name: Update results
+        if: github.ref == 'refs/heads/master'
+        run: "[ -d output ] && (! [ -d images ] || rm -r images) && mv output images"
+
+      - name: Upload changes
+        uses: actions/upload-artifact@v2
+        with:
+          name: changed-gsdump-outputs-${{ matrix.renderer }}
+          path: changes/
+          if-no-files-found: ignore
