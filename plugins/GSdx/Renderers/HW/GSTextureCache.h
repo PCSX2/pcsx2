@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include <limits>
+
 #include "Renderers/Common/GSRenderer.h"
 #include "Renderers/Common/GSFastList.h"
 #include "Renderers/Common/GSDirtyRect.h"
@@ -29,6 +31,15 @@ class GSTextureCache
 {
 public:
 	enum {RenderTarget, DepthStencil};
+
+	constexpr static uint32 MAX_BP = 0x3fff;
+
+	constexpr static bool CheckOverlap(const uint32 a_bp, const uint32 a_bp_end, const uint32 b_bp, const uint32 b_bp_end) noexcept
+	{
+		const bool valid = a_bp < a_bp_end && b_bp < b_bp_end;
+		const bool overlap = a_bp <= b_bp_end && a_bp_end >= b_bp;
+		return valid && overlap;
+	}
 
 	class Surface : public GSAlignedClass<32>
 	{
@@ -186,17 +197,33 @@ public:
 		void RemoveAt(Source* s);
 	};
 
-	struct TexInsideRtCacheEntry
+	struct SurfaceOffsetKeyElem
 	{
 		uint32 psm;
 		uint32 bp;
-		uint32 bp_end;
 		uint32 bw;
-		uint32 t_tex0_tbp0;
-		uint32 m_end_block;
-		bool has_valid_offset;
-		int x_offset;
-		int y_offset;
+		GSVector4i rect;
+	};
+
+	struct SurfaceOffsetKey
+	{
+		std::array<SurfaceOffsetKeyElem, 2> elems;  // A and B elems.
+	};
+
+	struct SurfaceOffset
+	{
+		bool is_valid;
+		GSVector4i b2a_offset;  // B to A offset in B coords.
+	};
+
+	struct SurfaceOffsetKeyHash
+	{
+		std::size_t operator()(const SurfaceOffsetKey& key) const;
+	};
+
+	struct SurfaceOffsetKeyEqual
+	{
+		bool operator()(const SurfaceOffsetKey& lhs, const SurfaceOffsetKey& rhs) const;
 	};
 
 protected:
@@ -213,8 +240,8 @@ protected:
 	static bool m_disable_partial_invalidation;
 	bool m_texture_inside_rt;
 	static bool m_wrap_gs_mem;
-	uint8 m_texture_inside_rt_cache_size = 255;
-	std::vector<TexInsideRtCacheEntry> m_texture_inside_rt_cache;
+	constexpr static size_t S_SURFACE_OFFSET_CACHE_MAX_SIZE = std::numeric_limits<uint16>::max();
+	std::unordered_map<SurfaceOffsetKey, SurfaceOffset, SurfaceOffsetKeyHash, SurfaceOffsetKeyEqual> m_surface_offset_cache;
 
 	virtual Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false, int x_offset = 0, int y_offset = 0);
 	virtual Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type);
@@ -256,4 +283,7 @@ public:
 	void PrintMemoryUsage();
 
 	void AttachPaletteToSource(Source* s, uint16 pal, bool need_gs_texture);
+	SurfaceOffset ComputeSurfaceOffset(const GSOffset* off, const GSVector4i& r, const Target* t);
+	SurfaceOffset ComputeSurfaceOffset(const uint32_t bp, const uint32_t bw, const uint32_t psm, const GSVector4i& r, const Target* t);
+	SurfaceOffset ComputeSurfaceOffset(const SurfaceOffsetKey& sok);
 };

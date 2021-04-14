@@ -286,6 +286,10 @@ void GSRendererHW::VSync(int field)
 	{
 		m_tc->RemoveAll();
 
+		// Reset RT size.
+		m_width = !m_upscale_multiplier ? m_custom_width : default_rt_size.x;
+		m_height = !m_upscale_multiplier ? m_custom_height : default_rt_size.y;
+
 		m_reset = false;
 	}
 
@@ -1206,34 +1210,12 @@ void GSRendererHW::Draw()
 		m_channel_shuffle = false;
 	}
 
-	GIFRegTEX0 TEX0;
-
-	TEX0.TBP0 = context->FRAME.Block();
-	TEX0.TBW = context->FRAME.FBW;
-	TEX0.PSM = context->FRAME.PSM;
-
-	GSTextureCache::Target* rt = NULL;
-	GSTexture* rt_tex = NULL;
-	if (!no_rt) {
-		rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true, fm);
-		rt_tex = rt->m_texture;
-	}
-
-	TEX0.TBP0 = context->ZBUF.Block();
-	TEX0.TBW = context->FRAME.FBW;
-	TEX0.PSM = context->ZBUF.PSM;
-
-	GSTextureCache::Target* ds = NULL;
-	GSTexture* ds_tex = NULL;
-	if (!no_ds) {
-		ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, context->DepthWrite());
-		ds_tex = ds->m_texture;
-	}
-
 	m_src = nullptr;
 	m_texture_shuffle = false;
 
-	if(PRIM->TME)
+	GIFRegTEX0 TEX0;
+
+	if (PRIM->TME)
 	{
 		GIFRegCLAMP MIP_CLAMP = context->CLAMP;
 		int mxl = std::min<int>((int)m_context->TEX1.MXL, 6);
@@ -1261,12 +1243,14 @@ void GSRendererHW::Draw()
 			if (lcm == 1) {
 				m_lod.x = std::max<int>(k, 0);
 				m_lod.y = m_lod.x;
-			} else {
+			}
+			else {
 				// Not constant but who care !
 				if (interpolation == 2) {
 					// Mipmap Linear. Both layers are sampled, only take the big one
 					m_lod.x = std::max<int>((int)floor(m_vt.m_lod.x), 0);
-				} else {
+				}
+				else {
 					// On GS lod is a fixed float number 7:4 (4 bit for the frac part)
 #if 0
 					m_lod.x = std::max<int>((int)round(m_vt.m_lod.x + 0.0625), 0);
@@ -1300,7 +1284,8 @@ void GSRendererHW::Draw()
 			}
 
 			GL_CACHE("Mipmap LOD %d %d (%f %f) new size %dx%d (K %d L %u)", m_lod.x, m_lod.y, m_vt.m_lod.x, m_vt.m_lod.y, 1 << TEX0.TW, 1 << TEX0.TH, m_context->TEX1.K, m_context->TEX1.L);
-		} else {
+		}
+		else {
 			TEX0 = GetTex0Layer(0);
 		}
 
@@ -1376,10 +1361,34 @@ void GSRendererHW::Draw()
 		if (m_src->m_target && m_context->TEX0.PSM == PSM_PSMT8 && single_page && draw_sprite_tex) {
 			GL_INS("Channel shuffle effect detected (2nd shot)");
 			m_channel_shuffle = true;
-		} else {
+		}
+		else {
 			m_channel_shuffle = false;
 		}
 	}
+
+	TEX0.TBP0 = context->FRAME.Block();
+	TEX0.TBW = context->FRAME.FBW;
+	TEX0.PSM = context->FRAME.PSM;
+
+	GSTextureCache::Target* rt = NULL;
+	GSTexture* rt_tex = NULL;
+	if (!no_rt) {
+		rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true, fm);
+		rt_tex = rt->m_texture;
+	}
+
+	TEX0.TBP0 = context->ZBUF.Block();
+	TEX0.TBW = context->FRAME.FBW;
+	TEX0.PSM = context->ZBUF.PSM;
+
+	GSTextureCache::Target* ds = NULL;
+	GSTexture* ds_tex = NULL;
+	if (!no_ds) {
+		ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, context->DepthWrite());
+		ds_tex = ds->m_texture;
+	}
+
 	if (rt) {
 		// Be sure texture shuffle detection is properly propagated
 		// Otherwise set or clear the flag (Code in texture cache only set the flag)

@@ -25,22 +25,19 @@
 
 class GSDirtyRect
 {
-	int left;
-	int top;
-	int right;
-	int bottom;
-
-	uint32 psm;
-
 public:
+	const GSVector4i r;
+	const uint32 psm;
+	const uint32 bw;
+
 	GSDirtyRect();
-	GSDirtyRect(const GSVector4i& r, uint32 psm);
+	GSDirtyRect(const GSVector4i& r, const uint32 psm, const uint32 bw);
 	const GSVector4i GetDirtyRect(const GIFRegTEX0& TEX0) const;
 };
 
 class GSDirtyRectList : public std::vector<GSDirtyRect>
 {
 public:
-	GSDirtyRectList() {}
+	const GSVector4i GetDirtyRect(const GIFRegTEX0& TEX0, const GSVector2i& size) const;
 	const GSVector4i GetDirtyRectAndClear(const GIFRegTEX0& TEX0, const GSVector2i& size);
 };
