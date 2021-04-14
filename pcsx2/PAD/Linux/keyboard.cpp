@@ -157,17 +157,22 @@ void AnalyzeKeyEvent(keyEvent& evt)
 				s_Shift = true;
 			if (key == XK_F12 && s_Shift)
 			{
-				if (!s_grab_input)
+				s_grab_input = !s_grab_input;
+				if (s_grab_input)
 				{
-					s_grab_input = true;
-					XGrabPointer(GSdsp, GSwin, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, GSwin, None, CurrentTime);
-					XGrabKeyboard(GSdsp, GSwin, True, GrabModeAsync, GrabModeAsync, CurrentTime);
+					if (!GSdisplay.is_wayland)
+					{
+						XGrabPointer(GSdisplay.x11.display, GSdisplay.x11.window, True, ButtonPressMask, GrabModeAsync, GrabModeAsync, GSdisplay.x11.window, None, CurrentTime);
+						XGrabKeyboard(GSdisplay.x11.display, GSdisplay.x11.window, True, GrabModeAsync, GrabModeAsync, CurrentTime);
+					}
 				}
 				else
 				{
-					s_grab_input = false;
-					XUngrabPointer(GSdsp, CurrentTime);
-					XUngrabKeyboard(GSdsp, CurrentTime);
+					if (!GSdisplay.is_wayland)
+					{
+						XUngrabPointer(GSdisplay.x11.display, CurrentTime);
+						XUngrabKeyboard(GSdisplay.x11.display, CurrentTime);
+					}
 				}
 			}
 
@@ -268,18 +273,14 @@ void AnalyzeKeyEvent(keyEvent& evt)
 	}
 }
 
-void UpdateKeyboardInput()
+static void UpdateKeyboardInput_X11(Display* display, Window window)
 {
 	keyEvent evt = {0};
 	XEvent E = {0};
 
-	// Keyboard input send by PCSX2
-	g_ev_fifo.consume_all(AnalyzeKeyEvent);
-
-	// keyboard input
-	while (XPending(GSdsp) > 0)
+	while (XPending(display) > 0)
 	{
-		XNextEvent(GSdsp, &E);
+		XNextEvent(display, &E);
 
 		// Change the format of the structure to be compatible with GSOpen2
 		// mode (event come from pcsx2 not X)
@@ -299,6 +300,24 @@ void UpdateKeyboardInput()
 
 		AnalyzeKeyEvent(evt);
 	}
+}
+
+static void UpdateKeyboardInput_Wayland(PluginDisplayPropertiesWayland* props)
+{
+	// On Wayland at least, all keyboard input is sent to us from the main GUI,
+	// not the surface rendered to by GS. Thus we don't need to do anything here.
+}
+
+void UpdateKeyboardInput()
+{
+	// Keyboard input send by PCSX2
+	g_ev_fifo.consume_all(AnalyzeKeyEvent);
+
+	// keyboard input
+	if (GSdisplay.is_wayland)
+		UpdateKeyboardInput_Wayland(GSdisplay.wayland);
+	else
+		UpdateKeyboardInput_X11(GSdisplay.x11.display, GSdisplay.x11.window);
 }
 
 bool PollForNewKeyboardKeys(u32& pkey)

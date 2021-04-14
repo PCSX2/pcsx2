@@ -20,6 +20,17 @@
 #include "CpuUsageProvider.h"
 #include <memory>
 
+#ifdef __WXGTK__
+#include <gdk/gdkx.h>
+#include <gtk/gtk.h>
+#ifdef GDK_WINDOWING_WAYLAND
+#include <gdk/gdkwayland.h>
+#include "wayland-gsdisplay.h"
+#endif
+// undef Xlib macros that conflict with our symbols
+#undef DisableScreenSaver
+#undef Status
+#endif
 
 enum LimiterModeType
 {
@@ -80,7 +91,6 @@ protected:
 	void UpdateScreensaver();
 };
 
-
 // --------------------------------------------------------------------------------------
 //  GSFrame
 // --------------------------------------------------------------------------------------
@@ -108,6 +118,11 @@ public:
 
 	bool ShowFullScreen(bool show, bool updateConfig = true);
 	void UpdateTitleUpdateFreq();
+
+#if defined(__WXGTK__) && defined(GDK_WINDOWING_WAYLAND)
+	PluginDisplayPropertiesWayland* GetPluginDisplayPropertiesWaylandEGL();
+	void DestroyPluginDisplayPropertiesWayland(PluginDisplayPropertiesWayland* props_wl);
+#endif
 
 protected:
 	void OnCloseWindow( wxCloseEvent& evt );

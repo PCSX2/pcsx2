@@ -26,10 +26,11 @@
 #include <EGL/eglext.h>
 
 #define GS_EGL_X11 1
-#define GS_EGL_WL 0
+#define GS_EGL_WL 1
 
 class GSWndEGL : public GSWndGL
 {
+	void *m_native_display;
 	void *m_native_window;
 
 	EGLDisplay m_eglDisplay;
@@ -58,7 +59,7 @@ public:
 
 	virtual void *CreateNativeDisplay() = 0;
 	virtual void *CreateNativeWindow(int w, int h) = 0; // GSopen1/PSX API
-	virtual void *AttachNativeWindow(void *handle) = 0;
+	virtual void AttachNativeWindow(void *handle, void **out_native_display, void **out_native_window) = 0;
 	virtual void DestroyNativeResources() = 0;
 
 	GSVector4i GetClientRect();
@@ -80,7 +81,7 @@ public:
 
 	// Static to allow to query supported the platform
 	// before object creation
-	static int SelectPlatform();
+	static int SelectPlatform(void *display_handle);
 };
 
 #if GS_EGL_X11
@@ -94,7 +95,7 @@ class GSWndEGL_X11 : public GSWndEGL
 	Display  *m_NativeDisplay;
 	Window    m_NativeWindow;
 
-	public:
+public:
 	GSWndEGL_X11();
 	virtual ~GSWndEGL_X11() {};
 
@@ -103,7 +104,7 @@ class GSWndEGL_X11 : public GSWndEGL
 
 	void *CreateNativeDisplay() final;
 	void *CreateNativeWindow(int w, int h) final;
-	void *AttachNativeWindow(void *handle) final;
+	void AttachNativeWindow(void *handle, void **out_native_display, void **out_native_window) final;
 	void DestroyNativeResources() final;
 
 	bool SetWindowText(const char* title) final;
@@ -113,18 +114,26 @@ class GSWndEGL_X11 : public GSWndEGL
 
 #if GS_EGL_WL
 
-// Which include ?
 #include <wayland-client.h>
-#include <wayland-server.h>
-#include <wayland-client-protocol.h>
 #include <wayland-egl.h>
+#include <wayland-xdg-shell-client-protocol.h>
 
 class GSWndEGL_WL : public GSWndEGL
 {
 	wl_display    *m_NativeDisplay;
 	wl_egl_window *m_NativeWindow;
 
-	public:
+	wl_registry      *m_wl_registry;
+	wl_compositor    *m_wl_compositor;
+	wl_subcompositor *m_wl_subcompositor;
+	xdg_wm_base      *m_xdg_wm_base;
+
+	wl_surface    *m_wl_surface;
+	wl_subsurface *m_wl_subsurface;
+	xdg_surface   *m_xdg_surface;
+	xdg_toplevel  *m_xdg_toplevel;
+
+public:
 	GSWndEGL_WL();
 	virtual ~GSWndEGL_WL() {};
 
@@ -133,10 +142,26 @@ class GSWndEGL_WL : public GSWndEGL
 
 	void *CreateNativeDisplay() final;
 	void *CreateNativeWindow(int w, int h) final;
-	void *AttachNativeWindow(void *handle) final;
+	void AttachNativeWindow(void *handle, void **out_native_display, void **out_native_window) final;
 	void DestroyNativeResources() final;
 
 	bool SetWindowText(const char* title) final;
+
+	// wayland listeners
+	void RegistryAddGlobal(wl_registry *registry, uint32_t name, const char *interface, uint32_t version);
+	void RegistryRemoveGlobal(wl_registry *registry, uint32_t name);
+	void XDGSurfaceConfigure(xdg_surface *xdg_surface, uint32_t serial);
+	void XDGToplevelConfigure(xdg_toplevel *xdg_toplevel, int32_t width, int32_t height, wl_array *states);
+	void XDGToplevelClose(xdg_toplevel *xdg_toplevel);
+};
+
+// When the GS window handle is a Wayland window,
+// the first entry of pDsp will point to one of these.
+struct PluginDisplayPropertiesWayland {
+	wl_display* display; // NOTE: This display is not owned by this struct.
+	wl_egl_window* egl_window;
+	wl_surface* surface;
+	wl_subsurface* subsurface;
 };
 
 #endif

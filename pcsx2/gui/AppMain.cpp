@@ -53,6 +53,9 @@
 #ifdef __WXGTK__
 #include <gdk/gdkx.h>
 #include <gtk/gtk.h>
+#ifdef GDK_WINDOWING_WAYLAND
+#include <gdk/gdkwayland.h>
+#endif
 #endif
 
 // Safe to remove these lines when this is handled properly.
@@ -304,7 +307,7 @@ void Pcsx2App::PadKeyDispatch( const keyEvent& ev )
 	// outside of the window so the app isn't aware of the current key state.
 	m_kevt.m_shiftDown = wxGetKeyState(WXK_SHIFT);
 	m_kevt.m_controlDown = wxGetKeyState(WXK_CONTROL);
-	m_kevt.m_altDown = wxGetKeyState(WXK_MENU) || wxGetKeyState(WXK_ALT);
+	m_kevt.m_altDown = wxGetKeyState(WXK_ALT);
 
 	m_kevt.m_keyCode = vkey? vkey : ev.key;
 
@@ -1013,21 +1016,42 @@ void Pcsx2App::OpenGsPanel()
 
 	GdkWindow* draw_window = gtk_widget_get_window(child_window);
 
-#if GTK_MAJOR_VERSION < 3
-	Window Xwindow = GDK_WINDOW_XWINDOW(draw_window);
-#else
-	Window Xwindow = GDK_WINDOW_XID(draw_window);
-#endif
-	Display* XDisplay = GDK_WINDOW_XDISPLAY(draw_window);
+	// For Wayland ShowFullScreen must be called before GetPluginDisplayProperties
+	// so that the viewport's wl_surface is created before we access it.
+	gsFrame->ShowFullScreen( g_Conf->GSWindow.IsFullscreen );
 
-	pDsp[0] = (uptr)XDisplay;
-	pDsp[1] = (uptr)Xwindow;
+#ifdef GDK_WINDOWING_WAYLAND
+	if (GDK_IS_WAYLAND_WINDOW(draw_window))
+	{
+		pDsp[0] = (uptr)gsFrame->GetPluginDisplayPropertiesWaylandEGL();
+		pDsp[1] = (uptr)NULL;
+	}
+	else
+#endif
+#ifdef GDK_WINDOWING_X11
+	if (GDK_IS_X11_WINDOW(draw_window))
+	{
+#if GTK_MAJOR_VERSION < 3
+		Window Xwindow = GDK_WINDOW_XWINDOW(draw_window);
+#else
+		Window Xwindow = GDK_WINDOW_XID(draw_window);
+#endif
+		Display* XDisplay = GDK_WINDOW_XDISPLAY(draw_window);
+
+		pDsp[0] = (uptr)XDisplay;
+		pDsp[1] = (uptr)Xwindow;
+	}
+	else
+#endif
+	{
+		pxAssertDev(false, "Unknown GDK display type. Can't initialize GS Plugin.");
+	}
 #else
 	pDsp[0] = (uptr)gsFrame->GetViewport()->GetHandle();
-	pDsp[1] = NULL;
-#endif
+	pDsp[1] = (uptr)NULL;
 
 	gsFrame->ShowFullScreen( g_Conf->GSWindow.IsFullscreen );
+#endif
 
 #ifndef DISABLE_RECORDING
 	// Enable New & Play after the first game load of the session
@@ -1046,11 +1070,21 @@ void Pcsx2App::CloseGsPanel()
 	if (AppRpc_TryInvoke(&Pcsx2App::CloseGsPanel))
 		return;
 
-	if (CloseViewportWithPlugins)
+	if (GSFrame* gsFrame = GetGsFramePtr())
 	{
-		if (GSFrame* gsFrame = GetGsFramePtr())
-			if (GSPanel* woot = gsFrame->GetViewport())
-				woot->Destroy();
+#if defined(__WXGTK__) && defined(GDK_WINDOWING_WAYLAND)
+		if (GDK_IS_WAYLAND_WINDOW(gtk_widget_get_window(gsFrame->GetViewport()->GetHandle())))
+		{
+			PluginDisplayPropertiesWayland* props_wl = *(PluginDisplayPropertiesWayland **)pDsp;
+			gsFrame->DestroyPluginDisplayPropertiesWayland(props_wl);
+			pDsp[0] = (uptr)nullptr;
+			pDsp[1] = (uptr)nullptr;
+		}
+#endif
+
+		if (CloseViewportWithPlugins)
+			if (GSPanel* viewport = gsFrame->GetViewport())
+				viewport->Destroy();
 	}
 }
 

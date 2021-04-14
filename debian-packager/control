@@ -16,6 +16,7 @@ Build-Depends: cmake (>= 2.8.5),
     libpulse-dev,
     libsdl2-dev,
     libsoundtouch-dev,
+    libwayland-dev,
     libwxbase3.0-dev,
     libwxgtk3.0-dev,
     libxml2-dev,
@@ -23,6 +24,7 @@ Build-Depends: cmake (>= 2.8.5),
     libx11-xcb-dev,
     locales | locales-all,
     portaudio19-dev,
+    wayland-protocols,
     zlib1g-dev
 Standards-Version: 3.9.3
 Homepage: http://pcsx2.net/
