@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -158,7 +158,7 @@ static __forceinline s32 GetNextDataBuffered(V_Core& thiscore, uint voiceidx)
 	{
 		if (vc.PendingLoopStart)
 		{
-			if ((Cycles - vc.PlayCycle) >= 4 )
+			if ((Cycles - vc.PlayCycle) >= 4)
 			{
 				if (vc.LoopCycle < vc.PlayCycle)
 				{
@@ -364,10 +364,10 @@ static __forceinline void CalculateADSR(V_Core& thiscore, uint voiceidx)
 __forceinline static s32 GaussianInterpolate(s32 pv4, s32 pv3, s32 pv2, s32 pv1, s32 i)
 {
 	s32 out = 0;
-	out =  (interpTable[0x0FF-i] * pv4) >> 15;
-	out += (interpTable[0x1FF-i] * pv3) >> 15;
-	out += (interpTable[0x100+i] * pv2) >> 15;
-	out += (interpTable[0x000+i] * pv1) >> 15;
+	out =  (interpTable[0x0FF - i] * pv4) >> 15;
+	out += (interpTable[0x1FF - i] * pv3) >> 15;
+	out += (interpTable[0x100 + i] * pv2) >> 15;
+	out += (interpTable[0x000 + i] * pv1) >> 15;
 
 	return out;
 }
@@ -937,7 +937,7 @@ __forceinline
 
 	SndBuffer::Write(Out);
 
-	if(SampleRate == 96000) // Double up samples for 96khz (Port Audio Non-Exclusive)
+	if (SampleRate == 96000) // Double up samples for 96khz (Port Audio Non-Exclusive)
 		SndBuffer::Write(Out);
 
 	// Update AutoDMA output positioning
