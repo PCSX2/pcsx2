@@ -30,33 +30,33 @@ FONT 8, "MS Shell Dlg", 400, 0, 0x0
 BEGIN
     PUSHBUTTON      "OK",IDOK,101,238,50,14,NOT WS_TABSTOP
     PUSHBUTTON      "Cancel",IDCANCEL,157,238,50,14,NOT WS_TABSTOP
-    GROUPBOX        "Mixing Settings",IDC_STATIC,6,5,145,115
-    LTEXT           "Interpolation:",IDC_STATIC,12,16,61,10,NOT WS_GROUP
-    COMBOBOX        IDC_INTERPOLATE,14,26,129,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CHECKBOX        "Disable Effects Processing",IDC_EFFECTS_DISABLE,14,47,126,10
-    LTEXT           "(speedup!) Skips reverb effects processing, but won't sound as good in most games.",IDC_STATIC,26,59,110,36
-    CONTROL         "Use the de-alias filter",IDC_DEALIASFILTER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,92,126,10
-    LTEXT           "(overemphasizes the highs)",IDC_STATIC,26,104,114,12,NOT WS_GROUP
-    GROUPBOX        "",IDC_STATIC,6,123,145,45
-    CHECKBOX        "Enable Debug Options",IDC_DEBUG_ENABLE,14,135,118,10,NOT WS_TABSTOP
-    PUSHBUTTON      "Configure...",IDC_OPEN_CONFIG_DEBUG,14,147,52,13
-    GROUPBOX        "Output Settings",IDC_STATIC,157,5,145,225
-    LTEXT           "Module:",IDC_STATIC,163,16,50,9,NOT WS_GROUP
-    COMBOBOX        IDC_OUTPUT,165,26,129,120,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Configure...",IDC_OUTCONF,165,42,52,13
-    LTEXT           "Volume:",IDC_STATIC,192,61,27,8,NOT WS_GROUP
-    CTEXT           "100%",IDC_VOLUME_LABEL,226,61,58,9
-    CONTROL         "",IDC_VOLUME_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,165,72,129,10
-    LTEXT           "Latency:",IDC_STATIC,190,86,29,8,NOT WS_GROUP
-    CTEXT           "100 ms (avg)",IDC_LATENCY_LABEL,227,86,58,9
-    CONTROL         "Slider2",IDC_LATENCY_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,165,96,129,10
-    CONTROL         "Synchronizing Mode:",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,163,116,133,8
-    COMBOBOX        IDC_SYNCHMODE,165,126,129,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Advanced...",IDC_OPEN_CONFIG_SOUNDTOUCH,165,142,52,13
-    LTEXT           "Audio Expansion Mode:",IDC_SPEAKERS_TEXT,163,162,137,10,NOT WS_GROUP
-    COMBOBOX        IDC_SPEAKERS,165,172,129,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Use a Winamp DSP plugin",IDC_DSP_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,165,195,129,11
-    LTEXT           "(currently requires manual configuration via the ini file)",IDC_STATIC,177,207,100,20
+    GROUPBOX        "Mixing Settings",IDC_STATIC,3,5,154,115
+    LTEXT           "Interpolation:",IDC_STATIC,9,16,61,10,NOT WS_GROUP
+    COMBOBOX        IDC_INTERPOLATE,9,26,145,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CHECKBOX        "Disable Effects Processing",IDC_EFFECTS_DISABLE,11,47,126,10
+    LTEXT           "(speedup!) Skips reverb effects processing, but won't sound as good in most games.",IDC_STATIC,23,59,110,36
+    CONTROL         "Use the de-alias filter",IDC_DEALIASFILTER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,92,126,10
+    LTEXT           "(overemphasizes the highs)",IDC_STATIC,23,104,114,12,NOT WS_GROUP
+    GROUPBOX        "",IDC_STATIC,3,124,154,45
+    CHECKBOX        "Enable Debug Options",IDC_DEBUG_ENABLE,11,135,118,10,NOT WS_TABSTOP
+    PUSHBUTTON      "Configure...",IDC_OPEN_CONFIG_DEBUG,11,147,52,13
+    GROUPBOX        "Output Settings",IDC_STATIC,165,5,141,225
+    LTEXT           "Module:",IDC_STATIC,171,16,50,9,NOT WS_GROUP
+    COMBOBOX        IDC_OUTPUT,173,26,130,120,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Configure...",IDC_OUTCONF,173,42,52,13
+    LTEXT           "Volume:",IDC_STATIC,200,61,27,8,NOT WS_GROUP
+    CTEXT           "100%",IDC_VOLUME_LABEL,234,61,58,9
+    CONTROL         "",IDC_VOLUME_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,170,72,129,10
+    LTEXT           "Latency:",IDC_STATIC,196,86,29,8,NOT WS_GROUP
+    CTEXT           "100 ms (avg)",IDC_LATENCY_LABEL,233,86,58,9
+    CONTROL         "Slider2",IDC_LATENCY_SLIDER,"msctls_trackbar32",TBS_AUTOTICKS | WS_TABSTOP,173,96,129,10
+    CONTROL         "Synchronizing Mode:",IDC_STATIC,"Static",SS_LEFTNOWORDWRAP | WS_GROUP,171,116,133,8
+    COMBOBOX        IDC_SYNCHMODE,173,126,129,62,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Advanced...",IDC_OPEN_CONFIG_SOUNDTOUCH,172,142,52,13
+    LTEXT           "Audio Expansion Mode:",IDC_SPEAKERS_TEXT,170,162,137,10,NOT WS_GROUP
+    COMBOBOX        IDC_SPEAKERS,172,172,129,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Use a Winamp DSP plugin",IDC_DSP_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,172,195,129,11
+    LTEXT           "(currently requires manual configuration via the ini file)",IDC_STATIC,184,207,100,20
 END
 
 IDD_DEBUG DIALOGEX 0, 0, 303, 473

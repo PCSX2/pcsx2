@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -97,7 +97,7 @@ void SPU2writeDMA4Mem(u16* pMem, u32 size) // size now in 16bit units
 void SPU2interruptDMA4()
 {
 	FileLog("[%10d] SPU2 interruptDMA4\n", Cycles);
-	if(Cores[0].DmaMode)
+	if (Cores[0].DmaMode)
 		Cores[0].Regs.STATX |= 0x80;
 	Cores[0].Regs.STATX &= ~0x400;
 	Cores[0].TSA = Cores[0].ActiveTSA;
@@ -469,6 +469,9 @@ void SPU2async(u32 cycles)
 					break;
 				case 4:
 					printf(" - Catmull-Rom.\n");
+					break;
+				case 5:
+					printf(" - Gaussian.\n");
 					break;
 				default:
 					printf(" (unknown).\n");

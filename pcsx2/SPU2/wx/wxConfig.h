@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -30,7 +30,7 @@
 class MixerTab : public wxPanel
 {
 public:
-	wxChoice* m_inter_select, *m_audio_select;
+	wxChoice *m_inter_select, *m_audio_select;
 	wxCheckBox *effect_check, *dealias_check;
 	wxSlider *m_latency_slider, *m_volume_slider;
 	wxStaticBoxSizer *m_volume_box, *m_latency_box;
@@ -47,7 +47,7 @@ class SyncTab : public wxPanel
 {
 public:
 	wxChoice* m_sync_select;
-	wxButton* launch_adv_dialog, *reset_button;
+	wxButton *launch_adv_dialog, *reset_button;
 	wxSpinCtrl *seq_spin, *seek_spin, *overlap_spin;
 
 	SyncTab(wxWindow* parent);
