@@ -134,9 +134,11 @@ else()
 	find_package(SDL REQUIRED)
 endif()
 
-if(UNIX)
+if(UNIX AND NOT APPLE)
 	find_package(X11 REQUIRED)
 	make_imported_target_if_missing(X11::X11 X11)
+endif()
+if(UNIX)
 	# Most plugins (if not all) and PCSX2 core need gtk2, so set the required flags
 	if (GTK2_API)
 		find_package(GTK2 REQUIRED gtk)
