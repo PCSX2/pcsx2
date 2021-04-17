@@ -55,13 +55,17 @@ wxMenu* MainEmuFrame::MakeStatesSubMenu(int baseid, int loadBackupId) const
 		m->Enable(false);
 	}
 	// Implement custom hotkeys (F2) + (Shift + F2) with translatable string intact + not blank in GUI.
-	// baseid in the negatives will order in a different section, so if you want to increase more slots you can still easily do this, as -1 it will have the same function as opening file for savestates, which is bad
+	// baseid in the negatives will order in a different section, so if you want to increase more slots you can still easily do this, 
+	// as -1 it will have the same function as opening file for savestates, which is bad
+	// 
 	// For safety i also made them inactive aka grayed out to signify that's it's only for informational purposes
 	// Fixme: In the future this can still be expanded to actually cycle savestates in the GUI.
 	mnuSubstates->Append(baseid - 1, _("File..."));
-	wxMenuItem* CycleNext = mnuSubstates->Append(baseid - 2, _("Cycle to next slot") + wxString("  ") + fmt::format("({})", wxGetApp().GlobalAccels->findKeycodeWithCommandId("States_CycleSlotForward").toTitleizedString()));
+	wxMenuItem* CycleNext = mnuSubstates->Append(baseid - 2, _("Cycle to next slot") + wxString("  ") +
+																 fmt::format("({})", wxGetApp().GlobalAccels->findKeycodeWithCommandId("States_CycleSlotForward").toTitleizedString()));
 	CycleNext->Enable(false);
-	wxMenuItem* CycleBack = mnuSubstates->Append(baseid - 3, _("Cycle to previous slot") + wxString("  ") + fmt::format("({})", wxGetApp().GlobalAccels->findKeycodeWithCommandId("States_CycleSlotBackward").toTitleizedString()));
+	wxMenuItem* CycleBack = mnuSubstates->Append(baseid - 3, _("Cycle to previous slot") + wxString("  ") +
+																 fmt::format("({})", wxGetApp().GlobalAccels->findKeycodeWithCommandId("States_CycleSlotBackward").toTitleizedString()));
 	CycleBack->Enable(false);
 	return mnuSubstates;
 }
@@ -71,8 +75,8 @@ void MainEmuFrame::UpdateStatusBar()
 	wxString temp(wxEmptyString);
 
 #ifndef DISABLE_RECORDING
-	if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
-		temp += "Base Savestate - " + g_InputRecording.GetInputRecordingData().GetFilename() + "_SaveState.p2s";
+	if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().isFromSavestate())
+		temp += "Base Savestate - " + g_InputRecording.GetInputRecordingData().getFileName().wstring() + "_SaveState.p2s";
 	else
 #endif
 	{
@@ -517,7 +521,7 @@ void MainEmuFrame::CreateCaptureMenu()
 	AppendShortcutToMenuOption(*sysVideoCaptureItem, wxGetApp().GlobalAccels->findKeycodeWithCommandId("Sys_RecordingToggle").toTitleizedString());
 	m_submenuVideoCapture.AppendSeparator();
 	m_submenuVideoCapture.Append(MenuId_Capture_Video_IncludeAudio, _("Include Audio"),
-		_("Enables/disables the creation of a synchronized wav audio file when capturing video footage."), wxITEM_CHECK);
+								 _("Enables/disables the creation of a synchronized wav audio file when capturing video footage."), wxITEM_CHECK);
 	// Implement custom hotkeys (F8) + (Shift + F8) + (Ctrl + Shift + F8) with translatable string intact + not blank in GUI.
 	// Fixme: GlobalCommands.cpp L1029-L1031 is having issues because FrameForGS already maps the hotkey first.
 	// Fixme: When you uncomment L1029-L1031 on that file; Linux says that Ctrl is already used for something else and will append (Shift + F8) while Windows will (Ctrl + Shift + F8)

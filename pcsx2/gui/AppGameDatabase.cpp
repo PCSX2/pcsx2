@@ -18,19 +18,11 @@
 #include "App.h"
 #include "AppGameDatabase.h"
 
+#include "Utilities/FileUtils.h"
+
 #include <wx/stdpaths.h>
 #include "fmt/core.h"
 #include <fstream>
-
-std::ifstream AppGameDatabase::getFileAsStream(const wxString& file)
-{
-// TODO - config - refactor with std::filesystem/ghc::filesystem
-#ifdef _WIN32
-	return std::ifstream(file.wc_str());
-#else
-	return std::ifstream(file.c_str());
-#endif
-}
 
 AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file)
 {
@@ -62,8 +54,8 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file)
 
 	const u64 qpc_Start = GetCPUTicks();
 
-	std::ifstream fileStream = getFileAsStream(file);
-	if (!this->initDatabase(fileStream))
+	std::ifstream file_stream = FileUtils::fileInputStream(FileUtils::wxStringToPath(file));
+	if (!this->initDatabase(file_stream))
 	{
 		Console.Error(L"[GameDB] Database could not be loaded successfully");
 		return *this;

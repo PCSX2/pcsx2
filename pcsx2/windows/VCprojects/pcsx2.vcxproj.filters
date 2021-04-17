@@ -1321,11 +1321,11 @@
     <ClCompile Include="..\..\Recording\file\v1\InputRecordingFileV1.cpp">
       <Filter>Recording\File\v1</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Recording\InputRecordingFileV2.cpp">
-      <Filter>Recording\File\v2</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Recording\gui\NewRecordingFrame.cpp">
       <Filter>Recording\gui</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\file\v2\InputRecordingFileV2.cpp">
+      <Filter>Recording\File\v2</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2258,10 +2258,5 @@
     <Manifest Include="..\PCSX2.manifest">
       <Filter>AppHost\Resources</Filter>
     </Manifest>
-  </ItemGroup>
-  <ItemGroup>
-    <Image Include="..\..\gui\Resources\NoIcon.png">
-      <Filter>AppHost\Resources</Filter>
-    </Image>
   </ItemGroup>
 </Project>

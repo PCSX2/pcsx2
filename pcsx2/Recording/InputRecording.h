@@ -17,7 +17,7 @@
 
 #ifndef DISABLE_RECORDING
 
-#include "Recording/InputRecordingFile.h"
+#include "Recording/file/v2/InputRecordingFileV2.h"
 #include "Recording/VirtualPad/VirtualPad.h"
 
 class InputRecording
@@ -40,7 +40,7 @@ public:
 	// The running frame counter for the input recording
 	s32 GetFrameCounter();
 
-	InputRecordingFile& GetInputRecordingData();
+	InputRecordingFileV2& GetInputRecordingData();
 
 	// The internal PCSX2 g_FrameCount value on the first frame of the recording
 	u32 GetStartingFrame();
@@ -83,10 +83,10 @@ public:
 	/// Functions called from GUI
 
 	// Create a new input recording file
-	bool Create(wxString filename, const bool fromSaveState, wxString authorName);
+	bool Create(fs::path file_path, std::string author_name_utf8, InputRecordingFileV2::InputRecordingType recording_type);
 	// Play an existing input recording from a file
 	// Calls a file dialog if it fails to locate the default base savestate
-	bool Play(wxWindow* parent, wxString filename);
+	bool Play(wxWindow* parent, fs::path file_path);
 	// Stop the active input recording
 	void Stop();
 	// Displays the VirtualPad window for the chosen pad
@@ -119,13 +119,13 @@ private:
 
 	// DEPRECATED: Slated for removal
 	bool fInterruptFrame = false;
-	InputRecordingFile inputRecordingData;
+	InputRecordingFileV2 inputRecordingData;
 	bool initialLoad = false;
 	u32 startingFrame = 0;
 	s32 frameCounter = 0;
 	bool incrementUndo = false;
 	InputRecordingMode state = InputRecording::InputRecordingMode::NotActive;
-	wxString savestate;
+	fs::path savestate_path;
 
 	// Array of usable pads (currently, only 2)
 	struct InputRecordingPad
@@ -140,7 +140,7 @@ private:
 
 	// Resolve the name and region of the game currently loaded using the GameDB
 	// If the game cannot be found in the DB, the fallback is the ISO filename
-	wxString resolveGameName();
+	std::string resolveGameName();
 };
 
 extern InputRecording g_InputRecording;

@@ -49,7 +49,7 @@ void InputRecordingControls::CheckPauseStatus()
 
 		if (!pauseEmulation &&
 			g_InputRecording.IsReplaying() &&
-			g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
+			g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().getTotalFrames())
 		{
 			pauseEmulation = true;
 		}
@@ -93,7 +93,7 @@ void InputRecordingControls::ResumeCoreThreadIfStarted()
 void InputRecordingControls::FrameAdvance()
 {
 	if (g_InputRecording.IsReplaying() &&
-		g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
+		g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().getTotalFrames())
 	{
 		g_InputRecording.SetToRecordMode();
 		return;
@@ -133,7 +133,7 @@ void InputRecordingControls::PauseImmediately()
 void InputRecordingControls::Resume()
 {
 	if (g_InputRecording.IsReplaying() &&
-		g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
+		g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().getTotalFrames())
 	{
 		g_InputRecording.SetToRecordMode();
 		return;
@@ -146,7 +146,7 @@ void InputRecordingControls::TogglePause()
 {
 	if (pauseEmulation &&
 		g_InputRecording.IsReplaying() &&
-		g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().GetTotalFrames())
+		g_InputRecording.GetFrameCounter() >= g_InputRecording.GetInputRecordingData().getTotalFrames())
 	{
 		g_InputRecording.SetToRecordMode();
 		return;
@@ -160,7 +160,7 @@ void InputRecordingControls::RecordModeToggle()
 {
 	if (IsPaused() ||
 		g_InputRecording.IsReplaying() ||
-		g_InputRecording.GetFrameCounter() < g_InputRecording.GetInputRecordingData().GetTotalFrames())
+		g_InputRecording.GetFrameCounter() < g_InputRecording.GetInputRecordingData().getTotalFrames())
 	{
 		if (g_InputRecording.IsReplaying())
 			g_InputRecording.SetToRecordMode();
@@ -177,7 +177,7 @@ void InputRecordingControls::Lock(u32 frame)
 	frameLockTracker = frame;
 	frameAdvancing = false;
 	//Ensures that g_frameCount can be used to resume emulation after a fast/full boot
-	if (!g_InputRecording.GetInputRecordingData().FromSaveState())
+	if (!g_InputRecording.GetInputRecordingData().isFromSavestate())
 		g_FrameCount = frame + 1;
 	else
 		sMainFrame.StartInputRecording();
