@@ -11,6 +11,9 @@
 #                            libpcap if the module has problems finding the
 #                            proper installation path.
 #
+# Imported Targets:
+#  PCAP::PCAP                The libpcap library, if found
+#
 # Variables defined by this module:
 #
 #  PCAP_FOUND                System has libpcap, include and library dirs found
@@ -66,6 +69,13 @@ include(CheckFunctionExists)
 set(CMAKE_REQUIRED_LIBRARIES ${PCAP_LIBRARY})
 check_function_exists(pcap_get_pfring_id HAVE_PF_RING)
 set(CMAKE_REQUIRED_LIBRARIES)
+
+if(PCAP_LIBRARY AND NOT TARGET PCAP::PCAP)
+	add_library(PCAP::PCAP UNKNOWN IMPORTED GLOBAL)
+	set_target_properties(PCAP::PCAP PROPERTIES
+		IMPORTED_LOCATION "${PCAP_LIBRARY}"
+		INTERFACE_INCLUDE_DIRECTORIES "${PCAP_INCLUDE_DIR}")
+endif()
 
 mark_as_advanced(
 	PCAP_ROOT_DIR

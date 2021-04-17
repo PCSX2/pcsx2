@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Global.h"
-#include "soundtouch/SoundTouch.h"
+#include "SoundTouch.h"
 #include <wx/datetime.h>
 #include <algorithm>
 

@@ -7,16 +7,12 @@ endmacro()
 macro(check_lib var lib)
 	set(_arg_list ${ARGN})
 
-	if(PKG_CONFIG_FOUND AND NOT ${var}_FOUND AND NOT CMAKE_CROSSCOMPILING)
+	if(PKG_CONFIG_FOUND AND NOT CMAKE_CROSSCOMPILING)
 		string(TOLOWER ${lib} lower_lib)
-		pkg_search_module(${var} QUIET ${lower_lib})
+		pkg_search_module(${var} QUIET IMPORTED_TARGET ${lower_lib})
 	endif()
 
-	if(${var}_FOUND)
-		include_directories(${${var}_INCLUDE_DIRS})
-		# Make sure include directories for headers found using find_path below
-		# are re-added when reconfiguring
-		include_directories(${${var}_INCLUDE})
+	if(TARGET PkgConfig::${var})
 		_internal_message("-- ${var} found pkg")
 	else()
 		find_library(${var}_LIBRARIES ${lib})
@@ -27,7 +23,12 @@ macro(check_lib var lib)
 		endif()
 
 		if(${var}_LIBRARIES AND ${var}_INCLUDE)
-			include_directories(${${var}_INCLUDE})
+			add_library(PkgConfig::${var} UNKNOWN IMPORTED GLOBAL)
+			# Imitate what pkg-config would have found
+			set_target_properties(PkgConfig::${var} PROPERTIES
+				IMPORTED_LOCATION "${${var}_LIBRARIES}"
+				INTERFACE_INCLUDE_DIRECTORIES "${${var}_INCLUDE}"
+			)
 			_internal_message("-- ${var} found")
 			set(${var}_FOUND 1 CACHE INTERNAL "")
 		elseif(${var}_LIBRARIES)
