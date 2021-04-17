@@ -20,18 +20,11 @@ set -u
 # Function declarations
 set_ncpu_toolfile()
 {
-    ncpu=$(getconf _NPROCESSORS_ONLN)
+    ncpu=$(getconf NPROCESSORS_ONLN 2>/dev/null || getconf _NPROCESSORS_ONLN)
     if [ "$(uname -s)" = 'Darwin' ]; then
-        # Get the major Darwin/OSX version.
-        if [ "$(sysctl -n kern.osrelease | cut -d . -f 1)" -lt 13 ]; then
-            echo "This old OSX version is not supported! Build will fail."
-            toolfile=cmake/darwin-compiler-i386-clang.cmake
-        else
-            echo "Using Mavericks build with C++11 support."
-            toolfile=cmake/darwin13-compiler-i386-clang.cmake
-        fi
+        i386_flag="-DCMAKE_OSX_ARCHITECTURES=i386"
     elif [ "$(uname -s)" != 'FreeBSD' ]; then
-        toolfile=cmake/linux-compiler-i386-multilib.cmake
+        i386_flag="-DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake"
     fi
 }
 
@@ -205,13 +198,13 @@ for ARG in "$@"; do
         --use-system-yaml   ) flags="$flags -DUSE_SYSTEM_YAML=TRUE" ;;
         --asan              ) flags="$flags -DUSE_ASAN=TRUE" ;;
         --gtk2              ) flags="$flags -DGTK2_API=TRUE" ;;
-        --lto               ) flags="$flags -DUSE_LTO=TRUE" ;;
+        --lto               ) flags="$flags -DCMAKE_INTERPROCEDURAL_OPTIMIZATION=TRUE" ;;
         --pgo-optimize      ) flags="$flags -DUSE_PGO_OPTIMIZE=TRUE" ;;
         --pgo-generate      ) flags="$flags -DUSE_PGO_GENERATE=TRUE" ;;
         --no-portaudio      ) flags="$flags -DPORTAUDIO_API=FALSE" ;;
         --no-simd           ) flags="$flags -DDISABLE_ADVANCE_SIMD=TRUE" ;;
         --no-trans          ) flags="$flags -DNO_TRANSLATION=TRUE" ;;
-        --cross-multilib    ) flags="$flags -DCMAKE_TOOLCHAIN_FILE=$toolfile"; useCross=1; ;;
+        --cross-multilib    ) flags="$flags $i386_flag"; useCross=1; ;;
         --no-cross-multilib ) useCross=0; ;;
         --coverity          ) CoverityBuild=1; cleanBuild=1; ;;
         --vtune             ) flags="$flags -DUSE_VTUNE=TRUE" ;;
@@ -271,7 +264,7 @@ fi
 
 if [ "$useCross" -eq 2 ] && [ "$(getconf LONG_BIT 2> /dev/null)" != 32 ]; then
     echo "Forcing cross compilation."
-    flags="$flags -DCMAKE_TOOLCHAIN_FILE=$toolfile"
+    flags="$flags $i386_flag"
 elif [ "$useCross" -ne 1 ]; then
     useCross=0
 fi
