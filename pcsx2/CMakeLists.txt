@@ -815,8 +815,9 @@ set(rec_vp_src "${rec_src}/VirtualPad")
 set(pcsx2RecordingSources
 	${rec_src}/InputRecording.cpp
 	${rec_src}/InputRecordingControls.cpp
-	${rec_src}/InputRecordingFile.cpp
-	${rec_src}/NewRecordingFrame.cpp
+	${rec_src}/file/v1/InputRecordingFileV1.cpp
+	${rec_src}/file/v2/InputRecordingFileV2.cpp
+	${rec_src}/gui/NewRecordingFrame.cpp
 	${rec_src}/PadData.cpp
 	${rec_vp_src}/VirtualPad.cpp
 	${rec_vp_src}/VirtualPadData.cpp
@@ -827,8 +828,9 @@ set(pcsx2RecordingSources
 set(pcsx2RecordingHeaders
 	${rec_src}/InputRecording.h
 	${rec_src}/InputRecordingControls.h
-	${rec_src}/InputRecordingFile.h
-	${rec_src}/NewRecordingFrame.h
+	${rec_src}/file/v1/InputRecordingFileV1.h
+	${rec_src}/file/v2/InputRecordingFileV2.h
+	${rec_src}/gui/NewRecordingFrame.h
 	${rec_src}/PadData.h
 	${rec_src}/Utilities/InputRecordingLogger.h
 	${rec_vp_src}/VirtualPad.h
