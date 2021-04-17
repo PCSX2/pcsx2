@@ -9,6 +9,9 @@
 # control link flags          : -DUSER_CMAKE_LD_FLAGS="ldflags"
 #-------------------------------------------------------------------------------
 
+# Extra preprocessor definitions that will be added to all pcsx2 builds
+set(PCSX2_DEFS "")
+
 #-------------------------------------------------------------------------------
 # Misc option
 #-------------------------------------------------------------------------------
@@ -18,7 +21,7 @@ option(USE_SYSTEM_YAML "Uses a system version of yaml, if found")
 
 if(DISABLE_BUILD_DATE OR openSUSE)
 	message(STATUS "Disabling the inclusion of the binary compile date.")
-	add_definitions(-DDISABLE_BUILD_DATE)
+	list(APPEND PCSX2_DEFS DISABLE_BUILD_DATE)
 endif()
 
 option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
@@ -42,11 +45,10 @@ option(GTK2_API "Use GTK2 api (legacy)")
 
 if(PACKAGE_MODE)
 	# Compile all source codes with those defines
-	add_definitions(
-		-DPLUGIN_DIR_COMPILATION=${CMAKE_INSTALL_FULL_LIBDIR}/PCSX2
-		-DGAMEINDEX_DIR_COMPILATION=${CMAKE_INSTALL_FULL_DATADIR}/PCSX2
-		-DDOC_DIR_COMPILATION=${CMAKE_INSTALL_FULL_DOCDIR}
-	)
+	list(APPEND PCSX2_DEFS
+		PLUGIN_DIR_COMPILATION=${CMAKE_INSTALL_FULL_LIBDIR}/PCSX2
+		GAMEINDEX_DIR_COMPILATION=${CMAKE_INSTALL_FULL_DATADIR}/PCSX2
+		DOC_DIR_COMPILATION=${CMAKE_INSTALL_FULL_DOCDIR})
 endif()
 
 if(APPLE)
@@ -77,10 +79,23 @@ endif()
 # Note without the CMAKE_BUILD_TYPE options the value is still defined to ""
 # Ensure that the value set by the User is correct to avoid some bad behavior later
 #-------------------------------------------------------------------------------
-if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|Release|Prof")
+if(NOT CMAKE_BUILD_TYPE MATCHES "Debug|Devel|MinSizeRel|RelWithDebInfo|Release")
 	set(CMAKE_BUILD_TYPE Devel)
 	message(STATUS "BuildType set to ${CMAKE_BUILD_TYPE} by default")
 endif()
+# Add Devel build type
+set(CMAKE_C_FLAGS_DEVEL "${CMAKE_C_FLAGS_RELWITHDEBINFO}"
+	CACHE STRING "Flags used by the C compiler during development builds" FORCE)
+set(CMAKE_CXX_FLAGS_DEVEL "${CMAKE_CXX_FLAGS_RELWITHDEBINFO}"
+	CACHE STRING "Flags used by the C++ compiler during development builds" FORCE)
+set(CMAKE_LINKER_FLAGS_DEVEL "${CMAKE_LINKER_FLAGS_RELWITHDEBINFO}"
+	CACHE STRING "Flags used for linking binaries during development builds" FORCE)
+set(CMAKE_SHARED_LINKER_FLAGS_DEVEL "${CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO}"
+	CACHE STRING "Flags used for linking shared libraries during development builds" FORCE)
+if(CMAKE_CONFIGURATION_TYPES)
+	list(INSERT CMAKE_CONFIGURATION_TYPES 0 Devel)
+endif()
+mark_as_advanced(CMAKE_C_FLAGS_PROF CMAKE_CXX_FLAGS_PROF CMAKE_LINKER_FLAGS_PROF CMAKE_SHARED_LINKER_FLAGS_PROF)
 # AVX2 doesn't play well with gdb
 if(CMAKE_BUILD_TYPE MATCHES "Debug")
 	SET(DISABLE_ADVANCE_SIMD ON)
@@ -144,7 +159,7 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
 		endif()
 	endif()
 
-	add_definitions(-D_ARCH_32=1 -D_M_X86=1 -D_M_X86_32=1)
+	list(APPEND PCSX2_DEFS _ARCH_32=1 _M_X86=1 _M_X86_32=1)
 	set(_ARCH_32 1)
 	set(_M_X86 1)
 	set(_M_X86_32 1)
@@ -164,7 +179,7 @@ elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
 			set(ARCH_FLAG "-march=native")
 		endif()
 	endif()
-	add_definitions(-D_ARCH_64=1 -D_M_X86=1 -D_M_X86_64=1 -D__M_X86_64=1)
+	list(APPEND PCSX2_DEFS _ARCH_64=1 _M_X86=1 _M_X86_64=1 __M_X86_64=1)
 	set(_ARCH_64 1)
 	set(_M_X86 1)
 	set(_M_X86_64 1)
@@ -174,6 +189,8 @@ else()
 
 	message(FATAL_ERROR "Unsupported architecture: ${PCSX2_TARGET_ARCHITECTURES}")
 endif()
+string(REPLACE " " ";" ARCH_FLAG_LIST "${ARCH_FLAG}")
+add_compile_options("${ARCH_FLAG_LIST}")
 
 #-------------------------------------------------------------------------------
 # Control GCC flags
@@ -189,16 +206,6 @@ endif()
 # ${CMAKE_CXX_FLAGS_DEBUG} = "-g"
 # Use in release mode
 # ${CMAKE_CXX_FLAGS_RELEASE} = "-O3 -DNDEBUG"
-
-#-------------------------------------------------------------------------------
-# Do not use default cmake flags
-#-------------------------------------------------------------------------------
-set(CMAKE_C_FLAGS_DEBUG "")
-set(CMAKE_CXX_FLAGS_DEBUG "")
-set(CMAKE_C_FLAGS_DEVEL "")
-set(CMAKE_CXX_FLAGS_DEVEL "")
-set(CMAKE_C_FLAGS_RELEASE "")
-set(CMAKE_CXX_FLAGS_RELEASE "")
 
 #-------------------------------------------------------------------------------
 # Remove bad default option
@@ -221,18 +228,10 @@ option(USE_PGO_OPTIMIZE "Enable PGO optimization (use profile)")
 
 # Note1: Builtin strcmp/memcmp was proved to be slower on Mesa than stdlib version.
 # Note2: float operation SSE is impacted by the PCSX2 SSE configuration. In particular, flush to zero denormal.
-set(COMMON_FLAG "-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse -fno-operator-names")
+add_compile_options(-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse -fno-operator-names)
 
 if(USE_VTUNE)
-	set(COMMON_FLAG "${COMMON_FLAG} -DENABLE_VTUNE")
-endif()
-
-# Remove FORTIFY_SOURCE when compiling as debug, because it spams a lot of warnings on clang due to no optimization.
-# Should probably be checked on gcc as well, as the USE_CLANG might not be needed.
-if (USE_CLANG AND CMAKE_BUILD_TYPE MATCHES "Debug")
-set(HARDENING_FLAG "-Wformat -Wformat-security")
-else()
-set(HARDENING_FLAG "-D_FORTIFY_SOURCE=2  -Wformat -Wformat-security")
+	list(APPEND PCSX2_DEFS ENABLE_VTUNE)
 endif()
 
 # -Wno-attributes: "always_inline function might not be inlinable" <= real spam (thousand of warnings!!!)
@@ -246,137 +245,62 @@ endif()
 # -Wno-stringop-truncation: Who comes up with these compiler warnings, anyways?
 # -Wno-stringop-overflow: Probably the same people as this one...
 
-set(DEFAULT_WARNINGS "-Wall -Wextra -Wno-attributes -Wno-unused-function -Wno-unused-parameter -Wno-missing-field-initializers -Wno-deprecated-declarations -Wno-format -Wno-format-security -Wno-overloaded-virtual")
+set(DEFAULT_WARNINGS -Wall -Wextra -Wno-attributes -Wno-unused-function -Wno-unused-parameter -Wno-missing-field-initializers -Wno-deprecated-declarations -Wno-format -Wno-format-security -Wno-overloaded-virtual)
 if (NOT USE_ICC)
-	set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS} -Wno-unused-value ")
+	list(APPEND DEFAULT_WARNINGS -Wno-unused-value)
 endif()
 
 if (USE_CLANG)
-	set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS} -Wno-overloaded-virtual ")
+	list(APPEND DEFAULT_WARNINGS -Wno-overloaded-virtual)
 endif()
 
 if (USE_GCC)
-set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS}  -Wno-stringop-truncation  -Wno-stringop-overflow ")
+	list(APPEND DEFAULT_WARNINGS -Wno-stringop-truncation -Wno-stringop-overflow)
 endif()
 
 
 # -Wstrict-aliasing=n: to fix one day aliasing issue. n=1/2/3
 if (USE_ICC)
-	set(AGGRESSIVE_WARNING "-Wstrict-aliasing ")
+	set(AGGRESSIVE_WARNING -Wstrict-aliasing)
 else()
-	set(AGGRESSIVE_WARNING "-Wstrict-aliasing -Wstrict-overflow=1 ")
+	set(AGGRESSIVE_WARNING -Wstrict-aliasing -Wstrict-overflow=1)
 endif()
 
 if (USE_CLANG)
 	# -Wno-deprecated-register: glib issue...
-	set(DEFAULT_WARNINGS "${DEFAULT_WARNINGS}  -Wno-deprecated-register -Wno-c++14-extensions")
-	set(DBG "-g -fno-omit-frame-pointer")
-elseif (USE_ICC)
-	set(DBG "-g -fno-omit-frame-pointer")
-elseif (USE_GCC)
-	set(DBG "-ggdb3 -fno-omit-frame-pointer")
+	list(APPEND DEFAULT_WARNINGS -Wno-deprecated-register -Wno-c++14-extensions)
 endif()
 
 if (USE_PGO_GENERATE OR USE_PGO_OPTIMIZE)
-	set(PGO_FLAGS "-fprofile-dir=${CMAKE_SOURCE_DIR}/profile")
+	add_compile_options("-fprofile-dir=${CMAKE_SOURCE_DIR}/profile")
 endif()
 
 if (USE_PGO_GENERATE)
-	set(PGO_FLAGS "${PGO_FLAGS} -fprofile-generate")
+	add_compile_options(-fprofile-generate)
 endif()
 
 if(USE_PGO_OPTIMIZE)
-	set(PGO_FLAGS "${PGO_FLAGS} -fprofile-use")
+	add_compile_options(-fprofile-use)
 endif()
 
-if(CMAKE_BUILD_TYPE MATCHES "Debug")
-	set(DEBUG_FLAG "${DBG} -DPCSX2_DEVBUILD -DPCSX2_DEBUG -D_DEBUG")
-elseif(CMAKE_BUILD_TYPE MATCHES "Devel")
-	set(DEBUG_FLAG "${DBG} -DNDEBUG -DPCSX2_DEVBUILD -D_DEVEL")
-elseif(CMAKE_BUILD_TYPE MATCHES "Release")
-	set(DEBUG_FLAG "-DNDEBUG")
-elseif(CMAKE_BUILD_TYPE MATCHES "Prof")
-	# Keep frame pointer and debug information for profiler tool
-	set(DEBUG_FLAG "-g -fno-omit-frame-pointer -DNDEBUG")
-endif()
+list(APPEND PCSX2_DEFS
+	"$<$<CONFIG:Debug>:PCSX2_DEVBUILD;PCSX2_DEBUG;_DEBUG>"
+	"$<$<CONFIG:Devel>:PCSX2_DEVBUILD;_DEVEL>")
 
 if (USE_ASAN)
-	set(ASAN_FLAG "-fsanitize=address ${DBG} -DASAN_WORKAROUND")
-else()
-	set(ASAN_FLAG "")
+	add_compile_options(-fsanitize=address)
+	list(APPEND PCSX2_DEFS ASAN_WORKAROUND)
 endif()
 
-if(NOT DEFINED OPTIMIZATION_FLAG)
-	if (CMAKE_BUILD_TYPE STREQUAL Debug)
-		if (USE_GCC)
-			set(OPTIMIZATION_FLAG -Og)
-		else()
-			set(OPTIMIZATION_FLAG -O0)
-		endif()
-	else()
-		set(OPTIMIZATION_FLAG -O2)
-	endif()
+if(USE_CLANG AND TIMETRACE)
+	add_compile_options(-ftime-trace)
 endif()
 
-if (NOT DEFINED PGO)
-	set(PGO "none")
-	set(GCOV_LIBRARIES "")
-else()
-	set(GCOV_LIBRARIES "-lgcov")
-endif()
+set(PCSX2_WARNINGS ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING})
 
-if(USE_CLANG)
-	if(TIMETRACE)
-		set(COMMON_FLAG "${COMMON_FLAG} -ftime-trace ")
-	endif()
-endif()
-
-# Note: -DGTK_DISABLE_DEPRECATED can be used to test a build without gtk deprecated feature. It could be useful to port to a newer API
-# Disabling the hardening flags for the moment, as they spam quite a bit. ${HARDENING_FLAG}
-set(DEFAULT_GCC_FLAG "${ARCH_FLAG} ${COMMON_FLAG} ${DEFAULT_WARNINGS} ${AGGRESSIVE_WARNING} ${DEBUG_FLAG} ${ASAN_FLAG} ${OPTIMIZATION_FLAG} ${LTO_FLAGS} ${PGO_FLAGS}")
-# c++ only flags
-set(DEFAULT_CPP_FLAG "${DEFAULT_GCC_FLAG} -Wno-invalid-offsetof")
-
-#-------------------------------------------------------------------------------
-# Allow user to set some default flags
-# Note: string STRIP must be used to remove trailing and leading spaces.
-#       See policy CMP0004
-#-------------------------------------------------------------------------------
-# TODO: once we completely clean all flags management, this mess could be cleaned ;)
-### linker flags
-if(DEFINED USER_CMAKE_LD_FLAGS)
-	message(STATUS "Pcsx2 is very sensible with gcc flags, so use USER_CMAKE_LD_FLAGS at your own risk !!!")
-	string(STRIP "${USER_CMAKE_LD_FLAGS}" USER_CMAKE_LD_FLAGS)
-else()
-	set(USER_CMAKE_LD_FLAGS "")
-endif()
-
-# ask the linker to strip the binary
 if(CMAKE_BUILD_STRIP)
-	string(STRIP "${USER_CMAKE_LD_FLAGS} -s" USER_CMAKE_LD_FLAGS)
+	add_link_options(-s)
 endif()
-
-
-### c flags
-# Note CMAKE_C_FLAGS is also send to the linker.
-# By default allow build on amd64 machine
-if(DEFINED USER_CMAKE_C_FLAGS)
-	message(STATUS "Pcsx2 is very sensible with gcc flags, so use USER_CMAKE_C_FLAGS at your own risk !!!")
-	string(STRIP "${USER_CMAKE_C_FLAGS}" CMAKE_C_FLAGS)
-endif()
-# Use some default machine flags
-string(STRIP "${CMAKE_C_FLAGS} ${DEFAULT_GCC_FLAG}" CMAKE_C_FLAGS)
-
-
-### C++ flags
-# Note CMAKE_CXX_FLAGS is also send to the linker.
-# By default allow build on amd64 machine
-if(DEFINED USER_CMAKE_CXX_FLAGS)
-	message(STATUS "Pcsx2 is very sensible with gcc flags, so use USER_CMAKE_CXX_FLAGS at your own risk !!!")
-	string(STRIP "${USER_CMAKE_CXX_FLAGS}" CMAKE_CXX_FLAGS)
-endif()
-# Use some default machine flags
-string(STRIP "${CMAKE_CXX_FLAGS} ${DEFAULT_CPP_FLAG}" CMAKE_CXX_FLAGS)
 
 #-------------------------------------------------------------------------------
 # MacOS-specific things
@@ -384,11 +308,11 @@ string(STRIP "${CMAKE_CXX_FLAGS} ${DEFAULT_CPP_FLAG}" CMAKE_CXX_FLAGS)
 
 set(CMAKE_OSX_DEPLOYMENT_TARGET 10.9)
 
-if (APPLE AND ${CMAKE_OSX_DEPLOYMENT_TARGET} VERSION_LESS 10.14)
+if (APPLE AND ${CMAKE_OSX_DEPLOYMENT_TARGET} VERSION_LESS 10.14 AND NOT ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 10)
 	# Older versions of the macOS stdlib don't have operator new(size_t, align_val_t)
 	# Disable use of them with this flag
 	# Not great, but also no worse that what we were getting before we turned on C++17
-	set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-aligned-allocation")
+	add_compile_options(-fno-aligned-allocation)
 endif()
 
 # CMake defaults the suffix for modules to .so on macOS but wx tells us that the
@@ -410,6 +334,5 @@ if(CMAKE_SYSTEM_NAME MATCHES "Darwin")
 		list(APPEND CMAKE_PREFIX_PATH "/usr")
 	endif()
 
-	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -Wl,-dead_strip,-dead_strip_dylibs")
-	set(CMAKE_MODULE_LINKER_FLAGS "${CMAKE_MODULE_LINKER_FLAGS} -Wl,-dead_strip,-dead_strip_dylibs")
+	add_link_options(-Wl,-dead_strip,-dead_strip_dylibs)
 endif()
