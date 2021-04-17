@@ -162,7 +162,7 @@ static int host_stat(const std::string path, fio_stat_t *host_stats)
     struct stat file_stats;
     
     if (::stat(path.c_str(), &file_stats))
-        return IOP_ENOENT;
+        return -IOP_ENOENT;
     
     host_stats->size = file_stats.st_size;
     host_stats->hisize = 0;
@@ -241,12 +241,8 @@ public:
 	static int open(IOManFile **file, const std::string &full_path, s32 flags, u16 mode)
 	{
 		const std::string path = full_path.substr(full_path.find(':') + 1);
-
-		// host: actually DOES let you write!
-		//if (flags != IOP_O_RDONLY)
-		//	return -IOP_EROFS;
-
-		int native_flags = O_BINARY; // necessary in Windows.
+        int native_mode = S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH; // 0644
+        int native_flags = O_BINARY; // necessary in Windows.
 
 		switch(flags&IOP_O_RDWR)
 		{
@@ -259,7 +255,7 @@ public:
 		if(flags&IOP_O_CREAT)	native_flags |= O_CREAT;
 		if(flags&IOP_O_TRUNC)	native_flags |= O_TRUNC;
 
-		int hostfd = ::open(host_path(path).data(), native_flags);
+		int hostfd = ::open(host_path(path).data(), native_flags, native_mode);
 		if (hostfd < 0)
 			return translate_error(hostfd);
 
