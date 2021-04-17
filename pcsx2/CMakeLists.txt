@@ -1202,11 +1202,16 @@ if(Linux)
 		)
 
 	set(Platform_Libs
-		${LIBUDEV_LIBRARIES}
-		${X11_LIBRARIES}
-		${X11_XCB_LIBRARIES}
-		${XCB_LIBRARIES}
+		PkgConfig::AIO
+		PkgConfig::EGL
+		PkgConfig::LIBUDEV
+		PkgConfig::X11_XCB
+		PkgConfig::XCB
+		X11::X11
+		ALSA::ALSA
 		)
+elseif(UNIX AND NOT APPLE)
+	set(Platform_Libs X11::X11)
 endif()
 
 # Windows
@@ -1240,40 +1245,31 @@ set(pcsx2FinalLibs
 	Utilities
 	x86emitter
 	fmt::fmt
-	${wxWidgets_LIBRARIES}
-	${GTK2_LIBRARIES}
-	${ZLIB_LIBRARIES}
-	${AIO_LIBRARIES}
-	${GCOV_LIBRARIES}
-	${ALSA_LIBRARIES}
-	${SOUNDTOUCH_LIBRARIES}
-	${SDL2_LIBRARIES}
-	${PCAP_LIBRARY}
-	${LIBSAMPLERATE_LIBRARIES}
-	${LIBXML2_LIBRARIES}
-	${LIBC_LIBRARIES}
-	${PNG_LIBRARIES}
-	${FREETYPE_LIBRARIES}
-	${LIBLZMA_LIBRARIES}
-	${OPENGL_LIBRARIES}
-	${EGL_LIBRARIES}
+	yaml-cpp
+	chdr-static
+	wxWidgets::all
+	GTK::gtk
+	HarfBuzz::HarfBuzz
+	ZLIB::ZLIB
+	PkgConfig::SOUNDTOUCH
+	SDL::SDL
+	PCAP::PCAP
+	PkgConfig::SAMPLERATE
+	LibXml2::LibXml2
+	OpenGL::GL
+	PNG::PNG
+	Freetype::Freetype
+	LibLZMA::LibLZMA
 	${Platform_Libs}
 )
 
 if(PORTAUDIO_FOUND)
-	set(pcsx2FinalLibs ${pcsx2FinalLibs} ${PORTAUDIO_LIBRARIES})
+	set(pcsx2FinalLibs ${pcsx2FinalLibs} PkgConfig::PORTAUDIO)
 endif()
 
 if(PULSEAUDIO_FOUND)
-	set(pcsx2FinalLibs ${pcsx2FinalLibs} ${PULSEAUDIO_LIBRARIES})
+	set(pcsx2FinalLibs ${pcsx2FinalLibs} PulseAudio::PulseAudio)
 endif()
-
-# additonal include directories
-include_directories(
-	gui
-	x86
-	${CMAKE_BINARY_DIR}/pcsx2/gui
-)
 
 ### Generate the resources files
 file(MAKE_DIRECTORY ${res_bin})
@@ -1294,11 +1290,19 @@ foreach(res_file IN ITEMS
 endforeach()
 
 if(USE_VTUNE)
-	set(pcsx2FinalLibs ${pcsx2FinalLibs} ${VTUNE_LIBRARIES})
+	set(pcsx2FinalLibs ${pcsx2FinalLibs} Vtune::Vtune)
 endif()
 
 add_pcsx2_executable(${Output} "${pcsx2FinalSources}" "${pcsx2FinalLibs}" "${pcsx2FinalFlags}")
 target_compile_features(${Output} PRIVATE cxx_std_17)
+
+# additonal include directories
+target_include_directories(${Output} PRIVATE
+	gui
+	x86
+	${CMAKE_BINARY_DIR}/pcsx2/gui
+	${CMAKE_BINARY_DIR}/common/include/
+)
 
 if(COMMAND target_precompile_headers)
 	message("Using precompiled headers.")
@@ -1310,6 +1314,9 @@ if (APPLE)
 	# We have a bunch of page-sized arrays in bss that we use for jit
 	# Obviously not being able to make those arrays executable would be a problem
 	target_link_options(${Output} PRIVATE -Wl,-segprot,__DATA,rwx,rw)
+
+	# MacOS relies on X11's GL headers even though it doesn't use X11
+	target_include_directories(${Output} PRIVATE ${X11_INCLUDE_DIR})
 
 	set_target_properties(${Output} PROPERTIES
 		MACOSX_BUNDLE true
