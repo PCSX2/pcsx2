@@ -26,9 +26,6 @@
 #define O_BINARY 0
 #endif
 
-// set this to 0 to disable rewriting 'host:' paths!
-#define USE_HOST_REWRITE 1
-
 typedef struct {
     unsigned int mode;
     unsigned int attr;
@@ -45,23 +42,10 @@ typedef struct {
     unsigned int unknown;
 } fio_dirent_t;
 
-#if USE_HOST_REWRITE
-#	ifdef _WIN32
-		// disable this if you DON'T want "host:/usr/local/" paths
-		// to get rewritten into host:/
-#		define HOST_REWRITE_USR_LOCAL 1
-#	else
-		// unix/linux users might want to set it to 1
-		// if they DO want to keep demos from accessing their systems' /usr/local
-#		define HOST_REWRITE_USR_LOCAL 0
-#	endif
-
 static char HostRoot[1024];
-#endif
 
 void Hle_SetElfPath(const char* elfFileName)
 {
-#if USE_HOST_REWRITE
 	DevCon.WriteLn("HLE Host: Will load ELF: %s\n", elfFileName);
 
 	const char* pos1 = strrchr(elfFileName,'/');
@@ -95,10 +79,8 @@ void Hle_SetElfPath(const char* elfFileName)
 	int len = pos1-elfFileName+1;
 	memcpy(HostRoot,elfFileName,len); // include the / (or \\)
 	HostRoot[len] = 0;
-
+    
 	Console.WriteLn("HLE Host: Set 'host:' root path to: %s\n", HostRoot);
-
-#endif
 }
 
 namespace R3000A {
@@ -127,34 +109,12 @@ namespace R3000A {
 
 static std::string host_path(const std::string path)
 {
-// WIP code. Works well on win32, not so sure on unixes
-// TODO: get rid of dependency on CWD/PWD
-#if USE_HOST_REWRITE
-	// we want filenames to be relative to pcs2dir / host
-
-	std::string pathMod;
-
-	// partial "rooting",
-	// it will NOT avoid a path like "../../x" from escaping the pcsx2 folder!
-
-
-	const std::string _local_root = "/usr/local/";
-	if (HOST_REWRITE_USR_LOCAL && 0 == path.compare(0, _local_root.size(), _local_root.data())) {
-		return HostRoot + path.substr(_local_root.size());
-	} else if ((path[0] == '/') || (path[0] == '\\') || (isalpha(path[0]) && (path[1] == ':'))) // absolute NATIVE path (X:\blah)
-	{
-		// TODO: allow some way to use native paths in non-windows platforms
-		// maybe hack it so linux prefixes the path with "X:"? ;P
-		// or have all platforms use a common prefix for native paths
-		// FIXME: Why the hell would we allow this?
-		return path;
-	} else // relative paths
-		return HostRoot + path;
-
-	return pathMod;
-#else
-	return path;
-#endif
+    // We are NOT allowing to use the root of the host unit.
+    // For now it just supports relative folders from the location of the elf
+    if (path.rfind(HostRoot, 0) == 0)
+        return path;
+    else // relative paths
+        return HostRoot + path;
 }
 
 static int host_stat(const std::string path, fio_stat_t *host_stats)
