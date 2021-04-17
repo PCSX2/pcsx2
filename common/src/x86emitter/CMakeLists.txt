@@ -69,6 +69,8 @@ set(x86emitterFinalLibs
 add_pcsx2_lib(x86emitter "${x86emitterFinalSources}" "${x86emitterFinalLibs}" "${x86emitterFinalFlags}")
 target_compile_features(x86emitter PUBLIC cxx_std_17)
 target_include_directories(x86emitter PUBLIC ../../include PRIVATE ../../include/x86emitter)
+target_compile_definitions(x86emitter PUBLIC "${PCSX2_DEFS}")
+target_compile_options(x86emitter PRIVATE "${PCSX2_WARNINGS}")
 
 if(COMMAND target_precompile_headers)
 	target_precompile_headers(x86emitter PRIVATE PrecompiledHeader.h)

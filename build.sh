@@ -192,7 +192,7 @@ for ARG in "$@"; do
         --dev|--devel       ) flags="$flags -DCMAKE_BUILD_TYPE=Devel"   ; build="$root/build_dev";;
         --dbg|--debug       ) flags="$flags -DCMAKE_BUILD_TYPE=Debug"   ; build="$root/build_dbg";;
         --rel|--release     ) flags="$flags -DCMAKE_BUILD_TYPE=Release" ; build="$root/build_rel";;
-        --prof              ) flags="$flags -DCMAKE_BUILD_TYPE=Prof"    ; build="$root/build_prof";;
+        --prof              ) flags="$flags -DCMAKE_BUILD_TYPE=RelWithDebInfo"; build="$root/build_prof";;
         --strip             ) flags="$flags -DCMAKE_BUILD_STRIP=TRUE" ;;
         --sdl12             ) flags="$flags -DSDL2_API=FALSE" ;;
         --use-system-yaml   ) flags="$flags -DUSE_SYSTEM_YAML=TRUE" ;;

@@ -1295,6 +1295,8 @@ endif()
 
 add_pcsx2_executable(${Output} "${pcsx2FinalSources}" "${pcsx2FinalLibs}" "${pcsx2FinalFlags}")
 target_compile_features(${Output} PRIVATE cxx_std_17)
+target_compile_definitions(${Output} PUBLIC "${PCSX2_DEFS}")
+target_compile_options(${Output} PRIVATE "${PCSX2_WARNINGS}")
 
 # additonal include directories
 target_include_directories(${Output} PRIVATE
