@@ -223,6 +223,15 @@
     <Filter Include="System\Ps2\PAD">
       <UniqueIdentifier>{e1cbcaf6-9f65-4f14-9e89-27dd0f10e047}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Recording\File">
+      <UniqueIdentifier>{88218676-f42d-4b8a-8a93-4f07e4b5282e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Recording\File\v2">
+      <UniqueIdentifier>{e287682f-07a9-4eca-8bc4-bd6b9ee127ae}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Recording\File\v1">
+      <UniqueIdentifier>{1109b6d1-d45d-4a64-9f98-6b455304ee43}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -919,14 +928,8 @@
     <ClCompile Include="..\..\Recording\InputRecording.cpp">
       <Filter>Recording</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Recording\InputRecordingFile.cpp">
-      <Filter>Recording</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Recording\PadData.cpp">
       <Filter>Recording</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\Recording\NewRecordingFrame.cpp">
-      <Filter>Recording\gui</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Recording\VirtualPad\VirtualPad.cpp">
       <Filter>Recording\VirtualPad</Filter>
@@ -1314,6 +1317,15 @@
     </ClCompile>
     <ClCompile Include="..\..\CDVD\ChdFileReader.cpp">
       <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\file\v1\InputRecordingFileV1.cpp">
+      <Filter>Recording\File\v1</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\InputRecordingFileV2.cpp">
+      <Filter>Recording\File\v2</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\gui\NewRecordingFrame.cpp">
+      <Filter>Recording\gui</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -1746,14 +1758,8 @@
     <ClInclude Include="..\..\Recording\InputRecording.h">
       <Filter>Recording</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Recording\InputRecordingFile.h">
-      <Filter>Recording</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Recording\PadData.h">
       <Filter>Recording</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\Recording\NewRecordingFrame.h">
-      <Filter>Recording\gui</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Recording\VirtualPad\VirtualPad.h">
       <Filter>Recording\VirtualPad</Filter>
@@ -2081,6 +2087,15 @@
     </ClInclude>
     <ClInclude Include="..\..\PAD\Windows\resource_pad.h">
       <Filter>System\Ps2\PAD</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Recording\file\v1\InputRecordingFileV1.h">
+      <Filter>Recording\File\v1</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Recording\file\v2\InputRecordingFileV2.h">
+      <Filter>Recording\File\v2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Recording\gui\NewRecordingFrame.h">
+      <Filter>Recording\gui</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

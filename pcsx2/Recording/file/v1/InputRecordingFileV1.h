@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -18,52 +18,49 @@
 #ifndef DISABLE_RECORDING
 
 #include "System.h"
-
-#include "PadData.h"
-
-// NOTE / TODOs for Version 2
-// - Move fromSavestate, undoCount, and total frames into the header
-
-struct InputRecordingFileHeader
-{
-	u8 version = 1;
-	char emu[50] = "";
-	char author[255] = "";
-	char gameName[255] = "";
-
-public:
-	void SetEmulatorVersion();
-	void Init();
-	void SetAuthor(wxString author);
-	void SetGameName(wxString cdrom);
-};
-
-
-// DEPRECATED / Slated for Removal
-struct InputRecordingSavestate
-{
-	// Whether we start from the savestate or from power-on
-	bool fromSavestate = false;
-};
+#include "Recording/PadData.h"
 
 // Handles all operations on the input recording file
-class InputRecordingFile
+class InputRecordingFileV1
 {
 public:
-	~InputRecordingFile() { Close(); }
+	inline static const std::string s_extension = ".p2m2";
+	inline static const std::string s_extension_filter = "Legacy Input Recording Files (*.p2m2)|*.p2m2";
 
-	// Closes the underlying input recording file, writing the header and 
+	struct InputRecordingFileHeader
+	{
+		u8 version = 1;
+		char emu[50] = "";
+		char author[255] = "";
+		char gameName[255] = "";
+
+	public:
+		void SetEmulatorVersion();
+		void Init();
+		void SetAuthor(wxString author);
+		void SetGameName(wxString cdrom);
+	};
+
+	struct InputRecordingSavestate
+	{
+		// Whether we start from the savestate or from power-on
+		bool fromSavestate = false;
+	};
+
+	~InputRecordingFileV1() { Close(); }
+
+	// Closes the underlying input recording file, writing the header and
 	// prepares for a possible new recording to be started
 	bool Close();
 	// Retrieve the input recording's filename (not the path)
-	const wxString &GetFilename();
+	const wxString& GetFilename();
 	// Retrieve the input recording's header which contains high-level metadata on the recording
-	InputRecordingFileHeader &GetHeader();
+	InputRecordingFileHeader& GetHeader();
 	// The maximum number of frames, or in other words, the length of the recording
-	long &GetTotalFrames();
+	long& GetTotalFrames();
 	// The number of times a save-state has been loaded while recording this movie
 	// this is also often referred to as a "re-record"
-	unsigned long &GetUndoCount();
+	unsigned long& GetUndoCount();
 	// Whether or not this input recording starts by loading a save-state or by booting the game fresh
 	bool FromSaveState();
 	// Increment the number of undo actions and commit it to the recording file
@@ -75,22 +72,19 @@ public:
 	bool OpenNew(const wxString& path, bool fromSaveState);
 	// Reads the current frame's input data from the file in order to intercept and overwrite
 	// the current frame's value from the emulator
-	bool ReadKeyBuffer(u8 &result, const uint &frame, const uint port, const uint bufIndex);
+	bool ReadKeyBuffer(u8& result, const uint& frame, const uint port, const uint bufIndex);
 	// Updates the total frame counter and commit it to the recording file
 	void SetTotalFrames(long frames);
 	// Persist the input recording file header's current state to the file
 	bool WriteHeader();
 	// Writes the current frame's input data to the file so it can be replayed
-	bool WriteKeyBuffer(const uint &frame, const uint port, const uint bufIndex, const u8 &buf);
+	bool WriteKeyBuffer(const uint& frame, const uint port, const uint bufIndex, const u8& buf);
 
 private:
 	static const int controllerPortsSupported = 2;
 	static const int controllerInputBytes = 18;
 	static const int inputBytesPerFrame = controllerInputBytes * controllerPortsSupported;
-	// TODO - version 2, this could be greatly simplified if everything was in the header
-	// + 4 + 4 is the totalFrame and undoCount values
 	static const int headerSize = sizeof(InputRecordingFileHeader) + 4 + 4;
-	// DEPRECATED / Slated for Removal
 	static const int recordingSavestateHeaderSize = sizeof(bool);
 	static const int seekpointTotalFrames = sizeof(InputRecordingFileHeader);
 	static const int seekpointUndoCount = sizeof(InputRecordingFileHeader) + 4;

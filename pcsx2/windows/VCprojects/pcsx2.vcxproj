@@ -331,6 +331,9 @@
     <ClCompile Include="..\..\PAD\Windows\WindowsMouse.cpp" />
     <ClCompile Include="..\..\PAD\Windows\WndProcEater.cpp" />
     <ClCompile Include="..\..\PAD\Windows\XInputEnum.cpp" />
+    <ClCompile Include="..\..\Recording\file\v1\InputRecordingFileV1.cpp" />
+    <ClCompile Include="..\..\Recording\file\v2\InputRecordingFileV2.cpp" />
+    <ClCompile Include="..\..\Recording\gui\NewRecordingFrame.cpp" />
     <ClCompile Include="..\..\SPU2\DplIIdecoder.cpp" />
     <ClCompile Include="..\..\SPU2\debug.cpp" />
     <ClCompile Include="..\..\SPU2\RegLog.cpp" />
@@ -388,8 +391,6 @@
     <ClCompile Include="..\..\ShiftJisToUnicode.cpp" />
     <ClCompile Include="..\..\sif2.cpp" />
     <ClCompile Include="..\..\Recording\InputRecording.cpp" />
-    <ClCompile Include="..\..\Recording\NewRecordingFrame.cpp" />
-    <ClCompile Include="..\..\Recording\InputRecordingFile.cpp" />
     <ClCompile Include="..\..\Recording\PadData.cpp" />
     <ClCompile Include="..\..\USB\configuration.cpp" />
     <ClCompile Include="..\..\USB\deviceproxy.cpp" />
@@ -693,6 +694,9 @@
     <ClInclude Include="..\..\PAD\Windows\WindowsMouse.h" />
     <ClInclude Include="..\..\PAD\Windows\WndProcEater.h" />
     <ClInclude Include="..\..\PAD\Windows\XInputEnum.h" />
+    <ClInclude Include="..\..\Recording\file\v1\InputRecordingFileV1.h" />
+    <ClInclude Include="..\..\Recording\file\v2\InputRecordingFileV2.h" />
+    <ClInclude Include="..\..\Recording\gui\NewRecordingFrame.h" />
     <ClInclude Include="..\..\SPU2\Config.h" />
     <ClInclude Include="..\..\SPU2\Global.h" />
     <ClInclude Include="..\..\SPU2\interpolate_table.h" />
@@ -718,8 +722,6 @@
     <ClInclude Include="..\..\ps2\pgif.h" />
     <ClInclude Include="..\..\Recording\InputRecording.h" />
     <ClInclude Include="..\..\Recording\InputRecordingControls.h" />
-    <ClInclude Include="..\..\Recording\NewRecordingFrame.h" />
-    <ClInclude Include="..\..\Recording\InputRecordingFile.h" />
     <ClInclude Include="..\..\Recording\PadData.h" />
     <ClInclude Include="..\..\Recording\VirtualPad\VirtualPad.h" />
     <ClInclude Include="..\..\Recording\VirtualPad\VirtualPadData.h" />

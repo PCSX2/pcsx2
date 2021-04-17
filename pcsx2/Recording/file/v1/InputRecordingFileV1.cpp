@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -17,20 +17,21 @@
 
 #ifndef DISABLE_RECORDING
 
+#include "InputRecordingFileV1.h"
+
 #include "DebugTools/Debug.h"
 #include "MainFrame.h"
 #include "MemoryTypes.h"
 
-#include "InputRecordingFile.h"
-#include "Utilities/InputRecordingLogger.h"
+#include "Recording/Utilities/InputRecordingLogger.h"
 
-void InputRecordingFileHeader::Init()
+void InputRecordingFileV1::InputRecordingFileHeader::Init()
 {
 	memset(author, 0, ArraySize(author));
 	memset(gameName, 0, ArraySize(gameName));
 }
 
-void InputRecordingFileHeader::SetEmulatorVersion()
+void InputRecordingFileV1::InputRecordingFileHeader::SetEmulatorVersion()
 {
 	wxString emuVersion = wxString::Format("%s-%d.%d.%d", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo);
 	int max = ArraySize(emu) - 1;
@@ -38,21 +39,21 @@ void InputRecordingFileHeader::SetEmulatorVersion()
 	emu[max] = 0;
 }
 
-void InputRecordingFileHeader::SetAuthor(wxString _author)
+void InputRecordingFileV1::InputRecordingFileHeader::SetAuthor(wxString _author)
 {
 	int max = ArraySize(author) - 1;
 	strncpy(author, _author.c_str(), max);
 	author[max] = 0;
 }
 
-void InputRecordingFileHeader::SetGameName(wxString _gameName)
+void InputRecordingFileV1::InputRecordingFileHeader::SetGameName(wxString _gameName)
 {
 	int max = ArraySize(gameName) - 1;
 	strncpy(gameName, _gameName.c_str(), max);
 	gameName[max] = 0;
 }
 
-bool InputRecordingFile::Close()
+bool InputRecordingFileV1::Close()
 {
 	if (recordingFile == nullptr)
 	{
@@ -64,32 +65,32 @@ bool InputRecordingFile::Close()
 	return true;
 }
 
-const wxString &InputRecordingFile::GetFilename()
+const wxString &InputRecordingFileV1::GetFilename()
 {
 	return filename;
 }
 
-InputRecordingFileHeader &InputRecordingFile::GetHeader()
+InputRecordingFileV1::InputRecordingFileHeader &InputRecordingFileV1::GetHeader()
 {
 	return header;
 }
 
-long &InputRecordingFile::GetTotalFrames()
+long &InputRecordingFileV1::GetTotalFrames()
 {
 	return totalFrames;
 }
 
-unsigned long &InputRecordingFile::GetUndoCount()
+unsigned long &InputRecordingFileV1::GetUndoCount()
 {
 	return undoCount;
 }
 
-bool InputRecordingFile::FromSaveState()
+bool InputRecordingFileV1::FromSaveState()
 {
 	return savestate.fromSavestate;
 }
 
-void InputRecordingFile::IncrementUndoCount()
+void InputRecordingFileV1::IncrementUndoCount()
 {
 	undoCount++;
 	if (recordingFile == nullptr)
@@ -100,7 +101,7 @@ void InputRecordingFile::IncrementUndoCount()
 	fwrite(&undoCount, 4, 1, recordingFile);
 }
 
-bool InputRecordingFile::open(const wxString path, bool newRecording)
+bool InputRecordingFileV1::open(const wxString path, bool newRecording)
 {
 	if (newRecording)
 	{
@@ -128,7 +129,7 @@ bool InputRecordingFile::open(const wxString path, bool newRecording)
 	return false;
 }
 
-bool InputRecordingFile::OpenNew(const wxString& path, bool fromSavestate)
+bool InputRecordingFileV1::OpenNew(const wxString& path, bool fromSavestate)
 {
 	if (!open(path, true))
 		return false;
@@ -136,12 +137,12 @@ bool InputRecordingFile::OpenNew(const wxString& path, bool fromSavestate)
 	return true;
 }
 
-bool InputRecordingFile::OpenExisting(const wxString& path)
+bool InputRecordingFileV1::OpenExisting(const wxString& path)
 {
 	return open(path, false);
 }
 
-bool InputRecordingFile::ReadKeyBuffer(u8 &result, const uint &frame, const uint port, const uint bufIndex)
+bool InputRecordingFileV1::ReadKeyBuffer(u8 &result, const uint &frame, const uint port, const uint bufIndex)
 {
 	if (recordingFile == nullptr)
 	{
@@ -157,7 +158,7 @@ bool InputRecordingFile::ReadKeyBuffer(u8 &result, const uint &frame, const uint
 	return true;
 }
 
-void InputRecordingFile::SetTotalFrames(long frame)
+void InputRecordingFileV1::SetTotalFrames(long frame)
 {
 	if (recordingFile == nullptr || totalFrames >= frame)
 	{
@@ -168,7 +169,7 @@ void InputRecordingFile::SetTotalFrames(long frame)
 	fwrite(&totalFrames, 4, 1, recordingFile);
 }
 
-bool InputRecordingFile::WriteHeader()
+bool InputRecordingFileV1::WriteHeader()
 {
 	if (recordingFile == nullptr)
 	{
@@ -185,7 +186,7 @@ bool InputRecordingFile::WriteHeader()
 	return true;
 }
 
-bool InputRecordingFile::WriteKeyBuffer(const uint &frame, const uint port, const uint bufIndex, const u8 &buf)
+bool InputRecordingFileV1::WriteKeyBuffer(const uint &frame, const uint port, const uint bufIndex, const u8 &buf)
 {
 	if (recordingFile == nullptr)
 	{
@@ -203,12 +204,12 @@ bool InputRecordingFile::WriteKeyBuffer(const uint &frame, const uint port, cons
 	return true;
 }
 
-long InputRecordingFile::getRecordingBlockSeekPoint(const long &frame)
+long InputRecordingFileV1::getRecordingBlockSeekPoint(const long &frame)
 {
 	return headerSize + sizeof(bool) + frame * inputBytesPerFrame;
 }
 
-bool InputRecordingFile::verifyRecordingFileHeader()
+bool InputRecordingFileV1::verifyRecordingFileHeader()
 {
 	if (recordingFile == nullptr)
 	{
