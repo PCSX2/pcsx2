@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -73,6 +73,7 @@
     <ClCompile Include="..\..\src\Utilities\Console.cpp" />
     <ClCompile Include="..\..\src\Utilities\Exceptions.cpp" />
     <ClCompile Include="..\..\src\Utilities\FastFormatString.cpp" />
+    <ClCompile Include="..\..\src\Utilities\FileUtils.cpp" />
     <ClCompile Include="..\..\src\Utilities\IniInterface.cpp" />
     <ClCompile Include="..\..\src\Utilities\pxStreams.cpp" />
     <ClCompile Include="..\..\src\Utilities\pxTranslate.cpp" />
@@ -127,6 +128,7 @@
     <ClInclude Include="..\..\include\Utilities\Dependencies.h" />
     <ClInclude Include="..\..\include\Utilities\EventSource.h" />
     <ClInclude Include="..\..\include\Utilities\Exceptions.h" />
+    <ClInclude Include="..\..\include\Utilities\FileUtils.h" />
     <ClInclude Include="..\..\include\Utilities\FixedPointTypes.h" />
     <ClInclude Include="..\..\include\Utilities\General.h" />
     <ClInclude Include="..\..\include\Utilities\MathUtils.h" />

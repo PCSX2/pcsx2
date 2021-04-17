@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup>
     <Filter Include="Source Files">
@@ -119,6 +119,9 @@
     <ClCompile Include="..\..\src\Utilities\AlignedMalloc.cpp">
       <Filter>Source Files\Linux</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Utilities\FileUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\Utilities\StringUtils.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -217,6 +220,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Utilities\EmbeddedImage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\Utilities\FileUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Utilities\StringUtils.h">
