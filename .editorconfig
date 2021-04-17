@@ -1,0 +1,6 @@
+# Full Docs - https://editorconfig.org/
+# Relevant Visual Studio Docs - https://docs.microsoft.com/en-us/visualstudio/ide/create-portable-custom-editor-options?view=vs-2019
+
+# See http://utf8everywhere.org/#faq.literal
+[*.{cpp,h}]
+charset = utf-8
