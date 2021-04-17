@@ -1315,9 +1315,6 @@ if (APPLE)
 	# Obviously not being able to make those arrays executable would be a problem
 	target_link_options(${Output} PRIVATE -Wl,-segprot,__DATA,rwx,rw)
 
-	# MacOS relies on X11's GL headers even though it doesn't use X11
-	target_include_directories(${Output} PRIVATE ${X11_INCLUDE_DIR})
-
 	set_target_properties(${Output} PROPERTIES
 		MACOSX_BUNDLE true
 		MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/gui/Resources/Info.plist.in"

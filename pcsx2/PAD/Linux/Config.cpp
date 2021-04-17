@@ -17,9 +17,28 @@
 #include "Device.h"
 #include "keyboard.h"
 #include "AppConfig.h"
+#ifdef __APPLE__
+#include <Carbon/Carbon.h>
+#endif
 
 void DefaultKeyboardValues()
 {
+#ifdef __APPLE__
+	set_keyboard_key(0, kVK_ANSI_A, PAD_L2);
+	set_keyboard_key(0, kVK_ANSI_Semicolon, PAD_R2);
+	set_keyboard_key(0, kVK_ANSI_W, PAD_L1);
+	set_keyboard_key(0, kVK_ANSI_P, PAD_R1);
+	set_keyboard_key(0, kVK_ANSI_I, PAD_TRIANGLE);
+	set_keyboard_key(0, kVK_ANSI_L, PAD_CIRCLE);
+	set_keyboard_key(0, kVK_ANSI_K, PAD_CROSS);
+	set_keyboard_key(0, kVK_ANSI_J, PAD_SQUARE);
+	set_keyboard_key(0, kVK_ANSI_V, PAD_SELECT);
+	set_keyboard_key(0, kVK_ANSI_N, PAD_START);
+	set_keyboard_key(0, kVK_ANSI_E, PAD_UP);
+	set_keyboard_key(0, kVK_ANSI_F, PAD_RIGHT);
+	set_keyboard_key(0, kVK_ANSI_D, PAD_DOWN);
+	set_keyboard_key(0, kVK_ANSI_S, PAD_LEFT);
+#else
 	set_keyboard_key(0, XK_a, PAD_L2);
 	set_keyboard_key(0, XK_semicolon, PAD_R2);
 	set_keyboard_key(0, XK_w, PAD_L1);
@@ -34,6 +53,7 @@ void DefaultKeyboardValues()
 	set_keyboard_key(0, XK_f, PAD_RIGHT);
 	set_keyboard_key(0, XK_d, PAD_DOWN);
 	set_keyboard_key(0, XK_s, PAD_LEFT);
+#endif
 }
 
 void PADSaveConfig()
