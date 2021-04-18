@@ -21,6 +21,14 @@
 #include <ctype.h>
 #include <string.h>
 #include <sys/stat.h>
+#include "ghc/filesystem.h"
+
+#if !defined(S_ISREG) && defined(S_IFMT) && defined(S_IFREG)
+#define S_ISREG(m) (((m)&S_IFMT) == S_IFREG)
+#endif
+#if !defined(S_ISDIR) && defined(S_IFMT) && defined(S_IFDIR)
+#define S_ISDIR(m) (((m)&S_IFMT) == S_IFDIR)
+#endif
 
 #ifndef O_BINARY
 #define O_BINARY 0
@@ -113,19 +121,23 @@ namespace R3000A
 
 	static std::string host_path(const std::string path)
 	{
+		ghc::filesystem::path hostRootPath{HostRoot};
+		ghc::filesystem::path currentPath{path};
+
 		// We are NOT allowing to use the root of the host unit.
 		// For now it just supports relative folders from the location of the elf
-		if (path.rfind(HostRoot, 0) == 0)
+		if (currentPath.string().rfind(hostRootPath.string(), 0) == 0)
 			return path;
 		else // relative paths
-			return HostRoot + path;
+			return hostRootPath.concat(path).string();
 	}
 
 	static int host_stat(const std::string path, fio_stat_t* host_stats)
 	{
 		struct stat file_stats;
+		ghc::filesystem::path file_path{host_path(path)};
 
-		if (::stat(path.c_str(), &file_stats))
+		if (::stat(file_path.string().c_str(), &file_stats))
 			return -IOP_ENOENT;
 
 		host_stats->size = file_stats.st_size;
@@ -214,8 +226,8 @@ namespace R3000A
 		static int open(IOManFile** file, const std::string& full_path, s32 flags, u16 mode)
 		{
 			const std::string path = full_path.substr(full_path.find(':') + 1);
-			int native_mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH; // 0644
-			int native_flags = O_BINARY;                             // necessary in Windows.
+			ghc::filesystem::path file_path{host_path(path)};
+			int native_flags = O_BINARY; // necessary in Windows.
 
 			switch (flags & IOP_O_RDWR)
 			{
@@ -237,7 +249,11 @@ namespace R3000A
 			if (flags & IOP_O_TRUNC)
 				native_flags |= O_TRUNC;
 
-			int hostfd = ::open(host_path(path).data(), native_flags, native_mode);
+#ifdef _WIN32
+			int hostfd = ::_open(file_path.string().c_str(), native_flags, _S_IREAD | _S_IWRITE);
+#else
+			int hostfd = ::open(file_path.string().c_str(), native_flags, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+#endif
 			if (hostfd < 0)
 				return translate_error(hostfd);
 
@@ -290,13 +306,11 @@ namespace R3000A
 	class HostDir : public IOManDir
 	{
 	public:
-		DIR* dir;
-		std::string path;
+		ghc::filesystem::directory_iterator dir;
 
-		HostDir(DIR* native_dir, const std::string native_path)
+		HostDir(ghc::filesystem::directory_iterator native_dir)
+			: dir(native_dir)
 		{
-			dir = native_dir;
-			path = native_path;
 		}
 
 		virtual ~HostDir() = default;
@@ -306,11 +320,12 @@ namespace R3000A
 			const std::string relativePath = full_path.substr(full_path.find(':') + 1);
 			const std::string path = host_path(relativePath);
 
-			DIR* dirent = ::opendir(path.c_str());
-			if (!dirent)
+			std::error_code err;
+			ghc::filesystem::directory_iterator dirent(path.c_str(), err);
+			if (err)
 				return -IOP_ENOENT; // Should return ENOTDIR if path is a file?
 
-			*dir = new HostDir(dirent, relativePath);
+			*dir = new HostDir(dirent);
 			if (!*dir)
 				return -IOP_ENOMEM;
 
@@ -320,20 +335,18 @@ namespace R3000A
 		virtual int read(void* buf)
 		{
 			fio_dirent_t* hostcontent = (fio_dirent_t*)buf;
-			struct dirent* dire = ::readdir(dir);
-
-			if (dire == NULL)
+			if (dir == ghc::filesystem::end(dir))
 				return 0;
 
-			strcpy(hostcontent->name, dire->d_name);
-			host_stat(host_path(path + dire->d_name), &hostcontent->stat);
+			strcpy(hostcontent->name, dir->path().filename().c_str());
+			host_stat(host_path(dir->path()), &hostcontent->stat);
 
+			std::next(dir);
 			return 1;
 		}
 
 		virtual void close()
 		{
-			::closedir(dir);
 			delete this;
 		}
 	};
@@ -622,13 +635,9 @@ namespace R3000A
 			if (is_host(full_path))
 			{
 				const std::string path = full_path.substr(full_path.find(':') + 1);
-				int tmpError;
-#ifdef _WIN32
-				tmpError = ::mkdir(host_path(path).data());
-#else
-				tmpError = ::mkdir(host_path(path).data(), S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
-#endif
-				v0 = HostFile::translate_error(tmpError);
+				ghc::filesystem::path folder_path{host_path(path)};
+				bool suceeds = ghc::filesystem::create_directory(folder_path);
+				v0 = suceeds ? 0 : -IOP_EIO;
 				pc = ra;
 				return 1;
 			}
@@ -665,7 +674,9 @@ namespace R3000A
 			if (is_host(full_path))
 			{
 				const std::string path = full_path.substr(full_path.find(':') + 1);
-				v0 = HostFile::translate_error(::rmdir(host_path(path).data()));
+				ghc::filesystem::path folder_path{host_path(path)};
+				bool suceeds = ghc::filesystem::remove(folder_path);
+				v0 = suceeds ? 0 : -IOP_EIO;
 				pc = ra;
 				return 1;
 			}
