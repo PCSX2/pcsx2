@@ -565,8 +565,8 @@ namespace R3000A
 
 			if (IOManDir* dir = getfd<IOManDir>(fh))
 			{
-				std::unique_ptr<char[]> buf(new char[sizeof(fio_dirent_t)]);
-				v0 = dir->read(buf.get());
+				char buf[sizeof(fio_dirent_t)];
+				v0 = dir->read(&buf);
 
 				for (s32 i = 0; i < (s32)sizeof(fio_dirent_t); i++)
 					iopMemWrite8(data + i, buf[i]);
@@ -586,8 +586,8 @@ namespace R3000A
 			if (is_host(path))
 			{
 				const std::string full_path = host_path(path.substr(path.find(':') + 1));
-				std::unique_ptr<char[]> buf(new char[sizeof(fio_stat_t)]);
-				v0 = host_stat(full_path, (fio_stat_t*)buf.get());
+				char buf[sizeof(fio_stat_t)];
+				v0 = host_stat(full_path, (fio_stat_t*)&buf);
 
 				for (s32 i = 0; i < (s32)sizeof(fio_stat_t); i++)
 					iopMemWrite8(data + i, buf[i]);
@@ -644,19 +644,12 @@ namespace R3000A
 
 			if (IOManFile* file = getfd<IOManFile>(fd))
 			{
-				try
-				{
-					std::unique_ptr<char[]> buf(new char[count]);
+				auto buf = std::make_unique<char[]>(count);
 
-					v0 = file->read(buf.get(), count);
+				v0 = file->read(buf.get(), count);
 
-					for (s32 i = 0; i < (s32)v0; i++)
-						iopMemWrite8(data + i, buf[i]);
-				}
-				catch (const std::bad_alloc&)
-				{
-					v0 = -IOP_ENOMEM;
-				}
+				for (s32 i = 0; i < (s32)v0; i++)
+					iopMemWrite8(data + i, buf[i]);
 
 				pc = ra;
 				return 1;
@@ -696,19 +689,12 @@ namespace R3000A
 			}
 			else if (IOManFile* file = getfd<IOManFile>(fd))
 			{
-				try
-				{
-					std::unique_ptr<char[]> buf(new char[count]);
+				auto buf = std::make_unique<char[]>(count);
 
-					for (u32 i = 0; i < count; i++)
-						buf[i] = iopMemRead8(data + i);
+				for (u32 i = 0; i < count; i++)
+					buf[i] = iopMemRead8(data + i);
 
-					v0 = file->write(buf.get(), count);
-				}
-				catch (const std::bad_alloc&)
-				{
-					v0 = -IOP_ENOMEM;
-				}
+				v0 = file->write(buf.get(), count);
 
 				pc = ra;
 				return 1;
