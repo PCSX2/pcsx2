@@ -216,6 +216,8 @@ if(NOT USE_SYSTEM_YAML)
 	if(EXISTS "${CMAKE_SOURCE_DIR}/3rdparty/yaml-cpp/yaml-cpp/CMakeLists.txt")
 		message(STATUS "Using bundled yaml-cpp")
 		add_subdirectory(3rdparty/yaml-cpp/yaml-cpp EXCLUDE_FROM_ALL)
+		# Remove once https://github.com/jbeder/yaml-cpp/pull/815 is merged
+		target_compile_options(yaml-cpp PRIVATE -Wno-shadow)
 	else()
 		message(FATAL_ERROR "No bundled yaml-cpp was found")
 	endif()
