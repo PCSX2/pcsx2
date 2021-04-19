@@ -430,9 +430,6 @@ void MainEmuFrame::CreatePcsx2Menu()
 
 	m_GameSettingsSubmenu.Append(MenuId_EnableHostFs, _("Enable &Host Filesystem"),
 								 wxEmptyString, wxITEM_CHECK);
-
-	m_GameSettingsSubmenu.Append(MenuId_Debug_CreateBlockdump, _("Create &Blockdump"), _("Creates a block dump for debugging purposes."), wxITEM_CHECK);
-
 	m_menuSys.AppendSeparator();
 	// Implement custom hotkeys (F3) with translatable string intact + not blank in GUI.
 	wxMenuItem* sysLoadStateItem = m_menuSys.Append(MenuId_Sys_LoadStates, _("&Load state"), &m_LoadStatesSubmenu);
@@ -497,6 +494,7 @@ void MainEmuFrame::CreateConfigMenu()
 void MainEmuFrame::CreateWindowsMenu()
 {
 	m_menuWindow.Append(MenuId_Debug_Open, _("&Show Debug"), wxEmptyString, wxITEM_CHECK);
+  	m_menuWindow.Append(MenuId_Debug_CreateBlockdump, _("Create &Blockdump"), _("Creates a block dump for debugging purposes."), wxITEM_CHECK);
 #if defined(PCSX2_DEVBUILD) || defined(PCSX2_CI)
 	m_menuWindow.Append(MenuId_GSDump, _("Show &GS Debugger"));
 #endif
@@ -610,7 +608,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menubar.Append(&m_menuSys, _("&PCSX2"));
 	m_menubar.Append(&m_menuCDVD, _("CD&VD"));
 	m_menubar.Append(&m_menuConfig, _("&Config"));
-	m_menubar.Append(&m_menuWindow, _("&Window"));
+	m_menubar.Append(&m_menuWindow, _("&Debug"));
 	m_menubar.Append(&m_menuCapture, _("&Capture"));
 
 	SetMenuBar(&m_menubar);
