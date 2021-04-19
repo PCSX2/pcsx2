@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -427,9 +427,9 @@ void MainEmuFrame::CreatePcsx2Menu()
 		_("Input Recording for controller/keyboard presses, tools for automation and playback."), wxITEM_CHECK);
 #endif
 
-
 	m_GameSettingsSubmenu.Append(MenuId_EnableHostFs, _("Enable &Host Filesystem"),
 		wxEmptyString, wxITEM_CHECK);
+
 	m_menuSys.AppendSeparator();
 	// Implement custom hotkeys (F3) with translatable string intact + not blank in GUI.
 	wxMenuItem* sysLoadStateItem = m_menuSys.Append(MenuId_Sys_LoadStates, _("&Load state"), &m_LoadStatesSubmenu);
@@ -589,7 +589,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	, m_SaveStatesSubmenu(*MakeStatesSubMenu(MenuId_State_Save01))
 	, m_GameSettingsSubmenu(*new wxMenu())
 
-	, m_MenuItem_Console(*new wxMenuItem(&m_menuWindow, MenuId_Console, _("&Show Console"), wxEmptyString, wxITEM_CHECK))
+	, m_MenuItem_Console(*new wxMenuItem(&m_menuWindow, MenuId_Console, _("&Show Program Log"), wxEmptyString, wxITEM_CHECK))
 #if defined(__unix__)
 	, m_MenuItem_Console_Stdio(*new wxMenuItem(&m_menuWindow, MenuId_Console_Stdio, _("&Console to Stdio"), wxEmptyString, wxITEM_CHECK))
 #endif
