@@ -52,9 +52,10 @@ struct xa_decode
 	s32 stereo;
 	s32 nsamples;
 	ADPCM_Decode left, right;
-	std::vector<s16> pcm[2];
+	s16 pcm[2][16384];
 };
+
 
 s16 zigZagInterpolation(int channel, const s16 *Table);
 void DecodeADPCM(xa_subheader* header, xa_decode* decoded, u8* xaData);
-void DecodeChunck(u8* block_header, xa_subheader* header, const u8* samples, ADPCM_Decode* decp, int channel, std::vector<s16>& dest);
+void DecodeChunck(const u8 block_header, xa_subheader* header, const u16* samples, ADPCM_Decode* decp, int channel, s16 *dest);

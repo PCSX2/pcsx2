@@ -725,15 +725,17 @@ void setPs1CDVDSpeed(int speed)
 // Uninitalized on start. Holds a multiple of 6 samples.
 int sixstep[2];
 
-s16 PlayXA(int channel)
+s16 PlayXA(s16* pcm, int channel)
 {
 	s16 returnVal = 0;
 
-	if (cdr.Xa.pcm[channel].size() > 0)
+	if (sizeof(pcm) > 0)
 	{
+		returnVal = *(pcm)++;
+
 		for (int i = 0; i < 7; i++)
 		{
-			returnVal += zigZagInterpolation(channel, TableX[i]);
+			//returnVal += zigZagInterpolation(channel, TableX[i]);
 			sixstep[channel] -= 1;
 
 			if (sixstep[channel] <= 0)
@@ -744,10 +746,8 @@ s16 PlayXA(int channel)
 			}
 
 			//Console.Warning("Channel %02d", channel);
-			Console.Warning("Sample: %02x", returnVal);
+			//Console.Warning("Sample: %02x", returnVal);
 			//cdr.Xa.pcm[channel].clear();
-
-			cdr.Xa.pcm[channel].erase(cdr.Xa.pcm[channel].begin() + 0);
 		}
 	}
 	return returnVal;
@@ -923,6 +923,8 @@ void cdrWrite1(u8 rt)
 			AddIrqQueue(cdr.Cmd, 0x800);
 			break;
 
+		// CDXA: The file/channel numbers can be somehow selected with the Setfilter command. 
+		// No idea if the controller is automatically switching to the next channel or so when reaching the end of the file?
 		case CdlSetfilter:
 			cdr.File = cdr.Param[0];
 			cdr.Channel = cdr.Param[1];

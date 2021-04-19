@@ -906,8 +906,8 @@ __forceinline
 	* However, the XA nibbles are arranged in different order, and XA uses 2x28 nibbles per block (instead of 2x14),
 	* XA blocks can contain mono or stereo data, XA supports only two sample rates, and, XA doesn't support looping.
 	**************************************************************************************************************/
-	Out.Left += static_cast<s32>(PlayXA(0));
-	Out.Right += static_cast<s32>(PlayXA(1));
+	Out.Left += static_cast<s32>(PlayXA(cdr.Xa.pcm[0], 0));
+	Out.Right += static_cast<s32>(PlayXA(cdr.Xa.pcm[1], 1));
 
 	if (PlayMode & 8)
 	{

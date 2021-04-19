@@ -20,75 +20,178 @@
 #include <algorithm>
 #include <array>
 
+//============================================
+//===  ADPCM DECODING ROUTINES
+//============================================
+
+#ifndef FIXED
+static double K0[4] = {
+	0.0,
+	0.9375,
+	1.796875,
+	1.53125
+};
+
+static double K1[4] = {
+	0.0,
+	0.0,
+	-0.8125,
+	-0.859375
+};
+#else
+static int K0[4] = {
+	0.0 * (1 << 10),
+	0.9375 * (1 << 10),
+	1.796875 * (1 << 10),
+	1.53125 * (1 << 10)
+};
+
+static int K1[4] = {
+	0.0 * (1 << 10),
+	0.0 * (1 << 10),
+	-0.8125 * (1 << 10),
+	-0.859375 * (1 << 10)
+};
+#endif
+
+#define BLKSIZ 28       /* block size (32 - 4 nibbles) */
+
+//===========================================
+void ADPCM_InitDecode(ADPCM_Decode* decp)
+{
+	decp->y0 = 0;
+	decp->y1 = 0;
+}
+
+//===========================================
+#ifndef FIXED
+#define IK0(fid)	((int)((-K0[fid]) * (1<<10)))
+#define IK1(fid)	((int)((-K1[fid]) * (1<<10)))
+#else
+#define IK0(fid)	(-K0[fid])
+#define IK1(fid)	(-K1[fid])
+#endif
+
 // No$ calls this pos_xa_adpcm_table. This is also the other neg one as well XA ADPCM only has 4 values on either side where SPU has 5
 static const s8 tbl_XA_Factor[16][2] = {
 	{0, 0},
 	{60, 0},
 	{115, -52},
-	{98, -55} };
+	{98, -55}};
 
 #define CLAMP(_X_,_MI_,_MA_)	{if(_X_<_MI_)_X_=_MI_;if(_X_>_MA_)_X_=_MA_;}
 
 int pos[2];
 static s16 ringBuf[2][32];
 
-void DecodeChunck(u8* block_header, xa_subheader* header, const u8* samples, ADPCM_Decode* decp, int channel, std::vector<s16>& dest)
+// The below is mostly correct. This is not recieving the right amount of sample data at once!
+void DecodeChunck(const u8 block_header, xa_subheader* header, const std::vector<u16> samples, ADPCM_Decode* decp, int channel, s16 *dest)
 {
 	// Extract 4 or 8 bit nibble depending on BPS
-	int bps = header->Bits() ? 8 : 4;
+	/*int bps = header->Bits() ? 8 : 4;
 
 	//Console.Warning("Bps: %01d", bps);
-	u32 sampleData;
-	u32 nibble;
+	u32 word;
+	u32 sector;
+	u32 finalSample;
+	
+	s32 fy0, fy1;
+
+	fy0 = decp->y0;
+	fy1 = decp->y1;
+
+	u8 shift = 12 - (block_header & 0xF);
+	u8 filter = (block_header & 0x30) >> 4;
+	s32 filterPos = tbl_XA_Factor[filter][0];
+	s32 filterNeg = tbl_XA_Factor[filter][1];
+
+	//Console.Warning("Samples: %02x", samples);
+	//Console.Warning("Shift: %02x", shift);
+	//Console.Warning("Filter: %02x", filter);
 
 	for (u32 block = 0; block < bps; block++)
 	{
-		u8 shift = 12 - (block_header[4 + block] & 0xF);
-		u8 filter = (block_header[4 + block * 2] & 0x30) >> 4;
-		u8 filterPos = tbl_XA_Factor[filter][0];
-		u8 filterNeg = tbl_XA_Factor[filter][1];
-
-		s32 sam;
-
 		for (int i = 0; i < 28; i++)
 		{
-			// Note, the interleave changes based on SampleRate, Stenznek mentioned some games like rugrats
-			// handle this interleave incorrectly and will spam the buffer with too much data.
-			// We must crash and clear the buffer for audio to continue?
-			sampleData = (u32)(samples[0] & 0x0f);
-			sampleData |= ((u32)(samples[4] & 0x0f) << 4);
-			sampleData |= ((u32)(samples[8] & 0x0f) << 8);
-			sampleData |= ((u32)(samples[12] & 0x0f) << 12);
+			sector = samples[i];
+			//std::memcpy(&data, &samples[i * sizeof(u32)], sizeof(samples));
+			word = (sector & 0xf);
+			word |= ((sector << 4) & 0xf) >> shift; 
+			word |= ((sector << 8) & 0xf) >> shift;
+			word |= ((sector << 12) & 0xf) >> shift;
 
-			if (bps == 4)
+			//Console.Warning("Sector: %02x", sector);
+			//Console.Warning("Word: %02x", word);
+
+			//Console.Warning("Shift: %02x", shift);
+			u16 nibble;
+			
+			switch (bps)
 			{
-				nibble = ((sampleData >> (block * bps)) & 0x0F);
-			}
-			if (header->Samplerate() == 37800 && bps == 8)
-			{
-				nibble = ((sampleData >> (block * bps)) & 0xFF);
-			}
-			sam = static_cast<s32>((nibble << 12) >> shift);
+			case 4:
+				nibble = ((word >> (block * bps)) & 0x0F);
+				break;
+			case 8:
+				nibble = ((word >> (block * bps)) & 0xFF);
+				break;
+			} 
 
-			//Console.Warning("Data: %02x", sampleData);
-			//Console.Warning("Nibble: %02x", nibble);
+			s16 sam = (nibble << 12) >> shift;
 
-			// Equation taken from Mednafen
-			sam += ((decp->y0 * filterPos) >> 6) + ((decp->y1 * filterNeg) >> 6);
+			finalSample = (sam << shift) + ((fy0 * filterPos) + (fy1 * filterNeg) + 32) / 64;
+			//Console.Warning("Sam: %02x", sam);
 
-			CLAMP(sam, -0x8000, 0x7FFF);
-			//Console.Warning("Sample: %02x", sam);
+			CLAMP(finalSample, -32768, 32767);
+			Console.Warning("Sample: %02x", finalSample);
+			*(dest++) = finalSample;
 
-			dest.push_back(static_cast<s16>(sam));
+			decp->y1 = fy0;
+			decp->y0 = fy1;
 
-			decp->y1 = decp->y0;
-			decp->y0 = sam;
-
-			ringBuf[channel][pos[channel] & 0xF] = sam;
+			ringBuf[channel][pos[channel] & 0xF] = finalSample;
 
 			//Console.Warning("Previous Sample: %02x", decp->y1);
 		}
+	}*/
+
+	//Console.Warning("Samples: %02x", samples);
+
+	int i;
+	int range, filterid;
+	long fy0, fy1;
+
+	filterid = (block_header >>  4) & 0x0f;
+	range    = (block_header >>  0) & 0x0f;
+
+	fy0 = decp->y0;
+	fy1 = decp->y1;
+
+	for (i = 28/4; i; --i) {
+		long y;
+		long x0, x1, x2, x3;
+
+		y = samples[i];
+		x3 = (short)( y        & 0xf000) >> range; x3 <<= 4;
+		x2 = (short)((y <<  4) & 0xf000) >> range; x2 <<= 4;
+		x1 = (short)((y <<  8) & 0xf000) >> range; x1 <<= 4;
+		x0 = (short)((y << 12) & 0xf000) >> range; x0 <<= 4;
+
+		x0 -= (IK0(filterid) * fy0 + (IK1(filterid) * fy1)) >> 10; fy1 = fy0; fy0 = x0;
+		x1 -= (IK0(filterid) * fy0 + (IK1(filterid) * fy1)) >> 10; fy1 = fy0; fy0 = x1;
+		x2 -= (IK0(filterid) * fy0 + (IK1(filterid) * fy1)) >> 10; fy1 = fy0; fy0 = x2;
+		x3 -= (IK0(filterid) * fy0 + (IK1(filterid) * fy1)) >> 10; fy1 = fy0; fy0 = x3;
+
+		CLAMP( x0, -32768<<4, 32767<<4 ); *dest = x0 >> 4; dest += channel + 1;
+		CLAMP( x1, -32768<<4, 32767<<4 ); *dest = x1 >> 4; dest += channel + 1;
+		CLAMP( x2, -32768<<4, 32767<<4 ); *dest = x2 >> 4; dest += channel + 1;
+		CLAMP( x3, -32768<<4, 32767<<4 ); *dest = x3 >> 4; dest += channel + 1;
+		Console.Warning("x1: %02x", x1);
+		Console.Warning("x2: %02x", x2);
+		Console.Warning("x3: %02x", x3);
+		Console.Warning("x0: %02x", x0);
 	}
+	decp->y0 = fy0;
+	decp->y1 = fy1;
 }
 
 s16 zigZagInterpolation(int channel, const s16* Table)
@@ -100,69 +203,65 @@ s16 zigZagInterpolation(int channel, const s16* Table)
 	{
 		interpolatedSample += (ringBuf[channel][(pos[channel] - i) & 0x1F] * Table[i]) / 0x8000;
 	}
-
 	pos[channel] += 1; // increment position
 
 	CLAMP(interpolatedSample, -0x8000, 0x7FFF);
 	return interpolatedSample;
 }
 
-void DecodeADPCM(xa_subheader* header, xa_decode* decoded, u8* xaData)
+static int headtable[4] = { 0,2,8,10 };
+
+void DecodeADPCM(xa_subheader* subHeader, xa_decode* decoded, u8* xaData)
 {
-	u8* block_header, * sound_datap, * sound_datap2, * Left, * Right;
-	u8 filterPos;
-	int i, j, k, nbits;
-	u16 data[4096], * datap;
+	std::vector<u16> Left, Right;
+	u8 *header = xaData + 128;
+	u8 *sectors = header + 16;
 
-	nbits = header->Bits() == 4 ? 4 : 2;
-
-	// TODO. Extract and mix sample data
-	//block_header = xaData + 4;
-
-	// 16 bytes after header
-	//sound_datap = block_header + 16;
-
-	for (j = 0; j < 18; j++)
+	switch (subHeader->Bits())
 	{
-		// 4 bit vs 8 bit sound
-		for (int i = 0; i < header->Bits(); i++)
+		case 4:
+		for(int i = 0; i < 8; i++, sectors += 16)
 		{
-			block_header = xaData + j * 128;		// sound groups header
-			sound_datap = block_header + 16;	// sound data just after the header
-			datap = data;
-			sound_datap2 = sound_datap + i;
+			u32 Sector0 = sectors[0x10 + i * 4 + 0];
+			u32 Sector1 = sectors[0x10 + i * 4 + 4] << 4;
+			u32 Sector2 = sectors[0x10 + i * 4 + 8] << 8;
+			u32 Sector3 = sectors[0x10 + 1 * 4 + 12] << 12;
+			Left.push_back(Sector0);
+			Right.push_back(Sector1);
+			Left.push_back(Sector2);
+			Right.push_back(Sector3);
+		}
+		break;
 
-			*Right = sound_datap[i + 2];
-
-			if (i % 2)
+		case 8:
+		for (int i = 0; i < 4; i++, sectors += 16)
+		{
+			u16 Sector0 = sectors[0];
+			u16 Sector1 = sectors[8];
+			u16 Sector2 = sectors[16];
+			u16 Sector3 = sectors[24];
+			Left.push_back(Sector0);
+			Right.push_back(Sector1);
+			Left.push_back(Sector2);
+			Right.push_back(Sector3);
+		}
+		break;
+	}
+	for(int i = 0; i < 11; i++)
+	{
+		for (int blk = 0; blk < 4; blk++)
+		{
+			if (subHeader->Stereo())
 			{
-				i++;
-				// Odds are Left positives are Right
-				*Left = sound_datap[i];
-			}
-
-			if (header->Stereo())
-			{
-				// Allocate maximum sample size
-				//cdr.Xa.pcm[0].reserve(16384);
-				//cdr.Xa.pcm[1].reserve(16384);
-
-				DecodeChunck(block_header, header, Left, &decoded->left, 0, cdr.Xa.pcm[0]);
-				DecodeChunck(block_header, header, Right, &decoded->right, 1, cdr.Xa.pcm[1]);
-
-				//Console.Warning("Sample L: %02x", cdr.Xa.pcm[0][0]);
-				//Console.Warning("Sample R: %02x", cdr.Xa.pcm[1][0]);
+				DecodeChunck(header[headtable[i] + 0], subHeader, Left, &decoded->left, 0, decoded->pcm[0]);
+				DecodeChunck(header[headtable[i] + 1], subHeader, Right, &decoded->right, 1, decoded->pcm[1]);
 			}
 			else
 			{
-				// Mono sound
-				//cdr.Xa.pcm[0].reserve(16384);
-				DecodeChunck(block_header, header, Left, &decoded->left, 0, cdr.Xa.pcm[0]);
-				DecodeChunck(block_header, header, Right, &decoded->left, 1, cdr.Xa.pcm[0]);
-
-				//Console.Warning("Sample M: %02x", cdr.Xa.pcm[0][0]);
+				DecodeChunck(header[headtable[i] + 0], subHeader, Left, &decoded->left, 0, decoded->pcm[0]);
+				DecodeChunck(header[headtable[i] + 1], subHeader, Right, &decoded->left, 0, decoded->pcm[0]);
 			}
 		}
-		sound_datap++;
+		sectors += 128;
 	}
 }
