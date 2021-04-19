@@ -92,6 +92,7 @@ static void mVUupdateFlags(mV, const xmm& reg, const xmm& regT1in = xEmptyReg, c
 
 	if (mFLAG.doFlag) mVUallocMFLAGb(mVU, mReg, mFLAG.write); // Set Mac Flag
 	if (sFLAG.doFlag) {
+		xAND(mReg, 0xFF); // Ignore overflow bits, they're handled separately
 		xOR(sReg, mReg);
 		if (sFLAG.doNonSticky) {
 			xSHL(mReg, 8);
