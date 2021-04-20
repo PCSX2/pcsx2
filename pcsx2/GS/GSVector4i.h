@@ -81,16 +81,7 @@ public:
 
 	__forceinline GSVector4i(int x, int y, int z, int w)
 	{
-		// 4 gprs
-
-		// m = _mm_set_epi32(w, z, y, x);
-
-		// 2 gprs
-
-		GSVector4i xz = load(x).upl32(load(z));
-		GSVector4i yw = load(y).upl32(load(w));
-
-		*this = xz.upl32(yw);
+		m = _mm_set_epi32(w, z, y, x);
 	}
 
 	__forceinline GSVector4i(int x, int y)
