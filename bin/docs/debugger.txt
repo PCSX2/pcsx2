@@ -1,43 +1,58 @@
-disassembly view:
-     
-    ctrl+g          goto
-    ctrl+e          edit breakpoint
-    ctrl+d          enable/disable breakpoint
-    ctrl+b          add breakpoint
-    right           follow branch/position memory view to accessed address
-    left            go back one branch level/goto pc
-    up              move cursor up one line
-    down            move cursor down one line
-    page up         move visible area up one page
-    page down       move visible area down one page
-    f10             step over
-    f11             step into
-    tab             toggle display symbols
-    left click      select line/toggle breakpoint if line is already highlighted
-    right click     open context menu
-     
-memory view:
-     
-    ctrl+g          goto
-    ctrl+b          add breakpoint
-    left            move cursor back one byte/nibble
-    right           move cursor ahead one byte/nibble
-    up              move cursor up one line
-    down            move cursor down one line
-    page up         move cursor up one page
-    page down       move cursor down one page
-    0-9,A-F         overwrite hex nibble
-    any             overwrite ansi byte
-    left click      select byte/nibble
-    right click     open context menu
-    ctrl+wheel      zoom memory view
-    esc             return to previous goto address
-    ctrl+v          paste a hex string into memory
 
-breakpoint list:
+†---------------------†
 
-    up              select previous item
-    down            select next item
-    delete          remove selected breakpoint
-    return          edit selected breakpoint
-    space           toggle enable state of selected breakpoint
+Disassembly view:
+   
+†---------------------†
+
+  Ctrl + G             Goto                                                          
+  Ctrl + E             Edit Breakpoint                                               
+  Ctrl + D             Enable/disable breakpoint                                     
+  Ctrl + B             Add breakpoint                                                
+  Left                 Go back one branch level/goto pc                              
+  Right                Follow branch/position memory view to accessed address        
+  Up                   Move cursor up one line                                       
+  Down                 Move cursor down one line                                     
+  Page Up              Move visible area up one page                                 
+  Page Down            Move visible area down one page                               
+  F10                  Step over                                                     
+  F11                  Step into                                                     
+  Tab                  Toggle display symbols                                        
+  Left Click           Select line/toggle breakpoint if line is already highlighted  
+  Right Click          Open context menu                                             
+
+†---------------------†
+ 
+Memory View:
+ 
+†---------------------†
+
+  Ctrl + G             Goto                                                          
+  Ctrl + B             Add breakpoint                                                
+  Left                 Move cursor back one byte/nibble                              
+  Right                Move cursor ahead one byte/nibble                             
+  Up                   Move cursor up one line                                       
+  Down                 Move cursor down one line                                     
+  Page Up              Move cursor up one page                                       
+  Page Down            Move cursor down one page                                     
+  0-9,A-F              Overwrite hex nibble                                          
+  Any                  Overwrite ansi byte                                           
+  Left Click           Select byte/nibble                                            
+  Right Click          Open context menu                                             
+  Ctrl+Wheel           Zoom memory view                                              
+  Esc                  Return to previous goto address                               
+  Ctrl+V               Paste a hex string into memory                                
+
+†---------------------†
+ 
+Breakpoint List:
+ 
+†---------------------†
+
+    Up                Select previous item                                           
+    Down              Select next item                                               
+    Delete            Remove selected breakpoint                                     
+    Return            Edit selected breakpoint                                       
+    Space             Toggle enable state of selected breakpoint                     
+
+†---------------------†

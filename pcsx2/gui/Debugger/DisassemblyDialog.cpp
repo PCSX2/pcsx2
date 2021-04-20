@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -72,7 +72,7 @@ DebuggerHelpDialog::DebuggerHelpDialog(wxWindow* parent)
 	}
 
 	wxTextCtrl* textControl = new wxTextCtrl(this, wxID_ANY, text, wxDefaultPosition, wxDefaultSize, wxTE_MULTILINE | wxTE_READONLY);
-	textControl->SetMinSize(wxSize(400,300));
+	textControl->SetMinSize(wxSize(650,610));
 	sizer->Add(textControl, 1, wxEXPAND);
 
 	SetSizerAndFit(sizer);
@@ -248,12 +248,12 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent):
 	breakRunButton->Enable(false);
 	topRowSizer->Add(breakRunButton);
 
-	stepIntoButton = new wxButton( panel, wxID_ANY, L"Step Into");
+	stepIntoButton = new wxButton( panel, wxID_ANY, L"Step Into" + wxString(" (F11)"));
 	stepIntoButton->Enable(false);
 	Bind(wxEVT_BUTTON, &DisassemblyDialog::onStepIntoClicked, this, stepIntoButton->GetId());
 	topRowSizer->Add(stepIntoButton);
 
-	stepOverButton = new wxButton( panel, wxID_ANY, L"Step Over");
+	stepOverButton = new wxButton( panel, wxID_ANY, L"Step Over" + wxString(" (F10)"));
 	stepOverButton->Enable(false);
 	Bind(wxEVT_BUTTON, &DisassemblyDialog::onStepOverClicked, this, stepOverButton->GetId());
 	topRowSizer->Add(stepOverButton);
