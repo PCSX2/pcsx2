@@ -1072,7 +1072,12 @@ public:
 	{
 		for (int j = 0; j < 16; j++, dst += dstpitch)
 		{
-			((const GSVector4i*)src)[j].gather32_8(pal, (GSVector4i*)dst);
+			for (int k = 0; k < 4; k++)
+			{
+				const u8* s = src + j * 16 + k * 4;
+				GSVector4i v = GSVector4i(pal[s[0]], pal[s[1]], pal[s[2]], pal[s[3]]);
+				reinterpret_cast<GSVector4i*>(dst)[k] = v;
+			}
 		}
 	}
 
@@ -1543,6 +1548,15 @@ public:
 #endif
 	}
 
+	/// ReadAndExpandBlock8 for AVX2 platforms with slow VPGATHERDD (Haswell, Zen, Zen2, Zen3)
+	/// This is faster than the one in ReadAndExpandBlock8_32 on HSW+ due to a port 5 traffic jam, should be about the same on Zen
+	__forceinline static void ReadAndExpandBlock8_32HSW(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
+	{
+		alignas(32) u8 block[16 * 16];
+		ReadBlock8(src, (u8*)block, sizeof(block) / 16);
+		ExpandBlock8_32(block, dst, dstpitch, pal);
+	}
+
 	__forceinline static void ReadAndExpandBlock8_32(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
 	{
 		//printf("ReadAndExpandBlock8_32\n");
@@ -1829,6 +1843,25 @@ public:
 
 	// TODO: ReadAndExpandBlock4_16
 
+	// ReadAndExpandBlock8H for AVX2 platforms with slow VPGATHERDD (Haswell, Zen, Zen2, Zen3)
+	// Also serves as the implementation for AVX / SSE
+	__forceinline static void ReadAndExpandBlock8H_32HSW(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
+	{
+		for (int i = 0; i < 4; i++)
+		{
+			const u8* s = src + i * 64;
+			GSVector4i* d0 = reinterpret_cast<GSVector4i*>(dst + dstpitch * 0);
+			GSVector4i* d1 = reinterpret_cast<GSVector4i*>(dst + dstpitch * 1);
+
+			d0[0] = GSVector4i(pal[s[ 3]], pal[s[ 7]], pal[s[19]], pal[s[23]]);
+			d0[1] = GSVector4i(pal[s[35]], pal[s[39]], pal[s[51]], pal[s[55]]);
+			d1[0] = GSVector4i(pal[s[11]], pal[s[15]], pal[s[27]], pal[s[31]]);
+			d1[1] = GSVector4i(pal[s[43]], pal[s[47]], pal[s[59]], pal[s[63]]);
+
+			dst += dstpitch * 2;
+		}
+	}
+
 	__forceinline static void ReadAndExpandBlock8H_32(const u8* RESTRICT src, u8* RESTRICT dst, int dstpitch, const u32* RESTRICT pal)
 	{
 		//printf("ReadAndExpandBlock8H_32\n");
@@ -1853,29 +1886,7 @@ public:
 
 #else
 
-		const GSVector4i* s = (const GSVector4i*)src;
-
-		GSVector4i v0, v1, v2, v3;
-
-		for (int i = 0; i < 4; i++)
-		{
-			v0 = s[i * 4 + 0];
-			v1 = s[i * 4 + 1];
-			v2 = s[i * 4 + 2];
-			v3 = s[i * 4 + 3];
-
-			GSVector4i::sw64(v0, v1, v2, v3);
-
-			(v0 >> 24).gather32_32<>(pal, (GSVector4i*)&dst[0]);
-			(v1 >> 24).gather32_32<>(pal, (GSVector4i*)&dst[16]);
-
-			dst += dstpitch;
-
-			(v2 >> 24).gather32_32<>(pal, (GSVector4i*)&dst[0]);
-			(v3 >> 24).gather32_32<>(pal, (GSVector4i*)&dst[16]);
-
-			dst += dstpitch;
-		}
+		ReadAndExpandBlock8H_32HSW(src, dst, dstpitch, pal);
 
 #endif
 	}
