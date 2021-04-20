@@ -159,7 +159,7 @@ void GSRendererOGL::EmulateZbuffer()
 		}
 	}
 
-	GSVertex* v = &m_vertex.buff[0];
+	const GSVertex* v = &m_vertex.buff[0];
 	// Minor optimization of a corner case (it allow to better emulate some alpha test effects)
 	if (m_om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z && v[0].XYZ.Z == max_z)
 	{
@@ -193,10 +193,10 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 		// Please bang my head against the wall!
 		// 1/ Reduce the frame mask to a 16 bit format
 		const uint32& m = m_context->FRAME.FBMSK;
-		uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
+		const uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
 		// FIXME GSVector will be nice here
-		uint8 rg_mask = fbmask & 0xFF;
-		uint8 ba_mask = (fbmask >> 8) & 0xFF;
+		const uint8 rg_mask = fbmask & 0xFF;
+		const uint8 ba_mask = (fbmask >> 8) & 0xFF;
 		m_om_csel.wrgba = 0;
 
 		// 2 Select the new mask (Please someone put SSE here)
@@ -260,9 +260,9 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 	{
 		m_ps_sel.dfmt = GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt;
 
-		GSVector4i fbmask_v = GSVector4i::load((int)m_context->FRAME.FBMSK);
-		int ff_fbmask = fbmask_v.eq8(GSVector4i::xffffffff()).mask();
-		int zero_fbmask = fbmask_v.eq8(GSVector4i::zero()).mask();
+		const GSVector4i fbmask_v = GSVector4i::load((int)m_context->FRAME.FBMSK);
+		const int ff_fbmask = fbmask_v.eq8(GSVector4i::xffffffff()).mask();
+		const int zero_fbmask = fbmask_v.eq8(GSVector4i::zero()).mask();
 
 		m_om_csel.wrgba = ~ff_fbmask; // Enable channel if at least 1 bit is 0
 
@@ -383,12 +383,12 @@ void GSRendererOGL::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 		{
 			// Read either Red or Green. Let's check the V coordinate. 0-1 is likely top so
 			// red. 2-3 is likely bottom so green (actually depends on texture base pointer offset)
-			bool green = PRIM->FST && (m_vertex.buff[0].V & 32);
+			const bool green = PRIM->FST && (m_vertex.buff[0].V & 32);
 			if (green && (m_context->FRAME.FBMSK & 0x00FFFFFF) == 0x00FFFFFF)
 			{
 				// Typically used in Terminator 3
-				int blue_mask = m_context->FRAME.FBMSK >> 24;
-				int green_mask = ~blue_mask & 0xFF;
+				const int blue_mask = m_context->FRAME.FBMSK >> 24;
+				const int green_mask = ~blue_mask & 0xFF;
 				int blue_shift = -1;
 
 				// Note: potentially we could also check the value of the clut
@@ -405,7 +405,7 @@ void GSRendererOGL::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 					default:   ASSERT(0);      break;
 				}
 
-				int green_shift = 8 - blue_shift;
+				const int green_shift = 8 - blue_shift;
 				dev->SetupCBMisc(GSVector4i(blue_mask, blue_shift, green_mask, green_shift));
 
 				if (blue_shift >= 0)
@@ -651,11 +651,11 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 	const uint8 wms = m_context->CLAMP.WMS;
 	const uint8 wmt = m_context->CLAMP.WMT;
-	bool complex_wms_wmt = !!((wms | wmt) & 2);
+	const bool complex_wms_wmt = !!((wms | wmt) & 2);
 
-	bool need_mipmap = IsMipMapDraw();
-	bool shader_emulated_sampler = tex->m_palette || cpsm.fmt != 0 || complex_wms_wmt || psm.depth;
-	bool trilinear_manual = need_mipmap && m_mipmap == 2;
+	const bool need_mipmap = IsMipMapDraw();
+	const bool shader_emulated_sampler = tex->m_palette || cpsm.fmt != 0 || complex_wms_wmt || psm.depth;
+	const bool trilinear_manual = need_mipmap && m_mipmap == 2;
 
 	bool bilinear = m_vt.IsLinear();
 	int trilinear = 0;
@@ -806,13 +806,13 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	m_ps_sel.ltf = bilinear && shader_emulated_sampler;
 	m_ps_sel.point_sampler = GLLoader::vendor_id_amd && (!bilinear || shader_emulated_sampler);
 
-	int w = tex->m_texture->GetWidth();
-	int h = tex->m_texture->GetHeight();
+	const int w = tex->m_texture->GetWidth();
+	const int h = tex->m_texture->GetHeight();
 
-	int tw = (int)(1 << m_context->TEX0.TW);
-	int th = (int)(1 << m_context->TEX0.TH);
+	const int tw = (int)(1 << m_context->TEX0.TW);
+	const int th = (int)(1 << m_context->TEX0.TH);
 
-	GSVector4 WH(tw, th, w, h);
+	const GSVector4 WH(tw, th, w, h);
 
 	m_ps_sel.fst = !!PRIM->FST;
 
@@ -895,9 +895,9 @@ GSRendererOGL::PRIM_OVERLAP GSRendererOGL::PrimitiveOverlap()
 		return PRIM_OVERLAP_UNKNOW; // maybe, maybe not
 
 	// Check intersection of sprite primitive only
-	size_t count = m_vertex.next;
+	const size_t count = m_vertex.next;
 	PRIM_OVERLAP overlap = PRIM_OVERLAP_NO;
-	GSVertex* v = m_vertex.buff;
+	const GSVertex* v = m_vertex.buff;
 
 	m_drawlist.clear();
 	size_t i = 0;
@@ -1010,7 +1010,7 @@ void GSRendererOGL::SendDraw()
 	}
 	else if (m_vt.m_primclass == GS_SPRITE_CLASS)
 	{
-		size_t nb_vertex = (m_gs_sel.sprite == 1) ? 2 : 6;
+		const size_t nb_vertex = (m_gs_sel.sprite == 1) ? 2 : 6;
 
 		GL_PUSH("Split the draw (SPRITE)");
 
@@ -1028,7 +1028,7 @@ void GSRendererOGL::SendDraw()
 				m_index.tail / nb_vertex, m_drawlist.size(), message.c_str());
 #endif
 
-		for (size_t count, p = 0, n = 0; n < m_drawlist.size(); p += count, ++n)
+		for (size_t count = 0, p = 0, n = 0; n < m_drawlist.size(); p += count, ++n)
 		{
 			count = m_drawlist[n] * nb_vertex;
 			glTextureBarrier();
@@ -1039,7 +1039,7 @@ void GSRendererOGL::SendDraw()
 	{
 		// FIXME: Investigate: a dynamic check to pack as many primitives as possibles
 		// I'm nearly sure GSdx already have this kind of code (maybe we can adapt GSDirtyRect)
-		size_t nb_vertex = GSUtil::GetClassVertexCount(m_vt.m_primclass);
+		const size_t nb_vertex = GSUtil::GetClassVertexCount(m_vt.m_primclass);
 
 		GL_PUSH("Split the draw");
 
@@ -1085,13 +1085,13 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	const GSVector2i& rtsize = ds ? ds->GetSize()  : rt->GetSize();
 	const GSVector2& rtscale = ds ? ds->GetScale() : rt->GetScale();
 
-	bool DATE = m_context->TEST.DATE && m_context->FRAME.PSM != PSM_PSMCT24;
+	const bool DATE = m_context->TEST.DATE && m_context->FRAME.PSM != PSM_PSMCT24;
 	bool DATE_GL42 = false;
 	bool DATE_GL45 = false;
 	bool DATE_one  = false;
 
-	bool ate_first_pass  = m_context->TEST.DoFirstPass();
-	bool ate_second_pass = m_context->TEST.DoSecondPass();
+	const bool ate_first_pass = m_context->TEST.DoFirstPass();
+	const bool ate_second_pass = m_context->TEST.DoSecondPass();
 
 	ResetStates();
 	vs_cb.TextureOffset = GSVector4(0.0f);
@@ -1220,7 +1220,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	if (DATE && !DATE_GL45)
 	{
-		GSVector4i dRect = ComputeBoundingBox(rtscale, rtsize);
+		const GSVector4i dRect = ComputeBoundingBox(rtscale, rtsize);
 
 		// Reduce the quantity of clean function
 		glScissor(dRect.x, dRect.y, dRect.width(), dRect.height());
@@ -1238,8 +1238,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		}
 		else
 		{
-			GSVector4 src = GSVector4(dRect) / GSVector4(rtsize.x, rtsize.y).xyxy();
-			GSVector4 dst = src * 2.0f - 1.0f;
+			const GSVector4 src = GSVector4(dRect) / GSVector4(rtsize.x, rtsize.y).xyxy();
+			const GSVector4 dst = src * 2.0f - 1.0f;
 
 			GSVertexPT1 vertices[] =
 			{
@@ -1264,10 +1264,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// vs
 
 	// FIXME D3D11 and GL support half pixel center. Code could be easier!!!
-	float sx = 2.0f * rtscale.x / (rtsize.x << 4);
-	float sy = 2.0f * rtscale.y / (rtsize.y << 4);
-	float ox = (float)(int)m_context->XYOFFSET.OFX;
-	float oy = (float)(int)m_context->XYOFFSET.OFY;
+	const float sx = 2.0f * rtscale.x / (rtsize.x << 4);
+	const float sy = 2.0f * rtscale.y / (rtsize.y << 4);
+	const float ox = (float)(int)m_context->XYOFFSET.OFX;
+	const float oy = (float)(int)m_context->XYOFFSET.OFY;
 	float ox2 = -1.0f / rtsize.x;
 	float oy2 = -1.0f / rtsize.y;
 
@@ -1326,7 +1326,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	{
 		m_ps_sel.fog = 1;
 
-		GSVector4 fc = GSVector4::rgba32(m_env.FOGCOL.u32[0]);
+		const GSVector4 fc = GSVector4::rgba32(m_env.FOGCOL.u32[0]);
 		// Blend AREF to avoid to load a random value for alpha (dirty cache)
 		ps_cb.FogColor_AREF = fc.blend32<8>(ps_cb.FogColor_AREF);
 	}
@@ -1383,7 +1383,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	if (m_game.title == CRC::ICO)
 	{
-		GSVertex* v = &m_vertex.buff[0];
+		const GSVertex* v = &m_vertex.buff[0];
 		const GSVideoMode mode = GetVideoMode();
 		if (tex && m_vt.m_primclass == GS_SPRITE_CLASS && m_vertex.next == 2 && PRIM->ABE && // Blend texture
 			((v[1].U == 8200 && v[1].V == 7176 && mode == GSVideoMode::NTSC) || // at display resolution 512x448
@@ -1408,7 +1408,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			// We need the palette to convert the depth to the correct alpha value.
 			if (!tex->m_palette)
 			{
-				uint16 pal = GSLocalMemory::m_psm[tex->m_TEX0.PSM].pal;
+				const uint16 pal = GSLocalMemory::m_psm[tex->m_TEX0.PSM].pal;
 				m_tc->AttachPaletteToSource(tex, pal, true);
 				dev->PSSetShaderResource(1, tex->m_palette);
 			}
@@ -1417,7 +1417,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// rs
 	const GSVector4& hacked_scissor = m_channel_shuffle ? GSVector4(0, 0, 1024, 1024) : m_context->scissor.in;
-	GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * hacked_scissor).rintersect(GSVector4i(rtsize).zwxy());
+	const GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * hacked_scissor).rintersect(GSVector4i(rtsize).zwxy());
 
 	SetupIA(sx, sy);
 
@@ -1428,7 +1428,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	dev->SetupPipeline(m_vs_sel, m_gs_sel, m_ps_sel);
 
-	GSVector4i commitRect = ComputeBoundingBox(rtscale, rtsize);
+	const GSVector4i commitRect = ComputeBoundingBox(rtscale, rtsize);
 
 	if (rt)
 		rt->CommitRegion(GSVector2i(commitRect.z, commitRect.w));
@@ -1563,8 +1563,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// vertices will be overwritten. Trust me you don't want to do that.
 	if (hdr_rt)
 	{
-		GSVector4 dRect(ComputeBoundingBox(rtscale, rtsize));
-		GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
+		const GSVector4 dRect(ComputeBoundingBox(rtscale, rtsize));
+		const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
 		dev->StretchRect(hdr_rt, sRect, rt, dRect, ShaderConvert_MOD_256, false);
 
 		dev->Recycle(hdr_rt);
