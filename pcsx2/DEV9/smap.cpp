@@ -524,9 +524,6 @@ smap_read32(u32 addr)
 
 			dev9Ru32(SMAP_R_RXFIFO_RD_PTR) = ((rd_ptr + 4) & 16383);
 
-			if (dev9.bd_swap)
-				rv = (rv << 24) | (rv >> 24) | ((rv >> 8) & 0xFF00) | ((rv << 8) & 0xFF0000);
-
 			DevCon.WriteLn("SMAP_R_RXFIFO_DATA 32bit read %x", rv);
 			return rv;
 		}
@@ -807,9 +804,6 @@ smap_write32(u32 addr, u32 value)
 	switch (addr)
 	{
 		case SMAP_R_TXFIFO_DATA:
-			if (dev9.bd_swap)
-				value = (value << 24) | (value >> 24) | ((value >> 8) & 0xFF00) | ((value << 8) & 0xFF0000);
-
 			DevCon.WriteLn("SMAP_R_TXFIFO_DATA 32bit write %x", value);
 			*((u32*)(dev9.txfifo + dev9Ru32(SMAP_R_TXFIFO_WR_PTR))) = value;
 			dev9Ru32(SMAP_R_TXFIFO_WR_PTR) = (dev9Ru32(SMAP_R_TXFIFO_WR_PTR) + 4) & 16383;
