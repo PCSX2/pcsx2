@@ -37,6 +37,20 @@ class GSBlock
 	static const GSVector4i m_uw8hmask2;
 	static const GSVector4i m_uw8hmask3;
 
+#if _M_SSE >= 0x501
+	// Equvialent of `a = *s0; b = *s1; sw128(a, b);`
+	// Loads in two halves instead to reduce shuffle instructions
+	// Especially good for Zen/Zen+, as it's replacing a very expensive vperm2i128
+	template <bool Aligned = true>
+	static void LoadSW128(GSVector8i& a, GSVector8i& b, const void* s0, const void* s1)
+	{
+		const GSVector4i* src0 = static_cast<const GSVector4i*>(s0);
+		const GSVector4i* src1 = static_cast<const GSVector4i*>(s1);
+		a = GSVector8i(GSVector4i::load<Aligned>(src0), GSVector4i::load<Aligned>(src1));
+		b = GSVector8i(GSVector4i::load<Aligned>(src0 + 1), GSVector4i::load<Aligned>(src1 + 1));
+	}
+#endif
+
 public:
 	template <int i, int alignment, u32 mask>
 	__forceinline static void WriteColumn32(u8* RESTRICT dst, const u8* RESTRICT src, int srcpitch)
@@ -146,10 +160,9 @@ public:
 
 #if _M_SSE >= 0x501
 
-		GSVector8i v0 = GSVector8i::load<false>(s0);
-		GSVector8i v1 = GSVector8i::load<false>(s1);
+		GSVector8i v0, v1;
 
-		GSVector8i::sw128(v0, v1);
+		LoadSW128<false>(v0, v1, s0, s1);
 		GSVector8i::sw16(v0, v1);
 
 		v0 = v0.acbd();
@@ -435,10 +448,9 @@ public:
 
 		const GSVector8i* s = (const GSVector8i*)src;
 
-		GSVector8i v0 = s[i * 2 + 0];
-		GSVector8i v1 = s[i * 2 + 1];
+		GSVector8i v0, v1;
 
-		GSVector8i::sw128(v0, v1);
+		LoadSW128(v0, v1, &s[i * 2 + 0], &s[i * 2 + 1]);
 		GSVector8i::sw64(v0, v1);
 
 		GSVector8i::store<true>(&dst[dstpitch * 0], v0);
@@ -1499,10 +1511,9 @@ public:
 
 		for (int i = 0; i < 4; i++, dst += dstpitch * 2)
 		{
-			GSVector8i v0 = s[i * 2 + 0];
-			GSVector8i v1 = s[i * 2 + 1];
+			GSVector8i v0, v1;
 
-			GSVector8i::sw128(v0, v1);
+			LoadSW128(v0, v1, &s[i * 2 + 0], &s[i * 2 + 1]);
 			GSVector8i::sw64(v0, v1);
 
 			GSVector8i* d0 = (GSVector8i*)&dst[dstpitch * 0];
@@ -1575,10 +1586,7 @@ public:
 			GSVector8i* d2 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 2);
 			GSVector8i* d3 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 3);
 
-			v0 = s[i * 4 + 0];
-			v1 = s[i * 4 + 1];
-
-			GSVector8i::sw128(v0, v1);
+			LoadSW128(v0, v1, &s[i * 4 + 0], &s[i * 4 + 1]);
 			GSVector8i::sw64(v0, v1);
 
 			d0[0] = ((v0      ) & mask).gather32_32(pal);
@@ -1599,10 +1607,7 @@ public:
 			d2 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 2);
 			d3 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 3);
 
-			v1 = s[i * 4 + 2];
-			v0 = s[i * 4 + 3];
-
-			GSVector8i::sw128(v0, v1);
+			LoadSW128(v0, v1, &s[i * 4 + 3], &s[i * 4 + 2]);
 			GSVector8i::sw64(v0, v1);
 
 			d0[0] = ((v0      ) & mask).gather32_32(pal);
@@ -1727,10 +1732,7 @@ public:
 			GSVector8i* d2 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 2);
 			GSVector8i* d3 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 3);
 
-			v0 = s[i * 4 + 0];
-			v1 = s[i * 4 + 1];
-
-			GSVector8i::sw128(v0, v1);
+			LoadSW128(v0, v1, &s[i * 4 + 0], &s[i * 4 + 1]);
 			GSVector8i::sw64(v0, v1);
 
 			v0 = v0.shuffle8(shuf);
@@ -1750,10 +1752,7 @@ public:
 			d2 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 2);
 			d3 = reinterpret_cast<GSVector8i*>(dst + dstpitch * 3);
 
-			v1 = s[i * 4 + 2];
-			v0 = s[i * 4 + 3];
-
-			GSVector8i::sw128(v0, v1);
+			LoadSW128(v0, v1, &s[i * 4 + 3], &s[i * 4 + 2]);
 			GSVector8i::sw64(v0, v1);
 
 			v0 = v0.shuffle8(shuf);
@@ -1871,10 +1870,9 @@ public:
 		const GSVector8i* s = (const GSVector8i*)src;
 		for (int i = 0; i < 4; i++)
 		{
-			GSVector8i v0 = s[i * 2 + 0];
-			GSVector8i v1 = s[i * 2 + 1];
+			GSVector8i v0, v1;
 
-			GSVector8i::sw128(v0, v1);
+			LoadSW128(v0, v1, &s[i * 2 + 0], &s[i * 2 + 1]);
 			GSVector8i::sw64(v0, v1);
 
 			*reinterpret_cast<GSVector8i*>(dst) = (v0 >> 24).gather32_32(pal);
