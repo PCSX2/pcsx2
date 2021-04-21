@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -1045,9 +1045,10 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& e
 #ifndef DISABLE_RECORDING
 void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent& event)
 {
-	const bool initiallyPaused = g_InputRecordingControls.IsPaused();
+	const bool emulation_initially_paused = CoreThread.IsPaused();
+	const bool recording_initially_paused = g_InputRecordingControls.IsPaused();
 
-	if (!initiallyPaused)
+	if (!emulation_initially_paused && !recording_initially_paused)
 		g_InputRecordingControls.PauseImmediately();
 
 	NewRecordingFrame* newRecordingFrame = wxGetApp().GetNewRecordingFramePtr();
@@ -1063,8 +1064,8 @@ void MainEmuFrame::Menu_Recording_New_Click(wxCommandEvent& event)
 			}
 		}
 
-		if (!initiallyPaused)
-			g_InputRecordingControls.Resume();
+		if (!emulation_initially_paused && !recording_initially_paused)
+			g_InputRecordingControls.ResumeImmediately();
 	}
 }
 

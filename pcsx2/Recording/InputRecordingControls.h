@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -38,19 +38,19 @@ public:
 	// Called much more frequently than HandleFrameAdvanceAndPausing, instead of being per frame
 	// this hooks into pcsx2's main App event handler as it has to be able to resume emulation
 	// when drawing frames has compltely stopped
-	// 
+	//
 	// Resumes emulation if:
 	// - CoreThread is currently open and paused
 	// - We've signaled emulation to be resumed via TogglePause or FrameAdvancing
 	void ResumeCoreThreadIfStarted();
-	
+
 	// Resume emulation (incase the emulation is currently paused) and pause after a single frame has passed
 	void FrameAdvance();
 	// Returns true if emulation is currently set up to frame advance.
 	bool IsFrameAdvancing();
 	// Returns true if the input recording has been paused, which can occur:
 	// - After a single frame has passed after InputRecordingControls::FrameAdvance
-	// - Explicitly paused via an InputRecordingControls function 
+	// - Explicitly paused via an InputRecordingControls function
 	bool IsPaused();
 	// Pause emulation at the next available Vsync
 	void Pause();
@@ -58,6 +58,10 @@ public:
 	void PauseImmediately();
 	// Resume emulation when the next pcsx2 App event is handled
 	void Resume();
+	/**
+	 * @brief Resumes emulation immediately, don't wait until the next VSync
+	*/
+	void ResumeImmediately();
 	// Alternates emulation between a paused and unpaused state
 	void TogglePause();
 	// Switches between recording and replaying the active input recording file
