@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,13 +15,14 @@
 
 #include "PrecompiledHeader.h"
 
-#include "App.h"
 #include "AppGameDatabase.h"
 
-#include "Utilities/FileUtils.h"
+#include "App.h"
 
-#include <wx/stdpaths.h>
 #include "fmt/core.h"
+#include "Utilities/FileUtils.h"
+#include <wx/stdpaths.h>
+
 #include <fstream>
 
 AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file)
@@ -54,7 +55,7 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file)
 
 	const u64 qpc_Start = GetCPUTicks();
 
-	std::ifstream file_stream = FileUtils::fileInputStream(FileUtils::wxStringToPath(file));
+	std::ifstream file_stream = fs::ifstream(FileUtils::wxStringToPath(file));
 	if (!this->initDatabase(file_stream))
 	{
 		Console.Error(L"[GameDB] Database could not be loaded successfully");

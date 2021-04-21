@@ -297,7 +297,7 @@ void InputRecording::SetupInitialState(u32 newStartingFrame)
 	if (state != InputRecordingMode::Replaying)
 	{
 		inputRec::log("Started new input recording");
-		inputRec::consoleLog(fmt::format("Filename {}", inputRecordingData.getFileName().string()));
+		inputRec::consoleLog(fmt::format("Filename {}", inputRecordingData.getFileName()));
 		SetToRecordMode();
 	}
 	else
@@ -309,7 +309,7 @@ void InputRecording::SetupInitialState(u32 newStartingFrame)
 
 		incrementUndo = true;
 		inputRec::log("Replaying input recording");
-		inputRec::consoleMultiLog({fmt::format("File: {}", inputRecordingData.getFileName().string()),
+		inputRec::consoleMultiLog({fmt::format("File: {}", inputRecordingData.getFileName()),
 								   fmt::format("PCSX2 Version Used: {}", inputRecordingData.getEmulatorVersion()),
 								   fmt::format("Recording File Version: {}", inputRecordingData.getRecordingFileVersion()),
 								   fmt::format("Associated Game Name or ISO Filename: {}", inputRecordingData.getGameName()),
@@ -328,7 +328,7 @@ void InputRecording::SetupInitialState(u32 newStartingFrame)
 
 void InputRecording::FailedSavestate()
 {
-	inputRec::consoleLog(fmt::format("{} is not compatible with this version of PCSX2", savestate_path.string()));
+	inputRec::consoleLog(fmt::format("{} is not compatible with this version of PCSX2", savestate_path));
 	inputRec::consoleLog(fmt::format("Original PCSX2 version used: {}", inputRecordingData.getEmulatorVersion()));
 	inputRecordingData.closeFile();
 	initialLoad = false;
@@ -381,7 +381,7 @@ bool InputRecording::Play(wxWindow* parent, fs::path file_path)
 			inputRec::log("Legacy recording conversion failed, aborting.");
 		}
 		file_path.replace_extension("pir");
-		inputRec::log(fmt::format("Legacy recording conversion succeeded playing back converted file - {}", file_path.string()));
+		inputRec::log(fmt::format("Legacy recording conversion succeeded playing back converted file - {}", file_path));
 	}
 	else if (!inputRecordingData.openExistingFile(file_path))
 	{
@@ -411,14 +411,14 @@ bool InputRecording::Play(wxWindow* parent, fs::path file_path)
 										 "Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
 			if (loadStateDialog.ShowModal() == wxID_CANCEL)
 			{
-				inputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}", savestate_path.string()));
+				inputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}", savestate_path));
 				inputRec::log("Savestate load failed");
 				inputRecordingData.closeFile();
 				return false;
 			}
 
 			savestate_path = FileUtils::wxStringToPath(loadStateDialog.GetPath());
-			inputRec::consoleLog(fmt::format("Base savestate set to {}", savestate_path.string()));
+			inputRec::consoleLog(fmt::format("Base savestate set to {}", savestate_path));
 		}
 		state = InputRecordingMode::Replaying;
 		initialLoad = true;
@@ -445,8 +445,7 @@ void InputRecording::GoToFirstFrame(wxWindow* parent)
 			if (!initiallyPaused)
 				g_InputRecordingControls.PauseImmediately();
 
-			// TODO - verify if printing the string of a std::filesystem path works for unicode!
-			inputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}\n", savestate_path.string()));
+			inputRec::consoleLog(fmt::format("Could not locate savestate file at location - {}\n", savestate_path));
 			wxFileDialog loadStateDialog(parent, _("Select a savestate to accompany the recording with"), L"", L"",
 										 L"Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
 			int result = loadStateDialog.ShowModal();
@@ -459,7 +458,7 @@ void InputRecording::GoToFirstFrame(wxWindow* parent)
 				return;
 			}
 			savestate_path = FileUtils::wxStringToPath(loadStateDialog.GetPath());
-			inputRec::consoleLog(fmt::format("Base savestate swapped to {}", savestate_path.string()));
+			inputRec::consoleLog(fmt::format("Base savestate swapped to {}", savestate_path));
 		}
 		StateCopy_LoadFromFile(FileUtils::wxStringFromPath(savestate_path));
 	}

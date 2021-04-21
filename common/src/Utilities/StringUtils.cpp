@@ -20,12 +20,7 @@
 
 #include <Windows.h>
 
-std::string StringUtils::UTF8::narrow(const wchar_t* str)
-{
-	return narrow(std::wstring(str));
-}
-
-std::string StringUtils::UTF8::narrow(const std::wstring& str)
+std::string StringUtils::UTF8::narrow(const std::wstring_view& str)
 {
 	if (str.empty())
 	{
@@ -46,12 +41,7 @@ std::string StringUtils::UTF8::narrow(const std::wstring& str)
 	return output;
 }
 
-std::wstring StringUtils::UTF8::widen(const char* str)
-{
-	return widen(std::string(str));
-}
-
-std::wstring StringUtils::UTF8::widen(const std::string& str)
+std::wstring StringUtils::UTF8::widen(const std::string_view& str)
 {
 	auto const size =
 		MultiByteToWideChar(CP_UTF8, 0, str.data(), str.size(), nullptr, 0);

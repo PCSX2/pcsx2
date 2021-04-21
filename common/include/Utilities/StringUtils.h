@@ -21,17 +21,30 @@ namespace StringUtils
 {
 	namespace UTF8
 	{
-// There should be no reason for a unix environment to have to convert string->wstring
-// See - http://utf8everywhere.org/#how.cvt
+		// There should be no reason for a unix environment to have to convert string->wstring
+		// See - http://utf8everywhere.org/#how.cvt
 #ifdef _WIN32
-		std::string narrow(const wchar_t* str);
-		std::string narrow(const std::wstring& str);
-
-		std::wstring widen(const char* str);
-		std::wstring widen(const std::string& str);
+		/**
+		 * @brief Converts a UTF-16 string to a UTF-8 string
+		 * @param str UTF-16 string
+		 * @return UTF-8 string
+		*/
+		std::string narrow(const std::wstring_view& str);
+		/**
+		 * @brief Converts a UTF-8 string to a UTF-16 string
+		 * @param str UTF-8 string
+		 * @return UTF-16 string
+		*/
+		std::wstring widen(const std::string_view& str);
 #endif
 
 		// --- wxWidgets Conversions
+
+		/**
+		 * @brief Converts a wxString to a UTF-8 std::string
+		 * @param str wxString
+		 * @return UTF-8 std::string
+		*/
 		std::string fromWxString(const wxString& str);
 
 	} // namespace UTF8

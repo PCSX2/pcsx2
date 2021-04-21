@@ -149,7 +149,7 @@ bool InputRecordingFileV1::ReadKeyBuffer(u8 &result, const uint &frame, const ui
 		return false;
 	}
 
-	long seek = getRecordingBlockSeekPoint(frame) + controllerInputBytes * port + bufIndex;
+	long seek = getRecordingBlockSeekPoint(frame) + s_controllers_supported_per_frame * port + bufIndex;
 	if (fseek(recordingFile, seek, SEEK_SET) != 0 || fread(&result, 1, 1, recordingFile) != 1)
 	{
 		return false;

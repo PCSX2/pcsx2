@@ -26,9 +26,6 @@
 #include "Recording/Utilities/InputRecordingLogger.h"
 #include "Recording/file/v1/InputRecordingFileV1.h"
 
-#include <iostream>
-#include <fstream>
-
 bool InputRecordingFileV2::InputRecordingFileHeader::readHeader(std::fstream& file_stream)
 {
 	if (!file_stream.is_open())
@@ -44,8 +41,12 @@ bool InputRecordingFileV2::InputRecordingFileHeader::readHeader(std::fstream& fi
 		inputRec::log("Invalid Input Recording File");
 		return false;
 	}
-	file_stream.read((char*)&m_file_version_major, sizeof(m_file_version_major));
-	file_stream.read((char*)&m_file_version_minor, sizeof(m_file_version_minor));
+	file_stream.read((char*)&m_file_version_major, sizeof(m_file_version_major)); /* Flawfinder: ignore */
+	if (!file_stream)
+	{
+		return false;
+	}
+	file_stream.read((char*)&m_file_version_minor, sizeof(m_file_version_minor)); /* Flawfinder: ignore */
 
 	if (m_file_version_major == 2)
 	{
@@ -53,17 +54,18 @@ bool InputRecordingFileV2::InputRecordingFileHeader::readHeader(std::fstream& fi
 		std::getline(file_stream, m_recording_author, '\0');
 		std::getline(file_stream, m_game_name, '\0');
 
-		file_stream.read((char*)&m_offset_to_frame_counter, sizeof(int));
-		file_stream.read((char*)&m_total_frames, sizeof(m_total_frames));
-		file_stream.read((char*)&m_offset_to_redo_counter, sizeof(int));
-		file_stream.read((char*)&m_redo_count, sizeof(m_redo_count));
+		file_stream.read((char*)&m_offset_to_frame_counter, sizeof(int)); /* Flawfinder: ignore */
+		file_stream.read((char*)&m_total_frames, sizeof(m_total_frames)); /* Flawfinder: ignore */
+		file_stream.read((char*)&m_offset_to_redo_counter, sizeof(int));  /* Flawfinder: ignore */
+		file_stream.read((char*)&m_redo_count, sizeof(m_redo_count));     /* Flawfinder: ignore */
 		int recording_type = 0;
-		file_stream.read((char*)&recording_type, sizeof(recording_type));
+		file_stream.read((char*)&recording_type, sizeof(recording_type)); /* Flawfinder: ignore */
 		m_recording_type = static_cast<InputRecordingType>(recording_type);
-		file_stream.read((char*)&m_num_controllers_per_frame, sizeof(m_num_controllers_per_frame));
-		file_stream.read((char*)&m_offset_to_frame_data, sizeof(int));
+		file_stream.read((char*)&m_num_controllers_per_frame, sizeof(m_num_controllers_per_frame)); /* Flawfinder: ignore */
+		file_stream.read((char*)&m_offset_to_frame_data, sizeof(int));                              /* Flawfinder: ignore */
 	}
-	return true;
+
+	return !file_stream.fail();
 }
 
 bool InputRecordingFileV2::InputRecordingFileHeader::replaceHeader(std::fstream& file_stream, fs::path path)
@@ -75,22 +77,20 @@ bool InputRecordingFileV2::InputRecordingFileHeader::replaceHeader(std::fstream&
 	// If the file is existing, we need to re-write the rest of the file as fields may have gotten larger
 	fs::path temp = fs::path(path);
 	temp.replace_extension("tmp");
-	std::ofstream create_temp = FileUtils::binaryFileOutputStream(temp);
-	create_temp << file_stream.rdbuf();
+	std::fstream temp_stream = FileUtils::binaryFileStream(temp, true);
+	temp_stream << file_stream.rdbuf();
 	const int original_frame_data_seek_point = m_offset_to_frame_data;
-	create_temp.close(); // can't use an `fstream` because it won't create the file if it doesn't exist
-	std::ifstream original_file = FileUtils::binaryFileInputStream(temp);
 
 	// Write the header!
 	writeHeader(file_stream);
 
 	// Write the rest of the recording file back to the original file
-	original_file.seekg(original_frame_data_seek_point, std::ios::beg);
-	file_stream << original_file.rdbuf();
-	original_file.close();
-	fs::remove(temp.wstring());
+	temp_stream.seekg(original_frame_data_seek_point, std::ios::beg);
+	file_stream << temp_stream.rdbuf();
+	temp_stream.close();
+	fs::remove(temp);
 
-	return true;
+	return !file_stream.fail();
 }
 
 bool InputRecordingFileV2::InputRecordingFileHeader::writeHeader(std::fstream& file_stream)
@@ -129,26 +129,26 @@ bool InputRecordingFileV2::InputRecordingFileHeader::writeHeader(std::fstream& f
 		file_stream.write((char*)&m_offset_to_frame_data, sizeof(int));
 	}
 
-	return true;
+	return !file_stream.fail();
 }
 
-bool InputRecordingFileV2::InputRecordingFileHeader::updateHeaderInplace(std::fstream& fileStream)
+bool InputRecordingFileV2::InputRecordingFileHeader::updateHeaderInplace(std::fstream& file_stream)
 {
-	if (!fileStream.is_open())
+	if (!file_stream.is_open())
 	{
 		return false;
 	}
 
 	if (m_file_version_major == 2)
 	{
-		fileStream.seekp(m_offset_to_frame_counter, std::ios::beg);
-		fileStream.write((char*)&m_total_frames, sizeof(m_total_frames));
+		file_stream.seekp(m_offset_to_frame_counter, std::ios::beg);
+		file_stream.write((char*)&m_total_frames, sizeof(m_total_frames));
 
-		fileStream.seekp(m_offset_to_redo_counter, std::ios::beg);
-		fileStream.write((char*)&m_redo_count, sizeof(m_redo_count));
+		file_stream.seekp(m_offset_to_redo_counter, std::ios::beg);
+		file_stream.write((char*)&m_redo_count, sizeof(m_redo_count));
 	}
 
-	return true;
+	return !file_stream.fail();
 }
 
 /// --- Input Recording File
@@ -156,7 +156,9 @@ bool InputRecordingFileV2::InputRecordingFileHeader::updateHeaderInplace(std::fs
 bool InputRecordingFileV2::convertFromV1(InputRecordingFileV1& legacy_file, fs::path legacy_path)
 {
 	fs::path new_path = legacy_path.replace_extension(s_extension);
-	const InputRecordingType type = legacy_file.FromSaveState() ? InputRecordingType::INPUT_RECORDING_SAVESTATE : InputRecordingType::INPUT_RECORDING_POWER_ON;
+	const InputRecordingType type = legacy_file.FromSaveState() ?
+                                        InputRecordingType::INPUT_RECORDING_SAVESTATE :
+                                        InputRecordingType::INPUT_RECORDING_POWER_ON;
 	// Copy the savestate file from the legacy file
 	if (type == InputRecordingType::INPUT_RECORDING_SAVESTATE)
 	{
@@ -165,7 +167,9 @@ bool InputRecordingFileV2::convertFromV1(InputRecordingFileV1& legacy_file, fs::
 					  fs::copy_options::overwrite_existing);
 	}
 	// Create the file
-	bool created_successfully = createNewFile(new_path, legacy_file.GetHeader().author, legacy_file.GetHeader().gameName, type);
+	bool created_successfully = createNewFile(new_path,
+											  std::string(legacy_file.GetHeader().author),
+											  std::string(legacy_file.GetHeader().gameName), type);
 	if (!created_successfully)
 	{
 		return false;
@@ -175,15 +179,13 @@ bool InputRecordingFileV2::convertFromV1(InputRecordingFileV1& legacy_file, fs::
 
 	for (long i = 0; i < getTotalFrames(); i++)
 	{
-		// TODO - get this from a constant
-		for (int port = 0; port < 2; port++)
+		for (int port = 0; port < InputRecordingFileV1::s_controllers_supported_per_frame; port++)
 		{
-			// TODO - get this from a constant
-			for (int bufIndex = 0; bufIndex < 18; bufIndex++)
+			for (int buf_index = 0; buf_index < InputRecordingFileV1::s_controller_input_bytes; buf_index++)
 			{
 				u8 result;
-				legacy_file.ReadKeyBuffer(result, i, port, bufIndex);
-				writeInputFromBuffer(i, port, bufIndex, result);
+				legacy_file.ReadKeyBuffer(result, i, port, buf_index);
+				writeInputFromBuffer(i, port, buf_index, result);
 			}
 		}
 	}
@@ -191,7 +193,8 @@ bool InputRecordingFileV2::convertFromV1(InputRecordingFileV1& legacy_file, fs::
 	return true;
 }
 
-bool InputRecordingFileV2::createNewFile(const fs::path& path, const std::string& recording_author, const std::string& game_name, const InputRecordingType& recording_type)
+bool InputRecordingFileV2::createNewFile(const fs::path& path, const std::string& recording_author,
+										 const std::string& game_name, const InputRecordingType& recording_type)
 {
 	m_file_stream.close();
 	m_file_path = path;
@@ -199,7 +202,8 @@ bool InputRecordingFileV2::createNewFile(const fs::path& path, const std::string
 	m_file_stream = FileUtils::binaryFileStream(m_file_path, true);
 
 	// Init header values
-	m_header.m_emulator_version = fmt::format("{} - {}.{}.{}", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo);
+	m_header.m_emulator_version = fmt::format("{} - {}.{}.{}",
+											  pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo);
 	m_header.m_recording_author = recording_author;
 	m_header.m_game_name = game_name;
 	m_header.m_recording_type = recording_type;
@@ -215,7 +219,6 @@ bool InputRecordingFileV2::openExistingFile(const fs::path& path)
 	m_header = InputRecordingFileHeader();
 	if (!fs::exists(m_file_path))
 	{
-		// TODO - if file doesn't exist, throw an error
 		return false;
 	}
 	m_file_stream = FileUtils::binaryFileStream(m_file_path);
@@ -310,7 +313,7 @@ void InputRecordingFileV2::setFrameCounter(const long& num_frames)
 
 long InputRecordingFileV2::bytesPerController()
 {
-	return (isMacro() ? s_controller_bytes_per_frame * 2 : s_controller_bytes_per_frame);
+	return (isMacro() ? s_controller_input_bytes * 2 : s_controller_input_bytes);
 }
 
 long InputRecordingFileV2::bytesPerFrame()
@@ -328,7 +331,7 @@ long InputRecordingFileV2::getOffsetWithinFrame(const long& frame_seekpoint, con
 	return frame_seekpoint + (port * bytesPerController()) + (isMacro() ? buf_index * 2 : buf_index);
 }
 
-bool InputRecordingFileV2::readInputIntoBuffer(u8& result, const uint& frame, const uint& port, const uint& buf_index)
+bool InputRecordingFileV2::readInputIntoBuffer(u8& buffer, const uint& frame, const uint& port, const uint& buf_index)
 {
 	if (!m_file_stream.is_open())
 	{
@@ -343,18 +346,18 @@ bool InputRecordingFileV2::readInputIntoBuffer(u8& result, const uint& frame, co
 		if (buf_index == 0 || buf_index == 1)
 		{
 			u8 ignore_bitfield;
-			m_file_stream.read((char*)&ignore_bitfield, sizeof(ignore_bitfield));
-			ignore_bitfield = ~ignore_bitfield; // Flip the bits so the logic makes sense
+			m_file_stream.read((char*)&ignore_bitfield, sizeof(ignore_bitfield)); /* Flawfinder: ignore */
+			ignore_bitfield = ~ignore_bitfield;                                   // Flip the bits so the logic makes sense
 			u8 temp_result;
-			m_file_stream.read((char*)&temp_result, sizeof(temp_result));
-			temp_result &= ignore_bitfield; // Discard the bits we want to ignore
-			result |= temp_result;          // Combine with existing buffer value
+			m_file_stream.read((char*)&temp_result, sizeof(temp_result)); /* Flawfinder: ignore */
+			temp_result &= ignore_bitfield;                               // Discard the bits we want to ignore
+			buffer |= temp_result;                                        // Combine with existing buffer value
 			return !m_file_stream.fail();
 		}
 		else
 		{
 			bool ignore_input;
-			m_file_stream.read((char*)&ignore_input, sizeof(ignore_input));
+			m_file_stream.read((char*)&ignore_input, sizeof(ignore_input)); /* Flawfinder: ignore */
 			if (ignore_input)
 			{
 				// Ignore the input, don't modify the result!
@@ -362,11 +365,11 @@ bool InputRecordingFileV2::readInputIntoBuffer(u8& result, const uint& frame, co
 			}
 		}
 	}
-	m_file_stream.read((char*)&result, sizeof(result));
+	m_file_stream.read((char*)&buffer, sizeof(buffer)); /* Flawfinder: ignore */
 	return !m_file_stream.fail();
 }
 
-bool InputRecordingFileV2::writeInputFromBuffer(const uint& frame, const uint& port, const uint& buf_index, const u8& buf)
+bool InputRecordingFileV2::writeInputFromBuffer(const uint& frame, const uint& port, const uint& buf_index, const u8& buffer)
 {
 	if (!m_file_stream.is_open())
 	{
@@ -374,11 +377,11 @@ bool InputRecordingFileV2::writeInputFromBuffer(const uint& frame, const uint& p
 	}
 	const long seekPos = getOffsetWithinFrame(getFrameSeekpoint(frame), port, buf_index);
 	m_file_stream.seekp(seekPos, std::ios::beg);
-	m_file_stream.write((char*)&buf, sizeof(buf));
+	m_file_stream.write((char*)&buffer, sizeof(buffer));
 	return !m_file_stream.fail();
 }
 
-bool InputRecordingFileV2::writeDefaultMacroInputFromBuffer(const uint& frame, const uint& port, const uint& buf_index, const u8& buf)
+bool InputRecordingFileV2::writeDefaultMacroInputFromBuffer(const uint& frame, const uint& port, const uint& buf_index, const u8& buffer)
 {
 	if (!m_file_stream.is_open())
 	{
@@ -389,9 +392,9 @@ bool InputRecordingFileV2::writeDefaultMacroInputFromBuffer(const uint& frame, c
 	// For the first two bytes, we have to store bitfields instead of simple booleans
 	// A macro cannot be effectively created through the controller, so this serves as the default starting case
 	// Inputs can be flagged to be ignored in the recording viewer/editor later
-	bool dont_ignore = false;
+	const bool dont_ignore = false;
 	m_file_stream.write((char*)&dont_ignore, sizeof(dont_ignore));
-	m_file_stream.write((char*)&buf, sizeof(buf));
+	m_file_stream.write((char*)&buffer, sizeof(buffer));
 	return !m_file_stream.fail();
 }
 

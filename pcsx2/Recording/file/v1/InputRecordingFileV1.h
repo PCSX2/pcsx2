@@ -27,6 +27,9 @@ public:
 	inline static const std::string s_extension = ".p2m2";
 	inline static const std::string s_extension_filter = "Legacy Input Recording Files (*.p2m2)|*.p2m2";
 
+	static const int s_controllers_supported_per_frame = 2;
+	static const int s_controller_input_bytes = 18;
+
 	struct InputRecordingFileHeader
 	{
 		u8 version = 1;
@@ -81,9 +84,7 @@ public:
 	bool WriteKeyBuffer(const uint& frame, const uint port, const uint bufIndex, const u8& buf);
 
 private:
-	static const int controllerPortsSupported = 2;
-	static const int controllerInputBytes = 18;
-	static const int inputBytesPerFrame = controllerInputBytes * controllerPortsSupported;
+	static const int inputBytesPerFrame = s_controller_input_bytes * s_controllers_supported_per_frame;
 	static const int headerSize = sizeof(InputRecordingFileHeader) + 4 + 4;
 	static const int recordingSavestateHeaderSize = sizeof(bool);
 	static const int seekpointTotalFrames = sizeof(InputRecordingFileHeader);

@@ -76,6 +76,14 @@ int NewRecordingFrame::showModal(const bool isCoreThreadOpen)
 		choices.Add(s_recording_type_options.at(i).first);
 	}
 	m_from_choice->Set(choices);
+	m_from_choice->SetSelection(0);
+	// Select save-state by default if the game is currently running
+	if (isCoreThreadOpen)
+	{
+		// Assumes vector's position, not great but, using a map would be better here, but worse in wx's event handler.
+		m_from_choice->SetSelection(1);
+	}
+
 	return wxDialog::ShowModal();
 }
 

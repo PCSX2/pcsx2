@@ -18,33 +18,88 @@
 #include "ghc/filesystem.h"
 #include "wx/string.h"
 
+#include "fmt/format.h"
+
 #include <iostream>
 #include <fstream>
 
 namespace fs = ghc::filesystem;
 
+template <>
+struct fmt::formatter<fs::path> : formatter<string_view>
+{
+	// parse is inherited from formatter<string_view>.
+	template <typename FormatContext>
+	auto format(fs::path path, FormatContext& ctx)
+	{
+#ifdef _WIN32
+		return formatter<string_view>::format(StringUtils::UTF8::narrow(path.wstring()), ctx);
+#else
+		return formatter<string_view>::format(path.string(), ctx);
+#endif
+	}
+};
+
 namespace FileUtils
 {
 	/**
-	 * @brief TODO doxygen comments!
-	 * @param file_path 
-	 * @param mode 
-	 * @return 
+	 * @brief Creates an input/output file stream
+	 * @param file_path Relevant file-path
+	 * @param mode Defaults to std::ios::in | std::ios::out
+	 * @param create_if_nonexistant Will create the file if it does not already exist at the provided path
+	 * @return std::filesystem fstream with the provided mode.
 	*/
 	std::fstream fileStream(const fs::path& file_path, std::ios_base::openmode mode = std::ios::in | std::ios::out, bool create_if_nonexistant = false);
+
+	/**
+	 * @brief Creates an input/output binary file stream
+	 * @param file_path Relevant file-path
+	 * @param create_if_nonexistant Will create the file if it does not already exist at the provided path
+	 * @return std::filesystem fstream in binary mode
+	*/
 	std::fstream binaryFileStream(const fs::path& file_path, bool create_if_nonexistant = false);
 
-	std::ifstream fileInputStream(const fs::path& file_path, std::ios_base::openmode mode = std::ios::in);
+	/**
+	 * @brief Creates an input binary file stream
+	 * @param file_path Relevant file-path
+	 * @return std::filesystem ifstream in binary mode
+	*/
 	std::ifstream binaryFileInputStream(const fs::path& file_path);
 
-	std::ofstream fileOutputStream(const fs::path& file_path, std::ios_base::openmode mode = std::ios::out);
+	/**
+	 * @brief Creates an output binary file stream
+	 * @param file_path Relevant file-path
+	 * @return std::filesystem ofstream in binary mode
+	*/
 	std::ofstream binaryFileOutputStream(const fs::path& file_path);
 
+	/**
+	 * @brief Appends a string to the end of the current file name (preceeding the extension)
+	 * @param file_path The current file/file-path
+	 * @param utf8_str The string to append to the current file name
+	 * @return New file-path with the appropriate changes
+	*/
 	fs::path appendToFilename(fs::path file_path, const std::string& utf8_str);
+
+	/**
+	 * @brief Helper function to backup a file in it's current directory (appends .bak)
+	 * @param file_path File path
+	*/
 	void backupFileIfExists(const fs::path& file_path);
 
 	// --- wxWidgets Conversions
 
+	/**
+	 * @brief Convert wxString to a std::filesystem path, handles unicode appropriately.
+	 * @param file_path File-path as a wxString
+	 * @return std::filesystem path
+	*/
 	fs::path wxStringToPath(const wxString& file_path);
+
+	/**
+	 * @brief Convert a std::filesystem path to an wxString, handles unicode appropriately.
+	 * @param file_path std::filesystem path
+	 * @return wxString representation of the path
+	*/
 	wxString wxStringFromPath(const fs::path& file_path);
 } // namespace FileUtils

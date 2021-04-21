@@ -37,6 +37,9 @@
 #include "Dialogs/ConfigurationDialog.h"
 #include "Debugger/DisassemblyDialog.h"
 
+#include "fmt/ranges.h"
+#include "fmt/core.h"
+
 #include "Utilities/FileUtils.h"
 #include "Utilities/IniInterface.h"
 
@@ -1076,9 +1079,12 @@ void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent& event)
 	if (!initiallyPaused)
 		g_InputRecordingControls.PauseImmediately();
 
-	wxString file_filters("Input Recording Files (*.pir;*p2m2)|*.pir;*.p2m2");
-	file_filters.Append(InputRecordingFileV2::s_extension_filter);
-	file_filters.Append(InputRecordingFileV1::s_extension_filter);
+	std::vector<std::string> filter_list = {
+		"Input Recording Files (*.pir;*p2m2)|*.pir;*.p2m2",
+		InputRecordingFileV2::s_extension_filter,
+		InputRecordingFileV1::s_extension_filter};
+
+	wxString file_filters(fmt::to_string(fmt::join(filter_list, "|")));
 
 	wxFileDialog openFileDialog(this, _("Select Input Recording File"), "", "", file_filters, wxFD_OPEN);
 	if (openFileDialog.ShowModal() == wxID_CANCEL)
