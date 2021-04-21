@@ -1333,7 +1333,7 @@ public:
 		GSVector8i c = a;
 		GSVector8i d = b;
 
-		a = c.ac(d);
+		a = c.insert<1>(d.extract<0>()); // Should become a single vinserti128, faster on Zen+
 		b = c.bd(d);
 	}
 
