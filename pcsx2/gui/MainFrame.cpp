@@ -30,7 +30,7 @@
 #include "svnrev.h"
 #include "Saveslots.h"
 #ifndef DISABLE_RECORDING
-#	include "Recording/InputRecording.h"
+#include "Recording/InputRecording.h"
 #endif
 
 
@@ -393,43 +393,43 @@ void MainEmuFrame::CreatePcsx2Menu()
 	m_menuSys.Append(MenuId_Sys_SuspendResume, _("Initializing..."));
 
 	m_menuSys.Append(MenuId_Sys_Shutdown, _("Shut&down"),
-					 _("Wipes all internal VM states and shuts down plugins."));
+		_("Wipes all internal VM states and shuts down plugins."));
 	m_menuSys.FindItem(MenuId_Sys_Shutdown)->Enable(false);
 
 	m_menuSys.Append(MenuId_Boot_ELF, _("&Run ELF..."),
-					 _("For running raw PS2 binaries directly."));
+		_("For running raw PS2 binaries directly."));
 
 	m_menuSys.AppendSeparator();
 
 	m_menuSys.Append(MenuId_Config_FastBoot, _("Fast Boot"),
-					 _("Skips PS2 splash screens when booting from ISO or DVD media"), wxITEM_CHECK);
+		_("Skips PS2 splash screens when booting from ISO or DVD media"), wxITEM_CHECK);
 
 	m_menuSys.Append(MenuId_GameSettingsSubMenu, _("&Game Settings"), &m_GameSettingsSubmenu);
 
 	m_GameSettingsSubmenu.Append(MenuId_EnablePatches, _("Automatic &Gamefixes"),
-								 _("Automatically applies needed Gamefixes to known problematic games."), wxITEM_CHECK);
+		_("Automatically applies needed Gamefixes to known problematic games."), wxITEM_CHECK);
 
 	m_GameSettingsSubmenu.Append(MenuId_EnableCheats, _("Enable &Cheats"),
-								 _("Use cheats otherwise known as pnachs from the cheats folder."), wxITEM_CHECK);
+		_("Use cheats otherwise known as pnachs from the cheats folder."), wxITEM_CHECK);
 
 	m_GameSettingsSubmenu.Append(MenuId_IPC, _("Configure &IPC"), &m_submenuIPC);
 
 	m_submenuIPC.Append(MenuId_IPC_Enable, _("&Enable IPC"),
-						wxEmptyString, wxITEM_CHECK);
+		wxEmptyString, wxITEM_CHECK);
 
 	m_submenuIPC.Append(MenuId_IPC_Settings, _("IPC &Settings"));
 
 	m_GameSettingsSubmenu.Append(MenuId_EnableWideScreenPatches, _("Enable &Widescreen Patches"),
-								 _("Enabling Widescreen Patches may occasionally cause issues."), wxITEM_CHECK);
+		_("Enabling Widescreen Patches may occasionally cause issues."), wxITEM_CHECK);
 
 #ifndef DISABLE_RECORDING
 	m_GameSettingsSubmenu.Append(MenuId_EnableInputRecording, _("Enable &Input Recording"),
-								 _("Input Recording for controller/keyboard presses, tools for automation and playback."), wxITEM_CHECK);
+		_("Input Recording for controller/keyboard presses, tools for automation and playback."), wxITEM_CHECK);
 #endif
 
 
 	m_GameSettingsSubmenu.Append(MenuId_EnableHostFs, _("Enable &Host Filesystem"),
-								 wxEmptyString, wxITEM_CHECK);
+		wxEmptyString, wxITEM_CHECK);
 	m_menuSys.AppendSeparator();
 	// Implement custom hotkeys (F3) with translatable string intact + not blank in GUI.
 	wxMenuItem* sysLoadStateItem = m_menuSys.Append(MenuId_Sys_LoadStates, _("&Load state"), &m_LoadStatesSubmenu);
@@ -443,7 +443,7 @@ void MainEmuFrame::CreatePcsx2Menu()
 	m_menuSys.AppendSeparator();
 
 	m_menuSys.Append(MenuId_Exit, _("E&xit"),
-					 AddAppName(_("Closing %s may be hazardous to your health.")));
+		AddAppName(_("Closing %s may be hazardous to your health.")));
 }
 
 void MainEmuFrame::CreateCdvdMenu()
@@ -488,13 +488,13 @@ void MainEmuFrame::CreateConfigMenu()
 
 	m_menuConfig.Append(MenuId_ChangeLang, L"Change &Language..."); // Always in English
 	m_menuConfig.Append(MenuId_Config_ResetAll, _("C&lear All Settings..."),
-						AddAppName(_("Clears all %s settings and re-runs the startup wizard.")));
+		AddAppName(_("Clears all %s settings and re-runs the startup wizard.")));
 }
 
 void MainEmuFrame::CreateWindowsMenu()
 {
 	m_menuWindow.Append(MenuId_Debug_Open, _("&Show Debug"), wxEmptyString, wxITEM_CHECK);
-  	m_menuWindow.Append(MenuId_Debug_CreateBlockdump, _("Create &Blockdump"), _("Creates a block dump for debugging purposes."), wxITEM_CHECK);
+	m_menuWindow.Append(MenuId_Debug_CreateBlockdump, _("Create &Blockdump"), _("Creates a block dump for debugging purposes."), wxITEM_CHECK);
 #if defined(PCSX2_DEVBUILD) || defined(PCSX2_CI)
 	m_menuWindow.Append(MenuId_GSDump, _("Show &GS Debugger"));
 #endif
@@ -644,7 +644,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 		else
 		{
 			wintitle.Printf(L"%s  %d.%d.%d-%lld%s (git)", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid,
-							PCSX2_VersionLo, SVN_REV, SVN_MODS ? L"m" : wxEmptyString);
+				PCSX2_VersionLo, SVN_REV, SVN_MODS ? L"m" : wxEmptyString);
 		}
 	}
 
@@ -906,10 +906,10 @@ void PerPluginMenuInfo::Populate(PluginsEnum_t pid)
 	if (PluginId == PluginId_GS)
 	{
 		MyMenu.Append(MenuId_Video_CoreSettings, _("&Core GS Settings..."),
-					  _("Modify hardware emulation settings regulated by the PCSX2 core virtual machine."));
+			_("Modify hardware emulation settings regulated by the PCSX2 core virtual machine."));
 
 		MyMenu.Append(MenuId_Video_WindowSettings, _("&Window Settings..."),
-					  _("Modify window and appearance options, including aspect ratio."));
+			_("Modify window and appearance options, including aspect ratio."));
 
 		MyMenu.AppendSeparator();
 	}
@@ -917,7 +917,7 @@ void PerPluginMenuInfo::Populate(PluginsEnum_t pid)
 	// Populate options from the plugin here.
 
 	MyMenu.Append(GetPluginMenuId_Settings(PluginId), _("&Plugin Settings..."),
-				  wxsFormat(_("Opens the %s plugin's advanced settings dialog."), tbl_PluginInfo[pid].GetShortname().c_str()));
+		wxsFormat(_("Opens the %s plugin's advanced settings dialog."), tbl_PluginInfo[pid].GetShortname().c_str()));
 }
 
 // deletes menu items belonging to (created by) the plugin.  Leaves menu items created
@@ -943,6 +943,6 @@ void PerPluginMenuInfo::OnLoaded()
 	if (!CorePlugins.IsLoaded(PluginId))
 		return;
 	MyMenu.SetLabel(GetPluginMenuId_Name(PluginId),
-					CorePlugins.GetName(PluginId) + L" " + CorePlugins.GetVersion(PluginId));
+		CorePlugins.GetName(PluginId) + L" " + CorePlugins.GetVersion(PluginId));
 	MyMenu.Enable(GetPluginMenuId_Settings(PluginId), true);
 }
