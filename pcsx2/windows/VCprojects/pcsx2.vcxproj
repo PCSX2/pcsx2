@@ -576,10 +576,6 @@
     <ClCompile Include="..\..\gui\AppRes.cpp" />
     <ClCompile Include="..\..\gui\ConsoleLogger.cpp" />
     <ClCompile Include="..\..\gui\CpuUsageProvider.cpp" />
-    <ClCompile Include="..\..\gui\CpuUsageProviderLnx.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\gui\CpuUsageProviderMSW.cpp" />
     <ClCompile Include="..\..\gui\ExecutorThread.cpp" />
     <ClCompile Include="..\..\gui\FrameForGS.cpp" />
     <ClCompile Include="..\..\gui\GlobalCommands.cpp" />

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -47,7 +47,7 @@ AllPCSX2Threads AllPCSX2Threads::operator-( const AllPCSX2Threads& right ) const
 	return retval;
 }
 
-DefaultCpuUsageProvider::DefaultCpuUsageProvider()
+CpuUsageProvider::CpuUsageProvider()
 {
 	m_pct_ee = 0;
 	m_pct_gs = 0;
@@ -58,18 +58,18 @@ DefaultCpuUsageProvider::DefaultCpuUsageProvider()
 	Reset();
 }
 
-void DefaultCpuUsageProvider::Reset()
+void CpuUsageProvider::Reset()
 {
 	for( uint i=0; i<QueueDepth; ++i )
 		m_queue[i].LoadWithCurrentTimes();
 }
 
-bool DefaultCpuUsageProvider::IsImplemented() const
+bool CpuUsageProvider::IsImplemented() const
 {
 	return GetThreadTicksPerSecond() != 0;
 }
 
-void DefaultCpuUsageProvider::UpdateStats()
+void CpuUsageProvider::UpdateStats()
 {
 	// Measure deltas between the first and last positions in the ring buffer:
 
@@ -87,22 +87,22 @@ void DefaultCpuUsageProvider::UpdateStats()
 	m_pct_ui = (deltas.ui * 100) / timepass;
 }
 
-int DefaultCpuUsageProvider::GetEEcorePct() const
+int CpuUsageProvider::GetEEcorePct() const
 {
 	return m_pct_ee;
 }
 
-int DefaultCpuUsageProvider::GetGsPct() const
+int CpuUsageProvider::GetGsPct() const
 {
 	return m_pct_gs;
 }
 
-int DefaultCpuUsageProvider::GetVUPct() const
+int CpuUsageProvider::GetVUPct() const
 {
 	return m_pct_vu;
 }
 
-int DefaultCpuUsageProvider::GetGuiPct() const
+int CpuUsageProvider::GetGuiPct() const
 {
 	return m_pct_ui;
 }
