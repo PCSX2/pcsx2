@@ -52,46 +52,14 @@ typedef struct
 	unsigned int unknown;
 } fio_dirent_t;
 
-static char HostRoot[1024];
+static std::string hostRoot;
 
 void Hle_SetElfPath(const char* elfFileName)
 {
 	DevCon.WriteLn("HLE Host: Will load ELF: %s\n", elfFileName);
-
-	const char* pos1 = strrchr(elfFileName, '/');
-	const char* pos2 = strrchr(elfFileName, '\\');
-
-	if (pos2 > pos1) // we want the LAST path separator
-		pos1 = pos2;
-
-	if (!pos1) // if pos1 is NULL, then pos2 was not > pos1, so it must also be NULL
-	{
-		Console.WriteLn("HLE Notice: ELF does not have a path.\n");
-
-		// use %CD%/host/
-		char* cwd = getcwd(HostRoot, 1000); // save the other 23 chars to append /host/ :P
-		HostRoot[1000] = 0; // Be Safe.
-		if (cwd == nullptr)
-		{
-			Console.Error("Hle_SetElfPath: getcwd: buffer is too small");
-			return;
-		}
-
-		char* last = HostRoot + strlen(HostRoot) - 1;
-
-		if ((*last != '/') && (*last != '\\')) // PathAppend()-ish
-			last++;
-
-		strcpy(last, "/host/");
-
-		return;
-	}
-
-	int len = pos1 - elfFileName + 1;
-	memcpy(HostRoot, elfFileName, len); // include the / (or \\)
-	HostRoot[len] = 0;
-
-	Console.WriteLn("HLE Host: Set 'host:' root path to: %s\n", HostRoot);
+	ghc::filesystem::path elf_path{elfFileName};
+	hostRoot = elf_path.parent_path().concat("/");
+	Console.WriteLn("HLE Host: Set 'host:' root path to: %s\n", hostRoot.c_str());
 }
 
 namespace R3000A
@@ -121,7 +89,7 @@ namespace R3000A
 
 	static std::string host_path(const std::string path)
 	{
-		ghc::filesystem::path hostRootPath{HostRoot};
+		ghc::filesystem::path hostRootPath{hostRoot};
 		ghc::filesystem::path currentPath{path};
 
 		// We are NOT allowing to use the root of the host unit.
