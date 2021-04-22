@@ -659,12 +659,6 @@
     <ClCompile Include="..\..\gui\CpuUsageProvider.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\CpuUsageProviderLnx.cpp">
-      <Filter>AppHost</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\gui\CpuUsageProviderMSW.cpp">
-      <Filter>AppHost</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\gui\FrameForGS.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>

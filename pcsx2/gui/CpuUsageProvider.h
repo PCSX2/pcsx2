@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -32,24 +32,6 @@ public:
 	virtual int GetGuiPct() const=0;
 };
 
-
-class CpuUsageProvider : public BaseCpuUsageProvider
-{
-protected:
-	std::unique_ptr<BaseCpuUsageProvider> m_Implementation;
-
-public:
-	CpuUsageProvider();
-	virtual ~CpuUsageProvider();
-
-	virtual bool IsImplemented() const	{ return m_Implementation->IsImplemented(); }
-	virtual void UpdateStats()			{ m_Implementation->UpdateStats(); }
-	virtual int GetEEcorePct() const	{ return m_Implementation->GetEEcorePct(); }
-	virtual int GetGsPct() const		{ return m_Implementation->GetGsPct(); }
-	virtual int GetVUPct() const		{ return m_Implementation->GetVUPct(); }
-	virtual int GetGuiPct() const		{ return m_Implementation->GetGuiPct(); }
-};
-
 struct AllPCSX2Threads
 {
 	u64		ee, gs, vu, ui;
@@ -59,7 +41,7 @@ struct AllPCSX2Threads
 	AllPCSX2Threads operator-( const AllPCSX2Threads& right ) const;
 };
 
-class DefaultCpuUsageProvider :
+class CpuUsageProvider :
 	public BaseCpuUsageProvider,
 	public EventListener_CoreThread
 {
@@ -76,8 +58,8 @@ protected:
 	u32		m_pct_ui;
 
 public:
-	DefaultCpuUsageProvider();
-	virtual ~DefaultCpuUsageProvider() = default;
+	CpuUsageProvider();
+	virtual ~CpuUsageProvider() = default;
 
 	bool IsImplemented() const;
 	void Reset();
