@@ -493,8 +493,8 @@ void MainEmuFrame::CreateConfigMenu()
 
 void MainEmuFrame::CreateWindowsMenu()
 {
-	m_menuWindow.Append(MenuId_Debug_Open, _("&Show Debug"), wxEmptyString, wxITEM_CHECK);
 	m_menuWindow.Append(MenuId_Debug_CreateBlockdump, _("Create &Blockdump"), _("Creates a block dump for debugging purposes."), wxITEM_CHECK);
+	m_menuWindow.Append(MenuId_Debug_Open, _("&Show Debugger"), wxEmptyString, wxITEM_CHECK);
 #if defined(PCSX2_DEVBUILD) || defined(PCSX2_CI)
 	m_menuWindow.Append(MenuId_GSDump, _("Show &GS Debugger"));
 #endif
