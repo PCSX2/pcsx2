@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -147,8 +147,8 @@ void MainEmuFrame::Menu_ResetAllSettings_Click(wxCommandEvent& event)
 	{
 		ScopedCoreThreadPopup suspender;
 		if (!Msgbox::OkCancel(pxsFmt(
-								  pxE(L"This command clears %s settings and allows you to re-run the First-Time Wizard.  You will need to manually restart %s after this operation.\n\nWARNING!!  Click OK to delete *ALL* settings for %s and force-close the app, losing any current emulation progress.  Are you absolutely sure?\n\n(note: settings for plugins are unaffected)"), WX_STR(pxGetAppName()), WX_STR(pxGetAppName()), WX_STR(pxGetAppName())),
-							  _("Reset all settings?")))
+				pxE(L"This command clears %s settings and allows you to re-run the First-Time Wizard.  You will need to manually restart %s after this operation.\n\nWARNING!!  Click OK to delete *ALL* settings for %s and force-close the app, losing any current emulation progress.  Are you absolutely sure?\n\n(note: settings for plugins are unaffected)"), WX_STR(pxGetAppName()), WX_STR(pxGetAppName()), WX_STR(pxGetAppName())),
+				_("Reset all settings?")))
 		{
 			suspender.AllowResume();
 			return;
@@ -296,7 +296,7 @@ wxWindowID SwapOrReset_CdvdSrc(wxWindow* owner, CDVD_SourceType newsrc)
 
 		wxString changeMsg;
 		changeMsg.Printf(_("You've selected to switch the CDVD source from %s to %s."),
-						 CDVD_SourceLabels[enum_cast(g_Conf->CdvdSource)], CDVD_SourceLabels[enum_cast(newsrc)]);
+			CDVD_SourceLabels[enum_cast(g_Conf->CdvdSource)], CDVD_SourceLabels[enum_cast(newsrc)]);
 
 		dialog += dialog.Heading(changeMsg + L"\n\n" +
 								 _("Do you want to swap discs or boot the new image (system reset)?"));
@@ -323,8 +323,8 @@ wxWindowID SwapOrReset_CdvdSrc(wxWindow* owner, CDVD_SourceType newsrc)
 	if (result != wxID_RESET)
 	{
 		Console.Indent().WriteLn(L"(CdvdSource) HotSwapping CDVD source types from %s to %s.",
-								 WX_STR(wxString(CDVD_SourceLabels[enum_cast(oldsrc)])),
-								 WX_STR(wxString(CDVD_SourceLabels[enum_cast(newsrc)])));
+			WX_STR(wxString(CDVD_SourceLabels[enum_cast(oldsrc)])),
+			WX_STR(wxString(CDVD_SourceLabels[enum_cast(newsrc)])));
 		//CoreThread.ChangeCdvdSource();
 		sMainFrame.UpdateCdvdSrcSelection();
 		core.AllowResume();
@@ -390,7 +390,7 @@ bool MainEmuFrame::_DoSelectIsoBrowser(wxString& result)
 	isoFilterTypes.Add(L"*.*");
 
 	wxFileDialog ctrl(this, _("Select disc image, compressed disc image, or block-dump..."), g_Conf->Folders.RunIso.ToString(), wxEmptyString,
-					  JoinString(isoFilterTypes, L"|"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+		JoinString(isoFilterTypes, L"|"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
 	if (ctrl.ShowModal() != wxID_CANCEL)
 	{
@@ -407,7 +407,7 @@ bool MainEmuFrame::_DoSelectELFBrowser()
 	static const wxChar* elfFilterType = L"ELF Files (.elf)|*.elf;*.ELF";
 
 	wxFileDialog ctrl(this, _("Select ELF file..."), g_Conf->Folders.RunELF.ToString(), wxEmptyString,
-					  (wxString)elfFilterType + L"|" + _("All Files (*.*)") + L"|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
+		(wxString)elfFilterType + L"|" + _("All Files (*.*)") + L"|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
 	if (ctrl.ShowModal() != wxID_CANCEL)
 	{
@@ -638,7 +638,7 @@ void MainEmuFrame::Menu_EnableRecordingTools_Click(wxCommandEvent& event)
 		if (!Msgbox::OkCancel(_("Please be aware that PCSX2's input recording features are still very much a work-in-progress.\n"
 								"As a result, there may be unforeseen bugs, performance implications and instability with certain games.\n\n"
 								"These tools are provided as-is and should be enabled under your own discretion."),
-							  "Enabling Input Recording"))
+				"Enabling Input Recording"))
 		{
 			checked = false;
 			m_GameSettingsSubmenu.FindChildItem(MenuId_EnableInputRecording)->Check(false);
@@ -733,7 +733,7 @@ void MainEmuFrame::Menu_SaveStates_Click(wxCommandEvent& event)
 void MainEmuFrame::Menu_LoadStateFromFile_Click(wxCommandEvent& event)
 {
 	wxFileDialog loadStateDialog(this, _("Load State"), L"", L"",
-								 L"Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
+		L"Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
 
 	if (loadStateDialog.ShowModal() == wxID_CANCEL)
 	{
@@ -747,7 +747,7 @@ void MainEmuFrame::Menu_LoadStateFromFile_Click(wxCommandEvent& event)
 void MainEmuFrame::Menu_SaveStateToFile_Click(wxCommandEvent& event)
 {
 	wxFileDialog saveStateDialog(this, _("Save State"), L"", L"",
-								 L"Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
+		L"Savestate files (*.p2s)|*.p2s", wxFD_OPEN);
 
 	if (saveStateDialog.ShowModal() == wxID_CANCEL)
 	{
@@ -915,6 +915,7 @@ void MainEmuFrame::Menu_Wiki(wxCommandEvent& event)
 {
 	wxLaunchDefaultBrowser("https://wiki.pcsx2.net/Main_Page");
 }
+
 void MainEmuFrame::Menu_Forums(wxCommandEvent& event)
 {
 	wxLaunchDefaultBrowser("https://forums.pcsx2.net/");
@@ -1000,7 +1001,7 @@ void MainEmuFrame::VideoCaptureToggle()
 		}
 		else
 			m_capturingVideo = false;
-		
+
 		if (needsMainFrameEnable)
 			Enable();
 	}
@@ -1080,7 +1081,7 @@ void MainEmuFrame::Menu_Recording_Play_Click(wxCommandEvent& event)
 		g_InputRecordingControls.PauseImmediately();
 
 	wxFileDialog openFileDialog(this, _("Select P2M2 record file."), L"", L"",
-								L"p2m2 file(*.p2m2)|*.p2m2", wxFD_OPEN);
+		L"p2m2 file(*.p2m2)|*.p2m2", wxFD_OPEN);
 	if (openFileDialog.ShowModal() == wxID_CANCEL)
 	{
 		if (!initiallyPaused)
@@ -1114,7 +1115,7 @@ void MainEmuFrame::ApplyFirstFrameStatus()
 		cdvd_menu->SetHelp(L"Loads the savestate that accompanies the active input recording");
 	else
 		cdvd_menu->SetHelp(L"Reboots Emulation");
-		
+
 	UpdateStatusBar();
 }
 

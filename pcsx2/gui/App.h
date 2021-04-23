@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -87,9 +87,9 @@ enum MenuIdentifiers
 	MenuId_Boot = 1,
 	MenuId_Emulation,
 	MenuId_Config, // General config, plus non audio/video plugins.
-	MenuId_Video,  // Video options filled in by GS plugin
-	MenuId_Audio,  // audio options filled in by SPU2 plugin
-	MenuId_Misc,   // Misc options and help!
+	MenuId_Video, // Video options filled in by GS plugin
+	MenuId_Audio, // audio options filled in by SPU2 plugin
+	MenuId_Misc, // Misc options and help!
 
 	MenuId_Exit = wxID_EXIT,
 	MenuId_About = wxID_ABOUT,
@@ -114,10 +114,10 @@ enum MenuIdentifiers
 	//MenuId_Boot_Recent,			// Menu populated with recent source bootings
 
 
-	MenuId_Sys_SuspendResume,  // suspends/resumes active emulation, retains plugin states
-	MenuId_Sys_Shutdown,       // Closes virtual machine, shuts down plugins, wipes states.
-	MenuId_Sys_LoadStates,     // Opens load states submenu
-	MenuId_Sys_SaveStates,     // Opens save states submenu
+	MenuId_Sys_SuspendResume, // suspends/resumes active emulation, retains plugin states
+	MenuId_Sys_Shutdown, // Closes virtual machine, shuts down plugins, wipes states.
+	MenuId_Sys_LoadStates, // Opens load states submenu
+	MenuId_Sys_SaveStates, // Opens save states submenu
 	MenuId_EnableBackupStates, // Checkbox to enable/disables savestates backup
 	MenuId_GameSettingsSubMenu,
 	MenuId_EnablePatches,
@@ -180,8 +180,8 @@ enum MenuIdentifiers
 	MenuId_Video_WindowSettings,
 
 	// Miscellaneous Menu!  (Misc)
-	MenuId_Console,       // Enable console
-	MenuId_ChangeLang,    // Change language (resets first time wizard to show on next start)
+	MenuId_Console, // Enable console
+	MenuId_ChangeLang, // Change language (resets first time wizard to show on next start)
 	MenuId_Console_Stdio, // Enable Stdio
 
 	// Debug Subsection
@@ -738,21 +738,21 @@ wxDECLARE_APP(Pcsx2App);
 // continue running silently.  These macros make that possible without any extra boilerplate
 // conditionals or temp variable defines in the code.
 //
-#define sApp                                                \
+#define sApp \
 	if (Pcsx2App* __app_ = (Pcsx2App*)wxApp::GetInstance()) \
 	(*__app_)
 
-#define sLogFrame                                                  \
+#define sLogFrame \
 	if (ConsoleLogFrame* __conframe_ = wxGetApp().GetProgramLog()) \
 	(*__conframe_)
 
-#define sMainFrame                                  \
+#define sMainFrame \
 	if (MainEmuFrame* __frame_ = GetMainFramePtr()) \
 	(*__frame_)
 
 // Use this within the scope of a wxWindow (wxDialog or wxFrame).  If the window has a valid menu
 // bar, the command will run, otherwise it will be silently ignored. :)
-#define sMenuBar                              \
+#define sMenuBar \
 	if (wxMenuBar* __menubar_ = GetMenuBar()) \
 	(*__menubar_)
 
