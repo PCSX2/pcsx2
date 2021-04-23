@@ -30083,11 +30083,10 @@ SLPS-25709:
 SLPS-25710:
   name: "K-1 World Grand Prix 2006"
   region: "NTSC-J"
-  gameFixes:
-    - InstantVU1SpeedHack: 0  # Fixes random black frames from happening when in a fight session.
   compat: 4
   gameFixes:
     - XGKickHack # Fixes grey fighters problem.
+    - InstantVU1SpeedHack: 0  # Fixes random black frames from happening when in a fight session.
 SLPS-25711:
   name: "Kashimashi! Girl Meets Girl [Best Collection]"
   region: "NTSC-J"
