@@ -17,59 +17,16 @@
 
 #ifndef DISABLE_RECORDING
 
-// ---- Binary File Layout
-// ---- Header
-// v2.0 - Magic String = "pcsx2-input-recording"
-// v2.0 - (u8) File Version major
-// v2.0 - (u8) File Version minor
-// v2.0 - (int) Offset to Header Metadata
-// v2.0 - (int) Offset to Frame Counter
-// v2.0 - (int) Offset to Redo Counter
-// v2.0 - (int) Offset to Start of Frame Data
-// ---- Header Metadata
-// v2.0 - (u8) emulator version major
-// v2.0 - (u8) emulator version minor
-// v2.0 - (u8) emulator version patch
-// v2.0 - (string) emulator version name
-// v2.0 - (string) recording author
-// v2.0 - (string) game name
-// v2.0 - (long) - total frames
-// v2.0 - (long) - redo count
-// v2.0 - (int) - recording type (enum)
-// v2.0 - (u8) - number of controllers per frame
-// ---- Frame Data (Input Recording Type (Power-On or Savestate))
-// v2.0 - controller[0] - PadData (see below)
-// ...
-// v2.0 - controller[num_controllers_per_frame] - See above
-// ...
-// ---- Frame Data (Input Recording Macro Type)
-// v2.0 - controller[0] - PadData (see below).
-//			- each value is preceeded by a bool to indicate if it should be ignored or not
-//				- the exception is the first two bitfields for indicating if inputs are pressed or not,
-//					these are preceeded similarly by bitfields to indicate if they should be ignored
-// ...
-// v2.0 - controller[num_controllers_per_frame] - See above
-// ...
-
-// ---- PadData
-// ---- Pressed Flags Bitfield - (0 means pressed!)
-// Left, Down, Right, Up, Start, R3, L3, Select
-// ---- Pressed Flags Bitfield - (0 means pressed!)
-// Square, Cross, Circle, Triangle, R1, L1, R2, L2
-// ---- Analog Sticks Bytes
-// Right Analog X
-// Right Analog Y
-// Left Analog X
-// Left Analog Y
-// ---- Pressure Bytes
-// Right, Left, Up, Down, Triangle, Circle, Cross, Square, L1, R1, L2, R2
-
 #include "System.h"
 #include "Utilities/FileUtils.h"
 #include "Recording/file/v1/InputRecordingFileV1.h"
 
 #include <string>
 
+/**
+ * @brief Handles all operations on the input recording file.
+ *        You can find documentation on this file format in `pcsx2/Recording/docs/recording-file-schema.md`
+*/
 class InputRecordingFileV2
 {
 public:
@@ -129,7 +86,6 @@ private:
 		std::string m_emulator_version = "";
 		std::string m_recording_author = "";
 		std::string m_game_name = "";
-		// An signed 32-bit frame limit is equivalent to 1.13 years of continuous 60fps footage (assuming 2 controllers per frame!)
 		long m_total_frames = 0;
 		long m_redo_count = 0;
 		InputRecordingType m_recording_type = InputRecordingType::INPUT_RECORDING_POWER_ON;

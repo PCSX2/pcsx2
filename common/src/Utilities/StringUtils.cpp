@@ -46,8 +46,7 @@ std::wstring StringUtils::UTF8::widen(const std::string_view& str)
 	auto const size =
 		MultiByteToWideChar(CP_UTF8, 0, str.data(), str.size(), nullptr, 0);
 
-	std::wstring output;
-	output.resize(size);
+	std::wstring output(size, '\0');
 
 	if (size == 0 ||
 		size != MultiByteToWideChar(CP_UTF8, 0, str.data(), str.size(),

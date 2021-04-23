@@ -20,7 +20,10 @@
 #include "System.h"
 #include "Recording/PadData.h"
 
-// Handles all operations on the input recording file
+/**
+ * @brief Handles all operations on the input recording file.
+ *        You can find documentation on this file format in `pcsx2/Recording/docs/recording-file-schema.md`
+*/
 class InputRecordingFileV1
 {
 public:

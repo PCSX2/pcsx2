@@ -114,7 +114,6 @@ void NewRecordingFrame::enableOkBox()
 	}
 }
 
-// TODO - i removed the wxWidgets fix here, double check in a linux environment!
 fs::path NewRecordingFrame::getFile() const
 {
 	return FileUtils::wxStringToPath(m_file_picker->GetPath());

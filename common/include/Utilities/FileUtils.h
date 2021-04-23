@@ -16,9 +16,10 @@
 #pragma once
 
 #include "ghc/filesystem.h"
+#include "fmt/format.h"
 #include "wx/string.h"
 
-#include "fmt/format.h"
+#include "StringUtils.h"
 
 #include <iostream>
 #include <fstream>
