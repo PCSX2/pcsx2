@@ -65,26 +65,10 @@ public:
 
 		GSVector8i::sw64(v0, v1);
 
-		if (mask == 0xffffffff)
-		{
-			((GSVector8i*)dst)[i * 2 + 0] = v0;
-			((GSVector8i*)dst)[i * 2 + 1] = v1;
-		}
-		else
-		{
-			GSVector8i v2((int)mask);
+		GSVector8i* d = reinterpret_cast<GSVector8i*>(dst);
 
-			if (mask == 0xff000000 || mask == 0x00ffffff)
-			{
-				((GSVector8i*)dst)[i * 2 + 0] = ((GSVector8i*)dst)[i * 2 + 0].blend8(v0, v2);
-				((GSVector8i*)dst)[i * 2 + 1] = ((GSVector8i*)dst)[i * 2 + 1].blend8(v1, v2);
-			}
-			else
-			{
-				((GSVector8i*)dst)[i * 2 + 0] = ((GSVector8i*)dst)[i * 2 + 0].blend(v0, v2);
-				((GSVector8i*)dst)[i * 2 + 1] = ((GSVector8i*)dst)[i * 2 + 1].blend(v1, v2);
-			}
-		}
+		d[i * 2 + 0] = d[i * 2 + 0].smartblend<mask>(v0);
+		d[i * 2 + 1] = d[i * 2 + 1].smartblend<mask>(v1);
 
 #else
 
@@ -120,32 +104,12 @@ public:
 
 #endif
 
-		if (mask == 0xffffffff)
-		{
-			((GSVector4i*)dst)[i * 4 + 0] = v0;
-			((GSVector4i*)dst)[i * 4 + 1] = v1;
-			((GSVector4i*)dst)[i * 4 + 2] = v2;
-			((GSVector4i*)dst)[i * 4 + 3] = v3;
-		}
-		else
-		{
-			GSVector4i v4((int)mask);
+		GSVector4i* d = reinterpret_cast<GSVector4i*>(dst);
 
-			if (mask == 0xff000000 || mask == 0x00ffffff)
-			{
-				((GSVector4i*)dst)[i * 4 + 0] = ((GSVector4i*)dst)[i * 4 + 0].blend8(v0, v4);
-				((GSVector4i*)dst)[i * 4 + 1] = ((GSVector4i*)dst)[i * 4 + 1].blend8(v1, v4);
-				((GSVector4i*)dst)[i * 4 + 2] = ((GSVector4i*)dst)[i * 4 + 2].blend8(v2, v4);
-				((GSVector4i*)dst)[i * 4 + 3] = ((GSVector4i*)dst)[i * 4 + 3].blend8(v3, v4);
-			}
-			else
-			{
-				((GSVector4i*)dst)[i * 4 + 0] = ((GSVector4i*)dst)[i * 4 + 0].blend(v0, v4);
-				((GSVector4i*)dst)[i * 4 + 1] = ((GSVector4i*)dst)[i * 4 + 1].blend(v1, v4);
-				((GSVector4i*)dst)[i * 4 + 2] = ((GSVector4i*)dst)[i * 4 + 2].blend(v2, v4);
-				((GSVector4i*)dst)[i * 4 + 3] = ((GSVector4i*)dst)[i * 4 + 3].blend(v3, v4);
-			}
-		}
+		d[i * 4 + 0] = d[i * 4 + 0].smartblend<mask>(v0);
+		d[i * 4 + 1] = d[i * 4 + 1].smartblend<mask>(v1);
+		d[i * 4 + 2] = d[i * 4 + 2].smartblend<mask>(v2);
+		d[i * 4 + 3] = d[i * 4 + 3].smartblend<mask>(v3);
 
 #endif
 	}
