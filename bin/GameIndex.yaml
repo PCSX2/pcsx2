@@ -2868,6 +2868,7 @@ SCKA-20092:
   region: "NTSC-K"
   gameFixes:
     - XGKickHack # Fixes grey fighters problem.
+    - InstantVU1SpeedHack: 0  # Fixes random black frames from happening when in a fight session.
 SCKA-20096:
   name: "Barnyard"
   region: "NTSC-K"
@@ -12682,6 +12683,8 @@ SLES-53461:
   name: "Sega Classics Collection"
   region: "PAL-E"
   compat: 5
+  gameFixes:
+    - XGKickHack # Fixes black and white vehicle previews in MonacoGP.
 SLES-53462:
   name: "Matrix, The - Path of Neo"
   region: "PAL-M5"
@@ -19109,6 +19112,8 @@ SLPM-62362:
 SLPM-62364:
   name: "Sega Ages 2500 Series Vol.02 - Monaco GP"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes black and white vehicle previews.
 SLPM-62365:
   name: "Cardinal Arc - Konton no Fuusatsu"
   region: "NTSC-J"
@@ -21353,6 +21358,8 @@ SLPM-65373:
 SLPM-65374:
   name: "Energy Airforce - Aim Strike!"
   region: "NTSC-J"
+  gameFixes:
+    - InstantVU1SpeedHack: 0  # Fixes hanging while going ingame.
 SLPM-65375:
   name: "Shin Sangoku Musou 3 - Mushouden [Premium Pack]"
   region: "NTSC-J"
@@ -30076,6 +30083,8 @@ SLPS-25709:
 SLPS-25710:
   name: "K-1 World Grand Prix 2006"
   region: "NTSC-J"
+  gameFixes:
+    - InstantVU1SpeedHack: 0  # Fixes random black frames from happening when in a fight session.
   compat: 4
   gameFixes:
     - XGKickHack # Fixes grey fighters problem.
@@ -35376,6 +35385,8 @@ SLUS-21009:
   name: "Sega Classics Collection"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - XGKickHack # Fixes black and white vehicle previews in MonacoGP.
 SLUS-21010:
   name: "NanoBreaker"
   region: "NTSC-U"
