@@ -251,10 +251,11 @@ protected:
 
 	void Menu_GetStarted(wxCommandEvent& event);
 	void Menu_Compatibility(wxCommandEvent& event);
-	void Menu_Forums(wxCommandEvent& event);
 	void Menu_Website(wxCommandEvent& event);
-	void Menu_Github(wxCommandEvent& event);
 	void Menu_Wiki(wxCommandEvent& event);
+	void Menu_Forums(wxCommandEvent& event);
+	void Menu_Discord(wxCommandEvent& event);
+	void Menu_Github(wxCommandEvent& event);
 	void Menu_ShowAboutBox(wxCommandEvent& event);
 	void Menu_ShowGSDump(wxCommandEvent& event);
 

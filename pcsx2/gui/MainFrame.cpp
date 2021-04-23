@@ -294,10 +294,11 @@ void MainEmuFrame::ConnectMenus()
 
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_GetStarted, this, MenuId_Help_GetStarted);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Compatibility, this, MenuId_Help_Compatibility);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Forums, this, MenuId_Help_Forums);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Website, this, MenuId_Help_Website);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Github, this, MenuId_Help_Github);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Wiki, this, MenuId_Help_Wiki);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Forums, this, MenuId_Help_Forums);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Github, this, MenuId_Help_Github);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Discord, this, MenuId_Help_Discord);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ShowAboutBox, this, MenuId_About);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ShowGSDump, this, MenuId_GSDump);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ChangeLang, this, MenuId_ChangeLang);
@@ -557,6 +558,8 @@ void MainEmuFrame::CreateHelpMenu()
 	m_menuHelp.Append(MenuId_Help_Website, _("&Website"));
 	m_menuHelp.Append(MenuId_Help_Wiki, _("&Wiki"));
 	m_menuHelp.Append(MenuId_Help_Forums, _("&Support Forums"));
+	m_menuHelp.Append(MenuId_Help_Discord, _("&Discord"));
+	m_menuHelp.AppendSeparator();
 	m_menuHelp.Append(MenuId_Help_Github, _("&GitHub Repository"));
 	m_menuHelp.AppendSeparator();
 	m_menuHelp.Append(MenuId_About, _("&About..."));

@@ -906,24 +906,28 @@ void MainEmuFrame::Menu_Compatibility(wxCommandEvent& event)
 	wxLaunchDefaultBrowser("https://pcsx2.net/compatibility-list.html");
 }
 
-void MainEmuFrame::Menu_Forums(wxCommandEvent& event)
-{
-	wxLaunchDefaultBrowser("https://forums.pcsx2.net/");
-}
-
 void MainEmuFrame::Menu_Website(wxCommandEvent& event)
 {
 	wxLaunchDefaultBrowser("https://pcsx2.net/");
 }
 
-void MainEmuFrame::Menu_Github(wxCommandEvent& event)
-{
-	wxLaunchDefaultBrowser("https://github.com/PCSX2/pcsx2");
-}
-
 void MainEmuFrame::Menu_Wiki(wxCommandEvent& event)
 {
 	wxLaunchDefaultBrowser("https://wiki.pcsx2.net/Main_Page");
+}
+void MainEmuFrame::Menu_Forums(wxCommandEvent& event)
+{
+	wxLaunchDefaultBrowser("https://forums.pcsx2.net/");
+}
+
+void MainEmuFrame::Menu_Discord(wxCommandEvent& event)
+{
+	wxLaunchDefaultBrowser("https://discord.com/invite/TCz3t9k");
+}
+
+void MainEmuFrame::Menu_Github(wxCommandEvent& event)
+{
+	wxLaunchDefaultBrowser("https://github.com/PCSX2/pcsx2");
 }
 
 void MainEmuFrame::Menu_ShowAboutBox(wxCommandEvent& event)
