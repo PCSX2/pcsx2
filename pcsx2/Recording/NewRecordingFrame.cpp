@@ -15,50 +15,66 @@
 
 #include "PrecompiledHeader.h"
 
+#ifndef DISABLE_RECORDING
+
 #include "NewRecordingFrame.h"
 
+#include <wx/gbsizer.h>
 
-#ifndef DISABLE_RECORDING
 NewRecordingFrame::NewRecordingFrame(wxWindow* parent)
 	: wxDialog(parent, wxID_ANY, "New Input Recording", wxDefaultPosition, wxDefaultSize, wxSTAY_ON_TOP | wxCLOSE_BOX | wxCAPTION)
 {
-	wxPanel* panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _("panel"));
+	m_panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _("panel"));
 
-	wxFlexGridSizer* fgs = new wxFlexGridSizer(4, 2, 20, 20);
+	wxGridBagSizer* gbs = new wxGridBagSizer(20, 20);
+	gbs->SetFlexibleDirection(wxBOTH);
+	gbs->SetNonFlexibleGrowMode(wxFLEX_GROWMODE_SPECIFIED);
 	wxBoxSizer* container = new wxBoxSizer(wxVERTICAL);
 
-	m_fileLabel = new wxStaticText(panel, wxID_ANY, _("File Path"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
-	m_authorLabel = new wxStaticText(panel, wxID_ANY, _("Author"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
-	m_fromLabel = new wxStaticText(panel, wxID_ANY, _("Record From"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+	m_fileLabel = new wxStaticText(m_panel, wxID_ANY, _("File Path"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+	m_authorLabel = new wxStaticText(m_panel, wxID_ANY, _("Author"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+	m_fromLabel = new wxStaticText(m_panel, wxID_ANY, _("Record From"), wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
 
-	m_filePicker = new wxFilePickerCtrl(panel, MenuIds_New_Recording_Frame_File, wxEmptyString, "File", L"p2m2 file(*.p2m2)|*.p2m2", wxDefaultPosition, wxDefaultSize, wxFLP_SAVE | wxFLP_OVERWRITE_PROMPT | wxFLP_USE_TEXTCTRL);
-	m_authorInput = new wxTextCtrl(panel, MenuIds_New_Recording_Frame_Author, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	m_fromChoice = new wxChoice(panel, MenuIds_New_Recording_Frame_From, wxDefaultPosition, wxDefaultSize, NULL);
+	m_filePicker = new wxFilePickerCtrl(m_panel, MenuIds_New_Recording_Frame_File, wxEmptyString, "File", L"p2m2 file(*.p2m2)|*.p2m2", wxDefaultPosition, wxDefaultSize, wxFLP_SAVE | wxFLP_OVERWRITE_PROMPT | wxFLP_USE_TEXTCTRL);
+	m_authorInput = new wxTextCtrl(m_panel, MenuIds_New_Recording_Frame_Author, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+	m_fromChoice = new wxChoice(m_panel, MenuIds_New_Recording_Frame_From, wxDefaultPosition, wxDefaultSize, NULL);
 
-	m_startRecording = new wxButton(panel, wxID_OK, _("Browse Required"), wxDefaultPosition, wxDefaultSize);
+	m_savestate_label =
+		_("Be Warned! Basing an input recording off a savestate can be a mistake as savestates can break across emulator versions. Be prepared to be stuck to an emulator version or have to re-create your starting savestate in a later version.");
+	m_warning_label = new wxStaticText(m_panel, wxID_ANY, "", wxDefaultPosition, wxDefaultSize, wxALIGN_CENTER);
+	m_warning_label->SetForegroundColour(wxColor(*wxRED));
+
+	m_startRecording = new wxButton(m_panel, wxID_OK, _("Browse Required"), wxDefaultPosition, wxDefaultSize);
 	m_startRecording->Enable(false);
-	m_cancelRecording = new wxButton(panel, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize);
+	m_cancelRecording = new wxButton(m_panel, wxID_CANCEL, _("Cancel"), wxDefaultPosition, wxDefaultSize);
 
-	fgs->Add(m_fileLabel, 1);
-	fgs->Add(m_filePicker, 1);
+	gbs->Add(m_fileLabel, wxGBPosition(0, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	gbs->Add(m_filePicker, wxGBPosition(0, 1), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 
-	fgs->Add(m_authorLabel, 1);
-	fgs->Add(m_authorInput, 1, wxEXPAND);
+	gbs->Add(m_authorLabel, wxGBPosition(1, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	gbs->Add(m_authorInput, wxGBPosition(1, 1), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
 
-	fgs->Add(m_fromLabel, 1);
-	fgs->Add(m_fromChoice, 1, wxEXPAND);
+	gbs->Add(m_fromLabel, wxGBPosition(2, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	gbs->Add(m_fromChoice, wxGBPosition(2, 1), wxDefaultSpan, wxALIGN_CENTER_VERTICAL | wxEXPAND);
 
-	fgs->Add(m_startRecording, 1);
-	fgs->Add(m_cancelRecording, 1);
+	gbs->Add(m_warning_label, wxGBPosition(3, 0), wxGBSpan(1, 2), wxALIGN_CENTER_VERTICAL);
 
-	container->Add(fgs, 1, wxALL | wxEXPAND, 15);
-	panel->SetSizer(container);
-	panel->GetSizer()->Fit(this);
+	gbs->Add(m_startRecording, wxGBPosition(4, 0), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+	gbs->Add(m_cancelRecording, wxGBPosition(4, 1), wxDefaultSpan, wxALIGN_CENTER_VERTICAL);
+
+	gbs->AddGrowableCol(0);
+	gbs->AddGrowableCol(1);
+	gbs->AddGrowableRow(3);
+
+	container->Add(gbs, 1, wxALL | wxEXPAND, 15);
+	m_panel->SetSizer(container);
+	m_panel->GetSizer()->Fit(this);
 	Centre();
 
 	m_fileBrowsed = false;
 	m_filePicker->GetPickerCtrl()->Bind(wxEVT_FILEPICKER_CHANGED, &NewRecordingFrame::OnFileDirChange, this);
 	m_filePicker->Bind(wxEVT_FILEPICKER_CHANGED, &NewRecordingFrame::OnFileChanged, this);
+	m_fromChoice->Bind(wxEVT_CHOICE, &NewRecordingFrame::OnRecordingTypeChoiceChanged, this);
 }
 
 int NewRecordingFrame::ShowModal(const bool isCoreThreadOpen)
@@ -66,6 +82,16 @@ int NewRecordingFrame::ShowModal(const bool isCoreThreadOpen)
 	static const char* choices[2] = {"Boot", "Current Frame"};
 	m_fromChoice->Set(wxArrayString(1 + isCoreThreadOpen, &choices[0]));
 	m_fromChoice->SetSelection(isCoreThreadOpen);
+	if (m_fromChoice->GetSelection() == 1)
+	{
+		m_warning_label->SetLabel(m_savestate_label);
+	}
+	else
+	{
+		m_warning_label->SetLabel("");
+	}
+	m_warning_label->Wrap(GetClientSize().GetWidth());
+	m_panel->GetSizer()->Fit(this);
 	return wxDialog::ShowModal();
 }
 
@@ -79,6 +105,20 @@ void NewRecordingFrame::OnFileDirChange(wxFileDirPickerEvent& event)
 void NewRecordingFrame::OnFileChanged(wxFileDirPickerEvent& event)
 {
 	EnableOkBox();
+}
+
+void NewRecordingFrame::OnRecordingTypeChoiceChanged(wxCommandEvent& event)
+{
+	if (m_fromChoice->GetSelection() == 1)
+	{
+		m_warning_label->SetLabel(m_savestate_label);
+	}
+	else
+	{
+		m_warning_label->SetLabel("");
+	}
+	m_warning_label->Wrap(GetClientSize().GetWidth());
+	m_panel->GetSizer()->Fit(this);
 }
 
 void NewRecordingFrame::EnableOkBox()
