@@ -43,6 +43,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
 	m_conservative_framebuffer = theApp.GetConfigB("conservative_framebuffer");
 	m_accurate_date = theApp.GetConfigB("accurate_date");
+	m_scanmask = theApp.GetConfigI("scanmask");
 
 	if (theApp.GetConfigB("UserHacks"))
 	{

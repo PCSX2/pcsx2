@@ -264,7 +264,11 @@ public:
 				uint32 point_sampler : 1;
 				uint32 invalid_tex0 : 1; // Lupin the 3rd
 
-				uint32 _free : 14;
+				uint32 scanmsk : 2;
+				uint32 scanmsk_transparent : 1;
+				uint32 scanmsk_scaled : 1;
+
+				uint32 _free : 10;
 			};
 
 			uint64 key;

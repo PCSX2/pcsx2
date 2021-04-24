@@ -317,6 +317,11 @@ void GSdxApp::Init()
 	m_gs_tv_shaders.push_back(GSSetting(3, "Triangular filter", ""));
 	m_gs_tv_shaders.push_back(GSSetting(4, "Wave filter", ""));
 
+	m_gs_scanmask.push_back(GSSetting(0, "Off", ""));
+	m_gs_scanmask.push_back(GSSetting(1, "Unscaled", "Default"));
+	m_gs_scanmask.push_back(GSSetting(2, "Scaled", ""));
+	m_gs_scanmask.push_back(GSSetting(3, "Transparent", ""));
+
 	// Avoid to clutter the ini file with useless options
 #ifdef _WIN32
 	// Per OS option.
@@ -404,6 +409,7 @@ void GSdxApp::Init()
 	m_default_configuration["saven"]                                      = "0";
 	m_default_configuration["savet"]                                      = "0";
 	m_default_configuration["savez"]                                      = "0";
+	m_default_configuration["scanmask"]                                   = "1";
 	m_default_configuration["ShadeBoost"]                                 = "0";
 	m_default_configuration["ShadeBoost_Brightness"]                      = "50";
 	m_default_configuration["ShadeBoost_Contrast"]                        = "50";

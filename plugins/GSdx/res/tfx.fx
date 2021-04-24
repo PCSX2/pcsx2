@@ -51,6 +51,9 @@
 #define PS_PABE 0
 #define PS_DITHER 0
 #define PS_ZCLAMP 0
+#define PS_SCANMSK 0
+#define PS_SCANMSK_TRANSPARENT 0
+#define PS_SCANMSK_SCALED 0
 #endif
 
 #define SW_BLEND (PS_BLEND_A || PS_BLEND_B || PS_BLEND_D)
@@ -711,6 +714,18 @@ PS_OUTPUT ps_main(PS_INPUT input)
 {
 	float4 C = ps_color(input);
 
+	if (PS_SCANMSK & 2)
+	{
+		int2 fpos;
+		if (PS_SCANMSK_SCALED)
+			fpos = int2(input.p.xy);
+		else
+			fpos = int2(input.p.xy / (float)PS_SCALE_FACTOR);
+		// fail depth test on prohibited lines
+		if ((fpos.y & 1) == (PS_SCANMSK & 1))
+			discard;
+	}
+
 	PS_OUTPUT output;
 
 	if (PS_SHUFFLE)
@@ -771,13 +786,15 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		C.rgb = (uint3)((uint3)C.rgb & (uint3)0xF8);
 	}
 
+	if (PS_SCANMSK_TRANSPARENT)
+		alpha_blend /= 2.0f;
+
 	output.c0 = C / 255.0f;
 	output.c1 = (float4)(alpha_blend);
 
 #if PS_ZCLAMP
 	output.depth = min(input.p.z, MaxDepthPS);
 #endif
-
 	return output;
 }
 

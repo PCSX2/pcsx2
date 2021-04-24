@@ -101,6 +101,7 @@ void GSSettingsDlg::OnInit()
 	ComboBoxInit(IDC_ACCURATE_BLEND_UNIT_D3D11, theApp.m_gs_acc_blend_level_d3d11, theApp.GetConfigI("accurate_blending_unit_d3d11"));
 	ComboBoxInit(IDC_CRC_LEVEL, theApp.m_gs_crc_level, theApp.GetConfigI("crc_hack_level"));
 	ComboBoxInit(IDC_DITHERING, theApp.m_gs_dithering, theApp.GetConfigI("dithering_ps2"));
+	ComboBoxInit(IDC_SCANMSK, theApp.m_gs_scanmask, theApp.GetConfigI("scanmask"));
 
 	CheckDlgButton(m_hWnd, IDC_ACCURATE_DATE, theApp.GetConfigB("accurate_date"));
 	CheckDlgButton(m_hWnd, IDC_PALTEX, theApp.GetConfigB("paltex"));
@@ -247,6 +248,11 @@ bool GSSettingsDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				theApp.SetConfig("dithering_ps2", (int)data);
 			}
 
+			if (ComboBoxGetSelData(IDC_SCANMSK, data))
+			{
+				theApp.SetConfig("scanmask", (int)data);
+			}
+
 			theApp.SetConfig("accurate_date", (int)IsDlgButtonChecked(m_hWnd, IDC_ACCURATE_DATE));
 			theApp.SetConfig("paltex", (int)IsDlgButtonChecked(m_hWnd, IDC_PALTEX));
 			theApp.SetConfig("conservative_framebuffer", (int)IsDlgButtonChecked(m_hWnd, IDC_CONSERVATIVE_FB));
@@ -341,6 +347,8 @@ void GSSettingsDlg::UpdateControls()
 		EnableWindow(GetDlgItem(m_hWnd, IDC_PALTEX), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_DITHERING), hw);
 		EnableWindow(GetDlgItem(m_hWnd, IDC_DITHERING_TEXT), hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_SCANMSK), hw);
+		EnableWindow(GetDlgItem(m_hWnd, IDC_SCANMSK_TEXT), hw);
 
 		INT_PTR filter;
 		if (ComboBoxGetSelData(IDC_FILTER, filter))

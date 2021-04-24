@@ -836,7 +836,7 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	}
 
 	// Blend
-	if (!IsOpaque() && rt)
+	if ((!IsOpaque() && rt) || (m_scanmask == 3 && (m_env.SCANMSK.MSK & 2))) // enable blending with transparent scanmask (fixes water blocks in MGS2)
 	{
 		EmulateBlending();
 	}
@@ -980,6 +980,10 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 		m_om_dssel.zwe = false;
 		m_om_bsel.wa = false;
 	}
+	else if (m_scanmask == 3 && (m_env.SCANMSK.MSK & 2)) // disable z-write with transparent scanmask (fixes water particles in MGS2)
+	{
+		m_om_dssel.zwe = false;
+	}
 	else
 	{
 		EmulateAtst(ps_cb.FogColor_AREF, ps_atst, false);
@@ -1050,6 +1054,18 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	dev->PSSetShaderResource(1, tex ? tex->m_palette : NULL);
 
 	SetupIA(sx, sy);
+
+	// set up scanmask
+	if (m_scanmask == 3 && (m_env.SCANMSK.MSK & 2))
+	{
+		m_ps_sel.scanmsk_transparent = 1;
+		m_ps_sel.scanmsk = 0;
+	}
+	else if (m_scanmask == 0)
+		m_ps_sel.scanmsk = 0;
+	else
+		m_ps_sel.scanmsk = m_env.SCANMSK.MSK;
+	m_ps_sel.scanmsk_scaled = m_scanmask == 2;
 
 	uint8 afix = m_context->ALPHA.FIX;
 	dev->SetupOM(m_om_dssel, m_om_bsel, afix);
@@ -1131,7 +1147,7 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 	dev->EndScene();
 
 	// Warning: EndScene must be called before StretchRect otherwise
-	// vertices will be overwritten. Trust me you don't want to do that.
+	// vertices will be overwritten. Trust me you don't want to do that. 
 	if (hdr_rt)
 	{
 		GSVector4 dRect(ComputeBoundingBox(rtscale, rtsize));

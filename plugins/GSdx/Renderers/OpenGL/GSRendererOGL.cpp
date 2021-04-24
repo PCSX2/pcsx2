@@ -1201,7 +1201,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 	// Blend
 
-	if (!IsOpaque() && rt)
+	if ((!IsOpaque() && rt) || (m_scanmask == 3 && (m_env.SCANMSK.MSK & 2))) // enable blending with transparent scanmask (fixes water blocks in MGS2)
 	{
 		EmulateBlending(DATE_GL42, DATE_GL45);
 	}
@@ -1363,6 +1363,10 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		m_om_dssel.zwe = false;
 		m_om_csel.wa = false;
 	}
+	else if (m_scanmask == 3 && (m_env.SCANMSK.MSK & 2)) // disable z-write with transparent scanmask (fixes water particles in MGS2)
+	{
+		m_om_dssel.zwe = false;
+	}
 	else
 	{
 		EmulateAtst(ps_cb.FogColor_AREF, ps_atst, false);
@@ -1425,6 +1429,17 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	dev->SetupOM(m_om_dssel);
 
 	dev->SetupCB(&vs_cb, &ps_cb);
+
+	// set up scanmask
+	if (m_scanmask == 3 && (m_env.SCANMSK.MSK & 2)) {
+		m_ps_sel.scanmsk_transparent = 1;
+		m_ps_sel.scanmsk = 0;
+	}
+	else if (m_scanmask == 0)
+		m_ps_sel.scanmsk = 0;
+	else
+		m_ps_sel.scanmsk = m_env.SCANMSK.MSK;
+	m_ps_sel.scanmsk_scaled = m_scanmask == 2;
 
 	dev->SetupPipeline(m_vs_sel, m_gs_sel, m_ps_sel);
 

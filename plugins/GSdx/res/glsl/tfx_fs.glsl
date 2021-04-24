@@ -712,6 +712,16 @@ void ps_blend(inout vec4 Color, float As)
 
 void ps_main()
 {
+#if PS_SCANMSK & 2
+    #if PS_SCANMSK_SCALED
+ 	    ivec2 fpos = ivec2(gl_FragCoord.xy);
+    #else
+ 	    ivec2 fpos = ivec2(gl_FragCoord.xy / ScalingFactor.x);
+    #endif
+    // fail depth test on prohibited lines
+ 	if ((fpos.y & 1) == (PS_SCANMSK & 1))
+ 	 	discard;
+#endif
 #if ((PS_DATE & 3) == 1 || (PS_DATE & 3) == 2)
 
 #if PS_WRITE_RG == 1
@@ -860,12 +870,16 @@ void ps_main()
         // C.rgb = (C.rgb - 256.0f);
     // }
 // #endif
+
+#if PS_SCANMSK_TRANSPARENT
+    alpha_blend /= 2.0f;
+#endif
     SV_Target0 = C / 255.0f;
     SV_Target1 = vec4(alpha_blend);
 
 #if PS_ZCLAMP
 	gl_FragDepth = min(gl_FragCoord.z, MaxDepthPS);
-#endif 
+#endif
 }
 
 #endif

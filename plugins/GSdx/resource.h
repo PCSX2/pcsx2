@@ -40,6 +40,8 @@
 #define IDC_ACCURATE_BLEND_UNIT_TEXT    2044
 #define IDC_DITHERING                   2045
 #define IDC_DITHERING_TEXT              2046
+#define IDC_SCANMSK                     2047
+#define IDC_SCANMSK_TEXT                2048
 // Software Renderer Settings:
 #define IDC_MIPMAP_SW                   2060
 #define IDC_AA1                         2061

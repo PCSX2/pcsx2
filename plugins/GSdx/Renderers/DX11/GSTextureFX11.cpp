@@ -226,6 +226,9 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		sm.AddMacro("PS_PABE", sel.pabe);
 		sm.AddMacro("PS_DITHER", sel.dither);
 		sm.AddMacro("PS_ZCLAMP", sel.zclamp);
+		sm.AddMacro("PS_SCANMSK", sel.scanmsk);
+		sm.AddMacro("PS_SCANMSK_TRANSPARENT", sel.scanmsk_transparent);
+		sm.AddMacro("PS_SCANMSK_SCALED", sel.scanmsk_scaled);
 
 		CComPtr<ID3D11PixelShader> ps;
 
