@@ -913,6 +913,7 @@ void AppConfig::GSWindowOptions::LoadSave( IniInterface& ini )
 #ifndef DISABLE_RECORDING
 AppConfig::InputRecordingOptions::InputRecordingOptions()
 	: VirtualPadPosition(wxDefaultPosition)
+	, m_frame_advance_amount(1)
 {
 }
 
@@ -921,6 +922,7 @@ void AppConfig::InputRecordingOptions::loadSave(IniInterface& ini)
 	ScopedIniGroup path(ini, L"InputRecording");
 
 	IniEntry(VirtualPadPosition);
+	IniEntry(m_frame_advance_amount);
 }
 #endif
 

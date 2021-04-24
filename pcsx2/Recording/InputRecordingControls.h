@@ -46,6 +46,7 @@ public:
 	
 	// Resume emulation (incase the emulation is currently paused) and pause after a single frame has passed
 	void FrameAdvance();
+	void setFrameAdvanceAmount(int amount);
 	// Returns true if emulation is currently set up to frame advance.
 	bool IsFrameAdvancing();
 	// Returns true if the input recording has been paused, which can occur:
@@ -73,6 +74,8 @@ private:
 	// Indicates on the next VSync if we are frame advancing, this value
 	// and should be cleared once a single frame has passed
 	bool frameAdvancing = false;
+	u32 frame_advance_frame_counter = 0;
+	u32 frames_per_frame_advance = 1;
 	// Indicates if we intend to call CoreThread.PauseSelf() on the current or next available vsync
 	bool pauseEmulation = false;
 	// Indicates if we intend to call CoreThread.Resume() when the next pcsx2 App event is handled

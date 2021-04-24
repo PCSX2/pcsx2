@@ -259,10 +259,11 @@ public:
 #ifndef DISABLE_RECORDING
 	struct InputRecordingOptions
 	{
-		wxPoint		VirtualPadPosition;
+		wxPoint VirtualPadPosition;
+		int m_frame_advance_amount;
 
 		InputRecordingOptions();
-		void loadSave( IniInterface& conf );
+		void loadSave(IniInterface& conf);
 	};
 #endif
 

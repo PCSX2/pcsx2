@@ -204,6 +204,8 @@ enum MenuIdentifiers
 	MenuId_Recording_New,
 	MenuId_Recording_Play,
 	MenuId_Recording_Stop,
+	MenuId_Recording_Settings,
+	MenuId_Recording_Config_FrameAdvance,
 	MenuId_Recording_TogglePause,
 	MenuId_Recording_FrameAdvance,
 	MenuId_Recording_ToggleRecordingMode,

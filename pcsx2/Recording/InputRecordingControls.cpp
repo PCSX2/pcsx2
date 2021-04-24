@@ -31,7 +31,8 @@ InputRecordingControls g_InputRecordingControls;
 
 void InputRecordingControls::CheckPauseStatus()
 {
-	if (frameAdvancing)
+	frame_advance_frame_counter++;
+	if (frameAdvancing && frame_advance_frame_counter >= frames_per_frame_advance)
 	{
 		frameAdvancing = false;
 		pauseEmulation = true;
@@ -99,7 +100,13 @@ void InputRecordingControls::FrameAdvance()
 		return;
 	}
 	frameAdvancing = true;
+	frame_advance_frame_counter = 0;
 	Resume();
+}
+
+void InputRecordingControls::setFrameAdvanceAmount(int amount)
+{
+	frames_per_frame_advance = amount;
 }
 
 bool InputRecordingControls::IsFrameAdvancing()
