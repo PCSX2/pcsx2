@@ -84,7 +84,10 @@ class alignas(32) GSClut : public GSAlignedClass<32>
 	//static void ReadCLUT_T16_I8(const uint16* RESTRICT clut, uint32* RESTRICT dst);
 	//static void ReadCLUT_T16_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst);
 	//static void ReadCLUT_T16_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst32, uint64* RESTRICT dst64);
+public:
 	static void ExpandCLUT64_T32_I8(const uint32* RESTRICT src, uint64* RESTRICT dst);
+
+private:
 	static void ExpandCLUT64_T32(const GSVector4i& hi, const GSVector4i& lo0, const GSVector4i& lo1, const GSVector4i& lo2, const GSVector4i& lo3, GSVector4i* dst);
 	static void ExpandCLUT64_T32(const GSVector4i& hi, const GSVector4i& lo, GSVector4i* dst);
 	//static void ExpandCLUT64_T16_I8(const uint32* RESTRICT src, uint64* RESTRICT dst);
