@@ -122,6 +122,7 @@ protected:
 
 #ifndef DISABLE_RECORDING
 	wxMenu& m_menuRecording;
+	wxMenu& m_submenu_recording_settings;
 #endif
 	wxMenu& m_menuHelp;
 
@@ -164,7 +165,7 @@ public:
 	void CreateWindowsMenu();
 	void CreateCaptureMenu();
 #ifndef DISABLE_RECORDING
-	void CreateRecordMenu();
+	void CreateInputRecordingMenu();
 #endif
 	void CreateHelpMenu();
 
@@ -267,6 +268,7 @@ protected:
 	void Menu_Recording_New_Click(wxCommandEvent& event);
 	void Menu_Recording_Play_Click(wxCommandEvent& event);
 	void Menu_Recording_Stop_Click(wxCommandEvent& event);
+	void Menu_Recording_Config_FrameAdvance(wxCommandEvent& event);
 	void ApplyFirstFrameStatus();
 	void Menu_Recording_TogglePause_Click(wxCommandEvent& event);
 	void Menu_Recording_FrameAdvance_Click(wxCommandEvent& event);

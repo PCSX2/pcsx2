@@ -39,6 +39,9 @@
 
 #include "Utilities/IniInterface.h"
 
+#include "fmt/core.h"
+#include "wx/numdlg.h"
+
 #ifndef DISABLE_RECORDING
 #include "Recording/InputRecording.h"
 #include "Recording/InputRecordingControls.h"
@@ -1118,6 +1121,19 @@ void MainEmuFrame::ApplyFirstFrameStatus()
 void MainEmuFrame::Menu_Recording_Stop_Click(wxCommandEvent& event)
 {
 	StopInputRecording();
+}
+
+void MainEmuFrame::Menu_Recording_Config_FrameAdvance(wxCommandEvent& event)
+{
+	long result = wxGetNumberFromUser(_("Enter the number of frames to advance per advance"), _("Number of Frames"), _("Configure Frame Advance"), g_Conf->inputRecording.m_frame_advance_amount, 1, INT_MAX);
+	if (result != -1)
+	{
+		g_Conf->inputRecording.m_frame_advance_amount = result;
+		g_InputRecordingControls.setFrameAdvanceAmount(result);
+		wxString frame_advance_label = wxString(_("Configure Frame Advance"));
+		frame_advance_label.Append(fmt::format(" ({})", result));
+		m_submenu_recording_settings.SetLabel(MenuId_Recording_Config_FrameAdvance, frame_advance_label);
+	}
 }
 
 void MainEmuFrame::StartInputRecording()
