@@ -177,6 +177,10 @@ jobs:
       - name: Build PCSX2
         working-directory: build
         run: ../.github/workflows/scripts/linux/compile.sh
+
+      - name: Run Tests
+        working-directory: ./build
+        run: ninja unittests
         
       - name: Package AppImage
         env:
