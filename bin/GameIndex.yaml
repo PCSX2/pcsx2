@@ -2867,7 +2867,7 @@ SCKA-20092:
   name: "K-1 World Grand Prix 2006"
   region: "NTSC-K"
   speedHacks: 
-    - InstantVU1SpeedHack: 0  # Fixes random black frames from happening when in a fight session.
+    InstantVU1SpeedHack: 0  # Fixes random black frames from happening when in a fight session.
   gameFixes:
     - XGKickHack # Fixes grey fighters problem.
 SCKA-20096:
@@ -21360,7 +21360,7 @@ SLPM-65374:
   name: "Energy Airforce - Aim Strike!"
   region: "NTSC-J"
   speedHacks:
-    - InstantVU1SpeedHack: 0  # Fixes hanging while going ingame.
+    InstantVU1SpeedHack: 0  # Fixes hanging while going ingame.
 SLPM-65375:
   name: "Shin Sangoku Musou 3 - Mushouden [Premium Pack]"
   region: "NTSC-J"
@@ -30086,7 +30086,7 @@ SLPS-25710:
   region: "NTSC-J"
   compat: 4
   speedHacks:
-    - InstantVU1SpeedHack: 0  # Fixes random black frames from happening when in a fight session.
+    InstantVU1SpeedHack: 0  # Fixes random black frames from happening when in a fight session.
   gameFixes:
     - XGKickHack # Fixes grey fighters problem.
 SLPS-25711:
