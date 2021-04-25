@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -236,10 +236,6 @@ struct Pcsx2Config
 				EnableIOP		:1,
 				EnableVU0		:1,
 				EnableVU1		:1;
-
-			bool
-				UseMicroVU0		:1,
-				UseMicroVU1		:1;
 
 			bool
 				vuOverflow		:1,
@@ -540,10 +536,8 @@ TraceLogFilters&				SetTraceConfig();
 
 // ------------ CPU / Recompiler Options ---------------
 
-#define THREAD_VU1					(EmuConfig.Cpu.Recompiler.UseMicroVU1 && EmuConfig.Speedhacks.vuThread)
+#define THREAD_VU1					(EmuConfig.Cpu.Recompiler.EnableVU1 && EmuConfig.Speedhacks.vuThread)
 #define INSTANT_VU1					(EmuConfig.Speedhacks.vu1Instant)
-#define CHECK_MICROVU0				(EmuConfig.Cpu.Recompiler.UseMicroVU0)
-#define CHECK_MICROVU1				(EmuConfig.Cpu.Recompiler.UseMicroVU1)
 #define CHECK_EEREC					(EmuConfig.Cpu.Recompiler.EnableEE && GetCpuProviders().IsRecAvailable_EE())
 #define CHECK_CACHE					(EmuConfig.Cpu.Recompiler.EnableEECache)
 #define CHECK_IOPREC				(EmuConfig.Cpu.Recompiler.EnableIOP && GetCpuProviders().IsRecAvailable_IOP())
