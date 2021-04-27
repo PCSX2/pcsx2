@@ -48,7 +48,7 @@ public:
 	virtual void close() = 0;
 
 	virtual int lseek(s32 offset, s32 whence) { return -IOP_EIO; }
-	virtual int read(void* buf, u32 count) { return -IOP_EIO; }
+	virtual int read(void* buf, u32 count) { return -IOP_EIO; } /* Flawfinder: ignore */
 	virtual int write(void* buf, u32 count) { return -IOP_EIO; }
 };
 
@@ -64,7 +64,7 @@ public:
 
 	virtual void close() = 0;
 
-	virtual int read(void* buf) { return -IOP_EIO; }
+	virtual int read(void* buf) { return -IOP_EIO; } /* Flawfinder: ignore */
 };
 
 typedef int (*irxHLE)(); // return 1 if handled, otherwise 0
