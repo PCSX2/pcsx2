@@ -565,7 +565,7 @@ GSFrame::GSFrame( const wxString& title)
 	Bind(wxEVT_CLOSE_WINDOW, &GSFrame::OnCloseWindow, this);
 	Bind(wxEVT_MOVE, &GSFrame::OnMove, this);
 	Bind(wxEVT_SIZE, &GSFrame::OnResize, this);
-	Bind(wxEVT_ACTIVATE, &GSFrame::OnActivate, this);
+	Bind(wxEVT_SET_FOCUS, &GSFrame::OnFocus, this);
 
 	Bind(wxEVT_TIMER, &GSFrame::OnUpdateTitle, this, m_timer_UpdateTitle.GetId());
 }
@@ -799,11 +799,11 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	SetTitle(title);
 }
 
-void GSFrame::OnActivate( wxActivateEvent& evt )
+void GSFrame::OnFocus( wxFocusEvent& evt )
 {
 	if( IsBeingDeleted() ) return;
 
-	evt.Skip();
+	evt.Skip(false); // Reject the focus message, as we pass focus to the child
 	if( wxWindow* gsPanel = GetViewport() ) gsPanel->SetFocus();
 }
 
