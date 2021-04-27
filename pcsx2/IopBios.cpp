@@ -503,25 +503,30 @@ namespace R3000A
 			IOManDir* dir = NULL;
 			const std::string path = Ra0;
 
-			int err = HostDir::open(&dir, path);
-
-			if (err != 0 || !dir)
+			if (is_host(path))
 			{
-				if (err == 0)
-					err = -IOP_EIO;
-				if (dir)
-					dir->close();
-				v0 = err;
-			}
-			else
-			{
-				v0 = allocfd(dir);
-				if ((s32)v0 < 0)
-					dir->close();
+				int err = HostDir::open(&dir, path);
+
+				if (err != 0 || !dir)
+				{
+					if (err == 0)
+						err = -IOP_EIO;
+					if (dir)
+						dir->close();
+					v0 = err;
+				}
+				else
+				{
+					v0 = allocfd(dir);
+					if ((s32)v0 < 0)
+						dir->close();
+				}
+
+				pc = ra;
+				return 1;
 			}
 
-			pc = ra;
-			return 1;
+			return 0;
 		}
 
 		int dclose_HLE()
