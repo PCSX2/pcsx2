@@ -31565,6 +31565,8 @@ SLUS-20095:
   name: "SSX"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeRoundMode: 0
 SLUS-20096:
   name: "Swing Away Golf"
   region: "NTSC-U"
@@ -32437,6 +32439,8 @@ SLUS-20326:
   name: "SSX Tricky"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeRoundMode: 0
 SLUS-20327:
   name: "Aggressive Inline"
   region: "NTSC-U"
