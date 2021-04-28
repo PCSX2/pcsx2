@@ -2,7 +2,7 @@
 
 Usually, when you want to compile some software on Linux, you'll find a list of
 packages to install, which are usually distribution specific. As this is far from
-being user friendly and can mess with your system, we will instead use
+being user-friendly and can mess with your system, we will instead use
 [Nix](https://nixos.org/) to
 create a development environment separate from your system.
 
@@ -20,17 +20,17 @@ This will put you inside a folder containing PCSX2's source code.
 
 ## 2. Installing Nix
 
-Installing [Nix](https://nixos.org/) will require administrator rights. This is
-a one-off thing and it won't ask you again, even when you need to install
-pcsx2's dependencies! Make sure you have them (hint: if you can run `sudo` then
-it's okay) and run the following commands:
+[Installing Nix](https://nixos.org/download.html) will require administrator
+rights. This is a one-off thing and it won't ask you again, even when you need
+to install PCSX2's dependencies! Make sure you have them (hint: if you can run
+`sudo` then it's okay) and run the following commands:
 
 ```
 $ curl -L https://nixos.org/nix/install | sh
-$ . /home/$(whoami)/.nix-profile/etc/profile.d/nix.sh
+$ . ~/.nix-profile/etc/profile.d/nix.sh
 ```
 
-## 3. Enter the development environment 
+## 3. Enter the development environment
 
 Now in order to compile PCSX2 you need to enter the development environment. To
 do so run the following command:
