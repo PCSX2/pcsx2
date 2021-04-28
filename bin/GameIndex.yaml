@@ -31566,7 +31566,7 @@ SLUS-20095:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes riders vanish into the floor
 SLUS-20096:
   name: "Swing Away Golf"
   region: "NTSC-U"
@@ -32440,7 +32440,7 @@ SLUS-20326:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 0
+    eeRoundMode: 0 # Fixes riders vanish into the floor
 SLUS-20327:
   name: "Aggressive Inline"
   region: "NTSC-U"
