@@ -18,6 +18,8 @@ Installers and binaries for both Windows and Linux are available from [our websi
 
 Development builds are also available from [our website](https://pcsx2.net/download/development.html).
 
+For compilation instructions please follow our [compilation guide](COMPILING.md).
+
 ## System Requirements
 
 ### Minimum
