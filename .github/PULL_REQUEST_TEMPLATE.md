@@ -1,8 +1,3 @@
-<!--
-If this is your first PR to PCSX2, please review the relevant documentation:
-- https://github.com/PCSX2/pcsx2/blob/master/.github/CONTRIBUTING.md#pull-request-guidelines
--->
-
 ### Description of Changes
 <!-- Brief description or overview on what was changed in the PR -->
 
