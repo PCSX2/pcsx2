@@ -50,11 +50,11 @@ earlier and run the following commands:
 ```sh
 mkdir build
 cd build
-cmake ..
+cmake $cmakeFlags -DCMAKE_INSTALL_PREFIX=$(pwd)/result ..
 make -j$(nproc) install
 ```
 
-You should be good to go! You should be able to run PCSX2 by executing `../bin/PCSX2`.
+You should be good to go! You should be able to run PCSX2 by executing `result/bin/PCSX2`.
 
 ## Re-using the environment
 
@@ -69,7 +69,8 @@ In order to be able to update, send patches, and maintain the source code of the
 project you'll need to learn how to use `git`. This is out of scope for this
 guide, so refer to [their documentation](https://git-scm.com/docs). Additionally,
 once you know how to use `git`, you may want to contribute, for this you can follow
-[our guidelines](.github/CONTRIBUTING.md).
+[our guidelines](CONTRIBUTING.md), which also has a short guide to `git`
+built-in.
 
 If you want to compile the project with non default options you will have to
 learn how to use `cmake`. This is out of scope, so refer to
