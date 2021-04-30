@@ -578,6 +578,171 @@ set(pcsx2PADHeaders
     ${PADImgHeader}/arrow_right.h
     )
 
+
+# GS sources
+set(pcsx2GSSources
+	GS.cpp
+	GSAlignedClass.cpp
+	GSBlock.cpp
+	GSCapture.cpp
+	GSClut.cpp
+	GSCodeBuffer.cpp
+	GSCrc.cpp
+	GSDrawingContext.cpp
+	GSDump.cpp
+	GSLocalMemory.cpp
+	GSLzma.cpp
+	GSPerfMon.cpp
+	GSPng.cpp
+	GSState.cpp
+	GSTables.cpp
+	GSUtil.cpp
+	GSVector.cpp
+	GSdx.cpp
+	GSdxResources.cpp
+	stdafx.cpp
+	Renderers/Common/GSDevice.cpp
+	Renderers/Common/GSDirtyRect.cpp
+	Renderers/Common/GSFunctionMap.cpp
+	Renderers/Common/GSOsdManager.cpp
+	Renderers/Common/GSRenderer.cpp
+	Renderers/Common/GSTexture.cpp
+	Renderers/Common/GSVertexTrace.cpp
+	Renderers/Null/GSDeviceNull.cpp
+	Renderers/Null/GSRendererNull.cpp
+	Renderers/Null/GSTextureNull.cpp
+	Renderers/HW/GSHwHack.cpp
+	Renderers/HW/GSRendererHW.cpp
+	Renderers/HW/GSTextureCache.cpp
+	Renderers/SW/GSDrawScanline.cpp
+	Renderers/SW/GSDrawScanlineCodeGenerator.cpp
+	Renderers/SW/GSDrawScanlineCodeGenerator.x64.cpp
+	Renderers/SW/GSDrawScanlineCodeGenerator.x64.avx.cpp
+	Renderers/SW/GSDrawScanlineCodeGenerator.x64.avx2.cpp
+	Renderers/SW/GSDrawScanlineCodeGenerator.x86.cpp
+	Renderers/SW/GSDrawScanlineCodeGenerator.x86.avx.cpp
+	Renderers/SW/GSDrawScanlineCodeGenerator.x86.avx2.cpp
+	Renderers/SW/GSRasterizer.cpp
+	Renderers/SW/GSRendererSW.cpp
+	Renderers/SW/GSSetupPrimCodeGenerator.cpp
+	Renderers/SW/GSSetupPrimCodeGenerator.x64.cpp
+	Renderers/SW/GSSetupPrimCodeGenerator.x64.avx.cpp
+	Renderers/SW/GSSetupPrimCodeGenerator.x64.avx2.cpp
+	Renderers/SW/GSSetupPrimCodeGenerator.x86.cpp
+	Renderers/SW/GSSetupPrimCodeGenerator.x86.avx.cpp
+	Renderers/SW/GSSetupPrimCodeGenerator.x86.avx2.cpp
+	Renderers/SW/GSTextureCacheSW.cpp
+	Renderers/SW/GSTextureSW.cpp
+	Renderers/OpenGL/GLLoader.cpp
+	Renderers/OpenGL/GLState.cpp
+	Renderers/OpenGL/GSDeviceOGL.cpp
+	Renderers/OpenGL/GSRendererOGL.cpp
+	Renderers/OpenGL/GSShaderOGL.cpp
+	Renderers/OpenGL/GSTextureCacheOGL.cpp
+	Renderers/OpenGL/GSTextureOGL.cpp
+	Window/GSSetting.cpp
+	Window/GSWnd.cpp
+	Window/GSLinuxDialog.cpp
+	Window/GSWndEGL.cpp
+	)
+
+# GS headers
+set(pcsx2GSHeaders
+	config.h
+	GSAlignedClass.h
+	GSBlock.h
+	GSCapture.h
+	GSClut.h
+	GSCodeBuffer.h
+	GSCrc.h
+	GSDrawingContext.h
+	GSDrawingEnvironment.h
+	GSDump.h
+	GSdx.h
+	GSdxResources.h
+	GS.h
+	GSLocalMemory.h
+	GSLzma.h
+	GSPerfMon.h
+	GSPng.h
+	GSState.h
+	GSTables.h
+	GSThread_CXX11.h
+	GSThread.h
+	GSUtil.h
+	GSVector.h
+	GSVector4.h
+	GSVector4i.h
+	GSVector8.h
+	GSVector8i.h
+	stdafx.h
+	Renderers/Common/GSDevice.h
+	Renderers/Common/GSDirtyRect.h
+	Renderers/Common/GSFastList.h
+	Renderers/Common/GSFunctionMap.h
+	Renderers/Common/GSOsdManager.h
+	Renderers/Common/GSRenderer.h
+	Renderers/Common/GSTexture.h
+	Renderers/Common/GSVertex.h
+	Renderers/Common/GSVertexList.h
+	Renderers/Common/GSVertexTrace.h
+	Renderers/Null/GSDeviceNull.h
+	Renderers/Null/GSRendererNull.h
+	Renderers/Null/GSTextureNull.h
+	Renderers/HW/GSRendererHW.h
+	Renderers/HW/GSTextureCache.h
+	Renderers/HW/GSVertexHW.h
+	Renderers/SW/GSDrawScanlineCodeGenerator.h
+	Renderers/SW/GSDrawScanline.h
+	Renderers/SW/GSRasterizer.h
+	Renderers/SW/GSRendererSW.h
+	Renderers/SW/GSScanlineEnvironment.h
+	Renderers/SW/GSSetupPrimCodeGenerator.h
+	Renderers/SW/GSTextureCacheSW.h
+	Renderers/SW/GSTextureSW.h
+	Renderers/SW/GSVertexSW.h
+	Renderers/OpenGL/GLLoader.h
+	Renderers/OpenGL/GLState.h
+	Renderers/OpenGL/GSDeviceOGL.h
+	Renderers/OpenGL/GSRendererOGL.h
+	Renderers/OpenGL/GSShaderOGL.h
+	Renderers/OpenGL/GSTextureCacheOGL.h
+	Renderers/OpenGL/GSTextureOGL.h
+	Renderers/OpenGL/GSUniformBufferOGL.h
+	Renderers/OpenGL/GSVertexArrayOGL.h
+	Window/GSCaptureDlg.h
+	Window/GSDialog.h
+	Window/GSSetting.h
+	Window/GSSettingsDlg.h
+	Window/GSWnd.h
+	Window/GSWndEGL.h
+	)
+
+# GS resources
+set(pcsx2GSResources
+	res/logo-ogl.bmp
+	res/fxaa.fx
+	res/glsl/common_header.glsl
+	res/glsl/convert.glsl
+	res/glsl/interlace.glsl
+	res/glsl/merge.glsl
+	res/glsl/shadeboost.glsl
+	res/glsl/tfx_fs.glsl
+	res/glsl/tfx_vgs.glsl)
+
+add_custom_command(
+	OUTPUT ${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.h
+	COMMAND glib-compile-resources --sourcedir "${CMAKE_SOURCE_DIR}/pcsx2/GS/res" --generate-header
+	--c-name PAD_res "${CMAKE_SOURCE_DIR}/pcsx2/GS/res/GS-res.xml" --target=${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.h
+	DEPENDS ${pcsx2GSResources})
+
+add_custom_command(
+	OUTPUT ${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.cpp
+	COMMAND glib-compile-resources --sourcedir "${CMAKE_SOURCE_DIR}/pcsx2/GS/res" --generate-source
+	--c-name PAD_res "${CMAKE_SOURCE_DIR}/pcsx2/GS/res/GS-res.xml" --target=${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.cpp
+	DEPENDS ${pcsx2GSResources})
+
+
 # DebugTools sources
 set(pcsx2DebugToolsSources
 	DebugTools/DebugInterface.cpp
@@ -1014,6 +1179,8 @@ set(Common
 	${pcsx2DEV9Headers}
 	${pcsx2PADHeaders}
 	${pcsx2PADSources}
+	${pcsx2GSHeaders}
+	${pcsx2GSSources}
 	${pcsx2DebugToolsSources}
 	${pcsx2GuiSources}
 	${pcsx2GuiResources}
@@ -1047,6 +1214,7 @@ if(Linux)
 	set(Platform_Libs
 		${LIBUDEV_LIBRARIES}
 		${X11_LIBRARIES}
+		${X11_XCB_LIBRARIES}
 		)
 endif()
 
@@ -1092,6 +1260,12 @@ set(pcsx2FinalLibs
     ${PCAP_LIBRARY}
     ${LIBSAMPLERATE_LIBRARIES}
     ${LIBXML2_LIBRARIES}
+    ${LIBC_LIBRARIES}
+    ${PNG_LIBRARIES}
+    ${FREETYPE_LIBRARIES}
+    ${LIBLZMA_LIBRARIES}
+    ${OPENGL_LIBRARIES}
+    ${EGL_LIBRARIES}
     ${Platform_Libs}
 )
 
