@@ -79,29 +79,6 @@ protected:
 	virtual uint GetDataSize() const = 0;
 };
 
-class PluginSavestateEntry : public BaseSavestateEntry
-{
-protected:
-	PluginsEnum_t m_pid;
-
-public:
-	PluginSavestateEntry(PluginsEnum_t pid)
-	{
-		m_pid = pid;
-	}
-
-	virtual ~PluginSavestateEntry() = default;
-
-	virtual wxString GetFilename() const;
-	virtual void FreezeIn(pxInputStream& reader) const;
-	virtual void FreezeOut(SaveStateBase& writer) const;
-
-	virtual bool IsRequired() const { return false; }
-
-protected:
-	virtual PluginsEnum_t GetPluginId() const { return m_pid; }
-};
-
 void MemorySavestateEntry::FreezeIn(pxInputStream& reader) const
 {
 	const uint entrySize = reader.Length();
@@ -120,26 +97,6 @@ void MemorySavestateEntry::FreezeIn(pxInputStream& reader) const
 void MemorySavestateEntry::FreezeOut(SaveStateBase& writer) const
 {
 	writer.FreezeMem(GetDataPtr(), GetDataSize());
-}
-
-wxString PluginSavestateEntry::GetFilename() const
-{
-	return pxsFmt("Plugin %s.dat", tbl_PluginInfo[m_pid].shortname);
-}
-
-void PluginSavestateEntry::FreezeIn(pxInputStream& reader) const
-{
-	GetCorePlugins().FreezeIn(GetPluginId(), reader);
-}
-
-void PluginSavestateEntry::FreezeOut(SaveStateBase& writer) const
-{
-	if (uint size = GetCorePlugins().GetFreezeSize(GetPluginId()))
-	{
-		writer.PrepBlock(size);
-		GetCorePlugins().FreezeOut(GetPluginId(), writer.GetBlockPtr());
-		writer.CommitBlock(size);
-	}
 }
 
 // --------------------------------------------------------------------------------------
@@ -337,8 +294,6 @@ static const std::unique_ptr<BaseSavestateEntry> SavestateEntries[] = {
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_SPU2),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_USB),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_PAD),
-
-	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry(PluginId_GS)),
 };
 
 // It's bad mojo to have savestates trying to read and write from the same file at the
