@@ -1103,10 +1103,6 @@ if(PULSEAUDIO_FOUND)
     set(pcsx2FinalLibs ${pcsx2FinalLibs} ${PULSEAUDIO_LIBRARIES})
 endif()
 
-if(BUILTIN_GS)
-    set(pcsx2FinalLibs "${pcsx2FinalLibs} GSdx")
-endif()
-
 # additonal include directories
 include_directories(
     gui

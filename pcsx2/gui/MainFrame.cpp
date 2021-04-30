@@ -480,9 +480,6 @@ void MainEmuFrame::CreateConfigMenu()
 	m_menuConfig.Append(MenuId_Config_PAD, _("&GamePad Settings..."));
 	m_menuConfig.AppendSeparator();
 
-	m_menuConfig.Append(MenuId_Config_GS, _("&Video (GS)"), m_PluginMenuPacks[PluginId_GS]);
-
-	m_menuConfig.AppendSeparator();
 	m_menuConfig.Append(MenuId_Config_Multitap0Toggle, _("Multitap &1"), wxEmptyString, wxITEM_CHECK);
 	m_menuConfig.Append(MenuId_Config_Multitap1Toggle, _("Multitap &2"), wxEmptyString, wxITEM_CHECK);
 
