@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -43,10 +43,11 @@
 RecentIsoList::RecentIsoList(int firstIdForMenuItems_or_wxID_ANY)
 {
 	Menu = std::unique_ptr<wxMenu>(new wxMenu());
-	Menu->AppendCheckItem( MenuId_Ask_On_Booting, _("Always ask when booting"), _("Manually select an ISO upon boot ignoring the selection from recent ISO list.") );
+	Menu->Append( MenuId_IsoBrowse, _("Browse..."), _("Browse for an ISO that is not in your recent history."));
 	Menu->AppendSeparator();
-	Menu->Append( MenuId_IsoBrowse, _("Browse..."), _("Browse for an ISO that is not in your recent history."))->Enable(!g_Conf->AskOnBoot);
+	Menu->AppendCheckItem( MenuId_Ask_On_Booting, _("Always ask when booting"), _("Manually select an ISO upon boot ignoring the selection from recent ISO list.") );
 	Menu->Check( MenuId_Ask_On_Booting, g_Conf->AskOnBoot );
+
 	Manager = std::unique_ptr<RecentIsoManager>(new RecentIsoManager( Menu.get(), firstIdForMenuItems_or_wxID_ANY ));
 }
 
