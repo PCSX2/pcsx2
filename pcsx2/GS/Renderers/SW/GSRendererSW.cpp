@@ -335,12 +335,11 @@ void GSRendererSW::Draw()
 {
 	const GSDrawingContext* context = m_context;
 
-	SharedData* sd = new SharedData(this);
-
-	std::shared_ptr<GSRasterizerData> data(sd);
+	auto data = m_vertex_heap.make_shared<SharedData>(this).cast<GSRasterizerData>();
+	SharedData* sd = static_cast<SharedData*>(data.get());
 
 	sd->primclass = m_vt.m_primclass;
-	sd->buff = (u8*)_aligned_malloc(sizeof(GSVertexSW) * ((m_vertex.next + 1) & ~1) + sizeof(u32) * m_index.tail, 64);
+	sd->buff = (u8*)m_vertex_heap.alloc(sizeof(GSVertexSW) * ((m_vertex.next + 1) & ~1) + sizeof(u32) * m_index.tail, 64);
 	sd->vertex = (GSVertexSW*)sd->buff;
 	sd->vertex_count = m_vertex.next;
 	sd->index = (u32*)(sd->buff + sizeof(GSVertexSW) * ((m_vertex.next + 1) & ~1));
@@ -540,7 +539,7 @@ void GSRendererSW::Draw()
 	*/
 }
 
-void GSRendererSW::Queue(std::shared_ptr<GSRasterizerData>& item)
+void GSRendererSW::Queue(GSRingHeap::SharedPtr<GSRasterizerData>& item)
 {
 	SharedData* sd = (SharedData*)item.get();
 
@@ -1050,7 +1049,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 			{
 				gd.sel.tlu = 1;
 
-				gd.clut = (u32*)_aligned_malloc(sizeof(u32) * 256, 32); // FIXME: might address uninitialized data of the texture (0xCD) that is not in 0-15 range for 4-bpp formats
+				gd.clut = (u32*)m_vertex_heap.alloc(sizeof(u32) * 256, 32); // FIXME: might address uninitialized data of the texture (0xCD) that is not in 0-15 range for 4-bpp formats
 
 				memcpy(gd.clut, (const u32*)m_mem.m_clut, sizeof(u32) * GSLocalMemory::m_psm[context->TEX0.PSM].pal);
 			}
@@ -1327,7 +1326,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 		{
 			gd.sel.dthe = 1;
 
-			gd.dimx = (GSVector4i*)_aligned_malloc(sizeof(env.dimx), 32);
+			gd.dimx = (GSVector4i*)m_vertex_heap.alloc(sizeof(env.dimx), 32);
 
 			memcpy(gd.dimx, env.dimx, sizeof(env.dimx));
 		}
@@ -1444,9 +1443,9 @@ GSRendererSW::SharedData::~SharedData()
 	ReleasePages();
 
 	if (global.clut)
-		_aligned_free(global.clut);
+		GSRingHeap::free(global.clut);
 	if (global.dimx)
-		_aligned_free(global.dimx);
+		GSRingHeap::free(global.dimx);
 
 	if (LOG)
 	{

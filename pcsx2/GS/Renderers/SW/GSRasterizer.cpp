@@ -113,7 +113,7 @@ int GSRasterizer::FindMyNextScanline(int top) const
 	return top;
 }
 
-void GSRasterizer::Queue(const std::shared_ptr<GSRasterizerData>& data)
+void GSRasterizer::Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& data)
 {
 	Draw(data.get());
 }
@@ -1203,7 +1203,7 @@ GSRasterizerList::~GSRasterizerList()
 	_aligned_free(m_scanline);
 }
 
-void GSRasterizerList::Queue(const std::shared_ptr<GSRasterizerData>& data)
+void GSRasterizerList::Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& data)
 {
 	GSVector4i r = data->bbox.rintersect(data->scissor);
 

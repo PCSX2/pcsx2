@@ -20,6 +20,7 @@
 #include "GS/GSAlignedClass.h"
 #include "GS/GSPerfMon.h"
 #include "GS/GSThread_CXX11.h"
+#include "GS/GSRingHeap.h"
 
 class alignas(32) GSRasterizerData : public GSAlignedClass<32>
 {
@@ -43,7 +44,7 @@ public:
 		: scissor(GSVector4i::zero())
 		, bbox(GSVector4i::zero())
 		, primclass(GS_INVALID_CLASS)
-		, buff(NULL)
+		, buff(nullptr)
 		, vertex(NULL)
 		, vertex_count(0)
 		, index(NULL)
@@ -58,7 +59,7 @@ public:
 	virtual ~GSRasterizerData()
 	{
 		if (buff != NULL)
-			_aligned_free(buff);
+			GSRingHeap::free(buff);
 	}
 };
 
@@ -115,7 +116,7 @@ class IRasterizer : public GSAlignedClass<32>
 public:
 	virtual ~IRasterizer() {}
 
-	virtual void Queue(const std::shared_ptr<GSRasterizerData>& data) = 0;
+	virtual void Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& data) = 0;
 	virtual void Sync() = 0;
 	virtual bool IsSynced() const = 0;
 	virtual int GetPixels(bool reset = true) = 0;
@@ -172,7 +173,7 @@ public:
 
 	// IRasterizer
 
-	void Queue(const std::shared_ptr<GSRasterizerData>& data);
+	void Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& data);
 	void Sync() {}
 	bool IsSynced() const { return true; }
 	int GetPixels(bool reset);
@@ -182,7 +183,7 @@ public:
 class GSRasterizerList : public IRasterizer
 {
 protected:
-	using GSWorker = GSJobQueue<std::shared_ptr<GSRasterizerData>, 65536>;
+	using GSWorker = GSJobQueue<GSRingHeap::SharedPtr<GSRasterizerData>, 65536>;
 
 	GSPerfMon* m_perfmon;
 	// Worker threads depend on the rasterizers, so don't change the order.
@@ -213,7 +214,7 @@ public:
 			rl->m_r.push_back(std::unique_ptr<GSRasterizer>(new GSRasterizer(new DS(), i, threads, perfmon)));
 			auto& r = *rl->m_r[i];
 			rl->m_workers.push_back(std::unique_ptr<GSWorker>(new GSWorker(
-				[&r](std::shared_ptr<GSRasterizerData>& item) { r.Draw(item.get()); })));
+				[&r](GSRingHeap::SharedPtr<GSRasterizerData>& item) { r.Draw(item.get()); })));
 		}
 
 		return rl;
@@ -221,7 +222,7 @@ public:
 
 	// IRasterizer
 
-	void Queue(const std::shared_ptr<GSRasterizerData>& data);
+	void Queue(const GSRingHeap::SharedPtr<GSRasterizerData>& data);
 	void Sync();
 	bool IsSynced() const;
 	int GetPixels(bool reset);
