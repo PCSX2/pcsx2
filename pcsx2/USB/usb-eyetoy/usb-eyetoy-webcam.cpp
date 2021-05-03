@@ -426,7 +426,8 @@ namespace usb_eyetoy
 						s->mpeg_frame_size = s->videodev->GetImage(s->mpeg_frame_data, 320 * 240 * 2);
 						if (s->mpeg_frame_size == 0)
 						{
-							goto send_packet;
+							p->status = USB_RET_NAK;
+							break;
 						}
 
 						uint8_t header[] = {

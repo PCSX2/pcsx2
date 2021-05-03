@@ -502,6 +502,7 @@ namespace usb_eyetoy
 			if (len < (int)mpeg_buffer.length)
 				len2 = len;
 			memcpy(buf, mpeg_buffer.start, len2);
+			mpeg_buffer.length = 0;
 			mpeg_mutex.unlock();
 			return len2;
 		};
