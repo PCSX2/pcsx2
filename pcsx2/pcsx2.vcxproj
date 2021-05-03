@@ -480,6 +480,7 @@
     <ClCompile Include="GS\GSPerfMon.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSOsdManager.cpp" />
     <ClCompile Include="GS\GSPng.cpp" />
+    <ClCompile Include="GS\GSRingHeap.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSRasterizer.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSRenderer.cpp" />
     <ClCompile Include="GS\Renderers\DX11\GSRendererDX11.cpp" />
@@ -843,6 +844,7 @@
     <ClInclude Include="GS\GSPerfMon.h" />
     <ClInclude Include="GS\Renderers\Common\GSOsdManager.h" />
     <ClInclude Include="GS\GSPng.h" />
+    <ClInclude Include="GS\GSRingHeap.h" />
     <ClInclude Include="GS\Renderers\SW\GSRasterizer.h" />
     <ClInclude Include="GS\Renderers\Common\GSRenderer.h" />
     <ClInclude Include="GS\Renderers\DX11\GSRendererDX11.h" />
