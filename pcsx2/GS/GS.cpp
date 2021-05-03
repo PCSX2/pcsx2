@@ -738,7 +738,10 @@ const std::string root_hw("/tmp/GS_HW_dump32/");
 
 void* vmalloc(size_t size, bool code)
 {
-	return VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, code ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE);
+	void* ptr = VirtualAlloc(NULL, size, MEM_COMMIT | MEM_RESERVE, code ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE);
+	if (!ptr)
+		throw std::bad_alloc();
+	return ptr;
 }
 
 void vmfree(void* ptr, size_t size)
@@ -845,7 +848,10 @@ void* vmalloc(size_t size, bool code)
 #endif
 	}
 
-	return mmap(NULL, size, prot, flags, -1, 0);
+	void* ptr = mmap(NULL, size, prot, flags, -1, 0);
+	if (ptr == MAP_FAILED)
+		throw std::bad_alloc();
+	return ptr;
 }
 
 void vmfree(void* ptr, size_t size)
