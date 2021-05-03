@@ -20,9 +20,9 @@
 #include <algorithm>
 #include <array>
 
-//============================================
-//===  ADPCM DECODING ROUTINES
-//============================================
+ //============================================
+ //===  ADPCM DECODING ROUTINES
+ //============================================
 
 #ifndef FIXED
 static double K0[4] = {
@@ -77,7 +77,7 @@ static const s8 tbl_XA_Factor[16][2] = {
 	{0, 0},
 	{60, 0},
 	{115, -52},
-	{98, -55}};
+	{98, -55} };
 
 #define CLAMP(_X_,_MI_,_MA_)	{if(_X_<_MI_)_X_=_MI_;if(_X_>_MA_)_X_=_MA_;}
 
@@ -85,113 +85,40 @@ int pos[2];
 static s16 ringBuf[2][32];
 
 // The below is mostly correct. This is not recieving the right amount of sample data at once!
-void DecodeChunck(const u8 block_header, xa_subheader* header, const std::vector<u16> samples, ADPCM_Decode* decp, int channel, s16 *dest)
+void DecodeChunck(const u8 block_header, xa_subheader* header, const std::vector<u16> samples, ADPCM_Decode* decp, int channel, s16* dest)
 {
 	// Extract 4 or 8 bit nibble depending on BPS
-	/*int bps = header->Bits() ? 8 : 4;
+	int bps = header->Bits() ? 8 : 4;
 
-	//Console.Warning("Bps: %01d", bps);
-	u32 word;
-	u32 sector;
-	u32 finalSample;
-	
-	s32 fy0, fy1;
+	u8 filterid = (block_header >> 4) & 0x0f;
+	u8 range = (block_header >> 0) & 0x0f;
 
-	fy0 = decp->y0;
-	fy1 = decp->y1;
+	s8 filterPos = tbl_XA_Factor[filterid][0];
+	s8 filterNeg = tbl_XA_Factor[filterid][1];
 
-	u8 shift = 12 - (block_header & 0xF);
-	u8 filter = (block_header & 0x30) >> 4;
-	s32 filterPos = tbl_XA_Factor[filter][0];
-	s32 filterNeg = tbl_XA_Factor[filter][1];
+	// 28 Data words within
+	const u16 *sector = &samples[0];
+	u32 word = 0;
 
-	//Console.Warning("Samples: %02x", samples);
-	//Console.Warning("Shift: %02x", shift);
-	//Console.Warning("Filter: %02x", filter);
+	u32 fy0 = decp->y0;
+	u32 fy1 = decp->y1;
 
 	for (u32 block = 0; block < bps; block++)
 	{
-		for (int i = 0; i < 28; i++)
+		for (u32 i = 0; i < 27; i++)
 		{
-			sector = samples[i];
-			//std::memcpy(&data, &samples[i * sizeof(u32)], sizeof(samples));
-			word = (sector & 0xf);
-			word |= ((sector << 4) & 0xf) >> shift; 
-			word |= ((sector << 8) & 0xf) >> shift;
-			word |= ((sector << 12) & 0xf) >> shift;
+			std::memcpy(&word, &samples[i * sizeof(u32)], sizeof(samples));
+			u16 nibble = ((word >> block) & 0x0F);
+			u16 sample = (nibble << 12);
+			u16 processSample = (sample << range) + (((fy0 * filterPos) + (fy1 * filterNeg) + 32) / 64);
+			CLAMP(processSample, -0x8000, 0x7FFF);
+			Console.Warning("Proceesed Sample: %02x", processSample);
+			*(dest++) = processSample;
 
-			//Console.Warning("Sector: %02x", sector);
-			//Console.Warning("Word: %02x", word);
-
-			//Console.Warning("Shift: %02x", shift);
-			u16 nibble;
-			
-			switch (bps)
-			{
-			case 4:
-				nibble = ((word >> (block * bps)) & 0x0F);
-				break;
-			case 8:
-				nibble = ((word >> (block * bps)) & 0xFF);
-				break;
-			} 
-
-			s16 sam = (nibble << 12) >> shift;
-
-			finalSample = (sam << shift) + ((fy0 * filterPos) + (fy1 * filterNeg) + 32) / 64;
-			//Console.Warning("Sam: %02x", sam);
-
-			CLAMP(finalSample, -32768, 32767);
-			Console.Warning("Sample: %02x", finalSample);
-			*(dest++) = finalSample;
-
-			decp->y1 = fy0;
-			decp->y0 = fy1;
-
-			ringBuf[channel][pos[channel] & 0xF] = finalSample;
-
-			//Console.Warning("Previous Sample: %02x", decp->y1);
+			decp->y0 = fy0;
+			decp->y1 = fy1;
 		}
-	}*/
-
-	//Console.Warning("Samples: %02x", samples);
-
-	int i;
-	int range, filterid;
-	long fy0, fy1;
-
-	filterid = (block_header >>  4) & 0x0f;
-	range    = (block_header >>  0) & 0x0f;
-
-	fy0 = decp->y0;
-	fy1 = decp->y1;
-
-	for (i = 28/4; i; --i) {
-		long y;
-		long x0, x1, x2, x3;
-
-		y = samples[i];
-		x3 = (short)( y        & 0xf000) >> range; x3 <<= 4;
-		x2 = (short)((y <<  4) & 0xf000) >> range; x2 <<= 4;
-		x1 = (short)((y <<  8) & 0xf000) >> range; x1 <<= 4;
-		x0 = (short)((y << 12) & 0xf000) >> range; x0 <<= 4;
-
-		x0 -= (IK0(filterid) * fy0 + (IK1(filterid) * fy1)) >> 10; fy1 = fy0; fy0 = x0;
-		x1 -= (IK0(filterid) * fy0 + (IK1(filterid) * fy1)) >> 10; fy1 = fy0; fy0 = x1;
-		x2 -= (IK0(filterid) * fy0 + (IK1(filterid) * fy1)) >> 10; fy1 = fy0; fy0 = x2;
-		x3 -= (IK0(filterid) * fy0 + (IK1(filterid) * fy1)) >> 10; fy1 = fy0; fy0 = x3;
-
-		CLAMP( x0, -32768<<4, 32767<<4 ); *dest = x0 >> 4; dest += channel + 1;
-		CLAMP( x1, -32768<<4, 32767<<4 ); *dest = x1 >> 4; dest += channel + 1;
-		CLAMP( x2, -32768<<4, 32767<<4 ); *dest = x2 >> 4; dest += channel + 1;
-		CLAMP( x3, -32768<<4, 32767<<4 ); *dest = x3 >> 4; dest += channel + 1;
-		Console.Warning("x1: %02x", x1);
-		Console.Warning("x2: %02x", x2);
-		Console.Warning("x3: %02x", x3);
-		Console.Warning("x0: %02x", x0);
 	}
-	decp->y0 = fy0;
-	decp->y1 = fy1;
 }
 
 s16 zigZagInterpolation(int channel, const s16* Table)
@@ -214,42 +141,41 @@ static int headtable[4] = { 0,2,8,10 };
 void DecodeADPCM(xa_subheader* subHeader, xa_decode* decoded, u8* xaData)
 {
 	std::vector<u16> Left, Right;
-	u8 *header = xaData + 128;
-	u8 *sectors = header + 16;
-
-	switch (subHeader->Bits())
+	u8* header = xaData + 128;
+	u8* sectors = header + 16;
+	for (int blk = 0; blk < 4; blk++)
 	{
-		case 4:
-		for(int i = 0; i < 8; i++, sectors += 16)
+		switch (subHeader->Bits())
 		{
-			u32 Sector0 = sectors[0x10 + i * 4 + 0];
-			u32 Sector1 = sectors[0x10 + i * 4 + 4] << 4;
-			u32 Sector2 = sectors[0x10 + i * 4 + 8] << 8;
-			u32 Sector3 = sectors[0x10 + 1 * 4 + 12] << 12;
-			Left.push_back(Sector0);
-			Right.push_back(Sector1);
-			Left.push_back(Sector2);
-			Right.push_back(Sector3);
-		}
-		break;
+		case 4:
+			for (int i = 0; i < 7; i++, sectors += 16)
+			{
+				u32 Sector0 = (sectors[0x10 + blk + i * 4 + 0]);
+				u32 Sector1 = ((sectors[0x10 + blk + i * 4 + 4] << 4));
+				u32 Sector2 = ((sectors[0x10 + blk + i * 4 + 8] << 8));
+				u32 Sector3 = ((sectors[0x10 + blk + 1 * 4 + 12] << 12));
+				Left.push_back(Sector0);
+				Right.push_back(Sector1);
+				Left.push_back(Sector2);
+				Right.push_back(Sector3);
+			}
+			break;
 
 		case 8:
-		for (int i = 0; i < 4; i++, sectors += 16)
-		{
-			u16 Sector0 = sectors[0];
-			u16 Sector1 = sectors[8];
-			u16 Sector2 = sectors[16];
-			u16 Sector3 = sectors[24];
-			Left.push_back(Sector0);
-			Right.push_back(Sector1);
-			Left.push_back(Sector2);
-			Right.push_back(Sector3);
+			for (int i = 0; i < 4; i++, sectors += 16)
+			{
+				u16 Sector0 = sectors[0];
+				u16 Sector1 = sectors[8];
+				u16 Sector2 = sectors[16];
+				u16 Sector3 = sectors[24];
+				Left.push_back(Sector0);
+				Right.push_back(Sector1);
+				Left.push_back(Sector2);
+				Right.push_back(Sector3);
+			}
+			break;
 		}
-		break;
-	}
-	for(int i = 0; i < 11; i++)
-	{
-		for (int blk = 0; blk < 4; blk++)
+		for (int i = 0; i < 11; i++)
 		{
 			if (subHeader->Stereo())
 			{
