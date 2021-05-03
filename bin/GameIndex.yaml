@@ -19826,6 +19826,13 @@ SLPM-62623:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes chocolate coloured characters.
+  patches:
+    B99379B7:
+      content: |-
+        // Fixes game not working in hardware mode
+        comment=Patch by refraction and Kojin
+        patch=1,EE,0053B740,word,00009400
+        patch=1,EE,0053B768,word,00009400
 SLPM-62624:
   name: "Indoor Helicopter Adventure 2"
   region: "NTSC-J"
@@ -30089,6 +30096,13 @@ SLPS-25710:
     InstantVU1SpeedHack: 0  # Fixes random black frames from happening when in a fight session.
   gameFixes:
     - XGKickHack # Fixes grey fighters problem.
+  patches:
+    A7E5CE23:
+      content: |-
+        // Fixes game not working in hardware mode
+        comment=Patch by refraction and Kojin
+        patch=1,EE,004574B0,word,0000948c
+        patch=1,EE,004574D8,word,0000948c
 SLPS-25711:
   name: "Kashimashi! Girl Meets Girl [Best Collection]"
   region: "NTSC-J"
