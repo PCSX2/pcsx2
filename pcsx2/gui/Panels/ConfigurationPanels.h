@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -460,10 +460,32 @@ namespace Panels
 		BiosSelectorPanel( wxWindow* parent );
 		virtual ~BiosSelectorPanel() = default;
 
+		class EnumThread : public Threading::pxThread
+		{
+		public:
+			std::vector<std::pair<wxString, u32>> Result;
+
+			virtual ~EnumThread()
+			{
+				try {
+					pxThread::Cancel();
+				}
+				DESTRUCTOR_CATCHALL
+			}
+			EnumThread(BiosSelectorPanel& parent);
+
+		protected:
+			void ExecuteTaskInThread();
+			BiosSelectorPanel& m_parent;
+		};
+
 	protected:
 		virtual void Apply();
 		virtual void AppStatusEvent_OnSettingsApplied();
 		virtual void DoRefresh();
+		virtual void OnEnumComplete(wxCommandEvent& evt);
 		virtual bool ValidateEnumerationStatus();
+		
+		std::unique_ptr<EnumThread> m_EnumeratorThread;
 	};
 } // namespace Panels
