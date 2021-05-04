@@ -6122,7 +6122,7 @@ SLES-50029:
 SLES-50030:
   name: "SSX Snowboarding"
   region: "PAL-M3"
-   roundModes:
+  roundModes:
     eeRoundMode: 0 # Fixes riders vanish into the floor
 SLES-50031:
   name: "X-Squad"
