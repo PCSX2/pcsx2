@@ -6122,6 +6122,8 @@ SLES-50029:
 SLES-50030:
   name: "SSX Snowboarding"
   region: "PAL-M3"
+   roundModes:
+    eeRoundMode: 0 # Fixes riders vanish into the floor
 SLES-50031:
   name: "X-Squad"
   region: "PAL-E"
@@ -7100,6 +7102,8 @@ SLES-50544:
 SLES-50545:
   name: "SSX Tricky"
   region: "PAL-M3"
+  roundModes:
+    eeRoundMode: 0 # Fixes riders vanish into the floor
 SLES-50546:
   name: "LMA Manager 2002"
   region: "PAL-E"
@@ -26828,6 +26832,8 @@ SLPS-20024:
 SLPS-20025:
   name: "SSX - Snowboard Supercross"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0 # Fixes riders vanish into the floor
 SLPS-20027:
   name: "Aquaqua"
   region: "NTSC-J"
@@ -28049,6 +28055,8 @@ SLPS-25077:
 SLPS-25078:
   name: "SSX Tricky"
   region: "NTSC-J"
+  roundModes:
+    eeRoundMode: 0 # Fixes riders vanish into the floor
 SLPS-25079:
   name: "Madden NFL 2002"
   region: "NTSC-J"
@@ -31579,6 +31587,8 @@ SLUS-20095:
   name: "SSX"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes riders vanish into the floor
 SLUS-20096:
   name: "Swing Away Golf"
   region: "NTSC-U"
@@ -32451,6 +32461,8 @@ SLUS-20326:
   name: "SSX Tricky"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeRoundMode: 0 # Fixes riders vanish into the floor
 SLUS-20327:
   name: "Aggressive Inline"
   region: "NTSC-U"
