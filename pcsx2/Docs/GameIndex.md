@@ -15,6 +15,7 @@ The following is an annotated and comprehensive example of everything that can b
 SERIAL-12345: # !required! Serial number for the game, this is how games are looked up.  Case insensitive
   name: "A Sample Game" # !required!
   region: "NTSC-U" # !required!
+  compat: 0
   roundModes:
     eeRoundMode: 0
     vuRoundMode: 3
@@ -75,6 +76,17 @@ For example:
 However, YAML is case-sensitive and will allow multiple serials that only differ on casing.  To prevent mistakes, this will also throw a validation error and the first entry will be the one that wins.
 
 **Everything else can be safely assumed to be case sensitive!**
+
+## Compatibility
+
+`compat` can be set to the following values:
+- `0` = Unknown Compatibility Status
+- `1` = Nothing
+- `2` = Intro
+- `3` = Menu
+- `4` = In-game
+- `5` = Playable
+- `6` = Perfect
 
 ## Rounding Modes
 
