@@ -63,15 +63,16 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
         patch=1,EE,00000001,word,00000000
 ```
 
-> Note that quoting strings in YAML is optional, but certain characters are reserved like '*' and require the string to be quoted, be aware / use a YAML linter to avoid confusion.
+> Note that quoting strings in YAML is optional, but certain characters are reserved like '\*' and require the string to be quoted, be aware / use a YAML linter to avoid confusion.
 
 ## A Note on Case Sensitivity
 
 Both the serial numbers for the games, and the CRC patches are at the moment not case-sensitive and will be looked up with their lowercase representations.  **However, stylistically, uppercase is preferred and may be enforced and migrated to in the future**.
 
 For example:
--   `SLUS-123` will be stored and looked up in the GameDB as `slus-123`
--   Likewise, a CRC with upper-case hex `23AF6876` will be stored and looked up as `23af6876`
+
+*   `SLUS-123` will be stored and looked up in the GameDB as `slus-123`
+*   Likewise, a CRC with upper-case hex `23AF6876` will be stored and looked up as `23af6876`
 
 However, YAML is case-sensitive and will allow multiple serials that only differ on casing.  To prevent mistakes, this will also throw a validation error and the first entry will be the one that wins.
 
@@ -80,13 +81,14 @@ However, YAML is case-sensitive and will allow multiple serials that only differ
 ## Compatibility
 
 `compat` can be set to the following values:
-- `0` = Unknown Compatibility Status
-- `1` = Nothing
-- `2` = Intro
-- `3` = Menu
-- `4` = In-game
-- `5` = Playable
-- `6` = Perfect
+
+*   `0` = Unknown Compatibility Status
+*   `1` = Nothing
+*   `2` = Intro
+*   `3` = Menu
+*   `4` = In-game
+*   `5` = Playable
+*   `6` = Perfect
 
 ## Rounding Modes
 
@@ -96,24 +98,25 @@ These modes can be specified either on the **EE** (`eeRoundMode`) or **VU** (`vu
 
 ### Options for rounding
 
--   `0` = **Nearest**
--   `1` = **Negative Infinity**
--   `2` = **Positive Infinity**
--   `3` = **Chop (Zero)**
--   The is the common default
+*   `0` = **Nearest**
+*   `1` = **Negative Infinity**
+*   `2` = **Positive Infinity**
+*   `3` = **Chop (Zero)**
+*   The is the common default
 
 ## Clamping Modes
 
 The clamp modes are also numerically based.
--   `eeClampMode` refers to the EE's FPU co-processor
--   `vuClampMode` refers to the VU's and COP2 (VU0 Macro-mode)
+
+*   `eeClampMode` refers to the EE's FPU co-processor
+*   `vuClampMode` refers to the VU's and COP2 (VU0 Macro-mode)
 
 ### Options for clamping
 
--   `0` = **Disables** clamping completely
--   `1` = Clamp **Normally** (only clamp results)
--   `2` = Clamp **Extra** (clamp results as well as operands)
--   `3` = **Full Clamping** for FPU / Extra+Preserve Sign Clamping for VU
+*   `0` = **Disables** clamping completely
+*   `1` = Clamp **Normally** (only clamp results)
+*   `2` = Clamp **Extra** (clamp results as well as operands)
+*   `3` = **Full Clamping** for FPU / Extra+Preserve Sign Clamping for VU
 
 ## Game Fixes
 
@@ -121,53 +124,53 @@ These values are case-sensitive so take care.  If you incorrectly specify a Game
 
 ### Options for Game Fixes
 
--   `VuAddSubHack`
-    -   Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
+*   `VuAddSubHack`
+    *   Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
 
 -   `FpuMulHack`
     -   Tales of Destiny hangs.
 
--   `FpuNegDivHack`
-    -   Gundam games messed up camera-view. Dakar 2's sky showing over 3D. Others...
+*   `FpuNegDivHack`
+    *   Gundam games messed up camera-view. Dakar 2's sky showing over 3D. Others...
 
--   `XGKickHack`
-    -   Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace.
+*   `XGKickHack`
+    *   Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace.
 
--   `IPUWaitHack`
-    -   FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
+*   `IPUWaitHack`
+    *   FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
 
--   `EETimingHack`
-    -   General purpose timing hack.
+*   `EETimingHack`
+    *   General purpose timing hack.
 
--   `SkipMPEGHack`
-    -   Finds sceMpegIsEnd pattern in games and then recompiles code to say the videos are finished.
+*   `SkipMPEGHack`
+    *   Finds sceMpegIsEnd pattern in games and then recompiles code to say the videos are finished.
 
--   `OPHFlagHack`
-    -   Bleach Bankais and others.
+*   `OPHFlagHack`
+    *   Bleach Bankais and others.
 
--   `DMABusyHack`
-    -   Mana Khemia, Metal Saga. Denies writes to the DMAC when it's busy.
+*   `DMABusyHack`
+    *   Mana Khemia, Metal Saga. Denies writes to the DMAC when it's busy.
 
--   `VIFFIFOHack`
-    -   Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
+*   `VIFFIFOHack`
+    *   Transformers Armada, Test Drive Unlimited. Fixes slow booting issue.
 
--   `VIF1StallHack`
-    -   SOCOM II HUD and Spy Hunter loading hang.
+*   `VIF1StallHack`
+    *   SOCOM II HUD and Spy Hunter loading hang.
 
--   `GIFFIFOHack`
-    -   Enables the GIF FIFO. Needed for Wallace & Grommit, Hot Wheels, DJ Hero.
+*   `GIFFIFOHack`
+    *   Enables the GIF FIFO. Needed for Wallace & Grommit, Hot Wheels, DJ Hero.
 
--   `GoemonTlbHack`
-    -   Preload TLB hack to avoid tlb miss on Goemon.
+*   `GoemonTlbHack`
+    *   Preload TLB hack to avoid tlb miss on Goemon.
 
--   `ScarfaceIbitHack`
-    -   VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
+*   `ScarfaceIbitHack`
+    *   VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
 
--   `CrashTagTeamRacingIbitHack`
-    -   VU I bit Hack avoid constant recompilation (Crash Tag Team Racing).
+*   `CrashTagTeamRacingIbitHack`
+    *   VU I bit Hack avoid constant recompilation (Crash Tag Team Racing).
 
--   `VU0KickstartHack`
-    -   Let VU0 run ahead to fix some timing issues
+*   `VU0KickstartHack`
+    *   Let VU0 run ahead to fix some timing issues
 
 ## SpeedHacks
 
@@ -175,9 +178,9 @@ These values are in a key-value format, where the value is assumed to be an inte
 
 ### Options for SpeedHacks
 
--   `mvuFlagSpeedHack`
--   Accepted Values - `0` / `1`
--   Katamari Damacy have weird speed bug when this speed hack is enabled (and it is by default)
+*   `mvuFlagSpeedHack`
+*   Accepted Values - `0` / `1`
+*   Katamari Damacy have weird speed bug when this speed hack is enabled (and it is by default)
 
 <!-- [list-item-spacing] Missing new line after list item->
 
