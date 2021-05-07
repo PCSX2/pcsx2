@@ -165,15 +165,17 @@ public:
 		hdd_grid->Add(hdd_file_label, wxSizerFlags().Centre().Right());
 		hdd_grid->Add(m_hdd_file,     wxSizerFlags().Expand());
 		auto* hdd_size_label = new wxStaticText(this, wxID_ANY, _("HDD Size (GiB):"));
-		m_hdd_size_spin = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, HDD_MIN_GB, HDD_MAX_GB, HDD_MIN_GB);
-		hdd_grid->Add(hdd_size_label,  wxSizerFlags().Centre().Right());
-		hdd_grid->Add(m_hdd_size_spin, wxSizerFlags().Expand());
-		m_hdd_size_slider = new wxSlider(this, wxID_ANY, HDD_MIN_GB, HDD_MIN_GB, HDD_MAX_GB, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL | wxSL_VALUE_LABEL | wxSL_MIN_MAX_LABELS | wxSL_AUTOTICKS);
+		auto* hdd_size_box = new wxBoxSizer(wxHORIZONTAL);
+		m_hdd_size_slider = new wxSlider(this, wxID_ANY, HDD_MIN_GB, HDD_MIN_GB, HDD_MAX_GB, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL | wxSL_MIN_MAX_LABELS | wxSL_AUTOTICKS);
 		m_hdd_size_slider->SetPageSize(10);
 		for (int i = 15; i < HDD_MAX_GB; i += 5)
 			m_hdd_size_slider->SetTick(i);
-		hdd_grid->AddSpacer(0);
-		hdd_grid->Add(m_hdd_size_slider, wxSizerFlags().Expand());
+		m_hdd_size_spin = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, HDD_MIN_GB, HDD_MAX_GB, HDD_MIN_GB);
+		m_hdd_size_spin->SetSizeHints(m_hdd_size_spin->GetSizeFromTextSize(30));
+		hdd_size_box->Add(m_hdd_size_slider, wxSizerFlags(1).Centre());
+		hdd_size_box->Add(m_hdd_size_spin,   wxSizerFlags(0).Centre());
+		hdd_grid->Add(hdd_size_label, wxSizerFlags().Centre().Right());
+		hdd_grid->Add(hdd_size_box,   wxSizerFlags().Expand());
 
 		hdd_sizer->Add(hdd_grid, wxSizerFlags().Expand());
 
