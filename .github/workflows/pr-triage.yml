@@ -1,10 +1,7 @@
 # Runs steps to triage an incoming Pull Request, for example - applying labels.
 name: 🤔 Pull Request Triage
 
-on:
-  pull_request_target:
-    branches:
-      - '*'
+on: pull_request_target
 
 jobs:
   triage:
@@ -12,18 +9,18 @@ jobs:
     steps:
     - uses: actions/labeler@main
       with:
-        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
 
     - uses: xTVaser/first-interaction@v1.2.4
       with:
-        repo-token: "${{ secrets.GITHUB_TOKEN }}"
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
         debug-mode: false
         pr-message: |-
           ## Thank you for submitting a contribution to PCSX2
 
           As this is your first pull request, [please be aware of the contributing guidelines](https://github.com/PCSX2/pcsx2/blob/master/.github/CONTRIBUTING.md).
 
-          Additionally, as per recent changes in Github Actions, your pull request will need to be approved by a maintainer before Github Actions can run against it. [You can find more information about this change here.](https://github.blog/2021-04-22-github-actions-update-helping-maintainers-combat-bad-actors/)
+          Additionally, as per recent changes in GitHub Actions, your pull request will need to be approved by a maintainer before GitHub Actions can run against it. [You can find more information about this change here.](https://github.blog/2021-04-22-github-actions-update-helping-maintainers-combat-bad-actors/)
 
           Please be patient until this happens. In the meantime if you'd like to confirm the builds are passing, you have the option of opening a PR on your own fork, just make sure your fork's master branch is up to date!
         pr-labels: "First Time Contribution"

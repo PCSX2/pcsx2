@@ -7,22 +7,58 @@ on:
     branches:
       - master
     paths-ignore:
-      - .gitignore
-      - "**/*.md"
-      - .clang-format
-      - debian-packager/
-      - bin/PCSX2_keys.ini.default
-      - "pcsx2/PAD/Windows/**"
+      - '**/*.md'
+      - '**/*.bat'
+      - '**/*.cmd'
+      - '**/*.props'
+      - '**/*.sln'
+      - '.clang-format'
+      - '.codacy.yaml'
+      - '.github/*'
+      - '.github/workflows/lint-gamedb.yml'
+      - '.github/workflows/macos-workflow.yml'
+      - '.github/workflows/pr-triage.yml'
+      - '.github/workflows/scripts/windows/**'
+      - '.github/workflows/scripts/validation/**'
+      - '.github/workflows/windows-workflow.yml'
+      - '.gitignore'
+      - 'bin/PCSX2_keys.ini.default'
+      - 'build.sh'
+      - 'buildbot.xml'
+      - 'pcsx2/CDVD/Windows/**'
+      - 'pcsx2/DEV9/Win32/**'
+      - 'pcsx2/PAD/Windows/**'
+      - 'pcsx2/SPU2/Windows/**'
+      - 'pcsx2/USB/Win32/**'
+      - 'pcsx2/windows/**'
   pull_request:
     branches:
       - master
     paths-ignore:
-      - .gitignore
-      - "**/*.md"
-      - .clang-format
-      - debian-packager/
-      - bin/PCSX2_keys.ini.default
-      - "pcsx2/PAD/Windows/**"
+      - '**/*.md'
+      - '**/*.bat'
+      - '**/*.cmd'
+      - '**/*.props'
+      - '**/*.sln'
+      - '.clang-format'
+      - '.codacy.yaml'
+      - '.github/*'
+      - '.github/workflows/lint-gamedb.yml'
+      - '.github/workflows/macos-workflow.yml'
+      - '.github/workflows/pr-triage.yml'
+      - '.github/workflows/scripts/windows/**'
+      - '.github/workflows/scripts/validation/**'
+      - '.github/workflows/windows-workflow.yml'
+      - '.gitignore'
+      - 'bin/PCSX2_keys.ini.default'
+      - 'build.sh'
+      - 'buildbot.xml'
+      - 'pcsx2/CDVD/Windows/**'
+      - 'pcsx2/DEV9/Win32/**'
+      - 'pcsx2/PAD/Windows/**'
+      - 'pcsx2/SPU2/Windows/**'
+      - 'pcsx2/USB/Win32/**'
+      - 'pcsx2/windows/**'
 
 jobs:
   build:
@@ -82,7 +118,7 @@ jobs:
 
       - name: Checkout Submodules
         if: steps.cache-submodules.outputs.cache-hit != 'true'
-        run: git submodule update --init --recursive --jobs 2
+        run: git submodule update --init --recursive -j $(getconf _NPROCESSORS_ONLN)
 
       # -- SETUP CCACHE - https://cristianadam.eu/20200113/speeding-up-c-plus-plus-github-actions-using-ccache/
       - name: Prepare ccache timestamp
@@ -139,7 +175,7 @@ jobs:
         run: .github/workflows/scripts/linux/generate-cmake.sh
 
       - name: Build PCSX2
-        working-directory: ./build
+        working-directory: build
         run: ../.github/workflows/scripts/linux/compile.sh
         
       - name: Package AppImage

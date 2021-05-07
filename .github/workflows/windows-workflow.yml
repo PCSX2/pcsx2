@@ -7,22 +7,54 @@ on:
     branches:
       - master
     paths-ignore:
-      - .gitignore
-      - "**/*.md"
-      - .clang-format
-      - debian-packager/
-      - bin/PCSX2_keys.ini.default
-      - "pcsx2/PAD/Linux/**"
+      - '**/*.md'
+      - '.clang-format'
+      - '.codacy.yaml'
+      - '.github/*'
+      - '.github/workflows/lint-gamedb.yml'
+      - '.github/workflows/linux-workflow.yml'
+      - '.github/workflows/macos-workflow.yml'
+      - '.github/workflows/scripts/linux/**'
+      - '.github/workflows/scripts/validation/**'
+      - '.gitignore'
+      - 'bin/PCSX2_keys.ini.default'
+      - 'build.sh'
+      - 'buildbot.xml'
+      - 'debian-packager/**'
+      - 'linux_various/**'
+      - 'mscompile.cmd'
+      - 'pcsx2/CDVD/Linux/**'
+      - 'pcsx2/DEV9/Linux/**'
+      - 'pcsx2/Linux/**'
+      - 'pcsx2/PAD/Linux/**'
+      - 'pcsx2/SPU2/Linux/**'
+      - 'pcsx2/USB/linux/**'
   pull_request:
     branches:
       - master
     paths-ignore:
-      - .gitignore
-      - "**/*.md"
-      - .clang-format
-      - debian-packager/
-      - bin/PCSX2_keys.ini.default
-      - "pcsx2/PAD/Linux/**"
+      - '**/*.md'
+      - '.clang-format'
+      - '.codacy.yaml'
+      - '.github/*'
+      - '.github/workflows/lint-gamedb.yml'
+      - '.github/workflows/linux-workflow.yml'
+      - '.github/workflows/macos-workflow.yml'
+      - '.github/workflows/scripts/linux/**'
+      - '.github/workflows/scripts/validation/**'
+      - '.gitignore'
+      - 'bin/PCSX2_keys.ini.default'
+      - 'build.sh'
+      - 'buildbot.xml'
+      - 'debian-packager/**'
+      - 'linux_various/**'
+      - 'mscompile.cmd'
+      - 'pcsx2/CDVD/Linux/**'
+      - 'pcsx2/DEV9/Linux/**'
+      - 'pcsx2/Linux/**'
+      - 'pcsx2/PAD/Linux/**'
+      - 'pcsx2/SPU2/Linux/**'
+      - 'pcsx2/USB/linux/**'
   workflow_dispatch:
     inputs:
       retainDebugArtifacts:
@@ -38,52 +70,50 @@ jobs:
       matrix:
         os: [windows-2019]
         platform: [Win32, x64]
-        config: [Release, Release AVX2]
+        configuration: [Release, Release AVX2]
         experimental: [false]
 
-    name: "${{ matrix.platform }} | ${{ matrix.config }}"
+    name: ${{ matrix.platform }} | ${{ matrix.configuration }}
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
     timeout-minutes: 30
+
+    env:
+      POWERSHELL_TELEMETRY_OPTOUT: 1
 
     steps:
       # NOTE - useful for debugging
       # - name: Dump GitHub context
       #   env:
       #     GITHUB_CONTEXT: ${{ toJson(github) }}
-      #   run: |
-      #     echo "$GITHUB_CONTEXT"
+      #   run: echo "$GITHUB_CONTEXT"
 
       - name: Checkout Repository
         uses: actions/checkout@v2
 
       - name: Checkout Submodules
         if: steps.cache-submodules.outputs.cache-hit != 'true'
-        run: git submodule update --init --recursive --jobs 2
+        run: git submodule update --init --recursive -j $env:NUMBER_OF_PROCESSORS
 
       - name: Verify VS Project Files
-        shell: powershell
-        run: .\.github\workflows\scripts\windows\validate-vs-filters.ps1
+        run: .github\workflows\scripts\windows\validate-vs-filters.ps1
 
       - name: Setup msbuild
-        uses: microsoft/setup-msbuild@v1.0.2
-        with:
-          vs-version: 16.7
+        uses: microsoft/setup-msbuild@v1
 
       - name: Build PCSX2
         env:
           # Set to 'true' to retain the .pdb / .exp / .lib, etc files which can be useful for repro'ing issues that only occur in the compiled .exe
           RetainDebuggingArtifacts: ${{ github.event.inputs.retainDebugArtifacts == 'true' }}
-        run: msbuild "PCSX2_suite.sln" /m /v:m /p:Configuration="${{ matrix.config }}" /p:Platform="${{ matrix.platform }}"
+        run: msbuild "PCSX2_suite.sln" /m /v:m /p:Configuration="${{ matrix.configuration }}" /p:Platform="${{ matrix.platform }}"
 
       - name: Prepare Artifact Metadata
         id: artifact-metadata
         shell: bash
         run: |
           ARCH=$([ "${{ matrix.platform }}" == Win32 ] && echo "32bit" || echo "64bit")
-          SIMD=$([ "${{ matrix.config }}" == Release ] && echo "SSE4" || echo "AVX2")
-          ARTIFACT_NAME=""
+          SIMD=$([ "${{ matrix.configuration }}" == Release ] && echo "SSE4" || echo "AVX2")
           if [ ${{ github.event_name }} == "pull_request" ]; then
             PR_SHA=$(git rev-parse --short "${{ github.event.pull_request.head.sha }}")
             ARTIFACT_NAME="PCSX2-${ARCH}-${SIMD}"
@@ -106,7 +136,7 @@ jobs:
 
       - name: Prepare Artifact Folder
         shell: bash
-        working-directory: ./bin
+        working-directory: bin
         run: |
           retainDebugArtifacts=$([ "${{ github.event.inputs.retainDebugArtifacts }}" == "true" ] && echo "true" || echo "false")
           if [ "${retainDebugArtifacts}" == "false" ]; then
@@ -114,7 +144,7 @@ jobs:
             rm -f *.bsc *.exp *.ilk *.iobj *.ipdb *.lib *.pdb
           fi
           shopt -s extglob dotglob
-          mkdir "${{ steps.artifact-metadata.outputs.name }}"
+          mkdir -p "${{ steps.artifact-metadata.outputs.name }}"
           mv !("${{ steps.artifact-metadata.outputs.name }}") "${{ steps.artifact-metadata.outputs.name }}"
           shopt -u dotglob
 

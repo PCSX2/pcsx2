@@ -1,4 +1,4 @@
-#!/bin/sh -u
+#!/bin/sh
 
 # PCSX2 - PS2 Emulator for PCs
 # Copyright (C) 2002-2014  PCSX2 Dev Team
@@ -15,25 +15,22 @@
 # If not, see <http://www.gnu.org/licenses/>.
 
 #set -e # This terminates the script in case of any error
+set -u
 
 # Function declarations
 set_ncpu_toolfile()
 {
+    ncpu=$(getconf _NPROCESSORS_ONLN)
     if [ "$(uname -s)" = 'Darwin' ]; then
-        ncpu="$(sysctl -n hw.ncpu)"
-
         # Get the major Darwin/OSX version.
         if [ "$(sysctl -n kern.osrelease | cut -d . -f 1)" -lt 13 ]; then
-        echo "This old OSX version is not supported! Build will fail."
-        toolfile=cmake/darwin-compiler-i386-clang.cmake
+            echo "This old OSX version is not supported! Build will fail."
+            toolfile=cmake/darwin-compiler-i386-clang.cmake
         else
-        echo "Using Mavericks build with C++11 support."
-        toolfile=cmake/darwin13-compiler-i386-clang.cmake
+            echo "Using Mavericks build with C++11 support."
+            toolfile=cmake/darwin13-compiler-i386-clang.cmake
         fi
-    elif [ "$(uname -s)" = 'FreeBSD' ]; then
-        ncpu="$(sysctl -n hw.ncpu)"
-    else
-        ncpu=$(grep -w -c processor /proc/cpuinfo)
+    elif [ "$(uname -s)" != 'FreeBSD' ]; then
         toolfile=cmake/linux-compiler-i386-multilib.cmake
     fi
 }
@@ -73,17 +70,17 @@ set_compiler()
 {
     if [ "$useClang" -eq 1 ]; then
         if [ "$useCross" -eq 0 ]; then
-        CC=clang CXX=clang++ cmake $flags "$root" 2>&1 | tee -a "$log"
+            CC=clang CXX=clang++ cmake $flags "$root" 2>&1 | tee -a "$log"
         else
-        CC="clang -m32" CXX="clang++ -m32" cmake $flags "$root" 2>&1 | tee -a "$log"
+            CC="clang -m32" CXX="clang++ -m32" cmake $flags "$root" 2>&1 | tee -a "$log"
         fi
     else
         if [ "$useIcc" -eq 1 ]; then
-        if [ "$useCross" -eq 0 ]; then
-            CC="icc" CXX="icpc" cmake $flags "$root" 2>&1 | tee -a "$log"
-        else
-            CC="icc -m32" CXX="icpc -m32" cmake $flags "$root" 2>&1 | tee -a "$log"
-        fi
+            if [ "$useCross" -eq 0 ]; then
+                CC="icc" CXX="icpc" cmake $flags "$root" 2>&1 | tee -a "$log"
+            else
+                CC="icc -m32" CXX="icpc -m32" cmake $flags "$root" 2>&1 | tee -a "$log"
+            fi
         else
         # Default compiler AKA GCC
         cmake $flags "$root" 2>&1 | tee -a "$log"
@@ -113,7 +110,7 @@ run_cppcheck()
         log=cpp_check__${flat_d}.log
         rm -f "$log"
 
-        cppcheck $check -j $ncpu --platform=unix32 $define "$root/$d" 2>&1 | tee "$log"
+        cppcheck $check -j "$ncpu" --platform=unix32 "$define" "$root/$d" 2>&1 | tee "$log"
         # Create a small summary (warning it might miss some issues)
         fgrep -e "(warning)" -e "(error)" -e "(style)" -e "(performance)" -e "(portability)" "$log" >> $summary
     done
