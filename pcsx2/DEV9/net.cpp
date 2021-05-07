@@ -163,18 +163,18 @@ void TermNet()
 	}
 }
 
-const char* NetApiToString(NetApi api)
+const wxChar* NetApiToWxString(NetApi api)
 {
 	switch (api)
 	{
 		case NetApi::PCAP_Bridged:
-			return "PCAP (Bridged)";
+			return _("PCAP Bridged");
 		case NetApi::PCAP_Switched:
-			return "PCAP (Switched)";
+			return _("PCAP Switched");
 		case NetApi::TAP:
-			return "TAP";
+			return _("TAP");
 		default:
-			return "UNK";
+			return _("UNK");
 	}
 }
 
