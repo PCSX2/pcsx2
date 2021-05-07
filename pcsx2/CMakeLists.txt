@@ -321,30 +321,6 @@ set(pcsx2SPU2Headers
 	SPU2/WavFile.h
 )
 
-if(NOT WIN32)
-
-	# DEV9 UI sources
-	compile_gresources( pcsx2DEV9UISources
-	                    pcsx2DEV9UIXML
-	                    TYPE EMBED_C
-	                    RESOURCES "DEV9/Linux/dev9.ui"
-	                    PREFIX "/net/pcsx2/dev9"
-	                    COMPRESS_ALL
-	                    STRIPBLANKS_ALL
-	)
-
-	# DEV9 UI headers
-	compile_gresources( pcsx2DEV9UIHeaders
-	                    pcsx2DEV9UIXML
-	                    TYPE EMBED_H
-	                    RESOURCES "DEV9/Linux/dev9.ui"
-	                    PREFIX "/net/pcsx2/dev9"
-	                    COMPRESS_ALL
-	                    STRIPBLANKS_ALL
-	)
-
-endif()
-
 # DEV9 sources
 set(pcsx2DEV9Sources
 	DEV9/ATA/Commands/ATA_Command.cpp
@@ -376,7 +352,6 @@ set(pcsx2DEV9Sources
 	DEV9/flash.cpp
 	DEV9/pcap_io.cpp
 	DEV9/net.cpp
-	${pcsx2DEV9UISources}
 	)
 
 # DEV9 headers
@@ -404,7 +379,6 @@ set(pcsx2DEV9Headers
 	DEV9/pcap_io.h
 	DEV9/SimpleQueue.h
 	DEV9/smap.h
-	${pcsx2DEV9UIHeaders}
 	)
 
 # USBNull
