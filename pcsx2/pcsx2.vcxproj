@@ -504,12 +504,18 @@
     <ClCompile Include="GS\Renderers\Common\GSVertexTrace.cpp" />
     <ClCompile Include="GS\Window\GSWnd.cpp" />
     <ClCompile Include="GS\Window\GSWndDX.cpp" />
+    <ClCompile Include="GS\Window\GSWndEGL.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="GS\Window\GSWndWGL.cpp" />
     <ClCompile Include="Utilities\FileUtils.cpp" />
     <ClCompile Include="Dump.cpp" />
     <ClCompile Include="x86\iMisc.cpp" />
     <ClCompile Include="Pcsx2Config.cpp" />
     <ClCompile Include="windows\FlatFileReaderWindows.cpp" />
+    <ClCompile Include="Darwin\DarwinFlatFileReader.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="SaveState.cpp" />
     <ClCompile Include="SourceLog.cpp" />
     <ClCompile Include="System\SysCoreThread.cpp" />
@@ -697,6 +703,7 @@
     <ClInclude Include="CDVD\CompressedFileReader.h" />
     <ClInclude Include="CDVD\CompressedFileReaderUtils.h" />
     <ClInclude Include="CDVD\CsoFileReader.h" />
+    <ClInclude Include="CDVD\ChdFileReader.h" />
     <ClInclude Include="CDVD\GzippedFileReader.h" />
     <ClInclude Include="CDVD\ThreadedFileReader.h" />
     <ClInclude Include="CDVD\zlib_indexed.h" />
@@ -738,6 +745,7 @@
     <ClInclude Include="GameDatabase.h" />
     <ClInclude Include="Gif_Unit.h" />
     <ClInclude Include="gui\AppGameDatabase.h" />
+    <ClInclude Include="gui\i18n.h" />
     <ClInclude Include="gui\DriveList.h" />
     <ClInclude Include="gui\Saveslots.h" />
     <ClInclude Include="gui\Debugger\BreakpointWindow.h" />
@@ -791,6 +799,8 @@
     <ClInclude Include="GS\Renderers\OpenGL\GLLoader.h" />
     <ClInclude Include="GS\Renderers\OpenGL\GLState.h" />
     <ClInclude Include="GS\GS.h" />
+    <ClInclude Include="GS\GS_codegen.h" />
+    <ClInclude Include="GS\GS_types.h" />
     <ClInclude Include="GS\GSAlignedClass.h" />
     <ClInclude Include="GS\GSBlock.h" />
     <ClInclude Include="GS\GSCapture.h" />
@@ -856,12 +866,14 @@
     <ClInclude Include="GS\Renderers\Common\GSVertexTrace.h" />
     <ClInclude Include="GS\Window\GSWnd.h" />
     <ClInclude Include="GS\Window\GSWndDX.h" />
+    <ClInclude Include="GS\Window\GSWndEGL.h" />
     <ClInclude Include="GS\Window\GSWndWGL.h" />
     <ClInclude Include="GS\resource.h" />
     <ClInclude Include="IPU\IPUdma.h" />
     <ClInclude Include="Mdec.h" />
     <ClInclude Include="Patch.h" />
     <ClInclude Include="PrecompiledHeader.h" />
+    <ClInclude Include="sio_internal.h" />
     <ClInclude Include="ps2\pgif.h" />
     <ClInclude Include="Recording\InputRecording.h" />
     <ClInclude Include="Recording\InputRecordingControls.h" />
@@ -933,10 +945,12 @@
     <ClInclude Include="SaveState.h" />
     <ClInclude Include="System.h" />
     <ClInclude Include="System\SysThreads.h" />
+    <ClInclude Include="System\RecTypes.h" />
     <ClInclude Include="Counters.h" />
     <ClInclude Include="Dmac.h" />
     <ClInclude Include="Hardware.h" />
     <ClInclude Include="Hw.h" />
+    <ClInclude Include="ps2\HwInternal.h" />
     <ClInclude Include="Cache.h" />
     <ClInclude Include="Memory.h" />
     <ClInclude Include="vtlb.h" />
@@ -963,6 +977,7 @@
     <ClInclude Include="R5900.h" />
     <ClInclude Include="R5900Exceptions.h" />
     <ClInclude Include="R5900OpcodeTables.h" />
+    <ClInclude Include="COP0.h" />
     <ClInclude Include="x86\iCOP0.h" />
     <ClInclude Include="x86\iFPU.h" />
     <ClInclude Include="x86\iMMI.h" />
@@ -1023,6 +1038,7 @@
     </CustomBuildStep>
     <ClInclude Include="x86\BaseblockEx.h" />
     <ClInclude Include="ps2\BiosTools.h" />
+    <ClInclude Include="MemoryTypes.h" />
     <ClInclude Include="x86\iCore.h" />
     <ClInclude Include="CDVD\IsoFS\IsoDirectory.h" />
     <ClInclude Include="CDVD\IsoFS\IsoFile.h" />
@@ -1040,6 +1056,7 @@
     <ClInclude Include="gui\App.h" />
     <ClInclude Include="gui\AppCommon.h" />
     <ClInclude Include="gui\AppConfig.h" />
+    <ClInclude Include="gui\AppAccelerators.h" />
     <ClInclude Include="gui\AppCoreThread.h" />
     <ClInclude Include="gui\AppEventListeners.h" />
     <ClInclude Include="gui\AppForwardDefs.h" />
@@ -1050,9 +1067,14 @@
     <ClInclude Include="gui\GSFrame.h" />
     <ClInclude Include="gui\IsoDropTarget.h" />
     <ClInclude Include="gui\MainFrame.h" />
+    <ClInclude Include="gui\MemoryCardFile.h" />
+    <ClInclude Include="gui\MemoryCardFolder.h" />
     <ClInclude Include="gui\pxEventThread.h" />
     <ClInclude Include="gui\RecentIsoList.h" />
+    <ClInclude Include="PathDefs.h" />
+    <ClInclude Include="SysForwardDefs.h" />
     <ClInclude Include="ZipTools\ThreadedZipTools.h" />
+    <ClInclude Include="cheatscpp.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="$(SolutionDir)3rdparty\wxwidgets3.0\include\wx\msw\wx.rc">
