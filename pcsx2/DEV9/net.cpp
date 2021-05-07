@@ -178,21 +178,6 @@ const wxChar* NetApiToWxString(NetApi api)
 	}
 }
 
-const wchar_t* NetApiToWstring(NetApi api)
-{
-	switch (api)
-	{
-		case NetApi::PCAP_Bridged:
-			return L"PCAP (Bridged)";
-		case NetApi::PCAP_Switched:
-			return L"PCAP (Switched)";
-		case NetApi::TAP:
-			return L"TAP";
-		default:
-			return L"UNK";
-	}
-}
-
 using namespace PacketReader;
 using namespace PacketReader::IP;
 using namespace PacketReader::IP::UDP;

@@ -77,7 +77,6 @@ if(WIN32)
 		GS/GS.rc
 		PAD/Windows/PAD.rc
 		SPU2/Windows/SPU2.rc
-		DEV9/Win32/DEV9ghzdrk.rc
 		USB/usb-pad/dx/versionproxy.rc
 		USB/usb-pad/raw/raw-config.rc
 		windows/wxResources.rc
@@ -346,6 +345,7 @@ set(pcsx2DEV9Sources
 	DEV9/PacketReader/IP/IP_Packet.cpp
 	DEV9/PacketReader/EthernetFrame.cpp
 	DEV9/PacketReader/NetLib.cpp
+	DEV9/ConfigUI.cpp
 	DEV9/smap.cpp
 	DEV9/DEV9.cpp
 	DEV9/DEV9Config.cpp
@@ -755,11 +755,9 @@ if(WIN32)
 		DEV9/Win32/DEV9WinConfig.cpp
 		DEV9/Win32/pcap_io_win32.cpp
 		DEV9/Win32/tap-win32.cpp
-		DEV9/Win32/Win32.cpp
 	)
 	list(APPEND pcsx2DEV9Headers
 		DEV9/Win32/pcap_io_win32_funcs.h
-		DEV9/Win32/resource.h
 		DEV9/Win32/tap.h
 	)
 
@@ -833,7 +831,6 @@ else(WIN32)
 
 	list(APPEND pcsx2DEV9Sources
 		DEV9/Linux/Config.cpp
-		DEV9/Linux/Linux.cpp
 	)
 
 	list(APPEND pcsx2USBSources
