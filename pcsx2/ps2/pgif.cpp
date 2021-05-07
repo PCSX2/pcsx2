@@ -403,17 +403,7 @@ u32 immRespHndl(u32 cmd, u32 data)
         case 0x05:
             data = pgif4reg & 0x003FFFFF;
             break;  //Read Draw offset             ;GP0(E5h) ;22bit
-        case 0x06:
-            break;  //Returns Nothing (old value in GPUREAD remains unchanged)
-        case 0x07:
-            data = 0x2;
-            break;  //Read GPU Type (usually 2) See "GPU Versions" notes below
-        case 0x08:
-            data = 0;
-            break;  //Unknown (Returns 00000000h)
-                    //default: //Returns Nothing (old value in GPUREAD remains unchanged)
     }
-    //TODO: Is the PS2 "PS1 GPU" really a "version 2"-GPU???
     return data;
 }
 
