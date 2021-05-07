@@ -33,6 +33,9 @@
 #include "net.h"
 #include "PacketReader/IP/IP_Address.h"
 #include "gui/AppCoreThread.h"
+#ifdef _WIN32
+	#include "Win32/tap.h"
+#endif
 
 #include "ATA/HddCreate.h"
 
@@ -116,7 +119,14 @@ public:
 
 		auto* eth_adapter_box = new wxGridBagSizer(5, 5);
 		auto* eth_adapter_label = new wxStaticText(eth_pane, wxID_ANY, _("Ethernet Device:"));
+#ifdef _WIN32
+		m_adapter_list = TAPAdapter::GetAdapters();
+		auto pcap_adapters = PCAPAdapter::GetAdapters();
+		m_adapter_list.reserve(m_adapter_list.size() + pcap_adapters.size());
+		m_adapter_list.insert(m_adapter_list.end(), pcap_adapters.begin(), pcap_adapters.end());
+#else
 		m_adapter_list = PCAPAdapter::GetAdapters();
+#endif
 		wxArrayString adapter_name_list;
 		adapter_name_list.Add("");
 		for (const AdapterEntry& adapter : m_adapter_list)
