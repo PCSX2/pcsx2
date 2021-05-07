@@ -27,15 +27,14 @@
 #include <wx/spinctrl.h>
 #include <wx/gbsizer.h>
 
-#include "DEV9/Config.h"
-#include "DEV9/DEV9.h"
-#include "pcap.h"
-#include "DEV9/pcap_io.h"
-#include "DEV9/net.h"
-#include "DEV9/PacketReader/IP/IP_Address.h"
+#include "Config.h"
+#include "DEV9.h"
+#include "pcap_io.h"
+#include "net.h"
+#include "PacketReader/IP/IP_Address.h"
 #include "gui/AppCoreThread.h"
 
-#include "DEV9/ATA/HddCreate.h"
+#include "ATA/HddCreate.h"
 
 using PacketReader::IP::IP_Address;
 
