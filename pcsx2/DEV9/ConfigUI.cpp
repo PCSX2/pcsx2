@@ -103,22 +103,20 @@ class DEV9Dialog : public wxDialog
 
 public:
 	DEV9Dialog()
-		: wxDialog(nullptr, wxID_ANY, _("Network and HDD Settings"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX)
+		: wxDialog(nullptr, wxID_ANY, _("Network and HDD Settings"), wxDefaultPosition, wxDefaultSize, wxCAPTION | wxCLOSE_BOX | wxRESIZE_BORDER)
 	{
 		auto* padding = new wxBoxSizer(wxVERTICAL);
 		auto* top_box = new wxBoxSizer(wxVERTICAL);
 
 		// Ethernet section
-		auto* eth_section = new wxCollapsiblePane(this, wxID_ANY, _("Ethernet"));
-		auto* eth_pane = eth_section->GetPane();
-		auto* eth_sizer = new wxBoxSizer(wxVERTICAL);
+		auto* eth_sizer = new wxStaticBoxSizer(wxVERTICAL, this, _("Ethernet"));
 
-		m_eth_enable = new wxCheckBox(eth_pane, wxID_ANY, _("Enabled"));
+		m_eth_enable = new wxCheckBox(this, wxID_ANY, _("Enabled"));
 		eth_sizer->Add(m_eth_enable);
 		eth_sizer->AddSpacer(5);
 
 		auto* eth_adapter_box = new wxGridBagSizer(5, 5);
-		auto* eth_adapter_label = new wxStaticText(eth_pane, wxID_ANY, _("Ethernet Device:"));
+		auto* eth_adapter_label = new wxStaticText(this, wxID_ANY, _("Ethernet Device:"));
 #ifdef _WIN32
 		m_adapter_list = TAPAdapter::GetAdapters();
 		auto pcap_adapters = PCAPAdapter::GetAdapters();
@@ -131,11 +129,11 @@ public:
 		adapter_name_list.Add("");
 		for (const AdapterEntry& adapter : m_adapter_list)
 			adapter_name_list.Add(wxString::Format(_("%s (%s)"), adapter.name, NetApiToWxString(adapter.type)));
-		m_eth_adapter = new wxChoice(eth_pane, wxID_ANY, wxDefaultPosition, wxDefaultSize, adapter_name_list);
-		auto* intercept_dhcp_label = new wxStaticText(eth_pane, wxID_ANY, _("Intercept DHCP:"));
-		m_intercept_dhcp = new wxCheckBox(eth_pane, wxID_ANY, _("Enabled"));
-		auto* ps2_addr_label = new wxStaticText(eth_pane, wxID_ANY, _("PS2 Address:"));
-		m_ps2_address = new wxTextCtrl(eth_pane, wxID_ANY);
+		m_eth_adapter = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, adapter_name_list);
+		auto* intercept_dhcp_label = new wxStaticText(this, wxID_ANY, _("Intercept DHCP:"));
+		m_intercept_dhcp = new wxCheckBox(this, wxID_ANY, _("Enabled"));
+		auto* ps2_addr_label = new wxStaticText(this, wxID_ANY, _("PS2 Address:"));
+		m_ps2_address = new wxTextCtrl(this, wxID_ANY);
 		m_ps2_address->SetMinSize(wxSize(150, -1));
 
 		eth_adapter_box->Add(eth_adapter_label,    wxGBPosition(0, 0), wxDefaultSpan,  wxALIGN_RIGHT | wxALIGN_CENTRE_VERTICAL);
@@ -145,35 +143,32 @@ public:
 		eth_adapter_box->Add(m_intercept_dhcp,     wxGBPosition(1, 1), wxDefaultSpan,  wxEXPAND);
 		eth_adapter_box->Add(m_ps2_address,        wxGBPosition(2, 1), wxDefaultSpan,  wxEXPAND);
 
-		m_subnet_mask    .create(3, eth_pane, eth_adapter_box, _("Subnet Mask:"));
-		m_gateway_address.create(4, eth_pane, eth_adapter_box, _("Gateway Address:"));
-		m_dns1_address   .create(5, eth_pane, eth_adapter_box, _("DNS1 Address:"));
-		m_dns2_address   .create(6, eth_pane, eth_adapter_box, _("DNS2 Address:"));
+		m_subnet_mask    .create(3, this, eth_adapter_box, _("Subnet Mask:"));
+		m_gateway_address.create(4, this, eth_adapter_box, _("Gateway Address:"));
+		m_dns1_address   .create(5, this, eth_adapter_box, _("DNS1 Address:"));
+		m_dns2_address   .create(6, this, eth_adapter_box, _("DNS2 Address:"));
 
 		eth_adapter_box->AddGrowableCol(1);
 		eth_sizer->Add(eth_adapter_box, wxSizerFlags().Expand());
-		eth_pane->SetSizer(eth_sizer);
 
 		// HDD section
-		auto* hdd_section = new wxCollapsiblePane(this, wxID_ANY, _("Hard Disk Drive"));
-		auto* hdd_pane = hdd_section->GetPane();
-		auto* hdd_sizer = new wxBoxSizer(wxVERTICAL);
+		auto* hdd_sizer = new wxStaticBoxSizer(wxVERTICAL, this, _("Hard Disk Drive"));
 
-		m_hdd_enable = new wxCheckBox(hdd_pane, wxID_ANY, _("Enabled"));
+		m_hdd_enable = new wxCheckBox(this, wxID_ANY, _("Enabled"));
 		hdd_sizer->Add(m_hdd_enable);
 		hdd_sizer->AddSpacer(5);
 
 		auto* hdd_grid = new wxFlexGridSizer(2, 0, 5);
 		hdd_grid->AddGrowableCol(1);
-		auto* hdd_file_label = new wxStaticText(hdd_pane, wxID_ANY, _("HDD File:"));
-		m_hdd_file = new wxFilePickerCtrl(hdd_pane, wxID_ANY, wxEmptyString, _("HDD image file"), "HDD|*.raw", wxDefaultPosition, wxDefaultSize, wxFLP_SAVE | wxFLP_USE_TEXTCTRL);
+		auto* hdd_file_label = new wxStaticText(this, wxID_ANY, _("HDD File:"));
+		m_hdd_file = new wxFilePickerCtrl(this, wxID_ANY, wxEmptyString, _("HDD image file"), "HDD|*.raw", wxDefaultPosition, wxDefaultSize, wxFLP_SAVE | wxFLP_USE_TEXTCTRL);
 		hdd_grid->Add(hdd_file_label, wxSizerFlags().Centre().Right());
 		hdd_grid->Add(m_hdd_file,     wxSizerFlags().Expand());
-		auto* hdd_size_label = new wxStaticText(hdd_pane, wxID_ANY, _("HDD Size (GiB):"));
-		m_hdd_size_spin = new wxSpinCtrl(hdd_pane, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, HDD_MIN_GB, HDD_MAX_GB, HDD_MIN_GB);
+		auto* hdd_size_label = new wxStaticText(this, wxID_ANY, _("HDD Size (GiB):"));
+		m_hdd_size_spin = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, HDD_MIN_GB, HDD_MAX_GB, HDD_MIN_GB);
 		hdd_grid->Add(hdd_size_label,  wxSizerFlags().Centre().Right());
 		hdd_grid->Add(m_hdd_size_spin, wxSizerFlags().Expand());
-		m_hdd_size_slider = new wxSlider(hdd_pane, wxID_ANY, HDD_MIN_GB, HDD_MIN_GB, HDD_MAX_GB, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL | wxSL_VALUE_LABEL | wxSL_MIN_MAX_LABELS | wxSL_AUTOTICKS);
+		m_hdd_size_slider = new wxSlider(this, wxID_ANY, HDD_MIN_GB, HDD_MIN_GB, HDD_MAX_GB, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL | wxSL_VALUE_LABEL | wxSL_MIN_MAX_LABELS | wxSL_AUTOTICKS);
 		m_hdd_size_slider->SetPageSize(10);
 		for (int i = 15; i < HDD_MAX_GB; i += 5)
 			m_hdd_size_slider->SetTick(i);
@@ -181,14 +176,14 @@ public:
 		hdd_grid->Add(m_hdd_size_slider, wxSizerFlags().Expand());
 
 		hdd_sizer->Add(hdd_grid, wxSizerFlags().Expand());
-		hdd_pane->SetSizer(hdd_sizer);
 
-		top_box->Add(eth_section, wxSizerFlags().Expand());
-		top_box->Add(hdd_section, wxSizerFlags().Expand());
+		top_box->Add(eth_sizer, wxSizerFlags().Expand());
+		top_box->Add(hdd_sizer, wxSizerFlags().Expand());
 		top_box->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), wxSizerFlags().Right());
 
 		padding->Add(top_box, wxSizerFlags().Expand().Border(wxALL, 5));
 		SetSizerAndFit(padding);
+		SetMaxSize(wxSize(wxDefaultCoord, GetMinSize().y));
 
 		Bind(wxEVT_CHECKBOX, &DEV9Dialog::OnCheck, this);
 		Bind(wxEVT_SLIDER,   &DEV9Dialog::OnSlide, this);
