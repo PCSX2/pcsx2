@@ -5,12 +5,12 @@ on:
     branches:
       - master
     paths:
-      - "**/GameIndex.yaml"
+      - '**/GameIndex.yaml'
   pull_request:
     branches:
       - master
     paths:
-      - "**/GameIndex.yaml"
+      - '**/GameIndex.yaml'
 
 jobs:
   lint:
@@ -21,7 +21,7 @@ jobs:
 
       - name: Validate GameDB
         env:
-          SCRIPT_DIR: "./.github/workflows/scripts/validation/lint-gamedb"
+          SCRIPT_DIR: .github/workflows/scripts/validation/lint-gamedb
         run: |
           pip install -r "${SCRIPT_DIR}/requirements.txt"
           python "${SCRIPT_DIR}/lint-gamedb.py"
