@@ -358,6 +358,16 @@ namespace usb_eyetoy
 							Console.WriteLn("EyeToy : configured for unknown format");
 						}
 						break;
+					case OV519_GPIO_DATA_OUT0:
+						{
+							static char led_state = -1;
+							if (led_state != data[0])
+							{
+								led_state = data[0];
+								Console.WriteLn("EyeToy : LED : %d", !!led_state);
+							}
+						}
+						break;
 					case R518_I2C_CTL:
 						if (data[0] == 1) // Commit I2C write
 						{
