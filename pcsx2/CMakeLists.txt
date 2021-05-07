@@ -1172,6 +1172,7 @@ set(Common
 	${pcsx2GSHeaders}
 	${pcsx2GSSources}
 	${pcsx2DebugToolsSources}
+	${pcsx2DebugToolsHeaders}
 	${pcsx2GuiSources}
 	${pcsx2GuiResources}
 	${pcsx2GuiHeaders}
@@ -1350,3 +1351,18 @@ if(NOT DISABLE_SETCAP)
 		install(CODE "execute_process(COMMAND /bin/bash -c \"echo 'Enabling networking capability on Linux...';set -x; [ -f '${CMAKE_SOURCE_DIR}/bin/${Output}' ] && sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' '${CMAKE_SOURCE_DIR}/bin/${Output}'; set +x\")")
 	endif()
 endif()
+
+source_groups_from_vcxproj_filters(pcsx2.vcxproj.filters)
+
+# Unix-only files aren't in the vcxproj.filters
+source_group(System/Ps2/DEV9 REGULAR_EXPRESSION DEV9/*)
+source_group(System/Ps2/PAD FILES ${pcsx2PADSources} ${pcsx2PADHeaders})
+source_group(System/Ps2/SPU2 REGULAR_EXPRESSION SPU2/*)
+source_group(System/Ps2/USB REGULAR_EXPRESSION USB/*)
+
+# Generated resource files
+source_group(Resources/GUI FILES ${pcsx2GuiResources})
+source_group(Resources/PAD FILES ${pcsx2PADResources})
+source_group(Resources/Recording FILES ${pcsx2RecordingVirtualPadResources})
+source_group(Resources FILES ../bin/GameIndex.yaml gui/Resources/PCSX2.icns)
+source_group(Resources REGULAR_EXPRESSION ${CMAKE_CURRENT_BINARY_DIR}/*)
