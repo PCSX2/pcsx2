@@ -29,7 +29,7 @@
 #include "DriveList.h"
 
 #ifndef DISABLE_RECORDING
-#include "Recording/NewRecordingFrame.h"
+#include "Recording/gui/NewRecordingFrame.h"
 #endif
 
 class DisassemblyDialog;

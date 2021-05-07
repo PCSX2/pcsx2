@@ -28,6 +28,7 @@ set(UtilitiesSources
 	Linux/LnxHostSys.cpp
 	Mutex.cpp
 	PathUtils.cpp
+	FileUtils.cpp
 	PrecompiledHeader.cpp
 	Perf.cpp
 	pxCheckBox.cpp
@@ -38,6 +39,7 @@ set(UtilitiesSources
 	pxWindowTextWriter.cpp
 	RwMutex.cpp
 	StringHelpers.cpp
+	StringUtils.cpp
 	ThreadingDialogs.cpp
 	ThreadTools.cpp
 	wxAppWithHelpers.cpp
@@ -59,6 +61,7 @@ set(UtilitiesHeaders
 	../../include/Utilities/MakeUnique.h
 	../../include/Utilities/MemcpyFast.h
 	../../include/Utilities/MemsetFast.inl
+	../../include/Utilities/FileUtils.h
 	../../include/Utilities/Path.h
 	../../include/Utilities/PageFaultSource.h
 	../../include/Utilities/pxCheckBox.h
@@ -72,6 +75,7 @@ set(UtilitiesHeaders
 	../../include/Utilities/ScopedAlloc.h
 	../../include/Utilities/ScopedPtrMT.h
 	../../include/Utilities/StringHelpers.h
+	../../include/Utilities/StringUtils.h
 	../../include/Utilities/Threading.h
 	../../include/Utilities/ThreadingDialogs.h
 	../../include/Utilities/TraceLog.h
@@ -109,9 +113,11 @@ set(UtilitiesFinalSources
 )
 
 set(UtilitiesFinalLibs
-    ${LIBC_LIBRARIES} # Gold (new linux linker) does not get automatically dependency of dependency
+	${LIBC_LIBRARIES} # Gold (new linux linker) does not get automatically dependency of dependency
 	${wxWidgets_LIBRARIES}
-	yaml-cpp chdr-static
+	fmt::fmt
+	yaml-cpp
+	chdr-static
 )
 
 add_pcsx2_lib(${Output} "${UtilitiesFinalSources}" "${UtilitiesFinalLibs}" "${UtilitiesFinalFlags}")

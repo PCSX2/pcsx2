@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -17,9 +17,10 @@
 
 #include "yaml-cpp/yaml.h"
 
+#include <fstream>
+#include <string>
 #include <unordered_map>
 #include <vector>
-#include <string>
 
 // Since this is kinda yaml specific, might be a good idea to
 // relocate this into the yaml class

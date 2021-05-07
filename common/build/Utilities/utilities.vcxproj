@@ -43,7 +43,7 @@
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="PropertySheets">
     <Import Project="..\..\vsprops\CommonLibrary.props" />
-    <Import Project="..\..\vsprops\3rdpartyDeps.props"/>
+    <Import Project="..\..\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\vsprops\pthreads.props" />
     <Import Condition="$(Configuration.Contains(Debug))" Project="..\..\vsprops\CodeGen_Debug.props" />
     <Import Condition="$(Configuration.Contains(Devel))" Project="..\..\vsprops\CodeGen_Devel.props" />
@@ -73,10 +73,12 @@
     <ClCompile Include="..\..\src\Utilities\Console.cpp" />
     <ClCompile Include="..\..\src\Utilities\Exceptions.cpp" />
     <ClCompile Include="..\..\src\Utilities\FastFormatString.cpp" />
+    <ClCompile Include="..\..\src\Utilities\FileUtils.cpp" />
     <ClCompile Include="..\..\src\Utilities\IniInterface.cpp" />
     <ClCompile Include="..\..\src\Utilities\pxStreams.cpp" />
     <ClCompile Include="..\..\src\Utilities\pxTranslate.cpp" />
     <ClCompile Include="..\..\src\Utilities\pxWindowTextWriter.cpp" />
+    <ClCompile Include="..\..\src\Utilities\StringUtils.cpp" />
     <ClCompile Include="..\..\src\Utilities\ThreadingDialogs.cpp" />
     <ClCompile Include="..\..\src\Utilities\VirtualMemory.cpp" />
     <ClCompile Include="..\..\src\Utilities\x86\MemcpyFast.cpp">
@@ -118,6 +120,7 @@
     <ClInclude Include="..\..\include\Utilities\EmbeddedImage.h" />
     <ClInclude Include="..\..\include\Utilities\boost_spsc_queue.hpp" />
     <ClInclude Include="..\..\include\Utilities\ScopedAlloc.h" />
+    <ClInclude Include="..\..\include\Utilities\StringUtils.h" />
     <ClInclude Include="..\..\src\Utilities\ThreadingInternal.h" />
     <ClInclude Include="..\..\include\Utilities\Assertions.h" />
     <ClInclude Include="..\..\include\Utilities\CheckedStaticBox.h" />
@@ -125,6 +128,7 @@
     <ClInclude Include="..\..\include\Utilities\Dependencies.h" />
     <ClInclude Include="..\..\include\Utilities\EventSource.h" />
     <ClInclude Include="..\..\include\Utilities\Exceptions.h" />
+    <ClInclude Include="..\..\include\Utilities\FileUtils.h" />
     <ClInclude Include="..\..\include\Utilities\FixedPointTypes.h" />
     <ClInclude Include="..\..\include\Utilities\General.h" />
     <ClInclude Include="..\..\include\Utilities\MathUtils.h" />

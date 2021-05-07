@@ -119,6 +119,12 @@
     <ClCompile Include="..\..\src\Utilities\AlignedMalloc.cpp">
       <Filter>Source Files\Linux</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Utilities\FileUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\Utilities\StringUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\include\Utilities\EventSource.inl">
@@ -214,6 +220,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Utilities\EmbeddedImage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\Utilities\FileUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\Utilities\StringUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

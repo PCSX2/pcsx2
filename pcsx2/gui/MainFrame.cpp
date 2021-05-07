@@ -22,6 +22,7 @@
 #include "Dialogs/ModalPopups.h"
 #include "IsoDropTarget.h"
 
+#include "fmt/core.h"
 #include <wx/iconbndl.h>
 
 #include <unordered_map>
@@ -29,12 +30,13 @@
 
 #include "svnrev.h"
 #include "Saveslots.h"
+
 #ifndef DISABLE_RECORDING
+
 #include "Recording/InputRecording.h"
+
 #endif
 
-
-#include "fmt/core.h"
 // ------------------------------------------------------------------------
 wxMenu* MainEmuFrame::MakeStatesSubMenu(int baseid, int loadBackupId) const
 {
@@ -71,8 +73,8 @@ void MainEmuFrame::UpdateStatusBar()
 	wxString temp(wxEmptyString);
 
 #ifndef DISABLE_RECORDING
-	if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().FromSaveState())
-		temp += "Base Savestate - " + g_InputRecording.GetInputRecordingData().GetFilename() + "_SaveState.p2s";
+	if (g_InputRecording.IsActive() && g_InputRecording.GetInputRecordingData().isFromSavestate())
+		temp += "Base Savestate - " + FileUtils::wxStringFromPath(g_InputRecording.GetInputRecordingData().getFileName()) + "_SaveState.p2s";
 	else
 #endif
 	{
