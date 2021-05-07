@@ -641,19 +641,19 @@
     <ClCompile Include="CDVD\CDVDisoReader.cpp">
       <Filter>System\Ps2\Iop\CDVD</Filter>
     </ClCompile>
-    <ClCompile Include="Ipu\IPU.cpp">
+    <ClCompile Include="IPU\IPU.cpp">
       <Filter>System\Ps2\IPU</Filter>
     </ClCompile>
-    <ClCompile Include="Ipu\IPU_Fifo.cpp">
+    <ClCompile Include="IPU\IPU_Fifo.cpp">
       <Filter>System\Ps2\IPU</Filter>
     </ClCompile>
-    <ClCompile Include="Ipu\yuv2rgb.cpp">
+    <ClCompile Include="IPU\yuv2rgb.cpp">
       <Filter>System\Ps2\IPU</Filter>
     </ClCompile>
-    <ClCompile Include="Ipu\mpeg2lib\Idct.cpp">
+    <ClCompile Include="IPU\mpeg2lib\Idct.cpp">
       <Filter>System\Ps2\IPU\mpeg2lib</Filter>
     </ClCompile>
-    <ClCompile Include="Ipu\mpeg2lib\Mpeg.cpp">
+    <ClCompile Include="IPU\mpeg2lib\Mpeg.cpp">
       <Filter>System\Ps2\IPU\mpeg2lib</Filter>
     </ClCompile>
     <ClCompile Include="GS.cpp">
@@ -1077,7 +1077,7 @@
     <ClCompile Include="SPU2\Windows\ConfigSoundtouch.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
-    <ClCompile Include="SPU2\debug.cpp">
+    <ClCompile Include="SPU2\Debug.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
     <ClCompile Include="SPU2\Linux\Dialogs.cpp">
@@ -1119,7 +1119,7 @@
     <ClCompile Include="SPU2\Timestretcher.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
-    <ClCompile Include="SPU2\wavedump_wav.cpp">
+    <ClCompile Include="SPU2\Wavedump_wav.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
     <ClCompile Include="SPU2\SndOut_Portaudio.cpp">
@@ -1826,19 +1826,19 @@
     <ClInclude Include="CDVD\CDVDisoReader.h">
       <Filter>System\Ps2\Iop\CDVD</Filter>
     </ClInclude>
-    <ClInclude Include="Ipu\IPU.h">
+    <ClInclude Include="IPU\IPU.h">
       <Filter>System\Ps2\IPU</Filter>
     </ClInclude>
-    <ClInclude Include="Ipu\IPU_Fifo.h">
+    <ClInclude Include="IPU\IPU_Fifo.h">
       <Filter>System\Ps2\IPU</Filter>
     </ClInclude>
-    <ClInclude Include="Ipu\yuv2rgb.h">
+    <ClInclude Include="IPU\yuv2rgb.h">
       <Filter>System\Ps2\IPU</Filter>
     </ClInclude>
-    <ClInclude Include="Ipu\mpeg2lib\Mpeg.h">
+    <ClInclude Include="IPU\mpeg2lib\Mpeg.h">
       <Filter>System\Ps2\IPU\mpeg2lib</Filter>
     </ClInclude>
-    <ClInclude Include="Ipu\mpeg2lib\Vlc.h">
+    <ClInclude Include="IPU\mpeg2lib\Vlc.h">
       <Filter>System\Ps2\IPU\mpeg2lib</Filter>
     </ClInclude>
     <ClInclude Include="DebugTools\Debug.h">
