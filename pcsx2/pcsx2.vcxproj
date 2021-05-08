@@ -451,6 +451,7 @@
     <ClCompile Include="USB\usb-eyetoy\cam-windows.cpp" />
     <ClCompile Include="USB\usb-eyetoy\jo_mpeg.cpp" />
     <ClCompile Include="USB\usb-eyetoy\jpgd\jpgd.cpp" />
+    <ClCompile Include="USB\usb-eyetoy\jpgd\jpge.cpp" />
     <ClCompile Include="USB\usb-eyetoy\usb-eyetoy-webcam.cpp" />
     <ClCompile Include="USB\usb-hid\api_init_win32_hid.cpp" />
     <ClCompile Include="USB\usb-hid\raw\rawinput.cpp" />
@@ -936,6 +937,7 @@
     <ClInclude Include="USB\usb-eyetoy\cam-windows.h" />
     <ClInclude Include="USB\usb-eyetoy\jo_mpeg.h" />
     <ClInclude Include="USB\usb-eyetoy\jpgd\jpgd.h" />
+    <ClInclude Include="USB\usb-eyetoy\jpgd\jpge.h" />
     <ClInclude Include="USB\usb-eyetoy\ov519.h" />
     <ClInclude Include="USB\usb-eyetoy\usb-eyetoy-webcam.h" />
     <ClInclude Include="USB\usb-eyetoy\videodev.h" />

@@ -84,10 +84,10 @@ namespace usb_eyetoy
 		{
 		public:
 			DirectShow(int port);
-			~DirectShow() {}
-			int Open();
+			~DirectShow();
+			int Open(int width, int height, FrameFormat format, int mirror);
 			int Close();
-			int GetImage(uint8_t* buf, int len);
+			int GetImage(uint8_t* buf, size_t len);
 			void SetMirroring(bool state);
 			int Reset() { return 0; };
 

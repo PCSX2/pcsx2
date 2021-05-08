@@ -178,10 +178,34 @@ static int jo_processDU(jo_bits_t *bits, float A[64], const unsigned char htdc[9
 	return Q[0];
 }
 
+void write_ipu_header(jo_bits_t* bits, int width, int height) {
+	jo_writeBits(bits, 0x69, 8);
+	jo_writeBits(bits, 0x70, 8);
+	jo_writeBits(bits, 0x75, 8);
+	jo_writeBits(bits, 0x6D, 8);
+
+	jo_writeBits(bits, 0x00, 8);
+	jo_writeBits(bits, 0x00, 8);
+	jo_writeBits(bits, 0x00, 8);
+	jo_writeBits(bits, 0x00, 8);
+
+	jo_writeBits(bits, width & 0xFF,  8);
+	jo_writeBits(bits, width >> 8,    8);
+	jo_writeBits(bits, height & 0xFF, 8);
+	jo_writeBits(bits, height >> 8,   8);
+
+	jo_writeBits(bits, 0x01, 8);
+	jo_writeBits(bits, 0x00, 8);
+	jo_writeBits(bits, 0x00, 8);
+	jo_writeBits(bits, 0x00, 8);
+}
+
 unsigned long jo_write_mpeg(unsigned char *mpeg_buf, const unsigned char *raw, int width, int height, int format, int flipx, int flipy) {
 	int lastDCY = 128, lastDCCR = 128, lastDCCB = 128;
 	unsigned char *head = mpeg_buf;
 	jo_bits_t bits = {mpeg_buf};
+
+	write_ipu_header(&bits, width, height);
 
 	jo_writeBits(&bits, 0x00, 8);
 	for (int vblock = 0; vblock < (height+15)/16; vblock++) {

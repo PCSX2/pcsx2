@@ -33,12 +33,11 @@ namespace usb_eyetoy
 		uint8_t regs[0xFF];     //OV519
 		uint8_t i2c_regs[0xFF]; //OV764x
 
+		int hw_camera_running;
 		int frame_step;
 		unsigned char* mpeg_frame_data;
 		unsigned int mpeg_frame_size;
 		unsigned int mpeg_frame_offset;
-		uint8_t alts[3];
-		uint8_t filter_log;
 		//	} f;
 	} EYETOYState;
 
@@ -341,18 +340,31 @@ namespace usb_eyetoy
 				switch (index)
 				{
 					case OV519_RA0_FORMAT:
-						if (data[0] == 0x42)
+						if (data[0] == OV519_RA0_FORMAT_MPEG)
 						{
 							Console.WriteLn("EyeToy : configured for MPEG format");
 						}
-						else if (data[0] == 0x33)
+						else if (data[0] == OV519_RA0_FORMAT_JPEG)
 						{
-							Console.WriteLn("EyeToy : configured for JPEG format; Unimplemented");
+							Console.WriteLn("EyeToy : configured for JPEG format");
 						}
 						else
 						{
 							Console.WriteLn("EyeToy : configured for unknown format");
 						}
+
+						if (s->hw_camera_running && s->regs[OV519_RA0_FORMAT] != data[0])
+						{
+							Console.WriteLn("EyeToy : reinitialize the camera");
+							s->dev.klass.close(dev);
+							s->dev.klass.open(dev);
+						}
+						break;
+					case OV519_R10_H_SIZE:
+						Console.WriteLn("EyeToy : Image width : %d", data[0] << 4);
+						break;
+					case OV519_R11_V_SIZE:
+						Console.WriteLn("EyeToy : Image height : %d", data[0] << 3);
 						break;
 					case OV519_GPIO_DATA_OUT0:
 						{
@@ -379,9 +391,9 @@ namespace usb_eyetoy
 							{
 								s->i2c_regs[reg] = val;
 							}
-							if (reg == 0x12)
+							if (reg == OV7610_REG_COM_A)
 							{
-								const bool mirroring_enabled = val & 0x40;
+								const bool mirroring_enabled = val & OV7610_REG_COM_A_MASK_MIRROR;
 								s->videodev->SetMirroring(mirroring_enabled);
 								Console.WriteLn("EyeToy : mirroring %s", mirroring_enabled ? "ON" : "OFF");
 							}
@@ -420,6 +432,13 @@ namespace usb_eyetoy
 		uint8_t data[max_ep_size];
 		uint8_t devep = p->ep->nr;
 
+		if (!s->hw_camera_running)
+		{
+			Console.WriteLn("EyeToy : initialization done; start the camera");
+			s->hw_camera_running = 1;
+			s->dev.klass.open(dev);
+		}
+
 		switch (p->pid)
 		{
 			case USB_TOKEN_IN:
@@ -429,7 +448,7 @@ namespace usb_eyetoy
 
 					if (s->frame_step == 0)
 					{
-						s->mpeg_frame_size = s->videodev->GetImage(s->mpeg_frame_data, 320 * 240 * 2);
+						s->mpeg_frame_size = s->videodev->GetImage(s->mpeg_frame_data, 640 * 480 * 3);
 						if (s->mpeg_frame_size == 0)
 						{
 							p->status = USB_RET_NAK;
@@ -437,8 +456,8 @@ namespace usb_eyetoy
 						}
 
 						uint8_t header[] = {
-							0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
-							0x69, 0x70, 0x75, 0x6D, 0x00, 0x00, 0x00, 0x00, 0x40, 0x01, 0xF0, 0x00, 0x01, 0x00, 0x00, 0x00};
+							0xFF, 0xFF, 0xFF, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
+						header[0x0A] = s->regs[OV519_RA0_FORMAT] == OV519_RA0_FORMAT_JPEG ? 0x03 : 0x01;
 						memcpy(data, header, sizeof(header));
 
 						int data_pk = max_ep_size - sizeof(header);
@@ -459,9 +478,11 @@ namespace usb_eyetoy
 					{
 						uint8_t footer[] = {
 							0xFF, 0xFF, 0xFF, 0x51, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00};
+						footer[0x0A] = s->regs[OV519_RA0_FORMAT] == OV519_RA0_FORMAT_JPEG ? 0x03 : 0x01;
 						memcpy(data, footer, sizeof(footer));
 						s->frame_step = 0;
 					}
+
 					usb_packet_copy(p, data, max_ep_size);
 				}
 				else if (devep == 2)
@@ -489,14 +510,28 @@ namespace usb_eyetoy
 	int eyetoy_open(USBDevice* dev)
 	{
 		EYETOYState* s = (EYETOYState*)dev;
-		s->videodev->Open();
+		if (s->hw_camera_running)
+		{
+			const int width = s->regs[OV519_R10_H_SIZE] << 4;
+			const int height = s->regs[OV519_R11_V_SIZE] << 3;
+			const FrameFormat format = s->regs[OV519_RA0_FORMAT] == OV519_RA0_FORMAT_JPEG ? format_jpeg : format_mpeg;
+			const int mirror = !!(s->i2c_regs[OV7610_REG_COM_A] & OV7610_REG_COM_A_MASK_MIRROR);
+			Console.Error("EyeToy : eyetoy_open(); hw=%d, w=%d, h=%d, fmt=%d, mirr=%d", s->hw_camera_running,
+				width, height, format, mirror);
+			s->videodev->Open(width, height, format, mirror);
+		}
 		return 1;
 	}
 
 	void eyetoy_close(USBDevice* dev)
 	{
 		EYETOYState* s = (EYETOYState*)dev;
-		s->videodev->Close();
+		Console.Error("EyeToy : eyetoy_close(); hw=%d", s->hw_camera_running);
+		if (s->hw_camera_running)
+		{
+			s->hw_camera_running = 0;
+			s->videodev->Close();
+		}
 	}
 
 	USBDevice* EyeToyWebCamDevice::CreateDevice(int port)
@@ -552,8 +587,9 @@ namespace usb_eyetoy
 		usb_ep_init(&s->dev);
 		eyetoy_handle_reset((USBDevice*)s);
 
+		s->hw_camera_running = 0;
 		s->frame_step = 0;
-		s->mpeg_frame_data = (unsigned char*)calloc(1, 320 * 240 * 4); // TODO: 640x480 ?
+		s->mpeg_frame_data = (unsigned char*)calloc(1, 640 * 480 * 3);
 		s->mpeg_frame_offset = 0;
 
 		static_state = s;

@@ -20,14 +20,19 @@
 
 namespace usb_eyetoy
 {
+	enum FrameFormat
+	{
+		format_mpeg,
+		format_jpeg
+	};
 
 	class VideoDevice
 	{
 	public:
 		virtual ~VideoDevice() {}
-		virtual int Open() = 0;
+		virtual int Open(int width, int height, FrameFormat format, int mirror) = 0;
 		virtual int Close() = 0;
-		virtual int GetImage(uint8_t* buf, int len) = 0;
+		virtual int GetImage(uint8_t* buf, size_t len) = 0;
 		virtual void SetMirroring(bool state) = 0;
 		virtual int Reset() = 0;
 

@@ -33,6 +33,8 @@
 #define OV519_R20_DFR 0x20
 #define OV519_R25_FORMAT 0x25
 #define OV519_RA0_FORMAT 0xA0
+#define OV519_RA0_FORMAT_MPEG 0x42
+#define OV519_RA0_FORMAT_JPEG 0x33
 
 /* OV519 System Controller register numbers */
 #define OV519_R51_RESET1 0x51
@@ -50,6 +52,8 @@
 #define OV8610_REG_HUE 0x04     /* 04 reserved */
 #define OV7610_REG_CNT 0x05     /* Y contrast */
 #define OV7610_REG_BRT 0x06     /* Y brightness */
+#define OV7610_REG_COM_A 0x12   /* misc common regs */
+#define OV7610_REG_COM_A_MASK_MIRROR 0x40 /* mirror image */
 #define OV7610_REG_COM_C 0x14   /* misc common regs */
 #define OV7610_REG_ID_HIGH 0x1c /* manufacturer ID MSB */
 #define OV7610_REG_ID_LOW 0x1d  /* manufacturer ID LSB */

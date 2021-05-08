@@ -395,6 +395,7 @@ set(pcsx2USBSources
 	USB/usb-mic/usb-mic-logitech.cpp
 	USB/usb-mic/usb-headset.cpp
 	USB/usb-eyetoy/jpgd/jpgd.cpp
+	USB/usb-eyetoy/jpgd/jpge.cpp
 	USB/usb-eyetoy/jo_mpeg.cpp
 	USB/usb-eyetoy/usb-eyetoy-webcam.cpp
 	USB/usb-hid/usb-hid.cpp
@@ -449,6 +450,7 @@ set(pcsx2USBHeaders
 	USB/usb-mic/usb-headset.h
 	USB/usb-mic/audiodev-noop.h
 	USB/usb-eyetoy/jpgd/jpgd.h
+	USB/usb-eyetoy/jpgd/jpge.h
 	USB/usb-eyetoy/jo_mpeg.h
 	USB/usb-eyetoy/videodeviceproxy.h
 	USB/usb-eyetoy/videodev.h
