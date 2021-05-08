@@ -1218,6 +1218,9 @@
     <ClCompile Include="USB\usb-eyetoy\jpgd\jpgd.cpp">
       <Filter>System\Ps2\USB\usb-eyetoy\jpgd</Filter>
     </ClCompile>
+    <ClCompile Include="USB\usb-eyetoy\jpgd\jpge.cpp">
+      <Filter>System\Ps2\USB\usb-eyetoy\jpgd</Filter>
+    </ClCompile>
     <ClCompile Include="USB\usb-eyetoy\jo_mpeg.cpp">
       <Filter>System\Ps2\USB\usb-eyetoy</Filter>
     </ClCompile>
@@ -2249,6 +2252,9 @@
       <Filter>System\Ps2\USB\usb-eyetoy</Filter>
     </ClInclude>
     <ClInclude Include="USB\usb-eyetoy\jpgd\jpgd.h">
+      <Filter>System\Ps2\USB\usb-eyetoy\jpgd</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-eyetoy\jpgd\jpge.h">
       <Filter>System\Ps2\USB\usb-eyetoy\jpgd</Filter>
     </ClInclude>
     <ClInclude Include="USB\usb-hid\hidproxy.h">

@@ -20,7 +20,7 @@ namespace usb_eyetoy
 	namespace linux_api
 	{
 
-		typedef struct
+		typedef struct _buffer_t
 		{
 			void* start;
 			size_t length;
@@ -31,12 +31,11 @@ namespace usb_eyetoy
 		class V4L2 : public VideoDevice
 		{
 		public:
-			V4L2(int port)
-				: mPort(port){};
-			~V4L2(){};
-			int Open();
+			V4L2(int port);
+			~V4L2();
+			int Open(int width, int height, FrameFormat format, int mirror);
 			int Close();
-			int GetImage(uint8_t* buf, int len);
+			int GetImage(uint8_t* buf, size_t len);
 			void SetMirroring(bool state);
 			int Reset() { return 0; };
 
