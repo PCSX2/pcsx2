@@ -1,9 +1,9 @@
 # So you want to contribute to PCSX2? Great
 
-As a first step, please review these links as they'll help you understand how the development of the PCSX2 works. These pages are all found on the github [wiki](https://github.com/PCSX2/pcsx2/wiki). You should probably also check out the [forums](http://forums.pcsx2.net/index.php).
+As a first step, please review these links as they'll help you understand how the development of PCSX2 works. These pages are all found on the GitHub [wiki](https://github.com/PCSX2/pcsx2/wiki). You should probably also check out the [forums](https://forums.pcsx2.net/index.php).
 
 *   [Just Starting Out](#just-starting-out)
-*   [Issue Reportding](#issue-reportding)
+*   [Issue Reporting](#issue-reporting)
 *   [Pull Request Guidelines](#pull-request-guidelines)
 *   [General Documentation And Coding Strategies](#general-documentation-and-coding-strategies)
 *   [Tasks](#tasks)
@@ -14,7 +14,7 @@ As a first step, please review these links as they'll help you understand how th
 *   [How to build PCSX2 for Windows](https://github.com/PCSX2/pcsx2/wiki/Setting-up-the-PCSX2-repository-on-Windows-\(WIP---maybe-more-useful-as-a-manpage-instead%3F\))
 *   [How to build PCSX2 for Linux](https://github.com/PCSX2/pcsx2/wiki/Installing-on-Linux)
 
-## Issue Reportding
+## Issue Reporting
 
 *   [How to write a useful issue](https://github.com/PCSX2/pcsx2/wiki/How-to-create-useful-and-valid-issues)
 
