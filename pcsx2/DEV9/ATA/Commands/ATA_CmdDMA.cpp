@@ -62,7 +62,11 @@ void ATA::DRQCmdDMADataFromHost()
 }
 void ATA::PostCmdDMADataFromHost()
 {
-	QueueWrite(currentWriteSectors, currentWrite, currentWriteLength);
+	WriteQueueEntry entry{0};
+	entry.data = currentWrite;
+	entry.length = currentWriteLength;
+	entry.sector = currentWriteSectors;
+	writeQueue.Enqueue(entry);
 	currentWrite = nullptr;
 	currentWriteLength = 0;
 	currentWriteSectors = 0;

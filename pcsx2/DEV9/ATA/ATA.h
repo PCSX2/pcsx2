@@ -26,6 +26,8 @@
 #include "PS2Edefs.h"
 #include "PS2Eext.h"
 
+#include "../SimpleQueue.h"
+
 class ATA
 {
 public:
@@ -106,15 +108,11 @@ private:
 
 	struct WriteQueueEntry
 	{
-		std::atomic_bool ready{false};
-		WriteQueueEntry* next;
 		u8* data;
 		u32 length;
 		u64 sector;
 	};
-
-	WriteQueueEntry* head = nullptr;
-	WriteQueueEntry* tail = nullptr;
+	SimpleQueue<WriteQueueEntry> writeQueue;
 
 	std::thread ioThread;
 	bool ioRunning = false;
@@ -212,10 +210,6 @@ private:
 	void HDD_ReadSync(void (ATA::*drqCMD)());
 	bool HDD_CanAssessOrSetError();
 	void HDD_SetErrorAtTransferEnd();
-
-	void QueueWrite(u64 sector, u8* data, u32 length);
-	bool DequeueWrite(u64* sector, u8** data, u32* length);
-	bool IsQueueEmpty();
 
 	//Commands
 	void IDE_ExecCmd(u16 value);

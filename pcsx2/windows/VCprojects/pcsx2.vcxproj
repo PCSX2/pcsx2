@@ -650,6 +650,7 @@
     <ClInclude Include="..\..\DEV9\DEV9.h" />
     <ClInclude Include="..\..\DEV9\net.h" />
     <ClInclude Include="..\..\DEV9\pcap_io.h" />
+    <ClInclude Include="..\..\DEV9\SimpleQueue.h" />
     <ClInclude Include="..\..\DEV9\smap.h" />
     <ClInclude Include="..\..\DEV9\Win32\pcap_io_win32_funcs.h" />
     <ClInclude Include="..\..\DEV9\Win32\resource.h" />
