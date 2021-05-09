@@ -218,8 +218,7 @@ void OnBrowse(HWND hW)
 	wchar_t wbuff[4096] = {0};
 	memcpy(wbuff, HDD_DEF, sizeof(HDD_DEF));
 
-	//GHC uses UTF8 on all platforms
-	ghc::filesystem::path inis = GetSettingsFolder().ToUTF8().data();
+	ghc::filesystem::path inis(GetSettingsFolder().ToString().wx_str());
 	wstring w_inis = inis.wstring();
 
 	OPENFILENAMEW ofn;

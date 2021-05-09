@@ -199,19 +199,14 @@ s32 DEV9open(void* pDsp)
 	DevCon.WriteLn("DEV9: open r+: %s", config.Hdd);
 #endif
 
-#ifdef _WIN32
-	ghc::filesystem::path hddPath(std::wstring(config.Hdd));
-#else
 	ghc::filesystem::path hddPath(config.Hdd);
-#endif
 
 	if (hddPath.empty())
 		config.hddEnable = false;
 
 	if (hddPath.is_relative())
 	{
-		//GHC uses UTF8 on all platforms
-		ghc::filesystem::path path(GetSettingsFolder().ToUTF8().data());
+		ghc::filesystem::path path(GetSettingsFolder().ToString().wx_str());
 		hddPath = path / hddPath;
 	}
 
