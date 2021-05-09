@@ -74,11 +74,11 @@ bool GetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, std::uniqu
 
 	if (dwStatus == ERROR_BUFFER_OVERFLOW)
 	{
-		DevCon.WriteLn("GetWin32Adapter() buffer too small, resizing");
+		DevCon.WriteLn("DEV9: GetWin32Adapter() buffer too small, resizing");
 		neededSize = dwBufLen / sizeof(IP_ADAPTER_ADDRESSES) + 1;
 		AdapterInfo = std::make_unique<IP_ADAPTER_ADDRESSES[]>(neededSize);
 		dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
-		DevCon.WriteLn("New size %i", neededSize);
+		DevCon.WriteLn("DEV9: New size %i", neededSize);
 
 		DWORD dwStatus = GetAdaptersAddresses(
 			AF_UNSPEC,
@@ -145,7 +145,7 @@ int pcap_io_init(char* adapter, bool switched, mac_address virtual_mac)
 	char filter[1024] = "ether broadcast or ether dst ";
 	int dlt;
 	char* dlt_name;
-	Console.WriteLn("Opening adapter '%s'...", adapter);
+	Console.WriteLn("DEV9: Opening adapter '%s'...", adapter);
 
 	pcap_io_switched = switched;
 
@@ -158,8 +158,8 @@ int pcap_io_init(char* adapter, bool switched, mac_address virtual_mac)
 								   errbuf // error buffer
 								   )) == NULL)
 	{
-		Console.Error("%s", errbuf);
-		Console.Error("Unable to open the adapter. %s is not supported by pcap", adapter);
+		Console.Error("DEV9: %s", errbuf);
+		Console.Error("DEV9: Unable to open the adapter. %s is not supported by pcap", adapter);
 		return -1;
 	}
 	if (switched)
@@ -171,13 +171,13 @@ int pcap_io_init(char* adapter, bool switched, mac_address virtual_mac)
 
 		if (pcap_compile(adhandle, &fp, filter, 1, PCAP_NETMASK_UNKNOWN) == -1)
 		{
-			Console.Error("Error calling pcap_compile: %s", pcap_geterr(adhandle));
+			Console.Error("DEV9: Error calling pcap_compile: %s", pcap_geterr(adhandle));
 			return -1;
 		}
 
 		if (pcap_setfilter(adhandle, &fp) == -1)
 		{
-			Console.Error("Error setting filter: %s", pcap_geterr(adhandle));
+			Console.Error("DEV9: Error setting filter: %s", pcap_geterr(adhandle));
 			return -1;
 		}
 	}
@@ -186,7 +186,7 @@ int pcap_io_init(char* adapter, bool switched, mac_address virtual_mac)
 	dlt = pcap_datalink(adhandle);
 	dlt_name = (char*)pcap_datalink_val_to_name(dlt);
 
-	Console.Error("Device uses DLT %d: %s", dlt, dlt_name);
+	Console.Error("DEV9: Device uses DLT %d: %s", dlt, dlt_name);
 	switch (dlt)
 	{
 		case DLT_EN10MB:
@@ -204,7 +204,7 @@ int pcap_io_init(char* adapter, bool switched, mac_address virtual_mac)
 #endif
 
 	pcap_io_running = 1;
-	Console.WriteLn("Adapter Ok.");
+	Console.WriteLn("DEV9: Adapter Ok.");
 	return 0;
 }
 

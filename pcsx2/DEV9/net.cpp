@@ -90,7 +90,7 @@ void InitNet()
 
 	if (!na)
 	{
-		Console.Error("Failed to GetNetAdapter()");
+		Console.Error("DEV9: Failed to GetNetAdapter()");
 		config.ethEnable = false;
 		return;
 	}
@@ -119,9 +119,9 @@ void TermNet()
 	{
 		RxRunning = false;
 		nif->close();
-		Console.WriteLn("Waiting for RX-net thread to terminate..");
+		Console.WriteLn("DEV9: Waiting for RX-net thread to terminate..");
 		rx_thread.join();
-		Console.WriteLn("Done");
+		Console.WriteLn("DEV9: Done");
 
 		delete nif;
 		nif = nullptr;

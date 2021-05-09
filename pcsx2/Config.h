@@ -41,7 +41,6 @@ enum GamefixId
 	GamefixId_FIRST = 0,
 
 	Fix_VuAddSub = GamefixId_FIRST,
-	Fix_FpuCompare,
 	Fix_FpuMultiply,
 	Fix_FpuNegDiv,
 	Fix_XGKick,
@@ -358,7 +357,6 @@ struct Pcsx2Config
         BITFIELD32()
         bool
             VuAddSubHack : 1,           // Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
-            FpuCompareHack : 1,         // Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
             FpuMulHack : 1,             // Tales of Destiny hangs.
             FpuNegDivHack : 1,          // Gundam games messed up camera-view.
             XgKickHack : 1,             // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
@@ -552,7 +550,6 @@ TraceLogFilters&				SetTraceConfig();
 
 //------------ SPECIAL GAME FIXES!!! ---------------
 #define CHECK_VUADDSUBHACK			(EmuConfig.Gamefixes.VuAddSubHack)	 // Special Fix for Tri-ace games, they use an encryption algorithm that requires VU addi opcode to be bit-accurate.
-#define CHECK_FPUCOMPAREHACK		(EmuConfig.Gamefixes.FpuCompareHack) // Special Fix for Digimon Rumble Arena 2, fixes spinning/hanging on intro-menu.
 #define CHECK_FPUMULHACK			(EmuConfig.Gamefixes.FpuMulHack)	 // Special Fix for Tales of Destiny hangs.
 #define CHECK_FPUNEGDIVHACK			(EmuConfig.Gamefixes.FpuNegDivHack)	 // Special Fix for Gundam games messed up camera-view.
 #define CHECK_XGKICKHACK			(EmuConfig.Gamefixes.XgKickHack)	 // Special Fix for Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics.

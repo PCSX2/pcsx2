@@ -11043,8 +11043,8 @@ SLES-52631:
   name: "Digimon Rumble Arena 2"
   region: "PAL-M5"
   compat: 5
-  gameFixes:
-    - FpuCompareHack
+  clampModes:
+    eeClampMode: 3
 SLES-52636:
   name: "Colin McRae Rally 2005"
   region: "PAL-M5"
@@ -16965,13 +16965,13 @@ SLES-55493:
 SLES-55494:
   name: "X-Men Origins - Wolverine"
   region: "PAL-E-F"
-  gameFixes:
-    - FpuCompareHack # Flickering objects, sound loop.
+  clampModes:
+    eeClampMode: 3  # Flickering objects, sound loop.
 SLES-55495:
   name: "X-Men Origins - Wolverine"
   region: "PAL-M3"
-  gameFixes:
-    - FpuCompareHack # Flickering objects, sound loop.
+  clampModes:
+    eeClampMode: 3  # Flickering objects, sound loop.
 SLES-55496:
   name: "Secret Agent Clank"
   region: "PAL-Unk"
@@ -17825,8 +17825,8 @@ SLKA-25254:
   name: "Digimon Rumble Arena 2"
   region: "NTSC-K"
   compat: 5
-  gameFixes:
-    - FpuCompareHack
+  clampModes:
+    eeClampMode: 3
 SLKA-25255:
   name: "Mobile Suit Gundam - Seed - Never Ending Tomorrow"
   region: "NTSC-K"
@@ -35630,8 +35630,8 @@ SLUS-21067:
   name: "Digimon Rumble Arena 2"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - FpuCompareHack
+  clampModes:
+    eeClampMode: 3
 SLUS-21068:
   name: "Vietcong - Purple Haze"
   region: "NTSC-U"
@@ -39011,8 +39011,8 @@ SLUS-21880:
   name: "X-Men Origins - Wolverine"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - FpuCompareHack # Flickering objects, sound loop.
+  clampModes:
+    eeClampMode: 3  # Flickering objects, sound loop.
 SLUS-21881:
   name: "Transformers: Revenge of the Fallen"
   region: "NTSC-U"

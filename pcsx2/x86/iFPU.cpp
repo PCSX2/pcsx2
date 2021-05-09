@@ -307,7 +307,7 @@ REC_FPUFUNC(RSQRT_S);
 //------------------------------------------------------------------
 
 static __aligned16 u64 FPU_FLOAT_TEMP[2];
-__fi void fpuFloat4(int regd) { // +NaN -> +fMax, -NaN -> -fMax, +Inf -> +fMax, -Inf -> -fMax
+__fi void fpuFloat3(int regd) { // +NaN -> +fMax, -NaN -> -fMax, +Inf -> +fMax, -Inf -> -fMax
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 	if (t1reg >= 0) {
 		xMOVSS(xRegisterSSE(t1reg), xRegisterSSE(regd));
@@ -339,22 +339,8 @@ __fi void fpuFloat(int regd) {  // +/-NaN -> +fMax, +Inf -> +fMax, -Inf -> -fMax
 
 __fi void fpuFloat2(int regd) { // +NaN -> +fMax, -NaN -> -fMax, +Inf -> +fMax, -Inf -> -fMax
 	if (CHECK_FPU_OVERFLOW) {
-		fpuFloat4(regd);
+		fpuFloat3(regd);
 	}
-}
-
-__fi void fpuFloat3(int regd) {
-	// This clamp function is used in the recC_xx opcodes
-	// Rule of Rose needs clamping or else it crashes (minss or maxss both fix the crash)
-	// Tekken 5 has disappearing characters unless preserving NaN sign (fpuFloat4() preserves NaN sign).
-	// Digimon Rumble Arena 2 needs MAXSS clamping (if you only use minss, it spins on the intro-menus;
-	// it also doesn't like preserving NaN sign with fpuFloat4, so the only way to make Digimon work
-	// is by calling MAXSS first)
-	if (CHECK_FPUCOMPAREHACK) {
-		//xMIN.SS(xRegisterSSE(regd), ptr[&g_maxvals[0]]);
-		xMAX.SS(xRegisterSSE(regd), ptr[&g_minvals[0]]);
-	}
-	else fpuFloat4(regd);
 }
 
 void ClampValues(int regd) {
