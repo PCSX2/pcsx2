@@ -821,7 +821,7 @@ void DEV9write16(u32 addr, u16 value)
 				dev9.fifo_bytes_write = 0;
 				dev9.fifo_bytes_read = 0;
 				dev9.xfr_ctrl &= ~SPD_XFR_WRITE; //?
-				dev9.if_ctrl |= SPD_IF_READ;     //?
+				dev9.if_ctrl |= SPD_IF_READ; //?
 
 				FIFOIntr();
 			}
