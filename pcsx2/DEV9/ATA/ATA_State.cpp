@@ -53,10 +53,6 @@ int ATA::Open(ghc::filesystem::path hddPath)
 	hddImage.seekg(0, std::ios::end);
 	hddImageSize = hddImage.tellg();
 
-	//Setup Write queue
-	tail = new WriteQueueEntry();
-	head = tail;
-
 	{
 		std::lock_guard ioSignallock(ioMutex);
 		ioRead = false;
@@ -84,20 +80,15 @@ void ATA::Close()
 		ioThread.join();
 		ioRunning = false;
 	}
-	//Delete queue
-	if (head != nullptr)
-	{
-		if (!IsQueueEmpty())
-		{
-			Console.Error("DEV9: ATA: Write queue not empty");
-			pxAssert(false);
-			abort(); //All data must be written at this point
-		}
 
-		delete head;
-		head = nullptr;
-		tail = nullptr;
+	//verify queue
+	if (!writeQueue.IsQueueEmpty())
+	{
+		Console.Error("DEV9: ATA: Write queue not empty, possible data loss");
+		pxAssert(false);
+		abort(); //All data must be written at this point
 	}
+
 	//Close File Handle
 	if (hddImage.is_open())
 		hddImage.close();
@@ -314,7 +305,7 @@ void ATA::Async(uint cycles)
 			waitingCmd = nullptr;
 			(this->*cmd)();
 		}
-		else if (!IsQueueEmpty()) //Flush cache
+		else if (!writeQueue.IsQueueEmpty()) //Flush cache
 		{
 			//Log_Info("Starting async write");
 			{

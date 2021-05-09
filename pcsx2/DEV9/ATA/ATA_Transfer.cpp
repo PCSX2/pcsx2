@@ -89,18 +89,16 @@ void ATA::IO_Read()
 
 bool ATA::IO_Write()
 {
-	u64 sector = 0;
-	u8* data = nullptr;
-	u32 len = 0;
-	if (!DequeueWrite(&sector, &data, &len))
+	WriteQueueEntry entry;
+	if (!writeQueue.Dequeue(&entry))
 	{
 		std::lock_guard ioSignallock(ioMutex);
 		ioWrite = false;
 		return false;
 	}
 
-	hddImage.seekp(sector * 512, std::ios::beg);
-	hddImage.write((char*)data, len);
+	hddImage.seekp(entry.sector * 512, std::ios::beg);
+	hddImage.write((char*)entry.data, entry.length);
 	if (hddImage.fail())
 	{
 		Console.Error("DEV9: ATA: File write error");
@@ -108,7 +106,7 @@ bool ATA::IO_Write()
 		abort();
 	}
 	hddImage.flush();
-	delete[] data;
+	delete[] entry.data;
 	return true;
 }
 
@@ -210,41 +208,4 @@ void ATA::HDD_SetErrorAtTransferEnd()
 		currSect++;
 		HDD_SetLBA(currSect);
 	}
-}
-
-//Used by EE thread only
-void ATA::QueueWrite(u64 sector, u8* data, u32 length)
-{
-	WriteQueueEntry* newEntry = head;
-	newEntry->data = data;
-	newEntry->length = length;
-	newEntry->sector = sector;
-
-	//Allocate Next entry
-	newEntry->next = new WriteQueueEntry();
-	head = newEntry->next;
-	//Set ready
-	newEntry->ready.store(true);
-}
-
-//Used by IO thread only
-bool ATA::DequeueWrite(u64* sector, u8** data, u32* length)
-{
-	if (!tail->ready.load())
-		return false;
-
-	WriteQueueEntry* entry = tail;
-	tail = entry->next;
-
-	*sector = entry->sector;
-	*data = entry->data;
-	*length = entry->length;
-	delete entry;
-	return true;
-}
-
-//Used by EE thread only
-bool ATA::IsQueueEmpty()
-{
-	return !tail->ready.load();
 }

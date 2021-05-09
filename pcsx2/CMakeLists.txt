@@ -344,6 +344,7 @@ set(pcsx2DEV9Headers
 	DEV9/DEV9.h
 	DEV9/net.h
 	DEV9/pcap_io.h
+	DEV9/SimpleQueue.h
 	DEV9/smap.h
 	${pcsx2DEV9UIHeaders}
 	)

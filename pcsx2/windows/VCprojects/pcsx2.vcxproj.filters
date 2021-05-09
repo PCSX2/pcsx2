@@ -1848,6 +1848,9 @@
     <ClInclude Include="..\..\DEV9\pcap_io.h">
       <Filter>System\Ps2\DEV9</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\DEV9\SimpleQueue.h">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\DEV9\smap.h">
       <Filter>System\Ps2\DEV9</Filter>
     </ClInclude>
