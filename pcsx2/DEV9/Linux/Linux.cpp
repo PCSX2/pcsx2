@@ -60,7 +60,7 @@ IP_Address IPControl_GetValue(GtkEntry* entryCtl)
 	return {0};
 }
 
-void IPControl_Enable(GtkEntry *ipEntry, bool enabled, IP_Address value)
+void IPControl_Enable(GtkEntry* ipEntry, bool enabled, IP_Address value)
 {
 	if (enabled)
 	{
@@ -74,27 +74,27 @@ void IPControl_Enable(GtkEntry *ipEntry, bool enabled, IP_Address value)
 	}
 }
 
-void OnAutoMaskChanged(GtkToggleButton *togglebutton, gpointer usr_data)
+void OnAutoMaskChanged(GtkToggleButton* togglebutton, gpointer usr_data)
 {
 	IPControl_Enable((GtkEntry*)gtk_builder_get_object(builder, "IDC_IPADDRESS_SUBNET"), !gtk_toggle_button_get_active(togglebutton), config.Mask);
 }
 
-void OnAutoGatewayChanged(GtkToggleButton *togglebutton, gpointer usr_data)
+void OnAutoGatewayChanged(GtkToggleButton* togglebutton, gpointer usr_data)
 {
 	IPControl_Enable((GtkEntry*)gtk_builder_get_object(builder, "IDC_IPADDRESS_GATEWAY"), !gtk_toggle_button_get_active(togglebutton), config.Gateway);
 }
 
-void OnAutoDNS1Changed(GtkToggleButton *togglebutton, gpointer usr_data)
+void OnAutoDNS1Changed(GtkToggleButton* togglebutton, gpointer usr_data)
 {
 	IPControl_Enable((GtkEntry*)gtk_builder_get_object(builder, "IDC_IPADDRESS_DNS1"), !gtk_toggle_button_get_active(togglebutton), config.DNS1);
 }
 
-void OnAutoDNS2Changed(GtkToggleButton *togglebutton, gpointer usr_data)
+void OnAutoDNS2Changed(GtkToggleButton* togglebutton, gpointer usr_data)
 {
 	IPControl_Enable((GtkEntry*)gtk_builder_get_object(builder, "IDC_IPADDRESS_DNS2"), !gtk_toggle_button_get_active(togglebutton), config.DNS2);
 }
 
-void OnInterceptChanged(GtkToggleButton *togglebutton, gpointer usr_data)
+void OnInterceptChanged(GtkToggleButton* togglebutton, gpointer usr_data)
 {
 	if (gtk_toggle_button_get_active(togglebutton))
 	{
@@ -190,9 +190,9 @@ void OnInitDialog()
 
 	//Checkboxes
 	gtk_toggle_button_set_active((GtkToggleButton*)gtk_builder_get_object(builder, "IDC_ETHENABLED"),
-								 config.ethEnable);
+		config.ethEnable);
 	gtk_toggle_button_set_active((GtkToggleButton*)gtk_builder_get_object(builder, "IDC_HDDENABLED"),
-								 config.hddEnable);
+		config.hddEnable);
 
 	initialized = 1;
 }
@@ -204,7 +204,7 @@ void OnBrowse(GtkButton* button, gpointer usr_data)
 	static const wxChar* hddFilterType = L"HDD|*.raw;*.RAW";
 
 	wxFileDialog ctrl(nullptr, _("HDD Image File"), GetSettingsFolder().ToString(), HDD_DEF,
-					  (wxString)hddFilterType + L"|" + _("All Files (*.*)") + L"|*.*", wxFD_SAVE);
+		(wxString)hddFilterType + L"|" + _("All Files (*.*)") + L"|*.*", wxFD_SAVE);
 
 	if (ctrl.ShowModal() != wxID_CANCEL)
 	{
@@ -229,13 +229,13 @@ void OnBrowse(GtkButton* button, gpointer usr_data)
 void OnSpin(GtkSpinButton* spin, gpointer usr_data)
 {
 	gtk_range_set_value((GtkRange*)gtk_builder_get_object(builder, "IDC_HDDSIZE_SLIDER"),
-						gtk_spin_button_get_value(spin));
+		gtk_spin_button_get_value(spin));
 }
 
 void OnSlide(GtkRange* range, gpointer usr_data)
 {
 	gtk_spin_button_set_value((GtkSpinButton*)gtk_builder_get_object(builder, "IDC_HDDSIZE_SPIN"),
-							  gtk_range_get_value(range));
+		gtk_range_get_value(range));
 }
 
 void OnOk()
@@ -305,14 +305,14 @@ void DEV9configure()
 	{
 		builder = gtk_builder_new();
 		gtk_builder_add_callback_symbols(builder,
-										 "OnInterceptChanged", G_CALLBACK(&OnInterceptChanged),
-										 "OnAutoMaskChanged", G_CALLBACK(&OnAutoMaskChanged),
-										 "OnAutoGatewayChanged", G_CALLBACK(&OnAutoGatewayChanged),
-										 "OnAutoDNS1Changed", G_CALLBACK(&OnAutoDNS1Changed),
-										 "OnAutoDNS2Changed", G_CALLBACK(&OnAutoDNS2Changed),
-										 "OnBrowse", G_CALLBACK(&OnBrowse),
-										 "OnSpin", G_CALLBACK(&OnSpin),
-										 "OnSlide", G_CALLBACK(&OnSlide), nullptr);
+			"OnInterceptChanged", G_CALLBACK(&OnInterceptChanged),
+			"OnAutoMaskChanged", G_CALLBACK(&OnAutoMaskChanged),
+			"OnAutoGatewayChanged", G_CALLBACK(&OnAutoGatewayChanged),
+			"OnAutoDNS1Changed", G_CALLBACK(&OnAutoDNS1Changed),
+			"OnAutoDNS2Changed", G_CALLBACK(&OnAutoDNS2Changed),
+			"OnBrowse", G_CALLBACK(&OnBrowse),
+			"OnSpin", G_CALLBACK(&OnSpin),
+			"OnSlide", G_CALLBACK(&OnSlide), nullptr);
 		if (!gtk_builder_add_from_resource(builder, "/net/pcsx2/dev9/DEV9/Linux/dev9.ui", &error))
 		{
 			g_warning("Could not build config ui: %s", error->message);
