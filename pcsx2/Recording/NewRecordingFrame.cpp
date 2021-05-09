@@ -20,7 +20,7 @@
 
 #ifndef DISABLE_RECORDING
 NewRecordingFrame::NewRecordingFrame(wxWindow* parent)
-	: wxDialog(parent, wxID_ANY, "New Input Recording", wxDefaultPosition, wxDefaultSize, wxSTAY_ON_TOP | wxCAPTION)
+	: wxDialog(parent, wxID_ANY, "New Input Recording", wxDefaultPosition, wxDefaultSize, wxSTAY_ON_TOP | wxCLOSE_BOX | wxCAPTION)
 {
 	wxPanel* panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _("panel"));
 
