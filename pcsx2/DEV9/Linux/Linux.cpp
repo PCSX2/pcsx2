@@ -279,8 +279,7 @@ void OnOk()
 
 	if (hddPath.is_relative())
 	{
-		//GHC uses UTF8 on all platforms
-		ghc::filesystem::path path(GetSettingsFolder().ToUTF8().data());
+		ghc::filesystem::path path(GetSettingsFolder().ToString().wx_str());
 		hddPath = path / hddPath;
 	}
 
