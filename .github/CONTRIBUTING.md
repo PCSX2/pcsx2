@@ -1,6 +1,6 @@
 # So you want to contribute to PCSX2? Great
 
-As a first step, please review these links as they'll help you understand how the development of PCSX2 works. These pages are all found on the GitHub [wiki](https://github.com/PCSX2/pcsx2/wiki). You should probably also check out the [forums](https://forums.pcsx2.net/index.php).
+As a first step, please review these links as they'll help you understand how the development of PCSX2 works.
 
 *   [Just Starting Out](#just-starting-out)
 *   [Issue Reporting](#issue-reporting)
