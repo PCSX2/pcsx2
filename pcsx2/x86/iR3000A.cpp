@@ -68,7 +68,6 @@ u32 g_iopCyclePenalty;
 static EEINST* s_pInstCache = NULL;
 static u32 s_nInstCacheSize = 0;
 
-static BASEBLOCK* s_pCurBlock = NULL;
 static BASEBLOCKEX* s_pCurBlockEx = NULL;
 
 static u32 s_nEndBlock = 0; // what psxpc the current block ends
@@ -94,10 +93,6 @@ static u32 psxdump = 0;
 
 #define PSX_GETBLOCK(x) PC_GETBLOCK_(x, psxRecLUT)
 
-#define PSXREC_CLEARM(mem) \
-	(((mem) < g_psxMaxRecMem && (psxRecLUT[(mem) >> 16] + (mem))) ? \
-		psxRecClearMem(mem) : 4)
-
 // =====================================================================================================
 //  Dynamically Compiled Dispatchers - R3000A style
 // =====================================================================================================
@@ -112,7 +107,6 @@ typedef void DynGenFunc();
 static DynGenFunc* iopDispatcherEvent		= NULL;
 static DynGenFunc* iopDispatcherReg			= NULL;
 static DynGenFunc* iopJITCompile			= NULL;
-static DynGenFunc* iopJITCompileInBlock		= NULL;
 static DynGenFunc* iopEnterRecompiledCode	= NULL;
 static DynGenFunc* iopExitRecompiledCode	= NULL;
 
@@ -137,13 +131,6 @@ static DynGenFunc* _DynGen_JITCompile()
 	xMOV( rcx, ptrNative[xComplexAddress(rcx, psxRecLUT, rax*wordsize)] );
 	xJMP( ptrNative[rbx*(wordsize/4) + rcx] );
 
-	return (DynGenFunc*)retval;
-}
-
-static DynGenFunc* _DynGen_JITCompileInBlock()
-{
-	u8* retval = xGetPtr();
-	xJMP( (void*)iopJITCompile );
 	return (DynGenFunc*)retval;
 }
 
@@ -207,7 +194,6 @@ static void _DynGen_Dispatchers()
 	iopDispatcherReg	= _DynGen_DispatcherReg();
 
 	iopJITCompile			= _DynGen_JITCompile();
-	iopJITCompileInBlock	= _DynGen_JITCompileInBlock();
 	iopEnterRecompiledCode	= _DynGen_EnterRecompiledCode();
 
 	HostSys::MemProtectStatic( iopRecDispatchers, PageAccess_ExecOnly() );
@@ -805,65 +791,26 @@ static __noinline s32 recExecuteBlock( s32 eeCycles )
 	return iopBreak + iopCycleEE;
 }
 
-// Returns the offset to the next instruction after any cleared memory
-static __fi u32 psxRecClearMem(u32 pc)
-{
-	BASEBLOCK* pblock;
-
-	pblock = PSX_GETBLOCK(pc);
-	// if ((u8*)iopJITCompile == pblock->GetFnptr())
-	if (pblock->GetFnptr() == (uptr)iopJITCompile)
-		return 4;
-
-	pc = HWADDR(pc);
-
-	u32 lowerextent = pc, upperextent = pc + 4;
-	int blockidx = recBlocks.Index(pc);
-	pxAssert(blockidx != -1);
-
-	while (BASEBLOCKEX* pexblock = recBlocks[blockidx - 1]) {
-		if (pexblock->startpc + pexblock->size * 4 <= lowerextent)
-			break;
-
-		lowerextent = std::min(lowerextent, pexblock->startpc);
-		blockidx--;
-	}
-
-	int toRemoveFirst = blockidx;
-
-	while (BASEBLOCKEX* pexblock = recBlocks[blockidx]) {
-		if (pexblock->startpc >= upperextent)
-			break;
-
-		lowerextent = std::min(lowerextent, pexblock->startpc);
-		upperextent = std::max(upperextent, pexblock->startpc + pexblock->size * 4);
-
-		blockidx++;
-	}
-
-	if(toRemoveFirst != blockidx) {
-		recBlocks.Remove(toRemoveFirst, (blockidx - 1));
-	}
-
-	blockidx=0;
-	while(BASEBLOCKEX* pexblock = recBlocks[blockidx++])
-	{
-		if (pc >= pexblock->startpc && pc < pexblock->startpc + pexblock->size * 4) {
-			DevCon.Error("Impossible block clearing failure");
-			pxFailDev( "Impossible block clearing failure" );
-		}
-	}
-
-	iopClearRecLUT(PSX_GETBLOCK(lowerextent), (upperextent - lowerextent) / 4);
-
-	return upperextent - pc;
-}
-
 static __fi void recClearIOP(u32 Addr, u32 Size)
 {
-	u32 pc = Addr;
-	while (pc < Addr + Size*4)
-		pc += PSXREC_CLEARM(pc);
+	u32 pc       = HWADDR(Addr);
+	u32 end      = pc + Size * 4 - 4;
+	u32 real_end = end;
+	while ((end & ~0xFFF) >= (pc & ~0xFFF)) {
+		recBlocks.RemoveRange(end, pc, real_end, PSX_GETBLOCK(end & ~0xFFF));
+		end &= ~0xFFF;
+		if (end == 0) return;
+		end -= 4;
+	}
+
+	// Check previous pages in case of overlap block
+	bool removed;
+	do {
+		removed = recBlocks.RemoveRange(end, pc, real_end, PSX_GETBLOCK(end & ~0xFFF));
+		end &= ~0xFFF;
+		if (end == 0) return;
+		end -= 4;
+	} while (removed);
 }
 
 void psxSetBranchReg(u32 reg)
@@ -916,7 +863,7 @@ void psxSetBranchImm( u32 imm )
 	_psxFlushCall(FLUSH_EVERYTHING);
 	iPsxBranchTest(imm, imm <= psxpc);
 
-	recBlocks.Link(HWADDR(imm), xJcc32());
+	recBlocks.Link(HWADDR(imm), PSX_GETBLOCK(HWADDR(imm)), xJcc32());
 }
 
 static __fi u32 psxScaleBlockCycles()
@@ -1272,19 +1219,23 @@ static void __fastcall iopRecRecompile( const u32 startpc )
 	x86Align(16);
 	recPtr = x86Ptr;
 
-	s_pCurBlock = PSX_GETBLOCK(startpc);
+	{ // Update the function pointer of the current base block
+		BASEBLOCK* cur_base_block = PSX_GETBLOCK(startpc);
 
-	pxAssert(s_pCurBlock->GetFnptr() == (uptr)iopJITCompile
-		|| s_pCurBlock->GetFnptr() == (uptr)iopJITCompileInBlock);
+		pxAssert(cur_base_block->GetFnptr() == (uptr)iopJITCompile);
 
-	s_pCurBlockEx = recBlocks.Get(HWADDR(startpc));
+		cur_base_block->SetFnptr((uptr)recPtr);
+	}
 
-	if(!s_pCurBlockEx || s_pCurBlockEx->startpc != HWADDR(startpc))
-		s_pCurBlockEx = recBlocks.New(HWADDR(startpc), (uptr)recPtr);
+	if (IsDevBuild) {
+		s_pCurBlockEx = recBlocks.Get(HWADDR(startpc));
+		pxAssert(!s_pCurBlockEx || s_pCurBlockEx->startpc != HWADDR(startpc));
+	}
+
+	s_pCurBlockEx = recBlocks.New(HWADDR(startpc), (uptr)recPtr);
 
 	psxbranch = 0;
 
-	s_pCurBlock->SetFnptr( (uptr)x86Ptr );
 	s_psxBlockCycles = 0;
 
 	// reset recomp state variables
@@ -1312,8 +1263,7 @@ static void __fastcall iopRecRecompile( const u32 startpc )
 	while(1) {
 		BASEBLOCK* pblock = PSX_GETBLOCK(i);
 		if (i != startpc
-		 && pblock->GetFnptr() != (uptr)iopJITCompile
-		 && pblock->GetFnptr() != (uptr)iopJITCompileInBlock) {
+		 && pblock->GetFnptr() != (uptr)iopJITCompile) {
 			// branch = 3
 			willbranch3 = 1;
 			s_nEndBlock = i;
@@ -1427,11 +1377,6 @@ StartRecomp:
 	pxAssert( (psxpc-startpc)>>2 <= 0xffff );
 	s_pCurBlockEx->size = (psxpc-startpc)>>2;
 
-	for(i = 1; i < (u32)s_pCurBlockEx->size; ++i) {
-		if (s_pCurBlock[i].GetFnptr() == (uptr)iopJITCompile)
-			s_pCurBlock[i].SetFnptr((uptr)iopJITCompileInBlock);
-	}
-
 	if( !(psxpc&0x10000000) )
 		g_psxMaxRecMem = std::max( (psxpc&~0xa0000000), g_psxMaxRecMem );
 
@@ -1454,7 +1399,7 @@ StartRecomp:
 			pxAssert( psxpc == s_nEndBlock );
 			_psxFlushCall(FLUSH_EVERYTHING);
 			xMOV(ptr32[&psxRegs.pc], psxpc);
-			recBlocks.Link(HWADDR(s_nEndBlock), xJcc32() );
+			recBlocks.Link(HWADDR(s_nEndBlock), PSX_GETBLOCK(HWADDR(s_nEndBlock)), xJcc32() );
 			psxbranch = 3;
 		}
 	}
@@ -1470,7 +1415,6 @@ StartRecomp:
 
 	pxAssert( (g_psxHasConstReg&g_psxFlushedConstReg) == g_psxHasConstReg );
 
-	s_pCurBlock = NULL;
 	s_pCurBlockEx = NULL;
 }
 
