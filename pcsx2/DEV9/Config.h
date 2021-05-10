@@ -15,3 +15,6 @@
 
 void SaveConf();
 void LoadConf();
+
+void SaveDnsHosts();
+void LoadDnsHosts();

@@ -21,6 +21,7 @@
 #if defined(__POSIX__)
 #include <pthread.h>
 #endif
+
 #include "net.h"
 #include "DEV9.h"
 #ifdef _WIN32
@@ -278,6 +279,8 @@ void NetAdapter::InitInternalServer(ifaddrs* adapter)
 
 	if (config.InterceptDHCP)
 		dhcpServer.Init(adapter);
+	
+	dnsServer.Init(adapter);
 
 	if (blocks())
 	{
@@ -297,6 +300,8 @@ void NetAdapter::ReloadInternalServer(ifaddrs* adapter)
 
 	if (config.InterceptDHCP)
 		dhcpServer.Init(adapter);
+	
+	dnsServer.Init(adapter);
 }
 
 bool NetAdapter::InternalServerRecv(NetPacket* pkt)
@@ -314,6 +319,22 @@ bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 		frame.WritePacket(pkt);
 		return true;
 	}
+
+	IP_Payload* ippay;
+	ippay = dnsServer.Recv();
+	if (ippay != nullptr)
+	{
+		IP_Packet* ippkt = new IP_Packet(ippay);
+		ippkt->destinationIP = ps2IP;
+		ippkt->sourceIP = internalIP;
+		EthernetFrame frame(ippkt);
+		memcpy(frame.sourceMAC, internalMAC, 6);
+		memcpy(frame.destinationMAC, ps2MAC, 6);
+		frame.protocol = (u16)EtherType::IPv4;
+		frame.WritePacket(pkt);
+		return true;
+	}
+	
 	return false;
 }
 
@@ -340,6 +361,19 @@ bool NetAdapter::InternalServerSend(NetPacket* pkt)
 
 		if (ippkt.destinationIP == internalIP)
 		{
+			if (ippkt.protocol == (u16)IP_Type::UDP)
+			{
+				ps2IP = ippkt.sourceIP;
+
+				IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(ippkt.GetPayload());
+				UDP_Packet udppkt(ipPayload->data, ipPayload->GetLength());
+
+				if (udppkt.destinationPort == 53)
+				{
+					//Send DNS
+					return dnsServer.Send(&udppkt);
+				}
+			}
 			return true;
 		}
 	}
