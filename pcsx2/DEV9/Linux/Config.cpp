@@ -20,6 +20,7 @@
 
 #include "DEV9/DEV9.h"
 #include "gui/AppConfig.h"
+#include "DEV9/Config.h"
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -31,7 +32,6 @@
 
 void SaveConf()
 {
-
 	xmlDocPtr doc = NULL; /* document pointer */
 	xmlNodePtr root_node = NULL;
 	char buff[256];
@@ -124,11 +124,12 @@ void SaveConf()
      *have been allocated by the parser.
      */
 	xmlCleanupParser();
+
+	SaveDnsHosts();
 }
 
 void LoadConf()
 {
-
 	const std::string file(GetSettingsFolder().Combine(wxString("DEV9.cfg")).GetFullPath());
 	if (-1 == access(file.c_str(), F_OK))
 		return;
@@ -222,4 +223,6 @@ void LoadConf()
 	//    free(configFile);
 	xmlFreeDoc(doc);
 	xmlCleanupParser();
+
+	LoadDnsHosts();
 }

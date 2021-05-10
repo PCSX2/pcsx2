@@ -276,9 +276,11 @@
     <ClCompile Include="DEV9\ATA\ATA_State.cpp" />
     <ClCompile Include="DEV9\ATA\ATA_Transfer.cpp" />
     <ClCompile Include="DEV9\ATA\HddCreate.cpp" />
+    <ClCompile Include="DEV9\DEV9Config.cpp" />
     <ClCompile Include="DEV9\DEV9.cpp" />
     <ClCompile Include="DEV9\flash.cpp" />
     <ClCompile Include="DEV9\InternalServers\DHCP_Server.cpp" />
+    <ClCompile Include="DEV9\InternalServers\DNS_Server.cpp" />
     <ClCompile Include="DEV9\PacketReader\EthernetFrame.cpp" />
     <ClCompile Include="DEV9\PacketReader\IP\UDP\DHCP\DHCP_Options.cpp" />
     <ClCompile Include="DEV9\PacketReader\IP\UDP\DHCP\DHCP_Packet.cpp" />
@@ -724,6 +726,7 @@
     <ClInclude Include="DEV9\Config.h" />
     <ClInclude Include="DEV9\DEV9.h" />
     <ClInclude Include="DEV9\InternalServers\DHCP_Server.h" />
+    <ClInclude Include="DEV9\InternalServers\DNS_Server.h" />
     <ClInclude Include="DEV9\net.h" />
     <ClInclude Include="DEV9\PacketReader\EthernetFrame.h" />
     <ClInclude Include="DEV9\PacketReader\IP\UDP\DHCP\DHCP_Options.h" />

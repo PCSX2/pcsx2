@@ -55,6 +55,14 @@ bool rx_fifo_can_rx();
 #define HDD_MIN_GB 40
 #define HDD_MAX_GB 120
 
+struct ConfigHost
+{
+	std::string Url;
+	std::string Desc;
+	u8 Address[4];
+	bool Enabled;
+};
+
 struct ConfigDEV9
 {
 	char Eth[256];
@@ -69,6 +77,7 @@ struct ConfigDEV9
 	int AutoGateway;
 	int AutoDNS1;
 	int AutoDNS2;
+	std::vector<ConfigHost> EthHosts;
 #ifdef _WIN32
 	wchar_t Hdd[256];
 #else

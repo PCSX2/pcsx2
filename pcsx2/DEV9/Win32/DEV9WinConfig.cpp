@@ -21,6 +21,7 @@
 
 #include "DEV9/DEV9.h"
 #include "gui/AppConfig.h"
+#include "DEV9/Config.h"
 
 #include "ws2tcpip.h"
 
@@ -81,13 +82,18 @@ void SaveConf()
 
 	WritePrivateProfileInt(L"DEV9", L"ethEnable", config.ethEnable, file.c_str());
 	WritePrivateProfileInt(L"DEV9", L"hddEnable", config.hddEnable, file.c_str());
+
+	SaveDnsHosts();
 }
 
 void LoadConf()
 {
 	const std::wstring file(GetSettingsFolder().Combine(wxString("DEV9.cfg")).GetFullPath());
 	if (FileExists(file.c_str()) == false)
+	{
+		LoadDnsHosts();
 		return;
+	}
 
 	wchar_t addrBuff[INET_ADDRSTRLEN] = {0};
 	wchar_t wEth[sizeof(config.Eth)] = {0};
@@ -123,4 +129,6 @@ void LoadConf()
 
 	config.ethEnable = GetPrivateProfileInt(L"DEV9", L"ethEnable", config.ethEnable, file.c_str());
 	config.hddEnable = GetPrivateProfileInt(L"DEV9", L"hddEnable", config.hddEnable, file.c_str());
+
+	LoadDnsHosts();
 }
