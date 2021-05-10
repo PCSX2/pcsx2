@@ -1089,11 +1089,7 @@ void ApplyConfigIfRunning(Config oldConfig)
 
 	//Hdd
 	//Hdd Validate Path
-#ifdef _WIN32
-	ghc::filesystem::path hddPath(std::wstring(config.Hdd));
-#else
 	ghc::filesystem::path hddPath(config.Hdd);
-#endif
 
 	if (hddPath.empty())
 		config.hddEnable = false;
@@ -1101,7 +1097,7 @@ void ApplyConfigIfRunning(Config oldConfig)
 	if (hddPath.is_relative())
 	{
 		//GHC uses UTF8 on all platforms
-		ghc::filesystem::path path(GetSettingsFolder().ToUTF8().data());
+		ghc::filesystem::path path(GetSettingsFolder().ToString().wx_str());
 		hddPath = path / hddPath;
 	}
 
