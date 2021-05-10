@@ -322,6 +322,7 @@ set(pcsx2DEV9Sources
 	DEV9/ATA/ATA_Transfer.cpp
 	DEV9/ATA/HddCreate.cpp
 	DEV9/InternalServers/DHCP_Server.cpp
+	DEV9/InternalServers/DNS_Server.cpp
 	DEV9/PacketReader/IP/UDP/DHCP/DHCP_Options.cpp
 	DEV9/PacketReader/IP/UDP/DHCP/DHCP_Packet.cpp
 	DEV9/PacketReader/IP/UDP/DNS/DNS_Classes.cpp
@@ -333,6 +334,7 @@ set(pcsx2DEV9Sources
 	DEV9/PacketReader/NetLib.cpp
 	DEV9/smap.cpp
 	DEV9/DEV9.cpp
+	DEV9/DEV9Config.cpp
 	DEV9/flash.cpp
 	DEV9/pcap_io.cpp
 	DEV9/Linux/Config.cpp
@@ -347,6 +349,7 @@ set(pcsx2DEV9Headers
 	DEV9/ATA/HddCreate.h
 	DEV9/DEV9.h
 	DEV9/InternalServers/DHCP_Server.cpp
+	DEV9/InternalServers/DNS_Server.h
 	DEV9/net.h
 	DEV9/PacketReader/IP/UDP/DHCP/DHCP_Options.h
 	DEV9/PacketReader/IP/UDP/DHCP/DHCP_Packet.h

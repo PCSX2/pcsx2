@@ -33,6 +33,7 @@
 
 #include "PacketReader/IP/IP_Address.h"
 #include "InternalServers/DHCP_Server.h"
+#include "InternalServers/DNS_Server.h"
 
 struct ConfigDEV9;
 
@@ -87,6 +88,8 @@ protected:
 	static const u8 internalMAC[6];
 
 private:
+	//Only set if packet sent to the internal IP address
+	PacketReader::IP::IP_Address ps2IP{0};
 	std::thread internalRxThread;
 	std::atomic<bool> internalRxThreadRunning{false};
 
@@ -95,6 +98,7 @@ private:
 	bool internalRxHasData = false;
 
 	InternalServers::DHCP_Server dhcpServer = InternalServers::DHCP_Server([&] { InternalSignalReceived(); });
+	InternalServers::DNS_Server dnsServer = InternalServers::DNS_Server([&] { InternalSignalReceived(); });
 
 public:
 	NetAdapter();
