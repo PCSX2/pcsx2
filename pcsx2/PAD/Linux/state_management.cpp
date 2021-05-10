@@ -77,6 +77,11 @@ void Pad::set_mode(int _mode)
 	mode = _mode;
 }
 
+void Pad::toggle_mode()
+{
+	mode = mode == MODE_DIGITAL ? MODE_ANALOG : MODE_DIGITAL;
+}
+
 void Pad::set_vibrate(int motor, u8 val)
 {
 	nextVibrate[motor] = val;
@@ -183,6 +188,17 @@ u8 pad_poll(u8 value)
 		query.lastByte++;
 		query.currentCommand = value;
 
+
+		if (!pad->modeLock)
+		{
+			u32 analog = !(g_key_status.get(query.port) & (1 << PAD_ANALOG));
+			if (analog && !pad->analogPressed)
+			{
+				pad->toggle_mode();
+			}
+			pad->analogPressed = analog;
+		}
+
 		switch (value)
 		{
 			case CMD_CONFIG_MODE:
@@ -233,7 +249,7 @@ u8 pad_poll(u8 value)
 					b1=b1 & 0x1f;
 #endif
 
-				uint16_t buttons = g_key_status.get(query.port);
+				uint32_t buttons = g_key_status.get(query.port);
 
 				query.numBytes = 5;
 

@@ -16,7 +16,38 @@
 #pragma once
 #include <string.h> // for memset
 #include "PS2Edefs.h"
-#define MAX_KEYS 24
+
+// clang-format off
+enum gamePadValues {
+	PAD_L2 = 0,   // L2 button
+	PAD_R2,       // R2 button
+	PAD_L1,       // L1 button
+	PAD_R1,       // R1 button
+	PAD_TRIANGLE, // Triangle button ▲
+	PAD_CIRCLE,   // Circle button ●
+	PAD_CROSS,    // Cross button ✖
+	PAD_SQUARE,   // Square button ■
+	PAD_SELECT,   // Select button
+	PAD_L3,       // Left joystick button (L3)
+	PAD_R3,       // Right joystick button (R3)
+	PAD_START,    // Start button
+	PAD_UP,       // Directional pad ↑
+	PAD_RIGHT,    // Directional pad →
+	PAD_DOWN,     // Directional pad ↓
+	PAD_LEFT,     // Directional pad ←
+	PAD_L_UP,     // Left joystick (Up) ↑
+	PAD_L_RIGHT,  // Left joystick (Right) →
+	PAD_L_DOWN,   // Left joystick (Down) ↓
+	PAD_L_LEFT,   // Left joystick (Left) ←
+	PAD_R_UP,     // Right joystick (Up) ↑
+	PAD_R_RIGHT,  // Right joystick (Right) →
+	PAD_R_DOWN,   // Right joystick (Down) ↓
+	PAD_R_LEFT,   // Right joystick (Left) ←
+	PAD_ANALOG,
+
+	MAX_KEYS
+};
+// clang-format on
 
 extern void set_keyboard_key(int pad, int keysym, int index);
 extern int get_keyboard_key(int pad, int keysym);
@@ -39,9 +70,9 @@ public:
 			u16 reverse_ry : 1;
 			u16 mouse_l : 1;
 			u16 mouse_r : 1;
-			u16 _free : 9;             // The 9 remaining bits are unused, do what you wish with them ;)
+			u16 _free : 9; // The 9 remaining bits are unused, do what you wish with them ;)
 		} pad_options[GAMEPAD_NUMBER]; // One for each pads
-		u32 packed_options;            // Only first 8 bits of each 16 bits series are really used, rest is padding
+		u32 packed_options; // Only first 8 bits of each 16 bits series are really used, rest is padding
 	};
 
 	u32 log;

@@ -159,7 +159,7 @@ static std::string KeyName(int pad, int key, int keysym)
 		case kVK_JIS_Eisu:            return "英数";
 		case kVK_JIS_Kana:            return "かな";
 		default: return "Key " + std::to_string(keysym);
-		// clang-format on
+			// clang-format on
 	}
 }
 #else
@@ -189,16 +189,16 @@ static std::string KeyName(int pad, int key, int keysym)
 
 // Construtor of Dialog
 PADDialog::PADDialog()
-	: wxDialog(NULL,                                  // Parent
-			   wxID_ANY,                              // ID
-			   _T("GamePad configuration"),            // Title
-			   wxDefaultPosition,                     // Position
-			   wxSize(DEFAULT_WIDTH, DEFAULT_HEIGHT), // Width + Lenght
-			   // Style
-			   wxSYSTEM_MENU |
-				   wxCAPTION |
-				   wxCLOSE_BOX |
-				   wxCLIP_CHILDREN)
+	: wxDialog(NULL, // Parent
+		  wxID_ANY, // ID
+		  _T("GamePad configuration"), // Title
+		  wxDefaultPosition, // Position
+		  wxSize(DEFAULT_WIDTH, DEFAULT_HEIGHT), // Width + Lenght
+		  // Style
+		  wxSYSTEM_MENU |
+			  wxCAPTION |
+			  wxCLOSE_BOX |
+			  wxCLIP_CHILDREN)
 {
 
 	/*
@@ -212,193 +212,193 @@ PADDialog::PADDialog()
 
 	// L1
 	padding[PAD_L1][0] = 218; // Width
-	padding[PAD_L1][1] = 28;  // Height
-	padding[PAD_L1][2] = 50;  // X
+	padding[PAD_L1][1] = 28; // Height
+	padding[PAD_L1][2] = 50; // X
 	padding[PAD_L1][3] = 175; // Y
 
 	// L2
 	padding[PAD_L2][0] = 218; // Width
-	padding[PAD_L2][1] = 28;  // Height
-	padding[PAD_L2][2] = 50;  // X
+	padding[PAD_L2][1] = 28; // Height
+	padding[PAD_L2][2] = 50; // X
 	padding[PAD_L2][3] = 104; // Y
 
 	// R1
 	padding[PAD_R1][0] = 218; // Width
-	padding[PAD_R1][1] = 28;  // Height
+	padding[PAD_R1][1] = 28; // Height
 	padding[PAD_R1][2] = 726; // X
 	padding[PAD_R1][3] = 175; // Y
 
 	// R2
 	padding[PAD_R2][0] = 218; // Width
-	padding[PAD_R2][1] = 28;  // Height
+	padding[PAD_R2][1] = 28; // Height
 	padding[PAD_R2][2] = 726; // X
 	padding[PAD_R2][3] = 104; // Y
 
 	// Triangle
 	padding[PAD_TRIANGLE][0] = 218; // Width
-	padding[PAD_TRIANGLE][1] = 28;  // Height
+	padding[PAD_TRIANGLE][1] = 28; // Height
 	padding[PAD_TRIANGLE][2] = 726; // X
 	padding[PAD_TRIANGLE][3] = 246; // Y
 
 	// Circle
 	padding[PAD_CIRCLE][0] = 218; // Width
-	padding[PAD_CIRCLE][1] = 28;  // Height
+	padding[PAD_CIRCLE][1] = 28; // Height
 	padding[PAD_CIRCLE][2] = 726; // X
 	padding[PAD_CIRCLE][3] = 319; // Y
 
 	// Cross
 	padding[PAD_CROSS][0] = 218; // Width
-	padding[PAD_CROSS][1] = 28;  // Height
+	padding[PAD_CROSS][1] = 28; // Height
 	padding[PAD_CROSS][2] = 726; // X
 	padding[PAD_CROSS][3] = 391; // Y
 
 	// Square
 	padding[PAD_SQUARE][0] = 218; // Width
-	padding[PAD_SQUARE][1] = 28;  // Height
+	padding[PAD_SQUARE][1] = 28; // Height
 	padding[PAD_SQUARE][2] = 726; // X
 	padding[PAD_SQUARE][3] = 463; // Y
 
 	// Directional pad up
 	padding[PAD_UP][0] = 100; // Width
-	padding[PAD_UP][1] = 25;  // Height
+	padding[PAD_UP][1] = 25; // Height
 	padding[PAD_UP][2] = 108; // X
 	padding[PAD_UP][3] = 290; // Y
 
 	// Directional pad down
 	padding[PAD_DOWN][0] = 100; // Width
-	padding[PAD_DOWN][1] = 25;  // Height
+	padding[PAD_DOWN][1] = 25; // Height
 	padding[PAD_DOWN][2] = 108; // X
 	padding[PAD_DOWN][3] = 340; // Y
 
 	// Directional pad right
 	padding[PAD_RIGHT][0] = 109; // Width
-	padding[PAD_RIGHT][1] = 25;  // Height
+	padding[PAD_RIGHT][1] = 25; // Height
 	padding[PAD_RIGHT][2] = 159; // X
 	padding[PAD_RIGHT][3] = 315; // Y
 
 	// Directional pad left
 	padding[PAD_LEFT][0] = 109; // Width
-	padding[PAD_LEFT][1] = 25;  // Height
-	padding[PAD_LEFT][2] = 50;  // X
+	padding[PAD_LEFT][1] = 25; // Height
+	padding[PAD_LEFT][2] = 50; // X
 	padding[PAD_LEFT][3] = 315; // Y
 
 	// Left Joystick up
 	padding[PAD_L_UP][0] = 100; // Width
-	padding[PAD_L_UP][1] = 25;  // Height
+	padding[PAD_L_UP][1] = 25; // Height
 	padding[PAD_L_UP][2] = 325; // X
 	padding[PAD_L_UP][3] = 527; // Y
 
 	// Left Joystick down
 	padding[PAD_L_DOWN][0] = 100; // Width
-	padding[PAD_L_DOWN][1] = 25;  // Height
+	padding[PAD_L_DOWN][1] = 25; // Height
 	padding[PAD_L_DOWN][2] = 325; // X
 	padding[PAD_L_DOWN][3] = 577; // Y
 
 	// Left Joystick right
 	padding[PAD_L_RIGHT][0] = 109; // Width
-	padding[PAD_L_RIGHT][1] = 25;  // Height
+	padding[PAD_L_RIGHT][1] = 25; // Height
 	padding[PAD_L_RIGHT][2] = 377; // X
 	padding[PAD_L_RIGHT][3] = 552; // Y
 
 	// Left Joystick left
 	padding[PAD_L_LEFT][0] = 109; // Width
-	padding[PAD_L_LEFT][1] = 25;  // Height
+	padding[PAD_L_LEFT][1] = 25; // Height
 	padding[PAD_L_LEFT][2] = 268; // X
 	padding[PAD_L_LEFT][3] = 552; // Y
 
 	// L3
 	padding[PAD_L3][0] = 218; // Width
-	padding[PAD_L3][1] = 28;  // Height
+	padding[PAD_L3][1] = 28; // Height
 	padding[PAD_L3][2] = 268; // X
 	padding[PAD_L3][3] = 641; // Y
 
 	// Right Joystick up
 	padding[PAD_R_UP][0] = 100; // Width
-	padding[PAD_R_UP][1] = 25;  // Height
+	padding[PAD_R_UP][1] = 25; // Height
 	padding[PAD_R_UP][2] = 555; // X
 	padding[PAD_R_UP][3] = 527; // Y
 
 	// Right Joystick down
 	padding[PAD_R_DOWN][0] = 100; // Width
-	padding[PAD_R_DOWN][1] = 25;  // Height
+	padding[PAD_R_DOWN][1] = 25; // Height
 	padding[PAD_R_DOWN][2] = 555; // X
 	padding[PAD_R_DOWN][3] = 577; // Y
 
 	// Right Joystick right
 	padding[PAD_R_RIGHT][0] = 109; // Width
-	padding[PAD_R_RIGHT][1] = 25;  // Height
+	padding[PAD_R_RIGHT][1] = 25; // Height
 	padding[PAD_R_RIGHT][2] = 607; // X
 	padding[PAD_R_RIGHT][3] = 552; // Y
 
 	// Right Joystick left
 	padding[PAD_R_LEFT][0] = 109; // Width
-	padding[PAD_R_LEFT][1] = 25;  // Height
+	padding[PAD_R_LEFT][1] = 25; // Height
 	padding[PAD_R_LEFT][2] = 498; // X
 	padding[PAD_R_LEFT][3] = 552; // Y
 
 	// R3
 	padding[PAD_R3][0] = 218; // Width
-	padding[PAD_R3][1] = 28;  // Height
+	padding[PAD_R3][1] = 28; // Height
 	padding[PAD_R3][2] = 498; // X
 	padding[PAD_R3][3] = 641; // Y
 
 	// Start
 	padding[PAD_START][0] = 218; // Width
-	padding[PAD_START][1] = 28;  // Height
+	padding[PAD_START][1] = 28; // Height
 	padding[PAD_START][2] = 503; // X
-	padding[PAD_START][3] = 34;  // Y
+	padding[PAD_START][3] = 34; // Y
 
 	// Select
 	padding[PAD_SELECT][0] = 218; // Width
-	padding[PAD_SELECT][1] = 28;  // Height
+	padding[PAD_SELECT][1] = 28; // Height
 	padding[PAD_SELECT][2] = 273; // X
-	padding[PAD_SELECT][3] = 34;  // Y
+	padding[PAD_SELECT][3] = 34; // Y
 
 	// Analog
 	padding[Analog][0] = 218; // Width
-	padding[Analog][1] = 28;  // Height
-	padding[Analog][2] = 50;  // X
+	padding[Analog][1] = 28; // Height
+	padding[Analog][2] = 50; // X
 	padding[Analog][3] = 452; // Y
 
 	// Left Joystick Configuration
 	padding[JoyL_config][0] = 180; // Width
-	padding[JoyL_config][1] = 28;  // Height
-	padding[JoyL_config][2] = 50;  // X
+	padding[JoyL_config][1] = 28; // Height
+	padding[JoyL_config][2] = 50; // X
 	padding[JoyL_config][3] = 550; // Y
 
 	// Right Joystick Configuration
 	padding[JoyR_config][0] = 180; // Width
-	padding[JoyR_config][1] = 28;  // Height
+	padding[JoyR_config][1] = 28; // Height
 	padding[JoyR_config][2] = 764; // X
 	padding[JoyR_config][3] = 550; // Y
 
 	// Gamepad Configuration
 	padding[Gamepad_config][0] = 180; // Width
-	padding[Gamepad_config][1] = 28;  // Height
-	padding[Gamepad_config][2] = 50;  // X
+	padding[Gamepad_config][1] = 28; // Height
+	padding[Gamepad_config][2] = 50; // X
 	padding[Gamepad_config][3] = 585; // Y
 
 	// Set All Buttons
 	padding[Set_all][0] = 180; // Width
-	padding[Set_all][1] = 28;  // Height
+	padding[Set_all][1] = 28; // Height
 	padding[Set_all][2] = 764; // X
 	padding[Set_all][3] = 585; // Y
 
 	// Apply modifications without exit
-	padding[Apply][0] = 70;  // Width
-	padding[Apply][1] = 28;  // Height
+	padding[Apply][0] = 70; // Width
+	padding[Apply][1] = 28; // Height
 	padding[Apply][2] = 833; // X
 	padding[Apply][3] = 642; // Y
 
 	// Ok button
-	padding[Ok][0] = 70;  // Width
-	padding[Ok][1] = 28;  // Height
+	padding[Ok][0] = 70; // Width
+	padding[Ok][1] = 28; // Height
 	padding[Ok][2] = 913; // X
 	padding[Ok][3] = 642; // Y
 
 	// Cancel button
-	padding[Cancel][0] = 70;  // Width
-	padding[Cancel][1] = 28;  // Height
+	padding[Cancel][0] = 70; // Width
+	padding[Cancel][1] = 28; // Height
 	padding[Cancel][2] = 753; // X
 	padding[Cancel][3] = 642; // Y
 
@@ -419,7 +419,7 @@ PADDialog::PADDialog()
 		sstm << label << i;
 		// New page creation
 		m_tab_gamepad->AddPage(
-			m_pan_tabs[i],                           // Parent
+			m_pan_tabs[i], // Parent
 			wxString(sstm.str().c_str(), wxConvUTF8) // Title
 		);
 
@@ -427,11 +427,11 @@ PADDialog::PADDialog()
 		{
 			// Gamepad buttons
 			m_bt_gamepad[i][j] = new wxButton(
-				m_pan_tabs[i],                         // Parent
-				wxID_HIGHEST + j + 1,                  // ID
-				_T("Undefined"),                       // Label
+				m_pan_tabs[i], // Parent
+				wxID_HIGHEST + j + 1, // ID
+				_T("Undefined"), // Label
 				wxPoint(padding[j][2], padding[j][3]), // Position
-				wxSize(padding[j][0], padding[j][1])   // Size
+				wxSize(padding[j][0], padding[j][1]) // Size
 			);
 		}
 		// Redefine others gui buttons label
@@ -461,8 +461,8 @@ PADDialog::PADDialog()
 void PADDialog::InitDialog()
 {
 	GamePad::EnumerateGamePads(s_vgamePad); // activate gamepads
-	PADLoadConfig();                        // Load configuration from the ini file
-	repopulate();                           // Set label and fit simulated key array
+	PADLoadConfig(); // Load configuration from the ini file
+	repopulate(); // Set label and fit simulated key array
 }
 
 /****************************************/
@@ -473,10 +473,10 @@ void PADDialog::OnButtonClicked(wxCommandEvent& event)
 {
 	// Affichage d'un message à chaque clic sur le bouton
 	wxButton* bt_tmp = (wxButton*)event.GetEventObject(); // get the button object
-	int bt_id = bt_tmp->GetId() - wxID_HIGHEST - 1;       // get the real ID
-	int gamepad_id = m_tab_gamepad->GetSelection();       // get the tab ID (equivalent to the gamepad id)
+	int bt_id = bt_tmp->GetId() - wxID_HIGHEST - 1; // get the real ID
+	int gamepad_id = m_tab_gamepad->GetSelection(); // get the tab ID (equivalent to the gamepad id)
 	if (bt_id >= 0 && bt_id <= PAD_R_LEFT)
-	{                      // if the button ID is a gamepad button
+	{ // if the button ID is a gamepad button
 		bt_tmp->Disable(); // switch the button state to "Disable"
 		config_key(gamepad_id, bt_id);
 		bt_tmp->Enable(); // switch the button state to "Enable"
@@ -506,6 +506,9 @@ void PADDialog::OnButtonClicked(wxCommandEvent& event)
 	{ // If the button ID is equals to the Set_all button ID
 		for (int i = 0; i < MAX_KEYS; ++i)
 		{
+			if (i == PAD_ANALOG)
+				continue;
+
 			bt_tmp = m_bt_gamepad[gamepad_id][i];
 			switch (i)
 			{
@@ -576,16 +579,16 @@ void PADDialog::OnButtonClicked(wxCommandEvent& event)
 		}
 	}
 	else if (bt_id == Ok)
-	{                    // If the button ID is equals to the Ok button ID
+	{ // If the button ID is equals to the Ok button ID
 		PADSaveConfig(); // Save the configuration
-		Close();         // Close the window
+		Close(); // Close the window
 	}
 	else if (bt_id == Apply)
-	{                    // If the button ID is equals to the Apply button ID
+	{ // If the button ID is equals to the Apply button ID
 		PADSaveConfig(); // Save the configuration
 	}
 	else if (bt_id == Cancel)
-	{            // If the button ID is equals to the cancel button ID
+	{ // If the button ID is equals to the cancel button ID
 		Close(); // Close the window
 	}
 }
