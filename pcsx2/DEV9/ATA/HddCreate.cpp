@@ -32,7 +32,7 @@ void HddCreate::Start()
 	}
 
 	//This creates a modeless dialog
-	progressDialog = new wxProgressDialog("Creating HDD file", "Creating HDD file", neededSize, nullptr, wxPD_APP_MODAL | wxPD_AUTO_HIDE | wxPD_CAN_ABORT | wxPD_ELAPSED_TIME | wxPD_REMAINING_TIME);
+	progressDialog = new wxProgressDialog(_("Creating HDD file"), _("Creating HDD file"), neededSize, nullptr, wxPD_APP_MODAL | wxPD_AUTO_HIDE | wxPD_CAN_ABORT | wxPD_ELAPSED_TIME | wxPD_REMAINING_TIME);
 
 	fileThread = std::thread(&HddCreate::WriteImage, this, filePath, neededSize);
 
@@ -41,11 +41,11 @@ void HddCreate::Start()
 	//via CallAfter()
 
 	//Instead, loop here to update UI
-	char msg[32] = {0};
+	wxString msg;
 	int currentSize;
 	while ((currentSize = written.load()) != neededSize && !errored.load())
 	{
-		snprintf(msg, 32, "%i / %i MiB", written.load(), neededSize);
+		msg.Printf(_("%i / %i MiB"), written.load(), neededSize);
 
 		if (!progressDialog->Update(currentSize, msg))
 			canceled.store(true);
@@ -57,7 +57,7 @@ void HddCreate::Start()
 
 	if (errored.load())
 	{
-		wxMessageDialog dialog(nullptr, "Failed to create HDD file", "Info", wxOK);
+		wxMessageDialog dialog(nullptr, _("Failed to create HDD file"), _("Info"), wxOK);
 		dialog.ShowModal();
 	}
 

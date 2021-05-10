@@ -294,26 +294,6 @@ set(pcsx2SPU2Headers
 	SPU2/wx/wxConfig.h
 )
 
-# DEV9 UI sources
-compile_gresources( pcsx2DEV9UISources
-					pcsx2DEV9UIXML 
-					TYPE EMBED_C
-					RESOURCES "DEV9/Linux/dev9.ui"
-					PREFIX "/net/pcsx2/dev9"
-					COMPRESS_ALL
-					STRIPBLANKS_ALL
-)
-
-# DEV9 UI headers
-compile_gresources( pcsx2DEV9UIHeaders
-					pcsx2DEV9UIXML
-					TYPE EMBED_H
-					RESOURCES "DEV9/Linux/dev9.ui"
-					PREFIX "/net/pcsx2/dev9"
-					COMPRESS_ALL
-					STRIPBLANKS_ALL
-)
-
 # DEV9 sources
 set(pcsx2DEV9Sources
 	DEV9/ATA/Commands/ATA_Command.cpp
@@ -327,14 +307,13 @@ set(pcsx2DEV9Sources
 	DEV9/ATA/ATA_State.cpp
 	DEV9/ATA/ATA_Transfer.cpp
 	DEV9/ATA/HddCreate.cpp
+	DEV9/ConfigUI.cpp
 	DEV9/smap.cpp
 	DEV9/DEV9.cpp
 	DEV9/flash.cpp
 	DEV9/pcap_io.cpp
 	DEV9/Linux/Config.cpp
-	DEV9/Linux/Linux.cpp
 	DEV9/net.cpp
-	${pcsx2DEV9UISources}
 	)
 
 # DEV9 headers
@@ -345,7 +324,6 @@ set(pcsx2DEV9Headers
 	DEV9/net.h
 	DEV9/pcap_io.h
 	DEV9/smap.h
-	${pcsx2DEV9UIHeaders}
 	)
 
 # USBNull

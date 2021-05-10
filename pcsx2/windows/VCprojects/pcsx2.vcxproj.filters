@@ -1084,6 +1084,9 @@
     <ClCompile Include="..\..\DEV9\ATA\HddCreate.cpp">
       <Filter>System\Ps2\DEV9\ATA</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\DEV9\ConfigUI.cpp">
+      <Filter>System\Ps2\DEV9</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\DEV9\DEV9.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
@@ -1103,9 +1106,6 @@
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
     <ClCompile Include="..\..\DEV9\Win32\tap-win32.cpp">
-      <Filter>System\Ps2\DEV9</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\DEV9\Win32\Win32.cpp">
       <Filter>System\Ps2\DEV9</Filter>
     </ClCompile>
     <ClCompile Include="..\..\DEV9\Win32\DEV9WinConfig.cpp">
@@ -1857,9 +1857,6 @@
     <ClInclude Include="..\..\DEV9\Win32\pcap_io_win32_funcs.h">
       <Filter>System\Ps2\DEV9</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\DEV9\Win32\resource.h">
-      <Filter>System\Ps2\DEV9</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\DEV9\Win32\tap.h">
       <Filter>System\Ps2\DEV9</Filter>
     </ClInclude>
@@ -2089,9 +2086,6 @@
     </ResourceCompile>
     <ResourceCompile Include="..\..\SPU2\Windows\SPU2.rc">
       <Filter>System\Ps2\SPU2</Filter>
-    </ResourceCompile>
-    <ResourceCompile Include="..\..\DEV9\Win32\DEV9ghzdrk.rc">
-      <Filter>System\Ps2\DEV9</Filter>
     </ResourceCompile>
     <ResourceCompile Include="..\..\USB\usb-pad\dx\versionproxy.rc">
       <Filter>System\Ps2\USB\usb-pad\dx</Filter>

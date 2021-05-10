@@ -323,6 +323,16 @@ static void __forceinline PluginNullConfigure(std::string desc, s32& log)
 
 #else
 
+static void __forceinline SysMessage(const char* fmt, ...)
+{
+	va_list list;
+	char tmp[512];
+	va_start(list, fmt);
+	vsprintf(tmp, fmt, list);
+	va_end(list);
+	MessageBoxA(GetActiveWindow(), tmp, "Message", MB_SETFOREGROUND | MB_OK);
+}
+
 static void __forceinline SysMessage(const wchar_t* fmt, ...)
 {
 	va_list list;
