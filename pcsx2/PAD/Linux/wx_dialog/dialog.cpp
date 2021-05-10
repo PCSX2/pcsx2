@@ -36,9 +36,10 @@ static std::string KeyName(int pad, int key, int keysym)
 		}
 	}
 
+
+	// clang-format off
 	switch (keysym)
 	{
-		// clang-format off
 		case kVK_ANSI_A:              return "A";
 		case kVK_ANSI_B:              return "B";
 		case kVK_ANSI_C:              return "C";
@@ -159,8 +160,8 @@ static std::string KeyName(int pad, int key, int keysym)
 		case kVK_JIS_Eisu:            return "英数";
 		case kVK_JIS_Kana:            return "かな";
 		default: return "Key " + std::to_string(keysym);
-			// clang-format on
 	}
+	// clang-format on
 }
 #else
 static std::string KeyName(int pad, int key, int keysym)
