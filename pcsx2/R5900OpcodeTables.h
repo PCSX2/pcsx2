@@ -21,6 +21,8 @@ enum Syscall : u8
 {
 	SetGsCrt = 2,
 	SetVTLBRefillHandler = 13,
+	StartThread = 34,
+	ChangeThreadPriority = 41,
 	GetOsdConfigParam = 75,
 	GetOsdConfigParam2 = 111,
 	sysPrintOut = 117,

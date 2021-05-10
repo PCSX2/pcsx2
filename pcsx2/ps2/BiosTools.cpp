@@ -54,57 +54,7 @@ u32 BiosChecksum;
 u32 BiosRegion;
 bool NoOSD;
 wxString BiosDescription;
-const BiosDebugInformation* CurrentBiosInformation;
-
-const BiosDebugInformation biosVersions[] = {
-	// Notes: The SCPH versions have not been verified
-	
-	// USA     v02.00(14/06/2004) SCPH70012
-	{ 0x00000200, 0xD778DB8D, 0x8001A640 },
-	// USA     v01.60(19/03/2002) SCPH39004
-	{ 0x0000013C, 0x0B51A16F, 0x8001A280 },
-	// USA     v01.60(07/02/2002) SCPH39001
-	{ 0x0000013C, 0x3A75B059, 0x8001A480 },
-	// Europe  v02.20(10/02/2006) SCPH77008
-	{ 0x00000214, 0xD7EDD771, 0x8001AC00 },
-	// Europe  v02.20(20/06/2005) SCPH75004
-	{ 0x00000214, 0x0E9C22D3, 0x8001AC00 },
-	// Europe  v02.00(16/06/2004) SCPH70008
-	{ 0x00000200, 0x3C6AA4F4, 0x8001A640 },
-	// Europe  v02.00(14/06/2004) SCPH70004
-	{ 0x00000200, 0x9C7B59D3, 0x8001A640 },
-	{ 0x00000200, 0x8C7B49D3, 0x8001A640 }, // Russian variant 
-	// Europe  v02.00(04/11/2004) SCPH50003
-	{ 0x00000200, 0xBDE56F8E, 0x8001A580 },
-	// Europe  v01.90(23/06/2003) SCPH50004
-	{ 0x0000015A, 0xE36776DC, 0x8001A640 },
-	// Europe  v01.70(27/02/2003) SCPH50004
-	{ 0x00000146 ,0x4954F4A2, 0x8001A640 },
-	// Europe  v01.60(19/03/2002) SCPH39004
-	{ 0x0000013C, 0xFA3F9E90, 0x8001A280 },
-	// Europe  v01.60(04/10/2001) SCPH30004
-	{ 0x0000013C, 0xB8E26E89, 0x8001A580 },
-	// Europe  v01.60(04/10/2001) SCPH30004R
-	{ 0x0000013C, 0xEC9058f6, 0x8001A580 },
-	// Europe  v01.20(02/09/2000) SCPH30003
-	{ 0x00000114, 0xCF83F17A, 0x80017B40 },
-	// Japan   v02.20(05/09/2006) SCPH90006
-	{ 0x00000214, 0x098047D7, 0x8001AC00 },
-	// Japan   v02.20(20/06/2005) SCPH75004
-	{ 0x00000214, 0x0E9C22DC, 0x8001AC00 },
-	// Japan   v02.00(14/06/2004) SCPH70000
-	{ 0x00000200, 0xC9B61306, 0x8001A640 },
-	// Japan   v01.70(06/02/2003) SCPH50000
-	{ 0x00000146, 0x71C7C144, 0x8001A640 },
-	// Japan   v01.50(18/01/2001) SCPH30000
-	{ 0x00000132, 0x4FA83C78, 0x80019A00 },
-	// Japan   v01.00(17/01/2000) SCPH10000
-	{ 0x00000100, 0x22B99C77, 0x80017400 },
-	// China   v01.90(23/06/2003) SCPH50009
-	{ 0x0000015A, 0xE9D87F1F, 0x8001A640 },
-	// HK      v02.00(14/06/2004) SCPH70006
-	{ 0x00000200, 0x2E5D0C98, 0x8001A640 }
-};
+BiosDebugInformation CurrentBiosInformation;
 
 // --------------------------------------------------------------------------------------
 //  Exception::BiosLoadFailed  (implementations)
@@ -354,18 +304,7 @@ void LoadBIOS()
 		if (g_Conf->CurrentIRX.Length() > 3)
 			LoadIrx(g_Conf->CurrentIRX, &eeMem->ROM[0x3C0000]);
 
-		CurrentBiosInformation = NULL;
-		for (size_t i = 0; i < sizeof(biosVersions)/sizeof(biosVersions[0]); i++)
-		{
-			if (biosVersions[i].biosChecksum == BiosChecksum && biosVersions[i].biosVersion == BiosVersion)
-			{
-				CurrentBiosInformation = &biosVersions[i];
-				break;
-			}
-		}
-
-		if (CurrentBiosInformation == NULL)
-			Console.Warning("BIOS Warning: Unknown BIOS version. The debugger thread and stack frame views will not be functional.");
+		CurrentBiosInformation.threadListAddr = 0;
 	}
 	catch (Exception::BadStream& ex)
 	{
