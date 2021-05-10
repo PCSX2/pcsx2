@@ -98,7 +98,7 @@ void AutoDNS1Changed(HWND hW)
 
 void AutoDNS2Changed(HWND hW)
 {
-	IPControl_Enable(GetDlgItem(hW, IDC_IPADDRESS_DNS2), !Button_GetCheck(GetDlgItem(hW, IDC_CHECK_DNS2)), config.DNS1);
+	IPControl_Enable(GetDlgItem(hW, IDC_IPADDRESS_DNS2), !Button_GetCheck(GetDlgItem(hW, IDC_CHECK_DNS2)), config.DNS2);
 }
 
 void InterceptChanged(HWND hW)
@@ -141,7 +141,7 @@ void InterceptChanged(HWND hW)
 		IPControl_Enable(GetDlgItem(hW, IDC_IPADDRESS_SUBNET), false, config.Mask);
 		IPControl_Enable(GetDlgItem(hW, IDC_IPADDRESS_GATEWAY), false, config.Gateway);
 		IPControl_Enable(GetDlgItem(hW, IDC_IPADDRESS_DNS1), false, config.DNS1);
-		IPControl_Enable(GetDlgItem(hW, IDC_IPADDRESS_DNS2), false, config.DNS1);
+		IPControl_Enable(GetDlgItem(hW, IDC_IPADDRESS_DNS2), false, config.DNS2);
 	}
 }
 
