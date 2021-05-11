@@ -15,7 +15,7 @@
 
 #pragma once
 
-namespace PacketReader::IP::UDP
+namespace PacketReader::IP::UDP::DNS
 {
 	enum struct DNS_OPCode : u8
 	{
