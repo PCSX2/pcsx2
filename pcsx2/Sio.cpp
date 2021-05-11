@@ -678,7 +678,7 @@ SIO_WRITE sioWriteMemcard(u8 data)
 				sio2.packet.recvVal3 = 0x83;
 
 				mc_command_0x26_tag cmd;
-				PS2E_McdSizeInfo info;
+				McdSizeInfo info;
 
 				mcd->GetSizeInfo(info);
 

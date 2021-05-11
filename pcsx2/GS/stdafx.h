@@ -200,6 +200,7 @@ typedef int64 sint64;
 
 #define ASSERT assert
 
+/*
 #ifdef _M_AMD64
 	// Yeah let use mips naming ;)
 	#ifdef _WIN64
@@ -218,6 +219,7 @@ typedef int64 sint64;
 	#define t1 r9
 	#endif
 #endif
+*/
 
 // sse
 #if defined(__GNUC__)

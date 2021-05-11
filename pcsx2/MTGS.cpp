@@ -462,7 +462,7 @@ void SysMtgsThread::ExecuteTaskInThread()
 						{
 							MTGS_FreezeData* data = (MTGS_FreezeData*)tag.pointer;
 							int mode = tag.data[0];
-							data->retval = GetCorePlugins().DoFreeze(PluginId_GS, mode, data->fdata);
+							data->retval = GSfreeze(mode, (GSFreezeData*)data->fdata);
 						}
 						break;
 
