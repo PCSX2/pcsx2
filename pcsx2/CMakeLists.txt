@@ -728,16 +728,20 @@ set(pcsx2GSResources
 	GS/res/glsl/tfx_fs.glsl
 	GS/res/glsl/tfx_vgs.glsl)
 
+set(GSBin "${CMAKE_BINARY_DIR}/pcsx2/GS")
+include_directories ("${GSBin}")
+file(MAKE_DIRECTORY ${GSBin})
+
 add_custom_command(
 	OUTPUT ${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.h
 	COMMAND glib-compile-resources --sourcedir "${CMAKE_SOURCE_DIR}/pcsx2/GS/res" --generate-header
-	--c-name PAD_res "${CMAKE_SOURCE_DIR}/pcsx2/GS/res/GS-res.xml" --target=${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.h
+	--c-name GS_res "${CMAKE_SOURCE_DIR}/pcsx2/GS/res/GS-res.xml" --target=${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.h
 	DEPENDS ${pcsx2GSResources})
 
 add_custom_command(
 	OUTPUT ${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.cpp
 	COMMAND glib-compile-resources --sourcedir "${CMAKE_SOURCE_DIR}/pcsx2/GS/res" --generate-source
-	--c-name PAD_res "${CMAKE_SOURCE_DIR}/pcsx2/GS/res/GS-res.xml" --target=${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.cpp
+	--c-name GS_res "${CMAKE_SOURCE_DIR}/pcsx2/GS/res/GS-res.xml" --target=${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.cpp
 	DEPENDS ${pcsx2GSResources})
 
 
