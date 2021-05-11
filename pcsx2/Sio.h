@@ -34,37 +34,44 @@ struct _mcd
 	u32 ForceEjection_Timeout; // in SIO checks
 	wxDateTime ForceEjection_Timestamp;
 
+    struct McdSizeInfo
+    {
+        u16 SectorSize;              // Size of each sector, in bytes.  (only 512 and 1024 are valid)
+        u16 EraseBlockSizeInSectors; // Size of the erase block, in sectors (max is 16)
+        u32 McdSizeInSectors;        // Total size of the card, in sectors (no upper limit)
+        u8 Xor;                      // Checksum of previous data
+    };
 
-	void GetSizeInfo(PS2E_McdSizeInfo &info)
+	void GetSizeInfo(McdSizeInfo &info)
 	{
-		SysPlugins.McdGetSizeInfo(port, slot, info);
+		FileMcd_GetSizeInfo(port, slot, info);
 	}
 
 	bool IsPSX()
 	{
-		return SysPlugins.McdIsPSX(port, slot);
+		return FileMcd_IsPSX(port, slot);
 	}
 
 	void EraseBlock()
 	{
-		SysPlugins.McdEraseBlock(port, slot, transferAddr);
+		FileMcd_EraseBlock(port, slot, transferAddr);
 	}
 
 	// Read from memorycard to dest
 	void Read(u8 *dest, int size) 
 	{
-		SysPlugins.McdRead(port, slot, dest, transferAddr, size);
+		FileMcd_Read(port, slot, dest, transferAddr, size);
 	}
 
 	// Write to memorycard from src
 	void Write(u8 *src, int size) 
 	{
-		SysPlugins.McdSave(port, slot, src,transferAddr, size);
+		FileMcd_Save(port, slot, src,transferAddr, size);
 	}
 
 	bool IsPresent()
 	{
-		return SysPlugins.McdIsPresent(port, slot);
+		return FileMcd_IsPresent(port, slot);
 	}
 
 	u8 DoXor(const u8 *buf, uint length)
@@ -76,15 +83,15 @@ struct _mcd
 
 	u64 GetChecksum()
 	{
-		return SysPlugins.McdGetCRC(port, slot);
+		return FileMcd_GetCRC(port, slot);
 	}
 
 	void NextFrame() {
-		SysPlugins.McdNextFrame( port, slot );
+		FileMcd_NextFrame( port, slot );
 	}
 
 	bool ReIndex(const wxString& filter = L"") {
-		return SysPlugins.McdReIndex( port, slot, filter );
+		return FileMcd_McdReIndex( port, slot, filter );
 	}
 };
 

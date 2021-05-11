@@ -37,6 +37,14 @@ class DisassemblyDialog;
 #include "System.h"
 #include "System/SysThreads.h"
 
+#include "GS.h"
+
+typedef struct _keyEvent
+{
+    u32 key;
+    u32 evt;
+} keyEvent;
+
 typedef void FnType_OnThreadComplete(const wxCommandEvent& evt);
 typedef void (Pcsx2App::*FnPtr_Pcsx2App)();
 
