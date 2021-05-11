@@ -357,10 +357,11 @@ void NetAdapter::ReloadInternalServer(ifaddrs* adapter)
 
 bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 {
-	IP_Payload* updpkt = dhcpServer.Recv();
-	if (updpkt != nullptr)
+	IP_Payload* ippay;
+	ippay = dhcpServer.Recv();
+	if (ippay != nullptr)
 	{
-		IP_Packet* ippkt = new IP_Packet(updpkt);
+		IP_Packet* ippkt = new IP_Packet(ippay);
 		ippkt->destinationIP = {255, 255, 255, 255};
 		ippkt->sourceIP = internalIP;
 		EthernetFrame frame(ippkt);
@@ -371,7 +372,6 @@ bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 		return true;
 	}
 
-	IP_Payload* ippay;
 	ippay = dnsServer.Recv();
 	if (ippay != nullptr)
 	{
