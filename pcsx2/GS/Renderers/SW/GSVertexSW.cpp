@@ -19,5 +19,5 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSVertexSW.h"

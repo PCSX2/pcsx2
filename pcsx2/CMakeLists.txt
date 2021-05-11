@@ -576,6 +576,7 @@ set(pcsx2PADHeaders
     ${PADImgHeader}/arrow_right.h
     )
 
+include_directories ("${CMAKE_SOURCE_DIR}/3rdparty/xbyak/")
 
 # GS sources
 set(pcsx2GSSources
@@ -598,7 +599,6 @@ set(pcsx2GSSources
 	GS/GSVector.cpp
 	GS/GSdx.cpp
 	GS/GS_res.cpp
-	GS/stdafx.cpp
 	GS/Renderers/Common/GSDevice.cpp
 	GS/Renderers/Common/GSDirtyRect.cpp
 	GS/Renderers/Common/GSFunctionMap.cpp
@@ -673,7 +673,6 @@ set(pcsx2GSHeaders
 	GS/GSVector4i.h
 	GS/GSVector8.h
 	GS/GSVector8i.h
-	GS/stdafx.h
 	GS/Renderers/Common/GSDevice.h
 	GS/Renderers/Common/GSDirtyRect.h
 	GS/Renderers/Common/GSFastList.h

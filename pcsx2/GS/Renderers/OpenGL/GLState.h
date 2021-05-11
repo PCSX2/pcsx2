@@ -21,8 +21,8 @@
 
 #pragma once
 
-#include "GSdx.h"
-#include "GSVector.h"
+#include "../../GS.h"
+#include "../../GSVector.h"
 
 namespace GLState
 {

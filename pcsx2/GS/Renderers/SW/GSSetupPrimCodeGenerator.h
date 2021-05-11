@@ -21,9 +21,9 @@
 
 #pragma once
 
-#include "Renderers/SW/GSScanlineEnvironment.h"
-#include "Renderers/Common/GSFunctionMap.h"
-#include "GSUtil.h"
+#include "GSScanlineEnvironment.h"
+#include "../Common/GSFunctionMap.h"
+#include "../../GSUtil.h"
 
 class GSSetupPrimCodeGenerator : public GSCodeGenerator
 {

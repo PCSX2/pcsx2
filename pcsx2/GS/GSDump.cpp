@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSDump.h"
 
 GSDumpBase::GSDumpBase(const std::string& fn)

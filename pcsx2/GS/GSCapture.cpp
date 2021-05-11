@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSCapture.h"
 #include "GSPng.h"
 #include "GSUtil.h"

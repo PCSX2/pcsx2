@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSVertexTrace.h"
 #include "GSUtil.h"
 #include "GSState.h"

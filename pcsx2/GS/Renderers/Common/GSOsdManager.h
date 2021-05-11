@@ -21,8 +21,8 @@
 
 #pragma once
 
-#include "stdafx.h"
-#include "GSVector.h"
+#include "PrecompiledHeader.h"
+#include "../../GSVector.h"
 #include "GSVertex.h"
 #include "GSTexture.h"
 #include <ft2build.h>

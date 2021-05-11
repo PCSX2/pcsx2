@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSDeviceNull.h"
 
 bool GSDeviceNull::Create(const std::shared_ptr<GSWnd>& wnd)

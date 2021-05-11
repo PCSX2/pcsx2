@@ -19,7 +19,7 @@
 *
 */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSDrawingContext.h"
 #include "GSdx.h"
 

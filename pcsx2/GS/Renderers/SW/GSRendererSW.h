@@ -21,8 +21,8 @@
 
 #pragma once
 
-#include "Renderers/SW/GSTextureCacheSW.h"
-#include "Renderers/SW/GSDrawScanline.h"
+#include "GSTextureCacheSW.h"
+#include "GSDrawScanline.h"
 
 class GSRendererSW : public GSRenderer
 {

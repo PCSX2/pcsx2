@@ -18,7 +18,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSLzma.h"
 
 GSDumpFile::GSDumpFile(char* filename, const char* repack_filename)

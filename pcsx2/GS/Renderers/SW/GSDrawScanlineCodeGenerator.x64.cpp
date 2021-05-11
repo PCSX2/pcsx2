@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSDrawScanlineCodeGenerator.h"
 
 #if _M_SSE < 0x501 && (defined(_M_AMD64) || defined(_WIN64))

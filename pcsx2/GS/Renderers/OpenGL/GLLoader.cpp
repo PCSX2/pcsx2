@@ -18,7 +18,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GLLoader.h"
 #include "GSdx.h"
 #include "GS.h"

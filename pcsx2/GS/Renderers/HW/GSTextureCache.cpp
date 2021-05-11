@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSTextureCache.h"
 #include "GSRendererHW.h"
 #include "GSUtil.h"

@@ -20,7 +20,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSWnd.h"
 
 void GSWndGL::PopulateGlFunction()

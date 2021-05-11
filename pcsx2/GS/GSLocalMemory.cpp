@@ -24,7 +24,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSLocalMemory.h"
 #include "GSdx.h"
 

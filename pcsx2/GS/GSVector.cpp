@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSVector.h"
 
 CONSTINIT const GSVector4i GSVector4i::m_xff[17] =

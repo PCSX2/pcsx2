@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSTextureCacheSW.h"
 
 GSTextureCacheSW::GSTextureCacheSW(GSState* state)

@@ -21,10 +21,10 @@
 
 #pragma once
 
-#include "GSdx.h"
-#include "Window/GSWnd.h"
-#include "GSState.h"
-#include "GSCapture.h"
+#include "../../GS.h"
+#include "../../Window/GSWnd.h"
+#include "../../GSState.h"
+#include "../../GSCapture.h"
 
 class GSRenderer : public GSState
 {

@@ -22,11 +22,11 @@
 #pragma once
 
 #include "GS.h"
-#include "Renderers/SW/GSVertexSW.h"
-#include "Renderers/Common/GSFunctionMap.h"
-#include "GSAlignedClass.h"
-#include "GSPerfMon.h"
-#include "GSThread_CXX11.h"
+#include "GSVertexSW.h"
+#include "../Common/GSFunctionMap.h"
+#include "../../GSAlignedClass.h"
+#include "../../GSPerfMon.h"
+#include "../../GSThread_CXX11.h"
 
 class alignas(32) GSRasterizerData : public GSAlignedClass<32>
 {

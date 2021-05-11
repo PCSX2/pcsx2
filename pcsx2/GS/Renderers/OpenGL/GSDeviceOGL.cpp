@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSState.h"
 #include "GSDeviceOGL.h"
 #include "GLState.h"

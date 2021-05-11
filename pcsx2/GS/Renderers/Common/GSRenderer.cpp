@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSRenderer.h"
 #if defined(__unix__) || defined(__APPLE__)
 #include <X11/keysym.h>

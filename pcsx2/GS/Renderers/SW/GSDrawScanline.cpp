@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSDrawScanline.h"
 #include "GSTextureCacheSW.h"
 

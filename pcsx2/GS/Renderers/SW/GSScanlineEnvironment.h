@@ -21,8 +21,8 @@
 
 #pragma once
 
-#include "GSLocalMemory.h"
-#include "GSVector.h"
+#include "../../GSLocalMemory.h"
+#include "../../GSVector.h"
 
 union GSScanlineSelector
 {
