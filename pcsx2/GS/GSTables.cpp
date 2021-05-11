@@ -21,7 +21,7 @@
 
 // clang-format off
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSTables.h"
 
 const uint8 blockTable32[4][8] =

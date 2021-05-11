@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSWndDX.h"
 
 #ifdef _WIN32

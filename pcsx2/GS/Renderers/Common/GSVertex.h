@@ -21,10 +21,10 @@
 
 #pragma once
 
-#include "GS.h"
-#include "GSVector.h"
-#include "Renderers/HW/GSVertexHW.h"
-#include "Renderers/SW/GSVertexSW.h"
+#include "../../GS.h"
+#include "../../GSVector.h"
+#include "../HW/GSVertexHW.h"
+#include "../SW/GSVertexSW.h"
 
 #pragma pack(push, 1)
 

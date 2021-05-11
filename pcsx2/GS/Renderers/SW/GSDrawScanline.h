@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "GSState.h"
+#include "../../GSState.h"
 #include "GSRasterizer.h"
 #include "GSScanlineEnvironment.h"
 #include "GSSetupPrimCodeGenerator.h"

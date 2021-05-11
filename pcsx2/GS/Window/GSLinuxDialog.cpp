@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include <gtk/gtk.h>
 #include "GS.h"
 #include "GSdx.h"

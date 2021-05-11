@@ -21,9 +21,9 @@
 
 #pragma once
 
-#include "Renderers/Common/GSRenderer.h"
-#include "Renderers/Common/GSFastList.h"
-#include "Renderers/Common/GSDirtyRect.h"
+#include "../Common/GSRenderer.h"
+#include "../Common/GSFastList.h"
+#include "../Common/GSDirtyRect.h"
 
 class GSTextureCache
 {

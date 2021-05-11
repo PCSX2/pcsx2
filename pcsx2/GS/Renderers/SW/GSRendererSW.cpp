@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSRendererSW.h"
 
 #define LOG 0

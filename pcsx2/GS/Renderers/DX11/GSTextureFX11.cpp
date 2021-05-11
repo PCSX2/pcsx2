@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSDevice11.h"
 #include "resource.h"
 #include "GSTables.h"

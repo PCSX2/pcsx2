@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSRendererHW.h"
 
 const float GSRendererHW::SSR_UV_TOLERANCE = 1e-3f;

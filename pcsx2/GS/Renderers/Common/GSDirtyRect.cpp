@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSDirtyRect.h"
 
 GSDirtyRect::GSDirtyRect()

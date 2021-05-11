@@ -19,7 +19,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSCodeBuffer.h"
 
 GSCodeBuffer::GSCodeBuffer(size_t blocksize)

@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "Renderers/Common/GSDevice.h"
+#include "../Common/GSDevice.h"
 #include "GSTextureNull.h"
 
 class GSDeviceNull : public GSDevice

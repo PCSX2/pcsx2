@@ -18,7 +18,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSPng.h"
 #include <zlib.h>
 #include <png.h>

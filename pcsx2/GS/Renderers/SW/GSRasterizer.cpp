@@ -21,7 +21,7 @@
 
 // TODO: JIT Draw* (flags: depth, texture, color (+iip), scissor)
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSRasterizer.h"
 
 int GSRasterizerData::s_counter = 0;

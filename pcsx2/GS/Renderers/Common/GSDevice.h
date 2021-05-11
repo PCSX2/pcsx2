@@ -22,10 +22,10 @@
 #pragma once
 
 #include "GSFastList.h"
-#include "Window/GSWnd.h"
+#include "../../Window/GSWnd.h"
 #include "GSTexture.h"
 #include "GSVertex.h"
-#include "GSAlignedClass.h"
+#include "../../GSAlignedClass.h"
 #include "GSOsdManager.h"
 
 enum ShaderConvert

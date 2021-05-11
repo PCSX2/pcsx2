@@ -20,7 +20,7 @@
  *
  */
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 #include "GSTextureCacheOGL.h"
 
 GSTextureCacheOGL::GSTextureCacheOGL(GSRenderer* r)

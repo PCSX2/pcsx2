@@ -22,7 +22,7 @@
 
 #pragma once
 
-#include "Renderers/HW/GSTextureCache.h"
+#include "../HW/GSTextureCache.h"
 #include "GSDeviceOGL.h"
 
 class GSTextureCacheOGL final : public GSTextureCache

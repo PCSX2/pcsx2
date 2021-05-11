@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "stdafx.h"
+#include "PrecompiledHeader.h"
 
 struct GSSetting
 {

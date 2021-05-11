@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "GSVector.h"
+#include "../../GSVector.h"
 
 struct alignas(32) GSVertexSW
 {
