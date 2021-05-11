@@ -783,7 +783,6 @@ set(pcsx2DebugToolsHeaders
 set(pcsx2GuiSources
 	gui/AppAssert.cpp
 	gui/AppConfig.cpp
-	gui/AppCorePlugins.cpp
 	gui/AppCoreThread.cpp
 	gui/AppEventSources.cpp
 	gui/AppGameDatabase.cpp
@@ -837,7 +836,6 @@ set(pcsx2GuiSources
 	gui/Panels/MemoryCardListView.cpp
 	gui/Panels/MiscPanelStuff.cpp
 	gui/Panels/PathsPanel.cpp
-	gui/Panels/PluginSelectorPanel.cpp
 	gui/Panels/SpeedhacksPanel.cpp
 	gui/Panels/VideoPanel.cpp
 	gui/RecentIsoList.cpp
@@ -851,7 +849,6 @@ set(pcsx2GuiHeaders
 	gui/AppAccelerators.h
 	gui/AppCommon.h
 	gui/AppConfig.h
-	gui/AppCorePlugins.h
 	gui/AppCoreThread.h
 	gui/AppEventListeners.h
 	gui/AppForwardDefs.h

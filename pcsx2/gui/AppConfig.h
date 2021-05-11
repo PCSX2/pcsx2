@@ -57,13 +57,11 @@ namespace PathDefs
 
 extern DocsModeType		DocsFolderMode;				// 
 extern bool				UseDefaultSettingsFolder;	// when TRUE, pcsx2 derives the settings folder from the DocsFolderMode
-extern bool				UseDefaultPluginsFolder;
 
 extern wxDirName		CustomDocumentsFolder;		// allows the specification of a custom home folder for PCSX2 documents files.
 extern wxDirName		SettingsFolder;				// dictates where the settings folder comes from, *if* UseDefaultSettingsFolder is FALSE.
 
 extern wxDirName		InstallFolder;
-extern wxDirName		PluginsFolder;
 
 extern wxDirName GetSettingsFolder();
 extern wxString  GetVmSettingsFilename();
@@ -189,11 +187,8 @@ public:
 	struct FilenameOptions
 	{
 		wxFileName Bios;
-		wxFileName Plugins[PluginId_Count];
 
 		void LoadSave( IniInterface& conf );
-
-		const wxFileName& operator[]( PluginsEnum_t pluginidx ) const;
 	};
 
 	// ------------------------------------------------------------------------
@@ -384,9 +379,6 @@ public:
 
 	wxString FullpathToBios() const;
 	wxString FullpathToMcd( uint slot ) const;
-	wxString FullpathTo( PluginsEnum_t pluginId ) const;
-
-	bool FullpathMatchTest( PluginsEnum_t pluginId, const wxString& cmpto ) const;
 
 	void LoadSave( IniInterface& ini );
 	void LoadSaveRootItems( IniInterface& ini );
