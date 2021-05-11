@@ -19,7 +19,6 @@
 #include "pxEventThread.h"
 
 #include "AppCommon.h"
-#include "AppCorePlugins.h"
 #include "SaveState.h"
 
 #define AffinityAssert_AllowFrom_CoreThread() \
@@ -235,8 +234,6 @@ class ScopedCoreThreadClose : public BaseScopedCoreThread
 public:
 	ScopedCoreThreadClose();
 	virtual ~ScopedCoreThreadClose();
-
-	void LoadPlugins();
 };
 
 struct ScopedCoreThreadPause : public BaseScopedCoreThread

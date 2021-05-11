@@ -185,7 +185,6 @@ void AppCoreThread::Resume()
 		return;
 	}
 
-	GetCorePlugins().Init();
 	SPU2init();
 	_parent::Resume();
 }
@@ -735,28 +734,9 @@ void SysExecEvent_CoreThreadClose::InvokeEvent()
 
 void SysExecEvent_CoreThreadPause::InvokeEvent()
 {
-#ifdef PCSX2_DEVBUILD
-	bool CorePluginsAreOpen = GetCorePlugins().AreOpen();
-	ScopedCoreThreadPause paused_core;
-	_post_and_wait(paused_core);
-
-	// All plugins should be initialized and opened upon resuming from
-	// a paused state.  If the thread that puased us changed plugin status, it should
-	// have used Close instead.
-	if (CorePluginsAreOpen)
-	{
-		CorePluginsAreOpen = GetCorePlugins().AreOpen();
-		pxAssertDev(CorePluginsAreOpen, "Invalid plugin close/shutdown detected during paused CoreThread; please Stop/Suspend the core instead.");
-	}
-	paused_core.AllowResume();
-
-#else
-
 	ScopedCoreThreadPause paused_core;
 	_post_and_wait(paused_core);
 	paused_core.AllowResume();
-
-#endif
 }
 
 

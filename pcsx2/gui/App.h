@@ -47,10 +47,6 @@ wxDECLARE_EVENT(pxEvt_SetSettingsPage, wxCommandEvent);
 // the universal Accelerator table.
 static const int pxID_PadHandler_Keydown = 8030;
 
-// Plugin ID sections are spaced out evenly at intervals to make it easy to use a
-// single for-loop to create them.
-static const int PluginMenuId_Interval = 0x10;
-
 // ID and return code used for modal popups that have a custom button.
 static const wxWindowID pxID_CUSTOM = wxID_LOWEST - 1;
 
@@ -58,11 +54,6 @@ static const wxWindowID pxID_CUSTOM = wxID_LOWEST - 1;
 // (assigned an arbitrary value)
 static const wxWindowID pxID_RestartWizard = wxID_LOWEST - 100;
 
-
-// Forces the Interface to destroy the GS viewport window when the GS plugin is
-// destroyed.  This has the side effect of forcing all plugins to close and re-open
-// along with the GS, since the GS viewport window handle will have changed.
-static const bool CloseViewportWithPlugins = false;
 
 // ------------------------------------------------------------------------
 // All Menu Options for the Main Window! :D
@@ -145,7 +136,6 @@ enum MenuIdentifiers
 	MenuId_Config_BIOS,
 	MenuId_Config_Language,
 
-	// Plugin ID order is important.  Must match the order in tbl_PluginInfo.
 	MenuId_Config_GS,
 	MenuId_Config_PAD,
 	MenuId_Config_SPU2,
@@ -165,15 +155,6 @@ enum MenuIdentifiers
 	MenuId_Help_Website,
 	MenuId_Help_Wiki,
 	MenuId_Help_Github,
-
-	// Plugin Sections
-	// ---------------
-	// Each plugin menu begins with its name, which is a grayed out option that's
-	// intended for display purposes only.  Plugin ID sections are spaced out evenly
-	// at intervals to make it easy to use a single for-loop to create them.
-
-	MenuId_PluginBase_Name = 0x100,
-	MenuId_PluginBase_Settings = 0x101,
 
 	MenuId_Video_CoreSettings = 0x200, // includes frame timings and skippings settings
 	MenuId_Video_WindowSettings,
@@ -247,7 +228,6 @@ struct AppImageIds
 	struct ConfigIds
 	{
 		int Paths,
-			Plugins,
 			Speedhacks,
 			Gamefixes,
 			MemoryCard,
@@ -256,7 +236,7 @@ struct AppImageIds
 
 		ConfigIds()
 		{
-			Paths = Plugins =
+			Paths =
 				Speedhacks = Gamefixes =
 					Video = Cpu =
 						MemoryCard = -1;
@@ -267,19 +247,13 @@ struct AppImageIds
 	{
 		int Settings,
 			Play,
-			Resume,
-			PluginVideo,
-			PluginAudio,
-			PluginPad;
+			Resume;
 
 		ToolbarIds()
 		{
 			Settings = -1;
 			Play = -1;
 			Resume = -1;
-			PluginVideo = -1;
-			PluginAudio = -1;
-			PluginPad = -1;
 		}
 	} Toolbars;
 };
@@ -419,14 +393,6 @@ public:
 		return SettingsFolder.IsOk() || VmSettingsFile.IsOk();
 	}
 
-	bool HasPluginsOverride() const
-	{
-		for (int i = 0; i < PluginId_Count; ++i)
-			if (Filenames.Plugins[i].IsOk())
-				return true;
-
-		return false;
-	}
 };
 
 // =====================================================================================================
@@ -442,16 +408,10 @@ class Pcsx2App : public wxAppWithHelpers
 	// on them and they are, themselves, fairly self-contained.
 
 protected:
-	EventSource<IEventListener_Plugins> m_evtsrc_CorePluginStatus;
 	EventSource<IEventListener_CoreThread> m_evtsrc_CoreThreadStatus;
 	EventSource<IEventListener_AppStatus> m_evtsrc_AppStatus;
 
 public:
-	void AddListener(IEventListener_Plugins& listener)
-	{
-		m_evtsrc_CorePluginStatus.Add(listener);
-	}
-
 	void AddListener(IEventListener_CoreThread& listener)
 	{
 		m_evtsrc_CoreThreadStatus.Add(listener);
@@ -460,11 +420,6 @@ public:
 	void AddListener(IEventListener_AppStatus& listener)
 	{
 		m_evtsrc_AppStatus.Add(listener);
-	}
-
-	void RemoveListener(IEventListener_Plugins& listener)
-	{
-		m_evtsrc_CorePluginStatus.Remove(listener);
 	}
 
 	void RemoveListener(IEventListener_CoreThread& listener)
@@ -477,11 +432,6 @@ public:
 		m_evtsrc_AppStatus.Remove(listener);
 	}
 
-	void AddListener(IEventListener_Plugins* listener)
-	{
-		m_evtsrc_CorePluginStatus.Add(listener);
-	}
-
 	void AddListener(IEventListener_CoreThread* listener)
 	{
 		m_evtsrc_CoreThreadStatus.Add(listener);
@@ -490,11 +440,6 @@ public:
 	void AddListener(IEventListener_AppStatus* listener)
 	{
 		m_evtsrc_AppStatus.Add(listener);
-	}
-
-	void RemoveListener(IEventListener_Plugins* listener)
-	{
-		m_evtsrc_CorePluginStatus.Remove(listener);
 	}
 
 	void RemoveListener(IEventListener_CoreThread* listener)
@@ -507,7 +452,6 @@ public:
 		m_evtsrc_AppStatus.Remove(listener);
 	}
 
-	void DispatchEvent(PluginEventType evt);
 	void DispatchEvent(AppEventType evt);
 	void DispatchEvent(CoreThreadStatus evt);
 	void DispatchUiSettingsEvent(IniInterface& ini);
@@ -819,12 +763,6 @@ extern pxDoAssertFnType AppDoAssert;
 //  External App-related Globals and Shortcuts
 // --------------------------------------------------------------------------------------
 
-extern int EnumeratePluginsInFolder(const wxDirName& searchPath, wxArrayString* dest);
-extern void LoadPluginsPassive();
-extern void LoadPluginsImmediate();
-extern void UnloadPlugins();
-extern void ShutdownPlugins();
-
 extern bool SysHasValidState();
 extern void SysUpdateIsoSrcFile(const wxString& newIsoFile);
 extern void SysUpdateDiscSrcDrive(const wxString& newDiscDrive);
@@ -836,7 +774,6 @@ extern MainEmuFrame* GetMainFramePtr();
 
 extern __aligned16 AppCoreThread CoreThread;
 extern __aligned16 SysMtgsThread mtgsThread;
-extern __aligned16 AppCorePlugins CorePlugins;
 
 extern void UI_UpdateSysControls();
 
