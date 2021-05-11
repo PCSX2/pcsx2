@@ -23,6 +23,8 @@
 #include "Gif_Unit.h"
 #include "MTVU.h"
 #include "Elfheader.h"
+#include "App.h"
+#include "gui/Dialogs/ModalPopups.h"
 #ifdef _WIN32
 #include "PAD/Windows/PAD.h"
 #else
@@ -209,7 +211,7 @@ void SysMtgsThread::OpenGS()
 	GSsetBaseMem(RingBuffer.Regs);
 	GSirqCallback(dummyIrqCallback);
 
-	pxAssert(GSopen2((void*)pDsp, 1 | (renderswitch ? 4 : 0)) != 0);
+	pxAssert(GSopen2((void**)pDsp, 1 | (renderswitch ? 4 : 0)) != 0);
 
 	GSsetVsync(EmuConfig.GS.GetVsync());
 
@@ -553,10 +555,10 @@ void SysMtgsThread::ExecuteTaskInThread()
 
 void SysMtgsThread::CloseGS()
 {
-	if (!m_Opened)
+	if (!m_Opened || GSDump::isRunning)
 		return;
 	m_Opened = false;
-	GetCorePlugins().Close(PluginId_GS);
+    Suspend();
 }
 
 void SysMtgsThread::OnSuspendInThread()
@@ -875,9 +877,6 @@ void SysMtgsThread::WaitForOpen()
 		{
 			RethrowException();
 
-			// Not opened yet, and no exceptions.  Weird?  You decide!
-			// [TODO] : implement a user confirmation to cancel the action and exit the
-			//   emulator forcefully, or to continue waiting on the GS.
 			pxAssert(_("The MTGS thread has become unresponsive while waiting for the GS plugin to open."));
 		}
 	}
@@ -887,7 +886,7 @@ void SysMtgsThread::WaitForOpen()
 
 void SysMtgsThread::Freeze(int mode, MTGS_FreezeData& data)
 {
-	GetCorePlugins().Open(PluginId_GS);
+	Resume();
 	SendPointerPacket(GS_RINGTYPE_FREEZE, mode, &data);
 	Resume();
 	WaitGS();
