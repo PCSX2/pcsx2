@@ -15,7 +15,6 @@
 
 #pragma once
 
-#include "PS2Edefs.h"
 #include "System.h"
 
 // Savestate Versioning!
@@ -25,6 +24,18 @@
 //  states, increment the upper 16 bit value, and clear the lower 16 bits to 0.
 
 static const u32 g_SaveVersion = (0x9A1F << 16) | 0x0000;
+
+// the freezing data between submodules and core
+// an interesting thing to note is that this dates back from before plugin
+// merges and was used to pass data between plugins and cores, although the
+// struct was system dependant as the size of int differs between systems, thus
+// subsystems making use of freezeData, like GSDump and save states aren't
+// necessarily portable; we might want to investigate this in the future -- govanify
+typedef struct
+{
+    int size;
+    s8 *data;
+} freezeData;
 
 // this function is meant to be used in the place of GSfreeze, and provides a safe layer
 // between the GS saving function and the MTGS's needs. :)
