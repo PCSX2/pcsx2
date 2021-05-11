@@ -24,8 +24,6 @@
 // This file is filled with stuff that breaks clang-format
 // clang-format off
 
-#define PLUGIN_VERSION 0
-
 #define VM_SIZE 4194304u
 #define HALF_VM_SIZE (VM_SIZE / 2u)
 #define PAGE_SIZE 8192u
@@ -1455,11 +1453,12 @@ struct GSFreezeData
 	uint8* data;
 };
 
+// ST_WRITE is defined in libc, avoid this
 enum stateType
 {
-	ST_WRITE,
-	ST_TRANSFER,
-	ST_VSYNC
+	SAVE_WRITE,
+	SAVE_TRANSFER,
+	SAVE_VSYNC
 };
 
 enum class GSVideoMode : uint8
@@ -1512,3 +1511,40 @@ const GSVector2i default_rt_size(2048, 2048);
 #else
 const GSVector2i default_rt_size(1280, 1024);
 #endif
+
+void GSsetBaseMem(uint8* mem);
+void GSsetSettingsDir(const char* dir);
+int GSinit();
+void GSshutdown();
+void GSclose();
+int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads = -1);
+void GSosdLog(const char* utf8, uint32 color);
+void GSosdMonitor(const char* key, const char* value, uint32 color);
+int GSopen2(void** dsp, uint32 flags);
+int GSopen(void** dsp, const char* title, int mt);
+void GSreset();
+void GSgifSoftReset(uint32 mask);
+void GSwriteCSR(uint32 csr);
+void GSinitReadFIFO(uint8* mem);
+void GSreadFIFO(uint8* mem);
+void GSinitReadFIFO2(uint8* mem, uint32 size);
+void GSreadFIFO2(uint8* mem, uint32 size);
+void GSgifTransfer(const uint8* mem, uint32 size);
+void GSgifTransfer1(uint8* mem, uint32 addr);
+void GSgifTransfer2(uint8* mem, uint32 size);
+void GSgifTransfer3(uint8* mem, uint32 size);
+void GSvsync(int field);
+uint32 GSmakeSnapshot(char* path);
+void GSkeyEvent(GSKeyEventData* e);
+int GSfreeze(int mode, GSFreezeData* data);
+void GSconfigure();
+int GStest();
+void GSirqCallback(void (*irq)());
+bool GSsetupRecording(std::string& filename);
+void GSendRecording();
+void GSsetGameCRC(uint32 crc, int options);
+void GSgetLastTag(uint32* tag);
+void GSgetTitleInfo2(char* dest, size_t length);
+void GSsetFrameSkip(int frameskip);
+void GSsetVsync(int vsync);
+void GSsetExclusive(int enabled);

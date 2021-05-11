@@ -18,6 +18,7 @@
 #include "Common.h"
 #include "System/SysThreads.h"
 #include "Gif.h"
+#include "GS/GS.h"
 
 extern Fixed100 GetVerticalFrequency();
 extern __aligned16 u8 g_RealGSMem[Ps2MemSize::GSregs];
