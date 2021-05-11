@@ -69,11 +69,9 @@ void vif1TransferToMemory()
 	}
 
 	GetMTGS().WaitGS();
-	if (GSinitReadFIFO2) {
-		GetMTGS().SendPointerPacket(GS_RINGTYPE_INIT_READ_FIFO2, size, pMem);
-		GetMTGS().WaitGS(false); // wait without reg sync
-	}
-	GSreadFIFO2((u64*)pMem, size);
+	GetMTGS().SendPointerPacket(GS_RINGTYPE_INIT_READ_FIFO2, size, pMem);
+	GetMTGS().WaitGS(false); // wait without reg sync
+	GSreadFIFO2((u8*)pMem, size);
 //	pMem += size;
 
 	//Some games such as Alex Ferguson's Player Manager 2001 reads less than GSLastDownloadSize by VIF then reads the remainder by FIFO

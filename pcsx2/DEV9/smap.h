@@ -16,23 +16,14 @@
 #pragma once
 #include "DEV9.h"
 
-EXPORT_C_(u8)
-smap_read8(u32 addr);
-EXPORT_C_(u16)
-smap_read16(u32 addr);
-EXPORT_C_(u32)
-smap_read32(u32 addr);
+u8 smap_read8(u32 addr);
+u16 smap_read16(u32 addr);
+u32 smap_read32(u32 addr);
 
-EXPORT_C_(void)
-smap_write8(u32 addr, u8 value);
-EXPORT_C_(void)
-smap_write16(u32 addr, u16 value);
-EXPORT_C_(void)
-smap_write32(u32 addr, u32 value);
+void smap_write8(u32 addr, u8 value);
+void smap_write16(u32 addr, u16 value);
+void smap_write32(u32 addr, u32 value);
 
-EXPORT_C_(void)
-smap_readDMA8Mem(u32* pMem, int size);
-EXPORT_C_(void)
-smap_writeDMA8Mem(u32* pMem, int size);
-EXPORT_C_(void)
-smap_async(u32 cycles);
+void smap_readDMA8Mem(u32* pMem, int size);
+void smap_writeDMA8Mem(u32* pMem, int size);
+void smap_async(u32 cycles);

@@ -15,7 +15,12 @@
 
 #pragma once
 
+#define FREEZE_LOAD 0
+#define FREEZE_SAVE 1
+#define FREEZE_SIZE 2
+
 #include "System.h"
+#include "Utilities/Exceptions.h"
 
 // Savestate Versioning!
 //  If you make changes to the savestate version, please increment the value below.
@@ -211,4 +216,17 @@ public:
 	bool IsSaving() const { return false; }
 	bool IsFinished() const { return m_idx >= m_memory->GetSizeInBytes(); }
 };
+
+
+namespace Exception
+{
+	// Exception thrown when a corrupted or truncated savestate is encountered.
+	class SaveStateLoadError : public BadStream
+	{
+		DEFINE_STREAM_EXCEPTION(SaveStateLoadError, BadStream)
+
+		virtual wxString FormatDiagnosticMessage() const;
+		virtual wxString FormatDisplayMessage() const;
+	};
+}; // namespace Exception
 

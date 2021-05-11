@@ -167,11 +167,11 @@ int GetMACAddress(char* adapter, mac_address* addr)
 	}
 	else
 	{
-		SysMessage("Could not get MAC address for adapter: %s", adapter);
+		Console.Error("Could not get MAC address for adapter: %s", adapter);
 	}
 	close(fd);
 #else
-	SysMessage("Could not get MAC address for adapter, OS not supported");
+	Console.Error("Could not get MAC address for adapter, OS not supported");
 #endif
 	return retval;
 }
@@ -230,7 +230,7 @@ int pcap_io_init(char* adapter, bool switched, mac_address virtual_mac)
 			//case DLT_IEEE802_11:
 			break;
 		default:
-			SysMessage("ERROR: Unsupported DataLink Type (%d): %s", dlt, dlt_name);
+			Console.Error("ERROR: Unsupported DataLink Type (%d): %s", dlt, dlt_name);
 			pcap_close(adhandle);
 			return -1;
 	}
@@ -391,7 +391,7 @@ PCAPAdapter::PCAPAdapter()
 
 	if (pcap_io_init(config.Eth, config.EthApi == NetApi::PCAP_Switched, newMAC) == -1)
 	{
-		SysMessage("Can't open Device '%s'\n", config.Eth);
+		Console.Error("Can't open Device '%s'\n", config.Eth);
 	}
 }
 bool PCAPAdapter::blocks()
