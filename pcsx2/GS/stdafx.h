@@ -26,6 +26,7 @@
 #pragma once
 
 #include "config.h"
+#include "Pcsx2Types.h"
 
 #ifdef _WIN32
 
@@ -49,8 +50,6 @@
 
 #endif
 
-#include <PluginCompatibility.h>
-
 #ifdef __x86_64__
 #define _M_AMD64
 #endif
@@ -65,12 +64,6 @@ typedef unsigned int uint32;
 typedef signed int int32;
 typedef unsigned long long uint64;
 typedef signed long long int64;
-#ifdef _M_AMD64
-typedef uint64 uptr;
-#else
-typedef uint32 uptr;
-#endif
-
 
 // xbyak compatibilities
 typedef int64 sint64;
@@ -167,10 +160,6 @@ typedef int64 sint64;
 	#define EXPORT_C EXPORT_C_(void)
 
 	#ifdef __GNUC__
-		#define __forceinline __inline__ __attribute__((always_inline,unused))
-		// #define __forceinline __inline__ __attribute__((__always_inline__, __gnu_inline__))
-		#define __assume(c) do { if (!(c)) __builtin_unreachable(); } while(0)
-
 		// GCC removes the variable as dead code and generates some warnings.
 		// Stack is automatically realigned due to SSE/AVX operations
 		#define ALIGN_STACK(n) (void)0;
@@ -289,21 +278,6 @@ typedef int64 sint64;
 #undef abs
 
 #if !defined(_MSC_VER)
-	#if defined(__USE_ISOC11) && !defined(ASAN_WORKAROUND) // not supported yet on gcc 4.9
-
-	#define _aligned_malloc(size, a) aligned_alloc(a, size)
-
-	#else
-
-	extern void* _aligned_malloc(size_t size, size_t alignment);
-
-	#endif
-
-	static inline void _aligned_free(void* p)
-	{
-		free(p);
-	}
-
 	// http://svn.reactos.org/svn/reactos/trunk/reactos/include/crt/mingw32/intrin_x86.h?view=markup
 
 	__forceinline int _BitScanForward(unsigned long* const Index, const unsigned long Mask)

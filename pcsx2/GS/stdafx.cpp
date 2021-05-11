@@ -231,20 +231,3 @@ void fifo_free(void* ptr, size_t size, size_t repeat)
 }
 
 #endif
-
-#if !defined(_MSC_VER)
-
-// declare linux equivalents (alignment must be power of 2 (1,2,4...2^15)
-
-#if !defined(__USE_ISOC11) || defined(ASAN_WORKAROUND)
-
-void* _aligned_malloc(size_t size, size_t alignment)
-{
-	void* ret = 0;
-	posix_memalign(&ret, alignment, size);
-	return ret;
-}
-
-#endif
-
-#endif

@@ -19,45 +19,7 @@
 #include "SaveState.h"
 #include "Saveslots.h"
 
-// --------------------------------------------------------------------------------------
-//  SysExecEvent_SaveSinglePlugin
-// --------------------------------------------------------------------------------------
-// fixme : Ideally this should use either Close or Pause depending on if the system is in
-// Fullscreen Exclusive mode or regular mode.  But since we don't yet support Fullscreen
-// Exclusive mode, and since I'm too lazy to make some third suspend class for that, we're
-// just using CoreThreadPause.  --air
-//
-class SysExecEvent_SaveSinglePlugin : public BaseSysExecEvent_ScopedCore
-{
-	typedef BaseSysExecEvent_ScopedCore _parent;
-
-protected:
-	PluginsEnum_t			m_pid;
-
-public:
-	wxString GetEventName() const { return L"SaveSinglePlugin"; }
-
-	virtual ~SysExecEvent_SaveSinglePlugin() = default;
-	SysExecEvent_SaveSinglePlugin* Clone() const { return new SysExecEvent_SaveSinglePlugin( *this ); }
-
-	SysExecEvent_SaveSinglePlugin( PluginsEnum_t pid=PluginId_GS )
-	{
-		m_pid = pid;
-	}
-	
-	SysExecEvent_SaveSinglePlugin& SetPluginId( PluginsEnum_t pid )
-	{
-		m_pid = pid;
-		return *this;
-	}
-
-protected:
-	void InvokeEvent();
-	void CleanupEvent();
-};
-
-
-extern void StateCopy_SaveToFile( const wxString& file );
-extern void StateCopy_LoadFromFile( const wxString& file );
-extern void StateCopy_SaveToSlot( uint num );
-extern void StateCopy_LoadFromSlot( uint slot, bool isFromBackup = false );
+extern void StateCopy_SaveToFile(const wxString& file);
+extern void StateCopy_LoadFromFile(const wxString& file);
+extern void StateCopy_SaveToSlot(uint num);
+extern void StateCopy_LoadFromSlot(uint slot, bool isFromBackup = false);
