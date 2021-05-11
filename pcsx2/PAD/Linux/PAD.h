@@ -24,6 +24,7 @@
 #include <wx/filename.h>
 #include "Utilities/pxStreams.h"
 #include "Utilities/Console.h"
+#include "App.h"
 #include <stdio.h>
 #include <assert.h>
 

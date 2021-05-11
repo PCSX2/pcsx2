@@ -75,86 +75,6 @@ std::unique_ptr<AppConfig> g_Conf;
 AspectRatioType iniAR;
 bool switchAR;
 
-static bool HandlePluginError( BaseException& ex )
-{
-	if (!pxDialogExists(L"Dialog:" + Dialogs::ComponentsConfigDialog::GetNameStatic()))
-	{
-		if( !Msgbox::OkCancel( ex.FormatDisplayMessage() +
-				_("\n\nPress Ok to go to the Plugin Configuration Panel.")
-			) )
-		return false;
-	}
-	else
-	{
-		Msgbox::Alert(ex.FormatDisplayMessage());
-	}
-
-	g_Conf->ComponentsTabName = L"Plugins";
-
-	// TODO: Send a message to the panel to select the failed plugin.
-
-	return AppOpenModalDialog<Dialogs::ComponentsConfigDialog>(L"Plugins") != wxID_CANCEL;
-}
-
-class PluginErrorEvent : public pxExceptionEvent
-{
-	typedef pxExceptionEvent _parent;
-
-public:
-	PluginErrorEvent( BaseException* ex=NULL ) : _parent( ex ) {}
-	PluginErrorEvent( const BaseException& ex ) : _parent( ex ) {}
-
-	virtual ~PluginErrorEvent() = default;
-	virtual PluginErrorEvent *Clone() const { return new PluginErrorEvent(*this); }
-
-protected:
-	void InvokeEvent();
-};
-
-class PluginInitErrorEvent : public pxExceptionEvent
-{
-	typedef pxExceptionEvent _parent;
-
-public:
-	PluginInitErrorEvent( BaseException* ex=NULL ) : _parent( ex ) {}
-	PluginInitErrorEvent( const BaseException& ex ) : _parent( ex ) {}
-
-	virtual ~PluginInitErrorEvent() = default;
-	virtual PluginInitErrorEvent *Clone() const { return new PluginInitErrorEvent(*this); }
-
-protected:
-	void InvokeEvent();
-
-};
-
-void PluginErrorEvent::InvokeEvent()
-{
-	if( !m_except ) return;
-
-	ScopedExcept deleteMe( m_except );
-	m_except = NULL;
-
-	if( !HandlePluginError( *deleteMe ) )
-	{
-		Console.Error( L"User-canceled plugin configuration; Plugins not loaded!" );
-		Msgbox::Alert( _("Warning!  System plugins have not been loaded.  PCSX2 may be inoperable.") );
-	}
-}
-
-void PluginInitErrorEvent::InvokeEvent()
-{
-	if( !m_except ) return;
-
-	ScopedExcept deleteMe( m_except );
-	m_except = NULL;
-
-	if( !HandlePluginError( *deleteMe ) )
-	{
-		Console.Error( L"User-canceled plugin configuration after plugin initialization failure.  Plugins unloaded." );
-		Msgbox::Alert( _("Warning!  System plugins have not been loaded.  PCSX2 may be inoperable.") );
-	}
-}
-
 // Returns a string message telling the user to consult guides for obtaining a legal BIOS.
 // This message is in a function because it's used as part of several dialogs in PCSX2 (there
 // are multiple variations on the BIOS and BIOS folder checks).
@@ -673,43 +593,6 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 #endif
 
 		CoreThread.Resume();
-	}
-	// ----------------------------------------------------------------------------
-	catch( Exception::PluginOpenError& ex )
-	{
-		// It might be possible for there to be no GS Frame, but I don't really know. This does
-		// prevent PCSX2 from locking up on a Windows wxWidgets 3.0 build. My conjecture is this:
-		// 1. Messagebox appears
-		// 2. Either a close or hide signal for gsframe gets sent to messagebox.
-		// 3. Message box hides itself without exiting the modal event loop, therefore locking up
-		// PCSX2. This probably happened in the BIOS error case above as well.
-		// So the idea is to explicitly close the gsFrame before the modal MessageBox appears and
-		// intercepts the close message. Only for wx3.0 though - it sometimes breaks linux wx2.8.
-
-		if (GSFrame* gsframe = wxGetApp().GetGsFramePtr())
-			gsframe->Close();
-
-		Console.Error(ex.FormatDiagnosticMessage());
-
-		// Make sure it terminates properly for nogui users.
-		if (wxGetApp().HasGUI())
-			AddIdleEvent(PluginInitErrorEvent(ex));
-	}
-	// ----------------------------------------------------------------------------
-	catch( Exception::PluginInitError& ex )
-	{
-		ShutdownPlugins();
-
-		Console.Error( ex.FormatDiagnosticMessage() );
-		AddIdleEvent( PluginInitErrorEvent(ex) );
-	}
-	// ----------------------------------------------------------------------------
-	catch( Exception::PluginError& ex )
-	{
-		UnloadPlugins();
-
-		Console.Error( ex.FormatDiagnosticMessage() );
-		AddIdleEvent( PluginErrorEvent(ex) );
 	}
 	// ----------------------------------------------------------------------------
 	#if 0
