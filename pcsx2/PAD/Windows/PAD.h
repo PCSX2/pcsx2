@@ -24,7 +24,6 @@
 #include "Utilities/Console.h"
 #include <stdio.h>
 #include <assert.h>
-#include "PS2Edefs.h"
 
 #include <array>
 #include <vector>

@@ -25,8 +25,6 @@
 //#define WINVER 0x0600
 //#define _WIN32_WINNT 0x0500
 
-#include "PS2Edefs.h"
-#include "PS2Eext.h"
 #include "net.h"
 #include "PacketReader/IP/IP_Address.h"
 #include "ATA/ATA.h"
