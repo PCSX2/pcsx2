@@ -22,8 +22,8 @@
 #include "PrecompiledHeader.h"
 #include <gtk/gtk.h>
 #include "GS.h"
-#include "GSdx.h"
-#include "GSdxResources.h"
+#include "GS.h"
+#include "GSResources.h"
 #include "GSSetting.h"
 
 // Port of deprecated GTK2 API to recent GTK3. Those defines
@@ -650,7 +650,7 @@ bool RunLinuxDialog()
 
 	/* Create the widgets */
 	dialog = gtk_dialog_new_with_buttons(
-		"GSdx Config",
+		"GS Config",
 		NULL, /* parent window*/
 		(GtkDialogFlags)(GTK_DIALOG_MODAL | GTK_DIALOG_DESTROY_WITH_PARENT),
 		"OK", GTK_RESPONSE_ACCEPT,
@@ -668,8 +668,8 @@ bool RunLinuxDialog()
 	// Grab a logo, to make things look nice.
 	if (BigEnough())
 	{
-		GResource* resources = GSdx_res_get_resource();
-		GInputStream* ogl_stream = g_resource_open_stream(resources, "/GSdx/res/logo-ogl.bmp", G_RESOURCE_LOOKUP_FLAGS_NONE, NULL);
+		GResource* resources = GS_res_get_resource();
+		GInputStream* ogl_stream = g_resource_open_stream(resources, "/GS/res/logo-ogl.bmp", G_RESOURCE_LOOKUP_FLAGS_NONE, NULL);
 		GdkPixbuf* ogl_logo = gdk_pixbuf_new_from_stream(ogl_stream, NULL, NULL);
 		g_object_unref(ogl_stream);
 		GtkWidget* logo_image = gtk_image_new_from_pixbuf(ogl_logo);
@@ -685,7 +685,7 @@ bool RunLinuxDialog()
 	GtkWidget* gl_table = CreateTableInBox(advanced_box, "OpenGL Very Advanced Custom Settings", 6, 2);
 
 	GtkWidget* record_table = CreateTableInBox(debug_box, "Recording Settings", 4, 3);
-	GtkWidget* debug_table = CreateTableInBox(debug_box, "OpenGL / GSdx Debug Settings", 6, 3);
+	GtkWidget* debug_table = CreateTableInBox(debug_box, "OpenGL / GS Debug Settings", 6, 3);
 
 	GtkWidget* shader_table = CreateTableInBox(shader_box, "Custom Shader Settings", 9, 2);
 	GtkWidget* osd_table = CreateTableInBox(osd_box, "OSD", 6, 2);

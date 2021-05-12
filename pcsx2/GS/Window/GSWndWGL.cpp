@@ -33,7 +33,7 @@ static void win_error(const wchar_t* msg, bool fatal = true)
 	if (fatal)
 	{
 		MessageBox(NULL, msg, L"ERROR", MB_OK | MB_ICONEXCLAMATION);
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 	}
 	else
 	{
@@ -343,7 +343,7 @@ void* GSWndWGL::GetProcAddress(const char* name, bool opt)
 			fprintf(stderr, "Failed to find %s\n", name);
 
 		if (!opt)
-			throw GSDXRecoverableError();
+			throw GSRecoverableError();
 	}
 	return ptr;
 }

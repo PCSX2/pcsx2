@@ -20,7 +20,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSdx.h"
+#include "../GS.h"
 #include "GSDevice.h"
 
 GSDevice::GSDevice()
@@ -279,7 +279,7 @@ void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, con
 	}
 	else
 	{
-		printf("GSdx: m_merge is NULL!\n");
+		printf("GS: m_merge is NULL!\n");
 	}
 
 	m_current = m_merge;

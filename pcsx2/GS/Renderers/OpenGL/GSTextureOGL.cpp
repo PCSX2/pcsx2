@@ -471,7 +471,7 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 
 	if (m_type == GSTexture::Offscreen)
 	{
-		// The fastest way will be to use a PBO to read the data asynchronously. Unfortunately GSdx
+		// The fastest way will be to use a PBO to read the data asynchronously. Unfortunately GS
 		// architecture is waiting the data right now.
 
 #if 0

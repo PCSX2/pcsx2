@@ -20,7 +20,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSdx.h"
+#include "GS.h"
 #include "GSDevice11.h"
 #include "GSUtil.h"
 #include "resource.h"
@@ -922,7 +922,7 @@ void GSDevice11::InitExternalFX()
 			if (fconfig.good())
 				shader << fconfig.rdbuf() << "\n";
 			else
-				fprintf(stderr, "GSdx: External shader config '%s' not loaded.\n", config_name.c_str());
+				fprintf(stderr, "GS: External shader config '%s' not loaded.\n", config_name.c_str());
 
 			std::string shader_name(theApp.GetConfigS("shaderfx_glsl"));
 			std::ifstream fshader(shader_name);
@@ -936,12 +936,12 @@ void GSDevice11::InitExternalFX()
 			}
 			else
 			{
-				fprintf(stderr, "GSdx: External shader '%s' not loaded and will be disabled!\n", shader_name.c_str());
+				fprintf(stderr, "GS: External shader '%s' not loaded and will be disabled!\n", shader_name.c_str());
 			}
 		}
-		catch (GSDXRecoverableError)
+		catch (GSRecoverableError)
 		{
-			printf("GSdx: failed to compile external post-processing shader. \n");
+			printf("GS: failed to compile external post-processing shader. \n");
 		}
 		ExShader_Compiled = true;
 	}
@@ -980,9 +980,9 @@ void GSDevice11::InitFXAA()
 			ShaderMacro sm(m_shader.model);
 			CreateShader(shader, "fxaa.fx", nullptr, "ps_main", sm.GetPtr(), &m_fxaa.ps);
 		}
-		catch (GSDXRecoverableError)
+		catch (GSRecoverableError)
 		{
-			printf("GSdx: failed to compile fxaa shader.\n");
+			printf("GS: failed to compile fxaa shader.\n");
 		}
 		FXAA_Compiled = true;
 	}
@@ -1372,7 +1372,7 @@ void GSDevice11::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector
 	ID3D11DepthStencilView* dsv = NULL;
 
 	if (!rt && !ds)
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 
 	if (rt) rtv = *(GSTexture11*)rt;
 	if (ds) dsv = *(GSTexture11*)ds;
@@ -1448,14 +1448,14 @@ void GSDevice11::CreateShader(const std::vector<char>& source, const char* fn, I
 
 	if (FAILED(hr))
 	{
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 	}
 
 	hr = m_dev->CreateInputLayout(layout, count, shader->GetBufferPointer(), shader->GetBufferSize(), il);
 
 	if (FAILED(hr))
 	{
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 	}
 }
 
@@ -1471,7 +1471,7 @@ void GSDevice11::CreateShader(const std::vector<char>& source, const char* fn, I
 
 	if (FAILED(hr))
 	{
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 	}
 }
 
@@ -1487,7 +1487,7 @@ void GSDevice11::CreateShader(const std::vector<char>& source, const char* fn, I
 
 	if (FAILED(hr))
 	{
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 	}
 }
 
@@ -1510,7 +1510,7 @@ void GSDevice11::CompileShader(const std::vector<char>& source, const char* fn, 
 		fprintf(stderr, "%s\n", (const char*)error->GetBufferPointer());
 
 	if (FAILED(hr))
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 }
 
 uint16 GSDevice11::ConvertBlendEnum(uint16 generic)

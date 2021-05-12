@@ -21,7 +21,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSState.h"
-#include "GSdx.h"
+#include "GS.h"
 
 bool s_nativeres;
 static CRCHackLevel s_crc_hack_level = CRCHackLevel::Full;
@@ -75,7 +75,7 @@ bool GSC_DBZBT3(const GSFrameInfo& fi, int& skip)
 bool GSC_DeathByDegreesTekkenNinaWilliams(const GSFrameInfo& fi, int& skip)
 {
 	// Note: Game also has issues with texture shuffle not supported on strange clamp mode.
-	// See https://forums.pcsx2.net/Thread-GSDX-Texture-Cache-Bug-Report-Death-By-Degrees-SLUS-20934-NTSC
+	// See https://forums.pcsx2.net/Thread-GS-Texture-Cache-Bug-Report-Death-By-Degrees-SLUS-20934-NTSC
 	if (skip == 0)
 	{
 		if ((Aggressive || !s_nativeres) && fi.TME && fi.FBP == 0 && fi.TBP0 == 0x34a0 && fi.TPSM == PSM_PSMCT32)

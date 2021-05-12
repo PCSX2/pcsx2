@@ -22,6 +22,8 @@
 
 #pragma once
 
+#include "../../GS_types.h"
+
 template <class T>
 struct Element
 {

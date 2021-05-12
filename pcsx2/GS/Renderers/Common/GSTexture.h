@@ -58,7 +58,7 @@ public:
 
 	virtual operator bool()
 	{
-		ASSERT(0);
+		pxAssert(0);
 		return false;
 	}
 

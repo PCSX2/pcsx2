@@ -24,7 +24,7 @@
 #include "Window/GSSetting.h"
 #include "GS.h"
 
-class GSdxApp
+class GSApp
 {
 	std::string m_ini;
 	std::string m_section;
@@ -33,7 +33,7 @@ class GSdxApp
 	GSRendererType m_current_renderer_type;
 
 public:
-	GSdxApp();
+	GSApp();
 
 	void Init();
 	void* GetModuleHandlePtr();
@@ -93,14 +93,14 @@ public:
 	std::vector<GSSetting> m_gs_tv_shaders;
 };
 
-struct GSDXError
+struct GSError
 {
 };
-struct GSDXRecoverableError : GSDXError
+struct GSRecoverableError : GSError
 {
 };
-struct GSDXErrorGlVertexArrayTooSmall : GSDXError
+struct GSErrorGlVertexArrayTooSmall : GSError
 {
 };
 
-extern GSdxApp theApp;
+extern GSApp theApp;

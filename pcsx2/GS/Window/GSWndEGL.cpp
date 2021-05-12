@@ -103,14 +103,14 @@ void GSWndEGL::CreateContext(int major, int minor)
 	if (numConfigs == 0)
 	{
 		fprintf(stderr, "EGL: Failed to get a frame buffer config! (0x%x)\n", eglGetError());
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 	}
 
 	m_eglSurface = eglCreatePlatformWindowSurface(m_eglDisplay, eglConfig, m_native_window, nullptr);
 	if (m_eglSurface == EGL_NO_SURFACE)
 	{
 		fprintf(stderr, "EGL: Failed to get a window surface\n");
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 	}
 
 	m_eglContext = eglCreateContext(m_eglDisplay, eglConfig, EGL_NO_CONTEXT, contextAttribs);
@@ -127,12 +127,12 @@ void GSWndEGL::CreateContext(int major, int minor)
 	{
 		fprintf(stderr, "EGL: Failed to create the context\n");
 		fprintf(stderr, "EGL STATUS: %x\n", status);
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 	}
 
 	if (!eglMakeCurrent(m_eglDisplay, m_eglSurface, m_eglSurface, m_eglContext))
 	{
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 	}
 }
 
@@ -171,7 +171,7 @@ void GSWndEGL::BindAPI()
 	if (api != EGL_OPENGL_API)
 	{
 		fprintf(stderr, "EGL: Failed to bind the OpenGL API got 0x%x instead\n", api);
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 	}
 }
 
@@ -232,7 +232,7 @@ void* GSWndEGL::GetProcAddress(const char* name, bool opt)
 			fprintf(stderr, "Failed to find %s\n", name);
 
 		if (!opt)
-			throw GSDXRecoverableError();
+			throw GSRecoverableError();
 	}
 	return ptr;
 }
@@ -280,13 +280,13 @@ void GSWndEGL::OpenEGLDisplay()
 	if (m_eglDisplay == EGL_NO_DISPLAY)
 	{
 		fprintf(stderr, "EGL: Failed to open a display! (0x%x)\n", eglGetError());
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 	}
 
 	if (!eglInitialize(m_eglDisplay, nullptr, nullptr))
 	{
 		fprintf(stderr, "EGL: Failed to initialize the display! (0x%x)\n", eglGetError());
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 	}
 }
 
@@ -320,7 +320,7 @@ void* GSWndEGL_X11::CreateNativeWindow(int w, int h)
 	if (m_NativeDisplay == nullptr)
 	{
 		fprintf(stderr, "EGL X11: display wasn't created before the window\n");
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 	}
 
 	xcb_connection_t* c = XGetXCBConnection(m_NativeDisplay);
@@ -334,7 +334,7 @@ void* GSWndEGL_X11::CreateNativeWindow(int w, int h)
 	if (m_NativeWindow == 0)
 	{
 		fprintf(stderr, "EGL X11: failed to create the native window\n");
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 	}
 
 	xcb_create_window(c, depth, m_NativeWindow, screen->root, x, y, w, h,

@@ -86,7 +86,7 @@ public:
 		if (!m_buffer_ptr)
 		{
 			fprintf(stderr, "Failed to map buffer\n");
-			throw GSDXError();
+			throw GSError();
 		}
 	}
 
@@ -109,7 +109,7 @@ public:
 		m_count = count;
 
 		if (m_count >= m_limit)
-			throw GSDXErrorGlVertexArrayTooSmall();
+			throw GSErrorGlVertexArrayTooSmall();
 
 		size_t offset = m_start * STRIDE;
 		size_t length = m_count * STRIDE;
@@ -315,7 +315,7 @@ public:
 				ptr = m_vb->map(count);
 				break;
 			}
-			catch (GSDXErrorGlVertexArrayTooSmall)
+			catch (GSErrorGlVertexArrayTooSmall)
 			{
 				GL_INS("GL vertex buffer is too small");
 
@@ -337,7 +337,7 @@ public:
 				m_vb->upload(vertices, count);
 				break;
 			}
-			catch (GSDXErrorGlVertexArrayTooSmall)
+			catch (GSErrorGlVertexArrayTooSmall)
 			{
 				GL_INS("GL vertex buffer is too small");
 
@@ -357,7 +357,7 @@ public:
 				m_ib->upload(index, count);
 				break;
 			}
-			catch (GSDXErrorGlVertexArrayTooSmall)
+			catch (GSErrorGlVertexArrayTooSmall)
 			{
 				GL_INS("GL index buffer is too small");
 

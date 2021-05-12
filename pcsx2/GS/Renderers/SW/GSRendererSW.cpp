@@ -1551,7 +1551,7 @@ void GSRendererSW::SharedData::UpdateSource()
 		}
 		else
 		{
-			printf("GSdx: out-of-memory, texturing temporarily disabled\n");
+			printf("GS: out-of-memory, texturing temporarily disabled\n");
 
 			global.sel.tfx = TFX_NONE;
 		}

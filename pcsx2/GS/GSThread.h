@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "GSdx.h"
+#include "GS.h"
 
 // http://software.intel.com/en-us/blogs/2012/11/06/exploring-intel-transactional-synchronization-extensions-with-intel-software
 #if 0

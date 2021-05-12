@@ -602,9 +602,7 @@ set(pcsx2GSSources
 	GS/GSTables.cpp
 	GS/GSUtil.cpp
 	GS/GSVector.cpp
-	GS/GSdx.cpp
 	GS/GS_res.cpp
-	GS/GS_types.h
 	GS/Renderers/Common/GSDevice.cpp
 	GS/Renderers/Common/GSDirtyRect.cpp
 	GS/Renderers/Common/GSFunctionMap.cpp
@@ -662,8 +660,8 @@ set(pcsx2GSHeaders
 	GS/GSDrawingContext.h
 	GS/GSDrawingEnvironment.h
 	GS/GSDump.h
-	GS/GSdx.h
 	GS/GS_res.h
+	GS/GS_types.h
 	GS/GS.h
 	GS/GSLocalMemory.h
 	GS/GSLzma.h

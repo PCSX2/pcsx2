@@ -26,7 +26,7 @@
 #ifdef _WIN32
 #include "resource.h"
 #else
-#include "GSdxResources.h"
+#include "GSResources.h"
 #endif
 
 GSShaderOGL::GSShaderOGL(bool debug)

@@ -65,14 +65,14 @@ namespace GSPng
 		try
 		{
 			if (png_ptr == nullptr)
-				throw GSDXRecoverableError();
+				throw GSRecoverableError();
 
 			info_ptr = png_create_info_struct(png_ptr);
 			if (info_ptr == nullptr)
-				throw GSDXRecoverableError();
+				throw GSRecoverableError();
 
 			if (setjmp(png_jmpbuf(png_ptr)))
-				throw GSDXRecoverableError();
+				throw GSRecoverableError();
 
 			png_init_io(png_ptr, fp);
 			png_set_compression_level(png_ptr, compression);
@@ -96,7 +96,7 @@ namespace GSPng
 
 			success = true;
 		}
-		catch (GSDXRecoverableError&)
+		catch (GSRecoverableError&)
 		{
 			fprintf(stderr, "Failed to write image %s\n", file.c_str());
 

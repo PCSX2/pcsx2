@@ -47,7 +47,7 @@ const char* GSUtil::GetLibName()
 		g_cpu.has(Xbyak::util::Cpu::tSSSE3) ? "SSSE3" : "SSE2";
 #endif
 
-	snprintf(name, sizeof(name), "GSdx "
+	snprintf(name, sizeof(name), "GS "
 
 #ifdef _WIN32
 		"%lld "

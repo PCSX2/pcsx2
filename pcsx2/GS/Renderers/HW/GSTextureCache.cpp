@@ -115,7 +115,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 		}
 		else
 		{
-			throw GSDXRecoverableError();
+			throw GSRecoverableError();
 		}
 	}
 
@@ -212,7 +212,7 @@ GSTextureCache::Source* GSTextureCache::LookupDepthSource(const GIFRegTEX0& TEX0
 			// The game tries to emulate a texture shuffle with an old depth buffer
 			// (don't exists yet for us due to the cache)
 			// Rendering is nicer (less garbage) if we skip the draw call.
-			throw GSDXRecoverableError();
+			throw GSRecoverableError();
 		}
 
 		//ASSERT(0);
@@ -1509,7 +1509,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		GSTexture* dTex = m_renderer->m_dev->CreateRenderTarget(w, h);
 		src->m_texture = dTex;
 
-		// GH: by default (m_paltex == 0) GSdx converts texture to the 32 bit format
+		// GH: by default (m_paltex == 0) GS converts texture to the 32 bit format
 		// However it is different here. We want to reuse a Render Target as a texture.
 		// Because the texture is already on the GPU, CPU can't convert it.
 		if (psm.pal > 0)
@@ -1576,7 +1576,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		else
 			ASSERT(0);
 
-		// Offset hack. Can be enabled via GSdx options.
+		// Offset hack. Can be enabled via GS options.
 		// The offset will be used in Draw().
 
 		float modx = 0.0f;

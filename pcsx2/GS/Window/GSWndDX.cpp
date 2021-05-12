@@ -82,7 +82,7 @@ LRESULT GSWndDX::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 bool GSWndDX::Create(const std::string& title, int w, int h)
 {
 	if (m_hWnd)
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 
 	m_managed = true;
 
@@ -102,7 +102,7 @@ bool GSWndDX::Create(const std::string& title, int w, int h)
 	{
 		if (!RegisterClass(&wc))
 		{
-			throw GSDXRecoverableError();
+			throw GSRecoverableError();
 		}
 	}
 
@@ -136,7 +136,7 @@ bool GSWndDX::Create(const std::string& title, int w, int h)
 	m_hWnd = CreateWindow(wc.lpszClassName, tmp.c_str(), style, r.left, r.top, r.width(), r.height(), NULL, NULL, wc.hInstance, (LPVOID)this);
 
 	if (!m_hWnd)
-		throw GSDXRecoverableError();
+		throw GSRecoverableError();
 
 	return true;
 }
@@ -155,7 +155,7 @@ void GSWndDX::Detach()
 {
 	if (m_hWnd && m_managed)
 	{
-		// close the window, since it's under GSdx care.  It's not taking messages anyway, and
+		// close the window, since it's under GS care.  It's not taking messages anyway, and
 		// that means its big, ugly, and in the way.
 
 		DestroyWindow(m_hWnd);

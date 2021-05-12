@@ -254,7 +254,7 @@ END
 
 IDD_CONFIG DIALOGEX 0, 0, 242, 360
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "GSdx Settings"
+CAPTION "GS Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     // General Settings:
@@ -393,10 +393,10 @@ BEGIN
             VALUE "CompanyName", "Gabest"
             VALUE "FileDescription", "GS plugin for ps2 emulators"
             VALUE "FileVersion", "1, 2, 0, 0"
-            VALUE "InternalName", "GSdx.dll"
+            VALUE "InternalName", "GS.dll"
             VALUE "LegalCopyright", "Copyright (c) 2007-2008 Gabest.  All rights reserved."
-            VALUE "OriginalFilename", "GSdx.dll"
-            VALUE "ProductName", "GSdx"
+            VALUE "OriginalFilename", "GS.dll"
+            VALUE "ProductName", "GS"
             VALUE "ProductVersion", "1, 2, 0, 0"
         END
     END
