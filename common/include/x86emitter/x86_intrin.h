@@ -29,28 +29,6 @@
 
 #endif
 
-// CPU information support
-#if defined(_WIN32)
-
-#define cpuid __cpuid
-#define cpuidex __cpuidex
-
-#else
-
-#include "xbyak_intrin.h"
-
-static __inline__ __attribute__((always_inline)) void cpuidex(int CPUInfo[], const int InfoType, const int count)
-{
-	__cpuid_count(InfoType, count, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
-}
-
-static __inline__ __attribute__((always_inline)) void cpuid(int CPUInfo[], const int InfoType)
-{
-	__cpuid(InfoType, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
-}
-
-#endif
-
 // Rotate instruction
 #if defined(__clang__) && __clang_major__ < 9
 #pragma clang diagnostic push

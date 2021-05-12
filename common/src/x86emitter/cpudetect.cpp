@@ -18,6 +18,28 @@
 #include "internal.h"
 #include "x86_intrin.h"
 
+// CPU information support
+#if defined(_WIN32)
+
+#define cpuid __cpuid
+#define cpuidex __cpuidex
+
+#else
+
+#include <cpuid.h>
+
+static __inline__ __attribute__((always_inline)) void cpuidex(int CPUInfo[], const int InfoType, const int count)
+{
+    __cpuid_count(InfoType, count, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+}
+
+static __inline__ __attribute__((always_inline)) void cpuid(int CPUInfo[], const int InfoType)
+{
+    __cpuid(InfoType, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+}
+
+#endif
+
 using namespace x86Emitter;
 
 __aligned16 x86capabilities x86caps;
