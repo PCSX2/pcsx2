@@ -187,7 +187,7 @@ vec4 sample_4_index(vec4 uv)
 {
     vec4 c;
 
-    // Either GSdx will send a texture that contains a single channel
+    // Either GS will send a texture that contains a single channel
     // in this case the red channel is remapped as alpha channel
     //
     // Or we have an old RT (ie RGBA8) that contains index (4/8) in the alpha channel

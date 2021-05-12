@@ -27,6 +27,7 @@
 #include "config.h"
 #include "Pcsx2Types.h"
 #include "GS_types.h"
+#include "Window/GSSetting.h"
 
 #ifdef _WIN32
 
@@ -211,7 +212,7 @@
 // sse
 #if defined(__GNUC__)
 
-// Convert gcc see define into GSdx (windows) define
+// Convert gcc see define into GS (windows) define
 #if defined(__AVX2__)
 	#if defined(__x86_64__)
 		#define _M_SSE 0x500 // TODO
@@ -1907,3 +1908,84 @@ void GSgetTitleInfo2(char* dest, size_t length);
 void GSsetFrameSkip(int frameskip);
 void GSsetVsync(int vsync);
 void GSsetExclusive(int enabled);
+
+class GSApp
+{
+	std::string m_ini;
+	std::string m_section;
+	std::map<std::string, std::string> m_default_configuration;
+	std::map<std::string, std::string> m_configuration_map;
+	GSRendererType m_current_renderer_type;
+
+public:
+	GSApp();
+
+	void Init();
+	void* GetModuleHandlePtr();
+
+#ifdef _WIN32
+	HMODULE GetModuleHandle()
+	{
+		return (HMODULE)GetModuleHandlePtr();
+	}
+#endif
+
+	void BuildConfigurationMap(const char* lpFileName);
+	void ReloadConfig();
+
+	size_t GetIniString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName);
+	bool WriteIniString(const char* lpAppName, const char* lpKeyName, const char* pString, const char* lpFileName);
+	int GetIniInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName);
+
+#ifdef _WIN32
+	bool LoadResource(int id, std::vector<char>& buff, const wchar_t* type = nullptr);
+#else
+	bool LoadResource(int id, std::vector<char>& buff, const char* type = nullptr);
+#endif
+
+	void SetConfig(const char* entry, const char* value);
+	void SetConfig(const char* entry, int value);
+	// Avoid issue with overloading
+	template <typename T>
+	T GetConfigT(const char* entry)
+	{
+		return static_cast<T>(GetConfigI(entry));
+	}
+	int GetConfigI(const char* entry);
+	bool GetConfigB(const char* entry);
+	std::string GetConfigS(const char* entry);
+
+	void SetCurrentRendererType(GSRendererType type);
+	GSRendererType GetCurrentRendererType() const;
+
+	void SetConfigDir(const char* dir);
+
+	std::vector<GSSetting> m_gs_renderers;
+	std::vector<GSSetting> m_gs_interlace;
+	std::vector<GSSetting> m_gs_aspectratio;
+	std::vector<GSSetting> m_gs_upscale_multiplier;
+	std::vector<GSSetting> m_gs_max_anisotropy;
+	std::vector<GSSetting> m_gs_dithering;
+	std::vector<GSSetting> m_gs_bifilter;
+	std::vector<GSSetting> m_gs_trifilter;
+	std::vector<GSSetting> m_gs_hack;
+	std::vector<GSSetting> m_gs_generic_list;
+	std::vector<GSSetting> m_gs_offset_hack;
+	std::vector<GSSetting> m_gs_hw_mipmapping;
+	std::vector<GSSetting> m_gs_crc_level;
+	std::vector<GSSetting> m_gs_acc_blend_level;
+	std::vector<GSSetting> m_gs_acc_blend_level_d3d11;
+	std::vector<GSSetting> m_gs_tv_shaders;
+};
+
+struct GSError
+{
+};
+struct GSRecoverableError : GSError
+{
+};
+struct GSErrorGlVertexArrayTooSmall : GSError
+{
+};
+
+extern GSApp theApp;

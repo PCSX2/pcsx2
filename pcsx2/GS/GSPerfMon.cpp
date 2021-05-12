@@ -21,6 +21,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSPerfMon.h"
+#include "GS_types.h"
 
 GSPerfMon::GSPerfMon()
 	: m_frame(0)

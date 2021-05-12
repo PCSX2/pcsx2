@@ -21,7 +21,7 @@
 
 #pragma once
 
-#include "Renderers/Common/GSTexture.h"
+#include "../Common/GSTexture.h"
 
 class GSTextureSW final : public GSTexture
 {

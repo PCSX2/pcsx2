@@ -23,6 +23,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSTables.h"
+#include "GS_types.h"
 
 const uint8 blockTable32[4][8] =
 {

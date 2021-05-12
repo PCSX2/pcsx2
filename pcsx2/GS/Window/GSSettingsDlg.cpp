@@ -20,7 +20,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSdx.h"
+#include "GS.h"
 #include "GSSettingsDlg.h"
 #include "GSUtil.h"
 #include "Renderers/DX11/GSDevice11.h"

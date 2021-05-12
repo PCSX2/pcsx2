@@ -20,7 +20,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSdx.h"
+#include "GS.h"
 #include "GSCaptureDlg.h"
 
 #define BeginEnumSysDev(clsid, pMoniker) \
@@ -37,8 +37,8 @@
 
 void GSCaptureDlg::InvalidFile()
 {
-	const std::wstring message = L"GSdx couldn't open file for capturing: " + m_filename + L".\nCapture aborted.";
-	MessageBox(GetActiveWindow(), message.c_str(), L"GSdx System Message", MB_OK | MB_SETFOREGROUND);
+	const std::wstring message = L"GS couldn't open file for capturing: " + m_filename + L".\nCapture aborted.";
+	MessageBox(GetActiveWindow(), message.c_str(), L"GS System Message", MB_OK | MB_SETFOREGROUND);
 }
 
 GSCaptureDlg::GSCaptureDlg()

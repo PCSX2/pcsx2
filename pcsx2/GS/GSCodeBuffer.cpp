@@ -21,6 +21,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSCodeBuffer.h"
+#include "GS_types.h"
 
 GSCodeBuffer::GSCodeBuffer(size_t blocksize)
 	: m_blocksize(blocksize)
@@ -40,8 +41,8 @@ GSCodeBuffer::~GSCodeBuffer()
 
 void* GSCodeBuffer::GetBuffer(size_t size)
 {
-	ASSERT(size < m_blocksize);
-	ASSERT(m_reserved == 0);
+	pxAssert(size < m_blocksize);
+	pxAssert(m_reserved == 0);
 
 	size = (size + 15) & ~15;
 
@@ -63,11 +64,11 @@ void* GSCodeBuffer::GetBuffer(size_t size)
 
 void GSCodeBuffer::ReleaseBuffer(size_t size)
 {
-	ASSERT(size <= m_reserved);
+	pxAssert(size <= m_reserved);
 
 	m_pos = ((m_pos + size) + 15) & ~15;
 
-	ASSERT(m_pos < m_blocksize);
+	pxAssert(m_pos < m_blocksize);
 
 	m_reserved = 0;
 }

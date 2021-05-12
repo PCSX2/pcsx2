@@ -2,7 +2,7 @@
 
 //{{NO_DEPENDENCIES}}
 // Microsoft Visual C++ generated include file.
-// Used by GSdx.rc
+// Used by GS.rc
 //
 // General Dialog:
 #define IDD_CONFIG                      2001

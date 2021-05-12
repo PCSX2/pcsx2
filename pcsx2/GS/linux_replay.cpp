@@ -28,7 +28,7 @@ static void* handle;
 void help()
 {
 	fprintf(stderr, "Loader gs file\n");
-	fprintf(stderr, "ARG1 GSdx plugin\n");
+	fprintf(stderr, "ARG1 GS plugin\n");
 	fprintf(stderr, "ARG2 .gs file\n");
 	fprintf(stderr, "ARG3 Ini directory\n");
 	if (handle)

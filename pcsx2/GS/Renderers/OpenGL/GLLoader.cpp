@@ -20,7 +20,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GLLoader.h"
-#include "GSdx.h"
+#include "GS.h"
 #include "GS.h"
 
 #if defined(__unix__) || defined(__APPLE__)
@@ -190,7 +190,7 @@ namespace GLLoader
 		if (!GLExtension::Has(ext))
 		{
 			fprintf(stderr, "ERROR: %s is NOT SUPPORTED\n", ext.c_str());
-			throw GSDXRecoverableError();
+			throw GSRecoverableError();
 		}
 
 		return;
@@ -228,7 +228,7 @@ namespace GLLoader
 		if (s == NULL)
 		{
 			fprintf(stderr, "Error: GLLoader failed to get GL version\n");
-			throw GSDXRecoverableError();
+			throw GSRecoverableError();
 		}
 		GLuint v = 1;
 		while (s[v] != '\0' && s[v - 1] != ' ')
@@ -279,7 +279,7 @@ namespace GLLoader
 		if ((major_gl < major) || (major_gl == major && minor_gl < minor))
 		{
 			fprintf(stderr, "OpenGL %d.%d is not supported. Only OpenGL %d.%d\n was found", major, minor, major_gl, minor_gl);
-			throw GSDXRecoverableError();
+			throw GSRecoverableError();
 		}
 	}
 

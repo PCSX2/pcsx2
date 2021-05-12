@@ -361,7 +361,7 @@ void GSRenderer::VSync(int field)
 		if (m_wnd->IsManaged())
 #endif
 		{
-			//GSdx owns the window's title, be verbose.
+			//GS owns the window's title, be verbose.
 
 			std::string s2 = m_regs->SMODE2.INT ? (std::string("Interlaced ") + (m_regs->SMODE2.FFMD ? "(frame)" : "(field)")) : "Progressive";
 
@@ -590,7 +590,7 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 			case VK_F5:
 				m_interlace = (m_interlace + s_interlace_nb + step) % s_interlace_nb;
 				theApp.SetConfig("interlace", m_interlace);
-				printf("GSdx: Set deinterlace mode to %d (%s).\n", m_interlace, theApp.m_gs_interlace.at(m_interlace).name.c_str());
+				printf("GS: Set deinterlace mode to %d (%s).\n", m_interlace, theApp.m_gs_interlace.at(m_interlace).name.c_str());
 				return;
 			case VK_F6:
 				if (m_wnd->IsManaged())
@@ -599,27 +599,27 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 			case VK_DELETE:
 				m_aa1 = !m_aa1;
 				theApp.SetConfig("aa1", m_aa1);
-				printf("GSdx: (Software) Edge anti-aliasing is now %s.\n", m_aa1 ? "enabled" : "disabled");
+				printf("GS: (Software) Edge anti-aliasing is now %s.\n", m_aa1 ? "enabled" : "disabled");
 				return;
 			case VK_INSERT:
 				m_mipmap = (m_mipmap + s_mipmap_nb + step) % s_mipmap_nb;
 				theApp.SetConfig("mipmap_hw", m_mipmap);
-				printf("GSdx: Mipmapping is now %s.\n", theApp.m_gs_hack.at(m_mipmap).name.c_str());
+				printf("GS: Mipmapping is now %s.\n", theApp.m_gs_hack.at(m_mipmap).name.c_str());
 				return;
 			case VK_PRIOR:
 				m_fxaa = !m_fxaa;
 				theApp.SetConfig("fxaa", m_fxaa);
-				printf("GSdx: FXAA anti-aliasing is now %s.\n", m_fxaa ? "enabled" : "disabled");
+				printf("GS: FXAA anti-aliasing is now %s.\n", m_fxaa ? "enabled" : "disabled");
 				return;
 			case VK_HOME:
 				m_shaderfx = !m_shaderfx;
 				theApp.SetConfig("shaderfx", m_shaderfx);
-				printf("GSdx: External post-processing is now %s.\n", m_shaderfx ? "enabled" : "disabled");
+				printf("GS: External post-processing is now %s.\n", m_shaderfx ? "enabled" : "disabled");
 				return;
 			case VK_NEXT: // As requested by Prafull, to be removed later
 				char dither_msg[3][16] = {"disabled", "auto", "auto unscaled"};
 				m_dithering = (m_dithering + 1) % 3;
-				printf("GSdx: Dithering is now %s.\n", dither_msg[m_dithering]);
+				printf("GS: Dithering is now %s.\n", dither_msg[m_dithering]);
 				return;
 		}
 	}

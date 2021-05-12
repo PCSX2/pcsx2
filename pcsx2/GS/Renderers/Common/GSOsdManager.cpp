@@ -20,7 +20,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSdx.h"
+#include "../GS.h"
 #include "GSOsdManager.h"
 #ifdef _WIN32
 #include "resource.h"
@@ -366,8 +366,7 @@ size_t GSOsdManager::Size()
 			}
 
 			float ratio = (elapsed - std::chrono::seconds(m_log_timeout / 2)).count() / std::chrono::seconds(m_log_timeout / 2).count();
-			ratio = ratio > 1.0f ? 1.0f : ratio < 0.0f ? 0.0f :
-                                                         ratio;
+			ratio = ratio > 1.0f ? 1.0f : ratio < 0.0f ? 0.0f : ratio;
 
 			y += offset += ((m_size + 2) * (2.0f / m_real_size.y)) * ratio;
 			sum += it->msg.size();

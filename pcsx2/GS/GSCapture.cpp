@@ -23,6 +23,7 @@
 #include "GSCapture.h"
 #include "GSPng.h"
 #include "GSUtil.h"
+#include "GS_types.h"
 
 #ifdef _WIN32
 
@@ -406,7 +407,7 @@ static IPin* GetFirstPin(IBaseFilter* pBF, PIN_DIRECTION dir)
 
 GSCapture::GSCapture()
 	: m_capturing(false), m_frame(0)
-	, m_out_dir("/tmp/GSdx_Capture") // FIXME Later add an option
+	, m_out_dir("/tmp/GS_Capture") // FIXME Later add an option
 {
 	m_out_dir = theApp.GetConfigS("capture_out_dir");
 	m_threads = theApp.GetConfigI("capture_threads");

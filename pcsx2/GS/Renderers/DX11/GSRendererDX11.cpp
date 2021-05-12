@@ -1015,7 +1015,7 @@ void GSRendererDX11::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sou
 		{
 			// Note potentially we can limit to TBP0:0x2800
 
-			// Depth buffer was moved so GSdx will invalide it which means a
+			// Depth buffer was moved so GS will invalide it which means a
 			// downscale. ICO uses the MSB depth bits as the texture alpha
 			// channel.  However this depth of field effect requires
 			// texel:pixel mapping accuracy.

@@ -22,7 +22,7 @@
 #include "StdAfx.h"
 #include <Shlwapi.h>
 #include <CommCtrl.h>
-#include "GSdx.h"
+#include "GS.h"
 #include "GSDialog.h"
 #include "GSVector.h"
 

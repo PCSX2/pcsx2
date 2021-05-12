@@ -1038,7 +1038,7 @@ void GSRendererOGL::SendDraw()
 	else
 	{
 		// FIXME: Investigate: a dynamic check to pack as many primitives as possibles
-		// I'm nearly sure GSdx already have this kind of code (maybe we can adapt GSDirtyRect)
+		// I'm nearly sure GS already have this kind of code (maybe we can adapt GSDirtyRect)
 		const size_t nb_vertex = GSUtil::GetClassVertexCount(m_vt.m_primclass);
 
 		GL_PUSH("Split the draw");
@@ -1392,7 +1392,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		{
 			// Note potentially we can limit to TBP0:0x2800
 
-			// Depth buffer was moved so GSdx will invalide it which means a
+			// Depth buffer was moved so GS will invalide it which means a
 			// downscale. ICO uses the MSB depth bits as the texture alpha
 			// channel.  However this depth of field effect requires
 			// texel:pixel mapping accuracy.

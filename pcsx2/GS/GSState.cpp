@@ -21,7 +21,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSState.h"
-#include "GSdx.h"
+#include "GS.h"
 #include "GSUtil.h"
 
 //#define Offset_ST  // Fixes Persona3 mini map alignment which is off even in software rendering
@@ -235,7 +235,7 @@ void GSState::SetFrameSkip(int skip)
 
 void GSState::Reset()
 {
-	//printf("GSdx info: GS reset\n");
+	//printf("GS info: GS reset\n");
 
 	// FIXME: memset(m_mem.m_vm8, 0, m_mem.m_vmsize); // bios logo not shown cut in half after reset, missing graphics in GoW after first FMV
 	memset(&m_path[0], 0, sizeof(m_path[0]) * countof(m_path));
@@ -1684,7 +1684,7 @@ void GSState::FlushPrim()
 			{
 				Draw();
 			}
-			catch (GSDXRecoverableError&)
+			catch (GSRecoverableError&)
 			{
 				// could be an unsupported draw call
 			}
@@ -1692,7 +1692,7 @@ void GSState::FlushPrim()
 			{
 				// Texture Out Of Memory
 				PurgePool();
-				fprintf(stderr, "GSDX OUT OF MEMORY\n");
+				fprintf(stderr, "GS OUT OF MEMORY\n");
 			}
 
 			m_context->RestoreReg();
@@ -1745,7 +1745,7 @@ void GSState::Write(const uint8* mem, int len)
 	 *
 	 * #Bug number 2. (darker screen)
 	 * The game will restore the previously saved buffer at position 0x0 to
-	 * 0x7F8.  Because of the extra RT pixels, GSdx will partialy invalidate
+	 * 0x7F8.  Because of the extra RT pixels, GS will partialy invalidate
 	 * the texture located at 0x700. Next access will generate a cache miss
 	 *
 	 * The no-solution: instead to handle garbage (aka RT) at the end of the
@@ -2393,7 +2393,7 @@ void GSState::Transfer(const uint8* mem, uint32 size)
 			}
 			else
 			{
-				// Unused in 0.9.7 and above, but might as well keep this for now; allows GSdx
+				// Unused in 0.9.7 and above, but might as well keep this for now; allows GS
 				// to work with legacy editions of PCSX2.
 
 				Transfer<0>(mem - 0x4000, 0x4000 / 16);
@@ -2518,7 +2518,7 @@ int GSState::Defrost(const GSFreezeData* fd)
 
 	if (version > m_version)
 	{
-		printf("GSdx: Savestate version is incompatible.  Load aborted.\n");
+		printf("GS: Savestate version is incompatible.  Load aborted.\n");
 
 		return -1;
 	}
@@ -2689,8 +2689,8 @@ void GSState::GrowVertexBuffer()
 
 	if (vertex == NULL || index == NULL)
 	{
-		printf("GSdx: failed to allocate %d bytes for verticles and %d for indices.\n", (int)sizeof(GSVertex) * maxcount, (int)sizeof(uint32) * maxcount * 3);
-		throw GSDXError();
+		printf("GS: failed to allocate %d bytes for verticles and %d for indices.\n", (int)sizeof(GSVertex) * maxcount, (int)sizeof(uint32) * maxcount * 3);
+		throw GSError();
 	}
 
 	if (m_vertex.buff != NULL)

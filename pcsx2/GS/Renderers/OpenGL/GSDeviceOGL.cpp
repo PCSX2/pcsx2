@@ -31,7 +31,7 @@
 #ifdef _WIN32
 #include "resource.h"
 #else
-#include "GSdxResources.h"
+#include "GSResources.h"
 #endif
 
 // TODO port those value into PerfMon API
@@ -84,9 +84,9 @@ GSDeviceOGL::GSDeviceOGL()
 	// Reset the debug file
 #ifdef ENABLE_OGL_DEBUG
 	if (theApp.GetCurrentRendererType() == GSRendererType::OGL_SW)
-		m_debug_gl_file = fopen("GSdx_opengl_debug_sw.txt", "w");
+		m_debug_gl_file = fopen("GS_opengl_debug_sw.txt", "w");
 	else
-		m_debug_gl_file = fopen("GSdx_opengl_debug_hw.txt", "w");
+		m_debug_gl_file = fopen("GS_opengl_debug_hw.txt", "w");
 #endif
 
 	m_debug_gl_call = theApp.GetConfigB("debug_opengl");
@@ -229,7 +229,7 @@ void GSDeviceOGL::GenerateProfilerData()
 		fprintf(stderr, "%3u ms => %3u ms\t%4u\n", 2 * i, 2 * (i + 1), time_repartition[i]);
 	}
 
-	FILE* csv = fopen("GSdx_profile.csv", "w");
+	FILE* csv = fopen("GS_profile.csv", "w");
 	if (csv)
 	{
 		for (size_t i = 0; i < times.size(); i++)
@@ -1040,7 +1040,7 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 void GSDeviceOGL::SelfShaderTestRun(const std::string& dir, const std::string& file, const PSSelector& sel, int& nb_shader)
 {
 #ifdef __unix__
-	std::string out = "/tmp/GSdx_Shader/";
+	std::string out = "/tmp/GS_Shader/";
 	GSmkdir(out.c_str());
 
 	out += dir + "/";
@@ -1412,7 +1412,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// Flip y axis only when we render in the backbuffer
 	// By default everything is render in the wrong order (ie dx).
 	// 1/ consistency between several pass rendering (interlace)
-	// 2/ in case some GSdx code expect thing in dx order.
+	// 2/ in case some GS code expect thing in dx order.
 	// Only flipping the backbuffer is transparent (I hope)...
 	GSVector4 flip_sr = sRect;
 	if (static_cast<GSTextureOGL*>(dTex)->IsBackbuffer())
