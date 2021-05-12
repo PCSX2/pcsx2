@@ -328,46 +328,50 @@ void GSPanel::OnMouseEvent( wxMouseEvent& evt )
 #if defined(__unix__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
-	if( (GSopen2 != NULL) ) {
-		keyEvent event;
-		// FIXME how to handle double click ???
-		if (evt.ButtonDown()) {
-			event.evt = 4; // X equivalent of ButtonPress
-			event.key = evt.GetButton();
-		} else if (evt.ButtonUp()) {
-			event.evt = 5; // X equivalent of ButtonRelease
-			event.key = evt.GetButton();
-		} else if (evt.Moving() || evt.Dragging()) {
-			event.evt = 6; // X equivalent of MotionNotify
-			long x,y;
-			evt.GetPosition(&x, &y);
-
-			wxCoord w, h;
-			wxWindowDC dc( this );
-			dc.GetSize(&w, &h);
-
-			// Special case to allow continuous mouvement near the border
-			if (x < 10)
-				x = 0;
-			else if (x > (w-10))
-				x = 0xFFFF;
-
-			if (y < 10)
-				y = 0;
-			else if (y > (w-10))
-				y = 0xFFFF;
-
-			// For compatibility purpose with the existing structure. I decide to reduce
-			// the position to 16 bits.
-			event.key = ((y & 0xFFFF) << 16) | (x & 0xFFFF);
-
-		} else {
-			event.key = 0;
-			event.evt = 0;
-		}
-
-		PADWriteEvent(event);
+	keyEvent event;
+	// FIXME how to handle double click ???
+	if (evt.ButtonDown())
+	{
+		event.evt = 4; // X equivalent of ButtonPress
+		event.key = evt.GetButton();
 	}
+	else if (evt.ButtonUp())
+	{
+		event.evt = 5; // X equivalent of ButtonRelease
+		event.key = evt.GetButton();
+	}
+	else if (evt.Moving() || evt.Dragging())
+	{
+		event.evt = 6; // X equivalent of MotionNotify
+		long x, y;
+		evt.GetPosition(&x, &y);
+
+		wxCoord w, h;
+		wxWindowDC dc(this);
+		dc.GetSize(&w, &h);
+
+		// Special case to allow continuous mouvement near the border
+		if (x < 10)
+			x = 0;
+		else if (x > (w - 10))
+			x = 0xFFFF;
+
+		if (y < 10)
+			y = 0;
+		else if (y > (w - 10))
+			y = 0xFFFF;
+
+		// For compatibility purpose with the existing structure. I decide to reduce
+		// the position to 16 bits.
+		event.key = ((y & 0xFFFF) << 16) | (x & 0xFFFF);
+	}
+	else
+	{
+		event.key = 0;
+		event.evt = 0;
+	}
+
+	PADWriteEvent(event);
 #endif
 }
 
@@ -391,18 +395,16 @@ void GSPanel::OnKeyDownOrUp( wxKeyEvent& evt )
 #if defined(__unix__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
-	if( (GSopen2 != NULL) ) {
-		keyEvent event;
-		event.key = evt.GetRawKeyCode();
-		if (evt.GetEventType() == wxEVT_KEY_UP)
-			event.evt = 3; // X equivalent of KEYRELEASE;
-		else if (evt.GetEventType() == wxEVT_KEY_DOWN)
-			event.evt = 2; // X equivalent of KEYPRESS;
-		else
-			event.evt = 0;
+	keyEvent event;
+	event.key = evt.GetRawKeyCode();
+	if (evt.GetEventType() == wxEVT_KEY_UP)
+		event.evt = 3; // X equivalent of KEYRELEASE;
+	else if (evt.GetEventType() == wxEVT_KEY_DOWN)
+		event.evt = 2; // X equivalent of KEYPRESS;
+	else
+		event.evt = 0;
 
-		PADWriteEvent(event);
-	}
+	PADWriteEvent(event);
 #endif
 
 #ifdef __WXMSW__
@@ -476,10 +478,8 @@ void GSPanel::OnFocus( wxFocusEvent& evt )
 #if defined(__unix__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
-	if((GSopen2 != NULL) ) {
-		keyEvent event = {0, 9}; // X equivalent of FocusIn;
-		PADWriteEvent(event);
-	}
+	keyEvent event = {0, 9}; // X equivalent of FocusIn;
+	PADWriteEvent(event);
 #endif
 	//Console.Warning("GS frame > focus set");
 
@@ -494,10 +494,8 @@ void GSPanel::OnFocusLost( wxFocusEvent& evt )
 #if defined(__unix__)
 	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
-	if((GSopen2 != NULL) ) {
-		keyEvent event = {0, 10}; // X equivalent of FocusOut
-		PADWriteEvent(event);
-	}
+	keyEvent event = {0, 10}; // X equivalent of FocusOut
+	PADWriteEvent(event);
 #endif
 	//Console.Warning("GS frame > focus lost");
 
@@ -690,7 +688,7 @@ void GSFrame::AppStatusEvent_OnSettingsApplied()
 
 	if( g_Conf->GSWindow.CloseOnEsc )
 	{
-		if( IsShown() && !CorePlugins.IsOpen(PluginId_GS) )
+		if (IsShown() /*&& TODO: CHECK IS GS IS CLOSED */)
 			Show( false );
 	}
 }

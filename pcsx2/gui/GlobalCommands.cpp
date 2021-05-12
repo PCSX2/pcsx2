@@ -390,7 +390,7 @@ namespace Implementations
 
 	void Sys_TakeSnapshot()
 	{
-		if (GSmakeSnapshot(g_Conf->Folders.Snapshots.ToUTF8()))
+		if (GSmakeSnapshot(g_Conf->Folders.Snapshots.ToUTF8().data()))
 			OSDlog(ConsoleColors::Color_Black, true, "Snapshot taken");
 	}
 
@@ -400,10 +400,12 @@ namespace Implementations
 			return;
 		if (renderswitch_delay == 0)
 		{
-			ScopedCoreThreadPause paused_core(new SysExecEvent_SaveSinglePlugin(PluginId_GS));
-			renderswitch = !renderswitch;
-			paused_core.AllowResume();
-			renderswitch_delay = -1;
+			/* TODO: reimplement this:
+			 * ScopedCoreThreadPause paused_core(new SysExecEvent_SaveSinglePlugin(PluginId_GS));
+			 * renderswitch = !renderswitch;
+			 * paused_core.AllowResume();
+			 * renderswitch_delay = -1;
+			 */
 		}
 	}
 
@@ -474,33 +476,23 @@ namespace Implementations
 				GetMainFramePtr()->Disable();
 			}
 
-			if (GSsetupRecording)
+			// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens.
+			std::string filename;
+			if (GSsetupRecording(filename))
 			{
-				// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens.
-				std::string filename;
-				if (GSsetupRecording(filename))
+				if (g_Conf->AudioCapture.EnableAudio && !SPU2setupRecording(&filename))
 				{
-					if (g_Conf->AudioCapture.EnableAudio && !SPU2setupRecording(&filename))
-					{
-						GSendRecording();
-						g_Pcsx2Recording = false;
-					}
-				}
-				else // recording dialog canceled by the user. align our state
+					GSendRecording();
 					g_Pcsx2Recording = false;
+				}
 			}
-			// the GS doesn't support recording
-			else if (!g_Conf->AudioCapture.EnableAudio || !SPU2setupRecording(nullptr))
+			else // recording dialog canceled by the user. align our state
 				g_Pcsx2Recording = false;
-
-			if (GetMainFramePtr() && needsMainFrameEnable)
-				GetMainFramePtr()->Enable();
 		}
 		else
 		{
 			// stop recording
-			if (GSendRecording)
-				GSendRecording();
+			GSendRecording();
 			if (g_Conf->AudioCapture.EnableAudio)
 				SPU2endRecording();
 		}

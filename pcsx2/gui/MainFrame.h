@@ -21,53 +21,6 @@
 #include <wx/image.h>
 #include <wx/docview.h>
 
-struct PluginMenuAddition
-{
-	wxString Text;
-	wxString HelpText;
-	PS2E_MenuItemStyle Flags;
-
-	wxMenuItem* Item;
-	int ItemId;
-
-	// Optional user data pointer (or typecast integer value)
-	void* UserPtr;
-
-	void(PS2E_CALLBACK* OnClicked)(PS2E_THISPTR* thisptr, void* userptr);
-};
-
-// --------------------------------------------------------------------------------------
-//  PerPluginMenuInfo
-// --------------------------------------------------------------------------------------
-class PerPluginMenuInfo
-{
-protected:
-	typedef std::vector<PluginMenuAddition> MenuItemAddonList;
-
-	// A list of menu items belonging to this plugin's menu.
-	MenuItemAddonList m_PluginMenuItems;
-
-public:
-	wxMenu& MyMenu;
-	PluginsEnum_t PluginId;
-
-public:
-	PerPluginMenuInfo()
-		: MyMenu(*new wxMenu())
-		, PluginId(PluginId_Count)
-	{
-	}
-
-	virtual ~PerPluginMenuInfo() = default;
-
-	void Populate(PluginsEnum_t pid);
-	void OnUnloaded();
-	void OnLoaded();
-
-	operator wxMenu*() { return &MyMenu; }
-	operator const wxMenu*() const { return &MyMenu; }
-};
-
 // --------------------------------------------------------------------------------------
 //  InvokeMenuCommand_OnSysStateUnlocked
 // --------------------------------------------------------------------------------------
@@ -96,7 +49,6 @@ public:
 //  MainEmuFrame
 // --------------------------------------------------------------------------------------
 class MainEmuFrame : public wxFrame,
-					 public EventListener_Plugins,
 					 public EventListener_CoreThread,
 					 public EventListener_AppStatus
 {
@@ -137,11 +89,8 @@ protected:
 	wxMenuItem& m_MenuItem_Console_Stdio;
 #endif
 
-	PerPluginMenuInfo m_PluginMenuPacks[PluginId_Count];
-
 	bool m_capturingVideo;
 
-	virtual void DispatchEvent(const PluginEventType& plugin_evt);
 	virtual void DispatchEvent(const CoreThreadStatus& status);
 	virtual void AppStatusEvent_OnSettingsApplied();
 
@@ -157,7 +106,6 @@ public:
 	void EnableMenuItem(int id, bool enable);
 	void CheckMenuItem(int id, bool checked);
 	void SetMenuItemLabel(int id, wxString str);
-	void EnableCdvdPluginSubmenu(bool isEnable = true);
 
 	void CreateCdvdMenu();
 	void CreatePcsx2Menu();
@@ -207,7 +155,7 @@ protected:
 	void Menu_McdSettings_Click(wxCommandEvent& event);
 	void Menu_WindowSettings_Click(wxCommandEvent& event);
 	void Menu_GSSettings_Click(wxCommandEvent& event);
-	void Menu_SelectPluginsBios_Click(wxCommandEvent& event);
+	void Menu_SelectBios_Click(wxCommandEvent& event);
 	void Menu_ResetAllSettings_Click(wxCommandEvent& event);
 
 	void Menu_IsoBrowse_Click(wxCommandEvent& event);
@@ -236,8 +184,6 @@ protected:
 
 	void Menu_SuspendResume_Click(wxCommandEvent& event);
 	void Menu_SysShutdown_Click(wxCommandEvent& event);
-
-	void Menu_ConfigPlugin_Click(wxCommandEvent& event);
 
 	void Menu_MultitapToggle_Click(wxCommandEvent& event);
 
@@ -290,5 +236,3 @@ protected:
 
 	friend class Pcsx2App;
 };
-
-extern int GetPluginMenuId_Settings(PluginsEnum_t pid);

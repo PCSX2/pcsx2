@@ -43,23 +43,6 @@ static void CheckHacksOverrides()
 	pxIssueConfirmation( dialog, MsgButtons().OK(), L"Dialog.SysConfig.Overrides" );
 }
 
-static void CheckPluginsOverrides()
-{
-	if( !wxGetApp().Overrides.HasPluginsOverride() ) return;
-	
-	// The user has commandline overrides enabled, so the options they see here and/or apply won't match
-	// the commandline overrides.  Let them know!
-
-	wxDialogWithHelpers dialog( NULL, _("Components Overrides Warning") );
-	
-	dialog += dialog.Text( pxEt( L"Warning!  You are running PCSX2 with command line options that override your configured plugin and/or folder settings.  These command line options will not be reflected in the settings dialog, and will be disabled when you apply settings changes here."
-	));
-
-	// [TODO] : List command line option overrides in action?
-
-	pxIssueConfirmation( dialog, MsgButtons().OK(), L"Dialog.ComponentsConfig.Overrides" );
-}
-
 //Behavior when unchecking 'Presets' is to keep the GUI settings at the last preset (even if not yet applied).
 //
 //Alternative possible behavior when unchecking 'Presets' (currently not implemented) is to set the GUI to
@@ -243,7 +226,6 @@ Dialogs::ComponentsConfigDialog::ComponentsConfigDialog(wxWindow* parent)
 	CreateListbook( wxGetApp().GetImgList_Config() );
 	const AppImageIds::ConfigIds& cfgid( wxGetApp().GetImgId().Config );
 
-	AddPage<PluginSelectorPanel>	( pxL("Plugins"),		cfgid.Plugins );
 	AddPage<BiosSelectorPanel>		( pxL("BIOS"),			cfgid.Cpu );
 	AddPage<StandardPathsPanel>		( pxL("Folders"),		cfgid.Paths );
 
@@ -251,9 +233,6 @@ Dialogs::ComponentsConfigDialog::ComponentsConfigDialog(wxWindow* parent)
 	AddOkCancel();
 
 	SetSizerAndFit(GetSizer());
-
-	if( wxGetApp().Overrides.HasPluginsOverride() )
-		wxGetApp().PostMethod( CheckPluginsOverrides );
 }
 
 Dialogs::InterfaceLanguageDialog::InterfaceLanguageDialog(wxWindow* parent)

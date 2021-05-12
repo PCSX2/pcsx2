@@ -57,11 +57,6 @@ void Pcsx2App::DetectCpuAndUserMode()
 #endif
 
 	EstablishAppUserMode();
-
-	// force unload plugins loaded by the wizard.  If we don't do this the recompilers might
-	// fail to allocate the memory they need to function.
-	ShutdownPlugins();
-	UnloadPlugins();
 }
 
 void Pcsx2App::OpenMainFrame()
@@ -196,8 +191,6 @@ void Pcsx2App::AllocateCoreStuffs()
 			pxIssueConfirmation(exconf, MsgButtons().OK());
 		}
 	}
-
-	LoadPluginsPassive();
 }
 
 
@@ -240,11 +233,6 @@ void Pcsx2App::OnInitCmdLine(wxCmdLineParser& parser)
 
 	parser.AddSwitch(wxEmptyString, L"profiling", _("update options to ease profiling (debug)"));
 
-	ForPlugins([&](const PluginInfo* pi) {
-		parser.AddOption(wxEmptyString, pi->GetShortname().Lower(),
-						 pxsFmt(_("specify the file to use as the %s plugin"), WX_STR(pi->GetShortname())));
-	});
-
 	parser.SetSwitchChars(L"-");
 }
 
@@ -285,33 +273,6 @@ bool Pcsx2App::ParseOverrides(wxCmdLineParser& parser)
 		Overrides.GsWindowMode = GsWinMode_Fullscreen;
 	if (parser.Found(L"windowed"))
 		Overrides.GsWindowMode = GsWinMode_Windowed;
-
-	ForPlugins([&](const PluginInfo* pi) {
-		if (parser.Found(pi->GetShortname().Lower(), &dest))
-		{
-			if (wxFileExists(dest))
-				Console.Warning(pi->GetShortname() + L" override: " + dest);
-			else
-			{
-				wxDialogWithHelpers okcan(NULL, AddAppName(_("Plugin Override Error - %s")));
-
-				okcan += okcan.Heading(wxsFormat(
-					_("%s Plugin Override Error!  The following file does not exist or is not a valid %s plugin:\n\n"),
-					pi->GetShortname().c_str(), pi->GetShortname().c_str()));
-
-				okcan += okcan.GetCharHeight();
-				okcan += okcan.Text(dest);
-				okcan += okcan.GetCharHeight();
-				okcan += okcan.Heading(AddAppName(_("Press OK to use the default configured plugin, or Cancel to close %s.")));
-
-				if (wxID_CANCEL == pxIssueConfirmation(okcan, MsgButtons().OKCancel()))
-					parsed = false;
-			}
-
-			if (parsed)
-				Overrides.Filenames.Plugins[pi->id] = dest;
-		}
-	});
 
 	return parsed;
 }

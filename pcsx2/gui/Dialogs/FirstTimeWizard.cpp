@@ -15,7 +15,6 @@
 
 #include "PrecompiledHeader.h"
 #include "System.h"
-#include "Plugins.h"
 #include "MSWstuff.h"
 
 #include "ModalPopups.h"
@@ -122,10 +121,8 @@ FirstTimeWizard::FirstTimeWizard( wxWindow* parent )
 	, m_page_bios		( *new ApplicableWizardPage( this, &m_page_plugins ) )
 
 	, m_panel_Intro		( *new FirstTimeIntroPanel( &m_page_intro ))
-	, m_panel_PluginSel	( *new PluginSelectorPanel( &m_page_plugins ) )
 	, m_panel_BiosSel	( *new BiosSelectorPanel( &m_page_bios ) )
 {
-	// Page 2 - Plugins Panel
 	// Page 3 - Bios Panel
 
 	m_page_intro.	SetSizer( new wxBoxSizer( wxVERTICAL ) );
@@ -133,7 +130,6 @@ FirstTimeWizard::FirstTimeWizard( wxWindow* parent )
 	m_page_bios.	SetSizer( new wxBoxSizer( wxVERTICAL ) );
 
 	m_page_intro	+= m_panel_Intro			| StdExpand();
-	m_page_plugins	+= m_panel_PluginSel		| StdExpand();
 	m_page_bios		+= m_panel_BiosSel			| StdExpand();
 
 	// Temporary tutorial message for the BIOS, needs proof-reading!!
@@ -232,25 +228,10 @@ void FirstTimeWizard::OnPageChanging( wxWizardEvent& evt )
 			}
 		}
 	}
-	else
-	{
-		// Moving Backward:
-		//   Some specific panels need per-init actions canceled.
-
-		if( page == 1 )
-		{
-			m_panel_PluginSel.CancelRefresh();
-		}
-	}
 }
 
 void FirstTimeWizard::OnPageChanged( wxWizardEvent& evt )
 {
-	// Plugin Selector needs a special OnShow hack, because Wizard child panels don't
-	// receive any Show events >_<
-	if( (sptr)evt.GetPage() == (sptr)&m_page_plugins )
-		m_panel_PluginSel.OnShown();
-
-	else if( (sptr)evt.GetPage() == (sptr)&m_page_bios )
+	if( (sptr)evt.GetPage() == (sptr)&m_page_bios )
 		m_panel_BiosSel.OnShown();
 }
