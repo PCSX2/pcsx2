@@ -20,10 +20,10 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSState.h"
+#include "../../GSState.h"
 #include "GSDeviceOGL.h"
 #include "GLState.h"
-#include "GSUtil.h"
+#include "../../GSUtil.h"
 #include <fstream>
 
 //#define ONLY_LINES
@@ -31,7 +31,7 @@
 #ifdef _WIN32
 #include "resource.h"
 #else
-#include "GSResources.h"
+#include "GS_res.h"
 #endif
 
 // TODO port those value into PerfMon API

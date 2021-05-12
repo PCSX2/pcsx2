@@ -23,7 +23,7 @@
 #include <gtk/gtk.h>
 #include "GS.h"
 #include "GS.h"
-#include "GSResources.h"
+#include "GS_res.h"
 #include "GSSetting.h"
 
 // Port of deprecated GTK2 API to recent GTK3. Those defines
