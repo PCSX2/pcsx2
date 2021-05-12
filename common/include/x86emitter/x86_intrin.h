@@ -37,16 +37,16 @@
 
 #else
 
-#include <cpuid.h>
+#include "xbyak_intrin.h"
 
 static __inline__ __attribute__((always_inline)) void cpuidex(int CPUInfo[], const int InfoType, const int count)
 {
-    __cpuid_count(InfoType, count, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+	__cpuid_count(InfoType, count, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
 }
 
 static __inline__ __attribute__((always_inline)) void cpuid(int CPUInfo[], const int InfoType)
 {
-    __cpuid(InfoType, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
+	__cpuid(InfoType, CPUInfo[0], CPUInfo[1], CPUInfo[2], CPUInfo[3]);
 }
 
 #endif
@@ -59,12 +59,12 @@ static __inline__ __attribute__((always_inline)) void cpuid(int CPUInfo[], const
 // Seriously what is so complicated to provided this bunch of intrinsics in clangs.
 static unsigned int _rotr(unsigned int x, int s)
 {
-    return (x >> s) | (x << (32 - s));
+	return (x >> s) | (x << (32 - s));
 }
 
 static unsigned int _rotl(unsigned int x, int s)
 {
-    return (x << s) | (x >> (32 - s));
+	return (x << s) | (x >> (32 - s));
 }
 
 #pragma clang diagnostic pop

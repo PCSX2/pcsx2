@@ -25,16 +25,19 @@
 #include "../Common/GSFunctionMap.h"
 #include "../../GSUtil.h"
 
-using namespace Xbyak;
-
 #if defined(_M_AMD64) || defined(_WIN64)
-#define RegLong Reg64
+#define RegLong Xbyak::Reg64
 #else
-#define RegLong Reg32
+#define RegLong Xbyak::Reg32
 #endif
 
 class GSDrawScanlineCodeGenerator : public GSCodeGenerator
 {
+	typedef Xbyak::Ymm Ymm;
+	typedef Xbyak::Xmm Xmm;
+	typedef Xbyak::Reg8 Reg8;
+	typedef Xbyak::Operand Operand;
+
 	void operator=(const GSDrawScanlineCodeGenerator&);
 
 	GSScanlineSelector m_sel;

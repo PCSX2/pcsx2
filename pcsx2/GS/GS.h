@@ -26,6 +26,7 @@
 
 #include "config.h"
 #include "Pcsx2Types.h"
+#include "GS_types.h"
 
 #ifdef _WIN32
 
@@ -55,20 +56,6 @@
 
 // put these into vc9/common7/ide/usertype.dat to have them highlighted
 
-
-typedef unsigned char uint8;
-typedef signed char int8;
-typedef unsigned short uint16;
-typedef signed short int16;
-typedef unsigned int uint32;
-typedef signed int int32;
-typedef unsigned long long uint64;
-typedef signed long long int64;
-
-// xbyak compatibilities
-typedef int64 sint64;
-#define MIE_INTEGER_TYPE_DEFINED
-#define XBYAK_ENABLE_OMITTED_OPERAND
 
 // stdc
 
@@ -1889,7 +1876,7 @@ void GSsetSettingsDir(const char* dir);
 int GSinit();
 void GSshutdown();
 void GSclose();
-int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads = -1);
+int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads);
 void GSosdLog(const char* utf8, uint32 color);
 void GSosdMonitor(const char* key, const char* value, uint32 color);
 int GSopen2(void** dsp, uint32 flags);

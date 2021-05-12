@@ -11,6 +11,8 @@ set(Output x86emitter)
 set(CommonFlags
     )
 
+include_directories ("${CMAKE_SOURCE_DIR}/3rdparty/xbyak/")
+
 set(x86emitterFinalFlags ${CommonFlags})
 
 # variable with all sources of this library

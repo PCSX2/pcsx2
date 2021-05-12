@@ -12,6 +12,8 @@ set(CommonFlags
 
 set(UtilitiesFinalFlags ${CommonFlags})
 
+include_directories ("${CMAKE_SOURCE_DIR}/3rdparty/xbyak/")
+
 # variable with all sources of this library
 set(UtilitiesSources
 	VirtualMemory.cpp

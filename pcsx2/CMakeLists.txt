@@ -14,14 +14,21 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif()
 
+include_directories ("${CMAKE_SOURCE_DIR}/3rdparty/xbyak/")
 
 set(CommonFlags
     -fno-strict-aliasing
     -Wstrict-aliasing # Allow to track strict aliasing issue.
     -Wno-parentheses
     -Wno-missing-braces
+    -Wno-unknown-pragmas
     -DWX_PRECOMP
 	)
+
+if(GCC_VERSION VERSION_EQUAL "8.0" OR GCC_VERSION VERSION_GREATER "8.0")
+	# gs is pretty bad at this
+	set(CommonFlags ${CommonFlags} -Wno-packed-not-aligned)
+endif()
 
 # Largely turning off because LegacyPluginAPI_Common in Plugins.h spams really badly in gcc 8 due to the memzero initialization.
 # Should probably be fixed properly, but for now this should work.
@@ -576,8 +583,6 @@ set(pcsx2PADHeaders
     ${PADImgHeader}/arrow_right.h
     )
 
-include_directories ("${CMAKE_SOURCE_DIR}/3rdparty/xbyak/")
-
 # GS sources
 set(pcsx2GSSources
 	GS/GS.cpp
@@ -599,6 +604,7 @@ set(pcsx2GSSources
 	GS/GSVector.cpp
 	GS/GSdx.cpp
 	GS/GS_res.cpp
+	GS/GS_types.h
 	GS/Renderers/Common/GSDevice.cpp
 	GS/Renderers/Common/GSDirtyRect.cpp
 	GS/Renderers/Common/GSFunctionMap.cpp
