@@ -235,7 +235,7 @@ void OSDlog(ConsoleColors color, bool console, const std::string& str);
 
 template<typename ... Args>
 void OSDlog(ConsoleColors color, bool console, const std::string& format, Args ... args) {
-	if (!GSosdLog && !console) return;
+	if (!console) return;
 
 	size_t size = snprintf( nullptr, 0, format.c_str(), args ... ) + 1; // Extra space for '\0'
 	std::vector<char> buf(size);

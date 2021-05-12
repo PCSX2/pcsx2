@@ -27,7 +27,6 @@
 #include "PAD/Linux/PAD.h"
 #endif
 
-#include "Plugins.h"
 #include "ps2/BiosTools.h"
 
 #include "Dialogs/ModalPopups.h"
@@ -495,9 +494,7 @@ void Pcsx2App::LogicalVsync()
 
 	renderswitch_delay >>= 1;
 
-	// Only call PADupdate here if we're using GSopen2.  Legacy GSopen plugins have the
-	// GS window belonging to the MTGS thread.
-	if( (GSopen2 != NULL) && (wxGetApp().GetGsFramePtr() != NULL) )
+	if( (wxGetApp().GetGsFramePtr() != NULL) )
 		PADupdate(0);
 
 	while( const keyEvent* ev = PADkeyEvent() )
@@ -506,9 +503,7 @@ void Pcsx2App::LogicalVsync()
 
 		// Give plugins first try to handle keys.  If none of them handles the key, it will
 		// be passed to the main user interface.
-
-		if( !GetCorePlugins().KeyEvent( *ev ) )
-			PadKeyDispatch( *ev );
+		PadKeyDispatch( *ev );
 	}
 }
 
@@ -725,8 +720,6 @@ void Pcsx2App::resetDebugger()
 		dlg->reset();
 }
 
-// NOTE: Plugins are *not* applied by this function.  Changes to plugins need to handled
-// manually.  The PluginSelectorPanel does this, for example.
 void AppApplySettings( const AppConfig* oldconf )
 {
 	AffinityAssert_AllowFrom_MainUI();
@@ -735,8 +728,8 @@ void AppApplySettings( const AppConfig* oldconf )
 
 	g_Conf->Folders.ApplyDefaults();
 
-	// Ensure existence of necessary documents folders.  Plugins and other parts
-	// of PCSX2 rely on them.
+	// Ensure existence of necessary documents folders.
+	// Other parts of PCSX2 rely on them.
 
 	g_Conf->Folders.MemoryCards.Mkdir();
 	g_Conf->Folders.Savestates.Mkdir();
@@ -753,8 +746,6 @@ void AppApplySettings( const AppConfig* oldconf )
 		wxDoNotLogInThisScope please;
 		i18n_SetLanguage( g_Conf->LanguageId, g_Conf->LanguageCode );
 	}
-	
-	CorePlugins.SetSettingsFolder( GetSettingsFolder().ToString() );
 
 	// Update the compression attribute on the Memcards folder.
 	// Memcards generally compress very well via NTFS compression.
@@ -874,8 +865,8 @@ void Pcsx2App::OpenGsPanel()
 		gsFrame->SetSize( newsize );
 		gsFrame->SetSize( oldsize );
 	}
-	
-	pxAssertDev( !GetCorePlugins().IsOpen( PluginId_GS ), "GS Plugin must be closed prior to opening a new Gs Panel!" );
+
+	//TODO: MAKE SURE GS IS CLOSED HERE
 
 #ifdef __WXGTK__
 	// The x window/display are actually very deeper in the widget. You need both display and window
@@ -928,13 +919,6 @@ void Pcsx2App::CloseGsPanel()
 {
 	if (AppRpc_TryInvoke(&Pcsx2App::CloseGsPanel))
 		return;
-
-	if (CloseViewportWithPlugins)
-	{
-		if (GSFrame* gsFrame = GetGsFramePtr())
-			if (GSPanel* woot = gsFrame->GetViewport())
-				woot->Destroy();
-	}
 }
 
 void Pcsx2App::OnGsFrameClosed(wxWindowID id)
@@ -1029,8 +1013,6 @@ protected:
 
 		// if something unloaded plugins since this messages was queued then it's best to ignore
 		// it, because apparently too much stuff is going on and the emulation states are wonky.
-		if( !CorePlugins.AreLoaded() ) return;
-
 		DbgCon.WriteLn( Color_Gray, "(SysExecute) received." );
 
 		CoreThread.ResetQuick();

@@ -599,7 +599,7 @@ uint FileMcd_ConvertToSlot(uint port, uint slot)
 	return slot + 4;     // multitap 2
 }
 
-static void FileMcd_EmuOpen()
+void FileMcd_EmuOpen()
 {
 	// detect inserted memory card types
 	for (uint slot = 0; slot < 8; ++slot)
@@ -627,13 +627,13 @@ static void FileMcd_EmuOpen()
 	Component_FileMcd->implFolder.Open();
 }
 
-static void FileMcd_EmuClose()
+void FileMcd_EmuClose()
 {
 	Component_FileMcd->implFolder.Close();
 	Component_FileMcd->impl.Close();
 }
 
-static s32 FileMcd_IsPresent(uint port, uint slot)
+s32 FileMcd_IsPresent(uint port, uint slot)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
 	switch (g_Conf->Mcd[combinedSlot].Type)
@@ -647,7 +647,7 @@ static s32 FileMcd_IsPresent(uint port, uint slot)
 	}
 }
 
-static void FileMcd_GetSizeInfo(uint port, uint slot, McdSizeInfo* outways)
+void FileMcd_GetSizeInfo(uint port, uint slot, McdSizeInfo* outways)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
 	switch (g_Conf->Mcd[combinedSlot].Type)
@@ -663,7 +663,7 @@ static void FileMcd_GetSizeInfo(uint port, uint slot, McdSizeInfo* outways)
 	}
 }
 
-static bool FileMcd_IsPSX(uint port, uint slot)
+bool FileMcd_IsPSX(uint port, uint slot)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
 	switch (g_Conf->Mcd[combinedSlot].Type)
@@ -677,7 +677,7 @@ static bool FileMcd_IsPSX(uint port, uint slot)
 	}
 }
 
-static s32 FileMcd_Read(uint port, uint slot, u8* dest, u32 adr, int size)
+s32 FileMcd_Read(uint port, uint slot, u8* dest, u32 adr, int size)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
 	switch (g_Conf->Mcd[combinedSlot].Type)
@@ -691,7 +691,7 @@ static s32 FileMcd_Read(uint port, uint slot, u8* dest, u32 adr, int size)
 	}
 }
 
-static s32 FileMcd_Save(uint port, uint slot, const u8* src, u32 adr, int size)
+s32 FileMcd_Save(uint port, uint slot, const u8* src, u32 adr, int size)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
 	switch (g_Conf->Mcd[combinedSlot].Type)
@@ -705,7 +705,7 @@ static s32 FileMcd_Save(uint port, uint slot, const u8* src, u32 adr, int size)
 	}
 }
 
-static s32 FileMcd_EraseBlock(uint port, uint slot, u32 adr)
+s32 FileMcd_EraseBlock(uint port, uint slot, u32 adr)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
 	switch (g_Conf->Mcd[combinedSlot].Type)
@@ -719,7 +719,7 @@ static s32 FileMcd_EraseBlock(uint port, uint slot, u32 adr)
 	}
 }
 
-static u64 FileMcd_GetCRC(uint port, uint slot)
+u64 FileMcd_GetCRC(uint port, uint slot)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
 	switch (g_Conf->Mcd[combinedSlot].Type)
@@ -733,7 +733,7 @@ static u64 FileMcd_GetCRC(uint port, uint slot)
 	}
 }
 
-static void FileMcd_NextFrame(uint port, uint slot)
+void FileMcd_NextFrame(uint port, uint slot)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
 	switch (g_Conf->Mcd[combinedSlot].Type)
@@ -749,7 +749,7 @@ static void FileMcd_NextFrame(uint port, uint slot)
 	}
 }
 
-static bool FileMcd_ReIndex(uint port, uint slot, const wxString& filter)
+bool FileMcd_ReIndex(uint port, uint slot, const wxString& filter)
 {
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
 	switch (g_Conf->Mcd[combinedSlot].Type)

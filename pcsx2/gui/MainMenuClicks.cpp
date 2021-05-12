@@ -102,7 +102,7 @@ void MainEmuFrame::Menu_GSSettings_Click(wxCommandEvent& event)
 	AppOpenDialog<SysConfigDialog>(this)->GetEventHandler()->ProcessEvent(evt);
 }
 
-void MainEmuFrame::Menu_SelectPluginsBios_Click(wxCommandEvent& event)
+void MainEmuFrame::Menu_SelectBios_Click(wxCommandEvent& event)
 {
 	AppOpenDialog<ComponentsConfigDialog>(this);
 }
@@ -844,30 +844,6 @@ void MainEmuFrame::Menu_SysShutdown_Click(wxCommandEvent& event)
 	}
 }
 
-void MainEmuFrame::Menu_ConfigPlugin_Click(wxCommandEvent& event)
-{
-	if (GSDump::isRunning)
-	{
-		wxMessageBox("Please open the settings window from the main GS Debugger window", _("GS Debugger"), wxICON_ERROR);
-		return;
-	}
-	const int eventId = event.GetId() - MenuId_PluginBase_Settings;
-
-	PluginsEnum_t pid = (PluginsEnum_t)(eventId / PluginMenuId_Interval);
-
-	// Don't try to call the Patches config dialog until we write one.
-	if (event.GetId() == MenuId_Config_Patches)
-		return;
-
-	if (!pxAssertDev((eventId >= 0) || (pid < PluginId_Count), "Invalid plugin identifier passed to ConfigPlugin event handler."))
-		return;
-
-	wxWindowDisabler disabler;
-	ScopedCoreThreadPause paused_core(new SysExecEvent_SaveSinglePlugin(pid));
-
-	GetCorePlugins().Configure(pid);
-}
-
 void MainEmuFrame::Menu_Debug_Open_Click(wxCommandEvent& event)
 {
 	DisassemblyDialog* dlg = wxGetApp().GetDisassemblyPtr();
@@ -969,45 +945,32 @@ void MainEmuFrame::VideoCaptureToggle()
 			Disable();
 		}
 
-		if (GSsetupRecording)
+		// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens
+		std::string filename;
+		if (GSsetupRecording(filename))
 		{
-			// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens
-			std::string filename;
-			if (GSsetupRecording(filename))
+			if (!g_Conf->AudioCapture.EnableAudio || SPU2setupRecording(&filename))
 			{
-				if (!g_Conf->AudioCapture.EnableAudio || SPU2setupRecording(&filename))
-				{
-					m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, false);
-					m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, true);
-					m_submenuVideoCapture.Enable(MenuId_Capture_Video_IncludeAudio, false);
-				}
-				else
-				{
-					GSendRecording();
-					m_capturingVideo = false;
-				}
+				m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, false);
+				m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, true);
+				m_submenuVideoCapture.Enable(MenuId_Capture_Video_IncludeAudio, false);
 			}
-			else // recording dialog canceled by the user. align our state
+			else
+			{
+				GSendRecording();
 				m_capturingVideo = false;
+			}
 		}
-		// the GS doesn't support recording
-		else if (g_Conf->AudioCapture.EnableAudio && SPU2setupRecording(nullptr))
-		{
-			m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, false);
-			m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, true);
-			m_submenuVideoCapture.Enable(MenuId_Capture_Video_IncludeAudio, false);
-		}
-		else
+		else // recording dialog canceled by the user. align our state
 			m_capturingVideo = false;
-		
+
 		if (needsMainFrameEnable)
 			Enable();
 	}
 	else
 	{
 		// stop recording
-		if (GSendRecording)
-			GSendRecording();
+		GSendRecording();
 		if (g_Conf->AudioCapture.EnableAudio)
 			SPU2endRecording();
 		m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, true);
@@ -1022,7 +985,7 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent& even
 	{
 		return;
 	}
-	GSmakeSnapshot(g_Conf->Folders.Snapshots.ToAscii());
+	GSmakeSnapshot(g_Conf->Folders.Snapshots.ToString().char_str());
 }
 
 void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& event)
@@ -1038,7 +1001,7 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& e
 	wxFileDialog fileDialog(this, _("Select a file"), g_Conf->Folders.Snapshots.ToAscii(), wxEmptyString, "PNG files (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
 	if (fileDialog.ShowModal() == wxID_OK)
-		GSmakeSnapshot(fileDialog.GetPath().c_str());
+		GSmakeSnapshot((char*)fileDialog.GetPath().char_str());
 
 	// Resume emulation
 	if (!wasPaused)

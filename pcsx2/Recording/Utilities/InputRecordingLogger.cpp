@@ -1,4 +1,4 @@
-﻿/*  PCSX2 - PS2 Emulator for PCs
+/*  PCSX2 - PS2 Emulator for PCs
  *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
@@ -27,8 +27,7 @@ namespace inputRec
 		recordingConLog(fmt::format("[REC]: {}\n", log));
 
 		// NOTE - Color is not currently used for OSD logs
-		if (GSosdLog)
-			GSosdLog(log.c_str(), wxGetApp().GetProgramLog()->GetRGBA(ConsoleColors::Color_StrongMagenta));
+		GSosdLog(log.c_str(), wxGetApp().GetProgramLog()->GetRGBA(ConsoleColors::Color_StrongMagenta));
 	}
 
 	void consoleLog(const std::string& log)
