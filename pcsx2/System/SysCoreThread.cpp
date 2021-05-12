@@ -30,6 +30,7 @@
 #include "SPU2/spu2.h"
 #include "DEV9/DEV9.h"
 #include "USB/USB.h"
+#include "gui/MemoryCardFile.h"
 #ifdef _WIN32
 #include "PAD/Windows/PAD.h"
 #else
@@ -102,9 +103,7 @@ void SysCoreThread::OnStart()
 
 void SysCoreThread::Start()
 {
-	if (!GetCorePlugins().AreLoaded())
-		return;
-	GetCorePlugins().Init();
+	GSinit();
 	SPU2init();
 	PADinit();
 	DEV9init();
@@ -317,18 +316,19 @@ void SysCoreThread::ExecuteTaskInThread()
 
 void SysCoreThread::OnSuspendInThread()
 {
-	GetCorePlugins().Close();
 	DEV9close();
 	USBclose();
 	DoCDVDclose();
 	FWclose();
 	PADclose();
 	SPU2close();
+	FileMcd_EmuClose();
+	GetMTGS().Suspend();
 }
 
 void SysCoreThread::OnResumeInThread(bool isSuspended)
 {
-	GetCorePlugins().Open();
+	GetMTGS().WaitForOpen();
 	if (isSuspended)
 	{
 		DEV9open((void*)pDsp);
@@ -337,6 +337,7 @@ void SysCoreThread::OnResumeInThread(bool isSuspended)
 	FWopen();
 	SPU2open((void*)pDsp);
 	PADopen((void*)pDsp);
+	FileMcd_EmuOpen();
 }
 
 
@@ -357,12 +358,13 @@ void SysCoreThread::OnCleanupInThread()
 	DEV9close();
 	DoCDVDclose();
 	FWclose();
-	GetCorePlugins().Close();
-	GetCorePlugins().Shutdown();
+	FileMcd_EmuClose();
+	GetMTGS().Suspend();
 	USBshutdown();
 	SPU2shutdown();
 	PADshutdown();
 	DEV9shutdown();
+	GetMTGS().Cancel();
 
 	_mm_setcsr(m_mxcsr_saved.bitmask);
 	Threading::DisableHiresScheduler();

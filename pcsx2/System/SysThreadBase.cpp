@@ -247,8 +247,6 @@ void SysThreadBase::Resume()
 				return;
 			if ((m_ExecMode != ExecMode_Closed) && (m_ExecMode != ExecMode_Paused))
 				return;
-			if (!GetCorePlugins().AreLoaded())
-				return;
 			break;
 
 		case ExecMode_Paused:
