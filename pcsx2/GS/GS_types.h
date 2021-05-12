@@ -1,6 +1,11 @@
 
 #pragma once
 
+#include <xbyak/xbyak.h>
+#include <xbyak/xbyak_util.h>
+#define MIE_INTEGER_TYPE_DEFINED
+#define XBYAK_ENABLE_OMITTED_OPERAND
+
 #include <cfloat>
 
 typedef unsigned char uint8;

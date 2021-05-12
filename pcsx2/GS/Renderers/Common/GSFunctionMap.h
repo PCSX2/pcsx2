@@ -25,7 +25,6 @@
 #include "../../GSCodeBuffer.h"
 
 #include "../SW/GSScanlineEnvironment.h"
-#include "x86emitter/xbyak_intrin.h"
 
 template <class KEY, class VALUE>
 class GSFunctionMap
