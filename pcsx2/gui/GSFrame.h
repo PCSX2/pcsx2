@@ -87,7 +87,6 @@ protected:
 class GSFrame : public wxFrame
 	, public EventListener_AppStatus
 	, public EventListener_CoreThread
-	, public EventListener_Plugins
 {
 	typedef wxFrame _parent;
 

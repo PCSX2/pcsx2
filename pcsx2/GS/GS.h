@@ -247,7 +247,7 @@
 #if !defined(_MSC_VER)
 	// http://svn.reactos.org/svn/reactos/trunk/reactos/include/crt/mingw32/intrin_x86.h?view=markup
 
-	__forceinline int _BitScanForward(unsigned long* const Index, const unsigned long Mask)
+	static int _BitScanForward(unsigned long* const Index, const unsigned long Mask)
 	{
 #if defined(__GCC_ASM_FLAG_OUTPUTS__) && 0
 		// Need GCC6 to test the code validity
@@ -265,8 +265,8 @@
 	// gcc 4.8 define __rdtsc but unfortunately the compiler crash...
 	// The redefine allow to skip the gcc __rdtsc version -- Gregory
 	#define __rdtsc _lnx_rdtsc
-	//__forceinline unsigned long long __rdtsc()
-	__forceinline unsigned long long _lnx_rdtsc()
+	//static unsigned long long __rdtsc()
+	static unsigned long long _lnx_rdtsc()
 	{
 		#if defined(__amd64__) || defined(__x86_64__)
 		unsigned long long low, high;

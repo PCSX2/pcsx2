@@ -39,18 +39,6 @@ enum AppEventType
 	AppStatus_Exiting
 };
 
-enum PluginEventType
-{
-	CorePlugins_Loaded,
-	CorePlugins_Init,
-	CorePlugins_Opening,		// dispatched prior to plugins being opened
-	CorePlugins_Opened,			// dispatched after plugins are opened
-	CorePlugins_Closing,		// dispatched prior to plugins being closed
-	CorePlugins_Closed,			// dispatched after plugins are closed
-	CorePlugins_Shutdown,
-	CorePlugins_Unloaded,
-};
-
 struct AppEventInfo
 {
 	AppEventType	evt_type;
@@ -99,37 +87,6 @@ class EventListener_CoreThread : public IEventListener_CoreThread
 public:
 	EventListener_CoreThread();
 	virtual ~EventListener_CoreThread();
-};
-
-// --------------------------------------------------------------------------------------
-//  IEventListener_Plugins
-// --------------------------------------------------------------------------------------
-class IEventListener_Plugins : public IEventDispatcher<PluginEventType>
-{
-public:
-	typedef PluginEventType EvtParams;
-
-public:
-	virtual ~IEventListener_Plugins() = default;
-
-	virtual void DispatchEvent( const PluginEventType& pevt );
-
-protected:
-	virtual void CorePlugins_OnLoaded() {}
-	virtual void CorePlugins_OnInit() {}
-	virtual void CorePlugins_OnOpening() {}		// dispatched prior to plugins being opened
-	virtual void CorePlugins_OnOpened() {}		// dispatched after plugins are opened
-	virtual void CorePlugins_OnClosing() {}		// dispatched prior to plugins being closed
-	virtual void CorePlugins_OnClosed() {}		// dispatched after plugins are closed
-	virtual void CorePlugins_OnShutdown() {}
-	virtual void CorePlugins_OnUnloaded() {}
-};
-
-class EventListener_Plugins : public IEventListener_Plugins
-{
-public:
-	EventListener_Plugins();
-	virtual ~EventListener_Plugins();
 };
 
 // --------------------------------------------------------------------------------------
@@ -200,35 +157,6 @@ protected:
 	void CoreThread_OnSuspended()		{ Owner.OnCoreThread_Suspended(); }
 	void CoreThread_OnReset()			{ Owner.OnCoreThread_Reset(); }
 	void CoreThread_OnStopped()			{ Owner.OnCoreThread_Stopped(); }
-};
-
-template< typename TypeToDispatchTo >
-class EventListenerHelper_Plugins : public EventListener_Plugins
-{
-public:
-	TypeToDispatchTo&	Owner;
-
-public:
-	EventListenerHelper_Plugins( TypeToDispatchTo& dispatchTo )
-		: Owner( dispatchTo ) { }
-
-	EventListenerHelper_Plugins( TypeToDispatchTo* dispatchTo )
-		: Owner( *dispatchTo )
-	{
-		pxAssert(dispatchTo != NULL);
-	}
-
-	virtual ~EventListenerHelper_Plugins() = default;
-
-protected:
-	void CorePlugins_OnLoaded()		{ Owner.OnCorePlugins_Loaded(); }
-	void CorePlugins_OnInit()		{ Owner.OnCorePlugins_Init(); }
-	void CorePlugins_OnOpening()	{ Owner.OnCorePlugins_Opening(); }
-	void CorePlugins_OnOpened()		{ Owner.OnCorePlugins_Opened(); }
-	void CorePlugins_OnClosing()	{ Owner.OnCorePlugins_Closing(); }
-	void CorePlugins_OnClosed()		{ Owner.OnCorePlugins_Closed(); }
-	void CorePlugins_OnShutdown()	{ Owner.OnCorePlugins_Shutdown(); }
-	void CorePlugins_OnUnloaded()	{ Owner.OnCorePlugins_Unloaded(); }
 };
 
 template< typename TypeToDispatchTo >

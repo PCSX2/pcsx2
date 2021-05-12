@@ -74,6 +74,8 @@ std::unique_ptr<AppConfig> g_Conf;
 AspectRatioType iniAR;
 bool switchAR;
 
+uptr pDsp[2];
+
 // Returns a string message telling the user to consult guides for obtaining a legal BIOS.
 // This message is in a function because it's used as part of several dialogs in PCSX2 (there
 // are multiple variations on the BIOS and BIOS folder checks).

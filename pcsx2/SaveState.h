@@ -84,7 +84,6 @@ public:
 	virtual SaveStateBase& FreezeMainMemory();
 	virtual SaveStateBase& FreezeBios();
 	virtual SaveStateBase& FreezeInternals();
-	virtual SaveStateBase& FreezePlugins();
 
 	// Loads or saves an arbitrary data type.  Usable on atomic types, structs, and arrays.
 	// For dynamically allocated pointers use FreezeMem instead.
