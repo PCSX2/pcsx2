@@ -21,6 +21,8 @@
 
 #pragma once
 
+#include "GS.h"
+
 class GSShaderOGL
 {
 	GLuint m_pipeline;
