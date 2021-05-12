@@ -1,13 +1,6 @@
 
 #pragma once
 
-#include <xbyak/xbyak.h>
-#include <xbyak/xbyak_util.h>
-#define MIE_INTEGER_TYPE_DEFINED
-#define XBYAK_ENABLE_OMITTED_OPERAND
-
-#include <cfloat>
-
 typedef unsigned char uint8;
 typedef signed char int8;
 typedef unsigned short uint16;
@@ -16,6 +9,14 @@ typedef unsigned int uint32;
 typedef signed int int32;
 typedef unsigned long long uint64;
 typedef signed long long int64;
+typedef signed long long sint64;
+
+#define MIE_INTEGER_TYPE_DEFINED
+#define XBYAK_ENABLE_OMITTED_OPERAND
+#include <xbyak/xbyak.h>
+#include <xbyak/xbyak_util.h>
+
+#include <cfloat>
 
 #ifndef RESTRICT
 

@@ -22,7 +22,7 @@
 #include "PrecompiledHeader.h"
 #include "GSTextureCache.h"
 #include "GSRendererHW.h"
-#include "GSUtil.h"
+#include "../../GSUtil.h"
 
 bool GSTextureCache::m_disable_partial_invalidation = false;
 bool GSTextureCache::m_wrap_gs_mem = false;

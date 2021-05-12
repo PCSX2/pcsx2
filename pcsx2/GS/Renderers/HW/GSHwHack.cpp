@@ -20,7 +20,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GSState.h"
+#include "../../GSState.h"
 #include "GS.h"
 
 bool s_nativeres;

@@ -22,6 +22,9 @@
 #include "PrecompiledHeader.h"
 #include "GSDrawScanlineCodeGenerator.h"
 #include "GSVertexSW.h"
+#include "../../GS_codegen.h"
+
+#undef _t
 
 #if _M_SSE >= 0x501 && (defined(_M_AMD64) || defined(_WIN64))
 

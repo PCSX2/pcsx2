@@ -662,6 +662,7 @@ set(pcsx2GSHeaders
 	GS/GSDump.h
 	GS/GS_res.h
 	GS/GS_types.h
+	GS/GS_codegen.h
 	GS/GS.h
 	GS/GSLocalMemory.h
 	GS/GSLzma.h
