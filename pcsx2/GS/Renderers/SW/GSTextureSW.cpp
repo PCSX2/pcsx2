@@ -21,7 +21,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSTextureSW.h"
-#include "GSPng.h"
+#include "../../GSPng.h"
 
 GSTextureSW::GSTextureSW(int type, int width, int height)
 {

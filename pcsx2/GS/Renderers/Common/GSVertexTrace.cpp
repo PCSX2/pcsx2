@@ -21,8 +21,8 @@
 
 #include "PrecompiledHeader.h"
 #include "GSVertexTrace.h"
-#include "GSUtil.h"
-#include "GSState.h"
+#include "../../GSUtil.h"
+#include "../../GSState.h"
 
 CONSTINIT const GSVector4 GSVertexTrace::s_minmax = GSVector4::cxpr(FLT_MAX, -FLT_MAX, 0.f, 0.f);
 

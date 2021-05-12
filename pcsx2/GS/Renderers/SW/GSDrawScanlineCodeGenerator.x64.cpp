@@ -99,17 +99,17 @@ void GSDrawScanlineCodeGenerator::WriteFrame_SSE()
 {
 }
 
-void GSDrawScanlineCodeGenerator::ReadPixel_SSE(const Xmm& dst, const Reg64& addr)
+void GSDrawScanlineCodeGenerator::ReadPixel_SSE(const Xmm& dst, const RegLong& addr)
 {
 }
 
-void GSDrawScanlineCodeGenerator::WritePixel_SSE(const Xmm& src, const Reg64& addr, const Reg8& mask, bool fast, int psm, int fz)
+void GSDrawScanlineCodeGenerator::WritePixel_SSE(const Xmm& src, const RegLong& addr, const Reg8& mask, bool fast, int psm, int fz)
 {
 }
 
 //static const int s_offsets[4] = {0, 2, 8, 10};
 
-void GSDrawScanlineCodeGenerator::WritePixel_SSE(const Xmm& src, const Reg64& addr, uint8 i, int psm)
+void GSDrawScanlineCodeGenerator::WritePixel_SSE(const Xmm& src, const RegLong& addr, uint8 i, int psm)
 {
 }
 

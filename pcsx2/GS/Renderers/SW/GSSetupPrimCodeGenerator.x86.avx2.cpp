@@ -22,10 +22,9 @@
 #include "PrecompiledHeader.h"
 #include "GSSetupPrimCodeGenerator.h"
 #include "GSVertexSW.h"
+#include "../../GS_codegen.h"
 
 #if _M_SSE >= 0x501 && !(defined(_M_AMD64) || defined(_WIN64))
-
-using namespace Xbyak;
 
 static const int _args = 0;
 static const int _vertex = _args + 4;
