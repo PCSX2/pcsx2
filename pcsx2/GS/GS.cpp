@@ -37,7 +37,6 @@
 #include "Window/GSWndWGL.h"
 #include "Window/GSSettingsDlg.h"
 
-#undef None
 
 static HRESULT s_hr = E_FAIL;
 
@@ -54,10 +53,10 @@ extern bool RunLinuxDialog();
 
 #endif
 
-#define PS2E_LT_GS 0x01
-#define PS2E_GS_VERSION 0x0006
-#define PS2E_X86 0x01    // 32 bit
-#define PS2E_X86_64 0x02 // 64 bit
+// do NOT undefine this/put it above includes, as x11 people love to redefine
+// things that make obscure compiler bugs, unless you want to run around and
+// debug obscure compiler errors --govanify
+#undef None
 
 static GSRenderer* s_gs = NULL;
 static void (*s_irq)() = NULL;
@@ -66,19 +65,6 @@ static int s_vsync = 0;
 static bool s_exclusive = true;
 static std::string s_renderer_name;
 bool gsopen_done = false; // crash guard for GSgetTitleInfo2 and GSKeyEvent (replace with lock?)
-
-uint32 PS2EgetCpuPlatform()
-{
-#ifdef _M_AMD64
-
-	return PS2E_X86_64;
-
-#else
-
-	return PS2E_X86;
-
-#endif
-}
 
 void GSsetBaseMem(uint8* mem)
 {
