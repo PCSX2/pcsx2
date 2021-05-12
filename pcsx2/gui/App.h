@@ -45,7 +45,7 @@ typedef struct _keyEvent
     u32 evt;
 } keyEvent;
 
-uptr pDsp[2];
+extern uptr pDsp[2];
 
 typedef void FnType_OnThreadComplete(const wxCommandEvent& evt);
 typedef void (Pcsx2App::*FnPtr_Pcsx2App)();

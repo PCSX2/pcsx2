@@ -23,6 +23,12 @@
 
 #pragma once
 
+#ifdef _WIN32
+#  define gsforceinline __forceinline
+#else
+#  define gsforceinline __forceinline __inline__
+#endif
+
 enum Align_Mode
 {
 	Align_Outside,
@@ -105,24 +111,24 @@ class GSVector8i;
 
 // conversion
 
-__forceinline GSVector4i::GSVector4i(const GSVector4& v, bool truncate)
+gsforceinline GSVector4i::GSVector4i(const GSVector4& v, bool truncate)
 {
 	m = truncate ? _mm_cvttps_epi32(v) : _mm_cvtps_epi32(v);
 }
 
-__forceinline GSVector4::GSVector4(const GSVector4i& v)
+gsforceinline GSVector4::GSVector4(const GSVector4i& v)
 {
 	m = _mm_cvtepi32_ps(v);
 }
 
 #if _M_SSE >= 0x501
 
-__forceinline GSVector8i::GSVector8i(const GSVector8& v, bool truncate)
+gsforceinline GSVector8i::GSVector8i(const GSVector8& v, bool truncate)
 {
 	m = truncate ? _mm256_cvttps_epi32(v) : _mm256_cvtps_epi32(v);
 }
 
-__forceinline GSVector8::GSVector8(const GSVector8i& v)
+gsforceinline GSVector8::GSVector8(const GSVector8i& v)
 {
 	m = _mm256_cvtepi32_ps(v);
 }
@@ -131,34 +137,34 @@ __forceinline GSVector8::GSVector8(const GSVector8i& v)
 
 // casting
 
-__forceinline GSVector4i GSVector4i::cast(const GSVector4& v)
+gsforceinline GSVector4i GSVector4i::cast(const GSVector4& v)
 {
 	return GSVector4i(_mm_castps_si128(v.m));
 }
 
-__forceinline GSVector4 GSVector4::cast(const GSVector4i& v)
+gsforceinline GSVector4 GSVector4::cast(const GSVector4i& v)
 {
 	return GSVector4(_mm_castsi128_ps(v.m));
 }
 
 #if _M_SSE >= 0x500
 
-__forceinline GSVector4i GSVector4i::cast(const GSVector8& v)
+gsforceinline GSVector4i GSVector4i::cast(const GSVector8& v)
 {
 	return GSVector4i(_mm_castps_si128(_mm256_castps256_ps128(v)));
 }
 
-__forceinline GSVector4 GSVector4::cast(const GSVector8& v)
+gsforceinline GSVector4 GSVector4::cast(const GSVector8& v)
 {
 	return GSVector4(_mm256_castps256_ps128(v));
 }
 
-__forceinline GSVector8 GSVector8::cast(const GSVector4i& v)
+gsforceinline GSVector8 GSVector8::cast(const GSVector4i& v)
 {
 	return GSVector8(_mm256_castps128_ps256(_mm_castsi128_ps(v.m)));
 }
 
-__forceinline GSVector8 GSVector8::cast(const GSVector4& v)
+gsforceinline GSVector8 GSVector8::cast(const GSVector4& v)
 {
 	return GSVector8(_mm256_castps128_ps256(v.m));
 }
@@ -167,32 +173,32 @@ __forceinline GSVector8 GSVector8::cast(const GSVector4& v)
 
 #if _M_SSE >= 0x501
 
-__forceinline GSVector4i GSVector4i::cast(const GSVector8i& v)
+gsforceinline GSVector4i GSVector4i::cast(const GSVector8i& v)
 {
 	return GSVector4i(_mm256_castsi256_si128(v));
 }
 
-__forceinline GSVector4 GSVector4::cast(const GSVector8i& v)
+gsforceinline GSVector4 GSVector4::cast(const GSVector8i& v)
 {
 	return GSVector4(_mm_castsi128_ps(_mm256_castsi256_si128(v)));
 }
 
-__forceinline GSVector8i GSVector8i::cast(const GSVector4i& v)
+gsforceinline GSVector8i GSVector8i::cast(const GSVector4i& v)
 {
 	return GSVector8i(_mm256_castsi128_si256(v.m));
 }
 
-__forceinline GSVector8i GSVector8i::cast(const GSVector4& v)
+gsforceinline GSVector8i GSVector8i::cast(const GSVector4& v)
 {
 	return GSVector8i(_mm256_castsi128_si256(_mm_castps_si128(v.m)));
 }
 
-__forceinline GSVector8i GSVector8i::cast(const GSVector8& v)
+gsforceinline GSVector8i GSVector8i::cast(const GSVector8& v)
 {
 	return GSVector8i(_mm256_castps_si256(v.m));
 }
 
-__forceinline GSVector8 GSVector8::cast(const GSVector8i& v)
+gsforceinline GSVector8 GSVector8::cast(const GSVector8i& v)
 {
 	return GSVector8(_mm256_castsi256_ps(v.m));
 }
