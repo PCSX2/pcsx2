@@ -22,7 +22,7 @@
 #pragma once
 
 #include "GS.h"
-#include "xbyak/xbyak_util.h"
+#include "x86emitter/xbyak_intrin.h"
 
 class GSUtil
 {

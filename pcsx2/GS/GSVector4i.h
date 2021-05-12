@@ -19,6 +19,8 @@
  *
  */
 
+#include "GS_types.h"
+
 class alignas(16) GSVector4i
 {
 	static const GSVector4i m_xff[17];
@@ -253,7 +255,7 @@ public:
 			case Align_Outside: v = *this + mask.zwxy(); break;
 			case Align_NegInf:  v = *this;               break;
 			case Align_PosInf:  v = *this + mask.zwzw(); break;
-			default: ASSERT(0); break;
+			default: pxAssert(0); break;
 		}
 
 		return v.andnot(mask.xyxy());
@@ -1745,7 +1747,7 @@ public:
 
 	__forceinline static bool compare16(const void* dst, const void* src, size_t size)
 	{
-		ASSERT((size & 15) == 0);
+		pxAssert((size & 15) == 0);
 
 		size >>= 4;
 
@@ -1765,7 +1767,7 @@ public:
 
 	__forceinline static bool compare64(const void* dst, const void* src, size_t size)
 	{
-		ASSERT((size & 63) == 0);
+		pxAssert((size & 63) == 0);
 
 		size >>= 6;
 
@@ -1793,7 +1795,7 @@ public:
 
 	__forceinline static bool update(const void* dst, const void* src, size_t size)
 	{
-		ASSERT((size & 15) == 0);
+		pxAssert((size & 15) == 0);
 
 		size >>= 4;
 
