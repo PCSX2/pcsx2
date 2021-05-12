@@ -21,10 +21,6 @@
 
 #include <chrono>
 
-// IMPORTANT!  If this gets a macro redefinition error it means PluginCallbacks.h is included
-// in a global-scope header, and that's a BAD THING.  Include it only into modules that need
-// it, because some need to be able to alter its behavior using defines.  Like this:
-
 struct Component_FileMcd;
 
 #include "MemoryCardFile.h"
@@ -583,12 +579,11 @@ u64 FileMemoryCard::GetCRC(uint slot)
 // --------------------------------------------------------------------------------------
 //  MemoryCard Component API Bindings
 // --------------------------------------------------------------------------------------
-
-struct Component_FileMcd
+namespace Mcd
 {
 	FileMemoryCard impl; // class-based implementations we refer to when API is invoked
 	FolderMemoryCardAggregator implFolder;
-};
+}; // namespace Mcd
 
 uint FileMcd_ConvertToSlot(uint port, uint slot)
 {
@@ -622,15 +617,15 @@ void FileMcd_EmuOpen()
 		}
 	}
 
-	Component_FileMcd->impl.Open();
-	Component_FileMcd->implFolder.SetFiltering(g_Conf->EmuOptions.McdFolderAutoManage);
-	Component_FileMcd->implFolder.Open();
+	Mcd::impl.Open();
+	Mcd::implFolder.SetFiltering(g_Conf->EmuOptions.McdFolderAutoManage);
+	Mcd::implFolder.Open();
 }
 
 void FileMcd_EmuClose()
 {
-	Component_FileMcd->implFolder.Close();
-	Component_FileMcd->impl.Close();
+	Mcd::implFolder.Close();
+	Mcd::impl.Close();
 }
 
 s32 FileMcd_IsPresent(uint port, uint slot)
@@ -639,9 +634,9 @@ s32 FileMcd_IsPresent(uint port, uint slot)
 	switch (g_Conf->Mcd[combinedSlot].Type)
 	{
 		case MemoryCardType::MemoryCard_File:
-			return Component_FileMcd->impl.IsPresent(combinedSlot);
+			return Mcd::impl.IsPresent(combinedSlot);
 		case MemoryCardType::MemoryCard_Folder:
-			return Component_FileMcd->implFolder.IsPresent(combinedSlot);
+			return Mcd::implFolder.IsPresent(combinedSlot);
 		default:
 			return false;
 	}
@@ -653,10 +648,10 @@ void FileMcd_GetSizeInfo(uint port, uint slot, McdSizeInfo* outways)
 	switch (g_Conf->Mcd[combinedSlot].Type)
 	{
 		case MemoryCardType::MemoryCard_File:
-			Component_FileMcd->impl.GetSizeInfo(combinedSlot, *outways);
+			Mcd::impl.GetSizeInfo(combinedSlot, *outways);
 			break;
 		case MemoryCardType::MemoryCard_Folder:
-			Component_FileMcd->implFolder.GetSizeInfo(combinedSlot, *outways);
+			Mcd::implFolder.GetSizeInfo(combinedSlot, *outways);
 			break;
 		default:
 			return;
@@ -669,9 +664,9 @@ bool FileMcd_IsPSX(uint port, uint slot)
 	switch (g_Conf->Mcd[combinedSlot].Type)
 	{
 		case MemoryCardType::MemoryCard_File:
-			return Component_FileMcd->impl.IsPSX(combinedSlot);
+			return Mcd::impl.IsPSX(combinedSlot);
 		case MemoryCardType::MemoryCard_Folder:
-			return Component_FileMcd->implFolder.IsPSX(combinedSlot);
+			return Mcd::implFolder.IsPSX(combinedSlot);
 		default:
 			return false;
 	}
@@ -683,9 +678,9 @@ s32 FileMcd_Read(uint port, uint slot, u8* dest, u32 adr, int size)
 	switch (g_Conf->Mcd[combinedSlot].Type)
 	{
 		case MemoryCardType::MemoryCard_File:
-			return Component_FileMcd->impl.Read(combinedSlot, dest, adr, size);
+			return Mcd::impl.Read(combinedSlot, dest, adr, size);
 		case MemoryCardType::MemoryCard_Folder:
-			return Component_FileMcd->implFolder.Read(combinedSlot, dest, adr, size);
+			return Mcd::implFolder.Read(combinedSlot, dest, adr, size);
 		default:
 			return 0;
 	}
@@ -697,9 +692,9 @@ s32 FileMcd_Save(uint port, uint slot, const u8* src, u32 adr, int size)
 	switch (g_Conf->Mcd[combinedSlot].Type)
 	{
 		case MemoryCardType::MemoryCard_File:
-			return Component_FileMcd->impl.Save(combinedSlot, src, adr, size);
+			return Mcd::impl.Save(combinedSlot, src, adr, size);
 		case MemoryCardType::MemoryCard_Folder:
-			return Component_FileMcd->implFolder.Save(combinedSlot, src, adr, size);
+			return Mcd::implFolder.Save(combinedSlot, src, adr, size);
 		default:
 			return 0;
 	}
@@ -711,9 +706,9 @@ s32 FileMcd_EraseBlock(uint port, uint slot, u32 adr)
 	switch (g_Conf->Mcd[combinedSlot].Type)
 	{
 		case MemoryCardType::MemoryCard_File:
-			return Component_FileMcd->impl.EraseBlock(combinedSlot, adr);
+			return Mcd::impl.EraseBlock(combinedSlot, adr);
 		case MemoryCardType::MemoryCard_Folder:
-			return Component_FileMcd->implFolder.EraseBlock(combinedSlot, adr);
+			return Mcd::implFolder.EraseBlock(combinedSlot, adr);
 		default:
 			return 0;
 	}
@@ -725,9 +720,9 @@ u64 FileMcd_GetCRC(uint port, uint slot)
 	switch (g_Conf->Mcd[combinedSlot].Type)
 	{
 		case MemoryCardType::MemoryCard_File:
-			return Component_FileMcd->impl.GetCRC(combinedSlot);
+			return Mcd::impl.GetCRC(combinedSlot);
 		case MemoryCardType::MemoryCard_Folder:
-			return Component_FileMcd->implFolder.GetCRC(combinedSlot);
+			return Mcd::implFolder.GetCRC(combinedSlot);
 		default:
 			return 0;
 	}
@@ -739,10 +734,10 @@ void FileMcd_NextFrame(uint port, uint slot)
 	switch (g_Conf->Mcd[combinedSlot].Type)
 	{
 		//case MemoryCardType::MemoryCard_File:
-		//	Component_FileMcd->impl.NextFrame( combinedSlot );
+		//	Mcd::impl.NextFrame( combinedSlot );
 		//	break;
 		case MemoryCardType::MemoryCard_Folder:
-			Component_FileMcd->implFolder.NextFrame(combinedSlot);
+			Mcd::implFolder.NextFrame(combinedSlot);
 			break;
 		default:
 			return;
@@ -755,10 +750,10 @@ bool FileMcd_ReIndex(uint port, uint slot, const wxString& filter)
 	switch (g_Conf->Mcd[combinedSlot].Type)
 	{
 		//case MemoryCardType::MemoryCard_File:
-		//	return Component_FileMcd->impl.ReIndex( combinedSlot, filter );
+		//	return Mcd::impl.ReIndex( combinedSlot, filter );
 		//	break;
 		case MemoryCardType::MemoryCard_Folder:
-			return Component_FileMcd->implFolder.ReIndex(combinedSlot, g_Conf->EmuOptions.McdFolderAutoManage, filter);
+			return Mcd::implFolder.ReIndex(combinedSlot, g_Conf->EmuOptions.McdFolderAutoManage, filter);
 			break;
 		default:
 			return false;

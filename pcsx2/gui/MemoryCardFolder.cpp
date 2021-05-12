@@ -679,7 +679,7 @@ s32 FolderMemoryCard::IsPresent() const
 	return m_isEnabled;
 }
 
-void FolderMemoryCard::GetSizeInfo(PS2E_McdSizeInfo& outways) const
+void FolderMemoryCard::GetSizeInfo(McdSizeInfo& outways) const
 {
 	outways.SectorSize = PageSize;
 	outways.EraseBlockSizeInSectors = BlockSize / PageSize;
@@ -2148,7 +2148,7 @@ s32 FolderMemoryCardAggregator::IsPresent(uint slot)
 	return m_cards[slot].IsPresent();
 }
 
-void FolderMemoryCardAggregator::GetSizeInfo(uint slot, PS2E_McdSizeInfo& outways)
+void FolderMemoryCardAggregator::GetSizeInfo(uint slot, McdSizeInfo& outways)
 {
 	m_cards[slot].GetSizeInfo(outways);
 }
