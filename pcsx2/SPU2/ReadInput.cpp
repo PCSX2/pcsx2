@@ -17,6 +17,7 @@
 #include "Global.h"
 #include "Dma.h"
 #include "IopDma.h"
+#include "IopHw.h"
 
 #include "spu2.h" // required for ENABLE_NEW_IOPDMA_SPU2 define
 

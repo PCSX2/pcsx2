@@ -44,8 +44,6 @@ void SPU2DoFreezeOut(void* dest);
 void SPU2configure();
 
 
-u32 SPU2ReadMemAddr(int core);
-void SPU2WriteMemAddr(int core, u32 value);
 void SPU2setDMABaseAddr(uptr baseaddr);
 void SPU2setSettingsDir(const char* dir);
 void SPU2setLogDir(const char* dir);

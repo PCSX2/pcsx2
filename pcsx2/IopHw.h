@@ -277,6 +277,7 @@ static dma_mbc&		hw_dma12	= (dma_mbc&) iopHw[0x1550];
 #define HW_DMA7_MADR (psxHu32(0x1500)) // SPU2 DMA
 #define HW_DMA7_BCR  (psxHu32(0x1504))
 #define HW_DMA7_CHCR (psxHu32(0x1508))
+#define HW_DMA7_TADR (psxHu32(0x150C))
 
 #define HW_DMA8_MADR (psxHu32(0x1510)) // DEV9 DMA
 #define HW_DMA8_BCR  (psxHu32(0x1514))

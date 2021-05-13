@@ -301,17 +301,6 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 			break;
 
 			// ------------------------------------------------------------------------
-			// Soon-to-be outdated SPU2 DMA hack (spu2 manages its own DMA MADR).
-			//
-			mcase(0x1f8010C0):
-				ret = SPU2ReadMemAddr(0);
-			break;
-
-			mcase(0x1f801500):
-				ret = SPU2ReadMemAddr(1);
-			break;
-
-			// ------------------------------------------------------------------------
 			// Legacy GPU  emulation
 			//
 			mcase(0x1f8010ac) :
