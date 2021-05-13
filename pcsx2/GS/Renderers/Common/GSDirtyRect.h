@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "../../GSLocalMemory.h"
+#include "GS/GSLocalMemory.h"
 
 class GSDirtyRect
 {

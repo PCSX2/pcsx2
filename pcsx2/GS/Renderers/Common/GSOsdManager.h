@@ -16,7 +16,7 @@
 #pragma once
 
 #include "PrecompiledHeader.h"
-#include "../../GSVector.h"
+#include "GS/GSVector.h"
 #include "GSVertex.h"
 #include "GSTexture.h"
 #include <ft2build.h>

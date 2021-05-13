@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "BiosDebugData.h"
-#include "../Memory.h"
+#include "Memory.h"
 
 std::vector<EEThread> getEEThreads()
 {

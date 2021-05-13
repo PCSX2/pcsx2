@@ -16,8 +16,8 @@
 #pragma once
 
 #include "PrecompiledHeader.h"
-#include "../GS.h"
-#include "../GSVector.h"
+#include "GS/GS.h"
+#include "GS/GSVector.h"
 
 class GSWnd
 {

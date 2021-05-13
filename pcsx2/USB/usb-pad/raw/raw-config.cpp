@@ -26,7 +26,7 @@
 
 #include <algorithm>
 #include <map>
-#include "../../configuration.h"
+#include "USB/configuration.h"
 #include "usb-pad-raw.h"
 #include "raw-config-res.h"
 #include <strsafe.h>

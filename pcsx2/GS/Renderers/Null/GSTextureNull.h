@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "../Common/GSTexture.h"
+#include "GS/Renderers/Common/GSTexture.h"
 
 class GSTextureNull : public GSTexture
 {

@@ -16,10 +16,10 @@
 #pragma once
 
 #include "GSFastList.h"
-#include "../../Window/GSWnd.h"
+#include "GS/Window/GSWnd.h"
 #include "GSTexture.h"
 #include "GSVertex.h"
-#include "../../GSAlignedClass.h"
+#include "GS/GSAlignedClass.h"
 #include "GSOsdManager.h"
 
 enum ShaderConvert

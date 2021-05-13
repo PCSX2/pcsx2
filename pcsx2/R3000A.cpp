@@ -19,7 +19,7 @@
 
 #include "Sio.h"
 #include "Sif.h"
-#include "../DebugTools/Breakpoints.h"
+#include "DebugTools/Breakpoints.h"
 #include "R5900OpcodeTables.h"
 
 using namespace R3000A;

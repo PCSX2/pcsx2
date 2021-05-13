@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../qemu-usb/vl.h"
+#include "USB/qemu-usb/vl.h"
 
 #include <limits.h>
 #include <string.h>

@@ -16,7 +16,7 @@
 #pragma once
 
 #include "Utilities/TraceLog.h"
-#include "../Memory.h"
+#include "Memory.h"
 
 extern FILE *emuLog;
 extern wxString emuLogName;

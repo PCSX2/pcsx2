@@ -18,7 +18,7 @@
 #include <stdlib.h>
 #include <arpa/inet.h>
 
-#include "../DEV9.h"
+#include "DEV9/DEV9.h"
 #include "AppConfig.h"
 
 #include <unistd.h>

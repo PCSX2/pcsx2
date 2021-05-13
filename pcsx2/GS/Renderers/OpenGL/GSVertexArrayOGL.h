@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "../../config.h"
+#include "GS/config.h"
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 extern uint64 g_vertex_upload_byte;

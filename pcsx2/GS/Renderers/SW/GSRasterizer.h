@@ -17,10 +17,10 @@
 
 #include "GS.h"
 #include "GSVertexSW.h"
-#include "../Common/GSFunctionMap.h"
-#include "../../GSAlignedClass.h"
-#include "../../GSPerfMon.h"
-#include "../../GSThread_CXX11.h"
+#include "GS/Renderers/Common/GSFunctionMap.h"
+#include "GS/GSAlignedClass.h"
+#include "GS/GSPerfMon.h"
+#include "GS/GSThread_CXX11.h"
 
 class alignas(32) GSRasterizerData : public GSAlignedClass<32>
 {

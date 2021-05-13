@@ -16,7 +16,7 @@
 #include <cstdint>
 #include <cstring>
 #include <pulse/pulseaudio.h>
-#include "../shared/ringbuffer.h"
+#include "USB/shared/ringbuffer.h"
 #include "audiodeviceproxy.h"
 #include <samplerate.h>
 //#include <typeinfo>

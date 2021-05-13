@@ -23,7 +23,7 @@
 #include "ghc/filesystem.h"
 #include <fstream>
 
-#include "../SimpleQueue.h"
+#include "DEV9/SimpleQueue.h"
 
 class ATA
 {

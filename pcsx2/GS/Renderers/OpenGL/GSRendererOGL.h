@@ -15,9 +15,9 @@
 
 #pragma once
 
-#include "../HW/GSRendererHW.h"
+#include "GS/Renderers/HW/GSRendererHW.h"
 #include "GSTextureCacheOGL.h"
-#include "../HW/GSVertexHW.h"
+#include "GS/Renderers/HW/GSVertexHW.h"
 
 class GSRendererOGL final : public GSRendererHW
 {

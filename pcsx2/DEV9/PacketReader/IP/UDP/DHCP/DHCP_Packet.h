@@ -17,7 +17,7 @@
 #include <vector>
 
 #include "DHCP_Options.h"
-#include "../../IP_Packet.h"
+#include "DEV9/PacketReader/IP/IP_Packet.h"
 
 namespace PacketReader::IP::UDP::DHCP
 {

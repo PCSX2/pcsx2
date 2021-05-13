@@ -15,7 +15,7 @@
 
 #ifndef USBMSD_H
 #define USBMSD_H
-#include "../deviceproxy.h"
+#include "USB/deviceproxy.h"
 
 namespace usb_msd
 {

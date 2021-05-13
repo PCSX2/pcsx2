@@ -21,8 +21,8 @@
 #include <algorithm>
 #include <iterator>
 #include "usb-hid.h"
-#include "../helpers.h"
-#include "../deviceproxy.h"
+#include "USB/helpers.h"
+#include "USB/deviceproxy.h"
 
 namespace usb_hid
 {

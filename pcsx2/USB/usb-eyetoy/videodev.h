@@ -15,8 +15,8 @@
 
 #ifndef VIDEODEV_H
 #define VIDEODEV_H
-#include "../qemu-usb/vl.h"
-#include "../configuration.h"
+#include "USB/qemu-usb/vl.h"
+#include "USB/configuration.h"
 
 namespace usb_eyetoy
 {

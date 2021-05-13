@@ -19,8 +19,8 @@
 #include "DebugInterface.h"
 #include "SymbolMap.h"
 #include "DebugInterface.h"
-#include "../R5900.h"
-#include "../R5900OpcodeTables.h"
+#include "R5900.h"
+#include "R5900OpcodeTables.h"
 
 static std::vector<MIPSAnalyst::AnalyzedFunction> functions;
 

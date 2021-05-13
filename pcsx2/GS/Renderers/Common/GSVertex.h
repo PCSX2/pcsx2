@@ -15,10 +15,10 @@
 
 #pragma once
 
-#include "../../GS.h"
-#include "../../GSVector.h"
-#include "../HW/GSVertexHW.h"
-#include "../SW/GSVertexSW.h"
+#include "GS/GS.h"
+#include "GS/GSVector.h"
+#include "GS/Renderers/HW/GSVertexHW.h"
+#include "GS/Renderers/SW/GSVertexSW.h"
 
 #pragma pack(push, 1)
 

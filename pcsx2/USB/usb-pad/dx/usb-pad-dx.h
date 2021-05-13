@@ -13,8 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../padproxy.h"
-#include "../../Win32/Config_usb.h"
+#include "USB/usb-pad/padproxy.h"
+#include "USB/Win32/Config_usb.h"
 
 namespace usb_pad
 {

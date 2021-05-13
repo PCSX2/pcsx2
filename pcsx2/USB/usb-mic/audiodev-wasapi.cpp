@@ -22,8 +22,8 @@
 #include <functiondiscoverykeys_devpkey.h>
 #include <process.h>
 #include "audiodev-wasapi.h"
-#include "../Win32/Config_usb.h"
-#include "../Win32/resource_usb.h"
+#include "USB/Win32/Config_usb.h"
+#include "USB/Win32/resource_usb.h"
 
 #define SafeRelease(x) \
 	if (x)             \

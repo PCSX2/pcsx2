@@ -16,8 +16,8 @@
 #include "PrecompiledHeader.h"
 #include "padproxy.h"
 #include "usb-pad.h"
-#include "../qemu-usb/desc.h"
-#include "../shared/inifile_usb.h"
+#include "USB/qemu-usb/desc.h"
+#include "USB/shared/inifile_usb.h"
 
 namespace usb_pad
 {

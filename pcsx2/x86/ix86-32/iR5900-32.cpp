@@ -32,7 +32,7 @@
 #include "CDVD/CDVD.h"
 #include "Elfheader.h"
 
-#include "../DebugTools/Breakpoints.h"
+#include "DebugTools/Breakpoints.h"
 #include "Patch.h"
 
 #if !PCSX2_SEH

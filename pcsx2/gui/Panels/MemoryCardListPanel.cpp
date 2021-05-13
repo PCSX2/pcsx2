@@ -23,7 +23,7 @@
 
 #include "Dialogs/ConfigurationDialog.h"
 #include "Utilities/IniInterface.h"
-#include "../../Sio.h"
+#include "Sio.h"
 
 #include <wx/filepicker.h>
 #include <wx/ffile.h>

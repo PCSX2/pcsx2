@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../deviceproxy.h"
+#include "USB/deviceproxy.h"
 #include "audiodeviceproxy.h"
 
 namespace usb_mic

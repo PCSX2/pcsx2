@@ -17,7 +17,7 @@
 #include "PrecompiledHeader.h"
 
 #include "IsoFSCDVD.h"
-#include "../CDVDaccess.h"
+#include "CDVD/CDVDaccess.h"
 
 IsoFSCDVD::IsoFSCDVD()
 {

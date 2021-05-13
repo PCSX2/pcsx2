@@ -11,8 +11,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "../qemu-usb/vl.h"
-#include "../qemu-usb/desc.h"
+#include "USB/qemu-usb/vl.h"
+#include "USB/qemu-usb/desc.h"
 #include "usb-msd.h"
 
 #define le32_to_cpu(x) (x)

@@ -15,9 +15,9 @@
 
 #include "PrecompiledHeader.h"
 #include "rawinput.h"
-#include "../../Win32/Config_usb.h"
-#include "../../qemu-usb/input-keymap.h"
-#include "../../qemu-usb/input-keymap-win32-to-qcode.h"
+#include "USB/Win32/Config_usb.h"
+#include "USB/qemu-usb/input-keymap.h"
+#include "USB/qemu-usb/input-keymap-win32-to-qcode.h"
 
 namespace usb_hid
 {
