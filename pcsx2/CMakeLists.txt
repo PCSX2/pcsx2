@@ -722,7 +722,6 @@ set(pcsx2GSHeaders
 
 # GS resources
 set(pcsx2GSResources
-	GS/res/logo-ogl.bmp
 	GS/res/fxaa.fx
 	GS/res/glsl/common_header.glsl
 	GS/res/glsl/convert.glsl
