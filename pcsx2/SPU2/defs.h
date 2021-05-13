@@ -451,8 +451,6 @@ struct V_Core
 	u16* DMARPtr; // Mem pointer for DMA Reads
 	u32 ReadSize;
 	bool IsDMARead;
-	u32 MADR;
-	u32 TADR;
 
 	u32 KeyOn; // not the KON register (though maybe it is)
 

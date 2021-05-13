@@ -60,15 +60,6 @@ void SPU2configure()
 
 u16* DMABaseAddr;
 
-u32 SPU2ReadMemAddr(int core)
-{
-	return Cores[core].MADR;
-}
-void SPU2WriteMemAddr(int core, u32 value)
-{
-	Cores[core].MADR = value;
-}
-
 void SPU2setDMABaseAddr(uptr baseaddr)
 {
 	DMABaseAddr = (u16*)baseaddr;

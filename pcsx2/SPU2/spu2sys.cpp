@@ -144,8 +144,6 @@ void V_Core::Init(int index)
 	AttrBit0 = 0;
 	DmaMode = 0;
 	DMAPtr = nullptr;
-	MADR = 0;
-	TADR = 0;
 	KeyOn = 0;
 	OutPos = 0;
 
@@ -461,7 +459,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 		Cores[0].DMAICounter -= amt;
 		Cores[0].LastClock = *cyclePtr;
 		if(!Cores[0].AdmaInProgress)
-			Cores[0].MADR += amt / 2;
+			HW_DMA4_MADR += amt / 2;
 
 		if (Cores[0].DMAICounter <= 0)
 		{
@@ -488,7 +486,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 			}
 			if (Cores[0].DMAICounter <= 0)
 			{
-				Cores[0].MADR = Cores[0].TADR;
+				HW_DMA4_MADR = HW_DMA4_TADR;
 				spu2DMA4Irq();
 			}
 		}
@@ -514,7 +512,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 		Cores[1].DMAICounter -= amt;
 		Cores[1].LastClock = *cyclePtr;
 		if (!Cores[1].AdmaInProgress)
-			Cores[1].MADR += amt / 2;
+			HW_DMA7_MADR += amt / 2;
 		if (Cores[1].DMAICounter <= 0)
 		{
 			if (((Cores[1].AutoDMACtrl & 2) != 2) && Cores[1].ReadSize)
@@ -541,7 +539,7 @@ __forceinline void TimeUpdate(u32 cClocks)
 
 			if (Cores[1].DMAICounter <= 0)
 			{
-				Cores[1].MADR = Cores[1].TADR;
+				HW_DMA7_MADR = HW_DMA7_TADR;
 				spu2DMA7Irq();
 			}
 		}
