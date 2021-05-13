@@ -22,6 +22,8 @@
 
 #include "vtlb.h"
 
+#include "Config.h"
+
 typedef SafeArray<u8> VmStateBuffer;
 
 class BaseVUmicroCPU;

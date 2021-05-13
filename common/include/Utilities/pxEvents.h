@@ -16,6 +16,7 @@
 #pragma once
 
 #include <wx/event.h>
+#include "General.h"
 
 wxDECLARE_EVENT(pxEvt_StartIdleEventTimer, wxCommandEvent);
 wxDECLARE_EVENT(pxEvt_DeleteObject, wxCommandEvent);
