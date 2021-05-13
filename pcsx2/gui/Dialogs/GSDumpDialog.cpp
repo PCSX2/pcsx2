@@ -68,8 +68,8 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	, m_selection(new wxButton(this, ID_RUN_CURSOR, _("Run to Selection"), wxDefaultPosition, wxSize(150, 50)))
 	, m_vsync(new wxButton(this, ID_RUN_VSYNC, _("Go to next VSync"), wxDefaultPosition, wxSize(150, 50)))
 	, m_settings(new wxButton(this, ID_SETTINGS, _("Open GS Settings"), wxDefaultPosition, wxSize(150, 50)))
-	, m_thread(std::make_unique<GSThread>(this))
 	, m_run(new wxButton(this, ID_RUN_DUMP, _("Run"), wxDefaultPosition, wxSize(150, 50)))
+	, m_thread(std::make_unique<GSThread>(this))
 {
 	wxBoxSizer* dump_info = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* dump_preview = new wxBoxSizer(wxVERTICAL);
