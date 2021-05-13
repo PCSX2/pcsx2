@@ -659,16 +659,6 @@ bool RunLinuxDialog()
 	GtkWidget* shader_box = CreateVbox();
 	GtkWidget* osd_box = CreateVbox();
 
-	// Grab a logo, to make things look nice.
-	if (BigEnough())
-	{
-		GResource* resources = GS_res_get_resource();
-		GInputStream* ogl_stream = g_resource_open_stream(resources, "/GS/res/logo-ogl.bmp", G_RESOURCE_LOOKUP_FLAGS_NONE, NULL);
-		GdkPixbuf* ogl_logo = gdk_pixbuf_new_from_stream(ogl_stream, NULL, NULL);
-		g_object_unref(ogl_stream);
-		GtkWidget* logo_image = gtk_image_new_from_pixbuf(ogl_logo);
-		gtk_box_pack_start(GTK_BOX(main_box), logo_image, true, true, 0);
-	}
 
 	GtkWidget* main_table = CreateTableInBox(main_box, NULL, 2, 2);
 
