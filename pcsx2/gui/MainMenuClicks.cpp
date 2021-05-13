@@ -88,17 +88,15 @@ void MainEmuFrame::Menu_PADSettings_Click(wxCommandEvent& event)
 	PADconfigure();
 }
 
+void MainEmuFrame::Menu_GSSettings_Click(wxCommandEvent& event)
+{
+	GSconfigure();
+}
+
 void MainEmuFrame::Menu_WindowSettings_Click(wxCommandEvent& event)
 {
 	wxCommandEvent evt(pxEvt_SetSettingsPage);
 	evt.SetString(L"GS Window");
-	AppOpenDialog<SysConfigDialog>(this)->GetEventHandler()->ProcessEvent(evt);
-}
-
-void MainEmuFrame::Menu_GSSettings_Click(wxCommandEvent& event)
-{
-	wxCommandEvent evt(pxEvt_SetSettingsPage);
-	evt.SetString(L"GS");
 	AppOpenDialog<SysConfigDialog>(this)->GetEventHandler()->ProcessEvent(evt);
 }
 

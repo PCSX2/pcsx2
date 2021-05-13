@@ -277,6 +277,7 @@ void MainEmuFrame::ConnectMenus()
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_NetworkSettings_Click, this, MenuId_Config_DEV9);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_USBSettings_Click, this, MenuId_Config_USB);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_PADSettings_Click, this, MenuId_Config_PAD);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_GSSettings_Click, this, MenuId_Config_GS);
 
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_GSSettings_Click, this, MenuId_Video_CoreSettings);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_WindowSettings_Click, this, MenuId_Video_WindowSettings);
@@ -447,6 +448,7 @@ void MainEmuFrame::CreateConfigMenu()
 	m_menuConfig.Append(MenuId_Config_DEV9, _("&Network and HDD Settings..."));
 	m_menuConfig.Append(MenuId_Config_USB, _("&USB Settings..."));
 	m_menuConfig.Append(MenuId_Config_PAD, _("&GamePad Settings..."));
+	m_menuConfig.Append(MenuId_Config_GS, _("&Graphical Settings..."));
 	m_menuConfig.AppendSeparator();
 
 	m_menuConfig.Append(MenuId_Config_Multitap0Toggle, _("Multitap &1"), wxEmptyString, wxITEM_CHECK);
