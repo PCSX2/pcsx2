@@ -361,6 +361,11 @@ extern const std::string root_hw;
 #  define CONSTINIT
 #endif
 
+// MacOS headers define PAGE_SIZE to the size of an x86 page
+#ifdef PAGE_SIZE
+#  undef PAGE_SIZE
+#endif
+
 #define VM_SIZE 4194304u
 #define HALF_VM_SIZE (VM_SIZE / 2u)
 #define PAGE_SIZE 8192u
