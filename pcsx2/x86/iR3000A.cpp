@@ -38,7 +38,7 @@
 #include "AppConfig.h"
 
 #include "Utilities/Perf.h"
-#include "../DebugTools/Breakpoints.h"
+#include "DebugTools/Breakpoints.h"
 
 using namespace x86Emitter;
 

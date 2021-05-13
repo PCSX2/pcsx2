@@ -15,8 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
-#include "../ATA.h"
-#include "../../DEV9.h"
+#include "DEV9/ATA/ATA.h"
+#include "DEV9/DEV9.h"
 
 void ATA::PreCmdExecuteDeviceDiag()
 {

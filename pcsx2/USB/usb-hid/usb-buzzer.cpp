@@ -25,7 +25,7 @@
 #include <windows.h>
 #include <setupapi.h>
 extern "C" {
-#include "../ddk/hidsdi.h"
+#include "USB/ddk/hidsdi.h"
 }
 
 #pragma comment(lib, "setupapi.lib")

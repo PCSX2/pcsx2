@@ -37,8 +37,8 @@
 #include "PAD/Linux/PAD.h"
 #endif
 
-#include "../DebugTools/MIPSAnalyst.h"
-#include "../DebugTools/SymbolMap.h"
+#include "DebugTools/MIPSAnalyst.h"
+#include "DebugTools/SymbolMap.h"
 
 #include "Utilities/PageFaultSource.h"
 #include "Utilities/Threading.h"

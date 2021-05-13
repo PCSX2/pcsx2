@@ -16,9 +16,9 @@
 #ifndef USBPAD_H
 #define USBPAD_H
 
-#include "../qemu-usb/vl.h"
-#include "../configuration.h"
-#include "../deviceproxy.h"
+#include "USB/qemu-usb/vl.h"
+#include "USB/configuration.h"
+#include "USB/deviceproxy.h"
 
 namespace usb_pad
 {

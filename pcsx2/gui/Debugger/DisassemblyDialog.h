@@ -23,7 +23,7 @@
 #include "CtrlMemView.h"
 #include "DebugEvents.h"
 #include "DebuggerLists.h"
-#include "../MSWstuff.h"
+#include "gui/MSWstuff.h"
 
 class DebuggerHelpDialog: public wxDialog
 {

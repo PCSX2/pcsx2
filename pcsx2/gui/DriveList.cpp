@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "DriveList.h"
 #include "MainFrame.h"
-#include "../CDVD/CDVDdiscReader.h"
+#include "CDVD/CDVDdiscReader.h"
 
 DriveList::DriveList()
 {

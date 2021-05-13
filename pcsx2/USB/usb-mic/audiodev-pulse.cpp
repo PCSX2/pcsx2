@@ -13,10 +13,10 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../gtk.h"
+#include "USB/gtk.h"
 #include "audiodev-pulse.h"
 #ifdef DYNLINK_PULSE
-#include "../dynlink/pulse.h"
+#include "USB/dynlink/pulse.h"
 #endif
 
 GtkWidget* new_combobox(const char* label, GtkWidget* vbox); // src/linux/config-gtk.cpp

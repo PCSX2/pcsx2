@@ -15,9 +15,9 @@
 
 #pragma once
 
-#include "../Common/GSDevice.h"
+#include "GS/Renderers/Common/GSDevice.h"
 #include "GSTextureOGL.h"
-#include "../../GS.h"
+#include "GS/GS.h"
 #include "GSVertexArrayOGL.h"
 #include "GSUniformBufferOGL.h"
 #include "GSShaderOGL.h"

@@ -30,15 +30,15 @@
 #include <string>
 #include "ghc/filesystem.h"
 
-#include "../Config.h"
-#include "../DEV9.h"
+#include "DEV9/Config.h"
+#include "DEV9/DEV9.h"
 #include "pcap.h"
-#include "../pcap_io.h"
-#include "../net.h"
-#include "../PacketReader/IP/IP_Address.h"
+#include "DEV9/pcap_io.h"
+#include "DEV9/net.h"
+#include "DEV9/PacketReader/IP/IP_Address.h"
 #include "AppCoreThread.h"
 
-#include "../ATA/HddCreate.h"
+#include "DEV9/ATA/HddCreate.h"
 
 using PacketReader::IP::IP_Address;
 

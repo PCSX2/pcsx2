@@ -23,7 +23,7 @@
 #include "SymbolMap.h"
 #include "MIPSAnalyst.h"
 #include "DebugInterface.h"
-#include "../R5900OpcodeTables.h"
+#include "R5900OpcodeTables.h"
 
 #define _RS ((rawOp >> 21) & 0x1F)
 #define _RT ((rawOp >> 16) & 0x1F)

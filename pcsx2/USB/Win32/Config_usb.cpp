@@ -15,14 +15,14 @@
 
 #include "PrecompiledHeader.h"
 #include "AppCoreThread.h"
-#include "../USB.h"
+#include "USB/USB.h"
 #include "resource_usb.h"
 #include "Config_usb.h"
-#include "../deviceproxy.h"
-#include "../usb-pad/padproxy.h"
-#include "../usb-mic/audiodeviceproxy.h"
-#include "../configuration.h"
-#include "../shared/inifile_usb.h"
+#include "USB/deviceproxy.h"
+#include "USB/usb-pad/padproxy.h"
+#include "USB/usb-mic/audiodeviceproxy.h"
+#include "USB/configuration.h"
+#include "USB/shared/inifile_usb.h"
 
 HINSTANCE hInstUSB;
 

@@ -14,11 +14,11 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "../Config.h"
+#include "SPU2/Config.h"
 #if defined(__linux__) || defined(__APPLE__)
-#include "../Linux/Config.h"
+#include "SPU2/Linux/Config.h"
 #endif
-#include "../Global.h"
+#include "SPU2/Global.h"
 #include "wxConfig.h"
 
 MixerTab::MixerTab(wxWindow* parent)

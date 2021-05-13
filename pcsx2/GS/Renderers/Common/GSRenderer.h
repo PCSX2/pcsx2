@@ -15,10 +15,10 @@
 
 #pragma once
 
-#include "../../GS.h"
-#include "../../Window/GSWnd.h"
-#include "../../GSState.h"
-#include "../../GSCapture.h"
+#include "GS/GS.h"
+#include "GS/Window/GSWnd.h"
+#include "GS/GSState.h"
+#include "GS/GSCapture.h"
 
 class GSRenderer : public GSState
 {

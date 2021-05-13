@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "../../GSVector.h"
+#include "GS/GSVector.h"
 
 class GSTexture
 {

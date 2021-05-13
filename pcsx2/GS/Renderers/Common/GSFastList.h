@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "../../GS_types.h"
+#include "GS/GS_types.h"
 
 template <class T>
 struct Element

@@ -24,10 +24,10 @@
 #endif
 
 #include "DHCP_Server.h"
-#include "../PacketReader/IP/UDP/UDP_Packet.h"
-#include "../PacketReader/IP/UDP/DHCP/DHCP_Packet.h"
+#include "DEV9/PacketReader/IP/UDP/UDP_Packet.h"
+#include "DEV9/PacketReader/IP/UDP/DHCP/DHCP_Packet.h"
 
-#include "../DEV9.h"
+#include "DEV9/DEV9.h"
 
 using namespace PacketReader;
 using namespace PacketReader::IP;

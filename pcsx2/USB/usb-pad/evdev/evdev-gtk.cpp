@@ -19,7 +19,7 @@
 #include <thread>
 #include <stdio.h>
 #include <sstream>
-#include "../../gtk.h"
+#include "USB/gtk.h"
 
 namespace usb_pad
 {

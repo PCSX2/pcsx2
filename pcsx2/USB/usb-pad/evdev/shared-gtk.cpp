@@ -14,7 +14,7 @@
  */
 
 #include "shared.h"
-#include "../../icon_buzz_24.h"
+#include "USB/icon_buzz_24.h"
 
 #include <chrono>
 #include <thread>

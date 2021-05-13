@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "../Common/GSRenderer.h"
+#include "GS/Renderers/Common/GSRenderer.h"
 
 class GSRendererNull : public GSRenderer
 {

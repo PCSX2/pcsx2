@@ -16,8 +16,8 @@
 #pragma once
 
 #include "GSTextureCache.h"
-#include "../Common/GSFunctionMap.h"
-#include "../../GSState.h"
+#include "GS/Renderers/Common/GSFunctionMap.h"
+#include "GS/GSState.h"
 
 class GSRendererHW : public GSRenderer
 {

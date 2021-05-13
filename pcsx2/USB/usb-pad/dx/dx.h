@@ -30,9 +30,9 @@
 #include <map>
 #include <sstream>
 
-#include "../usb-pad.h"
-#include "../../configuration.h"
-#include "../../usb-pad/lg/lg_ff.h"
+#include "USB/usb-pad/usb-pad.h"
+#include "USB/configuration.h"
+#include "USB/usb-pad/lg/lg_ff.h"
 
 #define DINPUT_AXES_COUNT 32
 

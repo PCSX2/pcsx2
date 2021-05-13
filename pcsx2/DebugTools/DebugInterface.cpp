@@ -20,12 +20,12 @@
 #include "R5900.h"
 #include "AppCoreThread.h"
 #include "Debug.h"
-#include "../VU.h"
-#include "../GS.h" // Required for gsNonMirroredRead()
+#include "VU.h"
+#include "GS.h" // Required for gsNonMirroredRead()
 #include "Counters.h"
 
-#include "../R3000A.h"
-#include "../IopMem.h"
+#include "R3000A.h"
+#include "IopMem.h"
 #include "SymbolMap.h"
 
 extern AppCoreThread CoreThread;

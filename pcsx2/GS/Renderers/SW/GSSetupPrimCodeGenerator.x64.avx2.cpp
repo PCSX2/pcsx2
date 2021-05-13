@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSSetupPrimCodeGenerator.h"
 #include "GSVertexSW.h"
-#include "../../GS_codegen.h"
+#include "GS/GS_codegen.h"
 
 #if _M_SSE >= 0x501 && (defined(_M_AMD64) || defined(_WIN64))
 

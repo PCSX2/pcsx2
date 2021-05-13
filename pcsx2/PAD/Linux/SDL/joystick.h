@@ -18,9 +18,9 @@
 #include <SDL.h>
 #include <SDL_haptic.h>
 
-#include "../GamePad.h"
-#include "../PAD.h"
-#include "../controller.h"
+#include "PAD/Linux/GamePad.h"
+#include "PAD/Linux/PAD.h"
+#include "PAD/Linux/controller.h"
 #define NB_EFFECT 2 // Don't use more than two, ps2 only has one for big motor and one for small(like most systems)
 // holds all joystick info
 class JoystickInfo : public GamePad

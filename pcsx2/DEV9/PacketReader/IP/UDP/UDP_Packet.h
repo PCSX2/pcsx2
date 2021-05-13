@@ -14,7 +14,7 @@
  */
 
 #pragma once
-#include "../IP_Packet.h"
+#include "DEV9/PacketReader/IP/IP_Packet.h"
 
 namespace PacketReader::IP::UDP
 {

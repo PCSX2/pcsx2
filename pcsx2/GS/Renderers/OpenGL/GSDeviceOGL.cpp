@@ -14,10 +14,10 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "../../GSState.h"
+#include "GS/GSState.h"
 #include "GSDeviceOGL.h"
 #include "GLState.h"
-#include "../../GSUtil.h"
+#include "GS/GSUtil.h"
 #include <fstream>
 
 //#define ONLY_LINES

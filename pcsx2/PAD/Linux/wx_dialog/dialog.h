@@ -31,9 +31,9 @@
 #include <string>
 #include <sstream>
 
-#include "../GamePad.h"
-#include "../keyboard.h"
-#include "../PAD.h"
+#include "PAD/Linux/GamePad.h"
+#include "PAD/Linux/keyboard.h"
+#include "PAD/Linux/PAD.h"
 #include "opPanel.h"
 
 #include "GamepadConfiguration.h"

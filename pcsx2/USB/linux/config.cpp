@@ -15,10 +15,10 @@
 
 #include "config.h"
 
-#include "../configuration.h"
-#include "../deviceproxy.h"
-#include "../usb-pad/padproxy.h"
-#include "../usb-mic/audiodeviceproxy.h"
+#include "USB/configuration.h"
+#include "USB/deviceproxy.h"
+#include "USB/usb-pad/padproxy.h"
+#include "USB/usb-mic/audiodeviceproxy.h"
 #include "Utilities/Console.h"
 
 void SysMessage_stderr(const char* fmt, ...)

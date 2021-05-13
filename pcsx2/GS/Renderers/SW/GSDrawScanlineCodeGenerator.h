@@ -16,8 +16,8 @@
 #pragma once
 
 #include "GSScanlineEnvironment.h"
-#include "../Common/GSFunctionMap.h"
-#include "../../GSUtil.h"
+#include "GS/Renderers/Common/GSFunctionMap.h"
+#include "GS/GSUtil.h"
 
 #if defined(_M_AMD64) || defined(_WIN64)
 #define RegLong Xbyak::Reg64

@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSDrawScanlineCodeGenerator.h"
 #include "GSVertexSW.h"
-#include "../../GS_codegen.h"
+#include "GS/GS_codegen.h"
 
 #undef _t
 

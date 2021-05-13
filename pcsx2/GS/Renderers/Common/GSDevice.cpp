@@ -14,7 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "../GS.h"
+#include "GS/GS.h"
 #include "GSDevice.h"
 
 GSDevice::GSDevice()

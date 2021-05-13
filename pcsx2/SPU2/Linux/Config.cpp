@@ -14,14 +14,14 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "../Global.h"
+#include "SPU2/Global.h"
 #include "Dialogs.h"
 #include "Config.h"
 
 #if defined(__unix__) || defined(__APPLE__)
 #include <SDL.h>
 #include <SDL_audio.h>
-#include "../wx/wxConfig.h"
+#include "SPU2/wx/wxConfig.h"
 #endif
 
 int AutoDMAPlayRate[2] = {0, 0};

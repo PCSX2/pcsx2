@@ -15,10 +15,10 @@
 
 #pragma once
 
-#include "../../GS.h"
-#include "../../GSCodeBuffer.h"
+#include "GS/GS.h"
+#include "GS/GSCodeBuffer.h"
 
-#include "../SW/GSScanlineEnvironment.h"
+#include "GS/Renderers/SW/GSScanlineEnvironment.h"
 
 template <class KEY, class VALUE>
 class GSFunctionMap

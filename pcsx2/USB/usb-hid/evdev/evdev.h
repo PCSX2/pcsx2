@@ -14,8 +14,8 @@
  */
 
 #pragma once
-#include "../usb-hid.h"
-#include "../../linux/util.h"
+#include "USB/usb-hid/usb-hid.h"
+#include "USB/linux/util.h"
 #include "Utilities/Console.h"
 #include <linux/input.h>
 #include <unistd.h>

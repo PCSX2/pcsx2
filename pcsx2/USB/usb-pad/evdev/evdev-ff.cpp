@@ -14,7 +14,7 @@
  */
 
 #include "evdev-ff.h"
-#include "../../usb-pad/lg/lg_ff.h"
+#include "USB/usb-pad/lg/lg_ff.h"
 #include <unistd.h>
 #include <cerrno>
 #include <cstring>

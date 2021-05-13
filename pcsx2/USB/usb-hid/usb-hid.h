@@ -14,8 +14,8 @@
  */
 
 #pragma once
-#include "../configuration.h"
-#include "../qemu-usb/hid.h"
+#include "USB/configuration.h"
+#include "USB/qemu-usb/hid.h"
 #include <list>
 #include <string>
 
