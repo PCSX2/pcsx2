@@ -23,6 +23,8 @@
 #include "Renderers/OpenGL/GSRendererOGL.h"
 #include "GSLzma.h"
 
+#include "AppCoreThread.h"
+
 #ifdef _WIN32
 
 #include "Renderers/DX11/GSRendererDX11.h"
@@ -706,6 +708,7 @@ int GSfreeze(int mode, GSFreezeData* data)
 
 void GSconfigure()
 {
+	ScopedCoreThreadPause paused_core;
 	try
 	{
 		if (!GSUtil::CheckSSE())
@@ -750,6 +753,7 @@ void GSconfigure()
 	catch (GSRecoverableError)
 	{
 	}
+	paused_core.AllowResume();
 }
 
 int GStest()
