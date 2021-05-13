@@ -435,6 +435,8 @@ HWBlend GSDevice::GetBlend(size_t index)
 
 uint16 GSDevice::GetBlendFlags(size_t index) { return m_blendMap[index].flags; }
 
+// clang-format off
+
 std::array<HWBlend, 3*3*3*3 + 1> GSDevice::m_blendMap =
 {{
 	{ BLEND_NO_REC               , OP_ADD          , CONST_ONE       , CONST_ZERO}      , // 0000: (Cs - Cs)*As + Cs ==> Cs
