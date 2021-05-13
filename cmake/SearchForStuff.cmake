@@ -139,6 +139,7 @@ if(UNIX)
         check_lib(GTK3 gtk+-3.0 gtk/gtk.h)
     endif()
     endif()
+    find_package(XCB)
 endif()
 
 #----------------------------------------

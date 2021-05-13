@@ -1218,6 +1218,7 @@ if(Linux)
 		${LIBUDEV_LIBRARIES}
 		${X11_LIBRARIES}
 		${X11_XCB_LIBRARIES}
+		${XCB_LIBRARIES}
 		)
 endif()
 
