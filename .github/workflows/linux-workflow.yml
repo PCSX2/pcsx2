@@ -53,6 +53,12 @@ jobs:
             cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
             detail: -nopch
             experimental: false
+          - os: ubuntu-20.04
+            platform: x86
+            compiler: gcc
+            cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON -DARCH_FLAG=-march=haswell
+            detail: -avx2-nopch
+            experimental: false
 
     name: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}${{ matrix.detail }}
     runs-on: ${{ matrix.os }}
