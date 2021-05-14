@@ -105,6 +105,8 @@ private:
 	bool internalRxHasData = false;
 
 	bool dhcpOn = false;
+
+protected:
 	InternalServers::DHCP_Server dhcpServer = InternalServers::DHCP_Server([&] { InternalSignalReceived(); });
 	InternalServers::DNS_Logger dnsLogger;
 	InternalServers::DNS_Server dnsServer = InternalServers::DNS_Server([&] { InternalSignalReceived(); });
