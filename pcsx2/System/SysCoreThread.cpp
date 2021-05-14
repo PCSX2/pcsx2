@@ -286,7 +286,7 @@ void SysCoreThread::DoCpuExecute()
 
 void SysCoreThread::ExecuteTaskInThread()
 {
-	Threading::EnableHiresScheduler(); // Note that *something* in SPU2 and GSdx also set the timer resolution to 1ms.
+	Threading::EnableHiresScheduler(); // Note that *something* in SPU2 and GS also set the timer resolution to 1ms.
 	m_sem_event.WaitWithoutYield();
 
 	m_mxcsr_saved.bitmask = _mm_getcsr();

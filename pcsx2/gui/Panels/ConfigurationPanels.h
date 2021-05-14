@@ -268,7 +268,7 @@ namespace Panels
 	protected:
 		// Exclusive mode is currently not used (true for svn r4399).
 		// PCSX2 has partial infrastructure for it:
-		//  - GSdx seem to support it (it supports the API and has implementation), but I don't know if it ever got called.
+		//  - GS seem to support it (it supports the API and has implementation), but I don't know if it ever got called.
 		//  - BUT, the configuration (AppConfig, and specifically GSWindowOptions) do NOT seem to have a place to store this value,
 		//    and PCSX2's code doesn't seem to use this API anywhere. So, no exclusive mode for now.
 		//    - avih

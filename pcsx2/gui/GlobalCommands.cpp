@@ -35,7 +35,7 @@
 #include "SPU2/spu2.h"
 #include "gui/Dialogs/ModalPopups.h"
 
-// renderswitch - tells GSdx to go into dx9 sw if "renderswitch" is set.
+// renderswitch - tells GS to go into dx9 sw if "renderswitch" is set.
 bool renderswitch = false;
 uint renderswitch_delay = 0;
 
@@ -485,7 +485,7 @@ namespace Implementations
 			// start recording
 
 			// make the recording setup dialog[s] pseudo-modal also for the main PCSX2 window
-			// (the GSdx dialog is already properly modal for the GS window)
+			// (the GS dialog is already properly modal for the GS window)
 			if (GetMainFramePtr() && GetMainFramePtr()->IsEnabled())
 				GetMainFramePtr()->Disable();
 
@@ -951,12 +951,12 @@ void AcceleratorDictionary::Map(const KeyAcceleratorCode& _acode, const char* se
 		if (!strcmp("Sys_TakeSnapshot", searchfor))
 		{
 			// Sys_TakeSnapshot is special in a bad way. On its own it creates a screenshot
-			// but GSdx also checks whether shift or ctrl are held down, and for each of
+			// but GS also checks whether shift or ctrl are held down, and for each of
 			// them it does a different thing (gs dumps). So we need to map a shortcut and
 			// also the same shortcut with shift and the same with ctrl to the same function.
 			// So make sure the shortcut doesn't include shift or ctrl, and then add two more
 			// which are derived from it.
-			// Also, looking at the GSdx code, it seems that it never cares about both shift
+			// Also, looking at the GS code, it seems that it never cares about both shift
 			// and ctrl held together, but PCSX2 traditionally mapped f8, shift-f8 and ctrl-shift-f8
 			// to Sys_TakeSnapshot, so let's not change it - we'll keep adding only shift and
 			// ctrl-shift to the base shortcut.
@@ -1049,8 +1049,8 @@ void Pcsx2App::InitDefaultGlobalAccelerators()
 
 	GlobalAccels->Map(AAC(WXK_ESCAPE), "Sys_SuspendResume");
 
-	// Fixme: GS Dumps could need a seperate label and hotkey binding or less interlinked with normal screenshots/snapshots , which messes with overloading lots of different mappings, commented the other GlobalAccels for this reason. GSdx hardcodes keybindings.
-	 GlobalAccels->Map(AAC(WXK_F8), "Sys_TakeSnapshot");
+	// Fixme: GS Dumps could need a seperate label and hotkey binding or less interlinked with normal screenshots/snapshots , which messes with overloading lots of different mappings, commented the other GlobalAccels for this reason. GS hardcodes keybindings.
+	GlobalAccels->Map(AAC(WXK_F8), "Sys_TakeSnapshot");
 	// GlobalAccels->Map(AAC(WXK_F8).Shift(), "Sys_TakeSnapshot");
 	// GlobalAccels->Map(AAC(WXK_F8).Shift().Cmd(), "Sys_TakeSnapshot");
 	GlobalAccels->Map(AAC(WXK_F9), "Sys_RenderswitchToggle");
