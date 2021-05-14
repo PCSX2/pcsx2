@@ -688,7 +688,7 @@ void GSFrame::AppStatusEvent_OnSettingsApplied()
 
 	if( g_Conf->GSWindow.CloseOnEsc )
 	{
-		if (IsShown() /*&& TODO: CHECK IS GS IS CLOSED */)
+		if (IsShown() && !gsopen_done)
 			Show( false );
 	}
 }

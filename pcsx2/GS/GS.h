@@ -1965,3 +1965,5 @@ struct GSErrorGlVertexArrayTooSmall : GSError
 };
 
 extern GSApp theApp;
+
+extern bool gsopen_done;
