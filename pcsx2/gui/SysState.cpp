@@ -38,7 +38,7 @@
 
 #include "Patch.h"
 
-// Used to hold the current state backup (fullcopy of PS2 memory and plugin states).
+// Used to hold the current state backup (fullcopy of PS2 memory and subcomponents states).
 //static VmStateBuffer state_buffer( L"Public Savestate Buffer" );
 
 static const wxChar* EntryFilename_StateVersion = L"PCSX2 Savestate Version.id";
@@ -294,11 +294,6 @@ public:
 
 
 
-
-// [TODO] : Add other components as files to the savestate gzip?
-//  * VU0/VU1 memory banks?  VU0prog, VU1prog, VU0data, VU1data.
-//  * GS register data?
-//  * Individual plugins?
 // (cpuRegs, iopRegs, VPU/GIF/DMAC structures should all remain as part of a larger unified
 //  block, since they're all PCSX2-dependent and having separate files in the archie for them
 //  would not be useful).

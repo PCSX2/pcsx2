@@ -30,17 +30,6 @@ if(GCC_VERSION VERSION_EQUAL "8.0" OR GCC_VERSION VERSION_GREATER "8.0")
 	set(CommonFlags ${CommonFlags} -Wno-packed-not-aligned)
 endif()
 
-# Largely turning off because LegacyPluginAPI_Common in Plugins.h spams really badly in gcc 8 due to the memzero initialization.
-# Should probably be fixed properly, but for now this should work.
-if(GCC_VERSION VERSION_EQUAL "8.0" OR GCC_VERSION VERSION_GREATER "8.0")
-    set(CommonFlags
-	    ${CommonFlags}
-	    -Wno-class-memaccess
-    )
-endif()
-
-
-
 if ("${PGO}" STREQUAL "generate")
     set(pcsx2FinalFlags -fprofile-generate)
 elseif("${PGO}" STREQUAL "use")
@@ -903,7 +892,6 @@ set(pcsx2GuiResources
     ${res_bin}/ConfigIcon_Gamefixes.h
     ${res_bin}/ConfigIcon_MemoryCard.h
     ${res_bin}/ConfigIcon_Paths.h
-    ${res_bin}/ConfigIcon_Plugins.h
     ${res_bin}/ConfigIcon_Speedhacks.h
     ${res_bin}/ConfigIcon_Video.h
     ${res_bin}/Logo.h
@@ -1293,7 +1281,7 @@ file(MAKE_DIRECTORY ${res_bin})
 foreach(res_file IN ITEMS
         AppIcon16 AppIcon32 AppIcon64 BackgroundLogo Logo NoIcon ButtonIcon_Camera
         ConfigIcon_Cpu ConfigIcon_Gamefixes ConfigIcon_MemoryCard
-        ConfigIcon_Paths ConfigIcon_Plugins ConfigIcon_Speedhacks ConfigIcon_Video Breakpoint_Active Breakpoint_Inactive)
+        ConfigIcon_Paths ConfigIcon_Speedhacks ConfigIcon_Video Breakpoint_Active Breakpoint_Inactive)
     add_custom_command(OUTPUT  "${res_bin}/${res_file}.h" COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${res_src}/${res_file}.png" "${res_bin}/${res_file}" )
 endforeach()
 
@@ -1341,7 +1329,7 @@ if (APPLE)
 	else()
 		set(postprocessBundleType ALL)
 	endif()
-	# Use custom_target and not custom_command so plugins can add themselves as dependencies
+
 	add_custom_target(pcsx2-postprocess-bundle ${postprocessBundleType}
 		COMMAND ${CMAKE_COMMAND} "-DPCSX2_BUNDLE_PATH=$<TARGET_FILE_DIR:${Output}>/../.."
 			-P ${CMAKE_SOURCE_DIR}/cmake/Pcsx2PostprocessBundle.cmake

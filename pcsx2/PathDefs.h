@@ -54,7 +54,6 @@ namespace PathDefs
 
 	extern wxDirName GetSnapshots();
 	extern wxDirName GetBios();
-	extern wxDirName GetPlugins();
 	extern wxDirName GetSavestates();
 	extern wxDirName GetMemoryCards();
 	extern wxDirName GetSettings();
@@ -74,7 +73,6 @@ namespace PathDefs
 		extern const wxDirName& Savestates();
 		extern const wxDirName& MemoryCards();
 		extern const wxDirName& Settings();
-		extern const wxDirName& Plugins();
 		extern const wxDirName& Logs();
 		extern const wxDirName& Dumps();
 		extern const wxDirName& Langs();

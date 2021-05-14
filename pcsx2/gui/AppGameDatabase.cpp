@@ -45,7 +45,7 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file)
 		//   regardless of any other settings.
 
 		// Note 1: Portable setup didn't suffer from this as install folder pointed already to the exe folder in portable.
-		// Note 2: Other folders are either configurable (plugins, memcards, etc) or create their content automatically (inis)
+		// Note 2: Other folders are either configurable (memcards, etc) or create their content automatically (inis)
 		//           So the games DB was really the only one that suffers from residues of prior installs.
 
 		//wxDirName dir = InstallFolder;

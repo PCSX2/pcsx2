@@ -75,8 +75,7 @@ extern wxDirName GetCheatsWsFolder();
 enum InstallationModeType
 {
 	// Use the user defined folder selections.  These can be anywhere on a user's hard drive,
-	// though by default the binaries (plugins) are located in Install_Dir (registered
-	// by the installer), and the user files (screenshots, inis) are in the user's documents
+	// though by default thee user files (screenshots, inis) are in the user's documents
 	// folder.  All folders are changable within the GUI.
 	InstallMode_Registered,
 

@@ -612,11 +612,6 @@ void SPU2DoFreezeIn(pxInputStream& infp)
 			Console.Indent().Warning("Warning: No data for SPU2 found. Status may be unpredictable.");
 
 		return;
-
-		// Note: Size mismatch check could also be done here on loading, but
-		// some plugins may have built-in version support for non-native formats or
-		// older versions of a different size... or could give different sizes depending
-		// on the status of the plugin when loading, so let's ignore it.
 	}
 
 	ScopedAlloc<s8> data(fP.size);

@@ -101,15 +101,7 @@ Dialogs::CreateMemoryCardDialog::CreateMemoryCardDialog( wxWindow* parent, const
 	m_text_filenameInput->SetFocus();
 	m_text_filenameInput->SelectAll();
 }
-/*
-wxDirName Dialogs::CreateMemoryCardDialog::GetPathToMcds() const
-{
-	return m_filepicker ? (wxDirName)m_filepicker->GetPath() : m_mcdpath;
-}
-*/
-// When this GUI is moved into the FileMemoryCard plugin (where it eventually belongs),
-// this function will be removed and the MemoryCardFile::Create() function will be used
-// instead.
+
 bool Dialogs::CreateMemoryCardDialog::CreateIt( const wxString& mcdFile, uint sizeInMB, bool isPSX )
 {
 	//int enc[16] = {0x77,0x7f,0x7f,0x77,0x7f,0x7f,0x77,0x7f,0x7f,0x77,0x7f,0x7f,0,0,0,0};

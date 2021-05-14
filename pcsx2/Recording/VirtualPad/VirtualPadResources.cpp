@@ -141,7 +141,7 @@ void AnalogStick::Render(wxDC& dc)
 	int newYCoord = analogPos.centerCoords.y + ((analogStick.yVector.val - 127) / 127.0) * analogPos.radius;
 	// We want to ensure the line segment length is capped at the defined radius
 	// NOTE - The conventional way to do this is using arctan2, but the analog values that come out
-	// of the Pad plugins in pcsx2 do not permit this, the coordinates returned do not define a circle.
+	// of Pad in pcsx2 do not permit this, the coordinates returned do not define a circle.
 	const float lengthOfLine = sqrt(pow(newXCoord - analogPos.centerCoords.x, 2) + pow(newYCoord - analogPos.centerCoords.y, 2));
 	if (lengthOfLine > analogPos.radius)
 	{

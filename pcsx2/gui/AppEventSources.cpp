@@ -112,8 +112,8 @@ void Pcsx2App::DispatchEvent( CoreThreadStatus evt )
 			break;
 	}
 
-	// Clear the sticky key statuses, because hell knows what'll change while the PAD
-	// plugin is suspended.
+	// Clear the sticky key statuses, because hell knows what'll change while PAD
+	// is suspended.
 
 	m_kevt.m_shiftDown		= false;
 	m_kevt.m_controlDown	= false;

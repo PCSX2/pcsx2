@@ -53,7 +53,7 @@ Panels::StandardPathsPanel::StandardPathsPanel( wxWindow* parent )
 	*this += (new DirPickerPanel( this, FolderId_Snapshots,
 		_("Snapshots:"),
 		_("Select a folder for Snapshots") ))->
-		SetToolTip( pxEt( L"This folder is where PCSX2 saves screenshots.  Actual screenshot image format and style may vary depending on the GS plugin being used."
+		SetToolTip( pxEt( L"This folder is where PCSX2 saves screenshots."
 		)
 	) | SubGroup();
 
@@ -61,7 +61,7 @@ Panels::StandardPathsPanel::StandardPathsPanel( wxWindow* parent )
 	*this += (new DirPickerPanel( this, FolderId_Logs,
 		_("Logs/Dumps:" ),
 		_("Select a folder for logs/dumps") ))->
-		SetToolTip( pxEt( L"This folder is where PCSX2 saves its logfiles and diagnostic dumps.  Most plugins will also adhere to this folder, however some older plugins may ignore it."
+		SetToolTip( pxEt( L"This folder is where PCSX2 saves its logfiles and diagnostic dumps."
 		)
 	) | SubGroup();
 

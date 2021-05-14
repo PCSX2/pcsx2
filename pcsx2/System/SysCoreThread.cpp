@@ -116,8 +116,6 @@ void SysCoreThread::Start()
 // memory savestates.
 //
 // Exceptions (can occur on first call only):
-//   PluginInitError     - thrown if a plugin fails init (init is performed on the current thread
-//                         on the first time the thread is resumed from it's initial idle state)
 //   ThreadCreationError - Insufficient system resources to create thread.
 //
 void SysCoreThread::OnResumeReady()
@@ -163,7 +161,7 @@ void SysCoreThread::Reset()
 
 
 // Applies a full suite of new settings, which will automatically facilitate the necessary
-// resets of the core and components (including plugins, if needed).  The scope of resetting
+// resets of the core and components.  The scope of resetting
 // is determined by comparing the current settings against the new settings, so that only
 // real differences are applied.
 void SysCoreThread::ApplySettings(const Pcsx2Config& src)

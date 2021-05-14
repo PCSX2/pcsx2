@@ -389,7 +389,7 @@ bool GSState::isinterlaced()
 GSVideoMode GSState::GetVideoMode()
 {
 	// TODO: Get confirmation of videomode from SYSCALL ? not necessary but would be nice.
-	// Other videomodes can't be detected on the plugin side without the help of the data from core
+	// Other videomodes can't be detected on our side without the help of the data from core
 	// You can only identify a limited number of video modes based on the info from CRTC registers.
 
 	GSVideoMode videomode = GSVideoMode::Unknown;

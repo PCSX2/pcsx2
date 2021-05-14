@@ -159,15 +159,15 @@ s32 PADfreeze(int mode, freezeData* data)
 
 	if (mode == FREEZE_SIZE)
 	{
-		data->size = sizeof(PadPluginFreezeData);
+		data->size = sizeof(PadFreezeData);
 	}
 	else if (mode == FREEZE_LOAD)
 	{
-		PadPluginFreezeData* pdata = (PadPluginFreezeData*)(data->data);
+		PadFreezeData* pdata = (PadFreezeData*)(data->data);
 
 		Pad::stop_vibrate_all();
 
-		if (data->size != sizeof(PadPluginFreezeData) || pdata->version != PAD_SAVE_STATE_VERSION ||
+		if (data->size != sizeof(PadFreezeData) || pdata->version != PAD_SAVE_STATE_VERSION ||
 			strncmp(pdata->format, "LinPad", sizeof(pdata->format)))
 			return 0;
 
@@ -199,10 +199,10 @@ s32 PADfreeze(int mode, freezeData* data)
 	}
 	else if (mode == FREEZE_SAVE)
 	{
-		if (data->size != sizeof(PadPluginFreezeData))
+		if (data->size != sizeof(PadFreezeData))
 			return 0;
 
-		PadPluginFreezeData* pdata = (PadPluginFreezeData*)(data->data);
+		PadFreezeData* pdata = (PadFreezeData*)(data->data);
 
 		// Tales of the Abyss - pad fix
 		// - PCSX2 only saves port0 (save #1), then port1 (save #2)
@@ -322,11 +322,6 @@ void PADDoFreezeIn(pxInputStream& infp)
 			Console.Indent().Warning("Warning: No data for PAD found. Status may be unpredictable.");
 
 		return;
-
-		// Note: Size mismatch check could also be done here on loading, but
-		// some plugins may have built-in version support for non-native formats or
-		// older versions of a different size... or could give different sizes depending
-		// on the status of the plugin when loading, so let's ignore it.
 	}
 
 	ScopedAlloc<s8> data(fP.size);

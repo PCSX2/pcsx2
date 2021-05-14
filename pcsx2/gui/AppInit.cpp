@@ -633,10 +633,6 @@ void Pcsx2App::OnDestroyWindow(wxWindowDestroyEvent& evt)
 	//    console logger.  If so, we need to disable logging to the console window, or else
 	//    it'll crash.  (this is because the console log system uses a cached window handle
 	//    instead of looking the window up via it's ID -- fast but potentially unsafe).
-	//
-	//  * The virtual machine's plugins usually depend on the GS window handle being valid,
-	//    so if the GS window is the one being shut down then we need to make sure to close
-	//    out the Corethread before it vanishes completely from existence.
 
 
 	OnProgramLogClosed(evt.GetId());

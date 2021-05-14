@@ -455,7 +455,7 @@ s32 USBfreeze(int mode, freezeData* data)
 			}
 			else if (!proxy && index != DEVTYPE_NONE)
 			{
-				Console.WriteLn(Color_Red, "USB: Port %d: unknown device.\nPlugin is probably too old for this save.", i);
+				Console.WriteLn(Color_Red, "USB: Port %d: unknown device.\nUSB is probably too old for this save.", i);
 			}
 			ptr += usbd.device[i].size;
 		}
@@ -661,11 +661,6 @@ void USBDoFreezeIn(pxInputStream& infp)
 			Console.Indent().Warning("Warning: No data for USB found. Status may be unpredictable.");
 
 		return;
-
-		// Note: Size mismatch check could also be done here on loading, but
-		// some plugins may have built-in version support for non-native formats or
-		// older versions of a different size... or could give different sizes depending
-		// on the status of the plugin when loading, so let's ignore it.
 	}
 
 	ScopedAlloc<s8> data(fP.size);

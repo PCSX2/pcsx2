@@ -24,7 +24,7 @@
 #include "Alsa.h"
 #include "SPU2/SndOut.h"
 
-// Does not work, except as effectively a null plugin.
+// Does not work, except as effectively a null output
 class AlsaMod : public SndOutModule
 {
 protected:

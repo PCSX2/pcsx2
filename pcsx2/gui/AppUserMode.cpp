@@ -26,14 +26,12 @@
 
 DocsModeType			DocsFolderMode = DocsFolder_User;
 bool					UseDefaultSettingsFolder = true;
-bool					UseDefaultPluginsFolder = true;
 
 
 wxDirName				CustomDocumentsFolder;
 wxDirName				SettingsFolder;
 
 wxDirName				InstallFolder;
-wxDirName				PluginsFolder;
 
 // The UserLocalData folder can be redefined depending on whether or not PCSX2 is in
 // "portable install" mode or not.  when PCSX2 has been configured for portable install, the
@@ -227,13 +225,6 @@ static void DoFirstTimeWizard()
 
 wxConfigBase* Pcsx2App::OpenInstallSettingsFile()
 {
-	// Implementation Notes:
-	//
-	// As of 0.9.8 and beyond, PCSX2's versioning should be strong enough to base ini and
-	// plugin compatibility on version information alone.  This in turn allows us to ditch
-	// the old system (CWD-based ini file mess) in favor of a system that simply stores
-	// most core application-level settings in the registry.
-
 	std::unique_ptr<wxConfigBase> conf_install;
 
 #ifdef __WXMSW__

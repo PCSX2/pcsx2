@@ -365,7 +365,7 @@ void MainEmuFrame::CreatePcsx2Menu()
 	m_menuSys.Append(MenuId_Sys_SuspendResume, _("Initializing..."));
 
 	m_menuSys.Append(MenuId_Sys_Shutdown, _("Shut&down"),
-		_("Wipes all internal VM states and shuts down plugins."));
+		_("Wipes all internal VM states."));
 	m_menuSys.FindItem(MenuId_Sys_Shutdown)->Enable(false);
 
 	m_menuSys.Append(MenuId_Boot_ELF, _("&Run ELF..."),

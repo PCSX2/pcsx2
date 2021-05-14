@@ -159,7 +159,7 @@ void SysMtgsThread::PostVsyncStart()
 	// in the ringbuffer.  The queue limit is disabled when both FrameLimiting and Vsync are
 	// disabled, since the queue can have perverse effects on framerate benchmarking.
 
-	// Edit: It's possible that MTGS is that much faster than the GS plugin that it creates so much lag,
+	// Edit: It's possible that MTGS is that much faster than GS that it creates so much lag,
 	// a game becomes uncontrollable (software rendering for example).
 	// For that reason it's better to have the limit always in place, at the cost of a few max FPS in benchmarks.
 	// If those are needed back, it's better to increase the VsyncQueueSize via PCSX_vm.ini.
@@ -866,8 +866,8 @@ void SysMtgsThread::WaitForOpen()
 
 	// Two-phase timeout on MTGS opening, so that possible errors are handled
 	// in a timely fashion.  We check for errors after 2 seconds, and then give it
-	// another 12 seconds if no errors occurred (this might seem long, but sometimes a
-	// GS plugin can be very stubborned, especially in debug mode builds).
+	// another 12 seconds if no errors occurred (this might seem long, but sometimes our
+	// GS can be very stubborned, especially in debug mode builds).
 
 	if (!m_sem_OpenDone.Wait(wxTimeSpan(0, 0, 2, 0)))
 	{
@@ -877,7 +877,7 @@ void SysMtgsThread::WaitForOpen()
 		{
 			RethrowException();
 
-			pxAssert(_("The MTGS thread has become unresponsive while waiting for the GS plugin to open."));
+			pxAssert(_("The MTGS thread has become unresponsive while waiting for GS to open."));
 		}
 	}
 

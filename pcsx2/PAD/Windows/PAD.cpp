@@ -1524,7 +1524,7 @@ keyEvent* PADkeyEvent()
 		// mouse/kb capture. In practice, WindowsMessagingMouse::Deactivate is called from PADclose, but doesn't
 		// manage to release the mouse, maybe due to the thread from which it's called or some
 		// state or somehow being too late.
-		// This explicitly triggers inactivity (releasing mouse/kb hooks) before PCSX2 starts to close the plugins.
+		// This explicitly triggers inactivity (releasing mouse/kb hooks) before PCSX2 starts to close subcomponents.
 		// Regardless, the mouse/kb hooks will get re-enabled on resume if required without need for further hacks.
 
 		PrepareActivityState(false);
@@ -1554,14 +1554,12 @@ keyEvent* PADkeyEvent()
 	return &ev;
 }
 
-struct PadPluginFreezeData
+struct PadFreezeData
 {
 	char format[8];
 	// Currently all different versions are incompatible.
 	// May split into major/minor with some compatibility rules.
 	u32 version;
-	// So when loading, know which plugin's settings I'm loading.
-	// Not a big deal.  Use a static variable when saving to figure it out.
 	u8 port;
 	// active slot for port
 	u8 slot[2];
@@ -1579,13 +1577,13 @@ s32 PADfreeze(int mode, freezeData* data)
 
 	if (mode == FREEZE_SIZE)
 	{
-		data->size = sizeof(PadPluginFreezeData);
+		data->size = sizeof(PadFreezeData);
 	}
 	else if (mode == FREEZE_LOAD)
 	{
-		PadPluginFreezeData& pdata = *(PadPluginFreezeData*)(data->data);
+		PadFreezeData& pdata = *(PadFreezeData*)(data->data);
 		StopVibrate();
-		if (data->size != sizeof(PadPluginFreezeData) ||
+		if (data->size != sizeof(PadFreezeData) ||
 			pdata.version != PAD_SAVE_STATE_VERSION ||
 			strcmp(pdata.format, "PadMode"))
 			return 0;
@@ -1622,9 +1620,9 @@ s32 PADfreeze(int mode, freezeData* data)
 	}
 	else if (mode == FREEZE_SAVE)
 	{
-		if (data->size != sizeof(PadPluginFreezeData))
+		if (data->size != sizeof(PadFreezeData))
 			return 0;
-		PadPluginFreezeData& pdata = *(PadPluginFreezeData*)(data->data);
+		PadFreezeData& pdata = *(PadFreezeData*)(data->data);
 
 
 		// Tales of the Abyss - pad fix
@@ -1697,11 +1695,6 @@ void PADDoFreezeIn(pxInputStream& infp)
 			Console.Indent().Warning("Warning: No data for PAD found. Status may be unpredictable.");
 
 		return;
-
-		// Note: Size mismatch check could also be done here on loading, but
-		// some plugins may have built-in version support for non-native formats or
-		// older versions of a different size... or could give different sizes depending
-		// on the status of the plugin when loading, so let's ignore it.
 	}
 
 	ScopedAlloc<s8> data(fP.size);
