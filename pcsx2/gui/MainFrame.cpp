@@ -591,7 +591,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 
 	, m_MenuItem_Console(*new wxMenuItem(&m_menuWindow, MenuId_Console, _("&Show Program Log"), wxEmptyString, wxITEM_CHECK))
 #if defined(__unix__)
-	, m_MenuItem_Console_Stdio(*new wxMenuItem(&m_menuWindow, MenuId_Console_Stdio, _("&Console to Stdio"), wxEmptyString, wxITEM_CHECK))
+	, m_MenuItem_Console_Stdio(*new wxMenuItem(&m_menuWindow, MenuId_Console_Stdio, _("&Program Log to Stdio"), wxEmptyString, wxITEM_CHECK))
 #endif
 
 {
