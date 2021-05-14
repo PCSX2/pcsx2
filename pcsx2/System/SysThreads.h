@@ -209,7 +209,6 @@ public:
 	virtual void GameStartingInThread();
 
 	virtual void ApplySettings(const Pcsx2Config& src);
-	virtual void UploadStateCopy(const VmStateBuffer& copy);
 
 	virtual bool HasActiveMachine() const { return m_hasActiveMachine; }
 

@@ -76,11 +76,6 @@ public:
 		return (m_version & 0xffff);
 	}
 
-	// Loads or saves the entire emulation state.
-	// Note: The Cpu state must be reset, and plugins *open*, prior to Defrosting
-	// (loading) a state!
-	virtual SaveStateBase& FreezeAll();
-
 	virtual SaveStateBase& FreezeMainMemory();
 	virtual SaveStateBase& FreezeBios();
 	virtual SaveStateBase& FreezeInternals();
@@ -197,7 +192,6 @@ public:
 	void MakeRoomForData();
 
 	void FreezeMem( void* data, int size );
-	memSavingState& FreezeAll();
 
 	bool IsSaving() const { return true; }
 };

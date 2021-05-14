@@ -181,16 +181,6 @@ void SysCoreThread::ApplySettings(const Pcsx2Config& src)
 	const_cast<Pcsx2Config&>(EmuConfig) = src;
 }
 
-void SysCoreThread::UploadStateCopy(const VmStateBuffer& copy)
-{
-	if (!pxAssertDev(IsPaused(), "CoreThread is not paused; new VM state cannot be uploaded."))
-		return;
-
-	memLoadingState loadme(copy);
-	loadme.FreezeAll();
-	m_resetVirtualMachine = false;
-}
-
 // --------------------------------------------------------------------------------------
 //  SysCoreThread *Worker* Implementations
 //    (Called from the context of this thread only)
