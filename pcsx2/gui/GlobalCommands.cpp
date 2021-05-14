@@ -401,10 +401,28 @@ namespace Implementations
 		if (renderswitch_delay == 0)
 		{
 			ScopedCoreThreadPause paused_core;
-			// TODO: add back saving/freezing of gs here -- govanify
+			std::unique_ptr<VmStateBuffer> plugstore;
+			GSFreezeData fP = {0, NULL};
+			GSfreeze(FREEZE_SIZE, &fP);
+			u8* data = new u8[fP.size];
+			fP.data = data;
+			if (CoreThread.HasActiveMachine())
+			{
+				plugstore = std::make_unique<VmStateBuffer>(L"StateCopy_RenderToggle");
+				memSavingState save(plugstore.get());
+				GSfreeze(FREEZE_SAVE, &fP);
+			}
+			GSclose();
+			if (plugstore)
+			{
+				memLoadingState load(plugstore.get());
+				GSfreeze(FREEZE_LOAD, &fP);
+			}
 			renderswitch = !renderswitch;
-			paused_core.AllowResume();
+			GSopen2((void**)pDsp, (renderswitch << 24));
 			renderswitch_delay = -1;
+			delete[] fP.data;
+			paused_core.AllowResume();
 		}
 	}
 
@@ -468,12 +486,8 @@ namespace Implementations
 
 			// make the recording setup dialog[s] pseudo-modal also for the main PCSX2 window
 			// (the GSdx dialog is already properly modal for the GS window)
-			bool needsMainFrameEnable = false;
 			if (GetMainFramePtr() && GetMainFramePtr()->IsEnabled())
-			{
-				needsMainFrameEnable = true;
 				GetMainFramePtr()->Disable();
-			}
 
 			// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens.
 			std::string filename;
