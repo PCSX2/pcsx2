@@ -241,16 +241,6 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	return *this;
 }
 
-SaveStateBase& SaveStateBase::FreezeAll()
-{
-	FreezeMainMemory();
-	FreezeBios();
-	FreezeInternals();
-	//TODO: ADD BACK FREEZE PLUGINS HERE
-
-	return *this;
-}
-
 
 // --------------------------------------------------------------------------------------
 //  memSavingState (implementations)
@@ -283,14 +273,6 @@ void memSavingState::MakeRoomForData()
 
 	m_memory->ChunkSize = ReallocThreshold;
 	m_memory->MakeRoomFor( m_idx + MemoryBaseAllocSize );
-}
-
-// Saving of state data to a memory buffer
-memSavingState& memSavingState::FreezeAll()
-{
-	MakeRoomForData();
-	_parent::FreezeAll();
-	return *this;
 }
 
 // --------------------------------------------------------------------------------------

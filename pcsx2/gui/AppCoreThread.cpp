@@ -642,13 +642,6 @@ bool AppCoreThread::StateCheckInThread()
 	return _parent::StateCheckInThread();
 }
 
-void AppCoreThread::UploadStateCopy(const VmStateBuffer& copy)
-{
-	ScopedCoreThreadPause paused_core;
-	_parent::UploadStateCopy(copy);
-	paused_core.AllowResume();
-}
-
 static uint m_except_threshold = 0;
 
 void AppCoreThread::ExecuteTaskInThread()

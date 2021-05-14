@@ -24,6 +24,7 @@
 #include "GSLzma.h"
 
 #include "AppCoreThread.h"
+#include "Utilities/pxStreams.h"
 
 #ifdef _WIN32
 
@@ -2309,7 +2310,7 @@ GSRendererType GSApp::GetCurrentRendererType() const
 
 void GSDoFreezeOut(void* dest)
 {
-	freezeData fP = {0, (s8*)dest};
+	GSFreezeData fP = {0, (u8*)dest};
 	if (GSfreeze(FREEZE_SIZE, &fP) != 0)
 		return;
 	if (!fP.size)
@@ -2324,7 +2325,7 @@ void GSDoFreezeOut(void* dest)
 
 void GSDoFreezeIn(pxInputStream& infp)
 {
-	freezeData fP = {0, nullptr};
+	GSFreezeData fP = {0, nullptr};
 	if (GSfreeze(FREEZE_SIZE, &fP) != 0)
 		fP.size = 0;
 
@@ -2346,7 +2347,7 @@ void GSDoFreezeIn(pxInputStream& infp)
 	}
 
 	ScopedAlloc<s8> data(fP.size);
-	fP.data = data.GetPtr();
+	fP.data = (u8*)data.GetPtr();
 
 	infp.Read(fP.data, fP.size);
 	if (GSfreeze(FREEZE_LOAD, &fP) != 0)

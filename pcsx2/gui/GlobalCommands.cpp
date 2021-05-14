@@ -400,7 +400,7 @@ namespace Implementations
 			return;
 		if (renderswitch_delay == 0)
 		{
-			ScopedCoreThreadPause paused_core();
+			ScopedCoreThreadPause paused_core;
 			// TODO: add back saving/freezing of gs here -- govanify
 			renderswitch = !renderswitch;
 			paused_core.AllowResume();

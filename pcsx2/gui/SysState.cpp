@@ -279,7 +279,7 @@ public:
 	void FreezeIn(pxInputStream& reader) const { return GSDoFreezeIn(reader); }
 	void FreezeOut(SaveStateBase& writer) const
 	{
-		freezeData fP = {0, NULL};
+		GSFreezeData fP = {0, NULL};
 		if (GSfreeze(FREEZE_SIZE, &fP) == 0)
 		{
 			const int size = fP.size;
