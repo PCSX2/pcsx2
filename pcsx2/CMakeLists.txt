@@ -22,6 +22,7 @@ set(CommonFlags
     -Wno-parentheses
     -Wno-missing-braces
     -Wno-unknown-pragmas
+    -Wno-class-memaccess
     -DWX_PRECOMP
 	)
 
