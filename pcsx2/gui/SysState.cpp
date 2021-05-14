@@ -270,6 +270,29 @@ public:
 	bool IsRequired() const { return true; }
 };
 
+class SavestateEntry_GS : public BaseSavestateEntry
+{
+public:
+	virtual ~SavestateEntry_GS() = default;
+
+	wxString GetFilename() const { return L"GS.bin"; }
+	void FreezeIn(pxInputStream& reader) const { return GSDoFreezeIn(reader); }
+	void FreezeOut(SaveStateBase& writer) const
+	{
+		freezeData fP = {0, NULL};
+		if (GSfreeze(FREEZE_SIZE, &fP) == 0)
+		{
+			const int size = fP.size;
+			writer.PrepBlock(size);
+			GSDoFreezeOut(writer.GetBlockPtr());
+			writer.CommitBlock(size);
+		}
+		return;
+	}
+	bool IsRequired() const { return true; }
+};
+
+
 
 
 // [TODO] : Add other components as files to the savestate gzip?
@@ -294,6 +317,7 @@ static const std::unique_ptr<BaseSavestateEntry> SavestateEntries[] = {
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_SPU2),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_USB),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_PAD),
+	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_GS),
 };
 
 // It's bad mojo to have savestates trying to read and write from the same file at the
