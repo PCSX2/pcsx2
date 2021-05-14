@@ -732,12 +732,12 @@ void GSconfigure()
 		// We can convince it that touching that pool would be unsafe by running all GTK calls within a CFRunLoop
 		// (Blocks submitted to the main queue by dispatch_async are run by its CFRunLoop)
 		dispatch_async(dispatch_get_main_queue(), ^{
-			if (RunLinuxDialog())
-			{
-				theApp.ReloadConfig();
-				// Force a reload of the gs state
-				theApp.SetCurrentRendererType(GSRendererType::Undefined);
-			}
+		  if (RunLinuxDialog())
+		  {
+			  theApp.ReloadConfig();
+			  // Force a reload of the gs state
+			  theApp.SetCurrentRendererType(GSRendererType::Undefined);
+		  }
 		});
 #else
 
@@ -976,9 +976,7 @@ void GSReplay(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
 	const std::string f{lpszCmdLine};
 	const bool is_xz = f.size() >= 4 && f.compare(f.size() - 3, 3, ".xz") == 0;
 
-	auto file = is_xz
-		? std::unique_ptr<GSDumpFile>{std::make_unique<GSDumpLzma>(lpszCmdLine, nullptr)}
-		: std::unique_ptr<GSDumpFile>{std::make_unique<GSDumpRaw>(lpszCmdLine, nullptr)};
+	auto file = is_xz ? std::unique_ptr<GSDumpFile>{std::make_unique<GSDumpLzma>(lpszCmdLine, nullptr)} : std::unique_ptr<GSDumpFile>{std::make_unique<GSDumpRaw>(lpszCmdLine, nullptr)};
 
 	GSinit();
 
@@ -1069,19 +1067,28 @@ void GSReplay(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
 			switch (p.type)
 			{
 				case 0:
-					switch(p.param)
+					switch (p.param)
 					{
-						case 0: GSgifTransfer1(p.buff.data(), p.addr); break;
-						case 1: GSgifTransfer2(p.buff.data(), p.size / 16); break;
-						case 2: GSgifTransfer3(p.buff.data(), p.size / 16); break;
-						case 3: GSgifTransfer(p.buff.data(), p.size / 16); break;
+						case 0:
+							GSgifTransfer1(p.buff.data(), p.addr);
+							break;
+						case 1:
+							GSgifTransfer2(p.buff.data(), p.size / 16);
+							break;
+						case 2:
+							GSgifTransfer3(p.buff.data(), p.size / 16);
+							break;
+						case 3:
+							GSgifTransfer(p.buff.data(), p.size / 16);
+							break;
 					}
 					break;
 				case 1:
 					GSvsync(p.param);
 					break;
 				case 2:
-					if(buff.size() < p.size) buff.resize(p.size);
+					if (buff.size() < p.size)
+						buff.resize(p.size);
 					GSreadFIFO2(p.buff.data(), p.size / 16);
 					break;
 				case 3:
@@ -1107,22 +1114,26 @@ void GSBenchmark(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow)
 	{
 		GSLocalMemory* mem = new GSLocalMemory();
 
-		static struct {int psm; const char* name;} s_format[] =
+		static struct
 		{
-			{PSM_PSMCT32, "32"},
-			{PSM_PSMCT24, "24"},
-			{PSM_PSMCT16, "16"},
-			{PSM_PSMCT16S, "16S"},
-			{PSM_PSMT8, "8"},
-			{PSM_PSMT4, "4"},
-			{PSM_PSMT8H, "8H"},
-			{PSM_PSMT4HL, "4HL"},
-			{PSM_PSMT4HH, "4HH"},
-			{PSM_PSMZ32, "32Z"},
-			{PSM_PSMZ24, "24Z"},
-			{PSM_PSMZ16, "16Z"},
-			{PSM_PSMZ16S, "16ZS"},
-		};
+			int psm;
+			const char* name;
+		} s_format[] =
+			{
+				{PSM_PSMCT32, "32"},
+				{PSM_PSMCT24, "24"},
+				{PSM_PSMCT16, "16"},
+				{PSM_PSMCT16S, "16S"},
+				{PSM_PSMT8, "8"},
+				{PSM_PSMT4, "4"},
+				{PSM_PSMT8H, "8H"},
+				{PSM_PSMT4HL, "4HL"},
+				{PSM_PSMT4HH, "4HH"},
+				{PSM_PSMZ32, "32Z"},
+				{PSM_PSMZ24, "24Z"},
+				{PSM_PSMZ16, "16Z"},
+				{PSM_PSMZ16S, "16ZS"},
+			};
 
 		uint8* ptr = (uint8*)_aligned_malloc(1024 * 1024 * 4, 32);
 
@@ -1377,9 +1388,7 @@ void GSReplay(char* lpszCmdLine, int renderer)
 		else
 			f.replace(f.end() - 3, f.end(), "_repack.gs");
 
-		GSDumpFile* file = is_xz
-			? (GSDumpFile*) new GSDumpLzma(lpszCmdLine, repack_dump ? f.c_str() : nullptr)
-			: (GSDumpFile*) new GSDumpRaw(lpszCmdLine, repack_dump ? f.c_str() : nullptr);
+		GSDumpFile* file = is_xz ? (GSDumpFile*)new GSDumpLzma(lpszCmdLine, repack_dump ? f.c_str() : nullptr) : (GSDumpFile*)new GSDumpRaw(lpszCmdLine, repack_dump ? f.c_str() : nullptr);
 
 		uint32 crc;
 		file->Read(&crc, 4);
@@ -1473,10 +1482,18 @@ void GSReplay(char* lpszCmdLine, int renderer)
 
 					switch (p->param)
 					{
-						case 0: GSgifTransfer1(&p->buff[0], p->addr); break;
-						case 1: GSgifTransfer2(&p->buff[0], p->size / 16); break;
-						case 2: GSgifTransfer3(&p->buff[0], p->size / 16); break;
-						case 3: GSgifTransfer(&p->buff[0], p->size / 16); break;
+						case 0:
+							GSgifTransfer1(&p->buff[0], p->addr);
+							break;
+						case 1:
+							GSgifTransfer2(&p->buff[0], p->size / 16);
+							break;
+						case 2:
+							GSgifTransfer3(&p->buff[0], p->size / 16);
+							break;
+						case 3:
+							GSgifTransfer(&p->buff[0], p->size / 16);
+							break;
 					}
 
 					break;
@@ -1524,9 +1541,9 @@ void GSReplay(char* lpszCmdLine, int renderer)
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 	unsigned long total_frame_nb = std::max(1l, frame_number) << 10;
 	fprintf(stderr, "memory bandwith. T: %f KB/f. V: %f KB/f. U: %f KB/f\n",
-			(float)g_real_texture_upload_byte / (float)total_frame_nb,
-			(float)g_vertex_upload_byte / (float)total_frame_nb,
-			(float)g_uniform_upload_byte / (float)total_frame_nb);
+		(float)g_real_texture_upload_byte / (float)total_frame_nb,
+		(float)g_vertex_upload_byte / (float)total_frame_nb,
+		(float)g_uniform_upload_byte / (float)total_frame_nb);
 #endif
 
 	for (auto i = packets.begin(); i != packets.end(); i++)
@@ -1864,7 +1881,7 @@ bool GSApp::WriteIniString(const char* lpAppName, const char* lpKeyName, const c
 	if (f == NULL)
 		return false; // FIXME print a nice message
 
-	// Maintain compatibility with GSDumpGUI/old Windows ini.
+		// Maintain compatibility with GSDumpGUI/old Windows ini.
 #ifdef _WIN32
 	fprintf(f, "[Settings]\n");
 #endif
@@ -2288,4 +2305,50 @@ void GSApp::SetCurrentRendererType(GSRendererType type)
 GSRendererType GSApp::GetCurrentRendererType() const
 {
 	return m_current_renderer_type;
+}
+
+void GSDoFreezeOut(void* dest)
+{
+	freezeData fP = {0, (s8*)dest};
+	if (GSfreeze(FREEZE_SIZE, &fP) != 0)
+		return;
+	if (!fP.size)
+		return;
+
+	Console.Indent().WriteLn("Saving GS");
+
+	if (GSfreeze(FREEZE_SAVE, &fP) != 0)
+		throw std::runtime_error(" * GS: Error saving state!\n");
+}
+
+
+void GSDoFreezeIn(pxInputStream& infp)
+{
+	freezeData fP = {0, nullptr};
+	if (GSfreeze(FREEZE_SIZE, &fP) != 0)
+		fP.size = 0;
+
+	Console.Indent().WriteLn("Loading GS");
+
+	if (!infp.IsOk() || !infp.Length())
+	{
+		// no state data to read, but GS expects some state data?
+		// Issue a warning to console...
+		if (fP.size != 0)
+			Console.Indent().Warning("Warning: No data for GS found. Status may be unpredictable.");
+
+		return;
+
+		// Note: Size mismatch check could also be done here on loading, but
+		// some plugins may have built-in version support for non-native formats or
+		// older versions of a different size... or could give different sizes depending
+		// on the status of the plugin when loading, so let's ignore it.
+	}
+
+	ScopedAlloc<s8> data(fP.size);
+	fP.data = data.GetPtr();
+
+	infp.Read(fP.data, fP.size);
+	if (GSfreeze(FREEZE_LOAD, &fP) != 0)
+		throw std::runtime_error(" * GS: Error loading state!\n");
 }
