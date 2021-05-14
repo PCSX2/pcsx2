@@ -419,7 +419,7 @@ namespace Implementations
 				GSfreeze(FREEZE_LOAD, &fP);
 			}
 			renderswitch = !renderswitch;
-			GSopen2((void**)pDsp, (renderswitch << 24));
+			GSopen2((void**)pDsp, (renderswitch ? 4 : 0));
 			renderswitch_delay = -1;
 			delete[] fP.data;
 			paused_core.AllowResume();
