@@ -28,6 +28,42 @@ namespace PacketReader::IP
 		virtual ~IP_Payload() {}
 	};
 
+	class IP_PayloadData : public IP_Payload
+	{
+	public:
+		std::unique_ptr<u8[]> data;
+
+	private:
+		int length;
+		u8 protocol;
+
+	public:
+		IP_PayloadData(int len, u8 prot)
+		{
+			protocol = prot;
+			length = len;
+
+			if (len != 0)
+				data = std::make_unique<u8[]>(len);
+		}
+		virtual int GetLength()
+		{
+			return length;
+		}
+		virtual void WriteBytes(u8* buffer, int* offset)
+		{
+			if (length == 0)
+				return;
+
+			memcpy(&buffer[*offset], data.get(), length);
+			*offset += length;
+		}
+		virtual u8 GetProtocol()
+		{
+			return protocol;
+		}
+	};
+
 	//Pointer to bytes not owned by class
 	class IP_PayloadPtr : public IP_Payload
 	{
