@@ -868,7 +868,7 @@ void Pcsx2App::OpenGsPanel()
 		gsFrame->SetSize( oldsize );
 	}
 
-	//TODO: MAKE SURE GS IS CLOSED HERE
+    pxAssertDev( !gsopen_done, "GS Plugin must be closed prior to opening a new Gs Panel!" );
 
 #ifdef __WXGTK__
 	// The x window/display are actually very deeper in the widget. You need both display and window

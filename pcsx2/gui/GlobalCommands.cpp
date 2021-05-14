@@ -400,12 +400,11 @@ namespace Implementations
 			return;
 		if (renderswitch_delay == 0)
 		{
-			/* TODO: reimplement this:
-			 * ScopedCoreThreadPause paused_core(new SysExecEvent_SaveSinglePlugin(PluginId_GS));
-			 * renderswitch = !renderswitch;
-			 * paused_core.AllowResume();
-			 * renderswitch_delay = -1;
-			 */
+			 ScopedCoreThreadPause paused_core();
+             GSfreeze();
+			 renderswitch = !renderswitch;
+			 paused_core.AllowResume();
+			 renderswitch_delay = -1;
 		}
 	}
 
