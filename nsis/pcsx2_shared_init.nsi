@@ -83,11 +83,6 @@ Function TempFilesOut
     File ..\bin\shaders\GSdx.fx
     File ..\bin\shaders\GSdx_FX_Settings.ini
 
-  SetOutPath "$TEMP\PCSX2 ${APP_VERSION}\Plugins"
-    File /nonfatal ..\bin\Plugins\gsdx32-sse2.dll
-    File /nonfatal ..\bin\Plugins\gsdx32-sse4.dll
-    File /nonfatal ..\bin\Plugins\gsdx32-avx2.dll
-
   SetOutPath "$TEMP\PCSX2 ${APP_VERSION}\Langs"
     File /nonfatal /r ..\bin\Langs\*.mo
 FunctionEnd
