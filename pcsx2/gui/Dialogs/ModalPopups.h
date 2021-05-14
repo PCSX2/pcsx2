@@ -93,7 +93,6 @@ class FirstTimeWizard : public wxWizard
 
 protected:
 	wxWizardPageSimple& m_page_intro;
-	wxWizardPageSimple& m_page_plugins;
 	wxWizardPageSimple& m_page_bios;
 
 	wxPanelWithHelpers& m_panel_Intro;
