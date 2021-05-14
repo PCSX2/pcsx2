@@ -25,6 +25,37 @@ namespace PacketReader
 		virtual ~Payload() {}
 	};
 
+	//Data owned by class
+	class PayloadData : public Payload
+	{
+	public:
+		std::unique_ptr<u8[]> data;
+
+	private:
+		int length;
+
+	public:
+		PayloadData(int len)
+		{
+			length = len;
+
+			if (len != 0)
+				data = std::make_unique<u8[]>(len);
+		}
+		virtual int GetLength()
+		{
+			return length;
+		}
+		virtual void WriteBytes(u8* buffer, int* offset)
+		{
+			if (length == 0)
+				return;
+
+			memcpy(&buffer[*offset], data.get(), length);
+			*offset += length;
+		}
+	};
+
 	//Pointer to bytes not owned by class
 	class PayloadPtr : public Payload
 	{
