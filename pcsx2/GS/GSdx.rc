@@ -367,45 +367,6 @@ END
 #endif    // APSTUDIO_INVOKED
 
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// Version
-//
-
-VS_VERSION_INFO VERSIONINFO
- FILEVERSION 1,2,0,0
- PRODUCTVERSION 1,2,0,0
- FILEFLAGSMASK 0x3fL
-#ifdef _DEBUG
- FILEFLAGS 0x1L
-#else
- FILEFLAGS 0x0L
-#endif
- FILEOS 0x4L
- FILETYPE 0x2L
- FILESUBTYPE 0x0L
-BEGIN
-    BLOCK "StringFileInfo"
-    BEGIN
-        BLOCK "040904e4"
-        BEGIN
-            VALUE "Comments", "http://guliverkli.sf.net/"
-            VALUE "CompanyName", "Gabest"
-            VALUE "FileDescription", "GS plugin for ps2 emulators"
-            VALUE "FileVersion", "1, 2, 0, 0"
-            VALUE "InternalName", "GS.dll"
-            VALUE "LegalCopyright", "Copyright (c) 2007-2008 Gabest.  All rights reserved."
-            VALUE "OriginalFilename", "GS.dll"
-            VALUE "ProductName", "GS"
-            VALUE "ProductVersion", "1, 2, 0, 0"
-        END
-    END
-    BLOCK "VarFileInfo"
-    BEGIN
-        VALUE "Translation", 0x409, 1252
-    END
-END
-
 #endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 

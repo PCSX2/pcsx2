@@ -333,12 +333,7 @@ int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads 
 	}
 	catch (std::exception& ex)
 	{
-		// Allowing std exceptions to escape the scope of the plugin callstack could
-		// be problematic, because of differing typeids between DLL and EXE compilations.
-		// ('new' could throw std::alloc)
-
 		printf("GS error: Exception caught in GSopen: %s", ex.what());
-
 		return -1;
 	}
 
@@ -2339,11 +2334,6 @@ void GSDoFreezeIn(pxInputStream& infp)
 			Console.Indent().Warning("Warning: No data for GS found. Status may be unpredictable.");
 
 		return;
-
-		// Note: Size mismatch check could also be done here on loading, but
-		// some plugins may have built-in version support for non-native formats or
-		// older versions of a different size... or could give different sizes depending
-		// on the status of the plugin when loading, so let's ignore it.
 	}
 
 	ScopedAlloc<s8> data(fP.size);

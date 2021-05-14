@@ -503,7 +503,7 @@ void Pcsx2App::LogicalVsync()
 	{
 		if( ev->key == 0 ) break;
 
-		// Give plugins first try to handle keys.  If none of them handles the key, it will
+		// Give PAD first try to handle keys.  If none of them handles the key, it will
 		// be passed to the main user interface.
 		PadKeyDispatch( *ev );
 	}
@@ -868,14 +868,13 @@ void Pcsx2App::OpenGsPanel()
 		gsFrame->SetSize( oldsize );
 	}
 
-    pxAssertDev( !gsopen_done, "GS Plugin must be closed prior to opening a new Gs Panel!" );
+    pxAssertDev( !gsopen_done, "GS must be closed prior to opening a new Gs Panel!" );
 
 #ifdef __WXGTK__
 	// The x window/display are actually very deeper in the widget. You need both display and window
 	// because unlike window there are unrelated. One could think it would be easier to send directly the GdkWindow.
 	// Unfortunately there is a race condition between gui and gs threads when you called the
-	// GDK_WINDOW_* macro. To be safe I think it is best to do here. It only cost a slight
-	// extension (fully compatible) of the plugins API. -- Gregory
+	// GDK_WINDOW_* macro. To be safe I think it is best to do here. -- Gregory
 
 	// GTK_PIZZA is an internal interface of wx, therefore they decide to
 	// remove it on wx 3. I tryed to replace it with gtk_widget_get_window but
@@ -1013,8 +1012,6 @@ protected:
 	{
 		wxGetApp().ProcessMethod( AppSaveSettings );
 
-		// if something unloaded plugins since this messages was queued then it's best to ignore
-		// it, because apparently too much stuff is going on and the emulation states are wonky.
 		DbgCon.WriteLn( Color_Gray, "(SysExecute) received." );
 
 		CoreThread.ResetQuick();

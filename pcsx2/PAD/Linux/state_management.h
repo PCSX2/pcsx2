@@ -95,7 +95,7 @@ public:
 };
 
 // Full state to manage save state
-struct PadPluginFreezeData
+struct PadFreezeData
 {
 	char format[8];
 	u32 version;

@@ -177,8 +177,6 @@ struct TraceLogFilters
 //  Pcsx2Config class
 // --------------------------------------------------------------------------------------
 // This is intended to be a public class library between the core emulator and GUI only.
-// It is *not* meant to be shared data between core emulation and plugins, due to issues
-// with version incompatibilities if the structure formats are changed.
 //
 // When GUI code performs modifications of this class, it must be done with strict thread
 // safety, since the emu runs on a separate thread.  Additionally many components of the

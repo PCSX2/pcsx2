@@ -118,7 +118,7 @@ public:
 };
 
 // --------------------------------------------------------------------------------------
-//  EventListenerHelpers (CoreThread / Plugins / AppStatus)
+//  EventListenerHelpers (CoreThread / AppStatus)
 // --------------------------------------------------------------------------------------
 // Welcome to the awkward world of C++ multi-inheritence.  wxWidgets' Connect() system is
 // incompatible because of limitations in C++ class member function pointers, so we need

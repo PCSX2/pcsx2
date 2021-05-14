@@ -118,8 +118,7 @@ static void WipeSettings()
 	wxRemoveFile(GetUiSettingsFilename());
 	wxRemoveFile(GetVmSettingsFilename());
 
-	// FIXME: wxRmdir doesn't seem to work here for some reason (possible file sharing issue
-	// with a plugin that leaves a file handle dangling maybe?).  But deleting the inis folder
+	// FIXME: wxRmdir doesn't seem to work here for some reason but deleting the inis folder
 	// manually from explorer does work.  Can't think of a good work-around at the moment. --air
 
 	//wxRmdir( GetSettingsFolder().ToString() );
@@ -148,7 +147,7 @@ void MainEmuFrame::Menu_ResetAllSettings_Click(wxCommandEvent& event)
 	{
 		ScopedCoreThreadPopup suspender;
 		if (!Msgbox::OkCancel(pxsFmt(
-								  pxE(L"This command clears %s settings and allows you to re-run the First-Time Wizard.  You will need to manually restart %s after this operation.\n\nWARNING!!  Click OK to delete *ALL* settings for %s and force-close the app, losing any current emulation progress.  Are you absolutely sure?\n\n(note: settings for plugins are unaffected)"), WX_STR(pxGetAppName()), WX_STR(pxGetAppName()), WX_STR(pxGetAppName())),
+								  pxE(L"This command clears %s settings and allows you to re-run the First-Time Wizard.  You will need to manually restart %s after this operation.\n\nWARNING!!  Click OK to delete *ALL* settings for %s and force-close the app, losing any current emulation progress.  Are you absolutely sure?"), WX_STR(pxGetAppName()), WX_STR(pxGetAppName()), WX_STR(pxGetAppName())),
 							  _("Reset all settings?")))
 		{
 			suspender.AllowResume();
@@ -795,8 +794,7 @@ void MainEmuFrame::Menu_SuspendResume_Click(wxCommandEvent& event)
 		return;
 
 	// Disable the menu item.  The state of the menu is indeterminate until the core thread
-	// has responded (it updates status after the plugins are loaded and emulation has
-	// engaged successfully).
+	// has responded (it updates status after emulation has engaged successfully).
 
 	EnableMenuItem(MenuId_Sys_SuspendResume, false);
 	GetSysExecutorThread().PostEvent(new SysExecEvent_ToggleSuspend());

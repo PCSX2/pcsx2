@@ -60,12 +60,6 @@ namespace PathDefs
 			return retval;
 		}
 
-		const wxDirName& Plugins()
-		{
-			static const wxDirName retval( L"plugins" );
-			return retval;
-		}
-
 		const wxDirName& Logs()
 		{
 			static const wxDirName retval( L"logs" );
@@ -113,7 +107,7 @@ namespace PathDefs
 	// (currently it's the CWD, but in the future I intend to move all binaries to a "bin"
 	// sub folder, in which case the approot will become "..") [- Air?]
 
-	//The installer installs the folders which are relative to AppRoot (that's plugins/langs)
+	//The installer installs the folders which are relative to AppRoot (that's langs)
 	//  relative to the exe folder, and not relative to cwd. So the exe should be default AppRoot. - avih
 	const wxDirName& AppRoot()
 	{
@@ -541,8 +535,6 @@ void App_LoadSaveInstallSettings( IniInterface& ini )
 	ini.Entry( L"SettingsFolder",			SettingsFolder,				PathDefs::GetSettings() );
 
 	// "Install_Dir" conforms to the NSIS standard install directory key name.
-	// Attempt to load plugins based on the Install Folder.
-
 	ini.Entry( L"Install_Dir",				InstallFolder,				(wxDirName)(wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath()) );
 	SetFullBaseDir( InstallFolder );
 
@@ -752,7 +744,7 @@ void AppConfig::FilenameOptions::LoadSave( IniInterface& ini )
 	static const wxFileName pc( L"Please Configure" );
 
 	//when saving in portable mode, we just save the non-full-path filename
- 	//  --> on load they'll be initialized with default (relative) paths (works both for plugins and bios)
+ 	//  --> on load they'll be initialized with default (relative) paths (works for bios)
 	//note: this will break if converting from install to portable, and custom folders are used. We can live with that.
 	bool needRelativeName = ini.IsSaving() && IsPortable();
 
@@ -1114,8 +1106,7 @@ void RelocateLogfile()
 //      that might be saved to the configured ini/settings folder.
 //
 // Notes:
-//   The overwrite option applies to PCSX2 options only.  Plugin option behavior will depend
-//   on the plugins.
+//   The overwrite option applies to PCSX2 options only.
 //
 void AppConfig_OnChangedSettingsFolder( bool overwrite )
 {

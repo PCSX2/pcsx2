@@ -962,7 +962,7 @@ void GSDevice11::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 }
 
 // This shouldn't be necessary, we have some bug corrupting memory
-// and for some reason isolating this code makes the plugin not crash
+// and for some reason isolating this code makes the subcomponent not crash
 void GSDevice11::InitFXAA()
 {
 	if (!FXAA_Compiled)

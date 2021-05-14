@@ -119,7 +119,6 @@ protected:
 	void CoreThread_OnResumed();
 	void CoreThread_OnSuspended();
 	void CoreThread_OnStopped();
-	void CorePlugins_OnShutdown();
 };
 
 // --------------------------------------------------------------------------------------

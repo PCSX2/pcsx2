@@ -50,9 +50,6 @@ s32 CALLBACK ISOopen(const char* pTitle)
 		return -1;
 	}
 
-	// The current plugin API doesn't expect exceptions to propagate out of the API
-	// calls, so we need to catch them, log them, and return -1.
-
 	try
 	{
 		iso.Open(fromUTF8(pTitle));

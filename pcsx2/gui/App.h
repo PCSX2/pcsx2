@@ -52,7 +52,7 @@ typedef void (Pcsx2App::*FnPtr_Pcsx2App)();
 
 wxDECLARE_EVENT(pxEvt_SetSettingsPage, wxCommandEvent);
 
-// This is used when the GS plugin is handling its own window.  Messages from the PAD
+// This is used when GS is handling its own window.  Messages from the PAD
 // are piped through to an app-level message handler, which dispatches them through
 // the universal Accelerator table.
 static const int pxID_PadHandler_Keydown = 8030;
@@ -87,9 +87,9 @@ enum MenuIdentifiers
 	// Main Menu Section
 	MenuId_Boot = 1,
 	MenuId_Emulation,
-	MenuId_Config, // General config, plus non audio/video plugins.
-	MenuId_Video,  // Video options filled in by GS plugin
-	MenuId_Audio,  // audio options filled in by SPU2 plugin
+	MenuId_Config, // General config.
+	MenuId_Video,  // Video options filled in by GS.
+	MenuId_Audio,  // audio options filled in by SPU2.
 	MenuId_Misc,   // Misc options and help!
 
 	MenuId_Exit = wxID_EXIT,
@@ -115,8 +115,8 @@ enum MenuIdentifiers
 	//MenuId_Boot_Recent,			// Menu populated with recent source bootings
 
 
-	MenuId_Sys_SuspendResume,  // suspends/resumes active emulation, retains plugin states
-	MenuId_Sys_Shutdown,       // Closes virtual machine, shuts down plugins, wipes states.
+	MenuId_Sys_SuspendResume,  // suspends/resumes active emulation
+	MenuId_Sys_Shutdown,       // Closes virtual machine, wipes states
 	MenuId_Sys_LoadStates,     // Opens load states submenu
 	MenuId_Sys_SaveStates,     // Opens save states submenu
 	MenuId_EnableBackupStates, // Checkbox to enable/disables savestates backup
