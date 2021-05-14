@@ -159,15 +159,15 @@ s32 PADfreeze(int mode, freezeData* data)
 
 	if (mode == FREEZE_SIZE)
 	{
-		data->size = sizeof(PadFreezeData);
+		data->size = sizeof(PadFullFreezeData);
 	}
 	else if (mode == FREEZE_LOAD)
 	{
-		PadFreezeData* pdata = (PadFreezeData*)(data->data);
+		PadFullFreezeData* pdata = (PadFullFreezeData*)(data->data);
 
 		Pad::stop_vibrate_all();
 
-		if (data->size != sizeof(PadFreezeData) || pdata->version != PAD_SAVE_STATE_VERSION ||
+		if (data->size != sizeof(PadFullFreezeData) || pdata->version != PAD_SAVE_STATE_VERSION ||
 			strncmp(pdata->format, "LinPad", sizeof(pdata->format)))
 			return 0;
 
@@ -199,10 +199,10 @@ s32 PADfreeze(int mode, freezeData* data)
 	}
 	else if (mode == FREEZE_SAVE)
 	{
-		if (data->size != sizeof(PadFreezeData))
+		if (data->size != sizeof(PadFullFreezeData))
 			return 0;
 
-		PadFreezeData* pdata = (PadFreezeData*)(data->data);
+		PadFullFreezeData* pdata = (PadFullFreezeData*)(data->data);
 
 		// Tales of the Abyss - pad fix
 		// - PCSX2 only saves port0 (save #1), then port1 (save #2)
