@@ -1967,3 +1967,7 @@ struct GSErrorGlVertexArrayTooSmall : GSError
 extern GSApp theApp;
 
 extern bool gsopen_done;
+
+
+void GSDoFreezeOut(void* dest);
+void GSDoFreezeIn(pxInputStream& infp);
