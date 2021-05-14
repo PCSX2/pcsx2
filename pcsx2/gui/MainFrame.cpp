@@ -493,7 +493,7 @@ void MainEmuFrame::CreateCaptureMenu()
 	// Fixme: When you uncomment L1029-L1031 on that file; Linux says that Ctrl is already used for something else and will append (Shift + F8) while Windows will (Ctrl + Shift + F8)
 	m_menuCapture.Append(MenuId_Capture_Screenshot, _("Screenshot"), &m_submenuScreenshot);
 	wxMenuItem* sysScreenShotItem = m_submenuScreenshot.Append(MenuId_Capture_Screenshot_Screenshot, _("Take Screenshot"));
-	// HACK: in AcceleratorDictionary::Map the Sys_TakeSnapshot entry gets Shift and Cmd (Ctrl) hardcoded to it because it is similarly hardcoded in GSdx
+	// HACK: in AcceleratorDictionary::Map the Sys_TakeSnapshot entry gets Shift and Cmd (Ctrl) hardcoded to it because it is similarly hardcoded in GS
 	// So... remove such modifiers as the GUI menu entry is only for the base keybinding without modifiers.
 	// We can be confident in doing so, as if a user adds these modifiers themselves, the same function rejects it.
 	KeyAcceleratorCode keyCode = wxGetApp().GlobalAccels->findKeycodeWithCommandId("Sys_TakeSnapshot");

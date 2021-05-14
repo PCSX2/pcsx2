@@ -933,7 +933,7 @@ void MainEmuFrame::VideoCaptureToggle()
 		// start recording
 
 		// make the recording setup dialog[s] pseudo-modal also for the main PCSX2 window
-		// (the GSdx dialog is already properly modal for the GS window)
+		// (the GS dialog is already properly modal for the GS window)
 		bool needsMainFrameEnable = false;
 		if (IsEnabled())
 		{
