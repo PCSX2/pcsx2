@@ -19,7 +19,7 @@
 #include "GS/GSVector.h"
 #include "GSVertex.h"
 #include "GSTexture.h"
-#include <ft2build.h>
+#include "ft2build.h"
 #include FT_FREETYPE_H
 
 class GSOsdManager

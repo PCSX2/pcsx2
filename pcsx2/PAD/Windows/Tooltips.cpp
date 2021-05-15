@@ -17,7 +17,7 @@
 #include "Global.h"
 #include "resource_pad.h"
 
-LPWSTR dialog_message(int ID, bool* updateText)
+LPWSTR pad_dialog_message(int ID, bool* updateText)
 {
 	if (updateText)
 		*updateText = true;

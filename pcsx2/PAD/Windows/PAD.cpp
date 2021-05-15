@@ -1554,7 +1554,7 @@ keyEvent* PADkeyEvent()
 	return &ev;
 }
 
-struct PadFreezeData
+struct PadFullFreezeData
 {
 	char format[8];
 	// Currently all different versions are incompatible.
@@ -1577,13 +1577,13 @@ s32 PADfreeze(int mode, freezeData* data)
 
 	if (mode == FREEZE_SIZE)
 	{
-		data->size = sizeof(PadFreezeData);
+		data->size = sizeof(PadFullFreezeData);
 	}
 	else if (mode == FREEZE_LOAD)
 	{
-		PadFreezeData& pdata = *(PadFreezeData*)(data->data);
+		PadFullFreezeData& pdata = *(PadFullFreezeData*)(data->data);
 		StopVibrate();
-		if (data->size != sizeof(PadFreezeData) ||
+		if (data->size != sizeof(PadFullFreezeData) ||
 			pdata.version != PAD_SAVE_STATE_VERSION ||
 			strcmp(pdata.format, "PadMode"))
 			return 0;
@@ -1620,9 +1620,9 @@ s32 PADfreeze(int mode, freezeData* data)
 	}
 	else if (mode == FREEZE_SAVE)
 	{
-		if (data->size != sizeof(PadFreezeData))
+		if (data->size != sizeof(PadFullFreezeData))
 			return 0;
-		PadFreezeData& pdata = *(PadFreezeData*)(data->data);
+		PadFullFreezeData& pdata = *(PadFullFreezeData*)(data->data);
 
 
 		// Tales of the Abyss - pad fix

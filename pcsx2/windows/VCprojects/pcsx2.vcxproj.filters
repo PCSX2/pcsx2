@@ -1392,9 +1392,6 @@
     <ClCompile Include="..\..\GS\GSDump.cpp">
       <Filter>System\Ps2\GS</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\GS\GSdx.cpp">
-      <Filter>System\Ps2\GS</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\GS\Renderers\Common\GSFunctionMap.cpp">
       <Filter>System\Ps2\GS</Filter>
     </ClCompile>

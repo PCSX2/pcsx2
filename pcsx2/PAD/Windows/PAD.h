@@ -33,6 +33,7 @@
 #include <mutex>
 #include <queue>
 
+#include "App.h"
 
 typedef struct
 {

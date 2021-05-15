@@ -57,7 +57,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectRootDir)/gui;$(SvnRootDir)\3rdparty\xbyak;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectRootDir)/gui;$(SolutionDir)3rdparty\xbyak;$(SolutionDir)3rdparty\freetype\include;$(SolutionDir)3rdparty\xz\xz\src\liblzma\api;$(SolutionDir)3rdparty/baseclasses/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
@@ -475,7 +475,6 @@
     <ClCompile Include="..\..\GS\Renderers\SW\GSDrawScanlineCodeGenerator.x86.avx2.cpp" />
     <ClCompile Include="..\..\GS\Renderers\SW\GSDrawScanlineCodeGenerator.x86.cpp" />
     <ClCompile Include="..\..\GS\GSDump.cpp" />
-    <ClCompile Include="..\..\GS\GSdx.cpp" />
     <ClCompile Include="..\..\GS\Renderers\Common\GSFunctionMap.cpp" />
     <ClCompile Include="..\..\GS\Renderers\HW\GSHwHack.cpp" />
     <ClCompile Include="..\..\GS\GSLocalMemory.cpp" />

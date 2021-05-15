@@ -23,7 +23,7 @@
 //#define ONLY_LINES
 
 #ifdef _WIN32
-#include "resource.h"
+#include "GS/resource.h"
 #else
 #include "GS_res.h"
 #endif

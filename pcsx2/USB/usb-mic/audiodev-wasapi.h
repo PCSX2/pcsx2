@@ -16,7 +16,7 @@
 // Used OBS as example
 
 #include "audiodeviceproxy.h"
-#include "USB/libsamplerate/samplerate.h"
+#include <libsamplerate/samplerate.h>
 #include "USB/shared/ringbuffer.h"
 
 #include <mmdeviceapi.h>
