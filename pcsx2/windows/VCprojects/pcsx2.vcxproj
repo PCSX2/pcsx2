@@ -149,10 +149,6 @@
       <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
       <Outputs>%(RelativeDir)%(Filename).h</Outputs>
     </CustomBuild>
-    <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Plugins.png">
-      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
-      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
-    </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Speedhacks.png">
       <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
       <Outputs>%(RelativeDir)%(Filename).h</Outputs>
@@ -1084,6 +1080,7 @@
     <ResourceCompile Include="..\..\..\3rdparty\wxwidgets3.0\include\wx\msw\wx.rc">
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\wxwidgets3.0\$(PlatformName);$(SolutionDir)3rdparty\wxwidgets3.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ResourceCompile>
+    <ResourceCompile Include="..\..\GS\GS.rc" />
     <ResourceCompile Include="..\..\PAD\Windows\PAD.rc" />
     <ResourceCompile Include="..\..\SPU2\Windows\SPU2.rc" />
     <ResourceCompile Include="..\..\DEV9\Win32\DEV9ghzdrk.rc" />

@@ -8,8 +8,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "3rdparty", "3rdparty", "{78
 		3rdparty\svn_readme.txt = 3rdparty\svn_readme.txt
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Plugins", "Plugins", "{703FD00B-D7A0-41E3-BD03-CEC86B385DAF}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{88F517F9-CE1C-4005-9BDF-4481FEB55053}"
 	ProjectSection(SolutionItems) = preProject
 		common\svn_readme.txt = common\svn_readme.txt
