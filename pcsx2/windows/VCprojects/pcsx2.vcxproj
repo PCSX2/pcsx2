@@ -74,6 +74,12 @@
       <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">false</MinimalRebuild>
       <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</MinimalRebuild>
       <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">false</MinimalRebuild>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)%(RelativeDir)</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">$(IntDir)%(RelativeDir)</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)%(RelativeDir)</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(IntDir)%(RelativeDir)</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">$(IntDir)%(RelativeDir)</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
     <Link>
       <LargeAddressAware>Yes</LargeAddressAware>
@@ -875,7 +881,6 @@
     <ClInclude Include="..\..\GS\Window\GSWndDX.h" />
     <ClInclude Include="..\..\GS\Window\GSWndWGL.h" />
     <ClInclude Include="..\..\GS\resource.h" />
-    <ClInclude Include="..\..\GS\targetver.h" />
     <ClInclude Include="..\..\IPU\IPUdma.h" />
     <ClInclude Include="..\..\Mdec.h" />
     <ClInclude Include="..\..\Patch.h" />

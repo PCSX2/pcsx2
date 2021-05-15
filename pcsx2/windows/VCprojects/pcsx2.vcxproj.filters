@@ -1794,9 +1794,6 @@
     <ClInclude Include="..\..\Ipu\mpeg2lib\Vlc.h">
       <Filter>System\Ps2\IPU\mpeg2lib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\GS.h">
-      <Filter>System\Ps2\GS</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\DebugTools\Debug.h">
       <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
@@ -2583,9 +2580,6 @@
     <ClInclude Include="..\..\GS\config.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\GS\targetver.h">
-      <Filter>System\Ps2\GS</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\GS\GSPng.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
@@ -2599,6 +2593,9 @@
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
     <ClInclude Include="..\..\GS\resource.h" />
+    <ClInclude Include="..\..\GS.h">
+      <Filter>System\Ps2</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\wxResources.rc">
