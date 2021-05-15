@@ -2622,6 +2622,9 @@
     <ResourceCompile Include="..\..\PAD\Windows\PAD.rc">
       <Filter>System\Ps2\PAD</Filter>
     </ResourceCompile>
+    <ResourceCompile Include="..\..\GS\GS.rc">
+      <Filter>System\Ps2\GS</Filter>
+    </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuildStep Include="..\..\rdebug\deci2.h">
@@ -2675,9 +2678,6 @@
       <Filter>AppHost\Resources</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Paths.png">
-      <Filter>AppHost\Resources</Filter>
-    </CustomBuild>
-    <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Plugins.png">
       <Filter>AppHost\Resources</Filter>
     </CustomBuild>
     <CustomBuild Include="..\..\gui\Resources\ConfigIcon_Speedhacks.png">
