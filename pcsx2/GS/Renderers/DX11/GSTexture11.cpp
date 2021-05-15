@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSTexture11.h"
-#include "GSPng.h"
+#include "GS/GSPng.h"
 
 GSTexture11::GSTexture11(ID3D11Texture2D* texture)
 	: m_texture(texture), m_layer(0)

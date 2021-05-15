@@ -16,8 +16,8 @@
 #pragma once
 
 #include "GSTexture11.h"
-#include "GSVector.h"
-#include "Renderers/Common/GSDevice.h"
+#include "GS/GSVector.h"
+#include "GS/Renderers/Common/GSDevice.h"
 
 struct GSVertexShader11
 {

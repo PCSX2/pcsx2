@@ -29,62 +29,6 @@
 
 Xbyak::util::Cpu g_cpu;
 
-const char* GSUtil::GetLibName()
-{
-	// The following ifdef mess is courtesy of "static string str;"
-	// being optimised by GCC to be unusable by older CPUs. Enjoy!
-	static char name[255];
-
-#if _M_SSE < 0x501
-	const char* sw_sse = g_cpu.has(Xbyak::util::Cpu::tAVX) ? "AVX" :
-		g_cpu.has(Xbyak::util::Cpu::tSSE41) ? "SSE41" :
-		g_cpu.has(Xbyak::util::Cpu::tSSSE3) ? "SSSE3" : "SSE2";
-#endif
-
-	snprintf(name, sizeof(name), "GS "
-
-#ifdef _WIN32
-		"%lld "
-#endif
-#ifdef _M_AMD64
-		"64-bit "
-#endif
-#ifdef __INTEL_COMPILER
-		"(Intel C++ %d.%02d %s/%s)",
-#elif _MSC_VER
-		"(MSVC %d.%02d %s/%s)",
-#elif __clang__
-		"(clang %d.%d.%d %s/%s)",
-#elif __GNUC__
-		"(GCC %d.%d.%d %s/%s)",
-#else
-		"(%s/%s)",
-#endif
-#ifdef _WIN32
-		SVN_REV,
-#endif
-#ifdef __INTEL_COMPILER
-		__INTEL_COMPILER / 100, __INTEL_COMPILER % 100,
-#elif _MSC_VER
-		_MSC_VER / 100, _MSC_VER % 100,
-#elif __clang__
-		__clang_major__, __clang_minor__, __clang_patchlevel__,
-#elif __GNUC__
-		__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__,
-#endif
-
-#if _M_SSE >= 0x501
-		"AVX2", "AVX2"
-#elif _M_SSE >= 0x500
-		"AVX", sw_sse
-#elif _M_SSE >= 0x401
-		"SSE4.1", sw_sse
-#endif
-	);
-
-	return name;
-}
-
 static class GSUtilMaps
 {
 public:

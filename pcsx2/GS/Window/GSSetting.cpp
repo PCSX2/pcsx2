@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSSetting.h"
 #ifdef _WIN32
-#include "resource.h"
+#include "GS/resource.h"
 #endif
 
 #ifdef _WIN32
