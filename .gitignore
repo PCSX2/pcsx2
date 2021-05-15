@@ -40,6 +40,7 @@ svnrev.h
 /build_dev
 /build_dbg
 /obj-*
+*.obj
 
 .DS_Store
 Thumbs.db
