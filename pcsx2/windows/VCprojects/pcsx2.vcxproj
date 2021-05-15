@@ -57,7 +57,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(ProjectRootDir)/gui;$(SolutionDir)3rdparty\xbyak;$(SolutionDir)3rdparty\freetype\include;$(SolutionDir)3rdparty\xz\xz\src\liblzma\api;$(SolutionDir)3rdparty/baseclasses/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(ProjectRootDir)/gui;$(SolutionDir)3rdparty\xbyak;$(SolutionDir)3rdparty\freetype\include;$(SolutionDir)3rdparty\xz\xz\src\liblzma\api;$(SolutionDir)3rdparty/baseclasses/;$(SolutionDir)3rdparty/zlib/;$(SolutionDir)3rdparty/libpng/;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>

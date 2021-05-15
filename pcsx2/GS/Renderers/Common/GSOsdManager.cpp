@@ -17,7 +17,7 @@
 #include "GS/GS.h"
 #include "GSOsdManager.h"
 #ifdef _WIN32
-#include "resource.h"
+#include "GS/resource.h"
 #endif
 
 void GSOsdManager::LoadFont()

@@ -16,7 +16,7 @@
 #pragma once
 
 #include "GSDialog.h"
-#include "resource.h"
+#include "GS/resource.h"
 #include <streams.h>
 
 class GSCaptureDlg : public GSDialog
