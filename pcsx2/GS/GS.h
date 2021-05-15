@@ -25,8 +25,6 @@
 
 #ifdef _WIN32
 
-#define WIN32_LEAN_AND_MEAN // Exclude rarely-used stuff from Windows headers
-
 #include <windows.h>
 #include <commctrl.h>
 #include <commdlg.h>
@@ -113,7 +111,11 @@
 #include <memory>
 #include <bitset>
 
+#ifdef __POSIX__
 #include <zlib.h>
+#else
+#include <zlib/zlib.h>
+#endif
 
 #include <unordered_map>
 #include <unordered_set>

@@ -18,12 +18,16 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Include", "Include", "{0FAD
 		common\include\afxresmw.h = common\include\afxresmw.h
 		common\include\Pcsx2Defs.h = common\include\Pcsx2Defs.h
 		common\include\Pcsx2Types.h = common\include\Pcsx2Types.h
-		common\include\PluginCallbacks.h = common\include\PluginCallbacks.h
 	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tools", "Tools", "{2D6F0A62-A247-4CCF-947F-FCD54BE16103}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "pcsx2", "pcsx2\windows\VCprojects\pcsx2.vcxproj", "{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}"
+	ProjectSection(ProjectDependencies) = postProject
+		{12728250-16EC-4DC6-94D7-E21DD88947F8} = {12728250-16EC-4DC6-94D7-E21DD88947F8}
+		{27F17499-A372-4408-8AFA-4F9F4584FBD3} = {27F17499-A372-4408-8AFA-4F9F4584FBD3}
+		{78B079BD-9FC7-4B9E-B4A6-96DA0F00248B} = {78B079BD-9FC7-4B9E-B4A6-96DA0F00248B}
+	EndProjectSection
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SoundTouch", "3rdparty\soundtouch\SoundTouch.vcxproj", "{E9B51944-7E6D-4BCD-83F2-7BBD5A46182D}"
 EndProject

@@ -18,6 +18,6 @@
 
 #include "Global.h"
 
-LPWSTR dialog_message(int ID, bool* updateText = false);
+LPWSTR pad_dialog_message(int ID, bool* updateText = false);
 
 #endif

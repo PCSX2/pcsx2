@@ -1363,7 +1363,7 @@ void AddTooltip(UINT id, HWND hWnd)
 {
 	static UINT tooltipStructSize = GetTooltipStructSize();
 	bool hasTooltip;
-	LPWSTR message = dialog_message(id, &hasTooltip);
+	LPWSTR message = pad_dialog_message(id, &hasTooltip);
 	if (!hasTooltip)
 		return;
 
