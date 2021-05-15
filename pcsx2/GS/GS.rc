@@ -94,17 +94,6 @@ IDR_TFX_FS_GLSL         RCDATA                  "res\\glsl\\tfx_fs.glsl";
 
 IDR_FONT_ROBOTO         RCDATA                  "res\\fonts-roboto\\Roboto-Regular.ttf";
 
-/////////////////////////////////////////////////////////////////////////////
-//
-// Bitmap
-//
-
-IDB_LOGO11              BITMAP                  "res\\logo11.bmp"
-
-IDB_LOGOGL              BITMAP                  "res\\logo-ogl.bmp"
-
-IDB_NULL                BITMAP                  "res\\logo-null.bmp"
-
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -258,9 +247,6 @@ CAPTION "GS Settings"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     // General Settings:
-    CONTROL         IDB_LOGO11,IDC_LOGO11,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
-    CONTROL         IDB_LOGOGL,IDC_LOGOGL,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
-    CONTROL         IDB_NULL,IDC_NULL,"Static",SS_BITMAP | SS_REALSIZECONTROL,6,6,230,44
     LTEXT           "Renderer:",IDC_STATIC,6,57,79,8
     COMBOBOX        IDC_RENDERER,70,55,166,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "Adapter:",IDC_ADAPTER_TEXT,6,72,79,8
