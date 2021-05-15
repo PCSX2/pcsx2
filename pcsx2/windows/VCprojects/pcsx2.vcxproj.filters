@@ -2448,9 +2448,6 @@
     <ClInclude Include="..\..\GS\GSDump.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\GS\GSdx.h">
-      <Filter>System\Ps2\GS</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\GS\Renderers\Common\GSFunctionMap.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
@@ -2580,9 +2577,6 @@
     <ClInclude Include="..\..\GS\Window\GSWndWGL.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\GS\resource.h">
-      <Filter>Resource Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\GS\Renderers\SW\GSTextureSW.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
@@ -2604,6 +2598,7 @@
     <ClInclude Include="..\..\GS\Renderers\Common\GSFastList.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\GS\resource.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\wxResources.rc">
