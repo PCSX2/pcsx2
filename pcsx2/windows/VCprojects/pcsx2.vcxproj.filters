@@ -317,9 +317,6 @@
     <ClCompile Include="..\..\Pcsx2Config.cpp">
       <Filter>System</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\PluginManager.cpp">
-      <Filter>System</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\SaveState.cpp">
       <Filter>System</Filter>
     </ClCompile>
@@ -776,9 +773,6 @@
     <ClCompile Include="..\..\gui\Panels\PathsPanel.cpp">
       <Filter>AppHost\Panels</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\Panels\PluginSelectorPanel.cpp">
-      <Filter>AppHost\Panels</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\gui\Panels\SpeedhacksPanel.cpp">
       <Filter>AppHost\Panels</Filter>
     </ClCompile>
@@ -794,7 +788,6 @@
     <ClCompile Include="..\..\Linux\LnxKeyCodes.cpp">
       <Filter>AppHost\Linux</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\AppCorePlugins.cpp" />
     <ClCompile Include="..\..\gui\ExecutorThread.cpp" />
     <ClCompile Include="..\..\gui\UpdateUI.cpp" />
     <ClCompile Include="..\..\gui\SysState.cpp" />
@@ -1602,9 +1595,6 @@
     <ClInclude Include="..\..\IopCommon.h">
       <Filter>System\Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Plugins.h">
-      <Filter>System\Include</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\SaveState.h">
       <Filter>System\Include</Filter>
     </ClInclude>
@@ -1893,7 +1883,6 @@
     <ClInclude Include="..\..\gui\Saveslots.h">
       <Filter>AppHost\Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\gui\AppCorePlugins.h" />
     <ClInclude Include="..\..\gui\AppCoreThread.h" />
     <ClInclude Include="..\..\gui\GSFrame.h" />
     <ClInclude Include="..\..\gui\pxEventThread.h" />
