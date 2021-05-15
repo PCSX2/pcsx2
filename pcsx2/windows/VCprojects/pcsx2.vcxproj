@@ -524,7 +524,6 @@
     <ClCompile Include="..\..\Dump.cpp" />
     <ClCompile Include="..\..\x86\iMisc.cpp" />
     <ClCompile Include="..\..\Pcsx2Config.cpp" />
-    <ClCompile Include="..\..\PluginManager.cpp" />
     <ClCompile Include="..\FlatFileReaderWindows.cpp" />
     <ClCompile Include="..\..\SaveState.cpp" />
     <ClCompile Include="..\..\SourceLog.cpp" />
@@ -652,7 +651,6 @@
     <ClCompile Include="..\..\CDVD\IsoFS\IsoFSCDVD.cpp" />
     <ClCompile Include="..\..\gui\AppAssert.cpp" />
     <ClCompile Include="..\..\gui\AppConfig.cpp" />
-    <ClCompile Include="..\..\gui\AppCorePlugins.cpp" />
     <ClCompile Include="..\..\gui\AppCoreThread.cpp" />
     <ClCompile Include="..\..\gui\AppEventSources.cpp" />
     <ClCompile Include="..\..\gui\AppInit.cpp" />
@@ -694,7 +692,6 @@
     <ClCompile Include="..\..\gui\Panels\MemoryCardListPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\MiscPanelStuff.cpp" />
     <ClCompile Include="..\..\gui\Panels\PathsPanel.cpp" />
-    <ClCompile Include="..\..\gui\Panels\PluginSelectorPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\SpeedhacksPanel.cpp" />
     <ClCompile Include="..\..\gui\Panels\VideoPanel.cpp" />
     <ClCompile Include="..\WinCompressNTFS.cpp" />
@@ -950,7 +947,6 @@
     <ClInclude Include="..\..\Config.h" />
     <ClInclude Include="..\..\Dump.h" />
     <ClInclude Include="..\..\IopCommon.h" />
-    <ClInclude Include="..\..\Plugins.h" />
     <ClInclude Include="..\..\SaveState.h" />
     <ClInclude Include="..\..\System.h" />
     <ClInclude Include="..\..\System\SysThreads.h" />
@@ -1061,7 +1057,6 @@
     <ClInclude Include="..\..\gui\App.h" />
     <ClInclude Include="..\..\gui\AppCommon.h" />
     <ClInclude Include="..\..\gui\AppConfig.h" />
-    <ClInclude Include="..\..\gui\AppCorePlugins.h" />
     <ClInclude Include="..\..\gui\AppCoreThread.h" />
     <ClInclude Include="..\..\gui\AppEventListeners.h" />
     <ClInclude Include="..\..\gui\AppForwardDefs.h" />
