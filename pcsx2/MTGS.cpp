@@ -239,7 +239,6 @@ static void dummyIrqCallback()
 
 void SysMtgsThread::OpenGS()
 {
-
 	if (m_Opened)
 		return;
 
@@ -593,6 +592,7 @@ void SysMtgsThread::CloseGS()
 {
 	if (!m_Opened || GSDump::isRunning)
 		return;
+	GSclose();
 	m_Opened = false;
     Suspend();
 }
