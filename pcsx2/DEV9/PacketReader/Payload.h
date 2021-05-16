@@ -51,7 +51,7 @@ namespace PacketReader
 			if (data == buffer)
 				return;
 
-			memcpy(buffer, data, length);
+			memcpy(&buffer[*offset], data, length);
 			*offset += length;
 		}
 	};
