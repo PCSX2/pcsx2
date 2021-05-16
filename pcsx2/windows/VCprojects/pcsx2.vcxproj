@@ -64,11 +64,11 @@
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
       <ShowIncludes Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">false</ShowIncludes>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;LZMA_API_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;LZMA_API_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NDEBUG;_SECURE_SCL_=0;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NDEBUG;_SECURE_SCL_=0;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">NDEBUG;_SECURE_SCL_=0;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;LZMA_API_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">NDEBUG;_SECURE_SCL_=0;WIN32_LEAN_AND_MEAN;SPU2X_PORTAUDIO;BUILD_DX=1;LZMA_API_STATIC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(CI)'=='true'">PCSX2_CI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MinimalRebuild>
       <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">false</MinimalRebuild>
@@ -83,12 +83,12 @@
     </ClCompile>
     <Link>
       <LargeAddressAware>Yes</LargeAddressAware>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;dxguid.lib;dinput8.lib;hid.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;Strmbase.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;dxguid.lib;dinput8.lib;hid.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;Strmbase.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;dxguid.lib;dinput8.lib;hid.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;Strmbase.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;dxguid.lib;dinput8.lib;hid.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;Strmbase.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;dxguid.lib;dinput8.lib;hid.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;Strmbase.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;dxguid.lib;dinput8.lib;hid.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;Strmbase.lib;legacy_stdio_definitions.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;dxguid.lib;dinput8.lib;hid.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;dxguid.lib;dinput8.lib;hid.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;dxguid.lib;dinput8.lib;hid.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;dxguid.lib;dinput8.lib;hid.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;dxguid.lib;dinput8.lib;hid.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;dxguid.lib;dinput8.lib;hid.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -1084,8 +1084,20 @@
     <ResourceCompile Include="..\wxResources.rc" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\3rdparty\baseclasses\baseclasses.vcxproj">
+      <Project>{27f17499-a372-4408-8afa-4f9f4584fbd3}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\fmt\fmt.vcxproj">
       <Project>{449ad25e-424a-4714-babc-68706cdcc33b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\3rdparty\freetype\builds\windows\freetype.vcxproj">
+      <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\3rdparty\libjpeg\libjpeg.vcxproj">
+      <Project>{bc236261-77e8-4567-8d09-45cd02965eb6}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\3rdparty\libpng\projects\vstudio\libpng\libpng.vcxproj">
+      <Project>{d6973076-9317-4ef2-a0b8-b7a18ac0713e}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\libsamplerate\libsamplerate.vcxproj">
       <Project>{47afdbef-f15f-4bc0-b436-5be443c3f80f}</Project>
@@ -1108,6 +1120,9 @@
     </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\wxwidgets3.0\build\msw\wx30_core.vcxproj">
       <Project>{6744dad8-9c70-574a-bff2-9f8dddb24a75}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\3rdparty\xz\liblzma.vcxproj">
+      <Project>{12728250-16ec-4dc6-94d7-e21dd88947f8}</Project>
     </ProjectReference>
     <ProjectReference Include="..\..\..\3rdparty\yaml-cpp\yaml.vcxproj">
       <Project>{48329442-e41b-4a1f-8364-36eee1b71343}</Project>
