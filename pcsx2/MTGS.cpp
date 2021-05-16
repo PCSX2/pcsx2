@@ -70,6 +70,42 @@ SysMtgsThread::SysMtgsThread()
 	// All other state vars are initialized by OnStart().
 }
 
+typedef void (SysMtgsThread::*FnPtr_MtgsThreadMethod)();
+
+class SysExecEvent_InvokeMtgsThreadMethod : public SysExecEvent
+{
+protected:
+	FnPtr_MtgsThreadMethod m_method;
+	bool m_IsCritical;
+
+public:
+	wxString GetEventName() const { return L"MtgsThreadMethod"; }
+	virtual ~SysExecEvent_InvokeMtgsThreadMethod() = default;
+	SysExecEvent_InvokeMtgsThreadMethod* Clone() const { return new SysExecEvent_InvokeMtgsThreadMethod(*this); }
+
+	bool AllowCancelOnExit() const { return false; }
+	bool IsCriticalEvent() const { return m_IsCritical; }
+
+	SysExecEvent_InvokeMtgsThreadMethod(FnPtr_MtgsThreadMethod method, bool critical = false)
+	{
+		m_method = method;
+		m_IsCritical = critical;
+	}
+
+	SysExecEvent_InvokeMtgsThreadMethod& Critical()
+	{
+		m_IsCritical = true;
+		return *this;
+	}
+
+protected:
+	void InvokeEvent()
+	{
+		if (m_method)
+			(mtgsThread.*m_method)();
+	}
+};
+
 void SysMtgsThread::OnStart()
 {
 	m_Opened = false;
@@ -563,7 +599,7 @@ void SysMtgsThread::CloseGS()
 
 void SysMtgsThread::OnSuspendInThread()
 {
-	CloseGS();
+	GetSysExecutorThread().PostEvent(new SysExecEvent_InvokeMtgsThreadMethod(&SysMtgsThread::CloseGS));
 	_parent::OnSuspendInThread();
 }
 
@@ -577,7 +613,7 @@ void SysMtgsThread::OnResumeInThread(bool isSuspended)
 
 void SysMtgsThread::OnCleanupInThread()
 {
-	CloseGS();
+	GetSysExecutorThread().PostEvent(new SysExecEvent_InvokeMtgsThreadMethod(&SysMtgsThread::CloseGS));
 	_parent::OnCleanupInThread();
 }
 
