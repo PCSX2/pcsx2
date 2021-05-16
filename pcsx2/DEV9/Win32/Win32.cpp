@@ -197,7 +197,7 @@ void OnInitDialog(HWND hW)
 				(WPARAM)0,
 				(LPARAM)10);
 
-	for (int i = 15; i < HDD_MAX_GB; i += 5)
+	for (int i = HDD_MIN_GB; i < HDD_MAX_GB; i += 5)
 	{
 		SendMessage(GetDlgItem(hW, IDC_HDDSIZE_SLIDER), TBM_SETTIC,
 					(WPARAM)0,
