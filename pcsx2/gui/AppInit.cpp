@@ -511,7 +511,7 @@ bool Pcsx2App::OnInit()
 		else if (Startup.SysAutoRunElf)
 		{
 			g_Conf->EmuOptions.UseBOOT2Injection = true;
-
+			g_Conf->Folders.RunELF = wxFileName(Startup.ElfFile).GetPath();
 			sApp.SysExecute(Startup.CdvdSource, Startup.ElfFile);
 		}
 		else if (Startup.SysAutoRunIrx)
