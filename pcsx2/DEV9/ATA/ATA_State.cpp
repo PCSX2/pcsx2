@@ -17,11 +17,25 @@
 
 #include "common/Assertions.h"
 #include "common/FileSystem.h"
+#include "common/StringUtil.h"
 
 #include "ATA.h"
 #include "DEV9/DEV9.h"
 #ifndef PCSX2_CORE
 #include "HddCreateWx.h"
+#endif
+
+#if _WIN32
+#include "pathcch.h"
+#include <io.h>
+#elif defined(__POSIX__)
+#define INVALID_HANDLE_VALUE -1
+#if defined(__APPLE__)
+#include <unistd.h>
+#endif
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #endif
 
 ATA::ATA()
@@ -71,6 +85,8 @@ int ATA::Open(const std::string& hddPath)
 	//Store HddImage size for later check
 	hddImageSize = static_cast<u64>(size);
 
+	InitSparseSupport(hddPath);
+
 	{
 		std::lock_guard ioSignallock(ioMutex);
 		ioRead = false;
@@ -81,6 +97,139 @@ int ATA::Open(const std::string& hddPath)
 	ioRunning = true;
 
 	return 0;
+}
+
+void ATA::InitSparseSupport(const std::string& hddPath)
+{
+#ifdef _WIN32
+	hddSparse = false;
+
+	const std::wstring wHddPath(StringUtil::UTF8StringToWideString(hddPath));
+	const DWORD fileAttributes = GetFileAttributes(wHddPath.c_str());
+	hddSparse = fileAttributes & FILE_ATTRIBUTE_SPARSE_FILE;
+
+	if (!hddSparse)
+		return;
+
+	// Get OS specific file handle for spare writing.
+	// HANDLE is owned by FILE* hddImage.
+	hddNativeHandle = reinterpret_cast<HANDLE>(_get_osfhandle(_fileno(hddImage)));
+	if (hddNativeHandle == INVALID_HANDLE_VALUE)
+	{
+		Console.Error("DEV9: ATA: Failed to open file for sparse");
+		hddSparse = false;
+		return;
+	}
+
+	// Get sparse block size (Initially assumed as 4096 bytes).
+	hddSparseBlockSize = 4096;
+
+	// We need the drive letter for the drive the file actually resides on
+	// which means we need to deal with any junction links in the path.
+	DWORD len = GetFinalPathNameByHandle(hddNativeHandle, nullptr, 0, FILE_NAME_NORMALIZED);
+
+	if (len != 0)
+	{
+		std::unique_ptr<TCHAR[]> name = std::make_unique<TCHAR[]>(len);
+		len = GetFinalPathNameByHandle(hddNativeHandle, name.get(), len, FILE_NAME_NORMALIZED);
+		if (len != 0)
+		{
+			PCWSTR rootEnd;
+			if (PathCchSkipRoot(name.get(), &rootEnd) == S_OK)
+			{
+				const size_t rootLength = rootEnd - name.get();
+				std::wstring finalPath(name.get(), rootLength);
+
+				DWORD sectorsPerCluster;
+				DWORD bytesPerSector;
+				DWORD temp1, temp2;
+				if (GetDiskFreeSpace(finalPath.c_str(), &sectorsPerCluster, &bytesPerSector, &temp1, &temp2) == TRUE)
+					hddSparseBlockSize = sectorsPerCluster * bytesPerSector;
+				else
+					Console.Error("DEV9: ATA: Failed to get sparse block size (GetDiskFreeSpace() returned false)");
+			}
+			else
+				Console.Error("DEV9: ATA: Failed to get sparse block size (PathCchSkipRoot() returned false)");
+		}
+		else
+			Console.Error("DEV9: ATA: Failed to get sparse block size (PathBuildRoot() returned 0)");
+	}
+	else
+		Console.Error("DEV9: ATA: Failed to get sparse block size (GetFinalPathNameByHandle() returned 0)");
+
+	/*  https://askbob.tech/the-ntfs-blog-sparse-and-compressed-file/
+	 *  NTFS Sparse Block Size are the same size as a compression unit
+	 *  Cluster Size    Compression Unit    
+	 *  --------------------------------
+	 *  512bytes         8kb (0x02000)
+	 *    1kb           16kb (0x04000)
+	 *    2kb           32kb (0x08000)
+	 *    4kb           64kb (0x10000)
+	 *    8kb           64kb (0x10000)
+	 *   16kb           64kb (0x10000)
+	 *   32kb           64kb (0x10000)
+	 *   64kb           64kb (0x10000)
+	 *  --------------------------------
+	 */
+
+	// Get the filesystem type.
+	WCHAR fsName[MAX_PATH + 1];
+	const BOOL ret = GetVolumeInformationByHandleW(hddNativeHandle, nullptr, 0, nullptr, nullptr, nullptr, fsName, MAX_PATH);
+	if (ret == FALSE)
+	{
+		Console.Error("DEV9: ATA: Failed to get sparse block size (GetVolumeInformationByHandle() returned false)");
+		// Assume NTFS.
+		wcscpy(fsName, L"NTFS");
+	}
+	if ((wcscmp(fsName, L"NTFS") == 0))
+	{
+		switch (hddSparseBlockSize)
+		{
+			case 512:
+				hddSparseBlockSize = 8192;
+				break;
+			case 1024:
+				hddSparseBlockSize = 16384;
+				break;
+			case 2048:
+				hddSparseBlockSize = 32768;
+				break;
+			case 4096:
+			case 8192:
+			case 16384:
+			case 32768:
+			case 65536:
+				hddSparseBlockSize = 65536;
+				break;
+			default:
+				break;
+		}
+	}
+	// Otherwise assume SparseBlockSize == block size.
+
+#elif defined(__POSIX__)
+	// fd is owned by FILE* hddImage.
+	hddNativeHandle = fileno(hddImage);
+	hddSparse = false;
+	if (hddNativeHandle != -1)
+	{
+		// No way to check if we can hole punch without trying it
+		// so just assume sparse files are supported.
+		hddSparse = true;
+
+		// Get sparse block size (Initially assumed as 4096 bytes).
+		hddSparseBlockSize = 4096;
+		struct stat fileInfo;
+		if (fstat(hddNativeHandle, &fileInfo) == 0)
+			hddSparseBlockSize = fileInfo.st_blksize;
+		else
+			Console.Error("DEV9: ATA: Failed to get sparse block size (fstat returned != 0)");
+	}
+	else
+		Console.Error("DEV9: ATA: Failed to open file for sparse");
+#endif
+	hddSparseBlock = std::make_unique<u8[]>(hddSparseBlockSize);
+	hddSparseBlockValid = false;
 }
 
 void ATA::Close()
@@ -108,6 +257,16 @@ void ATA::Close()
 	}
 
 	//Close File Handle
+	if (hddSparse)
+	{
+		// hddNativeHandle is owned by hddImage.
+		// It will get closed in fclose(hddImage).
+		hddNativeHandle = INVALID_HANDLE_VALUE;
+
+		hddSparse = false;
+		hddSparseBlock = nullptr;
+		hddSparseBlockValid = false;
+	}
 	if (hddImage)
 	{
 		std::fclose(hddImage);
