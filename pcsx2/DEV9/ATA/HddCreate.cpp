@@ -18,6 +18,10 @@
 #include <fstream>
 #include "HddCreate.h"
 
+#ifdef _WIN32
+#include <Windows.h>
+#endif
+
 void HddCreate::Start()
 {
 	//This can be called from the EE Core thread
@@ -34,7 +38,8 @@ void HddCreate::Start()
 	//This creates a modeless dialog
 	progressDialog = new wxProgressDialog("Creating HDD file", "Creating HDD file", neededSize, nullptr, wxPD_APP_MODAL | wxPD_AUTO_HIDE | wxPD_CAN_ABORT | wxPD_ELAPSED_TIME | wxPD_REMAINING_TIME);
 
-	fileThread = std::thread(&HddCreate::WriteImage, this, filePath, neededSize);
+	int zeroSize = 1;
+	fileThread = std::thread(&HddCreate::WriteImage, this, filePath, neededSize, zeroSize);
 
 	//This code was written for a modal dialog, however wxProgressDialog is modeless only
 	//The idea was block here in a ShowModal() call, and have the worker thread update the UI
@@ -43,9 +48,9 @@ void HddCreate::Start()
 	//Instead, loop here to update UI
 	char msg[32] = {0};
 	int currentSize;
-	while ((currentSize = written.load()) != neededSize && !errored.load())
+	while ((currentSize = written.load()) != zeroSize && !errored.load())
 	{
-		snprintf(msg, 32, "%i / %i MiB", written.load(), neededSize);
+		snprintf(msg, 32, "%i / %i MiB", written.load(), zeroSize);
 
 		if (!progressDialog->Update(currentSize, msg))
 			canceled.store(true);
@@ -70,7 +75,7 @@ void HddCreate::Start()
 	completedCV.notify_all();
 }
 
-void HddCreate::WriteImage(ghc::filesystem::path hddPath, int reqSizeMiB)
+void HddCreate::WriteImage(ghc::filesystem::path hddPath, int fileMiB, int zeroMiB)
 {
 	constexpr int buffsize = 4 * 1024;
 	u8 buff[buffsize] = {0}; //4kb
@@ -81,22 +86,92 @@ void HddCreate::WriteImage(ghc::filesystem::path hddPath, int reqSizeMiB)
 		return;
 	}
 
+	//Create File
 	std::fstream newImage = ghc::filesystem::fstream(hddPath, std::ios::out | std::ios::binary);
-
 	if (newImage.fail())
 	{
 		SetError();
 		return;
 	}
+	newImage.close();
 
-	//Size file
-	newImage.seekp(((u64)reqSizeMiB) * 1024 * 1024 - 1, std::ios::beg);
-	const char zero = 0;
-	newImage.write(&zero, 1);
+	//Size file (Slow on FS that don't support sparse)
+	std::error_code ec;
+	ghc::filesystem::resize_file(hddPath, ((u64)fileMiB) * 1024 * 1024, ec);
+	if (ec.value() != 0)
+	{
+		ghc::filesystem::remove(filePath);
+		SetError();
+		return;
+	}
 
-	if (newImage.fail())
+	//Make Sparse
+#ifdef _WIN32
+	HANDLE nativeFile = CreateFile(hddPath.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+
+	if (nativeFile == INVALID_HANDLE_VALUE)
 	{
 		newImage.close();
+		ghc::filesystem::remove(filePath);
+		SetError();
+		return;
+	}
+
+	DWORD dwFlags;
+	BOOL ret = GetVolumeInformationByHandleW(nativeFile, nullptr, MAX_PATH, nullptr, nullptr, &dwFlags, nullptr, MAX_PATH);
+
+	if (ret == 0)
+	{
+		Console.Error("DEV9: GetVolumeInformationByHandle() Failed");
+		CloseHandle(nativeFile);
+		newImage.close();
+		ghc::filesystem::remove(filePath);
+		SetError();
+		return;
+	}
+
+	if (dwFlags & FILE_SUPPORTS_SPARSE_FILES)
+	{
+		//Use sparse files
+		FILE_SET_SPARSE_BUFFER sparseSetting;
+		sparseSetting.SetSparse = true;
+		DWORD dwTemp;
+		ret = DeviceIoControl(nativeFile, FSCTL_SET_SPARSE, &sparseSetting, sizeof(sparseSetting), nullptr, 0, &dwTemp, nullptr);
+
+		if (ret == 0)
+		{
+			Console.Error("DEV9: Failed to set sparse");
+			CloseHandle(nativeFile);
+			newImage.close();
+			ghc::filesystem::remove(filePath);
+			SetError();
+			return;
+		}
+
+		FILE_ZERO_DATA_INFORMATION sparseRange;
+		sparseRange.FileOffset.QuadPart = 0;
+		sparseRange.BeyondFinalZero.QuadPart = ((u64)fileMiB) * 1024 * 1024;
+		ret = DeviceIoControl(nativeFile, FSCTL_SET_ZERO_DATA, &sparseRange, sizeof(sparseRange), nullptr, 0, &dwTemp, nullptr);
+
+		if (ret == 0)
+		{
+			Console.Error("DEV9: Failed to set sparse");
+			CloseHandle(nativeFile);
+			newImage.close();
+			ghc::filesystem::remove(filePath);
+			SetError();
+			return;
+		}
+	}
+	CloseHandle(nativeFile);
+#else
+	//Automatic on linux/mac
+#endif
+
+	//Reopen to zero
+	newImage = ghc::filesystem::fstream(hddPath, std::ios::in | std::ios::out | std::ios::binary);
+	if (newImage.fail())
+	{
 		ghc::filesystem::remove(filePath);
 		SetError();
 		return;
@@ -106,7 +181,7 @@ void HddCreate::WriteImage(ghc::filesystem::path hddPath, int reqSizeMiB)
 
 	newImage.seekp(0, std::ios::beg);
 
-	for (int iMiB = 0; iMiB < reqSizeMiB; iMiB++)
+	for (int iMiB = 0; iMiB < zeroMiB; iMiB++)
 	{
 		for (int i4kb = 0; i4kb < 256; i4kb++)
 		{
@@ -121,7 +196,7 @@ void HddCreate::WriteImage(ghc::filesystem::path hddPath, int reqSizeMiB)
 		}
 
 		const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastUpdate).count() >= 100 || (iMiB + 1) == neededSize)
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastUpdate).count() >= 100 || (iMiB + 1) == zeroMiB)
 		{
 			lastUpdate = now;
 			SetFileProgress(iMiB + 1);

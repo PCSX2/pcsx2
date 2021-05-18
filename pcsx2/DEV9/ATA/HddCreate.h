@@ -52,5 +52,5 @@ public:
 private:
 	void SetFileProgress(int currentSize);
 	void SetError();
-	void WriteImage(ghc::filesystem::path hddPath, int reqSizeMB);
+	void WriteImage(ghc::filesystem::path hddPath, int fileMiB, int zeroMiB);
 };
