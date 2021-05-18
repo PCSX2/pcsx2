@@ -1682,7 +1682,7 @@ void GSState::FlushPrim()
 			{
 				// could be an unsupported draw call
 			}
-			catch (const std::bad_alloc& e)
+			catch (const std::bad_alloc&)
 			{
 				// Texture Out Of Memory
 				PurgePool();

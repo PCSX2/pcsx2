@@ -128,7 +128,7 @@
 	#define EXPORT_C_(type) extern "C" type __stdcall
 	#define EXPORT_C EXPORT_C_(void)
 
-	#define ALIGN_STACK(n) alignas(n) int dummy__;
+	#define ALIGN_STACK(n) alignas(n) int dummy__; (void)dummy__;
 
 #else
 
