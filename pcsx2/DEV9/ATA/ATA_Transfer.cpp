@@ -182,7 +182,7 @@ bool ATA::IO_SparseWrite(u64 byteOffset, u64 byteSize)
 	if (ret == -1)
 		return false;
 
-#elif defined(_APPLE_)
+#elif defined(__APPLE__)
 	fpunchhole_t sparseRange{0};
 	sparseRange.fp_offset = byteOffset;
 	sparseRange.fp_length = byteSize;
