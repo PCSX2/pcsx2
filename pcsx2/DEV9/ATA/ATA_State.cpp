@@ -19,6 +19,16 @@
 #include "../DEV9.h"
 #include "HddCreate.h"
 
+#if _WIN32
+#include <Windows.h>
+#elif defined(__linux__)
+#define _GNU_SOURCE
+#include <fcntl.h>
+#elif defined(__APPLE__)
+#include <unistd.h>
+#include <fcntl.h>
+#endif
+
 ATA::ATA()
 {
 	//Power on, Would do self-Diag + Hardware Init
@@ -52,6 +62,31 @@ int ATA::Open(ghc::filesystem::path hddPath)
 	//Store HddImage size for later check
 	hddImage.seekg(0, std::ios::end);
 	hddImageSize = hddImage.tellg();
+
+//Check is sparse
+#ifdef _WIN32
+	const DWORD ret = GetFileAttributes(hddPath.c_str());
+	hddSparse = ret & FILE_ATTRIBUTE_SPARSE_FILE;
+	if (hddSparse)
+	{
+		//Get OS specific file handle for spare writing
+		hddNativeHandle = CreateFile(hddPath.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+		if (hddNativeHandle == INVALID_HANDLE_VALUE)
+		{
+			Console.Error("DEV9: ATA: Failed to open file for sparse");
+			hddSparse = false;
+		}
+	}
+#elif defined(__POSIX__)
+	//No way to check if we can hole punch without trying it
+	hddNativeHandle = open(hddPath.c_str(), O_RDWR);
+	hddSparse = false;
+	if (hddNativeHandle != -1)
+		//Assume sparse
+		hddSparse = true;
+	else
+		Console.Error("DEV9: ATA: Failed to open file for sparse");
+#endif
 
 	{
 		std::lock_guard ioSignallock(ioMutex);
@@ -90,6 +125,15 @@ void ATA::Close()
 	}
 
 	//Close File Handle
+	if (hddSparse)
+	{
+#ifdef _WIN32
+		CloseHandle(hddNativeHandle);
+#elif defined(__POSIX__)
+		close(hddNativeHandle);
+#endif
+		hddSparse = false;
+	}
 	if (hddImage.is_open())
 		hddImage.close();
 

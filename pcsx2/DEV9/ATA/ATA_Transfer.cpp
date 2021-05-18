@@ -18,6 +18,15 @@
 #include "ATA.h"
 #include "../DEV9.h"
 
+#if _WIN32
+#include <Windows.h>
+#elif defined(__linux__)
+#include <fcntl.h>
+#elif defined(__APPLE__)
+#include <unistd.h>
+#include <fcntl.h>
+#endif
+
 void ATA::IO_Thread()
 {
 	std::unique_lock ioWaitHandle(ioMutex);
@@ -98,15 +107,95 @@ bool ATA::IO_Write()
 	}
 
 	hddImage.seekp(entry.sector * 512, std::ios::beg);
-	hddImage.write((char*)entry.data, entry.length);
-	if (hddImage.fail())
+	if (hddSparse)
 	{
-		Console.Error("DEV9: ATA: File write error");
-		pxAssert(false);
-		abort();
+		//What size block is best (must fit evenly into 512 bytes)?
+		const int sparseSize = 512;
+		const static u8 zeroBlock[sparseSize]{0};
+		for (size_t i = 0; i < entry.length; i += sparseSize)
+		{
+			if (memcmp(&entry.data[i], zeroBlock, sparseSize) == 0)
+			{
+				if (!IO_SparseWrite(entry.sector * 512 + i, sparseSize))
+				{
+					Console.Error("DEV9: ATA: File sparse write error");
+
+#ifdef _WIN32
+					CloseHandle(hddNativeHandle);
+#elif defined(__POSIX__)
+					close(hddNativeHandle);
+#endif
+					hddSparse = false;
+
+					hddImage.write((char*)&entry.data[i], sparseSize);
+					if (hddImage.fail())
+					{
+						Console.Error("DEV9: ATA: File write error");
+						pxAssert(false);
+						abort();
+					}
+				}
+			}
+			else
+			{
+				hddImage.write((char*)&entry.data[i], sparseSize);
+				if (hddImage.fail())
+				{
+					Console.Error("DEV9: ATA: File write error");
+					pxAssert(false);
+					abort();
+				}
+			}
+		}
+	}
+	else
+	{
+		hddImage.write((char*)entry.data, entry.length);
+		if (hddImage.fail())
+		{
+			Console.Error("DEV9: ATA: File write error");
+			pxAssert(false);
+			abort();
+		}
 	}
 	hddImage.flush();
 	delete[] entry.data;
+	return true;
+}
+
+//Also sets hddImage write ptr
+bool ATA::IO_SparseWrite(u64 byteOffset, u64 byteSize)
+{
+#ifdef _WIN32
+	FILE_ZERO_DATA_INFORMATION sparseRange;
+	sparseRange.FileOffset.QuadPart = byteOffset;
+	sparseRange.BeyondFinalZero.QuadPart = byteOffset + byteSize;
+	DWORD dwTemp;
+	const BOOL ret = DeviceIoControl(hddNativeHandle, FSCTL_SET_ZERO_DATA, &sparseRange, sizeof(sparseRange), nullptr, 0, &dwTemp, nullptr);
+
+	if (ret == 0)
+		return false;
+
+#elif defined(__linux__)
+	const int ret = fallocate(hddNativeHandle, FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE, byteOffset, byteSize);
+
+	if (ret == -1)
+		return false;
+
+#elif defined(_APPLE_)
+	fpunchhole_t sparseRange{0};
+	sparseRange.fp_offset = byteOffset;
+	sparseRange.fp_length = byteSize;
+
+	int ret = fcntl(hddNativeHandle, F_PUNCHHOLE, &sparseRange);
+
+	if (ret == -1)
+		return false;
+
+#else
+	return false;
+#endif
+	hddImage.seekp(byteOffset + byteSize, std::ios::beg);
 	return true;
 }
 

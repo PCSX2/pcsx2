@@ -40,6 +40,12 @@ private:
 
 	std::fstream hddImage;
 	u64 hddImageSize;
+	bool hddSparse;
+#ifdef _WIN32
+	HANDLE hddNativeHandle;
+#else
+	int hddNativeHandle;
+#endif
 
 	int pioMode;
 	int sdmaMode;
@@ -206,6 +212,7 @@ private:
 	void IO_Thread();
 	void IO_Read();
 	bool IO_Write();
+	bool IO_SparseWrite(u64 byteOffset, u64 byteSize);
 	void HDD_ReadAsync(void (ATA::*drqCMD)());
 	void HDD_ReadSync(void (ATA::*drqCMD)());
 	bool HDD_CanAssessOrSetError();
