@@ -49,5 +49,5 @@ protected:
 	void SetCanceled();
 
 private:
-	void WriteImage(std::string hddPath, u64 reqSizeBytes);
+	void WriteImage(std::string hddPath, u64 fileBytes, u64 zeroSizeBytes);
 };
