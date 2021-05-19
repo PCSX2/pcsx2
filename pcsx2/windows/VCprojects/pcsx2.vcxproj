@@ -75,6 +75,9 @@
       <PreprocessorDefinitions Condition="'$(CI)'=='true'">PCSX2_CI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>false</MinimalRebuild>
       <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+      <!-- SH 2/3 flashlight, explicitly set here don't change -->
+      <!-- https://github.com/PCSX2/pcsx2/commit/16431653e4d92fda4069031897e24fbe4688d36a -->
+      <FloatingPointModel>Precise</FloatingPointModel>
     </ClCompile>
     <Link>
       <LargeAddressAware>Yes</LargeAddressAware>
