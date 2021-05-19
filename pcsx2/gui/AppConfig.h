@@ -352,11 +352,11 @@ public:
 	bool		AskOnBoot;
 
 	fs::path				CurrentIso;
-	std::string				CurrentBlockdump;
-	std::string				CurrentELF;
-	std::string				CurrentIRX;
+	fs::path				CurrentBlockdump;
+	fs::path				CurrentELF;
+	fs::path				CurrentIRX;
 	CDVD_SourceType			CdvdSource;
-	std::string				CurrentGameArgs;
+	fs::path				CurrentGameArgs;
 
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
 	// slots (3 each)

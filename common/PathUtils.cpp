@@ -157,11 +157,6 @@ std::string Path::ReplaceFilename(const wxString &src, const wxString &newfilena
 	return std::string(jojo.GetFullPath().ToUTF8());
 }
 
-std::string Path::GetFilename(const std::string &src)
-{
-	return fs::path(src).filename();
-}
-
 wxString Path::GetFilenameWithoutExt(const wxString& src)
 {
 	return wxFileName(src).GetName();

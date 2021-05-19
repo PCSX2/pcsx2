@@ -32,7 +32,7 @@ bool 					runWizard  = true; // This should default to true unless the stream sa
 
 std::vector<std::string> ErrorFolders;
 
-std::string usermodePath;
+fs::path usermodePath;
 
 fs::path CustomDocumentsFolder;
 fs::path SettingsFolder;
@@ -283,7 +283,7 @@ bool Pcsx2App::OpenInstallSettingsFile()
 
 	InstallFolder = Path::FromWxString((wxFileName(wxStandardPaths::Get().GetExecutablePath())).GetPath());
 
-	std::string usermodeFile = (GetAppName().ToStdString() + "-reg.yaml");
+	fs::path usermodeFile = (Path::FromWxString(GetAppName()) / "-reg.yaml");
 	usermodePath = (usrlocaldir / usermodeFile); 
 
 	if (!fs::exists(usermodePath))

@@ -467,7 +467,7 @@ bool Pcsx2App::OnInit()
 			if (Startup.CdvdSource == CDVD_SourceType::Iso)
 				SysUpdateIsoSrcFile(Startup.IsoFile);
 			sApp.SysExecute(Startup.CdvdSource);
-			g_Conf->CurrentGameArgs = Startup.GameLaunchArgs;
+			g_Conf->CurrentGameArgs = Path::FromWxString(Startup.GameLaunchArgs);
 		}
 		else if (Startup.SysAutoRunElf)
 		{
@@ -475,30 +475,27 @@ bool Pcsx2App::OnInit()
 
 			// wxPATH_NATIVE is broken on msw, it can delete the first directory after the volume
 			// EX: P://dir1/dir2/elf.elf -> P://dir2/ ???
-#ifdef _WIN32
-			wxFileName elfFile = wxFileName(Startup.ElfFile, wxPATH_WIN);
-#else
-			wxFileName elfFile = wxFileName(Startup.ElfFile, wxPATH_NATIVE);
-#endif
 
-			if (!elfFile.FileExists())
+			fs::path elfFile = fs::path(Path::FromWxString(Startup.ElfFile));
+
+			if (!fs::exists(elfFile))
 			{
 				wxMessageBox(wxString::Format(_("Specified elf file %s does not exist!"), Startup.ElfFile), "PCSX2", wxICON_ERROR);
 			}
 			else
 			{
-				g_Conf->Folders.RunELF = elfFile.GetPath();
-				sApp.SysExecute(Startup.CdvdSource, Startup.ElfFile);
+				g_Conf->Folders.RunELF = elfFile;
+				sApp.SysExecute(Startup.CdvdSource, Path::FromWxString(Startup.ElfFile));
 			}
 		}
 		else if (Startup.SysAutoRunIrx)
 		{
 			g_Conf->EmuOptions.UseBOOT2Injection = true;
 
-			g_Conf->CurrentIRX = Startup.ElfFile;
+			g_Conf->CurrentIRX = Path::FromWxString(Startup.ElfFile);
 
 			// FIXME: ElfFile is an irx it will crash
-			sApp.SysExecute(Startup.CdvdSource, Startup.ElfFile);
+			sApp.SysExecute(Startup.CdvdSource, Path::FromWxString(Startup.ElfFile));
 		}
 	}
 	// ----------------------------------------------------------------------------

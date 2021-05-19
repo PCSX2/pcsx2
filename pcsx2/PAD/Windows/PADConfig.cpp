@@ -336,8 +336,8 @@ void PADsetSettingsDir(const char* dir)
 	//swprintf_s( padSettings, L"%S", (dir==NULL) ? "inis" : dir );
 
 	//uint targlen = MultiByteToWideChar(CP_ACP, 0, dir, -1, NULL, 0);
-	std::string iniName = "PAD.ini";
-	MultiByteToWideChar(CP_UTF8, 0, (GetSettingsFolder() / iniName).c_str(), -1, padSettings, MAX_PATH * 2);
+	fs::path iniName = "PAD.ini";
+	MultiByteToWideChar(CP_UTF8, 0, (GetSettingsFolder() / iniName).u8string().c_str(), -1, padSettings, MAX_PATH * 2);
 
 	createSettingsDir = false;
 

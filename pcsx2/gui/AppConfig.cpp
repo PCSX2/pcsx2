@@ -406,7 +406,7 @@ namespace FilenameDefs
 
 static std::string GetResolvedFolder(FoldersEnum_t id)
 {
-	return g_Conf->Folders.IsDefault(id) ? PathDefs::Get(id).c_str() : g_Conf->Folders[id].string();
+	return g_Conf->Folders.IsDefault(id) ? PathDefs::Get(id).u8string().c_str() : g_Conf->Folders[id].u8string().c_str();
 }
 
 fs::path GetLogFolder()
@@ -429,7 +429,7 @@ fs::path GetSettingsFolder()
 	if ( !wxGetApp().Overrides.SettingsFolder.empty() )
 		return wxGetApp().Overrides.SettingsFolder;
 
-	return UseDefaultSettingsFolder ? PathDefs::GetSettings().c_str() : SettingsFolder.string();
+	return UseDefaultSettingsFolder ? PathDefs::GetSettings().u8string() : SettingsFolder.u8string();
 }
 
 fs::path GetVmSettingsFilename()

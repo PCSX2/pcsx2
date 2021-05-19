@@ -302,8 +302,8 @@ void LoadBIOS()
 		LoadExtraRom( L"rom2", eeMem->ROM2 );
 		LoadExtraRom( L"erom", eeMem->EROM );
 
-		if (g_Conf->CurrentIRX.length() > 3)
-			LoadIrx(g_Conf->CurrentIRX, &eeMem->ROM[0x3C0000]);
+		if (g_Conf->CurrentIRX.string().length() > 3)
+			LoadIrx(Path::ToWxString(g_Conf->CurrentIRX), &eeMem->ROM[0x3C0000]);
 
 		CurrentBiosInformation.threadListAddr = 0;
 	}

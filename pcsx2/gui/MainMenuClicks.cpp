@@ -741,7 +741,7 @@ void MainEmuFrame::Menu_OpenELF_Click(wxCommandEvent&)
 	if (_DoSelectELFBrowser())
 	{
 		g_Conf->EmuOptions.UseBOOT2Injection = true;
-		sApp.SysExecute(g_Conf->CdvdSource, g_Conf->CurrentELF);
+		sApp.SysExecute(g_Conf->CdvdSource, Path::ToWxString(g_Conf->CurrentELF));
 	}
 
 	stopped_core.AllowResume();
@@ -1016,7 +1016,7 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent& even
 	{
 		return;
 	}
-	GSmakeSnapshot(g_Conf->Folders.Snapshots.c_str()); // TODO: Add unicode handles for GS
+	GSmakeSnapshot(g_Conf->Folders.Snapshots.u8string().c_str()); // TODO: Add unicode handles for GS
 }
 
 void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& event)

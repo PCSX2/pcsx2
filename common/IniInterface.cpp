@@ -112,7 +112,7 @@ void IniLoader::Entry(const std::string &var, std::string &value, const std::str
 	if (m_Config)
 	{
 		m_Config->Read(var, &dest, defvalue);
-		value = Path::FromWxString(dest);
+		value = dest.ToUTF8();
 	}
 	else
 		value = defvalue;
