@@ -21,11 +21,12 @@
 
 #if _WIN32
 #include <Windows.h>
-#elif defined(__linux__)
-#define _GNU_SOURCE
-#include <fcntl.h>
-#elif defined(__APPLE__)
+#elif defined(__POSIX__)
+#if defined(__APPLE__)
 #include <unistd.h>
+#endif
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <fcntl.h>
 #endif
 
@@ -63,30 +64,7 @@ int ATA::Open(ghc::filesystem::path hddPath)
 	hddImage.seekg(0, std::ios::end);
 	hddImageSize = hddImage.tellg();
 
-//Check is sparse
-#ifdef _WIN32
-	const DWORD ret = GetFileAttributes(hddPath.c_str());
-	hddSparse = ret & FILE_ATTRIBUTE_SPARSE_FILE;
-	if (hddSparse)
-	{
-		//Get OS specific file handle for spare writing
-		hddNativeHandle = CreateFile(hddPath.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
-		if (hddNativeHandle == INVALID_HANDLE_VALUE)
-		{
-			Console.Error("DEV9: ATA: Failed to open file for sparse");
-			hddSparse = false;
-		}
-	}
-#elif defined(__POSIX__)
-	//No way to check if we can hole punch without trying it
-	hddNativeHandle = open(hddPath.c_str(), O_RDWR);
-	hddSparse = false;
-	if (hddNativeHandle != -1)
-		//Assume sparse
-		hddSparse = true;
-	else
-		Console.Error("DEV9: ATA: Failed to open file for sparse");
-#endif
+	InitSparseSupport(hddPath);
 
 	{
 		std::lock_guard ioSignallock(ioMutex);
@@ -98,6 +76,132 @@ int ATA::Open(ghc::filesystem::path hddPath)
 	ioRunning = true;
 
 	return 0;
+}
+
+void ATA::InitSparseSupport(ghc::filesystem::path hddPath)
+{
+#ifdef _WIN32
+	hddSparse = false;
+
+	const DWORD fileAttributes = GetFileAttributes(hddPath.c_str());
+	hddSparse = fileAttributes & FILE_ATTRIBUTE_SPARSE_FILE;
+
+	if (!hddSparse)
+		return;
+
+	//Get OS specific file handle for spare writing
+	hddNativeHandle = CreateFile(hddPath.c_str(), GENERIC_READ | GENERIC_WRITE, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	if (hddNativeHandle == INVALID_HANDLE_VALUE)
+	{
+		Console.Error("DEV9: ATA: Failed to open file for sparse");
+		hddSparse = false;
+		return;
+	}
+
+	//Get Sparse Block size
+	hddSparseBlockSize = 4096; //Assumed block size
+
+	//We need the drive letter for the drive the file actually resides on
+	//which means we need to deal with any junction links in the path
+	DWORD len = GetFinalPathNameByHandle(hddNativeHandle, nullptr, 0, FILE_NAME_NORMALIZED);
+
+	if (len != 0)
+	{
+		std::unique_ptr<TCHAR[]> name = std::make_unique<TCHAR[]>(len);
+		len = GetFinalPathNameByHandle(hddNativeHandle, name.get(), len, FILE_NAME_NORMALIZED);
+		if (len != 0)
+		{
+			ghc::filesystem::path finalPath(name.get());
+			finalPath = finalPath.root_path();
+
+			DWORD sectorsPerCluster;
+			DWORD bytesPerSector;
+			DWORD temp1, temp2;
+			const BOOL ret = GetDiskFreeSpace(finalPath.c_str(), &sectorsPerCluster, &bytesPerSector, &temp1, &temp2);
+			if (ret == TRUE)
+				hddSparseBlockSize = sectorsPerCluster * bytesPerSector;
+			else
+				Console.Error("DEV9: ATA: Failed to get sparse block size (GetDiskFreeSpace() returned false)");
+		}
+		else
+			Console.Error("DEV9: ATA: Failed to get sparse block size (GetFinalPathNameByHandle() returned 0)");
+	}
+	else
+		Console.Error("DEV9: ATA: Failed to get sparse block size (GetFinalPathNameByHandle() returned 0)");
+
+	/*  https://askbob.tech/the-ntfs-blog-sparse-and-compressed-file/
+	 *  NTFS Sparse Block Size are the same size as a compression unit
+	 *  Cluster Size    Compression Unit    
+	 *  --------------------------------
+	 *  512bytes         8kb (0x02000)
+	 *    1kb           16kb (0x04000)
+	 *    2kb           32kb (0x08000)
+	 *    4kb           64kb (0x10000)
+	 *    8kb           64kb (0x10000)
+	 *   16kb           64kb (0x10000)
+	 *   32kb           64kb (0x10000)
+	 *   64kb           64kb (0x10000)
+	 *  --------------------------------
+	 */
+
+	//Get the FS type
+	WCHAR fsName[MAX_PATH + 1];
+	const BOOL ret = GetVolumeInformationByHandleW(hddNativeHandle, nullptr, 0, nullptr, nullptr, nullptr, fsName, MAX_PATH);
+	if (ret == FALSE)
+	{
+		Console.Error("DEV9: ATA: Failed to get sparse block size (GetVolumeInformationByHandle() returned false)");
+		//Assume NTFS
+		wcscpy(fsName, L"NTFS");
+	}
+	if ((wcscmp(fsName, L"NTFS") == 0))
+	{
+		switch (hddSparseBlockSize)
+		{
+			case 512:
+				hddSparseBlockSize = 8192;
+				break;
+			case 1024:
+				hddSparseBlockSize = 16384;
+				break;
+			case 2048:
+				hddSparseBlockSize = 32768;
+				break;
+			case 4096:
+			case 8192:
+			case 16384:
+			case 32768:
+			case 65536:
+				hddSparseBlockSize = 65536;
+				break;
+			default:
+				break;
+		}
+	}
+	//Otherwise assume SparseBlockSize == block size
+
+#elif defined(__POSIX__)
+	hddNativeHandle = open(hddPath.c_str(), O_RDWR);
+	hddSparse = false;
+	if (hddNativeHandle != -1)
+	{
+		//No way to check if we can hole punch without trying it
+		//so just assume sparse files are supported
+		hddSparse = true;
+
+		//Get Sparse Block size
+		hddSparseBlockSize = 4096; //Assumed block size
+		struct stat fileInfo;
+		const int ret = fstat(hddNativeHandle, &fileInfo);
+		if (ret == 0)
+			hddSparseBlockSize = fileInfo.st_blksize;
+		else
+			Console.Error("DEV9: ATA: Failed to get sparse block size (fstat returned != 0)");
+	}
+	else
+		Console.Error("DEV9: ATA: Failed to open file for sparse");
+#endif
+	hddSparseBlock = std::make_unique<u8[]>(hddSparseBlockSize);
+	hddSparseBlockValid = false;
 }
 
 void ATA::Close()
@@ -133,6 +237,8 @@ void ATA::Close()
 		close(hddNativeHandle);
 #endif
 		hddSparse = false;
+		hddSparseBlock = nullptr;
+		hddSparseBlockValid = false;
 	}
 	if (hddImage.is_open())
 		hddImage.close();
