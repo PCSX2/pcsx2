@@ -290,8 +290,8 @@ namespace InternalServers
 			//Use adapter's DNS2 if it has one
 			//otherwise use adapter's DNS1
 
-			if (dnsIPs.size() >= 1)
-				dns2 = dnsIPs[std::min((size_t)2, dnsIPs.size())];
+			if (!dnsIPs.empty())
+				dns2 = dnsIPs[std::min<size_t>(1, dnsIPs.size() - 1)];
 		}
 		if (dns1.integer == 0 && dns2.integer != 0)
 		{
