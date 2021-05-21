@@ -1053,6 +1053,9 @@ SCED-50907:
 SCED-51531:
   name: "Official PlayStation 2 Magazine Demo 33"
   region: "PAL-M5"
+SCED-51535:
+  name: "Official PlayStation 2 Magazine Demo 40"
+  region: "PAL-M5"
 SCED-51537:
   name: "Official PlayStation 2 Magazine Demo 37"
   region: "PAL-M5"
@@ -1088,6 +1091,12 @@ SCED-52049:
   compat: 5
   clampModes:
     vuClampMode: 3  # Fixes minor SPS on characters.
+SCED-52053:
+  name: "Official Playstation Magazine - Demo Disc 40"
+  region: "PAL-PT"
+SCED-52057:
+  name: "Official Playstation Magazine - Demo Disc 40"
+  region: "PAL-IT"
 SCED-52355:
   name: "Military Multi Demo"
   region: "PAL-M5"
@@ -1125,6 +1134,12 @@ SCED-53161:
 SCED-53163:
   name: "Official PlayStation 2 Magazine Demo 60"
   region: "PAL-M12"
+SCED-53165:
+  name: "Official PlayStation 2 Magazine Demo 40"
+  region: "PAL-F"
+SCED-53175:
+  name: "Official PlayStation 2 Magazine Demo 40"
+  region: "PAL-G"
 SCED-53325:
   name: "Official PlayStation 2 Magazine Demo 58"
   region: "PAL-M5"
