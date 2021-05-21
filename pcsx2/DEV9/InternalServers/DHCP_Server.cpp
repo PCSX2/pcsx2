@@ -356,10 +356,12 @@ namespace InternalServers
 						Console.Error("DHCP: RouterIP missmatch");
 					break;
 				case 6:
+					// clang-format off
 					if (((((DHCPopDNS*)dhcp.options[i])->dnsServers.size() == 0 && dns1.integer == 0) ||
 						 (((DHCPopDNS*)dhcp.options[i])->dnsServers.size() == 1 && dns1.integer != 0 && dns2.integer == 0) ||
 						 (((DHCPopDNS*)dhcp.options[i])->dnsServers.size() == 2 && dns2.integer != 0)) == false)
 						Console.Error("DHCP: DNS count missmatch");
+					// clang-format on
 
 					if ((((DHCPopDNS*)dhcp.options[i])->dnsServers.size() > 0 && dns1 != ((DHCPopDNS*)dhcp.options[i])->dnsServers[0]) ||
 						(((DHCPopDNS*)dhcp.options[i])->dnsServers.size() > 1 && dns2 != ((DHCPopDNS*)dhcp.options[i])->dnsServers[1]))
@@ -390,8 +392,8 @@ namespace InternalServers
 				case 57:
 					maxMs = ((DHCPopMMSGS*)(dhcp.options[i]))->maxMessageSize;
 					break;
-				case 60:  //ClassID
-				case 61:  //ClientID
+				case 60: //ClassID
+				case 61: //ClientID
 				case 255: //End
 					break;
 				default:
