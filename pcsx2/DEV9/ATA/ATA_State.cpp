@@ -34,9 +34,7 @@ int ATA::Open(ghc::filesystem::path hddPath)
 	CreateHDDinfo(config.HddSize);
 
 	//Open File
-	if (ghc::filesystem::exists(hddPath))
-		hddImage = ghc::filesystem::fstream(hddPath, std::ios::in | std::ios::out | std::ios::binary);
-	else
+	if (!ghc::filesystem::exists(hddPath))
 	{
 		HddCreate hddCreator;
 		hddCreator.filePath = hddPath;
@@ -45,9 +43,8 @@ int ATA::Open(ghc::filesystem::path hddPath)
 
 		if (hddCreator.errored)
 			return -1;
-
-		hddImage = ghc::filesystem::fstream(hddPath);
 	}
+	hddImage = ghc::filesystem::fstream(hddPath, std::ios::in | std::ios::out | std::ios::binary);
 
 	//Store HddImage size for later check
 	hddImage.seekg(0, std::ios::end);
