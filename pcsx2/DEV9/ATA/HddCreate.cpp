@@ -18,8 +18,13 @@
 #include <fstream>
 #include "HddCreate.h"
 
-#ifdef _WIN32
+#if _WIN32
 #include <Windows.h>
+#elif defined(__POSIX__)
+#include <unistd.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
 #endif
 
 void HddCreate::Start()
@@ -48,9 +53,9 @@ void HddCreate::Start()
 	//Instead, loop here to update UI
 	char msg[32] = {0};
 	int currentSize;
-	while ((currentSize = written.load()) != zeroSize && !errored.load())
+	while ((currentSize = written.load()) != neededSize && !errored.load())
 	{
-		snprintf(msg, 32, "%i / %i MiB", written.load(), zeroSize);
+		snprintf(msg, 32, "%i / %i MiB", written.load(), neededSize);
 
 		if (!progressDialog->Update(currentSize, msg))
 			canceled.store(true);
@@ -77,54 +82,33 @@ void HddCreate::Start()
 
 void HddCreate::WriteImage(ghc::filesystem::path hddPath, int fileMiB, int zeroMiB)
 {
-	constexpr int buffsize = 4 * 1024;
-	u8 buff[buffsize] = {0}; //4kb
-
 	if (ghc::filesystem::exists(hddPath))
 	{
 		SetError();
 		return;
 	}
 
-	//Create File
-	std::fstream newImage = ghc::filesystem::fstream(hddPath, std::ios::out | std::ios::binary);
-	if (newImage.fail())
-	{
-		SetError();
-		return;
-	}
-	newImage.close();
+	const u64 fileBytes = ((u64)fileMiB) * 1024 * 1024;
+	bool sparseSupported = false;
 
-	//Size file (Slow on FS that don't support sparse)
-	std::error_code ec;
-	ghc::filesystem::resize_file(hddPath, ((u64)fileMiB) * 1024 * 1024, ec);
-	if (ec.value() != 0)
-	{
-		ghc::filesystem::remove(filePath);
-		SetError();
-		return;
-	}
-
-	//Make Sparse
 #ifdef _WIN32
-	HANDLE nativeFile = CreateFile(hddPath.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, nullptr);
+	//Create File
+	HANDLE nativeFile = CreateFile(hddPath.c_str(), GENERIC_WRITE, FILE_SHARE_WRITE, nullptr, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, nullptr);
 
 	if (nativeFile == INVALID_HANDLE_VALUE)
 	{
-		newImage.close();
-		ghc::filesystem::remove(filePath);
 		SetError();
 		return;
 	}
 
+	//Do we support sparse files
 	DWORD dwFlags;
-	BOOL ret = GetVolumeInformationByHandleW(nativeFile, nullptr, MAX_PATH, nullptr, nullptr, &dwFlags, nullptr, MAX_PATH);
+	BOOL ret = GetVolumeInformationByHandleW(nativeFile, nullptr, 0, nullptr, nullptr, &dwFlags, nullptr, 0);
 
-	if (ret == 0)
+	if (ret == FALSE)
 	{
-		Console.Error("DEV9: GetVolumeInformationByHandle() Failed");
+		Console.Error("DEV9: failed to check sparse");
 		CloseHandle(nativeFile);
-		newImage.close();
 		ghc::filesystem::remove(filePath);
 		SetError();
 		return;
@@ -132,17 +116,16 @@ void HddCreate::WriteImage(ghc::filesystem::path hddPath, int fileMiB, int zeroM
 
 	if (dwFlags & FILE_SUPPORTS_SPARSE_FILES)
 	{
-		//Use sparse files
+		//Sparse files supported
 		FILE_SET_SPARSE_BUFFER sparseSetting;
 		sparseSetting.SetSparse = true;
 		DWORD dwTemp;
 		ret = DeviceIoControl(nativeFile, FSCTL_SET_SPARSE, &sparseSetting, sizeof(sparseSetting), nullptr, 0, &dwTemp, nullptr);
 
-		if (ret == 0)
+		if (ret == FALSE)
 		{
 			Console.Error("DEV9: Failed to set sparse");
 			CloseHandle(nativeFile);
-			newImage.close();
 			ghc::filesystem::remove(filePath);
 			SetError();
 			return;
@@ -150,67 +133,171 @@ void HddCreate::WriteImage(ghc::filesystem::path hddPath, int fileMiB, int zeroM
 
 		FILE_ZERO_DATA_INFORMATION sparseRange;
 		sparseRange.FileOffset.QuadPart = 0;
-		sparseRange.BeyondFinalZero.QuadPart = ((u64)fileMiB) * 1024 * 1024;
+		sparseRange.BeyondFinalZero.QuadPart = fileBytes;
 		ret = DeviceIoControl(nativeFile, FSCTL_SET_ZERO_DATA, &sparseRange, sizeof(sparseRange), nullptr, 0, &dwTemp, nullptr);
 
-		if (ret == 0)
+		if (ret == FALSE)
 		{
 			Console.Error("DEV9: Failed to set sparse");
 			CloseHandle(nativeFile);
-			newImage.close();
 			ghc::filesystem::remove(filePath);
 			SetError();
 			return;
 		}
-	}
-	CloseHandle(nativeFile);
-#else
-	//Automatic on linux/mac
-#endif
 
-	//Reopen to zero
-	newImage = ghc::filesystem::fstream(hddPath, std::ios::in | std::ios::out | std::ios::binary);
-	if (newImage.fail())
+		sparseSupported = true;
+	}
+
+	//Set filesize
+	LARGE_INTEGER seek;
+	seek.QuadPart = fileBytes;
+	ret = SetFilePointerEx(nativeFile, seek, nullptr, FILE_BEGIN);
+
+	if (ret == FALSE)
 	{
+		Console.Error("DEV9: Failed to set size");
+		CloseHandle(nativeFile);
 		ghc::filesystem::remove(filePath);
 		SetError();
 		return;
 	}
 
+	ret = SetEndOfFile(nativeFile);
+
+	if (ret == FALSE)
+	{
+		Console.Error("DEV9: Failed to set size");
+		CloseHandle(nativeFile);
+		ghc::filesystem::remove(filePath);
+		SetError();
+		return;
+	}
+
+	seek.QuadPart = 0;
+	ret = SetFilePointerEx(nativeFile, seek, nullptr, FILE_BEGIN);
+
+	if (ret == FALSE)
+	{
+		Console.Error("DEV9: Failed to seek");
+		CloseHandle(nativeFile);
+		ghc::filesystem::remove(filePath);
+		SetError();
+		return;
+	}
+
+#elif defined(__POSIX__)
+	//Create File
+	int nativeFile = open(hddPath.c_str(), O_RDWR | O_CREAT, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+
+	if (nativeFile == -1)
+	{
+		SetError();
+		return;
+	}
+
+	//Set filesize
+	int ret = ftruncate(nativeFile, fileBytes);
+
+	if (ret == -1)
+	{
+		Console.Error("DEV9: Failed to set size");
+		close(nativeFile);
+		ghc::filesystem::remove(filePath);
+		SetError();
+		return;
+	}
+
+	//We check the blocks allocated
+	//Assume that we don't get a false positive from filesystems that only support ValidDataLength
+	struct stat fileInfo;
+	ret = fstat(nativeFile, &fileInfo);
+
+	if (ret == -1)
+	{
+		Console.Error("DEV9: Failed to check sparse");
+		close(nativeFile);
+		ghc::filesystem::remove(filePath);
+		SetError();
+		return;
+	}
+
+	if (fileInfo.st_blocks != fileBytes / 512)
+	{
+		//Sparse files supported
+		sparseSupported = true;
+		//Sparse automatically
+	}
+
+	off_t retOff = lseek(nativeFile, 0, SEEK_SET);
+
+	if (retOff == -1)
+	{
+		Console.Error("DEV9: Failed to seek");
+		close(nativeFile);
+		ghc::filesystem::remove(filePath);
+		SetError();
+		return;
+	}
+#endif
+
 	lastUpdate = std::chrono::steady_clock::now();
 
-	newImage.seekp(0, std::ios::beg);
+	int iMiB = 0;
+	if (sparseSupported)
+		iMiB = fileMiB - zeroMiB;
 
-	for (int iMiB = 0; iMiB < zeroMiB; iMiB++)
+	constexpr int buffsize = 4 * 1024;
+	const u8 buff[buffsize]{0};
+	for (; iMiB < fileMiB; iMiB++)
 	{
-		for (int i4kb = 0; i4kb < 256; i4kb++)
+		for (int ibuff = 0; ibuff < (1024 * 1024) / buffsize; ibuff++)
 		{
-			newImage.write((char*)buff, buffsize);
-			if (newImage.fail())
+#ifdef _WIN32
+			BOOL success = WriteFile(nativeFile, buff, buffsize, nullptr, nullptr);
+			if (success == FALSE)
 			{
-				newImage.close();
+				CloseHandle(nativeFile);
 				ghc::filesystem::remove(filePath);
 				SetError();
 				return;
 			}
+#elif defined(__POSIX__)
+			ssize_t written = write(nativeFile, buff, buffsize);
+			if (written != buffsize)
+			{
+				close(nativeFile);
+				ghc::filesystem::remove(filePath);
+				SetError();
+				return;
+			}
+#endif
 		}
 
 		const std::chrono::steady_clock::time_point now = std::chrono::steady_clock::now();
-		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastUpdate).count() >= 100 || (iMiB + 1) == zeroMiB)
+		if (std::chrono::duration_cast<std::chrono::milliseconds>(now - lastUpdate).count() >= 100 || (iMiB + 1) == fileMiB)
 		{
 			lastUpdate = now;
 			SetFileProgress(iMiB + 1);
 		}
 		if (canceled.load())
 		{
-			newImage.close();
+#ifdef _WIN32
+			CloseHandle(nativeFile);
+#elif defined(__POSIX__)
+			close(nativeFile);
+#endif
 			ghc::filesystem::remove(filePath);
 			SetError();
 			return;
 		}
 	}
-	newImage.flush();
-	newImage.close();
+#ifdef _WIN32
+	FlushFileBuffers(nativeFile);
+	CloseHandle(nativeFile);
+#elif defined(__POSIX__)
+	fsync(nativeFile);
+	close(nativeFile);
+#endif
 }
 
 void HddCreate::SetFileProgress(int currentSize)
