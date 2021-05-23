@@ -261,8 +261,8 @@ void Dialogs::CreateMemoryCardDialog::CreateControls()
 						  "You can always convert back between folder type and single memcard file.\n"))
 		.	SetInt(0),
 
-		RadioPanelItem(_("128 KiB (PSX)"), _("This is the standard Sony-provisioned size PSX memory card, only compatible with PSX games."))
-		.	SetToolTip(_t("This memory card is required by PSX games. It is not compatible with PS2 games."))
+		RadioPanelItem(_("128 KiB (PS1)"), _("This is the standard Sony-provisioned size PS1 memory card, only compatible with PS1 games."))
+		.	SetToolTip(_t("This memory card is required by PS1 games. It is not compatible with PS2 games."))
 		.	SetInt(1)
 	};
 
