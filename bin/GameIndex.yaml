@@ -1092,10 +1092,10 @@ SCED-52049:
   clampModes:
     vuClampMode: 3  # Fixes minor SPS on characters.
 SCED-52053:
-  name: "Official Playstation Magazine - Demo Disc 40"
+  name: "Official Playstation Magazine Demo Disc 40"
   region: "PAL-PT"
 SCED-52057:
-  name: "Official Playstation Magazine - Demo Disc 40"
+  name: "Official Playstation Magazine Demo Disc 40"
   region: "PAL-IT"
 SCED-52355:
   name: "Military Multi Demo"
