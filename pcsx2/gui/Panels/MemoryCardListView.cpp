@@ -149,7 +149,7 @@ wxString MemoryCardListView_Simple::OnGetItemText(long item, long column) const
 */		
 		case McdColS_Size:			return prefix + ( !it.IsPresent ? L"" : (it.IsPSX? pxsFmt( L"%u MBit", it.SizeInMB ) : ( it.SizeInMB > 0 ? pxsFmt( L"%u MiB", it.SizeInMB ) : L"Auto" ) ) );
 		case McdColS_Formatted:		return prefix + ( !it.IsPresent ? L"" : ( it.IsFormatted ? _("Yes") : _("No")) );
-		case McdColS_Type:			return prefix + ( !it.IsPresent ? L"" : ( it.IsPSX? _("PSX") : _("PS2")) );
+		case McdColS_Type:			return prefix + ( !it.IsPresent ? L"" : ( it.IsPSX? _("PS1") : _("PS2")) );
 		case McdColS_DateModified:	return prefix + ( !it.IsPresent || !it.DateModified.IsValid() ? L"" : it.DateModified.FormatDate() );
 		case McdColS_DateCreated:	return prefix + ( !it.IsPresent || !it.DateCreated.IsValid() ? L"" : it.DateCreated.FormatDate() );
 
