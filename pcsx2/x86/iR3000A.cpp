@@ -849,8 +849,8 @@ static __fi u32 psxRecClearMem(u32 pc)
 	while(BASEBLOCKEX* pexblock = recBlocks[blockidx++])
 	{
 		if (pc >= pexblock->startpc && pc < pexblock->startpc + pexblock->size * 4) {
-			DevCon.Error("Impossible block clearing failure");
-			pxFailDev( "Impossible block clearing failure" );
+			DevCon.Error("[IOP] Impossible block clearing failure");
+			pxFailDev( "[IOP] Impossible block clearing failure" );
 		}
 	}
 
