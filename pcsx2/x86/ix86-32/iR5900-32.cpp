@@ -847,9 +847,9 @@ void recClear(u32 addr, u32 size)
 		if (pexblock->startpc >= addr && pexblock->startpc < addr + size * 4
 		 || pexblock->startpc < addr && blockend > addr) {
 			if( !IsDevBuild )
-				Console.Error( "Impossible block clearing failure" );
+				Console.Error( "[EE] Impossible block clearing failure" );
 			else
-				pxFailDev( "Impossible block clearing failure" );
+				pxFailDev( "[EE] Impossible block clearing failure" );
 		}
 	}
 
