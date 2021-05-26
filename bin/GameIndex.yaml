@@ -1053,6 +1053,9 @@ SCED-50907:
 SCED-51531:
   name: "Official PlayStation 2 Magazine Demo 33"
   region: "PAL-M5"
+SCED-51535:
+  name: "Official PlayStation 2 Magazine Demo 40"
+  region: "PAL-M5"
 SCED-51537:
   name: "Official PlayStation 2 Magazine Demo 37"
   region: "PAL-M5"
@@ -1088,6 +1091,12 @@ SCED-52049:
   compat: 5
   clampModes:
     vuClampMode: 3  # Fixes minor SPS on characters.
+SCED-52053:
+  name: "Official Playstation Magazine Demo Disc 40"
+  region: "PAL-PT"
+SCED-52057:
+  name: "Official Playstation Magazine Demo Disc 40"
+  region: "PAL-IT"
 SCED-52355:
   name: "Military Multi Demo"
   region: "PAL-M5"
@@ -1125,8 +1134,20 @@ SCED-53161:
 SCED-53163:
   name: "Official PlayStation 2 Magazine Demo 60"
   region: "PAL-M12"
+SCED-53165:
+  name: "Official PlayStation 2 Magazine Demo 40"
+  region: "PAL-F"
+SCED-53175:
+  name: "Official PlayStation 2 Magazine Demo 40"
+  region: "PAL-G"
 SCED-53325:
   name: "Official PlayStation 2 Magazine Demo 58"
+  region: "PAL-M5"
+SCED-53905:
+  name: "Official PlayStation 2 Magazine Italia Special Sport Demo"
+  region: "PAL-M5"
+SCED-54410:
+  name: "Official PlayStation 2 Magazine Demo 85"
   region: "PAL-M5"
 SCES-50000:
   name: "Ridge Racer V"
@@ -2504,6 +2525,9 @@ SCES-55093:
 SCES-55094:
   name: "Buzz! The Pop Quiz"
   region: "PAL-M3"
+SCES-55178:
+  name: "Singstar Boy Bands vs Girl Bands"
+  region: "PAL-M5"
 SCES-55179:
   name: "SingStar Schlager"
   region: "PAL-G"
@@ -2556,6 +2580,9 @@ SCES-55538:
 SCES-55552:
   name: "SingStar MoTown"
   region: "PAL-G"
+SCES-55554:
+  name: "Singstar Take That"
+  region: "PAL-M5"
 SCES-55557:
   name: "SingStar Take That"
   region: "PAL-G"
