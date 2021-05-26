@@ -241,6 +241,9 @@
     <Filter Include="System\Ps2\PAD">
       <UniqueIdentifier>{e1cbcaf6-9f65-4f14-9e89-27dd0f10e047}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Recording\Viewer">
+      <UniqueIdentifier>{7afc0700-53d9-4a76-af60-5eb516e84f0c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\Utilities\folderdesc.txt">
@@ -293,6 +296,12 @@
     </None>
     <None Include="..\..\PAD\Windows\Default.ini">
       <Filter>System\Ps2\PAD</Filter>
+    </None>
+    <None Include="..\..\Recording\Viewer\RecordingMetadataDialog.h">
+      <Filter>Recording\Viewer</Filter>
+    </None>
+    <None Include="..\..\Recording\Viewer\RecordingViewerColumn.h">
+      <Filter>Recording\Viewer</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
@@ -1360,6 +1369,18 @@
     <ClCompile Include="..\..\Recording\Utilities\InputRecordingLogger.cpp">
       <Filter>Recording\Utilities</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Recording\Viewer\InputRecordingViewer.cpp">
+      <Filter>Recording\Viewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\Viewer\RecordingMetadataDialog.cpp">
+      <Filter>Recording\Viewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\Viewer\RecordingFileGridTable.cpp">
+      <Filter>Recording\Viewer</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Recording\Viewer\RecordingViewerColumn.cpp">
+      <Filter>Recording\Viewer</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Patch.h">
@@ -2172,6 +2193,12 @@
     <ClInclude Include="..\..\PAD\Windows\resource_pad.h">
       <Filter>System\Ps2\PAD</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Recording\Viewer\InputRecordingViewer.h">
+      <Filter>Recording\Viewer</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Recording\Viewer\RecordingFileGridTable.h">
+      <Filter>Recording\Viewer</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\wxResources.rc">
@@ -2333,5 +2360,10 @@
     <Manifest Include="..\PCSX2.manifest">
       <Filter>AppHost\Resources</Filter>
     </Manifest>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="..\..\gui\Resources\NoIcon.png">
+      <Filter>AppHost\Resources</Filter>
+    </Image>
   </ItemGroup>
 </Project>

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -97,7 +97,7 @@ void PadData::UpdateControllerData(u16 bufIndex, u8 const& bufVal)
 	}
 }
 
-u8 PadData::PollControllerData(u16 bufIndex)
+u8 PadData::PollControllerData(u16 bufIndex) const
 {
 	u8 byte = 0;
 	BufferIndex index = static_cast<BufferIndex>(bufIndex);
@@ -172,7 +172,7 @@ bool PadData::IsButtonPressed(ButtonResolver buttonResolver, u8 const& bufVal)
 	return (~bufVal & buttonResolver.buttonBitmask) > 0;
 }
 
-u8 PadData::BitmaskOrZero(bool pressed, ButtonResolver buttonInfo)
+u8 PadData::BitmaskOrZero(bool pressed, ButtonResolver buttonInfo) const
 {
 	return pressed ? buttonInfo.buttonBitmask : 0;
 }

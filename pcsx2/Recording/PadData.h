@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -89,7 +89,7 @@ public:
 
 	// Given the input buffer and the current index, updates the correct field(s)
 	void UpdateControllerData(u16 bufIndex, u8 const& bufVal);
-	u8 PollControllerData(u16 bufIndex);
+	u8 PollControllerData(u16 bufIndex) const;
 
 	// Prints current PadData to the Controller Log filter which disabled by default
 	void LogPadData(u8 const& port);
@@ -120,7 +120,7 @@ private:
 
 	// Checks and returns if button a is pressed or not
 	bool IsButtonPressed(ButtonResolver buttonResolver, u8 const& bufVal);
-	u8 BitmaskOrZero(bool pressed, ButtonResolver buttonInfo);
+	u8 BitmaskOrZero(bool pressed, ButtonResolver buttonInfo) const;
 
 	wxString RawPadBytesToString(int start, int end);
 };

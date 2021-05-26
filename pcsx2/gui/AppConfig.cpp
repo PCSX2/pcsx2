@@ -913,6 +913,47 @@ void AppConfig::GSWindowOptions::LoadSave( IniInterface& ini )
 #ifndef DISABLE_RECORDING
 AppConfig::InputRecordingOptions::InputRecordingOptions()
 	: VirtualPadPosition(wxDefaultPosition)
+	, ViewerPosition(wxDefaultPosition)
+	, ViewerLeftAnalogXIndex(0)
+	, ViewerLeftAnalogYIndex(1)
+	, ViewerRightAnalogXIndex(2)
+	, ViewerRightAnalogYIndex(3)
+	, ViewerSquareIndex(4)
+	, ViewerCrossIndex(5)
+	, ViewerCircleIndex(6)
+	, ViewerTriangleIndex(7)
+	, ViewerR1Index(8)
+	, ViewerR2Index(9)
+	, ViewerL1Index(10)
+	, ViewerL2Index(11)
+	, ViewerLeftIndex(12)
+	, ViewerDownIndex(13)
+	, ViewerRightIndex(14)
+	, ViewerUpIndex(15)
+	, ViewerR3Index(16)
+	, ViewerL3Index(17)
+	, ViewerSelectIndex(18)
+	, ViewerStartIndex(19)
+	, ViewerLeftAnalogXShown(true)
+	, ViewerLeftAnalogYShown(true)
+	, ViewerRightAnalogXShown(true)
+	, ViewerRightAnalogYShown(true)
+	, ViewerSquareShown(true)
+	, ViewerCrossShown(true)
+	, ViewerCircleShown(true)
+	, ViewerTriangleShown(true)
+	, ViewerR1Shown(true)
+	, ViewerR2Shown(true)
+	, ViewerL1Shown(true)
+	, ViewerL2Shown(true)
+	, ViewerLeftShown(true)
+	, ViewerDownShown(true)
+	, ViewerRightShown(true)
+	, ViewerUpShown(true)
+	, ViewerR3Shown(true)
+	, ViewerL3Shown(true)
+	, ViewerSelectShown(true)
+	, ViewerStartShown(true)
 {
 }
 
@@ -921,6 +962,52 @@ void AppConfig::InputRecordingOptions::loadSave(IniInterface& ini)
 	ScopedIniGroup path(ini, L"InputRecording");
 
 	IniEntry(VirtualPadPosition);
+	IniEntry(ViewerPosition);
+	// Analog Sticks
+	IniEntry(ViewerLeftAnalogXIndex);
+	IniEntry(ViewerLeftAnalogXShown);
+	IniEntry(ViewerLeftAnalogYIndex);
+	IniEntry(ViewerLeftAnalogYShown);
+	IniEntry(ViewerRightAnalogXIndex);
+	IniEntry(ViewerRightAnalogXShown);
+	IniEntry(ViewerRightAnalogYIndex);
+	IniEntry(ViewerRightAnalogYShown);
+	// Face Buttons
+	IniEntry(ViewerSquareIndex);
+	IniEntry(ViewerSquareShown);
+	IniEntry(ViewerCrossIndex);
+	IniEntry(ViewerCrossShown);
+	IniEntry(ViewerCircleIndex);
+	IniEntry(ViewerCircleShown);
+	IniEntry(ViewerTriangleIndex);
+	IniEntry(ViewerTriangleShown);
+	// Shoulder Buttons
+	IniEntry(ViewerR1Index);
+	IniEntry(ViewerR1Shown);
+	IniEntry(ViewerR2Index);
+	IniEntry(ViewerR2Shown);
+	IniEntry(ViewerL1Index);
+	IniEntry(ViewerL1Shown);
+	IniEntry(ViewerL2Index);
+	IniEntry(ViewerL2Shown);
+	// D-Pad
+	IniEntry(ViewerLeftIndex);
+	IniEntry(ViewerLeftShown);
+	IniEntry(ViewerDownIndex);
+	IniEntry(ViewerDownShown);
+	IniEntry(ViewerRightIndex);
+	IniEntry(ViewerRightShown);
+	IniEntry(ViewerUpIndex);
+	IniEntry(ViewerUpShown);
+	// Misc
+	IniEntry(ViewerR3Index);
+	IniEntry(ViewerR3Shown);
+	IniEntry(ViewerL3Index);
+	IniEntry(ViewerL3Shown);
+	IniEntry(ViewerSelectIndex);
+	IniEntry(ViewerSelectShown);
+	IniEntry(ViewerStartIndex);
+	IniEntry(ViewerStartShown);
 }
 #endif
 
