@@ -456,8 +456,6 @@ namespace usb_eyetoy
 						memcpy(data, footer, sizeof(footer));
 						s->frame_step = 0;
 					}
-
-				send_packet:
 					usb_packet_copy(p, data, max_ep_size);
 				}
 				else if (devep == 2)
