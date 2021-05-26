@@ -14494,6 +14494,8 @@ SLES-54307:
   name: "Rayman - Raving Rabbids"
   region: "PAL-M6"
   compat: 5
+  gameFixes:
+    - VU0KickstartHack # Fixes bad polygons on characters.
 SLES-54308:
   name: "Phantasy Star Universe"
   region: "PAL-M3"
@@ -37746,6 +37748,8 @@ SLUS-21576:
   name: "Rayman - Raving Rabbids"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - VU0KickstartHack # Fixes bad polygons on characters.
 SLUS-21577:
   name: "Odin Sphere"
   region: "NTSC-U"
