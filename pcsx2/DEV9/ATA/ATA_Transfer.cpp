@@ -194,11 +194,23 @@ bool ATA::IO_Write()
 
 void ATA::IO_SparseCacheLoad()
 {
+	//Reads are bounds checked, but for the sectors read only
+	//Need to bounds check for sparse block, to handle an edge case of a user providing a file with a size that dosn't align with the sparse block size
+	//Normally that won't happen as we generate files of exact Gib size
+	u64 readSize = hddSparseBlockSize;
+	const u64 posEnd = HddSparseStart + hddSparseBlockSize;
+	if (posEnd > hddImageSize)
+	{
+		readSize = hddSparseBlockSize - (posEnd - hddImageSize);
+		//Zero cache for data beyond end of file
+		memset(&hddSparseBlock[readSize], 0, hddSparseBlockSize - readSize);
+	}
+
 	//Store file pointer
 	std::streampos orgPos = hddImage.tellp();
 	//Load into cache
 	hddImage.seekg(HddSparseStart, std::ios::beg);
-	hddImage.read((char*)hddSparseBlock.get(), hddSparseBlockSize);
+	hddImage.read((char*)hddSparseBlock.get(), readSize);
 	if (hddImage.fail())
 	{
 		Console.Error("DEV9: ATA: File read error");
