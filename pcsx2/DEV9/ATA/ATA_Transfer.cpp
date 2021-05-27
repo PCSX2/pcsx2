@@ -210,7 +210,8 @@ void ATA::IO_SparseCacheLoad()
 	std::streampos orgPos = hddImage.tellp();
 	//Load into cache
 	hddImage.seekg(HddSparseStart, std::ios::beg);
-	hddImage.read((char*)hddSparseBlock.get(), readSize);
+	//Suppress Check buffer boundaries warning
+	hddImage.read((char*)hddSparseBlock.get(), readSize); /* Flawfinder: ignore */
 	if (hddImage.fail())
 	{
 		Console.Error("DEV9: ATA: File read error");
