@@ -15,8 +15,8 @@
 
 #include "cam-linux.h"
 #include "usb-eyetoy-webcam.h"
-#include "jpgd/jpgd.h"
-#include "jpgd/jpge.h"
+#include "jpgd.h"
+#include "jpge.h"
 #include "jo_mpeg.h"
 #include "USB/gtk.h"
 #include "Utilities/Console.h"

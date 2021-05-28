@@ -1215,10 +1215,10 @@
     <ClCompile Include="USB\usb-mic\usb-mic-singstar.cpp">
       <Filter>System\Ps2\USB\usb-mic</Filter>
     </ClCompile>
-    <ClCompile Include="USB\usb-eyetoy\jpgd\jpgd.cpp">
+    <ClCompile Include="..\3rdparty\jpgd\jpgd.cpp">
       <Filter>System\Ps2\USB\usb-eyetoy\jpgd</Filter>
     </ClCompile>
-    <ClCompile Include="USB\usb-eyetoy\jpgd\jpge.cpp">
+    <ClCompile Include="..\3rdparty\jpgd\jpge.cpp">
       <Filter>System\Ps2\USB\usb-eyetoy\jpgd</Filter>
     </ClCompile>
     <ClCompile Include="USB\usb-eyetoy\jo_mpeg.cpp">
@@ -2251,10 +2251,10 @@
     <ClInclude Include="USB\usb-eyetoy\videodeviceproxy.h">
       <Filter>System\Ps2\USB\usb-eyetoy</Filter>
     </ClInclude>
-    <ClInclude Include="USB\usb-eyetoy\jpgd\jpgd.h">
+    <ClInclude Include="..\3rdparty\jpgd\jpgd.h">
       <Filter>System\Ps2\USB\usb-eyetoy\jpgd</Filter>
     </ClInclude>
-    <ClInclude Include="USB\usb-eyetoy\jpgd\jpge.h">
+    <ClInclude Include="..\3rdparty\jpgd\jpge.h">
       <Filter>System\Ps2\USB\usb-eyetoy\jpgd</Filter>
     </ClInclude>
     <ClInclude Include="USB\usb-hid\hidproxy.h">
