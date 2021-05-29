@@ -572,7 +572,7 @@ void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapBitBool(CdvdShareWrite);
 	SettingsWrapBitBool(EnablePatches);
 	SettingsWrapBitBool(EnableCheats);
-	SettingsWrapBitBool(EnableIPC);
+	SettingsWrapBitBool(EnablePINE);
 	SettingsWrapBitBool(EnableWideScreenPatches);
 #ifndef DISABLE_RECORDING
 	SettingsWrapBitBool(EnableRecordingTools);
@@ -708,7 +708,7 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	CdvdShareWrite = cfg.CdvdShareWrite;
 	EnablePatches = cfg.EnablePatches;
 	EnableCheats = cfg.EnableCheats;
-	EnableIPC = cfg.EnableIPC;
+	EnablePINE = cfg.EnablePINE;
 	EnableWideScreenPatches = cfg.EnableWideScreenPatches;
 #ifndef DISABLE_RECORDING
 	EnableRecordingTools = cfg.EnableRecordingTools;

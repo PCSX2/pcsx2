@@ -29,7 +29,7 @@ extern WindowInfo g_gs_window_info;
 #include "Patch.h"
 #include "SysThreads.h"
 #include "MTVU.h"
-#include "IPC.h"
+#include "PINE.h"
 #include "FW.h"
 #include "SPU2/spu2.h"
 #include "DEV9/DEV9.h"
@@ -53,9 +53,9 @@ extern WindowInfo g_gs_window_info;
 
 bool g_CDVDReset = false;
 
-namespace IPCSettings
+namespace PINESettings
 {
-	unsigned int slot = IPC_DEFAULT_SLOT;
+	unsigned int slot = PINE_DEFAULT_SLOT;
 };
 
 // --------------------------------------------------------------------------------------
@@ -267,13 +267,13 @@ void SysCoreThread::GameStartingInThread()
 #ifdef USE_SAVESLOT_UI_UPDATES
 	UI_UpdateSysControls();
 #endif
-	if (EmuConfig.EnableIPC && m_IpcState == OFF)
+	if (EmuConfig.EnablePINE && m_PineState == OFF)
 	{
-		m_IpcState = ON;
-		m_socketIpc = std::make_unique<SocketIPC>(this, IPCSettings::slot);
+		m_PineState = ON;
+		m_pineServer = std::make_unique<PINEServer>(this, PINESettings::slot);
 	}
-	if (m_IpcState == ON && m_socketIpc->m_end)
-		m_socketIpc->Start();
+	if (m_PineState == ON && m_pineServer->m_end)
+		m_pineServer->Start();
 }
 
 bool SysCoreThread::StateCheckInThread()

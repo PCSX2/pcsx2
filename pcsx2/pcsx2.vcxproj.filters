@@ -1052,7 +1052,7 @@
     <ClCompile Include="gui\DriveList.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
-    <ClCompile Include="IPC.cpp">
+    <ClCompile Include="PINE.cpp">
       <Filter>System</Filter>
     </ClCompile>
     <ClCompile Include="FW.cpp">
@@ -1466,7 +1466,7 @@
     <ClCompile Include="GS\GSLzma.cpp">
       <Filter>System\Ps2\GS</Filter>
     </ClCompile>
-    <ClCompile Include="gui\Dialogs\IPCDialog.cpp">
+    <ClCompile Include="gui\Dialogs\PINEDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
     <ClCompile Include="gui\Dialogs\GSDumpDialog.cpp">
@@ -2141,7 +2141,7 @@
     <ClInclude Include="gui\DriveList.h">
       <Filter>AppHost\Include</Filter>
     </ClInclude>
-    <ClInclude Include="IPC.h">
+    <ClInclude Include="PINE.h">
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="FW.h">
