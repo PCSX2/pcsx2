@@ -40,10 +40,10 @@
 #include "gui/AppCoreThread.h"
 #include "System/SysThreads.h"
 #include "svnrev.h"
-#include "IPC.h"
+#include "PINE.h"
 
-SocketIPC::SocketIPC(SysCoreThread* vm, unsigned int slot)
-	: pxThread("IPC_Socket")
+PINEServer::PINEServer(SysCoreThread* vm, unsigned int slot)
+	: pxThread("PINE_Server")
 {
 #ifdef _WIN32
 	WSADATA wsa;
@@ -52,14 +52,14 @@ SocketIPC::SocketIPC(SysCoreThread* vm, unsigned int slot)
 
 	if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0)
 	{
-		Console.WriteLn(Color_Red, "IPC: Cannot initialize winsock! Shutting down...");
+		Console.WriteLn(Color_Red, "PINE: Cannot initialize winsock! Shutting down...");
 		return;
 	}
 
 	m_sock = socket(AF_INET, SOCK_STREAM, 0);
 	if ((m_sock == INVALID_SOCKET) || slot > 65536)
 	{
-		Console.WriteLn(Color_Red, "IPC: Cannot open socket! Shutting down...");
+		Console.WriteLn(Color_Red, "PINE: Cannot open socket! Shutting down...");
 		return;
 	}
 
@@ -71,7 +71,7 @@ SocketIPC::SocketIPC(SysCoreThread* vm, unsigned int slot)
 
 	if (bind(m_sock, (struct sockaddr*)&server, sizeof(server)) == SOCKET_ERROR)
 	{
-		Console.WriteLn(Color_Red, "IPC: Error while binding to socket! Shutting down...");
+		Console.WriteLn(Color_Red, "PINE: Error while binding to socket! Shutting down...");
 		return;
 	}
 
@@ -85,14 +85,14 @@ SocketIPC::SocketIPC(SysCoreThread* vm, unsigned int slot)
 	// fallback in case macOS or other OSes don't implement the XDG base
 	// spec
 	if (runtime_dir == nullptr)
-		m_socket_name = "/tmp/" IPC_EMULATOR_NAME ".sock";
+		m_socket_name = "/tmp/" PINE_EMULATOR_NAME ".sock";
 	else
 	{
 		m_socket_name = runtime_dir;
-		m_socket_name += "/" IPC_EMULATOR_NAME ".sock";
+		m_socket_name += "/" PINE_EMULATOR_NAME ".sock";
 	}
 
-	if (slot != IPC_DEFAULT_SLOT)
+	if (slot != PINE_DEFAULT_SLOT)
 		m_socket_name += "." + std::to_string(slot);
 
 	struct sockaddr_un server;
@@ -100,7 +100,7 @@ SocketIPC::SocketIPC(SysCoreThread* vm, unsigned int slot)
 	m_sock = socket(AF_UNIX, SOCK_STREAM, 0);
 	if (m_sock < 0)
 	{
-		Console.WriteLn(Color_Red, "IPC: Cannot open socket! Shutting down...");
+		Console.WriteLn(Color_Red, "PINE: Cannot open socket! Shutting down...");
 		return;
 	}
 	server.sun_family = AF_UNIX;
@@ -111,7 +111,7 @@ SocketIPC::SocketIPC(SysCoreThread* vm, unsigned int slot)
 	unlink(m_socket_name.c_str());
 	if (bind(m_sock, (struct sockaddr*)&server, sizeof(struct sockaddr_un)))
 	{
-		Console.WriteLn(Color_Red, "IPC: Error while binding to socket! Shutting down...");
+		Console.WriteLn(Color_Red, "PINE: Error while binding to socket! Shutting down...");
 		return;
 	}
 #endif
@@ -128,21 +128,21 @@ SocketIPC::SocketIPC(SysCoreThread* vm, unsigned int slot)
 	Start();
 }
 
-char* SocketIPC::MakeOkIPC(char* ret_buffer, uint32_t size = 5)
+char* PINEServer::MakeOkIPC(char* ret_buffer, uint32_t size = 5)
 {
 	ToArray<uint32_t>(ret_buffer, size, 0);
 	ret_buffer[4] = IPC_OK;
 	return ret_buffer;
 }
 
-char* SocketIPC::MakeFailIPC(char* ret_buffer, uint32_t size = 5)
+char* PINEServer::MakeFailIPC(char* ret_buffer, uint32_t size = 5)
 {
 	ToArray<uint32_t>(ret_buffer, size, 0);
 	ret_buffer[4] = IPC_FAIL;
 	return ret_buffer;
 }
 
-int SocketIPC::StartSocket()
+int PINEServer::StartSocket()
 {
 	m_msgsock = accept(m_sock, 0, 0);
 
@@ -160,7 +160,7 @@ int SocketIPC::StartSocket()
 		if (!(errno == ECONNABORTED || errno == EINTR || errno == EAGAIN || errno == EWOULDBLOCK))
 		{
 #endif
-			fprintf(stderr, "IPC: An unrecoverable error happened! Shutting down...\n");
+			fprintf(stderr, "PINE: An unrecoverable error happened! Shutting down...\n");
 			m_end = true;
 			return -1;
 		}
@@ -168,7 +168,7 @@ int SocketIPC::StartSocket()
 	return 0;
 }
 
-void SocketIPC::ExecuteTaskInThread()
+void PINEServer::ExecuteTaskInThread()
 {
 	m_end = false;
 
@@ -216,7 +216,7 @@ void SocketIPC::ExecuteTaskInThread()
 				}
 			}
 		}
-		SocketIPC::IPCBuffer res;
+		PINEServer::IPCBuffer res;
 
 		// we remove 4 bytes to get the message size out of the IPC command
 		// size in ParseCommand.
@@ -238,7 +238,7 @@ void SocketIPC::ExecuteTaskInThread()
 	return;
 }
 
-SocketIPC::~SocketIPC()
+PINEServer::~PINEServer()
 {
 	m_end = true;
 #ifdef _WIN32
@@ -258,7 +258,7 @@ SocketIPC::~SocketIPC()
 	DESTRUCTOR_CATCHALL
 }
 
-SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 buf_size)
+PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 buf_size)
 {
 	u32 ret_cnt = 5;
 	u32 buf_cnt = 0;

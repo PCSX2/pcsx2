@@ -130,7 +130,7 @@ set(pcsx2Sources
 	IopIrq.cpp
 	IopMem.cpp
 	IopSio2.cpp
-	IPC.cpp
+	PINE.cpp
 	Mdec.cpp
 	Memory.cpp
 	MemoryCardFile.cpp
@@ -205,7 +205,7 @@ set(pcsx2Headers
 	IopHw.h
 	IopMem.h
 	IopSio2.h
-	IPC.h
+	PINE.h
 	Mdec.h
 	MTVU.h
 	Memory.h
@@ -908,7 +908,7 @@ set(pcsx2GuiSources
 	gui/Dialogs/McdConfigDialog.cpp
 	gui/Dialogs/PickUserModeDialog.cpp
 	gui/Dialogs/SysConfigDialog.cpp
-	gui/Dialogs/IPCDialog.cpp
+	gui/Dialogs/PINEDialog.cpp
 	gui/Debugger/BreakpointWindow.cpp
 	gui/Debugger/CtrlDisassemblyView.cpp
 	gui/Debugger/CtrlRegisterList.cpp
