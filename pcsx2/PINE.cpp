@@ -380,6 +380,8 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 			}
 			case MsgVersion:
 			{
+				if (!m_vm->HasActiveMachine())
+					goto error;
 				char version[256] = {};
 				if (GIT_TAGGED_COMMIT) // Nightly builds
 				{
@@ -391,11 +393,14 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 				{
 					sprintf(version, "PCSX2 %u.%u.%u-%lld", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo, SVN_REV);
 				}
-				version[255] = 0x00;
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 256, buf_size))
+				const u32 size = strlen(version) + 1;
+				version[size] = 0x00;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
 					goto error;
-				memcpy(&ret_buffer[ret_cnt], version, 256);
-				ret_cnt += 256;
+				ToArray(ret_buffer, size, ret_cnt);
+				ret_cnt += 4;
+				memcpy(&ret_buffer[ret_cnt], version, size);
+				ret_cnt += size;
 				break;
 			}
 			case MsgSaveState:
@@ -422,52 +427,64 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 			{
 				if (!m_vm->HasActiveMachine())
 					goto error;
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 256, buf_size))
-					goto error;
-				char title[256] = {};
+				char title[GameInfo::gameName.size() + 1] = {};
 				sprintf(title, "%s", GameInfo::gameName.ToUTF8().data());
-				title[255] = 0x00;
-				memcpy(&ret_buffer[ret_cnt], title, 256);
-				ret_cnt += 256;
+				const u32 size = strlen(title) + 1;
+				title[size] = 0x00;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
+					goto error;
+				ToArray(ret_buffer, size, ret_cnt);
+				ret_cnt += 4;
+				memcpy(&ret_buffer[ret_cnt], title, size);
+				ret_cnt += size;
 				break;
 			}
 			case MsgID:
 			{
 				if (!m_vm->HasActiveMachine())
 					goto error;
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 256, buf_size))
+				char title[GameInfo::gameName.size() + 1] = {};
+				sprintf(title, "%s", GameInfo::gameSerial.ToUTF8().data());
+				const u32 size = strlen(title) + 1;
+				title[size] = 0x00;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
 					goto error;
-				char id[256] = {};
-				sprintf(id, "%s", GameInfo::gameSerial.ToUTF8().data());
-				id[255] = 0x00;
-				memcpy(&ret_buffer[ret_cnt], id, 256);
-				ret_cnt += 256;
+				ToArray(ret_buffer, size, ret_cnt);
+				ret_cnt += 4;
+				memcpy(&ret_buffer[ret_cnt], title, size);
+				ret_cnt += size;
 				break;
 			}
 			case MsgUUID:
 			{
 				if (!m_vm->HasActiveMachine())
 					goto error;
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 256, buf_size))
+				char title[GameInfo::gameName.size() + 1] = {};
+				sprintf(title, "%s", GameInfo::gameCRC.ToUTF8().data());
+				const u32 size = strlen(title) + 1;
+				title[size] = 0x00;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
 					goto error;
-				char uuid[256] = {};
-				sprintf(uuid, "%s", GameInfo::gameCRC.ToUTF8().data());
-				uuid[255] = 0x00;
-				memcpy(&ret_buffer[ret_cnt], uuid, 256);
-				ret_cnt += 256;
+				ToArray(ret_buffer, size, ret_cnt);
+				ret_cnt += 4;
+				memcpy(&ret_buffer[ret_cnt], title, size);
+				ret_cnt += size;
 				break;
 			}
 			case MsgGameVersion:
 			{
 				if (!m_vm->HasActiveMachine())
 					goto error;
-				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 256, buf_size))
+				char title[GameInfo::gameName.size() + 1] = {};
+				sprintf(title, "%s", GameInfo::gameVersion.ToUTF8().data());
+				const u32 size = strlen(title) + 1;
+				title[size] = 0x00;
+				if (!SafetyChecks(buf_cnt, 0, ret_cnt, size + 4, buf_size))
 					goto error;
-				char version[256] = {};
-				sprintf(version, "%s", GameInfo::gameVersion.ToUTF8().data());
-				version[255] = 0x00;
-				memcpy(&ret_buffer[ret_cnt], version, 256);
-				ret_cnt += 256;
+				ToArray(ret_buffer, size, ret_cnt);
+				ret_cnt += 4;
+				memcpy(&ret_buffer[ret_cnt], title, size);
+				ret_cnt += size;
 				break;
 			}
 			case MsgStatus:
