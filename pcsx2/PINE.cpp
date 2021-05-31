@@ -427,7 +427,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 			{
 				if (!m_vm->HasActiveMachine())
 					goto error;
-				char title[GameInfo::gameName.size() + 1] = {};
+				char* title = new char[GameInfo::gameName.size() + 1];
 				sprintf(title, "%s", GameInfo::gameName.ToUTF8().data());
 				const u32 size = strlen(title) + 1;
 				title[size] = 0x00;
@@ -437,13 +437,14 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 				ret_cnt += 4;
 				memcpy(&ret_buffer[ret_cnt], title, size);
 				ret_cnt += size;
+				delete[] title;
 				break;
 			}
 			case MsgID:
 			{
 				if (!m_vm->HasActiveMachine())
 					goto error;
-				char title[GameInfo::gameName.size() + 1] = {};
+				char* title = new char[GameInfo::gameSerial.size() + 1];
 				sprintf(title, "%s", GameInfo::gameSerial.ToUTF8().data());
 				const u32 size = strlen(title) + 1;
 				title[size] = 0x00;
@@ -453,13 +454,14 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 				ret_cnt += 4;
 				memcpy(&ret_buffer[ret_cnt], title, size);
 				ret_cnt += size;
+				delete[] title;
 				break;
 			}
 			case MsgUUID:
 			{
 				if (!m_vm->HasActiveMachine())
 					goto error;
-				char title[GameInfo::gameName.size() + 1] = {};
+				char* title = new char[GameInfo::gameCRC.size() + 1];
 				sprintf(title, "%s", GameInfo::gameCRC.ToUTF8().data());
 				const u32 size = strlen(title) + 1;
 				title[size] = 0x00;
@@ -469,13 +471,14 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 				ret_cnt += 4;
 				memcpy(&ret_buffer[ret_cnt], title, size);
 				ret_cnt += size;
+				delete[] title;
 				break;
 			}
 			case MsgGameVersion:
 			{
 				if (!m_vm->HasActiveMachine())
 					goto error;
-				char title[GameInfo::gameName.size() + 1] = {};
+				char* title = new char[GameInfo::gameVersion.size() + 1];
 				sprintf(title, "%s", GameInfo::gameVersion.ToUTF8().data());
 				const u32 size = strlen(title) + 1;
 				title[size] = 0x00;
@@ -485,6 +488,7 @@ PINEServer::IPCBuffer PINEServer::ParseCommand(char* buf, char* ret_buffer, u32 
 				ret_cnt += 4;
 				memcpy(&ret_buffer[ret_cnt], title, size);
 				ret_cnt += size;
+				delete[] title;
 				break;
 			}
 			case MsgStatus:
