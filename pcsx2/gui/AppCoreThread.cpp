@@ -424,7 +424,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 		GameInfo::gameCRC = L""; // Needs to be reset when rebooting otherwise previously loaded patches may load
 
 	if (ingame && !DiscSerial.IsEmpty())
-		GameInfo::gameSerial = L" [" + DiscSerial + L"]";
+		GameInfo::gameSerial = DiscSerial;
 
 	const wxString newGameKey(ingame ? SysGetDiscID() : SysGetBiosDiscID());
 	const bool verbose(newGameKey != curGameKey && ingame);
@@ -512,7 +512,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	// When we're booting, the bios loader will set a a title which would be more interesting than this
 	// to most users - with region, version, etc, so don't overwrite it with patch info. That's OK. Those
 	// users which want to know the status of the patches at the bios can check the console content.
-	wxString consoleTitle = GameInfo::gameName + GameInfo::gameSerial;
+	wxString consoleTitle = GameInfo::gameName + L" [" + GameInfo::gameSerial + L"]";
 	consoleTitle += L" [" + GameInfo::gameCRC.MakeUpper() + L"]" + gameCompat + gameFixes + gamePatch + gameCheats + gameWsHacks;
 	if (ingame)
 		Console.SetTitle(consoleTitle);
