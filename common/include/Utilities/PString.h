@@ -1,40 +1,56 @@
 #pragma once
+#include "ghc/filesystem.h"
 #include <iostream>
 #include <stdio.h>
-#include <wchar.h>
 #include <stdlib.h>
 #include <locale.h>
 #include <string>
 #include "Path.h"
 
+namespace fs = ghc::filesystem;
+
 class PString
 {
 private:
 	size_t count;
-	//std::basic_string<char> string;
-	const char* string;
+	std::basic_string<char> string;
+	//const char* string;
 public:
 	PString();
+
 	// Non default constructors
-	explicit PString(const std::wstring& wString);
-	explicit PString(const wxString& str);
 	PString(const char* string);
-	
+	PString(const fs::path path);
+	PString(const wxString& str);
+
+	#ifdef _WIN32
+	PString(const std::wstring& wString);
+	PString& operator=(const std::wstring&);
+	operator std::wstring();
+	#endif
+
+	#ifdef __cpp_lib_char8_t
+	PString(const std::u8string str);
+	PString& operator=(const std::u8string&);
+	operator std::u8string();
+	#endif
+
 	// Copy Constructor
 	PString(const PString& rhs);
 
+	PString(PString&& move);
+
 	bool operator==(const PString rhs);
 	
-	// Asignment operators
-	PString& operator=(const std::wstring&);
 	PString& operator=(const std::string&);
-	wchar_t* operator=(const PString&);
+	PString& operator=(PString&);
 
 	// Copy Operator
-	const PString& operator=(PString&);
+	const PString& operator=(const PString&);
 	
-	operator std::wstring();
+	operator std::string();
 	operator wxString();
+	operator fs::path();
 
 	size_t capacity() const noexcept
 	{
@@ -54,12 +70,11 @@ public:
 
 	const char* data() const
 	{
-		return string;
-
+		return string.data();
 	}
 	const char* c_str() const noexcept
 	{
-		return string;
+		return string.c_str();
 	}
 
 	bool empty() const noexcept
@@ -67,14 +82,13 @@ public:
 		return count == 0;
 	}
 
-
 	char operator[](size_t index)
 	{
 		return string[index];
 	}
 
 	friend std::ostream& operator<<(std::ostream & os, const PString& str);
-	friend std::istream& operator>> (std::istream& is, PString& str);
+	friend std::istream& operator>>(std::istream& is, PString& str);
 	friend std::istream& getline(std::istream& is, PString& s, char delim);
 	~PString();
 };

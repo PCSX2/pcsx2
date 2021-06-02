@@ -21,13 +21,26 @@ PString::PString(const PString& rhs)
 	string = rhs.string;
 }
 
-const PString& PString::operator=(PString& rhs)
+PString::PString(PString&& rhs)
+{
+	count = std::move(rhs.count);
+	string = std::move(rhs.string);
+}
+
+const PString& PString::operator=(const PString& rhs)
 {
 	count = rhs.count;
 	string = rhs.string;
 	return *this;
 }
 
+PString& PString::operator=(PString& rhs)
+{
+	count = std::move(rhs.count);
+	string = std::move(rhs.string);
+}
+
+#ifdef _WIN32
 // Non default
 PString::PString(const std::wstring& str)
 {
@@ -35,21 +48,7 @@ PString::PString(const std::wstring& str)
 	char* temp = new char[count];
 	const wchar_t* wStr = str.c_str();
 	size_t len = (wcslen(wStr) + 1) * sizeof(wchar_t);
-	wcstombs(temp, wStr, len);
-	if (temp != nullptr)
-	{
-		string = temp;
-	}
-}
-
-// Non default
-PString::PString(const wxString& str)
-{
-	count = str.size();
-	char* temp = new char[count];
-	const wchar_t* wStr = str.c_str();
-	size_t len = (wcslen(wStr) + 1) * sizeof(wchar_t);
-	wcstombs(temp, wStr, len);
+	wcstombs_s(&count, temp, len, wStr, len);
 	if (temp != nullptr)
 	{
 		string = temp;
@@ -62,12 +61,28 @@ PString& PString::operator=(const std::wstring& str)
 	char* temp = new char[count];
 	const wchar_t* wStr = str.c_str();
 	size_t len = (wcslen(wStr) + 1) * sizeof(wchar_t);
-	wcstombs(temp, wStr, len);
+	wcstombs_s(&count, temp, len, wStr, len);
 	if (temp != nullptr)
 	{
 		string = temp;
 	}
 	return *this;
+}
+
+PString::operator std::wstring()
+{
+	wchar_t* wstr = new wchar_t[count];
+	mbstowcs(wstr, string.data(), count);
+	std::wstring buf(wstr);
+	return buf;
+}
+#endif
+
+// Non default
+PString::PString(const wxString& str)
+{
+	count = str.size();
+	string = std::string(str.utf8_str());
 }
 
 PString& PString::operator=(const std::string& str)
@@ -77,41 +92,35 @@ PString& PString::operator=(const std::string& str)
 	return *this;
 }
 
-PString::operator std::wstring()
-{
-	wchar_t* wstr = new wchar_t[count];
-	mbstowcs(wstr, string, count);
-	std::wstring buf(wstr);
-	return buf;
-}
-
 PString::operator wxString()
 {
-	wchar_t* wstr = new wchar_t[count];
-	mbstowcs(wstr, string, count);
-	wxString buf(wstr);
+	wxString buf(string);
 	return buf;
 }
 
-wchar_t* PString::operator=(const PString& str)
+PString::operator std::string()
 {
-	size_t size = str.count;
-	wchar_t* wstr = new wchar_t[str.count];
-	mbstowcs(wstr, string, count);
-	return wstr;
+	std::string str(string);
+	return str;
+}
+
+PString::operator ghc::filesystem::path()
+{
+	fs::path str(string);
+	return str;
 }
 
 void PString::resize(size_t siz)
 {
 	count = siz;
-	string = new char[siz];
+	string.resize(siz);
 }
 
 void PString::resize(size_t siz, char c)
 {
-	delete string;
 	count = siz;
-	string += c;
+	string.resize(siz);
+	string = c;
 }
 
 bool PString::operator==(const PString rhs)
@@ -125,7 +134,7 @@ std::ostream& operator<<(std::ostream& os, const PString& str)
 	return os;
 }
 
-std::istream& operator>> (std::istream& is, PString& str)
+std::istream& operator>>(std::istream& is, PString& str)
 {
 	char* streambuf = new char[5000];
 	is.get(streambuf, 5000);
