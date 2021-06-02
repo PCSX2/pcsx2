@@ -20,6 +20,7 @@ target_sources(Utilities PRIVATE
 	FastFormatString.cpp
 	IniInterface.cpp
 	Mutex.cpp
+	PString.cpp
 	PathUtils.cpp
 	PrecompiledHeader.cpp
 	Perf.cpp
@@ -52,6 +53,7 @@ target_sources(Utilities PRIVATE
 	../../include/Utilities/MemcpyFast.h
 	../../include/Utilities/MemsetFast.inl
 	../../include/Utilities/Path.h
+	../../include/Utilities/PString.h
 	../../include/Utilities/PageFaultSource.h
 	../../include/Utilities/pxCheckBox.h
 	../../include/Utilities/pxForwardDefs.h
