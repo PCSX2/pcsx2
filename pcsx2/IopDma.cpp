@@ -37,25 +37,6 @@ static void __fastcall psxDmaGeneric(u32 madr, u32 bcr, u32 chcr, u32 spuCore)
 
 	const int size = (bcr >> 16) * (bcr & 0xFFFF);
 
-	// Update the spu2 to the current cycle before initiating the DMA
-
-	SPU2async(psxRegs.cycle - psxCounters[6].sCycleT);
-	//Console.Status("cycles sent to SPU2 %x\n", psxRegs.cycle - psxCounters[6].sCycleT);
-
-	psxCounters[6].sCycleT = psxRegs.cycle;
-	psxCounters[6].CycleT = size * 4;
-
-	psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
-	psxNextsCounter = psxRegs.cycle;
-	if (psxCounters[6].CycleT < psxNextCounter)
-		psxNextCounter = psxCounters[6].CycleT;
-
-	if ((g_iopNextEventCycle - psxNextsCounter) > (u32)psxNextCounter)
-	{
-		//DevCon.Warning("SPU2async Setting new counter branch, old %x new %x ((%x - %x = %x) > %x delta)", g_iopNextEventCycle, psxNextsCounter + psxNextCounter, g_iopNextEventCycle, psxNextsCounter, (g_iopNextEventCycle - psxNextsCounter), psxNextCounter);
-		g_iopNextEventCycle = psxNextsCounter + psxNextCounter;
-	}
-
 	switch (chcr)
 	{
 		case 0x01000201: //cpu to spu2 transfer
