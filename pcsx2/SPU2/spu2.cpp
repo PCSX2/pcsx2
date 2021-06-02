@@ -43,7 +43,6 @@ static bool IsInitialized = false;
 
 static u32 pClocks = 0;
 
-u32* cyclePtr = nullptr;
 u32 lClocks = 0;
 //static bool cpu_detected = false;
 
@@ -77,8 +76,7 @@ void SPU2setLogDir(const char* dir)
 
 void SPU2readDMA4Mem(u16* pMem, u32 size) // size now in 16bit units
 {
-	if (cyclePtr != nullptr)
-		TimeUpdate(*cyclePtr);
+	TimeUpdate(psxRegs.cycle);
 
 	FileLog("[%10d] SPU2 readDMA4Mem size %x\n", Cycles, size << 1);
 	Cores[0].DoDMAread(pMem, size);
@@ -86,8 +84,7 @@ void SPU2readDMA4Mem(u16* pMem, u32 size) // size now in 16bit units
 
 void SPU2writeDMA4Mem(u16* pMem, u32 size) // size now in 16bit units
 {
-	if (cyclePtr != nullptr)
-		TimeUpdate(*cyclePtr);
+	TimeUpdate(psxRegs.cycle);
 
 	FileLog("[%10d] SPU2 writeDMA4Mem size %x at address %x\n", Cycles, size << 1, Cores[0].TSA);
 
@@ -114,8 +111,7 @@ void SPU2interruptDMA7()
 
 void SPU2readDMA7Mem(u16* pMem, u32 size)
 {
-	if (cyclePtr != nullptr)
-		TimeUpdate(*cyclePtr);
+	TimeUpdate(psxRegs.cycle);
 
 	FileLog("[%10d] SPU2 readDMA7Mem size %x\n", Cycles, size << 1);
 	Cores[1].DoDMAread(pMem, size);
@@ -123,8 +119,7 @@ void SPU2readDMA7Mem(u16* pMem, u32 size)
 
 void SPU2writeDMA7Mem(u16* pMem, u32 size)
 {
-	if (cyclePtr != nullptr)
-		TimeUpdate(*cyclePtr);
+	TimeUpdate(psxRegs.cycle);
 
 	FileLog("[%10d] SPU2 writeDMA7Mem size %x at address %x\n", Cycles, size << 1, Cores[1].TSA);
 
@@ -329,7 +324,7 @@ s32 SPU2open(void* pDsp)
 #endif
 
 	IsOpened = true;
-	lClocks = (cyclePtr != nullptr) ? *cyclePtr : 0;
+	lClocks = psxRegs.cycle;
 
 	try
 	{
@@ -347,7 +342,6 @@ s32 SPU2open(void* pDsp)
 		return -1;
 	}
 	SPU2setDMABaseAddr((uptr)iopMem->Main);
-	SPU2setClockPtr(&psxRegs.cycle);
 	return 0;
 }
 
@@ -418,15 +412,7 @@ void SPU2async(u32 cycles)
 {
 	DspUpdate();
 
-	if (cyclePtr != nullptr)
-	{
-		TimeUpdate(*cyclePtr);
-	}
-	else
-	{
-		pClocks += cycles;
-		TimeUpdate(pClocks);
-	}
+	TimeUpdate(psxRegs.cycle);
 
 #ifdef DEBUG_KEYS
 	u32 curTicks = GetTickCount();
@@ -506,8 +492,7 @@ u16 SPU2read(u32 rmem)
 	}
 	else
 	{
-		if (cyclePtr != nullptr)
-			TimeUpdate(*cyclePtr);
+		TimeUpdate(psxRegs.cycle);
 
 		if (rmem >> 16 == 0x1f80)
 		{
@@ -535,8 +520,7 @@ void SPU2write(u32 rmem, u16 value)
 	// If the SPU2 isn't in in sync with the IOP, samples can end up playing at rather
 	// incorrect pitches and loop lengths.
 
-	if (cyclePtr != nullptr)
-		TimeUpdate(*cyclePtr);
+	TimeUpdate(psxRegs.cycle);
 
 	if (rmem >> 16 == 0x1f80)
 		Cores[0].WriteRegPS1(rmem, value);
