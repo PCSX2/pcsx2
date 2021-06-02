@@ -398,11 +398,6 @@ void SPU2shutdown()
 #endif
 }
 
-void SPU2setClockPtr(u32* ptr)
-{
-	cyclePtr = ptr;
-}
-
 #ifdef DEBUG_KEYS
 static u32 lastTicks;
 static bool lState[6];
