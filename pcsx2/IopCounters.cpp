@@ -542,6 +542,8 @@ void psxRcntUpdate()
 		psxCounters[CNT_SPU_DMA].sCycleT = psxRegs.cycle;
 		psxCounters[CNT_SPU_DMA].CycleT = psxCounters[CNT_SPU_DMA].rate;
 		SPU2RunDma(difference);
+		// The spu might have updateed the next cycle target
+		c = psxCounters[CNT_SPU_DMA].CycleT;
 	}
 	else
 		c -= difference;
