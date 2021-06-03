@@ -146,20 +146,18 @@ void psxRcntInit()
 	psxCounters[4].interrupt = 0x08000;
 	psxCounters[5].interrupt = 0x10000;
 
-	// SPU sample
-	psxCounters[6].rate = 768;
-	psxCounters[6].CycleT = psxCounters[6].rate;
-	psxCounters[6].mode = 0x8;
+	// Counters for driving emulation compenents
+	psxCounters[CNT_SPU_SAMPLE].rate = 768;
+	psxCounters[CNT_SPU_SAMPLE].CycleT = psxCounters[6].rate;
+	psxCounters[CNT_SPU_SAMPLE].mode = 0x8;
 
-	// USB
-	psxCounters[7].rate = PSXCLK / 1000;
-	psxCounters[7].CycleT = psxCounters[7].rate;
-	psxCounters[7].mode = 0x8;
+	psxCounters[CNT_USB].rate = PSXCLK / 1000;
+	psxCounters[CNT_USB].CycleT = psxCounters[7].rate;
+	psxCounters[CNT_USB].mode = 0x8;
 
-	// SPU DMA
-	psxCounters[8].rate = 1000;
-	psxCounters[8].CycleT = psxCounters[6].rate;
-	psxCounters[8].mode = 0x8;
+	psxCounters[CNT_SPU_DMA].rate = 1000;
+	psxCounters[CNT_SPU_DMA].CycleT = psxCounters[6].rate;
+	psxCounters[CNT_SPU_DMA].mode = 0x8;
 
 	for (i = 0; i < NUM_COUNTERS; i++)
 		psxCounters[i].sCycleT = psxRegs.cycle;
@@ -508,42 +506,44 @@ void psxRcntUpdate()
 	}
 
 
-	s32 difference = psxRegs.cycle - psxCounters[6].sCycleT;
-	s32 c = psxCounters[6].CycleT;
+	s32 difference = psxRegs.cycle - psxCounters[CNT_SPU_SAMPLE].sCycleT;
+	s32 c = psxCounters[CNT_SPU_SAMPLE].CycleT;
 
-	if (difference >= psxCounters[6].CycleT)
+	if (difference >= psxCounters[CNT_SPU_SAMPLE].CycleT)
 	{
-		psxCounters[6].sCycleT = psxRegs.cycle;
-		psxCounters[6].CycleT = psxCounters[6].rate;
+		psxCounters[CNT_SPU_SAMPLE].sCycleT = psxRegs.cycle;
+		psxCounters[CNT_SPU_SAMPLE].CycleT = psxCounters[CNT_SPU_SAMPLE].rate;
 		SPU2async(difference);
 	}
 	else
 		c -= difference;
 	psxNextCounter = c;
+
 	DEV9async(1);
-    const s32 diffusb = psxRegs.cycle - psxCounters[7].sCycleT;
-    s32 cusb = psxCounters[7].CycleT;
 
-    if (diffusb >= psxCounters[7].CycleT)
-    {
-		USBasync(diffusb);
-		psxCounters[7].sCycleT = psxRegs.cycle;
-		psxCounters[7].CycleT = psxCounters[7].rate;
-    }
-    else
-		cusb -= diffusb;
-    if (cusb < psxNextCounter)
-		psxNextCounter = cusb;
+	difference = psxRegs.cycle - psxCounters[CNT_USB].sCycleT;
+	c = psxCounters[CNT_USB].CycleT;
 
-    difference = psxRegs.cycle - psxCounters[8].sCycleT;
-	c = psxCounters[8].CycleT;
-    if (c >= psxCounters[8].CycleT)
-    {
-		psxCounters[8].sCycleT = psxRegs.cycle;
-		psxCounters[8].CycleT = psxCounters[8].rate;
+	if (difference >= psxCounters[CNT_USB].CycleT)
+	{
+		USBasync(difference);
+		psxCounters[CNT_USB].sCycleT = psxRegs.cycle;
+		psxCounters[CNT_USB].CycleT = psxCounters[CNT_USB].rate;
+	}
+	else
+		c -= difference;
+	if (c < psxNextCounter)
+		psxNextCounter = c;
+
+	difference = psxRegs.cycle - psxCounters[CNT_SPU_DMA].sCycleT;
+	c = psxCounters[CNT_SPU_DMA].CycleT;
+	if (c >= psxCounters[CNT_SPU_DMA].CycleT)
+	{
+		psxCounters[CNT_SPU_DMA].sCycleT = psxRegs.cycle;
+		psxCounters[CNT_SPU_DMA].CycleT = psxCounters[CNT_SPU_DMA].rate;
 		SPU2RunDma(difference);
-    }
-    else
+	}
+	else
 		c -= difference;
     if (c < psxNextCounter)
 		psxNextCounter = c;

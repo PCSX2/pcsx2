@@ -496,15 +496,17 @@ void SPU2RunDma(u32 cClocks)
 		}
 		else
 		{
-			if (((psxCounters[8].sCycleT + psxCounters[8].CycleT) - psxRegs.cycle) > (u32)Cores[0].DMAICounter)
+			if (((psxCounters[CNT_SPU_DMA].sCycleT +
+					 psxCounters[CNT_SPU_DMA].CycleT) -
+					psxRegs.cycle) > (u32)Cores[0].DMAICounter)
 			{
-				psxCounters[8].sCycleT = psxRegs.cycle;
-				psxCounters[8].CycleT = Cores[0].DMAICounter;
+				psxCounters[CNT_SPU_DMA].sCycleT = psxRegs.cycle;
+				psxCounters[CNT_SPU_DMA].CycleT = Cores[0].DMAICounter;
 
 				psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
 				psxNextsCounter = psxRegs.cycle;
-				if (psxCounters[8].CycleT < psxNextCounter)
-					psxNextCounter = psxCounters[8].CycleT;
+				if (psxCounters[CNT_SPU_DMA].CycleT < psxNextCounter)
+					psxNextCounter = psxCounters[CNT_SPU_DMA].CycleT;
 			}
 		}
 	}
@@ -549,10 +551,12 @@ void SPU2RunDma(u32 cClocks)
 		}
 		else
 		{
-			if (((psxCounters[8].sCycleT + psxCounters[8].CycleT) - psxRegs.cycle) > (u32)Cores[1].DMAICounter)
+			if (((psxCounters[CNT_SPU_DMA].sCycleT +
+					 psxCounters[CNT_SPU_DMA].CycleT) -
+					psxRegs.cycle) > (u32)Cores[1].DMAICounter)
 			{
-				psxCounters[8].sCycleT = psxRegs.cycle;
-				psxCounters[8].CycleT = Cores[1].DMAICounter;
+				psxCounters[CNT_SPU_DMA].sCycleT = psxRegs.cycle;
+				psxCounters[CNT_SPU_DMA].CycleT = Cores[1].DMAICounter;
 
 				psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
 				psxNextsCounter = psxRegs.cycle;
