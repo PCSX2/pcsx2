@@ -146,15 +146,22 @@ void psxRcntInit()
 	psxCounters[4].interrupt = 0x08000;
 	psxCounters[5].interrupt = 0x10000;
 
-	psxCounters[6].rate = 768 * 12; // 12 SPU ticks. 768 would be ideal but some games slow down internally for some reason
+	// SPU sample
+	psxCounters[6].rate = 768;
 	psxCounters[6].CycleT = psxCounters[6].rate;
 	psxCounters[6].mode = 0x8;
 
+	// USB
 	psxCounters[7].rate = PSXCLK / 1000;
 	psxCounters[7].CycleT = psxCounters[7].rate;
 	psxCounters[7].mode = 0x8;
 
-	for (i = 0; i < 8; i++)
+	// SPU DMA
+	psxCounters[8].rate = 1000;
+	psxCounters[8].CycleT = psxCounters[6].rate;
+	psxCounters[8].mode = 0x8;
+
+	for (i = 0; i < NUM_COUNTERS; i++)
 		psxCounters[i].sCycleT = psxRegs.cycle;
 
 	// Tell the IOP to branch ASAP, so that timers can get
@@ -501,7 +508,7 @@ void psxRcntUpdate()
 	}
 
 
-	const s32 difference = psxRegs.cycle - psxCounters[6].sCycleT;
+	s32 difference = psxRegs.cycle - psxCounters[6].sCycleT;
 	s32 c = psxCounters[6].CycleT;
 
 	if (difference >= psxCounters[6].CycleT)
@@ -528,6 +535,21 @@ void psxRcntUpdate()
 		cusb -= diffusb;
     if (cusb < psxNextCounter)
 		psxNextCounter = cusb;
+
+    difference = psxRegs.cycle - psxCounters[8].sCycleT;
+	c = psxCounters[8].CycleT;
+    if (c >= psxCounters[8].CycleT)
+    {
+		psxCounters[8].sCycleT = psxRegs.cycle;
+		psxCounters[8].CycleT = psxCounters[8].rate;
+		SPU2RunDma(difference);
+    }
+    else
+		c -= difference;
+    if (c < psxNextCounter)
+		psxNextCounter = c;
+
+
 
 	for (i = 0; i < 6; i++)
 		_rcntSet(i);
