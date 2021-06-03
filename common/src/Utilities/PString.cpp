@@ -128,7 +128,7 @@ PString::operator std::string()
 	return str;
 }
 
-PString::operator ghc::filesystem::path()
+PString::operator fs::path()
 {
 	fs::path str(string);
 	return str;
@@ -147,7 +147,7 @@ void PString::resize(size_t siz, char c)
 	string = c;
 }
 
-bool PString::operator==(const PString rhs)
+const bool PString::operator==(const PString rhs)
 {
 	return string == rhs.string;
 }

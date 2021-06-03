@@ -41,7 +41,7 @@ public:
 
 	PString(PString&& move);
 
-	bool operator==(const PString rhs);
+	const bool operator==(const PString rhs);
 	
 	PString& operator=(const std::string&);
 	PString& operator=(PString&);
@@ -60,7 +60,7 @@ public:
 
 	size_t size() const noexcept
 	{
-		return sizeof(string);
+		return strlen(c_str());
 	}
 
 	char& at(size_t pos);
