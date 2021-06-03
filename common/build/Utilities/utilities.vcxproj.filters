@@ -119,6 +119,9 @@
     <ClCompile Include="..\..\src\Utilities\AlignedMalloc.cpp">
       <Filter>Source Files\Linux</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Utilities\PString.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="..\..\include\Utilities\EventSource.inl">
@@ -211,6 +214,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="..\..\include\Utilities\EmbeddedImage.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\include\Utilities\PString.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

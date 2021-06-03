@@ -1,3 +1,4 @@
+#include "PrecompiledHeader.h"
 #include "PString.h"
 #include <codecvt>
 #include <wchar.h>
@@ -38,6 +39,7 @@ PString& PString::operator=(PString& rhs)
 {
 	count = std::move(rhs.count);
 	string = std::move(rhs.string);
+	return *this;
 }
 
 #ifdef _WIN32
@@ -48,11 +50,14 @@ PString::PString(const std::wstring& str)
 	char* temp = new char[count];
 	const wchar_t* wStr = str.c_str();
 	size_t len = (wcslen(wStr) + 1) * sizeof(wchar_t);
-	wcstombs_s(&count, temp, len, wStr, len);
-	if (temp != nullptr)
+	int err = wcstombs_s(&count, temp, len, wStr, len);
+	if (err != 0)
 	{
-		string = temp;
+		delete temp;
 	}
+
+	string = temp;
+	delete temp;
 }
 
 PString& PString::operator=(const std::wstring& str)
@@ -61,22 +66,41 @@ PString& PString::operator=(const std::wstring& str)
 	char* temp = new char[count];
 	const wchar_t* wStr = str.c_str();
 	size_t len = (wcslen(wStr) + 1) * sizeof(wchar_t);
-	wcstombs_s(&count, temp, len, wStr, len);
-	if (temp != nullptr)
+	int err = wcstombs_s(&count, temp, len, wStr, len);
+	if (err != 0)
+	{
+		std::cout << "Error: " << strerror(err) << std::endl;	
+	}
+	else
 	{
 		string = temp;
+		delete temp;
 	}
-	return *this;
+		return *this;
 }
 
 PString::operator std::wstring()
 {
 	wchar_t* wstr = new wchar_t[count];
-	mbstowcs(wstr, string.data(), count);
+	int err = mbstowcs(wstr, string.data(), count);
+	if (err != 0)
+	{
+		std::cout << "Error: " << strerror(err) << std::endl;
+		delete wstr;
+		return L"";
+	}
 	std::wstring buf(wstr);
+	delete wstr;
 	return buf;
 }
 #endif
+
+// Non default
+PString::PString(const fs::path path)
+{
+	count = path.string().size();
+	string = path.string();
+}
 
 // Non default
 PString::PString(const wxString& str)
@@ -94,7 +118,7 @@ PString& PString::operator=(const std::string& str)
 
 PString::operator wxString()
 {
-	wxString buf(string);
+	wxString buf(data());
 	return buf;
 }
 

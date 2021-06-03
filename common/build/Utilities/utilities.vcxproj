@@ -18,7 +18,7 @@
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="PropertySheets">
     <Import Project="..\..\vsprops\CommonLibrary.props" />
-    <Import Project="..\..\vsprops\3rdpartyDeps.props"/>
+    <Import Project="..\..\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\vsprops\pthreads.props" />
     <Import Condition="$(Configuration.Contains(Debug))" Project="..\..\vsprops\CodeGen_Debug.props" />
     <Import Condition="$(Configuration.Contains(Devel))" Project="..\..\vsprops\CodeGen_Devel.props" />
@@ -45,6 +45,7 @@
     <ClCompile Include="..\..\src\Utilities\Exceptions.cpp" />
     <ClCompile Include="..\..\src\Utilities\FastFormatString.cpp" />
     <ClCompile Include="..\..\src\Utilities\IniInterface.cpp" />
+    <ClCompile Include="..\..\src\Utilities\PString.cpp" />
     <ClCompile Include="..\..\src\Utilities\pxStreams.cpp" />
     <ClCompile Include="..\..\src\Utilities\pxTranslate.cpp" />
     <ClCompile Include="..\..\src\Utilities\pxWindowTextWriter.cpp" />
@@ -88,6 +89,7 @@
   <ItemGroup>
     <ClInclude Include="..\..\include\Utilities\EmbeddedImage.h" />
     <ClInclude Include="..\..\include\Utilities\boost_spsc_queue.hpp" />
+    <ClInclude Include="..\..\include\Utilities\PString.h" />
     <ClInclude Include="..\..\include\Utilities\ScopedAlloc.h" />
     <ClInclude Include="..\..\src\Utilities\ThreadingInternal.h" />
     <ClInclude Include="..\..\include\Utilities\Assertions.h" />
