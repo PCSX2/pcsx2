@@ -348,15 +348,15 @@ void V_Core::FinishDMAwrite()
 	{
 		DMAICounter = std::min(ReadSize, (u32)0x100) * 4;
 
-		if (((psxCounters[8].sCycleT + psxCounters[8].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
+		if (((psxCounters[CNT_SPU_DMA].sCycleT + psxCounters[CNT_SPU_DMA].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
 		{
-			psxCounters[8].sCycleT = psxRegs.cycle;
-			psxCounters[8].CycleT = DMAICounter;
+			psxCounters[CNT_SPU_DMA].sCycleT = psxRegs.cycle;
+			psxCounters[CNT_SPU_DMA].CycleT = DMAICounter;
 
 			psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
 			psxNextsCounter = psxRegs.cycle;
-			if (psxCounters[8].CycleT < psxNextCounter)
-				psxNextCounter = psxCounters[8].CycleT;
+			if (psxCounters[CNT_SPU_DMA].CycleT < psxNextCounter)
+				psxNextCounter = psxCounters[CNT_SPU_DMA].CycleT;
 		}
 	}
 	ActiveTSA = TDA;
@@ -444,15 +444,15 @@ void V_Core::FinishDMAread()
 	{
 		DMAICounter = std::min(ReadSize, (u32)0x100) * 4;
 
-		if (((psxCounters[8].sCycleT + psxCounters[8].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
+		if (((psxCounters[CNT_SPU_DMA].sCycleT + psxCounters[CNT_SPU_DMA].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
 		{
-			psxCounters[8].sCycleT = psxRegs.cycle;
-			psxCounters[8].CycleT = DMAICounter;
+			psxCounters[CNT_SPU_DMA].sCycleT = psxRegs.cycle;
+			psxCounters[CNT_SPU_DMA].CycleT = DMAICounter;
 
 			psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
 			psxNextsCounter = psxRegs.cycle;
-			if (psxCounters[8].CycleT < psxNextCounter)
-				psxNextCounter = psxCounters[8].CycleT;
+			if (psxCounters[CNT_SPU_DMA].CycleT < psxNextCounter)
+				psxNextCounter = psxCounters[CNT_SPU_DMA].CycleT;
 		}
 	}
 	ActiveTSA = TDA;
@@ -476,15 +476,15 @@ void V_Core::DoDMAread(u16* pMem, u32 size)
 	//Regs.ATTR |= 0x30;
 	TADR = MADR + (size << 1);
 
-	if (((psxCounters[8].sCycleT + psxCounters[8].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
+	if (((psxCounters[CNT_SPU_DMA].sCycleT + psxCounters[CNT_SPU_DMA].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
 	{
-		psxCounters[8].sCycleT = psxRegs.cycle;
-		psxCounters[8].CycleT = DMAICounter;
+		psxCounters[CNT_SPU_DMA].sCycleT = psxRegs.cycle;
+		psxCounters[CNT_SPU_DMA].CycleT = DMAICounter;
 
 		psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
 		psxNextsCounter = psxRegs.cycle;
-		if (psxCounters[8].CycleT < psxNextCounter)
-			psxNextCounter = psxCounters[8].CycleT;
+		if (psxCounters[CNT_SPU_DMA].CycleT < psxNextCounter)
+			psxNextCounter = psxCounters[CNT_SPU_DMA].CycleT;
 	}
 
 	if (MsgDMA())
