@@ -23149,7 +23149,8 @@ SLPM-65948:
   name: "Enthusia Professional Racing"
   region: "NTSC-J"
   clampModes:
-    eeClampMode: 3
+    eeClampMode: 3 # Fixes Freezing at the start of the race
+    vuClampMode: 3 # Fixes Freezing at the start of the race
 SLPM-65949:
   name: "Get Ride! AM Driver - The Truth of Xiangke"
   region: "NTSC-J"
