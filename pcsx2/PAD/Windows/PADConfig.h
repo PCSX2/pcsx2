@@ -43,7 +43,6 @@ public:
 	{
 		struct
 		{
-			u8 forceHide;
 			u8 mouseUnfocus;
 			u8 background;
 			u8 multipleBinding;

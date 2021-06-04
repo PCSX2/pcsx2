@@ -16,8 +16,6 @@
 #include "PrecompiledHeader.h"
 #include "Global.h"
 #include "HidDevice.h"
-#include <setupapi.h>
-#include <hidsdi.h>
 
 int FindHids(HidDeviceInfo** foundDevs, int vid, int pid)
 {

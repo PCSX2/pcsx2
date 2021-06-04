@@ -16,8 +16,6 @@
 #ifndef TOOLTIPS_H
 #define TOOLTIPS_H
 
-#include "Global.h"
-
 LPWSTR dialog_message(int ID, bool* updateText = false);
 
 #endif

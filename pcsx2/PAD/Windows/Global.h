@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "PAD.h"
+#include "PS2Edefs.h"
 
 #ifdef __linux__
 // Seriously why there is no standard
@@ -92,43 +92,22 @@ extern Window GSwin;
 
 #endif
 
-#ifndef _CRT_SECURE_NO_DEPRECATE
-#define _CRT_SECURE_NO_DEPRECATE
-#endif
-
-#ifdef _MSC_VER
-#define _WIN32_WINNT 0x0600
-#define NOMINMAX
-#include <algorithm>
-#include <windows.h>
-
-#ifdef PCSX2_DEBUG
-#define _CRTDBG_MAPALLOC
-#define _CRTDBG_MAP_ALLOC
-#include <stdlib.h>
-#include <crtdbg.h>
-#else
-#include <stdlib.h>
-#endif
-
-#else
-
-#include <stdlib.h>
-#include <mutex>
-
-#endif
-
-#include <stdio.h>
-#include <string.h>
-#include <math.h>
-
 #ifdef _MSC_VER
 #include <commctrl.h>
+#include <commdlg.h>
+#include <Shlwapi.h>
+#include <timeapi.h>
 // Only needed for DBT_DEVNODES_CHANGED
 #include <Dbt.h>
 #endif
 
-#include "PS2Edefs.h"
+#include <array>
+#include <mutex>
+#include <queue>
+
+#include <fstream>
+#include <iomanip>
+#include <sstream>
 
 // Needed for config screen
 void GetNameAndVersionString(wchar_t* out);

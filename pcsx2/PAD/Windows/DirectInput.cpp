@@ -722,10 +722,7 @@ BOOL CALLBACK EnumCallback(LPCDIDEVICEINSTANCE lpddi, LPVOID pvRef)
 	{
 		type = KEYBOARD;
 	}
-	else if ((lpddi->dwDevType & 0xFF) == DI8DEVTYPE_MOUSE)
-	{
-		type = MOUSE;
-	}
+
 	IDirectInputDevice8* did;
 	if (DI_OK == di8->CreateDevice(lpddi->guidInstance, &did, 0))
 	{

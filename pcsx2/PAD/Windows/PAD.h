@@ -15,35 +15,6 @@
 
 #pragma once
 
-#include <wx/string.h>
-#include <wx/tokenzr.h>
-#include <wx/intl.h>
-#include <wx/log.h>
-#include <wx/filename.h>
-#include "Utilities/pxStreams.h"
-#include "Utilities/Console.h"
-#include <stdio.h>
-#include <assert.h>
-#include "PS2Edefs.h"
-
-#include <array>
-#include <vector>
-#include <map>
-#include <string>
-#include <memory>
-#include <mutex>
-#include <queue>
-
-
-typedef struct
-{
-	unsigned char controllerType;
-	unsigned short buttonStatus;
-	unsigned char rightJoyX, rightJoyY, leftJoyX, leftJoyY;
-	unsigned char moveX, moveY;
-	unsigned char reserved[91];
-} PadDataS;
-
 void PADupdate(int pad);
 void PADshutdown();
 s32 PADinit();

@@ -28,12 +28,8 @@
 #include "DualShock3.h"
 #include "PAD.h"
 
-#include <Shlwapi.h>
-
 // Needed to know if raw input is available.  It requires XP or higher.
 #include "PADRawInput.h"
-#include <commdlg.h>
-#include <timeapi.h>
 #include "AppConfig.h"
 
 //max len 24 wchar_t
@@ -68,7 +64,6 @@ struct GeneralSettingsBool
 // Ties together config data structure, config files, and general config
 // dialog.
 const GeneralSettingsBool BoolOptionsInfo[] = {
-	{L"Force Cursor Hide", IDC_FORCE_HIDE, 0},
 	{L"Mouse Unfocus", IDC_MOUSE_UNFOCUS, 1},
 	{L"Background", IDC_BACKGROUND, 1},
 	{L"Multiple Bindings", IDC_MULTIPLE_BINDING, 0},
