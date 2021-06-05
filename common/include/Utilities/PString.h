@@ -79,18 +79,20 @@ public:
 	}
 
 	char& at(size_t pos);
-	const char& at(size_t pos) const;
+	char& at(size_t pos) const;
 
 	void resize(size_t n)
 	{
 		string.resize(n);
 	}
+
 	void resize(size_t n, char c);
 
 	const char* data() const
 	{
 		return string.data();
 	}
+	
 	const char* c_str() const noexcept
 	{
 		return string.c_str();
@@ -101,7 +103,12 @@ public:
 		return string.empty();
 	}
 
-	char operator[](size_t index)
+	char& operator[](size_t index)
+	{
+		return string[index];
+	}
+
+	char operator[](size_t index) const
 	{
 		return string[index];
 	}
