@@ -13,60 +13,78 @@ namespace fs = ghc::filesystem;
 class PString
 {
 private:
-	size_t count;
 	std::basic_string<char> string;
-	//const char* string;
 public:
-	PString();
+	PString() = default;
 
 	// Non default constructors
-	PString(const char* string);
-	PString(const fs::path path);
-	PString(const wxString& str);
+	PString(const char* string)
+	{
+		string = string;
+	}
+
+	explicit PString(const fs::path& path)
+	{
+		string = path.string();
+	}
+
+	PString(const wxString& str)
+	{
+		string = std::string(str.utf8_str());
+	}
 
 	#ifdef _WIN32
 	PString(const std::wstring& wString);
-	PString& operator=(const std::wstring&);
 	operator std::wstring();
 	#endif
 
 	#ifdef __cpp_lib_char8_t
-	PString(const std::u8string str);
-	PString& operator=(const std::u8string&);
+	PString(const std::u8string& str);
 	operator std::u8string();
 	#endif
 
 	// Copy Constructor
-	PString(const PString& rhs);
+	PString(const PString& rhs)
+	{
+		string = rhs.string;
+	}
 
-	PString(PString&& move);
+	PString(PString&& move)
+	{
+		string = move.string;
+	}
 
-	const bool operator==(const PString rhs);
-	
-	PString& operator=(const std::string&);
-	PString& operator=(PString&);
+	const bool operator==(const PString& rhs)
+	{
+		return string == rhs.string;
+	}
+
+	PString& operator=(PString&&);
 
 	// Copy Operator
 	const PString& operator=(const PString&);
 	
-	operator std::string();
-	operator wxString();
-	operator fs::path();
+	operator std::string() const;
+	operator wxString() const;
+	operator fs::path() const;
 
 	size_t capacity() const noexcept
 	{
-		return count;
+		return string.capacity();
 	}
 
 	size_t size() const noexcept
 	{
-		return strlen(c_str());
+		return string.size();
 	}
 
 	char& at(size_t pos);
 	const char& at(size_t pos) const;
 
-	void resize(size_t n);
+	void resize(size_t n)
+	{
+		string.resize(n);
+	}
 	void resize(size_t n, char c);
 
 	const char* data() const
@@ -80,7 +98,7 @@ public:
 
 	bool empty() const noexcept
 	{
-		return count == 0;
+		return string.empty();
 	}
 
 	char operator[](size_t index)
