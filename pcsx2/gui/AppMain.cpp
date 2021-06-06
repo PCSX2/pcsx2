@@ -1218,11 +1218,7 @@ void SysUpdateIsoSrcFile( const wxString& newIsoFile )
 
 void SysUpdateDiscSrcDrive( const wxString& newDiscDrive )
 {
-#if defined(_WIN32)
-	g_Conf->Folders.RunDisc = wxFileName::DirName(newDiscDrive);
-#else
-	g_Conf->Folders.RunDisc = wxFileName(newDiscDrive);
-#endif
+	g_Conf->Folders.RunDisc = newDiscDrive;
 	AppSaveSettings();
 	sMainFrame.UpdateCdvdSrcSelection();
 }
