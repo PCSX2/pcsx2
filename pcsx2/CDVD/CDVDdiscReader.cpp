@@ -186,7 +186,7 @@ s32 CALLBACK DISCopen(const char* pTitle)
 #if defined(_WIN32)
 	std::wstring drive = g_Conf->Folders.RunDisc.GetPath().ToStdWstring();
 #else
-	std::string drive = g_Conf->Folders.RunDisc.GetPath().ToStdString();
+	std::string drive = g_Conf->Folders.RunDisc.GetFullPath().ToStdString();
 #endif
 	GetValidDrive(drive);
 
