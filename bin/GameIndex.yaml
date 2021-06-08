@@ -16246,8 +16246,6 @@ SLES-55088:
 SLES-55090:
   name: "Naruto - Uzumaki Chronicles 2"
   region: "PAL-M5"
-  gameFixes:
-    - OPHFlagHack
 SLES-55091:
   name: "Hoppie"
   region: "PAL-E"
@@ -18051,8 +18049,6 @@ SLKA-25366:
   name: "Naruto - Uzumaki Chronicles 2"
   region: "NTSC-K"
   compat: 5
-  gameFixes:
-    - OPHFlagHack
 SLKA-25374:
   name: "FIFA Street 2"
   region: "NTSC-K"
@@ -37849,8 +37845,6 @@ SLUS-21594:
   name: "Naruto - Uzumaki Chronicles 2"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - OPHFlagHack
 SLUS-21595:
   name: "T.M.N.T. - Teenage Mutant Ninja Turtles"
   region: "NTSC-U"
