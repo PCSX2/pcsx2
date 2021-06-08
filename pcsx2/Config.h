@@ -53,8 +53,7 @@ enum GamefixId
 	Fix_VIF1Stall,
 	Fix_GIFFIFO,
 	Fix_GoemonTlbMiss,
-	Fix_ScarfaceIbit,
-	Fix_CrashTagTeamIbit,
+	Fix_Ibit,
 	Fix_VU0Kickstart,
 
 	GamefixId_COUNT
@@ -365,8 +364,7 @@ struct Pcsx2Config
             VIF1StallHack : 1,          // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
             GIFFIFOHack : 1,            // Enabled the GIF FIFO (more correct but slower)
             GoemonTlbHack : 1,          // Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
-            ScarfaceIbit : 1,           // Scarface I bit hack. Needed to stop constant VU recompilation
-            CrashTagTeamRacingIbit : 1, // Crash Tag Team Racing I bit hack. Needed to stop constant VU recompilation
+            IbitHack : 1,               // I bit hack. Needed to stop constant VU recompilation in some games
             VU0KickstartHack : 1;       // Speed up VU0 at start of program to avoid some VU1 sync issues
 		BITFIELD_END
 

@@ -12684,7 +12684,7 @@ SLES-53439:
   name: "Crash Tag Team Racing"
   region: "PAL-M6"
   gameFixes:
-    - CrashTagTeamRacingIbitHack # Fixes constant recompilation problems.
+    - IbitHack # Fixes constant recompilation problems.
 SLES-53441:
   name: "Heroes of the Pacific"
   region: "PAL-M5"
@@ -14329,17 +14329,17 @@ SLES-54182:
   name: "Scarface - The World is Yours"
   region: "PAL-M4"
   gameFixes:
-    - ScarfaceIbitHack
+    - IbitHack
 SLES-54183:
   name: "Scarface - The World is Yours"
   region: "PAL-G"
   gameFixes:
-    - ScarfaceIbitHack
+    - IbitHack
 SLES-54184:
   name: "Scarface - The World is Yours"
   region: "PAL-R"
   gameFixes:
-    - ScarfaceIbitHack
+    - IbitHack
 SLES-54185:
   name: "Dirge of Cerberus - Final Fantasy VII"
   region: "PAL-M5"
@@ -14509,7 +14509,7 @@ SLES-54271:
   name: "Scarface - The World is Yours"
   region: "PAL-E"
   gameFixes:
-    - ScarfaceIbitHack
+    - IbitHack
 SLES-54305:
   name: "Demon Chaos"
   region: "PAL-M5"
@@ -15040,7 +15040,7 @@ SLES-54534:
   name: "Scarface - The World is Yours [Collector's Edition]"
   region: "PAL-E"
   gameFixes:
-    - ScarfaceIbitHack
+    - IbitHack
 SLES-54536:
   name: "Big Idea's VeggieTales - LarryBoy and the Bad Apple"
   region: "PAL-I"
@@ -35831,7 +35831,7 @@ SLUS-21111:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - ScarfaceIbitHack
+    - IbitHack
 SLUS-21112:
   name: "L.A. Rush"
   region: "NTSC-U"
@@ -36166,7 +36166,7 @@ SLUS-21191:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - CrashTagTeamRacingIbitHack # Fixes constant recompilation problems.
+    - IbitHack # Fixes constant recompilation problems.
 SLUS-21192:
   name: "Cabela's Outdoor Adventures 2006"
   region: "NTSC-U"
@@ -37580,7 +37580,7 @@ SLUS-21492:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - ScarfaceIbitHack
+    - IbitHack
 SLUS-21493:
   name: "Need for Speed - Carbon"
   region: "NTSC-U"
