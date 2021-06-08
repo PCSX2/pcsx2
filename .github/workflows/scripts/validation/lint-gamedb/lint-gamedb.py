@@ -33,8 +33,6 @@ allowed_game_fixes = [
     "VIF1StallHack",
     "GIFFIFOHack",
     "GoemonTlbHack",
-    "ScarfaceIbitHack",
-    "CrashTagTeamRacingIbitHack",
     "VU0KickstartHack",
     "IbitHack",
 ]
