@@ -8,10 +8,11 @@ urlcolor: "cyan"
 # Debugger Key Bindings
 
 ## Disassembly View
--   `Ctrl+G`   -   goto
--   `Ctrl+E`   -   edit breakpoint
--   `Ctrl+D`   -   enable/disable breakpoint
--   `Ctrl+B`   -   add breakpoint
+-   `G`   -   goto
+-   `E`   -   edit breakpoint
+-   `D`   -   enable/disable breakpoint
+-   `B`   -   add breakpoint
+-   `M`   -   assemble opcode
 -   `Right Arrow`   -   follow branch/position memory view to accessed address
 -   `Left Arrow`   -   go back one branch level/goto pc
 -   `Up Arrow`   -   move cursor up one line
@@ -26,7 +27,7 @@ urlcolor: "cyan"
 
 ## Memory View
 
--   `Ctrl+G`   -   goto
+-   `G`   -   goto
 -   `Ctrl+B`   -   add breakpoint
 -   `Left Arrow`   -   move cursor back one byte/nibble
 -   `Right Arrow`   -   move cursor ahead one byte/nibble

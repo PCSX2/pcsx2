@@ -1,5 +1,5 @@
 ﻿/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -799,10 +799,17 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 {
 	u32 windowEnd = manager.getNthNextAddress(windowStart,visibleRows);
 
-	if (evt.ControlDown())
-	{
-		switch (evt.GetKeyCode())
+	switch (evt.GetKeyCode())
 		{
+		case 'g':
+		case 'G':
+			{
+				u64 addr;
+				if (!executeExpressionWindow(this, cpu, addr))
+					return;
+				gotoAddress(addr);
+			}
+			break;
 		case 'd':
 		case 'D':
 			toggleBreakpoint(true);
@@ -813,40 +820,21 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 			break;
 		case 'b':
 		case 'B':
-			{
-				BreakpointWindow bpw(this,cpu);
-				if (bpw.ShowModal() == wxID_OK)
-				{
-					bpw.addBreakpoint();
-					postEvent(debEVT_UPDATE,0);
-				}
-			}
-			break;
-		case 'g':
-		case 'G':
-			{
-				u64 addr;
-				if (!executeExpressionWindow(this,cpu,addr))
-					return;
-				gotoAddress(addr);
-			}
-			break;
-		default:
-			evt.Skip();
-			break;
-		}
-	} else {
-		if (evt.GetEventType() == wxEVT_CHAR && evt.GetKeyCode() >= 0x20 && evt.GetKeyCode() < 0x80)
 		{
-			std::string str;
-			str += (char) evt.GetKeyCode();
-
-			assembleOpcode(curAddress,str);
-			return;
+			BreakpointWindow bpw(this, cpu);
+			if (bpw.ShowModal() == wxID_OK)
+			{
+				bpw.addBreakpoint();
+				postEvent(debEVT_UPDATE, 0);
+			}
 		}
-
-		switch (evt.GetKeyCode())
+		break;
+		case 'm':
+		case 'M':
 		{
+			assembleOpcode(curAddress, "");
+		}
+		break;
 		case WXK_LEFT:
 			if (jumpStack.empty())
 			{
@@ -909,7 +897,6 @@ void CtrlDisassemblyView::keydownEvent(wxKeyEvent& evt)
 			evt.Skip();
 			break;
 		}
-	}
 
 	redraw();
 }
