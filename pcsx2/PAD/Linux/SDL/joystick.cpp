@@ -148,6 +148,7 @@ JoystickInfo::JoystickInfo(int id)
 	m_pad_to_sdl[PAD_R_RIGHT] = SDL_CONTROLLER_AXIS_RIGHTX;
 	m_pad_to_sdl[PAD_R_DOWN] = SDL_CONTROLLER_AXIS_RIGHTY;
 	m_pad_to_sdl[PAD_R_LEFT] = SDL_CONTROLLER_AXIS_RIGHTX;
+	m_pad_to_sdl[PAD_ANALOG] = SDL_CONTROLLER_BUTTON_GUIDE;
 
 	if (SDL_IsGameController(id))
 	{
@@ -176,7 +177,7 @@ JoystickInfo::JoystickInfo(int id)
 						"You can use SDL2 Gamepad Tool (https://www.generalarcade.com/gamepadtool/) or Steam to configure your joystick\n"
 						"The mapping can be stored in PAD.ini as 'SDL2 = <...mapping description...>'\n"
 						"Please post the new generated mapping to (https://github.com/gabomdq/SDL_GameControllerDB) so it can be added to the database.",
-				devname, guid);
+			devname, guid);
 
 #if SDL_MINOR_VERSION >= 4 // Version before 2.0.4 are bugged, JoystickClose crashes randomly
 		SDL_JoystickClose(joy);
@@ -242,7 +243,7 @@ JoystickInfo::JoystickInfo(int id)
 	}
 
 	fprintf(stdout, "PAD: controller (%s) detected%s, GUID:%s\n",
-			devname, m_haptic ? " with rumble support" : "", guid);
+		devname, m_haptic ? " with rumble support" : "", guid);
 
 	m_no_error = true;
 }
