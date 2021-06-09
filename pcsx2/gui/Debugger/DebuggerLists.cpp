@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -169,6 +169,7 @@ enum BreakpointListMenuIdentifiers
 {
 	ID_BREAKPOINTLIST_ENABLE = 1,
 	ID_BREAKPOINTLIST_EDIT,
+	ID_BREAKPOINTLIST_DELETE,
 	ID_BREAKPOINTLIST_ADDNEW,
 };
 
@@ -458,6 +459,9 @@ void BreakpointList::onPopupClick(wxCommandEvent& evt)
 	case ID_BREAKPOINTLIST_EDIT:
 		editBreakpoint(index);
 		break;
+	case ID_BREAKPOINTLIST_DELETE:
+		removeBreakpoint(index);
+		break;
 	case ID_BREAKPOINTLIST_ADDNEW:
 		postEvent(debEVT_BREAKPOINTWINDOW,0);
 		break;
@@ -477,6 +481,7 @@ void BreakpointList::showMenu(const wxPoint& pos)
 	{
 		menu.AppendCheckItem(ID_BREAKPOINTLIST_ENABLE,	L"Enable");
 		menu.Append(ID_BREAKPOINTLIST_EDIT,				L"Edit");
+		menu.Append(ID_BREAKPOINTLIST_DELETE,			L"Delete");
 		menu.AppendSeparator();
 
 		// check if the breakpoint is enabled
