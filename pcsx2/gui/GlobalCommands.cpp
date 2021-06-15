@@ -400,29 +400,10 @@ namespace Implementations
 			return;
 		if (renderswitch_delay == 0)
 		{
-			ScopedCoreThreadPause paused_core;
-			std::unique_ptr<VmStateBuffer> plugstore;
-			freezeData fP = {0, NULL};
-			GSfreeze(FREEZE_SIZE, &fP);
-			char* data = new char[fP.size];
-			fP.data = data;
-			if (CoreThread.HasActiveMachine())
-			{
-				plugstore = std::make_unique<VmStateBuffer>(L"StateCopy_RenderToggle");
-				memSavingState save(plugstore.get());
-				GSfreeze(FREEZE_SAVE, &fP);
-			}
-			GSclose();
-			if (plugstore)
-			{
-				memLoadingState load(plugstore.get());
-				GSfreeze(FREEZE_LOAD, &fP);
-			}
+			GetMTGS().Suspend();
 			renderswitch = !renderswitch;
-			GSopen2((void**)pDsp, (renderswitch ? 4 : 0));
+			GetMTGS().Resume();
 			renderswitch_delay = -1;
-			delete[] fP.data;
-			paused_core.AllowResume();
 		}
 	}
 
