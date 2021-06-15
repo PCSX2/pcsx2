@@ -188,12 +188,12 @@ int pcap_io_init(char* adapter, bool switched, mac_address virtual_mac)
 
 	/* Open the adapter */
 	if ((adhandle = pcap_open_live(adapter, // name of the device
-								   65536,   // portion of the packet to capture.
-								   // 65536 grants that the whole packet will be captured on all the MACs.
-								   switched ? 1 : 0,
-								   1,     // read timeout
-								   errbuf // error buffer
-								   )) == NULL)
+			 65536, // portion of the packet to capture.
+			 // 65536 grants that the whole packet will be captured on all the MACs.
+			 switched ? 1 : 0,
+			 1, // read timeout
+			 errbuf // error buffer
+			 )) == NULL)
 	{
 		Console.Error("DEV9: %s", errbuf);
 		Console.Error("DEV9: Unable to open the adapter. %s is not supported by pcap", adapter);
