@@ -497,7 +497,7 @@ void SysMtgsThread::ExecuteTaskInThread()
 						{
 							MTGS_FreezeData* data = (MTGS_FreezeData*)tag.pointer;
 							int mode = tag.data[0];
-							data->retval = GSfreeze(mode, (GSFreezeData*)data->fdata);
+							data->retval = GSfreeze(mode, (freezeData*)data->fdata);
 						}
 						break;
 

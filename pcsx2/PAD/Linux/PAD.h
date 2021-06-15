@@ -144,8 +144,6 @@ u8 PADpoll(u8 value);
 keyEvent* PADkeyEvent();
 void PADupdate(int pad);
 void PADconfigure();
-void PADDoFreezeOut(void* dest);
-void PADDoFreezeIn(pxInputStream& infp);
 
 #if defined(__unix__)
 void PADWriteEvent(keyEvent& evt);

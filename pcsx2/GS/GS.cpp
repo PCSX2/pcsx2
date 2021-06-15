@@ -678,7 +678,7 @@ void GSkeyEvent(GSKeyEventData* e)
 	}
 }
 
-int GSfreeze(int mode, GSFreezeData* data)
+int GSfreeze(int mode, freezeData* data)
 {
 	try
 	{
@@ -949,9 +949,9 @@ void GSReplay(char* lpszCmdLine, int renderer)
 		file->Read(&crc, 4);
 		GSsetGameCRC(crc, 0);
 
-		GSFreezeData fd;
+		freezeData fd;
 		file->Read(&fd.size, 4);
-		fd.data = new uint8[fd.size];
+		fd.data = new char[fd.size];
 		file->Read(fd.data, fd.size);
 
 		GSfreeze(FREEZE_LOAD, &fd);
@@ -1860,45 +1860,4 @@ void GSApp::SetCurrentRendererType(GSRendererType type)
 GSRendererType GSApp::GetCurrentRendererType() const
 {
 	return m_current_renderer_type;
-}
-
-void GSDoFreezeOut(void* dest)
-{
-	GSFreezeData fP = {0, (u8*)dest};
-	if (GSfreeze(FREEZE_SIZE, &fP) != 0)
-		return;
-	if (!fP.size)
-		return;
-
-	Console.Indent().WriteLn("Saving GS");
-
-	if (GSfreeze(FREEZE_SAVE, &fP) != 0)
-		throw std::runtime_error(" * GS: Error saving state!\n");
-}
-
-
-void GSDoFreezeIn(pxInputStream& infp)
-{
-	GSFreezeData fP = {0, nullptr};
-	if (GSfreeze(FREEZE_SIZE, &fP) != 0)
-		fP.size = 0;
-
-	Console.Indent().WriteLn("Loading GS");
-
-	if (!infp.IsOk() || !infp.Length())
-	{
-		// no state data to read, but GS expects some state data?
-		// Issue a warning to console...
-		if (fP.size != 0)
-			Console.Indent().Warning("Warning: No data for GS found. Status may be unpredictable.");
-
-		return;
-	}
-
-	ScopedAlloc<s8> data(fP.size);
-	fP.data = (u8*)data.GetPtr();
-
-	infp.Read(fP.data, fP.size);
-	if (GSfreeze(FREEZE_LOAD, &fP) != 0)
-		throw std::runtime_error(" * GS: Error loading state!\n");
 }

@@ -729,7 +729,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	m_dump_file->Read(state_data.get(), ss);
 	m_dump_file->Read(&regs, 8192);
 
-	GSFreezeData fd = {(int)ss, (u8*)state_data.get()};
+	freezeData fd = {(int)ss, (s8*)state_data.get()};
 	m_root_window->m_dump_packets.clear();
 
 	while (m_dump_file->Tell() < m_dump_file->Length())

@@ -45,7 +45,7 @@ class GSDumpBase
 	FILE* m_gs;
 
 protected:
-	void AddHeader(uint32 crc, const GSFreezeData& fd, const GSPrivRegSet* regs);
+	void AddHeader(uint32 crc, const freezeData& fd, const GSPrivRegSet* regs);
 	void Write(const void* data, size_t size);
 
 	virtual void AppendRawData(const void* data, size_t size) = 0;
@@ -66,7 +66,7 @@ class GSDump final : public GSDumpBase
 	void AppendRawData(uint8 c) final;
 
 public:
-	GSDump(const std::string& fn, uint32 crc, const GSFreezeData& fd, const GSPrivRegSet* regs);
+	GSDump(const std::string& fn, uint32 crc, const freezeData& fd, const GSPrivRegSet* regs);
 	virtual ~GSDump() = default;
 };
 
@@ -82,6 +82,6 @@ class GSDumpXz final : public GSDumpBase
 	void AppendRawData(uint8 c);
 
 public:
-	GSDumpXz(const std::string& fn, uint32 crc, const GSFreezeData& fd, const GSPrivRegSet* regs);
+	GSDumpXz(const std::string& fn, uint32 crc, const freezeData& fd, const GSPrivRegSet* regs);
 	virtual ~GSDumpXz();
 };

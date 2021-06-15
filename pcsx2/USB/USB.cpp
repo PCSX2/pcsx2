@@ -494,7 +494,6 @@ s32 USBfreeze(int mode, freezeData* data)
 				}
 			}
 		}
-
 	}
 	//TODO straight copying of structs can break cross-platform/cross-compiler save states 'cause padding 'n' stuff
 	else if (mode == FREEZE_SAVE)
@@ -628,46 +627,4 @@ int get_ticks_per_second()
 s64 get_clock()
 {
 	return clocks;
-}
-
-void USBDoFreezeOut(void* dest)
-{
-	freezeData fP = {0, (s8*)dest};
-	if (USBfreeze(FREEZE_SIZE, &fP) != 0)
-		return;
-	if (!fP.size)
-		return;
-
-	Console.Indent().WriteLn("Saving USB");
-
-	if (USBfreeze(FREEZE_SAVE, &fP) != 0)
-		throw std::runtime_error(" * USB: Error saving state!\n");
-}
-
-
-void USBDoFreezeIn(pxInputStream& infp)
-{
-	freezeData fP = {(int)infp.Length(), nullptr};
-	//if (USBfreeze(FREEZE_SIZE, &fP) != 0)
-	//	fP.size = 0;
-
-	Console.Indent().WriteLn("Loading USB");
-
-	if (!infp.IsOk() || !infp.Length())
-	{
-		// no state data to read, but USB expects some state data?
-		// Issue a warning to console...
-		if (fP.size != 0)
-			Console.Indent().Warning("Warning: No data for USB found. Status may be unpredictable.");
-
-		return;
-	}
-
-	ScopedAlloc<s8> data(fP.size);
-	fP.data = data.GetPtr();
-
-	infp.Read(fP.data, fP.size);
-	//if (USBfreeze(FREEZE_LOAD, &fP) != 0)
-	//	throw std::runtime_error(" * USB: Error loading state!\n");
-	USBfreeze(FREEZE_LOAD, &fP);
 }
