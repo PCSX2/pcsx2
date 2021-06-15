@@ -45,46 +45,46 @@ static const wxChar* EntryFilename_StateVersion = L"PCSX2 Savestate Version.id";
 static const wxChar* EntryFilename_Screenshot = L"Screenshot.jpg";
 static const wxChar* EntryFilename_InternalStructures = L"PCSX2 Internal Structures.dat";
 
-enum SysState_Component : unsigned char
+struct SysState_Component
 {
-	SPU2 = 0,
-	PAD = 1,
-	USB = 2,
-	GS = 3,
+	const char* name;
+	int (*freeze)(int, freezeData*);
 };
 
-typedef int (*SysState_FreezeFunction)(int, freezeData*);
-static const SysState_FreezeFunction SysState_ComponentFreeze[] = {SPU2freeze, PADfreeze, USBfreeze, GSfreeze};
-static const char* SysState_ComponentName[] = {"SPU2", "PAD", "USB", "GS"};
+static constexpr SysState_Component SPU2{"SPU2", SPU2freeze};
+static constexpr SysState_Component PAD{"PAD", PADfreeze};
+static constexpr SysState_Component USB{"USB", USBfreeze};
+static constexpr SysState_Component GS{"GS", GSfreeze};
+
 
 void SysState_ComponentFreezeOutRoot(void* dest, SysState_Component comp)
 {
 	freezeData fP = {0, (char*)dest};
-	if (SysState_ComponentFreeze[comp](FREEZE_SIZE, &fP) != 0)
+	if (comp.freeze(FREEZE_SIZE, &fP) != 0)
 		return;
 	if (!fP.size)
 		return;
 
-	Console.Indent().WriteLn("Saving %s", SysState_ComponentName[comp]);
+	Console.Indent().WriteLn("Saving %s", comp.name);
 
-	if (SysState_ComponentFreeze[comp](FREEZE_SAVE, &fP) != 0)
-		throw std::runtime_error(std::string(" * ") + SysState_ComponentName[comp] + std::string(": Error saving state!\n"));
+	if (comp.freeze(FREEZE_SAVE, &fP) != 0)
+		throw std::runtime_error(std::string(" * ") + comp.name + std::string(": Error saving state!\n"));
 }
 
 void SysState_ComponentFreezeIn(pxInputStream& infp, SysState_Component comp)
 {
 	freezeData fP = {0, nullptr};
-	if (SysState_ComponentFreeze[comp](FREEZE_SIZE, &fP) != 0)
+	if (comp.freeze(FREEZE_SIZE, &fP) != 0)
 		fP.size = 0;
 
-	Console.Indent().WriteLn("Loading %s", SysState_ComponentName[comp]);
+	Console.Indent().WriteLn("Loading %s", comp.name);
 
 	if (!infp.IsOk() || !infp.Length())
 	{
 		// no state data to read, but component expects some state data?
 		// Issue a warning to console...
 		if (fP.size != 0)
-			Console.Indent().Warning("Warning: No data for %s found. Status may be unpredictable.", SysState_ComponentName[comp]);
+			Console.Indent().Warning("Warning: No data for %s found. Status may be unpredictable.", comp.name);
 
 		return;
 	}
@@ -93,14 +93,14 @@ void SysState_ComponentFreezeIn(pxInputStream& infp, SysState_Component comp)
 	fP.data = data.GetPtr();
 
 	infp.Read(fP.data, fP.size);
-	if (SysState_ComponentFreeze[comp](FREEZE_LOAD, &fP) != 0)
-		throw std::runtime_error(std::string(" * ") + SysState_ComponentName[comp] + std::string(": Error loading state!\n"));
+	if (comp.freeze(FREEZE_LOAD, &fP) != 0)
+		throw std::runtime_error(std::string(" * ") + comp.name + std::string(": Error loading state!\n"));
 }
 
 void SysState_ComponentFreezeOut(SaveStateBase& writer, SysState_Component comp)
 {
 	freezeData fP = {0, NULL};
-	if (SysState_ComponentFreeze[comp](FREEZE_SIZE, &fP) == 0)
+	if (comp.freeze(FREEZE_SIZE, &fP) == 0)
 	{
 		const int size = fP.size;
 		writer.PrepBlock(size);
