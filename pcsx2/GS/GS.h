@@ -22,6 +22,7 @@
 #include "Pcsx2Types.h"
 #include "GS_types.h"
 #include "Window/GSSetting.h"
+#include "SaveState.h"
 
 #ifdef _WIN32
 
