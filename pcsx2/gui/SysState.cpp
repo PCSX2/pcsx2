@@ -45,6 +45,70 @@ static const wxChar* EntryFilename_StateVersion = L"PCSX2 Savestate Version.id";
 static const wxChar* EntryFilename_Screenshot = L"Screenshot.jpg";
 static const wxChar* EntryFilename_InternalStructures = L"PCSX2 Internal Structures.dat";
 
+enum SysState_Component : unsigned char
+{
+	SPU2 = 0,
+	PAD = 1,
+	USB = 2,
+	GS = 3,
+};
+
+typedef int (*SysState_FreezeFunction)(int, freezeData*);
+static const SysState_FreezeFunction SysState_ComponentFreeze[] = {SPU2freeze, PADfreeze, USBfreeze, GSfreeze};
+static const char* SysState_ComponentName[] = {"SPU2", "PAD", "USB", "GS"};
+
+void SysState_ComponentFreezeOutRoot(void* dest, SysState_Component comp)
+{
+	freezeData fP = {0, (char*)dest};
+	if (SysState_ComponentFreeze[comp](FREEZE_SIZE, &fP) != 0)
+		return;
+	if (!fP.size)
+		return;
+
+	Console.Indent().WriteLn("Saving %s", SysState_ComponentName[comp]);
+
+	if (SysState_ComponentFreeze[comp](FREEZE_SAVE, &fP) != 0)
+		throw std::runtime_error(std::string(" * ") + SysState_ComponentName[comp] + std::string(": Error saving state!\n"));
+}
+
+void SysState_ComponentFreezeIn(pxInputStream& infp, SysState_Component comp)
+{
+	freezeData fP = {0, nullptr};
+	if (SysState_ComponentFreeze[comp](FREEZE_SIZE, &fP) != 0)
+		fP.size = 0;
+
+	Console.Indent().WriteLn("Loading %s", SysState_ComponentName[comp]);
+
+	if (!infp.IsOk() || !infp.Length())
+	{
+		// no state data to read, but component expects some state data?
+		// Issue a warning to console...
+		if (fP.size != 0)
+			Console.Indent().Warning("Warning: No data for %s found. Status may be unpredictable.", SysState_ComponentName[comp]);
+
+		return;
+	}
+
+	ScopedAlloc<s8> data(fP.size);
+	fP.data = data.GetPtr();
+
+	infp.Read(fP.data, fP.size);
+	if (SysState_ComponentFreeze[comp](FREEZE_LOAD, &fP) != 0)
+		throw std::runtime_error(std::string(" * ") + SysState_ComponentName[comp] + std::string(": Error loading state!\n"));
+}
+
+void SysState_ComponentFreezeOut(SaveStateBase& writer, SysState_Component comp)
+{
+	freezeData fP = {0, NULL};
+	if (SysState_ComponentFreeze[comp](FREEZE_SIZE, &fP) == 0)
+	{
+		const int size = fP.size;
+		writer.PrepBlock(size);
+		SysState_ComponentFreezeOutRoot(writer.GetBlockPtr(), comp);
+		writer.CommitBlock(size);
+	}
+	return;
+}
 
 // --------------------------------------------------------------------------------------
 //  BaseSavestateEntry
@@ -210,19 +274,8 @@ public:
 	virtual ~SavestateEntry_SPU2() = default;
 
 	wxString GetFilename() const { return L"SPU2.bin"; }
-	void FreezeIn(pxInputStream& reader) const { return SPU2DoFreezeIn(reader); }
-	void FreezeOut(SaveStateBase& writer) const
-	{
-		freezeData fP = {0, NULL};
-		if (SPU2freeze(FREEZE_SIZE, &fP) == 0)
-		{
-			const int size = fP.size;
-			writer.PrepBlock(size);
-			SPU2DoFreezeOut(writer.GetBlockPtr());
-			writer.CommitBlock(size);
-		}
-		return;
-	}
+	void FreezeIn(pxInputStream& reader) const { return SysState_ComponentFreezeIn(reader, SPU2); }
+	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, SPU2); }
 	bool IsRequired() const { return true; }
 };
 
@@ -232,19 +285,8 @@ public:
 	virtual ~SavestateEntry_USB() = default;
 
 	wxString GetFilename() const { return L"USB.bin"; }
-	void FreezeIn(pxInputStream& reader) const { return USBDoFreezeIn(reader); }
-	void FreezeOut(SaveStateBase& writer) const
-	{
-		freezeData fP = {0, NULL};
-		if (USBfreeze(FREEZE_SIZE, &fP) == 0)
-		{
-			const int size = fP.size;
-			writer.PrepBlock(size);
-			USBDoFreezeOut(writer.GetBlockPtr());
-			writer.CommitBlock(size);
-		}
-		return;
-	}
+	void FreezeIn(pxInputStream& reader) const { return SysState_ComponentFreezeIn(reader, USB); }
+	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, USB); }
 	bool IsRequired() const { return true; }
 };
 
@@ -254,19 +296,8 @@ public:
 	virtual ~SavestateEntry_PAD() = default;
 
 	wxString GetFilename() const { return L"PAD.bin"; }
-	void FreezeIn(pxInputStream& reader) const { return PADDoFreezeIn(reader); }
-	void FreezeOut(SaveStateBase& writer) const
-	{
-		freezeData fP = {0, NULL};
-		if (PADfreeze(FREEZE_SIZE, &fP) == 0)
-		{
-			const int size = fP.size;
-			writer.PrepBlock(size);
-			PADDoFreezeOut(writer.GetBlockPtr());
-			writer.CommitBlock(size);
-		}
-		return;
-	}
+	void FreezeIn(pxInputStream& reader) const { return SysState_ComponentFreezeIn(reader, PAD); }
+	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, PAD); }
 	bool IsRequired() const { return true; }
 };
 
@@ -276,19 +307,8 @@ public:
 	virtual ~SavestateEntry_GS() = default;
 
 	wxString GetFilename() const { return L"GS.bin"; }
-	void FreezeIn(pxInputStream& reader) const { return GSDoFreezeIn(reader); }
-	void FreezeOut(SaveStateBase& writer) const
-	{
-		GSFreezeData fP = {0, NULL};
-		if (GSfreeze(FREEZE_SIZE, &fP) == 0)
-		{
-			const int size = fP.size;
-			writer.PrepBlock(size);
-			GSDoFreezeOut(writer.GetBlockPtr());
-			writer.CommitBlock(size);
-		}
-		return;
-	}
+	void FreezeIn(pxInputStream& reader) const { return SysState_ComponentFreezeIn(reader, GS); }
+	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, GS); }
 	bool IsRequired() const { return true; }
 };
 
@@ -744,3 +764,4 @@ void StateCopy_LoadFromSlot(uint slot, bool isFromBackup)
 	UI_UpdateSysControls();
 #endif
 }
+

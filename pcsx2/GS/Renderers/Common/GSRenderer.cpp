@@ -446,9 +446,9 @@ void GSRenderer::VSync(int field)
 	{
 		if (!m_dump && m_shift_key)
 		{
-			GSFreezeData fd = {0, nullptr};
+			freezeData fd = {0, nullptr};
 			Freeze(&fd, true);
-			fd.data = new uint8[fd.size];
+			fd.data = new char[fd.size];
 			Freeze(&fd, false);
 
 			if (m_control_key)

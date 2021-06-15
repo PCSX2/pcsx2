@@ -402,9 +402,9 @@ namespace Implementations
 		{
 			ScopedCoreThreadPause paused_core;
 			std::unique_ptr<VmStateBuffer> plugstore;
-			GSFreezeData fP = {0, NULL};
+			freezeData fP = {0, NULL};
 			GSfreeze(FREEZE_SIZE, &fP);
-			u8* data = new u8[fP.size];
+			char* data = new char[fP.size];
 			fP.data = data;
 			if (CoreThread.HasActiveMachine())
 			{

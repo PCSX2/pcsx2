@@ -266,8 +266,8 @@ public:
 	void WriteCSR(uint32 csr) { m_regs->CSR.u32[1] = csr; }
 	void ReadFIFO(uint8* mem, int size);
 	template<int index> void Transfer(const uint8* mem, uint32 size);
-	int Freeze(GSFreezeData* fd, bool sizeonly);
-	int Defrost(const GSFreezeData* fd);
+	int Freeze(freezeData* fd, bool sizeonly);
+	int Defrost(const freezeData* fd);
 	void GetLastTag(uint32* tag)
 	{
 		*tag = m_path3hack;

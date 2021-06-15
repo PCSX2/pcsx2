@@ -31,7 +31,7 @@ GSDumpBase::~GSDumpBase()
 		fclose(m_gs);
 }
 
-void GSDumpBase::AddHeader(uint32 crc, const GSFreezeData& fd, const GSPrivRegSet* regs)
+void GSDumpBase::AddHeader(uint32 crc, const freezeData& fd, const GSPrivRegSet* regs)
 {
 	AppendRawData(&crc, 4);
 	AppendRawData(&fd.size, 4);
@@ -91,7 +91,7 @@ void GSDumpBase::Write(const void* data, size_t size)
 // GSDump implementation
 //////////////////////////////////////////////////////////////////////
 
-GSDump::GSDump(const std::string& fn, uint32 crc, const GSFreezeData& fd, const GSPrivRegSet* regs)
+GSDump::GSDump(const std::string& fn, uint32 crc, const freezeData& fd, const GSPrivRegSet* regs)
 	: GSDumpBase(fn + ".gs")
 {
 	AddHeader(crc, fd, regs);
@@ -111,7 +111,7 @@ void GSDump::AppendRawData(uint8 c)
 // GSDumpXz implementation
 //////////////////////////////////////////////////////////////////////
 
-GSDumpXz::GSDumpXz(const std::string& fn, uint32 crc, const GSFreezeData& fd, const GSPrivRegSet* regs)
+GSDumpXz::GSDumpXz(const std::string& fn, uint32 crc, const freezeData& fd, const GSPrivRegSet* regs)
 	: GSDumpBase(fn + ".gs.xz")
 {
 	m_strm = LZMA_STREAM_INIT;

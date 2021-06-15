@@ -1783,12 +1783,6 @@ struct GSKeyEventData
 	uint32 key, type;
 };
 
-struct GSFreezeData
-{
-	int size;
-	uint8* data;
-};
-
 // ST_WRITE is defined in libc, avoid this
 enum stateType
 {
@@ -1872,7 +1866,7 @@ void GSgifTransfer3(uint8* mem, uint32 size);
 void GSvsync(int field);
 uint32 GSmakeSnapshot(char* path);
 void GSkeyEvent(GSKeyEventData* e);
-int GSfreeze(int mode, GSFreezeData* data);
+int GSfreeze(int mode, freezeData* data);
 void GSconfigure();
 int GStest();
 void GSirqCallback(void (*irq)());
@@ -1967,7 +1961,3 @@ struct GSErrorGlVertexArrayTooSmall : GSError
 extern GSApp theApp;
 
 extern bool gsopen_done;
-
-
-void GSDoFreezeOut(void* dest);
-void GSDoFreezeIn(pxInputStream& infp);
