@@ -594,13 +594,13 @@ void SysMtgsThread::CloseGS()
 {
 	if (!m_Opened || GSDump::isRunning)
 		return;
-	GSclose();
 	m_Opened = false;
     Suspend();
 }
 
 void SysMtgsThread::OnSuspendInThread()
 {
+	GSclose();
 	GetSysExecutorThread().PostEvent(new SysExecEvent_InvokeMtgsThreadMethod(&SysMtgsThread::CloseGS));
 	_parent::OnSuspendInThread();
 }
