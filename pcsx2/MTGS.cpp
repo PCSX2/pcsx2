@@ -242,6 +242,8 @@ void SysMtgsThread::OpenGS()
 	if (m_Opened)
 		return;
 
+	sApp.OpenGsPanel();
+
 	memcpy(RingBuffer.Regs, PS2MEM_GS, sizeof(PS2MEM_GS));
 	GSsetBaseMem(RingBuffer.Regs);
 	GSirqCallback(dummyIrqCallback);
