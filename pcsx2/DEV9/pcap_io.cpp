@@ -298,6 +298,9 @@ int pcap_io_recv(void* packet, int max_len)
 
 	if ((pcap_next_ex(adhandle, &header, &pkt_data1)) > 0)
 	{
+		if (header->len > max_len)
+			return -1;
+
 		memcpy(packet, pkt_data1, header->len);
 
 		if (!pcap_io_switched)
