@@ -22,13 +22,12 @@ set(CommonFlags
     -Wno-parentheses
     -Wno-missing-braces
     -Wno-unknown-pragmas
-    -Wno-class-memaccess
     -DWX_PRECOMP
 	)
 
 if(GCC_VERSION VERSION_EQUAL "8.0" OR GCC_VERSION VERSION_GREATER "8.0")
 	# gs is pretty bad at this
-	set(CommonFlags ${CommonFlags} -Wno-packed-not-aligned)
+	set(CommonFlags ${CommonFlags} -Wno-packed-not-aligned -Wno-class-memaccess)
 endif()
 
 if ("${PGO}" STREQUAL "generate")
