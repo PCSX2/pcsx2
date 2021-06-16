@@ -925,6 +925,7 @@ void SysMtgsThread::WaitForOpen()
 void SysMtgsThread::Freeze(int mode, MTGS_FreezeData& data)
 {
 	Resume();
+	WaitForOpen();
 	SendPointerPacket(GS_RINGTYPE_FREEZE, mode, &data);
 	Resume();
 	WaitGS();

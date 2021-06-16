@@ -400,9 +400,15 @@ namespace Implementations
 			return;
 		if (renderswitch_delay == 0)
 		{
-			GetMTGS().Suspend();
+			freezeData fP = {0, nullptr};
+			MTGS_FreezeData sstate = {&fP, 0};
+			GetMTGS().Freeze(FREEZE_SIZE, sstate);
+			fP.data = new char[fP.size];
+			GetMTGS().Freeze(FREEZE_SAVE, sstate);
+			GetMTGS().Suspend(true);
 			renderswitch = !renderswitch;
-			GetMTGS().Resume();
+			GetMTGS().Freeze(FREEZE_LOAD, sstate);
+			delete[] fP.data;
 			renderswitch_delay = -1;
 		}
 	}
