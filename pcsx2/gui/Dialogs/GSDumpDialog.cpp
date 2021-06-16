@@ -781,7 +781,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 
 	GSsetGameCRC((int)crc, 0);
 
-	if (!GSfreeze(0, &fd))
+	if (GSfreeze(0, &fd))
 		GSDump::isRunning = false;
 	GSvsync(1);
 	GSreset();
