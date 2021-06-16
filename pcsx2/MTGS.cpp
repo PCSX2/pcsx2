@@ -601,6 +601,7 @@ void SysMtgsThread::CloseGS()
 void SysMtgsThread::OnSuspendInThread()
 {
 	GSclose();
+	sApp.CloseGsPanel();
 	GetSysExecutorThread().PostEvent(new SysExecEvent_InvokeMtgsThreadMethod(&SysMtgsThread::CloseGS));
 	_parent::OnSuspendInThread();
 }
@@ -925,8 +926,12 @@ void SysMtgsThread::WaitForOpen()
 void SysMtgsThread::Freeze(int mode, MTGS_FreezeData& data)
 {
 	Resume();
-	WaitForOpen();
 	SendPointerPacket(GS_RINGTYPE_FREEZE, mode, &data);
 	Resume();
+	// we are forced to wait for the semaphore to be released, otherwise
+	// we'll end up in a state where the main thread is stuck on WaitGS
+	// and MTGS stuck on sApp.OpenGSPanel, which post an event to the main
+	// thread. Obviously this ends up in a deadlock. -- govanify
+	WaitForOpen();
 	WaitGS();
 }
