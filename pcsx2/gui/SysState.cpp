@@ -51,10 +51,17 @@ struct SysState_Component
 	int (*freeze)(int, freezeData*);
 };
 
+int SysState_MTGSFreeze(int mode, freezeData* fP)
+{
+	MTGS_FreezeData sstate = {fP, 0};
+	GetMTGS().Freeze(mode, sstate);
+	return sstate.retval;
+}
+
 static constexpr SysState_Component SPU2{"SPU2", SPU2freeze};
 static constexpr SysState_Component PAD{"PAD", PADfreeze};
 static constexpr SysState_Component USB{"USB", USBfreeze};
-static constexpr SysState_Component GS{"GS", GSfreeze};
+static constexpr SysState_Component GS{"GS", SysState_MTGSFreeze};
 
 
 void SysState_ComponentFreezeOutRoot(void* dest, SysState_Component comp)
