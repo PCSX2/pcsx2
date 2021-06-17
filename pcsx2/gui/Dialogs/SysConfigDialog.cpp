@@ -198,6 +198,7 @@ Dialogs::SysConfigDialog::SysConfigDialog(wxWindow* parent)
 
 	CreateListbook( wxGetApp().GetImgList_Config() );
 	const AppImageIds::ConfigIds& cfgid( wxGetApp().GetImgId().Config );
+	SetIcons(wxGetApp().GetIconBundle());
 
 	//NOTE: all pages which are added to SysConfigDialog must be of class BaseApplicableConfigPanel or derived.
 	//		see comment inside UpdateGuiForPreset implementation for more info.
@@ -225,6 +226,7 @@ Dialogs::ComponentsConfigDialog::ComponentsConfigDialog(wxWindow* parent)
 
 	CreateListbook( wxGetApp().GetImgList_Config() );
 	const AppImageIds::ConfigIds& cfgid( wxGetApp().GetImgId().Config );
+	SetIcons(wxGetApp().GetIconBundle());
 
 	AddPage<BiosSelectorPanel>		( pxL("BIOS"),			cfgid.Cpu );
 	AddPage<StandardPathsPanel>		( pxL("Folders"),		cfgid.Paths );
