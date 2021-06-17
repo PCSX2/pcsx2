@@ -79,7 +79,7 @@ static const size_t recLutSize = (Ps2MemSize::MainRam + Ps2MemSize::Rom + Ps2Mem
 
 static uptr m_ConfiguredCacheReserve = 64;
 
-static u32* recConstBuf = NULL;			// 64-bit pseudo-immediates
+alignas(16) static u32 recConstBuf[RECCONSTBUF_SIZE]; // 64-bit pseudo-immediates
 static BASEBLOCK *recRAM = NULL;		// and the ptr to the blocks here
 static BASEBLOCK *recROM = NULL;		// and here
 static BASEBLOCK *recROM1 = NULL;		// also here
@@ -568,12 +568,6 @@ static void recAlloc()
 		recLUT_SetPage(recLUT, hwLUT, recROM2, 0xa000, i, i - 0x1e40);
 	}
 
-    if( recConstBuf == NULL )
-		recConstBuf = (u32*) _aligned_malloc( RECCONSTBUF_SIZE * sizeof(*recConstBuf), 16 );
-
-	if( recConstBuf == NULL )
-		throw Exception::OutOfMemory( L"R5900-32 SIMD Constants Buffer" );
-
 	if( s_pInstCache == NULL )
 	{
 		s_nInstCacheSize = 128;
@@ -645,7 +639,6 @@ static void recShutdown()
 
 	recRAM = recROM = recROM1 = recROM2 = NULL;
 
-	safe_aligned_free( recConstBuf );
 	safe_free( s_pInstCache );
 	s_nInstCacheSize = 0;
 
