@@ -503,8 +503,12 @@ void Pcsx2App::LogicalVsync()
 	{
 		if( ev->key == 0 ) break;
 
-		// Give PAD first try to handle keys.  If none of them handles the key, it will
-		// be passed to the main user interface.
+		// in the past, in the plugin api, all plugins would have a first chance at treating the 
+		// input here, with the ui eventually dealing with it otherwise. Obviously this solution
+		// sucked and we had multiple components battling for input processing. I managed to make
+		// most of them go away during the plugin merge but GS still needs to process the inputs,
+		// we might want to move all the input handling in a frontend-specific file in the future -- govanify
+		GSkeyEvent((GSKeyEventData*)ev);
 		PadKeyDispatch( *ev );
 	}
 }
