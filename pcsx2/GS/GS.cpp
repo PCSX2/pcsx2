@@ -75,11 +75,6 @@ void GSsetBaseMem(uint8* mem)
 	}
 }
 
-void GSsetSettingsDir(const char* dir)
-{
-	theApp.SetConfigDir(dir);
-}
-
 int GSinit()
 {
 	if (!GSUtil::CheckSSE())
@@ -91,7 +86,9 @@ int GSinit()
 	// can crash if the CPU does not support the instruction set.
 	// Initialise it here instead - it's not ideal since we have to strip the
 	// const type qualifier from all the affected variables.
+	theApp.SetConfigDir();
 	theApp.Init();
+
 
 	GSUtil::Init();
 
@@ -710,6 +707,7 @@ void GSconfigure()
 		if (!GSUtil::CheckSSE())
 			return;
 
+		theApp.SetConfigDir();
 		theApp.Init();
 
 #ifdef _WIN32
@@ -1492,8 +1490,6 @@ void GSApp::Init()
 
 	m_current_renderer_type = GSRendererType::Undefined;
 
-	if (m_ini.empty())
-		m_ini = "inis/GS.ini";
 	m_section = "Settings";
 
 #ifdef _WIN32
@@ -1781,23 +1777,13 @@ void* GSApp::GetModuleHandlePtr()
 	return s_hModule;
 }
 
-void GSApp::SetConfigDir(const char* dir)
+void GSApp::SetConfigDir()
 {
-	if (dir == NULL)
-	{
-		m_ini = "inis/GS.ini";
-	}
-	else
-	{
-		m_ini = dir;
-
-		if (m_ini[m_ini.length() - 1] != DIRECTORY_SEPARATOR)
-		{
-			m_ini += DIRECTORY_SEPARATOR;
-		}
-
-		m_ini += "GS.ini";
-	}
+	// we need to initialize the ini folder later at runtime than at theApp init, as
+	// core settings aren't populated yet, thus we do populate it if needed either when
+	// opening GS settings or init -- govanify
+	wxString iniName(L"GS.ini");
+	m_ini = GetSettingsFolder().Combine(iniName).GetFullPath();
 }
 
 std::string GSApp::GetConfigS(const char* entry)

@@ -1844,7 +1844,6 @@ const GSVector2i default_rt_size(1280, 1024);
 #endif
 
 void GSsetBaseMem(uint8* mem);
-void GSsetSettingsDir(const char* dir);
 int GSinit();
 void GSshutdown();
 void GSclose();
@@ -1882,13 +1881,13 @@ void GSsetExclusive(int enabled);
 
 class GSApp
 {
-	std::string m_ini;
 	std::string m_section;
 	std::map<std::string, std::string> m_default_configuration;
 	std::map<std::string, std::string> m_configuration_map;
 	GSRendererType m_current_renderer_type;
 
 public:
+	std::string m_ini;
 	GSApp();
 
 	void Init();
@@ -1929,7 +1928,7 @@ public:
 	void SetCurrentRendererType(GSRendererType type);
 	GSRendererType GetCurrentRendererType() const;
 
-	void SetConfigDir(const char* dir);
+	void SetConfigDir();
 
 	std::vector<GSSetting> m_gs_renderers;
 	std::vector<GSSetting> m_gs_interlace;
