@@ -239,6 +239,7 @@ DisassemblyDialog::DisassemblyDialog(wxWindow* parent) :
 	topSizer = new wxBoxSizer(wxVERTICAL);
 	wxPanel* panel = new wxPanel(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxTAB_TRAVERSAL, _("panel"));
 	panel->SetSizer(topSizer);
+	SetIcons(wxGetApp().GetIconBundle());
 
 	// create top row
 	wxBoxSizer* topRowSizer = new wxBoxSizer(wxHORIZONTAL);

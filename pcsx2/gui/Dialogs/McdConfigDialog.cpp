@@ -101,6 +101,7 @@ Dialogs::McdConfigDialog::McdConfigDialog( wxWindow* parent )
 	: BaseConfigurationDialog( parent, _("MemoryCard Manager"), 600 )
 {
 	m_panel_mcdlist	= new MemoryCardListPanel_Simple( this );
+	SetIcons(wxGetApp().GetIconBundle());
 
 	wxFlexGridSizer* s_flex=new wxFlexGridSizer(3,1, 0, 0);
 	s_flex->AddGrowableCol(0);
