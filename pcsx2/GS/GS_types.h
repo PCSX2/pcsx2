@@ -105,3 +105,29 @@ extern void vmfree(void* ptr, size_t size);
 #else
 #define CONSTINIT
 #endif
+
+#define ASSERT assert
+
+// sse
+#if defined(__GNUC__)
+
+// Convert gcc see define into GS (windows) define
+#if defined(__AVX2__)
+#if defined(__x86_64__)
+#define _M_SSE 0x500 // TODO
+#else
+#define _M_SSE 0x501
+#endif
+#elif defined(__AVX__)
+#define _M_SSE 0x500
+#elif defined(__SSE4_1__)
+#define _M_SSE 0x401
+#endif
+
+#endif
+
+#if !defined(_M_SSE) && (!defined(_WIN32) || defined(_M_AMD64) || defined(_M_IX86_FP) && _M_IX86_FP >= 2)
+
+#define _M_SSE 0x401
+
+#endif
