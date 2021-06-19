@@ -51,8 +51,7 @@
       <BaseConfiguration>Debug</BaseConfiguration>
     </PropertyGroup>
     <ItemGroup>
-      <ConfigCPU Include="Debug"/>
-      <!--ConfigCPU Include="Debug AVX2;Debug"/-->
+      <ConfigCPU Include="Debug AVX2;Debug"/>
     </ItemGroup>
   </Target>
   <Target Name="DevelAll">
@@ -60,8 +59,7 @@
       <BaseConfiguration>Devel</BaseConfiguration>
     </PropertyGroup>
     <ItemGroup>
-      <ConfigCPU Include="Devel"/>
-      <!--ConfigCPU Include="Devel AVX2;Devel"/-->
+      <ConfigCPU Include="Devel AVX2;Devel"/>
     </ItemGroup>
   </Target>
   <Target Name="ReleaseAll">
