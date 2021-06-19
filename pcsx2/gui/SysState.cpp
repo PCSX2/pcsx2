@@ -53,8 +53,10 @@ struct SysState_Component
 
 int SysState_MTGSFreeze(int mode, freezeData* fP)
 {
+	ScopedCoreThreadPause paused_core;
 	MTGS_FreezeData sstate = {fP, 0};
 	GetMTGS().Freeze(mode, sstate);
+	paused_core.AllowResume();
 	return sstate.retval;
 }
 

@@ -595,14 +595,13 @@ void SysMtgsThread::CloseGS()
 	if (!m_Opened || GSDump::isRunning)
 		return;
 	m_Opened = false;
-	Suspend();
+	GSclose();
 	sApp.CloseGsPanel();
 }
 
 void SysMtgsThread::OnSuspendInThread()
 {
-	GSclose();
-	GetSysExecutorThread().PostEvent(new SysExecEvent_InvokeMtgsThreadMethod(&SysMtgsThread::CloseGS));
+	CloseGS();
 	_parent::OnSuspendInThread();
 }
 
@@ -616,7 +615,7 @@ void SysMtgsThread::OnResumeInThread(bool isSuspended)
 
 void SysMtgsThread::OnCleanupInThread()
 {
-	GetSysExecutorThread().PostEvent(new SysExecEvent_InvokeMtgsThreadMethod(&SysMtgsThread::CloseGS));
+	CloseGS();
 	_parent::OnCleanupInThread();
 }
 
@@ -925,8 +924,9 @@ void SysMtgsThread::WaitForOpen()
 
 void SysMtgsThread::Freeze(int mode, MTGS_FreezeData& data)
 {
-	Resume();
+	pxAssertDev(!IsSelf(), "This method is only allowed from threads *not* named MTGS.");
 	SendPointerPacket(GS_RINGTYPE_FREEZE, mode, &data);
+	// make sure MTGS is processing the packet we send it
 	Resume();
 	// we are forced to wait for the semaphore to be released, otherwise
 	// we'll end up in a state where the main thread is stuck on WaitGS
