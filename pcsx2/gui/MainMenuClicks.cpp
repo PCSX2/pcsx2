@@ -90,7 +90,17 @@ void MainEmuFrame::Menu_PADSettings_Click(wxCommandEvent& event)
 
 void MainEmuFrame::Menu_GSSettings_Click(wxCommandEvent& event)
 {
+	ScopedCoreThreadPause paused_core;
+	freezeData fP = {0, nullptr};
+	MTGS_FreezeData sstate = {&fP, 0};
+	GetMTGS().Freeze(FREEZE_SIZE, sstate);
+	fP.data = new char[fP.size];
+	GetMTGS().Freeze(FREEZE_SAVE, sstate);
+	GetMTGS().Suspend(true);
 	GSconfigure();
+	GetMTGS().Freeze(FREEZE_LOAD, sstate);
+	delete[] fP.data;
+	paused_core.AllowResume();
 }
 
 void MainEmuFrame::Menu_WindowSettings_Click(wxCommandEvent& event)
