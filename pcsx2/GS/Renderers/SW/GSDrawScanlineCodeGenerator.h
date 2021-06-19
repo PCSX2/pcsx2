@@ -63,7 +63,7 @@ class GSDrawScanlineCodeGenerator : public GSCodeGenerator
 	void AlphaBlend();
 	void WriteFrame();
 	void ReadPixel(const Ymm& dst, const Ymm& temp, const RegLong& addr);
-	void WritePixel(const Ymm& src, const Ymm& temp, const RegLong& addr, const Reg32& mask, bool fast, int psm, int fz);
+	void WritePixel(const Ymm& src, const Ymm& temp, const RegLong& addr, const Xbyak::Reg32& mask, bool fast, int psm, int fz);
 	void WritePixel(const Xmm& src, const RegLong& addr, uint8 i, uint8 j, int psm);
 	void ReadTexel(int pixels, int mip_offset = 0);
 	void ReadTexel(const Ymm& dst, const Ymm& addr, uint8 i);
