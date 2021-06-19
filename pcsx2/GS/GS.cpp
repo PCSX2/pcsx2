@@ -701,7 +701,6 @@ int GSfreeze(int mode, freezeData* data)
 
 void GSconfigure()
 {
-	ScopedCoreThreadPause paused_core;
 	try
 	{
 		if (!GSUtil::CheckSSE())
@@ -747,7 +746,6 @@ void GSconfigure()
 	catch (GSRecoverableError)
 	{
 	}
-	paused_core.AllowResume();
 }
 
 int GStest()
