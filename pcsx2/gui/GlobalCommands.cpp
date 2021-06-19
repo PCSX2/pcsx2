@@ -400,6 +400,7 @@ namespace Implementations
 			return;
 		if (renderswitch_delay == 0)
 		{
+			ScopedCoreThreadPause paused_core;
 			freezeData fP = {0, nullptr};
 			MTGS_FreezeData sstate = {&fP, 0};
 			GetMTGS().Freeze(FREEZE_SIZE, sstate);
@@ -410,6 +411,7 @@ namespace Implementations
 			GetMTGS().Freeze(FREEZE_LOAD, sstate);
 			delete[] fP.data;
 			renderswitch_delay = -1;
+			paused_core.AllowResume();
 		}
 	}
 
