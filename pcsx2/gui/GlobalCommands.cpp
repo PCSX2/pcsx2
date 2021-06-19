@@ -37,7 +37,6 @@
 
 // renderswitch - tells GS to go into dx9 sw if "renderswitch" is set.
 bool renderswitch = false;
-uint renderswitch_delay = 0;
 
 extern bool switchAR;
 
@@ -398,8 +397,10 @@ namespace Implementations
 	{
 		if (GSDump::isRunning)
 			return;
-		if (renderswitch_delay == 0)
+		static bool reentrant = false;
+		if (!reentrant)
 		{
+			reentrant = true;
 			ScopedCoreThreadPause paused_core;
 			freezeData fP = {0, nullptr};
 			MTGS_FreezeData sstate = {&fP, 0};
@@ -410,8 +411,8 @@ namespace Implementations
 			renderswitch = !renderswitch;
 			GetMTGS().Freeze(FREEZE_LOAD, sstate);
 			delete[] fP.data;
-			renderswitch_delay = -1;
 			paused_core.AllowResume();
+			reentrant = false;
 		}
 	}
 

@@ -450,7 +450,6 @@ extern uint eecount_on_last_vdec;
 extern bool FMVstarted;
 extern bool EnableFMV;
 extern bool renderswitch;
-extern uint renderswitch_delay;
 
 void DoFmvSwitch(bool on)
 {
@@ -493,8 +492,6 @@ void Pcsx2App::LogicalVsync()
 			}
 		}
 	}
-
-	renderswitch_delay >>= 1;
 
 	if( (wxGetApp().GetGsFramePtr() != NULL) )
 		PADupdate(0);
