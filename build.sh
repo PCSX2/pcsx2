@@ -107,7 +107,7 @@ run_cppcheck()
 
     check="--enable=warning,style,missingInclude"
 
-    for d in pcsx2 common plugins/GSdx
+    for d in pcsx2 common
     do
         flat_d=$(echo $d | sed -e 's@/@_@')
         log=cpp_check__${flat_d}.log
@@ -131,7 +131,7 @@ run_clangtidy()
     # EXAMPLE
     #
     #   Modernize loop syntax, fix if old style found.
-    #     $ clang-tidy -p build_dev/compile_commands.json plugins/GSdx/GSTextureCache.cpp -checks='modernize-loop-convert' -fix
+    #     $ clang-tidy -p build_dev/compile_commands.json pcsx2/GS/Renderers/HW/GSTextureCache.cpp -checks='modernize-loop-convert' -fix
     #   Check all, tons of output:
     #     $ clang-tidy -p $compile_json $cpp -checks='*' -header-filter='.*'
     #   List of modernize checks:
@@ -256,7 +256,7 @@ for ARG in "$@"; do
             echo "--clang-tidy    : Do a clang-tidy analysis. Results can be found in build directory"
             echo "--cppcheck      : Do a cppcheck analysis. Results can be found in build directory"
             echo "--coverity      : Do a build for coverity"
-            echo "--vtune         : Plug GSdx with VTUNE"
+            echo "--vtune         : Plug GS with VTUNE"
             echo "--ftime-trace   : Analyse build time. Clang only."
 
             exit 1
