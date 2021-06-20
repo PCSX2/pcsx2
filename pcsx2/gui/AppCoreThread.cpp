@@ -862,8 +862,8 @@ ScopedCoreThreadPause::~ScopedCoreThreadPause()
 }
 
 ScopedCoreThreadPopup::ScopedCoreThreadPopup()
+	: m_scoped_core(std::unique_ptr<BaseScopedCoreThread>(new ScopedCoreThreadPause()))
 {
-	m_scoped_core = std::unique_ptr<BaseScopedCoreThread>(new ScopedCoreThreadPause());
 };
 
 void ScopedCoreThreadPopup::AllowResume()
