@@ -92,6 +92,8 @@ void MainEmuFrame::Menu_GSSettings_Click(wxCommandEvent& event)
 {
 	ScopedCoreThreadPause paused_core;
 	bool is_frame_closed = (wxGetApp().GetGsFramePtr() == nullptr);
+	if (!is_frame_closed)
+		is_frame_closed = !wxGetApp().GetGsFramePtr()->IsShown();
 	freezeData fP = {0, nullptr};
 	MTGS_FreezeData sstate = {&fP, 0};
 	GetMTGS().Freeze(FREEZE_SIZE, sstate);
