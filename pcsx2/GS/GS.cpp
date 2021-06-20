@@ -653,7 +653,7 @@ uint32 GSmakeSnapshot(char* path)
 				s = s + DIRECTORY_SEPARATOR;
 		}
 
-		return s_gs->MakeSnapshot(s + "gsdx");
+		return s_gs->MakeSnapshot(s + "gs");
 	}
 	catch (GSRecoverableError)
 	{
