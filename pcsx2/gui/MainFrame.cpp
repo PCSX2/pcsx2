@@ -36,6 +36,8 @@
 #include "Recording/InputRecordingControls.h"
 #endif
 
+extern std::atomic_bool init_gspanel;
+
 // ------------------------------------------------------------------------
 wxMenu* MainEmuFrame::MakeStatesSubMenu(int baseid, int loadBackupId) const
 {
@@ -154,6 +156,10 @@ bool MainEmuFrame::Destroy()
 //
 void MainEmuFrame::OnCloseWindow(wxCloseEvent& evt)
 {
+	// the main thread is busy suspending everything, so let's not try to call it 
+	// when closing the emulator
+	init_gspanel = false;
+
 	if (IsBeingDeleted())
 		return;
 
