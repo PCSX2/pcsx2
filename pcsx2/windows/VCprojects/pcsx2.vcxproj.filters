@@ -249,6 +249,9 @@
     <None Include="..\..\Docs\License.txt">
       <Filter>Docs</Filter>
     </None>
+    <None Include="..\..\ps2\eeHwTraceLog.inl">
+      <Filter>System\Ps2\EmotionEngine\Hardware</Filter>
+    </None>
     <None Include="..\..\x86\microVU_Alloc.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>
@@ -581,19 +584,19 @@
     <ClCompile Include="..\..\CDVD\CDVDisoReader.cpp">
       <Filter>System\Ps2\Iop\CDVD</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Ipu\IPU.cpp">
+    <ClCompile Include="..\..\IPU\IPU.cpp">
       <Filter>System\Ps2\IPU</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Ipu\IPU_Fifo.cpp">
+    <ClCompile Include="..\..\IPU\IPU_Fifo.cpp">
       <Filter>System\Ps2\IPU</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Ipu\yuv2rgb.cpp">
+    <ClCompile Include="..\..\IPU\yuv2rgb.cpp">
       <Filter>System\Ps2\IPU</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Ipu\mpeg2lib\Idct.cpp">
+    <ClCompile Include="..\..\IPU\mpeg2lib\Idct.cpp">
       <Filter>System\Ps2\IPU\mpeg2lib</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Ipu\mpeg2lib\Mpeg.cpp">
+    <ClCompile Include="..\..\IPU\mpeg2lib\Mpeg.cpp">
       <Filter>System\Ps2\IPU\mpeg2lib</Filter>
     </ClCompile>
     <ClCompile Include="..\..\GS.cpp">
@@ -794,14 +797,30 @@
     <ClCompile Include="..\..\Linux\LnxKeyCodes.cpp">
       <Filter>AppHost\Linux</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\gui\AppCorePlugins.cpp" />
-    <ClCompile Include="..\..\gui\ExecutorThread.cpp" />
-    <ClCompile Include="..\..\gui\UpdateUI.cpp" />
-    <ClCompile Include="..\..\gui\SysState.cpp" />
-    <ClCompile Include="..\..\ZipTools\thread_gzip.cpp" />
-    <ClCompile Include="..\..\ZipTools\thread_lzma.cpp" />
-    <ClCompile Include="..\..\GameDatabase.cpp" />
-    <ClCompile Include="..\..\Patch_Memory.cpp" />
+    <ClCompile Include="..\..\gui\AppCorePlugins.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gui\ExecutorThread.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gui\UpdateUI.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\gui\SysState.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ZipTools\thread_gzip.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\ZipTools\thread_lzma.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\GameDatabase.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Patch_Memory.cpp">
+      <Filter>Misc</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\IPU\IPUdma.cpp">
       <Filter>System\Ps2\IPU</Filter>
     </ClCompile>
@@ -827,6 +846,9 @@
       <Filter>System\Ps2\GS</Filter>
     </ClCompile>
     <ClCompile Include="..\FlatFileReaderWindows.cpp">
+      <Filter>System\ISO</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Darwin\DarwinFlatFileReader.cpp">
       <Filter>System\ISO</Filter>
     </ClCompile>
     <ClCompile Include="..\..\CDVD\InputIsoFile.cpp">
@@ -1021,7 +1043,7 @@
     <ClCompile Include="..\..\SPU2\Windows\ConfigSoundtouch.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\SPU2\debug.cpp">
+    <ClCompile Include="..\..\SPU2\Debug.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
     <ClCompile Include="..\..\SPU2\Linux\Dialogs.cpp">
@@ -1063,7 +1085,7 @@
     <ClCompile Include="..\..\SPU2\Timestretcher.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\SPU2\wavedump_wav.cpp">
+    <ClCompile Include="..\..\SPU2\Wavedump_wav.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
     <ClCompile Include="..\..\SPU2\SndOut_Portaudio.cpp">
@@ -1401,6 +1423,9 @@
     <ClInclude Include="..\..\System\SysThreads.h">
       <Filter>System\Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\System\RecTypes.h">
+      <Filter>System\Include</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\Counters.h">
       <Filter>System\Ps2\EmotionEngine</Filter>
     </ClInclude>
@@ -1411,6 +1436,9 @@
       <Filter>System\Ps2\EmotionEngine\Hardware</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Hw.h">
+      <Filter>System\Ps2\EmotionEngine\Hardware</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ps2\HwInternal.h">
       <Filter>System\Ps2\EmotionEngine\Hardware</Filter>
     </ClInclude>
     <ClInclude Include="..\..\Cache.h">
@@ -1483,6 +1511,9 @@
       <Filter>System\Ps2\EmotionEngine\EE</Filter>
     </ClInclude>
     <ClInclude Include="..\..\R5900OpcodeTables.h">
+      <Filter>System\Ps2\EmotionEngine\EE</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\COP0.h">
       <Filter>System\Ps2\EmotionEngine\EE</Filter>
     </ClInclude>
     <ClInclude Include="..\..\x86\iCOP0.h">
@@ -1566,19 +1597,19 @@
     <ClInclude Include="..\..\CDVD\CDVDisoReader.h">
       <Filter>System\Ps2\Iop\CDVD</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Ipu\IPU.h">
+    <ClInclude Include="..\..\IPU\IPU.h">
       <Filter>System\Ps2\IPU</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Ipu\IPU_Fifo.h">
+    <ClInclude Include="..\..\IPU\IPU_Fifo.h">
       <Filter>System\Ps2\IPU</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Ipu\yuv2rgb.h">
+    <ClInclude Include="..\..\IPU\yuv2rgb.h">
       <Filter>System\Ps2\IPU</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Ipu\mpeg2lib\Mpeg.h">
+    <ClInclude Include="..\..\IPU\mpeg2lib\Mpeg.h">
       <Filter>System\Ps2\IPU\mpeg2lib</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\Ipu\mpeg2lib\Vlc.h">
+    <ClInclude Include="..\..\IPU\mpeg2lib\Vlc.h">
       <Filter>System\Ps2\IPU\mpeg2lib</Filter>
     </ClInclude>
     <ClInclude Include="..\..\GS.h">
@@ -1600,6 +1631,9 @@
       <Filter>System\Ps2\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\ps2\BiosTools.h">
+      <Filter>System\Ps2\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\MemoryTypes.h">
       <Filter>System\Ps2\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\x86\iCore.h">
@@ -1677,22 +1711,55 @@
     <ClInclude Include="..\..\gui\MainFrame.h">
       <Filter>AppHost\Include</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\gui\MemoryCardFile.h">
+      <Filter>AppHost\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\MemoryCardFolder.h">
+      <Filter>AppHost\Include</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\gui\RecentIsoList.h">
       <Filter>AppHost\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gui\Saveslots.h">
       <Filter>AppHost\Include</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\gui\AppCorePlugins.h" />
-    <ClInclude Include="..\..\gui\AppCoreThread.h" />
-    <ClInclude Include="..\..\gui\GSFrame.h" />
-    <ClInclude Include="..\..\gui\pxEventThread.h" />
-    <ClInclude Include="..\..\ZipTools\ThreadedZipTools.h" />
-    <ClInclude Include="..\..\GameDatabase.h" />
+    <ClInclude Include="..\..\gui\AppAccelerators.h">
+      <Filter>AppHost\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\AppCorePlugins.h">
+      <Filter>AppHost\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\AppCoreThread.h">
+      <Filter>AppHost\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\GSFrame.h">
+      <Filter>AppHost\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\pxEventThread.h">
+      <Filter>AppHost\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\PathDefs.h">
+      <Filter>AppHost\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\SysForwardDefs.h">
+      <Filter>AppHost\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\ZipTools\ThreadedZipTools.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\GameDatabase.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\cheatscpp.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\IPU\IPUdma.h">
       <Filter>System\Ps2\IPU</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gui\AppGameDatabase.h">
+      <Filter>AppHost</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\gui\i18n.h">
       <Filter>AppHost</Filter>
     </ClInclude>
     <ClInclude Include="..\..\gui\Panels\MemoryCardPanels.h">
@@ -1761,6 +1828,9 @@
     <ClInclude Include="..\..\DebugTools\MipsStackWalk.h">
       <Filter>System\Ps2\Debug</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\CDVD\ChdFileReader.h">
+      <Filter>System\ISO</Filter>
+    </ClInclude>
     <ClInclude Include="..\..\CDVD\CsoFileReader.h">
       <Filter>System\ISO</Filter>
     </ClInclude>
@@ -1780,6 +1850,9 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="..\..\IopGte.h">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\sio_internal.h">
       <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
     <ClInclude Include="..\..\ps2\pgif.h">

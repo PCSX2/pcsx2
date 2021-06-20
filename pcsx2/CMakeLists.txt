@@ -214,7 +214,7 @@ set(pcsx2CDVDSources
 	CDVD/IsoFS/IsoFile.cpp
 	CDVD/IsoFS/IsoFSCDVD.cpp
 	CDVD/IsoFS/IsoFS.cpp
-    )
+	)
 
 # CDVD headers
 set(pcsx2CDVDHeaders
@@ -267,10 +267,10 @@ set(pcsx2SPU2Sources
 	SPU2/Linux/ConfigSoundTouch.cpp
 	SPU2/Linux/Dialogs.cpp
 	SPU2/wx/wxConfig.cpp
-    )
+	)
 
 if(PORTAUDIO_FOUND)
-    set(pcsx2SPU2Sources ${pcsx2SPU2Sources} SPU2/SndOut_Portaudio.cpp)
+	set(pcsx2SPU2Sources ${pcsx2SPU2Sources} SPU2/SndOut_Portaudio.cpp)
 endif()
 
 # SPU2 headers
@@ -482,11 +482,11 @@ set(pcsx2USBHeaders
 	USB/usb-hid/evdev/evdev.cpp
 	USB/usb-eyetoy/cam-linux.h
 	USB/qemu-usb/input-keymap-linux-to-qcode.h
-    )
+	)
 
 if(PULSEAUDIO_FOUND)
-    set(pcsx2USBSources ${pcsx2USBSources} USB/usb-mic/audiodev-pulse.cpp)
-    set(pcsx2USBHeaders ${pcsx2USBHeaders} USB/usb-mic/audiodev-pulse.h)
+	set(pcsx2USBSources ${pcsx2USBSources} USB/usb-mic/audiodev-pulse.cpp)
+	set(pcsx2USBHeaders ${pcsx2USBHeaders} USB/usb-mic/audiodev-pulse.h)
 endif()
 
 
@@ -535,7 +535,6 @@ set(pcsx2PADSources
     PAD/Linux/wx_dialog/JoystickConfiguration.cpp
     PAD/Linux/ini.cpp
     PAD/Linux/linux.cpp
-    ${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/resources_pad.cpp
     )
 
 # PAD/Linux headers
@@ -551,6 +550,10 @@ set(pcsx2PADHeaders
     PAD/Linux/wx_dialog/opPanel.h
     PAD/Linux/wx_dialog/GamepadConfiguration.h
     PAD/Linux/wx_dialog/JoystickConfiguration.h
+    )
+
+set(pcsx2PADResources
+    ${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/resources_pad.cpp
     ${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/resources_pad.h
     # images
     ${PADImgHeader}/analog.h
@@ -1014,7 +1017,9 @@ set(Common
 	${pcsx2DEV9Headers}
 	${pcsx2PADHeaders}
 	${pcsx2PADSources}
+	${pcsx2PADResources}
 	${pcsx2DebugToolsSources}
+	${pcsx2DebugToolsHeaders}
 	${pcsx2GuiSources}
 	${pcsx2GuiResources}
 	${pcsx2GuiHeaders}
@@ -1183,3 +1188,17 @@ if(NOT DISABLE_SETCAP)
         install(CODE "execute_process(COMMAND /bin/bash -c \"echo 'Enabling networking capability on Linux...';set -x; [ -f '${CMAKE_SOURCE_DIR}/bin/${Output}' ] && sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' '${CMAKE_SOURCE_DIR}/bin/${Output}'; set +x\")")
     endif()
 endif()
+
+source_groups_from_vcxproj_filters(windows/VCprojects/pcsx2.vcxproj.filters)
+
+# Unix-only files aren't in the vcxproj.filters
+source_group(System/Ps2/DEV9 REGULAR_EXPRESSION DEV9/*)
+source_group(System/Ps2/PAD FILES ${pcsx2PADSources} ${pcsx2PADHeaders})
+source_group(System/Ps2/SPU2 REGULAR_EXPRESSION SPU2/*)
+source_group(System/Ps2/USB REGULAR_EXPRESSION USB/*)
+
+# Generated resource files
+source_group(Resources/GUI FILES ${pcsx2GuiResources})
+source_group(Resources/PAD FILES ${pcsx2PADResources})
+source_group(Resources/Recording FILES ${pcsx2RecordingVirtualPadResources})
+source_group(Resources FILES ../bin/GameIndex.yaml gui/Resources/PCSX2.icns)
