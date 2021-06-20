@@ -51,6 +51,8 @@
 
 using namespace Dialogs;
 
+extern std::atomic_bool init_gspanel;
+
 void MainEmuFrame::Menu_SysSettings_Click(wxCommandEvent& event)
 {
 	AppOpenDialog<SysConfigDialog>(this);
@@ -91,20 +93,27 @@ void MainEmuFrame::Menu_PADSettings_Click(wxCommandEvent& event)
 void MainEmuFrame::Menu_GSSettings_Click(wxCommandEvent& event)
 {
 	ScopedCoreThreadPause paused_core;
-	bool is_frame_closed = (wxGetApp().GetGsFramePtr() == nullptr);
-	if (!is_frame_closed)
-		is_frame_closed = !wxGetApp().GetGsFramePtr()->IsShown();
+	bool is_frame_init = !(wxGetApp().GetGsFramePtr() == nullptr);
+	bool need_shutdown = GetMTGS().IsClosed();
+	init_gspanel = false;
 	freezeData fP = {0, nullptr};
 	MTGS_FreezeData sstate = {&fP, 0};
-	GetMTGS().Freeze(FREEZE_SIZE, sstate);
-	fP.data = new char[fP.size];
-	GetMTGS().Freeze(FREEZE_SAVE, sstate);
-	GetMTGS().Suspend(true);
+	if (is_frame_init)
+	{
+		GetMTGS().Freeze(FREEZE_SIZE, sstate);
+		fP.data = new char[fP.size];
+		GetMTGS().Freeze(FREEZE_SAVE, sstate);
+		GetMTGS().Suspend(true);
+	}
 	GSconfigure();
-	GetMTGS().Freeze(FREEZE_LOAD, sstate);
-	delete[] fP.data;
-	if (is_frame_closed)
-		wxGetApp().GetGsFramePtr()->Hide();
+	if (is_frame_init)
+	{
+		GetMTGS().Freeze(FREEZE_LOAD, sstate);
+		delete[] fP.data;
+	}
+	if (need_shutdown)
+		GetMTGS().Suspend(true);
+	init_gspanel = true;
 	paused_core.AllowResume();
 }
 

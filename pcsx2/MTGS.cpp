@@ -52,6 +52,7 @@ using namespace Threading;
 
 __aligned(32) MTGS_BufferedData RingBuffer;
 extern bool renderswitch;
+std::atomic_bool init_gspanel = true;
 
 
 #ifdef RINGBUF_DEBUG_STACK
@@ -242,7 +243,8 @@ void SysMtgsThread::OpenGS()
 	if (m_Opened)
 		return;
 
-	sApp.OpenGsPanel();
+	if (init_gspanel)
+		sApp.OpenGsPanel();
 
 	memcpy(RingBuffer.Regs, PS2MEM_GS, sizeof(PS2MEM_GS));
 	GSsetBaseMem(RingBuffer.Regs);
@@ -596,7 +598,8 @@ void SysMtgsThread::CloseGS()
 		return;
 	m_Opened = false;
 	GSclose();
-	sApp.CloseGsPanel();
+	if (init_gspanel)
+		sApp.CloseGsPanel();
 }
 
 void SysMtgsThread::OnSuspendInThread()
