@@ -17,6 +17,8 @@
 
 #include "GS.h"
 
+#include <xbyak/xbyak_util.h>
+
 class GSUtil
 {
 public:

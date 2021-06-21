@@ -25,10 +25,9 @@ typedef unsigned long long uint64;
 typedef signed long long int64;
 typedef signed long long sint64;
 
+// Makes sure that if anyone includes xbyak, it doesn't do anything bad
 #define MIE_INTEGER_TYPE_DEFINED
 #define XBYAK_ENABLE_OMITTED_OPERAND
-#include <xbyak/xbyak.h>
-#include <xbyak/xbyak_util.h>
 
 #include <cfloat>
 
