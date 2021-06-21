@@ -20,6 +20,8 @@
 
 #include "GS/Renderers/SW/GSScanlineEnvironment.h"
 
+#include <xbyak/xbyak_util.h>
+
 template <class KEY, class VALUE>
 class GSFunctionMap
 {
