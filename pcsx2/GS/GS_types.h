@@ -32,26 +32,18 @@ typedef signed long long sint64;
 
 #include <cfloat>
 
+// clang-format off
+
 #ifndef RESTRICT
-
-#ifdef __INTEL_COMPILER
-
-#define RESTRICT restrict
-
-#elif defined(_MSC_VER)
-
-#define RESTRICT __restrict
-
-#elif defined(__GNUC__)
-
-#define RESTRICT __restrict__
-
-#else
-
-#define RESTRICT
-
-#endif
-
+	#ifdef __INTEL_COMPILER
+		#define RESTRICT restrict
+	#elif defined(_MSC_VER)
+		#define RESTRICT __restrict
+	#elif defined(__GNUC__)
+		#define RESTRICT __restrict__
+	#else
+		#define RESTRICT
+	#endif
 #endif
 
 #ifdef _WIN32
@@ -101,9 +93,9 @@ extern void vmfree(void* ptr, size_t size);
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
 #ifdef __cpp_constinit
-#define CONSTINIT constinit
+	#define CONSTINIT constinit
 #else
-#define CONSTINIT
+	#define CONSTINIT
 #endif
 
 #define ASSERT assert
@@ -111,23 +103,23 @@ extern void vmfree(void* ptr, size_t size);
 // sse
 #if defined(__GNUC__)
 
-// Convert gcc see define into GS (windows) define
-#if defined(__AVX2__)
-#if defined(__x86_64__)
-#define _M_SSE 0x500 // TODO
-#else
-#define _M_SSE 0x501
-#endif
-#elif defined(__AVX__)
-#define _M_SSE 0x500
-#elif defined(__SSE4_1__)
-#define _M_SSE 0x401
-#endif
+	// Convert gcc see define into GS (windows) define
+	#if defined(__AVX2__)
+		#if defined(__x86_64__)
+			#define _M_SSE 0x500 // TODO
+		#else
+			#define _M_SSE 0x501
+		#endif
+	#elif defined(__AVX__)
+		#define _M_SSE 0x500
+	#elif defined(__SSE4_1__)
+		#define _M_SSE 0x401
+	#endif
 
 #endif
 
 #if !defined(_M_SSE) && (!defined(_WIN32) || defined(_M_AMD64) || defined(_M_IX86_FP) && _M_IX86_FP >= 2)
 
-#define _M_SSE 0x401
+	#define _M_SSE 0x401
 
 #endif
