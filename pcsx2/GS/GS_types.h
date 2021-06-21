@@ -92,8 +92,14 @@ extern void vmfree(void* ptr, size_t size);
 
 #define countof(a) (sizeof(a) / sizeof(a[0]))
 
+#ifndef __has_attribute
+	#define __has_attribute(x) 0
+#endif
+
 #ifdef __cpp_constinit
 	#define CONSTINIT constinit
+#elif __has_attribute(require_constant_initialization)
+	#define CONSTINIT __attribute__((require_constant_initialization))
 #else
 	#define CONSTINIT
 #endif
@@ -114,12 +120,12 @@ extern void vmfree(void* ptr, size_t size);
 		#define _M_SSE 0x500
 	#elif defined(__SSE4_1__)
 		#define _M_SSE 0x401
+	#else
+		#error PCSX2 requires compiling for at least SSE 4.1
 	#endif
 
-#endif
+#elif _M_SSE < 0x401
 
-#if !defined(_M_SSE) && (!defined(_WIN32) || defined(_M_AMD64) || defined(_M_IX86_FP) && _M_IX86_FP >= 2)
-
-	#define _M_SSE 0x401
+	#error PCSX2 requires compiling for at least SSE 4.1
 
 #endif
