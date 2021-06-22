@@ -65,7 +65,7 @@
     <Link>
       <LargeAddressAware>Yes</LargeAddressAware>
       <AdditionalDependencies>comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalDependencies>dxguid.lib;dinput8.lib;hid.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxguid.lib;dinput8.lib;hid.lib;PowrProf.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -681,6 +681,7 @@
     <ClCompile Include="gui\Panels\VideoPanel.cpp" />
     <ClCompile Include="windows\WinCompressNTFS.cpp" />
     <ClCompile Include="windows\WinConsolePipe.cpp" />
+    <ClCompile Include="windows\WinPowerProfile.cpp" />
     <ClCompile Include="Linux\LnxKeyCodes.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>

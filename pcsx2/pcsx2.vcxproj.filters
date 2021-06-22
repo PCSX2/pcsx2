@@ -824,6 +824,9 @@
     <ClCompile Include="windows\WinConsolePipe.cpp">
       <Filter>AppHost\Win32</Filter>
     </ClCompile>
+    <ClCompile Include="windows\WinPowerProfile.cpp">
+	  <Filter>AppHost\Win32</Filter>
+    </ClCompile>
     <ClCompile Include="Linux\LnxKeyCodes.cpp">
       <Filter>AppHost\Linux</Filter>
     </ClCompile>
