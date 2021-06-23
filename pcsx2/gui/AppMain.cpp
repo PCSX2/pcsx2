@@ -947,49 +947,29 @@ SysMainMemory& Pcsx2App::GetVmReserve()
 
 void Pcsx2App::OpenGsPanel()
 {
-	if( AppRpc_TryInvoke( &Pcsx2App::OpenGsPanel ) ) return;
+	if ( AppRpc_TryInvoke(&Pcsx2App::OpenGsPanel) ) return;
 
 	GSFrame* gsFrame = GetGsFramePtr();
-	if( gsFrame == NULL )
+
+	if (!gsFrame)
 	{
-		gsFrame = new GSFrame(GetAppName() );
+		gsFrame = new GSFrame(GetAppName());
 		m_id_GsFrame = gsFrame->GetId();
-
-		switch( wxGetApp().Overrides.GsWindowMode )
-		{
-			case GsWinMode_Windowed:
-				g_Conf->GSWindow.IsFullscreen = false;
-			break;
-
-			case GsWinMode_Fullscreen:
-				g_Conf->GSWindow.IsFullscreen = true;
-			break;
-
-			case GsWinMode_Unspecified:
-				g_Conf->GSWindow.IsFullscreen = g_Conf->GSWindow.DefaultToFullscreen;
-			break;
-		}
 	}
-	else
-	{
-		// This is an attempt to hackfix a bug in nvidia's 195.xx drivers: When using
-		// Aero and DX10, the driver fails to update the window after the device has changed,
-		// until some event like a hide/show or resize event is posted to the window.
-		// Presumably this forces the driver to re-cache the visibility info.
-		// Notes:
-		//   Doing an immediate hide/show didn't work.  So now I'm trying a resize.  Because
-		//   wxWidgets is "clever" (grr!) it optimizes out just force-setting the same size
-		//   over again, so instead I resize it to size-1 and then back to the original size.
-		//
-		// FIXME: Gsdx memory leaks in DX10 have been fixed.  This code may not be needed
-		// anymore.
-		
-		const wxSize oldsize( gsFrame->GetSize() );
-		wxSize newsize( oldsize );
-		newsize.DecBy(1);
 
-		gsFrame->SetSize( newsize );
-		gsFrame->SetSize( oldsize );
+	switch( wxGetApp().Overrides.GsWindowMode )
+	{
+		case GsWinMode_Windowed:
+			g_Conf->GSWindow.IsFullscreen = false;
+		break;
+
+		case GsWinMode_Fullscreen:
+			g_Conf->GSWindow.IsFullscreen = true;
+		break;
+
+		case GsWinMode_Unspecified:
+			g_Conf->GSWindow.IsFullscreen = g_Conf->GSWindow.DefaultToFullscreen;
+		break;
 	}
 	
 	pxAssertDev( !GetCorePlugins().IsOpen( PluginId_GS ), "GS Plugin must be closed prior to opening a new Gs Panel!" );
@@ -1046,11 +1026,10 @@ void Pcsx2App::CloseGsPanel()
 	if (AppRpc_TryInvoke(&Pcsx2App::CloseGsPanel))
 		return;
 
-	if (CloseViewportWithPlugins)
+	if (GSFrame* frame = GetGsFramePtr())
 	{
-		if (GSFrame* gsFrame = GetGsFramePtr())
-			if (GSPanel* woot = gsFrame->GetViewport())
-				woot->Destroy();
+		frame->Destroy();
+		m_id_GsFrame = wxID_ANY;
 	}
 }
 
