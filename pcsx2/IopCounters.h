@@ -24,7 +24,11 @@ struct psxCounter {
 	s32 CycleT;
 };
 
-#define NUM_COUNTERS 8
+#define NUM_COUNTERS 9
+
+#define CNT_SPU_SAMPLE 6
+#define CNT_USB 7
+#define CNT_SPU_DMA 8
 
 extern psxCounter psxCounters[NUM_COUNTERS];
 
