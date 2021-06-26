@@ -25,6 +25,8 @@ class GSBlock
 	static const GSVector4i m_r8mask;
 	static const GSVector4i m_r4mask;
 	static const GSVector4i m_w4mask;
+	static const GSVector4i m_r4hmask;
+	static const GSVector4i m_r4hmask_avx2;
 	static const GSVector4i m_palvec_mask;
 
 	static const GSVector4i m_avx2_r8mask1;
@@ -1865,6 +1867,7 @@ public:
 		GSVector8i p0, p1, p2, p3;
 		LoadPalVecs(pal, p0, p1, p2, p3);
 		GSVector8i maskvec(mask);
+		GSVector8i shufvec = GSVector8i::broadcast128(m_r4hmask_avx2);
 
 		GSVector8i v0, v1, v2, v3;
 
@@ -1880,12 +1883,7 @@ public:
 			v2 = s[i * 4 + 2] >> shift;
 			v3 = s[i * 4 + 3] >> shift;
 
-			GSVector8i::sw128(v0, v1);
-			GSVector8i::sw64(v0, v1);
-			GSVector8i::sw128(v2, v3);
-			GSVector8i::sw64(v2, v3);
-
-			GSVector8i all = v0.ps32(v1).pu16(v2.ps32(v3));
+			GSVector8i all = v0.ps32(v1).pu16(v2.ps32(v3)).xzyw().acbd().shuffle8(shufvec);
 			if (mask != 0xffffffff)
 				all = all & mask;
 
@@ -1914,9 +1912,7 @@ public:
 			v2 = s[i * 4 + 2] >> shift;
 			v3 = s[i * 4 + 3] >> shift;
 
-			GSVector4i::sw64(v0, v1, v2, v3);
-
-			GSVector4i all = v0.ps32(v1).pu16(v2.ps32(v3));
+			GSVector4i all = v0.ps32(v1).pu16(v2.ps32(v3)).shuffle8(m_r4hmask);
 			if (mask != 0xffffffff)
 				all = all & mask;
 
