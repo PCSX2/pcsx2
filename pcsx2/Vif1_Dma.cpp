@@ -20,6 +20,7 @@
 #include "Gif_Unit.h"
 #include "VUmicro.h"
 #include "newVif.h"
+#include "MTVU.h"
 
 u32 g_vif1Cycles = 0;
 
@@ -234,6 +235,9 @@ __fi void vif1VUFinish()
 {
 	if (VU0.VI[REG_VPU_STAT].UL & 0x500)
 	{
+		if(THREAD_VU1)
+			vu1Thread.Get_MTVUChanges();
+
 		CPU_INT(VIF_VU1_FINISH, 128);
 		return;
 	}

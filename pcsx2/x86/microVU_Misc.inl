@@ -180,6 +180,16 @@ static void __fc mVUwarningRegAccess(u32 prog, u32 pc) {
 	Console.Error("microVU0 Warning: Accessing VU1 Regs! [%04x] [%x]", pc, prog);
 }
 
+static void __fc mVUTBit() {
+	u32 old = vu1Thread.mtvuInterrupts.fetch_or(VU_Thread::InterruptFlagVUTBit, std::memory_order_release);
+	if (old & VU_Thread::InterruptFlagVUTBit)
+		DevCon.Warning("Old TBit not registered");
+}
+
+static void __fc mVUEBit() {
+	u32 old = vu1Thread.mtvuInterrupts.fetch_or(VU_Thread::InterruptFlagVUEBit, std::memory_order_release);
+}
+
 static inline u32 branchAddrN(const mV)
 {
 	pxAssumeDev(islowerOP, "MicroVU: Expected Lower OP code for valid branch addr.");

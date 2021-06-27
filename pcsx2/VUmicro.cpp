@@ -26,7 +26,8 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp) {
 
 	if (m_Idx && THREAD_VU1)
 	{
-		vu1Thread.Get_GSChanges();
+		vu1Thread.Get_MTVUChanges();
+		return;
 	}
 
 	if (!(stat & test)) return;
