@@ -73,8 +73,10 @@ void mVUinit(microVU& mVU, uint vuIndex) {
 
 // Resets Rec Data
 void mVUreset(microVU& mVU, bool resetReserve) {
+
 	if (THREAD_VU1)
 	{
+		DevCon.Warning("mVU Reset");
 		// If MTVU is toggled on during gameplay we need to flush the running VU1 program, else it gets in a mess
 		if (VU0.VI[REG_VPU_STAT].UL & 0x100)
 		{
@@ -346,6 +348,7 @@ void recMicroVU0::Reset() {
 void recMicroVU1::Reset() {
 	if(!pxAssertDev(m_Reserved, "MicroVU1 CPU Provider has not been reserved prior to reset!")) return;
 	vu1Thread.WaitVU();
+	vu1Thread.Get_MTVUChanges();
 	mVUreset(microVU1, true);
 }
 
@@ -388,7 +391,7 @@ void recMicroVU1::Execute(u32 cycles) {
 	VU1.VI[REG_TPC].UL <<= 3;
 	((mVUrecCall)microVU1.startFunct)(VU1.VI[REG_TPC].UL, cycles);
 	VU1.VI[REG_TPC].UL >>= 3;
-	if(microVU1.regs().flags & 0x4)
+	if(microVU1.regs().flags & 0x4 && !THREAD_VU1)
 	{
 		microVU1.regs().flags &= ~0x4;
 		hwIntcIrq(7);

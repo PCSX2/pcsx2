@@ -114,8 +114,10 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
 		if (!mVU.index || !THREAD_VU1) {
 			xAND(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? ~0x100 : ~0x001)); // VBS0/VBS1 flag
 		}
+		else
+			xFastCall((void*)mVUTBit);
 	}
-
+	
 	if (isEbit != 2) { // Save PC, and Jump to Exit Point
 		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
 		xJMP(mVU.exitFunct);
@@ -214,6 +216,8 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 		if (!mVU.index || !THREAD_VU1) {
 			xAND(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? ~0x100 : ~0x001)); // VBS0/VBS1 flag
 		}
+		else
+			xFastCall((void*)mVUEBit);
 	}
 
 	if (isEbit != 2 && isEbit != 3) { // Save PC, and Jump to Exit Point
@@ -280,8 +284,10 @@ void normBranch(mV, microFlagCycles& mFC) {
 		u32 tempPC = iPC;
 		xTEST(ptr32[&VU0.VI[REG_FBRST].UL], (isVU1 ? 0x400 : 0x4));
 		xForwardJump32 eJMP(Jcc_Zero);
-		xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x200 : 0x2));
-		xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
+		if (!mVU.index || !THREAD_VU1) {
+			xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x200 : 0x2));
+			xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
+		}
 		iPC = branchAddr(mVU)/4;
 		mVUDTendProgram(mVU, &mFC, 1);
 		eJMP.SetTarget();
@@ -292,8 +298,10 @@ void normBranch(mV, microFlagCycles& mFC) {
 		u32 tempPC = iPC;
 		xTEST(ptr32[&VU0.VI[REG_FBRST].UL], (isVU1 ? 0x800 : 0x8));
 		xForwardJump32 eJMP(Jcc_Zero);
-		xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x400 : 0x4));
-		xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
+		if (!mVU.index || !THREAD_VU1) {
+			xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x400 : 0x4));
+			xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
+		}
 		iPC = branchAddr(mVU)/4;
 		mVUDTendProgram(mVU, &mFC, 1);
 		eJMP.SetTarget();
@@ -393,8 +401,10 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
 		u32 tempPC = iPC;
 		xTEST(ptr32[&VU0.VI[REG_FBRST].UL], (isVU1 ? 0x800 : 0x8));
 		xForwardJump32 eJMP(Jcc_Zero);
-		xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x400 : 0x4));
-		xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
+		if (!mVU.index || !THREAD_VU1) {
+			xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x400 : 0x4));
+			xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
+		}
 		mVUDTendProgram(mVU, &mFC, 2);
 		xCMP(ptr16[&mVU.branch], 0);
 		xForwardJump32 tJMP(xInvertCond((JccComparisonType)JMPcc));
@@ -414,8 +424,10 @@ void condBranch(mV, microFlagCycles& mFC, int JMPcc) {
 		u32 tempPC = iPC;
 		xTEST(ptr32[&VU0.VI[REG_FBRST].UL], (isVU1 ? 0x400 : 0x4));
 		xForwardJump32 eJMP(Jcc_Zero);
-		xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x200 : 0x2));
-		xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
+		if (!mVU.index || !THREAD_VU1) {
+			xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x200 : 0x2));
+			xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
+		}
 		mVUDTendProgram(mVU, &mFC, 2);
 		xCMP(ptr16[&mVU.branch], 0);
 		xForwardJump32 dJMP(xInvertCond((JccComparisonType)JMPcc));
@@ -548,8 +560,10 @@ void normJump(mV, microFlagCycles& mFC) {
 	{
 		xTEST(ptr32[&VU0.VI[REG_FBRST].UL], (isVU1 ? 0x400 : 0x4));
 		xForwardJump32 eJMP(Jcc_Zero);
-		xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x200 : 0x2));
-		xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
+		if (!mVU.index || !THREAD_VU1) {
+			xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x200 : 0x2));
+			xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
+		}
 		mVUDTendProgram(mVU, &mFC, 2);
 		xMOV(gprT1, ptr32[&mVU.branch]);
 		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], gprT1);
@@ -560,8 +574,10 @@ void normJump(mV, microFlagCycles& mFC) {
 	{
 		xTEST(ptr32[&VU0.VI[REG_FBRST].UL], (isVU1 ? 0x800 : 0x8));
 		xForwardJump32 eJMP(Jcc_Zero);
-		xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x400 : 0x4));
-		xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
+		if (!mVU.index || !THREAD_VU1) {
+			xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x400 : 0x4));
+			xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
+		}
 		mVUDTendProgram(mVU, &mFC, 2);
 		xMOV(gprT1, ptr32[&mVU.branch]);
 		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], gprT1);
