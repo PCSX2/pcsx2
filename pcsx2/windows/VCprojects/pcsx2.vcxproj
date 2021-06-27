@@ -66,7 +66,7 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="PropertySheets">
-    <Import Project="vsprops\common.props" />
+    <Import Project="$(SolutionDir)common\vsprops\common.props" />
     <Import Project="..\..\..\common\vsprops\BaseProperties.props" />
     <Import Project="..\..\..\common\vsprops\3rdpartyDeps.props" />
     <Import Project="..\..\..\common\vsprops\pthreads.props" />
