@@ -43,9 +43,11 @@
 #include <sstream>
 #include <iomanip>
 
+//#define GSWindowScaleDebug
+
 static const KeyAcceleratorCode FULLSCREEN_TOGGLE_ACCELERATOR_GSPANEL=KeyAcceleratorCode( WXK_RETURN ).Alt();
 
-//#define GSWindowScaleDebug
+extern std::atomic_bool init_gspanel;
 
 void GSPanel::InitDefaultAccelerators()
 {
@@ -311,6 +313,11 @@ void GSPanel::OnResize(wxSizeEvent& event)
 
 void GSPanel::OnCloseWindow(wxCloseEvent& evt)
 {
+	// CoreThread pausing calls MTGS suspend which calls GSPanel close on
+	// the main thread leading to event starvation. This prevents regenerating
+	// a frame handle when the user closes the window, which prevents this race
+	// condition. -- govanify
+	init_gspanel = false;
 	CoreThread.Suspend();
 	evt.Skip();		// and close it.
 }
@@ -565,6 +572,8 @@ GSFrame::GSFrame( const wxString& title)
 
 void GSFrame::OnCloseWindow(wxCloseEvent& evt)
 {
+	// see GSPanel::OnCloseWindow
+	init_gspanel = false;
 	sApp.OnGsFrameClosed( GetId() );
 	Hide();		// and don't close it.
 }
