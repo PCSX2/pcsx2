@@ -40,6 +40,8 @@ static const int MCD_SIZE = 1024 * 8 * 16; // Legacy PSX card default size
 
 static const int MC2_MBSIZE = 1024 * 528 * 2; // Size of a single megabyte of card data
 
+bool FileMcd_Open = false;
+
 // ECC code ported from mymc
 // https://sourceforge.net/p/mymc-opl/code/ci/master/tree/ps2mc_ecc.py
 // Public domain license
@@ -596,6 +598,9 @@ uint FileMcd_ConvertToSlot(uint port, uint slot)
 
 void FileMcd_EmuOpen()
 {
+	if(FileMcd_Open)
+		return;
+	FileMcd_Open = true;
 	// detect inserted memory card types
 	for (uint slot = 0; slot < 8; ++slot)
 	{
@@ -624,6 +629,9 @@ void FileMcd_EmuOpen()
 
 void FileMcd_EmuClose()
 {
+	if(!FileMcd_Open)
+		return;
+	FileMcd_Open = false;
 	Mcd::implFolder.Close();
 	Mcd::impl.Close();
 }
