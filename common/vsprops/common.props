@@ -5,6 +5,14 @@
     <SvnRootDir>$(ProjectRootDir)\..</SvnRootDir>
     <SvnCommonDir>$(SvnRootDir)\common</SvnCommonDir>
     <PcsxSubsection />
+    <SSEString />
+    <SSEString Condition="$(Configuration.Contains(AVX2))">-avx2</SSEString>
+    <ArchString />
+    <ArchString Condition="'$(Platform)'=='x64'">x64</ArchString>
+    <BuildString />
+    <BuildString Condition="$(Configuration.Contains(Debug))">-dbg</BuildString>
+    <BuildString Condition="$(Configuration.Contains(Devel))">-dev</BuildString>
+    <EXEString>$(ProjectName)$(ArchString)$(SSEString)$(BuildString)</EXEString>
   </PropertyGroup>
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30128.1</_ProjectFileVersion>
