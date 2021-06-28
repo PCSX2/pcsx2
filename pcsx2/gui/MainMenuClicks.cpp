@@ -55,7 +55,7 @@ extern std::atomic_bool init_gspanel;
 
 void MainEmuFrame::Menu_SysSettings_Click(wxCommandEvent& event)
 {
-	AppOpenDialog<SysConfigDialog>(this);
+	AppOpenModalDialog<SysConfigDialog>(wxEmptyString, this);
 }
 
 void MainEmuFrame::Menu_IPC_Settings_Click(wxCommandEvent& event)
