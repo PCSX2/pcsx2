@@ -521,7 +521,7 @@ s32 FileMemoryCard::Save(uint slot, const u8* src, u32 adr, int size)
 		{
 			wxString name, ext;
 			wxFileName::SplitPath(m_file[slot].GetName(), NULL, NULL, &name, &ext);
-			OSDlog(Color_StrongYellow, false, "Memory Card %s written.", (const char*)(name + "." + ext).c_str());
+			OSDlog(Color_StrongYellow, true, "Memory Card %s written.", (const char*)(name + "." + ext).c_str());
 			last = std::chrono::system_clock::now();
 		}
 		return 1;
