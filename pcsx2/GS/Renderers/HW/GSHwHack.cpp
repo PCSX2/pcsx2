@@ -478,56 +478,6 @@ bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_ZettaiZetsumeiToshi2(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (fi.TME && fi.TPSM == PSM_PSMCT16S && (fi.FBMSK >= 0x6FFFFFFF || fi.FBMSK == 0))
-		{
-			skip = 1000;
-		}
-		else if (fi.TME && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0xFF000000)
-		{
-			skip = 2; // Fog
-		}
-		else if ((fi.FBP | fi.TBP0) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x3FFF)
-		{
-			// Note start of the effect (texture shuffle) is fixed in openGL but maybe not the extra draw
-			// call....
-			skip = 1000;
-		}
-	}
-	else
-	{
-		if (!fi.TME && fi.TPSM == PSM_PSMCT32 && fi.FBP == 0x1180 && fi.TBP0 == 0x1180 && (fi.FBMSK == 0))
-		{
-			skip = 0;
-		}
-		if (fi.TME && fi.TPSM == PSM_PSMT4 && fi.FBP && (fi.TBP0 != 0x3753))
-		{
-			skip = 0;
-		}
-		if (fi.TME && fi.TPSM == PSM_PSMT8H && fi.FBP == 0x22e0 && fi.TBP0 == 0x36e0)
-		{
-			skip = 0;
-		}
-		if (!fi.TME && fi.TPSM == PSM_PSMT8H && fi.FBP == 0x22e0)
-		{
-			skip = 0;
-		}
-		if (fi.TME && fi.TPSM == PSM_PSMT8 && (fi.FBP == 0x1180 || fi.FBP == 0) && (fi.TBP0 != 0x3764 && fi.TBP0 != 0x370f))
-		{
-			skip = 0;
-		}
-		if (fi.TME && fi.TPSM == PSM_PSMCT16S && (fi.FBP == 0x1180))
-		{
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_SakuraWarsSoLongMyLove(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -942,7 +892,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::UrbanReign] = GSC_UrbanReign;
 		lut[CRC::WildArms4] = GSC_WildArmsGames;
 		lut[CRC::WildArms5] = GSC_WildArmsGames;
-		lut[CRC::ZettaiZetsumeiToshi2] = GSC_ZettaiZetsumeiToshi2;
 
 		// Channel Effect
 		lut[CRC::GiTS] = GSC_GiTS;
