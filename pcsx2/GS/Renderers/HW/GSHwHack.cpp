@@ -798,20 +798,6 @@ bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SoTC(const GSFrameInfo& fi, int& skip)
-{
-	// Not needed anymore? What did it fix anyway? (rama)
-	if (skip == 0)
-	{
-		if (fi.TME /*&& fi.FBP == 0x03d80*/ && fi.FPSM == 0 && fi.TBP0 == 0x03fc0 && fi.TPSM == 1)
-		{
-			skip = 48; // Removes sky bloom
-		}
-	}
-
-	return true;
-}
-
 bool GSC_FFXGames(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -1010,7 +996,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::FFXII] = GSC_FFXGames;
 		lut[CRC::RedDeadRevolver] = GSC_RedDeadRevolver;
 		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
-		lut[CRC::SoTC] = GSC_SoTC;
 		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
 
 		// Upscaling issues
