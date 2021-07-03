@@ -13,17 +13,17 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-/* Client code example for interfacing with the IPC interface is available 
- * here: https://code.govanify.com/govanify/pcsx2_ipc/ */
+/* A reference client implementation for interfacing with PINE is available 
+ * here: https://code.govanify.com/govanify/pine/ */
 
 #pragma once
 
-// IPC uses a concept of "slot" to be able to communicate with multiple
+// PINE uses a concept of "slot" to be able to communicate with multiple
 // emulators at the same time, each slot should be unique to each emulator to
 // allow PnP and configurable by the end user so that several runs don't
 // conflict with each others
-#define IPC_DEFAULT_SLOT 28011
-#define IPC_EMULATOR_NAME "pcsx2"
+#define PINE_DEFAULT_SLOT 28011
+#define PINE_EMULATOR_NAME "pcsx2"
 
 #include "Utilities/PersistentThread.h"
 #include "System/SysThreads.h"
@@ -35,7 +35,7 @@
 
 using namespace Threading;
 
-class SocketIPC : public pxThread
+class PINEServer : public pxThread
 {
 	// parent thread
 	typedef pxThread _parent;
@@ -89,22 +89,22 @@ protected:
 	 */
 	enum IPCCommand : unsigned char
 	{
-		MsgRead8 = 0,           /**< Read 8 bit value to memory. */
-		MsgRead16 = 1,          /**< Read 16 bit value to memory. */
-		MsgRead32 = 2,          /**< Read 32 bit value to memory. */
-		MsgRead64 = 3,          /**< Read 64 bit value to memory. */
-		MsgWrite8 = 4,          /**< Write 8 bit value to memory. */
-		MsgWrite16 = 5,         /**< Write 16 bit value to memory. */
-		MsgWrite32 = 6,         /**< Write 32 bit value to memory. */
-		MsgWrite64 = 7,         /**< Write 64 bit value to memory. */
-		MsgVersion = 8,         /**< Returns PCSX2 version. */
-		MsgSaveState = 9,       /**< Saves a savestate. */
-		MsgLoadState = 0xA,     /**< Loads a savestate. */
-		MsgTitle = 0xB,         /**< Returns the game title. */
-		MsgID = 0xC,            /**< Returns the game ID. */
-		MsgUUID = 0xD,          /**< Returns the game UUID. */
-		MsgGameVersion = 0xE,   /**< Returns the game verion. */
-		MsgStatus = 0xF,        /**< Returns the emulator status. */
+		MsgRead8 = 0, /**< Read 8 bit value to memory. */
+		MsgRead16 = 1, /**< Read 16 bit value to memory. */
+		MsgRead32 = 2, /**< Read 32 bit value to memory. */
+		MsgRead64 = 3, /**< Read 64 bit value to memory. */
+		MsgWrite8 = 4, /**< Write 8 bit value to memory. */
+		MsgWrite16 = 5, /**< Write 16 bit value to memory. */
+		MsgWrite32 = 6, /**< Write 32 bit value to memory. */
+		MsgWrite64 = 7, /**< Write 64 bit value to memory. */
+		MsgVersion = 8, /**< Returns PCSX2 version. */
+		MsgSaveState = 9, /**< Saves a savestate. */
+		MsgLoadState = 0xA, /**< Loads a savestate. */
+		MsgTitle = 0xB, /**< Returns the game title. */
+		MsgID = 0xC, /**< Returns the game ID. */
+		MsgUUID = 0xD, /**< Returns the game UUID. */
+		MsgGameVersion = 0xE, /**< Returns the game verion. */
+		MsgStatus = 0xF, /**< Returns the emulator status. */
 		MsgUnimplemented = 0xFF /**< Unimplemented IPC message. */
 	};
 
@@ -115,7 +115,7 @@ protected:
 	enum EmuStatus : uint32_t
 	{
 		Running = 0, /**< Game is running */
-		Paused = 1,  /**< Game is paused */
+		Paused = 1, /**< Game is paused */
 		Shutdown = 2 /**< Game is shutdown */
 	};
 
@@ -125,7 +125,7 @@ protected:
 	 */
 	struct IPCBuffer
 	{
-		int size;     /**< Size of the buffer. */
+		int size; /**< Size of the buffer. */
 		char* buffer; /**< Buffer. */
 	};
 
@@ -137,7 +137,7 @@ protected:
 	 */
 	enum IPCResult : unsigned char
 	{
-		IPC_OK = 0,     /**< IPC command successfully completed. */
+		IPC_OK = 0, /**< IPC command successfully completed. */
 		IPC_FAIL = 0xFF /**< IPC command failed to complete. */
 	};
 
@@ -218,7 +218,7 @@ public:
 	bool m_end = true;
 
 	/* Initializers */
-	SocketIPC(SysCoreThread* vm, unsigned int slot = IPC_DEFAULT_SLOT);
-	virtual ~SocketIPC();
+	PINEServer(SysCoreThread* vm, unsigned int slot = PINE_DEFAULT_SLOT);
+	virtual ~PINEServer();
 
 }; // class SocketIPC

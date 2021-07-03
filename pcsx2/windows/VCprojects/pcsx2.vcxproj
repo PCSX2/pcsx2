@@ -315,13 +315,13 @@
     <ClCompile Include="..\..\gui\Debugger\DebugEvents.cpp" />
     <ClCompile Include="..\..\gui\Debugger\DebuggerLists.cpp" />
     <ClCompile Include="..\..\gui\Debugger\DisassemblyDialog.cpp" />
-    <ClCompile Include="..\..\gui\Dialogs\IPCDialog.cpp" />
+    <ClCompile Include="..\..\gui\Dialogs\PINEDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\GSDumpDialog.cpp" />
     <ClCompile Include="..\..\gui\Dialogs\McdConfigDialog.cpp" />
     <ClCompile Include="..\..\gui\DriveList.cpp" />
     <ClCompile Include="..\..\gui\Panels\MemoryCardListView.cpp" />
     <ClCompile Include="..\..\IopGte.cpp" />
-    <ClCompile Include="..\..\IPC.cpp" />
+    <ClCompile Include="..\..\PINE.cpp" />
     <ClCompile Include="..\..\FW.cpp" />
     <ClCompile Include="..\..\PAD\Windows\PADConfig.cpp" />
     <ClCompile Include="..\..\PAD\Windows\DeviceEnumerator.cpp" />
@@ -693,7 +693,7 @@
     <ClInclude Include="..\..\gui\Debugger\DisassemblyDialog.h" />
     <ClInclude Include="..\..\gui\Panels\MemoryCardPanels.h" />
     <ClInclude Include="..\..\IopGte.h" />
-    <ClInclude Include="..\..\IPC.h" />
+    <ClInclude Include="..\..\PINE.h" />
     <ClInclude Include="..\..\FW.h" />
     <ClInclude Include="..\..\PAD\Windows\PAD.h" />
     <ClInclude Include="..\..\PAD\Windows\PADConfig.h" />

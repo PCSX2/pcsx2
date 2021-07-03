@@ -56,9 +56,9 @@ void MainEmuFrame::Menu_SysSettings_Click(wxCommandEvent& event)
 	AppOpenDialog<SysConfigDialog>(this);
 }
 
-void MainEmuFrame::Menu_IPC_Settings_Click(wxCommandEvent& event)
+void MainEmuFrame::Menu_PINE_Settings_Click(wxCommandEvent& event)
 {
-	AppOpenDialog<IPCDialog>(this);
+	AppOpenDialog<PINEDialog>(this);
 }
 
 void MainEmuFrame::Menu_AudioSettings_Click(wxCommandEvent& event)
@@ -617,9 +617,9 @@ void MainEmuFrame::Menu_EnableCheats_Click(wxCommandEvent&)
 	AppSaveSettings();
 }
 
-void MainEmuFrame::Menu_IPC_Enable_Click(wxCommandEvent&)
+void MainEmuFrame::Menu_PINE_Enable_Click(wxCommandEvent&)
 {
-	g_Conf->EmuOptions.EnableIPC = GetMenuBar()->IsChecked(MenuId_IPC_Enable);
+	g_Conf->EmuOptions.EnablePINE = GetMenuBar()->IsChecked(MenuId_PINE_Enable);
 	AppApplySettings();
 	AppSaveSettings();
 }

@@ -26,7 +26,7 @@
 #include "AppConfig.h"
 
 using namespace pxSizerFlags;
-/* This dialog currently assumes the IPC server is started when launching a
+/* This dialog currently assumes the PINE server is started when launching a
  * game, as such we can allow the IPC Settings window to change the slot in a
  * volatile fashion so that it returns to the default but you can change it at
  * each restart of the emulator to allow for multiple emulator sessions.
@@ -34,25 +34,25 @@ using namespace pxSizerFlags;
  */
 
 // --------------------------------------------------------------------------------------
-//  IPCDialog  Implementation
+//  PINEDialog  Implementation
 // --------------------------------------------------------------------------------------
 
-Dialogs::IPCDialog::IPCDialog(wxWindow* parent)
-	: wxDialogWithHelpers(parent, _("IPC Settings"), pxDialogFlags())
+Dialogs::PINEDialog::PINEDialog(wxWindow* parent)
+	: wxDialogWithHelpers(parent, _("PINE Settings"), pxDialogFlags())
 {
-	wxTextCtrl* ipc_slot = new wxTextCtrl(this, wxID_ANY, wxString::Format(wxT("%u"), IPCSettings::slot), wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	ipc_slot->Bind(wxEVT_TEXT_ENTER, &Dialogs::IPCDialog::OnConfirm, this);
+	wxTextCtrl* ipc_slot = new wxTextCtrl(this, wxID_ANY, wxString::Format(wxT("%u"), PINESettings::slot), wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
+	ipc_slot->Bind(wxEVT_TEXT_ENTER, &Dialogs::PINEDialog::OnConfirm, this);
 
-	*this += new wxStaticText(this, wxID_ANY, _("IPC Slot"));
+	*this += new wxStaticText(this, wxID_ANY, _("PINE Slot"));
 	*this += ipc_slot;
 }
 
-void Dialogs::IPCDialog::OnConfirm(wxCommandEvent& evt)
+void Dialogs::PINEDialog::OnConfirm(wxCommandEvent& evt)
 {
 	wxTextCtrl* obj = static_cast<wxTextCtrl*>(evt.GetEventObject());
 	if (obj != nullptr)
 	{
-		IPCSettings::slot = (unsigned int)atoi(obj->GetValue().ToUTF8().data());
+		PINESettings::slot = (unsigned int)atoi(obj->GetValue().ToUTF8().data());
 		Destroy();
 	}
 }

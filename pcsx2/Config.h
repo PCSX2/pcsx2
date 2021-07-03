@@ -462,7 +462,7 @@ struct Pcsx2Config
 			CdvdShareWrite		:1,		// allows the iso to be modified while it's loaded
 			EnablePatches		:1,		// enables patch detection and application
 			EnableCheats		:1,		// enables cheat detection and application
-			EnableIPC		    :1,		// enables inter-process communication 
+			EnablePINE		    :1,		// enables inter-process communication through PINE
 			EnableWideScreenPatches		:1,
 #ifndef DISABLE_RECORDING
 			EnableRecordingTools :1,

@@ -213,10 +213,10 @@ enum MenuIdentifiers
 	MenuId_Recording_VirtualPad_Port1,
 #endif
 
-	// IPC Subsection
-	MenuId_IPC,
-	MenuId_IPC_Enable,
-	MenuId_IPC_Settings,
+	//  Subsection
+	MenuId_PINE,
+	MenuId_PINE_Enable,
+	MenuId_PINE_Settings,
 
 };
 

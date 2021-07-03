@@ -250,8 +250,8 @@ void MainEmuFrame::ConnectMenus()
 
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnablePatches_Click, this, MenuId_EnablePatches);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableCheats_Click, this, MenuId_EnableCheats);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_IPC_Enable_Click, this, MenuId_IPC_Enable);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_IPC_Settings_Click, this, MenuId_IPC_Settings);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_PINE_Enable_Click, this, MenuId_PINE_Enable);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_PINE_Settings_Click, this, MenuId_PINE_Settings);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableWideScreenPatches_Click, this, MenuId_EnableWideScreenPatches);
 #ifndef DISABLE_RECORDING
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_EnableRecordingTools_Click, this, MenuId_EnableInputRecording);
@@ -414,12 +414,12 @@ void MainEmuFrame::CreatePcsx2Menu()
 	m_GameSettingsSubmenu.Append(MenuId_EnableCheats, _("Enable &Cheats"),
 		_("Use cheats otherwise known as pnachs from the cheats folder."), wxITEM_CHECK);
 
-	m_GameSettingsSubmenu.Append(MenuId_IPC, _("Configure &IPC"), &m_submenuIPC);
+	m_GameSettingsSubmenu.Append(MenuId_PINE, _("Configure &PINE"), &m_submenuPINE);
 
-	m_submenuIPC.Append(MenuId_IPC_Enable, _("&Enable IPC"),
+	m_submenuPINE.Append(MenuId_PINE_Enable, _("&Enable PINE"),
 		wxEmptyString, wxITEM_CHECK);
 
-	m_submenuIPC.Append(MenuId_IPC_Settings, _("IPC &Settings"));
+	m_submenuPINE.Append(MenuId_PINE_Settings, _("PINE &Settings"));
 
 	m_GameSettingsSubmenu.Append(MenuId_EnableWideScreenPatches, _("Enable &Widescreen Patches"),
 		_("Enabling Widescreen Patches may occasionally cause issues."), wxITEM_CHECK);
@@ -589,7 +589,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	, m_menuWindow(*new wxMenu())
 	, m_menuCapture(*new wxMenu())
 	, m_submenuVideoCapture(*new wxMenu())
-	, m_submenuIPC(*new wxMenu())
+	, m_submenuPINE(*new wxMenu())
 	, m_submenuScreenshot(*new wxMenu())
 #ifndef DISABLE_RECORDING
 	, m_menuRecording(*new wxMenu())
@@ -848,7 +848,7 @@ void MainEmuFrame::ApplyConfigToGui(AppConfig& configToApply, int flags)
 	{ //these should not be affected by presets
 		menubar.Check(MenuId_EnableBackupStates, configToApply.EmuOptions.BackupSavestate);
 		menubar.Check(MenuId_EnableCheats, configToApply.EmuOptions.EnableCheats);
-		menubar.Check(MenuId_IPC_Enable, configToApply.EmuOptions.EnableIPC);
+		menubar.Check(MenuId_PINE_Enable, configToApply.EmuOptions.EnablePINE);
 		menubar.Check(MenuId_EnableWideScreenPatches, configToApply.EmuOptions.EnableWideScreenPatches);
 		menubar.Check(MenuId_Capture_Video_IncludeAudio, configToApply.AudioCapture.EnableAudio);
 #ifndef DISABLE_RECORDING

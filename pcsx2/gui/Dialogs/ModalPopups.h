@@ -407,14 +407,14 @@ namespace Dialogs
 		virtual ~AssertionDialog() = default;
 	};
 
-	class IPCDialog : public wxDialogWithHelpers
+	class PINEDialog : public wxDialogWithHelpers
 	{
 	public:
-		IPCDialog(wxWindow* parent = NULL);
-		virtual ~IPCDialog() = default;
+		PINEDialog(wxWindow* parent = NULL);
+		virtual ~PINEDialog() = default;
 
 		void OnConfirm(wxCommandEvent& evt);
-		static wxString GetNameStatic() { return L"IPCSettings"; }
+		static wxString GetNameStatic() { return L"PINESettings"; }
 		wxString GetDialogName() const { return GetNameStatic(); }
 	};
 } // namespace Dialogs

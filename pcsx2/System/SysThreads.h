@@ -19,7 +19,7 @@
 
 #include "Utilities/PersistentThread.h"
 #include "x86emitter/tools.h"
-#include "IPC.h"
+#include "PINE.h"
 
 
 using namespace Threading;
@@ -171,16 +171,16 @@ protected:
 	bool m_resetVsyncTimers;
 	bool m_resetVirtualMachine;
 
-	// Stores the state of the socket IPC thread.
-	std::unique_ptr<SocketIPC> m_socketIpc;
+	// Stores the state of the PINE thread.
+	std::unique_ptr<PINEServer> m_pineServer;
 
-	// Current state of the IPC thread
-	enum StateIPC
+	// Current state of the PINE thread
+	enum StatePINE
 	{
 		OFF,
 		ON
 	};
-	StateIPC m_IpcState = OFF;
+	StatePINE m_PineState = OFF;
 
 	// Indicates if the system has an active virtual machine state.  Pretty much always
 	// true anytime between plugins being initialized and plugins being shutdown.  Gets
@@ -268,7 +268,7 @@ extern SysCoreThread& GetCoreThread();
 
 extern bool g_CDVDReset;
 
-namespace IPCSettings
+namespace PINESettings
 {
 	extern unsigned int slot;
 };
