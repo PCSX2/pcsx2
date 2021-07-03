@@ -26,6 +26,8 @@
 
 #if _M_SSE < 0x501 && (defined(_M_AMD64) || defined(_WIN64))
 
+MULTI_ISA_UNSHARED_IMPL;
+
 using namespace Xbyak;
 
 #define _rip_local(field) (m_rip ? ptr[rip + &m_local.field] : ptr[t0 + offsetof(GSScanlineLocalData, field)])

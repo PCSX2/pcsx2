@@ -25,6 +25,8 @@
 #include "GSTextureCacheOGL.h"
 #include "Renderers/HW/GSVertexHW.h"
 
+MULTI_ISA_UNSHARED_START
+
 class GSRendererOGL final : public GSRendererHW
 {
 	enum PRIM_OVERLAP
@@ -87,3 +89,5 @@ public:
 
 	bool IsDummyTexture() const final;
 };
+
+MULTI_ISA_UNSHARED_END

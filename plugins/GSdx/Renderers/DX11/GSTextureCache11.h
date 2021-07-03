@@ -24,6 +24,8 @@
 #include "Renderers/HW/GSTextureCache.h"
 #include "GSDevice11.h"
 
+MULTI_ISA_UNSHARED_START
+
 class GSTextureCache11 : public GSTextureCache
 {
 protected:
@@ -35,3 +37,5 @@ protected:
 public:
 	GSTextureCache11(GSRenderer* r);
 };
+
+MULTI_ISA_UNSHARED_END

@@ -22,9 +22,21 @@
 #include "stdafx.h"
 #include "GSDrawScanline.h"
 #include "GSTextureCacheSW.h"
+#include "MultiISA.h"
+
+MULTI_ISA_UNSHARED_IMPL;
 
 // Lack of a better home
-std::unique_ptr<GSScanlineConstantData> g_const(new GSScanlineConstantData());
+std::unique_ptr<GSScanlineConstantData> CURRENT_ISA::g_const(new GSScanlineConstantData());
+
+bool CURRENT_ISA::InitGConst()
+{
+	if (g_const == nullptr)
+		return false;
+
+	g_const->Init();
+	return true;
+}
 
 GSDrawScanline::GSDrawScanline()
 	: m_sp_map("GSSetupPrim", &m_local)

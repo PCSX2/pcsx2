@@ -22,16 +22,14 @@
 #include "stdafx.h"
 #include "GSdx.h"
 #include "GSUtil.h"
-#include "Renderers/SW/GSRendererSW.h"
-#include "Renderers/Null/GSRendererNull.h"
+#include "MultiISA.h"
+#include "Renderers/Common/IGSRenderer.h"
 #include "Renderers/Null/GSDeviceNull.h"
 #include "Renderers/OpenGL/GSDeviceOGL.h"
-#include "Renderers/OpenGL/GSRendererOGL.h"
 #include "GSLzma.h"
 
 #ifdef _WIN32
 
-#include "Renderers/DX11/GSRendererDX11.h"
 #include "Renderers/DX11/GSDevice11.h"
 #include "Window/GSWndDX.h"
 #include "Window/GSWndWGL.h"
@@ -57,7 +55,7 @@ extern bool RunLinuxDialog();
 #define PS2E_X86 0x01    // 32 bit
 #define PS2E_X86_64 0x02 // 64 bit
 
-static GSRenderer* s_gs = NULL;
+static IGSRenderer* s_gs = NULL;
 static void (*s_irq)() = NULL;
 static uint8* s_basemem = NULL;
 static int s_vsync = 0;
@@ -126,10 +124,8 @@ EXPORT_C_(int) GSinit()
 
 	GSUtil::Init();
 
-	if (g_const == nullptr)
+	if (!MULTI_ISA_SELECT(InitGConst)())
 		return -1;
-	else
-		g_const->Init();
 
 #ifdef _WIN32
 	s_hr = ::CoInitializeEx(NULL, COINIT_MULTITHREADED);
@@ -168,13 +164,13 @@ EXPORT_C GSclose()
 
 	// Opengl requirement: It must be done before the Detach() of
 	// the context
-	delete s_gs->m_dev;
+	delete s_gs->Dev();
 
-	s_gs->m_dev = NULL;
+	s_gs->Dev() = NULL;
 
-	if (s_gs->m_wnd)
+	if (s_gs->Wnd())
 	{
-		s_gs->m_wnd->Detach();
+		s_gs->Wnd()->Detach();
 	}
 }
 
@@ -343,24 +339,24 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 				default:
 #ifdef _WIN32
 				case GSRendererType::DX1011_HW:
-					s_gs = (GSRenderer*)new GSRendererDX11();
+					s_gs = MULTI_ISA_SELECT(makeRendererDX11)();
 					break;
 #endif
 				case GSRendererType::OGL_HW:
-					s_gs = (GSRenderer*)new GSRendererOGL();
+					s_gs = MULTI_ISA_SELECT(makeRendererOGL)();
 					break;
 				case GSRendererType::OGL_SW:
-					s_gs = new GSRendererSW(threads);
+					s_gs = MULTI_ISA_SELECT(makeRendererSW)(threads);
 					break;
 				case GSRendererType::Null:
-					s_gs = new GSRendererNull();
+					s_gs = MULTI_ISA_SELECT(makeRendererNull)();
 					break;
 			}
-			if (s_gs == NULL)
-				return -1;
 		}
-
-		s_gs->m_wnd = window;
+		if (s_gs == NULL)
+			return -1;
+		else
+			s_gs->Wnd() = window;
 	}
 	catch (std::exception& ex)
 	{
@@ -394,7 +390,7 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 	if (renderer == GSRendererType::OGL_HW && theApp.GetConfigI("debug_glsl_shader") == 2)
 	{
 		printf("GSdx: test OpenGL shader. Please wait...\n\n");
-		static_cast<GSDeviceOGL*>(s_gs->m_dev)->SelfShaderTest();
+		static_cast<GSDeviceOGL*>(s_gs->Dev())->SelfShaderTest();
 		printf("\nGSdx: test OpenGL shader done. It will now exit\n");
 		return -1;
 	}
@@ -404,14 +400,14 @@ static int _GSopen(void** dsp, const char* title, GSRendererType renderer, int t
 
 EXPORT_C_(void) GSosdLog(const char* utf8, uint32 color)
 {
-	if (s_gs && s_gs->m_dev)
-		s_gs->m_dev->m_osd.Log(utf8);
+	if (s_gs && s_gs->Dev())
+		s_gs->Dev()->m_osd.Log(utf8);
 }
 
 EXPORT_C_(void) GSosdMonitor(const char* key, const char* value, uint32 color)
 {
-	if (s_gs && s_gs->m_dev)
-		s_gs->m_dev->m_osd.Monitor(key, value);
+	if (s_gs && s_gs->Dev())
+		s_gs->Dev()->m_osd.Monitor(key, value);
 }
 
 EXPORT_C_(int) GSopen2(void** dsp, uint32 flags)
@@ -599,7 +595,7 @@ EXPORT_C GSgifTransfer(const uint8* mem, uint32 size)
 {
 	try
 	{
-		s_gs->Transfer<3>(mem, size);
+		s_gs->Transfer3(mem, size);
 	}
 	catch (GSDXRecoverableError)
 	{
@@ -610,7 +606,7 @@ EXPORT_C GSgifTransfer1(uint8* mem, uint32 addr)
 {
 	try
 	{
-		s_gs->Transfer<0>(const_cast<uint8*>(mem) + addr, (0x4000 - addr) / 16);
+		s_gs->Transfer0(const_cast<uint8*>(mem) + addr, (0x4000 - addr) / 16);
 	}
 	catch (GSDXRecoverableError)
 	{
@@ -621,7 +617,7 @@ EXPORT_C GSgifTransfer2(uint8* mem, uint32 size)
 {
 	try
 	{
-		s_gs->Transfer<1>(const_cast<uint8*>(mem), size);
+		s_gs->Transfer1(const_cast<uint8*>(mem), size);
 	}
 	catch (GSDXRecoverableError)
 	{
@@ -632,7 +628,7 @@ EXPORT_C GSgifTransfer3(uint8* mem, uint32 size)
 {
 	try
 	{
-		s_gs->Transfer<2>(const_cast<uint8*>(mem), size);
+		s_gs->Transfer2(const_cast<uint8*>(mem), size);
 	}
 	catch (GSDXRecoverableError)
 	{
@@ -645,7 +641,7 @@ EXPORT_C GSvsync(int field)
 	{
 #ifdef _WIN32
 
-		if (s_gs->m_wnd->IsManaged())
+		if (s_gs->Wnd()->IsManaged())
 		{
 			MSG msg;
 
@@ -868,11 +864,11 @@ EXPORT_C GSgetTitleInfo2(char* dest, size_t length)
 	std::string s;
 	s.append(s_renderer_name);
 	// TODO: this gets called from a different thread concurrently with GSOpen (on linux)
-	if (gsopen_done && s_gs != NULL && s_gs->m_GStitleInfoBuffer[0])
+	if (gsopen_done && s_gs != NULL && s_gs->GStitleInfoBuffer()[0])
 	{
-		std::lock_guard<std::mutex> lock(s_gs->m_pGSsetTitle_Crit);
+		std::lock_guard<std::mutex> lock(s_gs->PGSsetTitle_Crit());
 
-		s.append(" | ").append(s_gs->m_GStitleInfoBuffer);
+		s.append(" | ").append(s_gs->GStitleInfoBuffer());
 
 		if (s.size() > length - 1)
 		{
@@ -1137,201 +1133,7 @@ EXPORT_C GSBenchmark(HWND hwnd, HINSTANCE hinst, LPSTR lpszCmdLine, int nCmdShow
 
 	Console console("GSdx", true);
 
-	if (1)
-	{
-		GSLocalMemory* mem = new GSLocalMemory();
-
-		static struct {int psm; const char* name;} s_format[] =
-		{
-			{PSM_PSMCT32, "32"},
-			{PSM_PSMCT24, "24"},
-			{PSM_PSMCT16, "16"},
-			{PSM_PSMCT16S, "16S"},
-			{PSM_PSMT8, "8"},
-			{PSM_PSMT4, "4"},
-			{PSM_PSMT8H, "8H"},
-			{PSM_PSMT4HL, "4HL"},
-			{PSM_PSMT4HH, "4HH"},
-			{PSM_PSMZ32, "32Z"},
-			{PSM_PSMZ24, "24Z"},
-			{PSM_PSMZ16, "16Z"},
-			{PSM_PSMZ16S, "16ZS"},
-		};
-
-		uint8* ptr = (uint8*)_aligned_malloc(1024 * 1024 * 4, 32);
-
-		for (int i = 0; i < 1024 * 1024 * 4; i++)
-			ptr[i] = (uint8)i;
-
-		//
-
-		for (int tbw = 5; tbw <= 10; tbw++)
-		{
-			int n = 256 << ((10 - tbw) * 2);
-
-			int w = 1 << tbw;
-			int h = 1 << tbw;
-
-			printf("%d x %d\n\n", w, h);
-
-			for (size_t i = 0; i < countof(s_format); i++)
-			{
-				const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[s_format[i].psm];
-
-				GSLocalMemory::writeImage wi = psm.wi;
-				GSLocalMemory::readImage ri = psm.ri;
-				GSLocalMemory::readTexture rtx = psm.rtx;
-				GSLocalMemory::readTexture rtxP = psm.rtxP;
-
-				GIFRegBITBLTBUF BITBLTBUF;
-
-				BITBLTBUF.SBP = 0;
-				BITBLTBUF.SBW = w / 64;
-				BITBLTBUF.SPSM = s_format[i].psm;
-				BITBLTBUF.DBP = 0;
-				BITBLTBUF.DBW = w / 64;
-				BITBLTBUF.DPSM = s_format[i].psm;
-
-				GIFRegTRXPOS TRXPOS;
-
-				TRXPOS.SSAX = 0;
-				TRXPOS.SSAY = 0;
-				TRXPOS.DSAX = 0;
-				TRXPOS.DSAY = 0;
-
-				GIFRegTRXREG TRXREG;
-
-				TRXREG.RRW = w;
-				TRXREG.RRH = h;
-
-				GSVector4i r(0, 0, w, h);
-
-				GIFRegTEX0 TEX0;
-
-				TEX0.TBP0 = 0;
-				TEX0.TBW = w / 64;
-
-				GIFRegTEXA TEXA;
-
-				TEXA.TA0 = 0;
-				TEXA.TA1 = 0x80;
-				TEXA.AEM = 0;
-
-				int trlen = w * h * psm.trbpp / 8;
-				int len = w * h * psm.bpp / 8;
-
-				clock_t start, end;
-
-				printf("[%4s] ", s_format[i].name);
-
-				start = clock();
-
-				for (int j = 0; j < n; j++)
-				{
-					int x = 0;
-					int y = 0;
-
-					(mem->*wi)(x, y, ptr, trlen, BITBLTBUF, TRXPOS, TRXREG);
-				}
-
-				end = clock();
-
-				printf("%6d %6d | ", (int)((float)trlen * n / (end - start) / 1000), (int)((float)(w * h) * n / (end - start) / 1000));
-
-				start = clock();
-
-				for (int j = 0; j < n; j++)
-				{
-					int x = 0;
-					int y = 0;
-
-					(mem->*ri)(x, y, ptr, trlen, BITBLTBUF, TRXPOS, TRXREG);
-				}
-
-				end = clock();
-
-				printf("%6d %6d | ", (int)((float)trlen * n / (end - start) / 1000), (int)((float)(w * h) * n / (end - start) / 1000));
-
-				const GSOffset* off = mem->GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
-
-				start = clock();
-
-				for (int j = 0; j < n; j++)
-				{
-					(mem->*rtx)(off, r, ptr, w * 4, TEXA);
-				}
-
-				end = clock();
-
-				printf("%6d %6d ", (int)((float)len * n / (end - start) / 1000), (int)((float)(w * h) * n / (end - start) / 1000));
-
-				if (psm.pal > 0)
-				{
-					start = clock();
-
-					for (int j = 0; j < n; j++)
-					{
-						(mem->*rtxP)(off, r, ptr, w, TEXA);
-					}
-
-					end = clock();
-
-					printf("| %6d %6d ", (int)((float)len * n / (end - start) / 1000), (int)((float)(w * h) * n / (end - start) / 1000));
-				}
-
-				printf("\n");
-			}
-
-			printf("\n");
-		}
-
-		_aligned_free(ptr);
-
-		delete mem;
-	}
-
-	//
-
-	if (0)
-	{
-		GSLocalMemory* mem = new GSLocalMemory();
-
-		uint8* ptr = (uint8*)_aligned_malloc(1024 * 1024 * 4, 32);
-
-		for (int i = 0; i < 1024 * 1024 * 4; i++)
-			ptr[i] = (uint8)i;
-
-		const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[PSM_PSMCT32];
-
-		GSLocalMemory::writeImage wi = psm.wi;
-
-		GIFRegBITBLTBUF BITBLTBUF;
-
-		BITBLTBUF.DBP = 0;
-		BITBLTBUF.DBW = 32;
-		BITBLTBUF.DPSM = PSM_PSMCT32;
-
-		GIFRegTRXPOS TRXPOS;
-
-		TRXPOS.DSAX = 0;
-		TRXPOS.DSAY = 1;
-
-		GIFRegTRXREG TRXREG;
-
-		TRXREG.RRW = 256;
-		TRXREG.RRH = 256;
-
-		int trlen = 256 * 256 * psm.trbpp / 8;
-
-		int x = 0;
-		int y = 0;
-
-		(mem->*wi)(x, y, ptr, trlen, BITBLTBUF, TRXPOS, TRXREG);
-
-		delete mem;
-	}
-
-	//
+	MULTI_ISA_SELECT(GSBenchmark)();
 
 	PostQuitMessage(0);
 }
@@ -1400,7 +1202,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		fprintf(stderr, "Error failed to GSopen\n");
 		return;
 	}
-	if (s_gs->m_wnd == NULL)
+	if (s_gs->Wnd() == NULL)
 		return;
 
 	{ // Read .gs content
@@ -1553,7 +1355,7 @@ EXPORT_C GSReplay(char* lpszCmdLine, int renderer)
 		}
 	}
 
-	static_cast<GSDeviceOGL*>(s_gs->m_dev)->GenerateProfilerData();
+	static_cast<GSDeviceOGL*>(s_gs->Dev())->GenerateProfilerData();
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 	unsigned long total_frame_nb = std::max(1l, frame_number) << 10;

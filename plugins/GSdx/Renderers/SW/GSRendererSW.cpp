@@ -21,8 +21,17 @@
 
 #include "stdafx.h"
 #include "GSRendererSW.h"
+#include "MultiISA.h"
 
 #define LOG 0
+
+MULTI_ISA_UNSHARED_IMPL;
+using namespace GSStateISAShared;
+
+IGSRenderer* CURRENT_ISA::makeRendererSW(int threads)
+{
+	return new GSRendererSW(threads);
+}
 
 static FILE* s_fp = LOG ? fopen("c:\\temp1\\_.txt", "w") : NULL;
 
@@ -1565,13 +1574,13 @@ void GSRendererSW::SharedData::UpdateSource()
 
 		std::string s;
 
-		if (m_parent->s_savet && m_parent->s_n >= m_parent->s_saven)
+		if (m_parent->s_savet && s_n >= m_parent->s_saven)
 		{
 			for (size_t i = 0; m_tex[i].t != NULL; i++)
 			{
 				const GIFRegTEX0& TEX0 = m_parent->GetTex0Layer(i);
 
-				s = format("%05d_f%lld_itex%d_%05x_%s.bmp", m_parent->s_n, frame, i, TEX0.TBP0, psm_str(TEX0.PSM));
+				s = format("%05d_f%lld_itex%d_%05x_%s.bmp", s_n, frame, i, TEX0.TBP0, psm_str(TEX0.PSM));
 
 				m_tex[i].t->Save(root_sw + s);
 			}
@@ -1582,7 +1591,7 @@ void GSRendererSW::SharedData::UpdateSource()
 
 				t->Update(GSVector4i(0, 0, 256, 1), global.clut, sizeof(uint32) * 256);
 
-				s = format("%05d_f%lld_itexp_%05x_%s.bmp", m_parent->s_n, frame, (int)m_parent->m_context->TEX0.CBP, psm_str(m_parent->m_context->TEX0.CPSM));
+				s = format("%05d_f%lld_itexp_%05x_%s.bmp", s_n, frame, (int)m_parent->m_context->TEX0.CBP, psm_str(m_parent->m_context->TEX0.CPSM));
 
 				t->Save(root_sw + s);
 

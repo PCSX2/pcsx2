@@ -27,6 +27,8 @@
 #include "Renderers/HW/GSVertexHW.h"
 #include "GSFunctionMap.h"
 
+MULTI_ISA_UNSHARED_START
+
 class GSState;
 
 class alignas(32) GSVertexTrace : public GSAlignedClass<32>
@@ -90,3 +92,5 @@ public:
 
 	void CorrectDepthTrace(const void* vertex, int count);
 };
+
+MULTI_ISA_UNSHARED_END

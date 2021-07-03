@@ -23,6 +23,8 @@
 
 #include "GSLocalMemory.h"
 
+MULTI_ISA_UNSHARED_START
+
 class GSDirtyRect
 {
 	int left;
@@ -44,3 +46,5 @@ public:
 	GSDirtyRectList() {}
 	const GSVector4i GetDirtyRectAndClear(const GIFRegTEX0& TEX0, const GSVector2i& size);
 };
+
+MULTI_ISA_UNSHARED_END

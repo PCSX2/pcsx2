@@ -25,6 +25,8 @@
 
 #if _M_SSE < 0x501 && (defined(_M_AMD64) || defined(_WIN64))
 
+MULTI_ISA_UNSHARED_IMPL;
+
 // Ease the reading of the code
 #define _m_local r12
 #define _m_local__gd r13

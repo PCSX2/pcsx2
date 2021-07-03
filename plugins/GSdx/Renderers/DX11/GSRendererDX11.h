@@ -25,6 +25,8 @@
 #include "GSTextureCache11.h"
 #include "Renderers/HW/GSVertexHW.h"
 
+MULTI_ISA_UNSHARED_START
+
 class GSRendererDX11 final : public GSRendererHW
 {
 	enum ACC_BLEND_D3D11
@@ -67,3 +69,5 @@ public:
 
 	bool CreateDevice(GSDevice* dev);
 };
+
+MULTI_ISA_UNSHARED_END

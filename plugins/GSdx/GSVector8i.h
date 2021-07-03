@@ -19,8 +19,6 @@
  *
  */
 
-#if _M_SSE >= 0x501
-
 class alignas(32) GSVector8i
 {
 	static const GSVector8i m_xff[33];
@@ -89,6 +87,18 @@ public:
 	};
 
 	GSVector8i() = default;
+	GSVector8i(const GSVector8i& v) = default;
+
+	constexpr GSVector8i(
+		char b0, char b1, char b2, char b3, char b4, char b5, char b6, char b7,
+		char b8, char b9, char b10, char b11, char b12, char b13, char b14, char b15,
+		char b16, char b17, char b18, char b19, char b20, char b21, char b22, char b23,
+		char b24, char b25, char b26, char b27, char b28, char b29, char b30, char b31)
+		: m(cxpr_setr_epi8(
+			b0,  b1,  b2,  b3,  b4,  b5,  b6,  b7,  b8,  b9,  b10, b11, b12, b13, b14, b15,
+			b16, b17, b18, b19, b20, b21, b22, b23, b24, b25, b26, b27, b28, b29, b30, b31))
+	{
+	}
 
 	static constexpr GSVector8i cxpr(int x0, int y0, int z0, int w0, int x1, int y1, int z1, int w1)
 	{
@@ -99,6 +109,13 @@ public:
 	{
 		return GSVector8i(cxpr_setr_epi32(x, x, x, x, x, x, x, x));
 	}
+
+	__forceinline constexpr explicit GSVector8i(__m256i m)
+		: m(m)
+	{
+	}
+
+#if _M_SSE >= 0x501
 
 	__forceinline explicit GSVector8i(const GSVector8& v, bool truncate = true);
 
@@ -118,17 +135,6 @@ public:
 		m = _mm256_set_epi16(s15, s14, s13, s12, s11, s10, s9, s8, s7, s6, s5, s4, s3, s2, s1, s0);
 	}
 
-	constexpr GSVector8i(
-		char b0, char b1, char b2, char b3, char b4, char b5, char b6, char b7,
-		char b8, char b9, char b10, char b11, char b12, char b13, char b14, char b15,
-		char b16, char b17, char b18, char b19, char b20, char b21, char b22, char b23,
-		char b24, char b25, char b26, char b27, char b28, char b29, char b30, char b31)
-		: m(cxpr_setr_epi8(
-			b0,  b1,  b2,  b3,  b4,  b5,  b6,  b7,  b8,  b9,  b10, b11, b12, b13, b14, b15,
-			b16, b17, b18, b19, b20, b21, b22, b23, b24, b25, b26, b27, b28, b29, b30, b31))
-	{
-	}
-
 	__forceinline GSVector8i(__m128i m0, __m128i m1)
 	{
 #if 0 // _MSC_VER >= 1700 
@@ -142,8 +148,6 @@ public:
 #endif
 	}
 
-	GSVector8i(const GSVector8i& v) = default;
-
 	__forceinline explicit GSVector8i(int i)
 	{
 		*this = i;
@@ -152,11 +156,6 @@ public:
 	__forceinline explicit GSVector8i(__m128i m)
 	{
 		*this = m;
-	}
-
-	__forceinline constexpr explicit GSVector8i(__m256i m)
-		: m(m)
-	{
 	}
 
 	__forceinline void operator=(const GSVector8i& v)
@@ -1884,6 +1883,6 @@ public:
 
 	__forceinline static GSVector8i xff(int n) { return m_xff[n]; }
 	__forceinline static GSVector8i x0f(int n) { return m_x0f[n]; }
-};
 
 #endif
+};

@@ -132,6 +132,8 @@
 	#pragma warning(disable : 4127) /* constant expresison */
 #endif
 
+MULTI_ISA_UNSHARED_HEADER_ONLY_START
+
 namespace Xbyak {
 
 enum {
@@ -2435,5 +2437,7 @@ static const Segment es(Segment::es), cs(Segment::cs), ss(Segment::ss), ds(Segme
 #endif
 
 } // end of namespace
+
+MULTI_ISA_UNSHARED_HEADER_ONLY_END
 
 #endif // XBYAK_XBYAK_H_

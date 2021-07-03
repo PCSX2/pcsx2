@@ -25,6 +25,9 @@
 #include <X11/keysym.h>
 #endif
 
+MULTI_ISA_UNSHARED_IMPL;
+using namespace GSStateISAShared;
+
 const unsigned int s_interlace_nb = 8;
 const unsigned int s_post_shader_nb = 5;
 const unsigned int s_aspect_ratio_nb = 3;

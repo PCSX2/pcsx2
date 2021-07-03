@@ -24,6 +24,8 @@
 #include "GSRendererHW.h"
 #include "GSUtil.h"
 
+MULTI_ISA_UNSHARED_IMPL;
+
 bool GSTextureCache::m_disable_partial_invalidation = false;
 bool GSTextureCache::m_wrap_gs_mem = false;
 

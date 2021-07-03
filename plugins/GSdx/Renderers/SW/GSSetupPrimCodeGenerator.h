@@ -25,6 +25,8 @@
 #include "Renderers/Common/GSFunctionMap.h"
 #include "GSUtil.h"
 
+MULTI_ISA_UNSHARED_START
+
 class GSSetupPrimCodeGenerator : public GSCodeGenerator
 {
 	void operator=(const GSSetupPrimCodeGenerator&);
@@ -58,3 +60,5 @@ class GSSetupPrimCodeGenerator : public GSCodeGenerator
 public:
 	GSSetupPrimCodeGenerator(void* param, uint64 key, void* code, size_t maxsize);
 };
+
+MULTI_ISA_UNSHARED_END

@@ -24,6 +24,8 @@
 
 #if _M_SSE < 0x501 && (defined(_M_AMD64) || defined(_WIN64))
 
+MULTI_ISA_UNSHARED_IMPL;
+
 // It is useless to port the code to SSEx, better use the faster 32 bits version instead
 void GSDrawScanlineCodeGenerator::Generate_SSE()
 {

@@ -21,7 +21,14 @@
 
 #include "stdafx.h"
 #include "GSRendererOGL.h"
+#include "MultiISA.h"
 
+MULTI_ISA_UNSHARED_IMPL;
+
+IGSRenderer* CURRENT_ISA::makeRendererOGL()
+{
+	return new GSRendererOGL();
+}
 
 GSRendererOGL::GSRendererOGL()
 	: GSRendererHW(new GSTextureCacheOGL(this))

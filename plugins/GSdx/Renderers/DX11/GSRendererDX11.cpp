@@ -21,6 +21,14 @@
 
 #include "stdafx.h"
 #include "GSRendererDX11.h"
+#include "MultiISA.h"
+
+MULTI_ISA_UNSHARED_IMPL;
+
+IGSRenderer* CURRENT_ISA::makeRendererDX11()
+{
+	return new GSRendererDX11();
+}
 
 GSRendererDX11::GSRendererDX11()
 	: GSRendererHW(new GSTextureCache11(this))
@@ -153,7 +161,7 @@ void GSRendererDX11::EmulateZbuffer()
 	if (m_om_dssel.ztst == ZTST_GEQUAL && m_vt.m_eq.z && v[0].XYZ.Z == max_z)
 	{
 #ifdef _DEBUG
-		fprintf(stdout, "%d: Optimize Z test GEQUAL to ALWAYS (%s)\n", s_n, psm_str(m_context->ZBUF.PSM));
+		fprintf(stdout, "%d: Optimize Z test GEQUAL to ALWAYS (%s)\n", GSStateISAShared::s_n, psm_str(m_context->ZBUF.PSM));
 #endif
 		m_om_dssel.ztst = ZTST_ALWAYS;
 	}

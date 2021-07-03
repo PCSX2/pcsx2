@@ -24,9 +24,11 @@
 #include "GSdx.h"
 #include "GSUtil.h"
 
+MULTI_ISA_UNSHARED_IMPL;
+
 //#define Offset_ST  // Fixes Persona3 mini map alignment which is off even in software rendering
 
-int GSState::s_n = 0;
+using namespace GSStateISAShared;
 
 GSState::GSState()
 	: m_version(6)

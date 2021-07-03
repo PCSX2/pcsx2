@@ -23,6 +23,8 @@
 #include "stdafx.h"
 #include "GSTextureCacheOGL.h"
 
+MULTI_ISA_UNSHARED_IMPL;
+
 GSTextureCacheOGL::GSTextureCacheOGL(GSRenderer* r)
 	: GSTextureCache(r)
 {

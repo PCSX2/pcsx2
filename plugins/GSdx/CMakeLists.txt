@@ -43,66 +43,69 @@ if(XDG_STD)
     set(GSdxFinalFlags ${GSdxFinalFlags} -DXDG_STD)
 endif()
 
+set(GSdxSourcesUnshared
+	GSBlock.cpp
+	GSClut.cpp
+	GSDrawingContext.cpp
+	GSLocalMemory.cpp
+	GSState.cpp
+	Renderers/Common/GSDirtyRect.cpp
+	Renderers/Common/GSFunctionMap.cpp
+	Renderers/Common/GSRenderer.cpp
+	Renderers/Common/GSVertexTrace.cpp
+	Renderers/HW/GSHwHack.cpp
+	Renderers/HW/GSRendererHW.cpp
+	Renderers/HW/GSTextureCache.cpp
+	Renderers/Null/GSRendererNull.cpp
+	Renderers/OpenGL/GSRendererOGL.cpp
+	Renderers/OpenGL/GSTextureCacheOGL.cpp
+	Renderers/SW/GSDrawScanline.cpp
+	Renderers/SW/GSDrawScanlineCodeGenerator.cpp
+	Renderers/SW/GSDrawScanlineCodeGenerator.x64.cpp
+	Renderers/SW/GSDrawScanlineCodeGenerator.x64.avx.cpp
+	Renderers/SW/GSDrawScanlineCodeGenerator.x64.avx2.cpp
+	Renderers/SW/GSDrawScanlineCodeGenerator.x86.cpp
+	Renderers/SW/GSDrawScanlineCodeGenerator.x86.avx.cpp
+	Renderers/SW/GSDrawScanlineCodeGenerator.x86.avx2.cpp
+	Renderers/SW/GSRasterizer.cpp
+	Renderers/SW/GSRendererSW.cpp
+	Renderers/SW/GSSetupPrimCodeGenerator.cpp
+	Renderers/SW/GSSetupPrimCodeGenerator.x64.cpp
+	Renderers/SW/GSSetupPrimCodeGenerator.x64.avx.cpp
+	Renderers/SW/GSSetupPrimCodeGenerator.x64.avx2.cpp
+	Renderers/SW/GSSetupPrimCodeGenerator.x86.cpp
+	Renderers/SW/GSSetupPrimCodeGenerator.x86.avx.cpp
+	Renderers/SW/GSSetupPrimCodeGenerator.x86.avx2.cpp
+	Renderers/SW/GSTextureCacheSW.cpp
+)
 
 set(GSdxSources
     GS.cpp
     GSAlignedClass.cpp
-    GSBlock.cpp
     GSCapture.cpp
-    GSClut.cpp
     GSCodeBuffer.cpp
     GSCrc.cpp
-    GSDrawingContext.cpp
     GSDump.cpp
-    GSLocalMemory.cpp
     GSLzma.cpp
     GSPerfMon.cpp
     GSPng.cpp
-    GSState.cpp
     GSTables.cpp
     GSUtil.cpp
     GSVector.cpp
     GSdx.cpp
     GSdxResources.cpp
+    MultiISA.cpp
     stdafx.cpp
     Renderers/Common/GSDevice.cpp
-    Renderers/Common/GSDirtyRect.cpp
-    Renderers/Common/GSFunctionMap.cpp
     Renderers/Common/GSOsdManager.cpp
-    Renderers/Common/GSRenderer.cpp
     Renderers/Common/GSTexture.cpp
-    Renderers/Common/GSVertexTrace.cpp
     Renderers/Null/GSDeviceNull.cpp
-    Renderers/Null/GSRendererNull.cpp
     Renderers/Null/GSTextureNull.cpp
-    Renderers/HW/GSHwHack.cpp
-    Renderers/HW/GSRendererHW.cpp
-    Renderers/HW/GSTextureCache.cpp
-    Renderers/SW/GSDrawScanline.cpp
-    Renderers/SW/GSDrawScanlineCodeGenerator.cpp
-    Renderers/SW/GSDrawScanlineCodeGenerator.x64.cpp
-    Renderers/SW/GSDrawScanlineCodeGenerator.x64.avx.cpp
-    Renderers/SW/GSDrawScanlineCodeGenerator.x64.avx2.cpp
-    Renderers/SW/GSDrawScanlineCodeGenerator.x86.cpp
-    Renderers/SW/GSDrawScanlineCodeGenerator.x86.avx.cpp
-    Renderers/SW/GSDrawScanlineCodeGenerator.x86.avx2.cpp
-    Renderers/SW/GSRasterizer.cpp
-    Renderers/SW/GSRendererSW.cpp
-    Renderers/SW/GSSetupPrimCodeGenerator.cpp
-    Renderers/SW/GSSetupPrimCodeGenerator.x64.cpp
-    Renderers/SW/GSSetupPrimCodeGenerator.x64.avx.cpp
-    Renderers/SW/GSSetupPrimCodeGenerator.x64.avx2.cpp
-    Renderers/SW/GSSetupPrimCodeGenerator.x86.cpp
-    Renderers/SW/GSSetupPrimCodeGenerator.x86.avx.cpp
-    Renderers/SW/GSSetupPrimCodeGenerator.x86.avx2.cpp
-    Renderers/SW/GSTextureCacheSW.cpp
     Renderers/SW/GSTextureSW.cpp
     Renderers/OpenGL/GLLoader.cpp
     Renderers/OpenGL/GLState.cpp
     Renderers/OpenGL/GSDeviceOGL.cpp
-    Renderers/OpenGL/GSRendererOGL.cpp
     Renderers/OpenGL/GSShaderOGL.cpp
-    Renderers/OpenGL/GSTextureCacheOGL.cpp
     Renderers/OpenGL/GSTextureOGL.cpp
     Window/GSSetting.cpp
     Window/GSWnd.cpp
@@ -136,6 +139,7 @@ set(GSdxHeaders
     GSVector4i.h
     GSVector8.h
     GSVector8i.h
+    MultiISA.h
     stdafx.h
     Renderers/Common/GSDevice.h
     Renderers/Common/GSDirtyRect.h
@@ -147,6 +151,7 @@ set(GSdxHeaders
     Renderers/Common/GSVertex.h
     Renderers/Common/GSVertexList.h
     Renderers/Common/GSVertexTrace.h
+    Renderers/Common/IGSRenderer.h
     Renderers/Null/GSDeviceNull.h
     Renderers/Null/GSRendererNull.h
     Renderers/Null/GSTextureNull.h
@@ -182,12 +187,15 @@ set(GSdxHeaders
     )
 
 if(Windows)
+    LIST(APPEND GSdxSourcesUnshared
+        Renderers/DX11/GSRendererDX11.cpp
+        Renderers/DX11/GSTextureCache11.cpp
+        )
+
     LIST(APPEND GSdxSources
         Renderers/DX11/GSDevice11.cpp
         Window/GSDialog.cpp
-        Renderers/DX11/GSRendererDX11.cpp
         Renderers/DX11/GSTexture11.cpp
-        Renderers/DX11/GSTextureCache11.cpp
         Renderers/DX11/GSTextureFX11.cpp
         GSVertexList.cpp
         Renderers/SW/GSVertexSW.cpp
@@ -268,17 +276,33 @@ include_directories(${CMAKE_CURRENT_BINARY_DIR})
 if(BUILTIN_GS)
     add_pcsx2_lib(${Output} "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
 else()
-    if (DISABLE_ADVANCE_SIMD)
-        # Don't append -SSE2 on the first build to keep same name as SIMD build
-        add_pcsx2_plugin("${Output}" "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags} -msse3 -msse4 -msse4.1")
-        add_pcsx2_plugin("${Output}-AVX2" "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags} -mavx -mavx2 -mbmi -mbmi2")
-        target_compile_features("${Output}-AVX2" PRIVATE cxx_std_17)
-    else()
-        add_pcsx2_plugin(${Output} "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
-    endif()
+	add_pcsx2_plugin(${Output} "${GSdxFinalSources}" "${GSdxFinalLibs}" "${GSdxFinalFlags}")
 endif()
 
 target_compile_features(${Output} PRIVATE cxx_std_17)
+target_compile_options(${Output} PRIVATE -msse4.1)
+
+if (DISABLE_ADVANCE_SIMD)
+	target_compile_definitions("${Output}" PRIVATE MULTI_ISA_SHARED_COMPILATION)
+	foreach(isa "sse4" "avx" "avx2")
+		add_library(GSdx-${isa} ${GSdxSourcesUnshared})
+		target_link_libraries(GSdx-${isa} PRIVATE ${GSdxFinalLibs})
+		target_compile_definitions(GSdx-${isa} PRIVATE MULTI_ISA_UNSHARED_COMPILATION)
+		target_compile_features(GSdx-${isa} PRIVATE cxx_std_17)
+		target_compile_options(GSdx-${isa} PRIVATE ${GSdxFinalFlags})
+		# Note: Using intel processor names because compilers (or at least clang) seem to have more detailed processor info for intel processors that ends up benefitting both in the end
+		if(${isa} STREQUAL "avx2")
+			target_compile_options(GSdx-${isa} PRIVATE -march=haswell -mtune=haswell)
+		elseif(${isa} STREQUAL "avx")
+			target_compile_options(GSdx-${isa} PRIVATE -march=sandybridge -mtune=sandybridge)
+		else()
+			target_compile_options(GSdx-${isa} PRIVATE -msse4.1 -mtune=nehalem)
+		endif()
+		target_link_libraries("${Output}" GSdx-${isa})
+	endforeach(isa)
+else()
+	target_sources("${Output}" PRIVATE ${GSdxSourcesUnshared})
+endif()
 
 ################################### Replay Loader
 if(BUILD_REPLAY_LOADERS)

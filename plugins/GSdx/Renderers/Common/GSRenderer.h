@@ -25,8 +25,11 @@
 #include "Window/GSWnd.h"
 #include "GSState.h"
 #include "GSCapture.h"
+#include "IGSRenderer.h"
 
-class GSRenderer : public GSState
+MULTI_ISA_UNSHARED_START
+
+class GSRenderer : public GSState, public IGSRenderer
 {
 	GSCapture m_capture;
 	std::string m_snapshot;
@@ -81,4 +84,29 @@ public:
 	std::mutex m_pGSsetTitle_Crit;
 
 	char m_GStitleInfoBuffer[128];
+
+	// Helpers to fulfill IGSRenderer
+	GSDevice*& Dev() final { return m_dev; }
+	std::shared_ptr<GSWnd>& Wnd() final { return m_wnd; }
+	void SetRegsMem(uint8* basemem) final { GSState::SetRegsMem(basemem); }
+	void SetIrqCallback(void (*irq)()) final { GSState::SetIrqCallback(irq); }
+	void SetMultithreaded(bool mt) { GSState::SetMultithreaded(mt); }
+	void Reset() { GSState::Reset(); }
+	void SoftReset(uint32 mask) { GSState::SoftReset(mask); };
+	void WriteCSR(uint32 csr) { GSState::WriteCSR(csr); }
+	void InitReadFIFO(uint8* mem, int size) { GSState::InitReadFIFO(mem, size); }
+	void ReadFIFO(uint8* mem, int size) { GSState::ReadFIFO(mem, size); }
+	void Transfer0(const uint8* mem, uint32 size) { Transfer<0>(mem, size); };
+	void Transfer1(const uint8* mem, uint32 size) { Transfer<1>(mem, size); };
+	void Transfer2(const uint8* mem, uint32 size) { Transfer<2>(mem, size); };
+	void Transfer3(const uint8* mem, uint32 size) { Transfer<3>(mem, size); };
+	int Freeze(GSFreezeData* fd, bool sizeonly) { return GSState::Freeze(fd, sizeonly); }
+	int Defrost(const GSFreezeData* fd) { return GSState::Defrost(fd); }
+	void SetGameCRC(uint32 crc, int options) { return GSState::SetGameCRC(crc, options); }
+	void GetLastTag(uint32* tag) { GSState::GetLastTag(tag); }
+	void SetFrameSkip(int skip) { GSState::SetFrameSkip(skip); }
+	std::mutex& PGSsetTitle_Crit() { return m_pGSsetTitle_Crit; }
+	char* GStitleInfoBuffer() { return m_GStitleInfoBuffer; }
 };
+
+MULTI_ISA_UNSHARED_END

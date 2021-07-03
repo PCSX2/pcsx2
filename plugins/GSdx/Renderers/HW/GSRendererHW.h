@@ -25,6 +25,8 @@
 #include "Renderers/Common/GSFunctionMap.h"
 #include "GSState.h"
 
+MULTI_ISA_UNSHARED_START
+
 class GSRendererHW : public GSRenderer
 {
 private:
@@ -198,3 +200,5 @@ public:
 	// Called by the texture cache to know if current texture is useful
 	virtual bool IsDummyTexture() const { return false; }
 };
+
+MULTI_ISA_UNSHARED_END

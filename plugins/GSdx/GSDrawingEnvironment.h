@@ -23,6 +23,8 @@
 
 #include "GS.h"
 
+MULTI_ISA_UNSHARED_START
+
 class alignas(32) GSDrawingEnvironment
 {
 public:
@@ -203,3 +205,5 @@ public:
 		fclose(fp);
 	}
 };
+
+MULTI_ISA_UNSHARED_END;

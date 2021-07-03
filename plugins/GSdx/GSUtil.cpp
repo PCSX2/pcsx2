@@ -21,6 +21,7 @@
 
 #include "stdafx.h"
 #include "GSUtil.h"
+#include "MultiISA.h"
 #include <locale>
 #include <codecvt>
 
@@ -33,19 +34,11 @@
 #define SVN_MODS 0
 #endif
 
-Xbyak::util::Cpu g_cpu;
-
 const char* GSUtil::GetLibName()
 {
 	// The following ifdef mess is courtesy of "static string str;"
 	// being optimised by GCC to be unusable by older CPUs. Enjoy!
 	static char name[255];
-
-#if _M_SSE < 0x501
-	const char* sw_sse = g_cpu.has(Xbyak::util::Cpu::tAVX) ? "AVX" :
-		g_cpu.has(Xbyak::util::Cpu::tSSE41) ? "SSE41" :
-		g_cpu.has(Xbyak::util::Cpu::tSSSE3) ? "SSSE3" : "SSE2";
-#endif
 
 	snprintf(name, sizeof(name), "GSdx "
 
@@ -56,13 +49,13 @@ const char* GSUtil::GetLibName()
 		"64-bit "
 #endif
 #ifdef __INTEL_COMPILER
-		"(Intel C++ %d.%02d %s/%s)",
+		"(Intel C++ %d.%02d)",
 #elif _MSC_VER
-		"(MSVC %d.%02d %s/%s)",
+		"(MSVC %d.%02d)",
 #elif __clang__
-		"(clang %d.%d.%d %s/%s)",
+		"(clang %d.%d.%d)",
 #elif __GNUC__
-		"(GCC %d.%d.%d %s/%s)",
+		"(GCC %d.%d.%d)",
 #else
 		"(%s/%s)",
 #endif
@@ -70,21 +63,13 @@ const char* GSUtil::GetLibName()
 		SVN_REV,
 #endif
 #ifdef __INTEL_COMPILER
-		__INTEL_COMPILER / 100, __INTEL_COMPILER % 100,
+		__INTEL_COMPILER / 100, __INTEL_COMPILER % 100
 #elif _MSC_VER
-		_MSC_VER / 100, _MSC_VER % 100,
+		_MSC_VER / 100, _MSC_VER % 100
 #elif __clang__
-		__clang_major__, __clang_minor__, __clang_patchlevel__,
+		__clang_major__, __clang_minor__, __clang_patchlevel__
 #elif __GNUC__
-		__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__,
-#endif
-
-#if _M_SSE >= 0x501
-		"AVX2", "AVX2"
-#elif _M_SSE >= 0x500
-		"AVX", sw_sse
-#elif _M_SSE >= 0x401
-		"SSE4.1", sw_sse
+		__GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__
 #endif
 	);
 
@@ -209,37 +194,12 @@ bool GSUtil::HasCompatibleBits(uint32 spsm, uint32 dpsm)
 
 bool GSUtil::CheckSSE()
 {
-	bool status = true;
-
-	struct ISA
+	if (currentISA == VectorISA::None)
 	{
-		Xbyak::util::Cpu::Type type;
-		const char* name;
-	};
-
-	ISA checks[] = {
-		{Xbyak::util::Cpu::tSSE41, "SSE41"},
-#if _M_SSE >= 0x500
-		{Xbyak::util::Cpu::tAVX, "AVX1"},
-#endif
-#if _M_SSE >= 0x501
-		{Xbyak::util::Cpu::tAVX2, "AVX2"},
-		{Xbyak::util::Cpu::tBMI1, "BMI1"},
-		{Xbyak::util::Cpu::tBMI2, "BMI2"},
-#endif
-	};
-
-	for (size_t i = 0; i < countof(checks); i++)
-	{
-		if (!g_cpu.has(checks[i].type))
-		{
-			fprintf(stderr, "This CPU does not support %s\n", checks[i].name);
-
-			status = false;
-		}
+		fprintf(stderr, "This CPU does not support at least SSE4.1\n");
+		return false;
 	}
-
-	return status;
+	return true;
 }
 
 CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)

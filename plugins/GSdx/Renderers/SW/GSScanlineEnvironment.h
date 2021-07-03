@@ -24,6 +24,8 @@
 #include "GSLocalMemory.h"
 #include "GSVector.h"
 
+MULTI_ISA_UNSHARED_START
+
 union GSScanlineSelector
 {
 	struct
@@ -328,3 +330,5 @@ struct GSScanlineConstantData : public GSAlignedClass<32>
 };
 
 extern std::unique_ptr<GSScanlineConstantData> g_const;
+
+MULTI_ISA_UNSHARED_END

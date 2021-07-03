@@ -20,7 +20,7 @@
  */
 
 #include "stdafx.h"
-#include "GSState.h"
+#include "MultiISA.h"
 #include "GSDeviceOGL.h"
 #include "GLState.h"
 #include "GSUtil.h"
@@ -2075,11 +2075,11 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 	// Don't spam noisy information on the terminal
 	if (gl_severity != GL_DEBUG_SEVERITY_NOTIFICATION)
 	{
-		fprintf(stderr, "T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), GSState::s_n, severity.c_str(), message.c_str());
+		fprintf(stderr, "T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), GSStateISAShared::s_n, severity.c_str(), message.c_str());
 	}
 #else
 	// Print nouveau shader compiler info
-	if (GSState::s_n == 0)
+	if (GSStateISAShared::s_n == 0)
 	{
 		int t, local, gpr, inst, byte;
 		int status = sscanf(message.c_str(), "type: %d, local: %d, gpr: %d, inst: %d, bytes: %d",
@@ -2094,7 +2094,7 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 #endif
 
 	if (m_debug_gl_file)
-		fprintf(m_debug_gl_file, "T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), GSState::s_n, severity.c_str(), message.c_str());
+		fprintf(m_debug_gl_file, "T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), GSStateISAShared::s_n, severity.c_str(), message.c_str());
 
 #ifdef _DEBUG
 	if (sev_counter >= 5)

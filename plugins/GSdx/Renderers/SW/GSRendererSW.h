@@ -24,6 +24,8 @@
 #include "Renderers/SW/GSTextureCacheSW.h"
 #include "Renderers/SW/GSDrawScanline.h"
 
+MULTI_ISA_UNSHARED_START
+
 class GSRendererSW : public GSRenderer
 {
 	static const GSVector4 m_pos_scale;
@@ -108,3 +110,5 @@ public:
 	GSRendererSW(int threads);
 	virtual ~GSRendererSW();
 };
+
+MULTI_ISA_UNSHARED_END

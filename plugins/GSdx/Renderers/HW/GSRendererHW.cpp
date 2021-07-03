@@ -22,6 +22,9 @@
 #include "stdafx.h"
 #include "GSRendererHW.h"
 
+MULTI_ISA_UNSHARED_IMPL;
+using namespace GSStateISAShared;
+
 const float GSRendererHW::SSR_UV_TOLERANCE = 1e-3f;
 
 GSRendererHW::GSRendererHW(GSTextureCache* tc)

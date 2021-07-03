@@ -145,6 +145,7 @@
     <ClCompile Include="Window\GSWnd.cpp" />
     <ClCompile Include="Window\GSWndDX.cpp" />
     <ClCompile Include="Window\GSWndWGL.cpp" />
+    <ClCompile Include="MultiISA.cpp" />
     <ClCompile Include="stdafx.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
@@ -181,6 +182,7 @@
     <ClInclude Include="Renderers\Common\GSOsdManager.h" />
     <ClInclude Include="GSPng.h" />
     <ClInclude Include="Renderers\SW\GSRasterizer.h" />
+    <ClInclude Include="Renderers\Common\IGSRenderer.h" />
     <ClInclude Include="Renderers\Common\GSRenderer.h" />
     <ClInclude Include="Renderers\DX11\GSRendererDX11.h" />
     <ClInclude Include="Renderers\HW\GSRendererHW.h" />
@@ -221,6 +223,7 @@
     <ClInclude Include="Window\GSWnd.h" />
     <ClInclude Include="Window\GSWndDX.h" />
     <ClInclude Include="Window\GSWndWGL.h" />
+    <ClInclude Include="MultiISA.h" />
     <ClInclude Include="stdafx.h" />
     <ClInclude Include="svnrev.h" />
     <ClInclude Include="resource.h" />

@@ -26,6 +26,8 @@
 #include "GSTables.h"
 #include "GSAlignedClass.h"
 
+MULTI_ISA_UNSHARED_START
+
 class GSLocalMemory;
 
 class alignas(32) GSClut : public GSAlignedClass<32>
@@ -116,3 +118,5 @@ public:
 	operator const uint32*() const { return m_buff32; }
 	operator const uint64*() const { return m_buff64; }
 };
+
+MULTI_ISA_UNSHARED_END

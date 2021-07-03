@@ -275,14 +275,9 @@ typedef int64 sint64;
 	(row3) = _mm_castps_si128(_mm_shuffle_ps(tmp2, tmp3, 0xDD)); \
 }
 
-#include <tmmintrin.h>
-#include <smmintrin.h>
-
-#if _M_SSE >= 0x500
-
-	#include <immintrin.h>
-
-#endif
+// Note: We use the struct definitions for GSVector8 no matter what
+// None of the compilers we use seem to complain at the existence of the header, only if you actually try to call its intrinsics
+#include <immintrin.h>
 
 #undef min
 #undef max
@@ -424,4 +419,46 @@ extern const std::string root_hw;
 #  define CONSTINIT __attribute__((require_constant_initialization))
 #else
 #  define CONSTINIT
+#endif
+
+// For multiple-isa compilation
+#ifdef MULTI_ISA_UNSHARED_COMPILATION
+// TODO: Remove the second check when we have _M_SSE properly set on x64
+# if _M_SSE >= 0x501 || defined(__AVX2__)
+#  define CURRENT_ISA isa_avx2
+# elif _M_SSE >= 0x500
+#  define CURRENT_ISA isa_avx
+# else
+#  define CURRENT_ISA isa_sse4
+# endif
+#else
+// Define to isa_native in shared section in addition to multi-isa-off so if someone tries to use it they'll hopefully get a linker error and notice
+# define CURRENT_ISA isa_native
+#endif
+
+#ifndef MULTI_ISA_SHARED_COMPILATION
+/// Mark the start of a header defining code that will be compiled multiple times in multi-isa mode
+/// Anything between this and a `MULTI_ISA_UNSHARED_END` will be placed in a different namespace for each of the multilple compilations
+# define MULTI_ISA_UNSHARED_START namespace CURRENT_ISA {
+/// Mark the end of a header defining code that will be compiled multiple times in multi-isa mode
+# define MULTI_ISA_UNSHARED_END }
+/// Mark the beginning of a file implementing things that will be compiled multiple times in multi-isa mode
+/// Takes advantage of the fact that a `using namespace` declaration will also affect any implementations of things as long as they're not valid without it
+/// Fully global variables are valid as-is, however, and will need to have `CURRENT_ISA::` manually prepended to them.
+/// If you forget to do this, it will show up as a linker error (either multiple definitions of the function/variable, or a "failed to find isa_native::function")
+# define MULTI_ISA_UNSHARED_IMPL using namespace CURRENT_ISA
+#else
+# define MULTI_ISA_UNSHARED_START static_assert(0, "This file should not be included by multi-isa shared compilation!");
+# define MULTI_ISA_UNSHARED_IMPL static_assert(0, "This file should be compiled unshared in multi-isa mode!");
+# define MULTI_ISA_UNSHARED_END
+#endif
+
+#ifdef MULTI_ISA_UNSHARED_COMPILATION
+/// `MULTI_ISA_UNSHARED_START` but for header only libraries that are used from both unshared and shared code
+/// (Header-only libraries are okay to use from both sides, but need this or forceinline to prevent ODR violations)
+# define MULTI_ISA_UNSHARED_HEADER_ONLY_START namespace CURRENT_ISA {
+# define MULTI_ISA_UNSHARED_HEADER_ONLY_END }
+#else
+# define MULTI_ISA_UNSHARED_HEADER_ONLY_START
+# define MULTI_ISA_UNSHARED_HEADER_ONLY_END
 #endif

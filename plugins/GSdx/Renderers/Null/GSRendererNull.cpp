@@ -21,3 +21,11 @@
 
 #include "stdafx.h"
 #include "GSRendererNull.h"
+#include "MultiISA.h"
+
+MULTI_ISA_UNSHARED_IMPL;
+
+IGSRenderer* CURRENT_ISA::makeRendererNull()
+{
+	return new GSRendererNull();
+}

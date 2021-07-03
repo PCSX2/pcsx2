@@ -25,6 +25,8 @@
 #include "GSTables.h"
 #include "GSVector.h"
 
+MULTI_ISA_UNSHARED_START
+
 class GSBlock
 {
 #if _M_SSE >= 0x501
@@ -1878,3 +1880,5 @@ public:
 
 	// TODO: ReadAndExpandBlock4HH_16
 };
+
+MULTI_ISA_UNSHARED_END

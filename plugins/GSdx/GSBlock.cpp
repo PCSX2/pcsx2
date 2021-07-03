@@ -22,6 +22,8 @@
 #include "stdafx.h"
 #include "GSBlock.h"
 
+MULTI_ISA_UNSHARED_IMPL;
+
 #if _M_SSE >= 0x501
 CONSTINIT const GSVector8i GSBlock::m_r16mask(0, 1, 4, 5, 2, 3, 6, 7, 8, 9, 12, 13, 10, 11, 14, 15, 0, 1, 4, 5, 2, 3, 6, 7, 8, 9, 12, 13, 10, 11, 14, 15);
 #else

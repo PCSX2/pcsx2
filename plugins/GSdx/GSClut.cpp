@@ -25,6 +25,8 @@
 
 #define CLUT_ALLOC_SIZE (2 * 4096)
 
+MULTI_ISA_UNSHARED_IMPL;
+
 GSClut::GSClut(GSLocalMemory* mem)
 	: m_mem(mem)
 {

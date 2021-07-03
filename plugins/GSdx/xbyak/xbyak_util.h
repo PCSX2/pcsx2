@@ -83,6 +83,8 @@
 extern "C" unsigned __int64 __xgetbv(int);
 #endif
 
+MULTI_ISA_UNSHARED_HEADER_ONLY_START
+
 namespace Xbyak { namespace util {
 
 /* GCC uses AVX/SSE4 operation to handle the uint64 type.
@@ -617,4 +619,7 @@ private:
 #endif
 
 } } // end of util
+
+MULTI_ISA_UNSHARED_HEADER_ONLY_END
+
 #endif

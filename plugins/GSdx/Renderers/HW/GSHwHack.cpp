@@ -22,16 +22,16 @@
 #include "stdafx.h"
 #include "GSState.h"
 #include "GSdx.h"
+#include "MultiISA.h"
 
-bool s_nativeres;
 static CRCHackLevel s_crc_hack_level = CRCHackLevel::Full;
+
+MULTI_ISA_UNSHARED_IMPL;
 
 // hacks
 #define Dx_and_OGL (s_crc_hack_level >= CRCHackLevel::Partial)
 #define Dx_only (s_crc_hack_level >= CRCHackLevel::Full)
 #define Aggressive (s_crc_hack_level >= CRCHackLevel::Aggressive)
-
-CRC::Region g_crc_region = CRC::NoRegion;
 
 ////////////////////////////////////////////////////////////////////////////////
 // Broken on both DirectX and OpenGL

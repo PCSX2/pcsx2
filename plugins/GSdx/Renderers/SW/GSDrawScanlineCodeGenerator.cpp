@@ -22,6 +22,8 @@
 #include "stdafx.h"
 #include "GSDrawScanlineCodeGenerator.h"
 
+MULTI_ISA_UNSHARED_IMPL;
+
 #if _M_SSE >= 0x501
 #else
 void GSDrawScanlineCodeGenerator::Generate()

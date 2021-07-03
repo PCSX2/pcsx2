@@ -28,6 +28,8 @@
 
 #include "Renderers/SW/GSScanlineEnvironment.h"
 
+MULTI_ISA_UNSHARED_START
+
 template <class KEY, class VALUE>
 class GSFunctionMap
 {
@@ -259,3 +261,5 @@ public:
 		return ret;
 	}
 };
+
+MULTI_ISA_UNSHARED_END
