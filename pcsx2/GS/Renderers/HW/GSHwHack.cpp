@@ -453,35 +453,6 @@ bool GSC_MidnightClub3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_TalesOfLegendia(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (fi.TME && (fi.FBP == 0x3f80 || fi.FBP == 0x03fa0) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 3; // 3, 9
-		}
-		if (fi.TME && fi.FBP == 0x3800 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMZ32)
-		{
-			skip = 2;
-		}
-		if (fi.TME && fi.FBP && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x3d80)
-		{
-			skip = 1; // Missing block 2a00 in the upper left
-		}
-		if (fi.TME && fi.FBP == 0x1c00 && (fi.TBP0 == 0x2e80 || fi.TBP0 == 0x2d80) && fi.TPSM == 0 && fi.FBMSK == 0xff000000)
-		{
-			skip = 1; // Ghosting
-		}
-		if (!fi.TME && fi.FBP == 0x2a00 && (fi.TBP0 == 0x1C00) && fi.TPSM == 0 && fi.FBMSK == 0x00FFFFFF)
-		{
-			skip = 1; // Poisoned layer dislocation
-		}
-	}
-
-	return true;
-}
-
 bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -978,7 +949,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::Simple2000Vol114] = GSC_Simple2000Vol114;
 		lut[CRC::Spartan] = GSC_Spartan;
 		lut[CRC::SFEX3] = GSC_SFEX3;
-		lut[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
 		lut[CRC::TalesofSymphonia] = GSC_TalesofSymphonia;
 		lut[CRC::TombRaiderAnniversary] = GSC_TombRaiderAnniversary;
 		lut[CRC::TombRaiderLegend] = GSC_TombRaiderLegend;
