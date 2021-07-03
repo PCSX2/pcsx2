@@ -244,21 +244,6 @@ bool GSC_Spartan(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_IkkiTousen(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if ((Aggressive || !s_nativeres) && fi.TME && fi.FBP == 0x00700 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01180 && fi.TPSM == PSM_PSMZ24)
-		{
-			// Might not be needed if any of the upscaling hacks fix the issues, needs to be further tested.
-			// Don't enable hack on native res if crc is below aggressive.
-			skip = 11; // Upscaling blur/ghosting
-		}
-	}
-
-	return true;
-}
-
 bool GSC_Oneechanbara2Special(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -1040,7 +1025,6 @@ void GSState::SetupCrcHack()
 		// Upscaling hacks
 		lut[CRC::DBZBT3] = GSC_DBZBT3;
 		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
-		lut[CRC::IkkiTousen] = GSC_IkkiTousen;
 		lut[CRC::Oneechanbara2Special] = GSC_Oneechanbara2Special;
 		lut[CRC::UltramanFightingEvolution] = GSC_UltramanFightingEvolution;
 		lut[CRC::Yakuza] = GSC_YakuzaGames;
