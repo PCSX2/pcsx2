@@ -593,21 +593,6 @@ bool GSC_SakuraWarsSoLongMyLove(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_FightingBeautyWulong(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if ((Aggressive || !s_nativeres) && fi.TME && (fi.TBP0 == 0x0700 || fi.TBP0 == 0x0a80) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
-		{
-			// Don't enable hack on native res if crc is below aggressive.
-			// removes glow/blur which cause ghosting and other sprite issues similar to Tekken 5
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_GodHand(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -1054,7 +1039,6 @@ void GSState::SetupCrcHack()
 
 		// Upscaling hacks
 		lut[CRC::DBZBT3] = GSC_DBZBT3;
-		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
 		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
 		lut[CRC::IkkiTousen] = GSC_IkkiTousen;
 		lut[CRC::Oneechanbara2Special] = GSC_Oneechanbara2Special;
