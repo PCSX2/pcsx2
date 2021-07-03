@@ -259,21 +259,6 @@ bool GSC_IkkiTousen(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_EvangelionJo(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if ((Aggressive || !s_nativeres) && fi.TME && fi.TBP0 == 0x2BC0 || (fi.FBP == 0 || fi.FBP == 0x1180) && (fi.FPSM | fi.TPSM) == 0)
-		{
-			// Don't enable hack on native res if crc is below aggressive.
-			// Removes blur/glow. Fixes ghosting when resolution is upscaled.
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_Oneechanbara2Special(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -1069,7 +1054,6 @@ void GSState::SetupCrcHack()
 
 		// Upscaling hacks
 		lut[CRC::DBZBT3] = GSC_DBZBT3;
-		lut[CRC::EvangelionJo] = GSC_EvangelionJo;
 		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
 		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
 		lut[CRC::IkkiTousen] = GSC_IkkiTousen;
