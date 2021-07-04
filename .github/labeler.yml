@@ -62,24 +62,24 @@
   - 'pcsx2/**/VIF*'
 
 # GS Related Labels
-'Plugin: GS': # TODO - update after plugin merge
-  - '**/GSdx/*'
-  - '**/GSdx/**'
+'GS':
+  - 'pcsx2/GS/*'
+  - 'pcsx2/GS/**/*'
 'GS: Direct3D':
-  - '**/GSdx/Renderers/DX11/*'
-  - '**/GSdx/Renderers/DX11/**/*'
+  - 'pcsx2/GS/Renderers/DX11/*'
+  - 'pcsx2/GS/Renderers/DX11/**/*'
 'GS: Hardware':
-  - '**/GSdx/Renderers/HW/*'
-  - '**/GSdx/Renderers/HW/**/*'
+  - 'pcsx2/GS/Renderers/HW/*'
+  - 'pcsx2/GS/Renderers/HW/**/*'
 'GS: OpenGL':
-  - '**/GSdx/Renderers/OpenGL/*'
-  - '**/GSdx/Renderers/OpenGL/**/*'
+  - 'pcsx2/GS/Renderers/OpenGL/*'
+  - 'pcsx2/GS/Renderers/OpenGL/**/*'
 'GS: Texture Cache':
-  - '**/GSdx/Renderers/*TextureCache*.*'
-  - '**/GSdx/Renderers/**/*TextureCache*.*'
+  - 'pcsx2/GS/Renderers/*TextureCache*.*'
+  - 'pcsx2/GS/Renderers/**/*TextureCache*.*'
 'GS: Software':
-  - '**/GSdx/Renderers/SW/*'
-  - '**/GSdx/Renderers/SW/**/*'
+  - 'pcsx2/GS/Renderers/SW/*'
+  - 'pcsx2/GS/Renderers/SW/**/*'
 
 # Other Core Components
 'CDVD':
