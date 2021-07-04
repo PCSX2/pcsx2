@@ -447,14 +447,15 @@ void MainEmuFrame::CreateCdvdMenu()
 
 void MainEmuFrame::CreateConfigMenu()
 {
-	m_menuConfig.Append(MenuId_Config_SysSettings, _("Emulation &Settings..."));
-	m_menuConfig.Append(MenuId_Config_McdSettings, _("&Memory Cards..."));
-	m_menuConfig.Append(MenuId_Config_BIOS, _("&BIOS Selector..."));
-	m_menuConfig.Append(MenuId_Config_SPU2, _("&Audio Settings..."));
-	m_menuConfig.Append(MenuId_Config_DEV9, _("&Network and HDD Settings..."));
-	m_menuConfig.Append(MenuId_Config_USB, _("&USB Settings..."));
-	m_menuConfig.Append(MenuId_Config_PAD, _("&GamePad Settings..."));
-	m_menuConfig.Append(MenuId_Config_GS, _("&Graphical Settings..."));
+	m_menuConfig.Append(MenuId_Config_SysSettings, _("General &Settings"));
+	m_menuConfig.Append(MenuId_Config_McdSettings, _("&Memory Cards"));
+	m_menuConfig.Append(MenuId_Config_BIOS, _("&BIOS / Folder Selector"));
+	m_menuConfig.AppendSeparator();
+	m_menuConfig.Append(MenuId_Config_GS, _("&Graphics Settings"));
+	m_menuConfig.Append(MenuId_Config_SPU2, _("&Audio Settings"));
+	m_menuConfig.Append(MenuId_Config_PAD, _("Game&pad Settings"));
+	m_menuConfig.Append(MenuId_Config_DEV9, _("&Network and HDD Settings"));
+	m_menuConfig.Append(MenuId_Config_USB, _("&USB Settings"));
 	m_menuConfig.AppendSeparator();
 
 	m_menuConfig.Append(MenuId_Config_Multitap0Toggle, _("Multitap &1"), wxEmptyString, wxITEM_CHECK);
@@ -462,8 +463,8 @@ void MainEmuFrame::CreateConfigMenu()
 
 	m_menuConfig.AppendSeparator();
 
-	m_menuConfig.Append(MenuId_ChangeLang, L"Change &Language..."); // Always in English
-	m_menuConfig.Append(MenuId_Config_ResetAll, _("C&lear All Settings..."),
+	m_menuConfig.Append(MenuId_ChangeLang, L"Change &Language"); // Always in English
+	m_menuConfig.Append(MenuId_Config_ResetAll, _("&Clear All Settings"),
 		AddAppName(_("Clears all %s settings and re-runs the startup wizard.")));
 }
 
@@ -506,7 +507,7 @@ void MainEmuFrame::CreateCaptureMenu()
 	keyCode.Shift(false);
 	keyCode.Cmd(false);
 	AppendShortcutToMenuOption(*sysScreenShotItem, keyCode.toTitleizedString());
-	m_submenuScreenshot.Append(MenuId_Capture_Screenshot_Screenshot_As, _("Screenshot As..."));
+	m_submenuScreenshot.Append(MenuId_Capture_Screenshot_Screenshot_As, _("Save Screenshot As..."));
 }
 
 void MainEmuFrame::CreateInputRecordingMenu()
@@ -543,7 +544,7 @@ void MainEmuFrame::CreateHelpMenu()
 	m_menuHelp.Append(MenuId_Help_Forums, _("&Support Forums"));
 	m_menuHelp.Append(MenuId_Help_Github, _("&GitHub Repository"));
 	m_menuHelp.AppendSeparator();
-	m_menuHelp.Append(MenuId_About, _("&About..."));
+	m_menuHelp.Append(MenuId_About, _("&About"));
 }
 
 // ------------------------------------------------------------------------
@@ -591,7 +592,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	m_menubar.Append(&m_menuCDVD, _("CD&VD"));
 	m_menubar.Append(&m_menuConfig, _("&Config"));
 	m_menubar.Append(&m_menuWindow, _("&Debug"));
-	m_menubar.Append(&m_menuCapture, _("&Capture"));
+	m_menubar.Append(&m_menuCapture, _("Captu&re"));
 
 	SetMenuBar(&m_menubar);
 
