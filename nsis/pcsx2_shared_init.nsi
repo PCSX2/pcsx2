@@ -80,8 +80,8 @@ Function TempFilesOut
     File ..\bin\docs\*
 
   SetOutPath "$TEMP\PCSX2 ${APP_VERSION}\Shaders"
-    File ..\bin\shaders\GSdx.fx
-    File ..\bin\shaders\GSdx_FX_Settings.ini
+    File ..\bin\shaders\GS.fx
+    File ..\bin\shaders\GS_FX_Settings.ini
 
   SetOutPath "$TEMP\PCSX2 ${APP_VERSION}\Langs"
     File /nonfatal /r ..\bin\Langs\*.mo
