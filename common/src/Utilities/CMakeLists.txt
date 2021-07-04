@@ -1,14 +1,14 @@
 # Check that people use the good file
 if(NOT TOP_CMAKE_WAS_SOURCED)
-    message(FATAL_ERROR "
-    You did not 'cmake' the good CMakeLists.txt file. Use the one in the top dir.
-    It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
+	message(FATAL_ERROR "
+	You did not 'cmake' the good CMakeLists.txt file. Use the one in the top dir.
+	It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif(NOT TOP_CMAKE_WAS_SOURCED)
 
 set(Output Utilities)
 
 set(CommonFlags
-    )
+	)
 
 set(UtilitiesFinalFlags ${CommonFlags})
 
@@ -109,7 +109,7 @@ set(UtilitiesFinalSources
 )
 
 set(UtilitiesFinalLibs
-    ${LIBC_LIBRARIES} # Gold (new linux linker) does not get automatically dependency of dependency
+	${LIBC_LIBRARIES} # Gold (new linux linker) does not get automatically dependency of dependency
 	${wxWidgets_LIBRARIES}
 	yaml-cpp chdr-static
 )

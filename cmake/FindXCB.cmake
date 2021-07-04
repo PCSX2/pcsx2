@@ -31,8 +31,8 @@
 
 include(FeatureSummary)
 set_package_properties(XCB PROPERTIES
-   URL "http://xcb.freedesktop.org/"
-   DESCRIPTION "X protocol C-language Binding")
+	URL "http://xcb.freedesktop.org/"
+	DESCRIPTION "X protocol C-language Binding")
 
 find_package(PkgConfig)
 pkg_check_modules(PC_XCB QUIET xcb ${XCB_FIND_COMPONENTS})

@@ -7,14 +7,14 @@
 
 find_package(PkgConfig)
 if(PKG_CONFIG_FOUND)
-  pkg_check_modules (LIBSAMPLERATE samplerate)
-  list(APPEND LIBSAMPLERATE_INCLUDE_DIRS ${LIBSAMPLERATE_INCLUDEDIR})
+	pkg_check_modules (LIBSAMPLERATE samplerate)
+	list(APPEND LIBSAMPLERATE_INCLUDE_DIRS ${LIBSAMPLERATE_INCLUDEDIR})
 endif()
 
 if(NOT LIBSAMPLERATE_FOUND)
-  find_path( LIBSAMPLERATE_INCLUDE_DIRS "samplerate.h"
-             PATH_SUFFIXES "samplerate" )
-  find_library( LIBSAMPLERATE_LIBRARIES samplerate)
+	find_path( LIBSAMPLERATE_INCLUDE_DIRS "samplerate.h"
+	           PATH_SUFFIXES "samplerate" )
+	find_library( LIBSAMPLERATE_LIBRARIES samplerate)
 endif()
 
 # handle the QUIETLY and REQUIRED arguments and set SAMPLERATE_FOUND to TRUE if

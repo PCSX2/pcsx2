@@ -4,8 +4,8 @@ set(CMAKE_SYSTEM_PROCESSOR i686)
 
 # Leave it generic since it could be clang, gnu, etc.
 if("$ENV{CC}" STREQUAL "" OR "$ENV{CXX}" STREQUAL "")
-    set(CMAKE_C_COMPILER cc -m32)
-    set(CMAKE_CXX_COMPILER c++ -m32)
+	set(CMAKE_C_COMPILER cc -m32)
+	set(CMAKE_CXX_COMPILER c++ -m32)
 endif()
 
 # If given a CMAKE_FIND_ROOT_PATH then

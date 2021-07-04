@@ -4,7 +4,7 @@
 # LIBC_LIBRARIES - link these to use libc
 
 if(LIBC_LIBRARIES)
-    set(LIBC_FIND_QUIETLY TRUE)
+	set(LIBC_FIND_QUIETLY TRUE)
 endif(LIBC_LIBRARIES)
 
 find_library(libm NAMES m)
