@@ -453,22 +453,6 @@ void GSRendererDX11::EmulateBlending()
 		return;
 
 	m_om_bsel.abe = 1;
-
-	if (m_env.PABE.PABE)
-	{
-		if (ALPHA.A == 0 && ALPHA.B == 1 && ALPHA.C == 0 && ALPHA.D == 1)
-		{
-			// this works because with PABE alpha blending is on when alpha >= 0x80, but since the pixel shader
-			// cannot output anything over 0x80 (== 1.0) blending with 0x80 or turning it off gives the same result
-
-			m_om_bsel.abe = 0;
-		}
-
-		// Breath of Fire Dragon Quarter, Strawberry Shortcake, Super Robot Wars, Cartoon Network Racing.
-		// fprintf(stderr, "%d: PABE mode ENABLED\n", s_n);
-		m_ps_sel.pabe = 1;
-	}
-
 	m_om_bsel.blend_index = uint8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
 	const int blend_flag = m_dev->GetBlendFlags(m_om_bsel.blend_index);
 
@@ -510,6 +494,25 @@ void GSRendererDX11::EmulateBlending()
 		{
 			// fprintf(stderr, "%d: COLCLIP HDR mode ENABLED\n", s_n);
 			m_ps_sel.hdr = 1;
+		}
+	}
+
+	// Per pixel alpha blending
+	if (m_env.PABE.PABE)
+	{
+		// Breath of Fire Dragon Quarter, Strawberry Shortcake, Super Robot Wars, Cartoon Network Racing.
+
+		if (ALPHA.A == 0 && ALPHA.B == 1 && ALPHA.C == 0 && ALPHA.D == 1)
+		{
+			// this works because with PABE alpha blending is on when alpha >= 0x80, but since the pixel shader
+			// cannot output anything over 0x80 (== 1.0) blending with 0x80 or turning it off gives the same result
+
+			m_om_bsel.abe = 0;
+		}
+		if (sw_blending)
+		{
+			// fprintf(stderr, "%d: PABE mode ENABLED\n", s_n);
+			m_ps_sel.pabe = 1;
 		}
 	}
 

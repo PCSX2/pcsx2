@@ -474,13 +474,6 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 		return;
 	}
 
-	if (m_env.PABE.PABE)
-	{
-		// Breath of Fire Dragon Quarter, Strawberry Shortcake, Super Robot Wars, Cartoon Network Racing.
-		GL_INS("PABE mode ENABLED");
-		m_ps_sel.pabe = 1;
-	}
-
 	// Compute the blending equation to detect special case
 	const uint8 blend_index = uint8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
 	const int blend_flag = m_dev->GetBlendFlags(blend_index);
@@ -558,6 +551,18 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 		{
 			GL_INS("COLCLIP HDR mode ENABLED");
 			m_ps_sel.hdr = 1;
+		}
+	}
+
+	// Per pixel alpha blending
+	if (m_env.PABE.PABE)
+	{
+		// Breath of Fire Dragon Quarter, Strawberry Shortcake, Super Robot Wars, Cartoon Network Racing.
+
+		if (sw_blending)
+		{
+			GL_INS("PABE mode ENABLED");
+			m_ps_sel.pabe = 1;
 		}
 	}
 
