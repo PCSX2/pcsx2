@@ -1462,7 +1462,7 @@ bool GSApp::WriteIniString(const char* lpAppName, const char* lpKeyName, const c
 	return false;
 }
 
-int GSApp::GetIniInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName)
+int GSApp::GetIniInt(const char* lpAppName, const char* lpKeyName, int nDefault, fs::path lpFileName)
 {
 	BuildConfigurationMap(lpFileName);
 
@@ -1732,20 +1732,16 @@ void GSApp::ReloadConfig()
 	BuildConfigurationMap(filename.c_str());
 }
 
-void GSApp::BuildConfigurationMap(const char* lpFileName)
+void GSApp::BuildConfigurationMap(const fs::path lpFileName)
 {
 	// Check if the map was already built
-	std::string inifile_value(lpFileName);
-	if (inifile_value.compare(m_configuration_map["inifile"]) == 0)
+	if (lpFileName.string().compare(m_configuration_map["inifile"]) == 0)
 		return;
-	m_configuration_map["inifile"] = inifile_value;
+	m_configuration_map["inifile"] = lpFileName.string();
 
 	// Load config from file
-#ifdef _WIN32
-	std::ifstream file(convert_utf8_to_utf16(lpFileName));
-#else
 	std::ifstream file(lpFileName);
-#endif
+
 	if (!file.is_open())
 		return;
 
@@ -1786,8 +1782,9 @@ void GSApp::SetConfigDir()
 	// we need to initialize the ini folder later at runtime than at theApp init, as
 	// core settings aren't populated yet, thus we do populate it if needed either when
 	// opening GS settings or init -- govanify
-	wxString iniName(L"GS.ini");
-	m_ini = GetSettingsFolder().Combine(iniName).GetFullPath();
+	// Change this to pString later? -- weirdbeard
+	std::string iniName("GS.ini");
+	m_ini = GetSettingsFolder() / iniName;
 }
 
 std::string GSApp::GetConfigS(const char* entry)
@@ -1797,12 +1794,12 @@ std::string GSApp::GetConfigS(const char* entry)
 
 	if (def != m_default_configuration.end())
 	{
-		GetIniString(m_section.c_str(), entry, def->second.c_str(), buff, countof(buff), m_ini.c_str());
+		GetIniString(m_section.c_str(), entry, def->second.c_str(), buff, countof(buff), m_ini.string().c_str());
 	}
 	else
 	{
 		fprintf(stderr, "Option %s doesn't have a default value\n", entry);
-		GetIniString(m_section.c_str(), entry, "", buff, countof(buff), m_ini.c_str());
+		GetIniString(m_section.c_str(), entry, "", buff, countof(buff), m_ini.string().c_str());
 	}
 
 	return {buff};
@@ -1810,7 +1807,7 @@ std::string GSApp::GetConfigS(const char* entry)
 
 void GSApp::SetConfig(const char* entry, const char* value)
 {
-	WriteIniString(m_section.c_str(), entry, value, m_ini.c_str());
+	WriteIniString(m_section.c_str(), entry, value, m_ini.string().c_str());
 }
 
 int GSApp::GetConfigI(const char* entry)
@@ -1819,12 +1816,12 @@ int GSApp::GetConfigI(const char* entry)
 
 	if (def != m_default_configuration.end())
 	{
-		return GetIniInt(m_section.c_str(), entry, std::stoi(def->second), m_ini.c_str());
+		return GetIniInt(m_section.c_str(), entry, std::stoi(def->second), m_ini.string().c_str());
 	}
 	else
 	{
 		fprintf(stderr, "Option %s doesn't have a default value\n", entry);
-		return GetIniInt(m_section.c_str(), entry, 0, m_ini.c_str());
+		return GetIniInt(m_section.c_str(), entry, 0, m_ini.string().c_str());
 	}
 }
 

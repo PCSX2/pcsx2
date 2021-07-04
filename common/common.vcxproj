@@ -98,6 +98,7 @@
     <ClInclude Include="MathUtils.h" />
     <ClInclude Include="MemcpyFast.h" />
     <ClInclude Include="Path.h" />
+    <ClInclude Include="PathUtils.h" />
     <ClInclude Include="PrecompiledHeader.h" />
     <ClInclude Include="pxStaticText.h" />
     <ClInclude Include="RedtapeWindows.h" />

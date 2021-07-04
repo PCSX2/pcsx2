@@ -195,6 +195,9 @@
     <ClInclude Include="Path.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PathUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="PersistentThread.h">
       <Filter>Header Files</Filter>
     </ClInclude>
