@@ -66,14 +66,11 @@
       <AdditionalDependencies>comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies>dxguid.lib;dinput8.lib;hid.lib;PowrProf.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <!-- Ensures that there is always a `bin/portable.yaml` file -->
+    <!-- If you want to bypass this logic and have your portable.yaml settings persist from build-to-build you can -->
+    <!-- create a bin/portable.build.yaml file which is .gitignored and will be used instead -->
     <PostBuildEvent>
-      <Command Condition="$(Configuration.Contains(Debug)) OR $(Configuration.Contains(Devel)) OR $(Configuration.Contains(Release))">IF EXIST "$(OutDir)\portable.build.yaml" (
-  COPY  "$(OutDir)\portable.build.yaml" "$(OutDir)\portable.yaml"
-) ELSE (
-  IF EXIST "$(ProjectRootDir)\Docs\portable.yaml" (
-    COPY "$(ProjectRootDir)\Docs\portable.yaml" "$(OutDir)\portable.yaml"
-  )
-)</Command>
+      <Command>cmd /c $(ProjectDir)windows\PostBuildEvent.cmd "$(OutDirFullPath)" "$(ProjectDir)"</Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
