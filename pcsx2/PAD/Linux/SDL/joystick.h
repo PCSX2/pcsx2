@@ -49,6 +49,7 @@ public:
 	size_t GetUniqueIdentifier() final;
 
 private:
+	static constexpr uint32_t s_effect_duration_ms = 125; // 125ms feels quite near to original
 	SDL_GameController* m_controller;
 	SDL_Haptic* m_haptic;
 	std::array<int, NB_EFFECT> m_effects_id;
