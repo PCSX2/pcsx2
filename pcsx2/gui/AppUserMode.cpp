@@ -283,7 +283,7 @@ bool Pcsx2App::OpenInstallSettingsFile()
 
 	InstallFolder = Path::FromWxString((wxFileName(wxStandardPaths::Get().GetExecutablePath())).GetPath());
 
-	fs::path usermodeFile = (Path::FromWxString(GetAppName()) / "-reg.yaml");
+	fs::path usermodeFile = (Path::FromWxString(GetAppName()).concat("-reg.yaml"));
 	usermodePath = (usrlocaldir / usermodeFile); 
 
 	if (!fs::exists(usermodePath))
