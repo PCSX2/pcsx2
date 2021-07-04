@@ -78,7 +78,7 @@ bool Pcsx2App::TestUserPermissionsRights(const fs::path& testFolder)
 
 		if (!fs::exists(folder))
 			if (!fs::create_directories(folder))
-				ErrorFolders.push_back(folder);
+				ErrorFolders.push_back(folder.string());
 	}
 
 	for (int i = 0; i < ErrorFolders.size(); i++)

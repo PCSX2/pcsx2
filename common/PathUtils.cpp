@@ -101,12 +101,6 @@ bool wxDirName::Mkdir()
 //  Path namespace (wxFileName helpers)
 // ---------------------------------------------------------------------------------
 
-
-bool Path::IsRelative(const std::string &path)
-{
-	return fs::path(path).is_relative();
-}
-
 bool Path::IsDirectoryWithinDirectory(fs::path base, fs::path dir)
 {
 	fs::path relativePath = fs::relative(fs::absolute(dir), fs::absolute(base));
@@ -160,11 +154,6 @@ std::string Path::ReplaceFilename(const wxString &src, const wxString &newfilena
 wxString Path::GetFilenameWithoutExt(const wxString& src)
 {
 	return wxFileName(src).GetName();
-}
-
-std::string Path::GetDirectory(const std::string &src)
-{
-	return src;
 }
 
 fs::path Path::GetExecutableDirectory()
