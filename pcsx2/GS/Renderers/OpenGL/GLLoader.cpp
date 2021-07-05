@@ -16,7 +16,6 @@
 #include "PrecompiledHeader.h"
 #include "GLLoader.h"
 #include "GS.h"
-#include "GS.h"
 
 #if defined(__unix__) || defined(__APPLE__)
 PFNGLBLENDFUNCSEPARATEPROC glBlendFuncSeparate = NULL;

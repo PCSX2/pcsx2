@@ -16,7 +16,6 @@
 #include "PrecompiledHeader.h"
 #include <gtk/gtk.h>
 #include "GS.h"
-#include "GS.h"
 #include "GS_res.h"
 #include "GSSetting.h"
 
