@@ -201,8 +201,16 @@ void Pcsx2App::WipeUserModeSettings()
 	{
 		// Remove the registry entry "RunWizard" conforming to this instance of PCSX2.
 		bool conf_install = OpenInstallSettingsFile();
-		stream["RunWizard"] = true;
-		Save(usermodePath);
+		if (conf_install == true)
+		{
+			stream["RunWizard"] = true;
+			Save(usermodePath);
+		}
+		else
+		{
+			// Uh, huston? We have a problem. This shouldn't be physically possible! Unless permission errors
+			Console.Error("Permission Error. Install mode not initalized!");
+		}
 	}
 }
 
@@ -247,12 +255,16 @@ bool Pcsx2App::Load(const fs::path& fileName)
 	}
 }
 
-void Pcsx2App::Save(const fs::path& fileName)
+bool Pcsx2App::Save(const fs::path& fileName)
 {
 	if (!fs::exists(fileName.parent_path().make_preferred()))
 	{
-		fs::create_directories(fileName.parent_path().make_preferred());
-	}
+		if (!fs::create_directories(fileName.parent_path().make_preferred()))
+		{
+			//Console.Error("Could not create Directory: ", fileName.string()); MacOS has issues with this line
+			return false;
+		}
+	} 
 
 	if (stream)
 	{
@@ -265,8 +277,10 @@ void Pcsx2App::Save(const fs::path& fileName)
 		catch (const std::exception& e)
 		{
 			DevCon.Warning("ERROR: ", e.what());
+			return false;
 		}
 	}
+	return true;
 }
 
 bool Pcsx2App::OpenInstallSettingsFile()
@@ -297,7 +311,10 @@ bool Pcsx2App::OpenInstallSettingsFile()
 		stream["SettingsFolder"] = SettingsFolder.string();
 		stream["Install_Dir"] = InstallFolder.string();
 		stream["RunWizard"] = false;
-		Save(usermodePath);
+		if (!Save(usermodePath))
+		{
+			return false;
+		}
 		DoFirstTimeWizard();
 		// Save user's new settings
 		AppConfig_OnChangedSettingsFolder(true);
@@ -311,7 +328,10 @@ bool Pcsx2App::OpenInstallSettingsFile()
 		{
 			DoFirstTimeWizard(); // covering the case the file was edited to true manually
 			stream["RunWizard"] = false;
-			Save(usermodePath);
+			if (!Save(usermodePath))
+			{
+				return false;
+			}
 		}
 
 		DocsFolderMode = (DocsModeType)stream["DocumentsFolderMode"].as<int>();
@@ -328,7 +348,7 @@ void Pcsx2App::ForceFirstTimeWizardOnNextRun()
 	bool conf_install = TestForPortableInstall();
 
 	if (!conf_install)
-		conf_install = OpenInstallSettingsFile();
+		OpenInstallSettingsFile();
 
 	stream["RunWizard"] = true;
 }

@@ -159,6 +159,9 @@ ATTR_DEP extern void FSTP32(u32 to);
 // fstp st(i)
 ATTR_DEP extern void FSTP(int st);
 
+#ifdef FSCALE
+# undef FSCALE // Defined in a macOS header
+#endif
 // frndint
 ATTR_DEP extern void FRNDINT();
 ATTR_DEP extern void FXCH(int st);

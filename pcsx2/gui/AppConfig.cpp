@@ -172,7 +172,7 @@ namespace PathDefs
 		// change it with compilation flags. -- Gregory
 #define xGAMEINDEX_str(s) GAMEINDEX_DIR_str(s)
 #define GAMEINDEX_DIR_str(s) #s
-		return std::string( xGAMEINDEX_str(GAMEINDEX_DIR_COMPILATION) );
+//		return std::string( xGAMEINDEX_str(GAMEINDEX_DIR_COMPILATION) );
 #endif
 	}
 
