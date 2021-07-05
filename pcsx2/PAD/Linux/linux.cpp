@@ -13,13 +13,12 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "Global.h"
 #include "AppCoreThread.h"
-#include "GamePad.h"
-#include "PAD.h"
+#include "Device.h"
 #include "keyboard.h"
 #include "state_management.h"
 
-#include <string.h>
 #include "wx_dialog/dialog.h"
 
 #ifndef __APPLE__
@@ -55,27 +54,7 @@ s32 _PADopen(void* pDsp)
 
 void _PADclose()
 {
-	s_vgamePad.clear();
-}
-
-void PollForJoystickInput(int cpad)
-{
-	int index = GamePad::uid_to_index(cpad);
-	if (index < 0)
-		return;
-
-	auto& gamePad = s_vgamePad[index];
-
-	gamePad->UpdateGamePadState();
-
-	for (int i = 0; i < MAX_KEYS; i++)
-	{
-		s32 value = gamePad->GetInput((gamePadValues)i);
-		if (value != 0)
-			g_key_status.press(cpad, i, value);
-		else
-			g_key_status.release(cpad, i);
-	}
+	device_manager->devices.clear();
 }
 
 void PADupdate(int pad)
@@ -95,26 +74,7 @@ void PADupdate(int pad)
 
 	// Actually PADupdate is always call with pad == 0. So you need to update both
 	// pads -- Gregory
-
-	// Poll keyboard/mouse event. There is currently no way to separate pad0 from pad1 event.
-	// So we will populate both pad in the same time
-	for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++)
-	{
-		g_key_status.keyboard_state_acces(cpad);
-	}
-	UpdateKeyboardInput();
-
-	// Get joystick state + Commit
-	for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++)
-	{
-		g_key_status.joystick_state_acces(cpad);
-
-		PollForJoystickInput(cpad);
-
-		g_key_status.commit_status(cpad);
-	}
-
-	Pad::rumble_all();
+	device_manager->Update();
 }
 
 void PADconfigure()

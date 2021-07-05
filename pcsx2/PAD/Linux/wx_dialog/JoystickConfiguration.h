@@ -15,14 +15,11 @@
 
 #pragma once
 
-#ifndef __JOYSTICKCONFIGURATION_H__
-#define __JOYSTICKCONFIGURATION_H__
-
 #include <wx/wx.h>
 
-#include "PAD/Linux/GamePad.h"
-#include "PAD/Linux/keyboard.h"
-#include "PAD/Linux/PAD.h"
+#include "../Global.h"
+#include "../Device.h"
+#include "../keyboard.h"
 
 class JoystickConfiguration : public wxDialog
 {
@@ -43,5 +40,3 @@ public:
 	JoystickConfiguration(int, bool, wxWindow*);
 	void InitJoystickConfiguration();
 };
-
-#endif // __JOYSTICKCONFIGURATION_H__

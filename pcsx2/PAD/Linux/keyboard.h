@@ -13,33 +13,32 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __KEYBOARD_H__
-#define __KEYBOARD_H__
+#pragma once
 
-#include "PAD.h"
+#include "Pcsx2Defs.h"
+#include "App.h"
 
 #if defined(__unix__) || defined(__APPLE__)
 
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
+
 // x11 is dumb like that
 #undef DisableScreenSaver
 
 extern void AnalyzeKeyEvent(keyEvent& evt);
 extern void UpdateKeyboardInput();
 extern bool PollForNewKeyboardKeys(u32& pkey);
-#ifndef __APPLE__
+#endif
+
+#if defined(__unix__)
+#include <gtk/gtk.h>
+#include <gdk/gdkkeysyms.h>
+
 extern Display* GSdsp;
 extern Window GSwin;
-#endif
 
-#else
-
-extern char* KeysymToChar(int keysym);
-extern WNDPROC GSwndProc;
-extern HWND GShwnd;
-
-#endif
-
+#elif defined(__APPLE__)
+#include <Carbon/Carbon.h>
 #endif

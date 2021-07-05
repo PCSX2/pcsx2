@@ -14,12 +14,8 @@
  */
 
 #pragma once
-#include <string.h> // for memset
-#define MAX_KEYS 24
 
-extern void set_keyboard_key(int pad, int keysym, int index);
-extern int get_keyboard_key(int pad, int keysym);
-extern bool IsAnalogKey(int index);
+#include "Global.h"
 
 class PADconf
 {
@@ -58,7 +54,7 @@ public:
 		packed_options = 0;
 		ff_intensity = 0x7FFF; // set it at max value by default
 		sensibility = 100;
-		for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
+		for (u32 pad = 0; pad < GAMEPAD_NUMBER; pad++)
 		{
 			keysym_map[pad].clear();
 		}
@@ -123,3 +119,19 @@ public:
 	}
 };
 extern PADconf g_conf;
+
+static __forceinline void set_keyboard_key(int pad, int keysym, int index)
+{
+	g_conf.keysym_map[pad][keysym] = index;
+}
+
+static __forceinline int get_keyboard_key(int pad, int keysym)
+{
+	// You must use find instead of []
+	// [] will create an element if the key does not exist and return 0
+	std::map<u32, u32>::iterator it = g_conf.keysym_map[pad].find(keysym);
+	if (it != g_conf.keysym_map[pad].end())
+		return it->second;
+	else
+		return -1;
+}

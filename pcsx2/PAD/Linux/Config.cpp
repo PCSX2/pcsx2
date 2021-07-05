@@ -13,12 +13,10 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include <string.h>
-
-#include "GamePad.h"
+#include "Global.h"
+#include "Device.h"
 #include "keyboard.h"
 #include "AppConfig.h"
-#include "PAD.h"
 
 void DefaultKeyboardValues()
 {
@@ -59,7 +57,7 @@ void PADSaveConfig()
 	fprintf(f, "uid[0] = %zu\n", g_conf.get_joy_uid(0));
 	fprintf(f, "uid[1] = %zu\n", g_conf.get_joy_uid(1));
 
-	for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
+	for (u32 pad = 0; pad < GAMEPAD_NUMBER; pad++)
 		for (auto const& it : g_conf.keysym_map[pad])
 			fprintf(f, "PAD %d:KEYSYM 0x%x = %d\n", pad, it.first, it.second);
 
@@ -80,7 +78,7 @@ void PADLoadConfig()
 	wxString iniName(L"PAD.ini");
 	const std::string iniFile = std::string(GetSettingsFolder().Combine(iniName).GetFullPath()); // default path, just in case
 	f = fopen(iniFile.c_str(), "r");
-	if (f == NULL)
+	if (f == nullptr)
 	{
 		printf("OnePAD: failed to load ini %s\n", iniFile.c_str());
 		PADSaveConfig(); //save and return
@@ -113,6 +111,7 @@ void PADLoadConfig()
 	u32 pad;
 	u32 keysym;
 	u32 index;
+
 	while (fscanf(f, "PAD %u:KEYSYM 0x%x = %u\n", &pad, &keysym, &index) == 3)
 	{
 		set_keyboard_key(pad & 1, keysym, index);

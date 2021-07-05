@@ -14,17 +14,18 @@
  */
 
 #include "KeyStatus.h"
+#include "Config.h"
 
 void KeyStatus::Init()
 {
-	for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
+	for (u32 pad = 0; pad < GAMEPAD_NUMBER; pad++)
 	{
 		m_button[pad] = 0xFFFF;
 		m_internal_button_kbd[pad] = 0xFFFF;
 		m_internal_button_joy[pad] = 0xFFFF;
 		m_state_acces[pad] = false;
 
-		for (int index = 0; index < MAX_KEYS; index++)
+		for (u32 index = 0; index < MAX_KEYS; index++)
 		{
 			m_button_pressure[pad][index] = 0xFF;
 			m_internal_button_pressure[pad][index] = 0xFF;
@@ -193,7 +194,7 @@ void KeyStatus::commit_status(u32 pad)
 {
 	m_button[pad] = m_internal_button_kbd[pad] & m_internal_button_joy[pad];
 
-	for (int index = 0; index < MAX_KEYS; index++)
+	for (u32 index = 0; index < MAX_KEYS; index++)
 		m_button_pressure[pad][index] = m_internal_button_pressure[pad][index];
 
 	m_analog[pad].lx = analog_merge(m_internal_analog_kbd[pad].lx, m_internal_analog_joy[pad].lx);

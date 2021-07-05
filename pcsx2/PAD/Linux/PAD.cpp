@@ -16,19 +16,18 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <fcntl.h>
-#include <string.h>
 #include <stdarg.h>
 
-#include "Utilities/pxStreams.h"
 #include "keyboard.h"
 #include "PAD.h"
 #include "state_management.h"
 
+#if defined(__unix__) || defined(__APPLE__)
+#include "Device.h"
+#endif
+
 #ifdef __linux__
 #include <unistd.h>
-#endif
-#ifdef _MSC_VER
-#define snprintf sprintf_s
 #endif
 
 const u32 revision = 3;
@@ -118,7 +117,7 @@ s32 PADopen(void* pDsp)
 	g_ev_fifo.reset();
 
 #if defined(__unix__) || defined(__APPLE__)
-	GamePad::EnumerateGamePads(s_vgamePad);
+	EnumerateDevices();
 #endif
 	return _PADopen(pDsp);
 }
@@ -252,7 +251,7 @@ keyEvent* PADkeyEvent()
 		{
 			case SDL_CONTROLLERDEVICEADDED:
 			case SDL_CONTROLLERDEVICEREMOVED:
-				GamePad::EnumerateGamePads(s_vgamePad);
+				EnumerateDevices();
 				break;
 			default:
 				break;
@@ -274,10 +273,10 @@ keyEvent* PADkeyEvent()
 	// PAD_LOG("Returning Event. Event Type: %d, Key: %d\n", s_event.evt, s_event.key);
 	return &s_event;
 #else // MacOS
-    s_event = event;
-    event.evt = 0;
-    event.key = 0;
-    return &s_event;
+	s_event = event;
+	event.evt = 0;
+	event.key = 0;
+	return &s_event;
 #endif
 }
 

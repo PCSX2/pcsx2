@@ -15,9 +15,6 @@
 
 #pragma once
 
-#ifndef __OPPANEL_H__
-#define __OPPANEL_H__
-
 #include <wx/wx.h>
 
 #include "EmbeddedImage.h"
@@ -70,5 +67,3 @@ public:
 	void ShowImg(int);
 	void MoveJoystick(int, int);
 };
-
-#endif // __OPPANEL_H__

@@ -18,24 +18,12 @@
   * Pragmatically, event handing's going in here too.
   */
 
-#if defined(__unix__)
-#include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
-#elif defined(__APPLE__)
-#include <Carbon/Carbon.h>
-#endif
-
+#include "Global.h"
 #include "keyboard.h"
 
-#ifdef _WIN32
-char* KeysymToChar(int keysym)
-{
-	LPWORD temp;
-
-	ToAscii((UINT)keysym, NULL, NULL, temp, NULL);
-	return (char*)temp;
-}
-#endif
+#include "mt_queue.h"
+extern keyEvent event;
+extern MtQueue<keyEvent> g_ev_fifo;
 
 /// g_key_status.press but with proper handling for analog buttons
 static void PressButton(u32 pad, u32 button)
@@ -76,7 +64,7 @@ static void PressButton(u32 pad, u32 button)
 
 void UpdateKeyboardInput()
 {
-	for (int pad = 0; pad < GAMEPAD_NUMBER; pad++)
+	for (u32 pad = 0; pad < GAMEPAD_NUMBER; pad++)
 	{
 		const auto& map = g_conf.keysym_map[pad];
 		// If we loop over all keys press/release based on current state,
@@ -135,7 +123,7 @@ void AnalyzeKeyEvent(keyEvent& evt)
 	int pad = 0;
 	int index = -1;
 
-	for (int cpad = 0; cpad < GAMEPAD_NUMBER; cpad++)
+	for (u32 cpad = 0; cpad < GAMEPAD_NUMBER; cpad++)
 	{
 		int tmp_index = get_keyboard_key(cpad, key);
 		if (tmp_index != -1)
@@ -320,74 +308,5 @@ bool PollForNewKeyboardKeys(u32& pkey)
 	}
 
 	return false;
-}
-
-#else
-LRESULT WINAPI PADwndProc(HWND hWnd, UINT msg, WPARAM wParam, LPARAM lParam)
-{
-	static bool lbutton = false, rbutton = false;
-	for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
-	{
-		g_key_status.keyboard_state_acces(pad);
-	}
-
-	switch (msg)
-	{
-		case WM_KEYDOWN:
-			if (lParam & 0x40000000)
-				return TRUE;
-
-			for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
-			{
-				for (int i = 0; i < MAX_KEYS; i++)
-				{
-					assert(0);
-#if 0
-                    if (wParam == get_key(pad, i)) {
-                        g_key_status.press(pad, i);
-                        break;
-                    }
-#endif
-				}
-			}
-
-			event.evt = KEYPRESS;
-			event.key = wParam;
-			break;
-
-		case WM_KEYUP:
-			for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
-			{
-				for (int i = 0; i < MAX_KEYS; i++)
-				{
-					assert(0);
-#if 0
-                    if (wParam == get_key(pad, i)) {
-                        g_key_status.release(pad, i);
-                        break;
-                    }
-#endif
-				}
-			}
-
-
-			event.evt = KEYRELEASE;
-			event.key = wParam;
-			break;
-
-		case WM_DESTROY:
-		case WM_QUIT:
-			event.evt = KEYPRESS;
-			event.key = VK_ESCAPE;
-			return GSwndProc(hWnd, msg, wParam, lParam);
-
-		default:
-			return GSwndProc(hWnd, msg, wParam, lParam);
-	}
-
-	for (int pad = 0; pad < GAMEPAD_NUMBER; ++pad)
-		g_key_status.commit_status(pad);
-
-	return TRUE;
 }
 #endif

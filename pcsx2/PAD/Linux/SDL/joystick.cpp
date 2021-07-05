@@ -22,7 +22,7 @@
 //////////////////////////
 
 // opens handles to all possible joysticks
-void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>>& vjoysticks)
+void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<Device>>& vjoysticks)
 {
 	uint32_t flag = SDL_INIT_JOYSTICK | SDL_INIT_HAPTIC | SDL_INIT_EVENTS | SDL_INIT_GAMECONTROLLER;
 
@@ -66,7 +66,7 @@ void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>>& vjo
 
 	for (int i = 0; i < SDL_NumJoysticks(); ++i)
 	{
-		vjoysticks.push_back(std::unique_ptr<GamePad>(new JoystickInfo(i)));
+		vjoysticks.push_back(std::unique_ptr<Device>(new JoystickInfo(i)));
 		// Something goes wrong in the init, let's drop it
 		if (!vjoysticks.back()->IsProperlyInitialized())
 			vjoysticks.pop_back();
@@ -116,7 +116,7 @@ JoystickInfo::~JoystickInfo()
 }
 
 JoystickInfo::JoystickInfo(int id)
-	: GamePad()
+	: Device()
 	, m_controller(nullptr)
 	, m_haptic(nullptr)
 	, m_unique_id(0)
@@ -168,7 +168,7 @@ JoystickInfo::JoystickInfo(int id)
 	// Collect Device Information
 	char guid[64];
 	SDL_JoystickGetGUIDString(SDL_JoystickGetGUID(joy), guid, 64);
-	const char* devname = SDL_JoystickNameForIndex(id);
+	m_device_name = SDL_JoystickNameForIndex(id);
 
 	if (m_controller == nullptr)
 	{
@@ -176,7 +176,7 @@ JoystickInfo::JoystickInfo(int id)
 						"You can use SDL2 Gamepad Tool (https://www.generalarcade.com/gamepadtool/) or Steam to configure your joystick\n"
 						"The mapping can be stored in PAD.ini as 'SDL2 = <...mapping description...>'\n"
 						"Please post the new generated mapping to (https://github.com/gabomdq/SDL_GameControllerDB) so it can be added to the database.",
-				devname, guid);
+				m_device_name.c_str(), guid);
 
 #if SDL_MINOR_VERSION >= 4 // Version before 2.0.4 are bugged, JoystickClose crashes randomly
 		SDL_JoystickClose(joy);
@@ -242,7 +242,7 @@ JoystickInfo::JoystickInfo(int id)
 	}
 
 	fprintf(stdout, "PAD: controller (%s) detected%s, GUID:%s\n",
-			devname, m_haptic ? " with rumble support" : "", guid);
+			m_device_name.c_str(), m_haptic ? " with rumble support" : "", guid);
 
 	m_no_error = true;
 }
@@ -299,7 +299,7 @@ int JoystickInfo::GetInput(gamePadValues input)
 	return value ? 0xFF : 0; // Max pressure
 }
 
-void JoystickInfo::UpdateGamePadState()
+void JoystickInfo::UpdateDeviceState()
 {
 	SDL_GameControllerUpdate();
 }
