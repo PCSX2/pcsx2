@@ -81,7 +81,6 @@ wxString GetOSVersionString()
 {
     wxString retval;
 
-    OSVERSIONINFOEX osvi;
     SYSTEM_INFO si;
     PGNSI pGNSI;
     PGPI pGPI;
@@ -89,13 +88,6 @@ wxString GetOSVersionString()
     DWORD dwType;
 
     memzero(si);
-    memzero(osvi);
-
-    osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-// GetVersionEx is deprecated, but we don't use it for version checking anyways
-#pragma warning(suppress : 4996)
-    if (!(bOsVersionInfoEx = GetVersionEx((OSVERSIONINFO *)&osvi)))
-        return L"GetVersionEx Error!";
 
     // Call GetNativeSystemInfo if supported or GetSystemInfo otherwise.
 
@@ -118,7 +110,6 @@ wxString GetOSVersionString()
         retval += IsWindowsServer() ? L"Windows Server 2012 R2 " : L"Windows 8.1 ";
 
     pGPI = (PGPI)GetProcAddress(GetModuleHandle(TEXT("kernel32.dll")), "GetProductInfo");
-    pGPI(osvi.dwMajorVersion, osvi.dwMinorVersion, 0, 0, &dwType);
 
     switch (dwType)
     {
@@ -174,12 +165,10 @@ wxString GetOSVersionString()
             break;
     }
 
-    retval += wxsFormat(L" (build %d)", osvi.dwBuildNumber);
-
     if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
-        retval += L", 64-bit";
+        retval += L"(64-bit)";
     else if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL)
-        retval += L", 32-bit";
+        retval += L"(32-bit)";
 
     return retval;
 }
