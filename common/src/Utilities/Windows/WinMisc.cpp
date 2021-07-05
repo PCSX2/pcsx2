@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -92,7 +92,8 @@ wxString GetOSVersionString()
     memzero(osvi);
 
     osvi.dwOSVersionInfoSize = sizeof(OSVERSIONINFOEX);
-
+// GetVersionEx is deprecated, but we don't use it for version checking anyways
+#pragma warning(suppress : 4996)
     if (!(bOsVersionInfoEx = GetVersionEx((OSVERSIONINFO *)&osvi)))
         return L"GetVersionEx Error!";
 
