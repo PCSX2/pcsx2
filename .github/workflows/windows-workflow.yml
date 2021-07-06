@@ -108,6 +108,11 @@ jobs:
         shell: bash
         working-directory: ./bin
         run: |
+          retainDebugArtifacts=$([ "${{ github.event.inputs.retainDebugArtifacts }}" == "true" ] && echo "true" || echo "false")
+          if [ "${retainDebugArtifacts}" == "false" ]; then
+            ls ./
+            rm -f *.bsc *.exp *.ilk *.iobj *.ipdb *.lib *.pdb
+          fi
           shopt -s extglob dotglob
           mkdir "${{ steps.artifact-metadata.outputs.name }}"
           mv !("${{ steps.artifact-metadata.outputs.name }}") "${{ steps.artifact-metadata.outputs.name }}"
