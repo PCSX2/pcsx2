@@ -566,7 +566,7 @@ namespace usb_eyetoy
 		return RESULT_CANCELED;
 	}
 
-	int EyeToyWebCamDevice::Freeze(int mode, USBDevice* dev, void* data)
+	int EyeToyWebCamDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
 	{
 		/*switch (mode)
 	{

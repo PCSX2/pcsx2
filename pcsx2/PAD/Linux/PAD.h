@@ -138,7 +138,7 @@ s32 PADopen(void* pDsp);
 void PADsetLogDir(const char* dir);
 void PADclose();
 s32 PADsetSlot(u8 port, u8 slot);
-s32 PADfreeze(int mode, freezeData* data);
+s32 PADfreeze(FreezeAction mode, freezeData* data);
 u8 PADstartPoll(int pad);
 u8 PADpoll(u8 value);
 keyEvent* PADkeyEvent();

@@ -538,7 +538,7 @@ void SPU2endRecording()
 		RecordStop();
 }
 
-s32 SPU2freeze(int mode, freezeData* data)
+s32 SPU2freeze(FreezeAction mode, freezeData* data)
 {
 	pxAssume(data != nullptr);
 	if (!data)
@@ -547,13 +547,13 @@ s32 SPU2freeze(int mode, freezeData* data)
 		return -1;
 	}
 
-	if (mode == FREEZE_SIZE)
+	if (mode == FreezeAction::Size)
 	{
 		data->size = SPU2Savestate::SizeIt();
 		return 0;
 	}
 
-	pxAssume(mode == FREEZE_LOAD || mode == FREEZE_SAVE);
+	pxAssume(mode == FreezeAction::Load || mode == FreezeAction::Save);
 
 	if (data->data == nullptr)
 	{
@@ -561,13 +561,13 @@ s32 SPU2freeze(int mode, freezeData* data)
 		return -1;
 	}
 
-	SPU2Savestate::DataBlock& spud = (SPU2Savestate::DataBlock&)*(data->data);
+	auto& spud = (SPU2Savestate::DataBlock&)*(data->data);
 
 	switch (mode)
 	{
-		case FREEZE_LOAD:
+		case FreezeAction::Load:
 			return SPU2Savestate::ThawIt(spud);
-		case FREEZE_SAVE:
+		case FreezeAction::Save:
 			return SPU2Savestate::FreezeIt(spud);
 
 			jNO_DEFAULT;

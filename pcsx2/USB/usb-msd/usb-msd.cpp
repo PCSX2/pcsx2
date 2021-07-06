@@ -1049,7 +1049,7 @@ namespace usb_msd
 		return "msd";
 	}
 
-	int MsdDevice::Freeze(int mode, USBDevice* dev, void* data)
+	int MsdDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
 	{
 		MSDState* s = (MSDState*)dev;
 		MSDState::freeze* tmp;
@@ -1058,7 +1058,7 @@ namespace usb_msd
 			return 0;
 		switch (mode)
 		{
-			case FREEZE_LOAD:
+			case FreezeAction::Load:
 				//if (s->f.req) free (s->f.req);
 
 				tmp = (MSDState::freeze*)data;
@@ -1072,12 +1072,12 @@ namespace usb_msd
 				usb_reattach(dev->port);
 				return sizeof(MSDState::freeze); // + sizeof(ReqState);
 
-			case FREEZE_SAVE:
+			case FreezeAction::Save:
 				tmp = (MSDState::freeze*)data;
 				*tmp = s->f;
 				return sizeof(MSDState::freeze);
 
-			case FREEZE_SIZE:
+			case FreezeAction::Size:
 				return sizeof(MSDState::freeze); // + sizeof(ReqState);
 			default:
 				break;
