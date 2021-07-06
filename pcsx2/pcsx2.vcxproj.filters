@@ -533,9 +533,6 @@
     <ClCompile Include="IopMem.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
-    <ClCompile Include="IopSif.cpp">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClCompile>
     <ClCompile Include="IopSio2.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>

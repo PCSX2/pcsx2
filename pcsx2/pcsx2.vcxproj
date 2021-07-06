@@ -1136,15 +1136,6 @@
     <ProjectReference Include="$(SolutionDir)3rdparty\soundtouch\SoundTouch.vcxproj">
       <Project>{e9b51944-7e6d-4bcd-83f2-7bbd5a46182d}</Project>
     </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\wxwidgets3.0\build\msw\wx30_adv.vcxproj">
-      <Project>{24c45343-fd20-5c92-81c1-35a2ae841e79}</Project>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\wxwidgets3.0\build\msw\wx30_base.vcxproj">
-      <Project>{3fcc50c2-81e9-5db2-b8d8-2129427568b1}</Project>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)3rdparty\wxwidgets3.0\build\msw\wx30_core.vcxproj">
-      <Project>{6744dad8-9c70-574a-bff2-9f8dddb24a75}</Project>
-    </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\xz\liblzma.vcxproj">
       <Project>{12728250-16ec-4dc6-94d7-e21dd88947f8}</Project>
     </ProjectReference>

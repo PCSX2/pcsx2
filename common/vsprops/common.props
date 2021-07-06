@@ -31,7 +31,11 @@
     </ClCompile>
     <Link>
       <AdditionalDependencies>setupapi.lib;comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="$(Configuration.Contains(Debug))">wx30_adv-dbg.lib;wx30_base-dbg.lib;wx30_core-dbg.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies Condition="!$(Configuration.Contains(Debug))">wx30_adv.lib;wx30_base.lib;wx30_core.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalLibraryDirectories>..\;..\libs;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='x64'">$(SolutionDir)3rdparty\wx\win64;%(AdditionalDependencies)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories Condition="'$(Platform)'=='Win32'">$(SolutionDir)3rdparty\wx\win32;%(AdditionalDependencies)</AdditionalLibraryDirectories>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Windows</SubSystem>
     </Link>
