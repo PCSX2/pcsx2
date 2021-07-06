@@ -105,8 +105,6 @@ oprofile_data/
 /3rdparty/portaudio/src/hostapi/asio/ASIOSDK/common
 /3rdparty/portaudio/src/hostapi/asio/ASIOSDK/host
 /3rdparty/portaudio/src/hostapi/wasapi/mingw-include
-/3rdparty/**/include/wx/setup.h
-/3rdparty/**/wx/msw/rcdefs.h
 /pcsx2/gui/Resources/*.h
 !/pcsx2/gui/Resources/EmbeddedImage.h
 /tools/bin
