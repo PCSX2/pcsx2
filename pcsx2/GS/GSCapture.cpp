@@ -21,47 +21,55 @@
 
 #ifdef _WIN32
 
-class CPinInfo : public PIN_INFO
+static void __stdcall ClosePinInfo(_Inout_ PIN_INFO* info) WI_NOEXCEPT
 {
-public:
-	CPinInfo() { pFilter = NULL; }
-	~CPinInfo()
+	if (info->pFilter)
 	{
-		if (pFilter)
-			pFilter->Release();
+		info->pFilter->Release();
 	}
-};
+}
 
-class CFilterInfo : public FILTER_INFO
+static void __stdcall CloseFilterInfo(_Inout_ FILTER_INFO* info) WI_NOEXCEPT
 {
-public:
-	CFilterInfo() { pGraph = NULL; }
-	~CFilterInfo()
+	if (info->pGraph)
 	{
-		if (pGraph)
-			pGraph->Release();
+		info->pGraph->Release();
 	}
-};
+}
 
-#define BeginEnumFilters(pFilterGraph, pEnumFilters, pBaseFilter) \
-	{ \
-		CComPtr<IEnumFilters> pEnumFilters; \
-		if(pFilterGraph && SUCCEEDED(pFilterGraph->EnumFilters(&pEnumFilters))) \
-		{ \
-			for(CComPtr<IBaseFilter> pBaseFilter; S_OK == pEnumFilters->Next(1, &pBaseFilter, 0); pBaseFilter = NULL) \
+using unique_pin_info = wil::unique_struct<PIN_INFO, decltype(&::ClosePinInfo), ::ClosePinInfo>;
+using unique_filter_info = wil::unique_struct<FILTER_INFO, decltype(&::CloseFilterInfo), ::CloseFilterInfo>;
+
+template<typename Func>
+static void EnumFilters(IGraphBuilder* filterGraph, Func&& f)
+{
+	wil::com_ptr_nothrow<IEnumFilters> enumFilters;
+	if (SUCCEEDED(filterGraph->EnumFilters(enumFilters.put())))
+	{
+		wil::com_ptr_nothrow<IBaseFilter> baseFilter;
+		while (enumFilters->Next(1, baseFilter.put(), nullptr) == S_OK)
+		{
+			std::forward<Func>(f)(baseFilter.get());
+		}
+	}
+}
+
+template<typename Func>
+static void EnumPins(IBaseFilter* baseFilter, Func&& f)
+{
+	wil::com_ptr_nothrow<IEnumPins> enumPins;
+	if (SUCCEEDED(baseFilter->EnumPins(enumPins.put())))
+	{
+		wil::com_ptr_nothrow<IPin> pin;
+		while (enumPins->Next(1, pin.put(), nullptr) == S_OK)
+		{
+			if (!std::forward<Func>(f)(pin.get()))
 			{
-
-#define EndEnumFilters }}}
-
-#define BeginEnumPins(pBaseFilter, pEnumPins, pPin) \
-	{ \
-		CComPtr<IEnumPins> pEnumPins; \
-		if(pBaseFilter && SUCCEEDED(pBaseFilter->EnumPins(&pEnumPins))) \
-		{ \
-			for(CComPtr<IPin> pPin; S_OK == pEnumPins->Next(1, &pPin, 0); pPin = NULL) \
-			{
-
-#define EndEnumPins }}}
+				break;
+			}
+		}
+	}
+}
 
 //
 // GSSource
@@ -249,9 +257,9 @@ public:
 			return E_UNEXPECTED;
 		}
 
-		CComPtr<IMediaSample> sample;
+		wil::com_ptr_nothrow<IMediaSample> sample;
 
-		if (FAILED(m_output->GetDeliveryBuffer(&sample, NULL, NULL, 0)))
+		if (FAILED(m_output->GetDeliveryBuffer(sample.put(), NULL, NULL, 0)))
 		{
 			return E_FAIL;
 		}
@@ -342,7 +350,7 @@ public:
 			return E_FAIL;
 		}
 
-		if (FAILED(m_output->Deliver(sample)))
+		if (FAILED(m_output->Deliver(sample.get())))
 		{
 			return E_FAIL;
 		}
@@ -358,25 +366,25 @@ public:
 	}
 };
 
-static IPin* GetFirstPin(IBaseFilter* pBF, PIN_DIRECTION dir)
+static wil::com_ptr_nothrow<IPin> GetFirstPin(IBaseFilter* pBF, PIN_DIRECTION dir)
 {
-	if (!pBF)
-		return nullptr;
-
-	BeginEnumPins(pBF, pEP, pPin)
+	wil::com_ptr_nothrow<IPin> result;
+	if (pBF)
 	{
-		PIN_DIRECTION dir2;
-		pPin->QueryDirection(&dir2);
-		if (dir == dir2)
+		EnumPins(pBF, [&](IPin* pin)
 		{
-			IPin* pRet = pPin.Detach();
-			pRet->Release();
-			return pRet;
-		}
+			PIN_DIRECTION dir2;
+			pin->QueryDirection(&dir2);
+			if (dir == dir2)
+			{
+				result = pin;
+				return false;
+			}
+			return true;
+		});
 	}
-	EndEnumPins
 
-	return nullptr;
+	return result;
 }
 
 #endif
@@ -443,64 +451,73 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	m_size.y = (dlg.m_height + 7) & ~7;
 	//
 
-	HRESULT hr;
-
-	CComPtr<ICaptureGraphBuilder2> cgb;
-	CComPtr<IBaseFilter> mux;
-
-	if (FAILED(hr = m_graph.CoCreateInstance(CLSID_FilterGraph))
-	 || FAILED(hr = cgb.CoCreateInstance(CLSID_CaptureGraphBuilder2))
-	 || FAILED(hr = cgb->SetFiltergraph(m_graph))
-	 || FAILED(hr = cgb->SetOutputFileName(&MEDIASUBTYPE_Avi, std::wstring(dlg.m_filename.begin(), dlg.m_filename.end()).c_str(), &mux, NULL)))
+	auto graph = wil::CoCreateInstanceNoThrow<IGraphBuilder>(CLSID_FilterGraph);
+	if (!graph)
+	{
+		return false;
+	}
+	auto cgb = wil::CoCreateInstanceNoThrow<ICaptureGraphBuilder2>(CLSID_CaptureGraphBuilder2);
+	if (!cgb)
 	{
 		return false;
 	}
 
-	m_src = new GSSource(m_size.x, m_size.y, fps, NULL, hr, dlg.m_colorspace);
+	wil::com_ptr_nothrow<IBaseFilter> mux;
+	if (FAILED(cgb->SetFiltergraph(graph.get()))
+	 || FAILED(cgb->SetOutputFileName(&MEDIASUBTYPE_Avi, std::wstring(dlg.m_filename.begin(), dlg.m_filename.end()).c_str(), mux.put(), nullptr)))
+	{
+		return false;
+	}
+
+	HRESULT source_hr = S_OK;
+	wil::com_ptr_nothrow<IBaseFilter> src;
+	src.attach(new GSSource(m_size.x, m_size.y, fps, NULL, source_hr, dlg.m_colorspace));
 
 	if (dlg.m_enc == 0)
 	{
-		if (FAILED(hr = m_graph->AddFilter(m_src, L"Source")))
+		if (FAILED(graph->AddFilter(src.get(), L"Source")))
 			return false;
-		if (FAILED(hr = m_graph->ConnectDirect(GetFirstPin(m_src, PINDIR_OUTPUT), GetFirstPin(mux, PINDIR_INPUT), NULL)))
+		if (FAILED(graph->ConnectDirect(GetFirstPin(src.get(), PINDIR_OUTPUT).get(), GetFirstPin(mux.get(), PINDIR_INPUT).get(), nullptr)))
 			return false;
 	}
 	else
 	{
-		if (FAILED(hr = m_graph->AddFilter(m_src, L"Source")) || FAILED(hr = m_graph->AddFilter(dlg.m_enc, L"Encoder")))
+		if (FAILED(graph->AddFilter(src.get(), L"Source")) || FAILED(graph->AddFilter(dlg.m_enc.get(), L"Encoder")))
 		{
 			return false;
 		}
 
-		if (FAILED(hr = m_graph->ConnectDirect(GetFirstPin(m_src, PINDIR_OUTPUT), GetFirstPin(dlg.m_enc, PINDIR_INPUT), NULL))
-		 || FAILED(hr = m_graph->ConnectDirect(GetFirstPin(dlg.m_enc, PINDIR_OUTPUT), GetFirstPin(mux, PINDIR_INPUT), NULL)))
+		if (FAILED(graph->ConnectDirect(GetFirstPin(src.get(), PINDIR_OUTPUT).get(), GetFirstPin(dlg.m_enc.get(), PINDIR_INPUT).get(), nullptr))
+		 || FAILED(graph->ConnectDirect(GetFirstPin(dlg.m_enc.get(), PINDIR_OUTPUT).get(), GetFirstPin(mux.get(), PINDIR_INPUT).get(), nullptr)))
 		{
 			return false;
 		}
 	}
 
-	BeginEnumFilters(m_graph, pEF, pBF)
+	EnumFilters(graph.get(), [](IBaseFilter* baseFilter)
 	{
-		CFilterInfo filter;
-		pBF->QueryFilterInfo(&filter);
-		printf("Filter [%p]: %ls\n", pBF.p, &(*filter.achName));
+		unique_filter_info filter;
+		baseFilter->QueryFilterInfo(&filter);
+		printf("Filter [%p]: %ls\n", baseFilter, filter.achName);
 
-		BeginEnumPins(pBF, pEP, pPin)
+		EnumPins(baseFilter, [](IPin* pin)
 		{
-			CComPtr<IPin> pPinTo;
-			pPin->ConnectedTo(&pPinTo);
+			wil::com_ptr_nothrow<IPin> pinTo;
+			pin->ConnectedTo(pinTo.put());
 
-			CPinInfo pi;
-			pPin->QueryPinInfo(&pi);
-			printf("- Pin [%p - %p]: %ls (%s)\n", pPin.p, pPinTo.p, &(*filter.achName), pi.dir ? "out" : "in");
-		}
-		EndEnumPins
-	}
-	EndEnumFilters
+			unique_pin_info pi;
+			pin->QueryPinInfo(&pi);
+			printf("- Pin [%p - %p]: %ls (%s)\n", pin, pinTo.get(), pi.achName, pi.dir ? "out" : "in");
+			return true;
+		});
+	});
 
-	hr = CComQIPtr<IMediaControl>(m_graph)->Run();
+	// Moving forward, we want failfast semantics so "commit" these interfaces by persisting them in the class
+	m_graph = std::move(graph);
+	m_src = std::move(src);
 
-	CComQIPtr<IGSSource>(m_src)->DeliverNewSegment();
+	m_graph.query<IMediaControl>()->Run();
+	m_src.query<IGSSource>()->DeliverNewSegment();
 
 	m_capturing = true;
 	filename = convert_utf16_to_utf8(dlg.m_filename.erase(dlg.m_filename.length() - 3, 3) + L"wav");
@@ -541,7 +558,7 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 
 	if (m_src)
 	{
-		CComQIPtr<IGSSource>(m_src)->DeliverFrame(bits, pitch, rgba);
+		m_src.query<IGSSource>()->DeliverFrame(bits, pitch, rgba);
 
 		return true;
 	}
@@ -570,16 +587,14 @@ bool GSCapture::EndCapture()
 
 	if (m_src)
 	{
-		CComQIPtr<IGSSource>(m_src)->DeliverEOS();
-
-		m_src = NULL;
+		m_src.query<IGSSource>()->DeliverEOS();
+		m_src.reset();
 	}
 
 	if (m_graph)
 	{
-		CComQIPtr<IMediaControl>(m_graph)->Stop();
-
-		m_graph = NULL;
+		m_graph.query<IMediaControl>()->Stop();
+		m_graph.reset();;
 	}
 
 #elif defined(__unix__)

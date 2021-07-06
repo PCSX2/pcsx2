@@ -20,6 +20,7 @@
 
 #ifdef _WIN32
 #include "Window/GSCaptureDlg.h"
+#include <wil/com.h>
 #endif
 
 class GSCapture
@@ -33,8 +34,8 @@ class GSCapture
 
 #ifdef _WIN32
 
-	CComPtr<IGraphBuilder> m_graph;
-	CComPtr<IBaseFilter> m_src;
+	wil::com_ptr_failfast<IGraphBuilder> m_graph;
+	wil::com_ptr_failfast<IBaseFilter> m_src;
 
 #elif defined(__unix__)
 

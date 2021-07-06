@@ -18,15 +18,16 @@
 #include "GSDialog.h"
 #include "GS/resource.h"
 #include <streams.h>
+#include <wil/com.h>
 
 class GSCaptureDlg : public GSDialog
 {
 	struct Codec
 	{
-		CComPtr<IMoniker> moniker;
-		CComPtr<IBaseFilter> filter;
+		wil::com_ptr_nothrow<IMoniker> moniker;
+		wil::com_ptr_nothrow<IBaseFilter> filter;
 		std::wstring FriendlyName;
-		_bstr_t DisplayName;
+		std::wstring DisplayName;
 	};
 
 	std::list<Codec> m_codecs;
@@ -46,5 +47,5 @@ public:
 	int m_height;
 	std::wstring m_filename;
 	INT_PTR m_colorspace;
-	CComPtr<IBaseFilter> m_enc;
+	wil::com_ptr_nothrow<IBaseFilter> m_enc;
 };

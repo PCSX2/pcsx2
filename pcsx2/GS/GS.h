@@ -33,8 +33,6 @@
 #include <d3dcompiler.h>
 #include <d3d11_1.h>
 #include <dxgi1_3.h>
-#include <comutil.h>
-#include <atlcomcli.h>
 
 #else
 
