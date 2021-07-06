@@ -47,7 +47,6 @@
 #include <cinttypes>	// Printf format
 #include <climits>
 #include <cmath>
-#include <complex>
 #include <condition_variable>
 #include <cstdarg>
 #include <cstddef>
@@ -61,9 +60,7 @@
 #include <memory>
 #include <mutex>
 #include <queue>
-#include <set>
 #include <sstream>
-#include <stack>
 #include <stdexcept>
 #include <string>
 #include <thread>

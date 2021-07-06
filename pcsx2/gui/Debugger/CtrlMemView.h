@@ -15,6 +15,7 @@
 
 #pragma once
 #include <wx/wx.h>
+#include <stack>
 
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
