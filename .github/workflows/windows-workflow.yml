@@ -38,9 +38,10 @@ jobs:
       matrix:
         os: [windows-2019]
         platform: [Win32, x64]
+        config: [Release, Release AVX2]
         experimental: [false]
 
-    name: ${{ matrix.os }}-${{ matrix.platform }}
+    name: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.config }}
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
@@ -74,17 +75,18 @@ jobs:
         env:
           # Set to 'true' to retain the .pdb / .exp / .lib, etc files which can be useful for repro'ing issues that only occur in the compiled .exe
           RetainDebuggingArtifacts: ${{ github.event.inputs.retainDebugArtifacts == 'true' }}
-        run: msbuild "buildbot.xml" /m /v:n /t:ReleaseAll /p:Platform=${{ matrix.platform }}
+        run: msbuild "PCSX2_suite.sln" /m /v:m /p:Configuration="${{ matrix.config }}" /p:Platform="${{ matrix.platform }}"
 
       - name: Prepare Artifact Metadata
         id: artifact-metadata
         shell: bash
         run: |
           ARCH=$([ "${{ matrix.platform }}" == Win32 ] && echo "32bit" || echo "64bit")
+          SIMD=$([ "${{ matrix.platform }}" == Release ] && echo "SSE4" || echo "AVX2")
           ARTIFACT_NAME=""
           if [ ${{ github.event_name }} == "pull_request" ]; then
             PR_SHA=$(git rev-parse --short "${{ github.event.pull_request.head.sha }}")
-            ARTIFACT_NAME="PCSX2-${ARCH}"
+            ARTIFACT_NAME="PCSX2-${ARCH}-${SIMD}"
             if [ ! -z "${{ github.event.pull_request.number }}" ]; then
               PR_NUM=${{ github.event.pull_request.number }}
               ARTIFACT_NAME="${ARTIFACT_NAME}-pr[${PR_NUM}]"
@@ -96,7 +98,7 @@ jobs:
             fi
           else
             SHA=$(git rev-parse --short "$GITHUB_SHA")
-            ARTIFACT_NAME="PCSX2-${ARCH}-sha[${SHA}"
+            ARTIFACT_NAME="PCSX2-${ARCH}-${SIMD}-sha[${SHA}"
           fi
           TRIMMED_ARTIFACT_NAME=$(printf "%.199s]" "$ARTIFACT_NAME")
           echo "name=$TRIMMED_ARTIFACT_NAME"
