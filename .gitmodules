@@ -18,3 +18,7 @@
 	path = 3rdparty/libchdr/libchdr
 	url = https://github.com/rtissera/libchdr.git
 	shallow = true
+[submodule "3rdparty/wil"]
+	path = 3rdparty/wil
+	url = https://github.com/microsoft/wil.git
+	branch = master
