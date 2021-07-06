@@ -7,7 +7,7 @@ if (Linux)
 endif()
 find_package(PCAP)
 find_package(LibXml2)
-find_package(Freetype) # GSdx OSD
+find_package(Freetype) # GS OSD
 find_package(Gettext) # translation tool
 if(EXISTS ${PROJECT_SOURCE_DIR}/.git)
     find_package(Git)
@@ -299,7 +299,6 @@ include_directories(3rdparty/libchdr/libchdr/include)
 #-------------------------------------------------------------------------------
 set(msg_dep_common_libs "check these libraries -> wxWidgets (>=3.0), aio")
 set(msg_dep_pcsx2       "check these libraries -> wxWidgets (>=3.0), gtk2, zlib (>=1.2.4), pcsx2 common libs")
-set(msg_dep_gsdx        "check these libraries -> opengl, png (>=1.2), zlib (>=1.2.4), X11, liblzma")
 
 macro(print_dep str dep)
     if (PACKAGE_MODE)
