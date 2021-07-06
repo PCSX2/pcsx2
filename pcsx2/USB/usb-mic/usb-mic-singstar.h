@@ -48,7 +48,7 @@ namespace usb_mic
 			return nullptr;
 		}
 		static int Configure(int port, const std::string& api, void* data);
-		static int Freeze(int mode, USBDevice* dev, void* data);
+		static int Freeze(FreezeAction mode, USBDevice* dev, void* data);
 		static std::vector<std::string> SubTypes()
 		{
 			return {};

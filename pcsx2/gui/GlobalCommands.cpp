@@ -404,12 +404,12 @@ namespace Implementations
 			ScopedCoreThreadPause paused_core;
 			freezeData fP = {0, nullptr};
 			MTGS_FreezeData sstate = {&fP, 0};
-			GetMTGS().Freeze(FREEZE_SIZE, sstate);
+			GetMTGS().Freeze(FreezeAction::Size, sstate);
 			fP.data = new char[fP.size];
-			GetMTGS().Freeze(FREEZE_SAVE, sstate);
+			GetMTGS().Freeze(FreezeAction::Save, sstate);
 			GetMTGS().Suspend(true);
 			renderswitch = !renderswitch;
-			GetMTGS().Freeze(FREEZE_LOAD, sstate);
+			GetMTGS().Freeze(FreezeAction::Load, sstate);
 			delete[] fP.data;
 			paused_core.AllowResume();
 			reentrant = false;

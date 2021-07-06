@@ -675,19 +675,19 @@ void GSkeyEvent(GSKeyEventData* e)
 	}
 }
 
-int GSfreeze(int mode, freezeData* data)
+int GSfreeze(FreezeAction mode, freezeData* data)
 {
 	try
 	{
-		if (mode == FREEZE_SAVE)
+		if (mode == FreezeAction::Save)
 		{
 			return s_gs->Freeze(data, false);
 		}
-		else if (mode == FREEZE_SIZE)
+		else if (mode == FreezeAction::Size)
 		{
 			return s_gs->Freeze(data, true);
 		}
-		else if (mode == FREEZE_LOAD)
+		else if (mode == FreezeAction::Load)
 		{
 			return s_gs->Defrost(data);
 		}
@@ -950,7 +950,7 @@ void GSReplay(char* lpszCmdLine, int renderer)
 		fd.data = new char[fd.size];
 		file->Read(fd.data, fd.size);
 
-		GSfreeze(FREEZE_LOAD, &fd);
+		GSfreeze(FreezeAction::Load, &fd);
 		delete[] fd.data;
 
 		file->Read(regs, 0x2000);
