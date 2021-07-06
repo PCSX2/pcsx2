@@ -88,6 +88,7 @@ if(WIN32)
 		WIN32_LEAN_AND_MEAN
 		LZMA_API_STATIC
 		BUILD_DX=1
+		WIL_SUPPRESS_EXCEPTIONS
 	)
 	target_include_directories(PCSX2 PRIVATE
 		../3rdparty # GL headers
@@ -1456,6 +1457,7 @@ if(WIN32)
 	target_link_libraries(PCSX2 PRIVATE
 		baseclasses
 		pthreads4w
+		WIL::WIL
 		setupapi.lib
 		ws2_32.lib
 		shlwapi.lib
