@@ -38,20 +38,43 @@
 //////////////////////////////////////////////////////////////////////////////////////////
 // Include the STL junk that's actually handy.
 
-#include <stdexcept>
-#include <vector>
-#include <list>
-#include <stack>
-#include <cstring>		// string.h under c++
-#include <cstdio>		// stdio.h under c++
-#include <cstdlib>
+#include <algorithm>
+#include <array>
+#include <atomic>
+#include <bitset>
+#include <cassert>
+#include <cfloat>
 #include <cinttypes>	// Printf format
+#include <climits>
+#include <cmath>
+#include <complex>
+#include <condition_variable>
+#include <cstdarg>
+#include <cstddef>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+#include <functional>
+#include <list>
+#include <map>
+#include <memory>
+#include <mutex>
+#include <queue>
+#include <set>
+#include <sstream>
+#include <stack>
+#include <stdexcept>
+#include <string>
+#include <thread>
+#include <unordered_map>
+#include <unordered_set>
+#include <vector>
 
 // ... and include some ANSI/POSIX C libs that are useful too, just for good measure.
 // (these compile lightning fast with or without PCH, but they never change so
 // might as well add them here)
 
-#include <stddef.h>
 #include <sys/stat.h>
 #include <pthread.h>
 
@@ -84,7 +107,7 @@ typedef void FnType_Void();
 typedef FnType_Void* Fnptr_Void;
 
 // --------------------------------------------------------------------------------------
-//  Compiler/OS specific macros and defines 
+//  Compiler/OS specific macros and defines
 // --------------------------------------------------------------------------------------
 
 #if defined(_MSC_VER)
