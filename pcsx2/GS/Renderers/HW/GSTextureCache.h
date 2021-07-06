@@ -18,6 +18,9 @@
 #include "GS/Renderers/Common/GSRenderer.h"
 #include "GS/Renderers/Common/GSFastList.h"
 #include "GS/Renderers/Common/GSDirtyRect.h"
+#include <array>
+#include <unordered_map>
+#include <unordered_set>
 
 class GSTextureCache
 {

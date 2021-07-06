@@ -20,6 +20,7 @@
 #include "GS/resource.h"
 #include <fstream>
 #include <VersionHelpers.h>
+#include <sstream>
 
 GSDevice11::GSDevice11()
 {

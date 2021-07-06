@@ -19,6 +19,7 @@
 #include "GS.h"
 #include "GSDialog.h"
 #include "GS/GSVector.h"
+#include <commdlg.h>
 
 GSDialog::GSDialog(UINT id)
 	: m_id(id)

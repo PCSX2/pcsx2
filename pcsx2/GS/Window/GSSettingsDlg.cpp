@@ -21,6 +21,7 @@
 #include "GS/resource.h"
 #include "GSSetting.h"
 #include <algorithm>
+#include <CommCtrl.h>
 
 GSSettingsDlg::GSSettingsDlg()
 	: GSDialog(IDD_CONFIG)

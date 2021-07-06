@@ -20,6 +20,8 @@
 #include "GSVector.h"
 #include "GSBlock.h"
 #include "GSClut.h"
+#include <array>
+#include <unordered_map>
 
 class GSOffset : public GSAlignedClass<32>
 {

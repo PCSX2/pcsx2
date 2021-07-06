@@ -22,6 +22,7 @@
 #include "Renderers/OpenGL/GSDeviceOGL.h"
 #include "Renderers/OpenGL/GSRendererOGL.h"
 #include "GSLzma.h"
+#include "zlib.h"
 
 #include "AppCoreThread.h"
 #include "Utilities/pxStreams.h"

@@ -24,23 +24,7 @@
 #include "Window/GSSetting.h"
 #include "SaveState.h"
 
-#ifdef _WIN32
-
-#include <windows.h>
-#include <commctrl.h>
-#include <commdlg.h>
-#include <shellapi.h>
-#include <d3dcompiler.h>
-#include <d3d11_1.h>
-#include <dxgi1_3.h>
-#include <comutil.h>
-#include <atlcomcli.h>
-
-#else
-
-#include <fcntl.h>
-
-#endif
+#include <map>
 
 #ifdef __x86_64__
 #define _M_AMD64
@@ -73,51 +57,6 @@
 #endif
 
 // put these into vc9/common7/ide/usertype.dat to have them highlighted
-
-
-// stdc
-
-#include <cstddef>
-#include <cstdio>
-#include <cstdarg>
-#include <cstdlib>
-#include <cmath>
-#include <cfloat>
-#include <ctime>
-#include <climits>
-#include <cstring>
-#include <cassert>
-
-#if __GNUC__ > 5 || (__GNUC__ == 5 && __GNUC_MINOR__ >= 4)
-#include <codecvt>
-#include <locale>
-#endif
-
-#include <complex>
-#include <string>
-#include <array>
-#include <vector>
-#include <list>
-#include <map>
-#include <set>
-#include <queue>
-#include <algorithm>
-#include <thread>
-#include <atomic>
-#include <mutex>
-#include <condition_variable>
-#include <functional>
-#include <memory>
-#include <bitset>
-
-#ifdef __POSIX__
-#include <zlib.h>
-#else
-#include <zlib/zlib.h>
-#endif
-
-#include <unordered_map>
-#include <unordered_set>
 
 // Don't un-indent our ifdefs
 // clang-format off
@@ -176,9 +115,6 @@
 	#endif
 
 #endif
-
-#include <xmmintrin.h>
-#include <emmintrin.h>
 
 #ifndef _MM_DENORMALS_ARE_ZERO
 #define _MM_DENORMALS_ARE_ZERO 0x0040

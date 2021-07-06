@@ -17,6 +17,8 @@
 
 #include "GS/Renderers/Common/GSRenderer.h"
 #include "GS/Renderers/Common/GSFastList.h"
+#include <array>
+#include <unordered_set>
 
 class GSTextureCacheSW
 {

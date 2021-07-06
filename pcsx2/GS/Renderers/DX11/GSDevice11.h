@@ -18,6 +18,11 @@
 #include "GSTexture11.h"
 #include "GS/GSVector.h"
 #include "GS/Renderers/Common/GSDevice.h"
+#include <atlcomcli.h>
+#include <comutil.h>
+#include <d3d11_1.h>
+#include <d3dcompiler.h>
+#include <unordered_map>
 
 struct GSVertexShader11
 {

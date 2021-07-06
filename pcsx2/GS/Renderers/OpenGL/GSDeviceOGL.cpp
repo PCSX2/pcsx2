@@ -19,6 +19,7 @@
 #include "GLState.h"
 #include "GS/GSUtil.h"
 #include <fstream>
+#include <sstream>
 
 //#define ONLY_LINES
 
