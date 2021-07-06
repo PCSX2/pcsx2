@@ -25,54 +25,54 @@ static __aligned16 LARGE_INTEGER lfreq;
 
 void InitCPUTicks()
 {
-    QueryPerformanceFrequency(&lfreq);
+	QueryPerformanceFrequency(&lfreq);
 }
 
 u64 GetTickFrequency()
 {
-    return lfreq.QuadPart;
+	return lfreq.QuadPart;
 }
 
 u64 GetCPUTicks()
 {
-    LARGE_INTEGER count;
-    QueryPerformanceCounter(&count);
-    return count.QuadPart;
+	LARGE_INTEGER count;
+	QueryPerformanceCounter(&count);
+	return count.QuadPart;
 }
 
 u64 GetPhysicalMemory()
 {
-    MEMORYSTATUSEX status;
-    status.dwLength = sizeof(status);
-    GlobalMemoryStatusEx(&status);
-    return status.ullTotalPhys;
+	MEMORYSTATUSEX status;
+	status.dwLength = sizeof(status);
+	GlobalMemoryStatusEx(&status);
+	return status.ullTotalPhys;
 }
 
 // Calculates the Windows OS Version and processor architecture, and returns it as a
 // human-readable string. :)
 wxString GetOSVersionString()
 {
-    wxString retval;
+	wxString retval;
 
-    SYSTEM_INFO si;
+	SYSTEM_INFO si;
 	GetNativeSystemInfo(&si);
 
-    if (!IsWindows8Point1OrGreater())
-        return L"Unsupported Operating System!";
+	if (!IsWindows8Point1OrGreater())
+		return L"Unsupported Operating System!";
 
-    retval += L"Microsoft ";
+	retval += L"Microsoft ";
 
-    if (IsWindows10OrGreater())
-        retval += IsWindowsServer() ? L"Windows Server 2016" : L"Windows 10";
-    else // IsWindows8Point1OrGreater()
-        retval += IsWindowsServer() ? L"Windows Server 2012 R2" : L"Windows 8.1";
+	if (IsWindows10OrGreater())
+		retval += IsWindowsServer() ? L"Windows Server 2016" : L"Windows 10";
+	else // IsWindows8Point1OrGreater()
+		retval += IsWindowsServer() ? L"Windows Server 2012 R2" : L"Windows 8.1";
 
-    if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
-        retval += L", 64-bit";
-    else if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL)
-        retval += L", 32-bit";
+	if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_AMD64)
+		retval += L", 64-bit";
+	else if (si.wProcessorArchitecture == PROCESSOR_ARCHITECTURE_INTEL)
+		retval += L", 32-bit";
 
-    return retval;
+	return retval;
 }
 
 // --------------------------------------------------------------------------------------
@@ -80,37 +80,37 @@ wxString GetOSVersionString()
 // --------------------------------------------------------------------------------------
 Exception::WinApiError::WinApiError()
 {
-    ErrorId = GetLastError();
-    m_message_diag = L"Unspecified Windows API error.";
+	ErrorId = GetLastError();
+	m_message_diag = L"Unspecified Windows API error.";
 }
 
 wxString Exception::WinApiError::GetMsgFromWindows() const
 {
-    if (!ErrorId)
-        return L"No valid error number was assigned to this exception!";
+	if (!ErrorId)
+		return L"No valid error number was assigned to this exception!";
 
-    const DWORD BUF_LEN = 2048;
-    TCHAR t_Msg[BUF_LEN];
-    if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, 0, ErrorId, 0, t_Msg, BUF_LEN, 0))
-        return wxsFormat(L"Win32 Error #%d: %s", ErrorId, t_Msg);
+	const DWORD BUF_LEN = 2048;
+	TCHAR t_Msg[BUF_LEN];
+	if (FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, 0, ErrorId, 0, t_Msg, BUF_LEN, 0))
+		return wxsFormat(L"Win32 Error #%d: %s", ErrorId, t_Msg);
 
-    return wxsFormat(L"Win32 Error #%d (no text msg available)", ErrorId);
+	return wxsFormat(L"Win32 Error #%d (no text msg available)", ErrorId);
 }
 
 wxString Exception::WinApiError::FormatDisplayMessage() const
 {
-    return m_message_user + L"\n\n" + GetMsgFromWindows();
+	return m_message_user + L"\n\n" + GetMsgFromWindows();
 }
 
 wxString Exception::WinApiError::FormatDiagnosticMessage() const
 {
-    return m_message_diag + L"\n\t" + GetMsgFromWindows();
+	return m_message_diag + L"\n\t" + GetMsgFromWindows();
 }
 
 void ScreensaverAllow(bool allow)
 {
-    EXECUTION_STATE flags = ES_CONTINUOUS;
-    if (!allow)
-        flags |= ES_DISPLAY_REQUIRED;
-    SetThreadExecutionState(flags);
+	EXECUTION_STATE flags = ES_CONTINUOUS;
+	if (!allow)
+		flags |= ES_DISPLAY_REQUIRED;
+	SetThreadExecutionState(flags);
 }
