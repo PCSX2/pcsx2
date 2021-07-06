@@ -24,7 +24,7 @@ The following is a list of *general* style recommendations that will make review
 
 *   Commit Messages
     *   Please try to prefix your commit message, indicating what area of the project was modified.
-        *   For example `gsdx: message...`.
+        *   For example `gs: message...`.
         *   Looking at the project's commit history will help with keeping prefixes consistent overtime, *there is no strictly enforced list*.
     *   Try to keep messages brief and informative
     *   Remove unnecessary commits and squash commits together when appropriate.
@@ -49,4 +49,4 @@ The following is a list of *general* style recommendations that will make review
 
 *   [Todo List](https://github.com/PCSX2/pcsx2/wiki/Contributing-\(TODO-List\))
 *   [Issues](https://github.com/PCSX2/pcsx2/issues)
-*   [A collection of ideas to improve GSdx OGL](https://github.com/PCSX2/pcsx2/wiki/Todo-List)
+*   [A collection of ideas to improve GS OGL](https://github.com/PCSX2/pcsx2/wiki/Todo-List)
