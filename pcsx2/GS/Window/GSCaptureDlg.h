@@ -18,6 +18,8 @@
 #include "GSDialog.h"
 #include "GS/resource.h"
 #include <streams.h>
+#include <comutil.h>
+#include <atlcomcli.h>
 
 class GSCaptureDlg : public GSDialog
 {
