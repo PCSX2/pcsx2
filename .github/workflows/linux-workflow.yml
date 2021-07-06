@@ -1,4 +1,4 @@
-name: Linux Build
+name: 🐧 Linux Build
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -60,7 +60,7 @@ jobs:
             detail: -avx2-nopch
             experimental: false
 
-    name: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}${{ matrix.detail }}
+    name: "${{ matrix.platform }} | ${{ matrix.compiler }} ${{ matrix.detail }}"
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.

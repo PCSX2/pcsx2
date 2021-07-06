@@ -1,4 +1,4 @@
-name: Windows Build
+name: 🪟 Windows Builds
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -41,7 +41,7 @@ jobs:
         config: [Release, Release AVX2]
         experimental: [false]
 
-    name: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.config }}
+    name: "${{ matrix.platform }} | ${{ matrix.config }}"
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
@@ -82,7 +82,7 @@ jobs:
         shell: bash
         run: |
           ARCH=$([ "${{ matrix.platform }}" == Win32 ] && echo "32bit" || echo "64bit")
-          SIMD=$([ "${{ matrix.platform }}" == Release ] && echo "SSE4" || echo "AVX2")
+          SIMD=$([ "${{ matrix.config }}" == Release ] && echo "SSE4" || echo "AVX2")
           ARTIFACT_NAME=""
           if [ ${{ github.event_name }} == "pull_request" ]; then
             PR_SHA=$(git rev-parse --short "${{ github.event.pull_request.head.sha }}")

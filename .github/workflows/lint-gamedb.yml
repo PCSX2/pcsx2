@@ -1,4 +1,4 @@
-name: Validate GameDB
+name: 📝 Validate GameDB
 
 on:
   push:
