@@ -19,15 +19,18 @@
 
 #include <xaudio2.h>
 #include <cguid.h>
-#include <atlcomcli.h>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
 #include <string>
 
+#include <wil/com.h>
+#include <wil/resource.h>
+#include <wil/win32_helpers.h>
+
 namespace Exception
 {
-	class XAudio2Error : public std::runtime_error
+	class XAudio2Error final : public std::runtime_error
 	{
 	private:
 		static std::string CreateErrorMessage(const HRESULT result, const std::string& msg)
@@ -59,7 +62,7 @@ namespace Exception
 
 static const double SndOutNormalizer = (double)(1UL << (SndOutVolumeShift + 16));
 
-class XAudio2Mod : public SndOutModule
+class XAudio2Mod final : public SndOutModule
 {
 private:
 	static const int PacketsPerBuffer = 8;
@@ -76,7 +79,7 @@ private:
 		const uint m_BufferSize;
 		const uint m_BufferSizeBytes;
 
-		CRITICAL_SECTION cs;
+		wil::critical_section cs;
 
 	public:
 		int GetEmptySampleCount()
@@ -86,11 +89,6 @@ private:
 			return state.SamplesPlayed & (m_BufferSize - 1);
 		}
 
-		virtual ~BaseStreamingVoice()
-		{
-			DeleteCriticalSection(&cs);
-		}
-
 		BaseStreamingVoice(uint numChannels)
 			: pSourceVoice(nullptr)
 			, m_nBuffers(Config_XAudio2.NumBuffers)
@@ -98,7 +96,6 @@ private:
 			, m_BufferSize(SndOutPacketSize * m_nChannels * PacketsPerBuffer)
 			, m_BufferSizeBytes(m_BufferSize * sizeof(s16))
 		{
-			InitializeCriticalSection(&cs);
 		}
 
 		virtual void Init(IXAudio2* pXAudio2) = 0;
@@ -129,7 +126,7 @@ private:
 				throw Exception::XAudio2Error(hr, "XAudio2 CreateSourceVoice failure: ");
 			}
 
-			EnterCriticalSection(&cs);
+			auto lock = cs.lock();
 
 			pSourceVoice->FlushSourceBuffers();
 			pSourceVoice->Start(0, 0);
@@ -145,8 +142,6 @@ private:
 				buf.pAudioData = (BYTE*)buf.pContext;
 				pSourceVoice->SubmitSourceBuffer(&buf);
 			}
-
-			LeaveCriticalSection(&cs);
 		}
 
 		STDMETHOD_(void, OnVoiceProcessingPassStart)
@@ -190,9 +185,8 @@ private:
 			// blocking, and the documentation states no callbacks are called
 			// or audio data is read after it returns, so it's safe to free up
 			// resources.
-			EnterCriticalSection(&cs);
+			auto lock = cs.lock();
 			m_buffer = nullptr;
-			LeaveCriticalSection(&cs);
 		}
 
 		void Init(IXAudio2* pXAudio2)
@@ -229,14 +223,13 @@ private:
 		STDMETHOD_(void, OnBufferEnd)
 		(void* context)
 		{
-			EnterCriticalSection(&cs);
+			auto lock = cs.lock();
 
 			// All of these checks are necessary because XAudio2 is wonky shizat.
 			// XXX: The pSourceVoice nullptr check seems a bit self-inflicted
 			// due to the destructor logic.
 			if (pSourceVoice == nullptr || context == nullptr)
 			{
-				LeaveCriticalSection(&cs);
 				return;
 			}
 
@@ -251,30 +244,29 @@ private:
 			buf.pContext = context;
 
 			pSourceVoice->SubmitSourceBuffer(&buf);
-			LeaveCriticalSection(&cs);
 		}
 	};
 
-	HMODULE xAudio2DLL = nullptr;
-	decltype(&XAudio2Create) pXAudio2Create = nullptr;
-	CComPtr<IXAudio2> pXAudio2;
+	wil::unique_couninitialize_call xaudio2CoInitialize;
+	wil::unique_hmodule xAudio2DLL;
+	wil::com_ptr_nothrow<IXAudio2> pXAudio2;
 	IXAudio2MasteringVoice* pMasteringVoice = nullptr;
 	std::unique_ptr<BaseStreamingVoice> m_voiceContext;
 
 public:
 	s32 Init()
 	{
-		CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+		xaudio2CoInitialize = wil::CoInitializeEx_failfast(COINIT_MULTITHREADED);
 
 		try
 		{
 			HRESULT hr;
 
-			xAudio2DLL = LoadLibraryEx(XAUDIO2_DLL, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32);
+			xAudio2DLL.reset(LoadLibraryEx(XAUDIO2_DLL, nullptr, LOAD_LIBRARY_SEARCH_SYSTEM32));
 			if (xAudio2DLL == nullptr)
 				throw std::runtime_error("Could not load " XAUDIO2_DLL_A ". Error code:" + std::to_string(GetLastError()));
 
-			pXAudio2Create = reinterpret_cast<decltype(&XAudio2Create)>(GetProcAddress(xAudio2DLL, "XAudio2Create"));
+			auto pXAudio2Create = GetProcAddressByFunctionDeclaration(xAudio2DLL.get(), XAudio2Create);
 			if (pXAudio2Create == nullptr)
 				throw std::runtime_error("XAudio2Create not found. Error code: " + std::to_string(GetLastError()));
 
@@ -350,7 +342,7 @@ public:
 					break;
 			}
 
-			m_voiceContext->Init(pXAudio2);
+			m_voiceContext->Init(pXAudio2.get());
 		}
 		catch (std::runtime_error& ex)
 		{
@@ -380,15 +372,9 @@ public:
 
 		pMasteringVoice = nullptr;
 
-		pXAudio2.Release();
-		CoUninitialize();
-
-		if (xAudio2DLL)
-		{
-			FreeLibrary(xAudio2DLL);
-			xAudio2DLL = nullptr;
-			pXAudio2Create = nullptr;
-		}
+		pXAudio2.reset();
+		xAudio2DLL.reset();
+		xaudio2CoInitialize.reset();
 	}
 
 	virtual void Configure(uptr parent)
