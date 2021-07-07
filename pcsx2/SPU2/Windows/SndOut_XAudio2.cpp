@@ -17,8 +17,6 @@
 #include "SPU2/Global.h"
 #include "Dialogs.h"
 
-#undef _WIN32_WINNT
-#define _WIN32_WINNT 0x0602
 #include <xaudio2.h>
 #include <cguid.h>
 #include <atlcomcli.h>
