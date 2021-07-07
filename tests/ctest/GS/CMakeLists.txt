@@ -23,4 +23,11 @@ foreach(isa "sse4" "avx" "avx2")
 
 	target_compile_options(swizzle_test_${isa} PRIVATE ${compile_options_${isa}})
 	target_compile_definitions(swizzle_test_${isa} PRIVATE ${definitions_${isa}})
+	if(WIN32)
+		target_compile_definitions(swizzle_test_${isa} PRIVATE
+			WINVER=0x0603
+			_WIN32_WINNT=0x0603
+			WIN32_LEAN_AND_MEAN
+		)
+	endif()
 endforeach()

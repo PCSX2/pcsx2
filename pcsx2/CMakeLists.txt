@@ -85,6 +85,8 @@ if(WIN32)
 	)
 	target_compile_definitions(PCSX2 PRIVATE
 		_M_SSE=0x401 # TODO: Multiple ISA
+		WINVER=0x0603
+		_WIN32_WINNT=0x0603
 		WIN32_LEAN_AND_MEAN
 		LZMA_API_STATIC
 		BUILD_DX=1

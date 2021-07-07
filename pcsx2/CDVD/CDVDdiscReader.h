@@ -19,7 +19,6 @@
 #include "IopCommon.h"
 
 #if defined(_WIN32)
-#define _WIN32_WINNT 0x0600
 #define NOMINMAX
 #include <windows.h>
 #endif
