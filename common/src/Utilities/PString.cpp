@@ -17,34 +17,20 @@ PString& PString::operator=(PString&& rhs)
 
 #ifdef _WIN32
 // Non default
-PString::PString(const std::wstring& str)
+PString::PString(const std::wstring& utf16_string)
 {
-	char* temp = new char[count];
-	const wchar_t* wStr = str.c_str();
-	size_t len = (wcslen(wStr) + 1) * sizeof(wchar_t);
-	int err = wcstombs_s(&count, temp, len, wStr, len);
-	if (err != 0)
-	{
-		delete temp;
-	}
-
-	string = temp;
-	delete temp;
+	const int size = WideCharToMultiByte(CP_UTF8, 0, utf16_string.c_str(), utf16_string.size(), nullptr, 0, nullptr, nullptr);
+	std::string converted_string(size, 0);
+	WideCharToMultiByte(CP_UTF8, 0, utf16_string.c_str(), utf16_string.size(), converted_string.data(), converted_string.size(), nullptr, nullptr);
+	string = converted_string;
 }
 
 PString::operator std::wstring()
 {
-	wchar_t* wstr = new wchar_t[count];
-	int err = mbstowcs(wstr, string.data(), count);
-	if (err != 0)
-	{
-		std::cout << "Error: " << strerror(err) << std::endl;
-		delete wstr;
-		return L"";
-	}
-	std::wstring buf(wstr);
-	delete wstr;
-	return buf;
+	int size = MultiByteToWideChar(CP_UTF8, 0, string.c_str(), -1, nullptr, 0);
+	std::vector<wchar_t> converted_string(size);
+	MultiByteToWideChar(CP_UTF8, 0, string.c_str(), -1, converted_string.data(), converted_string.size());
+	return { converted_string.data() };
 }
 #endif
 
