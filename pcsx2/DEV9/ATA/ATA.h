@@ -38,6 +38,19 @@ private:
 	std::fstream hddImage;
 	u64 hddImageSize;
 
+	bool hddSparse = false;
+	int hddSparseBlockSize;
+	u64 HddSparseStart;
+	//u64 hddSparseEnd;
+	std::unique_ptr<u8[]> hddSparseBlock;
+	bool hddSparseBlockValid = false;
+
+#ifdef _WIN32
+	HANDLE hddNativeHandle;
+#else
+	int hddNativeHandle;
+#endif
+
 	int pioMode;
 	int sdmaMode;
 	int mdmaMode;
@@ -171,6 +184,8 @@ public:
 	//ATAwritePIO;
 
 private:
+	void InitSparseSupport(ghc::filesystem::path hddPath);
+
 	//Info
 	void CreateHDDinfo(int sizeMb);
 	void CreateHDDinfoCsum();
@@ -203,6 +218,10 @@ private:
 	void IO_Thread();
 	void IO_Read();
 	bool IO_Write();
+	bool IO_SparseZero(u64 byteOffset, u64 byteSize);
+	void IO_SparseCacheUpdateLocation(u64 Offset);
+	void IO_SparseCacheLoad();
+	bool IsAllZero(const void* data, size_t len);
 	void HDD_ReadAsync(void (ATA::*drqCMD)());
 	void HDD_ReadSync(void (ATA::*drqCMD)());
 	bool HDD_CanAssessOrSetError();

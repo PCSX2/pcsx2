@@ -18,6 +18,15 @@
 #include "ATA.h"
 #include "DEV9/DEV9.h"
 
+#if _WIN32
+#include <Windows.h>
+#elif defined(__POSIX__)
+#if defined(__APPLE__)
+#include <unistd.h>
+#endif
+#include <fcntl.h>
+#endif
+
 void ATA::IO_Thread()
 {
 	std::unique_lock ioWaitHandle(ioMutex);
@@ -97,16 +106,220 @@ bool ATA::IO_Write()
 		return false;
 	}
 
-	hddImage.seekp(entry.sector * 512, std::ios::beg);
-	hddImage.write((char*)entry.data, entry.length);
-	if (hddImage.fail())
+	u64 imagePos = entry.sector * 512;
+	hddImage.seekp(imagePos, std::ios::beg);
+	if (hddSparse)
 	{
-		Console.Error("DEV9: ATA: File write error");
-		pxAssert(false);
-		abort();
+		int written = 0;
+		while (written != entry.length)
+		{
+			IO_SparseCacheUpdateLocation(imagePos + written);
+			//Align to sparse block size
+			u32 writeSize = hddSparseBlockSize - ((imagePos + written) % hddSparseBlockSize);
+			//Limit to size of write
+			writeSize = std::min(writeSize, entry.length - written);
+
+			pxAssert(writeSize > 0);
+			pxAssert(writeSize <= hddSparseBlockSize);
+			pxAssert((imagePos + written) - HddSparseStart >= 0);
+			pxAssert((imagePos + written) - HddSparseStart + writeSize <= hddSparseBlockSize);
+
+			if (IsAllZero(&entry.data[written], writeSize))
+			{
+#ifdef _DEBUG
+				std::unique_ptr<u8[]> zeroBlock = std::make_unique<u8[]>(writeSize);
+				memset(zeroBlock.get(), 0, writeSize);
+				pxAssert(memcmp(&entry.data[written], zeroBlock.get(), writeSize) == 0);
+#endif
+
+				if (!IO_SparseZero(imagePos + written, writeSize))
+				{
+					Console.Error("DEV9: ATA: File sparse write error");
+
+#ifdef _WIN32
+					CloseHandle(hddNativeHandle);
+#elif defined(__POSIX__)
+					close(hddNativeHandle);
+#endif
+					hddSparse = false;
+					hddSparseBlock = nullptr;
+					hddSparseBlockValid = false;
+
+					hddImage.write((char*)&entry.data[written], writeSize);
+					if (hddImage.fail())
+					{
+						Console.Error("DEV9: ATA: File write error");
+						pxAssert(false);
+						abort();
+					}
+				}
+			}
+			else
+			{
+#ifdef _DEBUG
+				std::unique_ptr<u8[]> zeroBlock = std::make_unique<u8[]>(writeSize);
+				memset(zeroBlock.get(), 0, writeSize);
+				pxAssert(memcmp(&entry.data[written], zeroBlock.get(), writeSize) != 0);
+#endif
+				//Update Cache
+				if (hddSparseBlockValid)
+					memcpy(&hddSparseBlock[(imagePos + written) - HddSparseStart], &entry.data[written], writeSize);
+
+				hddImage.write((char*)&entry.data[written], writeSize);
+				if (hddImage.fail())
+				{
+					Console.Error("DEV9: ATA: File write error");
+					pxAssert(false);
+					abort();
+				}
+			}
+			written += writeSize;
+			pxAssert(hddImage.tellp() == (imagePos + written));
+		}
+	}
+	else
+	{
+		hddImage.write((char*)entry.data, entry.length);
+		if (hddImage.fail())
+		{
+			Console.Error("DEV9: ATA: File write error");
+			pxAssert(false);
+			abort();
+		}
 	}
 	hddImage.flush();
 	delete[] entry.data;
+	return true;
+}
+
+void ATA::IO_SparseCacheLoad()
+{
+	//Reads are bounds checked, but for the sectors read only
+	//Need to bounds check for sparse block, to handle an edge case of a user providing a file with a size that dosn't align with the sparse block size
+	//Normally that won't happen as we generate files of exact Gib size
+	u64 readSize = hddSparseBlockSize;
+	const u64 posEnd = HddSparseStart + hddSparseBlockSize;
+	if (posEnd > hddImageSize)
+	{
+		readSize = hddSparseBlockSize - (posEnd - hddImageSize);
+		//Zero cache for data beyond end of file
+		memset(&hddSparseBlock[readSize], 0, hddSparseBlockSize - readSize);
+	}
+
+	//Store file pointer
+	std::streampos orgPos = hddImage.tellp();
+	//Load into cache
+	hddImage.seekg(HddSparseStart, std::ios::beg);
+	//Suppress Check buffer boundaries warning
+	hddImage.read((char*)hddSparseBlock.get(), readSize); /* Flawfinder: ignore */
+	if (hddImage.fail())
+	{
+		Console.Error("DEV9: ATA: File read error");
+		pxAssert(false);
+		abort();
+	}
+
+	hddSparseBlockValid = true;
+
+	//Restore file pointer
+	hddImage.seekp(orgPos, std::ios::beg);
+}
+
+void ATA::IO_SparseCacheUpdateLocation(u64 byteOffset)
+{
+	u64 currentBlockStart = (byteOffset / hddSparseBlockSize) * hddSparseBlockSize;
+	if (currentBlockStart != HddSparseStart)
+	{
+		HddSparseStart = currentBlockStart;
+		hddSparseBlockValid = false;
+		//Only update cache when we perform a sparse write
+	}
+}
+
+//Also sets hddImage write ptr
+bool ATA::IO_SparseZero(u64 byteOffset, u64 byteSize)
+{
+	if (hddSparseBlockValid == false)
+		IO_SparseCacheLoad();
+
+	//Assert as range check
+	pxAssert(byteOffset - HddSparseStart >= 0);
+	pxAssert(byteOffset - HddSparseStart + byteSize <= hddSparseBlockSize);
+
+	//Write to cache
+	memset(&hddSparseBlock[byteOffset - HddSparseStart], 0, byteSize);
+
+	//Is block non-zero?
+	if (!IsAllZero(hddSparseBlock.get(), hddSparseBlockSize))
+	{
+#ifdef _DEBUG
+		std::unique_ptr<u8[]> zeroBlock = std::make_unique<u8[]>(hddSparseBlockSize);
+		memset(zeroBlock.get(), 0, hddSparseBlockSize);
+		pxAssert(memcmp(hddSparseBlock.get(), zeroBlock.get(), hddSparseBlockSize) != 0);
+#endif
+
+		//No, do normal write
+		hddImage.write((char*)&hddSparseBlock[byteOffset - HddSparseStart], byteSize);
+		if (hddImage.fail())
+		{
+			Console.Error("DEV9: ATA: File write error");
+			pxAssert(false);
+			abort();
+		}
+		hddImage.flush();
+		return true;
+	}
+
+#ifdef _DEBUG
+	std::unique_ptr<u8[]> zeroBlock = std::make_unique<u8[]>(hddSparseBlockSize);
+	memset(zeroBlock.get(), 0, hddSparseBlockSize);
+	pxAssert(memcmp(hddSparseBlock.get(), zeroBlock.get(), hddSparseBlockSize) == 0);
+#endif
+
+	//Yes, try sparse write
+#ifdef _WIN32
+	FILE_ZERO_DATA_INFORMATION sparseRange;
+	sparseRange.FileOffset.QuadPart = HddSparseStart;
+	sparseRange.BeyondFinalZero.QuadPart = HddSparseStart + hddSparseBlockSize;
+	DWORD dwTemp;
+	BOOL ret = DeviceIoControl(hddNativeHandle, FSCTL_SET_ZERO_DATA, &sparseRange, sizeof(sparseRange), nullptr, 0, &dwTemp, nullptr);
+
+	if (ret == FALSE)
+		return false;
+
+#elif defined(__linux__)
+	const int ret = fallocate(hddNativeHandle, FALLOC_FL_PUNCH_HOLE | FALLOC_FL_KEEP_SIZE, HddSparseStart, hddSparseBlockSize);
+
+	if (ret == -1)
+		return false;
+
+#elif defined(__APPLE__)
+	fpunchhole_t sparseRange{0};
+	sparseRange.fp_offset = HddSparseStart;
+	sparseRange.fp_length = hddSparseBlockSize;
+
+	const int ret = fcntl(hddNativeHandle, F_PUNCHHOLE, &sparseRange);
+
+	if (ret == -1)
+		return false;
+
+#else
+	return false;
+#endif
+	hddImage.seekp(byteOffset + byteSize, std::ios::beg);
+	return true;
+}
+
+bool ATA::IsAllZero(const void* data, size_t len)
+{
+	intmax_t* pbi = (intmax_t*)data;
+	intmax_t* pbiUpper = ((intmax_t*)(((char*)data) + len)) - 1;
+	for (; pbi <= pbiUpper; pbi++)
+		if (*pbi)
+			return false; /* check with the biggest int available most of the array, but without aligning it */
+	for (char* p = (char*)pbi; p < ((char*)data) + len; p++)
+		if (*p)
+			return false; /* check end of non aligned array */
 	return true;
 }
 
