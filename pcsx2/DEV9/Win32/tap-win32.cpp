@@ -22,14 +22,15 @@
 #include <iphlpapi.h>
 
 #include <Netcfgx.h>
-#include <comdef.h>
-#include <atlbase.h>
 #include <devguid.h>
 
 #include <tchar.h>
 #include "tap.h"
 #include "..\dev9.h"
 #include <string>
+
+#include <wil/com.h>
+#include <wil/resource.h>
 
 //=============
 // TAP IOCTLs
@@ -69,38 +70,33 @@
 
 bool IsTAPDevice(const TCHAR* guid)
 {
-	HKEY netcard_key;
-	LONG status;
-	DWORD len;
-	int i = 0;
-
-	status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, ADAPTER_KEY, 0, KEY_READ, &netcard_key);
-
-	if (status != ERROR_SUCCESS)
+	wil::unique_hkey netcard_key;
+	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, ADAPTER_KEY, 0, KEY_READ, netcard_key.put()) != ERROR_SUCCESS)
 		return false;
 
+	int i = 0;
 	for (;;)
 	{
 		TCHAR enum_name[256];
 		TCHAR unit_string[256];
-		HKEY unit_key;
 		TCHAR component_id_string[] = _T("ComponentId");
 		TCHAR component_id[256];
 		TCHAR net_cfg_instance_id_string[] = _T("NetCfgInstanceId");
 		TCHAR net_cfg_instance_id[256];
 		DWORD data_type;
 
-		len = sizeof(enum_name);
-		status = RegEnumKeyEx(netcard_key, i, enum_name, &len, nullptr, nullptr, nullptr, nullptr);
+		DWORD len = std::size(enum_name);
+		LSTATUS status = RegEnumKeyEx(netcard_key.get(), i, enum_name, &len, nullptr, nullptr, nullptr, nullptr);
 
 		if (status == ERROR_NO_MORE_ITEMS)
 			break;
 		else if (status != ERROR_SUCCESS)
 			return false;
 
-		_sntprintf(unit_string, sizeof(unit_string), _T("%s\\%s"), ADAPTER_KEY, enum_name);
+		_stprintf_s(unit_string, _T("%s\\%s"), ADAPTER_KEY, enum_name);
 
-		status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, unit_string, 0, KEY_READ, &unit_key);
+		wil::unique_hkey unit_key;
+		status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, unit_string, 0, KEY_READ, unit_key.put());
 
 		if (status != ERROR_SUCCESS)
 		{
@@ -109,13 +105,13 @@ bool IsTAPDevice(const TCHAR* guid)
 		else
 		{
 			len = sizeof(component_id);
-			status = RegQueryValueEx(unit_key, component_id_string, nullptr, &data_type,
+			status = RegQueryValueEx(unit_key.get(), component_id_string, nullptr, &data_type,
 									 (LPBYTE)component_id, &len);
 
 			if (!(status != ERROR_SUCCESS || data_type != REG_SZ))
 			{
 				len = sizeof(net_cfg_instance_id);
-				status = RegQueryValueEx(unit_key, net_cfg_instance_id_string, nullptr, &data_type,
+				status = RegQueryValueEx(unit_key.get(), net_cfg_instance_id_string, nullptr, &data_type,
 										 (LPBYTE)net_cfg_instance_id, &len);
 
 				if (status == ERROR_SUCCESS && data_type == REG_SZ)
@@ -123,36 +119,31 @@ bool IsTAPDevice(const TCHAR* guid)
 					// tap_ovpnconnect, tap0901 or root\tap, no clue why
 					if ((!wcsncmp(component_id, L"tap", 3) || !wcsncmp(component_id, L"root\\tap", 8)) && !_tcscmp(net_cfg_instance_id, guid))
 					{
-						RegCloseKey(unit_key);
-						RegCloseKey(netcard_key);
 						return true;
 					}
 				}
 			}
-			RegCloseKey(unit_key);
 		}
 		++i;
 	}
 
-	RegCloseKey(netcard_key);
 	return false;
 }
 
 std::vector<AdapterEntry> TAPAdapter::GetAdapters()
 {
 	std::vector<AdapterEntry> tap_nic;
-	LONG status;
-	HKEY control_net_key;
 	DWORD len;
 	DWORD cSubKeys = 0;
 
-	status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, NETWORK_CONNECTIONS_KEY, 0, KEY_READ | KEY_QUERY_VALUE,
-						  &control_net_key);
+	wil::unique_hkey control_net_key;
+	LSTATUS status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, NETWORK_CONNECTIONS_KEY, 0, KEY_READ | KEY_QUERY_VALUE,
+						  control_net_key.put());
 
 	if (status != ERROR_SUCCESS)
 		return tap_nic;
 
-	status = RegQueryInfoKey(control_net_key, nullptr, nullptr, nullptr, &cSubKeys, nullptr, nullptr,
+	status = RegQueryInfoKey(control_net_key.get(), nullptr, nullptr, nullptr, &cSubKeys, nullptr, nullptr,
 							 nullptr, nullptr, nullptr, nullptr, nullptr);
 
 	if (status != ERROR_SUCCESS)
@@ -162,26 +153,26 @@ std::vector<AdapterEntry> TAPAdapter::GetAdapters()
 	{
 		TCHAR enum_name[256];
 		TCHAR connection_string[256];
-		HKEY connection_key;
 		TCHAR name_data[256];
 		DWORD name_type;
 		const TCHAR name_string[] = _T("Name");
 
-		len = sizeof(enum_name);
-		status = RegEnumKeyEx(control_net_key, i, enum_name, &len, nullptr, nullptr, nullptr, nullptr);
+		len = std::size(enum_name);
+		status = RegEnumKeyEx(control_net_key.get(), i, enum_name, &len, nullptr, nullptr, nullptr, nullptr);
 
 		if (status != ERROR_SUCCESS)
 			continue;
 
-		_sntprintf(connection_string, sizeof(connection_string), _T("%s\\%s\\Connection"),
+		_stprintf_s(connection_string, _T("%s\\%s\\Connection"),
 				   NETWORK_CONNECTIONS_KEY, enum_name);
 
-		status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, connection_string, 0, KEY_READ, &connection_key);
+		wil::unique_hkey connection_key;
+		status = RegOpenKeyEx(HKEY_LOCAL_MACHINE, connection_string, 0, KEY_READ, connection_key.put());
 
 		if (status == ERROR_SUCCESS)
 		{
 			len = sizeof(name_data);
-			status = RegQueryValueEx(connection_key, name_string, nullptr, &name_type, (LPBYTE)name_data,
+			status = RegQueryValueEx(connection_key.get(), name_string, nullptr, &name_type, (LPBYTE)name_data,
 									 &len);
 
 			if (status != ERROR_SUCCESS || name_type != REG_SZ)
@@ -199,12 +190,8 @@ std::vector<AdapterEntry> TAPAdapter::GetAdapters()
 					tap_nic.push_back(t);
 				}
 			}
-
-			RegCloseKey(connection_key);
 		}
 	}
-
-	RegCloseKey(control_net_key);
 
 	return tap_nic;
 }
@@ -240,41 +227,40 @@ HANDLE TAPOpen(const char* device_guid)
 	} version;
 	LONG version_len;
 
-	_snprintf(device_path, sizeof(device_path), "%s%s%s",
+	sprintf_s(device_path, "%s%s%s",
 			  USERMODEDEVICEDIR,
 			  device_guid,
 			  TAPSUFFIX);
 
-	HANDLE handle = CreateFileA(
+	wil::unique_hfile handle(CreateFileA(
 		device_path,
 		GENERIC_READ | GENERIC_WRITE,
 		0,
 		0,
 		OPEN_EXISTING,
 		FILE_ATTRIBUTE_SYSTEM | FILE_FLAG_OVERLAPPED,
-		0);
+		0));
 
-	if (handle == INVALID_HANDLE_VALUE)
+	if (!handle)
 	{
 		return INVALID_HANDLE_VALUE;
 	}
 
-	BOOL bret = DeviceIoControl(handle, TAP_IOCTL_GET_VERSION,
+	BOOL bret = DeviceIoControl(handle.get(), TAP_IOCTL_GET_VERSION,
 								&version, sizeof(version),
 								&version, sizeof(version), (LPDWORD)&version_len, NULL);
 
 	if (bret == FALSE)
 	{
-		CloseHandle(handle);
 		return INVALID_HANDLE_VALUE;
 	}
 
-	if (!TAPSetStatus(handle, TRUE))
+	if (!TAPSetStatus(handle.get(), TRUE))
 	{
 		return INVALID_HANDLE_VALUE;
 	}
 
-	return handle;
+	return handle.release();
 }
 
 PIP_ADAPTER_ADDRESSES FindAdapterViaIndex(PIP_ADAPTER_ADDRESSES adapterList, int ifIndex)
@@ -432,42 +418,38 @@ bool TAPGetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, std::un
 	AdapterInfoReduced = nullptr;
 
 	//Step 2
-	HRESULT cohr = S_OK;
 	//Init COM
-	cohr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
+	const HRESULT cohr = CoInitializeEx(nullptr, COINIT_MULTITHREADED);
 	if (!SUCCEEDED(cohr))
 		return false;
 
 	PIP_ADAPTER_ADDRESSES bridgeAdapter = nullptr;
 
 	//Create Instance of INetCfg
-	HRESULT hr = S_OK;
-	CComPtr<INetCfg> netcfg;
-	hr = netcfg.CoCreateInstance(CLSID_CNetCfg, nullptr, CLSCTX_INPROC_SERVER);
-	if (SUCCEEDED(hr))
+	if (auto netcfg = wil::CoCreateInstanceNoThrow<INetCfg>(CLSID_CNetCfg))
 	{
-		hr = netcfg->Initialize(nullptr);
+		HRESULT hr = netcfg->Initialize(nullptr);
 		if (SUCCEEDED(hr))
 		{
 			//Get the bridge component
 			//The bridged adapter should have this bound
-			CComPtr<INetCfgComponent> bridge;
-			hr = netcfg->FindComponent(L"ms_bridge", &bridge);
+			wil::com_ptr_nothrow<INetCfgComponent> bridge;
+			hr = netcfg->FindComponent(L"ms_bridge", bridge.put());
 
 			if (SUCCEEDED(hr))
 			{
 				//Get a List of network adapters via INetCfg
-				CComPtr<IEnumNetCfgComponent> components;
-				hr = netcfg->EnumComponents(&GUID_DEVCLASS_NET, &components);
+				wil::com_ptr_nothrow<IEnumNetCfgComponent> components;
+				hr = netcfg->EnumComponents(&GUID_DEVCLASS_NET, components.put());
 				if (SUCCEEDED(hr))
 				{
 					//Search possible bridge adapters
-					for (size_t i = 0; i < potentialBridges.size(); i++)
+					for (const auto& index : potentialBridges)
 					{
 						//We need to match the adapter index to an INetCfgComponent
 						//We do this by matching IP_ADAPTER_ADDRESSES.AdapterName
 						//with the INetCfgComponent Instance GUID
-						PIP_ADAPTER_ADDRESSES cAdapterInfo = FindAdapterViaIndex(AdapterInfo.get(), potentialBridges[i]);
+						PIP_ADAPTER_ADDRESSES cAdapterInfo = FindAdapterViaIndex(AdapterInfo.get(), index);
 
 						if (cAdapterInfo == nullptr || cAdapterInfo->AdapterName == nullptr)
 							continue;
@@ -481,11 +463,10 @@ bool TAPGetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, std::un
 							continue;
 
 						//Loop through components
-						CComPtr<INetCfgComponent> component;
+						wil::com_ptr_nothrow<INetCfgComponent> component;
 						while (true)
 						{
-							component.Release(); //CComPtr must be release any held component or else we assert
-							if (components->Next(1, &component, nullptr) != S_OK)
+							if (components->Next(1, component.put(), nullptr) != S_OK)
 								break;
 
 							GUID comInstGuid;
@@ -493,32 +474,30 @@ bool TAPGetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, std::un
 
 							if (SUCCEEDED(hr) && IsEqualGUID(nameGuid, comInstGuid))
 							{
-								CComHeapPtr<WCHAR> comId;
-								hr = component->GetId(&comId);
+								wil::unique_cotaskmem_string comId;
+								hr = component->GetId(comId.put());
 								if (!SUCCEEDED(hr))
 									continue;
 
 								//The bridge adapter for Win8+ has this ComponentID
 								//However not every adapter with this componentID is a bridge
-								if (wcscmp(L"compositebus\\ms_implat_mp", comId) == 0)
+								if (wcscmp(L"compositebus\\ms_implat_mp", comId.get()) == 0)
 								{
-									CComHeapPtr<WCHAR> dispName;
-									hr = component->GetDisplayName(&dispName);
+									wil::unique_cotaskmem_string dispName;
+									hr = component->GetDisplayName(dispName.put());
 									if (SUCCEEDED(hr))
 										Console.WriteLn(L"DEV9: %s is possible bridge (Check 2 passed)", dispName);
 
 									//Check if adapter has the ms_bridge component bound to it.
-									CComPtr<INetCfgComponentBindings> bindings;
-									hr = bridge->QueryInterface<INetCfgComponentBindings>(&bindings);
-									if (!SUCCEEDED(hr))
+									auto bindings = bridge.try_query<INetCfgComponentBindings>();
+									if (!bindings)
 										continue;
 
-									hr = bindings->IsBoundTo(component);
+									hr = bindings->IsBoundTo(component.get());
 									if (hr != S_OK)
 										continue;
 
-									dispName.Free();
-									hr = component->GetDisplayName(&dispName);
+									hr = component->GetDisplayName(dispName.put());
 									if (SUCCEEDED(hr))
 										Console.WriteLn(L"DEV9: %s is bridge (Check 3 passed)", dispName);
 
@@ -537,7 +516,6 @@ bool TAPGetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, std::un
 		}
 	}
 
-	netcfg.Release(); //Release before CoUninitialize();
 	if (cohr == S_OK)
 		CoUninitialize();
 
