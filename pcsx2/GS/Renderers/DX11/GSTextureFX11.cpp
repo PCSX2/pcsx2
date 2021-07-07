@@ -30,7 +30,7 @@ bool GSDevice11::CreateTextureFX()
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	hr = m_dev->CreateBuffer(&bd, NULL, &m_vs_cb);
+	hr = m_dev->CreateBuffer(&bd, nullptr, m_vs_cb.put());
 
 	if (FAILED(hr))
 		return false;
@@ -41,7 +41,7 @@ bool GSDevice11::CreateTextureFX()
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	hr = m_dev->CreateBuffer(&bd, NULL, &m_gs_cb);
+	hr = m_dev->CreateBuffer(&bd, nullptr, m_gs_cb.put());
 
 	if (FAILED(hr))
 		return false;
@@ -52,7 +52,7 @@ bool GSDevice11::CreateTextureFX()
 	bd.Usage = D3D11_USAGE_DEFAULT;
 	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
 
-	hr = m_dev->CreateBuffer(&bd, NULL, &m_ps_cb);
+	hr = m_dev->CreateBuffer(&bd, nullptr, m_ps_cb.put());
 
 	if (FAILED(hr))
 		return false;
@@ -70,7 +70,7 @@ bool GSDevice11::CreateTextureFX()
 	sd.MaxAnisotropy = D3D11_MIN_MAXANISOTROPY;
 	sd.ComparisonFunc = D3D11_COMPARISON_NEVER;
 
-	hr = m_dev->CreateSamplerState(&sd, &m_palette_ss);
+	hr = m_dev->CreateSamplerState(&sd, m_palette_ss.put());
 
 	if (FAILED(hr))
 		return false;
@@ -117,28 +117,26 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 
 		std::vector<char> shader;
 		theApp.LoadResource(IDR_TFX_FX, shader);
-		CreateShader(shader, "tfx.fx", nullptr, "vs_main", sm.GetPtr(), &vs.vs, layout, countof(layout), &vs.il);
+		CreateShader(shader, "tfx.fx", nullptr, "vs_main", sm.GetPtr(), &vs.vs, layout, countof(layout), vs.il.put());
 
 		m_vs[sel] = vs;
 
-		i = m_vs.find(sel);
+		i = m_vs.try_emplace(sel, std::move(vs)).first;
 	}
 
 	if (m_vs_cb_cache.Update(cb))
 	{
-		ID3D11DeviceContext* ctx = m_ctx;
-
-		ctx->UpdateSubresource(m_vs_cb, 0, NULL, cb, 0, 0);
+		m_ctx->UpdateSubresource(m_vs_cb.get(), 0, NULL, cb, 0, 0);
 	}
 
-	VSSetShader(i->second.vs, m_vs_cb);
+	VSSetShader(i->second.vs.get(), m_vs_cb.get());
 
-	IASetInputLayout(i->second.il);
+	IASetInputLayout(i->second.il.get());
 }
 
 void GSDevice11::SetupGS(GSSelector sel, const GSConstantBuffer* cb)
 {
-	CComPtr<ID3D11GeometryShader> gs;
+	wil::com_ptr_nothrow<ID3D11GeometryShader> gs;
 
 	const bool unscale_pt_ln = (sel.point == 1 || sel.line == 1);
 	// Geometry shader is disabled if sprite conversion is done on the cpu (sel.cpu_sprite).
@@ -161,7 +159,7 @@ void GSDevice11::SetupGS(GSSelector sel, const GSConstantBuffer* cb)
 
 			std::vector<char> shader;
 			theApp.LoadResource(IDR_TFX_FX, shader);
-			CreateShader(shader, "tfx.fx", nullptr, "gs_main", sm.GetPtr(), &gs);
+			CreateShader(shader, "tfx.fx", nullptr, "gs_main", sm.GetPtr(), gs.put());
 
 			m_gs[sel] = gs;
 		}
@@ -170,12 +168,10 @@ void GSDevice11::SetupGS(GSSelector sel, const GSConstantBuffer* cb)
 
 	if (m_gs_cb_cache.Update(cb))
 	{
-		ID3D11DeviceContext* ctx = m_ctx;
-
-		ctx->UpdateSubresource(m_gs_cb, 0, NULL, cb, 0, 0);
+		m_ctx->UpdateSubresource(m_gs_cb.get(), 0, NULL, cb, 0, 0);
 	}
 
-	GSSetShader(gs, m_gs_cb);
+	GSSetShader(gs.get(), m_gs_cb.get());
 }
 
 void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSelector ssel)
@@ -221,25 +217,21 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		sm.AddMacro("PS_DITHER", sel.dither);
 		sm.AddMacro("PS_ZCLAMP", sel.zclamp);
 
-		CComPtr<ID3D11PixelShader> ps;
+		wil::com_ptr_nothrow<ID3D11PixelShader> ps;
 
 		std::vector<char> shader;
 		theApp.LoadResource(IDR_TFX_FX, shader);
-		CreateShader(shader, "tfx.fx", nullptr, "ps_main", sm.GetPtr(), &ps);
+		CreateShader(shader, "tfx.fx", nullptr, "ps_main", sm.GetPtr(), ps.put());
 
-		m_ps[sel] = ps;
-
-		i = m_ps.find(sel);
+		i = m_ps.try_emplace(sel, std::move(ps)).first;
 	}
 
 	if (m_ps_cb_cache.Update(cb))
 	{
-		ID3D11DeviceContext* ctx = m_ctx;
-
-		ctx->UpdateSubresource(m_ps_cb, 0, NULL, cb, 0, 0);
+		m_ctx->UpdateSubresource(m_ps_cb.get(), 0, NULL, cb, 0, 0);
 	}
 
-	CComPtr<ID3D11SamplerState> ss0, ss1;
+	wil::com_ptr_nothrow<ID3D11SamplerState> ss0, ss1;
 
 	if (sel.tfx != 4)
 	{
@@ -282,9 +274,9 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 		}
 	}
 
-	PSSetSamplerState(ss0, ss1);
+	PSSetSamplerState(ss0.get(), ss1.get());
 
-	PSSetShader(i->second, m_ps_cb);
+	PSSetShader(i->second.get(), m_ps_cb.get());
 }
 
 void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix)
@@ -327,16 +319,13 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 			dsd.DepthFunc = ztst[dssel.ztst];
 		}
 
-		CComPtr<ID3D11DepthStencilState> dss;
+		wil::com_ptr_nothrow<ID3D11DepthStencilState> dss;
+		m_dev->CreateDepthStencilState(&dsd, dss.put());
 
-		m_dev->CreateDepthStencilState(&dsd, &dss);
-
-		m_om_dss[dssel] = dss;
-
-		i = m_om_dss.find(dssel);
+		i = m_om_dss.try_emplace(dssel, std::move(dss)).first;
 	}
 
-	OMSetDepthStencilState(i->second, 1);
+	OMSetDepthStencilState(i->second.get(), 1);
 
 	auto j = std::as_const(m_om_bs).find(bsel);
 
@@ -369,14 +358,11 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 		if (bsel.wb) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_BLUE;
 		if (bsel.wa) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_ALPHA;
 
-		CComPtr<ID3D11BlendState> bs;
+		wil::com_ptr_nothrow<ID3D11BlendState> bs;
+		m_dev->CreateBlendState(&bd, bs.put());
 
-		m_dev->CreateBlendState(&bd, &bs);
-
-		m_om_bs[bsel] = bs;
-
-		j = m_om_bs.find(bsel);
+		j = m_om_bs.try_emplace(bsel, std::move(bs)).first;
 	}
 
-	OMSetBlendState(j->second, (float)(int)afix / 0x80);
+	OMSetBlendState(j->second.get(), (float)(int)afix / 0x80);
 }

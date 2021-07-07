@@ -22,6 +22,7 @@
 #include "Renderers/DX11/GSDevice11.h"
 #include <VersionHelpers.h>
 #include "svnrev.h"
+#include <wil/com.h>
 #else
 #define SVN_REV 0
 #define SVN_MODS 0
@@ -240,11 +241,11 @@ D3D_FEATURE_LEVEL GSUtil::CheckDirect3D11Level(IDXGIAdapter* adapter, D3D_DRIVER
 
 GSRendererType GSUtil::GetBestRenderer()
 {
-	CComPtr<IDXGIFactory1> dxgi_factory;
-	if (SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(&dxgi_factory))))
+	wil::com_ptr_nothrow<IDXGIFactory1> dxgi_factory;
+	if (SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(dxgi_factory.put()))))
 	{
-		CComPtr<IDXGIAdapter1> adapter;
-		if (SUCCEEDED(dxgi_factory->EnumAdapters1(0, &adapter)))
+		wil::com_ptr_nothrow<IDXGIAdapter1> adapter;
+		if (SUCCEEDED(dxgi_factory->EnumAdapters1(0, adapter.put())))
 		{
 			DXGI_ADAPTER_DESC1 desc;
 			if (SUCCEEDED(adapter->GetDesc1(&desc)))
@@ -286,11 +287,7 @@ std::string GStempdir()
 #ifdef _WIN32
 	wchar_t path[MAX_PATH + 1];
 	GetTempPath(MAX_PATH, path);
-	std::wstring tmp(path);
-	using convert_type = std::codecvt_utf8<wchar_t>;
-	std::wstring_convert<convert_type, wchar_t> converter;
-
-	return converter.to_bytes(tmp);
+	return convert_utf16_to_utf8(path);
 #else
 	return "/tmp";
 #endif

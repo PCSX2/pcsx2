@@ -18,11 +18,12 @@
 #include "GSTexture11.h"
 #include "GS/GSVector.h"
 #include "GS/Renderers/Common/GSDevice.h"
+#include <wil/com.h>
 
 struct GSVertexShader11
 {
-	CComPtr<ID3D11VertexShader> vs;
-	CComPtr<ID3D11InputLayout> il;
+	wil::com_ptr_nothrow<ID3D11VertexShader> vs;
+	wil::com_ptr_nothrow<ID3D11InputLayout> il;
 };
 
 class GSDevice11 final : public GSDevice
@@ -406,14 +407,11 @@ private:
 
 	uint16 ConvertBlendEnum(uint16 generic) final;
 
-	CComPtr<IDXGIFactory2> m_factory;
-	CComPtr<ID3D11Device> m_dev;
-	CComPtr<ID3D11DeviceContext> m_ctx;
-	CComPtr<IDXGISwapChain1> m_swapchain;
-	CComPtr<ID3D11Buffer> m_vb;
-	CComPtr<ID3D11Buffer> m_vb_old;
-	CComPtr<ID3D11Buffer> m_ib;
-	CComPtr<ID3D11Buffer> m_ib_old;
+	wil::com_ptr_nothrow<ID3D11Device> m_dev;
+	wil::com_ptr_nothrow<ID3D11DeviceContext> m_ctx;
+	wil::com_ptr_nothrow<IDXGISwapChain1> m_swapchain;
+	wil::com_ptr_nothrow<ID3D11Buffer> m_vb;
+	wil::com_ptr_nothrow<ID3D11Buffer> m_ib;
 
 	struct
 	{
@@ -444,69 +442,68 @@ private:
 		uint16_t ps_sr_bitfield;
 	} m_state;
 
-	CComPtr<ID3D11RasterizerState> m_rs;
 
 	struct
 	{
-		CComPtr<ID3D11InputLayout> il;
-		CComPtr<ID3D11VertexShader> vs;
-		CComPtr<ID3D11PixelShader> ps[ShaderConvert_Count];
-		CComPtr<ID3D11SamplerState> ln;
-		CComPtr<ID3D11SamplerState> pt;
-		CComPtr<ID3D11DepthStencilState> dss;
-		CComPtr<ID3D11DepthStencilState> dss_write;
-		CComPtr<ID3D11BlendState> bs;
+		wil::com_ptr_nothrow<ID3D11InputLayout> il;
+		wil::com_ptr_nothrow<ID3D11VertexShader> vs;
+		wil::com_ptr_nothrow<ID3D11PixelShader> ps[ShaderConvert_Count];
+		wil::com_ptr_nothrow<ID3D11SamplerState> ln;
+		wil::com_ptr_nothrow<ID3D11SamplerState> pt;
+		wil::com_ptr_nothrow<ID3D11DepthStencilState> dss;
+		wil::com_ptr_nothrow<ID3D11DepthStencilState> dss_write;
+		wil::com_ptr_nothrow<ID3D11BlendState> bs;
 	} m_convert;
 
 	struct
 	{
-		CComPtr<ID3D11PixelShader> ps[2];
-		CComPtr<ID3D11Buffer> cb;
-		CComPtr<ID3D11BlendState> bs;
+		wil::com_ptr_nothrow<ID3D11PixelShader> ps[2];
+		wil::com_ptr_nothrow<ID3D11Buffer> cb;
+		wil::com_ptr_nothrow<ID3D11BlendState> bs;
 	} m_merge;
 
 	struct
 	{
-		CComPtr<ID3D11PixelShader> ps[4];
-		CComPtr<ID3D11Buffer> cb;
+		wil::com_ptr_nothrow<ID3D11PixelShader> ps[4];
+		wil::com_ptr_nothrow<ID3D11Buffer> cb;
 	} m_interlace;
 
 	struct
 	{
-		CComPtr<ID3D11PixelShader> ps;
-		CComPtr<ID3D11Buffer> cb;
+		wil::com_ptr_nothrow<ID3D11PixelShader> ps;
+		wil::com_ptr_nothrow<ID3D11Buffer> cb;
 	} m_shaderfx;
 
 	struct
 	{
-		CComPtr<ID3D11PixelShader> ps;
-		CComPtr<ID3D11Buffer> cb;
+		wil::com_ptr_nothrow<ID3D11PixelShader> ps;
+		wil::com_ptr_nothrow<ID3D11Buffer> cb;
 	} m_fxaa;
 
 	struct
 	{
-		CComPtr<ID3D11PixelShader> ps;
-		CComPtr<ID3D11Buffer> cb;
+		wil::com_ptr_nothrow<ID3D11PixelShader> ps;
+		wil::com_ptr_nothrow<ID3D11Buffer> cb;
 	} m_shadeboost;
 
 	struct
 	{
-		CComPtr<ID3D11DepthStencilState> dss;
-		CComPtr<ID3D11BlendState> bs;
+		wil::com_ptr_nothrow<ID3D11DepthStencilState> dss;
+		wil::com_ptr_nothrow<ID3D11BlendState> bs;
 	} m_date;
 
 	// Shaders...
 
 	std::unordered_map<uint32, GSVertexShader11> m_vs;
-	CComPtr<ID3D11Buffer> m_vs_cb;
-	std::unordered_map<uint32, CComPtr<ID3D11GeometryShader>> m_gs;
-	CComPtr<ID3D11Buffer> m_gs_cb;
-	std::unordered_map<uint64, CComPtr<ID3D11PixelShader>> m_ps;
-	CComPtr<ID3D11Buffer> m_ps_cb;
-	std::unordered_map<uint32, CComPtr<ID3D11SamplerState>> m_ps_ss;
-	CComPtr<ID3D11SamplerState> m_palette_ss;
-	std::unordered_map<uint32, CComPtr<ID3D11DepthStencilState>> m_om_dss;
-	std::unordered_map<uint32, CComPtr<ID3D11BlendState>> m_om_bs;
+	wil::com_ptr_nothrow<ID3D11Buffer> m_vs_cb;
+	std::unordered_map<uint32, wil::com_ptr_nothrow<ID3D11GeometryShader>> m_gs;
+	wil::com_ptr_nothrow<ID3D11Buffer> m_gs_cb;
+	std::unordered_map<uint64, wil::com_ptr_nothrow<ID3D11PixelShader>> m_ps;
+	wil::com_ptr_nothrow<ID3D11Buffer> m_ps_cb;
+	std::unordered_map<uint32, wil::com_ptr_nothrow<ID3D11SamplerState>> m_ps_ss;
+	wil::com_ptr_nothrow<ID3D11SamplerState> m_palette_ss;
+	std::unordered_map<uint32, wil::com_ptr_nothrow<ID3D11DepthStencilState>> m_om_dss;
+	std::unordered_map<uint32, wil::com_ptr_nothrow<ID3D11BlendState>> m_om_bs;
 
 	VSConstantBuffer m_vs_cb_cache;
 	GSConstantBuffer m_gs_cb_cache;
@@ -584,13 +581,13 @@ public:
 	void SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix);
 
-	ID3D11Device* operator->() { return m_dev; }
-	operator ID3D11Device*() { return m_dev; }
-	operator ID3D11DeviceContext*() { return m_ctx; }
+	ID3D11Device* operator->() { return m_dev.get(); }
+	operator ID3D11Device*() { return m_dev.get(); }
+	operator ID3D11DeviceContext*() { return m_ctx.get(); }
 
 	void CreateShader(const std::vector<char>& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11VertexShader** vs, D3D11_INPUT_ELEMENT_DESC* layout, int count, ID3D11InputLayout** il);
 	void CreateShader(const std::vector<char>& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11GeometryShader** gs);
 	void CreateShader(const std::vector<char>& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11PixelShader** ps);
 
-	void CompileShader(const std::vector<char>& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3DBlob** shader, std::string shader_model);
+	void CompileShader(const std::vector<char>& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3DBlob** shader, const std::string& shader_model);
 };
