@@ -1,4 +1,4 @@
-name: MacOS Build
+name: 🍎 MacOS Builds
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -34,7 +34,7 @@ jobs:
         platform: [x64]
         experimental: [false]
 
-    name: ${{ matrix.os }}-${{ matrix.platform }}
+    name: ${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.

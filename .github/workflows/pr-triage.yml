@@ -1,5 +1,5 @@
 # Runs steps to triage an incoming Pull Request, for example - applying labels.
-name: "Pull Request Triage"
+name: 🤔 Pull Request Triage
 
 on:
   pull_request_target:
