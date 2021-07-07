@@ -21,6 +21,7 @@
 #include "GS/resource.h"
 #include "GSSetting.h"
 #include <algorithm>
+#include <wil/com.h>
 
 GSSettingsDlg::GSSettingsDlg()
 	: GSDialog(IDD_CONFIG)
@@ -41,8 +42,8 @@ GSSettingsDlg::GSSettingsDlg()
 
 std::vector<GSSettingsDlg::Adapter> GSSettingsDlg::EnumerateD3D11Adapters()
 {
-	CComPtr<IDXGIFactory1> dxgi_factory;
-	CreateDXGIFactory1(IID_PPV_ARGS(&dxgi_factory));
+	wil::com_ptr_nothrow<IDXGIFactory1> dxgi_factory;
+	CreateDXGIFactory1(IID_PPV_ARGS(dxgi_factory.put()));
 	if (dxgi_factory == nullptr)
 		return {};
 
@@ -53,19 +54,15 @@ std::vector<GSSettingsDlg::Adapter> GSSettingsDlg::EnumerateD3D11Adapters()
 #endif
 	};
 
-	CComPtr<IDXGIAdapter1> adapter;
-	for (int i = 0; dxgi_factory->EnumAdapters1(i, &adapter) == S_OK; ++i, adapter = nullptr)
+	wil::com_ptr_nothrow<IDXGIAdapter1> adapter;
+	for (int i = 0; SUCCEEDED(dxgi_factory->EnumAdapters1(i, adapter.put())); ++i)
 	{
 		DXGI_ADAPTER_DESC1 desc;
-		if (adapter->GetDesc1(&desc) != S_OK)
+		if (FAILED(adapter->GetDesc1(&desc)))
 			continue;
 
-		D3D_FEATURE_LEVEL level = GSUtil::CheckDirect3D11Level(adapter, D3D_DRIVER_TYPE_UNKNOWN);
-
-		const int size = WideCharToMultiByte(CP_ACP, 0, desc.Description, sizeof(desc.Description), nullptr, 0, nullptr, nullptr);
-		std::vector<char> buf(size);
-		WideCharToMultiByte(CP_ACP, 0, desc.Description, sizeof(desc.Description), buf.data(), size, nullptr, nullptr);
-		adapters.push_back({buf.data(), GSAdapter(desc), level});
+		D3D_FEATURE_LEVEL level = GSUtil::CheckDirect3D11Level(adapter.get(), D3D_DRIVER_TYPE_UNKNOWN);
+		adapters.emplace_back(convert_utf16_to_utf8(desc.Description), GSAdapter(desc), level);
 	}
 
 	auto unsupported_adapter = [](const auto& adapter) { return adapter.level < D3D_FEATURE_LEVEL_10_0; };

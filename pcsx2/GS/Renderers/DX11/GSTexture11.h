@@ -17,22 +17,23 @@
 
 #include "GS.h"
 #include "GS/Renderers/Common/GSTexture.h"
+#include <wil/com.h>
 
 class GSTexture11 : public GSTexture
 {
-	CComPtr<ID3D11Device> m_dev;
-	CComPtr<ID3D11DeviceContext> m_ctx;
-	CComPtr<ID3D11Texture2D> m_texture;
+	wil::com_ptr_nothrow<ID3D11Device> m_dev;
+	wil::com_ptr_nothrow<ID3D11DeviceContext> m_ctx;
+	wil::com_ptr_nothrow<ID3D11Texture2D> m_texture;
 	D3D11_TEXTURE2D_DESC m_desc;
-	CComPtr<ID3D11ShaderResourceView> m_srv;
-	CComPtr<ID3D11RenderTargetView> m_rtv;
-	CComPtr<ID3D11DepthStencilView> m_dsv;
+	wil::com_ptr_nothrow<ID3D11ShaderResourceView> m_srv;
+	wil::com_ptr_nothrow<ID3D11RenderTargetView> m_rtv;
+	wil::com_ptr_nothrow<ID3D11DepthStencilView> m_dsv;
 
 	int m_layer;
 	int m_max_layer;
 
 public:
-	explicit GSTexture11(ID3D11Texture2D* texture);
+	explicit GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture);
 
 	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0);
 	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0);
