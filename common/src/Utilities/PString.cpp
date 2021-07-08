@@ -37,10 +37,10 @@ PString::PString(const std::wstring& utf16_string)
 
 PString::operator std::wstring()
 {
-	int size = MultiByteToWideChar(CP_UTF8, 0, string.c_str(), -1, nullptr, 0);
+	const int size = MultiByteToWideChar(CP_UTF8, 0, string.c_str(), string.size(), nullptr, 0);
 	std::vector<wchar_t> converted_string(size);
 	MultiByteToWideChar(CP_UTF8, 0, string.c_str(), -1, converted_string.data(), converted_string.size());
-	return { converted_string.data() };
+	return converted_string.data();
 }
 #endif
 
@@ -71,6 +71,24 @@ std::ostream& operator<<(std::ostream& os, const PString& str)
 {
 	os << str.string;
 	return os;
+}
+
+std::string PString::u8()
+{
+	return string;
+}
+
+std::string PString::mb()
+{
+#ifdef _WIN32
+	std::wstring temp = *this;
+	const int size = WideCharToMultiByte(CP_ACP, 0, temp.c_str(), temp.size(), nullptr, 0, nullptr, nullptr);
+	string.resize(size, 0);
+	WideCharToMultiByte(CP_ACP, 0, temp.c_str(), temp.size(), string.data(), string.size(), nullptr, nullptr);
+	return string;
+#else
+	return string;
+#endif
 }
 
 /*std::istream& operator>>(std::istream& is, PString& str)

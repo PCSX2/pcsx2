@@ -17,12 +17,6 @@ private:
 public:
 	PString() = default;
 
-	// Non default constructors
-	PString(const char* string)
-	{
-		string = string;
-	}
-
 	explicit PString(const fs::path& path)
 	{
 		string = path.string();
@@ -56,6 +50,11 @@ public:
 	{
 		string = move.string;
 	}
+
+	// Return OS specific UTF format
+	std::string mb();
+	// Return UTF8 explicit string
+	std::string u8();
 
 	const bool operator==(const PString& rhs)
 	{
