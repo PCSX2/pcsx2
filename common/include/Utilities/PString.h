@@ -39,7 +39,10 @@ public:
 	#endif
 
 	#ifdef __cpp_lib_char8_t
-	PString(const std::u8string& str);
+	PString::PString(const std::u8string& str)
+	{
+		string = std::string(str.begin(), str.end());
+	}
 	operator std::u8string();
 	#endif
 

@@ -15,6 +15,16 @@ PString& PString::operator=(PString&& rhs)
 	return *this;
 }
 
+
+#ifdef __cpp_lib_char8_t
+PString::operator std::u8string()
+{
+	std::u8string str(string.begin(), string.end());
+	return str;
+}
+#endif
+
+
 #ifdef _WIN32
 // Non default
 PString::PString(const std::wstring& utf16_string)
@@ -54,8 +64,7 @@ PString::operator fs::path() const
 
 void PString::resize(size_t siz, char c)
 {
-	string.resize(siz);
-	string = c;
+	string.resize(siz, c);
 }
 
 std::ostream& operator<<(std::ostream& os, const PString& str)
