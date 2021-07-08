@@ -606,9 +606,7 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	IniEntry( Toolbar_ImageSize );
 	IniEntry( Toolbar_ShowLabels );
 
-	wxFileName res(Path::ToWxString(CurrentIso));
-	ini.Entry( L"CurrentIso", res, res, ini.IsLoading() || IsPortable() );
-	CurrentIso = Path::FromWxString(res.GetFullPath());
+	ini.Entry( L"CurrentIso", CurrentIso, CurrentIso);
 
 	IniEntry( CurrentBlockdump );
 	IniEntry( CurrentELF );
@@ -745,7 +743,6 @@ void AppConfig::FolderOptions::LoadSave(IniInterface& ini)
 	fs::path optional_base = IsPortable() ? PathDefs::AppRoot() : "";
 
 	IniFileDirectory(Bios, optional_base);
-	IniFileDirectory(Plugins, optional_base);
 	IniFileDirectory(Snapshots, optional_base);
 	IniFileDirectory(Savestates, optional_base);
 	IniFileDirectory(MemoryCards, optional_base);

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -130,11 +130,6 @@ wxString Path::Normalize(const wxDirName& src)
 	return wxDirName(src).Normalize().ToString();
 }
 
-wxString Path::Combine(const wxString& srcPath, const wxDirName& srcFile)
-{
-	return (wxDirName(srcPath) + srcFile).ToString();
-}
-
 // Replaces the extension of the file with the one given.
 // This function works for path names as well as file names.
 std::string Path::ReplaceExtension(const wxString &src, const wxString &ext)
@@ -162,11 +157,11 @@ fs::path Path::GetExecutableDirectory()
 	return exePath.parent_path();
 }
 
-fs::path Path::getPath(const fs::path& p, const fs::path& b, bool isPort)
+fs::path Path::getPath(fs::path p, bool isPortable)
 {
-	if (isPort)
+	if (isPortable)
 	{
-		return fs::relative(p, b);
+		return fs::relative(p);
 	}
 	else
 	{

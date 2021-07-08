@@ -86,7 +86,6 @@ oprofile_data/
 /bin/inis
 /bin/logs
 /bin/memcards
-/bin/plugins
 /bin/snaps
 /bin/sstates
 /bin/portable*.yaml

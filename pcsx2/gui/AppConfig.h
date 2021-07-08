@@ -161,7 +161,6 @@ public:
 
 		fs::path
 			Bios,
-			Plugins,
 			Snapshots,
 			Savestates,
 			MemoryCards,
