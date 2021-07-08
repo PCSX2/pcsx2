@@ -659,9 +659,9 @@ static __ri bool ipuPACK(tIPU_CMD_CSC csc)
 
 static void ipuSETTH(u32 val)
 {
-	s_thresh[0] = (val & 0xff);
-	s_thresh[1] = ((val >> 16) & 0xff);
-	IPU_LOG("SETTH (Set threshold value)command %x.", val&0xff00ff);
+	s_thresh[0] = (val & 0x1ff);
+	s_thresh[1] = ((val >> 16) & 0x1ff);
+	IPU_LOG("SETTH (Set threshold value)command %x.", val&0x1ff01ff);
 }
 
 // --------------------------------------------------------------------------------------
