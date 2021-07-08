@@ -33,11 +33,6 @@ GSRendererOGL::GSRendererOGL()
 	ResetStates();
 }
 
-bool GSRendererOGL::CreateDevice(GSDevice* dev)
-{
-	return GSRenderer::CreateDevice(dev);
-}
-
 void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 {
 	GL_PUSH("IA");

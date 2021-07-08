@@ -20,6 +20,7 @@
 
 #include "config.h"
 #include "common/Pcsx2Types.h"
+#include "common/WindowInfo.h"
 #include "GS_types.h"
 #include "Window/GSSetting.h"
 #include "SaveState.h"
@@ -1793,6 +1794,12 @@ void GSgetTitleInfo2(char* dest, size_t length);
 void GSsetFrameSkip(int frameskip);
 void GSsetVsync(int vsync);
 void GSsetExclusive(int enabled);
+
+#ifndef PCSX2_CORE
+// Needed for window resizing in wx. Can be safely called from the UI thread.
+void GSResizeWindow(int width, int height);
+bool GSCheckForWindowResize(int* new_width, int* new_height);
+#endif
 
 class GSApp
 {

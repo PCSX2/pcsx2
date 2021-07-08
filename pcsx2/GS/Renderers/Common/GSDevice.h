@@ -15,8 +15,8 @@
 
 #pragma once
 
+#include "common/WindowInfo.h"
 #include "GSFastList.h"
-#include "GS/Window/GSWnd.h"
 #include "GSTexture.h"
 #include "GSVertex.h"
 #include "GS/GSAlignedClass.h"
@@ -145,7 +145,6 @@ protected:
 	static const int m_NO_BLEND = 0;
 	static const int m_MERGE_BLEND = m_blendMap.size() - 1;
 
-	std::shared_ptr<GSWnd> m_wnd;
 	int m_vsync;
 	bool m_rbswapped;
 	GSTexture* m_backbuffer;
@@ -190,7 +189,7 @@ public:
 		DontCare
 	};
 
-	virtual bool Create(const std::shared_ptr<GSWnd>& wnd);
+	virtual bool Create(const WindowInfo& wi);
 	virtual bool Reset(int w, int h);
 	virtual bool IsLost(bool update = false) { return false; }
 	virtual void Present(const GSVector4i& r, int shader);
@@ -247,6 +246,8 @@ public:
 	bool ResizeTarget(GSTexture** t);
 
 	bool IsRBSwapped() { return m_rbswapped; }
+	int GetBackbufferWidth() const { return m_backbuffer ? m_backbuffer->GetWidth() : 0; }
+	int GetBackbufferHeight() const { return m_backbuffer ? m_backbuffer->GetHeight() : 0; }
 
 	void AgePool();
 	void PurgePool();

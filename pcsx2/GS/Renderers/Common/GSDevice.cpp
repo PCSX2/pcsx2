@@ -18,8 +18,7 @@
 #include "GSDevice.h"
 
 GSDevice::GSDevice()
-	: m_wnd()
-	, m_vsync(false)
+	: m_vsync(false)
 	, m_rbswapped(false)
 	, m_backbuffer(NULL)
 	, m_merge(NULL)
@@ -46,10 +45,8 @@ GSDevice::~GSDevice()
 	delete m_target_tmp;
 }
 
-bool GSDevice::Create(const std::shared_ptr<GSWnd>& wnd)
+bool GSDevice::Create(const WindowInfo& wi)
 {
-	m_wnd = wnd;
-
 	return true;
 }
 
@@ -73,26 +70,18 @@ bool GSDevice::Reset(int w, int h)
 	m_target_tmp = NULL;
 
 	m_current = NULL; // current is special, points to other textures, no need to delete
-
-	return m_wnd != NULL;
+	return true;
 }
 
 void GSDevice::Present(const GSVector4i& r, int shader)
 {
-	const GSVector4i cr = m_wnd->GetClientRect();
-
-	const int w = std::max<int>(cr.width(), 1);
-	const int h = std::max<int>(cr.height(), 1);
-
-	if (!m_backbuffer || m_backbuffer->GetWidth() != w || m_backbuffer->GetHeight() != h)
-	{
-		if (!Reset(w, h))
-		{
-			return;
-		}
-	}
-
 	GL_PUSH("Present");
+
+#ifndef PCSX2_CORE
+	int new_width, new_height;
+	if (GSCheckForWindowResize(&new_width, &new_height) && !Reset(new_width, new_height))
+		return;
+#endif
 
 	// FIXME is it mandatory, it could be slow
 	ClearRenderTarget(m_backbuffer, 0);

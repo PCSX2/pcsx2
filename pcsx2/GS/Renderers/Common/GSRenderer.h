@@ -16,7 +16,6 @@
 #pragma once
 
 #include "GS/GS.h"
-#include "GS/Window/GSWnd.h"
 #include "GS/GSState.h"
 #include "GS/GSCapture.h"
 
@@ -48,14 +47,13 @@ protected:
 	virtual GSTexture* GetFeedbackOutput() { return nullptr; }
 
 public:
-	std::shared_ptr<GSWnd> m_wnd;
 	GSDevice* m_dev;
 
 public:
 	GSRenderer();
 	virtual ~GSRenderer();
 
-	virtual bool CreateDevice(GSDevice* dev);
+	virtual bool CreateDevice(GSDevice* dev, const WindowInfo& wi);
 	virtual void ResetDevice();
 	virtual void VSync(int field);
 	virtual bool MakeSnapshot(const std::string& path);
