@@ -74,11 +74,11 @@ bool GSDevice11::SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode)
 	return true;
 }
 
-bool GSDevice11::Create(const std::shared_ptr<GSWnd>& wnd)
+bool GSDevice11::Create(const WindowInfo& wi)
 {
 	bool nvidia_vendor = false;
 
-	if (!__super::Create(wnd))
+	if (!__super::Create(wi))
 	{
 		return false;
 	}
@@ -177,7 +177,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd>& wnd)
 		swapchain_description.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
 
 		const HRESULT result = factory->CreateSwapChainForHwnd(
-			m_dev.get(), reinterpret_cast<HWND>(m_wnd->GetHandle()),
+			m_dev.get(), reinterpret_cast<HWND>(wi.window_handle),
 			&swapchain_description, nullptr, nullptr, m_swapchain.put());
 
 		if (FAILED(result))
@@ -382,7 +382,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd>& wnd)
 
 	//
 
-	Reset(1, 1);
+	Reset(wi.surface_width, wi.surface_height);
 
 	//
 

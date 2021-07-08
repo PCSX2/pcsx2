@@ -514,12 +514,6 @@
     <ClCompile Include="GS\Renderers\Common\GSVertexList.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSVertexSW.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSVertexTrace.cpp" />
-    <ClCompile Include="GS\Window\GSWnd.cpp" />
-    <ClCompile Include="GS\Window\GSWndDX.cpp" />
-    <ClCompile Include="GS\Window\GSWndEGL.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="GS\Window\GSWndWGL.cpp" />
     <ClCompile Include="Utilities\FileUtils.cpp" />
     <ClCompile Include="Dump.cpp" />
     <ClCompile Include="x86\iMisc.cpp" />
@@ -886,10 +880,6 @@
     <ClInclude Include="GS\Renderers\Common\GSVertexList.h" />
     <ClInclude Include="GS\Renderers\SW\GSVertexSW.h" />
     <ClInclude Include="GS\Renderers\Common\GSVertexTrace.h" />
-    <ClInclude Include="GS\Window\GSWnd.h" />
-    <ClInclude Include="GS\Window\GSWndDX.h" />
-    <ClInclude Include="GS\Window\GSWndEGL.h" />
-    <ClInclude Include="GS\Window\GSWndWGL.h" />
     <ClInclude Include="GS\resource.h" />
     <ClInclude Include="IPU\IPUdma.h" />
     <ClInclude Include="Mdec.h" />

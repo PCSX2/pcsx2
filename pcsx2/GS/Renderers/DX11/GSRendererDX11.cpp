@@ -24,11 +24,6 @@ GSRendererDX11::GSRendererDX11()
 	ResetStates();
 }
 
-bool GSRendererDX11::CreateDevice(GSDevice* dev)
-{
-	return GSRenderer::CreateDevice(dev);
-}
-
 void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 {
 	GSDevice11* dev = (GSDevice11*)m_dev;

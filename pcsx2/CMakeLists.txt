@@ -664,7 +664,6 @@ set(pcsx2GSSources
 	GS/Renderers/OpenGL/GSTextureCacheOGL.cpp
 	GS/Renderers/OpenGL/GSTextureOGL.cpp
 	GS/Window/GSSetting.cpp
-	GS/Window/GSWnd.cpp
 	)
 
 # GS headers
@@ -734,7 +733,6 @@ set(pcsx2GSHeaders
 	GS/Window/GSDialog.h
 	GS/Window/GSSetting.h
 	GS/Window/GSSettingsDlg.h
-	GS/Window/GSWnd.h
 	)
 
 if(WIN32)
@@ -807,16 +805,12 @@ if(WIN32)
 		GS/Window/GSCaptureDlg.cpp
 		GS/Window/GSDialog.cpp
 		GS/Window/GSSettingsDlg.cpp
-		GS/Window/GSWndDX.cpp
-		GS/Window/GSWndWGL.cpp
 	)
 	list(APPEND pcsx2GSHeaders
 		GS/Renderers/DX11/GSDevice11.h
 		GS/Renderers/DX11/GSRendererDX11.h
 		GS/Renderers/DX11/GSTexture11.h
 		GS/Renderers/DX11/GSTextureCache11.h
-		GS/Window/GSWndDX.h
-		GS/Window/GSWndWGL.h
 	)
 else(WIN32)
 	list(APPEND pcsx2SPU2Sources
@@ -902,12 +896,10 @@ else(WIN32)
 	list(APPEND pcsx2GSSources
 		GS/GS_res.cpp
 		GS/Window/GSLinuxDialog.cpp
-		GS/Window/GSWndEGL.cpp
 	)
 
 	list(APPEND pcsx2GSHeaders
 		GS/GS_res.h
-		GS/Window/GSWndEGL.h
 	)
 endif(WIN32)
 
@@ -1394,13 +1386,8 @@ if(Linux)
 
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		PkgConfig::AIO
-		PkgConfig::EGL
 		PkgConfig::LIBUDEV
 		ALSA::ALSA
-	)
-elseif(UNIX AND NOT APPLE)
-	target_link_libraries(PCSX2_FLAGS INTERFACE
-		PkgConfig::EGL
 	)
 endif()
 

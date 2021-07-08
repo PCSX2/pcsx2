@@ -31,7 +31,6 @@ GSRenderer::GSRenderer()
 	, m_control_key(false)
 	, m_texture_shuffle(false)
 	, m_real_size(0, 0)
-	, m_wnd()
 	, m_dev(NULL)
 {
 	m_GStitleInfoBuffer[0] = 0;
@@ -56,12 +55,12 @@ GSRenderer::~GSRenderer()
 	delete m_dev;
 }
 
-bool GSRenderer::CreateDevice(GSDevice* dev)
+bool GSRenderer::CreateDevice(GSDevice* dev, const WindowInfo& wi)
 {
 	ASSERT(dev);
 	ASSERT(!m_dev);
 
-	if (!dev->Create(m_wnd))
+	if (!dev->Create(wi))
 	{
 		return false;
 	}
@@ -468,7 +467,7 @@ void GSRenderer::VSync(int field)
 
 	// This will scale the OSD to the window's size.
 	// Will maintiain the font size no matter what size the window is.
-	GSVector4i window_size = m_wnd->GetClientRect();
+	GSVector4i window_size(0, 0, m_dev->GetBackbufferWidth(), m_dev->GetBackbufferHeight());
 	m_dev->m_osd.m_real_size.x = window_size.v[2];
 	m_dev->m_osd.m_real_size.y = window_size.v[3];
 
@@ -568,8 +567,7 @@ bool GSRenderer::MakeSnapshot(const std::string& path)
 
 bool GSRenderer::BeginCapture(std::string& filename)
 {
-	const GSVector4i crect(m_wnd->GetClientRect());
-	GSVector4i disp = ComputeDrawRectangle(crect.z, crect.w);
+	GSVector4i disp = ComputeDrawRectangle(m_dev->GetBackbufferWidth(), m_dev->GetBackbufferHeight());
 	float aspect = (float)disp.width() / std::max(1, disp.height());
 
 	return m_capture.BeginCapture(GetTvRefreshRate(), GetInternalResolution(), aspect, filename);

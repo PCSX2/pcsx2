@@ -30,16 +30,12 @@
 
 #include "Renderers/DX11/GSRendererDX11.h"
 #include "Renderers/DX11/GSDevice11.h"
-#include "Window/GSWndDX.h"
-#include "Window/GSWndWGL.h"
 #include "Window/GSSettingsDlg.h"
 
 
 static HRESULT s_hr = E_FAIL;
 
 #else
-
-#include "GS/Window/GSWndEGL.h"
 
 #ifdef __APPLE__
 #include <gtk/gtk.h>
@@ -63,6 +59,13 @@ static int s_vsync = 0;
 static bool s_exclusive = true;
 static std::string s_renderer_name;
 bool gsopen_done = false; // crash guard for GSgetTitleInfo2 and GSKeyEvent (replace with lock?)
+
+#ifndef PCSX2_CORE
+static std::atomic_bool s_gs_window_resized{false};
+static std::mutex s_gs_window_resized_lock;
+static int s_new_gs_window_width = 0;
+static int s_new_gs_window_height = 0;
+#endif
 
 void GSsetBaseMem(uint8* mem)
 {
@@ -126,6 +129,11 @@ void GSclose()
 {
 	gsopen_done = false;
 
+#ifndef PCSX2_CORE
+	// Make sure we don't have any leftover resize events from our last open.
+	s_gs_window_resized.store(false);
+#endif
+
 	if (s_gs == NULL)
 		return;
 
@@ -136,11 +144,6 @@ void GSclose()
 	delete s_gs->m_dev;
 
 	s_gs->m_dev = NULL;
-
-	if (s_gs->m_wnd)
-	{
-		s_gs->m_wnd->Detach();
-	}
 }
 
 int _GSopen(const WindowInfo& wi, const char* title, GSRendererType renderer, int threads = -1)
@@ -177,60 +180,7 @@ int _GSopen(const WindowInfo& wi, const char* title, GSRendererType renderer, in
 			theApp.SetCurrentRendererType(renderer);
 		}
 
-		std::shared_ptr<GSWnd> window;
-		{
-			// Select the window first to detect the GL requirement
-			std::vector<std::shared_ptr<GSWnd>> wnds;
-			switch (renderer)
-			{
-				case GSRendererType::OGL_HW:
-				case GSRendererType::OGL_SW:
-#if defined(__unix__)
-					if (std::shared_ptr<GSWndEGL> wnd = GSWndEGL::CreateForPlatform(wi); wnd)
-						wnds.push_back(std::move(wnd));
-#elif defined(__APPLE__)
-					// No windows available for macOS at the moment
-#else
-					wnds.push_back(std::make_shared<GSWndWGL>());
-#endif
-					break;
-				default:
-#ifdef _WIN32
-					wnds.push_back(std::make_shared<GSWndDX>());
-#elif defined(__APPLE__)
-					// No windows available for macOS at the moment
-#else
-					wnds.push_back(std::make_shared<GSWndEGL_X11>());
-#endif
-					break;
-			}
-
-			for (auto& wnd : wnds)
-			{
-				try
-				{
-					if (!wnd->Attach(wi))
-						continue;
-
-					window = wnd; // Previous code will throw if window isn't supported
-					break;
-				}
-				catch (GSRecoverableError)
-				{
-					wnd->Detach();
-				}
-			}
-
-			if (!window)
-			{
-				GSclose();
-
-				return -1;
-			}
-		}
-
 		std::string renderer_name;
-
 		switch (renderer)
 		{
 			default:
@@ -288,8 +238,6 @@ int _GSopen(const WindowInfo& wi, const char* title, GSRendererType renderer, in
 			if (s_gs == NULL)
 				return -1;
 		}
-
-		s_gs->m_wnd = window;
 	}
 	catch (std::exception& ex)
 	{
@@ -300,7 +248,7 @@ int _GSopen(const WindowInfo& wi, const char* title, GSRendererType renderer, in
 	s_gs->SetRegsMem(s_basemem);
 	s_gs->SetVSync(s_vsync);
 
-	if (!s_gs->CreateDevice(dev))
+	if (!s_gs->CreateDevice(dev, wi))
 	{
 		// This probably means the user has DX11 configured with a video card that is only DX9
 		// compliant.  Cound mean drivr issues of some sort also, but to be sure, that's the most
@@ -755,6 +703,28 @@ void GSsetExclusive(int enabled)
 		s_gs->SetVSync(s_vsync);
 	}
 }
+
+#ifndef PCSX2_CORE
+void GSResizeWindow(int width, int height)
+{
+	std::unique_lock lock(s_gs_window_resized_lock);
+	s_new_gs_window_width = width;
+	s_new_gs_window_height = height;
+	s_gs_window_resized.store(true);
+}
+
+bool GSCheckForWindowResize(int* new_width, int* new_height)
+{
+	if (!s_gs_window_resized.load())
+		return false;
+
+	std::unique_lock lock(s_gs_window_resized_lock);
+	*new_width = s_new_gs_window_width;
+	*new_height = s_new_gs_window_height;
+	s_gs_window_resized.store(false);
+	return true;
+}
+#endif
 
 std::string format(const char* fmt, ...)
 {

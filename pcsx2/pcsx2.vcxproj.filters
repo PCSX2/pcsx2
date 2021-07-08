@@ -1628,18 +1628,6 @@
     <ClCompile Include="GS\Window\GSSettingsDlg.cpp">
       <Filter>System\Ps2\GS\Window</Filter>
     </ClCompile>
-    <ClCompile Include="GS\Window\GSWndDX.cpp">
-      <Filter>System\Ps2\GS\Window</Filter>
-    </ClCompile>
-    <ClCompile Include="GS\Window\GSWndEGL.cpp">
-      <Filter>System\Ps2\GS\Window</Filter>
-    </ClCompile>
-    <ClCompile Include="GS\Window\GSWndWGL.cpp">
-      <Filter>System\Ps2\GS\Window</Filter>
-    </ClCompile>
-    <ClCompile Include="GS\Window\GSWnd.cpp">
-      <Filter>System\Ps2\GS\Window</Filter>
-    </ClCompile>
     <ClCompile Include="gui\wxAppWithHelpers.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
@@ -2728,18 +2716,6 @@
       <Filter>System\Ps2\GS\Window</Filter>
     </ClInclude>
     <ClInclude Include="GS\Window\GSSettingsDlg.h">
-      <Filter>System\Ps2\GS\Window</Filter>
-    </ClInclude>
-    <ClInclude Include="GS\Window\GSWndDX.h">
-      <Filter>System\Ps2\GS\Window</Filter>
-    </ClInclude>
-    <ClInclude Include="GS\Window\GSWndEGL.h">
-      <Filter>System\Ps2\GS\Window</Filter>
-    </ClInclude>
-    <ClInclude Include="GS\Window\GSWndWGL.h">
-      <Filter>System\Ps2\GS\Window</Filter>
-    </ClInclude>
-    <ClInclude Include="GS\Window\GSWnd.h">
       <Filter>System\Ps2\GS\Window</Filter>
     </ClInclude>
     <ClInclude Include="gui\wxAppWithHelpers.h">

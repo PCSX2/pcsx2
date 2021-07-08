@@ -305,9 +305,27 @@ GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, int format)
 	return t;
 }
 
-bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd>& wnd)
+bool GSDeviceOGL::Create(const WindowInfo& wi)
 {
 	std::vector<char> shader;
+
+	m_gl_context = GL::Context::Create(wi, GL::Context::GetAllVersionsList());
+	if (!m_gl_context || !m_gl_context->MakeCurrent())
+		return false;
+
+	// Check openGL requirement as soon as possible so we can switch to another
+	// renderer/device
+	try
+	{
+		GLLoader::check_gl_requirements();
+	}
+	catch (std::exception& ex)
+	{
+		printf("GS error: Exception caught in GSDeviceOGL::Create: %s", ex.what());
+		m_gl_context->DoneCurrent();
+		return false;
+	}
+
 	// ****************************************************************
 	// Debug helper
 	// ****************************************************************
@@ -584,11 +602,10 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd>& wnd)
 	// ****************************************************************
 	// Finish window setup and backbuffer
 	// ****************************************************************
-	if (!GSDevice::Create(wnd))
+	if (!GSDevice::Create(wi))
 		return false;
 
-	const GSVector4i rect = wnd->GetClientRect();
-	Reset(rect.z, rect.w);
+	Reset(wi.surface_width, wi.surface_height);
 
 	// Basic to ensure structures are correctly packed
 	static_assert(sizeof(VSSelector) == 4, "Wrong VSSelector size");
@@ -645,19 +662,20 @@ bool GSDeviceOGL::Reset(int w, int h)
 	// Opengl allocate the backbuffer with the window. The render is done in the backbuffer when
 	// there isn't any FBO. Only a dummy texture is created to easily detect when the rendering is done
 	// in the backbuffer
-	m_backbuffer = new GSTextureOGL(GSTextureOGL::Backbuffer, w, h, 0, m_fbo_read, false);
-
+	m_gl_context->ResizeSurface(w, h);
+	m_backbuffer = new GSTextureOGL(GSTextureOGL::Backbuffer, m_gl_context->GetSurfaceWidth(),
+		m_gl_context->GetSurfaceHeight(), 0, m_fbo_read, false);
 	return true;
 }
 
 void GSDeviceOGL::SetVSync(int vsync)
 {
-	m_wnd->SetVSync(vsync);
+	m_gl_context->SetSwapInterval(vsync);
 }
 
 void GSDeviceOGL::Flip()
 {
-	m_wnd->Flip();
+	m_gl_context->SwapBuffers();
 
 	if (GLLoader::in_replayer)
 	{

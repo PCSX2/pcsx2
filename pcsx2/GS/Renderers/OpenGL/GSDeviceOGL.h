@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "common/GL/Context.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GSTextureOGL.h"
 #include "GS/GS.h"
@@ -464,6 +465,7 @@ public:
 	static int m_shader_reg;
 
 private:
+	std::unique_ptr<GL::Context> m_gl_context;
 	int m_force_texture_clear;
 	int m_mipmap;
 	TriFiltering m_filter;
@@ -581,10 +583,10 @@ public:
 	// Used by OpenGL, so the same calling convention is required.
 	static void APIENTRY DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id, GLenum gl_severity, GLsizei gl_length, const GLchar* gl_message, const void* userParam);
 
-	bool Create(const std::shared_ptr<GSWnd>& wnd);
-	bool Reset(int w, int h);
-	void Flip();
-	void SetVSync(int vsync);
+	bool Create(const WindowInfo& wi) override;
+	bool Reset(int w, int h) override;
+	void Flip() override;
+	void SetVSync(int vsync) override;
 
 	void DrawPrimitive() final;
 	void DrawPrimitive(int offset, int count);
