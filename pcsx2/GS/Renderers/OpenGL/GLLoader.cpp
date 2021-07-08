@@ -17,21 +17,6 @@
 #include "GLLoader.h"
 #include "GS.h"
 
-#ifdef __APPLE__
-#  undef glScissorIndexed
-#  undef glViewportIndexedf
-PFNGLSCISSORINDEXEDPROC   gs_glScissorIndexed   = glScissorIndexed;
-PFNGLVIEWPORTINDEXEDFPROC gs_glViewportIndexedf = glViewportIndexedf;
-#  define glScissorIndexed   gs_glScissorIndexed
-#  define glViewportIndexedf gs_glViewportIndexedf
-#endif
-#ifdef __unix__
-PFNGLBLENDFUNCSEPARATEPROC glBlendFuncSeparate = NULL;
-#endif
-PFNGLTEXTUREPAGECOMMITMENTEXTPROC glTexturePageCommitmentEXT = NULL;
-
-#include "PFN_GLLOADER_CPP.h"
-
 namespace GLExtension
 {
 

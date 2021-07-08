@@ -61,6 +61,9 @@ void GSWndWGL::CreateContext(int major, int minor)
 	// On linux it works without the extra temporary context, not sure the limitation still applied
 	AttachContext();
 
+	if (!gladLoadWGLLoader([](const char* name) { return static_cast<void*>(wglGetProcAddress(name)); }, m_NativeDisplay))
+		win_error(L"Failed to load WGL");
+
 	// Create a context
 	int context_attribs[] =
 	{
@@ -79,10 +82,6 @@ void GSWndWGL::CreateContext(int major, int minor)
 		WGL_CONTEXT_PROFILE_MASK_ARB, WGL_CONTEXT_CORE_PROFILE_BIT_ARB,
 		0
 	};
-
-	PFNWGLCREATECONTEXTATTRIBSARBPROC wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)wglGetProcAddress("wglCreateContextAttribsARB");
-	if (!wglCreateContextAttribsARB)
-		win_error(L"Failed to init wglCreateContextAttribsARB function pointer");
 
 	HGLRC context30 = wglCreateContextAttribsARB(m_NativeDisplay, NULL, context_attribs);
 	if (!context30)
@@ -124,19 +123,7 @@ void GSWndWGL::DetachContext()
 
 void GSWndWGL::PopulateWndGlFunction()
 {
-	m_swapinterval = (PFNWGLSWAPINTERVALEXTPROC)wglGetProcAddress("wglSwapIntervalEXT");
-
-	// To ease the process, extension management is itself an extension. Clever isn't it!
-	PFNWGLGETEXTENSIONSSTRINGARBPROC wglGetExtensionsStringARB = (PFNWGLGETEXTENSIONSSTRINGARBPROC)wglGetProcAddress("wglGetExtensionsStringARB");
-	if (wglGetExtensionsStringARB)
-	{
-		const char* ext = wglGetExtensionsStringARB(m_NativeDisplay);
-		m_has_late_vsync = m_swapinterval && ext && strstr(ext, "WGL_EXT_swap_control_tear");
-	}
-	else
-	{
-		m_has_late_vsync = false;
-	}
+	m_has_late_vsync = GLAD_WGL_EXT_swap_control_tear;
 }
 
 bool GSWndWGL::Attach(const WindowInfo& wi)
@@ -223,32 +210,6 @@ GSVector4i GSWndWGL::GetClientRect()
 	return r;
 }
 
-void* GSWndWGL::GetProcAddress(const char* name, bool opt)
-{
-	void* ptr = (void*)wglGetProcAddress(name);
-	// In order to get function pointer of GL1.0 and GL1.1 you need to get from
-	// opengl32.dll directly
-	// Here an example from https://www.khronos.org/opengl/wiki/Load_OpenGL_Functions
-	// Note: so far we use direct linking but it could become handy for the migration
-	// to the new gl header (glcorearb.h)
-#if 0
-	if(ptr == 0 || (ptr == (void*)0x1) || (ptr == (void*)0x2) || (ptr == (void*)0x3) || (ptr == (void*)-1) )
-	{
-		HMODULE module = LoadLibraryA("opengl32.dll");
-		ptr = (void *)GetProcAddress(module, name);
-	}
-#endif
-	if (ptr == NULL)
-	{
-		if (theApp.GetConfigB("debug_opengl"))
-			fprintf(stderr, "Failed to find %s\n", name);
-
-		if (!opt)
-			throw GSRecoverableError();
-	}
-	return ptr;
-}
-
 //TODO: check extensions supported or not
 //FIXME : extension allocation
 void GSWndWGL::SetSwapInterval()
@@ -256,8 +217,8 @@ void GSWndWGL::SetSwapInterval()
 	// m_swapinterval uses an integer as parameter
 	// 0 -> disable vsync
 	// n -> wait n frame
-	if (m_swapinterval)
-		m_swapinterval(m_vsync);
+	if (GLAD_WGL_EXT_swap_control)
+		wglSwapIntervalEXT(m_vsync);
 }
 
 void GSWndWGL::Flip()

@@ -18,18 +18,8 @@
 
 void GSWndGL::PopulateGlFunction()
 {
-	// Load mandatory function pointer
-#define GL_EXT_LOAD(ext) *(void**)&(ext) = GetProcAddress(#ext, false)
-	// Load extra function pointer
-#define GL_EXT_LOAD_OPT(ext) *(void**)&(ext) = GetProcAddress(#ext, true)
-
-#include "PFN_WND.h"
-
-	// GL1.X mess
-#if defined(__unix__)
-	GL_EXT_LOAD(glBlendFuncSeparate);
-#endif
-	GL_EXT_LOAD_OPT(glTexturePageCommitmentEXT);
+	if (!gladLoadGL())
+		throw GSRecoverableError();
 
 	// Check openGL requirement as soon as possible so we can switch to another
 	// renderer/device

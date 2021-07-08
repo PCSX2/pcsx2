@@ -64,7 +64,5 @@ public:
 	}
 	virtual ~GSWndGL() override = default;
 
-	virtual void* GetProcAddress(const char* name, bool opt = false) = 0;
-
 	void SetVSync(int vsync) final;
 };

@@ -58,7 +58,6 @@ public:
 
 	void AttachContext() final;
 	void DetachContext() final;
-	void* GetProcAddress(const char* name, bool opt = false) final;
 
 	void Flip() final;
 };
