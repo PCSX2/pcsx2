@@ -858,7 +858,7 @@ void Pcsx2App::OpenGsPanel()
 		//   wxWidgets is "clever" (grr!) it optimizes out just force-setting the same size
 		//   over again, so instead I resize it to size-1 and then back to the original size.
 		//
-		// FIXME: Gsdx memory leaks in DX10 have been fixed.  This code may not be needed
+		// FIXME: GS memory leaks in DX10 have been fixed.  This code may not be needed
 		// anymore.
 		
 		const wxSize oldsize( gsFrame->GetSize() );
