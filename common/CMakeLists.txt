@@ -18,6 +18,8 @@ target_sources(common PRIVATE
 	Exceptions.cpp
 	FastFormatString.cpp
 	FastJmp.cpp
+	GL/Context.cpp
+	GL/StreamBuffer.cpp
 	IniInterface.cpp
 	Mutex.cpp
 	Misc.cpp
@@ -67,6 +69,8 @@ target_sources(common PRIVATE
 	Exceptions.h
 	FastJmp.h
 	General.h
+	GL/Context.h
+	GL/StreamBuffer.h
 	MemcpyFast.h
 	MemsetFast.inl
 	Path.h
@@ -123,14 +127,50 @@ if(WIN32)
 	enable_language(ASM_MASM)
 	target_sources(common PRIVATE FastJmp.asm)
 	target_link_libraries(common PUBLIC pthreads4w Winmm.lib)
-elseif(NOT APPLE)
-  if(TARGET PkgConfig::XRANDR)
-  	target_link_libraries(common PRIVATE PkgConfig::XRANDR)
-    target_compile_definitions(common PRIVATE "HAS_XRANDR=1")
-  endif()
+	target_sources(common PRIVATE
+		FastJmp.asm
+		GL/ContextWGL.cpp
+		GL/ContextWGL.h
+	)
+	target_link_libraries(common PUBLIC pthreads4w Winmm.lib opengl32.lib)
+elseif(APPLE)
+	target_sources(common PRIVATE
+		GL/ContextAGL.mm
+		GL/ContextAGL.h
+	)
+	set_source_files_properties(GL/ContextAGL.mm PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
+	target_compile_options(common PUBLIC -fobjc-arc)
+	target_link_options(common PUBLIC -fobjc-link-runtime)
+else()
+	if(X11_API OR WAYLAND_API)
+		target_sources(common PRIVATE
+			GL/ContextEGL.cpp
+			GL/ContextEGL.h
+		)
+		target_link_libraries(common PRIVATE PkgConfig::EGL)
+	endif()
+
+	if(X11_API)
+		target_sources(common PRIVATE
+			GL/ContextEGLX11.cpp
+			GL/ContextEGLX11.h
+		)
+		if(TARGET PkgConfig::XRANDR)
+			target_link_libraries(common PRIVATE PkgConfig::XRANDR)
+			target_compile_definitions(common PRIVATE "HAS_XRANDR=1")
+		endif()
+	endif()
+
+	if(WAYLAND_API)
+		target_sources(common PRIVATE
+			GL/ContextEGLWayland.cpp
+			GL/ContextEGLWayland.h
+		)
+	  target_link_libraries(common PRIVATE ${WAYLAND_EGL_LIBRARIES})
+	endif()
 endif()
 
-target_link_libraries(common PRIVATE ${LIBC_LIBRARIES} PUBLIC wxWidgets::all)
+target_link_libraries(common PRIVATE ${LIBC_LIBRARIES} PUBLIC wxWidgets::all glad)
 target_compile_features(common PUBLIC cxx_std_17)
 target_include_directories(common PUBLIC ../3rdparty/include ../)
 target_compile_definitions(common PUBLIC "${PCSX2_DEFS}")

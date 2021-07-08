@@ -121,6 +121,15 @@
     <ClCompile Include="WindowInfo.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="GL\ContextWGL.cpp">
+      <Filter>Source Files\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="GL\Context.cpp">
+      <Filter>Source Files\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="GL\StreamBuffer.cpp">
+      <Filter>Source Files\GL</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Assertions.h">
@@ -282,6 +291,15 @@
     <ClInclude Include="WindowInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GL\Context.h">
+      <Filter>Header Files\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="GL\ContextWGL.h">
+      <Filter>Header Files\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="GL\StreamBuffer.h">
+      <Filter>Header Files\GL</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -289,6 +307,12 @@
     </Filter>
     <Filter Include="Header Files">
       <UniqueIdentifier>{eef579af-e6a8-4d3b-a88e-c0e4cad9e5d8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\GL">
+      <UniqueIdentifier>{92d1bb2d-d172-4356-b9f4-a8fcc8e7fcce}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\GL">
+      <UniqueIdentifier>{5e76b340-cb0e-4946-83ec-7d72e397cac8}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
