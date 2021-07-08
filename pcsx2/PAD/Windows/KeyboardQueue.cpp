@@ -18,14 +18,7 @@
 // This is undoubtedly completely unnecessary.
 #include "KeyboardQueue.h"
 
-// What MS calls a single process Mutex.  Faster, supposedly.
-// More importantly, can be abbreviated, amusingly, as cSection.
-#ifdef _MSC_VER
-static CRITICAL_SECTION cSection;
-static u8 csInitialized = 0;
-#else
 static std::mutex cSection;
-#endif
 
 #define EVENT_QUEUE_LEN 16
 // Actually points one beyond the last queued event.
@@ -35,16 +28,7 @@ static keyEvent queuedEvents[EVENT_QUEUE_LEN];
 
 void QueueKeyEvent(int key, int event)
 {
-#ifdef _MSC_VER
-	if (!csInitialized)
-	{
-		csInitialized = 1;
-		InitializeCriticalSection(&cSection);
-	}
-	EnterCriticalSection(&cSection);
-#else
 	std::lock_guard<std::mutex> lock(cSection);
-#endif
 
 	// Don't queue events if escape is on top of queue.  This is just for safety
 	// purposes when a game is killing the emulator for whatever reason.
@@ -69,9 +53,6 @@ void QueueKeyEvent(int key, int event)
 			nextQueuedEvent = (nextQueuedEvent + 1) % EVENT_QUEUE_LEN;
 		}
 	}
-#ifdef _MSC_VER
-	LeaveCriticalSection(&cSection);
-#endif
 }
 
 int GetQueuedKeyEvent(keyEvent* event)
@@ -79,27 +60,14 @@ int GetQueuedKeyEvent(keyEvent* event)
 	if (lastQueuedEvent == nextQueuedEvent)
 		return 0;
 
-#ifdef _MSC_VER
-	EnterCriticalSection(&cSection);
-#else
 	std::lock_guard<std::mutex> lock(cSection);
-#endif
+
 	*event = queuedEvents[nextQueuedEvent];
 	nextQueuedEvent = (nextQueuedEvent + 1) % EVENT_QUEUE_LEN;
-#ifdef _MSC_VER
-	LeaveCriticalSection(&cSection);
-#endif
 	return 1;
 }
 
 void ClearKeyQueue()
 {
 	lastQueuedEvent = nextQueuedEvent;
-#ifdef _MSC_VER
-	if (csInitialized)
-	{
-		DeleteCriticalSection(&cSection);
-		csInitialized = 0;
-	}
-#endif
 }
