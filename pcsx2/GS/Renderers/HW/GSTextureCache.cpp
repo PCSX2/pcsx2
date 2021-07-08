@@ -2050,7 +2050,7 @@ void GSTextureCache::Target::Update()
 		// any games to only upload a single page of data for the depth.
 		//
 		// FFX2 menu got another bug. I'm not sure the top-left is properly written or not. It
-		// could be a gsdx transfer bug too due to unaligned-page transfer.
+		// could be a gs transfer bug too due to unaligned-page transfer.
 		//
 		// So the quick and dirty solution is just to clean the depth buffer.
 		m_renderer->m_dev->ClearDepth(m_texture);

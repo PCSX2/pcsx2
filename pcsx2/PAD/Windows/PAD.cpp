@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "Global.h"
 
-// For escape timer, so as not to break GSDX+DX9.
+// For escape timer, so as not to break GS.
 #include <time.h>
 #include <fstream>
 #include <iomanip>
