@@ -189,6 +189,9 @@ else()
 
 endif(WIN32)
 
+# Require threads on all OSes.
+find_package(Threads REQUIRED)
+
 set(ACTUALLY_ENABLE_TESTS ${ENABLE_TESTS})
 if(ENABLE_TESTS)
 	if(NOT EXISTS "${CMAKE_SOURCE_DIR}/3rdparty/gtest/CMakeLists.txt")
@@ -265,3 +268,5 @@ else()
 	set(BIN2CPP perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl)
 	set(BIN2CPPDEP ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl)
 endif()
+
+add_subdirectory(3rdparty/glad EXCLUDE_FROM_ALL)
