@@ -251,8 +251,8 @@ void RecentIsoManager::AppStatusEvent_OnUiSettingsLoadSave( const AppSettingsEve
 		int cnt = m_Items.size();
 		for( int i=0; i<cnt; ++i )
 		{
-			wxFileName item_filename = wxFileName(m_Items[i].Filename);
-			ini.Entry( pxsFmt( L"Filename%02d", i ),  item_filename, wxFileName(L""), IsPortable());
+			fs::path item_filename = fs::path(Path::FromWxString(m_Items[i].Filename));
+			ini.Entry( pxsFmt( L"Filename%02d", i ), item_filename, "");
 		}
 
 		ini.GetConfig().SetRecordDefaults( true );
