@@ -1447,6 +1447,7 @@ endif()
 
 target_link_libraries(PCSX2_FLAGS INTERFACE
 	common
+	glad
 	fmt::fmt
 	yaml-cpp
 	chdr-static

@@ -17,14 +17,14 @@
 
 #ifdef _WIN32
 
+#include "glad_wgl.h"
+
 class GSWndWGL final : public GSWndGL
 {
 	HWND  m_NativeWindow;
 	HDC   m_NativeDisplay;
 	HGLRC m_context;
 	bool  m_has_late_vsync;
-
-	PFNWGLSWAPINTERVALEXTPROC m_swapinterval;
 
 	void PopulateWndGlFunction();
 	void CreateContext(int major, int minor);
@@ -47,7 +47,6 @@ public:
 
 	void AttachContext() override;
 	void DetachContext() override;
-	void* GetProcAddress(const char* name, bool opt) override;
 
 	void Flip() override;
 };

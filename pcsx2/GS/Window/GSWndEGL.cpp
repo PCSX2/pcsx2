@@ -196,20 +196,6 @@ void GSWndEGL::Detach()
 	DestroyNativeResources();
 }
 
-void* GSWndEGL::GetProcAddress(const char* name, bool opt)
-{
-	void* ptr = (void*)eglGetProcAddress(name);
-	if (ptr == nullptr)
-	{
-		if (theApp.GetConfigB("debug_opengl"))
-			fprintf(stderr, "Failed to find %s\n", name);
-
-		if (!opt)
-			throw GSRecoverableError();
-	}
-	return ptr;
-}
-
 GSVector4i GSWndEGL::GetClientRect()
 {
 	EGLint h = 0;
