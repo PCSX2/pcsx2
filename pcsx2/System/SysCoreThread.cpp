@@ -19,6 +19,9 @@
 #include "IopBios.h"
 #include "R5900.h"
 
+#include "common/WindowInfo.h"
+extern WindowInfo g_gs_window_info;
+
 #include "Counters.h"
 #include "GS.h"
 #include "Elfheader.h"
@@ -323,11 +326,11 @@ void SysCoreThread::TearDownSystems(SystemsMask systemsToTearDown)
 void SysCoreThread::OnResumeInThread(SystemsMask systemsToReinstate)
 {
 	GetMTGS().WaitForOpen();
-	if (systemsToReinstate & System_DEV9) DEV9open((void*)pDsp);
-	if (systemsToReinstate & System_USB) USBopen((void*)pDsp);
+	if (systemsToReinstate & System_DEV9) DEV9open();
+	if (systemsToReinstate & System_USB) USBopen(g_gs_window_info);
 	if (systemsToReinstate & System_FW) FWopen();
-	if (systemsToReinstate & System_SPU2) SPU2open((void*)pDsp);
-	if (systemsToReinstate & System_PAD) PADopen((void*)pDsp);
+	if (systemsToReinstate & System_SPU2) SPU2open();
+	if (systemsToReinstate & System_PAD) PADopen(g_gs_window_info);
 	if (systemsToReinstate & System_MCD) FileMcd_EmuOpen();
 }
 

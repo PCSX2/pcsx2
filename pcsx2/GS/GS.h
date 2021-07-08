@@ -1765,6 +1765,7 @@ enum class CRCHackLevel : int8
 };
 
 struct HostKeyEvent;
+struct WindowInfo;
 
 #ifdef ENABLE_ACCURATE_BUFFER_EMULATION
 const GSVector2i default_rt_size(2048, 2048);
@@ -1776,10 +1777,10 @@ void GSsetBaseMem(uint8* mem);
 int GSinit();
 void GSshutdown();
 void GSclose();
-int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads);
+int _GSopen(const WindowInfo& wi, const char* title, GSRendererType renderer, int threads);
 void GSosdLog(const char* utf8, uint32 color);
 void GSosdMonitor(const char* key, const char* value, uint32 color);
-int GSopen2(void** dsp, uint32 flags);
+int GSopen2(const WindowInfo & wi, uint32 flags);
 void GSreset();
 void GSgifSoftReset(uint32 mask);
 void GSwriteCSR(uint32 csr);

@@ -73,7 +73,7 @@ wxIMPLEMENT_APP(Pcsx2App);
 
 std::unique_ptr<AppConfig> g_Conf;
 
-uptr pDsp[2];
+WindowInfo g_gs_window_info;
 
 // Returns a string message telling the user to consult guides for obtaining a legal BIOS.
 // This message is in a function because it's used as part of several dialogs in PCSX2 (there
@@ -864,39 +864,12 @@ void Pcsx2App::OpenGsPanel()
 
     pxAssertDev( !gsopen_done, "GS must be closed prior to opening a new Gs Panel!" );
 
-#ifdef __WXGTK__
-	// The x window/display are actually very deeper in the widget. You need both display and window
-	// because unlike window there are unrelated. One could think it would be easier to send directly the GdkWindow.
-	// Unfortunately there is a race condition between gui and gs threads when you called the
-	// GDK_WINDOW_* macro. To be safe I think it is best to do here. -- Gregory
+	gsFrame->ShowFullScreen(g_Conf->GSWindow.IsFullscreen);
+	wxApp::ProcessPendingEvents();
 
-	// GTK_PIZZA is an internal interface of wx, therefore they decide to
-	// remove it on wx 3. I tryed to replace it with gtk_widget_get_window but
-	// unfortunately it creates a gray box in the middle of the window on some
-	// users.
-
-	GtkWidget *child_window = GTK_WIDGET(gsFrame->GetViewport()->GetHandle());
-
-	gtk_widget_realize(child_window); // create the widget to allow to use GDK_WINDOW_* macro
-	gtk_widget_set_double_buffered(child_window, false); // Disable the widget double buffer, you will use the opengl one
-
-	GdkWindow* draw_window = gtk_widget_get_window(child_window);
-
-#if GTK_MAJOR_VERSION < 3
-	Window Xwindow = GDK_WINDOW_XWINDOW(draw_window);
-#else
-	Window Xwindow = GDK_WINDOW_XID(draw_window);
-#endif
-	Display* XDisplay = GDK_WINDOW_XDISPLAY(draw_window);
-
-	pDsp[0] = (uptr)XDisplay;
-	pDsp[1] = (uptr)Xwindow;
-#else
-	pDsp[0] = (uptr)gsFrame->GetViewport()->GetHandle();
-	pDsp[1] = NULL;
-#endif
-
-	gsFrame->ShowFullScreen( g_Conf->GSWindow.IsFullscreen );
+	std::optional<WindowInfo> wi = gsFrame->GetViewport()->GetWindowInfo();
+	pxAssertDev(wi.has_value(), "GS frame has a valid native window");
+	g_gs_window_info = std::move(*wi);
 
 #ifndef DISABLE_RECORDING
 	// Enable New & Play after the first game load of the session

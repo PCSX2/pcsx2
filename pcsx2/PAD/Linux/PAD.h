@@ -31,13 +31,15 @@ enum PadOptions
 	PADOPTION_MOUSE_R = 0x40,
 };
 
+struct WindowInfo;
+
 extern FILE* padLog;
 extern void initLogging();
 
 extern HostKeyEvent event;
 extern MtQueue<HostKeyEvent> g_ev_fifo;
 
-s32 _PADopen(void* pDsp);
+s32 _PADopen(const WindowInfo& wi);
 void _PADclose();
 void PADsetMode(int pad, int mode);
 
@@ -45,7 +47,7 @@ void SysMessage(char* fmt, ...);
 
 s32 PADinit();
 void PADshutdown();
-s32 PADopen(void* pDsp);
+s32 PADopen(const WindowInfo& wi);
 void PADsetLogDir(const char* dir);
 void PADclose();
 s32 PADsetSlot(u8 port, u8 slot);

@@ -46,35 +46,21 @@ public:
 	GSWndEGL(int platform);
 	virtual ~GSWndEGL(){};
 
-	bool Create(const std::string& title, int w, int h) final;
-	bool Attach(void* handle, bool managed = true) final;
+	static std::shared_ptr<GSWndEGL> CreateForPlatform(const WindowInfo& wi);
+
+	bool Attach(const WindowInfo& wi) final;
 	void Detach() final;
 
-	virtual void* CreateNativeDisplay() = 0;
-	virtual void* CreateNativeWindow(int w, int h) = 0; // GSopen1/PSX API
-	virtual void* AttachNativeWindow(void* handle) = 0;
+	virtual void* AttachNativeWindow(const WindowInfo& wi) = 0;
 	virtual void DestroyNativeResources() = 0;
 
 	GSVector4i GetClientRect();
-	virtual bool SetWindowText(const char* title) = 0; // GSopen1/PSX API
 
 	void AttachContext() final;
 	void DetachContext() final;
 	void* GetProcAddress(const char* name, bool opt = false) final;
 
 	void Flip() final;
-
-	// Deprecated API
-	void Show() final {}
-	void Hide() final {}
-	void HideFrame() final {} // DX9 API
-
-	virtual void* GetDisplay() = 0; // GSopen1 API
-	virtual void* GetHandle() = 0; // DX API
-
-	// Static to allow to query supported the platform
-	// before object creation
-	static int SelectPlatform();
 };
 
 #if GS_EGL_X11
@@ -83,24 +69,18 @@ public:
 #include <X11/Xlib.h>
 #include <X11/Xlib-xcb.h>
 
-class GSWndEGL_X11 : public GSWndEGL
+class GSWndEGL_X11 final : public GSWndEGL
 {
-	Display* m_NativeDisplay;
 	Window m_NativeWindow;
 
 public:
 	GSWndEGL_X11();
-	virtual ~GSWndEGL_X11(){};
+	virtual ~GSWndEGL_X11() final = default;
 
-	void* GetDisplay() final { return (void*)m_NativeDisplay; }
-	void* GetHandle() final { return (void*)&m_NativeWindow; }
+	void* GetHandle() final { return reinterpret_cast<void*>(m_NativeWindow); }
 
-	void* CreateNativeDisplay() final;
-	void* CreateNativeWindow(int w, int h) final;
-	void* AttachNativeWindow(void* handle) final;
+	void* AttachNativeWindow(const WindowInfo& wi) final;
 	void DestroyNativeResources() final;
-
-	bool SetWindowText(const char* title) final;
 };
 
 #endif
@@ -113,24 +93,18 @@ public:
 #include <wayland-client-protocol.h>
 #include <wayland-egl.h>
 
-class GSWndEGL_WL : public GSWndEGL
+class GSWndEGL_WL final : public GSWndEGL
 {
-	wl_display* m_NativeDisplay;
 	wl_egl_window* m_NativeWindow;
 
 public:
 	GSWndEGL_WL();
-	virtual ~GSWndEGL_WL(){};
+	virtual ~GSWndEGL_WL() final = default;
 
-	void* GetDisplay() final { return (void*)m_NativeDisplay; }
-	void* GetHandle() final { return (void*)m_NativeWindow; }
+	void* GetHandle() final { return reinterpret_cast<void*>(m_NativeWindow); }
 
-	void* CreateNativeDisplay() final;
-	void* CreateNativeWindow(int w, int h) final;
-	void* AttachNativeWindow(void* handle) final;
+	void* AttachNativeWindow(const WindowInfo& wi) final;
 	void DestroyNativeResources() final;
-
-	bool SetWindowText(const char* title) final;
 };
 
 #endif

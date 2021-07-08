@@ -18,7 +18,13 @@
 
 #include "AppCommon.h"
 #include "CpuUsageProvider.h"
+#include "common/WindowInfo.h"
 #include <memory>
+#include <optional>
+
+#ifdef WAYLAND_API
+#include <wayland-client.h>
+#endif
 
 // --------------------------------------------------------------------------------------
 //  GSPanel
@@ -40,6 +46,8 @@ protected:
 public:
 	GSPanel( wxWindow* parent );
 	virtual ~GSPanel();
+
+	std::optional<WindowInfo> GetWindowInfo();
 
 	void DoShowMouse();
 	void DirectKeyCommand( wxKeyEvent& evt );
@@ -67,6 +75,20 @@ protected:
 	void OnLeftDclick( wxMouseEvent& evt );
 
 	void UpdateScreensaver();
+
+private:
+#ifdef WAYLAND_API
+  static void WaylandGlobalRegistryAddHandler(void* data, wl_registry* registry, uint32_t id, const char* interface, uint32_t version);
+  static void WaylandGlobalRegistryRemoveHandler(void* data, wl_registry* registry, uint32_t id);
+
+  bool WaylandCreateSubsurface(wl_display* display, wl_surface* parent_surface);
+  void WaylandDestroySubsurface();
+
+  wl_compositor* m_wl_compositor = nullptr;
+  wl_subcompositor* m_wl_subcompositor = nullptr;
+  wl_surface* m_wl_child_surface = nullptr;
+  wl_subsurface* m_wl_child_subsurface = nullptr;
+#endif
 };
 
 
