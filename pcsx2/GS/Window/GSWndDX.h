@@ -17,30 +17,18 @@
 #include "GSWnd.h"
 
 #ifdef _WIN32
-class GSWndDX : public GSWnd
+class GSWndDX final : public GSWnd
 {
 	HWND m_hWnd;
 
-	bool m_frame;
-
-	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-	virtual LRESULT OnMessage(UINT message, WPARAM wParam, LPARAM lParam);
-
 public:
 	GSWndDX();
-	virtual ~GSWndDX();
+	~GSWndDX() override;
 
-	bool Create(const std::string& title, int w, int h);
-	bool Attach(void* handle, bool managed = true);
-	void Detach();
+	bool Attach(const WindowInfo& wi) override;
+	void Detach() override;
 
-	void* GetDisplay() { return m_hWnd; }
-	void* GetHandle() { return m_hWnd; }
-	GSVector4i GetClientRect();
-	bool SetWindowText(const char* title);
-
-	void Show();
-	void Hide();
-	void HideFrame();
+	void* GetHandle() override { return m_hWnd; }
+	GSVector4i GetClientRect() override;
 };
 #endif

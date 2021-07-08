@@ -25,6 +25,8 @@
 #include "Elfheader.h"
 #include "gui/Dialogs/ModalPopups.h"
 
+#include "common/WindowInfo.h"
+extern WindowInfo g_gs_window_info;
 
 // Uncomment this to enable profiling of the GS RingBufferCopy function.
 //#define PCSX2_GSRING_SAMPLING_STATS
@@ -237,7 +239,7 @@ void SysMtgsThread::OpenGS()
 	memcpy(RingBuffer.Regs, PS2MEM_GS, sizeof(PS2MEM_GS));
 	GSsetBaseMem(RingBuffer.Regs);
 
-	pxAssertMsg((GSopen2((void**)pDsp, 1 | (renderswitch ? 4 : 0)) == 0), "GS failed to open!");
+	pxAssertMsg((GSopen2(g_gs_window_info, 1 | (renderswitch ? 4 : 0)) == 0), "GS failed to open!");
 
 	GSsetVsync(EmuConfig.GS.GetVsync());
 

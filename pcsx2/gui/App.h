@@ -15,7 +15,8 @@
 
 #pragma once
 
-#include "gui/wxAppWithHelpers.h"
+#include "wxAppWithHelpers.h"
+#include "common/WindowInfo.h"
 
 #include <wx/fileconf.h>
 #include <wx/apptrait.h>
@@ -39,7 +40,8 @@ struct HostKeyEvent;
 #include "System.h"
 #include "System/SysThreads.h"
 
-extern uptr pDsp[2];
+// TODO: Not the best location for this, but it needs to be accessed by MTGS etc.
+extern WindowInfo g_gs_window_info;
 
 typedef void FnType_OnThreadComplete(const wxCommandEvent& evt);
 typedef void (Pcsx2App::*FnPtr_Pcsx2App)();

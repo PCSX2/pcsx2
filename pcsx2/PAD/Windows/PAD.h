@@ -36,6 +36,7 @@
 #include "SaveState.h"
 
 struct HostKeyEvent;
+struct WindowInfo;
 
 struct PadDataS
 {
@@ -49,12 +50,14 @@ struct PadDataS
 void PADupdate(int pad);
 void PADshutdown();
 s32 PADinit();
-s32 PADopen(void* pDsp);
+s32 PADopen(const WindowInfo& wi);
 void PADclose();
 u8 PADstartPoll(int pad);
 u8 PADpoll(u8 value);
 HostKeyEvent* PADkeyEvent();
+#ifndef PCSX2_CORE
 void PADconfigure();
+#endif
 s32 PADfreeze(FreezeAction mode, freezeData* data);
 s32 PADsetSlot(u8 port, u8 slot);
 void PADsetSettingsDir(const char* dir);
