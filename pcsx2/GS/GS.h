@@ -1790,7 +1790,6 @@ int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads)
 void GSosdLog(const char* utf8, uint32 color);
 void GSosdMonitor(const char* key, const char* value, uint32 color);
 int GSopen2(void** dsp, uint32 flags);
-int GSopen(void** dsp, const char* title, int mt);
 void GSreset();
 void GSgifSoftReset(uint32 mask);
 void GSwriteCSR(uint32 csr);
