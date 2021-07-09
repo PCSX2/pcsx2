@@ -62,9 +62,9 @@ wxMenu* MainEmuFrame::MakeStatesSubMenu(int baseid, int loadBackupId) const
 	// For safety i also made them inactive aka grayed out to signify that's it's only for informational purposes
 	// Fixme: In the future this can still be expanded to actually cycle savestates in the GUI.
 	mnuSubstates->Append(baseid - 1, _("File..."));
-	wxMenuItem* CycleNext = mnuSubstates->Append(baseid - 2, _("Cycle to next slot") + wxString("  ") + fmt::format("({})", wxGetApp().GlobalAccels->findKeycodeWithCommandId("States_CycleSlotForward").toTitleizedString()));
+	wxMenuItem* CycleNext = mnuSubstates->Append(baseid - 2, _("Cycle to next slot") + wxString("  ") + fmt::format("({})", wxGetApp().GlobalAccels->findKeycodeWithCommandId("States_CycleSlotForward").toTitleizedString().mb_str()));
 	CycleNext->Enable(false);
-	wxMenuItem* CycleBack = mnuSubstates->Append(baseid - 3, _("Cycle to previous slot") + wxString("  ") + fmt::format("({})", wxGetApp().GlobalAccels->findKeycodeWithCommandId("States_CycleSlotBackward").toTitleizedString()));
+	wxMenuItem* CycleBack = mnuSubstates->Append(baseid - 3, _("Cycle to previous slot") + wxString("  ") + fmt::format("({})", wxGetApp().GlobalAccels->findKeycodeWithCommandId("States_CycleSlotBackward").toTitleizedString().mb_str()));
 	CycleBack->Enable(false);
 	return mnuSubstates;
 }
