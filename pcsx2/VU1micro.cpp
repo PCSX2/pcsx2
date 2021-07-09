@@ -69,7 +69,7 @@ void __fastcall vu1ExecMicro(u32 addr)
 		if(VU0.VI[REG_FBRST].UL & 0x800)
 			VU0.VI[REG_VPU_STAT].UL |= 0x0100;
 
-		vu1Thread.ExecuteVU(addr, vif1Regs.top, vif1Regs.itop);
+		vu1Thread.ExecuteVU(addr & 0x7FF, vif1Regs.top, vif1Regs.itop);
 		return;
 	}
 	static int count = 0;
@@ -79,7 +79,7 @@ void __fastcall vu1ExecMicro(u32 addr)
 	VU1.cycle = cpuRegs.cycle;
 	VU0.VI[REG_VPU_STAT].UL &= ~0xFF00;
 	VU0.VI[REG_VPU_STAT].UL |=  0x0100;
-	if ((s32)addr != -1) VU1.VI[REG_TPC].UL = addr;
+	if ((s32)addr != -1) VU1.VI[REG_TPC].UL = addr & 0x7FF;
 
 	CpuVU1->SetStartPC(VU1.VI[REG_TPC].UL << 3);
 	_vuExecMicroDebug(VU1);
