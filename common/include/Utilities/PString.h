@@ -12,11 +12,11 @@ namespace fs = ghc::filesystem;
 
 class PString
 {
+
 private:
 	std::basic_string<char> string;
 public:
 	PString() = default;
-
 	explicit PString(const fs::path& path)
 	{
 		string = path.u8string();
@@ -24,7 +24,7 @@ public:
 
 	PString(const wxString& str)
 	{
-		string = std::string(str.utf8_str());
+		string = std::string(str.utf8_str(), str.size());
 	}
 
 	#ifdef _WIN32
@@ -65,9 +65,8 @@ public:
 		return string == rhs.string;
 	}
 
-	operator std::string() const;
 	operator wxString() const;
-	explicit operator fs::path() const;
+	fs::path path() const;
 
 	size_t capacity() const noexcept
 	{

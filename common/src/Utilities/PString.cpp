@@ -37,13 +37,7 @@ PString::operator wxString() const
 	return buf;
 }
 
-PString::operator std::string() const
-{
-	std::string str(string);
-	return str;
-}
-
-PString::operator fs::path() const
+fs::path PString::path() const
 {
 	fs::path str(fs::u8path(string));
 	return str;
