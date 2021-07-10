@@ -3,19 +3,6 @@
 #include <codecvt>
 #include <wchar.h>
 
-const PString& PString::operator=(const PString& rhs)
-{
-	string = rhs.string;
-	return *this;
-}
-
-PString& PString::operator=(PString&& rhs)
-{
-	string = std::move(rhs.string);
-	return *this;
-}
-
-
 #ifdef __cpp_lib_char8_t
 PString::operator std::u8string()
 {
@@ -46,7 +33,7 @@ PString::operator std::wstring()
 
 PString::operator wxString() const
 {
-	wxString buf(data());
+	wxString buf(string);
 	return buf;
 }
 
@@ -60,11 +47,6 @@ PString::operator fs::path() const
 {
 	fs::path str(string);
 	return str;
-}
-
-void PString::resize(size_t siz, char c)
-{
-	string.resize(siz, c);
 }
 
 std::ostream& operator<<(std::ostream& os, const PString& str)

@@ -51,8 +51,9 @@ public:
 		string = std::move(move.string);
 	}
 
-	// Return OS specific UTF format
+	// Return OS specific format
 	std::string mb() const;
+
 	// Return UTF8 explicit string
 	std::string u8() const
 	{
@@ -64,14 +65,9 @@ public:
 		return string == rhs.string;
 	}
 
-	PString& operator=(PString&&);
-
-	// Copy Operator
-	const PString& operator=(const PString&);
-	
 	operator std::string() const;
 	operator wxString() const;
-	operator fs::path() const;
+	explicit operator fs::path() const;
 
 	size_t capacity() const noexcept
 	{
@@ -88,14 +84,20 @@ public:
 		return string.at(pos);
 	}
 
-	char& at(size_t pos) const;
+	const char& at(size_t pos) const
+	{
+		return string.at(pos);
+	}
 
 	void resize(size_t n)
 	{
 		string.resize(n);
 	}
 
-	void resize(size_t n, char c);
+	void resize(size_t n, char c)
+	{
+		string.resize(n, c);
+	}
 
 	const char* data() const
 	{
