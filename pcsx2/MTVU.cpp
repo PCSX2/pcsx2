@@ -144,7 +144,7 @@ void VU_Thread::ExecuteRingBuffer()
 					vifRegs.itop = Read();
 
 					if (addr != -1)
-						vuRegs.VI[REG_TPC].UL = addr;
+						vuRegs.VI[REG_TPC].UL = addr & 0x7FF;
 					vuCPU->SetStartPC(vuRegs.VI[REG_TPC].UL << 3);
 					vuCPU->Execute(vu1RunCycles);
 					gifUnit.gifPath[GIF_PATH_1].FinishGSPacketMTVU();
