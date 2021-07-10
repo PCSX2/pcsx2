@@ -19,7 +19,7 @@ public:
 
 	explicit PString(const fs::path& path)
 	{
-		string = path.string();
+		string = path.u8string();
 	}
 
 	PString(const wxString& str)
@@ -48,13 +48,16 @@ public:
 
 	PString(PString&& move)
 	{
-		string = move.string;
+		string = std::move(move.string);
 	}
 
 	// Return OS specific UTF format
-	std::string mb();
+	std::string mb() const;
 	// Return UTF8 explicit string
-	std::string u8();
+	std::string u8() const
+	{
+		return string;
+	}
 
 	const bool operator==(const PString& rhs)
 	{
@@ -80,7 +83,11 @@ public:
 		return string.size();
 	}
 
-	char& at(size_t pos);
+	char& at(size_t pos)
+	{
+		return string.at(pos);
+	}
+
 	char& at(size_t pos) const;
 
 	void resize(size_t n)
