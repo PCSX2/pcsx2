@@ -45,7 +45,7 @@ PString::operator std::string() const
 
 PString::operator fs::path() const
 {
-	fs::path str(string);
+	fs::path str(fs::u8path(string));
 	return str;
 }
 
