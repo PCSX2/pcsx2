@@ -33,7 +33,7 @@ PString::operator std::wstring()
 
 PString::operator wxString() const
 {
-	wxString buf(string);
+	wxString buf(string, string.size());
 	return buf;
 }
 
@@ -58,11 +58,12 @@ std::ostream& operator<<(std::ostream& os, const PString& str)
 std::string PString::mb() const 
 {
 #ifdef _WIN32
-	std::wstring temp = *this;
+	PString tempS = string;
+	std::wstring temp = tempS;
 	const int size = WideCharToMultiByte(CP_ACP, 0, temp.c_str(), temp.size(), nullptr, 0, nullptr, nullptr);
-	string.resize(size, 0);
-	WideCharToMultiByte(CP_ACP, 0, temp.c_str(), temp.size(), string.data(), string.size(), nullptr, nullptr);
-	return string;
+	std::string converted_string(size, 0);
+	WideCharToMultiByte(CP_ACP, 0, temp.c_str(), temp.size(), converted_string.data(), converted_string.size(), nullptr, nullptr);
+	return converted_string;
 #else
 	return string;
 #endif
