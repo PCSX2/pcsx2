@@ -46,8 +46,6 @@
 #define _M_AMD64
 #endif
 
-#include <GL/gl.h>
-#include <GL/glext.h>
 #include "Renderers/OpenGL/GLLoader.h"
 #include "Renderers/OpenGL/PFN_GLLOADER_HPP.h"
 
