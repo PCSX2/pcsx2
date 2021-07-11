@@ -8168,6 +8168,8 @@ SLES-51056:
   name: "Fighting Fury"
   region: "PAL-E"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes hang at menu.
 SLES-51057:
   name: "Hard Hitter 2"
   region: "PAL-M3"
@@ -26936,6 +26938,8 @@ SLPS-20037:
 SLPS-20038:
   name: "Grappler Baki - Baki Saidai no Tournament"
   region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Fixes hang at menu.
 SLPS-20040:
   name: "MotoGP"
   region: "NTSC-J"
