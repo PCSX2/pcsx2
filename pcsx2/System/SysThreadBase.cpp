@@ -57,7 +57,7 @@ void SysThreadBase::OnStart()
 	_parent::OnStart();
 }
 
-// Suspends emulation and closes the emulation state (including plugins) at the next PS2 vsync,
+// Suspends emulation and closes the emulation state at the next PS2 vsync,
 // and returns control to the calling thread; or does nothing if the core is already suspended.
 //
 // Parameters:
@@ -72,7 +72,7 @@ void SysThreadBase::OnStart()
 //
 // Exceptions:
 //   CancelEvent  - thrown if the thread is already in a Paused or Closing state.  Because
-//      actions that pause emulation typically rely on plugins remaining loaded/active,
+//      actions that pause emulation typically rely on subcomponents remaining loaded/active,
 //      Suspension must cancel itself forcefully or risk crashing whatever other action is
 //      in progress.
 //
@@ -203,8 +203,6 @@ void SysThreadBase::PauseSelfDebug()
 // Resume, you'll need to bind callbacks to either OnResumeReady or OnResumeInThread.
 //
 // Exceptions:
-//   PluginInitError     - thrown if a plugin fails init (init is performed on the current thread
-//                         on the first time the thread is resumed from it's initial idle state)
 //   ThreadCreationError - Insufficient system resources to create thread.
 //
 void SysThreadBase::Resume()
@@ -246,8 +244,6 @@ void SysThreadBase::Resume()
 			if (!m_running)
 				return;
 			if ((m_ExecMode != ExecMode_Closed) && (m_ExecMode != ExecMode_Paused))
-				return;
-			if (!GetCorePlugins().AreLoaded())
 				return;
 			break;
 

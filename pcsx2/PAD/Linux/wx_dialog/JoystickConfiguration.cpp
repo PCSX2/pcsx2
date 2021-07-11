@@ -22,7 +22,7 @@ static const s32 joy_check_id = wxID_HIGHEST + 100 + 3;
 // Constructor of JoystickConfiguration
 JoystickConfiguration::JoystickConfiguration(int pad, bool left, wxWindow* parent)
 	: wxDialog(parent, wxID_ANY, _T("Joystick configuration"), wxDefaultPosition, wxDefaultSize,
-	           wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN)
+			   wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN)
 {
 	m_pad_id = pad;
 	m_isForLeftJoystick = left;
@@ -62,11 +62,11 @@ void JoystickConfiguration::InitJoystickConfiguration()
 	 * Check if there exist at least one pad available
 	 * if the pad id is 0, you need at least 1 gamepad connected,
 	 * if the pad id is 1, you need at least 2 gamepads connected,
-	 * Prevent to use a none initialized value on s_vgamePad (core dump)
+	 * Prevent using a non-initialized value (core dump)
 	 */
-	if (s_vgamePad.size() < m_pad_id + 1)
+	if (device_manager->devices.size() < m_pad_id + 1)
 	{
-		if (s_vgamePad.empty())
+		if (device_manager->devices.empty())
 			wxMessageBox(L"No gamepad detected.");
 		else
 			wxMessageBox(L"No second gamepad detected.");

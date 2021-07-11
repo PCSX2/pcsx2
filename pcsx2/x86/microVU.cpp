@@ -73,8 +73,10 @@ void mVUinit(microVU& mVU, uint vuIndex) {
 
 // Resets Rec Data
 void mVUreset(microVU& mVU, bool resetReserve) {
+
 	if (THREAD_VU1)
 	{
+		DevCon.Warning("mVU Reset");
 		// If MTVU is toggled on during gameplay we need to flush the running VU1 program, else it gets in a mess
 		if (VU0.VI[REG_VPU_STAT].UL & 0x100)
 		{
@@ -250,7 +252,7 @@ __fi bool mVUcmpProg(microVU& mVU, microProgram& prog, const bool cmpWholeProg) 
 		for (const auto& range : *prog.ranges) {
 			auto cmpOffset = [&](void* x) { return (u8*)x + range.start; };
 			if ((range.start < 0) || (range.end < 0)) { DevCon.Error("microVU%d: Negative Range![%d][%d]", mVU.index, range.start, range.end); }
-			if (memcmp_mmx(cmpOffset(prog.data), cmpOffset(mVU.regs().Micro), ((range.end+8) - range.start))) {
+			if (memcmp_mmx(cmpOffset(prog.data), cmpOffset(mVU.regs().Micro), (range.end - range.start))) {
 				return false;
 			}
 		}
@@ -271,25 +273,7 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState) {
 		std::deque<microProgram*>::iterator it(list->begin());
 		for ( ; it != list->end(); ++it) {
 			bool b = mVUcmpProg(mVU, *it[0], 0);
-			if (EmuConfig.Gamefixes.ScarfaceIbit) {
-				if (isVU1 && ((((u32*)mVU.regs().Micro)[startPC / 4 + 1]) == 0x80200118) &&
-						     ((((u32*)mVU.regs().Micro)[startPC / 4 + 3]) == 0x81000062)) {
-					b = true;
-					mVU.prog.cleared = 0;
-					mVU.prog.cur = it[0];
-					mVU.prog.isSame = 1;
-				}
-            } else if (EmuConfig.Gamefixes.CrashTagTeamRacingIbit) {
-				// Crash tag team tends to make changes to the I register settings in the addresses 0x2bd0 - 0x3ff8
-				// so detect when the code is only changed in this region and don't recompile. Use the same Scarface hack
-				// to access the new I regsiter settings (Look at doIbit() in microVU_Compile.inl
-                if (isVU1 && (memcmp_mmx((u8 *)(it[0]->data), (u8 *)(mVU.regs().Micro), 0x2bd0) == 0)) {
-                    b = true;
-                    mVU.prog.cleared = 0;
-                    mVU.prog.cur = it[0];
-                    mVU.prog.isSame = 1;
-                }
-            }
+			
 			if (b) {
 				quick.block = it[0]->block[startPC/8];
 				quick.prog  = it[0];
@@ -364,6 +348,7 @@ void recMicroVU0::Reset() {
 void recMicroVU1::Reset() {
 	if(!pxAssertDev(m_Reserved, "MicroVU1 CPU Provider has not been reserved prior to reset!")) return;
 	vu1Thread.WaitVU();
+	vu1Thread.Get_MTVUChanges();
 	mVUreset(microVU1, true);
 }
 
@@ -406,7 +391,7 @@ void recMicroVU1::Execute(u32 cycles) {
 	VU1.VI[REG_TPC].UL <<= 3;
 	((mVUrecCall)microVU1.startFunct)(VU1.VI[REG_TPC].UL, cycles);
 	VU1.VI[REG_TPC].UL >>= 3;
-	if(microVU1.regs().flags & 0x4)
+	if(microVU1.regs().flags & 0x4 && !THREAD_VU1)
 	{
 		microVU1.regs().flags &= ~0x4;
 		hwIntcIrq(7);

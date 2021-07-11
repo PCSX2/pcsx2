@@ -23,7 +23,7 @@
 
 #include "Elfheader.h"
 
-#include "../DebugTools/Breakpoints.h"
+#include "DebugTools/Breakpoints.h"
 
 #include <float.h>
 

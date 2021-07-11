@@ -21,7 +21,7 @@ if(DISABLE_BUILD_DATE OR openSUSE)
     add_definitions(-DDISABLE_BUILD_DATE)
 endif()
 
-option(USE_VTUNE "Plug VTUNE to profile GSdx JIT.")
+option(USE_VTUNE "Plug VTUNE to profile GS JIT.")
 
 #-------------------------------------------------------------------------------
 # Graphical option
@@ -151,9 +151,9 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
     if(NOT DEFINED ARCH_FLAG)
         if (DISABLE_ADVANCE_SIMD)
             if (USE_ICC)
-                set(ARCH_FLAG "-msse2")
+                set(ARCH_FLAG "-msse2 -msse4.1")
             else()
-                set(ARCH_FLAG "-msse -msse2 -mfxsr -march=i686")
+                set(ARCH_FLAG "-msse -msse2 -msse4.1 -mfxsr -march=i686")
             endif()
         else()
             # AVX requires some fix of the ABI (mangling) (default 2)
@@ -174,9 +174,9 @@ elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
     if(NOT DEFINED ARCH_FLAG)
         if (DISABLE_ADVANCE_SIMD)
             if (USE_ICC)
-                set(ARCH_FLAG "-msse2")
+                set(ARCH_FLAG "-msse2 -msse4.1")
             else()
-                set(ARCH_FLAG "-msse -msse2 -mfxsr")
+                set(ARCH_FLAG "-msse -msse2 -msse4.1 -mfxsr")
             endif()
         else()
             #set(ARCH_FLAG "-march=native -fabi-version=6")
@@ -241,7 +241,7 @@ option(USE_PGO_OPTIMIZE "Enable PGO optimization (use profile)")
 
 # Note1: Builtin strcmp/memcmp was proved to be slower on Mesa than stdlib version.
 # Note2: float operation SSE is impacted by the PCSX2 SSE configuration. In particular, flush to zero denormal.
-set(COMMON_FLAG "-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse")
+set(COMMON_FLAG "-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse -fno-operator-names")
 
 if(USE_VTUNE)
     set(COMMON_FLAG "${COMMON_FLAG} -DENABLE_VTUNE")

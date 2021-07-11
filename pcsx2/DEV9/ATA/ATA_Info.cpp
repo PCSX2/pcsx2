@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 
 #include "ATA.h"
-#include "../DEV9.h"
+#include "DEV9/DEV9.h"
 
 void ATA::WriteUInt16(u8* data, int* index, u16 value)
 {

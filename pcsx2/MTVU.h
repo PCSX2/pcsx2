@@ -52,9 +52,11 @@ public:
 		InterruptFlagFinish = 1 << 0,
 		InterruptFlagSignal = 1 << 1,
 		InterruptFlagLabel  = 1 << 2,
+		InterruptFlagVUEBit = 1 << 3,
+		InterruptFlagVUTBit = 1 << 4,
 	};
 
-	std::atomic<u32> gsInterrupts; // Used for GS Signal, Finish etc
+	std::atomic<u32> mtvuInterrupts; // Used for GS Signal, Finish etc, plus VU End/T-Bit
 	std::atomic<u64> gsLabel; // Used for GS Label command
 	std::atomic<u64> gsSignal; // Used for GS Signal command
 
@@ -72,7 +74,7 @@ public:
 	// Waits till MTVU is done processing
 	void WaitVU();
 
-	void Get_GSChanges();
+	void Get_MTVUChanges();
 
 	void ExecuteVU(u32 vu_addr, u32 vif_top, u32 vif_itop);
 

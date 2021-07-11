@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -14,11 +14,11 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "../Config.h"
+#include "SPU2/Config.h"
 #if defined(__linux__) || defined(__APPLE__)
-#include "../Linux/Config.h"
+#include "SPU2/Linux/Config.h"
 #endif
-#include "../Global.h"
+#include "SPU2/Global.h"
 #include "wxConfig.h"
 
 MixerTab::MixerTab(wxWindow* parent)
@@ -30,12 +30,12 @@ MixerTab::MixerTab(wxWindow* parent)
 	top_box->Add(new wxStaticText(this, wxID_ANY, "Interpolation"), wxSizerFlags().Centre());
 
 	wxArrayString interpolation_entries;
-	interpolation_entries.Add("Nearest (Fastest/bad quality)");
-	interpolation_entries.Add("Linear (Simple/okay sound)");
-	interpolation_entries.Add("Cubic (Artificial highs)");
-	interpolation_entries.Add("Hermite (Better highs)");
-	interpolation_entries.Add("Catmull-Rom (PS2-like/slow)");
-	interpolation_entries.Add("Gaussian (SPU native)");
+	interpolation_entries.Add("Nearest (Fastest / worst quality)");
+	interpolation_entries.Add("Linear (Simple / okay sound)");
+	interpolation_entries.Add("Cubic (Fake highs / okay sound)");
+	interpolation_entries.Add("Hermite (Better highs / okay sound)");
+	interpolation_entries.Add("Catmull-Rom (PS2-like / good sound)");
+	interpolation_entries.Add("Gaussian (PS2-like / great sound)");
 
 	m_inter_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, interpolation_entries);
 
@@ -393,7 +393,7 @@ Dialog::Dialog()
 	m_sdl_text = new wxStaticText(this, wxID_ANY, "SDL API");
 	m_sdl_box->Add(m_sdl_text, wxSizerFlags().Centre());
 
-	wxArrayString  sdl_entries;
+	wxArrayString sdl_entries;
 	for (int i = 0; i < SDL_GetNumAudioDrivers(); ++i)
 		sdl_entries.Add(SDL_GetAudioDriver(i));
 

@@ -87,7 +87,6 @@ protected:
 class GSFrame : public wxFrame
 	, public EventListener_AppStatus
 	, public EventListener_CoreThread
-	, public EventListener_Plugins
 {
 	typedef wxFrame _parent;
 
@@ -113,14 +112,13 @@ protected:
 	void OnCloseWindow( wxCloseEvent& evt );
 	void OnMove( wxMoveEvent& evt );
 	void OnResize( wxSizeEvent& evt );
-	void OnActivate( wxActivateEvent& evt );
+	void OnFocus( wxFocusEvent& evt );
 	void OnUpdateTitle( wxTimerEvent& evt );
 
 	void AppStatusEvent_OnSettingsApplied();
 	void CoreThread_OnResumed();
 	void CoreThread_OnSuspended();
 	void CoreThread_OnStopped();
-	void CorePlugins_OnShutdown();
 };
 
 // --------------------------------------------------------------------------------------

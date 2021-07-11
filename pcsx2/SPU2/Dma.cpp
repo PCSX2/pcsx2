@@ -154,8 +154,7 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 {
 	int size = sz;
 
-	if (cyclePtr != nullptr)
-		TimeUpdate(*cyclePtr);
+	TimeUpdate(psxRegs.cycle);
 
 	if (MsgAutoDMA())
 		ConLog("* SPU2: DMA%c AutoDMA Transfer of %d bytes to %x (%02x %x %04x).OutPos %x\n",
@@ -167,7 +166,7 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 	{
 		ActiveTSA = 0x2000 + (Index << 10);
 		DMAICounter = size * 4;
-		LastClock = *cyclePtr;
+		LastClock = psxRegs.cycle;
 	}
 	else if (size >= 256)
 	{
@@ -194,7 +193,7 @@ void V_Core::StartADMAWrite(u16* pMem, u32 sz)
 		ConLog("ADMA%c Error Size of %x too small\n", GetDmaIndexChar(), size);
 		InputDataLeft = 0;
 		DMAICounter = size * 4;
-		LastClock = *cyclePtr;
+		LastClock = psxRegs.cycle;
 	}
 }
 
@@ -214,13 +213,12 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 		}
 	}
 
-	if (cyclePtr != nullptr)
-		TimeUpdate(*cyclePtr);
+	TimeUpdate(psxRegs.cycle);
 
 	ReadSize = size;
 	IsDMARead = false;
 	DMAICounter = 0;
-	LastClock = *cyclePtr;
+	LastClock = psxRegs.cycle;
 	Regs.STATX &= ~0x80;
 	Regs.STATX |= 0x400;
 	TADR = MADR + (size << 1);
@@ -462,14 +460,13 @@ void V_Core::FinishDMAread()
 
 void V_Core::DoDMAread(u16* pMem, u32 size)
 {
-	if (cyclePtr != nullptr)
-		TimeUpdate(*cyclePtr);
+	TimeUpdate(psxRegs.cycle);
 
 	DMARPtr = pMem;
 	ActiveTSA = TSA & 0xfffff;
 	ReadSize = size;
 	IsDMARead = true;
-	LastClock = *cyclePtr;
+	LastClock = psxRegs.cycle;
 	DMAICounter = std::min(ReadSize, (u32)0x100) * 4;
 	Regs.STATX &= ~0x80;
 	Regs.STATX |= 0x400;
@@ -502,7 +499,7 @@ void V_Core::DoDMAwrite(u16* pMem, u32 size)
 		Regs.STATX &= ~0x80;
 		//Regs.ATTR |= 0x30;
 		DMAICounter = 1 * 4;
-		LastClock = *cyclePtr;
+		LastClock = psxRegs.cycle;
 		return;
 	}
 

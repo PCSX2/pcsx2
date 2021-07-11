@@ -199,19 +199,14 @@ s32 DEV9open(void* pDsp)
 	DevCon.WriteLn("DEV9: open r+: %s", config.Hdd);
 #endif
 
-#ifdef _WIN32
-	ghc::filesystem::path hddPath(std::wstring(config.Hdd));
-#else
 	ghc::filesystem::path hddPath(config.Hdd);
-#endif
 
 	if (hddPath.empty())
 		config.hddEnable = false;
 
 	if (hddPath.is_relative())
 	{
-		//GHC uses UTF8 on all platforms
-		ghc::filesystem::path path(GetSettingsFolder().ToUTF8().data());
+		ghc::filesystem::path path(GetSettingsFolder().ToString().wx_str());
 		hddPath = path / hddPath;
 	}
 
@@ -826,7 +821,7 @@ void DEV9write16(u32 addr, u16 value)
 				dev9.fifo_bytes_write = 0;
 				dev9.fifo_bytes_read = 0;
 				dev9.xfr_ctrl &= ~SPD_XFR_WRITE; //?
-				dev9.if_ctrl |= SPD_IF_READ;     //?
+				dev9.if_ctrl |= SPD_IF_READ; //?
 
 				FIFOIntr();
 			}
@@ -1094,11 +1089,7 @@ void ApplyConfigIfRunning(Config oldConfig)
 
 	//Hdd
 	//Hdd Validate Path
-#ifdef _WIN32
-	ghc::filesystem::path hddPath(std::wstring(config.Hdd));
-#else
 	ghc::filesystem::path hddPath(config.Hdd);
-#endif
 
 	if (hddPath.empty())
 		config.hddEnable = false;
@@ -1106,7 +1097,7 @@ void ApplyConfigIfRunning(Config oldConfig)
 	if (hddPath.is_relative())
 	{
 		//GHC uses UTF8 on all platforms
-		ghc::filesystem::path path(GetSettingsFolder().ToUTF8().data());
+		ghc::filesystem::path path(GetSettingsFolder().ToString().wx_str());
 		hddPath = path / hddPath;
 	}
 

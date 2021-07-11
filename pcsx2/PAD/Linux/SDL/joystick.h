@@ -18,12 +18,13 @@
 #include <SDL.h>
 #include <SDL_haptic.h>
 
-#include "../GamePad.h"
-#include "../PAD.h"
-#include "../controller.h"
+#include "../Global.h"
+#include "../Device.h"
+
 #define NB_EFFECT 2 // Don't use more than two, ps2 only has one for big motor and one for small(like most systems)
+
 // holds all joystick info
-class JoystickInfo : public GamePad
+class JoystickInfo : public Device
 {
 public:
 	JoystickInfo(int id);
@@ -34,7 +35,7 @@ public:
 
 
 	// opens handles to all possible joysticks
-	static void EnumerateJoysticks(std::vector<std::unique_ptr<GamePad>>& vjoysticks);
+	static void EnumerateJoysticks(std::vector<std::unique_ptr<Device>>& vjoysticks);
 
 	void Rumble(unsigned type, unsigned pad) override;
 
@@ -44,7 +45,7 @@ public:
 
 	int GetInput(gamePadValues input) final;
 
-	void UpdateGamePadState() final;
+	void UpdateDeviceState() final;
 
 	size_t GetUniqueIdentifier() final;
 

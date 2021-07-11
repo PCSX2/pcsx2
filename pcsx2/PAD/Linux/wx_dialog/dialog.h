@@ -15,9 +15,6 @@
 
 #pragma once
 
-#ifndef __DIALOG_H__
-#define __DIALOG_H__
-
 #include <wx/wx.h>
 #include <wx/notebook.h>
 #include <wx/frame.h>
@@ -28,12 +25,11 @@
 #include <wx/graphics.h>
 #include <wx/timer.h>
 
-#include <string>
 #include <sstream>
 
-#include "../GamePad.h"
+#include "../InputManager.h"
 #include "../keyboard.h"
-#include "../PAD.h"
+#include "../Global.h"
 #include "opPanel.h"
 
 #include "GamepadConfiguration.h"
@@ -41,7 +37,7 @@
 
 // Allow to found quickly button id
 // e.g L2 → 0, triangle → 4, ...
-// see PAD.h for more details about gamepad button id
+// see Global.h for more details about gamepad button id
 
 enum gui_buttons
 {
@@ -91,5 +87,3 @@ public:
 };
 
 extern void DisplayDialog(); // Main function
-
-#endif // __DIALOG_H__

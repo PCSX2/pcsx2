@@ -15,8 +15,12 @@
 
 #pragma once
 
-#include "PS2Edefs.h"
+#define FREEZE_LOAD 0
+#define FREEZE_SAVE 1
+#define FREEZE_SIZE 2
+
 #include "System.h"
+#include "Utilities/Exceptions.h"
 
 // Savestate Versioning!
 //  If you make changes to the savestate version, please increment the value below.
@@ -24,7 +28,19 @@
 //  the lower 16 bit value.  IF the change is breaking of all compatibility with old
 //  states, increment the upper 16 bit value, and clear the lower 16 bits to 0.
 
-static const u32 g_SaveVersion = (0x9A1F << 16) | 0x0000;
+static const u32 g_SaveVersion = (0x9A20 << 16) | 0x0000;
+
+// the freezing data between submodules and core
+// an interesting thing to note is that this dates back from before plugin
+// merges and was used to pass data between plugins and cores, although the
+// struct was system dependant as the size of int differs between systems, thus
+// subsystems making use of freezeData, like GSDump and save states aren't
+// necessarily portable; we might want to investigate this in the future -- govanify
+typedef struct
+{
+    int size;
+    s8 *data;
+} freezeData;
 
 // this function is meant to be used in the place of GSfreeze, and provides a safe layer
 // between the GS saving function and the MTGS's needs. :)
@@ -60,15 +76,9 @@ public:
 		return (m_version & 0xffff);
 	}
 
-	// Loads or saves the entire emulation state.
-	// Note: The Cpu state must be reset, and plugins *open*, prior to Defrosting
-	// (loading) a state!
-	virtual SaveStateBase& FreezeAll();
-
 	virtual SaveStateBase& FreezeMainMemory();
 	virtual SaveStateBase& FreezeBios();
 	virtual SaveStateBase& FreezeInternals();
-	virtual SaveStateBase& FreezePlugins();
 
 	// Loads or saves an arbitrary data type.  Usable on atomic types, structs, and arrays.
 	// For dynamically allocated pointers use FreezeMem instead.
@@ -182,7 +192,6 @@ public:
 	void MakeRoomForData();
 
 	void FreezeMem( void* data, int size );
-	memSavingState& FreezeAll();
 
 	bool IsSaving() const { return true; }
 };
@@ -200,4 +209,17 @@ public:
 	bool IsSaving() const { return false; }
 	bool IsFinished() const { return m_idx >= m_memory->GetSizeInBytes(); }
 };
+
+
+namespace Exception
+{
+	// Exception thrown when a corrupted or truncated savestate is encountered.
+	class SaveStateLoadError : public BadStream
+	{
+		DEFINE_STREAM_EXCEPTION(SaveStateLoadError, BadStream)
+
+		virtual wxString FormatDiagnosticMessage() const;
+		virtual wxString FormatDisplayMessage() const;
+	};
+}; // namespace Exception
 

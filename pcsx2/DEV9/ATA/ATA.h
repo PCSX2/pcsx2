@@ -23,10 +23,7 @@
 #include "ghc/filesystem.h"
 #include <fstream>
 
-#include "PS2Edefs.h"
-#include "PS2Eext.h"
-
-#include "../SimpleQueue.h"
+#include "DEV9/SimpleQueue.h"
 
 class ATA
 {

@@ -19,12 +19,11 @@
 
 enum FoldersEnum_t
 {
-	// FIXME : Plugins and Settings folders are no longer part of the user-local
+	// FIXME : Settings folder is no longer part of the user-local
 	// ini storage.  They have been moved to an app-local ini storage class (which is currently
 	// handled lazily via global variables)
-	FolderId_Plugins = 0,
-	FolderId_Settings,
-	
+	FolderId_Settings = 0,
+
 	FolderId_Bios,
 	FolderId_Snapshots,
 	FolderId_Savestates,
@@ -55,7 +54,6 @@ namespace PathDefs
 
 	extern wxDirName GetSnapshots();
 	extern wxDirName GetBios();
-	extern wxDirName GetPlugins();
 	extern wxDirName GetSavestates();
 	extern wxDirName GetMemoryCards();
 	extern wxDirName GetSettings();
@@ -75,7 +73,6 @@ namespace PathDefs
 		extern const wxDirName& Savestates();
 		extern const wxDirName& MemoryCards();
 		extern const wxDirName& Settings();
-		extern const wxDirName& Plugins();
 		extern const wxDirName& Logs();
 		extern const wxDirName& Dumps();
 		extern const wxDirName& Langs();

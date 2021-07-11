@@ -16,9 +16,9 @@
 #pragma once
 #include <linux/joystick.h>
 #include <unistd.h>
-#include "../../gtk.h"
-#include "../padproxy.h"
-#include "../../configuration.h"
+#include "USB/gtk.h"
+#include "USB/usb-pad/padproxy.h"
+#include "USB/configuration.h"
 
 #define N_HIDRAW_FF_PT "hidraw_ff_pt"
 #define N_GAIN_ENABLED "gain_enabled"

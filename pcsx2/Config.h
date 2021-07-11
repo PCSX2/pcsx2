@@ -23,19 +23,6 @@
 
 class IniInterface;
 
-enum PluginsEnum_t
-{
-	PluginId_GS = 0,
-	PluginId_Count,
-
-	// Memorycard plugin support is preliminary, and is only hacked/hardcoded in at this
-	// time.  So it's placed afer PluginId_Count so that it doesn't show up in the conf
-	// screens or other plugin tables.
-
-	PluginId_Mcd,
-	PluginId_AllocCount // Extra value for correct array allocation
-};
-
 enum GamefixId
 {
 	GamefixId_FIRST = 0,
@@ -53,8 +40,7 @@ enum GamefixId
 	Fix_VIF1Stall,
 	Fix_GIFFIFO,
 	Fix_GoemonTlbMiss,
-	Fix_ScarfaceIbit,
-	Fix_CrashTagTeamIbit,
+	Fix_Ibit,
 	Fix_VU0Kickstart,
 
 	GamefixId_COUNT
@@ -190,8 +176,6 @@ struct TraceLogFilters
 //  Pcsx2Config class
 // --------------------------------------------------------------------------------------
 // This is intended to be a public class library between the core emulator and GUI only.
-// It is *not* meant to be shared data between core emulation and plugins, due to issues
-// with version incompatibilities if the structure formats are changed.
 //
 // When GUI code performs modifications of this class, it must be done with strict thread
 // safety, since the emu runs on a separate thread.  Additionally many components of the
@@ -365,8 +349,7 @@ struct Pcsx2Config
             VIF1StallHack : 1,          // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
             GIFFIFOHack : 1,            // Enabled the GIF FIFO (more correct but slower)
             GoemonTlbHack : 1,          // Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
-            ScarfaceIbit : 1,           // Scarface I bit hack. Needed to stop constant VU recompilation
-            CrashTagTeamRacingIbit : 1, // Crash Tag Team Racing I bit hack. Needed to stop constant VU recompilation
+            IbitHack : 1,               // I bit hack. Needed to stop constant VU recompilation in some games
             VU0KickstartHack : 1;       // Speed up VU0 at start of program to avoid some VU1 sync issues
 		BITFIELD_END
 

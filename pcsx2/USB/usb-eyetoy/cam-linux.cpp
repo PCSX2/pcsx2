@@ -17,7 +17,7 @@
 #include "usb-eyetoy-webcam.h"
 #include "jpgd/jpgd.h"
 #include "jo_mpeg.h"
-#include "../gtk.h"
+#include "USB/gtk.h"
 #include "Utilities/Console.h"
 
 #include <stdio.h>

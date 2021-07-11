@@ -167,11 +167,11 @@ int GetMACAddress(char* adapter, mac_address* addr)
 	}
 	else
 	{
-		SysMessage("Could not get MAC address for adapter: %s", adapter);
+		Console.Error("Could not get MAC address for adapter: %s", adapter);
 	}
 	close(fd);
 #else
-	SysMessage("Could not get MAC address for adapter, OS not supported");
+	Console.Error("Could not get MAC address for adapter, OS not supported");
 #endif
 	return retval;
 }
@@ -188,12 +188,12 @@ int pcap_io_init(char* adapter, bool switched, mac_address virtual_mac)
 
 	/* Open the adapter */
 	if ((adhandle = pcap_open_live(adapter, // name of the device
-								   65536,   // portion of the packet to capture.
-								   // 65536 grants that the whole packet will be captured on all the MACs.
-								   switched ? 1 : 0,
-								   1,     // read timeout
-								   errbuf // error buffer
-								   )) == NULL)
+			 65536, // portion of the packet to capture.
+			 // 65536 grants that the whole packet will be captured on all the MACs.
+			 switched ? 1 : 0,
+			 1, // read timeout
+			 errbuf // error buffer
+			 )) == NULL)
 	{
 		Console.Error("DEV9: %s", errbuf);
 		Console.Error("DEV9: Unable to open the adapter. %s is not supported by pcap", adapter);
@@ -230,7 +230,7 @@ int pcap_io_init(char* adapter, bool switched, mac_address virtual_mac)
 			//case DLT_IEEE802_11:
 			break;
 		default:
-			SysMessage("ERROR: Unsupported DataLink Type (%d): %s", dlt, dlt_name);
+			Console.Error("ERROR: Unsupported DataLink Type (%d): %s", dlt, dlt_name);
 			pcap_close(adhandle);
 			return -1;
 	}
@@ -298,6 +298,9 @@ int pcap_io_recv(void* packet, int max_len)
 
 	if ((pcap_next_ex(adhandle, &header, &pkt_data1)) > 0)
 	{
+		if (header->len > max_len)
+			return -1;
+
 		memcpy(packet, pkt_data1, header->len);
 
 		if (!pcap_io_switched)
@@ -388,7 +391,7 @@ PCAPAdapter::PCAPAdapter()
 
 	if (pcap_io_init(config.Eth, config.EthApi == NetApi::PCAP_Switched, newMAC) == -1)
 	{
-		SysMessage("Can't open Device '%s'\n", config.Eth);
+		Console.Error("Can't open Device '%s'\n", config.Eth);
 	}
 }
 bool PCAPAdapter::blocks()

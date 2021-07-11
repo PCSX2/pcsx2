@@ -946,8 +946,7 @@ __fi void cdvdReadInterrupt()
 
 		cdvd.Reading = false;
 
-		// Any other value besides 0 should be considered invalid here (wtf is that wacky
-		// plugin trying to do?)
+		// Any other value besides 0 should be considered invalid here
 		pxAssert(cdvd.RErr == 0);
 	}
 
@@ -1329,7 +1328,7 @@ static void cdvdWrite04(u8 rt)
 			cdvd.ReadTime = cdvdBlockReadTime(MODE_CDROM);
 			CDVDREAD_INT(cdvdStartSeek(cdvd.SeekToSector, MODE_CDROM));
 
-			// Read-ahead by telling the plugin about the track now.
+			// Read-ahead by telling CDVD about the track now.
 			// This helps improve performance on actual from-cd emulation
 			// (ie, not using the hard drive)
 			cdvd.RErr = DoCDVDreadTrack(cdvd.SeekToSector, cdvd.ReadMode);
@@ -1365,7 +1364,7 @@ static void cdvdWrite04(u8 rt)
 			cdvd.ReadTime = cdvdBlockReadTime(MODE_DVDROM);
 			CDVDREAD_INT(cdvdStartSeek(cdvd.SeekToSector, MODE_DVDROM));
 
-			// Read-ahead by telling the plugin about the track now.
+			// Read-ahead by telling CDVD about the track now.
 			// This helps improve performance on actual from-cd emulation
 			// (ie, not using the hard drive)
 			cdvd.RErr = DoCDVDreadTrack(cdvd.SeekToSector, cdvd.ReadMode);

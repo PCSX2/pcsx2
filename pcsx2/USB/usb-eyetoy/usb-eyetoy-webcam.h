@@ -16,9 +16,9 @@
 #ifndef USBEYETOYWEBCAM_H
 #define USBEYETOYWEBCAM_H
 
-#include "../qemu-usb/vl.h"
-#include "../configuration.h"
-#include "../deviceproxy.h"
+#include "USB/qemu-usb/vl.h"
+#include "USB/configuration.h"
+#include "USB/deviceproxy.h"
 #include "videodeviceproxy.h"
 #include <mutex>
 

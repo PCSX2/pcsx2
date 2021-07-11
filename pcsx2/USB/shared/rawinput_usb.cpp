@@ -19,7 +19,7 @@
 #include <vector>
 #include <algorithm>
 #include <mutex>
-#include "../platcompat.h"
+#include "USB/platcompat.h"
 #include "PAD/Windows/WndProcEater.h"
 
 extern HINSTANCE hInst;

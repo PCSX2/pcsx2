@@ -57,19 +57,5 @@ MY_LD_LIBRARY_PATH=${MY_LD_LIBRARY_PATH:+$MY_LD_LIBRARY_PATH:}$DIR/3rdPartyLibs
 # openSUSE don't follow FHS !!!!
 MY_LD_LIBRARY_PATH=${MY_LD_LIBRARY_PATH:+$MY_LD_LIBRARY_PATH:}/usr/lib/wx-2.8-stl
 
-# Test plugin depencencies (help users to detect missing depencencies)
-if [ -x `which ldd` ]
-then
-    for plugin in `find $DIR/plugins -iname "lib*.so"`
-    do
-        if [ `ldd $plugin | grep -c found` != 0 ]
-        then
-            echo "ERROR the plugin ($plugin) miss some dependencies"
-            echo "    `ldd $plugin | grep found`"
-            echo ""
-        fi
-    done
-fi
-
 # And finally launch me
 GDK_BACKEND=x11 LD_LIBRARY_PATH="$MY_LD_LIBRARY_PATH" __GL_THREADED_OPTIMIZATIONS=1 mesa_glthread=true MESA_NO_ERROR=1 $DIR/PCSX2 "$@"

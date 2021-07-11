@@ -21,7 +21,6 @@
 #include <map>
 #include <vector>
 
-#include "PluginCallbacks.h"
 #include "AppConfig.h"
 
 //#define DEBUG_WRITE_FOLDER_CARD_IN_MEMORY_TO_FILE_ON_CHANGE
@@ -390,7 +389,7 @@ public:
 	bool ReIndex(bool enableFiltering, const wxString& filter);
 
 	s32 IsPresent() const;
-	void GetSizeInfo(PS2E_McdSizeInfo& outways) const;
+	void GetSizeInfo(McdSizeInfo& outways) const;
 	bool IsPSX() const;
 	s32 Read(u8* dest, u32 adr, int size);
 	s32 Save(const u8* src, u32 adr, int size);
@@ -619,7 +618,7 @@ public:
 	void SetFiltering(const bool enableFiltering);
 
 	s32 IsPresent(uint slot);
-	void GetSizeInfo(uint slot, PS2E_McdSizeInfo& outways);
+	void GetSizeInfo(uint slot, McdSizeInfo& outways);
 	bool IsPSX(uint slot);
 	s32 Read(uint slot, u8* dest, u32 adr, int size);
 	s32 Save(uint slot, const u8* src, u32 adr, int size);

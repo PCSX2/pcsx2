@@ -35,12 +35,8 @@ u16 SPU2read(u32 mem);
 bool SPU2setupRecording(const std::string* filename);
 void SPU2endRecording();
 
-void SPU2setClockPtr(u32* ptr);
-
 void SPU2async(u32 cycles);
 s32 SPU2freeze(int mode, freezeData* data);
-void SPU2DoFreezeIn(pxInputStream& infp);
-void SPU2DoFreezeOut(void* dest);
 void SPU2configure();
 
 
@@ -57,7 +53,6 @@ void SPU2writeDMA7Mem(u16* pMem, u32 size);
 extern u8 callirq;
 
 extern u32 lClocks;
-extern u32* cyclePtr;
 
 extern void SPU2writeLog(const char* action, u32 rmem, u16 value);
 extern void TimeUpdate(u32 cClocks);

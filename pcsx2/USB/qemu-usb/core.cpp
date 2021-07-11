@@ -25,7 +25,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "../platcompat.h"
+#include "USB/platcompat.h"
 #include "vl.h"
 #include "iov.h"
 //#include "trace.h"

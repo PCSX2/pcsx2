@@ -56,9 +56,6 @@
 #include <pthread.h>
 
 
-// As plugins which use C have to be used with PCSX2, the BOOL type is redefined
-// to prevent any C/C++ compatibility issues.
-typedef int BOOL;
 #undef  TRUE
 #undef  FALSE
 #define TRUE  1

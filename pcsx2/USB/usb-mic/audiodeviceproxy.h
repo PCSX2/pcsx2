@@ -21,9 +21,9 @@
 #include <list>
 #include <algorithm>
 #include <iterator>
-#include "../helpers.h"
-#include "../configuration.h"
-#include "../deviceproxy.h"
+#include "USB/helpers.h"
+#include "USB/configuration.h"
+#include "USB/deviceproxy.h"
 #include "audiodev.h"
 
 namespace usb_mic

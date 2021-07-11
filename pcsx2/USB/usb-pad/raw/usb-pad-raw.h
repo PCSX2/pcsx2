@@ -18,10 +18,10 @@
 #include <thread>
 #include <array>
 #include <atomic>
-#include "../padproxy.h"
-#include "../usb-pad.h"
-#include "../../shared/rawinput_usb.h"
-#include "../../readerwriterqueue/readerwriterqueue.h"
+#include "USB/usb-pad/padproxy.h"
+#include "USB/usb-pad/usb-pad.h"
+#include "USB/shared/rawinput_usb.h"
+#include "USB/readerwriterqueue/readerwriterqueue.h"
 
 namespace usb_pad
 {

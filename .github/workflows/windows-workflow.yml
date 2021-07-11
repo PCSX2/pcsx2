@@ -1,4 +1,4 @@
-name: Windows Build
+name: 🖥️ Windows Builds
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -23,6 +23,12 @@ on:
       - debian-packager/
       - bin/PCSX2_keys.ini.default
       - "pcsx2/PAD/Linux/**"
+  workflow_dispatch:
+    inputs:
+      retainDebugArtifacts:
+        description: 'Retain debug artifacts (.pdb/.exp/.lib) for an easier debugging experience. (true|false)'
+        required: true
+        default: 'false'
 
 jobs:
   build:
@@ -32,9 +38,10 @@ jobs:
       matrix:
         os: [windows-2019]
         platform: [Win32, x64]
+        config: [Release, Release AVX2]
         experimental: [false]
 
-    name: ${{ matrix.os }}-${{ matrix.platform }}
+    name: "${{ matrix.platform }} | ${{ matrix.config }}"
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
@@ -65,17 +72,21 @@ jobs:
           vs-version: 16.7
 
       - name: Build PCSX2
-        run: msbuild "buildbot.xml" /m /v:n /t:ReleaseAll /p:Platform=${{ matrix.platform }}
+        env:
+          # Set to 'true' to retain the .pdb / .exp / .lib, etc files which can be useful for repro'ing issues that only occur in the compiled .exe
+          RetainDebuggingArtifacts: ${{ github.event.inputs.retainDebugArtifacts == 'true' }}
+        run: msbuild "PCSX2_suite.sln" /m /v:m /p:Configuration="${{ matrix.config }}" /p:Platform="${{ matrix.platform }}"
 
       - name: Prepare Artifact Metadata
         id: artifact-metadata
         shell: bash
         run: |
           ARCH=$([ "${{ matrix.platform }}" == Win32 ] && echo "32bit" || echo "64bit")
+          SIMD=$([ "${{ matrix.config }}" == Release ] && echo "SSE4" || echo "AVX2")
           ARTIFACT_NAME=""
           if [ ${{ github.event_name }} == "pull_request" ]; then
             PR_SHA=$(git rev-parse --short "${{ github.event.pull_request.head.sha }}")
-            ARTIFACT_NAME="PCSX2-${ARCH}"
+            ARTIFACT_NAME="PCSX2-${ARCH}-${SIMD}"
             if [ ! -z "${{ github.event.pull_request.number }}" ]; then
               PR_NUM=${{ github.event.pull_request.number }}
               ARTIFACT_NAME="${ARTIFACT_NAME}-pr[${PR_NUM}]"
@@ -87,7 +98,7 @@ jobs:
             fi
           else
             SHA=$(git rev-parse --short "$GITHUB_SHA")
-            ARTIFACT_NAME="PCSX2-${ARCH}-sha[${SHA}"
+            ARTIFACT_NAME="PCSX2-${ARCH}-${SIMD}-sha[${SHA}"
           fi
           TRIMMED_ARTIFACT_NAME=$(printf "%.199s]" "$ARTIFACT_NAME")
           echo "name=$TRIMMED_ARTIFACT_NAME"
@@ -97,6 +108,11 @@ jobs:
         shell: bash
         working-directory: ./bin
         run: |
+          retainDebugArtifacts=$([ "${{ github.event.inputs.retainDebugArtifacts }}" == "true" ] && echo "true" || echo "false")
+          if [ "${retainDebugArtifacts}" == "false" ]; then
+            ls ./
+            rm -f *.bsc *.exp *.ilk *.iobj *.ipdb *.lib *.pdb
+          fi
           shopt -s extglob dotglob
           mkdir "${{ steps.artifact-metadata.outputs.name }}"
           mv !("${{ steps.artifact-metadata.outputs.name }}") "${{ steps.artifact-metadata.outputs.name }}"

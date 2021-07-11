@@ -43,11 +43,11 @@ public:
 		// returning FALSE.
 		ExecMode_NoThreadYet,
 
-		// Thread is safely paused, with plugins in a "closed" state, and waiting for a
+		// Thread is safely paused, with subcomponents in a "closed" state, and waiting for a
 		// resume/open signal.
 		ExecMode_Closed,
 
-		// Thread is safely paused, with plugins in an "open" state, and waiting for a
+		// Thread is safely paused, with subcomponents in an "open" state, and waiting for a
 		// resume/open signal.
 		ExecMode_Paused,
 
@@ -183,8 +183,8 @@ protected:
 	StateIPC m_IpcState = OFF;
 
 	// Indicates if the system has an active virtual machine state.  Pretty much always
-	// true anytime between plugins being initialized and plugins being shutdown.  Gets
-	// set false when plugins are shutdown, the corethread is canceled, or when an error
+	// true anytime between subcomponents being initialized and being shutdown.  Gets
+	// set false when they are shutdown, the corethread is canceled, or when an error
 	// occurs while trying to upload a new state into the VM.
 	std::atomic<bool> m_hasActiveMachine;
 
@@ -209,7 +209,6 @@ public:
 	virtual void GameStartingInThread();
 
 	virtual void ApplySettings(const Pcsx2Config& src);
-	virtual void UploadStateCopy(const VmStateBuffer& copy);
 
 	virtual bool HasActiveMachine() const { return m_hasActiveMachine; }
 

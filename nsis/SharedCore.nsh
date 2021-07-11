@@ -41,7 +41,7 @@ SectionEnd
 
 !include "SharedShortcuts.nsh"
 
-LangString DESC_CORE       ${LANG_ENGLISH} "Core components (binaries, plugins, documentation, etc)."
+LangString DESC_CORE       ${LANG_ENGLISH} "Core components (binaries, documentation, etc)."
 LangString DESC_STARTMENU  ${LANG_ENGLISH} "Adds shortcuts for PCSX2 to the start menu (all users)."
 LangString DESC_DESKTOP    ${LANG_ENGLISH} "Adds a shortcut for PCSX2 to the desktop (all users)."
 

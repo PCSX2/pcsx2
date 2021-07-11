@@ -1053,6 +1053,9 @@ SCED-50907:
 SCED-51531:
   name: "Official PlayStation 2 Magazine Demo 33"
   region: "PAL-M5"
+SCED-51535:
+  name: "Official PlayStation 2 Magazine Demo 40"
+  region: "PAL-M5"
 SCED-51537:
   name: "Official PlayStation 2 Magazine Demo 37"
   region: "PAL-M5"
@@ -1088,6 +1091,12 @@ SCED-52049:
   compat: 5
   clampModes:
     vuClampMode: 3  # Fixes minor SPS on characters.
+SCED-52053:
+  name: "Official Playstation Magazine Demo Disc 40"
+  region: "PAL-PT"
+SCED-52057:
+  name: "Official Playstation Magazine Demo Disc 40"
+  region: "PAL-IT"
 SCED-52355:
   name: "Military Multi Demo"
   region: "PAL-M5"
@@ -1125,8 +1134,20 @@ SCED-53161:
 SCED-53163:
   name: "Official PlayStation 2 Magazine Demo 60"
   region: "PAL-M12"
+SCED-53165:
+  name: "Official PlayStation 2 Magazine Demo 40"
+  region: "PAL-F"
+SCED-53175:
+  name: "Official PlayStation 2 Magazine Demo 40"
+  region: "PAL-G"
 SCED-53325:
   name: "Official PlayStation 2 Magazine Demo 58"
+  region: "PAL-M5"
+SCED-53905:
+  name: "Official PlayStation 2 Magazine Italia Special Sport Demo"
+  region: "PAL-M5"
+SCED-54410:
+  name: "Official PlayStation 2 Magazine Demo 85"
   region: "PAL-M5"
 SCES-50000:
   name: "Ridge Racer V"
@@ -2504,6 +2525,9 @@ SCES-55093:
 SCES-55094:
   name: "Buzz! The Pop Quiz"
   region: "PAL-M3"
+SCES-55178:
+  name: "Singstar Boy Bands vs Girl Bands"
+  region: "PAL-M5"
 SCES-55179:
   name: "SingStar Schlager"
   region: "PAL-G"
@@ -2556,6 +2580,9 @@ SCES-55538:
 SCES-55552:
   name: "SingStar MoTown"
   region: "PAL-G"
+SCES-55554:
+  name: "Singstar Take That"
+  region: "PAL-M5"
 SCES-55557:
   name: "SingStar Take That"
   region: "PAL-G"
@@ -12657,7 +12684,7 @@ SLES-53439:
   name: "Crash Tag Team Racing"
   region: "PAL-M6"
   gameFixes:
-    - CrashTagTeamRacingIbitHack # Fixes constant recompilation problems.
+    - IbitHack # Fixes constant recompilation problems.
 SLES-53441:
   name: "Heroes of the Pacific"
   region: "PAL-M5"
@@ -14302,17 +14329,17 @@ SLES-54182:
   name: "Scarface - The World is Yours"
   region: "PAL-M4"
   gameFixes:
-    - ScarfaceIbitHack
+    - IbitHack
 SLES-54183:
   name: "Scarface - The World is Yours"
   region: "PAL-G"
   gameFixes:
-    - ScarfaceIbitHack
+    - IbitHack
 SLES-54184:
   name: "Scarface - The World is Yours"
   region: "PAL-R"
   gameFixes:
-    - ScarfaceIbitHack
+    - IbitHack
 SLES-54185:
   name: "Dirge of Cerberus - Final Fantasy VII"
   region: "PAL-M5"
@@ -14482,7 +14509,7 @@ SLES-54271:
   name: "Scarface - The World is Yours"
   region: "PAL-E"
   gameFixes:
-    - ScarfaceIbitHack
+    - IbitHack
 SLES-54305:
   name: "Demon Chaos"
   region: "PAL-M5"
@@ -15013,7 +15040,7 @@ SLES-54534:
   name: "Scarface - The World is Yours [Collector's Edition]"
   region: "PAL-E"
   gameFixes:
-    - ScarfaceIbitHack
+    - IbitHack
 SLES-54536:
   name: "Big Idea's VeggieTales - LarryBoy and the Bad Apple"
   region: "PAL-I"
@@ -16219,8 +16246,6 @@ SLES-55088:
 SLES-55090:
   name: "Naruto - Uzumaki Chronicles 2"
   region: "PAL-M5"
-  gameFixes:
-    - OPHFlagHack
 SLES-55091:
   name: "Hoppie"
   region: "PAL-E"
@@ -18024,8 +18049,6 @@ SLKA-25366:
   name: "Naruto - Uzumaki Chronicles 2"
   region: "NTSC-K"
   compat: 5
-  gameFixes:
-    - OPHFlagHack
 SLKA-25374:
   name: "FIFA Street 2"
   region: "NTSC-K"
@@ -23122,7 +23145,8 @@ SLPM-65948:
   name: "Enthusia Professional Racing"
   region: "NTSC-J"
   clampModes:
-    eeClampMode: 3
+    eeClampMode: 3 # Fixes Freezing at the start of the race
+    vuClampMode: 3 # Fixes Freezing at the start of the race
 SLPM-65949:
   name: "Get Ride! AM Driver - The Truth of Xiangke"
   region: "NTSC-J"
@@ -35803,7 +35827,7 @@ SLUS-21111:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - ScarfaceIbitHack
+    - IbitHack
 SLUS-21112:
   name: "L.A. Rush"
   region: "NTSC-U"
@@ -36138,7 +36162,7 @@ SLUS-21191:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - CrashTagTeamRacingIbitHack # Fixes constant recompilation problems.
+    - IbitHack # Fixes constant recompilation problems.
 SLUS-21192:
   name: "Cabela's Outdoor Adventures 2006"
   region: "NTSC-U"
@@ -37552,7 +37576,7 @@ SLUS-21492:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - ScarfaceIbitHack
+    - IbitHack
 SLUS-21493:
   name: "Need for Speed - Carbon"
   region: "NTSC-U"
@@ -37821,8 +37845,6 @@ SLUS-21594:
   name: "Naruto - Uzumaki Chronicles 2"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - OPHFlagHack
 SLUS-21595:
   name: "T.M.N.T. - Teenage Mutant Ninja Turtles"
   region: "NTSC-U"

@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "../net.h"
+#include "DEV9/net.h"
 #include "Payload.h"
 
 namespace PacketReader

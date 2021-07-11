@@ -27,7 +27,6 @@
 #include "PAD/Linux/PAD.h"
 #endif
 
-#include "Plugins.h"
 #include "ps2/BiosTools.h"
 
 #include "Dialogs/ModalPopups.h"
@@ -75,85 +74,7 @@ std::unique_ptr<AppConfig> g_Conf;
 AspectRatioType iniAR;
 bool switchAR;
 
-static bool HandlePluginError( BaseException& ex )
-{
-	if (!pxDialogExists(L"Dialog:" + Dialogs::ComponentsConfigDialog::GetNameStatic()))
-	{
-		if( !Msgbox::OkCancel( ex.FormatDisplayMessage() +
-				_("\n\nPress Ok to go to the Plugin Configuration Panel.")
-			) )
-		return false;
-	}
-	else
-	{
-		Msgbox::Alert(ex.FormatDisplayMessage());
-	}
-
-	g_Conf->ComponentsTabName = L"Plugins";
-
-	// TODO: Send a message to the panel to select the failed plugin.
-
-	return AppOpenModalDialog<Dialogs::ComponentsConfigDialog>(L"Plugins") != wxID_CANCEL;
-}
-
-class PluginErrorEvent : public pxExceptionEvent
-{
-	typedef pxExceptionEvent _parent;
-
-public:
-	PluginErrorEvent( BaseException* ex=NULL ) : _parent( ex ) {}
-	PluginErrorEvent( const BaseException& ex ) : _parent( ex ) {}
-
-	virtual ~PluginErrorEvent() = default;
-	virtual PluginErrorEvent *Clone() const { return new PluginErrorEvent(*this); }
-
-protected:
-	void InvokeEvent();
-};
-
-class PluginInitErrorEvent : public pxExceptionEvent
-{
-	typedef pxExceptionEvent _parent;
-
-public:
-	PluginInitErrorEvent( BaseException* ex=NULL ) : _parent( ex ) {}
-	PluginInitErrorEvent( const BaseException& ex ) : _parent( ex ) {}
-
-	virtual ~PluginInitErrorEvent() = default;
-	virtual PluginInitErrorEvent *Clone() const { return new PluginInitErrorEvent(*this); }
-
-protected:
-	void InvokeEvent();
-
-};
-
-void PluginErrorEvent::InvokeEvent()
-{
-	if( !m_except ) return;
-
-	ScopedExcept deleteMe( m_except );
-	m_except = NULL;
-
-	if( !HandlePluginError( *deleteMe ) )
-	{
-		Console.Error( L"User-canceled plugin configuration; Plugins not loaded!" );
-		Msgbox::Alert( _("Warning!  System plugins have not been loaded.  PCSX2 may be inoperable.") );
-	}
-}
-
-void PluginInitErrorEvent::InvokeEvent()
-{
-	if( !m_except ) return;
-
-	ScopedExcept deleteMe( m_except );
-	m_except = NULL;
-
-	if( !HandlePluginError( *deleteMe ) )
-	{
-		Console.Error( L"User-canceled plugin configuration after plugin initialization failure.  Plugins unloaded." );
-		Msgbox::Alert( _("Warning!  System plugins have not been loaded.  PCSX2 may be inoperable.") );
-	}
-}
+uptr pDsp[2];
 
 // Returns a string message telling the user to consult guides for obtaining a legal BIOS.
 // This message is in a function because it's used as part of several dialogs in PCSX2 (there
@@ -529,7 +450,6 @@ extern uint eecount_on_last_vdec;
 extern bool FMVstarted;
 extern bool EnableFMV;
 extern bool renderswitch;
-extern uint renderswitch_delay;
 
 void DoFmvSwitch(bool on)
 {
@@ -573,22 +493,20 @@ void Pcsx2App::LogicalVsync()
 		}
 	}
 
-	renderswitch_delay >>= 1;
-
-	// Only call PADupdate here if we're using GSopen2.  Legacy GSopen plugins have the
-	// GS window belonging to the MTGS thread.
-	if( (GSopen2 != NULL) && (wxGetApp().GetGsFramePtr() != NULL) )
+	if( (wxGetApp().GetGsFramePtr() != NULL) )
 		PADupdate(0);
 
 	while( const keyEvent* ev = PADkeyEvent() )
 	{
 		if( ev->key == 0 ) break;
 
-		// Give plugins first try to handle keys.  If none of them handles the key, it will
-		// be passed to the main user interface.
-
-		if( !GetCorePlugins().KeyEvent( *ev ) )
-			PadKeyDispatch( *ev );
+		// in the past, in the plugin api, all plugins would have a first chance at treating the 
+		// input here, with the ui eventually dealing with it otherwise. Obviously this solution
+		// sucked and we had multiple components battling for input processing. I managed to make
+		// most of them go away during the plugin merge but GS still needs to process the inputs,
+		// we might want to move all the input handling in a frontend-specific file in the future -- govanify
+		GSkeyEvent((GSKeyEventData*)ev);
+		PadKeyDispatch( *ev );
 	}
 }
 
@@ -673,43 +591,6 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 #endif
 
 		CoreThread.Resume();
-	}
-	// ----------------------------------------------------------------------------
-	catch( Exception::PluginOpenError& ex )
-	{
-		// It might be possible for there to be no GS Frame, but I don't really know. This does
-		// prevent PCSX2 from locking up on a Windows wxWidgets 3.0 build. My conjecture is this:
-		// 1. Messagebox appears
-		// 2. Either a close or hide signal for gsframe gets sent to messagebox.
-		// 3. Message box hides itself without exiting the modal event loop, therefore locking up
-		// PCSX2. This probably happened in the BIOS error case above as well.
-		// So the idea is to explicitly close the gsFrame before the modal MessageBox appears and
-		// intercepts the close message. Only for wx3.0 though - it sometimes breaks linux wx2.8.
-
-		if (GSFrame* gsframe = wxGetApp().GetGsFramePtr())
-			gsframe->Close();
-
-		Console.Error(ex.FormatDiagnosticMessage());
-
-		// Make sure it terminates properly for nogui users.
-		if (wxGetApp().HasGUI())
-			AddIdleEvent(PluginInitErrorEvent(ex));
-	}
-	// ----------------------------------------------------------------------------
-	catch( Exception::PluginInitError& ex )
-	{
-		ShutdownPlugins();
-
-		Console.Error( ex.FormatDiagnosticMessage() );
-		AddIdleEvent( PluginInitErrorEvent(ex) );
-	}
-	// ----------------------------------------------------------------------------
-	catch( Exception::PluginError& ex )
-	{
-		UnloadPlugins();
-
-		Console.Error( ex.FormatDiagnosticMessage() );
-		AddIdleEvent( PluginErrorEvent(ex) );
 	}
 	// ----------------------------------------------------------------------------
 	#if 0
@@ -842,8 +723,6 @@ void Pcsx2App::resetDebugger()
 		dlg->reset();
 }
 
-// NOTE: Plugins are *not* applied by this function.  Changes to plugins need to handled
-// manually.  The PluginSelectorPanel does this, for example.
 void AppApplySettings( const AppConfig* oldconf )
 {
 	AffinityAssert_AllowFrom_MainUI();
@@ -852,8 +731,8 @@ void AppApplySettings( const AppConfig* oldconf )
 
 	g_Conf->Folders.ApplyDefaults();
 
-	// Ensure existence of necessary documents folders.  Plugins and other parts
-	// of PCSX2 rely on them.
+	// Ensure existence of necessary documents folders.
+	// Other parts of PCSX2 rely on them.
 
 	g_Conf->Folders.MemoryCards.Mkdir();
 	g_Conf->Folders.Savestates.Mkdir();
@@ -870,8 +749,6 @@ void AppApplySettings( const AppConfig* oldconf )
 		wxDoNotLogInThisScope please;
 		i18n_SetLanguage( g_Conf->LanguageId, g_Conf->LanguageCode );
 	}
-	
-	CorePlugins.SetSettingsFolder( GetSettingsFolder().ToString() );
 
 	// Update the compression attribute on the Memcards folder.
 	// Memcards generally compress very well via NTFS compression.
@@ -981,7 +858,7 @@ void Pcsx2App::OpenGsPanel()
 		//   wxWidgets is "clever" (grr!) it optimizes out just force-setting the same size
 		//   over again, so instead I resize it to size-1 and then back to the original size.
 		//
-		// FIXME: Gsdx memory leaks in DX10 have been fixed.  This code may not be needed
+		// FIXME: GS memory leaks in DX10 have been fixed.  This code may not be needed
 		// anymore.
 		
 		const wxSize oldsize( gsFrame->GetSize() );
@@ -991,15 +868,14 @@ void Pcsx2App::OpenGsPanel()
 		gsFrame->SetSize( newsize );
 		gsFrame->SetSize( oldsize );
 	}
-	
-	pxAssertDev( !GetCorePlugins().IsOpen( PluginId_GS ), "GS Plugin must be closed prior to opening a new Gs Panel!" );
+
+    pxAssertDev( !gsopen_done, "GS must be closed prior to opening a new Gs Panel!" );
 
 #ifdef __WXGTK__
 	// The x window/display are actually very deeper in the widget. You need both display and window
 	// because unlike window there are unrelated. One could think it would be easier to send directly the GdkWindow.
 	// Unfortunately there is a race condition between gui and gs threads when you called the
-	// GDK_WINDOW_* macro. To be safe I think it is best to do here. It only cost a slight
-	// extension (fully compatible) of the plugins API. -- Gregory
+	// GDK_WINDOW_* macro. To be safe I think it is best to do here. -- Gregory
 
 	// GTK_PIZZA is an internal interface of wx, therefore they decide to
 	// remove it on wx 3. I tryed to replace it with gtk_widget_get_window but
@@ -1045,13 +921,6 @@ void Pcsx2App::CloseGsPanel()
 {
 	if (AppRpc_TryInvoke(&Pcsx2App::CloseGsPanel))
 		return;
-
-	if (CloseViewportWithPlugins)
-	{
-		if (GSFrame* gsFrame = GetGsFramePtr())
-			if (GSPanel* woot = gsFrame->GetViewport())
-				woot->Destroy();
-	}
 }
 
 void Pcsx2App::OnGsFrameClosed(wxWindowID id)
@@ -1144,10 +1013,6 @@ protected:
 	{
 		wxGetApp().ProcessMethod( AppSaveSettings );
 
-		// if something unloaded plugins since this messages was queued then it's best to ignore
-		// it, because apparently too much stuff is going on and the emulation states are wonky.
-		if( !CorePlugins.AreLoaded() ) return;
-
 		DbgCon.WriteLn( Color_Gray, "(SysExecute) received." );
 
 		CoreThread.ResetQuick();
@@ -1218,11 +1083,7 @@ void SysUpdateIsoSrcFile( const wxString& newIsoFile )
 
 void SysUpdateDiscSrcDrive( const wxString& newDiscDrive )
 {
-#if defined(_WIN32)
-	g_Conf->Folders.RunDisc = wxFileName::DirName(newDiscDrive);
-#else
-	g_Conf->Folders.RunDisc = wxFileName(newDiscDrive);
-#endif
+	g_Conf->Folders.RunDisc = newDiscDrive;
 	AppSaveSettings();
 	sMainFrame.UpdateCdvdSrcSelection();
 }

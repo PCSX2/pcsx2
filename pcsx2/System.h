@@ -19,9 +19,10 @@
 
 #include "Utilities/SafeArray.h"
 #include "Utilities/Threading.h"		// to use threading stuff, include the Threading namespace in your file.
-#include "Plugins.h"
 
 #include "vtlb.h"
+
+#include "Config.h"
 
 typedef SafeArray<u8> VmStateBuffer;
 

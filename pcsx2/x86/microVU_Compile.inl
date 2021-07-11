@@ -44,19 +44,23 @@ __fi void mVUcheckIsSame(mV) {
 // Sets up microProgram PC ranges based on whats been recompiled
 void mVUsetupRange(microVU& mVU, s32 pc, bool isStartPC) {
 	std::deque<microRange>*& ranges = mVUcurProg.ranges;
-	pc &= mVU.microMemSize - 8;
-
+	pxAssertDev(pc <= mVU.microMemSize, pxsFmt("microVU%d: PC outside of VU memory PC=0x%04x", mVU.index, pc));
 	if (isStartPC) { // Check if startPC is already within a block we've recompiled
 		std::deque<microRange>::const_iterator it(ranges->begin());
 		for ( ; it != ranges->end(); ++it) {
 			if ((pc >= it[0].start) && (pc <= it[0].end)) {
 				if (it[0].start != it[0].end)
-					return; // Last case makes sure its not a 1-opcode EvilBlock
+				{
+					microRange mRange = { it[0].start, it[0].end };
+					ranges->erase(it);
+					ranges->push_front(mRange);
+					return; // new start PC is inside the range of another range
+				}
 			}
 		}
 	}
-	else if (mVUrange.end != -1) {
-		// Above case was true
+	else if (mVUrange.end >= pc) {
+		// existing range covers more area than current PC so no need to process it
 		return;
 	}
 
@@ -75,23 +79,22 @@ void mVUsetupRange(microVU& mVU, s32 pc, bool isStartPC) {
 		std::deque<microRange>::iterator it(ranges->begin());
 		for (++it; it != ranges->end(); ++it) {
 			if((it[0].start >= rStart) && (it[0].start <= rEnd)) { // Starts after this prog but starts before the end of current prog
-				it[0].end   = std::max(it[0].end, rEnd);  // Extend the end of this prog to match this program
+				it[0].start = std::min(it[0].start, rStart); // Choose the earlier start
 				mergedRange = true;
 			}
 			// Make sure we check both as the start on the other one may be later, we don't want to delete that
 			if ((it[0].end >= rStart) && (it[0].end <= rEnd)) { // Ends after this prog starts but ends before this one ends
-				it[0].start = std::min(it[0].start, rStart); // Choose the earlier start
+				it[0].end = std::max(it[0].end, rEnd);  // Extend the end of this prog to match this program
 				mergedRange = true;
 			}
 		}
 		if (mergedRange) {
-			//DevCon.WriteLn(Color_Green, "microVU%d: Prog Range Merging", mVU.index);
 			ranges->erase(ranges->begin());
 		}
 	}
 	else {
-		DevCon.WriteLn(Color_Green, "microVU%d: Prog Range Wrap [%04x] [%d]", mVU.index, mVUrange.start, mVUrange.end);
 		mVUrange.end = mVU.microMemSize;
+		DevCon.WriteLn(Color_Green, "microVU%d: Prog Range Wrap [%04x] [%d]", mVU.index, mVUrange.start, mVUrange.end);
 		microRange mRange = {0, pc};
 		ranges->push_front(mRange);
 	}
@@ -109,7 +112,7 @@ void doIbit(mV) {
 	if (mVUup.iBit) { 
 		incPC(-1);
 		mVU.regAlloc->clearRegVF(33);
-		if (EmuConfig.Gamefixes.ScarfaceIbit || EmuConfig.Gamefixes.CrashTagTeamRacingIbit) {
+		if (EmuConfig.Gamefixes.IbitHack) {
 			xMOV(gprT1, ptr32[&curI]);
 			xMOV(ptr32[&mVU.getVI(REG_I)], gprT1);
 		}
@@ -511,8 +514,10 @@ void mVUDoDBit(microVU& mVU, microFlagCycles* mFC)
 {
 	xTEST(ptr32[&VU0.VI[REG_FBRST].UL], (isVU1 ? 0x400 : 0x4));
 	xForwardJump32 eJMP(Jcc_Zero);
-	xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x200 : 0x2));
-	xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
+	if (!isVU1 || !THREAD_VU1) {
+		xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x200 : 0x2));
+		xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
+	}
 	incPC(1);
 	mVUDTendProgram(mVU, mFC, 1);
 	incPC(-1);
@@ -523,8 +528,10 @@ void mVUDoTBit(microVU& mVU, microFlagCycles* mFC)
 {
 	xTEST(ptr32[&VU0.VI[REG_FBRST].UL], (isVU1 ? 0x800 : 0x8));
 	xForwardJump32 eJMP(Jcc_Zero);
-	xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x400 : 0x4));
-	xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
+	if (!isVU1 || !THREAD_VU1) {
+		xOR(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? 0x400 : 0x4));
+		xOR(ptr32[&mVU.regs().flags], VUFLAG_INTCINTERRUPT);
+	}
 	incPC(1);
 	mVUDTendProgram(mVU, mFC, 1);
 	incPC(-1);
@@ -580,6 +587,11 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 		if (curI & _Ibit_) {
 			mVUlow.isNOP = true;
 			mVUup.iBit = true;
+			if (EmuConfig.Gamefixes.IbitHack) {
+				mVUsetupRange(mVU, xPC, false);
+				if (branch < 2)
+					mVUsetupRange(mVU, xPC+8, true);  // Ideally we'd do +4 but the mmx compare only works in 64bits, this should be fine
+			}
 		}
 		else {
 			incPC(-1);
@@ -675,8 +687,8 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 				for (size_t i = 0; i < (sizeof(microRegInfo) - 4) / 4; i++, lpS++, cpS++) {
 					xMOV(ptr32[lpS], cpS[0]);
 				}
-				mVUsetupRange(mVU, xPC, false);
 				incPC(2);
+				mVUsetupRange(mVU, xPC, false);
 				mVUendProgram(mVU, &mFC, 0);
 				normBranchCompile(mVU, xPC);
 				incPC(-2);
@@ -689,7 +701,7 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 		}
 
 		if (isEvilBlock) {
-			mVUsetupRange(mVU, xPC, false);
+			mVUsetupRange(mVU, xPC+8, false);
 			normJumpCompile(mVU, mFC, true);
 			goto perf_and_return;
 		}
@@ -697,15 +709,16 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 			// Handle range wrapping
 			if ((xPC + 8) == mVU.microMemSize)
 			{
-				mVUsetupRange(mVU, xPC, false);
+				mVUsetupRange(mVU, xPC+8, false);
 				mVUsetupRange(mVU, 0, 1);
 			}
 			incPC(1);
 		}
 		else {
+			incPC(1);
 			mVUsetupRange(mVU, xPC, false);
 			mVUdebugPrintBlocks(mVU, true);
-			incPC(-3); // Go back to branch opcode
+			incPC(-4); // Go back to branch opcode
 
 			switch (mVUlow.branch) {
 			case 1: // B/BAL
@@ -742,7 +755,7 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 	}
 
 	// E-bit End
-	mVUsetupRange(mVU, xPC - 8, false);
+	mVUsetupRange(mVU, xPC, false);
 	mVUendProgram(mVU, &mFC, 1);
 
 perf_and_return:

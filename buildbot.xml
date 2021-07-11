@@ -1,9 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="ReleaseAll" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!-- Add all the projects that use the non-standard configurations here. -->
-  <ItemGroup>
-    <TargetsSetCPU Include="plugins\GSdx"/>
-  </ItemGroup>
   <!-- Add all the solutions here. -->
   <ItemGroup>
     <SolutionSet Include="$(MSBuildProjectDirectory)\PCSX2_suite.sln" />
@@ -20,8 +16,11 @@
       CreateHardLinksForPublishFilesIfPossible=$(CreateHardLinksIfPossible);
     </CompileFastPlz>
   </PropertyGroup>
+  <PropertyGroup>
+    <RetainDebuggingArtifacts Condition="'$(RetainDebuggingArtifacts)' == ''">false</RetainDebuggingArtifacts>
+  </PropertyGroup>
   <!-- Add all the custom targets here. -->
-  <Target Name="CleanBloat" AfterTargets="InternalBuild">
+  <Target Name="CleanBloat" AfterTargets="InternalBuild" Condition="'$(RetainDebuggingArtifacts)' == 'false'">
     <ItemGroup>
       <BloatToDelete Include="$(MSBuildProjectDirectory)\bin\**\*.bsc"/>
       <BloatToDelete Include="$(MSBuildProjectDirectory)\bin\**\*.exp"/>
@@ -52,8 +51,7 @@
       <BaseConfiguration>Debug</BaseConfiguration>
     </PropertyGroup>
     <ItemGroup>
-      <ConfigCPU Include="Debug"/>
-      <!--ConfigCPU Include="Debug AVX2;Debug"/-->
+      <ConfigCPU Include="Debug AVX2;Debug"/>
     </ItemGroup>
   </Target>
   <Target Name="DevelAll">
@@ -61,8 +59,7 @@
       <BaseConfiguration>Devel</BaseConfiguration>
     </PropertyGroup>
     <ItemGroup>
-      <ConfigCPU Include="Devel"/>
-      <!--ConfigCPU Include="Devel AVX2;Devel"/-->
+      <ConfigCPU Include="Devel AVX2;Devel"/>
     </ItemGroup>
   </Target>
   <Target Name="ReleaseAll">

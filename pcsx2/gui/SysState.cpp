@@ -38,13 +38,86 @@
 
 #include "Patch.h"
 
-// Used to hold the current state backup (fullcopy of PS2 memory and plugin states).
+// Used to hold the current state backup (fullcopy of PS2 memory and subcomponents states).
 //static VmStateBuffer state_buffer( L"Public Savestate Buffer" );
 
 static const wxChar* EntryFilename_StateVersion = L"PCSX2 Savestate Version.id";
 static const wxChar* EntryFilename_Screenshot = L"Screenshot.jpg";
 static const wxChar* EntryFilename_InternalStructures = L"PCSX2 Internal Structures.dat";
 
+struct SysState_Component
+{
+	const char* name;
+	int (*freeze)(int, freezeData*);
+};
+
+int SysState_MTGSFreeze(int mode, freezeData* fP)
+{
+	ScopedCoreThreadPause paused_core;
+	MTGS_FreezeData sstate = {fP, 0};
+	GetMTGS().Freeze(mode, sstate);
+	paused_core.AllowResume();
+	return sstate.retval;
+}
+
+static constexpr SysState_Component SPU2{"SPU2", SPU2freeze};
+static constexpr SysState_Component PAD{"PAD", PADfreeze};
+static constexpr SysState_Component USB{"USB", USBfreeze};
+static constexpr SysState_Component GS{"GS", SysState_MTGSFreeze};
+
+
+void SysState_ComponentFreezeOutRoot(void* dest, SysState_Component comp)
+{
+	freezeData fP = {0, (char*)dest};
+	if (comp.freeze(FREEZE_SIZE, &fP) != 0)
+		return;
+	if (!fP.size)
+		return;
+
+	Console.Indent().WriteLn("Saving %s", comp.name);
+
+	if (comp.freeze(FREEZE_SAVE, &fP) != 0)
+		throw std::runtime_error(std::string(" * ") + comp.name + std::string(": Error saving state!\n"));
+}
+
+void SysState_ComponentFreezeIn(pxInputStream& infp, SysState_Component comp)
+{
+	freezeData fP = {0, nullptr};
+	if (comp.freeze(FREEZE_SIZE, &fP) != 0)
+		fP.size = 0;
+
+	Console.Indent().WriteLn("Loading %s", comp.name);
+
+	if (!infp.IsOk() || !infp.Length())
+	{
+		// no state data to read, but component expects some state data?
+		// Issue a warning to console...
+		if (fP.size != 0)
+			Console.Indent().Warning("Warning: No data for %s found. Status may be unpredictable.", comp.name);
+
+		return;
+	}
+
+	ScopedAlloc<s8> data(fP.size);
+	fP.data = data.GetPtr();
+
+	infp.Read(fP.data, fP.size);
+	if (comp.freeze(FREEZE_LOAD, &fP) != 0)
+		throw std::runtime_error(std::string(" * ") + comp.name + std::string(": Error loading state!\n"));
+}
+
+void SysState_ComponentFreezeOut(SaveStateBase& writer, SysState_Component comp)
+{
+	freezeData fP = {0, NULL};
+	if (comp.freeze(FREEZE_SIZE, &fP) == 0)
+	{
+		const int size = fP.size;
+		writer.PrepBlock(size);
+		SysState_ComponentFreezeOutRoot(writer.GetBlockPtr(), comp);
+		writer.CommitBlock(size);
+	}
+	return;
+}
 
 // --------------------------------------------------------------------------------------
 //  BaseSavestateEntry
@@ -79,29 +152,6 @@ protected:
 	virtual uint GetDataSize() const = 0;
 };
 
-class PluginSavestateEntry : public BaseSavestateEntry
-{
-protected:
-	PluginsEnum_t m_pid;
-
-public:
-	PluginSavestateEntry(PluginsEnum_t pid)
-	{
-		m_pid = pid;
-	}
-
-	virtual ~PluginSavestateEntry() = default;
-
-	virtual wxString GetFilename() const;
-	virtual void FreezeIn(pxInputStream& reader) const;
-	virtual void FreezeOut(SaveStateBase& writer) const;
-
-	virtual bool IsRequired() const { return false; }
-
-protected:
-	virtual PluginsEnum_t GetPluginId() const { return m_pid; }
-};
-
 void MemorySavestateEntry::FreezeIn(pxInputStream& reader) const
 {
 	const uint entrySize = reader.Length();
@@ -120,26 +170,6 @@ void MemorySavestateEntry::FreezeIn(pxInputStream& reader) const
 void MemorySavestateEntry::FreezeOut(SaveStateBase& writer) const
 {
 	writer.FreezeMem(GetDataPtr(), GetDataSize());
-}
-
-wxString PluginSavestateEntry::GetFilename() const
-{
-	return pxsFmt("Plugin %s.dat", tbl_PluginInfo[m_pid].shortname);
-}
-
-void PluginSavestateEntry::FreezeIn(pxInputStream& reader) const
-{
-	GetCorePlugins().FreezeIn(GetPluginId(), reader);
-}
-
-void PluginSavestateEntry::FreezeOut(SaveStateBase& writer) const
-{
-	if (uint size = GetCorePlugins().GetFreezeSize(GetPluginId()))
-	{
-		writer.PrepBlock(size);
-		GetCorePlugins().FreezeOut(GetPluginId(), writer.GetBlockPtr());
-		writer.CommitBlock(size);
-	}
 }
 
 // --------------------------------------------------------------------------------------
@@ -253,19 +283,8 @@ public:
 	virtual ~SavestateEntry_SPU2() = default;
 
 	wxString GetFilename() const { return L"SPU2.bin"; }
-	void FreezeIn(pxInputStream& reader) const { return SPU2DoFreezeIn(reader); }
-	void FreezeOut(SaveStateBase& writer) const
-	{
-		freezeData fP = {0, NULL};
-		if (SPU2freeze(FREEZE_SIZE, &fP) == 0)
-		{
-			const int size = fP.size;
-			writer.PrepBlock(size);
-			SPU2DoFreezeOut(writer.GetBlockPtr());
-			writer.CommitBlock(size);
-		}
-		return;
-	}
+	void FreezeIn(pxInputStream& reader) const { return SysState_ComponentFreezeIn(reader, SPU2); }
+	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, SPU2); }
 	bool IsRequired() const { return true; }
 };
 
@@ -275,19 +294,8 @@ public:
 	virtual ~SavestateEntry_USB() = default;
 
 	wxString GetFilename() const { return L"USB.bin"; }
-	void FreezeIn(pxInputStream& reader) const { return USBDoFreezeIn(reader); }
-	void FreezeOut(SaveStateBase& writer) const
-	{
-		freezeData fP = {0, NULL};
-		if (USBfreeze(FREEZE_SIZE, &fP) == 0)
-		{
-			const int size = fP.size;
-			writer.PrepBlock(size);
-			USBDoFreezeOut(writer.GetBlockPtr());
-			writer.CommitBlock(size);
-		}
-		return;
-	}
+	void FreezeIn(pxInputStream& reader) const { return SysState_ComponentFreezeIn(reader, USB); }
+	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, USB); }
 	bool IsRequired() const { return true; }
 };
 
@@ -297,28 +305,24 @@ public:
 	virtual ~SavestateEntry_PAD() = default;
 
 	wxString GetFilename() const { return L"PAD.bin"; }
-	void FreezeIn(pxInputStream& reader) const { return PADDoFreezeIn(reader); }
-	void FreezeOut(SaveStateBase& writer) const
-	{
-		freezeData fP = {0, NULL};
-		if (PADfreeze(FREEZE_SIZE, &fP) == 0)
-		{
-			const int size = fP.size;
-			writer.PrepBlock(size);
-			PADDoFreezeOut(writer.GetBlockPtr());
-			writer.CommitBlock(size);
-		}
-		return;
-	}
+	void FreezeIn(pxInputStream& reader) const { return SysState_ComponentFreezeIn(reader, PAD); }
+	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, PAD); }
+	bool IsRequired() const { return true; }
+};
+
+class SavestateEntry_GS : public BaseSavestateEntry
+{
+public:
+	virtual ~SavestateEntry_GS() = default;
+
+	wxString GetFilename() const { return L"GS.bin"; }
+	void FreezeIn(pxInputStream& reader) const { return SysState_ComponentFreezeIn(reader, GS); }
+	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, GS); }
 	bool IsRequired() const { return true; }
 };
 
 
 
-// [TODO] : Add other components as files to the savestate gzip?
-//  * VU0/VU1 memory banks?  VU0prog, VU1prog, VU0data, VU1data.
-//  * GS register data?
-//  * Individual plugins?
 // (cpuRegs, iopRegs, VPU/GIF/DMAC structures should all remain as part of a larger unified
 //  block, since they're all PCSX2-dependent and having separate files in the archie for them
 //  would not be useful).
@@ -337,8 +341,7 @@ static const std::unique_ptr<BaseSavestateEntry> SavestateEntries[] = {
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_SPU2),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_USB),
 	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_PAD),
-
-	std::unique_ptr<BaseSavestateEntry>(new PluginSavestateEntry(PluginId_GS)),
+	std::unique_ptr<BaseSavestateEntry>(new SavestateEntry_GS),
 };
 
 // It's bad mojo to have savestates trying to read and write from the same file at the
@@ -770,3 +773,4 @@ void StateCopy_LoadFromSlot(uint slot, bool isFromBackup)
 	UI_UpdateSysControls();
 #endif
 }
+

@@ -93,11 +93,9 @@ class FirstTimeWizard : public wxWizard
 
 protected:
 	wxWizardPageSimple& m_page_intro;
-	wxWizardPageSimple& m_page_plugins;
 	wxWizardPageSimple& m_page_bios;
 
 	wxPanelWithHelpers& m_panel_Intro;
-	Panels::PluginSelectorPanel& m_panel_PluginSel;
 	Panels::BiosSelectorPanel& m_panel_BiosSel;
 
 public:
@@ -105,11 +103,6 @@ public:
 	virtual ~FirstTimeWizard() = default;
 
 	wxWizardPage* GetFirstPage() const { return &m_page_intro; }
-
-	void ForceEnumPlugins()
-	{
-		m_panel_PluginSel.OnShown();
-	}
 
 	int ShowModal();
 

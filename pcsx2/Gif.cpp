@@ -44,7 +44,7 @@ __fi void clearFIFOstuff(bool full) {
 		CSRreg.FIFO = full ? CSR_FIFO_FULL : CSR_FIFO_EMPTY;
 }
 
-//I suspect this is GS side which should really be handled by the GS plugin which also doesn't current have a fifo, but we can guess from our fifo
+//I suspect this is GS side which should really be handled by GS which also doesn't current have a fifo, but we can guess from our fifo
 static __fi void CalculateFIFOCSR() {
 	if (gifRegs.stat.FQC >= 15) {
 		CSRreg.FIFO = CSR_FIFO_FULL;

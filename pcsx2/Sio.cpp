@@ -47,9 +47,8 @@ static const u8 memcard_psx[] = {0x5A, 0x5D, 0x5C, 0x5D, 0x04, 0x00, 0x00, 0x80}
 // FIXME variable commented out since it's not used atm.
 // static const mc_command_0x26_tag mc_sizeinfo_8mb= {'+', 512, 16, 0x4000, 0x52, 0x5A};
 
-// Ejection timeout management belongs in the MemoryCardFile plugin, except the plugin
-// interface is not yet complete.
-
+// Ejection timeout management belongs in MemoryCardFile
+//
 //Reinsert the card after auto-eject: after max tries or after min tries + XXX milliseconds, whichever comes first.
 //E.g. if the game polls the card 100 times/sec and max tries=100, then after 1 second it will see the card as inserted (ms timeout not reached).
 //E.g. if the game polls the card 1 time/sec, then it will see the card ejected 4 times, and on the 5th it will see it as inserted (4 secs from the initial access).
@@ -604,8 +603,7 @@ SIO_WRITE memcardInit()
 {
 	mcd = &mcds[sio.GetPort()][sio.GetSlot()];
 
-	// forced ejection logic.  Technically belongs in the McdIsPresent handler for
-	// the plugin, once the memorycard plugin system is completed.
+	// forced ejection logic.  Technically belongs in the McdIsPresent handler.
 
 	bool forceEject = false;
 
@@ -678,7 +676,7 @@ SIO_WRITE sioWriteMemcard(u8 data)
 				sio2.packet.recvVal3 = 0x83;
 
 				mc_command_0x26_tag cmd;
-				PS2E_McdSizeInfo info;
+				McdSizeInfo info;
 
 				mcd->GetSizeInfo(info);
 
@@ -1035,10 +1033,6 @@ void SaveStateBase::sioFreeze()
 
 	FreezeTag( "sio" );
 	Freeze( sio );
-
-	// TODO : This stuff should all be moved to the memorycard plugin eventually,
-	// but that requires adding memorycard plugin to the savestate, and I'm not in
-	// the mood to do that (let's plan it for 0.9.8) --air
 
 	if( IsSaving() )
 	{

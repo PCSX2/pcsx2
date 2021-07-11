@@ -19,8 +19,8 @@
 #include "usb-eyetoy-webcam.h"
 #include "jo_mpeg.h"
 
-#include "../Win32/Config_usb.h"
-#include "../Win32/resource_usb.h"
+#include "USB/Win32/Config_usb.h"
+#include "USB/Win32/resource_usb.h"
 
 namespace usb_eyetoy
 {
@@ -471,7 +471,7 @@ namespace usb_eyetoy
 		{
 			mpeg_mutex.lock();
 			int len2 = mpeg_buffer.length;
-			if (len < mpeg_buffer.length)
+			if ((unsigned int)len < mpeg_buffer.length)
 				len2 = len;
 			memcpy(buf, mpeg_buffer.start, len2);
 			mpeg_buffer.length = 0;

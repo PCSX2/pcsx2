@@ -19,7 +19,6 @@
 #include "Utilities/EventSource.inl"
 
 template class EventSource< IEventListener_CoreThread >;
-template class EventSource< IEventListener_Plugins >;
 template class EventSource< IEventListener_AppStatus >;
 
 AppSettingsEventInfo::AppSettingsEventInfo( IniInterface& ini, AppEventType evt_type )
@@ -49,33 +48,6 @@ void IEventListener_CoreThread::DispatchEvent( const CoreThreadStatus& status )
 		case CoreThread_Suspended:	CoreThread_OnSuspended();		break;
 		case CoreThread_Reset:		CoreThread_OnReset();			break;
 		case CoreThread_Stopped:	CoreThread_OnStopped();			break;
-		
-		jNO_DEFAULT;
-	}
-}
-
-EventListener_Plugins::EventListener_Plugins()
-{
-	wxGetApp().AddListener( this );
-}
-
-EventListener_Plugins::~EventListener_Plugins()
-{
-	wxGetApp().RemoveListener( this );
-}
-
-void IEventListener_Plugins::DispatchEvent( const PluginEventType& pevt )
-{
-	switch( pevt )
-	{
-		case CorePlugins_Loaded:	CorePlugins_OnLoaded();		break;
-		case CorePlugins_Init:		CorePlugins_OnInit();		break;
-		case CorePlugins_Opening:	CorePlugins_OnOpening();	break;
-		case CorePlugins_Opened:	CorePlugins_OnOpened();		break;
-		case CorePlugins_Closing:	CorePlugins_OnClosing();	break;
-		case CorePlugins_Closed:	CorePlugins_OnClosed();		break;
-		case CorePlugins_Shutdown:	CorePlugins_OnShutdown();	break;
-		case CorePlugins_Unloaded:	CorePlugins_OnUnloaded();	break;
 		
 		jNO_DEFAULT;
 	}
@@ -115,13 +87,6 @@ void IEventListener_AppStatus::DispatchEvent( const AppEventInfo& evtinfo )
 	}
 }
 
-
-void Pcsx2App::DispatchEvent( PluginEventType evt )
-{
-	if( !AffinityAssert_AllowFrom_MainUI() ) return;
-	m_evtsrc_CorePluginStatus.Dispatch( evt );
-}
-
 void Pcsx2App::DispatchEvent( AppEventType evt )
 {
 	if( !AffinityAssert_AllowFrom_MainUI() ) return;
@@ -147,8 +112,8 @@ void Pcsx2App::DispatchEvent( CoreThreadStatus evt )
 			break;
 	}
 
-	// Clear the sticky key statuses, because hell knows what'll change while the PAD
-	// plugin is suspended.
+	// Clear the sticky key statuses, because hell knows what'll change while PAD
+	// is suspended.
 
 	m_kevt.m_shiftDown		= false;
 	m_kevt.m_controlDown	= false;

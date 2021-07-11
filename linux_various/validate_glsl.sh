@@ -38,7 +38,7 @@ Help:
     --input <file>         : input glsl file (mandatory)
     --macro <name> <value> : set a macro. Can be repeated
     --entry <name>         : set an entry point. Note: print the ASM output of the program
-    --test_dx              : test of gsdx glsl file
+    --test_gs              : test of gs glsl file
     --nofrag               : disable fragment processing
     --novert               : disable vertex processing
 EOF
@@ -51,7 +51,7 @@ case $1 in
     --input|--i) INPUT=$2; shift 2;;
     --macro|--m) MACRO="${MACRO}#define $2 $3\n"; shift 3;;
     --entry|--e) ENTRY="-entry $2";shift 2;;
-    --test_dx )  TEST_GSDX=1; shift 1;;
+    --test_gs )  TEST_GS=1; shift 1;;
     --nofrag)    NOFRAG=1; shift 1;;
     --novert)    NOVERT=1; shift 1;;
 
@@ -114,7 +114,7 @@ fragment_test()
 # Main
 ######################################################
 
-if [ "$TEST_GSDX" = '1' ] ; then
+if [ "$TEST_GS" = '1' ] ; then
     echo "not yet implemented"
     # A very big shader example (124 instructions!)
     ./validate_glsl.sh --input $INPUT --novert --entry ps_main --macro PS_TCC 0 --macro PS_TFX 0 --macro PS_IIP 1 --macro PS_ATST 4 --macro PS_FST 1 --macro PS_BLEND 4 --macro PS_COLCLIP 3 --macro PS_SHUFFLE 1 --macro PS_LTF 1 --macro PS_FMT 6 --macro PS_AEM 0 --macro PS_FBMASK 1 --macro PS_FOG 1 --macro PS_WMS 2 --macro PS_WMT 3

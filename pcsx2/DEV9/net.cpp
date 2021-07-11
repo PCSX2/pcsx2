@@ -54,7 +54,8 @@ void NetRxThread()
 				Console.Error("DEV9: rx_fifo_can_rx() false after nif->recv(), dropping");
 		}
 
-		std::this_thread::yield();
+		using namespace std::chrono_literals;
+		std::this_thread::sleep_for(1ms);
 	}
 }
 

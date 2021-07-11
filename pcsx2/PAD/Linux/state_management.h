@@ -13,11 +13,28 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "PAD.h"
+#pragma once
+
+#include "Global.h"
 
 #define MODE_DIGITAL 0x41
 #define MODE_ANALOG 0x73
 #define MODE_DS2_NATIVE 0x79
+
+enum PadCommands
+{
+	CMD_SET_VREF_PARAM = 0x40,
+	CMD_QUERY_DS2_ANALOG_MODE = 0x41,
+	CMD_READ_DATA_AND_VIBRATE = 0x42,
+	CMD_CONFIG_MODE = 0x43,
+	CMD_SET_MODE_AND_LOCK = 0x44,
+	CMD_QUERY_MODEL_AND_MODE = 0x45,
+	CMD_QUERY_ACT = 0x46,  // ??
+	CMD_QUERY_COMB = 0x47, // ??
+	CMD_QUERY_MODE = 0x4C, // QUERY_MODE ??
+	CMD_VIBRATION_TOGGLE = 0x4D,
+	CMD_SET_DS2_NATIVE_MODE = 0x4F // SET_DS2_NATIVE_MODE
+};
 
 // The state of the PS2 bus
 struct QueryInfo
@@ -95,7 +112,7 @@ public:
 };
 
 // Full state to manage save state
-struct PadPluginFreezeData
+struct PadFullFreezeData
 {
 	char format[8];
 	u32 version;

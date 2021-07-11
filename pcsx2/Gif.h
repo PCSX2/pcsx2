@@ -59,32 +59,6 @@ enum GIF_PATH_STATE {
 	GIF_PATH_WAIT	 = 4  // Used only by PATH3 to simulate packet length (Path 3 Masking)
 };
 
-enum GIF_FLG {
-	GIF_FLG_PACKED	= 0,
-	GIF_FLG_REGLIST	= 1,
-	GIF_FLG_IMAGE	= 2,
-	GIF_FLG_IMAGE2	= 3
-};
-
-enum GIF_REG {
-	GIF_REG_PRIM	= 0x00,
-	GIF_REG_RGBA	= 0x01,
-	GIF_REG_STQ		= 0x02,
-	GIF_REG_UV		= 0x03,
-	GIF_REG_XYZF2	= 0x04,
-	GIF_REG_XYZ2	= 0x05,
-	GIF_REG_TEX0_1	= 0x06,
-	GIF_REG_TEX0_2	= 0x07,
-	GIF_REG_CLAMP_1	= 0x08,
-	GIF_REG_CLAMP_2	= 0x09,
-	GIF_REG_FOG		= 0x0a,
-	GIF_REG_INVALID	= 0x0b,
-	GIF_REG_XYZF3	= 0x0c,
-	GIF_REG_XYZ3	= 0x0d,
-	GIF_REG_A_D		= 0x0e,
-	GIF_REG_NOP		= 0x0f,
-};
-
 enum gifstate_t {
 	GIF_STATE_READY = 0,
 	GIF_STATE_EMPTY = 0x10

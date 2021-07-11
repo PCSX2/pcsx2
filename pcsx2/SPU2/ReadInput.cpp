@@ -51,6 +51,24 @@ StereoOut32 V_Core::ReadInput_HiFi()
 		retval.Right >>= 4;
 	}
 
+	// Simulate MADR increase, GTA VC tracks the MADR address for calculating a certain point in the buffer
+	if (InputDataTransferred)
+	{
+		u32 amount = std::min(InputDataTransferred, (u32)0x180);
+
+		InputDataTransferred -= amount;
+		MADR += amount;
+		// Because some games watch the MADR to see when it reaches the end we need to end the DMA here
+		// Tom & Jerry War of the Whiskers is one such game, the music will skip
+		if (!InputDataTransferred && !InputDataLeft)
+		{
+			if (Index == 0)
+				spu2DMA4Irq();
+			else
+				spu2DMA7Irq();
+		}
+	}
+
 	if (ReadIndex == 0x100 || ReadIndex == 0x0 || ReadIndex == 0x80 || ReadIndex == 0x180)
 	{
 		if (ReadIndex == 0x100)
@@ -75,8 +93,6 @@ StereoOut32 V_Core::ReadInput_HiFi()
 				}
 
 				InputDataLeft = 0;
-				DMAICounter = InputDataTransferred * 4;
-				LastClock = *cyclePtr;
 			}
 		}
 		else if ((AutoDMACtrl & (Index + 1)))

@@ -15,16 +15,31 @@
 
 #pragma once
 
-// NOTICE!  This file is intended as a temporary placebo only, until such time that the
-// memorycard system is properly extracted into a plugin system (which would make it a
-// separate project file).
-//
-// Please do not move contents from MemoryCardfile.cpp, such as class definitions, into 
-// this file.  I'd prefer they stay in MemoryCardFile.cpp for now. --air
+struct McdSizeInfo
+{
+	u16 SectorSize; // Size of each sector, in bytes.  (only 512 and 1024 are valid)
+	u16 EraseBlockSizeInSectors; // Size of the erase block, in sectors (max is 16)
+	u32 McdSizeInSectors; // Total size of the card, in sectors (no upper limit)
+	u8 Xor; // Checksum of previous data
+};
 
 extern uint FileMcd_GetMtapPort(uint slot);
 extern uint FileMcd_GetMtapSlot(uint slot);
-extern bool FileMcd_IsMultitapSlot( uint slot );
+extern bool FileMcd_IsMultitapSlot(uint slot);
 //extern wxFileName FileMcd_GetSimpleName(uint slot);
 extern wxString FileMcd_GetDefaultName(uint slot);
-extern bool isValidNewFilename( wxString filenameStringToTest, wxDirName atBasePath, wxString& out_errorMessage, uint minNumCharacters=5 );
+extern bool isValidNewFilename(wxString filenameStringToTest, wxDirName atBasePath, wxString& out_errorMessage, uint minNumCharacters = 5);
+
+
+uint FileMcd_ConvertToSlot(uint port, uint slot);
+void FileMcd_EmuOpen();
+void FileMcd_EmuClose();
+s32 FileMcd_IsPresent(uint port, uint slot);
+void FileMcd_GetSizeInfo(uint port, uint slot, McdSizeInfo* outways);
+bool FileMcd_IsPSX(uint port, uint slot);
+s32 FileMcd_Read(uint port, uint slot, u8* dest, u32 adr, int size);
+s32 FileMcd_Save(uint port, uint slot, const u8* src, u32 adr, int size);
+s32 FileMcd_EraseBlock(uint port, uint slot, u32 adr);
+u64 FileMcd_GetCRC(uint port, uint slot);
+void FileMcd_NextFrame(uint port, uint slot);
+bool FileMcd_ReIndex(uint port, uint slot, const wxString& filter);

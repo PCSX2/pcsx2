@@ -85,7 +85,7 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel(wxWindow* parent)
 								 L"CTRL + NUMPAD-PLUS: Zoom-In, \n"
 								 L"CTRL + NUMPAD-MINUS: Zoom-Out, \nCTRL + NUMPAD-*: Toggle 100/0"));
 
-	m_combo_vsync->SetToolTip(pxEt(L"Vsync eliminates screen tearing but typically has a big performance hit. It usually only applies to fullscreen mode, and may not work with all GS plugins."));
+	m_combo_vsync->SetToolTip(pxEt(L"Vsync eliminates screen tearing but typically has a big performance hit. It usually only applies to fullscreen mode."));
 
 	m_check_HideMouse->SetToolTip(pxEt(L"Check this to force the mouse cursor invisible inside the GS window; useful if using the mouse as a primary control device for gaming.  By default the mouse auto-hides after 2 seconds of inactivity."));
 

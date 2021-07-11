@@ -14,7 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "../CDVDdiscReader.h"
+#include "CDVD/CDVDdiscReader.h"
 
 std::vector<std::wstring> GetOpticalDriveList()
 {
@@ -41,23 +41,19 @@ void GetValidDrive(std::wstring& drive)
 		auto drives = GetOpticalDriveList();
 		if (drives.empty())
 		{
-			drive = {};
+			drive.clear();
+			return;
 		}
-		else
-		{
-			drive = drives.front();
-		}
+		drive = drives.front();
 	}
-	else
-	{
-		int size = WideCharToMultiByte(CP_UTF8, 0, drive.c_str(), -1, nullptr, 0, nullptr, nullptr);
-		std::vector<char> converted_string(size);
-		WideCharToMultiByte(CP_UTF8, 0, drive.c_str(), -1, converted_string.data(), converted_string.size(), nullptr, nullptr);
-		printf(" * CDVD: Opening drive '%s'...\n", converted_string.data());
 
-		// The drive string has the form "X:\", but to open the drive, the string
-		// has to be in the form "\\.\X:"
-		drive.pop_back();
-		drive.insert(0, L"\\\\.\\");
-	}
+	int size = WideCharToMultiByte(CP_UTF8, 0, drive.c_str(), -1, nullptr, 0, nullptr, nullptr);
+	std::vector<char> converted_string(size);
+	WideCharToMultiByte(CP_UTF8, 0, drive.c_str(), -1, converted_string.data(), converted_string.size(), nullptr, nullptr);
+	printf(" * CDVD: Opening drive '%s'...\n", converted_string.data());
+
+	// The drive string has the form "X:\", but to open the drive, the string
+	// has to be in the form "\\.\X:"
+	drive.pop_back();
+	drive.insert(0, L"\\\\.\\");
 }

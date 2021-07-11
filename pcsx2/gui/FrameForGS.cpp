@@ -43,9 +43,11 @@
 #include <sstream>
 #include <iomanip>
 
+//#define GSWindowScaleDebug
+
 static const KeyAcceleratorCode FULLSCREEN_TOGGLE_ACCELERATOR_GSPANEL=KeyAcceleratorCode( WXK_RETURN ).Alt();
 
-//#define GSWindowScaleDebug
+extern std::atomic_bool init_gspanel;
 
 void GSPanel::InitDefaultAccelerators()
 {
@@ -311,6 +313,11 @@ void GSPanel::OnResize(wxSizeEvent& event)
 
 void GSPanel::OnCloseWindow(wxCloseEvent& evt)
 {
+	// CoreThread pausing calls MTGS suspend which calls GSPanel close on
+	// the main thread leading to event starvation. This prevents regenerating
+	// a frame handle when the user closes the window, which prevents this race
+	// condition. -- govanify
+	init_gspanel = false;
 	CoreThread.Suspend();
 	evt.Skip();		// and close it.
 }
@@ -326,48 +333,52 @@ void GSPanel::OnMouseEvent( wxMouseEvent& evt )
 	}
 
 #if defined(__unix__)
-	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
+	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
-	if( (GSopen2 != NULL) ) {
-		keyEvent event;
-		// FIXME how to handle double click ???
-		if (evt.ButtonDown()) {
-			event.evt = 4; // X equivalent of ButtonPress
-			event.key = evt.GetButton();
-		} else if (evt.ButtonUp()) {
-			event.evt = 5; // X equivalent of ButtonRelease
-			event.key = evt.GetButton();
-		} else if (evt.Moving() || evt.Dragging()) {
-			event.evt = 6; // X equivalent of MotionNotify
-			long x,y;
-			evt.GetPosition(&x, &y);
-
-			wxCoord w, h;
-			wxWindowDC dc( this );
-			dc.GetSize(&w, &h);
-
-			// Special case to allow continuous mouvement near the border
-			if (x < 10)
-				x = 0;
-			else if (x > (w-10))
-				x = 0xFFFF;
-
-			if (y < 10)
-				y = 0;
-			else if (y > (w-10))
-				y = 0xFFFF;
-
-			// For compatibility purpose with the existing structure. I decide to reduce
-			// the position to 16 bits.
-			event.key = ((y & 0xFFFF) << 16) | (x & 0xFFFF);
-
-		} else {
-			event.key = 0;
-			event.evt = 0;
-		}
-
-		PADWriteEvent(event);
+	keyEvent event;
+	// FIXME how to handle double click ???
+	if (evt.ButtonDown())
+	{
+		event.evt = 4; // X equivalent of ButtonPress
+		event.key = evt.GetButton();
 	}
+	else if (evt.ButtonUp())
+	{
+		event.evt = 5; // X equivalent of ButtonRelease
+		event.key = evt.GetButton();
+	}
+	else if (evt.Moving() || evt.Dragging())
+	{
+		event.evt = 6; // X equivalent of MotionNotify
+		long x, y;
+		evt.GetPosition(&x, &y);
+
+		wxCoord w, h;
+		wxWindowDC dc(this);
+		dc.GetSize(&w, &h);
+
+		// Special case to allow continuous mouvement near the border
+		if (x < 10)
+			x = 0;
+		else if (x > (w - 10))
+			x = 0xFFFF;
+
+		if (y < 10)
+			y = 0;
+		else if (y > (w - 10))
+			y = 0xFFFF;
+
+		// For compatibility purpose with the existing structure. I decide to reduce
+		// the position to 16 bits.
+		event.key = ((y & 0xFFFF) << 16) | (x & 0xFFFF);
+	}
+	else
+	{
+		event.key = 0;
+		event.evt = 0;
+	}
+
+	PADWriteEvent(event);
 #endif
 }
 
@@ -383,32 +394,30 @@ void GSPanel::OnHideMouseTimeout( wxTimerEvent& evt )
 void GSPanel::OnKeyDownOrUp( wxKeyEvent& evt )
 {
 
-	// HACK: Legacy PAD plugins expect PCSX2 to ignore keyboard messages on the GS Window while
-	// the PAD plugin is open, so ignore here (PCSX2 will direct messages routed from PAD directly
+	// HACK: PAD expect PCSX2 to ignore keyboard messages on the GS Window while
+	// it is open, so ignore here (PCSX2 will direct messages routed from PAD directly
 	// to the APP level message handler, which in turn routes them right back here -- yes it's
 	// silly, but oh well).
 
 #if defined(__unix__)
-	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
+	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
-	if( (GSopen2 != NULL) ) {
-		keyEvent event;
-		event.key = evt.GetRawKeyCode();
-		if (evt.GetEventType() == wxEVT_KEY_UP)
-			event.evt = 3; // X equivalent of KEYRELEASE;
-		else if (evt.GetEventType() == wxEVT_KEY_DOWN)
-			event.evt = 2; // X equivalent of KEYPRESS;
-		else
-			event.evt = 0;
+	keyEvent event;
+	event.key = evt.GetRawKeyCode();
+	if (evt.GetEventType() == wxEVT_KEY_UP)
+		event.evt = 3; // X equivalent of KEYRELEASE;
+	else if (evt.GetEventType() == wxEVT_KEY_DOWN)
+		event.evt = 2; // X equivalent of KEYPRESS;
+	else
+		event.evt = 0;
 
-		PADWriteEvent(event);
-	}
+	PADWriteEvent(event);
 #endif
 
 #ifdef __WXMSW__
 	// Not sure what happens on Linux, but on windows this method is called only when emulation
 	// is paused and the GS window is not hidden (and therefore the event doesn't arrive from
-	// the pad plugin and doesn't go through Pcsx2App::PadKeyDispatch). On such case (paused).
+	// pad and doesn't go through Pcsx2App::PadKeyDispatch). On such case (paused).
 	// It needs to handle two issues:
 	// 1. It's called both for key down and key up (linux apparently needs it this way) - but we
 	//    don't want to execute the command twice (normally commands execute on key down only).
@@ -474,12 +483,10 @@ void GSPanel::OnFocus( wxFocusEvent& evt )
 		DoShowMouse();
 
 #if defined(__unix__)
-	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
+	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
-	if((GSopen2 != NULL) ) {
-		keyEvent event = {0, 9}; // X equivalent of FocusIn;
-		PADWriteEvent(event);
-	}
+	keyEvent event = {0, 9}; // X equivalent of FocusIn;
+	PADWriteEvent(event);
 #endif
 	//Console.Warning("GS frame > focus set");
 
@@ -492,12 +499,10 @@ void GSPanel::OnFocusLost( wxFocusEvent& evt )
 	m_HasFocus = false;
 	DoShowMouse();
 #if defined(__unix__)
-	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad plugin. Wx deletes
+	// HACK2: In gsopen2 there is one event buffer read by both wx/gui and pad. Wx deletes
 	// the event before the pad see it. So you send key event directly to the pad.
-	if((GSopen2 != NULL) ) {
-		keyEvent event = {0, 10}; // X equivalent of FocusOut
-		PADWriteEvent(event);
-	}
+	keyEvent event = {0, 10}; // X equivalent of FocusOut
+	PADWriteEvent(event);
 #endif
 	//Console.Warning("GS frame > focus lost");
 
@@ -560,13 +565,15 @@ GSFrame::GSFrame( const wxString& title)
 	Bind(wxEVT_CLOSE_WINDOW, &GSFrame::OnCloseWindow, this);
 	Bind(wxEVT_MOVE, &GSFrame::OnMove, this);
 	Bind(wxEVT_SIZE, &GSFrame::OnResize, this);
-	Bind(wxEVT_ACTIVATE, &GSFrame::OnActivate, this);
+	Bind(wxEVT_SET_FOCUS, &GSFrame::OnFocus, this);
 
 	Bind(wxEVT_TIMER, &GSFrame::OnUpdateTitle, this, m_timer_UpdateTitle.GetId());
 }
 
 void GSFrame::OnCloseWindow(wxCloseEvent& evt)
 {
+	// see GSPanel::OnCloseWindow
+	init_gspanel = false;
 	sApp.OnGsFrameClosed( GetId() );
 	Hide();		// and don't close it.
 }
@@ -633,11 +640,6 @@ void GSFrame::CoreThread_OnStopped()
 	//if( !IsBeingDeleted() ) Destroy();
 }
 
-void GSFrame::CorePlugins_OnShutdown()
-{
-	if( !IsBeingDeleted() ) Destroy();
-}
-
 // overrides base Show behavior.
 bool GSFrame::Show( bool shown )
 {
@@ -690,7 +692,7 @@ void GSFrame::AppStatusEvent_OnSettingsApplied()
 
 	if( g_Conf->GSWindow.CloseOnEsc )
 	{
-		if( IsShown() && !CorePlugins.IsOpen(PluginId_GS) )
+		if (IsShown() && !gsopen_done)
 			Show( false );
 	}
 }
@@ -797,11 +799,11 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	SetTitle(title);
 }
 
-void GSFrame::OnActivate( wxActivateEvent& evt )
+void GSFrame::OnFocus( wxFocusEvent& evt )
 {
 	if( IsBeingDeleted() ) return;
 
-	evt.Skip();
+	evt.Skip(false); // Reject the focus message, as we pass focus to the child
 	if( wxWindow* gsPanel = GetViewport() ) gsPanel->SetFocus();
 }
 

@@ -101,15 +101,7 @@ Dialogs::CreateMemoryCardDialog::CreateMemoryCardDialog( wxWindow* parent, const
 	m_text_filenameInput->SetFocus();
 	m_text_filenameInput->SelectAll();
 }
-/*
-wxDirName Dialogs::CreateMemoryCardDialog::GetPathToMcds() const
-{
-	return m_filepicker ? (wxDirName)m_filepicker->GetPath() : m_mcdpath;
-}
-*/
-// When this GUI is moved into the FileMemoryCard plugin (where it eventually belongs),
-// this function will be removed and the MemoryCardFile::Create() function will be used
-// instead.
+
 bool Dialogs::CreateMemoryCardDialog::CreateIt( const wxString& mcdFile, uint sizeInMB, bool isPSX )
 {
 	//int enc[16] = {0x77,0x7f,0x7f,0x77,0x7f,0x7f,0x77,0x7f,0x7f,0x77,0x7f,0x7f,0,0,0,0};
@@ -261,8 +253,8 @@ void Dialogs::CreateMemoryCardDialog::CreateControls()
 						  "You can always convert back between folder type and single memcard file.\n"))
 		.	SetInt(0),
 
-		RadioPanelItem(_("128 KiB (PSX)"), _("This is the standard Sony-provisioned size PSX memory card, only compatible with PSX games."))
-		.	SetToolTip(_t("This memory card is required by PSX games. It is not compatible with PS2 games."))
+		RadioPanelItem(_("128 KiB (PS1)"), _("This is the standard Sony-provisioned size PS1 memory card, only compatible with PS1 games."))
+		.	SetToolTip(_t("This memory card is required by PS1 games. It is not compatible with PS2 games."))
 		.	SetInt(1)
 	};
 

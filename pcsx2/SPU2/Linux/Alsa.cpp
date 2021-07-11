@@ -20,11 +20,11 @@
 #include "PrecompiledHeader.h"
 #include <alsa/asoundlib.h>
 
-#include "../Global.h"
+#include "SPU2/Global.h"
 #include "Alsa.h"
-#include "../SndOut.h"
+#include "SPU2/SndOut.h"
 
-// Does not work, except as effectively a null plugin.
+// Does not work, except as effectively a null output
 class AlsaMod : public SndOutModule
 {
 protected:

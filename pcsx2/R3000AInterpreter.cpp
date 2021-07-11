@@ -19,7 +19,7 @@
 #include "App.h" // For host irx injection hack
 
 #include "R5900OpcodeTables.h"
-#include "../DebugTools/Breakpoints.h"
+#include "DebugTools/Breakpoints.h"
 
 using namespace R3000A;
 

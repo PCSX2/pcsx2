@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+    <gresource prefix="/GS/res/">
+        <file>glsl/common_header.glsl</file>
+    </gresource>
+    <gresource prefix="/GS/res/">
+        <file>glsl/convert.glsl</file>
+    </gresource>
+    <gresource prefix="/GS/res/">
+        <file>fxaa.fx</file>
+    </gresource>
+    <gresource prefix="/GS/res/">
+        <file>glsl/interlace.glsl</file>
+    </gresource>
+    <gresource prefix="/GS/res/">
+        <file>glsl/merge.glsl</file>
+    </gresource>
+    <gresource prefix="/GS/res/">
+        <file>glsl/shadeboost.glsl</file>
+    </gresource>
+    <gresource prefix="/GS/res/">
+        <file>glsl/tfx_vgs.glsl</file>
+    </gresource>
+    <gresource prefix="/GS/res/">
+        <file>glsl/tfx_fs.glsl</file>
+    </gresource>
+    <gresource prefix="/GS/res/">
+        <file>fonts-roboto/Roboto-Regular.ttf</file>
+    </gresource>
+</gresources>

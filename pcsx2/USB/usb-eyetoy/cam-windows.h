@@ -72,11 +72,11 @@ namespace usb_eyetoy
 
 		typedef void (*DShowVideoCaptureCallback)(unsigned char* data, int len, int bitsperpixel);
 
-		typedef struct
+		struct buffer_t
 		{
 			void* start = NULL;
 			size_t length = 0;
-		} buffer_t;
+		};
 
 		static const char* APINAME = "DirectShow";
 

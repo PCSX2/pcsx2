@@ -18,8 +18,8 @@
 #include "SymbolMap.h"
 #include "MIPSAnalyst.h"
 #include <cstdio>
-#include "../R5900.h"
-#include "../System.h"
+#include "R5900.h"
+#include "System.h"
 
 std::vector<BreakPoint> CBreakPoints::breakPoints_;
 u32 CBreakPoints::breakSkipFirstAtEE_ = 0;

@@ -27,7 +27,6 @@
 
 #include "PathDefs.h"
 #include "AppConfig.h"
-#include "Plugins.h"
 #include "GSFrame.h"
 #include "Counters.h"
 
@@ -69,8 +68,8 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	, m_selection(new wxButton(this, ID_RUN_CURSOR, _("Run to Selection"), wxDefaultPosition, wxSize(150, 50)))
 	, m_vsync(new wxButton(this, ID_RUN_VSYNC, _("Go to next VSync"), wxDefaultPosition, wxSize(150, 50)))
 	, m_settings(new wxButton(this, ID_SETTINGS, _("Open GS Settings"), wxDefaultPosition, wxSize(150, 50)))
-	, m_thread(std::make_unique<GSThread>(this))
 	, m_run(new wxButton(this, ID_RUN_DUMP, _("Run"), wxDefaultPosition, wxSize(150, 50)))
+	, m_thread(std::make_unique<GSThread>(this))
 {
 	wxBoxSizer* dump_info = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* dump_preview = new wxBoxSizer(wxVERTICAL);
@@ -275,7 +274,7 @@ void Dialogs::GSDumpDialog::ToVSync(wxCommandEvent& event)
 
 void Dialogs::GSDumpDialog::OpenSettings(wxCommandEvent& event)
 {
-	GetCorePlugins().Configure(PluginId_GS);
+	GSconfigure();
 }
 
 void Dialogs::GSDumpDialog::ToStart(wxCommandEvent& event)
@@ -632,17 +631,17 @@ void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSData& event, char* regs)
 					std::unique_ptr<char[]> data(new char[16384]);
 					int addr = 16384 - event.length;
 					memcpy(data.get(), event.data.get() + addr, event.length);
-					GSgifTransfer1((u32*)data.get(), addr);
+					GSgifTransfer1((u8*)data.get(), addr);
 					break;
 				}
 				case Path1New:
-					GSgifTransfer((u32*)event.data.get(), event.length / 16);
+					GSgifTransfer((u8*)event.data.get(), event.length / 16);
 					break;
 				case Path2:
-					GSgifTransfer2((u32*)event.data.get(), event.length / 16);
+					GSgifTransfer2((u8*)event.data.get(), event.length / 16);
 					break;
 				case Path3:
-					GSgifTransfer3((u32*)event.data.get(), event.length / 16);
+					GSgifTransfer3((u8*)event.data.get(), event.length / 16);
 					break;
 				default:
 					break;
@@ -661,7 +660,7 @@ void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSData& event, char* regs)
 		case ReadFIFO2:
 		{
 			std::unique_ptr<char[]> arr(new char[*((int*)event.data.get())]);
-			GSreadFIFO2((u64*)arr.get(), *((int*)event.data.get()));
+			GSreadFIFO2((u8*)arr.get(), *((int*)event.data.get()));
 			break;
 		}
 		case Registers:
@@ -760,7 +759,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 		m_root_window->m_dump_packets.push_back({id, std::move(data), size, id_transfer});
 	}
 
-	GetCorePlugins().Init();
+	GSinit();
 	sApp.OpenGsPanel();
 
 	// to gather the gs frame object we have to be a bit hacky since sApp is not syntax complete
@@ -773,8 +772,8 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 		g_FrameCount = 0;
 	}
 
-	GSsetBaseMem((void*)regs);
-	if (GSopen2((void*)pDsp, (renderer_override<<24)) != 0)
+	GSsetBaseMem((u8*)regs);
+	if (GSopen2((void**)pDsp, (renderer_override<<24)) != 0)
 	{
 		OnStop();
 		return;
@@ -782,12 +781,12 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 
 	GSsetGameCRC((int)crc, 0);
 
-	if (!GetCorePlugins().DoFreeze(PluginId_GS, 0, &fd, true))
+	if (GSfreeze(0, &fd))
 		GSDump::isRunning = false;
 	GSvsync(1);
 	GSreset();
-	GSsetBaseMem((void*)regs);
-	GetCorePlugins().DoFreeze(PluginId_GS, 0, &fd, true);
+	GSsetBaseMem((u8*)regs);
+	GSfreeze(0, &fd);
 
 	size_t i = 0;
 	m_debug_index = 0;
@@ -855,8 +854,8 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 		{
 			if (!window->IsShown())
 			{
-				GetCorePlugins().Close();
-				GetCorePlugins().Shutdown();
+				GSclose();
+				GSshutdown();
 				sApp.CloseGsPanel();
 				GSDump::isRunning = false;
 			}

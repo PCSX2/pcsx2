@@ -16,21 +16,22 @@
 #include "PrecompiledHeader.h"
 #include <stdio.h>
 #include <commdlg.h>
+#include <commctrl.h>
 
 #include <string>
 #include "ghc/filesystem.h"
 #include "fmt/format.h"
 
-#include "..\Config.h"
+#include "DEV9/Config.h"
 #include "resource.h"
-#include "..\DEV9.h"
-#include "..\pcap_io.h"
-#include "..\net.h"
-#include "..\PacketReader\IP\IP_Address.h"
+#include "DEV9/DEV9.h"
+#include "DEV9/pcap_io.h"
+#include "DEV9/net.h"
+#include "DEV9/PacketReader\IP\IP_Address.h"
 #include "tap.h"
 #include "AppCoreThread.h"
 
-#include "../ATA/HddCreate.h"
+#include "DEV9/ATA/HddCreate.h"
 
 using PacketReader::IP::IP_Address;
 
@@ -183,30 +184,30 @@ void OnInitDialog(HWND hW)
 	Edit_LimitText(GetDlgItem(hW, IDC_HDDSIZE_TEXT), 3); //Excluding null char
 	//HDDSpin
 	SendMessage(GetDlgItem(hW, IDC_HDDSIZE_SPIN), UDM_SETRANGE,
-				(WPARAM)0,
-				(LPARAM)MAKELPARAM(HDD_MAX_GB, HDD_MIN_GB));
+		(WPARAM)0,
+		(LPARAM)MAKELPARAM(HDD_MAX_GB, HDD_MIN_GB));
 	SendMessage(GetDlgItem(hW, IDC_HDDSIZE_SPIN), UDM_SETPOS,
-				(WPARAM)0,
-				(LPARAM)(config.HddSize / 1024));
+		(WPARAM)0,
+		(LPARAM)(config.HddSize / 1024));
 
 	//HDDSlider
 	SendMessage(GetDlgItem(hW, IDC_HDDSIZE_SLIDER), TBM_SETRANGE,
-				(WPARAM)FALSE,
-				(LPARAM)MAKELPARAM(HDD_MIN_GB, HDD_MAX_GB));
+		(WPARAM)FALSE,
+		(LPARAM)MAKELPARAM(HDD_MIN_GB, HDD_MAX_GB));
 	SendMessage(GetDlgItem(hW, IDC_HDDSIZE_SLIDER), TBM_SETPAGESIZE,
-				(WPARAM)0,
-				(LPARAM)10);
+		(WPARAM)0,
+		(LPARAM)10);
 
 	for (int i = HDD_MIN_GB; i < HDD_MAX_GB; i += 5)
 	{
 		SendMessage(GetDlgItem(hW, IDC_HDDSIZE_SLIDER), TBM_SETTIC,
-					(WPARAM)0,
-					(LPARAM)i);
+			(WPARAM)0,
+			(LPARAM)i);
 	}
 
 	SendMessage(GetDlgItem(hW, IDC_HDDSIZE_SLIDER), TBM_SETPOS,
-				(WPARAM)TRUE,
-				(LPARAM)(config.HddSize / 1024));
+		(WPARAM)TRUE,
+		(LPARAM)(config.HddSize / 1024));
 
 	//Checkboxes
 	Button_SetCheck(GetDlgItem(hW, IDC_ETHENABLED), config.ethEnable);
@@ -218,8 +219,7 @@ void OnBrowse(HWND hW)
 	wchar_t wbuff[4096] = {0};
 	memcpy(wbuff, HDD_DEF, sizeof(HDD_DEF));
 
-	//GHC uses UTF8 on all platforms
-	ghc::filesystem::path inis = GetSettingsFolder().ToUTF8().data();
+	ghc::filesystem::path inis(GetSettingsFolder().ToString().wx_str());
 	wstring w_inis = inis.wstring();
 
 	OPENFILENAMEW ofn;
@@ -246,11 +246,11 @@ void OnBrowse(HWND hW)
 			int filesizeGb = ghc::filesystem::file_size(hddFile) / (1024 * 1024 * 1024);
 			//Set slider
 			SendMessage(GetDlgItem(hW, IDC_HDDSIZE_SPIN), UDM_SETPOS,
-						(WPARAM)0,
-						(LPARAM)filesizeGb);
+				(WPARAM)0,
+				(LPARAM)filesizeGb);
 			SendMessage(GetDlgItem(hW, IDC_HDDSIZE_SLIDER), TBM_SETPOS,
-						(WPARAM)TRUE,
-						(LPARAM)filesizeGb);
+				(WPARAM)TRUE,
+				(LPARAM)filesizeGb);
 		}
 
 		if (hddFile.parent_path() == inis)
@@ -422,11 +422,11 @@ BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 								return TRUE;
 
 							SendMessage(GetDlgItem(hW, IDC_HDDSIZE_SPIN), UDM_SETPOS,
-										(WPARAM)0,
-										(LPARAM)curpos);
+								(WPARAM)0,
+								(LPARAM)curpos);
 							SendMessage(GetDlgItem(hW, IDC_HDDSIZE_SLIDER), TBM_SETPOS,
-										(WPARAM)TRUE,
-										(LPARAM)curpos);
+								(WPARAM)TRUE,
+								(LPARAM)curpos);
 							return TRUE;
 						}
 					}
@@ -455,8 +455,8 @@ BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 				case TB_THUMBTRACK:
 					//Update Textbox
 					SendMessage(GetDlgItem(hW, IDC_HDDSIZE_SPIN), UDM_SETPOS,
-								(WPARAM)0,
-								(LPARAM)curpos);
+						(WPARAM)0,
+						(LPARAM)curpos);
 					return TRUE;
 
 				default:
@@ -484,8 +484,8 @@ BOOL CALLBACK ConfigureDlgProc(HWND hW, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					//Update Textbox
 					//Edit_SetText(GetDlgItem(hW, IDC_HDDSIZE_TEXT), to_wstring(curpos).c_str());
 					SendMessage(GetDlgItem(hW, IDC_HDDSIZE_SLIDER), TBM_SETPOS,
-								(WPARAM)TRUE,
-								(LPARAM)curpos);
+						(WPARAM)TRUE,
+						(LPARAM)curpos);
 					return TRUE;
 
 				default:
@@ -502,9 +502,9 @@ void DEV9configure()
 	Config oldConfig = config;
 
 	DialogBox(hInst,
-			  MAKEINTRESOURCE(IDD_CONFIG),
-			  GetActiveWindow(),
-			  (DLGPROC)ConfigureDlgProc);
+		MAKEINTRESOURCE(IDD_CONFIG),
+		GetActiveWindow(),
+		(DLGPROC)ConfigureDlgProc);
 	//SysMessage("Nothing to Configure");
 
 	ApplyConfigIfRunning(oldConfig);

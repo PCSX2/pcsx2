@@ -36,7 +36,7 @@
 #include "Patch.h"
 #include "GameDatabase.h"
 
-#include "../DebugTools/Breakpoints.h"
+#include "DebugTools/Breakpoints.h"
 #include "R5900OpcodeTables.h"
 
 using namespace R5900;	// for R5900 disasm tools
@@ -269,7 +269,7 @@ static __fi void TESTINT( u8 n, void (*callback)() )
 {
 	if( !(cpuRegs.interrupt & (1 << n)) ) return;
 
-	if( cpuTestCycle( cpuRegs.sCycle[n], cpuRegs.eCycle[n] ) )
+	if(!g_GameStarted || cpuTestCycle( cpuRegs.sCycle[n], cpuRegs.eCycle[n] ) )
 	{
 		cpuClearInt( n );
 		callback();
@@ -398,7 +398,17 @@ __fi void _cpuEventTest_Shared()
 	// These are basically just DMAC-related events, which also piggy-back the same bits as
 	// the PS2's own DMA channel IRQs and IRQ Masks.
 
-	_cpuTestInterrupts();
+	// This is a BIOS hack because the coding in the BIOS is terrible but the bug is masked by Data Cache
+	// where a DMA buffer is overwritten without waiting for the transfer to end, which causes the fonts to get all messed up
+	// so to fix it, we run all the DMA's instantly when in the BIOS.
+	// Only use the lower 17 bits of the cpuRegs.interrupt as the upper bits are for VU0/1 sync which can't be done in a tight loop
+	if (!g_GameStarted && dmacRegs.ctrl.DMAE && !(psHu8(DMAC_ENABLER + 2) & 1) && (cpuRegs.interrupt & 0x1FFFF))
+	{
+		while(cpuRegs.interrupt & 0x1FFFF)
+			_cpuTestInterrupts();
+	}
+	else
+		_cpuTestInterrupts();
 
 	// ---- IOP -------------
 	// * It's important to run a iopEventTest before calling ExecuteBlock. This

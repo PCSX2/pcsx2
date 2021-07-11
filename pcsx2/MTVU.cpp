@@ -69,9 +69,9 @@ void SaveStateBase::mtvuFreeze()
 		Freeze(v);
 	}
 
-	u32 gsInterrupts = vu1Thread.gsInterrupts.load();
+	u32 gsInterrupts = vu1Thread.mtvuInterrupts.load();
 	Freeze(gsInterrupts);
-	vu1Thread.gsInterrupts.store(gsInterrupts);
+	vu1Thread.mtvuInterrupts.store(gsInterrupts);
 	u64 gsSignal = vu1Thread.gsSignal.load();
 	Freeze(gsSignal);
 	vu1Thread.gsSignal.store(gsSignal);
@@ -113,7 +113,7 @@ void VU_Thread::Reset()
 	memzero(vifRegs);
 	for (size_t i = 0; i < 4; ++i)
 		vu1Thread.vuCycles[i] = 0;
-	vu1Thread.gsInterrupts = 0;
+	vu1Thread.mtvuInterrupts = 0;
 }
 
 void VU_Thread::ExecuteTaskInThread()
@@ -144,7 +144,7 @@ void VU_Thread::ExecuteRingBuffer()
 					vifRegs.itop = Read();
 
 					if (addr != -1)
-						vuRegs.VI[REG_TPC].UL = addr;
+						vuRegs.VI[REG_TPC].UL = addr & 0x7FF;
 					vuCPU->SetStartPC(vuRegs.VI[REG_TPC].UL << 3);
 					vuCPU->Execute(vu1RunCycles);
 					gifUnit.gifPath[GIF_PATH_1].FinishGSPacketMTVU();
@@ -336,10 +336,10 @@ u32 VU_Thread::Get_vuCycles()
 		   2;
 }
 
-void VU_Thread::Get_GSChanges()
+void VU_Thread::Get_MTVUChanges()
 {
 	// Note: Atomic communication is with Gif_Unit.cpp Gif_HandlerAD_MTVU
-	u32 interrupts = gsInterrupts.load(std::memory_order_relaxed);
+	u32 interrupts = mtvuInterrupts.load(std::memory_order_relaxed);
 	if (!interrupts)
 		return;
 	
@@ -349,7 +349,7 @@ void VU_Thread::Get_GSChanges()
 		const u64 signal = gsSignal.load(std::memory_order_relaxed);
 		// If load of signal was moved after clearing the flag, the other thread could write a new value before we load without noticing the double signal
 		// Prevent that with release semantics
-		gsInterrupts.fetch_and(~InterruptFlagSignal, std::memory_order_release);
+		mtvuInterrupts.fetch_and(~InterruptFlagSignal, std::memory_order_release);
 		GUNIT_WARN("SIGNAL firing");
 		const u32 signalMsk = (u32)(signal >> 32);
 		const u32 signalData = (u32)signal;
@@ -372,7 +372,7 @@ void VU_Thread::Get_GSChanges()
 	}
 	if (interrupts & InterruptFlagFinish)
 	{
-		gsInterrupts.fetch_and(~InterruptFlagFinish, std::memory_order_relaxed);
+		mtvuInterrupts.fetch_and(~InterruptFlagFinish, std::memory_order_relaxed);
 		GUNIT_WARN("Finish firing");
 		CSRreg.FINISH = true;
 		gifUnit.gsFINISH.gsFINISHFired = false;
@@ -382,7 +382,7 @@ void VU_Thread::Get_GSChanges()
 	}
 	if (interrupts & InterruptFlagLabel)
 	{
-		gsInterrupts.fetch_and(~InterruptFlagLabel, std::memory_order_acquire);
+		mtvuInterrupts.fetch_and(~InterruptFlagLabel, std::memory_order_acquire);
 		// If other thread updates gsLabel for a second interrupt, that's okay.  Worst case we think there's a label interrupt but gsLabel is 0
 		// We do not want the exchange of gsLabel to move ahead of clearing the flag, or the other thread could add more work before we clear the flag, resulting in an update with the flag unset
 		// acquire semantics should supply that guarantee
@@ -391,6 +391,21 @@ void VU_Thread::Get_GSChanges()
 		const u32 labelMsk = (u32)(label >> 32);
 		const u32 labelData = (u32)label;
 		GSSIGLBLID.LBLID = (GSSIGLBLID.LBLID & ~labelMsk) | (labelData & labelMsk);
+	}
+	if (interrupts & InterruptFlagVUEBit)
+	{
+		mtvuInterrupts.fetch_and(~InterruptFlagVUEBit, std::memory_order_relaxed);
+		
+		VU0.VI[REG_VPU_STAT].UL &= ~0x0100;
+		//DevCon.Warning("E-Bit registered %x", VU0.VI[REG_VPU_STAT].UL);
+	}
+	if (interrupts & InterruptFlagVUTBit)
+	{
+		mtvuInterrupts.fetch_and(~InterruptFlagVUTBit, std::memory_order_relaxed);
+		VU0.VI[REG_VPU_STAT].UL &= ~0x0100;
+		VU0.VI[REG_VPU_STAT].UL |= 0x0400;
+		//DevCon.Warning("T-Bit registered %x", VU0.VI[REG_VPU_STAT].UL);
+		hwIntcIrq(7);
 	}
 }
 
@@ -423,7 +438,7 @@ void VU_Thread::WaitVU()
 void VU_Thread::ExecuteVU(u32 vu_addr, u32 vif_top, u32 vif_itop)
 {
 	MTVU_LOG("MTVU - ExecuteVU!");
-	Get_GSChanges(); // Clear any pending interrupts
+	Get_MTVUChanges(); // Clear any pending interrupts
 	ReserveSpace(4);
 	Write(MTVU_VU_EXECUTE);
 	Write(vu_addr);
@@ -435,7 +450,7 @@ void VU_Thread::ExecuteVU(u32 vu_addr, u32 vif_top, u32 vif_itop)
 	u32 cycles = std::min(Get_vuCycles(), 3000u);
 	cpuRegs.cycle += cycles * EmuConfig.Speedhacks.EECycleSkip;
 	VU0.cycle += cycles * EmuConfig.Speedhacks.EECycleSkip;
-	Get_GSChanges();
+	Get_MTVUChanges();
 }
 
 void VU_Thread::VifUnpack(vifStruct& _vif, VIFregisters& _vifRegs, u8* data, u32 size)

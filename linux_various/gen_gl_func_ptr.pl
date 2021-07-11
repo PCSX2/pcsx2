@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU General Public License along with PCSX2.
 # If not, see <http://www.gnu.org/licenses/>.
 
-# Generate glfunction pointer for GSdx
+# Generate glfunction pointer for GS
 
 use File::Basename;
 use strict;

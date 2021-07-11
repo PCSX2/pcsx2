@@ -23,6 +23,8 @@
 #include "Gif_Unit.h"
 #include "MTVU.h"
 #include "Elfheader.h"
+#include "App.h"
+#include "gui/Dialogs/ModalPopups.h"
 #ifdef _WIN32
 #include "PAD/Windows/PAD.h"
 #else
@@ -50,6 +52,7 @@ using namespace Threading;
 
 __aligned(32) MTGS_BufferedData RingBuffer;
 extern bool renderswitch;
+std::atomic_bool init_gspanel = true;
 
 
 #ifdef RINGBUF_DEBUG_STACK
@@ -68,9 +71,45 @@ SysMtgsThread::SysMtgsThread()
 	// All other state vars are initialized by OnStart().
 }
 
+typedef void (SysMtgsThread::*FnPtr_MtgsThreadMethod)();
+
+class SysExecEvent_InvokeMtgsThreadMethod : public SysExecEvent
+{
+protected:
+	FnPtr_MtgsThreadMethod m_method;
+	bool m_IsCritical;
+
+public:
+	wxString GetEventName() const { return L"MtgsThreadMethod"; }
+	virtual ~SysExecEvent_InvokeMtgsThreadMethod() = default;
+	SysExecEvent_InvokeMtgsThreadMethod* Clone() const { return new SysExecEvent_InvokeMtgsThreadMethod(*this); }
+
+	bool AllowCancelOnExit() const { return false; }
+	bool IsCriticalEvent() const { return m_IsCritical; }
+
+	SysExecEvent_InvokeMtgsThreadMethod(FnPtr_MtgsThreadMethod method, bool critical = false)
+	{
+		m_method = method;
+		m_IsCritical = critical;
+	}
+
+	SysExecEvent_InvokeMtgsThreadMethod& Critical()
+	{
+		m_IsCritical = true;
+		return *this;
+	}
+
+protected:
+	void InvokeEvent()
+	{
+		if (m_method)
+			(mtgsThread.*m_method)();
+	}
+};
+
 void SysMtgsThread::OnStart()
 {
-	m_PluginOpened = false;
+	m_Opened = false;
 
 	m_ReadPos = 0;
 	m_WritePos = 0;
@@ -157,7 +196,7 @@ void SysMtgsThread::PostVsyncStart()
 	// in the ringbuffer.  The queue limit is disabled when both FrameLimiting and Vsync are
 	// disabled, since the queue can have perverse effects on framerate benchmarking.
 
-	// Edit: It's possible that MTGS is that much faster than the GS plugin that it creates so much lag,
+	// Edit: It's possible that MTGS is that much faster than GS that it creates so much lag,
 	// a game becomes uncontrollable (software rendering for example).
 	// For that reason it's better to have the limit always in place, at the cost of a few max FPS in benchmarks.
 	// If those are needed back, it's better to increase the VsyncQueueSize via PCSX_vm.ini.
@@ -199,33 +238,23 @@ static void dummyIrqCallback()
 	// (and zerogs does >_<)
 }
 
-void SysMtgsThread::OpenPlugin()
+void SysMtgsThread::OpenGS()
 {
-
-	if (m_PluginOpened)
+	if (m_Opened)
 		return;
+
+	if (init_gspanel)
+		sApp.OpenGsPanel();
 
 	memcpy(RingBuffer.Regs, PS2MEM_GS, sizeof(PS2MEM_GS));
 	GSsetBaseMem(RingBuffer.Regs);
 	GSirqCallback(dummyIrqCallback);
 
-	int result;
-
-	if (GSopen2 != NULL)
-		result = GSopen2((void*)pDsp, 1 | (renderswitch ? 4 : 0));
-	else
-		result = GSopen((void*)pDsp, "PCSX2", renderswitch ? 2 : 1);
-
+	pxAssertMsg((GSopen2((void**)pDsp, 1 | (renderswitch ? 4 : 0)) == 0), "GS failed to open!");
 
 	GSsetVsync(EmuConfig.GS.GetVsync());
 
-	if (result != 0)
-	{
-		DevCon.WriteLn("GSopen Failed: return code: 0x%x", result);
-		throw Exception::PluginOpenError(PluginId_GS);
-	}
-
-	m_PluginOpened = true;
+	m_Opened = true;
 	m_sem_OpenDone.Post();
 
 	GSsetGameCRC(ElfCRC, 0);
@@ -335,13 +364,13 @@ void SysMtgsThread::ExecuteTaskInThread()
 					if (endpos >= RingBufferSize)
 					{
 						uint firstcopylen = RingBufferSize - datapos;
-						GSgifTransfer((u32*)data, firstcopylen);
+						GSgifTransfer((u8*)data, firstcopylen);
 						datapos = endpos & RingBufferMask;
-						GSgifTransfer((u32*)RingBuffer.m_Ring, datapos);
+						GSgifTransfer((u8*)RingBuffer.m_Ring, datapos);
 					}
 					else
 					{
-						GSgifTransfer((u32*)data, qsize);
+						GSgifTransfer((u8*)data, qsize);
 					}
 
 					ringposinc += qsize;
@@ -404,7 +433,7 @@ void SysMtgsThread::ExecuteTaskInThread()
 					u32 offset = tag.data[0];
 					u32 size = tag.data[1];
 					if (offset != ~0u)
-						GSgifTransfer((u32*)&path.buffer[offset], size / 16);
+						GSgifTransfer((u8*)&path.buffer[offset], size / 16);
 					path.readAmount.fetch_sub(size, std::memory_order_acq_rel);
 					break;
 				}
@@ -420,7 +449,7 @@ void SysMtgsThread::ExecuteTaskInThread()
 					Gif_Path& path = gifUnit.gifPath[GIF_PATH_1];
 					GS_Packet gsPack = path.GetGSPacketMTVU(); // Get vu1 program's xgkick packet(s)
 					if (gsPack.size)
-						GSgifTransfer((u32*)&path.buffer[gsPack.offset], gsPack.size / 16);
+						GSgifTransfer((u8*)&path.buffer[gsPack.offset], gsPack.size / 16);
 					path.readAmount.fetch_sub(gsPack.size + gsPack.readAmount, std::memory_order_acq_rel);
 					path.PopGSPacketMTVU(); // Should be done last, for proper Gif_MTGS_Wait()
 					break;
@@ -457,9 +486,9 @@ void SysMtgsThread::ExecuteTaskInThread()
 							if (m_VsyncSignalListener.exchange(false))
 								m_sem_Vsync.Post();
 
-							busy.Release();
-							StateCheckInThread();
-							busy.Acquire();
+							// Do not StateCheckInThread() here
+							// Otherwise we could pause while there's still data in the queue
+							// Which could make the MTVU thread wait forever for it to empty
 						}
 						break;
 
@@ -472,14 +501,13 @@ void SysMtgsThread::ExecuteTaskInThread()
 						{
 							MTGS_FreezeData* data = (MTGS_FreezeData*)tag.pointer;
 							int mode = tag.data[0];
-							data->retval = GetCorePlugins().DoFreeze(PluginId_GS, mode, data->fdata);
+							data->retval = GSfreeze(mode, (freezeData*)data->fdata);
 						}
 						break;
 
 						case GS_RINGTYPE_RESET:
 							MTGS_LOG("(MTGS Packet Read) ringtype=Reset");
-							if (GSreset != NULL)
-								GSreset();
+							GSreset();
 							break;
 
 						case GS_RINGTYPE_SOFTRESET:
@@ -500,14 +528,12 @@ void SysMtgsThread::ExecuteTaskInThread()
 
 						case GS_RINGTYPE_INIT_READ_FIFO1:
 							MTGS_LOG("(MTGS Packet Read) ringtype=Fifo1");
-							if (GSinitReadFIFO)
-								GSinitReadFIFO((u64*)tag.pointer);
+							GSinitReadFIFO((u8*)tag.pointer);
 							break;
 
 						case GS_RINGTYPE_INIT_READ_FIFO2:
 							MTGS_LOG("(MTGS Packet Read) ringtype=Fifo2, size=%d", tag.data[0]);
-							if (GSinitReadFIFO2)
-								GSinitReadFIFO2((u64*)tag.pointer, tag.data[0]);
+							GSinitReadFIFO2((u8*)tag.pointer, tag.data[0]);
 							break;
 
 #ifdef PCSX2_DEVBUILD
@@ -566,31 +592,35 @@ void SysMtgsThread::ExecuteTaskInThread()
 	}
 }
 
-void SysMtgsThread::ClosePlugin()
+void SysMtgsThread::CloseGS()
 {
-	if (!m_PluginOpened)
+	if (!m_Opened || GSDump::isRunning)
 		return;
-	m_PluginOpened = false;
-	GetCorePlugins().Close(PluginId_GS);
+	m_Opened = false;
+	GSclose();
+	if (init_gspanel)
+		sApp.CloseGsPanel();
 }
 
 void SysMtgsThread::OnSuspendInThread()
 {
-	ClosePlugin();
+	CloseGS();
 	_parent::OnSuspendInThread();
 }
 
 void SysMtgsThread::OnResumeInThread(bool isSuspended)
 {
 	if (isSuspended)
-		OpenPlugin();
+		OpenGS();
 
 	_parent::OnResumeInThread(isSuspended);
 }
 
 void SysMtgsThread::OnCleanupInThread()
 {
-	ClosePlugin();
+	CloseGS();
+	// Unblock any threads in WaitGS in case MTGS gets cancelled while still processing work
+	m_ReadPos.store(m_WritePos.load(std::memory_order_acquire), std::memory_order_relaxed);
 	_parent::OnCleanupInThread();
 }
 
@@ -873,14 +903,14 @@ void SysMtgsThread::SendGameCRC(u32 crc)
 
 void SysMtgsThread::WaitForOpen()
 {
-	if (m_PluginOpened)
+	if (m_Opened)
 		return;
 	Resume();
 
 	// Two-phase timeout on MTGS opening, so that possible errors are handled
 	// in a timely fashion.  We check for errors after 2 seconds, and then give it
-	// another 12 seconds if no errors occurred (this might seem long, but sometimes a
-	// GS plugin can be very stubborned, especially in debug mode builds).
+	// another 12 seconds if no errors occurred (this might seem long, but sometimes our
+	// GS can be very stubborned, especially in debug mode builds).
 
 	if (!m_sem_OpenDone.Wait(wxTimeSpan(0, 0, 2, 0)))
 	{
@@ -890,12 +920,7 @@ void SysMtgsThread::WaitForOpen()
 		{
 			RethrowException();
 
-			// Not opened yet, and no exceptions.  Weird?  You decide!
-			// [TODO] : implement a user confirmation to cancel the action and exit the
-			//   emulator forcefully, or to continue waiting on the GS.
-
-			throw Exception::PluginOpenError(PluginId_GS)
-				.SetBothMsgs(pxLt("The MTGS thread has become unresponsive while waiting for the GS plugin to open."));
+			pxAssert(_("The MTGS thread has become unresponsive while waiting for GS to open."));
 		}
 	}
 
@@ -904,8 +929,14 @@ void SysMtgsThread::WaitForOpen()
 
 void SysMtgsThread::Freeze(int mode, MTGS_FreezeData& data)
 {
-	GetCorePlugins().Open(PluginId_GS);
+	pxAssertDev(!IsSelf(), "This method is only allowed from threads *not* named MTGS.");
 	SendPointerPacket(GS_RINGTYPE_FREEZE, mode, &data);
+	// make sure MTGS is processing the packet we send it
 	Resume();
+	// we are forced to wait for the semaphore to be released, otherwise
+	// we'll end up in a state where the main thread is stuck on WaitGS
+	// and MTGS stuck on sApp.OpenGSPanel, which post an event to the main
+	// thread. Obviously this ends up in a deadlock. -- govanify
+	WaitForOpen();
 	WaitGS();
 }

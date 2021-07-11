@@ -17,9 +17,9 @@
 
 #include <functional>
 
-#include "../SimpleQueue.h"
-#include "../PacketReader/IP/IP_Address.h"
-#include "../PacketReader/IP/UDP/UDP_Packet.h"
+#include "DEV9/SimpleQueue.h"
+#include "DEV9/PacketReader/IP/IP_Address.h"
+#include "DEV9/PacketReader/IP/UDP/UDP_Packet.h"
 
 #ifdef _WIN32
 #include <winsock2.h>

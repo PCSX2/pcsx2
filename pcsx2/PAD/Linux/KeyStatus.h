@@ -13,10 +13,9 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef __KEYSTATUS_H__
-#define __KEYSTATUS_H__
+#pragma once
 
-#include "PAD.h"
+#include "Global.h"
 
 typedef struct
 {
@@ -70,5 +69,3 @@ public:
 };
 
 extern KeyStatus g_key_status;
-
-#endif

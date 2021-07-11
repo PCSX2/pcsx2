@@ -17,14 +17,14 @@
 
 GamepadConfiguration::GamepadConfiguration(int pad, wxWindow* parent)
 	: wxDialog(parent, wxID_ANY, _T("Gamepad"), wxDefaultPosition, wxDefaultSize,
-	           wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN)
+			   wxSYSTEM_MENU | wxCAPTION | wxCLOSE_BOX | wxCLIP_CHILDREN)
 {
 	m_pad_id = pad;
 
 	wxBoxSizer* gamepad_box = new wxBoxSizer(wxVERTICAL);
 
 	wxArrayString choices;
-	for (const auto& j : s_vgamePad)
+	for (const auto& j : device_manager->devices)
 	{
 		choices.Add(j->GetName());
 	}
@@ -34,11 +34,11 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow* parent)
 
 	wxStaticBoxSizer* rumble_box = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Rumble intensity"));
 	m_sl_rumble_intensity = new wxSlider(this, rumble_slider_id, 0, 0, 0x7FFF, wxDefaultPosition, wxDefaultSize,
-	                                     wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
+										 wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
 
 	wxStaticBoxSizer* joy_box = new wxStaticBoxSizer(wxVERTICAL, this, wxT("Joystick sensibility"));
 	m_sl_joystick_sensibility = new wxSlider(this, joy_slider_id, 0, 0, 200, wxDefaultPosition, wxDefaultSize,
-	                                         wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
+											 wxSL_HORIZONTAL | wxSL_LABELS | wxSL_BOTTOM);
 
 	gamepad_box->Add(m_joy_map, wxSizerFlags().Expand().Border(wxALL, 5));
 	gamepad_box->Add(m_cb_rumble, wxSizerFlags().Expand());
@@ -70,9 +70,9 @@ void GamepadConfiguration::InitGamepadConfiguration()
 	 * Check if there exist at least one pad available
 	 * if the pad id is 0, you need at least 1 gamepad connected,
 	 * if the pad id is 1, you need at least 2 gamepads connected,
-	 * Prevent to use a none initialized value on s_vgamePad (core dump)
+	 * Prevent to use a non-initialized value (core dump)
 	 */
-	if (s_vgamePad.size() >= m_pad_id + 1)
+	if (device_manager->devices.size() >= m_pad_id + 1)
 	{
 		/*
 		 * Determine if the device can use rumble
@@ -81,7 +81,7 @@ void GamepadConfiguration::InitGamepadConfiguration()
 		 */
 
 		// Bad idea. Some connected devices might support rumble but not all connected devices.
-		//        if (!s_vgamePad[m_pad_id]->TestForce(0.001f)) {
+		//        if (!device_manager->devices[m_pad_id]->TestForce(0.001f)) {
 		//            wxMessageBox(L"Rumble is not available for your device.");
 		//            m_cb_rumble->Disable();           // disable the rumble checkbox
 		//            m_sl_rumble_intensity->Disable(); // disable the rumble intensity slider
@@ -114,7 +114,7 @@ void GamepadConfiguration::OnSliderReleased(wxCommandEvent& event)
 
 		// convert in a float value between 0 and 1, and run rumble feedback.
 		// 0 to 1 scales to 0x0 to 0x7FFF
-		s_vgamePad[m_pad_id]->TestForce(m_sl_rumble_intensity->GetValue() / (float)0x7FFF);
+		device_manager->devices[m_pad_id]->TestForce(m_sl_rumble_intensity->GetValue() / (float)0x7FFF);
 	}
 	else if (sl_id == joy_slider_id)
 	{
@@ -135,7 +135,7 @@ void GamepadConfiguration::OnCheckboxChange(wxCommandEvent& event)
 		g_conf.pad_options[m_pad_id].forcefeedback = (m_cb_rumble->GetValue()) ? (u32)1 : (u32)0;
 		if (m_cb_rumble->GetValue())
 		{
-			s_vgamePad[m_pad_id]->TestForce();
+			device_manager->devices[m_pad_id]->TestForce();
 			m_sl_rumble_intensity->Enable();
 		}
 		else
@@ -154,7 +154,7 @@ void GamepadConfiguration::OnChoiceChange(wxCommandEvent& event)
 	int id = choice_tmp->GetSelection();
 	if (id != wxNOT_FOUND)
 	{
-		g_conf.set_joy_uid(m_pad_id, GamePad::index_to_uid(id));
+		g_conf.set_joy_uid(m_pad_id, Device::index_to_uid(id));
 	}
 }
 
@@ -170,7 +170,7 @@ void GamepadConfiguration::repopulate()
 	m_sl_rumble_intensity->SetValue(g_conf.get_ff_intensity());
 	m_sl_joystick_sensibility->SetValue(g_conf.get_sensibility());
 
-	u32 joyid = GamePad::uid_to_index(m_pad_id);
+	u32 joyid = Device::uid_to_index(m_pad_id);
 	if (joyid < m_joy_map->GetCount() && !m_joy_map->IsEmpty())
 		m_joy_map->SetSelection(joyid);
 

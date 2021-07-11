@@ -256,12 +256,6 @@ static void DetectDiskType()
 	int baseMediaType = CDVD->getDiskType();
 	int mType = -1;
 
-	// Paranoid mode: do not trust the plugin's detection system to work correctly.
-	// (.. and there's no reason plugins should be doing their own detection anyway).
-
-	//TODO_CDVD We're not using CDVD plugins anymore but I believe both ISO and Disc use their own
-	//detection system. Possible code reduction here
-
 	switch (baseMediaType)
 	{
 #if 0
@@ -353,8 +347,6 @@ bool DoCDVDopen()
 {
 	CheckNullCDVD();
 
-	// the new disk callback is set on Init also, but just in case the plugin clears it for
-	// some reason on close, we re-send here:
 	CDVD->newDiskCB(cdvdNewDiskCB);
 
 	// Win32 Fail: the old CDVD api expects MBCS on Win32 platforms, but generating a MBCS
@@ -362,7 +354,6 @@ bool DoCDVDopen()
 	// converted (which isn't really practical knowledge).  A 'best guess' would be the
 	// default codepage of the user's Windows install, but even that will fail and return
 	// question marks if the filename is another language.
-	// Likely Fix: Force new versions of CDVD plugins to expect UTF8 instead.
 
 	//TODO_CDVD check if ISO and Disc use UTF8
 
@@ -373,7 +364,6 @@ bool DoCDVDopen()
 
 	if (ret == -1)
 		return false; // error! (handled by caller)
-	//if( ret == 1 )	throw Exception::CancelEvent(L"User canceled the CDVD plugin's open dialog."); <--- TODO_CDVD is this still needed?
 
 	int cdtype = DoCDVDdetectDiskType();
 
@@ -473,7 +463,6 @@ s32 DoCDVDreadTrack(u32 lsn, int mode)
 {
 	CheckNullCDVD();
 
-	// TEMP: until all the plugins use the new CDVDgetBuffer style
 	// TODO: The CDVD api only uses the new getBuffer style. Why is this temp?
 	// lastReadSize is needed for block dumps
 	switch (mode)

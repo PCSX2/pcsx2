@@ -13,9 +13,9 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../../shared/rawinput_usb.h"
-#include "../hidproxy.h"
-#include "../usb-hid.h"
+#include "USB/shared/rawinput_usb.h"
+#include "USB/usb-hid/hidproxy.h"
+#include "USB/usb-hid/usb-hid.h"
 
 namespace usb_hid
 {

@@ -17,32 +17,19 @@
 
 bool pxIsEnglish(int id)
 {
-    return (id == wxLANGUAGE_ENGLISH || id == wxLANGUAGE_ENGLISH_US);
+	return (id == wxLANGUAGE_ENGLISH || id == wxLANGUAGE_ENGLISH_US);
 }
 
 // --------------------------------------------------------------------------------------
 //  pxExpandMsg  -- an Iconized Text Translator
 //  Was replaced by a standard implementation of wxGetTranslation
 // --------------------------------------------------------------------------------------
-const wxChar *__fastcall pxExpandMsg(const wxChar *englishContent)
+const wxChar *__fastcall pxExpandMsg(const wxChar *message)
 {
-    return wxGetTranslation(englishContent).wc_str();
+	return wxGetTranslation(message).wc_str();
 }
 
-// ------------------------------------------------------------------------
-// Alternative implementation for wxGetTranslation.
-// This version performs a string length check in devel builds, which issues a warning
-// if the string seems too long for gettext lookups.  Longer complicated strings should
-// usually be implemented used the pxMsgExpand system instead.
-//
 const wxChar *__fastcall pxGetTranslation(const wxChar *message)
 {
-    if (IsDevBuild) {
-        if (wxStrlen(message) > 128) {
-            Console.Warning("pxGetTranslation: Long message detected, maybe use pxE() instead?");
-            Console.WriteLn(Color_Green, L"Message: %s", message);
-        }
-    }
-
-    return wxGetTranslation(message).wc_str();
+	return wxGetTranslation(message).wc_str();
 }

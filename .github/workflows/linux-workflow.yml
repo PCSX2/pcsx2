@@ -1,4 +1,4 @@
-name: Linux Build
+name: 🐧 Linux Builds
 
 # Controls when the action will run. Triggers the workflow on push or pull request
 # events but only for the master branch
@@ -53,8 +53,14 @@ jobs:
             cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
             detail: -nopch
             experimental: false
+          - os: ubuntu-20.04
+            platform: x86
+            compiler: gcc
+            cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON -DARCH_FLAG=-march=haswell
+            detail: -avx2-nopch
+            experimental: false
 
-    name: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}${{ matrix.detail }}
+    name: "${{ matrix.platform }} | ${{ matrix.compiler }} ${{ matrix.detail }}"
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
@@ -85,7 +91,7 @@ jobs:
           message("::set-output name=timestamp::${current_date}")
 
       - name: ccache cache files
-        uses: actions/cache@v2.1.5
+        uses: actions/cache@v2.1.6
         with:
           path: .ccache
           key: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}${{ matrix.detail }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}

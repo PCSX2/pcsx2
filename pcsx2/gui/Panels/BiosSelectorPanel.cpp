@@ -26,6 +26,9 @@
 
 using namespace pxSizerFlags;
 
+wxDECLARE_EVENT(pxEvt_BiosEnumerationFinished, wxCommandEvent);
+wxDEFINE_EVENT(pxEvt_BiosEnumerationFinished, wxCommandEvent);
+
 // =====================================================================================================
 //  BaseSelectorPanel
 // =====================================================================================================
@@ -41,8 +44,8 @@ using namespace pxSizerFlags;
 // upgraded to wx2.9/3.0, it should incorporate such functionality into this base class.  (for now
 // we just provide the user with a "refresh" button).
 //
-Panels::BaseSelectorPanel::BaseSelectorPanel( wxWindow* parent )
-	: BaseApplicableConfigPanel( parent, wxVERTICAL )
+Panels::BaseSelectorPanel::BaseSelectorPanel(wxWindow* parent)
+	: BaseApplicableConfigPanel(parent, wxVERTICAL)
 {
 	Bind(wxEVT_DIRPICKER_CHANGED, &BaseSelectorPanel::OnFolderChanged, this);
 	Bind(wxEVT_SHOW, &BaseSelectorPanel::OnShow, this);
@@ -51,22 +54,22 @@ Panels::BaseSelectorPanel::BaseSelectorPanel( wxWindow* parent )
 void Panels::BaseSelectorPanel::OnShow(wxShowEvent& evt)
 {
 	evt.Skip();
-	if( evt.IsShown() )
+	if (evt.IsShown())
 		OnShown();
 }
 
 void Panels::BaseSelectorPanel::OnShown()
 {
-	if( !ValidateEnumerationStatus() )
+	if (!ValidateEnumerationStatus())
 		DoRefresh();
 }
 
-bool Panels::BaseSelectorPanel::Show( bool visible )
+bool Panels::BaseSelectorPanel::Show(bool visible)
 {
-	if( visible )
+	if (visible)
 		OnShown();
 
-	return BaseApplicableConfigPanel::Show( visible );
+	return BaseApplicableConfigPanel::Show(visible);
 }
 
 void Panels::BaseSelectorPanel::RefreshSelections()
@@ -75,13 +78,13 @@ void Panels::BaseSelectorPanel::RefreshSelections()
 	DoRefresh();
 }
 
-void Panels::BaseSelectorPanel::OnRefreshSelections( wxCommandEvent& evt )
+void Panels::BaseSelectorPanel::OnRefreshSelections(wxCommandEvent& evt)
 {
 	evt.Skip();
 	RefreshSelections();
 }
 
-void Panels::BaseSelectorPanel::OnFolderChanged( wxFileDirPickerEvent& evt )
+void Panels::BaseSelectorPanel::OnFolderChanged(wxFileDirPickerEvent& evt)
 {
 	evt.Skip();
 	OnShown();
@@ -90,30 +93,32 @@ void Panels::BaseSelectorPanel::OnFolderChanged( wxFileDirPickerEvent& evt )
 // =====================================================================================================
 //  BiosSelectorPanel
 // =====================================================================================================
-Panels::BiosSelectorPanel::BiosSelectorPanel( wxWindow* parent )
-	: BaseSelectorPanel( parent )
+Panels::BiosSelectorPanel::BiosSelectorPanel(wxWindow* parent)
+	: BaseSelectorPanel(parent)
 {
-	SetMinWidth( 480 );
+	SetMinWidth(480);
 
-	m_ComboBox		= new wxListBox( this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_SINGLE | wxLB_SORT | wxLB_NEEDED_SB );
-	m_FolderPicker	= new DirPickerPanel( this, FolderId_Bios,
-		_("BIOS Search Path:"),						// static box label
-		_("Select folder with PS2 BIOS roms")		// dir picker popup label
+	m_ComboBox = new wxListBox(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxLB_SINGLE | wxLB_SORT | wxLB_NEEDED_SB);
+	m_FolderPicker = new DirPickerPanel(this, FolderId_Bios,
+		_("BIOS Search Path:"), // static box label
+		_("Select folder with PS2 BIOS roms") // dir picker popup label
 	);
 
-	m_ComboBox->SetFont( pxGetFixedFont( m_ComboBox->GetFont().GetPointSize()+1 ) );
-	m_ComboBox->SetMinSize( wxSize( wxDefaultCoord, std::max( m_ComboBox->GetMinSize().GetHeight(), 96 ) ) );
+	m_ComboBox->SetFont(pxGetFixedFont(m_ComboBox->GetFont().GetPointSize() + 1));
+	m_ComboBox->SetMinSize(wxSize(wxDefaultCoord, std::max(m_ComboBox->GetMinSize().GetHeight(), 96)));
 
 	//if (InstallationMode != InstallMode_Portable)
-		m_FolderPicker->SetStaticDesc( _("Click the Browse button to select a different folder where PCSX2 will look for PS2 BIOS roms.") );
+	m_FolderPicker->SetStaticDesc(_("Click the Browse button to select a different folder where PCSX2 will look for PS2 BIOS roms."));
 
-	wxButton* refreshButton = new wxButton( this, wxID_ANY, _("Refresh list") );
+	wxButton* refreshButton = new wxButton(this, wxID_ANY, _("Refresh list"));
 
-	*this	+= Label(_("Select a BIOS rom:"));
-	*this	+= m_ComboBox		| StdExpand();
-	*this	+= refreshButton	| pxBorder(wxLEFT, StdPadding);
-	*this	+= 8;
-	*this	+= m_FolderPicker	| StdExpand();
+	*this += Label(_("Select a BIOS rom:"));
+	*this += m_ComboBox | StdExpand();
+	*this += refreshButton | pxBorder(wxLEFT, StdPadding);
+	*this += 8;
+	*this += m_FolderPicker | StdExpand();
+
+	Bind(pxEvt_BiosEnumerationFinished, &BiosSelectorPanel::OnEnumComplete, this);
 
 	Bind(wxEVT_BUTTON, &BiosSelectorPanel::OnRefreshSelections, this, refreshButton->GetId());
 }
@@ -121,15 +126,15 @@ Panels::BiosSelectorPanel::BiosSelectorPanel( wxWindow* parent )
 void Panels::BiosSelectorPanel::Apply()
 {
 	// User never visited this tab, so there's nothing to apply.
-	if( !m_BiosList ) return;
+	if (!m_BiosList)
+		return;
 
 	int sel = m_ComboBox->GetSelection();
-	if( sel == wxNOT_FOUND )
+	if (sel == wxNOT_FOUND)
 	{
 		throw Exception::CannotApplySettings(this)
 			.SetDiagMsg(L"User did not specify a valid BIOS selection.")
-			.SetUserMsg( pxE( L"Please select a valid BIOS.  If you are unable to make a valid selection then press Cancel to close the Configuration panel."
-			) );
+			.SetUserMsg(pxE(L"Please select a valid BIOS.  If you are unable to make a valid selection then press Cancel to close the Configuration panel."));
 	}
 
 	g_Conf->BaseFilenames.Bios = (*m_BiosList)[(sptr)m_ComboBox->GetClientData(sel)];
@@ -147,10 +152,10 @@ bool Panels::BiosSelectorPanel::ValidateEnumerationStatus()
 	// occurs during file enumeration.
 	std::unique_ptr<wxArrayString> bioslist(new wxArrayString());
 
-	if( m_FolderPicker->GetPath().Exists() )
+	if (m_FolderPicker->GetPath().Exists())
 		wxDir::GetAllFiles(m_FolderPicker->GetPath().ToString(), bioslist.get(), L"*.*", wxDIR_FILES);
 
-	if( !m_BiosList || (*bioslist != *m_BiosList) )
+	if (!m_BiosList || (*bioslist != *m_BiosList))
 		validated = false;
 
 	m_BiosList.swap(bioslist);
@@ -162,28 +167,52 @@ bool Panels::BiosSelectorPanel::ValidateEnumerationStatus()
 	return validated;
 }
 
-void Panels::BiosSelectorPanel::DoRefresh()
+void Panels::BiosSelectorPanel::EnumThread::ExecuteTaskInThread()
 {
-	if (!m_BiosList) return;
-
-	m_ComboBox->Clear();
-
-	const wxFileName right(g_Conf->FullpathToBios());
-	bool biosSet = false;
-
-	for(size_t i=0; i<m_BiosList->GetCount(); ++i)
+	for (size_t i = 0; i < m_parent.m_BiosList->GetCount(); ++i)
 	{
 		wxString description;
-		if (!IsBIOS((*m_BiosList)[i], description)) continue;
-		int sel = m_ComboBox->Append( description, (void*)i );
-
-		if (wxFileName((*m_BiosList)[i] ) == right)
-		{
-			m_ComboBox->SetSelection(sel);
-			biosSet = true;
-		}
+		if (!IsBIOS((*m_parent.m_BiosList)[i], description))
+			continue;
+		Result.emplace_back(std::move(description), i);
 	}
 
-	if ((!biosSet) && !(m_ComboBox->IsEmpty()))
-		m_ComboBox->SetSelection(0);
+	wxCommandEvent done(pxEvt_BiosEnumerationFinished);
+	done.SetClientData(this);
+	m_parent.GetEventHandler()->AddPendingEvent(done);
 }
+
+void Panels::BiosSelectorPanel::DoRefresh()
+{
+	m_ComboBox->Clear();
+	if (!m_BiosList->size())
+		return;
+
+	m_ComboBox->Append(wxString("Enumerating BIOSes..."));
+	m_ComboBox->Update();
+
+	m_EnumeratorThread.reset(new EnumThread(*this));
+
+	m_EnumeratorThread->Start();
+}
+
+void Panels::BiosSelectorPanel::OnEnumComplete(wxCommandEvent& evt)
+{
+	auto enumThread = static_cast<EnumThread*>(evt.GetClientData());
+	// Sanity check, in case m_BiosList was updated by ValidateEnumerationStatus() while the EnumThread was running
+	if (m_EnumeratorThread.get() != enumThread || m_BiosList->size() < enumThread->Result.size())
+		return;
+
+	const wxFileName& currentBios = g_Conf->FullpathToBios();
+	m_ComboBox->Clear(); // Clear the "Enumerating BIOSes..."
+
+	for (const std::pair<wxString, u32>& result : enumThread->Result)
+	{
+		const int sel = m_ComboBox->Append(result.first, reinterpret_cast<void*>(result.second));
+		if (currentBios == wxFileName((*m_BiosList)[result.second]))
+			m_ComboBox->SetSelection(sel);
+	}
+};
+
+Panels::BiosSelectorPanel::EnumThread::EnumThread(BiosSelectorPanel& parent)
+	: m_parent(parent){};

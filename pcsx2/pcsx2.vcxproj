@@ -1,0 +1,1179 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug AVX2|Win32">
+      <Configuration>Debug AVX2</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug AVX2|x64">
+      <Configuration>Debug AVX2</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Devel|Win32">
+      <Configuration>Devel</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Devel|x64">
+      <Configuration>Devel</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Devel AVX2|Win32">
+      <Configuration>Devel AVX2</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Devel AVX2|x64">
+      <Configuration>Devel AVX2</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release AVX2|Win32">
+      <Configuration>Release AVX2</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release AVX2|x64">
+      <Configuration>Release AVX2</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <Import Project="$(SolutionDir)common\vsprops\WinSDK.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{1CEFD830-2B76-4596-A4EE-BCD7280A60BD}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>Application</ConfigurationType>
+    <CharacterSet>Unicode</CharacterSet>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+    <WholeProgramOptimization Condition="$(Configuration.Contains(Release))">true</WholeProgramOptimization>
+    <UseDebugLibraries Condition="$(Configuration.Contains(Debug))">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)common\vsprops\common.props" />
+    <Import Project="$(SolutionDir)common\vsprops\BaseProperties.props" />
+    <Import Project="$(SolutionDir)common\vsprops\3rdpartyDeps.props" />
+    <Import Project="$(SolutionDir)common\vsprops\pthreads.props" />
+    <Import Condition="$(Configuration.Contains(Debug))" Project="$(SolutionDir)common\vsprops\CodeGen_Debug.props" />
+    <Import Condition="$(Configuration.Contains(Devel))" Project="$(SolutionDir)common\vsprops\CodeGen_Devel.props" />
+    <Import Condition="$(Configuration.Contains(Release))" Project="$(SolutionDir)common\vsprops\CodeGen_Release.props" />
+    <Import Condition="!$(Configuration.Contains(Release))" Project="$(SolutionDir)common\vsprops\IncrementalLinking.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <TargetName>$(EXEString)</TargetName>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <AdditionalIncludeDirectories>$(ProjectDir)\gui;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\xbyak;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\freetype\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\xz\xz\src\liblzma\api;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\baseclasses;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\libpng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
+      <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;LZMA_API_STATIC;BUILD_DX=1;SPU2X_PORTAUDIO;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="$(Configuration.Contains(Debug))">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="$(Configuration.Contains(Devel))">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="$(Configuration.Contains(Release))">NDEBUG;_SECURE_SCL_=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(CI)'=='true'">PCSX2_CI;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="!$(Configuration.Contains(AVX2))">_M_SSE=0x401;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="$(Configuration.Contains(AVX2))">_M_SSE=0x501;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <!-- This flag will throw a warning on x64 as SSE2 is implied-->
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="'$(Platform)'!='x64'">StreamingSIMDExtensions2</EnableEnhancedInstructionSet>
+      <EnableEnhancedInstructionSet Condition="$(Configuration.Contains(AVX2))">AdvancedVectorExtensions2</EnableEnhancedInstructionSet>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
+      <!-- SH 2/3 flashlight, explicitly set here don't change -->
+      <!-- https://github.com/PCSX2/pcsx2/commit/16431653e4d92fda4069031897e24fbe4688d36a -->
+      <FloatingPointModel>Precise</FloatingPointModel>
+    </ClCompile>
+    <Link>
+      <LargeAddressAware>Yes</LargeAddressAware>
+      <AdditionalDependencies>comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>dxguid.lib;dinput8.lib;hid.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <None Include="PAD\Windows\Default.ini" />
+    <None Include="Utilities\folderdesc.txt" />
+    <None Include="Docs\License.txt" />
+    <None Include="x86\microVU_Alloc.inl" />
+    <None Include="x86\microVU_Analyze.inl" />
+    <None Include="x86\microVU_Branch.inl" />
+    <None Include="x86\microVU_Clamp.inl" />
+    <None Include="x86\microVU_Compile.inl" />
+    <None Include="x86\microVU_Execute.inl" />
+    <None Include="x86\microVU_Flags.inl" />
+    <None Include="x86\microVU_Log.inl" />
+    <None Include="x86\microVU_Lower.inl" />
+    <None Include="x86\microVU_Macro.inl" />
+    <None Include="x86\microVU_Misc.inl" />
+    <None Include="x86\microVU_Tables.inl" />
+    <None Include="x86\microVU_Upper.inl" />
+    <None Include="gui\Dialogs\BaseConfigurationDialog.inl" />
+    <CustomBuild Include="gui\Resources\AppIcon16.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="gui\Resources\AppIcon32.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="gui\Resources\AppIcon64.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="gui\Resources\BackgroundLogo.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="gui\Resources\NoIcon.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="gui\Resources\ButtonIcon_Camera.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="gui\Resources\ConfigIcon_Cpu.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="gui\Resources\ConfigIcon_Gamefixes.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="gui\Resources\ConfigIcon_MemoryCard.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="gui\Resources\ConfigIcon_Paths.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="gui\Resources\ConfigIcon_Speedhacks.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="gui\Resources\ConfigIcon_Video.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="gui\Resources\Logo.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="gui\Resources\Breakpoint_Active.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="gui\Resources\Breakpoint_Inactive.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <!-- Generate Recording GUI Image Headers -->
+    <CustomBuild Include="Recording\VirtualPad\img\controllerFull.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\controllerThreeQuarters.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\controllerHalf.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\circlePressed.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\crossPressed.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\downPressed.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\l1Pressed.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\l2Pressed.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\l3Pressed.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\leftPressed.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\r1Pressed.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\r2Pressed.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\r3Pressed.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\rightPressed.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\selectPressed.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\squarePressed.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\startPressed.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\trianglePressed.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+    <CustomBuild Include="Recording\VirtualPad\img\upPressed.png">
+      <Command>cmd.exe /c %(RelativeDir)bin2cpp.cmd %(Filename)%(Extension)</Command>
+      <Outputs>%(RelativeDir)%(Filename).h</Outputs>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CDVD\BlockdumpFileReader.cpp" />
+    <ClCompile Include="CDVD\CDVDdiscReader.cpp" />
+    <ClCompile Include="CDVD\CDVDdiscThread.cpp" />
+    <ClCompile Include="CDVD\ChdFileReader.cpp" />
+    <ClCompile Include="CDVD\ChunksCache.cpp" />
+    <ClCompile Include="CDVD\CompressedFileReader.cpp" />
+    <ClCompile Include="CDVD\CsoFileReader.cpp" />
+    <ClCompile Include="CDVD\GzippedFileReader.cpp" />
+    <ClCompile Include="CDVD\OutputIsoFile.cpp" />
+    <ClCompile Include="CDVD\Linux\DriveUtility.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="CDVD\Linux\IOCtlSrc.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="CDVD\Windows\DriveUtility.cpp" />
+    <ClCompile Include="CDVD\Windows\IOCtlSrc.cpp" />
+    <ClCompile Include="DebugTools\Breakpoints.cpp" />
+    <ClCompile Include="DebugTools\DebugInterface.cpp" />
+    <ClCompile Include="DebugTools\DisassemblyManager.cpp" />
+    <ClCompile Include="DebugTools\BiosDebugData.cpp" />
+    <ClCompile Include="DebugTools\ExpressionParser.cpp" />
+    <ClCompile Include="DebugTools\MIPSAnalyst.cpp" />
+    <ClCompile Include="DebugTools\MipsAssembler.cpp" />
+    <ClCompile Include="DebugTools\MipsAssemblerTables.cpp" />
+    <ClCompile Include="DebugTools\MipsStackWalk.cpp" />
+    <ClCompile Include="DebugTools\SymbolMap.cpp" />
+    <ClCompile Include="DEV9\ATA\Commands\ATA_Command.cpp" />
+    <ClCompile Include="DEV9\ATA\Commands\ATA_CmdDMA.cpp" />
+    <ClCompile Include="DEV9\ATA\Commands\ATA_CmdExecuteDeviceDiag.cpp" />
+    <ClCompile Include="DEV9\ATA\Commands\ATA_CmdNoData.cpp" />
+    <ClCompile Include="DEV9\ATA\Commands\ATA_CmdPIOData.cpp" />
+    <ClCompile Include="DEV9\ATA\Commands\ATA_CmdSMART.cpp" />
+    <ClCompile Include="DEV9\ATA\Commands\ATA_SCE.cpp" />
+    <ClCompile Include="DEV9\ATA\ATA_Info.cpp" />
+    <ClCompile Include="DEV9\ATA\ATA_State.cpp" />
+    <ClCompile Include="DEV9\ATA\ATA_Transfer.cpp" />
+    <ClCompile Include="DEV9\ATA\HddCreate.cpp" />
+    <ClCompile Include="DEV9\DEV9.cpp" />
+    <ClCompile Include="DEV9\flash.cpp" />
+    <ClCompile Include="DEV9\InternalServers\DHCP_Server.cpp" />
+    <ClCompile Include="DEV9\PacketReader\EthernetFrame.cpp" />
+    <ClCompile Include="DEV9\PacketReader\IP\UDP\DHCP\DHCP_Options.cpp" />
+    <ClCompile Include="DEV9\PacketReader\IP\UDP\DHCP\DHCP_Packet.cpp" />
+    <ClCompile Include="DEV9\PacketReader\IP\UDP\DNS\DNS_Classes.cpp" />
+    <ClCompile Include="DEV9\PacketReader\IP\UDP\DNS\DNS_Packet.cpp" />
+    <ClCompile Include="DEV9\PacketReader\IP\UDP\UDP_Packet.cpp" />
+    <ClCompile Include="DEV9\PacketReader\IP\IP_Options.cpp" />
+    <ClCompile Include="DEV9\PacketReader\IP\IP_Packet.cpp" />
+    <ClCompile Include="DEV9\PacketReader\NetLib.cpp" />
+    <ClCompile Include="DEV9\pcap_io.cpp" />
+    <ClCompile Include="DEV9\Win32\pcap_io_win32.cpp" />
+    <ClCompile Include="DEV9\smap.cpp" />
+    <ClCompile Include="DEV9\Win32\DEV9WinConfig.cpp" />
+    <ClCompile Include="DEV9\net.cpp" />
+    <ClCompile Include="DEV9\Win32\tap-win32.cpp" />
+    <ClCompile Include="DEV9\Win32\Win32.cpp" />
+    <ClCompile Include="GameDatabase.cpp" />
+    <ClCompile Include="Gif_Logger.cpp" />
+    <ClCompile Include="Gif_Unit.cpp" />
+    <ClCompile Include="gui\AppGameDatabase.cpp" />
+    <ClCompile Include="gui\AppUserMode.cpp" />
+    <ClCompile Include="gui\Debugger\BreakpointWindow.cpp" />
+    <ClCompile Include="gui\Debugger\CtrlDisassemblyView.cpp" />
+    <ClCompile Include="gui\Debugger\CtrlMemView.cpp" />
+    <ClCompile Include="gui\Debugger\CtrlRegisterList.cpp" />
+    <ClCompile Include="gui\Debugger\DebugEvents.cpp" />
+    <ClCompile Include="gui\Debugger\DebuggerLists.cpp" />
+    <ClCompile Include="gui\Debugger\DisassemblyDialog.cpp" />
+    <ClCompile Include="gui\Dialogs\IPCDialog.cpp" />
+    <ClCompile Include="gui\Dialogs\GSDumpDialog.cpp" />
+    <ClCompile Include="gui\Dialogs\McdConfigDialog.cpp" />
+    <ClCompile Include="gui\DriveList.cpp" />
+    <ClCompile Include="gui\Panels\MemoryCardListView.cpp" />
+    <ClCompile Include="IopGte.cpp" />
+    <ClCompile Include="IPC.cpp" />
+    <ClCompile Include="FW.cpp" />
+    <ClCompile Include="PAD\Windows\PADConfig.cpp" />
+    <ClCompile Include="PAD\Windows\DeviceEnumerator.cpp" />
+    <ClCompile Include="PAD\Windows\Diagnostics.cpp" />
+    <ClCompile Include="PAD\Windows\DirectInput.cpp" />
+    <ClCompile Include="PAD\Windows\DualShock3.cpp" />
+    <ClCompile Include="PAD\Windows\Global.cpp" />
+    <ClCompile Include="PAD\Windows\HidDevice.cpp" />
+    <ClCompile Include="PAD\Windows\InputManager.cpp" />
+    <ClCompile Include="PAD\Windows\KeyboardQueue.cpp" />
+    <ClCompile Include="PAD\Windows\PAD.cpp" />
+    <ClCompile Include="PAD\Windows\PADRawInput.cpp" />
+    <ClCompile Include="PAD\Windows\Tooltips.cpp" />
+    <ClCompile Include="PAD\Windows\VKey.cpp" />
+    <ClCompile Include="PAD\Windows\WindowsKeyboard.cpp" />
+    <ClCompile Include="PAD\Windows\WindowsMessaging.cpp" />
+    <ClCompile Include="PAD\Windows\WindowsMouse.cpp" />
+    <ClCompile Include="PAD\Windows\WndProcEater.cpp" />
+    <ClCompile Include="PAD\Windows\XInputEnum.cpp" />
+    <ClCompile Include="Recording\Utilities\InputRecordingLogger.cpp" />
+    <ClCompile Include="SPU2\DplIIdecoder.cpp" />
+    <ClCompile Include="SPU2\debug.cpp" />
+    <ClCompile Include="SPU2\RegLog.cpp" />
+    <ClCompile Include="SPU2\SndOut_Portaudio.cpp" />
+    <ClCompile Include="SPU2\wavedump_wav.cpp" />
+    <ClCompile Include="SPU2\Lowpass.cpp" />
+    <ClCompile Include="SPU2\SndOut.cpp" />
+    <ClCompile Include="SPU2\Timestretcher.cpp" />
+    <ClCompile Include="SPU2\Windows\SndOut_waveOut.cpp" />
+    <ClCompile Include="SPU2\Windows\SndOut_XAudio2.cpp" />
+    <ClCompile Include="SPU2\Linux\Alsa.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="SPU2\dma.cpp" />
+    <ClCompile Include="SPU2\RegTable.cpp" />
+    <ClCompile Include="SPU2\spu2freeze.cpp" />
+    <ClCompile Include="SPU2\spu2sys.cpp" />
+    <ClCompile Include="SPU2\ADSR.cpp" />
+    <ClCompile Include="SPU2\Mixer.cpp" />
+    <ClCompile Include="SPU2\ReadInput.cpp" />
+    <ClCompile Include="SPU2\Reverb.cpp" />
+    <ClCompile Include="SPU2\Windows\dsp.cpp" />
+    <ClCompile Include="SPU2\Linux\Config.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="SPU2\Linux\Dialogs.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="SPU2\Windows\CfgHelpers.cpp" />
+    <ClCompile Include="SPU2\Windows\Config.cpp" />
+    <ClCompile Include="SPU2\Windows\ConfigDebug.cpp" />
+    <ClCompile Include="SPU2\Windows\ConfigSoundtouch.cpp" />
+    <ClCompile Include="SPU2\Windows\RealtimeDebugger.cpp" />
+    <ClCompile Include="SPU2\Windows\UIHelpers.cpp" />
+    <ClCompile Include="SPU2\spu2.cpp" />
+    <ClCompile Include="IPU\IPUdma.cpp" />
+    <ClCompile Include="IPU\IPUdither.cpp" />
+    <ClCompile Include="Linux\LnxConsolePipe.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="Mdec.cpp" />
+    <ClCompile Include="MultipartFileReader.cpp" />
+    <ClCompile Include="Patch.cpp" />
+    <ClCompile Include="Patch_Memory.cpp" />
+    <ClCompile Include="PrecompiledHeader.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="ps2\Iop\PsxBios.cpp" />
+    <ClCompile Include="ps2\LegacyDmac.cpp" />
+    <ClCompile Include="ps2\pgif.cpp" />
+    <ClCompile Include="Recording\InputRecordingControls.cpp" />
+    <ClCompile Include="Recording\VirtualPad\VirtualPad.cpp" />
+    <ClCompile Include="Recording\VirtualPad\VirtualPadData.cpp" />
+    <ClCompile Include="Recording\VirtualPad\VirtualPadResources.cpp" />
+    <ClCompile Include="ShiftJisToUnicode.cpp" />
+    <ClCompile Include="sif2.cpp" />
+    <ClCompile Include="Recording\InputRecording.cpp" />
+    <ClCompile Include="Recording\NewRecordingFrame.cpp" />
+    <ClCompile Include="Recording\InputRecordingFile.cpp" />
+    <ClCompile Include="Recording\PadData.cpp" />
+    <ClCompile Include="USB\configuration.cpp" />
+    <ClCompile Include="USB\deviceproxy.cpp" />
+    <ClCompile Include="USB\device_init.cpp" />
+    <ClCompile Include="USB\qemu-usb\bus.cpp" />
+    <ClCompile Include="USB\qemu-usb\core.cpp" />
+    <ClCompile Include="USB\qemu-usb\desc.cpp" />
+    <ClCompile Include="USB\qemu-usb\glib.cpp" />
+    <ClCompile Include="USB\qemu-usb\hid.cpp" />
+    <ClCompile Include="USB\qemu-usb\input-keymap-qcode-to-qnum.cpp" />
+    <ClCompile Include="USB\qemu-usb\input-keymap-win32-to-qcode.cpp" />
+    <ClCompile Include="USB\qemu-usb\iov.cpp" />
+    <ClCompile Include="USB\qemu-usb\usb-ohci.cpp" />
+    <ClCompile Include="USB\qemu-usb\vl.cpp" />
+    <ClCompile Include="USB\shared\hidapi.cpp" />
+    <ClCompile Include="USB\shared\inifile_usb.cpp" />
+    <ClCompile Include="USB\shared\rawinput_usb.cpp" />
+    <ClCompile Include="USB\shared\ringbuffer.cpp" />
+    <ClCompile Include="USB\shared\shared_usb.cpp" />
+    <ClCompile Include="USB\usb-eyetoy\api_init_win32_eyetoy.cpp" />
+    <ClCompile Include="USB\usb-eyetoy\cam-windows.cpp" />
+    <ClCompile Include="USB\usb-eyetoy\jo_mpeg.cpp" />
+    <ClCompile Include="USB\usb-eyetoy\jpgd\jpgd.cpp" />
+    <ClCompile Include="USB\usb-eyetoy\usb-eyetoy-webcam.cpp" />
+    <ClCompile Include="USB\usb-hid\api_init_win32_hid.cpp" />
+    <ClCompile Include="USB\usb-hid\raw\rawinput.cpp" />
+    <ClCompile Include="USB\usb-hid\usb-hid.cpp" />
+    <ClCompile Include="USB\usb-mic\api_init_win32_mic.cpp" />
+    <ClCompile Include="USB\usb-mic\audiodev-wasapi.cpp" />
+    <ClCompile Include="USB\usb-mic\usb-headset.cpp" />
+    <ClCompile Include="USB\usb-mic\usb-mic-logitech.cpp" />
+    <ClCompile Include="USB\usb-mic\usb-mic-singstar.cpp" />
+    <ClCompile Include="USB\usb-msd\usb-msd-win32.cpp" />
+    <ClCompile Include="USB\usb-msd\usb-msd.cpp" />
+    <ClCompile Include="USB\usb-pad\api_init_win32_pad.cpp" />
+    <ClCompile Include="USB\usb-pad\dx\dinput-config.cpp" />
+    <ClCompile Include="USB\usb-pad\dx\dinput.cpp" />
+    <ClCompile Include="USB\usb-pad\dx\usb-pad-dx.cpp" />
+    <ClCompile Include="USB\usb-pad\lg\lg_ff.cpp" />
+    <ClCompile Include="USB\usb-pad\raw\raw-config.cpp" />
+    <ClCompile Include="USB\usb-pad\raw\usb-pad-raw.cpp" />
+    <ClCompile Include="USB\usb-pad\usb-pad-ff.cpp" />
+    <ClCompile Include="USB\usb-pad\usb-pad.cpp" />
+    <ClCompile Include="USB\usb-pad\usb-seamic.cpp" />
+    <ClCompile Include="USB\USB.cpp" />
+    <ClCompile Include="USB\Win32\Config_usb.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GLLoader.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GLState.cpp" />
+    <ClCompile Include="GS\GS.cpp" />
+    <ClCompile Include="GS\GSAlignedClass.cpp" />
+    <ClCompile Include="GS\GSBlock.cpp" />
+    <ClCompile Include="GS\GSCapture.cpp" />
+    <ClCompile Include="GS\Window\GSCaptureDlg.cpp" />
+    <ClCompile Include="GS\GSClut.cpp" />
+    <ClCompile Include="GS\GSCodeBuffer.cpp" />
+    <ClCompile Include="GS\GSCrc.cpp" />
+    <ClCompile Include="GS\Renderers\Common\GSDevice.cpp" />
+    <ClCompile Include="GS\Renderers\DX11\GSDevice11.cpp" />
+    <ClCompile Include="GS\Renderers\Null\GSDeviceNull.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GSDeviceOGL.cpp" />
+    <ClCompile Include="GS\Window\GSDialog.cpp" />
+    <ClCompile Include="GS\Renderers\Common\GSDirtyRect.cpp" />
+    <ClCompile Include="GS\GSDrawingContext.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanline.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.x64.avx.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.x64.avx2.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.x64.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.x86.avx.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.x86.avx2.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.x86.cpp" />
+    <ClCompile Include="GS\GSDump.cpp" />
+    <ClCompile Include="GS\Renderers\Common\GSFunctionMap.cpp" />
+    <ClCompile Include="GS\Renderers\HW\GSHwHack.cpp" />
+    <ClCompile Include="GS\GSLocalMemory.cpp" />
+    <ClCompile Include="GS\GSLzma.cpp" />
+    <ClCompile Include="GS\GSPerfMon.cpp" />
+    <ClCompile Include="GS\Renderers\Common\GSOsdManager.cpp" />
+    <ClCompile Include="GS\GSPng.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSRasterizer.cpp" />
+    <ClCompile Include="GS\Renderers\Common\GSRenderer.cpp" />
+    <ClCompile Include="GS\Renderers\DX11\GSRendererDX11.cpp" />
+    <ClCompile Include="GS\Renderers\HW\GSRendererHW.cpp" />
+    <ClCompile Include="GS\Renderers\Null\GSRendererNull.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GSRendererOGL.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSRendererSW.cpp" />
+    <ClCompile Include="GS\Window\GSSetting.cpp" />
+    <ClCompile Include="GS\Window\GSSettingsDlg.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x64.avx.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x64.avx2.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x64.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x86.avx.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x86.avx2.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x86.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GSShaderOGL.cpp" />
+    <ClCompile Include="GS\GSState.cpp" />
+    <ClCompile Include="GS\GSTables.cpp" />
+    <ClCompile Include="GS\Renderers\Common\GSTexture.cpp" />
+    <ClCompile Include="GS\Renderers\DX11\GSTexture11.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GSTextureOGL.cpp" />
+    <ClCompile Include="GS\Renderers\HW\GSTextureCache.cpp" />
+    <ClCompile Include="GS\Renderers\DX11\GSTextureCache11.cpp" />
+    <ClCompile Include="GS\Renderers\OpenGL\GSTextureCacheOGL.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSTextureCacheSW.cpp" />
+    <ClCompile Include="GS\Renderers\DX11\GSTextureFX11.cpp" />
+    <ClCompile Include="GS\Renderers\Null\GSTextureNull.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSTextureSW.cpp" />
+    <ClCompile Include="GS\GSUtil.cpp" />
+    <ClCompile Include="GS\GSVector.cpp" />
+    <ClCompile Include="GS\Renderers\Common\GSVertexList.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSVertexSW.cpp" />
+    <ClCompile Include="GS\Renderers\Common\GSVertexTrace.cpp" />
+    <ClCompile Include="GS\Window\GSWnd.cpp" />
+    <ClCompile Include="GS\Window\GSWndDX.cpp" />
+    <ClCompile Include="GS\Window\GSWndWGL.cpp" />
+    <ClCompile Include="Utilities\FileUtils.cpp" />
+    <ClCompile Include="Dump.cpp" />
+    <ClCompile Include="x86\iMisc.cpp" />
+    <ClCompile Include="Pcsx2Config.cpp" />
+    <ClCompile Include="windows\FlatFileReaderWindows.cpp" />
+    <ClCompile Include="SaveState.cpp" />
+    <ClCompile Include="SourceLog.cpp" />
+    <ClCompile Include="System\SysCoreThread.cpp" />
+    <ClCompile Include="System.cpp" />
+    <ClCompile Include="System\SysThreadBase.cpp" />
+    <ClCompile Include="Elfheader.cpp" />
+    <ClCompile Include="CDVD\InputIsoFile.cpp" />
+    <ClCompile Include="x86\BaseblockEx.cpp" />
+    <ClCompile Include="ps2\BiosTools.cpp" />
+    <ClCompile Include="Counters.cpp" />
+    <ClCompile Include="FiFo.cpp" />
+    <ClCompile Include="Hw.cpp" />
+    <ClCompile Include="HwRead.cpp" />
+    <ClCompile Include="HwWrite.cpp" />
+    <ClCompile Include="Cache.cpp" />
+    <ClCompile Include="Memory.cpp" />
+    <ClCompile Include="x86\ix86-32\recVTLB.cpp" />
+    <ClCompile Include="vtlb.cpp" />
+    <ClCompile Include="MTVU.cpp" />
+    <ClCompile Include="VUmicro.cpp" />
+    <ClCompile Include="VUmicroMem.cpp" />
+    <ClCompile Include="x86\microVU.cpp" />
+    <ClCompile Include="VU0.cpp" />
+    <ClCompile Include="VU0micro.cpp" />
+    <ClCompile Include="VU0microInterp.cpp" />
+    <ClCompile Include="VU1micro.cpp" />
+    <ClCompile Include="VU1microInterp.cpp" />
+    <ClCompile Include="VUflags.cpp" />
+    <ClCompile Include="VUops.cpp" />
+    <ClCompile Include="Sif.cpp" />
+    <ClCompile Include="Sif0.cpp" />
+    <ClCompile Include="Sif1.cpp" />
+    <ClCompile Include="Vif.cpp" />
+    <ClCompile Include="Vif0_Dma.cpp" />
+    <ClCompile Include="Vif1_Dma.cpp" />
+    <ClCompile Include="Vif1_MFIFO.cpp" />
+    <ClCompile Include="Vif_Codes.cpp" />
+    <ClCompile Include="Vif_Transfer.cpp" />
+    <ClCompile Include="Vif_Unpack.cpp" />
+    <ClCompile Include="x86\newVif_Unpack.cpp" />
+    <ClCompile Include="x86\newVif_Dynarec.cpp" />
+    <ClCompile Include="x86\newVif_UnpackSSE.cpp" />
+    <ClCompile Include="SPR.cpp" />
+    <ClCompile Include="Gif.cpp" />
+    <ClCompile Include="R5900OpcodeTables.cpp" />
+    <ClCompile Include="x86\iCOP0.cpp" />
+    <ClCompile Include="x86\iFPU.cpp" />
+    <ClCompile Include="x86\iFPUd.cpp" />
+    <ClCompile Include="x86\iMMI.cpp" />
+    <ClCompile Include="x86\iR5900Misc.cpp" />
+    <ClCompile Include="x86\ir5900tables.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900-32.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900Arit.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900AritImm.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900Branch.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900Jump.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900LoadStore.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900Move.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900MultDiv.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900Shift.cpp" />
+    <ClCompile Include="x86\ix86-32\iR5900Templates.cpp" />
+    <ClCompile Include="COP0.cpp" />
+    <ClCompile Include="COP2.cpp" />
+    <ClCompile Include="FPU.cpp" />
+    <ClCompile Include="Interpreter.cpp" />
+    <ClCompile Include="MMI.cpp" />
+    <ClCompile Include="R5900.cpp" />
+    <ClCompile Include="R5900OpcodeImpl.cpp" />
+    <ClCompile Include="IopBios.cpp" />
+    <ClCompile Include="IopCounters.cpp" />
+    <ClCompile Include="IopDma.cpp" />
+    <ClCompile Include="IopIrq.cpp" />
+    <ClCompile Include="IopMem.cpp" />
+    <ClCompile Include="windows\WinKeyCodes.cpp" />
+    <ClCompile Include="IopSio2.cpp" />
+    <ClCompile Include="R3000A.cpp" />
+    <ClCompile Include="R3000AInterpreter.cpp" />
+    <ClCompile Include="R3000AOpcodeTables.cpp" />
+    <ClCompile Include="Sio.cpp" />
+    <ClCompile Include="x86\iR3000A.cpp" />
+    <ClCompile Include="x86\iR3000Atables.cpp" />
+    <ClCompile Include="IopHw.cpp" />
+    <ClCompile Include="ps2\Iop\IopHwRead.cpp" />
+    <ClCompile Include="ps2\Iop\IopHwWrite.cpp" />
+    <ClCompile Include="CDVD\CdRom.cpp" />
+    <ClCompile Include="CDVD\CDVD.cpp" />
+    <ClCompile Include="CDVD\CDVDaccess.cpp" />
+    <ClCompile Include="CDVD\CDVDisoReader.cpp" />
+    <ClCompile Include="Ipu\IPU.cpp" />
+    <ClCompile Include="Ipu\IPU_Fifo.cpp" />
+    <ClCompile Include="Ipu\yuv2rgb.cpp" />
+    <ClCompile Include="Ipu\mpeg2lib\Idct.cpp" />
+    <ClCompile Include="Ipu\mpeg2lib\Mpeg.cpp" />
+    <ClCompile Include="GS.cpp" />
+    <ClCompile Include="GSState.cpp" />
+    <ClCompile Include="MTGS.cpp" />
+    <ClCompile Include="DebugTools\DisR3000A.cpp" />
+    <ClCompile Include="DebugTools\DisR5900asm.cpp" />
+    <ClCompile Include="DebugTools\DisVU0Micro.cpp" />
+    <ClCompile Include="DebugTools\DisVU1Micro.cpp" />
+    <ClCompile Include="rdebug\deci2.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="rdebug\deci2_dbgp.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="rdebug\deci2_dcmp.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="rdebug\deci2_iloadp.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="rdebug\deci2_netmp.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="rdebug\deci2_ttyp.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="x86\ix86-32\iCore-32.cpp" />
+    <ClCompile Include="x86\iCore.cpp" />
+    <ClCompile Include="CDVD\IsoFS\IsoFile.cpp" />
+    <ClCompile Include="CDVD\IsoFS\IsoFS.cpp" />
+    <ClCompile Include="CDVD\IsoFS\IsoFSCDVD.cpp" />
+    <ClCompile Include="gui\AppAssert.cpp" />
+    <ClCompile Include="gui\AppConfig.cpp" />
+    <ClCompile Include="gui\AppCoreThread.cpp" />
+    <ClCompile Include="gui\AppEventSources.cpp" />
+    <ClCompile Include="gui\AppInit.cpp" />
+    <ClCompile Include="gui\AppMain.cpp" />
+    <ClCompile Include="gui\AppRes.cpp" />
+    <ClCompile Include="gui\ConsoleLogger.cpp" />
+    <ClCompile Include="gui\CpuUsageProvider.cpp" />
+    <ClCompile Include="gui\ExecutorThread.cpp" />
+    <ClCompile Include="gui\FrameForGS.cpp" />
+    <ClCompile Include="gui\GlobalCommands.cpp" />
+    <ClCompile Include="gui\i18n.cpp" />
+    <ClCompile Include="gui\IsoDropTarget.cpp" />
+    <ClCompile Include="gui\MainFrame.cpp" />
+    <ClCompile Include="gui\MainMenuClicks.cpp" />
+    <ClCompile Include="gui\MemoryCardFile.cpp" />
+    <ClCompile Include="gui\MemoryCardFolder.cpp" />
+    <ClCompile Include="gui\MessageBoxes.cpp" />
+    <ClCompile Include="gui\MSWstuff.cpp" />
+    <ClCompile Include="gui\RecentIsoList.cpp" />
+    <ClCompile Include="gui\UpdateUI.cpp" />
+    <ClCompile Include="gui\Dialogs\AboutBoxDialog.cpp" />
+    <ClCompile Include="gui\Dialogs\AssertionDialog.cpp" />
+    <ClCompile Include="gui\Dialogs\BaseConfigurationDialog.cpp" />
+    <ClCompile Include="gui\Dialogs\ConfirmationDialogs.cpp" />
+    <ClCompile Include="gui\Dialogs\ConvertMemoryCardDialog.cpp" />
+    <ClCompile Include="gui\Dialogs\CreateMemoryCardDialog.cpp" />
+    <ClCompile Include="gui\Dialogs\FirstTimeWizard.cpp" />
+    <ClCompile Include="gui\Dialogs\ImportSettingsDialog.cpp" />
+    <ClCompile Include="gui\Dialogs\LogOptionsDialog.cpp" />
+    <ClCompile Include="gui\Dialogs\PickUserModeDialog.cpp" />
+    <ClCompile Include="gui\Dialogs\SysConfigDialog.cpp" />
+    <ClCompile Include="gui\Panels\BaseApplicableConfigPanel.cpp" />
+    <ClCompile Include="gui\Panels\BiosSelectorPanel.cpp" />
+    <ClCompile Include="gui\Panels\CpuPanel.cpp" />
+    <ClCompile Include="gui\Panels\DirPickerPanel.cpp" />
+    <ClCompile Include="gui\Panels\GameFixesPanel.cpp" />
+    <ClCompile Include="gui\Panels\GSWindowPanel.cpp" />
+    <ClCompile Include="gui\Panels\LogOptionsPanels.cpp" />
+    <ClCompile Include="gui\Panels\MemoryCardListPanel.cpp" />
+    <ClCompile Include="gui\Panels\MiscPanelStuff.cpp" />
+    <ClCompile Include="gui\Panels\PathsPanel.cpp" />
+    <ClCompile Include="gui\Panels\SpeedhacksPanel.cpp" />
+    <ClCompile Include="gui\Panels\VideoPanel.cpp" />
+    <ClCompile Include="windows\WinCompressNTFS.cpp" />
+    <ClCompile Include="windows\WinConsolePipe.cpp" />
+    <ClCompile Include="Linux\LnxKeyCodes.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="gui\Saveslots.cpp" />
+    <ClCompile Include="gui\SysState.cpp" />
+    <ClCompile Include="ZipTools\thread_gzip.cpp" />
+    <ClCompile Include="ZipTools\thread_lzma.cpp" />
+    <ClCompile Include="windows\Optimus.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="AsyncFileReader.h" />
+    <ClInclude Include="CDVD\CDVDdiscReader.h" />
+    <ClInclude Include="CDVD\ChunksCache.h" />
+    <ClInclude Include="CDVD\CompressedFileReader.h" />
+    <ClInclude Include="CDVD\CompressedFileReaderUtils.h" />
+    <ClInclude Include="CDVD\CsoFileReader.h" />
+    <ClInclude Include="CDVD\GzippedFileReader.h" />
+    <ClInclude Include="CDVD\zlib_indexed.h" />
+    <ClInclude Include="DebugTools\Breakpoints.h" />
+    <ClInclude Include="DebugTools\DebugInterface.h" />
+    <ClInclude Include="DebugTools\DisassemblyManager.h" />
+    <ClInclude Include="DebugTools\BiosDebugData.h" />
+    <ClInclude Include="DebugTools\ExpressionParser.h" />
+    <ClInclude Include="DebugTools\MIPSAnalyst.h" />
+    <ClInclude Include="DebugTools\MipsAssembler.h" />
+    <ClInclude Include="DebugTools\MipsAssemblerTables.h" />
+    <ClInclude Include="DebugTools\MipsStackWalk.h" />
+    <ClInclude Include="DebugTools\SymbolMap.h" />
+    <ClInclude Include="DEV9\ATA\ATA.h" />
+    <ClInclude Include="DEV9\ATA\HddCreate.h" />
+    <ClInclude Include="DEV9\Config.h" />
+    <ClInclude Include="DEV9\DEV9.h" />
+    <ClInclude Include="DEV9\InternalServers\DHCP_Server.h" />
+    <ClInclude Include="DEV9\net.h" />
+    <ClInclude Include="DEV9\PacketReader\EthernetFrame.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\DHCP\DHCP_Options.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\DHCP\DHCP_Packet.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\DNS\DNS_Classes.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\DNS\DNS_Enums.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\DNS\DNS_Packet.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\UDP\UDP_Packet.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\IP_Address.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\IP_Options.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\IP_Packet.h" />
+    <ClInclude Include="DEV9\PacketReader\IP\IP_Payload.h" />
+    <ClInclude Include="DEV9\PacketReader\NetLib.h" />
+    <ClInclude Include="DEV9\PacketReader\Payload.h" />
+    <ClInclude Include="DEV9\pcap_io.h" />
+    <ClInclude Include="DEV9\SimpleQueue.h" />
+    <ClInclude Include="DEV9\smap.h" />
+    <ClInclude Include="DEV9\Win32\pcap_io_win32_funcs.h" />
+    <ClInclude Include="DEV9\Win32\resource.h" />
+    <ClInclude Include="DEV9\Win32\tap.h" />
+    <ClInclude Include="GameDatabase.h" />
+    <ClInclude Include="Gif_Unit.h" />
+    <ClInclude Include="gui\AppGameDatabase.h" />
+    <ClInclude Include="gui\DriveList.h" />
+    <ClInclude Include="gui\Saveslots.h" />
+    <ClInclude Include="gui\Debugger\BreakpointWindow.h" />
+    <ClInclude Include="gui\Debugger\CtrlDisassemblyView.h" />
+    <ClInclude Include="gui\Debugger\CtrlMemView.h" />
+    <ClInclude Include="gui\Debugger\CtrlRegisterList.h" />
+    <ClInclude Include="gui\Debugger\DebugEvents.h" />
+    <ClInclude Include="gui\Debugger\DebuggerLists.h" />
+    <ClInclude Include="gui\Debugger\DisassemblyDialog.h" />
+    <ClInclude Include="gui\Panels\MemoryCardPanels.h" />
+    <ClInclude Include="IopGte.h" />
+    <ClInclude Include="IPC.h" />
+    <ClInclude Include="FW.h" />
+    <ClInclude Include="PAD\Windows\PAD.h" />
+    <ClInclude Include="PAD\Windows\PADConfig.h" />
+    <ClInclude Include="PAD\Windows\DeviceEnumerator.h" />
+    <ClInclude Include="PAD\Windows\Diagnostics.h" />
+    <ClInclude Include="PAD\Windows\DirectInput.h" />
+    <ClInclude Include="PAD\Windows\DualShock3.h" />
+    <ClInclude Include="PAD\Windows\Global.h" />
+    <ClInclude Include="PAD\Windows\HidDevice.h" />
+    <ClInclude Include="PAD\Windows\InputManager.h" />
+    <ClInclude Include="PAD\Windows\KeyboardQueue.h" />
+    <ClInclude Include="PAD\Windows\PADRawInput.h" />
+    <ClInclude Include="PAD\Windows\resource_pad.h" />
+    <ClInclude Include="PAD\Windows\Tooltips.h" />
+    <ClInclude Include="PAD\Windows\usb.h" />
+    <ClInclude Include="PAD\Windows\VKey.h" />
+    <ClInclude Include="PAD\Windows\WindowsKeyboard.h" />
+    <ClInclude Include="PAD\Windows\WindowsMessaging.h" />
+    <ClInclude Include="PAD\Windows\WindowsMouse.h" />
+    <ClInclude Include="PAD\Windows\WndProcEater.h" />
+    <ClInclude Include="PAD\Windows\XInputEnum.h" />
+    <ClInclude Include="SPU2\Config.h" />
+    <ClInclude Include="SPU2\Global.h" />
+    <ClInclude Include="SPU2\interpolate_table.h" />
+    <ClInclude Include="SPU2\Lowpass.h" />
+    <ClInclude Include="SPU2\SndOut.h" />
+    <ClInclude Include="SPU2\Linux\Alsa.h" />
+    <ClInclude Include="SPU2\spdif.h" />
+    <ClInclude Include="SPU2\defs.h" />
+    <ClInclude Include="SPU2\Dma.h" />
+    <ClInclude Include="SPU2\regs.h" />
+    <ClInclude Include="SPU2\Mixer.h" />
+    <ClInclude Include="SPU2\Windows\dsp.h" />
+    <ClInclude Include="SPU2\Linux\Config.h" />
+    <ClInclude Include="SPU2\Linux\Dialogs.h" />
+    <ClInclude Include="SPU2\Windows\Dialogs.h" />
+    <ClInclude Include="SPU2\Windows\WinConfig.h" />
+    <ClInclude Include="SPU2\spu2.h" />
+    <ClInclude Include="SPU2\Windows\resource.h" />
+    <ClInclude Include="GS\config.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GLLoader.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GLState.h" />
+    <ClInclude Include="GS\GS.h" />
+    <ClInclude Include="GS\GSAlignedClass.h" />
+    <ClInclude Include="GS\GSBlock.h" />
+    <ClInclude Include="GS\GSCapture.h" />
+    <ClInclude Include="GS\Window\GSCaptureDlg.h" />
+    <ClInclude Include="GS\GSClut.h" />
+    <ClInclude Include="GS\GSCodeBuffer.h" />
+    <ClInclude Include="GS\GSCrc.h" />
+    <ClInclude Include="GS\Renderers\Common\GSDevice.h" />
+    <ClInclude Include="GS\Renderers\DX11\GSDevice11.h" />
+    <ClInclude Include="GS\Renderers\Null\GSDeviceNull.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GSDeviceOGL.h" />
+    <ClInclude Include="GS\Window\GSDialog.h" />
+    <ClInclude Include="GS\Renderers\Common\GSDirtyRect.h" />
+    <ClInclude Include="GS\GSDrawingContext.h" />
+    <ClInclude Include="GS\GSDrawingEnvironment.h" />
+    <ClInclude Include="GS\Renderers\SW\GSDrawScanline.h" />
+    <ClInclude Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.h" />
+    <ClInclude Include="GS\GSDump.h" />
+    <ClInclude Include="GS\Renderers\Common\GSFastList.h" />
+    <ClInclude Include="GS\Renderers\Common\GSFunctionMap.h" />
+    <ClInclude Include="GS\GSLocalMemory.h" />
+    <ClInclude Include="GS\GSLzma.h" />
+    <ClInclude Include="GS\GSPerfMon.h" />
+    <ClInclude Include="GS\Renderers\Common\GSOsdManager.h" />
+    <ClInclude Include="GS\GSPng.h" />
+    <ClInclude Include="GS\Renderers\SW\GSRasterizer.h" />
+    <ClInclude Include="GS\Renderers\Common\GSRenderer.h" />
+    <ClInclude Include="GS\Renderers\DX11\GSRendererDX11.h" />
+    <ClInclude Include="GS\Renderers\HW\GSRendererHW.h" />
+    <ClInclude Include="GS\Renderers\Null\GSRendererNull.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GSRendererOGL.h" />
+    <ClInclude Include="GS\Renderers\SW\GSRendererSW.h" />
+    <ClInclude Include="GS\Renderers\SW\GSScanlineEnvironment.h" />
+    <ClInclude Include="GS\Window\GSSetting.h" />
+    <ClInclude Include="GS\Window\GSSettingsDlg.h" />
+    <ClInclude Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GSShaderOGL.h" />
+    <ClInclude Include="GS\GSState.h" />
+    <ClInclude Include="GS\GSTables.h" />
+    <ClInclude Include="GS\Renderers\Common\GSTexture.h" />
+    <ClInclude Include="GS\Renderers\DX11\GSTexture11.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GSTextureOGL.h" />
+    <ClInclude Include="GS\Renderers\HW\GSTextureCache.h" />
+    <ClInclude Include="GS\Renderers\DX11\GSTextureCache11.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GSTextureCacheOGL.h" />
+    <ClInclude Include="GS\Renderers\SW\GSTextureCacheSW.h" />
+    <ClInclude Include="GS\Renderers\Null\GSTextureNull.h" />
+    <ClInclude Include="GS\Renderers\SW\GSTextureSW.h" />
+    <ClInclude Include="GS\GSThread.h" />
+    <ClInclude Include="GS\GSThread_CXX11.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GSUniformBufferOGL.h" />
+    <ClInclude Include="GS\GSUtil.h" />
+    <ClInclude Include="GS\GSVector.h" />
+    <ClInclude Include="GS\GSVector4i.h" />
+    <ClInclude Include="GS\GSVector4.h" />
+    <ClInclude Include="GS\GSVector8i.h" />
+    <ClInclude Include="GS\GSVector8.h" />
+    <ClInclude Include="GS\Renderers\Common\GSVertex.h" />
+    <ClInclude Include="GS\Renderers\OpenGL\GSVertexArrayOGL.h" />
+    <ClInclude Include="GS\Renderers\HW\GSVertexHW.h" />
+    <ClInclude Include="GS\Renderers\Common\GSVertexList.h" />
+    <ClInclude Include="GS\Renderers\SW\GSVertexSW.h" />
+    <ClInclude Include="GS\Renderers\Common\GSVertexTrace.h" />
+    <ClInclude Include="GS\Window\GSWnd.h" />
+    <ClInclude Include="GS\Window\GSWndDX.h" />
+    <ClInclude Include="GS\Window\GSWndWGL.h" />
+    <ClInclude Include="GS\resource.h" />
+    <ClInclude Include="IPU\IPUdma.h" />
+    <ClInclude Include="Mdec.h" />
+    <ClInclude Include="Patch.h" />
+    <ClInclude Include="PrecompiledHeader.h" />
+    <ClInclude Include="ps2\pgif.h" />
+    <ClInclude Include="Recording\InputRecording.h" />
+    <ClInclude Include="Recording\InputRecordingControls.h" />
+    <ClInclude Include="Recording\NewRecordingFrame.h" />
+    <ClInclude Include="Recording\InputRecordingFile.h" />
+    <ClInclude Include="Recording\PadData.h" />
+    <ClInclude Include="Recording\VirtualPad\VirtualPad.h" />
+    <ClInclude Include="Recording\VirtualPad\VirtualPadData.h" />
+    <ClInclude Include="Recording\VirtualPad\VirtualPadResources.h" />
+    <ClInclude Include="Recording\Utilities\InputRecordingLogger.h" />
+    <ClInclude Include="USB\configuration.h" />
+    <ClInclude Include="USB\deviceproxy.h" />
+    <ClInclude Include="USB\helpers.h" />
+    <ClInclude Include="USB\platcompat.h" />
+    <ClInclude Include="USB\proxybase.h" />
+    <ClInclude Include="USB\qemu-usb\desc.h" />
+    <ClInclude Include="USB\qemu-usb\glib.h" />
+    <ClInclude Include="USB\qemu-usb\hid.h" />
+    <ClInclude Include="USB\qemu-usb\input-keymap-win32-to-qcode.h" />
+    <ClInclude Include="USB\qemu-usb\input-keymap.h" />
+    <ClInclude Include="USB\qemu-usb\iov.h" />
+    <ClInclude Include="USB\qemu-usb\queue.h" />
+    <ClInclude Include="USB\qemu-usb\qusb.h" />
+    <ClInclude Include="USB\qemu-usb\USBinternal.h" />
+    <ClInclude Include="USB\qemu-usb\vl.h" />
+    <ClInclude Include="USB\readerwriterqueue\atomicops.h" />
+    <ClInclude Include="USB\readerwriterqueue\readerwriterqueue.h" />
+    <ClInclude Include="USB\shared\hidapi.h" />
+    <ClInclude Include="USB\shared\inifile_usb.h" />
+    <ClInclude Include="USB\shared\rawinput_usb.h" />
+    <ClInclude Include="USB\shared\ringbuffer.h" />
+    <ClInclude Include="USB\shared\shared_usb.h" />
+    <ClInclude Include="USB\usb-eyetoy\cam-windows.h" />
+    <ClInclude Include="USB\usb-eyetoy\jo_mpeg.h" />
+    <ClInclude Include="USB\usb-eyetoy\jpgd\jpgd.h" />
+    <ClInclude Include="USB\usb-eyetoy\ov519.h" />
+    <ClInclude Include="USB\usb-eyetoy\usb-eyetoy-webcam.h" />
+    <ClInclude Include="USB\usb-eyetoy\videodev.h" />
+    <ClInclude Include="USB\usb-eyetoy\videodeviceproxy.h" />
+    <ClInclude Include="USB\usb-hid\hidproxy.h" />
+    <ClInclude Include="USB\usb-hid\noop.h" />
+    <ClInclude Include="USB\usb-hid\raw\rawinput.h" />
+    <ClInclude Include="USB\usb-hid\usb-hid.h" />
+    <ClInclude Include="USB\usb-mic\audio.h" />
+    <ClInclude Include="USB\usb-mic\audiodev-noop.h" />
+    <ClInclude Include="USB\usb-mic\audiodev-wasapi.h" />
+    <ClInclude Include="USB\usb-mic\audiodev.h" />
+    <ClInclude Include="USB\usb-mic\audiodeviceproxy.h" />
+    <ClInclude Include="USB\usb-mic\usb-headset.h" />
+    <ClInclude Include="USB\usb-mic\usb-mic-singstar.h" />
+    <ClInclude Include="USB\usb-msd\usb-msd.h" />
+    <ClInclude Include="USB\usb-pad\dx\dx.h" />
+    <ClInclude Include="USB\usb-pad\dx\usb-pad-dx.h" />
+    <ClInclude Include="USB\usb-pad\dx\versionproxy.h" />
+    <ClInclude Include="USB\usb-pad\lg\lg_ff.h" />
+    <ClInclude Include="USB\usb-pad\padproxy.h" />
+    <ClInclude Include="USB\usb-pad\raw\raw-config-res.h" />
+    <ClInclude Include="USB\usb-pad\raw\usb-pad-raw.h" />
+    <ClInclude Include="USB\usb-pad\usb-pad.h" />
+    <ClInclude Include="USB\USB.h" />
+    <ClInclude Include="USB\Win32\Config_usb.h" />
+    <ClInclude Include="USB\Win32\resource_usb.h" />
+    <ClInclude Include="Utilities\AsciiFile.h" />
+    <ClInclude Include="Elfheader.h" />
+    <ClInclude Include="CDVD\IsoFileFormats.h" />
+    <ClInclude Include="Common.h" />
+    <ClInclude Include="Config.h" />
+    <ClInclude Include="Dump.h" />
+    <ClInclude Include="IopCommon.h" />
+    <ClInclude Include="SaveState.h" />
+    <ClInclude Include="System.h" />
+    <ClInclude Include="System\SysThreads.h" />
+    <ClInclude Include="Counters.h" />
+    <ClInclude Include="Dmac.h" />
+    <ClInclude Include="Hardware.h" />
+    <ClInclude Include="Hw.h" />
+    <ClInclude Include="Cache.h" />
+    <ClInclude Include="Memory.h" />
+    <ClInclude Include="vtlb.h" />
+    <ClInclude Include="MTVU.h" />
+    <ClInclude Include="VU.h" />
+    <ClInclude Include="VUmicro.h" />
+    <ClInclude Include="x86\microVU.h" />
+    <ClInclude Include="x86\microVU_IR.h" />
+    <ClInclude Include="x86\microVU_Misc.h" />
+    <ClInclude Include="x86\microVU_Profiler.h" />
+    <ClInclude Include="x86\R5900_Profiler.h" />
+    <ClInclude Include="VUflags.h" />
+    <ClInclude Include="VUops.h" />
+    <ClInclude Include="Sif.h" />
+    <ClInclude Include="Sifcmd.h" />
+    <ClInclude Include="Vif.h" />
+    <ClInclude Include="Vif_Dma.h" />
+    <ClInclude Include="Vif_Unpack.h" />
+    <ClInclude Include="x86\newVif.h" />
+    <ClInclude Include="x86\newVif_HashBucket.h" />
+    <ClInclude Include="x86\newVif_UnpackSSE.h" />
+    <ClInclude Include="SPR.h" />
+    <ClInclude Include="Gif.h" />
+    <ClInclude Include="R5900.h" />
+    <ClInclude Include="R5900Exceptions.h" />
+    <ClInclude Include="R5900OpcodeTables.h" />
+    <ClInclude Include="x86\iCOP0.h" />
+    <ClInclude Include="x86\iFPU.h" />
+    <ClInclude Include="x86\iMMI.h" />
+    <ClInclude Include="x86\iR5900.h" />
+    <ClInclude Include="x86\iR5900Arit.h" />
+    <ClInclude Include="x86\iR5900AritImm.h" />
+    <ClInclude Include="x86\iR5900Branch.h" />
+    <ClInclude Include="x86\iR5900Jump.h" />
+    <ClInclude Include="x86\iR5900LoadStore.h" />
+    <ClInclude Include="x86\iR5900Move.h" />
+    <ClInclude Include="x86\iR5900MultDiv.h" />
+    <ClInclude Include="x86\iR5900Shift.h" />
+    <ClInclude Include="IopBios.h" />
+    <ClInclude Include="IopCounters.h" />
+    <ClInclude Include="IopDma.h" />
+    <ClInclude Include="IopMem.h" />
+    <ClInclude Include="IopSio2.h" />
+    <ClInclude Include="R3000A.h" />
+    <ClInclude Include="Sio.h" />
+    <ClInclude Include="x86\iR3000A.h" />
+    <ClInclude Include="IopHw.h" />
+    <ClInclude Include="ps2\Iop\IopHw_Internal.h" />
+    <ClInclude Include="CDVD\CdRom.h" />
+    <ClInclude Include="CDVD\CDVD.h" />
+    <ClInclude Include="CDVD\CDVD_internal.h" />
+    <ClInclude Include="CDVD\CDVDaccess.h" />
+    <ClInclude Include="CDVD\CDVDisoReader.h" />
+    <ClInclude Include="Ipu\IPU.h" />
+    <ClInclude Include="Ipu\IPU_Fifo.h" />
+    <ClInclude Include="Ipu\yuv2rgb.h" />
+    <ClInclude Include="Ipu\mpeg2lib\Mpeg.h" />
+    <ClInclude Include="Ipu\mpeg2lib\Vlc.h" />
+    <ClInclude Include="GS.h" />
+    <ClInclude Include="DebugTools\Debug.h" />
+    <ClInclude Include="DebugTools\DisASM.h" />
+    <ClInclude Include="DebugTools\DisVUmicro.h" />
+    <ClInclude Include="DebugTools\DisVUops.h" />
+    <CustomBuildStep Include="rdebug\deci2.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_dbgp.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_dcmp.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_drfp.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_iloadp.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_netmp.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <CustomBuildStep Include="rdebug\deci2_ttyp.h">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </CustomBuildStep>
+    <ClInclude Include="x86\BaseblockEx.h" />
+    <ClInclude Include="ps2\BiosTools.h" />
+    <ClInclude Include="x86\iCore.h" />
+    <ClInclude Include="CDVD\IsoFS\IsoDirectory.h" />
+    <ClInclude Include="CDVD\IsoFS\IsoFile.h" />
+    <ClInclude Include="CDVD\IsoFS\IsoFileDescriptor.h" />
+    <ClInclude Include="CDVD\IsoFS\IsoFS.h" />
+    <ClInclude Include="CDVD\IsoFS\IsoFSCDVD.h" />
+    <ClInclude Include="CDVD\IsoFS\SectorSource.h" />
+    <ClInclude Include="gui\Dialogs\ConfigurationDialog.h" />
+    <ClInclude Include="gui\Dialogs\LogOptionsDialog.h" />
+    <ClInclude Include="gui\Dialogs\ModalPopups.h" />
+    <ClInclude Include="gui\MSWstuff.h" />
+    <ClInclude Include="windows\resource.h" />
+    <ClInclude Include="gui\Panels\ConfigurationPanels.h" />
+    <ClInclude Include="gui\Panels\LogOptionsPanels.h" />
+    <ClInclude Include="gui\App.h" />
+    <ClInclude Include="gui\AppCommon.h" />
+    <ClInclude Include="gui\AppConfig.h" />
+    <ClInclude Include="gui\AppCoreThread.h" />
+    <ClInclude Include="gui\AppEventListeners.h" />
+    <ClInclude Include="gui\AppForwardDefs.h" />
+    <ClInclude Include="gui\ApplyState.h" />
+    <ClInclude Include="gui\AppSaveStates.h" />
+    <ClInclude Include="gui\ConsoleLogger.h" />
+    <ClInclude Include="gui\CpuUsageProvider.h" />
+    <ClInclude Include="gui\GSFrame.h" />
+    <ClInclude Include="gui\IsoDropTarget.h" />
+    <ClInclude Include="gui\MainFrame.h" />
+    <ClInclude Include="gui\pxEventThread.h" />
+    <ClInclude Include="gui\RecentIsoList.h" />
+    <ClInclude Include="ZipTools\ThreadedZipTools.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="$(SolutionDir)3rdparty\wxwidgets3.0\include\wx\msw\wx.rc">
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\wxwidgets3.0\$(PlatformName);$(SolutionDir)3rdparty\wxwidgets3.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ResourceCompile>
+    <ResourceCompile Include="GS\GS.rc" />
+    <ResourceCompile Include="PAD\Windows\PAD.rc" />
+    <ResourceCompile Include="SPU2\Windows\SPU2.rc" />
+    <ResourceCompile Include="DEV9\Win32\DEV9ghzdrk.rc" />
+    <ResourceCompile Include="USB\usb-pad\dx\versionproxy.rc" />
+    <ResourceCompile Include="USB\usb-pad\raw\raw-config.rc" />
+    <ResourceCompile Include="USB\Win32\USBDialog.rc" />
+    <ResourceCompile Include="windows\wxResources.rc" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(SolutionDir)3rdparty\baseclasses\baseclasses.vcxproj">
+      <Project>{27f17499-a372-4408-8afa-4f9f4584fbd3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\fmt\fmt.vcxproj">
+      <Project>{449ad25e-424a-4714-babc-68706cdcc33b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\freetype\builds\windows\freetype.vcxproj">
+      <Project>{78b079bd-9fc7-4b9e-b4a6-96da0f00248b}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\libjpeg\libjpeg.vcxproj">
+      <Project>{bc236261-77e8-4567-8d09-45cd02965eb6}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\libpng\projects\vstudio\libpng\libpng.vcxproj">
+      <Project>{d6973076-9317-4ef2-a0b8-b7a18ac0713e}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\libsamplerate\libsamplerate.vcxproj">
+      <Project>{47afdbef-f15f-4bc0-b436-5be443c3f80f}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\portaudio\build\msvc\portaudio.vcxproj">
+      <Project>{0a18a071-125e-442f-aff7-a3f68abecf99}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\pthreads4w\build\pthreads4w.vcxproj">
+      <Project>{0fae817d-9a32-4830-857e-81da57246e16}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\soundtouch\SoundTouch.vcxproj">
+      <Project>{e9b51944-7e6d-4bcd-83f2-7bbd5a46182d}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\wxwidgets3.0\build\msw\wx30_adv.vcxproj">
+      <Project>{24c45343-fd20-5c92-81c1-35a2ae841e79}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\wxwidgets3.0\build\msw\wx30_base.vcxproj">
+      <Project>{3fcc50c2-81e9-5db2-b8d8-2129427568b1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\wxwidgets3.0\build\msw\wx30_core.vcxproj">
+      <Project>{6744dad8-9c70-574a-bff2-9f8dddb24a75}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\xz\liblzma.vcxproj">
+      <Project>{12728250-16ec-4dc6-94d7-e21dd88947f8}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\yaml-cpp\yaml.vcxproj">
+      <Project>{48329442-e41b-4a1f-8364-36eee1b71343}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\libchdr\libchdr.vcxproj">
+      <Project>{a0d2b3ad-1f72-4ee3-8b5c-f2c358da35f0}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\zlib\zlib.vcxproj">
+      <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)common\build\Utilities\utilities.vcxproj">
+      <Project>{4639972e-424e-4e13-8b07-ca403c481346}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)common\build\x86emitter\x86emitter.vcxproj">
+      <Project>{a51123f5-9505-4eae-85e7-d320290a272c}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)tools\bin2cpp\bin2c.vcxproj">
+      <Project>{677b7d11-d5e1-40b3-88b1-9a4df83d2213}</Project>
+      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Manifest Include="windows\PCSX2.manifest" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

@@ -14,25 +14,21 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
     It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif()
 
+include_directories ("${CMAKE_SOURCE_DIR}/3rdparty/xbyak/")
 
 set(CommonFlags
     -fno-strict-aliasing
     -Wstrict-aliasing # Allow to track strict aliasing issue.
     -Wno-parentheses
     -Wno-missing-braces
+    -Wno-unknown-pragmas
     -DWX_PRECOMP
 	)
 
-# Largely turning off because LegacyPluginAPI_Common in Plugins.h spams really badly in gcc 8 due to the memzero initialization.
-# Should probably be fixed properly, but for now this should work.
 if(GCC_VERSION VERSION_EQUAL "8.0" OR GCC_VERSION VERSION_GREATER "8.0")
-    set(CommonFlags
-	    ${CommonFlags}
-	    -Wno-class-memaccess
-    )
+	# gs is pretty bad at this
+	set(CommonFlags ${CommonFlags} -Wno-packed-not-aligned -Wno-class-memaccess)
 endif()
-
-
 
 if ("${PGO}" STREQUAL "generate")
     set(pcsx2FinalFlags -fprofile-generate)
@@ -103,7 +99,6 @@ set(pcsx2Sources
 	Patch.cpp
 	Patch_Memory.cpp
 	Pcsx2Config.cpp
-	PluginManager.cpp
 	PrecompiledHeader.cpp
 	R3000A.cpp
 	R3000AInterpreter.cpp
@@ -173,7 +168,6 @@ set(pcsx2Headers
 	MemoryTypes.h
 	Patch.h
 	PathDefs.h
-	Plugins.h
 	PrecompiledHeader.h
 	R3000A.h
 	R5900Exceptions.h
@@ -522,8 +516,8 @@ add_custom_command(
 
 # PAD/Linux sources 
 set(pcsx2PADSources
-    PAD/Linux/controller.cpp
-    PAD/Linux/GamePad.cpp
+    PAD/Linux/Device.cpp
+    PAD/Linux/InputManager.cpp
     PAD/Linux/SDL/joystick.cpp
     PAD/Linux/keyboard.cpp
     PAD/Linux/KeyStatus.cpp
@@ -533,7 +527,7 @@ set(pcsx2PADSources
     PAD/Linux/wx_dialog/opPanel.cpp
     PAD/Linux/wx_dialog/GamepadConfiguration.cpp
     PAD/Linux/wx_dialog/JoystickConfiguration.cpp
-    PAD/Linux/ini.cpp
+    PAD/Linux/Config.cpp
     PAD/Linux/linux.cpp
     ${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/resources_pad.cpp
     )
@@ -541,8 +535,10 @@ set(pcsx2PADSources
 # PAD/Linux headers
 set(pcsx2PADHeaders
     PAD/Linux/bitwise.h
-    PAD/Linux/controller.h
-    PAD/Linux/GamePad.h
+    PAD/Linux/Config.h
+    PAD/Linux/Device.h
+    PAD/Linux/Global.h
+    PAD/Linux/InputManager.h
     PAD/Linux/SDL/joystick.h
     PAD/Linux/keyboard.h
     PAD/Linux/KeyStatus.h
@@ -577,6 +573,171 @@ set(pcsx2PADHeaders
     ${PADImgHeader}/arrow_left.h
     ${PADImgHeader}/arrow_right.h
     )
+
+# GS sources
+set(pcsx2GSSources
+	GS/GS.cpp
+	GS/GSAlignedClass.cpp
+	GS/GSBlock.cpp
+	GS/GSCapture.cpp
+	GS/GSClut.cpp
+	GS/GSCodeBuffer.cpp
+	GS/GSCrc.cpp
+	GS/GSDrawingContext.cpp
+	GS/GSDump.cpp
+	GS/GSLocalMemory.cpp
+	GS/GSLzma.cpp
+	GS/GSPerfMon.cpp
+	GS/GSPng.cpp
+	GS/GSState.cpp
+	GS/GSTables.cpp
+	GS/GSUtil.cpp
+	GS/GSVector.cpp
+	GS/GS_res.cpp
+	GS/Renderers/Common/GSDevice.cpp
+	GS/Renderers/Common/GSDirtyRect.cpp
+	GS/Renderers/Common/GSFunctionMap.cpp
+	GS/Renderers/Common/GSOsdManager.cpp
+	GS/Renderers/Common/GSRenderer.cpp
+	GS/Renderers/Common/GSTexture.cpp
+	GS/Renderers/Common/GSVertexTrace.cpp
+	GS/Renderers/Null/GSDeviceNull.cpp
+	GS/Renderers/Null/GSRendererNull.cpp
+	GS/Renderers/Null/GSTextureNull.cpp
+	GS/Renderers/HW/GSHwHack.cpp
+	GS/Renderers/HW/GSRendererHW.cpp
+	GS/Renderers/HW/GSTextureCache.cpp
+	GS/Renderers/SW/GSDrawScanline.cpp
+	GS/Renderers/SW/GSDrawScanlineCodeGenerator.cpp
+	GS/Renderers/SW/GSDrawScanlineCodeGenerator.x64.cpp
+	GS/Renderers/SW/GSDrawScanlineCodeGenerator.x64.avx.cpp
+	GS/Renderers/SW/GSDrawScanlineCodeGenerator.x64.avx2.cpp
+	GS/Renderers/SW/GSDrawScanlineCodeGenerator.x86.cpp
+	GS/Renderers/SW/GSDrawScanlineCodeGenerator.x86.avx.cpp
+	GS/Renderers/SW/GSDrawScanlineCodeGenerator.x86.avx2.cpp
+	GS/Renderers/SW/GSRasterizer.cpp
+	GS/Renderers/SW/GSRendererSW.cpp
+	GS/Renderers/SW/GSSetupPrimCodeGenerator.cpp
+	GS/Renderers/SW/GSSetupPrimCodeGenerator.x64.cpp
+	GS/Renderers/SW/GSSetupPrimCodeGenerator.x64.avx.cpp
+	GS/Renderers/SW/GSSetupPrimCodeGenerator.x64.avx2.cpp
+	GS/Renderers/SW/GSSetupPrimCodeGenerator.x86.cpp
+	GS/Renderers/SW/GSSetupPrimCodeGenerator.x86.avx.cpp
+	GS/Renderers/SW/GSSetupPrimCodeGenerator.x86.avx2.cpp
+	GS/Renderers/SW/GSTextureCacheSW.cpp
+	GS/Renderers/SW/GSTextureSW.cpp
+	GS/Renderers/OpenGL/GLLoader.cpp
+	GS/Renderers/OpenGL/GLState.cpp
+	GS/Renderers/OpenGL/GSDeviceOGL.cpp
+	GS/Renderers/OpenGL/GSRendererOGL.cpp
+	GS/Renderers/OpenGL/GSShaderOGL.cpp
+	GS/Renderers/OpenGL/GSTextureCacheOGL.cpp
+	GS/Renderers/OpenGL/GSTextureOGL.cpp
+	GS/Window/GSSetting.cpp
+	GS/Window/GSWnd.cpp
+	GS/Window/GSLinuxDialog.cpp
+	GS/Window/GSWndEGL.cpp
+	)
+
+# GS headers
+set(pcsx2GSHeaders
+	GS/config.h
+	GS/GSAlignedClass.h
+	GS/GSBlock.h
+	GS/GSCapture.h
+	GS/GSClut.h
+	GS/GSCodeBuffer.h
+	GS/GSCrc.h
+	GS/GSDrawingContext.h
+	GS/GSDrawingEnvironment.h
+	GS/GSDump.h
+	GS/GS_res.h
+	GS/GS_types.h
+	GS/GS_codegen.h
+	GS/GS.h
+	GS/GSLocalMemory.h
+	GS/GSLzma.h
+	GS/GSPerfMon.h
+	GS/GSPng.h
+	GS/GSState.h
+	GS/GSTables.h
+	GS/GSThread_CXX11.h
+	GS/GSThread.h
+	GS/GSUtil.h
+	GS/GSVector.h
+	GS/GSVector4.h
+	GS/GSVector4i.h
+	GS/GSVector8.h
+	GS/GSVector8i.h
+	GS/Renderers/Common/GSDevice.h
+	GS/Renderers/Common/GSDirtyRect.h
+	GS/Renderers/Common/GSFastList.h
+	GS/Renderers/Common/GSFunctionMap.h
+	GS/Renderers/Common/GSOsdManager.h
+	GS/Renderers/Common/GSRenderer.h
+	GS/Renderers/Common/GSTexture.h
+	GS/Renderers/Common/GSVertex.h
+	GS/Renderers/Common/GSVertexList.h
+	GS/Renderers/Common/GSVertexTrace.h
+	GS/Renderers/Null/GSDeviceNull.h
+	GS/Renderers/Null/GSRendererNull.h
+	GS/Renderers/Null/GSTextureNull.h
+	GS/Renderers/HW/GSRendererHW.h
+	GS/Renderers/HW/GSTextureCache.h
+	GS/Renderers/HW/GSVertexHW.h
+	GS/Renderers/SW/GSDrawScanlineCodeGenerator.h
+	GS/Renderers/SW/GSDrawScanline.h
+	GS/Renderers/SW/GSRasterizer.h
+	GS/Renderers/SW/GSRendererSW.h
+	GS/Renderers/SW/GSScanlineEnvironment.h
+	GS/Renderers/SW/GSSetupPrimCodeGenerator.h
+	GS/Renderers/SW/GSTextureCacheSW.h
+	GS/Renderers/SW/GSTextureSW.h
+	GS/Renderers/SW/GSVertexSW.h
+	GS/Renderers/OpenGL/GLLoader.h
+	GS/Renderers/OpenGL/GLState.h
+	GS/Renderers/OpenGL/GSDeviceOGL.h
+	GS/Renderers/OpenGL/GSRendererOGL.h
+	GS/Renderers/OpenGL/GSShaderOGL.h
+	GS/Renderers/OpenGL/GSTextureCacheOGL.h
+	GS/Renderers/OpenGL/GSTextureOGL.h
+	GS/Renderers/OpenGL/GSUniformBufferOGL.h
+	GS/Renderers/OpenGL/GSVertexArrayOGL.h
+	GS/Window/GSCaptureDlg.h
+	GS/Window/GSDialog.h
+	GS/Window/GSSetting.h
+	GS/Window/GSSettingsDlg.h
+	GS/Window/GSWnd.h
+	GS/Window/GSWndEGL.h
+	)
+
+# GS resources
+set(pcsx2GSResources
+	GS/res/fxaa.fx
+	GS/res/glsl/common_header.glsl
+	GS/res/glsl/convert.glsl
+	GS/res/glsl/interlace.glsl
+	GS/res/glsl/merge.glsl
+	GS/res/glsl/shadeboost.glsl
+	GS/res/glsl/tfx_fs.glsl
+	GS/res/glsl/tfx_vgs.glsl)
+
+set(GSBin "${CMAKE_BINARY_DIR}/pcsx2/GS")
+include_directories ("${GSBin}")
+file(MAKE_DIRECTORY ${GSBin})
+
+add_custom_command(
+	OUTPUT ${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.h
+	COMMAND glib-compile-resources --sourcedir "${CMAKE_SOURCE_DIR}/pcsx2/GS/res" --generate-header
+	--c-name GS_res "${CMAKE_SOURCE_DIR}/pcsx2/GS/res/GS-res.xml" --target=${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.h
+	DEPENDS ${pcsx2GSResources})
+
+add_custom_command(
+	OUTPUT ${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.cpp
+	COMMAND glib-compile-resources --sourcedir "${CMAKE_SOURCE_DIR}/pcsx2/GS/res" --generate-source
+	--c-name GS_res "${CMAKE_SOURCE_DIR}/pcsx2/GS/res/GS-res.xml" --target=${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.cpp
+	DEPENDS ${pcsx2GSResources})
+
 
 # DebugTools sources
 set(pcsx2DebugToolsSources
@@ -616,7 +777,6 @@ set(pcsx2DebugToolsHeaders
 set(pcsx2GuiSources
 	gui/AppAssert.cpp
 	gui/AppConfig.cpp
-	gui/AppCorePlugins.cpp
 	gui/AppCoreThread.cpp
 	gui/AppEventSources.cpp
 	gui/AppGameDatabase.cpp
@@ -670,7 +830,6 @@ set(pcsx2GuiSources
 	gui/Panels/MemoryCardListView.cpp
 	gui/Panels/MiscPanelStuff.cpp
 	gui/Panels/PathsPanel.cpp
-	gui/Panels/PluginSelectorPanel.cpp
 	gui/Panels/SpeedhacksPanel.cpp
 	gui/Panels/VideoPanel.cpp
 	gui/RecentIsoList.cpp
@@ -684,7 +843,6 @@ set(pcsx2GuiHeaders
 	gui/AppAccelerators.h
 	gui/AppCommon.h
 	gui/AppConfig.h
-	gui/AppCorePlugins.h
 	gui/AppCoreThread.h
 	gui/AppEventListeners.h
 	gui/AppForwardDefs.h
@@ -736,7 +894,6 @@ set(pcsx2GuiResources
     ${res_bin}/ConfigIcon_Gamefixes.h
     ${res_bin}/ConfigIcon_MemoryCard.h
     ${res_bin}/ConfigIcon_Paths.h
-    ${res_bin}/ConfigIcon_Plugins.h
     ${res_bin}/ConfigIcon_Speedhacks.h
     ${res_bin}/ConfigIcon_Video.h
     ${res_bin}/Logo.h
@@ -1014,6 +1171,8 @@ set(Common
 	${pcsx2DEV9Headers}
 	${pcsx2PADHeaders}
 	${pcsx2PADSources}
+	${pcsx2GSHeaders}
+	${pcsx2GSSources}
 	${pcsx2DebugToolsSources}
 	${pcsx2GuiSources}
 	${pcsx2GuiResources}
@@ -1047,6 +1206,8 @@ if(Linux)
 	set(Platform_Libs
 		${LIBUDEV_LIBRARIES}
 		${X11_LIBRARIES}
+		${X11_XCB_LIBRARIES}
+		${XCB_LIBRARIES}
 		)
 endif()
 
@@ -1092,6 +1253,12 @@ set(pcsx2FinalLibs
     ${PCAP_LIBRARY}
     ${LIBSAMPLERATE_LIBRARIES}
     ${LIBXML2_LIBRARIES}
+    ${LIBC_LIBRARIES}
+    ${PNG_LIBRARIES}
+    ${FREETYPE_LIBRARIES}
+    ${LIBLZMA_LIBRARIES}
+    ${OPENGL_LIBRARIES}
+    ${EGL_LIBRARIES}
     ${Platform_Libs}
 )
 
@@ -1101,10 +1268,6 @@ endif()
 
 if(PULSEAUDIO_FOUND)
     set(pcsx2FinalLibs ${pcsx2FinalLibs} ${PULSEAUDIO_LIBRARIES})
-endif()
-
-if(BUILTIN_GS)
-    set(pcsx2FinalLibs "${pcsx2FinalLibs} GSdx")
 endif()
 
 # additonal include directories
@@ -1120,7 +1283,7 @@ file(MAKE_DIRECTORY ${res_bin})
 foreach(res_file IN ITEMS
         AppIcon16 AppIcon32 AppIcon64 BackgroundLogo Logo NoIcon ButtonIcon_Camera
         ConfigIcon_Cpu ConfigIcon_Gamefixes ConfigIcon_MemoryCard
-        ConfigIcon_Paths ConfigIcon_Plugins ConfigIcon_Speedhacks ConfigIcon_Video Breakpoint_Active Breakpoint_Inactive)
+        ConfigIcon_Paths ConfigIcon_Speedhacks ConfigIcon_Video Breakpoint_Active Breakpoint_Inactive)
     add_custom_command(OUTPUT  "${res_bin}/${res_file}.h" COMMAND perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl "${res_src}/${res_file}.png" "${res_bin}/${res_file}" )
 endforeach()
 
@@ -1168,7 +1331,7 @@ if (APPLE)
 	else()
 		set(postprocessBundleType ALL)
 	endif()
-	# Use custom_target and not custom_command so plugins can add themselves as dependencies
+
 	add_custom_target(pcsx2-postprocess-bundle ${postprocessBundleType}
 		COMMAND ${CMAKE_COMMAND} "-DPCSX2_BUNDLE_PATH=$<TARGET_FILE_DIR:${Output}>/../.."
 			-P ${CMAKE_SOURCE_DIR}/cmake/Pcsx2PostprocessBundle.cmake

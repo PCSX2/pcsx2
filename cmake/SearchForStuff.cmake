@@ -7,7 +7,7 @@ if (Linux)
 endif()
 find_package(PCAP)
 find_package(LibXml2)
-find_package(Freetype) # GSdx OSD
+find_package(Freetype) # GS OSD
 find_package(Gettext) # translation tool
 if(EXISTS ${PROJECT_SOURCE_DIR}/.git)
     find_package(Git)
@@ -21,7 +21,6 @@ find_package(OpenGL)
 find_package(PNG)
 find_package(Vtune)
 
-# The requirement of wxWidgets is checked in SelectPcsx2Plugins module
 # Does not require the module (allow to compile non-wx plugins)
 # Force the unicode build (the variable is only supported on cmake 2.8.3 and above)
 # Warning do not put any double-quote for the argument...
@@ -140,6 +139,7 @@ if(UNIX)
         check_lib(GTK3 gtk+-3.0 gtk/gtk.h)
     endif()
     endif()
+    find_package(XCB)
 endif()
 
 #----------------------------------------
@@ -291,3 +291,71 @@ endif()
 
 add_subdirectory(3rdparty/libchdr/libchdr EXCLUDE_FROM_ALL)
 include_directories(3rdparty/libchdr/libchdr/include)
+
+
+
+#-------------------------------------------------------------------------------
+#                              Dependency message print
+#-------------------------------------------------------------------------------
+set(msg_dep_common_libs "check these libraries -> wxWidgets (>=3.0), aio")
+set(msg_dep_pcsx2       "check these libraries -> wxWidgets (>=3.0), gtk2, zlib (>=1.2.4), pcsx2 common libs")
+
+macro(print_dep str dep)
+    if (PACKAGE_MODE)
+        message(FATAL_ERROR "${str}:${dep}")
+    else()
+        message(STATUS "${str}:${dep}")
+    endif()
+endmacro(print_dep)
+
+#-------------------------------------------------------------------------------
+#								Pcsx2 core & common libs
+#-------------------------------------------------------------------------------
+# Check for additional dependencies.
+# If all dependencies are available, including OS, build it
+#-------------------------------------------------------------------------------
+if (GTK2_FOUND OR GTK3_FOUND)
+    set(GTKn_FOUND TRUE)
+elseif(APPLE) # Not we have but that we don't change all if(gtkn) entries
+    set(GTKn_FOUND TRUE)
+else()
+    set(GTKn_FOUND FALSE)
+endif()
+
+if(SDL_FOUND OR SDL2_FOUND)
+    set(SDLn_FOUND TRUE)
+else()
+    set(SDLn_FOUND FALSE)
+endif()
+
+if(wxWidgets_FOUND)
+    set(common_libs TRUE)
+elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/common/src")
+    set(common_libs FALSE)
+else()
+    set(common_libs FALSE)
+    print_dep("Skip build of common libraries: missing dependencies" "${msg_dep_common_libs}")
+endif()
+
+# Common dependancy
+if(wxWidgets_FOUND AND ZLIB_FOUND AND common_libs AND NOT (Linux AND NOT AIO_FOUND))
+    if(OPENGL_FOUND AND X11_FOUND AND GTKn_FOUND AND ZLIB_FOUND AND PNG_FOUND AND FREETYPE_FOUND AND LIBLZMA_FOUND AND ((EGL_FOUND AND X11_XCB_FOUND) OR APPLE))
+        set(pcsx2_core TRUE)
+    else()
+        print_dep("Skip build of pcsx2 core: missing dependencies" "${msg_dep_pcsx2}")
+        set(pcsx2_core FALSE)
+    endif()
+elseif(NOT EXISTS "${CMAKE_SOURCE_DIR}/pcsx2")
+    set(pcsx2_core FALSE)
+else()
+    set(pcsx2_core FALSE)
+    print_dep("Skip build of pcsx2 core: missing dependencies" "${msg_dep_pcsx2}")
+endif()
+
+
+
+# Linux, BSD, use gtk2, but not OSX
+if(UNIX AND pcsx2_core AND NOT GTKn_FOUND AND NOT APPLE)
+    set(pcsx2_core FALSE)
+    print_dep("Skip build of pcsx2 core: missing dependencies" "${msg_dep_pcsx2}")
+endif()
