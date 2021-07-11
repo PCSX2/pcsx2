@@ -15,6 +15,9 @@
 
 #pragma once
 
+#include <GL/gl.h>
+#include <GL/glext.h>
+
 #define GL_TEX_LEVEL_0 (0)
 #define GL_TEX_LEVEL_1 (1)
 #define GL_FB_DEFAULT  (0)
@@ -99,7 +102,6 @@
 #define ENABLE_GL_VERSION_4_5 1
 // #define ENABLE_GL_VERSION_4_6 1
 
-#include "GS.h"
 // FIX compilation issue with Mesa 10
 #include "glext_extra.h"
 
