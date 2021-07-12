@@ -412,6 +412,7 @@ set(pcsx2USBSources
 	USB/shared/shared_usb.cpp
 	USB/shared/inifile_usb.cpp
 	USB/shared/ringbuffer.cpp
+	USB/usb-printer/usb-printer.cpp
 	)
 
 # USB headers
@@ -456,6 +457,7 @@ set(pcsx2USBHeaders
 	USB/shared/shared_usb.h
 	USB/shared/inifile_usb.h
 	USB/shared/ringbuffer.h
+	USB/usb-printer/usb-printer.h
 	)
 
 if(TARGET PulseAudio::PulseAudio)
