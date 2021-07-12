@@ -151,8 +151,12 @@ CRC::Game CRC::m_games[] =
 	{0x09F49E37, CrashBandicootWoC, NoRegion, 0},
 	{0x103B5706, CrashBandicootWoC, US, 0}, // American Greatest Hits release
 	{0x75182BE5, CrashBandicootWoC, US, 0},
-	{0x5188ABCA, CrashBandicootWoC, US, 0},
+	{0x5188ABCA, CrashBandicootWoC, US, 0}, // Beta
+	{0xEB1EB7FE, CrashBandicootWoC, US, 0}, // Demo
+	{0xEFAD49C7, CrashBandicootWoC, US, 0}, // E3 Demo
 	{0x34E2EEC7, CrashBandicootWoC, RU, 0},
+	{0x00A074A7, CrashBandicootWoC, KO, 0},
+	{0xF8643F9B, CrashBandicootWoC, JP, 0},
 	{0x3A03D62F, CrashBandicootWoC, EU, 0},
 	{0x35D70452, CrashBandicootWoC, EU, 0},
 	{0x72E1E60E, Spartan, EU, 0},
@@ -379,16 +383,17 @@ CRC::Game CRC::m_games[] =
 	{0x06A7506A, SacredBlaze, JP, 0},
 	{0x9C712FF0, Jak1, EU, TextureInsideRt}, // Jak and Daxter: The Precursor Legacy
 	{0x1B3976AB, Jak1, US, TextureInsideRt},
-	{0x472E7699, Jak1, US, TextureInsideRt},
+	{0x472E7699, Jak1, US, TextureInsideRt}, // Greatest Hits
 	{0x96A608C5, Jak1, US, TextureInsideRt}, // Cingular Wireless Demo, PS Underground Demo
 	{0xEDE4FE64, Jak1, JP, TextureInsideRt}, // Jak x Daxter: Kyuusekai no Isan
 	{0x2A7FD3B4, Jak1, JP, TextureInsideRt}, // Demo, Taikenba
+	{0x988B0DED, Jak1, NoRegion, TextureInsideRt}, // US Review
 	{0x2479F4A9, Jak2, EU, TextureInsideRt},
 	{0xF41C1B29, Jak2, EU, TextureInsideRt}, // Demo
 	{0x9184AAF1, Jak2, US, TextureInsideRt},
 	{0xA2034C69, Jak2, US, TextureInsideRt}, // Demo
 	{0x25FE4D23, Jak2, KO, TextureInsideRt},
-	{0xB4976DAF, Jak2, JP, TextureInsideRt},
+	{0xB4976DAF, Jak2, JP, TextureInsideRt}, // Jak II: Jak x Daxter 2
 	{0x1ED2EF9E, Jak2, NoRegion, TextureInsideRt}, // EU Preview, EU Review
 	{0x12804727, Jak3, EU, TextureInsideRt},
 	{0xE59E10BF, Jak3, EU, TextureInsideRt},
@@ -477,24 +482,50 @@ CRC::Game CRC::m_games[] =
 	{0xCE4933D0, RatchetAndClank, US, 0},
 	{0x6F191506, RatchetAndClank, US, 0}, // E3 Demo
 	{0x81CBFEA2, RatchetAndClank, US, 0}, // EB Games Demo
+	{0xAAAA62BE, RatchetAndClank, US, 0}, // 2306 Beta
+	{0xBE03FCFA, RatchetAndClank, US, 0}, // 2506 Beta
+	{0x660CDF9A, RatchetAndClank, US, 0}, // 0208 Beta
+	{0xA6FEE57C, RatchetAndClank, US, 0}, // 0909 Beta
 	{0x56A35F77, RatchetAndClank, JP, 0},
 	{0x76F724A3, RatchetAndClank, EU, 0},
 	{0x6A8F18B9, RatchetAndClank, EU, 0},
+	{0x5C19F3B7, RatchetAndClank, EU, 0}, // Regular Demo
 	{0xB3A71D10, RatchetAndClank2, US, 0}, // Going Commando
 	{0x38996035, RatchetAndClank2, US, 0},
+	{0xF700EE7E, RatchetAndClank2, US, 0}, // Regular Demo
+	{0xF67ADF58, RatchetAndClank2, US, 0}, // Retail Employees Demo
 	{0xDF6F94A1, RatchetAndClank2, US, 0}, // Demo - Going Commando & Jak II
+	{0xB40CB33B, RatchetAndClank2, US, 0}, // 0608 Beta
+	{0x96CE6D94, RatchetAndClank2, US, 0}, // 1808 Beta
+	{0x9B140173, RatchetAndClank2, US, 0}, // 0409 Beta
+	{0xFE76425E, RatchetAndClank2, US, 0}, // 0709 Beta
+	{0x89A26EC9, RatchetAndClank2, KO, 0},
 	{0x8CAA5F16, RatchetAndClank2, JP, 0}, // Gagaga! Ginga no Commando-ssu
 	{0x2F486E6F, RatchetAndClank2, EU, 0},
+	{0xB40CB33B, RatchetAndClank2, EU, 0}, // 0808 Beta
+	{0x50A3AC53, RatchetAndClank2, EU, 0}, // 0909 Beta
 	{0x45FE0CC4, RatchetAndClank3, US, 0}, // Up Your Arsenal
 	{0x2A12175A, RatchetAndClank3, US, 0}, // Regular Demo
+	{0xCC53C3B4, RatchetAndClank3, US, 0}, // Public Beta v1.0
+	{0x7DE24A7C, RatchetAndClank3, US, 0}, // Beta Press Demo
 	{0xD8EB2C29, RatchetAndClank3, US, 0}, // 1108 Beta
+	{0x8860B0CF, RatchetAndClank3, US, 0}, // Focus344 Build
+	{0x9FCC4BA4, RatchetAndClank3, KO, 0},
 	{0x64DC6000, RatchetAndClank3, JP, 0}, // Totsugeki! Galactic Rangers
 	{0x17125698, RatchetAndClank3, EU, 0},
+	{0x4A85FC67, RatchetAndClank3, EU, 0}, // Beta Trial Disc
 	{0x9BFBCD42, RatchetAndClank4, US, 0}, // Deadlocked
+	{0xD301186D, RatchetAndClank4, US, 0}, // Regular Demo
+	{0xBDF8A887, RatchetAndClank4, US, 0}, // Public Beta v.1
+	{0xBF85E343, RatchetAndClank4, US, 0}, // 1309 Beta
+	{0x529BC7CC, RatchetAndClank4, KO, 0},
 	{0x2EC9DA96, RatchetAndClank4, JP, 0}, // GiriGiri Ginga no Giga Battle
+	{0x76975025, RatchetAndClank4, JP, 0}, // Demo, Taikenba
 	{0xD697D204, RatchetAndClank4, EU, 0}, // Ratchet Gladiator
 	{0x8661F7BA, RatchetAndClank5, US, 0}, // Size Matters
-	{0xFCB981D5, RatchetAndClank5, EU, 0}, // Size Matters
+	{0x7029DCE6, RatchetAndClank5, KO, 0},
+	{0x9ADCF7AF, RatchetAndClank5, JP, 0}, // Gekitotsu! Dodeka Ginga no Miri Miri Gundan
+	{0xFCB981D5, RatchetAndClank5, EU, 0},
 	{0x8634861F, RickyPontingInternationalCricket, EU, 0},
 	{0xDDAC3815, Shox, US, 0},
 	{0xF84FE9DE, Shox, KO, 0},
