@@ -18350,6 +18350,9 @@ SLPM-60106:
 SLPM-60107:
   name: "Golf Paradise"
   region: "NTSC-J"
+SLPM-60109:
+  name: "Ridge Racer V [Trial]"
+  region: "NTSC-J"
 SLPM-60172:
   name: "Itadaki Street 3 - Okuman Chouja ni Shiteageru"
   region: "NTSC-J"
@@ -18376,6 +18379,9 @@ SLPM-60265:
 SLPM-60273:
   name: "Zettai Zetsumei Toshi 2: Itetsuita Kioku-tachi [Trial B]"
   region: "NTSC-J"
+SLPM-60282:
+  name: "Lucky * Star RAvish Romance [Trial]"
+  region: "NTSC-J"
 SLPM-61009:
   name: "Silent Hill 2 (Red Ribbon) [Trial]"
   region: "NTSC-J"
@@ -18389,6 +18395,9 @@ SLPM-61011:
   region: "NTSC-J"
   speedHacks:
     InstantVU1SpeedHack: 0  # Fixes hang on FMV's when CDVD timing is accurate.
+SLPM-61018:
+  name: "Abarenbou Princess [Trial]"
+  region: "NTSC-J"
 SLPM-61051:
   name: "Dengeki PS2 D61"
   region: "NTSC-J"
@@ -18478,6 +18487,12 @@ SLPM-62023:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 3  # Fixes missing 3D polygons when going ingame.
+SLPM-62025:
+  name: "PrintFan"
+  region: "NTSC-J"
+SLPM-62026:
+  name: "Silent Scope"
+  region: "NTSC-J"
 SLPM-62027:
   name: "Snowboard Heaven"
   region: "NTSC-J"
