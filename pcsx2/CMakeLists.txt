@@ -416,6 +416,7 @@ set(pcsx2USBSources
 	USB/usb-eyetoy/api_init_linux.cpp
 	USB/usb-hid/api_init_linux.cpp
 	USB/usb-mic/api_init_linux.cpp
+	USB/usb-printer/usb-printer.cpp
 	)
 
 # USB headers
@@ -473,6 +474,7 @@ set(pcsx2USBHeaders
 	USB/usb-hid/evdev/evdev.cpp
 	USB/usb-eyetoy/cam-linux.h
 	USB/qemu-usb/input-keymap-linux-to-qcode.h
+	USB/usb-printer/usb-printer.h
 	)
 include_directories ("../3rdparty/jpgd/")
 
