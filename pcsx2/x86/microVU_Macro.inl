@@ -265,6 +265,8 @@ void COP2_Interlock(bool mBitSync) {
 
 	if (cpuRegs.code & 1) {
 		iFlushCall(FLUSH_EVERYTHING);
+		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+		xForwardJZ32 skipvuidle;
 		xMOV(eax, ptr[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles_clear());
 		xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
@@ -272,6 +274,7 @@ void COP2_Interlock(bool mBitSync) {
 		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
 		if (mBitSync) xFastCall((void*)_vu0WaitMicro);
 		else		  xFastCall((void*)_vu0FinishMicro);
+		skipvuidle.SetTarget();
 	}
 }
 
@@ -289,15 +292,23 @@ static void recCFC2() {
 
 	COP2_Interlock(false);
 	if (!_Rt_) return;
-	if (!(cpuRegs.code & 1) && !EmuConfig.Gamefixes.VU0KickstartHack) {
-		iFlushCall(FLUSH_EVERYTHING);
-		xMOV(eax, ptr[&cpuRegs.cycle]);
+
+	iFlushCall(FLUSH_EVERYTHING);
+
+	if (!(cpuRegs.code & 1)) {
+		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+		xForwardJZ32 skipvuidle;
+		xMOV(eax, ptr32[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles_clear());
-		xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
+		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
+		xSUB(eax, ptr32[&vu0Regs.cycle]);
+		xCMP(eax, 8);
+		xForwardJL32 skip;
 		xLoadFarAddr(arg1reg, CpuVU0);
 		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+		skip.SetTarget();
+		skipvuidle.SetTarget();
 	}
-	iFlushCall(FLUSH_EVERYTHING);
 
 	if (_Rd_ == REG_STATUS_FLAG) { // Normalize Status Flag
 		xMOV(eax, ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL]);
@@ -359,15 +370,23 @@ static void recCTC2() {
 	printCOP2("CTC2");
 	COP2_Interlock(1);
 	if (!_Rd_) return;
-	if (!(cpuRegs.code & 1) && !EmuConfig.Gamefixes.VU0KickstartHack) {
-		iFlushCall(FLUSH_EVERYTHING);
-		xMOV(eax, ptr[&cpuRegs.cycle]);
+
+	iFlushCall(FLUSH_EVERYTHING);
+
+	if (!(cpuRegs.code & 1)) {;
+		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+		xForwardJZ32 skipvuidle;
+		xMOV(eax, ptr32[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles_clear());
-		xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
+		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
+		xSUB(eax, ptr32[&vu0Regs.cycle]);
+		xCMP(eax, 8);
+		xForwardJL32 skip;
 		xLoadFarAddr(arg1reg, CpuVU0);
 		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+		skip.SetTarget();
+		skipvuidle.SetTarget();
 	}
-	iFlushCall(FLUSH_EVERYTHING);
 
 	switch(_Rd_) {
 		case REG_MAC_FLAG: case REG_TPC:
@@ -432,15 +451,22 @@ static void recQMFC2() {
 	COP2_Interlock(false);
 	if (!_Rt_) return;
 
-	if (!(cpuRegs.code & 1) && !EmuConfig.Gamefixes.VU0KickstartHack) {
-		iFlushCall(FLUSH_EVERYTHING);
-		xMOV(eax, ptr[&cpuRegs.cycle]);
+	iFlushCall(FLUSH_EVERYTHING);
+
+	if (!(cpuRegs.code & 1)) {
+		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+		xForwardJZ32 skipvuidle;
+		xMOV(eax, ptr32[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles_clear());
-		xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
+		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
+		xSUB(eax, ptr32[&vu0Regs.cycle]);
+		xCMP(eax, 8);
+		xForwardJL32 skip;
 		xLoadFarAddr(arg1reg, CpuVU0);
 		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+		skip.SetTarget();
+		skipvuidle.SetTarget();
 	}
-	iFlushCall(FLUSH_EVERYTHING);
 
 	// FixMe: For some reason this line is needed or else games break:
 	_eeOnWriteReg(_Rt_, 0);
@@ -454,15 +480,23 @@ static void recQMTC2() {
 	printCOP2("QMTC2");
 	COP2_Interlock(true);
 	if (!_Rd_) return;
-	if (!(cpuRegs.code & 1) && !EmuConfig.Gamefixes.VU0KickstartHack) {
-		iFlushCall(FLUSH_EVERYTHING);
-		xMOV(eax, ptr[&cpuRegs.cycle]);
+
+	iFlushCall(FLUSH_EVERYTHING);
+
+	if (!(cpuRegs.code & 1)) {
+		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+		xForwardJZ32 skipvuidle;
+		xMOV(eax, ptr32[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles_clear());
-		xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
+		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
+		xSUB(eax, ptr32[&vu0Regs.cycle]);
+		xCMP(eax, 8);
+		xForwardJL32 skip;
 		xLoadFarAddr(arg1reg, CpuVU0);
 		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+		skip.SetTarget();
+		skipvuidle.SetTarget();
 	}
-	iFlushCall(FLUSH_EVERYTHING);
 
 	xMOVAPS(xmmT1, ptr128[&cpuRegs.GPR.r[_Rt_]]);
 	xMOVAPS(ptr128[&vu0Regs.VF[_Rd_]], xmmT1);
@@ -534,9 +568,11 @@ namespace OpcodeImpl { void recCOP2() { recCOP2t[_Rs_](); }}}}
 void recCOP2_BC2  () { recCOP2_BC2t[_Rt_](); }
 void recCOP2_SPEC1() {
 	iFlushCall(FLUSH_EVERYTHING);
-	xMOV(eax, ptr[&cpuRegs.cycle]);
-	xADD(eax, scaleblockcycles_clear());
-	xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
-	xFastCall((void*)_vu0FinishMicro); recCOP2SPECIAL1t[_Funct_]();
+	xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+	xForwardJZ32 skipvuidle;
+	xFastCall((void*)_vu0FinishMicro);
+	skipvuidle.SetTarget();
+
+	recCOP2SPECIAL1t[_Funct_]();
 }
 void recCOP2_SPEC2() { recCOP2SPECIAL2t[(cpuRegs.code&3)|((cpuRegs.code>>4)&0x7c)](); }

@@ -574,12 +574,19 @@ void recSWC1()
 void recLQC2()
 {
 	iFlushCall(FLUSH_EVERYTHING);
-	xMOV(eax, ptr[&cpuRegs.cycle]);
+
+	xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+	xForwardJZ32 skipvuidle;
+	xMOV(eax, ptr32[&cpuRegs.cycle]);
 	xADD(eax, scaleblockcycles_clear());
-	xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
+	xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
+	xSUB(eax, ptr32[&VU0.cycle]);
+	xCMP(eax, 8);
+	xForwardJL32 skip;
 	xLoadFarAddr(arg1reg, CpuVU0);
 	xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
-	iFlushCall(FLUSH_EVERYTHING);
+	skip.SetTarget();
+	skipvuidle.SetTarget();
 
 	if (_Rt_)
 		xLEA(arg2reg, ptr[&VU0.VF[_Ft_].UD[0]]);
@@ -611,12 +618,19 @@ void recLQC2()
 void recSQC2()
 {
 	iFlushCall(FLUSH_EVERYTHING);
-	xMOV(eax, ptr[&cpuRegs.cycle]);
+
+	xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+	xForwardJZ32 skipvuidle;
+	xMOV(eax, ptr32[&cpuRegs.cycle]);
 	xADD(eax, scaleblockcycles_clear());
-	xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
+	xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
+	xSUB(eax, ptr32[&VU0.cycle]);
+	xCMP(eax, 8);
+	xForwardJL32 skip;
 	xLoadFarAddr(arg1reg, CpuVU0);
 	xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
-	iFlushCall(FLUSH_EVERYTHING);
+	skip.SetTarget();
+	skipvuidle.SetTarget();
 
 	xLEA(arg2reg, ptr[&VU0.VF[_Ft_].UD[0]]);
 

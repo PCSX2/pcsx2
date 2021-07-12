@@ -69,12 +69,6 @@ void BaseVUmicroCPU::ExecuteBlockJIT(BaseVUmicroCPU* cpu) {
 		s32 delta = (s32)(u32)(cpuRegs.cycle - cycle);
 		if (delta > 0) {			// Enough time has passed
 			cpu->Execute(delta);	// Execute the time since the last call
-			if (stat & test) {
-				cpuSetNextEventDelta(delta);
-			}
-		}
-		else {
-			cpuSetNextEventDelta(-delta); // Haven't caught-up from kick start
 		}
 	}
 }
