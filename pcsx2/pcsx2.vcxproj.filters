@@ -241,6 +241,9 @@
     <Filter Include="System\Ps2\USB\usb-pad\raw">
       <UniqueIdentifier>{8640e8ca-7d79-4221-b1bf-35bc142a9add}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\USB\usb-printer">
+      <UniqueIdentifier>{343981c6-ca99-462d-9b20-0500a23ae4cd}</UniqueIdentifier>
+    </Filter>
     <Filter Include="System\Ps2\PAD">
       <UniqueIdentifier>{e1cbcaf6-9f65-4f14-9e89-27dd0f10e047}</UniqueIdentifier>
     </Filter>
@@ -1316,6 +1319,9 @@
     <ClCompile Include="USB\usb-msd\usb-msd-win32.cpp">
       <Filter>System\Ps2\USB\usb-msd</Filter>
     </ClCompile>
+    <ClCompile Include="USB\usb-printer\usb-printer.cpp">
+      <Filter>System\Ps2\USB\usb-printer</Filter>
+    </ClCompile>
     <ClCompile Include="USB\shared\hidapi.cpp">
       <Filter>System\Ps2\USB\shared</Filter>
     </ClCompile>
@@ -2385,6 +2391,9 @@
     </ClInclude>
     <ClInclude Include="USB\usb-mic\audiodev-wasapi.h">
       <Filter>System\Ps2\USB\usb-mic</Filter>
+    </ClInclude>
+    <ClInclude Include="USB\usb-printer\usb-printer.h">
+      <Filter>System\Ps2\USB\usb-printer</Filter>
     </ClInclude>
     <ClInclude Include="USB\shared\hidapi.h">
       <Filter>System\Ps2\USB\shared</Filter>

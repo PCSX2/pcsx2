@@ -15,12 +15,13 @@
 
 #include "PrecompiledHeader.h"
 #include "deviceproxy.h"
-#include "usb-pad/usb-pad.h"
-#include "usb-msd/usb-msd.h"
-#include "usb-mic/usb-mic-singstar.h"
-#include "usb-mic/usb-headset.h"
-#include "usb-hid/usb-hid.h"
 #include "usb-eyetoy/usb-eyetoy-webcam.h"
+#include "usb-hid/usb-hid.h"
+#include "usb-mic/usb-headset.h"
+#include "usb-mic/usb-mic-singstar.h"
+#include "usb-msd/usb-msd.h"
+#include "usb-pad/usb-pad.h"
+#include "usb-printer/usb-printer.h"
 
 void RegisterDevice::Register()
 {
@@ -43,6 +44,7 @@ void RegisterDevice::Register()
 	inst.Add(DEVTYPE_EYETOY, new DeviceProxy<usb_eyetoy::EyeToyWebCamDevice>());
 	inst.Add(DEVTYPE_BEATMANIA_DADADA, new DeviceProxy<usb_hid::BeatManiaDevice>());
 	inst.Add(DEVTYPE_SEGA_SEAMIC, new DeviceProxy<usb_pad::SeamicDevice>());
+	inst.Add(DEVTYPE_PRINTER, new DeviceProxy<usb_printer::PrinterDevice>());
 	inst.Add(DEVTYPE_KEYBOARDMANIA, new DeviceProxy<usb_pad::KeyboardmaniaDevice>());
 
 	RegisterAPIs();

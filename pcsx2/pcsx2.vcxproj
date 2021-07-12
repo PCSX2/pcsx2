@@ -453,6 +453,7 @@
     <ClCompile Include="USB\usb-pad\usb-pad-ff.cpp" />
     <ClCompile Include="USB\usb-pad\usb-pad.cpp" />
     <ClCompile Include="USB\usb-pad\usb-seamic.cpp" />
+    <ClCompile Include="USB\usb-printer\usb-printer.cpp" />
     <ClCompile Include="USB\USB.cpp" />
     <ClCompile Include="USB\Win32\Config_usb.cpp" />
     <ClCompile Include="GS\Renderers\OpenGL\GLLoader.cpp" />
@@ -943,6 +944,7 @@
     <ClInclude Include="USB\usb-pad\raw\raw-config-res.h" />
     <ClInclude Include="USB\usb-pad\raw\usb-pad-raw.h" />
     <ClInclude Include="USB\usb-pad\usb-pad.h" />
+    <ClInclude Include="USB\usb-printer\usb-printer.h" />
     <ClInclude Include="USB\USB.h" />
     <ClInclude Include="USB\Win32\Config_usb.h" />
     <ClInclude Include="USB\Win32\resource_usb.h" />
