@@ -32,6 +32,60 @@
 
 namespace usb_printer
 {
+	static const uint8_t mpr_g600_dev_desciptor[] = {
+		0x12,        // bLength
+		0x01,        // bDescriptorType (Device)
+		0x00, 0x01,  // bcdUSB 1.00
+		0x00,        // bDeviceClass (Use class information in the Interface Descriptors)
+		0x00,        // bDeviceSubClass
+		0x00,        // bDeviceProtocol
+		0x08,        // bMaxPacketSize0 8
+		0x4C, 0x05,  // idVendor 0x054C
+		0x3D, 0x00,  // idProduct 0x003D
+		0x00, 0x01,  // bcdDevice 2.00
+		0x01,        // iManufacturer (String Index)
+		0x02,        // iProduct (String Index)
+		0x03,        // iSerialNumber (String Index)
+		0x01,        // bNumConfigurations 1
+	};
+	static int mpr_g600_dev_desciptor_size = sizeof(mpr_g600_dev_desciptor);
+
+	static const uint8_t mpr_g600_config_descriptor[] = {
+		0x09,        // bLength
+		0x02,        // bDescriptorType (Configuration)
+		0x20, 0x00,  // wTotalLength 32
+		0x01,        // bNumInterfaces 1
+		0x01,        // bConfigurationValue
+		0x00,        // iConfiguration (String Index)
+		0x40,        // bmAttributes Self Powered
+		0x01,        // bMaxPower 2mA
+
+		0x09,        // bLength
+		0x04,        // bDescriptorType (Interface)
+		0x00,        // bInterfaceNumber 0
+		0x00,        // bAlternateSetting
+		0x02,        // bNumEndpoints 2
+		0x07,        // bInterfaceClass
+		0x01,        // bInterfaceSubClass
+		0x02,        // bInterfaceProtocol
+		0x00,        // iInterface (String Index)
+
+		0x07,        // bLength
+		0x05,        // bDescriptorType (Endpoint)
+		0x01,        // bEndpointAddress (OUT/H2D)
+		0x02,        // bmAttributes (Bulk)
+		0x40, 0x00,  // wMaxPacketSize 64
+		0x00,        // bInterval 0 (unit depends on device speed)
+
+		0x07,        // bLength
+		0x05,        // bDescriptorType (Endpoint)
+		0x82,        // bEndpointAddress (IN/D2H)
+		0x02,        // bmAttributes (Bulk)
+		0x40, 0x00,  // wMaxPacketSize 64
+		0x00,        // bInterval 0 (unit depends on device speed)
+	};
+	static int mpr_g600_config_descriptor_size = sizeof(mpr_g600_config_descriptor);
+
 	static const uint8_t dpp_mp1_dev_desciptor[] = {
 		0x12,        // bLength
 		0x01,        // bDescriptorType (Device)
@@ -88,11 +142,13 @@ namespace usb_printer
 
 	enum PrinterModel
 	{
+		Sony_MPR_G600,
 		Sony_DPP_MP1,
 	};
 
 	enum PrinterProtocol
 	{
+		ProtocolCanonBJL,
 		ProtocolSonyUPD,
 	};
 
@@ -110,6 +166,15 @@ namespace usb_printer
 	};
 
 	static const PrinterData sPrinters[] = {
+		{
+			Sony_MPR_G600,
+			"Sony MPR-G600A (Popegg)",
+			mpr_g600_dev_desciptor, mpr_g600_dev_desciptor_size,
+			mpr_g600_config_descriptor, mpr_g600_config_descriptor_size,
+			{"", "Sony", "MPR-G600", "3H2IJg"},
+			"MFG:SONY;CMD:BJL,BJRaster3,BSCCe;MDL:MPR-G600;CLS:PRINTER;DES:Sony MPR-G600;",
+			ProtocolCanonBJL,
+		},
 		{
 			Sony_DPP_MP1,
 			"Sony DPP-MP1",

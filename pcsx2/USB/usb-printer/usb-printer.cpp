@@ -43,6 +43,8 @@ namespace usb_printer
 		long data_pos;
 	} PrinterState;
 
+	void canon_close_file(PrinterState* s);
+
 	static void usb_printer_handle_reset(USBDevice* dev)
 	{
 		PrinterState* s = (PrinterState*)dev;
@@ -75,8 +77,89 @@ namespace usb_printer
 				p->actual_length = ret;
 				break;
 			case ClassInterfaceRequest | GET_PORT_STATUS:
+				if (sPrinters[s->selected_printer].protocol == ProtocolCanonBJL)
+				{
+					canon_close_file(s);
+				}
 				data[0] = GET_PORT_STATUS_PAPER_NOT_EMPTY | GET_PORT_STATUS_SELECTED | GET_PORT_STATUS_NO_ERROR;
 				p->actual_length = 1;
+				break;
+		}
+	}
+
+	void canon_open_file(PrinterState* s)
+	{
+		char filepath[1024];
+		char cur_time_str[32];
+		const time_t cur_time = time(nullptr);
+		strftime(cur_time_str, sizeof(cur_time_str), "%Y_%m_%d_%H_%M_%S", localtime(&cur_time));
+		snprintf(filepath, sizeof(filepath), "%s/print_%s.bin",
+				g_Conf->Folders.Snapshots.ToString().ToStdString().c_str(), cur_time_str);
+		s->print_file = open(filepath, O_WRONLY | O_CREAT | O_TRUNC | O_BINARY, 666);
+		if (s->print_file < 0)
+		{
+			Console.WriteLn("Printer: Canon: Cannot open: %s", filepath);
+			return;
+		}
+		Console.WriteLn("Printer: Canon: Saving to... %s", filepath);
+	}
+
+	void canon_close_file(PrinterState* s)
+	{
+		if (s->print_file >= 0)
+		{
+			Console.WriteLn("Printer: Canon: done.");
+			close(s->print_file);
+		}
+		s->print_file = -1;
+	}
+
+	static void usb_printer_handle_data_canon(USBDevice* dev, USBPacket* p)
+	{
+		PrinterState* s = (PrinterState*)dev;
+		unsigned char data[896] = {0};
+		int actual_length = 0;
+		const uint8_t ep_nr = p->ep->nr;
+		const uint8_t ep_type = p->ep->type;
+
+		switch (p->pid)
+		{
+			case USB_TOKEN_OUT:
+				usb_packet_copy(p, data, MIN(p->iov.size, sizeof(data)));
+				if (data[0] == 0x1b && data[1] == 0x5b && data[2] == 0x4b && data[3] == 0x1c)
+				{
+					s->cmd_state = 1;
+				}
+				else if (s->print_file < 0
+					&& data[0] == 0x1b && data[1] == 0x5b && data[2] == 0x4b && data[3] == 0x02)
+				{
+					canon_open_file(s);
+				}
+
+				if (s->print_file >= 0)
+				{
+					write(s->print_file, &data[0], p->iov.size);
+				}
+				break;
+			case USB_TOKEN_IN:
+				if (s->cmd_state == 1)
+				{
+					const unsigned int len = sprintf((char*)data + 2, "xxDWS:NO;DOC:4,00,NO;DSC:NO;DBS:NO;DJS:NO;");
+					data[0] = 0x00;
+					data[1] = 1 + len;
+					actual_length = 2 + len;
+					s->cmd_state = 0;
+				}
+				else
+				{
+					const unsigned char status[] = {0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff, 0x00, 0x00, 0x00, 0xff};
+					memcpy(data, &status[0], sizeof(status));
+					actual_length = sizeof(status);
+				}
+				usb_packet_copy(p, data, MIN(actual_length, sizeof(data)));
+				break;
+			default:
+				p->status = USB_RET_STALL;
 				break;
 		}
 	}
@@ -135,9 +218,9 @@ namespace usb_printer
 
 	void sony_close_file(PrinterState* s)
 	{
-		Console.WriteLn("Printer: Sony: done.");
 		if (s->print_file >= 0)
 		{
+			Console.WriteLn("Printer: Sony: done.");
 			close(s->print_file);
 		}
 		s->print_file = -1;
@@ -291,6 +374,9 @@ namespace usb_printer
 		s->dev.klass.handle_control = usb_printer_handle_control;
 		switch (sPrinters[subtype].protocol)
 		{
+			case ProtocolCanonBJL:
+				s->dev.klass.handle_data = usb_printer_handle_data_canon;
+				break;
 			case ProtocolSonyUPD:
 				s->dev.klass.handle_data = usb_printer_handle_data_sony;
 				break;
