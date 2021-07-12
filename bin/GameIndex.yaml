@@ -1013,6 +1013,51 @@ SCAJ-30010:
 SCAJ-30011:
   name: "God of War II"
   region: "NTSC-E"
+SCCS-40002:
+  name: "Devil May Cry 2 - Disc 1"
+  region: "NTSC-C"
+SCCS-40003:
+  name: "Devil May Cry 2 - Disc 2"
+  region: "NTSC-C"
+SCCS-40005:
+  name: "ICO"
+  region: "NTSC-C"
+SCCS-40006:
+  name: "Shin Sangoku Musou 2"
+  region: "NTSC-C"
+SCCS-40007:
+  name: "Arc the Lad: Seirei no Tasogare"
+  region: "NTSC-C"
+SCCS-40009:
+  name: "Dragon Ball Z 2"
+  region: "NTSC-C"
+SCCS-40010:
+  name: "Super Puzzle Bobble 2"
+  region: "NTSC-C"
+SCCS-40011:
+  name: "Armored Core 2: Another Age"
+  region: "NTSC-C"
+SCCS-40014:
+  name: "World Soccer Winning Eleven 7: International"
+  region: "NTSC-C"
+SCCS-40015:
+  name: "Viorate no Atelier: Gramnad no Renkinjutsushi 2"
+  region: "NTSC-C"
+SCCS-40016:
+  name: "Ape Escape: Pumped & Primed"
+  region: "NTSC-C"
+SCCS-40017:
+  name: "EyeToy: Play"
+  region: "NTSC-C"
+SCCS-40018:
+  name: "Saru EyeToy: Oosawagi! Ukkiuki Game Tenkomori!!"
+  region: "NTSC-C"
+SCCS-40019:
+  name: "Formula One 04"
+  region: "NTSC-C"
+SCCS-40022:
+  name: "World Soccer Winning Eleven 8: Asia Championship"
+  region: "NTSC-C"
 SCED-50041:
   name: "Tekken Tag Tournament [Demo]"
   region: "PAL-E"
@@ -8123,6 +8168,8 @@ SLES-51056:
   name: "Fighting Fury"
   region: "PAL-E"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes hang at menu.
 SLES-51057:
   name: "Hard Hitter 2"
   region: "PAL-M3"
@@ -26891,6 +26938,8 @@ SLPS-20037:
 SLPS-20038:
   name: "Grappler Baki - Baki Saidai no Tournament"
   region: "NTSC-J"
+  gameFixes:
+    - EETimingHack # Fixes hang at menu.
 SLPS-20040:
   name: "MotoGP"
   region: "NTSC-J"
