@@ -70,3 +70,7 @@ jobs:
       - name: Build PCSX2
         working-directory: ./build
         run: make -j2 # macOS doesn't use make install
+
+      - name: Run Tests
+        working-directory: ./build
+        run: make -j2 unittests
