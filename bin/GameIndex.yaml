@@ -130,6 +130,11 @@ PCPX-96649:
 PCPX-96660:
   name: "Tourist Trophy [Demo]"
   region: "NTSC-J"
+PCPX-98017:
+  name: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [Demo, Taikenba]"
+  region: "NTSC-J"
+  gameFixes:
+    - VU0KickstartHack # Fixes Character SPS.
 SCAJ-10001:
   name: "Makai Senki Disgaea"
   region: "NTSC-Unk"
@@ -1095,6 +1100,11 @@ SCED-50907:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
   gameFixes:
     - IPUWaitHack
+SCED-51075:
+  name: "Ratchet & Clank [Regular Demo]"
+  region: "PAL-M5"
+  gameFixes:
+    - VU0KickstartHack # Fixes Character SPS.
 SCED-51531:
   name: "Official PlayStation 2 Magazine Demo 33"
   region: "PAL-M5"
@@ -2968,7 +2978,7 @@ SCKA-20117:
   name: "Super Robot Taisen OG - Original Generations Gaiden"
   region: "NTSC-K"
 SCKA-20120:
-  name: "Ratchet & Clank"
+  name: "Ratchet & Clank - Size Matters"
   region: "NTSC-K"
   gameFixes:
     - VU0KickstartHack # Fixes Character SPS.
@@ -6028,6 +6038,9 @@ SLED-50359:
 SLED-50478:
   name: "WWF Smackdown! - Just Bring It [Demo]"
   region: "PAL-E"
+SLED-50484:
+  name: "Rayman M [Demo]"
+  region: "PAL-E"
 SLED-50488:
   name: "Spy Hunter [Demo]"
   region: "PAL-E"
@@ -7070,9 +7083,6 @@ SLES-50481:
   name: "Vexx"
   region: "PAL-M5"
   compat: 5
-SLES-50484:
-  name: "Rayman M"
-  region: "PAL-Unk"
 SLES-50486:
   name: "Splashdown"
   region: "PAL-M5"
@@ -17654,6 +17664,10 @@ SLKA-25071:
 SLKA-25077:
   name: "Culdcept II - Expansion"
   region: "NTSC-K"
+SLKA-25078:
+  name: "Rayman 3 - Hoodlum Havoc"
+  region: "NTSC-K"
+  compat: 5
 SLKA-25081:
   name: "SD Gundam G Generation Neo"
   region: "NTSC-K"
@@ -26562,7 +26576,7 @@ SLPM-74002:
   name: "Shin Sangoku Musou [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74003:
-  name: "Crash Bandikoot 4 - Saikuretsu [PlayStation 2 The Best]"
+  name: "Crash Bandicoot 4 - Saikuretsu! Majin Power [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74004:
   name: "Maximo - Ghosts to Glory [PlayStation 2 The Best]"
