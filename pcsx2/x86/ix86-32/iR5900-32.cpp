@@ -1163,13 +1163,14 @@ int cop2flags(u32 code)
 
 int COP2DivUnitTimings(u32 code)
 {
+	// Note: Cycles are off by 1 since the check ignores the actual op, so they are off by 1
 	switch (code & 0x3FF)
 	{
 		case 0x3BC: // DIV
 		case 0x3BD: // SQRT
-			return 7;
+			return 6;
 		case 0x3BE: // RSQRT
-			return 13;
+			return 12;
 		default:
 			return 0; // Used mainly for WAITQ
 	}
