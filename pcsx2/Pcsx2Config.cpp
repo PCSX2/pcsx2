@@ -129,6 +129,8 @@ Pcsx2Config::RecompilerOptions::RecompilerOptions()
 	fpuOverflow	= true;
 	//fpuExtraOverflow = false;
 	//fpuFullMode = false;
+
+	ThrowAddressExceptions = false;
 }
 
 void Pcsx2Config::RecompilerOptions::ApplySanityCheck()
@@ -186,6 +188,8 @@ void Pcsx2Config::RecompilerOptions::LoadSave( IniInterface& ini )
 	IniBitBool( StackFrameChecks );
 	IniBitBool( PreBlockCheckEE );
 	IniBitBool( PreBlockCheckIOP );
+
+	IniBitBool(ThrowAddressExceptions);
 }
 
 Pcsx2Config::CpuOptions::CpuOptions()

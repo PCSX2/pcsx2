@@ -238,6 +238,10 @@ struct Pcsx2Config
 				PreBlockCheckIOP:1;
 			bool
 				EnableEECache   :1;
+
+			bool
+				ThrowAddressExceptions : 1;
+
 		BITFIELD_END
 
 		RecompilerOptions();
