@@ -39,20 +39,18 @@ chmod a+x ./squashfs-root/AppRun
 chmod a+x ./squashfs-root/runtime
 chmod a+x ./squashfs-root/AppRun-patched
 echo "$name" > "$GITHUB_WORKSPACE"/squashfs-root/version.txt
-mkdir -p "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/{plugins,vm}
+mkdir -p "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/app
 cp -r "$GITHUB_WORKSPACE"/bin/Langs "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/
-cp "$GITHUB_WORKSPACE"/bin/docs/{Configuration_Guide.pdf,PCSX2_FAQ.pdf} "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/plugins
-cp "$GITHUB_WORKSPACE"/bin/cheats_ws.zip "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/plugins
-if [[ -e "$BUILDPATH/plugins" ]]; then
-  find "$BUILDPATH/plugins" -iname '*.so' -exec cp {} "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/plugins \;
-fi
-cp ./bin/GameIndex.yaml "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/plugins/GameIndex.yaml
+cp "$GITHUB_WORKSPACE"/bin/docs/{Configuration_Guide.pdf,PCSX2_FAQ.pdf} "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/app
+cp "$GITHUB_WORKSPACE"/bin/cheats_ws.zip "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/app
+
+cp ./bin/GameIndex.yaml "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/app/GameIndex.yaml
 export UPD_INFO="gh-releases-zsync|PCSX2|pcsx2|latest|$name.AppImage.zsync"
 export OUTPUT="$name.AppImage"
 /tmp/squashfs-root/AppRun --appdir="$GITHUB_WORKSPACE"/squashfs-root/ -d "$GITHUB_WORKSPACE"/squashfs-root/PCSX2.desktop -i "$GITHUB_WORKSPACE"/squashfs-root/PCSX2.png --output appimage
 mkdir -p "$GITHUB_WORKSPACE"/artifacts/
 ls -al .
-mv "$name.AppImage" "$GITHUB_WORKSPACE"/artifacts # && mv "$name.AppImage.zsync" $GITHUB_WORKSPACE/artifacts
+mv "$name.AppImage" "$GITHUB_WORKSPACE"/artifacts # && mv "$name.AppImage.zsync" "$GITHUB_WORKSPACE"/artifacts
 chmod -R 777 ./artifacts
 cd ./artifacts
 ls -al .
