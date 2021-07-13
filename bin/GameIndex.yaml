@@ -34,30 +34,30 @@ GUST-00009:
   gameFixes:
     - GIFFIFOHack # Fixes flickering sprites.
 PAPX-90203:
-  name: "Gran Turismo 2000 [Trial]"
+  name: "Gran Turismo 2000 [Demo]"
   region: "NTSC-J"
 PAPX-90222:
-  name: "Jak x Daxter: Kyuusekai no Isan [Demo, Taikenba]"
+  name: "Jak x Daxter: Kyuusekai no Isan [Demo]"
   region: "NTSC-J"
   gameFixes:
     - VU0KickstartHack # Fixes Character SPS.
 PAPX-90223:
-  name: "Jak x Daxter: Kyuusekai no Isan [Demo, Taikenba]"
+  name: "Jak x Daxter: Kyuusekai no Isan [Demo]"
   region: "NTSC-J"
   gameFixes:
     - VU0KickstartHack # Fixes Character SPS.
 PAPX-90231:
-  name: "Kaitou Sly Cooper [Demo, Taikenba]"
+  name: "Kaitou Sly Cooper [Demo]"
   region: "NTSC-J"
 PAPX-90512:
-  name: "Gran Turismo 4 - Toyota Prius [Trial]"
+  name: "Gran Turismo 4 - Toyota Prius [Demo]"
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2  # Text in GT mode works.
   # Comments from old GameIndex.dbf for this Game
   # eeClampMode = 3  Text in races works.
 PAPX-90516:
-  name: "Jak and Daxter II [Trial]"
+  name: "Jak and Daxter II [Demo]"
   region: "NTSC-J"
   gameFixes:
     - VU0KickstartHack # Fixes Character SPS.
@@ -131,7 +131,7 @@ PCPX-96660:
   name: "Tourist Trophy [Demo]"
   region: "NTSC-J"
 PCPX-98017:
-  name: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [Demo, Taikenba]"
+  name: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [Demo]"
   region: "NTSC-J"
   gameFixes:
     - VU0KickstartHack # Fixes Character SPS.
@@ -18665,6 +18665,9 @@ SLPM-62112:
 SLPM-62113:
   name: "World Soccer Winning Eleven 5 - Final Evolution"
   region: "NTSC-J"
+SLPM-62114:
+  name: "Crash Bandicoot 4 - Sakuretsu! Majin Power"
+  region: "NTSC-J"
 SLPM-62117:
   name: "Momotaro Train X"
   region: "NTSC-J"
@@ -26576,7 +26579,7 @@ SLPM-74002:
   name: "Shin Sangoku Musou [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74003:
-  name: "Crash Bandicoot 4 - Saikuretsu! Majin Power [PlayStation 2 The Best]"
+  name: "Crash Bandicoot 4 - Sakuretsu! Majin Power [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74004:
   name: "Maximo - Ghosts to Glory [PlayStation 2 The Best]"
