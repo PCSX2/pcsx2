@@ -31,33 +31,35 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-18.04
             platform: x86
             compiler: gcc
+            detail: appimage
             experimental: false
-          - os: ubuntu-20.04
+          - os: ubuntu-18.04
             platform: x64
             compiler: gcc
+            detail: appimage
             experimental: false
-          - os: ubuntu-20.04
+          - os: ubuntu-18.04
             platform: x86
             compiler: clang
             # Need to disable PCH until cmake 3.17
             # (PCH conflicts with ccache, fixed by https://gitlab.kitware.com/cmake/cmake/-/merge_requests/4400)
             cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
-            detail: -nopch
+            detail: nopch
             experimental: false
-          - os: ubuntu-20.04
+          - os: ubuntu-18.04
             platform: x86
             compiler: gcc
             cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
-            detail: -nopch
+            detail: nopch
             experimental: false
-          - os: ubuntu-20.04
+          - os: ubuntu-18.04
             platform: x86
             compiler: gcc
             cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON -DARCH_FLAG=-march=haswell
-            detail: -avx2-nopch
+            detail: avx2 nopch
             experimental: false
 
     name: "${{ matrix.platform }} | ${{ matrix.compiler }} ${{ matrix.detail }}"
@@ -95,22 +97,62 @@ jobs:
         with:
           path: .ccache
           key: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}${{ matrix.detail }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
-          restore-keys: |
-            ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}${{ matrix.detail }}-ccache-
+          restore-keys: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}${{ matrix.detail }}-ccache-
 
+      - name: Prepare Artifact Metadata
+        id: artifact-metadata
+        shell: bash
+        run: |
+          ARCH=$([ "${{ matrix.platform }}" == x86 ] && echo "32bit" || echo "64bit")
+          ARTIFACT_NAME=""
+          if [ ${{ github.event_name }} == "pull_request" ]; then
+            PR_SHA=$(git rev-parse --short "${{ github.event.pull_request.head.sha }}")
+            ARTIFACT_NAME="PCSX2-${ARCH}"
+            if [ ! -z "${{ github.event.pull_request.number }}" ]; then
+              PR_NUM=${{ github.event.pull_request.number }}
+              ARTIFACT_NAME="${ARTIFACT_NAME}-pr[${PR_NUM}]"
+            fi
+            ARTIFACT_NAME="${ARTIFACT_NAME}-sha[${PR_SHA}]"
+            if [ ! -z "${{ github.event.pull_request.title }}" ]; then
+              PR_TITLE=$(echo "${{ github.event.pull_request.title }}" | tr -cd '[a-zA-Z0-9[:space:]]_-')
+              ARTIFACT_NAME="${ARTIFACT_NAME}-title["${PR_TITLE}""
+            fi
+          else
+            SHA=$(git rev-parse --short "$GITHUB_SHA")
+            ARTIFACT_NAME="PCSX2-${ARCH}-sha[${SHA}"
+          fi
+          TRIMMED_ARTIFACT_NAME=$(printf "%.199s]" "$ARTIFACT_NAME")
+          echo "name=$TRIMMED_ARTIFACT_NAME"
+          echo "##[set-output name=name;]${TRIMMED_ARTIFACT_NAME}"
+          
       - name: Install Packages
         env:
           PLATFORM: ${{ matrix.platform }}
           COMPILER: ${{ matrix.compiler }}
-        run: ./.github/workflows/scripts/linux/install-packages.sh
+        run: .github/workflows/scripts/linux/install-packages.sh
 
       - name: Generate CMake
         env:
           PLATFORM: ${{ matrix.platform }}
           COMPILER: ${{ matrix.compiler }}
           ADDITIONAL_CMAKE_ARGS: ${{ matrix.cmakeflags }}
-        run: ./.github/workflows/scripts/linux/generate-cmake.sh
+        run: .github/workflows/scripts/linux/generate-cmake.sh
 
       - name: Build PCSX2
         working-directory: ./build
         run: ../.github/workflows/scripts/linux/compile.sh
+        
+      - name: Package AppImage
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          COMPILER: ${{ matrix.compiler }}
+          name: ${{ steps.artifact-metadata.outputs.name }}
+        run: .github/workflows/scripts/linux/appimage.sh
+        if: ${{ matrix.detail  == 'appimage' }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.artifact-metadata.outputs.name }}
+          path: artifacts
+        if: ${{ matrix.detail  == 'appimage' }}
