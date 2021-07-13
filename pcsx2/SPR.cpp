@@ -390,16 +390,8 @@ int  _SPR1chain()
 __fi void SPR1chain()
 {
 	int cycles = 0;
-	if(!CHECK_IPUWAITHACK)
-	{
-		cycles =  _SPR1chain() * BIAS;
-		CPU_INT(DMAC_TO_SPR, cycles);
-	}
-	else
-	{
-		 _SPR1chain();
-		CPU_INT(DMAC_TO_SPR, 8);
-	}
+	cycles =  _SPR1chain() * BIAS;
+	CPU_INT(DMAC_TO_SPR, cycles);
 }
 
 void _SPR1interleave()

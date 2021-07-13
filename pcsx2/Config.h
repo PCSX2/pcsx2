@@ -31,7 +31,6 @@ enum GamefixId
 	Fix_FpuMultiply,
 	Fix_FpuNegDiv,
 	Fix_XGKick,
-	Fix_IpuWait,
 	Fix_EETiming,
 	Fix_SkipMpeg,
 	Fix_OPHFlag,
@@ -42,6 +41,7 @@ enum GamefixId
 	Fix_GoemonTlbMiss,
 	Fix_Ibit,
 	Fix_VU0Kickstart,
+	Fix_RatchetDyna,
 
 	GamefixId_COUNT
 };
@@ -334,23 +334,23 @@ struct Pcsx2Config
 	// NOTE: The GUI's GameFixes panel is dependent on the order of bits in this structure.
 	struct GamefixOptions
 	{
-        BITFIELD32()
-        bool
-            VuAddSubHack : 1,           // Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
-            FpuMulHack : 1,             // Tales of Destiny hangs.
-            FpuNegDivHack : 1,          // Gundam games messed up camera-view.
-            XgKickHack : 1,             // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
-            IPUWaitHack : 1,            // FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
-            EETimingHack : 1,           // General purpose timing hack.
-            SkipMPEGHack : 1,           // Skips MPEG videos (Katamari and other games need this)
-            OPHFlagHack : 1,            // Bleach Blade Battlers
-            DMABusyHack : 1,            // Denies writes to the DMAC when it's busy. This is correct behaviour but bad timing can cause problems.
-            VIFFIFOHack : 1,            // Pretends to fill the non-existant VIF FIFO Buffer.
-            VIF1StallHack : 1,          // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
-            GIFFIFOHack : 1,            // Enabled the GIF FIFO (more correct but slower)
-            GoemonTlbHack : 1,          // Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
-            IbitHack : 1,               // I bit hack. Needed to stop constant VU recompilation in some games
-            VU0KickstartHack : 1;       // Speed up VU0 at start of program to avoid some VU1 sync issues
+		BITFIELD32()
+		bool
+			VuAddSubHack : 1,			// Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
+			FpuMulHack : 1,				// Tales of Destiny hangs.
+			FpuNegDivHack : 1,			// Gundam games messed up camera-view.
+			XgKickHack : 1,				// Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
+			EETimingHack : 1,			// General purpose timing hack.
+			SkipMPEGHack : 1,			// Skips MPEG videos (Katamari and other games need this)
+			OPHFlagHack : 1,			// Bleach Blade Battlers
+			DMABusyHack : 1,			// Denies writes to the DMAC when it's busy. This is correct behaviour but bad timing can cause problems.
+			VIFFIFOHack : 1,			// Pretends to fill the non-existant VIF FIFO Buffer.
+			VIF1StallHack : 1,			// Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
+			GIFFIFOHack : 1,			// Enabled the GIF FIFO (more correct but slower)
+			GoemonTlbHack : 1,			// Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
+			IbitHack : 1,				// I bit hack. Needed to stop constant VU recompilation in some games
+			VU0KickstartHack : 1,		// Gives new VU programs a slight head start and runs VU's ahead of EE to avoid VU register reading/writing issues
+			RatchetDynaHack : 1;		// Dynamically patch bad COP2 timing in EE program as it cannot be patched traditionally
 		BITFIELD_END
 
 		GamefixOptions();
@@ -530,7 +530,6 @@ TraceLogFilters&				SetTraceConfig();
 #define CHECK_FPUMULHACK			(EmuConfig.Gamefixes.FpuMulHack)	 // Special Fix for Tales of Destiny hangs.
 #define CHECK_FPUNEGDIVHACK			(EmuConfig.Gamefixes.FpuNegDivHack)	 // Special Fix for Gundam games messed up camera-view.
 #define CHECK_XGKICKHACK			(EmuConfig.Gamefixes.XgKickHack)	 // Special Fix for Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics.
-#define CHECK_IPUWAITHACK			(EmuConfig.Gamefixes.IPUWaitHack)	 // Special Fix For FFX
 #define CHECK_EETIMINGHACK			(EmuConfig.Gamefixes.EETimingHack)	 // Fix all scheduled events to happen in 1 cycle.
 #define CHECK_SKIPMPEGHACK			(EmuConfig.Gamefixes.SkipMPEGHack)	 // Finds sceMpegIsEnd pattern to tell the game the mpeg is finished (Katamari and a lot of games need this)
 #define CHECK_OPHFLAGHACK			(EmuConfig.Gamefixes.OPHFlagHack)	 // Bleach Blade Battlers
