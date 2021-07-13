@@ -24,7 +24,6 @@ allowed_game_fixes = [
     "FpuMulHack",
     "FpuNegDivHack",
     "XGKickHack",
-    "IPUWaitHack",
     "EETimingHack",
     "SkipMPEGHack",
     "OPHFlagHack",
@@ -35,6 +34,7 @@ allowed_game_fixes = [
     "GoemonTlbHack",
     "VU0KickstartHack",
     "IbitHack",
+    "RatchetDynaHack",
 ]
 allowed_speed_hacks = ["mvuFlagSpeedHack", "InstantVU1SpeedHack"]
 # Patches are allowed to have a 'default' key or a crc-32 key, followed by
