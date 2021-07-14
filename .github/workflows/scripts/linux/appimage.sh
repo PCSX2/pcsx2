@@ -16,6 +16,8 @@ cd /tmp
 curl -sSfLO "https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-$ARCH.AppImage"
 chmod a+x linuxdeploy*.AppImage
 ./linuxdeploy-"$ARCH".AppImage --appimage-extract
+curl -sSfL "https://raw.githubusercontent.com/linuxdeploy/linuxdeploy-plugin-gtk/master/linuxdeploy-plugin-gtk.sh" -o /tmp/squashfs-root/usr/bin/linuxdeploy-plugin-gtk.sh
+chmod a+x /tmp/squashfs-root/usr/bin/linuxdeploy-plugin-gtk.sh
 mv /tmp/squashfs-root/usr/bin/patchelf /tmp/squashfs-root/usr/bin/patchelf.orig
 sudo cp /usr/local/bin/patchelf /tmp/squashfs-root/usr/bin/patchelf
 cd "$GITHUB_WORKSPACE"
@@ -47,7 +49,7 @@ cp "$GITHUB_WORKSPACE"/bin/cheats_ws.zip "$GITHUB_WORKSPACE"/squashfs-root/usr/b
 cp ./bin/GameIndex.yaml "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/app/GameIndex.yaml
 export UPD_INFO="gh-releases-zsync|PCSX2|pcsx2|latest|$name.AppImage.zsync"
 export OUTPUT="$name.AppImage"
-/tmp/squashfs-root/AppRun --appdir="$GITHUB_WORKSPACE"/squashfs-root/ -d "$GITHUB_WORKSPACE"/squashfs-root/PCSX2.desktop -i "$GITHUB_WORKSPACE"/squashfs-root/PCSX2.png --output appimage
+/tmp/squashfs-root/AppRun --appdir="$GITHUB_WORKSPACE"/squashfs-root/ --plugin gtk -d "$GITHUB_WORKSPACE"/squashfs-root/PCSX2.desktop -i "$GITHUB_WORKSPACE"/squashfs-root/PCSX2.png --output appimage
 mkdir -p "$GITHUB_WORKSPACE"/artifacts/
 ls -al .
 mv "$name.AppImage" "$GITHUB_WORKSPACE"/artifacts # && mv "$name.AppImage.zsync" "$GITHUB_WORKSPACE"/artifacts
