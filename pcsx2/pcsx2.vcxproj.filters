@@ -294,6 +294,9 @@
     <None Include="PAD\Windows\Default.ini">
       <Filter>System\Ps2\PAD</Filter>
     </None>
+    <None Include="..\..\gui\Panels\MemoryCardPanelColumns.h">
+      <Filter>AppHost\Panels</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Patch.cpp">

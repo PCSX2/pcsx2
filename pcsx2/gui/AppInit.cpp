@@ -467,19 +467,19 @@ bool Pcsx2App::OnInit()
 			if (Startup.CdvdSource == CDVD_SourceType::Iso)
 				SysUpdateIsoSrcFile(Startup.IsoFile);
 			sApp.SysExecute(Startup.CdvdSource);
-			g_Conf->CurrentGameArgs = Startup.GameLaunchArgs;
+			g_Conf->CurrentGameArgs = Path::FromWxString(Startup.GameLaunchArgs);
 		}
 		else if (Startup.SysAutoRunElf)
 		{
 			g_Conf->EmuOptions.UseBOOT2Injection = true;
-			g_Conf->Folders.RunELF = wxFileName(Startup.ElfFile).GetPath();
+			g_Conf->Folders.RunELF = Path::FromWxString(Startup.ElfFile);
 			sApp.SysExecute(Startup.CdvdSource, Startup.ElfFile);
 		}
 		else if (Startup.SysAutoRunIrx)
 		{
 			g_Conf->EmuOptions.UseBOOT2Injection = true;
 
-			g_Conf->CurrentIRX = Startup.ElfFile;
+			g_Conf->CurrentIRX = Path::FromWxString(Startup.ElfFile);
 
 			// FIXME: ElfFile is an irx it will crash
 			sApp.SysExecute(Startup.CdvdSource, Startup.ElfFile);

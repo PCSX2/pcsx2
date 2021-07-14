@@ -15,15 +15,19 @@
 
 #include "PrecompiledHeader.h"
 #include "App.h"
+#include "AppConfig.h"
 #include "MainFrame.h"
 
 #include "MemoryCardFile.h"
+#include "gui/Panels/MemoryCardPanelColumns.h"
 
 #include "Utilities/IniInterface.h"
 
+#include <algorithm>
 #include <wx/stdpaths.h>
 #include "DebugTools/Debug.h"
 #include <memory>
+#include "fmt/core.h"
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // PathDefs Namespace -- contains default values for various pcsx2 path names and locations.
@@ -36,70 +40,70 @@ namespace PathDefs
 {
 	namespace Base
 	{
-		const wxDirName& Snapshots()
+		const std::string& Snapshots()
 		{
-			static const wxDirName retval( L"snaps" );
-			return retval;
+			static const std::string temp("snaps");
+			return temp;
 		}
 
-		const wxDirName& Savestates()
+		const std::string& Savestates()
 		{
-			static const wxDirName retval( L"sstates" );
-			return retval;
+			static const std::string temp("sstates");
+			return temp;
 		}
 
-		const wxDirName& MemoryCards()
+		const std::string& MemoryCards()
 		{
-			static const wxDirName retval( L"memcards" );
-			return retval;
+			static const std::string temp("memcards");
+			return temp;
 		}
 
-		const wxDirName& Settings()
+		const std::string& Settings()
 		{
-			static const wxDirName retval( L"inis" );
-			return retval;
+			static const std::string temp("settings");
+			return temp;
 		}
 
-		const wxDirName& Logs()
+		const std::string& Logs()
 		{
-			static const wxDirName retval( L"logs" );
-			return retval;
+			static const std::string temp("logs");
+			return temp;
 		}
 
-		const wxDirName& Bios()
+		const std::string& Bios()
 		{
-			static const wxDirName retval(L"bios");
-			return retval;
+			static const std::string temp("bios");
+			return temp;
 		}
 
-		const wxDirName& Cheats()
+		const std::string& Cheats()
 		{
-			static const wxDirName retval(L"cheats");
-			return retval;
+			static const std::string temp("cheats");
+			return temp;
 		}
 
-		const wxDirName& CheatsWS()
+		const std::string& CheatsWS()
 		{
-			static const wxDirName retval(L"cheats_ws");
-			return retval;
+			static const std::string temp("cheats_ws");
+			return temp;
 		}
 
-		const wxDirName& Langs()
+		const std::string& Langs()
 		{
-			static const wxDirName retval( L"Langs" );
-			return retval;
+			static const std::string temp("Langs");
+			return temp;
 		}
 
-		const wxDirName& Dumps()
+		const std::string& Dumps()
 		{
-			static const wxDirName retval( L"dumps" );
-			return retval;
+			static const std::string temp("dumps");
+			return temp;
 		}
 		
-		const wxDirName& Docs()
+		const std::string& Docs()
 		{
-			static const wxDirName retval( L"docs" );
-			return retval;
+			static const std::string temp("docs");
+			return temp;
 		}
 	};
 
@@ -109,39 +113,31 @@ namespace PathDefs
 
 	//The installer installs the folders which are relative to AppRoot (that's langs)
 	//  relative to the exe folder, and not relative to cwd. So the exe should be default AppRoot. - avih
-	const wxDirName& AppRoot()
+	fs::path AppRoot()
 	{
-		//AffinityAssert_AllowFrom_MainUI();
-/*
-		if (InstallationMode == InstallMode_Registered)
-		{
-			static const wxDirName cwdCache( (wxDirName)Path::Normalize(wxGetCwd()) );
-			return cwdCache;
-		}
-		else if (InstallationMode == InstallMode_Portable)
-*/		
 		if (InstallationMode == InstallMode_Registered || InstallationMode == InstallMode_Portable)
 		{
-			static const wxDirName appCache( (wxDirName)
-				wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath() );
-			return appCache;
+			fs::path path(Path::GetExecutableDirectory());
+			path.make_preferred();
+			return path;
 		}
 		else
-			pxFail( "Unimplemented user local folder mode encountered." );
-		
-		static const wxDirName dotFail(L".");
+			pxFail("Unimplemented user local folder mode encountered.");
+
+		static const std::string dotFail(".");
 		return dotFail;
 	}
 
     // Specifies the main configuration folder.
-    wxDirName GetUserLocalDataDir()
+    fs::path GetUserLocalDataDir()
     {
-        return wxDirName(wxStandardPaths::Get().GetUserLocalDataDir());
+        fs::path temp = wxStandardPaths::Get().GetUserLocalDataDir().ToStdString();
+        return temp;
     }
 
 	// Fetches the path location for user-consumable documents -- stuff users are likely to want to
 	// share with other programs: screenshots, memory cards, and savestates.
-	wxDirName GetDocuments( DocsModeType mode )
+	fs::path GetDocuments( DocsModeType mode )
 	{
 		switch( mode )
 		{
@@ -149,25 +145,25 @@ namespace PathDefs
 			// Move all user data file into central configuration directory (XDG_CONFIG_DIR)
 			case DocsFolder_User:	return GetUserLocalDataDir();
 #else
-			case DocsFolder_User:	return (wxDirName)Path::Combine( wxStandardPaths::Get().GetDocumentsDir(), pxGetAppName() );
+			case DocsFolder_User:	return Path::Combine(Path::FromWxString(wxStandardPaths::Get().GetDocumentsDir()), Path::FromWxString(pxGetAppName()));
 #endif
 			case DocsFolder_Custom: return CustomDocumentsFolder;
 
 			jNO_DEFAULT
 		}
 
-		return wxDirName();
+		return GetDocuments(mode);
 	}
 
-	wxDirName GetDocuments()
+	fs::path GetDocuments()
 	{
-		return GetDocuments( DocsFolderMode );
+		return GetDocuments(DocsFolderMode);
 	}
 
-	wxDirName GetProgramDataDir()
+	fs::path GetProgramDataDir()
 	{
 #ifdef __APPLE__
-		return wxDirName(wxStandardPaths::Get().GetResourcesDir());
+		return Path::FromWxString(wxStandardPaths::Get().GetResourcesDir());
 #elif !defined(GAMEINDEX_DIR_COMPILATION)
 		return AppRoot();
 #else
@@ -175,65 +171,63 @@ namespace PathDefs
 		// change it with compilation flags. -- Gregory
 #define xGAMEINDEX_str(s) GAMEINDEX_DIR_str(s)
 #define GAMEINDEX_DIR_str(s) #s
-		return wxDirName( xGAMEINDEX_str(GAMEINDEX_DIR_COMPILATION) );
+//		return std::string( xGAMEINDEX_str(GAMEINDEX_DIR_COMPILATION) );
 #endif
 	}
 
-	wxDirName GetSnapshots()
+	fs::path GetSnapshots()
 	{
-		return GetDocuments() + Base::Snapshots();
+		return Path::Combine(GetDocuments(), "snaps");
 	}
 
-	wxDirName GetBios()
+	fs::path GetBios()
 	{
-		return GetDocuments() + Base::Bios();;
+		return Path::Combine(GetDocuments(), "bios");
 	}
 
-	wxDirName GetCheats()
+	fs::path GetCheats()
 	{
-		return GetDocuments() + Base::Cheats();
+		return Path::Combine(GetDocuments(), "cheats");
 	}
 
-	wxDirName GetCheatsWS()
+	fs::path GetCheatsWS()
 	{
-		return GetDocuments() + Base::CheatsWS();
-	}
-	
-	wxDirName GetDocs()
-	{
-		return AppRoot() + Base::Docs();
+		return Path::Combine(GetDocuments(), "cheats_ws");
 	}
 
-	wxDirName GetSavestates()
+	fs::path GetDocs()
 	{
-		return GetDocuments() + Base::Savestates();
+		return Path::Combine(GetDocuments(), "docs");
 	}
 
-	wxDirName GetMemoryCards()
+	fs::path GetSavestates()
 	{
-		return GetDocuments() + Base::MemoryCards();
+		return Path::Combine(GetDocuments(), "sstates");
 	}
 
-	wxDirName GetSettings()
+	fs::path GetMemoryCards()
 	{
-		return GetDocuments() + Base::Settings();
+		return Path::Combine(GetDocuments(), "memcards");
 	}
 
-	wxDirName GetLogs()
+	fs::path GetSettings()
 	{
-		return GetDocuments() + Base::Logs();
+		fs::path path = Path::Combine(GetDocuments(), "settings");
+		SettingsFolder = path;
+		return path;
 	}
 
-	wxDirName GetLangs()
+	fs::path GetLogs()
 	{
-#ifdef __APPLE__
-		return wxDirName(wxStandardPaths::Get().GetResourcesDir());
-#else
-		return AppRoot() + Base::Langs();
-#endif
+		return Path::Combine(GetDocuments(), "logs");
 	}
 
-	wxDirName Get( FoldersEnum_t folderidx )
+	fs::path GetLangs()
+	{
+		return Path::Combine(AppRoot(), "Langs");
+	}
+
+	fs::path Get( FoldersEnum_t folderidx )
 	{
 		switch( folderidx )
 		{
@@ -251,11 +245,11 @@ namespace PathDefs
 
 			jNO_DEFAULT
 		}
-		return wxDirName();
+		return fs::path();
 	}
 };
 
-wxDirName& AppConfig::FolderOptions::operator[]( FoldersEnum_t folderidx )
+fs::path& AppConfig::FolderOptions::operator[]( FoldersEnum_t folderidx )
 {
 	switch( folderidx )
 	{
@@ -276,7 +270,7 @@ wxDirName& AppConfig::FolderOptions::operator[]( FoldersEnum_t folderidx )
 	return SettingsFolder;		// unreachable, but suppresses warnings.
 }
 
-const wxDirName& AppConfig::FolderOptions::operator[]( FoldersEnum_t folderidx ) const
+const fs::path& AppConfig::FolderOptions::operator[]( FoldersEnum_t folderidx ) const
 {
 	return const_cast<FolderOptions*>( this )->operator[]( folderidx );
 }
@@ -302,7 +296,7 @@ bool AppConfig::FolderOptions::IsDefault( FoldersEnum_t folderidx ) const
 	return false;
 }
 
-void AppConfig::FolderOptions::Set( FoldersEnum_t folderidx, const wxString& src, bool useDefault )
+void AppConfig::FolderOptions::Set( FoldersEnum_t folderidx, const fs::path& src, bool useDefault)
 {
 	switch( folderidx )
 	{
@@ -409,57 +403,62 @@ namespace FilenameDefs
 	}
 };
 
-static wxDirName GetResolvedFolder(FoldersEnum_t id)
+static std::string GetResolvedFolder(FoldersEnum_t id)
 {
-	return g_Conf->Folders.IsDefault(id) ? PathDefs::Get(id) : g_Conf->Folders[id];
+	return g_Conf->Folders.IsDefault(id) ? PathDefs::Get(id).u8string().c_str() : g_Conf->Folders[id].u8string().c_str();
 }
 
-wxDirName GetLogFolder()
+fs::path GetLogFolder()
 {
 	return GetResolvedFolder(FolderId_Logs);
 }
 
-wxDirName GetCheatsFolder()
+fs::path GetCheatsFolder()
 {
 	return GetResolvedFolder(FolderId_Cheats);
 }
 
-wxDirName GetCheatsWsFolder()
+fs::path GetCheatsWsFolder()
 {
 	return GetResolvedFolder(FolderId_CheatsWS);
 }
 
-wxDirName GetSettingsFolder()
+fs::path GetSettingsFolder()
 {
-	if( wxGetApp().Overrides.SettingsFolder.IsOk() )
+	if ( !wxGetApp().Overrides.SettingsFolder.empty() )
 		return wxGetApp().Overrides.SettingsFolder;
 
-	return UseDefaultSettingsFolder ? PathDefs::GetSettings() : SettingsFolder;
+	return UseDefaultSettingsFolder ? PathDefs::GetSettings().u8string() : SettingsFolder.u8string();
 }
 
-wxString GetVmSettingsFilename()
+fs::path GetVmSettingsFilename()
 {
-	wxFileName fname( wxGetApp().Overrides.VmSettingsFile.IsOk() ? wxGetApp().Overrides.VmSettingsFile : FilenameDefs::GetVmConfig() );
-	return GetSettingsFolder().Combine( fname ).GetFullPath();
+	fs::path fname = Path::FromWxString(FilenameDefs::GetVmConfig().GetFullPath());
+	if (wxGetApp().Overrides.VmSettingsFile.IsOk())
+		fname = Path::FromWxString(wxGetApp().Overrides.VmSettingsFile.GetFullPath());
+	return Path::Combine(GetSettingsFolder(), fname);
 }
 
-wxString GetUiSettingsFilename()
+fs::path GetUiSettingsFilename()
 {
-	wxFileName fname( FilenameDefs::GetUiConfig() );
-	return GetSettingsFolder().Combine( fname ).GetFullPath();
+	fs::path fname = Path::FromWxString(FilenameDefs::GetUiConfig().GetFullPath());
+	return Path::Combine(GetSettingsFolder(), fname);
 }
 
-wxString GetUiKeysFilename()
+fs::path GetUiKeysFilename()
 {
-	wxFileName fname( FilenameDefs::GetUiKeysConfig() );
-	return GetSettingsFolder().Combine( fname ).GetFullPath();
+	fs::path fname = Path::FromWxString(FilenameDefs::GetUiKeysConfig().GetFullPath());
+	return Path::Combine(GetSettingsFolder(), fname);
 }
 
-
-wxString AppConfig::FullpathToBios() const				{ return Path::Combine( Folders.Bios, BaseFilenames.Bios ); }
-wxString AppConfig::FullpathToMcd( uint slot ) const
+fs::path AppConfig::FullpathToBios() const
 {
-	return Path::Combine( Folders.MemoryCards, Mcd[slot].Filename );
+	return Path::Combine(Folders.Bios, BaseFilenames.Bios.filename());
+}
+
+fs::path AppConfig::FullpathToMcd(uint slot) const
+{
+	return Path::Combine(Folders.MemoryCards, Mcd[slot].Filename);
 }
 
 bool IsPortable()
@@ -497,7 +496,7 @@ AppConfig::AppConfig()
 	for( uint slot=0; slot<8; ++slot )
 	{
 		Mcd[slot].Enabled	= !FileMcd_IsMultitapSlot(slot);	// enables main 2 slots
-		Mcd[slot].Filename	= FileMcd_GetDefaultName( slot );
+		Mcd[slot].Filename	= Path::FromWxString(FileMcd_GetDefaultName( slot ));
 
 		// Folder memory card is autodetected later.
 		Mcd[slot].Type = MemoryCardType::MemoryCard_File;
@@ -527,18 +526,26 @@ void App_LoadSaveInstallSettings( IniInterface& ini )
 		NULL
 	};
 
+    wxString CustomDoc = Path::ToWxString(CustomDocumentsFolder);
+    wxString Setting = Path::ToWxString(SettingsFolder);
+    wxFileName InstallF(Path::ToWxString(InstallFolder));
+
 	ini.EnumEntry( L"DocumentsFolderMode",	DocsFolderMode,	DocsFolderModeNames, (InstallationMode == InstallMode_Registered) ? DocsFolder_User : DocsFolder_Custom);
 
-	ini.Entry( L"CustomDocumentsFolder",	CustomDocumentsFolder,		PathDefs::AppRoot() );
+	ini.Entry( L"CustomDocumentsFolder",	CustomDoc,		Path::ToWxString(PathDefs::AppRoot()) );
 
 	ini.Entry( L"UseDefaultSettingsFolder", UseDefaultSettingsFolder,	true );
-	ini.Entry( L"SettingsFolder",			SettingsFolder,				PathDefs::GetSettings() );
+	ini.Entry( L"SettingsFolder",			Setting,				Path::ToWxString(PathDefs::GetSettings()) );
 
 	// "Install_Dir" conforms to the NSIS standard install directory key name.
-	ini.Entry( L"Install_Dir",				InstallFolder,				(wxDirName)(wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath()) );
-	SetFullBaseDir( InstallFolder );
+	ini.Entry( L"Install_Dir",				InstallF,				(wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath()) );
+	SetFullBaseDir( wxDirName(InstallF) );
 
-	ini.Flush();
+	if (!ini.Flush())
+	{
+		Console.Error(L"You don\'t have permissions to write settings");
+		return;
+	}
 }
 
 void App_LoadInstallSettings( wxConfigBase* ini )
@@ -560,21 +567,24 @@ void AppConfig::LoadSaveMemcards( IniInterface& ini )
 
 	for( uint slot=0; slot<2; ++slot )
 	{
+		fs::path Filename = Mcd[slot].Filename;
 		ini.Entry( pxsFmt( L"Slot%u_Enable", slot+1 ),
 			Mcd[slot].Enabled, Mcd[slot].Enabled );
 		ini.Entry( pxsFmt( L"Slot%u_Filename", slot+1 ),
-			Mcd[slot].Filename, Mcd[slot].Filename );
+			Filename, Filename );
+		Mcd[slot].Filename = Filename;
 	}
 
 	for( uint slot=2; slot<8; ++slot )
 	{
+		wxString Filename (Path::ToWxString(Mcd[slot].Filename));
 		int mtport = FileMcd_GetMtapPort(slot)+1;
 		int mtslot = FileMcd_GetMtapSlot(slot)+1;
 
 		ini.Entry( pxsFmt( L"Multitap%u_Slot%u_Enable", mtport, mtslot ),
 			Mcd[slot].Enabled, Mcd[slot].Enabled );
 		ini.Entry( pxsFmt( L"Multitap%u_Slot%u_Filename", mtport, mtslot ),
-			Mcd[slot].Filename, Mcd[slot].Filename );
+			Filename, Filename );
 	}
 }
 
@@ -594,9 +604,7 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	IniEntry( Toolbar_ImageSize );
 	IniEntry( Toolbar_ShowLabels );
 
-	wxFileName res(CurrentIso);
-	ini.Entry( L"CurrentIso", res, res, ini.IsLoading() || IsPortable() );
-	CurrentIso = res.GetFullPath();
+	ini.Entry( L"CurrentIso", CurrentIso, CurrentIso);
 
 	IniEntry( CurrentBlockdump );
 	IniEntry( CurrentELF );
@@ -626,6 +634,7 @@ void AppConfig::LoadSave( IniInterface& ini )
 	// Process various sub-components:
 	ProgLogBox		.LoadSave( ini, L"ProgramLog" );
 
+	MemoryCardListPanel.LoadSave(ini);
 	Folders			.LoadSave( ini );
 	BaseFilenames	.LoadSave( ini );
 	GSWindow		.LoadSave( ini );
@@ -636,7 +645,11 @@ void AppConfig::LoadSave( IniInterface& ini )
 	AudioCapture.LoadSave( ini );
 	Templates		.LoadSave( ini );
 
-	ini.Flush();
+	if (!ini.Flush())
+	{
+		Console.Error(L"You don\'t have permissions to write settings");
+		return;
+	}
 }
 
 // ------------------------------------------------------------------------
@@ -662,6 +675,20 @@ void AppConfig::ConsoleLogOptions::LoadSave( IniInterface& ini, const wxChar* lo
 	IniEntry( Theme );
 }
 
+void AppConfig::MemoryCardListPanelOptions::LoadSave(IniInterface& ini)
+{
+	ScopedIniGroup path( ini, L"MemoryCardListPanel" );
+
+	// TODO - config - once we switch to YAML, we could just iterate through what's in the file
+	// instead of having to have everything hard-coded...
+	for (auto const& columnInfo : LIST_VIEW_DEFAULT_COLUMN_INFO)
+	{
+		const int defValue = columnInfo.width;
+		const std::string key = fmt::format("ColumnWidth_{}", columnInfo.key);
+		ini.Entry(key, columnWidths, defValue);
+	}
+}
+
 void AppConfig::FolderOptions::ApplyDefaults()
 {
 	if( UseDefaultBios )		Bios		  = PathDefs::GetBios();
@@ -684,55 +711,54 @@ AppConfig::FolderOptions::FolderOptions()
 	, Logs			( PathDefs::GetLogs() )
 	, Cheats		( PathDefs::GetCheats() )
 	, CheatsWS      ( PathDefs::GetCheatsWS() )
-
-	, RunIso	( PathDefs::GetDocuments() )			// raw default is always the Documents folder.
-	, RunELF	( PathDefs::GetDocuments() )			// raw default is always the Documents folder.
-	, RunDisc()
+	// raw default is always the Documents folder.
+	, RunIso(PathDefs::GetDocuments())
+	, RunELF(PathDefs::GetDocuments())
+	, RunDisc(PathDefs::GetDocuments())
 {
 	bitset = 0xffffffff;
 }
 
-void AppConfig::FolderOptions::LoadSave( IniInterface& ini )
+void AppConfig::FolderOptions::LoadSave(IniInterface& ini)
 {
-	ScopedIniGroup path( ini, L"Folders" );
+	ScopedIniGroup path(ini, L"Folders");
 
-	if( ini.IsSaving() )
+	if (ini.IsSaving())
 	{
 		ApplyDefaults();
 	}
 
-	IniBitBool( UseDefaultBios );
-	IniBitBool( UseDefaultSnapshots );
-	IniBitBool( UseDefaultSavestates );
-	IniBitBool( UseDefaultMemoryCards );
-	IniBitBool( UseDefaultLogs );
-	IniBitBool( UseDefaultLangs );
-	IniBitBool( UseDefaultCheats );
-	IniBitBool( UseDefaultCheatsWS );
+	IniBitBool(UseDefaultBios);
+	IniBitBool(UseDefaultPlugins);
+	IniBitBool(UseDefaultSnapshots);
+	IniBitBool(UseDefaultSavestates);
+	IniBitBool(UseDefaultMemoryCards);
+	IniBitBool(UseDefaultLogs);
+	IniBitBool(UseDefaultLangs);
+	IniBitBool(UseDefaultCheats);
+	IniBitBool(UseDefaultCheatsWS);
 
-	//when saving in portable mode, we save relative paths if possible
-	 //  --> on load, these relative paths will be expanded relative to the exe folder.
-	bool rel = ( ini.IsLoading() || IsPortable() );
-	
-	IniEntryDirFile( Bios,  rel);
-	IniEntryDirFile( Snapshots,  rel );
-	IniEntryDirFile( Savestates,  rel );
-	IniEntryDirFile( MemoryCards,  rel );
-	IniEntryDirFile( Logs,  rel );
-	IniEntryDirFile( Langs,  rel );
-	IniEntryDirFile( Cheats, rel );
-	IniEntryDirFile( CheatsWS, rel );
+	fs::path optional_base = IsPortable() ? PathDefs::AppRoot() : "";
 
-	IniEntryDirFile( RunIso, rel );
-	IniEntryDirFile( RunELF, rel );
-	IniEntry(RunDisc);
+	IniFileDirectory(Bios, optional_base);
+	IniFileDirectory(Snapshots, optional_base);
+	IniFileDirectory(Savestates, optional_base);
+	IniFileDirectory(MemoryCards, optional_base);
+	IniFileDirectory(Logs, optional_base);
+	IniFileDirectory(Langs, optional_base);
+	IniFileDirectory(Cheats, optional_base);
+	IniFileDirectory(CheatsWS, optional_base);
 
-	if( ini.IsLoading() )
+	IniFileDirectory(RunIso, optional_base);
+	IniFileDirectory(RunELF, optional_base);
+	IniFileDirectory(RunDisc, optional_base);
+
+	if (ini.IsLoading())
 	{
 		ApplyDefaults();
 
-		for( int i=0; i<FolderId_COUNT; ++i )
-			operator[]( (FoldersEnum_t)i ).Normalize();
+		for (int i = 0; i < FolderId_COUNT; ++i)
+			operator[]((FoldersEnum_t)i);
 	}
 }
 
@@ -741,18 +767,14 @@ void AppConfig::FilenameOptions::LoadSave( IniInterface& ini )
 {
 	ScopedIniGroup path( ini, L"Filenames" );
 
-	static const wxFileName pc( L"Please Configure" );
+	static const fs::path pc( "Please Configure" );
 
 	//when saving in portable mode, we just save the non-full-path filename
  	//  --> on load they'll be initialized with default (relative) paths (works for bios)
 	//note: this will break if converting from install to portable, and custom folders are used. We can live with that.
-	bool needRelativeName = ini.IsSaving() && IsPortable();
+	needRelativeName = ini.IsSaving() && IsPortable();
 
-	if( needRelativeName ) { 
-		wxFileName bios_filename = wxFileName( Bios.GetFullName() );
-		ini.Entry( L"BIOS", bios_filename, pc );
-	} else
-		ini.Entry( L"BIOS", Bios, pc );
+	ini.Entry( "BIOS", Bios, pc );
 }
 
 // ------------------------------------------------------------------------
@@ -901,23 +923,6 @@ void AppConfig::CaptureOptions::LoadSave(IniInterface& ini)
 	ScopedIniGroup path(ini, L"Capture");
 
 	IniEntry( EnableAudio );
-}
-
-AppConfig::UiTemplateOptions::UiTemplateOptions()
-{
-	LimiterUnlimited	= L"Max";
-	LimiterTurbo		= L"Turbo";
-	LimiterSlowmo		= L"Slowmo";
-	LimiterNormal		= L"Normal";
-	OutputFrame			= L"Frame";
-	OutputField			= L"Field";
-	OutputProgressive	= L"Progressive";
-	OutputInterlaced	= L"Interlaced";
-	Paused				= L"<PAUSED> ";
-	TitleTemplate		= L"Slot: ${slot} | Speed: ${speed} (${vfps}) | ${videomode} | Limiter: ${limiter} | ${gsdx} | ${omodei} | ${cpuusage}";
-#ifndef DISABLE_RECORDING
-	RecordingTemplate	= L"Slot: ${slot} | Frame: ${frame}/${maxFrame} | Rec. Mode: ${mode} | Speed: ${speed} (${vfps}) | Limiter: ${limiter}";
-#endif
 }
 
 void AppConfig::UiTemplateOptions::LoadSave(IniInterface& ini)
@@ -1079,9 +1084,9 @@ wxFileConfig* OpenFileConfig( const wxString& filename )
 
 void RelocateLogfile()
 {
-	g_Conf->Folders.Logs.Mkdir();
+	fs::create_directories(g_Conf->Folders.Logs);
 
-	wxString newlogname( Path::Combine( g_Conf->Folders.Logs.ToString(), L"emuLog.txt" ) );
+	wxString newlogname = Path::ToWxString(Path::Combine(g_Conf->Folders.Logs, "emuLog.txt"));
 
 	if( (emuLog != NULL) && (emuLogName != newlogname) )
 	{
@@ -1110,10 +1115,10 @@ void RelocateLogfile()
 //
 void AppConfig_OnChangedSettingsFolder( bool overwrite )
 {
-	PathDefs::GetDocuments().Mkdir();
-	GetSettingsFolder().Mkdir();
+	fs::create_directories(PathDefs::GetDocuments());
+	fs::create_directories(GetSettingsFolder());
 
-	const wxString iniFilename( GetUiSettingsFilename() );
+	const wxString iniFilename(Path::ToWxString(GetUiSettingsFilename()));
 
 	if( overwrite )
 	{
@@ -1223,17 +1228,24 @@ AppIniLoader::AppIniLoader()
 
 static void LoadUiSettings()
 {
-	AppIniLoader loader;
+	std::unique_ptr<wxFileConfig> uini(OpenFileConfig(Path::ToWxString(GetUiSettingsFilename())));
+	IniLoader loader(uini.get());
 	ConLog_LoadSaveSettings( loader );
 	SysTraceLog_LoadSaveSettings( loader );
 
 	g_Conf = std::make_unique<AppConfig>();
 	g_Conf->LoadSave( loader );
 
-	if( !wxFile::Exists( g_Conf->CurrentIso ) )
-	{
+	if (!fs::exists(g_Conf->CurrentIso) || !fs::is_regular_file(g_Conf->CurrentIso))
 		g_Conf->CurrentIso.clear();
-	}
+
+#if defined(_WIN32)
+	if( !fs::exists(g_Conf->Folders.RunDisc.make_preferred()) )
+		g_Conf->Folders.RunDisc.clear();
+#else
+	if ( !fs::exists(g_Conf->Folders.RunDisc.make_preferred()))
+		g_Conf->Folders.RunDisc.clear();
+#endif
 
 	sApp.DispatchUiSettingsEvent( loader );
 }
@@ -1243,7 +1255,7 @@ static void LoadVmSettings()
 	// Load virtual machine options and apply some defaults overtop saved items, which
 	// are regulated by the PCSX2 UI.
 
-	std::unique_ptr<wxFileConfig> vmini( OpenFileConfig( GetVmSettingsFilename() ) );
+	std::unique_ptr<wxFileConfig> vmini( OpenFileConfig( Path::ToWxString(GetVmSettingsFilename()) ) );
 	IniLoader vmloader( vmini.get() );
 	g_Conf->EmuOptions.LoadSave( vmloader );
 	g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.NominalScalar;
@@ -1265,14 +1277,15 @@ void AppLoadSettings()
 
 static void SaveUiSettings()
 {	
-	if( !wxFile::Exists( g_Conf->CurrentIso ) )
-	{
+	if( !fs::exists( g_Conf->CurrentIso ) )
 		g_Conf->CurrentIso.clear();
-	}
+	if (!fs::exists(g_Conf->Folders.RunDisc.make_preferred()))
+		g_Conf->Folders.RunDisc.clear();
 
-	sApp.GetRecentIsoManager().Add( g_Conf->CurrentIso );
+	sApp.GetRecentIsoManager().Add( Path::ToWxString(g_Conf->CurrentIso) );
 
-	AppIniSaver saver;
+	std::unique_ptr<wxFileConfig> uiini(OpenFileConfig(Path::ToWxString(GetUiSettingsFilename())));
+	IniSaver saver(uiini.get());
 	g_Conf->LoadSave( saver );
 	ConLog_LoadSaveSettings( saver );
 	SysTraceLog_LoadSaveSettings( saver );
@@ -1282,7 +1295,7 @@ static void SaveUiSettings()
 
 static void SaveVmSettings()
 {
-	std::unique_ptr<wxFileConfig> vmini( OpenFileConfig( GetVmSettingsFilename() ) );
+	std::unique_ptr<wxFileConfig> vmini( OpenFileConfig( Path::ToWxString(GetVmSettingsFilename()) ) );
 	IniSaver vmsaver( vmini.get() );
 	g_Conf->EmuOptions.LoadSave( vmsaver );
 

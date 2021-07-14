@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "IniInterface.h"
 
+#include <string>
 #include <wx/gdicmn.h>
 
 const wxRect wxDefaultRect(wxDefaultCoord, wxDefaultCoord, wxDefaultCoord, wxDefaultCoord);
@@ -84,10 +85,12 @@ void IniInterface::SetPath(const wxString &path)
         m_Config->SetPath(path);
 }
 
-void IniInterface::Flush()
+bool IniInterface::Flush()
 {
     if (m_Config)
-        m_Config->Flush();
+        return m_Config->Flush();
+    else
+        return false;
 }
 
 
@@ -107,6 +110,26 @@ IniLoader::IniLoader(wxConfigBase *config)
 IniLoader::IniLoader()
     : IniInterface()
 {
+}
+
+void IniLoader::Entry(const std::string &var, std::string &value, const std::string defvalue)
+{
+    wxString dest;
+    if (m_Config)
+    {
+        m_Config->Read(var, &dest, defvalue);
+        value = dest.ToUTF8();
+    }
+    else
+        value = defvalue;
+}
+
+void IniLoader::Entry(const std::string& key, std::map<std::string, int>& var, const int defValue)
+{
+    int value = defValue;
+    if (m_Config)
+        m_Config->Read(Path::ToWxString(key), &value, defValue);
+    var[key] = value;
 }
 
 void IniLoader::Entry(const wxString &var, wxString &value, const wxString defvalue)
@@ -133,6 +156,42 @@ void IniLoader::Entry(const wxString &var, wxDirName &value, const wxDirName def
         if (value.IsAbsolute())
             value.Normalize();
     }
+}
+
+void IniLoader::Entry(const wxString& var, fs::path& value, fs::path defvalue)
+{
+	wxString tempPath;
+	if (m_Config)
+		m_Config->Read(var, &tempPath, wxEmptyString);
+
+	// If we found nothing in the config, use the default
+	if (tempPath.IsEmpty())
+	{
+		value = defvalue;
+		return;
+	}
+
+	value = Path::FromWxString(tempPath);
+}
+
+void IniLoader::Entry(const wxString& var, fs::path& value, fs::path defvalue, fs::path optional_base)
+{
+	wxString tempPath;
+	if (m_Config)
+		m_Config->Read(var, &tempPath, wxEmptyString);
+
+	// If we found nothing in the config, use the default
+	if (tempPath.IsEmpty())
+	{
+		value = defvalue;
+		return;
+	}
+
+	value = Path::FromWxString(tempPath);
+	if (value.is_relative())
+	{
+		value = optional_base / value;
+	}
 }
 
 void IniLoader::Entry(const wxString &var, wxFileName &value, const wxFileName defvalue, bool isAllowRelative)
@@ -285,6 +344,24 @@ IniSaver::IniSaver()
 {
 }
 
+void IniSaver::Entry(const std::string &var, std::string &value, const std::string defvalue)
+{
+    wxString saver(value);
+    if (!m_Config)
+        return;
+    m_Config->Write(var, saver);
+}
+
+void IniSaver::Entry(const std::string& key, std::map<std::string, int>& var, const int defValue)
+{
+    if (!m_Config)
+        return;
+    int value = defValue;
+    if (var.count(key) == 1)
+        value = var[key];
+    m_Config->Write(key, value);
+}
+
 void IniSaver::Entry(const wxString &var, wxString &value, const wxString defvalue)
 {
     if (!m_Config)
@@ -302,13 +379,42 @@ void IniSaver::Entry(const wxString &var, wxDirName &value, const wxDirName defv
         res.Normalize();
 
     if (isAllowRelative)
-        res = wxDirName::MakeAutoRelativeTo(res, g_fullBaseDirName.ToString());
+        res = Path::ToWxString(fs::relative(Path::FromWxString(res.ToString()), Path::FromWxString(g_fullBaseDirName.ToString())));
 
+     m_Config->Write(var, res.ToString());
+}
 
-    /*if( value == defvalue )
-		m_Config->Write( var, wxString() );
-	else*/
-    m_Config->Write(var, res.ToString());
+void IniSaver::Entry(const wxString &var, fs::path &value, const fs::path defvalue)
+{
+    if (!m_Config)
+        return;
+
+		m_Config->Write(var, Path::ToWxString(value));
+}
+
+void IniSaver::Entry(const wxString &var, fs::path &value, const fs::path defvalue, fs::path optional_base)
+{
+    if (!m_Config)
+        return;
+
+		// Including logic in the IniInterface that does magic to the values passed in because it's too difficult to handle values
+		// that require a different loading/saving scheme currently.
+		//
+		// It's assumed that `optional_base` will only be provided if we are in portable mode
+		// 
+		// Directories returned as a relative path IF:
+		// - We are running in Portable Mode
+		// - The directory is a subdirectory of the executable's directory
+		// OTHERWISE
+		// - We return an absolute path
+		if (!optional_base.empty() && Path::IsDirectoryWithinDirectory(optional_base, value))
+		{
+			m_Config->Write(var, Path::ToWxString(fs::relative(value, optional_base)));
+		}
+		else
+		{
+			m_Config->Write(var, Path::ToWxString(fs::absolute(value)));
+		}
 }
 
 void IniSaver::Entry(const wxString &var, wxFileName &value, const wxFileName defvalue, bool isAllowRelative)
@@ -321,7 +427,7 @@ void IniSaver::Entry(const wxString &var, wxFileName &value, const wxFileName de
         res.Normalize();
 
     if (isAllowRelative)
-        res = wxDirName::MakeAutoRelativeTo(res, g_fullBaseDirName.ToString());
+        res = Path::ToWxString(fs::relative(Path::FromWxString(res.GetFullPath()), Path::FromWxString(g_fullBaseDirName.ToString())));
 
     m_Config->Write(var, res.GetFullPath());
 }
@@ -368,7 +474,6 @@ void IniSaver::Entry(const wxString &var, Fixed100 &value, const Fixed100 defval
 
     // Note: the "easy" way would be to convert to double and load/save that, but floating point
     // has way too much rounding error so we really need to do things out manually, using strings.
-
     m_Config->Write(var, value.ToString());
 }
 

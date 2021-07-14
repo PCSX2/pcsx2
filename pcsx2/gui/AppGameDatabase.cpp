@@ -22,22 +22,19 @@
 #include "fmt/core.h"
 #include <fstream>
 
-std::ifstream AppGameDatabase::getFileAsStream(const wxString& file)
+std::ifstream AppGameDatabase::getFileAsStream(const fs::path& file)
 {
-// TODO - config - refactor with std::filesystem/ghc::filesystem
 #ifdef _WIN32
-	return std::ifstream(file.wc_str());
+	return std::ifstream(file.wstring());
 #else
-	return std::ifstream(file.c_str());
+	return std::ifstream(file);
 #endif
 }
 
-AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file)
+AppGameDatabase& AppGameDatabase::LoadFromFile(const fs::path& _file)
 {
-	// TODO - config - refactor with std::filesystem/ghc::filesystem
-
-	wxString file(_file);
-	if (wxFileName(file).IsRelative())
+	fs::path file = _file;
+	if (file.is_relative())
 	{
 		// InstallFolder is the preferred base directory for the DB file, but the registry can point to previous
 		// installs if uninstall wasn't done properly.
@@ -49,14 +46,14 @@ AppGameDatabase& AppGameDatabase::LoadFromFile(const wxString& _file)
 		//           So the games DB was really the only one that suffers from residues of prior installs.
 
 		//wxDirName dir = InstallFolder;
-		wxDirName dir = (wxDirName)wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath();
-		file = (dir + file).GetFullPath();
+		fs::path dir = Path::FromWxString(wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath());
+		file = (dir.parent_path() / file);
 	}
 
 
-	if (!wxFileExists(file))
+	if (!fs::exists(file))
 	{
-		Console.Error(L"[GameDB] Database Not Found! [%s]", WX_STR(file));
+		Console.Error(L"[GameDB] Database Not Found! [%s]", WX_STR(Path::ToWxString(file)));
 		return *this;
 	}
 

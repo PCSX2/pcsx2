@@ -18,6 +18,7 @@
 #include "AppForwardDefs.h"
 #include "Config.h"
 #include "PathDefs.h"
+#include "Utilities/PathUtils.h"
 #include "CDVD/CDVDaccess.h"
 #include "Utilities/General.h"
 #include "Utilities/Path.h"
@@ -25,6 +26,7 @@
 #include <wx/colour.h>
 #include <wx/gdicmn.h>
 #include <memory>
+#include <map>
 
 enum DocsModeType
 {
@@ -49,28 +51,27 @@ namespace PathDefs
 	// user checks "Use Default paths" option provided on most path selectors.  These are not
 	// used otherwise, in favor of the user-configurable specifications in the ini files.
 
-	extern wxDirName GetUserLocalDataDir();
-	extern wxDirName GetProgramDataDir();
-	extern wxDirName GetDocuments();
-	extern wxDirName GetDocuments( DocsModeType mode );
+	extern fs::path GetUserLocalDataDir();
+	extern fs::path GetProgramDataDir();
+	extern fs::path GetDocuments();
+	extern fs::path GetDocuments( DocsModeType mode );
 }
 
 extern DocsModeType		DocsFolderMode;				// 
 extern bool				UseDefaultSettingsFolder;	// when TRUE, pcsx2 derives the settings folder from the DocsFolderMode
 
-extern wxDirName		CustomDocumentsFolder;		// allows the specification of a custom home folder for PCSX2 documents files.
-extern wxDirName		SettingsFolder;				// dictates where the settings folder comes from, *if* UseDefaultSettingsFolder is FALSE.
+extern fs::path		CustomDocumentsFolder;		// allows the specification of a custom home folder for PCSX2 documents files.
+extern fs::path		SettingsFolder;				// dictates where the settings folder comes from, *if* UseDefaultSettingsFolder is FALSE.
+extern fs::path		InstallFolder;
 
-extern wxDirName		InstallFolder;
+extern fs::path  GetSettingsFolder();
+extern fs::path  GetVmSettingsFilename();
+extern fs::path  GetUiSettingsFilename();
+extern fs::path  GetUiKeysFilename();
 
-extern wxDirName GetSettingsFolder();
-extern wxString  GetVmSettingsFilename();
-extern wxString  GetUiSettingsFilename();
-extern wxString  GetUiKeysFilename();
-
-extern wxDirName GetLogFolder();
-extern wxDirName GetCheatsFolder();
-extern wxDirName GetCheatsWsFolder();
+extern fs::path GetLogFolder();
+extern fs::path GetCheatsFolder();
+extern fs::path GetCheatsWsFolder();
 
 enum InstallationModeType
 {
@@ -148,6 +149,7 @@ public:
 		BITFIELD32()
 			bool
 				UseDefaultBios:1,
+				UseDefaultPlugins: 1,
 				UseDefaultSnapshots:1,
 				UseDefaultSavestates:1,
 				UseDefaultMemoryCards:1,
@@ -157,7 +159,7 @@ public:
 				UseDefaultCheatsWS:1;
 		BITFIELD_END
 
-		wxDirName
+		fs::path
 			Bios,
 			Snapshots,
 			Savestates,
@@ -167,26 +169,26 @@ public:
 			Cheats,
 			CheatsWS;
 
-		wxDirName RunIso;		// last used location for Iso loading.
-		wxDirName RunELF;		// last used location for ELF loading.
-		wxString RunDisc;		// last used location for Disc loading.
+		fs::path RunIso;		// last used location for Iso loading.
+		fs::path RunELF;		// last used location for ELF loading.
+		fs::path RunDisc;		// last used location for Disc loading.
 
 		FolderOptions();
 		void LoadSave( IniInterface& conf );
 		void ApplyDefaults();
 
-		void Set( FoldersEnum_t folderidx, const wxString& src, bool useDefault );
+		void Set( FoldersEnum_t folderidx, const fs::path& src, bool useDefault );
 
-		const wxDirName& operator[]( FoldersEnum_t folderidx ) const;
-		wxDirName& operator[]( FoldersEnum_t folderidx );
+		const fs::path& operator[]( FoldersEnum_t folderidx ) const;
+		fs::path& operator[]( FoldersEnum_t folderidx );
 		bool IsDefault( FoldersEnum_t folderidx ) const;
 	};
 
 	// ------------------------------------------------------------------------
 	struct FilenameOptions
 	{
-		wxFileName Bios;
-
+		fs::path Bios;
+		bool needRelativeName = false;
 		void LoadSave( IniInterface& conf );
 	};
 
@@ -195,9 +197,16 @@ public:
 	//
 	struct McdOptions
 	{
-		wxFileName	Filename;	// user-configured location of this memory card
+		fs::path	Filename;	// user-configured location of this memory card
 		bool		Enabled;	// memory card enabled (if false, memcard will not show up in-game)
 		MemoryCardType Type;	// the memory card implementation that should be used
+	};
+
+	struct MemoryCardListPanelOptions
+	{
+		std::map<std::string, int> columnWidths;
+
+		void LoadSave( IniInterface& conf );
 	};
 
 	// ------------------------------------------------------------------------
@@ -262,22 +271,22 @@ public:
 #endif
 
 	struct UiTemplateOptions {
-		UiTemplateOptions();
 		void LoadSave(IniInterface& conf);
 
-		wxString LimiterUnlimited;
-		wxString LimiterTurbo;
-		wxString LimiterSlowmo;
-		wxString LimiterNormal;
-		wxString OutputFrame;
-		wxString OutputField;
-		wxString OutputProgressive;
-		wxString OutputInterlaced;
-		wxString Paused;
-		wxString TitleTemplate;
-#ifndef DISABLE_RECORDING
-		wxString RecordingTemplate;
-#endif
+
+		std::string LimiterUnlimited	= "Max";
+		std::string LimiterTurbo		= "Turbo";
+		std::string LimiterSlowmo		= "Slowmo";
+		std::string LimiterNormal		= "Normal";
+		std::string OutputFrame			= "Frame";
+		std::string OutputField			= "Field";
+		std::string OutputProgressive	= "Progressive";
+		std::string OutputInterlaced	= "Interlaced";
+		std::string Paused				= "<PAUSED> ";
+		std::string TitleTemplate		= "Slot: ${slot} | Speed: ${speed} (${vfps}) | ${videomode} | Limiter: ${limiter} | ${gsdx} | ${omodei} | ${cpuusage}";
+		#ifndef DISABLE_RECORDING
+		std::string RecordingTemplate	= "Slot: ${slot} | Frame: ${frame}/${maxFrame} | Rec. Mode: ${mode} | Speed: ${speed} (${vfps}) | Limiter: ${limiter}";
+		#endif
 	};
 
 	struct CaptureOptions
@@ -344,16 +353,17 @@ public:
 
 	bool		AskOnBoot;
 
-	wxString				CurrentIso;
-    wxString				CurrentBlockdump;
-	wxString				CurrentELF;
-	wxString				CurrentIRX;
+	fs::path				CurrentIso;
+	fs::path				CurrentBlockdump;
+	fs::path				CurrentELF;
+	fs::path				CurrentIRX;
 	CDVD_SourceType			CdvdSource;
-	wxString				CurrentGameArgs;
+	fs::path				CurrentGameArgs;
 
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
 	// slots (3 each)
 	McdOptions				Mcd[8];
+	MemoryCardListPanelOptions MemoryCardListPanel;
 	wxString				GzipIsoIndexTemplate; // for quick-access index with gzipped ISO
 
 	ConsoleLogOptions		ProgLogBox;
@@ -376,8 +386,8 @@ public:
 public:
 	AppConfig();
 
-	wxString FullpathToBios() const;
-	wxString FullpathToMcd( uint slot ) const;
+	fs::path FullpathToBios() const;
+	fs::path FullpathToMcd( uint slot ) const;
 
 	void LoadSave( IniInterface& ini );
 	void LoadSaveRootItems( IniInterface& ini );

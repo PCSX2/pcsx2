@@ -37,8 +37,9 @@ bool FileExists(std::wstring szPath)
 
 void SaveConf()
 {
-	const std::wstring file(GetSettingsFolder().Combine(wxString("DEV9.cfg")).GetFullPath());
-	DeleteFile(file.c_str());
+	fs::path filePath = GetSettingsFolder() / "DEV9.cfg";
+	const std::wstring file(filePath.wstring());
+	fs::remove(filePath);
 
 	//Create file with UT16 BOM to allow PrivateProfile to save unicode data
 	int bom = 0xFEFF;
@@ -85,8 +86,9 @@ void SaveConf()
 
 void LoadConf()
 {
-	const std::wstring file(GetSettingsFolder().Combine(wxString("DEV9.cfg")).GetFullPath());
-	if (FileExists(file.c_str()) == false)
+	fs::path filePath = GetSettingsFolder() / "DEV9.cfg";
+	const std::wstring file(filePath.wstring());
+	if (!fs::exists(filePath))
 		return;
 
 	wchar_t addrBuff[INET_ADDRSTRLEN] = {0};

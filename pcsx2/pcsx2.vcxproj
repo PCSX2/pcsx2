@@ -115,6 +115,12 @@
       <AdditionalDependencies>comctl32.lib;ws2_32.lib;shlwapi.lib;winmm.lib;rpcrt4.lib;iphlpapi.lib;dsound.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <AdditionalDependencies>dxguid.lib;dinput8.lib;hid.lib;d3dcompiler.lib;d3d11.lib;dxgi.lib;strmiids.lib;opengl32.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
+    <!-- Ensures that there is always a `bin/portable.yaml` file -->
+    <!-- If you want to bypass this logic and have your portable.yaml settings persist from build-to-build you can -->
+    <!-- create a bin/portable.build.yaml file which is .gitignored and will be used instead -->
+    <PostBuildEvent>
+      <Command>cmd /c $(ProjectDir)windows\PostBuildEvent.cmd "$(OutDirFullPath)" "$(ProjectDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="PAD\Windows\Default.ini" />

@@ -16,16 +16,11 @@
 #pragma once
 
 #include "AppCommon.h"
+#include "MemoryCardPanelColumns.h"
 
 #include <wx/dnd.h>
 #include <wx/listctrl.h>
 
-struct ListViewColumnInfo
-{
-	const wxChar*		name;
-	int					width;
-	wxListColumnFormat	align;
-};
 
 // --------------------------------------------------------------------------------------
 //  McdListItem / IMcdList
@@ -43,7 +38,7 @@ struct McdSlotItem
 	MemoryCardType Type;		//The implementation used for this memory card
 	
 	//Only meaningful when IsPresent==true (a file exists for this item):
-	wxFileName	Filename;		// full pathname
+	fs::path	Filename;		// full pathname
 	bool		IsFormatted;
 	bool		IsPSX; // False: PS2 memory card, True: PSX memory card
 	uint		SizeInMB;		// size, in megabytes!
@@ -120,7 +115,8 @@ public:
 	virtual void SetCardCount( int length )=0;
 	virtual void SetMcdProvider( IMcdList* face );
 
-	virtual void LoadSaveColumns( IniInterface& ini );
+	virtual void LoadColumns();
+	virtual void SaveColumns();
 	virtual const ListViewColumnInfo& GetDefaultColumnInfo( uint idx ) const=0;
 
 	virtual IMcdList& GetMcdProvider();

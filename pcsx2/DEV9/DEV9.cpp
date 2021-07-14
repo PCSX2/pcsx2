@@ -94,7 +94,7 @@ int hEeprom;
 int mapping;
 #endif
 
-std::string s_strIniPath = "inis";
+std::string s_strIniPath = "settings";
 std::string s_strLogPath = "logs";
 
 bool isRunning = false;
@@ -206,7 +206,8 @@ s32 DEV9open(void* pDsp)
 
 	if (hddPath.is_relative())
 	{
-		ghc::filesystem::path path(GetSettingsFolder().ToString().wx_str());
+		//GHC uses UTF8 on all platforms
+		fs::path path = GetSettingsFolder();
 		hddPath = path / hddPath;
 	}
 
@@ -1070,7 +1071,7 @@ void DEV9setSettingsDir(const char* dir)
 {
 	// Grab the ini directory.
 	// TODO: Use
-	s_strIniPath = (dir == NULL) ? "inis" : dir;
+	s_strIniPath = (dir == NULL) ? "settings" : dir;
 }
 
 void DEV9setLogDir(const char* dir)
@@ -1097,7 +1098,7 @@ void ApplyConfigIfRunning(Config oldConfig)
 	if (hddPath.is_relative())
 	{
 		//GHC uses UTF8 on all platforms
-		ghc::filesystem::path path(GetSettingsFolder().ToString().wx_str());
+		ghc::filesystem::path path(GetSettingsFolder());
 		hddPath = path / hddPath;
 	}
 

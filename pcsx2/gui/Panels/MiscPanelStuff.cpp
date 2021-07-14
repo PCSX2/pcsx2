@@ -43,7 +43,7 @@ Panels::DocsFolderPickerPanel::DocsFolderPickerPanel( wxWindow* parent, bool isF
 	{
 		RadioPanelItem(
 			_("User Documents (recommended)"),
-			_("Location: ") + PathDefs::GetDocuments(DocsFolder_User).ToString()
+			_("Location: ") + Path::ToWxString(PathDefs::GetDocuments(DocsFolder_User))
 		),
 
 		RadioPanelItem(
@@ -76,7 +76,7 @@ DocsModeType Panels::DocsFolderPickerPanel::GetDocsMode() const
 void Panels::DocsFolderPickerPanel::Apply()
 {
 	DocsFolderMode			= (DocsModeType) m_radio_UserMode->GetSelection();
-	CustomDocumentsFolder	= m_dirpicker_custom->GetPath();
+	CustomDocumentsFolder	= Path::FromWxString(m_dirpicker_custom->GetPath().ToString());
 }
 
 void Panels::DocsFolderPickerPanel::AppStatusEvent_OnSettingsApplied()

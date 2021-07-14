@@ -24,9 +24,9 @@
 
 using namespace pxSizerFlags;
 
-static wxString GetNormalizedConfigFolder( FoldersEnum_t folderId )
+static wxString GetNormalizedConfigFolder(FoldersEnum_t folderId)
 {
-	return Path::Normalize( g_Conf->Folders.IsDefault( folderId ) ? PathDefs::Get(folderId) : g_Conf->Folders[folderId] );
+	return Path::Normalize(Path::ToWxString(g_Conf->Folders.IsDefault(folderId) ? PathDefs::Get(folderId) : g_Conf->Folders[folderId]));
 }
 
 // Pass me TRUE if the default path is to be used, and the DirPickerCtrl disabled from use.
@@ -37,7 +37,7 @@ void Panels::DirPickerPanel::UpdateCheckStatus( bool someNoteworthyBoolean )
 	m_pickerCtrl->Enable( !someNoteworthyBoolean );
 	if (someNoteworthyBoolean)
 	{
-		wxString normalized( Path::Normalize( PathDefs::Get( m_FolderId ) ) );
+		wxString normalized(Path::Normalize(Path::ToWxString(PathDefs::Get(m_FolderId))));
 		m_pickerCtrl->SetPath( normalized );
 
 		wxFileDirPickerEvent event( m_pickerCtrl->GetEventType(), m_pickerCtrl, m_pickerCtrl->GetId(), normalized );
@@ -259,21 +259,21 @@ void Panels::DirPickerPanel::AppStatusEvent_OnSettingsApplied()
 
 void Panels::DirPickerPanel::Apply()
 {
-	wxDirName path( GetPath() );
+	fs::path path = Path::FromWxString(GetPath().ToString());
 
-	if (!path.Exists())
+	if (!fs::exists(path))
 	{
 		wxDialogWithHelpers dialog( NULL, _("Create folder?") );
 		dialog += dialog.Heading(AddAppName(_("A configured folder does not exist.  Should %s try to create it?")));
 		dialog += 12;
-		dialog += dialog.Heading( path.ToString() );
+		dialog += dialog.Heading( Path::ToWxString(path) );
 
 		if( wxID_CANCEL == pxIssueConfirmation( dialog, MsgButtons().Custom(_("Create"), "create").Cancel(), L"CreateNewFolder" ) )
 			throw Exception::CannotApplySettings( this );
 	}
 
-	path.Mkdir();
-	g_Conf->Folders.Set( m_FolderId, path.ToString(), m_checkCtrl ? m_checkCtrl->GetValue() : false );
+	fs::create_directories(path);
+	g_Conf->Folders.Set( m_FolderId, path , m_checkCtrl ? m_checkCtrl->GetValue() : false );
 }
 
 wxDirName Panels::DirPickerPanel::GetPath() const

@@ -363,7 +363,7 @@ void i18n_SetLanguagePath()
 	wxLocale::AddCatalogLookupPathPrefix( wxGetCwd() );
 	// additional location for linux
 #if defined(__unix__) || defined(__APPLE__)
-	wxLocale::AddCatalogLookupPathPrefix( PathDefs::GetLangs().ToString() );
+	wxLocale::AddCatalogLookupPathPrefix( Path::ToWxString(PathDefs::GetLangs()) );
 #endif
 
 }

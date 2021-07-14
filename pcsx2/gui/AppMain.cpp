@@ -348,7 +348,7 @@ class Pcsx2StandardPaths : public wxStandardPaths
 public:
 	wxString GetResourcesDir() const
 	{
-		return Path::Combine( GetDataDir(), L"Langs" );
+		return Path::ToWxString(Path::Combine( Path::FromWxString(GetDataDir()), "Langs" ));
 	}
 
 #ifdef __POSIX__
@@ -357,23 +357,26 @@ public:
 		// I got memory corruption inside wxGetEnv when I heavily toggle the GS renderer (F9). It seems wxGetEnv
 		// isn't thread safe? To avoid any issue on this read only variable, I cache the result.
 		static wxString cache_dir;
-		if (!cache_dir.IsEmpty()) return cache_dir;
+		if (!cache_dir.IsEmpty())
+			return cache_dir;
 
 		// Note: GetUserLocalDataDir() on linux return $HOME/.pcsx2 unfortunately it does not follow the XDG standard
 		// So we re-implement it, to follow the standard.
 		wxDirName user_local_dir;
-		wxDirName default_config_dir = (wxDirName)Path::Combine( L".config", pxGetAppName() );
+		wxDirName default_config_dir = wxDirName(Path::ToWxString(Path::Combine(".config", Path::FromWxString(pxGetAppName()))));
 		wxString xdg_home_value;
-		if( wxGetEnv(L"XDG_CONFIG_HOME", &xdg_home_value) ) {
-			if ( xdg_home_value.IsEmpty() ) {
+		if (wxGetEnv(L"XDG_CONFIG_HOME", &xdg_home_value))
+		{
+			if (xdg_home_value.IsEmpty())
 				// variable exist but it is empty. So use the default value
-				user_local_dir = (wxDirName)Path::Combine( GetUserConfigDir() , default_config_dir);
-			} else {
-				user_local_dir = (wxDirName)Path::Combine( xdg_home_value, pxGetAppName());
-			}
-		} else {
+				user_local_dir = wxDirName(Path::ToWxString(Path::Combine(Path::FromWxString(GetUserConfigDir()), Path::FromWxString(default_config_dir.ToString()))));
+			else
+				user_local_dir = wxDirName(Path::ToWxString(Path::Combine(Path::FromWxString(xdg_home_value), Path::FromWxString(pxGetAppName()))));
+		}
+		else
+		{
 			// variable do not exist
-			user_local_dir = (wxDirName)Path::Combine( GetUserConfigDir() , default_config_dir);
+			user_local_dir = wxDirName(Path::ToWxString(Path::Combine(Path::FromWxString(GetUserConfigDir()), Path::FromWxString(default_config_dir.ToString()))));
 		}
 
 		cache_dir = user_local_dir.ToString();
@@ -381,7 +384,6 @@ public:
 		return cache_dir;
 	}
 #endif
-
 };
 #endif // ifdef __APPLE__
 
@@ -734,13 +736,15 @@ void AppApplySettings( const AppConfig* oldconf )
 	// Ensure existence of necessary documents folders.
 	// Other parts of PCSX2 rely on them.
 
-	g_Conf->Folders.MemoryCards.Mkdir();
-	g_Conf->Folders.Savestates.Mkdir();
-	g_Conf->Folders.Snapshots.Mkdir();
-	g_Conf->Folders.Cheats.Mkdir();
-	g_Conf->Folders.CheatsWS.Mkdir();
+	fs::create_directories(g_Conf->Folders.MemoryCards);
+	fs::create_directories(g_Conf->Folders.Savestates);
+	fs::create_directories(g_Conf->Folders.Snapshots);
+	fs::create_directories(g_Conf->Folders.Cheats);
+	fs::create_directories(g_Conf->Folders.CheatsWS);
+	
 
-	g_Conf->EmuOptions.BiosFilename = g_Conf->FullpathToBios();
+
+	g_Conf->EmuOptions.BiosFilename = Path::ToWxString(g_Conf->FullpathToBios());
 
 	RelocateLogfile();
 
@@ -754,7 +758,7 @@ void AppApplySettings( const AppConfig* oldconf )
 	// Memcards generally compress very well via NTFS compression.
 
 	#ifdef __WXMSW__
-	NTFS_CompressFile( g_Conf->Folders.MemoryCards.ToString(), g_Conf->McdCompressNTFS );
+	NTFS_CompressFile( Path::ToWxString(g_Conf->Folders.MemoryCards), g_Conf->McdCompressNTFS );
 	#endif
 	sApp.DispatchEvent( AppStatus_SettingsApplied );
 
@@ -1020,7 +1024,7 @@ protected:
 		CBreakPoints::SetSkipFirst(BREAKPOINT_EE, 0);
 		CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, 0);
 
-		CDVDsys_SetFile(CDVD_SourceType::Iso, g_Conf->CurrentIso );
+		CDVDsys_SetFile(CDVD_SourceType::Iso, Path::ToWxString(g_Conf->CurrentIso) );
 		if( m_UseCDVDsrc )
 			CDVDsys_ChangeSource( m_cdvdsrc_type );
 		else if( CDVD == NULL )
@@ -1076,14 +1080,14 @@ void SysStatus( const wxString& text )
 // Applies a new active iso source file
 void SysUpdateIsoSrcFile( const wxString& newIsoFile )
 {
-	g_Conf->CurrentIso = newIsoFile;
+	g_Conf->CurrentIso = Path::FromWxString(newIsoFile);
 	sMainFrame.UpdateStatusBar();
 	sMainFrame.UpdateCdvdSrcSelection();
 }
 
 void SysUpdateDiscSrcDrive( const wxString& newDiscDrive )
 {
-	g_Conf->Folders.RunDisc = newDiscDrive;
+	g_Conf->Folders.RunDisc = Path::FromWxString(newDiscDrive);
 	AppSaveSettings();
 	sMainFrame.UpdateCdvdSrcSelection();
 }

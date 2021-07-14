@@ -389,8 +389,8 @@ namespace Implementations
 
 	void Sys_TakeSnapshot()
 	{
-		if (GSmakeSnapshot(g_Conf->Folders.Snapshots.ToUTF8().data()))
-			OSDlog(ConsoleColors::Color_Black, true, "Snapshot taken");
+		if (GSmakeSnapshot(g_Conf->Folders.Snapshots.u8string().c_str()))
+			OSDlog(ConsoleColors::Color_Black, true, "Snapshot taken"); // TODO: Add unicode handles for GS
 	}
 
 	void Sys_RenderToggle()
@@ -879,7 +879,7 @@ void AcceleratorDictionary::Map(const KeyAcceleratorCode& _acode, const char* se
 	KeyAcceleratorCode acode = _acode;
 	wxString overrideStr;
 	wxAcceleratorEntry codeParser; //Provides string parsing capabilities
-	wxFileConfig cfg(L"", L"", L"", GetUiKeysFilename(), wxCONFIG_USE_GLOBAL_FILE);
+	wxFileConfig cfg(L"", L"", L"", Path::ToWxString(GetUiKeysFilename()), wxCONFIG_USE_GLOBAL_FILE);
 	if (cfg.Read(wxString::FromUTF8(searchfor), &overrideStr))
 	{
 		// needs a '\t' prefix (originally used for wxMenu accelerators parsing)...

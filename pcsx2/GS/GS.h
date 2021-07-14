@@ -23,6 +23,7 @@
 #include "GS_types.h"
 #include "Window/GSSetting.h"
 #include "SaveState.h"
+#include "Utilities/PathUtils.h"
 
 #ifdef _WIN32
 
@@ -1826,7 +1827,7 @@ void GSgifTransfer1(uint8* mem, uint32 addr);
 void GSgifTransfer2(uint8* mem, uint32 size);
 void GSgifTransfer3(uint8* mem, uint32 size);
 void GSvsync(int field);
-uint32 GSmakeSnapshot(char* path);
+uint32 GSmakeSnapshot(const char* path);
 void GSkeyEvent(GSKeyEventData* e);
 int GSfreeze(int mode, freezeData* data);
 void GSconfigure();
@@ -1849,7 +1850,7 @@ class GSApp
 	GSRendererType m_current_renderer_type;
 
 public:
-	std::string m_ini;
+	fs::path m_ini;
 	GSApp();
 
 	void Init();
@@ -1862,12 +1863,12 @@ public:
 	}
 #endif
 
-	void BuildConfigurationMap(const char* lpFileName);
+	void BuildConfigurationMap(const fs::path lpFileName);
 	void ReloadConfig();
 
 	size_t GetIniString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName);
 	bool WriteIniString(const char* lpAppName, const char* lpKeyName, const char* pString, const char* lpFileName);
-	int GetIniInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName);
+	int GetIniInt(const char* lpAppName, const char* lpKeyName, int nDefault, const fs::path lpFileName);
 
 #ifdef _WIN32
 	bool LoadResource(int id, std::vector<char>& buff, const wchar_t* type = nullptr);

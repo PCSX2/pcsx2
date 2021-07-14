@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,8 +15,11 @@
 
 #include "PrecompiledHeader.h"
 #include "Path.h"
-
+#include "PathUtils.h"
 #include <wx/file.h>
+#include <wx/stdpaths.h>
+#include <wx/filename.h>
+#include "ghc/filesystem.h"
 #include <wx/utils.h>
 
 // ---------------------------------------------------------------------------------
@@ -55,22 +58,6 @@ wxDirName &wxDirName::Normalize(int flags, const wxString &cwd)
     return *this;
 }
 
-wxDirName &wxDirName::MakeRelativeTo(const wxString &pathBase)
-{
-    pxAssertMsg(IsDir(), L"Warning: Malformed directory name detected during wDirName normalization.");
-    if (!wxFileName::MakeRelativeTo(pathBase))
-        throw Exception::ParseError().SetDiagMsg(L"wxDirName::MakeRelativeTo operation failed.");
-    return *this;
-}
-
-wxDirName &wxDirName::MakeAbsolute(const wxString &cwd)
-{
-    pxAssertMsg(IsDir(), L"Warning: Malformed directory name detected during wDirName normalization.");
-    if (!wxFileName::MakeAbsolute(cwd))
-        throw Exception::ParseError().SetDiagMsg(L"wxDirName::MakeAbsolute operation failed.");
-    return *this;
-}
-
 void wxDirName::Rmdir()
 {
     if (!Exists())
@@ -98,20 +85,22 @@ bool wxDirName::Mkdir()
 //  Path namespace (wxFileName helpers)
 // ---------------------------------------------------------------------------------
 
-
-bool Path::IsRelative(const wxString &path)
+bool Path::IsDirectoryWithinDirectory(fs::path base, fs::path dir)
 {
-    return wxDirName(path).IsRelative();
+	fs::path relativePath = fs::relative(fs::absolute(dir), fs::absolute(base));
+	if (relativePath.empty())
+	{
+		return false;
+	}
+	return relativePath.string().rfind("..", 0) != 0;
 }
 
-// Returns -1 if the file does not exist.
-s64 Path::GetFileSize(const wxString &path)
+s64 Path::GetFileSize(const fs::path &path)
 {
-    if (!wxFile::Exists(path.c_str()))
+    if (!fs::exists(path))
         return -1;
-    return (s64)wxFileName::GetSize(path).GetValue();
+    return (s64)fs::file_size(path);
 }
-
 
 wxString Path::Normalize(const wxString &src)
 {
@@ -125,50 +114,25 @@ wxString Path::Normalize(const wxDirName &src)
     return wxDirName(src).Normalize().ToString();
 }
 
-wxString Path::MakeAbsolute(const wxString &src)
+fs::path Path::Combine(const fs::path &srcPath, const fs::path &srcFile)
 {
-    wxFileName absolute(src);
-    absolute.MakeAbsolute();
-    return absolute.GetFullPath();
-}
-
-// Concatenates two pathnames together, inserting delimiters (backslash on win32)
-// as needed! Assumes the 'dest' is allocated to at least g_MaxPath length.
-//
-wxString Path::Combine(const wxString &srcPath, const wxString &srcFile)
-{
-    return (wxDirName(srcPath) + srcFile).GetFullPath();
-}
-
-wxString Path::Combine(const wxDirName &srcPath, const wxFileName &srcFile)
-{
-    return (srcPath + srcFile).GetFullPath();
-}
-
-wxString Path::Combine(const wxString &srcPath, const wxDirName &srcFile)
-{
-    return (wxDirName(srcPath) + srcFile).ToString();
+    return (srcPath / srcFile).make_preferred();
 }
 
 // Replaces the extension of the file with the one given.
 // This function works for path names as well as file names.
-wxString Path::ReplaceExtension(const wxString &src, const wxString &ext)
+std::string Path::ReplaceExtension(const wxString &src, const wxString &ext)
 {
     wxFileName jojo(src);
     jojo.SetExt(ext);
-    return jojo.GetFullPath();
+    return std::string(jojo.GetFullPath().ToUTF8());
 }
 
-wxString Path::ReplaceFilename(const wxString &src, const wxString &newfilename)
+std::string Path::ReplaceFilename(const wxString &src, const wxString &newfilename)
 {
     wxFileName jojo(src);
     jojo.SetFullName(newfilename);
-    return jojo.GetFullPath();
-}
-
-wxString Path::GetFilename(const wxString &src)
-{
-    return wxFileName(src).GetFullName();
+    return std::string(jojo.GetFullPath().ToUTF8());
 }
 
 wxString Path::GetFilenameWithoutExt(const wxString &src)
@@ -176,21 +140,21 @@ wxString Path::GetFilenameWithoutExt(const wxString &src)
     return wxFileName(src).GetName();
 }
 
-wxString Path::GetDirectory(const wxString &src)
+fs::path Path::GetExecutableDirectory()
 {
-    return wxFileName(src).GetPath();
+	fs::path exePath(wxStandardPaths::Get().GetExecutablePath().ToStdWstring());
+	return exePath.parent_path();
 }
-
 
 // returns the base/root directory of the given path.
 // Example /this/that/something.txt -> dest == "/"
-wxString Path::GetRootDirectory(const wxString &src)
+fs::path Path::GetRootDirectory(const wxString &src)
 {
     size_t pos = src.find_first_of(wxFileName::GetPathSeparators());
-    if (pos == wxString::npos)
-        return wxString();
+    if (pos == 0)
+        return std::string();
     else
-        return wxString(src.begin(), src.begin() + pos);
+        return fs::path(std::string(src.begin(), src.begin() + pos));
 }
 
 // ------------------------------------------------------------------------
@@ -220,4 +184,22 @@ void pxExplore(const wxString &path)
 void pxExplore(const char *path)
 {
     pxExplore(fromUTF8(path));
+}
+
+wxString Path::ToWxString(const fs::path& path)
+{
+#ifdef _WIN32
+    return wxString(path.wstring());
+#else
+    return wxString(path.string());
+#endif
+}
+
+fs::path Path::FromWxString(const wxString& path)
+{
+#ifdef _WIN32
+    return fs::path(path.ToStdWstring());
+#else
+    return fs::path(path.ToStdString());
+#endif
 }

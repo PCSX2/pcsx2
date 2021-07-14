@@ -139,8 +139,19 @@ static void WipeSettings()
 	wxGetApp().CleanupRestartable();
 	wxGetApp().CleanupResources();
 
-	wxRemoveFile(GetUiSettingsFilename());
-	wxRemoveFile(GetVmSettingsFilename());
+	try
+	{
+		for (auto& p : fs::directory_iterator(GetUiSettingsFilename().parent_path()))
+		{
+			fs::remove_all(p.path());
+		}
+	}
+	catch (const std::exception& e)
+	{
+		DevCon.WriteLn("Failure to Delete");
+	}
+
+	//fs::remove_all(GetVmSettingsFilename().make_preferred());
 
 	// FIXME: wxRmdir doesn't seem to work here for some reason but deleting the inis folder
 	// manually from explorer does work.  Can't think of a good work-around at the moment. --air
@@ -196,7 +207,7 @@ wxWindowID SwapOrReset_Iso(wxWindow* owner, IScopedCoreThread& core_control, con
 	}
 	wxWindowID result = wxID_CANCEL;
 
-	if ((g_Conf->CdvdSource == CDVD_SourceType::Iso) && (isoFilename == g_Conf->CurrentIso))
+	if ((g_Conf->CdvdSource == CDVD_SourceType::Iso) && (isoFilename == Path::ToWxString(g_Conf->CurrentIso)))
 	{
 		core_control.AllowResume();
 		return result;
@@ -258,7 +269,7 @@ wxWindowID SwapOrReset_Disc(wxWindow* owner, IScopedCoreThread& core, const wxSt
 	}
 	wxWindowID result = wxID_CANCEL;
 
-	if ((g_Conf->CdvdSource == CDVD_SourceType::Disc) && (driveLetter == g_Conf->Folders.RunDisc))
+	if ((g_Conf->CdvdSource == CDVD_SourceType::Disc) && (driveLetter == Path::ToWxString(g_Conf->Folders.RunDisc)))
 	{
 		core.AllowResume();
 		return result;
@@ -413,13 +424,13 @@ bool MainEmuFrame::_DoSelectIsoBrowser(wxString& result)
 	isoFilterTypes.Add(_("All Files (*.*)"));
 	isoFilterTypes.Add(L"*.*");
 
-	wxFileDialog ctrl(this, _("Select disc image, compressed disc image, or block-dump..."), g_Conf->Folders.RunIso.ToString(), wxEmptyString,
+	wxFileDialog ctrl(this, _("Select disc image, compressed disc image, or block-dump..."), Path::ToWxString(g_Conf->Folders.RunIso), wxEmptyString,
 					  JoinString(isoFilterTypes, L"|"), wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
 	if (ctrl.ShowModal() != wxID_CANCEL)
 	{
 		result = ctrl.GetPath();
-		g_Conf->Folders.RunIso = wxFileName(result).GetPath();
+		g_Conf->Folders.RunIso = Path::FromWxString(result);
 		return true;
 	}
 
@@ -430,13 +441,13 @@ bool MainEmuFrame::_DoSelectELFBrowser()
 {
 	static const wxChar* elfFilterType = L"ELF Files (.elf)|*.elf;*.ELF";
 
-	wxFileDialog ctrl(this, _("Select ELF file..."), g_Conf->Folders.RunELF.ToString(), wxEmptyString,
+	wxFileDialog ctrl(this, _("Select ELF file..."), Path::ToWxString(g_Conf->Folders.RunELF), wxEmptyString,
 					  (wxString)elfFilterType + L"|" + _("All Files (*.*)") + L"|*.*", wxFD_OPEN | wxFD_FILE_MUST_EXIST);
 
 	if (ctrl.ShowModal() != wxID_CANCEL)
 	{
-		g_Conf->Folders.RunELF = wxFileName(ctrl.GetPath()).GetPath();
-		g_Conf->CurrentELF = ctrl.GetPath();
+		g_Conf->Folders.RunELF = Path::FromWxString(wxFileName(ctrl.GetPath()).GetPath());
+		g_Conf->CurrentELF = Path::FromWxString(ctrl.GetPath());
 		return true;
 	}
 
@@ -454,16 +465,16 @@ void MainEmuFrame::_DoBootCdvd()
 
 	if (g_Conf->CdvdSource == CDVD_SourceType::Iso)
 	{
-		bool selector = g_Conf->CurrentIso.IsEmpty();
+		bool selector = g_Conf->CurrentIso.empty();
 
-		if (!selector && !wxFileExists(g_Conf->CurrentIso))
+		if (!selector && !fs::exists(g_Conf->CurrentIso))
 		{
 			// User has an iso selected from a previous run, but it doesn't exist anymore.
 			// Issue a courtesy popup and then an Iso Selector to choose a new one.
 
 			wxDialogWithHelpers dialog(this, _("ISO file not found!"));
 			dialog += dialog.Heading(
-				_("An error occurred while trying to open the file:") + wxString(L"\n\n") + g_Conf->CurrentIso + L"\n\n" +
+				_("An error occurred while trying to open the file:") + wxString(L"\n\n") + Path::ToWxString(g_Conf->CurrentIso) + L"\n\n" +
 				_("Error: The configured ISO file does not exist.  Click OK to select a new ISO source for CDVD."));
 
 			pxIssueConfirmation(dialog, MsgButtons().OK());
@@ -730,7 +741,7 @@ void MainEmuFrame::Menu_OpenELF_Click(wxCommandEvent&)
 	if (_DoSelectELFBrowser())
 	{
 		g_Conf->EmuOptions.UseBOOT2Injection = true;
-		sApp.SysExecute(g_Conf->CdvdSource, g_Conf->CurrentELF);
+		sApp.SysExecute(g_Conf->CdvdSource, Path::ToWxString(g_Conf->CurrentELF));
 	}
 
 	stopped_core.AllowResume();
@@ -1005,7 +1016,7 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent& even
 	{
 		return;
 	}
-	GSmakeSnapshot(g_Conf->Folders.Snapshots.ToString().char_str());
+	GSmakeSnapshot(g_Conf->Folders.Snapshots.u8string().c_str()); // TODO: Add unicode handles for GS
 }
 
 void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& event)
@@ -1018,7 +1029,7 @@ void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click(wxCommandEvent& e
 	if (!wasPaused)
 		CoreThread.Pause();
 
-	wxFileDialog fileDialog(this, _("Select a file"), g_Conf->Folders.Snapshots.ToAscii(), wxEmptyString, "PNG files (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+	wxFileDialog fileDialog(this, _("Select a file"), Path::ToWxString(g_Conf->Folders.Snapshots), wxEmptyString, "PNG files (*.png)|*.png", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
 
 	if (fileDialog.ShowModal() == wxID_OK)
 		GSmakeSnapshot((char*)fileDialog.GetPath().char_str());

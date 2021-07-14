@@ -68,7 +68,7 @@ void RecentIsoManager::OnChangedSelection( wxCommandEvent& evt )
 	// Actually there is no change on the selection so the event can be skip
 	// Note: It also avoids a deadlock which appears when the core thread is already paused
 	// and ScopedCoreThreadPopup try to stop the thread (GSOpen1 code path)
-	if( (g_Conf->CdvdSource == CDVD_SourceType::Iso) && (m_Items[i].Filename == g_Conf->CurrentIso) )
+	if( (g_Conf->CdvdSource == CDVD_SourceType::Iso) && (m_Items[i].Filename == Path::ToWxString(g_Conf->CurrentIso)) )
 	{
 		evt.Skip();
 		return;
@@ -190,7 +190,7 @@ void RecentIsoManager::InsertIntoMenu( int id )
 	if (this->m_firstIdForMenuItems_or_wxID_ANY != wxID_ANY)
 		wxid = this->m_firstIdForMenuItems_or_wxID_ANY + id;
 
-	wxString filename = Path::GetFilename(curitem.Filename);
+	wxString filename = Path::ToWxString(Path::FromWxString(curitem.Filename).filename());
 	// & is used to specify the keyboard shortcut key in menu labels. && must
 	// be used to display an &.
 	filename.Replace("&", "&&", true);
@@ -224,7 +224,7 @@ void RecentIsoManager::LoadListFrom( IniInterface& ini )
 		ini.Entry( pxsFmt( L"Filename%02d", i ), loadtmp, loadtmp, true );
 		if( loadtmp.GetFullName()!=L"" ) Add( loadtmp.GetFullPath() );
 	}
-	Add( g_Conf->CurrentIso );
+	Add( Path::ToWxString(g_Conf->CurrentIso) );
 
 	ini.GetConfig().SetRecordDefaults( true );
 }
@@ -251,8 +251,8 @@ void RecentIsoManager::AppStatusEvent_OnUiSettingsLoadSave( const AppSettingsEve
 		int cnt = m_Items.size();
 		for( int i=0; i<cnt; ++i )
 		{
-			wxFileName item_filename = wxFileName(m_Items[i].Filename);
-			ini.Entry( pxsFmt( L"Filename%02d", i ),  item_filename, wxFileName(L""), IsPortable());
+			fs::path item_filename = fs::path(Path::FromWxString(m_Items[i].Filename));
+			ini.Entry( pxsFmt( L"Filename%02d", i ), item_filename, "");
 		}
 
 		ini.GetConfig().SetRecordDefaults( true );

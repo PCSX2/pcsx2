@@ -17,7 +17,7 @@
 #include "SPU2/Global.h"
 #include "Dialogs.h"
 #include "Config.h"
-#include "Utilities/Path.h"
+#include "Utilities/PathUtils.h"
 
 bool DebugEnabled = false;
 bool _MsgToConsole = false;
@@ -40,8 +40,8 @@ bool _RegDump = false;
 // the configured crap in the ini file.
 static bool LogLocationSetByPcsx2 = false;
 
-static wxDirName LogsFolder;
-static wxDirName DumpsFolder;
+static fs::path LogsFolder;
+static fs::path DumpsFolder;
 
 wxString AccessLogFileName;
 wxString WaveLogFileName;
@@ -54,24 +54,24 @@ wxString RegDumpFileName;
 
 void CfgSetLogDir(const char* dir)
 {
-	LogsFolder = (dir == nullptr) ? wxString(L"logs") : fromUTF8(dir);
-	DumpsFolder = (dir == nullptr) ? wxString(L"logs") : fromUTF8(dir);
+	LogsFolder = Path::FromWxString((dir == nullptr) ? wxString(L"logs") : fromUTF8(dir));
+	DumpsFolder = Path::FromWxString((dir == nullptr) ? wxString(L"logs") : fromUTF8(dir));
 	LogLocationSetByPcsx2 = (dir != nullptr);
 }
 
-FILE* OpenBinaryLog(const wxString& logfile)
+FILE* OpenBinaryLog(const fs::path& logfile)
 {
-	return wxFopen(Path::Combine(LogsFolder, logfile), L"wb");
+	return wxFopen(Path::ToWxString(Path::Combine(LogsFolder, logfile)), L"wb");
 }
 
-FILE* OpenLog(const wxString& logfile)
+FILE* OpenLog(const fs::path& logfile)
 {
-	return wxFopen(Path::Combine(LogsFolder, logfile), L"w");
+	return wxFopen(Path::ToWxString(Path::Combine(LogsFolder, logfile)), L"w");
 }
 
-FILE* OpenDump(const wxString& logfile)
+FILE* OpenDump(const fs::path& logfile)
 {
-	return wxFopen(Path::Combine(DumpsFolder, logfile), L"w");
+	return wxFopen(Path::ToWxString(Path::Combine(DumpsFolder, logfile)), L"w");
 }
 
 namespace DebugConfig
