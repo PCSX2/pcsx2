@@ -40,12 +40,12 @@ PAPX-90222:
   name: "Jak x Daxter: Kyuusekai no Isan [Demo, Taikenba]"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 PAPX-90223:
   name: "Jak x Daxter: Kyuusekai no Isan [Demo, Taikenba]"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 PAPX-90231:
   name: "Kaitou Sly Cooper [Demo, Taikenba]"
   region: "NTSC-J"
@@ -60,7 +60,7 @@ PAPX-90516:
   name: "Jak and Daxter II [Trial]"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 PBPX-95201:
   name: "Dead or Alive 2"
   region: "NTSC-J"
@@ -99,7 +99,7 @@ PBPX-95514:
   name: "Playstation 2 - Demo Disc 2002"
   region: "PAL-M5"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS in Ratchet and Clank.
+    - VUKickstartHack # Fixes Character SPS in Ratchet and Clank.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 PBPX-95517:
   name: "Network Adapter Start-Up Disc"
@@ -175,7 +175,7 @@ SCAJ-20001:
   name: "Ratchet & Clank"
   region: "NTSC-Unk"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCAJ-20002:
   name: "Gallop Racer 6 - Revolution"
@@ -417,7 +417,7 @@ SCAJ-20070:
   region: "NTSC-Unk"
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCAJ-20072:
   name: "Ghost in the Shell - Stand Alone Complex"
   region: "NTSC-Unk"
@@ -425,7 +425,7 @@ SCAJ-20073:
   name: "Jak and Daxter II"
   region: "NTSC-Unk"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCAJ-20074:
   name: "King of Fighters 2002, The"
   region: "NTSC-Unk"
@@ -562,7 +562,7 @@ SCAJ-20109:
   name: "Ratchet & Clank 3 - Up your Arsenal"
   region: "NTSC-Unk"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCAJ-20110:
   name: "Dragon Quest VIII - Sora to Daichi to Norowareshi Himegimi"
@@ -572,7 +572,7 @@ SCAJ-20111:
   region: "NTSC-Unk"
   gameFixes:
     - XGKickHack # Fixes bad Geometry.
-    - VU0KickstartHack # Fixes loading hang.
+    - VUKickstartHack # Fixes loading hang.
 SCAJ-20112:
   name: "Tales of Rebirth"
   region: "NTSC-Unk"
@@ -596,7 +596,7 @@ SCAJ-20118:
   region: "NTSC-J"
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCAJ-20119:
   name: "Gladiator - Road to Freedom"
   region: "NTSC-Unk"
@@ -767,7 +767,7 @@ SCAJ-20157:
   name: "Ratchet & Clank 4th - GiriGiri Gingano Giga-battle"
   region: "NTSC-Unk"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCAJ-20158:
   name: "Ikusa Gami"
@@ -847,7 +847,7 @@ SCAJ-20177:
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCAJ-20178:
   name: "Ape Escape - Million Monkeys"
   region: "NTSC-Unk"
@@ -915,7 +915,7 @@ SCAJ-20197:
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCAJ-20198:
   name: "Everybody's Tennis [PlayStation 2 The Best]"
   region: "NTSC-Unk"
@@ -1078,7 +1078,7 @@ SCED-50614:
   name: "Jak and Daxter: The Precursor Legacy [Demo]"
   region: "PAL-Unk"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCED-50642:
   name: "Final Fantasy X [Demo] [Final Fantasy VI PS1 - Bonus Disc]"
   region: "PAL-E"
@@ -1129,7 +1129,7 @@ SCED-51700:
   name: "Jak II: Renegade [Demo]"
   region: "PAL-M5"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCED-52049:
   name: "Dog's Life [Demo]"
   region: "PAL-M11"
@@ -1159,7 +1159,7 @@ SCED-52952:
   name: "Jak 3 [Demo]"
   region: "PAL-M5"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCED-52970:
   name: "SCEE Hits Demo"
   region: "PAL-M5"
@@ -1247,7 +1247,7 @@ SCES-50034:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Crash On Load.
+    - VUKickstartHack # Fixes Crash On Load.
 SCES-50105:
   name: "Sky Odyssey"
   region: "PAL-M5"
@@ -1299,13 +1299,13 @@ SCES-50360:
   name: "Twisted Metal - Black"
   region: "PAL-M5"
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Car Models.
+    - VUKickstartHack # Fixes Bad Car Models.
 SCES-50361:
   name: "Jak and Daxter: The Precursor Legacy"
   region: "PAL-M6"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCES-50408:
   name: "PaRappa the Rapper 2"
   region: "PAL-M5"
@@ -1428,7 +1428,7 @@ SCES-50614:
   name: "Jak and Daxter: The Precursor Legacy"
   region: "PAL-Unk"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCES-50759:
   name: "Virtua Fighter 4"
   region: "PAL-M5"
@@ -1494,7 +1494,7 @@ SCES-50916:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCES-50917:
   name: "Sly Racoon"
@@ -1589,7 +1589,7 @@ SCES-51135:
   clampModes:
     vuClampMode: 2  # Fix other SPS.
   gameFixes:
-    - VU0KickstartHack # Fixes objects disappearing.
+    - VUKickstartHack # Fixes objects disappearing.
 SCES-51159:
   name: "The Getaway"
   region: "PAL-M5"
@@ -1638,12 +1638,12 @@ SCES-51463:
   region: "PAL-M6"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Missing Graphics.
+    - VUKickstartHack # Fixes Missing Graphics.
 SCES-51480:
   name: "Twisted Metal - Black - Online"
   region: "PAL-M5"
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Car Models.
+    - VUKickstartHack # Fixes Bad Car Models.
 SCES-51513:
   name: "EyeToy - Play"
   region: "PAL-M11"
@@ -1663,7 +1663,7 @@ SCES-51593:
   name: "Hardware Online Arena [Beta, Promo & Full Release]"
   region: "PAL-M4"
   gameFixes:
-    - VU0KickstartHack # Reduces chance of hanging going ingame.
+    - VUKickstartHack # Reduces chance of hanging going ingame.
   patches:
     81797E77:
       content: |-
@@ -1677,7 +1677,7 @@ SCES-51607:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - EETimingHack # Fixes DMA errors 
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
   memcardFilters: # Reads Ratchet 1 data.
@@ -1688,7 +1688,7 @@ SCES-51608:
   region: "PAL-M7"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
   patches:
     default:
       content: |-
@@ -1739,7 +1739,7 @@ SCES-51685:
   clampModes:
     vuClampMode: 2  # Fix other SPS.
   gameFixes:
-    - VU0KickstartHack # Fixes objects disappearing.
+    - VUKickstartHack # Fixes objects disappearing.
 SCES-51706:
   name: "Amplitude"
   region: "PAL-M5"
@@ -1945,7 +1945,7 @@ SCES-52456:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
   memcardFilters: # Reads Ratchet 1 & 2 data.
     - "SCES-52456"
@@ -1956,7 +1956,7 @@ SCES-52460:
   region: "PAL-M7"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
   patches:
     default:
       content: |-
@@ -2110,13 +2110,13 @@ SCES-53285:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCES-53286:
   name: "Jak X - Combat Racing"
   region: "PAL-M7"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
   memcardFilters: # Reads Ratchet Gladiator data.
     - "SCES-53286"
     - "SCES-53285"
@@ -2173,7 +2173,7 @@ SCES-53358:
   clampModes:
     vuClampMode: 2  # Fixes minimap HUD.
   gameFixes:
-    - VU0KickstartHack # Fixes missing geometry.
+    - VUKickstartHack # Fixes missing geometry.
 SCES-53372:
   name: "Tourist Trophy - The Real Riding Simulator"
   region: "PAL-M5"
@@ -2608,7 +2608,7 @@ SCES-55510:
   name: "Jak and Daxter: The Lost Frontier"
   region: "PAL-M12"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCES-55535:
   name: "Desi Adda: Games of India"
   region: "PAL-M4"
@@ -2669,12 +2669,12 @@ SCKA-20010:
   name: "Jak II"
   region: "NTSC-K"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCKA-20011:
   name: "Ratchet & Clank 2"
   region: "NTSC-K"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
   memcardFilters:
     - "SCKA-20011"
@@ -2766,7 +2766,7 @@ SCKA-20037:
   name: "Ratchet & Clank 3"
   region: "NTSC-K"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
   memcardFilters:
     - "SCKA-20037"
@@ -2782,7 +2782,7 @@ SCKA-20040:
   name: "Jak 3"
   region: "NTSC-K"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCKA-20043:
   name: "Magna Carta"
   region: "NTSC-K"
@@ -2854,7 +2854,7 @@ SCKA-20060:
   name: "Ratchet - Deadlocked"
   region: "NTSC-K"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCKA-20061:
   name: "Wanda to Kyozou (Shadow of the Colossus)"
@@ -2914,7 +2914,7 @@ SCKA-20079:
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCKA-20081:
   name: "Tekken 5 [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -2968,7 +2968,7 @@ SCKA-20120:
   name: "Ratchet & Clank"
   region: "NTSC-K"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCKA-20132:
   name: "Shin Megami Tensei: Persona 4"
@@ -3219,7 +3219,7 @@ SCPS-15021:
   name: "Jak x Daxter: Kyuusekai no Isan"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCPS-15022:
   name: "Dual Hearts"
   region: "NTSC-J"
@@ -3273,7 +3273,7 @@ SCPS-15037:
   name: "Ratchet & Clank"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-15038:
   name: "Operator's Side"
@@ -3352,7 +3352,7 @@ SCPS-15056:
   name: "Ratchet & Clank 2"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
   memcardFilters:
     - "SCPS-15056"
@@ -3361,7 +3361,7 @@ SCPS-15057:
   name: "Jak and Daxter II"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCPS-15058:
   name: "Arc the Lad - Generation"
   region: "NTSC-J"
@@ -3450,7 +3450,7 @@ SCPS-15084:
   name: "Ratchet & Clank 3"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
   memcardFilters:
     - "SCPS-15084"
     - "SCPS-15056"
@@ -3537,13 +3537,13 @@ SCPS-15099:
   name: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-15100:
   name: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-15101:
   name: "Bleach - Hanatareshi Yabou"
@@ -3621,7 +3621,7 @@ SCPS-15120:
   name: "Ratchet & Clank 5 Gekitotsu! Dodeka Ginga no Mirimiri Gundan"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCPS-17001:
   name: "Gran Turismo 4"
   region: "NTSC-J"
@@ -3730,12 +3730,12 @@ SCPS-19210:
   name: "Jak x Daxter: Kyuusekai no Isan [PlayStation 2 The Best]"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCPS-19211:
   name: "Ratchet & Clank [PlayStation 2 The Best]"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-19213:
   name: "Operator's Side [PlayStation 2 The Best] [with Microphone]"
@@ -3777,7 +3777,7 @@ SCPS-19302:
   name: "Ratchet & Clank 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-19303:
   name: "Boku no Natsuyasumi 2 [PlayStation 2 The Best]"
@@ -3815,13 +3815,13 @@ SCPS-19309:
   name: "Ratchet & Clank 3 - Up Your Arsenal [PlayStation 2 The Best]"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-19310:
   name: "Ratchet & Clank [PlayStation 2 The Best]"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-19311:
   name: "Saru Get You 3 [PlayStation 2 The Best]"
@@ -3850,13 +3850,13 @@ SCPS-19316:
   name: "Ratchet & Clank [PlayStation 2 The Best]"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-19317:
   name: "Ratchet & Clank 2 - Going Commando [PlayStation 2 The Best]"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-19318:
   name: "Genji - Dawn of the Samurai [PlayStation 2 The Best]"
@@ -3879,7 +3879,7 @@ SCPS-19321:
   name: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [PlayStation 2 The Best]"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-19322:
   name: "Wild ARMs - The 4th Detonator [PlayStation 2 The Best - Reprint]"
@@ -3927,7 +3927,7 @@ SCPS-19328:
   name: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [PlayStation 2 the Best - Reprint]"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-19329:
   name: "Bleach - Blade Battlers [PlayStation 2 The Best]"
@@ -3999,7 +3999,7 @@ SCPS-55004:
   name: "Jak x Daxter: Kyuusekai no Isan"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCPS-55005:
   name: "Gran Turismo - Concept 2001 Tokyo"
   region: "NTSC-J"
@@ -4048,7 +4048,7 @@ SCPS-55019:
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCPS-55020:
   name: "Kengo 2"
   region: "NTSC-J"
@@ -4206,7 +4206,7 @@ SCPS-56003:
   name: "Jak and Daxter: The Precursor Legacy"
   region: "NTSC-K"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCPS-56005:
   name: "Gran Turismo Concept 2002 Tokyo-Seoul"
   region: "NTSC-K"
@@ -4276,7 +4276,7 @@ SCUS-97101:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Car Models.
+    - VUKickstartHack # Fixes Bad Car Models.
 SCUS-97102:
   name: "Gran Turismo 3 - A-Spec"
   region: "NTSC-U"
@@ -4350,7 +4350,7 @@ SCUS-97124:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCUS-97125:
   name: "Frequency"
   region: "NTSC-U"
@@ -4428,7 +4428,7 @@ SCUS-97142:
   clampModes:
     vuClampMode: 2  # Fix other SPS.
   gameFixes:
-    - VU0KickstartHack # Fixes objects disappearing.
+    - VUKickstartHack # Fixes objects disappearing.
 SCUS-97144:
   name: "PlayStation Underground 5.1"
   region: "NTSC-U"
@@ -4493,7 +4493,7 @@ SCUS-97164:
   name: "Twisted Metal Black [Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Car Models.
+    - VUKickstartHack # Fixes Bad Car Models.
 SCUS-97165:
   name: "Official U.S. PlayStation Magazine Demo Disc 051"
   region: "NTSC-U"
@@ -4513,12 +4513,12 @@ SCUS-97170:
   name: "Jak and Daxter: The Precursor Legacy [Cingular Wireless Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCUS-97171:
   name: "Jak and Daxter: The Precursor Legacy [PS Underground Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCUS-97172:
   name: "World Tour Soccer 2002"
   region: "NTSC-U"
@@ -4544,7 +4544,7 @@ SCUS-97179:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Car Models.
+    - VUKickstartHack # Fixes Bad Car Models.
 SCUS-97181:
   name: "Official U.S. PlayStation Magazine Demo Disc 055"
   region: "NTSC-U"
@@ -4588,13 +4588,13 @@ SCUS-97195:
   name: "Twisted Metal Black - Online"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Car Models.
+    - VUKickstartHack # Fixes Bad Car Models.
 SCUS-97196:
   name: "Twisted Metal Black - Online [Demo]"
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Car Models.
+    - VUKickstartHack # Fixes Bad Car Models.
 SCUS-97197:
   name: "War of the Monsters"
   region: "NTSC-U"
@@ -4608,7 +4608,7 @@ SCUS-97199:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97200:
   name: "Kiosk Demo Disc 2.05"
@@ -4642,7 +4642,7 @@ SCUS-97209:
   name: "Ratchet & Clank [E3 Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97210:
   name: "Sly Cooper and the Thievius Raccoonus [Demo]"
@@ -4699,7 +4699,7 @@ SCUS-97225:
   clampModes:
     vuClampMode: 2  # Fix other SPS.
   gameFixes:
-    - VU0KickstartHack # Fixes objects disappearing.
+    - VUKickstartHack # Fixes objects disappearing.
 SCUS-97226:
   name: "NCAA GameBreaker 2003 [Demo]"
   region: "NTSC-U"
@@ -4745,7 +4745,7 @@ SCUS-97240:
   name: "Ratchet & Clank [EB Games Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97241:
   name: "Official U.S. PlayStation Magazine Demo Disc 066"
@@ -4829,7 +4829,7 @@ SCUS-97265:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCUS-97266:
   name: "Final Fantasy XI [Disc1of2]"
   region: "NTSC-U"
@@ -4839,7 +4839,7 @@ SCUS-97268:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
   memcardFilters:
     - "SCUS-97268"
@@ -4861,12 +4861,12 @@ SCUS-97273:
   name: "Jak II [Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCUS-97274:
   name: "Jak II [Video Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCUS-97275:
   name: "SOCOM II - U.S. Navy SEALs"
   region: "NTSC-U"
@@ -4930,13 +4930,13 @@ SCUS-97322:
   name: "Ratchet & Clank 2 - Going Commando [Regular Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97323:
   name: "Ratchet & Clank 2 - Going Commando [Retail Employees Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97324:
   name: "Kiosk Demo Disc 2.11"
@@ -4972,7 +4972,7 @@ SCUS-97330:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCUS-97331:
   name: "Official U.S. PlayStation Magazine Demo Disc 078"
   region: "NTSC-U"
@@ -5024,7 +5024,7 @@ SCUS-97353:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
   memcardFilters:
     - "SCUS-97353"
@@ -5080,7 +5080,7 @@ SCUS-97374:
   name: "Ratchet & Clank 2 - Going Commando & Jak II [Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS (for both).
+    - VUKickstartHack # Fixes Character SPS (for both).
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97377:
   name: "Syphon Filter - The Omega Strain [Regular Demo]"
@@ -5099,7 +5099,7 @@ SCUS-97381:
   name: "Ratchet & Clank 2 - Going Commando [GameStop Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97382:
   name: "NBA Shootout 2004 [Demo]"
@@ -5171,18 +5171,18 @@ SCUS-97411:
   name: "Ratchet & Clank - Up Your Arsenal [Regular Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97412:
   name: "Jak 3 [Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCUS-97413:
   name: "Ratchet & Clank - Up Your Arsenal [Public Beta v1.0]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97414:
   name: "EyeToy - AntiGrav"
@@ -5233,7 +5233,7 @@ SCUS-97429:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
   memcardFilters:
     - "SCUS-97429"
     - "SCUS-97465"
@@ -5271,7 +5271,7 @@ SCUS-97440:
   name: "Jak and Daxter Trilogy [Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCUS-97441:
   name: "The Getaway - Black Monday [Demo]"
   region: "NTSC-U"
@@ -5346,7 +5346,7 @@ SCUS-97465:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97466:
   name: "Gretzky NHL '06"
@@ -5435,25 +5435,25 @@ SCUS-97485:
   name: "Ratchet - Deadlocked [Regular Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97486:
   name: "Jak X - Combat Racing [Regular Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCUS-97487:
   name: "Ratchet - Deadlocked [Public Beta v.1]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97488:
   name: "Jak X - Combat Racing [Public Beta v.1]"
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCUS-97489:
   name: "SOCOM 3 - U.S. Navy SEALs [Public Beta v.1]"
   region: "NTSC-U"
@@ -5520,7 +5520,7 @@ SCUS-97509:
   name: "Jak II [Greatest Hits]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCUS-97510:
   name: "ATV Off-Road Fury 2 [Greatest Hits]"
   region: "NTSC-U"
@@ -5541,7 +5541,7 @@ SCUS-97513:
   name: "Ratchet & Clank 2 - Going Commando [Greatest Hits]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97514:
   name: "ATV Off-Road Fury 3 [Greatest Hits]"
@@ -5553,7 +5553,7 @@ SCUS-97516:
   name: "Jak 3 [Greatest Hits]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCUS-97517:
   name: "Killzone [Greatest Hits]"
   region: "NTSC-U"
@@ -5563,7 +5563,7 @@ SCUS-97518:
   name: "Ratchet & Clank - Up Your Arsenal [Greatest Hits]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97519:
   name: "Sly 2 - Band of Thieves [Greatest Hits]"
@@ -5641,7 +5641,7 @@ SCUS-97555:
   name: "Jak and Daxter Complete Trilogy [Demo]"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS (for all 3 games).
+    - VUKickstartHack # Fixes Character SPS (for all 3 games).
 SCUS-97556:
   name: "MLB '07 - The Show"
   region: "NTSC-U"
@@ -5653,7 +5653,7 @@ SCUS-97558:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCUS-97560:
   name: "SOCOM - U.S. Navy SEALs - Combined Assault [Demo]"
   region: "NTSC-U"
@@ -5736,7 +5736,7 @@ SCUS-97615:
   name: "Ratchet & Clank - Size Matters"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCUS-97616:
   name: "SingStar 80's"
   region: "NTSC-U"
@@ -6119,7 +6119,7 @@ SLED-53723:
   name: "Peter Jackson's King Kong [Demo]"
   region: "PAL-E"
   gameFixes:
-    - VU0KickstartHack # Fixes bad polygons on characters.
+    - VUKickstartHack # Fixes bad polygons on characters.
 SLED-53745:
   name: "Total Overdose [Demo]"
   region: "PAL-M5"
@@ -6831,7 +6831,7 @@ SLES-50306:
   region: "PAL-M4"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes lightning effects.
+    - VUKickstartHack # Fixes lightning effects.
 SLES-50310:
   name: "Freak Out"
   region: "PAL-E"
@@ -7196,7 +7196,7 @@ SLES-50540:
   name: "Simpsons Road Rage"
   region: "PAL-E"
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Character Models.
+    - VUKickstartHack # Fixes Bad Character Models.
 SLES-50541:
   name: "Capcom vs. SNK 2 - Mark of the Millennium"
   region: "PAL-E"
@@ -7323,7 +7323,7 @@ SLES-50628:
   name: "Simpsons Road Rage"
   region: "PAL-M5"
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Character Models.
+    - VUKickstartHack # Fixes Bad Character Models.
 SLES-50630:
   name: "Dragon Rage"
   region: "PAL-E"
@@ -8079,13 +8079,13 @@ SLES-50984:
   region: "PAL-E"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes minor random car SPS.
+    - VUKickstartHack # Fixes minor random car SPS.
 SLES-50985:
   name: "Gumball 3000"
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes minor random car SPS.
+    - VUKickstartHack # Fixes minor random car SPS.
 SLES-50986:
   name: "Twin Caliber"
   region: "PAL-M4"
@@ -8398,7 +8398,7 @@ SLES-51144:
   region: "PAL-M7"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes SPS.
+    - VUKickstartHack # Fixes SPS.
 SLES-51145:
   name: "Monopoly Party"
   region: "PAL-M5"
@@ -8609,12 +8609,12 @@ SLES-51250:
   region: "PAL-E"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes SPS.
+    - VUKickstartHack # Fixes SPS.
 SLES-51251:
   name: "Shox - Rally Reinvented"
   region: "PAL-E"
   gameFixes:
-    - VU0KickstartHack # Fixes SPS.
+    - VUKickstartHack # Fixes SPS.
 SLES-51252:
   name: "Lord of the Rings, The - The Two Towers"
   region: "PAL-M3"
@@ -9378,7 +9378,7 @@ SLES-51696:
   region: "PAL-M5"
   gameFixes:
     - EETimingHack # Fixes hang before going ingame.
-    - VU0KickstartHack # Fixes SPS.
+    - VUKickstartHack # Fixes SPS.
 SLES-51697:
   name: "SSX 3"
   region: "PAL-M5"
@@ -9840,7 +9840,7 @@ SLES-51917:
   roundModes:
     eeRoundMode: 0  # Fixes SPS with water in some places.
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLES-51918:
   name: "Prince of Persia - The Sands of Time"
   region: "PAL-M5"
@@ -10018,7 +10018,7 @@ SLES-52001:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes crashes and broken graphics.
+    - VUKickstartHack # Fixes crashes and broken graphics.
 SLES-52002:
   name: "Rogue Ops"
   region: "PAL-M6"
@@ -11020,7 +11020,7 @@ SLES-52568:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes bad Geometry.
-    - VU0KickstartHack # Fixes loading hang.
+    - VUKickstartHack # Fixes loading hang.
 SLES-52569:
   name: "Spyro - A Hero's Tail"
   region: "PAL-M6"
@@ -11441,7 +11441,7 @@ SLES-52755:
   name: "Blood Will Tell"
   region: "PAL-M5"
   gameFixes:
-    - VU0KickstartHack # Fixes main character model SPS.
+    - VUKickstartHack # Fixes main character model SPS.
 SLES-52760:
   name: "Pro Evolution Soccer 4"
   region: "PAL-M4"
@@ -12661,12 +12661,12 @@ SLES-53393:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLES-53396:
   name: "Spartan Total Warrior"
   region: "PAL-M3"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLES-53398:
   name: "Zombie Zone"
   region: "PAL-E"
@@ -13419,7 +13419,7 @@ SLES-53701:
   region: "PAL-M5"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes loading hang.
+    - VUKickstartHack # Fixes loading hang.
 SLES-53702:
   name: "Resident Evil 4"
   region: "PAL-M5"
@@ -13429,17 +13429,17 @@ SLES-53703:
   region: "PAL-M10"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes bad polygons on characters.
+    - VUKickstartHack # Fixes bad polygons on characters.
 SLES-53704:
   name: "King Kong, Peter Jackson's - The Official Game of the Movie"
   region: "PAL-R"
   gameFixes:
-    - VU0KickstartHack # Fixes bad polygons on characters.
+    - VUKickstartHack # Fixes bad polygons on characters.
 SLES-53705:
   name: "King Kong, Peter Jackson's - The Official Game of the Movie"
   region: "PAL-PL-E"
   gameFixes:
-    - VU0KickstartHack # Fixes bad polygons on characters.
+    - VUKickstartHack # Fixes bad polygons on characters.
 SLES-53706:
   name: "Disney's The Chronicles of Narnia - The Lion, The Witch, and The Wardrobe"
   region: "PAL-E"
@@ -13849,7 +13849,7 @@ SLES-53904:
   region: "PAL-M5"
   gameFixes:
     - GIFFIFOHack # Fixes corrupted graphics in the menus.
-    - VU0KickstartHack # Fixes TLB misses and collision bugs.
+    - VUKickstartHack # Fixes TLB misses and collision bugs.
 SLES-53906:
   name: "50cent - Bulletproof"
   region: "PAL-F"
@@ -14602,7 +14602,7 @@ SLES-54307:
   region: "PAL-M6"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes bad polygons on characters.
+    - VUKickstartHack # Fixes bad polygons on characters.
 SLES-54308:
   name: "Phantasy Star Universe"
   region: "PAL-M3"
@@ -15353,33 +15353,33 @@ SLES-54644:
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLES-54645:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-F"
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLES-54646:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-G"
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLES-54647:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-I"
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLES-54648:
   name: "Valkyrie Profile 2 - Silmeria"
   region: "PAL-S"
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLES-54653:
   name: "Freak Out - Extreme Freeride"
   region: "PAL-M5"
@@ -16201,7 +16201,7 @@ SLES-55019:
   name: "Ratchet & Clank - Size Matters"
   region: "PAL-M13"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLES-55020:
   name: "Die Simpsons - Das Spiel"
   region: "PAL-G"
@@ -17425,14 +17425,14 @@ SLES-82028:
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLES-82029:
   name: "Star Ocean 3 - Till the End of Time [Disc2of2]"
   region: "PAL-E"
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
   memcardFilters:
     - "SLES-82028"
 SLES-82030:
@@ -18745,7 +18745,7 @@ SLPM-62132:
   clampModes:
     vuClampMode: 2  # Fixes minimap HUD.
   gameFixes:
-    - VU0KickstartHack # Fixes missing geometry.
+    - VUKickstartHack # Fixes missing geometry.
 SLPM-62133:
   name: "Bloody Roar 3 [Konami The Best]"
   region: "NTSC-J"
@@ -20258,7 +20258,7 @@ SLPM-62737:
   name: "Rally Shox & Freestyle Motorcross [EA Best Hits]"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes SPS.
+    - VUKickstartHack # Fixes SPS.
 SLPM-62739:
   name: "Suro Genjin"
   region: "NTSC-J"
@@ -20989,7 +20989,7 @@ SLPM-65209:
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLPM-65210:
   name: "Chou Battle Houshin - Bundle #1"
   region: "NTSC-J"
@@ -21674,14 +21674,14 @@ SLPM-65438:
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLPM-65439:
   name: "Star Ocean 3 [Director's Cut] [Disc2of2]"
   region: "NTSC-J"
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
   memcardFilters:
     - "SLPM-65438"
 SLPM-65441:
@@ -21943,7 +21943,7 @@ SLPM-65529:
   name: "Mission Impossible - Operation Surma"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes crashes and broken graphics.
+    - VUKickstartHack # Fixes crashes and broken graphics.
 SLPM-65530:
   name: "J-League Pro Soccer Club - Tsukuku 2004"
   region: "NTSC-J"
@@ -22477,7 +22477,7 @@ SLPM-65701:
   name: "Ghost Hunter"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Missing Graphics.
+    - VUKickstartHack # Fixes Missing Graphics.
 SLPM-65702:
   name: "Sangokushi Senki [Koei Collection Series]"
   region: "NTSC-J"
@@ -22795,14 +22795,14 @@ SLPM-65800:
   region: "NTSC-J"
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLPM-65801:
   name: "Crash Bandicoot 5"
   region: "NTSC-J"
   compat: 5
   gameFixes:
     - XGKickHack # Fixes bad geometry.
-    - VU0KickstartHack # Fixes loading hang.
+    - VUKickstartHack # Fixes loading hang.
 SLPM-65802:
   name: "Def Jam - Vendetta [EA Best Hits]"
   region: "NTSC-J"
@@ -24022,7 +24022,7 @@ SLPM-66211:
   name: "King Kong, Peter Jackson's - The Official Game of the Movie"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes bad polygons on characters.
+    - VUKickstartHack # Fixes bad polygons on characters.
 SLPM-66212:
   name: "Sega Rally 2006"
   region: "NTSC-J"
@@ -24674,7 +24674,7 @@ SLPM-66419:
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLPM-66420:
   name: "Front Mission 4 [Ultimate Hits]"
   region: "NTSC-J"
@@ -24754,7 +24754,7 @@ SLPM-66444:
   name: "Spartan - Total Warrior"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLPM-66445:
   name: "Persona 3"
   region: "NTSC-J"
@@ -24876,14 +24876,14 @@ SLPM-66478:
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLPM-66479:
   name: "Star Ocean 3 - Till the End of Time [Ultimate Hits] [Disc2of2]"
   region: "NTSC-J"
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
   memcardFilters:
     - "SLPM-66478"
 SLPM-66480:
@@ -25878,7 +25878,7 @@ SLPM-66782:
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLPM-66783:
   name: "Idol Janshi Suchie-Pai 4 [Limited Edition]"
   region: "NTSC-J"
@@ -26982,7 +26982,7 @@ SLPS-20040:
   name: "MotoGP"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Crash On Load
+    - VUKickstartHack # Fixes Crash On Load
 SLPS-20041:
   name: "Mahjong Goku Taisei"
   region: "NTSC-J"
@@ -31559,7 +31559,7 @@ SLUS-20058:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes crash on load.
+    - VUKickstartHack # Fixes crash on load.
 SLUS-20062:
   name: "Grand Theft Auto III"
   region: "NTSC-U"
@@ -31798,7 +31798,7 @@ SLUS-20139:
   name: "Simpsons, The - Road Rage"
   region: "NTSC-U"
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Character Models.
+    - VUKickstartHack # Fixes Bad Character Models.
 SLUS-20140:
   name: "NHL Hitz 2002"
   region: "NTSC-U"
@@ -31976,7 +31976,7 @@ SLUS-20184:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes lightning effects.
+    - VUKickstartHack # Fixes lightning effects.
 SLUS-20186:
   name: "Monster Jam - Maximum Destruction"
   region: "NTSC-U"
@@ -32475,7 +32475,7 @@ SLUS-20305:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Bad Character Models.
+    - VUKickstartHack # Fixes Bad Character Models.
 SLUS-20306:
   name: "Contra - Shattered Soldier"
   region: "NTSC-U"
@@ -32889,7 +32889,7 @@ SLUS-20400:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes crashes and broken graphics.
+    - VUKickstartHack # Fixes crashes and broken graphics.
 SLUS-20402:
   name: "Britney's Dance Beat"
   region: "NTSC-U"
@@ -33285,7 +33285,7 @@ SLUS-20488:
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLUS-20489:
   name: "Whirl Tour"
   region: "NTSC-U"
@@ -33460,7 +33460,7 @@ SLUS-20533:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes SPS.
+    - VUKickstartHack # Fixes SPS.
 SLUS-20534:
   name: "Cabela's Big Game Hunter"
   region: "NTSC-U"
@@ -34419,7 +34419,7 @@ SLUS-20763:
   roundModes:
     eeRoundMode: 0  # Fixes SPS with water in some places.
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLUS-20764:
   name: "Bombastic"
   region: "NTSC-U"
@@ -34488,7 +34488,7 @@ SLUS-20782:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes main character model SPS.
+    - VUKickstartHack # Fixes main character model SPS.
 SLUS-20784:
   name: "Italian Job, The"
   region: "NTSC-U"
@@ -34911,7 +34911,7 @@ SLUS-20891:
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes character SPS.
+    - VUKickstartHack # Fixes character SPS.
   memcardFilters:
     - "SLUS-20488"
 SLUS-20892:
@@ -34990,7 +34990,7 @@ SLUS-20909:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes bad geometry.
-    - VU0KickstartHack # Fixes loading hang.
+    - VUKickstartHack # Fixes loading hang.
 SLUS-20910:
   name: "Test Drive - Eve of Destruction"
   region: "NTSC-U"
@@ -35390,7 +35390,7 @@ SLUS-20993:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Missing Graphics.
+    - VUKickstartHack # Fixes Missing Graphics.
 SLUS-20994:
   name: "Full Metal Alchemist and The Broken Angel"
   region: "NTSC-U"
@@ -35840,7 +35840,7 @@ SLUS-21095:
   compat: 5
   gameFixes:
     - GIFFIFOHack # Fixes corrupted graphics in the menus.
-    - VU0KickstartHack # Fixes TLB misses and collision bugs.
+    - VUKickstartHack # Fixes TLB misses and collision bugs.
 SLUS-21096:
   name: "Ape Escape - Pumped & Primed"
   region: "NTSC-U"
@@ -36327,7 +36327,7 @@ SLUS-21212:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLUS-21213:
   name: "Madden NFL '06"
   region: "NTSC-U"
@@ -36587,7 +36587,7 @@ SLUS-21262:
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLUS-21263:
   name: "Romancing SaGa"
   region: "NTSC-U"
@@ -36623,7 +36623,7 @@ SLUS-21268:
   clampModes:
     vuClampMode: 2  # Fixes minimap HUD.
   gameFixes:
-    - VU0KickstartHack # Fixes missing geometry.
+    - VUKickstartHack # Fixes missing geometry.
 SLUS-21269:
   name: "Bully"
   region: "NTSC-U"
@@ -36643,7 +36643,7 @@ SLUS-21272:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes loading hang.
+    - VUKickstartHack # Fixes loading hang.
 SLUS-21273:
   name: "Matrix, The - Path of Neo"
   region: "NTSC-U"
@@ -36802,7 +36802,7 @@ SLUS-21311:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes bad polygons on characters.
+    - VUKickstartHack # Fixes bad polygons on characters.
 SLUS-21312:
   name: "Wallace & Gromit - The Curse of the Were-Rabbit"
   region: "NTSC-U"
@@ -37451,7 +37451,7 @@ SLUS-21452:
   compat: 5
   gameFixes:
     - VuAddSubHack
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLUS-21453:
   name: "Disney's Meet the Robinsons"
   region: "NTSC-U"
@@ -37852,7 +37852,7 @@ SLUS-21576:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes bad polygons on characters.
+    - VUKickstartHack # Fixes bad polygons on characters.
 SLUS-21577:
   name: "Odin Sphere"
   region: "NTSC-U"
@@ -38342,7 +38342,7 @@ SLUS-21689:
   region: "NTSC-U"
   compat: 4
   gameFixes:
-    - VU0KickstartHack # Fixes SPS.
+    - VUKickstartHack # Fixes SPS.
 SLUS-21690:
   name: "Alone in the Dark"
   region: "NTSC-U"
@@ -39739,7 +39739,7 @@ SLUS-29082:
   roundModes:
     eeRoundMode: 0  # Fixes SPS with water in some places.
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SLUS-29083:
   name: "Maximo vs. The Army of Zin [Demo]"
   region: "NTSC-U"
@@ -39785,7 +39785,7 @@ SLUS-29101:
   region: "NTSC-U"
   gameFixes:
     - XGKickHack # Fixes bad geometry.
-    - VU0KickstartHack # Fixes loading hang (only for Crash).
+    - VUKickstartHack # Fixes loading hang (only for Crash).
 SLUS-29104:
   name: "Galactic Wrestling - Featuring Ultimate Muscle [Demo]"
   region: "NTSC-U"
@@ -40046,7 +40046,7 @@ TCES-52456:
   name: "Ratchet and Clank 3 Beta Trial Code"
   region: "PAL-E"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
     - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 TCES-52582:
   name: "Everybody's Golf 4 Beta Trial Code"
@@ -40064,7 +40064,7 @@ TCES-53286:
   region: "PAL-E"
   compat: 5
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 TCPS-10058:
   name: "Densha de Go! Shinkansen [with Controller]"
   region: "NTSC-J"

@@ -40,7 +40,7 @@ enum GamefixId
 	Fix_GIFFIFO,
 	Fix_GoemonTlbMiss,
 	Fix_Ibit,
-	Fix_VU0Kickstart,
+	Fix_VUKickstart,
 	Fix_RatchetDyna,
 
 	GamefixId_COUNT
@@ -349,7 +349,7 @@ struct Pcsx2Config
 			GIFFIFOHack : 1,			// Enabled the GIF FIFO (more correct but slower)
 			GoemonTlbHack : 1,			// Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
 			IbitHack : 1,				// I bit hack. Needed to stop constant VU recompilation in some games
-			VU0KickstartHack : 1,		// Gives new VU programs a slight head start and runs VU's ahead of EE to avoid VU register reading/writing issues
+			VUKickstartHack : 1,		// Gives new VU programs a slight head start and runs VU's ahead of EE to avoid VU register reading/writing issues
 			RatchetDynaHack : 1;		// Dynamically patch bad COP2 timing in EE program as it cannot be patched traditionally
 		BITFIELD_END
 

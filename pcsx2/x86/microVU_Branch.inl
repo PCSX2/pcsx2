@@ -15,7 +15,6 @@
 
 #pragma once
 
-extern bool  doEarlyExit (microVU& mVU);
 extern void  mVUincCycles(microVU& mVU, int x);
 extern void* mVUcompile  (microVU& mVU, u32 startPC, uptr pState);
 extern void* mVUcompileSingleInstruction(microVU& mVU, u32 startPC, uptr pState, microFlagCycles& mFC);
@@ -56,10 +55,8 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
 		if (mVUinfo.doXGKICK && xPC >= mVUinfo.XGKICKPC) {
 			mVU_XGKICK_DELAY(mVU);
 		}
-		if (doEarlyExit(mVU)) {
-			if (!isVU1) xFastCall((void*)mVU0clearlpStateJIT);
-			else		xFastCall((void*)mVU1clearlpStateJIT);
-		}
+		if (!isVU1) xFastCall((void*)mVU0clearlpStateJIT);
+		else		xFastCall((void*)mVU1clearlpStateJIT);
 	}
 
 	// Save P/Q Regs
@@ -154,12 +151,10 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 		if (mVUinfo.doXGKICK) {
 			mVU_XGKICK_DELAY(mVU);
 		}
-		if (doEarlyExit(mVU)) {
-			if (!isVU1)
-				xFastCall((void*)mVU0clearlpStateJIT);
-			else
-				xFastCall((void*)mVU1clearlpStateJIT);
-		}
+		if (!isVU1)
+			xFastCall((void*)mVU0clearlpStateJIT);
+		else
+			xFastCall((void*)mVU1clearlpStateJIT);
 	}
 
 	// Save P/Q Regs
