@@ -533,9 +533,6 @@
     <ClCompile Include="IopMem.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
-    <ClCompile Include="IopSif.cpp">
-      <Filter>System\Ps2\Iop</Filter>
-    </ClCompile>
     <ClCompile Include="IopSio2.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
@@ -1214,12 +1211,6 @@
     </ClCompile>
     <ClCompile Include="USB\usb-mic\usb-mic-singstar.cpp">
       <Filter>System\Ps2\USB\usb-mic</Filter>
-    </ClCompile>
-    <ClCompile Include="..\3rdparty\jpgd\jpgd.cpp">
-      <Filter>System\Ps2\USB\usb-eyetoy\jpgd</Filter>
-    </ClCompile>
-    <ClCompile Include="..\3rdparty\jpgd\jpge.cpp">
-      <Filter>System\Ps2\USB\usb-eyetoy\jpgd</Filter>
     </ClCompile>
     <ClCompile Include="USB\usb-eyetoy\jo_mpeg.cpp">
       <Filter>System\Ps2\USB\usb-eyetoy</Filter>
@@ -2250,12 +2241,6 @@
     </ClInclude>
     <ClInclude Include="USB\usb-eyetoy\videodeviceproxy.h">
       <Filter>System\Ps2\USB\usb-eyetoy</Filter>
-    </ClInclude>
-    <ClInclude Include="..\3rdparty\jpgd\jpgd.h">
-      <Filter>System\Ps2\USB\usb-eyetoy\jpgd</Filter>
-    </ClInclude>
-    <ClInclude Include="..\3rdparty\jpgd\jpge.h">
-      <Filter>System\Ps2\USB\usb-eyetoy\jpgd</Filter>
     </ClInclude>
     <ClInclude Include="USB\usb-hid\hidproxy.h">
       <Filter>System\Ps2\USB\usb-hid</Filter>
