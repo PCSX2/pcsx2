@@ -1065,6 +1065,63 @@ SCCS-40022:
 SCED-50041:
   name: "Tekken Tag Tournament [Demo]"
   region: "PAL-E"
+SCED-50065:
+  name: "Official PlayStation 2 Magazine Demo 1"
+  region: "PAL-M5"
+SCED-50066:
+  name: "Official PlayStation 2 Magazine Demo 2"
+  region: "PAL-M5"
+SCED-50067:
+  name: "Official PlayStation 2 Magazine Demo 3"
+  region: "PAL-M5"
+SCED-50140:
+  name: "Official PlayStation 2 Magazine Demo 5"
+  region: "PAL-M5"
+SCED-50141:
+  name: "Official PlayStation 2 Magazine Demo 6"
+  region: "PAL-M5"
+SCED-50142:
+  name: "Official PlayStation 2 Magazine Demo 7"
+  region: "PAL-M5"
+SCED-50143:
+  name: "Official PlayStation 2 Magazine Demo 8"
+  region: "PAL-M5"
+SCED-50144:
+  name: "Official PlayStation 2 Magazine Demo 9"
+  region: "PAL-M5"
+SCED-50145:
+  name: "Official PlayStation 2 Magazine Demo 10"
+  region: "PAL-M5"
+SCED-50146:
+  name: "Official PlayStation 2 Magazine Demo 11"
+  region: "PAL-M5"
+SCED-50147:
+  name: "Official PlayStation 2 Magazine Demo 12"
+  region: "PAL-M5"
+SCED-50148:
+  name: "Official PlayStation 2 Magazine Demo 13"
+  region: "PAL-M5"
+SCED-50149:
+  name: "Official PlayStation 2 Magazine Demo 14"
+  region: "PAL-M5"
+SCED-50150:
+  name: "Official PlayStation 2 Magazine Demo 15"
+  region: "PAL-M5"
+SCED-50151:
+  name: "Official PlayStation 2 Magazine Demo 16"
+  region: "PAL-M5"
+SCED-50152:
+  name: "Official PlayStation 2 Magazine Demo 17"
+  region: "PAL-M5"
+SCED-50153:
+  name: "Official PlayStation 2 Magazine Demo 18" # Australian
+  region: "PAL-M5"
+SCED-50154:
+  name: "Official PlayStation 2 Magazine Demo 19"
+  region: "PAL-M5"
+SCED-50162:
+  name: "Official PS2 Magazine UK Greatest Hits Vol 2: Special Ed: A-Z of PS2"
+  region: "PAL-M5"
 SCED-50163:
   name: "PlayStation 2 Greatest Hits Vol.3 [Demo]"
   region: "PAL-M5"
@@ -1074,32 +1131,182 @@ SCED-50254:
 SCED-50286:
   name: "Red Faction [Demo]"
   region: "PAL-Unk"
+SCED-50381:
+  name: "Official PlayStation 2 Magazine Demo 8"
+  region: "PAL-M5"
+SCED-50404:
+  name: "Official PlayStation 2 Magazine Demo 10" # German
+  region: "PAL-E-G"
+SCED-50460:
+  name: "Official PlayStation 2 Magazine Demo 11" # German
+  region: "PAL-E-G"
+SCED-50463:
+  name: "Official PlayStation 2 Magazine Demo 11" # French
+  region: "PAL-M5"
+SCED-50506:
+  name: "Official PlayStation 2 Magazine Demo 12" # German
+  region: "PAL-M5"
+SCED-50543:
+  name: "Official PlayStation 2 Magazine Demo 12" # French
+  region: "PAL-M5"
+SCED-50593:
+  name: "Official PlayStation 2 Magazine Demo 13" # French
+  region: "PAL-M5"
+SCED-50594:
+  name: "Official PlayStation 2 Magazine Demo 13" # German
+  region: "PAL-G"
+SCED-50610:
+  name: "Official PlayStation 2 Magazine Demo 14" # Australian
+  region: "PAL-M5"
 SCED-50614:
   name: "Jak and Daxter: The Precursor Legacy [Demo]"
   region: "PAL-Unk"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
+SCED-50622:
+  name: "Official PlayStation 2 Magazine Demo 14" # German
+  region: "PAL-E-G"
 SCED-50642:
   name: "Final Fantasy X [Demo] [Final Fantasy VI PS1 - Bonus Disc]"
   region: "PAL-E"
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
+SCED-50675:
+  name: "Official PlayStation 2 Magazine Demo 16"
+  region: "PAL-M5"
+SCED-50685:
+  name: "Official PlayStation 2 Magazine Demo 15"
+  region: "PAL-E-G"
+SCED-50697:
+  name: "Official PlayStation 2 Magazine Demo 17" # German
+  region: "PAL-E-G"
+SCED-50698:
+  name: "Official PlayStation 2 Magazine Demo 18" # German
+  region: "PAL-E-G"
+SCED-50699:
+  name: "Official PlayStation 2 Magazine Demo 20" # German
+  region: "PAL-E-G"
+SCED-50700:
+  name: "Official PlayStation 2 Magazine Demo 21" # German
+  region: "PAL-E-G"
+SCED-50701:
+  name: "Official PlayStation 2 Magazine Demo 22" # German
+  region: "PAL-E-G"
+SCED-50736:
+  name: "Official PlayStation 2 Magazine Demo 16" # German
+  region: "PAL-E-G"
+SCED-50742:
+  name: "Official PlayStation 2 Magazine Demo 21"
+  region: "PAL-M5"
+SCED-50743:
+  name: "Official PlayStation 2 Magazine Demo 20"
+  region: "PAL-M5"
+SCED-50744:
+  name: "Official PlayStation 2 Magazine Demo 22"
+  region: "PAL-M5"
+SCED-50745:
+  name: "Official PlayStation 2 Magazine Demo 23"
+  region: "PAL-M5"
+SCED-50746:
+  name: "Official PlayStation 2 Magazine Demo 24"
+  region: "PAL-M5"
+SCED-50747:
+  name: "Official PlayStation 2 Magazine Demo 25"
+  region: "PAL-M5"
 SCED-50748:
   name: "Official PlayStation 2 Magazine Demo 26"
   region: "PAL-M5"
+SCED-50749:
+  name: "Official PlayStation 2 Magazine Demo 27"
+  region: "PAL-M5"
+SCED-50750:
+  name: "Official PlayStation 2 Magazine Demo 28"
+  region: "PAL-M5"
 SCED-50781:
   name: "Destruction Derby Arenas [Beta]"
+  region: "PAL-M5"
+SCED-50825:
+  name: "Official PlayStation 2 Magazine Demo 18"
   region: "PAL-M5"
 SCED-50907:
   name: "Final Fantasy X [Bonus Disc - Beyond Final Fantasy]"
   region: "PAL-Unk"
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
+SCED-50945:
+  name: "Official PlayStation 2 Magazine Demo 20"
+  region: "PAL-M5"
+SCED-50989:
+  name: "Official PlayStation 2 Magazine Demo 21"
+  region: "PAL-M5"
+SCED-51016:
+  name: "Official PlayStation 2 Magazine Demo 22/23"
+  region: "PAL-M5"
+SCED-51147:
+  name: "Official PlayStation 2 Magazine Demo 24"
+  region: "PAL-M5"
+SCED-51185:
+  name: "Official PlayStation 2 Magazine Demo 24" # German
+  region: "PAL-E-G"
+SCED-51262:
+  name: "Official PlayStation 2 Magazine Demo 25" # German
+  region: "PAL-E-G"
+SCED-51279:
+  name: "Official PlayStation 2 Magazine Demo 25"
+  region: "PAL-M5"
+SCED-51319:
+  name: "Official PlayStation 2 Magazine Demo 27" # German
+  region: "PAL-E-G"
+SCED-51359:
+  name: "Official PlayStation 2 Magazine Demo 27"
+  region: "PAL-M5"
+SCED-51376:
+  name: "Official PlayStation 2 Magazine Demo 28" # German
+  region: "PAL-E-G"
+SCED-51384:
+  name: "Official PlayStation 2 Magazine Demo 29"
+  region: "PAL-M5"
+SCED-51432:
+  name: "Official PlayStation 2 Magazine Demo 29" # German
+  region: "PAL-E-G"
+SCED-51440:
+  name: "Official PlayStation 2 Magazine Demo 29"
+  region: "PAL-M5"
+SCED-51457:
+  name: "Official PlayStation 2 Magazine Demo 30"
+  region: "PAL-M5"
+SCED-51483:
+  name: "Official PlayStation 2 Magazine Demo 30" # German
+  region: "PAL-E-G"
+SCED-51485:
+  name: "Official PlayStation 2 Magazine Demo 30" # Australian
+  region: "PAL-E"
+SCED-51489:
+  name: "Official PlayStation 2 Magazine Demo 30"
+  region: "PAL-M5"
+SCED-51529:
+  name: "Official PlayStation 2 Magazine Demo 31"
+  region: "PAL-M5"
+SCED-51530:
+  name: "Official PlayStation 2 Magazine Demo 32"
+  region: "PAL-M5"
 SCED-51531:
   name: "Official PlayStation 2 Magazine Demo 33"
   region: "PAL-M5"
+SCED-51532:
+  name: "Official PlayStation 2 Magazine Demo 34"
+  region: "PAL-M5"
+SCED-51533:
+  name: "Official PlayStation 2 Magazine Demo 35"
+  region: "PAL-M5"
+SCED-51534:
+  name: "Official PlayStation 2 Magazine Demo 36"
+  region: "PAL-M5"
 SCED-51535:
   name: "Official PlayStation 2 Magazine Demo 40"
+  region: "PAL-M5"
+SCED-51536:
+  name: "Official PlayStation 2 Magazine Demo 41"
   region: "PAL-M5"
 SCED-51537:
   name: "Official PlayStation 2 Magazine Demo 37"
@@ -1107,18 +1314,66 @@ SCED-51537:
 SCED-51538:
   name: "Official PlayStation 2 Magazine Demo 38"
   region: "PAL-M5"
+SCED-51539:
+  name: "Official PlayStation 2 Magazine Demo 42"
+  region: "PAL-M5"
 SCED-51540:
   name: "Official PlayStation 2 Magazine Demo 39"
   region: "PAL-M5"
-SCED-51568:
+SCED-51556:
+  name: "Official PlayStation 2 Magazine Demo 31"
+  region: "PAL-M5"
+SCED-51558:
+  name: "Official PlayStation 2 Magazine Demo 32"
+  region: "PAL-M5"
+SCED-51559:
   name: "Official PlayStation 2 Magazine Demo 33"
+  region: "PAL-M5"
+SCED-51560:
+  name: "Official PlayStation 2 Magazine Demo 34" # French
+  region: "PAL-F"
+SCED-51561:
+  name: "Official PlayStation 2 Magazine Demo 35"
+  region: "PAL-M5"
+SCED-51563:
+  name: "Official PlayStation 2 Magazine Demo 37"
+  region: "PAL-M5"
+SCED-51565:
+  name: "Official PlayStation 2 Magazine Demo 40"
+  region: "PAL-M5"
+SCED-51566:
+  name: "Official PlayStation 2 Magazine Demo 31" # German
+  region: "PAL-E-G"
+SCED-51567:
+  name: "Official PlayStation 2 Magazine Demo 32" # German
+  region: "PAL-E-G"
+SCED-51568:
+  name: "Official PlayStation 2 Magazine Demo 33" # German
   region: "PAL-E-G"
   roundModes:
     vuRoundMode: 0  # Fixes SPS (Primal).
   clampModes:
     vuClampMode: 2  # Fixes other SPS (Primal).
+SCED-51569:
+  name: "Official PlayStation 2 Magazine Demo 34" # German
+  region: "PAL-E-G"
+SCED-51570:
+  name: "Official PlayStation 2 Magazine Demo 35" # German
+  region: "PAL-E-G"
+SCED-51571:
+  name: "Official PlayStation 2 Magazine Demo 36" # German
+  region: "PAL-E-G"
+SCED-51572:
+  name: "Official PlayStation 2 Magazine Demo 37" # German
+  region: "PAL-E-G"
+SCED-51573:
+  name: "Official PlayStation 2 Magazine Demo 38" # German
+  region: "PAL-E-G"
+SCED-51575:
+  name: "Official PlayStation 2 Magazine Demo 40" # German
+  region: "PAL-E-G"
 SCED-51657:
-  name: "Official Playstation Magazine - Demo Disc 33"
+  name: "Official Playstation Magazine Demo 33"
   region: "PAL-Unk"
   compat: 5
   patches:
@@ -1130,37 +1385,175 @@ SCED-51700:
   region: "PAL-M5"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
+SCED-51935:
+  name: "Official PlayStation 2 Magazine Demo 38" # German
+  region: "PAL-E-G"
+SCED-52037:
+  name: "Official PlayStation 2 Magazine Demo 39" # German
+  region: "PAL-E-G"
 SCED-52049:
   name: "Dog's Life [Demo]"
   region: "PAL-M11"
   compat: 5
   clampModes:
     vuClampMode: 3  # Fixes minor SPS on characters.
+SCED-52051:
+  name: "Official PlayStation 2 Magazine Demo 43"
+  region: "PAL-M5"
+SCED-52052:
+  name: "Official PlayStation 2 Magazine Demo 44"
+  region: "PAL-M5"
 SCED-52053:
-  name: "Official Playstation Magazine Demo Disc 40"
+  name: "Official Playstation 2 Magazine Demo 40"
   region: "PAL-PT"
+SCED-52054:
+  name: "Official PlayStation 2 Magazine Demo 40"
+  region: "PAL-M5"
 SCED-52057:
   name: "Official Playstation Magazine Demo Disc 40"
   region: "PAL-IT"
 SCED-52260:
   name: "Forbidden Siren [Demo]"
   region: "PAL-M5"
+SCED-52068:
+  name: "Official PlayStation 2 Magazine Demo 41" # German
+  region: "PAL-E-G"
+SCED-52069:
+  name: "Official PlayStation 2 Magazine Demo 42" # German
+  region: "PAL-E-G"
+SCED-52076:
+  name: "Official PlayStation 2 Magazine Demo 49" # German
+  region: "PAL-G"
+SCED-52080:
+  name: "Official PlayStation 2 Magazine Demo 53" # German
+  region: "PAL-E-G"
+SCED-52081:
+  name: "Official PlayStation 2 Magazine Demo 41"
+  region: "PAL-M5"
+SCED-52083:
+  name: "Official PlayStation 2 Magazine Demo 43"
+  region: "PAL-M5"
+SCED-52085:
+  name: "Official PlayStation 2 Magazine Demo 45"
+  region: "PAL-M5"
+SCED-52087:
+  name: "Official PlayStation 2 Magazine Demo 47" # German
+  region: "PAL-E-G"
+SCED-52088:
+  name: "Official PlayStation 2 Magazine Demo 48"
+  region: "PAL-M5"
+SCED-52090:
+  name: "Official PlayStation 2 Magazine Demo 50" # German
+  region: "PAL-E-G"
+SCED-52091:
+  name: "Official PlayStation 2 Magazine Demo 51"
+  region: "PAL-M5"
+SCED-52092:
+  name: "Official PlayStation 2 Magazine Demo 52" # German
+  region: "PAL-E-G"
+SCED-52120:
+  name: "Official PlayStation 2 Magazine Demo 55" # German
+  region: "PAL-E-G"
+SCED-52160:
+  name: "Official PlayStation 2 Magazine Demo 45"
+  region: "PAL-M5"
+SCED-52161:
+  name: "Official PlayStation 2 Magazine Demo 46"
+  region: "PAL-M5"
+SCED-52162:
+  name: "Official PlayStation 2 Magazine Demo 47"
+  region: "PAL-M5"
+SCED-52163:
+  name: "Official PlayStation 2 Magazine Demo 48"
+  region: "PAL-M5"
+SCED-52164:
+  name: "Official PlayStation 2 Magazine Demo 49"
+  region: "PAL-M5"
+SCED-52165:
+  name: "Official PlayStation 2 Magazine Demo 50" # United Kingdom
+  region: "PAL-E"
+SCED-52166:
+  name: "Official PlayStation 2 Magazine Demo 51" # United Kingdom
+  region: "PAL-E"
+SCED-52167:
+  name: "Official PlayStation 2 Magazine Demo 52" # United Kingdom
+  region: "PAL-E"
+SCED-52168:
+  name: "Official PlayStation 2 Magazine Demo 53" # United Kingdom
+  region: "PAL-E"
+SCED-52169:
+  name: "Official PlayStation 2 Magazine Demo 54"
+  region: "PAL-M5"
+SCED-52170:
+  name: "Official PlayStation 2 Magazine Demo 55" # United Kingdom
+  region: "PAL-E"
+SCED-52177:
+  name: "Official PlayStation 2 Magazine Demo 41"
+  region: "PAL-M5"
+SCED-52185:
+  name: "Official PlayStation 2 Magazine Demo 41"
+  region: "PAL-M5"
+SCED-52196:
+  name: "Official PS2 Magazine Demo 22 Special Ed: It's Here" # United Kingdom
+  region: "PAL-E"
+SCED-52270:
+  name: "Official PlayStation 2 Magazine Demo 42"
+  region: "PAL-M5"
+SCED-52271:
+  name: "Official PlayStation 2 Magazine Demo 42"
+  region: "PAL-M5"
+SCED-52273:
+  name: "Official PlayStation 2 Magazine Demo 42"
+  region: "PAL-M5"
+SCED-52354:
+  name: "Official PlayStation 2 Magazine Demo 43"
+  region: "PAL-M5"
 SCED-52355:
   name: "Military Multi Demo"
   region: "PAL-M5"
-SCED-52932:
-  name: "Bonus Demo 8 (old)"
+SCED-52377:
+  name: "Official PlayStation 2 Magazine Demo 44"
   region: "PAL-M5"
 SCED-52436:
   name: "Playstation2 UK Demo 7-2004"
   region: "PAL-M5"
   compat: 5
+SCED-52442:
+  name: "Official PlayStation 2 Magazine Demo 45"
+  region: "PAL-M5"
+SCED-52452:
+  name: "Official PlayStation 2 Magazine Demo 45"
+  region: "PAL-M5"
+SCED-52549:
+  name: "Official PlayStation 2 Magazine Demo 47"
+  region: "PAL-M5"
+SCED-52619:
+  name: "Official PlayStation 2 Magazine Demo 48"
+  region: "PAL-M5"
 SCED-52681:
   name: "Gran Turismo 4 BMW 1 Series [Demo]"
   region: "PAL-M11"
+SCED-52728:
+  name: "Official PlayStation 2 Magazine Demo 49"
+  region: "PAL-M5"
+SCED-52785:
+  name: "Official PlayStation 2 Magazine Demo 50"
+  region: "PAL-M5"
+SCED-52786:
+  name: "Official PlayStation 2 Magazine Demo 51"
+  region: "PAL-M5"
+SCED-52796:
+  name: "Official PlayStation 2 Magazine Demo 50"
+  region: "PAL-M5"
 SCED-52818:
   name: "EyeToy - Chat [Light]"
   region: "PAL-M11"
+SCED-52932:
+  name: "Bonus Demo 8 (old)"
+  region: "PAL-M5"
+SCED-52938:
+  name: "Official PlayStation 2 Magazine Demo 52"
+  region: "PAL-M5"
 SCED-52952:
   name: "Jak 3 [Demo]"
   region: "PAL-M5"
@@ -1168,6 +1561,33 @@ SCED-52952:
     - VUKickstartHack # Fixes Character SPS.
 SCED-52970:
   name: "SCEE Hits Demo"
+  region: "PAL-M5"
+SCED-52990:
+  name: "Official PlayStation 2 Magazine Demo 53"
+  region: "PAL-M5"
+SCED-52991:
+  name: "Official PlayStation 2 Magazine Demo 53" # French
+  region: "PAL-M5"
+SCED-53056:
+  name: "Official PlayStation 2 Magazine Demo 54" # German
+  region: "PAL-E-G"
+SCED-53068:
+  name: "Official PlayStation 2 Magazine Demo 54" # French
+  region: "PAL-M5"
+SCED-53122:
+  name: "Official PlayStation 2 Magazine Demo 56"
+  region: "PAL-M5"
+SCED-53123:
+  name: "Official PlayStation 2 Magazine Demo 55"
+  region: "PAL-M5"
+SCED-53132:
+  name: "Official PlayStation 2 Magazine Demo 56"
+  region: "PAL-M5"
+SCED-53159:
+  name: "Official PlayStation 2 Magazine Demo 57" # German
+  region: "PAL-E-G"
+SCED-53160:
+  name: "Official PlayStation 2 Magazine Demo 57"
   region: "PAL-M5"
 SCED-53161:
   name: "Official PlayStation 2 Magazine Demo 58"
@@ -1182,24 +1602,300 @@ SCED-53161:
         patch=1,EE,0047df70,word,4A7503BC
         patch=1,EE,0047df74,word,4A0002FF
         patch=1,EE,0047df78,word,4A0002FF
+SCED-53162:
+  name: "Official PlayStation 2 Magazine Demo 59"
+  region: "PAL-M5"
 SCED-53163:
   name: "Official PlayStation 2 Magazine Demo 60"
   region: "PAL-M12"
+SCED-53164:
+  name: "Official PlayStation 2 Magazine Demo 61"
+  region: "PAL-M5"
 SCED-53165:
-  name: "Official PlayStation 2 Magazine Demo 40"
-  region: "PAL-F"
+  name: "Official PlayStation 2 Magazine Demo 62"
+  region: "PAL-M5"
+SCED-53166:
+  name: "Official PlayStation 2 Magazine Demo 63"
+  region: "PAL-M5"
+SCED-53167:
+  name: "Official PlayStation 2 Magazine Demo 64"
+  region: "PAL-M5"
+SCED-53168:
+  name: "Official PlayStation 2 Magazine Demo 65"
+  region: "PAL-M5"
+SCED-53169:
+  name: "Official PlayStation 2 Magazine Demo 66"
+  region: "PAL-M5"
+SCED-53170:
+  name: "Official PlayStation 2 Magazine Demo 67"
+  region: "PAL-M5"
+SCED-53171:
+  name: "Official PlayStation 2 Magazine Demo 68"
+  region: "PAL-M5"
 SCED-53175:
   name: "Official PlayStation 2 Magazine Demo 40"
   region: "PAL-G"
-SCED-53325:
+SCED-53176:
+  name: "Official PlayStation 2 Magazine Demo 56"
+  region: "PAL-M5"
+SCED-53206:
+  name: "Official PlayStation 2 Magazine Demo 58" # German
+  region: "PAL-G"
+SCED-53207:
+  name: "Official PlayStation 2 Magazine Demo 59" # German
+  region: "PAL-G"
+SCED-53208:
+  name: "Official PlayStation 2 Magazine Demo 60" # German
+  region: "PAL-G"
+SCED-53209:
+  name: "Official PlayStation 2 Magazine Demo 61" # German
+  region: "PAL-G"
+SCED-53210:
+  name: "Official PlayStation 2 Magazine Demo 62" # German
+  region: "PAL-G"
+SCED-53211:
+  name: "Official PlayStation 2 Magazine Demo 63" # German
+  region: "PAL-G"
+SCED-53212:
+  name: "Official PlayStation 2 Magazine Demo 64" # German
+  region: "PAL-G"
+SCED-53213:
+  name: "Official PlayStation 2 Magazine Demo 65" # German
+  region: "PAL-G"
+SCED-53214:
+  name: "Official PlayStation 2 Magazine Demo 66" # German
+  region: "PAL-G"
+SCED-53215:
+  name: "Official PlayStation 2 Magazine Demo 67" # German
+  region: "PAL-G"
+SCED-53216:
+  name: "Official PlayStation 2 Magazine Demo 68" # German
+  region: "PAL-G"
+SCED-53217:
+  name: "Official PlayStation 2 Magazine Demo 69" # German
+  region: "PAL-G"
+SCED-53225:
   name: "Official PlayStation 2 Magazine Demo 58"
   region: "PAL-M5"
+SCED-53228:
+  name: "Official PlayStation 2 Magazine Demo 57"
+  region: "PAL-M5"
+SCED-53288:
+  name: "Official PlayStation 2 Magazine Demo 58"
+  region: "PAL-M5"
+SCED-53289:
+  name: "Official PlayStation 2 Magazine Demo 59"
+  region: "PAL-M5"
+SCED-53290:
+  name: "Official PlayStation 2 Magazine Demo 60"
+  region: "PAL-M5"
+SCED-53291:
+  name: "Official PlayStation 2 Magazine Demo 61"
+  region: "PAL-M5"
+SCED-53292:
+  name: "Official PlayStation 2 Magazine Demo 62"
+  region: "PAL-M5"
+SCED-53293:
+  name: "Official PlayStation 2 Magazine Demo 63"
+  region: "PAL-M5"
+SCED-53325:
+  name: "Official PlayStation 2 Magazine Demo 58" # Spanish/Portuguese
+  region: "PAL-M5"
+SCED-53348:
+  name: "Official PlayStation 2 Magazine Demo 58" # French
+  region: "PAL-F"
+SCED-53854:
+  name: "Official PS2 Magazine French Christmas Special" # French
+  region: "PAL-F"
 SCED-53905:
   name: "Official PlayStation 2 Magazine Italia Special Sport Demo"
+  region: "PAL-M5"
+SCED-53916:
+  name: "Official PlayStation 2 Magazine Demo 67" # French
+  region: "PAL-M5"
+SCED-53932:
+  name: "Official PlayStation 2 Magazine Demo 67" # Spanish
+  region: "PAL-M5"
+SCED-53939:
+  name: "Official PlayStation 2 Magazine Demo 67" # Australian
+  region: "PAL-E"
+SCED-53978:
+  name: "Official PlayStation 2 Magazine Demo 69"
+  region: "PAL-M5"
+SCED-54001:
+  name: "Official PlayStation 2 Magazine Demo 69"
+  region: "PAL-M5"
+SCED-54024:
+  name: "Official PlayStation 2 Magazine Demo 70"
+  region: "PAL-M5"
+SCED-54036:
+  name: "Official PlayStation 2 Magazine Demo 69/70"
+  region: "PAL-M5"
+SCED-54037:
+  name: "Official PlayStation 2 Magazine Demo 70"
+  region: "PAL-M5"
+SCED-54043:
+  name: "Official PlayStation 2 Magazine Demo 71"
+  region: "PAL-M5"
+SCED-54044:
+  name: "Official PlayStation 2 Magazine Demo 72"
+  region: "PAL-M5"
+SCED-54045:
+  name: "Official PlayStation 2 Magazine Demo 73"
+  region: "PAL-M5"
+SCED-54046:
+  name: "Official PlayStation 2 Magazine Demo 74"
+  region: "PAL-M5"
+SCED-54047:
+  name: "Official PlayStation 2 Magazine Demo 75"
+  region: "PAL-M5"
+SCED-54048:
+  name: "Official PlayStation 2 Magazine Demo 76"
+  region: "PAL-M5"
+SCED-54049:
+  name: "Official PlayStation 2 Magazine Demo 77"
+  region: "PAL-M5"
+SCED-54050:
+  name: "Official PlayStation 2 Magazine Demo 71" # German
+  region: "PAL-M5"
+SCED-54051:
+  name: "Official PlayStation 2 Magazine Demo 72" # German
+  region: "PAL-M5"
+SCED-54052:
+  name: "Official PlayStation 2 Magazine Demo 73" # German
+  region: "PAL-M5"
+SCED-54053:
+  name: "Official PlayStation 2 Magazine Demo 74" # German
+  region: "PAL-M5"
+SCED-54054:
+  name: "Official PlayStation 2 Magazine Demo 75" # German
+  region: "PAL-M5"
+SCED-54055:
+  name: "Official PlayStation 2 Magazine Demo 76" # German
+  region: "PAL-M5"
+SCED-54056:
+  name: "Official PlayStation 2 Magazine Demo 77" # German
+  region: "PAL-M5"
+SCED-54057:
+  name: "Official PlayStation 2 Magazine Demo 78" # German
+  region: "PAL-M5"
+SCED-54058:
+  name: "Official PlayStation 2 Magazine Demo 79" # German
+  region: "PAL-M5"
+SCED-54059:
+  name: "Official PlayStation 2 Magazine Demo 80" # German
+  region: "PAL-M5"
+SCED-54070:
+  name: "Official PlayStation 2 Magazine Demo 71" # Spanish/Portuguese
+  region: "PAL-M5"
+SCED-54079:
+  name: "Official PlayStation 2 Magazine Demo 71" # French
+  region: "PAL-M5"
+SCED-54099:
+  name: "Official PlayStation 2 Magazine Demo 71" # Australian
+  region: "PAL-M5"
+SCED-54144:
+  name: "Official PlayStation 2 Magazine Demo 72" # French
+  region: "PAL-M5"
+SCED-54176:
+  name: "Official PlayStation 2 Magazine Demo 73" # BeNeLux
+  region: "PAL-M5"
+SCED-54202:
+  name: "Official PlayStation 2 Magazine Demo 74"
+  region: "PAL-M5"
+SCED-54403:
+  name: "Official PlayStation 2 Magazine Demo 78"
+  region: "PAL-M5"
+SCED-54404:
+  name: "Official PlayStation 2 Magazine Demo 79"
+  region: "PAL-M5"
+SCED-54405:
+  name: "Official PlayStation 2 Magazine Demo 80"
+  region: "PAL-M5"
+SCED-54406:
+  name: "Official PlayStation 2 Magazine Demo 81"
+  region: "PAL-M5"
+SCED-54407:
+  name: "Official PlayStation 2 Magazine Demo 82"
+  region: "PAL-M5"
+SCED-54408:
+  name: "Official PlayStation 2 Magazine Demo 83"
+  region: "PAL-M5"
+SCED-54409:
+  name: "Official PlayStation 2 Magazine Demo 84"
   region: "PAL-M5"
 SCED-54410:
   name: "Official PlayStation 2 Magazine Demo 85"
   region: "PAL-M5"
+SCED-54411:
+  name: "Official PlayStation 2 Magazine Demo 86"
+  region: "PAL-M5"
+SCED-54412:
+  name: "Official PlayStation 2 Magazine Demo 87"
+  region: "PAL-M5"
+SCED-54413:
+  name: "Official PlayStation 2 Magazine Demo 88"
+  region: "PAL-M5"
+SCED-54414:
+  name: "Official PlayStation 2 Magazine Demo 89"
+  region: "PAL-M5"
+SCED-54415:
+  name: "Official PlayStation 2 Magazine Demo 90"
+  region: "PAL-M5"
+SCED-54416:
+  name: "Official PlayStation 2 Magazine Demo 91"
+  region: "PAL-M5"
+SCED-54417:
+  name: "Official PlayStation 2 Magazine Demo 92"
+  region: "PAL-M5"
+SCED-54418:
+  name: "Official PlayStation 2 Magazine Demo 93"
+  region: "PAL-M5"
+SCED-54480:
+  name: "Official PlayStation 2 Magazine Demo 78" # French
+  region: "PAL-M5"
+SCED-54481:
+  name: "Official PlayStation 2 Magazine Demo 79" # French
+  region: "PAL-M5"
+SCED-54567:
+  name: "Official PlayStation 2 Magazine Demo 80" # Spanish/Portuguese
+  region: "PAL-M5"
+SCED-54605:
+  name: "Official PlayStation 2 Magazine Demo 81" # German
+  region: "PAL-G"
+SCED-54642:
+  name: "Official PlayStation 2 Magazine Demo 82" # German
+  region: "PAL-M5"
+SCED-54692:
+  name: "Official PlayStation 2 Magazine Demo 83" # German
+  region: "PAL-E-G"
+SCED-54758:
+  name: "Official PlayStation 2 Magazine Demo 84" # German
+  region: "PAL-G"
+SCED-55113:
+  name: "Official PlayStation 2 Magazine Demo 94"
+  region: "PAL-M5"
+SCED-55114:
+  name: "Official PlayStation 2 Magazine Demo 95"
+  region: "PAL-M5"
+SCED-55115:
+  name: "Official PlayStation 2 Magazine Demo 96"
+  region: "PAL-M5"
+SCED-55116:
+  name: "Official PlayStation 2 Magazine Demo 97"
+  region: "PAL-M5"
+SCED-55117:
+  name: "Official PlayStation 2 Magazine Demo 98"
+  region: "PAL-M5"
+SCED-55118:
+  name: "Official PlayStation 2 Magazine Demo 99"
+  region: "PAL-M5"
+SCED-55119:
+  name: "Official PlayStation 2 Magazine Demo 100"
+  region: "PAL-M5"
+SCED-55120:
+  name: "Official PlayStation 2 Magazine Demo 101"
+  region: "PAL-DU"
 SCES-50000:
   name: "Ridge Racer V"
   region: "PAL-M5"
