@@ -6510,6 +6510,13 @@ SLES-50178:
 SLES-50179:
   name: "Oni"
   region: "PAL-S"
+  patches:
+    20F419E9:
+      content: |-
+        comment=Patch by refraction
+        // Rearrange PCR write and BC0F instruction
+        patch=0,EE,001CEF78,word,4100ffff
+        patch=0,EE,001CEF7C,word,ac430000
 SLES-50182:
   name: "MTV Music Generator 2"
   region: "PAL-M5"
@@ -11823,7 +11830,7 @@ SLES-52976:
   name: "GoldenEye - Rogue Agent"
   region: "PAL-G"
 SLES-52977:
-  name: "GoldenEye - Rogue Agent"
+  name: "GoldenEye: Agente Corrupto"
   region: "PAL-S"
 SLES-52978:
   name: "La Pucelle Tactics"
