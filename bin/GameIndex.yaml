@@ -1142,8 +1142,14 @@ SCED-52053:
 SCED-52057:
   name: "Official Playstation Magazine Demo Disc 40"
   region: "PAL-IT"
+SCED-52260:
+  name: "Forbidden Siren [Demo]"
+  region: "PAL-M5"
 SCED-52355:
   name: "Military Multi Demo"
+  region: "PAL-M5"
+SCED-52932:
+  name: "Bonus Demo 8 (old)"
   region: "PAL-M5"
 SCED-52436:
   name: "Playstation2 UK Demo 7-2004"
