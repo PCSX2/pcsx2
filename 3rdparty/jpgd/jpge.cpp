@@ -28,7 +28,6 @@
 //                       Code review revealed method load_block_16_8_8() (used for the non-default H2V1 sampling mode to downsample chroma) somehow didn't get the rounding factor fix from v1.02.
 // v1.05, March 25, 2020: Added Apache 2.0 alternate license
 
-#include "PrecompiledHeader.h"
 #include "jpge.h"
 
 #include <stdlib.h>

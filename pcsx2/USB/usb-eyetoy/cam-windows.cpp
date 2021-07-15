@@ -14,11 +14,12 @@
  */
 
 #include "PrecompiledHeader.h"
+
+#include <jpgd/jpge.h>
 #include "videodev.h"
 #include "cam-windows.h"
 #include "usb-eyetoy-webcam.h"
 #include "jo_mpeg.h"
-#include "jpgd/jpge.h"
 
 #include "USB/Win32/Config_usb.h"
 #include "USB/Win32/resource_usb.h"
