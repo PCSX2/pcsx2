@@ -87,6 +87,9 @@ void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 			//
 			// Note2: Due to MultiThreaded driver, Nvidia suffers less of the previous issue. Still it isn't free
 			// Shadow Heart is 90 fps (gs) vs 113 fps (no gs)
+			//
+			// Note3: Some GPUs (Happens on GT 750m, not on Intel 5200) don't properly divide by large floats (e.g. FLT_MAX/FLT_MAX == 0)
+			// Lines2Sprites predivides by Q, avoiding this issue, so always use it if m_vt.m_accurate_stq
 
 			// If the draw calls contains few primitives. Geometry Shader gain with be rather small versus
 			// the extra validation cost of the extra stage.
