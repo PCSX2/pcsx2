@@ -366,7 +366,7 @@ public:
 	void SendDataPacket();
 	void SendGameCRC( u32 crc );
 	void WaitForOpen();
-	void Freeze( int mode, MTGS_FreezeData& data );
+	void Freeze( FreezeAction mode, MTGS_FreezeData& data );
 
 	void SendSimpleGSPacket( MTGS_RingCommand type, u32 offset, u32 size, GIF_PATH path );
 	void SendSimplePacket( MTGS_RingCommand type, int data0, int data1, int data2 );

@@ -100,15 +100,15 @@ void MainEmuFrame::Menu_GSSettings_Click(wxCommandEvent& event)
 	MTGS_FreezeData sstate = {&fP, 0};
 	if (is_frame_init)
 	{
-		GetMTGS().Freeze(FREEZE_SIZE, sstate);
+		GetMTGS().Freeze(FreezeAction::Size, sstate);
 		fP.data = new char[fP.size];
-		GetMTGS().Freeze(FREEZE_SAVE, sstate);
+		GetMTGS().Freeze(FreezeAction::Save, sstate);
 		GetMTGS().Suspend(true);
 	}
 	GSconfigure();
 	if (is_frame_init)
 	{
-		GetMTGS().Freeze(FREEZE_LOAD, sstate);
+		GetMTGS().Freeze(FreezeAction::Load, sstate);
 		delete[] fP.data;
 	}
 	if (need_shutdown)

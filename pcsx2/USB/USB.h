@@ -39,7 +39,7 @@ void USBasync(u32 cycles);
 void USBshutdown();
 void USBclose();
 s32 USBopen(void* pDsp);
-s32 USBfreeze(int mode, freezeData* data);
+s32 USBfreeze(FreezeAction mode, freezeData* data);
 
 u8 USBread8(u32 addr);
 u16 USBread16(u32 addr);

@@ -781,12 +781,12 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 
 	GSsetGameCRC((int)crc, 0);
 
-	if (GSfreeze(0, &fd))
+	if (GSfreeze(FreezeAction::Load, &fd))
 		GSDump::isRunning = false;
 	GSvsync(1);
 	GSreset();
 	GSsetBaseMem((u8*)regs);
-	GSfreeze(0, &fd);
+	GSfreeze(FreezeAction::Load, &fd);
 
 	size_t i = 0;
 	m_debug_index = 0;

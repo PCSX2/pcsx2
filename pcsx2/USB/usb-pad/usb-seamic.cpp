@@ -467,7 +467,7 @@ namespace usb_pad
 		return RESULT_CANCELED;
 	}
 
-	int SeamicDevice::Freeze(int mode, USBDevice* dev, void* data)
+	int SeamicDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
 	{
 		return 0;
 		//  SeamicState *s = (SeamicState *)dev;

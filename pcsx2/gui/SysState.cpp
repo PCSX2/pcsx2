@@ -48,10 +48,10 @@ static const wxChar* EntryFilename_InternalStructures = L"PCSX2 Internal Structu
 struct SysState_Component
 {
 	const char* name;
-	int (*freeze)(int, freezeData*);
+	int (*freeze)(FreezeAction, freezeData*);
 };
 
-int SysState_MTGSFreeze(int mode, freezeData* fP)
+int SysState_MTGSFreeze(FreezeAction mode, freezeData* fP)
 {
 	ScopedCoreThreadPause paused_core;
 	MTGS_FreezeData sstate = {fP, 0};
@@ -69,21 +69,21 @@ static constexpr SysState_Component GS{"GS", SysState_MTGSFreeze};
 void SysState_ComponentFreezeOutRoot(void* dest, SysState_Component comp)
 {
 	freezeData fP = {0, (char*)dest};
-	if (comp.freeze(FREEZE_SIZE, &fP) != 0)
+	if (comp.freeze(FreezeAction::Size, &fP) != 0)
 		return;
 	if (!fP.size)
 		return;
 
 	Console.Indent().WriteLn("Saving %s", comp.name);
 
-	if (comp.freeze(FREEZE_SAVE, &fP) != 0)
+	if (comp.freeze(FreezeAction::Save, &fP) != 0)
 		throw std::runtime_error(std::string(" * ") + comp.name + std::string(": Error saving state!\n"));
 }
 
 void SysState_ComponentFreezeIn(pxInputStream& infp, SysState_Component comp)
 {
 	freezeData fP = {0, nullptr};
-	if (comp.freeze(FREEZE_SIZE, &fP) != 0)
+	if (comp.freeze(FreezeAction::Size, &fP) != 0)
 		fP.size = 0;
 
 	Console.Indent().WriteLn("Loading %s", comp.name);
@@ -102,14 +102,14 @@ void SysState_ComponentFreezeIn(pxInputStream& infp, SysState_Component comp)
 	fP.data = data.GetPtr();
 
 	infp.Read(fP.data, fP.size);
-	if (comp.freeze(FREEZE_LOAD, &fP) != 0)
+	if (comp.freeze(FreezeAction::Load, &fP) != 0)
 		throw std::runtime_error(std::string(" * ") + comp.name + std::string(": Error loading state!\n"));
 }
 
 void SysState_ComponentFreezeOut(SaveStateBase& writer, SysState_Component comp)
 {
 	freezeData fP = {0, NULL};
-	if (comp.freeze(FREEZE_SIZE, &fP) == 0)
+	if (comp.freeze(FreezeAction::Size, &fP) == 0)
 	{
 		const int size = fP.size;
 		writer.PrepBlock(size);

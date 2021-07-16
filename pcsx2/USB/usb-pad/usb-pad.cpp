@@ -649,7 +649,7 @@ namespace usb_pad
 		return RESULT_CANCELED;
 	}
 
-	int PadDevice::Freeze(int mode, USBDevice* dev, void* data)
+	int PadDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
 	{
 		PADState* s = (PADState*)dev;
 
@@ -657,14 +657,14 @@ namespace usb_pad
 			return 0;
 		switch (mode)
 		{
-			case FREEZE_LOAD:
+			case FreezeAction::Load:
 				s->f = *(PADState::freeze*)data;
 				s->pad->Type((PS2WheelTypes)s->f.dev_subtype);
 				return sizeof(PADState::freeze);
-			case FREEZE_SAVE:
+			case FreezeAction::Save:
 				*(PADState::freeze*)data = s->f;
 				return sizeof(PADState::freeze);
-			case FREEZE_SIZE:
+			case FreezeAction::Size:
 				return sizeof(PADState::freeze);
 			default:
 				break;
@@ -724,7 +724,7 @@ namespace usb_pad
 		return RESULT_CANCELED;
 	}
 
-	int RBDrumKitDevice::Freeze(int mode, USBDevice* dev, void* data)
+	int RBDrumKitDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
 	{
 		return PadDevice::Freeze(mode, dev, data);
 	}
@@ -781,7 +781,7 @@ namespace usb_pad
 		return RESULT_CANCELED;
 	}
 
-	int BuzzDevice::Freeze(int mode, USBDevice* dev, void* data)
+	int BuzzDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
 	{
 		return PadDevice::Freeze(mode, dev, data);
 	}

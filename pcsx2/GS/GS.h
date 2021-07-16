@@ -1828,7 +1828,7 @@ void GSgifTransfer3(uint8* mem, uint32 size);
 void GSvsync(int field);
 uint32 GSmakeSnapshot(char* path);
 void GSkeyEvent(GSKeyEventData* e);
-int GSfreeze(int mode, freezeData* data);
+int GSfreeze(FreezeAction mode, freezeData* data);
 void GSconfigure();
 int GStest();
 void GSirqCallback(void (*irq)());

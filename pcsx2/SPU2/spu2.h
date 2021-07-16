@@ -36,7 +36,7 @@ bool SPU2setupRecording(const std::string* filename);
 void SPU2endRecording();
 
 void SPU2async(u32 cycles);
-s32 SPU2freeze(int mode, freezeData* data);
+s32 SPU2freeze(FreezeAction mode, freezeData* data);
 void SPU2configure();
 
 

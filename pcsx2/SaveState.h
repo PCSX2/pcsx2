@@ -15,12 +15,15 @@
 
 #pragma once
 
-#define FREEZE_LOAD 0
-#define FREEZE_SAVE 1
-#define FREEZE_SIZE 2
-
 #include "System.h"
 #include "Utilities/Exceptions.h"
+
+enum class FreezeAction
+{
+	Load,
+	Save,
+	Size,
+};
 
 // Savestate Versioning!
 //  If you make changes to the savestate version, please increment the value below.

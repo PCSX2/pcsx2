@@ -794,7 +794,7 @@ namespace usb_hid
 		return RESULT_CANCELED;
 	}
 
-	int HIDKbdDevice::Freeze(int mode, USBDevice* dev, void* data)
+	int HIDKbdDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
 	{
 		auto s = reinterpret_cast<UsbHIDState*>(dev);
 		auto freezed = reinterpret_cast<UsbHIDState::freeze*>(data);
@@ -803,19 +803,19 @@ namespace usb_hid
 			return 0;
 		switch (mode)
 		{
-			case FREEZE_LOAD:
+			case FreezeAction::Load:
 				if (!s)
 					return -1;
 				s->f = *freezed;
 				hid_init(&s->f.hid, HID_KEYBOARD, usb_hid_changed);
 
 				return sizeof(UsbHIDState::freeze);
-			case FREEZE_SAVE:
+			case FreezeAction::Save:
 				if (!s)
 					return -1;
 				*freezed = s->f;
 				return sizeof(UsbHIDState::freeze);
-			case FREEZE_SIZE:
+			case FreezeAction::Size:
 				return sizeof(UsbHIDState::freeze);
 			default:
 				break;
@@ -893,7 +893,7 @@ namespace usb_hid
 		return RESULT_CANCELED;
 	}
 
-	int HIDMouseDevice::Freeze(int mode, USBDevice* dev, void* data)
+	int HIDMouseDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
 	{
 		auto s = reinterpret_cast<UsbHIDState*>(dev);
 		auto freezed = reinterpret_cast<UsbHIDState::freeze*>(data);
@@ -902,19 +902,19 @@ namespace usb_hid
 			return 0;
 		switch (mode)
 		{
-			case FREEZE_LOAD:
+			case FreezeAction::Load:
 				if (!s)
 					return -1;
 				s->f = *freezed;
 				hid_init(&s->f.hid, HID_MOUSE, usb_hid_changed);
 
 				return sizeof(UsbHIDState::freeze);
-			case FREEZE_SAVE:
+			case FreezeAction::Save:
 				if (!s)
 					return -1;
 				*freezed = s->f;
 				return sizeof(UsbHIDState::freeze);
-			case FREEZE_SIZE:
+			case FreezeAction::Size:
 				return sizeof(UsbHIDState::freeze);
 			default:
 				break;
@@ -996,7 +996,7 @@ namespace usb_hid
 		return RESULT_CANCELED;
 	}
 
-	int BeatManiaDevice::Freeze(int mode, USBDevice* dev, void* data)
+	int BeatManiaDevice::Freeze(FreezeAction mode, USBDevice* dev, void* data)
 	{
 		return HIDKbdDevice::Freeze(mode, dev, data);
 	}

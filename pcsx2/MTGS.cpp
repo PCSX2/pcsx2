@@ -501,7 +501,7 @@ void SysMtgsThread::ExecuteTaskInThread()
 						{
 							MTGS_FreezeData* data = (MTGS_FreezeData*)tag.pointer;
 							int mode = tag.data[0];
-							data->retval = GSfreeze(mode, (freezeData*)data->fdata);
+							data->retval = GSfreeze((FreezeAction)mode, (freezeData*)data->fdata);
 						}
 						break;
 
@@ -927,10 +927,10 @@ void SysMtgsThread::WaitForOpen()
 	RethrowException();
 }
 
-void SysMtgsThread::Freeze(int mode, MTGS_FreezeData& data)
+void SysMtgsThread::Freeze(FreezeAction mode, MTGS_FreezeData& data)
 {
 	pxAssertDev(!IsSelf(), "This method is only allowed from threads *not* named MTGS.");
-	SendPointerPacket(GS_RINGTYPE_FREEZE, mode, &data);
+	SendPointerPacket(GS_RINGTYPE_FREEZE, (int)mode, &data);
 	// make sure MTGS is processing the packet we send it
 	Resume();
 	// we are forced to wait for the semaphore to be released, otherwise

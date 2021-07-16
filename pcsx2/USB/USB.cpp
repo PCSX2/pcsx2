@@ -341,12 +341,12 @@ void USBsetRAM(void* mem)
 	Reset();
 }
 
-s32 USBfreeze(int mode, freezeData* data)
+s32 USBfreeze(FreezeAction mode, freezeData* data)
 {
 	USBfreezeData usbd = {0};
 
 	//TODO FREEZE_SIZE mismatch causes loading to fail in PCSX2 beforehand
-	if (mode == FREEZE_LOAD)
+	if (mode == FreezeAction::Load)
 	{
 		if ((long unsigned int)data->size < sizeof(USBfreezeData))
 		{
@@ -412,7 +412,7 @@ s32 USBfreeze(int mode, freezeData* data)
 
 			if (proxy && usb_device[i]) /* usb device creation may have failed for some reason */
 			{
-				if (proxy->Freeze(FREEZE_SIZE, usb_device[i], nullptr) != (s32)usbd.device[i].size)
+				if (proxy->Freeze(FreezeAction::Size, usb_device[i], nullptr) != (s32)usbd.device[i].size)
 				{
 					Console.WriteLn(Color_Red, "USB: Port %d: device's freeze size doesn't match.", i);
 					return -1;
@@ -442,7 +442,7 @@ s32 USBfreeze(int mode, freezeData* data)
 					usb_desc_set_interface(usb_device[i], k, tmp.altsetting[k]);
 				}
 
-				proxy->Freeze(FREEZE_LOAD, usb_device[i], ptr);
+				proxy->Freeze(FreezeAction::Load, usb_device[i], ptr);
 				if (!usb_device[i]->attached)
 				{ // FIXME FREEZE_SAVE fcked up
 					usb_device[i]->attached = true;
@@ -496,7 +496,7 @@ s32 USBfreeze(int mode, freezeData* data)
 		}
 	}
 	//TODO straight copying of structs can break cross-platform/cross-compiler save states 'cause padding 'n' stuff
-	else if (mode == FREEZE_SAVE)
+	else if (mode == FreezeAction::Save)
 	{
 		memset(data->data, 0, data->size); //maybe it already is...
 		RegisterDevice& regInst = RegisterDevice::instance();
@@ -510,7 +510,7 @@ s32 USBfreeze(int mode, freezeData* data)
 			usbd.device[i].index = index;
 
 			if (proxy && usb_device[i])
-				usbd.device[i].size = proxy->Freeze(FREEZE_SIZE, usb_device[i], nullptr);
+				usbd.device[i].size = proxy->Freeze(FreezeAction::Size, usb_device[i], nullptr);
 			else
 				usbd.device[i].size = 0;
 
@@ -545,7 +545,7 @@ s32 USBfreeze(int mode, freezeData* data)
 			{
 				usbd.device[i].dev = *usb_device[i];
 				if (proxy && usbd.device[i].size)
-					proxy->Freeze(FREEZE_SAVE, usb_device[i], ptr);
+					proxy->Freeze(FreezeAction::Save, usb_device[i], ptr);
 			}
 			memset(&usbd.device[i].dev.klass, 0, sizeof(USBDeviceClass));
 
@@ -559,7 +559,7 @@ s32 USBfreeze(int mode, freezeData* data)
 
 		*(USBfreezeData*)data->data = usbd;
 	}
-	else if (mode == FREEZE_SIZE)
+	else if (mode == FreezeAction::Size)
 	{
 		data->size = 0x10000;
 	}
