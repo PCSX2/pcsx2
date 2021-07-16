@@ -132,7 +132,8 @@ set(pcsx2Sources
 	VU1microInterp.cpp
 	VUflags.cpp
 	VUmicroMem.cpp
-	VUops.cpp)
+	VUops.cpp
+	des.cpp)
 
 # Main pcsx2 header
 set(pcsx2Headers
@@ -187,7 +188,8 @@ set(pcsx2Headers
 	vtlb.h
 	VUflags.h
 	VUmicro.h
-	VUops.h)
+	VUops.h
+	des.h)
 
 # CDVD sources
 set(pcsx2CDVDSources
