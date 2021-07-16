@@ -100,6 +100,16 @@ namespace R3000A
 			return hostRootPath.concat(path).string();
 	}
 
+	// This is a workaround for GHS on *NIX platforms
+	// Whenever a program splits directories with a backslash (ulaunchelf)
+	// the directory is considered non-existant
+	static __fi std::string clean_path(const std::string path)
+	{
+		std::string ret = path;
+		std::replace(ret.begin(),ret.end(),'\\','/');
+		return ret;
+	}
+
 	static int host_stat(const std::string path, fio_stat_t* host_stats)
 	{
 		struct stat file_stats;
@@ -446,7 +456,7 @@ namespace R3000A
 		int open_HLE()
 		{
 			IOManFile* file = NULL;
-			const std::string path = Ra0;
+			const std::string path = clean_path(Ra0);
 			s32 flags = a1;
 			u16 mode = a2;
 
@@ -501,7 +511,7 @@ namespace R3000A
 		int dopen_HLE()
 		{
 			IOManDir* dir = NULL;
-			const std::string path = Ra0;
+			const std::string path = clean_path(Ra0);
 
 			if (is_host(path))
 			{
@@ -566,7 +576,7 @@ namespace R3000A
 
 		int getStat_HLE()
 		{
-			const std::string path = Ra0;
+			const std::string path = clean_path(Ra0);
 			u32 data = a1;
 
 			if (is_host(path))
@@ -603,7 +613,7 @@ namespace R3000A
 
 		int mkdir_HLE()
 		{
-			const std::string full_path = Ra0;
+			const std::string full_path = clean_path(Ra0);
 
 			if (is_host(full_path))
 			{
@@ -642,7 +652,7 @@ namespace R3000A
 
 		int rmdir_HLE()
 		{
-			const std::string full_path = Ra0;
+			const std::string full_path = clean_path(Ra0);
 
 			if (is_host(full_path))
 			{
