@@ -25,7 +25,6 @@ on:
       - 'bin/PCSX2_keys.ini.default'
       - 'build.sh'
       - 'buildbot.xml'
-      - 'debian-packager/**'
       - 'pcsx2/CDVD/Windows/**'
       - 'pcsx2/DEV9/Win32/**'
       - 'pcsx2/PAD/Windows/**'
@@ -36,7 +35,6 @@ on:
     branches:
       - master
     paths-ignore:
-      - '**/*.md'
       - '**/*.bat'
       - '**/*.cmd'
       - '**/*.props'
@@ -54,7 +52,6 @@ on:
       - 'bin/PCSX2_keys.ini.default'
       - 'build.sh'
       - 'buildbot.xml'
-      - 'debian-packager/**'
       - 'pcsx2/CDVD/Windows/**'
       - 'pcsx2/DEV9/Win32/**'
       - 'pcsx2/PAD/Windows/**'
