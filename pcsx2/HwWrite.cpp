@@ -26,6 +26,11 @@
 #include "SPU2/spu2.h"
 #include "R3000A.h"
 
+#include "App.h"
+#include "ConsoleLogger.h"
+#include "DebugTools/Debug.h"
+#include "Utilities/Console.h"
+
 using namespace R5900;
 
 // Shift the middle 8 bits (bits 4-12) into the lower 8 bits.
@@ -253,6 +258,7 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 				default:
 					// TODO: psx add the real address in a sbus mcase
 					if (((mem & 0x1FFFFFFF) >= EEMemoryMap::SBUS_PS1_Start) && ((mem & 0x1FFFFFFF) < EEMemoryMap::SBUS_PS1_End)) {
+						pgifConLog(L"Pgif DMA: set mode");
 						PGIFw((mem & 0x1FFFFFFF), value);
 						return;
 					}
