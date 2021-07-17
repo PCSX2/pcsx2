@@ -55,7 +55,15 @@ bool rx_fifo_can_rx();
 #define HDD_MIN_GB 40
 #define HDD_MAX_GB 120
 
-struct Config
+struct ConfigHost
+{
+	std::string Url;
+	std::string Desc;
+	u8 Address[4];
+	bool Enabled;
+};
+
+struct ConfigDEV9
 {
 	char Eth[256];
 	NetApi EthApi;
@@ -69,6 +77,8 @@ struct Config
 	int AutoGateway;
 	int AutoDNS1;
 	int AutoDNS2;
+	int EthLogDNS;
+	std::vector<ConfigHost> EthHosts;
 #ifdef _WIN32
 	wchar_t Hdd[256];
 #else
@@ -80,7 +90,8 @@ struct Config
 	int ethEnable;
 };
 
-EXTERN Config config;
+
+EXTERN ConfigDEV9 config;
 
 typedef struct
 {
@@ -736,7 +747,7 @@ u32 DEV9read32(u32 addr);
 void DEV9write8(u32 addr, u8 value);
 void DEV9write16(u32 addr, u16 value);
 void DEV9write32(u32 addr, u32 value);
-void ApplyConfigIfRunning(Config oldConfig);
+void ApplyConfigIfRunning(ConfigDEV9 oldConfig);
 
 #ifdef _WIN32
 #pragma warning(error : 4013)

@@ -21,6 +21,7 @@
 #if defined(__POSIX__)
 #include <pthread.h>
 #endif
+
 #include "net.h"
 #include "DEV9.h"
 #ifdef _WIN32
@@ -122,7 +123,7 @@ void InitNet()
 #endif
 }
 
-void ReconfigureLiveNet(Config* oldConfig)
+void ReconfigureLiveNet(ConfigDEV9* oldConfig)
 {
 	//Eth
 	if (config.ethEnable)
@@ -236,6 +237,57 @@ NetAdapter::~NetAdapter()
 	}
 }
 
+void NetAdapter::InspectSend(NetPacket* pkt)
+{
+	if (config.EthLogDNS)
+	{
+		EthernetFrame frame(pkt);
+		if (frame.protocol == (u16)EtherType::IPv4)
+		{
+			PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
+			IP_Packet ippkt(payload->data, payload->GetLength());
+
+			if (ippkt.protocol == (u16)IP_Type::UDP)
+			{
+				IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(ippkt.GetPayload());
+				UDP_Packet udppkt(ipPayload->data, ipPayload->GetLength());
+
+				if (udppkt.destinationPort == 53)
+				{
+					Console.WriteLn("DEV9: DNS: Packet Sent To %i.%i.%i.%i",
+									ippkt.destinationIP.bytes[0], ippkt.destinationIP.bytes[1], ippkt.destinationIP.bytes[2], ippkt.destinationIP.bytes[3]);
+					dnsLogger.InspectSend(&udppkt);
+				}
+			}
+		}
+	}
+}
+void NetAdapter::InspectRecv(NetPacket* pkt)
+{
+	if (config.EthLogDNS)
+	{
+		EthernetFrame frame(pkt);
+		if (frame.protocol == (u16)EtherType::IPv4)
+		{
+			PayloadPtr* payload = static_cast<PayloadPtr*>(frame.GetPayload());
+			IP_Packet ippkt(payload->data, payload->GetLength());
+
+			if (ippkt.protocol == (u16)IP_Type::UDP)
+			{
+				IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(ippkt.GetPayload());
+				UDP_Packet udppkt(ipPayload->data, ipPayload->GetLength());
+
+				if (udppkt.sourcePort == 53)
+				{
+					Console.WriteLn("DEV9: DNS: Packet Sent From %i.%i.%i.%i",
+									ippkt.sourceIP.bytes[0], ippkt.sourceIP.bytes[1], ippkt.sourceIP.bytes[2], ippkt.sourceIP.bytes[3]);
+					dnsLogger.InspectRecv(&udppkt);
+				}
+			}
+		}
+	}
+}
+
 void NetAdapter::SetMACAddress(u8* mac)
 {
 	if (mac == nullptr)
@@ -278,6 +330,8 @@ void NetAdapter::InitInternalServer(ifaddrs* adapter)
 
 	if (config.InterceptDHCP)
 		dhcpServer.Init(adapter);
+	
+	dnsServer.Init(adapter);
 
 	if (blocks())
 	{
@@ -297,14 +351,17 @@ void NetAdapter::ReloadInternalServer(ifaddrs* adapter)
 
 	if (config.InterceptDHCP)
 		dhcpServer.Init(adapter);
+	
+	dnsServer.Init(adapter);
 }
 
 bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 {
-	IP_Payload* updpkt = dhcpServer.Recv();
-	if (updpkt != nullptr)
+	IP_Payload* ippay;
+	ippay = dhcpServer.Recv();
+	if (ippay != nullptr)
 	{
-		IP_Packet* ippkt = new IP_Packet(updpkt);
+		IP_Packet* ippkt = new IP_Packet(ippay);
 		ippkt->destinationIP = {255, 255, 255, 255};
 		ippkt->sourceIP = internalIP;
 		EthernetFrame frame(ippkt);
@@ -314,6 +371,22 @@ bool NetAdapter::InternalServerRecv(NetPacket* pkt)
 		frame.WritePacket(pkt);
 		return true;
 	}
+
+	ippay = dnsServer.Recv();
+	if (ippay != nullptr)
+	{
+		IP_Packet* ippkt = new IP_Packet(ippay);
+		ippkt->destinationIP = ps2IP;
+		ippkt->sourceIP = internalIP;
+		EthernetFrame frame(ippkt);
+		memcpy(frame.sourceMAC, internalMAC, 6);
+		memcpy(frame.destinationMAC, ps2MAC, 6);
+		frame.protocol = (u16)EtherType::IPv4;
+		frame.WritePacket(pkt);
+		InspectRecv(pkt);
+		return true;
+	}
+	
 	return false;
 }
 
@@ -340,6 +413,19 @@ bool NetAdapter::InternalServerSend(NetPacket* pkt)
 
 		if (ippkt.destinationIP == internalIP)
 		{
+			if (ippkt.protocol == (u16)IP_Type::UDP)
+			{
+				ps2IP = ippkt.sourceIP;
+
+				IP_PayloadPtr* ipPayload = static_cast<IP_PayloadPtr*>(ippkt.GetPayload());
+				UDP_Packet udppkt(ipPayload->data, ipPayload->GetLength());
+
+				if (udppkt.destinationPort == 53)
+				{
+					//Send DNS
+					return dnsServer.Send(&udppkt);
+				}
+			}
 			return true;
 		}
 	}

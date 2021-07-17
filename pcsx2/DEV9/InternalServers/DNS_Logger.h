@@ -14,30 +14,25 @@
  */
 
 #pragma once
+#include "DEV9/PacketReader/IP/IP_Packet.h"
+#include "DEV9/PacketReader/IP/UDP/DNS/DNS_Packet.h"
 
-namespace PacketReader::IP::UDP::DNS
+namespace InternalServers
 {
-	enum struct DNS_OPCode : u8
+	class DNS_Logger
 	{
-		Query = 0,
-		IQuery = 1,
-		Status = 2,
-		Reserved = 3,
-		Notify = 4,
-		Update = 5
+	public:
+		DNS_Logger(){};
+
+		//Expects a UDP_payload
+		void InspectRecv(PacketReader::IP::IP_Payload* payload);
+		//Expects a UDP_payload
+		void InspectSend(PacketReader::IP::IP_Payload* payload);
+
+	private:
+		std::string VectorToString(const std::vector<u8>& data);
+		const char* OpCodeToString(PacketReader::IP::UDP::DNS::DNS_OPCode opcode);
+		const char* RCodeToString(PacketReader::IP::UDP::DNS::DNS_RCode rcode);
+		void LogPacket(PacketReader::IP::UDP::DNS::DNS_Packet* payload);
 	};
-	enum struct DNS_RCode : u8
-	{
-		NoError = 0,
-		FormatError = 1,
-		ServerFailure = 2,
-		NameError = 3,
-		NotImplemented = 4,
-		Refused = 5,
-		YXDomain = 6,
-		YXRRSet = 7,
-		NXRRSet = 8,
-		NotAuth = 9,
-		NotZone = 10,
-	};
-} // namespace PacketReader::IP::UDP
+} // namespace InternalServers

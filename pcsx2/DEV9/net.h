@@ -33,8 +33,10 @@
 
 #include "PacketReader/IP/IP_Address.h"
 #include "InternalServers/DHCP_Server.h"
+#include "InternalServers/DNS_Logger.h"
+#include "InternalServers/DNS_Server.h"
 
-struct Config;
+struct ConfigDEV9;
 
 // first three recognized by Xlink as Sony PS2
 const u8 defaultMAC[6] = {0x00, 0x04, 0x1F, 0x82, 0x30, 0x31};
@@ -87,6 +89,8 @@ protected:
 	static const u8 internalMAC[6];
 
 private:
+	//Only set if packet sent to the internal IP address
+	PacketReader::IP::IP_Address ps2IP{0};
 	std::thread internalRxThread;
 	std::atomic<bool> internalRxThreadRunning{false};
 
@@ -95,6 +99,8 @@ private:
 	bool internalRxHasData = false;
 
 	InternalServers::DHCP_Server dhcpServer = InternalServers::DHCP_Server([&] { InternalSignalReceived(); });
+	InternalServers::DNS_Logger dnsLogger;
+	InternalServers::DNS_Server dnsServer = InternalServers::DNS_Server([&] { InternalSignalReceived(); });
 
 public:
 	NetAdapter();
@@ -109,6 +115,9 @@ public:
 protected:
 	void SetMACAddress(u8* mac);
 	bool VerifyPkt(NetPacket* pkt, int read_size);
+
+	void InspectRecv(NetPacket* pkt);
+	void InspectSend(NetPacket* pkt);
 
 #ifdef _WIN32
 	void InitInternalServer(PIP_ADAPTER_ADDRESSES adapter);
@@ -128,7 +137,7 @@ private:
 
 void tx_put(NetPacket* ptr);
 void InitNet();
-void ReconfigureLiveNet(Config* oldConfig);
+void ReconfigureLiveNet(ConfigDEV9* oldConfig);
 void TermNet();
 
 const char* NetApiToString(NetApi api);
