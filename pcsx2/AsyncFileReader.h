@@ -79,7 +79,7 @@ class FlatFileReader : public AsyncFileReader
 #elif defined(__POSIX__)
 	int m_fd; // TODO OSX don't know if overlap as an equivalent on OSX
 	struct aiocb m_aiocb;
-	bool m_read_in_progress;
+	bool m_async_read_in_progress;
 #endif
 
 	bool shareWrite;

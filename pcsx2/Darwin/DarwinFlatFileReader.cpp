@@ -16,10 +16,6 @@
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
 
-#if defined(__APPLE__)
-#warning Tested on FreeBSD, not OS X. Be very afraid.
-#endif
-
 // The aio module has been reported to cause issues with FreeBSD 10.3, so let's
 // disable it for 10.3 and earlier and hope FreeBSD 11 and onwards is fine.
 // Note: It may be worth checking whether aio provides any performance benefit.
@@ -32,7 +28,7 @@ FlatFileReader::FlatFileReader(bool shareWrite) : shareWrite(shareWrite)
 {
 	m_blocksize = 2048;
 	m_fd = -1;
-	m_read_in_progress = false;
+	m_async_read_in_progress = false;
 }
 
 FlatFileReader::~FlatFileReader(void)
@@ -61,61 +57,69 @@ void FlatFileReader::BeginRead(void* pBuffer, uint sector, uint count)
 
 	u32 bytesToRead = count * m_blocksize;
 
-#if defined(DISABLE_AIO)
-	m_aiocb.aio_nbytes = pread(m_fd, pBuffer, bytesToRead, offset);
-	if (m_aiocb.aio_nbytes != bytesToRead)
-		m_aiocb.aio_nbytes = -1;
-#else
+	m_async_read_in_progress = false;
+#ifndef DISABLE_AIO
 	m_aiocb = {0};
 	m_aiocb.aio_fildes = m_fd;
 	m_aiocb.aio_offset = offset;
 	m_aiocb.aio_nbytes = bytesToRead;
 	m_aiocb.aio_buf = pBuffer;
 
-	if (aio_read(&m_aiocb) != 0) {
+	if (aio_read(&m_aiocb) == 0)
+	{
+		m_async_read_in_progress = true;
+	}
+	else
+	{
+		switch (errno)
+		{
 #if defined(__FreeBSD__)
-		if (errno == ENOSYS)
-			Console.Error("AIO read failed: Check the aio kernel module is loaded");
-		else
-			Console.Error("AIO read failed: error code %d", errno);
-#else
-		Console.Error("AIO read failed: error code %d\n", errno);
+			case ENOSYS:
+				Console.Error("AIO read failed: Check the aio kernel module is loaded");
+				break;
 #endif
-		return;
+			case EAGAIN:
+				Console.Warning("AIO read failed: Out of resources.  Will read synchronously");
+				break;
+			default:
+				Console.Error("AIO read failed: error code %d\n", errno);
+				break;
+		}
 	}
 #endif
-	m_read_in_progress = true;
+	if (!m_async_read_in_progress)
+	{
+		m_aiocb.aio_nbytes = pread(m_fd, pBuffer, bytesToRead, offset);
+		if (m_aiocb.aio_nbytes != bytesToRead)
+			m_aiocb.aio_nbytes = -1;
+	}
 }
 
 int FlatFileReader::FinishRead(void)
 {
-#if defined(DISABLE_AIO)
-	m_read_in_progress = false;
-	return m_aiocb.aio_nbytes == (size_t)-1 ? -1: 1;
-#else
+	if (!m_async_read_in_progress)
+		return m_aiocb.aio_nbytes == (size_t)-1 ? -1 : 1;
+	m_async_read_in_progress = true;
+
 	struct aiocb *aiocb_list[] = {&m_aiocb};
 
-	while (aio_suspend(aiocb_list, 1, nullptr) == -1)
-		if (errno != EINTR)
-			break;
-
-	m_read_in_progress = false;
-	return aio_return(&m_aiocb) == -1? -1: 1;
-#endif
+	while (aio_suspend(aiocb_list, 1, nullptr) == -1 && errno == EINTR)
+		;
+	return aio_return(&m_aiocb) == -1 ? -1 : 1;
 }
 
 void FlatFileReader::CancelRead(void)
 {
-#if !defined(DISABLE_AIO)
-	aio_cancel(m_fd, &m_aiocb);
-#endif
-	m_read_in_progress = false;
+	if (m_async_read_in_progress)
+	{
+		aio_cancel(m_fd, &m_aiocb);
+		m_async_read_in_progress = false;
+	}
 }
 
 void FlatFileReader::Close(void)
 {
-	if (m_read_in_progress)
-		CancelRead();
+	CancelRead();
 	if (m_fd != -1)
 		close(m_fd);
 
