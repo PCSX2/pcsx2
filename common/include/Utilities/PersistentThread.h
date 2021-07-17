@@ -58,6 +58,9 @@ protected:
     virtual void OnThreadCleanup() = 0;
 };
 
+/// Set the name of the current thread
+void SetNameOfCurrentThread(const char* name);
+
 // --------------------------------------------------------------------------------------
 // pxThread - Helper class for the basics of starting/managing persistent threads.
 // --------------------------------------------------------------------------------------
@@ -194,7 +197,7 @@ protected:
     bool _basecancel();
     void _selfRunningTest(const wxChar *name) const;
     void _DoSetThreadName(const wxString &name);
-    void _DoSetThreadName(const char *name);
+    void _DoSetThreadName(const char *name) { SetNameOfCurrentThread(name); }
     void _internal_execute();
     void _try_virtual_invoke(void (pxThread::*method)());
     void _ThreadCleanup();

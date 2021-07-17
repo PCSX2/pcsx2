@@ -103,7 +103,7 @@ void Threading::pxThread::_platform_specific_OnCleanupInThread()
     CloseHandle((HANDLE)m_native_handle);
 }
 
-void Threading::pxThread::_DoSetThreadName(const char *name)
+void Threading::SetNameOfCurrentThread(const char *name)
 {
 // This feature needs Windows headers and MSVC's SEH support:
 

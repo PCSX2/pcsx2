@@ -24,7 +24,7 @@
 // For this reason, it's currently disabled.
 #define CSO_USE_CHUNKSCACHE 0
 
-#include "AsyncFileReader.h"
+#include "ThreadedFileReader.h"
 #include "ChunksCache.h"
 
 struct CsoHeader;
@@ -32,7 +32,7 @@ typedef struct z_stream_s z_stream;
 
 static const uint CSO_CHUNKCACHE_SIZE_MB = 200;
 
-class CsoFileReader : public AsyncFileReader
+class CsoFileReader : public ThreadedFileReader
 {
 	DeclareNoncopyableObject(CsoFileReader);
 
@@ -42,66 +42,44 @@ public:
 		, m_frameShift(0)
 		, m_indexShift(0)
 		, m_readBuffer(0)
-		, m_zlibBuffer(0)
-		, m_zlibBufferFrame(0)
 		, m_index(0)
 		, m_totalSize(0)
 		, m_src(0)
 		, m_z_stream(0)
-		,
-#if CSO_USE_CHUNKSCACHE
-		m_cache(CSO_CHUNKCACHE_SIZE_MB)
-		,
-#endif
-		m_bytesRead(0)
 	{
 		m_blocksize = 2048;
 	};
 
-	virtual ~CsoFileReader(void) { Close(); };
+	~CsoFileReader(void) { Close(); };
 
 	static bool CanHandle(const wxString& fileName);
-	virtual bool Open(const wxString& fileName);
+	bool Open2(const wxString& fileName) override;
 
-	virtual int ReadSync(void* pBuffer, uint sector, uint count);
+	Chunk ChunkForOffset(u64 offset) override;
+	int ReadChunk(void *dst, s64 chunkID) override;
 
-	virtual void BeginRead(void* pBuffer, uint sector, uint count);
-	virtual int FinishRead(void);
-	virtual void CancelRead(void);
+	void Close2(void) override;
 
-	virtual void Close(void);
-
-	virtual uint GetBlockCount(void) const
+	uint GetBlockCount(void) const override
 	{
 		return (m_totalSize - m_dataoffset) / m_blocksize;
 	};
-
-	virtual void SetBlockSize(uint bytes) { m_blocksize = bytes; }
-	virtual void SetDataOffset(int bytes) { m_dataoffset = bytes; }
 
 private:
 	static bool ValidateHeader(const CsoHeader& hdr);
 	bool ReadFileHeader();
 	bool InitializeBuffers();
 	int ReadFromFrame(u8* dest, u64 pos, int maxBytes);
+	bool DecompressFrame(Bytef* dst, u32 frame, u32 readBufferSize);
 	bool DecompressFrame(u32 frame, u32 readBufferSize);
 
 	u32 m_frameSize;
 	u8 m_frameShift;
 	u8 m_indexShift;
-	u8* m_readBuffer;
-	u8* m_zlibBuffer;
-	u32 m_zlibBufferFrame;
+	u8* m_readBuffer;;
 	u32* m_index;
 	u64 m_totalSize;
 	// The actual source cso file handle.
 	FILE* m_src;
 	z_stream* m_z_stream;
-
-#if CSO_USE_CHUNKSCACHE
-	ChunksCache m_cache;
-#endif
-
-	// The result of a read is stored here between BeginRead() and FinishRead().
-	int m_bytesRead;
 };

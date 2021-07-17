@@ -9,6 +9,7 @@
 			<array>
 				<string>iso</string>
 				<string>cso</string>
+				<string>chd</string>
 			</array>
 			<key>CFBundleTypeIconFile</key>
 			<string>PCSX2.icns</string>
