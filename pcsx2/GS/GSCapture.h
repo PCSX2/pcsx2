@@ -20,6 +20,7 @@
 
 #ifdef _WIN32
 #include "Window/GSCaptureDlg.h"
+#include <atlcomcli.h>
 #endif
 
 class GSCapture

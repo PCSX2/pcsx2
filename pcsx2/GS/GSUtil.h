@@ -16,6 +16,10 @@
 #pragma once
 
 #include "GS.h"
+#ifdef _WIN32
+#include <dxgi1_3.h>
+#include <d3dcompiler.h>
+#endif
 
 #include <xbyak/xbyak_util.h>
 
