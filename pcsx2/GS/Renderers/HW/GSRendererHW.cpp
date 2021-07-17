@@ -884,11 +884,8 @@ void GSRendererHW::SwSpriteRender()
 		InvalidateLocalMem(bitbltbuf, GSVector4i(sx, sy, sx + w, sy + h));
 	InvalidateVideoMem(bitbltbuf, GSVector4i(dx, dy, dx + w, dy + h));
 
-	GSOffset* RESTRICT spo = texture_mapping_enabled ? m_mem.GetOffset(bitbltbuf.SBP, bitbltbuf.SBW, bitbltbuf.SPSM) : nullptr;
-	GSOffset* RESTRICT dpo = m_mem.GetOffset(bitbltbuf.DBP, bitbltbuf.DBW, bitbltbuf.DPSM);
-
-	const int* RESTRICT scol = texture_mapping_enabled ? &spo->pixel.col[0][sx] : nullptr;
-	int* RESTRICT dcol = &dpo->pixel.col[0][dx];
+	GSOffset spo = texture_mapping_enabled ? m_mem.GetOffset(bitbltbuf.SBP, bitbltbuf.SBW, bitbltbuf.SPSM) : GSOffset();
+	GSOffset dpo = m_mem.GetOffset(bitbltbuf.DBP, bitbltbuf.DBW, bitbltbuf.DPSM);
 
 	const bool alpha_blending_enabled = PRIM->ABE;
 
@@ -909,19 +906,23 @@ void GSRendererHW::SwSpriteRender()
 
 	for (int y = 0; y < h; y++, ++sy, ++dy)
 	{
-		const uint32* RESTRICT s = texture_mapping_enabled ? &m_mem.m_vm32[spo->pixel.row[sy]] : nullptr;
-		uint32* RESTRICT d = &m_mem.m_vm32[dpo->pixel.row[dy]];
+		auto spa = texture_mapping_enabled ? spo.paMulti(m_mem.m_vm32, sx, sy) : GSOffset::PAPtrHelper<uint32>();
+		auto dpa = dpo.paMulti(m_mem.m_vm32, dx, dy);
 
 		ASSERT(w % 2 == 0);
 
 		for (int x = 0; x < w; x += 2)
 		{
+			uint32* di = dpa.value(x);
+			ASSERT(*di + 1 == *dpa.value(x + 1)); // Destination pixel pair is adjacent in memory
+
 			GSVector4i sc;
 			if (texture_mapping_enabled)
 			{
+				uint32* si = spa.value(x);
 				// Read 2 source pixel colors
-				ASSERT((scol[x] + 1) == scol[x + 1]); // Source pixel pair is adjacent in memory
-				sc = GSVector4i::loadl(&s[scol[x]]).u8to16(); // 0x00AA00BB00GG00RR00aa00bb00gg00rr
+				ASSERT((*si + 1) == *spa.value(x + 1)); // Source pixel pair is adjacent in memory
+				sc = GSVector4i::loadl(si).u8to16(); // 0x00AA00BB00GG00RR00aa00bb00gg00rr
 
 				// Apply TFX
 				ASSERT(tex0_tfx == 0 || tex0_tfx == 1);
@@ -942,8 +943,7 @@ void GSRendererHW::SwSpriteRender()
 			if (alpha_blending_enabled || fb_mask_enabled)
 			{
 				// Read 2 destination pixel colors
-				ASSERT((dcol[x] + 1) == dcol[x + 1]); // Destination pixel pair is adjacent in memory
-				dc0 = GSVector4i::loadl(&d[dcol[x]]).u8to16(); // 0x00AA00BB00GG00RR00aa00bb00gg00rr
+				dc0 = GSVector4i::loadl(di).u8to16(); // 0x00AA00BB00GG00RR00aa00bb00gg00rr
 			}
 
 			if (alpha_blending_enabled)
@@ -998,8 +998,7 @@ void GSRendererHW::SwSpriteRender()
 
 			// Store 2 pixel colors
 			dc = dc.pu16(GSVector4i::zero()); // 0x0000000000000000AABBGGRRaabbggrr
-			ASSERT((dcol[x] + 1) == dcol[x + 1]); // Destination pixel pair is adjacent in memory
-			GSVector4i::storel(&d[dcol[x]], dc);
+			GSVector4i::storel(di, dc);
 		}
 	}
 }
@@ -1805,7 +1804,7 @@ void GSRendererHW::OI_GsMemClear()
 	// Limit it further to a full screen 0 write
 	if ((m_vertex.next == 2) && m_vt.m_min.c.eq(GSVector4i(0)))
 	{
-		GSOffset* off = m_context->offset.fb;
+		const GSOffset& off = m_context->offset.fb;
 		const GSVector4i r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(m_context->scissor.in));
 		// Limit the hack to a single fullscreen clear. Some games might use severals column to clear a screen
 		// but hopefully it will be enough.
@@ -1823,12 +1822,11 @@ void GSRendererHW::OI_GsMemClear()
 			// Based on WritePixel32
 			for (int y = r.top; y < r.bottom; y++)
 			{
-				uint32* RESTRICT d = &m_mem.m_vm32[off->pixel.row[y]];
-				int* RESTRICT col = off->pixel.col[0];
+				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.m_vm32, 0, y);
 
 				for (int x = r.left; x < r.right; x++)
 				{
-					d[col[x]] = 0; // Here the constant color
+					*pa.value(x) = 0; // Here the constant color
 				}
 			}
 		}
@@ -1837,12 +1835,11 @@ void GSRendererHW::OI_GsMemClear()
 			// Based on WritePixel24
 			for (int y = r.top; y < r.bottom; y++)
 			{
-				uint32* RESTRICT d = &m_mem.m_vm32[off->pixel.row[y]];
-				int* RESTRICT col = off->pixel.col[0];
+				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle32).paMulti(m_mem.m_vm32, 0, y);
 
 				for (int x = r.left; x < r.right; x++)
 				{
-					d[col[x]] &= 0xff000000; // Clear the color
+					*pa.value(x) &= 0xff000000; // Clear the color
 				}
 			}
 		}
@@ -1853,12 +1850,11 @@ void GSRendererHW::OI_GsMemClear()
 			// Based on WritePixel16
 			for(int y = r.top; y < r.bottom; y++)
 			{
-				uint32* RESTRICT d = &m_mem.m_vm16[off->pixel.row[y]];
-				int* RESTRICT col = off->pixel.col[0];
+				auto pa = off.assertSizesMatch(GSLocalMemory::swizzle16).paMulti(m_mem.m_vm16, 0, y);
 
 				for(int x = r.left; x < r.right; x++)
 				{
-					d[col[x]] = 0; // Here the constant color
+					*pa.value(x) = 0; // Here the constant color
 				}
 			}
 #endif

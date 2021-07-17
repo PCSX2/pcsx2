@@ -17,52 +17,38 @@
 #include "GSLocalMemory.h"
 #include "GS.h"
 
-#define ASSERT_BLOCK(r, w, h) \
-	ASSERT((r).width() >= (w) && (r).height() >= (h) && !((r).left & ((w) - 1)) && !((r).top & ((h) - 1)) && !((r).right & ((w) - 1)) && !((r).bottom & ((h) - 1))); \
+template <typename Fn>
+static void foreachBlock(const GSOffset& off, GSLocalMemory* mem, const GSVector4i& r, uint8* dst, int dstpitch, int bpp, Fn&& fn)
+{
+	ASSERT(off.isBlockAligned(r));
+	GSOffset::BNHelper bn = off.bnMulti(r.left, r.top);
+	int right = r.right >> off.blockShiftX();
+	int bottom = r.bottom >> off.blockShiftY();
 
-#define FOREACH_BLOCK_START(r, w, h, bpp) \
-	ASSERT_BLOCK(r, w, h); \
-	GSVector4i _r = (r) >> 3; \
-	uint8* _dst = dst - _r.left * (bpp); \
-	int _offset = dstpitch * (h); \
-	for(int y = _r.top; y < _r.bottom; y += (h) >> 3, _dst += _offset) \
-	{ \
-		uint32 _base = off->block.row[y]; \
-		for(int x = _r.left; x < _r.right; x += (w) >> 3) \
-		{ \
-			const uint8* src = BlockPtr(_base + off->block.col[x]); \
-			uint8* read_dst = &_dst[x * (bpp)]; \
+	int offset = dstpitch << off.blockShiftY();
+	int xAdd = (1 << off.blockShiftX()) * (bpp / 8);
 
-#define FOREACH_BLOCK_END }}
+	for (; bn.blkY() < bottom; bn.nextBlockY(), dst += offset)
+	{
+		for (int x = 0; bn.blkX() < right; bn.nextBlockX(), x += xAdd)
+		{
+			const uint8* src = mem->BlockPtr(bn.value());
+			uint8* read_dst = dst + x;
+			fn(read_dst, src);
+		}
+	}
+}
 
 //
 
-uint32 GSLocalMemory::pageOffset32[32][32][64];
-uint32 GSLocalMemory::pageOffset32Z[32][32][64];
-uint32 GSLocalMemory::pageOffset16[32][64][64];
-uint32 GSLocalMemory::pageOffset16S[32][64][64];
-uint32 GSLocalMemory::pageOffset16Z[32][64][64];
-uint32 GSLocalMemory::pageOffset16SZ[32][64][64];
-uint32 GSLocalMemory::pageOffset8[32][64][128];
-uint32 GSLocalMemory::pageOffset4[32][128][128];
-
-int GSLocalMemory::rowOffset32[4096];
-int GSLocalMemory::rowOffset32Z[4096];
-int GSLocalMemory::rowOffset16[4096];
-int GSLocalMemory::rowOffset16S[4096];
-int GSLocalMemory::rowOffset16Z[4096];
-int GSLocalMemory::rowOffset16SZ[4096];
-int GSLocalMemory::rowOffset8[2][4096];
-int GSLocalMemory::rowOffset4[2][4096];
-
-short GSLocalMemory::blockOffset32[256];
-short GSLocalMemory::blockOffset32Z[256];
-short GSLocalMemory::blockOffset16[256];
-short GSLocalMemory::blockOffset16S[256];
-short GSLocalMemory::blockOffset16Z[256];
-short GSLocalMemory::blockOffset16SZ[256];
-short GSLocalMemory::blockOffset8[256];
-short GSLocalMemory::blockOffset4[256];
+constexpr GSSwizzleInfo GSLocalMemory::swizzle32;
+constexpr GSSwizzleInfo GSLocalMemory::swizzle32Z;
+constexpr GSSwizzleInfo GSLocalMemory::swizzle16;
+constexpr GSSwizzleInfo GSLocalMemory::swizzle16S;
+constexpr GSSwizzleInfo GSLocalMemory::swizzle16Z;
+constexpr GSSwizzleInfo GSLocalMemory::swizzle16SZ;
+constexpr GSSwizzleInfo GSLocalMemory::swizzle8;
+constexpr GSSwizzleInfo GSLocalMemory::swizzle4;
 
 //
 
@@ -100,119 +86,9 @@ GSLocalMemory::GSLocalMemory()
 
 	memset(m_vm8, 0, m_vmsize);
 
-	for (int bp = 0; bp < 32; bp++)
-	{
-		for (int y = 0; y < 32; y++) for (int x = 0; x < 64; x++)
-		{
-			pageOffset32[bp][y][x] = PixelAddressOrg32(x, y, bp, 0);
-			pageOffset32Z[bp][y][x] = PixelAddressOrg32Z(x, y, bp, 0);
-		}
-
-		for (int y = 0; y < 64; y++) for (int x = 0; x < 64; x++)
-		{
-			pageOffset16[bp][y][x] = PixelAddressOrg16(x, y, bp, 0);
-			pageOffset16S[bp][y][x] = PixelAddressOrg16S(x, y, bp, 0);
-			pageOffset16Z[bp][y][x] = PixelAddressOrg16Z(x, y, bp, 0);
-			pageOffset16SZ[bp][y][x] = PixelAddressOrg16SZ(x, y, bp, 0);
-		}
-
-		for (int y = 0; y < 64; y++) for (int x = 0; x < 128; x++)
-		{
-			pageOffset8[bp][y][x] = PixelAddressOrg8(x, y, bp, 0);
-		}
-
-		for (int y = 0; y < 128; y++) for (int x = 0; x < 128; x++)
-		{
-			pageOffset4[bp][y][x] = PixelAddressOrg4(x, y, bp, 0);
-		}
-	}
-
-	for (size_t x = 0; x < countof(rowOffset32); x++)
-	{
-		rowOffset32[x] = (int)PixelAddress32(x & 0x7ff, 0, 0, 32) - (int)PixelAddress32(0, 0, 0, 32);
-	}
-
-	for (size_t x = 0; x < countof(rowOffset32Z); x++)
-	{
-		rowOffset32Z[x] = (int)PixelAddress32Z(x & 0x7ff, 0, 0, 32) - (int)PixelAddress32Z(0, 0, 0, 32);
-	}
-
-	for (size_t x = 0; x < countof(rowOffset16); x++)
-	{
-		rowOffset16[x] = (int)PixelAddress16(x & 0x7ff, 0, 0, 32) - (int)PixelAddress16(0, 0, 0, 32);
-	}
-
-	for (size_t x = 0; x < countof(rowOffset16S); x++)
-	{
-		rowOffset16S[x] = (int)PixelAddress16S(x & 0x7ff, 0, 0, 32) - (int)PixelAddress16S(0, 0, 0, 32);
-	}
-
-	for (size_t x = 0; x < countof(rowOffset16Z); x++)
-	{
-		rowOffset16Z[x] = (int)PixelAddress16Z(x & 0x7ff, 0, 0, 32) - (int)PixelAddress16Z(0, 0, 0, 32);
-	}
-
-	for (size_t x = 0; x < countof(rowOffset16SZ); x++)
-	{
-		rowOffset16SZ[x] = (int)PixelAddress16SZ(x & 0x7ff, 0, 0, 32) - (int)PixelAddress16SZ(0, 0, 0, 32);
-	}
-
-	for (size_t x = 0; x < countof(rowOffset8[0]); x++)
-	{
-		rowOffset8[0][x] = (int)PixelAddress8(x & 0x7ff, 0, 0, 32) - (int)PixelAddress8(0, 0, 0, 32);
-		rowOffset8[1][x] = (int)PixelAddress8(x & 0x7ff, 2, 0, 32) - (int)PixelAddress8(0, 2, 0, 32);
-	}
-
-	for (size_t x = 0; x < countof(rowOffset4[0]); x++)
-	{
-		rowOffset4[0][x] = (int)PixelAddress4(x & 0x7ff, 0, 0, 32) - (int)PixelAddress4(0, 0, 0, 32);
-		rowOffset4[1][x] = (int)PixelAddress4(x & 0x7ff, 2, 0, 32) - (int)PixelAddress4(0, 2, 0, 32);
-	}
-
-	for (size_t x = 0; x < countof(blockOffset32); x++)
-	{
-		blockOffset32[x] = (short)((int)BlockNumber32(x << 3, 0, 0, 32) - (int)BlockNumber32(0, 0, 0, 32));
-	}
-
-	for (size_t x = 0; x < countof(blockOffset32Z); x++)
-	{
-		blockOffset32Z[x] = (short)((int)BlockNumber32Z(x << 3, 0, 0, 32) - (int)BlockNumber32Z(0, 0, 0, 32));
-	}
-
-	for (size_t x = 0; x < countof(blockOffset16); x++)
-	{
-		blockOffset16[x] = (short)((int)BlockNumber16(x << 3, 0, 0, 32) - (int)BlockNumber16(0, 0, 0, 32));
-	}
-
-	for (size_t x = 0; x < countof(blockOffset16S); x++)
-	{
-		blockOffset16S[x] = (short)((int)BlockNumber16S(x << 3, 0, 0, 32) - (int)BlockNumber16S(0, 0, 0, 32));
-	}
-
-	for (size_t x = 0; x < countof(blockOffset16Z); x++)
-	{
-		blockOffset16Z[x] = (short)((int)BlockNumber16Z(x << 3, 0, 0, 32) - (int)BlockNumber16Z(0, 0, 0, 32));
-	}
-
-	for (size_t x = 0; x < countof(blockOffset16SZ); x++)
-	{
-		blockOffset16SZ[x] = (short)((int)BlockNumber16SZ(x << 3, 0, 0, 32) - (int)BlockNumber16SZ(0, 0, 0, 32));
-	}
-
-	for (size_t x = 0; x < countof(blockOffset8); x++)
-	{
-		blockOffset8[x] = (short)((int)BlockNumber8(x << 3, 0, 0, 32) - (int)BlockNumber8(0, 0, 0, 32));
-	}
-
-	for (size_t x = 0; x < countof(blockOffset4); x++)
-	{
-		blockOffset4[x] = (short)((int)BlockNumber4(x << 3, 0, 0, 32) - (int)BlockNumber4(0, 0, 0, 32));
-	}
-
 	for (size_t i = 0; i < countof(m_psm); i++)
 	{
-		m_psm[i].pa = &GSLocalMemory::PixelAddress32;
-		m_psm[i].bn = &GSLocalMemory::BlockNumber32;
+		m_psm[i].info = GSLocalMemory::swizzle32;
 		m_psm[i].rp = &GSLocalMemory::ReadPixel32;
 		m_psm[i].rpa = &GSLocalMemory::ReadPixel32;
 		m_psm[i].wp = &GSLocalMemory::WritePixel32;
@@ -230,32 +106,19 @@ GSLocalMemory::GSLocalMemory()
 		m_psm[i].pal = 0;
 		m_psm[i].bs = GSVector2i(8, 8);
 		m_psm[i].pgs = GSVector2i(64, 32);
-		for (int j = 0; j < 8; j++)
-			m_psm[i].rowOffset[j] = rowOffset32;
-		m_psm[i].blockOffset = blockOffset32;
 		m_psm[i].msk = 0xff;
 		m_psm[i].depth = 0;
 	}
 
-	m_psm[PSM_PSGPU24].pa = &GSLocalMemory::PixelAddress16;
-	m_psm[PSM_PSMCT16].pa = &GSLocalMemory::PixelAddress16;
-	m_psm[PSM_PSMCT16S].pa = &GSLocalMemory::PixelAddress16S;
-	m_psm[PSM_PSMT8].pa = &GSLocalMemory::PixelAddress8;
-	m_psm[PSM_PSMT4].pa = &GSLocalMemory::PixelAddress4;
-	m_psm[PSM_PSMZ32].pa = &GSLocalMemory::PixelAddress32Z;
-	m_psm[PSM_PSMZ24].pa = &GSLocalMemory::PixelAddress32Z;
-	m_psm[PSM_PSMZ16].pa = &GSLocalMemory::PixelAddress16Z;
-	m_psm[PSM_PSMZ16S].pa = &GSLocalMemory::PixelAddress16SZ;
-
-	m_psm[PSM_PSGPU24].bn = &GSLocalMemory::BlockNumber16;
-	m_psm[PSM_PSMCT16].bn = &GSLocalMemory::BlockNumber16;
-	m_psm[PSM_PSMCT16S].bn = &GSLocalMemory::BlockNumber16S;
-	m_psm[PSM_PSMT8].bn = &GSLocalMemory::BlockNumber8;
-	m_psm[PSM_PSMT4].bn = &GSLocalMemory::BlockNumber4;
-	m_psm[PSM_PSMZ32].bn = &GSLocalMemory::BlockNumber32Z;
-	m_psm[PSM_PSMZ24].bn = &GSLocalMemory::BlockNumber32Z;
-	m_psm[PSM_PSMZ16].bn = &GSLocalMemory::BlockNumber16Z;
-	m_psm[PSM_PSMZ16S].bn = &GSLocalMemory::BlockNumber16SZ;
+	m_psm[PSM_PSGPU24].info = GSLocalMemory::swizzle16;
+	m_psm[PSM_PSMCT16].info = GSLocalMemory::swizzle16;
+	m_psm[PSM_PSMCT16S].info = GSLocalMemory::swizzle16S;
+	m_psm[PSM_PSMT8].info = GSLocalMemory::swizzle8;
+	m_psm[PSM_PSMT4].info = GSLocalMemory::swizzle4;
+	m_psm[PSM_PSMZ32].info = GSLocalMemory::swizzle32Z;
+	m_psm[PSM_PSMZ24].info = GSLocalMemory::swizzle32Z;
+	m_psm[PSM_PSMZ16].info = GSLocalMemory::swizzle16Z;
+	m_psm[PSM_PSMZ16S].info = GSLocalMemory::swizzle16SZ;
 
 	m_psm[PSM_PSMCT24].rp = &GSLocalMemory::ReadPixel24;
 	m_psm[PSM_PSMCT16].rp = &GSLocalMemory::ReadPixel16;
@@ -446,26 +309,6 @@ GSLocalMemory::GSLocalMemory()
 	m_psm[PSM_PSMT4].pgs = GSVector2i(128, 128);
 	m_psm[PSM_PSMZ16].pgs = m_psm[PSM_PSMZ16S].pgs = GSVector2i(64, 64);
 
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSGPU24].rowOffset[i] = rowOffset16;
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSMCT16].rowOffset[i] = rowOffset16;
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSMCT16S].rowOffset[i] = rowOffset16S;
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSMT8].rowOffset[i] = rowOffset8[((i + 2) >> 2) & 1];
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSMT4].rowOffset[i] = rowOffset4[((i + 2) >> 2) & 1];
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSMZ32].rowOffset[i] = rowOffset32Z;
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSMZ24].rowOffset[i] = rowOffset32Z;
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSMZ16].rowOffset[i] = rowOffset16Z;
-	for(int i = 0; i < 8; i++) m_psm[PSM_PSMZ16S].rowOffset[i] = rowOffset16SZ;
-
-	m_psm[PSM_PSGPU24].blockOffset = blockOffset16;
-	m_psm[PSM_PSMCT16].blockOffset = blockOffset16;
-	m_psm[PSM_PSMCT16S].blockOffset = blockOffset16S;
-	m_psm[PSM_PSMT8].blockOffset = blockOffset8;
-	m_psm[PSM_PSMT4].blockOffset = blockOffset4;
-	m_psm[PSM_PSMZ32].blockOffset = blockOffset32Z;
-	m_psm[PSM_PSMZ24].blockOffset = blockOffset32Z;
-	m_psm[PSM_PSMZ16].blockOffset = blockOffset16Z;
-	m_psm[PSM_PSMZ16S].blockOffset = blockOffset16SZ;
-
 	m_psm[PSM_PSMCT24].msk = 0x3f;
 	m_psm[PSM_PSMZ24].msk = 0x3f;
 	m_psm[PSM_PSMT8H].msk = 0xc0;
@@ -485,8 +328,6 @@ GSLocalMemory::~GSLocalMemory()
 	else
 		vmfree(m_vm8, m_vmsize * 4);
 
-	for (auto& i : m_omap)
-		delete i.second;
 	for (auto& i : m_pomap)
 		_aligned_free(i.second);
 	for (auto& i : m_po4map)
@@ -496,24 +337,6 @@ GSLocalMemory::~GSLocalMemory()
 	{
 		delete[] i.second;
 	}
-}
-
-GSOffset* GSLocalMemory::GetOffset(uint32 bp, uint32 bw, uint32 psm)
-{
-	uint32 hash = bp | (bw << 14) | (psm << 20);
-
-	auto i = m_omap.find(hash);
-
-	if (i != m_omap.end())
-	{
-		return i->second;
-	}
-
-	GSOffset* off = new GSOffset(bp, bw, psm);
-
-	m_omap[hash] = off;
-
-	return off;
 }
 
 GSPixelOffset* GSLocalMemory::GetPixelOffset(const GIFRegFRAME& FRAME, const GIFRegZBUF& ZBUF)
@@ -549,22 +372,19 @@ GSPixelOffset* GSLocalMemory::GetPixelOffset(const GIFRegFRAME& FRAME, const GIF
 	off->zpsm = zpsm;
 	off->bw = bw;
 
-	pixelAddress fpa = m_psm[fpsm].pa;
-	pixelAddress zpa = m_psm[zpsm].pa;
-
 	int fs = m_psm[fpsm].bpp >> 5;
 	int zs = m_psm[zpsm].bpp >> 5;
 
 	for (int i = 0; i < 2048; i++)
 	{
-		off->row[i].x = (int)fpa(0, i, fbp, bw) << fs;
-		off->row[i].y = (int)zpa(0, i, zbp, bw) << zs;
+		off->row[i].x = (int)m_psm[fpsm].info.pa(0, i, fbp, bw) << fs;
+		off->row[i].y = (int)m_psm[zpsm].info.pa(0, i, zbp, bw) << zs;
 	}
 
 	for (int i = 0; i < 2048; i++)
 	{
-		off->col[i].x = m_psm[fpsm].rowOffset[0][i] << fs;
-		off->col[i].y = m_psm[zpsm].rowOffset[0][i] << zs;
+		off->col[i].x = (m_psm[fpsm].info.pa(i, 0, 0, 32) - m_psm[fpsm].info.pa(0, 0, 0, 32)) << fs;
+		off->col[i].y = (m_psm[zpsm].info.pa(i, 0, 0, 32) - m_psm[zpsm].info.pa(0, 0, 0, 32)) << zs;
 	}
 
 	m_pomap[hash] = off;
@@ -605,22 +425,19 @@ GSPixelOffset4* GSLocalMemory::GetPixelOffset4(const GIFRegFRAME& FRAME, const G
 	off->zpsm = zpsm;
 	off->bw = bw;
 
-	pixelAddress fpa = m_psm[fpsm].pa;
-	pixelAddress zpa = m_psm[zpsm].pa;
-
 	int fs = m_psm[fpsm].bpp >> 5;
 	int zs = m_psm[zpsm].bpp >> 5;
 
 	for (int i = 0; i < 2048; i++)
 	{
-		off->row[i].x = (int)fpa(0, i, fbp, bw) << fs;
-		off->row[i].y = (int)zpa(0, i, zbp, bw) << zs;
+		off->row[i].x = (int)m_psm[fpsm].info.pa(0, i, fbp, bw) << fs;
+		off->row[i].y = (int)m_psm[zpsm].info.pa(0, i, zbp, bw) << zs;
 	}
 
 	for (int i = 0; i < 512; i++)
 	{
-		off->col[i].x = m_psm[fpsm].rowOffset[0][i * 4] << fs;
-		off->col[i].y = m_psm[zpsm].rowOffset[0][i * 4] << zs;
+		off->col[i].x = (m_psm[fpsm].info.pa(i * 4, 0, 0, 32) - m_psm[fpsm].info.pa(0, 0, 0, 32)) << fs;
+		off->col[i].y = (m_psm[zpsm].info.pa(i * 4, 0, 0, 32) - m_psm[zpsm].info.pa(0, 0, 0, 32)) << zs;
 	}
 
 	m_po4map[hash] = off;
@@ -646,19 +463,18 @@ std::vector<GSVector2i>* GSLocalMemory::GetPage2TileMap(const GIFRegTEX0& TEX0)
 	int tw = std::max<int>(1 << TEX0.TW, bs.x);
 	int th = std::max<int>(1 << TEX0.TH, bs.y);
 
-	const GSOffset* off = GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
+	GSOffset off = GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
+	GSOffset::BNHelper bn = off.bnMulti(0, 0);
 
 	std::unordered_map<uint32, std::unordered_set<uint32>> tmp; // key = page, value = y:x, 7 bits each, max 128x128 tiles for the worst case (1024x1024 32bpp 8x8 blocks)
 
-	for (int y = 0; y < th; y += bs.y)
+	for (; bn.blkY() < (th >> off.blockShiftY()); bn.nextBlockY())
 	{
-		uint32 base = off->block.row[y >> 3];
-
-		for (int x = 0, i = y << 7; x < tw; x += bs.x, i += bs.x)
+		for (; bn.blkX() < (tw >> off.blockShiftX()); bn.nextBlockX())
 		{
-			uint32 page = ((base + off->block.col[x >> 3]) >> 5) % MAX_PAGES;
+			uint32 page = (bn.value() >> 5) % MAX_PAGES;
 
-			tmp[page].insert(i >> 3); // ((y << 7) | x) >> 3
+			tmp[page].insert((bn.blkY() << 7) + bn.blkX());
 		}
 	}
 
@@ -1249,6 +1065,63 @@ void GSLocalMemory::WriteImage24Z(int& tx, int& ty, const uint8* src, int len, G
 	}
 }
 
+/// Helper for WriteImageX and ReadImageX
+/// `len` is in pixels, unlike WriteImageX/ReadImageX where it's bytes
+/// `xinc` is the amount to increment `x` by per iteration
+/// Calls `paGetter` on a starting (x, y) to get some sort of pixel address helper for each line,
+///  then `fn` on the helper and an x offset once for every `xinc` pixels along that line
+template <typename PAGetter, typename Fn>
+static void readWriteHelperImpl(int& tx, int& ty, int len, int xinc, int sx, int w, PAGetter&& paGetter, Fn&& fn)
+{
+	int y = ty;
+	int ex = sx + w;
+	int remX = ex - tx;
+
+	ASSERT(remX >= 0);
+
+	auto pa = paGetter(tx, y);
+
+	while (len > 0)
+	{
+		int stop = std::min(remX, len);
+		len -= stop;
+		remX -= stop;
+
+		for (int x = 0; x < stop; x += xinc)
+			fn(pa, x);
+
+		if (remX == 0)
+		{
+			y++;
+			remX = w;
+			pa = paGetter(sx, y);
+		}
+	}
+
+	tx = ex - remX;
+	ty = y;
+}
+
+/// Helper for WriteImageX and ReadImageX
+/// `len` is in pixels, unlike WriteImageX/ReadImageX where it's bytes
+/// `xinc` is the amount to increment `x` by per iteration
+/// Calls `fn` with a `PAHelper` representing the current line and an int representing the x offset in that line
+template <typename Fn>
+static void readWriteHelper(int& tx, int& ty, int len, int xinc, int sx, int w, const GSOffset& off, Fn&& fn)
+{
+	readWriteHelperImpl(tx, ty, len, xinc, sx, w, [&](int x, int y){ return off.paMulti(x, y); }, std::forward<Fn>(fn));
+}
+
+/// Helper for WriteImageX and ReadImageX
+/// `len` is in pixels, unlike WriteImageX/ReadImageX where it's bytes
+/// `xinc` is the amount to increment `x` by per iteration
+/// Calls `fn` with a `PAPtrHelper` representing the current line and an int representing the x offset in that line
+template <typename VM, typename Fn>
+static void readWriteHelper(VM* vm, int& tx, int& ty, int len, int xinc, int sx, int w, const GSOffset& off, Fn&& fn)
+{
+	readWriteHelperImpl(tx, ty, len, xinc, sx, w, [&](int x, int y){ return off.paMulti(vm, x, y); }, std::forward<Fn>(fn));
+}
+
 void GSLocalMemory::WriteImageX(int& tx, int& ty, const uint8* src, int len, GIFRegBITBLTBUF& BITBLTBUF, GIFRegTRXPOS& TRXPOS, GIFRegTRXREG& TRXREG)
 {
 	if (len <= 0)
@@ -1260,200 +1133,86 @@ void GSLocalMemory::WriteImageX(int& tx, int& ty, const uint8* src, int len, GIF
 
 	uint32 bp = BITBLTBUF.DBP;
 	uint32 bw = BITBLTBUF.DBW;
-	psm_t* psm = &m_psm[BITBLTBUF.DPSM];
 
-	int x = tx;
-	int y = ty;
-	int sx = (int)TRXPOS.DSAX;
-	int ex = sx + (int)TRXREG.RRW;
+	int sx = TRXPOS.DSAX;
+	int w = TRXREG.RRW;
+
+	GSOffset off = GetOffset(bp, bw, BITBLTBUF.DPSM);
 
 	switch (BITBLTBUF.DPSM)
 	{
 		case PSM_PSMCT32:
 		case PSM_PSMZ32:
-
-			len /= 4;
-
-			while (len > 0)
+			readWriteHelper(m_vm32, tx, ty, len / 4, 1, sx, w, off.assertSizesMatch(swizzle32), [&](auto& pa, int x)
 			{
-				uint32 addr = psm->pa(0, y, bp, bw);
-				int* offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x++, pd++)
-				{
-					WritePixel32(addr + offset[x], *pd);
-				}
-
-				if (x >= ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				*pa.value(x) = *pd;
+				pd++;
+			});
 			break;
 
 		case PSM_PSMCT24:
 		case PSM_PSMZ24:
-
-			len /= 3;
-
-			while (len > 0)
+			readWriteHelper(m_vm32, tx, ty, len / 3, 1, sx, w, off.assertSizesMatch(swizzle32), [&](auto& pa, int x)
 			{
-				uint32 addr = psm->pa(0, y, bp, bw);
-				int* offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x++, pb += 3)
-				{
-					WritePixel24(addr + offset[x], *(uint32*)pb);
-				}
-
-				if (x >= ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				WritePixel24(pa.value(x), *(uint32*)pb);
+				pb += 3;
+			});
 			break;
 
 		case PSM_PSMCT16:
 		case PSM_PSMCT16S:
 		case PSM_PSMZ16:
 		case PSM_PSMZ16S:
-
-			len /= 2;
-
-			while (len > 0)
+			readWriteHelper(m_vm16, tx, ty, len / 2, 1, sx, w, off.assertSizesMatch(swizzle16), [&](auto& pa, int x)
 			{
-				uint32 addr = psm->pa(0, y, bp, bw);
-				int* offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x++, pw++)
-				{
-					WritePixel16(addr + offset[x], *pw);
-				}
-
-				if (x >= ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				*pa.value(x) = *pw;
+				pw++;
+			});
 			break;
 
 		case PSM_PSMT8:
-
-			while (len > 0)
+			readWriteHelper(m_vm8, tx, ty, len, 1, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8), [&](auto& pa, int x)
 			{
-				uint32 addr = psm->pa(0, y, bp, bw);
-				int* offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x++, pb++)
-				{
-					WritePixel8(addr + offset[x], *pb);
-				}
-
-				if (x >= ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				*pa.value(x) = *pb;
+				pb++;
+			});
 			break;
 
 		case PSM_PSMT4:
-
-			while (len > 0)
+			readWriteHelper(tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4), [&](GSOffset::PAHelper& pa, int x)
 			{
-				uint32 addr = psm->pa(0, y, bp, bw);
-				int* offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x += 2, pb++)
-				{
-					WritePixel4(addr + offset[x + 0], *pb & 0xf);
-					WritePixel4(addr + offset[x + 1], *pb >> 4);
-				}
-
-				if (x >= ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				WritePixel4(pa.value(x), *pb & 0xf);
+				WritePixel4(pa.value(x + 1), *pb >> 4);
+				pb++;
+			});
 			break;
 
 		case PSM_PSMT8H:
-
-			while (len > 0)
+			readWriteHelper(m_vm32, tx, ty, len, 1, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8H), [&](auto& pa, int x)
 			{
-				uint32 addr = psm->pa(0, y, bp, bw);
-				int* offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x++, pb++)
-				{
-					WritePixel8H(addr + offset[x], *pb);
-				}
-
-				if (x >= ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				WritePixel8H(pa.value(x), *pb);
+				pb++;
+			});
 			break;
 
 		case PSM_PSMT4HL:
-
-			while (len > 0)
+			readWriteHelper(m_vm32, tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HL), [&](auto& pa, int x)
 			{
-				uint32 addr = psm->pa(0, y, bp, bw);
-				int* offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x += 2, pb++)
-				{
-					WritePixel4HL(addr + offset[x + 0], *pb & 0xf);
-					WritePixel4HL(addr + offset[x + 1], *pb >> 4);
-				}
-
-				if (x >= ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				WritePixel4HL(pa.value(x), *pb & 0xf);
+				WritePixel4HL(pa.value(x + 1), *pb >> 4);
+				pb++;
+			});
 			break;
 
 		case PSM_PSMT4HH:
-
-			while (len > 0)
+			readWriteHelper(m_vm32, tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HH), [&](auto& pa, int x)
 			{
-				uint32 addr = psm->pa(0, y, bp, bw);
-				int* offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x += 2, pb++)
-				{
-					WritePixel4HH(addr + offset[x + 0], *pb & 0xf);
-					WritePixel4HH(addr + offset[x + 1], *pb >> 4);
-				}
-
-				if (x >= ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				WritePixel4HH(pa.value(x), *pb & 0xf);
+				WritePixel4HH(pa.value(x + 1), *pb >> 4);
+				pb++;
+			});
 			break;
 	}
-
-	tx = x;
-	ty = y;
 }
 
 //
@@ -1469,12 +1228,11 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, uint8* dst, int len, GIFRegBITB
 
 	uint32 bp = BITBLTBUF.SBP;
 	uint32 bw = BITBLTBUF.SBW;
-	psm_t* RESTRICT psm = &m_psm[BITBLTBUF.SPSM];
 
-	int x = tx;
-	int y = ty;
-	int sx = (int)TRXPOS.SSAX;
-	int ex = sx + (int)TRXREG.RRW;
+	int sx = TRXPOS.SSAX;
+	int w = TRXREG.RRW;
+
+	GSOffset off = GetOffset(bp, bw, BITBLTBUF.SPSM);
 
 	// printf("spsm=%d x=%d ex=%d y=%d len=%d\n", BITBLTBUF.SPSM, x, ex, y, len);
 
@@ -1482,280 +1240,159 @@ void GSLocalMemory::ReadImageX(int& tx, int& ty, uint8* dst, int len, GIFRegBITB
 	{
 		case PSM_PSMCT32:
 		case PSM_PSMZ32:
-
+		{
 			// MGS1 intro, fade effect between two scenes (airplane outside-inside transition)
+
+			int x = tx;
+			int y = ty;
+			int ex = sx + w;
 
 			len /= 4;
 
+			GSOffset::PAPtrHelper pa = off.assertSizesMatch(swizzle32).paMulti(m_vm32, 0, y);
+
 			while (len > 0)
 			{
-				int* RESTRICT offset = psm->rowOffset[y & 7];
-				uint32* RESTRICT ps = &m_vm32[psm->pa(0, y, bp, bw)];
-
 				for (; len > 0 && x < ex && (x & 7); len--, x++, pd++)
 				{
-					*pd = ps[offset[x]];
+					*pd = *pa.value(x);
 				}
 
 				// aligned to a column
 
 				for (int ex8 = ex - 8; len >= 8 && x <= ex8; len -= 8, x += 8, pd += 8)
 				{
-					int off = offset[x];
+					uint32* ps = pa.value(x);
 
-					GSVector4i::store<false>(&pd[0], GSVector4i::load(&ps[off + 0], &ps[off + 4]));
-					GSVector4i::store<false>(&pd[4], GSVector4i::load(&ps[off + 8], &ps[off + 12]));
+					GSVector4i::store<false>(&pd[0], GSVector4i::load(ps + 0, ps + 4));
+					GSVector4i::store<false>(&pd[4], GSVector4i::load(ps + 8, ps + 12));
 
 					for (int i = 0; i < 8; i++)
-						ASSERT(pd[i] == ps[offset[x + i]]);
+						ASSERT(pd[i] == *pa.value(x + i));
 				}
 
 				for (; len > 0 && x < ex; len--, x++, pd++)
 				{
-					*pd = ps[offset[x]];
+					*pd = *pa.value(x);
 				}
 
 				if (x == ex)
 				{
-					x = sx;
 					y++;
+					x = sx;
+					pa = off.assertSizesMatch(swizzle32).paMulti(m_vm32, 0, y);
 				}
 			}
 
-			break;
+			tx = x;
+			ty = y;
+		}
+		break;
 
 		case PSM_PSMCT24:
 		case PSM_PSMZ24:
-
-			len /= 3;
-
-			while (len > 0)
+			readWriteHelper(m_vm32, tx, ty, len / 3, 1, sx, w, off.assertSizesMatch(swizzle32), [&](auto& pa, int x)
 			{
-				int* RESTRICT offset = psm->rowOffset[y & 7];
-				uint32* RESTRICT ps = &m_vm32[psm->pa(0, y, bp, bw)];
-
-				for (; len > 0 && x < ex; len--, x++, pb += 3)
-				{
-					uint32 c = ps[offset[x]];
-
-					pb[0] = (uint8)(c);
-					pb[1] = (uint8)(c >> 8);
-					pb[2] = (uint8)(c >> 16);
-				}
-
-				if (x == ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				uint32 c = *pa.value(x);
+				pb[0] = (uint8)(c);
+				pb[1] = (uint8)(c >> 8);
+				pb[2] = (uint8)(c >> 16);
+				pb += 3;
+			});
 			break;
 
 		case PSM_PSMCT16:
 		case PSM_PSMCT16S:
 		case PSM_PSMZ16:
 		case PSM_PSMZ16S:
-
-			len /= 2;
-
-			while (len > 0)
+			readWriteHelper(m_vm16, tx, ty, len / 2, 1, sx, w, off.assertSizesMatch(swizzle16), [&](auto& pa, int x)
 			{
-				int* RESTRICT offset = psm->rowOffset[y & 7];
-				uint16* RESTRICT ps = &m_vm16[psm->pa(0, y, bp, bw)];
-
-				for (int ex4 = ex - 4; len >= 4 && x <= ex4; len -= 4, x += 4, pw += 4)
-				{
-					pw[0] = ps[offset[x + 0]];
-					pw[1] = ps[offset[x + 1]];
-					pw[2] = ps[offset[x + 2]];
-					pw[3] = ps[offset[x + 3]];
-				}
-
-				for (; len > 0 && x < ex; len--, x++, pw++)
-				{
-					*pw = ps[offset[x]];
-				}
-
-				if (x == ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				*pw = *pa.value(x);
+				pw++;
+			});
 			break;
 
 		case PSM_PSMT8:
-
-			while (len > 0)
+			readWriteHelper(m_vm8, tx, ty, len, 1, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8), [&](auto& pa, int x)
 			{
-				int* RESTRICT offset = psm->rowOffset[y & 7];
-				uint8* RESTRICT ps = &m_vm8[psm->pa(0, y, bp, bw)];
-
-				for (int ex4 = ex - 4; len >= 4 && x <= ex4; len -= 4, x += 4, pb += 4)
-				{
-					pb[0] = ps[offset[x + 0]];
-					pb[1] = ps[offset[x + 1]];
-					pb[2] = ps[offset[x + 2]];
-					pb[3] = ps[offset[x + 3]];
-				}
-
-				for (; len > 0 && x < ex; len--, x++, pb++)
-				{
-					*pb = ps[offset[x]];
-				}
-
-				if (x == ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				*pb = *pa.value(x);
+				pb++;
+			});
 			break;
 
 		case PSM_PSMT4:
-
-			while (len > 0)
+			readWriteHelper(tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4), [&](GSOffset::PAHelper& pa, int x)
 			{
-				uint32 addr = psm->pa(0, y, bp, bw);
-				int* RESTRICT offset = psm->rowOffset[y & 7];
-
-				for (; len > 0 && x < ex; len--, x += 2, pb++)
-				{
-					*pb = (uint8)(ReadPixel4(addr + offset[x + 0]) | (ReadPixel4(addr + offset[x + 1]) << 4));
-				}
-
-				if (x == ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				uint8 low = ReadPixel4(pa.value(x));
+				uint8 high = ReadPixel4(pa.value(x + 1));
+				*pb = low | (high << 4);
+			});
 			break;
 
 		case PSM_PSMT8H:
-
-			while (len > 0)
+			readWriteHelper(m_vm32, tx, ty, len, 1, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT8H), [&](auto& pa, int x)
 			{
-				int* RESTRICT offset = psm->rowOffset[y & 7];
-				uint32* RESTRICT ps = &m_vm32[psm->pa(0, y, bp, bw)];
-
-				for (int ex4 = ex - 4; len >= 4 && x <= ex4; len -= 4, x += 4, pb += 4)
-				{
-					pb[0] = (uint8)(ps[offset[x + 0]] >> 24);
-					pb[1] = (uint8)(ps[offset[x + 1]] >> 24);
-					pb[2] = (uint8)(ps[offset[x + 2]] >> 24);
-					pb[3] = (uint8)(ps[offset[x + 3]] >> 24);
-				}
-
-				for (; len > 0 && x < ex; len--, x++, pb++)
-				{
-					*pb = (uint8)(ps[offset[x]] >> 24);
-				}
-
-				if (x == ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				*pb = (uint8)(*pa.value(x) >> 24);
+				pb++;
+			});
 			break;
 
 		case PSM_PSMT4HL:
-
-			while (len > 0)
+			readWriteHelper(m_vm32, tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HL), [&](auto& pa, int x)
 			{
-				int* offset = psm->rowOffset[y & 7];
-				uint32* RESTRICT ps = &m_vm32[psm->pa(0, y, bp, bw)];
-
-				for (; len > 0 && x < ex; len--, x += 2, pb++)
-				{
-					uint32 c0 = (ps[offset[x + 0]] >> 24) & 0x0f;
-					uint32 c1 = (ps[offset[x + 1]] >> 20) & 0xf0;
-
-					*pb = (uint8)(c0 | c1);
-				}
-
-				if (x == ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				uint32 c0 = *pa.value(x) >> 24 & 0x0f;
+				uint32 c1 = *pa.value(x + 1) >> 20 & 0xf0;
+				*pb = (uint8)(c0 | c1);
+				pb++;
+			});
 			break;
 
 		case PSM_PSMT4HH:
-
-			while (len > 0)
+			readWriteHelper(m_vm32, tx, ty, len * 2, 2, sx, w, GSOffset::fromKnownPSM(bp, bw, PSM_PSMT4HH), [&](auto& pa, int x)
 			{
-				int* RESTRICT offset = psm->rowOffset[y & 7];
-				uint32* RESTRICT ps = &m_vm32[psm->pa(0, y, bp, bw)];
-
-				for (; len > 0 && x < ex; len--, x += 2, pb++)
-				{
-					uint32 c0 = (ps[offset[x + 0]] >> 28) & 0x0f;
-					uint32 c1 = (ps[offset[x + 1]] >> 24) & 0xf0;
-
-					*pb = (uint8)(c0 | c1);
-				}
-
-				if (x == ex)
-				{
-					x = sx;
-					y++;
-				}
-			}
-
+				uint32 c0 = *pa.value(x) >> 28 & 0x0f;
+				uint32 c1 = *pa.value(x + 1) >> 24 & 0xf0;
+				*pb = (uint8)(c0 | c1);
+				pb++;
+			});
 			break;
 	}
-
-	tx = x;
-	ty = y;
 }
 
 ///////////////////
 
-void GSLocalMemory::ReadTexture32(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
+void GSLocalMemory::ReadTexture32(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
 {
-	FOREACH_BLOCK_START(r, 8, 8, 32)
+	foreachBlock(off.assertSizesMatch(swizzle32), this, r, dst, dstpitch, 32, [&](uint8* read_dst, const uint8* src)
 	{
 		GSBlock::ReadBlock32(src, read_dst, dstpitch);
-	}
-	FOREACH_BLOCK_END
+	});
 }
 
-void GSLocalMemory::ReadTexture24(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
+void GSLocalMemory::ReadTexture24(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
 {
 	if (TEXA.AEM)
 	{
-		FOREACH_BLOCK_START(r, 8, 8, 32)
+		foreachBlock(off.assertSizesMatch(swizzle32), this, r, dst, dstpitch, 32, [&](uint8* read_dst, const uint8* src)
 		{
 			GSBlock::ReadAndExpandBlock24<true>(src, read_dst, dstpitch, TEXA);
-		}
-		FOREACH_BLOCK_END
+		});
 	}
 	else
 	{
-		FOREACH_BLOCK_START(r, 8, 8, 32)
+		foreachBlock(off.assertSizesMatch(swizzle32), this, r, dst, dstpitch, 32, [&](uint8* read_dst, const uint8* src)
 		{
 			GSBlock::ReadAndExpandBlock24<false>(src, read_dst, dstpitch, TEXA);
-		}
-		FOREACH_BLOCK_END
+		});
 	}
 }
 
-void GSLocalMemory::ReadTextureGPU24(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
+void GSLocalMemory::ReadTextureGPU24(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
 {
-	FOREACH_BLOCK_START(r, 16, 8, 16)
+	foreachBlock(off.assertSizesMatch(swizzle16), this, r, dst, dstpitch, 16, [&](uint8* read_dst, const uint8* src)
 	{
 		GSBlock::ReadBlock16(src, read_dst, dstpitch);
-	}
-	FOREACH_BLOCK_END
+	});
 
 	// Convert packed RGB scanline to 32 bits RGBA
 	ASSERT(dstpitch >= r.width() * 4);
@@ -1770,79 +1407,72 @@ void GSLocalMemory::ReadTextureGPU24(const GSOffset* RESTRICT off, const GSVecto
 	}
 }
 
-void GSLocalMemory::ReadTexture16(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
+void GSLocalMemory::ReadTexture16(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
 {
 	if (TEXA.AEM)
 	{
-		FOREACH_BLOCK_START(r, 16, 8, 32)
+		foreachBlock(off.assertSizesMatch(swizzle16), this, r, dst, dstpitch, 32, [&](uint8* read_dst, const uint8* src)
 		{
 			GSBlock::ReadAndExpandBlock16<true>(src, read_dst, dstpitch, TEXA);
-		}
-		FOREACH_BLOCK_END
+		});
 	}
 	else
 	{
-		FOREACH_BLOCK_START(r, 16, 8, 32)
+		foreachBlock(off.assertSizesMatch(swizzle16), this, r, dst, dstpitch, 32, [&](uint8* read_dst, const uint8* src)
 		{
 			GSBlock::ReadAndExpandBlock16<false>(src, read_dst, dstpitch, TEXA);
-		}
-		FOREACH_BLOCK_END
+		});
 	}
 }
 
-void GSLocalMemory::ReadTexture8(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
+void GSLocalMemory::ReadTexture8(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
 {
 	const uint32* pal = m_clut;
 
-	FOREACH_BLOCK_START(r, 16, 16, 32)
+	foreachBlock(off.assertSizesMatch(swizzle8), this, r, dst, dstpitch, 32, [&](uint8* read_dst, const uint8* src)
 	{
 		GSBlock::ReadAndExpandBlock8_32(src, read_dst, dstpitch, pal);
-	}
-	FOREACH_BLOCK_END
+	});
 }
 
-void GSLocalMemory::ReadTexture4(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
+void GSLocalMemory::ReadTexture4(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
 {
 	const uint64* pal = m_clut;
 
-	FOREACH_BLOCK_START(r, 32, 16, 32)
+	foreachBlock(off.assertSizesMatch(swizzle4), this, r, dst, dstpitch, 32, [&](uint8* read_dst, const uint8* src)
 	{
 		GSBlock::ReadAndExpandBlock4_32(src, read_dst, dstpitch, pal);
-	}
-	FOREACH_BLOCK_END
+	});
 }
 
-void GSLocalMemory::ReadTexture8H(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
+void GSLocalMemory::ReadTexture8H(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
 {
 	const uint32* pal = m_clut;
 
-	FOREACH_BLOCK_START(r, 8, 8, 32)
+	foreachBlock(off.assertSizesMatch(swizzle32), this, r, dst, dstpitch, 32, [&](uint8* read_dst, const uint8* src)
 	{
 		GSBlock::ReadAndExpandBlock8H_32(src, read_dst, dstpitch, pal);
-	}
-	FOREACH_BLOCK_END
+	});
 }
 
-void GSLocalMemory::ReadTexture4HL(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
+void GSLocalMemory::ReadTexture4HL(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
 {
 	const uint32* pal = m_clut;
 
-	FOREACH_BLOCK_START(r, 8, 8, 32)
+	foreachBlock(off.assertSizesMatch(swizzle32), this, r, dst, dstpitch, 32, [&](uint8* read_dst, const uint8* src)
 	{
 		GSBlock::ReadAndExpandBlock4HL_32(src, read_dst, dstpitch, pal);
-	}
-	FOREACH_BLOCK_END
+	});
 }
 
-void GSLocalMemory::ReadTexture4HH(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
+void GSLocalMemory::ReadTexture4HH(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
 {
 	const uint32* pal = m_clut;
 
-	FOREACH_BLOCK_START(r, 8, 8, 32)
+	foreachBlock(off.assertSizesMatch(swizzle32), this, r, dst, dstpitch, 32, [&](uint8* read_dst, const uint8* src)
 	{
 		GSBlock::ReadAndExpandBlock4HH_32(src, read_dst, dstpitch, pal);
-	}
-	FOREACH_BLOCK_END
+	});
 }
 
 ///////////////////
@@ -1919,9 +1549,9 @@ void GSLocalMemory::ReadTextureBlock4HH(uint32 bp, uint8* dst, int dstpitch, con
 
 ///////////////////
 
-void GSLocalMemory::ReadTexture(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
+void GSLocalMemory::ReadTexture(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
 {
-	const psm_t& psm = m_psm[off->psm];
+	const psm_t& psm = m_psm[off.psm()];
 
 	readTexel rt = psm.rt;
 	readTexture rtx = psm.rtx;
@@ -1930,9 +1560,9 @@ void GSLocalMemory::ReadTexture(const GSOffset* RESTRICT off, const GSVector4i& 
 	{
 		GIFRegTEX0 TEX0;
 
-		TEX0.TBP0 = off->bp;
-		TEX0.TBW = off->bw;
-		TEX0.PSM = off->psm;
+		TEX0.TBP0 = off.bp();
+		TEX0.TBW = off.bw();
+		TEX0.PSM = off.psm();
 
 		GSVector4i cr = r.ralign<Align_Inside>(psm.bs);
 
@@ -1998,49 +1628,44 @@ void GSLocalMemory::ReadTexture(const GSOffset* RESTRICT off, const GSVector4i& 
 
 // 32/8
 
-void GSLocalMemory::ReadTexture8P(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
+void GSLocalMemory::ReadTexture8P(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
 {
-	FOREACH_BLOCK_START(r, 16, 16, 8)
+	foreachBlock(off.assertSizesMatch(swizzle8), this, r, dst, dstpitch, 8, [&](uint8* read_dst, const uint8* src)
 	{
 		GSBlock::ReadBlock8(src, read_dst, dstpitch);
-	}
-	FOREACH_BLOCK_END
+	});
 }
 
-void GSLocalMemory::ReadTexture4P(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
+void GSLocalMemory::ReadTexture4P(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
 {
-	FOREACH_BLOCK_START(r, 32, 16, 8)
+	foreachBlock(off.assertSizesMatch(swizzle4), this, r, dst, dstpitch, 8, [&](uint8* read_dst, const uint8* src)
 	{
 		GSBlock::ReadBlock4P(src, read_dst, dstpitch);
-	}
-	FOREACH_BLOCK_END
+	});
 }
 
-void GSLocalMemory::ReadTexture8HP(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
+void GSLocalMemory::ReadTexture8HP(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
 {
-	FOREACH_BLOCK_START(r, 8, 8, 8)
+	foreachBlock(off.assertSizesMatch(swizzle32), this, r, dst, dstpitch, 8, [&](uint8* read_dst, const uint8* src)
 	{
 		GSBlock::ReadBlock8HP(src, read_dst, dstpitch);
-	}
-	FOREACH_BLOCK_END
+	});
 }
 
-void GSLocalMemory::ReadTexture4HLP(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
+void GSLocalMemory::ReadTexture4HLP(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
 {
-	FOREACH_BLOCK_START(r, 8, 8, 8)
+	foreachBlock(off.assertSizesMatch(swizzle32), this, r, dst, dstpitch, 8, [&](uint8* read_dst, const uint8* src)
 	{
 		GSBlock::ReadBlock4HLP(src, read_dst, dstpitch);
-	}
-	FOREACH_BLOCK_END
+	});
 }
 
-void GSLocalMemory::ReadTexture4HHP(const GSOffset* RESTRICT off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
+void GSLocalMemory::ReadTexture4HHP(const GSOffset& off, const GSVector4i& r, uint8* dst, int dstpitch, const GIFRegTEXA& TEXA)
 {
-	FOREACH_BLOCK_START(r, 8, 8, 8)
+	foreachBlock(off.assertSizesMatch(swizzle32), this, r, dst, dstpitch, 8, [&](uint8* read_dst, const uint8* src)
 	{
 		GSBlock::ReadBlock4HHP(src, read_dst, dstpitch);
-	}
-	FOREACH_BLOCK_END
+	});
 }
 
 //
@@ -2118,157 +1743,165 @@ void GSLocalMemory::SaveBMP(const std::string& fn, uint32 bp, uint32 bw, uint32 
 
 // GSOffset
 
-GSOffset::GSOffset(uint32 _bp, uint32 _bw, uint32 _psm)
+namespace
 {
-	hash = _bp | (_bw << 14) | (_psm << 20);
-
-	GSLocalMemory::pixelAddress bn = GSLocalMemory::m_psm[_psm].bn;
-
-	for (int i = 0; i < 256; i++)
+	/// Helper for GSOffset::pageLooperForRect
+	struct alignas(16) TextureAligned
 	{
-		block.row[i] = (short)bn(0, i << 3, _bp, _bw);
+		int ox1, oy1, ox2, oy2; ///< Block-aligned outer rect (smallest rectangle containing the original that is block-aligned)
+		int ix1, iy1, ix2, iy2; ///< Page-aligned inner rect (largest rectangle inside original that is page-aligned)
+	};
+
+	/// Helper for GSOffset::pageLooperForRect
+	TextureAligned align(const GSVector4i& rect, const GSVector2i& blockMask, const GSVector2i& pageMask, int blockShiftX, int blockShiftY)
+	{
+		GSVector4i outer = rect.ralign_presub<Align_Outside>(blockMask);
+		GSVector4i inner = outer.ralign_presub<Align_Inside>(pageMask);
+#if _M_SSE >= 0x501
+		GSVector4i shift = GSVector4i(blockShiftX, blockShiftY).xyxy();
+		outer = outer.srav32(shift);
+		inner = inner.srav32(shift);
+		return {
+			outer.x,
+			outer.y,
+			outer.z,
+			outer.w,
+			inner.x,
+			inner.y,
+			inner.z,
+			inner.w,
+		};
+#else
+		GSVector4i outerX = outer.sra32(blockShiftX);
+		GSVector4i outerY = outer.sra32(blockShiftY);
+		GSVector4i innerX = inner.sra32(blockShiftX);
+		GSVector4i innerY = inner.sra32(blockShiftY);
+		return {
+			outerX.x,
+			outerY.y,
+			outerX.z,
+			outerY.w,
+			innerX.x,
+			innerY.y,
+			innerX.z,
+			innerY.w,
+		};
+#endif
 	}
 
-	block.col = GSLocalMemory::m_psm[_psm].blockOffset;
+} // namespace
 
-	GSLocalMemory::pixelAddress pa = GSLocalMemory::m_psm[_psm].pa;
-
-	for (int i = 0; i < 4096; i++)
-	{
-		pixel.row[i] = (int)pa(0, i & 0x7ff, _bp, _bw);
-	}
-
-	for (int i = 0; i < 8; i++)
-	{
-		pixel.col[i] = GSLocalMemory::m_psm[_psm].rowOffset[i];
-	}
-
-	pages_as_bit.fill(nullptr);
-}
-
-GSOffset::~GSOffset()
+GSOffset::PageLooper GSOffset::pageLooperForRect(const GSVector4i& rect) const
 {
-	for (auto buffer : pages_as_bit)
-		_aligned_free(buffer);
-}
+	// Plan:
+	// - Split texture into tiles on page lines
+	// - When bp is not page-aligned, each page-sized tile of texture may touch the page on either side of it
+	//   e.g. if bp is 1 on PSMCT32, the top left tile uses page 1 if the rect covers the bottom right block, and uses page 0 if the rect covers any block other than the bottom right
+	// - Center tiles (ones that aren't first or last) cover all blocks that the first and last do in a row
+	//   Therefore, if the first tile in a row touches the higher of its two pages, subsequent non-last tiles will at least touch the higher of their pages as well (and same for center to last, etc)
+	//   Therefore, with the exception of row covering two pages in a z swizzle (which could touch e.g. pages 1 and 3 but not 2), all rows touch contiguous pages
+	//   For now, we won't deal with that case as it's rare (only possible with a thin, unaligned rect on an unaligned bp on a z swizzle), and the worst issue looping too many pages could cause is unneccessary cache invalidation
+	//   If code is added later to deal with the case, you'll need to change loopPagesWithBreak's block deduplication code, as it currently works by forcing the page number to increase monotonically which could cause blocks to be missed if e.g. the first row touches 1 and 3, and the second row touches 2 and 4
+	// - Based on the above assumption, we calculate the range of pages a row could touch with full coverage, then add one to the start if the first tile doesn't touch its lower page, and subtract one from the end if the last tile doesn't touch its upper page
+	// - This is done separately for the first and last rows in the y axis, as they may not have the same coverage as a row in the middle
 
-uint32* GSOffset::GetPages(const GSVector4i& rect, uint32* pages, GSVector4i* bbox)
-{
-	GSVector2i bs = (bp & 31) == 0 ? GSLocalMemory::m_psm[psm].pgs : GSLocalMemory::m_psm[psm].bs;
+	PageLooper out;
+	const int topPg = rect.top >> m_pageShiftY;
+	const int botPg = (rect.bottom + m_pageMask.y) >> m_pageShiftY;
+	const int blockOff = m_bp & 0x1f;
+	const int invBlockOff = 32 - blockOff;
+	const bool aligned = blockOff == 0;
 
-	GSVector4i r = rect.ralign<Align_Outside>(bs);
+	out.bp = (m_bp >> 5) + topPg * m_bwPg;
+	out.yInc = m_bwPg;
+	out.yCnt = botPg - topPg;
+	out.firstRowPgXStart = out.midRowPgXStart = out.lastRowPgXStart = rect.left >> m_pageShiftX;
+	out.firstRowPgXEnd = out.midRowPgXEnd = out.lastRowPgXEnd = ((rect.right + m_pageMask.x) >> m_pageShiftX) + !aligned;
+	// Page-aligned bp is easy, all tiles touch their lower page but not the upper
+	if (aligned)
+		return out;
 
-	if (bbox != NULL)
-		*bbox = r;
+	TextureAligned a = align(rect, m_blockMask, m_pageMask, m_blockShiftX, m_blockShiftY);
 
-	// worst case:
-	// bp page-aligned: (w * h) / (64 * 32)
-	// bp block-aligned: (w * h) / (8 * 8)
+	const int shiftX = m_pageShiftX - m_blockShiftX;
+	const int shiftY = m_pageShiftY - m_blockShiftY;
+	const int blkW = 1 << shiftX;
+	const int blkH = 1 << shiftY;
 
-	int size = r.width() * r.height();
-
-	int limit = MAX_PAGES + 1;
-
-	if (pages == NULL)
+	/// Does the given rect in the texture touch the given page?
+	auto rectUsesPage = [&](int x1, int x2, int y1, int y2, bool lowPage) -> bool
 	{
-		limit = std::min<int>((size >> ((bp & 31) != 0 ? 6 : 11)) + 2, MAX_PAGES) + 1;
+		for (int y = y1; y < y2; y++)
+			for (int x = x1; x < x2; x++)
+				if ((m_blockSwizzle->lookup(x, y) < invBlockOff) == lowPage)
+					return true;
+		return false;
+	};
 
-		pages = new uint32[limit];
-	}
-
-	alignas(16) uint32 tmp[16];
-
-	((GSVector4i*)tmp)[0] = GSVector4i::zero();
-	((GSVector4i*)tmp)[1] = GSVector4i::zero();
-	((GSVector4i*)tmp)[2] = GSVector4i::zero();
-	((GSVector4i*)tmp)[3] = GSVector4i::zero();
-
-	r = r.sra32(3);
-
-	bs.x >>= 3;
-	bs.y >>= 3;
-
-	uint32* RESTRICT p = pages;
-
-	for (int y = r.top; y < r.bottom; y += bs.y)
+	/// Do the given coordinates stay within the boundaries of one page?
+	auto staysWithinOnePage = [](int o1, int o2, int i1, int i2) -> bool
 	{
-		uint32 base = block.row[y];
+		// Inner rect being inside out indicates staying within one page
+		if (i2 < i1)
+			return true;
+		// If there's no inner rect, stays in one page if only one side of the page line is used
+		if (i2 == i1)
+			return o1 == i1 || o2 == i1;
+		return false;
+	};
 
-		for (int x = r.left; x < r.right; x += bs.x)
+	const bool onePageX = staysWithinOnePage(a.ox1, a.ox2, a.ix1, a.ix2);
+	/// Adjusts start/end values for lines that don't touch their first/last page
+	/// (e.g. if the texture only touches the bottom-left corner of its top-right page, depending on the bp, it may not have any pixels that actually use the last page in the row)
+	auto adjustStartEnd = [&](int& start, int& end, int y1, int y2)
+	{
+		int startAdj1, startAdj2, endAdj1, endAdj2;
+		if (onePageX)
 		{
-			uint32 n = ((base + block.col[x]) >> 5) % MAX_PAGES;
-
-			uint32& row = tmp[n >> 5];
-			uint32 col = 1 << (n & 31);
-
-			if ((row & col) == 0)
-			{
-				row |= col;
-
-				*p++ = n;
-			}
+			startAdj1 = endAdj1 = a.ox1;
+			startAdj2 = endAdj2 = a.ox2;
 		}
-	}
-
-	*p++ = (uint32)EOP;
-
-	ASSERT(p - pages <= limit);
-
-	return pages;
-}
-
-uint32* GSOffset::GetPagesAsBits(const GIFRegTEX0& TEX0)
-{
-	// Performance note:
-	// GSOffset is per bp/bw/psm
-	// Pages coverage depends also on TW and Th (8bits). Therefore we will save them as a small array.
-	// It is faster than a hash cache and it reduces the GetPagesAsBits overhead.
-
-	int hash_key = (TEX0.u64 >> 26) & 0xFF;
-	uint32* pages = pages_as_bit[hash_key];
-
-	if (pages)
-		return pages;
-
-	// Aligned on 64 bytes to store the full bitmap in a single cache line
-	pages = (uint32*)_aligned_malloc(MAX_PAGES / 8, 64);
-	pages_as_bit[hash_key] = pages;
-
-	GetPagesAsBits(GSVector4i(0, 0, 1 << TEX0.TW, 1 << TEX0.TH), pages);
-
-	return pages;
-}
-
-
-void* GSOffset::GetPagesAsBits(const GSVector4i& rect, void* pages)
-{
-	ASSERT(pages != nullptr);
-
-	((GSVector4i*)pages)[0] = GSVector4i::zero();
-	((GSVector4i*)pages)[1] = GSVector4i::zero();
-	((GSVector4i*)pages)[2] = GSVector4i::zero();
-	((GSVector4i*)pages)[3] = GSVector4i::zero();
-
-	GSVector2i bs = (bp & 31) == 0 ? GSLocalMemory::m_psm[psm].pgs : GSLocalMemory::m_psm[psm].bs;
-
-	GSVector4i r = rect.ralign<Align_Outside>(bs);
-
-	r = r.sra32(3);
-
-	bs.x >>= 3;
-	bs.y >>= 3;
-
-	for (int y = r.top; y < r.bottom; y += bs.y)
-	{
-		uint32 base = block.row[y];
-
-		for (int x = r.left; x < r.right; x += bs.x)
+		else
 		{
-			uint32 n = ((base + block.col[x]) >> 5) % MAX_PAGES;
-
-			((uint32*)pages)[n >> 5] |= 1 << (n & 31);
+			startAdj1 = (a.ox1 == a.ix1) ? 0    : a.ox1;
+			startAdj2 = (a.ox1 == a.ix1) ? blkW : a.ix1;
+			endAdj1   = (a.ox2 == a.ix2) ? 0    : a.ix2;
+			endAdj2   = (a.ox2 == a.ix2) ? blkW : a.ox2;
 		}
+
+		if (!rectUsesPage(startAdj1, startAdj2, y1, y2, true))
+			start++;
+		if (!rectUsesPage(endAdj1, endAdj2, y1, y2, false))
+			end--;
+	};
+
+	// If y stays within one page, loop functions will only look at the `first` fields
+	if (staysWithinOnePage(a.oy1, a.oy2, a.iy1, a.iy2))
+	{
+		adjustStartEnd(out.firstRowPgXStart, out.firstRowPgXEnd, a.oy1, a.oy2);
+		return out;
 	}
 
-	return pages;
+	// Mid rows (if any) will always have full range of y
+	adjustStartEnd(out.midRowPgXStart, out.midRowPgXEnd, 0, blkH);
+	// For first and last rows, either copy mid if they are full height or separately calculate them with their smaller ranges
+	if (a.oy1 != a.iy1)
+	{
+		adjustStartEnd(out.firstRowPgXStart, out.firstRowPgXEnd, a.oy1, a.iy1);
+	}
+	else
+	{
+		out.firstRowPgXStart = out.midRowPgXStart;
+		out.firstRowPgXEnd   = out.midRowPgXEnd;
+	}
+	if (a.oy2 != a.iy2)
+	{
+		adjustStartEnd(out.lastRowPgXStart, out.lastRowPgXEnd, a.iy2, a.oy2);
+	}
+	else
+	{
+		out.lastRowPgXStart = out.midRowPgXStart;
+		out.lastRowPgXEnd   = out.midRowPgXEnd;
+	}
+	return out;
 }

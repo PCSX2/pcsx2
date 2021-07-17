@@ -220,16 +220,14 @@ void GSClut::WriteCLUT16S_I4_CSM1(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& T
 template <int n>
 void GSClut::WriteCLUT32_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
-	GSOffset* off = m_mem->GetOffset(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT32);
-
-	uint32* RESTRICT s = &m_mem->m_vm32[off->pixel.row[TEXCLUT.COV]];
-	int* RESTRICT col = &off->pixel.col[0][TEXCLUT.COU << 4];
+	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT32);
+	auto pa = off.paMulti(m_mem->m_vm32, TEXCLUT.COU << 4, TEXCLUT.COV);
 
 	uint16* RESTRICT clut = m_clut + ((TEX0.CSA & 15) << 4);
 
 	for (int i = 0; i < n; i++)
 	{
-		uint32 c = s[col[i]];
+		uint32 c = *pa.value(i);
 
 		clut[i] = (uint16)(c & 0xffff);
 		clut[i + 256] = (uint16)(c >> 16);
@@ -239,32 +237,28 @@ void GSClut::WriteCLUT32_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCL
 template <int n>
 void GSClut::WriteCLUT16_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
-	GSOffset* off = m_mem->GetOffset(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT16);
-
-	uint16* RESTRICT s = &m_mem->m_vm16[off->pixel.row[TEXCLUT.COV]];
-	int* RESTRICT col = &off->pixel.col[0][TEXCLUT.COU << 4];
+	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT16);
+	auto pa = off.paMulti(m_mem->m_vm16, TEXCLUT.COU << 4, TEXCLUT.COV);
 
 	uint16* RESTRICT clut = m_clut + (TEX0.CSA << 4);
 
 	for (int i = 0; i < n; i++)
 	{
-		clut[i] = s[col[i]];
+		clut[i] = *pa.value(i);
 	}
 }
 
 template <int n>
 void GSClut::WriteCLUT16S_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
-	GSOffset* off = m_mem->GetOffset(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT16S);
-
-	uint16* RESTRICT s = &m_mem->m_vm16[off->pixel.row[TEXCLUT.COV]];
-	int* RESTRICT col = &off->pixel.col[0][TEXCLUT.COU << 4];
+	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT16S);
+	auto pa = off.paMulti(m_mem->m_vm16, TEXCLUT.COU << 4, TEXCLUT.COV);
 
 	uint16* RESTRICT clut = m_clut + (TEX0.CSA << 4);
 
 	for (int i = 0; i < n; i++)
 	{
-		clut[i] = s[col[i]];
+		clut[i] = *pa.value(i);
 	}
 }
 
