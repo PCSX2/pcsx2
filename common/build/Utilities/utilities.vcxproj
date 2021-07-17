@@ -103,6 +103,7 @@
     <ClCompile Include="..\..\src\Utilities\Windows\WinMisc.cpp" />
     <ClCompile Include="..\..\src\Utilities\Windows\WinThreads.cpp" />
     <ClCompile Include="..\..\src\Utilities\Mutex.cpp" />
+    <ClCompile Include="..\..\src\Utilities\Misc.cpp" />
     <ClCompile Include="..\..\src\Utilities\RwMutex.cpp" />
     <ClCompile Include="..\..\src\Utilities\Semaphore.cpp" />
     <ClCompile Include="..\..\src\Utilities\ThreadTools.cpp" />

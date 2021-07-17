@@ -27,6 +27,7 @@ set(UtilitiesSources
 	IniInterface.cpp
 	Linux/LnxHostSys.cpp
 	Mutex.cpp
+	Misc.cpp
 	PathUtils.cpp
 	PrecompiledHeader.cpp
 	Perf.cpp

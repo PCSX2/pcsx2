@@ -86,6 +86,9 @@
     <ClCompile Include="..\..\src\Utilities\Mutex.cpp">
       <Filter>Source Files\Threading</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\src\Utilities\Misc.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="..\..\src\Utilities\Semaphore.cpp">
       <Filter>Source Files\Threading</Filter>
     </ClCompile>
