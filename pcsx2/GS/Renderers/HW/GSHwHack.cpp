@@ -244,36 +244,6 @@ bool GSC_Spartan(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_IkkiTousen(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if ((Aggressive || !s_nativeres) && fi.TME && fi.FBP == 0x00700 && fi.FPSM == PSM_PSMZ24 && fi.TBP0 == 0x01180 && fi.TPSM == PSM_PSMZ24)
-		{
-			// Might not be needed if any of the upscaling hacks fix the issues, needs to be further tested.
-			// Don't enable hack on native res if crc is below aggressive.
-			skip = 11; // Upscaling blur/ghosting
-		}
-	}
-
-	return true;
-}
-
-bool GSC_EvangelionJo(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if ((Aggressive || !s_nativeres) && fi.TME && fi.TBP0 == 0x2BC0 || (fi.FBP == 0 || fi.FBP == 0x1180) && (fi.FPSM | fi.TPSM) == 0)
-		{
-			// Don't enable hack on native res if crc is below aggressive.
-			// Removes blur/glow. Fixes ghosting when resolution is upscaled.
-			skip = 1;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_Oneechanbara2Special(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -483,35 +453,6 @@ bool GSC_MidnightClub3(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_TalesOfLegendia(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (fi.TME && (fi.FBP == 0x3f80 || fi.FBP == 0x03fa0) && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMT8)
-		{
-			skip = 3; // 3, 9
-		}
-		if (fi.TME && fi.FBP == 0x3800 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMZ32)
-		{
-			skip = 2;
-		}
-		if (fi.TME && fi.FBP && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x3d80)
-		{
-			skip = 1; // Missing block 2a00 in the upper left
-		}
-		if (fi.TME && fi.FBP == 0x1c00 && (fi.TBP0 == 0x2e80 || fi.TBP0 == 0x2d80) && fi.TPSM == 0 && fi.FBMSK == 0xff000000)
-		{
-			skip = 1; // Ghosting
-		}
-		if (!fi.TME && fi.FBP == 0x2a00 && (fi.TBP0 == 0x1C00) && fi.TPSM == 0 && fi.FBMSK == 0x00FFFFFF)
-		{
-			skip = 1; // Poisoned layer dislocation
-		}
-	}
-
-	return true;
-}
-
 bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -537,56 +478,6 @@ bool GSC_Kunoichi(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_ZettaiZetsumeiToshi2(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (fi.TME && fi.TPSM == PSM_PSMCT16S && (fi.FBMSK >= 0x6FFFFFFF || fi.FBMSK == 0))
-		{
-			skip = 1000;
-		}
-		else if (fi.TME && fi.TPSM == PSM_PSMCT32 && fi.FBMSK == 0xFF000000)
-		{
-			skip = 2; // Fog
-		}
-		else if ((fi.FBP | fi.TBP0) && fi.FPSM == fi.TPSM && fi.TPSM == PSM_PSMCT16 && fi.FBMSK == 0x3FFF)
-		{
-			// Note start of the effect (texture shuffle) is fixed in openGL but maybe not the extra draw
-			// call....
-			skip = 1000;
-		}
-	}
-	else
-	{
-		if (!fi.TME && fi.TPSM == PSM_PSMCT32 && fi.FBP == 0x1180 && fi.TBP0 == 0x1180 && (fi.FBMSK == 0))
-		{
-			skip = 0;
-		}
-		if (fi.TME && fi.TPSM == PSM_PSMT4 && fi.FBP && (fi.TBP0 != 0x3753))
-		{
-			skip = 0;
-		}
-		if (fi.TME && fi.TPSM == PSM_PSMT8H && fi.FBP == 0x22e0 && fi.TBP0 == 0x36e0)
-		{
-			skip = 0;
-		}
-		if (!fi.TME && fi.TPSM == PSM_PSMT8H && fi.FBP == 0x22e0)
-		{
-			skip = 0;
-		}
-		if (fi.TME && fi.TPSM == PSM_PSMT8 && (fi.FBP == 0x1180 || fi.FBP == 0) && (fi.TBP0 != 0x3764 && fi.TBP0 != 0x370f))
-		{
-			skip = 0;
-		}
-		if (fi.TME && fi.TPSM == PSM_PSMCT16S && (fi.FBP == 0x1180))
-		{
-			skip = 2;
-		}
-	}
-
-	return true;
-}
-
 bool GSC_SakuraWarsSoLongMyLove(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -602,21 +493,6 @@ bool GSC_SakuraWarsSoLongMyLove(const GSFrameInfo& fi, int& skip)
 		else if (fi.TME && (fi.FBP == 0 || fi.FBP == 0x1180) && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x3F3F && fi.TPSM == PSM_PSMT8)
 		{
 			skip = 1; // Floodlight
-		}
-	}
-
-	return true;
-}
-
-bool GSC_FightingBeautyWulong(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if ((Aggressive || !s_nativeres) && fi.TME && (fi.TBP0 == 0x0700 || fi.TBP0 == 0x0a80) && (fi.TPSM == PSM_PSMCT32 || fi.TPSM == PSM_PSMCT24))
-		{
-			// Don't enable hack on native res if crc is below aggressive.
-			// removes glow/blur which cause ghosting and other sprite issues similar to Tekken 5
-			skip = 1;
 		}
 	}
 
@@ -823,20 +699,6 @@ bool GSC_TriAceGames(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_TenchuGames(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (fi.TME && fi.TPSM == PSM_PSMZ16 && fi.FPSM == PSM_PSMCT16 && fi.FBMSK == 0x03FFF)
-		{
-			// Depth is fine, blending issues remain, crc hack can be adjusted to skip blend wall/fog only.
-			skip = 3;
-		}
-	}
-
-	return true;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // Aggressive only hack
 ////////////////////////////////////////////////////////////////////////////////
@@ -886,20 +748,6 @@ bool GSC_GodOfWar(const GSFrameInfo& fi, int& skip)
 	return true;
 }
 
-bool GSC_SoTC(const GSFrameInfo& fi, int& skip)
-{
-	// Not needed anymore? What did it fix anyway? (rama)
-	if (skip == 0)
-	{
-		if (fi.TME /*&& fi.FBP == 0x03d80*/ && fi.FPSM == 0 && fi.TBP0 == 0x03fc0 && fi.TPSM == 1)
-		{
-			skip = 48; // Removes sky bloom
-		}
-	}
-
-	return true;
-}
-
 bool GSC_FFXGames(const GSFrameInfo& fi, int& skip)
 {
 	if (skip == 0)
@@ -933,19 +781,6 @@ bool GSC_Okami(const GSFrameInfo& fi, int& skip)
 		if (fi.TME && fi.FBP == 0x00e00 && fi.FPSM == PSM_PSMCT32 && fi.TBP0 == 0x03800 && fi.TPSM == PSM_PSMT4)
 		{
 			skip = 0;
-		}
-	}
-
-	return true;
-}
-
-bool GSC_RedDeadRevolver(const GSFrameInfo& fi, int& skip)
-{
-	if (skip == 0)
-	{
-		if (fi.FBP == 0x03700 && fi.FPSM == PSM_PSMCT32 && fi.TPSM == PSM_PSMCT24)
-		{
-			skip = 2; // Blur
 		}
 	}
 
@@ -1037,7 +872,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::Simple2000Vol114] = GSC_Simple2000Vol114;
 		lut[CRC::Spartan] = GSC_Spartan;
 		lut[CRC::SFEX3] = GSC_SFEX3;
-		lut[CRC::TalesOfLegendia] = GSC_TalesOfLegendia;
 		lut[CRC::TalesofSymphonia] = GSC_TalesofSymphonia;
 		lut[CRC::TombRaiderAnniversary] = GSC_TombRaiderAnniversary;
 		lut[CRC::TombRaiderLegend] = GSC_TombRaiderLegend;
@@ -1045,7 +879,6 @@ void GSState::SetupCrcHack()
 		lut[CRC::UrbanReign] = GSC_UrbanReign;
 		lut[CRC::WildArms4] = GSC_WildArmsGames;
 		lut[CRC::WildArms5] = GSC_WildArmsGames;
-		lut[CRC::ZettaiZetsumeiToshi2] = GSC_ZettaiZetsumeiToshi2;
 
 		// Channel Effect
 		lut[CRC::GiTS] = GSC_GiTS;
@@ -1069,10 +902,7 @@ void GSState::SetupCrcHack()
 
 		// Upscaling hacks
 		lut[CRC::DBZBT3] = GSC_DBZBT3;
-		lut[CRC::EvangelionJo] = GSC_EvangelionJo;
-		lut[CRC::FightingBeautyWulong] = GSC_FightingBeautyWulong;
 		lut[CRC::GodOfWar2] = GSC_GodOfWar2;
-		lut[CRC::IkkiTousen] = GSC_IkkiTousen;
 		lut[CRC::Oneechanbara2Special] = GSC_Oneechanbara2Special;
 		lut[CRC::UltramanFightingEvolution] = GSC_UltramanFightingEvolution;
 		lut[CRC::Yakuza] = GSC_YakuzaGames;
@@ -1085,8 +915,6 @@ void GSState::SetupCrcHack()
 		// Accurate Blending
 		lut[CRC::GetaWay] = GSC_GetaWayGames;            // Blending High
 		lut[CRC::GetaWayBlackMonday] = GSC_GetaWayGames; // Blending High
-		lut[CRC::TenchuFS] = GSC_TenchuGames;
-		lut[CRC::TenchuWoH] = GSC_TenchuGames;
 
 		// These games emulate a stencil buffer with the alpha channel of the RT (too slow to move to Aggressive)
 		// Needs at least Basic Blending,
@@ -1102,9 +930,7 @@ void GSState::SetupCrcHack()
 		lut[CRC::FFX2] = GSC_FFXGames;
 		lut[CRC::FFX] = GSC_FFXGames;
 		lut[CRC::FFXII] = GSC_FFXGames;
-		lut[CRC::RedDeadRevolver] = GSC_RedDeadRevolver;
 		lut[CRC::ShinOnimusha] = GSC_ShinOnimusha;
-		lut[CRC::SoTC] = GSC_SoTC;
 		lut[CRC::XenosagaE3] = GSC_XenosagaE3;
 
 		// Upscaling issues
