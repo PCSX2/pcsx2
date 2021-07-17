@@ -6,9 +6,11 @@ echo "${PLATFORM}"
 if [ "${PLATFORM}" == "x86" ]; then
   APPARCH="i686"
   ARCH="i386"
+  LIBARCH="i386-linux-gnu"
 else
   APPARCH="x86_64"
   ARCH="x86_64"
+  LIBARCH="x86_64-linux-gnu"
 fi
 BUILDPATH="$GITHUB_WORKSPACE"/build
 BUILDBIN="$BUILDPATH"/pcsx2
@@ -45,8 +47,8 @@ mkdir -p "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/app
 cp -r "$GITHUB_WORKSPACE"/bin/Langs "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/
 cp "$GITHUB_WORKSPACE"/bin/docs/{Configuration_Guide.pdf,PCSX2_FAQ.pdf} "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/app
 cp "$GITHUB_WORKSPACE"/bin/cheats_ws.zip "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/app
-
 cp ./bin/GameIndex.yaml "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/app/GameIndex.yaml
+cp /usr/lib/$LIBARCH/libthai.so.0 "$GITHUB_WORKSPACE"/squashfs-root/usr/lib/
 export UPD_INFO="gh-releases-zsync|PCSX2|pcsx2|latest|$name.AppImage.zsync"
 export OUTPUT="$name.AppImage"
 /tmp/squashfs-root/AppRun --appdir="$GITHUB_WORKSPACE"/squashfs-root/ --plugin gtk -d "$GITHUB_WORKSPACE"/squashfs-root/PCSX2.desktop -i "$GITHUB_WORKSPACE"/squashfs-root/PCSX2.png --output appimage
