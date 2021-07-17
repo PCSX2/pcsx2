@@ -17,7 +17,7 @@
 #include "SPU2/Global.h"
 #include "Dialogs.h"
 
-#include "soundtouch/SoundTouch.h"
+#include "SoundTouch.h"
 
 static int SequenceLenMS = 30;
 static int SeekWindowMS = 20;

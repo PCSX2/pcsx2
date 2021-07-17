@@ -1,4 +1,4 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <_ProjectFileVersion>10.0.30128.1</_ProjectFileVersion>
@@ -6,7 +6,7 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\;$(SolutionDir)3rdparty\soundtouch\;$(SolutionDir)3rdparty\yaml-cpp\yaml-cpp\include\;$(SolutionDir)3rdparty\fmt\fmt\include\;$(SolutionDir)3rdparty\libchdr\libchdr\include;$(SolutionDir)3rdparty\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\;$(SolutionDir)3rdparty\soundtouch\soundtouch\;$(SolutionDir)3rdparty\yaml-cpp\yaml-cpp\include\;$(SolutionDir)3rdparty\fmt\fmt\include\;$(SolutionDir)3rdparty\libchdr\libchdr\include;$(SolutionDir)3rdparty\include\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <AdditionalLibraryDirectories>$(SolutionDir)deps\$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>

@@ -15,6 +15,14 @@
 
 #pragma once
 
+#ifdef __APPLE__
+	#define GL_SILENCE_DEPRECATION
+	#include <OpenGL/gl3.h>
+#else
+	#include <GL/gl.h>
+	#include <GL/glext.h>
+#endif
+
 #define GL_TEX_LEVEL_0 (0)
 #define GL_TEX_LEVEL_1 (1)
 #define GL_FB_DEFAULT  (0)
@@ -84,6 +92,7 @@
 #define ENABLE_GL_VERSION_1_4 1
 #endif
 
+#ifndef __APPLE__ // macOS provides up to GL 4.1
 #define ENABLE_GL_VERSION_1_5 1
 #define ENABLE_GL_VERSION_2_0 1
 #define ENABLE_GL_VERSION_2_1 1
@@ -93,13 +102,13 @@
 #define ENABLE_GL_VERSION_3_3 1
 #define ENABLE_GL_VERSION_4_0 1
 #define ENABLE_GL_VERSION_4_1 1
+#endif
 #define ENABLE_GL_VERSION_4_2 1
 #define ENABLE_GL_VERSION_4_3 1
 #define ENABLE_GL_VERSION_4_4 1
 #define ENABLE_GL_VERSION_4_5 1
 // #define ENABLE_GL_VERSION_4_6 1
 
-#include "GS.h"
 // FIX compilation issue with Mesa 10
 #include "glext_extra.h"
 
@@ -108,9 +117,17 @@
 typedef void(APIENTRYP PFNGLTEXTUREPAGECOMMITMENTEXTPROC)(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint zoffset, GLsizei width, GLsizei height, GLsizei depth, GLboolean commit);
 #endif
 
+#ifdef __APPLE__
+// Apple uses weakly-linked dylibs to provide GL symbols
+// This means that it's possible for a symbol to be null, but not writable by us
+extern PFNGLSCISSORINDEXEDPROC   gs_glScissorIndexed;
+extern PFNGLVIEWPORTINDEXEDFPROC gs_glViewportIndexedf;
+#  define glScissorIndexed   gs_glScissorIndexed
+#  define glViewportIndexedf gs_glViewportIndexedf
+#endif
 
 // It should be done by ENABLE_GL_VERSION_1_4 but it conflicts with the old gl.h
-#if defined(__unix__) || defined(__APPLE__)
+#ifdef __unix__
 extern PFNGLBLENDFUNCSEPARATEPROC glBlendFuncSeparate;
 #endif
 extern PFNGLTEXTUREPAGECOMMITMENTEXTPROC glTexturePageCommitmentEXT;

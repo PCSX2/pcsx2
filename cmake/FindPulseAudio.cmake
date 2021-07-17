@@ -2,6 +2,7 @@
 #
 #   PULSEAUDIO_FOUND        - True if PULSEAUDIO_INCLUDE_DIR &
 #                             PULSEAUDIO_LIBRARY are found
+#   PulseAudio::PulseAudio  - Imported target for PulseAudio, if found
 #   PULSEAUDIO_LIBRARIES    - Set when PULSEAUDIO_LIBRARY is found
 #   PULSEAUDIO_INCLUDE_DIRS - Set when PULSEAUDIO_INCLUDE_DIR is found
 #
@@ -34,6 +35,13 @@ find_package_handle_standard_args(PulseAudio
 	REQUIRED_VARS PULSEAUDIO_LIBRARY PULSEAUDIO_INCLUDE_DIR
 	VERSION_VAR PULSEAUDIO_VERSION_STRING
 )
+
+if(PULSEAUDIO_LIBRARY AND NOT TARGET PulseAudio::PulseAudio)
+	add_library(PulseAudio::PulseAudio UNKNOWN IMPORTED GLOBAL)
+	set_target_properties(PulseAudio::PulseAudio PROPERTIES
+		IMPORTED_LOCATION "${PULSEAUDIO_LIBRARY}"
+		INTERFACE_INCLUDE_DIRECTORIES "${PULSEAUDIO_INCLUDE_DIR}")
+endif()
 
 if(PULSEAUDIO_FOUND)
 	set(PULSEAUDIO_LIBRARIES ${PULSEAUDIO_LIBRARY})
