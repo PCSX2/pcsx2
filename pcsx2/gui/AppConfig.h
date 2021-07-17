@@ -115,6 +115,12 @@ enum MemoryCardType
 	MemoryCard_MaxCount
 };
 
+enum AudioCaptureSetting
+{
+	Audio_Mono,
+	Audio_Stereo
+};
+
 // =====================================================================================================
 //  Pcsx2 Application Configuration. 
 // =====================================================================================================
@@ -283,6 +289,7 @@ public:
 	struct CaptureOptions
 	{
 		bool EnableAudio;
+		AudioCaptureSetting	ChannelConfig;
 
 		CaptureOptions();
 

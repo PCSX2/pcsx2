@@ -894,6 +894,7 @@ void AppConfig::FramerateOptions::LoadSave( IniInterface& ini )
 AppConfig::CaptureOptions::CaptureOptions()
 {
 	EnableAudio = true;
+	ChannelConfig = Audio_Stereo;
 }
 
 void AppConfig::CaptureOptions::LoadSave(IniInterface& ini)
@@ -901,6 +902,16 @@ void AppConfig::CaptureOptions::LoadSave(IniInterface& ini)
 	ScopedIniGroup path(ini, L"Capture");
 
 	IniEntry( EnableAudio );
+
+	static const wxChar* AudioSettings[] =
+	{
+		L"Mono",
+		L"Stereo",
+		// WARNING: array must be NULL terminated to compute it size
+		NULL
+	};
+
+	ini.EnumEntry(L"ChannelConfig", ChannelConfig, AudioSettings, ChannelConfig);
 }
 
 AppConfig::UiTemplateOptions::UiTemplateOptions()

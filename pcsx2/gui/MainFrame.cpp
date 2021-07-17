@@ -122,6 +122,14 @@ void MainEmuFrame::UpdateCdvdSrcSelection()
 	UpdateStatusBar();
 }
 
+void MainEmuFrame::UpdateAudioCaptureSelections()
+{
+	if (g_Conf->AudioCapture.ChannelConfig == Audio_Stereo)
+		GetMenuBar()->Check(MenuId_Capture_Audio_Stereo, true);
+	else
+		GetMenuBar()->Check(MenuId_Capture_Audio_Mono, true);
+}
+
 bool MainEmuFrame::Destroy()
 {
 	// Sigh: wxWidgets doesn't issue Destroy() calls for children windows when the parent
@@ -314,7 +322,8 @@ void MainEmuFrame::ConnectMenus()
 	// Capture
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Video_ToggleCapture_Click, this, MenuId_Capture_Video_Record);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Video_ToggleCapture_Click, this, MenuId_Capture_Video_Stop);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Video_IncludeAudio_Click, this, MenuId_Capture_Video_IncludeAudio);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Audio_Include_Click, this, MenuId_Capture_Audio_Include);
+	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Audio_ChannelType_Click, this, MenuId_Capture_Audio_Stereo, MenuId_Capture_Audio_Stereo + 2);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click, this, MenuId_Capture_Screenshot_Screenshot);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_Capture_Screenshot_Screenshot_As_Click, this, MenuId_Capture_Screenshot_Screenshot_As);
 
@@ -491,14 +500,20 @@ void MainEmuFrame::CreateCaptureMenu()
 	sysVideoCaptureItem = m_submenuVideoCapture.Append(MenuId_Capture_Video_Stop, _("Stop Video Capture"));
 	sysVideoCaptureItem->Enable(false);
 	AppendShortcutToMenuOption(*sysVideoCaptureItem, wxGetApp().GlobalAccels->findKeycodeWithCommandId("Sys_RecordingToggle").toTitleizedString());
-	m_submenuVideoCapture.AppendSeparator();
-	m_submenuVideoCapture.Append(MenuId_Capture_Video_IncludeAudio, _("Include Audio"),
+		
+	m_menuCapture.Append(MenuId_Capture_Audio, _("Audio"), &m_submenuAudioCapture);
+	m_submenuAudioCapture.Append(MenuId_Capture_Audio_Include, _("Include"),
 		_("Enables/disables the creation of a synchronized wav audio file when capturing video footage."), wxITEM_CHECK);
+	m_submenuAudioCapture.AppendSeparator();
+	m_submenuAudioCapture.Append(MenuId_Capture_Audio_Stereo, _("Stereo (Default)"), wxEmptyString, wxITEM_RADIO);
+	m_submenuAudioCapture.Append(MenuId_Capture_Audio_Mono, _("Mono"), _("Note: if in-game audio is in stereo, the resulting audio file will most likely sound really weird"), wxITEM_RADIO);
+
 	// Implement custom hotkeys (F8) + (Shift + F8) + (Ctrl + Shift + F8) with translatable string intact + not blank in GUI.
 	// Fixme: GlobalCommands.cpp L1029-L1031 is having issues because FrameForGS already maps the hotkey first.
 	// Fixme: When you uncomment L1029-L1031 on that file; Linux says that Ctrl is already used for something else and will append (Shift + F8) while Windows will (Ctrl + Shift + F8)
 	m_menuCapture.Append(MenuId_Capture_Screenshot, _("Screenshot"), &m_submenuScreenshot);
 	wxMenuItem* sysScreenShotItem = m_submenuScreenshot.Append(MenuId_Capture_Screenshot_Screenshot, _("Take Screenshot"));
+
 	// HACK: in AcceleratorDictionary::Map the Sys_TakeSnapshot entry gets Shift and Cmd (Ctrl) hardcoded to it because it is similarly hardcoded in GS
 	// So... remove such modifiers as the GUI menu entry is only for the base keybinding without modifiers.
 	// We can be confident in doing so, as if a user adds these modifiers themselves, the same function rejects it.
@@ -564,6 +579,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	, m_menuCapture(*new wxMenu())
 	, m_submenuVideoCapture(*new wxMenu())
 	, m_submenuIPC(*new wxMenu())
+	, m_submenuAudioCapture(*new wxMenu())
 	, m_submenuScreenshot(*new wxMenu())
 #ifndef DISABLE_RECORDING
 	, m_menuRecording(*new wxMenu())
@@ -821,7 +837,7 @@ void MainEmuFrame::ApplyConfigToGui(AppConfig& configToApply, int flags)
 		menubar.Check(MenuId_EnableCheats, configToApply.EmuOptions.EnableCheats);
 		menubar.Check(MenuId_IPC_Enable, configToApply.EmuOptions.EnableIPC);
 		menubar.Check(MenuId_EnableWideScreenPatches, configToApply.EmuOptions.EnableWideScreenPatches);
-		menubar.Check(MenuId_Capture_Video_IncludeAudio, configToApply.AudioCapture.EnableAudio);
+		menubar.Check(MenuId_Capture_Audio_Include, configToApply.AudioCapture.EnableAudio);
 #ifndef DISABLE_RECORDING
 		menubar.Check(MenuId_EnableInputRecording, configToApply.EmuOptions.EnableRecordingTools);
 		wxString frame_advance_label = wxString(_("Configure Frame Advance"));
@@ -841,6 +857,7 @@ void MainEmuFrame::ApplyConfigToGui(AppConfig& configToApply, int flags)
 	}
 
 	UpdateCdvdSrcSelection(); //shouldn't be affected by presets but updates from g_Conf anyway and not from configToApply, so no problem here.
+	UpdateAudioCaptureSelections();
 }
 
 //write pending preset settings from the gui to g_Conf,

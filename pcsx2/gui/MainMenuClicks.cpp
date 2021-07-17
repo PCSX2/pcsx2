@@ -942,9 +942,9 @@ void MainEmuFrame::Menu_Capture_Video_ToggleCapture_Click(wxCommandEvent& event)
 	VideoCaptureToggle();
 }
 
-void MainEmuFrame::Menu_Capture_Video_IncludeAudio_Click(wxCommandEvent& event)
+void MainEmuFrame::Menu_Capture_Audio_Include_Click(wxCommandEvent& event)
 {
-	g_Conf->AudioCapture.EnableAudio = GetMenuBar()->IsChecked(MenuId_Capture_Video_IncludeAudio);
+	g_Conf->AudioCapture.EnableAudio = GetMenuBar()->IsChecked(MenuId_Capture_Audio_Include);
 	ApplySettings();
 }
 
@@ -969,13 +969,7 @@ void MainEmuFrame::VideoCaptureToggle()
 		std::string filename;
 		if (GSsetupRecording(filename))
 		{
-			if (!g_Conf->AudioCapture.EnableAudio || SPU2setupRecording(&filename))
-			{
-				m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, false);
-				m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, true);
-				m_submenuVideoCapture.Enable(MenuId_Capture_Video_IncludeAudio, false);
-			}
-			else
+			if (g_Conf->AudioCapture.EnableAudio && !SPU2setupRecording(&filename))
 			{
 				GSendRecording();
 				m_capturingVideo = false;
@@ -993,10 +987,22 @@ void MainEmuFrame::VideoCaptureToggle()
 		GSendRecording();
 		if (g_Conf->AudioCapture.EnableAudio)
 			SPU2endRecording();
-		m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, true);
-		m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, false);
-		m_submenuVideoCapture.Enable(MenuId_Capture_Video_IncludeAudio, true);
 	}
+	
+	m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, !m_capturingVideo);
+	m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, m_capturingVideo);
+
+	m_submenuAudioCapture.Enable(MenuId_Capture_Audio_Include, !m_capturingVideo);
+	m_submenuAudioCapture.Enable(MenuId_Capture_Audio_Stereo, !m_capturingVideo);
+	m_submenuAudioCapture.Enable(MenuId_Capture_Audio_Mono, !m_capturingVideo);
+}
+
+void MainEmuFrame::Menu_Capture_Audio_ChannelType_Click(wxCommandEvent& event)
+{
+	if (event.GetId() == MenuId_Capture_Audio_Mono)
+		g_Conf->AudioCapture.ChannelConfig = Audio_Mono;
+	else
+		g_Conf->AudioCapture.ChannelConfig = Audio_Stereo;
 }
 
 void MainEmuFrame::Menu_Capture_Screenshot_Screenshot_Click(wxCommandEvent& event)

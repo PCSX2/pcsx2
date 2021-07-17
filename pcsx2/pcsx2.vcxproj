@@ -377,6 +377,7 @@
     <ClCompile Include="SPU2\Lowpass.cpp" />
     <ClCompile Include="SPU2\SndOut.cpp" />
     <ClCompile Include="SPU2\Timestretcher.cpp" />
+    <ClCompile Include="SPU2\WavFile.cpp" />
     <ClCompile Include="SPU2\Windows\SndOut_waveOut.cpp" />
     <ClCompile Include="SPU2\Windows\SndOut_XAudio2.cpp" />
     <ClCompile Include="SPU2\dma.cpp" />
@@ -814,6 +815,7 @@
     <ClInclude Include="SPU2\Dma.h" />
     <ClInclude Include="SPU2\regs.h" />
     <ClInclude Include="SPU2\Mixer.h" />
+    <ClInclude Include="SPU2\WavFile.h" />
     <ClInclude Include="SPU2\Windows\dsp.h" />
     <ClInclude Include="SPU2\Linux\Config.h" />
     <ClInclude Include="SPU2\Linux\Dialogs.h" />
