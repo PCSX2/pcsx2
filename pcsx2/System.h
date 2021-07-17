@@ -215,3 +215,6 @@ namespace Msgbox
 	extern int	Assertion( const wxString& text, const wxString& stacktrace );
 }
 
+#ifdef _WIN32
+extern void CheckIsUserOnHighPerfPowerPlan();
+#endif

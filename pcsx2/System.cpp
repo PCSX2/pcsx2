@@ -266,6 +266,10 @@ void SysLogMachineCaps()
 #endif
 
 	Console.Newline();
+
+#ifdef _WIN32
+	CheckIsUserOnHighPerfPowerPlan();
+#endif
 }
 
 template< typename CpuType >
