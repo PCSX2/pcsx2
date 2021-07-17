@@ -14,6 +14,7 @@
  */
 
 /* I2C registers */
+#define R511_I2C_CTL 0x40
 #define R51x_I2C_W_SID 0x41
 #define R51x_I2C_SADDR_3 0x42
 #define R51x_I2C_SADDR_2 0x43

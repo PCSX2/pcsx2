@@ -23,7 +23,14 @@ namespace usb_eyetoy
 	enum FrameFormat
 	{
 		format_mpeg,
-		format_jpeg
+		format_jpeg,
+		format_yuv400
+	};
+
+	enum DeviceType
+	{
+		TYPE_EYETOY,
+		TYPE_OV511P,
 	};
 
 	class VideoDevice
@@ -38,9 +45,12 @@ namespace usb_eyetoy
 
 		virtual int Port() { return mPort; }
 		virtual void Port(int port) { mPort = port; }
+		virtual int Type() { return mType; }
+		virtual void Type(int type) { mType = type; }
 
 	protected:
 		int mPort;
+		int mType;
 	};
 
 } // namespace usb_eyetoy

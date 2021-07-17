@@ -49,275 +49,37 @@ namespace usb_eyetoy
 		"EyeToy USB camera Namtai",
 	};
 
-	/*
-	Manufacturer:   OmniVision Technologies, Inc.
-	Product ID:     0x8519
-	Vendor ID:      0x05a9
-
-	Device VendorID/ProductID:   0x054C/0x0155   (Sony Corporation)
-	Device Version Number:   0x0100
-	Number of Configurations:   1
-	Manufacturer String:   1 "Sony corporation"
-	Product String:   2 "EyeToy USB camera Namtai"
-	*/
-
-	static const uint8_t eyetoy_dev_descriptor[] = {
-		0x12,          /* bLength */
-		0x01,          /* bDescriptorType */
-		WBVAL(0x0110), /* bcdUSB */
-		0x00,          /* bDeviceClass */
-		0x00,          /* bDeviceSubClass */
-		0x00,          /* bDeviceProtocol */
-		0x08,          /* bMaxPacketSize0 */
-		WBVAL(0x054c), /* idVendor */
-		WBVAL(0x0155), /* idProduct */
-		WBVAL(0x0100), /* bcdDevice */
-		0x01,          /* iManufacturer */
-		0x02,          /* iProduct */
-		0x00,          /* iSerialNumber */
-		0x01,          /* bNumConfigurations */
-	};
-
-	static const uint8_t eyetoy_config_descriptor[] = {
-		0x09,       // bLength
-		0x02,       // bDescriptorType (Configuration)
-		0xB4, 0x00, // wTotalLength 180
-		0x03,       // bNumInterfaces 3
-		0x01,       // bConfigurationValue
-		0x00,       // iConfiguration (String Index)
-		0x80,       // bmAttributes
-		0xFA,       // bMaxPower 500mA
-
-		0x09, // bLength
-		0x04, // bDescriptorType (Interface)
-		0x00, // bInterfaceNumber 0
-		0x00, // bAlternateSetting
-		0x01, // bNumEndpoints 1
-		0xFF, // bInterfaceClass
-		0x00, // bInterfaceSubClass
-		0x00, // bInterfaceProtocol
-		0x00, // iInterface (String Index)
-
-		0x07,       // bLength
-		0x05,       // bDescriptorType (Endpoint)
-		0x81,       // bEndpointAddress (IN/D2H)
-		0x01,       // bmAttributes (Isochronous, No Sync, Data EP)
-		0x00, 0x00, // wMaxPacketSize 0
-		0x01,       // bInterval 1 (unit depends on device speed)
-
-		0x09, // bLength
-		0x04, // bDescriptorType (Interface)
-		0x00, // bInterfaceNumber 0
-		0x01, // bAlternateSetting
-		0x01, // bNumEndpoints 1
-		0xFF, // bInterfaceClass
-		0x00, // bInterfaceSubClass
-		0x00, // bInterfaceProtocol
-		0x00, // iInterface (String Index)
-
-		0x07,       // bLength
-		0x05,       // bDescriptorType (Endpoint)
-		0x81,       // bEndpointAddress (IN/D2H)
-		0x01,       // bmAttributes (Isochronous, No Sync, Data EP)
-		0x80, 0x01, // wMaxPacketSize 384
-		0x01,       // bInterval 1 (unit depends on device speed)
-
-		0x09, // bLength
-		0x04, // bDescriptorType (Interface)
-		0x00, // bInterfaceNumber 0
-		0x02, // bAlternateSetting
-		0x01, // bNumEndpoints 1
-		0xFF, // bInterfaceClass
-		0x00, // bInterfaceSubClass
-		0x00, // bInterfaceProtocol
-		0x00, // iInterface (String Index)
-
-		0x07,       // bLength
-		0x05,       // bDescriptorType (Endpoint)
-		0x81,       // bEndpointAddress (IN/D2H)
-		0x01,       // bmAttributes (Isochronous, No Sync, Data EP)
-		0x00, 0x02, // wMaxPacketSize 512
-		0x01,       // bInterval 1 (unit depends on device speed)
-
-		0x09, // bLength
-		0x04, // bDescriptorType (Interface)
-		0x00, // bInterfaceNumber 0
-		0x03, // bAlternateSetting
-		0x01, // bNumEndpoints 1
-		0xFF, // bInterfaceClass
-		0x00, // bInterfaceSubClass
-		0x00, // bInterfaceProtocol
-		0x00, // iInterface (String Index)
-
-		0x07,       // bLength
-		0x05,       // bDescriptorType (Endpoint)
-		0x81,       // bEndpointAddress (IN/D2H)
-		0x01,       // bmAttributes (Isochronous, No Sync, Data EP)
-		0x00, 0x03, // wMaxPacketSize 768
-		0x01,       // bInterval 1 (unit depends on device speed)
-
-		0x09, // bLength
-		0x04, // bDescriptorType (Interface)
-		0x00, // bInterfaceNumber 0
-		0x04, // bAlternateSetting
-		0x01, // bNumEndpoints 1
-		0xFF, // bInterfaceClass
-		0x00, // bInterfaceSubClass
-		0x00, // bInterfaceProtocol
-		0x00, // iInterface (String Index)
-
-		0x07,       // bLength
-		0x05,       // bDescriptorType (Endpoint)
-		0x81,       // bEndpointAddress (IN/D2H)
-		0x01,       // bmAttributes (Isochronous, No Sync, Data EP)
-		0x80, 0x03, // wMaxPacketSize 896
-		0x01,       // bInterval 1 (unit depends on device speed)
-
-		0x09, // bLength
-		0x04, // bDescriptorType (Interface)
-		0x01, // bInterfaceNumber 1
-		0x00, // bAlternateSetting
-		0x00, // bNumEndpoints 0
-		0x01, // bInterfaceClass (Audio)
-		0x01, // bInterfaceSubClass (Audio Control)
-		0x00, // bInterfaceProtocol
-		0x00, // iInterface (String Index)
-
-		0x09,       // bLength
-		0x24,       // bDescriptorType (See Next Line)
-		0x01,       // bDescriptorSubtype (CS_INTERFACE -> HEADER)
-		0x00, 0x01, // bcdADC 1.00
-		0x1E, 0x00, // wTotalLength 30
-		0x01,       // binCollection 0x01
-		0x02,       // baInterfaceNr 2
-
-		0x0C,       // bLength
-		0x24,       // bDescriptorType (See Next Line)
-		0x02,       // bDescriptorSubtype (CS_INTERFACE -> INPUT_TERMINAL)
-		0x01,       // bTerminalID
-		0x01, 0x02, // wTerminalType (Microphone)
-		0x00,       // bAssocTerminal
-		0x01,       // bNrChannels 1
-		0x00, 0x00, // wChannelConfig
-		0x00,       // iChannelNames
-		0x00,       // iTerminal
-
-		0x09,       // bLength
-		0x24,       // bDescriptorType (See Next Line)
-		0x03,       // bDescriptorSubtype (CS_INTERFACE -> OUTPUT_TERMINAL)
-		0x02,       // bTerminalID
-		0x01, 0x01, // wTerminalType (USB Streaming)
-		0x00,       // bAssocTerminal
-		0x01,       // bSourceID
-		0x00,       // iTerminal
-
-		0x09, // bLength
-		0x04, // bDescriptorType (Interface)
-		0x02, // bInterfaceNumber 2
-		0x00, // bAlternateSetting
-		0x00, // bNumEndpoints 0
-		0x01, // bInterfaceClass (Audio)
-		0x02, // bInterfaceSubClass (Audio Streaming)
-		0x00, // bInterfaceProtocol
-		0x00, // iInterface (String Index)
-
-		0x09, // bLength
-		0x04, // bDescriptorType (Interface)
-		0x02, // bInterfaceNumber 2
-		0x01, // bAlternateSetting
-		0x01, // bNumEndpoints 1
-		0x01, // bInterfaceClass (Audio)
-		0x02, // bInterfaceSubClass (Audio Streaming)
-		0x00, // bInterfaceProtocol
-		0x00, // iInterface (String Index)
-
-		0x07,       // bLength
-		0x24,       // bDescriptorType (See Next Line)
-		0x01,       // bDescriptorSubtype (CS_INTERFACE -> AS_GENERAL)
-		0x02,       // bTerminalLink
-		0x01,       // bDelay 1
-		0x01, 0x00, // wFormatTag (PCM)
-
-		0x0B,             // bLength
-		0x24,             // bDescriptorType (See Next Line)
-		0x02,             // bDescriptorSubtype (CS_INTERFACE -> FORMAT_TYPE)
-		0x01,             // bFormatType 1
-		0x01,             // bNrChannels (Mono)
-		0x02,             // bSubFrameSize 2
-		0x10,             // bBitResolution 16
-		0x01,             // bSamFreqType 1
-		0x80, 0x3E, 0x00, // tSamFreq[1] 16000 Hz
-
-		0x09,       // bLength
-		0x05,       // bDescriptorType (See Next Line)
-		0x82,       // bEndpointAddress (IN/D2H)
-		0x05,       // bmAttributes (Isochronous, Async, Data EP)
-		0x28, 0x00, // wMaxPacketSize 40
-		0x01,       // bInterval 1 (unit depends on device speed)
-		0x00,       // bRefresh
-		0x00,       // bSyncAddress
-
-		0x07,       // bLength
-		0x25,       // bDescriptorType (See Next Line)
-		0x01,       // bDescriptorSubtype (CS_ENDPOINT -> EP_GENERAL)
-		0x00,       // bmAttributes (None)
-		0x00,       // bLockDelayUnits
-		0x00, 0x00, // wLockDelay 0
-	};
-
-	static void reset_ov519(EYETOYState* s)
+	static void reset_controller(EYETOYState* s)
 	{
-		static const uint8_t ov519_defaults[] = {
-			0xc0, 0x00, 0xa8, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x00, 0x00, 0x00,
-			0x14, 0x1e, 0x00, 0x00, 0x00, 0x00, 0x00, 0x40, 0x00, 0x00, 0x00, 0x44, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x08, 0x98, 0xff, 0x00, 0x03, 0x00, 0x00, 0x1e, 0x01, 0xf1, 0x00, 0x01, 0x00, 0x00, 0x00,
-			0xff, 0xff, 0xff, 0xff, 0x50, 0x51, 0x52, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x3b, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0xff, 0x00, 0x01, 0x00, 0x21, 0x00, 0x02, 0x6d, 0x0e, 0x00, 0x02, 0x00, 0x11,
-			0x00, 0x00, 0x0f, 0x00, 0x00, 0x00, 0x00, 0x00, 0x05, 0x04, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0xb4, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0xff, 0x03, 0x03, 0xfc, 0x00, 0xff, 0x00, 0x00, 0xff,
-			0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x7f, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x33, 0x04, 0x40, 0x40, 0x0c, 0x3f, 0x00, 0x00, 0x00, 0x20, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x0a, 0x0f, 0x1e, 0x2d, 0xff, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x01, 0x02, 0x03, 0x00, 0x05, 0x02, 0x07, 0x00, 0x09, 0x02, 0x0b, 0x00, 0x0d, 0x02, 0x0f,
-			0x00, 0x11, 0x02, 0x13, 0x00, 0x15, 0x02, 0x17, 0x00, 0x19, 0x02, 0x1b, 0x00, 0x1d, 0x02, 0x1f,
-			0x50, 0x64, 0x82, 0x96, 0x82, 0x81, 0x00, 0x01, 0x02, 0x00, 0x10, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x20, 0x40, 0x60, 0x80, 0xa0, 0xc0, 0xe0, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		};
-		memcpy(s->regs, ov519_defaults, sizeof(s->regs));
+		if (s->videodev->Type() == TYPE_EYETOY)
+		{
+			memcpy(s->regs, ov519_defaults, sizeof(s->regs));
+		}
+		else if (s->videodev->Type() == TYPE_OV511P)
+		{
+			memcpy(s->regs, ov511p_defaults, sizeof(s->regs));
+		}
 	}
 
-	static void reset_i2c(EYETOYState* s)
+	static void reset_sensor(EYETOYState* s)
 	{
-		static const uint8_t ov7648_defaults[] = {
-			0x00, 0x84, 0x84, 0x84, 0x34, 0x3e, 0x80, 0x8c, 0x00, 0x00, 0x76, 0x48, 0x7b, 0x5b, 0x00, 0x98,
-			0x57, 0x00, 0x14, 0xa3, 0x04, 0x00, 0x00, 0x1a, 0xba, 0x03, 0xf3, 0x00, 0x7f, 0xa2, 0x00, 0x01,
-			0xc0, 0x80, 0x80, 0xde, 0x10, 0x8a, 0xa2, 0xe2, 0x20, 0x00, 0x00, 0x00, 0x88, 0x81, 0x00, 0x94,
-			0x40, 0xa0, 0xc0, 0x16, 0x16, 0x00, 0x00, 0x82, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01,
-			0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01,
-			0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xca, 0x00,
-			0x06, 0xe0, 0x88, 0x11, 0x89, 0x02, 0x55, 0x01, 0x7a, 0x04, 0x00, 0x00, 0x11, 0x01, 0x06, 0x00,
-			0x01, 0x00, 0x10, 0x50, 0x20, 0x02, 0x00, 0xf3, 0x80, 0x80, 0x80, 0x00, 0x00, 0x47, 0x27, 0x8a,
-			0x83, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01, 0x83, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x1f, 0x1f,
-			0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-			0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00, 0x82, 0x00,
-			0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01,
-			0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x7e, 0x00, 0x00, 0x00, 0x00, 0x01, 0x01, 0x01, 0x01,
-			0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x83, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-			0x75, 0x75, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-		};
-		memcpy(s->i2c_regs, ov7648_defaults, sizeof(s->regs));
+		if (s->videodev->Type() == TYPE_EYETOY)
+		{
+			memcpy(s->i2c_regs, ov7648_defaults, sizeof(s->regs));
+		}
+		else if (s->videodev->Type() == TYPE_OV511P)
+		{
+			memcpy(s->i2c_regs, ov7620_defaults, sizeof(s->regs));
+		}
 	}
 
 	static void eyetoy_handle_reset(USBDevice* dev)
 	{
-		reset_ov519((EYETOYState*)dev);
-		reset_i2c((EYETOYState*)dev);
+		reset_controller((EYETOYState*)dev);
+		reset_sensor((EYETOYState*)dev);
 	}
 
-	static void eyetoy_handle_control(USBDevice* dev, USBPacket* p, int request, int value,
+	static void webcam_handle_control_eyetoy(USBDevice* dev, USBPacket* p, int request, int value,
 									  int index, int length, uint8_t* data)
 	{
 		EYETOYState* s = (EYETOYState*)dev;
@@ -385,7 +147,7 @@ namespace usb_eyetoy
 							if ((reg == 0x12) && (val & 0x80))
 							{
 								s->i2c_regs[0x12] = val & ~0x80; //or skip?
-								reset_i2c(s);
+								reset_sensor(s);
 							}
 							else if (reg < sizeof(s->i2c_regs))
 							{
@@ -425,7 +187,64 @@ namespace usb_eyetoy
 		}
 	}
 
-	static void eyetoy_handle_data(USBDevice* dev, USBPacket* p)
+	static void webcam_handle_control_ov511p(USBDevice* dev, USBPacket* p, int request, int value,
+									  int index, int length, uint8_t* data)
+	{
+		EYETOYState* s = (EYETOYState*)dev;
+		int ret = 0;
+
+		ret = usb_desc_handle_control(dev, p, request, value, index, length, data);
+		if (ret >= 0)
+		{
+			return;
+		}
+
+		switch (request)
+		{
+			case VendorDeviceRequest | 0x3: //Read register
+				data[0] = s->regs[index & 0xFF];
+				p->actual_length = 1;
+				break;
+
+			case VendorDeviceOutRequest | 0x2: //Write register
+				switch (index)
+				{
+					case R511_I2C_CTL:
+						if (data[0] == 1)
+						{
+							uint8_t reg = s->regs[R51x_I2C_SADDR_3];
+							uint8_t val = s->regs[R51x_I2C_DATA];
+							if (reg < sizeof(s->i2c_regs))
+							{
+								s->i2c_regs[reg] = val;
+							}
+						}
+						else if (s->regs[R511_I2C_CTL] == 0x03 && data[0] == 0x05)
+						{
+							uint8_t i2c_reg = s->regs[R51x_I2C_SADDR_2];
+							s->regs[R51x_I2C_DATA] = 0;
+
+							if (i2c_reg < sizeof(s->i2c_regs))
+							{
+								s->regs[R51x_I2C_DATA] = s->i2c_regs[i2c_reg];
+							}
+						}
+						break;
+					default:
+						break;
+				}
+
+				s->regs[index & 0xFF] = data[0];
+				p->actual_length = 1;
+
+				break;
+			default:
+				p->status = USB_RET_STALL;
+				break;
+		}
+	}
+
+	static void webcam_handle_data_eyetoy(USBDevice* dev, USBPacket* p)
 	{
 		EYETOYState* s = (EYETOYState*)dev;
 		static const int max_ep_size = 896;
@@ -500,22 +319,95 @@ namespace usb_eyetoy
 		}
 	}
 
+	static void webcam_handle_data_ov511p(USBDevice* dev, USBPacket* p)
+	{
+		EYETOYState* s = (EYETOYState*)dev;
+		static const int max_ep_size = 960; // 961
+		uint8_t data[max_ep_size];
+		uint8_t devep = p->ep->nr;
+
+		if (!s->hw_camera_running)
+		{
+			Console.WriteLn("EyeToy : initialization done; start the camera");
+			s->hw_camera_running = 1;
+			s->dev.klass.open(dev);
+		}
+
+		switch (p->pid)
+		{
+			case USB_TOKEN_IN:
+				if (devep == 1)
+				{
+					memset(data, 0x00, sizeof(data));
+
+					if (s->frame_step == 0)
+					{
+						s->mpeg_frame_size = s->videodev->GetImage(s->mpeg_frame_data, 640 * 480 * 3);
+						if (s->mpeg_frame_size == 0)
+						{
+							p->status = USB_RET_NAK;
+							break;
+						}
+
+						uint8_t header[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x28}; // 28 <> 29
+						memcpy(data, header, sizeof(header));
+
+						int data_pk = max_ep_size - sizeof(header);
+						memcpy(data + sizeof(header), s->mpeg_frame_data, data_pk);
+						s->mpeg_frame_offset = data_pk;
+						s->frame_step++;
+					}
+					else if (s->mpeg_frame_offset < s->mpeg_frame_size)
+					{
+						int data_pk = s->mpeg_frame_size - s->mpeg_frame_offset;
+						if (data_pk > max_ep_size)
+							data_pk = max_ep_size;
+						memcpy(data, s->mpeg_frame_data + s->mpeg_frame_offset, data_pk);
+						s->mpeg_frame_offset += data_pk;
+						s->frame_step++;
+					}
+					else
+					{
+						uint8_t footer[] = {0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xA8, 0x09, 0x07};
+						memcpy(data, footer, sizeof(footer));
+						s->frame_step = 0;
+					}
+
+					usb_packet_copy(p, data, max_ep_size);
+				}
+				break;
+			case USB_TOKEN_OUT:
+			default:
+				p->status = USB_RET_STALL;
+				break;
+		}
+	}
+
 	static void eyetoy_handle_destroy(USBDevice* dev)
 	{
 		EYETOYState* s = (EYETOYState*)dev;
-
 		delete s;
 	}
 
 	int eyetoy_open(USBDevice* dev)
 	{
 		EYETOYState* s = (EYETOYState*)dev;
-		if (s->hw_camera_running)
+		if (s->hw_camera_running && s->videodev->Type() == TYPE_EYETOY)
 		{
 			const int width = s->regs[OV519_R10_H_SIZE] << 4;
 			const int height = s->regs[OV519_R11_V_SIZE] << 3;
 			const FrameFormat format = s->regs[OV519_RA0_FORMAT] == OV519_RA0_FORMAT_JPEG ? format_jpeg : format_mpeg;
 			const int mirror = !!(s->i2c_regs[OV7610_REG_COM_A] & OV7610_REG_COM_A_MASK_MIRROR);
+			Console.Error("EyeToy : eyetoy_open(); hw=%d, w=%d, h=%d, fmt=%d, mirr=%d", s->hw_camera_running,
+				width, height, format, mirror);
+			s->videodev->Open(width, height, format, mirror);
+		}
+		else if (s->hw_camera_running && s->videodev->Type() == TYPE_OV511P)
+		{
+			const int width = 320;
+			const int height = 240;
+			const FrameFormat format = format_yuv400;
+			const int mirror = 0;
 			Console.Error("EyeToy : eyetoy_open(); hw=%d, w=%d, h=%d, fmt=%d, mirr=%d", s->hw_camera_running,
 				width, height, format, mirror);
 			s->videodev->Open(width, height, format, mirror);
@@ -553,12 +445,12 @@ namespace usb_eyetoy
 		}
 
 		videodev = proxy->CreateObject(port);
-
 		if (!videodev)
 			return NULL;
 
-		EYETOYState* s;
+		videodev->Type(GetSelectedSubtype(std::make_pair(port, TypeName())));
 
+		EYETOYState* s;
 		s = new EYETOYState();
 		if (!s)
 			return NULL;
@@ -566,17 +458,29 @@ namespace usb_eyetoy
 		s->desc.full = &s->desc_dev;
 		s->desc.str = desc_strings;
 
-		if (usb_desc_parse_dev(eyetoy_dev_descriptor, sizeof(eyetoy_dev_descriptor), s->desc, s->desc_dev) < 0)
-			goto fail;
-		if (usb_desc_parse_config(eyetoy_config_descriptor, sizeof(eyetoy_config_descriptor), s->desc_dev) < 0)
-			goto fail;
+		if (videodev->Type() == TYPE_EYETOY)
+		{
+			if (usb_desc_parse_dev(eyetoy_dev_descriptor, sizeof(eyetoy_dev_descriptor), s->desc, s->desc_dev) < 0)
+				goto fail;
+			if (usb_desc_parse_config(eyetoy_config_descriptor, sizeof(eyetoy_config_descriptor), s->desc_dev) < 0)
+				goto fail;
+			s->dev.klass.handle_control = webcam_handle_control_eyetoy;
+			s->dev.klass.handle_data = webcam_handle_data_eyetoy;
+		}
+		else if (videodev->Type() == TYPE_OV511P)
+		{
+			if (usb_desc_parse_dev(ov511p_dev_descriptor, sizeof(ov511p_dev_descriptor), s->desc, s->desc_dev) < 0)
+				goto fail;
+			if (usb_desc_parse_config(ov511p_config_descriptor, sizeof(ov511p_config_descriptor), s->desc_dev) < 0)
+				goto fail;
+			s->dev.klass.handle_control = webcam_handle_control_ov511p;
+			s->dev.klass.handle_data = webcam_handle_data_ov511p;
+		}
 
 		s->videodev = videodev;
 		s->dev.speed = USB_SPEED_FULL;
 		s->dev.klass.handle_attach = usb_desc_attach;
 		s->dev.klass.handle_reset = eyetoy_handle_reset;
-		s->dev.klass.handle_control = eyetoy_handle_control;
-		s->dev.klass.handle_data = eyetoy_handle_data;
 		s->dev.klass.unrealize = eyetoy_handle_destroy;
 		s->dev.klass.open = eyetoy_open;
 		s->dev.klass.close = eyetoy_close;

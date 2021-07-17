@@ -230,12 +230,15 @@ namespace usb_eyetoy
 									(pmtConfig->cbFormat >= sizeof(VIDEOINFOHEADER)) &&
 									(pmtConfig->pbFormat != nullptr))
 								{
-
 									VIDEOINFOHEADER* pVih = (VIDEOINFOHEADER*)pmtConfig->pbFormat;
 									pVih->bmiHeader.biWidth = frame_width;
 									pVih->bmiHeader.biHeight = frame_height;
 									pVih->bmiHeader.biSizeImage = DIBSIZE(pVih->bmiHeader);
 									hr = pSourceConfig->SetFormat(pmtConfig);
+									if (FAILED(hr))
+									{
+										Console.Warning("Camera: SetFormat err : %x", hr);
+									}
 								}
 								//DeleteMediaType(pmtConfig);
 							}
@@ -408,6 +411,31 @@ namespace usb_eyetoy
 					}
 					free(data2);
 				}
+				else if (frame_format == format_yuv400)
+				{
+					int in_pos = 0;
+					for (int my = 0; my < 8; my++)
+						for (int mx = 0; mx < 10; mx++)
+							for (int y = 0; y < 8; y++)
+								for (int x = 0; x < 8; x++)
+								{
+									int srcx = 4* (8*mx + x);
+									int srcy = frame_height - 4* (8*my + y) - 1;
+									unsigned char* src = data + (srcy * frame_width + srcx) * bytesPerPixel;
+									if (srcy < 0)
+									{
+										comprBuf[in_pos++] = 0x01;
+									}
+									else
+									{
+										float r = src[2];
+										float g = src[1];
+										float b = src[0];
+										comprBuf[in_pos++] = 0.299f * r + 0.587f * g + 0.114f * b;
+									}
+								}
+					comprLen = 80 * 64;
+				}
 				store_mpeg_frame(comprBuf, comprLen);
 				free(comprBuf);
 			}
@@ -417,7 +445,7 @@ namespace usb_eyetoy
 			}
 		}
 
-		void create_dummy_frame()
+		void create_dummy_frame_eyetoy()
 		{
 			const int bytesPerPixel = 3;
 			int comprBufSize = frame_width * frame_height * bytesPerPixel;
@@ -455,6 +483,24 @@ namespace usb_eyetoy
 			free(comprBuf);
 		}
 
+		void create_dummy_frame_ov511p()
+		{
+			int comprBufSize = 80 * 64;
+			unsigned char* comprBuf = (unsigned char*)calloc(1, comprBufSize);
+			if (frame_format == format_yuv400)
+			{
+				for (int y = 0; y < 64; y++)
+				{
+					for (int x = 0; x < 80; x++)
+					{
+						comprBuf[80 * y + x] = 255 * y / 80;
+					}
+				}
+			}
+			store_mpeg_frame(comprBuf, comprBufSize);
+			free(comprBuf);
+		}
+
 		DirectShow::DirectShow(int port)
 		{
 			mPort = port;
@@ -484,7 +530,14 @@ namespace usb_eyetoy
 			frame_height = height;
 			frame_format = format;
 			mirroring_enabled = mirror;
-			create_dummy_frame();
+			if (format == format_yuv400)
+			{
+				create_dummy_frame_ov511p();
+			}
+			else
+			{
+				create_dummy_frame_eyetoy();
+			}
 
 			std::wstring selectedDevice;
 			LoadSetting(EyeToyWebCamDevice::TypeName(), Port(), APINAME, N_DEVICE, selectedDevice);
