@@ -1375,7 +1375,7 @@ void recompileNextInstruction(int delayslot)
 
 	// Hardcoded Ratchet & Clank fixes since the game dyamically replaces memory for the program
 	// meaning it cannot be patched easily by traditional methods.
-	if (!EmuConfig.Gamefixes.RatchetDynaHack)
+	if (EmuConfig.Gamefixes.RatchetDynaHack)
 	{
 		if (cpuRegs.code == 0x4B8123BC)
 		{
