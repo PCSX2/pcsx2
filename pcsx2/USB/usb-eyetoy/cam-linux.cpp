@@ -128,6 +128,28 @@ namespace usb_eyetoy
 					}
 					free(data2);
 				}
+				else if (frame_format == format_yuv400)
+				{
+					int in_pos = 0;
+					for (int my = 0; my < 8; my++)
+						for (int mx = 0; mx < 10; mx++)
+							for (int y = 0; y < 8; y++)
+								for (int x = 0; x < 8; x++)
+								{
+									int srcx = 4* (8*mx + x);
+									int srcy = 4* (8*my + y);
+									unsigned char* src = (unsigned char*)data + (srcy * frame_width + srcx) * 2/*Y+UV*/;
+									if (srcy >= frame_height)
+									{
+										comprBuf[in_pos++] = 0x01;
+									}
+									else
+									{
+										comprBuf[in_pos++] = src[0];//Y
+									}
+								}
+					comprLen = 80 * 64;
+				}
 				store_mpeg_frame(comprBuf, comprLen);
 				free(comprBuf);
 			}
@@ -146,6 +168,38 @@ namespace usb_eyetoy
 				else if (frame_format == format_jpeg)
 				{
 					store_mpeg_frame(data, size);
+				}
+				else if (frame_format == format_yuv400)
+				{
+					int width, height, actual_comps;
+					unsigned char* rgbData = jpgd::decompress_jpeg_image_from_memory(data, size, &width, &height, &actual_comps, 3);
+					unsigned char* comprBuf = (unsigned char*)calloc(1, comprBufSize);
+					int comprLen = 0;
+					int in_pos = 0;
+					for (int my = 0; my < 8; my++)
+						for (int mx = 0; mx < 10; mx++)
+							for (int y = 0; y < 8; y++)
+								for (int x = 0; x < 8; x++)
+								{
+									int srcx = 4* (8*mx + x);
+									int srcy = 4* (8*my + y);
+									unsigned char* src = rgbData + (srcy * frame_width + srcx) * bytesPerPixel;
+									if (srcy >= frame_height)
+									{
+										comprBuf[in_pos++] = 0x01;
+									}
+									else
+									{
+										float r = src[0];
+										float g = src[1];
+										float b = src[2];
+										comprBuf[in_pos++] = 0.299f * r + 0.587f * g + 0.114f * b;
+									}
+								}
+					comprLen = 80 * 64;
+					free(rgbData);
+					store_mpeg_frame(comprBuf, comprLen);
+					free(comprBuf);
 				}
 			}
 			else
@@ -493,7 +547,7 @@ namespace usb_eyetoy
 			return 0;
 		}
 
-		void create_dummy_frame()
+		void create_dummy_frame_eyetoy()
 		{
 			const int bytesPerPixel = 3;
 			int comprBufSize = frame_width * frame_height * bytesPerPixel;
@@ -531,6 +585,24 @@ namespace usb_eyetoy
 			free(comprBuf);
 		}
 
+		void create_dummy_frame_ov511p()
+		{
+			int comprBufSize = 80 * 64;
+			unsigned char* comprBuf = (unsigned char*)calloc(1, comprBufSize);
+			if (frame_format == format_yuv400)
+			{
+				for (int y = 0; y < 64; y++)
+				{
+					for (int x = 0; x < 80; x++)
+					{
+						comprBuf[80 * y + x] = 255 * y / 80;
+					}
+				}
+			}
+			store_mpeg_frame(comprBuf, comprBufSize);
+			free(comprBuf);
+		}
+
 		V4L2::V4L2(int port)
 		{
 			mPort = port;
@@ -549,7 +621,15 @@ namespace usb_eyetoy
 			frame_height = height;
 			frame_format = format;
 			mirroring_enabled = mirror;
-			create_dummy_frame();
+			if (format == format_yuv400)
+			{
+				create_dummy_frame_ov511p();
+			}
+			else
+			{
+				create_dummy_frame_eyetoy();
+			}
+
 			if (eyetoy_running)
 			{
 				eyetoy_running = 0;
