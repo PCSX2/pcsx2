@@ -104,10 +104,11 @@ static const TraceLogDescriptor
 
 	TLD_deci2 = {L"DECI2", L"DECI&2 Console", pxDt("Shows DECI2 debugging logs (EE processor).")},
 
-	TLD_sysoutConsole = {L"SYSout", L"System Out", pxDt("Shows strings printed to the system output stream.")}
+	TLD_sysoutConsole = {L"SYSout", L"System Out", pxDt("Shows strings printed to the system output stream.")},
+
+	TLD_Pgif = {L"PGIFout", L"&PGIF Console", pxDt("Shows output from pgif the emulated ps1 gpu")},
 
 #ifndef DISABLE_RECORDING
-,
 	TLD_recordingConsole = {L"Input Recording", L"Input Recording Console", pxDt("Shows recording related logs and information.")},
 
 	TLD_controlInfo = {L"Controller Info", L"Controller Info", pxDt("Shows detailed controller input values for port 1, every frame.")}
@@ -121,6 +122,7 @@ SysConsoleLogPack::SysConsoleLogPack()
 	, eeConsole(&TLD_eeConsole)
 	, iopConsole(&TLD_iopConsole)
 	, deci2(&TLD_deci2)
+	, pgifLog(&TLD_Pgif)
 #ifndef DISABLE_RECORDING
 	, recordingConsole(&TLD_recordingConsole)
 	, controlInfo(&TLD_controlInfo)
