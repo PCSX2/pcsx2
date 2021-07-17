@@ -229,27 +229,6 @@
 #endif
 	}
 
-	#ifdef __GNUC__
-
-	// gcc 4.8 define __rdtsc but unfortunately the compiler crash...
-	// The redefine allow to skip the gcc __rdtsc version -- Gregory
-	#define __rdtsc _lnx_rdtsc
-	//static unsigned long long __rdtsc()
-	static unsigned long long _lnx_rdtsc()
-	{
-		#if defined(__amd64__) || defined(__x86_64__)
-		unsigned long long low, high;
-		__asm__ __volatile__("rdtsc" : "=a"(low), "=d"(high));
-		return low | (high << 32);
-		#else
-		unsigned long long retval;
-		__asm__ __volatile__("rdtsc" : "=A"(retval));
-		return retval;
-		#endif
-	}
-
-	#endif
-
 #endif
 
 extern std::string format(const char* fmt, ...);
