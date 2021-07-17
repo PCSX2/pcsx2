@@ -56,8 +56,6 @@
       <PreprocessorDefinitions>HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <AdditionalIncludeDirectories>$(ProjectDir);xz/src/liblzma/common;xz/src/common;xz/src/liblzma/api;xz/src/liblzma/check;xz/src/liblzma/delta;xz/src/liblzma/lz;xz/src/liblzma/lzma;xz/src/liblzma/rangecoder;xz/src/liblzma/simple</AdditionalIncludeDirectories>
-      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MinimalRebuild>
-      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</MinimalRebuild>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
