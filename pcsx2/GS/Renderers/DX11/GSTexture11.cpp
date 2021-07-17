@@ -17,15 +17,15 @@
 #include "GSTexture11.h"
 #include "GS/GSPng.h"
 
-GSTexture11::GSTexture11(ID3D11Texture2D* texture)
-	: m_texture(texture), m_layer(0)
+GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture)
+	: m_texture(std::move(texture)), m_layer(0)
 {
 	ASSERT(m_texture);
 
-	m_texture->GetDevice(&m_dev);
+	m_texture->GetDevice(m_dev.put());
 	m_texture->GetDesc(&m_desc);
 
-	m_dev->GetImmediateContext(&m_ctx);
+	m_dev->GetImmediateContext(m_ctx.put());
 
 	m_size.x = (int)m_desc.Width;
 	m_size.y = (int)m_desc.Height;
@@ -54,7 +54,7 @@ bool GSTexture11::Update(const GSVector4i& r, const void* data, int pitch, int l
 		D3D11_BOX box = {(UINT)r.left, (UINT)r.top, 0U, (UINT)r.right, (UINT)r.bottom, 1U};
 		UINT subresource = layer; // MipSlice + (ArraySlice * MipLevels).
 
-		m_ctx->UpdateSubresource(m_texture, subresource, &box, data, pitch, 0);
+		m_ctx->UpdateSubresource(m_texture.get(), subresource, &box, data, pitch, 0);
 
 		return true;
 	}
@@ -78,7 +78,7 @@ bool GSTexture11::Map(GSMap& m, const GSVector4i* r, int layer)
 		D3D11_MAPPED_SUBRESOURCE map;
 		UINT subresource = layer;
 
-		if (SUCCEEDED(m_ctx->Map(m_texture, subresource, D3D11_MAP_READ_WRITE, 0, &map)))
+		if (SUCCEEDED(m_ctx->Map(m_texture.get(), subresource, D3D11_MAP_READ_WRITE, 0, &map)))
 		{
 			m.bits = (uint8*)map.pData;
 			m.pitch = (int)map.RowPitch;
@@ -97,13 +97,12 @@ void GSTexture11::Unmap()
 	if (m_texture)
 	{
 		UINT subresource = m_layer;
-		m_ctx->Unmap(m_texture, subresource);
+		m_ctx->Unmap(m_texture.get(), subresource);
 	}
 }
 
 bool GSTexture11::Save(const std::string& fn)
 {
-	CComPtr<ID3D11Texture2D> res;
 	D3D11_TEXTURE2D_DESC desc;
 
 	m_texture->GetDesc(&desc);
@@ -112,22 +111,22 @@ bool GSTexture11::Save(const std::string& fn)
 	desc.BindFlags = 0;
 	desc.CPUAccessFlags = D3D11_CPU_ACCESS_READ;
 
-	HRESULT hr = m_dev->CreateTexture2D(&desc, nullptr, &res);
+	wil::com_ptr_nothrow<ID3D11Texture2D> res;
+	HRESULT hr = m_dev->CreateTexture2D(&desc, nullptr, res.put());
 	if (FAILED(hr))
 	{
 		return false;
 	}
 
-	m_ctx->CopyResource(res, m_texture);
+	m_ctx->CopyResource(res.get(), m_texture.get());
 
 	if (m_desc.BindFlags & D3D11_BIND_DEPTH_STENCIL)
 	{
-		CComPtr<ID3D11Texture2D> dst;
-
 		desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
 		desc.CPUAccessFlags |= D3D11_CPU_ACCESS_WRITE;
 
-		hr = m_dev->CreateTexture2D(&desc, nullptr, &dst);
+		wil::com_ptr_nothrow<ID3D11Texture2D> dst;
+		hr = m_dev->CreateTexture2D(&desc, nullptr, dst.put());
 		if (FAILED(hr))
 		{
 			return false;
@@ -135,17 +134,23 @@ bool GSTexture11::Save(const std::string& fn)
 
 		D3D11_MAPPED_SUBRESOURCE sm, dm;
 
-		hr = m_ctx->Map(res, 0, D3D11_MAP_READ, 0, &sm);
+		hr = m_ctx->Map(res.get(), 0, D3D11_MAP_READ, 0, &sm);
 		if (FAILED(hr))
 		{
 			return false;
 		}
-		hr = m_ctx->Map(dst, 0, D3D11_MAP_WRITE, 0, &dm);
+		auto unmap_res = wil::scope_exit([&]{
+			m_ctx->Unmap(res.get(), 0);
+		});
+
+		hr = m_ctx->Map(dst.get(), 0, D3D11_MAP_WRITE, 0, &dm);
 		if (FAILED(hr))
 		{
-			m_ctx->Unmap(res, 0);
 			return false;
 		}
+		auto unmap_dst = wil::scope_exit([&]{
+			m_ctx->Unmap(dst.get(), 0);
+		});
 
 		uint8* s = static_cast<uint8*>(sm.pData);
 		uint8* d = static_cast<uint8*>(dm.pData);
@@ -158,10 +163,7 @@ bool GSTexture11::Save(const std::string& fn)
 			}
 		}
 
-		m_ctx->Unmap(res, 0);
-		m_ctx->Unmap(dst, 0);
-
-		res = dst;
+		res = std::move(dst);
 	}
 
 	res->GetDesc(&desc);
@@ -184,7 +186,7 @@ bool GSTexture11::Save(const std::string& fn)
 	}
 
 	D3D11_MAPPED_SUBRESOURCE sm;
-	hr = m_ctx->Map(res, 0, D3D11_MAP_READ, 0, &sm);
+	hr = m_ctx->Map(res.get(), 0, D3D11_MAP_READ, 0, &sm);
 	if (FAILED(hr))
 	{
 		return false;
@@ -193,14 +195,14 @@ bool GSTexture11::Save(const std::string& fn)
 	int compression = theApp.GetConfigI("png_compression_level");
 	bool success = GSPng::Save(format, fn, static_cast<uint8*>(sm.pData), desc.Width, desc.Height, sm.RowPitch, compression);
 
-	m_ctx->Unmap(res, 0);
+	m_ctx->Unmap(res.get(), 0);
 
 	return success;
 }
 
 GSTexture11::operator ID3D11Texture2D*()
 {
-	return m_texture;
+	return m_texture.get();
 }
 
 GSTexture11::operator ID3D11ShaderResourceView*()
@@ -215,15 +217,15 @@ GSTexture11::operator ID3D11ShaderResourceView*()
 			srvd.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
 			srvd.Texture2D.MipLevels = 1;
 
-			m_dev->CreateShaderResourceView(m_texture, &srvd, &m_srv);
+			m_dev->CreateShaderResourceView(m_texture.get(), &srvd, m_srv.put());
 		}
 		else
 		{
-			m_dev->CreateShaderResourceView(m_texture, NULL, &m_srv);
+			m_dev->CreateShaderResourceView(m_texture.get(), nullptr, m_srv.put());
 		}
 	}
 
-	return m_srv;
+	return m_srv.get();
 }
 
 GSTexture11::operator ID3D11RenderTargetView*()
@@ -232,10 +234,10 @@ GSTexture11::operator ID3D11RenderTargetView*()
 
 	if (!m_rtv && m_dev && m_texture)
 	{
-		m_dev->CreateRenderTargetView(m_texture, NULL, &m_rtv);
+		m_dev->CreateRenderTargetView(m_texture.get(), nullptr, m_rtv.put());
 	}
 
-	return m_rtv;
+	return m_rtv.get();
 }
 
 GSTexture11::operator ID3D11DepthStencilView*()
@@ -249,15 +251,15 @@ GSTexture11::operator ID3D11DepthStencilView*()
 			dsvd.Format = DXGI_FORMAT_D32_FLOAT_S8X24_UINT;
 			dsvd.ViewDimension = D3D11_DSV_DIMENSION_TEXTURE2D;
 
-			m_dev->CreateDepthStencilView(m_texture, &dsvd, &m_dsv);
+			m_dev->CreateDepthStencilView(m_texture.get(), &dsvd, m_dsv.put());
 		}
 		else
 		{
-			m_dev->CreateDepthStencilView(m_texture, NULL, &m_dsv);
+			m_dev->CreateDepthStencilView(m_texture.get(), nullptr, m_dsv.put());
 		}
 	}
 
-	return m_dsv;
+	return m_dsv.get();
 }
 
 bool GSTexture11::Equal(GSTexture11* tex)

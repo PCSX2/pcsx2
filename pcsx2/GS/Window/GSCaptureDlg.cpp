@@ -17,17 +17,32 @@
 #include "GS.h"
 #include "GSCaptureDlg.h"
 
-#define BeginEnumSysDev(clsid, pMoniker) \
-	{ \
-		CComPtr<ICreateDevEnum> pDevEnum4$##clsid; \
-		pDevEnum4$##clsid.CoCreateInstance(CLSID_SystemDeviceEnum); \
-		CComPtr<IEnumMoniker> pClassEnum4$##clsid; \
-		if (SUCCEEDED(pDevEnum4$##clsid->CreateClassEnumerator(clsid, &pClassEnum4$##clsid, 0)) && pClassEnum4$##clsid) \
-		{ \
-			for (CComPtr<IMoniker> pMoniker; pClassEnum4$##clsid->Next(1, &pMoniker, 0) == S_OK; pMoniker = NULL) \
-			{
+// Ideally this belongs in WIL, but CAUUID is used by a *single* COM function in WinAPI.
+// That's presumably why it's omitted and is unlikely to make it to upstream WIL.
+static void __stdcall CloseCAUUID(_Inout_ CAUUID* cauuid) WI_NOEXCEPT
+{
+	::CoTaskMemFree(cauuid->pElems);
+}
 
-#define EndEnumSysDev }}}
+using unique_cauuid = wil::unique_struct<CAUUID, decltype(&::CloseCAUUID), ::CloseCAUUID>;
+using unique_olestr = wil::unique_any<LPOLESTR, decltype(&::CoTaskMemFree), ::CoTaskMemFree>;
+
+template<typename Func>
+static void EnumSysDev(const GUID& clsid, Func&& f)
+{
+	if (auto devEnum = wil::CoCreateInstanceNoThrow<ICreateDevEnum>(CLSID_SystemDeviceEnum))
+	{
+		wil::com_ptr_nothrow<IEnumMoniker> classEnum;
+		if (SUCCEEDED(devEnum->CreateClassEnumerator(clsid, classEnum.put(), 0)))
+		{
+			wil::com_ptr_nothrow<IMoniker> moniker;
+			while (classEnum->Next(1, moniker.put(), nullptr) == S_OK)
+			{
+				std::forward<Func>(f)(moniker.get());
+			}
+		}
+	}
+}
 
 void GSCaptureDlg::InvalidFile()
 {
@@ -56,7 +71,7 @@ int GSCaptureDlg::GetSelCodec(Codec& c)
 
 		if (!c.filter)
 		{
-			c.moniker->BindToObject(NULL, NULL, __uuidof(IBaseFilter), (void**)&c.filter);
+			c.moniker->BindToObject(NULL, NULL, IID_PPV_ARGS(c.filter.put()));
 
 			if (!c.filter)
 				return 0;
@@ -79,13 +94,12 @@ void GSCaptureDlg::UpdateConfigureButton()
 		return;
 	}
 
-	if (CComQIPtr<ISpecifyPropertyPages> pSPP = c.filter)
+	if (auto pSPP = c.filter.try_query<ISpecifyPropertyPages>())
 	{
-		CAUUID caGUID;
-		memset(&caGUID, 0, sizeof(caGUID));
+		unique_cauuid caGUID;
 		enable = SUCCEEDED(pSPP->GetPages(&caGUID));
 	}
-	else if (CComQIPtr<IAMVfwCompressDialogs> pAMVfWCD = c.filter)
+	else if (auto pAMVfWCD = c.filter.try_query<IAMVfwCompressDialogs>())
 	{
 		enable = pAMVfWCD->ShowDialog(VfwCompressDialog_QueryConfig, nullptr) == S_OK;
 	}
@@ -102,7 +116,7 @@ void GSCaptureDlg::OnInit()
 
 	m_codecs.clear();
 
-	_bstr_t selected = theApp.GetConfigS("CaptureVideoCodecDisplayName").c_str();
+	const std::wstring selected = convert_utf8_to_utf16(theApp.GetConfigS("CaptureVideoCodecDisplayName"));
 
 	ComboBoxAppend(IDC_CODECS, "Uncompressed", 0, true);
 	ComboBoxAppend(IDC_COLORSPACE, "YUY2", 0, true);
@@ -110,44 +124,38 @@ void GSCaptureDlg::OnInit()
 
 	CoInitialize(0); // this is obviously wrong here, each thread should call this on start, and where is CoUninitalize?
 
-	BeginEnumSysDev(CLSID_VideoCompressorCategory, moniker)
+	EnumSysDev(CLSID_VideoCompressorCategory, [&](IMoniker* moniker)
 	{
 		Codec c;
 
 		c.moniker = moniker;
 
+		unique_olestr str;
+		if (FAILED(moniker->GetDisplayName(NULL, NULL, str.put())))
+			return;
+
 		std::wstring prefix;
+		if      (wcsstr(str.get(), L"@device:dmo:")) prefix = L"(DMO) ";
+		else if (wcsstr(str.get(), L"@device:sw:"))  prefix = L"(DS) ";
+		else if (wcsstr(str.get(), L"@device:cm:"))  prefix = L"(VfW) ";
 
-		LPOLESTR str = NULL;
+		
+		c.DisplayName = str.get();
 
-		if (FAILED(moniker->GetDisplayName(NULL, NULL, &str)))
-			continue;
+		wil::com_ptr_nothrow<IPropertyBag> pPB;
+		if (FAILED(moniker->BindToStorage(0, 0, IID_PPV_ARGS(pPB.put()))))
+			return;
 
-		if      (wcsstr(str, L"@device:dmo:")) prefix = L"(DMO) ";
-		else if (wcsstr(str, L"@device:sw:"))  prefix = L"(DS) ";
-		else if (wcsstr(str, L"@device:cm:"))  prefix = L"(VfW) ";
-
-		c.DisplayName = str;
-
-		CoTaskMemFree(str);
-
-		CComPtr<IPropertyBag> pPB;
-
-		if (FAILED(moniker->BindToStorage(0, 0, IID_IPropertyBag, (void**)&pPB)))
-			continue;
-
-		_variant_t var;
-
-		if (FAILED(pPB->Read(_bstr_t(_T("FriendlyName")), &var, NULL)))
-			continue;
+		wil::unique_variant var;
+		if (FAILED(pPB->Read(L"FriendlyName", &var, nullptr)))
+			return;
 
 		c.FriendlyName = prefix + var.bstrVal;
 
 		m_codecs.push_back(c);
 
 		ComboBoxAppend(IDC_CODECS, c.FriendlyName.c_str(), (LPARAM)&m_codecs.back(), c.DisplayName == selected);
-	}
-	EndEnumSysDev
+	});
 	UpdateConfigureButton();
 }
 
@@ -194,23 +202,16 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				Codec c;
 				if (GetSelCodec(c) == 1)
 				{
-					if (CComQIPtr<ISpecifyPropertyPages> pSPP = c.filter)
+					if (auto pSPP = c.filter.try_query<ISpecifyPropertyPages>())
 					{
-						CAUUID caGUID;
-						memset(&caGUID, 0, sizeof(caGUID));
-
+						unique_cauuid caGUID;
 						if (SUCCEEDED(pSPP->GetPages(&caGUID)))
 						{
-							IUnknown* lpUnk = NULL;
-							pSPP.QueryInterface(&lpUnk);
-							OleCreatePropertyFrame(m_hWnd, 0, 0, c.FriendlyName.c_str(), 1, (IUnknown**)&lpUnk, caGUID.cElems, caGUID.pElems, 0, 0, NULL);
-							lpUnk->Release();
-
-							if (caGUID.pElems)
-								CoTaskMemFree(caGUID.pElems);
+							auto lpUnk = pSPP.try_query<IUnknown>();
+							OleCreatePropertyFrame(m_hWnd, 0, 0, c.FriendlyName.c_str(), 1, lpUnk.addressof(), caGUID.cElems, caGUID.pElems, 0, 0, NULL);
 						}
 					}
-					else if (CComQIPtr<IAMVfwCompressDialogs> pAMVfWCD = c.filter)
+					else if (auto pAMVfWCD = c.filter.try_query<IAMVfwCompressDialogs>())
 					{
 						if (pAMVfWCD->ShowDialog(VfwCompressDialog_QueryConfig, NULL) == S_OK)
 							pAMVfWCD->ShowDialog(VfwCompressDialog_Config, m_hWnd);
@@ -244,7 +245,7 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 			theApp.SetConfig("CaptureFileName", convert_utf16_to_utf8(m_filename).c_str());
 
 			if (ris != 2)
-				theApp.SetConfig("CaptureVideoCodecDisplayName", c.DisplayName);
+				theApp.SetConfig("CaptureVideoCodecDisplayName", convert_utf16_to_utf8(c.DisplayName).c_str());
 			else
 				theApp.SetConfig("CaptureVideoCodecDisplayName", "");
 			break;
