@@ -633,7 +633,7 @@ set(pcsx2GSSources
 	GS/Renderers/OpenGL/GSTextureOGL.cpp
 	GS/Window/GSSetting.cpp
 	GS/Window/GSWnd.cpp
-	GS/Window/GSLinuxDialog.cpp
+	GS/Window/GSwxDialog.cpp
 	GS/Window/GSWndEGL.cpp
 	)
 
@@ -704,9 +704,9 @@ set(pcsx2GSHeaders
 	GS/Window/GSCaptureDlg.h
 	GS/Window/GSDialog.h
 	GS/Window/GSSetting.h
-	GS/Window/GSSettingsDlg.h
 	GS/Window/GSWnd.h
 	GS/Window/GSWndEGL.h
+	GS/Window/GSwxDialog.h
 	)
 
 # GS resources

@@ -1539,9 +1539,6 @@
     <ClCompile Include="GS\GSLzma.cpp">
       <Filter>System\Ps2\GS</Filter>
     </ClCompile>
-    <ClCompile Include="GS\Window\GSSettingsDlg.cpp">
-      <Filter>System\Ps2\GS</Filter>
-    </ClCompile>
     <ClCompile Include="gui\Dialogs\IPCDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
@@ -1553,6 +1550,9 @@
     </ClCompile>
     <ClCompile Include="Recording\Utilities\InputRecordingLogger.cpp">
       <Filter>Recording\Utilities</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Window\GSwxDialog.cpp">
+      <Filter>System\Ps2\GS</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -2455,9 +2455,6 @@
     <ClInclude Include="GS\Window\GSSetting.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
-    <ClInclude Include="GS\Window\GSSettingsDlg.h">
-      <Filter>System\Ps2\GS</Filter>
-    </ClInclude>
     <ClInclude Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
@@ -2566,6 +2563,9 @@
     <ClInclude Include="GS\resource.h" />
     <ClInclude Include="GS.h">
       <Filter>System\Ps2</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Window\GSwxDialog.h">
+      <Filter>System\Ps2\GS</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
