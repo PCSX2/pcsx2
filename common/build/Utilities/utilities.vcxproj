@@ -114,6 +114,7 @@
     <ClInclude Include="..\..\include\Utilities\EmbeddedImage.h" />
     <ClInclude Include="..\..\include\Utilities\boost_spsc_queue.hpp" />
     <ClInclude Include="..\..\include\Utilities\ScopedAlloc.h" />
+    <ClInclude Include="..\..\include\Utilities\WindowInfo.h" />
     <ClInclude Include="..\..\src\Utilities\ThreadingInternal.h" />
     <ClInclude Include="..\..\include\Utilities\Assertions.h" />
     <ClInclude Include="..\..\include\Utilities\CheckedStaticBox.h" />

@@ -68,6 +68,7 @@ set(UtilitiesHeaders
 	../../include/Utilities/Threading.h
 	../../include/Utilities/ThreadingDialogs.h
 	../../include/Utilities/TraceLog.h
+	../../include/Utilities/WindowInfo.h
 	../../include/Utilities/wxAppWithHelpers.h
 	../../include/Utilities/wxBaseTools.h
 	../../include/Utilities/wxGuiTools.h

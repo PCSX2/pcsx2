@@ -216,5 +216,8 @@
     <ClInclude Include="..\..\include\Utilities\EmbeddedImage.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\include\Utilities\WindowInfo.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
