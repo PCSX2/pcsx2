@@ -5,8 +5,10 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 	It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif(NOT TOP_CMAKE_WAS_SOURCED)
 
-# variable with all sources of this library
-set(UtilitiesSources
+add_library(Utilities)
+
+# Utilities sources
+target_sources(Utilities PRIVATE
 	VirtualMemory.cpp
 	AlignedMalloc.cpp
 	../../include/Utilities/FixedPointTypes.inl
@@ -38,8 +40,8 @@ set(UtilitiesSources
 	wxHelpers.cpp
 	)
 
-# variable with all headers of this library
-set(UtilitiesHeaders
+# Utilities headers
+target_sources(Utilities PRIVATE
 	../../include/Utilities/Assertions.h
 	../../include/Utilities/boost_spsc_queue.hpp
 	../../include/Utilities/CheckedStaticBox.h
@@ -76,40 +78,31 @@ set(UtilitiesHeaders
 )
 
 if(APPLE)
-	LIST(APPEND UtilitiesSources
+	target_sources(Utilities PRIVATE
 		Darwin/DarwinThreads.cpp
 		Darwin/DarwinMisc.cpp
 		Darwin/DarwinSemaphore.cpp
 	)
 elseif(Windows)
-	LIST(APPEND UtilitiesSources
+	target_sources(Utilities PRIVATE
 		x86/MemcpyFast.cpp
 		Windows/WinThreads.cpp
 		Windows/WinHostSys.cpp
 		Windows/WinMisc.cpp
 	)
 else()
-	LIST(APPEND UtilitiesSources
+	target_sources(Utilities PRIVATE
 		Linux/LnxThreads.cpp
 		Linux/LnxMisc.cpp
 		Semaphore.cpp
 	)
 endif()
 
-set(UtilitiesFinalSources
-	${UtilitiesSources}
-	${UtilitiesHeaders}
-)
-
-foreach(library Utilities Utilities_NO_TLS)
-	add_library(${library} "${UtilitiesFinalSources}")
-	target_link_libraries(${library} PRIVATE ${LIBC_LIBRARIES} PUBLIC wxWidgets::all)
-	target_compile_features(${library} PUBLIC cxx_std_17)
-	target_include_directories(${library} PUBLIC ../../../3rdparty/include ../../include PRIVATE ../../include/Utilities .)
-	target_compile_definitions(${library} PUBLIC "${PCSX2_DEFS}")
-	target_compile_options(${library} PRIVATE "${PCSX2_WARNINGS}")
-	if(COMMAND target_precompile_headers)
-		target_precompile_headers(${library} PRIVATE PrecompiledHeader.h)
-	endif()
-endforeach()
-target_compile_definitions(Utilities_NO_TLS PUBLIC PCSX2_THREAD_LOCAL=0)
+target_link_libraries(Utilities PRIVATE ${LIBC_LIBRARIES} PUBLIC wxWidgets::all)
+target_compile_features(Utilities PUBLIC cxx_std_17)
+target_include_directories(Utilities PUBLIC ../../../3rdparty/include ../../include PRIVATE ../../include/Utilities .)
+target_compile_definitions(Utilities PUBLIC "${PCSX2_DEFS}")
+target_compile_options(Utilities PRIVATE "${PCSX2_WARNINGS}")
+if(COMMAND target_precompile_headers)
+	target_precompile_headers(Utilities PRIVATE PrecompiledHeader.h)
+endif()
