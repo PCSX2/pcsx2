@@ -5,10 +5,10 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 	It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif(NOT TOP_CMAKE_WAS_SOURCED)
 
-set(x86emitterFinalFlags ${CommonFlags})
+add_library(x86emitter)
 
-# variable with all sources of this library
-set(x86emitterSources
+# x86emitter sources
+target_sources(x86emitter PRIVATE
 	bmi.cpp
 	cpudetect.cpp
 	fpu.cpp
@@ -21,8 +21,8 @@ set(x86emitterSources
 	simd.cpp
 	x86emitter.cpp)
 
-# variable with all headers of this library
-set(x86emitterHeaders
+# x86emitter headers
+target_sources(x86emitter PRIVATE
 	../../include/x86emitter/implement/dwshift.h
 	../../include/x86emitter/implement/group1.h
 	../../include/x86emitter/implement/group2.h
@@ -52,21 +52,12 @@ set(x86emitterHeaders
 	)
 
 if(Windows)
-	LIST(APPEND x86emitterSources WinCpuDetect.cpp)
+	target_sources(x86emitter PRIVATE WinCpuDetect.cpp)
 else()
-	LIST(APPEND x86emitterSources LnxCpuDetect.cpp)
+	target_sources(x86emitter PRIVATE LnxCpuDetect.cpp)
 endif()
 
-set(x86emitterFinalSources
-	${x86emitterSources}
-	${x86emitterHeaders}
-)
-
-set(x86emitterFinalLibs
-	wxWidgets::all
-)
-
-add_pcsx2_lib(x86emitter "${x86emitterFinalSources}" "${x86emitterFinalLibs}" "${x86emitterFinalFlags}")
+target_link_libraries(x86emitter PRIVATE wxWidgets::all)
 target_compile_features(x86emitter PUBLIC cxx_std_17)
 target_include_directories(x86emitter PUBLIC ../../include PRIVATE ../../include/x86emitter)
 target_compile_definitions(x86emitter PUBLIC "${PCSX2_DEFS}")

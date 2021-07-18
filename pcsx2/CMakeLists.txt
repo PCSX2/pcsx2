@@ -1,5 +1,16 @@
 include(macros/GlibCompileResourcesSupport)
 
+add_executable(PCSX2)
+
+target_compile_features(PCSX2 PRIVATE cxx_std_17)
+target_compile_definitions(PCSX2 PUBLIC "${PCSX2_DEFS}")
+target_compile_options(PCSX2 PRIVATE "${PCSX2_WARNINGS}")
+
+if (PACKAGE_MODE)
+	install(TARGETS PCSX2 DESTINATION ${CMAKE_INSTALL_BINDIR})
+else()
+	install(TARGETS PCSX2 DESTINATION ${CMAKE_SOURCE_DIR}/bin)
+endif()
 
 if (openSUSE)
 	# openSUSE don't install wx in a standard library system
@@ -14,8 +25,6 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 	It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif()
 
-include_directories ("${CMAKE_SOURCE_DIR}/3rdparty/xbyak/")
-
 set(CommonFlags
 	-fno-strict-aliasing
 	-Wstrict-aliasing # Allow to track strict aliasing issue.
@@ -27,37 +36,34 @@ set(CommonFlags
 
 if(GCC_VERSION VERSION_EQUAL "8.0" OR GCC_VERSION VERSION_GREATER "8.0")
 	# gs is pretty bad at this
-	set(CommonFlags ${CommonFlags} -Wno-packed-not-aligned -Wno-class-memaccess)
+	list(APPEND CommonFlags -Wno-packed-not-aligned -Wno-class-memaccess)
 endif()
+
+target_compile_options(PCSX2 PRIVATE ${CommonFlags})
 
 if ("${PGO}" STREQUAL "generate")
-	set(pcsx2FinalFlags -fprofile-generate)
+	target_compile_options(PCSX2 PRIVATE -fprofile-generate)
 elseif("${PGO}" STREQUAL "use")
-	set(pcsx2FinalFlags -fprofile-use)
-else()
-	set(pcsx2FinalFlags "")
+	target_compile_options(PCSX2 PRIVATE -fprofile-use)
 endif()
 
-set(pcsx2FinalFlags ${pcsx2FinalFlags} ${CommonFlags})
-
 if(PORTAUDIO_FOUND)
-	set(pcsx2FinalFlags ${pcsx2FinalFlags} -DSPU2X_PORTAUDIO)
+	target_compile_definitions(PCSX2 PRIVATE SPU2X_PORTAUDIO)
+	target_link_libraries(PCSX2 PRIVATE PkgConfig::PORTAUDIO)
 endif()
 
 if(PULSEAUDIO_FOUND)
-	set(pcsx2FinalFlags ${pcsx2FinalFlags} -DSPU2X_PULSEAUDIO)
+	target_compile_definitions(PCSX2 PRIVATE SPU2X_PULSEAUDIO)
+	target_link_libraries(PCSX2 PRIVATE PulseAudio::PulseAudio)
 endif()
 
 if(XDG_STD)
-	set(pcsx2FinalFlags ${pcsx2FinalFlags} -DXDG_STD)
+	target_compile_definitions(PCSX2 PRIVATE XDG_STD)
 endif()
 
 if(SDL_FOUND OR SDL2_FOUND)
-	set(pcsx2FinalFlags ${pcsx2FinalFlags} -DSDL_BUILD)
+	target_compile_definitions(PCSX2 PRIVATE SDL_BUILD)
 endif()
-
-
-set(Output PCSX2)
 
 # Main pcsx2 source
 set(pcsx2Sources
@@ -264,7 +270,7 @@ set(pcsx2SPU2Sources
 	)
 
 if(PORTAUDIO_FOUND)
-	set(pcsx2SPU2Sources ${pcsx2SPU2Sources} SPU2/SndOut_Portaudio.cpp)
+	list(APPEND pcsx2SPU2Sources SPU2/SndOut_Portaudio.cpp)
 endif()
 
 # SPU2 headers
@@ -474,19 +480,16 @@ set(pcsx2USBHeaders
 	USB/usb-eyetoy/cam-linux.h
 	USB/qemu-usb/input-keymap-linux-to-qcode.h
 	)
-include_directories ("../3rdparty/jpgd/")
 
 if(PULSEAUDIO_FOUND)
-	set(pcsx2USBSources ${pcsx2USBSources} USB/usb-mic/audiodev-pulse.cpp)
-	set(pcsx2USBHeaders ${pcsx2USBHeaders} USB/usb-mic/audiodev-pulse.h)
+	list(APPEND pcsx2USBSources USB/usb-mic/audiodev-pulse.cpp)
+	list(APPEND pcsx2USBHeaders USB/usb-mic/audiodev-pulse.h)
 endif()
-
-
 
 # PAD resources pre-compilation
 set(PADImgHeader "${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/ImgHeader")
 set(PADImg "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/Img")
-include_directories ("${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/")
+target_include_directories(PCSX2 PRIVATE "${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/")
 
 file(MAKE_DIRECTORY ${PADImgHeader})
 
@@ -721,8 +724,8 @@ set(pcsx2GSResources
 	GS/res/glsl/tfx_vgs.glsl)
 
 set(GSBin "${CMAKE_BINARY_DIR}/pcsx2/GS")
-include_directories ("${GSBin}")
-file(MAKE_DIRECTORY ${GSBin})
+target_include_directories(PCSX2 PRIVATE "${GSBin}")
+file(MAKE_DIRECTORY "${GSBin}")
 
 add_custom_command(
 	OUTPUT ${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.h
@@ -1158,7 +1161,7 @@ set(pcsx2x86Headers
 	)
 
 # common Sources
-set(Common
+target_sources(PCSX2 PRIVATE
 	${pcsx2Sources}
 	${pcsx2Headers}
 	${pcsx2CDVDSources}
@@ -1195,14 +1198,14 @@ set(Common
 # platform sources
 # Linux
 if(Linux)
-	set(Platform
+	target_sources(PCSX2 PRIVATE
 		${pcsx2LinuxSources}
 		${pcsx2LinuxHeaders}
 		${pcsx2USBSources}
 		${pcsx2USBHeaders}
 		)
 
-	set(Platform_Libs
+	target_link_libraries(PCSX2 PRIVATE
 		PkgConfig::AIO
 		PkgConfig::EGL
 		PkgConfig::LIBUDEV
@@ -1212,19 +1215,19 @@ if(Linux)
 		ALSA::ALSA
 		)
 elseif(UNIX AND NOT APPLE)
-	set(Platform_Libs X11::X11)
+	target_link_libraries(PCSX2 PRIVATE X11::X11)
 endif()
 
 # Windows
 if(Windows)
-	set(Platform
+	target_sources(PCSX2 PRIVATE
 		${pcsx2WindowsSources}
 		${pcsx2WindowsHeaders})
 endif()
 
 # MacOSX
 if(APPLE)
-	set(Platform
+	target_sources(PCSX2 PRIVATE
 		${pcsx2OSXSources}
 		${pcsx2LinuxHeaders}
 		${pcsx2USBNullSources}
@@ -1232,17 +1235,12 @@ if(APPLE)
 endif()
 
 if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "NetBSD")
-	set(Platform
+	target_sources(PCSX2 PRIVATE
 		${pcsx2FreeBSDSources}
 		${pcsx2LinuxHeaders})
 endif()
 
-set(pcsx2FinalSources
-	${Common}
-	${Platform}
-)
-
-set(pcsx2FinalLibs
+target_link_libraries(PCSX2 PRIVATE
 	Utilities
 	x86emitter
 	fmt::fmt
@@ -1261,16 +1259,7 @@ set(pcsx2FinalLibs
 	PNG::PNG
 	Freetype::Freetype
 	LibLZMA::LibLZMA
-	${Platform_Libs}
 )
-
-if(PORTAUDIO_FOUND)
-	set(pcsx2FinalLibs ${pcsx2FinalLibs} PkgConfig::PORTAUDIO)
-endif()
-
-if(PULSEAUDIO_FOUND)
-	set(pcsx2FinalLibs ${pcsx2FinalLibs} PulseAudio::PulseAudio)
-endif()
 
 ### Generate the resources files
 file(MAKE_DIRECTORY ${res_bin})
@@ -1291,41 +1280,39 @@ foreach(res_file IN ITEMS
 endforeach()
 
 if(USE_VTUNE)
-	set(pcsx2FinalLibs ${pcsx2FinalLibs} Vtune::Vtune)
+	target_link_libraries(PCSX2 PRIVATE Vtune::Vtune)
 endif()
 
-add_pcsx2_executable(${Output} "${pcsx2FinalSources}" "${pcsx2FinalLibs}" "${pcsx2FinalFlags}")
-target_compile_features(${Output} PRIVATE cxx_std_17)
-target_compile_definitions(${Output} PUBLIC "${PCSX2_DEFS}")
-target_compile_options(${Output} PRIVATE "${PCSX2_WARNINGS}")
-
 # additonal include directories
-target_include_directories(${Output} PRIVATE
+target_include_directories(PCSX2 PRIVATE
+	.
 	gui
 	x86
 	${CMAKE_BINARY_DIR}/pcsx2/gui
 	${CMAKE_BINARY_DIR}/common/include/
+	"${CMAKE_SOURCE_DIR}/3rdparty/jpgd/"
+	"${CMAKE_SOURCE_DIR}/3rdparty/xbyak/"
 )
 
 if(COMMAND target_precompile_headers)
 	message("Using precompiled headers.")
-	target_precompile_headers(${Output} PRIVATE PrecompiledHeader.h)
+	target_precompile_headers(PCSX2 PRIVATE PrecompiledHeader.h)
 endif()
 
 if (APPLE)
 	# MacOS defaults to having a maximum protection of the __DATA segment of rw (non-executable)
 	# We have a bunch of page-sized arrays in bss that we use for jit
 	# Obviously not being able to make those arrays executable would be a problem
-	target_link_options(${Output} PRIVATE -Wl,-segprot,__DATA,rwx,rw)
+	target_link_options(PCSX2 PRIVATE -Wl,-segprot,__DATA,rwx,rw)
 
-	set_target_properties(${Output} PROPERTIES
+	set_target_properties(PCSX2 PROPERTIES
 		MACOSX_BUNDLE true
 		MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/gui/Resources/Info.plist.in"
 		OUTPUT_NAME PCSX2
 	)
 
-	target_sources(${Output} PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/gui/Resources/PCSX2.icns")
-	target_sources(${Output} PRIVATE "${CMAKE_SOURCE_DIR}/bin/GameIndex.yaml")
+	target_sources(PCSX2 PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/gui/Resources/PCSX2.icns")
+	target_sources(PCSX2 PRIVATE "${CMAKE_SOURCE_DIR}/bin/GameIndex.yaml")
 	set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/gui/Resources/PCSX2.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 	set_source_files_properties("${CMAKE_SOURCE_DIR}/bin/GameIndex.yaml" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 
@@ -1338,10 +1325,10 @@ if (APPLE)
 	endif()
 
 	add_custom_target(pcsx2-postprocess-bundle ${postprocessBundleType}
-		COMMAND ${CMAKE_COMMAND} "-DPCSX2_BUNDLE_PATH=$<TARGET_FILE_DIR:${Output}>/../.."
+		COMMAND ${CMAKE_COMMAND} "-DPCSX2_BUNDLE_PATH=$<TARGET_FILE_DIR:PCSX2>/../.."
 			-P ${CMAKE_SOURCE_DIR}/cmake/Pcsx2PostprocessBundle.cmake
 	)
-	add_dependencies(pcsx2-postprocess-bundle ${Output})
+	add_dependencies(pcsx2-postprocess-bundle PCSX2)
 
 	# Set the right file types for .inl files in Xcode
 	get_target_property(PCSX2_SOURCES PCSX2 SOURCES)
@@ -1354,9 +1341,9 @@ endif()
 
 if(NOT DISABLE_SETCAP)
 	if(PACKAGE_MODE)
-		install(CODE "execute_process(COMMAND /bin/bash -c \"echo 'Enabling networking capability on Linux...';set -x; [ -f '${CMAKE_INSTALL_FULL_BINDIR}/${Output}' ] && sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' '${CMAKE_INSTALL_FULL_BINDIR}/${Output}'; set +x\")")
+		install(CODE "execute_process(COMMAND /bin/bash -c \"echo 'Enabling networking capability on Linux...';set -x; [ -f '${CMAKE_INSTALL_FULL_BINDIR}/PCSX2' ] && sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' '${CMAKE_INSTALL_FULL_BINDIR}/PCSX2'; set +x\")")
 	else()
-		install(CODE "execute_process(COMMAND /bin/bash -c \"echo 'Enabling networking capability on Linux...';set -x; [ -f '${CMAKE_SOURCE_DIR}/bin/${Output}' ] && sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' '${CMAKE_SOURCE_DIR}/bin/${Output}'; set +x\")")
+		install(CODE "execute_process(COMMAND /bin/bash -c \"echo 'Enabling networking capability on Linux...';set -x; [ -f '${CMAKE_SOURCE_DIR}/bin/PCSX2' ] && sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' '${CMAKE_SOURCE_DIR}/bin/PCSX2'; set +x\")")
 	endif()
 endif()
 
