@@ -17,7 +17,7 @@
 
 #ifdef _WIN32
 
-class GSWndWGL : public GSWndGL
+class GSWndWGL final : public GSWndGL
 {
 	HWND  m_NativeWindow;
 	HDC   m_NativeDisplay;
@@ -35,29 +35,21 @@ class GSWndWGL : public GSWndGL
 	void SetSwapInterval();
 	bool HasLateVsyncSupport() { return m_has_late_vsync; }
 
-	static LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam);
-
 public:
 	GSWndWGL();
-	virtual ~GSWndWGL() {}
+	~GSWndWGL() override = default;
 
-	bool Create(const std::string& title, int w, int h);
-	bool Attach(const WindowInfo& wi, bool managed = true);
-	void Detach();
+	bool Attach(const WindowInfo& wi) override;
+	void Detach() override;
 
-	void* GetDisplay() { return m_NativeWindow; }
-	void* GetHandle() { return m_NativeWindow; }
-	GSVector4i GetClientRect();
-	bool SetWindowText(const char* title);
+	void* GetHandle() override { return m_NativeWindow; }
+	GSVector4i GetClientRect() override;
 
-	void AttachContext();
-	void DetachContext();
-	void* GetProcAddress(const char* name, bool opt);
+	void AttachContext() override;
+	void DetachContext() override;
+	void* GetProcAddress(const char* name, bool opt) override;
 
-	void Show();
-	void Hide();
-	void HideFrame();
-	void Flip();
+	void Flip() override;
 };
 
 #endif

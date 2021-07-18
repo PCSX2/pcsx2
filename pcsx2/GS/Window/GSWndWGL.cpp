@@ -41,23 +41,6 @@ GSWndWGL::GSWndWGL()
 {
 }
 
-// Used by GSReplay. Perhaps the stuff used by GSReplay can be moved out? That way all
-// the GSOpen 1 stuff can be removed. But that'll take a bit of thinking.
-LRESULT CALLBACK GSWndWGL::WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	switch (message)
-	{
-		case WM_CLOSE:
-			// This takes place before GSClose, so don't destroy the Window so we can clean up.
-			ShowWindow(hWnd, SW_HIDE);
-			// DestroyWindow(hWnd);
-			return 0;
-		default:
-			return DefWindowProc(hWnd, message, wParam, lParam);
-	}
-}
-
-
 void GSWndWGL::CreateContext(int major, int minor)
 {
 	if (!m_NativeDisplay || !m_NativeWindow)
@@ -156,13 +139,12 @@ void GSWndWGL::PopulateWndGlFunction()
 	}
 }
 
-bool GSWndWGL::Attach(const WindowInfo& wi, bool managed)
+bool GSWndWGL::Attach(const WindowInfo& wi)
 {
 	if (wi.type != WindowInfo::Type::Win32)
 		return false;
 
 	m_NativeWindow = static_cast<HWND>(wi.window_handle);
-	m_managed = managed;
 
 	OpenWGLDisplay();
 
@@ -184,13 +166,6 @@ void GSWndWGL::Detach()
 	m_context = NULL;
 
 	CloseWGLDisplay();
-
-	// Used by GSReplay.
-	if (m_NativeWindow && m_managed)
-	{
-		DestroyWindow(m_NativeWindow);
-		m_NativeWindow = NULL;
-	}
 }
 
 void GSWndWGL::OpenWGLDisplay()
@@ -236,77 +211,6 @@ void GSWndWGL::CloseWGLDisplay()
 		win_error(L"Release Device Context Failed.");
 
 	m_NativeDisplay = NULL;
-}
-
-//TODO: GSopen 1 => Drop?
-// Used by GSReplay. At least for now.
-// More or less copy pasted from GSWndDX::Create and GSWndWGL::Attach with a few
-// modifications
-bool GSWndWGL::Create(const std::string& title, int w, int h)
-{
-	if (m_NativeWindow)
-		return false;
-
-	m_managed = true;
-
-	WNDCLASS wc;
-
-	memset(&wc, 0, sizeof(wc));
-
-	wc.style = CS_HREDRAW | CS_VREDRAW | CS_DBLCLKS | CS_OWNDC;
-	wc.lpfnWndProc = WndProc;
-	wc.hInstance = theApp.GetModuleHandle();
-	wc.hCursor = LoadCursor(NULL, IDC_ARROW);
-	wc.hbrBackground = (HBRUSH)GetStockObject(BLACK_BRUSH);
-	wc.lpszClassName = L"GSWndOGL";
-
-	if (!GetClassInfo(wc.hInstance, wc.lpszClassName, &wc))
-	{
-		if (!RegisterClass(&wc))
-		{
-			return false;
-		}
-	}
-
-	DWORD style = WS_CLIPCHILDREN | WS_CLIPSIBLINGS | WS_OVERLAPPEDWINDOW | WS_BORDER;
-
-	GSVector4i r;
-
-	GetWindowRect(GetDesktopWindow(), r);
-
-	// Old GSOpen ModeWidth and ModeHeight are not necessary with this.
-	bool remote = !!GetSystemMetrics(SM_REMOTESESSION);
-
-	if (w <= 0 || h <= 0 || remote)
-	{
-		w = r.width() / 3;
-		h = r.width() / 4;
-
-		if (!remote)
-		{
-			w *= 2;
-			h *= 2;
-		}
-	}
-
-	r.left = (r.left + r.right - w) / 2;
-	r.top = (r.top + r.bottom - h) / 2;
-	r.right = r.left + w;
-	r.bottom = r.top + h;
-
-	AdjustWindowRect(r, style, FALSE);
-
-	std::wstring tmp = std::wstring(title.begin(), title.end());
-	m_NativeWindow = CreateWindow(wc.lpszClassName, tmp.c_str(), style, r.left, r.top, r.width(), r.height(), NULL, NULL, wc.hInstance, (LPVOID)this);
-
-	if (m_NativeWindow == NULL)
-		return false;
-
-	OpenWGLDisplay();
-
-	FullContextInit();
-
-	return true;
 }
 
 //Same as DX
@@ -363,42 +267,4 @@ void GSWndWGL::Flip()
 
 	SwapBuffers(m_NativeDisplay);
 }
-
-void GSWndWGL::Show()
-{
-	if (!m_managed)
-		return;
-
-	// Used by GSReplay
-	SetForegroundWindow(m_NativeWindow);
-	ShowWindow(m_NativeWindow, SW_SHOWNORMAL);
-	UpdateWindow(m_NativeWindow);
-}
-
-void GSWndWGL::Hide()
-{
-}
-
-void GSWndWGL::HideFrame()
-{
-}
-
-// Returns FALSE if the window has no title, or if th window title is under the strict
-// management of the emulator.
-
-bool GSWndWGL::SetWindowText(const char* title)
-{
-	if (!m_managed)
-		return false;
-
-	const size_t tmp_size = strlen(title) + 1;
-	std::wstring tmp(tmp_size, L'#');
-	mbstowcs(&tmp[0], title, tmp_size);
-	// Used by GSReplay.
-	::SetWindowText(m_NativeWindow, tmp.c_str());
-
-	return true;
-}
-
-
 #endif

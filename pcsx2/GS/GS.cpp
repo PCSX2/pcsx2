@@ -210,9 +210,10 @@ int _GSopen(const WindowInfo& wi, const char* title, GSRendererType renderer, in
 			{
 				try
 				{
-					wnd->Attach(wi, false);
-					window = wnd; // Previous code will throw if window isn't supported
+					if (!wnd->Attach(wi))
+						continue;
 
+					window = wnd; // Previous code will throw if window isn't supported
 					break;
 				}
 				catch (GSRecoverableError)
@@ -531,23 +532,6 @@ void GSvsync(int field)
 {
 	try
 	{
-#ifdef _WIN32
-
-		if (s_gs->m_wnd->IsManaged())
-		{
-			MSG msg;
-
-			memset(&msg, 0, sizeof(msg));
-
-			while (msg.message != WM_QUIT && PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-		}
-
-#endif
-
 		s_gs->VSync(field);
 	}
 	catch (GSRecoverableError)

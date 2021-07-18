@@ -350,13 +350,7 @@ void GSRenderer::VSync(int field)
 		std::string s;
 
 #ifdef GSTITLEINFO_API_FORCE_VERBOSE
-		if (1) //force verbose reply
-#else
-		if (m_wnd->IsManaged())
-#endif
 		{
-			//GS owns the window's title, be verbose.
-
 			std::string s2 = m_regs->SMODE2.INT ? (std::string("Interlaced ") + (m_regs->SMODE2.FFMD ? "(frame)" : "(field)")) : "Progressive";
 
 			s = format(
@@ -388,41 +382,29 @@ void GSRenderer::VSync(int field)
 				s += format(" | %d%% CPU", sum);
 			}
 		}
-		else
+#else
 		{
 			// Satisfy PCSX2's request for title info: minimal verbosity due to more external title text
 
 			s = format("%dx%d | %s", GetInternalResolution().x, GetInternalResolution().y, theApp.m_gs_interlace[m_interlace].name.c_str());
 		}
+#endif
 
 		if (m_capture.IsCapturing())
 		{
 			s += " | Recording...";
 		}
 
-		if (m_wnd->IsManaged())
-		{
-			m_wnd->SetWindowText(s.c_str());
-		}
-		else
-		{
-			// note: do not use TryEnterCriticalSection.  It is unnecessary code complication in
-			// an area that absolutely does not matter (even if it were 100 times slower, it wouldn't
-			// be noticeable).  Besides, these locks are extremely short -- overhead of conditional
-			// is way more expensive than just waiting for the CriticalSection in 1 of 10,000,000 tries. --air
+		// note: do not use TryEnterCriticalSection.  It is unnecessary code complication in
+		// an area that absolutely does not matter (even if it were 100 times slower, it wouldn't
+		// be noticeable).  Besides, these locks are extremely short -- overhead of conditional
+		// is way more expensive than just waiting for the CriticalSection in 1 of 10,000,000 tries. --air
 
-			std::lock_guard<std::mutex> lock(m_pGSsetTitle_Crit);
+		std::lock_guard<std::mutex> lock(m_pGSsetTitle_Crit);
 
-			strncpy(m_GStitleInfoBuffer, s.c_str(), countof(m_GStitleInfoBuffer) - 1);
+		strncpy(m_GStitleInfoBuffer, s.c_str(), countof(m_GStitleInfoBuffer) - 1);
 
-			m_GStitleInfoBuffer[sizeof(m_GStitleInfoBuffer) - 1] = 0; // make sure null terminated even if text overflows
-		}
-	}
-	else
-	{
-		// [TODO]
-		// We don't have window title rights, or the window has no title,
-		// so let's use actual OSD!
+		m_GStitleInfoBuffer[sizeof(m_GStitleInfoBuffer) - 1] = 0; // make sure null terminated even if text overflows
 	}
 
 	if (m_frameskip)
@@ -586,10 +568,6 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 				m_interlace = (m_interlace + s_interlace_nb + step) % s_interlace_nb;
 				theApp.SetConfig("interlace", m_interlace);
 				printf("GS: Set deinterlace mode to %d (%s).\n", m_interlace, theApp.m_gs_interlace.at(m_interlace).name.c_str());
-				return;
-			case VK_F6:
-				if (m_wnd->IsManaged())
-					m_aspectratio = (m_aspectratio + s_aspect_ratio_nb + step) % s_aspect_ratio_nb;
 				return;
 			case VK_DELETE:
 				m_aa1 = !m_aa1;
