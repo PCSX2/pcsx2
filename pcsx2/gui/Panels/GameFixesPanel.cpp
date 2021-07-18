@@ -95,10 +95,6 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 		{
 			_("VU Kickstart (Run ahead) to avoid sync problems when reading or writing VU registers"),
 			wxEmptyString
-		},
-		{
-			_("Dynamically patch bad COP2 timing with Ratchet && Clank games"),
-			wxEmptyString
 		}
 	};
 

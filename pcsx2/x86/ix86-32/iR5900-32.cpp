@@ -1373,26 +1373,6 @@ void recompileNextInstruction(int delayslot)
 
 	cpuRegs.code = *(int *)s_pCode;
 
-	// Hardcoded Ratchet & Clank fixes since the game dyamically replaces memory for the program
-	// meaning it cannot be patched easily by traditional methods.
-	if (EmuConfig.Gamefixes.RatchetDynaHack)
-	{
-		if (cpuRegs.code == 0x4B8123BC)
-		{
-			if (*(int*)PSM(pc + 0x4) == 0x4BE30858 && *(int*)PSM(pc + 0x8) == 0xF8610010 && *(int*)PSM(pc + 0xc) == 0x4A20009C)
-			{
-				DevCon.Warning("Patching Ratchet and Clank bad COP2 sequence at PC %x", cpuRegs.pc);
-				cpuRegs.code = 0x4A20009C;
-
-				memWrite32(pc, 0x4A20009C);
-				memWrite32(pc + 0x4, 0x4B8123BC);
-				memWrite32(pc + 0x8, 0x4BE30858);
-				memWrite32(pc + 0xc, 0xF8610010);
-				
-			}
-		}
-	}
-
 	if (!delayslot) {
 		pc += 4;
 		g_cpuFlushedPC = false;

@@ -100,7 +100,6 @@ PBPX-95514:
   region: "PAL-M5"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS in Ratchet and Clank.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 PBPX-95517:
   name: "Network Adapter Start-Up Disc"
   region: "NTSC-U"
@@ -176,7 +175,6 @@ SCAJ-20001:
   region: "NTSC-Unk"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCAJ-20002:
   name: "Gallop Racer 6 - Revolution"
   region: "NTSC-Unk"
@@ -563,7 +561,6 @@ SCAJ-20109:
   region: "NTSC-Unk"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCAJ-20110:
   name: "Dragon Quest VIII - Sora to Daichi to Norowareshi Himegimi"
   region: "NTSC-Unk"
@@ -768,7 +765,6 @@ SCAJ-20157:
   region: "NTSC-Unk"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCAJ-20158:
   name: "Ikusa Gami"
   region: "NTSC-Unk"
@@ -2197,7 +2193,6 @@ SCES-50916:
   compat: 5
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCES-50917:
   name: "Sly Racoon"
   region: "PAL-M5"
@@ -2381,7 +2376,6 @@ SCES-51607:
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
     - EETimingHack # Fixes DMA errors 
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
   memcardFilters: # Reads Ratchet 1 data.
     - "SCES-51607"
     - "SCES-50916"
@@ -2648,7 +2642,6 @@ SCES-52456:
   compat: 5
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
   memcardFilters: # Reads Ratchet 1 & 2 data.
     - "SCES-52456"
     - "SCES-51607"
@@ -2813,7 +2806,6 @@ SCES-53285:
   compat: 5
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCES-53286:
   name: "Jak X - Combat Racing"
   region: "PAL-M7"
@@ -3377,7 +3369,6 @@ SCKA-20011:
   region: "NTSC-K"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
   memcardFilters:
     - "SCKA-20011"
     - "SCKA-20120"
@@ -3469,7 +3460,6 @@ SCKA-20037:
   region: "NTSC-K"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
   memcardFilters:
     - "SCKA-20037"
     - "SCKA-20011"
@@ -3557,7 +3547,6 @@ SCKA-20060:
   region: "NTSC-K"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCKA-20061:
   name: "Wanda to Kyozou (Shadow of the Colossus)"
   region: "NTSC-K"
@@ -3671,7 +3660,6 @@ SCKA-20120:
   region: "NTSC-K"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCKA-20132:
   name: "Shin Megami Tensei: Persona 4"
   region: "NTSC-K"
@@ -3976,7 +3964,6 @@ SCPS-15037:
   region: "NTSC-J"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-15038:
   name: "Operator's Side"
   region: "NTSC-J"
@@ -4055,7 +4042,6 @@ SCPS-15056:
   region: "NTSC-J"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
   memcardFilters:
     - "SCPS-15056"
     - "SCPS-15037"
@@ -4240,13 +4226,11 @@ SCPS-15099:
   region: "NTSC-J"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-15100:
   name: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle"
   region: "NTSC-J"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-15101:
   name: "Bleach - Hanatareshi Yabou"
   region: "NTSC-J"
@@ -4438,7 +4422,6 @@ SCPS-19211:
   region: "NTSC-J"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-19213:
   name: "Operator's Side [PlayStation 2 The Best] [with Microphone]"
   region: "NTSC-J"
@@ -4480,7 +4463,6 @@ SCPS-19302:
   region: "NTSC-J"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-19303:
   name: "Boku no Natsuyasumi 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -4518,13 +4500,11 @@ SCPS-19309:
   region: "NTSC-J"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-19310:
   name: "Ratchet & Clank [PlayStation 2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-19311:
   name: "Saru Get You 3 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -4553,13 +4533,11 @@ SCPS-19316:
   region: "NTSC-J"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-19317:
   name: "Ratchet & Clank 2 - Going Commando [PlayStation 2 The Best]"
   region: "NTSC-J"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-19318:
   name: "Genji - Dawn of the Samurai [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -4582,7 +4560,6 @@ SCPS-19321:
   region: "NTSC-J"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-19322:
   name: "Wild ARMs - The 4th Detonator [PlayStation 2 The Best - Reprint]"
   region: "NTSC-J"
@@ -4630,7 +4607,6 @@ SCPS-19328:
   region: "NTSC-J"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCPS-19329:
   name: "Bleach - Blade Battlers [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -5311,7 +5287,6 @@ SCUS-97199:
   compat: 5
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97200:
   name: "Kiosk Demo Disc 2.05"
   region: "NTSC-U"
@@ -5345,7 +5320,6 @@ SCUS-97209:
   region: "NTSC-U"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97210:
   name: "Sly Cooper and the Thievius Raccoonus [Demo]"
   region: "NTSC-U"
@@ -5448,7 +5422,6 @@ SCUS-97240:
   region: "NTSC-U"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97241:
   name: "Official U.S. PlayStation Magazine Demo Disc 066"
   region: "NTSC-U"
@@ -5542,7 +5515,6 @@ SCUS-97268:
   compat: 5
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
   memcardFilters:
     - "SCUS-97268"
     - "SCUS-97199"
@@ -5633,13 +5605,11 @@ SCUS-97322:
   region: "NTSC-U"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97323:
   name: "Ratchet & Clank 2 - Going Commando [Retail Employees Demo]"
   region: "NTSC-U"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97324:
   name: "Kiosk Demo Disc 2.11"
   region: "NTSC-U"
@@ -5727,7 +5697,6 @@ SCUS-97353:
   compat: 5
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
   memcardFilters:
     - "SCUS-97353"
     - "SCUS-97268"
@@ -5783,7 +5752,6 @@ SCUS-97374:
   region: "NTSC-U"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS (for both).
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97377:
   name: "Syphon Filter - The Omega Strain [Regular Demo]"
   region: "NTSC-U"
@@ -5802,7 +5770,6 @@ SCUS-97381:
   region: "NTSC-U"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97382:
   name: "NBA Shootout 2004 [Demo]"
   region: "NTSC-U"
@@ -5874,7 +5841,6 @@ SCUS-97411:
   region: "NTSC-U"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97412:
   name: "Jak 3 [Demo]"
   region: "NTSC-U"
@@ -5885,7 +5851,6 @@ SCUS-97413:
   region: "NTSC-U"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97414:
   name: "EyeToy - AntiGrav"
   region: "NTSC-U"
@@ -6049,7 +6014,6 @@ SCUS-97465:
   compat: 5
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97466:
   name: "Gretzky NHL '06"
   region: "NTSC-U"
@@ -6138,7 +6102,6 @@ SCUS-97485:
   region: "NTSC-U"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97486:
   name: "Jak X - Combat Racing [Regular Demo]"
   region: "NTSC-U"
@@ -6149,7 +6112,6 @@ SCUS-97487:
   region: "NTSC-U"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97488:
   name: "Jak X - Combat Racing [Public Beta v.1]"
   region: "NTSC-U"
@@ -6244,7 +6206,6 @@ SCUS-97513:
   region: "NTSC-U"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97514:
   name: "ATV Off-Road Fury 3 [Greatest Hits]"
   region: "NTSC-U"
@@ -6266,7 +6227,6 @@ SCUS-97518:
   region: "NTSC-U"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 SCUS-97519:
   name: "Sly 2 - Band of Thieves [Greatest Hits]"
   region: "NTSC-U"
@@ -40749,7 +40709,6 @@ TCES-52456:
   region: "PAL-E"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
-    - RatchetDynaHack # Dynamically patches bad COP2 code in Ratchet and Clank games
 TCES-52582:
   name: "Everybody's Golf 4 Beta Trial Code"
   region: "PAL-E"
