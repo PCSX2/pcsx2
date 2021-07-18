@@ -32,6 +32,7 @@ target_sources(common PRIVATE
 	StringHelpers.cpp
 	StringUtil.cpp
 	ThreadTools.cpp
+	WindowInfo.cpp
 	emitter/bmi.cpp
 	emitter/cpudetect.cpp
 	emitter/fpu.cpp
@@ -85,6 +86,7 @@ target_sources(common PRIVATE
 	StringUtil.h
 	Threading.h
 	TraceLog.h
+	WindowInfo.h
 	wxBaseTools.h
 	emitter/cpudetect_internal.h
 	emitter/implement/dwshift.h
@@ -121,6 +123,11 @@ if(WIN32)
 	enable_language(ASM_MASM)
 	target_sources(common PRIVATE FastJmp.asm)
 	target_link_libraries(common PUBLIC pthreads4w Winmm.lib)
+elseif(NOT APPLE)
+  if(TARGET PkgConfig::XRANDR)
+  	target_link_libraries(common PRIVATE PkgConfig::XRANDR)
+    target_compile_definitions(common PRIVATE "HAS_XRANDR=1")
+  endif()
 endif()
 
 target_link_libraries(common PRIVATE ${LIBC_LIBRARIES} PUBLIC wxWidgets::all)

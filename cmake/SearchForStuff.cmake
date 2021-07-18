@@ -123,6 +123,7 @@ else()
 		check_lib(EGL EGL EGL/egl.h)
 		check_lib(X11_XCB X11-xcb X11/Xlib-xcb.h)
 		check_lib(XCB xcb xcb/xcb.h)
+		check_lib(XRANDR xrandr)
 
 		if(Linux)
 			check_lib(AIO aio libaio.h)
