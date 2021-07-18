@@ -99,8 +99,14 @@ jobs:
           HOMEBREW_NO_INSTALL_CLEANUP: 1
           HOMEBREW_NO_ANALYTICS: 1
         run: |
-          brew update
-          brew install sound-touch portaudio wxmac gtk+3 sdl2 libsamplerate
+          # To save time, only brew update if running the install without it fails
+          function do-install() {
+            brew install sound-touch portaudio wxmac gtk+3 sdl2 libsamplerate
+          }
+          if ! do-install; then
+            brew update
+            do-install
+          fi
 
       - name: Generate CMake Files
         run: cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_PO=FALSE -B build .
