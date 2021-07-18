@@ -18,6 +18,7 @@
 #include "Device.h"
 #include "keyboard.h"
 #include "state_management.h"
+#include "Utilities/WindowInfo.h"
 
 #include "wx_dialog/dialog.h"
 
@@ -42,11 +43,14 @@ static void SysMessage(const char* fmt, ...)
 	dialog.ShowModal();
 }
 
-s32 _PADopen(void* pDsp)
+s32 _PADopen(const WindowInfo& wi)
 {
 #ifndef __APPLE__
-	GSdsp = *(Display**)pDsp;
-	GSwin = (Window) * (((u32*)pDsp) + 1);
+	if (wi.type != WindowInfo::Type::X11)
+		return -1;
+
+	GSdsp = static_cast<Display*>(wi.display_connection);
+	GSwin = reinterpret_cast<Window>(wi.window_handle);
 #endif
 
 	return 0;

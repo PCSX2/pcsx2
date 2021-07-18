@@ -156,9 +156,12 @@ void GSWndWGL::PopulateWndGlFunction()
 	}
 }
 
-bool GSWndWGL::Attach(void* handle, bool managed)
+bool GSWndWGL::Attach(const WindowInfo& wi, bool managed)
 {
-	m_NativeWindow = (HWND)handle;
+	if (wi.type != WindowInfo::Type::Win32)
+		return false;
+
+	m_NativeWindow = static_cast<HWND>(wi.window_handle);
 	m_managed = managed;
 
 	OpenWGLDisplay();

@@ -721,7 +721,7 @@ extern void DEV9configure();
 void FLASHinit();
 s32 DEV9init();
 void DEV9close();
-s32 DEV9open(void* pDsp);
+s32 DEV9open();
 void DEV9shutdown();
 u32 FLASHread32(u32 addr, int size);
 void FLASHwrite32(u32 addr, u32 value, int size);

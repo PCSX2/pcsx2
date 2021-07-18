@@ -135,11 +135,14 @@ bool GSWndDX::Create(const std::string& title, int w, int h)
 	return true;
 }
 
-bool GSWndDX::Attach(void* handle, bool managed)
+bool GSWndDX::Attach(const WindowInfo& wi, bool managed)
 {
+	if (wi.type != WindowInfo::Type::Win32)
+		return false;
+
 	// TODO: subclass
 
-	m_hWnd = (HWND)handle;
+	m_hWnd = static_cast<HWND>(wi.window_handle);
 	m_managed = managed;
 
 	return true;

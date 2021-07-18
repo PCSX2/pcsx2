@@ -319,12 +319,12 @@ void SysCoreThread::OnResumeInThread(bool isSuspended)
 	GetMTGS().WaitForOpen();
 	if (isSuspended)
 	{
-		DEV9open((void*)pDsp);
-		USBopen((void*)pDsp);
+		DEV9open();
+		USBopen(g_gs_window_info);
 	}
 	FWopen();
-	SPU2open((void*)pDsp);
-	PADopen((void*)pDsp);
+	SPU2open();
+	PADopen(g_gs_window_info);
 	FileMcd_EmuOpen();
 }
 

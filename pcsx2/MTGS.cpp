@@ -250,7 +250,7 @@ void SysMtgsThread::OpenGS()
 	GSsetBaseMem(RingBuffer.Regs);
 	GSirqCallback(dummyIrqCallback);
 
-	pxAssertMsg((GSopen2((void**)pDsp, 1 | (renderswitch ? 4 : 0)) == 0), "GS failed to open!");
+	pxAssertMsg((GSopen2(g_gs_window_info, 1 | (renderswitch ? 4 : 0)) == 0), "GS failed to open!");
 
 	GSsetVsync(EmuConfig.GS.GetVsync());
 

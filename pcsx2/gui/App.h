@@ -16,6 +16,7 @@
 #pragma once
 
 #include "Utilities/wxAppWithHelpers.h"
+#include "Utilities/WindowInfo.h"
 
 #include <wx/fileconf.h>
 #include <wx/apptrait.h>
@@ -45,7 +46,8 @@ typedef struct _keyEvent
     u32 evt;
 } keyEvent;
 
-extern uptr pDsp[2];
+// TODO: Not the best location for this, but it needs to be accessed by MTGS etc.
+extern WindowInfo g_gs_window_info;
 
 typedef void FnType_OnThreadComplete(const wxCommandEvent& evt);
 typedef void (Pcsx2App::*FnPtr_Pcsx2App)();

@@ -18,7 +18,9 @@
 
 #include "AppCommon.h"
 #include "CpuUsageProvider.h"
+#include "Utilities/WindowInfo.h"
 #include <memory>
+#include <optional>
 
 
 enum LimiterModeType
@@ -50,6 +52,8 @@ protected:
 public:
 	GSPanel( wxWindow* parent );
 	virtual ~GSPanel();
+
+	std::optional<WindowInfo> GetWindowInfo();
 
 	void DoResize();
 	void DoShowMouse();

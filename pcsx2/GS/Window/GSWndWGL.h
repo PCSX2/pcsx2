@@ -42,7 +42,7 @@ public:
 	virtual ~GSWndWGL() {}
 
 	bool Create(const std::string& title, int w, int h);
-	bool Attach(void* handle, bool managed = true);
+	bool Attach(const WindowInfo& wi, bool managed = true);
 	void Detach();
 
 	void* GetDisplay() { return m_NativeWindow; }

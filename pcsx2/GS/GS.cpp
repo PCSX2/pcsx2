@@ -144,7 +144,7 @@ void GSclose()
 	}
 }
 
-int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads = -1)
+int _GSopen(const WindowInfo& wi, const char* title, GSRendererType renderer, int threads = -1)
 {
 	GSDevice* dev = NULL;
 
@@ -187,23 +187,8 @@ int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads 
 				case GSRendererType::OGL_HW:
 				case GSRendererType::OGL_SW:
 #if defined(__unix__)
-					// Note: EGL code use GLX otherwise maybe it could be also compatible with Windows
-					// Yes OpenGL code isn't complicated enough !
-					switch (GSWndEGL::SelectPlatform())
-					{
-#if GS_EGL_X11
-						case EGL_PLATFORM_X11_KHR:
-							wnds.push_back(std::make_shared<GSWndEGL_X11>());
-							break;
-#endif
-#if GS_EGL_WL
-						case EGL_PLATFORM_WAYLAND_KHR:
-							wnds.push_back(std::make_shared<GSWndEGL_WL>());
-							break;
-#endif
-						default:
-							break;
-					}
+					if (std::shared_ptr<GSWndEGL> wnd = GSWndEGL::CreateForPlatform(wi); wnd)
+						wnds.push_back(std::move(wnd));
 #elif defined(__APPLE__)
 					// No windows available for macOS at the moment
 #else
@@ -221,19 +206,11 @@ int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads 
 					break;
 			}
 
-			int w = theApp.GetConfigI("ModeWidth");
-			int h = theApp.GetConfigI("ModeHeight");
-#if defined(__unix__)
-			void* win_handle = (void*)((uptr*)(dsp) + 1);
-#else
-			void* win_handle = *dsp;
-#endif
-
 			for (auto& wnd : wnds)
 			{
 				try
 				{
-					wnd->Attach(win_handle, false);
+					wnd->Attach(wi, false);
 					window = wnd; // Previous code will throw if window isn't supported
 
 					break;
@@ -359,7 +336,7 @@ void GSosdMonitor(const char* key, const char* value, uint32 color)
 		s_gs->m_dev->m_osd.Monitor(key, value);
 }
 
-int GSopen2(void** dsp, uint32 flags)
+int GSopen2(const WindowInfo& wi, uint32 flags)
 {
 	static bool stored_toggle_state = false;
 	const bool toggle_state = !!(flags & 4);
@@ -401,7 +378,7 @@ int GSopen2(void** dsp, uint32 flags)
 	}
 	stored_toggle_state = toggle_state;
 
-	int retval = _GSopen(dsp, "", current_renderer);
+	int retval = _GSopen(wi, "", current_renderer);
 
 	if (s_gs != NULL)
 		s_gs->SetAspectRatio(0); // PCSX2 manages the aspect ratios

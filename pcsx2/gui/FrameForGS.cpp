@@ -43,6 +43,20 @@
 #include <sstream>
 #include <iomanip>
 
+#ifdef __WXGTK__
+#include <gdk/gdkx.h>
+#include <gtk/gtk.h>
+
+// Junk X11 macros...
+#ifdef DisableScreenSaver
+#undef DisableScreenSaver
+#endif
+#endif
+
+#ifdef GDK_WINDOWING_WAYLAND
+#include <gdk/gdkwayland.h>
+#endif
+
 //#define GSWindowScaleDebug
 
 static const KeyAcceleratorCode FULLSCREEN_TOGGLE_ACCELERATOR_GSPANEL=KeyAcceleratorCode( WXK_RETURN ).Alt();
@@ -241,6 +255,66 @@ void GSPanel::DoShowMouse()
 		m_CursorShown = true;
 	}
 	m_HideMouseTimer.Start( 1750, true );
+}
+
+std::optional<WindowInfo> GSPanel::GetWindowInfo()
+{
+	WindowInfo ret;
+
+	const wxSize gs_vp_size(GetClientSize());
+	ret.surface_scale = static_cast<float>(GetContentScaleFactor());
+	ret.surface_width = static_cast<u32>(gs_vp_size.GetWidth());
+	ret.surface_height = static_cast<u32>(gs_vp_size.GetHeight());
+
+#if defined(_WIN32)
+	ret.type = WindowInfo::Type::Win32;
+	ret.window_handle = GetHandle();
+#elif defined(__WXGTK__)
+	GtkWidget* child_window = GTK_WIDGET(GetHandle());
+
+	// create the widget to allow to use GDK_WINDOW_* macro
+	gtk_widget_realize(child_window);
+
+	// Disable the widget double buffer, you will use the opengl one
+	gtk_widget_set_double_buffered(child_window, false);
+
+	GdkWindow* draw_window = gtk_widget_get_window(child_window);
+
+	// TODO: Do we even want to support GTK2?
+#if GTK_MAJOR_VERSION < 3
+	ret.type = WindowInfo::Type::X11;
+	ret.display_connection = GDK_WINDOW_XDISPLAY(draw_window);
+	ret.window_handle = reinterpret_cast<void*>(GDK_WINDOW_XWINDOW(draw_window));
+#else
+#ifdef GDK_WINDOWING_X11
+	if (GDK_IS_X11_WINDOW(draw_window))
+	{
+		ret.type = WindowInfo::Type::X11;
+		ret.display_connection = GDK_WINDOW_XDISPLAY(draw_window);
+		ret.window_handle = reinterpret_cast<void*>(GDK_WINDOW_XID(draw_window));
+	}
+#endif // GDK_WINDOWING_X11
+#ifdef GDK_WINDOWING_WAYLAND
+	if (GDK_IS_WAYLAND_WINDOW(draw_window))
+	{
+		ret.type = WindowInfo::Type::Wayland;
+		ret.display_connection = gdk_wayland_display_get_wl_display(gdk_window_get_display(draw_window));
+		ret.window_handle = gdk_wayland_window_get_wl_surface(draw_window);
+	}
+#endif	// GDK_WINDOWING_WAYLAND
+#endif // GTK_MAJOR_VERSION >= 3
+#elif defined(__WXOSX__)
+	ret.type = WindowInfo::Type::MacOS;
+	ret.window_handle = GetHandle();
+#endif
+
+	if (ret.type == WindowInfo::Type::Surfaceless)
+	{
+		Console.Error("Unknown window type for GSFrame.");
+		return std::nullopt;
+	}
+
+	return ret;
 }
 
 void GSPanel::DoResize()

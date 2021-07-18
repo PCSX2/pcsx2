@@ -18,15 +18,14 @@
 
 #if defined(__unix__)
 
-// static method
-int GSWndEGL::SelectPlatform()
+std::shared_ptr<GSWndEGL> GSWndEGL::CreateForPlatform(const WindowInfo& wi)
 {
 	// Check the supported extension
 	const char* client_extensions = eglQueryString(EGL_NO_DISPLAY, EGL_EXTENSIONS);
 	if (!client_extensions)
 	{
 		fprintf(stderr, "EGL: Client extension not supported\n");
-		return 0;
+		return nullptr;
 	}
 	fprintf(stdout, "EGL: Supported extensions: %s\n", client_extensions);
 
@@ -34,28 +33,27 @@ int GSWndEGL::SelectPlatform()
 	if (!strstr(client_extensions, "EGL_EXT_platform_base"))
 	{
 		fprintf(stderr, "EGL: Dynamic platform selection isn't supported\n");
-		return 0;
+		return nullptr;
 	}
 
 	// Finally we can select the platform
 #if GS_EGL_X11
-	if (strstr(client_extensions, "EGL_EXT_platform_x11"))
+	if (strstr(client_extensions, "EGL_EXT_platform_x11") && wi.type == WindowInfo::Type::X11)
 	{
 		fprintf(stdout, "EGL: select X11 platform\n");
-		return EGL_PLATFORM_X11_KHR;
+		return std::make_shared<GSWndEGL_X11>();
 	}
 #endif
 #if GS_EGL_WL
-	if (strstr(client_extensions, "EGL_EXT_platform_wayland"))
+	if (strstr(client_extensions, "EGL_EXT_platform_wayland") && wi.type == WindowInfo::Type::Wayland)
 	{
 		fprintf(stdout, "EGL: select Wayland platform\n");
-		return EGL_PLATFORM_WAYLAND_KHR;
+		return std::make_shared<GSWndEGL_WL>();
 	}
 #endif
 
-	fprintf(stderr, "EGL: no compatible platform found\n");
-
-	return 0;
+	fprintf(stderr, "EGL: no compatible platform found for wintype %u\n", static_cast<unsigned>(wi.type));
+	return nullptr;
 }
 
 
@@ -103,7 +101,7 @@ void GSWndEGL::CreateContext(int major, int minor)
 	m_eglSurface = eglCreatePlatformWindowSurface(m_eglDisplay, eglConfig, m_native_window, nullptr);
 	if (m_eglSurface == EGL_NO_SURFACE)
 	{
-		fprintf(stderr, "EGL: Failed to get a window surface\n");
+		fprintf(stderr, "EGL: Failed to get a window surface (0x%x)\n", eglGetError());
 		throw GSRecoverableError();
 	}
 
@@ -169,11 +167,13 @@ void GSWndEGL::BindAPI()
 	}
 }
 
-bool GSWndEGL::Attach(void* handle, bool managed)
+bool GSWndEGL::Attach(const WindowInfo& wi, bool managed)
 {
 	m_managed = managed;
 
-	m_native_window = AttachNativeWindow(handle);
+	m_native_window = AttachNativeWindow(wi);
+	if (!m_native_window)
+		return false;
 
 	OpenEGLDisplay();
 
@@ -341,10 +341,13 @@ void* GSWndEGL_X11::CreateNativeWindow(int w, int h)
 	return (void*)&m_NativeWindow;
 }
 
-void* GSWndEGL_X11::AttachNativeWindow(void* handle)
+void* GSWndEGL_X11::AttachNativeWindow(const WindowInfo& wi)
 {
-	m_NativeWindow = *(Window*)handle;
-	return handle;
+	if (wi.type != WindowInfo::Type::X11)
+		return nullptr;
+
+	m_NativeWindow = reinterpret_cast<Window>(wi.window_handle);
+	return &m_NativeWindow;
 }
 
 void GSWndEGL_X11::DestroyNativeResources()
@@ -395,10 +398,21 @@ void* GSWndEGL_WL::CreateNativeWindow(int w, int h)
 	return nullptr;
 }
 
-void* GSWndEGL_WL::AttachNativeWindow(void* handle)
+void* GSWndEGL_WL::AttachNativeWindow(const WindowInfo& wi)
 {
-	m_NativeWindow = (wl_egl_window*)handle;
-	return handle;
+	if (wi.type != WindowInfo::Type::Wayland)
+		return nullptr;
+
+	m_NativeWindow = wl_egl_window_create(static_cast<wl_surface*>(wi.window_handle),
+	                                      static_cast<int>(wi.surface_width),
+	                                      static_cast<int>(wi.surface_height));
+	if (!m_NativeWindow)
+	{
+		std::fprintf(stderr, "Failed to create walyand EGL window\n");
+		return nullptr;
+	}
+
+	return m_NativeWindow;
 }
 
 void GSWndEGL_WL::DestroyNativeResources()
@@ -407,6 +421,12 @@ void GSWndEGL_WL::DestroyNativeResources()
 	{
 		wl_display_disconnect(m_NativeDisplay);
 		m_NativeDisplay = nullptr;
+	}
+
+	if (m_NativeWindow)
+	{
+		wl_egl_window_destroy(m_NativeWindow);
+		m_NativeWindow = nullptr;
 	}
 }
 

@@ -16,6 +16,7 @@
 #pragma once
 
 #include "PrecompiledHeader.h"
+#include "Utilities/WindowInfo.h"
 #include "GS/GS.h"
 #include "GS/GSVector.h"
 
@@ -32,7 +33,7 @@ public:
 	virtual ~GSWnd() {}
 
 	virtual bool Create(const std::string& title, int w, int h) = 0;
-	virtual bool Attach(void* handle, bool managed = true) = 0;
+	virtual bool Attach(const WindowInfo& wi, bool managed = true) = 0;
 	virtual void Detach() = 0;
 	bool IsManaged() const { return m_managed; }
 
@@ -78,7 +79,7 @@ public:
 	virtual ~GSWndGL() {}
 
 	virtual bool Create(const std::string& title, int w, int h) = 0;
-	virtual bool Attach(void* handle, bool managed = true) = 0;
+	virtual bool Attach(const WindowInfo& wi, bool managed = true) = 0;
 	virtual void Detach() = 0;
 
 	virtual void* GetDisplay() = 0;

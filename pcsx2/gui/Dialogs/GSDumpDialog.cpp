@@ -773,7 +773,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	}
 
 	GSsetBaseMem((u8*)regs);
-	if (GSopen2((void**)pDsp, (renderer_override<<24)) != 0)
+	if (GSopen2(g_gs_window_info, (renderer_override<<24)) != 0)
 	{
 		OnStop();
 		return;
