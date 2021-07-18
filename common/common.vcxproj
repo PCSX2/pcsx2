@@ -54,6 +54,7 @@
     <ClCompile Include="StringUtil.cpp" />
     <ClCompile Include="SettingsWrapper.cpp" />
     <ClCompile Include="VirtualMemory.cpp" />
+    <ClCompile Include="WindowInfo.cpp" />
     <ClCompile Include="x86\MemcpyFast.cpp" />
     <ClCompile Include="PathUtils.cpp" />
     <ClCompile Include="Perf.cpp" />
@@ -117,6 +118,7 @@
     <ClInclude Include="RedtapeWindows.h" />
     <ClInclude Include="SafeArray.h" />
     <ClInclude Include="StringHelpers.h" />
+    <ClInclude Include="WindowInfo.h" />
     <ClInclude Include="wxBaseTools.h" />
     <ClInclude Include="Threading.h" />
     <ClInclude Include="PersistentThread.h" />
