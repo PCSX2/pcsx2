@@ -69,6 +69,19 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <None Include="GS\res\glsl\common_header.glsl" />
+    <None Include="GS\res\glsl\convert.glsl" />
+    <None Include="GS\res\glsl\interlace.glsl" />
+    <None Include="GS\res\glsl\merge.glsl" />
+    <None Include="GS\res\glsl\shadeboost.glsl" />
+    <None Include="GS\res\glsl\tfx_fs.glsl" />
+    <None Include="GS\res\glsl\tfx_vgs.glsl" />
+    <None Include="GS\res\convert.fx" />
+    <None Include="GS\res\fxaa.fx" />
+    <None Include="GS\res\interlace.fx" />
+    <None Include="GS\res\merge.fx" />
+    <None Include="GS\res\shadeboost.fx" />
+    <None Include="GS\res\tfx.fx" />
     <None Include="PAD\Windows\Default.ini" />
     <None Include="Utilities\folderdesc.txt" />
     <None Include="Docs\License.txt" />
