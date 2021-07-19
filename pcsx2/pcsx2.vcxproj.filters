@@ -241,6 +241,9 @@
     <Filter Include="System\Ps2\PAD">
       <UniqueIdentifier>{e1cbcaf6-9f65-4f14-9e89-27dd0f10e047}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\GS\Shaders">
+      <UniqueIdentifier>{38f3b97b-eac6-4085-b6b0-567ec5081242}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Utilities\folderdesc.txt">
@@ -293,6 +296,45 @@
     </None>
     <None Include="PAD\Windows\Default.ini">
       <Filter>System\Ps2\PAD</Filter>
+    </None>
+    <None Include="GS\res\glsl\common_header.glsl">
+      <Filter>System\Ps2\GS\Shaders</Filter>
+    </None>
+    <None Include="GS\res\glsl\convert.glsl">
+      <Filter>System\Ps2\GS\Shaders</Filter>
+    </None>
+    <None Include="GS\res\glsl\interlace.glsl">
+      <Filter>System\Ps2\GS\Shaders</Filter>
+    </None>
+    <None Include="GS\res\glsl\merge.glsl">
+      <Filter>System\Ps2\GS\Shaders</Filter>
+    </None>
+    <None Include="GS\res\glsl\shadeboost.glsl">
+      <Filter>System\Ps2\GS\Shaders</Filter>
+    </None>
+    <None Include="GS\res\glsl\tfx_fs.glsl">
+      <Filter>System\Ps2\GS\Shaders</Filter>
+    </None>
+    <None Include="GS\res\glsl\tfx_vgs.glsl">
+      <Filter>System\Ps2\GS\Shaders</Filter>
+    </None>
+    <None Include="GS\res\convert.fx">
+      <Filter>System\Ps2\GS\Shaders</Filter>
+    </None>
+    <None Include="GS\res\fxaa.fx">
+      <Filter>System\Ps2\GS\Shaders</Filter>
+    </None>
+    <None Include="GS\res\interlace.fx">
+      <Filter>System\Ps2\GS\Shaders</Filter>
+    </None>
+    <None Include="GS\res\merge.fx">
+      <Filter>System\Ps2\GS\Shaders</Filter>
+    </None>
+    <None Include="GS\res\shadeboost.fx">
+      <Filter>System\Ps2\GS\Shaders</Filter>
+    </None>
+    <None Include="GS\res\tfx.fx">
+      <Filter>System\Ps2\GS\Shaders</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
