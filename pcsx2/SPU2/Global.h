@@ -15,7 +15,6 @@
 
 #pragma once
 
-
 #define NOMINMAX
 
 extern bool psxmode;
@@ -31,17 +30,7 @@ namespace soundtouch
 	class SoundTouch;
 }
 
-#include <assert.h>
-#include <cstdlib>
-#include <cstdio>
-#include <cstdarg>
-#include <cmath>
-#include <ctime>
-#include <stdexcept>
-
-#include "Utilities/Dependencies.h"
-#include "Pcsx2Defs.h"
-#include "Pcsx2Types.h"
+#include "PrecompiledHeader.h"
 
 //////////////////////////////////////////////////////////////////////////
 // Override Win32 min/max macros with the STL's type safe and macro
@@ -65,26 +54,8 @@ static __forceinline T GetClamped(T src, T min, T max)
 extern void SysMessage(const char* fmt, ...);
 extern void SysMessage(const wchar_t* fmt, ...);
 
-//////////////////////////////////////////////////////////////
-// Dev / Debug conditionals --
-//   Consts for using if() statements instead of uglier #ifdef macros.
-//   Abbreviated macros for dev/debug only consoles and msgboxes.
-
-#ifdef PCSX2_DEVBUILD
-#define DevMsg MsgBox
-#else
-#define DevMsg
-#endif
-
-#ifdef PCSX2_DEVBUILD
-#define SPU2_LOG
-#endif
-
 // Uncomment to enable debug keys on numpad (0 to 5)
 //#define DEBUG_KEYS
-
-#include "Utilities/Exceptions.h"
-#include "Utilities/SafeArray.h"
 
 #include "defs.h"
 #include "regs.h"

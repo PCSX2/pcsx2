@@ -59,11 +59,3 @@ extern void CfgReadStr(const TCHAR* Section, const TCHAR* Name, wxString& Data, 
 extern void CfgReadStr(const TCHAR* Section, const TCHAR* Name, TCHAR* Data, int DataSize, const TCHAR* Default);
 extern int CfgReadInt(const TCHAR* Section, const TCHAR* Name, int Default);
 extern float CfgReadFloat(const TCHAR* Section, const TCHAR* Name, float Default);
-
-// Items Specific to DirectSound
-struct ds_device_data
-{
-	wxString name;
-	GUID guid;
-	bool hasGuid;
-};
