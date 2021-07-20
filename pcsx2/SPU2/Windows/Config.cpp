@@ -16,8 +16,6 @@
 #include "PrecompiledHeader.h"
 #include "SPU2/Global.h"
 #include "Dialogs.h"
-#include "Config.h"
-#include <math.h>
 
 #ifdef PCSX2_DEVBUILD
 static const int LATENCY_MAX = 3000;
