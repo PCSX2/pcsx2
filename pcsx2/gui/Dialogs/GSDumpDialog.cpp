@@ -212,7 +212,7 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 	{
 		wxString s;
 		s.Printf(_("Failed to load the dump %s !"), m_selected_dump);
-		wxMessageBox(s, _("GSDumpGov"), wxICON_ERROR);
+		wxMessageBox(s, _("GS Debugger"), wxICON_ERROR);
 		return;
 	}
 	m_run->Disable();
