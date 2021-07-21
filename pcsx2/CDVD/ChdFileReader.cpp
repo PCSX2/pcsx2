@@ -65,7 +65,7 @@ bool ChdFileReader::Open2(const wxString& fileName)
 		if (dir.IsOpened())
 		{
 			wxString parent_fileName;
-			bool cont = dir.GetFirst(&parent_fileName, wxString("*.", wxfilename.GetExt()), wxDIR_FILES | wxDIR_HIDDEN);
+			bool cont = dir.GetFirst(&parent_fileName, wxString("*.") + wxfilename.GetExt(), wxDIR_FILES | wxDIR_HIDDEN);
 			for (; cont; cont = dir.GetNext(&parent_fileName))
 			{
 				parent_fileName = wxFileName(dir_path, parent_fileName).GetFullPath();
