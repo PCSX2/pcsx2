@@ -242,7 +242,6 @@ set(pcsx2SPU2Sources
 	SPU2/Debug.cpp
 	SPU2/DplIIdecoder.cpp
 	SPU2/Dma.cpp
-	SPU2/Lowpass.cpp
 	SPU2/Mixer.cpp
 	SPU2/spu2.cpp
 	SPU2/ReadInput.cpp
@@ -276,7 +275,6 @@ set(pcsx2SPU2Headers
 	SPU2/Dma.h
 	SPU2/Global.h
 	SPU2/interpolate_table.h
-	SPU2/Lowpass.h
 	SPU2/Mixer.h
 	SPU2/spu2.h
 	SPU2/regs.h

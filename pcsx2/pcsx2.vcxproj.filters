@@ -1059,9 +1059,6 @@
     <ClCompile Include="SPU2\Mixer.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
-    <ClCompile Include="SPU2\Lowpass.cpp">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClCompile>
     <ClCompile Include="SPU2\Windows\Config.cpp">
       <Filter>System\Ps2\SPU2</Filter>
     </ClCompile>
@@ -2096,9 +2093,6 @@
       <Filter>System\Ps2\SPU2</Filter>
     </ClInclude>
     <ClInclude Include="SPU2\interpolate_table.h">
-      <Filter>System\Ps2\SPU2</Filter>
-    </ClInclude>
-    <ClInclude Include="SPU2\Lowpass.h">
       <Filter>System\Ps2\SPU2</Filter>
     </ClInclude>
     <ClInclude Include="SPU2\Config.h">
