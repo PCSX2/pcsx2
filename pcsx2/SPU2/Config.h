@@ -76,8 +76,6 @@ extern float VolumeAdjustBRdb;
 extern float VolumeAdjustSLdb;
 extern float VolumeAdjustSRdb;
 extern float VolumeAdjustLFEdb;
-extern bool postprocess_filter_enabled;
-extern bool postprocess_filter_dealias;
 
 extern int dplLevel;
 

@@ -58,9 +58,6 @@ float VolumeAdjustSL;
 float VolumeAdjustSR;
 float VolumeAdjustLFE;
 
-bool postprocess_filter_enabled = 1;
-bool postprocess_filter_dealias = false;
-
 // OUTPUT
 int SndOutLatencyMS = 100;
 int SynchMode = 0; // Time Stretch, Async or Disabled.
@@ -85,7 +82,6 @@ void ReadSettings()
 {
 	Interpolation = CfgReadInt(L"MIXING", L"Interpolation", 5);
 
-	postprocess_filter_dealias = CfgReadBool(L"MIXING", L"DealiasFilter", false);
 	FinalVolume = ((float)CfgReadInt(L"MIXING", L"FinalVolume", 100)) / 100;
 	if (FinalVolume > 1.0f)
 		FinalVolume = 1.0f;
@@ -162,7 +158,6 @@ void WriteSettings()
 {
 	CfgWriteInt(L"MIXING", L"Interpolation", Interpolation);
 
-	CfgWriteBool(L"MIXING", L"DealiasFilter", postprocess_filter_dealias);
 	CfgWriteInt(L"MIXING", L"FinalVolume", (int)(FinalVolume * 100 + 0.5f));
 
 	CfgWriteBool(L"MIXING", L"AdvancedVolumeControl", AdvancedVolumeControl);
@@ -277,7 +272,6 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			EnableWindow(GetDlgItem(hWnd, IDC_OPEN_CONFIG_SOUNDTOUCH), (SynchMode == 0));
 			EnableWindow(GetDlgItem(hWnd, IDC_OPEN_CONFIG_DEBUG), DebugEnabled);
 
-			SET_CHECK(IDC_DEALIASFILTER, postprocess_filter_dealias);
 			SET_CHECK(IDC_DEBUG_ENABLE, DebugEnabled);
 			SET_CHECK(IDC_DSP_ENABLE, dspPluginEnabled);
 		}
@@ -362,7 +356,6 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					SoundtouchCfg::OpenDialog(hWnd);
 					break;
 
-					HANDLE_CHECK(IDC_DEALIASFILTER, postprocess_filter_dealias);
 					HANDLE_CHECK(IDC_DSP_ENABLE, dspPluginEnabled);
 					HANDLE_CHECKNB(IDC_DEBUG_ENABLE, DebugEnabled);
 					DebugConfig::EnableControls(hWnd);
