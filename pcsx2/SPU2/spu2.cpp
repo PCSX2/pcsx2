@@ -393,12 +393,6 @@ void SPU2async(u32 cycles)
 			if ((cState[i] && !lState[i]) && i != 5)
 				Interpolation = i;
 
-			if ((cState[i] && !lState[i]) && i == 5)
-			{
-				postprocess_filter_enabled = !postprocess_filter_enabled;
-				printf("Post process filters %s \n", postprocess_filter_enabled ? "enabled" : "disabled");
-			}
-
 			lState[i] = cState[i];
 		}
 

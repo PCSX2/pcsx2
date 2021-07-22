@@ -66,8 +66,6 @@ static __forceinline bool RegDump() { return _RegDump & DebugEnabled; }*/
 
 extern int Interpolation;
 extern float FinalVolume;
-extern bool postprocess_filter_enabled;
-extern bool postprocess_filter_dealias;
 
 extern int AutoDMAPlayRate[2];
 
