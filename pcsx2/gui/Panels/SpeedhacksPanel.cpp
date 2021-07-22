@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -229,10 +229,10 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 	s_table->Add(miscHacksPanel, StdExpand());
 	s_table->Add(vuHacksPanel, StdExpand());
 	s_table->Add(new wxStaticText(this, -1, ""));
-	s_table->Add(m_button_Defaults, StdButton());
 
 	m_sizer = new wxBoxSizer(wxVERTICAL);
 	m_sizer->Add(m_check_Enable, StdExpand());
+	m_sizer->Add(m_button_Defaults, StdButton()); // Hackfix restore defaults from not vanishing when changing the sliders, SpeedhacksPanel is the worst panel as can't be fixed in current state.
 	m_sizer->Add(s_table);
 
 	SetSizer(m_sizer);
