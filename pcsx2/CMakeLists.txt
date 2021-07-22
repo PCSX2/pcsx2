@@ -1259,6 +1259,7 @@ target_link_libraries(PCSX2 PRIVATE
 	PNG::PNG
 	Freetype::Freetype
 	LibLZMA::LibLZMA
+	${LIBC_LIBRARIES}
 )
 
 ### Generate the resources files
