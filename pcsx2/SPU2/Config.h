@@ -66,7 +66,6 @@ extern wxString RegDumpFileName;
 
 extern int Interpolation;
 extern int numSpeakers;
-extern bool EffectsDisabled;
 extern float FinalVolume; // Global / pre-scale
 extern bool AdvancedVolumeControl;
 extern float VolumeAdjustFLdb;

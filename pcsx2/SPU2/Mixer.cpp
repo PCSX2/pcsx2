@@ -695,11 +695,6 @@ StereoOut32 V_Core::Mix(const VoiceMixSet& inVoices, const StereoOut32& Input, c
 	TD.Left += Ext.Left & DryGate.ExtL;
 	TD.Right += Ext.Right & DryGate.ExtR;
 
-	// User-level Effects disabling.  Nice speedup but breaks games that depend on
-	// reverb IRQs (very few -- if you find one name it here!).
-	if (EffectsDisabled)
-		return TD;
-
 	// ----------------------------------------------------------------------------
 	//    Reverberation Effects Processing
 	// ----------------------------------------------------------------------------

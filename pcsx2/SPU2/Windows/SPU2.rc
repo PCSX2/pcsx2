@@ -7,6 +7,7 @@
 //
 // Generated from the TEXTINCLUDE 2 resource.
 //
+#include "svnrev.h"
 #include "afxresmw.h"
 /////////////////////////////////////////////////////////////////////////////
 #undef APSTUDIO_READONLY_SYMBOLS
@@ -33,8 +34,6 @@ BEGIN
     GROUPBOX        "Mixing Settings",IDC_STATIC,3,5,154,115
     LTEXT           "Interpolation:",IDC_STATIC,9,16,61,10,NOT WS_GROUP
     COMBOBOX        IDC_INTERPOLATE,9,26,145,84,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CHECKBOX        "Disable Effects Processing",IDC_EFFECTS_DISABLE,11,47,126,10
-    LTEXT           "(speedup!) Skips reverb effects processing, but won't sound as good in most games.",IDC_STATIC,23,59,110,36
     CONTROL         "Use the de-alias filter",IDC_DEALIASFILTER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,92,126,10
     LTEXT           "(overemphasizes the highs)",IDC_STATIC,23,104,114,12,NOT WS_GROUP
     GROUPBOX        "",IDC_STATIC,3,124,154,45
@@ -145,11 +144,8 @@ BEGIN
     IDD_CONFIG, DIALOG
     BEGIN
         LEFTMARGIN, 6
-        RIGHTMARGIN, 314
         VERTGUIDE, 218
         VERTGUIDE, 282
-        BOTTOMMARGIN, 292
-        HORZGUIDE, 268
     END
 
     IDD_DEBUG, DIALOG
