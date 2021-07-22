@@ -39,9 +39,6 @@ MixerTab::MixerTab(wxWindow* parent)
 
 	m_inter_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, interpolation_entries);
 
-	effect_check = new wxCheckBox(this, wxID_ANY, "Disable Effects Processing (Speedup)");
-	dealias_check = new wxCheckBox(this, wxID_ANY, "Use the de-alias filter (Overemphasizes the highs) ");
-
 	// Latency Slider
 	const int min_latency = SynchMode == 0 ? LATENCY_MIN_TIMESTRETCH : LATENCY_MIN;
 
@@ -66,8 +63,6 @@ MixerTab::MixerTab(wxWindow* parent)
 	m_audio_box->Add(m_audio_select, wxSizerFlags().Expand());
 
 	top_box->Add(m_inter_select, wxSizerFlags().Centre());
-	top_box->Add(effect_check, wxSizerFlags().Centre());
-	top_box->Add(dealias_check, wxSizerFlags().Centre());
 	top_box->Add(m_latency_box, wxSizerFlags().Expand());
 	top_box->Add(m_volume_box, wxSizerFlags().Expand());
 	top_box->Add(m_audio_box, wxSizerFlags().Expand());
@@ -79,8 +74,6 @@ void MixerTab::Load()
 {
 	m_inter_select->SetSelection(Interpolation);
 
-	effect_check->SetValue(EffectsDisabled);
-	dealias_check->SetValue(postprocess_filter_dealias);
 	m_audio_select->SetSelection(numSpeakers);
 
 	m_volume_slider->SetValue(FinalVolume * 100);
@@ -90,8 +83,6 @@ void MixerTab::Load()
 void MixerTab::Save()
 {
 	Interpolation = m_inter_select->GetSelection();
-	EffectsDisabled = effect_check->GetValue();
-	postprocess_filter_dealias = dealias_check->GetValue();
 
 	numSpeakers = m_audio_select->GetSelection();
 
