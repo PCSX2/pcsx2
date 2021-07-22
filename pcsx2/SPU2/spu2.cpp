@@ -41,8 +41,6 @@ int SampleRate = 48000;
 static bool IsOpened = false;
 static bool IsInitialized = false;
 
-static u32 pClocks = 0;
-
 u32 lClocks = 0;
 //static bool cpu_detected = false;
 
