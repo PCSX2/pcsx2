@@ -47,12 +47,12 @@ elseif("${PGO}" STREQUAL "use")
 	target_compile_options(PCSX2 PRIVATE -fprofile-use)
 endif()
 
-if(PORTAUDIO_FOUND)
+if(TARGET PkgConfig::PORTAUDIO)
 	target_compile_definitions(PCSX2 PRIVATE SPU2X_PORTAUDIO)
 	target_link_libraries(PCSX2 PRIVATE PkgConfig::PORTAUDIO)
 endif()
 
-if(PULSEAUDIO_FOUND)
+if(TARGET PulseAudio::PulseAudio)
 	target_compile_definitions(PCSX2 PRIVATE SPU2X_PULSEAUDIO)
 	target_link_libraries(PCSX2 PRIVATE PulseAudio::PulseAudio)
 endif()
@@ -61,8 +61,9 @@ if(XDG_STD)
 	target_compile_definitions(PCSX2 PRIVATE XDG_STD)
 endif()
 
-if(SDL_FOUND OR SDL2_FOUND)
+if(TARGET SDL::SDL)
 	target_compile_definitions(PCSX2 PRIVATE SDL_BUILD)
+	target_link_libraries(PCSX2 PRIVATE SDL::SDL)
 endif()
 
 # Main pcsx2 source
@@ -269,7 +270,7 @@ set(pcsx2SPU2Sources
 	SPU2/wx/wxConfig.cpp
 	)
 
-if(PORTAUDIO_FOUND)
+if(TARGET PkgConfig::PORTAUDIO)
 	list(APPEND pcsx2SPU2Sources SPU2/SndOut_Portaudio.cpp)
 endif()
 
@@ -481,7 +482,7 @@ set(pcsx2USBHeaders
 	USB/qemu-usb/input-keymap-linux-to-qcode.h
 	)
 
-if(PULSEAUDIO_FOUND)
+if(TARGET PulseAudio::PulseAudio)
 	list(APPEND pcsx2USBSources USB/usb-mic/audiodev-pulse.cpp)
 	list(APPEND pcsx2USBHeaders USB/usb-mic/audiodev-pulse.h)
 endif()
@@ -1251,7 +1252,6 @@ target_link_libraries(PCSX2 PRIVATE
 	HarfBuzz::HarfBuzz
 	ZLIB::ZLIB
 	PkgConfig::SOUNDTOUCH
-	SDL::SDL
 	PCAP::PCAP
 	PkgConfig::SAMPLERATE
 	LibXml2::LibXml2
