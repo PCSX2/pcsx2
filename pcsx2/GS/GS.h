@@ -1817,6 +1817,8 @@ void GSgetTitleInfo2(char* dest, size_t length);
 void GSsetFrameSkip(int frameskip);
 void GSsetVsync(int vsync);
 void GSsetExclusive(int enabled);
+bool GSGetFMVSwitch();
+void GSSetFMVSwitch(bool enabled);
 
 class GSApp
 {
@@ -1871,7 +1873,6 @@ public:
 
 	std::vector<GSSetting> m_gs_renderers;
 	std::vector<GSSetting> m_gs_interlace;
-	std::vector<GSSetting> m_gs_aspectratio;
 	std::vector<GSSetting> m_gs_upscale_multiplier;
 	std::vector<GSSetting> m_gs_max_anisotropy;
 	std::vector<GSSetting> m_gs_dithering;

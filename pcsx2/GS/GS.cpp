@@ -419,9 +419,6 @@ int GSopen2(void** dsp, uint32 flags)
 
 	int retval = _GSopen(dsp, "", current_renderer);
 
-	if (s_gs != NULL)
-		s_gs->SetAspectRatio(0); // PCSX2 manages the aspect ratios
-
 	gsopen_done = true;
 
 	return retval;
@@ -863,6 +860,19 @@ void GSsetExclusive(int enabled)
 	if (s_gs)
 	{
 		s_gs->SetVSync(s_vsync);
+	}
+}
+
+bool GSGetFMVSwitch()
+{
+	return s_gs ? s_gs->GetFMVSwitch() : false;
+}
+
+void GSSetFMVSwitch(bool enabled)
+{
+	if (s_gs)
+	{
+		s_gs->SetFMVSwitch(enabled);
 	}
 }
 
@@ -1510,10 +1520,6 @@ void GSApp::Init()
 	m_gs_interlace.push_back(GSSetting(5, "Blend tff", "slight blur, 1/2 fps"));
 	m_gs_interlace.push_back(GSSetting(6, "Blend bff", "slight blur, 1/2 fps"));
 	m_gs_interlace.push_back(GSSetting(7, "Automatic", "Default"));
-
-	m_gs_aspectratio.push_back(GSSetting(0, "Stretch", ""));
-	m_gs_aspectratio.push_back(GSSetting(1, "4:3", ""));
-	m_gs_aspectratio.push_back(GSSetting(2, "16:9", ""));
 
 	m_gs_upscale_multiplier.push_back(GSSetting(1, "Native", "PS2"));
 	m_gs_upscale_multiplier.push_back(GSSetting(2, "2x Native", "~720p"));
