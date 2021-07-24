@@ -14,7 +14,7 @@
  */
 
 #include <gtest/gtest.h>
-#include <x86emitter.h>
+#include <x86emitter/x86emitter.h>
 
 using namespace x86Emitter;
 

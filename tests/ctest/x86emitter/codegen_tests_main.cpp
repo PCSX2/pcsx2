@@ -15,7 +15,7 @@
 
 #include "codegen_tests.h"
 #include <gtest/gtest.h>
-#include <x86emitter.h>
+#include <x86emitter/x86emitter.h>
 #include <cstdio>
 
 using namespace x86Emitter;
