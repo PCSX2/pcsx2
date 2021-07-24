@@ -51,7 +51,6 @@ public:
 	GSPanel( wxWindow* parent );
 	virtual ~GSPanel();
 
-	void DoResize();
 	void DoShowMouse();
 	void DirectKeyCommand( wxKeyEvent& evt );
 	void DirectKeyCommand( const KeyAcceleratorCode& kac );
