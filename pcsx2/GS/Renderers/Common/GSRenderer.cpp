@@ -15,13 +15,13 @@
 
 #include "PrecompiledHeader.h"
 #include "GSRenderer.h"
+#include "gui/AppConfig.h"
 #if defined(__unix__)
 #include <X11/keysym.h>
 #endif
 
 const unsigned int s_interlace_nb = 8;
 const unsigned int s_post_shader_nb = 5;
-const unsigned int s_aspect_ratio_nb = 3;
 const unsigned int s_mipmap_nb = 3;
 
 GSRenderer::GSRenderer()
@@ -29,6 +29,7 @@ GSRenderer::GSRenderer()
 	, m_shift_key(false)
 	, m_control_key(false)
 	, m_texture_shuffle(false)
+	, m_fmv_switch(false)
 	, m_real_size(0, 0)
 	, m_wnd()
 	, m_dev(NULL)
@@ -36,7 +37,6 @@ GSRenderer::GSRenderer()
 	m_GStitleInfoBuffer[0] = 0;
 
 	m_interlace   = theApp.GetConfigI("interlace") % s_interlace_nb;
-	m_aspectratio = theApp.GetConfigI("AspectRatio") % s_aspect_ratio_nb;
 	m_shader      = theApp.GetConfigI("TVShader") % s_post_shader_nb;
 	m_vsync       = theApp.GetConfigI("vsync");
 	m_aa1         = theApp.GetConfigB("aa1");
@@ -304,6 +304,73 @@ GSVector2i GSRenderer::GetInternalResolution()
 	return m_real_size;
 }
 
+GSVector4i GSRenderer::ComputeDrawRectangle(int width, int height) const
+{
+	const double f_width = static_cast<double>(width);
+	const double f_height = static_cast<double>(height);
+	const double clientAr = f_width / f_height;
+
+	double targetAr = clientAr;
+
+	if (m_fmv_switch)
+	{
+		if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_4_3)
+		{
+			targetAr = 4.0 / 3.0;
+		}
+		else if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_16_9)
+		{
+			targetAr = 16.0 / 9.0;
+		}
+	}
+	else
+	{
+		if (g_Conf->GSWindow.AspectRatio == AspectRatio_4_3)
+		{
+			targetAr = 4.0 / 3.0;
+		}
+		else if (g_Conf->GSWindow.AspectRatio == AspectRatio_16_9)
+		{
+			targetAr = 16.0 / 9.0;
+		}
+	}
+
+	const double arr = targetAr / clientAr;
+	double target_width = f_width;
+	double target_height = f_height;
+	if (arr < 1)
+		target_width = std::floor(f_width * arr + 0.5);
+	else if (arr > 1)
+		target_height = std::floor(f_height / arr + 0.5);
+
+	float zoom = g_Conf->GSWindow.Zoom.ToFloat() / 100.0;
+	if (zoom == 0) //auto zoom in untill black-bars are gone (while keeping the aspect ratio).
+		zoom = std::max((float)arr, (float)(1.0 / arr));
+
+	target_width *= zoom;
+	target_height *= zoom * g_Conf->GSWindow.StretchY.ToFloat() / 100.0;
+
+	double target_x, target_y;
+	if (target_width > f_width)
+		target_x = -((target_width - f_width) * 0.5);
+	else
+		target_x = (f_width - target_width) * 0.5;
+	if (target_height > f_height)
+		target_y = -((target_height - f_height) * 0.5);
+	else
+		target_y = (f_height - target_height) * 0.5;
+
+	const double unit = .01 * std::min(target_x, target_y);
+	target_x += unit * g_Conf->GSWindow.OffsetX.ToFloat();
+	target_y += unit * g_Conf->GSWindow.OffsetY.ToFloat();
+
+	return GSVector4i(
+		static_cast<int>(std::floor(target_x)),
+		static_cast<int>(std::floor(target_y)),
+		static_cast<int>(std::round(target_x + target_width)),
+		static_cast<int>(std::round(target_y + target_height)));
+}
+
 void GSRenderer::SetVSync(int vsync)
 {
 	m_vsync = vsync;
@@ -356,6 +423,7 @@ void GSRenderer::VSync(int field)
 #endif
 		{
 			//GS owns the window's title, be verbose.
+			static const char* aspect_ratio_names[AspectRatio_MaxCount] = { "Stretch", "4:3", "16:9" };
 
 			std::string s2 = m_regs->SMODE2.INT ? (std::string("Interlaced ") + (m_regs->SMODE2.FFMD ? "(frame)" : "(field)")) : "Progressive";
 
@@ -364,7 +432,7 @@ void GSRenderer::VSync(int field)
 				m_perfmon.GetFrame(), GetInternalResolution().x, GetInternalResolution().y, fps, (int)(100.0 * fps / GetTvRefreshRate()),
 				s2.c_str(),
 				theApp.m_gs_interlace[m_interlace].name.c_str(),
-				theApp.m_gs_aspectratio[m_aspectratio].name.c_str(),
+				aspect_ratio_names[g_Conf->GSWindow.AspectRatio],
 				(int)m_perfmon.Get(GSPerfMon::SyncPoint),
 				(int)m_perfmon.Get(GSPerfMon::Prim),
 				(int)m_perfmon.Get(GSPerfMon::Draw),
@@ -438,7 +506,7 @@ void GSRenderer::VSync(int field)
 	m_dev->m_osd.m_real_size.x = window_size.v[2];
 	m_dev->m_osd.m_real_size.y = window_size.v[3];
 
-	m_dev->Present(m_wnd->GetClientRect().fit(m_aspectratio), m_shader);
+	m_dev->Present(ComputeDrawRectangle(window_size.z, window_size.w), m_shader);
 
 	// snapshot
 
@@ -534,7 +602,8 @@ bool GSRenderer::MakeSnapshot(const std::string& path)
 
 bool GSRenderer::BeginCapture(std::string& filename)
 {
-	GSVector4i disp = m_wnd->GetClientRect().fit(m_aspectratio);
+	const GSVector4i crect(m_wnd->GetClientRect());
+	GSVector4i disp = ComputeDrawRectangle(crect.z, crect.w);
 	float aspect = (float)disp.width() / std::max(1, disp.height());
 
 	return m_capture.BeginCapture(GetTvRefreshRate(), GetInternalResolution(), aspect, filename);
@@ -586,10 +655,6 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 				m_interlace = (m_interlace + s_interlace_nb + step) % s_interlace_nb;
 				theApp.SetConfig("interlace", m_interlace);
 				printf("GS: Set deinterlace mode to %d (%s).\n", m_interlace, theApp.m_gs_interlace.at(m_interlace).name.c_str());
-				return;
-			case VK_F6:
-				if (m_wnd->IsManaged())
-					m_aspectratio = (m_aspectratio + s_aspect_ratio_nb + step) % s_aspect_ratio_nb;
 				return;
 			case VK_DELETE:
 				m_aa1 = !m_aa1;

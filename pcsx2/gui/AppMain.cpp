@@ -71,9 +71,6 @@ wxIMPLEMENT_APP(Pcsx2App);
 
 std::unique_ptr<AppConfig> g_Conf;
 
-AspectRatioType iniAR;
-bool switchAR;
-
 uptr pDsp[2];
 
 // Returns a string message telling the user to consult guides for obtaining a legal BIOS.
@@ -451,21 +448,6 @@ extern bool FMVstarted;
 extern bool EnableFMV;
 extern bool renderswitch;
 
-void DoFmvSwitch(bool on)
-{
-	if (g_Conf->GSWindow.FMVAspectRatioSwitch != FMV_AspectRatio_Switch_Off) {
-		if (on) {
-			switchAR = true;
-			iniAR = g_Conf->GSWindow.AspectRatio;
-		} else {
-			switchAR = false;
-		}
-		if (GSFrame* gsFrame = wxGetApp().GetGsFramePtr())
-			if (GSPanel* viewport = gsFrame->GetViewport())
-				viewport->DoResize();
-	}
-}
-
 void Pcsx2App::LogicalVsync()
 {
 	if( AppRpc_TryInvokeAsync( &Pcsx2App::LogicalVsync ) ) return;
@@ -479,7 +461,7 @@ void Pcsx2App::LogicalVsync()
 	if (g_Conf->GSWindow.FMVAspectRatioSwitch != FMV_AspectRatio_Switch_Off) {
 		if (EnableFMV) {
 			DevCon.Warning("FMV on");
-			DoFmvSwitch(true);
+			GSSetFMVSwitch(true);
 			EnableFMV = false;
 		}
 
@@ -487,7 +469,7 @@ void Pcsx2App::LogicalVsync()
 			int diff = cpuRegs.cycle - eecount_on_last_vdec;
 			if (diff > 60000000 ) {
 				DevCon.Warning("FMV off");
-				DoFmvSwitch(false);
+				GSSetFMVSwitch(false);
 				FMVstarted = false;
 			}
 		}
