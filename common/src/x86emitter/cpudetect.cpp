@@ -1,5 +1,5 @@
 /*  Cpudetection lib
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -112,35 +112,14 @@ s64 x86capabilities::_CPUSpeedHz(u64 time) const
 
     // Align the cpu execution to a cpuTick boundary.
 
-    // GCC 4.8 has __rdtsc but apparently it causes a crash. Only known working on MSVC
     do {
         timeStart = GetCPUTicks();
-#ifdef _MSC_VER
         startCycle = __rdtsc();
-#elif defined(_M_X86_64)
-        unsigned long long low, high;
-        __asm__ __volatile__("rdtsc"
-                             : "=a"(low), "=d"(high));
-        startCycle = low | (high << 32);
-#else
-        __asm__ __volatile__("rdtsc"
-                             : "=A"(startCycle));
-#endif
     } while (GetCPUTicks() == timeStart);
 
     do {
         timeStop = GetCPUTicks();
-#ifdef _MSC_VER
         endCycle = __rdtsc();
-#elif defined(_M_X86_64)
-        unsigned long long low, high;
-        __asm__ __volatile__("rdtsc"
-                             : "=a"(low), "=d"(high));
-        endCycle = low | (high << 32);
-#else
-        __asm__ __volatile__("rdtsc"
-                             : "=A"(endCycle));
-#endif
     } while ((timeStop - timeStart) < time);
 
     s64 cycleCount = endCycle - startCycle;
