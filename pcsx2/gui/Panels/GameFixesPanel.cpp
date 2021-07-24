@@ -81,7 +81,7 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			wxEmptyString
 		},
 		{
-			_("Enable the GIF FIFO (slower but needed for Hotwheels, Wallace and Gromit, DJ Hero)"),
+			_("Force GIF PATH3 transfers through FIFO (Fifa Street 2)"),
 			wxEmptyString
 		},
 		{

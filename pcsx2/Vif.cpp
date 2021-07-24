@@ -222,14 +222,14 @@ __fi void vif1FBRST(u32 value) {
 				    case MFD_VIF1:
                         //Console.WriteLn("MFIFO Stall");
 						//MFIFO active and not empty
-                        if(vif1ch.chcr.STR) CPU_INT(DMAC_MFIFO_VIF, 0);
+                        if(vif1ch.chcr.STR && !vif1Regs.stat.test(VIF1_STAT_FDR)) CPU_INT(DMAC_MFIFO_VIF, 0);
                         break;
 
                     case NO_MFD:
                     case MFD_RESERVED:
                     case MFD_GIF: // Wonder if this should be with VIF?
                         // Gets the timing right - Flatout
-                        if(vif1ch.chcr.STR) CPU_INT(DMAC_VIF1, 0);
+                        if(vif1ch.chcr.STR && !vif1Regs.stat.test(VIF1_STAT_FDR)) CPU_INT(DMAC_VIF1, 0);
                         break;
 				}
 
@@ -256,6 +256,8 @@ __fi void vif1STAT(u32 value) {
 		//position, as we clear it and set it to the end well before the interrupt, the game assumes it's finished,
 		//then proceeds to reverse the dma before we have even done it ourselves. So lets just make sure VIF is ready :)
 		if (vif1ch.qwc > 0 || isStalled == false){
+			vif1ch.qwc = 0;
+			hwDmacIrq(DMAC_VIF1);
 			vif1ch.chcr.STR = false;
 			cpuRegs.interrupt &= ~((1 << DMAC_VIF1) | (1 << DMAC_MFIFO_VIF));
 		}

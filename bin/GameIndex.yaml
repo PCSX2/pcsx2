@@ -31,8 +31,6 @@ GUST-00009:
   region: "NTSC-J"
   roundModes:
     eeRoundMode: 0  # Fixes jump issue.
-  gameFixes:
-    - GIFFIFOHack # Fixes flickering sprites.
 PAPX-90203:
   name: "Gran Turismo 2000 [Trial]"
   region: "NTSC-J"
@@ -2210,8 +2208,6 @@ SCES-50928:
   region: "PAL-M6"
   clampModes:
     vuClampMode: 2  # Fixes bad shadows.
-  gameFixes:
-    - GIFFIFOHack # Resolves random sprite/HUD corruption.
 SCES-50934:
   name: "WRC II Extreme"
   region: "PAL-M7"
@@ -2419,8 +2415,6 @@ SCES-51618:
   region: "PAL-M5"
   clampModes:
     vuClampMode: 2  # Fixes bad shadows.
-  gameFixes:
-    - GIFFIFOHack # Resolves random sprite/HUD corruption.
 SCES-51635:
   name: "Brave - The Search for Spirit Dancer"
   region: "PAL-M5"
@@ -3678,8 +3672,6 @@ SCKA-24008:
   region: "NTSC-K"
   clampModes:
     vuClampMode: 2  # Fixes bad shadows.
-  gameFixes:
-    - GIFFIFOHack # Resolves random sprite/HUD corruption.
 SCKA-30001:
   name: "Gran Turismo 4"
   region: "NTSC-K"
@@ -3997,8 +3989,6 @@ SCPS-15044:
   region: "NTSC-J"
   clampModes:
     vuClampMode: 2  # Fixes bad shadows.
-  gameFixes:
-    - GIFFIFOHack # Resolves random sprite/HUD corruption.
 SCPS-15045:
   name: "Ka (Mosquito) - Let's Go Hawaiian"
   region: "NTSC-J"
@@ -5077,8 +5067,6 @@ SCUS-97134:
   compat: 5
   clampModes:
     vuClampMode: 2  # Fixes bad shadows.
-  gameFixes:
-    - GIFFIFOHack # Resolves random sprite/HUD corruption.
 SCUS-97136:
   name: "NCAA Final Four 2002"
   region: "NTSC-U"
@@ -5314,8 +5302,6 @@ SCUS-97205:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 2  # Fixes bad shadows.
-  gameFixes:
-    - GIFFIFOHack # Resolves random sprite/HUD corruption.
 SCUS-97206:
   name: "PlayStation Underground Jampack Summer 2002"
   region: "NTSC-U"
@@ -5399,8 +5385,6 @@ SCUS-97230:
   region: "NTSC-U"
   clampModes:
     vuClampMode: 2  # Fixes bad shadows.
-  gameFixes:
-    - GIFFIFOHack # Resolves random sprite/HUD corruption.
 SCUS-97231:
   name: "Arc the Lad - Twilight of the Spirits"
   region: "NTSC-U"
@@ -8786,13 +8770,9 @@ SLES-51011:
 SLES-51013:
   name: "Blade II"
   region: "PAL-E"
-  gameFixes:
-    - GIFFIFOHack # Fixes flickering HUD. (originally was EE Timing Hack but required since r4821)
 SLES-51014:
   name: "Blade II"
   region: "PAL-F"
-  gameFixes:
-    - GIFFIFOHack # Fixes flickering HUD. (originally was EE Timing Hack but required since r4821)
 SLES-51017:
   name: "Scooby-Doo! and The Night of 100 Frights"
   region: "PAL-E"
@@ -9537,8 +9517,6 @@ SLES-51372:
   compat: 5
   clampModes:
     vuClampMode: 3  # Fixes minor SPS on characters.
-  gameFixes:
-    - GIFFIFOHack
 SLES-51374:
   name: "RoboCop"
   region: "PAL-M5"
@@ -10409,8 +10387,6 @@ SLES-51877:
 SLES-51879:
   name: "Hot Wheels World Race"
   region: "PAL-E"
-  gameFixes:
-    - GIFFIFOHack
 SLES-51881:
   name: "Mercedes Bens World Racing"
   region: "PAL-F-G"
@@ -10649,8 +10625,6 @@ SLES-51989:
   compat: 5
   clampModes:
     vuClampMode: 3  # Fixes minor SPS on characters.
-  gameFixes:
-    - GIFFIFOHack
 SLES-51991:
   name: "Dance UK"
   region: "PAL-E"
@@ -10726,8 +10700,6 @@ SLES-52026:
   compat: 5
   clampModes:
     vuClampMode: 3  # Fixes minor SPS on characters.
-  gameFixes:
-    - GIFFIFOHack
 SLES-52028:
   name: "Junior Sports Basketball"
   region: "PAL-M5"
@@ -14518,7 +14490,6 @@ SLES-53904:
   name: "DT Racer"
   region: "PAL-M5"
   gameFixes:
-    - GIFFIFOHack # Fixes corrupted graphics in the menus.
     - VUKickstartHack # Fixes TLB misses and collision bugs.
 SLES-53906:
   name: "50cent - Bulletproof"
@@ -14668,8 +14639,6 @@ SLES-53979:
 SLES-53982:
   name: "Fight Night Round 3"
   region: "PAL-E-F"
-  gameFixes:
-  - GIFFIFOHack # Fixes corrupt textures.
 SLES-53984:
   name: "Ice Age 2 - The Meltdown"
   region: "PAL-M6"
@@ -15533,8 +15502,6 @@ SLES-54396:
 SLES-54400:
   name: "SpongeBob SquarePants - Creature from the Krusty Krab"
   region: "PAL-M7"
-  gameFixes:
-    - GIFFIFOHack # Fixes bad graphics.
 SLES-54402:
   name: "Need for Speed - Carbon [Collector's Edition]"
   region: "PAL-F"
@@ -16803,8 +16770,6 @@ SLES-54995:
   name: "Puzzle Quest - Challenge of the Warlords"
   region: "PAL-M5"
   compat: 5
-  gameFixes:
-    - GIFFIFOHack # Fixes flickering black and white sprites.
 SLES-54996:
   name: "Golden Compass, The"
   region: "PAL-M5"
@@ -17669,8 +17634,6 @@ SLES-55443:
   compat: 5
   roundModes:
     eeRoundMode: 0  # Fixes jump issue.
-  gameFixes:
-    - GIFFIFOHack # Fixes flickering sprites.
 SLES-55444:
   name: "Ar tonelico II: Melody of Metafalica"
   region: "PAL-E"
@@ -17876,8 +17839,6 @@ SLES-55576:
 SLES-55577:
   name: "DJ Hero"
   region: "PAL-M5"
-  gameFixes:
-    - GIFFIFOHack
 SLES-55578:
   name: "Band Hero"
   region: "PAL-M5"
@@ -18908,8 +18869,6 @@ SLPM-20436:
 SLPM-55005:
   name: "Mana Khemia 2: Ochita Gakuen to Renkinjutsushi Tachi"
   region: "NTSC-J"
-  gameFixes:
-    - GIFFIFOHack # Fixes flickering sprites.
 SLPM-55008:
   name: "Sengoku Basara X"
   region: "NTSC-J"
@@ -18954,8 +18913,6 @@ SLPM-55110:
 SLPM-55114:
   name: "Mana Khemia 2: Ochita Gakuen to Renkinjutsushi Tachi"
   region: "NTSC-J"
-  gameFixes:
-    - GIFFIFOHack # Fixes flickering sprites.
 SLPM-55118:
   name: "Galaxy Angel II - Eigou Kaiki no Koku [Disc1of2]"
   region: "NTSC-J"
@@ -26303,8 +26260,6 @@ SLPM-66693:
 SLPM-66694:
   name: "Spongebob"
   region: "NTSC-J"
-  gameFixes:
-    - GIFFIFOHack # Fixes bad graphics.
 SLPM-66695:
   name: "Kono Aozora ni Yakusoku o - Melody of the Sun and Sea"
   region: "NTSC-J"
@@ -33407,8 +33362,6 @@ SLUS-20360:
   name: "Blade II"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - GIFFIFOHack # Fixes flickering HUD. (originally was EE Timing Hack but required since r4821)
 SLUS-20361:
   name: "Rally Fusion - Race of Champions"
   region: "NTSC-U"
@@ -34666,8 +34619,6 @@ SLUS-20647:
   compat: 5
   clampModes:
     vuClampMode: 3  # Fixes minor SPS on characters.
-  gameFixes:
-    - GIFFIFOHack
 SLUS-20648:
   name: "NBA Jam 2004"
   region: "NTSC-U"
@@ -35018,8 +34969,6 @@ SLUS-20737:
   name: "Hot Wheels - World Race"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - GIFFIFOHack
 SLUS-20738:
   name: "Van Helsing"
   region: "NTSC-U"
@@ -36564,7 +36513,6 @@ SLUS-21095:
   region: "NTSC-U"
   compat: 5
   gameFixes:
-    - GIFFIFOHack # Fixes corrupted graphics in the menus.
     - VUKickstartHack # Fixes TLB misses and collision bugs.
 SLUS-21096:
   name: "Ape Escape - Pumped & Primed"
@@ -37880,8 +37828,6 @@ SLUS-21383:
   name: "Fight Night - Round 3"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-  - GIFFIFOHack # Fixes corrupt textures.
 SLUS-21384:
   name: "Cabela's Alaskan Adventures"
   region: "NTSC-U"
@@ -37917,8 +37863,6 @@ SLUS-21391:
   name: "SpongeBob SquarePants - Creature from the Krusty Krab"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - GIFFIFOHack # Fixes bad graphics.
 SLUS-21392:
   name: "Shrek Smash and Crash"
   region: "NTSC-U"
@@ -39083,8 +39027,6 @@ SLUS-21692:
   name: "Puzzle Quest - Challenge of the Warlords"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - GIFFIFOHack # Fixes flickering black and white sprites.
 SLUS-21693:
   name: "7 Wonders of the Ancient World"
   region: "NTSC-U"
@@ -39271,8 +39213,6 @@ SLUS-21735:
   compat: 5
   roundModes:
     eeRoundMode: 0  # Fixes jump issue.
-  gameFixes:
-    - GIFFIFOHack # Fixes flickering sprites.
 SLUS-21736:
   name: "Wall-E"
   region: "NTSC-U"
@@ -39878,8 +39818,6 @@ SLUS-21890:
   name: "Mana Khemia 2: Fall Of Alchemy"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - GIFFIFOHack # Fixes flickering sprites.
 SLUS-21891:
   name: "G-Force"
   region: "NTSC-U"
@@ -39952,8 +39890,6 @@ SLUS-21908:
 SLUS-21909:
   name: "DJ Hero"
   region: "NTSC-U"
-  gameFixes:
-    - GIFFIFOHack
 SLUS-21910:
   name: "Marvel Super Hero Squad"
   region: "NTSC-U"

@@ -216,12 +216,6 @@ __ri void hwMFIFOResume(u32 transferred) {
 				CPU_INT(DMAC_MFIFO_GIF, transferred * BIAS);
 				gif.gifstate = GIF_STATE_READY;
 			}
-			if (!CHECK_GIFFIFOHACK)
-			{
-				gifRegs.stat.FQC = 16;
-				//GIF FIFO
-				clearFIFOstuff(true);
-			}			
 			break;
 		}
 		default:

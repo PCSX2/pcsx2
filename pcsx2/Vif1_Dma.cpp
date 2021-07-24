@@ -288,7 +288,7 @@ __fi void vif1Interrupt()
 
 	g_vif1Cycles = 0;
 
-	if( gifRegs.stat.APATH == 2  && gifUnit.gifPath[GIF_PATH_2].isDone())
+	if( gifRegs.stat.APATH == 2 && gifUnit.gifPath[GIF_PATH_2].isDone())
 	{
 		gifRegs.stat.APATH = 0;
 		gifRegs.stat.OPH = 0;
@@ -427,7 +427,7 @@ __fi void vif1Interrupt()
 	vif1.irqoffset.enabled = false;
 	if(vif1.queued_program) vifExecQueue(1);
 	g_vif1Cycles = 0;
-	DMA_LOG("VIF1 DMA End");
+	VIF_LOG("VIF1 DMA End");
 	hwDmacIrq(DMAC_VIF1);
 
 }

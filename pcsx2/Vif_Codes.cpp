@@ -422,14 +422,13 @@ vifOp(vifCode_MSCNT) {
 // ToDo: FixMe
 vifOp(vifCode_MskPath3) {
 	vif1Only();
-	pass1 {		
+	pass1 {
 		vif1Regs.mskpath3 = (vif1Regs.code >> 15) & 0x1;
 		gifRegs.stat.M3P  = (vif1Regs.code >> 15) & 0x1;
 		GUNIT_LOG("Vif1 - MskPath3 [p3 = %s]", vif1Regs.mskpath3 ? "masked" : "enabled");
 		if(!vif1Regs.mskpath3) {
-			GUNIT_WARN("Path3 triggering!");
-			if(CHECK_GIFFIFOHACK)gif_fifo.read(false);
-			else gifInterrupt();
+			GUNIT_WARN("VIF MSKPATH3 off Path3 triggering!");
+			gifInterrupt();
 		}
 		vif1.cmd = 0;
 		vif1.pass = 0;

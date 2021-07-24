@@ -80,11 +80,10 @@ extern __aligned16 gifStruct gif;
 struct GIF_Fifo
 {
 	unsigned int data[64]; //16 QW FIFO
-	unsigned int readdata[64]; //16 QW Inline for reading
-	int readpos, writepos;
+	unsigned int fifoSize;
 
-	int write(u32* pMem, int size);
-	int read(bool calledFromDMA = false);
+	int write_fifo(u32* pMem, int size);
+	int read_fifo();
 
 	void init();
 };

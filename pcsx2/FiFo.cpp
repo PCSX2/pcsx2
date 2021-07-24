@@ -125,10 +125,10 @@ void __fastcall WriteFIFO_VIF1(const mem128_t *value)
 void __fastcall WriteFIFO_GIF(const mem128_t *value)
 {
 	GUNIT_LOG("WriteFIFO_GIF()");
-	if (CHECK_GIFFIFOHACK) {
-		gif_fifo.write((u32*)value, 1);
-
-		gif_fifo.read(true);		
+	if ((!gifUnit.CanDoPath3() || gif_fifo.fifoSize > 0)) {
+		//DevCon.Warning("GIF FIFO HW Write");
+		gif_fifo.write_fifo((u32*)value, 1);
+		gif_fifo.read_fifo();
 	}
 	else {
 		gifUnit.TransferGSPacketData(GIF_TRANS_FIFO, (u8*)value, 16);
