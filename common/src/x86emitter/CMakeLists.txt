@@ -36,7 +36,7 @@ set(x86emitterHeaders
 	../../include/x86emitter/implement/simd_helpers.h
 	../../include/x86emitter/implement/simd_moremovs.h
 	../../include/x86emitter/implement/simd_shufflepack.h
-	../../include/x86emitter/implement/simd_templated_helpers
+	../../include/x86emitter/implement/simd_templated_helpers.h
 	../../include/x86emitter/implement/test.h
 	../../include/x86emitter/implement/xchg.h
 	../../include/x86emitter/instructions.h
