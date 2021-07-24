@@ -538,6 +538,7 @@ struct Gif_Unit
 		gifRegs.stat.reset();
 		gifRegs.ctrl.reset();
 		gifRegs.mode.reset();
+		gif_fifo.init();
 	}
 
 	// Adds a finished GS Packet to the MTGS ring buffer
