@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -654,23 +654,22 @@ __fi void rcntUpdate_vSync()
 
 static __fi void _cpuTestTarget( int i )
 {
-	if (counters[i].count < counters[i].target) return;
+	if (counters[i].count < counters[i].target)
+		return;
 
 	if(counters[i].mode.TargetInterrupt) {
-
 		EECNT_LOG("EE Counter[%d] TARGET reached - mode=%x, count=%x, target=%x", i, counters[i].mode, counters[i].count, counters[i].target);
 		if (!counters[i].mode.TargetReached)
 		{
 			counters[i].mode.TargetReached = 1;
 			hwIntcIrq(counters[i].interrupt);
 		}
-		// The PS2 only resets if the interrupt is enabled - Tested on PS2
-		if (counters[i].mode.ZeroReturn)
-			counters[i].count -= counters[i].target; // Reset on target
-		else
-			counters[i].target |= EECNT_FUTURE_TARGET;
 	}
-	else counters[i].target |= EECNT_FUTURE_TARGET;
+
+	if (counters[i].mode.ZeroReturn)
+		counters[i].count -= counters[i].target; // Reset on target
+	else
+		counters[i].target |= EECNT_FUTURE_TARGET; // OR with future target to prevent a retrigger
 }
 
 static __fi void _cpuTestOverflow( int i )
