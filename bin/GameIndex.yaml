@@ -14081,6 +14081,7 @@ SLES-53701:
   region: "PAL-M5"
   compat: 5
   gameFixes:
+    - XGKickHack # Fixes texture normals.
     - VUKickstartHack # Fixes loading hang.
 SLES-53702:
   name: "Resident Evil 4"
@@ -37305,6 +37306,7 @@ SLUS-21272:
   region: "NTSC-U"
   compat: 5
   gameFixes:
+    - XGKickHack # Fixes texture normals.
     - VUKickstartHack # Fixes loading hang.
 SLUS-21273:
   name: "Matrix, The - Path of Neo"
