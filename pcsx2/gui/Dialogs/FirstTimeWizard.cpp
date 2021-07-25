@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -227,6 +227,6 @@ void FirstTimeWizard::OnPageChanging( wxWizardEvent& evt )
 
 void FirstTimeWizard::OnPageChanged( wxWizardEvent& evt )
 {
-	if( ((sptr)evt.GetPage() == (sptr)&m_page_bios) )
-		m_panel_BiosSel.OnShown();
+	//	if( ((sptr)evt.GetPage() == (sptr)&m_page_bios) )			// FirstTimeWizard panel which prevents the user for clicking on finish to the main PCSX2 menu , it has the warning message:
+	//	m_panel_BiosSel.OnShown();									// .SetUserMsg(pxE(L"Please select a valid BIOS.  If you are unable to make a valid selection then press Cancel to close the Configuration panel."));
 }

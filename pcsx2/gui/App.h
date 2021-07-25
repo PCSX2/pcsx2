@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -143,7 +143,6 @@ enum MenuIdentifiers
 	MenuId_Config_SysSettings,
 	MenuId_Config_McdSettings,
 	MenuId_Config_AppSettings,
-	MenuId_Config_BIOS,
 	MenuId_Config_Language,
 
 	MenuId_Config_GS,

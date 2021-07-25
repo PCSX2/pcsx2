@@ -1040,10 +1040,10 @@ wxSize wxSizer::GetMinSize()
     return ret;
 }
 
-void wxSizer::DoSetMinSize( int width, int height )
+void wxSizer::DoSetMinSize(int width, int height)
 {
-    m_minSize.x = width;
-    m_minSize.y = height;
+	m_minSize.x = width;
+	m_minSize.y = height * 1.6; // Hackfix: There is no real fixed height, workaround for general settings where BIOS / Folders / GS Window / Speedhacks and others reside in.
 }
 
 bool wxSizer::DoSetItemMinSize( wxWindow *window, int width, int height )

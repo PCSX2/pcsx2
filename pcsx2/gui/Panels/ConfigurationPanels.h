@@ -393,7 +393,7 @@ namespace Panels
 	// --------------------------------------------------------------------------------------
 	//  BasePathsPanel / StandardPathsPanel
 	// --------------------------------------------------------------------------------------
-	class BasePathsPanel : public wxPanelWithHelpers
+	class BasePathsPanel : public BaseApplicableConfigPanel
 	{
 	public:
 		BasePathsPanel(wxWindow* parent);
@@ -405,6 +405,16 @@ namespace Panels
 	{
 	public:
 		StandardPathsPanel(wxWindow* parent);
+
+		void Apply() override
+		{
+
+		}
+
+		void AppStatusEvent_OnSettingsApplied() override
+		{
+
+		}
 	};
 
 	// --------------------------------------------------------------------------------------

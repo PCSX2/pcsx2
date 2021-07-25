@@ -278,7 +278,6 @@ void MainEmuFrame::ConnectMenus()
 	// Config
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_SysSettings_Click, this, MenuId_Config_SysSettings);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_McdSettings_Click, this, MenuId_Config_McdSettings);
-	Bind(wxEVT_MENU, &MainEmuFrame::Menu_SelectBios_Click, this, MenuId_Config_BIOS);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_AudioSettings_Click, this, MenuId_Config_SPU2);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_NetworkSettings_Click, this, MenuId_Config_DEV9);
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_USBSettings_Click, this, MenuId_Config_USB);
@@ -449,7 +448,6 @@ void MainEmuFrame::CreateConfigMenu()
 {
 	m_menuConfig.Append(MenuId_Config_SysSettings, _("General &Settings"));
 	m_menuConfig.Append(MenuId_Config_McdSettings, _("&Memory Cards"));
-	m_menuConfig.Append(MenuId_Config_BIOS, _("&BIOS / Folder Selector"));
 	m_menuConfig.AppendSeparator();
 	m_menuConfig.Append(MenuId_Config_GS, _("&Graphics Settings"));
 	m_menuConfig.Append(MenuId_Config_SPU2, _("&Audio Settings"));

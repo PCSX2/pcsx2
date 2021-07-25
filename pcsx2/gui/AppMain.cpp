@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -103,7 +103,7 @@ protected:
 
 static bool HandleBIOSError(BaseException& ex)
 {
-	if (!pxDialogExists(L"Dialog:" + Dialogs::ComponentsConfigDialog::GetNameStatic()))
+	if (!pxDialogExists(L"Dialog:" + Dialogs::SysConfigDialog::GetNameStatic()))
 	{
 		if (!Msgbox::OkCancel(ex.FormatDisplayMessage() + L"\n\n" + BIOS_GetMsg_Required()
 			+ L"\n\n" + _("Press Ok to go to the BIOS Configuration Panel."), _("PS2 BIOS Error")))
@@ -116,7 +116,7 @@ static bool HandleBIOSError(BaseException& ex)
 
 	g_Conf->ComponentsTabName = L"BIOS";
 
-	return AppOpenModalDialog<Dialogs::ComponentsConfigDialog>(L"BIOS") != wxID_CANCEL;
+	return AppOpenModalDialog<Dialogs::SysConfigDialog>(L"BIOS") != wxID_CANCEL;
 }
 
 void BIOSLoadErrorEvent::InvokeEvent()

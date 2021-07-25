@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -192,7 +192,7 @@ void Dialogs::SysConfigDialog::Cancel()
 }
 
 Dialogs::SysConfigDialog::SysConfigDialog(wxWindow* parent)
-	: BaseConfigurationDialog( parent, AddAppName(_("Emulation Settings - %s")), 580 )
+	: BaseConfigurationDialog( parent, AddAppName(_("General Settings - %s")), 600 )
 {
 	ScopedBusyCursor busy( Cursor_ReallyBusy );
 
@@ -202,6 +202,8 @@ Dialogs::SysConfigDialog::SysConfigDialog(wxWindow* parent)
 
 	//NOTE: all pages which are added to SysConfigDialog must be of class BaseApplicableConfigPanel or derived.
 	//		see comment inside UpdateGuiForPreset implementation for more info.
+	AddPage<BiosSelectorPanel>		( pxL("BIOS"),			cfgid.Cpu );
+	AddPage<StandardPathsPanel>		( pxL("Folders"),		cfgid.Paths );
 	AddPage<CpuPanelEE>				( pxL("EE/IOP"),		cfgid.Cpu );
 	AddPage<CpuPanelVU>				( pxL("VUs"),			cfgid.Cpu );
 	AddPage<VideoPanel>				( pxL("GS"),			cfgid.Cpu );
@@ -217,24 +219,6 @@ Dialogs::SysConfigDialog::SysConfigDialog(wxWindow* parent)
 
 	if( wxGetApp().Overrides.HasCustomHacks() )
 		wxGetApp().PostMethod( CheckHacksOverrides );
-}
-
-Dialogs::ComponentsConfigDialog::ComponentsConfigDialog(wxWindow* parent)
-	: BaseConfigurationDialog( parent, AddAppName(_("Components Selectors - %s")),  750 )
-{
-	ScopedBusyCursor busy( Cursor_ReallyBusy );
-
-	CreateListbook( wxGetApp().GetImgList_Config() );
-	const AppImageIds::ConfigIds& cfgid( wxGetApp().GetImgId().Config );
-	SetIcons(wxGetApp().GetIconBundle());
-
-	AddPage<BiosSelectorPanel>		( pxL("BIOS"),			cfgid.Cpu );
-	AddPage<StandardPathsPanel>		( pxL("Folders"),		cfgid.Paths );
-
-	AddListbook();
-	AddOkCancel();
-
-	SetSizerAndFit(GetSizer());
 }
 
 Dialogs::InterfaceLanguageDialog::InterfaceLanguageDialog(wxWindow* parent)
