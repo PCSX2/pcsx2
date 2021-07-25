@@ -278,14 +278,15 @@ static u32 WRITERING_DMA(u32 *pMem, u32 qwc) {
 	if (gifRegs.stat.IMT)
 	{
 		// Splitting by 8qw can be really slow, so on bigger packets be less picky.
-		// Some games like Wallace & Gromit like smaller packets to be split correctly, hopefully with little impact on speed.
-		// 68 works for W&G but 128 is more of a safe point.
-		if (qwc > 128)
-			qwc = std::min(qwc, 1024u);
+		// Games seem to be more concerned with other channels finishing before PATH 3 finishes
+		// so we can get away with transferring "most" of it when it's a big packet.
+		// Use Wallace and Gromit Project Zoo or The Suffering for testing
+		if (qwc > 64)
+			qwc = qwc-64;
 		else
 			qwc = std::min(qwc, 8u);
 	}
-	
+
 	uint size;
 
 	if (CheckPaths() == false || ((qwc < 8 || gif_fifo.fifoSize > 0) && CHECK_GIFFIFOHACK))
