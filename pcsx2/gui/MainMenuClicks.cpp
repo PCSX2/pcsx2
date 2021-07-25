@@ -126,7 +126,7 @@ void MainEmuFrame::Menu_WindowSettings_Click(wxCommandEvent& event)
 
 void MainEmuFrame::Menu_SelectBios_Click(wxCommandEvent& event)
 {
-	AppOpenDialog<ComponentsConfigDialog>(this);
+	AppOpenDialog<SysConfigDialog>(this);
 }
 
 void MainEmuFrame::Menu_ChangeLang(wxCommandEvent& event) // Always in English
