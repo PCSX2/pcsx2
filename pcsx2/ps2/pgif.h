@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
-*  Copyright (C) 2016-2016  PCSX2 Dev Team
+*  Copyright (C) 2016-2021  PCSX2 Dev Team
 *  Copyright (C) 2016 Wisi
 *
 *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
