@@ -222,7 +222,7 @@ Pcsx2Config::GSOptions::GSOptions()
 {
 	FrameLimitEnable		= true;
 	FrameSkipEnable			= false;
-	VsyncEnable				= VsyncMode::Off;
+	VsyncEnable				= VsyncMode::On;
 
 	SynchronousMTGS			= false;
 	VsyncQueueSize			= 2;
