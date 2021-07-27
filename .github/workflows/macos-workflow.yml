@@ -111,4 +111,20 @@ jobs:
 
       - name: Build PCSX2
         working-directory: build
-        run: make -j$(getconf _NPROCESSORS_ONLN) # macOS doesn't use make install
+        run: make -j$(getconf _NPROCESSORS_ONLN)
+
+      - name: Compress pcsx2 folder
+        working-directory: build/pcsx2
+        run: |
+          tar -zcvf pcsx2.tar.gz PCSX2.app
+    
+      - name: Get short SHA and ARCH
+        id: slug
+        run: |
+          echo "::set-output name=sha8::$(echo ${GITHUB_SHA} | cut -c1-8)"
+          echo "::set-output name=arch::$([ "${{ matrix.platform }}" == x86 ] && echo "32bit" || echo "64bit")"
+
+      - uses: actions/upload-artifact@v2
+        with:
+          name: PCSX2-${{ steps.slug.outputs.arch }}-[${{ steps.slug.outputs.sha8 }}]
+          path: build/pcsx2/pcsx2.tar.gz
