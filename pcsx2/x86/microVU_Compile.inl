@@ -44,7 +44,7 @@ __fi void mVUcheckIsSame(mV) {
 // Sets up microProgram PC ranges based on whats been recompiled
 void mVUsetupRange(microVU& mVU, s32 pc, bool isStartPC) {
 	std::deque<microRange>*& ranges = mVUcurProg.ranges;
-	pxAssertDev(pc <= mVU.microMemSize, pxsFmt("microVU%d: PC outside of VU memory PC=0x%04x", mVU.index, pc));
+	pxAssertDev(pc <= (s64)mVU.microMemSize, pxsFmt("microVU%d: PC outside of VU memory PC=0x%04x", mVU.index, pc));
 	if (isStartPC) { // Check if startPC is already within a block we've recompiled
 		std::deque<microRange>::const_iterator it(ranges->begin());
 		for ( ; it != ranges->end(); ++it) {
