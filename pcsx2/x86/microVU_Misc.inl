@@ -187,7 +187,7 @@ static void __fc mVUTBit() {
 }
 
 static void __fc mVUEBit() {
-	u32 old = vu1Thread.mtvuInterrupts.fetch_or(VU_Thread::InterruptFlagVUEBit, std::memory_order_release);
+	vu1Thread.mtvuInterrupts.fetch_or(VU_Thread::InterruptFlagVUEBit, std::memory_order_release);
 }
 
 static inline u32 branchAddrN(const mV)
