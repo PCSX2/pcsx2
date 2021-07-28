@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
-#include "PathUtils.h"
+#include "common/PathUtils.h"
 
 #if defined(__APPLE__)
 #warning Tested on FreeBSD, not OS X. Be very afraid.

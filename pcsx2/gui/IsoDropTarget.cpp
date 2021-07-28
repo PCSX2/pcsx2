@@ -98,7 +98,7 @@ protected:
 		if( confirmed )
 		{
 			g_Conf->EmuOptions.UseBOOT2Injection = true;
-			sApp.SysExecute( g_Conf->CdvdSource, Path::ToWxString(g_Conf->CurrentELF));
+			sApp.SysExecute( g_Conf->CdvdSource, g_Conf->CurrentELF);
 		}
 		else
 			stopped_core.AllowResume();
