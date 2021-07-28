@@ -227,6 +227,6 @@ void FirstTimeWizard::OnPageChanging( wxWizardEvent& evt )
 
 void FirstTimeWizard::OnPageChanged( wxWizardEvent& evt )
 {
-	//	if( ((sptr)evt.GetPage() == (sptr)&m_page_bios) )			// FirstTimeWizard panel which prevents the user for clicking on finish to the main PCSX2 menu , it has the warning message:
-	//	m_panel_BiosSel.OnShown();									// .SetUserMsg(pxE(L"Please select a valid BIOS.  If you are unable to make a valid selection then press Cancel to close the Configuration panel."));
+	if( ((sptr)evt.GetPage() == (sptr)&m_page_bios) )
+	    m_panel_BiosSel.OnShown();
 }
