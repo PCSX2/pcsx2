@@ -22,16 +22,11 @@ using namespace pxSizerFlags;
 
 static const int BetweenFolderSpace = 5;
 
-Panels::BasePathsPanel::BasePathsPanel( wxWindow* parent )
-	: BaseApplicableConfigPanel( parent, wxVERTICAL )
-{
-}
-
 // --------------------------------------------------------------------------------------
 //  Panels::StandardPathsPanel  (implementations)
 // --------------------------------------------------------------------------------------
 Panels::StandardPathsPanel::StandardPathsPanel( wxWindow* parent )
-	: BasePathsPanel( parent )
+	: BaseApplicableConfigPanel( parent )
 {
 	*this += BetweenFolderSpace;
 	*this += (new DirPickerPanel( this, FolderId_Cheats,
@@ -77,5 +72,15 @@ Panels::StandardPathsPanel::StandardPathsPanel( wxWindow* parent )
 	*this += BetweenFolderSpace;
 
 	GetSizer()->SetMinSize( wxSize( 475, GetSizer()->GetMinSize().GetHeight() ) );
+}
+
+void Panels::StandardPathsPanel::Apply()
+{
+
+}
+
+void Panels::StandardPathsPanel::AppStatusEvent_OnSettingsApplied()
+{
+
 }
 

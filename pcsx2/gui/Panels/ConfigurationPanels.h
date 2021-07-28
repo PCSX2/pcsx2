@@ -391,30 +391,14 @@ namespace Panels
 	};
 
 	// --------------------------------------------------------------------------------------
-	//  BasePathsPanel / StandardPathsPanel
+	//  StandardPathsPanel
 	// --------------------------------------------------------------------------------------
-	class BasePathsPanel : public BaseApplicableConfigPanel
-	{
-	public:
-		BasePathsPanel(wxWindow* parent);
-
-	protected:
-	};
-
-	class StandardPathsPanel : public BasePathsPanel
+	class StandardPathsPanel : public BaseApplicableConfigPanel
 	{
 	public:
 		StandardPathsPanel(wxWindow* parent);
-
-		void Apply() override
-		{
-
-		}
-
-		void AppStatusEvent_OnSettingsApplied() override
-		{
-
-		}
+		void Apply();
+		void AppStatusEvent_OnSettingsApplied();
 	};
 
 	// --------------------------------------------------------------------------------------
