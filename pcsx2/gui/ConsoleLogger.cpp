@@ -290,6 +290,7 @@ enum MenuId_LogSources_Offset
 	MenuId_LogSources_Offset_eeRecPerf,
 
 	MenuId_LogSources_Offset_ELF = 4,
+	MenuId_LogSouces_Offset_pgif = 5,
 
 	MenuId_LogSources_Offset_Event = 6,
 	MenuId_LogSources_Offset_Thread,
@@ -311,7 +312,7 @@ static ConsoleLogSource* const ConLogSources[] =
 	(ConsoleLogSource*)&pxConLog_Event,
 	(ConsoleLogSource*)&pxConLog_Thread,
 	(ConsoleLogSource*)&SysConsole.sysoutConsole,
-	NULL,
+	(ConsoleLogSource*)&SysConsole.pgifLog,
 #ifndef DISABLE_RECORDING
 	(ConsoleLogSource*)&SysConsole.recordingConsole,
 	(ConsoleLogSource*)&SysConsole.controlInfo,

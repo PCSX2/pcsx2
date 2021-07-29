@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include "Pcsx2Types.h"
-
 // Implemented in Config.cpp
 extern float VolumeAdjustFL;
 extern float VolumeAdjustFR;

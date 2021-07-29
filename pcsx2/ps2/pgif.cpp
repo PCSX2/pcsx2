@@ -18,6 +18,11 @@
 #include "ps2/Iop/IopHw_Internal.h"
 #include "ps2/HwInternal.h"
 #include "ps2/pgif.h"
+#include "ConsoleLogger.h"
+#include <fmt/core.h>
+
+//Debug printf:
+#define REG_LOG 0
 
 //NOTES (TODO):
 /*
@@ -32,25 +37,6 @@ All the PS1 GPU info comes from psx-spx: http://problemkaputt.de/psx-spx.htm
 
 
 */
-
-//Debug printf:
-// Set to 1 to log PGIF HW IO
-#define LOG_REG 0
-
-#if LOG_REG
-	#define REG_LOG DevCon.WriteLn
-#else
-	#define REG_LOG(...) do {} while(0)
-#endif
-
-// Set to 1 to log PGPU DMA
-#define LOG_PGPU_DMA 0
-
-#if LOG_PGPU_DMA
-	#define PGPU_DMA_LOG DevCon.WriteLn
-#else
-	#define PGPU_DMA_LOG(...) do {} while(0)
-#endif
 
 //HW Registers:
 struct Regs_t
@@ -128,7 +114,7 @@ void ringBufPut(struct ringBuf_t* rb, u32* data)
 	else
 	{
 		// This should never happen. If it does, the code is bad somewhere.
-		Console.WriteLn("############################# PGIF FIFO overflow! sz= %X", rb->size);
+		pgifConLog("############################# PGIF FIFO overflow! sz= %X", rb->size);
 	}
 }
 
@@ -144,7 +130,7 @@ void ringBufGet(struct ringBuf_t* rb, u32* data)
 	else
 	{
 		// This should never happen. If it does, the code is bad somewhere.
-		Console.WriteLn("############################# PGIF FIFO underflow! sz= %X", rb->size);
+		pgifConLog("############################# PGIF FIFO underflow! sz= %X", rb->size);
 	}
 }
 
@@ -247,7 +233,7 @@ void pgifReset()
 void triggerPgifInt(int subCause)
 {
 	//For the PGIF on EE side.
-	//	Console.WriteLn("TRIGGERRING PGIF IRQ! %08X  %08X ", psHu32(INTC_STAT), psHu32(INTC_MASK));
+	//	pgifConLog("TRIGGERRING PGIF IRQ! %08X  %08X ", psHu32(INTC_STAT), psHu32(INTC_MASK));
 	//Left-overs from tests:
 	//iopCycleEE = -1; //0000;
 	//iopBreak = 0;
@@ -459,7 +445,7 @@ void cmdRingBufGet(u32* data)
 
 void datRingBufGet(u32* data)
 {
-	//if (pgifDatRbC.count >= (PGIF_DAT_RB_SIZE -1)) { Console.WriteLn( "PGIF DAT BUF FULL %08X ",  pgifDatRbC.count);
+	//if (pgifDatRbC.count >= (PGIF_DAT_RB_SIZE -1)) { pgifConLog( "PGIF DAT BUF FULL %08X ",  pgifDatRbC.count);
 	if (pgifDatRbC.count > 0)
 	{
 		ringBufGet(&pgifDatRbC, data);
@@ -481,7 +467,7 @@ void datRingBufGet(u32* data)
 
 void psxGPUw(int addr, u32 data)
 {
-	REG_LOG("PGPU write 0x%08X = 0x%08X", addr, data);
+	pgifConLog("PGPU write 0x%08X = 0x%08X", addr, data);
 	if (addr == HW_PS1_GPU_DATA)
 	{
 		//regs.pgpu.data = data; //just until it is certain that nothing uses the old value in the latch.
@@ -525,9 +511,10 @@ u32 psxGPUr(int addr)
 	{
 		data = getUpdPgpuStatReg();
 	}
+#if REG_LOG == 1
 	if (addr != HW_PS1_GPU_STATUS) //prints way too many times (pools)
-		REG_LOG("PGPU read  0x%08X = 0x%08X  EEpc= %08X ", addr, data, cpuRegs.pc);
-
+		pgifConLog("PGPU read  0x%08X = 0x%08X  EEpc= %08X ", addr, data, cpuRegs.pc);
+#endif
 	return data;
 }
 
@@ -535,9 +522,10 @@ u32 psxGPUr(int addr)
 // Write PGIF Hardware Registers.
 void PGIFw(int addr, u32 data)
 {
+#if REG_LOG == 1
 	if (((addr != PGIF_CTRL) || (addr != PGPU_STAT) || ((addr == PGIF_CTRL) && (getUpdPgifCtrlReg() != data))) && (addr != PGPU_STAT))
-		REG_LOG("PGIF write 0x%08X = 0x%08X  0x%08X  EEpc= %08X  IOPpc= %08X ", addr, data, getUpdPgifCtrlReg(), cpuRegs.pc, psxRegs.pc);
-
+		pgifConLog("PGIF write 0x%08X = 0x%08X  0x%08X  EEpc= %08X  IOPpc= %08X ", addr, data, getUpdPgifCtrlReg(), cpuRegs.pc, psxRegs.pc);
+#endif
 	switch (addr)
 	{
 		case PGPU_STAT:
@@ -561,12 +549,12 @@ void PGIFw(int addr, u32 data)
 			regs.pgif.pgif4 = data;
 			break;
 		case PGPU_CMD_FIFO:
-			Console.WriteLn("PGIF CMD FIFO write by EE (SHOULDN'T HAPPEN) 0x%08X = 0x%08X", addr, data);
+			pgifConLog("PGIF CMD FIFO write by EE (SHOULDN'T HAPPEN) 0x%08X = 0x%08X", addr, data);
 			break;
 		case PGPU_DAT_FIFO:
 			//regs.pgpu.data = data;
 			ringBufPut(&pgifDatRbC, &data);
-			// 	Console.WriteLn( "\n\r PGIF REVERSE !!! DATA write 0x%08X = 0x%08X  IF_CTRL= %08X   PGPU_STAT= %08X  CmdCnt 0x%X \n\r",  addr, data,  getUpdPgifCtrlReg(),  getUpdPgpuStatReg(), pgifCmdRbC.count);
+			// 	pgifConLog( "\n\r PGIF REVERSE !!! DATA write 0x%08X = 0x%08X  IF_CTRL= %08X   PGPU_STAT= %08X  CmdCnt 0x%X \n\r",  addr, data,  getUpdPgifCtrlReg(),  getUpdPgpuStatReg(), pgifCmdRbC.count);
 			drainPgpuDmaNrToIop();
 			break;
 		default:
@@ -610,11 +598,12 @@ u32 PGIFr(int addr)
 			DevCon.Warning("PGIF read from unknown location 0xx%", addr);
 			break;
 	}
+#if REG_LOG == 1
 	if (addr != PGPU_DAT_FIFO)
 		if ((addr != PGIF_CTRL) || (getUpdPgifCtrlReg() != data))
 			if (addr != PGPU_STAT)
-				REG_LOG("PGIF read %08X = %08X  GPU_ST %08X  IF_STAT %08X IOPpc %08X EEpc= %08X ", addr, data, getUpdPgpuStatReg(), getUpdPgifCtrlReg(), psxRegs.pc, cpuRegs.pc);
-
+				pgifConLog("PGIF read %08X = %08X  GPU_ST %08X  IF_STAT %08X IOPpc %08X EEpc= %08X ", addr, data, getUpdPgpuStatReg(), getUpdPgifCtrlReg(), psxRegs.pc, cpuRegs.pc);
+#endif
 	return data;
 }
 
@@ -624,7 +613,7 @@ void PGIFrQword(u32 addr, void* dat)
 
 	if (addr == PGPU_CMD_FIFO)
 	{ //shouldn't happen
-		Console.WriteLn("PGIF QW CMD read =ERR!");
+		pgifConLog("PGIF QW CMD read =ERR!");
 	}
 	else if (addr == PGPU_DAT_FIFO)
 	{
@@ -638,20 +627,23 @@ void PGIFrQword(u32 addr, void* dat)
 	}
 	else
 	{
-		Console.WriteLn("PGIF QWord Read from address %08X  ERR - shouldnt happen!", addr);
-		Console.WriteLn("Data = %08X %08X %08X %08X ", *(u32*)(data + 0), *(u32*)(data + 1), *(u32*)(data + 2), *(u32*)(data + 3));
+		pgifConLog("PGIF QWord Read from address %08X  ERR - shouldnt happen!", addr);
 	}
+#if REG_LOG == 1
+  if (addr != PGPU_DAT_FIFO)
+    pgifConLog("PGIF QW read  0x%08X = %08X %08X %08X %08X ", addr, *(u32 *)(data + 0), *(u32 *)(data + 1), *(u32 *)(data + 2), *(u32 *)(data + 3));
+#endif
 }
 
 void PGIFwQword(u32 addr, void* dat)
 {
 	u32* data = (u32*)dat;
 	DevCon.Warning("WARNING PGIF WRITE BY PS1DRV ! - NOT KNOWN TO EVER BE DONE!");
-	Console.WriteLn("PGIF QW write  0x%08X = 0x%08X %08X %08X %08X ", addr, *(u32*)(data + 0), *(u32*)(data + 1), *(u32*)(data + 2), *(u32*)(data + 3));
+	pgifConLog("PGIF QW write  0x%08X = 0x%08X %08X %08X %08X ", addr, *(u32*)(data + 0), *(u32*)(data + 1), *(u32*)(data + 2), *(u32*)(data + 3));
 
 	if (addr == PGPU_CMD_FIFO)
 	{ //shouldn't happen
-		Console.WriteLn("PGIF QW CMD write =ERR!");
+		pgifConLog("PGIF QW CMD write =ERR!");
 	}
 	else if (addr == PGPU_DAT_FIFO)
 	{
@@ -710,7 +702,7 @@ void drainPgpuDmaLl()
 	if ((dma.llDma.nextAddr == 0x000C8000) || (dma.llDma.nextAddr == 0x0) || (dma.llDma.nextAddr == 0x3))
 		dntPrt++;
 	//	if (dntPrt <5)
-	//Console.WriteLn( "dma.llDmaFILL nxtAdr %08X  trAddr %08X dma.llDma.totalWords %08X  dma.llDma.currentWord %08X  IF_CTRL= %08X ",  dma.llDma.nextAddr, dma.llDma.pgpuDmaTrAddr, dma.llDma.totalWords, dma.llDma.currentWord, getUpdPgifCtrlReg(),  cpuRegs.pc, psxRegs.pc);
+	//pgifConLog( "dma.llDmaFILL nxtAdr %08X  trAddr %08X dma.llDma.totalWords %08X  dma.llDma.currentWord %08X  IF_CTRL= %08X ",  dma.llDma.nextAddr, dma.llDma.pgpuDmaTrAddr, dma.llDma.totalWords, dma.llDma.currentWord, getUpdPgifCtrlReg(),  cpuRegs.pc, psxRegs.pc);
 
 	if (dma.llDma.currentWord >= dma.llDma.totalWords)
 	{ //Reached end of sequence, or the beginning of a new one
@@ -726,14 +718,14 @@ void drainPgpuDmaLl()
 			pgpuDmaChcr &= ~DMA_TRIGGER; //DMA is no longer active (in transfer)
 			pgpuDmaChcr &= ~DMA_START_BUSY; //Transfer completed => clear busy flag
 			pgpuDmaIntr(3);
-			PGPU_DMA_LOG("PGPU DMA LINKED LIST FINISHED ");
+			pgifConLog("PGPU DMA LINKED LIST FINISHED ");
 		}
 		else
 		{
 			data = iopMemRead32(dma.llDma.nextAddr);
-			//		Console.WriteLn( "PGPU LL DMA HDR= %08X  ", data);
+			//		pgifConLog( "PGPU LL DMA HDR= %08X  ", data);
 			//data = psxHu32(dma.llDma.nextAddr); //The (next) current header word.
-			//Console.WriteLn( "PGPU LL DMA data= %08X  ", data);
+			//pgifConLog( "PGPU LL DMA data= %08X  ", data);
 			pgpuDmaMadr = data; //Copy the header word in MADR.
 			//It is unknown whether the whole word should go here, but because this is a "Memory ADdress Register", leave only the address.
 			pgpuDmaMadr &= 0x00FFFFFF; // correct or not?
@@ -747,7 +739,7 @@ void drainPgpuDmaLl()
 	{
 		//if (dma.llDma.currentWord < dma.llDma.totalWords) {
 		data = iopMemRead32(dma.llDma.pgpuDmaTrAddr); //0; //psxHu32(dma.llDma.pgpuDmaTrAddr); //Get the word of the packet from IOP RAM.
-		//PGPU_DMA_LOG( "PGPU LL DMA data= %08X  addr %08X ", data, dma.llDma.pgpuDmaTrAddr);
+		//pgifConLog( "PGPU LL DMA data= %08X  addr %08X ", data, dma.llDma.pgpuDmaTrAddr);
 		ringBufPut(&pgifDatRbC, &data);
 		dma.llDma.pgpuDmaTrAddr += 4;
 		dma.llDma.currentWord++;
@@ -766,7 +758,7 @@ void drainPgpuDmaNrToGpu()
 	if (dma.normal.currentWord < dma.normal.totalWords)
 	{
 		data = iopMemRead32(dma.normal.addr); //Get the word of the packet from IOP RAM.
-		//	PGPU_DMA_LOG( "PGPU NRM DMA data= %08X  addr %08X ", data, dma.llDma.pgpuDmaTrAddr);
+		//	pgifConLog( "PGPU NRM DMA data= %08X  addr %08X ", data, dma.llDma.pgpuDmaTrAddr);
 
 		ringBufPut(&pgifDatRbC, &data);
 		dma.normal.addr += 4;
@@ -785,7 +777,7 @@ void drainPgpuDmaNrToGpu()
 		pgpuDmaChcr &= ~DMA_TRIGGER; //DMA is no longer active (in transfer)
 		pgpuDmaChcr &= ~DMA_START_BUSY; //Transfer completed => clear busy flag
 		pgpuDmaIntr(1);
-		PGPU_DMA_LOG("PGPU DMA Norm IOP->GPU FINISHED ");
+		pgifConLog("PGPU DMA Norm IOP->GPU FINISHED ");
 	}
 }
 
@@ -821,7 +813,7 @@ void drainPgpuDmaNrToIop()
 		pgpuDmaChcr &= ~DMA_TRIGGER; //DMA is no longer active (in transfer)
 		pgpuDmaChcr &= ~DMA_START_BUSY; //Transfer completed => clear busy flag
 		pgpuDmaIntr(2);
-		PGPU_DMA_LOG("PGPU DMA GPU->IOP FINISHED ");
+		pgifConLog("PGPU DMA GPU->IOP FINISHED ");
 	}
 
 	if (pgifDatRbC.count > 0)
@@ -835,11 +827,11 @@ void processPgpuDma()
 	if (!(pgpuDmaChcr & DMA_START_BUSY))
 		return; //not really neessary in this case.
 	pgpuDmaChcr |= DMA_TRIGGER; //DMA is active (in transfer)
-	PGPU_DMA_LOG("PGPU DMA EXEC CHCR %08X  BCR %08X  MADR %08X ", pgpuDmaChcr, pgpuDmaBcr, pgpuDmaMadr);
+	pgifConLog("PGPU DMA EXEC CHCR %08X  BCR %08X  MADR %08X ", pgpuDmaChcr, pgpuDmaBcr, pgpuDmaMadr);
 
 	if (pgpuDmaChcr & DMA_LINKED_LIST)
 	{
-		PGPU_DMA_LOG("PGPU DMA LINKED LIST WARNING!!! dir= %d ", (pgpuDmaChcr & 1)); //for (i=0;i<0x0FFFFFFF;i++) {}
+		pgifConLog("PGPU DMA LINKED LIST WARNING!!! dir= %d ", (pgpuDmaChcr & 1)); //for (i=0;i<0x0FFFFFFF;i++) {}
 
 		if (pgpuDmaChcr & DMA_DIR_FROM_RAM)
 		{ //Linked-list only supported on direction to GPU.
@@ -847,22 +839,22 @@ void processPgpuDma()
 			//for the very start, the address of the first word should come for the address, stored at MADR
 			dma.llDma.nextAddr = (pgpuDmaMadr & 0x1FFFFFFF); //The address in IOP RAM where to load the first header word from
 			//u32 data = iopMemRead32(dma.llDma.nextAddr);
-			//Console.WriteLn( "PGPU LL DMA data= %08X  ", data);
+			//pgifConLog( "PGPU LL DMA data= %08X  ", data);
 
 			dma.llDma.currentWord = 0; //current word
 			dma.llDma.totalWords = 0; //total number of words
-			PGPU_DMA_LOG("LL DMA FILL ");
+			pgifConLog("LL DMA FILL ");
 
 			fillFifoOnDrain(); //drainPgpuDmaLl(); //fill a single word in fifo now, because otherwise PS1DRV won't know that there is aything in it and it wouldn't know that a transfer is pending.
 			return;
 		}
 		else
 		{
-			Console.WriteLn("ERR: Linked list GPU DMA TO IOP!");
+			pgifConLog("ERR: Linked list GPU DMA TO IOP!");
 			return;
 		}
 	}
-	PGPU_DMA_LOG("WARNING! NORMAL DMA TO EE "); //for (i=0;i<0x1FFFFFFF;i++) {}
+	pgifConLog("WARNING! NORMAL DMA TO EE "); //for (i=0;i<0x1FFFFFFF;i++) {}
 	dma.normal.currentWord = 0;
 	dma.normal.addr = pgpuDmaMadr & 0x1FFFFFFF;
 	dma.normal.totalWords = ((pgpuDmaBcr & 0xFFFF) * ((pgpuDmaBcr >> 16) & 0xFFFF));
@@ -874,7 +866,7 @@ void processPgpuDma()
 	}
 	else
 	{
-		PGPU_DMA_LOG("                 NORMAL DMA TO IOP ");
+		pgifConLog("                 NORMAL DMA TO IOP ");
 		dma.state.toIopNormalActive = 1;
 		drainPgpuDmaNrToIop();
 	}
@@ -904,21 +896,21 @@ u32 psxDma2GpuR(u32 addr)
 			break;
 		case PGPU_DMA_TADR:
 			data = pgpuDmaTadr;
-			Console.Warning("PGPU DMA read TADR!");
+			pgifConLog("PGPU DMA read TADR!");
 			break;
 		default:
 			//Possible unaligned read?
-			Console.Warning("Unknown PGPU DMA read 0x%08X", addr);
+			pgifConLog("Unknown PGPU DMA read 0x%08X", addr);
 			break;
 	}
 	if (addr != PGPU_DMA_CHCR)
-		Console.WriteLn("PGPU DMA read  0x%08X = 0x%08X", addr, data);
+		pgifConLog("PGPU DMA read  0x%08X = 0x%08X", addr, data);
 	return data;
 }
 
 void psxDma2GpuW(u32 addr, u32 data)
 {
-	PGPU_DMA_LOG("PGPU DMA write 0x%08X = 0x%08X", addr, data);
+	pgifConLog("PGPU DMA write 0x%08X = 0x%08X", addr, data);
 	addr &= 0x1FFFFFFF;
 	switch (addr)
 	{
@@ -937,11 +929,11 @@ void psxDma2GpuW(u32 addr, u32 data)
 			break;
 		case PGPU_DMA_TADR:
 			pgpuDmaTadr = data;
-			Console.WriteLn("PGPU DMA write TADR! ");
+			pgifConLog("PGPU DMA write TADR! ");
 			break;
 		default:
 			//Possible unaligned Write?
-			Console.Warning("Unknown PGPU DMA write 0x%08X = 0x%08X", addr, data);
+			pgifConLog("Unknown PGPU DMA write 0x%08X = 0x%08X", addr, data);
 			break;
 	}
 }
@@ -957,21 +949,21 @@ void psxDma2GpuW(u32 addr, u32 data)
 //BIOS POST
 void ps12PostOut(u32 mem, u8 value)
 {
-	Console.WriteLn("XXXXXXXXXXXXXXXXXXXXXXX PS12 POST = %02X ", value);
+	pgifConLog("XXXXXXXXXXXXXXXXXXXXXXX PS12 POST = %02X ", value);
 	//iopMemWrite32(0x0000B9B0, 1); //a bit of high-level emulation to enable DUART TTY in PS1 kernel...which doesn't work
 }
 
 
 void psDuartW(u32 mem, u8 value)
 {
-	Console.WriteLn("XXXXXXXXXXXXXXXXXXXXXXX DUART reg %08X = %02X >%c<", mem, value, value);
+	pgifConLog("XXXXXXXXXXXXXXXXXXXXXXX DUART reg %08X = %02X >%c<", mem, value, value);
 	if ((mem & 0x1FFFFFFF) == 0x1F802023)
 	{
-		Console.WriteLn("XXXXXXXXXXXXXXXXXXXXXXX DUART A = %02X >%c<", value, value);
+		pgifConLog("XXXXXXXXXXXXXXXXXXXXXXX DUART A = %02X >%c<", value, value);
 	}
 	else if ((mem & 0x1FFFFFFF) == 0x1F80202B)
 	{
-		Console.WriteLn("XXXXXXXXXXXXXXXXXXXXXXX DUART B = %02X >%c<", value, value);
+		pgifConLog("XXXXXXXXXXXXXXXXXXXXXXX DUART B = %02X >%c<", value, value);
 	}
 }
 
@@ -990,7 +982,7 @@ u32 getIntTmrKReg(u32 mem, u32 data)
 	u32 outd = data;
 	if (regs.pgif.ctrl != 0)
 	{
-		Console.WriteLn("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
+		pgifConLog("XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX");
 		//outd = 0;
 		outd = 0x7FFFFFFF;
 	}
@@ -1002,7 +994,7 @@ void HPCoS_print(u32 mem, u32 data)
 	int i;
 	if ((mem & 0x1FFFFFFF) == 0x1103A0)
 	{
-		//Console.WriteLn("HPCoS BufPnt = %08X ", data);
+		//pgifConLog("HPCoS BufPnt = %08X ", data);
 		char str[201];
 		//if (data == 0) {
 		for (i = 0; i < 200; i++)
@@ -1012,10 +1004,10 @@ void HPCoS_print(u32 mem, u32 data)
 				break;
 		}
 		str[i] = 0;
-		//	Console.WriteLn(" FFFFFFFFFFFFFFFFFFFFFFFFFFFF  >%s<  ", str);
+		//	pgifConLog(" FFFFFFFFFFFFFFFFFFFFFFFFFFFF  >%s<  ", str);
 		//}
 	} //else if ((mem & 0x1FFFFFFF) == 0x117328) {
-	//	Console.WriteLn("HPCoS BufAdr = %08X  >%c<", data, data);
+	//	pgifConLog("HPCoS BufAdr = %08X  >%c<", data, data);
 
 	//}
 }
@@ -1029,7 +1021,7 @@ void anyIopLS(u32 addr, u32 data, int Wr)
 //#define nrRuns 0xFFFFFF
 #define nrRuns 0xFFFFFFF
 	//if ((startPrntPc > nrRuns) && (startPrntPc < (nrRuns + 2000)))
-	//	Console.WriteLn( "MEM %d  0x%08X = 0x%08X IOPpc= %08X ",  Wr, addr, data, psxRegs.pc);
+	//	pgifConLog( "MEM %d  0x%08X = 0x%08X IOPpc= %08X ",  Wr, addr, data, psxRegs.pc);
 	//else
 	if (startPrntPc <= (nrRuns + 2000))
 		startPrntPc++;
@@ -1045,7 +1037,7 @@ void dma6_OTClear()
 	//u32 blkCnt = (psxHu(0x1f8010e4) >> 16) & 0xFFFF;
 	u32 addrPnt = madr;
 	u32 pntCnt = 0;
-	Console.WriteLn("DMA6 OT clr madr %08X  bcr %08X  chcr %08X", psxHu(0x1f8010e0), psxHu(0x1f8010e4), psxHu(0x1f8010e8));
+	pgifConLog("DMA6 OT clr madr %08X  bcr %08X  chcr %08X", psxHu(0x1f8010e0), psxHu(0x1f8010e4), psxHu(0x1f8010e8));
 
 	while (pntCnt < blkSz)
 	{ //Very unoptimized...

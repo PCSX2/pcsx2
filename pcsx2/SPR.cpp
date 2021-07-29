@@ -313,12 +313,13 @@ void SPRFROMinterrupt()
 					spr0ch.madr = dmacRegs.rbor.ADDR + (spr0ch.madr & dmacRegs.rbsr.RMSK);
 					//Console.WriteLn("mfifoGIFtransfer %x madr %x, tadr %x", gif->chcr._u32, gif->madr, gif->tadr);
 					hwMFIFOResume(mfifotransferred);
-					mfifotransferred = 0;
 					break;
 				}
 				default:
 					break;
 			}
+
+			mfifotransferred = 0;
 		}
 
 		return;

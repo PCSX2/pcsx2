@@ -31,18 +31,12 @@ using namespace Threading;
 
 MutexRecursive mtx_SPU2Status;
 
-#include "svnrev.h"
-
-#ifdef _MSC_VER
-#define snprintf sprintf_s
-#endif
 int SampleRate = 48000;
 
 static bool IsOpened = false;
 static bool IsInitialized = false;
 
 u32 lClocks = 0;
-//static bool cpu_detected = false;
 
 void SPU2configure()
 {
@@ -55,12 +49,6 @@ void SPU2configure()
 //  DMA 4/7 Callbacks from Core Emulator
 // --------------------------------------------------------------------------------------
 
-u16* DMABaseAddr;
-
-void SPU2setDMABaseAddr(uptr baseaddr)
-{
-	DMABaseAddr = (u16*)baseaddr;
-}
 
 void SPU2setSettingsDir(const char* dir)
 {
@@ -339,7 +327,6 @@ s32 SPU2open(void* pDsp)
 		SPU2close();
 		return -1;
 	}
-	SPU2setDMABaseAddr((uptr)iopMem->Main);
 	return 0;
 }
 

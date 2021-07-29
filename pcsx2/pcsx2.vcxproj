@@ -340,7 +340,6 @@
     <ClCompile Include="SPU2\RegLog.cpp" />
     <ClCompile Include="SPU2\SndOut_Portaudio.cpp" />
     <ClCompile Include="SPU2\wavedump_wav.cpp" />
-    <ClCompile Include="SPU2\Lowpass.cpp" />
     <ClCompile Include="SPU2\SndOut.cpp" />
     <ClCompile Include="SPU2\Timestretcher.cpp" />
     <ClCompile Include="SPU2\Windows\SndOut_waveOut.cpp" />
@@ -775,7 +774,6 @@
     <ClInclude Include="SPU2\Config.h" />
     <ClInclude Include="SPU2\Global.h" />
     <ClInclude Include="SPU2\interpolate_table.h" />
-    <ClInclude Include="SPU2\Lowpass.h" />
     <ClInclude Include="SPU2\SndOut.h" />
     <ClInclude Include="SPU2\spdif.h" />
     <ClInclude Include="SPU2\defs.h" />

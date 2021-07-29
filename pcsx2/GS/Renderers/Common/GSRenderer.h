@@ -34,13 +34,13 @@ class GSRenderer : public GSState
 protected:
 	int m_dithering;
 	int m_interlace;
-	int m_aspectratio;
 	int m_vsync;
 	bool m_aa1;
 	bool m_shaderfx;
 	bool m_fxaa;
 	bool m_shadeboost;
 	bool m_texture_shuffle;
+	bool m_fmv_switch;
 	GSVector2i m_real_size;
 
 	virtual GSTexture* GetOutput(int i, int& y_offset) = 0;
@@ -63,13 +63,17 @@ public:
 	virtual int GetUpscaleMultiplier() { return 1; }
 	virtual GSVector2i GetCustomResolution() { return GSVector2i(0, 0); }
 	GSVector2i GetInternalResolution();
-	void SetAspectRatio(int aspect) { m_aspectratio = aspect; }
 	void SetVSync(int vsync);
+
+	__fi bool GetFMVSwitch() const { return m_fmv_switch; }
+	__fi void SetFMVSwitch(bool enabled) { m_fmv_switch = enabled; }
 
 	virtual bool BeginCapture(std::string& filename);
 	virtual void EndCapture();
 
 	void PurgePool();
+
+	GSVector4i ComputeDrawRectangle(int width, int height) const;
 
 public:
 	std::mutex m_pGSsetTitle_Crit;

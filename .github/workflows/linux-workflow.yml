@@ -70,12 +70,12 @@ jobs:
           - os: ubuntu-18.04
             platform: x86
             compiler: gcc
-            detail: appimage
+            appimage: true
             experimental: false
           - os: ubuntu-18.04
             platform: x64
             compiler: gcc
-            detail: appimage
+            appimage: true
             experimental: false
           - os: ubuntu-18.04
             platform: x86
@@ -83,22 +83,22 @@ jobs:
             # Need to disable PCH until cmake 3.17
             # (PCH conflicts with ccache, fixed by https://gitlab.kitware.com/cmake/cmake/-/merge_requests/4400)
             cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
-            detail: -nopch
+            detail: " nopch"
             experimental: false
           - os: ubuntu-18.04
             platform: x86
             compiler: gcc
             cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
-            detail: -nopch
+            detail: " nopch"
             experimental: false
           - os: ubuntu-18.04
             platform: x86
             compiler: gcc
             cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON -DARCH_FLAG=-march=haswell
-            detail: -avx2-nopch
+            detail: " avx2 nopch"
             experimental: false
 
-    name: "${{ matrix.platform }} | ${{ matrix.compiler }} ${{ matrix.detail }}"
+    name: ${{ matrix.platform }} | ${{ matrix.compiler }}${{ matrix.detail }}
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
@@ -132,8 +132,8 @@ jobs:
         uses: actions/cache@v2.1.6
         with:
           path: .ccache
-          key: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}${{ matrix.detail }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
-          restore-keys: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}${{ matrix.detail }}-ccache-
+          key: ${{ matrix.os }} ${{ matrix.platform }} ${{ matrix.compiler }}${{ matrix.detail }} ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: ${{ matrix.os }} ${{ matrix.platform }} ${{ matrix.compiler }}${{ matrix.detail }} ccache
 
       - name: Prepare Artifact Metadata
         id: artifact-metadata
@@ -184,11 +184,11 @@ jobs:
           COMPILER: ${{ matrix.compiler }}
           name: ${{ steps.artifact-metadata.outputs.name }}
         run: .github/workflows/scripts/linux/appimage.sh
-        if: ${{ matrix.detail  == 'appimage' }}
+        if: ${{ matrix.appimage }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         with:
           name: ${{ steps.artifact-metadata.outputs.name }}
           path: artifacts
-        if: ${{ matrix.detail  == 'appimage' }}
+        if: ${{ matrix.appimage }}
