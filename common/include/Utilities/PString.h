@@ -27,6 +27,11 @@ public:
 		string = std::string(str.utf8_str(), str.size());
 	}
 
+	PString(const std::string& str)
+	{
+		string = str;
+	}
+
 	#ifdef _WIN32
 	PString(const std::wstring& wString);
 	operator std::wstring();
@@ -126,6 +131,6 @@ public:
 	friend std::ostream& operator<<(std::ostream & os, const PString& str);
 	friend std::istream& operator>>(std::istream& is, PString& str);
 	friend std::istream& getline(std::istream& is, PString& s, char delim);
-	~PString();
+	~PString() = default;
 };
 

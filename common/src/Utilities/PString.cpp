@@ -18,16 +18,16 @@ PString::PString(const std::wstring& utf16_string)
 {
 	const int size = WideCharToMultiByte(CP_UTF8, 0, utf16_string.c_str(), utf16_string.size(), nullptr, 0, nullptr, nullptr);
 	std::string converted_string(size, 0);
-	WideCharToMultiByte(CP_UTF8, 0, utf16_string.c_str(), utf16_string.size(), converted_string.data(), converted_string.size(), nullptr, nullptr);
+	WideCharToMultiByte(CP_UTF8, 0, utf16_string.c_str(), utf16_string.size(), converted_string.data(), size, nullptr, nullptr);
 	string = converted_string;
 }
 
 PString::operator std::wstring()
 {
 	const int size = MultiByteToWideChar(CP_UTF8, 0, string.c_str(), string.size(), nullptr, 0);
-	std::vector<wchar_t> converted_string(size);
-	MultiByteToWideChar(CP_UTF8, 0, string.c_str(), string.size(), converted_string.data(), converted_string.size());
-	return converted_string.data();
+	std::wstring converted_string(size, 0);
+	MultiByteToWideChar(CP_UTF8, 0, string.c_str(), string.size(), converted_string.data(), size);
+	return converted_string;
 }
 #endif
 
