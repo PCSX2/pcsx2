@@ -25,9 +25,6 @@ GSDevice11::GSDevice11()
 {
 	memset(&m_state, 0, sizeof(m_state));
 
-	FXAA_Compiled = false;
-	ExShader_Compiled = false;
-
 	m_state.topology = D3D11_PRIMITIVE_TOPOLOGY_UNDEFINED;
 	m_state.bf = -1;
 
@@ -903,10 +900,16 @@ void GSDevice11::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool 
 	StretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[shader], m_interlace.cb, linear);
 }
 
-//Included an init function for this also. Just to be safe.
-void GSDevice11::InitExternalFX()
+void GSDevice11::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 {
-	if (!ExShader_Compiled)
+	GSVector2i s = dTex->GetSize();
+
+	GSVector4 sRect(0, 0, 1, 1);
+	GSVector4 dRect(0, 0, s.x, s.y);
+
+	ExternalFXConstantBuffer cb;
+
+	if (m_shaderfx.ps == nullptr)
 	{
 		try
 		{
@@ -920,37 +923,23 @@ void GSDevice11::InitExternalFX()
 
 			std::string shader_name(theApp.GetConfigS("shaderfx_glsl"));
 			std::ifstream fshader(shader_name);
-			if (fshader.good())
-			{
-				shader << fshader.rdbuf();
-				const std::string& s = shader.str();
-				std::vector<char> buff(s.begin(), s.end());
-				ShaderMacro sm(m_shader.model);
-				CreateShader(buff, shader_name.c_str(), D3D_COMPILE_STANDARD_FILE_INCLUDE, "ps_main", sm.GetPtr(), &m_shaderfx.ps);
-			}
-			else
+			if (!fshader.good())
 			{
 				fprintf(stderr, "GS: External shader '%s' not loaded and will be disabled!\n", shader_name.c_str());
+				return;
 			}
+
+			shader << fshader.rdbuf();
+			const std::string& s = shader.str();
+			std::vector<char> buff(s.begin(), s.end());
+			ShaderMacro sm(m_shader.model);
+			CreateShader(buff, shader_name.c_str(), D3D_COMPILE_STANDARD_FILE_INCLUDE, "ps_main", sm.GetPtr(), &m_shaderfx.ps);
 		}
 		catch (GSRecoverableError)
 		{
-			printf("GS: failed to compile external post-processing shader. \n");
+			printf("GS: Failed to compile external post-processing shader.\n");
 		}
-		ExShader_Compiled = true;
 	}
-}
-
-void GSDevice11::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
-{
-	GSVector2i s = dTex->GetSize();
-
-	GSVector4 sRect(0, 0, 1, 1);
-	GSVector4 dRect(0, 0, s.x, s.y);
-
-	ExternalFXConstantBuffer cb;
-
-	InitExternalFX();
 
 	cb.xyFrame = GSVector2((float)s.x, (float)s.y);
 	cb.rcpFrame = GSVector4(1.0f / (float)s.x, 1.0f / (float)s.y, 0.0f, 0.0f);
@@ -959,27 +948,6 @@ void GSDevice11::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 	m_ctx->UpdateSubresource(m_shaderfx.cb, 0, NULL, &cb, 0, 0);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_shaderfx.ps, m_shaderfx.cb, true);
-}
-
-// This shouldn't be necessary, we have some bug corrupting memory
-// and for some reason isolating this code makes the subcomponent not crash
-void GSDevice11::InitFXAA()
-{
-	if (!FXAA_Compiled)
-	{
-		try
-		{
-			std::vector<char> shader;
-			theApp.LoadResource(IDR_FXAA_FX, shader);
-			ShaderMacro sm(m_shader.model);
-			CreateShader(shader, "fxaa.fx", nullptr, "ps_main", sm.GetPtr(), &m_fxaa.ps);
-		}
-		catch (GSRecoverableError)
-		{
-			printf("GS: failed to compile fxaa shader.\n");
-		}
-		FXAA_Compiled = true;
-	}
 }
 
 void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
@@ -991,7 +959,20 @@ void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 
 	FXAAConstantBuffer cb;
 
-	InitFXAA();
+	if (m_fxaa.ps == nullptr)
+	{
+		try
+		{
+			std::vector<char> shader;
+			theApp.LoadResource(IDR_FXAA_FX, shader);
+			ShaderMacro sm(m_shader.model);
+			CreateShader(shader, "fxaa.fx", nullptr, "ps_main", sm.GetPtr(), &m_fxaa.ps);
+		}
+		catch (GSRecoverableError)
+		{
+			printf("GS: Failed to compile fxaa shader.\n");
+		}
+	}
 
 	cb.rcpFrame = GSVector4(1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
 	cb.rcpFrameOpt = GSVector4::zero();
