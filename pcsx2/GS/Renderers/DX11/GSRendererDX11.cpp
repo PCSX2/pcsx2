@@ -508,6 +508,7 @@ void GSRendererDX11::EmulateBlending()
 			// cannot output anything over 0x80 (== 1.0) blending with 0x80 or turning it off gives the same result
 
 			m_om_bsel.abe = 0;
+			m_om_bsel.blend_index = 0;
 		}
 		if (sw_blending)
 		{
@@ -545,6 +546,7 @@ void GSRendererDX11::EmulateBlending()
 		{
 			// Disable HW blending
 			m_om_bsel.abe = 0;
+			m_om_bsel.blend_index = 0;
 
 			// Only BLEND_NO_REC should hit this code path for now
 			ASSERT(blend_non_recursive);
