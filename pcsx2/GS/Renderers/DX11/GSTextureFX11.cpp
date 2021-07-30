@@ -346,11 +346,10 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uin
 
 		memset(&bd, 0, sizeof(bd));
 
-		bd.RenderTarget[0].BlendEnable = bsel.abe;
-
 		if (bsel.abe)
 		{
-			HWBlend blend = GetBlend(bsel.blend_index);
+			const HWBlend blend = GetBlend(bsel.blend_index);
+			bd.RenderTarget[0].BlendEnable = TRUE;
 			bd.RenderTarget[0].BlendOp = (D3D11_BLEND_OP)blend.op;
 			bd.RenderTarget[0].SrcBlend = (D3D11_BLEND)blend.src;
 			bd.RenderTarget[0].DestBlend = (D3D11_BLEND)blend.dst;
