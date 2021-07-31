@@ -611,6 +611,21 @@ namespace R3000A
 			return 0;
 		}
 
+		int remove_HLE()
+		{
+			const std::string full_path = clean_path(Ra0);
+
+			if (is_host(full_path))
+			{
+				const std::string path = full_path.substr(full_path.find(':') + 1);
+				ghc::filesystem::path file_path{host_path(path)};
+				bool suceeds = ghc::filesystem::remove(file_path);
+				v0 = suceeds ? 0 : -IOP_EIO;
+				pc = ra;
+			}
+			return 0;
+		}
+
 		int mkdir_HLE()
 		{
 			const std::string full_path = clean_path(Ra0);
@@ -924,6 +939,7 @@ namespace R3000A
 			EXPORT_H(  6, read)
 			EXPORT_H(  7, write)
 			EXPORT_H(  8, lseek)
+			EXPORT_H( 10, remove)
 			EXPORT_H( 11, mkdir)
 			EXPORT_H( 12, rmdir)
 			EXPORT_H( 13, dopen)
