@@ -90,7 +90,7 @@ namespace R3000A
 	static std::string host_path(const std::string path)
 	{
 		ghc::filesystem::path hostRootPath{hostRoot};
-		ghc::filesystem::path currentPath{path};
+		const ghc::filesystem::path currentPath{path};
 
 		// We are NOT allowing to use the root of the host unit.
 		// For now it just supports relative folders from the location of the elf
@@ -113,7 +113,7 @@ namespace R3000A
 	static int host_stat(const std::string path, fio_stat_t* host_stats)
 	{
 		struct stat file_stats;
-		ghc::filesystem::path file_path{host_path(path)};
+		const ghc::filesystem::path file_path{host_path(path)};
 
 		if (::stat(file_path.string().c_str(), &file_stats))
 			return -IOP_ENOENT;
@@ -204,7 +204,7 @@ namespace R3000A
 		static int open(IOManFile** file, const std::string& full_path, s32 flags, u16 mode)
 		{
 			const std::string path = full_path.substr(full_path.find(':') + 1);
-			ghc::filesystem::path file_path{host_path(path)};
+			const ghc::filesystem::path file_path{host_path(path)};
 			int native_flags = O_BINARY; // necessary in Windows.
 
 			switch (flags & IOP_O_RDWR)
@@ -618,9 +618,9 @@ namespace R3000A
 			if (is_host(full_path))
 			{
 				const std::string path = full_path.substr(full_path.find(':') + 1);
-				ghc::filesystem::path file_path{host_path(path)};
-				bool suceeds = ghc::filesystem::remove(file_path);
-				v0 = suceeds ? 0 : -IOP_EIO;
+				const ghc::filesystem::path file_path{host_path(path)};
+				const bool succeeded = ghc::filesystem::remove(file_path);
+				v0 = succeeded ? 0 : -IOP_EIO;
 				pc = ra;
 			}
 			return 0;
@@ -633,9 +633,9 @@ namespace R3000A
 			if (is_host(full_path))
 			{
 				const std::string path = full_path.substr(full_path.find(':') + 1);
-				ghc::filesystem::path folder_path{host_path(path)};
-				bool suceeds = ghc::filesystem::create_directory(folder_path);
-				v0 = suceeds ? 0 : -IOP_EIO;
+				const ghc::filesystem::path folder_path{host_path(path)};
+				const bool succeeded = ghc::filesystem::create_directory(folder_path);
+				v0 = succeeded ? 0 : -IOP_EIO;
 				pc = ra;
 				return 1;
 			}
@@ -672,9 +672,9 @@ namespace R3000A
 			if (is_host(full_path))
 			{
 				const std::string path = full_path.substr(full_path.find(':') + 1);
-				ghc::filesystem::path folder_path{host_path(path)};
-				bool suceeds = ghc::filesystem::remove(folder_path);
-				v0 = suceeds ? 0 : -IOP_EIO;
+				const ghc::filesystem::path folder_path{host_path(path)};
+				const bool succeeded = ghc::filesystem::remove(folder_path);
+				v0 = succeeded ? 0 : -IOP_EIO;
 				pc = ra;
 				return 1;
 			}
