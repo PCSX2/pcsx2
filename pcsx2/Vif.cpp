@@ -265,9 +265,12 @@ __fi void vif1STAT(u32 value)
 		//then proceeds to reverse the dma before we have even done it ourselves. So lets just make sure VIF is ready :)
 		if (vif1ch.qwc > 0 || isStalled == false)
 		{
-			vif1ch.qwc = 0;
-			hwDmacIrq(DMAC_VIF1);
-			vif1ch.chcr.STR = false;
+			if (vif1ch.chcr.STR)
+			{
+				vif1ch.qwc = 0;
+				hwDmacIrq(DMAC_VIF1);
+				vif1ch.chcr.STR = false;
+			}
 			cpuRegs.interrupt &= ~((1 << DMAC_VIF1) | (1 << DMAC_MFIFO_VIF));
 		}
 		//This is actually more important for our handling, else the DMA for reverse fifo doesnt start properly.
