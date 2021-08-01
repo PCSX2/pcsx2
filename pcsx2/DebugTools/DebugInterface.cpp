@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -375,13 +375,13 @@ DebugInterface::RegisterType R5900DebugInterface::getRegisterType(int cat)
 	{
 	case EECAT_GPR:
 	case EECAT_CP0:
-	case EECAT_VU0F:
 	case EECAT_VU0I:
 	case EECAT_FCR:
 	case EECAT_GSPRIV:
 	default:
 		return NORMAL;
 	case EECAT_FPR:
+	case EECAT_VU0F:
 		return SPECIAL;
 	}
 }
@@ -485,18 +485,19 @@ wxString R5900DebugInterface::getRegisterString(int cat, int num)
 {
 	switch (cat)
 	{
-	case EECAT_GPR:
-	case EECAT_CP0:
-	case EECAT_FCR:
-		return getRegister(cat,num).ToString();
-	case EECAT_FPR:
+		case EECAT_GPR:
+		case EECAT_CP0:
+		case EECAT_FCR:
+		case EECAT_VU0F:
+			return getRegister(cat, num).ToString();
+		case EECAT_FPR:
 		{
 			char str[64];
 			sprintf(str,"%f",fpuRegs.fpr[num].f);
 			return wxString(str,wxConvUTF8);
 		}
-	default:
-		return L"";
+		default:
+			return L"";
 	}
 }
 
