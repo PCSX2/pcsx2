@@ -146,8 +146,7 @@ int main(int argc, char* argv[])
 	if( (dest=fopen( Dummy, "wb+" )) == NULL )
 	{
 		printf( "ERROR : I can't open destination file   %s\n", Dummy );
-		(void)fcloseall();
-		return 0L;
+		return 1;
 	}
 
 	// ----------------------------------------------------------------------------
@@ -195,7 +194,6 @@ int main(int argc, char* argv[])
 	if( ferror( dest ) )
 	{
 		printf( "ERROR writing on target file:  %s\n", Dummy );
-		(void)fcloseall();
 		return 20L;
 	}
 
@@ -218,8 +216,6 @@ int main(int argc, char* argv[])
 	while( ! feof( source ) );
 
 	fprintf(dest,"};\n");
-
-	fcloseall();
 
 	return 0;
 }
