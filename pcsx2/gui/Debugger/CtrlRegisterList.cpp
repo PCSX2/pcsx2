@@ -100,7 +100,7 @@ wxSize CtrlRegisterList::getOptimalSize() const
 		int bits = std::min<u32>(maxBits, cpu->getRegisterSize(i));
 
 		// Workaround for displaying VU0F registers as floats
-		if (i == EECAT_VU0F && displayVU0FAsFloat)
+		if (i == EECAT_VU0F && displayVU0FAsFloat && category == EECAT_VU0F)
 			bits = 128;
 
 		const int start = startPositions[i];
@@ -253,24 +253,8 @@ void CtrlRegisterList::OnDraw(wxDC& dc)
 	startRow = std::max<int>(0, startRow - 1);
 	endRow = std::min<int>(cpu->getRegisterCount(category) - 1, endRow - 1);
 
-	// Add a title to help identify registers W Z Y X
-	if (category == EECAT_VU0F)
-	{
-		const int piece = width / 5; // 4 registers + space for register name
-
-		const wxString titles[4] = {"W", "Z", "Y", "X"};
-		const int titleAmt = abs((maxBits / 32) - 4);
-
-		for (int iter = 4; iter > titleAmt; iter--)
-		{
-			dc.SetBrush(wxBrush(wxColor(0xFFFFEFE8)));
-			dc.SetPen(wxPen(wxColor(0xFF000000)));
-
-			dc.DrawRectangle((piece * iter) + 3, rowHeight, piece, rowHeight);
-			dc.DrawText(titles[iter - 1], (piece * iter) + piece / 2, rowHeight + 2);
-		}
-	}
-
+	const wxString vu0fTitles[5] = {"W", "Z", "Y", "X"};
+	int vu0fTitleCur = abs(maxBits / 32 - 4);
 	const int nameStart = 17;
 	const int valueStart = startPositions[category];
 
@@ -322,8 +306,19 @@ void CtrlRegisterList::OnDraw(wxDC& dc)
 						const u128 val = cpu->getRegister(category, i);
 						// Use std::bit_cast in C++20. The below is technically UB
 						sprintf(str, "%7.2f %7.2f %7.2f %7.2f", *(float*)&val._u32[3], *(float*)&val._u32[2], *(float*)&val._u32[1], *(float*)&val._u32[0]);
-
 						dc.DrawText(wxString(str), x, y + 2);
+
+						// Only draw the VU0f titles when we are drawing the first row
+						if (i == startRow)
+						{
+							for (int j = 0; j < 4; j++)
+							{
+								dc.SetTextForeground(colorNormal);
+								dc.DrawText(vu0fTitles[j], x + charWidth * 4, rowHeight + 2);
+								x += charWidth * 8 + 2;
+							}
+						}
+
 						break;
 					}
 				}
@@ -367,16 +362,24 @@ void CtrlRegisterList::OnDraw(wxDC& dc)
 								}
 							}
 
-							for (int i = startIndex; i >= 0; i--)
+							for (int j = startIndex; j >= 0; j--)
 							{
-								if (changed.changed[i])
+								if (changed.changed[j])
 									dc.SetTextForeground(colorChanged);
 								else
 									dc.SetTextForeground(colorUnchanged);
 
-								drawU32Text(dc, value._u32[i], x, y + 2);
+								drawU32Text(dc, value._u32[j], x, y + 2);
+
+								// Only draw the VU0f titles when we are drawing the first row and are on the VU0f category
+								if (category == EECAT_VU0F && i == startRow)
+								{
+									dc.SetTextForeground(colorNormal);
+									dc.DrawText(vu0fTitles[vu0fTitleCur++], x + charWidth * 4, rowHeight + 2);
+								}
 								x += charWidth * 8 + 2;
 							}
+
 							break;
 						}
 						case 64:
@@ -387,16 +390,17 @@ void CtrlRegisterList::OnDraw(wxDC& dc)
 								dc.DrawText(L"+", x - charWidth, y + 2);
 							}
 
-							for (int i = 1; i >= 0; i--)
+							for (int j = 1; j >= 0; j--)
 							{
-								if (changed.changed[i])
+								if (changed.changed[j])
 									dc.SetTextForeground(colorChanged);
 								else
 									dc.SetTextForeground(colorUnchanged);
 
-								drawU32Text(dc, value._u32[i], x, y + 2);
+								drawU32Text(dc, value._u32[j], x, y + 2);
 								x += charWidth * 8 + 2;
 							}
+
 							break;
 						}
 						case 32:
@@ -574,7 +578,8 @@ void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 	{
 		if (y >= rowHeight)
 		{
-			const int row = (y - rowHeight) / rowHeight;
+			// The ternary here is due to the fact that VU0f has an extra row for the w z y x title
+			const int row = (y - rowHeight * (category == EECAT_VU0F ? 2 : 1)) / rowHeight;
 			if (row != currentRows[category] && row < cpu->getRegisterCount(category))
 				setCurrentRow(row);
 		}
@@ -640,12 +645,19 @@ void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 			if (cat != category)
 			{
 				category = cat;
+
+				// Requires the next two lines to check if we are rendering the vu0f category
+				// and if we need to make the window sized for 128 bits because we are displaying as float
+				SetInitialSize(ClientToWindowSize(GetMinClientSize()));
+				postEvent(debEVT_UPDATELAYOUT, 0);
+
 				Refresh();
 			}
 		}
 		else
 		{
-			const int row = (y - (rowHeight * 2)) / rowHeight;
+			// The ternary here is due to the fact that VU0f has an extra row for the w z y x title
+			const int row = (y - rowHeight * (category == EECAT_VU0F ? 2 : 1)) / rowHeight;
 			if (row != currentRows[category] && row < cpu->getRegisterCount(category))
 				setCurrentRow(row);
 		}
