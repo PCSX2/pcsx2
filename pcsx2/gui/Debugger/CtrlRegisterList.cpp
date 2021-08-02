@@ -67,7 +67,7 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 		int maxLen = 0;
 		for (int k = 0; k < cpu->getRegisterCount(i); k++)
 		{
-			maxLen = std::max<int>(maxLen, strlen(cpu->getRegisterName(i, k)));
+			maxLen = std::max<int>(maxLen, strlen(cpu->getRegisterName(i, k))); /* Flawfinder: ignore */
 		}
 
 		const int x = 17 + (maxLen + 2) * charWidth;
@@ -244,7 +244,7 @@ void CtrlRegisterList::OnDraw(wxDC& dc)
 			dc.DrawRectangle(x, 0, piece + 1, rowHeight);
 
 			// center text
-			x += (piece - strlen(name) * charWidth) / 2;
+			x += (piece - strlen(name) * charWidth) / 2; /* Flawfinder: ignore */
 			dc.DrawText(wxString(name, wxConvUTF8), x, 2);
 		}
 	}
