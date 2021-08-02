@@ -1001,8 +1001,10 @@ protected:
 		symbolMap.Clear();
 		CBreakPoints::SetSkipFirst(BREAKPOINT_EE, 0);
 		CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, 0);
-
-		CDVDsys_SetFile(CDVD_SourceType::Iso, g_Conf->CurrentIso );
+		// This function below gets called again from AppCoreThread.cpp and will pass the current ISO regardless if we
+		// are starting an ELF. In terms of symbol loading this doesn't matter because AppCoreThread.cpp doesn't clear the symbol map
+		// and we _only_ read symbols if the map is empty
+		CDVDsys_SetFile(CDVD_SourceType::Iso, m_UseELFOverride ? m_elf_override : g_Conf->CurrentIso );
 		if( m_UseCDVDsrc )
 			CDVDsys_ChangeSource( m_cdvdsrc_type );
 		else if( CDVD == NULL )
