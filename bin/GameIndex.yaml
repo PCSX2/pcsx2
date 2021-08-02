@@ -132,7 +132,7 @@ PCPX-98017:
   name: "Ratchet & Clank 4th - GiriGiri Ginga no Giga Battle [Demo]"
   region: "NTSC-J"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCAJ-10001:
   name: "Makai Senki Disgaea"
   region: "NTSC-Unk"
@@ -1254,7 +1254,7 @@ SCED-51075:
   name: "Ratchet & Clank [Regular Demo]"
   region: "PAL-M5"
   gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
+    - VUKickstartHack # Fixes Character SPS.
 SCED-51147:
   name: "Official PlayStation 2 Magazine Demo 24"
   region: "PAL-M5"
