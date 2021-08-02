@@ -1098,7 +1098,7 @@ SCED-50907:
   region: "PAL-Unk"
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
- SCED-50945:
+SCED-50945:
   name: "Official PlayStation 2 Magazine Demo 20"
   region: "PAL-M5"
 SCED-50989:
@@ -1107,11 +1107,6 @@ SCED-50989:
 SCED-51016:
   name: "Official PlayStation 2 Magazine Demo 22/23"
   region: "PAL-M5"
-SCED-51075:
-  name: "Ratchet & Clank [Regular Demo]"
-  region: "PAL-M5"
-  gameFixes:
-    - VU0KickstartHack # Fixes Character SPS.
 SCED-51147:
   name: "Official PlayStation 2 Magazine Demo 24"
   region: "PAL-M5"
