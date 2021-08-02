@@ -279,8 +279,8 @@ namespace usb_pad
 			"BRIGHTNESS_ZERO",  /* linux:244 (KEY_BRIGHTNESS_ZERO) */
 			"DISPLAY_OFF",      /* linux:245 (KEY_DISPLAY_OFF) */
 			"WIMAX",            /* linux:246 (KEY_WIMAX) */
-			"247",              /* linux:247 (unnamed) */
-			"248",              /* linux:248 (unnamed) */
+			"RFKILL",           /* linux:247 (KEY_RFKILL) */
+			"MICMUTE",          /* linux:248 (KEY_MICMUTE) */
 			"249",              /* linux:249 (unnamed) */
 			"250",              /* linux:250 (unnamed) */
 			"251",              /* linux:251 (unnamed) */
@@ -556,15 +556,15 @@ namespace usb_pad
 			"NUMERIC_9",        /* linux:521 (KEY_NUMERIC_9) */
 			"NUMERIC_STAR",     /* linux:522 (KEY_NUMERIC_STAR) */
 			"NUMERIC_POUND",    /* linux:523 (KEY_NUMERIC_POUND) */
-			"RFKILL",           /* linux:524 (KEY_RFKILL) */
+			"KEY_NUMERIC_A",    /* linux:524 (KEY_NUMERIC_A) */
 		};
 
-		static bool GetEventName(const char* dev_type, int map, int event, const char** name)
+		static bool GetEventName(const char* dev_type, int map, int event, bool is_button, const char** name)
 		{
 			if (!name)
 				return false;
 
-			if (map < JOY_STEERING || !strcmp(dev_type, BuzzDevice::TypeName()))
+			if (is_button)
 			{
 				if (event < (int)key_to_str.size())
 				{
@@ -593,7 +593,7 @@ namespace usb_pad
 			};
 			AxisValue axisVal[ABS_MAX + 1]{};
 			unsigned long absbit[NBITS(ABS_MAX)]{};
-			struct axis_correct abs_correct[ABS_MAX]{};
+			axis_correct abs_correct[ABS_MAX]{};
 
 			inverted = false;
 
@@ -616,9 +616,7 @@ namespace usb_pad
 				while ((len = read(js.second.fd, &event, sizeof(event))) > 0)
 					;
 
-			struct timeval timeout
-			{
-			};
+			timeval timeout{};
 			timeout.tv_sec = 5;
 			int result = select(maxfd + 1, &fdset, NULL, NULL, &timeout);
 
@@ -744,6 +742,8 @@ namespace usb_pad
 			int ret = 0;
 			if (!strcmp(dev_type, BuzzDevice::TypeName()))
 				ret = GtkBuzzConfigure(port, dev_type, "Evdev Settings", evdev::APINAME, GTK_WINDOW(data), apicbs);
+			else if (!strcmp(dev_type, KeyboardmaniaDevice::TypeName()))
+				ret = GtkKeyboardmaniaConfigure(port, dev_type, "Evdev Settings", evdev::APINAME, GTK_WINDOW(data), apicbs);
 			else
 				ret = GtkPadConfigure(port, dev_type, "Evdev Settings", evdev::APINAME, GTK_WINDOW(data), apicbs);
 			return ret;

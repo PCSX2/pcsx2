@@ -108,6 +108,17 @@ namespace usb_pad
 			IDC_LABEL17,
 			IDC_LABEL18,
 			IDC_LABEL19,
+			IDC_LABEL20,
+			IDC_LABEL21,
+			IDC_LABEL22,
+			IDC_LABEL23,
+			IDC_LABEL24,
+			IDC_LABEL25,
+			IDC_LABEL26,
+			IDC_LABEL27,
+			IDC_LABEL28,
+			IDC_LABEL29,
+			IDC_LABEL30,
 		};
 
 		struct DXDlgSettings
@@ -990,6 +1001,14 @@ namespace usb_pad
 							}
 						}
 						break;
+						case IDC_DELALL:
+						{
+							for (int i = 0; i < CID_COUNT; i++)
+							{
+								DeleteControl(s->port, (ControlID)i);
+							}
+						}
+						break;
 
 						case IDC_ASS0:
 						{
@@ -1089,6 +1108,61 @@ namespace usb_pad
 						case IDC_ASS19:
 						{
 							StartListen(CID_START);
+							break;
+						}
+						case IDC_ASS20:
+						{
+							StartListen(CID_BUTTON20);
+							break;
+						}
+						case IDC_ASS21:
+						{
+							StartListen(CID_BUTTON21);
+							break;
+						}
+						case IDC_ASS22:
+						{
+							StartListen(CID_BUTTON22);
+							break;
+						}
+						case IDC_ASS23:
+						{
+							StartListen(CID_BUTTON23);
+							break;
+						}
+						case IDC_ASS24:
+						{
+							StartListen(CID_BUTTON24);
+							break;
+						}
+						case IDC_ASS25:
+						{
+							StartListen(CID_BUTTON25);
+							break;
+						}
+						case IDC_ASS26:
+						{
+							StartListen(CID_BUTTON26);
+							break;
+						}
+						case IDC_ASS27:
+						{
+							StartListen(CID_BUTTON27);
+							break;
+						}
+						case IDC_ASS28:
+						{
+							StartListen(CID_BUTTON28);
+							break;
+						}
+						case IDC_ASS29:
+						{
+							StartListen(CID_BUTTON29);
+							break;
+						}
+						case IDC_ASS30:
+						{
+							StartListen(CID_BUTTON30);
 							break;
 						}
 						case IDC_DEL0:
@@ -1242,7 +1316,7 @@ namespace usb_pad
 			INVERTFORCES[port] = SendDlgItemMessage(hWnd, IDC_CHECK1, BM_GETCHECK, 0, 0);
 			useRamp = !!SendDlgItemMessage(hWnd, IDC_CHECK3, BM_GETCHECK, 0, 0);
 			GAINZ[port][0] = SendMessage(GetDlgItem(hWnd, IDC_SLIDER4), TBM_GETPOS, 0, 0);
-			FFMULTI[port][0] = SendMessage(GetDlgItem(hWnd, IDC_SLIDER5), TBM_GETPOS, 0, 0);	
+			FFMULTI[port][0] = SendMessage(GetDlgItem(hWnd, IDC_SLIDER5), TBM_GETPOS, 0, 0);
 		}
 
 		void SaveDInputConfig(int port, const char* dev_type)
@@ -1386,9 +1460,13 @@ namespace usb_pad
 			struct DXDlgSettings s;
 			s.port = port;
 			s.dev_type = dev_type;
-			if (strcmp(dev_type, "buzz_device") == 0)
+			if (strcmp(dev_type, BuzzDevice::TypeName()) == 0)
 			{
 				return DialogBoxParam(h.hInst, MAKEINTRESOURCE(IDD_DLG_BUZZ), h.hWnd, DxDialogProc, (LPARAM)&s);
+			}
+			if (strcmp(dev_type, KeyboardmaniaDevice::TypeName()) == 0)
+			{
+				return DialogBoxParam(h.hInst, MAKEINTRESOURCE(IDD_DLG_KEYBOARDMANIA), h.hWnd, DxDialogProc, (LPARAM)&s);
 			}
 			return DialogBoxParam(h.hInst, MAKEINTRESOURCE(IDD_DIALOG1), h.hWnd, DxDialogProc, (LPARAM)&s);
 		}

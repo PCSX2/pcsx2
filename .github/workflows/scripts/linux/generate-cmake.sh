@@ -10,17 +10,23 @@ else
   export CXX=clang++
 fi
 
-if [ "${PLATFORM}" = "x86" ]; then
+if [ "${PLATFORM}" = x86 ]; then
   ADDITIONAL_CMAKE_ARGS="$ADDITIONAL_CMAKE_ARGS -DCMAKE_TOOLCHAIN_FILE=cmake/linux-compiler-i386-multilib.cmake"
 fi
 echo "Additional CMake Args - ${ADDITIONAL_CMAKE_ARGS}"
 
 # Generate CMake into ./build
-cmake \
--D CMAKE_CXX_COMPILER_LAUNCHER=ccache \
--D DISABLE_ADVANCE_SIMD=TRUE \
--D CMAKE_BUILD_TYPE=Release \
--D BUILD_REPLAY_LOADERS=TRUE \
--D CMAKE_BUILD_PO=FALSE \
--D GTK3_API=TRUE ${ADDITIONAL_CMAKE_ARGS} \
+cmake                                       \
+-DCMAKE_CXX_COMPILER_LAUNCHER=ccache        \
+-DCMAKE_BUILD_TYPE=Release                  \
+-DPACKAGE_MODE=TRUE                         \
+-DDISABLE_ADVANCE_SIMD=TRUE                 \
+-DCMAKE_INSTALL_LIBDIR="/tmp/"              \
+-DCMAKE_INSTALL_DATADIR="/tmp/"             \
+-DCMAKE_INSTALL_DOCDIR="/tmp/PCSX2"         \
+-DOpenGL_GL_PREFERENCE="LEGACY"             \
+-DOPENGL_opengl_LIBRARY=""                  \
+-DXDG_STD=TRUE                              \
+$ADDITIONAL_CMAKE_ARGS                      \
+-GNinja                                     \
 -B build

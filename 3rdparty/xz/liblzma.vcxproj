@@ -1,23 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-  </ItemGroup>
+  <Import Project="$(SolutionDir)common\vsprops\BaseProjectConfig.props" />
   <Import Project="$(SolutionDir)common\vsprops\WinSDK.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{12728250-16EC-4DC6-94D7-E21DD88947F8}</ProjectGuid>
@@ -56,8 +39,6 @@
       <PreprocessorDefinitions>HAVE_CONFIG_H;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <AdditionalIncludeDirectories>$(ProjectDir);xz/src/liblzma/common;xz/src/common;xz/src/liblzma/api;xz/src/liblzma/check;xz/src/liblzma/delta;xz/src/liblzma/lz;xz/src/liblzma/lzma;xz/src/liblzma/rangecoder;xz/src/liblzma/simple</AdditionalIncludeDirectories>
-      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MinimalRebuild>
-      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</MinimalRebuild>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>

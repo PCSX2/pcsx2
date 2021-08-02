@@ -189,7 +189,7 @@ static void configureApi(GtkWidget* widget, gpointer data)
 	}
 }
 
-GtkWidget* new_combobox(const char* label, GtkWidget* vbox)
+GtkWidget* new_combobox(const char* label, GtkWidget* vbox, bool scrollable)
 {
 	GtkWidget *rs_hbox, *rs_label, *rs_cb;
 
@@ -199,10 +199,16 @@ GtkWidget* new_combobox(const char* label, GtkWidget* vbox)
 	rs_label = gtk_label_new(label);
 	gtk_box_pack_start(GTK_BOX(rs_hbox), rs_label, FALSE, TRUE, 5);
 	gtk_label_set_justify(GTK_LABEL(rs_label), GTK_JUSTIFY_RIGHT);
-	gtk_misc_set_alignment(GTK_MISC(rs_label), 1, 0.5);
 
 	rs_cb = gtk_combo_box_text_new();
-	gtk_box_pack_start(GTK_BOX(rs_hbox), rs_cb, TRUE, TRUE, 5);
+	if (!scrollable)
+		gtk_box_pack_start(GTK_BOX(rs_hbox), rs_cb, TRUE, TRUE, 5);
+	else
+	{
+		GtkWidget* sw = gtk_scrolled_window_new(NULL, NULL);
+		gtk_container_add(GTK_CONTAINER(sw), rs_cb);
+		gtk_box_pack_start(GTK_BOX(rs_hbox), sw, TRUE, TRUE, 5);
+	}
 	return rs_cb;
 }
 
@@ -235,7 +241,6 @@ void USBconfigure()
 	const char* players[] = {"Player 1:", "Player 2:"};
 
 	GtkWidget *rs_cb, *vbox;
-	uint32_t sel_idx = 0;
 
 	// Create the dialog window
 	GtkWidget* dlg = gtk_dialog_new_with_buttons(

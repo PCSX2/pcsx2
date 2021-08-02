@@ -7,22 +7,58 @@ on:
     branches:
       - master
     paths-ignore:
-      - .gitignore
-      - "**/*.md"
-      - .clang-format
-      - debian-packager/
-      - bin/PCSX2_keys.ini.default
-      - "pcsx2/PAD/Windows/**"
+      - '**/*.md'
+      - '**/*.bat'
+      - '**/*.cmd'
+      - '**/*.props'
+      - '**/*.sln'
+      - '.clang-format'
+      - '.codacy.yaml'
+      - '.github/*'
+      - '.github/workflows/lint-gamedb.yml'
+      - '.github/workflows/macos-workflow.yml'
+      - '.github/workflows/pr-triage.yml'
+      - '.github/workflows/scripts/windows/**'
+      - '.github/workflows/scripts/validation/**'
+      - '.github/workflows/windows-workflow.yml'
+      - '.gitignore'
+      - 'bin/PCSX2_keys.ini.default'
+      - 'build.sh'
+      - 'buildbot.xml'
+      - 'pcsx2/CDVD/Windows/**'
+      - 'pcsx2/DEV9/Win32/**'
+      - 'pcsx2/PAD/Windows/**'
+      - 'pcsx2/SPU2/Windows/**'
+      - 'pcsx2/USB/Win32/**'
+      - 'pcsx2/windows/**'
   pull_request:
     branches:
       - master
     paths-ignore:
-      - .gitignore
-      - "**/*.md"
-      - .clang-format
-      - debian-packager/
-      - bin/PCSX2_keys.ini.default
-      - "pcsx2/PAD/Windows/**"
+      - '**/*.md'
+      - '**/*.bat'
+      - '**/*.cmd'
+      - '**/*.props'
+      - '**/*.sln'
+      - '.clang-format'
+      - '.codacy.yaml'
+      - '.github/*'
+      - '.github/workflows/lint-gamedb.yml'
+      - '.github/workflows/macos-workflow.yml'
+      - '.github/workflows/pr-triage.yml'
+      - '.github/workflows/scripts/windows/**'
+      - '.github/workflows/scripts/validation/**'
+      - '.github/workflows/windows-workflow.yml'
+      - '.gitignore'
+      - 'bin/PCSX2_keys.ini.default'
+      - 'build.sh'
+      - 'buildbot.xml'
+      - 'pcsx2/CDVD/Windows/**'
+      - 'pcsx2/DEV9/Win32/**'
+      - 'pcsx2/PAD/Windows/**'
+      - 'pcsx2/SPU2/Windows/**'
+      - 'pcsx2/USB/Win32/**'
+      - 'pcsx2/windows/**'
 
 jobs:
   build:
@@ -31,36 +67,38 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: ubuntu-20.04
+          - os: ubuntu-18.04
             platform: x86
             compiler: gcc
+            appimage: true
             experimental: false
-          - os: ubuntu-20.04
+          - os: ubuntu-18.04
             platform: x64
             compiler: gcc
+            appimage: true
             experimental: false
-          - os: ubuntu-20.04
+          - os: ubuntu-18.04
             platform: x86
             compiler: clang
             # Need to disable PCH until cmake 3.17
             # (PCH conflicts with ccache, fixed by https://gitlab.kitware.com/cmake/cmake/-/merge_requests/4400)
             cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
-            detail: -nopch
+            detail: " nopch"
             experimental: false
-          - os: ubuntu-20.04
+          - os: ubuntu-18.04
             platform: x86
             compiler: gcc
             cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
-            detail: -nopch
+            detail: " nopch"
             experimental: false
-          - os: ubuntu-20.04
+          - os: ubuntu-18.04
             platform: x86
             compiler: gcc
             cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON -DARCH_FLAG=-march=haswell
-            detail: -avx2-nopch
+            detail: " avx2 nopch"
             experimental: false
 
-    name: "${{ matrix.platform }} | ${{ matrix.compiler }} ${{ matrix.detail }}"
+    name: ${{ matrix.platform }} | ${{ matrix.compiler }}${{ matrix.detail }}
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
@@ -80,7 +118,7 @@ jobs:
 
       - name: Checkout Submodules
         if: steps.cache-submodules.outputs.cache-hit != 'true'
-        run: git submodule update --init --recursive --jobs 2
+        run: git submodule update --init --recursive -j $(getconf _NPROCESSORS_ONLN)
 
       # -- SETUP CCACHE - https://cristianadam.eu/20200113/speeding-up-c-plus-plus-github-actions-using-ccache/
       - name: Prepare ccache timestamp
@@ -94,23 +132,67 @@ jobs:
         uses: actions/cache@v2.1.6
         with:
           path: .ccache
-          key: ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}${{ matrix.detail }}-ccache-${{ steps.ccache_cache_timestamp.outputs.timestamp }}
-          restore-keys: |
-            ${{ matrix.os }}-${{ matrix.platform }}-${{ matrix.compiler }}${{ matrix.detail }}-ccache-
+          key: ${{ matrix.os }} ${{ matrix.platform }} ${{ matrix.compiler }}${{ matrix.detail }} ccache ${{ steps.ccache_cache_timestamp.outputs.timestamp }}
+          restore-keys: ${{ matrix.os }} ${{ matrix.platform }} ${{ matrix.compiler }}${{ matrix.detail }} ccache
 
+      - name: Prepare Artifact Metadata
+        id: artifact-metadata
+        shell: bash
+        run: |
+          ARCH=$([ "${{ matrix.platform }}" == x86 ] && echo "32bit" || echo "64bit")
+          ARTIFACT_NAME=""
+          if [ ${{ github.event_name }} == "pull_request" ]; then
+            PR_SHA=$(git rev-parse --short "${{ github.event.pull_request.head.sha }}")
+            ARTIFACT_NAME="PCSX2-${ARCH}"
+            if [ ! -z "${{ github.event.pull_request.number }}" ]; then
+              PR_NUM=${{ github.event.pull_request.number }}
+              ARTIFACT_NAME="${ARTIFACT_NAME}-pr[${PR_NUM}]"
+            fi
+            ARTIFACT_NAME="${ARTIFACT_NAME}-sha[${PR_SHA}]"
+            if [ ! -z "${{ github.event.pull_request.title }}" ]; then
+              PR_TITLE=$(echo "${{ github.event.pull_request.title }}" | tr -cd '[a-zA-Z0-9[:space:]]_-')
+              ARTIFACT_NAME="${ARTIFACT_NAME}-title["${PR_TITLE}""
+            fi
+          else
+            SHA=$(git rev-parse --short "$GITHUB_SHA")
+            ARTIFACT_NAME="PCSX2-${ARCH}-sha[${SHA}"
+          fi
+          TRIMMED_ARTIFACT_NAME=$(printf "%.199s]" "$ARTIFACT_NAME")
+          echo "name=$TRIMMED_ARTIFACT_NAME"
+          echo "##[set-output name=name;]${TRIMMED_ARTIFACT_NAME}"
+          
       - name: Install Packages
         env:
           PLATFORM: ${{ matrix.platform }}
           COMPILER: ${{ matrix.compiler }}
-        run: ./.github/workflows/scripts/linux/install-packages.sh
+        run: .github/workflows/scripts/linux/install-packages.sh
 
       - name: Generate CMake
         env:
           PLATFORM: ${{ matrix.platform }}
           COMPILER: ${{ matrix.compiler }}
           ADDITIONAL_CMAKE_ARGS: ${{ matrix.cmakeflags }}
-        run: ./.github/workflows/scripts/linux/generate-cmake.sh
+        run: .github/workflows/scripts/linux/generate-cmake.sh
 
       - name: Build PCSX2
-        working-directory: ./build
+        working-directory: build
         run: ../.github/workflows/scripts/linux/compile.sh
+
+      - name: Run Tests
+        working-directory: ./build
+        run: ninja unittests
+        
+      - name: Package AppImage
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          COMPILER: ${{ matrix.compiler }}
+          name: ${{ steps.artifact-metadata.outputs.name }}
+        run: .github/workflows/scripts/linux/appimage.sh
+        if: ${{ matrix.appimage }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: ${{ steps.artifact-metadata.outputs.name }}
+          path: artifacts
+        if: ${{ matrix.appimage }}

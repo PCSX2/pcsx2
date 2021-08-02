@@ -400,8 +400,6 @@ private:
 	void DoFXAA(GSTexture* sTex, GSTexture* dTex) final;
 	void DoShadeBoost(GSTexture* sTex, GSTexture* dTex) final;
 	void DoExternalFX(GSTexture* sTex, GSTexture* dTex) final;
-	void InitExternalFX();
-	void InitFXAA(); // Bug workaround! Stack corruption? Heap corruption? No idea
 	void RenderOsd(GSTexture* dt);
 	void BeforeDraw();
 	void AfterDraw();
@@ -447,9 +445,6 @@ private:
 	} m_state;
 
 	CComPtr<ID3D11RasterizerState> m_rs;
-
-	bool FXAA_Compiled;
-	bool ExShader_Compiled;
 
 	struct
 	{

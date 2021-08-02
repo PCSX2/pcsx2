@@ -124,6 +124,8 @@ public:
 	void AppendShortcutToMenuOption(wxMenuItem& item, wxString keyCodeStr);
 	void UpdateStatusBar();
 	void VideoCaptureToggle();
+	bool IsCapturing() const noexcept { return m_capturingVideo; }
+
 #ifndef DISABLE_RECORDING
 	void initializeRecordingMenuItem(MenuIdentifiers menuId, wxString keyCodeStr, bool enable = true);
 	void enableRecordingMenuItem(MenuIdentifiers menuId, bool enable);

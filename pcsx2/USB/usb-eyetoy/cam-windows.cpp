@@ -14,6 +14,8 @@
  */
 
 #include "PrecompiledHeader.h"
+
+#include <jpgd/jpge.h>
 #include "videodev.h"
 #include "cam-windows.h"
 #include "usb-eyetoy-webcam.h"
@@ -26,6 +28,12 @@ namespace usb_eyetoy
 {
 	namespace windows_api
 	{
+		buffer_t mpeg_buffer{};
+		std::mutex mpeg_mutex;
+		int frame_width;
+		int frame_height;
+		FrameFormat frame_format;
+		bool mirroring_enabled = true;
 
 		HRESULT DirectShow::CallbackHandler::SampleCB(double time, IMediaSample* sample)
 		{
@@ -224,8 +232,8 @@ namespace usb_eyetoy
 								{
 
 									VIDEOINFOHEADER* pVih = (VIDEOINFOHEADER*)pmtConfig->pbFormat;
-									pVih->bmiHeader.biWidth = 320;
-									pVih->bmiHeader.biHeight = 240;
+									pVih->bmiHeader.biWidth = frame_width;
+									pVih->bmiHeader.biHeight = frame_height;
 									pVih->bmiHeader.biSizeImage = DIBSIZE(pVih->bmiHeader);
 									hr = pSourceConfig->SetFormat(pmtConfig);
 								}
@@ -354,11 +362,7 @@ namespace usb_eyetoy
 				throw hr;
 		}
 
-		buffer_t mpeg_buffer{};
-		std::mutex mpeg_mutex;
-		bool mirroring_enabled = true;
-
-		void store_mpeg_frame(unsigned char* data, unsigned int len)
+		void store_mpeg_frame(const unsigned char* data, const unsigned int len)
 		{
 			mpeg_mutex.lock();
 			memcpy(mpeg_buffer.start, data, len);
@@ -370,10 +374,42 @@ namespace usb_eyetoy
 		{
 			if (bitsperpixel == 24)
 			{
-				unsigned char* mpegData = (unsigned char*)calloc(1, 320 * 240 * 2);
-				int mpegLen = jo_write_mpeg(mpegData, data, 320, 240, JO_BGR24, mirroring_enabled ? JO_FLIP_X : JO_NONE, JO_FLIP_Y);
-				store_mpeg_frame(mpegData, mpegLen);
-				free(mpegData);
+				const int bytesPerPixel = 3;
+				int comprBufSize = frame_width * frame_height * bytesPerPixel;
+				unsigned char* comprBuf = (unsigned char*)calloc(1, comprBufSize);
+				int comprLen = 0;
+				if (frame_format == format_mpeg)
+				{
+					comprLen = jo_write_mpeg(comprBuf, data, frame_width, frame_height, JO_BGR24, mirroring_enabled ? JO_FLIP_X : JO_NONE, JO_FLIP_Y);
+				}
+				else if (frame_format == format_jpeg)
+				{
+					// flip Y - always required on windows
+					unsigned char* data2 = (unsigned char*)calloc(1, comprBufSize);
+					for (int y = 0; y < frame_height; y++)
+					{
+						for (int x = 0; x < frame_width; x++)
+						{
+							unsigned char* src = data + (y * frame_width + x) * bytesPerPixel;
+							unsigned char* dst = data2 + ((frame_height - y - 1) * frame_width + x) * bytesPerPixel;
+							dst[0] = src[2];
+							dst[1] = src[1];
+							dst[2] = src[0];
+						}
+					}
+
+					jpge::params params;
+					params.m_quality = 80;
+					params.m_subsampling = jpge::H2V1;
+					comprLen = comprBufSize;
+					if (!jpge::compress_image_to_jpeg_file_in_memory(comprBuf, comprLen, frame_width, frame_height, 3, data2, params))
+					{
+						comprLen = 0;
+					}
+					free(data2);
+				}
+				store_mpeg_frame(comprBuf, comprLen);
+				free(comprBuf);
 			}
 			else
 			{
@@ -383,27 +419,40 @@ namespace usb_eyetoy
 
 		void create_dummy_frame()
 		{
-			const int width = 320;
-			const int height = 240;
 			const int bytesPerPixel = 3;
-
-			unsigned char* rgbData = (unsigned char*)calloc(1, width * height * bytesPerPixel);
-			for (int y = 0; y < height; y++)
+			int comprBufSize = frame_width * frame_height * bytesPerPixel;
+			unsigned char* rgbData = (unsigned char*)calloc(1, comprBufSize);
+			for (int y = 0; y < frame_height; y++)
 			{
-				for (int x = 0; x < width; x++)
+				for (int x = 0; x < frame_width; x++)
 				{
-					unsigned char* ptr = rgbData + (y * width + x) * bytesPerPixel;
-					ptr[0] = 255 - y;
-					ptr[1] = y;
-					ptr[2] = 255 - y;
+					unsigned char* ptr = rgbData + (y * frame_width + x) * bytesPerPixel;
+					ptr[0] = 255 * y / frame_height;
+					ptr[1] = 255 * x / frame_width;
+					ptr[2] = 255 * y / frame_height;
 				}
 			}
-			unsigned char* mpegData = (unsigned char*)calloc(1, width * height * bytesPerPixel);
-			int mpegLen = jo_write_mpeg(mpegData, rgbData, width, height, JO_RGB24, JO_NONE, JO_NONE);
+			unsigned char* comprBuf = (unsigned char*)calloc(1, comprBufSize);
+			int comprLen = 0;
+			if (frame_format == format_mpeg)
+			{
+				comprLen = jo_write_mpeg(comprBuf, rgbData, frame_width, frame_height, JO_RGB24, JO_NONE, JO_NONE);
+			}
+			else if (frame_format == format_jpeg)
+			{
+				jpge::params params;
+				params.m_quality = 80;
+				params.m_subsampling = jpge::H2V1;
+				comprLen = comprBufSize;
+				if (!jpge::compress_image_to_jpeg_file_in_memory(comprBuf, comprLen, frame_width, frame_height, 3, rgbData, params))
+				{
+					comprLen = 0;
+				}
+			}
 			free(rgbData);
 
-			store_mpeg_frame(mpegData, mpegLen);
-			free(mpegData);
+			store_mpeg_frame(comprBuf, comprLen);
+			free(comprBuf);
 		}
 
 		DirectShow::DirectShow(int port)
@@ -419,11 +468,21 @@ namespace usb_eyetoy
 			samplegrabber = nullptr;
 			callbackhandler = new CallbackHandler();
 			CoInitialize(NULL);
+			mpeg_buffer.start = calloc(1, 640 * 480 * 2);
 		}
 
-		int DirectShow::Open()
+		DirectShow::~DirectShow()
 		{
-			mpeg_buffer.start = calloc(1, 320 * 240 * 2);
+			free(mpeg_buffer.start);
+			mpeg_buffer.start = nullptr;
+		}
+
+		int DirectShow::Open(int width, int height, FrameFormat format, int mirror)
+		{
+			frame_width = width;
+			frame_height = height;
+			frame_format = format;
+			mirroring_enabled = mirror;
 			create_dummy_frame();
 
 			std::wstring selectedDevice;
@@ -461,13 +520,10 @@ namespace usb_eyetoy
 			safe_release(pGraphBuilder);
 			safe_release(pGraph);
 			safe_release(pControl);
-
-			free(mpeg_buffer.start);
-			mpeg_buffer.start = nullptr;
 			return 0;
 		};
 
-		int DirectShow::GetImage(uint8_t* buf, int len)
+		int DirectShow::GetImage(uint8_t* buf, size_t len)
 		{
 			mpeg_mutex.lock();
 			int len2 = mpeg_buffer.length;

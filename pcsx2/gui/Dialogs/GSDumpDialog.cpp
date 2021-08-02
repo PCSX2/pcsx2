@@ -212,7 +212,7 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 	{
 		wxString s;
 		s.Printf(_("Failed to load the dump %s !"), m_selected_dump);
-		wxMessageBox(s, _("GSDumpGov"), wxICON_ERROR);
+		wxMessageBox(s, _("GS Debugger"), wxICON_ERROR);
 		return;
 	}
 	m_run->Disable();
@@ -781,12 +781,12 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 
 	GSsetGameCRC((int)crc, 0);
 
-	if (GSfreeze(0, &fd))
+	if (GSfreeze(FreezeAction::Load, &fd))
 		GSDump::isRunning = false;
 	GSvsync(1);
 	GSreset();
 	GSsetBaseMem((u8*)regs);
-	GSfreeze(0, &fd);
+	GSfreeze(FreezeAction::Load, &fd);
 
 	size_t i = 0;
 	m_debug_index = 0;

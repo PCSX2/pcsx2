@@ -31,20 +31,12 @@ using namespace Threading;
 
 MutexRecursive mtx_SPU2Status;
 
-#include "svnrev.h"
-
-#ifdef _MSC_VER
-#define snprintf sprintf_s
-#endif
 int SampleRate = 48000;
 
 static bool IsOpened = false;
 static bool IsInitialized = false;
 
-static u32 pClocks = 0;
-
 u32 lClocks = 0;
-//static bool cpu_detected = false;
 
 void SPU2configure()
 {
@@ -57,12 +49,6 @@ void SPU2configure()
 //  DMA 4/7 Callbacks from Core Emulator
 // --------------------------------------------------------------------------------------
 
-u16* DMABaseAddr;
-
-void SPU2setDMABaseAddr(uptr baseaddr)
-{
-	DMABaseAddr = (u16*)baseaddr;
-}
 
 void SPU2setSettingsDir(const char* dir)
 {
@@ -150,7 +136,7 @@ s32 SPU2reset()
 	memset(spu2regs, 0, 0x010000);
 	memset(_spu2mem, 0, 0x200000);
 	memset(_spu2mem + 0x2800, 7, 0x10); // from BIOS reversal. Locks the voices so they don't run free.
-
+	memset(_spu2mem + 0xe870, 7, 0x10); // Loop which gets left over by the BIOS, Megaman X7 relies on it being there.
 	Spdif.Info = 0; // Reset IRQ Status if it got set in a previously run game
 
 	Cores[0].Init(0);
@@ -341,7 +327,6 @@ s32 SPU2open(void* pDsp)
 		SPU2close();
 		return -1;
 	}
-	SPU2setDMABaseAddr((uptr)iopMem->Main);
 	return 0;
 }
 
@@ -541,7 +526,7 @@ void SPU2endRecording()
 		RecordStop();
 }
 
-s32 SPU2freeze(int mode, freezeData* data)
+s32 SPU2freeze(FreezeAction mode, freezeData* data)
 {
 	pxAssume(data != nullptr);
 	if (!data)
@@ -550,13 +535,13 @@ s32 SPU2freeze(int mode, freezeData* data)
 		return -1;
 	}
 
-	if (mode == FREEZE_SIZE)
+	if (mode == FreezeAction::Size)
 	{
 		data->size = SPU2Savestate::SizeIt();
 		return 0;
 	}
 
-	pxAssume(mode == FREEZE_LOAD || mode == FREEZE_SAVE);
+	pxAssume(mode == FreezeAction::Load || mode == FreezeAction::Save);
 
 	if (data->data == nullptr)
 	{
@@ -564,13 +549,13 @@ s32 SPU2freeze(int mode, freezeData* data)
 		return -1;
 	}
 
-	SPU2Savestate::DataBlock& spud = (SPU2Savestate::DataBlock&)*(data->data);
+	auto& spud = (SPU2Savestate::DataBlock&)*(data->data);
 
 	switch (mode)
 	{
-		case FREEZE_LOAD:
+		case FreezeAction::Load:
 			return SPU2Savestate::ThawIt(spud);
-		case FREEZE_SAVE:
+		case FreezeAction::Save:
 			return SPU2Savestate::FreezeIt(spud);
 
 			jNO_DEFAULT;

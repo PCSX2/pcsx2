@@ -1,16 +1,9 @@
 # Check that people use the good file
 if(NOT TOP_CMAKE_WAS_SOURCED)
-    message(FATAL_ERROR "
-    You did not 'cmake' the good CMakeLists.txt file. Use the one in the top dir.
-    It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
+	message(FATAL_ERROR "
+	You did not 'cmake' the good CMakeLists.txt file. Use the one in the top dir.
+	It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif(NOT TOP_CMAKE_WAS_SOURCED)
-
-set(Output Utilities)
-
-set(CommonFlags
-    )
-
-set(UtilitiesFinalFlags ${CommonFlags})
 
 # variable with all sources of this library
 set(UtilitiesSources
@@ -108,21 +101,15 @@ set(UtilitiesFinalSources
 	${UtilitiesHeaders}
 )
 
-set(UtilitiesFinalLibs
-    ${LIBC_LIBRARIES} # Gold (new linux linker) does not get automatically dependency of dependency
-	${wxWidgets_LIBRARIES}
-	yaml-cpp chdr-static
-)
-
-add_pcsx2_lib(${Output} "${UtilitiesFinalSources}" "${UtilitiesFinalLibs}" "${UtilitiesFinalFlags}")
-add_pcsx2_lib(${Output}_NO_TLS "${UtilitiesFinalSources}" "${UtilitiesFinalLibs}" "${UtilitiesFinalFlags} -DPCSX2_THREAD_LOCAL=0")
-
-target_compile_features(${Output} PUBLIC cxx_std_17)
-target_compile_features(${Output}_NO_TLS PUBLIC cxx_std_17)
-target_include_directories(${Output} PUBLIC ../../../3rdparty/include)
-target_include_directories(${Output}_NO_TLS PUBLIC ../../../3rdparty/include)
-
-if(COMMAND target_precompile_headers)
-	target_precompile_headers(${Output} PRIVATE PrecompiledHeader.h)
-	target_precompile_headers(${Output}_NO_TLS PRIVATE PrecompiledHeader.h)
-endif()
+foreach(library Utilities Utilities_NO_TLS)
+	add_library(${library} "${UtilitiesFinalSources}")
+	target_link_libraries(${library} PRIVATE ${LIBC_LIBRARIES} PUBLIC wxWidgets::all)
+	target_compile_features(${library} PUBLIC cxx_std_17)
+	target_include_directories(${library} PUBLIC ../../../3rdparty/include ../../include PRIVATE ../../include/Utilities .)
+	target_compile_definitions(${library} PUBLIC "${PCSX2_DEFS}")
+	target_compile_options(${library} PRIVATE "${PCSX2_WARNINGS}")
+	if(COMMAND target_precompile_headers)
+		target_precompile_headers(${library} PRIVATE PrecompiledHeader.h)
+	endif()
+endforeach()
+target_compile_definitions(Utilities_NO_TLS PUBLIC PCSX2_THREAD_LOCAL=0)

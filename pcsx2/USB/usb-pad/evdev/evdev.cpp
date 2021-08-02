@@ -108,7 +108,6 @@ namespace usb_pad
 					}
 				}
 			}
-		//quit:
 			closedir(dirp);
 			return false;
 		}
@@ -151,7 +150,7 @@ namespace usb_pad
 					str.clear();
 					str.str("");
 					str << EVDEV_DIR << dp->d_name;
-					std::string path = str.str();
+					const std::string path = str.str();
 
 					auto it = std::find_if(list_cache.begin(), list_cache.end(),
 										   [&path](evdev_device& dev) {
@@ -168,14 +167,14 @@ namespace usb_pad
 						continue;
 					}
 
-					//list_cache.push_back(std::make_pair(std::string(dp->d_name), path));
-
 					res = ioctl(fd, EVIOCGNAME(sizeof(buf)), buf);
 					if (res < 0)
 						Console.Warning("EVIOCGNAME");
 					else
 					{
-						list_cache.push_back({buf, dp->d_name, path});
+						evdev_device dev{buf, dp->d_name, path, {}};
+						res = ioctl(fd, EVIOCGID, &dev.input_id);
+						list_cache.push_back(dev);
 					}
 
 					close(fd);
@@ -183,7 +182,6 @@ namespace usb_pad
 			}
 
 			list.assign(list_cache.begin(), list_cache.end());
-		//quit:
 			closedir(dirp);
 		}
 
@@ -214,34 +212,12 @@ namespace usb_pad
 			switch (code)
 			{
 				case 0x80 | JOY_STEERING:
-				case ABS_X:
 					mWheelData.steering = device.cfg.inverted[0] ? range - NORM(value, range) : NORM(value, range);
 					break;
-				//case ABS_Y: mWheelData.clutch = NORM(value, 0xFF); break; //no wheel on PS2 has one, afaik
-				//case ABS_RX: mWheelData.axis_rx = NORM(event.value, 0xFF); break;
-				case ABS_RY:
-				//treat_me_like_ABS_RY:
-					mWheelData.throttle = 0xFF;
-					mWheelData.brake = 0xFF;
-					if (value < 0)
-						mWheelData.throttle = NORM2(value, 0xFF);
-					else
-						mWheelData.brake = NORM2(-value, 0xFF);
-					break;
 				case 0x80 | JOY_THROTTLE:
-				case ABS_Z:
-					/*if (mIsGamepad)
-				mWheelData.brake = 0xFF - NORM(value, 0xFF);
-			else*/
 					mWheelData.throttle = device.cfg.inverted[1] ? NORM(value, 0xFF) : 0xFF - NORM(value, 0xFF);
 					break;
 				case 0x80 | JOY_BRAKE:
-				case ABS_RZ:
-					/*if (mIsGamepad)
-				mWheelData.throttle = 0xFF - NORM(value, 0xFF);
-			else if (mIsDualAnalog)
-				goto treat_me_like_ABS_RY;
-			else*/
 					mWheelData.brake = device.cfg.inverted[2] ? NORM(value, 0xFF) : 0xFF - NORM(value, 0xFF);
 					break;
 
@@ -314,7 +290,6 @@ namespace usb_pad
 					for (int i = 0; i < len; i++)
 					{
 						input_event& event = events[i];
-						int code, value;
 						switch (event.type)
 						{
 							case EV_ABS:
@@ -322,102 +297,24 @@ namespace usb_pad
 								if (mType == WT_BUZZ_CONTROLLER)
 									break;
 
-								value = AxisCorrect(device.abs_correct[event.code], event.value);
-								/*if (event.code == 0)
-								event.code, device.axis_map[event.code] & ~0x80, event.value, value);
-						*/
+								int value = AxisCorrect(device.abs_correct[event.code], event.value);
+								//if (event.code == 0)
+								//	event.code, device.axis_map[event.code] & ~0x80, event.value, value);
 								SetAxis(device, event.code, value);
 							}
 							break;
 							case EV_KEY:
 							{
-								code = device.btn_map[event.code] != (uint16_t)-1 ? device.btn_map[event.code] : event.code;
-
-								if (mType == WT_BUZZ_CONTROLLER)
-								{
-									if (device.btn_map[event.code] != (uint16_t)-1)
-									{
-										if (event.value)
-											mWheelData.buttons |= 1 << (code & ~0x8000); //on
-										else
-											mWheelData.buttons &= ~(1 << (code & ~0x8000)); //off
-									}
-
+								uint16_t button = device.btn_map[event.code];
+								if (button == (uint16_t)-1 || !(button & 0x8000))
 									break;
-								}
 
-								PS2Buttons button = PAD_BUTTON_COUNT;
-								if (code >= (0x8000 | JOY_CROSS) && // user mapped
-									code <= (0x8000 | JOY_L3))
-								{
-									button = (PS2Buttons)(code & ~0x8000);
-								}
-								else if (code >= BTN_TRIGGER && code < BTN_BASE5) // try to guess
-								{
-									button = (PS2Buttons)((code - BTN_TRIGGER) & ~0x8000);
-								}
+								button = button & ~0x8000;
+
+								if (event.value)
+									mWheelData.buttons |= 1 << convert_wt_btn(mType, button); //on
 								else
-								{
-#if 0
-									// Map to xbox360ish controller
-									switch (code)
-									{
-										// Digital hatswitch
-										case 0x8000 | JOY_LEFT:
-											mWheelData.hat_horz = (!event.value ? PAD_HAT_COUNT : PAD_HAT_W);
-											break;
-										case 0x8000 | JOY_RIGHT:
-											mWheelData.hat_horz = (!event.value ? PAD_HAT_COUNT : PAD_HAT_E);
-											break;
-										case 0x8000 | JOY_UP:
-											mWheelData.hat_vert = (!event.value ? PAD_HAT_COUNT : PAD_HAT_N);
-											break;
-										case 0x8000 | JOY_DOWN:
-											mWheelData.hat_vert = (!event.value ? PAD_HAT_COUNT : PAD_HAT_S);
-											break;
-										case BTN_WEST:
-											button = PAD_SQUARE;
-											break;
-										case BTN_NORTH:
-											button = PAD_TRIANGLE;
-											break;
-										case BTN_EAST:
-											button = PAD_CIRCLE;
-											break;
-										case BTN_SOUTH:
-											button = PAD_CROSS;
-											break;
-										case BTN_SELECT:
-											button = PAD_SELECT;
-											break;
-										case BTN_START:
-											button = PAD_START;
-											break;
-										case BTN_TR:
-											button = PAD_R1;
-											break;
-										case BTN_TL:
-											button = PAD_L1;
-											break;
-										case BTN_TR2:
-											button = PAD_R2;
-											break;
-										case BTN_TL2:
-											button = PAD_L2;
-											break;
-										default:
-											break;
-									}
-#endif
-								}
-
-								//if (button != PAD_BUTTON_COUNT)
-								{
-									if (event.value)
-										mWheelData.buttons |= 1 << convert_wt_btn(mType, button); //on
-									else
-										mWheelData.buttons &= ~(1 << convert_wt_btn(mType, button)); //off
-								}
+									mWheelData.buttons &= ~(1 << convert_wt_btn(mType, button)); //off
 							}
 							break;
 							case EV_SYN: //TODO useful?
@@ -487,13 +384,15 @@ namespace usb_pad
 		{
 			if (mUseRawFF)
 			{
-
-				if (data[0] == 0x8 || data[0] == 0xB)
-					return len;
-				if (data[0] == 0xF8 &&
-					/* Allow range changes */
-					!(data[1] == 0x81 || data[1] == 0x02 || data[1] == 0x03))
-					return len; //don't send extended commands
+				if (mType <= WT_GT_FORCE)
+				{
+					if (data[0] == 0x8 || data[0] == 0xB)
+						return len;
+					if (data[0] == 0xF8 &&
+						/* Allow range changes */
+						!(data[1] == 0x81 || data[1] == 0x02 || data[1] == 0x03))
+						return len; //don't send extended commands
+				}
 
 				std::array<uint8_t, 8> report{0};
 
@@ -506,9 +405,12 @@ namespace usb_pad
 				return len;
 			}
 
-			const ff_data* ffdata = (const ff_data*)data;
-			bool hires = (mType == WT_DRIVING_FORCE_PRO || mType == WT_DRIVING_FORCE_PRO_1102);
-			ParseFFData(ffdata, hires);
+			if (mType <= WT_GT_FORCE)
+			{
+				const ff_data* ffdata = (const ff_data*)data;
+				bool hires = (mType == WT_DRIVING_FORCE_PRO || mType == WT_DRIVING_FORCE_PRO_1102);
+				ParseFFData(ffdata, hires);
+			}
 
 			return len;
 		}
@@ -568,7 +470,7 @@ namespace usb_pad
 				}
 
 				if (joypath.empty() || !file_exists(joypath))
-					goto quit;
+					return 1;
 
 				int fd = -1;
 				if ((fd = open(joypath.c_str(), O_RDWR | O_NONBLOCK)) < 0)
@@ -584,16 +486,6 @@ namespace usb_pad
 					int pid, vid;
 					if ((mUseRawFF = FindHidraw(evphys, hid_dev, &vid, &pid)))
 					{
-
-						// For safety, only allow Logitech (classic ffb) devices
-						if (vid != 0x046D /* Logitech */ /*|| info.bustype != BUS_USB*/
-							|| pid == 0xc262             /* G920 hid mode */
-							|| pid == 0xc261             /* G920 xbox mode */
-						)
-						{
-							mUseRawFF = 0;
-						}
-
 						// check if still using hidraw and run the thread
 						if (mUseRawFF && !mWriterThreadIsRunning)
 						{
@@ -637,22 +529,24 @@ namespace usb_pad
 					continue;
 				}
 
-				/*unsigned int version;
-		if (ioctl(mHandle, EVIOCGVERSION, &version) < 0)
-		{
-			SysMessage("%s: Get version failed: %s\n", APINAME, strerror(errno));
-			return false;
-		}*/
-
-				int max_buttons = JOY_STEERING;
+				// device.cfg.controls[0..max_buttons] - mapped buttons
+				// device.cfg.controls[max_buttons..etc] - mapped axes
+				int max_buttons = 0;
+				int max_axes = 0;
 				switch (mType)
 				{
 					case WT_BUZZ_CONTROLLER:
 						LoadBuzzMappings(mDevType, mPort, it.id, device.cfg);
 						max_buttons = 20;
 						break;
+					case WT_KEYBOARDMANIA_CONTROLLER:
+						max_buttons = 31;
+						LoadMappings(mDevType, mPort, it.id, max_buttons, 0, device.cfg);
+						break;
 					default:
-						LoadMappings(mDevType, mPort, it.id, device.cfg);
+						max_buttons = JOY_STEERING;
+						max_axes = 3;
+						LoadMappings(mDevType, mPort, it.id, max_buttons, 3, device.cfg);
 						if (!LoadSetting(mDevType, mPort, APINAME, N_GAIN_ENABLED, b_gain))
 							b_gain = 1;
 						if (!LoadSetting(mDevType, mPort, APINAME, N_GAIN, gain))
@@ -683,30 +577,19 @@ namespace usb_pad
 							continue;
 						}
 
-
-						//device.axis_map[i] = device.axes;
-
 						// convert values into 16 bit range
 						CalcAxisCorr(device.abs_correct[i], absinfo);
 
-						//TODO joystick/gamepad is dual analog?
-						if (i == ABS_RZ)
-						{
-							//absinfo.value = AxisCorrect(mAbsCorrect[i], absinfo.value);
-							if (std::abs(absinfo.value) < 200) /* 200 is random, allows for some dead zone */
-								device.is_dualanalog = true;
-						}
-
 						// FIXME axes as buttons
-						for (int k = max_buttons /*JOY_STEERING*/; k < JOY_MAPS_COUNT; k++)
+						for (int k = 0; k < max_axes; k++)
 						{
-							if (i == device.cfg.controls[k])
+							if (i == device.cfg.controls[k + max_buttons])
 							{
 								has_mappings = true;
-								device.axis_map[i] = 0x80 | k;
+								device.axis_map[i] = 0x80 | (k + JOY_STEERING);
 								// TODO Instead of single FF instance, create for every device with X-axis???
 								// and then switch between them according to which device was used recently
-								if (k == JOY_STEERING && !mFFdev && !mUseRawFF)
+								if (k == 0 && !mFFdev && !mUseRawFF)
 								{
 									mFFdev = new EvdevFF(device.cfg.fd, b_gain, gain, b_ac, ac);
 								}
@@ -715,46 +598,16 @@ namespace usb_pad
 					}
 				}
 
-#ifndef NDEBUG
-				for (int i = 0; i < ABS_MAX; ++i)
+				for (int k = 0; k < max_buttons; k++)
 				{
+					auto i = device.cfg.controls[k];
+					if (i >= 0 && i <= KEY_MAX)
+					{
+						has_mappings = true;
+						device.btn_map[i] = 0x8000 | k;
+					}
 				}
-#endif
 
-				for (int i = BTN_JOYSTICK; i < KEY_MAX; ++i)
-				{
-					if (test_bit(i, keybit))
-					{
-						device.btn_map[i] = -1; //device.buttons;
-						if (i == BTN_GAMEPAD)
-						{
-							device.is_gamepad = true;
-						}
-						for (int k = 0; k < max_buttons; k++)
-						{
-							if (i == device.cfg.controls[k])
-							{
-								has_mappings = true;
-								device.btn_map[i] = 0x8000 | k;
-							}
-						}
-					}
-				}
-				for (int i = 0; i < BTN_JOYSTICK; ++i)
-				{
-					if (test_bit(i, keybit))
-					{
-						device.btn_map[i] = -1; //device.buttons;
-						for (int k = 0; k < max_buttons; k++)
-						{
-							if (i == device.cfg.controls[k])
-							{
-								has_mappings = true;
-								device.btn_map[i] = 0x8000 | k;
-							}
-						}
-					}
-				}
 				if (!has_mappings)
 				{
 					close(device.cfg.fd);
@@ -763,10 +616,6 @@ namespace usb_pad
 			}
 
 			return 0;
-
-		quit:
-			Close();
-			return 1;
 		}
 
 		int EvDevPad::Close()
@@ -776,9 +625,12 @@ namespace usb_pad
 
 			if (mHidHandle != -1)
 			{
-				uint8_t reset[7] = {0};
-				reset[0] = 0xF3; //stop forces
-				write(mHidHandle, reset, sizeof(reset));
+				if (mType <= WT_GT_FORCE)
+				{
+					uint8_t reset[7] = {0};
+					reset[0] = 0xF3; //stop forces
+					write(mHidHandle, reset, sizeof(reset));
+				}
 				close(mHidHandle);
 			}
 

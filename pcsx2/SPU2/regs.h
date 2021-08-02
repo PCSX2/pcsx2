@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include "Pcsx2Types.h"
-
 #define SPU2_CORE0 0x00000000
 #define SPU2_CORE1 0x00000400
 

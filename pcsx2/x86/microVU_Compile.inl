@@ -44,7 +44,7 @@ __fi void mVUcheckIsSame(mV) {
 // Sets up microProgram PC ranges based on whats been recompiled
 void mVUsetupRange(microVU& mVU, s32 pc, bool isStartPC) {
 	std::deque<microRange>*& ranges = mVUcurProg.ranges;
-	pxAssertDev(pc <= mVU.microMemSize, pxsFmt("microVU%d: PC outside of VU memory PC=0x%04x", mVU.index, pc));
+	pxAssertDev(pc <= (s64)mVU.microMemSize, pxsFmt("microVU%d: PC outside of VU memory PC=0x%04x", mVU.index, pc));
 	if (isStartPC) { // Check if startPC is already within a block we've recompiled
 		std::deque<microRange>::const_iterator it(ranges->begin());
 		for ( ; it != ranges->end(); ++it) {
@@ -358,11 +358,6 @@ void mVUdebugPrintBlocks(microVU& mVU, bool isEndPC) {
 	}
 }
 
-// vu0 is allowed to exit early, so are dev builds (for inf loops)
-__fi bool doEarlyExit(microVU& mVU) {
-	return true;// IsDevBuild || !isVU1;
-}
-
 // Saves Pipeline State for resuming from early exits
 __fi void mVUsavePipelineState(microVU& mVU) {
 	u32* lpS = (u32*)&mVU.prog.lpState;
@@ -374,33 +369,21 @@ __fi void mVUsavePipelineState(microVU& mVU) {
 // Test cycles to see if we need to exit-early...
 void mVUtestCycles(microVU& mVU, microFlagCycles& mFC) {
 	iPC = mVUstartPC;
-	if (doEarlyExit(mVU)) {
-		xMOV(eax, ptr32[&mVU.cycles]);
-		if (!EmuConfig.Gamefixes.VU0KickstartHack)
-			xSUB(eax, mVUcycles); // Running behind, make sure we have time to run the block
-		else
-			xSUB(eax, 1); // Running ahead, make sure cycles left are above 0
-		xCMP(eax, 0);
-		xForwardJGE32 skip;
-		mVUsavePipelineState(mVU);
-		if (isVU0) {
-			// TEST32ItoM((uptr)&mVU.regs().flags, VUFLAG_MFLAGSET);
-			// xFowardJZ32 vu0jmp;
-			// mVUbackupRegs(mVU, true);
-			// xFastCall(mVUwarning0, mVU.prog.cur->idx, xPC); // VU0 is allowed early exit for COP2 Interlock Simulation
-			// mVUrestoreRegs(mVU, true);
-			mVUendProgram(mVU, &mFC, 0);
-			// vu0jmp.SetTarget();
-		}
-		else {
-			/*mVUbackupRegs(mVU, true);
-			xFastCall(mVUwarning1, mVU.prog.cur->idx, xPC);
-			mVUrestoreRegs(mVU, true);
-			mVUsavePipelineState(mVU);*/
-			mVUendProgram(mVU, &mFC, 0);
-		}
-		skip.SetTarget();
-	}
+
+	xMOV(eax, ptr32[&mVU.cycles]);
+	if (!EmuConfig.Gamefixes.VUKickstartHack)
+		xSUB(eax, mVUcycles); // Running behind, make sure we have time to run the block
+	else
+		xSUB(eax, 1); // Running ahead, make sure cycles left are above 0
+
+	xCMP(eax, 0);
+	xForwardJGE32 skip;
+
+	mVUsavePipelineState(mVU);
+	mVUendProgram(mVU, &mFC, 0);
+
+	skip.SetTarget();
+
 	xSUB(ptr32[&mVU.cycles], mVUcycles);
 }
 
@@ -438,7 +421,7 @@ __fi void mVUinitFirstPass(microVU& mVU, uptr pState, u8* thisPtr) {
 	if ((uptr)&mVUregs != pState) {	// Loads up Pipeline State Info
 		memcpy((u8*)&mVUregs, (u8*)pState, sizeof(microRegInfo));
 	}
-	if (doEarlyExit(mVU) && ((uptr)&mVU.prog.lpState != pState)) {
+	if (((uptr)&mVU.prog.lpState != pState)) {
 		memcpy((u8*)&mVU.prog.lpState, (u8*)pState, sizeof(microRegInfo));
 	}
 	mVUblock.x86ptrStart	= thisPtr;

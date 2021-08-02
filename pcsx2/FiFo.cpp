@@ -41,16 +41,19 @@
 
 void __fastcall ReadFIFO_VIF1(mem128_t* out)
 {
-	if (vif1Regs.stat.test(VIF1_STAT_INT | VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS) )
-		DevCon.Warning( "Reading from vif1 fifo when stalled" );
+	if (vif1Regs.stat.test(VIF1_STAT_INT | VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS))
+		DevCon.Warning("Reading from vif1 fifo when stalled");
 
 	ZeroQWC(out); // Clear first in case no data gets written...
 	pxAssertRel(vif1Regs.stat.FQC != 0, "FQC = 0 on VIF FIFO READ!");
-	if (vif1Regs.stat.FDR) {
-		if (vif1Regs.stat.FQC > vif1.GSLastDownloadSize) {
+	if (vif1Regs.stat.FDR)
+	{
+		if (vif1Regs.stat.FQC > vif1.GSLastDownloadSize)
+		{
 			DevCon.Warning("Warning! GS Download size < FIFO count!");
 		}
-		if (vif1Regs.stat.FQC > 0) {
+		if (vif1Regs.stat.FQC > 0)
+		{
 			GetMTGS().WaitGS();
 			GetMTGS().SendPointerPacket(GS_RINGTYPE_INIT_READ_FIFO1, 0, out);
 			GetMTGS().WaitGS(false); // wait without reg sync
@@ -69,68 +72,79 @@ void __fastcall ReadFIFO_VIF1(mem128_t* out)
 //////////////////////////////////////////////////////////////////////////
 // WriteFIFO Pages
 //
-void __fastcall WriteFIFO_VIF0(const mem128_t *value)
+void __fastcall WriteFIFO_VIF0(const mem128_t* value)
 {
 	VIF_LOG("WriteFIFO/VIF0 <- %ls", WX_STR(value->ToString()));
 
 	vif0ch.qwc += 1;
-	if(vif0.irqoffset.value != 0 && vif0.vifstalled.enabled) DevCon.Warning("Offset on VIF0 FIFO start!");
+	if (vif0.irqoffset.value != 0 && vif0.vifstalled.enabled)
+		DevCon.Warning("Offset on VIF0 FIFO start!");
 	bool ret = VIF0transfer((u32*)value, 4);
 
-	if (vif0.cmd) 
+	if (vif0.cmd)
 	{
-		if(vif0.done && vif0ch.qwc == 0)	vif0Regs.stat.VPS = VPS_WAITING;
+		if (vif0.done && vif0ch.qwc == 0)
+			vif0Regs.stat.VPS = VPS_WAITING;
 	}
-	else		 
+	else
 	{
 		vif0Regs.stat.VPS = VPS_IDLE;
 	}
 
-	pxAssertDev( ret, "vif stall code not implemented" );
+	pxAssertDev(ret, "vif stall code not implemented");
 }
 
-void __fastcall WriteFIFO_VIF1(const mem128_t *value)
+void __fastcall WriteFIFO_VIF1(const mem128_t* value)
 {
 	VIF_LOG("WriteFIFO/VIF1 <- %ls", WX_STR(value->ToString()));
 
-	if (vif1Regs.stat.FDR) {
+	if (vif1Regs.stat.FDR)
+	{
 		DevCon.Warning("writing to fifo when fdr is set!");
 	}
-	if (vif1Regs.stat.test(VIF1_STAT_INT | VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS) ) {
+	if (vif1Regs.stat.test(VIF1_STAT_INT | VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS))
+	{
 		DevCon.Warning("writing to vif1 fifo when stalled");
 	}
-	if (vif1.irqoffset.value != 0 && vif1.vifstalled.enabled) {
+	if (vif1.irqoffset.value != 0 && vif1.vifstalled.enabled)
+	{
 		DevCon.Warning("Offset on VIF1 FIFO start!");
 	}
 
 	bool ret = VIF1transfer((u32*)value, 4);
 
-	if (vif1.cmd) {
-		if (vif1.done && !vif1ch.qwc) vif1Regs.stat.VPS = VPS_WAITING;
+	if (vif1.cmd)
+	{
+		if (vif1.done && !vif1ch.qwc)
+			vif1Regs.stat.VPS = VPS_WAITING;
 	}
-	else vif1Regs.stat.VPS = VPS_IDLE;
+	else
+		vif1Regs.stat.VPS = VPS_IDLE;
 
-	if( gifRegs.stat.APATH == 2  && gifUnit.gifPath[1].isDone())
+	if (gifRegs.stat.APATH == 2 && gifUnit.gifPath[1].isDone())
 	{
 		gifRegs.stat.APATH = 0;
 		gifRegs.stat.OPH = 0;
 		vif1Regs.stat.VGW = false; //Let vif continue if it's stuck on a flush
 
-		if(gifUnit.checkPaths(1,0,1)) gifUnit.Execute(false, true);
+		if (gifUnit.checkPaths(1, 0, 1))
+			gifUnit.Execute(false, true);
 	}
 
-	pxAssertDev( ret, "vif stall code not implemented" );
+	pxAssertDev(ret, "vif stall code not implemented");
 }
 
-void __fastcall WriteFIFO_GIF(const mem128_t *value)
+void __fastcall WriteFIFO_GIF(const mem128_t* value)
 {
 	GUNIT_LOG("WriteFIFO_GIF()");
-	if (CHECK_GIFFIFOHACK) {
-		gif_fifo.write((u32*)value, 1);
-
-		gif_fifo.read(true);		
+	if ((!gifUnit.CanDoPath3() || gif_fifo.fifoSize > 0))
+	{
+		//DevCon.Warning("GIF FIFO HW Write");
+		gif_fifo.write_fifo((u32*)value, 1);
+		gif_fifo.read_fifo();
 	}
-	else {
+	else
+	{
 		gifUnit.TransferGSPacketData(GIF_TRANS_FIFO, (u8*)value, 16);
 	}
 
@@ -144,9 +158,8 @@ void __fastcall WriteFIFO_GIF(const mem128_t *value)
 
 		if (gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_IDLE || gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_WAIT)
 		{
-			if (gifUnit.checkPaths(1, 1, 0)) gifUnit.Execute(false, true);
+			if (gifUnit.checkPaths(1, 1, 0))
+				gifUnit.Execute(false, true);
 		}
-
 	}
-	
 }

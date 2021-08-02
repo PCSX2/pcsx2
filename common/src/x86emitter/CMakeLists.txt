@@ -1,15 +1,9 @@
 # Check that people use the good file
 if(NOT TOP_CMAKE_WAS_SOURCED)
-    message(FATAL_ERROR "
-    You did not 'cmake' the good CMakeLists.txt file. Use the one in the top dir.
-    It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
+	message(FATAL_ERROR "
+	You did not 'cmake' the good CMakeLists.txt file. Use the one in the top dir.
+	It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif(NOT TOP_CMAKE_WAS_SOURCED)
-
-
-set(Output x86emitter)
-
-set(CommonFlags
-    )
 
 set(x86emitterFinalFlags ${CommonFlags})
 
@@ -69,12 +63,15 @@ set(x86emitterFinalSources
 )
 
 set(x86emitterFinalLibs
-	${wxWidgets_LIBRARIES}
+	wxWidgets::all
 )
 
-add_pcsx2_lib(${Output} "${x86emitterFinalSources}" "${x86emitterFinalLibs}" "${x86emitterFinalFlags}")
-target_compile_features(${Output} PUBLIC cxx_std_17)
+add_pcsx2_lib(x86emitter "${x86emitterFinalSources}" "${x86emitterFinalLibs}" "${x86emitterFinalFlags}")
+target_compile_features(x86emitter PUBLIC cxx_std_17)
+target_include_directories(x86emitter PUBLIC ../../include PRIVATE ../../include/x86emitter)
+target_compile_definitions(x86emitter PUBLIC "${PCSX2_DEFS}")
+target_compile_options(x86emitter PRIVATE "${PCSX2_WARNINGS}")
 
 if(COMMAND target_precompile_headers)
-	target_precompile_headers(${Output} PRIVATE PrecompiledHeader.h)
+	target_precompile_headers(x86emitter PRIVATE PrecompiledHeader.h)
 endif()

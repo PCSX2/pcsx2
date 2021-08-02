@@ -313,7 +313,7 @@ namespace usb_pad
 				HidP_GetCaps(pPreparsedData, &caps);
 
 				if (caps.UsagePage == HID_USAGE_PAGE_GENERIC &&
-					caps.Usage == HID_USAGE_GENERIC_JOYSTICK)
+					(caps.Usage == HID_USAGE_GENERIC_JOYSTICK || caps.Usage == HID_USAGE_GENERIC_GAMEPAD))
 				{
 					std::wstring strPath(didData->DevicePath);
 					std::transform(strPath.begin(), strPath.end(), strPath.begin(), ::toupper);

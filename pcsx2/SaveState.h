@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -15,12 +15,15 @@
 
 #pragma once
 
-#define FREEZE_LOAD 0
-#define FREEZE_SAVE 1
-#define FREEZE_SIZE 2
-
 #include "System.h"
 #include "Utilities/Exceptions.h"
+
+enum class FreezeAction
+{
+	Load,
+	Save,
+	Size,
+};
 
 // Savestate Versioning!
 //  If you make changes to the savestate version, please increment the value below.
@@ -28,7 +31,7 @@
 //  the lower 16 bit value.  IF the change is breaking of all compatibility with old
 //  states, increment the upper 16 bit value, and clear the lower 16 bits to 0.
 
-static const u32 g_SaveVersion = (0x9A20 << 16) | 0x0000;
+static const u32 g_SaveVersion = (0x9A22 << 16) | 0x0000;
 
 // the freezing data between submodules and core
 // an interesting thing to note is that this dates back from before plugin

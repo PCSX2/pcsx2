@@ -72,110 +72,110 @@ set(HarfBuzz_COMPILE_OPTIONS ${PC_HARFBUZZ_CFLAGS_OTHER})
 set(HarfBuzz_VERSION ${PC_HARFBUZZ_CFLAGS_VERSION})
 
 find_path(HarfBuzz_INCLUDE_DIR
-    NAMES hb.h
-    HINTS ${PC_HARFBUZZ_INCLUDEDIR} ${PC_HARFBUZZ_INCLUDE_DIRS}
-    PATH_SUFFIXES harfbuzz
+	NAMES hb.h
+	HINTS ${PC_HARFBUZZ_INCLUDEDIR} ${PC_HARFBUZZ_INCLUDE_DIRS}
+	PATH_SUFFIXES harfbuzz
 )
 
 find_library(HarfBuzz_LIBRARY
-    NAMES ${HarfBuzz_NAMES} harfbuzz
-    HINTS ${PC_HARFBUZZ_LIBDIR} ${PC_HARFBUZZ_LIBRARY_DIRS}
+	NAMES ${HarfBuzz_NAMES} harfbuzz
+	HINTS ${PC_HARFBUZZ_LIBDIR} ${PC_HARFBUZZ_LIBRARY_DIRS}
 )
 
 if (HarfBuzz_INCLUDE_DIR AND NOT HarfBuzz_VERSION)
-    if (EXISTS "${HarfBuzz_INCLUDE_DIR}/hb-version.h")
-        file(READ "${HarfBuzz_INCLUDE_DIR}/hb-version.h" _harfbuzz_version_content)
+	if (EXISTS "${HarfBuzz_INCLUDE_DIR}/hb-version.h")
+		file(READ "${HarfBuzz_INCLUDE_DIR}/hb-version.h" _harfbuzz_version_content)
 
-        string(REGEX MATCH "#define +HB_VERSION_STRING +\"([0-9]+\\.[0-9]+\\.[0-9]+)\"" _dummy "${_harfbuzz_version_content}")
-        set(HarfBuzz_VERSION "${CMAKE_MATCH_1}")
-    endif ()
+		string(REGEX MATCH "#define +HB_VERSION_STRING +\"([0-9]+\\.[0-9]+\\.[0-9]+)\"" _dummy "${_harfbuzz_version_content}")
+		set(HarfBuzz_VERSION "${CMAKE_MATCH_1}")
+	endif ()
 endif ()
 
 if ("${HarfBuzz_FIND_VERSION}" VERSION_GREATER "${HarfBuzz_VERSION}")
-    message(FATAL_ERROR "Required version (" ${HarfBuzz_FIND_VERSION} ") is higher than found version (" ${HarfBuzz_VERSION} ")")
+	message(FATAL_ERROR "Required version (" ${HarfBuzz_FIND_VERSION} ") is higher than found version (" ${HarfBuzz_VERSION} ")")
 endif ()
 
 # Find components
 if (HarfBuzz_INCLUDE_DIR AND HarfBuzz_LIBRARY)
-    set(_HarfBuzz_REQUIRED_LIBS_FOUND ON)
-    set(HarfBuzz_LIBS_FOUND "HarfBuzz (required): ${HarfBuzz_LIBRARY}")
+	set(_HarfBuzz_REQUIRED_LIBS_FOUND ON)
+	set(HarfBuzz_LIBS_FOUND "HarfBuzz (required): ${HarfBuzz_LIBRARY}")
 else ()
-    set(_HarfBuzz_REQUIRED_LIBS_FOUND OFF)
-    set(HarfBuzz_LIBS_NOT_FOUND "HarfBuzz (required)")
+	set(_HarfBuzz_REQUIRED_LIBS_FOUND OFF)
+	set(HarfBuzz_LIBS_NOT_FOUND "HarfBuzz (required)")
 endif ()
 
 if ("ICU" IN_LIST HarfBuzz_FIND_COMPONENTS)
-    pkg_check_modules(PC_HARFBUZZ_ICU QUIET harfbuzz-icu)
-    set(HarfBuzz_ICU_COMPILE_OPTIONS ${PC_HARFBUZZ_ICU_CFLAGS_OTHER})
+	pkg_check_modules(PC_HARFBUZZ_ICU QUIET harfbuzz-icu)
+	set(HarfBuzz_ICU_COMPILE_OPTIONS ${PC_HARFBUZZ_ICU_CFLAGS_OTHER})
 
-    find_library(HarfBuzz_ICU_LIBRARY
-        NAMES ${HarfBuzz_ICU_NAMES} harfbuzz-icu
-        HINTS ${PC_HARFBUZZ_ICU_LIBDIR} ${PC_HARFBUZZ_ICU_LIBRARY_DIRS}
-    )
+	find_library(HarfBuzz_ICU_LIBRARY
+		NAMES ${HarfBuzz_ICU_NAMES} harfbuzz-icu
+		HINTS ${PC_HARFBUZZ_ICU_LIBDIR} ${PC_HARFBUZZ_ICU_LIBRARY_DIRS}
+	)
 
-    if (HarfBuzz_ICU_LIBRARY)
-        if (HarfBuzz_FIND_REQUIRED_ICU)
-            list(APPEND HarfBuzz_LIBS_FOUND "ICU (required): ${HarfBuzz_ICU_LIBRARY}")
-        else ()
-           list(APPEND HarfBuzz_LIBS_FOUND "ICU (optional): ${HarfBuzz_ICU_LIBRARY}")
-        endif ()
-    else ()
-        if (HarfBuzz_FIND_REQUIRED_ICU)
-           set(_HarfBuzz_REQUIRED_LIBS_FOUND OFF)
-           list(APPEND HarfBuzz_LIBS_NOT_FOUND "ICU (required)")
-        else ()
-           list(APPEND HarfBuzz_LIBS_NOT_FOUND "ICU (optional)")
-        endif ()
-    endif ()
+	if (HarfBuzz_ICU_LIBRARY)
+		if (HarfBuzz_FIND_REQUIRED_ICU)
+			list(APPEND HarfBuzz_LIBS_FOUND "ICU (required): ${HarfBuzz_ICU_LIBRARY}")
+		else ()
+			list(APPEND HarfBuzz_LIBS_FOUND "ICU (optional): ${HarfBuzz_ICU_LIBRARY}")
+		endif ()
+	else ()
+		if (HarfBuzz_FIND_REQUIRED_ICU)
+			set(_HarfBuzz_REQUIRED_LIBS_FOUND OFF)
+			list(APPEND HarfBuzz_LIBS_NOT_FOUND "ICU (required)")
+		else ()
+			list(APPEND HarfBuzz_LIBS_NOT_FOUND "ICU (optional)")
+		endif ()
+	endif ()
 endif ()
 
 if (NOT HarfBuzz_FIND_QUIETLY)
-    if (HarfBuzz_LIBS_FOUND)
-        message(STATUS "Found the following HarfBuzz libraries:")
-        foreach (found ${HarfBuzz_LIBS_FOUND})
-            message(STATUS " ${found}")
-        endforeach ()
-    endif ()
-    if (HarfBuzz_LIBS_NOT_FOUND)
-        message(STATUS "The following HarfBuzz libraries were not found:")
-        foreach (found ${HarfBuzz_LIBS_NOT_FOUND})
-            message(STATUS " ${found}")
-        endforeach ()
-    endif ()
+	if (HarfBuzz_LIBS_FOUND)
+		message(STATUS "Found the following HarfBuzz libraries:")
+		foreach (found ${HarfBuzz_LIBS_FOUND})
+			message(STATUS " ${found}")
+		endforeach ()
+	endif ()
+	if (HarfBuzz_LIBS_NOT_FOUND)
+		message(STATUS "The following HarfBuzz libraries were not found:")
+		foreach (found ${HarfBuzz_LIBS_NOT_FOUND})
+			message(STATUS " ${found}")
+		endforeach ()
+	endif ()
 endif ()
 
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(HarfBuzz
-    FOUND_VAR HarfBuzz_FOUND
-    REQUIRED_VARS HarfBuzz_INCLUDE_DIR HarfBuzz_LIBRARY _HarfBuzz_REQUIRED_LIBS_FOUND
-    VERSION_VAR HarfBuzz_VERSION
+	FOUND_VAR HarfBuzz_FOUND
+	REQUIRED_VARS HarfBuzz_INCLUDE_DIR HarfBuzz_LIBRARY _HarfBuzz_REQUIRED_LIBS_FOUND
+	VERSION_VAR HarfBuzz_VERSION
 )
 
 if (HarfBuzz_LIBRARY AND NOT TARGET HarfBuzz::HarfBuzz)
-    add_library(HarfBuzz::HarfBuzz UNKNOWN IMPORTED GLOBAL)
-    set_target_properties(HarfBuzz::HarfBuzz PROPERTIES
-        IMPORTED_LOCATION "${HarfBuzz_LIBRARY}"
-        INTERFACE_COMPILE_OPTIONS "${HarfBuzz_COMPILE_OPTIONS}"
-        INTERFACE_INCLUDE_DIRECTORIES "${HarfBuzz_INCLUDE_DIR}"
-    )
+	add_library(HarfBuzz::HarfBuzz UNKNOWN IMPORTED GLOBAL)
+	set_target_properties(HarfBuzz::HarfBuzz PROPERTIES
+		IMPORTED_LOCATION "${HarfBuzz_LIBRARY}"
+		INTERFACE_COMPILE_OPTIONS "${HarfBuzz_COMPILE_OPTIONS}"
+		INTERFACE_INCLUDE_DIRECTORIES "${HarfBuzz_INCLUDE_DIR}"
+	)
 endif ()
 
 if (HarfBuzz_ICU_LIBRARY AND NOT TARGET HarfBuzz::ICU)
-    add_library(HarfBuzz::ICU UNKNOWN IMPORTED GLOBAL)
-    set_target_properties(HarfBuzz::ICU PROPERTIES
-        IMPORTED_LOCATION "${HarfBuzz_ICU_LIBRARY}"
-        INTERFACE_COMPILE_OPTIONS "${HarfBuzz_ICU_COMPILE_OPTIONS}"
-        INTERFACE_INCLUDE_DIRECTORIES "${HarfBuzz_INCLUDE_DIR}"
-    )
+	add_library(HarfBuzz::ICU UNKNOWN IMPORTED GLOBAL)
+	set_target_properties(HarfBuzz::ICU PROPERTIES
+		IMPORTED_LOCATION "${HarfBuzz_ICU_LIBRARY}"
+		INTERFACE_COMPILE_OPTIONS "${HarfBuzz_ICU_COMPILE_OPTIONS}"
+		INTERFACE_INCLUDE_DIRECTORIES "${HarfBuzz_INCLUDE_DIR}"
+	)
 endif ()
 
 mark_as_advanced(
-    HarfBuzz_INCLUDE_DIR
-    HarfBuzz_LIBRARY
-    HarfBuzz_ICU_LIBRARY
+	HarfBuzz_INCLUDE_DIR
+	HarfBuzz_LIBRARY
+	HarfBuzz_ICU_LIBRARY
 )
 
 if (HarfBuzz_FOUND)
-   set(HarfBuzz_LIBRARIES ${HarfBuzz_LIBRARY} ${HarfBuzz_ICU_LIBRARY})
-   set(HarfBuzz_INCLUDE_DIRS ${HarfBuzz_INCLUDE_DIR})
+	set(HarfBuzz_LIBRARIES ${HarfBuzz_LIBRARY} ${HarfBuzz_ICU_LIBRARY})
+	set(HarfBuzz_INCLUDE_DIRS ${HarfBuzz_INCLUDE_DIR})
 endif ()

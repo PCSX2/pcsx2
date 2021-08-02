@@ -22,7 +22,7 @@
 void BaseVUmicroCPU::ExecuteBlock(bool startUp) {
 	const u32& stat	= VU0.VI[REG_VPU_STAT].UL;
 	const int  test = m_Idx ? 0x100 : 1;
-	const int  s = EmuConfig.Gamefixes.VU0KickstartHack ? 16 : 0; // Kick Start Cycles (Jak needs at least 4 due to writing values after they're read
+	const int  s = EmuConfig.Gamefixes.VUKickstartHack ? 16 : 0; // Kick Start Cycles (Jak needs at least 4 due to writing values after they're read
 
 	if (m_Idx && THREAD_VU1)
 	{
@@ -69,12 +69,6 @@ void BaseVUmicroCPU::ExecuteBlockJIT(BaseVUmicroCPU* cpu) {
 		s32 delta = (s32)(u32)(cpuRegs.cycle - cycle);
 		if (delta > 0) {			// Enough time has passed
 			cpu->Execute(delta);	// Execute the time since the last call
-			if (stat & test) {
-				cpuSetNextEventDelta(delta);
-			}
-		}
-		else {
-			cpuSetNextEventDelta(-delta); // Haven't caught-up from kick start
 		}
 	}
 }

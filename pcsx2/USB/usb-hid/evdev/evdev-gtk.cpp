@@ -20,8 +20,6 @@
 #include <cstdio>
 #include <sstream>
 
-GtkWidget* new_combobox(const char* label, GtkWidget* vbox); // src/linux/config-gtk.cpp
-
 namespace usb_hid
 {
 	namespace evdev

@@ -12,6 +12,8 @@
  *  You should have received a copy of the GNU General Public License along with PCSX2.
  *  If not, see <http://www.gnu.org/licenses/>.
  */
+#pragma once
 
-#define GLIB_DISABLE_DEPRECATION_WARNINGS
 #include <gtk/gtk.h>
+
+GtkWidget* new_combobox(const char* label, GtkWidget* vbox, bool scrollable = false); // linux/config-gtk.cpp

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(SolutionDir)common\vsprops\BaseProjectConfig.props" />
+  <Import Project="$(SolutionDir)common\vsprops\WinSDK.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{ED2F21FD-0A36-4A8F-9B90-E7D92A2ACB63}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization Condition="$(Configuration.Contains(Release))">true</WholeProgramOptimization>
+    <UseDebugLibraries Condition="$(Configuration.Contains(Debug))">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="$(SolutionDir)3rdparty\DefaultProjectRootDir.props" />
+    <Import Project="$(SolutionDir)3rdparty\3rdparty.props" />
+    <Import Condition="$(Configuration.Contains(Debug))" Project="$(SolutionDir)common\vsprops\CodeGen_Debug.props" />
+    <Import Condition="$(Configuration.Contains(Devel))" Project="$(SolutionDir)common\vsprops\CodeGen_Devel.props" />
+    <Import Condition="$(Configuration.Contains(Release))" Project="$(SolutionDir)common\vsprops\CodeGen_Release.props" />
+    <Import Condition="!$(Configuration.Contains(Release))" Project="$(SolutionDir)common\vsprops\IncrementalLinking.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <ClCompile Include="jpgd.cpp" />
+    <ClCompile Include="jpge.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="jpgd.h" />
+    <ClInclude Include="jpgd_idct.h" />
+    <ClInclude Include="jpge.h" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

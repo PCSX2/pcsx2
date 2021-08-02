@@ -1,55 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ItemGroup Label="ProjectConfigurations">
-    <ProjectConfiguration Include="Debug (NO ASIO)|Win32">
-      <Configuration>Debug (NO ASIO)</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug (NO ASIO)|x64">
-      <Configuration>Debug (NO ASIO)</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|Win32">
-      <Configuration>Debug</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Debug|x64">
-      <Configuration>Debug</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Devel (NO ASIO)|Win32">
-      <Configuration>Devel (NO ASIO)</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Devel (NO ASIO)|x64">
-      <Configuration>Devel (NO ASIO)</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Devel|Win32">
-      <Configuration>Devel</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Devel|x64">
-      <Configuration>Devel</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release (NO ASIO)|Win32">
-      <Configuration>Release (NO ASIO)</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release (NO ASIO)|x64">
-      <Configuration>Release (NO ASIO)</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|Win32">
-      <Configuration>Release</Configuration>
-      <Platform>Win32</Platform>
-    </ProjectConfiguration>
-    <ProjectConfiguration Include="Release|x64">
-      <Configuration>Release</Configuration>
-      <Platform>x64</Platform>
-    </ProjectConfiguration>
-  </ItemGroup>
+  <Import Project="$(SolutionDir)common\vsprops\BaseProjectConfig.props" />
   <Import Project="$(SolutionDir)common\vsprops\WinSDK.props" />
   <PropertyGroup Label="Globals">
     <ProjectGuid>{0A18A071-125E-442F-AFF7-A3F68ABECF99}</ProjectGuid>
@@ -67,11 +18,11 @@
   <ImportGroup Label="ExtensionSettings" />
   <ImportGroup Label="PropertySheets">
     <Import Project="ProjectRootDir.props" />
-    <Import Project="..\..\..\3rdparty.props" />
-    <Import Condition="$(Configuration.Contains(Debug))" Project="..\..\..\..\common\vsprops\CodeGen_Debug.props" />
-    <Import Condition="$(Configuration.Contains(Devel))" Project="..\..\..\..\common\vsprops\CodeGen_Devel.props" />
-    <Import Condition="$(Configuration.Contains(Release))" Project="..\..\..\..\common\vsprops\CodeGen_Release.props" />
-    <Import Condition="!$(Configuration.Contains(Release))" Project="..\..\..\..\common\vsprops\IncrementalLinking.props" />
+    <Import Project="$(SolutionDir)3rdparty\3rdparty.props" />
+    <Import Condition="$(Configuration.Contains(Debug))" Project="$(SolutionDir)common\vsprops\CodeGen_Debug.props" />
+    <Import Condition="$(Configuration.Contains(Devel))" Project="$(SolutionDir)common\vsprops\CodeGen_Devel.props" />
+    <Import Condition="$(Configuration.Contains(Release))" Project="$(SolutionDir)common\vsprops\CodeGen_Release.props" />
+    <Import Condition="!$(Configuration.Contains(Release))" Project="$(SolutionDir)common\vsprops\IncrementalLinking.props" />
   </ImportGroup>
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup>
@@ -79,32 +30,10 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories Condition="'$(Configuration.Contains(NO ASIO))'">..\..\src\common;..\..\include;.\;..\..\src\os\win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <AdditionalIncludeDirectories Condition="'!$(Configuration.Contains(NO ASIO))'">..\..\src\hostapi\asio\ASIOSDK\host;..\..\src\hostapi\asio\ASIOSDK\host\pc;..\..\src\hostapi\asio\ASIOSDK\common;..\..\src\common;..\..\include;.\;..\..\src\os\win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions Condition="'$(Configuration.Contains(NO ASIO))' and '!$(Configuration.Contains(Debug))'">_CRT_SECURE_NO_DEPRECATE;PAWIN_USE_WDMKS_DEVICE_INFO;PA_USE_DS=1;PA_USE_WASAPI=1;PA_USE_WDMKS=1;PA_USE_WMME=0;PA_USE_ASIO=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'$(Configuration.Contains(NO ASIO))' and '$(Configuration.Contains(Debug))'">PA_ENABLE_DEBUG_OUTPUT;_CRT_SECURE_NO_DEPRECATE;PAWIN_USE_WDMKS_DEVICE_INFO;PA_USE_DS=1;PA_USE_WASAPI=1;PA_USE_WDMKS=1;PA_USE_WMME=0;PA_USE_ASIO=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'!$(Configuration.Contains(NO ASIO))' and '!$(Configuration.Contains(Debug))'">_CRT_SECURE_NO_DEPRECATE;PAWIN_USE_WDMKS_DEVICE_INFO;PA_USE_DS=1;PA_USE_WASAPI=1;PA_USE_WDMKS=1;PA_USE_WMME=0;PA_USE_ASIO=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <PreprocessorDefinitions Condition="'!$(Configuration.Contains(NO ASIO))' and '$(Configuration.Contains(Debug))'">PA_ENABLE_DEBUG_OUTPUT;_CRT_SECURE_NO_DEPRECATE;PAWIN_USE_WDMKS_DEVICE_INFO;PA_USE_DS=1;PA_USE_WASAPI=1;PA_USE_WDMKS=1;PA_USE_WMME=0;PA_USE_ASIO=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
-      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">false</MinimalRebuild>
-      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug (NO ASIO)|Win32'">false</MinimalRebuild>
-      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">false</MinimalRebuild>
-      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Devel (NO ASIO)|Win32'">false</MinimalRebuild>
-      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">false</MinimalRebuild>
-      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Debug (NO ASIO)|x64'">false</MinimalRebuild>
-      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">false</MinimalRebuild>
-      <MinimalRebuild Condition="'$(Configuration)|$(Platform)'=='Devel (NO ASIO)|x64'">false</MinimalRebuild>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug (NO ASIO)|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Devel|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Devel (NO ASIO)|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release (NO ASIO)|Win32'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Debug (NO ASIO)|x64'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Devel|x64'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Devel (NO ASIO)|x64'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release|x64'">TurnOffAllWarnings</WarningLevel>
-      <WarningLevel Condition="'$(Configuration)|$(Platform)'=='Release (NO ASIO)|x64'">TurnOffAllWarnings</WarningLevel>
+      <AdditionalIncludeDirectories>..\..\src\common;..\..\include;.\;..\..\src\os\win;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>_CRT_SECURE_NO_DEPRECATE;PAWIN_USE_WDMKS_DEVICE_INFO;PA_USE_DS=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>PA_USE_WASAPI=1;PA_USE_WDMKS=1;PA_USE_WMME=0;PA_USE_ASIO=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="$(Configuration.Contains(Debug))">PA_ENABLE_DEBUG_OUTPUT;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>ksuser.lib</AdditionalDependencies>
@@ -121,30 +50,6 @@
     <ClCompile Include="..\..\src\common\pa_ringbuffer.c" />
     <ClCompile Include="..\..\src\common\pa_stream.c" />
     <ClCompile Include="..\..\src\common\pa_trace.c" />
-    <ClCompile Include="..\..\src\hostapi\asio\pa_asio.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration.Contains(NO ASIO))'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\hostapi\asio\ASIOSDK\common\asio.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration.Contains(NO ASIO))'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\hostapi\asio\ASIOSDK\host\ASIOConvertSamples.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration.Contains(NO ASIO))'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\hostapi\asio\ASIOSDK\host\asiodrivers.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration.Contains(NO ASIO))'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\hostapi\asio\ASIOSDK\host\pc\asiolist.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration.Contains(NO ASIO))'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\hostapi\asio\ASIOSDK\common\combase.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration.Contains(NO ASIO))'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\hostapi\asio\ASIOSDK\common\debugmessage.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration.Contains(NO ASIO))'">true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="..\..\src\hostapi\asio\ASIOSDK\common\register.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration.Contains(NO ASIO))'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="..\..\src\hostapi\dsound\pa_win_ds.c" />
     <ClCompile Include="..\..\src\hostapi\dsound\pa_win_ds_dynlink.c" />
     <ClCompile Include="..\..\src\hostapi\wdmks\pa_win_wdmks.c" />

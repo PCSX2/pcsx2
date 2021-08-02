@@ -7,7 +7,7 @@ project(Pcsx2)
 #
 # Setting it to a range tells it that it supports the features on the newer
 # versions as well, avoiding setting policies.
-cmake_minimum_required(VERSION 3.3.0...3.17)
+cmake_minimum_required(VERSION 3.10...3.17)
 
 # Variable to check that people use the good file
 set(TOP_CMAKE_WAS_SOURCED TRUE)
@@ -35,63 +35,54 @@ get_git_version_info()
 write_svnrev_h()
 
 if(NOT NO_TRANSLATION)
-    # make the translation
-    if(EXISTS "${CMAKE_SOURCE_DIR}/locales")
-        add_subdirectory(locales)
-    endif()
+	# make the translation
+	if(EXISTS "${CMAKE_SOURCE_DIR}/locales")
+		add_subdirectory(locales)
+	endif()
 endif()
 
 # make common
-if(common_libs)
-    add_subdirectory(common/src/Utilities)
-    add_subdirectory(common/src/x86emitter)
-endif()
+add_subdirectory(common/src/Utilities)
+add_subdirectory(common/src/x86emitter)
 
 # make pcsx2
-if(EXISTS "${CMAKE_SOURCE_DIR}/pcsx2" AND pcsx2_core)
-    add_subdirectory(pcsx2)
-endif()
-
-# make plugins
-if(EXISTS "${CMAKE_SOURCE_DIR}/plugins")
-    add_subdirectory(plugins)
-endif()
+add_subdirectory(pcsx2)
 
 # tests
 if(ACTUALLY_ENABLE_TESTS)
-    add_subdirectory(3rdparty/gtest EXCLUDE_FROM_ALL)
-    add_subdirectory(tests/ctest)
+	add_subdirectory(3rdparty/gtest EXCLUDE_FROM_ALL)
+	add_subdirectory(tests/ctest)
 endif()
 
 #-------------------------------------------------------------------------------
 
 # Install some files to ease package creation
 if(PACKAGE_MODE)
-    if(NOT DISABLE_CHEATS_ZIP)
-        INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/cheats_ws.zip" DESTINATION "${CMAKE_INSTALL_DATADIR}/PCSX2")
-    endif()
-    INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/GameIndex.yaml" DESTINATION "${CMAKE_INSTALL_DATADIR}/PCSX2")
+	if(NOT DISABLE_CHEATS_ZIP)
+		INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/cheats_ws.zip" DESTINATION "${CMAKE_INSTALL_DATADIR}/PCSX2")
+	endif()
+	INSTALL(FILES     "${CMAKE_SOURCE_DIR}/bin/GameIndex.yaml" DESTINATION "${CMAKE_INSTALL_DATADIR}/PCSX2")
 
-    # set categories depending on system/distribution in pcsx2.desktop
-    if(openSUSE)
-        set(PCSX2_MENU_CATEGORIES "System;Emulator;")
-    else()
-        set(PCSX2_MENU_CATEGORIES "Game;Emulator;")
-    endif()
-    configure_file("${CMAKE_SOURCE_DIR}/linux_various/PCSX2.desktop.in" "${CMAKE_BINARY_DIR}/linux_various/PCSX2.desktop" @ONLY)
+	# set categories depending on system/distribution in pcsx2.desktop
+	if(openSUSE)
+		set(PCSX2_MENU_CATEGORIES "System;Emulator;")
+	else()
+		set(PCSX2_MENU_CATEGORIES "Game;Emulator;")
+	endif()
+	configure_file("${CMAKE_SOURCE_DIR}/linux_various/PCSX2.desktop.in" "${CMAKE_BINARY_DIR}/linux_various/PCSX2.desktop" @ONLY)
 
-    INSTALL(FILES "${CMAKE_BINARY_DIR}/linux_various/PCSX2.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
-    INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2.xpm"     DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/pixmaps")
-    INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2_FAQ.pdf"      DESTINATION "${CMAKE_INSTALL_DOCDIR}")
-    INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/Configuration_Guide.pdf"   DESTINATION "${CMAKE_INSTALL_DOCDIR}")
-    INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2.1"            DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")
-    if(NOT DISABLE_PCSX2_WRAPPER)
-        INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2-linux.sh"          DESTINATION "${CMAKE_INSTALL_BINDIR}")
-    endif()
+	INSTALL(FILES "${CMAKE_BINARY_DIR}/linux_various/PCSX2.desktop" DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/applications")
+	INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2.xpm"     DESTINATION "${CMAKE_INSTALL_DATAROOTDIR}/pixmaps")
+	INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2_FAQ.pdf"      DESTINATION "${CMAKE_INSTALL_DOCDIR}")
+	INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/Configuration_Guide.pdf"   DESTINATION "${CMAKE_INSTALL_DOCDIR}")
+	INSTALL(FILES "${CMAKE_SOURCE_DIR}/bin/docs/PCSX2.1"            DESTINATION "${CMAKE_INSTALL_MANDIR}/man1")
+	if(NOT DISABLE_PCSX2_WRAPPER)
+		INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2-linux.sh"          DESTINATION "${CMAKE_INSTALL_BINDIR}")
+	endif()
 
 else()
-    if(NOT DISABLE_PCSX2_WRAPPER)
-        # special case to avoid having linux files in windows
-        INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2-linux.sh"          DESTINATION "${CMAKE_SOURCE_DIR}/bin")
-    endif()
+	if(NOT DISABLE_PCSX2_WRAPPER)
+		# special case to avoid having linux files in windows
+		INSTALL(FILES "${CMAKE_SOURCE_DIR}/linux_various/PCSX2-linux.sh"          DESTINATION "${CMAKE_SOURCE_DIR}/bin")
+	endif()
 endif()

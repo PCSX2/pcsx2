@@ -38,8 +38,6 @@
 // renderswitch - tells GS to go into dx9 sw if "renderswitch" is set.
 bool renderswitch = false;
 
-extern bool switchAR;
-
 static bool g_Pcsx2Recording = false; // true if recording video and sound
 
 
@@ -174,21 +172,11 @@ namespace Implementations
 		pauser.AllowResume();
 	}
 
-	void UpdateImagePosition()
-	{
-		//AppApplySettings() would have been nicer, since it also immidiately affects the GUI (if open).
-		//However, the events sequence it generates also "depresses" Shift/CTRL/etc, so consecutive zoom with CTRL down breaks.
-		//Since zoom only affects the window viewport anyway, we can live with directly calling it.
-		if (GSFrame* gsFrame = wxGetApp().GetGsFramePtr())
-			if (GSPanel* woot = gsFrame->GetViewport())
-				woot->DoResize();
-	}
-
 	void GSwindow_CycleAspectRatio()
 	{
 		AspectRatioType& art = g_Conf->GSWindow.AspectRatio;
 		const char* arts = "Not modified";
-		if (art == AspectRatio_Stretch && switchAR) //avoids a double 4:3 when coming from FMV aspect ratio switch
+		if (art == AspectRatio_Stretch && GSGetFMVSwitch()) //avoids a double 4:3 when coming from FMV aspect ratio switch
 			art = AspectRatio_4_3;
 		switch (art)
 		{
@@ -209,7 +197,9 @@ namespace Implementations
 		}
 
 		OSDlog(Color_StrongBlue, true, "(GSwindow) Aspect ratio: %s", arts);
-		UpdateImagePosition();
+
+		// Disable FMV mode if we were previously in it, so the user can override the AR.
+		GSSetFMVSwitch(false);
 	}
 
 	void SetOffset(float x, float y)
@@ -217,8 +207,6 @@ namespace Implementations
 		g_Conf->GSWindow.OffsetX = x;
 		g_Conf->GSWindow.OffsetY = y;
 		OSDlog(Color_StrongBlue, true, "(GSwindow) Offset: x=%f, y=%f", x, y);
-
-		UpdateImagePosition();
 	}
 
 	void GSwindow_OffsetYplus()
@@ -252,8 +240,6 @@ namespace Implementations
 			return;
 		g_Conf->GSWindow.StretchY = zoom;
 		OSDlog(Color_StrongBlue, true, "(GSwindow) Vertical stretch: %f", zoom);
-
-		UpdateImagePosition();
 	}
 
 	void GSwindow_ZoomInY()
@@ -279,8 +265,6 @@ namespace Implementations
 			OSDlog(Color_StrongBlue, true, "(GSwindow) Zoom: 0 (auto, no black bars)");
 		else
 			OSDlog(Color_StrongBlue, true, "(GSwindow) Zoom: %f", zoom);
-
-		UpdateImagePosition();
 	}
 
 
@@ -404,12 +388,12 @@ namespace Implementations
 			ScopedCoreThreadPause paused_core;
 			freezeData fP = {0, nullptr};
 			MTGS_FreezeData sstate = {&fP, 0};
-			GetMTGS().Freeze(FREEZE_SIZE, sstate);
+			GetMTGS().Freeze(FreezeAction::Size, sstate);
 			fP.data = new char[fP.size];
-			GetMTGS().Freeze(FREEZE_SAVE, sstate);
+			GetMTGS().Freeze(FreezeAction::Save, sstate);
 			GetMTGS().Suspend(true);
 			renderswitch = !renderswitch;
-			GetMTGS().Freeze(FREEZE_LOAD, sstate);
+			GetMTGS().Freeze(FreezeAction::Load, sstate);
 			delete[] fP.data;
 			paused_core.AllowResume();
 			reentrant = false;

@@ -1160,6 +1160,50 @@ int cop2flags(u32 code)
 	}
 	return 3;
 }
+
+int COP2DivUnitTimings(u32 code)
+{
+	// Note: Cycles are off by 1 since the check ignores the actual op, so they are off by 1
+	switch (code & 0x3FF)
+	{
+		case 0x3BC: // DIV
+		case 0x3BD: // SQRT
+			return 6;
+		case 0x3BE: // RSQRT
+			return 12;
+		default:
+			return 0; // Used mainly for WAITQ
+	}
+}
+
+bool COP2IsQOP(u32 code)
+{
+	if(_Opcode_ != 022) // Not COP2 operation
+		return false;
+
+	if ((code & 0x3f) == 0x20) // VADDq
+		return true;
+	if ((code & 0x3f) == 0x21) // VMADDq
+		return true;
+	if ((code & 0x3f) == 0x24) // VSUBq
+		return true;
+	if ((code & 0x3f) == 0x25) // VMSUBq
+		return true;
+	if ((code & 0x3f) == 0x1C) // VMULq
+		return true;
+	if ((code & 0x7FF) == 0x1FC) // VMULAq
+		return true;
+	if ((code & 0x7FF) == 0x23C) // VADDAq
+		return true;
+	if ((code & 0x7FF) == 0x23D) // VMADDAq
+		return true;
+	if ((code & 0x7FF) == 0x27C) // VSUBAq
+		return true;
+	if ((code & 0x7FF) == 0x27D) // VMSUBAq
+		return true;
+
+	return false;
+}
 #endif
 
 
@@ -1449,6 +1493,30 @@ void recompileNextInstruction(int delayslot)
 			; // TODO
 		else if (_Rs_ == 6) // CTC2
 			; // TODO
+		else if ((cpuRegs.code & 0x7FC) == 0x3BC) // DIV/RSQRT/SQRT/WAITQ
+		{
+			int cycles = COP2DivUnitTimings(cpuRegs.code);
+			for (u32 p = pc; cycles > 0 && p < s_nEndBlock; p += 4, cycles--)
+			{
+				cpuRegs.code = memRead32(p);
+
+				if((_Opcode_ == 022) && (cpuRegs.code & 0x7FC) == 0x3BC) // WaitQ or another DIV op hit (stalled), we're safe
+					break;
+
+				else if (COP2IsQOP(cpuRegs.code))
+				{
+					std::string disasm;
+					DevCon.Warning("Possible incorrect Q value used in COP2");
+					for (u32 i = s_pCurBlockEx->startpc; i < s_nEndBlock; i += 4)
+					{
+						disasm = "";
+						disR5900Fasm(disasm, memRead32(i), i, false);
+						DevCon.Warning("%x %s%08X %s", i, i == pc - 4 ? "*" : i == p ? "=" : " ", memRead32(i), disasm.c_str());
+					}
+					break;
+				}
+			}
+		}
 		else
 		{
 			int s = cop2flags(cpuRegs.code);

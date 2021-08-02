@@ -126,7 +126,7 @@ void Threading::pxThread::_platform_specific_OnCleanupInThread()
 }
 
 // name can be up to 16 bytes
-void Threading::pxThread::_DoSetThreadName(const char *name)
+void Threading::SetNameOfCurrentThread(const char *name)
 {
     pthread_setname_np(name);
 }

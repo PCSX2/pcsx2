@@ -1,0 +1,15 @@
+#!/bin/bash
+
+export LD_LIBRARY_PATH="$APPDIR/usr/lib:$LD_LIBRARY_PATH"
+BINARY_NAME=$(basename "$ARGV0")
+if [[ ! -e "$PWD/$BINARY_NAME.config" ]]; then
+        mkdir "$PWD/$BINARY_NAME.config"
+fi       
+export XDG_CONFIG_HOME="$PWD/$BINARY_NAME.config"
+
+ln -sf $APPDIR/usr/bin/app /tmp/PCSX2 
+mkdir -p $HOME/.local/share/icons/hicolor/scalable/apps && cp $APPDIR/PCSX2.png $HOME/.local/share/icons/hicolor/scalable/apps
+
+$APPDIR/AppRun-patched
+
+unlink /tmp/PCSX2

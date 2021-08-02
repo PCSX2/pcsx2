@@ -16,6 +16,7 @@
 #pragma once
 #include <linux/joystick.h>
 #include <unistd.h>
+#include "Pcsx2Types.h"
 #include "USB/gtk.h"
 #include "USB/usb-pad/padproxy.h"
 #include "USB/configuration.h"
@@ -31,10 +32,15 @@ struct evdev_device
 	std::string name;
 	std::string id;
 	std::string path;
+	struct {
+		uint16_t bustype;
+		uint16_t vendor;
+		uint16_t product;
+		uint16_t version;
+	} input_id;
 };
 
 typedef std::vector<evdev_device> device_list;
-GtkWidget* new_combobox(const char* label, GtkWidget* vbox);
 
 namespace usb_pad
 {
@@ -46,7 +52,6 @@ namespace usb_pad
 			COL_NAME = 0,
 			COL_PS2,
 			COL_PC,
-			COL_COLUMN_WIDTH,
 			COL_BINDING,
 			NUM_COLS
 		};
@@ -76,7 +81,7 @@ namespace usb_pad
 			JOY_MAPS_COUNT
 		};
 
-		static constexpr const char* JoystickMapNames[] = {
+		constexpr const char* JoystickMapNames[]{
 			"cross",
 			"square",
 			"circle",
@@ -95,14 +100,49 @@ namespace usb_pad
 			"right",
 			"steering",
 			"throttle",
-			"brake"};
+			"brake",
+		};
 
-		static constexpr const char* buzz_map_names[] = {
+		constexpr const char* buzz_map_names[]{
 			"red",
 			"yellow",
 			"green",
 			"orange",
 			"blue",
+		};
+
+		constexpr const char* kbdmania_key_labels[]{
+			"C 1",
+			"C# 1",
+			"D 1",
+			"D# 1",
+			"E 1",
+			"F 1",
+			"F# 1",
+			"",
+			"G 1",
+			"G# 1",
+			"A 1",
+			"A# 1",
+			"B 1",
+			"C 2",
+			"Select",
+			"",
+			"C# 2",
+			"D 2",
+			"D# 2",
+			"E 2",
+			"F 2",
+			"F# 2",
+			"Start",
+			"",
+			"G 2",
+			"G# 2",
+			"A 2",
+			"A# 2",
+			"B 2",
+			"Up",
+			"Down",
 		};
 
 		struct Point
@@ -128,7 +168,7 @@ namespace usb_pad
 
 		struct ApiCallbacks
 		{
-			bool (*get_event_name)(const char* dev_type, int map, int event, const char** name);
+			bool (*get_event_name)(const char* dev_type, int map, int event, bool is_button, const char** name);
 			void (*populate)(device_list& jsdata);
 			bool (*poll)(const std::vector<std::pair<std::string, ConfigMapping>>& jsconf, std::string& dev_name, bool isaxis, int& value, bool& inverted, int& initial);
 		};
@@ -145,6 +185,7 @@ namespace usb_pad
 			ApiCallbacks* cb;
 			int use_hidraw_ff_pt;
 			const char* dev_type;
+			u32 max_axes, max_buttons;
 		};
 
 		struct axis_correct
@@ -160,15 +201,13 @@ namespace usb_pad
 			uint8_t axis_map[ABS_MAX + 1];
 			uint16_t btn_map[KEY_MAX + 1];
 			struct axis_correct abs_correct[ABS_MAX];
-			bool is_gamepad;    //xboxish gamepad
-			bool is_dualanalog; // tricky, have to read the AXIS_RZ somehow and
-								// determine if its unpressed value is zero
 		};
 
 		int GtkPadConfigure(int port, const char* dev_type, const char* title, const char* apiname, GtkWindow* parent, ApiCallbacks& apicbs);
 		int GtkBuzzConfigure(int port, const char* dev_type, const char* title, const char* apiname, GtkWindow* parent, ApiCallbacks& apicbs);
-		bool LoadMappings(const char* dev_type, int port, const std::string& joyname, ConfigMapping& cfg);
-		bool SaveMappings(const char* dev_type, int port, const std::string& joyname, const ConfigMapping& cfg);
+		int GtkKeyboardmaniaConfigure(int port, const char* dev_type, const char* apititle, const char* apiname, GtkWindow* parent, ApiCallbacks& apicbs);
+		bool LoadMappings(const char* dev_type, int port, const std::string& joyname, u32 max_buttons, u32 max_axes, ConfigMapping& cfg);
+		bool SaveMappings(const char* dev_type, int port, const std::string& joyname, u32 max_buttons, u32 max_axes, const ConfigMapping& cfg);
 		bool LoadBuzzMappings(const char* dev_type, int port, const std::string& joyname, ConfigMapping& cfg);
 		bool SaveBuzzMappings(const char* dev_type, int port, const std::string& joyname, const ConfigMapping& cfg);
 	} // namespace evdev

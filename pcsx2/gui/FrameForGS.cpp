@@ -243,72 +243,11 @@ void GSPanel::DoShowMouse()
 	m_HideMouseTimer.Start( 1750, true );
 }
 
-void GSPanel::DoResize()
-{
-	if( GetParent() == NULL ) return;
-	wxSize client = GetParent()->GetClientSize();
-	wxSize viewport = client;
-
-	if ( !client.GetHeight() || !client.GetWidth() )
-		return;
-
-	double clientAr = (double)client.GetWidth()/(double)client.GetHeight();
-
-	extern AspectRatioType iniAR;
-	extern bool switchAR;
-	double targetAr = clientAr;
-
-	if (g_Conf->GSWindow.AspectRatio != iniAR) {
-		switchAR = false;
-	}
-
-	if (switchAR) {
-		if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_4_3) {
-			targetAr = 4.0 / 3.0;
-		} else if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_16_9) {
-			targetAr = 16.0 / 9.0;
-		} else {
-			// Allows for better real time toggling, returns to the non fmv override aspect ratio.
-			switchAR = false;
-		}
-	} else {
-		if (g_Conf->GSWindow.AspectRatio == AspectRatio_4_3) {
-			targetAr = 4.0 / 3.0;
-		} else if (g_Conf->GSWindow.AspectRatio == AspectRatio_16_9) {
-			targetAr = 16.0 / 9.0;
-		}
-	}
-
-	double arr = targetAr / clientAr;
-
-	if( arr < 1 )
-		viewport.x = (int)( (double)viewport.x*arr + 0.5);
-	else if( arr > 1 )
-		viewport.y = (int)( (double)viewport.y/arr + 0.5);
-
-	float zoom = g_Conf->GSWindow.Zoom.ToFloat()/100.0;
-	if( zoom == 0 )//auto zoom in untill black-bars are gone (while keeping the aspect ratio).
-		zoom = std::max( (float)arr, (float)(1.0/arr) );
-
-	viewport.Scale(zoom, zoom*g_Conf->GSWindow.StretchY.ToFloat()/100.0 );
-	SetSize( viewport );
-	CenterOnParent();
-	
-	int cx, cy;
-	GetPosition(&cx, &cy);
-	float unit = .01*(float)std::min(viewport.x, viewport.y);
-	SetPosition( wxPoint( cx + unit*g_Conf->GSWindow.OffsetX.ToFloat(), cy + unit*g_Conf->GSWindow.OffsetY.ToFloat() ) );
-#ifdef GSWindowScaleDebug
-	Console.WriteLn(Color_Yellow, "GSWindowScaleDebug: zoom %f, viewport.x %d, viewport.y %d", zoom, viewport.GetX(), viewport.GetY());
-#endif
-}
 
 void GSPanel::OnResize(wxSizeEvent& event)
 {
 	if( IsBeingDeleted() ) return;
-	DoResize();
-	//Console.Error( "Size? %d x %d", GetSize().x, GetSize().y );
-	//event.
+	event.Skip();
 }
 
 void GSPanel::OnCloseWindow(wxCloseEvent& evt)
@@ -524,7 +463,6 @@ void GSPanel::CoreThread_OnSuspended()
 void GSPanel::AppStatusEvent_OnSettingsApplied()
 {
 	if( IsBeingDeleted() ) return;
-	DoResize();
 	DoShowMouse();
 }
 
@@ -557,6 +495,8 @@ GSFrame::GSFrame( const wxString& title)
 
 	GSPanel* gsPanel = new GSPanel( this );
 	m_id_gspanel = gsPanel->GetId();
+	gsPanel->SetPosition(wxPoint(0, 0));
+	gsPanel->SetSize(GetClientSize());
 
 	// TODO -- Implement this GS window status window!  Whee.
 	// (main concern is retaining proper client window sizes when closing/re-opening the window).
@@ -653,7 +593,6 @@ bool GSFrame::Show( bool shown )
 			m_id_gspanel = gsPanel->GetId();
 		}
 
-		gsPanel->DoResize();
 		gsPanel->SetFocus();
 
 		if (!m_timer_UpdateTitle.IsRunning())
@@ -844,15 +783,9 @@ void GSFrame::OnResize( wxSizeEvent& evt )
 		g_Conf->GSWindow.WindowSize	= GetClientSize();
 	}
 
+	// Ensure we're always in sync with the parent size.
 	if( GSPanel* gsPanel = GetViewport() )
-	{
-		gsPanel->DoResize();
-		gsPanel->SetFocus();
-	}
+		gsPanel->SetSize(evt.GetSize());
 
-	//wxPoint hudpos = wxPoint(-10,-10) + (GetClientSize() - m_hud->GetSize());
-	//m_hud->SetPosition( hudpos ); //+ GetScreenPosition() + GetClientAreaOrigin() );
-
-	// if we skip, the panel is auto-sized to fit our window anyway, which we do not want!
-	//evt.Skip();
+	evt.Skip();
 }

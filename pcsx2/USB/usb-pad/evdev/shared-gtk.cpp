@@ -15,6 +15,7 @@
 
 #include "shared.h"
 #include "USB/icon_buzz_24.h"
+#include "Utilities/Console.h"
 
 #include <chrono>
 #include <thread>
@@ -29,37 +30,59 @@ namespace usb_pad
 		using sys_clock = std::chrono::system_clock;
 		using ms = std::chrono::milliseconds;
 
-#define JOYTYPE "joytype"
-#define CFG "cfg"
+		constexpr auto CONTROL = "control";
+		constexpr auto CFG = "cfg";
 
-		bool LoadMappings(const char* dev_type, int port, const std::string& joyname, ConfigMapping& cfg)
+		// Buttons from 0, axes after buttons
+		bool LoadMappings(const char* dev_type, int port, const std::string& joyname, u32 max_buttons, u32 max_axes, ConfigMapping& cfg)
 		{
-			assert(JOY_MAPS_COUNT == countof(JoystickMapNames));
 			std::stringstream str;
+			const bool use_control_names = !strcmp(dev_type, PadDevice::TypeName());
 
 			if (joyname.empty())
 				return false;
 
-			int j = 0;
-			cfg.controls.resize(JOY_MAPS_COUNT);
-			for (auto& i : cfg.controls)
+			cfg.controls.resize(max_buttons + max_axes);
+			for (u32 i = 0; i < max_buttons + max_axes; i++)
 			{
 				str.clear();
 				str.str("");
-				str << "map_" << JoystickMapNames[j++];
+				if (i < max_buttons)
+				{
+					str << "button_";
+					if (use_control_names && i < (u32)countof(JoystickMapNames))
+						str << JoystickMapNames[i];
+					else
+						str << i;
+				}
+				else
+				{
+					str << "axis_";
+					u32 axis = i - max_buttons;
+					if (use_control_names && (JOY_STEERING + axis) < (u32)countof(JoystickMapNames))
+						str << JoystickMapNames[JOY_STEERING + axis];
+					else
+						str << axis;
+				}
+
 				const std::string& name = str.str();
 				int32_t var;
 				if (LoadSetting(dev_type, port, joyname, name.c_str(), var))
-					i = var;
+					cfg.controls[i] = var;
 				else
-					i = -1;
+					cfg.controls[i] = -1;
 			}
 
 			for (int i = 0; i < 3; i++)
 			{
 				str.clear();
 				str.str("");
-				str << "inverted_" << JoystickMapNames[JOY_STEERING + i];
+				str << "inverted_";
+				if (use_control_names)
+					str << JoystickMapNames[JOY_STEERING + i];
+				else
+					str << i;
+
 				{
 					const std::string& name = str.str();
 					if (!LoadSetting(dev_type, port, joyname, name.c_str(), cfg.inverted[i]))
@@ -68,7 +91,12 @@ namespace usb_pad
 
 				str.clear();
 				str.str("");
-				str << "initial_" << JoystickMapNames[JOY_STEERING + i];
+				str << "initial_";
+				if (use_control_names)
+					str << JoystickMapNames[JOY_STEERING + i];
+				else
+					str << i;
+
 				{
 					const std::string& name = str.str();
 					if (!LoadSetting(dev_type, port, joyname, name.c_str(), cfg.initial[i]))
@@ -78,29 +106,58 @@ namespace usb_pad
 			return true;
 		}
 
-		bool SaveMappings(const char* dev_type, int port, const std::string& joyname, const ConfigMapping& cfg)
+		bool SaveMappings(const char* dev_type, int port, const std::string& joyname, u32 max_buttons, u32 max_axes, const ConfigMapping& cfg)
 		{
-			assert(JOY_MAPS_COUNT == countof(JoystickMapNames));
-			if (joyname.empty() || cfg.controls.size() != JOY_MAPS_COUNT)
+			if (joyname.empty() || cfg.controls.size() != max_buttons + max_axes)
 				return false;
 
 			RemoveSection(dev_type, port, joyname);
 			std::stringstream str;
-			for (int i = 0; i < JOY_MAPS_COUNT; i++)
+			const bool use_control_names = !strcmp(dev_type, PadDevice::TypeName());
+			bool has_axes = false;
+
+			for (u32 i = 0; i < max_buttons + max_axes; i++)
 			{
 				str.clear();
 				str.str("");
-				str << "map_" << JoystickMapNames[i];
+				if (i < max_buttons)
+				{
+					str << "button_";
+					if (use_control_names && i < (u32)countof(JoystickMapNames))
+						str << JoystickMapNames[i];
+					else
+						str << i;
+				}
+				else
+				{
+					str << "axis_";
+					u32 axis = i - max_buttons;
+					if (use_control_names && (JOY_STEERING + axis) < (u32)countof(JoystickMapNames))
+						str << JoystickMapNames[JOY_STEERING + axis];
+					else
+						str << axis;
+				}
+
 				const std::string& name = str.str();
-				if (cfg.controls[i] >= 0 && !SaveSetting(dev_type, port, joyname, name.c_str(), static_cast<int32_t>(cfg.controls[i])))
-					return false;
+				if (cfg.controls[i] >= 0)
+				{
+					if (!SaveSetting(dev_type, port, joyname, name.c_str(), static_cast<int32_t>(cfg.controls[i])))
+						return false;
+					if (i >= max_buttons)
+						has_axes = true;
+				}
 			}
 
-			for (int i = 0; i < 3; i++)
+			for (u32 i = 0; i < 3 && has_axes; i++)
 			{
 				str.clear();
 				str.str("");
-				str << "inverted_" << JoystickMapNames[JOY_STEERING + i];
+				str << "inverted_";
+				if (use_control_names)
+					str << JoystickMapNames[JOY_STEERING + i];
+				else
+					str << i;
+
 				{
 					const std::string& name = str.str();
 					if (!SaveSetting(dev_type, port, joyname, name.c_str(), cfg.inverted[i]))
@@ -109,7 +166,12 @@ namespace usb_pad
 
 				str.clear();
 				str.str("");
-				str << "initial_" << JoystickMapNames[JOY_STEERING + i];
+				str << "initial_";
+				if (use_control_names)
+					str << JoystickMapNames[JOY_STEERING + i];
+				else
+					str << i;
+
 				{
 					const std::string& name = str.str();
 					if (!SaveSetting(dev_type, port, joyname, name.c_str(), cfg.initial[i]))
@@ -169,48 +231,50 @@ namespace usb_pad
 		static void refresh_store(ConfigData* cfg)
 		{
 			GtkTreeIter iter;
+			std::string name;
 
 			gtk_list_store_clear(cfg->store);
 			for (auto& it : cfg->jsconf)
 			{
-				for (int i = 0; /*i < JOY_MAPS_COUNT && */ i < (int)it.second.controls.size(); i++)
+				for (size_t i = 0; i < it.second.controls.size(); i++)
 				{
 					if (it.second.controls[i] < 0)
 						continue;
 
 					const char* pc_name = "Unknown";
-					cfg->cb->get_event_name(cfg->dev_type, i, it.second.controls[i], &pc_name);
+					bool is_button = (i < cfg->max_buttons);
+					cfg->cb->get_event_name(cfg->dev_type, i, it.second.controls[i], is_button, &pc_name);
 
 					gtk_list_store_append(cfg->store, &iter);
 
 					if (!strcmp(cfg->dev_type, BuzzDevice::TypeName()))
 					{
-
 						std::stringstream ss;
 						ss << (1 + i / countof(buzz_map_names));
 						ss << " ";
 						ss << buzz_map_names[i % countof(buzz_map_names)];
-
-						std::string name = ss.str();
-
-						gtk_list_store_set(cfg->store, &iter,
-										   COL_NAME, it.first.c_str(),
-										   COL_PS2, name.c_str(),
-										   COL_PC, pc_name,
-										   COL_COLUMN_WIDTH, 50,
-										   COL_BINDING, i,
-										   -1);
+						name = ss.str();
 					}
+					else if (!strcmp(cfg->dev_type, PadDevice::TypeName()))
+						name = JoystickMapNames[i];
+					else if (!strcmp(cfg->dev_type, KeyboardmaniaDevice::TypeName()))
+						name = kbdmania_key_labels[i];
 					else
 					{
-						gtk_list_store_set(cfg->store, &iter,
-										   COL_NAME, it.first.c_str(),
-										   COL_PS2, JoystickMapNames[i],
-										   COL_PC, pc_name,
-										   COL_COLUMN_WIDTH, 50,
-										   COL_BINDING, i,
-										   -1);
+						std::stringstream ss;
+						if (is_button)
+							ss << "Button " << i;
+						else
+							ss << "Axis " << (i - cfg->max_buttons);
+						name = ss.str();
 					}
+
+					gtk_list_store_set(cfg->store, &iter,
+									   COL_NAME, it.first.c_str(),
+									   COL_PS2, name.c_str(),
+									   COL_PC, pc_name,
+									   COL_BINDING, i,
+									   -1);
 				}
 			}
 		}
@@ -219,90 +283,52 @@ namespace usb_pad
 		{
 			gint idx = gtk_combo_box_get_active(GTK_COMBO_BOX(widget));
 			//int port = reinterpret_cast<uintptr_t>(data);
-			ConfigData* cfg = (ConfigData*)g_object_get_data(G_OBJECT(widget), CFG);
+			ConfigData* cfg = reinterpret_cast<ConfigData*>(g_object_get_data(G_OBJECT(widget), CFG));
 
 			if (!cfg)
 				return;
 
 			if (idx > -1)
-			{
-				std::string name = (cfg->joysticks.begin() + idx)->name;
 				cfg->js_iter = (cfg->joysticks.begin() + idx);
-			}
 		}
 
-		static void button_clicked(GtkComboBox* widget, gpointer data)
+		static void button_clicked(GtkWidget* widget, gpointer data)
 		{
-			int type = reinterpret_cast<uintptr_t>(g_object_get_data(G_OBJECT(widget), JOYTYPE));
-			ConfigData* cfg = (ConfigData*)g_object_get_data(G_OBJECT(widget), CFG);
+			u32 control = reinterpret_cast<uintptr_t>(g_object_get_data(G_OBJECT(widget), CONTROL));
+			ConfigData* cfg = reinterpret_cast<ConfigData*>(g_object_get_data(G_OBJECT(widget), CFG));
+			if (!cfg)
+				return;
 
-			if (cfg /*&& type < cfg->mappings.size() && cfg->js_iter != cfg->joysticks.end()*/)
+			int value, initial = 0;
+			std::string dev_name;
+			bool inverted = false;
+			bool is_axis = (control >= cfg->max_buttons);
+
+			gtk_label_set_text(GTK_LABEL(cfg->label), "Polling for input for 5 seconds...");
+
+			// let label change its text
+			while (gtk_events_pending())
+				gtk_main_iteration_do(FALSE);
+
+			if (cfg->cb->poll(cfg->jsconf, dev_name, is_axis, value, inverted, initial))
 			{
-				int value, initial = 0;
-				std::string dev_name;
-				bool inverted = false;
-				bool is_axis = (type >= JOY_STEERING && type <= JOY_BRAKE);
+				auto it = std::find_if(cfg->jsconf.begin(), cfg->jsconf.end(),
+									   [&dev_name](MappingPair& i) -> bool {
+										   return i.first == dev_name;
+									   });
 
-				gtk_label_set_text(GTK_LABEL(cfg->label), "Polling for input for 5 seconds...");
-
-				// let label change its text
-				while (gtk_events_pending())
-					gtk_main_iteration_do(FALSE);
-
-				if (cfg->cb->poll(cfg->jsconf, dev_name, is_axis, value, inverted, initial))
+				if (it != cfg->jsconf.end() && control < (u32)it->second.controls.size())
 				{
-					auto it = std::find_if(cfg->jsconf.begin(), cfg->jsconf.end(),
-										   [&dev_name](MappingPair& i) -> bool {
-											   return i.first == dev_name;
-										   });
-
-					if (it != cfg->jsconf.end() && type < (int)it->second.controls.size())
+					it->second.controls[control] = value;
+					if (is_axis && control - cfg->max_buttons < countof(it->second.inverted))
 					{
-						it->second.controls[type] = value;
-						if (is_axis)
-						{
-							it->second.inverted[type - JOY_STEERING] = inverted;
-							it->second.initial[type - JOY_STEERING] = initial;
-						}
-						refresh_store(cfg);
+						it->second.inverted[control - cfg->max_buttons] = inverted;
+						it->second.initial[control - cfg->max_buttons] = initial;
 					}
+					refresh_store(cfg);
 				}
-				gtk_label_set_text(GTK_LABEL(cfg->label), "");
 			}
-		}
-
-		static void button_clicked_buzz(GtkComboBox* widget, gpointer data)
-		{
-			int type = reinterpret_cast<uintptr_t>(g_object_get_data(G_OBJECT(widget), JOYTYPE));
-			ConfigData* cfg = (ConfigData*)g_object_get_data(G_OBJECT(widget), CFG);
-
-			if (cfg /*&& type < cfg->mappings.size() && cfg->js_iter != cfg->joysticks.end()*/)
-			{
-				int value, initial = 0;
-				std::string dev_name;
-				bool inverted = false;
-
-				gtk_label_set_text(GTK_LABEL(cfg->label), "Polling for input for 5 seconds...");
-
-				// let label change its text
-				while (gtk_events_pending())
-					gtk_main_iteration_do(FALSE);
-
-				if (cfg->cb->poll(cfg->jsconf, dev_name, false, value, inverted, initial))
-				{
-					auto it = std::find_if(cfg->jsconf.begin(), cfg->jsconf.end(),
-										   [&dev_name](MappingPair& i) -> bool {
-											   return i.first == dev_name;
-										   });
-
-					if (it != cfg->jsconf.end() && type < (int)it->second.controls.size())
-					{
-						it->second.controls[type] = value;
-						refresh_store(cfg);
-					}
-				}
-				gtk_label_set_text(GTK_LABEL(cfg->label), "");
-			}
+			gtk_label_set_text(GTK_LABEL(cfg->label), "");
 		}
 
 		// save references to row paths, automatically updated when store changes
@@ -349,13 +375,6 @@ namespace usb_pad
 
 			gtk_tree_selection_selected_foreach(sel, view_selected_foreach_func, &rr_list);
 
-			/* // single row selection
-	GtkTreeIter iter;
-
-	if (gtk_tree_selection_get_selected(sel, &model, &iter)) {
-		view_selected_foreach_func(model, nullptr, &iter, cfg);
-	}*/
-
 			GList* list = gtk_tree_selection_get_selected_rows(sel, &model);
 			// remove rows from store pointed to by row references
 			for (node = g_list_first(rr_list); node != nullptr; node = node->next)
@@ -364,14 +383,12 @@ namespace usb_pad
 				if (path)
 				{
 					GtkTreeIter iter;
-
 					if (gtk_tree_model_get_iter(model, &iter, path))
 					{
 						view_remove_binding(model, &iter, cfg);
-						//gtk_list_store_remove(GTK_LIST_STORE(model), &iter);
 					}
 				}
-			};
+			}
 
 			g_list_free_full(rr_list, (GDestroyNotify)gtk_tree_row_reference_free);
 			g_list_free_full(list, (GDestroyNotify)gtk_tree_path_free);
@@ -394,74 +411,50 @@ namespace usb_pad
 			}
 		}
 
-		int GtkPadConfigure(int port, const char* dev_type, const char* apititle, const char* apiname, GtkWindow* parent, ApiCallbacks& apicbs)
+		static GtkWidget* make_dialog(GtkWindow* parent, const std::string& title, int w = 1200, int h = 700)
 		{
-			GtkWidget *ro_frame, *rs_cb;
-			GtkWidget *main_hbox, *right_vbox, *left_vbox, *treeview;
-			GtkWidget* button;
-
-			int fd;
-			ConfigData cfg;
-
-			apicbs.populate(cfg.joysticks);
-
-			cfg.js_iter = cfg.joysticks.end();
-			cfg.label = gtk_label_new("");
-			cfg.store = gtk_list_store_new(NUM_COLS,
-										   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
-			cfg.cb = &apicbs;
-			cfg.dev_type = dev_type;
-
-			for (const auto& it : cfg.joysticks)
-			{
-				if ((fd = open(it.path.c_str(), O_RDONLY | O_NONBLOCK)) < 0)
-				{
-					continue;
-				}
-
-				ConfigMapping c(fd);
-				LoadMappings(cfg.dev_type, port, it.id, c);
-				cfg.jsconf.push_back(std::make_pair(it.id, c));
-			}
-
-			refresh_store(&cfg);
-
-			std::string path;
-			LoadSetting(dev_type, port, apiname, N_JOYSTICK, path);
-
-			cfg.use_hidraw_ff_pt = false;
-			bool is_evdev = (strncmp(apiname, "evdev", 5) == 0);
-			if (is_evdev) //TODO idk about joydev
-			{
-				LoadSetting(dev_type, port, apiname, N_HIDRAW_FF_PT, cfg.use_hidraw_ff_pt);
-			}
-
-			// ---------------------------
-			std::string title = (port ? "Player One " : "Player Two ");
-			title += apititle;
-
-			GtkWidget* dlg = gtk_dialog_new_with_buttons(
+			auto dlg = gtk_dialog_new_with_buttons(
 				title.c_str(), parent, GTK_DIALOG_MODAL,
 				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
 				GTK_STOCK_OK, GTK_RESPONSE_OK,
 				NULL);
 			gtk_window_set_position(GTK_WINDOW(dlg), GTK_WIN_POS_CENTER);
 			gtk_window_set_resizable(GTK_WINDOW(dlg), TRUE);
-			gtk_window_set_default_size(GTK_WINDOW(dlg), 320, 240);
+			gtk_window_set_default_size(GTK_WINDOW(dlg), w, h);
+			return dlg;
+		}
 
-			// ---------------------------
-			GtkWidget* dlg_area_box = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
-
-			main_hbox = gtk_hbox_new(FALSE, 5);
-			gtk_container_add(GTK_CONTAINER(dlg_area_box), main_hbox);
-
+		static void create_panes(GtkWidget* container, GtkWidget*& left_vbox, GtkWidget*& right_vbox)
+		{
 			left_vbox = gtk_vbox_new(FALSE, 5);
-			gtk_box_pack_start(GTK_BOX(main_hbox), left_vbox, TRUE, TRUE, 5);
-			right_vbox = gtk_vbox_new(FALSE, 5);
-			gtk_box_pack_start(GTK_BOX(main_hbox), right_vbox, TRUE, TRUE, 5);
+			right_vbox = gtk_vbox_new(FALSE, 15);
 
-			// ---------------------------
-			treeview = gtk_tree_view_new();
+#if 0
+			GtkWidget* paned = gtk_hpaned_new();
+			gtk_container_add(GTK_CONTAINER(container), paned);
+			gtk_paned_add1(GTK_PANED(paned), left_vbox);
+
+			GtkWidget* sc_win = gtk_scrolled_window_new(NULL, NULL);
+			gtk_container_add(GTK_CONTAINER(sc_win), right_vbox);
+			gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(sc_win), GTK_POLICY_AUTOMATIC,
+										   GTK_POLICY_AUTOMATIC);
+			gtk_paned_add2(GTK_PANED(paned), sc_win);
+#else
+			GtkWidget* hbox = gtk_hbox_new(FALSE, 5);
+			gtk_container_add(GTK_CONTAINER(container), hbox);
+			gtk_box_pack_start(GTK_BOX(hbox), left_vbox, TRUE, TRUE, 5);
+			gtk_box_pack_start(GTK_BOX(hbox), right_vbox, TRUE, TRUE, 5);
+#endif
+#if GTK_CHECK_VERSION(3, 0, 0)
+			gtk_widget_set_vexpand(left_vbox, TRUE);
+			gtk_widget_set_valign(right_vbox, GTK_ALIGN_START);
+#endif
+		}
+
+		static GtkWidget* make_mappings_treeview(int port, ConfigData& cfg, GtkWidget* container)
+		{
+			GtkWidget* button;
+			auto treeview = gtk_tree_view_new();
 			cfg.treeview = GTK_TREE_VIEW(treeview);
 			auto selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
 			gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
@@ -469,7 +462,7 @@ namespace usb_pad
 			GtkCellRenderer* render = gtk_cell_renderer_text_new();
 
 			gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
-														-1, "Name", render, "text", COL_NAME, "width", COL_COLUMN_WIDTH, NULL);
+														-1, "Name", render, "text", COL_NAME, NULL);
 			gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
 														-1, "PS2", render, "text", COL_PS2, NULL);
 			gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
@@ -486,28 +479,85 @@ namespace usb_pad
 
 			GtkWidget* scwin = gtk_scrolled_window_new(NULL, NULL);
 			gtk_container_add(GTK_CONTAINER(scwin), treeview);
-			//gtk_scrolled_window_set_min_content_width(GTK_SCROLLED_WINDOW(scwin), 200);
 			gtk_widget_set_size_request(GTK_WIDGET(scwin), 200, 100);
 			gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scwin), GTK_POLICY_AUTOMATIC,
-										   GTK_POLICY_ALWAYS);
-			gtk_box_pack_start(GTK_BOX(left_vbox), scwin, TRUE, TRUE, 5);
+										   GTK_POLICY_AUTOMATIC);
+			gtk_box_pack_start(GTK_BOX(container), scwin, TRUE, TRUE, 5);
 
 			button = gtk_button_new_with_label("Clear binding");
-			gtk_box_pack_start(GTK_BOX(left_vbox), button, FALSE, FALSE, 5);
+			gtk_box_pack_start(GTK_BOX(container), button, FALSE, FALSE, 5);
 			g_object_set_data(G_OBJECT(button), CFG, &cfg);
 			g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(clear_binding_clicked), reinterpret_cast<gpointer>(port));
 
 			button = gtk_button_new_with_label("Clear All");
-			gtk_box_pack_start(GTK_BOX(left_vbox), button, FALSE, FALSE, 5);
+			gtk_box_pack_start(GTK_BOX(container), button, FALSE, FALSE, 5);
 			g_object_set_data(G_OBJECT(button), CFG, &cfg);
 			g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(clear_all_clicked), reinterpret_cast<gpointer>(port));
+			return treeview;
+		}
 
+		static void load_devices_mappings(ConfigData& cfg, const int port, ApiCallbacks& apicbs)
+		{
+			int fd;
+			apicbs.populate(cfg.joysticks);
+
+			cfg.js_iter = cfg.joysticks.end();
+			cfg.label = gtk_label_new("");
+			cfg.store = gtk_list_store_new(NUM_COLS,
+										   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
+			cfg.cb = &apicbs;
+
+			for (const auto& it : cfg.joysticks)
+			{
+				if ((fd = open(it.path.c_str(), O_RDONLY | O_NONBLOCK)) < 0)
+				{
+					Console.Warning("USB: failed to open '%s'", it.path.c_str());
+					continue;
+				}
+
+				ConfigMapping c(fd);
+				LoadMappings(cfg.dev_type, port, it.id, cfg.max_buttons, cfg.max_axes, c);
+				cfg.jsconf.push_back(std::make_pair(it.id, c));
+			}
+
+			refresh_store(&cfg);
+		}
+
+		int GtkPadConfigure(int port, const char* dev_type, const char* apititle, const char* apiname, GtkWindow* parent, ApiCallbacks& apicbs)
+		{
+			GtkWidget *ro_frame, *rs_cb;
+			GtkWidget *right_vbox, *left_vbox;
+
+			ConfigData cfg{};
+			cfg.dev_type = dev_type;
+			cfg.max_axes = 3;
+			cfg.max_buttons = JOY_STEERING; // 16
+			load_devices_mappings(cfg, port, apicbs);
+
+			std::string path;
+			LoadSetting(dev_type, port, apiname, N_JOYSTICK, path);
+
+			cfg.use_hidraw_ff_pt = false;
+			bool is_evdev = (strncmp(apiname, "evdev", 5) == 0);
+			if (is_evdev)
+			{
+				LoadSetting(dev_type, port, apiname, N_HIDRAW_FF_PT, cfg.use_hidraw_ff_pt);
+			}
+
+			// ---------------------------
+			const std::string title = std::string(port ? "Player One " : "Player Two ") + apititle;
+			GtkWidget* dlg = make_dialog(parent, title);
+
+			// ---------------------------
+			GtkWidget* dlg_area_box = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
+			create_panes(dlg_area_box, left_vbox, right_vbox);
+			make_mappings_treeview(port, cfg, left_vbox);
 
 			// ---------------------------
 
 			// Remapping
 			{
-				GtkWidget* table = gtk_table_new(5, 7, true);
+				GtkWidget* table = gtk_table_new(5, 7, TRUE);
 				gtk_container_add(GTK_CONTAINER(right_vbox), table);
 				//GtkAttachOptions opt = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL); // default
 				GtkAttachOptions opt = (GtkAttachOptions)(GTK_FILL);
@@ -551,7 +601,7 @@ namespace usb_pad
 					GtkWidget* button = gtk_button_new_with_label(button_labels[i]);
 					g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), reinterpret_cast<gpointer>(port));
 
-					g_object_set_data(G_OBJECT(button), JOYTYPE, reinterpret_cast<gpointer>(button_pos[i].type));
+					g_object_set_data(G_OBJECT(button), CONTROL, reinterpret_cast<gpointer>(button_pos[i].type));
 					g_object_set_data(G_OBJECT(button), CFG, &cfg);
 
 					gtk_table_attach(GTK_TABLE(table), button,
@@ -563,21 +613,21 @@ namespace usb_pad
 				GtkWidget* hbox = gtk_hbox_new(false, 5);
 				gtk_container_add(GTK_CONTAINER(right_vbox), hbox);
 
-				button = gtk_button_new_with_label("Steering");
+				GtkWidget* button = gtk_button_new_with_label("Steering");
 				gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 5);
-				g_object_set_data(G_OBJECT(button), JOYTYPE, reinterpret_cast<gpointer>(JOY_STEERING));
+				g_object_set_data(G_OBJECT(button), CONTROL, reinterpret_cast<gpointer>(JOY_STEERING));
 				g_object_set_data(G_OBJECT(button), CFG, &cfg);
 				g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), reinterpret_cast<gpointer>(port));
 
 				button = gtk_button_new_with_label("Throttle");
 				gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 5);
-				g_object_set_data(G_OBJECT(button), JOYTYPE, reinterpret_cast<gpointer>(JOY_THROTTLE));
+				g_object_set_data(G_OBJECT(button), CONTROL, reinterpret_cast<gpointer>(JOY_THROTTLE));
 				g_object_set_data(G_OBJECT(button), CFG, &cfg);
 				g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), reinterpret_cast<gpointer>(port));
 
 				button = gtk_button_new_with_label("Brake");
 				gtk_box_pack_start(GTK_BOX(hbox), button, TRUE, TRUE, 5);
-				g_object_set_data(G_OBJECT(button), JOYTYPE, reinterpret_cast<gpointer>(JOY_BRAKE));
+				g_object_set_data(G_OBJECT(button), CONTROL, reinterpret_cast<gpointer>(JOY_BRAKE));
 				g_object_set_data(G_OBJECT(button), CFG, &cfg);
 				g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), reinterpret_cast<gpointer>(port));
 
@@ -594,7 +644,7 @@ namespace usb_pad
 			GtkWidget* ff_scales[2];
 			int32_t ff_enabled[2];
 
-			GtkWidget* table = gtk_table_new(3, 2, true);
+			GtkWidget* table = gtk_table_new(3, 2, TRUE);
 			gtk_container_add(GTK_CONTAINER(ro_frame), table);
 			gtk_table_set_homogeneous(GTK_TABLE(table), FALSE);
 			GtkAttachOptions opt = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL); // default
@@ -654,14 +704,18 @@ namespace usb_pad
 				g_signal_connect(G_OBJECT(chk_btn), "toggled", G_CALLBACK(checkbox_toggled), reinterpret_cast<gboolean*>(&cfg.use_hidraw_ff_pt));
 				gtk_box_pack_start(GTK_BOX(frame_vbox), chk_btn, FALSE, FALSE, 5);
 
-				rs_cb = new_combobox("Device:", frame_vbox);
+				rs_cb = new_combobox("Device:", frame_vbox, true);
 
+				const std::vector<uint16_t> whitelist{PAD_LG_FFB_WHITELIST};
 				int idx = 0, sel_idx = 0;
 				for (auto& it : cfg.joysticks)
 				{
+					if (!(it.input_id.vendor == PAD_VID && std::find(whitelist.begin(), whitelist.end(), it.input_id.product) != whitelist.end()))
+						continue;
+
 					std::stringstream str;
 					str << it.name;
-					if (!strcmp(apiname, "evdev") && !it.id.empty())
+					if (!it.id.empty())
 						str << " [" << it.id << "]";
 
 					gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(rs_cb), str.str().c_str());
@@ -688,7 +742,7 @@ namespace usb_pad
 				}
 
 				for (auto& it : cfg.jsconf)
-					SaveMappings(dev_type, port, it.first, it.second);
+					SaveMappings(dev_type, port, it.first, cfg.max_buttons, cfg.max_axes, it.second);
 
 				if (is_evdev)
 				{
@@ -731,11 +785,10 @@ namespace usb_pad
 
 		int GtkBuzzConfigure(int port, const char* dev_type, const char* apititle, const char* apiname, GtkWindow* parent, ApiCallbacks& apicbs)
 		{
-			GtkWidget *main_hbox, *right_vbox, *left_vbox, *treeview;
-			GtkWidget* button;
+			GtkWidget *main_hbox, *right_vbox, *left_vbox;
 
 			int fd;
-			ConfigData cfg;
+			ConfigData cfg{};
 
 			apicbs.populate(cfg.joysticks);
 
@@ -745,6 +798,8 @@ namespace usb_pad
 										   G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_INT, G_TYPE_INT);
 			cfg.cb = &apicbs;
 			cfg.dev_type = dev_type;
+			cfg.max_axes = 0;
+			cfg.max_buttons = 20;
 
 			for (const auto& it : cfg.joysticks)
 			{
@@ -762,17 +817,8 @@ namespace usb_pad
 			refresh_store(&cfg);
 
 			// ---------------------------
-			std::string title = "Buzz ";
-			title += apititle;
-
-			GtkWidget* dlg = gtk_dialog_new_with_buttons(
-				title.c_str(), parent, GTK_DIALOG_MODAL,
-				GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL,
-				GTK_STOCK_OK, GTK_RESPONSE_OK,
-				NULL);
-			gtk_window_set_position(GTK_WINDOW(dlg), GTK_WIN_POS_CENTER);
-			gtk_window_set_resizable(GTK_WINDOW(dlg), TRUE);
-			gtk_window_set_default_size(GTK_WINDOW(dlg), 320, 240);
+			const std::string title = std::string("Buzz ") + apititle;
+			GtkWidget* dlg = make_dialog(parent, title);
 
 			// ---------------------------
 			GtkWidget* dlg_area_box = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
@@ -781,56 +827,21 @@ namespace usb_pad
 			gtk_container_add(GTK_CONTAINER(dlg_area_box), main_hbox);
 
 			left_vbox = gtk_vbox_new(FALSE, 5);
-			gtk_box_pack_start(GTK_BOX(main_hbox), left_vbox, TRUE, TRUE, 5);
 			right_vbox = gtk_vbox_new(FALSE, 5);
+			gtk_box_pack_start(GTK_BOX(main_hbox), left_vbox, TRUE, TRUE, 5);
 			gtk_box_pack_start(GTK_BOX(main_hbox), right_vbox, TRUE, TRUE, 5);
 
-			// ---------------------------
-			treeview = gtk_tree_view_new();
-			cfg.treeview = GTK_TREE_VIEW(treeview);
-			auto selection = gtk_tree_view_get_selection(GTK_TREE_VIEW(treeview));
-			gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
+			make_mappings_treeview(port, cfg, left_vbox);
 
-			GtkCellRenderer* render = gtk_cell_renderer_text_new();
-
-			gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
-														-1, "Name", render, "text", COL_NAME, "width", COL_COLUMN_WIDTH, NULL);
-			gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
-														-1, "PS2", render, "text", COL_PS2, NULL);
-			gtk_tree_view_insert_column_with_attributes(GTK_TREE_VIEW(treeview),
-														-1, "PC", render, "text", COL_PC, NULL);
-
-			gtk_tree_view_set_tooltip_column(GTK_TREE_VIEW(treeview), 0);
-
-			gtk_tree_view_column_set_resizable(gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), 0), TRUE);
-			gtk_tree_view_column_set_resizable(gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), 1), TRUE);
-			gtk_tree_view_column_set_resizable(gtk_tree_view_get_column(GTK_TREE_VIEW(treeview), 2), TRUE);
-
-			gtk_tree_view_set_model(GTK_TREE_VIEW(treeview), GTK_TREE_MODEL(cfg.store));
-			g_object_unref(GTK_TREE_MODEL(cfg.store)); //treeview has its own ref
-
-			GtkWidget* scwin = gtk_scrolled_window_new(NULL, NULL);
-			gtk_container_add(GTK_CONTAINER(scwin), treeview);
-			gtk_widget_set_size_request(GTK_WIDGET(scwin), 200, 100);
-			gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scwin), GTK_POLICY_AUTOMATIC,
-										   GTK_POLICY_ALWAYS);
-			gtk_box_pack_start(GTK_BOX(left_vbox), scwin, TRUE, TRUE, 5);
-
-			button = gtk_button_new_with_label("Clear binding");
-			gtk_box_pack_start(GTK_BOX(left_vbox), button, FALSE, FALSE, 5);
-			g_object_set_data(G_OBJECT(button), CFG, &cfg);
-			g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(clear_binding_clicked), reinterpret_cast<gpointer>(port));
-
-			button = gtk_button_new_with_label("Clear All");
-			gtk_box_pack_start(GTK_BOX(left_vbox), button, FALSE, FALSE, 5);
-			g_object_set_data(G_OBJECT(button), CFG, &cfg);
-			g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(clear_all_clicked), reinterpret_cast<gpointer>(port));
+#if GTK_CHECK_VERSION(3, 0, 0)
+			gtk_widget_set_vexpand(left_vbox, TRUE);
+#endif
 
 			// ---------------------------
 
 			// Remapping
 			{
-				GtkWidget* table = gtk_table_new(5, 4, true);
+				GtkWidget* table = gtk_table_new(5, 4, TRUE);
 				gtk_container_add(GTK_CONTAINER(right_vbox), table);
 				GtkAttachOptions opt = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL); // default
 
@@ -877,9 +888,9 @@ namespace usb_pad
 						if (GTK_IS_ALIGNMENT(children->data))
 							gtk_alignment_set(GTK_ALIGNMENT(children->data), 0.0f, 0.5f, 0.2f, 0.f);
 
-						g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked_buzz), reinterpret_cast<gpointer>(port));
+						g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), reinterpret_cast<gpointer>(port));
 
-						g_object_set_data(G_OBJECT(button), JOYTYPE, reinterpret_cast<gpointer>(j * countof(buzz_btns) + buzz_btns[i]));
+						g_object_set_data(G_OBJECT(button), CONTROL, reinterpret_cast<gpointer>(j * countof(buzz_btns) + buzz_btns[i]));
 						g_object_set_data(G_OBJECT(button), CFG, &cfg);
 
 						gtk_table_attach(GTK_TABLE(table), button,
@@ -919,6 +930,179 @@ namespace usb_pad
 
 				for (auto& it : cfg.jsconf)
 					SaveBuzzMappings(dev_type, port, it.first, it.second);
+			}
+			else
+				ret = RESULT_CANCELED;
+
+			for (auto& it : cfg.jsconf)
+				close(it.second.fd);
+
+			gtk_widget_destroy(dlg);
+			return ret;
+		}
+
+		int GtkKeyboardmaniaConfigure(int port, const char* dev_type, const char* apititle, const char* apiname, GtkWindow* parent, ApiCallbacks& apicbs)
+		{
+			GtkWidget *right_vbox, *left_vbox;
+
+			ConfigData cfg{};
+			cfg.dev_type = dev_type;
+			cfg.max_buttons = 31;
+			load_devices_mappings(cfg, port, apicbs);
+
+			// ---------------------------
+			const std::string title = std::string("Keyboardmania ") + apititle;
+			GtkWidget* dlg = make_dialog(parent, title);
+
+			// ---------------------------
+			GtkWidget* dlg_area_box = gtk_dialog_get_content_area(GTK_DIALOG(dlg));
+			create_panes(dlg_area_box, left_vbox, right_vbox);
+			make_mappings_treeview(port, cfg, left_vbox);
+
+			// ---------------------------
+			// Remapping
+			{
+				GtkWidget* table = gtk_table_new(5, 14, TRUE);
+				gtk_container_add(GTK_CONTAINER(right_vbox), table);
+				GtkAttachOptions opt = (GtkAttachOptions)(GTK_EXPAND | GTK_FILL); // default
+#if GTK_CHECK_VERSION(3, 0, 0)
+				gtk_widget_set_halign(table, GTK_ALIGN_START);
+#endif
+
+				struct keys
+				{
+					u32 index;
+					bool sharp;
+				};
+
+				constexpr keys keys[]{
+					{0, false},
+					{1, true},
+					{2, false},
+					{3, true},
+					{4, false},
+					{5, false},
+					{6, true},
+					//{"padding", 7},
+					{8, false},
+					{9, true},
+					{10, false},
+					{11, true},
+					{12, false},
+					{13, false},
+					//{"Select", 14},
+					//{"padding", 15},
+					{16, true},
+					{17, false},
+					{18, true},
+					{19, false},
+					{20, false},
+					{21, true},
+					//{"Start", 22},
+					//{"padding", 23},
+					{24, false},
+					{25, true},
+					{26, false},
+					{27, true},
+					{28, false},
+					//{"Up", 29},
+					//{"Down", 30},
+				};
+
+				int attached = 0;
+				int voffset = 0;
+				for (auto& key : keys)
+				{
+					GtkWidget* button = gtk_button_new_with_label(kbdmania_key_labels[key.index]);
+					g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), reinterpret_cast<gpointer>(port));
+					g_object_set_data(G_OBJECT(button), CONTROL, reinterpret_cast<gpointer>(key.index));
+					g_object_set_data(G_OBJECT(button), CFG, &cfg);
+
+					// split into 2-by-2 rows
+					if (attached > 6)
+					{
+						voffset = 2;
+						attached = 0;
+					}
+
+					if (!key.sharp)
+					{
+						gtk_table_attach(GTK_TABLE(table), button,
+										 attached * 2, 2 + attached * 2,
+										 1 + voffset, 2 + voffset,
+										 opt, opt, 5, 1);
+						attached++;
+					}
+					else
+						gtk_table_attach(GTK_TABLE(table), button,
+										 attached * 2 - 1, attached * 2 + 2 - 1,
+										 0 + voffset, 1 + voffset,
+										 opt, opt, 5, 1);
+				}
+
+				GtkWidget *button, *frame_box, *frame;
+				GtkWidget* frame_container = gtk_hbox_new(FALSE, 5);
+				gtk_container_add(GTK_CONTAINER(right_vbox), frame_container);
+#if GTK_CHECK_VERSION(3, 0, 0)
+				gtk_widget_set_valign(frame_container, GTK_ALIGN_START);
+#endif
+
+				frame = gtk_frame_new("Buttons");
+				{
+					frame_box = gtk_hbox_new(FALSE, 5);
+					gtk_container_add(GTK_CONTAINER(frame), frame_box);
+					gtk_box_pack_start(GTK_BOX(frame_container), frame, FALSE, FALSE, 5);
+
+					button = gtk_button_new_with_label("Start");
+					g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), reinterpret_cast<gpointer>(port));
+					g_object_set_data(G_OBJECT(button), CONTROL, reinterpret_cast<gpointer>(22));
+					g_object_set_data(G_OBJECT(button), CFG, &cfg);
+					gtk_box_pack_start(GTK_BOX(frame_box), button, FALSE, FALSE, 5);
+
+					button = gtk_button_new_with_label("Select");
+					g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), reinterpret_cast<gpointer>(port));
+					g_object_set_data(G_OBJECT(button), CONTROL, reinterpret_cast<gpointer>(14));
+					g_object_set_data(G_OBJECT(button), CFG, &cfg);
+					gtk_box_pack_start(GTK_BOX(frame_box), button, FALSE, FALSE, 5);
+				}
+
+				frame = gtk_frame_new("Wheel");
+				{
+					frame_box = gtk_hbox_new(FALSE, 5);
+					gtk_container_add(GTK_CONTAINER(frame), frame_box);
+					gtk_box_pack_start(GTK_BOX(frame_container), frame, FALSE, FALSE, 5);
+
+					button = gtk_button_new_with_label("Up");
+					g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), reinterpret_cast<gpointer>(port));
+					g_object_set_data(G_OBJECT(button), CONTROL, reinterpret_cast<gpointer>(29));
+					g_object_set_data(G_OBJECT(button), CFG, &cfg);
+					gtk_box_pack_start(GTK_BOX(frame_box), button, FALSE, FALSE, 5);
+
+					button = gtk_button_new_with_label("Down");
+					g_signal_connect(G_OBJECT(button), "clicked", G_CALLBACK(button_clicked), reinterpret_cast<gpointer>(port));
+					g_object_set_data(G_OBJECT(button), CONTROL, reinterpret_cast<gpointer>(30));
+					g_object_set_data(G_OBJECT(button), CFG, &cfg);
+					gtk_box_pack_start(GTK_BOX(frame_box), button, FALSE, FALSE, 5);
+				}
+			}
+
+			gtk_box_pack_start(GTK_BOX(right_vbox), cfg.label, TRUE, TRUE, 5);
+
+			// ---------------------------
+			gtk_widget_show_all(dlg);
+			gint result = gtk_dialog_run(GTK_DIALOG(dlg));
+
+			int ret = RESULT_OK;
+			if (result == GTK_RESPONSE_OK)
+			{
+				if (cfg.js_iter != cfg.joysticks.end())
+				{
+					if (!SaveSetting(dev_type, port, apiname, N_JOYSTICK, cfg.js_iter->path))
+						ret = RESULT_FAILED;
+				}
+
+				for (auto& it : cfg.jsconf)
+					SaveMappings(dev_type, port, it.first, cfg.max_buttons, 0, it.second);
 			}
 			else
 				ret = RESULT_CANCELED;

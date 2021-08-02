@@ -46,8 +46,6 @@
 #define _M_AMD64
 #endif
 
-#include <GL/gl.h>
-#include <GL/glext.h>
 #include "Renderers/OpenGL/GLLoader.h"
 #include "Renderers/OpenGL/PFN_GLLOADER_HPP.h"
 
@@ -228,27 +226,6 @@
 		return Mask ? 1 : 0;
 #endif
 	}
-
-	#ifdef __GNUC__
-
-	// gcc 4.8 define __rdtsc but unfortunately the compiler crash...
-	// The redefine allow to skip the gcc __rdtsc version -- Gregory
-	#define __rdtsc _lnx_rdtsc
-	//static unsigned long long __rdtsc()
-	static unsigned long long _lnx_rdtsc()
-	{
-		#if defined(__amd64__) || defined(__x86_64__)
-		unsigned long long low, high;
-		__asm__ __volatile__("rdtsc" : "=a"(low), "=d"(high));
-		return low | (high << 32);
-		#else
-		unsigned long long retval;
-		__asm__ __volatile__("rdtsc" : "=A"(retval));
-		return retval;
-		#endif
-	}
-
-	#endif
 
 #endif
 
@@ -1828,7 +1805,7 @@ void GSgifTransfer3(uint8* mem, uint32 size);
 void GSvsync(int field);
 uint32 GSmakeSnapshot(char* path);
 void GSkeyEvent(GSKeyEventData* e);
-int GSfreeze(int mode, freezeData* data);
+int GSfreeze(FreezeAction mode, freezeData* data);
 void GSconfigure();
 int GStest();
 void GSirqCallback(void (*irq)());
@@ -1840,6 +1817,8 @@ void GSgetTitleInfo2(char* dest, size_t length);
 void GSsetFrameSkip(int frameskip);
 void GSsetVsync(int vsync);
 void GSsetExclusive(int enabled);
+bool GSGetFMVSwitch();
+void GSSetFMVSwitch(bool enabled);
 
 class GSApp
 {
@@ -1894,7 +1873,6 @@ public:
 
 	std::vector<GSSetting> m_gs_renderers;
 	std::vector<GSSetting> m_gs_interlace;
-	std::vector<GSSetting> m_gs_aspectratio;
 	std::vector<GSSetting> m_gs_upscale_multiplier;
 	std::vector<GSSetting> m_gs_max_anisotropy;
 	std::vector<GSSetting> m_gs_dithering;

@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2014  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -24,11 +24,11 @@ wxBEGIN_EVENT_TABLE(GenericListView, wxWindow)
 	EVT_RIGHT_DOWN(GenericListView::mouseEvent)
 	EVT_RIGHT_UP(GenericListView::mouseEvent)
 	EVT_LEFT_DCLICK(GenericListView::mouseEvent)
-	EVT_LIST_ITEM_RIGHT_CLICK(wxID_ANY,GenericListView::listEvent)
+	EVT_LIST_ITEM_RIGHT_CLICK(wxID_ANY, GenericListView::listEvent)
 wxEND_EVENT_TABLE()
 
 GenericListView::GenericListView(wxWindow* parent, GenericListViewColumn* columns, int columnCount)
-	: wxListView(parent,wxID_ANY,wxDefaultPosition,wxDefaultSize,wxLC_VIRTUAL|wxLC_REPORT|wxLC_SINGLE_SEL|wxNO_BORDER)
+	: wxListView(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize, wxLC_VIRTUAL | wxLC_REPORT | wxLC_SINGLE_SEL | wxNO_BORDER)
 {
 	m_isInResizeColumn = false;
 	dontResizeColumnsInSizeEventHandler = false;
@@ -46,7 +46,7 @@ void GenericListView::insertColumns(GenericListViewColumn* columns, int count)
 		column.SetText(columns[i].name);
 		column.SetWidth(totalWidth * columns[i].size);
 
-		InsertColumn(i,column);
+		InsertColumn(i, column);
 	}
 
 	this->columns = columns;
@@ -54,7 +54,8 @@ void GenericListView::insertColumns(GenericListViewColumn* columns, int count)
 
 void GenericListView::resizeColumn(int col, int width)
 {
-	if (!m_isInResizeColumn) {
+	if (!m_isInResizeColumn)
+	{
 		m_isInResizeColumn = true;
 
 		SetColumnWidth(col, width);
@@ -87,18 +88,20 @@ void GenericListView::keydownEvent(wxKeyEvent& evt)
 	int sel = GetFirstSelected();
 	switch (evt.GetKeyCode())
 	{
-	case WXK_UP:
-		if (sel > 0) {
-			Select(sel-1);
-			Focus(sel-1);
-		}
-		break;
-	case WXK_DOWN:
-		if (sel+1 < GetItemCount()) {
-			Select(sel+1);
-			Focus(sel+1);
-		}
-		break;
+		case WXK_UP:
+			if (sel > 0)
+			{
+				Select(sel - 1);
+				Focus(sel - 1);
+			}
+			break;
+		case WXK_DOWN:
+			if (sel + 1 < GetItemCount())
+			{
+				Select(sel + 1);
+				Focus(sel + 1);
+			}
+			break;
 	}
 
 	onKeyDown(evt.GetKeyCode());
@@ -126,15 +129,15 @@ void GenericListView::update()
 
 wxString GenericListView::OnGetItemText(long item, long col) const
 {
-	return getColumnText(item,col);
+	return getColumnText(item, col);
 }
 
 void GenericListView::postEvent(wxEventType type, int value)
 {
-   wxCommandEvent event( type, GetId() );
-   event.SetEventObject(this);
-   event.SetInt(value);
-   wxPostEvent(this,event);
+	wxCommandEvent event(type, GetId());
+	event.SetEventObject(this);
+	event.SetInt(value);
+	wxPostEvent(this, event);
 }
 
 void GenericListView::mouseEvent(wxMouseEvent& evt)
@@ -145,45 +148,59 @@ void GenericListView::mouseEvent(wxMouseEvent& evt)
 	{
 		clickPos = evt.GetPosition();
 		evt.Skip();
-	} else if (type == wxEVT_RIGHT_UP)
+	}
+	else if (type == wxEVT_RIGHT_UP)
 	{
-		onRightClick(GetFirstSelected(),evt.GetPosition());
-	} else if (type == wxEVT_LEFT_DCLICK)
+		onRightClick(GetFirstSelected(), evt.GetPosition());
+	}
+	else if (type == wxEVT_LEFT_DCLICK)
 	{
-		onDoubleClick(GetFirstSelected(),evt.GetPosition());
+		onDoubleClick(GetFirstSelected(), evt.GetPosition());
 	}
 }
 
 void GenericListView::listEvent(wxListEvent& evt)
 {
-	onRightClick(GetFirstSelected(),clickPos);
+	onRightClick(GetFirstSelected(), clickPos);
 }
 
 //
 // BreakpointList
 //
 
-enum { BPL_TYPE, BPL_OFFSET, BPL_SIZELABEL, BPL_OPCODE, BPL_CONDITION, BPL_HITS, BPL_ENABLED, BPL_COLUMNCOUNT };
+enum
+{
+	BPL_TYPE,
+	BPL_OFFSET,
+	BPL_SIZELABEL,
+	BPL_OPCODE,
+	BPL_CONDITION,
+	BPL_HITS,
+	BPL_ENABLED,
+	BPL_COLUMNCOUNT
+};
 
 enum BreakpointListMenuIdentifiers
 {
 	ID_BREAKPOINTLIST_ENABLE = 1,
 	ID_BREAKPOINTLIST_EDIT,
+	ID_BREAKPOINTLIST_DELETE,
 	ID_BREAKPOINTLIST_ADDNEW,
 };
 
 GenericListViewColumn breakpointColumns[BPL_COLUMNCOUNT] = {
-	{ L"Type",			0.12f },
-	{ L"Offset",		0.12f },
-	{ L"Size/Label",	0.18f },
-	{ L"Opcode",		0.28f },
-	{ L"Condition",		0.17f },
-	{ L"Hits",			0.05f },
-	{ L"Enabled",		0.08f }
-};
+	{L"Type", 0.12f},
+	{L"Offset", 0.12f},
+	{L"Size/Label", 0.18f},
+	{L"Opcode", 0.28f},
+	{L"Condition", 0.17f},
+	{L"Hits", 0.05f},
+	{L"Enabled", 0.08f}};
 
 BreakpointList::BreakpointList(wxWindow* parent, DebugInterface* _cpu, CtrlDisassemblyView* _disassembly)
-	: GenericListView(parent,breakpointColumns,BPL_COLUMNCOUNT), cpu(_cpu),disasm(_disassembly)
+	: GenericListView(parent, breakpointColumns, BPL_COLUMNCOUNT)
+	, cpu(_cpu)
+	, disasm(_disassembly)
 {
 }
 
@@ -192,11 +209,13 @@ int BreakpointList::getRowCount()
 	int count = 0;
 	for (size_t i = 0; i < CBreakPoints::GetMemChecks().size(); i++)
 	{
-		if (displayedMemChecks_[i].cpu == cpu->getCpuType()) count++;
+		if (displayedMemChecks_[i].cpu == cpu->getCpuType())
+			count++;
 	}
 	for (size_t i = 0; i < CBreakPoints::GetBreakpoints().size(); i++)
 	{
-		if (!displayedBreakPoints_[i].temporary && displayedBreakPoints_[i].cpu == cpu->getCpuType()) count++;
+		if (!displayedBreakPoints_[i].temporary && displayedBreakPoints_[i].cpu == cpu->getCpuType())
+			count++;
 	}
 
 	return count;
@@ -206,106 +225,131 @@ wxString BreakpointList::getColumnText(int item, int col) const
 {
 	FastFormatUnicode dest;
 	bool isMemory;
-	int index = getBreakpointIndex(item,isMemory);
-	if (index == -1) return L"Invalid";
-		
+	int index = getBreakpointIndex(item, isMemory);
+	if (index == -1)
+		return L"Invalid";
+
 	switch (col)
 	{
-	case BPL_TYPE:
+		case BPL_TYPE:
 		{
-			if (isMemory) {
-				switch ((int)displayedMemChecks_[index].cond) {
-				case MEMCHECK_READ:
-					dest.Write("Read");
-					break;
-				case MEMCHECK_WRITE:
-					dest.Write("Write");
-					break;
-				case MEMCHECK_READWRITE:
-					dest.Write("Read/Write");
-					break;
-				case MEMCHECK_WRITE | MEMCHECK_WRITE_ONCHANGE:
-					dest.Write("Write Change");
-					break;
-				case MEMCHECK_READWRITE | MEMCHECK_WRITE_ONCHANGE:
-					dest.Write("Read/Write Change");
-					break;
+			if (isMemory)
+			{
+				switch ((int)displayedMemChecks_[index].cond)
+				{
+					case MEMCHECK_READ:
+						dest.Write("Read");
+						break;
+					case MEMCHECK_WRITE:
+						dest.Write("Write");
+						break;
+					case MEMCHECK_READWRITE:
+						dest.Write("Read/Write");
+						break;
+					case MEMCHECK_WRITE | MEMCHECK_WRITE_ONCHANGE:
+						dest.Write("Write Change");
+						break;
+					case MEMCHECK_READWRITE | MEMCHECK_WRITE_ONCHANGE:
+						dest.Write("Read/Write Change");
+						break;
 				}
-			} else {
+			}
+			else
+			{
 				dest.Write(L"Execute");
 			}
 		}
 		break;
-	case BPL_OFFSET:
+		case BPL_OFFSET:
 		{
-			if (isMemory) {
-				dest.Write("0x%08X",displayedMemChecks_[index].start);
-			} else {
-				dest.Write("0x%08X",displayedBreakPoints_[index].addr);
+			if (isMemory)
+			{
+				dest.Write("0x%08X", displayedMemChecks_[index].start);
+			}
+			else
+			{
+				dest.Write("0x%08X", displayedBreakPoints_[index].addr);
 			}
 		}
 		break;
-	case BPL_SIZELABEL:
+		case BPL_SIZELABEL:
 		{
-			if (isMemory) {
+			if (isMemory)
+			{
 				auto mc = displayedMemChecks_[index];
 				if (mc.end == 0)
-					dest.Write("0x%08X",1);
+					dest.Write("0x%08X", 1);
 				else
-					dest.Write("0x%08X",mc.end-mc.start);
-			} else {
+					dest.Write("0x%08X", mc.end - mc.start);
+			}
+			else
+			{
 				const std::string sym = symbolMap.GetLabelString(displayedBreakPoints_[index].addr);
 				if (!sym.empty())
 				{
-					dest.Write("%s",sym.c_str());
-				} else {
+					dest.Write("%s", sym.c_str());
+				}
+				else
+				{
 					dest.Write("-");
 				}
 			}
 		}
 		break;
-	case BPL_OPCODE:
+		case BPL_OPCODE:
 		{
-			if (isMemory) {
+			if (isMemory)
+			{
 				dest.Write(L"-");
-			} else {
+			}
+			else
+			{
 				if (!cpu->isAlive())
 					break;
 				char temp[256];
 				disasm->getOpcodeText(displayedBreakPoints_[index].addr, temp);
-				dest.Write("%s",temp);
+				dest.Write("%s", temp);
 			}
 		}
 		break;
-	case BPL_CONDITION:
+		case BPL_CONDITION:
 		{
-			if (isMemory || !displayedBreakPoints_[index].hasCond) {
-				dest.Write("-");
-			} else {
-				dest.Write("%s",displayedBreakPoints_[index].cond.expressionString);
-			}
-		}
-		break;
-	case BPL_HITS:
-		{
-			if (isMemory) {
-				dest.Write("%d",displayedMemChecks_[index].numHits);
-			} else {
+			if (isMemory || !displayedBreakPoints_[index].hasCond)
+			{
 				dest.Write("-");
 			}
-		}
-		break;
-	case BPL_ENABLED:
-		{
-			if (isMemory) {
-				dest.Write("%s",displayedMemChecks_[index].result & MEMCHECK_BREAK ? "true" : "false");
-			} else {
-				dest.Write("%s",displayedBreakPoints_[index].enabled ? "true" : "false");
+			else
+			{
+				dest.Write("%s", displayedBreakPoints_[index].cond.expressionString);
 			}
 		}
 		break;
-	default:
-		return L"Invalid";
+		case BPL_HITS:
+		{
+			if (isMemory)
+			{
+				dest.Write("%d", displayedMemChecks_[index].numHits);
+			}
+			else
+			{
+				dest.Write("-");
+			}
+		}
+		break;
+		case BPL_ENABLED:
+		{
+			if (isMemory)
+			{
+				dest.Write("%s", displayedMemChecks_[index].result & MEMCHECK_BREAK ? "true" : "false");
+			}
+			else
+			{
+				dest.Write("%s", displayedBreakPoints_[index].enabled ? "true" : "false");
+			}
+		}
+		break;
+		default:
+			return L"Invalid";
 	}
 
 	return dest;
@@ -316,15 +360,15 @@ void BreakpointList::onKeyDown(int key)
 	int sel = GetFirstSelected();
 	switch (key)
 	{
-	case WXK_DELETE:
-		removeBreakpoint(sel);
-		break;
-	case WXK_RETURN:
-		editBreakpoint(sel);
-		break;
-	case WXK_SPACE:
-		toggleEnabled(sel);
-		break;
+		case WXK_DELETE:
+			removeBreakpoint(sel);
+			break;
+		case WXK_RETURN:
+			editBreakpoint(sel);
+			break;
+		case WXK_SPACE:
+			toggleEnabled(sel);
+			break;
 	}
 }
 
@@ -333,7 +377,8 @@ int BreakpointList::getBreakpointIndex(int itemIndex, bool& isMemory) const
 	// memory breakpoints first
 	for (size_t i = 0; i < displayedMemChecks_.size(); i++)
 	{
-		if (displayedMemChecks_[i].cpu != cpu->getCpuType()) continue;
+		if (displayedMemChecks_[i].cpu != cpu->getCpuType())
+			continue;
 		if (itemIndex == 0)
 		{
 			isMemory = true;
@@ -369,7 +414,7 @@ void BreakpointList::reloadBreakpoints()
 {
 	// Update the items we're displaying from the debugger.
 	displayedBreakPoints_ = CBreakPoints::GetBreakpoints();
-	displayedMemChecks_= CBreakPoints::GetMemChecks();
+	displayedMemChecks_ = CBreakPoints::GetMemChecks();
 	update();
 }
 
@@ -377,19 +422,22 @@ void BreakpointList::editBreakpoint(int itemIndex)
 {
 	bool isMemory;
 	int index = getBreakpointIndex(itemIndex, isMemory);
-	if (index == -1) return;
+	if (index == -1)
+		return;
 
-	BreakpointWindow win(this,cpu);
+	BreakpointWindow win(this, cpu);
 	if (isMemory)
 	{
 		auto mem = displayedMemChecks_[index];
 		win.loadFromMemcheck(mem);
 		if (win.ShowModal() == wxID_OK)
 		{
-			CBreakPoints::RemoveMemCheck(cpu->getCpuType(), mem.start,mem.end);
+			CBreakPoints::RemoveMemCheck(cpu->getCpuType(), mem.start, mem.end);
 			win.addBreakpoint();
 		}
-	} else {
+	}
+	else
+	{
 		auto bp = displayedBreakPoints_[index];
 		win.loadFromBreakpoint(bp);
 		if (win.ShowModal() == wxID_OK)
@@ -404,12 +452,16 @@ void BreakpointList::toggleEnabled(int itemIndex)
 {
 	bool isMemory;
 	int index = getBreakpointIndex(itemIndex, isMemory);
-	if (index == -1) return;
+	if (index == -1)
+		return;
 
-	if (isMemory) {
+	if (isMemory)
+	{
 		MemCheck mcPrev = displayedMemChecks_[index];
 		CBreakPoints::ChangeMemCheck(cpu->getCpuType(), mcPrev.start, mcPrev.end, mcPrev.cond, MemCheckResult(mcPrev.result ^ MEMCHECK_BREAK));
-	} else {
+	}
+	else
+	{
 		BreakPoint bpPrev = displayedBreakPoints_[index];
 		CBreakPoints::ChangeBreakPoint(cpu->getCpuType(), bpPrev.addr, !bpPrev.enabled);
 	}
@@ -418,30 +470,36 @@ void BreakpointList::toggleEnabled(int itemIndex)
 void BreakpointList::gotoBreakpointAddress(int itemIndex)
 {
 	bool isMemory;
-	int index = getBreakpointIndex(itemIndex,isMemory);
-	if (index == -1) return;
+	int index = getBreakpointIndex(itemIndex, isMemory);
+	if (index == -1)
+		return;
 
 	if (isMemory)
 	{
 		u32 address = displayedMemChecks_[index].start;
-		postEvent(debEVT_GOTOINMEMORYVIEW,address);
-	} else {
+		postEvent(debEVT_GOTOINMEMORYVIEW, address);
+	}
+	else
+	{
 		u32 address = displayedBreakPoints_[index].addr;
-		postEvent(debEVT_GOTOINDISASM,address);
+		postEvent(debEVT_GOTOINDISASM, address);
 	}
 }
 
 void BreakpointList::removeBreakpoint(int itemIndex)
 {
 	bool isMemory;
-	int index = getBreakpointIndex(itemIndex,isMemory);
-	if (index == -1) return;
+	int index = getBreakpointIndex(itemIndex, isMemory);
+	if (index == -1)
+		return;
 
 	if (isMemory)
 	{
 		auto mc = displayedMemChecks_[index];
 		CBreakPoints::RemoveMemCheck(cpu->getCpuType(), mc.start, mc.end);
-	} else {
+	}
+	else
+	{
 		u32 address = displayedBreakPoints_[index].addr;
 		CBreakPoints::RemoveBreakPoint(displayedBreakPoints_[index].cpu, address);
 	}
@@ -452,47 +510,51 @@ void BreakpointList::onPopupClick(wxCommandEvent& evt)
 	int index = GetFirstSelected();
 	switch (evt.GetId())
 	{
-	case ID_BREAKPOINTLIST_ENABLE:
-		toggleEnabled(index);
-		break;
-	case ID_BREAKPOINTLIST_EDIT:
-		editBreakpoint(index);
-		break;
-	case ID_BREAKPOINTLIST_ADDNEW:
-		postEvent(debEVT_BREAKPOINTWINDOW,0);
-		break;
-	default:
-		wxMessageBox( L"Unimplemented.",  L"Unimplemented.", wxICON_INFORMATION);
-		break;
+		case ID_BREAKPOINTLIST_ENABLE:
+			toggleEnabled(index);
+			break;
+		case ID_BREAKPOINTLIST_EDIT:
+			editBreakpoint(index);
+			break;
+		case ID_BREAKPOINTLIST_DELETE:
+			removeBreakpoint(index);
+			break;
+		case ID_BREAKPOINTLIST_ADDNEW:
+			postEvent(debEVT_BREAKPOINTWINDOW, 0);
+			break;
+		default:
+			wxMessageBox(L"Unimplemented.", L"Unimplemented.", wxICON_INFORMATION);
+			break;
 	}
 }
 
 void BreakpointList::showMenu(const wxPoint& pos)
 {
 	bool isMemory;
-	int index = getBreakpointIndex(GetFirstSelected(),isMemory);
+	int index = getBreakpointIndex(GetFirstSelected(), isMemory);
 
 	wxMenu menu;
 	if (index != -1)
 	{
-		menu.AppendCheckItem(ID_BREAKPOINTLIST_ENABLE,	L"Enable");
-		menu.Append(ID_BREAKPOINTLIST_EDIT,				L"Edit");
+		menu.AppendCheckItem(ID_BREAKPOINTLIST_ENABLE, L"Enable");
+		menu.Append(ID_BREAKPOINTLIST_EDIT, L"Edit");
+		menu.Append(ID_BREAKPOINTLIST_DELETE, L"Delete");
 		menu.AppendSeparator();
 
 		// check if the breakpoint is enabled
 		bool enabled;
 		if (isMemory)
 			enabled = (displayedMemChecks_[index].result & MEMCHECK_BREAK) != 0;
-		else 
+		else
 			enabled = displayedBreakPoints_[index].enabled;
 
-		menu.Check(ID_BREAKPOINTLIST_ENABLE,enabled);
+		menu.Check(ID_BREAKPOINTLIST_ENABLE, enabled);
 	}
 
-	menu.Append(ID_BREAKPOINTLIST_ADDNEW,			L"Add new");
+	menu.Append(ID_BREAKPOINTLIST_ADDNEW, L"Add new");
 
 	menu.Bind(wxEVT_MENU, &BreakpointList::onPopupClick, this);
-	PopupMenu(&menu,pos);
+	PopupMenu(&menu, pos);
 }
 
 void BreakpointList::onRightClick(int itemIndex, const wxPoint& point)
@@ -510,19 +572,29 @@ void BreakpointList::onDoubleClick(int itemIndex, const wxPoint& point)
 // ThreadList
 //
 
-enum { TL_TID, TL_PROGRAMCOUNTER, TL_ENTRYPOINT, TL_PRIORITY, TL_STATE, TL_WAITTYPE, TL_COLUMNCOUNT };
+enum
+{
+	TL_TID,
+	TL_PROGRAMCOUNTER,
+	TL_ENTRYPOINT,
+	TL_PRIORITY,
+	TL_STATE,
+	TL_WAITTYPE,
+	TL_COLUMNCOUNT
+};
 
 GenericListViewColumn threadColumns[TL_COLUMNCOUNT] = {
-	{ L"TID",			0.08f },
-	{ L"PC",			0.21f },
-	{ L"Entry Point",	0.21f },
-	{ L"Priority",		0.08f },
-	{ L"State",			0.21f },
-	{ L"Wait type",		0.21f },
+	{L"TID", 0.08f},
+	{L"PC", 0.21f},
+	{L"Entry Point", 0.21f},
+	{L"Priority", 0.08f},
+	{L"State", 0.21f},
+	{L"Wait type", 0.21f},
 };
 
 ThreadList::ThreadList(wxWindow* parent, DebugInterface* _cpu)
-	: GenericListView(parent,threadColumns,TL_COLUMNCOUNT), cpu(_cpu)
+	: GenericListView(parent, threadColumns, TL_COLUMNCOUNT)
+	, cpu(_cpu)
 {
 }
 
@@ -548,63 +620,63 @@ wxString ThreadList::getColumnText(int item, int col) const
 
 	switch (col)
 	{
-	case TL_TID:
-		dest.Write("%d",thread.tid);
-		break;
-	case TL_PROGRAMCOUNTER:
-		if (thread.data.status == THS_RUN)
-			dest.Write("0x%08X", cpu->getPC());
-		else
-			dest.Write("0x%08X", thread.data.entry);
-		break;
-	case TL_ENTRYPOINT:
-		dest.Write("0x%08X", thread.data.entry_init);
-		break;
-	case TL_PRIORITY:
-		dest.Write("0x%02X", thread.data.currentPriority);
-		break;
-	case TL_STATE:
-		switch (thread.data.status)
-		{
-		case THS_BAD:
-			dest.Write("Bad");
+		case TL_TID:
+			dest.Write("%d", thread.tid);
 			break;
-		case THS_RUN:
-			dest.Write("Running");
+		case TL_PROGRAMCOUNTER:
+			if (thread.data.status == THS_RUN)
+				dest.Write("0x%08X", cpu->getPC());
+			else
+				dest.Write("0x%08X", thread.data.entry);
 			break;
-		case THS_READY:
-			dest.Write("Ready");
+		case TL_ENTRYPOINT:
+			dest.Write("0x%08X", thread.data.entry_init);
 			break;
-		case THS_WAIT:
-			dest.Write("Waiting");
+		case TL_PRIORITY:
+			dest.Write("0x%02X", thread.data.currentPriority);
 			break;
-		case THS_SUSPEND:
-			dest.Write("Suspended");
+		case TL_STATE:
+			switch (thread.data.status)
+			{
+				case THS_BAD:
+					dest.Write("Bad");
+					break;
+				case THS_RUN:
+					dest.Write("Running");
+					break;
+				case THS_READY:
+					dest.Write("Ready");
+					break;
+				case THS_WAIT:
+					dest.Write("Waiting");
+					break;
+				case THS_SUSPEND:
+					dest.Write("Suspended");
+					break;
+				case THS_WAIT_SUSPEND:
+					dest.Write("Waiting/Suspended");
+					break;
+				case THS_DORMANT:
+					dest.Write("Dormant");
+					break;
+			}
 			break;
-		case THS_WAIT_SUSPEND:
-			dest.Write("Waiting/Suspended");
+		case TL_WAITTYPE:
+			switch (thread.data.waitType)
+			{
+				case WAIT_NONE:
+					dest.Write("None");
+					break;
+				case WAIT_WAKEUP_REQ:
+					dest.Write("Wakeup request");
+					break;
+				case WAIT_SEMA:
+					dest.Write("Semaphore");
+					break;
+			}
 			break;
-		case THS_DORMANT:
-			dest.Write("Dormant");
-			break;
-		}
-		break;
-	case TL_WAITTYPE:
-		switch (thread.data.waitType)
-		{
-		case WAIT_NONE:
-			dest.Write("None");
-			break;
-		case WAIT_WAKEUP_REQ:
-			dest.Write("Wakeup request");
-			break;
-		case WAIT_SEMA:
-			dest.Write("Semaphore");
-			break;
-		}
-		break;
-	default:
-		return L"Invalid";
+		default:
+			return L"Invalid";
 	}
 
 	return dest;
@@ -619,16 +691,16 @@ void ThreadList::onDoubleClick(int itemIndex, const wxPoint& point)
 
 	switch (thread.data.status)
 	{
-	case THS_DORMANT:
-	case THS_BAD:
-		postEvent(debEVT_GOTOINDISASM,thread.data.entry_init);
-		break;
-	case THS_RUN:
-		postEvent(debEVT_GOTOINDISASM,cpu->getPC());
-		break;
-	default:
-		postEvent(debEVT_GOTOINDISASM,thread.data.entry);
-		break;
+		case THS_DORMANT:
+		case THS_BAD:
+			postEvent(debEVT_GOTOINDISASM, thread.data.entry_init);
+			break;
+		case THS_RUN:
+			postEvent(debEVT_GOTOINDISASM, cpu->getPC());
+			break;
+		default:
+			postEvent(debEVT_GOTOINDISASM, thread.data.entry);
+			break;
 	}
 }
 
@@ -641,7 +713,7 @@ EEThread ThreadList::getRunningThread()
 	}
 
 	EEThread thread;
-	memset(&thread,0,sizeof(thread));
+	memset(&thread, 0, sizeof(thread));
 	thread.tid = -1;
 	return thread;
 }
@@ -650,26 +722,36 @@ EEThread ThreadList::getRunningThread()
 // StackFramesList
 //
 
-enum { SF_ENTRY, SF_ENTRYNAME, SF_CURPC, SF_CUROPCODE, SF_CURSP, SF_FRAMESIZE, SF_COLUMNCOUNT };
-
-GenericListViewColumn stackFrameolumns[SF_COLUMNCOUNT] = {
-	{ L"Entry",			0.12f },
-	{ L"Name",			0.24f },
-	{ L"PC",			0.12f },
-	{ L"Opcode",		0.28f },
-	{ L"SP",			0.12f },
-	{ L"Frame Size",	0.12f }
+enum
+{
+	SF_ENTRY,
+	SF_ENTRYNAME,
+	SF_CURPC,
+	SF_CUROPCODE,
+	SF_CURSP,
+	SF_FRAMESIZE,
+	SF_COLUMNCOUNT
 };
 
+GenericListViewColumn stackFrameolumns[SF_COLUMNCOUNT] = {
+	{L"Entry", 0.12f},
+	{L"Name", 0.24f},
+	{L"PC", 0.12f},
+	{L"Opcode", 0.28f},
+	{L"SP", 0.12f},
+	{L"Frame Size", 0.12f}};
+
 StackFramesList::StackFramesList(wxWindow* parent, DebugInterface* _cpu, CtrlDisassemblyView* _disassembly)
-	: GenericListView(parent,stackFrameolumns,SF_COLUMNCOUNT), cpu(_cpu), disassembly(_disassembly)
+	: GenericListView(parent, stackFrameolumns, SF_COLUMNCOUNT)
+	, cpu(_cpu)
+	, disassembly(_disassembly)
 {
 }
 
 void StackFramesList::loadStackFrames(EEThread& currentThread)
 {
-	frames = MipsStackWalk::Walk(cpu,cpu->getPC(),cpu->getRegister(0,31),cpu->getRegister(0,29),
-			currentThread.data.entry_init,currentThread.data.stack);
+	frames = MipsStackWalk::Walk(cpu, cpu->getPC(), cpu->getRegister(0, 31), cpu->getRegister(0, 29),
+		currentThread.data.entry_init, currentThread.data.stack);
 	update();
 }
 
@@ -688,39 +770,42 @@ wxString StackFramesList::getColumnText(int item, int col) const
 
 	switch (col)
 	{
-	case SF_ENTRY:
-		dest.Write("0x%08X",frame.entry);
-		break;
-	case SF_ENTRYNAME:
+		case SF_ENTRY:
+			dest.Write("0x%08X", frame.entry);
+			break;
+		case SF_ENTRYNAME:
 		{
 			const std::string sym = symbolMap.GetLabelString(frame.entry);
-			if (!sym.empty()) {
-				dest.Write("%s",sym.c_str());
-			} else {
+			if (!sym.empty())
+			{
+				dest.Write("%s", sym.c_str());
+			}
+			else
+			{
 				dest.Write("-");
 			}
 		}
 		break;
-	case SF_CURPC:
-		dest.Write("0x%08X",frame.pc);
-		break;
-	case SF_CUROPCODE:
+		case SF_CURPC:
+			dest.Write("0x%08X", frame.pc);
+			break;
+		case SF_CUROPCODE:
 		{
 			if (!cpu->isAlive())
 				break;
 			char temp[512];
-			disassembly->getOpcodeText(frame.pc,temp);
-			dest.Write("%s",temp);
+			disassembly->getOpcodeText(frame.pc, temp);
+			dest.Write("%s", temp);
 		}
 		break;
-	case SF_CURSP:
-		dest.Write("0x%08X",frame.sp);
-		break;
-	case SF_FRAMESIZE:
-		dest.Write("0x%08X",frame.stackSize);
-		break;
-	default:
-		return L"Invalid";
+		case SF_CURSP:
+			dest.Write("0x%08X", frame.sp);
+			break;
+		case SF_FRAMESIZE:
+			dest.Write("0x%08X", frame.stackSize);
+			break;
+		default:
+			return L"Invalid";
 	}
 
 	return dest;
@@ -730,6 +815,6 @@ void StackFramesList::onDoubleClick(int itemIndex, const wxPoint& point)
 {
 	if (itemIndex < 0 || itemIndex >= (int)frames.size())
 		return;
-	
-	postEvent(debEVT_GOTOINDISASM,frames[itemIndex].pc);
+
+	postEvent(debEVT_GOTOINDISASM, frames[itemIndex].pc);
 }
