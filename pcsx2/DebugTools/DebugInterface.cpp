@@ -53,7 +53,7 @@ enum ReferenceIndexType
 class MipsExpressionFunctions : public IExpressionFunctions
 {
 public:
-	MipsExpressionFunctions(DebugInterface* cpu)
+	explicit MipsExpressionFunctions(DebugInterface* cpu)
 		: cpu(cpu){};
 
 	virtual bool parseReference(char* str, u64& referenceIndex)
