@@ -1098,13 +1098,68 @@ SCED-50907:
   region: "PAL-Unk"
   roundModes:
     eeRoundMode: 1  # Fixes reverse control and boss in some places.
-  gameFixes:
-    - IPUWaitHack
+ SCED-50945:
+  name: "Official PlayStation 2 Magazine Demo 20"
+  region: "PAL-M5"
+SCED-50989:
+  name: "Official PlayStation 2 Magazine Demo 21"
+  region: "PAL-M5"
+SCED-51016:
+  name: "Official PlayStation 2 Magazine Demo 22/23"
+  region: "PAL-M5"
 SCED-51075:
   name: "Ratchet & Clank [Regular Demo]"
   region: "PAL-M5"
   gameFixes:
     - VU0KickstartHack # Fixes Character SPS.
+SCED-51147:
+  name: "Official PlayStation 2 Magazine Demo 24"
+  region: "PAL-M5"
+SCED-51185:
+  name: "Official PlayStation 2 Magazine Demo 24" # German
+  region: "PAL-E-G"
+SCED-51262:
+  name: "Official PlayStation 2 Magazine Demo 25" # German
+  region: "PAL-E-G"
+SCED-51279:
+  name: "Official PlayStation 2 Magazine Demo 25"
+  region: "PAL-M5"
+SCED-51319:
+  name: "Official PlayStation 2 Magazine Demo 27" # German
+  region: "PAL-E-G"
+SCED-51359:
+  name: "Official PlayStation 2 Magazine Demo 27"
+  region: "PAL-M5"
+SCED-51376:
+  name: "Official PlayStation 2 Magazine Demo 28" # German
+  region: "PAL-E-G"
+SCED-51384:
+  name: "Official PlayStation 2 Magazine Demo 29"
+  region: "PAL-M5"
+SCED-51432:
+  name: "Official PlayStation 2 Magazine Demo 29" # German
+  region: "PAL-E-G"
+SCED-51440:
+  name: "Official PlayStation 2 Magazine Demo 29"
+  region: "PAL-M5"
+SCED-51457:
+  name: "Official PlayStation 2 Magazine Demo 30"
+  region: "PAL-M5"
+SCED-51483:
+  name: "Official PlayStation 2 Magazine Demo 30" # German
+  region: "PAL-E-G"
+SCED-51485:
+  name: "Official PlayStation 2 Magazine Demo 30" # Australian
+  region: "PAL-E"
+SCED-51489:
+  name: "Official PlayStation 2 Magazine Demo 30"
+  region: "PAL-M5"
+SCED-51529:
+  name: "Official PlayStation 2 Magazine Demo 31"
+  region: "PAL-M5"
+SCED-51530:
+  name: "Official PlayStation 2 Magazine Demo 32"
+  region: "PAL-M5"
 SCED-51531:
   name: "Official PlayStation 2 Magazine Demo 33"
   region: "PAL-M5"
