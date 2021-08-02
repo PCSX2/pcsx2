@@ -151,6 +151,7 @@ CRC::Game CRC::m_games[] =
 	{0x09F49E37, CrashBandicootWoC, NoRegion, 0},
 	{0x103B5706, CrashBandicootWoC, US, 0}, // American Greatest Hits release
 	{0x75182BE5, CrashBandicootWoC, US, 0},
+	{0x5188ABCA, CrashBandicootWoC, US, 0},
 	{0xEB1EB7FE, CrashBandicootWoC, US, 0}, // Regular Demo
 	{0x34E2EEC7, CrashBandicootWoC, RU, 0},
 	{0x00A074A7, CrashBandicootWoC, KO, 0},
