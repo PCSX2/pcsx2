@@ -1250,6 +1250,11 @@ SCED-50989:
 SCED-51016:
   name: "Official PlayStation 2 Magazine Demo 22/23"
   region: "PAL-M5"
+SCED-51075:
+  name: "Ratchet & Clank [Regular Demo]"
+  region: "PAL-M5"
+  gameFixes:
+    - VU0KickstartHack # Fixes Character SPS.
 SCED-51147:
   name: "Official PlayStation 2 Magazine Demo 24"
   region: "PAL-M5"
