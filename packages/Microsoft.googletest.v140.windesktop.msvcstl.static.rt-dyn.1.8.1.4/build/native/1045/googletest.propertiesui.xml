@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ProjectSchemaDefinitions xmlns="clr-namespace:Microsoft.Build.Framework.XamlTypes;assembly=Microsoft.Build.Framework">
+  <Rule Name="ReferencedPackages-Microsoft-GoogleTest" PageTemplate="tool" DisplayName="Przywoływane pakiety" SwitchPrefix="/" Order="1">
+    <Rule.Categories>
+      <Category Name="Google Test" DisplayName="Google Test" />
+    </Rule.Categories>
+    <Rule.DataSource>
+      <DataSource Persistence="ProjectFile" ItemType="" />
+    </Rule.DataSource>
+    <EnumProperty Name="Microsoft-GoogleTest-Disable-gtest_main" DisplayName="Użyj funkcji main biblioteki Google Test" Description="Użyj głównej funkcji udostępnianej przez strukturę Google Test" Category="Google Test">
+      <!-- Note that UI and code behind have the logic inversed; this is to have "Yes" treated as the default. -->
+      <EnumValue Name="" DisplayName="Tak" />
+      <EnumValue Name="true" DisplayName="Nie" />
+    </EnumProperty>
+  </Rule>
+</ProjectSchemaDefinitions>

@@ -1019,6 +1019,7 @@ set(pcsx2GuiSources
 	gui/Saveslots.cpp
 	gui/SysState.cpp
 	gui/UpdateUI.cpp
+	PcsxTests/test.cpp
 	)
 
 # gui headers
