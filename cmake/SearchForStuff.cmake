@@ -224,3 +224,10 @@ if(NOT USE_SYSTEM_YAML)
 endif()
 
 add_subdirectory(3rdparty/libchdr/libchdr EXCLUDE_FROM_ALL)
+
+if(USE_NATIVE_TOOLS)
+	add_subdirectory(tools/bin2cpp EXCLUDE_FROM_ALL)
+	set(BIN2CPP bin2cpp)
+else()
+	set(BIN2CPP perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl)
+endif()
