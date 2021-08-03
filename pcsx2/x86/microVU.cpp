@@ -279,6 +279,13 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState) {
 				quick.prog  = it[0];
 				list->erase(it);
 				list->push_front(quick.prog);
+
+				// Sanity check, in case for some reason the program compilation aborted half way through (JALR for example)
+				if (quick.block == nullptr)
+				{
+					void* entryPoint = mVUblockFetch(mVU, startPC, pState);
+					return entryPoint;
+				}
 				return mVUentryGet(mVU, quick.block, startPC, pState);
 			}
 		}
