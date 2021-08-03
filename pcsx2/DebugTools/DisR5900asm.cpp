@@ -1391,12 +1391,12 @@ void P_VMULAz( std::string& output ){_sap("vmulaz.%s ACC,%s,%sz") dest_string(),
 void P_VMULAw( std::string& output ){_sap("vmulaw.%s ACC,%s,%sw") dest_string(),COP2_REG_FP[DECODE_FS],COP2_REG_FP[DECODE_FT]);}
 void P_VMULAq( std::string& output ){_sap("vmulaq.%s ACC %s, Q") dest_string(), COP2_REG_FP[DECODE_FS]); }
 void P_VABS( std::string& output ){_sap("vabs.%s %s, %s") dest_string(),COP2_REG_FP[DECODE_FT], COP2_REG_FP[DECODE_FS]);}
-void P_VMULAi( std::string& output ){_sap("vmulaq.%s ACC %s, I") dest_string(), COP2_REG_FP[DECODE_FS]); }
+void P_VMULAi( std::string& output ){_sap("vmulai.%s ACC %s, I") dest_string(), COP2_REG_FP[DECODE_FS]); }
 void P_VCLIPw( std::string& output ){_sap("vclip %sxyz, %sw") COP2_REG_FP[DECODE_FS], COP2_REG_FP[DECODE_FT]);}
 void P_VADDAq( std::string& output ){_sap("vaddaq.%s ACC %s, Q") dest_string(), COP2_REG_FP[DECODE_FS]); }
 void P_VMADDAq( std::string& output ){_sap("vmaddaq.%s ACC %s, Q") dest_string(), COP2_REG_FP[DECODE_FS]); }
 void P_VADDAi( std::string& output ){_sap("vaddai.%s ACC %s, I") dest_string(), COP2_REG_FP[DECODE_FS]); }
-void P_VMADDAi( std::string& output ){_sap("vmaddai.%s ACC %s, Q") dest_string(), COP2_REG_FP[DECODE_FS]); }
+void P_VMADDAi( std::string& output ){_sap("vmaddai.%s ACC %s, I") dest_string(), COP2_REG_FP[DECODE_FS]); }
 void P_VSUBAq( std::string& output ){_sap("vsubaq.%s ACC %s, Q") dest_string(), COP2_REG_FP[DECODE_FS]); }
 void P_VMSUBAq( std::string& output ){_sap("vmsubaq.%s ACC %s, Q") dest_string(), COP2_REG_FP[DECODE_FS]); }
 void P_VSUBAi( std::string& output ){_sap("vsubai.%s ACC %s, I") dest_string(), COP2_REG_FP[DECODE_FS]); }
