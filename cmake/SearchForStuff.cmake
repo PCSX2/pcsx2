@@ -1,163 +1,179 @@
 #-------------------------------------------------------------------------------
 #                       Search all libraries on the system
 #-------------------------------------------------------------------------------
-## Use cmake package to find module
-if (Linux)
-	find_package(ALSA REQUIRED)
-	make_imported_target_if_missing(ALSA::ALSA ALSA)
-endif()
-find_package(PCAP REQUIRED)
-find_package(LibXml2 REQUIRED)
-make_imported_target_if_missing(LibXml2::LibXml2 LibXml2)
-find_package(Freetype REQUIRED) # GS OSD
-find_package(Gettext) # translation tool
 if(EXISTS ${PROJECT_SOURCE_DIR}/.git)
 	find_package(Git)
 endif()
-find_package(LibLZMA REQUIRED)
-make_imported_target_if_missing(LibLZMA::LibLZMA LIBLZMA)
-
-# Using find_package OpenGL without either setting your opengl preference to GLVND or LEGACY
-# is deprecated as of cmake 3.11.
-set(OpenGL_GL_PREFERENCE GLVND)
-find_package(OpenGL REQUIRED)
-find_package(PNG REQUIRED)
-find_package(Vtune)
-
-# Does not require the module (allow to compile non-wx plugins)
-# Force the unicode build (the variable is only supported on cmake 2.8.3 and above)
-# Warning do not put any double-quote for the argument...
-# set(wxWidgets_CONFIG_OPTIONS --unicode=yes --debug=yes) # In case someone want to debug inside wx
-#
-# Fedora uses an extra non-standard option ... Arch must be the first option.
-# They do uname -m if missing so only fix for cross compilations.
-# http://pkgs.fedoraproject.org/cgit/wxGTK.git/plain/wx-config
-if(Fedora AND CMAKE_CROSSCOMPILING)
-	set(wxWidgets_CONFIG_OPTIONS --arch ${PCSX2_TARGET_ARCHITECTURES} --unicode=yes)
+if (WIN32)
+	# We bundle everything on Windows
+	add_subdirectory(3rdparty/zlib EXCLUDE_FROM_ALL)
+	add_subdirectory(3rdparty/libpng EXCLUDE_FROM_ALL)
+	add_subdirectory(3rdparty/libjpeg EXCLUDE_FROM_ALL)
+	add_subdirectory(3rdparty/libsamplerate EXCLUDE_FROM_ALL)
+	add_subdirectory(3rdparty/baseclasses EXCLUDE_FROM_ALL)
+	add_subdirectory(3rdparty/freetype EXCLUDE_FROM_ALL)
+	add_subdirectory(3rdparty/portaudio EXCLUDE_FROM_ALL)
+	add_subdirectory(3rdparty/pthreads4w EXCLUDE_FROM_ALL)
+	add_subdirectory(3rdparty/soundtouch EXCLUDE_FROM_ALL)
+	add_subdirectory(3rdparty/wxwidgets3.0 EXCLUDE_FROM_ALL)
+	add_subdirectory(3rdparty/xz EXCLUDE_FROM_ALL)
 else()
-	set(wxWidgets_CONFIG_OPTIONS --unicode=yes)
-endif()
+	## Use cmake package to find module
+	if (Linux)
+		find_package(ALSA REQUIRED)
+		make_imported_target_if_missing(ALSA::ALSA ALSA)
+	endif()
+	find_package(PCAP REQUIRED)
+	find_package(LibXml2 REQUIRED)
+	make_imported_target_if_missing(LibXml2::LibXml2 LibXml2)
+	find_package(Freetype REQUIRED) # GS OSD
+	find_package(Gettext) # translation tool
+	find_package(LibLZMA REQUIRED)
+	make_imported_target_if_missing(LibLZMA::LibLZMA LIBLZMA)
 
-# I'm removing the version check, because it excludes newer versions and requires specifically 3.0.
-#list(APPEND wxWidgets_CONFIG_OPTIONS --version=3.0)
+	# Using find_package OpenGL without either setting your opengl preference to GLVND or LEGACY
+	# is deprecated as of cmake 3.11.
+	set(OpenGL_GL_PREFERENCE GLVND)
+	find_package(OpenGL REQUIRED)
+	find_package(PNG REQUIRED)
+	find_package(Vtune)
 
-# The wx version must be specified so a mix of gtk2 and gtk3 isn't used
-# as that can cause compile errors.
-if(GTK2_API AND NOT APPLE)
-	list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk2)
-elseif(NOT APPLE)
-	list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
-endif()
+	# Does not require the module (allow to compile non-wx plugins)
+	# Force the unicode build (the variable is only supported on cmake 2.8.3 and above)
+	# Warning do not put any double-quote for the argument...
+	# set(wxWidgets_CONFIG_OPTIONS --unicode=yes --debug=yes) # In case someone want to debug inside wx
+	#
+	# Fedora uses an extra non-standard option ... Arch must be the first option.
+	# They do uname -m if missing so only fix for cross compilations.
+	# http://pkgs.fedoraproject.org/cgit/wxGTK.git/plain/wx-config
+	if(Fedora AND CMAKE_CROSSCOMPILING)
+		set(wxWidgets_CONFIG_OPTIONS --arch ${PCSX2_TARGET_ARCHITECTURES} --unicode=yes)
+	else()
+		set(wxWidgets_CONFIG_OPTIONS --unicode=yes)
+	endif()
 
-# wx2.8 => /usr/bin/wx-config-2.8
-# lib32-wx2.8 => /usr/bin/wx-config32-2.8
-# wx3.0 => /usr/bin/wx-config-3.0
-# I'm going to take a wild guess and predict this:
-# lib32-wx3.0 => /usr/bin/wx-config32-3.0
-# FindwxWidgets only searches for wx-config.
-if(CMAKE_CROSSCOMPILING)
-	# May need to fix the filenames for lib32-wx3.0.
-	if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
-		if (Fedora AND EXISTS "/usr/bin/wx-config-3.0")
+	# I'm removing the version check, because it excludes newer versions and requires specifically 3.0.
+	#list(APPEND wxWidgets_CONFIG_OPTIONS --version=3.0)
+
+	# The wx version must be specified so a mix of gtk2 and gtk3 isn't used
+	# as that can cause compile errors.
+	if(GTK2_API AND NOT APPLE)
+		list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk2)
+	elseif(NOT APPLE)
+		list(APPEND wxWidgets_CONFIG_OPTIONS --toolkit=gtk3)
+	endif()
+
+	# wx2.8 => /usr/bin/wx-config-2.8
+	# lib32-wx2.8 => /usr/bin/wx-config32-2.8
+	# wx3.0 => /usr/bin/wx-config-3.0
+	# I'm going to take a wild guess and predict this:
+	# lib32-wx3.0 => /usr/bin/wx-config32-3.0
+	# FindwxWidgets only searches for wx-config.
+	if(CMAKE_CROSSCOMPILING)
+		# May need to fix the filenames for lib32-wx3.0.
+		if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
+			if (Fedora AND EXISTS "/usr/bin/wx-config-3.0")
+				set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.0")
+			endif()
+			if (EXISTS "/usr/bin/wx-config32")
+				set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config32")
+			endif()
+			if (EXISTS "/usr/bin/wx-config32-3.0")
+				set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config32-3.0")
+			endif()
+		endif()
+	else()
+		if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+			set(wxWidgets_CONFIG_EXECUTABLE "/usr/local/bin/wxgtk3u-3.0-config")
+		endif()
+		if(EXISTS "/usr/bin/wx-config-3.2")
+			set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.2")
+		endif()
+		if(EXISTS "/usr/bin/wx-config-3.1")
+			set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.1")
+		endif()
+		if(EXISTS "/usr/bin/wx-config-3.0")
 			set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.0")
 		endif()
-		if (EXISTS "/usr/bin/wx-config32")
-			set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config32")
+		if(EXISTS "/usr/bin/wx-config")
+			set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config")
 		endif()
-		if (EXISTS "/usr/bin/wx-config32-3.0")
-			set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config32-3.0")
+		if(NOT GTK2_API AND EXISTS "/usr/bin/wx-config-gtk3")
+			set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-gtk3")
 		endif()
 	endif()
-else()
-	if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
-		set(wxWidgets_CONFIG_EXECUTABLE "/usr/local/bin/wxgtk3u-3.0-config")
-	endif()
-	if(EXISTS "/usr/bin/wx-config-3.2")
-		set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.2")
-	endif()
-	if(EXISTS "/usr/bin/wx-config-3.1")
-		set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.1")
-	endif()
-	if(EXISTS "/usr/bin/wx-config-3.0")
-		set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-3.0")
-	endif()
-	if(EXISTS "/usr/bin/wx-config")
-		set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config")
-	endif()
-	if(NOT GTK2_API AND EXISTS "/usr/bin/wx-config-gtk3")
-		set(wxWidgets_CONFIG_EXECUTABLE "/usr/bin/wx-config-gtk3")
-	endif()
-endif()
 
-find_package(wxWidgets REQUIRED base core adv)
-include(${wxWidgets_USE_FILE})
-make_imported_target_if_missing(wxWidgets::all wxWidgets)
+	find_package(wxWidgets REQUIRED base core adv)
+	include(${wxWidgets_USE_FILE})
+	make_imported_target_if_missing(wxWidgets::all wxWidgets)
 
-find_package(ZLIB REQUIRED)
+	find_package(ZLIB REQUIRED)
 
-## Use pcsx2 package to find module
-include(FindLibc)
+	## Use pcsx2 package to find module
+	include(FindLibc)
 
-## Use pcsx2 package to find module
-include(FindPulseAudio)
+	## Use pcsx2 package to find module
+	include(FindPulseAudio)
 
-## Use CheckLib package to find module
-include(CheckLib)
+	## Use CheckLib package to find module
+	include(CheckLib)
 
-if(Linux)
-	check_lib(EGL EGL EGL/egl.h)
-	check_lib(X11_XCB X11-xcb X11/Xlib-xcb.h)
-	check_lib(XCB xcb xcb/xcb.h)
-	check_lib(AIO aio libaio.h)
-	# There are two udev pkg config files - udev.pc (wrong), libudev.pc (correct)
-	# When cross compiling, pkg-config will be skipped so we have to look for
-	# udev (it'll automatically be prefixed with lib). But when not cross
-	# compiling, we have to look for libudev.pc. Argh. Hence the silliness below.
-	if(CMAKE_CROSSCOMPILING)
-		check_lib(LIBUDEV udev libudev.h)
+	if(Linux)
+		check_lib(EGL EGL EGL/egl.h)
+		check_lib(X11_XCB X11-xcb X11/Xlib-xcb.h)
+		check_lib(XCB xcb xcb/xcb.h)
+		check_lib(AIO aio libaio.h)
+		# There are two udev pkg config files - udev.pc (wrong), libudev.pc (correct)
+		# When cross compiling, pkg-config will be skipped so we have to look for
+		# udev (it'll automatically be prefixed with lib). But when not cross
+		# compiling, we have to look for libudev.pc. Argh. Hence the silliness below.
+		if(CMAKE_CROSSCOMPILING)
+			check_lib(LIBUDEV udev libudev.h)
+		else()
+			check_lib(LIBUDEV libudev libudev.h)
+		endif()
+	endif()
+	if(PORTAUDIO_API)
+		check_lib(PORTAUDIO portaudio portaudio.h pa_linux_alsa.h)
+	endif()
+	check_lib(SOUNDTOUCH SoundTouch SoundTouch.h PATH_SUFFIXES soundtouch)
+	check_lib(SAMPLERATE samplerate samplerate.h)
+
+	if(SDL2_API)
+		check_lib(SDL2 SDL2 SDL.h PATH_SUFFIXES SDL2)
+		alias_library(SDL::SDL PkgConfig::SDL2)
 	else()
-		check_lib(LIBUDEV libudev libudev.h)
+		# Tell cmake that we use SDL as a library and not as an application
+		set(SDL_BUILDING_LIBRARY TRUE)
+		find_package(SDL REQUIRED)
 	endif()
-endif()
-if(PORTAUDIO_API)
-	check_lib(PORTAUDIO portaudio portaudio.h pa_linux_alsa.h)
-endif()
-check_lib(SOUNDTOUCH SoundTouch SoundTouch.h PATH_SUFFIXES soundtouch)
-check_lib(SAMPLERATE samplerate samplerate.h)
 
-if(SDL2_API)
-	check_lib(SDL2 SDL2 SDL.h PATH_SUFFIXES SDL2)
-	alias_library(SDL::SDL PkgConfig::SDL2)
-else()
-	# Tell cmake that we use SDL as a library and not as an application
-	set(SDL_BUILDING_LIBRARY TRUE)
-	find_package(SDL REQUIRED)
-endif()
-
-if(UNIX AND NOT APPLE)
-	find_package(X11 REQUIRED)
-	make_imported_target_if_missing(X11::X11 X11)
-endif()
-if(UNIX)
-	# Most plugins (if not all) and PCSX2 core need gtk2, so set the required flags
-	if (GTK2_API)
-		find_package(GTK2 REQUIRED gtk)
-		alias_library(GTK::gtk GTK2::gtk)
-	else()
-	if(CMAKE_CROSSCOMPILING)
-		find_package(GTK3 REQUIRED gtk)
-		alias_library(GTK::gtk GTK3::gtk)
-	else()
-		check_lib(GTK3 gtk+-3.0 gtk/gtk.h)
-		alias_library(GTK::gtk PkgConfig::GTK3)
+	if(UNIX AND NOT APPLE)
+		find_package(X11 REQUIRED)
+		make_imported_target_if_missing(X11::X11 X11)
 	endif()
+	if(UNIX)
+		# Most plugins (if not all) and PCSX2 core need gtk2, so set the required flags
+		if (GTK2_API)
+			find_package(GTK2 REQUIRED gtk)
+			alias_library(GTK::gtk GTK2::gtk)
+		else()
+		if(CMAKE_CROSSCOMPILING)
+			find_package(GTK3 REQUIRED gtk)
+			alias_library(GTK::gtk GTK3::gtk)
+		else()
+			check_lib(GTK3 gtk+-3.0 gtk/gtk.h)
+			alias_library(GTK::gtk PkgConfig::GTK3)
+		endif()
+		endif()
 	endif()
-endif()
 
-#----------------------------------------
-#           Use system include
-#----------------------------------------
-find_package(HarfBuzz)
+	#----------------------------------------
+	#           Use system include
+	#----------------------------------------
+	find_package(HarfBuzz)
+
+endif(WIN32)
 
 set(ACTUALLY_ENABLE_TESTS ${ENABLE_TESTS})
 if(ENABLE_TESTS)
@@ -216,8 +232,10 @@ if(NOT USE_SYSTEM_YAML)
 	if(EXISTS "${CMAKE_SOURCE_DIR}/3rdparty/yaml-cpp/yaml-cpp/CMakeLists.txt")
 		message(STATUS "Using bundled yaml-cpp")
 		add_subdirectory(3rdparty/yaml-cpp/yaml-cpp EXCLUDE_FROM_ALL)
-		# Remove once https://github.com/jbeder/yaml-cpp/pull/815 is merged
-		target_compile_options(yaml-cpp PRIVATE -Wno-shadow)
+		if (NOT MSVC)
+			# Remove once https://github.com/jbeder/yaml-cpp/pull/815 is merged
+			target_compile_options(yaml-cpp PRIVATE -Wno-shadow)
+		endif()
 	else()
 		message(FATAL_ERROR "No bundled yaml-cpp was found")
 	endif()

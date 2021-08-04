@@ -25,14 +25,18 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 	It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif()
 
-set(CommonFlags
-	-fno-strict-aliasing
-	-Wstrict-aliasing # Allow to track strict aliasing issue.
-	-Wno-parentheses
-	-Wno-missing-braces
-	-Wno-unknown-pragmas
-	-DWX_PRECOMP
+if(MSVC)
+	set(CommonFlags)
+else()
+	set(CommonFlags
+		-fno-strict-aliasing
+		-Wstrict-aliasing # Allow to track strict aliasing issue.
+		-Wno-parentheses
+		-Wno-missing-braces
+		-Wno-unknown-pragmas
+		-DWX_PRECOMP
 	)
+endif()
 
 if(GCC_VERSION VERSION_EQUAL "8.0" OR GCC_VERSION VERSION_GREATER "8.0")
 	# gs is pretty bad at this
@@ -1248,19 +1252,27 @@ target_link_libraries(PCSX2 PRIVATE
 	yaml-cpp
 	chdr-static
 	wxWidgets::all
-	GTK::gtk
-	HarfBuzz::HarfBuzz
 	ZLIB::ZLIB
 	PkgConfig::SOUNDTOUCH
-	PCAP::PCAP
 	PkgConfig::SAMPLERATE
-	LibXml2::LibXml2
-	OpenGL::GL
 	PNG::PNG
 	Freetype::Freetype
 	LibLZMA::LibLZMA
 	${LIBC_LIBRARIES}
 )
+
+if(WIN32)
+	target_link_libraries(PCSX2 PRIVATE
+	)
+else()
+	target_link_libraries(PCSX2 PRIVATE
+		GTK::gtk
+		HarfBuzz::HarfBuzz
+		OpenGL::GL
+		PCAP::PCAP
+		LibXml2::LibXml2
+	)
+endif()
 
 ### Generate the resources files
 file(MAKE_DIRECTORY ${res_bin})

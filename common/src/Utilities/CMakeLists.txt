@@ -10,7 +10,6 @@ add_library(Utilities)
 # Utilities sources
 target_sources(Utilities PRIVATE
 	VirtualMemory.cpp
-	AlignedMalloc.cpp
 	../../include/Utilities/FixedPointTypes.inl
 	../../include/Utilities/EventSource.inl
 	../../include/Utilities/SafeArray.inl
@@ -20,7 +19,6 @@ target_sources(Utilities PRIVATE
 	Exceptions.cpp
 	FastFormatString.cpp
 	IniInterface.cpp
-	Linux/LnxHostSys.cpp
 	Mutex.cpp
 	PathUtils.cpp
 	PrecompiledHeader.cpp
@@ -38,7 +36,7 @@ target_sources(Utilities PRIVATE
 	wxAppWithHelpers.cpp
 	wxGuiTools.cpp
 	wxHelpers.cpp
-	)
+)
 
 # Utilities headers
 target_sources(Utilities PRIVATE
@@ -76,25 +74,35 @@ target_sources(Utilities PRIVATE
 	ThreadingInternal.h
 )
 
-if(APPLE)
+if(WIN32)
 	target_sources(Utilities PRIVATE
-		Darwin/DarwinThreads.cpp
-		Darwin/DarwinMisc.cpp
-		Darwin/DarwinSemaphore.cpp
-	)
-elseif(Windows)
-	target_sources(Utilities PRIVATE
-		x86/MemcpyFast.cpp
 		Windows/WinThreads.cpp
 		Windows/WinHostSys.cpp
 		Windows/WinMisc.cpp
-	)
-else()
-	target_sources(Utilities PRIVATE
-		Linux/LnxThreads.cpp
-		Linux/LnxMisc.cpp
 		Semaphore.cpp
 	)
+	if(_M_X86_32)
+		target_sources(Utilities PRIVATE x86/MemcpyFast.cpp)
+	endif()
+	target_link_libraries(Utilities PUBLIC pthreads4w Winmm.lib)
+else()
+	target_sources(Utilities PRIVATE
+		AlignedMalloc.cpp
+		Linux/LnxHostSys.cpp
+	)
+	if(APPLE)
+		target_sources(Utilities PRIVATE
+			Darwin/DarwinThreads.cpp
+			Darwin/DarwinMisc.cpp
+			Darwin/DarwinSemaphore.cpp
+		)
+	else()
+		target_sources(Utilities PRIVATE
+			Linux/LnxThreads.cpp
+			Linux/LnxMisc.cpp
+			Semaphore.cpp
+		)
+	endif()
 endif()
 
 if(USE_VTUNE)

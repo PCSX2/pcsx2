@@ -68,7 +68,7 @@ function(get_git_version_info)
 endfunction()
 
 function(write_svnrev_h)
-	file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h "#define SVN_REV ${PCSX2_WC_TIME}ll \n#define SVN_MODS 0\n#define GIT_REV \"${PCSX2_GIT_REV}\"")
+	file(WRITE ${CMAKE_BINARY_DIR}/common/include/svnrev.h "#define SVN_REV ${PCSX2_WC_TIME}ll \n#define SVN_MODS 0\n#define GIT_REV \"${PCSX2_GIT_REV}\"\n")
 endfunction()
 
 function(check_compiler_version version_warn version_err)
