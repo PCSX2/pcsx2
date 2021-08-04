@@ -57,7 +57,7 @@ else()
 	target_sources(x86emitter PRIVATE LnxCpuDetect.cpp)
 endif()
 
-target_link_libraries(x86emitter PRIVATE wxWidgets::all)
+target_link_libraries(x86emitter PRIVATE Utilities wxWidgets::all)
 target_compile_features(x86emitter PUBLIC cxx_std_17)
 target_include_directories(x86emitter PUBLIC ../../include PRIVATE ../../include/x86emitter)
 target_compile_definitions(x86emitter PUBLIC "${PCSX2_DEFS}")

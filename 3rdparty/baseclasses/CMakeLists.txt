@@ -1,0 +1,55 @@
+add_library(baseclasses
+	amextra.cpp
+	amfilter.cpp
+	amvideo.cpp
+	combase.cpp
+	ctlutil.cpp
+	ddmm.cpp
+	mtype.cpp
+	outputq.cpp
+	pstream.cpp
+	pullpin.cpp
+	refclock.cpp
+	renbase.cpp
+	schedule.cpp
+	seekpt.cpp
+	source.cpp
+	strmctl.cpp
+	sysclock.cpp
+	transfrm.cpp
+	transip.cpp
+	vtrans.cpp
+	wxdebug.cpp
+	wxlist.cpp
+	wxutil.cpp
+	amextra.h
+	amfilter.h
+	cache.h
+	combase.h
+	ctlutil.h
+	ddmm.h
+	fourcc.h
+	measure.h
+	msgthrd.h
+	mtype.h
+	outputq.h
+	pstream.h
+	pullpin.h
+	refclock.h
+	reftime.h
+	renbase.h
+	schedule.h
+	seekpt.h
+	source.h
+	streams.h
+	strmctl.h
+	sysclock.h
+	transfrm.h
+	transip.h
+	vtrans.h
+	wxdebug.h
+	wxlist.h
+	wxutil.h
+)
+target_include_directories(baseclasses PUBLIC .)
+target_precompile_headers(baseclasses PRIVATE streams.h)

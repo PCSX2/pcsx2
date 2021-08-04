@@ -77,6 +77,8 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
 	set(USE_GCC TRUE)
 	message(STATUS "Building with GNU GCC")
+elseif(MSVC)
+	message(STATUS "Building with MSVC")
 else()
 	message(FATAL_ERROR "Unknown compiler: ${CMAKE_CXX_COMPILER_ID}")
 endif()
@@ -99,6 +101,8 @@ set(CMAKE_LINKER_FLAGS_DEVEL "${CMAKE_LINKER_FLAGS_RELWITHDEBINFO}"
 	CACHE STRING "Flags used for linking binaries during development builds" FORCE)
 set(CMAKE_SHARED_LINKER_FLAGS_DEVEL "${CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO}"
 	CACHE STRING "Flags used for linking shared libraries during development builds" FORCE)
+set(CMAKE_EXE_LINKER_FLAGS_DEVEL "${CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO}"
+	CACHE STRING "Flags used for linking executables during development builds" FORCE)
 if(CMAKE_CONFIGURATION_TYPES)
 	list(INSERT CMAKE_CONFIGURATION_TYPES 0 Devel)
 endif()
@@ -152,17 +156,21 @@ if(${PCSX2_TARGET_ARCHITECTURES} MATCHES "i386")
 	set(CMAKE_POSITION_INDEPENDENT_CODE OFF)
 
 	if(NOT DEFINED ARCH_FLAG)
-		if (DISABLE_ADVANCE_SIMD)
-			if (USE_ICC)
-				set(ARCH_FLAG "-msse2 -msse4.1")
-			else()
-				set(ARCH_FLAG "-msse -msse2 -msse4.1 -mfxsr -march=i686")
-			endif()
+		if (MSVC)
+			set(ARCH_FLAG /arch:SSE2)
 		else()
-			# AVX requires some fix of the ABI (mangling) (default 2)
-			# Note: V6 requires GCC 4.7
-			#set(ARCH_FLAG "-march=native -fabi-version=6")
-			set(ARCH_FLAG "-mfxsr -march=native")
+			if (DISABLE_ADVANCE_SIMD)
+				if (USE_ICC)
+					set(ARCH_FLAG "-msse2 -msse4.1")
+				else()
+					set(ARCH_FLAG "-msse -msse2 -msse4.1 -mfxsr -march=i686")
+				endif()
+			else()
+				# AVX requires some fix of the ABI (mangling) (default 2)
+				# Note: V6 requires GCC 4.7
+				#set(ARCH_FLAG "-march=native -fabi-version=6")
+				set(ARCH_FLAG "-mfxsr -march=native")
+			endif()
 		endif()
 	endif()
 
@@ -174,7 +182,7 @@ elseif(${PCSX2_TARGET_ARCHITECTURES} MATCHES "x86_64")
 	# x86_64 requires -fPIC
 	set(CMAKE_POSITION_INDEPENDENT_CODE ON)
 
-	if(NOT DEFINED ARCH_FLAG)
+	if(NOT DEFINED ARCH_FLAG AND NOT MSVC)
 		if (DISABLE_ADVANCE_SIMD)
 			if (USE_ICC)
 				set(ARCH_FLAG "-msse2 -msse4.1")
@@ -235,7 +243,13 @@ option(USE_PGO_OPTIMIZE "Enable PGO optimization (use profile)")
 
 # Note1: Builtin strcmp/memcmp was proved to be slower on Mesa than stdlib version.
 # Note2: float operation SSE is impacted by the PCSX2 SSE configuration. In particular, flush to zero denormal.
-add_compile_options(-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse -fno-operator-names)
+if(NOT MSVC)
+	add_compile_options(-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse -fno-operator-names)
+endif()
+
+if(WIN32)
+	list(APPEND PCSX2_DEFS TIXML_USE_STL _SCL_SECURE_NO_WARNINGS _UNICODE UNICODE)
+endif()
 
 if(USE_VTUNE)
 	list(APPEND PCSX2_DEFS ENABLE_VTUNE)
@@ -252,9 +266,13 @@ endif()
 # -Wno-stringop-truncation: Who comes up with these compiler warnings, anyways?
 # -Wno-stringop-overflow: Probably the same people as this one...
 
-set(DEFAULT_WARNINGS -Wall -Wextra -Wno-attributes -Wno-unused-function -Wno-unused-parameter -Wno-missing-field-initializers -Wno-deprecated-declarations -Wno-format -Wno-format-security -Wno-overloaded-virtual)
-if (NOT USE_ICC)
-	list(APPEND DEFAULT_WARNINGS -Wno-unused-value)
+if (MSVC)
+	set(DEFAULT_WARNINGS)
+else()
+	set(DEFAULT_WARNINGS -Wall -Wextra -Wno-attributes -Wno-unused-function -Wno-unused-parameter -Wno-missing-field-initializers -Wno-deprecated-declarations -Wno-format -Wno-format-security -Wno-overloaded-virtual)
+	if (NOT USE_ICC)
+		list(APPEND DEFAULT_WARNINGS -Wno-unused-value)
+	endif()
 endif()
 
 if (USE_CLANG)
@@ -269,7 +287,7 @@ endif()
 # -Wstrict-aliasing=n: to fix one day aliasing issue. n=1/2/3
 if (USE_ICC)
 	set(AGGRESSIVE_WARNING -Wstrict-aliasing)
-else()
+elseif(NOT MSVC)
 	set(AGGRESSIVE_WARNING -Wstrict-aliasing -Wstrict-overflow=1)
 endif()
 
