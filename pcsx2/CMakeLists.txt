@@ -1342,6 +1342,14 @@ if (APPLE)
 			-P ${CMAKE_SOURCE_DIR}/cmake/Pcsx2PostprocessBundle.cmake
 	)
 	add_dependencies(pcsx2-postprocess-bundle ${Output})
+
+	# Set the right file types for .inl files in Xcode
+	get_target_property(PCSX2_SOURCES PCSX2 SOURCES)
+	foreach(source IN LISTS PCSX2_SOURCES)
+		if("${source}" MATCHES "\\.(inl|h)$")
+			set_source_files_properties("${source}" PROPERTIES XCODE_EXPLICIT_FILE_TYPE sourcecode.cpp.h)
+		endif()
+	endforeach()
 endif()
 
 if(NOT DISABLE_SETCAP)
