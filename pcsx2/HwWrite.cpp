@@ -185,7 +185,7 @@ void __fastcall _hwWrite32( u32 mem, u32 value )
 						//pgifInit();
 						psxReset();
 						PSXCLK =  33868800;
-						SPU2ps1reset();
+						SPU2reset(PS2Modes::PSX);
 						setPs1CDVDSpeed(cdvd.Speed);
 						psxHu32(0x1f801450) = 0x8;
 						psxHu32(0x1f801078) = 1;

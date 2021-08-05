@@ -112,13 +112,27 @@ void SPU2writeDMA7Mem(u16* pMem, u32 size)
 	Cores[1].DoDMAwrite(pMem, size);
 }
 
-s32 SPU2reset()
+s32 SPU2reset(PS2Modes isRunningPSXMode)
 {
-	if (SndBuffer::Test() == 0 && SampleRate != 48000)
-	{
-		SampleRate = 48000;
-		SndBuffer::Cleanup();
+	u32 requiredSampleRate = (isRunningPSXMode == PS2Modes::PSX) ? 44100 : 48000;
 
+	if (isRunningPSXMode == PS2Modes::PS2)
+	{
+		memset(spu2regs, 0, 0x010000);
+		memset(_spu2mem, 0, 0x200000);
+		memset(_spu2mem + 0x2800, 7, 0x10); // from BIOS reversal. Locks the voices so they don't run free.
+		memset(_spu2mem + 0xe870, 7, 0x10); // Loop which gets left over by the BIOS, Megaman X7 relies on it being there.
+
+		Spdif.Info = 0; // Reset IRQ Status if it got set in a previously run game
+
+		Cores[0].Init(0);
+		Cores[1].Init(1);
+	}
+
+	if (SampleRate != requiredSampleRate)
+	{
+		SampleRate = requiredSampleRate;
+		SndBuffer::Cleanup();
 		try
 		{
 			SndBuffer::Init();
@@ -130,48 +144,6 @@ s32 SPU2reset()
 			return -1;
 		}
 	}
-	else
-		SampleRate = 48000;
-
-	memset(spu2regs, 0, 0x010000);
-	memset(_spu2mem, 0, 0x200000);
-	memset(_spu2mem + 0x2800, 7, 0x10); // from BIOS reversal. Locks the voices so they don't run free.
-	memset(_spu2mem + 0xe870, 7, 0x10); // Loop which gets left over by the BIOS, Megaman X7 relies on it being there.
-	Spdif.Info = 0; // Reset IRQ Status if it got set in a previously run game
-
-	Cores[0].Init(0);
-	Cores[1].Init(1);
-	return 0;
-}
-
-s32 SPU2ps1reset()
-{
-	printf("RESET PS1 \n");
-
-	if (SndBuffer::Test() == 0 && SampleRate != 44100)
-	{
-		SampleRate = 44100;
-		SndBuffer::Cleanup();
-
-		try
-		{
-			SndBuffer::Init();
-		}
-		catch (std::exception& ex)
-		{
-			fprintf(stderr, "SPU2 Error: Could not initialize device, or something.\nReason: %s", ex.what());
-			SPU2close();
-			return -1;
-		}
-	}
-	else
-		SampleRate = 44100;
-
-	/* memset(spu2regs, 0, 0x010000);
-    memset(_spu2mem, 0, 0x200000);
-    memset(_spu2mem + 0x2800, 7, 0x10); // from BIOS reversal. Locks the voices so they don't run free.
-    Cores[0].Init(0);
-    Cores[1].Init(1);*/
 	return 0;
 }
 
@@ -227,7 +199,7 @@ s32 SPU2init()
 		}
 	}
 
-	SPU2reset();
+	SPU2reset(PS2Modes::PS2);
 
 	DMALogOpen();
 	InitADSR();
