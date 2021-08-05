@@ -926,7 +926,7 @@ void cdrWrite1(u8 rt)
 			break;
 
 		case CdlReadS:
-			if (cdvd.Type == CDVD_TYPE_CDDA) // Taken from pcsxr
+			if (cdvd.Type == CDVD_TYPE_PSCDDA) // Taken from pcsxr
 				goto do_CdlPlay;
 			cdr.Irq = 0;
 			StopReading();
