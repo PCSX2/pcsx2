@@ -1790,8 +1790,24 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 				//		case 0x26: // cdvdman_call128 (0,3) - In V10 Bios
 				//			break;
 
-				//		case 0x27: // cdvdman_call148 (0:13) - In V10 Bios
-				//			break;
+			case 0x27: // GetPS1BootParam (0:13) - called only by China region PS2 models
+
+				// Return Disc Serial which is passed to PS1DRV and later used to find matching config.			
+				SetResultSize(13);
+				cdvd.Result[0] = 0;
+				cdvd.Result[1] = DiscSerial[0];
+				cdvd.Result[2] = DiscSerial[1];
+				cdvd.Result[3] = DiscSerial[2];
+				cdvd.Result[4] = DiscSerial[3];
+				cdvd.Result[5] = DiscSerial[4];
+				cdvd.Result[6] = DiscSerial[5];
+				cdvd.Result[7] = DiscSerial[6];
+				cdvd.Result[8] = DiscSerial[7];
+				cdvd.Result[9] = DiscSerial[9]; // Skipping dot here is required.
+				cdvd.Result[10] = DiscSerial[10];
+				cdvd.Result[11] = DiscSerial[11];
+				cdvd.Result[12] = DiscSerial[12];
+				break;
 
 				//		case 0x28: // cdvdman_call150 (1:1) - In V10 Bios
 				//			break;
