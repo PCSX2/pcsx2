@@ -272,7 +272,7 @@ namespace usb_hid
 		0x05,       /*  u8  ep_bDescriptorType; Endpoint */
 		0x81,       /*  u8  ep_bEndpointAddress; IN Endpoint 1 */
 		0x03,       /*  u8  ep_bmAttributes; Interrupt */
-		0x03, 0x00, /*  u16 ep_wMaxPacketSize; */
+		0x04, 0x00, /*  u16 ep_wMaxPacketSize; */
 		0x0a,       /*  u8  ep_bInterval; (255ms -- usb 2.0 spec) */
 	};
 
@@ -328,7 +328,7 @@ namespace usb_hid
 		0x81,       /*  u8  ep_bEndpointAddress; IN Endpoint 1 */
 		0x03,       /*  u8  ep_bmAttributes; Interrupt */
 		0x08, 0x00, /*  u16 ep_wMaxPacketSize; */
-		0x03,       /*  u8  ep_bInterval; (255ms -- usb 2.0 spec) */
+		0x0a,       /*  u8  ep_bInterval; (255ms -- usb 2.0 spec) */
 	};
 
 	static const uint8_t qemu_mouse_hid_report_descriptor[] = {
