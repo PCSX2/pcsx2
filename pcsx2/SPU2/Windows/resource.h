@@ -3,7 +3,6 @@
 // Used by SPU2.rc
 #define IDD_CONFIG 9
 #define IDD_DEBUG 105
-#define IDD_WAVEOUT 109
 #define IDD_CONFIG_SOUNDTOUCH 117
 #define IDD_CONFIG_DEBUG 118
 #define IDD_PORTAUDIO 119

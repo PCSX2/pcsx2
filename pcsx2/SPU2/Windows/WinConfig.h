@@ -68,17 +68,4 @@ struct CONFIG_XAUDIO2
 	}
 };
 
-struct CONFIG_WAVEOUT
-{
-	wxString Device;
-	s8 NumBuffers;
-
-	CONFIG_WAVEOUT()
-		: Device()
-		, NumBuffers(4)
-	{
-	}
-};
-
-extern CONFIG_WAVEOUT Config_WaveOut;
 extern CONFIG_XAUDIO2 Config_XAudio2;
