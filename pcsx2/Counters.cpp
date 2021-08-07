@@ -66,9 +66,10 @@ static void rcntWmode(int index, u32 value);
 static void rcntWtarget(int index, u32 value);
 static void rcntWhold(int index, u32 value);
 
-static bool IsAnalogVideoMode()
+// For Analog/Double Strike and Interlace modes
+static bool IsInterlacedVideoMode()
 {
-	return (gsVideoMode == GS_VideoMode::PAL || gsVideoMode == GS_VideoMode::NTSC || gsVideoMode == GS_VideoMode::DVD_NTSC || gsVideoMode == GS_VideoMode::DVD_PAL);
+	return (gsVideoMode == GS_VideoMode::PAL || gsVideoMode == GS_VideoMode::NTSC || gsVideoMode == GS_VideoMode::DVD_NTSC || gsVideoMode == GS_VideoMode::DVD_PAL || gsVideoMode == GS_VideoMode::HDTV_1080I);
 }
 
 void rcntReset(int index) {
@@ -225,7 +226,7 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 	u64 hBlank = Scanline / 2;
 	u64 hRender = Scanline - hBlank;
 
-	if (!IsAnalogVideoMode())
+	if (!IsInterlacedVideoMode())
 	{
 		hBlank /= 2;
 		hRender /= 2;
@@ -249,7 +250,7 @@ static void vSyncInfoCalc(vSyncTimingInfo* info, Fixed100 framesPerSecond, u32 s
 	if ((hBlank % 10000) >= 5000) info->hBlank++;
 
 	// Calculate accumulative hSync rounding error per half-frame:
-	if (IsAnalogVideoMode()) // gets off the chart in that mode
+	if (IsInterlacedVideoMode()) // gets off the chart in that mode
 	{
 		u32 hSyncCycles = ((info->hRender + info->hBlank) * scansPerFrame) / 2;
 		u32 vSyncCycles = (info->Render + info->Blank);
@@ -362,13 +363,14 @@ u32 UpdateVSyncRate()
 
 	case GS_VideoMode::SDTV_480P:
 	case GS_VideoMode::SDTV_576P:
-	case GS_VideoMode::HDTV_1080P:
-	case GS_VideoMode::HDTV_1080I:
 	case GS_VideoMode::HDTV_720P:
 	case GS_VideoMode::VESA:
 		scanlines = SCANLINES_TOTAL_NTSC;
 		break;
-
+	case GS_VideoMode::HDTV_1080P:
+	case GS_VideoMode::HDTV_1080I:
+		scanlines = SCANLINES_TOTAL_1080;
+		break;
 	case GS_VideoMode::Unknown:
 	default:
 		// Falls through to default when unidentified mode parameter of SetGsCrt is detected.
@@ -522,7 +524,11 @@ static __fi void VSyncStart(u32 sCycle)
 
 	//cpuRegs.eCycle[30] = 2;
 
-	// Should no longer be required (Refraction)
+	// Update 08/2021: The only game I know to require this kind of thing as of 1.7.0 is Penny Racers/Gadget Racers (which has a patch to avoid the problem and others)
+	// These games have a tight loop checking INTC_STAT waiting for the VBLANK Start, however the game also has a VBLANK Hander which clears it.
+	// Therefore, there needs to be some delay in order for it to see the interrupt flag before the interrupt is acknowledged, likely helped on real hardware by the pipelines.
+	// Without the patch and fixing this, the games have other issues, so I'm not going to rush to fix it.
+	// Refraction
 }
 
 static __fi void GSVSync()

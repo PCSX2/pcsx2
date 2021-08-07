@@ -88,6 +88,7 @@ struct SyncCounter
 #define HBLANK_COUNTER_SPEED	1 //Set to '3' to double the speed of games like KHII
 //#define HBLANK_TIMER_SLOWDOWN	1 //Set to '2' to increase the speed of games like God of War (FPS will be less, but game will be faster)
 
+#define SCANLINES_TOTAL_1080	1125 // total number of scanlines for 1080I mode
 //------------------------------------------------------------------
 // NTSC Timing Information!!! (some scanline info is guessed)
 //------------------------------------------------------------------
