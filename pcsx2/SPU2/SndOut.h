@@ -665,7 +665,6 @@ public:
 
 #ifdef _MSC_VER
 //internal
-extern SndOutModule* WaveOut;
 extern SndOutModule* XAudio2Out;
 #endif
 #if defined(SPU2X_PORTAUDIO)

@@ -62,7 +62,6 @@ int SynchMode = 0; // Time Stretch, Async or Disabled.
 
 u32 OutputModule = 0;
 
-CONFIG_WAVEOUT Config_WaveOut;
 CONFIG_XAUDIO2 Config_XAudio2;
 
 // DSP
@@ -127,10 +126,6 @@ void ReadSettings()
 	dspPluginModule = CfgReadInt(L"DSP PLUGIN", L"ModuleNum", 0);
 	dspPluginEnabled = CfgReadBool(L"DSP PLUGIN", L"Enabled", false);
 
-	// Read WAVEOUT configs:
-	CfgReadStr(L"WAVEOUT", L"Device", Config_WaveOut.Device, L"default");
-	Config_WaveOut.NumBuffers = CfgReadInt(L"WAVEOUT", L"Buffer_Count", 4);
-
 	PortaudioOut->ReadSettings();
 
 	SoundtouchCfg::ReadSettings();
@@ -174,11 +169,6 @@ void WriteSettings()
 	CfgWriteInt(L"OUTPUT", L"SpeakerConfiguration", numSpeakers);
 	CfgWriteInt(L"OUTPUT", L"DplDecodingLevel", dplLevel);
 
-	if (Config_WaveOut.Device.empty())
-		Config_WaveOut.Device = L"default";
-	CfgWriteStr(L"WAVEOUT", L"Device", Config_WaveOut.Device);
-	CfgWriteInt(L"WAVEOUT", L"Buffer_Count", Config_WaveOut.NumBuffers);
-
 	CfgWriteStr(L"DSP PLUGIN", L"Filename", dspPlugin);
 	CfgWriteInt(L"DSP PLUGIN", L"ModuleNum", dspPluginModule);
 	CfgWriteBool(L"DSP PLUGIN", L"Enabled", dspPluginEnabled);
@@ -191,10 +181,7 @@ void WriteSettings()
 void CheckOutputModule(HWND window)
 {
 	OutputModule = SendMessage(GetDlgItem(window, IDC_OUTPUT), CB_GETCURSEL, 0, 0);
-	const bool IsConfigurable =
-		mods[OutputModule] == PortaudioOut ||
-		mods[OutputModule] == WaveOut;
-
+	const bool IsConfigurable = mods[OutputModule] == PortaudioOut;
 	const bool AudioExpansion =
 		mods[OutputModule] == XAudio2Out ||
 		mods[OutputModule] == PortaudioOut;
