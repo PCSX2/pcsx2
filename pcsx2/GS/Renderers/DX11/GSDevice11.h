@@ -21,6 +21,7 @@
 #include <atlcomcli.h>
 #include <comutil.h>
 #include <d3d11_1.h>
+#include <dxgi1_3.h>
 #include <d3dcompiler.h>
 #include <unordered_map>
 
@@ -28,6 +29,27 @@ struct GSVertexShader11
 {
 	CComPtr<ID3D11VertexShader> vs;
 	CComPtr<ID3D11InputLayout> il;
+};
+
+struct GSAdapter
+{
+	uint32 vendor;
+	uint32 device;
+	uint32 subsys;
+	uint32 rev;
+
+	operator std::string() const;
+	bool operator==(const GSAdapter&) const;
+	bool operator==(const std::string& s) const
+	{
+		return (std::string)*this == s;
+	}
+	bool operator==(const char* s) const
+	{
+		return (std::string)*this == s;
+	}
+
+	GSAdapter(const DXGI_ADAPTER_DESC1& desc_dxgi);
 };
 
 class GSDevice11 final : public GSDevice

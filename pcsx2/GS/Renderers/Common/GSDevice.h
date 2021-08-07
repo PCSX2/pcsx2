@@ -22,10 +22,6 @@
 #include "GS/GSAlignedClass.h"
 #include "GSOsdManager.h"
 #include <array>
-#ifdef _WIN32
-#include <dxgi1_3.h>
-#endif
-
 
 enum ShaderConvert
 {
@@ -262,30 +258,4 @@ public:
 	// Index is computed as ((((A * 3 + B) * 3) + C) * 3) + D. A, B, C, D taken from ALPHA register.
 	HWBlend GetBlend(size_t index);
 	uint16 GetBlendFlags(size_t index);
-};
-
-struct GSAdapter
-{
-	uint32 vendor;
-	uint32 device;
-	uint32 subsys;
-	uint32 rev;
-
-	operator std::string() const;
-	bool operator==(const GSAdapter&) const;
-	bool operator==(const std::string& s) const
-	{
-		return (std::string)*this == s;
-	}
-	bool operator==(const char* s) const
-	{
-		return (std::string)*this == s;
-	}
-
-#ifdef _WIN32
-	GSAdapter(const DXGI_ADAPTER_DESC1& desc_dxgi);
-#endif
-#ifdef __linux__
-	// TODO
-#endif
 };

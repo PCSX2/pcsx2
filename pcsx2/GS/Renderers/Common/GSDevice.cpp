@@ -396,34 +396,6 @@ bool GSDevice::ResizeTarget(GSTexture** t)
 	return ResizeTexture(t, GSTexture::RenderTarget, s.x, s.y);
 }
 
-GSAdapter::operator std::string() const
-{
-	char buf[sizeof "12345678:12345678:12345678:12345678"];
-	sprintf(buf, "%.4X:%.4X:%.8X:%.2X", vendor, device, subsys, rev);
-	return buf;
-}
-
-bool GSAdapter::operator==(const GSAdapter& desc_dxgi) const
-{
-	return vendor == desc_dxgi.vendor
-		&& device == desc_dxgi.device
-		&& subsys == desc_dxgi.subsys
-		&& rev == desc_dxgi.rev;
-}
-
-#ifdef _WIN32
-GSAdapter::GSAdapter(const DXGI_ADAPTER_DESC1& desc_dxgi)
-	: vendor(desc_dxgi.VendorId)
-	, device(desc_dxgi.DeviceId)
-	, subsys(desc_dxgi.SubSysId)
-	, rev(desc_dxgi.Revision)
-{
-}
-#endif
-#ifdef __linux__
-// TODO
-#endif
-
 HWBlend GSDevice::GetBlend(size_t index)
 {
 	HWBlend blend = m_blendMap[index];
