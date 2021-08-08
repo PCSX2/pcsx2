@@ -1040,10 +1040,10 @@ wxSize wxSizer::GetMinSize()
     return ret;
 }
 
-void wxSizer::DoSetMinSize(int width, int height)
+void wxSizer::DoSetMinSize( int width, int height )
 {
-	m_minSize.x = width;
-	m_minSize.y = height;
+    m_minSize.x = width;
+    m_minSize.y = height;
 }
 
 bool wxSizer::DoSetItemMinSize( wxWindow *window, int width, int height )
