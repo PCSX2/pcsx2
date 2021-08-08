@@ -257,6 +257,7 @@ void operator+=(wxWindow &target, WinType &src)
         return;
     *target.GetSizer() += src;
 }
+
 template <typename WinType>
 void operator+=(wxWindow &target, const pxWindowAndFlags<WinType> &src)
 {

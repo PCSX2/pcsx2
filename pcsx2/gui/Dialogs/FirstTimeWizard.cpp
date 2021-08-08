@@ -228,5 +228,5 @@ void FirstTimeWizard::OnPageChanging( wxWizardEvent& evt )
 void FirstTimeWizard::OnPageChanged( wxWizardEvent& evt )
 {
 	if( ((sptr)evt.GetPage() == (sptr)&m_page_bios) )
-	    m_panel_BiosSel.OnShown();
+		m_panel_BiosSel.OnShown();
 }
