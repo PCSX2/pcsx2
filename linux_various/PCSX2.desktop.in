@@ -3,6 +3,7 @@ Version=1.0
 Terminal=false
 Type=Application
 Name=PCSX2
+StartupWMClass=PCSX2
 GenericName=PlayStation 2 Emulator
 GenericName[zh_CN]=PlayStation 2 模拟器
 Comment=Sony PlayStation 2 emulator
