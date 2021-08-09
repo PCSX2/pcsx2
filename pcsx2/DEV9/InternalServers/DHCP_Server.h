@@ -61,14 +61,15 @@ namespace InternalServers
 		PacketReader::IP::UDP::UDP_Packet* Recv();
 		bool Send(PacketReader::IP::UDP::UDP_Packet* payload);
 
+#ifdef __linux__
+		static std::vector<PacketReader::IP::IP_Address> GetGatewaysLinux(char* interfaceName);
+#endif
+
 		~DHCP_Server();
 
 	private:
 #ifdef __POSIX__
 		static std::vector<std::string> SplitString(std::string str, char delimiter);
-#ifdef __linux__
-		static std::vector<PacketReader::IP::IP_Address> GetGatewaysLinux(char* interfaceName);
-#endif
 		static std::vector<PacketReader::IP::IP_Address> GetDNSUnix();
 #endif
 
