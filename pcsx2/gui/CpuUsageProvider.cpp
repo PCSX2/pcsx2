@@ -19,7 +19,7 @@
 #include "System.h"
 
 #ifndef __POSIX__
-#include "SysThreads.h"
+#include "System/SysThreads.h"
 #endif
 
 #include "GS.h"

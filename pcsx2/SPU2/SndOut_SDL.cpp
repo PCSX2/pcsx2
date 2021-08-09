@@ -14,6 +14,9 @@
  */
 
 #include "PrecompiledHeader.h"
+
+#ifdef SDL_BUILD
+
 #include <cassert>
 #include <iostream>
 
@@ -188,3 +191,5 @@ private:
 SDLAudioMod SDLAudioMod::mod;
 
 SndOutModule* const SDLOut = &SDLAudioMod::mod;
+
+#endif // SDL_BUILD
