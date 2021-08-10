@@ -56,6 +56,9 @@ extern void SysMessage(const wchar_t* fmt, ...);
 
 // Uncomment to enable debug keys on numpad (0 to 5)
 //#define DEBUG_KEYS
+#ifdef PCSX2_DEVBUILD
+#define SPU2_LOG
+#endif
 
 #include "defs.h"
 #include "regs.h"
