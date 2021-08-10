@@ -17831,6 +17831,8 @@ SLES-55572:
   name: "Marvel Super Hero Squad"
   region: "PAL-M6"
   compat: 5
+  gameFixes:
+    - EETimingHack # Broken textures.
 SLES-55573:
   name: "MotorStorm Arctic Edge"
   region: "PAL-M14"
@@ -32677,6 +32679,9 @@ SLUS-20197:
   name: "Pac-Man Fever"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeRoundMode: 2 # Fixes Gauntlet Golf 
+    vuRoundMode: 2 # Fixes game board jittering
 SLUS-20198:
   name: "FireBlade"
   region: "NTSC-U"
@@ -39901,6 +39906,8 @@ SLUS-21909:
 SLUS-21910:
   name: "Marvel Super Hero Squad"
   region: "NTSC-U"
+  gameFixes:
+    - EETimingHack # Broken textures.
 SLUS-21913:
   name: "Star Wars The Clone Wars: Republic Heroes"
   region: "NTSC-U"
