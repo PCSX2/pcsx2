@@ -25,6 +25,9 @@ namespace D3D
 	// create a dxgi factory
 	wil::com_ptr_nothrow<IDXGIFactory2> CreateFactory(bool debug);
 
+	// get a list of adapters
+	std::vector<std::string> GetAdapterList(IDXGIFactory2* factory);
+
 	// get an adapter based on position
 	// assuming no one removes/moves it, it should always have the same id
 	// however in the event that the adapter is not found due to the above, use the default
