@@ -16,6 +16,10 @@
 #include "PrecompiledHeader.h"
 #include "GSwxDialog.h"
 
+#ifdef _WIN32
+#include "GS/Renderers/DX11/D3D.h"
+#endif
+
 using namespace GSSettingsDialog;
 
 namespace
@@ -37,10 +41,8 @@ namespace
 		}
 	}
 
-	size_t get_config_index(const std::vector<GSSetting>& s, const char* str)
+	size_t get_config_index(const std::vector<GSSetting>& s, int value)
 	{
-		int value = theApp.GetConfigI(str);
-
 		for (size_t i = 0; i < s.size(); i++)
 		{
 			if (s[i].value == value)
@@ -151,7 +153,7 @@ void GSUIElementHolder::Load()
 			case UIElem::Type::Choice:
 			{
 				GSwxChoice* choice = static_cast<GSwxChoice*>(elem.control);
-				choice->SetSelection(get_config_index(choice->settings, elem.config));
+				choice->SetSelection(get_config_index(choice->settings, theApp.GetConfigI(elem.config)));
 				break;
 			}
 			case UIElem::Type::Spin:
@@ -554,14 +556,12 @@ Dialog::Dialog()
 	auto* top_grid = new wxFlexGridSizer(2, 5, 5);
 	top_grid->SetFlexibleDirection(wxHORIZONTAL);
 
-	m_ui.addComboBoxAndLabel(top_grid, "Renderer:", "Renderer", &theApp.m_gs_renderers);
+	m_renderer_select = m_ui.addComboBoxAndLabel(top_grid, "Renderer:", "Renderer", &theApp.m_gs_renderers);
+	m_renderer_select->Bind(wxEVT_CHOICE, &Dialog::OnRendererChange, this);
 
 #ifdef _WIN32
 	add_label(this, top_grid, "Adapter:");
-	wxArrayString m_adapter_str;
-	//add_settings_to_array_string(theApp.m_gs_renderers, m_adapter_str);
-	m_adapter_str.Add("Default");
-	m_adapter_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, m_adapter_str);
+	m_adapter_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, {});
 	top_grid->Add(m_adapter_select, wxSizerFlags().Expand());
 #endif
 
@@ -604,12 +604,68 @@ void Dialog::CallUpdate(wxCommandEvent&)
 	Update();
 }
 
+void Dialog::OnRendererChange(wxCommandEvent&)
+{
+	PopulateAdapterList();
+}
+
+GSRendererType Dialog::GetSelectedRendererType()
+{
+	int index = m_renderer_select->GetSelection();
+
+	// there is no currently selected renderer or the combo box has more entries than the renderer list or the current selection is negative
+	// make sure you haven't made a mistake initializing everything
+	ASSERT(index < theApp.m_gs_renderers.size() || index >= 0);
+
+	const GSRendererType type = static_cast<GSRendererType>(
+		theApp.m_gs_renderers[index].value
+	);
+
+	return type;
+}
+
+void Dialog::PopulateAdapterList()
+{
+#ifdef _WIN32
+	m_adapter_select->Clear();
+
+	if (GetSelectedRendererType() == GSRendererType::DX1011_HW)
+	{
+		auto factory = D3D::CreateFactory(false);
+		auto adapter_list = D3D::GetAdapterList(factory.get());
+
+		wxArrayString adapter_arr_string;
+		for (const auto name : adapter_list)
+		{
+			adapter_arr_string.push_back(
+				convert_utf8_to_utf16(name)
+			);
+		}
+
+		m_adapter_select->Insert(adapter_arr_string, 0);
+		m_adapter_select->Enable();
+		m_adapter_select->SetSelection(
+			theApp.GetConfigI("adapter_index")
+		);
+	}
+	else
+	{
+		m_adapter_select->Disable();
+	}
+#endif
+}
+
 void Dialog::Load()
 {
 	m_ui.Load();
 #ifdef _WIN32
-	m_adapter_select->SetSelection(0);
+	GSRendererType renderer = GSRendererType(theApp.GetConfigI("Renderer"));
+	if (renderer == GSRendererType::Undefined)
+		renderer = D3D::ShouldPreferD3D() ? GSRendererType::DX1011_HW : GSRendererType::OGL_HW;
+	m_renderer_select->SetSelection(get_config_index(theApp.m_gs_renderers, static_cast<int>(renderer)));
 #endif
+
+	PopulateAdapterList();
 
 	m_hacks_panel->Load();
 	m_renderer_panel->Load();
@@ -622,6 +678,17 @@ void Dialog::Load()
 void Dialog::Save()
 {
 	m_ui.Save();
+#ifdef _WIN32
+	// only save the adapter when it makes sense to
+	// prevents changing the adapter, switching to another renderer and saving
+	if (GetSelectedRendererType() == GSRendererType::DX1011_HW)
+	{
+		const int current_adapter =
+			m_adapter_select->GetSelection();
+
+		theApp.SetConfig("adapter_index", current_adapter);
+	}
+#endif
 
 	m_hacks_panel->Save();
 	m_renderer_panel->Save();
@@ -634,7 +701,6 @@ void Dialog::Save()
 void Dialog::Update()
 {
 	m_ui.Update();
-	m_adapter_select->Disable();
 
 	m_hacks_panel->Update();
 	m_renderer_panel->Update();

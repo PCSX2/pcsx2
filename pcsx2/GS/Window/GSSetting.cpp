@@ -15,9 +15,6 @@
 
 #include "PrecompiledHeader.h"
 #include "GSSetting.h"
-#ifdef _WIN32
-#include "GS/resource.h"
-#endif
 
 #ifdef _WIN32
 #define cvtString(s) L##s

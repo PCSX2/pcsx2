@@ -49,6 +49,30 @@ namespace D3D
 		return factory;
 	}
 
+	std::vector<std::string> GetAdapterList(IDXGIFactory2* factory)
+	{
+		ASSERT(factory);
+
+		UINT index = 0;
+		wil::com_ptr_nothrow<IDXGIAdapter1> adapter;
+
+		std::vector<std::string> adapter_list;
+		while (factory->EnumAdapters1(index, adapter.put()) != DXGI_ERROR_NOT_FOUND)
+		{
+			DXGI_ADAPTER_DESC1 desc;
+
+			std::string name;
+			if (SUCCEEDED(adapter->GetDesc1(&desc)))
+				name = convert_utf16_to_utf8(desc.Description);
+
+			adapter_list.push_back(std::move(name));
+
+			index++;
+		}
+
+		return adapter_list;
+	}
+
 	wil::com_ptr_nothrow<IDXGIAdapter1> GetAdapterFromIndex(IDXGIFactory2* factory, int index)
 	{
 		ASSERT(factory);
