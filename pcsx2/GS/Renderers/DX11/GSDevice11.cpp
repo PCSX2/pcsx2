@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GS.h"
 #include "GSDevice11.h"
+#include "GS/Renderers/DX11/D3D.h"
 #include "GS/GSUtil.h"
 #include "GS/resource.h"
 #include <fstream>
@@ -76,8 +77,6 @@ bool GSDevice11::SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode)
 
 bool GSDevice11::Create(const WindowInfo& wi)
 {
-	bool nvidia_vendor = false;
-
 	if (!__super::Create(wi))
 	{
 		return false;
@@ -89,57 +88,35 @@ bool GSDevice11::Create(const WindowInfo& wi)
 	D3D11_RASTERIZER_DESC rd;
 	D3D11_BLEND_DESC bsd;
 
-	// create factory
-	wil::com_ptr_nothrow<IDXGIFactory2> factory;
+	const bool enable_debugging = theApp.GetConfigB("debug_d3d");
+
+	auto factory = D3D::CreateFactory(enable_debugging);
+	if (!factory)
+		return false;
+
+	// select adapter
+	auto adapter = D3D::GetAdapterFromIndex(
+		factory.get(), theApp.GetConfigI("adapter_index")
+	);
+
+	DXGI_ADAPTER_DESC1 adapter_desc = {};
+	if (SUCCEEDED(adapter->GetDesc1(&adapter_desc)))
 	{
-		const HRESULT result = CreateDXGIFactory2(0, IID_PPV_ARGS(factory.put()));
-		if (FAILED(result))
-		{
-			fprintf(stderr, "D3D11: Unable to create DXGIFactory2 (reason: %x)\n", result);
-			return false;
-		}
+		std::string adapter_name = convert_utf16_to_utf8(
+			adapter_desc.Description
+		);
+
+		fprintf(stderr, "Selected DXGI Adapter\n"
+			"\tName: %s\n"
+			"\tVendor: %x\n", adapter_name.c_str(), adapter_desc.VendorId);
 	}
-
-	// enumerate adapters
-	wil::com_ptr_nothrow<IDXGIAdapter1> adapter;
-	D3D_DRIVER_TYPE driver_type = D3D_DRIVER_TYPE_HARDWARE;
-
-	{
-		std::string adapter_id = theApp.GetConfigS("Adapter");
-
-		if (adapter_id == "ref")
-			driver_type = D3D_DRIVER_TYPE_REFERENCE;
-		else
-		{
-			for (int i = 0;; i++)
-			{
-				wil::com_ptr_nothrow<IDXGIAdapter1> enum_adapter;
-				if (FAILED(factory->EnumAdapters1(i, enum_adapter.put())))
-					break;
-				DXGI_ADAPTER_DESC1 desc;
-				const HRESULT hr = enum_adapter->GetDesc1(&desc);
-				if (SUCCEEDED(hr) && (GSAdapter(desc) == adapter_id || adapter_id == "default"))
-				{
-					if (desc.VendorId == 0x10DE)
-						nvidia_vendor = true;
-
-					adapter = std::move(enum_adapter);
-					driver_type = D3D_DRIVER_TYPE_UNKNOWN;
-					break;
-				}
-			}
-		}
-	}
-
-	D3D_FEATURE_LEVEL level;
 
 	// device creation
 	{
 		uint32 flags = D3D11_CREATE_DEVICE_SINGLETHREADED;
 
-#ifdef _DEBUG
-		flags |= D3D11_CREATE_DEVICE_DEBUG;
-#endif
+		if(enable_debugging)
+			flags |= D3D11_CREATE_DEVICE_DEBUG;
 
 		constexpr std::array<D3D_FEATURE_LEVEL, 3> supported_levels = {
 			D3D_FEATURE_LEVEL_11_0,
@@ -147,16 +124,60 @@ bool GSDevice11::Create(const WindowInfo& wi)
 			D3D_FEATURE_LEVEL_10_0,
 		};
 
-		const HRESULT result = D3D11CreateDevice(
-			adapter.get(), driver_type, nullptr, flags,
+		D3D_FEATURE_LEVEL feature_level;
+		HRESULT result = D3D11CreateDevice(
+			adapter.get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr, flags,
 			supported_levels.data(), supported_levels.size(),
-			D3D11_SDK_VERSION, m_dev.put(), &level, m_ctx.put());
+			D3D11_SDK_VERSION, m_dev.put(), &feature_level, m_ctx.put()
+		);
+
+		// if a debug device is requested but not supported, fallback to non-debug device
+		if (FAILED(result) && enable_debugging)
+		{
+			fprintf(stderr, "D3D: failed to create debug device, trying without debugging\n");
+			// clear the debug flag
+			flags = D3D11_CREATE_DEVICE_SINGLETHREADED;
+
+			result = D3D11CreateDevice(
+				adapter.get(), D3D_DRIVER_TYPE_UNKNOWN, nullptr, flags,
+				supported_levels.data(), supported_levels.size(),
+				D3D11_SDK_VERSION, m_dev.put(), &feature_level, m_ctx.put()
+			);
+		}
 
 		if (FAILED(result))
 		{
-			fprintf(stderr, "D3D11: Unable to create D3D11 device (reason %x)\n", result);
+			fprintf(stderr, "D3D: unable to create D3D11 device (reason %x)\n"
+				"ensure that your gpu supports our minimum requirements:\n"
+				"https://github.com/PCSX2/pcsx2#system-requirements\n", result);
 			return false;
 		}
+
+		if (enable_debugging)
+		{
+			if (auto info_queue = m_dev.try_query<ID3D11InfoQueue>())
+			{
+				const int break_on = theApp.GetConfigI("dx_break_on_severity");
+
+				info_queue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, break_on & (1 << 0));
+				info_queue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, break_on & (1 << 1));
+				info_queue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, break_on & (1 << 2));
+				info_queue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_INFO, break_on & (1 << 3));
+			}
+			fprintf(stderr, "D3D: debugging enabled\n");
+		}
+
+		if (!SetFeatureLevel(feature_level, true))
+		{
+			fprintf(stderr, "D3D: adapter doesn't have a sufficient feature level\n");
+			return false;
+		}
+
+		// Set maximum texture size limit based on supported feature level.
+		if (feature_level >= D3D_FEATURE_LEVEL_11_0)
+			m_d3d_texsize = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
+		else
+			m_d3d_texsize = D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;
 	}
 
 	// swapchain creation
@@ -182,39 +203,17 @@ bool GSDevice11::Create(const WindowInfo& wi)
 
 		if (FAILED(result))
 		{
-			fprintf(stderr, "D3D11: Failed to create swapchain (reason: %x)\n", result);
+			fprintf(stderr, "D3D: Failed to create swapchain (reason: %x)\n", result);
 			return false;
 		}
 	}
 
-	if (!SetFeatureLevel(level, true))
-		return false;
-
-	// Set maximum texture size limit based on supported feature level.
-	if (level >= D3D_FEATURE_LEVEL_11_0)
-		m_d3d_texsize = D3D11_REQ_TEXTURE2D_U_OR_V_DIMENSION;
-	else
-		m_d3d_texsize = D3D10_REQ_TEXTURE2D_U_OR_V_DIMENSION;
-
 	{
 		// HACK: check nVIDIA
 		// Note: It can cause issues on several games such as SOTC, Fatal Frame, plus it adds border offset.
-		const bool disable_safe_features = theApp.GetConfigB("UserHacks") && theApp.GetConfigB("UserHacks_Disable_Safe_Features");
-		m_hack_topleft_offset = (m_upscale_multiplier != 1 && nvidia_vendor && !disable_safe_features) ? -0.01f : 0.0f;
+		bool disable_safe_features = theApp.GetConfigB("UserHacks") && theApp.GetConfigB("UserHacks_Disable_Safe_Features");
+		m_hack_topleft_offset = (m_upscale_multiplier != 1 && D3D::IsNvidia(adapter.get()) && !disable_safe_features) ? -0.01f : 0.0f;
 	}
-
-	// debug
-#ifdef _DEBUG
-	if (auto info_queue = m_dev.try_query<ID3D11InfoQueue>())
-	{
-		int break_on = theApp.GetConfigI("dx_break_on_severity");
-
-		info_queue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_CORRUPTION, break_on & (1 << 0));
-		info_queue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_ERROR, break_on & (1 << 1));
-		info_queue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_WARNING, break_on & (1 << 2));
-		info_queue->SetBreakOnSeverity(D3D11_MESSAGE_SEVERITY_INFO, break_on & (1 << 3));
-	}
-#endif
 
 	// convert
 

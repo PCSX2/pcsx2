@@ -789,6 +789,7 @@ if(WIN32)
 	)
 
 	list(APPEND pcsx2GSSources
+		GS/Renderers/DX11/D3D.cpp
 		GS/Renderers/DX11/GSDevice11.cpp
 		GS/Renderers/DX11/GSRendererDX11.cpp
 		GS/Renderers/DX11/GSTexture11.cpp
@@ -799,6 +800,7 @@ if(WIN32)
 		GS/Window/GSSettingsDlg.cpp
 	)
 	list(APPEND pcsx2GSHeaders
+		GS/Renderers/DX11/D3D.h
 		GS/Renderers/DX11/GSDevice11.h
 		GS/Renderers/DX11/GSRendererDX11.h
 		GS/Renderers/DX11/GSTexture11.h

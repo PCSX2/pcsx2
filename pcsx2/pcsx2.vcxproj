@@ -304,6 +304,7 @@
     <ClCompile Include="GameDatabase.cpp" />
     <ClCompile Include="Gif_Logger.cpp" />
     <ClCompile Include="Gif_Unit.cpp" />
+    <ClCompile Include="GS\Renderers\DX11\D3D.cpp" />
     <ClCompile Include="gui\AppGameDatabase.cpp" />
     <ClCompile Include="gui\AppUserMode.cpp" />
     <ClCompile Include="gui\CheckedStaticBox.cpp" />
@@ -742,6 +743,7 @@
     <ClInclude Include="DEV9\Win32\tap.h" />
     <ClInclude Include="GameDatabase.h" />
     <ClInclude Include="Gif_Unit.h" />
+    <ClInclude Include="GS\Renderers\DX11\D3D.h" />
     <ClInclude Include="gui\AppGameDatabase.h" />
     <ClInclude Include="gui\CheckedStaticBox.h" />
     <ClInclude Include="gui\i18n.h" />

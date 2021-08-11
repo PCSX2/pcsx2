@@ -486,6 +486,9 @@ DebugTab::DebugTab(wxWindow* parent)
 	auto* debug_check_box = new wxWrapSizer(wxHORIZONTAL);
 	m_ui.addCheckBox(debug_check_box, "GLSL compilation", "debug_glsl_shader");
 	m_ui.addCheckBox(debug_check_box, "Print GL error", "debug_opengl");
+#ifdef _WIN32
+	m_ui.addCheckBox(debug_check_box, "D3D Debug Layer", "debug_d3d");
+#endif
 	m_ui.addCheckBox(debug_check_box, "Dump GS data", "dump");
 
 	auto* debug_save_check_box = new wxWrapSizer(wxHORIZONTAL);
