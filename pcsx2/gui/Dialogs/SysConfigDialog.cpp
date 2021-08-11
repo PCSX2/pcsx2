@@ -192,7 +192,7 @@ void Dialogs::SysConfigDialog::Cancel()
 }
 
 Dialogs::SysConfigDialog::SysConfigDialog(wxWindow* parent)
-	: BaseConfigurationDialog( parent, AddAppName(_("General Settings - %s")), 600 )
+	: BaseConfigurationDialog( parent, AddAppName(_("General Settings - %s")), 580 )
 {
 	ScopedBusyCursor busy( Cursor_ReallyBusy );
 
