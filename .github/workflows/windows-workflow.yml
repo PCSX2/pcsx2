@@ -104,23 +104,28 @@ jobs:
 
       - name: Generate CMake
         id: cmake
-        shell: bash
+        shell: cmd
         run: |
-          TYPE=$([ "${{ github.event.inputs.retainDebugArtifacts }}" == "true" ] && echo RelWithDebInfo || echo Release)
-          echo "::set-output name=buildtype::$TYPE"
-          cmake . -B build -DCMAKE_BUILD_TYPE=$TYPE -DCMAKE_GENERATOR_PLATFORM=${{ matrix.platform }}
+          if "${{ github.event.inputs.retainDebugArtifacts }}"=="true" (SET type=RelWithDebInfo) else (SET type=Release)
+          if "${{ matrix.platform }}"=="Win32" (SET vcvars=vcvarsamd64_x86.bat) else (SET vcvars=vcvars64.bat)
+          call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\%vcvars%"
+          echo ::set-output name=buildtype::%type%
+          echo ::set-output name=vcvars::%vcvars%
+          cmake . -B build -DCMAKE_BUILD_TYPE=%type% -G Ninja
         if: matrix.configuration == 'CMake'
 
       - name: Build PCSX2
+        shell: cmd
         env:
           # Set to 'true' to retain the .pdb / .exp / .lib, etc files which can be useful for repro'ing issues that only occur in the compiled .exe
           RetainDebuggingArtifacts: ${{ github.event.inputs.retainDebugArtifacts == 'true' }}
         run: |
-          if ("${{ matrix.configuration }}" -eq "CMake") {
+          if "${{ matrix.configuration }}"=="CMake" (
+            call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\${{ steps.cmake.outputs.vcvars }}"
             cmake --build build --config ${{ steps.cmake.outputs.buildtype }}
-          } else {
+          ) else (
             msbuild "PCSX2_suite.sln" /m /v:m /p:Configuration="${{ matrix.configuration }}" /p:Platform="${{ matrix.platform }}"
-          }
+          )
 
       - name: Prepare Artifact Metadata
         id: artifact-metadata
@@ -131,7 +136,7 @@ jobs:
             Release) SIMD="SSE4";;
             *AVX2)   SIMD="AVX2";;
             CMake)   SIMD="CMake"
-                     cp build/pcsx2/${{ steps.cmake.outputs.buildtype }}/PCSX2* bin/ ;;
+                     cp build/pcsx2/PCSX2* bin/ ;;
             *)       SIMD="UNKNOWN";;
           esac
           if [ ${{ github.event_name }} == "pull_request" ]; then
