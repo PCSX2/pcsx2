@@ -31,6 +31,7 @@
 #include "Renderers/DX11/GSRendererDX11.h"
 #include "Renderers/DX11/GSDevice11.h"
 #include "Window/GSSettingsDlg.h"
+#include "GS/Renderers/DX11/D3D.h"
 
 
 static HRESULT s_hr = E_FAIL;
@@ -151,7 +152,12 @@ int _GSopen(const WindowInfo& wi, const char* title, GSRendererType renderer, in
 		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
 #ifdef _WIN32
 		if (renderer == GSRendererType::Default)
-			renderer = GSUtil::GetBestRenderer();
+		{
+			if (D3D::ShouldPreferD3D())
+				renderer = GSRendererType::DX1011_HW;
+			else
+				renderer = GSRendererType::OGL_HW;
+		}
 #endif
 	}
 
@@ -301,7 +307,12 @@ int GSopen2(const WindowInfo& wi, uint32 flags)
 				const auto config_renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
 
 				if (current_renderer == config_renderer)
-					current_renderer = GSUtil::GetBestRenderer();
+				{
+					if (D3D::ShouldPreferD3D())
+						current_renderer = GSRendererType::DX1011_HW;
+					else
+						current_renderer = GSRendererType::OGL_HW;
+				}
 				else
 					current_renderer = config_renderer;
 			}
@@ -1185,9 +1196,10 @@ void GSApp::Init()
 	// Avoid to clutter the ini file with useless options
 #ifdef _WIN32
 	// Per OS option.
-	m_default_configuration["Adapter"]                                    = "default";
+	m_default_configuration["adapter_index"]                              = "0";
 	m_default_configuration["CaptureFileName"]                            = "";
 	m_default_configuration["CaptureVideoCodecDisplayName"]               = "";
+	m_default_configuration["debug_d3d"]                                  = "0";
 	m_default_configuration["dx_break_on_severity"]                       = "0";
 	// D3D Blending option
 	m_default_configuration["accurate_blending_unit_d3d11"]               = "1";
