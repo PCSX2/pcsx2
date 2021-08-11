@@ -68,7 +68,7 @@ jobs:
       matrix:
         os: [windows-2019]
         platform: [Win32, x64]
-        configuration: [Release, Release AVX2]
+        configuration: [Release, Release AVX2, CMake]
         experimental: [false]
 
     name: ${{ matrix.platform }} | ${{ matrix.configuration }}
@@ -96,22 +96,44 @@ jobs:
 
       - name: Verify VS Project Files
         run: .github\workflows\scripts\windows\validate-vs-filters.ps1
+        if: matrix.configuration != 'CMake'
 
       - name: Setup msbuild
         uses: microsoft/setup-msbuild@v1
+        if: matrix.configuration != 'CMake'
+
+      - name: Generate CMake
+        id: cmake
+        shell: bash
+        run: |
+          TYPE=$([ "${{ github.event.inputs.retainDebugArtifacts }}" == "true" ] && echo RelWithDebInfo || echo Release)
+          echo "::set-output name=buildtype::$TYPE"
+          cmake . -B build -DCMAKE_BUILD_TYPE=$TYPE -DCMAKE_GENERATOR_PLATFORM=${{ matrix.platform }}
+        if: matrix.configuration == 'CMake'
 
       - name: Build PCSX2
         env:
           # Set to 'true' to retain the .pdb / .exp / .lib, etc files which can be useful for repro'ing issues that only occur in the compiled .exe
           RetainDebuggingArtifacts: ${{ github.event.inputs.retainDebugArtifacts == 'true' }}
-        run: msbuild "PCSX2_suite.sln" /m /v:m /p:Configuration="${{ matrix.configuration }}" /p:Platform="${{ matrix.platform }}"
+        run: |
+          if ("${{ matrix.configuration }}" -eq "CMake") {
+            cmake --build build --config ${{ steps.cmake.outputs.buildtype }}
+          } else {
+            msbuild "PCSX2_suite.sln" /m /v:m /p:Configuration="${{ matrix.configuration }}" /p:Platform="${{ matrix.platform }}"
+          }
 
       - name: Prepare Artifact Metadata
         id: artifact-metadata
         shell: bash
         run: |
           ARCH=$([ "${{ matrix.platform }}" == Win32 ] && echo "32bit" || echo "64bit")
-          SIMD=$([ "${{ matrix.configuration }}" == Release ] && echo "SSE4" || echo "AVX2")
+          case "${{ matrix.configuration }}" in
+            Release) SIMD="SSE4";;
+            *AVX2)   SIMD="AVX2";;
+            CMake)   SIMD="CMake"
+                     cp build/pcsx2/${{ steps.cmake.outputs.buildtype }}/PCSX2* bin/ ;;
+            *)       SIMD="UNKNOWN";;
+          esac
           if [ ${{ github.event_name }} == "pull_request" ]; then
             PR_SHA=$(git rev-parse --short "${{ github.event.pull_request.head.sha }}")
             ARTIFACT_NAME="PCSX2-${ARCH}-${SIMD}"
