@@ -75,10 +75,15 @@ jobs:
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     env:
       POWERSHELL_TELEMETRY_OPTOUT: 1
+      BUILDCACHE_COMPRESS_FORMAT: ZSTD
+      BUILDCACHE_COMPRESS_LEVEL: 19
+      BUILDCACHE_MAX_CACHE_SIZE: 134217728 # 128MB
+      BUILDCACHE_DIRECT_MODE: true
+      BUILDCACHE_LOG_FILE: ${{ github.workspace }}\buildcache.log
 
     steps:
       # NOTE - useful for debugging
@@ -93,6 +98,12 @@ jobs:
       - name: Checkout Submodules
         if: steps.cache-submodules.outputs.cache-hit != 'true'
         run: git submodule update --init --recursive -j $env:NUMBER_OF_PROCESSORS
+
+      - name: Setup Buildcache
+        uses: mikehardy/buildcache-action@v1.2.1
+        with:
+          cache_key: ${{ matrix.os }} ${{ matrix.platform }} ${{ matrix.configuration }}
+        if: matrix.configuration == 'CMake' # TODO: buildcache on VS
 
       - name: Verify VS Project Files
         run: .github\workflows\scripts\windows\validate-vs-filters.ps1
@@ -111,7 +122,7 @@ jobs:
           call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\%vcvars%"
           echo ::set-output name=buildtype::%type%
           echo ::set-output name=vcvars::%vcvars%
-          cmake . -B build -DCMAKE_BUILD_TYPE=%type% -G Ninja
+          cmake . -B build -DCMAKE_BUILD_TYPE=%type% -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=..\buildcache\bin\buildcache.exe -DCMAKE_CXX_COMPILER_LAUNCHER=..\buildcache\bin\buildcache.exe -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
         if: matrix.configuration == 'CMake'
 
       - name: Build PCSX2
