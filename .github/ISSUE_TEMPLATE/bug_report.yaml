@@ -1,0 +1,153 @@
+# Docs - https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-githubs-form-schema
+name: Bug Report
+description: Found a problem? Help us improve.
+title: "[BUG]: "
+labels: [Bug]
+# assignees:
+#   - octocat
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Important: Read First
+
+        Please do not make support requests on GitHub. Our issue tracker is for tracking bugs and feature requests only
+        If you need help configuring the emulator please make a request on our forums or contact us on discord
+
+        If you are unsure, start with [discord](https://discord.com/invite/TCz3t9k) or the [forums](https://forums.pcsx2.net/index.php)
+
+        Please make an effort to make sure your issue isn't already reported
+
+        ### Please Avoid Issues Pertaining to the Following:
+        - We are **not** accepting bug reports for **PSX mode** at this time
+          - If you are interested in helping contribute to PSX mode please do so on the forums. Otherwise our recommendation is that you use a [proper PSX emulator](https://emulation.gametechwiki.com/index.php/PlayStation_emulators)
+        - We do **not** accept issues relating to **upscaling** at this time
+          - We are aware of the various problems with upscaling. The issue spans many games and having hundreds of issues for the same fundamental issues isn't particularly helpful. There are several workarounds for graphical problems that come as a result of upscaling
+          - Please try your game at native resolution before creating an issue
+          - If your bug is the result of upscaling please use the forums or discord for assistance with various upscaling workarounds. Additionally, the unofficial PCSX2 [Wiki](https://wiki.pcsx2.net/Main_Page) often lists various fixes for upscaling issues
+  - type: textarea
+    id: desc
+    attributes:
+      label: Describe the Bug
+      description: "A clear and concise description of what the bug is"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction Steps
+      description: "Steps to reproduce the behavior"
+      value: |
+        1.
+        2.
+        3.
+        ...
+    validations:
+      required: true
+  - type: textarea
+    id: expect
+    attributes:
+      label: Expected Behavior
+      description: "A clear and concise description of what you expected to happen"
+    validations:
+      required: false
+  - type: markdown
+    attributes:
+      value: |
+        ## System Info
+
+        Please make sure your system meets our requirements for OS version, CPU and GPU
+        - [System Requirements](https://github.com/PCSX2/pcsx2#system-requirements)
+
+        We **do not** accept bug reports for **unsupported operating systems**.
+        - [For macOS Support](https://forums.pcsx2.net/Thread-Native-Mac-Testing-Build)
+
+        Performance issues as a result of not meeting our hardware requirements are not valid
+
+        Please read our known issues pages for AMD and Intel drivers.
+        - [Intel Drivers](https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-Intel-GPUs-All-you-need-to-know)
+        - [AMD Drivers](https://github.com/PCSX2/pcsx2/wiki/OpenGL-and-AMD-GPUs---All-you-need-to-know)
+
+        We are **not** accepting issues related to the **libretro** core. The libretro core is being maintained separately at this time
+  - type: input
+    id: rev
+    attributes:
+      label: PCSX2 Revision
+      description: "We only accept bug reports for the latest dev version. Please try upgrading before making an issue."
+      placeholder: "Example: dev-525"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+      - Windows 10 (32bit)
+      - Windows 10 (64bit)
+      - Windows 8.1 (32bit)
+      - Windows 8.1 (64bit)
+      - Linux (32bit) - Specify Distro Below
+      - Linux (64bit) - Specify Distro Below
+      - macOS (Monteray)
+      - macOS (BigSur)
+      - macOS (Catalina)
+      - macOS (Mojave)
+    validations:
+      required: true
+  - type: input
+    id: os-distro
+    attributes:
+      label: If Linux - Specify Distro
+      placeholder: "Example: Arch"
+    validations:
+      required: false
+  - type: input
+    id: cpu
+    attributes:
+      label: CPU
+      placeholder: "Example: i5-7600"
+    validations:
+      required: true
+  - type: input
+    id: gpu
+    attributes:
+      label: GPU
+      placeholder: "Example: GTX 1070"
+    validations:
+      required: true
+  - type: textarea
+    id: gsSettings
+    attributes:
+      label: GS Settings
+      description: "Any **non-default** settings for GS. If you don't want to list them out, please provide screenshots of your configuration window (including hw hacks if enabled)."
+    validations:
+      required: false
+  - type: textarea
+    id: emuSettings
+    attributes:
+      label: Emulation Settings
+      description: |
+        Any non-default core settings. If you don't want to list them out, please provide screenshots of your configuration window
+
+        Please note that the safe preset works for most games. MTVU can have some compatibility issues so please disable it before making a report
+
+        If you need to modify the settings manually because a game requires you to do so to work, please state that explicitly
+    validations:
+      required: false
+  - type: textarea
+    id: gsScreens
+    attributes:
+      label: GS Window Screenshots
+      description: "If your issue is graphical in nature and you think screenshots will help illustrate your issue, you may do that here."
+    validations:
+      required: false
+  - type: textarea
+    id: logsDumps
+    attributes:
+      label: "Logs & Dumps"
+      description: |
+        Please feel free to attach any logs, block dumps, GSdump, etc here
+
+        If your problem is graphical in nature it is highly recommended that you provide a GSdump. [GSdump Guide](https://forums.pcsx2.net/Thread-How-to-create-a-proper-GS-dump)
+    validations:
+      required: false
