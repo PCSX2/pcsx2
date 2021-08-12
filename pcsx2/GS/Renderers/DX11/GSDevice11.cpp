@@ -248,7 +248,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd>& wnd)
 
 	for (size_t i = 0; i < countof(m_convert.ps); i++)
 	{
-		CreateShader(shader, "convert.fx", nullptr, format("ps_main%d", i).c_str(), sm_convert_ptr, &m_convert.ps[i]);
+		CreateShader(shader, "convert.fx", nullptr, fmt::format("ps_main{:d}", i).c_str(), sm_convert_ptr, &m_convert.ps[i]);
 	}
 
 	memset(&dsd, 0, sizeof(dsd));
@@ -280,7 +280,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd>& wnd)
 	theApp.LoadResource(IDR_MERGE_FX, shader);
 	for (size_t i = 0; i < countof(m_merge.ps); i++)
 	{
-		CreateShader(shader, "merge.fx", nullptr, format("ps_main%d", i).c_str(), sm_model.GetPtr(), &m_merge.ps[i]);
+		CreateShader(shader, "merge.fx", nullptr, fmt::format("ps_main{:d}", i).c_str(), sm_model.GetPtr(), &m_merge.ps[i]);
 	}
 
 	memset(&bsd, 0, sizeof(bsd));
@@ -309,7 +309,7 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd>& wnd)
 	theApp.LoadResource(IDR_INTERLACE_FX, shader);
 	for (size_t i = 0; i < countof(m_interlace.ps); i++)
 	{
-		CreateShader(shader, "interlace.fx", nullptr, format("ps_main%d", i).c_str(), sm_model.GetPtr(), &m_interlace.ps[i]);
+		CreateShader(shader, "interlace.fx", nullptr, fmt::format("ps_main{:d}", i).c_str(), sm_model.GetPtr(), &m_interlace.ps[i]);
 	}
 
 	// Shade Boost
