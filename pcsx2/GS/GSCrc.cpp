@@ -520,7 +520,7 @@ std::string ToLower(std::string str)
 // E.g. Disable hacks for these CRCs:   CrcHacksExclusions=0x0F0C4A9C, 0x0EE5646B, 0x7ACF7E03
 bool IsCrcExcluded(std::string exclusionList, uint32 crc)
 {
-	std::string target = format("0x%08x", crc);
+	std::string target = fmt::format("{:#08x}", crc);
 	exclusionList = ToLower(exclusionList);
 	return exclusionList.find(target) != std::string::npos || exclusionList.find("all") != std::string::npos;
 }
