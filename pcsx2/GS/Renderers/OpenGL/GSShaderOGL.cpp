@@ -17,6 +17,8 @@
 #include "GSShaderOGL.h"
 #include "GLState.h"
 
+#include "fmt/core.h"
+
 #ifdef _WIN32
 #include "GS/resource.h"
 #else

@@ -22,6 +22,8 @@
 #include "GS/GSAlignedClass.h"
 #include "GSOsdManager.h"
 
+#include "fmt/core.h"
+
 enum ShaderConvert
 {
 	ShaderConvert_COPY = 0,

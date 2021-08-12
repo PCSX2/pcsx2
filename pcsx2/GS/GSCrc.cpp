@@ -17,6 +17,8 @@
 #include "GS.h"
 #include "GSCrc.h"
 
+#include "fmt/core.h"
+
 CRC::Game CRC::m_games[] =
 {
 	// Note: IDs 0x7ACF7E03, 0x7D4EA48F, 0x37C53760 - shouldn't be added as it's from the multiloaders when packing games.

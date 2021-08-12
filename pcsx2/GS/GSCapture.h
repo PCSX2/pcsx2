@@ -22,6 +22,8 @@
 #include "Window/GSCaptureDlg.h"
 #endif
 
+#include "fmt/core.h"
+
 class GSCapture
 {
 	std::recursive_mutex m_lock;

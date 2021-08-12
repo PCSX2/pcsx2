@@ -19,6 +19,8 @@
 #include "GS_res.h"
 #include "GSSetting.h"
 
+#include "fmt/core.h"
+
 // Port of deprecated GTK2 API to recent GTK3. Those defines
 // could prove handy for testing
 #define GTK3_MONITOR_API GTK_CHECK_VERSION(3, 22, 0)
