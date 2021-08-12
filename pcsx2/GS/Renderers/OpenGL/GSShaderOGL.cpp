@@ -266,7 +266,7 @@ std::string GSShaderOGL::GenGlslHeader(const std::string& entry, GLenum type, co
 	}
 
 	// Select the entry point ie the main function
-	header += format("#define %s main\n", entry.c_str());
+	header += fmt::format("#define {:s} main\n", entry.c_str());
 
 	header += macro;
 
