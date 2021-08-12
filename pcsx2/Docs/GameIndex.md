@@ -38,9 +38,8 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
     - VIF1StallHack
     - GIFFIFOHack
     - GoemonTlbHack
-    - ScarfaceIbitHack
-    - CrashTagTeamRacingIbitHack
-    - VU0KickstartHack
+    - IbitHack
+    - VUKickstartHack
   # The value of the speedhacks is assumed to be an integer,
   # but at the time of writing speedhacks are effectively booleans (0/1)
   speedHacks:
@@ -163,14 +162,11 @@ These values are case-sensitive so take care.  If you incorrectly specify a Game
 *   `GoemonTlbHack`
     *   Preload TLB hack to avoid tlb miss on Goemon.
 
-*   `ScarfaceIbitHack`
-    *   VU I bit Hack avoid constant recompilation (Scarface The World Is Yours).
+*   `IbitHack`
+    *   VU I bit Hack avoid constant recompilation in some games (Scarface The World Is Yours, Crash Tag Team Racing).
 
-*   `CrashTagTeamRacingIbitHack`
-    *   VU I bit Hack avoid constant recompilation (Crash Tag Team Racing).
-
-*   `VU0KickstartHack`
-    *   Let VU0 run ahead to fix some timing issues
+*   `VUKickstartHack`
+    *   Let the VU's both run ahead of the EE to fix some timing issues.
 
 ## SpeedHacks
 
