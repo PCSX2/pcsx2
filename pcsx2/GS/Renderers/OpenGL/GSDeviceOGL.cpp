@@ -409,7 +409,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd>& wnd)
 		m_convert.vs = vs;
 		for (size_t i = 0; i < countof(m_convert.ps); i++)
 		{
-			ps = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
+			ps = m_shader->Compile("convert.glsl", fmt::format("ps_main{:d}", i), GL_FRAGMENT_SHADER, shader.data());
 			std::string pretty_name = "Convert pipe " + std::to_string(i);
 			m_convert.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
@@ -439,7 +439,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd>& wnd)
 
 		for (size_t i = 0; i < countof(m_merge_obj.ps); i++)
 		{
-			ps = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
+			ps = m_shader->Compile("merge.glsl", fmt::format("ps_main{:d}", i), GL_FRAGMENT_SHADER, shader.data());
 			std::string pretty_name = "Merge pipe " + std::to_string(i);
 			m_merge_obj.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
@@ -457,7 +457,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd>& wnd)
 
 		for (size_t i = 0; i < countof(m_interlace.ps); i++)
 		{
-			ps = m_shader->Compile("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
+			ps = m_shader->Compile("interlace.glsl", fmt::format("ps_main{:d}", i), GL_FRAGMENT_SHADER, shader.data());
 			std::string pretty_name = "Interlace pipe " + std::to_string(i);
 			m_interlace.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
@@ -472,9 +472,9 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd>& wnd)
 		int ShadeBoost_Contrast = std::max(0, std::min(theApp.GetConfigI("ShadeBoost_Contrast"), 100));
 		int ShadeBoost_Brightness = std::max(0, std::min(theApp.GetConfigI("ShadeBoost_Brightness"), 100));
 		int ShadeBoost_Saturation = std::max(0, std::min(theApp.GetConfigI("ShadeBoost_Saturation"), 100));
-		std::string shade_macro = format("#define SB_SATURATION %d.0\n", ShadeBoost_Saturation)
-			+ format("#define SB_BRIGHTNESS %d.0\n", ShadeBoost_Brightness)
-			+ format("#define SB_CONTRAST %d.0\n", ShadeBoost_Contrast);
+		std::string shade_macro = fmt::format("#define SB_SATURATION {:d}.0\n", ShadeBoost_Saturation)
+			+ fmt::format("#define SB_BRIGHTNESS {:d}.0\n", ShadeBoost_Brightness)
+			+ fmt::format("#define SB_CONTRAST {:d}.0\n", ShadeBoost_Contrast);
 
 		theApp.LoadResource(IDR_SHADEBOOST_GLSL, shader);
 
@@ -964,7 +964,7 @@ void GSDeviceOGL::Barrier(GLbitfield b)
 
 GLuint GSDeviceOGL::CompileVS(VSSelector sel)
 {
-	std::string macro = format("#define VS_INT_FST %d\n", sel.int_fst);
+	std::string macro = fmt::format("#define VS_INT_FST {:d}\n", (uint32)sel.int_fst);
 
 	if (GLLoader::buggy_sso_dual_src)
 		return m_shader->CompileShader("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, m_shader_tfx_vgs.data(), macro);
@@ -974,8 +974,8 @@ GLuint GSDeviceOGL::CompileVS(VSSelector sel)
 
 GLuint GSDeviceOGL::CompileGS(GSSelector sel)
 {
-	std::string macro = format("#define GS_POINT %d\n", sel.point)
-		+ format("#define GS_LINE %d\n", sel.line);
+	std::string macro = fmt::format("#define GS_POINT {:d}\n", (uint32)sel.point)
+		+ fmt::format("#define GS_LINE {:d}\n", (uint32)sel.line);
 
 	if (GLLoader::buggy_sso_dual_src)
 		return m_shader->CompileShader("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, m_shader_tfx_vgs.data(), macro);
@@ -985,44 +985,44 @@ GLuint GSDeviceOGL::CompileGS(GSSelector sel)
 
 GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 {
-	std::string macro = format("#define PS_FST %d\n", sel.fst)
-		+ format("#define PS_WMS %d\n", sel.wms)
-		+ format("#define PS_WMT %d\n", sel.wmt)
-		+ format("#define PS_TEX_FMT %d\n", sel.tex_fmt)
-		+ format("#define PS_DFMT %d\n", sel.dfmt)
-		+ format("#define PS_DEPTH_FMT %d\n", sel.depth_fmt)
-		+ format("#define PS_CHANNEL_FETCH %d\n", sel.channel)
-		+ format("#define PS_URBAN_CHAOS_HLE %d\n", sel.urban_chaos_hle)
-		+ format("#define PS_TALES_OF_ABYSS_HLE %d\n", sel.tales_of_abyss_hle)
-		+ format("#define PS_TEX_IS_FB %d\n", sel.tex_is_fb)
-		+ format("#define PS_INVALID_TEX0 %d\n", sel.invalid_tex0)
-		+ format("#define PS_AEM %d\n", sel.aem)
-		+ format("#define PS_TFX %d\n", sel.tfx)
-		+ format("#define PS_TCC %d\n", sel.tcc)
-		+ format("#define PS_ATST %d\n", sel.atst)
-		+ format("#define PS_FOG %d\n", sel.fog)
-		+ format("#define PS_CLR1 %d\n", sel.clr1)
-		+ format("#define PS_FBA %d\n", sel.fba)
-		+ format("#define PS_LTF %d\n", sel.ltf)
-		+ format("#define PS_AUTOMATIC_LOD %d\n", sel.automatic_lod)
-		+ format("#define PS_MANUAL_LOD %d\n", sel.manual_lod)
-		+ format("#define PS_COLCLIP %d\n", sel.colclip)
-		+ format("#define PS_DATE %d\n", sel.date)
-		+ format("#define PS_TCOFFSETHACK %d\n", sel.tcoffsethack)
-		+ format("#define PS_POINT_SAMPLER %d\n", sel.point_sampler)
-		+ format("#define PS_BLEND_A %d\n", sel.blend_a)
-		+ format("#define PS_BLEND_B %d\n", sel.blend_b)
-		+ format("#define PS_BLEND_C %d\n", sel.blend_c)
-		+ format("#define PS_BLEND_D %d\n", sel.blend_d)
-		+ format("#define PS_IIP %d\n", sel.iip)
-		+ format("#define PS_SHUFFLE %d\n", sel.shuffle)
-		+ format("#define PS_READ_BA %d\n", sel.read_ba)
-		+ format("#define PS_WRITE_RG %d\n", sel.write_rg)
-		+ format("#define PS_FBMASK %d\n", sel.fbmask)
-		+ format("#define PS_HDR %d\n", sel.hdr)
-		+ format("#define PS_DITHER %d\n", sel.dither)
-		+ format("#define PS_ZCLAMP %d\n", sel.zclamp)
-		+ format("#define PS_PABE %d\n", sel.pabe)
+	std::string macro = fmt::format("#define PS_FST {:d}\n", (uint32)sel.fst)
+		+ fmt::format("#define PS_WMS {:d}\n", (uint32)sel.wms)
+		+ fmt::format("#define PS_WMT {:d}\n", (uint32)sel.wmt)
+		+ fmt::format("#define PS_TEX_FMT {:d}\n", (uint32)sel.tex_fmt)
+		+ fmt::format("#define PS_DFMT {:d}\n", (uint32)sel.dfmt)
+		+ fmt::format("#define PS_DEPTH_FMT {:d}\n", (uint32)sel.depth_fmt)
+		+ fmt::format("#define PS_CHANNEL_FETCH {:d}\n", (uint32)sel.channel)
+		+ fmt::format("#define PS_URBAN_CHAOS_HLE {:d}\n", (uint32)sel.urban_chaos_hle)
+		+ fmt::format("#define PS_TALES_OF_ABYSS_HLE {:d}\n", (uint32)sel.tales_of_abyss_hle)
+		+ fmt::format("#define PS_TEX_IS_FB {:d}\n", (uint32)sel.tex_is_fb)
+		+ fmt::format("#define PS_INVALID_TEX0 {:d}\n", (uint32)sel.invalid_tex0)
+		+ fmt::format("#define PS_AEM {:d}\n", (uint32)sel.aem)
+		+ fmt::format("#define PS_TFX {:d}\n", (uint32)sel.tfx)
+		+ fmt::format("#define PS_TCC {:d}\n", (uint32)sel.tcc)
+		+ fmt::format("#define PS_ATST {:d}\n", (uint32)sel.atst)
+		+ fmt::format("#define PS_FOG {:d}\n", (uint32)sel.fog)
+		+ fmt::format("#define PS_CLR1 {:d}\n", (uint32)sel.clr1)
+		+ fmt::format("#define PS_FBA {:d}\n", (uint32)sel.fba)
+		+ fmt::format("#define PS_LTF {:d}\n", (uint32)sel.ltf)
+		+ fmt::format("#define PS_AUTOMATIC_LOD {:d}\n", (uint32)sel.automatic_lod)
+		+ fmt::format("#define PS_MANUAL_LOD {:d}\n", (uint32)sel.manual_lod)
+		+ fmt::format("#define PS_COLCLIP {:d}\n", (uint32)sel.colclip)
+		+ fmt::format("#define PS_DATE {:d}\n", (uint32)sel.date)
+		+ fmt::format("#define PS_TCOFFSETHACK {:d}\n", (uint32)sel.tcoffsethack)
+		+ fmt::format("#define PS_POINT_SAMPLER {:d}\n", (uint32)sel.point_sampler)
+		+ fmt::format("#define PS_BLEND_A {:d}\n", (uint32)sel.blend_a)
+		+ fmt::format("#define PS_BLEND_B {:d}\n", (uint32)sel.blend_b)
+		+ fmt::format("#define PS_BLEND_C {:d}\n", (uint32)sel.blend_c)
+		+ fmt::format("#define PS_BLEND_D {:d}\n", (uint32)sel.blend_d)
+		+ fmt::format("#define PS_IIP {:d}\n", (uint32)sel.iip)
+		+ fmt::format("#define PS_SHUFFLE {:d}\n", (uint32)sel.shuffle)
+		+ fmt::format("#define PS_READ_BA {:d}\n", (uint32)sel.read_ba)
+		+ fmt::format("#define PS_WRITE_RG {:d}\n", (uint32)sel.write_rg)
+		+ fmt::format("#define PS_FBMASK {:d}\n", (uint32)sel.fbmask)
+		+ fmt::format("#define PS_HDR {:d}\n", (uint32)sel.hdr)
+		+ fmt::format("#define PS_DITHER {:d}\n", (uint32)sel.dither)
+		+ fmt::format("#define PS_ZCLAMP {:d}\n", (uint32)sel.zclamp)
+		+ fmt::format("#define PS_PABE {:d}\n", (uint32)sel.pabe)
 	;
 
 	if (GLLoader::buggy_sso_dual_src)
@@ -1111,7 +1111,7 @@ void GSDeviceOGL::SelfShaderTest()
 				sel.colclip = colclip;
 				sel.dfmt = fmt;
 
-				std::string file = format("Shader_Blend_%d_%d_%d_%d__Cclip_%d__Dfmt_%d.glsl.asm",
+				std::string file = fmt::format("Shader_Blend_{:d}_{:d}_{:d}_{:d}__Cclip_{:d}__Dfmt_{:d}.glsl.asm",
 					i, ib, i, i, colclip, fmt);
 				SelfShaderTestRun(test, file, sel, nb_shader);
 			}
@@ -1126,7 +1126,7 @@ void GSDeviceOGL::SelfShaderTest()
 		sel.tfx = 4;
 
 		sel.atst = atst;
-		std::string file = format("Shader_Atst_%d.glsl.asm", atst);
+		std::string file = fmt::format("Shader_Atst_{:d}.glsl.asm", atst);
 		SelfShaderTestRun(test, file, sel, nb_shader);
 	}
 	SelfShaderTestPrint(test, nb_shader);
@@ -1142,7 +1142,7 @@ void GSDeviceOGL::SelfShaderTest()
 		sel.shuffle = 1;
 		sel.read_ba = read_ba;
 
-		std::string file = format("Shader_Fog__Fbmask__Shuffle__Read_ba_%d.glsl.asm", read_ba);
+		std::string file = fmt::format("Shader_Fog__Fbmask__Shuffle__Read_ba_{:d}.glsl.asm", read_ba);
 		SelfShaderTestRun(test, file, sel, nb_shader);
 	}
 	SelfShaderTestPrint(test, nb_shader);
@@ -1154,7 +1154,7 @@ void GSDeviceOGL::SelfShaderTest()
 		sel.tfx = 4;
 
 		sel.date = date;
-		std::string file = format("Shader_Date_%d.glsl.asm", date);
+		std::string file = fmt::format("Shader_Date_{:d}.glsl.asm", date);
 		SelfShaderTestRun(test, file, sel, nb_shader);
 	}
 	SelfShaderTestPrint(test, nb_shader);
@@ -1168,7 +1168,7 @@ void GSDeviceOGL::SelfShaderTest()
 		sel.fba = 1;
 		sel.dfmt = fmt;
 		sel.clr1 = 1;
-		std::string file = format("Shader_Fba__Clr1__Dfmt_%d.glsl.asm", fmt);
+		std::string file = fmt::format("Shader_Fba__Clr1__Dfmt_{:d}.glsl.asm", fmt);
 		SelfShaderTestRun(test, file, sel, nb_shader);
 	}
 	SelfShaderTestPrint(test, nb_shader);
@@ -1182,7 +1182,7 @@ void GSDeviceOGL::SelfShaderTest()
 		sel.iip = 1;
 		sel.tcoffsethack = 1;
 
-		std::string file = format("Shader_Fst__TC__Iip.glsl.asm");
+		std::string file = fmt::format("Shader_Fst__TC__Iip.glsl.asm");
 		SelfShaderTestRun(test, file, sel, nb_shader);
 	}
 	SelfShaderTestPrint(test, nb_shader);
@@ -1200,7 +1200,7 @@ void GSDeviceOGL::SelfShaderTest()
 				sel.channel = channel;
 				sel.tfx = tfx;
 				sel.tcc = tcc;
-				std::string file = format("Shader_Tfx_%d__Tcc_%d__Channel_%d.glsl.asm", tfx, tcc, channel);
+				std::string file = fmt::format("Shader_Tfx_{:d}__Tcc_{:d}__Channel_{:d}.glsl.asm", tfx, tcc, channel);
 				SelfShaderTestRun(test, file, sel, nb_shader);
 			}
 		}
@@ -1234,7 +1234,7 @@ void GSDeviceOGL::SelfShaderTest()
 							sel.tex_fmt   = fmt;
 							sel.wms       = wms;
 							sel.wmt       = wmt;
-							std::string file = format("Shader_Ltf_%d__Aem_%d__TFmt_%d__Wms_%d__Wmt_%d__DepthFmt_%d.glsl.asm",
+							std::string file = fmt::format("Shader_Ltf_{:d}__Aem_{:d}__TFmt_{:d}__Wms_{:d}__Wmt_{:d}__DepthFmt_{:d}.glsl.asm",
 								ltf, aem, fmt, wms, wmt, depth);
 							SelfShaderTestRun(test, file, sel, nb_shader);
 						}
