@@ -1859,8 +1859,8 @@ void GSState::Read(uint8* mem, int len)
 
 	if (s_dump && s_save && s_n >= s_saven)
 	{
-		std::string s = m_dump_root + format(
-			"%05d_read_%05x_%d_%d_%d_%d_%d_%d.bmp",
+		std::string s = m_dump_root + fmt::format(
+			"{:05d}_read_{:05x}_{:d}_{:d}_{:d}_{:d}_{:d}_{:d}.bmp",
 			s_n, (int)m_env.BITBLTBUF.SBP, (int)m_env.BITBLTBUF.SBW, (int)m_env.BITBLTBUF.SPSM,
 			r.left, r.top, r.right, r.bottom);
 
