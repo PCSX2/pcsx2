@@ -96,7 +96,6 @@ jobs:
         uses: actions/checkout@v2
 
       - name: Checkout Submodules
-        if: steps.cache-submodules.outputs.cache-hit != 'true'
         run: git submodule update --init --recursive -j $env:NUMBER_OF_PROCESSORS
 
       - name: Setup Buildcache
