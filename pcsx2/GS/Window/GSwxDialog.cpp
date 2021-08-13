@@ -544,15 +544,6 @@ Dialog::Dialog()
 	auto* padding = new wxBoxSizer(wxVERTICAL);
 	m_top_box = new wxBoxSizer(wxVERTICAL);
 
-	// Right now, I'm hardcoding the location of the picture.
-	wxString fileLocation = wxStandardPaths::Get().GetExecutablePath();
-	fileLocation = wxFileName(fileLocation).GetPath() + L"/plugins/logo-ogl.bmp";
-	if (wxFileName(fileLocation).Exists())
-	{
-		wxBitmap logo(fileLocation, wxBITMAP_TYPE_BMP);
-		m_top_box->Add(new wxStaticBitmap(this, wxID_ANY, logo), wxSizerFlags().Centre());
-	}
-
 	auto* top_grid = new wxFlexGridSizer(2, 5, 5);
 	top_grid->SetFlexibleDirection(wxHORIZONTAL);
 
