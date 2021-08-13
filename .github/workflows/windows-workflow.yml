@@ -137,6 +137,13 @@ jobs:
             msbuild "PCSX2_suite.sln" /m /v:m /p:Configuration="${{ matrix.configuration }}" /p:Platform="${{ matrix.platform }}"
           )
 
+      - name: Run Tests
+        shell: cmd
+        run: |
+          call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\${{ steps.cmake.outputs.vcvars }}"
+          cmake --build build --config ${{ steps.cmake.outputs.buildtype }} --target unittests
+        if: matrix.configuration == 'CMake'
+
       - name: Prepare Artifact Metadata
         id: artifact-metadata
         shell: bash
