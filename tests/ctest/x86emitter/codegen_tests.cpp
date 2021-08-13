@@ -13,20 +13,29 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "codegen_tests.h"
 #include <gtest/gtest.h>
 #include <x86emitter/x86emitter.h>
+#include <Utilities/Assertions.h>
 
 using namespace x86Emitter;
 
 thread_local const char *currentTest;
 
-void pxOnAssert(const DiagnosticOrigin &origin, const wxString &msg) {
-	FAIL() << "Assertion failed: " << msg
+static void assertHandlerInternal(const DiagnosticOrigin& origin, const wxChar* msg) {
+	FAIL() << "Assertion failed: " << wxString(msg)
 		<< "\n  at " << origin.srcfile << ":" << origin.line << ""
 		<< "\n  when trying to assemble " << currentTest;
 }
 
+static bool assertHandler(const DiagnosticOrigin& origin, const wxChar* msg) {
+	assertHandlerInternal(origin, msg);
+	return false;
+}
+
 void runCodegenTest(void (*exec)(void *base), const char* description, const char* expected) {
+	pxDoAssert = assertHandler;
+
 	u8 code[4096];
 	memset(code, 0xcc, sizeof(code));
 	char str[4096] = {0};
