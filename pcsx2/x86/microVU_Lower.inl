@@ -681,7 +681,8 @@ mVUop(mVU_IADDI) {
 	pass1 { mVUanalyzeIADDI(mVU, _Is_, _It_, _Imm5_); }
 	pass2 {
 		mVUallocVIa(mVU, gprT1, _Is_);
-		xADD(gprT1b, _Imm5_);
+		if (_Imm5_ != 0)
+			xADD(gprT1b, _Imm5_);
 		mVUallocVIb(mVU, gprT1, _It_);
 		mVU.profiler.EmitOp(opIADDI);
 	}
@@ -692,7 +693,8 @@ mVUop(mVU_IADDIU) {
 	pass1 { mVUanalyzeIADDI(mVU, _Is_, _It_, _Imm15_); }
 	pass2 {
 		mVUallocVIa(mVU, gprT1, _Is_);
-		xADD(gprT1b, _Imm15_);
+		if (_Imm15_ != 0)
+			xADD(gprT1b, _Imm15_);
 		mVUallocVIb(mVU, gprT1, _It_);
 		mVU.profiler.EmitOp(opIADDIU);
 	}
@@ -749,7 +751,8 @@ mVUop(mVU_ISUBIU) {
 	pass1 { mVUanalyzeIALU2(mVU, _Is_, _It_); }
 	pass2 {
 		mVUallocVIa(mVU, gprT1, _Is_);
-		xSUB(gprT1b, _Imm15_);
+		if (_Imm15_ != 0)
+			xSUB(gprT1b, _Imm15_);
 		mVUallocVIb(mVU, gprT1, _It_);
 		mVU.profiler.EmitOp(opISUBIU);
 	}
@@ -850,7 +853,8 @@ mVUop(mVU_ILW) {
 		mVUallocVIa(mVU, gprT2, _Is_);
 		if (!_Is_)
 			xXOR(gprT2, gprT2);
-		xADD(gprT2, _Imm11_);
+		if (_Imm11_ != 0)
+			xADD(gprT2, _Imm11_);
 		mVUaddrFix (mVU, gprT2q);
 		xMOVZX(gprT1, ptr16[xComplexAddress(gprT3q, ptr, gprT2q)]);
 		mVUallocVIb(mVU, gprT1, _It_);
@@ -924,7 +928,8 @@ mVUop(mVU_ISW) {
 		mVUallocVIa(mVU, gprT2, _Is_);
 		if (!_Is_)
 			xXOR(gprT2, gprT2);
-		xADD(gprT2, _Imm11_);
+		if (_Imm11_ != 0)
+			xADD(gprT2, _Imm11_);
 		mVUaddrFix (mVU, gprT2q);
 
 		mVUallocVIa(mVU, gprT1, _It_);
@@ -963,9 +968,10 @@ mVUop(mVU_LQ) {
 	pass2 {
 		void *ptr = mVU.regs().Mem;
 		mVUallocVIa(mVU, gprT2, _Is_);
-        if (!_Is_)
-            xXOR(gprT2, gprT2);
-		xADD(gprT2, _Imm11_);
+		if (!_Is_)
+			xXOR(gprT2, gprT2);
+		if (_Imm11_ != 0)
+			xADD(gprT2, _Imm11_);
 		mVUaddrFix(mVU, gprT2q);
 
 		const xmm& Ft = mVU.regAlloc->allocReg(-1, _Ft_, _X_Y_Z_W);
@@ -1042,9 +1048,10 @@ mVUop(mVU_SQ) {
 		void * ptr = mVU.regs().Mem;
 
 		mVUallocVIa(mVU, gprT2, _It_);
-        if (!_It_)
-            xXOR(gprT2, gprT2);
-		xADD(gprT2, _Imm11_);
+		if (!_It_)
+			xXOR(gprT2, gprT2);
+		if (_Imm11_ != 0)
+			xADD(gprT2, _Imm11_);
 		mVUaddrFix(mVU, gprT2q);
 
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
