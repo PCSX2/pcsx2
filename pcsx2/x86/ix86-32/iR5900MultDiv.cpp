@@ -254,9 +254,9 @@ EERECOMPILE_CODE0(MULTU, XMMINFO_READS|XMMINFO_READT|(_Rd_?XMMINFO_WRITED:0));
 ////////////////////////////////////////////////////
 void recMULT1_const()
 {
-	u64 res = (u64)g_cpuConstRegs[_Rs_].UL[0] * (u64)g_cpuConstRegs[_Rt_].UL[0];
+	s64 res = (s64)g_cpuConstRegs[_Rs_].SL[0] * (s64)g_cpuConstRegs[_Rt_].SL[0];
 
-	recWritebackConstHILO(res, 1, 1);
+	recWritebackConstHILO((u64)res, 1, 1);
 }
 
 void recMULT1_(int info)
