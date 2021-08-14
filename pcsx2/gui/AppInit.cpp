@@ -472,8 +472,24 @@ bool Pcsx2App::OnInit()
 		else if (Startup.SysAutoRunElf)
 		{
 			g_Conf->EmuOptions.UseBOOT2Injection = true;
-			g_Conf->Folders.RunELF = wxFileName(Startup.ElfFile).GetPath();
-			sApp.SysExecute(Startup.CdvdSource, Startup.ElfFile);
+
+			// wxPATH_NATIVE is broken on msw, it can delete the first directory after the volume
+			// EX: P://dir1/dir2/elf.elf -> P://dir2/ ???
+#ifdef _WIN32
+			wxFileName elfFile = wxFileName(Startup.ElfFile, wxPATH_WIN);
+#else
+			wxFileName elfFile = wxFileName(Startup.ElfFile, wxPATH_NATIVE);
+#endif
+
+			if (!elfFile.FileExists())
+			{
+				wxMessageBox(wxString::Format(_("Specified elf file %s does not exist!"), Startup.ElfFile), "PCSX2", wxICON_ERROR);
+			}
+			else
+			{
+				g_Conf->Folders.RunELF = elfFile.GetPath();
+				sApp.SysExecute(Startup.CdvdSource, Startup.ElfFile);
+			}
 		}
 		else if (Startup.SysAutoRunIrx)
 		{
