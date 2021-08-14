@@ -164,7 +164,8 @@ public:
 			struct
 			{
 				uint32 int_fst : 1;
-				uint32 _free : 31;
+				uint32 sprite_upscale : 1;
+				uint32 _free : 30;
 			};
 
 			uint32 key;
@@ -536,7 +537,7 @@ private:
 		GLuint timer() { return timer_query[last_query]; }
 	} m_profiler;
 
-	GLuint m_vs[1 << 1];
+	GLuint m_vs[1 << 2];
 	GLuint m_gs[1 << 3];
 	GLuint m_ps_ss[1 << 7];
 	GSDepthStencilOGL* m_om_dss[1 << 5];

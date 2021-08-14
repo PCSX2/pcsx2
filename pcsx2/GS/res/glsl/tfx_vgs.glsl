@@ -55,6 +55,11 @@ void vs_main()
 
     p.xy = vec2(i_p) - vec2(0.05f, 0.05f);
     p.xy = p.xy * VertexScale - VertexOffset;
+#if VS_SPRITE_UPSCALE == 1
+    // align positions that would be subpixel with native scaling but are not when upscaled
+    vec2 halfRTSize = 1.0 / (16.0 * VertexScale); // VertexScale = 2.0 * rtSize / 16, but we need (rtSize / 2.0)
+    p.xy = round(p.xy * halfRTSize) / halfRTSize;
+#endif
     p.w = 1.0f;
     p.z = float(z) * exp_min32;
 

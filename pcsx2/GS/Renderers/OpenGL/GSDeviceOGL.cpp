@@ -964,7 +964,8 @@ void GSDeviceOGL::Barrier(GLbitfield b)
 
 GLuint GSDeviceOGL::CompileVS(VSSelector sel)
 {
-	std::string macro = format("#define VS_INT_FST %d\n", sel.int_fst);
+	std::string macro = format("#define VS_INT_FST %d\n", sel.int_fst)
+		+ format("#define VS_SPRITE_UPSCALE %d\n", sel.sprite_upscale);
 
 	if (GLLoader::buggy_sso_dual_src)
 		return m_shader->CompileShader("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, m_shader_tfx_vgs.data(), macro);

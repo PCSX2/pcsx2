@@ -77,6 +77,10 @@ void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 			break;
 
 		case GS_SPRITE_CLASS:
+			if (unscale_pt_ln)
+			{
+				m_vs_sel.sprite_upscale = 1;
+			}
 			// Heuristics: trade-off
 			// Lines: GPU conversion => ofc, more GPU. And also more CPU due to extra shader validation stage.
 			// Triangles: CPU conversion => ofc, more CPU ;) more bandwidth (72 bytes / sprite)
