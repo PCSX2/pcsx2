@@ -1525,9 +1525,10 @@ void GSApp::Init()
 	m_gs_upscale_multiplier.push_back(GSSetting(2, "2x Native", "~720p"));
 	m_gs_upscale_multiplier.push_back(GSSetting(3, "3x Native", "~1080p"));
 	m_gs_upscale_multiplier.push_back(GSSetting(4, "4x Native", "~1440p 2K"));
-	m_gs_upscale_multiplier.push_back(GSSetting(5, "5x Native", "~1620p 3K"));
+	m_gs_upscale_multiplier.push_back(GSSetting(5, "5x Native", "~1620p"));
 	m_gs_upscale_multiplier.push_back(GSSetting(6, "6x Native", "~2160p 4K"));
-	m_gs_upscale_multiplier.push_back(GSSetting(8, "8x Native", "~2880p 5K"));
+	m_gs_upscale_multiplier.push_back(GSSetting(7, "7x Native", "~2520p"));
+	m_gs_upscale_multiplier.push_back(GSSetting(8, "8x Native", "~2880p"));
 
 	m_gs_max_anisotropy.push_back(GSSetting(0, "Off", "Default"));
 	m_gs_max_anisotropy.push_back(GSSetting(2, "2x", ""));
