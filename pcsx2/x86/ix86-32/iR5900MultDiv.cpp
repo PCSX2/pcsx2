@@ -159,7 +159,7 @@ void recWritebackConstHILO(u64 res, int writed, int upper)
 	}
 
 	if (!writed || !_Rd_) return;
-	g_cpuConstRegs[_Rd_].UD[0] = (s32)(res & 0xffffffff); //that is the difference
+	g_cpuConstRegs[_Rd_].SD[0] = (s32)(res & 0xffffffffULL); //that is the difference
 }
 
 //// MULT
