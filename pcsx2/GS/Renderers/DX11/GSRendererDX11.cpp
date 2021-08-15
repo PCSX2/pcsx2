@@ -60,6 +60,10 @@ void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 			break;
 
 		case GS_SPRITE_CLASS:
+			if (unscale_pt_ln)
+			{
+				m_vs_sel.sprite_upscale = 1;
+			}
 			// Lines: GPU conversion.
 			// Triangles: CPU conversion.
 			if (!m_vt.m_accurate_stq && m_vertex.next > 32) // <=> 16 sprites (based on Shadow Hearts)

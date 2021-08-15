@@ -101,6 +101,7 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 
 		sm.AddMacro("VS_TME", sel.tme);
 		sm.AddMacro("VS_FST", sel.fst);
+		sm.AddMacro("VS_SPRITE_UPSCALE", sel.sprite_upscale);
 
 		D3D11_INPUT_ELEMENT_DESC layout[] =
 		{

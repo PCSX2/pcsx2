@@ -7,6 +7,7 @@
 #ifndef VS_TME
 #define VS_TME 1
 #define VS_FST 1
+#define VS_SPRITE_UPSCALE 0
 #endif
 
 #ifndef GS_IIP
@@ -799,7 +800,13 @@ VS_OUTPUT vs_main(VS_INPUT input)
 
 	float4 p = float4(input.p, input.z, 0) - float4(0.05f, 0.05f, 0, 0);
 
-	output.p = p * VertexScale - VertexOffset;
+	p = p * VertexScale - VertexOffset;
+#if VS_SPRITE_UPSCALE == 1
+	// align positions that would be subpixel with native scaling but are not when upscaled
+	float2 halfRTSize = 1.0 / (16.0 * VertexScale.xy); // VertexScale = 2.0 * rtSize / 16, but we need (rtSize / 2.0)
+	p.xy = round(p.xy * halfRTSize) / halfRTSize;
+#endif
+	output.p = p;
 
 	if(VS_TME)
 	{

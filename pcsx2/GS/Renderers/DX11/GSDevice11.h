@@ -74,8 +74,9 @@ public:
 			{
 				uint32 tme : 1;
 				uint32 fst : 1;
+				uint32 sprite_upscale : 1;
 
-				uint32 _free : 30;
+				uint32 _free : 29;
 			};
 
 			uint32 key;
