@@ -22,16 +22,7 @@
 #include "SDL/joystick.h"
 #endif
 
-std::unique_ptr<InputDeviceManager> device_manager(new InputDeviceManager);
-
-InputDeviceManager::InputDeviceManager()
-{
-}
-
-InputDeviceManager::~InputDeviceManager()
-{
-	device_manager->devices.clear();
-}
+InputDeviceManager device_manager;
 
 // Needs to be moved to individual device code, as does the keyboard input.
 void PollForJoystickInput(int cpad)
@@ -40,7 +31,7 @@ void PollForJoystickInput(int cpad)
 	if (index < 0)
 		return;
 
-	auto& gamePad = device_manager->devices[index];
+	auto& gamePad = device_manager.devices[index];
 
 	gamePad->UpdateDeviceState();
 
@@ -83,6 +74,6 @@ void InputDeviceManager::Update()
 void EnumerateDevices()
 {
 #ifdef SDL_BUILD
-	JoystickInfo::EnumerateJoysticks(device_manager->devices);
+	JoystickInfo::EnumerateJoysticks(device_manager.devices);
 #endif
 }
