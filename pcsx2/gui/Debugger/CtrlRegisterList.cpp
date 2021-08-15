@@ -76,7 +76,6 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 	}
 
 	SetDoubleBuffered(true);
-	SetInitialSize(ClientToWindowSize(GetMinClientSize()));
 
 	const wxSize actualSize = getOptimalSize();
 	SetVirtualSize(actualSize);
@@ -467,34 +466,29 @@ void CtrlRegisterList::onPopupClick(wxCommandEvent& evt)
 		case ID_REGISTERLIST_DISPLAY32:
 			resolvePointerStrings = false;
 			maxBits = 32;
-			SetInitialSize(ClientToWindowSize(GetMinClientSize()));
 			postEvent(debEVT_UPDATELAYOUT, 0);
 			Refresh();
 			break;
 		case ID_REGISTERLIST_DISPLAY64:
 			resolvePointerStrings = false;
 			maxBits = 64;
-			SetInitialSize(ClientToWindowSize(GetMinClientSize()));
 			postEvent(debEVT_UPDATELAYOUT, 0);
 			Refresh();
 			break;
 		case ID_REGISTERLIST_DISPLAY128:
 			resolvePointerStrings = false;
 			maxBits = 128;
-			SetInitialSize(ClientToWindowSize(GetMinClientSize()));
 			postEvent(debEVT_UPDATELAYOUT, 0);
 			Refresh();
 			break;
 		case ID_REGISTERLIST_DISPLAY128STRINGS:
 			resolvePointerStrings = true;
 			maxBits = 128;
-			SetInitialSize(ClientToWindowSize(GetMinClientSize()));
 			postEvent(debEVT_UPDATELAYOUT, 0);
 			Refresh();
 			break;
 		case ID_REGISTERLIST_DISPLAYVU0FFLOATS:
 			displayVU0FAsFloat = !displayVU0FAsFloat;
-			SetInitialSize(ClientToWindowSize(GetMinClientSize()));
 			postEvent(debEVT_UPDATELAYOUT, 0);
 			Refresh();
 			break;
@@ -645,12 +639,6 @@ void CtrlRegisterList::mouseEvent(wxMouseEvent& evt)
 			if (cat != category)
 			{
 				category = cat;
-
-				// Requires the next two lines to check if we are rendering the vu0f category
-				// and if we need to make the window sized for 128 bits because we are displaying as float
-				SetInitialSize(ClientToWindowSize(GetMinClientSize()));
-				postEvent(debEVT_UPDATELAYOUT, 0);
-
 				Refresh();
 			}
 		}
