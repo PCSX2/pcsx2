@@ -64,9 +64,9 @@ void JoystickConfiguration::InitJoystickConfiguration()
 	 * if the pad id is 1, you need at least 2 gamepads connected,
 	 * Prevent using a non-initialized value (core dump)
 	 */
-	if (device_manager->devices.size() < m_pad_id + 1)
+	if (device_manager.devices.size() < m_pad_id + 1)
 	{
-		if (device_manager->devices.empty())
+		if (device_manager.devices.empty())
 			wxMessageBox(L"No gamepad detected.");
 		else
 			wxMessageBox(L"No second gamepad detected.");

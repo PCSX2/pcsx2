@@ -23,14 +23,12 @@ class Device;
 class InputDeviceManager
 {
 public:
-	InputDeviceManager();
-	~InputDeviceManager();
 	void Update();
 
 	std::vector<std::unique_ptr<Device>> devices;
 };
 
-extern std::unique_ptr<InputDeviceManager> device_manager;
+extern InputDeviceManager device_manager;
 
 /*
  * Find every interesting device and create right structure for them(depends on backend)
