@@ -327,6 +327,11 @@ if(CMAKE_BUILD_STRIP)
 	add_link_options(-s)
 endif()
 
+# Enable special stuff for CI builds
+if($ENV{CI} STREQUAL "true")
+	list(APPEND PCSX2_DEFS PCSX2_CI)
+endif()
+
 #-------------------------------------------------------------------------------
 # MacOS-specific things
 #-------------------------------------------------------------------------------
