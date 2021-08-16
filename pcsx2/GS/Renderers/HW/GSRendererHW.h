@@ -151,6 +151,7 @@ protected:
 	int m_userhacks_round_sprite_offset;
 	int m_userHacks_HPO;
 	bool m_userHacks_enabled_unscale_ptln;
+	bool m_userHacks_unscale_sprite_pos;
 
 	bool m_userhacks_tcoffset;
 	float m_userhacks_tcoffset_x;

@@ -597,6 +597,7 @@ void GSHacksDlg::OnInit()
 	CheckDlgButton(m_hWnd, IDC_SAFE_FEATURES, theApp.GetConfigB("UserHacks_Disable_Safe_Features"));
 	CheckDlgButton(m_hWnd, IDC_MEMORY_WRAPPING, theApp.GetConfigB("wrap_gs_mem"));
 	CheckDlgButton(m_hWnd, IDC_MERGE_PP_SPRITE, theApp.GetConfigB("UserHacks_merge_pp_sprite"));
+	CheckDlgButton(m_hWnd, IDC_UNSCALE_SPRITE_POS, theApp.GetConfigB("UserHacks_unscale_sprite_pos"));
 
 	ComboBoxInit(IDC_HALF_SCREEN_TS, theApp.m_gs_generic_list, theApp.GetConfigI("UserHacks_Half_Bottom_Override"));
 	ComboBoxInit(IDC_TRI_FILTER, theApp.m_gs_trifilter, theApp.GetConfigI("UserHacks_TriFilter"));
@@ -657,6 +658,7 @@ void GSHacksDlg::OnInit()
 	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK_TEXT), hwhacks && !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_OFFSETHACK), hwhacks && !native);
 	EnableWindow(GetDlgItem(m_hWnd, IDC_MERGE_PP_SPRITE), hwhacks && !native);
+	EnableWindow(GetDlgItem(m_hWnd, IDC_UNSCALE_SPRITE_POS), hwhacks && !native);
 
 	// OpenGL Very Advanced Custom Settings:
 	EnableWindow(GetDlgItem(m_hWnd, IDC_GEOMETRY_SHADER_OVERRIDE), ogl);
@@ -795,6 +797,7 @@ bool GSHacksDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 					theApp.SetConfig("UserHacks_Disable_Safe_Features", (int)IsDlgButtonChecked(m_hWnd, IDC_SAFE_FEATURES));
 					theApp.SetConfig("wrap_gs_mem", (int)IsDlgButtonChecked(m_hWnd, IDC_MEMORY_WRAPPING));
 					theApp.SetConfig("UserHacks_merge_pp_sprite", (int)IsDlgButtonChecked(m_hWnd, IDC_MERGE_PP_SPRITE));
+					theApp.SetConfig("UserHacks_unscale_sprite_pos", (int)IsDlgButtonChecked(m_hWnd, IDC_UNSCALE_SPRITE_POS));
 					theApp.SetConfig("UserHacks_TCOffsetX", (int)SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETX), UDM_GETPOS, 0, 0));
 					theApp.SetConfig("UserHacks_TCOffsetY", (int)SendMessage(GetDlgItem(m_hWnd, IDC_TCOFFSETY), UDM_GETPOS, 0, 0));
 

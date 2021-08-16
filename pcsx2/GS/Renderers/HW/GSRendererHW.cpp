@@ -44,6 +44,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 		m_userHacks_enabled_unscale_ptln = !theApp.GetConfigB("UserHacks_Disable_Safe_Features");
 		m_userhacks_align_sprite_X       = theApp.GetConfigB("UserHacks_align_sprite_X");
 		m_userHacks_merge_sprite         = theApp.GetConfigB("UserHacks_merge_pp_sprite");
+		m_userHacks_unscale_sprite_pos   = theApp.GetConfigB("UserHacks_unscale_sprite_pos");
 		m_userhacks_ts_half_bottom       = theApp.GetConfigI("UserHacks_Half_Bottom_Override");
 		m_userhacks_round_sprite_offset  = theApp.GetConfigI("UserHacks_round_sprite_offset");
 		m_userHacks_HPO                  = theApp.GetConfigI("UserHacks_HalfPixelOffset");
@@ -57,6 +58,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 		m_userHacks_enabled_unscale_ptln = true;
 		m_userhacks_align_sprite_X       = false;
 		m_userHacks_merge_sprite         = false;
+		m_userHacks_unscale_sprite_pos   = true;
 		m_userhacks_ts_half_bottom       = -1;
 		m_userhacks_round_sprite_offset  = 0;
 		m_userHacks_HPO                  = 0;

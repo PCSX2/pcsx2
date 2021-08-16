@@ -60,7 +60,7 @@ void GSRendererDX11::SetupIA(const float& sx, const float& sy)
 			break;
 
 		case GS_SPRITE_CLASS:
-			if (unscale_pt_ln)
+			if (m_userHacks_unscale_sprite_pos && GetUpscaleMultiplier() != 1)
 			{
 				m_vs_sel.sprite_upscale = 1;
 			}

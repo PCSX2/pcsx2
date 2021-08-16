@@ -1713,6 +1713,7 @@ void GSApp::Init()
 	m_default_configuration["UserHacks_TriFilter"]                        = std::to_string(static_cast<int8>(TriFiltering::None));
 	m_default_configuration["UserHacks_WildHack"]                         = "0";
 	m_default_configuration["wrap_gs_mem"]                                = "0";
+	m_default_configuration["UserHacks_unscale_sprite_pos"]               = "1";
 	m_default_configuration["vsync"]                                      = "0";
 	// clang-format on
 }
