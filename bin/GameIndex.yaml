@@ -13886,9 +13886,13 @@ SLES-53614:
 SLES-53616:
   name: "True Crime - New York City"
   region: "PAL-E"
+  clampModes:
+    eeClampMode: 2  # Fixes SPS on highway.
 SLES-53618:
   name: "True Crime - New York City"
   region: "PAL-S"
+  clampModes:
+    eeClampMode: 2  # Fixes SPS on highway.
 SLES-53621:
   name: "Wallace & Grommit - The Curse of the Were Rabbit"
   region: "PAL-M5"
@@ -25527,6 +25531,8 @@ SLPM-66472:
 SLPM-66473:
   name: "True Crime - New York City"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 2  # Fixes SPS on highway.
 SLPM-66474:
   name: "Odin Sphere"
   region: "NTSC-J"
@@ -27408,6 +27414,8 @@ SLPM-74242:
 SLPM-74243:
   name: "True Crime - New York City [PlayStation 2 The Best]"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 2  # Fixes SPS on highway.
 SLPM-74244:
   name: "Phantasy Star Universe [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -36569,6 +36577,8 @@ SLUS-21106:
   name: "True Crime - New York City"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    eeClampMode: 2  # Fixes SPS on highway.
 SLUS-21107:
   name: "X-Men - The Official Game"
   region: "NTSC-U"
