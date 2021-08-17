@@ -21,8 +21,6 @@
 #include <wx/stdpaths.h>
 #include "fmt/core.h"
 
-#include "Debugger/DisassemblyDialog.h"
-
 #include "common/Threading.h"
 
 #include "ps2/BiosTools.h"
