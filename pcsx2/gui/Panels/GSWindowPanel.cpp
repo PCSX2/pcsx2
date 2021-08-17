@@ -17,8 +17,8 @@
 #include "ConfigurationPanels.h"
 
 #include "fmt/core.h"
-#include "App.h"
-#include "AppAccelerators.h"
+#include "gui/App.h"
+#include "gui/AppAccelerators.h"
 
 using namespace pxSizerFlags;
 

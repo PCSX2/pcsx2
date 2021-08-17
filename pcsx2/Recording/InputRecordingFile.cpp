@@ -18,11 +18,13 @@
 #ifndef DISABLE_RECORDING
 
 #include "DebugTools/Debug.h"
-#include "MainFrame.h"
+#include "gui/MainFrame.h"
 #include "MemoryTypes.h"
 
 #include "InputRecordingFile.h"
 #include "Utilities/InputRecordingLogger.h"
+
+#include <fmt/format.h>
 
 void InputRecordingFileHeader::Init()
 {

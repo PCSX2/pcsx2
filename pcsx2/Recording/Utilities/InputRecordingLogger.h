@@ -15,13 +15,6 @@
 
 #pragma once
 
-#include "App.h"
-#include "ConsoleLogger.h"
-#include "DebugTools/Debug.h"
-#include "common/Console.h"
-
-#include <fmt/core.h>
-
 #include <memory>
 #include <string>
 #include <vector>

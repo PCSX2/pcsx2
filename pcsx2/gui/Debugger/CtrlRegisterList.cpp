@@ -18,7 +18,7 @@
 #include "DebugTools/Debug.h"
 
 #include "DebugEvents.h"
-#include "AppConfig.h"
+#include "gui/AppConfig.h"
 #include "DisassemblyDialog.h"
 
 wxBEGIN_EVENT_TABLE(CtrlRegisterList, wxWindow)

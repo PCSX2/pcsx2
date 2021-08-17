@@ -21,7 +21,7 @@
 
 #include "DebugEvents.h"
 #include "BreakpointWindow.h"
-#include "AppConfig.h"
+#include "gui/AppConfig.h"
 #include "System.h"
 #include "DisassemblyDialog.h"
 
@@ -29,8 +29,8 @@
 #include <wx/clipbrd.h>
 #include <wx/file.h>
 
-#include "Resources/Breakpoint_Active.h"
-#include "Resources/Breakpoint_Inactive.h"
+#include "gui/Resources/Breakpoint_Active.h"
+#include "gui/Resources/Breakpoint_Inactive.h"
 
 wxBEGIN_EVENT_TABLE(CtrlDisassemblyView, wxWindow)
 	EVT_PAINT(CtrlDisassemblyView::paintEvent)

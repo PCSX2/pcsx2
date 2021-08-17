@@ -26,8 +26,6 @@
 #include "SPU2/spu2.h"
 #include "R3000A.h"
 
-#include "ConsoleLogger.h"
-
 using namespace R5900;
 
 // Shift the middle 8 bits (bits 4-12) into the lower 8 bits.

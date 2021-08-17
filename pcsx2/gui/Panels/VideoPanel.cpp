@@ -14,9 +14,9 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "App.h"
-#include "AppAccelerators.h"
-#include "Dialogs/ConfigurationDialog.h"
+#include "gui/App.h"
+#include "gui/AppAccelerators.h"
+#include "gui/Dialogs/ConfigurationDialog.h"
 #include "ConfigurationPanels.h"
 
 #include <wx/spinctrl.h>

@@ -16,9 +16,9 @@
 #include "PrecompiledHeader.h"
 #include "ConfigurationDialog.h"
 #include "System.h"
-#include "MSWstuff.h"
+#include "gui/MSWstuff.h"
 
-#include "MemoryCardFile.h"
+#include "gui/MemoryCardFile.h"
 //#include <wx/filepicker.h>
 #include <wx/ffile.h>
 

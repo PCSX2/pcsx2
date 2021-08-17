@@ -17,11 +17,11 @@
 
 #ifndef DISABLE_RECORDING
 
-#include "App.h"
 #include "Counters.h"
 #include "DebugTools/Debug.h"
-#include "MainFrame.h"
 #include "MemoryTypes.h"
+#include "gui/App.h"
+#include "gui/MainFrame.h"
 
 #include "InputRecording.h"
 #include "InputRecordingControls.h"

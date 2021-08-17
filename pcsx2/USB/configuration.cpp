@@ -18,7 +18,7 @@
 #include "configuration.h"
 #include "shared/inifile_usb.h"
 #include "platcompat.h"
-#include "AppConfig.h"
+#include "gui/AppConfig.h"
 #include <map>
 #include <vector>
 

@@ -25,8 +25,8 @@
 #include <wx/dnd.h>
 #include <memory>
 
-#include "AppCommon.h"
-#include "ApplyState.h"
+#include "gui/AppCommon.h"
+#include "gui/ApplyState.h"
 
 
 namespace Panels

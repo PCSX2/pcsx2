@@ -15,10 +15,10 @@
 
 #include "PrecompiledHeader.h"
 #include "System.h"
-#include "MSWstuff.h"
+#include "gui/MSWstuff.h"
 
 #include "ModalPopups.h"
-#include "Panels/ConfigurationPanels.h"
+#include "gui/Panels/ConfigurationPanels.h"
 #include <wx/file.h>
 #include <wx/filepicker.h>
 #include <wx/hyperlink.h>

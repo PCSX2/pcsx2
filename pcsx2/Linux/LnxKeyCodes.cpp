@@ -14,7 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "ConsoleLogger.h"
+#include "gui/ConsoleLogger.h"
 
 #include <gdk/gdkkeysyms.h>
 

@@ -18,7 +18,7 @@
 #include "DebugInterface.h"
 #include "Memory.h"
 #include "R5900.h"
-#include "AppCoreThread.h"
+#include "gui/AppCoreThread.h"
 #include "Debug.h"
 #include "VU.h"
 #include "GS.h" // Required for gsNonMirroredRead()

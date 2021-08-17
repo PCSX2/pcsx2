@@ -408,8 +408,8 @@ const std::vector<BreakPoint> CBreakPoints::GetBreakpoints()
 }
 
 // including them earlier causes some ambiguities
-#include "App.h"
-#include "Debugger/DisassemblyDialog.h"
+#include "gui/App.h"
+#include "gui/Debugger/DisassemblyDialog.h"
 
 void CBreakPoints::Update(BreakPointCpu cpu, u32 addr)
 {

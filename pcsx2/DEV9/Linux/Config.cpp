@@ -19,7 +19,7 @@
 #include <arpa/inet.h>
 
 #include "DEV9/DEV9.h"
-#include "AppConfig.h"
+#include "gui/AppConfig.h"
 
 #include <unistd.h>
 #include <sys/types.h>

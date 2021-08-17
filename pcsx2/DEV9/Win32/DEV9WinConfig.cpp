@@ -19,8 +19,8 @@
 
 #include <fstream>
 
-#include "..\DEV9.h"
-#include "AppConfig.h"
+#include "DEV9/DEV9.h"
+#include "gui/AppConfig.h"
 
 #include "ws2tcpip.h"
 

@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "MemoryTypes.h"
+
 struct EECNT_MODE
 {
 	// 0 - BUSCLK

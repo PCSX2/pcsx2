@@ -14,16 +14,16 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "App.h"
-#include "AppCommon.h"
-#include "MSWstuff.h"
+#include "gui/App.h"
+#include "gui/AppCommon.h"
+#include "gui/MSWstuff.h"
 
-#include "Dialogs/ModalPopups.h"
+#include "gui/Dialogs/ModalPopups.h"
 
 #include "System/SysThreads.h"
 
 #include "PathDefs.h"
-#include "AppConfig.h"
+#include "gui/AppConfig.h"
 
 using namespace pxSizerFlags;
 /* This dialog currently assumes the IPC server is started when launching a

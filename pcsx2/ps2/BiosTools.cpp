@@ -22,7 +22,7 @@
 
 
 // FIXME: Temporary hack until we remove dependence on Pcsx2App.
-#include "AppConfig.h"
+#include "gui/AppConfig.h"
 #include "wx/mstream.h"
 #include "wx/wfstream.h"
 

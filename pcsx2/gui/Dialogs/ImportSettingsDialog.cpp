@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "System.h"
-#include "MSWstuff.h"
+#include "gui/MSWstuff.h"
 
 #include "ModalPopups.h"
 

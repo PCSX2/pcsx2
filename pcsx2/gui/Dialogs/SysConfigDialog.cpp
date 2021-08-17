@@ -15,13 +15,13 @@
 
 #include "PrecompiledHeader.h"
 #include "System.h"
-#include "App.h"
+#include "gui/App.h"
 
 #include "ConfigurationDialog.h"
 #include "BaseConfigurationDialog.inl"
 #include "ModalPopups.h"
-#include "Panels/ConfigurationPanels.h"
-#include "MainFrame.h"
+#include "gui/Panels/ConfigurationPanels.h"
+#include "gui/MainFrame.h"
 
 using namespace Panels;
 using namespace pxSizerFlags;

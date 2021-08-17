@@ -14,7 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "AppConfig.h"
+#include "gui/AppConfig.h"
 #include "Dialogs.h"
 #include <wx/fileconf.h>
 

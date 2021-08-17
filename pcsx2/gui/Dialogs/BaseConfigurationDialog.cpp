@@ -15,12 +15,12 @@
 
 #include "PrecompiledHeader.h"
 #include "System.h"
-#include "App.h"
-#include "MSWstuff.h"
+#include "gui/App.h"
+#include "gui/MSWstuff.h"
 
 #include "ConfigurationDialog.h"
 #include "ModalPopups.h"
-#include "Panels/ConfigurationPanels.h"
+#include "gui/Panels/ConfigurationPanels.h"
 
 #include <wx/artprov.h>
 #include <wx/filepicker.h>

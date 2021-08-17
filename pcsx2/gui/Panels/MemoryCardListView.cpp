@@ -17,7 +17,7 @@
 #include "ConfigurationPanels.h"
 #include "MemoryCardPanels.h"
 
-#include "Dialogs/ConfigurationDialog.h"
+#include "gui/Dialogs/ConfigurationDialog.h"
 
 #include "common/IniInterface.h"
 

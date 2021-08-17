@@ -17,7 +17,6 @@
 #include "IopCommon.h"
 
 #include "Common.h"
-#include "ConsoleLogger.h"
 #include "Sio.h"
 #include "sio_internal.h"
 #ifdef _WIN32

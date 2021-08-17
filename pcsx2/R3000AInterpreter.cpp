@@ -16,7 +16,7 @@
 
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
-#include "App.h" // For host irx injection hack
+#include "gui/App.h" // For host irx injection hack
 
 #include "R5900OpcodeTables.h"
 #include "DebugTools/Breakpoints.h"

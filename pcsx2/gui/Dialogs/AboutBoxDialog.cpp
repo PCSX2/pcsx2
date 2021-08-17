@@ -14,14 +14,14 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "App.h"
-#include "AppCommon.h"
-#include "MSWstuff.h"
+#include "gui/App.h"
+#include "gui/AppCommon.h"
+#include "gui/MSWstuff.h"
 
-#include "Dialogs/ModalPopups.h"
+#include "gui/Dialogs/ModalPopups.h"
 
 #include "common/EmbeddedImage.h"
-#include "Resources/Logo.h"
+#include "gui/Resources/Logo.h"
 
 #include <wx/mstream.h>
 #include <wx/hyperlink.h>

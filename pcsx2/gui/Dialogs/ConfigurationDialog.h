@@ -18,9 +18,9 @@
 #include <wx/wx.h>
 #include <wx/propdlg.h>
 
-#include "AppCommon.h"
-#include "ApplyState.h"
-#include "App.h"
+#include "gui/AppCommon.h"
+#include "gui/ApplyState.h"
+#include "gui/App.h"
 
 namespace Panels
 {

@@ -16,7 +16,7 @@
 #pragma once
 
 #include "common/Pcsx2Defs.h"
-#include "App.h"
+#include "gui/App.h"
 
 #if defined(__unix__) || defined(__APPLE__)
 

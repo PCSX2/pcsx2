@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "AppCommon.h"
+#include "gui/AppCommon.h"
 
 #include <wx/dnd.h>
 #include <wx/listctrl.h>

@@ -18,10 +18,10 @@
 #include "ConfigurationDialog.h"
 #include "BaseConfigurationDialog.inl"
 #include "ModalPopups.h"
-#include "MSWstuff.h"
+#include "gui/MSWstuff.h"
 
-#include "Panels/ConfigurationPanels.h"
-#include "Panels/MemoryCardPanels.h"
+#include "gui/Panels/ConfigurationPanels.h"
+#include "gui/Panels/MemoryCardPanels.h"
 
 using namespace pxSizerFlags;
 
