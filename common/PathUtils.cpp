@@ -70,7 +70,7 @@ wxDirName& wxDirName::MakeAbsolute(const wxString& cwd)
 	return *this;
 }
 
-void wxDirName::Rmdir()
+void wxDirName::Rmdir() const
 {
 	if (!Exists())
 		return;
@@ -78,7 +78,7 @@ void wxDirName::Rmdir()
 	// TODO : Throw exception if operation failed?  Do we care?
 }
 
-bool wxDirName::Mkdir()
+bool wxDirName::Mkdir() const
 {
 // wxWidgets recurses directory creation for us.
 

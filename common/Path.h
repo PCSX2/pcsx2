@@ -166,8 +166,8 @@ public:
 	bool SetCwd() { return wxFileName::SetCwd(); }
 
 	// wxWidgets is missing the const qualifier for this one!  Shame!
-	void Rmdir();
-	bool Mkdir();
+	void Rmdir() const;
+	bool Mkdir() const;
 
 	// ------------------------------------------------------------------------
 
