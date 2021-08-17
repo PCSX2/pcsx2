@@ -91,30 +91,6 @@ bool IsPortable();
 
 extern InstallationModeType	InstallationMode;
 
-enum AspectRatioType
-{
-	AspectRatio_Stretch,
-	AspectRatio_4_3,
-	AspectRatio_16_9,
-	AspectRatio_MaxCount
-};
-
-enum FMVAspectRatioSwitchType
-{
-	FMV_AspectRatio_Switch_Off,
-	FMV_AspectRatio_Switch_4_3,
-	FMV_AspectRatio_Switch_16_9,
-	FMV_AspectRatio_Switch_MaxCount
-};
-
-enum MemoryCardType
-{
-	MemoryCard_None,
-	MemoryCard_File,
-	MemoryCard_Folder,
-	MemoryCard_MaxCount
-};
-
 // =====================================================================================================
 //  Pcsx2 Application Configuration. 
 // =====================================================================================================
