@@ -863,7 +863,14 @@ namespace R3000A
 
 		void RegisterIntrHandler_DEBUG()
 		{
-			DevCon.WriteLn(Color_Gray, "RegisterIntrHandler: intr %s, handler %x", intrname[a0], a2);
+			if(a0 < std::size(intrname) - 1)
+			{
+				DevCon.WriteLn(Color_Gray, "RegisterIntrHandler: intr %s, handler %x", intrname[a0], a2);
+			}
+			else
+			{
+				DevCon.WriteLn(Color_Gray, "RegisterIntrHandler: intr UNKNOWN (%d), handler %x",a0,a2);
+			}
 		}
 	} // namespace intrman
 
