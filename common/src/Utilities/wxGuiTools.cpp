@@ -19,6 +19,7 @@
 
 #include <wx/app.h>
 #include <wx/window.h>
+#include <wx/display.h>
 
 const pxAlignmentType
     pxCentre = {pxAlignmentType::Center}, // Horizontal centered alignment
@@ -199,8 +200,17 @@ bool pxIsValidWindowPosition(const wxWindow &window, const wxPoint &windowPos)
     // all we need visible for the user to be able to drag the window into view.  But
     // there's no way to get that info from wx, so we'll just have to guesstimate...
 
-    wxSize sizeMatters(window.GetSize().GetWidth(), 32); // if some gui has 32 pixels of undraggable title bar, the user deserves to suffer.
-    return wxGetDisplayArea().Contains(wxRect(windowPos, sizeMatters));
+    const wxSize sizeMatters(window.GetSize().GetWidth(), 32);
+
+    for (unsigned int i = 0; i < wxDisplay::GetCount(); i++)
+    {
+        const auto rect = wxDisplay(i).GetGeometry();
+
+        if (rect.Contains(wxRect(windowPos, sizeMatters)))
+            return true;
+    }
+
+    return false;
 }
 
 // Retrieves the area of the screen, which can be used to enforce a valid zone for
