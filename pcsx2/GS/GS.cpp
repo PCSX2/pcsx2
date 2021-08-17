@@ -23,7 +23,7 @@
 #include "Renderers/OpenGL/GSRendererOGL.h"
 #include "GSLzma.h"
 
-#include "gui/AppCoreThread.h"
+#include "gui/AppConfig.h"    // GetSettingsFolder()
 #include "common/pxStreams.h"
 
 #ifdef _WIN32
