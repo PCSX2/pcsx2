@@ -25,7 +25,7 @@
 #endif
 #include "R3000A.h"
 #include "common/pxStreams.h"
-#include "AppCoreThread.h"
+#include "gui/AppCoreThread.h"
 
 using namespace Threading;
 

@@ -14,7 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "AppConfig.h"
+#include "gui/AppConfig.h"
 #include "SPU2/Global.h"
 #include "Dialogs.h"
 

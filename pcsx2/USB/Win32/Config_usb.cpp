@@ -14,7 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "AppCoreThread.h"
+#include "gui/AppCoreThread.h"
 #include "USB/USB.h"
 #include "resource_usb.h"
 #include "Config_usb.h"

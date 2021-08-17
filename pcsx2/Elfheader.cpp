@@ -19,7 +19,7 @@
 #include "GS.h"			// for sending game crc to mtgs
 #include "Elfheader.h"
 #include "DebugTools/SymbolMap.h"
-#include "AppCoreThread.h"
+#include "gui/AppCoreThread.h"
 
 u32 ElfCRC;
 u32 ElfEntry;

@@ -14,20 +14,20 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "App.h"
-#include "AppCommon.h"
-#include "MSWstuff.h"
+#include "gui/App.h"
+#include "gui/AppCommon.h"
+#include "gui/MSWstuff.h"
 
-#include "Dialogs/ModalPopups.h"
+#include "gui/Dialogs/ModalPopups.h"
 
 
 #include "common/EmbeddedImage.h"
-#include "Resources/NoIcon.h"
+#include "gui/Resources/NoIcon.h"
 #include "GS.h"
 
 #include "PathDefs.h"
-#include "AppConfig.h"
-#include "GSFrame.h"
+#include "gui/AppConfig.h"
+#include "gui/GSFrame.h"
 #include "Counters.h"
 
 #include <wx/mstream.h>

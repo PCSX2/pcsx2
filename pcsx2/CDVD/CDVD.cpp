@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
-#include "AppConfig.h"
+#include "gui/AppConfig.h"
 
 #include <memory>
 #include <ctype.h>

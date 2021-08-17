@@ -1515,9 +1515,8 @@ endforeach()
 # additonal include directories
 target_include_directories(PCSX2 PRIVATE
 	.
-	gui
 	x86
-	${CMAKE_BINARY_DIR}/pcsx2/gui
+	${CMAKE_BINARY_DIR}/pcsx2
 	${CMAKE_BINARY_DIR}/common/include/
 	"${CMAKE_SOURCE_DIR}/3rdparty/jpgd/"
 	"${CMAKE_SOURCE_DIR}/3rdparty/xbyak/"

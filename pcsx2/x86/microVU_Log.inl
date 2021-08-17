@@ -46,7 +46,7 @@ _mVUt void __mVULog(const char* fmt, ...)
 		} \
 	}
 
-#include "AppConfig.h"
+#include "gui/AppConfig.h"
 
 void __mVUdumpProgram(microVU& mVU, microProgram& prog)
 {

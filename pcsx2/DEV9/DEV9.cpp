@@ -36,7 +36,7 @@
 #include "DEV9.h"
 #undef EXTERN
 #include "Config.h"
-#include "AppConfig.h"
+#include "gui/AppConfig.h"
 #include "smap.h"
 
 

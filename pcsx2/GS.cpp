@@ -21,7 +21,7 @@
 #include "GS.h"
 #include "Gif_Unit.h"
 #include "Counters.h"
-#include "GSFrame.h"
+#include "gui/GSFrame.h"
 
 using namespace Threading;
 using namespace R5900;

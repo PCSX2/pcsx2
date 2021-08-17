@@ -14,9 +14,9 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "App.h"
+#include "gui/App.h"
 #include "ModalPopups.h"
-#include "MSWstuff.h"
+#include "gui/MSWstuff.h"
 
 using namespace pxSizerFlags;
 

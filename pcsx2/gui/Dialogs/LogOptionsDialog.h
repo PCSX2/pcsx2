@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "App.h"
+#include "gui/App.h"
 #include "ConfigurationDialog.h"
 
 #include "common/wxGuiTools.h"

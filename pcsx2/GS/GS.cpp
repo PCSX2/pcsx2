@@ -23,7 +23,7 @@
 #include "Renderers/OpenGL/GSRendererOGL.h"
 #include "GSLzma.h"
 
-#include "AppCoreThread.h"
+#include "gui/AppCoreThread.h"
 #include "common/pxStreams.h"
 
 #ifdef _WIN32

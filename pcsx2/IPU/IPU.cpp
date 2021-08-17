@@ -22,7 +22,7 @@
 #include "mpeg2lib/Mpeg.h"
 
 #include <limits.h>
-#include "AppConfig.h"
+#include "gui/AppConfig.h"
 
 #include "common/MemsetFast.inl"
 

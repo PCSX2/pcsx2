@@ -19,7 +19,7 @@
 #include <time.h>
 #include <cmath>
 
-#include "App.h"
+#include "gui/App.h"
 #include "Common.h"
 #include "R3000A.h"
 #include "Counters.h"

@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include "AppCommon.h"
-#include "ApplyState.h"
+#include "gui/AppCommon.h"
+#include "gui/ApplyState.h"
 #include <memory>
 
 namespace Panels

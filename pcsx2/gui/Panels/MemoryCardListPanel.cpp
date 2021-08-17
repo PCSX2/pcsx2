@@ -14,14 +14,14 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "AppCoreThread.h"
+#include "gui/AppCoreThread.h"
 #include "System.h"
-#include "MemoryCardFile.h"
+#include "gui/MemoryCardFile.h"
 
 #include "ConfigurationPanels.h"
 #include "MemoryCardPanels.h"
 
-#include "Dialogs/ConfigurationDialog.h"
+#include "gui/Dialogs/ConfigurationDialog.h"
 #include "common/IniInterface.h"
 #include "Sio.h"
 

@@ -17,6 +17,14 @@
 
 #include "InputRecordingLogger.h"
 
+#include "DebugTools/Debug.h"
+#include "common/Console.h"
+#include "GS.h"				// GSosdlog
+#include "gui/App.h"	// GetRGBA
+#include "gui/ConsoleLogger.h"
+
+#include <fmt/core.h>
+
 namespace inputRec
 {
 	void log(const std::string& log)

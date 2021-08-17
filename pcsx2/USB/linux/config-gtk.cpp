@@ -20,7 +20,7 @@
 #include <map>
 #include <vector>
 #include <string>
-#include "AppCoreThread.h"
+#include "gui/AppCoreThread.h"
 #include "USB/gtk.h"
 
 #include "USB/configuration.h"

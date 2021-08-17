@@ -17,10 +17,10 @@
 #include "ConfigurationDialog.h"
 #include "System.h"
 
-#include "MSWstuff.h"
+#include "gui/MSWstuff.h"
 
-#include "MemoryCardFile.h"
-#include "MemoryCardFolder.h"
+#include "gui/MemoryCardFile.h"
+#include "gui/MemoryCardFolder.h"
 #include <wx/ffile.h>
 
 enum MemoryCardConversionType {

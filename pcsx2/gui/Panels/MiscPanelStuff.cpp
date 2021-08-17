@@ -14,10 +14,10 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "App.h"
+#include "gui/App.h"
 #include "ConfigurationPanels.h"
 
-#include "Dialogs/ConfigurationDialog.h"
+#include "gui/Dialogs/ConfigurationDialog.h"
 
 #include "ps2/BiosTools.h"
 

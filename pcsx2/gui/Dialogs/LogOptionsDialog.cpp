@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "LogOptionsDialog.h"
-#include "Panels/LogOptionsPanels.h"
+#include "gui/Panels/LogOptionsPanels.h"
 
 #include <wx/statline.h>
 

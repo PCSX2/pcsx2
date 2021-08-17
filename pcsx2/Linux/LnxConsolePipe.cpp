@@ -15,8 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
-#include "App.h"
-#include "ConsoleLogger.h"
+#include "gui/App.h"
+#include "gui/ConsoleLogger.h"
 #include <unistd.h>
 
 using namespace Threading;

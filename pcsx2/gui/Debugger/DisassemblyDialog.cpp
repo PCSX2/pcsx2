@@ -15,8 +15,8 @@
 
 #include "PrecompiledHeader.h"
 
-#include "App.h"
-#include "MainFrame.h"
+#include "gui/App.h"
+#include "gui/MainFrame.h"
 #include "DisassemblyDialog.h"
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"

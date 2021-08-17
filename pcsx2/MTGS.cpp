@@ -23,7 +23,6 @@
 #include "Gif_Unit.h"
 #include "MTVU.h"
 #include "Elfheader.h"
-#include "App.h"
 #include "gui/Dialogs/ModalPopups.h"
 #ifdef _WIN32
 #include "PAD/Windows/PAD.h"

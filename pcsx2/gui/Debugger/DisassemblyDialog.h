@@ -16,7 +16,7 @@
 #pragma once
 #include <wx/wx.h>
 #include <wx/notebook.h>
-#include "App.h"
+#include "gui/App.h"
 
 #include "CtrlDisassemblyView.h"
 #include "CtrlRegisterList.h"

@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include <fstream>
 #include <wx/stdpaths.h>
-#include "AppConfig.h"
+#include "gui/AppConfig.h"
 #include "ChunksCache.h"
 #include "CompressedFileReaderUtils.h"
 #include "GzippedFileReader.h"

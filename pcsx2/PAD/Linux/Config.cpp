@@ -13,10 +13,10 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "gui/AppConfig.h"
 #include "Global.h"
 #include "Device.h"
 #include "keyboard.h"
-#include "AppConfig.h"
 #ifdef __APPLE__
 #include <Carbon/Carbon.h>
 #endif

@@ -25,19 +25,19 @@
 #include "MSWstuff.h"
 
 #include "common/EmbeddedImage.h"
-#include "Resources/BackgroundLogo.h"
-#include "Resources/ButtonIcon_Camera.h"
+#include "gui/Resources/BackgroundLogo.h"
+#include "gui/Resources/ButtonIcon_Camera.h"
 
-#include "Resources/ConfigIcon_Cpu.h"
-#include "Resources/ConfigIcon_Video.h"
-#include "Resources/ConfigIcon_Speedhacks.h"
-#include "Resources/ConfigIcon_Gamefixes.h"
-#include "Resources/ConfigIcon_Paths.h"
-#include "Resources/ConfigIcon_MemoryCard.h"
+#include "gui/Resources/ConfigIcon_Cpu.h"
+#include "gui/Resources/ConfigIcon_Video.h"
+#include "gui/Resources/ConfigIcon_Speedhacks.h"
+#include "gui/Resources/ConfigIcon_Gamefixes.h"
+#include "gui/Resources/ConfigIcon_Paths.h"
+#include "gui/Resources/ConfigIcon_MemoryCard.h"
 
-#include "Resources/AppIcon16.h"
-#include "Resources/AppIcon32.h"
-#include "Resources/AppIcon64.h"
+#include "gui/Resources/AppIcon16.h"
+#include "gui/Resources/AppIcon32.h"
+#include "gui/Resources/AppIcon64.h"
 
 RecentIsoList::RecentIsoList(int firstIdForMenuItems_or_wxID_ANY)
 {

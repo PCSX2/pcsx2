@@ -13,8 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "gui/AppCoreThread.h"
 #include "Global.h"
-#include "AppCoreThread.h"
 #include "Device.h"
 #include "keyboard.h"
 #include "state_management.h"

@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "ConfigurationPanels.h"
-#include "Dialogs/ModalPopups.h"
+#include "gui/Dialogs/ModalPopups.h"
 
 #include <wx/stdpaths.h>
 #include <wx/file.h>

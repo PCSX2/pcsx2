@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 
-#include "App.h"
+#include "gui/App.h"
 #include "SaveState.h"
 #include "ThreadedZipTools.h"
 #include "common/SafeArray.inl"

@@ -68,7 +68,7 @@
 // need a full recompile anyway, when modified (etc)
 
 #include "common/Pcsx2Defs.h"
-#include "i18n.h"
+#include "gui/i18n.h"
 
 #include "common/wxBaseTools.h"
 #include "common/Path.h"

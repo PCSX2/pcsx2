@@ -35,7 +35,7 @@
 #include "IopCommon.h"
 #include "iCore.h"
 
-#include "AppConfig.h"
+#include "gui/AppConfig.h"
 
 #include "common/Perf.h"
 #include "DebugTools/Breakpoints.h"

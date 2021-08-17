@@ -22,7 +22,7 @@
 #include "IPU/IPU.h"
 #include "DebugTools/SymbolMap.h"
 
-#include "AppConfig.h"
+#include "gui/AppConfig.h"
 #include "Utilities/AsciiFile.h"
 
 using namespace R5900;

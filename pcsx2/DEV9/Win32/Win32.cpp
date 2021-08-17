@@ -29,7 +29,7 @@
 #include "DEV9/net.h"
 #include "DEV9/PacketReader\IP\IP_Address.h"
 #include "tap.h"
-#include "AppCoreThread.h"
+#include "gui/AppCoreThread.h"
 
 #include "DEV9/ATA/HddCreate.h"
 
