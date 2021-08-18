@@ -29,6 +29,7 @@
 #include "PAD.h"
 
 #include <Shlwapi.h>
+#include "MSWstuff.h"
 
 // Needed to know if raw input is available.  It requires XP or higher.
 #include "PADRawInput.h"
@@ -1721,13 +1722,14 @@ INT_PTR CALLBACK DialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, LPARAM l
 	{
 		case WM_INITDIALOG:
 		{
+			float scale = MSW_GetDPIScale(); // 1.0 for non-Windows
 			ListView_SetExtendedListViewStyleEx(hWndList, LVS_EX_DOUBLEBUFFER, LVS_EX_DOUBLEBUFFER);
 			LVCOLUMN c;
 			c.mask = LVCF_TEXT | LVCF_WIDTH;
-			c.cx = 90;
+			c.cx = (int)(90 * scale);
 			c.pszText = L"Device";
 			ListView_InsertColumn(hWndList, 0, &c);
-			c.cx = 70;
+			c.cx = (int)(100 * scale);
 			c.pszText = L"PC Control";
 			ListView_InsertColumn(hWndList, 1, &c);
 			c.pszText = L"PS2 Control";
@@ -2642,12 +2644,13 @@ INT_PTR CALLBACK GeneralDialogProc(HWND hWnd, unsigned int msg, WPARAM wParam, L
 			HWND hWndCombo = GetDlgItem(hWnd, IDC_PAD_TYPE);
 			if (SendMessage(hWndCombo, CB_GETCOUNT, 0, 0) == 0)
 			{
+				float scale = MSW_GetDPIScale(); // 1.0 for non-Windows
 				LVCOLUMN c;
 				c.mask = LVCF_TEXT | LVCF_WIDTH;
-				c.cx = 50;
+				c.cx = (int)(50 * scale);
 				c.pszText = L"Pad";
 				ListView_InsertColumn(hWndList, 0, &c);
-				c.cx = 120;
+				c.cx = (int)(140 * scale);
 				c.pszText = L"Type";
 				ListView_InsertColumn(hWndList, 1, &c);
 				c.pszText = L"Bindings";
