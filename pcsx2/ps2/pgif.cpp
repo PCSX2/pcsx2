@@ -234,8 +234,7 @@ void handleGp1Command(u32 cmd)
 {
 	//Check GP1() command and configure PGIF accordingly.
 	//Commands 0x00 - 0x01 are partially handled in ps1drv, we should just clear fifo.
-	u32 cmdNr = ((cmd >> 24) & 0xFF) & 0x3F;
-	u32 param = 0;
+	const u32 cmdNr = ((cmd >> 24) & 0xFF) & 0x3F;
 	switch (cmdNr)
 	{
 		case 0:
@@ -613,7 +612,7 @@ void drainPgpuDmaNrToGpu()
 
 void drainPgpuDmaNrToIop()
 {
-	u32 data;
+	u32 data = 0;
 	if (!dma.state.to_iop_active || rb_gp0.count <= 0)
 		return;
 

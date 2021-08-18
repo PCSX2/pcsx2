@@ -119,15 +119,6 @@ struct PGPUregisters
 };
 static PGPUregisters& pgpu = (PGPUregisters&)eeHw[0xf300];
 
-static struct Regs_t
-{
-	struct pgifRegs_t
-	{
-		//PGifIfStat
-		u32 ctrl;
-	} pgif;
-} hwRegs;
-
 //Internal dma flags:
 static struct dma_t
 {
@@ -260,7 +251,6 @@ struct ringBuf_t
 #define pgpuDmaTadr HW_DMA2_TADR
 
 void pgifInit(void);
-void pgifReset(void);
 
 extern void psxGPUw(int, u32);
 extern u32 psxGPUr(int);
