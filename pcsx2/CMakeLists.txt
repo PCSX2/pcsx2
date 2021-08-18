@@ -80,6 +80,7 @@ if(WIN32)
 		USB/usb-pad/dx/versionproxy.rc
 		USB/usb-pad/raw/raw-config.rc
 		windows/wxResources.rc
+		windows/PCSX2.manifest
 	)
 	target_compile_definitions(PCSX2 PRIVATE
 		_M_SSE=0x401 # TODO: Multiple ISA
