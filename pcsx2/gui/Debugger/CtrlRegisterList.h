@@ -78,7 +78,6 @@ private:
 	int rowHeight, charWidth;
 	u32 lastPc;
 	int category;
-	int maxBits;
 	bool resolvePointerStrings;
 	bool displayVU0FAsFloat;
 };
