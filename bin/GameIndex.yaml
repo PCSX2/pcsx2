@@ -9027,6 +9027,8 @@ SLES-51134:
   name: "Powerpuff Girls - Relish Rampage"
   region: "PAL-M4"
   compat: 5
+  clampModes:
+    eeClampMode: 3  # Fixes hangs in certain locations like building under construction.
 SLES-51141:
   name: "Summoner 2"
   region: "PAL-E"
@@ -34379,6 +34381,8 @@ SLUS-20585:
   name: "Powerpuff Girls, The - Relish Rampage"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    eeClampMode: 3  # Fixes hangs in certain locations like building under construction.
 SLUS-20586:
   name: "IHRA Drag Racing 2"
   region: "NTSC-U"
