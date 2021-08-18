@@ -24,13 +24,13 @@
 // Returns 0 on failure (not supported by the operating system).
 u64 GetPhysicalMemory()
 {
-    u64 pages = 0;
+	u64 pages = 0;
 
 #ifdef _SC_PHYS_PAGES
-    pages = sysconf(_SC_PHYS_PAGES);
+	pages = sysconf(_SC_PHYS_PAGES);
 #endif
 
-    return pages * getpagesize();
+	return pages * getpagesize();
 }
 
 
@@ -40,22 +40,22 @@ void InitCPUTicks()
 
 u64 GetTickFrequency()
 {
-    return 1000000; // unix measures in microseconds
+	return 1000000; // unix measures in microseconds
 }
 
 u64 GetCPUTicks()
 {
-    struct timeval t;
-    gettimeofday(&t, NULL);
-    return ((u64)t.tv_sec * GetTickFrequency()) + t.tv_usec;
+	struct timeval t;
+	gettimeofday(&t, NULL);
+	return ((u64)t.tv_sec * GetTickFrequency()) + t.tv_usec;
 }
 
 wxString GetOSVersionString()
 {
-    return wxGetLinuxDistributionInfo().Description;
+	return wxGetLinuxDistributionInfo().Description;
 }
 
 void ScreensaverAllow(bool allow)
 {
-    // no-op
+	// no-op
 }
