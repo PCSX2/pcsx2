@@ -6815,6 +6815,12 @@ SLED-53723:
   region: "PAL-E"
   gameFixes:
     - VUKickstartHack # Fixes bad polygons on characters.
+SLED-53732:
+  name: "Spartan: Total Warrior [Demo]"
+  region: "PAL"
+  gameFixes:
+    - VUKickstartHack # Fixes Character SPS.
+    - EETimingHack # Fixes garbage textures flashing on the character model 
 SLED-53745:
   name: "Total Overdose [Demo]"
   region: "PAL-M5"
@@ -13353,11 +13359,13 @@ SLES-53393:
   compat: 5
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
+    - EETimingHack # Fixes garbage textures flashing on the character model
 SLES-53396:
   name: "Spartan Total Warrior"
   region: "PAL-M3"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
+    - EETimingHack # Fixes garbage textures flashing on the character model
 SLES-53398:
   name: "Zombie Zone"
   region: "PAL-E"
@@ -25491,6 +25499,7 @@ SLPM-66444:
   region: "NTSC-J"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
+    - EETimingHack # Fixes garbage textures flashing on the character model 
 SLPM-66445:
   name: "Persona 3"
   region: "NTSC-J"
@@ -37098,6 +37107,7 @@ SLUS-21212:
   compat: 5
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
+    - EETimingHack # Fixes garbage textures flashing on the character model
 SLUS-21213:
   name: "Madden NFL '06"
   region: "NTSC-U"
