@@ -1295,10 +1295,10 @@ public:
 
 	__forceinline static void UnpackAndWriteBlock8H(const uint8* RESTRICT src, int srcpitch, uint8* RESTRICT dst)
 	{
-		GSVector4i v4, v5, v6, v7;
 
 #if _M_SSE >= 0x501
 
+		GSVector4i v4, v5, v6, v7;
 		GSVector8i v0, v1, v2, v3;
 		GSVector8i mask = GSVector8i::xff000000();
 
@@ -1342,7 +1342,7 @@ public:
 
 #elif _M_SSE >= 0x301
 
-		GSVector4i v0, v1, v2, v3;
+		GSVector4i v0, v1, v2, v3, v4;
 		GSVector4i mask = GSVector4i::xff000000();
 		GSVector4i mask0 = m_uw8hmask0;
 		GSVector4i mask1 = m_uw8hmask1;
@@ -1379,10 +1379,9 @@ public:
 					s[i] = (columnTable32[j][i * 2] & 0x0f) | (columnTable32[j][i * 2 + 1] << 4);
 		}
 
-		GSVector4i v4, v5, v6;
-
 #if _M_SSE >= 0x501
 
+		GSVector4i v4, v5, v6;
 		GSVector8i v0, v1, v2, v3;
 		GSVector8i mask(0x0f000000);
 
@@ -1426,7 +1425,7 @@ public:
 
 #elif _M_SSE >= 0x301
 
-		GSVector4i v0, v1, v2, v3;
+		GSVector4i v0, v1, v2, v3, v4, v5;
 		GSVector4i mask = GSVector4i(0x0f000000);
 		GSVector4i mask0 = m_uw8hmask0;
 		GSVector4i mask1 = m_uw8hmask1;
@@ -1466,10 +1465,10 @@ public:
 
 	__forceinline static void UnpackAndWriteBlock4HH(const uint8* RESTRICT src, int srcpitch, uint8* RESTRICT dst)
 	{
-		GSVector4i v4, v5, v6;
 
 #if _M_SSE >= 0x501
 
+		GSVector4i v4, v5, v6;
 		GSVector8i v0, v1, v2, v3;
 		GSVector8i mask = GSVector8i::xf0000000();
 
@@ -1513,7 +1512,7 @@ public:
 
 #elif _M_SSE >= 0x301
 
-		GSVector4i v0, v1, v2, v3;
+		GSVector4i v0, v1, v2, v3, v4, v5;
 		GSVector4i mask = GSVector4i::xf0000000();
 		GSVector4i mask0 = m_uw8hmask0;
 		GSVector4i mask1 = m_uw8hmask1;
