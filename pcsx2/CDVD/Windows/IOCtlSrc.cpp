@@ -29,8 +29,8 @@
 #include <cstdlib>
 #include <stdexcept>
 
-IOCtlSrc::IOCtlSrc(decltype(m_filename) filename)
-	: m_filename(filename)
+IOCtlSrc::IOCtlSrc(std::string filename)
+	: m_filename(std::move(filename))
 {
 	if (!Reopen())
 		throw std::runtime_error(" * CDVD: Error opening source.\n");
@@ -53,7 +53,7 @@ bool IOCtlSrc::Reopen()
 		CloseHandle(m_device);
 
 	// SPTI only works if the device is opened with GENERIC_WRITE access.
-	m_device = CreateFile(m_filename.c_str(), GENERIC_READ | GENERIC_WRITE,
+	m_device = CreateFileA(m_filename.c_str(), GENERIC_READ | GENERIC_WRITE,
 						  FILE_SHARE_READ, nullptr, OPEN_EXISTING,
 						  FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
 	if (m_device == INVALID_HANDLE_VALUE)

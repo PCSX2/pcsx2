@@ -52,13 +52,13 @@ class IOCtlSrc
 	IOCtlSrc(const IOCtlSrc&) = delete;
 	IOCtlSrc& operator=(const IOCtlSrc&) = delete;
 
+	std::string m_filename;
+
 #if defined(_WIN32)
 	HANDLE m_device = INVALID_HANDLE_VALUE;
-	std::wstring m_filename;
 	mutable std::mutex m_lock;
 #else
 	int m_device = -1;
-	std::string m_filename;
 #endif
 
 	s32 m_media_type = 0;
@@ -71,7 +71,7 @@ class IOCtlSrc
 	bool Reopen();
 
 public:
-	IOCtlSrc(decltype(m_filename) filename);
+	IOCtlSrc(std::string filename);
 	~IOCtlSrc();
 
 	u32 GetSectorCount() const;
@@ -86,13 +86,8 @@ public:
 
 extern std::unique_ptr<IOCtlSrc> src;
 
-#if defined(_WIN32)
-std::vector<std::wstring> GetOpticalDriveList();
-void GetValidDrive(std::wstring& drive);
-#else
 std::vector<std::string> GetOpticalDriveList();
 void GetValidDrive(std::string& drive);
-#endif
 
 extern bool disc_has_changed;
 extern bool weAreInNewDiskCB;
