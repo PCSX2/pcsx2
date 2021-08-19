@@ -20,7 +20,6 @@
 #include "Counters.h"
 #include "DebugTools/Debug.h"
 #include "MemoryTypes.h"
-#include "gui/App.h"
 #include "gui/MainFrame.h"
 
 #include "InputRecording.h"
@@ -68,24 +67,24 @@ void InputRecordingControls::HandlePausingAndLocking()
 			frameLock = false;
 			Resume();
 		}
-		else if (!emulationCurrentlyPaused && CoreThread.IsOpen() && CoreThread.IsRunning())
+		else if (!emulationCurrentlyPaused && GetCoreThread().IsOpen() && GetCoreThread().IsRunning())
 		{
 			emulationCurrentlyPaused = true;
-			CoreThread.PauseSelf();
+			GetCoreThread().PauseSelf();
 		}
 	}
-	else if (pauseEmulation && CoreThread.IsOpen() && CoreThread.IsRunning())
+	else if (pauseEmulation && GetCoreThread().IsOpen() && GetCoreThread().IsRunning())
 	{
 		emulationCurrentlyPaused = true;
-		CoreThread.PauseSelf();
+		GetCoreThread().PauseSelf();
 	}
 }
 
 void InputRecordingControls::ResumeCoreThreadIfStarted()
 {
-	if (resumeEmulation && CoreThread.IsOpen())
+	if (resumeEmulation && GetCoreThread().IsOpen())
 	{
-		CoreThread.Resume();
+		GetCoreThread().Resume();
 		resumeEmulation = false;
 		emulationCurrentlyPaused = false;
 	}
@@ -115,7 +114,7 @@ bool InputRecordingControls::IsFrameAdvancing()
 
 bool InputRecordingControls::IsPaused()
 {
-	return emulationCurrentlyPaused && CoreThread.IsOpen() && CoreThread.IsPaused();
+	return emulationCurrentlyPaused && GetCoreThread().IsOpen() && GetCoreThread().IsPaused();
 }
 
 void InputRecordingControls::Pause()
@@ -126,13 +125,13 @@ void InputRecordingControls::Pause()
 
 void InputRecordingControls::PauseImmediately()
 {
-	if (!CoreThread.IsPaused())
+	if (!GetCoreThread().IsPaused())
 	{
 		Pause();
-		if (CoreThread.IsOpen() && CoreThread.IsRunning())
+		if (GetCoreThread().IsOpen() && GetCoreThread().IsRunning())
 		{
 			emulationCurrentlyPaused = true;
-			CoreThread.PauseSelf();
+			GetCoreThread().PauseSelf();
 		}
 	}
 }
@@ -150,13 +149,13 @@ void InputRecordingControls::Resume()
 
 void InputRecordingControls::ResumeImmediately()
 {
-	if (CoreThread.IsPaused())
+	if (GetCoreThread().IsPaused())
 	{
 		Resume();
-		if (CoreThread.IsRunning())
+		if (GetCoreThread().IsRunning())
 		{
 			emulationCurrentlyPaused = false;
-			CoreThread.Resume();
+			GetCoreThread().Resume();
 		}
 	}
 }

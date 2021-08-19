@@ -469,7 +469,7 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 				switch (m_vm->HasActiveMachine())
 				{
 					case true:
-						if (CoreThread.IsClosing())
+						if (GetCoreThread().IsClosing())
 							status = Paused;
 						else
 							status = Running;
