@@ -37710,6 +37710,15 @@ SLUS-21355:
   name: "Midnight Club 3 - DUB Edition Remix"
   region: "NTSC-U"
   compat: 5
+  patches:
+    60A42FF5:
+      content: |-
+        comment=Patch by Refraction
+        // Patches a CTC2 write to FBRST to not set the T-Bit enable
+        // Fixes slow speed in MTVU due to developers leaving T-Bit enabled and not using it
+        // PCSX2 has to sync more when T-Bit is enabled so the game spends more time waiting
+        // for VU1 to finish, which reduces the advantage of MTVU to basically zero.
+        patch=0,EE,0052907C,word,00000000
 SLUS-21356:
   name: "Tom Clancy's Splinter Cell - Double Agent"
   region: "NTSC-U"
