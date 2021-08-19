@@ -3,8 +3,8 @@
 set -e
 
 if [ "${COMPILER}" = "gcc" ]; then
-  export CC=gcc
-  export CXX=g++
+  export CC=gcc-8
+  export CXX=g++-8
 else
   export CC=clang
   export CXX=clang++
