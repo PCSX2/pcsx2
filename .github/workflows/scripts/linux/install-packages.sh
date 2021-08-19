@@ -111,41 +111,24 @@ fi
 sudo apt-get -qq update
 
 # Install packages needed for building
-BUILD_PACKAGE_STR=""
-for i in "${BUILD_PACKAGES[@]}"; do
-  BUILD_PACKAGE_STR="${BUILD_PACKAGE_STR} ${i}"
-done
-
 if [ "${COMPILER}" = "gcc" ]; then
-  for i in "${GCC_PACKAGES[@]}"; do
-    BUILD_PACKAGE_STR="${BUILD_PACKAGE_STR} ${i}"
-  done
+  BUILD_PACKAGES+=("${GCC_PACKAGES[@]}")
 else
-  for i in "${CLANG_PACKAGES[@]}"; do
-    BUILD_PACKAGE_STR="${BUILD_PACKAGE_STR} ${i}"
-  done
+  BUILD_PACKAGES+=("${CLANG_PACKAGES[@]}")
 fi
 
-echo "Will install the following packages for building - ${BUILD_PACKAGE_STR}"
+echo "Will install the following packages for building - ${BUILD_PACKAGES[*]}"
 #sudo apt remove gcc-9 g++-9
-sudo apt-get -y install ${BUILD_PACKAGE_STR}
-
-sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10
-sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-8 10
-sudo update-alternatives --install /usr/bin/cc cc /usr/bin/gcc 30
-sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/g++ 30
+sudo apt-get -y install "${BUILD_PACKAGES[@]}"
 
 # Install packages needed by pcsx2
-PCSX2_PACKAGES_STR=""
-for i in "${PCSX2_PACKAGES[@]}"; do
-  PCSX2_PACKAGES_STR="${PCSX2_PACKAGES_STR} ${i}${ARCH}"
-done
+PCSX2_PACKAGES=("${PCSX2_PACKAGES[@]/%/"${ARCH}"}")
 if [ "${PLATFORM}" == "x86" ]; then
 echo "Installing workaround attempt"
 sudo apt-get -y install libgcc-s1:i386
 fi
-echo "Will install the following packages for pcsx2 - ${PCSX2_PACKAGES_STR}"
-sudo apt-get -y install ${PCSX2_PACKAGES_STR}
+echo "Will install the following packages for pcsx2 - ${PCSX2_PACKAGES[*]}"
+sudo apt-get -y install "${PCSX2_PACKAGES[@]}"
 
 cd /tmp
 curl -sSfLO https://github.com/NixOS/patchelf/releases/download/0.12/patchelf-0.12.tar.bz2        
