@@ -542,9 +542,9 @@ TraceLogFilters&				SetTraceConfig();
 
 #define THREAD_VU1					(EmuConfig.Cpu.Recompiler.EnableVU1 && EmuConfig.Speedhacks.vuThread)
 #define INSTANT_VU1					(EmuConfig.Speedhacks.vu1Instant)
-#define CHECK_EEREC					(EmuConfig.Cpu.Recompiler.EnableEE && GetCpuProviders().IsRecAvailable_EE())
+#define CHECK_EEREC					(EmuConfig.Cpu.Recompiler.EnableEE)
 #define CHECK_CACHE					(EmuConfig.Cpu.Recompiler.EnableEECache)
-#define CHECK_IOPREC				(EmuConfig.Cpu.Recompiler.EnableIOP && GetCpuProviders().IsRecAvailable_IOP())
+#define CHECK_IOPREC				(EmuConfig.Cpu.Recompiler.EnableIOP)
 
 //------------ SPECIAL GAME FIXES!!! ---------------
 #define CHECK_VUADDSUBHACK			(EmuConfig.Gamefixes.VuAddSubHack)	 // Special Fix for Tri-ace games, they use an encryption algorithm that requires VU addi opcode to be bit-accurate.

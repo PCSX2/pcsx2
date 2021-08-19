@@ -1100,16 +1100,6 @@ SysMainMemory& GetVmMemory()
 	return wxGetApp().GetVmReserve();
 }
 
-SysCoreThread& GetCoreThread()
-{
-	return CoreThread;
-}
-
-SysMtgsThread& GetMTGS()
-{
-	return mtgsThread;
-}
-
 SysCpuProviderPack& GetCpuProviders()
 {
 	return *wxGetApp().m_CpuProviders;
