@@ -1280,10 +1280,6 @@ foreach(res_file IN ITEMS
 	add_custom_command(OUTPUT "${res_rec_vp_src}/${res_file}.h" COMMAND ${BIN2CPP} "${res_rec_vp_src}/${res_file}.png" "${res_rec_vp_src}/${res_file}" )
 endforeach()
 
-if(USE_VTUNE)
-	target_link_libraries(PCSX2 PRIVATE Vtune::Vtune)
-endif()
-
 # additonal include directories
 target_include_directories(PCSX2 PRIVATE
 	.
