@@ -159,9 +159,6 @@
     <ClInclude Include="..\..\include\Utilities\MathUtils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Utilities\MakeUnique.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\Utilities\MemcpyFast.h">
       <Filter>Header Files</Filter>
     </ClInclude>
