@@ -98,6 +98,10 @@ else()
 	)
 endif()
 
+if(USE_VTUNE)
+	target_link_libraries(Utilities PUBLIC Vtune::Vtune)
+endif()
+
 target_link_libraries(Utilities PRIVATE ${LIBC_LIBRARIES} PUBLIC wxWidgets::all)
 target_compile_features(Utilities PUBLIC cxx_std_17)
 target_include_directories(Utilities PUBLIC ../../../3rdparty/include ../../include PRIVATE ../../include/Utilities .)
