@@ -22673,6 +22673,8 @@ SLPM-65525:
 SLPM-65526:
   name: "Dororo"
   region: "NTSC-J"
+  gameFixes:
+    - VUKickstartHack # Fixes main character model SPS.
 SLPM-65527:
   name: "FIFA Total Football"
   region: "NTSC-J"
