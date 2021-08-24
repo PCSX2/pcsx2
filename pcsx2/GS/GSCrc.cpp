@@ -43,7 +43,6 @@ CRC::Game CRC::m_games[] =
 	{0xEE97DB5B, FFX, RU, 0},
 	{0xAEC495CC, FFX, RU, 0},
 	{0xBB3D833A, FFX, US, 0},
-	{0xF0800C1E, FFX, US, 0}, // Prototype/Beta
 	{0x6A4EFE60, FFX, JP, 0},
 	{0x3866CA7E, FFX, ASIA, 0}, // int.
 	{0x658597E2, FFX, JP, 0}, // int.
@@ -104,7 +103,6 @@ CRC::Game CRC::m_games[] =
 	{0xB01A4C95, ICO, JP, 0},
 	{0x2DF2C1EA, ICO, KO, 0},
 	{0x5C991F4E, ICO, EU, 0},
-	{0x3DCE2229, ICO, RU, 0}, // Unofficial RU-version
 	{0x788D8B4F, ICO, EU, 0},
 	{0x29C28734, ICO, CH, 0},
 	{0x60013EBD, GTConcept, EU, 0},
@@ -261,7 +259,6 @@ CRC::Game CRC::m_games[] =
 	{0x37CD4279, LordOfTheRingsThirdAge, KO, 0},
 	{0xE169BAF8, RedDeadRevolver, US, 0},
 	{0xE2E67E23, RedDeadRevolver, EU, 0},
-	{0x87844524, RedDeadRevolver, RU, 0}, // Unofficial RU-version
 	{0xCBB87BF9, EvangelionJo, JP, 0}, // cutie comment
 	{0xC5B75C7C, Oneechanbara2Special, JP, 0}, // cutie comment
 	{0xC725CC6C, Oneechanbara2Special, JP, 0},
@@ -277,7 +274,6 @@ CRC::Game CRC::m_games[] =
 	{0x36393CD3, ShadowofRome, JP, 0},
 	{0x694A998E, TombRaiderUnderworld, JP, 0}, // cutie comment
 	{0x8E214549, TombRaiderUnderworld, EU, 0},
-	{0x8E265148, TombRaiderUnderworld, RU, 0}, // Unofficial RU-version
 	{0x618769D6, TombRaiderUnderworld, US, 0},
 	{0xB639EB17, TombRaiderAnniversary, US, 0}, // Also needed for automatic mipmapping
 	{0xB05805B6, TombRaiderAnniversary, JP, 0}, // cutie comment
@@ -455,10 +451,8 @@ CRC::Game CRC::m_games[] =
 	{0x6F991F52, SoulReaver2, JP, 0},
 	{0x1B7FF35A, SoulReaver2, KO, 0},
 	{0x6D8B4CD1, SoulReaver2, EU, 0},
-	{0x60F56E8F, SoulReaver2, RU, 0}, // Unofficial RU-version
 	{0x728AB07C, LegacyOfKainDefiance, US, 0},
 	{0xBCAD1E8A, LegacyOfKainDefiance, EU, 0},
-	{0x018AC37C, LegacyOfKainDefiance, RU, 0}, // Unofficial RU-version
 	{0x28D09BF9, NicktoonsUnite, US, 0},
 	{0xF25266C4, NicktoonsUnite, EU, 0}, // Nickelodeon SpongeBob SquarePants And Friends Unite
 	{0x7AE1C04B, Persona3, US, 0}, // Regular Version
