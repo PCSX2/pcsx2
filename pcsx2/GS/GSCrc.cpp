@@ -307,6 +307,7 @@ CRC::Game CRC::m_games[] =
 	{0x1F8640E0, TalesOfLegendia, JP, 0},
 	{0xE4F5DA2B, TalesOfLegendia, KO, 0},
 	{0x519E816B, Kunoichi, US, 0}, // Nightshade
+	{0x160B66C8, Kunoichi, US, 0}, // Undub
 	{0x3FB419FD, Kunoichi, JP, 0},
 	{0x086D198E, Kunoichi, CH, 0},
 	{0x3B470BBD, Kunoichi, EU, 0},
