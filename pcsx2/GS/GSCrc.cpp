@@ -392,6 +392,7 @@ CRC::Game CRC::m_games[] =
 	{0xA2034C69, Jak2, US, TextureInsideRt}, // Demo
 	{0x25FE4D23, Jak2, KO, TextureInsideRt},
 	{0xB4976DAF, Jak2, JP, TextureInsideRt}, // Jak II: Jak x Daxter 2
+	{0x43D4FF3E, Jak2, JP, TextureInsideRt}, // Demo
 	{0x12804727, Jak3, EU, TextureInsideRt},
 	{0xE59E10BF, Jak3, EU, TextureInsideRt},
 	{0xCA68E4D5, Jak3, EU, TextureInsideRt}, // Demo
