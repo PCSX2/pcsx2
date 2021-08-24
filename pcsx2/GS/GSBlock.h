@@ -502,7 +502,7 @@ public:
 		GSVector8i::store<true>(&dst[dstpitch * 0], v0);
 		GSVector8i::store<true>(&dst[dstpitch * 1], v1);
 
-#elif _M_SSE >= 0x301
+#else
 
 		const GSVector4i* s = (const GSVector4i*)src;
 
@@ -1340,7 +1340,7 @@ public:
 		((GSVector8i*)dst)[6] = ((GSVector8i*)dst)[6].blend8(v2, mask);
 		((GSVector8i*)dst)[7] = ((GSVector8i*)dst)[7].blend8(v3, mask);
 
-#elif _M_SSE >= 0x301
+#else
 
 		GSVector4i v0, v1, v2, v3, v4;
 		GSVector4i mask = GSVector4i::xff000000();
@@ -1423,7 +1423,7 @@ public:
 		((GSVector8i*)dst)[6] = ((GSVector8i*)dst)[6].blend(v2, mask);
 		((GSVector8i*)dst)[7] = ((GSVector8i*)dst)[7].blend(v3, mask);
 
-#elif _M_SSE >= 0x301
+#else
 
 		GSVector4i v0, v1, v2, v3, v4, v5;
 		GSVector4i mask = GSVector4i(0x0f000000);
@@ -1510,7 +1510,7 @@ public:
 		((GSVector8i*)dst)[6] = ((GSVector8i*)dst)[6].blend(v2, mask);
 		((GSVector8i*)dst)[7] = ((GSVector8i*)dst)[7].blend(v3, mask);
 
-#elif _M_SSE >= 0x301
+#else
 
 		GSVector4i v0, v1, v2, v3, v4, v5;
 		GSVector4i mask = GSVector4i::xf0000000();

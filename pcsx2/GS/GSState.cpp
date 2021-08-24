@@ -589,20 +589,10 @@ void GSState::GIFPackedRegHandlerNull(const GIFPackedReg* RESTRICT r)
 
 void GSState::GIFPackedRegHandlerRGBA(const GIFPackedReg* RESTRICT r)
 {
-#if _M_SSE >= 0x301
-
 	GSVector4i mask = GSVector4i::load(0x0c080400);
 	GSVector4i v = GSVector4i::load<false>(r).shuffle8(mask);
 
 	m_v.RGBAQ.u32[0] = (uint32)GSVector4i::store(v);
-
-#else
-
-	GSVector4i v = GSVector4i::load<false>(r) & GSVector4i::x000000ff();
-
-	m_v.RGBAQ.u32[0] = v.rgba32();
-
-#endif
 
 	m_v.RGBAQ.Q = m_q;
 }
