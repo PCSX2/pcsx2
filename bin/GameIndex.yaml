@@ -948,6 +948,8 @@ SCAJ-25045:
 SCAJ-25047:
   name: "Dororo"
   region: "NTSC-Unk"
+  gameFixes:
+    - VUKickstartHack # Fixes main character model SPS.
 SCAJ-30001:
   name: "Xenosaga Episode I [PlayStation 2 The Best]"
   region: "NTSC-Unk"
@@ -6590,6 +6592,8 @@ SLAJ-25046:
 SLAJ-25047:
   name: "Dororo"
   region: "NTSC-Ch-J"
+  gameFixes:
+    - VUKickstartHack # Fixes main character model SPS.
 SLAJ-25048:
   name: "Sengoku Musou Mushoden"
   region: "NTSC-Unk"
@@ -18628,6 +18632,8 @@ SLKA-25225:
   name: "Dororo"
   region: "NTSC-K"
   compat: 5
+  gameFixes:
+    - VUKickstartHack # Fixes main character model SPS.
 SLKA-25227:
   name: "Neo Contra"
   region: "NTSC-K"
@@ -24755,6 +24761,8 @@ SLPM-66206:
 SLPM-66207:
   name: "Dororo [Sega the Best 2800]"
   region: "NTSC-J"
+  gameFixes:
+    - VUKickstartHack # Fixes main character model SPS.
 SLPM-66208:
   name: "Sakura Taisen V - Episode 0 - Samurai Girl of Wild [Sega the Best]"
   region: "NTSC-J"
