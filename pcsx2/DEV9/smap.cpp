@@ -315,6 +315,7 @@ void emac3_write(u32 addr)
 			break;
 		default:
 			DevCon.WriteLn("DEV9: SMAP: emac3 write  %x=%x", addr, value);
+			break;
 	}
 	dev9Ru32(addr) = wswap(value);
 }

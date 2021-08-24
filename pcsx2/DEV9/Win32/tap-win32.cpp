@@ -418,7 +418,7 @@ bool TAPGetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, std::un
 				PIP_ADAPTER_ADDRESSES potentialAdapter = FindAdapterViaIndex(AdapterInfoReduced.get(), row.HigherLayerInterfaceIndex);
 				if (potentialAdapter != nullptr)
 				{
-					Console.WriteLn("DEV9: %s is possible bridge (Check 1 passed)", potentialAdapter->Description);
+					Console.WriteLn(L"DEV9: %s is possible bridge (Check 1 passed)", potentialAdapter->Description);
 					potentialBridges.push_back(row.HigherLayerInterfaceIndex);
 				}
 				else

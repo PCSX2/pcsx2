@@ -453,7 +453,7 @@ u16 DEV9read16(u32 addr)
 
 		case SPD_R_REV_2:
 			hard = 0x0011;
-			DevCon.WriteLn("DEV9: STD_R_REV_1 16bit read %x", hard);
+			DevCon.WriteLn("DEV9: STD_R_REV_2 16bit read %x", hard);
 			return hard;
 
 		case SPD_R_REV_3:
@@ -787,7 +787,7 @@ void DEV9write16(u32 addr, u16 value)
 
 			break;
 		case SPD_R_XFR_CTRL:
-			DevCon.WriteLn("DEV9: SPD_R_IF_CTRL 16bit write %x", value);
+			DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL 16bit write %x", value);
 			dev9.xfr_ctrl = value;
 
 			if (value & SPD_XFR_WRITE)
@@ -807,9 +807,7 @@ void DEV9write16(u32 addr, u16 value)
 				DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL For DMA Disabled");
 
 			if ((value & 0b1111111101111000) != 0)
-			{
 				Console.Error("DEV9: SPD_R_XFR_CTRL Unknown value written %x", value);
-			}
 
 			break;
 		case SPD_R_DBUF_STAT:
@@ -817,7 +815,7 @@ void DEV9write16(u32 addr, u16 value)
 
 			if ((value & SPD_DBUF_RESET_FIFO) != 0)
 			{
-				DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL Reset FIFO");
+				DevCon.WriteLn("DEV9: SPD_R_DBUF_STAT Reset FIFO");
 				dev9.fifo_bytes_write = 0;
 				dev9.fifo_bytes_read = 0;
 				dev9.xfr_ctrl &= ~SPD_XFR_WRITE; //?
@@ -827,7 +825,7 @@ void DEV9write16(u32 addr, u16 value)
 			}
 
 			if (value != 3)
-				Console.Error("DEV9: SPD_R_38 16bit write %x Which != 3!!!", value);
+				Console.Error("DEV9: SPD_R_DBUF_STAT 16bit write %x Which != 3!!!", value);
 			break;
 
 		case SPD_R_IF_CTRL:
