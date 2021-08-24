@@ -250,13 +250,12 @@ void emac3_write(u32 addr)
 	switch (addr)
 	{
 		case SMAP_R_EMAC3_MODE0_L:
-			DevCon.WriteLn("DEV9: SMAP: SMAP_R_EMAC3_MODE0 write %x", value);
+			//DevCon.WriteLn("DEV9: SMAP: SMAP_R_EMAC3_MODE0 write %x", value);
 			value = (value & (~SMAP_E3_SOFT_RESET)) | SMAP_E3_TXMAC_IDLE | SMAP_E3_RXMAC_IDLE;
 			dev9Ru16(SMAP_R_EMAC3_STA_CTRL_H) |= SMAP_E3_PHY_OP_COMP;
 			break;
 		case SMAP_R_EMAC3_TxMODE0_L:
-			DevCon.WriteLn("DEV9: SMAP: SMAP_R_EMAC3_TxMODE0_L write %x", value);
-			//spams// emu_printf("SMAP: SMAP_R_EMAC3_TxMODE0_L write %x\n", value);
+			//DevCon.WriteLn("DEV9: SMAP: SMAP_R_EMAC3_TxMODE0_L write %x", value);
 			//Process TX  here ?
 			if (!(value & SMAP_E3_TX_GNP_0))
 				Console.Error("DEV9: SMAP_R_EMAC3_TxMODE0_L: SMAP_E3_TX_GNP_0 not set");
@@ -267,7 +266,7 @@ void emac3_write(u32 addr)
 				Console.Error("DEV9: SMAP_R_EMAC3_TxMODE0_L: extra bits set !");
 			break;
 		case SMAP_R_EMAC3_TxMODE1_L:
-			DevCon.WriteLn("DEV9: SMAP_R_EMAC3_TxMODE1_L 32bit write %x", value);
+			//DevCon.WriteLn("DEV9: SMAP_R_EMAC3_TxMODE1_L 32bit write %x", value);
 			if (value == 0x380f0000)
 			{
 				Console.WriteLn("DEV9: Adapter Detection Hack - Resetting RX/TX");
@@ -275,7 +274,7 @@ void emac3_write(u32 addr)
 			}
 			break;
 		case SMAP_R_EMAC3_STA_CTRL_L:
-			DevCon.WriteLn("DEV9: SMAP: SMAP_R_EMAC3_STA_CTRL write %x", value);
+			//DevCon.WriteLn("DEV9: SMAP: SMAP_R_EMAC3_STA_CTRL write %x", value);
 			{
 				if (value & (SMAP_E3_PHY_READ))
 				{
@@ -293,7 +292,7 @@ void emac3_write(u32 addr)
 								val |= SMAP_PHY_STS_LINK | SMAP_PHY_STS_100M | SMAP_PHY_STS_FDX | SMAP_PHY_STS_ANCP;
 							break;
 					}
-					DevCon.WriteLn("DEV9: phy_read %d: %x", reg, val);
+					//DevCon.WriteLn("DEV9: phy_read %d: %x", reg, val);
 					value = (value & 0xFFFF) | (val << 16);
 				}
 				if (value & (SMAP_E3_PHY_WRITE))
@@ -308,7 +307,7 @@ void emac3_write(u32 addr)
 							val |= 0x1;
 							break;
 					}
-					DevCon.WriteLn("DEV9: phy_write %d: %x", reg, val);
+					//DevCon.WriteLn("DEV9: phy_write %d: %x", reg, val);
 					dev9.phyregs[reg] = val;
 				}
 			}
@@ -524,7 +523,7 @@ u32 smap_read32(u32 addr)
 
 			dev9Ru32(SMAP_R_RXFIFO_RD_PTR) = ((rd_ptr + 4) & 16383);
 
-			DevCon.WriteLn("DEV9: SMAP_R_RXFIFO_DATA 32bit read %x", rv);
+			//DevCon.WriteLn("DEV9: SMAP_R_RXFIFO_DATA 32bit read %x", rv);
 			return rv;
 		}
 		default:
@@ -540,14 +539,14 @@ void smap_write8(u32 addr, u8 value)
 	switch (addr)
 	{
 		case SMAP_R_TXFIFO_FRAME_INC:
-			DevCon.WriteLn("DEV9: SMAP_R_TXFIFO_FRAME_INC 8bit write %x", value);
+			//DevCon.WriteLn("DEV9: SMAP_R_TXFIFO_FRAME_INC 8bit write %x", value);
 			{
 				dev9Ru8(SMAP_R_TXFIFO_FRAME_CNT)++;
 			}
 			return;
 
 		case SMAP_R_RXFIFO_FRAME_DEC:
-			DevCon.WriteLn("DEV9: SMAP_R_RXFIFO_FRAME_DEC 8bit write %x", value);
+			//DevCon.WriteLn("DEV9: SMAP_R_RXFIFO_FRAME_DEC 8bit write %x", value);
 			counter_lock.lock();
 			dev9Ru8(addr) = value;
 			{
@@ -557,7 +556,7 @@ void smap_write8(u32 addr, u8 value)
 			return;
 
 		case SMAP_R_TXFIFO_CTRL:
-			DevCon.WriteLn("DEV9: SMAP_R_TXFIFO_CTRL 8bit write %x", value);
+			//DevCon.WriteLn("DEV9: SMAP_R_TXFIFO_CTRL 8bit write %x", value);
 			if (value & SMAP_TXFIFO_RESET)
 			{
 				dev9.txbdi = 0;
@@ -571,7 +570,7 @@ void smap_write8(u32 addr, u8 value)
 			return;
 
 		case SMAP_R_RXFIFO_CTRL:
-			DevCon.WriteLn("DEV9: SMAP_R_RXFIFO_CTRL 8bit write %x", value);
+			//DevCon.WriteLn("DEV9: SMAP_R_RXFIFO_CTRL 8bit write %x", value);
 			if (value & SMAP_RXFIFO_RESET)
 			{
 				reset_lock.lock(); //lock reset mutex 1st
@@ -675,7 +674,7 @@ void smap_write16(u32 addr, u16 value)
 	switch (addr)
 	{
 		case SMAP_R_INTR_CLR:
-			DevCon.WriteLn("DEV9: SMAP: SMAP_R_INTR_CLR 16bit write %x", value);
+			//DevCon.WriteLn("DEV9: SMAP: SMAP_R_INTR_CLR 16bit write %x", value);
 			dev9.irqcause &= ~value;
 			return;
 
@@ -685,7 +684,7 @@ void smap_write16(u32 addr, u16 value)
 			return;
 #define EMAC3_L_WRITE(name)                                   \
 	case name:                                                \
-		DevCon.WriteLn("DEV9: SMAP: " #name " 16 bit write %x", value); \
+		/* DevCon.WriteLn("DEV9: SMAP: " #name " 16 bit write %x", value);*/ \
 		dev9Ru16(addr) = value;                               \
 		return;
 	// clang-format off
@@ -722,7 +721,7 @@ void smap_write16(u32 addr, u16 value)
 
 #define EMAC3_H_WRITE(name)                                   \
 	case name:                                                \
-		DevCon.WriteLn("DEV9: SMAP: " #name " 16 bit write %x", value); \
+		/* DevCon.WriteLn("DEV9: SMAP: " #name " 16 bit write %x", value);*/ \
 		dev9Ru16(addr) = value;                               \
 		emac3_write(addr - 2);                                \
 		return;
@@ -804,7 +803,7 @@ void smap_write32(u32 addr, u32 value)
 	switch (addr)
 	{
 		case SMAP_R_TXFIFO_DATA:
-			DevCon.WriteLn("DEV9: SMAP_R_TXFIFO_DATA 32bit write %x", value);
+			//DevCon.WriteLn("DEV9: SMAP_R_TXFIFO_DATA 32bit write %x", value);
 			*((u32*)(dev9.txfifo + dev9Ru32(SMAP_R_TXFIFO_WR_PTR))) = value;
 			dev9Ru32(SMAP_R_TXFIFO_WR_PTR) = (dev9Ru32(SMAP_R_TXFIFO_WR_PTR) + 4) & 16383;
 			return;
