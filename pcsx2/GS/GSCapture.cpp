@@ -321,8 +321,6 @@ public:
 			{
 				if (rgba)
 				{
-#if _M_SSE >= 0x301
-
 					GSVector4i* s = (GSVector4i*)src;
 					GSVector4i* d = (GSVector4i*)dst;
 
@@ -332,18 +330,6 @@ public:
 					{
 						d[i] = s[i].shuffle8(mask);
 					}
-
-#else
-
-					GSVector4i* s = (GSVector4i*)src;
-					GSVector4i* d = (GSVector4i*)dst;
-
-					for (int i = 0, w4 = w >> 2; i < w4; i++)
-					{
-						d[i] = ((s[i] & 0x00ff0000) >> 16) | ((s[i] & 0x000000ff) << 16) | (s[i] & 0x0000ff00);
-					}
-
-#endif
 				}
 				else
 				{

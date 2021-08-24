@@ -912,15 +912,10 @@ public:
 	__forceinline GSVector4i modulate16(const GSVector4i& f) const
 	{
 		// a * f << shift
-
-#if _M_SSE >= 0x301
-
 		if (shift == 0)
 		{
 			return mul16hrs(f);
 		}
-
-#endif
 
 		return sll16(shift + 1).mul16hs(f);
 	}
