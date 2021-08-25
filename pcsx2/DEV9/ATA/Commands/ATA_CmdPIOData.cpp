@@ -51,11 +51,11 @@ void ATA::PostCmdPIODataToHost()
 //FromHost
 u16 ATA::ATAreadPIO()
 {
-	DevCon.WriteLn("DEV9: *ATA_R_DATA 16bit read, pio_count %i,  pio_size %i", pioPtr, pioEnd);
+	//DevCon.WriteLn("DEV9: *ATA_R_DATA 16bit read, pio_count %i,  pio_size %i", pioPtr, pioEnd);
 	if (pioPtr < pioEnd)
 	{
 		const u16 ret = *(u16*)&pioBuffer[pioPtr * 2];
-		DevCon.WriteLn("DEV9: *ATA_R_DATA returned value is  %x", ret);
+		//DevCon.WriteLn("DEV9: *ATA_R_DATA returned value is  %x", ret);
 		pioPtr++;
 		if (pioPtr >= pioEnd) //Fnished transfer (Changed from MegaDev9)
 			PostCmdPIODataToHost();

@@ -507,11 +507,11 @@ u16 DEV9read16(u32 addr)
 				hard |= SPD_DBUF_STAT_FULL;
 			}
 
-			DevCon.WriteLn("DEV9: SPD_R_DBUF_STAT 16bit read %x", hard);
+			//DevCon.WriteLn("DEV9: SPD_R_DBUF_STAT 16bit read %x", hard);
 			return hard;
 		}
 		case SPD_R_IF_CTRL:
-			DevCon.WriteLn("DEV9: SPD_R_IF_CTRL 16bit read %x", dev9.if_ctrl);
+			//DevCon.WriteLn("DEV9: SPD_R_IF_CTRL 16bit read %x", dev9.if_ctrl);
 			return dev9.if_ctrl;
 		default:
 			hard = dev9Ru16(addr);
@@ -787,35 +787,35 @@ void DEV9write16(u32 addr, u16 value)
 
 			break;
 		case SPD_R_XFR_CTRL:
-			DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL 16bit write %x", value);
+			//DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL 16bit write %x", value);
 			dev9.xfr_ctrl = value;
 
-			if (value & SPD_XFR_WRITE)
-				DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL Set Write");
-			else
-				DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL Set Read");
+			//if (value & SPD_XFR_WRITE)
+			//	DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL Set Write");
+			//else
+			//	DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL Set Read");
 
-			if ((value & (1 << 1)) != 0)
-				DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL Unknown Bit 1");
+			//if ((value & (1 << 1)) != 0)
+			//	DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL Unknown Bit 1");
 
-			if ((value & (1 << 2)) != 0)
-				DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL Unknown Bit 2");
+			//if ((value & (1 << 2)) != 0)
+			//	DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL Unknown Bit 2");
 
-			if (value & SPD_XFR_DMAEN)
-				DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL For DMA Enabled");
-			else
-				DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL For DMA Disabled");
+			//if (value & SPD_XFR_DMAEN)
+			//	DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL For DMA Enabled");
+			//else
+			//	DevCon.WriteLn("DEV9: SPD_R_XFR_CTRL For DMA Disabled");
 
 			if ((value & 0b1111111101111000) != 0)
 				Console.Error("DEV9: SPD_R_XFR_CTRL Unknown value written %x", value);
 
 			break;
 		case SPD_R_DBUF_STAT:
-			DevCon.WriteLn("DEV9: SPD_R_DBUF_STAT 16bit write %x", value);
+			//DevCon.WriteLn("DEV9: SPD_R_DBUF_STAT 16bit write %x", value);
 
 			if ((value & SPD_DBUF_RESET_FIFO) != 0)
 			{
-				DevCon.WriteLn("DEV9: SPD_R_DBUF_STAT Reset FIFO");
+				//DevCon.WriteLn("DEV9: SPD_R_DBUF_STAT Reset FIFO");
 				dev9.fifo_bytes_write = 0;
 				dev9.fifo_bytes_read = 0;
 				dev9.xfr_ctrl &= ~SPD_XFR_WRITE; //?
@@ -829,21 +829,21 @@ void DEV9write16(u32 addr, u16 value)
 			break;
 
 		case SPD_R_IF_CTRL:
-			DevCon.WriteLn("DEV9: SPD_R_IF_CTRL 16bit write %x", value);
+			//DevCon.WriteLn("DEV9: SPD_R_IF_CTRL 16bit write %x", value);
 			dev9.if_ctrl = value;
 
-			if (value & SPD_IF_UDMA)
-				DevCon.WriteLn("DEV9: IF_CTRL UDMA Enabled");
-			else
-				DevCon.WriteLn("DEV9: IF_CTRL UDMA Disabled");
-			if (value & SPD_IF_READ)
-				DevCon.WriteLn("DEV9: IF_CTRL DMA Is ATA Read");
-			else
-				DevCon.WriteLn("DEV9: IF_CTRL DMA Is ATA Write");
+			//if (value & SPD_IF_UDMA)
+			//	DevCon.WriteLn("DEV9: IF_CTRL UDMA Enabled");
+			//else
+			//	DevCon.WriteLn("DEV9: IF_CTRL UDMA Disabled");
+			//if (value & SPD_IF_READ)
+			//	DevCon.WriteLn("DEV9: IF_CTRL DMA Is ATA Read");
+			//else
+			//	DevCon.WriteLn("DEV9: IF_CTRL DMA Is ATA Write");
 
 			if (value & SPD_IF_ATA_DMAEN)
 			{
-				DevCon.WriteLn("DEV9: IF_CTRL ATA DMA Enabled");
+				//DevCon.WriteLn("DEV9: IF_CTRL ATA DMA Enabled");
 				if (value & SPD_IF_READ) //Semi async
 				{
 					HDDWriteFIFO(); //Yes this is not a typo
@@ -854,8 +854,8 @@ void DEV9write16(u32 addr, u16 value)
 				}
 				FIFOIntr();
 			}
-			else
-				DevCon.WriteLn("DEV9: IF_CTRL ATA DMA Disabled");
+			//else
+			//	DevCon.WriteLn("DEV9: IF_CTRL ATA DMA Disabled");
 
 			if (value & (1 << 3))
 				DevCon.WriteLn("DEV9: IF_CTRL Unknown Bit 3 Set");
@@ -867,7 +867,7 @@ void DEV9write16(u32 addr, u16 value)
 
 			if ((value & SPD_IF_HDD_RESET) == 0) //Maybe?
 			{
-				DevCon.WriteLn("DEV9: IF_CTRL HDD Hard Reset");
+				//DevCon.WriteLn("DEV9: IF_CTRL HDD Hard Reset");
 				dev9.ata->ATA_HardReset();
 			}
 			if ((value & SPD_IF_ATA_RESET) != 0)
@@ -887,25 +887,25 @@ void DEV9write16(u32 addr, u16 value)
 
 			break;
 		case SPD_R_PIO_MODE: //ATA only? or includes EEPROM?
-			DevCon.WriteLn("DEV9: SPD_R_PIO_MODE 16bit write %x", value);
+			//DevCon.WriteLn("DEV9: SPD_R_PIO_MODE 16bit write %x", value);
 			dev9.pio_mode = value;
 
 			switch (value)
 			{
 				case 0x92:
-					DevCon.WriteLn("DEV9: SPD_R_PIO_MODE 0");
+					//DevCon.WriteLn("DEV9: SPD_R_PIO_MODE 0");
 					break;
 				case 0x72:
-					DevCon.WriteLn("DEV9: SPD_R_PIO_MODE 1");
+					//DevCon.WriteLn("DEV9: SPD_R_PIO_MODE 1");
 					break;
 				case 0x32:
-					DevCon.WriteLn("DEV9: SPD_R_PIO_MODE 2");
+					//DevCon.WriteLn("DEV9: SPD_R_PIO_MODE 2");
 					break;
 				case 0x24:
-					DevCon.WriteLn("DEV9: SPD_R_PIO_MODE 3");
+					//DevCon.WriteLn("DEV9: SPD_R_PIO_MODE 3");
 					break;
 				case 0x23:
-					DevCon.WriteLn("DEV9: SPD_R_PIO_MODE 4");
+					//DevCon.WriteLn("DEV9: SPD_R_PIO_MODE 4");
 					break;
 
 				default:
