@@ -15726,6 +15726,28 @@ SLES-54462:
 SLES-54463:
   name: "Sprint Cars - Road to Knoxville"
   region: "PAL-A"
+  clampModes:
+    vuClampMode: 3
+  gameFixes:
+    - VUKickstartHack
+  patches:
+    DFBAE612:
+      content: |-
+        comment=Patch by Prafull
+        // Rearrange COP2 instructions to fix bad mac flag stuff. Fixes ingame physics.
+        patch=1,EE,002657d0,word,48448800
+        patch=1,EE,002657d4,word,309000E0
+        patch=1,EE,002657dc,word,4BF0116C
+        patch=1,EE,002657e4,word,00908024
+        patch=1,EE,002657e8,word,4A0002FF
+        patch=1,EE,002657ec,word,4BF019AC
+        patch=1,EE,00265800,word,48448800
+        patch=1,EE,00265804,word,309000E0
+        patch=1,EE,00265808,word,4BE2896C
+        patch=1,EE,0026580c,word,48448800
+        patch=1,EE,00265810,word,4BE389AC
+        patch=1,EE,00265814,word,4A0002FF
+        patch=1,EE,00265818,word,4A0002FF
 SLES-54464:
   name: "Global Defence Force"
   region: "PAL-E"
@@ -15924,6 +15946,10 @@ SLES-54559:
 SLES-54560:
   name: "Alpine Ski Racing 2007"
   region: "PAL-M3"
+  clampModes:
+    vuClampMode: 3
+  gameFixes:
+    - VUKickstartHack
 SLES-54561:
   name: "Capcom Classics Collection Vol. 2"
   region: "PAL-E"
@@ -16848,6 +16874,8 @@ SLES-54994:
   name: "Pippa Funnell - Ranch Rescue"
   region: "PAL-M11"
   compat: 5
+  gameFixes:
+    - VUKickstartHack
 SLES-54995:
   name: "Puzzle Quest - Challenge of the Warlords"
   region: "PAL-M5"
@@ -38100,6 +38128,28 @@ SLUS-21418:
   name: "Sprint Cars - Road to Knoxville"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vuClampMode: 3
+  gameFixes:
+    - VUKickstartHack
+  patches:
+    A08C4057:
+      content: |-
+        comment=Patch by Prafull
+        // Rearrange COP2 instructions to fix bad mac flag stuff. Fixes ingame physics.
+        patch=1,EE,00264d60,word,48448800
+        patch=1,EE,00264d64,word,309000E0
+        patch=1,EE,00264d6c,word,4BF0116C
+        patch=1,EE,00264d74,word,00908024
+        patch=1,EE,00264d78,word,4A0002FF
+        patch=1,EE,00264d7c,word,4BF019AC
+        patch=1,EE,00264d90,word,48448800
+        patch=1,EE,00264d94,word,309000E0
+        patch=1,EE,00264d98,word,4BE2896C
+        patch=1,EE,00264d9c,word,48448800
+        patch=1,EE,00264da0,word,4BE389AC
+        patch=1,EE,00264da4,word,4A0002FF
+        patch=1,EE,00264da8,word,4A0002FF
 SLUS-21419:
   name: "Dirge of Cerberus - Final Fantasy VII"
   region: "NTSC-U"
@@ -38747,6 +38797,8 @@ SLUS-21600:
 SLUS-21601:
   name: "Sprint Cars 2 - Showdown at Eldora"
   region: "NTSC-U"
+  clampModes:
+    vuClampMode: 3
   patches:
     75D13A19:
       content: |-
