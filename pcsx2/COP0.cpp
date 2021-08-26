@@ -123,7 +123,14 @@ void COP0_DiagnosticPCCR()
 extern int branch;
 __fi void COP0_UpdatePCCR()
 {
-	//if( cpuRegs.CP0.n.Status.b.ERL || !cpuRegs.PERF.n.pccr.b.CTE ) return;
+	// Counting and counter exceptions are not performed if we are currently executing a Level 2 exception (ERL)
+	// or the counting function is not enabled (CTE)
+	if (cpuRegs.CP0.n.Status.b.ERL || !cpuRegs.PERF.n.pccr.b.CTE)
+	{
+		s_iLastPERFCycle[0] = cpuRegs.cycle;
+		s_iLastPERFCycle[1] = s_iLastPERFCycle[0];
+		return;
+	}
 
 	// Implemented memory mode check (kernel/super/user)
 
@@ -145,7 +152,7 @@ __fi void COP0_UpdatePCCR()
 
 			//prev ^= (1UL<<31);		// XOR is fun!
 			//if( (prev & cpuRegs.PERF.n.pcr0) & (1UL<<31) )
-			if( (cpuRegs.PERF.n.pcr0 & 0x80000000) && (cpuRegs.CP0.n.Status.b.ERL == 1) && cpuRegs.PERF.n.pccr.b.CTE)
+			if((cpuRegs.PERF.n.pcr0 & 0x80000000))
 			{
 				// TODO: Vector to the appropriate exception here.
 				// This code *should* be correct, but is untested (and other parts of the emu are
@@ -192,7 +199,7 @@ __fi void COP0_UpdatePCCR()
 			cpuRegs.PERF.n.pcr1 += incr;
 			s_iLastPERFCycle[1] = cpuRegs.cycle;
 
-			if( (cpuRegs.PERF.n.pcr1 & 0x80000000) && (cpuRegs.CP0.n.Status.b.ERL == 1) && cpuRegs.PERF.n.pccr.b.CTE)
+			if( (cpuRegs.PERF.n.pcr1 & 0x80000000))
 			{
 				// TODO: Vector to the appropriate exception here.
 				// This code *should* be correct, but is untested (and other parts of the emu are
