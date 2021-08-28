@@ -491,6 +491,7 @@
     <ClCompile Include="GS\Window\GSSetting.cpp" />
     <ClCompile Include="GS\Window\GSSettingsDlg.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.all.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x64.avx.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x64.avx2.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x64.cpp" />
@@ -855,6 +856,7 @@
     <ClInclude Include="GS\Window\GSSetting.h" />
     <ClInclude Include="GS\Window\GSSettingsDlg.h" />
     <ClInclude Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.h" />
+    <ClInclude Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.all.h" />
     <ClInclude Include="GS\Renderers\OpenGL\GSShaderOGL.h" />
     <ClInclude Include="GS\GSState.h" />
     <ClInclude Include="GS\GSTables.h" />

@@ -649,6 +649,7 @@ set(pcsx2GSSources
 	GS/Renderers/SW/GSRasterizer.cpp
 	GS/Renderers/SW/GSRendererSW.cpp
 	GS/Renderers/SW/GSSetupPrimCodeGenerator.cpp
+	GS/Renderers/SW/GSSetupPrimCodeGenerator.all.cpp
 	GS/Renderers/SW/GSSetupPrimCodeGenerator.x64.cpp
 	GS/Renderers/SW/GSSetupPrimCodeGenerator.x64.avx.cpp
 	GS/Renderers/SW/GSSetupPrimCodeGenerator.x64.avx2.cpp
@@ -719,6 +720,7 @@ set(pcsx2GSHeaders
 	GS/Renderers/SW/GSRendererSW.h
 	GS/Renderers/SW/GSScanlineEnvironment.h
 	GS/Renderers/SW/GSSetupPrimCodeGenerator.h
+	GS/Renderers/SW/GSSetupPrimCodeGenerator.all.h
 	GS/Renderers/SW/GSTextureCacheSW.h
 	GS/Renderers/SW/GSTextureSW.h
 	GS/Renderers/SW/GSVertexSW.h
