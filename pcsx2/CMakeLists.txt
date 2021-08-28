@@ -1737,11 +1737,16 @@ if (APPLE)
 	)
 	add_dependencies(pcsx2-postprocess-bundle PCSX2)
 
-	# Set the right file types for .inl files in Xcode
 	get_target_property(PCSX2_SOURCES PCSX2 SOURCES)
 	foreach(source IN LISTS PCSX2_SOURCES)
+		# Set the right file types for .inl files in Xcode
 		if("${source}" MATCHES "\\.(inl|h)$")
 			set_source_files_properties("${source}" PROPERTIES XCODE_EXPLICIT_FILE_TYPE sourcecode.cpp.h)
+		endif()
+		# CMake makefile and ninja generators will attempt to share one PCH for both cpp and mm files
+		# That's not actually OK
+		if("${source}" MATCHES "\\.mm$")
+			set_source_files_properties("${source}" PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
 		endif()
 	endforeach()
 endif()
