@@ -37,14 +37,7 @@ GSDrawScanlineCodeGenerator::GSDrawScanlineCodeGenerator(void* param, uint64 key
 	if (m_sel.breakpoint)
 		db(0xCC);
 
-	try
-	{
-		Generate();
-	}
-	catch (std::exception& e)
-	{
-		fprintf(stderr, "ERR:GSDrawScanlineCodeGenerator %s\n", e.what());
-	}
+	Generate();
 }
 
 void GSDrawScanlineCodeGenerator::modulate16(const Xmm& a, const Operand& f, uint8 shift)
