@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSSetupPrimCodeGenerator.h"
+#include "GSSetupPrimCodeGenerator.all.h"
 
 using namespace Xbyak;
 
@@ -30,12 +31,5 @@ GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(void* param, uint64 key, void
 	m_en.t = m_sel.fb && m_sel.tfx != TFX_NONE ? 1 : 0;
 	m_en.c = m_sel.fb && !(m_sel.tfx == TFX_DECAL && m_sel.tcc) ? 1 : 0;
 
-#if _M_SSE >= 0x501
-	Generate_AVX2();
-#else
-	if (m_cpu.has(util::Cpu::tAVX))
-		Generate_AVX();
-	else
-		Generate_SSE();
-#endif
+	GSSetupPrimCodeGenerator2(this, CPUInfo(m_cpu), param, key).Generate();
 }
