@@ -108,12 +108,15 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit) {
 	}
 
 	if (isEbit) { // Clear 'is busy' Flags
+		xMOV(ptr32[&mVU.regs().nextBlockCycles], 0);
 		if (!mVU.index || !THREAD_VU1) {
 			xAND(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? ~0x100 : ~0x001)); // VBS0/VBS1 flag
 		}
 		else
 			xFastCall((void*)mVUTBit);
 	}
+	else
+		xMOV(ptr32[&mVU.regs().nextBlockCycles], mVUcycles);
 	
 	if (isEbit != 2) { // Save PC, and Jump to Exit Point
 		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);
@@ -208,12 +211,15 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit) {
 
 
 	if ((isEbit && isEbit != 3)) { // Clear 'is busy' Flags
+		xMOV(ptr32[&mVU.regs().nextBlockCycles], 0);
 		if (!mVU.index || !THREAD_VU1) {
 			xAND(ptr32[&VU0.VI[REG_VPU_STAT].UL], (isVU1 ? ~0x100 : ~0x001)); // VBS0/VBS1 flag
 		}
 		else
 			xFastCall((void*)mVUEBit);
 	}
+	else
+		xMOV(ptr32[&mVU.regs().nextBlockCycles], mVUcycles);
 
 	if (isEbit != 2 && isEbit != 3) { // Save PC, and Jump to Exit Point
 		xMOV(ptr32[&mVU.regs().VI[REG_TPC].UL], xPC);

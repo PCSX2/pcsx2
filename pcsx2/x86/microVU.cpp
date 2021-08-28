@@ -95,6 +95,7 @@ void mVUreset(microVU& mVU, bool resetReserve) {
 	mVUdispatcherCD(mVU);
 	mVUemitSearch();
 
+	mVU.regs().nextBlockCycles = 0;
 	// Clear All Program Data
 	//memset(&mVU.prog, 0, sizeof(mVU.prog));
 	memset(&mVU.prog.lpState, 0, sizeof(mVU.prog.lpState));
