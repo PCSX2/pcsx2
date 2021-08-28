@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSDrawScanlineCodeGenerator.h"
+#include "GSDrawScanlineCodeGenerator.all.h"
 
 #if _M_SSE >= 0x501
 #else
@@ -37,7 +38,7 @@ GSDrawScanlineCodeGenerator::GSDrawScanlineCodeGenerator(void* param, uint64 key
 	if (m_sel.breakpoint)
 		db(0xCC);
 
-	Generate();
+	GSDrawScanlineCodeGenerator2(this, CPUInfo(m_cpu), (void*)&m_local, m_sel.key).Generate();
 }
 
 void GSDrawScanlineCodeGenerator::modulate16(const Xmm& a, const Operand& f, uint8 shift)

@@ -466,6 +466,7 @@
     <ClCompile Include="GS\GSDrawingContext.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSDrawScanline.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.all.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.x64.avx.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.x64.avx2.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.x64.cpp" />
@@ -830,6 +831,7 @@
     <ClInclude Include="GS\GSDrawingEnvironment.h" />
     <ClInclude Include="GS\Renderers\SW\GSDrawScanline.h" />
     <ClInclude Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.h" />
+    <ClInclude Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.all.h" />
     <ClInclude Include="GS\Renderers\SW\GSNewCodeGenerator.h" />
     <ClInclude Include="GS\GSDump.h" />
     <ClInclude Include="GS\Renderers\Common\GSFastList.h" />
