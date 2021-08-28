@@ -328,7 +328,7 @@ if(CMAKE_BUILD_STRIP)
 endif()
 
 # Enable special stuff for CI builds
-if($ENV{CI} STREQUAL "true")
+if("$ENV{CI}" STREQUAL "true")
 	list(APPEND PCSX2_DEFS PCSX2_CI)
 endif()
 
