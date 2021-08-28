@@ -34,25 +34,17 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp) {
 
 	if (startUp && s) {  // Start Executing a microprogram
 		Execute(s); // Kick start VU
-
-		if (stat & test) {
-			cpuSetNextEventDelta(s);
-
-			if (m_Idx)
-				VU1.cycle = cpuRegs.cycle;
-			else
-				VU0.cycle = cpuRegs.cycle;
-		}
 	}
 	else { // Continue Executing
 		u32 cycle = m_Idx ? VU1.cycle : VU0.cycle;
 		s32 delta = (s32)(u32)(cpuRegs.cycle - cycle);
-		if (delta > 0) {	// Enough time has passed
+		s32 nextblockcycles = m_Idx ? VU1.nextBlockCycles : VU0.nextBlockCycles;
+
+		if (delta < nextblockcycles)
+			return;
+
+		if (delta > 0)		// Enough time has passed
 			Execute(delta);	// Execute the time since the last call
-			if (stat & test) 
-				cpuSetNextEventDelta(delta);
-		}
-		else cpuSetNextEventDelta(-delta); // Haven't caught-up from kick start
 	}
 }
 
@@ -62,11 +54,11 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp) {
 // This fixes spinning/hanging in some games like Ratchet and Clank's Intro.
 void BaseVUmicroCPU::ExecuteBlockJIT(BaseVUmicroCPU* cpu) {
 	const u32& stat	= VU0.VI[REG_VPU_STAT].UL;
-	const int  test = cpu->m_Idx ? 0x100 : 1;
+	const int  test = 1;
 
 	if (stat & test) {		// VU is running
-		u32 cycle = cpu->m_Idx ? VU1.cycle : VU0.cycle;
-		s32 delta = (s32)(u32)(cpuRegs.cycle - cycle);
+		s32 delta = (s32)(u32)(cpuRegs.cycle - VU0.cycle);
+
 		if (delta > 0) {			// Enough time has passed
 			cpu->Execute(delta);	// Execute the time since the last call
 		}

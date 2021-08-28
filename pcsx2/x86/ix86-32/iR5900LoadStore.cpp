@@ -581,6 +581,7 @@ void recLQC2()
 	xADD(eax, scaleblockcycles_clear());
 	xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
 	xSUB(eax, ptr32[&VU0.cycle]);
+	xSUB(eax, ptr32[&VU0.nextBlockCycles]);
 	xCMP(eax, 8);
 	xForwardJL32 skip;
 	xLoadFarAddr(arg1reg, CpuVU0);
@@ -625,6 +626,7 @@ void recSQC2()
 	xADD(eax, scaleblockcycles_clear());
 	xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
 	xSUB(eax, ptr32[&VU0.cycle]);
+	xSUB(eax, ptr32[&VU0.nextBlockCycles]);
 	xCMP(eax, 8);
 	xForwardJL32 skip;
 	xLoadFarAddr(arg1reg, CpuVU0);
