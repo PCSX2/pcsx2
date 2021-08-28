@@ -1535,6 +1535,9 @@
     <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.x86.cpp">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClCompile>
+    <ClCompile Include="GS\Renderers\SW\GSNewCodeGenerator.cpp">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClCompile>
     <ClCompile Include="GS\Renderers\SW\GSRendererSW.cpp">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClCompile>
@@ -2629,6 +2632,9 @@
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.h">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\SW\GSNewCodeGenerator.h">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\SW\GSRendererSW.h">

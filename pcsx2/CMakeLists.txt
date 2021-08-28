@@ -645,6 +645,7 @@ set(pcsx2GSSources
 	GS/Renderers/SW/GSDrawScanlineCodeGenerator.x86.cpp
 	GS/Renderers/SW/GSDrawScanlineCodeGenerator.x86.avx.cpp
 	GS/Renderers/SW/GSDrawScanlineCodeGenerator.x86.avx2.cpp
+	GS/Renderers/SW/GSNewCodeGenerator.cpp
 	GS/Renderers/SW/GSRasterizer.cpp
 	GS/Renderers/SW/GSRendererSW.cpp
 	GS/Renderers/SW/GSSetupPrimCodeGenerator.cpp
@@ -713,6 +714,7 @@ set(pcsx2GSHeaders
 	GS/Renderers/HW/GSVertexHW.h
 	GS/Renderers/SW/GSDrawScanlineCodeGenerator.h
 	GS/Renderers/SW/GSDrawScanline.h
+	GS/Renderers/SW/GSNewCodeGenerator.h
 	GS/Renderers/SW/GSRasterizer.h
 	GS/Renderers/SW/GSRendererSW.h
 	GS/Renderers/SW/GSScanlineEnvironment.h
