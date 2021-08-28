@@ -1544,27 +1544,6 @@
     <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.cpp">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClCompile>
-    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.all.cpp">
-      <Filter>System\Ps2\GS\Renderers\Software</Filter>
-    </ClCompile>
-    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x64.avx.cpp">
-      <Filter>System\Ps2\GS\Renderers\Software</Filter>
-    </ClCompile>
-    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x64.avx2.cpp">
-      <Filter>System\Ps2\GS\Renderers\Software</Filter>
-    </ClCompile>
-    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x64.cpp">
-      <Filter>System\Ps2\GS\Renderers\Software</Filter>
-    </ClCompile>
-    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x86.avx.cpp">
-      <Filter>System\Ps2\GS\Renderers\Software</Filter>
-    </ClCompile>
-    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x86.avx2.cpp">
-      <Filter>System\Ps2\GS\Renderers\Software</Filter>
-    </ClCompile>
-    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x86.cpp">
-      <Filter>System\Ps2\GS\Renderers\Software</Filter>
-    </ClCompile>
     <ClCompile Include="GS\Renderers\SW\GSTextureCacheSW.cpp">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClCompile>

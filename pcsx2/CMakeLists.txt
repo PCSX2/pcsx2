@@ -650,12 +650,6 @@ set(pcsx2GSSources
 	GS/Renderers/SW/GSRendererSW.cpp
 	GS/Renderers/SW/GSSetupPrimCodeGenerator.cpp
 	GS/Renderers/SW/GSSetupPrimCodeGenerator.all.cpp
-	GS/Renderers/SW/GSSetupPrimCodeGenerator.x64.cpp
-	GS/Renderers/SW/GSSetupPrimCodeGenerator.x64.avx.cpp
-	GS/Renderers/SW/GSSetupPrimCodeGenerator.x64.avx2.cpp
-	GS/Renderers/SW/GSSetupPrimCodeGenerator.x86.cpp
-	GS/Renderers/SW/GSSetupPrimCodeGenerator.x86.avx.cpp
-	GS/Renderers/SW/GSSetupPrimCodeGenerator.x86.avx2.cpp
 	GS/Renderers/SW/GSTextureCacheSW.cpp
 	GS/Renderers/SW/GSTextureSW.cpp
 	GS/Renderers/OpenGL/GLLoader.cpp
