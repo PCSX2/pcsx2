@@ -486,7 +486,6 @@ if(WIN32)
 		PAD/Windows/Diagnostics.cpp
 		PAD/Windows/DirectInput.cpp
 		PAD/Windows/DualShock3.cpp
-		PAD/Windows/Global.cpp
 		PAD/Windows/HidDevice.cpp
 		PAD/Windows/InputManager.cpp
 		PAD/Windows/KeyboardQueue.cpp
@@ -753,7 +752,6 @@ if(WIN32)
 		SPU2/Windows/ConfigSoundTouch.cpp
 		SPU2/Windows/dsp.cpp
 		SPU2/Windows/RealtimeDebugger.cpp
-		SPU2/Windows/SndOut_waveOut.cpp
 		SPU2/Windows/SndOut_XAudio2.cpp
 		SPU2/Windows/UIHelpers.cpp
 	)
