@@ -640,12 +640,6 @@ set(pcsx2GSSources
 	GS/Renderers/SW/GSDrawScanline.cpp
 	GS/Renderers/SW/GSDrawScanlineCodeGenerator.cpp
 	GS/Renderers/SW/GSDrawScanlineCodeGenerator.all.cpp
-	GS/Renderers/SW/GSDrawScanlineCodeGenerator.x64.cpp
-	GS/Renderers/SW/GSDrawScanlineCodeGenerator.x64.avx.cpp
-	GS/Renderers/SW/GSDrawScanlineCodeGenerator.x64.avx2.cpp
-	GS/Renderers/SW/GSDrawScanlineCodeGenerator.x86.cpp
-	GS/Renderers/SW/GSDrawScanlineCodeGenerator.x86.avx.cpp
-	GS/Renderers/SW/GSDrawScanlineCodeGenerator.x86.avx2.cpp
 	GS/Renderers/SW/GSNewCodeGenerator.cpp
 	GS/Renderers/SW/GSRasterizer.cpp
 	GS/Renderers/SW/GSRendererSW.cpp
@@ -676,7 +670,6 @@ set(pcsx2GSHeaders
 	GS/GSDrawingEnvironment.h
 	GS/GSDump.h
 	GS/GS_types.h
-	GS/GS_codegen.h
 	GS/GS.h
 	GS/GSLocalMemory.h
 	GS/GSLzma.h
