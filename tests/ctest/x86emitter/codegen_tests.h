@@ -13,8 +13,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Utilities/Dependencies.h"
-
 void runCodegenTest(void (*exec)(void *base), const char* description, const char* expected);
 
 // Use null to skip, empty string to expect no output

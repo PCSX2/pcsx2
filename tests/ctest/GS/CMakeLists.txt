@@ -1,14 +1,15 @@
 foreach(isa "sse4" "avx" "avx2")
 	set(GSDir ${CMAKE_SOURCE_DIR}/pcsx2/GS)
 
-	if(${native_vector_isa} LESS ${isa_number_${isa}})
+	if((${isa} STREQUAL "sse4" AND ${native_vector_isa} LESS 41)
+	OR (${isa} STREQUAL "avx"  AND ${native_vector_isa} LESS 50)
+	OR (${isa} STREQUAL "avx2" AND ${native_vector_isa} LESS 51))
 		# Skip unsupported tests
 		continue()
 	endif()
 
 	add_pcsx2_test(swizzle_test_${isa}
 		swizzle_test_main.cpp
-		swizzle_test_nops.cpp
 		${GSDir}/GSBlock.cpp
 		${GSDir}/GSBlock.h
 		${GSDir}/GSClut.cpp
@@ -17,10 +18,20 @@ foreach(isa "sse4" "avx" "avx2")
 		${GSDir}/GSTables.h)
 
 	target_include_directories(swizzle_test_${isa} PRIVATE ${GSDir} ${CMAKE_SOURCE_DIR}/pcsx2/ ${CMAKE_SOURCE_DIR}/pcsx2/gui)
-	if(WIN32)
-		target_include_directories(swizzle_test_${isa} PRIVATE ${CMAKE_SOURCE_DIR}/3rdparty)
+
+	# Prevent linker errors for functions in e.g. GSClut that we don't actually use depending on things we didn't include
+	if(UNIX AND NOT APPLE)
+		target_compile_options(swizzle_test_${isa} PRIVATE -ffunction-sections)
+		target_link_options(swizzle_test_${isa} PRIVATE -Wl,-gc-sections)
+	elseif(APPLE)
+		target_link_options(swizzle_test_${isa} PRIVATE -Wl,-dead_strip)
 	endif()
 
-	target_compile_options(swizzle_test_${isa} PRIVATE ${compile_options_${isa}})
-	target_compile_definitions(swizzle_test_${isa} PRIVATE ${definitions_${isa}})
+	if(${isa} STREQUAL "avx2")
+		target_compile_options(swizzle_test_${isa} PRIVATE -mavx2 -mbmi -mbmi2)
+	elseif(${isa} STREQUAL "avx")
+		target_compile_options(swizzle_test_${isa} PRIVATE -mavx)
+	else()
+		target_compile_options(swizzle_test_${isa} PRIVATE -msse4.1)
+	endif()
 endforeach()
