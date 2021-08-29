@@ -15,14 +15,9 @@
 
 #pragma once
 
+#include <dinput.h>
 #include <windows.h>
 #include <stdint.h>
-
-#if !defined(DIRECTINPUT_VERSION)
-#define DIRECTINPUT_VERSION 0x0800
-#endif
-
-#include <dinput.h>
 #include <atomic>
 #include <algorithm>
 #include <array>

@@ -1447,7 +1447,7 @@ namespace usb_pad
 					AddInputMap(port, (ControlID)cid, im);
 				}
 			}
-			catch (std::exception& err)
+			catch (std::exception&)
 			{
 			}
 
