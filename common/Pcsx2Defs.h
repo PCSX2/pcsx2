@@ -15,6 +15,8 @@
 
 #pragma once
 
+// clang-format off
+
 #ifdef __CYGWIN__
 	#define __linux__
 #endif
@@ -197,3 +199,37 @@ static const int __pagesize = PCSX2_PAGESIZE;
 #define __ri __releaseinline
 #define __fi __forceinline
 #define __fc __fastcall
+
+// Makes sure that if anyone includes xbyak, it doesn't do anything bad
+#define MIE_INTEGER_TYPE_DEFINED
+#define XBYAK_ENABLE_OMITTED_OPERAND
+
+#ifdef __x86_64__
+	#define _M_AMD64
+#endif
+
+#ifndef RESTRICT
+	#ifdef __INTEL_COMPILER
+		#define RESTRICT restrict
+	#elif defined(_MSC_VER)
+		#define RESTRICT __restrict
+	#elif defined(__GNUC__)
+		#define RESTRICT __restrict__
+	#else
+		#define RESTRICT
+	#endif
+#endif
+
+#ifndef __has_attribute
+	#define __has_attribute(x) 0
+#endif
+
+#ifdef __cpp_constinit
+	#define CONSTINIT constinit
+#elif __has_attribute(require_constant_initialization)
+	#define CONSTINIT __attribute__((require_constant_initialization))
+#else
+	#define CONSTINIT
+#endif
+
+#define ASSERT assert

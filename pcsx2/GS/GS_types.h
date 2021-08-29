@@ -25,25 +25,10 @@ typedef unsigned long long uint64;
 typedef signed long long int64;
 typedef signed long long sint64;
 
-// Makes sure that if anyone includes xbyak, it doesn't do anything bad
-#define MIE_INTEGER_TYPE_DEFINED
-#define XBYAK_ENABLE_OMITTED_OPERAND
 
 #include <cfloat>
 
 // clang-format off
-
-#ifndef RESTRICT
-	#ifdef __INTEL_COMPILER
-		#define RESTRICT restrict
-	#elif defined(_MSC_VER)
-		#define RESTRICT __restrict
-	#elif defined(__GNUC__)
-		#define RESTRICT __restrict__
-	#else
-		#define RESTRICT
-	#endif
-#endif
 
 #ifdef _WIN32
 inline std::string convert_utf16_to_utf8(const std::wstring& utf16_string)
@@ -88,19 +73,3 @@ inline FILE* px_fopen(const std::string& filename, const std::string& mode)
 
 extern void* vmalloc(size_t size, bool code);
 extern void vmfree(void* ptr, size_t size);
-
-#define countof(a) (sizeof(a) / sizeof(a[0]))
-
-#ifndef __has_attribute
-	#define __has_attribute(x) 0
-#endif
-
-#ifdef __cpp_constinit
-	#define CONSTINIT constinit
-#elif __has_attribute(require_constant_initialization)
-	#define CONSTINIT __attribute__((require_constant_initialization))
-#else
-	#define CONSTINIT
-#endif
-
-#define ASSERT assert
