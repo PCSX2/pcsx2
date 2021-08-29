@@ -41,10 +41,6 @@
 
 #endif
 
-#ifdef __x86_64__
-#define _M_AMD64
-#endif
-
 #include "Renderers/OpenGL/GLLoader.h"
 
 #ifdef _WIN32
