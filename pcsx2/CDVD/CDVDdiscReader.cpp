@@ -197,7 +197,7 @@ s32 CALLBACK DISCopen(const char* pTitle)
 	{
 		src = std::unique_ptr<IOCtlSrc>(new IOCtlSrc(drive));
 	}
-	catch (std::runtime_error& ex)
+	catch (std::runtime_error&)
 	{
 		return -1;
 	}
