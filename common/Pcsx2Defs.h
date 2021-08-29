@@ -146,7 +146,7 @@ static const int __pagesize = PCSX2_PAGESIZE;
 	#define __aligned32 __attribute__((aligned(32)))
 	#define __pagealigned __attribute__((aligned(PCSX2_PAGESIZE)))
 
-	#define __assume(cond) ((void)0) // GCC has no equivalent for __assume
+	#define __assume(cond) do { if (!(cond)) __builtin_unreachable(); } while(0)
 	#define CALLBACK __attribute__((stdcall))
 
 	// Inlining note: GCC needs ((unused)) attributes defined on inlined functions to suppress
@@ -154,7 +154,11 @@ static const int __pagesize = PCSX2_PAGESIZE;
 	// happens *by design* like all the friggen time >_<)
 
 	#ifndef __fastcall
-		#define __fastcall __attribute__((fastcall))
+		#ifndef _M_X86_32
+			#define __fastcall // Attribute not available, and x86_32 is pretty much the only cc that passes literally everything in registers
+		#else
+			#define __fastcall __attribute__((fastcall))
+		#endif
 	#endif
 	#define __vectorcall __fastcall
 	#define _inline __inline__ __attribute__((unused))

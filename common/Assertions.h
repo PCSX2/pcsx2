@@ -155,8 +155,8 @@ extern pxDoAssertFnType* pxDoAssert;
 #define pxAssertMsg(cond, msg) (likely(cond))
 #define pxAssertDev(cond, msg) (likely(cond))
 
-#define pxAssumeMsg(cond, msg) (__assume(cond))
-#define pxAssumeDev(cond, msg) (__assume(cond))
+#define pxAssumeMsg(cond, msg) __assume(cond)
+#define pxAssumeDev(cond, msg) __assume(cond)
 
 #define pxFail(msg) \
 	do \
