@@ -43,8 +43,8 @@ namespace OpcodeImpl {
 	void recDIV1();
 	void recDIVU1();
 
-namespace MMI
-{
+namespace MMI {
+
 	void recPLZCW();
 	void recMMI0();
 	void recMMI1();
@@ -138,7 +138,9 @@ namespace MMI
 	void recPOR();
 	void recPCPYH();
 
-} } } }
+} // namespace MMI
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900
 
 #endif
-

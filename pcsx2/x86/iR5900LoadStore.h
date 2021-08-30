@@ -50,6 +50,8 @@ namespace OpcodeImpl {
 	void recLQC2();
 	void recSQC2();
 
-} } }
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900
 
 #endif

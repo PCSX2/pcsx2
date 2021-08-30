@@ -12,16 +12,18 @@
  *  You should have received a copy of the GNU General Public License along with PCSX2.
  *  If not, see <http://www.gnu.org/licenses/>.
  */
- 
+
 #pragma once
 
 #include "Utilities/AsciiFile.h"
 
 // writes text directly to mVU.logFile, no newlines appended.
-_mVUt void __mVULog(const char* fmt, ...) {
+_mVUt void __mVULog(const char* fmt, ...)
+{
 
 	microVU& mVU = mVUx;
-	if (!mVU.logFile) return;
+	if (!mVU.logFile)
+		return;
 
 	char tmp[2024];
 	va_list list;
@@ -31,21 +33,29 @@ _mVUt void __mVULog(const char* fmt, ...) {
 	vsprintf(tmp, fmt, list);
 	va_end(list);
 
-	mVU.logFile->Write( tmp );
+	mVU.logFile->Write(tmp);
 	mVU.logFile->Flush();
 }
 
-#define commaIf() { if (bitX[6]) { mVUlog(","); bitX[6] = false; } }
+#define commaIf() \
+	{ \
+		if (bitX[6]) \
+		{ \
+			mVUlog(","); \
+			bitX[6] = false; \
+		} \
+	}
 
 #include "AppConfig.h"
 
-void __mVUdumpProgram(microVU& mVU, microProgram& prog) {
+void __mVUdumpProgram(microVU& mVU, microProgram& prog)
+{
 	bool bitX[7];
 	int delay = 0;
 	int bBranch = mVUbranch;
-	int bCode	= mVU.code;
-	int bPC		= iPC;
-	mVUbranch	= 0;
+	int bCode   = mVU.code;
+	int bPC     = iPC;
+	mVUbranch   = 0;
 
 	const wxString logname(wxsFormat(L"microVU%d prog - %02d.html", mVU.index, prog.idx));
 	mVU.logFile = std::unique_ptr<AsciiFile>(new AsciiFile(Path::Combine(g_Conf->Folders.Logs, logname), L"w"));
@@ -56,16 +66,27 @@ void __mVUdumpProgram(microVU& mVU, microProgram& prog) {
 	mVUlog("<font face=\"Courier New\" color=\"#ffffff\">\n");
 
 	mVUlog("<font size=\"5\" color=\"#7099ff\">");
-	mVUlog("*********************\n<br>",		prog.idx);
-	mVUlog("* Micro-Program #%02d *\n<br>",		prog.idx);
-	mVUlog("*********************\n\n<br><br>",	prog.idx);
+	mVUlog("*********************\n<br>",       prog.idx);
+	mVUlog("* Micro-Program #%02d *\n<br>",     prog.idx);
+	mVUlog("*********************\n\n<br><br>", prog.idx);
 	mVUlog("</font>");
 
-	for (u32 i = 0; i < mVU.progSize; i+=2) {
+	for (u32 i = 0; i < mVU.progSize; i += 2)
+	{
 
-		if (delay)		{ delay--; mVUlog("</font>"); if (!delay) mVUlog("<hr/>"); }
-		if (mVUbranch)	{ delay = 1; mVUbranch = 0; }
-		mVU.code = prog.data[i+1];
+		if (delay)
+		{
+			delay--;
+			mVUlog("</font>");
+			if (!delay)
+				mVUlog("<hr/>");
+		}
+		if (mVUbranch)
+		{
+			delay = 1;
+			mVUbranch = 0;
+		}
+		mVU.code = prog.data[i + 1];
 
 		bitX[0] = false;
 		bitX[1] = false;
@@ -84,14 +105,15 @@ void __mVUdumpProgram(microVU& mVU, microProgram& prog) {
 		if (delay == 2) { mVUlog("<font color=\"#FFFF00\">"); }
 		if (delay == 1) { mVUlog("<font color=\"#999999\">"); }
 
-		iPC = (i+1);
-		mVUlog("<a name=\"addr%04x\">", i*4);
-		mVUlog("[%04x] (%08x)</a> ", i*4, mVU.code);
+		iPC = (i + 1);
+		mVUlog("<a name=\"addr%04x\">", i * 4);
+		mVUlog("[%04x] (%08x)</a> ", i * 4, mVU.code);
 		mVUopU(mVU, 2);
 
-		if (bitX[5]) {
+		if (bitX[5])
+		{
 			mVUlog(" (");
-			if (bitX[0]) { mVUlog("I"); bitX[6] = true; }
+			if (bitX[0]) {            mVUlog("I"); bitX[6] = true; }
 			if (bitX[1]) { commaIf(); mVUlog("E"); bitX[6] = true; }
 			if (bitX[2]) { commaIf(); mVUlog("M"); bitX[6] = true; }
 			if (bitX[3]) { commaIf(); mVUlog("D"); bitX[6] = true; }
@@ -99,20 +121,23 @@ void __mVUdumpProgram(microVU& mVU, microProgram& prog) {
 			mVUlog(")");
 		}
 
-		if (mVUstall) {
+		if (mVUstall)
+		{
 			mVUlog(" Stall %d Cycles", mVUstall);
 		}
 
 		iPC = i;
 		mVU.code = prog.data[i];
 
-		if(bitX[0]) {
+		if (bitX[0])
+		{
 			mVUlog("<br>\n<font color=\"#FF7000\">");
-			mVUlog("[%04x] (%08x) %f", i*4, mVU.code, *(float*)&mVU.code);
+			mVUlog("[%04x] (%08x) %f", i * 4, mVU.code, *(float*)&mVU.code);
 			mVUlog("</font>\n\n<br><br>");
 		}
-		else {
-			mVUlog("<br>\n[%04x] (%08x) ", i*4, mVU.code);
+		else
+		{
+			mVUlog("<br>\n[%04x] (%08x) ", i * 4, mVU.code);
 			mVUopL(mVU, 2);
 			mVUlog("\n\n<br><br>");
 		}
@@ -123,9 +148,8 @@ void __mVUdumpProgram(microVU& mVU, microProgram& prog) {
 
 	mVUbranch = bBranch;
 	mVU.code  = bCode;
-	iPC		  = bPC;
+	iPC       = bPC;
 	setCode();
 
 	mVU.logFile.reset(nullptr);
 }
-

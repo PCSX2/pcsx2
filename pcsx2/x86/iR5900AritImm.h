@@ -34,6 +34,9 @@ namespace OpcodeImpl {
 
 	void recSLTI();
 	void recSLTIU();
-} } }
+
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900
 
 #endif

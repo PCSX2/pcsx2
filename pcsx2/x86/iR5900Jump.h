@@ -29,6 +29,9 @@ namespace OpcodeImpl {
 	void recJAL();
 	void recJR();
 	void recJALR();
-} } }
+
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900
 
 #endif

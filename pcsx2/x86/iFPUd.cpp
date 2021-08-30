@@ -75,15 +75,15 @@ namespace DOUBLE {
 #define _Fd_ _Sa_
 
 // FCR31 Flags
-#define FPUflagC	0X00800000
-#define FPUflagI	0X00020000
-#define FPUflagD	0X00010000
-#define FPUflagO	0X00008000
-#define FPUflagU	0X00004000
-#define FPUflagSI	0X00000040
-#define FPUflagSD	0X00000020
-#define FPUflagSO	0X00000010
-#define FPUflagSU	0X00000008
+#define FPUflagC  0x00800000
+#define FPUflagI  0x00020000
+#define FPUflagD  0x00010000
+#define FPUflagO  0x00008000
+#define FPUflagU  0x00004000
+#define FPUflagSI 0x00000040
+#define FPUflagSD 0x00000020
+#define FPUflagSO 0x00000010
+#define FPUflagSU 0x00000008
 
 //------------------------------------------------------------------
 
@@ -95,44 +95,44 @@ namespace DOUBLE {
 // PS2 -> DOUBLE
 //------------------------------------------------------------------
 
-#define SINGLE(sign, exp, mant) (((u32)(sign)<<31) | ((u32)(exp)<<23) | (u32)(mant))
-#define DOUBLE(sign, exp, mant) (((sign ## ULL)<<63) | ((exp ## ULL)<<52) | (mant ## ULL))
+#define SINGLE(sign, exp, mant) (((u32)(sign) << 31) | ((u32)(exp) << 23) | (u32)(mant))
+#define DOUBLE(sign, exp, mant) (((sign##ULL) << 63) | ((exp##ULL) << 52) | (mant##ULL))
 
 struct FPUd_Globals
 {
-	u32		neg[4], pos[4];
+	u32 neg[4], pos[4];
 
-	u32		pos_inf[4], neg_inf[4],
-			one_exp[4];
+	u32 pos_inf[4], neg_inf[4],
+	    one_exp[4];
 
-	u64		dbl_one_exp[2];
+	u64 dbl_one_exp[2];
 
-	u64		dbl_cvt_overflow,	// needs special code if above or equal
-			dbl_ps2_overflow,	// overflow & clamp if above or equal
-			dbl_underflow;		// underflow if below
+	u64 dbl_cvt_overflow, // needs special code if above or equal
+	    dbl_ps2_overflow, // overflow & clamp if above or equal
+	    dbl_underflow;    // underflow if below
 
-	u64		padding;
+	u64 padding;
 
-	u64		dbl_s_pos[2];
+	u64 dbl_s_pos[2];
 	//u64		dlb_s_neg[2];
 };
 
 static const __aligned(32) FPUd_Globals s_const =
 {
-	{ 0x80000000, 0xffffffff, 0xffffffff, 0xffffffff },
-	{ 0x7fffffff, 0xffffffff, 0xffffffff, 0xffffffff },
+	{0x80000000, 0xffffffff, 0xffffffff, 0xffffffff},
+	{0x7fffffff, 0xffffffff, 0xffffffff, 0xffffffff},
 
-	{SINGLE(0,0xff,0), 0, 0, 0},
-	{SINGLE(1,0xff,0), 0, 0, 0},
-	{SINGLE(0,1,0), 0, 0, 0},
+	{SINGLE(0, 0xff, 0), 0, 0, 0},
+	{SINGLE(1, 0xff, 0), 0, 0, 0},
+	{SINGLE(0,    1, 0), 0, 0, 0},
 
-	{DOUBLE(0,1,0), 0},
+	{DOUBLE(0, 1, 0), 0},
 
-	DOUBLE(0,1151,0),	// cvt_overflow
-	DOUBLE(0,1152,0),	// ps2_overflow
-	DOUBLE(0,897,0),	// underflow
+	DOUBLE(0, 1151, 0), // cvt_overflow
+	DOUBLE(0, 1152, 0), // ps2_overflow
+	DOUBLE(0,  897, 0), // underflow
 
-	0,					// Padding!!
+	0,                  // Padding!!
 
 	{0x7fffffffffffffffULL, 0},
 	//{0x8000000000000000ULL, 0},
@@ -144,12 +144,12 @@ static const __aligned(32) FPUd_Globals s_const =
 void ToDouble(int reg)
 {
 	xUCOMI.SS(xRegisterSSE(reg), ptr[s_const.pos_inf]); // Sets ZF if reg is equal or incomparable to pos_inf
-	u8 *to_complex = JE8(0); // Complex conversion if positive infinity or NaN
+	u8* to_complex = JE8(0); // Complex conversion if positive infinity or NaN
 	xUCOMI.SS(xRegisterSSE(reg), ptr[s_const.neg_inf]);
-	u8 *to_complex2 = JE8(0); // Complex conversion if negative infinity
+	u8* to_complex2 = JE8(0); // Complex conversion if negative infinity
 
 	xCVTSS2SD(xRegisterSSE(reg), xRegisterSSE(reg)); // Simply convert
-	u8 *end = JMP8(0);
+	u8* end = JMP8(0);
 
 	x86SetJ8(to_complex);
 	x86SetJ8(to_complex2);
@@ -166,12 +166,10 @@ void ToDouble(int reg)
 // DOUBLE -> PS2
 //------------------------------------------------------------------
 
-/*
-	if FPU_RESULT is defined, results are more like the real PS2's FPU. But new issues may happen if
-		the VU isn't clamping all operands since games may transfer FPU results into the VU.
-		Ar tonelico 1 does this with the result from DIV/RSQRT (when a division by zero occurs)
-	otherwise, results are still usually better than iFPU.cpp.
-*/
+// If FPU_RESULT is defined, results are more like the real PS2's FPU.
+// But new issues may happen if the VU isn't clamping all operands since games may transfer FPU results into the VU.
+// Ar tonelico 1 does this with the result from DIV/RSQRT (when a division by zero occurs).
+// Otherwise, results are still usually better than iFPU.cpp.
 
 // ToPS2FPU_Full - converts double-precision IEEE float to single-precision PS2 float
 
@@ -192,27 +190,27 @@ void ToPS2FPU_Full(int reg, bool flags, int absreg, bool acc, bool addsub)
 	xAND.PD(xRegisterSSE(absreg), ptr[&s_const.dbl_s_pos]);
 
 	xUCOMI.SD(xRegisterSSE(absreg), ptr[&s_const.dbl_cvt_overflow]);
-	u8 *to_complex = JAE8(0);
+	u8* to_complex = JAE8(0);
 
 	xUCOMI.SD(xRegisterSSE(absreg), ptr[&s_const.dbl_underflow]);
-	u8 *to_underflow = JB8(0);
+	u8* to_underflow = JB8(0);
 
 	xCVTSD2SS(xRegisterSSE(reg), xRegisterSSE(reg)); //simply convert
 #ifdef __M_X86_64
 	u32* end = JMP32(0);
 #else
-	u8 *end = JMP8(0);
+	u8* end = JMP8(0);
 #endif
 
 	x86SetJ8(to_complex);
 	xUCOMI.SD(xRegisterSSE(absreg), ptr[&s_const.dbl_ps2_overflow]);
-	u8 *to_overflow = JAE8(0);
+	u8* to_overflow = JAE8(0);
 
 	xPSUB.Q(xRegisterSSE(reg), ptr[&s_const.dbl_one_exp]); //lower exponent
 	xCVTSD2SS(xRegisterSSE(reg), xRegisterSSE(reg)); //convert
 	xPADD.D(xRegisterSSE(reg), ptr[s_const.one_exp]); //raise exponent
 #ifdef __M_X86_64
-	u32 *end2 = JMP32(0);
+	u32* end2 = JMP32(0);
 #else
 	u8* end2 = JMP8(0);
 #endif
@@ -224,15 +222,15 @@ void ToPS2FPU_Full(int reg, bool flags, int absreg, bool acc, bool addsub)
 		xOR(ptr32[&fpuRegs.fprc[31]], (FPUflagO | FPUflagSO));
 	if (flags && FPU_FLAGS_OVERFLOW && acc)
 		xOR(ptr32[&fpuRegs.ACCflag], 1);
-	u8 *end3 = JMP8(0);
+	u8* end3 = JMP8(0);
 
 	x86SetJ8(to_underflow);
-	u8 *end4 = nullptr;
+	u8* end4 = nullptr;
 	if (flags && FPU_FLAGS_UNDERFLOW) //set underflow flags if not zero
 	{
 		xXOR.PD(xRegisterSSE(absreg), xRegisterSSE(absreg));
 		xUCOMI.SD(xRegisterSSE(reg), xRegisterSSE(absreg));
-		u8 *is_zero = JE8(0);
+		u8* is_zero = JE8(0);
 
 		xOR(ptr32[&fpuRegs.fprc[31]], (FPUflagU | FPUflagSU));
 		if (addsub)
@@ -290,25 +288,52 @@ void SetMaxValue(int regd)
 	}
 }
 
-#define GET_S(sreg) { \
-	if( info & PROCESS_EE_S ) xMOVSS(xRegisterSSE(sreg), xRegisterSSE(EEREC_S)); \
-	else xMOVSSZX(xRegisterSSE(sreg), ptr[&fpuRegs.fpr[_Fs_]]); }
+#define GET_S(sreg) \
+	do { \
+		if (info & PROCESS_EE_S) \
+			xMOVSS(xRegisterSSE(sreg), xRegisterSSE(EEREC_S)); \
+		else \
+			xMOVSSZX(xRegisterSSE(sreg), ptr[&fpuRegs.fpr[_Fs_]]); \
+	} while (0)
 
-#define ALLOC_S(sreg) { (sreg) = _allocTempXMMreg(XMMT_FPS, -1);  GET_S(sreg); }
+#define ALLOC_S(sreg) \
+	do { \
+		(sreg) = _allocTempXMMreg(XMMT_FPS, -1); \
+		GET_S(sreg); \
+	} while (0)
 
-#define GET_T(treg) { \
-	if( info & PROCESS_EE_T ) xMOVSS(xRegisterSSE(treg), xRegisterSSE(EEREC_T)); \
-	else xMOVSSZX(xRegisterSSE(treg), ptr[&fpuRegs.fpr[_Ft_]]); }
+#define GET_T(treg) \
+	do { \
+		if (info & PROCESS_EE_T) \
+			xMOVSS(xRegisterSSE(treg), xRegisterSSE(EEREC_T)); \
+		else \
+			xMOVSSZX(xRegisterSSE(treg), ptr[&fpuRegs.fpr[_Ft_]]); \
+	} while (0)
 
-#define ALLOC_T(treg) { (treg) = _allocTempXMMreg(XMMT_FPS, -1);  GET_T(treg); }
+#define ALLOC_T(treg) \
+	do { \
+		(treg) = _allocTempXMMreg(XMMT_FPS, -1); \
+		GET_T(treg); \
+	} while (0)
 
-#define GET_ACC(areg) { \
-	if( info & PROCESS_EE_ACC ) xMOVSS(xRegisterSSE(areg), xRegisterSSE(EEREC_ACC)); \
-	else xMOVSSZX(xRegisterSSE(areg), ptr[&fpuRegs.ACC]); }
+#define GET_ACC(areg) \
+	do { \
+		if (info & PROCESS_EE_ACC) \
+			xMOVSS(xRegisterSSE(areg), xRegisterSSE(EEREC_ACC)); \
+		else \
+			xMOVSSZX(xRegisterSSE(areg), ptr[&fpuRegs.ACC]); \
+	} while (0)
 
-#define ALLOC_ACC(areg) { (areg) = _allocTempXMMreg(XMMT_FPS, -1);  GET_ACC(areg); }
+#define ALLOC_ACC(areg) \
+	do { \
+		(areg) = _allocTempXMMreg(XMMT_FPS, -1); \
+		GET_ACC(areg); \
+	} while (0)
 
-#define CLEAR_OU_FLAGS { xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO | FPUflagU)); }
+#define CLEAR_OU_FLAGS \
+	do { \
+		xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO | FPUflagU)); \
+	} while (0)
 
 
 //------------------------------------------------------------------
@@ -324,7 +349,7 @@ void recABS_S_xmm(int info)
 	xAND.PS(xRegisterSSE(EEREC_D), ptr[s_const.pos]);
 }
 
-FPURECOMPILE_CONSTCODE(ABS_S, XMMINFO_WRITED|XMMINFO_READS);
+FPURECOMPILE_CONSTCODE(ABS_S, XMMINFO_WRITED | XMMINFO_READS);
 //------------------------------------------------------------------
 
 
@@ -405,8 +430,8 @@ void FPU_ADD_SUB(int tempd, int tempt) //tempd and tempt are overwritten, they a
 
 void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
 {
-	u8 *noHack;
-	u32 *endMul = nullptr;
+	u8* noHack;
+	u32* endMul = nullptr;
 
 	if (CHECK_FPUMULHACK)
 	{
@@ -432,8 +457,8 @@ void FPU_MUL(int info, int regd, int sreg, int treg, bool acc)
 //------------------------------------------------------------------
 // CommutativeOp XMM (used for ADD and SUB opcodes. that's it.)
 //------------------------------------------------------------------
-static void (*recFPUOpXMM_to_XMM[] )(x86SSERegType, x86SSERegType) = {
-	SSE2_ADDSD_XMM_to_XMM, SSE2_SUBSD_XMM_to_XMM };
+static void (*recFPUOpXMM_to_XMM[])(x86SSERegType, x86SSERegType) = {
+	SSE2_ADDSD_XMM_to_XMM, SSE2_SUBSD_XMM_to_XMM};
 
 void recFPUOp(int info, int regd, int op, bool acc)
 {
@@ -460,19 +485,19 @@ void recFPUOp(int info, int regd, int op, bool acc)
 //------------------------------------------------------------------
 void recADD_S_xmm(int info)
 {
-    EE::Profiler.EmitOp(eeOpcode::ADD_F);
-    recFPUOp(info, EEREC_D, 0, false);
+	EE::Profiler.EmitOp(eeOpcode::ADD_F);
+	recFPUOp(info, EEREC_D, 0, false);
 }
 
-FPURECOMPILE_CONSTCODE(ADD_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(ADD_S, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 
 void recADDA_S_xmm(int info)
 {
-    EE::Profiler.EmitOp(eeOpcode::ADDA_F);
-    recFPUOp(info, EEREC_ACC, 0, true);
+	EE::Profiler.EmitOp(eeOpcode::ADDA_F);
+	recFPUOp(info, EEREC_ACC, 0, true);
 }
 
-FPURECOMPILE_CONSTCODE(ADDA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(ADDA_S, XMMINFO_WRITEACC | XMMINFO_READS | XMMINFO_READT);
 //------------------------------------------------------------------
 
 void recCMP(int info)
@@ -495,29 +520,29 @@ void recC_EQ_xmm(int info)
 	recCMP(info);
 
 	j8Ptr[0] = JZ8(0);
-		xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC );
+		xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC);
 		j8Ptr[1] = JMP8(0);
 	x86SetJ8(j8Ptr[0]);
 		xOR(ptr32[&fpuRegs.fprc[31]], FPUflagC);
 	x86SetJ8(j8Ptr[1]);
 }
 
-FPURECOMPILE_CONSTCODE(C_EQ, XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(C_EQ, XMMINFO_READS | XMMINFO_READT);
 
-void recC_LE_xmm(int info )
+void recC_LE_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::CLE_F);
 	recCMP(info);
 
 	j8Ptr[0] = JBE8(0);
-		xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC );
+		xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC);
 		j8Ptr[1] = JMP8(0);
 	x86SetJ8(j8Ptr[0]);
 		xOR(ptr32[&fpuRegs.fprc[31]], FPUflagC);
 	x86SetJ8(j8Ptr[1]);
 }
 
-FPURECOMPILE_CONSTCODE(C_LE, XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(C_LE, XMMINFO_READS | XMMINFO_READT);
 
 void recC_LT_xmm(int info)
 {
@@ -525,14 +550,14 @@ void recC_LT_xmm(int info)
 	recCMP(info);
 
 	j8Ptr[0] = JB8(0);
-		xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC );
+		xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC);
 		j8Ptr[1] = JMP8(0);
 	x86SetJ8(j8Ptr[0]);
 		xOR(ptr32[&fpuRegs.fprc[31]], FPUflagC);
 	x86SetJ8(j8Ptr[1]);
 }
 
-FPURECOMPILE_CONSTCODE(C_LT, XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(C_LT, XMMINFO_READS | XMMINFO_READT);
 //------------------------------------------------------------------
 
 
@@ -542,41 +567,39 @@ FPURECOMPILE_CONSTCODE(C_LT, XMMINFO_READS|XMMINFO_READT);
 void recCVT_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::CVTS_F);
-	if( !(info&PROCESS_EE_S) || (EEREC_D != EEREC_S && !(info&PROCESS_EE_MODEWRITES)) ) {
+	if (!(info & PROCESS_EE_S) || (EEREC_D != EEREC_S && !(info & PROCESS_EE_MODEWRITES)))
 		xCVTSI2SS(xRegisterSSE(EEREC_D), ptr32[&fpuRegs.fpr[_Fs_]]);
-	}
-	else {
+	else
 		xCVTDQ2PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	}
 }
 
-FPURECOMPILE_CONSTCODE(CVT_S, XMMINFO_WRITED|XMMINFO_READS);
+FPURECOMPILE_CONSTCODE(CVT_S, XMMINFO_WRITED | XMMINFO_READS);
 
 void recCVT_W() //called from iFPU.cpp's recCVT_W
 {
 	EE::Profiler.EmitOp(eeOpcode::CVTW);
 	int regs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
 
-	if( regs >= 0 )
+	if (regs >= 0)
 	{
 		xCVTTSS2SI(eax, xRegisterSSE(regs));
-		xMOVMSKPS(edx, xRegisterSSE(regs));	//extract the signs
-		xAND(edx, 1);					//keep only LSB
+		xMOVMSKPS(edx, xRegisterSSE(regs)); // extract the signs
+		xAND(edx, 1);                       // keep only LSB
 	}
 	else
 	{
-		xCVTTSS2SI(eax, ptr32[&fpuRegs.fpr[ _Fs_ ]]);
-		xMOV(edx, ptr[&fpuRegs.fpr[ _Fs_ ]]);
-		xSHR(edx, 31);	//mov sign to lsb
+		xCVTTSS2SI(eax, ptr32[&fpuRegs.fpr[_Fs_]]);
+		xMOV(edx, ptr[&fpuRegs.fpr[_Fs_]]);
+		xSHR(edx, 31); //mov sign to lsb
 	}
 
 	//kill register allocation for dst because we write directly to fpuRegs.fpr[_Fd_]
 	_deleteFPtoXMMreg(_Fd_, 2);
 
-	xADD(edx, 0x7FFFFFFF);	//0x7FFFFFFF if positive, 0x8000 0000 if negative
+	xADD(edx, 0x7FFFFFFF); // 0x7FFFFFFF if positive, 0x8000 0000 if negative
 
-	xCMP(eax, 0x80000000);	//If the result is indefinitive
-	xCMOVE(eax, edx);		//Saturate it
+	xCMP(eax, 0x80000000); // If the result is indefinitive
+	xCMOVE(eax, edx);      // Saturate it
 
 	//Write the result
 	xMOV(ptr[&fpuRegs.fpr[_Fd_]], eax);
@@ -594,25 +617,25 @@ void recDIVhelper1(int regd, int regt) // Sets flags
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
-	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
+	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI | FPUflagD)); // Clear I and D flags
 
 	//--- Check for divide by zero ---
 	xXOR.PS(xRegisterSSE(t1reg), xRegisterSSE(t1reg));
 	xCMPEQ.SS(xRegisterSSE(t1reg), xRegisterSSE(regt));
 	xMOVMSKPS(xRegister32(tempReg), xRegisterSSE(t1reg));
-	xAND(xRegister32(tempReg), 1);  //Check sign (if regt == zero, sign will be set)
+	xAND(xRegister32(tempReg), 1); //Check sign (if regt == zero, sign will be set)
 	ajmp32 = JZ32(0); //Skip if not set
 
 		//--- Check for 0/0 ---
 		xXOR.PS(xRegisterSSE(t1reg), xRegisterSSE(t1reg));
 		xCMPEQ.SS(xRegisterSSE(t1reg), xRegisterSSE(regd));
 		xMOVMSKPS(xRegister32(tempReg), xRegisterSSE(t1reg));
-		xAND(xRegister32(tempReg), 1);  //Check sign (if regd == zero, sign will be set)
+		xAND(xRegister32(tempReg), 1); //Check sign (if regd == zero, sign will be set)
 		pjmp1 = JZ8(0); //Skip if not set
-			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI|FPUflagSI); // Set I and SI flags ( 0/0 )
+			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI | FPUflagSI); // Set I and SI flags ( 0/0 )
 			pjmp2 = JMP8(0);
 		x86SetJ8(pjmp1); //x/0 but not 0/0
-			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagD|FPUflagSD); // Set D and SD flags ( x/0 )
+			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagD | FPUflagSD); // Set D and SD flags ( x/0 )
 		x86SetJ8(pjmp2);
 
 		//--- Make regd +/- Maximum ---
@@ -650,9 +673,9 @@ void recDIV_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::DIV_F);
 	bool roundmodeFlag = false;
-    //Console.WriteLn("DIV");
+	//Console.WriteLn("DIV");
 
-	if( CHECK_FPUNEGDIVHACK )
+	if (CHECK_FPUNEGDIVHACK)
 	{
 		if (g_sseMXCSR.GetRoundMode() != SSEround_NegInf)
 		{
@@ -660,8 +683,8 @@ void recDIV_S_xmm(int info)
 			//Console.WriteLn("div to negative inf");
 
 			roundmode_neg = g_sseMXCSR;
-			roundmode_neg.SetRoundMode( SSEround_NegInf );
-			xLDMXCSR( roundmode_neg );
+			roundmode_neg.SetRoundMode(SSEround_NegInf);
+			xLDMXCSR(roundmode_neg);
 			roundmodeFlag = true;
 		}
 	}
@@ -673,8 +696,8 @@ void recDIV_S_xmm(int info)
 			//Console.WriteLn("div to nearest");
 
 			roundmode_nearest = g_sseMXCSR;
-			roundmode_nearest.SetRoundMode( SSEround_Nearest );
-			xLDMXCSR( roundmode_nearest );
+			roundmode_nearest.SetRoundMode(SSEround_Nearest);
+			xLDMXCSR(roundmode_nearest);
 			roundmodeFlag = true;
 		}
 	}
@@ -690,11 +713,12 @@ void recDIV_S_xmm(int info)
 
 	xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(sreg));
 
-	if (roundmodeFlag) xLDMXCSR (g_sseMXCSR);
+	if (roundmodeFlag)
+		xLDMXCSR(g_sseMXCSR);
 	_freeXMMreg(sreg); _freeXMMreg(treg);
 }
 
-FPURECOMPILE_CONSTCODE(DIV_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(DIV_S, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 //------------------------------------------------------------------
 
 
@@ -723,18 +747,18 @@ void recMaddsub(int info, int regd, int op, bool acc)
 	//          TEST FOR ACC/MUL OVERFLOWS, PROPOGATE THEM IF THEY OCCUR
 
 	xTEST(ptr32[&fpuRegs.fprc[31]], FPUflagO);
-	u8 *mulovf = JNZ8(0);
+	u8* mulovf = JNZ8(0);
 	ToDouble(sreg); //else, convert
 
 	xTEST(ptr32[&fpuRegs.ACCflag], 1);
-	u8 *accovf = JNZ8(0);
+	u8* accovf = JNZ8(0);
 	ToDouble(treg); //else, convert
-	u8 *operation = JMP8(0);
+	u8* operation = JMP8(0);
 
 	x86SetJ8(mulovf);
 	if (op == 1) //sub
 		xXOR.PS(xRegisterSSE(sreg), ptr[s_const.neg]);
-	xMOVAPS(xRegisterSSE(treg), xRegisterSSE(sreg));  //fall through below
+	xMOVAPS(xRegisterSSE(treg), xRegisterSSE(sreg)); //fall through below
 
 	x86SetJ8(accovf);
 	SetMaxValue(treg); //just in case... I think it has to be a MaxValue already here
@@ -743,7 +767,7 @@ void recMaddsub(int info, int regd, int op, bool acc)
 		xOR(ptr32[&fpuRegs.fprc[31]], FPUflagO | FPUflagSO);
 	if (FPU_FLAGS_OVERFLOW && acc)
 		xOR(ptr32[&fpuRegs.ACCflag], 1);
-	u32 *skipall = JMP32(0);
+	u32* skipall = JMP32(0);
 
 	//			PERFORM THE ACCUMULATION AND TEST RESULT. CONVERT TO SINGLE
 
@@ -767,7 +791,7 @@ void recMADD_S_xmm(int info)
 	recMaddsub(info, EEREC_D, 0, false);
 }
 
-FPURECOMPILE_CONSTCODE(MADD_S, XMMINFO_WRITED|XMMINFO_READACC|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(MADD_S, XMMINFO_WRITED | XMMINFO_READACC | XMMINFO_READS | XMMINFO_READT);
 
 void recMADDA_S_xmm(int info)
 {
@@ -775,7 +799,7 @@ void recMADDA_S_xmm(int info)
 	recMaddsub(info, EEREC_ACC, 0, true);
 }
 
-FPURECOMPILE_CONSTCODE(MADDA_S, XMMINFO_WRITEACC|XMMINFO_READACC|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(MADDA_S, XMMINFO_WRITEACC | XMMINFO_READACC | XMMINFO_READS | XMMINFO_READT);
 //------------------------------------------------------------------
 
 
@@ -785,8 +809,8 @@ FPURECOMPILE_CONSTCODE(MADDA_S, XMMINFO_WRITEACC|XMMINFO_READACC|XMMINFO_READS|X
 
 static const __aligned16 u32 minmax_mask[8] =
 {
-	0xffffffff,	0x80000000, 0, 0,
-	0,			0x40000000, 0, 0
+	0xffffffff, 0x80000000, 0, 0,
+	0,          0x40000000, 0, 0,
 };
 // FPU's MAX/MIN work with all numbers (including "denormals"). Check VU's logical min max for more info.
 void recMINMAX(int info, bool ismin)
@@ -818,7 +842,7 @@ void recMAX_S_xmm(int info)
 	recMINMAX(info, false);
 }
 
-FPURECOMPILE_CONSTCODE(MAX_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(MAX_S, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 
 void recMIN_S_xmm(int info)
 {
@@ -826,7 +850,7 @@ void recMIN_S_xmm(int info)
 	recMINMAX(info, true);
 }
 
-FPURECOMPILE_CONSTCODE(MIN_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(MIN_S, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 //------------------------------------------------------------------
 
 
@@ -839,7 +863,7 @@ void recMOV_S_xmm(int info)
 	GET_S(EEREC_D);
 }
 
-FPURECOMPILE_CONSTCODE(MOV_S, XMMINFO_WRITED|XMMINFO_READS);
+FPURECOMPILE_CONSTCODE(MOV_S, XMMINFO_WRITED | XMMINFO_READS);
 //------------------------------------------------------------------
 
 
@@ -853,7 +877,7 @@ void recMSUB_S_xmm(int info)
 	recMaddsub(info, EEREC_D, 1, false);
 }
 
-FPURECOMPILE_CONSTCODE(MSUB_S, XMMINFO_WRITED|XMMINFO_READACC|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(MSUB_S, XMMINFO_WRITED | XMMINFO_READACC | XMMINFO_READS | XMMINFO_READT);
 
 void recMSUBA_S_xmm(int info)
 {
@@ -861,7 +885,7 @@ void recMSUBA_S_xmm(int info)
 	recMaddsub(info, EEREC_ACC, 1, true);
 }
 
-FPURECOMPILE_CONSTCODE(MSUBA_S, XMMINFO_WRITEACC|XMMINFO_READACC|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(MSUBA_S, XMMINFO_WRITEACC | XMMINFO_READACC | XMMINFO_READS | XMMINFO_READT);
 //------------------------------------------------------------------
 
 //------------------------------------------------------------------
@@ -877,7 +901,7 @@ void recMUL_S_xmm(int info)
 	_freeXMMreg(sreg); _freeXMMreg(treg);
 }
 
-FPURECOMPILE_CONSTCODE(MUL_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(MUL_S, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 
 void recMULA_S_xmm(int info)
 {
@@ -889,7 +913,7 @@ void recMULA_S_xmm(int info)
 	_freeXMMreg(sreg); _freeXMMreg(treg);
 }
 
-FPURECOMPILE_CONSTCODE(MULA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(MULA_S, XMMINFO_WRITEACC | XMMINFO_READS | XMMINFO_READT);
 //------------------------------------------------------------------
 
 
@@ -906,7 +930,7 @@ void recNEG_S_xmm(int info)
 	xXOR.PS(xRegisterSSE(EEREC_D), ptr[&s_const.neg[0]]);
 }
 
-FPURECOMPILE_CONSTCODE(NEG_S, XMMINFO_WRITED|XMMINFO_READS);
+FPURECOMPILE_CONSTCODE(NEG_S, XMMINFO_WRITED | XMMINFO_READS);
 //------------------------------------------------------------------
 
 
@@ -920,7 +944,7 @@ void recSUB_S_xmm(int info)
 	recFPUOp(info, EEREC_D, 1, false);
 }
 
-FPURECOMPILE_CONSTCODE(SUB_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(SUB_S, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 
 
 void recSUBA_S_xmm(int info)
@@ -929,7 +953,7 @@ void recSUBA_S_xmm(int info)
 	recFPUOp(info, EEREC_ACC, 1, true);
 }
 
-FPURECOMPILE_CONSTCODE(SUBA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(SUBA_S, XMMINFO_WRITEACC | XMMINFO_READS | XMMINFO_READT);
 //------------------------------------------------------------------
 
 
@@ -939,7 +963,7 @@ FPURECOMPILE_CONSTCODE(SUBA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
 void recSQRT_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::SQRT_F);
-	u8 *pjmp;
+	u8* pjmp;
 	int roundmodeFlag = 0;
 	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
@@ -950,21 +974,22 @@ void recSQRT_S_xmm(int info)
 		// Set roundmode to nearest if it isn't already
 		//Console.WriteLn("sqrt to nearest");
 		roundmode_nearest = g_sseMXCSR;
-		roundmode_nearest.SetRoundMode( SSEround_Nearest );
-		xLDMXCSR (roundmode_nearest);
+		roundmode_nearest.SetRoundMode(SSEround_Nearest);
+		xLDMXCSR(roundmode_nearest);
 		roundmodeFlag = 1;
 	}
 
 	GET_T(EEREC_D);
 
-	if (FPU_FLAGS_ID) {
-		xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
+	if (FPU_FLAGS_ID)
+	{
+		xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI | FPUflagD)); // Clear I and D flags
 
 		//--- Check for negative SQRT --- (sqrt(-0) = 0, unlike what the docs say)
 		xMOVMSKPS(xRegister32(tempReg), xRegisterSSE(EEREC_D));
-		xAND(xRegister32(tempReg), 1);  //Check sign
+		xAND(xRegister32(tempReg), 1); //Check sign
 		pjmp = JZ8(0); //Skip if none are
-			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI|FPUflagSI); // Set I and SI flags
+			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI | FPUflagSI); // Set I and SI flags
 			xAND.PS(xRegisterSSE(EEREC_D), ptr[&s_const.pos[0]]); // Make EEREC_D Positive
 		x86SetJ8(pjmp);
 	}
@@ -980,15 +1005,14 @@ void recSQRT_S_xmm(int info)
 
 	ToPS2FPU(EEREC_D, false, t1reg, false);
 
-	if (roundmodeFlag == 1) {
-		xLDMXCSR (g_sseMXCSR);
-	}
+	if (roundmodeFlag == 1)
+		xLDMXCSR(g_sseMXCSR);
 
 	_freeX86reg(tempReg);
 	_freeXMMreg(t1reg);
 }
 
-FPURECOMPILE_CONSTCODE(SQRT_S, XMMINFO_WRITED|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(SQRT_S, XMMINFO_WRITED | XMMINFO_READT);
 //------------------------------------------------------------------
 
 
@@ -999,17 +1023,17 @@ void recRSQRThelper1(int regd, int regt) // Preforms the RSQRT function when reg
 {
 	u8 *pjmp1, *pjmp2;
 	u8 *qjmp1, *qjmp2;
-	u32 *pjmp32;
+	u32* pjmp32;
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
-	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
+	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI | FPUflagD)); // Clear I and D flags
 
 	//--- (first) Check for negative SQRT ---
 	xMOVMSKPS(xRegister32(tempReg), xRegisterSSE(regt));
-	xAND(xRegister32(tempReg), 1);  //Check sign
+	xAND(xRegister32(tempReg), 1); //Check sign
 	pjmp2 = JZ8(0); //Skip if not set
-		xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI|FPUflagSI); // Set I and SI flags
+		xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI | FPUflagSI); // Set I and SI flags
 		xAND.PS(xRegisterSSE(regt), ptr[&s_const.pos[0]]); // Make regt Positive
 	x86SetJ8(pjmp2);
 
@@ -1017,19 +1041,19 @@ void recRSQRThelper1(int regd, int regt) // Preforms the RSQRT function when reg
 	xXOR.PS(xRegisterSSE(t1reg), xRegisterSSE(t1reg));
 	xCMPEQ.SS(xRegisterSSE(t1reg), xRegisterSSE(regt));
 	xMOVMSKPS(xRegister32(tempReg), xRegisterSSE(t1reg));
-	xAND(xRegister32(tempReg), 1);  //Check sign (if regt == zero, sign will be set)
+	xAND(xRegister32(tempReg), 1); //Check sign (if regt == zero, sign will be set)
 	pjmp1 = JZ8(0); //Skip if not set
 
 		//--- Check for 0/0 ---
 		xXOR.PS(xRegisterSSE(t1reg), xRegisterSSE(t1reg));
 		xCMPEQ.SS(xRegisterSSE(t1reg), xRegisterSSE(regd));
 		xMOVMSKPS(xRegister32(tempReg), xRegisterSSE(t1reg));
-		xAND(xRegister32(tempReg), 1);  //Check sign (if regd == zero, sign will be set)
+		xAND(xRegister32(tempReg), 1); //Check sign (if regd == zero, sign will be set)
 		qjmp1 = JZ8(0); //Skip if not set
-			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI|FPUflagSI); // Set I and SI flags ( 0/0 )
+			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI | FPUflagSI); // Set I and SI flags ( 0/0 )
 			qjmp2 = JMP8(0);
 		x86SetJ8(qjmp1); //x/0 but not 0/0
-			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagD|FPUflagSD); // Set D and SD flags ( x/0 )
+			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagD | FPUflagSD); // Set D and SD flags ( x/0 )
 		x86SetJ8(qjmp2);
 
 		SetMaxValue(regd); //clamp to max
@@ -1075,8 +1099,8 @@ void recRSQRT_S_xmm(int info)
 		// Set roundmode to nearest if it isn't already
 		//Console.WriteLn("sqrt to nearest");
 		roundmode_nearest = g_sseMXCSR;
-		roundmode_nearest.SetRoundMode( SSEround_Nearest );
-		xLDMXCSR (roundmode_nearest);
+		roundmode_nearest.SetRoundMode(SSEround_Nearest);
+		xLDMXCSR(roundmode_nearest);
 		roundmodeFlag = true;
 	}
 
@@ -1091,11 +1115,16 @@ void recRSQRT_S_xmm(int info)
 
 	_freeXMMreg(treg); _freeXMMreg(sreg);
 
-	if (roundmodeFlag) xLDMXCSR (g_sseMXCSR);
+	if (roundmodeFlag)
+		xLDMXCSR(g_sseMXCSR);
 }
 
-FPURECOMPILE_CONSTCODE(RSQRT_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(RSQRT_S, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 
 
-} } } } }
+} // namespace DOUBLE
+} // namespace COP1
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900
 #endif
