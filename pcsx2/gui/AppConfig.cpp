@@ -24,6 +24,7 @@
 #include <wx/stdpaths.h>
 #include "DebugTools/Debug.h"
 #include <memory>
+#include <algorithm>
 
 //////////////////////////////////////////////////////////////////////////////////////////
 // PathDefs Namespace -- contains default values for various pcsx2 path names and locations.
@@ -860,23 +861,13 @@ void AppConfig::InputRecordingOptions::loadSave(IniInterface& ini)
 #endif
 
 // ----------------------------------------------------------------------------
-AppConfig::FramerateOptions::FramerateOptions()
-{
-	NominalScalar			= 1.0;
-	TurboScalar				= 2.0;
-	SlomoScalar				= 0.50;
-
-	SkipOnLimit				= false;
-	SkipOnTurbo				= false;
-}
-
 void AppConfig::FramerateOptions::SanityCheck()
 {
 	// Ensure Conformation of various options...
 
-	NominalScalar	.ConfineTo( 0.05, 10.0 );
-	TurboScalar		.ConfineTo( 0.05, 10.0 );
-	SlomoScalar		.ConfineTo( 0.05, 10.0 );
+	NominalScalar = std::clamp(NominalScalar, 5.0, 1000.0);
+	TurboScalar = std::clamp(TurboScalar, 5.0, 1000.0);
+	SlomoScalar = std::clamp(SlomoScalar, 5.0, 1000.0);
 }
 
 void AppConfig::FramerateOptions::LoadSave( IniInterface& ini )

@@ -20,7 +20,7 @@
 #include "Gif.h"
 #include "GS/GS.h"
 
-extern Fixed100 GetVerticalFrequency();
+extern double GetVerticalFrequency();
 extern __aligned16 u8 g_RealGSMem[Ps2MemSize::GSregs];
 
 enum CSR_FifoState
@@ -282,20 +282,19 @@ extern bool gsIsInterlaced;
 
 enum MTGS_RingCommand
 {
-	GS_RINGTYPE_P1
-,	GS_RINGTYPE_P2
-,	GS_RINGTYPE_P3
-,	GS_RINGTYPE_VSYNC
-,	GS_RINGTYPE_FRAMESKIP
-,	GS_RINGTYPE_FREEZE
-,	GS_RINGTYPE_RESET			// issues a GSreset() command.
-,	GS_RINGTYPE_SOFTRESET		// issues a soft reset for the GIF
-,	GS_RINGTYPE_MODECHANGE		// for issued mode changes.
-,	GS_RINGTYPE_CRC
-,	GS_RINGTYPE_GSPACKET
-,	GS_RINGTYPE_MTVU_GSPACKET
-,	GS_RINGTYPE_INIT_READ_FIFO1
-,	GS_RINGTYPE_INIT_READ_FIFO2
+	GS_RINGTYPE_P1,
+	GS_RINGTYPE_P2,
+	GS_RINGTYPE_P3,
+	GS_RINGTYPE_VSYNC,
+	GS_RINGTYPE_FRAMESKIP,
+	GS_RINGTYPE_FREEZE,
+	GS_RINGTYPE_RESET,          // issues a GSreset() command.
+	GS_RINGTYPE_SOFTRESET,      // issues a soft reset for the GIF
+	GS_RINGTYPE_CRC,
+	GS_RINGTYPE_GSPACKET,
+	GS_RINGTYPE_MTVU_GSPACKET,
+	GS_RINGTYPE_INIT_READ_FIFO1,
+	GS_RINGTYPE_INIT_READ_FIFO2,
 };
 
 
@@ -410,12 +409,11 @@ extern SysMtgsThread& GetMTGS();
 extern s32 gsOpen();
 extern void gsClose();
 extern void gsReset();
-extern void gsOnModeChanged( Fixed100 framerate, u32 newTickrate );
-extern void gsSetVideoMode( GS_VideoMode mode );
+extern void gsSetVideoMode(GS_VideoMode mode);
 extern void gsResetFrameSkip();
 extern void gsPostVsyncStart();
 extern void gsFrameSkip();
-extern void gsUpdateFrequency( Pcsx2Config& config );
+extern void gsUpdateFrequency(Pcsx2Config& config);
 
 // Some functions shared by both the GS and MTGS
 extern void _gs_ResetFrameskip();

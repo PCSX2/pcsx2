@@ -686,7 +686,7 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 
 	AppConfig::UiTemplateOptions& templates = g_Conf->Templates;
 
-	float percentage = (fps * 100) / GetVerticalFrequency().ToFloat();
+	const float percentage = (fps * 100) / GetVerticalFrequency();
 
 	char gsDest[128];
 	gsDest[0] = 0; // No need to set whole array to NULL.

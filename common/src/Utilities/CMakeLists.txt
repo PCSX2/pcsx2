@@ -10,7 +10,6 @@ add_library(Utilities)
 # Utilities sources
 target_sources(Utilities PRIVATE
 	VirtualMemory.cpp
-	../../include/Utilities/FixedPointTypes.inl
 	../../include/Utilities/EventSource.inl
 	../../include/Utilities/SafeArray.inl
 	CheckedStaticBox.cpp
@@ -47,7 +46,6 @@ target_sources(Utilities PRIVATE
 	../../include/Utilities/Dependencies.h
 	../../include/Utilities/EventSource.h
 	../../include/Utilities/Exceptions.h
-	../../include/Utilities/FixedPointTypes.h
 	../../include/Utilities/General.h
 	../../include/Utilities/MemcpyFast.h
 	../../include/Utilities/MemsetFast.inl

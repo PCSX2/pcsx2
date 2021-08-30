@@ -217,24 +217,6 @@ void Pcsx2Config::CpuOptions::LoadSave( IniInterface& ini )
 	Recompiler.LoadSave( ini );
 }
 
-// Default GSOptions
-Pcsx2Config::GSOptions::GSOptions()
-{
-	FrameLimitEnable		= true;
-	FrameSkipEnable			= false;
-	VsyncEnable				= VsyncMode::Off;
-
-	SynchronousMTGS			= false;
-	VsyncQueueSize			= 2;
-
-	FramesToDraw			= 2;
-	FramesToSkip			= 2;
-
-	LimitScalar				= 1.0;
-	FramerateNTSC			= 59.94;
-	FrameratePAL			= 50.0;
-}
-
 void Pcsx2Config::GSOptions::LoadSave( IniInterface& ini )
 {
 	ScopedIniGroup path( ini, L"GS" );

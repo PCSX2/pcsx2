@@ -20,12 +20,6 @@
 
 const wxRect wxDefaultRect(wxDefaultCoord, wxDefaultCoord, wxDefaultCoord, wxDefaultCoord);
 
-// Implement FixedPointTypes (for lack of a better location, for now)
-
-#include "FixedPointTypes.inl"
-template struct FixedInt<100>;
-template struct FixedInt<256>;
-
 wxDirName g_fullBaseDirName = wxDirName(L"");
 void SetFullBaseDir(wxDirName appRoot)
 {
@@ -196,15 +190,15 @@ int IniLoader::EntryBitfield(const wxString &var, int value, const int defvalue)
     return result;
 }
 
-void IniLoader::Entry(const wxString &var, Fixed100 &value, const Fixed100 defvalue)
+void IniLoader::Entry(const wxString &var, double& value, const double defvalue)
 {
-    // Note: the "easy" way would be to convert to double and load/save that, but floating point
-    // has way too much rounding error so we really need to do things out manually.. >_<
+    auto readval = wxString::FromDouble(value);
 
-    wxString readval(value.ToString());
     if (m_Config)
         m_Config->Read(var, &readval);
-    value = Fixed100::FromString(readval, value);
+
+    if (!readval.ToDouble(&value))
+        value = 0.0;
 }
 
 void IniLoader::Entry(const wxString &var, wxPoint &value, const wxPoint defvalue)
@@ -361,15 +355,12 @@ int IniSaver::EntryBitfield(const wxString &var, int value, const int defvalue)
     return value;
 }
 
-void IniSaver::Entry(const wxString &var, Fixed100 &value, const Fixed100 defvalue)
+void IniSaver::Entry(const wxString &var, double &value, const double defvalue)
 {
     if (!m_Config)
         return;
 
-    // Note: the "easy" way would be to convert to double and load/save that, but floating point
-    // has way too much rounding error so we really need to do things out manually, using strings.
-
-    m_Config->Write(var, value.ToString());
+    m_Config->Write(var, wxString::FromDouble(value));
 }
 
 void IniSaver::Entry(const wxString &var, wxPoint &value, const wxPoint defvalue)

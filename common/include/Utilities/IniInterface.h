@@ -16,7 +16,6 @@
 #pragma once
 
 #include "Path.h"
-#include "FixedPointTypes.h"
 #include <wx/config.h>
 #include <wx/gdicmn.h>
 
@@ -64,7 +63,7 @@ public:
     virtual bool EntryBitBool(const wxString &var, bool value, const bool defvalue = false) = 0;
     virtual int EntryBitfield(const wxString &var, int value, const int defvalue = 0) = 0;
 
-    virtual void Entry(const wxString &var, Fixed100 &value, const Fixed100 defvalue = Fixed100()) = 0;
+    virtual void Entry(const wxString &var, double& value, const double defvalue = 0.0) = 0;
 
     virtual void Entry(const wxString &var, wxPoint &value, const wxPoint defvalue = wxDefaultPosition) = 0;
     virtual void Entry(const wxString &var, wxSize &value, const wxSize defvalue = wxDefaultSize) = 0;
@@ -127,7 +126,7 @@ public:
     bool EntryBitBool(const wxString &var, bool value, const bool defvalue = false);
     int EntryBitfield(const wxString &var, int value, const int defvalue = 0);
 
-    void Entry(const wxString &var, Fixed100 &value, const Fixed100 defvalue = Fixed100());
+    void Entry(const wxString &var, double& value, const double defvalue = 0.0) override;
 
     void Entry(const wxString &var, wxPoint &value, const wxPoint defvalue = wxDefaultPosition);
     void Entry(const wxString &var, wxSize &value, const wxSize defvalue = wxDefaultSize);
@@ -165,7 +164,7 @@ public:
     bool EntryBitBool(const wxString &var, bool value, const bool defvalue = false);
     int EntryBitfield(const wxString &var, int value, const int defvalue = 0);
 
-    void Entry(const wxString &var, Fixed100 &value, const Fixed100 defvalue = Fixed100());
+    void Entry(const wxString &var, double &value, const double defvalue = 0.0) override;
 
     void Entry(const wxString &var, wxPoint &value, const wxPoint defvalue = wxDefaultPosition);
     void Entry(const wxString &var, wxSize &value, const wxSize defvalue = wxDefaultSize);

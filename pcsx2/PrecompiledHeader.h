@@ -70,7 +70,6 @@
 #include "Pcsx2Defs.h"
 #include "i18n.h"
 
-#include "Utilities/FixedPointTypes.h"
 #include "Utilities/wxBaseTools.h"
 #include "Utilities/Path.h"
 #include "Utilities/Console.h"

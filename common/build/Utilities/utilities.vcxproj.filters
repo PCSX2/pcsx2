@@ -150,9 +150,6 @@
     <ClInclude Include="..\..\include\Utilities\Exceptions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\include\Utilities\FixedPointTypes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\include\Utilities\General.h">
       <Filter>Header Files</Filter>
     </ClInclude>
