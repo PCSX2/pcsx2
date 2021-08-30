@@ -99,7 +99,7 @@ jobs:
         run: git submodule update --init --recursive -j $env:NUMBER_OF_PROCESSORS
 
       - name: Setup Buildcache
-        uses: mikehardy/buildcache-action@v1.2.1
+        uses: mikehardy/buildcache-action@v1.2.2
         with:
           cache_key: ${{ matrix.os }} ${{ matrix.platform }} ${{ matrix.configuration }}
         if: matrix.configuration == 'CMake' # TODO: buildcache on VS
