@@ -1058,7 +1058,7 @@ u8 monthmap[13] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 void cdvdVsync()
 {
 	cdvd.RTCcount++;
-	if (cdvd.RTCcount < (GetVerticalFrequency().ToIntRounded()))
+	if (cdvd.RTCcount < GetVerticalFrequency())
 		return;
 	cdvd.RTCcount = 0;
 

@@ -518,10 +518,6 @@ void SysMtgsThread::ExecuteTaskInThread()
 						}
 						break;
 
-						case GS_RINGTYPE_MODECHANGE:
-							// [TODO] some frameskip sync logic might be needed here!
-							break;
-
 						case GS_RINGTYPE_CRC:
 							GSsetGameCRC(tag.data[0], 0);
 							break;

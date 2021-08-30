@@ -343,12 +343,12 @@ GSVector4i GSRenderer::ComputeDrawRectangle(int width, int height) const
 	else if (arr > 1)
 		target_height = std::floor(f_height / arr + 0.5);
 
-	float zoom = g_Conf->GSWindow.Zoom.ToFloat() / 100.0;
+	float zoom = g_Conf->GSWindow.Zoom / 100.0;
 	if (zoom == 0) //auto zoom in untill black-bars are gone (while keeping the aspect ratio).
 		zoom = std::max((float)arr, (float)(1.0 / arr));
 
 	target_width *= zoom;
-	target_height *= zoom * g_Conf->GSWindow.StretchY.ToFloat() / 100.0;
+	target_height *= zoom * g_Conf->GSWindow.StretchY / 100.0;
 
 	double target_x, target_y;
 	if (target_width > f_width)
@@ -361,8 +361,8 @@ GSVector4i GSRenderer::ComputeDrawRectangle(int width, int height) const
 		target_y = (f_height - target_height) * 0.5;
 
 	const double unit = .01 * std::min(target_x, target_y);
-	target_x += unit * g_Conf->GSWindow.OffsetX.ToFloat();
-	target_y += unit * g_Conf->GSWindow.OffsetY.ToFloat();
+	target_x += unit * g_Conf->GSWindow.OffsetX;
+	target_y += unit * g_Conf->GSWindow.OffsetY;
 
 	return GSVector4i(
 		static_cast<int>(std::floor(target_x)),

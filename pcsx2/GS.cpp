@@ -28,18 +28,11 @@ using namespace R5900;
 
 __aligned16 u8 g_RealGSMem[Ps2MemSize::GSregs];
 
-void gsOnModeChanged( Fixed100 framerate, u32 newTickrate )
-{
-	GetMTGS().SendSimplePacket( GS_RINGTYPE_MODECHANGE, framerate.Raw, newTickrate, 0 );
-}
-
-
-void gsSetVideoMode(GS_VideoMode mode )
+void gsSetVideoMode(GS_VideoMode mode)
 {
 	gsVideoMode = mode;
 	UpdateVSyncRate();
 }
-
 
 // Make sure framelimiter options are in sync with GS capabilities.
 void gsReset()
@@ -58,13 +51,13 @@ void gsUpdateFrequency(Pcsx2Config& config)
 	switch (g_LimiterMode)
 	{
 	case LimiterModeType::Limit_Nominal:
-		config.GS.LimitScalar = g_Conf->Framerate.NominalScalar;
+		config.GS.LimitScalar = g_Conf->Framerate.NominalScalar / 100.0;
 		break;
 	case LimiterModeType::Limit_Slomo:
-		config.GS.LimitScalar = g_Conf->Framerate.SlomoScalar;
+		config.GS.LimitScalar = g_Conf->Framerate.SlomoScalar / 100.0;
 		break;
 	case LimiterModeType::Limit_Turbo:
-		config.GS.LimitScalar = g_Conf->Framerate.TurboScalar;
+		config.GS.LimitScalar = g_Conf->Framerate.TurboScalar / 100.0;
 		break;
 	default:
 		pxAssert("Unknown framelimiter mode!");

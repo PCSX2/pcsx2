@@ -211,22 +211,22 @@ namespace Implementations
 
 	void GSwindow_OffsetYplus()
 	{
-		SetOffset(g_Conf->GSWindow.OffsetX.ToFloat(), g_Conf->GSWindow.OffsetY.ToFloat() + 1);
+		SetOffset(g_Conf->GSWindow.OffsetX, g_Conf->GSWindow.OffsetY + 1);
 	}
 
 	void GSwindow_OffsetYminus()
 	{
-		SetOffset(g_Conf->GSWindow.OffsetX.ToFloat(), g_Conf->GSWindow.OffsetY.ToFloat() - 1);
+		SetOffset(g_Conf->GSWindow.OffsetX, g_Conf->GSWindow.OffsetY - 1);
 	}
 
 	void GSwindow_OffsetXplus()
 	{
-		SetOffset(g_Conf->GSWindow.OffsetX.ToFloat() + 1, g_Conf->GSWindow.OffsetY.ToFloat());
+		SetOffset(g_Conf->GSWindow.OffsetX + 1, g_Conf->GSWindow.OffsetY);
 	}
 
 	void GSwindow_OffsetXminus()
 	{
-		SetOffset(g_Conf->GSWindow.OffsetX.ToFloat() - 1, g_Conf->GSWindow.OffsetY.ToFloat());
+		SetOffset(g_Conf->GSWindow.OffsetX - 1, g_Conf->GSWindow.OffsetY);
 	}
 
 	void GSwindow_OffsetReset()
@@ -244,11 +244,11 @@ namespace Implementations
 
 	void GSwindow_ZoomInY()
 	{
-		SetZoomY(g_Conf->GSWindow.StretchY.ToFloat() + 1);
+		SetZoomY(g_Conf->GSWindow.StretchY + 1);
 	}
 	void GSwindow_ZoomOutY()
 	{
-		SetZoomY(g_Conf->GSWindow.StretchY.ToFloat() - 1);
+		SetZoomY(g_Conf->GSWindow.StretchY - 1);
 	}
 	void GSwindow_ZoomResetY()
 	{
@@ -270,7 +270,7 @@ namespace Implementations
 
 	void GSwindow_ZoomIn()
 	{
-		float z = g_Conf->GSWindow.Zoom.ToFloat();
+		float z = g_Conf->GSWindow.Zoom;
 		if (z == 0)
 			z = 100;
 		z++;
@@ -278,7 +278,7 @@ namespace Implementations
 	}
 	void GSwindow_ZoomOut()
 	{
-		float z = g_Conf->GSWindow.Zoom.ToFloat();
+		float z = g_Conf->GSWindow.Zoom;
 		if (z == 0)
 			z = 100;
 		z--;
@@ -286,7 +286,7 @@ namespace Implementations
 	}
 	void GSwindow_ZoomToggle()
 	{
-		float z = g_Conf->GSWindow.Zoom.ToFloat();
+		float z = g_Conf->GSWindow.Zoom;
 		if (z == 100)
 			z = 0;
 		else

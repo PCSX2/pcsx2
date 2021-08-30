@@ -206,28 +206,27 @@ public:
 	struct GSWindowOptions
 	{
 		// Closes the GS/Video port on escape (good for fullscreen activity)
-		bool		CloseOnEsc;
-		
-		bool		DefaultToFullscreen;
-		bool		AlwaysHideMouse;
-		bool		DisableResizeBorders;
-		bool		DisableScreenSaver;
+		bool CloseOnEsc;
+		bool DefaultToFullscreen;
+		bool AlwaysHideMouse;
+		bool DisableResizeBorders;
+		bool DisableScreenSaver;
 
 		AspectRatioType AspectRatio;
 		FMVAspectRatioSwitchType FMVAspectRatioSwitch;
-		Fixed100	Zoom;
-		Fixed100	StretchY;
-		Fixed100	OffsetX;
-		Fixed100	OffsetY;
 
+		double Zoom;
+		double StretchY;
+		double OffsetX;
+		double OffsetY;
 
-		wxSize		WindowSize;
-		wxPoint		WindowPos;
-		bool		IsMaximized;
-		bool		IsFullscreen;
-		bool		EnableVsyncWindowFlag;
+		wxSize WindowSize;
+		wxPoint WindowPos;
 
-		bool		IsToggleFullscreenOnDoubleClick;
+		bool IsMaximized;
+		bool IsFullscreen;
+		bool EnableVsyncWindowFlag;
+		bool IsToggleFullscreenOnDoubleClick;
 
 		GSWindowOptions();
 
@@ -237,15 +236,13 @@ public:
 
 	struct FramerateOptions
 	{
-		bool		SkipOnLimit;
-		bool		SkipOnTurbo;
+		bool SkipOnLimit{ false };
+		bool SkipOnTurbo{ false };
 
-		Fixed100	NominalScalar;
-		Fixed100	TurboScalar;
-		Fixed100	SlomoScalar;
+		double NominalScalar{ 100.0 };
+		double TurboScalar{ 200.0 };
+		double SlomoScalar{ 50.0 };
 
-		FramerateOptions();
-		
 		void LoadSave( IniInterface& conf );
 		void SanityCheck();
 	};

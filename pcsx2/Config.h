@@ -16,8 +16,6 @@
 #pragma once
 
 #include "x86emitter/tools.h"
-
-#include "Utilities/FixedPointTypes.h"
 #include "Utilities/General.h"
 #include <wx/filename.h>
 
@@ -282,24 +280,23 @@ struct Pcsx2Config
 	// ------------------------------------------------------------------------
 	struct GSOptions
 	{
+		int VsyncQueueSize{ 2 };
+
 		// forces the MTGS to execute tags/tasks in fully blocking/synchronous
-		// style.  Useful for debugging potential bugs in the MTGS pipeline.
-		bool	SynchronousMTGS;
+		// style. Useful for debugging potential bugs in the MTGS pipeline.
+		bool SynchronousMTGS{ false };
+		bool FrameLimitEnable{ true };
+		bool FrameSkipEnable{ false };
 
-		int		VsyncQueueSize;
+		VsyncMode VsyncEnable{ VsyncMode::Off };
 
-		bool		FrameLimitEnable;
-		bool		FrameSkipEnable;
-		VsyncMode	VsyncEnable;
+		int FramesToDraw{ 2 }; // number of consecutive frames (fields) to render
+		int FramesToSkip{ 2 }; // number of consecutive frames (fields) to skip
 
-		int		FramesToDraw;	// number of consecutive frames (fields) to render
-		int		FramesToSkip;	// number of consecutive frames (fields) to skip
+		double LimitScalar{ 1.0 };
+		double FramerateNTSC{ 59.94 };
+		double FrameratePAL{ 50.00 };
 
-		Fixed100	LimitScalar;
-		Fixed100	FramerateNTSC;
-		Fixed100	FrameratePAL;
-
-		GSOptions();
 		void LoadSave( IniInterface& conf );
 
 		int GetVsync() const;
