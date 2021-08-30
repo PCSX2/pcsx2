@@ -1280,7 +1280,7 @@ static void SaveUiSettings()
 	if (!fs::exists(g_Conf->Folders.RunDisc))
 		g_Conf->Folders.RunDisc.clear();
 
-	sApp.GetRecentIsoManager().Add( Path::ToWxString(g_Conf->CurrentIso) );
+	sApp.GetRecentIsoManager().Add( g_Conf->CurrentIso.string() );
 
 	std::unique_ptr<wxFileConfig> uiini(OpenFileConfig(Path::ToWxString(GetUiSettingsFilename())));
 	IniSaver saver(uiini.get());
@@ -1307,6 +1307,7 @@ void AppSaveSettings()
 
 	static std::atomic<bool> isPosted(false);
 
+	// Fucking with this will break GUI events and messages. Dialogues won't open... Stuff like that
 	if( !wxThread::IsMain() )
 	{
 		if( !isPosted.exchange(true) )

@@ -485,7 +485,7 @@ bool Pcsx2App::OnInit()
 			else
 			{
 				g_Conf->Folders.RunELF = elfFile;
-				sApp.SysExecute(Startup.CdvdSource, Path::FromWxString(Startup.ElfFile));
+				sApp.SysExecute(Startup.CdvdSource, g_Conf->Folders.RunELF);
 			}
 		}
 		else if (Startup.SysAutoRunIrx)

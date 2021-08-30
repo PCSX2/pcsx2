@@ -360,7 +360,7 @@ void Pcsx2App::EstablishAppUserMode()
 	bool conf_install = TestForPortableInstall();
 
 	if (!conf_install)
-		conf_install = OpenInstallSettingsFile();
+		OpenInstallSettingsFile();
 
 	if (!runWizard)
 	{

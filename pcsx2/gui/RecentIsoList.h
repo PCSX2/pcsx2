@@ -58,7 +58,7 @@ public:
 	void EnableItems(bool display);
 	void Repopulate();
 	void Clear();
-	void Add( const wxString& src );
+	void Add( const std::string& src );
 
 protected:
 	void InsertIntoMenu( int id );
