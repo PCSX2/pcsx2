@@ -31,29 +31,29 @@ extern void mergeVectors(xRegisterSSE dest, xRegisterSSE src, xRegisterSSE temp,
 class VifUnpackSSE_Base
 {
 public:
-	bool			usn;			// unsigned flag
-	bool			doMask;			// masking write enable flag
-	int				UnpkLoopIteration;
-	int				UnpkNoOfIterations;
-	int				IsAligned;
+	bool usn;    // unsigned flag
+	bool doMask; // masking write enable flag
+	int  UnpkLoopIteration;
+	int  UnpkNoOfIterations;
+	int  IsAligned;
 
 
 protected:
-	xAddressVoid	dstIndirect;
-	xAddressVoid	srcIndirect;
-	xRegisterSSE	workReg;
-	xRegisterSSE	destReg;	
+	xAddressVoid dstIndirect;
+	xAddressVoid srcIndirect;
+	xRegisterSSE workReg;
+	xRegisterSSE destReg;
 
 public:
 	VifUnpackSSE_Base();
 	virtual ~VifUnpackSSE_Base() = default;
 
-	virtual void xUnpack( int upktype ) const;
-	virtual bool IsUnmaskedOp() const=0;
+	virtual void xUnpack(int upktype) const;
+	virtual bool IsUnmaskedOp() const = 0;
 	virtual void xMovDest() const;
 
 protected:
-	virtual void doMaskWrite(const xRegisterSSE& regX ) const=0;
+	virtual void doMaskWrite(const xRegisterSSE& regX) const = 0;
 
 	virtual void xShiftR(const xRegisterSSE& regX, int n) const;
 	virtual void xPMOVXX8(const xRegisterSSE& regX) const;
@@ -75,7 +75,6 @@ protected:
 	virtual void xUPK_V4_16() const;
 	virtual void xUPK_V4_8() const;
 	virtual void xUPK_V4_5() const;
-
 };
 
 // --------------------------------------------------------------------------------------
@@ -86,16 +85,16 @@ class VifUnpackSSE_Simple : public VifUnpackSSE_Base
 	typedef VifUnpackSSE_Base _parent;
 
 public:
-	int				curCycle;
+	int curCycle;
 
 public:
 	VifUnpackSSE_Simple(bool usn_, bool domask_, int curCycle_);
 	virtual ~VifUnpackSSE_Simple() = default;
 
-	virtual bool IsUnmaskedOp() const{ return !doMask; }
+	virtual bool IsUnmaskedOp() const { return !doMask; }
 
 protected:
-	virtual void doMaskWrite(const xRegisterSSE& regX ) const;
+	virtual void doMaskWrite(const xRegisterSSE& regX) const;
 };
 
 // --------------------------------------------------------------------------------------
@@ -106,44 +105,43 @@ class VifUnpackSSE_Dynarec : public VifUnpackSSE_Base
 	typedef VifUnpackSSE_Base _parent;
 
 public:
-	bool			isFill;
-	int				doMode;			// two bit value representing... something!
-	
+	bool isFill;
+	int  doMode; // two bit value representing... something!
+
 protected:
-	const nVifStruct&	v;			// vif0 or vif1
-	const nVifBlock&	vB;			// some pre-collected data from VifStruct
-	int					vCL;		// internal copy of vif->cl
+	const nVifStruct& v;   // vif0 or vif1
+	const nVifBlock&  vB;  // some pre-collected data from VifStruct
+	int               vCL; // internal copy of vif->cl
 
 public:
 	VifUnpackSSE_Dynarec(const nVifStruct& vif_, const nVifBlock& vifBlock_);
-	VifUnpackSSE_Dynarec(const VifUnpackSSE_Dynarec& src)	// copy constructor
+	VifUnpackSSE_Dynarec(const VifUnpackSSE_Dynarec& src) // copy constructor
 		: _parent(src)
 		, v(src.v)
 		, vB(src.vB)
 	{
-		isFill	= src.isFill;
-		vCL		= src.vCL;
+		isFill = src.isFill;
+		vCL    = src.vCL;
 	}
 
 	virtual ~VifUnpackSSE_Dynarec() = default;
 
-	virtual bool IsUnmaskedOp() const{ return !doMode && !doMask; }
+	virtual bool IsUnmaskedOp() const { return !doMode && !doMask; }
 
-	void ModUnpack( int upknum, bool PostOp );
+	void ModUnpack(int upknum, bool PostOp);
 	void CompileRoutine();
-	
+
 
 protected:
 	virtual void doMaskWrite(const xRegisterSSE& regX) const;
 	void SetMasks(int cS) const;
 	void writeBackRow() const;
 
-	static VifUnpackSSE_Dynarec FillingWrite( const VifUnpackSSE_Dynarec& src )
+	static VifUnpackSSE_Dynarec FillingWrite(const VifUnpackSSE_Dynarec& src)
 	{
-		VifUnpackSSE_Dynarec fillingWrite( src );
+		VifUnpackSSE_Dynarec fillingWrite(src);
 		fillingWrite.doMask = true;
 		fillingWrite.doMode = 0;
 		return fillingWrite;
 	}
 };
-

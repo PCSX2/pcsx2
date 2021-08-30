@@ -23,8 +23,8 @@
 
 using namespace x86Emitter;
 
-const __aligned16 u32 g_minvals[4]	= {0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff};
-const __aligned16 u32 g_maxvals[4]	= {0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff};
+const __aligned16 u32 g_minvals[4] = {0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff};
+const __aligned16 u32 g_maxvals[4] = {0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff};
 
 //------------------------------------------------------------------
 namespace R5900 {
@@ -32,33 +32,34 @@ namespace Dynarec {
 namespace OpcodeImpl {
 namespace COP1 {
 
-namespace DOUBLE {
+namespace DOUBLE
+{
 
-void recABS_S_xmm(int info);
-void recADD_S_xmm(int info);
-void recADDA_S_xmm(int info);
-void recC_EQ_xmm(int info);
-void recC_LE_xmm(int info);
-void recC_LT_xmm(int info);
-void recCVT_S_xmm(int info);
-void recCVT_W();
-void recDIV_S_xmm(int info);
-void recMADD_S_xmm(int info);
-void recMADDA_S_xmm(int info);
-void recMAX_S_xmm(int info);
-void recMIN_S_xmm(int info);
-void recMOV_S_xmm(int info);
-void recMSUB_S_xmm(int info);
-void recMSUBA_S_xmm(int info);
-void recMUL_S_xmm(int info);
-void recMULA_S_xmm(int info);
-void recNEG_S_xmm(int info);
-void recSUB_S_xmm(int info);
-void recSUBA_S_xmm(int info);
-void recSQRT_S_xmm(int info);
-void recRSQRT_S_xmm(int info);
+	void recABS_S_xmm(int info);
+	void recADD_S_xmm(int info);
+	void recADDA_S_xmm(int info);
+	void recC_EQ_xmm(int info);
+	void recC_LE_xmm(int info);
+	void recC_LT_xmm(int info);
+	void recCVT_S_xmm(int info);
+	void recCVT_W();
+	void recDIV_S_xmm(int info);
+	void recMADD_S_xmm(int info);
+	void recMADDA_S_xmm(int info);
+	void recMAX_S_xmm(int info);
+	void recMIN_S_xmm(int info);
+	void recMOV_S_xmm(int info);
+	void recMSUB_S_xmm(int info);
+	void recMSUBA_S_xmm(int info);
+	void recMUL_S_xmm(int info);
+	void recMULA_S_xmm(int info);
+	void recNEG_S_xmm(int info);
+	void recSUB_S_xmm(int info);
+	void recSUBA_S_xmm(int info);
+	void recSQRT_S_xmm(int info);
+	void recRSQRT_S_xmm(int info);
 
-};
+}; // namespace DOUBLE
 
 //------------------------------------------------------------------
 // Helper Macros
@@ -68,36 +69,38 @@ void recRSQRT_S_xmm(int info);
 #define _Fd_ _Sa_
 
 // FCR31 Flags
-#define FPUflagC	0X00800000
-#define FPUflagI	0X00020000
-#define FPUflagD	0X00010000
-#define FPUflagO	0X00008000
-#define FPUflagU	0X00004000
-#define FPUflagSI	0X00000040
-#define FPUflagSD	0X00000020
-#define FPUflagSO	0X00000010
-#define FPUflagSU	0X00000008
+#define FPUflagC  0x00800000
+#define FPUflagI  0x00020000
+#define FPUflagD  0x00010000
+#define FPUflagO  0x00008000
+#define FPUflagU  0x00004000
+#define FPUflagSI 0x00000040
+#define FPUflagSD 0x00000020
+#define FPUflagSO 0x00000010
+#define FPUflagSU 0x00000008
 
 // Add/Sub opcodes produce the same results as the ps2
 #define FPU_CORRECT_ADD_SUB 1
 
-static const __aligned16 u32 s_neg[4] = { 0x80000000, 0xffffffff, 0xffffffff, 0xffffffff };
-static const __aligned16 u32 s_pos[4] = { 0x7fffffff, 0xffffffff, 0xffffffff, 0xffffffff };
+static const __aligned16 u32 s_neg[4] = {0x80000000, 0xffffffff, 0xffffffff, 0xffffffff};
+static const __aligned16 u32 s_pos[4] = {0x7fffffff, 0xffffffff, 0xffffffff, 0xffffffff};
 
 #define REC_FPUBRANCH(f) \
 	void f(); \
-	void rec##f() { \
-	iFlushCall(FLUSH_INTERPRETER); \
-	xFastCall((void*)(uptr)R5900::Interpreter::OpcodeImpl::COP1::f); \
-	g_branch = 2; \
-}
+	void rec##f() \
+	{ \
+		iFlushCall(FLUSH_INTERPRETER); \
+		xFastCall((void*)(uptr)R5900::Interpreter::OpcodeImpl::COP1::f); \
+		g_branch = 2; \
+	}
 
 #define REC_FPUFUNC(f) \
 	void f(); \
-	void rec##f() { \
-	iFlushCall(FLUSH_INTERPRETER); \
-	xFastCall((void*)(uptr)R5900::Interpreter::OpcodeImpl::COP1::f); \
-}
+	void rec##f() \
+	{ \
+		iFlushCall(FLUSH_INTERPRETER); \
+		xFastCall((void*)(uptr)R5900::Interpreter::OpcodeImpl::COP1::f); \
+	}
 //------------------------------------------------------------------
 
 //------------------------------------------------------------------
@@ -119,15 +122,16 @@ REC_FPUFUNC(MTC1);
 //------------------------------------------------------------------
 void recCFC1(void)
 {
-	if ( !_Rt_  ) return;
+	if (!_Rt_)
+		return;
 	EE::Profiler.EmitOp(eeOpcode::CFC1);
 
 	_eeOnWriteReg(_Rt_, 1);
 
 	if (_Fs_ >= 16)
-		xMOV(eax, ptr[&fpuRegs.fprc[31] ]);
+		xMOV(eax, ptr[&fpuRegs.fprc[31]]);
 	else
-		xMOV(eax, ptr[&fpuRegs.fprc[0] ]);
+		xMOV(eax, ptr[&fpuRegs.fprc[0]]);
 	_deleteEEreg(_Rt_, 0);
 
 	if (_Fs_ >= 16)
@@ -136,35 +140,36 @@ void recCFC1(void)
 		xOR(eax, 0x01000001); //set always-one bits
 	}
 
-	xCDQ( );
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edx);
+	xCDQ();
+	xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
+	xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
 }
 
 void recCTC1()
 {
-	if ( _Fs_ != 31 ) return;
+	if (_Fs_ != 31)
+		return;
 	EE::Profiler.EmitOp(eeOpcode::CTC1);
 
-	if ( GPR_IS_CONST1(_Rt_) )
+	if (GPR_IS_CONST1(_Rt_))
 	{
-		xMOV(ptr32[&fpuRegs.fprc[ _Fs_ ]], g_cpuConstRegs[_Rt_].UL[0]);
+		xMOV(ptr32[&fpuRegs.fprc[_Fs_]], g_cpuConstRegs[_Rt_].UL[0]);
 	}
 	else
 	{
 		int mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
 
-		if( mmreg >= 0 )
+		if (mmreg >= 0)
 		{
-			xMOVSS(ptr[&fpuRegs.fprc[ _Fs_ ]], xRegisterSSE(mmreg));
+			xMOVSS(ptr[&fpuRegs.fprc[_Fs_]], xRegisterSSE(mmreg));
 		}
 
 		else
 		{
 			_deleteGPRtoXMMreg(_Rt_, 1);
 
-			xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-			xMOV(ptr[&fpuRegs.fprc[ _Fs_ ]], eax);
+			xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+			xMOV(ptr[&fpuRegs.fprc[_Fs_]], eax);
 		}
 	}
 }
@@ -178,25 +183,26 @@ void recCTC1()
 void recMFC1()
 {
 	int regt, regs;
-	if ( ! _Rt_ ) return;
+	if (!_Rt_)
+		return;
 	EE::Profiler.EmitOp(eeOpcode::MFC1);
 
 	_eeOnWriteReg(_Rt_, 1);
 
 	regs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
 
-	if( regs >= 0 )
+	if (regs >= 0)
 	{
 		_deleteGPRtoXMMreg(_Rt_, 2);
-		_signExtendXMMtoM((uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ], regs, 0);
+		_signExtendXMMtoM((uptr)&cpuRegs.GPR.r[_Rt_].UL[0], regs, 0);
 	}
 	else
 	{
 		regt = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
 
-		if( regt >= 0 )
+		if (regt >= 0)
 		{
-			if( xmmregs[regt].mode & MODE_WRITE )
+			if (xmmregs[regt].mode & MODE_WRITE)
 			{
 				xMOVH.PS(ptr[&cpuRegs.GPR.r[_Rt_].UL[2]], xRegisterSSE(regt));
 			}
@@ -204,11 +210,11 @@ void recMFC1()
 		}
 
 		_deleteEEreg(_Rt_, 0);
-		xMOV(eax, ptr[&fpuRegs.fpr[ _Fs_ ].UL ]);
+		xMOV(eax, ptr[&fpuRegs.fpr[_Fs_].UL]);
 
-		xCDQ( );
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edx);
+		xCDQ();
+		xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
+		xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
 	}
 }
 
@@ -221,18 +227,18 @@ void recMFC1()
 void recMTC1()
 {
 	EE::Profiler.EmitOp(eeOpcode::MTC1);
-	if( GPR_IS_CONST1(_Rt_) )
+	if (GPR_IS_CONST1(_Rt_))
 	{
 		_deleteFPtoXMMreg(_Fs_, 0);
-		xMOV(ptr32[&fpuRegs.fpr[ _Fs_ ].UL], g_cpuConstRegs[_Rt_].UL[0]);
+		xMOV(ptr32[&fpuRegs.fpr[_Fs_].UL], g_cpuConstRegs[_Rt_].UL[0]);
 	}
 	else
 	{
 		int mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rt_, MODE_READ);
 
-		if( mmreg >= 0 )
+		if (mmreg >= 0)
 		{
-			if( g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE )
+			if (g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE)
 			{
 				// transfer the reg directly
 				_deleteGPRtoXMMreg(_Rt_, 2);
@@ -243,24 +249,24 @@ void recMTC1()
 			{
 				int mmreg2 = _allocCheckFPUtoXMM(g_pCurInstInfo, _Fs_, MODE_WRITE);
 
-				if( mmreg2 >= 0 )
+				if (mmreg2 >= 0)
 					xMOVSS(xRegisterSSE(mmreg2), xRegisterSSE(mmreg));
 				else
-					xMOVSS(ptr[&fpuRegs.fpr[ _Fs_ ].UL], xRegisterSSE(mmreg));
+					xMOVSS(ptr[&fpuRegs.fpr[_Fs_].UL], xRegisterSSE(mmreg));
 			}
 		}
 		else
 		{
 			int mmreg2 = _allocCheckFPUtoXMM(g_pCurInstInfo, _Fs_, MODE_WRITE);
 
-			if( mmreg2 >= 0 )
+			if (mmreg2 >= 0)
 			{
-				xMOVSSZX(xRegisterSSE(mmreg2), ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]]);
+				xMOVSSZX(xRegisterSSE(mmreg2), ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 			}
 			else
 			{
-				xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]]);
-				xMOV(ptr[&fpuRegs.fpr[ _Fs_ ].UL], eax);
+				xMOV(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+				xMOV(ptr[&fpuRegs.fpr[_Fs_].UL], eax);
 			}
 		}
 	}
@@ -307,9 +313,11 @@ REC_FPUFUNC(RSQRT_S);
 //------------------------------------------------------------------
 
 static __aligned16 u64 FPU_FLOAT_TEMP[2];
-__fi void fpuFloat3(int regd) { // +NaN -> +fMax, -NaN -> -fMax, +Inf -> +fMax, -Inf -> -fMax
+__fi void fpuFloat3(int regd) // +NaN -> +fMax, -NaN -> -fMax, +Inf -> +fMax, -Inf -> -fMax
+{
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
-	if (t1reg >= 0) {
+	if (t1reg >= 0)
+	{
 		xMOVSS(xRegisterSSE(t1reg), xRegisterSSE(regd));
 		xAND.PS(xRegisterSSE(t1reg), ptr[&s_neg[0]]);
 		xMIN.SS(xRegisterSSE(regd), ptr[&g_maxvals[0]]);
@@ -317,33 +325,39 @@ __fi void fpuFloat3(int regd) { // +NaN -> +fMax, -NaN -> -fMax, +Inf -> +fMax, 
 		xOR.PS(xRegisterSSE(regd), xRegisterSSE(t1reg));
 		_freeXMMreg(t1reg);
 	}
-	else {
+	else
+	{
 		Console.Error("fpuFloat2() allocation error");
 		t1reg = (regd == 0) ? 1 : 0; // get a temp reg thats not regd
-		xMOVAPS(ptr[&FPU_FLOAT_TEMP[0]], xRegisterSSE(t1reg )); // backup data in t1reg to a temp address
+		xMOVAPS(ptr[&FPU_FLOAT_TEMP[0]], xRegisterSSE(t1reg)); // backup data in t1reg to a temp address
 		xMOVSS(xRegisterSSE(t1reg), xRegisterSSE(regd));
 		xAND.PS(xRegisterSSE(t1reg), ptr[&s_neg[0]]);
 		xMIN.SS(xRegisterSSE(regd), ptr[&g_maxvals[0]]);
 		xMAX.SS(xRegisterSSE(regd), ptr[&g_minvals[0]]);
 		xOR.PS(xRegisterSSE(regd), xRegisterSSE(t1reg));
-		xMOVAPS(xRegisterSSE(t1reg), ptr[&FPU_FLOAT_TEMP[0] ]); // restore t1reg data
+		xMOVAPS(xRegisterSSE(t1reg), ptr[&FPU_FLOAT_TEMP[0]]); // restore t1reg data
 	}
 }
 
-__fi void fpuFloat(int regd) {  // +/-NaN -> +fMax, +Inf -> +fMax, -Inf -> -fMax
-	if (CHECK_FPU_OVERFLOW) {
+__fi void fpuFloat(int regd) // +/-NaN -> +fMax, +Inf -> +fMax, -Inf -> -fMax
+{
+	if (CHECK_FPU_OVERFLOW)
+	{
 		xMIN.SS(xRegisterSSE(regd), ptr[&g_maxvals[0]]); // MIN() must be before MAX()! So that NaN's become +Maximum
 		xMAX.SS(xRegisterSSE(regd), ptr[&g_minvals[0]]);
 	}
 }
 
-__fi void fpuFloat2(int regd) { // +NaN -> +fMax, -NaN -> -fMax, +Inf -> +fMax, -Inf -> -fMax
-	if (CHECK_FPU_OVERFLOW) {
+__fi void fpuFloat2(int regd) // +NaN -> +fMax, -NaN -> -fMax, +Inf -> +fMax, -Inf -> -fMax
+{
+	if (CHECK_FPU_OVERFLOW)
+	{
 		fpuFloat3(regd);
 	}
 }
 
-void ClampValues(int regd) {
+void ClampValues(int regd)
+{
 	fpuFloat(regd);
 }
 //------------------------------------------------------------------
@@ -355,8 +369,10 @@ void ClampValues(int regd) {
 void recABS_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::ABS_F);
-	if( info & PROCESS_EE_S ) xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	else xMOVSSZX(xRegisterSSE(EEREC_D), ptr[&fpuRegs.fpr[_Fs_]]);
+	if (info & PROCESS_EE_S)
+		xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else
+		xMOVSSZX(xRegisterSSE(EEREC_D), ptr[&fpuRegs.fpr[_Fs_]]);
 
 	xAND.PS(xRegisterSSE(EEREC_D), ptr[&s_pos[0]]);
 	//xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO|FPUflagU)); // Clear O and U flags
@@ -365,7 +381,7 @@ void recABS_S_xmm(int info)
 		xMIN.SS(xRegisterSSE(EEREC_D), ptr[&g_maxvals[0]]);
 }
 
-FPURECOMPILE_CONSTCODE(ABS_S, XMMINFO_WRITED|XMMINFO_READS);
+FPURECOMPILE_CONSTCODE(ABS_S, XMMINFO_WRITED | XMMINFO_READS);
 //------------------------------------------------------------------
 
 
@@ -465,14 +481,20 @@ void FPU_ADD_SUB(int regd, int regt, int issub)
 	_freeX86reg(tempecx);
 }
 
-void FPU_ADD(int regd, int regt) {
-	if (FPU_CORRECT_ADD_SUB) FPU_ADD_SUB(regd, regt, 0);
-	else xADD.SS(xRegisterSSE(regd), xRegisterSSE(regt));
+void FPU_ADD(int regd, int regt)
+{
+	if (FPU_CORRECT_ADD_SUB)
+		FPU_ADD_SUB(regd, regt, 0);
+	else
+		xADD.SS(xRegisterSSE(regd), xRegisterSSE(regt));
 }
 
-void FPU_SUB(int regd, int regt) {
-	if (FPU_CORRECT_ADD_SUB) FPU_ADD_SUB(regd, regt, 1);
-	else xSUB.SS(xRegisterSSE(regd), xRegisterSSE(regt));
+void FPU_SUB(int regd, int regt)
+{
+	if (FPU_CORRECT_ADD_SUB)
+		FPU_ADD_SUB(regd, regt, 1);
+	else
+		xSUB.SS(xRegisterSSE(regd), xRegisterSSE(regt));
 }
 
 //------------------------------------------------------------------
@@ -518,11 +540,11 @@ void FPU_MUL_REV(int regd, int regt) { FPU_MUL(regd, regt, true); } //reversed o
 //------------------------------------------------------------------
 // CommutativeOp XMM (used for ADD, MUL, MAX, and MIN opcodes)
 //------------------------------------------------------------------
-static void (*recComOpXMM_to_XMM[] )(x86SSERegType, x86SSERegType) = {
-	FPU_ADD, FPU_MUL, SSE_MAXSS_XMM_to_XMM, SSE_MINSS_XMM_to_XMM };
+static void (*recComOpXMM_to_XMM[])(x86SSERegType, x86SSERegType) = {
+	FPU_ADD, FPU_MUL,     SSE_MAXSS_XMM_to_XMM, SSE_MINSS_XMM_to_XMM};
 
-static void (*recComOpXMM_to_XMM_REV[] )(x86SSERegType, x86SSERegType) = { //reversed operands
-	FPU_ADD, FPU_MUL_REV, SSE_MAXSS_XMM_to_XMM, SSE_MINSS_XMM_to_XMM };
+static void (*recComOpXMM_to_XMM_REV[])(x86SSERegType, x86SSERegType) = { //reversed operands
+	FPU_ADD, FPU_MUL_REV, SSE_MAXSS_XMM_to_XMM, SSE_MINSS_XMM_to_XMM};
 
 //static void (*recComOpM32_to_XMM[] )(x86SSERegType, uptr) = {
 //	SSE_ADDSS_M32_to_XMM, SSE_MULSS_M32_to_XMM, SSE_MAXSS_M32_to_XMM, SSE_MINSS_M32_to_XMM };
@@ -531,39 +553,70 @@ int recCommutativeOp(int info, int regd, int op)
 {
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
 
-	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
+	switch (info & (PROCESS_EE_S | PROCESS_EE_T))
+	{
 		case PROCESS_EE_S:
-			if (regd == EEREC_S) {
+			if (regd == EEREC_S)
+			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
-				if (CHECK_FPU_EXTRA_OVERFLOW  /*&& !CHECK_FPUCLAMPHACK */ || (op >= 2)) { fpuFloat2(regd); fpuFloat2(t0reg); }
+				if (CHECK_FPU_EXTRA_OVERFLOW /*&& !CHECK_FPUCLAMPHACK */ || (op >= 2))
+				{
+					fpuFloat2(regd);
+					fpuFloat2(t0reg);
+				}
 				recComOpXMM_to_XMM[op](regd, t0reg);
 			}
-			else {
+			else
+			{
 				xMOVSSZX(xRegisterSSE(regd), ptr[&fpuRegs.fpr[_Ft_]]);
-				if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2)) { fpuFloat2(regd); fpuFloat2(EEREC_S); }
+				if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2))
+				{
+					fpuFloat2(regd);
+					fpuFloat2(EEREC_S);
+				}
 				recComOpXMM_to_XMM_REV[op](regd, EEREC_S);
 			}
 			break;
 		case PROCESS_EE_T:
-			if (regd == EEREC_T) {
+			if (regd == EEREC_T)
+			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
-				if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2)) { fpuFloat2(regd); fpuFloat2(t0reg); }
+				if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2))
+				{
+					fpuFloat2(regd);
+					fpuFloat2(t0reg);
+				}
 				recComOpXMM_to_XMM_REV[op](regd, t0reg);
 			}
-			else {
+			else
+			{
 				xMOVSSZX(xRegisterSSE(regd), ptr[&fpuRegs.fpr[_Fs_]]);
-				if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2)) { fpuFloat2(regd); fpuFloat2(EEREC_T); }
+				if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2))
+				{
+					fpuFloat2(regd);
+					fpuFloat2(EEREC_T);
+				}
 				recComOpXMM_to_XMM[op](regd, EEREC_T);
 			}
 			break;
-		case (PROCESS_EE_S|PROCESS_EE_T):
-			if (regd == EEREC_T) {
-				if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2)) { fpuFloat2(regd); fpuFloat2(EEREC_S); }
+		case (PROCESS_EE_S | PROCESS_EE_T):
+			if (regd == EEREC_T)
+			{
+				if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2))
+				{
+					fpuFloat2(regd);
+					fpuFloat2(EEREC_S);
+				}
 				recComOpXMM_to_XMM_REV[op](regd, EEREC_S);
 			}
-			else {
+			else
+			{
 				xMOVSS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
-				if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2)) { fpuFloat2(regd); fpuFloat2(EEREC_T); }
+				if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2))
+				{
+					fpuFloat2(regd);
+					fpuFloat2(EEREC_T);
+				}
 				recComOpXMM_to_XMM[op](regd, EEREC_T);
 			}
 			break;
@@ -571,7 +624,11 @@ int recCommutativeOp(int info, int regd, int op)
 			Console.WriteLn(Color_Magenta, "FPU: recCommutativeOp case 4");
 			xMOVSSZX(xRegisterSSE(regd), ptr[&fpuRegs.fpr[_Fs_]]);
 			xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
-			if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2)) { fpuFloat2(regd); fpuFloat2(t0reg); }
+			if (CHECK_FPU_EXTRA_OVERFLOW || (op >= 2))
+			{
+				fpuFloat2(regd);
+				fpuFloat2(t0reg);
+			}
 			recComOpXMM_to_XMM[op](regd, t0reg);
 			break;
 	}
@@ -589,20 +646,20 @@ void recADD_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::ADD_F);
 	//xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO|FPUflagU)); // Clear O and U flags
-    ClampValues(recCommutativeOp(info, EEREC_D, 0));
+	ClampValues(recCommutativeOp(info, EEREC_D, 0));
 	//REC_FPUOP(ADD_S);
 }
 
-FPURECOMPILE_CONSTCODE(ADD_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(ADD_S, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 
 void recADDA_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::ADDA_F);
 	//xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO|FPUflagU)); // Clear O and U flags
-    ClampValues(recCommutativeOp(info, EEREC_ACC, 0));
+	ClampValues(recCommutativeOp(info, EEREC_ACC, 0));
 }
 
-FPURECOMPILE_CONSTCODE(ADDA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(ADDA_S, XMMINFO_WRITEACC | XMMINFO_READS | XMMINFO_READT);
 //------------------------------------------------------------------
 
 //------------------------------------------------------------------
@@ -662,30 +719,35 @@ void recC_EQ_xmm(int info)
 
 	//Console.WriteLn("recC_EQ_xmm()");
 
-	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
+	switch (info & (PROCESS_EE_S | PROCESS_EE_T))
+	{
 		case PROCESS_EE_S:
 			fpuFloat3(EEREC_S);
 			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-			if (t0reg >= 0) {
+			if (t0reg >= 0)
+			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
 				fpuFloat3(t0reg);
 				xUCOMI.SS(xRegisterSSE(EEREC_S), xRegisterSSE(t0reg));
 				_freeXMMreg(t0reg);
 			}
-			else xUCOMI.SS(xRegisterSSE(EEREC_S), ptr[&fpuRegs.fpr[_Ft_]]);
+			else
+				xUCOMI.SS(xRegisterSSE(EEREC_S), ptr[&fpuRegs.fpr[_Ft_]]);
 			break;
 		case PROCESS_EE_T:
 			fpuFloat3(EEREC_T);
 			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-			if (t0reg >= 0) {
+			if (t0reg >= 0)
+			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				fpuFloat3(t0reg);
 				xUCOMI.SS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 				_freeXMMreg(t0reg);
 			}
-			else xUCOMI.SS(xRegisterSSE(EEREC_T), ptr[&fpuRegs.fpr[_Fs_]]);
+			else
+				xUCOMI.SS(xRegisterSSE(EEREC_T), ptr[&fpuRegs.fpr[_Fs_]]);
 			break;
-		case (PROCESS_EE_S|PROCESS_EE_T):
+		case (PROCESS_EE_S | PROCESS_EE_T):
 			fpuFloat3(EEREC_S);
 			fpuFloat3(EEREC_T);
 			xUCOMI.SS(xRegisterSSE(EEREC_S), xRegisterSSE(EEREC_T));
@@ -697,35 +759,36 @@ void recC_EQ_xmm(int info)
 			xCMP(xRegister32(tempReg), ptr[&fpuRegs.fpr[_Ft_]]);
 
 			j8Ptr[0] = JZ8(0);
-				xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC );
+				xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC);
 				j8Ptr[1] = JMP8(0);
 			x86SetJ8(j8Ptr[0]);
 				xOR(ptr32[&fpuRegs.fprc[31]], FPUflagC);
 			x86SetJ8(j8Ptr[1]);
 
-			if (tempReg >= 0) _freeX86reg(tempReg);
+			if (tempReg >= 0)
+				_freeX86reg(tempReg);
 			return;
 	}
 
 	j8Ptr[0] = JZ8(0);
-		xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC );
+		xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC);
 		j8Ptr[1] = JMP8(0);
 	x86SetJ8(j8Ptr[0]);
 		xOR(ptr32[&fpuRegs.fprc[31]], FPUflagC);
 	x86SetJ8(j8Ptr[1]);
 }
 
-FPURECOMPILE_CONSTCODE(C_EQ, XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(C_EQ, XMMINFO_READS | XMMINFO_READT);
 //REC_FPUFUNC(C_EQ);
 
 void recC_F()
 {
 	EE::Profiler.EmitOp(eeOpcode::CF_F);
-	xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC );
+	xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC);
 }
 //REC_FPUFUNC(C_F);
 
-void recC_LE_xmm(int info )
+void recC_LE_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::CLE_F);
 	int tempReg; //tempX86reg
@@ -733,32 +796,37 @@ void recC_LE_xmm(int info )
 
 	//Console.WriteLn("recC_LE_xmm()");
 
-	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
+	switch (info & (PROCESS_EE_S | PROCESS_EE_T))
+	{
 		case PROCESS_EE_S:
 			fpuFloat3(EEREC_S);
 			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-			if (t0reg >= 0) {
+			if (t0reg >= 0)
+			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
 				fpuFloat3(t0reg);
 				xUCOMI.SS(xRegisterSSE(EEREC_S), xRegisterSSE(t0reg));
 				_freeXMMreg(t0reg);
 			}
-			else xUCOMI.SS(xRegisterSSE(EEREC_S), ptr[&fpuRegs.fpr[_Ft_]]);
+			else
+				xUCOMI.SS(xRegisterSSE(EEREC_S), ptr[&fpuRegs.fpr[_Ft_]]);
 			break;
 		case PROCESS_EE_T:
 			fpuFloat3(EEREC_T);
 			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-			if (t0reg >= 0) {
+			if (t0reg >= 0)
+			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				fpuFloat3(t0reg);
 				xUCOMI.SS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 				_freeXMMreg(t0reg);
 			}
-			else {
+			else
+			{
 				xUCOMI.SS(xRegisterSSE(EEREC_T), ptr[&fpuRegs.fpr[_Fs_]]);
 
 				j8Ptr[0] = JAE8(0);
-					xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC );
+					xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC);
 					j8Ptr[1] = JMP8(0);
 				x86SetJ8(j8Ptr[0]);
 					xOR(ptr32[&fpuRegs.fprc[31]], FPUflagC);
@@ -766,7 +834,7 @@ void recC_LE_xmm(int info )
 				return;
 			}
 			break;
-		case (PROCESS_EE_S|PROCESS_EE_T):
+		case (PROCESS_EE_S | PROCESS_EE_T):
 			fpuFloat3(EEREC_S);
 			fpuFloat3(EEREC_T);
 			xUCOMI.SS(xRegisterSSE(EEREC_S), xRegisterSSE(EEREC_T));
@@ -778,25 +846,26 @@ void recC_LE_xmm(int info )
 			xCMP(xRegister32(tempReg), ptr[&fpuRegs.fpr[_Ft_]]);
 
 			j8Ptr[0] = JLE8(0);
-				xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC );
+				xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC);
 				j8Ptr[1] = JMP8(0);
 			x86SetJ8(j8Ptr[0]);
 				xOR(ptr32[&fpuRegs.fprc[31]], FPUflagC);
 			x86SetJ8(j8Ptr[1]);
 
-			if (tempReg >= 0) _freeX86reg(tempReg);
+			if (tempReg >= 0)
+				_freeX86reg(tempReg);
 			return;
 	}
 
 	j8Ptr[0] = JBE8(0);
-		xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC );
+		xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC);
 		j8Ptr[1] = JMP8(0);
 	x86SetJ8(j8Ptr[0]);
 		xOR(ptr32[&fpuRegs.fprc[31]], FPUflagC);
 	x86SetJ8(j8Ptr[1]);
 }
 
-FPURECOMPILE_CONSTCODE(C_LE, XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(C_LE, XMMINFO_READS | XMMINFO_READT);
 //REC_FPUFUNC(C_LE);
 
 void recC_LT_xmm(int info)
@@ -807,32 +876,37 @@ void recC_LT_xmm(int info)
 
 	//Console.WriteLn("recC_LT_xmm()");
 
-	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
+	switch (info & (PROCESS_EE_S | PROCESS_EE_T))
+	{
 		case PROCESS_EE_S:
 			fpuFloat3(EEREC_S);
 			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-			if (t0reg >= 0) {
+			if (t0reg >= 0)
+			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
 				fpuFloat3(t0reg);
 				xUCOMI.SS(xRegisterSSE(EEREC_S), xRegisterSSE(t0reg));
 				_freeXMMreg(t0reg);
 			}
-			else xUCOMI.SS(xRegisterSSE(EEREC_S), ptr[&fpuRegs.fpr[_Ft_]]);
+			else
+				xUCOMI.SS(xRegisterSSE(EEREC_S), ptr[&fpuRegs.fpr[_Ft_]]);
 			break;
 		case PROCESS_EE_T:
 			fpuFloat3(EEREC_T);
 			t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-			if (t0reg >= 0) {
+			if (t0reg >= 0)
+			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				fpuFloat3(t0reg);
 				xUCOMI.SS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 				_freeXMMreg(t0reg);
 			}
-			else {
+			else
+			{
 				xUCOMI.SS(xRegisterSSE(EEREC_T), ptr[&fpuRegs.fpr[_Fs_]]);
 
 				j8Ptr[0] = JA8(0);
-					xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC );
+					xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC);
 					j8Ptr[1] = JMP8(0);
 				x86SetJ8(j8Ptr[0]);
 					xOR(ptr32[&fpuRegs.fprc[31]], FPUflagC);
@@ -840,7 +914,7 @@ void recC_LT_xmm(int info)
 				return;
 			}
 			break;
-		case (PROCESS_EE_S|PROCESS_EE_T):
+		case (PROCESS_EE_S | PROCESS_EE_T):
 			// Clamp NaNs
 			// Note: This fixes a crash in Rule of Rose.
 			fpuFloat3(EEREC_S);
@@ -854,25 +928,26 @@ void recC_LT_xmm(int info)
 			xCMP(xRegister32(tempReg), ptr[&fpuRegs.fpr[_Ft_]]);
 
 			j8Ptr[0] = JL8(0);
-				xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC );
+				xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC);
 				j8Ptr[1] = JMP8(0);
 			x86SetJ8(j8Ptr[0]);
 				xOR(ptr32[&fpuRegs.fprc[31]], FPUflagC);
 			x86SetJ8(j8Ptr[1]);
 
-			if (tempReg >= 0) _freeX86reg(tempReg);
+			if (tempReg >= 0)
+				_freeX86reg(tempReg);
 			return;
 	}
 
 	j8Ptr[0] = JB8(0);
-		xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC );
+		xAND(ptr32[&fpuRegs.fprc[31]], ~FPUflagC);
 		j8Ptr[1] = JMP8(0);
 	x86SetJ8(j8Ptr[0]);
 		xOR(ptr32[&fpuRegs.fprc[31]], FPUflagC);
 	x86SetJ8(j8Ptr[1]);
 }
 
-FPURECOMPILE_CONSTCODE(C_LT, XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(C_LT, XMMINFO_READS | XMMINFO_READT);
 //REC_FPUFUNC(C_LT);
 //------------------------------------------------------------------
 
@@ -883,15 +958,17 @@ FPURECOMPILE_CONSTCODE(C_LT, XMMINFO_READS|XMMINFO_READT);
 void recCVT_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::CVTS_F);
-	if( !(info&PROCESS_EE_S) || (EEREC_D != EEREC_S && !(info&PROCESS_EE_MODEWRITES)) ) {
+	if (!(info & PROCESS_EE_S) || (EEREC_D != EEREC_S && !(info & PROCESS_EE_MODEWRITES)))
+	{
 		xCVTSI2SS(xRegisterSSE(EEREC_D), ptr32[&fpuRegs.fpr[_Fs_]]);
 	}
-	else {
+	else
+	{
 		xCVTDQ2PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 	}
 }
 
-FPURECOMPILE_CONSTCODE(CVT_S, XMMINFO_WRITED|XMMINFO_READS);
+FPURECOMPILE_CONSTCODE(CVT_S, XMMINFO_WRITED | XMMINFO_READS);
 
 void recCVT_W()
 {
@@ -906,27 +983,28 @@ void recCVT_W()
 
 	int regs = _checkXMMreg(XMMTYPE_FPREG, _Fs_, MODE_READ);
 
-	if( regs >= 0 )
+	if (regs >= 0)
 	{
-		if (CHECK_FPU_EXTRA_OVERFLOW) fpuFloat2(regs);
+		if (CHECK_FPU_EXTRA_OVERFLOW)
+			fpuFloat2(regs);
 		xCVTTSS2SI(eax, xRegisterSSE(regs));
-		xMOVMSKPS(edx, xRegisterSSE(regs));	//extract the signs
-		xAND(edx, 1);				//keep only LSB
+		xMOVMSKPS(edx, xRegisterSSE(regs)); //extract the signs
+		xAND(edx, 1); // keep only LSB
 	}
 	else
 	{
-		xCVTTSS2SI(eax, ptr32[&fpuRegs.fpr[ _Fs_ ]]);
-		xMOV(edx, ptr[&fpuRegs.fpr[ _Fs_ ]]);
-		xSHR(edx, 31);	//mov sign to lsb
+		xCVTTSS2SI(eax, ptr32[&fpuRegs.fpr[_Fs_]]);
+		xMOV(edx, ptr[&fpuRegs.fpr[_Fs_]]);
+		xSHR(edx, 31); // mov sign to lsb
 	}
 
 	//kill register allocation for dst because we write directly to fpuRegs.fpr[_Fd_]
 	_deleteFPtoXMMreg(_Fd_, 2);
 
-	xADD(edx, 0x7FFFFFFF);	//0x7FFFFFFF if positive, 0x8000 0000 if negative
+	xADD(edx, 0x7FFFFFFF); // 0x7FFFFFFF if positive, 0x8000 0000 if negative
 
-	xCMP(eax, 0x80000000);	//If the result is indefinitive
-	xCMOVE(eax, edx);		//Saturate it
+	xCMP(eax, 0x80000000); // If the result is indefinitive
+	xCMOVE(eax, edx);      // Saturate it
 
 	//Write the result
 	xMOV(ptr[&fpuRegs.fpr[_Fd_]], eax);
@@ -944,25 +1022,25 @@ void recDIVhelper1(int regd, int regt) // Sets flags
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
-	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
+	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI | FPUflagD)); // Clear I and D flags
 
 	/*--- Check for divide by zero ---*/
 	xXOR.PS(xRegisterSSE(t1reg), xRegisterSSE(t1reg));
 	xCMPEQ.SS(xRegisterSSE(t1reg), xRegisterSSE(regt));
 	xMOVMSKPS(xRegister32(tempReg), xRegisterSSE(t1reg));
-	xAND(xRegister32(tempReg), 1);  //Check sign (if regt == zero, sign will be set)
+	xAND(xRegister32(tempReg), 1); //Check sign (if regt == zero, sign will be set)
 	ajmp32 = JZ32(0); //Skip if not set
 
 		/*--- Check for 0/0 ---*/
 		xXOR.PS(xRegisterSSE(t1reg), xRegisterSSE(t1reg));
 		xCMPEQ.SS(xRegisterSSE(t1reg), xRegisterSSE(regd));
 		xMOVMSKPS(xRegister32(tempReg), xRegisterSSE(t1reg));
-		xAND(xRegister32(tempReg), 1);  //Check sign (if regd == zero, sign will be set)
+		xAND(xRegister32(tempReg), 1); //Check sign (if regd == zero, sign will be set)
 		pjmp1 = JZ8(0); //Skip if not set
-			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI|FPUflagSI); // Set I and SI flags ( 0/0 )
+			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI | FPUflagSI); // Set I and SI flags ( 0/0 )
 			pjmp2 = JMP8(0);
 		x86SetJ8(pjmp1); //x/0 but not 0/0
-			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagD|FPUflagSD); // Set D and SD flags ( x/0 )
+			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagD | FPUflagSD); // Set D and SD flags ( x/0 )
 		x86SetJ8(pjmp2);
 
 		/*--- Make regd +/- Maximum ---*/
@@ -999,9 +1077,9 @@ void recDIV_S_xmm(int info)
 	EE::Profiler.EmitOp(eeOpcode::DIV_F);
 	bool roundmodeFlag = false;
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
-    //Console.WriteLn("DIV");
+	//Console.WriteLn("DIV");
 
-	if( CHECK_FPUNEGDIVHACK )
+	if (CHECK_FPUNEGDIVHACK)
 	{
 		if (g_sseMXCSR.GetRoundMode() != SSEround_NegInf)
 		{
@@ -1009,8 +1087,8 @@ void recDIV_S_xmm(int info)
 			//Console.WriteLn("div to negative inf");
 
 			roundmode_neg = g_sseMXCSR;
-			roundmode_neg.SetRoundMode( SSEround_NegInf );
-			xLDMXCSR( roundmode_neg );
+			roundmode_neg.SetRoundMode(SSEround_NegInf);
+			xLDMXCSR(roundmode_neg);
 			roundmodeFlag = true;
 		}
 	}
@@ -1022,61 +1100,79 @@ void recDIV_S_xmm(int info)
 			//Console.WriteLn("div to nearest");
 
 			roundmode_nearest = g_sseMXCSR;
-			roundmode_nearest.SetRoundMode( SSEround_Nearest );
-			xLDMXCSR( roundmode_nearest );
+			roundmode_nearest.SetRoundMode(SSEround_Nearest);
+			xLDMXCSR(roundmode_nearest);
 			roundmodeFlag = true;
 		}
 	}
 
-	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
+	switch (info & (PROCESS_EE_S | PROCESS_EE_T))
+	{
 		case PROCESS_EE_S:
 			//Console.WriteLn("FPU: DIV case 1");
 			xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
-			if (CHECK_FPU_EXTRA_FLAGS) recDIVhelper1(EEREC_D, t0reg);
-			else recDIVhelper2(EEREC_D, t0reg);
+			if (CHECK_FPU_EXTRA_FLAGS)
+				recDIVhelper1(EEREC_D, t0reg);
+			else
+				recDIVhelper2(EEREC_D, t0reg);
 			break;
 		case PROCESS_EE_T:
 			//Console.WriteLn("FPU: DIV case 2");
-			if (EEREC_D == EEREC_T) {
+			if (EEREC_D == EEREC_T)
+			{
 				xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 				xMOVSSZX(xRegisterSSE(EEREC_D), ptr[&fpuRegs.fpr[_Fs_]]);
-				if (CHECK_FPU_EXTRA_FLAGS) recDIVhelper1(EEREC_D, t0reg);
-				else recDIVhelper2(EEREC_D, t0reg);
+				if (CHECK_FPU_EXTRA_FLAGS)
+					recDIVhelper1(EEREC_D, t0reg);
+				else
+					recDIVhelper2(EEREC_D, t0reg);
 			}
-			else {
+			else
+			{
 				xMOVSSZX(xRegisterSSE(EEREC_D), ptr[&fpuRegs.fpr[_Fs_]]);
-				if (CHECK_FPU_EXTRA_FLAGS) recDIVhelper1(EEREC_D, EEREC_T);
-				else recDIVhelper2(EEREC_D, EEREC_T);
+				if (CHECK_FPU_EXTRA_FLAGS)
+					recDIVhelper1(EEREC_D, EEREC_T);
+				else
+					recDIVhelper2(EEREC_D, EEREC_T);
 			}
 			break;
-		case (PROCESS_EE_S|PROCESS_EE_T):
+		case (PROCESS_EE_S | PROCESS_EE_T):
 			//Console.WriteLn("FPU: DIV case 3");
-			if (EEREC_D == EEREC_T) {
+			if (EEREC_D == EEREC_T)
+			{
 				xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 				xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-				if (CHECK_FPU_EXTRA_FLAGS) recDIVhelper1(EEREC_D, t0reg);
-				else recDIVhelper2(EEREC_D, t0reg);
+				if (CHECK_FPU_EXTRA_FLAGS)
+					recDIVhelper1(EEREC_D, t0reg);
+				else
+					recDIVhelper2(EEREC_D, t0reg);
 			}
-			else {
+			else
+			{
 				xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-				if (CHECK_FPU_EXTRA_FLAGS) recDIVhelper1(EEREC_D, EEREC_T);
-				else recDIVhelper2(EEREC_D, EEREC_T);
+				if (CHECK_FPU_EXTRA_FLAGS)
+					recDIVhelper1(EEREC_D, EEREC_T);
+				else
+					recDIVhelper2(EEREC_D, EEREC_T);
 			}
 			break;
 		default:
 			//Console.WriteLn("FPU: DIV case 4");
 			xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
 			xMOVSSZX(xRegisterSSE(EEREC_D), ptr[&fpuRegs.fpr[_Fs_]]);
-			if (CHECK_FPU_EXTRA_FLAGS) recDIVhelper1(EEREC_D, t0reg);
-			else recDIVhelper2(EEREC_D, t0reg);
+			if (CHECK_FPU_EXTRA_FLAGS)
+				recDIVhelper1(EEREC_D, t0reg);
+			else
+				recDIVhelper2(EEREC_D, t0reg);
 			break;
 	}
-	if (roundmodeFlag) xLDMXCSR (g_sseMXCSR);
+	if (roundmodeFlag)
+		xLDMXCSR(g_sseMXCSR);
 	_freeXMMreg(t0reg);
 }
 
-FPURECOMPILE_CONSTCODE(DIV_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(DIV_S, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 //------------------------------------------------------------------
 
 
@@ -1089,38 +1185,46 @@ void recMADDtemp(int info, int regd)
 	int t1reg;
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
 
-	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
+	switch (info & (PROCESS_EE_S | PROCESS_EE_T))
+	{
 		case PROCESS_EE_S:
-			if(regd == EEREC_S) {
+			if (regd == EEREC_S)
+			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(regd); fpuFloat2(t0reg); }
 				xMUL.SS(xRegisterSSE(regd), xRegisterSSE(t0reg));
-				if (info & PROCESS_EE_ACC) {
+				if (info & PROCESS_EE_ACC)
+				{
 					if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(EEREC_ACC); fpuFloat(regd); }
 					FPU_ADD(regd, EEREC_ACC);
 				}
-				else {
+				else
+				{
 					xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]);
 					if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(EEREC_ACC); fpuFloat(t0reg); }
 					FPU_ADD(regd, t0reg);
 				}
 			}
-			else if (regd == EEREC_ACC){
+			else if (regd == EEREC_ACC)
+			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(EEREC_S); fpuFloat2(t0reg); }
 				xMUL.SS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 				FPU_ADD(regd, t0reg);
 			}
-			else {
+			else
+			{
 				xMOVSSZX(xRegisterSSE(regd), ptr[&fpuRegs.fpr[_Ft_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(regd); fpuFloat2(EEREC_S); }
 				xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
-				if (info & PROCESS_EE_ACC) {
+				if (info & PROCESS_EE_ACC)
+				{
 					if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(EEREC_ACC); fpuFloat(regd); }
 					FPU_ADD(regd, EEREC_ACC);
 				}
-				else {
+				else
+				{
 					xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]);
 					if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(EEREC_ACC); fpuFloat(t0reg); }
 					FPU_ADD(regd, t0reg);
@@ -1128,85 +1232,102 @@ void recMADDtemp(int info, int regd)
 			}
 			break;
 		case PROCESS_EE_T:
-			if(regd == EEREC_T) {
+			if (regd == EEREC_T)
+			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(regd); fpuFloat2(t0reg); }
 				xMUL.SS(xRegisterSSE(regd), xRegisterSSE(t0reg));
-				if (info & PROCESS_EE_ACC) {
+				if (info & PROCESS_EE_ACC)
+				{
 					if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(EEREC_ACC); fpuFloat(regd); }
 					FPU_ADD(regd, EEREC_ACC);
 				}
-				else {
+				else
+				{
 					xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]);
 					if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(EEREC_ACC); fpuFloat(t0reg); }
 					FPU_ADD(regd, t0reg);
 				}
 			}
-			else if (regd == EEREC_ACC){
+			else if (regd == EEREC_ACC)
+			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(EEREC_T); fpuFloat2(t0reg); }
 				xMUL.SS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 				FPU_ADD(regd, t0reg);
 			}
-			else {
+			else
+			{
 				xMOVSSZX(xRegisterSSE(regd), ptr[&fpuRegs.fpr[_Fs_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(regd); fpuFloat2(EEREC_T); }
 				xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_T));
-				if (info & PROCESS_EE_ACC) {
+				if (info & PROCESS_EE_ACC)
+				{
 					if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(EEREC_ACC); fpuFloat(regd); }
 					FPU_ADD(regd, EEREC_ACC);
 				}
-				else {
+				else
+				{
 					xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]);
 					if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(EEREC_ACC); fpuFloat(t0reg); }
 					FPU_ADD(regd, t0reg);
 				}
 			}
 			break;
-		case (PROCESS_EE_S|PROCESS_EE_T):
-			if(regd == EEREC_S) {
+		case (PROCESS_EE_S | PROCESS_EE_T):
+			if (regd == EEREC_S)
+			{
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(regd); fpuFloat2(EEREC_T); }
 				xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_T));
-				if (info & PROCESS_EE_ACC) {
+				if (info & PROCESS_EE_ACC)
+				{
 					if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(EEREC_ACC); }
 					FPU_ADD(regd, EEREC_ACC);
 				}
-				else {
+				else
+				{
 					xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]);
 					if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 					FPU_ADD(regd, t0reg);
 				}
 			}
-			else if(regd == EEREC_T) {
+			else if (regd == EEREC_T)
+			{
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(regd); fpuFloat2(EEREC_S); }
 				xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
-				if (info & PROCESS_EE_ACC) {
+				if (info & PROCESS_EE_ACC)
+				{
 					if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(EEREC_ACC); }
 					FPU_ADD(regd, EEREC_ACC);
 				}
-				else {
+				else
+				{
 					xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]);
 					if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 					FPU_ADD(regd, t0reg);
 				}
 			}
-			else if(regd == EEREC_ACC) {
+			else if (regd == EEREC_ACC)
+			{
 				xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(t0reg); fpuFloat2(EEREC_T); }
 				xMUL.SS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 				FPU_ADD(regd, t0reg);
 			}
-			else {
+			else
+			{
 				xMOVSS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(regd); fpuFloat2(EEREC_T); }
 				xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_T));
-				if (info & PROCESS_EE_ACC) {
+				if (info & PROCESS_EE_ACC)
+				{
 					if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(EEREC_ACC); }
 					FPU_ADD(regd, EEREC_ACC);
 				}
-				else {
+				else
+				{
 					xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]);
 					if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 					FPU_ADD(regd, t0reg);
@@ -1214,7 +1335,8 @@ void recMADDtemp(int info, int regd)
 			}
 			break;
 		default:
-			if(regd == EEREC_ACC){
+			if (regd == EEREC_ACC)
+			{
 				t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				xMOVSSZX(xRegisterSSE(t1reg), ptr[&fpuRegs.fpr[_Ft_]]);
@@ -1230,11 +1352,13 @@ void recMADDtemp(int info, int regd)
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(regd); fpuFloat2(t0reg); }
 				xMUL.SS(xRegisterSSE(regd), xRegisterSSE(t0reg));
-				if (info & PROCESS_EE_ACC) {
+				if (info & PROCESS_EE_ACC)
+				{
 					if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(EEREC_ACC); }
 					FPU_ADD(regd, EEREC_ACC);
 				}
-				else {
+				else
+				{
 					xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]);
 					if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 					FPU_ADD(regd, t0reg);
@@ -1243,8 +1367,8 @@ void recMADDtemp(int info, int regd)
 			break;
 	}
 
-     ClampValues(regd);
-	 _freeXMMreg(t0reg);
+	ClampValues(regd);
+	_freeXMMreg(t0reg);
 }
 
 void recMADD_S_xmm(int info)
@@ -1254,7 +1378,7 @@ void recMADD_S_xmm(int info)
 	recMADDtemp(info, EEREC_D);
 }
 
-FPURECOMPILE_CONSTCODE(MADD_S, XMMINFO_WRITED|XMMINFO_READACC|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(MADD_S, XMMINFO_WRITED | XMMINFO_READACC | XMMINFO_READS | XMMINFO_READT);
 
 void recMADDA_S_xmm(int info)
 {
@@ -1263,7 +1387,7 @@ void recMADDA_S_xmm(int info)
 	recMADDtemp(info, EEREC_ACC);
 }
 
-FPURECOMPILE_CONSTCODE(MADDA_S, XMMINFO_WRITEACC|XMMINFO_READACC|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(MADDA_S, XMMINFO_WRITEACC | XMMINFO_READACC | XMMINFO_READS | XMMINFO_READT);
 //------------------------------------------------------------------
 
 
@@ -1274,19 +1398,19 @@ void recMAX_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::MAX_F);
 	//xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO|FPUflagU)); // Clear O and U flags
-    recCommutativeOp(info, EEREC_D, 2);
+	recCommutativeOp(info, EEREC_D, 2);
 }
 
-FPURECOMPILE_CONSTCODE(MAX_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(MAX_S, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 
 void recMIN_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::MIN_F);
 	//xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO|FPUflagU)); // Clear O and U flags
-    recCommutativeOp(info, EEREC_D, 3);
+	recCommutativeOp(info, EEREC_D, 3);
 }
 
-FPURECOMPILE_CONSTCODE(MIN_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(MIN_S, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 //------------------------------------------------------------------
 
 
@@ -1296,11 +1420,13 @@ FPURECOMPILE_CONSTCODE(MIN_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
 void recMOV_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::MOV_F);
-	if( info & PROCESS_EE_S ) xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	else xMOVSSZX(xRegisterSSE(EEREC_D), ptr[&fpuRegs.fpr[_Fs_]]);
+	if (info & PROCESS_EE_S)
+		xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else
+		xMOVSSZX(xRegisterSSE(EEREC_D), ptr[&fpuRegs.fpr[_Fs_]]);
 }
 
-FPURECOMPILE_CONSTCODE(MOV_S, XMMINFO_WRITED|XMMINFO_READS);
+FPURECOMPILE_CONSTCODE(MOV_S, XMMINFO_WRITED | XMMINFO_READS);
 //------------------------------------------------------------------
 
 
@@ -1309,107 +1435,133 @@ FPURECOMPILE_CONSTCODE(MOV_S, XMMINFO_WRITED|XMMINFO_READS);
 //------------------------------------------------------------------
 void recMSUBtemp(int info, int regd)
 {
-int t1reg;
+	int t1reg;
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
 
-	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
+	switch (info & (PROCESS_EE_S | PROCESS_EE_T))
+	{
 		case PROCESS_EE_S:
-			if(regd == EEREC_S) {
+			if (regd == EEREC_S)
+			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(regd); fpuFloat2(t0reg); }
 				xMUL.SS(xRegisterSSE(regd), xRegisterSSE(t0reg));
-				if (info & PROCESS_EE_ACC) { xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_ACC)); }
-				else { xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]); }
+				if (info & PROCESS_EE_ACC)
+					xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_ACC));
+				else
+					xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 				FPU_SUB(t0reg, regd);
 				xMOVSS(xRegisterSSE(regd), xRegisterSSE(t0reg));
 			}
-			else if (regd == EEREC_ACC){
+			else if (regd == EEREC_ACC)
+			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(EEREC_S); fpuFloat2(t0reg); }
 				xMUL.SS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 				FPU_SUB(regd, t0reg);
 			}
-			else {
+			else
+			{
 				xMOVSSZX(xRegisterSSE(regd), ptr[&fpuRegs.fpr[_Ft_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(regd); fpuFloat2(EEREC_S); }
 				xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
-				if (info & PROCESS_EE_ACC) { xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_ACC)); }
-				else { xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]); }
+				if (info & PROCESS_EE_ACC)
+					xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_ACC));
+				else
+					xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 				FPU_SUB(t0reg, regd);
 				xMOVSS(xRegisterSSE(regd), xRegisterSSE(t0reg));
 			}
 			break;
 		case PROCESS_EE_T:
-			if(regd == EEREC_T) {
+			if (regd == EEREC_T)
+			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(regd); fpuFloat2(t0reg); }
 				xMUL.SS(xRegisterSSE(regd), xRegisterSSE(t0reg));
-				if (info & PROCESS_EE_ACC) { xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_ACC)); }
-				else { xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]); }
+				if (info & PROCESS_EE_ACC)
+					xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_ACC));
+				else
+					xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 				FPU_SUB(t0reg, regd);
 				xMOVSS(xRegisterSSE(regd), xRegisterSSE(t0reg));
 			}
-			else if (regd == EEREC_ACC){
+			else if (regd == EEREC_ACC)
+			{
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(EEREC_T); fpuFloat2(t0reg); }
 				xMUL.SS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 				FPU_SUB(regd, t0reg);
 			}
-			else {
+			else
+			{
 				xMOVSSZX(xRegisterSSE(regd), ptr[&fpuRegs.fpr[_Fs_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(regd); fpuFloat2(EEREC_T); }
 				xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_T));
-				if (info & PROCESS_EE_ACC) { xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_ACC)); }
-				else { xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]); }
+				if (info & PROCESS_EE_ACC)
+					xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_ACC));
+				else
+					xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 				FPU_SUB(t0reg, regd);
 				xMOVSS(xRegisterSSE(regd), xRegisterSSE(t0reg));
 			}
 			break;
-		case (PROCESS_EE_S|PROCESS_EE_T):
-			if(regd == EEREC_S) {
+		case (PROCESS_EE_S | PROCESS_EE_T):
+			if (regd == EEREC_S)
+			{
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(regd); fpuFloat2(EEREC_T); }
 				xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_T));
-				if (info & PROCESS_EE_ACC) { xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_ACC)); }
-				else { xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]); }
+				if (info & PROCESS_EE_ACC)
+					xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_ACC));
+				else
+					xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 				FPU_SUB(t0reg, regd);
 				xMOVSS(xRegisterSSE(regd), xRegisterSSE(t0reg));
 			}
-			else if(regd == EEREC_T) {
+			else if (regd == EEREC_T)
+			{
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(regd); fpuFloat2(EEREC_S); }
 				xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
-				if (info & PROCESS_EE_ACC) { xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_ACC)); }
-				else { xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]); }
+				if (info & PROCESS_EE_ACC)
+					xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_ACC));
+				else
+					xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 				FPU_SUB(t0reg, regd);
 				xMOVSS(xRegisterSSE(regd), xRegisterSSE(t0reg));
 			}
-			else if(regd == EEREC_ACC) {
+			else if (regd == EEREC_ACC)
+			{
 				xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(t0reg); fpuFloat2(EEREC_T); }
 				xMUL.SS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 				FPU_SUB(regd, t0reg);
 			}
-			else {
+			else
+			{
 				xMOVSS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(regd); fpuFloat2(EEREC_T); }
 				xMUL.SS(xRegisterSSE(regd), xRegisterSSE(EEREC_T));
-				if (info & PROCESS_EE_ACC) { xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_ACC)); }
-				else { xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]); }
+				if (info & PROCESS_EE_ACC)
+					xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_ACC));
+				else
+					xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 				FPU_SUB(t0reg, regd);
 				xMOVSS(xRegisterSSE(regd), xRegisterSSE(t0reg));
 			}
 			break;
 		default:
-			if(regd == EEREC_ACC){
+			if (regd == EEREC_ACC)
+			{
 				t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Fs_]]);
 				xMOVSSZX(xRegisterSSE(t1reg), ptr[&fpuRegs.fpr[_Ft_]]);
@@ -1425,8 +1577,10 @@ int t1reg;
 				xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat2(regd); fpuFloat2(t0reg); }
 				xMUL.SS(xRegisterSSE(regd), xRegisterSSE(t0reg));
-				if (info & PROCESS_EE_ACC)  { xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_ACC)); }
-				else { xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]); }
+				if (info & PROCESS_EE_ACC)
+					xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_ACC));
+				else
+					xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.ACC]);
 				if (CHECK_FPU_EXTRA_OVERFLOW) { fpuFloat(regd); fpuFloat(t0reg); }
 				FPU_SUB(t0reg, regd);
 				xMOVSS(xRegisterSSE(regd), xRegisterSSE(t0reg));
@@ -1434,9 +1588,8 @@ int t1reg;
 			break;
 	}
 
-     ClampValues(regd);
-	 _freeXMMreg(t0reg);
-
+	ClampValues(regd);
+	_freeXMMreg(t0reg);
 }
 
 void recMSUB_S_xmm(int info)
@@ -1446,7 +1599,7 @@ void recMSUB_S_xmm(int info)
 	recMSUBtemp(info, EEREC_D);
 }
 
-FPURECOMPILE_CONSTCODE(MSUB_S, XMMINFO_WRITED|XMMINFO_READACC|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(MSUB_S, XMMINFO_WRITED | XMMINFO_READACC | XMMINFO_READS | XMMINFO_READT);
 
 void recMSUBA_S_xmm(int info)
 {
@@ -1455,7 +1608,7 @@ void recMSUBA_S_xmm(int info)
 	recMSUBtemp(info, EEREC_ACC);
 }
 
-FPURECOMPILE_CONSTCODE(MSUBA_S, XMMINFO_WRITEACC|XMMINFO_READACC|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(MSUBA_S, XMMINFO_WRITEACC | XMMINFO_READACC | XMMINFO_READS | XMMINFO_READT);
 //------------------------------------------------------------------
 
 
@@ -1466,10 +1619,10 @@ void recMUL_S_xmm(int info)
 {
 	EE::Profiler.EmitOp(eeOpcode::MUL_F);
 	//xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO|FPUflagU)); // Clear O and U flags
-    ClampValues(recCommutativeOp(info, EEREC_D, 1));
+	ClampValues(recCommutativeOp(info, EEREC_D, 1));
 }
 
-FPURECOMPILE_CONSTCODE(MUL_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(MUL_S, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 
 void recMULA_S_xmm(int info)
 {
@@ -1478,24 +1631,27 @@ void recMULA_S_xmm(int info)
 	ClampValues(recCommutativeOp(info, EEREC_ACC, 1));
 }
 
-FPURECOMPILE_CONSTCODE(MULA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(MULA_S, XMMINFO_WRITEACC | XMMINFO_READS | XMMINFO_READT);
 //------------------------------------------------------------------
 
 
 //------------------------------------------------------------------
 // NEG XMM
 //------------------------------------------------------------------
-void recNEG_S_xmm(int info) {
+void recNEG_S_xmm(int info)
+{
 	EE::Profiler.EmitOp(eeOpcode::NEG_F);
-	if( info & PROCESS_EE_S ) xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	else xMOVSSZX(xRegisterSSE(EEREC_D), ptr[&fpuRegs.fpr[_Fs_]]);
+	if (info & PROCESS_EE_S)
+		xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else
+		xMOVSSZX(xRegisterSSE(EEREC_D), ptr[&fpuRegs.fpr[_Fs_]]);
 
 	//xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO|FPUflagU)); // Clear O and U flags
 	xXOR.PS(xRegisterSSE(EEREC_D), ptr[&s_neg[0]]);
 	ClampValues(EEREC_D);
 }
 
-FPURECOMPILE_CONSTCODE(NEG_S, XMMINFO_WRITED|XMMINFO_READS);
+FPURECOMPILE_CONSTCODE(NEG_S, XMMINFO_WRITED | XMMINFO_READS);
 //------------------------------------------------------------------
 
 
@@ -1514,33 +1670,39 @@ void recSUBop(int info, int regd)
 
 	//xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagO|FPUflagU)); // Clear O and U flags
 
-	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
+	switch (info & (PROCESS_EE_S | PROCESS_EE_T))
+	{
 		case PROCESS_EE_S:
 			//Console.WriteLn("FPU: SUB case 1");
-			if (regd != EEREC_S) xMOVSS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
+			if (regd != EEREC_S)
+				xMOVSS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 			xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
 			recSUBhelper(regd, t0reg);
 			break;
 		case PROCESS_EE_T:
 			//Console.WriteLn("FPU: SUB case 2");
-			if (regd == EEREC_T) {
+			if (regd == EEREC_T)
+			{
 				xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 				xMOVSSZX(xRegisterSSE(regd), ptr[&fpuRegs.fpr[_Fs_]]);
 				recSUBhelper(regd, t0reg);
 			}
-			else {
+			else
+			{
 				xMOVSSZX(xRegisterSSE(regd), ptr[&fpuRegs.fpr[_Fs_]]);
 				recSUBhelper(regd, EEREC_T);
 			}
 			break;
-		case (PROCESS_EE_S|PROCESS_EE_T):
+		case (PROCESS_EE_S | PROCESS_EE_T):
 			//Console.WriteLn("FPU: SUB case 3");
-			if (regd == EEREC_T) {
+			if (regd == EEREC_T)
+			{
 				xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 				xMOVSS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 				recSUBhelper(regd, t0reg);
 			}
-			else {
+			else
+			{
 				xMOVSS(xRegisterSSE(regd), xRegisterSSE(EEREC_S));
 				recSUBhelper(regd, EEREC_T);
 			}
@@ -1563,7 +1725,7 @@ void recSUB_S_xmm(int info)
 	recSUBop(info, EEREC_D);
 }
 
-FPURECOMPILE_CONSTCODE(SUB_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(SUB_S, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 
 
 void recSUBA_S_xmm(int info)
@@ -1572,7 +1734,7 @@ void recSUBA_S_xmm(int info)
 	recSUBop(info, EEREC_ACC);
 }
 
-FPURECOMPILE_CONSTCODE(SUBA_S, XMMINFO_WRITEACC|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(SUBA_S, XMMINFO_WRITEACC | XMMINFO_READS | XMMINFO_READT);
 //------------------------------------------------------------------
 
 
@@ -1591,39 +1753,46 @@ void recSQRT_S_xmm(int info)
 		// Set roundmode to nearest if it isn't already
 		//Console.WriteLn("sqrt to nearest");
 		roundmode_nearest = g_sseMXCSR;
-		roundmode_nearest.SetRoundMode( SSEround_Nearest );
-		xLDMXCSR (roundmode_nearest);
+		roundmode_nearest.SetRoundMode(SSEround_Nearest);
+		xLDMXCSR(roundmode_nearest);
 		roundmodeFlag = true;
 	}
 
-	if( info & PROCESS_EE_T ) xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else xMOVSSZX(xRegisterSSE(EEREC_D), ptr[&fpuRegs.fpr[_Ft_]]);
+	if (info & PROCESS_EE_T)
+		xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else
+		xMOVSSZX(xRegisterSSE(EEREC_D), ptr[&fpuRegs.fpr[_Ft_]]);
 
-	if (CHECK_FPU_EXTRA_FLAGS) {
+	if (CHECK_FPU_EXTRA_FLAGS)
+	{
 		int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
-		xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
+		xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI | FPUflagD)); // Clear I and D flags
 
 		/*--- Check for negative SQRT ---*/
 		xMOVMSKPS(xRegister32(tempReg), xRegisterSSE(EEREC_D));
-		xAND(xRegister32(tempReg), 1);  //Check sign
+		xAND(xRegister32(tempReg), 1); //Check sign
 		pjmp = JZ8(0); //Skip if none are
-			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI|FPUflagSI); // Set I and SI flags
+			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI | FPUflagSI); // Set I and SI flags
 			xAND.PS(xRegisterSSE(EEREC_D), ptr[&s_pos[0]]); // Make EEREC_D Positive
 		x86SetJ8(pjmp);
 
 		_freeX86reg(tempReg);
 	}
-	else xAND.PS(xRegisterSSE(EEREC_D), ptr[&s_pos[0]]); // Make EEREC_D Positive
+	else
+		xAND.PS(xRegisterSSE(EEREC_D), ptr[&s_pos[0]]); // Make EEREC_D Positive
 
-	if (CHECK_FPU_OVERFLOW) xMIN.SS(xRegisterSSE(EEREC_D), ptr[&g_maxvals[0]]);// Only need to do positive clamp, since EEREC_D is positive
+	if (CHECK_FPU_OVERFLOW) // Only need to do positive clamp, since EEREC_D is positive
+		xMIN.SS(xRegisterSSE(EEREC_D), ptr[&g_maxvals[0]]);
 	xSQRT.SS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
-	if (CHECK_FPU_EXTRA_OVERFLOW) ClampValues(EEREC_D); // Shouldn't need to clamp again since SQRT of a number will always be smaller than the original number, doing it just incase :/
+	if (CHECK_FPU_EXTRA_OVERFLOW) // Shouldn't need to clamp again since SQRT of a number will always be smaller than the original number, doing it just incase :/
+		ClampValues(EEREC_D);
 
-	if (roundmodeFlag) xLDMXCSR (g_sseMXCSR);
+	if (roundmodeFlag)
+		xLDMXCSR(g_sseMXCSR);
 }
 
-FPURECOMPILE_CONSTCODE(SQRT_S, XMMINFO_WRITED|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(SQRT_S, XMMINFO_WRITED | XMMINFO_READT);
 //------------------------------------------------------------------
 
 
@@ -1638,13 +1807,13 @@ void recRSQRThelper1(int regd, int t0reg) // Preforms the RSQRT function when re
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
 	int tempReg = _allocX86reg(xEmptyReg, X86TYPE_TEMP, 0, 0);
 
-	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI|FPUflagD)); // Clear I and D flags
+	xAND(ptr32[&fpuRegs.fprc[31]], ~(FPUflagI | FPUflagD)); // Clear I and D flags
 
 	/*--- (first) Check for negative SQRT ---*/
 	xMOVMSKPS(xRegister32(tempReg), xRegisterSSE(t0reg));
-	xAND(xRegister32(tempReg), 1);  //Check sign
+	xAND(xRegister32(tempReg), 1); //Check sign
 	pjmp2 = JZ8(0); //Skip if not set
-		xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI|FPUflagSI); // Set I and SI flags
+		xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI | FPUflagSI); // Set I and SI flags
 		xAND.PS(xRegisterSSE(t0reg), ptr[&s_pos[0]]); // Make t0reg Positive
 	x86SetJ8(pjmp2);
 
@@ -1652,18 +1821,18 @@ void recRSQRThelper1(int regd, int t0reg) // Preforms the RSQRT function when re
 	xXOR.PS(xRegisterSSE(t1reg), xRegisterSSE(t1reg));
 	xCMPEQ.SS(xRegisterSSE(t1reg), xRegisterSSE(t0reg));
 	xMOVMSKPS(xRegister32(tempReg), xRegisterSSE(t1reg));
-	xAND(xRegister32(tempReg), 1);  //Check sign (if t0reg == zero, sign will be set)
+	xAND(xRegister32(tempReg), 1); //Check sign (if t0reg == zero, sign will be set)
 	pjmp1 = JZ8(0); //Skip if not set
 		/*--- Check for 0/0 ---*/
 		xXOR.PS(xRegisterSSE(t1reg), xRegisterSSE(t1reg));
 		xCMPEQ.SS(xRegisterSSE(t1reg), xRegisterSSE(regd));
 		xMOVMSKPS(xRegister32(tempReg), xRegisterSSE(t1reg));
-		xAND(xRegister32(tempReg), 1);  //Check sign (if regd == zero, sign will be set)
+		xAND(xRegister32(tempReg), 1); //Check sign (if regd == zero, sign will be set)
 		qjmp1 = JZ8(0); //Skip if not set
-			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI|FPUflagSI); // Set I and SI flags ( 0/0 )
+			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagI | FPUflagSI); // Set I and SI flags ( 0/0 )
 			qjmp2 = JMP8(0);
 		x86SetJ8(qjmp1); //x/0 but not 0/0
-			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagD|FPUflagSD); // Set D and SD flags ( x/0 )
+			xOR(ptr32[&fpuRegs.fprc[31]], FPUflagD | FPUflagSD); // Set D and SD flags ( x/0 )
 		x86SetJ8(qjmp2);
 
 		/*--- Make regd +/- Maximum ---*/
@@ -1672,7 +1841,8 @@ void recRSQRThelper1(int regd, int t0reg) // Preforms the RSQRT function when re
 		pjmp32 = JMP32(0);
 	x86SetJ8(pjmp1);
 
-	if (CHECK_FPU_EXTRA_OVERFLOW) {
+	if (CHECK_FPU_EXTRA_OVERFLOW)
+	{
 		xMIN.SS(xRegisterSSE(t0reg), ptr[&g_maxvals[0]]); // Only need to do positive clamp, since t0reg is positive
 		fpuFloat2(regd);
 	}
@@ -1690,7 +1860,8 @@ void recRSQRThelper1(int regd, int t0reg) // Preforms the RSQRT function when re
 void recRSQRThelper2(int regd, int t0reg) // Preforms the RSQRT function when regd <- Fs and t0reg <- Ft (Doesn't set flags)
 {
 	xAND.PS(xRegisterSSE(t0reg), ptr[&s_pos[0]]); // Make t0reg Positive
-	if (CHECK_FPU_EXTRA_OVERFLOW) {
+	if (CHECK_FPU_EXTRA_OVERFLOW)
+	{
 		xMIN.SS(xRegisterSSE(t0reg), ptr[&g_maxvals[0]]); // Only need to do positive clamp, since t0reg is positive
 		fpuFloat2(regd);
 	}
@@ -1708,41 +1879,53 @@ void recRSQRT_S_xmm(int info)
 	int t0reg = _allocTempXMMreg(XMMT_FPS, -1);
 	//Console.WriteLn("FPU: RSQRT");
 
-	switch(info & (PROCESS_EE_S|PROCESS_EE_T) ) {
+	switch (info & (PROCESS_EE_S | PROCESS_EE_T))
+	{
 		case PROCESS_EE_S:
 			//Console.WriteLn("FPU: RSQRT case 1");
 			xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
-			if (CHECK_FPU_EXTRA_FLAGS) recRSQRThelper1(EEREC_D, t0reg);
-			else recRSQRThelper2(EEREC_D, t0reg);
+			if (CHECK_FPU_EXTRA_FLAGS)
+				recRSQRThelper1(EEREC_D, t0reg);
+			else
+				recRSQRThelper2(EEREC_D, t0reg);
 			break;
 		case PROCESS_EE_T:
 			//Console.WriteLn("FPU: RSQRT case 2");
 			xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 			xMOVSSZX(xRegisterSSE(EEREC_D), ptr[&fpuRegs.fpr[_Fs_]]);
-			if (CHECK_FPU_EXTRA_FLAGS) recRSQRThelper1(EEREC_D, t0reg);
-			else recRSQRThelper2(EEREC_D, t0reg);
+			if (CHECK_FPU_EXTRA_FLAGS)
+				recRSQRThelper1(EEREC_D, t0reg);
+			else
+				recRSQRThelper2(EEREC_D, t0reg);
 			break;
-		case (PROCESS_EE_S|PROCESS_EE_T):
+		case (PROCESS_EE_S | PROCESS_EE_T):
 			//Console.WriteLn("FPU: RSQRT case 3");
 			xMOVSS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 			xMOVSS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-			if (CHECK_FPU_EXTRA_FLAGS) recRSQRThelper1(EEREC_D, t0reg);
-			else recRSQRThelper2(EEREC_D, t0reg);
+			if (CHECK_FPU_EXTRA_FLAGS)
+				recRSQRThelper1(EEREC_D, t0reg);
+			else
+				recRSQRThelper2(EEREC_D, t0reg);
 			break;
 		default:
 			//Console.WriteLn("FPU: RSQRT case 4");
 			xMOVSSZX(xRegisterSSE(t0reg), ptr[&fpuRegs.fpr[_Ft_]]);
 			xMOVSSZX(xRegisterSSE(EEREC_D), ptr[&fpuRegs.fpr[_Fs_]]);
-			if (CHECK_FPU_EXTRA_FLAGS) recRSQRThelper1(EEREC_D, t0reg);
-			else recRSQRThelper2(EEREC_D, t0reg);
+			if (CHECK_FPU_EXTRA_FLAGS)
+				recRSQRThelper1(EEREC_D, t0reg);
+			else
+				recRSQRThelper2(EEREC_D, t0reg);
 			break;
 	}
 	_freeXMMreg(t0reg);
 }
 
-FPURECOMPILE_CONSTCODE(RSQRT_S, XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT);
+FPURECOMPILE_CONSTCODE(RSQRT_S, XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
 
 #endif // FPU_RECOMPILE
 
-} } } }
+} // namespace COP1
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900

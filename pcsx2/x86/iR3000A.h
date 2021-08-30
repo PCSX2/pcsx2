@@ -54,32 +54,36 @@ void _psxMoveGPRtoM(uptr to, int fromgpr);
 void _psxMoveGPRtoRm(x86IntRegType to, int fromgpr);
 #endif
 
-extern u32 psxpc;			// recompiler pc
-extern int psxbranch;		// set for branch
+extern u32 psxpc; // recompiler pc
+extern int psxbranch; // set for branch
 extern u32 g_iopCyclePenalty;
 
 void psxSaveBranchState();
 void psxLoadBranchState();
 
 extern void psxSetBranchReg(u32 reg);
-extern void psxSetBranchImm( u32 imm );
+extern void psxSetBranchImm(u32 imm);
 extern void psxRecompileNextInstruction(int delayslot);
 
 ////////////////////////////////////////////////////////////////////
 // IOP Constant Propagation Defines, Vars, and API - From here down!
 
-#define PSX_IS_CONST1(reg) ((reg)<32 && (g_psxHasConstReg&(1<<(reg))))
-#define PSX_IS_CONST2(reg1, reg2) ((g_psxHasConstReg&(1<<(reg1)))&&(g_psxHasConstReg&(1<<(reg2))))
-#define PSX_SET_CONST(reg) { \
-	if( (reg) < 32 ) { \
-		g_psxHasConstReg |= (1<<(reg)); \
-		g_psxFlushedConstReg &= ~(1<<(reg)); \
-	} \
-}
+#define PSX_IS_CONST1(reg) ((reg) < 32 && (g_psxHasConstReg & (1 << (reg))))
+#define PSX_IS_CONST2(reg1, reg2) ((g_psxHasConstReg & (1 << (reg1))) && (g_psxHasConstReg & (1 << (reg2))))
+#define PSX_SET_CONST(reg) \
+	{ \
+		if ((reg) < 32) \
+		{ \
+			g_psxHasConstReg |= (1 << (reg)); \
+			g_psxFlushedConstReg &= ~(1 << (reg)); \
+		} \
+	}
 
-#define PSX_DEL_CONST(reg) { \
-	if( (reg) < 32 ) g_psxHasConstReg &= ~(1<<(reg)); \
-}
+#define PSX_DEL_CONST(reg) \
+	{ \
+		if ((reg) < 32) \
+			g_psxHasConstReg &= ~(1 << (reg)); \
+	}
 
 extern u32 g_psxConstRegs[32];
 extern u32 g_psxHasConstReg, g_psxFlushedConstReg;
@@ -92,38 +96,38 @@ typedef void (*R3000AFNPTR_INFO)(int info);
 //
 // rd = rs op rt
 #define PSXRECOMPILE_CONSTCODE0(fn) \
-void rpsx##fn(void) \
-{ \
-	psxRecompileCodeConst0(rpsx##fn##_const, rpsx##fn##_consts, rpsx##fn##_constt, rpsx##fn##_); \
-}
+	void rpsx##fn(void) \
+	{ \
+		psxRecompileCodeConst0(rpsx##fn##_const, rpsx##fn##_consts, rpsx##fn##_constt, rpsx##fn##_); \
+	}
 
 // rt = rs op imm16
 #define PSXRECOMPILE_CONSTCODE1(fn) \
-void rpsx##fn(void) \
-{ \
-	psxRecompileCodeConst1(rpsx##fn##_const, rpsx##fn##_); \
-}
+	void rpsx##fn(void) \
+	{ \
+		psxRecompileCodeConst1(rpsx##fn##_const, rpsx##fn##_); \
+	}
 
 // rd = rt op sa
 #define PSXRECOMPILE_CONSTCODE2(fn) \
-void rpsx##fn(void) \
-{ \
-	psxRecompileCodeConst2(rpsx##fn##_const, rpsx##fn##_); \
-}
+	void rpsx##fn(void) \
+	{ \
+		psxRecompileCodeConst2(rpsx##fn##_const, rpsx##fn##_); \
+	}
 
 // [lo,hi] = rt op rs
 #define PSXRECOMPILE_CONSTCODE3(fn, LOHI) \
-void rpsx##fn(void) \
-{ \
-	psxRecompileCodeConst3(rpsx##fn##_const, rpsx##fn##_consts, rpsx##fn##_constt, rpsx##fn##_, LOHI); \
-}
+	void rpsx##fn(void) \
+	{ \
+		psxRecompileCodeConst3(rpsx##fn##_const, rpsx##fn##_consts, rpsx##fn##_constt, rpsx##fn##_, LOHI); \
+	}
 
 #define PSXRECOMPILE_CONSTCODE3_PENALTY(fn, LOHI, cycles) \
-void rpsx##fn(void) \
-{ \
-	psxRecompileCodeConst3(rpsx##fn##_const, rpsx##fn##_consts, rpsx##fn##_constt, rpsx##fn##_, LOHI); \
-	g_iopCyclePenalty = cycles; \
-}
+	void rpsx##fn(void) \
+	{ \
+		psxRecompileCodeConst3(rpsx##fn##_const, rpsx##fn##_consts, rpsx##fn##_constt, rpsx##fn##_, LOHI); \
+		g_iopCyclePenalty = cycles; \
+	}
 
 // rd = rs op rt
 void psxRecompileCodeConst0(R3000AFNPTR constcode, R3000AFNPTR_INFO constscode, R3000AFNPTR_INFO consttcode, R3000AFNPTR_INFO noconstcode);

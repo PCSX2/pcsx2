@@ -26,8 +26,7 @@ using namespace x86Emitter;
 
 namespace R5900 {
 namespace Dynarec {
-namespace OpcodeImpl
-{
+namespace OpcodeImpl {
 
 /*********************************************************
 * Register branch logic                                  *
@@ -47,27 +46,31 @@ REC_SYS(BLEZ);
 REC_SYS(BGEZ);
 REC_SYS(BGTZL);
 REC_SYS(BLTZL);
-REC_SYS_DEL(BLTZAL, 31);
+REC_SYS_DEL(BLTZAL,  31);
 REC_SYS_DEL(BLTZALL, 31);
 REC_SYS(BLEZL);
 REC_SYS(BGEZL);
-REC_SYS_DEL(BGEZAL, 31);
+REC_SYS_DEL(BGEZAL,  31);
 REC_SYS_DEL(BGEZALL, 31);
 
 #else
 
 void recSetBranchEQ(int info, int bne, int process)
 {
-	if( info & PROCESS_EE_XMM ) {
+	if (info & PROCESS_EE_XMM)
+	{
 		int t0reg;
 
-		if( process & PROCESS_CONSTS ) {
-			if( (g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rt_) ) {
+		if (process & PROCESS_CONSTS)
+		{
+			if ((g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rt_))
+			{
 				_deleteGPRtoXMMreg(_Rt_, 1);
 				xmmregs[EEREC_T].inuse = 0;
 				t0reg = EEREC_T;
 			}
-			else {
+			else
+			{
 				t0reg = _allocTempXMMreg(XMMT_INT, -1);
 				xMOVQZX(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 			}
@@ -76,15 +79,19 @@ void recSetBranchEQ(int info, int bne, int process)
 			xPCMP.EQD(xRegisterSSE(t0reg), ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 
 
-			if( t0reg != EEREC_T ) _freeXMMreg(t0reg);
+			if (t0reg != EEREC_T)
+				_freeXMMreg(t0reg);
 		}
-		else if( process & PROCESS_CONSTT ) {
-			if( (g_pCurInstInfo->regs[_Rs_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rs_) ) {
+		else if (process & PROCESS_CONSTT)
+		{
+			if ((g_pCurInstInfo->regs[_Rs_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rs_))
+			{
 				_deleteGPRtoXMMreg(_Rs_, 1);
 				xmmregs[EEREC_S].inuse = 0;
 				t0reg = EEREC_S;
 			}
-			else {
+			else
+			{
 				t0reg = _allocTempXMMreg(XMMT_INT, -1);
 				xMOVQZX(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 			}
@@ -92,29 +99,35 @@ void recSetBranchEQ(int info, int bne, int process)
 			_flushConstReg(_Rt_);
 			xPCMP.EQD(xRegisterSSE(t0reg), ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 
-			if( t0reg != EEREC_S ) _freeXMMreg(t0reg);
+			if (t0reg != EEREC_S)
+				_freeXMMreg(t0reg);
 		}
-		else {
+		else
+		{
 
-			if( (g_pCurInstInfo->regs[_Rs_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rs_) ) {
+			if ((g_pCurInstInfo->regs[_Rs_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rs_))
+			{
 				_deleteGPRtoXMMreg(_Rs_, 1);
 				xmmregs[EEREC_S].inuse = 0;
 				t0reg = EEREC_S;
 				xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 			}
-			else if( (g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rt_) ) {
+			else if ((g_pCurInstInfo->regs[_Rt_] & EEINST_LASTUSE) || !EEINST_ISLIVEXMM(_Rt_))
+			{
 				_deleteGPRtoXMMreg(_Rt_, 1);
 				xmmregs[EEREC_T].inuse = 0;
 				t0reg = EEREC_T;
 				xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 			}
-			else {
+			else
+			{
 				t0reg = _allocTempXMMreg(XMMT_INT, -1);
 				xMOVQZX(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 				xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 			}
 
-			if( t0reg != EEREC_S && t0reg != EEREC_T ) _freeXMMreg(t0reg);
+			if (t0reg != EEREC_S && t0reg != EEREC_T)
+				_freeXMMreg(t0reg);
 		}
 
 		xMOVMSKPS(eax, xRegisterSSE(t0reg));
@@ -122,66 +135,77 @@ void recSetBranchEQ(int info, int bne, int process)
 		_eeFlushAllUnused();
 
 		xAND(al, 3);
-		xCMP(al, 0x3 );
+		xCMP(al, 0x3);
 
-		if( bne ) j32Ptr[ 1 ] = JE32( 0 );
-		else j32Ptr[ 0 ] = j32Ptr[ 1 ] = JNE32( 0 );
+		if (bne)
+			j32Ptr[1] = JE32(0);
+		else
+			j32Ptr[0] = j32Ptr[1] = JNE32(0);
 	}
-	else {
+	else
+	{
 
 		_eeFlushAllUnused();
 
-		if( bne ) {
-			if( process & PROCESS_CONSTS ) {
-				xCMP(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], g_cpuConstRegs[_Rs_].UL[0] );
-				j8Ptr[ 0 ] = JNE8( 0 );
+		if (bne)
+		{
+			if (process & PROCESS_CONSTS)
+			{
+				xCMP(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], g_cpuConstRegs[_Rs_].UL[0]);
+				j8Ptr[0] = JNE8(0);
 
-				xCMP(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], g_cpuConstRegs[_Rs_].UL[1] );
-				j32Ptr[ 1 ] = JE32( 0 );
+				xCMP(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], g_cpuConstRegs[_Rs_].UL[1]);
+				j32Ptr[1] = JE32(0);
 			}
-			else if( process & PROCESS_CONSTT ) {
-				xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], g_cpuConstRegs[_Rt_].UL[0] );
-				j8Ptr[ 0 ] = JNE8( 0 );
+			else if (process & PROCESS_CONSTT)
+			{
+				xCMP(ptr32[&cpuRegs.GPR.r[_Rs_].UL[0]], g_cpuConstRegs[_Rt_].UL[0]);
+				j8Ptr[0] = JNE8(0);
 
-				xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], g_cpuConstRegs[_Rt_].UL[1] );
-				j32Ptr[ 1 ] = JE32( 0 );
+				xCMP(ptr32[&cpuRegs.GPR.r[_Rs_].UL[1]], g_cpuConstRegs[_Rt_].UL[1]);
+				j32Ptr[1] = JE32(0);
 			}
-			else {
-				xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-				xCMP(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-				j8Ptr[ 0 ] = JNE8( 0 );
+			else
+			{
+				xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+				xCMP(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+				j8Ptr[0] = JNE8(0);
 
-				xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
-				xCMP(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
-				j32Ptr[ 1 ] = JE32( 0 );
+				xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[1]]);
+				xCMP(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[1]]);
+				j32Ptr[1] = JE32(0);
 			}
 
-			x86SetJ8( j8Ptr[0] );
+			x86SetJ8(j8Ptr[0]);
 		}
-		else {
+		else
+		{
 			// beq
-			if( process & PROCESS_CONSTS ) {
-				xCMP(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], g_cpuConstRegs[_Rs_].UL[0] );
-				j32Ptr[ 0 ] = JNE32( 0 );
+			if (process & PROCESS_CONSTS)
+			{
+				xCMP(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], g_cpuConstRegs[_Rs_].UL[0]);
+				j32Ptr[0] = JNE32(0);
 
-				xCMP(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], g_cpuConstRegs[_Rs_].UL[1] );
-				j32Ptr[ 1 ] = JNE32( 0 );
+				xCMP(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], g_cpuConstRegs[_Rs_].UL[1]);
+				j32Ptr[1] = JNE32(0);
 			}
-			else if( process & PROCESS_CONSTT ) {
-				xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], g_cpuConstRegs[_Rt_].UL[0] );
-				j32Ptr[ 0 ] = JNE32( 0 );
+			else if (process & PROCESS_CONSTT)
+			{
+				xCMP(ptr32[&cpuRegs.GPR.r[_Rs_].UL[0]], g_cpuConstRegs[_Rt_].UL[0]);
+				j32Ptr[0] = JNE32(0);
 
-				xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], g_cpuConstRegs[_Rt_].UL[1] );
-				j32Ptr[ 1 ] = JNE32( 0 );
+				xCMP(ptr32[&cpuRegs.GPR.r[_Rs_].UL[1]], g_cpuConstRegs[_Rt_].UL[1]);
+				j32Ptr[1] = JNE32(0);
 			}
-			else {
-				xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-				xCMP(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
-				j32Ptr[ 0 ] = JNE32( 0 );
+			else
+			{
+				xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+				xCMP(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+				j32Ptr[0] = JNE32(0);
 
-				xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
-				xCMP(eax, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ] ]);
-				j32Ptr[ 1 ] = JNE32( 0 );
+				xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[1]]);
+				xCMP(eax, ptr[&cpuRegs.GPR.r[_Rt_].UL[1]]);
+				j32Ptr[1] = JNE32(0);
 			}
 		}
 	}
@@ -193,22 +217,27 @@ void recSetBranchL(int ltz)
 {
 	int regs = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ);
 
-	if( regs >= 0 ) {
+	if (regs >= 0)
+	{
 		xMOVMSKPS(eax, xRegisterSSE(regs));
 
 		_eeFlushAllUnused();
 
-		xTEST(al, 2 );
+		xTEST(al, 2);
 
-		if( ltz ) j32Ptr[ 0 ] = JZ32( 0 );
-		else j32Ptr[ 0 ] = JNZ32( 0 );
+		if (ltz)
+			j32Ptr[0] = JZ32(0);
+		else
+			j32Ptr[0] = JNZ32(0);
 
 		return;
 	}
 
-	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], 0 );
-	if( ltz ) j32Ptr[ 0 ] = JGE32( 0 );
-	else j32Ptr[ 0 ] = JL32( 0 );
+	xCMP(ptr32[&cpuRegs.GPR.r[_Rs_].UL[1]], 0);
+	if (ltz)
+		j32Ptr[0] = JGE32(0);
+	else
+		j32Ptr[0] = JL32(0);
 
 	_clearNeededXMMregs();
 }
@@ -218,23 +247,23 @@ void recBEQ_const()
 {
 	u32 branchTo;
 
-	if( g_cpuConstRegs[_Rs_].SD[0] == g_cpuConstRegs[_Rt_].SD[0] )
+	if (g_cpuConstRegs[_Rs_].SD[0] == g_cpuConstRegs[_Rt_].SD[0])
 		branchTo = ((s32)_Imm_ * 4) + pc;
 	else
-		branchTo = pc+4;
+		branchTo = pc + 4;
 
 	recompileNextInstruction(1);
-	SetBranchImm( branchTo );
+	SetBranchImm(branchTo);
 }
 
 void recBEQ_process(int info, int process)
 {
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
-	if ( _Rs_ == _Rt_ )
+	if (_Rs_ == _Rt_)
 	{
 		recompileNextInstruction(1);
-		SetBranchImm( branchTo );
+		SetBranchImm(branchTo);
 	}
 	else
 	{
@@ -245,8 +274,8 @@ void recBEQ_process(int info, int process)
 
 		SetBranchImm(branchTo);
 
-		x86SetJ32( j32Ptr[ 0 ] );
-		x86SetJ32( j32Ptr[ 1 ] );
+		x86SetJ32(j32Ptr[0]);
+		x86SetJ32(j32Ptr[1]);
 
 		// recopy the next inst
 		pc -= 4;
@@ -261,27 +290,27 @@ void recBEQ_(int info) { recBEQ_process(info, 0); }
 void recBEQ_consts(int info) { recBEQ_process(info, PROCESS_CONSTS); }
 void recBEQ_constt(int info) { recBEQ_process(info, PROCESS_CONSTT); }
 
-EERECOMPILE_CODE0(BEQ, XMMINFO_READS|XMMINFO_READT);
+EERECOMPILE_CODE0(BEQ, XMMINFO_READS | XMMINFO_READT);
 
 //// BNE
 void recBNE_const()
 {
 	u32 branchTo;
 
-	if( g_cpuConstRegs[_Rs_].SD[0] != g_cpuConstRegs[_Rt_].SD[0] )
+	if (g_cpuConstRegs[_Rs_].SD[0] != g_cpuConstRegs[_Rt_].SD[0])
 		branchTo = ((s32)_Imm_ * 4) + pc;
 	else
-		branchTo = pc+4;
+		branchTo = pc + 4;
 
 	recompileNextInstruction(1);
-	SetBranchImm( branchTo );
+	SetBranchImm(branchTo);
 }
 
 void recBNE_process(int info, int process)
 {
 	u32 branchTo = ((s32)_Imm_ * 4) + pc;
 
-	if ( _Rs_ == _Rt_ )
+	if (_Rs_ == _Rt_)
 	{
 		recompileNextInstruction(1);
 		SetBranchImm(pc);
@@ -295,7 +324,7 @@ void recBNE_process(int info, int process)
 
 	SetBranchImm(branchTo);
 
-	x86SetJ32( j32Ptr[ 1 ] );
+	x86SetJ32(j32Ptr[1]);
 
 	// recopy the next inst
 	pc -= 4;
@@ -309,18 +338,20 @@ void recBNE_(int info) { recBNE_process(info, 0); }
 void recBNE_consts(int info) { recBNE_process(info, PROCESS_CONSTS); }
 void recBNE_constt(int info) { recBNE_process(info, PROCESS_CONSTT); }
 
-EERECOMPILE_CODE0(BNE, XMMINFO_READS|XMMINFO_READT);
+EERECOMPILE_CODE0(BNE, XMMINFO_READS | XMMINFO_READT);
 
 //// BEQL
 void recBEQL_const()
 {
-	if( g_cpuConstRegs[_Rs_].SD[0] == g_cpuConstRegs[_Rt_].SD[0] ) {
+	if (g_cpuConstRegs[_Rs_].SD[0] == g_cpuConstRegs[_Rt_].SD[0])
+	{
 		u32 branchTo = ((s32)_Imm_ * 4) + pc;
 		recompileNextInstruction(1);
-		SetBranchImm( branchTo );
+		SetBranchImm(branchTo);
 	}
-	else {
-		SetBranchImm( pc+4 );
+	else
+	{
+		SetBranchImm(pc + 4);
 	}
 }
 
@@ -333,8 +364,8 @@ void recBEQL_process(int info, int process)
 	recompileNextInstruction(1);
 	SetBranchImm(branchTo);
 
-	x86SetJ32( j32Ptr[ 0 ] );
-	x86SetJ32( j32Ptr[ 1 ] );
+	x86SetJ32(j32Ptr[0]);
+	x86SetJ32(j32Ptr[1]);
 
 	LoadBranchState();
 	SetBranchImm(pc);
@@ -344,18 +375,20 @@ void recBEQL_(int info) { recBEQL_process(info, 0); }
 void recBEQL_consts(int info) { recBEQL_process(info, PROCESS_CONSTS); }
 void recBEQL_constt(int info) { recBEQL_process(info, PROCESS_CONSTT); }
 
-EERECOMPILE_CODE0(BEQL, XMMINFO_READS|XMMINFO_READT);
+EERECOMPILE_CODE0(BEQL, XMMINFO_READS | XMMINFO_READT);
 
 //// BNEL
 void recBNEL_const()
 {
-	if( g_cpuConstRegs[_Rs_].SD[0] != g_cpuConstRegs[_Rt_].SD[0] ) {
+	if (g_cpuConstRegs[_Rs_].SD[0] != g_cpuConstRegs[_Rt_].SD[0])
+	{
 		u32 branchTo = ((s32)_Imm_ * 4) + pc;
 		recompileNextInstruction(1);
 		SetBranchImm(branchTo);
 	}
-	else {
-		SetBranchImm( pc+4 );
+	else
+	{
+		SetBranchImm(pc + 4);
 	}
 }
 
@@ -366,10 +399,10 @@ void recBNEL_process(int info, int process)
 	recSetBranchEQ(info, 0, process);
 
 	SaveBranchState();
-	SetBranchImm(pc+4);
+	SetBranchImm(pc + 4);
 
-	x86SetJ32( j32Ptr[ 0 ] );
-	x86SetJ32( j32Ptr[ 1 ] );
+	x86SetJ32(j32Ptr[0]);
+	x86SetJ32(j32Ptr[1]);
 
 	// recopy the next inst
 	LoadBranchState();
@@ -381,7 +414,7 @@ void recBNEL_(int info) { recBNEL_process(info, 0); }
 void recBNEL_consts(int info) { recBNEL_process(info, PROCESS_CONSTS); }
 void recBNEL_constt(int info) { recBNEL_process(info, PROCESS_CONSTT); }
 
-EERECOMPILE_CODE0(BNEL, XMMINFO_READS|XMMINFO_READT);
+EERECOMPILE_CODE0(BNEL, XMMINFO_READS | XMMINFO_READT);
 
 /*********************************************************
 * Register branch logic                                  *
@@ -411,15 +444,16 @@ void recBLTZAL()
 	_eeFlushAllUnused();
 
 	_deleteEEreg(31, 0);
-	xMOV(ptr32[&cpuRegs.GPR.r[31].UL[0]], pc+4);
+	xMOV(ptr32[&cpuRegs.GPR.r[31].UL[0]], pc + 4);
 	xMOV(ptr32[&cpuRegs.GPR.r[31].UL[1]], 0);
 
-	if( GPR_IS_CONST1(_Rs_) ) {
-		if( !(g_cpuConstRegs[_Rs_].SD[0] < 0) )
-			branchTo = pc+4;
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		if (!(g_cpuConstRegs[_Rs_].SD[0] < 0))
+			branchTo = pc + 4;
 
 		recompileNextInstruction(1);
-		SetBranchImm( branchTo );
+		SetBranchImm(branchTo);
 		return;
 	}
 
@@ -431,7 +465,7 @@ void recBLTZAL()
 
 	SetBranchImm(branchTo);
 
-	x86SetJ32( j32Ptr[ 0 ] );
+	x86SetJ32(j32Ptr[0]);
 
 	// recopy the next inst
 	pc -= 4;
@@ -452,15 +486,16 @@ void recBGEZAL()
 	_eeFlushAllUnused();
 
 	_deleteEEreg(31, 0);
-	xMOV(ptr32[&cpuRegs.GPR.r[31].UL[0]], pc+4);
+	xMOV(ptr32[&cpuRegs.GPR.r[31].UL[0]], pc + 4);
 	xMOV(ptr32[&cpuRegs.GPR.r[31].UL[1]], 0);
 
-	if( GPR_IS_CONST1(_Rs_) ) {
-		if( !(g_cpuConstRegs[_Rs_].SD[0] >= 0) )
-			branchTo = pc+4;
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		if (!(g_cpuConstRegs[_Rs_].SD[0] >= 0))
+			branchTo = pc + 4;
 
 		recompileNextInstruction(1);
-		SetBranchImm( branchTo );
+		SetBranchImm(branchTo);
 		return;
 	}
 
@@ -472,7 +507,7 @@ void recBGEZAL()
 
 	SetBranchImm(branchTo);
 
-	x86SetJ32( j32Ptr[ 0 ] );
+	x86SetJ32(j32Ptr[0]);
 
 	// recopy the next inst
 	pc -= 4;
@@ -493,15 +528,17 @@ void recBLTZALL()
 	_eeFlushAllUnused();
 
 	_deleteEEreg(31, 0);
-	xMOV(ptr32[&cpuRegs.GPR.r[31].UL[0]], pc+4);
+	xMOV(ptr32[&cpuRegs.GPR.r[31].UL[0]], pc + 4);
 	xMOV(ptr32[&cpuRegs.GPR.r[31].UL[1]], 0);
 
-	if( GPR_IS_CONST1(_Rs_) ) {
-		if( !(g_cpuConstRegs[_Rs_].SD[0] < 0) )
-			SetBranchImm( pc + 4);
-		else {
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		if (!(g_cpuConstRegs[_Rs_].SD[0] < 0))
+			SetBranchImm(pc + 4);
+		else
+		{
 			recompileNextInstruction(1);
-			SetBranchImm( branchTo );
+			SetBranchImm(branchTo);
 		}
 		return;
 	}
@@ -512,7 +549,7 @@ void recBLTZALL()
 	recompileNextInstruction(1);
 	SetBranchImm(branchTo);
 
-	x86SetJ32( j32Ptr[ 0 ] );
+	x86SetJ32(j32Ptr[0]);
 
 	LoadBranchState();
 	SetBranchImm(pc);
@@ -529,15 +566,17 @@ void recBGEZALL()
 	_eeFlushAllUnused();
 
 	_deleteEEreg(31, 0);
-	xMOV(ptr32[&cpuRegs.GPR.r[31].UL[0]], pc+4);
+	xMOV(ptr32[&cpuRegs.GPR.r[31].UL[0]], pc + 4);
 	xMOV(ptr32[&cpuRegs.GPR.r[31].UL[1]], 0);
 
-	if( GPR_IS_CONST1(_Rs_) ) {
-		if( !(g_cpuConstRegs[_Rs_].SD[0] >= 0) )
-			SetBranchImm( pc + 4);
-		else {
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		if (!(g_cpuConstRegs[_Rs_].SD[0] >= 0))
+			SetBranchImm(pc + 4);
+		else
+		{
 			recompileNextInstruction(1);
-			SetBranchImm( branchTo );
+			SetBranchImm(branchTo);
 		}
 		return;
 	}
@@ -548,7 +587,7 @@ void recBGEZALL()
 	recompileNextInstruction(1);
 	SetBranchImm(branchTo);
 
-	x86SetJ32( j32Ptr[ 0 ] );
+	x86SetJ32(j32Ptr[0]);
 
 	LoadBranchState();
 	SetBranchImm(pc);
@@ -564,25 +603,26 @@ void recBLEZ()
 
 	_eeFlushAllUnused();
 
-	if( GPR_IS_CONST1(_Rs_) ) {
-		if( !(g_cpuConstRegs[_Rs_].SD[0] <= 0) )
-			branchTo = pc+4;
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		if (!(g_cpuConstRegs[_Rs_].SD[0] <= 0))
+			branchTo = pc + 4;
 
 		recompileNextInstruction(1);
-		SetBranchImm( branchTo );
+		SetBranchImm(branchTo);
 		return;
 	}
 
 	_flushEEreg(_Rs_);
 
-	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], 0 );
-	j8Ptr[ 0 ] = JL8( 0 );
-	j32Ptr[ 1 ] = JG32( 0 );
+	xCMP(ptr32[&cpuRegs.GPR.r[_Rs_].UL[1]], 0);
+	j8Ptr[0] = JL8(0);
+	j32Ptr[1] = JG32(0);
 
-	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], 0 );
-	j32Ptr[ 2 ] = JNZ32( 0 );
+	xCMP(ptr32[&cpuRegs.GPR.r[_Rs_].UL[0]], 0);
+	j32Ptr[2] = JNZ32(0);
 
-	x86SetJ8( j8Ptr[ 0 ] );
+	x86SetJ8(j8Ptr[0]);
 
 	_clearNeededXMMregs();
 
@@ -591,8 +631,8 @@ void recBLEZ()
 
 	SetBranchImm(branchTo);
 
-	x86SetJ32( j32Ptr[ 1 ] );
-	x86SetJ32( j32Ptr[ 2 ] );
+	x86SetJ32(j32Ptr[1]);
+	x86SetJ32(j32Ptr[2]);
 
 	// recopy the next inst
 	pc -= 4;
@@ -611,25 +651,26 @@ void recBGTZ()
 
 	_eeFlushAllUnused();
 
-	if( GPR_IS_CONST1(_Rs_) ) {
-		if( !(g_cpuConstRegs[_Rs_].SD[0] > 0) )
-			branchTo = pc+4;
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		if (!(g_cpuConstRegs[_Rs_].SD[0] > 0))
+			branchTo = pc + 4;
 
 		recompileNextInstruction(1);
-		SetBranchImm( branchTo );
+		SetBranchImm(branchTo);
 		return;
 	}
 
 	_flushEEreg(_Rs_);
 
-	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], 0 );
-	j8Ptr[ 0 ] = JG8( 0 );
-	j32Ptr[ 1 ] = JL32( 0 );
+	xCMP(ptr32[&cpuRegs.GPR.r[_Rs_].UL[1]], 0);
+	j8Ptr[0] = JG8(0);
+	j32Ptr[1] = JL32(0);
 
-	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], 0 );
-	j32Ptr[ 2 ] = JZ32( 0 );
+	xCMP(ptr32[&cpuRegs.GPR.r[_Rs_].UL[0]], 0);
+	j32Ptr[2] = JZ32(0);
 
-	x86SetJ8( j8Ptr[ 0 ] );
+	x86SetJ8(j8Ptr[0]);
 
 	_clearNeededXMMregs();
 
@@ -638,8 +679,8 @@ void recBGTZ()
 
 	SetBranchImm(branchTo);
 
-	x86SetJ32( j32Ptr[ 1 ] );
-	x86SetJ32( j32Ptr[ 2 ] );
+	x86SetJ32(j32Ptr[1]);
+	x86SetJ32(j32Ptr[2]);
 
 	// recopy the next inst
 	pc -= 4;
@@ -658,12 +699,13 @@ void recBLTZ()
 
 	_eeFlushAllUnused();
 
-	if( GPR_IS_CONST1(_Rs_) ) {
-		if( !(g_cpuConstRegs[_Rs_].SD[0] < 0) )
-			branchTo = pc+4;
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		if (!(g_cpuConstRegs[_Rs_].SD[0] < 0))
+			branchTo = pc + 4;
 
 		recompileNextInstruction(1);
-		SetBranchImm( branchTo );
+		SetBranchImm(branchTo);
 		return;
 	}
 
@@ -674,7 +716,7 @@ void recBLTZ()
 
 	SetBranchImm(branchTo);
 
-	x86SetJ32( j32Ptr[ 0 ] );
+	x86SetJ32(j32Ptr[0]);
 
 	// recopy the next inst
 	pc -= 4;
@@ -693,12 +735,13 @@ void recBGEZ()
 
 	_eeFlushAllUnused();
 
-	if( GPR_IS_CONST1(_Rs_) ) {
-		if( !(g_cpuConstRegs[_Rs_].SD[0] >= 0) )
-			branchTo = pc+4;
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		if (!(g_cpuConstRegs[_Rs_].SD[0] >= 0))
+			branchTo = pc + 4;
 
 		recompileNextInstruction(1);
-		SetBranchImm( branchTo );
+		SetBranchImm(branchTo);
 		return;
 	}
 
@@ -709,7 +752,7 @@ void recBGEZ()
 
 	SetBranchImm(branchTo);
 
-	x86SetJ32( j32Ptr[ 0 ] );
+	x86SetJ32(j32Ptr[0]);
 
 	// recopy the next inst
 	pc -= 4;
@@ -728,12 +771,14 @@ void recBLTZL()
 
 	_eeFlushAllUnused();
 
-	if( GPR_IS_CONST1(_Rs_) ) {
-		if( !(g_cpuConstRegs[_Rs_].SD[0] < 0) )
-			SetBranchImm( pc + 4);
-		else {
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		if (!(g_cpuConstRegs[_Rs_].SD[0] < 0))
+			SetBranchImm(pc + 4);
+		else
+		{
 			recompileNextInstruction(1);
-			SetBranchImm( branchTo );
+			SetBranchImm(branchTo);
 		}
 		return;
 	}
@@ -744,7 +789,7 @@ void recBLTZL()
 	recompileNextInstruction(1);
 	SetBranchImm(branchTo);
 
-	x86SetJ32( j32Ptr[ 0 ] );
+	x86SetJ32(j32Ptr[0]);
 
 	LoadBranchState();
 	SetBranchImm(pc);
@@ -760,12 +805,14 @@ void recBGEZL()
 
 	_eeFlushAllUnused();
 
-	if( GPR_IS_CONST1(_Rs_) ) {
-		if( !(g_cpuConstRegs[_Rs_].SD[0] >= 0) )
-			SetBranchImm( pc + 4);
-		else {
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		if (!(g_cpuConstRegs[_Rs_].SD[0] >= 0))
+			SetBranchImm(pc + 4);
+		else
+		{
 			recompileNextInstruction(1);
-			SetBranchImm( branchTo );
+			SetBranchImm(branchTo);
 		}
 		return;
 	}
@@ -776,12 +823,11 @@ void recBGEZL()
 	recompileNextInstruction(1);
 	SetBranchImm(branchTo);
 
-	x86SetJ32( j32Ptr[ 0 ] );
+	x86SetJ32(j32Ptr[0]);
 
 	LoadBranchState();
 	SetBranchImm(pc);
 }
-
 
 
 
@@ -799,27 +845,29 @@ void recBLEZL()
 
 	_eeFlushAllUnused();
 
-	if( GPR_IS_CONST1(_Rs_) ) {
-		if( !(g_cpuConstRegs[_Rs_].SD[0] <= 0) )
-			SetBranchImm( pc + 4);
-		else {
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		if (!(g_cpuConstRegs[_Rs_].SD[0] <= 0))
+			SetBranchImm(pc + 4);
+		else
+		{
 			_clearNeededXMMregs();
 			recompileNextInstruction(1);
-			SetBranchImm( branchTo );
+			SetBranchImm(branchTo);
 		}
 		return;
 	}
 
 	_flushEEreg(_Rs_);
 
-	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], 0 );
-	j32Ptr[ 0 ] = JL32( 0 );
-	j32Ptr[ 1 ] = JG32( 0 );
+	xCMP(ptr32[&cpuRegs.GPR.r[_Rs_].UL[1]], 0);
+	j32Ptr[0] = JL32(0);
+	j32Ptr[1] = JG32(0);
 
-	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], 0 );
-	j32Ptr[ 2 ] = JNZ32( 0 );
+	xCMP(ptr32[&cpuRegs.GPR.r[_Rs_].UL[0]], 0);
+	j32Ptr[2] = JNZ32(0);
 
-	x86SetJ32( j32Ptr[ 0 ] );
+	x86SetJ32(j32Ptr[0]);
 
 	_clearNeededXMMregs();
 
@@ -827,8 +875,8 @@ void recBLEZL()
 	recompileNextInstruction(1);
 	SetBranchImm(branchTo);
 
-	x86SetJ32( j32Ptr[ 1 ] );
-	x86SetJ32( j32Ptr[ 2 ] );
+	x86SetJ32(j32Ptr[1]);
+	x86SetJ32(j32Ptr[2]);
 
 	LoadBranchState();
 	SetBranchImm(pc);
@@ -843,27 +891,29 @@ void recBGTZL()
 
 	_eeFlushAllUnused();
 
-	if( GPR_IS_CONST1(_Rs_) ) {
-		if( !(g_cpuConstRegs[_Rs_].SD[0] > 0) )
-			SetBranchImm( pc + 4);
-		else {
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		if (!(g_cpuConstRegs[_Rs_].SD[0] > 0))
+			SetBranchImm(pc + 4);
+		else
+		{
 			_clearNeededXMMregs();
 			recompileNextInstruction(1);
-			SetBranchImm( branchTo );
+			SetBranchImm(branchTo);
 		}
 		return;
 	}
 
 	_flushEEreg(_Rs_);
 
-	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], 0 );
-	j32Ptr[ 0 ] = JG32( 0 );
-	j32Ptr[ 1 ] = JL32( 0 );
+	xCMP(ptr32[&cpuRegs.GPR.r[_Rs_].UL[1]], 0);
+	j32Ptr[0] = JG32(0);
+	j32Ptr[1] = JL32(0);
 
-	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], 0 );
-	j32Ptr[ 2 ] = JZ32( 0 );
+	xCMP(ptr32[&cpuRegs.GPR.r[_Rs_].UL[0]], 0);
+	j32Ptr[2] = JZ32(0);
 
-	x86SetJ32( j32Ptr[ 0 ] );
+	x86SetJ32(j32Ptr[0]);
 
 	_clearNeededXMMregs();
 
@@ -871,8 +921,8 @@ void recBGTZL()
 	recompileNextInstruction(1);
 	SetBranchImm(branchTo);
 
-	x86SetJ32( j32Ptr[ 1 ] );
-	x86SetJ32( j32Ptr[ 2 ] );
+	x86SetJ32(j32Ptr[1]);
+	x86SetJ32(j32Ptr[2]);
 
 	LoadBranchState();
 	SetBranchImm(pc);
@@ -880,4 +930,6 @@ void recBGTZL()
 
 #endif
 
-} } }
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900

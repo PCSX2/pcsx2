@@ -29,6 +29,9 @@ namespace OpcodeImpl {
 	void recMULTU();
 	void recDIV();
 	void recDIVU();
-} } }
+
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900
 
 #endif

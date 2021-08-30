@@ -38,18 +38,18 @@ namespace OpcodeImpl {
 
 namespace Interp = R5900::Interpreter::OpcodeImpl;
 
-REC_FUNC_DEL(LB, _Rt_);
+REC_FUNC_DEL(LB,  _Rt_);
 REC_FUNC_DEL(LBU, _Rt_);
-REC_FUNC_DEL(LH, _Rt_);
+REC_FUNC_DEL(LH,  _Rt_);
 REC_FUNC_DEL(LHU, _Rt_);
-REC_FUNC_DEL(LW, _Rt_);
+REC_FUNC_DEL(LW,  _Rt_);
 REC_FUNC_DEL(LWU, _Rt_);
 REC_FUNC_DEL(LWL, _Rt_);
 REC_FUNC_DEL(LWR, _Rt_);
-REC_FUNC_DEL(LD, _Rt_);
+REC_FUNC_DEL(LD,  _Rt_);
 REC_FUNC_DEL(LDR, _Rt_);
 REC_FUNC_DEL(LDL, _Rt_);
-REC_FUNC_DEL(LQ, _Rt_);
+REC_FUNC_DEL(LQ,  _Rt_);
 REC_FUNC(SB);
 REC_FUNC(SH);
 REC_FUNC(SW);
@@ -72,18 +72,23 @@ void _eeOnLoadWrite(u32 reg)
 {
 	int regt;
 
-	if( !reg ) return;
+	if (!reg)
+		return;
 
 	_eeOnWriteReg(reg, 1);
 	regt = _checkXMMreg(XMMTYPE_GPRREG, reg, MODE_READ);
 
-	if( regt >= 0 ) {
-		if( xmmregs[regt].mode & MODE_WRITE ) {
-			if( reg != _Rs_ ) {
+	if (regt >= 0)
+	{
+		if (xmmregs[regt].mode & MODE_WRITE)
+		{
+			if (reg != _Rs_)
+			{
 				xPUNPCK.HQDQ(xRegisterSSE(regt), xRegisterSSE(regt));
 				xMOVQ(ptr[&cpuRegs.GPR.r[reg].UL[2]], xRegisterSSE(regt));
 			}
-			else xMOVH.PS(ptr[&cpuRegs.GPR.r[reg].UL[2]], xRegisterSSE(regt));
+			else
+				xMOVH.PS(ptr[&cpuRegs.GPR.r[reg].UL[2]], xRegisterSSE(regt));
 		}
 		xmmregs[regt].inuse = 0;
 	}
@@ -95,9 +100,9 @@ __aligned16 u32 dummyValue[4];
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-void recLoad64( u32 bits, bool sign )
+void recLoad64(u32 bits, bool sign)
 {
-	pxAssume( bits == 64 || bits == 128 );
+	pxAssume(bits == 64 || bits == 128);
 
 	// Load arg2 with the destination.
 	// 64/128 bit modes load the result directly into the cpuRegs.GPR struct.
@@ -124,7 +129,7 @@ void recLoad64( u32 bits, bool sign )
 		_eeMoveGPRtoR(arg1regd, _Rs_);
 		if (_Imm_ != 0)
 			xADD(arg1regd, _Imm_);
-		if (bits == 128)		// force 16 byte alignment on 128 bit reads
+		if (bits == 128) // force 16 byte alignment on 128 bit reads
 			xAND(arg1regd, ~0x0F);
 
 		_eeOnLoadWrite(_Rt_);
@@ -137,9 +142,9 @@ void recLoad64( u32 bits, bool sign )
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-void recLoad32( u32 bits, bool sign )
+void recLoad32(u32 bits, bool sign)
 {
-	pxAssume( bits <= 32 );
+	pxAssume(bits <= 32);
 
 	// 8/16/32 bit modes return the loaded value in EAX.
 
@@ -157,7 +162,7 @@ void recLoad32( u32 bits, bool sign )
 		// Load arg1 with the source memory address that we're reading from.
 		_eeMoveGPRtoR(arg1regd, _Rs_);
 		if (_Imm_ != 0)
-			xADD(arg1regd, _Imm_ );
+			xADD(arg1regd, _Imm_);
 
 		_eeOnLoadWrite(_Rt_);
 		_deleteEEreg(_Rt_, 0);
@@ -185,65 +190,65 @@ void recLoad32( u32 bits, bool sign )
 
 void recStore(u32 bits)
 {
-        // Performance note: Const prop for the store address is good, always.
-        // Constprop for the value being stored is not really worthwhile (better to use register
-        // allocation -- simpler code and just as fast)
+	// Performance note: Const prop for the store address is good, always.
+	// Constprop for the value being stored is not really worthwhile (better to use register
+	// allocation -- simpler code and just as fast)
 
-        // Load EDX first with the value being written, or the address of the value
-        // being written (64/128 bit modes).
+	// Load EDX first with the value being written, or the address of the value
+	// being written (64/128 bit modes).
 
-        if (bits < 64)
-        {
-                _eeMoveGPRtoR(arg2regd, _Rt_);
-        }
-        else if (bits == 128 || bits == 64)
-        {
-                _flushEEreg(_Rt_);          // flush register to mem
-                xLEA(arg2reg, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
-        }
+	if (bits < 64)
+	{
+		_eeMoveGPRtoR(arg2regd, _Rt_);
+	}
+	else if (bits == 128 || bits == 64)
+	{
+		_flushEEreg(_Rt_); // flush register to mem
+		xLEA(arg2reg, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+	}
 
-        // Load ECX with the destination address, or issue a direct optimized write
-        // if the address is a constant propagation.
+	// Load ECX with the destination address, or issue a direct optimized write
+	// if the address is a constant propagation.
 
-        if (GPR_IS_CONST1(_Rs_))
-        {
-                u32 dstadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-                if (bits == 128)
-					dstadr &= ~0x0f;
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		u32 dstadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+		if (bits == 128)
+			dstadr &= ~0x0f;
 
-                vtlb_DynGenWrite_Const( bits, dstadr );
-        }
-        else
-        {
-                _eeMoveGPRtoR(arg1regd, _Rs_);
-                if (_Imm_ != 0)
-                        xADD(arg1regd, _Imm_);
-                if (bits == 128)
-                        xAND(arg1regd, ~0x0F);
+		vtlb_DynGenWrite_Const(bits, dstadr);
+	}
+	else
+	{
+		_eeMoveGPRtoR(arg1regd, _Rs_);
+		if (_Imm_ != 0)
+			xADD(arg1regd, _Imm_);
+		if (bits == 128)
+			xAND(arg1regd, ~0x0F);
 
-                iFlushCall(FLUSH_FULLVTLB);
+		iFlushCall(FLUSH_FULLVTLB);
 
-				vtlb_DynGenWrite(bits);
-        }
+		vtlb_DynGenWrite(bits);
+	}
 }
 
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
-void recLB()  { recLoad32(8,true);    EE::Profiler.EmitOp(eeOpcode::LB);}
-void recLBU() { recLoad32(8,false);   EE::Profiler.EmitOp(eeOpcode::LBU);}
-void recLH()  { recLoad32(16,true);   EE::Profiler.EmitOp(eeOpcode::LH);}
-void recLHU() { recLoad32(16,false);  EE::Profiler.EmitOp(eeOpcode::LHU);}
-void recLW()  { recLoad32(32,true);   EE::Profiler.EmitOp(eeOpcode::LW);}
-void recLWU() { recLoad32(32,false);  EE::Profiler.EmitOp(eeOpcode::LWU);}
-void recLD()  { recLoad64(64,false);  EE::Profiler.EmitOp(eeOpcode::LD);}
-void recLQ()  { recLoad64(128,false); EE::Profiler.EmitOp(eeOpcode::LQ);}
+void recLB()  { recLoad32(  8, true);  EE::Profiler.EmitOp(eeOpcode::LB); }
+void recLBU() { recLoad32(  8, false); EE::Profiler.EmitOp(eeOpcode::LBU); }
+void recLH()  { recLoad32( 16, true);  EE::Profiler.EmitOp(eeOpcode::LH); }
+void recLHU() { recLoad32( 16, false); EE::Profiler.EmitOp(eeOpcode::LHU); }
+void recLW()  { recLoad32( 32, true);  EE::Profiler.EmitOp(eeOpcode::LW); }
+void recLWU() { recLoad32( 32, false); EE::Profiler.EmitOp(eeOpcode::LWU); }
+void recLD()  { recLoad64( 64, false); EE::Profiler.EmitOp(eeOpcode::LD); }
+void recLQ()  { recLoad64(128, false); EE::Profiler.EmitOp(eeOpcode::LQ); }
 
-void recSB()  { recStore(8);   EE::Profiler.EmitOp(eeOpcode::SB);}
-void recSH()  { recStore(16);  EE::Profiler.EmitOp(eeOpcode::SH);}
-void recSW()  { recStore(32);  EE::Profiler.EmitOp(eeOpcode::SW);}
-void recSQ()  { recStore(128); EE::Profiler.EmitOp(eeOpcode::SQ);}
-void recSD()  { recStore(64);  EE::Profiler.EmitOp(eeOpcode::SD);}
+void recSB()  { recStore(  8); EE::Profiler.EmitOp(eeOpcode::SB); }
+void recSH()  { recStore( 16); EE::Profiler.EmitOp(eeOpcode::SH); }
+void recSW()  { recStore( 32); EE::Profiler.EmitOp(eeOpcode::SW); }
+void recSD()  { recStore( 64); EE::Profiler.EmitOp(eeOpcode::SD); }
+void recSQ()  { recStore(128); EE::Profiler.EmitOp(eeOpcode::SQ); }
 
 ////////////////////////////////////////////////////
 
@@ -536,9 +541,9 @@ void recSWC1()
 #else
 	_deleteFPtoXMMreg(_Rt_, 1);
 
-	xMOV(arg2regd, ptr32[&fpuRegs.fpr[_Rt_].UL] );
+	xMOV(arg2regd, ptr32[&fpuRegs.fpr[_Rt_].UL]);
 
-	if( GPR_IS_CONST1( _Rs_ ) )
+	if (GPR_IS_CONST1(_Rs_))
 	{
 		int addr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
 		vtlb_DynGenWrite_Const(32, addr);
@@ -657,7 +662,6 @@ void recSQC2()
 
 #endif
 
-} } }	// end namespace R5900::Dynarec::OpcodeImpl
-
-using namespace R5900::Dynarec;
-using namespace R5900::Dynarec::OpcodeImpl;
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900

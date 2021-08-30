@@ -25,7 +25,7 @@
 
 __fi static const x32& getFlagReg(uint fInst)
 {
-	static const x32* const gprFlags[4] = { &gprF0, &gprF1, &gprF2, &gprF3 };
+	static const x32* const gprFlags[4] = {&gprF0, &gprF1, &gprF2, &gprF3};
 	pxAssert(fInst < 4);
 	return *gprFlags[fInst];
 }
@@ -67,11 +67,12 @@ __ri void mVUallocSFLAGc(const x32& reg, const x32& regT, int fInstance)
 	setBitSFLAG(reg, regT, 0x00f0, 0x0080); // SS Bit
 	xAND(regT, 0xffff0000); // DS/DI/OS/US/D/I/O/U Bits
 	xSHR(regT, 14);
-	xOR (reg, regT);
+	xOR(reg, regT);
 }
 
 // Denormalizes Status Flag
-__ri void mVUallocSFLAGd(u32* memAddr) {
+__ri void mVUallocSFLAGd(u32* memAddr)
+{
 	xMOV(edx, ptr32[memAddr]);
 	xMOV(eax, edx);
 	xSHR(eax, 3);
@@ -80,11 +81,11 @@ __ri void mVUallocSFLAGd(u32* memAddr) {
 	xMOV(ecx, edx);
 	xSHL(ecx, 11);
 	xAND(ecx, 0x1800);
-	xOR (eax, ecx);
+	xOR(eax, ecx);
 
 	xSHL(edx, 14);
 	xAND(edx, 0x3cf0000);
-	xOR (eax, edx);
+	xOR(eax, edx);
 }
 
 __fi void mVUallocMFLAGa(mV, const x32& reg, int fInstance)
@@ -95,20 +96,20 @@ __fi void mVUallocMFLAGa(mV, const x32& reg, int fInstance)
 __fi void mVUallocMFLAGb(mV, const x32& reg, int fInstance)
 {
 	//xAND(reg, 0xffff);
-	if (fInstance < 4) xMOV(ptr32[&mVU.macFlag[fInstance]], reg);			// microVU
-	else			   xMOV(ptr32[&mVU.regs().VI[REG_MAC_FLAG].UL], reg);	// macroVU
+	if (fInstance < 4) xMOV(ptr32[&mVU.macFlag[fInstance]], reg);         // microVU
+	else               xMOV(ptr32[&mVU.regs().VI[REG_MAC_FLAG].UL], reg); // macroVU
 }
 
 __fi void mVUallocCFLAGa(mV, const x32& reg, int fInstance)
 {
-	if (fInstance < 4) xMOV(reg, ptr32[&mVU.clipFlag[fInstance]]);			// microVU
-	else			   xMOV(reg, ptr32[&mVU.regs().VI[REG_CLIP_FLAG].UL]);	// macroVU
+	if (fInstance < 4) xMOV(reg, ptr32[&mVU.clipFlag[fInstance]]);         // microVU
+	else               xMOV(reg, ptr32[&mVU.regs().VI[REG_CLIP_FLAG].UL]); // macroVU
 }
 
 __fi void mVUallocCFLAGb(mV, const x32& reg, int fInstance)
 {
-	if (fInstance < 4) xMOV(ptr32[&mVU.clipFlag[fInstance]], reg);			// microVU
-	else			   xMOV(ptr32[&mVU.regs().VI[REG_CLIP_FLAG].UL], reg);	// macroVU
+	if (fInstance < 4) xMOV(ptr32[&mVU.clipFlag[fInstance]], reg);         // microVU
+	else               xMOV(ptr32[&mVU.regs().VI[REG_CLIP_FLAG].UL], reg); // macroVU
 
 	// On COP2 modifying the CLIP flag we need to update the microVU version for when it's restored on new program
 	if (fInstance == 0xff)
@@ -125,7 +126,7 @@ __fi void mVUallocCFLAGb(mV, const x32& reg, int fInstance)
 
 __ri void mVUallocVIa(mV, const x32& GPRreg, int _reg_, bool signext = false)
 {
-	if  (!_reg_)
+	if (!_reg_)
 		xXOR(GPRreg, GPRreg);
 	else if (signext)
 		xMOVSX(GPRreg, ptr16[&mVU.regs().VI[_reg_].SL]);
@@ -135,15 +136,18 @@ __ri void mVUallocVIa(mV, const x32& GPRreg, int _reg_, bool signext = false)
 
 __ri void mVUallocVIb(mV, const x32& GPRreg, int _reg_)
 {
-	if (mVUlow.backupVI) { // Backs up reg to memory (used when VI is modified b4 a branch)
+	if (mVUlow.backupVI) // Backs up reg to memory (used when VI is modified b4 a branch)
+	{
 		xMOVZX(gprT3, ptr16[&mVU.regs().VI[_reg_].UL]);
 		xMOV  (ptr32[&mVU.VIbackup], gprT3);
 	}
 
-	if   (_reg_ == 0) {
+	if (_reg_ == 0)
+	{
 		return;
 	}
-	else if (_reg_ < 16) {
+	else if (_reg_ < 16)
+	{
 		xMOV(ptr16[&mVU.regs().VI[_reg_].UL], xRegister16(GPRreg.Id));
 	}
 }
@@ -168,5 +172,6 @@ __ri void writeQreg(const xmm& reg, int qInstance)
 {
 	if (qInstance)
 		xINSERTPS(xmmPQ, reg, _MM_MK_INSERTPS_NDX(0, 1, 0));
-	else xMOVSS(xmmPQ, reg);
+	else
+		xMOVSS(xmmPQ, reg);
 }

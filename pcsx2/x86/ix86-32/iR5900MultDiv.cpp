@@ -26,8 +26,7 @@ namespace Interp = R5900::Interpreter::OpcodeImpl;
 
 namespace R5900 {
 namespace Dynarec {
-namespace OpcodeImpl
-{
+namespace OpcodeImpl {
 
 /*********************************************************
 * Register mult/div & Register trap logic                *
@@ -35,20 +34,20 @@ namespace OpcodeImpl
 *********************************************************/
 #ifndef MULTDIV_RECOMPILE
 
-REC_FUNC_DEL(MULT , _Rd_);
-REC_FUNC_DEL(MULTU , _Rd_);
-REC_FUNC_DEL( MULT1  , _Rd_);
-REC_FUNC_DEL( MULTU1 , _Rd_);
+REC_FUNC_DEL(MULT,   _Rd_);
+REC_FUNC_DEL(MULTU,  _Rd_);
+REC_FUNC_DEL(MULT1,  _Rd_);
+REC_FUNC_DEL(MULTU1, _Rd_);
 
 REC_FUNC(DIV);
 REC_FUNC(DIVU);
-REC_FUNC( DIV1 );
-REC_FUNC( DIVU1 );
+REC_FUNC(DIV1);
+REC_FUNC(DIVU1);
 
-REC_FUNC_DEL( MADD , _Rd_ );
-REC_FUNC_DEL( MADDU  , _Rd_);
-REC_FUNC_DEL( MADD1  , _Rd_);
-REC_FUNC_DEL( MADDU1 , _Rd_ );
+REC_FUNC_DEL(MADD,   _Rd_);
+REC_FUNC_DEL(MADDU,  _Rd_);
+REC_FUNC_DEL(MADD1,  _Rd_);
+REC_FUNC_DEL(MADDU1, _Rd_);
 
 #else
 
@@ -56,19 +55,24 @@ REC_FUNC_DEL( MADDU1 , _Rd_ );
 void recWritebackHILO(int info, int writed, int upper)
 {
 	int regd, reglo = -1, reghi, savedlo = 0;
-	uptr loaddr = (uptr)&cpuRegs.LO.UL[ upper ? 2 : 0 ];
-	uptr hiaddr = (uptr)&cpuRegs.HI.UL[ upper ? 2 : 0 ];
-	u8 testlive = upper?EEINST_LIVE2:EEINST_LIVE0;
+	uptr loaddr = (uptr)&cpuRegs.LO.UL[upper ? 2 : 0];
+	uptr hiaddr = (uptr)&cpuRegs.HI.UL[upper ? 2 : 0];
+	u8 testlive = upper ? EEINST_LIVE2 : EEINST_LIVE0;
 
-	if( g_pCurInstInfo->regs[XMMGPR_HI] & testlive )
+	if (g_pCurInstInfo->regs[XMMGPR_HI] & testlive)
 		xMOV(ecx, edx);
 
-	if( g_pCurInstInfo->regs[XMMGPR_LO] & testlive ) {
+	if (g_pCurInstInfo->regs[XMMGPR_LO] & testlive)
+	{
 
-		if( (reglo = _checkXMMreg(XMMTYPE_GPRREG, XMMGPR_LO, MODE_READ)) >= 0 ) {
-			if( xmmregs[reglo].mode & MODE_WRITE ) {
-				if( upper ) xMOVQ(ptr[(void*)(loaddr-8)], xRegisterSSE(reglo));
-				else xMOVH.PS(ptr[(void*)(loaddr+8)], xRegisterSSE(reglo));
+		if ((reglo = _checkXMMreg(XMMTYPE_GPRREG, XMMGPR_LO, MODE_READ)) >= 0)
+		{
+			if (xmmregs[reglo].mode & MODE_WRITE)
+			{
+				if (upper)
+					xMOVQ(ptr[(void*)(loaddr - 8)], xRegisterSSE(reglo));
+				else
+					xMOVH.PS(ptr[(void*)(loaddr + 8)], xRegisterSSE(reglo));
 			}
 
 			xmmregs[reglo].inuse = 0;
@@ -77,38 +81,48 @@ void recWritebackHILO(int info, int writed, int upper)
 
 		xCDQ();
 		xMOV(ptr[(void*)(loaddr)], eax);
-		xMOV(ptr[(void*)(loaddr+4)], edx);
+		xMOV(ptr[(void*)(loaddr + 4)], edx);
 		savedlo = 1;
 	}
 
-	if ( writed && _Rd_ )
+	if (writed && _Rd_)
 	{
 		_eeOnWriteReg(_Rd_, 1);
 
 		regd = -1;
-		if( g_pCurInstInfo->regs[_Rd_] & EEINST_XMM ) {
-			if( savedlo ) {
-				regd = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_WRITE|MODE_READ);
-				if( regd >= 0 ) {
+		if (g_pCurInstInfo->regs[_Rd_] & EEINST_XMM)
+		{
+			if (savedlo)
+			{
+				regd = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_WRITE | MODE_READ);
+				if (regd >= 0)
+				{
 					xMOVL.PS(xRegisterSSE(regd), ptr[(void*)(loaddr)]);
 				}
 			}
 		}
 
-		if( regd < 0 ) {
+		if (regd < 0)
+		{
 			_deleteEEreg(_Rd_, 0);
 
-			if( !savedlo ) xCDQ();
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+			if (!savedlo)
+				xCDQ();
+			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
 		}
 	}
 
-	if( g_pCurInstInfo->regs[XMMGPR_HI] & testlive ) {
-		if( (reghi = _checkXMMreg(XMMTYPE_GPRREG, XMMGPR_HI, MODE_READ)) >= 0 ) {
-			if( xmmregs[reghi].mode & MODE_WRITE ) {
-				if( upper ) xMOVQ(ptr[(void*)(hiaddr-8)], xRegisterSSE(reghi));
-				else xMOVH.PS(ptr[(void*)(hiaddr+8)], xRegisterSSE(reghi));
+	if (g_pCurInstInfo->regs[XMMGPR_HI] & testlive)
+	{
+		if ((reghi = _checkXMMreg(XMMTYPE_GPRREG, XMMGPR_HI, MODE_READ)) >= 0)
+		{
+			if (xmmregs[reghi].mode & MODE_WRITE)
+			{
+				if (upper)
+					xMOVQ(ptr[(void*)(hiaddr - 8)], xRegisterSSE(reghi));
+				else
+					xMOVH.PS(ptr[(void*)(hiaddr + 8)], xRegisterSSE(reghi));
 			}
 
 			xmmregs[reghi].inuse = 0;
@@ -117,48 +131,59 @@ void recWritebackHILO(int info, int writed, int upper)
 
 		xMOV(ptr[(void*)(hiaddr)], ecx);
 		xSAR(ecx, 31);
-		xMOV(ptr[(void*)(hiaddr+4)], ecx);
+		xMOV(ptr[(void*)(hiaddr + 4)], ecx);
 	}
 }
 
 void recWritebackConstHILO(u64 res, int writed, int upper)
 {
 	int reglo, reghi;
-	uptr loaddr = (uptr)&cpuRegs.LO.UL[ upper ? 2 : 0 ];
-	uptr hiaddr = (uptr)&cpuRegs.HI.UL[ upper ? 2 : 0 ];
-	u8 testlive = upper?EEINST_LIVE2:EEINST_LIVE0;
+	uptr loaddr = (uptr)&cpuRegs.LO.UL[upper ? 2 : 0];
+	uptr hiaddr = (uptr)&cpuRegs.HI.UL[upper ? 2 : 0];
+	u8 testlive = upper ? EEINST_LIVE2 : EEINST_LIVE0;
 
-	if( g_pCurInstInfo->regs[XMMGPR_LO] & testlive ) {
-		reglo = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_LO, MODE_WRITE|MODE_READ);
+	if (g_pCurInstInfo->regs[XMMGPR_LO] & testlive)
+	{
+		reglo = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_LO, MODE_WRITE | MODE_READ);
 
-		if( reglo >= 0 ) {
+		if (reglo >= 0)
+		{
 			u32* mem_ptr = recGetImm64(res & 0x80000000 ? -1 : 0, (u32)res);
-			if( upper ) xMOVH.PS(xRegisterSSE(reglo), ptr[mem_ptr]);
-			else xMOVL.PS(xRegisterSSE(reglo), ptr[mem_ptr]);
+			if (upper)
+				xMOVH.PS(xRegisterSSE(reglo), ptr[mem_ptr]);
+			else
+				xMOVL.PS(xRegisterSSE(reglo), ptr[mem_ptr]);
 		}
-		else {
+		else
+		{
 			xMOV(ptr32[(u32*)(loaddr)], res & 0xffffffff);
-			xMOV(ptr32[(u32*)(loaddr+4)], (res&0x80000000)?0xffffffff:0);
+			xMOV(ptr32[(u32*)(loaddr + 4)], (res & 0x80000000) ? 0xffffffff : 0);
 		}
 	}
 
-	if( g_pCurInstInfo->regs[XMMGPR_HI] & testlive ) {
+	if (g_pCurInstInfo->regs[XMMGPR_HI] & testlive)
+	{
 
-		reghi = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_HI, MODE_WRITE|MODE_READ);
+		reghi = _allocCheckGPRtoXMM(g_pCurInstInfo, XMMGPR_HI, MODE_WRITE | MODE_READ);
 
-		if( reghi >= 0 ) {
+		if (reghi >= 0)
+		{
 			u32* mem_ptr = recGetImm64((res >> 63) ? -1 : 0, res >> 32);
-			if( upper ) xMOVH.PS(xRegisterSSE(reghi), ptr[mem_ptr]);
-			else xMOVL.PS(xRegisterSSE(reghi), ptr[mem_ptr]);
+			if (upper)
+				xMOVH.PS(xRegisterSSE(reghi), ptr[mem_ptr]);
+			else
+				xMOVL.PS(xRegisterSSE(reghi), ptr[mem_ptr]);
 		}
-		else {
+		else
+		{
 			_deleteEEreg(XMMGPR_HI, 0);
 			xMOV(ptr32[(u32*)(hiaddr)], res >> 32);
-			xMOV(ptr32[(u32*)(hiaddr+4)], (res>>63)?0xffffffff:0);
+			xMOV(ptr32[(u32*)(hiaddr + 4)], (res >> 63) ? 0xffffffff : 0);
 		}
 	}
 
-	if (!writed || !_Rd_) return;
+	if (!writed || !_Rd_)
+		return;
 	g_cpuConstRegs[_Rd_].SD[0] = (s32)(res & 0xffffffffULL); //that is the difference
 }
 
@@ -173,17 +198,20 @@ void recMULT_const()
 void recMULTUsuper(int info, int upper, int process);
 void recMULTsuper(int info, int upper, int process)
 {
-	if( process & PROCESS_CONSTS ) {
-		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );
-		xMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+	if (process & PROCESS_CONSTS)
+	{
+		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0]);
+		xMUL(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	}
-	else if( process & PROCESS_CONSTT) {
-		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
-		xMUL(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+	else if (process & PROCESS_CONSTT)
+	{
+		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0]);
+		xMUL(ptr32[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 	}
-	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-		xMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+	else
+	{
+		xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+		xMUL(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	}
 
 	recWritebackHILO(info, 1, upper);
@@ -205,7 +233,7 @@ void recMULT_constt(int info)
 }
 
 // don't set XMMINFO_WRITED|XMMINFO_WRITELO|XMMINFO_WRITEHI
-EERECOMPILE_CODE0(MULT, XMMINFO_READS|XMMINFO_READT|(_Rd_?XMMINFO_WRITED:0) );
+EERECOMPILE_CODE0(MULT, XMMINFO_READS | XMMINFO_READT | (_Rd_ ? XMMINFO_WRITED : 0));
 
 //// MULTU
 void recMULTU_const()
@@ -217,17 +245,20 @@ void recMULTU_const()
 
 void recMULTUsuper(int info, int upper, int process)
 {
-	if( process & PROCESS_CONSTS ) {
-		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );
-		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+	if (process & PROCESS_CONSTS)
+	{
+		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0]);
+		xUMUL(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	}
-	else if( process & PROCESS_CONSTT) {
-		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
-		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+	else if (process & PROCESS_CONSTT)
+	{
+		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0]);
+		xUMUL(ptr32[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 	}
-	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+	else
+	{
+		xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+		xUMUL(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	}
 
 	recWritebackHILO(info, 1, upper);
@@ -249,7 +280,7 @@ void recMULTU_constt(int info)
 }
 
 // don't specify XMMINFO_WRITELO or XMMINFO_WRITEHI, that is taken care of
-EERECOMPILE_CODE0(MULTU, XMMINFO_READS|XMMINFO_READT|(_Rd_?XMMINFO_WRITED:0));
+EERECOMPILE_CODE0(MULTU, XMMINFO_READS | XMMINFO_READT | (_Rd_ ? XMMINFO_WRITED : 0));
 
 ////////////////////////////////////////////////////
 void recMULT1_const()
@@ -274,7 +305,7 @@ void recMULT1_constt(int info)
 	recMULTsuper(info, 1, PROCESS_CONSTT);
 }
 
-EERECOMPILE_CODE0(MULT1, XMMINFO_READS|XMMINFO_READT|(_Rd_?XMMINFO_WRITED:0) );
+EERECOMPILE_CODE0(MULT1, XMMINFO_READS | XMMINFO_READT | (_Rd_ ? XMMINFO_WRITED : 0));
 
 ////////////////////////////////////////////////////
 void recMULTU1_const()
@@ -299,7 +330,7 @@ void recMULTU1_constt(int info)
 	recMULTUsuper(info, 1, PROCESS_CONSTT);
 }
 
-EERECOMPILE_CODE0(MULTU1, XMMINFO_READS|XMMINFO_READT|(_Rd_?XMMINFO_WRITED:0));
+EERECOMPILE_CODE0(MULTU1, XMMINFO_READS | XMMINFO_READT | (_Rd_ ? XMMINFO_WRITED : 0));
 
 //// DIV
 
@@ -313,15 +344,15 @@ void recDIVconst(int upper)
 	}
 	else if (g_cpuConstRegs[_Rt_].SL[0] != 0)
 	{
-        quot = g_cpuConstRegs[_Rs_].SL[0] / g_cpuConstRegs[_Rt_].SL[0];
-        rem = g_cpuConstRegs[_Rs_].SL[0] % g_cpuConstRegs[_Rt_].SL[0];
-    }
+		quot = g_cpuConstRegs[_Rs_].SL[0] / g_cpuConstRegs[_Rt_].SL[0];
+		rem = g_cpuConstRegs[_Rs_].SL[0] % g_cpuConstRegs[_Rt_].SL[0];
+	}
 	else
 	{
 		quot = (g_cpuConstRegs[_Rs_].SL[0] < 0) ? 1 : -1;
 		rem = g_cpuConstRegs[_Rs_].SL[0];
 	}
-	recWritebackConstHILO((u64)quot|((u64)rem<<32), 0, upper);
+	recWritebackConstHILO((u64)quot | ((u64)rem << 32), 0, upper);
 }
 
 void recDIV_const()
@@ -331,23 +362,23 @@ void recDIV_const()
 
 void recDIVsuper(int info, int sign, int upper, int process)
 {
-	if( process & PROCESS_CONSTT )
-		xMOV(ecx, g_cpuConstRegs[_Rt_].UL[0] );
+	if (process & PROCESS_CONSTT)
+		xMOV(ecx, g_cpuConstRegs[_Rt_].UL[0]);
 	else
-		xMOV(ecx, ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+		xMOV(ecx, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 
-	if( process & PROCESS_CONSTS )
-		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );
+	if (process & PROCESS_CONSTS)
+		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0]);
 	else
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+		xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 
-	u8 *end1;
-	if (sign)  //test for overflow (x86 will just throw an exception)
+	u8* end1;
+	if (sign) //test for overflow (x86 will just throw an exception)
 	{
-		xCMP(eax, 0x80000000 );
-		u8 *cont1 = JNE8(0);
-		xCMP(ecx, 0xffffffff );
-		u8 *cont2 = JNE8(0);
+		xCMP(eax, 0x80000000);
+		u8* cont1 = JNE8(0);
+		xCMP(ecx, 0xffffffff);
+		u8* cont2 = JNE8(0);
 		//overflow case:
 		xXOR(edx, edx); //EAX remains 0x80000000
 		end1 = JMP8(0);
@@ -356,32 +387,35 @@ void recDIVsuper(int info, int sign, int upper, int process)
 		x86SetJ8(cont2);
 	}
 
-	xCMP(ecx, 0 );
-	u8 *cont3 = JNE8(0);
+	xCMP(ecx, 0);
+	u8* cont3 = JNE8(0);
 	//divide by zero
 	xMOV(edx, eax);
 	if (sign) //set EAX to (EAX < 0)?1:-1
 	{
-		xSAR(eax, 31 ); //(EAX < 0)?-1:0
-		xSHL(eax, 1 ); //(EAX < 0)?-2:0
+		xSAR(eax, 31); //(EAX < 0)?-1:0
+		xSHL(eax, 1); //(EAX < 0)?-2:0
 		xNOT(eax); //(EAX < 0)?1:-1
 	}
 	else
-		xMOV(eax, 0xffffffff );
-	u8 *end2 = JMP8(0);
+		xMOV(eax, 0xffffffff);
+	u8* end2 = JMP8(0);
 
 	x86SetJ8(cont3);
-	if( sign ) {
+	if (sign)
+	{
 		xCDQ();
 		xDIV(ecx);
 	}
-	else {
+	else
+	{
 		xXOR(edx, edx);
 		xUDIV(ecx);
 	}
 
-	if (sign) x86SetJ8( end1 );
-	x86SetJ8( end2 );
+	if (sign)
+		x86SetJ8(end1);
+	x86SetJ8(end2);
 
 	// need to execute regardless of bad divide
 	recWritebackHILO(info, 0, upper);
@@ -402,13 +436,14 @@ void recDIV_constt(int info)
 	recDIVsuper(info, 1, 0, PROCESS_CONSTT);
 }
 
-EERECOMPILE_CODE0(DIV, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITELO|XMMINFO_WRITEHI);
+EERECOMPILE_CODE0(DIV, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITELO | XMMINFO_WRITEHI);
 
 //// DIVU
 void recDIVUconst(int upper)
 {
 	u32 quot, rem;
-	if (g_cpuConstRegs[_Rt_].UL[0] != 0) {
+	if (g_cpuConstRegs[_Rt_].UL[0] != 0)
+	{
 		quot = g_cpuConstRegs[_Rs_].UL[0] / g_cpuConstRegs[_Rt_].UL[0];
 		rem = g_cpuConstRegs[_Rs_].UL[0] % g_cpuConstRegs[_Rt_].UL[0];
 	}
@@ -418,7 +453,7 @@ void recDIVUconst(int upper)
 		rem = g_cpuConstRegs[_Rs_].UL[0];
 	}
 
-	recWritebackConstHILO((u64)quot|((u64)rem<<32), 0, upper);
+	recWritebackConstHILO((u64)quot | ((u64)rem << 32), 0, upper);
 }
 
 void recDIVU_const()
@@ -441,7 +476,7 @@ void recDIVU_constt(int info)
 	recDIVsuper(info, 0, 0, PROCESS_CONSTT);
 }
 
-EERECOMPILE_CODE0(DIVU, XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITELO|XMMINFO_WRITEHI);
+EERECOMPILE_CODE0(DIVU, XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITELO | XMMINFO_WRITEHI);
 
 void recDIV1_const()
 {
@@ -463,7 +498,7 @@ void recDIV1_constt(int info)
 	recDIVsuper(info, 1, 1, PROCESS_CONSTT);
 }
 
-EERECOMPILE_CODE0(DIV1, XMMINFO_READS|XMMINFO_READT);
+EERECOMPILE_CODE0(DIV1, XMMINFO_READS | XMMINFO_READT);
 
 void recDIVU1_const()
 {
@@ -485,26 +520,28 @@ void recDIVU1_constt(int info)
 	recDIVsuper(info, 0, 1, PROCESS_CONSTT);
 }
 
-EERECOMPILE_CODE0(DIVU1, XMMINFO_READS|XMMINFO_READT);
+EERECOMPILE_CODE0(DIVU1, XMMINFO_READS | XMMINFO_READT);
 
 void recMADD()
 {
-	if( GPR_IS_CONST2(_Rs_, _Rt_) ) {
+	if (GPR_IS_CONST2(_Rs_, _Rt_))
+	{
 		u64 result = ((s64)g_cpuConstRegs[_Rs_].SL[0] * (s64)g_cpuConstRegs[_Rt_].SL[0]);
 		_deleteEEreg(XMMGPR_LO, 1);
 		_deleteEEreg(XMMGPR_HI, 1);
 
 		// dadd
-		xMOV(eax, ptr[&cpuRegs.LO.UL[ 0 ] ]);
-		xMOV(ecx, ptr[&cpuRegs.HI.UL[ 0 ] ]);
-		xADD(eax, (u32)result&0xffffffff );
-		xADC(ecx, (u32)(result>>32) );
+		xMOV(eax, ptr[&cpuRegs.LO.UL[0]]);
+		xMOV(ecx, ptr[&cpuRegs.HI.UL[0]]);
+		xADD(eax, (u32)result & 0xffffffff);
+		xADC(ecx, (u32)(result >> 32));
 		xCDQ();
-		if( _Rd_) {
+		if (_Rd_)
+		{
 			_eeOnWriteReg(_Rd_, 1);
 			_deleteEEreg(_Rd_, 0);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
 		}
 
 		xMOV(ptr[&cpuRegs.LO.UL[0]], eax);
@@ -522,28 +559,32 @@ void recMADD()
 	_deleteGPRtoXMMreg(_Rs_, 1);
 	_deleteGPRtoXMMreg(_Rt_, 1);
 
-	if( GPR_IS_CONST1(_Rs_) ) {
-		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );
-		xMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0]);
+		xMUL(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	}
-	else if ( GPR_IS_CONST1(_Rt_) ) {
-		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
-		xMUL(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+	else if (GPR_IS_CONST1(_Rt_))
+	{
+		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0]);
+		xMUL(ptr32[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 	}
-	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-		xMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+	else
+	{
+		xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+		xMUL(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	}
 
 	xMOV(ecx, edx);
-	xADD(eax, ptr[&cpuRegs.LO.UL[0] ]);
-	xADC(ecx, ptr[&cpuRegs.HI.UL[0] ]);
+	xADD(eax, ptr[&cpuRegs.LO.UL[0]]);
+	xADC(ecx, ptr[&cpuRegs.HI.UL[0]]);
 	xCDQ();
-	if( _Rd_ ) {
+	if (_Rd_)
+	{
 		_eeOnWriteReg(_Rd_, 1);
 		_deleteEEreg(_Rd_, 0);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
 	}
 
 	xMOV(ptr[&cpuRegs.LO.UL[0]], eax);
@@ -557,22 +598,24 @@ void recMADD()
 
 void recMADDU()
 {
-	if( GPR_IS_CONST2(_Rs_, _Rt_) ) {
+	if (GPR_IS_CONST2(_Rs_, _Rt_))
+	{
 		u64 result = ((u64)g_cpuConstRegs[_Rs_].UL[0] * (u64)g_cpuConstRegs[_Rt_].UL[0]);
 		_deleteEEreg(XMMGPR_LO, 1);
 		_deleteEEreg(XMMGPR_HI, 1);
 
 		// dadd
-		xMOV(eax, ptr[&cpuRegs.LO.UL[ 0 ] ]);
-		xMOV(ecx, ptr[&cpuRegs.HI.UL[ 0 ] ]);
-		xADD(eax, (u32)result&0xffffffff );
-		xADC(ecx, (u32)(result>>32) );
+		xMOV(eax, ptr[&cpuRegs.LO.UL[0]]);
+		xMOV(ecx, ptr[&cpuRegs.HI.UL[0]]);
+		xADD(eax, (u32)result & 0xffffffff);
+		xADC(ecx, (u32)(result >> 32));
 		xCDQ();
-		if( _Rd_) {
+		if (_Rd_)
+		{
 			_eeOnWriteReg(_Rd_, 1);
 			_deleteEEreg(_Rd_, 0);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
 		}
 
 		xMOV(ptr[&cpuRegs.LO.UL[0]], eax);
@@ -590,28 +633,32 @@ void recMADDU()
 	_deleteGPRtoXMMreg(_Rs_, 1);
 	_deleteGPRtoXMMreg(_Rt_, 1);
 
-	if( GPR_IS_CONST1(_Rs_) ) {
-		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );
-		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0]);
+		xUMUL(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	}
-	else if ( GPR_IS_CONST1(_Rt_) ) {
-		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
-		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+	else if (GPR_IS_CONST1(_Rt_))
+	{
+		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0]);
+		xUMUL(ptr32[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 	}
-	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+	else
+	{
+		xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+		xUMUL(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	}
 
 	xMOV(ecx, edx);
-	xADD(eax, ptr[&cpuRegs.LO.UL[0] ]);
-	xADC(ecx, ptr[&cpuRegs.HI.UL[0] ]);
+	xADD(eax, ptr[&cpuRegs.LO.UL[0]]);
+	xADC(ecx, ptr[&cpuRegs.HI.UL[0]]);
 	xCDQ();
-	if( _Rd_ ) {
+	if (_Rd_)
+	{
 		_eeOnWriteReg(_Rd_, 1);
 		_deleteEEreg(_Rd_, 0);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
 	}
 
 	xMOV(ptr[&cpuRegs.LO.UL[0]], eax);
@@ -625,22 +672,24 @@ void recMADDU()
 
 void recMADD1()
 {
-	if( GPR_IS_CONST2(_Rs_, _Rt_) ) {
+	if (GPR_IS_CONST2(_Rs_, _Rt_))
+	{
 		u64 result = ((s64)g_cpuConstRegs[_Rs_].SL[0] * (s64)g_cpuConstRegs[_Rt_].SL[0]);
 		_deleteEEreg(XMMGPR_LO, 1);
 		_deleteEEreg(XMMGPR_HI, 1);
 
 		// dadd
-		xMOV(eax, ptr[&cpuRegs.LO.UL[ 2 ] ]);
-		xMOV(ecx, ptr[&cpuRegs.HI.UL[ 2 ] ]);
-		xADD(eax, (u32)result&0xffffffff );
-		xADC(ecx, (u32)(result>>32) );
+		xMOV(eax, ptr[&cpuRegs.LO.UL[2]]);
+		xMOV(ecx, ptr[&cpuRegs.HI.UL[2]]);
+		xADD(eax, (u32)result & 0xffffffff);
+		xADC(ecx, (u32)(result >> 32));
 		xCDQ();
-		if( _Rd_) {
+		if (_Rd_)
+		{
 			_eeOnWriteReg(_Rd_, 1);
 			_deleteEEreg(_Rd_, 0);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
 		}
 
 		xMOV(ptr[&cpuRegs.LO.UL[2]], eax);
@@ -658,28 +707,32 @@ void recMADD1()
 	_deleteGPRtoXMMreg(_Rs_, 1);
 	_deleteGPRtoXMMreg(_Rt_, 1);
 
-	if( GPR_IS_CONST1(_Rs_) ) {
-		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );
-		xMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0]);
+		xMUL(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	}
-	else if ( GPR_IS_CONST1(_Rt_) ) {
-		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
-		xMUL(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+	else if (GPR_IS_CONST1(_Rt_))
+	{
+		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0]);
+		xMUL(ptr32[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 	}
-	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-		xMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+	else
+	{
+		xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+		xMUL(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	}
 
 	xMOV(ecx, edx);
-	xADD(eax, ptr[&cpuRegs.LO.UL[2] ]);
-	xADC(ecx, ptr[&cpuRegs.HI.UL[2] ]);
+	xADD(eax, ptr[&cpuRegs.LO.UL[2]]);
+	xADC(ecx, ptr[&cpuRegs.HI.UL[2]]);
 	xCDQ();
-	if( _Rd_ ) {
+	if (_Rd_)
+	{
 		_eeOnWriteReg(_Rd_, 1);
 		_deleteEEreg(_Rd_, 0);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
 	}
 
 	xMOV(ptr[&cpuRegs.LO.UL[2]], eax);
@@ -693,22 +746,24 @@ void recMADD1()
 
 void recMADDU1()
 {
-	if( GPR_IS_CONST2(_Rs_, _Rt_) ) {
+	if (GPR_IS_CONST2(_Rs_, _Rt_))
+	{
 		u64 result = ((u64)g_cpuConstRegs[_Rs_].UL[0] * (u64)g_cpuConstRegs[_Rt_].UL[0]);
 		_deleteEEreg(XMMGPR_LO, 1);
 		_deleteEEreg(XMMGPR_HI, 1);
 
 		// dadd
-		xMOV(eax, ptr[&cpuRegs.LO.UL[ 2 ] ]);
-		xMOV(ecx, ptr[&cpuRegs.HI.UL[ 2 ] ]);
-		xADD(eax, (u32)result&0xffffffff );
-		xADC(ecx, (u32)(result>>32) );
+		xMOV(eax, ptr[&cpuRegs.LO.UL[2]]);
+		xMOV(ecx, ptr[&cpuRegs.HI.UL[2]]);
+		xADD(eax, (u32)result & 0xffffffff);
+		xADC(ecx, (u32)(result >> 32));
 		xCDQ();
-		if( _Rd_) {
+		if (_Rd_)
+		{
 			_eeOnWriteReg(_Rd_, 1);
 			_deleteEEreg(_Rd_, 0);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+			xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
 		}
 
 		xMOV(ptr[&cpuRegs.LO.UL[2]], eax);
@@ -726,28 +781,32 @@ void recMADDU1()
 	_deleteGPRtoXMMreg(_Rs_, 1);
 	_deleteGPRtoXMMreg(_Rt_, 1);
 
-	if( GPR_IS_CONST1(_Rs_) ) {
-		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0] );
-		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		xMOV(eax, g_cpuConstRegs[_Rs_].UL[0]);
+		xUMUL(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	}
-	else if ( GPR_IS_CONST1(_Rt_) ) {
-		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0] );
-		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+	else if (GPR_IS_CONST1(_Rt_))
+	{
+		xMOV(eax, g_cpuConstRegs[_Rt_].UL[0]);
+		xUMUL(ptr32[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 	}
-	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-		xUMUL(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ] ]);
+	else
+	{
+		xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+		xUMUL(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
 	}
 
 	xMOV(ecx, edx);
-	xADD(eax, ptr[&cpuRegs.LO.UL[2] ]);
-	xADC(ecx, ptr[&cpuRegs.HI.UL[2] ]);
+	xADD(eax, ptr[&cpuRegs.LO.UL[2]]);
+	xADC(ecx, ptr[&cpuRegs.HI.UL[2]]);
 	xCDQ();
-	if( _Rd_ ) {
+	if (_Rd_)
+	{
 		_eeOnWriteReg(_Rd_, 1);
 		_deleteEEreg(_Rd_, 0);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], edx);
+		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
+		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], edx);
 	}
 
 	xMOV(ptr[&cpuRegs.LO.UL[2]], eax);
@@ -762,4 +821,6 @@ void recMADDU1()
 
 #endif
 
-} } }
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900

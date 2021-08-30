@@ -31,7 +31,7 @@ namespace Dynarec {
 // Parameters:
 //   jmpSkip - This parameter is the result of the appropriate J32 instruction
 //   (usually JZ32 or JNZ32).
-void recDoBranchImm( u32* jmpSkip, bool isLikely )
+void recDoBranchImm(u32* jmpSkip, bool isLikely)
 {
 	// All R5900 branches use this format:
 	const u32 branchTo = ((s32)_Imm_ * 4) + pc;
@@ -51,17 +51,17 @@ void recDoBranchImm( u32* jmpSkip, bool isLikely )
 	// if it's a likely branch then we'll need to skip the delay slot here, since
 	// MIPS cancels the delay slot instruction when branches aren't taken.
 	LoadBranchState();
-	if( !isLikely )
+	if (!isLikely)
 	{
-		pc -= 4;		// instruction rewinder for delay slot, if non-likely.
+		pc -= 4; // instruction rewinder for delay slot, if non-likely.
 		recompileNextInstruction(1);
 	}
-	SetBranchImm(pc);	// start a new recompiled block.
+	SetBranchImm(pc); // start a new recompiled block.
 }
 
-void recDoBranchImm_Likely( u32* jmpSkip )
+void recDoBranchImm_Likely(u32* jmpSkip)
 {
-	recDoBranchImm( jmpSkip, true );
+	recDoBranchImm(jmpSkip, true);
 }
 
 namespace OpcodeImpl {
@@ -92,13 +92,16 @@ void recSYNC()
 void recMFSA()
 {
 	int mmreg;
-	if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
 	mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rd_, MODE_WRITE);
-	if( mmreg >= 0 ) {
+	if (mmreg >= 0)
+	{
 		xMOVL.PS(xRegisterSSE(mmreg), ptr[&cpuRegs.sa]);
 	}
-	else {
+	else
+	{
 		xMOV(eax, ptr[&cpuRegs.sa]);
 		_deleteEEreg(_Rd_, 0);
 		xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], eax);
@@ -109,16 +112,20 @@ void recMFSA()
 // SA is 4-bit and contains the amount of bytes to shift
 void recMTSA()
 {
-	if( GPR_IS_CONST1(_Rs_) ) {
-		xMOV(ptr32[&cpuRegs.sa], g_cpuConstRegs[_Rs_].UL[0] & 0xf );
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		xMOV(ptr32[&cpuRegs.sa], g_cpuConstRegs[_Rs_].UL[0] & 0xf);
 	}
-	else {
+	else
+	{
 		int mmreg;
 
-		if( (mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
+		if ((mmreg = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0)
+		{
 			xMOVSS(ptr[&cpuRegs.sa], xRegisterSSE(mmreg));
 		}
-		else {
+		else
+		{
 			xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 			xMOV(ptr[&cpuRegs.sa], eax);
 		}
@@ -128,135 +135,141 @@ void recMTSA()
 
 void recMTSAB()
 {
-	if( GPR_IS_CONST1(_Rs_) ) {
+	if (GPR_IS_CONST1(_Rs_))
+	{
 		xMOV(ptr32[&cpuRegs.sa], ((g_cpuConstRegs[_Rs_].UL[0] & 0xF) ^ (_Imm_ & 0xF)));
 	}
-	else {
+	else
+	{
 		_eeMoveGPRtoR(eax, _Rs_);
 		xAND(eax, 0xF);
-		xXOR(eax, _Imm_&0xf);
+		xXOR(eax, _Imm_ & 0xf);
 		xMOV(ptr[&cpuRegs.sa], eax);
 	}
- }
+}
 
 void recMTSAH()
 {
-	if( GPR_IS_CONST1(_Rs_) ) {
+	if (GPR_IS_CONST1(_Rs_))
+	{
 		xMOV(ptr32[&cpuRegs.sa], ((g_cpuConstRegs[_Rs_].UL[0] & 0x7) ^ (_Imm_ & 0x7)) << 1);
 	}
-	else {
+	else
+	{
 		_eeMoveGPRtoR(eax, _Rs_);
 		xAND(eax, 0x7);
-		xXOR(eax, _Imm_&0x7);
+		xXOR(eax, _Imm_ & 0x7);
 		xSHL(eax, 1);
 		xMOV(ptr[&cpuRegs.sa], eax);
 	}
 }
 
-	////////////////////////////////////////////////////
-	void recNULL()
-	{
-		Console.Error("EE: Unimplemented op %x", cpuRegs.code);
-	}
+////////////////////////////////////////////////////
+void recNULL()
+{
+	Console.Error("EE: Unimplemented op %x", cpuRegs.code);
+}
 
-	////////////////////////////////////////////////////
-	void recUnknown()
-	{
-		// TODO : Unknown ops should throw an exception.
-		Console.Error("EE: Unrecognized op %x", cpuRegs.code);
-	}
+////////////////////////////////////////////////////
+void recUnknown()
+{
+	// TODO : Unknown ops should throw an exception.
+	Console.Error("EE: Unrecognized op %x", cpuRegs.code);
+}
 
-	void recMMI_Unknown()
-	{
-		// TODO : Unknown ops should throw an exception.
-		Console.Error("EE: Unrecognized MMI op %x", cpuRegs.code);
-	}
+void recMMI_Unknown()
+{
+	// TODO : Unknown ops should throw an exception.
+	Console.Error("EE: Unrecognized MMI op %x", cpuRegs.code);
+}
 
-	void recCOP0_Unknown()
-	{
-		// TODO : Unknown ops should throw an exception.
-		Console.Error("EE: Unrecognized COP0 op %x", cpuRegs.code);
-	}
+void recCOP0_Unknown()
+{
+	// TODO : Unknown ops should throw an exception.
+	Console.Error("EE: Unrecognized COP0 op %x", cpuRegs.code);
+}
 
-	void recCOP1_Unknown()
-	{
-		// TODO : Unknown ops should throw an exception.
-		Console.Error("EE: Unrecognized FPU/COP1 op %x", cpuRegs.code);
-	}
+void recCOP1_Unknown()
+{
+	// TODO : Unknown ops should throw an exception.
+	Console.Error("EE: Unrecognized FPU/COP1 op %x", cpuRegs.code);
+}
 
-	/**********************************************************
-	*    UNHANDLED YET OPCODES
-	*
-	**********************************************************/
+/**********************************************************
+*    UNHANDLED YET OPCODES
+*
+**********************************************************/
 
-	// Suikoden 3 uses it a lot
-	void recCACHE() //Interpreter only!
-	{
-	   //xMOV(ptr32[&cpuRegs.code], (u32)cpuRegs.code );
-	   //xMOV(ptr32[&cpuRegs.pc], (u32)pc );
-	   //iFlushCall(FLUSH_EVERYTHING);
-	   //xFastCall((void*)(uptr)R5900::Interpreter::OpcodeImpl::CACHE );
-	   //branch = 2;
-	}
+// Suikoden 3 uses it a lot
+void recCACHE() //Interpreter only!
+{
+	//xMOV(ptr32[&cpuRegs.code], (u32)cpuRegs.code );
+	//xMOV(ptr32[&cpuRegs.pc], (u32)pc );
+	//iFlushCall(FLUSH_EVERYTHING);
+	//xFastCall((void*)(uptr)R5900::Interpreter::OpcodeImpl::CACHE );
+	//branch = 2;
+}
 
-	void recTGE()
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TGE );
-	}
+void recTGE()
+{
+	recBranchCall(R5900::Interpreter::OpcodeImpl::TGE);
+}
 
-	void recTGEU()
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TGEU );
-	}
+void recTGEU()
+{
+	recBranchCall(R5900::Interpreter::OpcodeImpl::TGEU);
+}
 
-	void recTLT()
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TLT );
-	}
+void recTLT()
+{
+	recBranchCall(R5900::Interpreter::OpcodeImpl::TLT);
+}
 
-	void recTLTU()
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TLTU );
-	}
+void recTLTU()
+{
+	recBranchCall(R5900::Interpreter::OpcodeImpl::TLTU);
+}
 
-	void recTEQ()
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TEQ );
-	}
+void recTEQ()
+{
+	recBranchCall(R5900::Interpreter::OpcodeImpl::TEQ);
+}
 
-	void recTNE()
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TNE );
-	}
+void recTNE()
+{
+	recBranchCall(R5900::Interpreter::OpcodeImpl::TNE);
+}
 
-	void recTGEI()
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TGEI );
-	}
+void recTGEI()
+{
+	recBranchCall(R5900::Interpreter::OpcodeImpl::TGEI);
+}
 
-	void recTGEIU()
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TGEIU );
-	}
+void recTGEIU()
+{
+	recBranchCall(R5900::Interpreter::OpcodeImpl::TGEIU);
+}
 
-	void recTLTI()
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TLTI );
-	}
+void recTLTI()
+{
+	recBranchCall(R5900::Interpreter::OpcodeImpl::TLTI);
+}
 
-	void recTLTIU()
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TLTIU );
-	}
+void recTLTIU()
+{
+	recBranchCall(R5900::Interpreter::OpcodeImpl::TLTIU);
+}
 
-	void recTEQI()
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TEQI );
-	}
+void recTEQI()
+{
+	recBranchCall(R5900::Interpreter::OpcodeImpl::TEQI);
+}
 
-	void recTNEI()
-	{
-		recBranchCall( R5900::Interpreter::OpcodeImpl::TNEI );
-	}
+void recTNEI()
+{
+	recBranchCall(R5900::Interpreter::OpcodeImpl::TNEI);
+}
 
-} }}		// end Namespace R5900::Dynarec::OpcodeImpl
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900

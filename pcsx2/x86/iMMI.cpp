@@ -34,24 +34,23 @@ namespace Interp = R5900::Interpreter::OpcodeImpl::MMI;
 namespace R5900 {
 namespace Dynarec {
 namespace OpcodeImpl {
-namespace MMI
-{
+namespace MMI {
 
 #ifndef MMI_RECOMPILE
 
-REC_FUNC_DEL( PLZCW, _Rd_ );
+REC_FUNC_DEL(PLZCW, _Rd_);
 
-REC_FUNC_DEL( PMFHL, _Rd_ );
-REC_FUNC_DEL( PMTHL, _Rd_ );
+REC_FUNC_DEL(PMFHL, _Rd_);
+REC_FUNC_DEL(PMTHL, _Rd_);
 
-REC_FUNC_DEL( PSRLW, _Rd_ );
-REC_FUNC_DEL( PSRLH, _Rd_ );
+REC_FUNC_DEL(PSRLW, _Rd_);
+REC_FUNC_DEL(PSRLH, _Rd_);
 
-REC_FUNC_DEL( PSRAH, _Rd_ );
-REC_FUNC_DEL( PSRAW, _Rd_ );
+REC_FUNC_DEL(PSRAH, _Rd_);
+REC_FUNC_DEL(PSRAW, _Rd_);
 
-REC_FUNC_DEL( PSLLH, _Rd_ );
-REC_FUNC_DEL( PSLLW, _Rd_ );
+REC_FUNC_DEL(PSLLH, _Rd_);
+REC_FUNC_DEL(PSLLW, _Rd_);
 
 #else
 
@@ -59,11 +58,13 @@ void recPLZCW()
 {
 	int regs = -1;
 
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PLZCW);
 
-	if( GPR_IS_CONST1(_Rs_) ) {
+	if (GPR_IS_CONST1(_Rs_))
+	{
 		_eeOnWriteReg(_Rd_, 0);
 		_deleteEEreg(_Rd_, 0);
 		GPR_SET_CONST(_Rd_);
@@ -77,11 +78,13 @@ void recPLZCW()
 
 	_eeOnWriteReg(_Rd_, 0);
 
-	if( (regs = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0 ) {
+	if ((regs = _checkXMMreg(XMMTYPE_GPRREG, _Rs_, MODE_READ)) >= 0)
+	{
 		xMOVD(eax, xRegisterSSE(regs));
 	}
-	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]]);
+	else
+	{
+		xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 	}
 
 	_deleteEEreg(_Rd_, 0);
@@ -97,58 +100,62 @@ void recPLZCW()
 	// --- first word ---
 
 	xMOV(ecx, 31);
-	xTEST(eax, eax);		// TEST sets the sign flag accordingly.
+	xTEST(eax, eax); // TEST sets the sign flag accordingly.
 	u8* label_notSigned = JNS8(0);
 	xNOT(eax);
 	x86SetJ8(label_notSigned);
 
 	xBSR(eax, eax);
-	u8* label_Zeroed = JZ8(0);	// If BSR sets the ZF, eax is "trash"
+	u8* label_Zeroed = JZ8(0); // If BSR sets the ZF, eax is "trash"
 	xSUB(ecx, eax);
-	xDEC(ecx);			// PS2 doesn't count the first bit
+	xDEC(ecx); // PS2 doesn't count the first bit
 
 	x86SetJ8(label_Zeroed);
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 0 ]], ecx);
+	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[0]], ecx);
 
 	// second word
 
-	if( regs >= 0) {
-		xPSHUF.D(xRegisterSSE(regs&0xf), xRegisterSSE(regs&0xf), 0xe1);
-		xMOVD(eax, xRegisterSSE(regs&0xf));
-		xPSHUF.D(xRegisterSSE(regs&0xf), xRegisterSSE(regs&0xf), 0xe1);
+	if (regs >= 0)
+	{
+		xPSHUF.D(xRegisterSSE(regs & 0xf), xRegisterSSE(regs & 0xf), 0xe1);
+		xMOVD(eax, xRegisterSSE(regs & 0xf));
+		xPSHUF.D(xRegisterSSE(regs & 0xf), xRegisterSSE(regs & 0xf), 0xe1);
 	}
-	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]]);
+	else
+	{
+		xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[1]]);
 	}
 
 	xMOV(ecx, 31);
-	xTEST(eax, eax);		// TEST sets the sign flag accordingly.
+	xTEST(eax, eax); // TEST sets the sign flag accordingly.
 	label_notSigned = JNS8(0);
 	xNOT(eax);
 	x86SetJ8(label_notSigned);
 
 	xBSR(eax, eax);
-	label_Zeroed = JZ8(0);	// If BSR sets the ZF, eax is "trash"
+	label_Zeroed = JZ8(0); // If BSR sets the ZF, eax is "trash"
 	xSUB(ecx, eax);
-	xDEC(ecx);			// PS2 doesn't count the first bit
+	xDEC(ecx); // PS2 doesn't count the first bit
 
 	x86SetJ8(label_Zeroed);
-	xMOV(ptr[&cpuRegs.GPR.r[ _Rd_ ].UL[ 1 ]], ecx);
+	xMOV(ptr[&cpuRegs.GPR.r[_Rd_].UL[1]], ecx);
 
 	GPR_DEL_CONST(_Rd_);
 }
 
 void recPMFHL()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PMFHL);
 
-	int info = eeRecompileCodeXMM( XMMINFO_WRITED|XMMINFO_READLO|XMMINFO_READHI );
+	int info = eeRecompileCodeXMM(XMMINFO_WRITED | XMMINFO_READLO | XMMINFO_READHI);
 
 	int t0reg;
 
-	switch (_Sa_) {
+	switch (_Sa_)
+	{
 		case 0x00: // LW
 
 			t0reg = _allocTempXMMreg(XMMT_INT, -1);
@@ -171,7 +178,7 @@ void recPMFHL()
 			// fall to interp
 			_deleteEEreg(_Rd_, 0);
 			iFlushCall(FLUSH_INTERPRETER); // since calling CALLFunc
-			xFastCall((void*)(uptr)R5900::Interpreter::OpcodeImpl::MMI::PMFHL );
+			xFastCall((void*)(uptr)R5900::Interpreter::OpcodeImpl::MMI::PMFHL);
 			break;
 
 		case 0x03: // LH
@@ -187,11 +194,13 @@ void recPMFHL()
 			break;
 
 		case 0x04: // SH
-			if( EEREC_D == EEREC_HI ) {
+			if (EEREC_D == EEREC_HI)
+			{
 				xPACK.SSDW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_LO));
 				xPSHUF.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D), 0x72);
 			}
-			else {
+			else
+			{
 				xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_LO));
 				xPACK.SSDW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_HI));
 
@@ -209,11 +218,12 @@ void recPMFHL()
 
 void recPMTHL()
 {
-	if ( _Sa_ != 0 ) return;
+	if (_Sa_ != 0)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PMTHL);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READLO|XMMINFO_READHI|XMMINFO_WRITELO|XMMINFO_WRITEHI );
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READLO | XMMINFO_READHI | XMMINFO_WRITELO | XMMINFO_WRITEHI);
 
 	xBLEND.PS(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_S), 0x5);
 	xSHUF.PS(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_S), 0xdd);
@@ -225,17 +235,20 @@ void recPMTHL()
 ////////////////////////////////////////////////////
 void recPSRLH()
 {
-	if ( !_Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSRLH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READT|XMMINFO_WRITED );
-	if( (_Sa_&0xf) == 0 ) {
+	int info = eeRecompileCodeXMM(XMMINFO_READT | XMMINFO_WRITED);
+	if ((_Sa_ & 0xf) == 0)
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-		xPSRL.W(xRegisterSSE(EEREC_D), _Sa_&0xf );
+		xPSRL.W(xRegisterSSE(EEREC_D), _Sa_ & 0xf);
 	}
 	_clearNeededXMMregs();
 }
@@ -243,17 +256,20 @@ void recPSRLH()
 ////////////////////////////////////////////////////
 void recPSRLW()
 {
-	if( !_Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSRLW);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READT|XMMINFO_WRITED );
-	if( _Sa_ == 0 ) {
+	int info = eeRecompileCodeXMM(XMMINFO_READT | XMMINFO_WRITED);
+	if (_Sa_ == 0)
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-		xPSRL.D(xRegisterSSE(EEREC_D), _Sa_ );
+		xPSRL.D(xRegisterSSE(EEREC_D), _Sa_);
 	}
 	_clearNeededXMMregs();
 }
@@ -261,17 +277,20 @@ void recPSRLW()
 ////////////////////////////////////////////////////
 void recPSRAH()
 {
-	if ( !_Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSRAH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READT|XMMINFO_WRITED );
-	if( (_Sa_&0xf) == 0 ) {
+	int info = eeRecompileCodeXMM(XMMINFO_READT | XMMINFO_WRITED);
+	if ((_Sa_ & 0xf) == 0)
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-		xPSRA.W(xRegisterSSE(EEREC_D), _Sa_&0xf );
+		xPSRA.W(xRegisterSSE(EEREC_D), _Sa_ & 0xf);
 	}
 	_clearNeededXMMregs();
 }
@@ -279,17 +298,20 @@ void recPSRAH()
 ////////////////////////////////////////////////////
 void recPSRAW()
 {
-	if ( !_Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSRAW);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READT|XMMINFO_WRITED );
-	if( _Sa_ == 0 ) {
+	int info = eeRecompileCodeXMM(XMMINFO_READT | XMMINFO_WRITED);
+	if (_Sa_ == 0)
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-		xPSRA.D(xRegisterSSE(EEREC_D), _Sa_ );
+		xPSRA.D(xRegisterSSE(EEREC_D), _Sa_);
 	}
 	_clearNeededXMMregs();
 }
@@ -297,17 +319,20 @@ void recPSRAW()
 ////////////////////////////////////////////////////
 void recPSLLH()
 {
-	if ( !_Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSLLH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READT|XMMINFO_WRITED );
-	if( (_Sa_&0xf) == 0 ) {
+	int info = eeRecompileCodeXMM(XMMINFO_READT | XMMINFO_WRITED);
+	if ((_Sa_ & 0xf) == 0)
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-		xPSLL.W(xRegisterSSE(EEREC_D), _Sa_&0xf );
+		xPSLL.W(xRegisterSSE(EEREC_D), _Sa_ & 0xf);
 	}
 	_clearNeededXMMregs();
 }
@@ -315,17 +340,20 @@ void recPSLLH()
 ////////////////////////////////////////////////////
 void recPSLLW()
 {
-	if ( !_Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSLLW);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READT|XMMINFO_WRITED );
-	if( _Sa_ == 0 ) {
+	int info = eeRecompileCodeXMM(XMMINFO_READT | XMMINFO_WRITED);
+	if (_Sa_ == 0)
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-		xPSLL.D(xRegisterSSE(EEREC_D), _Sa_ );
+		xPSLL.D(xRegisterSSE(EEREC_D), _Sa_);
 	}
 	_clearNeededXMMregs();
 }
@@ -352,50 +380,55 @@ void recPLZCW()
 *********************************************************/
 #ifndef MMI0_RECOMPILE
 
-REC_FUNC_DEL( PADDB, _Rd_);
-REC_FUNC_DEL( PADDH, _Rd_);
-REC_FUNC_DEL( PADDW, _Rd_);
-REC_FUNC_DEL( PADDSB, _Rd_);
-REC_FUNC_DEL( PADDSH, _Rd_);
-REC_FUNC_DEL( PADDSW, _Rd_);
-REC_FUNC_DEL( PSUBB, _Rd_);
-REC_FUNC_DEL( PSUBH, _Rd_);
-REC_FUNC_DEL( PSUBW, _Rd_);
-REC_FUNC_DEL( PSUBSB, _Rd_);
-REC_FUNC_DEL( PSUBSH, _Rd_);
-REC_FUNC_DEL( PSUBSW, _Rd_);
+REC_FUNC_DEL(PADDB,  _Rd_);
+REC_FUNC_DEL(PADDH,  _Rd_);
+REC_FUNC_DEL(PADDW,  _Rd_);
+REC_FUNC_DEL(PADDSB, _Rd_);
+REC_FUNC_DEL(PADDSH, _Rd_);
+REC_FUNC_DEL(PADDSW, _Rd_);
+REC_FUNC_DEL(PSUBB,  _Rd_);
+REC_FUNC_DEL(PSUBH,  _Rd_);
+REC_FUNC_DEL(PSUBW,  _Rd_);
+REC_FUNC_DEL(PSUBSB, _Rd_);
+REC_FUNC_DEL(PSUBSH, _Rd_);
+REC_FUNC_DEL(PSUBSW, _Rd_);
 
-REC_FUNC_DEL( PMAXW, _Rd_);
-REC_FUNC_DEL( PMAXH, _Rd_);
+REC_FUNC_DEL(PMAXW,  _Rd_);
+REC_FUNC_DEL(PMAXH,  _Rd_);
 
-REC_FUNC_DEL( PCGTW, _Rd_);
-REC_FUNC_DEL( PCGTH, _Rd_);
-REC_FUNC_DEL( PCGTB, _Rd_);
+REC_FUNC_DEL(PCGTW,  _Rd_);
+REC_FUNC_DEL(PCGTH,  _Rd_);
+REC_FUNC_DEL(PCGTB,  _Rd_);
 
-REC_FUNC_DEL( PEXTLW, _Rd_);
+REC_FUNC_DEL(PEXTLW, _Rd_);
 
-REC_FUNC_DEL( PPACW, _Rd_);
-REC_FUNC_DEL( PEXTLH, _Rd_);
-REC_FUNC_DEL( PPACH, _Rd_);
-REC_FUNC_DEL( PEXTLB, _Rd_);
-REC_FUNC_DEL( PPACB, _Rd_);
-REC_FUNC_DEL( PEXT5, _Rd_);
-REC_FUNC_DEL( PPAC5, _Rd_);
+REC_FUNC_DEL(PPACW,  _Rd_);
+REC_FUNC_DEL(PEXTLH, _Rd_);
+REC_FUNC_DEL(PPACH,  _Rd_);
+REC_FUNC_DEL(PEXTLB, _Rd_);
+REC_FUNC_DEL(PPACB,  _Rd_);
+REC_FUNC_DEL(PEXT5,  _Rd_);
+REC_FUNC_DEL(PPAC5,  _Rd_);
 
 #else
 
 ////////////////////////////////////////////////////
 void recPMAXW()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PMAXW);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_S == EEREC_T ) xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	else if( EEREC_D == EEREC_S ) xPMAX.SD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if ( EEREC_D == EEREC_T ) xPMAX.SD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	else {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_S == EEREC_T)
+		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else if (EEREC_D == EEREC_S)
+		xPMAX.SD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+		xPMAX.SD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPMAX.SD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -405,25 +438,30 @@ void recPMAXW()
 ////////////////////////////////////////////////////
 void recPPACW()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PPACW);
 
-	int info = eeRecompileCodeXMM( ((_Rs_!=0)?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM(((_Rs_ != 0) ? XMMINFO_READS : 0) | XMMINFO_READT | XMMINFO_WRITED);
 
-	if( _Rs_ == 0 ) {
+	if (_Rs_ == 0)
+	{
 		xPSHUF.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 0x88);
 		xPSRL.DQ(xRegisterSSE(EEREC_D), 8);
 	}
-	else {
+	else
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
-		if( EEREC_D == EEREC_T ) {
+		if (EEREC_D == EEREC_T)
+		{
 			xPSHUF.D(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S), 0x88);
 			xPSHUF.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 0x88);
 			xPUNPCK.LQDQ(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 			_freeXMMreg(t0reg);
 		}
-		else {
+		else
+		{
 			xPSHUF.D(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T), 0x88);
 			xPSHUF.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S), 0x88);
 			xPUNPCK.LQDQ(xRegisterSSE(t0reg), xRegisterSSE(EEREC_D));
@@ -439,18 +477,21 @@ void recPPACW()
 
 void recPPACH()
 {
-	if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PPACH);
 
-	int info = eeRecompileCodeXMM( (_Rs_!=0?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED );
-	if( _Rs_ == 0 ) {
+	int info = eeRecompileCodeXMM((_Rs_ != 0 ? XMMINFO_READS : 0) | XMMINFO_READT | XMMINFO_WRITED);
+	if (_Rs_ == 0)
+	{
 		xPSHUF.LW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 0x88);
 		xPSHUF.HW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D), 0x88);
 		xPSLL.DQ(xRegisterSSE(EEREC_D), 4);
 		xPSRL.DQ(xRegisterSSE(EEREC_D), 8);
 	}
-	else {
+	else
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 		xPSHUF.LW(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S), 0x88);
 		xPSHUF.LW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 0x88);
@@ -469,13 +510,16 @@ void recPPACH()
 ////////////////////////////////////////////////////
 void recPPACB()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PPACB);
 
-	int info = eeRecompileCodeXMM( (_Rs_!=0?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED );
-	if( _Rs_ == 0 ) {
-		if( _hasFreeXMMreg() ) {
+	int info = eeRecompileCodeXMM((_Rs_ != 0 ? XMMINFO_READS : 0) | XMMINFO_READT | XMMINFO_WRITED);
+	if (_Rs_ == 0)
+	{
+		if (_hasFreeXMMreg())
+		{
 			int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPSLL.W(xRegisterSSE(EEREC_D), 8);
@@ -484,7 +528,8 @@ void recPPACB()
 			xPACK.USWB(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 			_freeXMMreg(t0reg);
 		}
-		else {
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPSLL.W(xRegisterSSE(EEREC_D), 8);
 			xPSRL.W(xRegisterSSE(EEREC_D), 8);
@@ -492,7 +537,8 @@ void recPPACB()
 			xPSRL.DQ(xRegisterSSE(EEREC_D), 8);
 		}
 	}
-	else {
+	else
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
@@ -511,11 +557,12 @@ void recPPACB()
 ////////////////////////////////////////////////////
 void recPEXT5()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PEXT5);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READT|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM(XMMINFO_READT | XMMINFO_WRITED);
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
 
@@ -549,11 +596,12 @@ void recPEXT5()
 ////////////////////////////////////////////////////
 void recPPAC5()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PPAC5);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READT|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM(XMMINFO_READT | XMMINFO_WRITED);
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
 
@@ -589,14 +637,18 @@ void recPPAC5()
 ////////////////////////////////////////////////////
 void recPMAXH()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PMAXH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D == EEREC_S ) xPMAX.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) xPMAX.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	else {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D == EEREC_S)
+		xPMAX.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+		xPMAX.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPMAX.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -606,16 +658,19 @@ void recPMAXH()
 ////////////////////////////////////////////////////
 void recPCGTB()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PCGTB);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D != EEREC_T ) {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D != EEREC_T)
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPCMP.GTB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
-	else {
+	else
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
@@ -628,16 +683,19 @@ void recPCGTB()
 ////////////////////////////////////////////////////
 void recPCGTH()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PCGTH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D != EEREC_T ) {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D != EEREC_T)
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPCMP.GTW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
-	else {
+	else
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
@@ -651,16 +709,19 @@ void recPCGTH()
 void recPCGTW()
 {
 	//TODO:optimize RS | RT== 0
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PCGTW);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D != EEREC_T ) {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D != EEREC_T)
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPCMP.GTD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
-	else {
+	else
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
@@ -673,14 +734,18 @@ void recPCGTW()
 ////////////////////////////////////////////////////
 void recPADDSB()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PADDSB);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D == EEREC_S ) xPADD.SB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) xPADD.SB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	else {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D == EEREC_S)
+		xPADD.SB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+		xPADD.SB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPADD.SB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -690,14 +755,18 @@ void recPADDSB()
 ////////////////////////////////////////////////////
 void recPADDSH()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PADDSH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D == EEREC_S ) xPADD.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) xPADD.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	else {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D == EEREC_S)
+		xPADD.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+		xPADD.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPADD.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -708,11 +777,12 @@ void recPADDSH()
 //NOTE: check kh2 movies if changing this
 void recPADDSW()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PADDSW);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
 	int t2reg = _allocTempXMMreg(XMMT_INT, -1);
@@ -727,9 +797,12 @@ void recPADDSW()
 	xMOVDQA(xRegisterSSE(t1reg), xRegisterSSE(EEREC_T));
 
 	// normal addition
-	if( EEREC_D == EEREC_S ) xPADD.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) xPADD.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	else {
+	if (EEREC_D == EEREC_S)
+		xPADD.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+		xPADD.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPADD.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -760,20 +833,24 @@ void recPADDSW()
 ////////////////////////////////////////////////////
 void recPSUBSB()
 {
-   if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSUBSB);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D == EEREC_S ) xPSUB.SB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D == EEREC_S)
+		xPSUB.SB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.SB(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 		_freeXMMreg(t0reg);
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.SB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -783,20 +860,24 @@ void recPSUBSB()
 ////////////////////////////////////////////////////
 void recPSUBSH()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSUBSH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D == EEREC_S ) xPSUB.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D == EEREC_S)
+		xPSUB.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.SW(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 		_freeXMMreg(t0reg);
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -807,11 +888,12 @@ void recPSUBSH()
 //NOTE: check kh2 movies if changing this
 void recPSUBSW()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSUBSW);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
 	int t2reg = _allocTempXMMreg(XMMT_INT, -1);
@@ -828,13 +910,16 @@ void recPSUBSW()
 	xPSRL.D(xRegisterSSE(t1reg), 31);
 
 	// normal subtraction
-	if( EEREC_D == EEREC_S ) xPSUB.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) {
+	if (EEREC_D == EEREC_S)
+		xPSUB.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+	{
 		xMOVDQA(xRegisterSSE(t2reg), xRegisterSSE(EEREC_T));
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.D(xRegisterSSE(EEREC_D), xRegisterSSE(t2reg));
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -864,14 +949,18 @@ void recPSUBSW()
 ////////////////////////////////////////////////////
 void recPADDB()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PADDB);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D == EEREC_S ) xPADD.B(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) xPADD.B(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	else {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D == EEREC_S)
+		xPADD.B(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+		xPADD.B(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPADD.B(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -881,22 +970,31 @@ void recPADDB()
 ////////////////////////////////////////////////////
 void recPADDH()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PADDH);
 
-	int info = eeRecompileCodeXMM( (_Rs_!=0?XMMINFO_READS:0)|(_Rt_!=0?XMMINFO_READT:0)|XMMINFO_WRITED );
-	if( _Rs_ == 0 ) {
-		if( _Rt_ == 0 ) xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
-		else xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	int info = eeRecompileCodeXMM((_Rs_ != 0 ? XMMINFO_READS : 0) | (_Rt_ != 0 ? XMMINFO_READT : 0) | XMMINFO_WRITED);
+	if (_Rs_ == 0)
+	{
+		if (_Rt_ == 0)
+			xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
+		else
+			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
-	else if( _Rt_ == 0 ) {
+	else if (_Rt_ == 0)
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 	}
-	else {
-		if( EEREC_D == EEREC_S ) xPADD.W(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-		else if( EEREC_D == EEREC_T ) xPADD.W(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-		else {
+	else
+	{
+		if (EEREC_D == EEREC_S)
+			xPADD.W(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+		else if (EEREC_D == EEREC_T)
+			xPADD.W(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			xPADD.W(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		}
@@ -907,22 +1005,31 @@ void recPADDH()
 ////////////////////////////////////////////////////
 void recPADDW()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PADDW);
 
-	int info = eeRecompileCodeXMM( (_Rs_!=0?XMMINFO_READS:0)|(_Rt_!=0?XMMINFO_READT:0)|XMMINFO_WRITED );
-	if( _Rs_ == 0 ) {
-		if( _Rt_ == 0 ) xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
-		else xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	int info = eeRecompileCodeXMM((_Rs_ != 0 ? XMMINFO_READS : 0) | (_Rt_ != 0 ? XMMINFO_READT : 0) | XMMINFO_WRITED);
+	if (_Rs_ == 0)
+	{
+		if (_Rt_ == 0)
+			xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
+		else
+			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
-	else if( _Rt_ == 0 ) {
+	else if (_Rt_ == 0)
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 	}
-	else {
-		if( EEREC_D == EEREC_S ) xPADD.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-		else if( EEREC_D == EEREC_T ) xPADD.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-		else {
+	else
+	{
+		if (EEREC_D == EEREC_S)
+			xPADD.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+		else if (EEREC_D == EEREC_T)
+			xPADD.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			xPADD.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		}
@@ -933,20 +1040,24 @@ void recPADDW()
 ////////////////////////////////////////////////////
 void recPSUBB()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSUBB);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D == EEREC_S ) xPSUB.B(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D == EEREC_S)
+		xPSUB.B(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.B(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 		_freeXMMreg(t0reg);
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.B(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -956,20 +1067,24 @@ void recPSUBB()
 ////////////////////////////////////////////////////
 void recPSUBH()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSUBH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D == EEREC_S ) xPSUB.W(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D == EEREC_S)
+		xPSUB.W(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.W(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 		_freeXMMreg(t0reg);
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.W(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -979,20 +1094,24 @@ void recPSUBH()
 ////////////////////////////////////////////////////
 void recPSUBW()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSUBW);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D == EEREC_S ) xPSUB.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D == EEREC_S)
+		xPSUB.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.D(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 		_freeXMMreg(t0reg);
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -1002,25 +1121,31 @@ void recPSUBW()
 ////////////////////////////////////////////////////
 void recPEXTLW()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PEXTLW);
 
-	int info = eeRecompileCodeXMM( (_Rs_!=0?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED );
-	if( _Rs_ == 0 ) {
+	int info = eeRecompileCodeXMM((_Rs_ != 0 ? XMMINFO_READS : 0) | XMMINFO_READT | XMMINFO_WRITED);
+	if (_Rs_ == 0)
+	{
 		xPUNPCK.LDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		xPSRL.Q(xRegisterSSE(EEREC_D), 32);
 	}
-	else {
-		if( EEREC_D == EEREC_T ) xPUNPCK.LDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-		else if( EEREC_D == EEREC_S ) {
+	else
+	{
+		if (EEREC_D == EEREC_T)
+			xPUNPCK.LDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+		else if (EEREC_D == EEREC_S)
+		{
 			int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 			xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPUNPCK.LDQ(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 			_freeXMMreg(t0reg);
 		}
-		else {
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPUNPCK.LDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		}
@@ -1030,25 +1155,31 @@ void recPEXTLW()
 
 void recPEXTLB()
 {
-	if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PEXTLB);
 
-	int info = eeRecompileCodeXMM( (_Rs_!=0?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED );
-	if( _Rs_ == 0 ) {
+	int info = eeRecompileCodeXMM((_Rs_ != 0 ? XMMINFO_READS : 0) | XMMINFO_READT | XMMINFO_WRITED);
+	if (_Rs_ == 0)
+	{
 		xPUNPCK.LBW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		xPSRL.W(xRegisterSSE(EEREC_D), 8);
 	}
-	else {
-		if( EEREC_D == EEREC_T ) xPUNPCK.LBW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-		else if( EEREC_D == EEREC_S ) {
+	else
+	{
+		if (EEREC_D == EEREC_T)
+			xPUNPCK.LBW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+		else if (EEREC_D == EEREC_S)
+		{
 			int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 			xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPUNPCK.LBW(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 			_freeXMMreg(t0reg);
 		}
-		else {
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPUNPCK.LBW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		}
@@ -1058,25 +1189,31 @@ void recPEXTLB()
 
 void recPEXTLH()
 {
-	if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PEXTLH);
 
-	int info = eeRecompileCodeXMM( (_Rs_!=0?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED );
-	if( _Rs_ == 0 ) {
+	int info = eeRecompileCodeXMM((_Rs_ != 0 ? XMMINFO_READS : 0) | XMMINFO_READT | XMMINFO_WRITED);
+	if (_Rs_ == 0)
+	{
 		xPUNPCK.LWD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		xPSRL.D(xRegisterSSE(EEREC_D), 16);
 	}
-	else {
-		if( EEREC_D == EEREC_T ) xPUNPCK.LWD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-		else if( EEREC_D == EEREC_S ) {
+	else
+	{
+		if (EEREC_D == EEREC_T)
+			xPUNPCK.LWD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+		else if (EEREC_D == EEREC_S)
+		{
 			int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 			xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPUNPCK.LWD(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 			_freeXMMreg(t0reg);
 		}
-		else {
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPUNPCK.LWD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		}
@@ -1092,28 +1229,28 @@ void recPEXTLH()
 *********************************************************/
 #ifndef MMI1_RECOMPILE
 
-REC_FUNC_DEL( PABSW, _Rd_);
-REC_FUNC_DEL( PABSH, _Rd_);
+REC_FUNC_DEL(PABSW,  _Rd_);
+REC_FUNC_DEL(PABSH,  _Rd_);
 
-REC_FUNC_DEL( PMINW, _Rd_);
-REC_FUNC_DEL( PADSBH, _Rd_);
-REC_FUNC_DEL( PMINH, _Rd_);
-REC_FUNC_DEL( PCEQB, _Rd_);
-REC_FUNC_DEL( PCEQH, _Rd_);
-REC_FUNC_DEL( PCEQW, _Rd_);
+REC_FUNC_DEL(PMINW,  _Rd_);
+REC_FUNC_DEL(PADSBH, _Rd_);
+REC_FUNC_DEL(PMINH,  _Rd_);
+REC_FUNC_DEL(PCEQB,  _Rd_);
+REC_FUNC_DEL(PCEQH,  _Rd_);
+REC_FUNC_DEL(PCEQW,  _Rd_);
 
-REC_FUNC_DEL( PADDUB, _Rd_);
-REC_FUNC_DEL( PADDUH, _Rd_);
-REC_FUNC_DEL( PADDUW, _Rd_);
+REC_FUNC_DEL(PADDUB, _Rd_);
+REC_FUNC_DEL(PADDUH, _Rd_);
+REC_FUNC_DEL(PADDUW, _Rd_);
 
-REC_FUNC_DEL( PSUBUB, _Rd_);
-REC_FUNC_DEL( PSUBUH, _Rd_);
-REC_FUNC_DEL( PSUBUW, _Rd_);
+REC_FUNC_DEL(PSUBUB, _Rd_);
+REC_FUNC_DEL(PSUBUH, _Rd_);
+REC_FUNC_DEL(PSUBUW, _Rd_);
 
-REC_FUNC_DEL( PEXTUW, _Rd_);
-REC_FUNC_DEL( PEXTUH, _Rd_);
-REC_FUNC_DEL( PEXTUB, _Rd_);
-REC_FUNC_DEL( QFSRV, _Rd_);
+REC_FUNC_DEL(PEXTUW, _Rd_);
+REC_FUNC_DEL(PEXTUH, _Rd_);
+REC_FUNC_DEL(PEXTUB, _Rd_);
+REC_FUNC_DEL(QFSRV,  _Rd_);
 
 #else
 
@@ -1121,11 +1258,12 @@ REC_FUNC_DEL( QFSRV, _Rd_);
 
 void recPABSW() //needs clamping
 {
-	if( !_Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PABSW);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READT|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM(XMMINFO_READT | XMMINFO_WRITED);
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
 	xPSLL.D(xRegisterSSE(t0reg), 31);
@@ -1140,11 +1278,12 @@ void recPABSW() //needs clamping
 ////////////////////////////////////////////////////
 void recPABSH()
 {
-	if( !_Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PABSH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READT|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM(XMMINFO_READT | XMMINFO_WRITED);
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	xPCMP.EQW(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
 	xPSLL.W(xRegisterSSE(t0reg), 15);
@@ -1158,15 +1297,20 @@ void recPABSH()
 ////////////////////////////////////////////////////
 void recPMINW()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PMINW);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_S == EEREC_T ) xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	else if( EEREC_D == EEREC_S ) xPMIN.SD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if ( EEREC_D == EEREC_T ) xPMIN.SD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	else {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_S == EEREC_T)
+		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else if (EEREC_D == EEREC_S)
+		xPMIN.SD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+		xPMIN.SD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPMIN.SD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -1176,30 +1320,35 @@ void recPMINW()
 ////////////////////////////////////////////////////
 void recPADSBH()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PADSBH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
 	int t0reg;
 
-	if( EEREC_S == EEREC_T ) {
+	if (EEREC_S == EEREC_T)
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPADD.W(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		// reset lower bits to 0s
 		xPSRL.DQ(xRegisterSSE(EEREC_D), 8);
 		xPSLL.DQ(xRegisterSSE(EEREC_D), 8);
 	}
-	else {
+	else
+	{
 		t0reg = _allocTempXMMreg(XMMT_INT, -1);
 
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 
-		if( EEREC_D == EEREC_S ) {
+		if (EEREC_D == EEREC_S)
+		{
 			xPADD.W(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 			xPSUB.W(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		}
-		else {
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			xPSUB.W(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPADD.W(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
@@ -1217,22 +1366,28 @@ void recPADSBH()
 ////////////////////////////////////////////////////
 void recPADDUW()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PADDUW);
 
-	int info = eeRecompileCodeXMM( (_Rs_?XMMINFO_READS:0)|(_Rt_?XMMINFO_READT:0)|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM((_Rs_ ? XMMINFO_READS : 0) | (_Rt_ ? XMMINFO_READT : 0) | XMMINFO_WRITED);
 
-	if( _Rt_ == 0 ) {
-		if( _Rs_ == 0 ) {
+	if (_Rt_ == 0)
+	{
+		if (_Rs_ == 0)
+		{
 			xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		}
-		else xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+		else
+			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 	}
-	else if( _Rs_ == 0 ) {
+	else if (_Rs_ == 0)
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
-	else {
+	else
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 		int t1reg = _allocTempXMMreg(XMMT_INT, -1);
 
@@ -1242,9 +1397,12 @@ void recPADDUW()
 		xPXOR(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S)); // invert MSB of Rs (for unsigned comparison)
 
 		// normal 32-bit addition
-		if( EEREC_D == EEREC_S ) xPADD.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-		else if( EEREC_D == EEREC_T ) xPADD.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-		else {
+		if (EEREC_D == EEREC_S)
+			xPADD.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+		else if (EEREC_D == EEREC_T)
+			xPADD.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			xPADD.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		}
@@ -1265,20 +1423,24 @@ void recPADDUW()
 ////////////////////////////////////////////////////
 void recPSUBUB()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSUBUB);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D == EEREC_S ) xPSUB.USB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D == EEREC_S)
+		xPSUB.USB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.USB(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 		_freeXMMreg(t0reg);
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.USB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -1288,20 +1450,24 @@ void recPSUBUB()
 ////////////////////////////////////////////////////
 void recPSUBUH()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSUBUH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D == EEREC_S ) xPSUB.USW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D == EEREC_S)
+		xPSUB.USW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.USW(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 		_freeXMMreg(t0reg);
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.USW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -1311,11 +1477,12 @@ void recPSUBUH()
 ////////////////////////////////////////////////////
 void recPSUBUW()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSUBUW);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
 
@@ -1324,20 +1491,23 @@ void recPSUBUW()
 
 	// normal 32-bit subtraction
 	// and invert MSB of Rs and Rt (for unsigned comparison)
-	if( EEREC_D == EEREC_S ) {
+	if (EEREC_D == EEREC_S)
+	{
 		xMOVDQA(xRegisterSSE(t1reg), xRegisterSSE(t0reg));
 		xPXOR(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 		xPXOR(xRegisterSSE(t1reg), xRegisterSSE(EEREC_T));
 		xPSUB.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
-	else if( EEREC_D == EEREC_T ) {
+	else if (EEREC_D == EEREC_T)
+	{
 		xMOVDQA(xRegisterSSE(t1reg), xRegisterSSE(EEREC_T));
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.D(xRegisterSSE(EEREC_D), xRegisterSSE(t1reg));
 		xPXOR(xRegisterSSE(t1reg), xRegisterSSE(t0reg));
 		xPXOR(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSUB.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		xMOVDQA(xRegisterSSE(t1reg), xRegisterSSE(t0reg));
@@ -1359,25 +1529,31 @@ void recPSUBUW()
 ////////////////////////////////////////////////////
 void recPEXTUH()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PEXTUH);
 
-	int info = eeRecompileCodeXMM( (_Rs_!=0?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED );
-	if( _Rs_ == 0 ) {
+	int info = eeRecompileCodeXMM((_Rs_ != 0 ? XMMINFO_READS : 0) | XMMINFO_READT | XMMINFO_WRITED);
+	if (_Rs_ == 0)
+	{
 		xPUNPCK.HWD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		xPSRL.D(xRegisterSSE(EEREC_D), 16);
 	}
-	else {
-		if( EEREC_D == EEREC_T ) xPUNPCK.HWD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-		else if( EEREC_D == EEREC_S ) {
+	else
+	{
+		if (EEREC_D == EEREC_T)
+			xPUNPCK.HWD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+		else if (EEREC_D == EEREC_S)
+		{
 			int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 			xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPUNPCK.HWD(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 			_freeXMMreg(t0reg);
 		}
-		else {
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPUNPCK.HWD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		}
@@ -1389,12 +1565,14 @@ static __aligned16 u32 tempqw[8];
 
 void recQFSRV()
 {
-	if ( !_Rd_ ) return;
+	if (!_Rd_)
+		return;
 	//Console.WriteLn("recQFSRV()");
 
 	EE::Profiler.EmitOp(eeOpcode::QFSRV);
 
-	if (_Rs_ == _Rt_ + 1) {
+	if (_Rs_ == _Rt_ + 1)
+	{
 		_flushEEreg(_Rs_);
 		_flushEEreg(_Rt_);
 		int info = eeRecompileCodeXMM(XMMINFO_WRITED);
@@ -1404,13 +1582,13 @@ void recQFSRV()
 		xMOVDQU(xRegisterSSE(EEREC_D), ptr32[rax + rcx]);
 		return;
 	}
-		
-	int info = eeRecompileCodeXMM( XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED );
+
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
 
 	xMOV(eax, ptr32[&cpuRegs.sa]);
 	xLEA(rcx, ptr[tempqw]);
 	xMOVDQA(ptr32[rcx], xRegisterSSE(EEREC_T));
-	xMOVDQA(ptr32[rcx+16], xRegisterSSE(EEREC_S));
+	xMOVDQA(ptr32[rcx + 16], xRegisterSSE(EEREC_S));
 	xMOVDQU(xRegisterSSE(EEREC_D), ptr32[rax + rcx]);
 
 	_clearNeededXMMregs();
@@ -1419,26 +1597,32 @@ void recQFSRV()
 
 void recPEXTUB()
 {
-	if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PEXTUB);
 
-	int info = eeRecompileCodeXMM( (_Rs_!=0?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM((_Rs_ != 0 ? XMMINFO_READS : 0) | XMMINFO_READT | XMMINFO_WRITED);
 
-	if( _Rs_ == 0 ) {
+	if (_Rs_ == 0)
+	{
 		xPUNPCK.HBW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		xPSRL.W(xRegisterSSE(EEREC_D), 8);
 	}
-	else {
-		if( EEREC_D == EEREC_T ) xPUNPCK.HBW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-		else if( EEREC_D == EEREC_S ) {
+	else
+	{
+		if (EEREC_D == EEREC_T)
+			xPUNPCK.HBW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+		else if (EEREC_D == EEREC_S)
+		{
 			int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 			xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPUNPCK.HBW(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 			_freeXMMreg(t0reg);
 		}
-		else {
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPUNPCK.HBW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		}
@@ -1449,25 +1633,31 @@ void recPEXTUB()
 ////////////////////////////////////////////////////
 void recPEXTUW()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PEXTUW);
 
-	int info = eeRecompileCodeXMM( (_Rs_!=0?XMMINFO_READS:0)|XMMINFO_READT|XMMINFO_WRITED );
-	if( _Rs_ == 0 ) {
+	int info = eeRecompileCodeXMM((_Rs_ != 0 ? XMMINFO_READS : 0) | XMMINFO_READT | XMMINFO_WRITED);
+	if (_Rs_ == 0)
+	{
 		xPUNPCK.HDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		xPSRL.Q(xRegisterSSE(EEREC_D), 32);
 	}
-	else {
-		if( EEREC_D == EEREC_T ) xPUNPCK.HDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-		else if( EEREC_D == EEREC_S ) {
+	else
+	{
+		if (EEREC_D == EEREC_T)
+			xPUNPCK.HDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+		else if (EEREC_D == EEREC_S)
+		{
 			int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 			xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPUNPCK.HDQ(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 			_freeXMMreg(t0reg);
 		}
-		else {
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPUNPCK.HDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		}
@@ -1478,14 +1668,18 @@ void recPEXTUW()
 ////////////////////////////////////////////////////
 void recPMINH()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PMINH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D == EEREC_S ) xPMIN.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) xPMIN.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	else {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D == EEREC_S)
+		xPMIN.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+		xPMIN.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPMIN.SW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -1495,14 +1689,18 @@ void recPMINH()
 ////////////////////////////////////////////////////
 void recPCEQB()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PCEQB);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D == EEREC_S ) xPCMP.EQB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) xPCMP.EQB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	else {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D == EEREC_S)
+		xPCMP.EQB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+		xPCMP.EQB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPCMP.EQB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -1512,14 +1710,18 @@ void recPCEQB()
 ////////////////////////////////////////////////////
 void recPCEQH()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PCEQH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D == EEREC_S ) xPCMP.EQW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) xPCMP.EQW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	else {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D == EEREC_S)
+		xPCMP.EQW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+		xPCMP.EQW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPCMP.EQW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -1529,14 +1731,18 @@ void recPCEQH()
 ////////////////////////////////////////////////////
 void recPCEQW()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PCEQW);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D == EEREC_S ) xPCMP.EQD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) xPCMP.EQD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	else {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D == EEREC_S)
+		xPCMP.EQD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+		xPCMP.EQD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPCMP.EQD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -1546,34 +1752,44 @@ void recPCEQW()
 ////////////////////////////////////////////////////
 void recPADDUB()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PADDUB);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|(_Rt_?XMMINFO_READT:0)|XMMINFO_WRITED );
-	if( _Rt_ ) {
-		if( EEREC_D == EEREC_S ) xPADD.USB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-		else if( EEREC_D == EEREC_T ) xPADD.USB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-		else {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | (_Rt_ ? XMMINFO_READT : 0) | XMMINFO_WRITED);
+	if (_Rt_)
+	{
+		if (EEREC_D == EEREC_S)
+			xPADD.USB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+		else if (EEREC_D == EEREC_T)
+			xPADD.USB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			xPADD.USB(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		}
 	}
-	else xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else
+		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 	_clearNeededXMMregs();
 }
 
 ////////////////////////////////////////////////////
 void recPADDUH()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PADDUH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D == EEREC_S ) xPADD.USW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-	else if( EEREC_D == EEREC_T ) xPADD.USW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-	else {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D == EEREC_S)
+		xPADD.USW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+	else if (EEREC_D == EEREC_T)
+		xPADD.USW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPADD.USW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -1587,29 +1803,29 @@ void recPADDUH()
 *********************************************************/
 #ifndef MMI2_RECOMPILE
 
-REC_FUNC_DEL( PMFHI, _Rd_);
-REC_FUNC_DEL( PMFLO, _Rd_);
-REC_FUNC_DEL( PCPYLD, _Rd_);
-REC_FUNC_DEL( PAND, _Rd_);
-REC_FUNC_DEL( PXOR, _Rd_);
+REC_FUNC_DEL(PMFHI,  _Rd_);
+REC_FUNC_DEL(PMFLO,  _Rd_);
+REC_FUNC_DEL(PCPYLD, _Rd_);
+REC_FUNC_DEL(PAND,  _Rd_);
+REC_FUNC_DEL(PXOR,  _Rd_);
 
-REC_FUNC_DEL( PMADDW, _Rd_);
-REC_FUNC_DEL( PSLLVW, _Rd_);
-REC_FUNC_DEL( PSRLVW, _Rd_);
-REC_FUNC_DEL( PMSUBW, _Rd_);
-REC_FUNC_DEL( PINTH, _Rd_);
-REC_FUNC_DEL( PMULTW, _Rd_);
-REC_FUNC_DEL( PDIVW, _Rd_);
-REC_FUNC_DEL( PMADDH, _Rd_);
-REC_FUNC_DEL( PHMADH, _Rd_);
-REC_FUNC_DEL( PMSUBH, _Rd_);
-REC_FUNC_DEL( PHMSBH, _Rd_);
-REC_FUNC_DEL( PEXEH, _Rd_);
-REC_FUNC_DEL( PREVH, _Rd_);
-REC_FUNC_DEL( PMULTH, _Rd_);
-REC_FUNC_DEL( PDIVBW, _Rd_);
-REC_FUNC_DEL( PEXEW, _Rd_);
-REC_FUNC_DEL( PROT3W, _Rd_ );
+REC_FUNC_DEL(PMADDW, _Rd_);
+REC_FUNC_DEL(PSLLVW, _Rd_);
+REC_FUNC_DEL(PSRLVW, _Rd_);
+REC_FUNC_DEL(PMSUBW, _Rd_);
+REC_FUNC_DEL(PINTH,  _Rd_);
+REC_FUNC_DEL(PMULTW, _Rd_);
+REC_FUNC_DEL(PDIVW,  _Rd_);
+REC_FUNC_DEL(PMADDH, _Rd_);
+REC_FUNC_DEL(PHMADH, _Rd_);
+REC_FUNC_DEL(PMSUBH, _Rd_);
+REC_FUNC_DEL(PHMSBH, _Rd_);
+REC_FUNC_DEL(PEXEH,  _Rd_);
+REC_FUNC_DEL(PREVH,  _Rd_);
+REC_FUNC_DEL(PMULTH, _Rd_);
+REC_FUNC_DEL(PDIVBW, _Rd_);
+REC_FUNC_DEL(PEXEW,  _Rd_);
+REC_FUNC_DEL(PROT3W, _Rd_);
 
 #else
 
@@ -1618,36 +1834,48 @@ void recPMADDW()
 {
 	EE::Profiler.EmitOp(eeOpcode::PMADDW);
 
-	int info = eeRecompileCodeXMM( (((_Rs_)&&(_Rt_))?XMMINFO_READS:0)|(((_Rs_)&&(_Rt_))?XMMINFO_READT:0)|(_Rd_?XMMINFO_WRITED:0)|XMMINFO_WRITELO|XMMINFO_WRITEHI|XMMINFO_READLO|XMMINFO_READHI );
+	int info = eeRecompileCodeXMM((((_Rs_) && (_Rt_)) ? XMMINFO_READS : 0) | (((_Rs_) && (_Rt_)) ? XMMINFO_READT : 0) | (_Rd_ ? XMMINFO_WRITED : 0) | XMMINFO_WRITELO | XMMINFO_WRITEHI | XMMINFO_READLO | XMMINFO_READHI);
 	xSHUF.PS(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI), 0x88);
 	xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_LO), 0xd8); // LO = {LO[0], HI[0], LO[2], HI[2]}
-	if( _Rd_ ) {
-		if( !_Rs_ || !_Rt_ ) xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
-		else if( EEREC_D == EEREC_S ) xPMUL.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-		else if( EEREC_D == EEREC_T ) xPMUL.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-		else {
+	if (_Rd_)
+	{
+		if (!_Rs_ || !_Rt_)
+			xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
+		else if (EEREC_D == EEREC_S)
+			xPMUL.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+		else if (EEREC_D == EEREC_T)
+			xPMUL.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			xPMUL.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		}
 	}
-	else {
-		if( !_Rs_ || !_Rt_ ) xPXOR(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
-		else {
+	else
+	{
+		if (!_Rs_ || !_Rt_)
+			xPXOR(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_S));
 			xPMUL.DQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_T));
 		}
 	}
 
 	// add from LO/HI
-	if ( _Rd_ ) xPADD.Q(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_LO));
-	else xPADD.Q(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_LO));
+	if (_Rd_)
+		xPADD.Q(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_LO));
+	else
+		xPADD.Q(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_LO));
 
 	// interleave & sign extend
-	if ( _Rd_ ) {
+	if (_Rd_)
+	{
 		xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_D), 0x88);
 		xPSHUF.D(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_D), 0xdd);
 	}
-	else {
+	else
+	{
 		xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI), 0x88);
 		xPSHUF.D(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI), 0xdd);
 	}
@@ -1659,35 +1887,42 @@ void recPMADDW()
 ////////////////////////////////////////////////////
 void recPSLLVW()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSLLVW);
 
-	int info = eeRecompileCodeXMM( (_Rs_?XMMINFO_READS:0)|(_Rt_?XMMINFO_READT:0)|XMMINFO_WRITED );
-	if( _Rs_ == 0 ) {
-		if( _Rt_ == 0 ) {
+	int info = eeRecompileCodeXMM((_Rs_ ? XMMINFO_READS : 0) | (_Rt_ ? XMMINFO_READT : 0) | XMMINFO_WRITED);
+	if (_Rs_ == 0)
+	{
+		if (_Rt_ == 0)
+		{
 			xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		}
-		else {
+		else
+		{
 			xPSHUF.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 0x88);
 			xPMOVSX.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		}
 	}
-	else if( _Rt_ == 0 ) {
+	else if (_Rt_ == 0)
+	{
 		xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 	}
-	else {
+	else
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 		int t1reg = _allocTempXMMreg(XMMT_INT, -1);
 
 		// shamt is 5-bit
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
-		xPSLL.Q(xRegisterSSE(t0reg), 27+32);
-		xPSRL.Q(xRegisterSSE(t0reg), 27+32);
+		xPSLL.Q(xRegisterSSE(t0reg), 27 + 32);
+		xPSRL.Q(xRegisterSSE(t0reg), 27 + 32);
 
 		// EEREC_D[0] <- Rt[0], t1reg[0] <- Rt[2]
 		xMOVHL.PS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_T));
-		if( EEREC_D != EEREC_T ) xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+		if (EEREC_D != EEREC_T)
+			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 
 		// shift (left) Rt[0]
 		xPSLL.D(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
@@ -1709,35 +1944,42 @@ void recPSLLVW()
 ////////////////////////////////////////////////////
 void recPSRLVW()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSRLVW);
 
-	int info = eeRecompileCodeXMM( (_Rs_?XMMINFO_READS:0)|(_Rt_?XMMINFO_READT:0)|XMMINFO_WRITED );
-	if( _Rs_ == 0 ) {
-		if( _Rt_ == 0 ) {
+	int info = eeRecompileCodeXMM((_Rs_ ? XMMINFO_READS : 0) | (_Rt_ ? XMMINFO_READT : 0) | XMMINFO_WRITED);
+	if (_Rs_ == 0)
+	{
+		if (_Rt_ == 0)
+		{
 			xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		}
-		else {
+		else
+		{
 			xPSHUF.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 0x88);
 			xPMOVSX.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		}
 	}
-	else if( _Rt_ == 0 ) {
+	else if (_Rt_ == 0)
+	{
 		xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 	}
-	else {
+	else
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 		int t1reg = _allocTempXMMreg(XMMT_INT, -1);
 
 		// shamt is 5-bit
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
-		xPSLL.Q(xRegisterSSE(t0reg), 27+32);
-		xPSRL.Q(xRegisterSSE(t0reg), 27+32);
+		xPSLL.Q(xRegisterSSE(t0reg), 27 + 32);
+		xPSRL.Q(xRegisterSSE(t0reg), 27 + 32);
 
 		// EEREC_D[0] <- Rt[0], t1reg[0] <- Rt[2]
 		xMOVHL.PS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_T));
-		if( EEREC_D != EEREC_T ) xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+		if (EEREC_D != EEREC_T)
+			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 
 		// shift (right logical) Rt[0]
 		xPSRL.D(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
@@ -1761,42 +2003,54 @@ void recPMSUBW()
 {
 	EE::Profiler.EmitOp(eeOpcode::PMSUBW);
 
-	int info = eeRecompileCodeXMM( (((_Rs_)&&(_Rt_))?XMMINFO_READS:0)|(((_Rs_)&&(_Rt_))?XMMINFO_READT:0)|(_Rd_?XMMINFO_WRITED:0)|XMMINFO_WRITELO|XMMINFO_WRITEHI|XMMINFO_READLO|XMMINFO_READHI );
+	int info = eeRecompileCodeXMM((((_Rs_) && (_Rt_)) ? XMMINFO_READS : 0) | (((_Rs_) && (_Rt_)) ? XMMINFO_READT : 0) | (_Rd_ ? XMMINFO_WRITED : 0) | XMMINFO_WRITELO | XMMINFO_WRITEHI | XMMINFO_READLO | XMMINFO_READHI);
 	xSHUF.PS(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI), 0x88);
 	xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_LO), 0xd8); // LO = {LO[0], HI[0], LO[2], HI[2]}
-	if( _Rd_ ) {
-		if( !_Rs_ || !_Rt_ ) xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
-		else if( EEREC_D == EEREC_S ) xPMUL.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-		else if( EEREC_D == EEREC_T ) xPMUL.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-		else {
+	if (_Rd_)
+	{
+		if (!_Rs_ || !_Rt_)
+			xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
+		else if (EEREC_D == EEREC_S)
+			xPMUL.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+		else if (EEREC_D == EEREC_T)
+			xPMUL.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			xPMUL.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		}
 	}
-	else {
-		if( !_Rs_ || !_Rt_ ) xPXOR(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
-		else {
+	else
+	{
+		if (!_Rs_ || !_Rt_)
+			xPXOR(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_S));
 			xPMUL.DQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_T));
 		}
 	}
 
 	// sub from LO/HI
-	if ( _Rd_ ) {
+	if (_Rd_)
+	{
 		xPSUB.Q(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_D));
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_LO));
 	}
-	else {
+	else
+	{
 		xPSUB.Q(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI));
 		xMOVDQA(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_LO));
 	}
 
 	// interleave & sign extend
-	if ( _Rd_ ) {
+	if (_Rd_)
+	{
 		xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_D), 0x88);
 		xPSHUF.D(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_D), 0xdd);
 	}
-	else {
+	else
+	{
 		xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI), 0x88);
 		xPSHUF.D(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI), 0xdd);
 	}
@@ -1810,32 +2064,42 @@ void recPMULTW()
 {
 	EE::Profiler.EmitOp(eeOpcode::PMULTW);
 
-	int info = eeRecompileCodeXMM( (((_Rs_)&&(_Rt_))?XMMINFO_READS:0)|(((_Rs_)&&(_Rt_))?XMMINFO_READT:0)|(_Rd_?XMMINFO_WRITED:0)|XMMINFO_WRITELO|XMMINFO_WRITEHI );
-	if( !_Rs_ || !_Rt_ ) {
-		if( _Rd_ ) xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
+	int info = eeRecompileCodeXMM((((_Rs_) && (_Rt_)) ? XMMINFO_READS : 0) | (((_Rs_) && (_Rt_)) ? XMMINFO_READT : 0) | (_Rd_ ? XMMINFO_WRITED : 0) | XMMINFO_WRITELO | XMMINFO_WRITEHI);
+	if (!_Rs_ || !_Rt_)
+	{
+		if (_Rd_)
+			xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		xPXOR(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_LO));
 		xPXOR(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
 	}
-	else {
-		if( _Rd_ ) {
-			if( EEREC_D == EEREC_S ) xPMUL.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-			else if( EEREC_D == EEREC_T ) xPMUL.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-			else {
+	else
+	{
+		if (_Rd_)
+		{
+			if (EEREC_D == EEREC_S)
+				xPMUL.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+			else if (EEREC_D == EEREC_T)
+				xPMUL.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+			else
+			{
 				xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 				xPMUL.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			}
 		}
-		else {
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_S));
 			xPMUL.DQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_T));
 		}
 
 		// interleave & sign extend
-		if ( _Rd_ ) {
+		if (_Rd_)
+		{
 			xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_D), 0x88);
 			xPSHUF.D(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_D), 0xdd);
 		}
-		else {
+		else
+		{
 			xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI), 0x88);
 			xPSHUF.D(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI), 0xdd);
 		}
@@ -1870,7 +2134,7 @@ void recPHMADH()
 {
 	EE::Profiler.EmitOp(eeOpcode::PHMADH);
 
-	int info = eeRecompileCodeXMM( (_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITELO|XMMINFO_WRITEHI );
+	int info = eeRecompileCodeXMM((_Rd_ ? XMMINFO_WRITED : 0) | XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITELO | XMMINFO_WRITEHI);
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 
 	xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
@@ -1878,20 +2142,25 @@ void recPHMADH()
 	xPSLL.D(xRegisterSSE(t0reg), 16);
 	xPMADD.WD(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
 
-	if( _Rd_ ) {
-		if( EEREC_D == EEREC_S ) {
+	if (_Rd_)
+	{
+		if (EEREC_D == EEREC_S)
+		{
 			xPMADD.WD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		}
-		else if( EEREC_D == EEREC_T ) {
+		else if (EEREC_D == EEREC_T)
+		{
 			xPMADD.WD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		}
-		else {
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPMADD.WD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		}
 		xMOVDQA(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_D));
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_T));
 		xPMADD.WD(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_S));
 	}
@@ -1912,11 +2181,12 @@ void recPMSUBH()
 {
 	EE::Profiler.EmitOp(eeOpcode::PMSUBH);
 
-	int info = eeRecompileCodeXMM( (_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_READLO|XMMINFO_READHI|XMMINFO_WRITELO|XMMINFO_WRITEHI );
+	int info = eeRecompileCodeXMM((_Rd_ ? XMMINFO_WRITED : 0) | XMMINFO_READS | XMMINFO_READT | XMMINFO_READLO | XMMINFO_READHI | XMMINFO_WRITELO | XMMINFO_WRITEHI);
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
 
-	if( !_Rd_ ) {
+	if (!_Rd_)
+	{
 		xPXOR(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
 		xPSHUF.D(xRegisterSSE(t1reg), xRegisterSSE(EEREC_S), 0xd8); //S0, S1, S4, S5, S2, S3, S6, S7
 		xPUNPCK.LWD(xRegisterSSE(t1reg), xRegisterSSE(t0reg)); //S0, 0, S1, 0, S4, 0, S5, 0
@@ -1935,7 +2205,8 @@ void recPMSUBH()
 
 		xPSUB.D(xRegisterSSE(EEREC_HI), xRegisterSSE(t0reg));
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 		xMOVDQA(xRegisterSSE(t1reg), xRegisterSSE(EEREC_S));
 
@@ -1976,7 +2247,7 @@ void recPHMSBH()
 {
 	EE::Profiler.EmitOp(eeOpcode::PHMSBH);
 
-	int info = eeRecompileCodeXMM( (_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITELO|XMMINFO_WRITEHI );
+	int info = eeRecompileCodeXMM((_Rd_ ? XMMINFO_WRITED : 0) | XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITELO | XMMINFO_WRITEHI);
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 
 	xPCMP.EQD(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_LO));
@@ -1989,7 +2260,8 @@ void recPHMSBH()
 	xPMADD.WD(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_T));
 	xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_LO));
 	xPSUB.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI));
-	if( _Rd_ ) xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_LO));
+	if (_Rd_)
+		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_LO));
 
 	xPCMP.EQD(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
 	xPXOR(xRegisterSSE(t0reg), xRegisterSSE(EEREC_HI));
@@ -2009,11 +2281,12 @@ void recPHMSBH()
 ////////////////////////////////////////////////////
 void recPEXEH()
 {
-	if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PEXEH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READT|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM(XMMINFO_READT | XMMINFO_WRITED);
 	xPSHUF.LW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 0xc6);
 	xPSHUF.HW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D), 0xc6);
 	_clearNeededXMMregs();
@@ -2022,11 +2295,12 @@ void recPEXEH()
 ////////////////////////////////////////////////////
 void recPREVH()
 {
-	if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PREVH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READT|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM(XMMINFO_READT | XMMINFO_WRITED);
 	xPSHUF.LW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 0x1B);
 	xPSHUF.HW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D), 0x1B);
 	_clearNeededXMMregs();
@@ -2035,19 +2309,23 @@ void recPREVH()
 ////////////////////////////////////////////////////
 void recPINTH()
 {
-	if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PINTH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|XMMINFO_WRITED );
-	if( EEREC_D == EEREC_S ) {
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | XMMINFO_WRITED);
+	if (EEREC_D == EEREC_S)
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 		xMOVHL.PS(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
-		if( EEREC_D != EEREC_T ) xMOVQZX(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+		if (EEREC_D != EEREC_T)
+			xMOVQZX(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		xPUNPCK.LWD(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 		_freeXMMreg(t0reg);
 	}
-	else {
+	else
+	{
 		xMOVLH.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		xPUNPCK.HWD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 	}
@@ -2056,22 +2334,24 @@ void recPINTH()
 
 void recPEXEW()
 {
-	if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PEXEW);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READT|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM(XMMINFO_READT | XMMINFO_WRITED);
 	xPSHUF.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 0xc6);
 	_clearNeededXMMregs();
 }
 
 void recPROT3W()
 {
-	if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PROT3W);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READT|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM(XMMINFO_READT | XMMINFO_WRITED);
 	xPSHUF.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 0xc9);
 	_clearNeededXMMregs();
 }
@@ -2080,7 +2360,7 @@ void recPMULTH()
 {
 	EE::Profiler.EmitOp(eeOpcode::PMULTH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_READT|(_Rd_?XMMINFO_WRITED:0)|XMMINFO_WRITELO|XMMINFO_WRITEHI );
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_READT | (_Rd_ ? XMMINFO_WRITED : 0) | XMMINFO_WRITELO | XMMINFO_WRITEHI);
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 
 	xMOVDQA(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_S));
@@ -2095,7 +2375,8 @@ void recPMULTH()
 	// 4-7
 	xPUNPCK.HWD(xRegisterSSE(t0reg), xRegisterSSE(EEREC_HI));
 
-	if( _Rd_ ) {
+	if (_Rd_)
+	{
 		// 0,2,4,6, L->H
 		xPSHUF.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_LO), 0x88);
 		xPSHUF.D(xRegisterSSE(EEREC_HI), xRegisterSSE(t0reg), 0x88);
@@ -2115,11 +2396,12 @@ void recPMULTH()
 
 void recPMFHI()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PMFHI);
 
-	int info = eeRecompileCodeXMM( XMMINFO_WRITED|XMMINFO_READHI );
+	int info = eeRecompileCodeXMM(XMMINFO_WRITED | XMMINFO_READHI);
 	xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_HI));
 	_clearNeededXMMregs();
 }
@@ -2127,11 +2409,12 @@ void recPMFHI()
 ////////////////////////////////////////////////////
 void recPMFLO()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PMFLO);
 
-	int info = eeRecompileCodeXMM( XMMINFO_WRITED|XMMINFO_READLO );
+	int info = eeRecompileCodeXMM(XMMINFO_WRITED | XMMINFO_READLO);
 	xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_LO));
 	_clearNeededXMMregs();
 }
@@ -2139,18 +2422,22 @@ void recPMFLO()
 ////////////////////////////////////////////////////
 void recPAND()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PAND);
 
-	int info = eeRecompileCodeXMM( XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT );
-	if( EEREC_D == EEREC_T ) {
+	int info = eeRecompileCodeXMM(XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
+	if (EEREC_D == EEREC_T)
+	{
 		xPAND(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 	}
-	else if( EEREC_D == EEREC_S ) {
+	else if (EEREC_D == EEREC_S)
+	{
 		xPAND(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPAND(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -2160,18 +2447,22 @@ void recPAND()
 ////////////////////////////////////////////////////
 void recPXOR()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PXOR);
 
-	int info = eeRecompileCodeXMM( XMMINFO_WRITED|XMMINFO_READS|XMMINFO_READT );
-	if( EEREC_D == EEREC_T ) {
+	int info = eeRecompileCodeXMM(XMMINFO_WRITED | XMMINFO_READS | XMMINFO_READT);
+	if (EEREC_D == EEREC_T)
+	{
 		xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 	}
-	else if( EEREC_D == EEREC_S ) {
+	else if (EEREC_D == EEREC_S)
+	{
 		xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
@@ -2181,22 +2472,29 @@ void recPXOR()
 ////////////////////////////////////////////////////
 void recPCPYLD()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PCPYLD);
 
-	int info = eeRecompileCodeXMM( XMMINFO_WRITED|(( _Rs_== 0) ? 0:XMMINFO_READS)|XMMINFO_READT );
-	if( _Rs_ == 0 ) {
+	int info = eeRecompileCodeXMM(XMMINFO_WRITED | ((_Rs_ == 0) ? 0 : XMMINFO_READS) | XMMINFO_READT);
+	if (_Rs_ == 0)
+	{
 		xMOVQZX(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
-	else {
-		if( EEREC_D == EEREC_T ) xPUNPCK.LQDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-		else if( EEREC_S == EEREC_T ) xPSHUF.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S), 0x44);
-		else if( EEREC_D == EEREC_S ) {
+	else
+	{
+		if (EEREC_D == EEREC_T)
+			xPUNPCK.LQDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+		else if (EEREC_S == EEREC_T)
+			xPSHUF.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S), 0x44);
+		else if (EEREC_D == EEREC_S)
+		{
 			xPUNPCK.LQDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPSHUF.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D), 0x4e);
 		}
-		else {
+		else
+		{
 			xMOVQZX(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPUNPCK.LQDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		}
@@ -2208,11 +2506,12 @@ void recPMADDH()
 {
 	EE::Profiler.EmitOp(eeOpcode::PMADDH);
 
-	int info = eeRecompileCodeXMM( (_Rd_?XMMINFO_WRITED:0)|XMMINFO_READS|XMMINFO_READT|XMMINFO_READLO|XMMINFO_READHI|XMMINFO_WRITELO|XMMINFO_WRITEHI );
+	int info = eeRecompileCodeXMM((_Rd_ ? XMMINFO_WRITED : 0) | XMMINFO_READS | XMMINFO_READT | XMMINFO_READLO | XMMINFO_READHI | XMMINFO_WRITELO | XMMINFO_WRITEHI);
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
 
-	if( !_Rd_ ) {
+	if (!_Rd_)
+	{
 		xPXOR(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
 		xPSHUF.D(xRegisterSSE(t1reg), xRegisterSSE(EEREC_S), 0xd8); //S0, S1, S4, S5, S2, S3, S6, S7
 		xPUNPCK.LWD(xRegisterSSE(t1reg), xRegisterSSE(t0reg)); //S0, 0, S1, 0, S4, 0, S5, 0
@@ -2231,7 +2530,8 @@ void recPMADDH()
 
 		xPADD.D(xRegisterSSE(EEREC_HI), xRegisterSSE(t0reg));
 	}
-	else {
+	else
+	{
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
 		xMOVDQA(xRegisterSSE(t1reg), xRegisterSSE(EEREC_S));
 
@@ -2272,19 +2572,19 @@ void recPMADDH()
 *********************************************************/
 #ifndef MMI3_RECOMPILE
 
-REC_FUNC_DEL( PMADDUW, _Rd_);
-REC_FUNC_DEL( PSRAVW, _Rd_);
-REC_FUNC_DEL( PMTHI, _Rd_);
-REC_FUNC_DEL( PMTLO, _Rd_);
-REC_FUNC_DEL( PINTEH, _Rd_);
-REC_FUNC_DEL( PMULTUW, _Rd_);
-REC_FUNC_DEL( PDIVUW, _Rd_);
-REC_FUNC_DEL( PCPYUD, _Rd_);
-REC_FUNC_DEL( POR, _Rd_);
-REC_FUNC_DEL( PNOR, _Rd_);
-REC_FUNC_DEL( PCPYH, _Rd_);
-REC_FUNC_DEL( PEXCW, _Rd_);
-REC_FUNC_DEL( PEXCH, _Rd_);
+REC_FUNC_DEL(PMADDUW, _Rd_);
+REC_FUNC_DEL(PSRAVW,  _Rd_);
+REC_FUNC_DEL(PMTHI,   _Rd_);
+REC_FUNC_DEL(PMTLO,   _Rd_);
+REC_FUNC_DEL(PINTEH,  _Rd_);
+REC_FUNC_DEL(PMULTUW, _Rd_);
+REC_FUNC_DEL(PDIVUW,  _Rd_);
+REC_FUNC_DEL(PCPYUD,  _Rd_);
+REC_FUNC_DEL(POR,     _Rd_);
+REC_FUNC_DEL(PNOR,    _Rd_);
+REC_FUNC_DEL(PCPYH,   _Rd_);
+REC_FUNC_DEL(PEXCW,   _Rd_);
+REC_FUNC_DEL(PEXCH,   _Rd_);
 
 #else
 
@@ -2293,35 +2593,42 @@ REC_FUNC_DEL( PEXCH, _Rd_);
 
 void recPSRAVW()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PSRAVW);
 
-	int info = eeRecompileCodeXMM( (_Rs_?XMMINFO_READS:0)|(_Rt_?XMMINFO_READT:0)|XMMINFO_WRITED );
-	if( _Rs_ == 0 ) {
-		if( _Rt_ == 0 ) {
+	int info = eeRecompileCodeXMM((_Rs_ ? XMMINFO_READS : 0) | (_Rt_ ? XMMINFO_READT : 0) | XMMINFO_WRITED);
+	if (_Rs_ == 0)
+	{
+		if (_Rt_ == 0)
+		{
 			xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		}
-		else {
+		else
+		{
 			xPSHUF.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 0x88);
 			xPMOVSX.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		}
 	}
-	else if( _Rt_ == 0 ) {
+	else if (_Rt_ == 0)
+	{
 		xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 	}
-	else {
+	else
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 		int t1reg = _allocTempXMMreg(XMMT_INT, -1);
 
 		// shamt is 5-bit
 		xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
-		xPSLL.Q(xRegisterSSE(t0reg), 27+32);
-		xPSRL.Q(xRegisterSSE(t0reg), 27+32);
+		xPSLL.Q(xRegisterSSE(t0reg), 27 + 32);
+		xPSRL.Q(xRegisterSSE(t0reg), 27 + 32);
 
 		// EEREC_D[0] <- Rt[0], t1reg[0] <- Rt[2]
 		xMOVHL.PS(xRegisterSSE(t1reg), xRegisterSSE(EEREC_T));
-		if( EEREC_D != EEREC_T ) xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+		if (EEREC_D != EEREC_T)
+			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 
 		// shift (right arithmetic) Rt[0]
 		xPSRA.D(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
@@ -2331,11 +2638,13 @@ void recPSRAVW()
 		xPSRA.D(xRegisterSSE(t1reg), xRegisterSSE(t0reg));
 
 		// merge & sign extend
-		if ( x86caps.hasStreamingSIMD4Extensions ) {
+		if (x86caps.hasStreamingSIMD4Extensions)
+		{
 			xPUNPCK.LDQ(xRegisterSSE(EEREC_D), xRegisterSSE(t1reg));
 			xPMOVSX.DQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		}
-		else {
+		else
+		{
 			xPUNPCK.LDQ(xRegisterSSE(EEREC_D), xRegisterSSE(t1reg));
 			xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_D));
 			xPSRA.D(xRegisterSSE(t0reg), 31); // get the signs
@@ -2351,38 +2660,46 @@ void recPSRAVW()
 
 
 ////////////////////////////////////////////////////
-static const __aligned16 u32 s_tempPINTEH[4] = {0x0000ffff, 0x0000ffff, 0x0000ffff, 0x0000ffff };
+static const __aligned16 u32 s_tempPINTEH[4] = {0x0000ffff, 0x0000ffff, 0x0000ffff, 0x0000ffff};
 
 void recPINTEH()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PINTEH);
 
-	int info = eeRecompileCodeXMM( (_Rs_?XMMINFO_READS:0)|(_Rt_?XMMINFO_READT:0)|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM((_Rs_ ? XMMINFO_READS : 0) | (_Rt_ ? XMMINFO_READT : 0) | XMMINFO_WRITED);
 
 	int t0reg = -1;
 
-	if( _Rs_ == 0 ) {
-		if( _Rt_ == 0 ) {
+	if (_Rs_ == 0)
+	{
+		if (_Rt_ == 0)
+		{
 			xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		}
-		else {
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			xPAND(xRegisterSSE(EEREC_D), ptr[s_tempPINTEH]);
 		}
 	}
-	else if( _Rt_ == 0 ) {
+	else if (_Rt_ == 0)
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		xPSLL.D(xRegisterSSE(EEREC_D), 16);
 	}
-	else {
-		if( EEREC_S == EEREC_T ) {
+	else
+	{
+		if (EEREC_S == EEREC_T)
+		{
 			xPSHUF.LW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S), 0xa0);
 			xPSHUF.HW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D), 0xa0);
 		}
-		else if( EEREC_D == EEREC_T ) {
-			pxAssert( EEREC_D != EEREC_S );
+		else if (EEREC_D == EEREC_T)
+		{
+			pxAssert(EEREC_D != EEREC_S);
 			t0reg = _allocTempXMMreg(XMMT_INT, -1);
 			xPSLL.D(xRegisterSSE(EEREC_D), 16);
 			xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_S));
@@ -2390,7 +2707,8 @@ void recPINTEH()
 			xPSLL.D(xRegisterSSE(t0reg), 16);
 			xPOR(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 		}
-		else {
+		else
+		{
 			t0reg = _allocTempXMMreg(XMMT_INT, -1);
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			xMOVDQA(xRegisterSSE(t0reg), xRegisterSSE(EEREC_T));
@@ -2401,7 +2719,8 @@ void recPINTEH()
 		}
 	}
 
-	if( t0reg >= 0 ) _freeXMMreg(t0reg);
+	if (t0reg >= 0)
+		_freeXMMreg(t0reg);
 	_clearNeededXMMregs();
 }
 
@@ -2410,35 +2729,45 @@ void recPMULTUW()
 {
 	EE::Profiler.EmitOp(eeOpcode::PMULTUW);
 
-	int info = eeRecompileCodeXMM( (((_Rs_)&&(_Rt_))?XMMINFO_READS:0)|(((_Rs_)&&(_Rt_))?XMMINFO_READT:0)|(_Rd_?XMMINFO_WRITED:0)|XMMINFO_WRITELO|XMMINFO_WRITEHI );
-	if( !_Rs_ || !_Rt_ ) {
-		if( _Rd_ ) xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
+	int info = eeRecompileCodeXMM((((_Rs_) && (_Rt_)) ? XMMINFO_READS : 0) | (((_Rs_) && (_Rt_)) ? XMMINFO_READT : 0) | (_Rd_ ? XMMINFO_WRITED : 0) | XMMINFO_WRITELO | XMMINFO_WRITEHI);
+	if (!_Rs_ || !_Rt_)
+	{
+		if (_Rd_)
+			xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		xPXOR(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_LO));
 		xPXOR(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
 	}
-	else {
-		if( _Rd_ ) {
-			if( EEREC_D == EEREC_S ) xPMUL.UDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-			else if( EEREC_D == EEREC_T ) xPMUL.UDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-			else {
+	else
+	{
+		if (_Rd_)
+		{
+			if (EEREC_D == EEREC_S)
+				xPMUL.UDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+			else if (EEREC_D == EEREC_T)
+				xPMUL.UDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+			else
+			{
 				xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 				xPMUL.UDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			}
 			xMOVDQA(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_D));
 		}
-		else {
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_S));
 			xPMUL.UDQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_T));
 		}
 
 		// interleave & sign extend
-		if ( x86caps.hasStreamingSIMD4Extensions ) {
+		if (x86caps.hasStreamingSIMD4Extensions)
+		{
 			xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI), 0x88);
 			xPSHUF.D(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI), 0xdd);
 			xPMOVSX.DQ(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_LO));
 			xPMOVSX.DQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
 		}
-		else {
+		else
+		{
 			int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 			xPSHUF.D(xRegisterSSE(t0reg), xRegisterSSE(EEREC_HI), 0xd8);
 			xMOVDQA(xRegisterSSE(EEREC_LO), xRegisterSSE(t0reg));
@@ -2458,41 +2787,53 @@ void recPMADDUW()
 {
 	EE::Profiler.EmitOp(eeOpcode::PMADDUW);
 
-	int info = eeRecompileCodeXMM( (((_Rs_)&&(_Rt_))?XMMINFO_READS:0)|(((_Rs_)&&(_Rt_))?XMMINFO_READT:0)|(_Rd_?XMMINFO_WRITED:0)|XMMINFO_WRITELO|XMMINFO_WRITEHI|XMMINFO_READLO|XMMINFO_READHI );
+	int info = eeRecompileCodeXMM((((_Rs_) && (_Rt_)) ? XMMINFO_READS : 0) | (((_Rs_) && (_Rt_)) ? XMMINFO_READT : 0) | (_Rd_ ? XMMINFO_WRITED : 0) | XMMINFO_WRITELO | XMMINFO_WRITEHI | XMMINFO_READLO | XMMINFO_READHI);
 	xSHUF.PS(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI), 0x88);
 	xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_LO), 0xd8); // LO = {LO[0], HI[0], LO[2], HI[2]}
-	if( _Rd_ ) {
-		if( !_Rs_ || !_Rt_ ) xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
-		else if( EEREC_D == EEREC_S ) xPMUL.UDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-		else if( EEREC_D == EEREC_T ) xPMUL.UDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-		else {
+	if (_Rd_)
+	{
+		if (!_Rs_ || !_Rt_)
+			xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
+		else if (EEREC_D == EEREC_S)
+			xPMUL.UDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+		else if (EEREC_D == EEREC_T)
+			xPMUL.UDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			xPMUL.UDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		}
 	}
-	else {
-		if( !_Rs_ || !_Rt_ ) xPXOR(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
-		else {
+	else
+	{
+		if (!_Rs_ || !_Rt_)
+			xPXOR(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_S));
 			xPMUL.UDQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_T));
 		}
 	}
 
 	// add from LO/HI
-	if ( _Rd_ ) {
+	if (_Rd_)
+	{
 		xPADD.Q(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_LO));
 		xMOVDQA(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_D));
 	}
-	else xPADD.Q(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_LO));
+	else
+		xPADD.Q(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_LO));
 
 	// interleave & sign extend
-	if ( x86caps.hasStreamingSIMD4Extensions ) {
+	if (x86caps.hasStreamingSIMD4Extensions)
+	{
 		xPSHUF.D(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_HI), 0x88);
 		xPSHUF.D(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI), 0xdd);
 		xPMOVSX.DQ(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_LO));
 		xPMOVSX.DQ(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_HI));
 	}
-	else {
+	else
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 		xPSHUF.D(xRegisterSSE(t0reg), xRegisterSSE(EEREC_HI), 0xd8);
 		xMOVDQA(xRegisterSSE(EEREC_LO), xRegisterSSE(t0reg));
@@ -2520,9 +2861,10 @@ void recPEXCW()
 {
 	EE::Profiler.EmitOp(eeOpcode::PEXCW);
 
-	if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
-	int info = eeRecompileCodeXMM( XMMINFO_READT|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM(XMMINFO_READT | XMMINFO_WRITED);
 	xPSHUF.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 0xd8);
 	_clearNeededXMMregs();
 }
@@ -2532,9 +2874,10 @@ void recPEXCH()
 {
 	EE::Profiler.EmitOp(eeOpcode::PEXCH);
 
-	if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
-	int info = eeRecompileCodeXMM( XMMINFO_READT|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM(XMMINFO_READT | XMMINFO_WRITED);
 	xPSHUF.LW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 0xd8);
 	xPSHUF.HW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D), 0xd8);
 	_clearNeededXMMregs();
@@ -2543,53 +2886,68 @@ void recPEXCH()
 ////////////////////////////////////////////////////
 void recPNOR()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PNOR);
 
-	int info = eeRecompileCodeXMM( (_Rs_!=0?XMMINFO_READS:0)|(_Rt_!=0?XMMINFO_READT:0)|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM((_Rs_ != 0 ? XMMINFO_READS : 0) | (_Rt_ != 0 ? XMMINFO_READT : 0) | XMMINFO_WRITED);
 
-	if( _Rs_ == 0 ) {
-		if( _Rt_ == 0 ) {
-			xPCMP.EQD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D ));
+	if (_Rs_ == 0)
+	{
+		if (_Rt_ == 0)
+		{
+			xPCMP.EQD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		}
-		else {
-			if( EEREC_D == EEREC_T ) {
+		else
+		{
+			if (EEREC_D == EEREC_T)
+			{
 				int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 				xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
 				xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 				_freeXMMreg(t0reg);
 			}
-			else {
-				xPCMP.EQD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D ));
-				if( _Rt_ != 0 ) xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+			else
+			{
+				xPCMP.EQD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
+				if (_Rt_ != 0)
+					xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			}
 		}
 	}
-	else if( _Rt_ == 0 ) {
-		if( EEREC_D == EEREC_S ) {
+	else if (_Rt_ == 0)
+	{
+		if (EEREC_D == EEREC_S)
+		{
 			int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 			xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
 			xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 			_freeXMMreg(t0reg);
 		}
-		else {
-			xPCMP.EQD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D ));
+		else
+		{
+			xPCMP.EQD(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 			xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		}
 	}
-	else {
+	else
+	{
 		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 
-		if( EEREC_D == EEREC_S ) xPOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-		else if( EEREC_D == EEREC_T ) xPOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-		else {
+		if (EEREC_D == EEREC_S)
+			xPOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+		else if (EEREC_D == EEREC_T)
+			xPOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
-			if( EEREC_S != EEREC_T ) xPOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+			if (EEREC_S != EEREC_T)
+				xPOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		}
 
-		xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(t0reg ));
-		xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg ));
+		xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
+		xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(t0reg));
 		_freeXMMreg(t0reg);
 	}
 	_clearNeededXMMregs();
@@ -2600,7 +2958,7 @@ void recPMTHI()
 {
 	EE::Profiler.EmitOp(eeOpcode::PMTHI);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_WRITEHI );
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_WRITEHI);
 	xMOVDQA(xRegisterSSE(EEREC_HI), xRegisterSSE(EEREC_S));
 	_clearNeededXMMregs();
 }
@@ -2610,7 +2968,7 @@ void recPMTLO()
 {
 	EE::Profiler.EmitOp(eeOpcode::PMTLO);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|XMMINFO_WRITELO );
+	int info = eeRecompileCodeXMM(XMMINFO_READS | XMMINFO_WRITELO);
 	xMOVDQA(xRegisterSSE(EEREC_LO), xRegisterSSE(EEREC_S));
 	_clearNeededXMMregs();
 }
@@ -2618,34 +2976,44 @@ void recPMTLO()
 ////////////////////////////////////////////////////
 void recPCPYUD()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PCPYUD);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READS|(( _Rt_ == 0) ? 0:XMMINFO_READT)|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM(XMMINFO_READS | ((_Rt_ == 0) ? 0 : XMMINFO_READT) | XMMINFO_WRITED);
 
-	if( _Rt_ == 0 ) {
-		if( EEREC_D == EEREC_S ) {
+	if (_Rt_ == 0)
+	{
+		if (EEREC_D == EEREC_S)
+		{
 			xPUNPCK.HQDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			xMOVQZX(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		}
-		else {
+		else
+		{
 			xMOVHL.PS(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			xMOVQZX(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		}
 	}
-	else {
-		if( EEREC_D == EEREC_S ) xPUNPCK.HQDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-		else if( EEREC_D == EEREC_T ) {
+	else
+	{
+		if (EEREC_D == EEREC_S)
+			xPUNPCK.HQDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+		else if (EEREC_D == EEREC_T)
+		{
 			//TODO
 			xPUNPCK.HQDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			xPSHUF.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D), 0x4e);
 		}
-		else {
-			if( EEREC_S == EEREC_T ) {
+		else
+		{
+			if (EEREC_S == EEREC_T)
+			{
 				xPSHUF.D(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S), 0xee);
 			}
-			else {
+			else
+			{
 				xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 				xPUNPCK.HQDQ(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 			}
@@ -2657,31 +3025,41 @@ void recPCPYUD()
 ////////////////////////////////////////////////////
 void recPOR()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::POR);
 
-	int info = eeRecompileCodeXMM( (_Rs_!=0?XMMINFO_READS:0)|(_Rt_!=0?XMMINFO_READT:0)|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM((_Rs_ != 0 ? XMMINFO_READS : 0) | (_Rt_ != 0 ? XMMINFO_READT : 0) | XMMINFO_WRITED);
 
-	if( _Rs_ == 0 ) {
-		if( _Rt_ == 0 ) {
+	if (_Rs_ == 0)
+	{
+		if (_Rt_ == 0)
+		{
 			xPXOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D));
 		}
-		else xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
+		else
+			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 	}
-	else if( _Rt_ == 0 ) {
+	else if (_Rt_ == 0)
+	{
 		xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 	}
-	else {
-		if( EEREC_D == EEREC_S ) {
+	else
+	{
+		if (EEREC_D == EEREC_S)
+		{
 			xPOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
 		}
-		else if( EEREC_D == EEREC_T ) {
+		else if (EEREC_D == EEREC_T)
+		{
 			xPOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 		}
-		else {
+		else
+		{
 			xMOVDQA(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T));
-			if( EEREC_S != EEREC_T ) {
+			if (EEREC_S != EEREC_T)
+			{
 				xPOR(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_S));
 			}
 		}
@@ -2692,16 +3070,20 @@ void recPOR()
 ////////////////////////////////////////////////////
 void recPCPYH()
 {
-	if ( ! _Rd_ ) return;
+	if (!_Rd_)
+		return;
 
 	EE::Profiler.EmitOp(eeOpcode::PCPYH);
 
-	int info = eeRecompileCodeXMM( XMMINFO_READT|XMMINFO_WRITED );
+	int info = eeRecompileCodeXMM(XMMINFO_READT | XMMINFO_WRITED);
 	xPSHUF.LW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_T), 0);
 	xPSHUF.HW(xRegisterSSE(EEREC_D), xRegisterSSE(EEREC_D), 0);
 	_clearNeededXMMregs();
 }
 
-#endif	// else MMI3_RECOMPILE
+#endif // else MMI3_RECOMPILE
 
-} } } }
+} // namespace MMI
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900

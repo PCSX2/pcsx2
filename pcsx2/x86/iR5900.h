@@ -23,44 +23,46 @@
 #include "R5900_Profiler.h"
 
 extern u32 maxrecmem;
-extern u32 pc;			         // recompiler pc 
-extern int g_branch;	         // set for branch
-extern u32 target;		         // branch target
-extern u32 s_nBlockCycles;		// cycles of current block recompiling
+extern u32 pc;             // recompiler pc
+extern int g_branch;       // set for branch
+extern u32 target;         // branch target
+extern u32 s_nBlockCycles; // cycles of current block recompiling
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
 
-#define REC_FUNC( f ) \
-   void rec##f() \
-   { \
-	   recCall(Interp::f); \
-   }
-
-#define REC_FUNC_DEL( f, delreg ) \
+#define REC_FUNC(f) \
 	void rec##f() \
-{ \
-	if( (delreg) > 0 ) _deleteEEreg(delreg, 1); \
-	recCall(Interp::f); \
-}
+	{ \
+		recCall(Interp::f); \
+	}
 
-#define REC_SYS( f ) \
-   void rec##f() \
-   { \
-	   recBranchCall(Interp::f); \
-   }
+#define REC_FUNC_DEL(f, delreg) \
+	void rec##f() \
+	{ \
+		if ((delreg) > 0) \
+			_deleteEEreg(delreg, 1); \
+		recCall(Interp::f); \
+	}
 
-#define REC_SYS_DEL( f, delreg ) \
-   void rec##f() \
-   { \
-	   if( (delreg) > 0 ) _deleteEEreg(delreg, 1); \
-	   recBranchCall(Interp::f); \
-   }
+#define REC_SYS(f) \
+	void rec##f() \
+	{ \
+		recBranchCall(Interp::f); \
+	}
+
+#define REC_SYS_DEL(f, delreg) \
+	void rec##f() \
+	{ \
+		if ((delreg) > 0) \
+			_deleteEEreg(delreg, 1); \
+		recBranchCall(Interp::f); \
+	}
 
 
 // Used to clear recompiled code blocks during memory/dma write operations.
 u32 recClearMem(u32 pc);
-u32 REC_CLEARM( u32 mem );
+u32 REC_CLEARM(u32 mem);
 extern bool g_recompilingDelaySlot;
 
 // used when processing branches
@@ -68,35 +70,42 @@ void SaveBranchState();
 void LoadBranchState();
 
 void recompileNextInstruction(int delayslot);
-void SetBranchReg( u32 reg );
-void SetBranchImm( u32 imm );
+void SetBranchReg(u32 reg);
+void SetBranchImm(u32 imm);
 
 void iFlushCall(int flushtype);
-void recBranchCall( void (*func)() );
-void recCall( void (*func)() );
+void recBranchCall(void (*func)());
+void recCall(void (*func)());
 u32 scaleblockcycles_clear();
 
-namespace R5900{
-namespace Dynarec {
-extern void recDoBranchImm( u32* jmpSkip, bool isLikely = false );
-extern void recDoBranchImm_Likely( u32* jmpSkip );
-} }
+namespace R5900
+{
+	namespace Dynarec
+	{
+		extern void recDoBranchImm(u32* jmpSkip, bool isLikely = false);
+		extern void recDoBranchImm_Likely(u32* jmpSkip);
+	} // namespace Dynarec
+} // namespace R5900
 
 ////////////////////////////////////////////////////////////////////
 // Constant Propagation - From here to the end of the header!
 
-#define GPR_IS_CONST1(reg) (EE_CONST_PROP && (reg)<32 && (g_cpuHasConstReg&(1<<(reg))))
-#define GPR_IS_CONST2(reg1, reg2) (EE_CONST_PROP && (g_cpuHasConstReg&(1<<(reg1)))&&(g_cpuHasConstReg&(1<<(reg2))))
-#define GPR_SET_CONST(reg) { \
-	if( (reg) < 32 ) { \
-		g_cpuHasConstReg |= (1<<(reg)); \
-		g_cpuFlushedConstReg &= ~(1<<(reg)); \
-	} \
-}
+#define GPR_IS_CONST1(reg) (EE_CONST_PROP && (reg) < 32 && (g_cpuHasConstReg & (1 << (reg))))
+#define GPR_IS_CONST2(reg1, reg2) (EE_CONST_PROP && (g_cpuHasConstReg & (1 << (reg1))) && (g_cpuHasConstReg & (1 << (reg2))))
+#define GPR_SET_CONST(reg) \
+	{ \
+		if ((reg) < 32) \
+		{ \
+			g_cpuHasConstReg |= (1 << (reg)); \
+			g_cpuFlushedConstReg &= ~(1 << (reg)); \
+		} \
+	}
 
-#define GPR_DEL_CONST(reg) { \
-	if( (reg) < 32 ) g_cpuHasConstReg &= ~(1<<(reg)); \
-}
+#define GPR_DEL_CONST(reg) \
+	{ \
+		if ((reg) < 32) \
+			g_cpuHasConstReg &= ~(1 << (reg)); \
+	}
 
 extern __aligned16 GPR_reg64 g_cpuConstRegs[32];
 extern u32 g_cpuHasConstReg, g_cpuFlushedConstReg;
@@ -108,7 +117,7 @@ u32* _eeGetConstReg(int reg);
 void _eeMoveGPRtoR(const x86Emitter::xRegister32& to, int fromgpr);
 void _eeMoveGPRtoM(uptr to, int fromgpr);
 void _eeMoveGPRtoRm(x86IntRegType to, int fromgpr);
-void eeSignExtendTo(int gpr, bool onlyupper=false);
+void eeSignExtendTo(int gpr, bool onlyupper = false);
 
 void _eeFlushAllUnused();
 void _eeOnWriteReg(int reg, int signext);
@@ -123,7 +132,7 @@ void _flushEEreg(int reg);
 // allocates memory on the instruction size and returns the pointer
 u32* recGetImm64(u32 hi, u32 lo);
 
-void _vuRegsCOP22(VURegs * VU, _VURegsNum *VUregsn);
+void _vuRegsCOP22(VURegs* VU, _VURegsNum* VUregsn);
 
 //////////////////////////////////////
 // Templates for code recompilation //
@@ -133,18 +142,18 @@ typedef void (*R5900FNPTR)();
 typedef void (*R5900FNPTR_INFO)(int info);
 
 #define EERECOMPILE_CODE0(fn, xmminfo) \
-void rec##fn(void) \
-{ \
-	EE::Profiler.EmitOp(eeOpcode::fn); \
-	eeRecompileCode0(rec##fn##_const, rec##fn##_consts, rec##fn##_constt, rec##fn##_, xmminfo); \
-}
+	void rec##fn(void) \
+	{ \
+		EE::Profiler.EmitOp(eeOpcode::fn); \
+		eeRecompileCode0(rec##fn##_const, rec##fn##_consts, rec##fn##_constt, rec##fn##_, xmminfo); \
+	}
 
 #define EERECOMPILE_CODEX(codename, fn) \
-void rec##fn(void) \
-{ \
-	EE::Profiler.EmitOp(eeOpcode::fn); \
-	codename(rec##fn##_const, rec##fn##_); \
-}
+	void rec##fn(void) \
+	{ \
+		EE::Profiler.EmitOp(eeOpcode::fn); \
+		codename(rec##fn##_const, rec##fn##_); \
+	}
 
 //
 // MMX/XMM caching helpers
@@ -164,31 +173,31 @@ void eeRecompileCode3(R5900FNPTR constcode, R5900FNPTR_INFO multicode);
 //
 // rd = rs op rt
 #define EERECOMPILE_CONSTCODE0(fn) \
-void rec##fn(void) \
-{ \
-	eeRecompileCodeConst0(rec##fn##_const, rec##fn##_consts, rec##fn##_constt, rec##fn##_); \
-} \
+	void rec##fn(void) \
+	{ \
+		eeRecompileCodeConst0(rec##fn##_const, rec##fn##_consts, rec##fn##_constt, rec##fn##_); \
+	}
 
 // rt = rs op imm16
 #define EERECOMPILE_CONSTCODE1(fn) \
-void rec##fn(void) \
-{ \
-	eeRecompileCodeConst1(rec##fn##_const, rec##fn##_); \
-} \
+	void rec##fn(void) \
+	{ \
+		eeRecompileCodeConst1(rec##fn##_const, rec##fn##_); \
+	}
 
 // rd = rt op sa
 #define EERECOMPILE_CONSTCODE2(fn) \
-void rec##fn(void) \
-{ \
-	eeRecompileCodeConst2(rec##fn##_const, rec##fn##_); \
-} \
+	void rec##fn(void) \
+	{ \
+		eeRecompileCodeConst2(rec##fn##_const, rec##fn##_); \
+	}
 
 // rd = rt op rs
 #define EERECOMPILE_CONSTCODESPECIAL(fn, mult) \
-void rec##fn(void) \
-{ \
-	eeRecompileCodeConstSPECIAL(rec##fn##_const, rec##fn##_, mult); \
-} \
+	void rec##fn(void) \
+	{ \
+		eeRecompileCodeConstSPECIAL(rec##fn##_const, rec##fn##_, mult); \
+	}
 
 // rd = rs op rt
 void eeRecompileCodeConst0(R5900FNPTR constcode, R5900FNPTR_INFO constscode, R5900FNPTR_INFO consttcode, R5900FNPTR_INFO noconstcode);
@@ -200,26 +209,26 @@ void eeRecompileCodeConst2(R5900FNPTR constcode, R5900FNPTR_INFO noconstcode);
 void eeRecompileCodeConstSPECIAL(R5900FNPTR constcode, R5900FNPTR_INFO multicode, int MULT);
 
 // XMM caching helpers
-#define XMMINFO_READLO	0x01
-#define XMMINFO_READHI	0x02
-#define XMMINFO_WRITELO	0x04
-#define XMMINFO_WRITEHI	0x08
-#define XMMINFO_WRITED	0x10
-#define XMMINFO_READD	0x20
-#define XMMINFO_READS	0x40
-#define XMMINFO_READT	0x80
-#define XMMINFO_READD_LO	0x100 // if set and XMMINFO_READD is set, reads only low 64 bits of D
-#define XMMINFO_READACC		0x200
-#define XMMINFO_WRITEACC	0x400
+#define XMMINFO_READLO   0x001
+#define XMMINFO_READHI   0x002
+#define XMMINFO_WRITELO  0x004
+#define XMMINFO_WRITEHI  0x008
+#define XMMINFO_WRITED   0x010
+#define XMMINFO_READD    0x020
+#define XMMINFO_READS    0x040
+#define XMMINFO_READT    0x080
+#define XMMINFO_READD_LO 0x100 // if set and XMMINFO_READD is set, reads only low 64 bits of D
+#define XMMINFO_READACC  0x200
+#define XMMINFO_WRITEACC 0x400
 
 #define FPURECOMPILE_CONSTCODE(fn, xmminfo) \
-void rec##fn(void) \
-{ \
-	if (CHECK_FPU_FULL) \
-		eeFPURecompileCode(DOUBLE::rec##fn##_xmm, R5900::Interpreter::OpcodeImpl::COP1::fn, xmminfo); \
-	else \
-		eeFPURecompileCode(rec##fn##_xmm, R5900::Interpreter::OpcodeImpl::COP1::fn, xmminfo); \
-}
+	void rec##fn(void) \
+	{ \
+		if (CHECK_FPU_FULL) \
+			eeFPURecompileCode(DOUBLE::rec##fn##_xmm, R5900::Interpreter::OpcodeImpl::COP1::fn, xmminfo); \
+		else \
+			eeFPURecompileCode(rec##fn##_xmm, R5900::Interpreter::OpcodeImpl::COP1::fn, xmminfo); \
+	}
 
 // rd = rs op rt (all regs need to be in xmm)
 int eeRecompileCodeXMM(int xmminfo);

@@ -24,8 +24,7 @@ using namespace x86Emitter;
 
 namespace R5900 {
 namespace Dynarec {
-namespace OpcodeImpl
-{
+namespace OpcodeImpl {
 
 /*********************************************************
 * Arithmetic with immediate operand                      *
@@ -36,42 +35,45 @@ namespace OpcodeImpl
 
 namespace Interp = R5900::Interpreter::OpcodeImpl;
 
-REC_FUNC_DEL(ADDI, _Rt_);
-REC_FUNC_DEL(ADDIU, _Rt_);
-REC_FUNC_DEL(DADDI, _Rt_);
+REC_FUNC_DEL(ADDI,   _Rt_);
+REC_FUNC_DEL(ADDIU,  _Rt_);
+REC_FUNC_DEL(DADDI,  _Rt_);
 REC_FUNC_DEL(DADDIU, _Rt_);
-REC_FUNC_DEL(ANDI, _Rt_);
-REC_FUNC_DEL(ORI, _Rt_);
-REC_FUNC_DEL(XORI, _Rt_);
+REC_FUNC_DEL(ANDI,   _Rt_);
+REC_FUNC_DEL(ORI,    _Rt_);
+REC_FUNC_DEL(XORI,   _Rt_);
 
-REC_FUNC_DEL(SLTI, _Rt_);
-REC_FUNC_DEL(SLTIU, _Rt_);
+REC_FUNC_DEL(SLTI,   _Rt_);
+REC_FUNC_DEL(SLTIU,  _Rt_);
 
 #else
 
 //// ADDI
-void recADDI_const( void )
+void recADDI_const(void)
 {
 	g_cpuConstRegs[_Rt_].SD[0] = (s64)(g_cpuConstRegs[_Rs_].SL[0] + (s32)_Imm_);
 }
 
 void recADDI_(int info)
 {
-	pxAssert( !(info&PROCESS_EE_XMM) );
+	pxAssert(!(info & PROCESS_EE_XMM));
 
-	if ( _Rt_ == _Rs_ ) {
+	if (_Rt_ == _Rs_)
+	{
 		// must perform the ADD unconditionally, to maintain flags status:
-		xADD(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], _Imm_);
-		_signExtendSFtoM( (uptr)&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]);
+		xADD(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], _Imm_);
+		_signExtendSFtoM((uptr)&cpuRegs.GPR.r[_Rt_].UL[1]);
 	}
-	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+	else
+	{
+		xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 
-		if ( _Imm_ != 0 ) xADD(eax, _Imm_ );
+		if (_Imm_ != 0)
+			xADD(eax, _Imm_);
 
-		xCDQ( );
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edx);
+		xCDQ();
+		xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
+		xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
 	}
 }
 
@@ -91,26 +93,28 @@ void recDADDI_const()
 
 void recDADDI_(int info)
 {
-	pxAssert( !(info&PROCESS_EE_XMM) );
+	pxAssert(!(info & PROCESS_EE_XMM));
 
-	if( _Rt_ == _Rs_ ) {
-		xADD(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], _Imm_);
-		xADC(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], _Imm_<0?0xffffffff:0);
+	if (_Rt_ == _Rs_)
+	{
+		xADD(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], _Imm_);
+		xADC(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], _Imm_ < 0 ? 0xffffffff : 0);
 	}
-	else {
-		xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
+	else
+	{
+		xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
 
-		xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
+		xMOV(edx, ptr[&cpuRegs.GPR.r[_Rs_].UL[1]]);
 
-		if ( _Imm_ != 0 )
+		if (_Imm_ != 0)
 		{
-			xADD(eax, _Imm_ );
-			xADC(edx, _Imm_ < 0?0xffffffff:0);
+			xADD(eax, _Imm_);
+			xADC(edx, _Imm_ < 0 ? 0xffffffff : 0);
 		}
 
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
+		xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
 
-		xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edx);
+		xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
 	}
 }
 
@@ -135,11 +139,11 @@ void recSLTIU_(int info)
 {
 	xMOV(eax, 1);
 
-	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], _Imm_ >= 0 ? 0 : 0xffffffff);
-	j8Ptr[0] = JB8( 0 );
-	j8Ptr[2] = JA8( 0 );
+	xCMP(ptr32[&cpuRegs.GPR.r[_Rs_].UL[1]], _Imm_ >= 0 ? 0 : 0xffffffff);
+	j8Ptr[0] = JB8(0);
+	j8Ptr[2] = JA8(0);
 
-	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], (s32)_Imm_ );
+	xCMP(ptr32[&cpuRegs.GPR.r[_Rs_].UL[0]], (s32)_Imm_);
 	j8Ptr[1] = JB8(0);
 
 	x86SetJ8(j8Ptr[2]);
@@ -148,8 +152,8 @@ void recSLTIU_(int info)
 	x86SetJ8(j8Ptr[0]);
 	x86SetJ8(j8Ptr[1]);
 
-	xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
-	xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], 0 );
+	xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
+	xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], 0);
 }
 
 EERECOMPILE_CODEX(eeRecompileCode1, SLTIU);
@@ -165,11 +169,11 @@ void recSLTI_(int info)
 	// test silent hill if modding
 	xMOV(eax, 1);
 
-	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ]], _Imm_ >= 0 ? 0 : 0xffffffff);
-	j8Ptr[0] = JL8( 0 );
-	j8Ptr[2] = JG8( 0 );
+	xCMP(ptr32[&cpuRegs.GPR.r[_Rs_].UL[1]], _Imm_ >= 0 ? 0 : 0xffffffff);
+	j8Ptr[0] = JL8(0);
+	j8Ptr[2] = JG8(0);
 
-	xCMP(ptr32[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ]], (s32)_Imm_ );
+	xCMP(ptr32[&cpuRegs.GPR.r[_Rs_].UL[0]], (s32)_Imm_);
 	j8Ptr[1] = JB8(0);
 
 	x86SetJ8(j8Ptr[2]);
@@ -178,8 +182,8 @@ void recSLTI_(int info)
 	x86SetJ8(j8Ptr[0]);
 	x86SetJ8(j8Ptr[1]);
 
-	xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
-	xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], 0 );
+	xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
+	xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], 0);
 }
 
 EERECOMPILE_CODEX(eeRecompileCode1, SLTI);
@@ -192,49 +196,57 @@ void recANDI_const()
 
 void recLogicalOpI(int info, int op)
 {
-	if ( _ImmU_ != 0 )
+	if (_ImmU_ != 0)
 	{
-		if( _Rt_ == _Rs_ ) {
-			switch(op) {
+		if (_Rt_ == _Rs_)
+		{
+			switch (op)
+			{
 				case 0: xAND(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], _ImmU_); break;
 				case 1: xOR(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], _ImmU_); break;
 				case 2: xXOR(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], _ImmU_); break;
 				default: pxAssert(0);
 			}
 		}
-		else {
-			xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-			if( op != 0 )
-				xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
+		else
+		{
+			xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+			if (op != 0)
+				xMOV(edx, ptr[&cpuRegs.GPR.r[_Rs_].UL[1]]);
 
-			switch(op) {
+			switch (op)
+			{
 				case 0: xAND(eax, _ImmU_); break;
 				case 1: xOR(eax, _ImmU_); break;
 				case 2: xXOR(eax, _ImmU_); break;
 				default: pxAssert(0);
 			}
 
-			if( op != 0 )
-				xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edx);
-			xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
+			if (op != 0)
+				xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
+			xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
 		}
 
-		if( op == 0 ) {
-			xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], 0 );
+		if (op == 0)
+		{
+			xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], 0);
 		}
 	}
 	else
 	{
-		if( op == 0 ) {
-			xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], 0 );
-			xMOV(ptr32[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], 0 );
+		if (op == 0)
+		{
+			xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], 0);
+			xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], 0);
 		}
-		else {
-			if( _Rt_ != _Rs_ ) {
-				xMOV(eax, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 0 ] ]);
-				xMOV(edx, ptr[&cpuRegs.GPR.r[ _Rs_ ].UL[ 1 ] ]);
-				xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 0 ]], eax);
-				xMOV(ptr[&cpuRegs.GPR.r[ _Rt_ ].UL[ 1 ]], edx);
+		else
+		{
+			if (_Rt_ != _Rs_)
+			{
+				xMOV(eax, ptr[&cpuRegs.GPR.r[_Rs_].UL[0]]);
+				xMOV(edx, ptr[&cpuRegs.GPR.r[_Rs_].UL[1]]);
+				xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
+				xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
 			}
 		}
 	}
@@ -275,4 +287,6 @@ EERECOMPILE_CODEX(eeRecompileCode1, XORI);
 
 #endif
 
-} } }
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900

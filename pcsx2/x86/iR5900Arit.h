@@ -23,8 +23,8 @@
 
 namespace R5900 {
 namespace Dynarec {
-namespace OpcodeImpl
-{
+namespace OpcodeImpl {
+
 	void recADD();
 	void recADDU();
 	void recDADD();
@@ -39,5 +39,8 @@ namespace OpcodeImpl
 	void recNOR();
 	void recSLT();
 	void recSLTU();
-} } }
+
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900
 #endif

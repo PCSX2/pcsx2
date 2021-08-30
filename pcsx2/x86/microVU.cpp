@@ -39,9 +39,9 @@ void mVUreserveCache(microVU& mVU)
 	mVU.cache_reserve = new RecompiledCodeReserve(pxsFmt("Micro VU%u Recompiler Cache", mVU.index), _16mb);
 	mVU.cache_reserve->SetProfilerName(pxsFmt("mVU%urec", mVU.index));
 
-	mVU.cache = mVU.index ?
-                    (u8*)mVU.cache_reserve->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::mVU1recOffset, mVU.cacheSize * _1mb) :
-                    (u8*)mVU.cache_reserve->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::mVU0recOffset, mVU.cacheSize * _1mb);
+	mVU.cache = mVU.index
+		? (u8*)mVU.cache_reserve->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::mVU1recOffset, mVU.cacheSize * _1mb)
+		: (u8*)mVU.cache_reserve->Reserve(GetVmMemory().MainMemory(), HostMemoryMap::mVU0recOffset, mVU.cacheSize * _1mb);
 
 	mVU.cache_reserve->ThrowIfNotOk();
 }
@@ -55,17 +55,17 @@ void mVUinit(microVU& mVU, uint vuIndex)
 
 	memzero(mVU.prog);
 
-	mVU.index = vuIndex;
-	mVU.cop2 = 0;
-	mVU.vuMemSize = (mVU.index ? 0x4000 : 0x1000);
+	mVU.index        =  vuIndex;
+	mVU.cop2         =  0;
+	mVU.vuMemSize    = (mVU.index ? 0x4000 : 0x1000);
 	mVU.microMemSize = (mVU.index ? 0x4000 : 0x1000);
-	mVU.progSize = (mVU.index ? 0x4000 : 0x1000) / 4;
-	mVU.progMemMask = mVU.progSize - 1;
-	mVU.cacheSize = vuIndex ? mVU1cacheReserve : mVU0cacheReserve;
-	mVU.cache = NULL;
-	mVU.dispCache = NULL;
-	mVU.startFunct = NULL;
-	mVU.exitFunct = NULL;
+	mVU.progSize     = (mVU.index ? 0x4000 : 0x1000) / 4;
+	mVU.progMemMask  =  mVU.progSize-1;
+	mVU.cacheSize    =  vuIndex ? mVU1cacheReserve : mVU0cacheReserve;
+	mVU.cache        = NULL;
+	mVU.dispCache    = NULL;
+	mVU.startFunct   = NULL;
+	mVU.exitFunct    = NULL;
 
 	mVUreserveCache(mVU);
 
@@ -110,17 +110,17 @@ void mVUreset(microVU& mVU, bool resetReserve)
 	mVU.profiler.Reset(mVU.index);
 
 	// Program Variables
-	mVU.prog.cleared = 1;
-	mVU.prog.isSame = -1;
-	mVU.prog.cur = NULL;
-	mVU.prog.total = 0;
-	mVU.prog.curFrame = 0;
+	mVU.prog.cleared  =  1;
+	mVU.prog.isSame   = -1;
+	mVU.prog.cur      = NULL;
+	mVU.prog.total    =  0;
+	mVU.prog.curFrame =  0;
 
 	// Setup Dynarec Cache Limits for Each Program
 	u8* z = mVU.cache;
 	mVU.prog.x86start = z;
-	mVU.prog.x86ptr = z;
-	mVU.prog.x86end = z + ((mVU.cacheSize - mVUcacheSafeZone) * _1mb);
+	mVU.prog.x86ptr   = z;
+	mVU.prog.x86end   = z + ((mVU.cacheSize - mVUcacheSafeZone) * _1mb);
 	//memset(mVU.prog.x86start, 0xcc, mVU.cacheSize*_1mb);
 
 	for (u32 i = 0; i < (mVU.progSize / 2); i++)
@@ -294,13 +294,9 @@ __fi bool mVUcmpProg(microVU& mVU, microProgram& prog, const bool cmpWholeProg)
 		{
 			auto cmpOffset = [&](void* x) { return (u8*)x + range.start; };
 			if ((range.start < 0) || (range.end < 0))
-			{
 				DevCon.Error("microVU%d: Negative Range![%d][%d]", mVU.index, range.start, range.end);
-			}
 			if (memcmp_mmx(cmpOffset(prog.data), cmpOffset(mVU.regs().Micro), (range.end - range.start)))
-			{
 				return false;
-			}
 		}
 	}
 	mVU.prog.cleared = 0;
@@ -314,10 +310,10 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState)
 {
 	microVU& mVU = mVUx;
 	microProgramQuick& quick = mVU.prog.quick[mVU.regs().start_pc / 8];
-	microProgramList* list = mVU.prog.prog[mVU.regs().start_pc / 8];
+	microProgramList*  list  = mVU.prog.prog [mVU.regs().start_pc / 8];
 
-	if (!quick.prog)
-	{ // If null, we need to search for new program
+	if (!quick.prog) // If null, we need to search for new program
+	{
 		std::deque<microProgram*>::iterator it(list->begin());
 		for (; it != list->end(); ++it)
 		{
@@ -326,7 +322,7 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState)
 			if (b)
 			{
 				quick.block = it[0]->block[startPC / 8];
-				quick.prog = it[0];
+				quick.prog  = it[0];
 				list->erase(it);
 				list->push_front(quick.prog);
 
@@ -342,11 +338,11 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState)
 
 		// If cleared and program not found, make a new program instance
 		mVU.prog.cleared = 0;
-		mVU.prog.isSame = 1;
-		mVU.prog.cur = mVUcreateProg(mVU, mVU.regs().start_pc / 8);
-		void* entryPoint = mVUblockFetch(mVU, startPC, pState);
-		quick.block = mVU.prog.cur->block[startPC / 8];
-		quick.prog = mVU.prog.cur;
+		mVU.prog.isSame  = 1;
+		mVU.prog.cur     = mVUcreateProg(mVU, mVU.regs().start_pc/8);
+		void* entryPoint = mVUblockFetch(mVU,  startPC, pState);
+		quick.block      = mVU.prog.cur->block[startPC/8];
+		quick.prog       = mVU.prog.cur;
 		list->push_front(mVU.prog.cur);
 		//mVUprintUniqueRatio(mVU);
 		return entryPoint;
@@ -371,16 +367,8 @@ _mVUt __fi void* mVUsearchProg(u32 startPC, uptr pState)
 //------------------------------------------------------------------
 // recMicroVU0 / recMicroVU1
 //------------------------------------------------------------------
-recMicroVU0::recMicroVU0()
-{
-	m_Idx = 0;
-	IsInterpreter = false;
-}
-recMicroVU1::recMicroVU1()
-{
-	m_Idx = 1;
-	IsInterpreter = false;
-}
+recMicroVU0::recMicroVU0() { m_Idx = 0; IsInterpreter = false; }
+recMicroVU1::recMicroVU1() { m_Idx = 1; IsInterpreter = false; }
 void recMicroVU0::Vsync() noexcept { mVUvsyncUpdate(microVU0); }
 void recMicroVU1::Vsync() noexcept { mVUvsyncUpdate(microVU1); }
 

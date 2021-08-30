@@ -29,23 +29,25 @@ extern u32 g_psxMaxRecMem;
 
 // R3000A instruction implementation
 #define REC_FUNC(f) \
-static void rpsx##f() { \
-	xMOV(ptr32[&psxRegs.code], (u32)psxRegs.code); \
-	_psxFlushCall(FLUSH_EVERYTHING); \
-	xFastCall((void*)(uptr)psx##f); \
-	PSX_DEL_CONST(_Rt_); \
-/*	branch = 2; */\
-}
+	static void rpsx##f() \
+	{ \
+		xMOV(ptr32[&psxRegs.code], (u32)psxRegs.code); \
+		_psxFlushCall(FLUSH_EVERYTHING); \
+		xFastCall((void*)(uptr)psx##f); \
+		PSX_DEL_CONST(_Rt_); \
+		/*	branch = 2; */ \
+	}
 
 // Same as above but with a different naming convension (to avoid various rename)
 #define REC_GTE_FUNC(f) \
-static void rgte##f() { \
-	xMOV(ptr32[&psxRegs.code], (u32)psxRegs.code); \
-	_psxFlushCall(FLUSH_EVERYTHING); \
-	xFastCall((void*)(uptr)gte##f); \
-	PSX_DEL_CONST(_Rt_); \
-/*	branch = 2; */\
-}
+	static void rgte##f() \
+	{ \
+		xMOV(ptr32[&psxRegs.code], (u32)psxRegs.code); \
+		_psxFlushCall(FLUSH_EVERYTHING); \
+		xFastCall((void*)(uptr)gte##f); \
+		PSX_DEL_CONST(_Rt_); \
+		/*	branch = 2; */ \
+	}
 
 extern void psxLWL();
 extern void psxLWR();
@@ -61,16 +63,22 @@ void rpsxADDIU_const()
 // adds a constant to sreg and puts into dreg
 void rpsxADDconst(int dreg, int sreg, u32 off, int info)
 {
-	if (sreg) {
-		if (sreg == dreg) {
+	if (sreg)
+	{
+		if (sreg == dreg)
+		{
 			xADD(ptr32[&psxRegs.GPR.r[dreg]], off);
-		} else {
+		}
+		else
+		{
 			xMOV(eax, ptr32[&psxRegs.GPR.r[sreg]]);
-			if (off) xADD(eax, off);
+			if (off)
+				xADD(eax, off);
 			xMOV(ptr32[&psxRegs.GPR.r[dreg]], eax);
 		}
 	}
-	else {
+	else
+	{
 		xMOV(ptr32[&psxRegs.GPR.r[dreg]], off);
 	}
 }
@@ -78,7 +86,8 @@ void rpsxADDconst(int dreg, int sreg, u32 off, int info)
 void rpsxADDIU_(int info)
 {
 	// Rt = Rs + Im
-	if (!_Rt_) return;
+	if (!_Rt_)
+		return;
 	rpsxADDconst(_Rt_, _Rs_, _Imm_, info);
 }
 
@@ -95,8 +104,8 @@ void rpsxSLTI_const()
 void rpsxSLTconst(int info, int dreg, int sreg, int imm)
 {
 	xXOR(eax, eax);
-    xCMP(ptr32[&psxRegs.GPR.r[sreg]], imm);
-    xSETL(al);
+	xCMP(ptr32[&psxRegs.GPR.r[sreg]], imm);
+	xSETL(al);
 	xMOV(ptr32[&psxRegs.GPR.r[dreg]], eax);
 }
 
@@ -114,7 +123,7 @@ void rpsxSLTUconst(int info, int dreg, int sreg, int imm)
 {
 	xXOR(eax, eax);
 	xCMP(ptr32[&psxRegs.GPR.r[sreg]], imm);
-    xSETB(al);
+	xSETB(al);
 	xMOV(ptr32[&psxRegs.GPR.r[dreg]], eax);
 }
 
@@ -130,15 +139,21 @@ void rpsxANDI_const()
 
 void rpsxANDconst(int info, int dreg, int sreg, u32 imm)
 {
-	if (imm) {
-		if (sreg == dreg) {
+	if (imm)
+	{
+		if (sreg == dreg)
+		{
 			xAND(ptr32[&psxRegs.GPR.r[dreg]], imm);
-		} else {
+		}
+		else
+		{
 			xMOV(eax, ptr32[&psxRegs.GPR.r[sreg]]);
 			xAND(eax, imm);
 			xMOV(ptr32[&psxRegs.GPR.r[dreg]], eax);
 		}
-	} else {
+	}
+	else
+	{
 		xMOV(ptr32[&psxRegs.GPR.r[dreg]], 0);
 	}
 }
@@ -155,18 +170,23 @@ void rpsxORI_const()
 
 void rpsxORconst(int info, int dreg, int sreg, u32 imm)
 {
-	if (imm) {
-		if (sreg == dreg) {
+	if (imm)
+	{
+		if (sreg == dreg)
+		{
 			xOR(ptr32[&psxRegs.GPR.r[dreg]], imm);
 		}
-		else {
+		else
+		{
 			xMOV(eax, ptr32[&psxRegs.GPR.r[sreg]]);
 			xOR(eax, imm);
 			xMOV(ptr32[&psxRegs.GPR.r[dreg]], eax);
 		}
 	}
-	else {
-		if( dreg != sreg ) {
+	else
+	{
+		if (dreg != sreg)
+		{
 			xMOV(ecx, ptr32[&psxRegs.GPR.r[sreg]]);
 			xMOV(ptr32[&psxRegs.GPR.r[dreg]], ecx);
 		}
@@ -184,29 +204,37 @@ void rpsxXORI_const()
 
 void rpsxXORconst(int info, int dreg, int sreg, u32 imm)
 {
-	if( imm == 0xffffffff ) {
-		if( dreg == sreg ) {
+	if (imm == 0xffffffff)
+	{
+		if (dreg == sreg)
+		{
 			xNOT(ptr32[&psxRegs.GPR.r[dreg]]);
 		}
-		else {
+		else
+		{
 			xMOV(ecx, ptr32[&psxRegs.GPR.r[sreg]]);
 			xNOT(ecx);
 			xMOV(ptr32[&psxRegs.GPR.r[dreg]], ecx);
 		}
 	}
-	else if (imm) {
+	else if (imm)
+	{
 
-		if (sreg == dreg) {
+		if (sreg == dreg)
+		{
 			xXOR(ptr32[&psxRegs.GPR.r[dreg]], imm);
 		}
-		else {
+		else
+		{
 			xMOV(eax, ptr32[&psxRegs.GPR.r[sreg]]);
 			xXOR(eax, imm);
 			xMOV(ptr32[&psxRegs.GPR.r[dreg]], eax);
 		}
 	}
-	else {
-		if( dreg != sreg ) {
+	else
+	{
+		if (dreg != sreg)
+		{
 			xMOV(ecx, ptr32[&psxRegs.GPR.r[sreg]]);
 			xMOV(ptr32[&psxRegs.GPR.r[dreg]], ecx);
 		}
@@ -219,7 +247,8 @@ PSXRECOMPILE_CONSTCODE1(XORI);
 
 void rpsxLUI()
 {
-	if(!_Rt_) return;
+	if (!_Rt_)
+		return;
 	_psxOnWriteReg(_Rt_);
 	_psxDeleteReg(_Rt_, 0);
 	PSX_SET_CONST(_Rt_);
@@ -240,14 +269,21 @@ void rpsxADDU_constt(int info)
 
 void rpsxADDU_(int info)
 {
-	if (_Rs_ && _Rt_) {
+	if (_Rs_ && _Rt_)
+	{
 		xMOV(eax, ptr32[&psxRegs.GPR.r[_Rs_]]);
 		xADD(eax, ptr32[&psxRegs.GPR.r[_Rt_]]);
-	} else if (_Rs_) {
+	}
+	else if (_Rs_)
+	{
 		xMOV(eax, ptr32[&psxRegs.GPR.r[_Rs_]]);
-	} else if (_Rt_) {
+	}
+	else if (_Rt_)
+	{
 		xMOV(eax, ptr32[&psxRegs.GPR.r[_Rt_]]);
-	} else {
+	}
+	else
+	{
 		xXOR(eax, eax);
 	}
 	xMOV(ptr32[&psxRegs.GPR.r[_Rd_]], eax);
@@ -275,13 +311,16 @@ void rpsxSUBU_constt(int info) { rpsxADDconst(_Rd_, _Rs_, -(int)g_psxConstRegs[_
 void rpsxSUBU_(int info)
 {
 	// Rd = Rs - Rt
-	if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
-	if( _Rd_ == _Rs_ ) {
+	if (_Rd_ == _Rs_)
+	{
 		xMOV(eax, ptr32[&psxRegs.GPR.r[_Rt_]]);
 		xSUB(ptr32[&psxRegs.GPR.r[_Rd_]], eax);
 	}
-	else {
+	else
+	{
 		xMOV(eax, ptr32[&psxRegs.GPR.r[_Rs_]]);
 		xSUB(eax, ptr32[&psxRegs.GPR.r[_Rt_]]);
 		xMOV(ptr32[&psxRegs.GPR.r[_Rd_]], eax);
@@ -294,33 +333,35 @@ void rpsxSUB() { rpsxSUBU(); }
 
 void rpsxLogicalOp(int info, int op)
 {
-	if( _Rd_ == _Rs_ || _Rd_ == _Rt_ ) {
+	if (_Rd_ == _Rs_ || _Rd_ == _Rt_)
+	{
 		int vreg = _Rd_ == _Rs_ ? _Rt_ : _Rs_;
 		xMOV(ecx, ptr32[&psxRegs.GPR.r[vreg]]);
 
-		switch(op) {
+		switch (op) {
 			case 0: xAND(ptr32[&psxRegs.GPR.r[_Rd_]], ecx); break;
-			case 1: xOR(ptr32[&psxRegs.GPR.r[_Rd_]], ecx); break;
+			case 1: xOR (ptr32[&psxRegs.GPR.r[_Rd_]], ecx); break;
 			case 2: xXOR(ptr32[&psxRegs.GPR.r[_Rd_]], ecx); break;
-			case 3: xOR(ptr32[&psxRegs.GPR.r[_Rd_]], ecx); break;
+			case 3: xOR (ptr32[&psxRegs.GPR.r[_Rd_]], ecx); break;
 			default: pxAssert(0);
 		}
 
-		if( op == 3 )
+		if (op == 3)
 			xNOT(ptr32[&psxRegs.GPR.r[_Rd_]]);
 	}
-	else {
+	else
+	{
 		xMOV(ecx, ptr32[&psxRegs.GPR.r[_Rs_]]);
 
-		switch(op) {
+		switch (op) {
 			case 0: xAND(ecx, ptr32[&psxRegs.GPR.r[_Rt_]]); break;
-			case 1: xOR(ecx, ptr32[&psxRegs.GPR.r[_Rt_]]); break;
+			case 1: xOR (ecx, ptr32[&psxRegs.GPR.r[_Rt_]]); break;
 			case 2: xXOR(ecx, ptr32[&psxRegs.GPR.r[_Rt_]]); break;
-			case 3: xOR(ecx, ptr32[&psxRegs.GPR.r[_Rt_]]); break;
+			case 3: xOR (ecx, ptr32[&psxRegs.GPR.r[_Rt_]]); break;
 			default: pxAssert(0);
 		}
 
-		if( op == 3 )
+		if (op == 3)
 			xNOT(ecx);
 		xMOV(ptr32[&psxRegs.GPR.r[_Rd_]], ecx);
 	}
@@ -368,23 +409,29 @@ void rpsxNOR_const()
 
 void rpsxNORconst(int info, int dreg, int sreg, u32 imm)
 {
-	if( imm ) {
-		if( dreg == sreg ) {
+	if (imm)
+	{
+		if (dreg == sreg)
+		{
 			xOR(ptr32[&psxRegs.GPR.r[dreg]], imm);
 			xNOT(ptr32[&psxRegs.GPR.r[dreg]]);
 		}
-		else {
+		else
+		{
 			xMOV(ecx, ptr32[&psxRegs.GPR.r[sreg]]);
 			xOR(ecx, imm);
 			xNOT(ecx);
 			xMOV(ptr32[&psxRegs.GPR.r[dreg]], ecx);
 		}
 	}
-	else {
-		if( dreg == sreg ) {
+	else
+	{
+		if (dreg == sreg)
+		{
 			xNOT(ptr32[&psxRegs.GPR.r[dreg]]);
 		}
-		else {
+		else
+		{
 			xMOV(ecx, ptr32[&psxRegs.GPR.r[sreg]]);
 			xNOT(ecx);
 			xMOV(ptr32[&psxRegs.GPR.r[dreg]], ecx);
@@ -442,7 +489,8 @@ void rpsxSLTU_constt(int info) { rpsxSLTUconst(info, _Rd_, _Rs_, g_psxConstRegs[
 void rpsxSLTU_(int info)
 {
 	// Rd = Rs < Rt (unsigned)
-	if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
 	xMOV(eax, ptr32[&psxRegs.GPR.r[_Rs_]]);
 	xCMP(eax, ptr32[&psxRegs.GPR.r[_Rt_]]);
@@ -466,8 +514,10 @@ void rpsxMULTsuperconst(int info, int sreg, int imm, int sign)
 {
 	// Lo/Hi = Rs * Rt (signed)
 	xMOV(eax, imm);
-	if( sign ) xMUL(ptr32[&psxRegs.GPR.r[sreg]]);
-	else xUMUL(ptr32[&psxRegs.GPR.r[sreg]]);
+	if (sign)
+		xMUL(ptr32[&psxRegs.GPR.r[sreg]]);
+	else
+		xUMUL(ptr32[&psxRegs.GPR.r[sreg]]);
 	xMOV(ptr32[&psxRegs.GPR.n.lo], eax);
 	xMOV(ptr32[&psxRegs.GPR.n.hi], edx);
 }
@@ -476,8 +526,10 @@ void rpsxMULTsuper(int info, int sign)
 {
 	// Lo/Hi = Rs * Rt (signed)
 	xMOV(eax, ptr32[&psxRegs.GPR.r[_Rs_]]);
-	if( sign ) xMUL(ptr32[&psxRegs.GPR.r[_Rt_]]);
-	else xUMUL(ptr32[&psxRegs.GPR.r[_Rt_]]);
+	if (sign)
+		xMUL(ptr32[&psxRegs.GPR.r[_Rt_]]);
+	else
+		xUMUL(ptr32[&psxRegs.GPR.r[_Rt_]]);
 	xMOV(ptr32[&psxRegs.GPR.n.lo], eax);
 	xMOV(ptr32[&psxRegs.GPR.n.hi], edx);
 }
@@ -515,22 +567,29 @@ void rpsxDIV_const()
 	 * 	Quotient: 0x80000000 (-2147483648), and remainder: 0x00000000 (0)
 	 */
 	// Of course x86 cpu does overflow !
-	if (g_psxConstRegs[_Rs_] == 0x80000000u && g_psxConstRegs[_Rt_] == 0xFFFFFFFFu) {
+	if (g_psxConstRegs[_Rs_] == 0x80000000u && g_psxConstRegs[_Rt_] == 0xFFFFFFFFu)
+	{
 		xMOV(ptr32[&psxRegs.GPR.n.hi], 0);
 		xMOV(ptr32[&psxRegs.GPR.n.lo], 0x80000000);
 		return;
 	}
 
-	if (g_psxConstRegs[_Rt_] != 0) {
+	if (g_psxConstRegs[_Rt_] != 0)
+	{
 		lo = *(int*)&g_psxConstRegs[_Rs_] / *(int*)&g_psxConstRegs[_Rt_];
 		hi = *(int*)&g_psxConstRegs[_Rs_] % *(int*)&g_psxConstRegs[_Rt_];
 		xMOV(ptr32[&psxRegs.GPR.n.hi], hi);
 		xMOV(ptr32[&psxRegs.GPR.n.lo], lo);
-	} else {
+	}
+	else
+	{
 		xMOV(ptr32[&psxRegs.GPR.n.hi], g_psxConstRegs[_Rs_]);
-		if (g_psxConstRegs[_Rs_] & 0x80000000u) {
+		if (g_psxConstRegs[_Rs_] & 0x80000000u)
+		{
 			xMOV(ptr32[&psxRegs.GPR.n.lo], 0x1);
-		} else {
+		}
+		else
+		{
 			xMOV(ptr32[&psxRegs.GPR.n.lo], 0xFFFFFFFFu);
 		}
 	}
@@ -539,23 +598,23 @@ void rpsxDIV_const()
 void rpsxDIVsuper(int info, int sign, int process = 0)
 {
 	// Lo/Hi = Rs / Rt (signed)
-	if( process & PROCESS_CONSTT )
+	if (process & PROCESS_CONSTT)
 		xMOV(ecx, g_psxConstRegs[_Rt_]);
 	else
 		xMOV(ecx, ptr32[&psxRegs.GPR.r[_Rt_]]);
 
-	if( process & PROCESS_CONSTS )
+	if (process & PROCESS_CONSTS)
 		xMOV(eax, g_psxConstRegs[_Rs_]);
 	else
 		xMOV(eax, ptr32[&psxRegs.GPR.r[_Rs_]]);
 
-	u8 *end1;
-	if (sign)  //test for overflow (x86 will just throw an exception)
+	u8* end1;
+	if (sign) //test for overflow (x86 will just throw an exception)
 	{
-		xCMP(eax, 0x80000000 );
-		u8 *cont1 = JNE8(0);
-		xCMP(ecx, 0xffffffff );
-		u8 *cont2 = JNE8(0);
+		xCMP(eax, 0x80000000);
+		u8* cont1 = JNE8(0);
+		xCMP(ecx, 0xffffffff);
+		u8* cont2 = JNE8(0);
 		//overflow case:
 		xXOR(edx, edx); //EAX remains 0x80000000
 		end1 = JMP8(0);
@@ -564,34 +623,37 @@ void rpsxDIVsuper(int info, int sign, int process = 0)
 		x86SetJ8(cont2);
 	}
 
-	xCMP(ecx, 0 );
-	u8 *cont3 = JNE8(0);
+	xCMP(ecx, 0);
+	u8* cont3 = JNE8(0);
 
 	//divide by zero
 	xMOV(edx, eax);
 	if (sign) //set EAX to (EAX < 0)?1:-1
 	{
-		xSAR(eax, 31 ); //(EAX < 0)?-1:0
-		xSHL(eax, 1 ); //(EAX < 0)?-2:0
+		xSAR(eax, 31); //(EAX < 0)?-1:0
+		xSHL(eax, 1); //(EAX < 0)?-2:0
 		xNOT(eax); //(EAX < 0)?1:-1
 	}
 	else
-		xMOV(eax, 0xffffffff );
-	u8 *end2 = JMP8(0);
+		xMOV(eax, 0xffffffff);
+	u8* end2 = JMP8(0);
 
 	// Normal division
 	x86SetJ8(cont3);
-	if( sign ) {
+	if (sign)
+	{
 		xCDQ();
 		xDIV(ecx);
 	}
-	else {
+	else
+	{
 		xXOR(edx, edx);
 		xUDIV(ecx);
 	}
 
-	if (sign) x86SetJ8( end1 );
-	x86SetJ8( end2 );
+	if (sign)
+		x86SetJ8(end1);
+	x86SetJ8(end2);
 
 	xMOV(ptr32[&psxRegs.GPR.n.lo], eax);
 	xMOV(ptr32[&psxRegs.GPR.n.hi], edx);
@@ -608,12 +670,15 @@ void rpsxDIVU_const()
 {
 	u32 lo, hi;
 
-	if (g_psxConstRegs[_Rt_] != 0) {
+	if (g_psxConstRegs[_Rt_] != 0)
+	{
 		lo = g_psxConstRegs[_Rs_] / g_psxConstRegs[_Rt_];
 		hi = g_psxConstRegs[_Rs_] % g_psxConstRegs[_Rt_];
 		xMOV(ptr32[&psxRegs.GPR.n.hi], hi);
 		xMOV(ptr32[&psxRegs.GPR.n.lo], lo);
-	} else {
+	}
+	else
+	{
 		xMOV(ptr32[&psxRegs.GPR.n.hi], g_psxConstRegs[_Rs_]);
 		xMOV(ptr32[&psxRegs.GPR.n.lo], 0xFFFFFFFFu);
 	}
@@ -640,9 +705,11 @@ static void rpsxLB()
 	_psxDeleteReg(_Rt_, 0);
 
 	xMOV(ecx, ptr32[&psxRegs.GPR.r[_Rs_]]);
-	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall((void*)iopMemRead8, ecx );		// returns value in EAX
-	if (_Rt_) {
+	if (_Imm_)
+		xADD(ecx, _Imm_);
+	xFastCall((void*)iopMemRead8, ecx); // returns value in EAX
+	if (_Rt_)
+	{
 		xMOVSX(eax, al);
 		xMOV(ptr32[&psxRegs.GPR.r[_Rt_]], eax);
 	}
@@ -656,9 +723,11 @@ static void rpsxLBU()
 	_psxDeleteReg(_Rt_, 0);
 
 	xMOV(ecx, ptr32[&psxRegs.GPR.r[_Rs_]]);
-	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall((void*)iopMemRead8, ecx );		// returns value in EAX
-	if (_Rt_) {
+	if (_Imm_)
+		xADD(ecx, _Imm_);
+	xFastCall((void*)iopMemRead8, ecx); // returns value in EAX
+	if (_Rt_)
+	{
 		xMOVZX(eax, al);
 		xMOV(ptr32[&psxRegs.GPR.r[_Rt_]], eax);
 	}
@@ -672,9 +741,11 @@ static void rpsxLH()
 	_psxDeleteReg(_Rt_, 0);
 
 	xMOV(ecx, ptr32[&psxRegs.GPR.r[_Rs_]]);
-	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall((void*)iopMemRead16, ecx );		// returns value in EAX
-	if (_Rt_) {
+	if (_Imm_)
+		xADD(ecx, _Imm_);
+	xFastCall((void*)iopMemRead16, ecx); // returns value in EAX
+	if (_Rt_)
+	{
 		xMOVSX(eax, ax);
 		xMOV(ptr32[&psxRegs.GPR.r[_Rt_]], eax);
 	}
@@ -688,9 +759,11 @@ static void rpsxLHU()
 	_psxDeleteReg(_Rt_, 0);
 
 	xMOV(ecx, ptr32[&psxRegs.GPR.r[_Rs_]]);
-	if (_Imm_) xADD(ecx, _Imm_);
-	xFastCall((void*)iopMemRead16, ecx );		// returns value in EAX
-	if (_Rt_) {
+	if (_Imm_)
+		xADD(ecx, _Imm_);
+	xFastCall((void*)iopMemRead16, ecx); // returns value in EAX
+	if (_Rt_)
+	{
 		xMOVZX(eax, ax);
 		xMOV(ptr32[&psxRegs.GPR.r[_Rt_]], eax);
 	}
@@ -705,13 +778,15 @@ static void rpsxLW()
 
 	_psxFlushCall(FLUSH_EVERYTHING);
 	xMOV(ecx, ptr32[&psxRegs.GPR.r[_Rs_]]);
-	if (_Imm_) xADD(ecx, _Imm_);
+	if (_Imm_)
+		xADD(ecx, _Imm_);
 
 	xTEST(ecx, 0x10000000);
 	j8Ptr[0] = JZ8(0);
 
-	xFastCall((void*)iopMemRead32, ecx );		// returns value in EAX
-	if (_Rt_) {
+	xFastCall((void*)iopMemRead32, ecx); // returns value in EAX
+	if (_Rt_)
+	{
 		xMOV(ptr32[&psxRegs.GPR.r[_Rt_]], eax);
 	}
 	j8Ptr[1] = JMP8(0);
@@ -721,7 +796,8 @@ static void rpsxLW()
 	xAND(ecx, 0x1fffff);
 
 	xMOV(ecx, ptr32[xComplexAddress(rax, iopMem->Main, rcx)]);
-	if (_Rt_) {
+	if (_Rt_)
+	{
 		xMOV(ptr32[&psxRegs.GPR.r[_Rt_]], ecx);
 	}
 
@@ -735,9 +811,10 @@ static void rpsxSB()
 	_psxDeleteReg(_Rt_, 1);
 
 	xMOV(arg1regd, ptr32[&psxRegs.GPR.r[_Rs_]]);
-	if (_Imm_) xADD(arg1regd, _Imm_);
-	xMOV( arg2regd, ptr32[&psxRegs.GPR.r[_Rt_]] );
-	xFastCall((void*)iopMemWrite8, arg1regd, arg2regd );
+	if (_Imm_)
+		xADD(arg1regd, _Imm_);
+	xMOV(arg2regd, ptr32[&psxRegs.GPR.r[_Rt_]]);
+	xFastCall((void*)iopMemWrite8, arg1regd, arg2regd);
 }
 
 static void rpsxSH()
@@ -746,9 +823,10 @@ static void rpsxSH()
 	_psxDeleteReg(_Rt_, 1);
 
 	xMOV(arg1regd, ptr32[&psxRegs.GPR.r[_Rs_]]);
-	if (_Imm_) xADD(arg1regd, _Imm_);
-	xMOV( arg2regd, ptr32[&psxRegs.GPR.r[_Rt_]] );
-	xFastCall((void*)iopMemWrite16, arg1regd, arg2regd );
+	if (_Imm_)
+		xADD(arg1regd, _Imm_);
+	xMOV(arg2regd, ptr32[&psxRegs.GPR.r[_Rt_]]);
+	xFastCall((void*)iopMemWrite16, arg1regd, arg2regd);
 }
 
 static void rpsxSW()
@@ -757,9 +835,10 @@ static void rpsxSW()
 	_psxDeleteReg(_Rt_, 1);
 
 	xMOV(arg1regd, ptr32[&psxRegs.GPR.r[_Rs_]]);
-	if (_Imm_) xADD(arg1regd, _Imm_);
-	xMOV( arg2regd, ptr32[&psxRegs.GPR.r[_Rt_]] );
-	xFastCall((void*)iopMemWrite32, arg1regd, arg2regd );
+	if (_Imm_)
+		xADD(arg1regd, _Imm_);
+	xMOV(arg2regd, ptr32[&psxRegs.GPR.r[_Rt_]]);
+	xFastCall((void*)iopMemWrite32, arg1regd, arg2regd);
 }
 
 //// SLL
@@ -772,17 +851,22 @@ void rpsxSLL_const()
 void rpsxShiftConst(int info, int rdreg, int rtreg, int imm, int shifttype)
 {
 	imm &= 0x1f;
-	if (imm) {
-		if( rdreg == rtreg ) {
-			switch(shifttype) {
+	if (imm)
+	{
+		if (rdreg == rtreg)
+		{
+			switch (shifttype)
+			{
 				case 0: xSHL(ptr32[&psxRegs.GPR.r[rdreg]], imm); break;
 				case 1: xSHR(ptr32[&psxRegs.GPR.r[rdreg]], imm); break;
 				case 2: xSAR(ptr32[&psxRegs.GPR.r[rdreg]], imm); break;
 			}
 		}
-		else {
+		else
+		{
 			xMOV(eax, ptr32[&psxRegs.GPR.r[rtreg]]);
-			switch(shifttype) {
+			switch (shifttype)
+			{
 				case 0: xSHL(eax, imm); break;
 				case 1: xSHR(eax, imm); break;
 				case 2: xSAR(eax, imm); break;
@@ -790,8 +874,10 @@ void rpsxShiftConst(int info, int rdreg, int rtreg, int imm, int shifttype)
 			xMOV(ptr32[&psxRegs.GPR.r[rdreg]], eax);
 		}
 	}
-	else {
-		if( rdreg != rtreg ) {
+	else
+	{
+		if (rdreg != rtreg)
+		{
 			xMOV(eax, ptr32[&psxRegs.GPR.r[rtreg]]);
 			xMOV(ptr32[&psxRegs.GPR.r[rdreg]], eax);
 		}
@@ -822,7 +908,7 @@ PSXRECOMPILE_CONSTCODE2(SRA);
 //// SLLV
 void rpsxSLLV_const()
 {
-	g_psxConstRegs[_Rd_] = g_psxConstRegs[_Rt_] << (g_psxConstRegs[_Rs_]&0x1f);
+	g_psxConstRegs[_Rd_] = g_psxConstRegs[_Rt_] << (g_psxConstRegs[_Rs_] & 0x1f);
 }
 
 void rpsxShiftVconsts(int info, int shifttype)
@@ -834,7 +920,8 @@ void rpsxShiftVconstt(int info, int shifttype)
 {
 	xMOV(eax, g_psxConstRegs[_Rt_]);
 	xMOV(ecx, ptr32[&psxRegs.GPR.r[_Rs_]]);
-	switch(shifttype) {
+	switch (shifttype)
+	{
 		case 0: xSHL(eax, cl); break;
 		case 1: xSHR(eax, cl); break;
 		case 2: xSAR(eax, cl); break;
@@ -857,7 +944,7 @@ PSXRECOMPILE_CONSTCODE0(SLLV);
 //// SRLV
 void rpsxSRLV_const()
 {
-	g_psxConstRegs[_Rd_] = g_psxConstRegs[_Rt_] >> (g_psxConstRegs[_Rs_]&0x1f);
+	g_psxConstRegs[_Rd_] = g_psxConstRegs[_Rt_] >> (g_psxConstRegs[_Rs_] & 0x1f);
 }
 
 void rpsxSRLV_consts(int info) { rpsxShiftVconsts(info, 1); }
@@ -875,7 +962,7 @@ PSXRECOMPILE_CONSTCODE0(SRLV);
 //// SRAV
 void rpsxSRAV_const()
 {
-	g_psxConstRegs[_Rd_] = *(int*)&g_psxConstRegs[_Rt_] >> (g_psxConstRegs[_Rs_]&0x1f);
+	g_psxConstRegs[_Rd_] = *(int*)&g_psxConstRegs[_Rt_] >> (g_psxConstRegs[_Rs_] & 0x1f);
 }
 
 void rpsxSRAV_consts(int info) { rpsxShiftVconsts(info, 2); }
@@ -895,7 +982,8 @@ extern void rpsxBREAK();
 
 void rpsxMFHI()
 {
-	if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
 	_psxOnWriteReg(_Rd_);
 	_psxDeleteReg(_Rd_, 0);
@@ -905,10 +993,12 @@ void rpsxMFHI()
 
 void rpsxMTHI()
 {
-	if( PSX_IS_CONST1(_Rs_) ) {
+	if (PSX_IS_CONST1(_Rs_))
+	{
 		xMOV(ptr32[&psxRegs.GPR.n.hi], g_psxConstRegs[_Rs_]);
 	}
-	else {
+	else
+	{
 		_psxDeleteReg(_Rs_, 1);
 		xMOV(eax, ptr32[&psxRegs.GPR.r[_Rs_]]);
 		xMOV(ptr32[&psxRegs.GPR.n.hi], eax);
@@ -917,7 +1007,8 @@ void rpsxMTHI()
 
 void rpsxMFLO()
 {
-	if (!_Rd_) return;
+	if (!_Rd_)
+		return;
 
 	_psxOnWriteReg(_Rd_);
 	_psxDeleteReg(_Rd_, 0);
@@ -927,10 +1018,12 @@ void rpsxMFLO()
 
 void rpsxMTLO()
 {
-	if( PSX_IS_CONST1(_Rs_) ) {
+	if (PSX_IS_CONST1(_Rs_))
+	{
 		xMOV(ptr32[&psxRegs.GPR.n.lo], g_psxConstRegs[_Rs_]);
 	}
-	else {
+	else
+	{
 		_psxDeleteReg(_Rs_, 1);
 		xMOV(eax, ptr32[&psxRegs.GPR.r[_Rs_]]);
 		xMOV(ptr32[&psxRegs.GPR.n.lo], eax);
@@ -947,7 +1040,7 @@ void rpsxJ()
 
 void rpsxJAL()
 {
-	u32 newpc = (_InstrucTarget_ << 2) + ( psxpc & 0xf0000000 );
+	u32 newpc = (_InstrucTarget_ << 2) + (psxpc & 0xf0000000);
 	_psxDeleteReg(31, 0);
 	PSX_SET_CONST(31);
 	g_psxConstRegs[31] = psxpc + 4;
@@ -967,7 +1060,7 @@ void rpsxJALR()
 	_allocX86reg(calleeSavedReg2d, X86TYPE_PCWRITEBACK, 0, MODE_WRITE);
 	_psxMoveGPRtoR(calleeSavedReg2d, _Rs_);
 
-	if ( _Rd_ )
+	if (_Rd_)
 	{
 		_psxDeleteReg(_Rd_, 0);
 		PSX_SET_CONST(_Rd_);
@@ -976,27 +1069,28 @@ void rpsxJALR()
 
 	psxRecompileNextInstruction(1);
 
-	if( x86regs[calleeSavedReg2d.GetId()].inuse ) {
-		pxAssert( x86regs[calleeSavedReg2d.GetId()].type == X86TYPE_PCWRITEBACK );
+	if (x86regs[calleeSavedReg2d.GetId()].inuse)
+	{
+		pxAssert(x86regs[calleeSavedReg2d.GetId()].type == X86TYPE_PCWRITEBACK);
 		xMOV(ptr32[&psxRegs.pc], calleeSavedReg2d);
 		x86regs[calleeSavedReg2d.GetId()].inuse = 0;
-		#ifdef PCSX2_DEBUG
-		xOR( calleeSavedReg2d, calleeSavedReg2d );
-		#endif
-
+#ifdef PCSX2_DEBUG
+		xOR(calleeSavedReg2d, calleeSavedReg2d);
+#endif
 	}
-	else {
+	else
+	{
 		xMOV(eax, ptr32[&g_recWriteback]);
 		xMOV(ptr32[&psxRegs.pc], eax);
-		#ifdef PCSX2_DEBUG
-		xOR( eax, eax );
-		#endif
+#ifdef PCSX2_DEBUG
+		xOR(eax, eax);
+#endif
 	}
-	#ifdef PCSX2_DEBUG
+#ifdef PCSX2_DEBUG
 	xForwardJNZ8 skipAssert;
-	xWrite8( 0xcc );
+	xWrite8(0xcc);
 	skipAssert.SetTarget();
-	#endif
+#endif
 
 	psxSetBranchReg(0xffffffff);
 }
@@ -1006,18 +1100,21 @@ static u32* s_pbranchjmp;
 
 void rpsxSetBranchEQ(int info, int process)
 {
-	if( process & PROCESS_CONSTS ) {
-		xCMP(ptr32[&psxRegs.GPR.r[ _Rt_ ]], g_psxConstRegs[_Rs_] );
-		s_pbranchjmp = JNE32( 0 );
+	if (process & PROCESS_CONSTS)
+	{
+		xCMP(ptr32[&psxRegs.GPR.r[_Rt_]], g_psxConstRegs[_Rs_]);
+		s_pbranchjmp = JNE32(0);
 	}
-	else if( process & PROCESS_CONSTT ) {
-		xCMP(ptr32[&psxRegs.GPR.r[ _Rs_ ]], g_psxConstRegs[_Rt_] );
-		s_pbranchjmp = JNE32( 0 );
+	else if (process & PROCESS_CONSTT)
+	{
+		xCMP(ptr32[&psxRegs.GPR.r[_Rs_]], g_psxConstRegs[_Rt_]);
+		s_pbranchjmp = JNE32(0);
 	}
-	else {
-		xMOV(eax, ptr32[&psxRegs.GPR.r[ _Rs_ ] ]);
-		xCMP(eax, ptr32[&psxRegs.GPR.r[ _Rt_ ] ]);
-		s_pbranchjmp = JNE32( 0 );
+	else
+	{
+		xMOV(eax, ptr32[&psxRegs.GPR.r[_Rs_]]);
+		xCMP(eax, ptr32[&psxRegs.GPR.r[_Rt_]]);
+		s_pbranchjmp = JNE32(0);
 	}
 }
 
@@ -1025,23 +1122,23 @@ void rpsxBEQ_const()
 {
 	u32 branchTo;
 
-	if( g_psxConstRegs[_Rs_] == g_psxConstRegs[_Rt_] )
+	if (g_psxConstRegs[_Rs_] == g_psxConstRegs[_Rt_])
 		branchTo = ((s32)_Imm_ * 4) + psxpc;
 	else
-		branchTo = psxpc+4;
+		branchTo = psxpc + 4;
 
 	psxRecompileNextInstruction(1);
-	psxSetBranchImm( branchTo );
+	psxSetBranchImm(branchTo);
 }
 
 void rpsxBEQ_process(int info, int process)
 {
 	u32 branchTo = ((s32)_Imm_ * 4) + psxpc;
 
-	if ( _Rs_ == _Rt_ )
+	if (_Rs_ == _Rt_)
 	{
 		psxRecompileNextInstruction(1);
-		psxSetBranchImm( branchTo );
+		psxSetBranchImm(branchTo);
 	}
 	else
 	{
@@ -1053,7 +1150,7 @@ void rpsxBEQ_process(int info, int process)
 		psxRecompileNextInstruction(1);
 		psxSetBranchImm(branchTo);
 
-		x86SetJ32A( s_pbranchjmp );
+		x86SetJ32A(s_pbranchjmp);
 
 		// recopy the next inst
 		psxpc -= 4;
@@ -1074,20 +1171,20 @@ void rpsxBNE_const()
 {
 	u32 branchTo;
 
-	if( g_psxConstRegs[_Rs_] != g_psxConstRegs[_Rt_] )
+	if (g_psxConstRegs[_Rs_] != g_psxConstRegs[_Rt_])
 		branchTo = ((s32)_Imm_ * 4) + psxpc;
 	else
-		branchTo = psxpc+4;
+		branchTo = psxpc + 4;
 
 	psxRecompileNextInstruction(1);
-	psxSetBranchImm( branchTo );
+	psxSetBranchImm(branchTo);
 }
 
 void rpsxBNE_process(int info, int process)
 {
 	u32 branchTo = ((s32)_Imm_ * 4) + psxpc;
 
-	if ( _Rs_ == _Rt_ )
+	if (_Rs_ == _Rt_)
 	{
 		psxRecompileNextInstruction(1);
 		psxSetBranchImm(psxpc);
@@ -1101,7 +1198,7 @@ void rpsxBNE_process(int info, int process)
 	psxRecompileNextInstruction(1);
 	psxSetBranchImm(psxpc);
 
-	x86SetJ32A( s_pbranchjmp );
+	x86SetJ32A(s_pbranchjmp);
 
 	// recopy the next inst
 	psxpc -= 4;
@@ -1124,12 +1221,13 @@ void rpsxBLTZ()
 
 	_psxFlushAllUnused();
 
-	if( PSX_IS_CONST1(_Rs_) ) {
-		if( (int)g_psxConstRegs[_Rs_] >= 0 )
-			branchTo = psxpc+4;
+	if (PSX_IS_CONST1(_Rs_))
+	{
+		if ((int)g_psxConstRegs[_Rs_] >= 0)
+			branchTo = psxpc + 4;
 
 		psxRecompileNextInstruction(1);
-		psxSetBranchImm( branchTo );
+		psxSetBranchImm(branchTo);
 		return;
 	}
 
@@ -1141,7 +1239,7 @@ void rpsxBLTZ()
 
 	psxSetBranchImm(psxpc);
 
-	x86SetJ32A( pjmp );
+	x86SetJ32A(pjmp);
 
 	// recopy the next inst
 	psxpc -= 4;
@@ -1158,12 +1256,13 @@ void rpsxBGEZ()
 
 	_psxFlushAllUnused();
 
-	if( PSX_IS_CONST1(_Rs_) ) {
-		if ( (int)g_psxConstRegs[_Rs_] < 0 )
-			branchTo = psxpc+4;
+	if (PSX_IS_CONST1(_Rs_))
+	{
+		if ((int)g_psxConstRegs[_Rs_] < 0)
+			branchTo = psxpc + 4;
 
 		psxRecompileNextInstruction(1);
-		psxSetBranchImm( branchTo );
+		psxSetBranchImm(branchTo);
 		return;
 	}
 
@@ -1175,7 +1274,7 @@ void rpsxBGEZ()
 
 	psxSetBranchImm(psxpc);
 
-	x86SetJ32A( pjmp );
+	x86SetJ32A(pjmp);
 
 	// recopy the next inst
 	psxpc -= 4;
@@ -1198,12 +1297,13 @@ void rpsxBLTZAL()
 	PSX_SET_CONST(31);
 	g_psxConstRegs[31] = psxpc + 4;
 
-	if( PSX_IS_CONST1(_Rs_) ) {
-		if( (int)g_psxConstRegs[_Rs_] >= 0 )
-			branchTo = psxpc+4;
+	if (PSX_IS_CONST1(_Rs_))
+	{
+		if ((int)g_psxConstRegs[_Rs_] >= 0)
+			branchTo = psxpc + 4;
 
 		psxRecompileNextInstruction(1);
-		psxSetBranchImm( branchTo );
+		psxSetBranchImm(branchTo);
 		return;
 	}
 
@@ -1216,7 +1316,7 @@ void rpsxBLTZAL()
 
 	psxSetBranchImm(psxpc);
 
-	x86SetJ32A( pjmp );
+	x86SetJ32A(pjmp);
 
 	// recopy the next inst
 	psxpc -= 4;
@@ -1238,12 +1338,13 @@ void rpsxBGEZAL()
 	PSX_SET_CONST(31);
 	g_psxConstRegs[31] = psxpc + 4;
 
-	if( PSX_IS_CONST1(_Rs_) ) {
-		if( (int)g_psxConstRegs[_Rs_] < 0 )
-			branchTo = psxpc+4;
+	if (PSX_IS_CONST1(_Rs_))
+	{
+		if ((int)g_psxConstRegs[_Rs_] < 0)
+			branchTo = psxpc + 4;
 
 		psxRecompileNextInstruction(1);
-		psxSetBranchImm( branchTo );
+		psxSetBranchImm(branchTo);
 		return;
 	}
 
@@ -1255,7 +1356,7 @@ void rpsxBGEZAL()
 
 	psxSetBranchImm(psxpc);
 
-	x86SetJ32A( pjmp );
+	x86SetJ32A(pjmp);
 
 	// recopy the next inst
 	psxpc -= 4;
@@ -1273,12 +1374,13 @@ void rpsxBLEZ()
 
 	_psxFlushAllUnused();
 
-	if( PSX_IS_CONST1(_Rs_) ) {
-		if( (int)g_psxConstRegs[_Rs_] > 0 )
-			branchTo = psxpc+4;
+	if (PSX_IS_CONST1(_Rs_))
+	{
+		if ((int)g_psxConstRegs[_Rs_] > 0)
+			branchTo = psxpc + 4;
 
 		psxRecompileNextInstruction(1);
-		psxSetBranchImm( branchTo );
+		psxSetBranchImm(branchTo);
 		return;
 	}
 
@@ -1292,7 +1394,7 @@ void rpsxBLEZ()
 	psxRecompileNextInstruction(1);
 	psxSetBranchImm(psxpc);
 
-	x86SetJ32A( pjmp );
+	x86SetJ32A(pjmp);
 
 	psxpc -= 4;
 	psxLoadBranchState();
@@ -1308,12 +1410,13 @@ void rpsxBGTZ()
 
 	_psxFlushAllUnused();
 
-	if( PSX_IS_CONST1(_Rs_) ) {
-		if( (int)g_psxConstRegs[_Rs_] <= 0 )
-			branchTo = psxpc+4;
+	if (PSX_IS_CONST1(_Rs_))
+	{
+		if ((int)g_psxConstRegs[_Rs_] <= 0)
+			branchTo = psxpc + 4;
 
 		psxRecompileNextInstruction(1);
-		psxSetBranchImm( branchTo );
+		psxSetBranchImm(branchTo);
 		return;
 	}
 
@@ -1327,7 +1430,7 @@ void rpsxBGTZ()
 	psxRecompileNextInstruction(1);
 	psxSetBranchImm(psxpc);
 
-	x86SetJ32A( pjmp );
+	x86SetJ32A(pjmp);
 
 	psxpc -= 4;
 	psxLoadBranchState();
@@ -1338,7 +1441,8 @@ void rpsxBGTZ()
 void rpsxMFC0()
 {
 	// Rt = Cop0->Rd
-	if (!_Rt_) return;
+	if (!_Rt_)
+		return;
 
 	_psxOnWriteReg(_Rt_);
 	xMOV(eax, ptr32[&psxRegs.CP0.r[_Rd_]]);
@@ -1348,7 +1452,8 @@ void rpsxMFC0()
 void rpsxCFC0()
 {
 	// Rt = Cop0->Rd
-	if (!_Rt_) return;
+	if (!_Rt_)
+		return;
 
 	_psxOnWriteReg(_Rt_);
 	xMOV(eax, ptr32[&psxRegs.CP0.r[_Rd_]]);
@@ -1358,10 +1463,12 @@ void rpsxCFC0()
 void rpsxMTC0()
 {
 	// Cop0->Rd = Rt
-	if( PSX_IS_CONST1(_Rt_) ) {
+	if (PSX_IS_CONST1(_Rt_))
+	{
 		xMOV(ptr32[&psxRegs.CP0.r[_Rd_]], g_psxConstRegs[_Rt_]);
 	}
-	else {
+	else
+	{
 		_psxDeleteReg(_Rt_, 1);
 		xMOV(eax, ptr32[&psxRegs.GPR.r[_Rt_]]);
 		xMOV(ptr32[&psxRegs.CP0.r[_Rd_]], eax);
@@ -1387,7 +1494,7 @@ void rpsxRFE()
 	// Test the IOP's INTC status, so that any pending ints get raised.
 
 	_psxFlushCall(0);
-	xFastCall((void*)(uptr)&iopTestIntc );
+	xFastCall((void*)(uptr)&iopTestIntc);
 }
 
 //// COP2
@@ -1437,7 +1544,8 @@ static void rpsxCOP0() { rpsxCP0[_Rs_](); }
 static void rpsxCOP2() { rpsxCP2[_Funct_](); }
 static void rpsxBASIC() { rpsxCP2BSC[_Rs_](); }
 
-static void rpsxNULL() {
+static void rpsxNULL()
+{
 	Console.WriteLn("psxUNK: %8.8x", psxRegs.code);
 }
 
@@ -1449,7 +1557,7 @@ void (*rpsxBSC[64])() = {
 	rpsxLB     , rpsxLH    , rpsxLWL , rpsxLW   , rpsxLBU , rpsxLHU , rpsxLWR , rpsxNULL,
 	rpsxSB     , rpsxSH    , rpsxSWL , rpsxSW   , rpsxNULL, rpsxNULL, rpsxSWR , rpsxNULL,
 	rpsxNULL   , rpsxNULL  , rgteLWC2, rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
-	rpsxNULL   , rpsxNULL  , rgteSWC2, rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL
+	rpsxNULL   , rpsxNULL  , rgteSWC2, rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
 };
 
 void (*rpsxSPC[64])() = {
@@ -1460,21 +1568,21 @@ void (*rpsxSPC[64])() = {
 	rpsxADD , rpsxADDU, rpsxSUB , rpsxSUBU, rpsxAND    , rpsxOR   , rpsxXOR , rpsxNOR ,
 	rpsxNULL, rpsxNULL, rpsxSLT , rpsxSLTU, rpsxNULL   , rpsxNULL , rpsxNULL, rpsxNULL,
 	rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL   , rpsxNULL , rpsxNULL, rpsxNULL,
-	rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL   , rpsxNULL , rpsxNULL, rpsxNULL
+	rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL   , rpsxNULL , rpsxNULL, rpsxNULL,
 };
 
 void (*rpsxREG[32])() = {
 	rpsxBLTZ  , rpsxBGEZ  , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
 	rpsxNULL  , rpsxNULL  , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
 	rpsxBLTZAL, rpsxBGEZAL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
-	rpsxNULL  , rpsxNULL  , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL
+	rpsxNULL  , rpsxNULL  , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
 };
 
 void (*rpsxCP0[32])() = {
 	rpsxMFC0, rpsxNULL, rpsxCFC0, rpsxNULL, rpsxMTC0, rpsxNULL, rpsxCTC0, rpsxNULL,
 	rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
 	rpsxRFE , rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
-	rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL
+	rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
 };
 
 void (*rpsxCP2[64])() = {
@@ -1485,35 +1593,37 @@ void (*rpsxCP2[64])() = {
 	rgteNCT  , rpsxNULL , rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL , rpsxNULL , rpsxNULL, // 20
 	rgteSQR  , rgteDCPL , rgteDPCT , rpsxNULL, rpsxNULL, rgteAVSZ3, rgteAVSZ4, rpsxNULL, // 28
 	rgteRTPT , rpsxNULL , rpsxNULL , rpsxNULL, rpsxNULL, rpsxNULL , rpsxNULL , rpsxNULL, // 30
-	rpsxNULL , rpsxNULL , rpsxNULL , rpsxNULL, rpsxNULL, rgteGPF  , rgteGPL  , rgteNCCT  // 38
+	rpsxNULL , rpsxNULL , rpsxNULL , rpsxNULL, rpsxNULL, rgteGPF  , rgteGPL  , rgteNCCT, // 38
 };
 
-void(*rpsxCP2BSC[32])() = {
+void (*rpsxCP2BSC[32])() = {
 	rgteMFC2, rpsxNULL, rgteCFC2, rpsxNULL, rgteMTC2, rpsxNULL, rgteCTC2, rpsxNULL,
 	rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
 	rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
-	rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL
+	rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL, rpsxNULL,
 };
 
 ////////////////////////////////////////////////
 // Back-Prob Function Tables - Gathering Info //
 ////////////////////////////////////////////////
-#define rpsxpropSetRead(reg) { \
-	if( !(pinst->regs[reg] & EEINST_USED) ) \
-		pinst->regs[reg] |= EEINST_LASTUSE; \
-	prev->regs[reg] |= EEINST_LIVE0|EEINST_USED; \
-	pinst->regs[reg] |= EEINST_USED; \
-	_recFillRegister(*pinst, XMMTYPE_GPRREG, reg, 0); \
-} \
+#define rpsxpropSetRead(reg) \
+	{ \
+		if (!(pinst->regs[reg] & EEINST_USED)) \
+			pinst->regs[reg] |= EEINST_LASTUSE; \
+		prev->regs[reg] |= EEINST_LIVE0 | EEINST_USED; \
+		pinst->regs[reg] |= EEINST_USED; \
+		_recFillRegister(*pinst, XMMTYPE_GPRREG, reg, 0); \
+	}
 
-#define rpsxpropSetWrite(reg) { \
-	prev->regs[reg] &= ~EEINST_LIVE0; \
-	if( !(pinst->regs[reg] & EEINST_USED) ) \
-		pinst->regs[reg] |= EEINST_LASTUSE; \
-	pinst->regs[reg] |= EEINST_USED; \
-	prev->regs[reg] |= EEINST_USED; \
-	_recFillRegister(*pinst, XMMTYPE_GPRREG, reg, 1); \
-}
+#define rpsxpropSetWrite(reg) \
+	{ \
+		prev->regs[reg] &= ~EEINST_LIVE0; \
+		if (!(pinst->regs[reg] & EEINST_USED)) \
+			pinst->regs[reg] |= EEINST_LASTUSE; \
+		pinst->regs[reg] |= EEINST_USED; \
+		prev->regs[reg] |= EEINST_USED; \
+		_recFillRegister(*pinst, XMMTYPE_GPRREG, reg, 1); \
+	}
 
 void rpsxpropBSC(EEINST* prev, EEINST* pinst);
 void rpsxpropSPECIAL(EEINST* prev, EEINST* pinst);
@@ -1531,9 +1641,14 @@ void rpsxpropCP2(EEINST* prev, EEINST* pinst);
 //NULL   , NULL  , NULL, NULL , NULL, NULL, NULL, NULL
 void rpsxpropBSC(EEINST* prev, EEINST* pinst)
 {
-	switch(psxRegs.code >> 26) {
-		case 0: rpsxpropSPECIAL(prev, pinst); break;
-		case 1: rpsxpropREGIMM(prev, pinst); break;
+	switch (psxRegs.code >> 26)
+	{
+		case 0:
+			rpsxpropSPECIAL(prev, pinst);
+			break;
+		case 1:
+			rpsxpropREGIMM(prev, pinst);
+			break;
 		case 2: // j
 			break;
 		case 3: // jal
@@ -1554,8 +1669,12 @@ void rpsxpropBSC(EEINST* prev, EEINST* pinst)
 			rpsxpropSetWrite(_Rt_);
 			break;
 
-		case 16: rpsxpropCP0(prev, pinst); break;
-		case 18: rpsxpropCP2(prev, pinst); break;
+		case 16:
+			rpsxpropCP0(prev, pinst);
+			break;
+		case 18:
+			rpsxpropCP2(prev, pinst);
+			break;
 
 		// stores
 		case 40: case 41: case 42: case 43: case 46:
@@ -1582,10 +1701,11 @@ void rpsxpropBSC(EEINST* prev, EEINST* pinst)
 //ADD , ADDU, SUB , SUBU, AND    , OR   , XOR , NOR ,
 //NULL, NULL, SLT , SLTU, NULL   , NULL , NULL, NULL,
 //NULL, NULL, NULL, NULL, NULL   , NULL , NULL, NULL,
-//NULL, NULL, NULL, NULL, NULL   , NULL , NULL, NULL
+//NULL, NULL, NULL, NULL, NULL   , NULL , NULL, NULL,
 void rpsxpropSPECIAL(EEINST* prev, EEINST* pinst)
 {
-	switch(_Funct_) {
+	switch (_Funct_)
+	{
 		case 0: // SLL
 		case 2: // SRL
 		case 3: // SRA
@@ -1641,8 +1761,10 @@ void rpsxpropSPECIAL(EEINST* prev, EEINST* pinst)
 		case 34: // sub
 		case 35: // subu
 			rpsxpropSetWrite(_Rd_);
-			if( _Rs_ ) rpsxpropSetRead(_Rs_);
-			if( _Rt_ ) rpsxpropSetRead(_Rt_);
+			if (_Rs_)
+				rpsxpropSetRead(_Rs_);
+			if (_Rt_)
+				rpsxpropSetRead(_Rt_);
 			break;
 
 		default:
@@ -1659,7 +1781,8 @@ void rpsxpropSPECIAL(EEINST* prev, EEINST* pinst)
 //NULL  , NULL  , NULL, NULL, NULL, NULL, NULL, NULL
 void rpsxpropREGIMM(EEINST* prev, EEINST* pinst)
 {
-	switch(_Rt_) {
+	switch (_Rt_)
+	{
 		case 0: // bltz
 		case 1: // bgez
 			rpsxpropSetRead(_Rs_);
@@ -1678,10 +1801,11 @@ void rpsxpropREGIMM(EEINST* prev, EEINST* pinst)
 //MFC0, NULL, CFC0, NULL, MTC0, NULL, CTC0, NULL,
 //NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 //RFE , NULL, NULL, NULL, NULL, NULL, NULL, NULL,
-//NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL
+//NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL,
 void rpsxpropCP0(EEINST* prev, EEINST* pinst)
 {
-	switch(_Rs_) {
+	switch (_Rs_)
+	{
 		case 0: // mfc0
 		case 2: // cfc0
 			rpsxpropSetWrite(_Rt_);
@@ -1703,10 +1827,11 @@ void rpsxpropCP0(EEINST* prev, EEINST* pinst)
 // gteMFC2, psxNULL, gteCFC2, psxNULL, gteMTC2, psxNULL, gteCTC2, psxNULL,
 // psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
 // psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
-// psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL
+// psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL, psxNULL,
 void rpsxpropCP2_basic(EEINST* prev, EEINST* pinst)
 {
-	switch(_Rs_) {
+	switch (_Rs_)
+	{
 		case 0: // mfc2
 		case 2: // cfc2
 			rpsxpropSetWrite(_Rt_);
@@ -1718,7 +1843,7 @@ void rpsxpropCP2_basic(EEINST* prev, EEINST* pinst)
 			break;
 
 		default:
-			pxFailDev( "iop invalid opcode in const propagation (rpsxpropCP2/BASIC)" );
+			pxFailDev("iop invalid opcode in const propagation (rpsxpropCP2/BASIC)");
 			break;
 	}
 }
@@ -1732,10 +1857,11 @@ void rpsxpropCP2_basic(EEINST* prev, EEINST* pinst)
 // gteNCT  , psxNULL , psxNULL , psxNULL, psxNULL, psxNULL , psxNULL , psxNULL, // 20
 // gteSQR  , gteDCPL , gteDPCT , psxNULL, psxNULL, gteAVSZ3, gteAVSZ4, psxNULL, // 28
 // gteRTPT , psxNULL , psxNULL , psxNULL, psxNULL, psxNULL , psxNULL , psxNULL, // 30
-// psxNULL , psxNULL , psxNULL , psxNULL, psxNULL, gteGPF  , gteGPL  , gteNCCT  // 38
+// psxNULL , psxNULL , psxNULL , psxNULL, psxNULL, gteGPF  , gteGPL  , gteNCCT, // 38
 void rpsxpropCP2(EEINST* prev, EEINST* pinst)
 {
-	switch(_Funct_) {
+	switch (_Funct_)
+	{
 		case 0: // Basic opcode
 			rpsxpropCP2_basic(prev, pinst);
 			break;

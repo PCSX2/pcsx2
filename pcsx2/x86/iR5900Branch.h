@@ -41,6 +41,9 @@ namespace OpcodeImpl {
 	void recBGEZL();
 	void recBGEZAL();
 	void recBGEZALL();
-} } }
+
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900
 
 #endif

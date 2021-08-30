@@ -54,10 +54,10 @@ static void _setupBranchTest()
 	// But using 32-bit loads here is ok (and faster), because we mask off
 	// everything except the lower 10 bits away.
 
-	xMOV(eax, ptr[(&psHu32(DMAC_PCR) )]);
-	xMOV(ecx, 0x3ff );		// ECX is our 10-bit mask var
+	xMOV(eax, ptr[(&psHu32(DMAC_PCR))]);
+	xMOV(ecx, 0x3ff); // ECX is our 10-bit mask var
 	xNOT(eax);
-	xOR(eax, ptr[(&psHu32(DMAC_STAT) )]);
+	xOR(eax, ptr[(&psHu32(DMAC_STAT))]);
 	xAND(eax, ecx);
 	xCMP(eax, ecx);
 }
@@ -93,14 +93,14 @@ void recTLBWR() { recCall(Interp::TLBWR); }
 
 void recERET()
 {
-	recBranchCall( Interp::ERET );
+	recBranchCall(Interp::ERET);
 }
 
 void recEI()
 {
 	// must branch after enabling interrupts, so that anything
 	// pending gets triggered properly.
-	recBranchCall( Interp::EI );
+	recBranchCall(Interp::EI);
 }
 
 void recDI()
@@ -117,7 +117,7 @@ void recDI()
 	// Fixes booting issues in the following games:
 	// Jak X, Namco 50th anniversary, Spongebob the Movie, Spongebob Battle for Bikini Bottom,
 	// The Incredibles, The Incredibles rize of the underminer, Soukou kihei armodyne, Garfield Saving Arlene, Tales of Fandom Vol. 2.
-	if(!g_recompilingDelaySlot)
+	if (!g_recompilingDelaySlot)
 		recompileNextInstruction(0); // DI execution is delayed by one instruction
 
 	xMOV(eax, ptr[&cpuRegs.CP0.n.Status]);
@@ -134,27 +134,28 @@ void recDI()
 
 #ifndef CP0_RECOMPILE
 
-REC_SYS( MFC0 );
-REC_SYS( MTC0 );
+REC_SYS(MFC0);
+REC_SYS(MTC0);
 
 #else
 
 void recMFC0()
 {
-	if( _Rd_ == 9 )
+	if (_Rd_ == 9)
 	{
 		// This case needs to be handled even if the write-back is ignored (_Rt_ == 0 )
-        xMOV(ecx, ptr[&cpuRegs.cycle]);
-        xMOV(eax, ecx);
+		xMOV(ecx, ptr[&cpuRegs.cycle]);
+		xMOV(eax, ecx);
 		xSUB(eax, ptr[&s_iLastCOP0Cycle]);
-		u8* skipInc = JNZ8( 0 );
+		u8* skipInc = JNZ8(0);
 		xINC(eax);
-		x86SetJ8( skipInc );
-        xADD(ptr[&cpuRegs.CP0.n.Count], eax);
+		x86SetJ8(skipInc);
+		xADD(ptr[&cpuRegs.CP0.n.Count], eax);
 		xMOV(ptr[&s_iLastCOP0Cycle], ecx);
-        xMOV(eax, ptr[&cpuRegs.CP0.r[ _Rd_ ] ]);
+		xMOV(eax, ptr[&cpuRegs.CP0.r[_Rd_]]);
 
-		if( !_Rt_ ) return;
+		if (!_Rt_)
+			return;
 
 		_deleteEEreg(_Rt_, 0);
 		xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
@@ -164,9 +165,10 @@ void recMFC0()
 		return;
 	}
 
-	if ( !_Rt_ ) return;
+	if (!_Rt_)
+		return;
 
-	if( _Rd_ == 25 )
+	if (_Rd_ == 25)
 	{
 		if (0 == (_Imm_ & 1)) // MFPS, register value ignored
 		{
@@ -192,13 +194,14 @@ void recMFC0()
 
 		return;
 	}
-	else if(_Rd_ == 24){
+	else if (_Rd_ == 24)
+	{
 		COP0_LOG("MFC0 Breakpoint debug Registers code = %x\n", cpuRegs.code & 0x3FF);
-        return;
+		return;
 	}
 	_eeOnWriteReg(_Rt_, 1);
 	_deleteEEreg(_Rt_, 0);
-	xMOV(eax, ptr[&cpuRegs.CP0.r[ _Rd_ ]]);
+	xMOV(eax, ptr[&cpuRegs.CP0.r[_Rd_]]);
 	xCDQ();
 	xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
 	xMOV(ptr[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
@@ -206,25 +209,25 @@ void recMFC0()
 
 void recMTC0()
 {
-	if( GPR_IS_CONST1(_Rt_) )
+	if (GPR_IS_CONST1(_Rt_))
 	{
 		switch (_Rd_)
 		{
 			case 12:
 				iFlushCall(FLUSH_INTERPRETER);
 				xFastCall((void*)WriteCP0Status, g_cpuConstRegs[_Rt_].UL[0]);
-			break;
+				break;
 
 			case 16:
 				iFlushCall(FLUSH_INTERPRETER);
 				xFastCall((void*)WriteCP0Config, g_cpuConstRegs[_Rt_].UL[0]);
-			break;
+				break;
 
 			case 9:
 				xMOV(ecx, ptr[&cpuRegs.cycle]);
 				xMOV(ptr[&s_iLastCOP0Cycle], ecx);
 				xMOV(ptr32[&cpuRegs.CP0.r[9]], g_cpuConstRegs[_Rt_].UL[0]);
-			break;
+				break;
 
 			case 25:
 				if (0 == (_Imm_ & 1)) // MTPS
@@ -249,15 +252,15 @@ void recMTC0()
 					xMOV(ptr32[&cpuRegs.PERF.n.pcr1], g_cpuConstRegs[_Rt_].UL[0]);
 					xMOV(ptr[&s_iLastPERFCycle[1]], eax);
 				}
-			break;
+				break;
 
 			case 24:
 				COP0_LOG("MTC0 Breakpoint debug Registers code = %x\n", cpuRegs.code & 0x3FF);
-			break;
+				break;
 
 			default:
 				xMOV(ptr32[&cpuRegs.CP0.r[_Rd_]], g_cpuConstRegs[_Rt_].UL[0]);
-			break;
+				break;
 		}
 	}
 	else
@@ -267,20 +270,20 @@ void recMTC0()
 			case 12:
 				iFlushCall(FLUSH_INTERPRETER);
 				_eeMoveGPRtoR(ecx, _Rt_);
-				xFastCall((void*)WriteCP0Status, ecx );
-			break;
+				xFastCall((void*)WriteCP0Status, ecx);
+				break;
 
 			case 16:
 				iFlushCall(FLUSH_INTERPRETER);
 				_eeMoveGPRtoR(ecx, _Rt_);
 				xFastCall((void*)WriteCP0Config, ecx);
-			break;
+				break;
 
 			case 9:
 				xMOV(ecx, ptr[&cpuRegs.cycle]);
 				_eeMoveGPRtoM((uptr)&cpuRegs.CP0.r[9], _Rt_);
 				xMOV(ptr[&s_iLastCOP0Cycle], ecx);
-			break;
+				break;
 
 			case 25:
 				if (0 == (_Imm_ & 1)) // MTPS
@@ -304,15 +307,15 @@ void recMTC0()
 					_eeMoveGPRtoM((uptr)&cpuRegs.PERF.n.pcr1, _Rt_);
 					xMOV(ptr[&s_iLastPERFCycle[1]], ecx);
 				}
-			break;
+				break;
 
 			case 24:
 				COP0_LOG("MTC0 Breakpoint debug Registers code = %x\n", cpuRegs.code & 0x3FF);
-			break;
+				break;
 
 			default:
 				_eeMoveGPRtoM((uptr)&cpuRegs.CP0.r[_Rd_], _Rt_);
-			break;
+				break;
 		}
 	}
 }
@@ -346,4 +349,7 @@ void rec(TLBWR) {
 void rec(TLBP) {
 }*/
 
-}}}}
+} // namespace COP0
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900

@@ -27,6 +27,9 @@ namespace OpcodeImpl {
 	void recMTHI();
 	void recMOVN();
 	void recMOVZ();
-} } }
+
+} // namespace OpcodeImpl
+} // namespace Dynarec
+} // namespace R5900
 
 #endif

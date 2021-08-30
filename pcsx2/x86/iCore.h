@@ -25,51 +25,51 @@
 ////////////////////////////////////////////////////////////////////////////////
 // Shared Register allocation flags (apply to X86, XMM, MMX, etc).
 
-#define MODE_READ		1
-#define MODE_WRITE		2
-#define MODE_READHALF	4 // read only low 64 bits
-#define MODE_VUXY		0x8	// vector only has xy valid (real zw are in mem), not the same as MODE_READHALF
-#define MODE_VUZ		0x10 // z only doesn't work for now
-#define MODE_VUXYZ		(MODE_VUZ|MODE_VUXY) // vector only has xyz valid (real w is in memory)
-#define MODE_NOFLUSH	0x20	// can't flush reg to mem
-#define MODE_NOFRAME	0x40	// when allocating x86regs, don't use ebp reg
-#define MODE_8BITREG	0x80	// when allocating x86regs, use only eax, ecx, edx, and ebx
+#define MODE_READ        1
+#define MODE_WRITE       2
+#define MODE_READHALF    4 // read only low 64 bits
+#define MODE_VUXY        8 // vector only has xy valid (real zw are in mem), not the same as MODE_READHALF
+#define MODE_VUZ      0x10 // z only doesn't work for now
+#define MODE_VUXYZ (MODE_VUZ | MODE_VUXY) // vector only has xyz valid (real w is in memory)
+#define MODE_NOFLUSH  0x20 // can't flush reg to mem
+#define MODE_NOFRAME  0x40 // when allocating x86regs, don't use ebp reg
+#define MODE_8BITREG  0x80 // when allocating x86regs, use only eax, ecx, edx, and ebx
 
 #define PROCESS_EE_XMM 0x02
 
 // currently only used in FPU
-#define PROCESS_EE_S		0x04 // S is valid, otherwise take from mem
-#define PROCESS_EE_T		0x08 // T is valid, otherwise take from mem
+#define PROCESS_EE_S 0x04 // S is valid, otherwise take from mem
+#define PROCESS_EE_T 0x08 // T is valid, otherwise take from mem
 
 // not used in VU recs
 #define PROCESS_EE_MODEWRITES 0x10 // if s is a reg, set if not in cpuRegs
 #define PROCESS_EE_MODEWRITET 0x20 // if t is a reg, set if not in cpuRegs
-#define PROCESS_EE_LO		0x40 // lo reg is valid
-#define PROCESS_EE_HI		0x80 // hi reg is valid
-#define PROCESS_EE_ACC		0x40 // acc reg is valid
+#define PROCESS_EE_LO         0x40 // lo reg is valid
+#define PROCESS_EE_HI         0x80 // hi reg is valid
+#define PROCESS_EE_ACC        0x40 // acc reg is valid
 
 // used in VU recs
 #define PROCESS_VU_UPDATEFLAGS 0x10
-#define PROCESS_VU_COP2		0x80 // simple cop2
+#define PROCESS_VU_COP2 0x80 // simple cop2
 
-#define EEREC_S (((info)>>8)&0xf)
-#define EEREC_T (((info)>>12)&0xf)
-#define EEREC_D (((info)>>16)&0xf)
-#define EEREC_LO (((info)>>20)&0xf)
-#define EEREC_HI (((info)>>24)&0xf)
-#define EEREC_ACC (((info)>>20)&0xf)
-#define EEREC_TEMP (((info)>>24)&0xf)
+#define EEREC_S    (((info) >>  8) & 0xf)
+#define EEREC_T    (((info) >> 12) & 0xf)
+#define EEREC_D    (((info) >> 16) & 0xf)
+#define EEREC_LO   (((info) >> 20) & 0xf)
+#define EEREC_HI   (((info) >> 24) & 0xf)
+#define EEREC_ACC  (((info) >> 20) & 0xf)
+#define EEREC_TEMP (((info) >> 24) & 0xf)
 #define VUREC_FMAC ((info)&0x80000000)
 
-#define PROCESS_EE_SET_S(reg) ((reg)<<8)
-#define PROCESS_EE_SET_T(reg) ((reg)<<12)
-#define PROCESS_EE_SET_D(reg) ((reg)<<16)
-#define PROCESS_EE_SET_LO(reg) ((reg)<<20)
-#define PROCESS_EE_SET_HI(reg) ((reg)<<24)
-#define PROCESS_EE_SET_ACC(reg) ((reg)<<20)
+#define PROCESS_EE_SET_S(reg)   ((reg) <<  8)
+#define PROCESS_EE_SET_T(reg)   ((reg) << 12)
+#define PROCESS_EE_SET_D(reg)   ((reg) << 16)
+#define PROCESS_EE_SET_LO(reg)  ((reg) << 20)
+#define PROCESS_EE_SET_HI(reg)  ((reg) << 24)
+#define PROCESS_EE_SET_ACC(reg) ((reg) << 20)
 
 #define PROCESS_VU_SET_ACC(reg) PROCESS_EE_SET_ACC(reg)
-#define PROCESS_VU_SET_TEMP(reg) ((reg)<<24)
+#define PROCESS_VU_SET_TEMP(reg) ((reg) << 24)
 
 #define PROCESS_VU_SET_FMAC() 0x80000000
 
@@ -91,19 +91,20 @@
 #define X86TYPE_VUPWRITE 8
 #define X86TYPE_PSX 9
 #define X86TYPE_PCWRITEBACK 10
-#define X86TYPE_VUJUMP 12		// jump from random mem (g_recWriteback)
+#define X86TYPE_VUJUMP 12 // jump from random mem (g_recWriteback)
 #define X86TYPE_VITEMP 13
-#define X86TYPE_FNARG 14        // function parameter, max is 4
+#define X86TYPE_FNARG 14 // function parameter, max is 4
 
 #define X86TYPE_VU1 0x80
 
 //#define X86_ISVI(type) ((type&~X86TYPE_VU1) == X86TYPE_VI)
 static __fi int X86_ISVI(int type)
 {
-	return ((type&~X86TYPE_VU1) == X86TYPE_VI);
+	return ((type & ~X86TYPE_VU1) == X86TYPE_VI);
 }
 
-struct _x86regs {
+struct _x86regs
+{
 	u8 inuse;
 	u8 reg; // value of 0 - not used
 	u8 mode;
@@ -117,8 +118,8 @@ extern _x86regs x86regs[iREGCNT_GPR], s_saveX86regs[iREGCNT_GPR];
 
 uptr _x86GetAddr(int type, int reg);
 void _initX86regs();
-int  _getFreeX86reg(int mode);
-int  _allocX86reg(x86Emitter::xRegister32 x86reg, int type, int reg, int mode);
+int _getFreeX86reg(int mode);
+int _allocX86reg(x86Emitter::xRegister32 x86reg, int type, int reg, int mode);
 void _deleteX86reg(int type, int reg, int flush);
 int _checkX86reg(int type, int reg, int mode);
 void _addNeededX86reg(int type, int reg);
@@ -133,21 +134,22 @@ void _flushConstReg(int reg);
 ////////////////////////////////////////////////////////////////////////////////
 //   XMM (128-bit) Register Allocation Tools
 
-#define XMM_CONV_VU(VU) (VU==&VU1)
+#define XMM_CONV_VU(VU) (VU == &VU1)
 
-#define XMMTYPE_TEMP    0 // has to be 0
-#define XMMTYPE_VFREG   1
-#define XMMTYPE_ACC     2
-#define XMMTYPE_FPREG   3
-#define XMMTYPE_FPACC   4
-#define XMMTYPE_GPRREG  5
+#define XMMTYPE_TEMP   0 // has to be 0
+#define XMMTYPE_VFREG  1
+#define XMMTYPE_ACC    2
+#define XMMTYPE_FPREG  3
+#define XMMTYPE_FPACC  4
+#define XMMTYPE_GPRREG 5
 
 // lo and hi regs
-#define XMMGPR_LO       33
-#define XMMGPR_HI       32
-#define XMMFPU_ACC      32
+#define XMMGPR_LO  33
+#define XMMGPR_HI  32
+#define XMMFPU_ACC 32
 
-struct _xmmregs {
+struct _xmmregs
+{
 	u8 inuse;
 	u8 reg;
 	u8 type;
@@ -158,12 +160,12 @@ struct _xmmregs {
 };
 
 void _initXMMregs();
-int  _getFreeXMMreg();
-int  _allocTempXMMreg(XMMSSEType type, int xmmreg);
-int  _allocFPtoXMMreg(int xmmreg, int fpreg, int mode);
-int  _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode);
-int  _allocFPACCtoXMMreg(int xmmreg, int mode);
-int  _checkXMMreg(int type, int reg, int mode);
+int _getFreeXMMreg();
+int _allocTempXMMreg(XMMSSEType type, int xmmreg);
+int _allocFPtoXMMreg(int xmmreg, int fpreg, int mode);
+int _allocGPRtoXMMreg(int xmmreg, int gprreg, int mode);
+int _allocFPACCtoXMMreg(int xmmreg, int mode);
+int _checkXMMreg(int type, int reg, int mode);
 void _addNeededFPtoXMMreg(int fpreg);
 void _addNeededFPACCtoXMMreg();
 void _addNeededGPRtoXMMreg(int gprreg);
@@ -199,15 +201,15 @@ int _signExtendXMMtoM(uptr to, x86SSERegType from, int candestroy); // returns t
 // 3/ EEINST_LIVE* is cleared when register is written. And set again when register is read.
 // My guess: the purpose is to detect the usage hole in the flow
 
-#define EEINST_LIVE0	1	// if var is ever used (read or write)
-#define EEINST_LIVE2	4	// if cur var's next 64 bits are needed
-#define EEINST_LASTUSE	8	// if var isn't written/read anymore
-//#define EEINST_MMX		0x10 // removed
-#define EEINST_XMM		0x20	// var will be used in xmm ops
-#define EEINST_USED		0x40
+#define EEINST_LIVE0     1 // if var is ever used (read or write)
+#define EEINST_LIVE2     4 // if cur var's next 64 bits are needed
+#define EEINST_LASTUSE   8 // if var isn't written/read anymore
+//#define EEINST_MMX    0x10 // removed
+#define EEINST_XMM    0x20 // var will be used in xmm ops
+#define EEINST_USED   0x40
 
-#define EEINSTINFO_COP1		1
-#define EEINSTINFO_COP2		2
+#define EEINSTINFO_COP1 1
+#define EEINSTINFO_COP2 2
 
 struct EEINST
 {
@@ -233,19 +235,19 @@ extern u32 _recIsRegWritten(EEINST* pinst, int size, u8 xmmtype, u8 reg);
 //extern u32 _recIsRegUsed(EEINST* pinst, int size, u8 xmmtype, u8 reg);
 extern void _recFillRegister(EEINST& pinst, int type, int reg, int write);
 
-static __fi bool EEINST_ISLIVE64(u32 reg)	{ return !!(g_pCurInstInfo->regs[reg] & (EEINST_LIVE0)); }
-static __fi bool EEINST_ISLIVEXMM(u32 reg)	{ return !!(g_pCurInstInfo->regs[reg] & (EEINST_LIVE0|EEINST_LIVE2)); }
-static __fi bool EEINST_ISLIVE2(u32 reg)	{ return !!(g_pCurInstInfo->regs[reg] & EEINST_LIVE2); }
+static __fi bool EEINST_ISLIVE64(u32 reg)  { return !!(g_pCurInstInfo->regs[reg] & (EEINST_LIVE0)); }
+static __fi bool EEINST_ISLIVEXMM(u32 reg) { return !!(g_pCurInstInfo->regs[reg] & (EEINST_LIVE0 | EEINST_LIVE2)); }
+static __fi bool EEINST_ISLIVE2(u32 reg)   { return !!(g_pCurInstInfo->regs[reg] & EEINST_LIVE2); }
 
-static __fi bool FPUINST_ISLIVE(u32 reg)	{ return !!(g_pCurInstInfo->fpuregs[reg] & EEINST_LIVE0); }
-static __fi bool FPUINST_LASTUSE(u32 reg)	{ return !!(g_pCurInstInfo->fpuregs[reg] & EEINST_LASTUSE); }
+static __fi bool FPUINST_ISLIVE(u32 reg)   { return !!(g_pCurInstInfo->fpuregs[reg] & EEINST_LIVE0); }
+static __fi bool FPUINST_LASTUSE(u32 reg)  { return !!(g_pCurInstInfo->fpuregs[reg] & EEINST_LASTUSE); }
 
 extern u32 g_recWriteback; // used for jumps (VUrec mess!)
 
 extern _xmmregs xmmregs[iREGCNT_XMM], s_saveXMMregs[iREGCNT_XMM];
 
-extern __tls_emit u8  *j8Ptr[32];		// depreciated item.  use local u8* vars instead.
-extern __tls_emit u32 *j32Ptr[32];		// depreciated item.  use local u32* vars instead.
+extern __tls_emit u8* j8Ptr[32];   // depreciated item.  use local u8* vars instead.
+extern __tls_emit u32* j32Ptr[32]; // depreciated item.  use local u32* vars instead.
 
 extern u16 g_x86AllocCounter;
 extern u16 g_xmmAllocCounter;
@@ -272,25 +274,25 @@ int _allocCheckGPRtoX86(EEINST* pinst, int gprreg, int mode);
 // the code being called is going to modify register allocations -- ie, be doing
 // some kind of recompiling of its own.
 
-#define FLUSH_CACHED_REGS	0x001
-#define FLUSH_FLUSH_XMM		0x002
-#define FLUSH_FREE_XMM		0x004	// both flushes and frees
-#define FLUSH_FLUSH_ALLX86	0x020	// flush x86
-#define FLUSH_FREE_TEMPX86	0x040	// flush and free temporary x86 regs
-#define FLUSH_FREE_ALLX86	0x080	// free all x86 regs
-#define FLUSH_FREE_VU0		0x100	// free all vu0 related regs
-#define FLUSH_PC			0x200	// program counter
-#define FLUSH_CAUSE			0x000	// disabled for now: cause register, only the branch delay bit
-#define FLUSH_CODE			0x800	// opcode for interpreter
+#define FLUSH_CACHED_REGS  0x001
+#define FLUSH_FLUSH_XMM    0x002
+#define FLUSH_FREE_XMM     0x004 // both flushes and frees
+#define FLUSH_FLUSH_ALLX86 0x020 // flush x86
+#define FLUSH_FREE_TEMPX86 0x040 // flush and free temporary x86 regs
+#define FLUSH_FREE_ALLX86  0x080 // free all x86 regs
+#define FLUSH_FREE_VU0     0x100 // free all vu0 related regs
+#define FLUSH_PC           0x200 // program counter
+#define FLUSH_CAUSE        0x000 // disabled for now: cause register, only the branch delay bit
+#define FLUSH_CODE         0x800 // opcode for interpreter
 
-#define FLUSH_EVERYTHING	0x1ff
+#define FLUSH_EVERYTHING   0x1ff
 //#define FLUSH_EXCEPTION		0x1ff   // will probably do this totally differently actually
-#define FLUSH_INTERPRETER	0xfff
+#define FLUSH_INTERPRETER  0xfff
 #define FLUSH_FULLVTLB FLUSH_NOCONST
 
 // no freeing, used when callee won't destroy xmm regs
-#define FLUSH_NODESTROY (FLUSH_CACHED_REGS|FLUSH_FLUSH_XMM|FLUSH_FLUSH_ALLX86)
+#define FLUSH_NODESTROY (FLUSH_CACHED_REGS | FLUSH_FLUSH_XMM | FLUSH_FLUSH_ALLX86)
 // used when regs aren't going to be changed be callee
-#define FLUSH_NOCONST	(FLUSH_FREE_XMM|FLUSH_FREE_TEMPX86)
+#define FLUSH_NOCONST (FLUSH_FREE_XMM | FLUSH_FREE_TEMPX86)
 
 #endif
