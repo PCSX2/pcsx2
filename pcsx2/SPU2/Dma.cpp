@@ -229,9 +229,6 @@ void V_Core::PlainDMAWrite(u16* pMem, u32 size)
 			Cores[Index].IRQEnable, Cores[Index].IRQA);
 
 	FinishDMAwrite();
-
-	if (ReadSize == 0) //DMA Finished right away so we need a DMAICounter size to trigger the interrupt
-		DMAICounter = size * 4;
 }
 
 void V_Core::FinishDMAwrite()
@@ -240,6 +237,8 @@ void V_Core::FinishDMAwrite()
 	{
 		DMAPtr = (u16*)iopPhysMem(MADR);
 	}
+
+	DMAICounter = ReadSize;
 
 	if (Index == 0)
 		DMA4LogWrite(DMAPtr, ReadSize << 1);
@@ -340,23 +339,20 @@ void V_Core::FinishDMAwrite()
 
 	DMAPtr += TDA - ActiveTSA;
 	ReadSize -= TDA - ActiveTSA;
-	if (ReadSize == 0)
-		DMAICounter = 0;
-	else
+
+	DMAICounter = (DMAICounter - ReadSize) * 4;
+
+	if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
 	{
-		DMAICounter = std::min(ReadSize, (u32)0x100) * 4;
+		psxCounters[6].sCycleT = psxRegs.cycle;
+		psxCounters[6].CycleT = DMAICounter;
 
-		if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
-		{
-			psxCounters[6].sCycleT = psxRegs.cycle;
-			psxCounters[6].CycleT = DMAICounter;
-
-			psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
-			psxNextsCounter = psxRegs.cycle;
-			if (psxCounters[6].CycleT < psxNextCounter)
-				psxNextCounter = psxCounters[6].CycleT;
-		}
+		psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
+		psxNextsCounter = psxRegs.cycle;
+		if (psxCounters[6].CycleT < psxNextCounter)
+			psxNextCounter = psxCounters[6].CycleT;
 	}
+
 	ActiveTSA = TDA;
 	ActiveTSA &= 0xfffff;
 	TSA = ActiveTSA;
@@ -367,6 +363,7 @@ void V_Core::FinishDMAread()
 	u32 buff1end = ActiveTSA + std::min(ReadSize, (u32)0x100 + std::abs(DMAICounter / 4));
 	u32 start = ActiveTSA;
 	u32 buff2end = 0;
+
 	if (buff1end > 0x100000)
 	{
 		buff2end = buff1end - 0x100000;
@@ -433,26 +430,24 @@ void V_Core::FinishDMAread()
 
 	DMARPtr += TDA - ActiveTSA;
 	ReadSize -= TDA - ActiveTSA;
-	if (ReadSize == 0)
-	{
-		IsDMARead = false;
-		DMAICounter = 0;
-	}
-	else
-	{
+
+	// DMA Reads are done AFTER the delay, so to get the timing right we need to scheule one last DMA to catch IRQ's
+	if (ReadSize)
 		DMAICounter = std::min(ReadSize, (u32)0x100) * 4;
+	else
+		DMAICounter = 4;
 
-		if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
-		{
-			psxCounters[6].sCycleT = psxRegs.cycle;
-			psxCounters[6].CycleT = DMAICounter;
+	if (((psxCounters[6].sCycleT + psxCounters[6].CycleT) - psxRegs.cycle) > (u32)DMAICounter)
+	{
+		psxCounters[6].sCycleT = psxRegs.cycle;
+		psxCounters[6].CycleT = DMAICounter;
 
-			psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
-			psxNextsCounter = psxRegs.cycle;
-			if (psxCounters[6].CycleT < psxNextCounter)
-				psxNextCounter = psxCounters[6].CycleT;
-		}
+		psxNextCounter -= (psxRegs.cycle - psxNextsCounter);
+		psxNextsCounter = psxRegs.cycle;
+		if (psxCounters[6].CycleT < psxNextCounter)
+			psxNextCounter = psxCounters[6].CycleT;
 	}
+
 	ActiveTSA = TDA;
 	ActiveTSA &= 0xfffff;
 	TSA = ActiveTSA;

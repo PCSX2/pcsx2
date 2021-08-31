@@ -463,14 +463,6 @@ __forceinline void TimeUpdate(u32 cClocks)
 
 		if (Cores[0].DMAICounter <= 0)
 		{
-			if (((Cores[0].AutoDMACtrl & 1) != 1) && Cores[0].ReadSize)
-			{
-				if (Cores[0].IsDMARead)
-					Cores[0].FinishDMAread();
-				else
-					Cores[0].FinishDMAwrite();
-			}
-
 			for (int i = 0; i < 2; i++)
 			{
 				if (has_to_call_irq_dma[i])
@@ -484,6 +476,15 @@ __forceinline void TimeUpdate(u32 cClocks)
 					}
 				}
 			}
+
+			if (((Cores[0].AutoDMACtrl & 1) != 1) && Cores[0].ReadSize)
+			{
+				if (Cores[0].IsDMARead)
+					Cores[0].FinishDMAread();
+				else
+					Cores[0].FinishDMAwrite();
+			}
+
 			if (Cores[0].DMAICounter <= 0)
 			{
 				HW_DMA4_MADR = HW_DMA4_TADR;
@@ -515,14 +516,6 @@ __forceinline void TimeUpdate(u32 cClocks)
 			HW_DMA7_MADR += amt / 2;
 		if (Cores[1].DMAICounter <= 0)
 		{
-			if (((Cores[1].AutoDMACtrl & 2) != 2) && Cores[1].ReadSize)
-			{
-				if (Cores[1].IsDMARead)
-					Cores[1].FinishDMAread();
-				else
-					Cores[1].FinishDMAwrite();
-			}
-
 			for (int i = 0; i < 2; i++)
 			{
 				if (has_to_call_irq_dma[i])
@@ -535,6 +528,14 @@ __forceinline void TimeUpdate(u32 cClocks)
 						spu2Irq();
 					}
 				}
+			}
+
+			if (((Cores[1].AutoDMACtrl & 2) != 2) && Cores[1].ReadSize)
+			{
+				if (Cores[1].IsDMARead)
+					Cores[1].FinishDMAread();
+				else
+					Cores[1].FinishDMAwrite();
 			}
 
 			if (Cores[1].DMAICounter <= 0)
