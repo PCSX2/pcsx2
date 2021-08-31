@@ -371,6 +371,9 @@
     <ClCompile Include="PrecompiledHeader.cpp">
       <Filter>Misc</Filter>
     </ClCompile>
+	<ClInclude Include="resource.h">
+	  <Filter>Misc</Filter>
+	</ClInclude>
     <ClCompile Include="ShiftJisToUnicode.cpp">
       <Filter>Misc</Filter>
     </ClCompile>
@@ -2563,7 +2566,9 @@
     <ClInclude Include="GS\Renderers\Common\GSFastList.h">
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
-    <ClInclude Include="GS\resource.h" />
+    <ClInclude Include="GS\resource.h">
+	  <Filter>System\Ps2\GS</Filter>
+	</ClInclude>
     <ClInclude Include="GS.h">
       <Filter>System\Ps2</Filter>
     </ClInclude>
@@ -2717,6 +2722,9 @@
       <Filter>AppHost\Resources</Filter>
     </ResourceCompile>
     <ResourceCompile Include="$(SolutionDir)3rdparty\wxwidgets3.0\include\wx\msw\wx.rc">
+      <Filter>AppHost\Resources</Filter>
+    </ResourceCompile>
+    <ResourceCompile Include="PCSX2.rc">
       <Filter>AppHost\Resources</Filter>
     </ResourceCompile>
     <ResourceCompile Include="SPU2\Windows\SPU2.rc">
