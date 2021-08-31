@@ -21,6 +21,7 @@
 #include "GSVertex.h"
 #include "GS/GSAlignedClass.h"
 #include "GSOsdManager.h"
+#include <array>
 
 enum ShaderConvert
 {

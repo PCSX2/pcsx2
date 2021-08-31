@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include "GS_types.h"
-
 class GSPerfMon
 {
 public:

@@ -20,6 +20,11 @@
 #include "GS/resource.h"
 #endif
 
+#if __GNUC__ > 5 || (__GNUC__ == 5 && __GNUC_MINOR__ >= 4)
+#include <codecvt>
+#include <locale>
+#endif
+
 void GSOsdManager::LoadFont()
 {
 	FT_Error error = FT_New_Face(m_library, theApp.GetConfigS("osd_fontname").c_str(), 0, &m_face);

@@ -16,6 +16,7 @@
 #pragma once
 
 #include "GS.h"
+#include <unordered_map>
 
 class GSShaderOGL
 {

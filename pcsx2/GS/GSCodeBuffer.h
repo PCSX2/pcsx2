@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include "GS_types.h"
-
 class GSCodeBuffer
 {
 	std::vector<void*> m_buffers;

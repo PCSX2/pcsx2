@@ -17,6 +17,7 @@
 #include "GSVertexTrace.h"
 #include "GS/GSUtil.h"
 #include "GS/GSState.h"
+#include <cfloat>
 
 CONSTINIT const GSVector4 GSVertexTrace::s_minmax = GSVector4::cxpr(FLT_MAX, -FLT_MAX, 0.f, 0.f);
 

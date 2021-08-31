@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include "GS/GS_types.h"
-
 template <class T>
 struct Element
 {

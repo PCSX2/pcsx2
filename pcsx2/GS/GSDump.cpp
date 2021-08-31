@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSDump.h"
+#include "GS_types.h"
 
 GSDumpBase::GSDumpBase(const std::string& fn)
 	: m_frames(0)
