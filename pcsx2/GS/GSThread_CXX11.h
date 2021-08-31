@@ -50,7 +50,7 @@ private:
 
 			l.unlock();
 
-			uint32 waited = 0;
+			u32 waited = 0;
 			while (true)
 			{
 				while (m_queue.consume_one(*this))
@@ -110,7 +110,7 @@ public:
 
 	void Wait()
 	{
-		uint32 waited = 0;
+		u32 waited = 0;
 		while (true)
 		{
 			if (IsEmpty())

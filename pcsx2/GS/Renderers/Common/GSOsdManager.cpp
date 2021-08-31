@@ -276,7 +276,7 @@ void GSOsdManager::Monitor(const char* key, const char* value)
 	}
 }
 
-void GSOsdManager::RenderGlyph(GSVertexPT1* dst, const glyph_info g, float x, float y, uint32 color)
+void GSOsdManager::RenderGlyph(GSVertexPT1* dst, const glyph_info g, float x, float y, u32 color)
 {
 	float x2 = x + g.bl * (2.0f / m_real_size.x);
 	float y2 = -y - g.bt * (2.0f / m_real_size.y);
@@ -309,7 +309,7 @@ void GSOsdManager::RenderGlyph(GSVertexPT1* dst, const glyph_info g, float x, fl
 	++dst;
 }
 
-void GSOsdManager::RenderString(GSVertexPT1* dst, const std::u32string msg, float x, float y, uint32 color)
+void GSOsdManager::RenderString(GSVertexPT1* dst, const std::u32string msg, float x, float y, u32 color)
 {
 	char32_t p = 0;
 	for (const auto& c : msg)
@@ -435,8 +435,8 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count)
 			ratio = ratio > 1.0f ? 1.0f : ratio < 0.0f ? 0.0f : ratio;
 
 			y += offset += ((m_size + 2) * (2.0f / m_real_size.y)) * ratio;
-			uint32 color = m_color;
-			((uint8*)&color)[3] = (uint8)(((uint8*)&color)[3] * (1.0f - ratio) * opacity);
+			u32 color = m_color;
+			((u8*)&color)[3] = (u8)(((u8*)&color)[3] * (1.0f - ratio) * opacity);
 			RenderString(dst, it->msg, x, y, color);
 			dst += it->msg.size() * 6;
 			drawn += it->msg.size() * 6;
@@ -473,8 +473,8 @@ size_t GSOsdManager::GeneratePrimitives(GSVertexPT1* dst, size_t count)
 			float x = 1.0f - 8 * (2.0f / m_real_size.x) - first_max - m_char_info[' '].ax * (2.0f / m_real_size.x) - second_max;
 			float y = -1.0f + ((m_size + 2) * (2.0f / m_real_size.y)) * line++;
 
-			uint32 color = m_color;
-			((uint8*)&color)[3] = (uint8)(((uint8*)&color)[3] * opacity);
+			u32 color = m_color;
+			((u8*)&color)[3] = (u8)(((u8*)&color)[3] * opacity);
 
 			// Render the key
 			RenderString(dst, pair.first, x, y, color);

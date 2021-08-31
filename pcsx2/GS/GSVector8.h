@@ -59,15 +59,15 @@ public:
 		struct { float x0, y0, z0, w0, x1, y1, z1, w1; };
 		struct { float r0, g0, b0, a0, r1, g1, b1, a1; };
 		float v[8];
-		float f32[8];
-		int8 i8[32];
-		int16 i16[16];
-		int32 i32[8];
-		int64 i64[4];
-		uint8 u8[32];
-		uint16 u16[16];
-		uint32 u32[8];
-		uint64 u64[4];
+		float F32[8];
+		s8  I8[32];
+		s16 I16[16];
+		s32 I32[8];
+		s64 I64[4];
+		u8  U8[32];
+		u16 U16[16];
+		u32 U32[8];
+		u64 U64[4];
 		__m256 m;
 		__m128 m0, m1;
 	};
@@ -103,7 +103,7 @@ public:
 		return GSVector8(cxpr_setr_epi32(x, x, x, x, x, x, x, x));
 	}
 
-	static constexpr GSVector8 cxpr(uint32 x)
+	static constexpr GSVector8 cxpr(u32 x)
 	{
 		return cxpr(static_cast<int>(x));
 	}

@@ -188,7 +188,7 @@ GSRendererHW::~GSRendererHW()
 	delete m_tc;
 }
 
-void GSRendererHW::SetGameCRC(uint32 crc, int options)
+void GSRendererHW::SetGameCRC(u32 crc, int options)
 {
 	GSRenderer::SetGameCRC(crc, options);
 
@@ -389,7 +389,7 @@ void GSRendererHW::Lines2Sprites()
 		int i = (int)count * 2 - 4;
 		GSVertex* s = &m_vertex.buff[count - 2];
 		GSVertex* q = &m_vertex.buff[count * 2 - 4];
-		uint32* RESTRICT index = &m_index.buff[count * 3 - 6];
+		u32* RESTRICT index = &m_index.buff[count * 3 - 6];
 
 		for (; i >= 0; i -= 4, s -= 2, q -= 4, index -= 6)
 		{
@@ -402,13 +402,13 @@ void GSRendererHW::Lines2Sprites()
 
 			if (PRIM->TME && !PRIM->FST)
 			{
-				GSVector4 st0 = GSVector4::loadl(&v0.ST.u64);
-				GSVector4 st1 = GSVector4::loadl(&v1.ST.u64);
+				GSVector4 st0 = GSVector4::loadl(&v0.ST.U64);
+				GSVector4 st1 = GSVector4::loadl(&v1.ST.U64);
 				GSVector4 Q = GSVector4(v1.RGBAQ.Q, v1.RGBAQ.Q, v1.RGBAQ.Q, v1.RGBAQ.Q);
 				GSVector4 st = st0.upld(st1) / Q;
 
-				GSVector4::storel(&v0.ST.u64, st);
-				GSVector4::storeh(&v1.ST.u64, st);
+				GSVector4::storel(&v0.ST.U64, st);
+				GSVector4::storeh(&v1.ST.U64, st);
 
 				v0.RGBAQ.Q = 1.0f;
 				v1.RGBAQ.Q = 1.0f;
@@ -419,7 +419,7 @@ void GSRendererHW::Lines2Sprites()
 
 			// swap x, s, u
 
-			const uint16 x = v0.XYZ.X;
+			const u16 x = v0.XYZ.X;
 			v0.XYZ.X = v1.XYZ.X;
 			v1.XYZ.X = x;
 
@@ -427,7 +427,7 @@ void GSRendererHW::Lines2Sprites()
 			v0.ST.S = v1.ST.S;
 			v1.ST.S = s;
 
-			const uint16 u = v0.U;
+			const u16 u = v0.U;
 			v0.U = v1.U;
 			v1.U = u;
 
@@ -447,9 +447,9 @@ void GSRendererHW::Lines2Sprites()
 	}
 }
 
-void GSRendererHW::EmulateAtst(GSVector4& FogColor_AREF, uint8& ps_atst, const bool pass_2)
+void GSRendererHW::EmulateAtst(GSVector4& FogColor_AREF, u8& ps_atst, const bool pass_2)
 {
-	static const uint32 inverted_atst[] = {ATST_ALWAYS, ATST_NEVER, ATST_GEQUAL, ATST_GREATER, ATST_NOTEQUAL, ATST_LESS, ATST_LEQUAL, ATST_EQUAL};
+	static const u32 inverted_atst[] = {ATST_ALWAYS, ATST_NEVER, ATST_GEQUAL, ATST_GREATER, ATST_NOTEQUAL, ATST_LESS, ATST_LEQUAL, ATST_EQUAL};
 
 	if (!m_context->TEST.ATE)
 		return;
@@ -570,10 +570,10 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 				GSVector4i tmp(v[i].XYZ.Y, v[i].V, v[i + 1].XYZ.Y, v[i + 1].V);
 				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
 
-				v[i].XYZ.Y = (uint16)tmp.x;
-				v[i].V = (uint16)tmp.y;
-				v[i + 1].XYZ.Y = (uint16)tmp.z;
-				v[i + 1].V = (uint16)tmp.w;
+				v[i].XYZ.Y = (u16)tmp.x;
+				v[i].V = (u16)tmp.y;
+				v[i + 1].XYZ.Y = (u16)tmp.z;
+				v[i + 1].V = (u16)tmp.w;
 			}
 		}
 	}
@@ -603,9 +603,9 @@ void GSRendererHW::ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba)
 				tmp = GSVector4i(tmp - offset).srl32(1) + offset;
 
 				//fprintf(stderr, "Before %d, After %d\n", v[i + 1].XYZ.Y, tmp.y);
-				v[i].XYZ.Y = (uint16)tmp.x;
+				v[i].XYZ.Y = (u16)tmp.x;
 				v[i].ST.T /= 2.0f;
-				v[i + 1].XYZ.Y = (uint16)tmp.y;
+				v[i + 1].XYZ.Y = (u16)tmp.y;
 				v[i + 1].ST.T /= 2.0f;
 			}
 		}
@@ -757,15 +757,15 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 				// Replace all sprite with a single fullscreen sprite.
 				GSVertex* s = &m_vertex.buff[0];
 
-				s[0].XYZ.X = static_cast<uint16>((16.0f * m_vt.m_min.p.x) + m_context->XYOFFSET.OFX);
-				s[1].XYZ.X = static_cast<uint16>((16.0f * m_vt.m_max.p.x) + m_context->XYOFFSET.OFX);
-				s[0].XYZ.Y = static_cast<uint16>((16.0f * m_vt.m_min.p.y) + m_context->XYOFFSET.OFY);
-				s[1].XYZ.Y = static_cast<uint16>((16.0f * m_vt.m_max.p.y) + m_context->XYOFFSET.OFY);
+				s[0].XYZ.X = static_cast<u16>((16.0f * m_vt.m_min.p.x) + m_context->XYOFFSET.OFX);
+				s[1].XYZ.X = static_cast<u16>((16.0f * m_vt.m_max.p.x) + m_context->XYOFFSET.OFX);
+				s[0].XYZ.Y = static_cast<u16>((16.0f * m_vt.m_min.p.y) + m_context->XYOFFSET.OFY);
+				s[1].XYZ.Y = static_cast<u16>((16.0f * m_vt.m_max.p.y) + m_context->XYOFFSET.OFY);
 
-				s[0].U = static_cast<uint16>(16.0f * m_vt.m_min.t.x);
-				s[0].V = static_cast<uint16>(16.0f * m_vt.m_min.t.y);
-				s[1].U = static_cast<uint16>(16.0f * m_vt.m_max.t.x);
-				s[1].V = static_cast<uint16>(16.0f * m_vt.m_max.t.y);
+				s[0].U = static_cast<u16>(16.0f * m_vt.m_min.t.x);
+				s[0].V = static_cast<u16>(16.0f * m_vt.m_min.t.y);
+				s[1].U = static_cast<u16>(16.0f * m_vt.m_max.t.x);
+				s[1].V = static_cast<u16>(16.0f * m_vt.m_max.t.y);
 
 				m_vertex.head = m_vertex.tail = m_vertex.next = 2;
 				m_index.tail = 2;
@@ -791,10 +791,10 @@ void GSRendererHW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 	m_tc->InvalidateLocalMem(m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM), r);
 }
 
-uint16 GSRendererHW::Interpolate_UV(float alpha, int t0, int t1)
+u16 GSRendererHW::Interpolate_UV(float alpha, int t0, int t1)
 {
 	const float t = (1.0f - alpha) * t0 + alpha * t1;
-	return (uint16)t & ~0xF; // cheap rounding
+	return (u16)t & ~0xF; // cheap rounding
 }
 
 float GSRendererHW::alpha0(int L, int X0, int X1)
@@ -899,28 +899,28 @@ void GSRendererHW::SwSpriteRender()
 	const bool fb_mask_enabled = m_context->FRAME.FBMSK != 0x0;
 	const GSVector4i fb_mask = GSVector4i(m_context->FRAME.FBMSK).u8to16(); // 0x00AA00BB00GG00RR00AA00BB00GG00RR
 
-	const uint8 tex0_tfx = m_context->TEX0.TFX;
-	const uint8 tex0_tcc = m_context->TEX0.TCC;
-	const uint8 alpha_b = m_context->ALPHA.B;
-	const uint8 alpha_c = m_context->ALPHA.C;
-	const uint8 alpha_fix = m_context->ALPHA.FIX;
+	const u8 tex0_tfx = m_context->TEX0.TFX;
+	const u8 tex0_tcc = m_context->TEX0.TCC;
+	const u8 alpha_b = m_context->ALPHA.B;
+	const u8 alpha_c = m_context->ALPHA.C;
+	const u8 alpha_fix = m_context->ALPHA.FIX;
 
 	for (int y = 0; y < h; y++, ++sy, ++dy)
 	{
-		auto spa = texture_mapping_enabled ? spo.paMulti(m_mem.m_vm32, sx, sy) : GSOffset::PAPtrHelper<uint32>();
+		auto spa = texture_mapping_enabled ? spo.paMulti(m_mem.m_vm32, sx, sy) : GSOffset::PAPtrHelper<u32>();
 		auto dpa = dpo.paMulti(m_mem.m_vm32, dx, dy);
 
 		ASSERT(w % 2 == 0);
 
 		for (int x = 0; x < w; x += 2)
 		{
-			uint32* di = dpa.value(x);
+			u32* di = dpa.value(x);
 			ASSERT(*di + 1 == *dpa.value(x + 1)); // Destination pixel pair is adjacent in memory
 
 			GSVector4i sc;
 			if (texture_mapping_enabled)
 			{
-				uint32* si = spa.value(x);
+				u32* si = spa.value(x);
 				// Read 2 source pixel colors
 				ASSERT((*si + 1) == *spa.value(x + 1)); // Source pixel pair is adjacent in memory
 				sc = GSVector4i::loadl(si).u8to16(); // 0x00AA00BB00GG00RR00aa00bb00gg00rr
@@ -1079,8 +1079,8 @@ void GSRendererHW::RoundSpriteOffset()
 		const int Lx = (v[i + 1].XYZ.X - v[i].XYZ.X);
 		const float ax0 = alpha0(Lx, X0, X1);
 		const float ax1 = alpha1(Lx, X0, X1);
-		const uint16 tx0 = Interpolate_UV(ax0, v[i].U, v[i + 1].U);
-		const uint16 tx1 = Interpolate_UV(ax1, v[i].U, v[i + 1].U);
+		const u16 tx0 = Interpolate_UV(ax0, v[i].U, v[i + 1].U);
+		const u16 tx1 = Interpolate_UV(ax1, v[i].U, v[i + 1].U);
 #ifdef DEBUG_U
 		if (debug)
 		{
@@ -1096,8 +1096,8 @@ void GSRendererHW::RoundSpriteOffset()
 		const int Ly = (v[i + 1].XYZ.Y - v[i].XYZ.Y);
 		const float ay0 = alpha0(Ly, Y0, Y1);
 		const float ay1 = alpha1(Ly, Y0, Y1);
-		const uint16 ty0 = Interpolate_UV(ay0, v[i].V, v[i + 1].V);
-		const uint16 ty1 = Interpolate_UV(ay1, v[i].V, v[i + 1].V);
+		const u16 ty0 = Interpolate_UV(ay0, v[i].V, v[i + 1].V);
+		const u16 ty1 = Interpolate_UV(ay1, v[i].V, v[i + 1].V);
 #ifdef DEBUG_V
 		if (debug)
 		{
@@ -1206,8 +1206,8 @@ void GSRendererHW::Draw()
 	const GIFRegFRAME FRAME = context->FRAME;
 	const GIFRegZBUF ZBUF = context->ZBUF;
 
-	uint32 fm = context->FRAME.FBMSK;
-	uint32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
+	u32 fm = context->FRAME.FBMSK;
+	u32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
 
 	// Note required to compute TryAlphaTest below. So do it now.
 	if (PRIM->TME && tex_psm.pal > 0)
@@ -1469,7 +1469,7 @@ void GSRendererHW::Draw()
 
 	if (s_dump)
 	{
-		const uint64 frame = m_perfmon.GetFrame();
+		const u64 frame = m_perfmon.GetFrame();
 
 		std::string s;
 
@@ -1651,7 +1651,7 @@ void GSRendererHW::Draw()
 
 	if (s_dump)
 	{
-		const uint64 frame = m_perfmon.GetFrame();
+		const u64 frame = m_perfmon.GetFrame();
 
 		std::string s;
 
@@ -1715,7 +1715,7 @@ GSRendererHW::Hacks::Hacks()
 
 void GSRendererHW::Hacks::SetGameCRC(const CRC::Game& game)
 {
-	const uint32 hash = (uint32)((game.region << 24) | game.title);
+	const u32 hash = (u32)((game.region << 24) | game.title);
 
 	m_oi = m_oi_map[hash];
 	m_oo = m_oo_map[hash];
@@ -1744,7 +1744,7 @@ void GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds)
 		//const GSLocalMemory::psm_t& depth_psm = GSLocalMemory::m_psm[m_context->ZBUF.PSM];
 
 		// Z and color must be constant and the same
-		if (m_vt.m_eq.rgba != 0xFFFF || !m_vt.m_eq.z || v[1].XYZ.Z != v[1].RGBAQ.u32[0])
+		if (m_vt.m_eq.rgba != 0xFFFF || !m_vt.m_eq.z || v[1].XYZ.Z != v[1].RGBAQ.U32[0])
 			return;
 
 		// Format doesn't have the same size. It smells fishy (xmen...)
@@ -1752,12 +1752,12 @@ void GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds)
 		//	return;
 
 		// Size of the current draw
-		const uint32 w_pages = static_cast<uint32>(roundf(m_vt.m_max.p.x / frame_psm.pgs.x));
-		const uint32 h_pages = static_cast<uint32>(roundf(m_vt.m_max.p.y / frame_psm.pgs.y));
-		const uint32 written_pages = w_pages * h_pages;
+		const u32 w_pages = static_cast<u32>(roundf(m_vt.m_max.p.x / frame_psm.pgs.x));
+		const u32 h_pages = static_cast<u32>(roundf(m_vt.m_max.p.y / frame_psm.pgs.y));
+		const u32 written_pages = w_pages * h_pages;
 
 		// Frame and depth pointer can be inverted
-		uint32 base = 0, half = 0;
+		u32 base = 0, half = 0;
 		if (m_context->FRAME.FBP > m_context->ZBUF.ZBP)
 		{
 			base = m_context->ZBUF.ZBP;
@@ -1772,7 +1772,7 @@ void GSRendererHW::OI_DoubleHalfClear(GSTexture* rt, GSTexture* ds)
 		// If both buffers are side by side we can expect a fast clear in on-going
 		if (half <= (base + written_pages))
 		{
-			const uint32 color = v[1].RGBAQ.u32[0];
+			const u32 color = v[1].RGBAQ.U32[0];
 			const bool clear_depth = (m_context->FRAME.FBP > m_context->ZBUF.ZBP);
 
 			GL_INS("OI_DoubleHalfClear:%s: base %x half %x. w_pages %d h_pages %d fbw %d. Color %x",
@@ -1953,7 +1953,7 @@ bool GSRendererHW::OI_BigMuthaTruckers(GSTexture* rt, GSTexture* ds, GSTextureCa
 
 		const size_t count = m_vertex.next;
 		GSVertex* v = &m_vertex.buff[0];
-		const uint16 offset = (uint16)m_r.y * 16;
+		const u16 offset = (u16)m_r.y * 16;
 
 		for (size_t i = 0; i < count; i++)
 			v[i].V += offset;
@@ -1978,7 +1978,7 @@ bool GSRendererHW::OI_DBZBTGames(GSTexture* rt, GSTexture* ds, GSTextureCache::S
 
 bool GSRendererHW::OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
-	static uint32* video = NULL;
+	static u32* video = NULL;
 	static size_t lines = 0;
 
 	if (lines == 0)
@@ -1997,7 +1997,7 @@ bool GSRendererHW::OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source
 				// incoming pixels are stored in columns, one column is 16x512, total res 448x512 or 448x454
 
 				if (!video)
-					video = new uint32[512 * 512];
+					video = new u32[512 * 512];
 
 				const int ox = m_context->XYOFFSET.OFX - 8;
 				const int oy = m_context->XYOFFSET.OFY - 8;
@@ -2012,7 +2012,7 @@ bool GSRendererHW::OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source
 					if (x < 0 || x >= 448 || y < 0 || y >= (int)lines)
 						return false; // le sigh
 
-					video[(y << 8) + (y << 7) + (y << 6) + x] = v->RGBAQ.u32[0];
+					video[(y << 8) + (y << 7) + (y << 6) + x] = v->RGBAQ.U32[0];
 				}
 
 				return false;
@@ -2062,9 +2062,9 @@ bool GSRendererHW::OI_FFXII(GSTexture* rt, GSTexture* ds, GSTextureCache::Source
 
 bool GSRendererHW::OI_FFX(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t)
 {
-	const uint32 FBP = m_context->FRAME.Block();
-	const uint32 ZBP = m_context->ZBUF.Block();
-	const uint32 TBP = m_context->TEX0.TBP0;
+	const u32 FBP = m_context->FRAME.Block();
+	const u32 ZBP = m_context->ZBUF.Block();
+	const u32 TBP = m_context->TEX0.TBP0;
 
 	if ((FBP == 0x00d00 || FBP == 0x00000) && ZBP == 0x02100 && PRIM->TME && TBP == 0x01a00 && m_context->TEX0.PSM == PSM_PSMCT16S)
 	{
@@ -2086,15 +2086,15 @@ bool GSRendererHW::OI_MetalSlug6(GSTexture* rt, GSTexture* ds, GSTextureCache::S
 
 	for (int i = (int)m_vertex.next; i > 0; i--, v++)
 	{
-		const uint32 c = v->RGBAQ.u32[0];
+		const u32 c = v->RGBAQ.U32[0];
 
-		const uint32 r = (c >> 0) & 0xff;
-		const uint32 g = (c >> 8) & 0xff;
-		const uint32 b = (c >> 16) & 0xff;
+		const u32 r = (c >> 0) & 0xff;
+		const u32 g = (c >> 8) & 0xff;
+		const u32 b = (c >> 16) & 0xff;
 
 		if (r == 0 && g != 0 && b != 0)
 		{
-			v->RGBAQ.u32[0] = (c & 0xffffff00) | ((g + b + 1) >> 1);
+			v->RGBAQ.U32[0] = (c & 0xffffff00) | ((g + b + 1) >> 1);
 		}
 	}
 
@@ -2107,8 +2107,8 @@ bool GSRendererHW::OI_RozenMaidenGebetGarden(GSTexture* rt, GSTexture* ds, GSTex
 {
 	if (!PRIM->TME)
 	{
-		const uint32 FBP = m_context->FRAME.Block();
-		const uint32 ZBP = m_context->ZBUF.Block();
+		const u32 FBP = m_context->FRAME.Block();
+		const u32 ZBP = m_context->ZBUF.Block();
 
 		if (FBP == 0x008c0 && ZBP == 0x01a40)
 		{
@@ -2193,8 +2193,8 @@ bool GSRendererHW::OI_PointListPalette(GSTexture* rt, GSTexture* ds, GSTextureCa
 {
 	if (m_vt.m_primclass == GS_POINT_CLASS && !PRIM->TME)
 	{
-		const uint32 FBP = m_context->FRAME.Block();
-		const uint32 FBW = m_context->FRAME.FBW;
+		const u32 FBP = m_context->FRAME.Block();
+		const u32 FBW = m_context->FRAME.FBW;
 
 		if (FBP >= 0x03f40 && (FBP & 0x1f) == 0)
 		{
@@ -2204,12 +2204,12 @@ bool GSRendererHW::OI_PointListPalette(GSTexture* rt, GSTexture* ds, GSTextureCa
 
 				for (int i = 0; i < 16; i++, v++)
 				{
-					uint32 c = v->RGBAQ.u32[0];
-					const uint32 a = c >> 24;
+					u32 c = v->RGBAQ.U32[0];
+					const u32 a = c >> 24;
 
 					c = (a >= 0x80 ? 0xff000000 : (a << 25)) | (c & 0x00ffffff);
 
-					v->RGBAQ.u32[0] = c;
+					v->RGBAQ.U32[0] = c;
 
 					m_mem.WritePixel32(i & 7, i >> 3, c, FBP, FBW);
 				}
@@ -2224,12 +2224,12 @@ bool GSRendererHW::OI_PointListPalette(GSTexture* rt, GSTexture* ds, GSTextureCa
 
 				for (int i = 0; i < 256; i++, v++)
 				{
-					uint32 c = v->RGBAQ.u32[0];
-					const uint32 a = c >> 24;
+					u32 c = v->RGBAQ.U32[0];
+					const u32 a = c >> 24;
 
 					c = (a >= 0x80 ? 0xff000000 : (a << 25)) | (c & 0x00ffffff);
 
-					v->RGBAQ.u32[0] = c;
+					v->RGBAQ.U32[0] = c;
 
 					m_mem.WritePixel32(i & 15, i >> 4, c, FBP, FBW);
 				}
@@ -2329,7 +2329,7 @@ void GSRendererHW::OO_MajokkoALaMode2()
 {
 	// palette readback
 
-	const uint32 FBP = m_context->FRAME.Block();
+	const u32 FBP = m_context->FRAME.Block();
 
 	if (!PRIM->TME && FBP == 0x03f40)
 	{
@@ -2349,7 +2349,7 @@ bool GSRendererHW::CU_MajokkoALaMode2()
 {
 	// palette should stay 16 x 16
 
-	const uint32 FBP = m_context->FRAME.Block();
+	const u32 FBP = m_context->FRAME.Block();
 
 	return FBP != 0x03f40;
 }
@@ -2358,7 +2358,7 @@ bool GSRendererHW::CU_TalesOfAbyss()
 {
 	// full image blur and brightening
 
-	const uint32 FBP = m_context->FRAME.Block();
+	const u32 FBP = m_context->FRAME.Block();
 
 	return FBP != 0x036e0 && FBP != 0x03560 && FBP != 0x038e0;
 }

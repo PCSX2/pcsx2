@@ -46,7 +46,7 @@ static HRESULT s_hr = E_FAIL;
 #undef None
 
 static GSRenderer* s_gs = NULL;
-static uint8* s_basemem = NULL;
+static u8* s_basemem = NULL;
 static int s_vsync = 0;
 static bool s_exclusive = true;
 static std::string s_renderer_name;
@@ -59,7 +59,7 @@ static int s_new_gs_window_width = 0;
 static int s_new_gs_window_height = 0;
 #endif
 
-void GSsetBaseMem(uint8* mem)
+void GSsetBaseMem(u8* mem)
 {
 	s_basemem = mem;
 
@@ -267,19 +267,19 @@ int _GSopen(const WindowInfo& wi, const char* title, GSRendererType renderer, in
 	return 0;
 }
 
-void GSosdLog(const char* utf8, uint32 color)
+void GSosdLog(const char* utf8, u32 color)
 {
 	if (s_gs && s_gs->m_dev)
 		s_gs->m_dev->m_osd.Log(utf8);
 }
 
-void GSosdMonitor(const char* key, const char* value, uint32 color)
+void GSosdMonitor(const char* key, const char* value, u32 color)
 {
 	if (s_gs && s_gs->m_dev)
 		s_gs->m_dev->m_osd.Monitor(key, value);
 }
 
-int GSopen2(const WindowInfo& wi, uint32 flags)
+int GSopen2(const WindowInfo& wi, u32 flags)
 {
 	static bool stored_toggle_state = false;
 	const bool toggle_state = !!(flags & 4);
@@ -344,7 +344,7 @@ void GSreset()
 	}
 }
 
-void GSgifSoftReset(uint32 mask)
+void GSgifSoftReset(u32 mask)
 {
 	try
 	{
@@ -355,7 +355,7 @@ void GSgifSoftReset(uint32 mask)
 	}
 }
 
-void GSwriteCSR(uint32 csr)
+void GSwriteCSR(u32 csr)
 {
 	try
 	{
@@ -366,7 +366,7 @@ void GSwriteCSR(uint32 csr)
 	}
 }
 
-void GSinitReadFIFO(uint8* mem)
+void GSinitReadFIFO(u8* mem)
 {
 	GL_PERF("Init Read FIFO1");
 	try
@@ -382,7 +382,7 @@ void GSinitReadFIFO(uint8* mem)
 	}
 }
 
-void GSreadFIFO(uint8* mem)
+void GSreadFIFO(u8* mem)
 {
 	try
 	{
@@ -397,7 +397,7 @@ void GSreadFIFO(uint8* mem)
 	}
 }
 
-void GSinitReadFIFO2(uint8* mem, uint32 size)
+void GSinitReadFIFO2(u8* mem, u32 size)
 {
 	GL_PERF("Init Read FIFO2");
 	try
@@ -413,7 +413,7 @@ void GSinitReadFIFO2(uint8* mem, uint32 size)
 	}
 }
 
-void GSreadFIFO2(uint8* mem, uint32 size)
+void GSreadFIFO2(u8* mem, u32 size)
 {
 	try
 	{
@@ -428,7 +428,7 @@ void GSreadFIFO2(uint8* mem, uint32 size)
 	}
 }
 
-void GSgifTransfer(const uint8* mem, uint32 size)
+void GSgifTransfer(const u8* mem, u32 size)
 {
 	try
 	{
@@ -439,33 +439,33 @@ void GSgifTransfer(const uint8* mem, uint32 size)
 	}
 }
 
-void GSgifTransfer1(uint8* mem, uint32 addr)
+void GSgifTransfer1(u8* mem, u32 addr)
 {
 	try
 	{
-		s_gs->Transfer<0>(const_cast<uint8*>(mem) + addr, (0x4000 - addr) / 16);
+		s_gs->Transfer<0>(const_cast<u8*>(mem) + addr, (0x4000 - addr) / 16);
 	}
 	catch (GSRecoverableError)
 	{
 	}
 }
 
-void GSgifTransfer2(uint8* mem, uint32 size)
+void GSgifTransfer2(u8* mem, u32 size)
 {
 	try
 	{
-		s_gs->Transfer<1>(const_cast<uint8*>(mem), size);
+		s_gs->Transfer<1>(const_cast<u8*>(mem), size);
 	}
 	catch (GSRecoverableError)
 	{
 	}
 }
 
-void GSgifTransfer3(uint8* mem, uint32 size)
+void GSgifTransfer3(u8* mem, u32 size)
 {
 	try
 	{
-		s_gs->Transfer<2>(const_cast<uint8*>(mem), size);
+		s_gs->Transfer<2>(const_cast<u8*>(mem), size);
 	}
 	catch (GSRecoverableError)
 	{
@@ -487,7 +487,7 @@ void GSvsync(int field)
 	}
 }
 
-uint32 GSmakeSnapshot(char* path)
+u32 GSmakeSnapshot(char* path)
 {
 	try
 	{
@@ -629,7 +629,7 @@ void GSendRecording()
 	pt(" - Capture ended\n");
 }
 
-void GSsetGameCRC(uint32 crc, int options)
+void GSsetGameCRC(u32 crc, int options)
 {
 	s_gs->SetGameCRC(crc, options);
 }
@@ -746,7 +746,7 @@ void vmfree(void* ptr, size_t size)
 }
 
 static HANDLE s_fh = NULL;
-static uint8* s_Next[8];
+static u8* s_Next[8];
 
 void* fifo_alloc(size_t size, size_t repeat)
 {
@@ -770,8 +770,8 @@ void* fifo_alloc(size_t size, size_t repeat)
 	void* fifo = MapViewOfFile(s_fh, FILE_MAP_ALL_ACCESS, 0, 0, size);
 	for (size_t i = 1; i < repeat; i++)
 	{
-		void* base = (uint8*)fifo + size * i;
-		s_Next[i] = (uint8*)MapViewOfFileEx(s_fh, FILE_MAP_ALL_ACCESS, 0, 0, size, base);
+		void* base = (u8*)fifo + size * i;
+		s_Next[i] = (u8*)MapViewOfFileEx(s_fh, FILE_MAP_ALL_ACCESS, 0, 0, size, base);
 		errorID = ::GetLastError();
 		if (s_Next[i] != base)
 		{
@@ -881,8 +881,8 @@ void* fifo_alloc(size_t size, size_t repeat)
 
 	for (size_t i = 1; i < repeat; i++)
 	{
-		void* base = (uint8*)fifo + size * i;
-		uint8* next = (uint8*)mmap(base, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, s_shm_fd, 0);
+		void* base = (u8*)fifo + size * i;
+		u8* next = (u8*)mmap(base, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, s_shm_fd, 0);
 		if (next != base)
 			fprintf(stderr, "Fail to mmap contiguous segment\n");
 	}
@@ -1081,16 +1081,16 @@ void GSApp::Init()
 	m_section = "Settings";
 
 #ifdef _WIN32
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_HW), "Direct3D 11", ""));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW), "OpenGL", ""));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_SW), "Software", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::DX1011_HW), "Direct3D 11", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::OGL_HW), "OpenGL", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::OGL_SW), "Software", ""));
 #else // Linux
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW), "OpenGL", ""));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_SW), "Software", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::OGL_HW), "OpenGL", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::OGL_SW), "Software", ""));
 #endif
 
 	// The null renderer goes third, it has use for benchmarking purposes in a release build
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null), "Null", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::Null), "Null", ""));
 
 	m_gs_interlace.push_back(GSSetting(0, "None", ""));
 	m_gs_interlace.push_back(GSSetting(1, "Weave tff", "saw-tooth"));
@@ -1120,14 +1120,14 @@ void GSApp::Init()
 	m_gs_dithering.push_back(GSSetting(2, "Unscaled", "Default"));
 	m_gs_dithering.push_back(GSSetting(1, "Scaled", ""));
 
-	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Nearest), "Nearest", ""));
-	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Forced_But_Sprite), "Bilinear", "Forced excluding sprite"));
-	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Forced), "Bilinear", "Forced"));
-	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::PS2), "Bilinear", "PS2"));
+	m_gs_bifilter.push_back(GSSetting(static_cast<u32>(BiFiltering::Nearest), "Nearest", ""));
+	m_gs_bifilter.push_back(GSSetting(static_cast<u32>(BiFiltering::Forced_But_Sprite), "Bilinear", "Forced excluding sprite"));
+	m_gs_bifilter.push_back(GSSetting(static_cast<u32>(BiFiltering::Forced), "Bilinear", "Forced"));
+	m_gs_bifilter.push_back(GSSetting(static_cast<u32>(BiFiltering::PS2), "Bilinear", "PS2"));
 
-	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::None), "None", "Default"));
-	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::PS2), "Trilinear", ""));
-	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::Forced), "Trilinear", "Ultra/Slow"));
+	m_gs_trifilter.push_back(GSSetting(static_cast<u32>(TriFiltering::None), "None", "Default"));
+	m_gs_trifilter.push_back(GSSetting(static_cast<u32>(TriFiltering::PS2), "Trilinear", ""));
+	m_gs_trifilter.push_back(GSSetting(static_cast<u32>(TriFiltering::Forced), "Trilinear", "Ultra/Slow"));
 
 	m_gs_generic_list.push_back(GSSetting(-1, "Automatic", "Default"));
 	m_gs_generic_list.push_back(GSSetting(0, "Force-Disabled", ""));
@@ -1202,7 +1202,7 @@ void GSApp::Init()
 	m_default_configuration["capture_threads"]                            = "4";
 	m_default_configuration["CaptureHeight"]                              = "480";
 	m_default_configuration["CaptureWidth"]                               = "640";
-	m_default_configuration["crc_hack_level"]                             = std::to_string(static_cast<int8>(CRCHackLevel::Automatic));
+	m_default_configuration["crc_hack_level"]                             = std::to_string(static_cast<s8>(CRCHackLevel::Automatic));
 	m_default_configuration["CrcHacksExclusions"]                         = "";
 	m_default_configuration["debug_glsl_shader"]                          = "0";
 	m_default_configuration["debug_opengl"]                               = "0";
@@ -1211,7 +1211,7 @@ void GSApp::Init()
 	m_default_configuration["dump"]                                       = "0";
 	m_default_configuration["extrathreads"]                               = "2";
 	m_default_configuration["extrathreads_height"]                        = "4";
-	m_default_configuration["filter"]                                     = std::to_string(static_cast<int8>(BiFiltering::PS2));
+	m_default_configuration["filter"]                                     = std::to_string(static_cast<s8>(BiFiltering::PS2));
 	m_default_configuration["force_texture_clear"]                        = "0";
 	m_default_configuration["fxaa"]                                       = "0";
 	m_default_configuration["interlace"]                                  = "7";
@@ -1288,7 +1288,7 @@ void GSApp::Init()
 	m_default_configuration["UserHacks_TCOffsetX"]                        = "0";
 	m_default_configuration["UserHacks_TCOffsetY"]                        = "0";
 	m_default_configuration["UserHacks_TextureInsideRt"]                  = "0";
-	m_default_configuration["UserHacks_TriFilter"]                        = std::to_string(static_cast<int8>(TriFiltering::None));
+	m_default_configuration["UserHacks_TriFilter"]                        = std::to_string(static_cast<s8>(TriFiltering::None));
 	m_default_configuration["UserHacks_WildHack"]                         = "0";
 	m_default_configuration["wrap_gs_mem"]                                = "0";
 	m_default_configuration["vsync"]                                      = "0";

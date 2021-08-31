@@ -36,7 +36,7 @@ GSRendererSW::GSRendererSW(int threads)
 
 	m_rl = GSRasterizerList::Create<GSDrawScanline>(threads, &m_perfmon);
 
-	m_output = (uint8*)_aligned_malloc(1024 * 1024 * sizeof(uint32), 32);
+	m_output = (u8*)_aligned_malloc(1024 * 1024 * sizeof(u32), 32);
 
 	std::fill(std::begin(m_fzb_pages), std::end(m_fzb_pages), 0);
 	std::fill(std::begin(m_tex_pages), std::end(m_tex_pages), 0);
@@ -194,7 +194,7 @@ GSTexture* GSRendererSW::GetFeedbackOutput()
 }
 
 
-template <uint32 primclass, uint32 tme, uint32 fst, uint32 q_div>
+template <u32 primclass, u32 tme, u32 fst, u32 q_div>
 void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count)
 {
 	// FIXME q_div wasn't added to AVX2 code path.
@@ -339,20 +339,20 @@ void GSRendererSW::Draw()
 	std::shared_ptr<GSRasterizerData> data(sd);
 
 	sd->primclass = m_vt.m_primclass;
-	sd->buff = (uint8*)_aligned_malloc(sizeof(GSVertexSW) * ((m_vertex.next + 1) & ~1) + sizeof(uint32) * m_index.tail, 64);
+	sd->buff = (u8*)_aligned_malloc(sizeof(GSVertexSW) * ((m_vertex.next + 1) & ~1) + sizeof(u32) * m_index.tail, 64);
 	sd->vertex = (GSVertexSW*)sd->buff;
 	sd->vertex_count = m_vertex.next;
-	sd->index = (uint32*)(sd->buff + sizeof(GSVertexSW) * ((m_vertex.next + 1) & ~1));
+	sd->index = (u32*)(sd->buff + sizeof(GSVertexSW) * ((m_vertex.next + 1) & ~1));
 	sd->index_count = m_index.tail;
 
 	// skip per pixel division if q is constant.
 	// Optimize the division by 1 with a nop. It also means that GS_SPRITE_CLASS must be processed when !m_vt.m_eq.q.
 	// If you have both GS_SPRITE_CLASS && m_vt.m_eq.q, it will depends on the first part of the 'OR'
-	uint32 q_div = !IsMipMapActive() && ((m_vt.m_eq.q && m_vt.m_min.t.z != 1.0f) || (!m_vt.m_eq.q && m_vt.m_primclass == GS_SPRITE_CLASS));
+	u32 q_div = !IsMipMapActive() && ((m_vt.m_eq.q && m_vt.m_min.t.z != 1.0f) || (!m_vt.m_eq.q && m_vt.m_primclass == GS_SPRITE_CLASS));
 
 	(this->*m_cvb[m_vt.m_primclass][PRIM->TME][PRIM->FST][q_div])(sd->vertex, m_vertex.buff, m_vertex.next);
 
-	memcpy(sd->index, m_index.buff, sizeof(uint32) * m_index.tail);
+	memcpy(sd->index, m_index.buff, sizeof(u32) * m_index.tail);
 
 	GSVector4i scissor = GSVector4i(context->scissor.in);
 	GSVector4i bbox = GSVector4i(m_vt.m_min.p.floor().xyxy(m_vt.m_max.p.ceil()));
@@ -382,7 +382,7 @@ void GSRendererSW::Draw()
 	{
 		int n = GSUtil::GetVertexCount(PRIM->PRIM);
 
-		for (uint32 i = 0, j = 0; i < m_index.tail; i += n, j++)
+		for (u32 i = 0, j = 0; i < m_index.tail; i += n, j++)
 		{
 			for (int k = 0; k < n; k++)
 			{
@@ -443,7 +443,7 @@ void GSRendererSW::Draw()
 	{
 		Sync(2);
 
-		uint64 frame = m_perfmon.GetFrame();
+		u64 frame = m_perfmon.GetFrame();
 		// Dump the texture in 32 bits format. It helps to debug texture shuffle effect
 		// It will breaks the few games that really uses 16 bits RT
 		bool texture_shuffle = ((context->FRAME.PSM & 0x2) && ((context->TEX0.PSM & 3) == 2) && (m_vt.m_primclass == GS_SPRITE_CLASS));
@@ -594,7 +594,7 @@ void GSRendererSW::Sync(int reason)
 
 	GSPerfMonAutoTimer pmat(&m_perfmon, GSPerfMon::Sync);
 
-	uint64 t = __rdtsc();
+	u64 t = __rdtsc();
 
 	m_rl->Sync();
 
@@ -645,7 +645,7 @@ void GSRendererSW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 
 	if (!m_rl->IsSynced())
 	{
-		pages.loopPagesWithBreak([&](uint32 page)
+		pages.loopPagesWithBreak([&](u32 page)
 		{
 			if (m_fzb_pages[page] | m_tex_pages[page])
 			{
@@ -673,7 +673,7 @@ void GSRendererSW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 		GSOffset off = m_mem.GetOffset(BITBLTBUF.SBP, BITBLTBUF.SBW, BITBLTBUF.SPSM);
 		GSOffset::PageLooper pages = off.pageLooperForRect(r);
 
-		pages.loopPagesWithBreak([&](uint32 page)
+		pages.loopPagesWithBreak([&](u32 page)
 		{
 			if (m_fzb_pages[page])
 			{
@@ -688,7 +688,7 @@ void GSRendererSW::InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GS
 
 void GSRendererSW::UsePages(const GSOffset::PageLooper& pages, const int type)
 {
-	pages.loopPages([=](uint32 page)
+	pages.loopPages([=](u32 page)
 	{
 		switch (type)
 		{
@@ -712,7 +712,7 @@ void GSRendererSW::UsePages(const GSOffset::PageLooper& pages, const int type)
 
 void GSRendererSW::ReleasePages(const GSOffset::PageLooper& pages, const int type)
 {
-	pages.loopPages([=](uint32 page)
+	pages.loopPages([=](u32 page)
 	{
 		switch (type)
 		{
@@ -767,14 +767,14 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 
 		memset(m_fzb_cur_pages, 0, sizeof(m_fzb_cur_pages));
 
-		uint32 used = 0;
+		u32 used = 0;
 
 		requirePages();
 
-		fb_pages->loopPages([&](uint32 i)
+		fb_pages->loopPages([&](u32 i)
 		{
-			uint32 row = i >> 5;
-			uint32 col = 1 << (i & 31);
+			u32 row = i >> 5;
+			u32 col = 1 << (i & 31);
 
 			m_fzb_cur_pages[row] |= col;
 
@@ -782,10 +782,10 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 			used |= m_tex_pages[i];
 		});
 
-		zb_pages->loopPages([&](uint32 i)
+		zb_pages->loopPages([&](u32 i)
 		{
-			uint32 row = i >> 5;
-			uint32 col = 1 << (i & 31);
+			u32 row = i >> 5;
+			u32 col = 1 << (i & 31);
 
 			m_fzb_cur_pages[row] |= col;
 
@@ -825,12 +825,12 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 
 			requirePages();
 
-			uint32 used = 0;
+			u32 used = 0;
 
-			fb_pages->loopPages([&](uint32 i)
+			fb_pages->loopPages([&](u32 i)
 			{
-				uint32 row = i >> 5;
-				uint32 col = 1 << (i & 31);
+				u32 row = i >> 5;
+				u32 col = 1 << (i & 31);
 
 				if ((m_fzb_cur_pages[row] & col) == 0)
 				{
@@ -840,10 +840,10 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 				}
 			});
 
-			zb_pages->loopPages([&](uint32 i)
+			zb_pages->loopPages([&](u32 i)
 			{
-				uint32 row = i >> 5;
-				uint32 col = 1 << (i & 31);
+				u32 row = i >> 5;
+				u32 col = 1 << (i & 31);
 
 				if ((m_fzb_cur_pages[row] & col) == 0)
 				{
@@ -875,7 +875,7 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 
 			if (fb && !res)
 			{
-				fb_pages->loopPagesWithBreak([&](uint32 page)
+				fb_pages->loopPagesWithBreak([&](u32 page)
 				{
 					if (m_fzb_pages[page] & 0xffff0000)
 					{
@@ -895,7 +895,7 @@ bool GSRendererSW::CheckTargetPages(const GSOffset::PageLooper* fb_pages, const 
 
 			if (zb && !res)
 			{
-				zb_pages->loopPagesWithBreak([&](uint32 page)
+				zb_pages->loopPagesWithBreak([&](u32 page)
 				{
 					if (m_fzb_pages[page] & 0x0000ffff)
 					{
@@ -927,7 +927,7 @@ bool GSRendererSW::CheckSourcePages(SharedData* sd)
 			GSOffset::PageLooper pages = sd->m_tex[i].t->m_offset.pageLooperForRect(sd->m_tex[i].r);
 
 			bool ret = false;
-			pages.loopPagesWithBreak([&](uint32 pages)
+			pages.loopPagesWithBreak([&](u32 pages)
 			{
 				// TODO: 8H 4HL 4HH texture at the same place as the render target (24 bit, or 32-bit where the alpha channel is masked, Valkyrie Profile 2)
 
@@ -972,8 +972,8 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	gd.sel.ababcd = 0xff;
 	gd.sel.prim = primclass;
 
-	uint32 fm = context->FRAME.FBMSK;
-	uint32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
+	u32 fm = context->FRAME.FBMSK;
+	u32 zm = context->ZBUF.ZMSK || context->TEST.ZTE == 0 ? 0xffffffff : 0;
 
 	if (context->TEST.ZTE && context->TEST.ZTST == ZTST_NEVER)
 	{
@@ -1049,9 +1049,9 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 			{
 				gd.sel.tlu = 1;
 
-				gd.clut = (uint32*)_aligned_malloc(sizeof(uint32) * 256, 32); // FIXME: might address uninitialized data of the texture (0xCD) that is not in 0-15 range for 4-bpp formats
+				gd.clut = (u32*)_aligned_malloc(sizeof(u32) * 256, 32); // FIXME: might address uninitialized data of the texture (0xCD) that is not in 0-15 range for 4-bpp formats
 
-				memcpy(gd.clut, (const uint32*)m_mem.m_clut, sizeof(uint32) * GSLocalMemory::m_psm[context->TEX0.PSM].pal);
+				memcpy(gd.clut, (const u32*)m_mem.m_clut, sizeof(u32) * GSLocalMemory::m_psm[context->TEX0.PSM].pal);
 			}
 
 			gd.sel.wms = context->CLAMP.WMS;
@@ -1216,30 +1216,30 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 				}
 			}
 
-			uint16 tw = 1u << TEX0.TW;
-			uint16 th = 1u << TEX0.TH;
+			u16 tw = 1u << TEX0.TW;
+			u16 th = 1u << TEX0.TH;
 
 			switch (context->CLAMP.WMS)
 			{
 				case CLAMP_REPEAT:
-					gd.t.min.u16[0] = gd.t.minmax.u16[0] = tw - 1;
-					gd.t.max.u16[0] = gd.t.minmax.u16[2] = 0;
-					gd.t.mask.u32[0] = 0xffffffff;
+					gd.t.min.U16[0] = gd.t.minmax.U16[0] = tw - 1;
+					gd.t.max.U16[0] = gd.t.minmax.U16[2] = 0;
+					gd.t.mask.U32[0] = 0xffffffff;
 					break;
 				case CLAMP_CLAMP:
-					gd.t.min.u16[0] = gd.t.minmax.u16[0] = 0;
-					gd.t.max.u16[0] = gd.t.minmax.u16[2] = tw - 1;
-					gd.t.mask.u32[0] = 0;
+					gd.t.min.U16[0] = gd.t.minmax.U16[0] = 0;
+					gd.t.max.U16[0] = gd.t.minmax.U16[2] = tw - 1;
+					gd.t.mask.U32[0] = 0;
 					break;
 				case CLAMP_REGION_CLAMP:
-					gd.t.min.u16[0] = gd.t.minmax.u16[0] = std::min<uint16>(context->CLAMP.MINU, tw - 1);
-					gd.t.max.u16[0] = gd.t.minmax.u16[2] = std::min<uint16>(context->CLAMP.MAXU, tw - 1);
-					gd.t.mask.u32[0] = 0;
+					gd.t.min.U16[0] = gd.t.minmax.U16[0] = std::min<u16>(context->CLAMP.MINU, tw - 1);
+					gd.t.max.U16[0] = gd.t.minmax.U16[2] = std::min<u16>(context->CLAMP.MAXU, tw - 1);
+					gd.t.mask.U32[0] = 0;
 					break;
 				case CLAMP_REGION_REPEAT:
-					gd.t.min.u16[0] = gd.t.minmax.u16[0] = context->CLAMP.MINU & (tw - 1);
-					gd.t.max.u16[0] = gd.t.minmax.u16[2] = context->CLAMP.MAXU & (tw - 1);
-					gd.t.mask.u32[0] = 0xffffffff;
+					gd.t.min.U16[0] = gd.t.minmax.U16[0] = context->CLAMP.MINU & (tw - 1);
+					gd.t.max.U16[0] = gd.t.minmax.U16[2] = context->CLAMP.MAXU & (tw - 1);
+					gd.t.mask.U32[0] = 0xffffffff;
 					break;
 				default:
 					__assume(0);
@@ -1248,24 +1248,24 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 			switch (context->CLAMP.WMT)
 			{
 				case CLAMP_REPEAT:
-					gd.t.min.u16[4] = gd.t.minmax.u16[1] = th - 1;
-					gd.t.max.u16[4] = gd.t.minmax.u16[3] = 0;
-					gd.t.mask.u32[2] = 0xffffffff;
+					gd.t.min.U16[4] = gd.t.minmax.U16[1] = th - 1;
+					gd.t.max.U16[4] = gd.t.minmax.U16[3] = 0;
+					gd.t.mask.U32[2] = 0xffffffff;
 					break;
 				case CLAMP_CLAMP:
-					gd.t.min.u16[4] = gd.t.minmax.u16[1] = 0;
-					gd.t.max.u16[4] = gd.t.minmax.u16[3] = th - 1;
-					gd.t.mask.u32[2] = 0;
+					gd.t.min.U16[4] = gd.t.minmax.U16[1] = 0;
+					gd.t.max.U16[4] = gd.t.minmax.U16[3] = th - 1;
+					gd.t.mask.U32[2] = 0;
 					break;
 				case CLAMP_REGION_CLAMP:
-					gd.t.min.u16[4] = gd.t.minmax.u16[1] = std::min<uint16>(context->CLAMP.MINV, th - 1);
-					gd.t.max.u16[4] = gd.t.minmax.u16[3] = std::min<uint16>(context->CLAMP.MAXV, th - 1); // ffx anima summon scene, when the anchor appears (th = 256, maxv > 256)
-					gd.t.mask.u32[2] = 0;
+					gd.t.min.U16[4] = gd.t.minmax.U16[1] = std::min<u16>(context->CLAMP.MINV, th - 1);
+					gd.t.max.U16[4] = gd.t.minmax.U16[3] = std::min<u16>(context->CLAMP.MAXV, th - 1); // ffx anima summon scene, when the anchor appears (th = 256, maxv > 256)
+					gd.t.mask.U32[2] = 0;
 					break;
 				case CLAMP_REGION_REPEAT:
-					gd.t.min.u16[4] = gd.t.minmax.u16[1] = context->CLAMP.MINV & (th - 1); // skygunner main menu water texture 64x64, MINV = 127
-					gd.t.max.u16[4] = gd.t.minmax.u16[3] = context->CLAMP.MAXV & (th - 1);
-					gd.t.mask.u32[2] = 0xffffffff;
+					gd.t.min.U16[4] = gd.t.minmax.U16[1] = context->CLAMP.MINV & (th - 1); // skygunner main menu water texture 64x64, MINV = 127
+					gd.t.max.U16[4] = gd.t.minmax.U16[3] = context->CLAMP.MAXV & (th - 1);
+					gd.t.mask.U32[2] = 0xffffffff;
 					break;
 				default:
 					__assume(0);
@@ -1281,8 +1281,8 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 		{
 			gd.sel.fge = 1;
 
-			gd.frb = env.FOGCOL.u32[0] & 0x00ff00ff;
-			gd.fga = (env.FOGCOL.u32[0] >> 8) & 0x00ff00ff;
+			gd.frb = env.FOGCOL.U32[0] & 0x00ff00ff;
+			gd.fga = (env.FOGCOL.U32[0] >> 8) & 0x00ff00ff;
 		}
 
 		if (context->FRAME.PSM != PSM_PSMCT24)
@@ -1294,7 +1294,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 		if (!IsOpaque())
 		{
 			gd.sel.abe = PRIM->ABE;
-			gd.sel.ababcd = context->ALPHA.u32[0];
+			gd.sel.ababcd = context->ALPHA.U32[0];
 
 			if (env.PABE.PABE)
 			{
@@ -1337,12 +1337,12 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 	if (zwrite || ztest)
 	{
-		uint32_t z_max = 0xffffffff >> (GSLocalMemory::m_psm[context->ZBUF.PSM].fmt * 8);
+		u32 z_max = 0xffffffff >> (GSLocalMemory::m_psm[context->ZBUF.PSM].fmt * 8);
 
 		gd.sel.zpsm = GSLocalMemory::m_psm[context->ZBUF.PSM].fmt;
 		gd.sel.ztst = ztest ? context->TEST.ZTST : (int)ZTST_ALWAYS;
-		gd.sel.zoverflow = (uint32)GSVector4i(m_vt.m_max.p).z == 0x80000000U;
-		gd.sel.zclamp = (uint32)GSVector4i(m_vt.m_max.p).z > z_max;
+		gd.sel.zoverflow = (u32)GSVector4i(m_vt.m_max.p).z == 0x80000000U;
+		gd.sel.zclamp = (u32)GSVector4i(m_vt.m_max.p).z > z_max;
 	}
 
 #if _M_SSE >= 0x501
@@ -1356,8 +1356,8 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	}
 	else if (gd.sel.fpsm == 2)
 	{
-		uint32 rb = gd.fm & 0x00f800f8;
-		uint32 ga = gd.fm & 0x8000f800;
+		u32 rb = gd.fm & 0x00f800f8;
+		u32 ga = gd.fm & 0x8000f800;
 
 		gd.fm = (ga >> 16) | (rb >> 9) | (ga >> 6) | (rb >> 3) | 0xffff0000;
 	}
@@ -1403,7 +1403,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 	{
 		gd.sel.notest = 1;
 
-		uint32 ofx = context->XYOFFSET.OFX;
+		u32 ofx = context->XYOFFSET.OFX;
 
 		for (int i = 0, j = m_vertex.tail; i < j; i++)
 		{
@@ -1551,7 +1551,7 @@ void GSRendererSW::SharedData::UpdateSource()
 
 	if (m_parent->s_dump)
 	{
-		uint64 frame = m_parent->m_perfmon.GetFrame();
+		u64 frame = m_parent->m_perfmon.GetFrame();
 
 		std::string s;
 
@@ -1570,7 +1570,7 @@ void GSRendererSW::SharedData::UpdateSource()
 			{
 				GSTextureSW* t = new GSTextureSW(0, 256, 1);
 
-				t->Update(GSVector4i(0, 0, 256, 1), global.clut, sizeof(uint32) * 256);
+				t->Update(GSVector4i(0, 0, 256, 1), global.clut, sizeof(u32) * 256);
 
 				s = format("%05d_f%lld_itexp_%05x_%s.bmp", m_parent->s_n, frame, (int)m_parent->m_context->TEX0.CBP, psm_str(m_parent->m_context->TEX0.CPSM));
 

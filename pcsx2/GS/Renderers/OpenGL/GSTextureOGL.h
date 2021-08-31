@@ -24,7 +24,7 @@ namespace PboPool
 	inline void UnbindPbo();
 	inline void Sync();
 
-	inline char* Map(uint32 size);
+	inline char* Map(u32 size);
 	inline void Unmap();
 	inline uptr Offset();
 	inline void EndTransfer();
@@ -41,7 +41,7 @@ private:
 	bool m_clean;
 	bool m_generate_mipmap;
 
-	uint8* m_local_buffer;
+	u8* m_local_buffer;
 	// Avoid alignment constrain
 	//GSVector4i m_r;
 	int m_r_x;
@@ -54,10 +54,10 @@ private:
 	// internal opengl format/type/alignment
 	GLenum m_int_format;
 	GLenum m_int_type;
-	uint32 m_int_shift;
+	u32 m_int_shift;
 
 	// Allow to track size of allocated memory
-	uint32 m_mem_usage;
+	u32 m_mem_usage;
 
 public:
 	explicit GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read, bool mipmap);
@@ -72,7 +72,7 @@ public:
 	bool IsBackbuffer() { return (m_type == GSTexture::Backbuffer); }
 	bool IsDss() { return (m_type == GSTexture::DepthStencil || m_type == GSTexture::SparseDepthStencil); }
 
-	uint32 GetID() final { return m_texture_id; }
+	u32 GetID() final { return m_texture_id; }
 	bool HasBeenCleaned() { return m_clean; }
 	void WasAttached() { m_clean = false; }
 	void WasCleaned() { m_clean = true; }
@@ -82,5 +82,5 @@ public:
 
 	void CommitPages(const GSVector2i& region, bool commit) final;
 
-	uint32 GetMemUsage();
+	u32 GetMemUsage();
 };

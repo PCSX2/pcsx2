@@ -37,17 +37,17 @@ namespace GSPng
 	public:
 		Format m_fmt;
 		const std::string m_file;
-		uint8* m_image;
+		u8* m_image;
 		int m_w;
 		int m_h;
 		int m_pitch;
 		int m_compression;
 
-		Transaction(GSPng::Format fmt, const std::string& file, const uint8* image, int w, int h, int pitch, int compression);
+		Transaction(GSPng::Format fmt, const std::string& file, const u8* image, int w, int h, int pitch, int compression);
 		~Transaction();
 	};
 
-	bool Save(GSPng::Format fmt, const std::string& file, uint8* image, int w, int h, int pitch, int compression, bool rb_swapped = false);
+	bool Save(GSPng::Format fmt, const std::string& file, u8* image, int w, int h, int pitch, int compression, bool rb_swapped = false);
 
 	void Process(std::shared_ptr<Transaction>& item);
 

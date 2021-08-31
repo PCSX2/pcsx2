@@ -47,14 +47,14 @@ GSVertexTrace::GSVertexTrace(const GSState* state)
 	InitUpdate(GS_SPRITE_CLASS);
 }
 
-void GSVertexTrace::Update(const void* vertex, const uint32* index, int v_count, int i_count, GS_PRIM_CLASS primclass)
+void GSVertexTrace::Update(const void* vertex, const u32* index, int v_count, int i_count, GS_PRIM_CLASS primclass)
 {
 	m_primclass = primclass;
 
-	uint32 iip = m_state->PRIM->IIP;
-	uint32 tme = m_state->PRIM->TME;
-	uint32 fst = m_state->PRIM->FST;
-	uint32 color = !(m_state->PRIM->TME && m_state->m_context->TEX0.TFX == TFX_DECAL && m_state->m_context->TEX0.TCC);
+	u32 iip = m_state->PRIM->IIP;
+	u32 tme = m_state->PRIM->TME;
+	u32 fst = m_state->PRIM->FST;
+	u32 color = !(m_state->PRIM->TME && m_state->m_context->TEX0.TFX == TFX_DECAL && m_state->m_context->TEX0.TCC);
 
 	(this->*m_fmm[color][fst][tme][iip][primclass])(vertex, index, i_count);
 
@@ -148,8 +148,8 @@ void GSVertexTrace::Update(const void* vertex, const uint32* index, int v_count,
 	}
 }
 
-template <GS_PRIM_CLASS primclass, uint32 iip, uint32 tme, uint32 fst, uint32 color>
-void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int count)
+template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color>
+void GSVertexTrace::FindMinMax(const void* vertex, const u32* index, int count)
 {
 	const GSDrawingContext* context = m_state->m_context;
 
@@ -184,8 +184,8 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 	{
 		if (color)
 		{
-			GSVector4i c0 = GSVector4i::load(v0.RGBAQ.u32[0]);
-			GSVector4i c1 = GSVector4i::load(v1.RGBAQ.u32[0]);
+			GSVector4i c0 = GSVector4i::load(v0.RGBAQ.U32[0]);
+			GSVector4i c1 = GSVector4i::load(v1.RGBAQ.U32[0]);
 			if (iip || finalVertex)
 			{
 				cmin = cmin.min_u8(c0.min_u8(c1));
@@ -304,8 +304,8 @@ void GSVertexTrace::FindMinMax(const void* vertex, const uint32* index, int coun
 	m_max.p = (GSVector4(pmax) - o) * s;
 
 	// Fix signed int conversion
-	m_min.p = m_min.p.insert32<0, 2>(GSVector4::load((float)(uint32)pmin.extract32<2>()));
-	m_max.p = m_max.p.insert32<0, 2>(GSVector4::load((float)(uint32)pmax.extract32<2>()));
+	m_min.p = m_min.p.insert32<0, 2>(GSVector4::load((float)(u32)pmin.extract32<2>()));
+	m_max.p = m_max.p.insert32<0, 2>(GSVector4::load((float)(u32)pmax.extract32<2>()));
 
 	if (tme)
 	{
@@ -354,7 +354,7 @@ void GSVertexTrace::CorrectDepthTrace(const void* vertex, int count)
 
 
 	const GSVertex* RESTRICT v = (GSVertex*)vertex;
-	uint32 z = v[0].XYZ.Z;
+	u32 z = v[0].XYZ.Z;
 
 	// ought to check only 1/2 for sprite
 	if (z & 1)

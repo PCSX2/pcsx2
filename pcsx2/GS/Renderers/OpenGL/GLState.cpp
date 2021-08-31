@@ -23,11 +23,11 @@ namespace GLState
 	GSVector4i scissor;
 
 	bool blend;
-	uint16 eq_RGB;
-	uint16 f_sRGB;
-	uint16 f_dRGB;
-	uint8 bf;
-	uint32 wrgba;
+	u16 eq_RGB;
+	u16 f_sRGB;
+	u16 f_dRGB;
+	u8 bf;
+	u32 wrgba;
 
 	bool depth;
 	GLenum depth_func;
@@ -50,7 +50,7 @@ namespace GLState
 	GLuint program;
 	GLuint pipeline;
 
-	int64 available_vram;
+	s64 available_vram;
 
 	void Clear()
 	{

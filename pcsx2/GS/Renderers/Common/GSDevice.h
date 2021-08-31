@@ -120,7 +120,7 @@ enum HWBlendFlags
 // Determines the HW blend function for DX11/OGL
 struct HWBlend
 {
-	uint16 flags, op, src, dst;
+	u16 flags, op, src, dst;
 };
 
 class GSDevice : public GSAlignedClass<32>
@@ -130,7 +130,7 @@ private:
 	static std::array<HWBlend, 3*3*3*3 + 1> m_blendMap;
 
 protected:
-	enum : uint16
+	enum : u16
 	{
 		// HW blend factors
 		SRC_COLOR,   INV_SRC_COLOR,    DST_COLOR,  INV_DST_COLOR,
@@ -172,7 +172,7 @@ protected:
 	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) {}
 	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex) {}
 	virtual void DoExternalFX(GSTexture* sTex, GSTexture* dTex) {}
-	virtual uint16 ConvertBlendEnum(uint16 generic) = 0; // Convert blend factors/ops from the generic enum to DX11/OGl specific.
+	virtual u16 ConvertBlendEnum(u16 generic) = 0; // Convert blend factors/ops from the generic enum to DX11/OGl specific.
 
 public:
 	GSOsdManager m_osd;
@@ -208,9 +208,9 @@ public:
 	virtual bool HasColorSparse() { return false; }
 
 	virtual void ClearRenderTarget(GSTexture* t, const GSVector4& c) {}
-	virtual void ClearRenderTarget(GSTexture* t, uint32 c) {}
+	virtual void ClearRenderTarget(GSTexture* t, u32 c) {}
 	virtual void ClearDepth(GSTexture* t) {}
-	virtual void ClearStencil(GSTexture* t, uint8 c) {}
+	virtual void ClearStencil(GSTexture* t, u8 c) {}
 
 	GSTexture* CreateSparseRenderTarget(int w, int h, int format = 0);
 	GSTexture* CreateSparseDepthStencil(int w, int h, int format = 0);
@@ -257,15 +257,15 @@ public:
 	// Convert the GS blend equations to HW specific blend factors/ops
 	// Index is computed as ((((A * 3 + B) * 3) + C) * 3) + D. A, B, C, D taken from ALPHA register.
 	HWBlend GetBlend(size_t index);
-	uint16 GetBlendFlags(size_t index);
+	u16 GetBlendFlags(size_t index);
 };
 
 struct GSAdapter
 {
-	uint32 vendor;
-	uint32 device;
-	uint32 subsys;
-	uint32 rev;
+	u32 vendor;
+	u32 device;
+	u32 subsys;
+	u32 rev;
 
 	operator std::string() const;
 	bool operator==(const GSAdapter&) const;

@@ -89,7 +89,7 @@ public:
 				"used SSE instruction in AVX code",
 				"used AVX instruction in SSE code",
 			};
-			if (static_cast<uint32>(value) < (sizeof(tbl) / sizeof(*tbl)))
+			if (static_cast<u32>(value) < (sizeof(tbl) / sizeof(*tbl)))
 			{
 				return tbl[value];
 			}
@@ -320,11 +320,11 @@ public:
 	FORWARD(2, BASE, name, ARGS_OO) \
 	FORWARD(2, BASE, name, ARGS_OI)
 
-#define ARGS_OI const Operand&, uint32
+#define ARGS_OI const Operand&, u32
 #define ARGS_OO const Operand&, const Operand&
 #define ARGS_XI const Xmm&, int
 #define ARGS_XO const Xmm&, const Operand&
-#define ARGS_XOI const Xmm&, const Operand&, uint8
+#define ARGS_XOI const Xmm&, const Operand&, u8
 #define ARGS_XXO const Xmm&, const Xmm&, const Operand&
 
 // For instructions that are ifdef'd out without XBYAK64
@@ -334,7 +334,7 @@ public:
 	#define REQUIRE64(action) require64()
 #endif
 
-	const uint8 *getCurr() { return actual.getCurr(); }
+	const u8 *getCurr() { return actual.getCurr(); }
 	void align(int x = 16) { return actual.align(x); }
 	void db(int code) { actual.db(code); }
 	void L(const std::string& label) { actual.L(label); }
@@ -374,7 +374,7 @@ public:
 	SFORWARD(2, cvtdq2ps,  ARGS_XO)
 	SFORWARD(2, cvtps2dq,  ARGS_XO)
 	SFORWARD(2, cvttps2dq, ARGS_XO)
-	SFORWARD(3, extractps, const Operand&, const Xmm&, uint8)
+	SFORWARD(3, extractps, const Operand&, const Xmm&, u8)
 	AFORWARD(2, maxps,     ARGS_XO)
 	AFORWARD(2, minps,     ARGS_XO)
 	SFORWARD(2, movaps,    ARGS_XO)
@@ -403,8 +403,8 @@ public:
 	AFORWARD(2, pcmpeqd,   ARGS_XO)
 	AFORWARD(2, pcmpeqw,   ARGS_XO)
 	AFORWARD(2, pcmpgtd,   ARGS_XO)
-	SFORWARD(3, pextrd,    const Operand&, const Xmm&, uint8)
-	SFORWARD(3, pextrw,    const Operand&, const Xmm&, uint8)
+	SFORWARD(3, pextrd,    const Operand&, const Xmm&, u8)
+	SFORWARD(3, pextrw,    const Operand&, const Xmm&, u8)
 	AFORWARD(3, pinsrd,    ARGS_XOI)
 	AFORWARD(2, pmaxsw,    ARGS_XO)
 	AFORWARD(2, pminsd,    ARGS_XO)
@@ -448,12 +448,12 @@ public:
 	FORWARD(2, AVX2, vbroadcasti128, const Ymm&, const Address&)
 	FORWARD(2, AVX,  vbroadcastf128, const Ymm&, const Address&)
 	FORWARD(3, FMA,  vfmadd213ps,    ARGS_XXO)
-	FORWARD(3, AVX2, vextracti128,   const Operand&, const Ymm&, uint8)
-	FORWARD(4, AVX2, vinserti128,    const Ymm&, const Ymm&, const Operand&, uint8);
+	FORWARD(3, AVX2, vextracti128,   const Operand&, const Ymm&, u8)
+	FORWARD(4, AVX2, vinserti128,    const Ymm&, const Ymm&, const Operand&, u8);
 	FORWARD(2, AVX2, vpbroadcastd,   ARGS_XO)
 	FORWARD(2, AVX2, vpbroadcastq,   ARGS_XO)
 	FORWARD(2, AVX2, vpbroadcastw,   ARGS_XO)
-	FORWARD(3, AVX2, vpermq,         const Ymm&, const Operand&, uint8)
+	FORWARD(3, AVX2, vpermq,         const Ymm&, const Operand&, u8)
 	FORWARD(3, AVX2, vpgatherdd,     const Xmm&, const Address&, const Xmm&);
 	FORWARD(3, AVX2, vpsravd,        ARGS_XXO)
 	FORWARD(3, AVX2, vpsrlvd,        ARGS_XXO)

@@ -31,7 +31,7 @@ GSDumpBase::~GSDumpBase()
 		fclose(m_gs);
 }
 
-void GSDumpBase::AddHeader(uint32 crc, const freezeData& fd, const GSPrivRegSet* regs)
+void GSDumpBase::AddHeader(u32 crc, const freezeData& fd, const GSPrivRegSet* regs)
 {
 	AppendRawData(&crc, 4);
 	AppendRawData(&fd.size, 4);
@@ -39,18 +39,18 @@ void GSDumpBase::AddHeader(uint32 crc, const freezeData& fd, const GSPrivRegSet*
 	AppendRawData(regs, sizeof(*regs));
 }
 
-void GSDumpBase::Transfer(int index, const uint8* mem, size_t size)
+void GSDumpBase::Transfer(int index, const u8* mem, size_t size)
 {
 	if (size == 0)
 		return;
 
 	AppendRawData(0);
-	AppendRawData(static_cast<uint8>(index));
+	AppendRawData(static_cast<u8>(index));
 	AppendRawData(&size, 4);
 	AppendRawData(mem, size);
 }
 
-void GSDumpBase::ReadFIFO(uint32 size)
+void GSDumpBase::ReadFIFO(u32 size)
 {
 	if (size == 0)
 		return;
@@ -69,7 +69,7 @@ bool GSDumpBase::VSync(int field, bool last, const GSPrivRegSet* regs)
 	AppendRawData(regs, sizeof(*regs));
 
 	AppendRawData(1);
-	AppendRawData(static_cast<uint8>(field));
+	AppendRawData(static_cast<u8>(field));
 
 	if (last)
 		m_extra_frames--;
@@ -91,7 +91,7 @@ void GSDumpBase::Write(const void* data, size_t size)
 // GSDump implementation
 //////////////////////////////////////////////////////////////////////
 
-GSDump::GSDump(const std::string& fn, uint32 crc, const freezeData& fd, const GSPrivRegSet* regs)
+GSDump::GSDump(const std::string& fn, u32 crc, const freezeData& fd, const GSPrivRegSet* regs)
 	: GSDumpBase(fn + ".gs")
 {
 	AddHeader(crc, fd, regs);
@@ -102,7 +102,7 @@ void GSDump::AppendRawData(const void* data, size_t size)
 	Write(data, size);
 }
 
-void GSDump::AppendRawData(uint8 c)
+void GSDump::AppendRawData(u8 c)
 {
 	Write(&c, 1);
 }
@@ -111,7 +111,7 @@ void GSDump::AppendRawData(uint8 c)
 // GSDumpXz implementation
 //////////////////////////////////////////////////////////////////////
 
-GSDumpXz::GSDumpXz(const std::string& fn, uint32 crc, const freezeData& fd, const GSPrivRegSet* regs)
+GSDumpXz::GSDumpXz(const std::string& fn, u32 crc, const freezeData& fd, const GSPrivRegSet* regs)
 	: GSDumpBase(fn + ".gs.xz")
 {
 	m_strm = LZMA_STREAM_INIT;
@@ -150,7 +150,7 @@ void GSDumpXz::AppendRawData(const void* data, size_t size)
 		Flush();
 }
 
-void GSDumpXz::AppendRawData(uint8 c)
+void GSDumpXz::AppendRawData(u8 c)
 {
 	m_in_buff.push_back(c);
 }
@@ -170,7 +170,7 @@ void GSDumpXz::Flush()
 
 void GSDumpXz::Compress(lzma_action action, lzma_ret expected_status)
 {
-	std::vector<uint8> out_buff(1024 * 1024);
+	std::vector<u8> out_buff(1024 * 1024);
 	do
 	{
 		m_strm.next_out = out_buff.data();
