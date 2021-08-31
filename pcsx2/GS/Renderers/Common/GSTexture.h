@@ -31,7 +31,7 @@ protected:
 public:
 	struct GSMap
 	{
-		uint8* bits;
+		u8* bits;
 		int pitch;
 	};
 
@@ -61,7 +61,7 @@ public:
 	virtual void Unmap() = 0;
 	virtual void GenerateMipmap() {}
 	virtual bool Save(const std::string& fn) = 0;
-	virtual uint32 GetID() { return 0; }
+	virtual u32 GetID() { return 0; }
 
 	GSVector2 GetScale() const { return m_scale; }
 	void SetScale(const GSVector2& scale) { m_scale = scale; }
@@ -90,5 +90,5 @@ public:
 	float OffsetHack_mody;
 
 	// Typical size of a RGBA texture
-	virtual uint32 GetMemUsage() { return m_size.x * m_size.y * 4; }
+	virtual u32 GetMemUsage() { return m_size.x * m_size.y * 4; }
 };

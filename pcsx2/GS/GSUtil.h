@@ -24,15 +24,15 @@ class GSUtil
 public:
 	static void Init();
 
-	static GS_PRIM_CLASS GetPrimClass(uint32 prim);
-	static int GetVertexCount(uint32 prim);
-	static int GetClassVertexCount(uint32 primclass);
+	static GS_PRIM_CLASS GetPrimClass(u32 prim);
+	static int GetVertexCount(u32 prim);
+	static int GetClassVertexCount(u32 primclass);
 
-	static const uint32* HasSharedBitsPtr(uint32 dpsm);
-	static bool HasSharedBits(uint32 spsm, const uint32* ptr);
-	static bool HasSharedBits(uint32 spsm, uint32 dpsm);
-	static bool HasSharedBits(uint32 sbp, uint32 spsm, uint32 dbp, uint32 dpsm);
-	static bool HasCompatibleBits(uint32 spsm, uint32 dpsm);
+	static const u32* HasSharedBitsPtr(u32 dpsm);
+	static bool HasSharedBits(u32 spsm, const u32* ptr);
+	static bool HasSharedBits(u32 spsm, u32 dpsm);
+	static bool HasSharedBits(u32 sbp, u32 spsm, u32 dbp, u32 dpsm);
+	static bool HasCompatibleBits(u32 spsm, u32 dpsm);
 
 	static bool CheckSSE();
 	static CRCHackLevel GetRecommendedCRCHackLevel(GSRendererType type);

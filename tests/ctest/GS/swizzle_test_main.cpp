@@ -19,7 +19,7 @@
 #include <gtest/gtest.h>
 #include <string.h>
 
-static void swizzle(const uint8* table, uint8* dst, const uint8* src, int bpp, bool deswizzle)
+static void swizzle(const u8* table, u8* dst, const u8* src, int bpp, bool deswizzle)
 {
 	int pxbytes = bpp / 8;
 	for (int i = 0; i < (256 / pxbytes); i++)
@@ -30,21 +30,21 @@ static void swizzle(const uint8* table, uint8* dst, const uint8* src, int bpp, b
 	}
 }
 
-static void swizzle4(const uint16* table, uint8* dst, const uint8* src, bool deswizzle)
+static void swizzle4(const u16* table, u8* dst, const u8* src, bool deswizzle)
 {
 	for (int i = 0; i < 512; i++)
 	{
 		int soff = (deswizzle ? table[i] : i);
 		int doff = (deswizzle ? i : table[i]);
 		int spx = src[soff >> 1] >> ((soff & 1) * 4) & 0xF;
-		uint8* dpx = &dst[doff >> 1];
+		u8* dpx = &dst[doff >> 1];
 		int dshift = (doff & 1) * 4;
 		*dpx &= (0xF0 >> dshift);
 		*dpx |= (spx << dshift);
 	}
 }
 
-static void swizzleH(const uint8* table, uint32* dst, const uint8* src, int bpp, int shift)
+static void swizzleH(const u8* table, u32* dst, const u8* src, int bpp, int shift)
 {
 	for (int i = 0; i < 64; i++)
 	{
@@ -58,7 +58,7 @@ static void swizzleH(const uint8* table, uint32* dst, const uint8* src, int bpp,
 	}
 }
 
-static void expand16(uint32* dst, const uint16* src, const GIFRegTEXA& texa)
+static void expand16(u32* dst, const u16* src, const GIFRegTEXA& texa)
 {
 	for (int i = 0; i < 128; i++)
 	{
@@ -77,7 +77,7 @@ static void expand16(uint32* dst, const uint16* src, const GIFRegTEXA& texa)
 	}
 }
 
-static void expand8(uint32* dst, const uint8* src, const uint32* palette)
+static void expand8(u32* dst, const u8* src, const u32* palette)
 {
 	for (int i = 0; i < 256; i++)
 	{
@@ -85,7 +85,7 @@ static void expand8(uint32* dst, const uint8* src, const uint32* palette)
 	}
 }
 
-static void expand4(uint32* dst, const uint8* src, const uint32* palette)
+static void expand4(u32* dst, const u8* src, const u32* palette)
 {
 	for (int i = 0; i < 512; i++)
 	{
@@ -93,7 +93,7 @@ static void expand4(uint32* dst, const uint8* src, const uint32* palette)
 	}
 }
 
-static void expand4P(uint8* dst, const uint8* src)
+static void expand4P(u8* dst, const u8* src)
 {
 	for (int i = 0; i < 512; i++)
 	{
@@ -101,7 +101,7 @@ static void expand4P(uint8* dst, const uint8* src)
 	}
 }
 
-static void expandH(uint32* dst, const uint32* src, const uint32* palette, int shift, int mask)
+static void expandH(u32* dst, const u32* src, const u32* palette, int shift, int mask)
 {
 	for (int i = 0; i < 64; i++)
 	{
@@ -109,7 +109,7 @@ static void expandH(uint32* dst, const uint32* src, const uint32* palette, int s
 	}
 }
 
-static void expandHP(uint8* dst, const uint32* src, int shift, int mask)
+static void expandHP(u8* dst, const u32* src, int shift, int mask)
 {
 	for (int i = 0; i < 64; i++)
 	{
@@ -117,7 +117,7 @@ static void expandHP(uint8* dst, const uint32* src, int shift, int mask)
 	}
 }
 
-static std::string image2hex(const uint8* bin, int rows, int columns, int bpp)
+static std::string image2hex(const u8* bin, int rows, int columns, int bpp)
 {
 	std::string out;
 	const char* hex = "0123456789ABCDEF";
@@ -159,10 +159,10 @@ static std::string image2hex(const uint8* bin, int rows, int columns, int bpp)
 
 struct TestData
 {
-	alignas(64) uint8 block[256];
-	alignas(64) uint8 output[256 * (32 / 4)];
-	alignas(64) uint32 clut32[256];
-	alignas(64) uint64 clut64[256];
+	alignas(64) u8 block[256];
+	alignas(64) u8 output[256 * (32 / 4)];
+	alignas(64) u32 clut32[256];
+	alignas(64) u64 clut64[256];
 
 	/// Get some input data with pixel values counting up from 0
 	static TestData Linear()
@@ -202,39 +202,39 @@ struct TestData
 	}
 };
 
-static TestData swizzle(const uint8* table, TestData data, int bpp, bool deswizzle)
+static TestData swizzle(const u8* table, TestData data, int bpp, bool deswizzle)
 {
 	swizzle(table, data.output, data.block, bpp, deswizzle);
 	return data;
 }
 
-static TestData swizzle4(const uint16* table, TestData data, bool deswizzle)
+static TestData swizzle4(const u16* table, TestData data, bool deswizzle)
 {
 	swizzle4(table, data.output, data.block, deswizzle);
 	return data;
 }
 
-static TestData swizzleH(const uint8* table, TestData data, int bpp, int shift)
+static TestData swizzleH(const u8* table, TestData data, int bpp, int shift)
 {
-	swizzleH(table, reinterpret_cast<uint32*>(data.output), data.block, bpp, shift);
+	swizzleH(table, reinterpret_cast<u32*>(data.output), data.block, bpp, shift);
 	return data;
 }
 
 static TestData expand16(TestData data, const GIFRegTEXA& texa)
 {
-	expand16(reinterpret_cast<uint32*>(data.output), reinterpret_cast<const uint16*>(data.block), texa);
+	expand16(reinterpret_cast<u32*>(data.output), reinterpret_cast<const u16*>(data.block), texa);
 	return data;
 }
 
 static TestData expand8(TestData data)
 {
-	expand8(reinterpret_cast<uint32*>(data.output), data.block, data.clut32);
+	expand8(reinterpret_cast<u32*>(data.output), data.block, data.clut32);
 	return data;
 }
 
 static TestData expand4(TestData data)
 {
-	expand4(reinterpret_cast<uint32*>(data.output), data.block, data.clut32);
+	expand4(reinterpret_cast<u32*>(data.output), data.block, data.clut32);
 	return data;
 }
 
@@ -246,13 +246,13 @@ static TestData expand4P(TestData data)
 
 static TestData expandH(TestData data, int shift, int mask)
 {
-	expandH(reinterpret_cast<uint32*>(data.output), reinterpret_cast<const uint32*>(data.block), data.clut32, shift, mask);
+	expandH(reinterpret_cast<u32*>(data.output), reinterpret_cast<const u32*>(data.block), data.clut32, shift, mask);
 	return data;
 }
 
 static TestData expandHP(TestData data, int shift, int mask)
 {
-	expandHP(data.output, reinterpret_cast<uint32*>(data.block), shift, mask);
+	expandHP(data.output, reinterpret_cast<u32*>(data.block), shift, mask);
 	return data;
 }
 
@@ -318,7 +318,7 @@ TEST(ReadAndExpandTest, Read16AEM)
 	runTest([](TestData data)
 	{
 		// Actually test AEM
-		uint8 idx = data.block[0] >> 1;
+		u8 idx = data.block[0] >> 1;
 		data.block[idx * 2 + 0] = 0;
 		data.block[idx * 2 + 1] = 0;
 		GIFRegTEXA texa = {0};

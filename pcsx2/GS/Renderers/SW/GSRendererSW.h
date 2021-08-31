@@ -63,19 +63,19 @@ class GSRendererSW : public GSRenderer
 
 	ConvertVertexBufferPtr m_cvb[4][2][2][2];
 
-	template <uint32 primclass, uint32 tme, uint32 fst, uint32 q_div>
+	template <u32 primclass, u32 tme, u32 fst, u32 q_div>
 	void ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count);
 
 protected:
 	IRasterizer* m_rl;
 	GSTextureCacheSW* m_tc;
 	GSTexture* m_texture[2];
-	uint8* m_output;
+	u8* m_output;
 	GSPixelOffset4* m_fzb;
 	GSVector4i m_fzb_bbox;
-	uint32 m_fzb_cur_pages[16];
-	std::atomic<uint32> m_fzb_pages[512]; // uint16 frame/zbuf pages interleaved
-	std::atomic<uint16> m_tex_pages[512];
+	u32 m_fzb_cur_pages[16];
+	std::atomic<u32> m_fzb_pages[512]; // u16 frame/zbuf pages interleaved
+	std::atomic<u16> m_tex_pages[512];
 
 	void Reset();
 	void VSync(int field);

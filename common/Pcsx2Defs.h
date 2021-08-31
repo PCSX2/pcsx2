@@ -194,7 +194,6 @@ static const int __pagesize = PCSX2_PAGESIZE;
 #define __fc __fastcall
 
 // Makes sure that if anyone includes xbyak, it doesn't do anything bad
-#define MIE_INTEGER_TYPE_DEFINED
 #define XBYAK_ENABLE_OMITTED_OPERAND
 
 #ifdef __x86_64__

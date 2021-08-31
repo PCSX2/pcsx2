@@ -38,8 +38,8 @@ bool GSTextureSW::Update(const GSVector4i& r, const void* data, int pitch, int l
 
 	if (m_data != NULL && Map(m, &r))
 	{
-		uint8* RESTRICT src = (uint8*)data;
-		uint8* RESTRICT dst = m.bits;
+		u8* RESTRICT src = (u8*)data;
+		u8* RESTRICT dst = m.bits;
 
 		int rowbytes = r.width() << 2;
 
@@ -64,7 +64,7 @@ bool GSTextureSW::Map(GSMap& m, const GSVector4i* r, int layer)
 	{
 		if (!m_mapped.test_and_set(std::memory_order_acquire))
 		{
-			m.bits = (uint8*)m_data + m_pitch * r2.top + (r2.left << 2);
+			m.bits = (u8*)m_data + m_pitch * r2.top + (r2.left << 2);
 			m.pitch = m_pitch;
 
 			return true;
@@ -87,5 +87,5 @@ bool GSTextureSW::Save(const std::string& fn)
 	GSPng::Format fmt = GSPng::RGB_PNG;
 #endif
 	int compression = theApp.GetConfigI("png_compression_level");
-	return GSPng::Save(fmt, fn, static_cast<uint8*>(m_data), m_size.x, m_size.y, m_pitch, compression);
+	return GSPng::Save(fmt, fn, static_cast<u8*>(m_data), m_size.x, m_size.y, m_pitch, compression);
 }

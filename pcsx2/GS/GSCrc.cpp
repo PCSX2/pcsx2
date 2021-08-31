@@ -505,7 +505,7 @@ const CRC::Game CRC::m_games[] =
 	{0xB1BE3E51, Whiplash, EU, 0},
 };
 
-std::map<uint32, const CRC::Game*> CRC::m_map;
+std::map<u32, const CRC::Game*> CRC::m_map;
 
 std::string ToLower(std::string str)
 {
@@ -517,14 +517,14 @@ std::string ToLower(std::string str)
 // The list is case insensitive and order insensitive.
 // E.g. Disable all CRC hacks:          CrcHacksExclusions=all
 // E.g. Disable hacks for these CRCs:   CrcHacksExclusions=0x0F0C4A9C, 0x0EE5646B, 0x7ACF7E03
-bool IsCrcExcluded(std::string exclusionList, uint32 crc)
+bool IsCrcExcluded(std::string exclusionList, u32 crc)
 {
 	std::string target = format("0x%08x", crc);
 	exclusionList = ToLower(exclusionList);
 	return exclusionList.find(target) != std::string::npos || exclusionList.find("all") != std::string::npos;
 }
 
-const CRC::Game& CRC::Lookup(uint32 crc)
+const CRC::Game& CRC::Lookup(u32 crc)
 {
 	printf("GS Lookup CRC:%08X\n", crc);
 	if (m_map.empty())

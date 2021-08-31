@@ -32,11 +32,11 @@ Xbyak::util::Cpu g_cpu;
 static class GSUtilMaps
 {
 public:
-	uint8 PrimClassField[8];
-	uint8 VertexCountField[8];
-	uint8 ClassVertexCountField[4];
-	uint32 CompatibleBitsField[64][2];
-	uint32 SharedBitsField[64][2];
+	u8 PrimClassField[8];
+	u8 VertexCountField[8];
+	u8 ClassVertexCountField[4];
+	u32 CompatibleBitsField[64][2];
+	u32 SharedBitsField[64][2];
 
 	// Defer init to avoid AVX2 illegal instructions
 	void Init()
@@ -105,42 +105,42 @@ void GSUtil::Init()
 	s_maps.Init();
 }
 
-GS_PRIM_CLASS GSUtil::GetPrimClass(uint32 prim)
+GS_PRIM_CLASS GSUtil::GetPrimClass(u32 prim)
 {
 	return (GS_PRIM_CLASS)s_maps.PrimClassField[prim];
 }
 
-int GSUtil::GetVertexCount(uint32 prim)
+int GSUtil::GetVertexCount(u32 prim)
 {
 	return s_maps.VertexCountField[prim];
 }
 
-int GSUtil::GetClassVertexCount(uint32 primclass)
+int GSUtil::GetClassVertexCount(u32 primclass)
 {
 	return s_maps.ClassVertexCountField[primclass];
 }
 
-const uint32* GSUtil::HasSharedBitsPtr(uint32 dpsm)
+const u32* GSUtil::HasSharedBitsPtr(u32 dpsm)
 {
 	return s_maps.SharedBitsField[dpsm];
 }
 
-bool GSUtil::HasSharedBits(uint32 spsm, const uint32* RESTRICT ptr)
+bool GSUtil::HasSharedBits(u32 spsm, const u32* RESTRICT ptr)
 {
 	return (ptr[spsm >> 5] & (1 << (spsm & 0x1f))) == 0;
 }
 
-bool GSUtil::HasSharedBits(uint32 spsm, uint32 dpsm)
+bool GSUtil::HasSharedBits(u32 spsm, u32 dpsm)
 {
 	return (s_maps.SharedBitsField[dpsm][spsm >> 5] & (1 << (spsm & 0x1f))) == 0;
 }
 
-bool GSUtil::HasSharedBits(uint32 sbp, uint32 spsm, uint32 dbp, uint32 dpsm)
+bool GSUtil::HasSharedBits(u32 sbp, u32 spsm, u32 dbp, u32 dpsm)
 {
 	return ((sbp ^ dbp) | (s_maps.SharedBitsField[dpsm][spsm >> 5] & (1 << (spsm & 0x1f)))) == 0;
 }
 
-bool GSUtil::HasCompatibleBits(uint32 spsm, uint32 dpsm)
+bool GSUtil::HasCompatibleBits(u32 spsm, u32 dpsm)
 {
 	return (s_maps.CompatibleBitsField[spsm][dpsm >> 5] & (1 << (dpsm & 0x1f))) != 0;
 }

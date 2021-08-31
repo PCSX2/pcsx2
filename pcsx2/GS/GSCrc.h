@@ -170,16 +170,16 @@ public:
 
 	struct Game
 	{
-		uint32 crc;
+		u32 crc;
 		Title title;
 		Region region;
-		uint32 flags;
+		u32 flags;
 	};
 
 private:
 	static const Game m_games[];
-	static std::map<uint32, const Game*> m_map;
+	static std::map<u32, const Game*> m_map;
 
 public:
-	static const Game& Lookup(uint32 crc);
+	static const Game& Lookup(u32 crc);
 };

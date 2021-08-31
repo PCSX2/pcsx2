@@ -20,7 +20,7 @@
 class GSShaderOGL
 {
 	GLuint m_pipeline;
-	std::unordered_map<uint32, GLuint> m_program;
+	std::unordered_map<u32, GLuint> m_program;
 	const bool m_debug_shader;
 
 	std::vector<GLuint> m_shad_to_delete;

@@ -21,9 +21,9 @@
 struct alignas(64) GSBlockSwizzleTable
 {
 	// Some swizzles are 4x8 and others are 8x4.  An 8x8 table can store either at the cost of 2x size
-	uint8 value[8][8];
+	u8 value[8][8];
 
-	constexpr uint8 lookup(int x, int y) const
+	constexpr u8 lookup(int x, int y) const
 	{
 		return value[y & 7][x & 7];
 	}
@@ -111,14 +111,14 @@ extern const GSSizedBlockSwizzleTable<8, 4> blockTable16Z;
 extern const GSSizedBlockSwizzleTable<8, 4> blockTable16SZ;
 extern const GSSizedBlockSwizzleTable<4, 8> blockTable8;
 extern const GSSizedBlockSwizzleTable<8, 4> blockTable4;
-extern const uint8 columnTable32[8][8];
-extern const uint8 columnTable16[8][16];
-extern const uint8 columnTable8[16][16];
-extern const uint16 columnTable4[16][32];
-extern const uint8 clutTableT32I8[128];
-extern const uint8 clutTableT32I4[16];
-extern const uint8 clutTableT16I8[32];
-extern const uint8 clutTableT16I4[16];
+extern const u8 columnTable32[8][8];
+extern const u8 columnTable16[8][16];
+extern const u8 columnTable8[16][16];
+extern const u16 columnTable4[16][32];
+extern const u8 clutTableT32I8[128];
+extern const u8 clutTableT32I4[16];
+extern const u8 clutTableT16I8[32];
+extern const u8 clutTableT16I4[16];
 extern const GSPixelColOffsetTable< 32> pixelColOffset32;
 extern const GSPixelColOffsetTable< 32> pixelColOffset32Z;
 extern const GSPixelColOffsetTable< 64> pixelColOffset16;

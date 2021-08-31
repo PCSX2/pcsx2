@@ -515,14 +515,14 @@ enum class GSRendererType : int8_t
 #define REG32(name) \
 	union name      \
 	{               \
-		uint32 u32; \
+		u32 U32; \
 		struct {    \
 
 #define REG64(name)    \
 	union name         \
 	{                  \
-		uint64 u64;    \
-		uint32 u32[2]; \
+		u64 U64;    \
+		u32 U32[2]; \
 		void operator = (const GSVector4i& v) {GSVector4i::storel(this, v);} \
 		bool operator == (const union name& r) const {return ((GSVector4i)r).eq(*this);} \
 		bool operator != (const union name& r) const {return !((GSVector4i)r).eq(*this);} \
@@ -532,8 +532,8 @@ enum class GSRendererType : int8_t
 #define REG128(name)   \
 	union name         \
 	{                  \
-		uint64 u64[2]; \
-		uint32 u32[4]; \
+		u64 U64[2]; \
+		u32 U32[4]; \
 		struct {
 
 #define REG32_(prefix, name) REG32(prefix##name)
@@ -546,133 +546,133 @@ enum class GSRendererType : int8_t
 #define REG32_SET(name) \
 union name          \
 {                   \
-	uint32 u32;
+	u32 u32;
 
 #define REG64_SET(name) \
 	union name          \
 	{                   \
-		uint64 u64;     \
-		uint32 u32[2];
+		u64 U64;     \
+		u32 U32[2];
 
 #define REG128_SET(name) \
 	union name           \
 	{                    \
 		__m128i m128;    \
-		uint64 u64[2];   \
-		uint32 u32[4];
+		u64 U64[2];   \
+		u32 U32[4];
 
 #define REG_SET_END };
 
 REG64_(GSReg, BGCOLOR)
-	uint8 R;
-	uint8 G;
-	uint8 B;
-	uint8 _PAD1[5];
+	u8 R;
+	u8 G;
+	u8 B;
+	u8 _PAD1[5];
 REG_END
 
 REG64_(GSReg, BUSDIR)
-	uint32 DIR   :  1;
-	uint32 _PAD1 : 31;
-	uint32 _PAD2 : 32;
+	u32 DIR   :  1;
+	u32 _PAD1 : 31;
+	u32 _PAD2 : 32;
 REG_END
 
 REG64_(GSReg, CSR)
-	uint32 rSIGNAL : 1;
-	uint32 rFINISH : 1;
-	uint32 rHSINT  : 1;
-	uint32 rVSINT  : 1;
-	uint32 rEDWINT : 1;
-	uint32 rZERO1  : 1;
-	uint32 rZERO2  : 1;
-	uint32 r_PAD1  : 1;
-	uint32 rFLUSH  : 1;
-	uint32 rRESET  : 1;
-	uint32 r_PAD2  : 2;
-	uint32 rNFIELD : 1;
-	uint32 rFIELD  : 1;
-	uint32 rFIFO   : 2;
-	uint32 rREV    : 8;
-	uint32 rID     : 8;
-	uint32 wSIGNAL : 1;
-	uint32 wFINISH : 1;
-	uint32 wHSINT  : 1;
-	uint32 wVSINT  : 1;
-	uint32 wEDWINT : 1;
-	uint32 wZERO1  : 1;
-	uint32 wZERO2  : 1;
-	uint32 w_PAD1  : 1;
-	uint32 wFLUSH  : 1;
-	uint32 wRESET  : 1;
-	uint32 w_PAD2  : 2;
-	uint32 wNFIELD : 1;
-	uint32 wFIELD  : 1;
-	uint32 wFIFO   : 2;
-	uint32 wREV    : 8;
-	uint32 wID     : 8;
+	u32 rSIGNAL : 1;
+	u32 rFINISH : 1;
+	u32 rHSINT  : 1;
+	u32 rVSINT  : 1;
+	u32 rEDWINT : 1;
+	u32 rZERO1  : 1;
+	u32 rZERO2  : 1;
+	u32 r_PAD1  : 1;
+	u32 rFLUSH  : 1;
+	u32 rRESET  : 1;
+	u32 r_PAD2  : 2;
+	u32 rNFIELD : 1;
+	u32 rFIELD  : 1;
+	u32 rFIFO   : 2;
+	u32 rREV    : 8;
+	u32 rID     : 8;
+	u32 wSIGNAL : 1;
+	u32 wFINISH : 1;
+	u32 wHSINT  : 1;
+	u32 wVSINT  : 1;
+	u32 wEDWINT : 1;
+	u32 wZERO1  : 1;
+	u32 wZERO2  : 1;
+	u32 w_PAD1  : 1;
+	u32 wFLUSH  : 1;
+	u32 wRESET  : 1;
+	u32 w_PAD2  : 2;
+	u32 wNFIELD : 1;
+	u32 wFIELD  : 1;
+	u32 wFIFO   : 2;
+	u32 wREV    : 8;
+	u32 wID     : 8;
 REG_END
 
 REG64_(GSReg, DISPFB) // (-1/2)
-	uint32 FBP   :  9;
-	uint32 FBW   :  6;
-	uint32 PSM   :  5;
-	uint32 _PAD  : 12;
-	uint32 DBX   : 11;
-	uint32 DBY   : 11;
-	uint32 _PAD2 : 10;
+	u32 FBP   :  9;
+	u32 FBW   :  6;
+	u32 PSM   :  5;
+	u32 _PAD  : 12;
+	u32 DBX   : 11;
+	u32 DBY   : 11;
+	u32 _PAD2 : 10;
 REG_END2
-	uint32 Block() const { return FBP << 5; }
+	u32 Block() const { return FBP << 5; }
 REG_END2
 
 REG64_(GSReg, DISPLAY) // (-1/2)
-	uint32 DX    : 12;
-	uint32 DY    : 11;
-	uint32 MAGH  :  4;
-	uint32 MAGV  :  2;
-	uint32 _PAD  :  3;
-	uint32 DW    : 12;
-	uint32 DH    : 11;
-	uint32 _PAD2 :  9;
+	u32 DX    : 12;
+	u32 DY    : 11;
+	u32 MAGH  :  4;
+	u32 MAGV  :  2;
+	u32 _PAD  :  3;
+	u32 DW    : 12;
+	u32 DH    : 11;
+	u32 _PAD2 :  9;
 REG_END
 
 REG64_(GSReg, EXTBUF)
-	uint32 EXBP  : 14;
-	uint32 EXBW  :  6;
-	uint32 FBIN  :  2;
-	uint32 WFFMD :  1;
-	uint32 EMODA :  2;
-	uint32 EMODC :  2;
-	uint32 _PAD1 :  5;
-	uint32 WDX   : 11;
-	uint32 WDY   : 11;
-	uint32 _PAD2 : 10;
+	u32 EXBP  : 14;
+	u32 EXBW  :  6;
+	u32 FBIN  :  2;
+	u32 WFFMD :  1;
+	u32 EMODA :  2;
+	u32 EMODC :  2;
+	u32 _PAD1 :  5;
+	u32 WDX   : 11;
+	u32 WDY   : 11;
+	u32 _PAD2 : 10;
 REG_END
 
 REG64_(GSReg, EXTDATA)
-	uint32 SX    : 12;
-	uint32 SY    : 11;
-	uint32 SMPH  :  4;
-	uint32 SMPV  :  2;
-	uint32 _PAD1 :  3;
-	uint32 WW    : 12;
-	uint32 WH    : 11;
-	uint32 _PAD2 :  9;
+	u32 SX    : 12;
+	u32 SY    : 11;
+	u32 SMPH  :  4;
+	u32 SMPV  :  2;
+	u32 _PAD1 :  3;
+	u32 WW    : 12;
+	u32 WH    : 11;
+	u32 _PAD2 :  9;
 REG_END
 
 REG64_(GSReg, EXTWRITE)
-	uint32 WRITE :  1;
-	uint32 _PAD1 : 31;
-	uint32 _PAD2 : 32;
+	u32 WRITE :  1;
+	u32 _PAD1 : 31;
+	u32 _PAD2 : 32;
 REG_END
 
 REG64_(GSReg, IMR)
-	uint32 _PAD1     :  8;
-	uint32 SIGMSK    :  1;
-	uint32 FINISHMSK :  1;
-	uint32 HSMSK     :  1;
-	uint32 VSMSK     :  1;
-	uint32 EDWMSK    :  1;
-	uint32 _PAD2     : 19;
-	uint32 _PAD3     : 32;
+	u32 _PAD1     :  8;
+	u32 SIGMSK    :  1;
+	u32 FINISHMSK :  1;
+	u32 HSMSK     :  1;
+	u32 VSMSK     :  1;
+	u32 EDWMSK    :  1;
+	u32 _PAD2     : 19;
+	u32 _PAD3     : 32;
 REG_END
 
 REG64_(GSReg, PMODE)
@@ -680,54 +680,54 @@ union
 {
 	struct
 	{
-		uint32 EN1   :  1;
-		uint32 EN2   :  1;
-		uint32 CRTMD :  3;
-		uint32 MMOD  :  1;
-		uint32 AMOD  :  1;
-		uint32 SLBG  :  1;
-		uint32 ALP   :  8;
-		uint32 _PAD  : 16;
-		uint32 _PAD1 : 32;
+		u32 EN1   :  1;
+		u32 EN2   :  1;
+		u32 CRTMD :  3;
+		u32 MMOD  :  1;
+		u32 AMOD  :  1;
+		u32 SLBG  :  1;
+		u32 ALP   :  8;
+		u32 _PAD  : 16;
+		u32 _PAD1 : 32;
 	};
 
 	struct
 	{
-		uint32 EN    :  2;
-		uint32 _PAD2 : 30;
-		uint32 _PAD3 : 32;
+		u32 EN    :  2;
+		u32 _PAD2 : 30;
+		u32 _PAD3 : 32;
 	};
 };
 REG_END
 
 REG64_(GSReg, SIGLBLID)
-	uint32 SIGID;
-	uint32 LBLID;
+	u32 SIGID;
+	u32 LBLID;
 REG_END
 
 REG64_(GSReg, SMODE1)
-	uint32 RC     :  3;
-	uint32 LC     :  7;
-	uint32 T1248  :  2;
-	uint32 SLCK   :  1;
-	uint32 CMOD   :  2;
-	uint32 EX     :  1;
-	uint32 PRST   :  1;
-	uint32 SINT   :  1;
-	uint32 XPCK   :  1;
-	uint32 PCK2   :  2;
-	uint32 SPML   :  4;
-	uint32 GCONT  :  1; // YCrCb
-	uint32 PHS    :  1;
-	uint32 PVS    :  1;
-	uint32 PEHS   :  1;
-	uint32 PEVS   :  1;
-	uint32 CLKSEL :  2;
-	uint32 NVCK   :  1;
-	uint32 SLCK2  :  1;
-	uint32 VCKSEL :  2;
-	uint32 VHP    :  1;
-	uint32 _PAD1  : 27;
+	u32 RC     :  3;
+	u32 LC     :  7;
+	u32 T1248  :  2;
+	u32 SLCK   :  1;
+	u32 CMOD   :  2;
+	u32 EX     :  1;
+	u32 PRST   :  1;
+	u32 SINT   :  1;
+	u32 XPCK   :  1;
+	u32 PCK2   :  2;
+	u32 SPML   :  4;
+	u32 GCONT  :  1; // YCrCb
+	u32 PHS    :  1;
+	u32 PVS    :  1;
+	u32 PEHS   :  1;
+	u32 PEVS   :  1;
+	u32 CLKSEL :  2;
+	u32 NVCK   :  1;
+	u32 SLCK2  :  1;
+	u32 VCKSEL :  2;
+	u32 VHP    :  1;
+	u32 _PAD1  : 27;
 REG_END
 
 /*
@@ -747,35 +747,35 @@ CLKSEL=1 CMOD=0 EX=0 GCONT=0 LC=32 NVCK=1 PCK2=0 PEHS=0 PEVS=0 PHS=0 PRST=1 PVS=
 */
 
 REG64_(GSReg, SMODE2)
-	uint32 INT   :  1;
-	uint32 FFMD  :  1;
-	uint32 DPMS  :  2;
-	uint32 _PAD2 : 28;
-	uint32 _PAD3 : 32;
+	u32 INT   :  1;
+	u32 FFMD  :  1;
+	u32 DPMS  :  2;
+	u32 _PAD2 : 28;
+	u32 _PAD3 : 32;
 REG_END
 
 REG64_(GSReg, SRFSH)
-	uint32 _DUMMY;
+	u32 _DUMMY;
 	// TODO
 REG_END
 
 REG64_(GSReg, SYNCH1)
-	uint32 _DUMMY;
+	u32 _DUMMY;
 	// TODO
 REG_END
 
 REG64_(GSReg, SYNCH2)
-	uint32 _DUMMY;
+	u32 _DUMMY;
 	// TODO
 REG_END
 
 REG64_(GSReg, SYNCV)
-	uint32 VFP  : 10; // Vertical Front Porchinterval (?s)
-	uint32 VFPE : 10; // Vertical Front Porchinterval End (?s)
-	uint32 VBP  : 12; // Vertical Back Porchinterval (?s)
-	uint32 VBPE : 10; // Vertical Back Porchinterval End (?s)
-	uint32 VDP  : 11; // Vertical Differential Phase
-	uint32 VS   : 11; // Vertical Synchronization Timing
+	u32 VFP  : 10; // Vertical Front Porchinterval (?s)
+	u32 VFPE : 10; // Vertical Front Porchinterval End (?s)
+	u32 VBP  : 12; // Vertical Back Porchinterval (?s)
+	u32 VBPE : 10; // Vertical Back Porchinterval End (?s)
+	u32 VDP  : 11; // Vertical Differential Phase
+	u32 VS   : 11; // Vertical Synchronization Timing
 REG_END
 
 REG64_SET(GSReg)
@@ -798,27 +798,27 @@ REG_SET_END
 // GIFTag
 
 REG128(GIFTag)
-	uint32 NLOOP : 15;
-	uint32 EOP   :  1;
-	uint32 _PAD1 : 16;
-	uint32 _PAD2 : 14;
-	uint32 PRE   :  1;
-	uint32 PRIM  : 11;
-	uint32 FLG   :  2; // enum GIF_FLG
-	uint32 NREG  :  4;
-	uint64 REGS;
+	u32 NLOOP : 15;
+	u32 EOP   :  1;
+	u32 _PAD1 : 16;
+	u32 _PAD2 : 14;
+	u32 PRE   :  1;
+	u32 PRIM  : 11;
+	u32 FLG   :  2; // enum GIF_FLG
+	u32 NREG  :  4;
+	u64 REGS;
 REG_END
 
 // GIFReg
 
 REG64_(GIFReg, ALPHA)
-	uint32 A     :  2;
-	uint32 B     :  2;
-	uint32 C     :  2;
-	uint32 D     :  2;
-	uint32 _PAD1 : 24;
-	uint8 FIX;
-	uint8 _PAD2[3];
+	u32 A     :  2;
+	u32 B     :  2;
+	u32 C     :  2;
+	u32 D     :  2;
+	u32 _PAD1 : 24;
+	u8 FIX;
+	u8 _PAD2[3];
 REG_END2
 	// opaque => output will be Cs/As
 	__forceinline bool IsOpaque() const { return ((A == B || (C == 2 && FIX == 0)) && D == 0) || (A == 0 && B == D && C == 2 && FIX == 0x80); }
@@ -827,18 +827,18 @@ REG_END2
 REG_END2
 
 REG64_(GIFReg, BITBLTBUF)
-	uint32 SBP   : 14;
-	uint32 _PAD1 :  2;
-	uint32 SBW   :  6;
-	uint32 _PAD2 :  2;
-	uint32 SPSM  :  6;
-	uint32 _PAD3 :  2;
-	uint32 DBP   : 14;
-	uint32 _PAD4 :  2;
-	uint32 DBW   :  6;
-	uint32 _PAD5 :  2;
-	uint32 DPSM  :  6;
-	uint32 _PAD6 :  2;
+	u32 SBP   : 14;
+	u32 _PAD1 :  2;
+	u32 SBW   :  6;
+	u32 _PAD2 :  2;
+	u32 SPSM  :  6;
+	u32 _PAD3 :  2;
+	u32 DBP   : 14;
+	u32 _PAD4 :  2;
+	u32 DBW   :  6;
+	u32 _PAD5 :  2;
+	u32 DPSM  :  6;
+	u32 _PAD6 :  2;
 REG_END
 
 REG64_(GIFReg, CLAMP)
@@ -846,208 +846,208 @@ union
 {
 	struct
 	{
-		uint32 WMS   :  2;
-		uint32 WMT   :  2;
-		uint32 MINU  : 10;
-		uint32 MAXU  : 10;
-		uint32 _PAD1 :  8;
-		uint32 _PAD2 :  2;
-		uint32 MAXV  : 10;
-		uint32 _PAD3 : 20;
+		u32 WMS   :  2;
+		u32 WMT   :  2;
+		u32 MINU  : 10;
+		u32 MAXU  : 10;
+		u32 _PAD1 :  8;
+		u32 _PAD2 :  2;
+		u32 MAXV  : 10;
+		u32 _PAD3 : 20;
 	};
 
 	struct
 	{
-		uint64 _PAD4 : 24;
-		uint64 MINV  : 10;
-		uint64 _PAD5 : 30;
+		u64 _PAD4 : 24;
+		u64 MINV  : 10;
+		u64 _PAD5 : 30;
 	};
 };
 REG_END
 
 REG64_(GIFReg, COLCLAMP)
-	uint32 CLAMP :  1;
-	uint32 _PAD1 : 31;
-	uint32 _PAD2 : 32;
+	u32 CLAMP :  1;
+	u32 _PAD1 : 31;
+	u32 _PAD2 : 32;
 REG_END
 
 REG64_(GIFReg, DIMX)
-	int32   DM00 : 3;
-	int32 _PAD00 : 1;
-	int32   DM01 : 3;
-	int32 _PAD01 : 1;
-	int32   DM02 : 3;
-	int32 _PAD02 : 1;
-	int32   DM03 : 3;
-	int32 _PAD03 : 1;
-	int32   DM10 : 3;
-	int32 _PAD10 : 1;
-	int32   DM11 : 3;
-	int32 _PAD11 : 1;
-	int32   DM12 : 3;
-	int32 _PAD12 : 1;
-	int32   DM13 : 3;
-	int32 _PAD13 : 1;
-	int32   DM20 : 3;
-	int32 _PAD20 : 1;
-	int32   DM21 : 3;
-	int32 _PAD21 : 1;
-	int32   DM22 : 3;
-	int32 _PAD22 : 1;
-	int32   DM23 : 3;
-	int32 _PAD23 : 1;
-	int32   DM30 : 3;
-	int32 _PAD30 : 1;
-	int32   DM31 : 3;
-	int32 _PAD31 : 1;
-	int32   DM32 : 3;
-	int32 _PAD32 : 1;
-	int32   DM33 : 3;
-	int32 _PAD33 : 1;
+	s32   DM00 : 3;
+	s32 _PAD00 : 1;
+	s32   DM01 : 3;
+	s32 _PAD01 : 1;
+	s32   DM02 : 3;
+	s32 _PAD02 : 1;
+	s32   DM03 : 3;
+	s32 _PAD03 : 1;
+	s32   DM10 : 3;
+	s32 _PAD10 : 1;
+	s32   DM11 : 3;
+	s32 _PAD11 : 1;
+	s32   DM12 : 3;
+	s32 _PAD12 : 1;
+	s32   DM13 : 3;
+	s32 _PAD13 : 1;
+	s32   DM20 : 3;
+	s32 _PAD20 : 1;
+	s32   DM21 : 3;
+	s32 _PAD21 : 1;
+	s32   DM22 : 3;
+	s32 _PAD22 : 1;
+	s32   DM23 : 3;
+	s32 _PAD23 : 1;
+	s32   DM30 : 3;
+	s32 _PAD30 : 1;
+	s32   DM31 : 3;
+	s32 _PAD31 : 1;
+	s32   DM32 : 3;
+	s32 _PAD32 : 1;
+	s32   DM33 : 3;
+	s32 _PAD33 : 1;
 REG_END
 
 REG64_(GIFReg, DTHE)
-	uint32 DTHE  :  1;
-	uint32 _PAD1 : 31;
-	uint32 _PAD2 : 32;
+	u32 DTHE  :  1;
+	u32 _PAD1 : 31;
+	u32 _PAD2 : 32;
 REG_END
 
 REG64_(GIFReg, FBA)
-	uint32 FBA   :  1;
-	uint32 _PAD1 : 31;
-	uint32 _PAD2 : 32;
+	u32 FBA   :  1;
+	u32 _PAD1 : 31;
+	u32 _PAD2 : 32;
 REG_END
 
 REG64_(GIFReg, FINISH)
-	uint32 _PAD1[2];
+	u32 _PAD1[2];
 REG_END
 
 REG64_(GIFReg, FOG)
-	uint8 _PAD1[7];
-	uint8 F;
+	u8 _PAD1[7];
+	u8 F;
 REG_END
 
 REG64_(GIFReg, FOGCOL)
-	uint8 FCR;
-	uint8 FCG;
-	uint8 FCB;
-	uint8 _PAD1[5];
+	u8 FCR;
+	u8 FCG;
+	u8 FCB;
+	u8 _PAD1[5];
 REG_END
 
 REG64_(GIFReg, FRAME)
-	uint32 FBP   : 9;
-	uint32 _PAD1 : 7;
-	uint32 FBW   : 6;
-	uint32 _PAD2 : 2;
-	uint32 PSM   : 6;
-	uint32 _PAD3 : 2;
-	uint32 FBMSK;
+	u32 FBP   : 9;
+	u32 _PAD1 : 7;
+	u32 FBW   : 6;
+	u32 _PAD2 : 2;
+	u32 PSM   : 6;
+	u32 _PAD3 : 2;
+	u32 FBMSK;
 REG_END2
-	uint32 Block() const { return FBP << 5; }
+	u32 Block() const { return FBP << 5; }
 REG_END2
 
 REG64_(GIFReg, HWREG)
-	uint32 DATA_LOWER;
-	uint32 DATA_UPPER;
+	u32 DATA_LOWER;
+	u32 DATA_UPPER;
 REG_END
 
 REG64_(GIFReg, LABEL)
-	uint32 ID;
-	uint32 IDMSK;
+	u32 ID;
+	u32 IDMSK;
 REG_END
 
 REG64_(GIFReg, MIPTBP1)
-	uint64 TBP1 : 14;
-	uint64 TBW1 :  6;
-	uint64 TBP2 : 14;
-	uint64 TBW2 :  6;
-	uint64 TBP3 : 14;
-	uint64 TBW3 :  6;
-	uint64 _PAD :  4;
+	u64 TBP1 : 14;
+	u64 TBW1 :  6;
+	u64 TBP2 : 14;
+	u64 TBW2 :  6;
+	u64 TBP3 : 14;
+	u64 TBW3 :  6;
+	u64 _PAD :  4;
 REG_END
 
 REG64_(GIFReg, MIPTBP2)
-	uint64 TBP4 : 14;
-	uint64 TBW4 :  6;
-	uint64 TBP5 : 14;
-	uint64 TBW5 :  6;
-	uint64 TBP6 : 14;
-	uint64 TBW6 :  6;
-	uint64 _PAD :  4;
+	u64 TBP4 : 14;
+	u64 TBW4 :  6;
+	u64 TBP5 : 14;
+	u64 TBW5 :  6;
+	u64 TBP6 : 14;
+	u64 TBW6 :  6;
+	u64 _PAD :  4;
 REG_END
 
 REG64_(GIFReg, NOP)
-	uint32 _PAD[2];
+	u32 _PAD[2];
 REG_END
 
 REG64_(GIFReg, PABE)
-	uint32 PABE  :  1;
-	uint32 _PAD1 : 31;
-	uint32 _PAD2 : 32;
+	u32 PABE  :  1;
+	u32 _PAD1 : 31;
+	u32 _PAD2 : 32;
 REG_END
 
 REG64_(GIFReg, PRIM)
-	uint32 PRIM  :  3;
-	uint32 IIP   :  1;
-	uint32 TME   :  1;
-	uint32 FGE   :  1;
-	uint32 ABE   :  1;
-	uint32 AA1   :  1;
-	uint32 FST   :  1;
-	uint32 CTXT  :  1;
-	uint32 FIX   :  1;
-	uint32 _PAD1 : 21;
-	uint32 _PAD2 : 32;
+	u32 PRIM  :  3;
+	u32 IIP   :  1;
+	u32 TME   :  1;
+	u32 FGE   :  1;
+	u32 ABE   :  1;
+	u32 AA1   :  1;
+	u32 FST   :  1;
+	u32 CTXT  :  1;
+	u32 FIX   :  1;
+	u32 _PAD1 : 21;
+	u32 _PAD2 : 32;
 REG_END
 
 REG64_(GIFReg, PRMODE)
-	uint32 _PRIM :  3;
-	uint32 IIP   :  1;
-	uint32 TME   :  1;
-	uint32 FGE   :  1;
-	uint32 ABE   :  1;
-	uint32 AA1   :  1;
-	uint32 FST   :  1;
-	uint32 CTXT  :  1;
-	uint32 FIX   :  1;
-	uint32 _PAD2 : 21;
-	uint32 _PAD3 : 32;
+	u32 _PRIM :  3;
+	u32 IIP   :  1;
+	u32 TME   :  1;
+	u32 FGE   :  1;
+	u32 ABE   :  1;
+	u32 AA1   :  1;
+	u32 FST   :  1;
+	u32 CTXT  :  1;
+	u32 FIX   :  1;
+	u32 _PAD2 : 21;
+	u32 _PAD3 : 32;
 REG_END
 
 REG64_(GIFReg, PRMODECONT)
-	uint32 AC    :  1;
-	uint32 _PAD1 : 31;
-	uint32 _PAD2 : 32;
+	u32 AC    :  1;
+	u32 _PAD1 : 31;
+	u32 _PAD2 : 32;
 REG_END
 
 REG64_(GIFReg, RGBAQ)
-	uint8 R;
-	uint8 G;
-	uint8 B;
-	uint8 A;
+	u8 R;
+	u8 G;
+	u8 B;
+	u8 A;
 	float Q;
 REG_END
 
 REG64_(GIFReg, SCANMSK)
-	uint32 MSK   :  2;
-	uint32 _PAD1 : 30;
-	uint32 _PAD2 : 32;
+	u32 MSK   :  2;
+	u32 _PAD1 : 30;
+	u32 _PAD2 : 32;
 REG_END
 
 REG64_(GIFReg, SCISSOR)
-	uint32 SCAX0 : 11;
-	uint32 _PAD1 :  5;
-	uint32 SCAX1 : 11;
-	uint32 _PAD2 :  5;
-	uint32 SCAY0 : 11;
-	uint32 _PAD3 :  5;
-	uint32 SCAY1 : 11;
-	uint32 _PAD4 :  5;
+	u32 SCAX0 : 11;
+	u32 _PAD1 :  5;
+	u32 SCAX1 : 11;
+	u32 _PAD2 :  5;
+	u32 SCAY0 : 11;
+	u32 _PAD3 :  5;
+	u32 SCAY1 : 11;
+	u32 _PAD4 :  5;
 REG_END
 
 REG64_(GIFReg, SIGNAL)
-	uint32 ID;
-	uint32 IDMSK;
+	u32 ID;
+	u32 IDMSK;
 REG_END
 
 REG64_(GIFReg, ST)
@@ -1056,16 +1056,16 @@ REG64_(GIFReg, ST)
 REG_END
 
 REG64_(GIFReg, TEST)
-	uint32 ATE   :  1;
-	uint32 ATST  :  3;
-	uint32 AREF  :  8;
-	uint32 AFAIL :  2;
-	uint32 DATE  :  1;
-	uint32 DATM  :  1;
-	uint32 ZTE   :  1;
-	uint32 ZTST  :  2;
-	uint32 _PAD1 : 13;
-	uint32 _PAD2 : 32;
+	u32 ATE   :  1;
+	u32 ATST  :  3;
+	u32 AREF  :  8;
+	u32 AFAIL :  2;
+	u32 DATE  :  1;
+	u32 DATM  :  1;
+	u32 ZTE   :  1;
+	u32 ZTST  :  2;
+	u32 _PAD1 : 13;
+	u32 _PAD2 : 32;
 REG_END2
 	__forceinline bool DoFirstPass() const { return !ATE || ATST != ATST_NEVER; } // not all pixels fail automatically
 	__forceinline bool DoSecondPass() const { return ATE && ATST != ATST_ALWAYS && AFAIL != AFAIL_KEEP; } // pixels may fail, write fb/z
@@ -1077,26 +1077,26 @@ union
 {
 	struct
 	{
-		uint32 TBP0  : 14;
-		uint32 TBW   :  6;
-		uint32 PSM   :  6;
-		uint32 TW    :  4;
-		uint32 _PAD1 :  2;
-		uint32 _PAD2 :  2;
-		uint32 TCC   :  1;
-		uint32 TFX   :  2;
-		uint32 CBP   : 14;
-		uint32 CPSM  :  4;
-		uint32 CSM   :  1;
-		uint32 CSA   :  5;
-		uint32 CLD   :  3;
+		u32 TBP0  : 14;
+		u32 TBW   :  6;
+		u32 PSM   :  6;
+		u32 TW    :  4;
+		u32 _PAD1 :  2;
+		u32 _PAD2 :  2;
+		u32 TCC   :  1;
+		u32 TFX   :  2;
+		u32 CBP   : 14;
+		u32 CPSM  :  4;
+		u32 CSM   :  1;
+		u32 CSA   :  5;
+		u32 CLD   :  3;
 	};
 
 	struct
 	{
-		uint64 _PAD3 : 30;
-		uint64 TH    :  4;
-		uint64 _PAD4 : 30;
+		u64 _PAD3 : 30;
+		u64 TH    :  4;
+		u64 _PAD4 : 30;
 	};
 };
 REG_END2
@@ -1111,128 +1111,128 @@ REG_END2
 		}
 
 		// The recast of TBW seems useless but it avoid tons of warning from GCC...
-		return ((uint32)TBW << 6u) < (1u << TW);
+		return ((u32)TBW << 6u) < (1u << TW);
 	}
 REG_END2
 
 REG64_(GIFReg, TEX1)
-	uint32 LCM   :  1;
-	uint32 _PAD1 :  1;
-	uint32 MXL   :  3;
-	uint32 MMAG  :  1;
-	uint32 MMIN  :  3;
-	uint32 MTBA  :  1;
-	uint32 _PAD2 :  9;
-	uint32 L     :  2;
-	uint32 _PAD3 : 11;
-	int32  K     : 12; // 1:7:4
-	uint32 _PAD4 : 20;
+	u32 LCM   :  1;
+	u32 _PAD1 :  1;
+	u32 MXL   :  3;
+	u32 MMAG  :  1;
+	u32 MMIN  :  3;
+	u32 MTBA  :  1;
+	u32 _PAD2 :  9;
+	u32 L     :  2;
+	u32 _PAD3 : 11;
+	s32  K    : 12; // 1:7:4
+	u32 _PAD4 : 20;
 REG_END2
 	bool IsMinLinear() const { return (MMIN == 1) || (MMIN & 4); }
 	bool IsMagLinear() const { return MMAG; }
 REG_END2
 
 REG64_(GIFReg, TEX2)
-	uint32 _PAD1 : 20;
-	uint32 PSM   :  6;
-	uint32 _PAD2 :  6;
-	uint32 _PAD3 :  5;
-	uint32 CBP   : 14;
-	uint32 CPSM  :  4;
-	uint32 CSM   :  1;
-	uint32 CSA   :  5;
-	uint32 CLD   :  3;
+	u32 _PAD1 : 20;
+	u32 PSM   :  6;
+	u32 _PAD2 :  6;
+	u32 _PAD3 :  5;
+	u32 CBP   : 14;
+	u32 CPSM  :  4;
+	u32 CSM   :  1;
+	u32 CSA   :  5;
+	u32 CLD   :  3;
 REG_END
 
 REG64_(GIFReg, TEXA)
-	uint8 TA0;
-	uint8 _PAD1 : 7;
-	uint8 AEM   : 1;
-	uint16 _PAD2;
-	uint8 TA1   : 8;
-	uint8 _PAD3[3];
+	u8 TA0;
+	u8 _PAD1 : 7;
+	u8 AEM   : 1;
+	u16 _PAD2;
+	u8 TA1   : 8;
+	u8 _PAD3[3];
 REG_END
 
 REG64_(GIFReg, TEXCLUT)
-	uint32 CBW   :  6;
-	uint32 COU   :  6;
-	uint32 COV   : 10;
-	uint32 _PAD1 : 10;
-	uint32 _PAD2 : 32;
+	u32 CBW   :  6;
+	u32 COU   :  6;
+	u32 COV   : 10;
+	u32 _PAD1 : 10;
+	u32 _PAD2 : 32;
 REG_END
 
 REG64_(GIFReg, TEXFLUSH)
-	uint32 _PAD1 : 32;
-	uint32 _PAD2 : 32;
+	u32 _PAD1 : 32;
+	u32 _PAD2 : 32;
 REG_END
 
 REG64_(GIFReg, TRXDIR)
-	uint32 XDIR  :  2;
-	uint32 _PAD1 : 30;
-	uint32 _PAD2 : 32;
+	u32 XDIR  :  2;
+	u32 _PAD1 : 30;
+	u32 _PAD2 : 32;
 REG_END
 
 REG64_(GIFReg, TRXPOS)
-	uint32 SSAX  : 11;
-	uint32 _PAD1 :  5;
-	uint32 SSAY  : 11;
-	uint32 _PAD2 :  5;
-	uint32 DSAX  : 11;
-	uint32 _PAD3 :  5;
-	uint32 DSAY  : 11;
-	uint32 DIRY  :  1;
-	uint32 DIRX  :  1;
-	uint32 _PAD4 :  3;
+	u32 SSAX  : 11;
+	u32 _PAD1 :  5;
+	u32 SSAY  : 11;
+	u32 _PAD2 :  5;
+	u32 DSAX  : 11;
+	u32 _PAD3 :  5;
+	u32 DSAY  : 11;
+	u32 DIRY  :  1;
+	u32 DIRX  :  1;
+	u32 _PAD4 :  3;
 REG_END
 
 REG64_(GIFReg, TRXREG)
-	uint32 RRW   : 12;
-	uint32 _PAD1 : 20;
-	uint32 RRH   : 12;
-	uint32 _PAD2 : 20;
+	u32 RRW   : 12;
+	u32 _PAD1 : 20;
+	u32 RRH   : 12;
+	u32 _PAD2 : 20;
 REG_END
 
 // GSState::GIFPackedRegHandlerUV and GSState::GIFRegHandlerUV will make sure that the _PAD1/2 bits are set to zero
 
 REG64_(GIFReg, UV)
-	uint16 U;
-	// uint32 _PAD1 : 2;
-	uint16 V;
-	// uint32 _PAD2 : 2;
-	uint32 _PAD3;
+	u16 U;
+	// u32 _PAD1 : 2;
+	u16 V;
+	// u32 _PAD2 : 2;
+	u32 _PAD3;
 REG_END
 
 // GSState::GIFRegHandlerXYOFFSET will make sure that the _PAD1/2 bits are set to zero
 
 REG64_(GIFReg, XYOFFSET)
-	uint32 OFX; // : 16; uint32 _PAD1 : 16;
-	uint32 OFY; // : 16; uint32 _PAD2 : 16;
+	u32 OFX; // : 16; u32 _PAD1 : 16;
+	u32 OFY; // : 16; u32 _PAD2 : 16;
 REG_END
 
 REG64_(GIFReg, XYZ)
-	uint16 X;
-	uint16 Y;
-	uint32 Z;
+	u16 X;
+	u16 Y;
+	u32 Z;
 REG_END
 
 REG64_(GIFReg, XYZF)
-	uint16 X;
-	uint16 Y;
-	uint32 Z : 24;
-	uint32 F :  8;
+	u16 X;
+	u16 Y;
+	u32 Z : 24;
+	u32 F :  8;
 REG_END
 
 REG64_(GIFReg, ZBUF)
-	uint32 ZBP   :  9;
-	uint32 _PAD1 : 15;
-	// uint32 PSM   :  4;
-	// uint32 _PAD2 :  4;
-	uint32 PSM   :  6;
-	uint32 _PAD2 :  2;
-	uint32 ZMSK  :  1;
-	uint32 _PAD3 : 31;
+	u32 ZBP   :  9;
+	u32 _PAD1 : 15;
+	// u32 PSM   :  4;
+	// u32 _PAD2 :  4;
+	u32 PSM   :  6;
+	u32 _PAD2 :  2;
+	u32 ZMSK  :  1;
+	u32 _PAD3 : 31;
 REG_END2
-	uint32 Block() const { return ZBP << 5; }
+	u32 Block() const { return ZBP << 5; }
 REG_END2
 
 REG64_SET(GIFReg)
@@ -1281,88 +1281,88 @@ REG_SET_END
 // GIFPacked
 
 REG128_(GIFPacked, PRIM)
-	uint32 PRIM  : 11;
-	uint32 _PAD1 : 21;
-	uint32 _PAD2[3];
+	u32 PRIM  : 11;
+	u32 _PAD1 : 21;
+	u32 _PAD2[3];
 REG_END
 
 REG128_(GIFPacked, RGBA)
-	uint8 R;
-	uint8 _PAD1[3];
-	uint8 G;
-	uint8 _PAD2[3];
-	uint8 B;
-	uint8 _PAD3[3];
-	uint8 A;
-	uint8 _PAD4[3];
+	u8 R;
+	u8 _PAD1[3];
+	u8 G;
+	u8 _PAD2[3];
+	u8 B;
+	u8 _PAD3[3];
+	u8 A;
+	u8 _PAD4[3];
 REG_END
 
 REG128_(GIFPacked, STQ)
 	float S;
 	float T;
 	float Q;
-	uint32 _PAD1 : 32;
+	u32 _PAD1 : 32;
 REG_END
 
 REG128_(GIFPacked, UV)
-	uint32 U     : 14;
-	uint32 _PAD1 : 18;
-	uint32 V     : 14;
-	uint32 _PAD2 : 18;
-	uint32 _PAD3 : 32;
-	uint32 _PAD4 : 32;
+	u32 U     : 14;
+	u32 _PAD1 : 18;
+	u32 V     : 14;
+	u32 _PAD2 : 18;
+	u32 _PAD3 : 32;
+	u32 _PAD4 : 32;
 REG_END
 
 REG128_(GIFPacked, XYZF2)
-	uint16 X;
-	uint16 _PAD1;
-	uint16 Y;
-	uint16 _PAD2;
-	uint32 _PAD3 :  4;
-	uint32 Z     : 24;
-	uint32 _PAD4 :  4;
-	uint32 _PAD5 :  4;
-	uint32 F     :  8;
-	uint32 _PAD6 :  3;
-	uint32 ADC   :  1;
-	uint32 _PAD7 : 16;
+	u16 X;
+	u16 _PAD1;
+	u16 Y;
+	u16 _PAD2;
+	u32 _PAD3 :  4;
+	u32 Z     : 24;
+	u32 _PAD4 :  4;
+	u32 _PAD5 :  4;
+	u32 F     :  8;
+	u32 _PAD6 :  3;
+	u32 ADC   :  1;
+	u32 _PAD7 : 16;
 REG_END2
-uint32 Skip() const { return u32[3] & 0x8000; }
+u32 Skip() const { return U32[3] & 0x8000; }
 REG_END2
 
 REG128_(GIFPacked, XYZ2)
-	uint16 X;
-	uint16 _PAD1;
-	uint16 Y;
-	uint16 _PAD2;
-	uint32 Z;
-	uint32 _PAD3 : 15;
-	uint32 ADC   :  1;
-	uint32 _PAD4 : 16;
+	u16 X;
+	u16 _PAD1;
+	u16 Y;
+	u16 _PAD2;
+	u32 Z;
+	u32 _PAD3 : 15;
+	u32 ADC   :  1;
+	u32 _PAD4 : 16;
 REG_END2
-	uint32 Skip() const { return u32[3] & 0x8000; }
+	u32 Skip() const { return U32[3] & 0x8000; }
 REG_END2
 
 REG128_(GIFPacked, FOG)
-	uint32 _PAD1;
-	uint32 _PAD2;
-	uint32 _PAD3;
-	uint32 _PAD4 :  4;
-	uint32 F     :  8;
-	uint32 _PAD5 : 20;
+	u32 _PAD1;
+	u32 _PAD2;
+	u32 _PAD3;
+	u32 _PAD4 :  4;
+	u32 F     :  8;
+	u32 _PAD5 : 20;
 REG_END
 
 REG128_(GIFPacked, A_D)
-	uint64 DATA;
-	uint8 ADDR : 8; // enum GIF_A_D_REG
-	uint8 _PAD1[3 + 4];
+	u64 DATA;
+	u8 ADDR : 8; // enum GIF_A_D_REG
+	u8 _PAD1[3 + 4];
 REG_END
 
 REG128_(GIFPacked, NOP)
-	uint32 _PAD1;
-	uint32 _PAD2;
-	uint32 _PAD3;
-	uint32 _PAD4;
+	u32 _PAD1;
+	u32 _PAD2;
+	u32 _PAD3;
+	u32 _PAD4;
 REG_END
 
 REG128_SET(GIFPackedReg)
@@ -1381,10 +1381,10 @@ REG_SET_END
 struct alignas(32) GIFPath
 {
 	GIFTag tag;
-	uint32 nloop;
-	uint32 nreg;
-	uint32 reg;
-	uint32 type;
+	u32 nloop;
+	u32 nreg;
+	u32 reg;
+	u32 type;
 	GSVector4i regs;
 
 	enum
@@ -1401,11 +1401,11 @@ struct alignas(32) GIFPath
 
 		// the compiler has a hard time not reloading every time a field of src is accessed
 
-		uint32 a = src->u32[0];
-		uint32 b = src->u32[1];
+		u32 a = src->U32[0];
+		u32 b = src->U32[1];
 
-		tag.u32[0] = a;
-		tag.u32[1] = b;
+		tag.U32[0] = a;
+		tag.U32[1] = b;
 
 		nloop = a & 0x7fff;
 
@@ -1436,10 +1436,10 @@ struct alignas(32) GIFPath
 						break;
 					case 3:
 						// many games, TODO: formats mixed with NOPs (xeno2: 040f010f02, 04010f020f, mgs3: 04010f0f02, 0401020f0f, 04010f020f)
-						if (regs.u32[0] == 0x00040102)
+						if (regs.U32[0] == 0x00040102)
 							type = TYPE_STQRGBAXYZF2;
 						// GoW (has other crazy formats, like ...030503050103)
-						if (regs.u32[0] == 0x00050102)
+						if (regs.U32[0] == 0x00050102)
 							type = TYPE_STQRGBAXYZ2;
 						// TODO: common types with UV instead
 						break;
@@ -1455,7 +1455,7 @@ struct alignas(32) GIFPath
 						break;
 					case 9:
 						// ffx
-						if (regs.u32[0] == 0x02040102 && regs.u32[1] == 0x01020401 && regs.u32[2] == 0x00000004)
+						if (regs.U32[0] == 0x02040102 && regs.U32[1] == 0x01020401 && regs.U32[2] == 0x00000004)
 						{
 							type = TYPE_STQRGBAXYZF2;
 							nreg = 3;
@@ -1468,7 +1468,7 @@ struct alignas(32) GIFPath
 						break;
 					case 12:
 						// dq8 (not many, mostly 040102)
-						if (regs.u32[0] == 0x02040102 && regs.u32[1] == 0x01020401 && regs.u32[2] == 0x04010204)
+						if (regs.U32[0] == 0x02040102 && regs.U32[1] == 0x01020401 && regs.U32[2] == 0x04010204)
 						{
 							type = TYPE_STQRGBAXYZF2;
 							nreg = 3;
@@ -1490,14 +1490,14 @@ struct alignas(32) GIFPath
 		}
 	}
 
-	__forceinline uint8 GetReg() const
+	__forceinline u8 GetReg() const
 	{
-		return regs.u8[reg];
+		return regs.U8[reg];
 	}
 
-	__forceinline uint8 GetReg(uint32 index) const
+	__forceinline u8 GetReg(u32 index) const
 	{
-		return regs.u8[index];
+		return regs.U8[index];
 	}
 
 	__forceinline bool StepReg()
@@ -1523,37 +1523,37 @@ struct GSPrivRegSet
 		struct
 		{
 			GSRegPMODE  PMODE;
-			uint64      _pad1;
+			u64         _pad1;
 			GSRegSMODE1 SMODE1;
-			uint64      _pad2;
+			u64         _pad2;
 			GSRegSMODE2 SMODE2;
-			uint64      _pad3;
+			u64         _pad3;
 			GSRegSRFSH  SRFSH;
-			uint64      _pad4;
+			u64         _pad4;
 			GSRegSYNCH1 SYNCH1;
-			uint64      _pad5;
+			u64         _pad5;
 			GSRegSYNCH2 SYNCH2;
-			uint64      _pad6;
+			u64         _pad6;
 			GSRegSYNCV  SYNCV;
-			uint64      _pad7;
+			u64         _pad7;
 			struct
 			{
 				GSRegDISPFB  DISPFB;
-				uint64       _pad1;
+				u64          _pad1;
 				GSRegDISPLAY DISPLAY;
-				uint64       _pad2;
+				u64          _pad2;
 			} DISP[2];
 			GSRegEXTBUF   EXTBUF;
-			uint64        _pad8;
+			u64           _pad8;
 			GSRegEXTDATA  EXTDATA;
-			uint64        _pad9;
+			u64           _pad9;
 			GSRegEXTWRITE EXTWRITE;
-			uint64        _pad10;
+			u64           _pad10;
 			GSRegBGCOLOR  BGCOLOR;
-			uint64        _pad11;
+			u64           _pad11;
 		};
 
-		uint8 _pad12[0x1000];
+		u8 _pad12[0x1000];
 	};
 
 	union
@@ -1561,18 +1561,18 @@ struct GSPrivRegSet
 		struct
 		{
 			GSRegCSR      CSR;
-			uint64        _pad13;
+			u64           _pad13;
 			GSRegIMR      IMR;
-			uint64        _pad14;
-			uint64        _unk1[4];
+			u64           _pad14;
+			u64           _unk1[4];
 			GSRegBUSDIR   BUSDIR;
-			uint64        _pad15;
-			uint64        _unk2[6];
+			u64           _pad15;
+			u64           _unk2[6];
 			GSRegSIGLBLID SIGLBLID;
-			uint64        _pad16;
+			u64           _pad16;
 		};
 
-		uint8 _pad17[0x1000];
+		u8 _pad17[0x1000];
 	};
 
 	void Dump(FILE* fp)
@@ -1643,16 +1643,16 @@ struct GSPrivRegSet
 			SMODE2.DPMS);
 
 		fprintf(fp, "SRFSH %08x_%08x\n",
-			SRFSH.u32[0],
-			SRFSH.u32[1]);
+			SRFSH.U32[0],
+			SRFSH.U32[1]);
 
 		fprintf(fp, "SYNCH1 %08x_%08x\n",
-			SYNCH1.u32[0],
-			SYNCH1.u32[1]);
+			SYNCH1.U32[0],
+			SYNCH1.U32[1]);
 
 		fprintf(fp, "SYNCH2 %08x_%08x\n",
-			SYNCH2.u32[0],
-			SYNCH2.u32[1]);
+			SYNCH2.U32[0],
+			SYNCH2.U32[1]);
 
 		fprintf(fp, "SYNCV VBP=%u VBPE=%u VDP=%u VFP=%u VFPE=%u VS=%u\n",
 			SYNCV.VBP,
@@ -1663,8 +1663,8 @@ struct GSPrivRegSet
 			SYNCV.VS);
 
 		fprintf(fp, "CSR %08x_%08x\n",
-			CSR.u32[0],
-			CSR.u32[1]);
+			CSR.U32[0],
+			CSR.U32[1]);
 
 		fprintf(fp, "BGCOLOR B=%u G=%u R=%u\n",
 			BGCOLOR.B,
@@ -1702,7 +1702,7 @@ enum stateType
 	SAVE_VSYNC
 };
 
-enum class GSVideoMode : uint8
+enum class GSVideoMode : u8
 {
 	Unknown,
 	NTSC,
@@ -1714,7 +1714,7 @@ enum class GSVideoMode : uint8
 };
 
 // Ordering was done to keep compatibility with older ini file.
-enum class BiFiltering : uint8
+enum class BiFiltering : u8
 {
 	Nearest,
 	Forced,
@@ -1722,7 +1722,7 @@ enum class BiFiltering : uint8
 	Forced_But_Sprite,
 };
 
-enum class TriFiltering : uint8
+enum class TriFiltering : u8
 {
 	None,
 	PS2,
@@ -1737,7 +1737,7 @@ enum class HWMipmapLevel : int
 	Full
 };
 
-enum class CRCHackLevel : int8
+enum class CRCHackLevel : s8
 {
 	Automatic = -1,
 	None,
@@ -1756,34 +1756,34 @@ const GSVector2i default_rt_size(2048, 2048);
 const GSVector2i default_rt_size(1280, 1024);
 #endif
 
-void GSsetBaseMem(uint8* mem);
+void GSsetBaseMem(u8* mem);
 int GSinit();
 void GSshutdown();
 void GSclose();
 int _GSopen(const WindowInfo& wi, const char* title, GSRendererType renderer, int threads);
-void GSosdLog(const char* utf8, uint32 color);
-void GSosdMonitor(const char* key, const char* value, uint32 color);
-int GSopen2(const WindowInfo & wi, uint32 flags);
+void GSosdLog(const char* utf8, u32 color);
+void GSosdMonitor(const char* key, const char* value, u32 color);
+int GSopen2(const WindowInfo & wi, u32 flags);
 void GSreset();
-void GSgifSoftReset(uint32 mask);
-void GSwriteCSR(uint32 csr);
-void GSinitReadFIFO(uint8* mem);
-void GSreadFIFO(uint8* mem);
-void GSinitReadFIFO2(uint8* mem, uint32 size);
-void GSreadFIFO2(uint8* mem, uint32 size);
-void GSgifTransfer(const uint8* mem, uint32 size);
-void GSgifTransfer1(uint8* mem, uint32 addr);
-void GSgifTransfer2(uint8* mem, uint32 size);
-void GSgifTransfer3(uint8* mem, uint32 size);
+void GSgifSoftReset(u32 mask);
+void GSwriteCSR(u32 csr);
+void GSinitReadFIFO(u8* mem);
+void GSreadFIFO(u8* mem);
+void GSinitReadFIFO2(u8* mem, u32 size);
+void GSreadFIFO2(u8* mem, u32 size);
+void GSgifTransfer(const u8* mem, u32 size);
+void GSgifTransfer1(u8* mem, u32 addr);
+void GSgifTransfer2(u8* mem, u32 size);
+void GSgifTransfer3(u8* mem, u32 size);
 void GSvsync(int field);
-uint32 GSmakeSnapshot(char* path);
+u32 GSmakeSnapshot(char* path);
 void GSkeyEvent(const HostKeyEvent& e);
 int GSfreeze(FreezeAction mode, freezeData* data);
 void GSconfigure();
 int GStest();
 bool GSsetupRecording(std::string& filename);
 void GSendRecording();
-void GSsetGameCRC(uint32 crc, int options);
+void GSsetGameCRC(u32 crc, int options);
 void GSgetTitleInfo2(char* dest, size_t length);
 void GSsetFrameSkip(int frameskip);
 void GSsetVsync(int vsync);

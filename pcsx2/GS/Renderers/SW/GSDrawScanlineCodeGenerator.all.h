@@ -92,7 +92,7 @@ class GSDrawScanlineCodeGenerator2 : public GSNewCodeGenerator
 	}
 
 public:
-	GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator* base, CPUInfo cpu, void* param, uint64 key);
+	GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator* base, CPUInfo cpu, void* param, u64 key);
 	void Generate();
 
 private:
@@ -120,8 +120,8 @@ private:
 	void pbroadcastwLocal(const XYm& reg, const Xbyak::Address& mem);
 	/// Broadcast a 32-bit GPR to a vector register
 	void broadcastGPRToVec(const XYm& vec, const Xbyak::Reg32& gpr);
-	void modulate16(const XYm& a, const Xbyak::Operand& f, uint8 shift);
-	void lerp16(const XYm& a, const XYm& b, const XYm& f, uint8 shift);
+	void modulate16(const XYm& a, const Xbyak::Operand& f, u8 shift);
+	void lerp16(const XYm& a, const XYm& b, const XYm& f, u8 shift);
 	void lerp16_4(const XYm& a, const XYm& b, const XYm& f);
 	void mix16(const XYm& a, const XYm& b, const XYm& temp);
 	void clamp16(const XYm& a, const XYm& temp);
@@ -159,7 +159,7 @@ private:
 #else
 	void WritePixel(const XYm& src_, const AddressReg& addr, const Xbyak::Reg32& mask, bool fast, int psm, int fz);
 #endif
-	void WritePixel(const Xmm& src, const AddressReg& addr, uint8 i, uint8 j, int psm);
+	void WritePixel(const Xmm& src, const AddressReg& addr, u8 i, u8 j, int psm);
 	void ReadTexel1(const XYm& dst, const XYm& src, const XYm& tmp1, const XYm& tmp2, int mip_offset);
 	void ReadTexel4(
 		const XYm& d0,   const XYm& d1,
@@ -185,5 +185,5 @@ private:
 		const Xmm& d2s0, const Xmm& d3s1,
 		const Xmm& s2,   const Xmm& s3,
 		int pixels,      int mip_offset);
-	void ReadTexelImpl(const Xmm& dst, const Xmm& addr, uint8 i, bool texInA3, bool preserveDst);
+	void ReadTexelImpl(const Xmm& dst, const Xmm& addr, u8 i, bool texInA3, bool preserveDst);
 };

@@ -126,7 +126,7 @@ GSTexture* GSDevice::FetchSurface(int type, int w, int h, int format)
 void GSDevice::PrintMemoryUsage()
 {
 #ifdef ENABLE_OGL_DEBUG
-	uint32 pool = 0;
+	u32 pool = 0;
 	for (auto t : m_pool)
 	{
 		if (t)
@@ -422,7 +422,7 @@ HWBlend GSDevice::GetBlend(size_t index)
 	return blend;
 }
 
-uint16 GSDevice::GetBlendFlags(size_t index) { return m_blendMap[index].flags; }
+u16 GSDevice::GetBlendFlags(size_t index) { return m_blendMap[index].flags; }
 
 // clang-format off
 

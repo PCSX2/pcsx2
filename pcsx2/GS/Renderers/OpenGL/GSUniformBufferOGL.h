@@ -18,7 +18,7 @@
 #include "GLState.h"
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
-extern uint64 g_uniform_upload_byte;
+extern u64 g_uniform_upload_byte;
 #endif
 
 
@@ -26,11 +26,11 @@ class GSUniformBufferOGL
 {
 	GLuint m_buffer; // data object
 	GLuint m_index;  // GLSL slot
-	uint32 m_size;   // size of the data
-	uint8* m_cache;  // content of the previous upload
+	u32 m_size;   // size of the data
+	u8* m_cache;  // content of the previous upload
 
 public:
-	GSUniformBufferOGL(const std::string& pretty_name, GLuint index, uint32 size)
+	GSUniformBufferOGL(const std::string& pretty_name, GLuint index, u32 size)
 		: m_index(index), m_size(size)
 	{
 		glGenBuffers(1, &m_buffer);
@@ -38,7 +38,7 @@ public:
 		glObjectLabel(GL_BUFFER, m_buffer, pretty_name.size(), pretty_name.c_str());
 		allocate();
 		attach();
-		m_cache = (uint8*)_aligned_malloc(m_size, 32);
+		m_cache = (u8*)_aligned_malloc(m_size, 32);
 		memset(m_cache, 0, m_size);
 	}
 

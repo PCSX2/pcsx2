@@ -29,9 +29,9 @@ class GSSetupPrimCodeGenerator : public GSCodeGenerator
 
 	struct
 	{
-		uint32 z : 1, f : 1, t : 1, c : 1;
+		u32 z : 1, f : 1, t : 1, c : 1;
 	} m_en;
 
 public:
-	GSSetupPrimCodeGenerator(void* param, uint64 key, void* code, size_t maxsize);
+	GSSetupPrimCodeGenerator(void* param, u64 key, void* code, size_t maxsize);
 };

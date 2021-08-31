@@ -100,7 +100,7 @@ using namespace Xbyak;
 	#define _rip_local_d_p(x) _rip_local_d(x)
 #endif
 
-GSDrawScanlineCodeGenerator2::GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator* base, CPUInfo cpu, void* param, uint64 key)
+GSDrawScanlineCodeGenerator2::GSDrawScanlineCodeGenerator2(Xbyak::CodeGenerator* base, CPUInfo cpu, void* param, u64 key)
 	: _parent(base, cpu)
 	, m_local(*(GSScanlineLocalData*)param)
 	, m_rip(false)
@@ -201,7 +201,7 @@ void GSDrawScanlineCodeGenerator2::broadcastGPRToVec(const XYm& vec, const Xbyak
 #endif
 }
 
-void GSDrawScanlineCodeGenerator2::modulate16(const XYm& a, const Operand& f, uint8 shift)
+void GSDrawScanlineCodeGenerator2::modulate16(const XYm& a, const Operand& f, u8 shift)
 {
 	if (shift == 0)
 	{
@@ -214,7 +214,7 @@ void GSDrawScanlineCodeGenerator2::modulate16(const XYm& a, const Operand& f, ui
 	}
 }
 
-void GSDrawScanlineCodeGenerator2::lerp16(const XYm& a, const XYm& b, const XYm& f, uint8 shift)
+void GSDrawScanlineCodeGenerator2::lerp16(const XYm& a, const XYm& b, const XYm& f, u8 shift)
 {
 	psubw(a, b);
 	modulate16(a, f, shift);
@@ -251,7 +251,7 @@ void GSDrawScanlineCodeGenerator2::clamp16(const XYm& a, const XYm& temp)
 
 void GSDrawScanlineCodeGenerator2::alltrue(const XYm& test)
 {
-	uint32 mask = test.isYMM() ? 0xffffffff : 0xffff;
+	u32 mask = test.isYMM() ? 0xffffffff : 0xffff;
 	pmovmskb(eax, test);
 	cmp(eax, mask);
 	je("step", GSCodeGenerator::T_NEAR);
@@ -1215,7 +1215,7 @@ void GSDrawScanlineCodeGenerator2::TestZ(const XYm& temp1, const XYm& temp2)
 
 		if (m_sel.zclamp)
 		{
-			const uint8 amt = (uint8)((m_sel.zpsm & 0x3) * 8);
+			const u8 amt = (u8)((m_sel.zpsm & 0x3) * 8);
 			pcmpeqd(temp1, temp1);
 			psrld(temp1, amt);
 			pminsd(xym0, temp1);
@@ -1244,8 +1244,8 @@ void GSDrawScanlineCodeGenerator2::TestZ(const XYm& temp1, const XYm& temp2)
 
 		if (m_sel.zpsm)
 		{
-			pslld(temp2, static_cast<uint8>(m_sel.zpsm * 8));
-			psrld(temp2, static_cast<uint8>(m_sel.zpsm * 8));
+			pslld(temp2, static_cast<u8>(m_sel.zpsm * 8));
+			psrld(temp2, static_cast<u8>(m_sel.zpsm * 8));
 		}
 
 		if (m_sel.zoverflow || m_sel.zpsm == 0)
@@ -1415,7 +1415,7 @@ void GSDrawScanlineCodeGenerator2::SampleTexture_TexelReadHelper(int mip_offset)
 
 	THREEARG(punpcklwd, xym5, xym2, xym0);
 	punpckhwd(xym2, xym0);
-	pslld(xym2, static_cast<uint8>(m_sel.tw + 3));
+	pslld(xym2, static_cast<u8>(m_sel.tw + 3));
 
 	// xym0 = 0
 	// xym2 = y0
@@ -1432,7 +1432,7 @@ void GSDrawScanlineCodeGenerator2::SampleTexture_TexelReadHelper(int mip_offset)
 
 		THREEARG(punpcklwd, xym1, xym3, xym0);
 		punpckhwd(xym3, xym0);
-		pslld(xym3, static_cast<uint8>(m_sel.tw + 3));
+		pslld(xym3, static_cast<u8>(m_sel.tw + 3));
 
 		// xym1 = x1
 		// xym2 = y0
@@ -1460,10 +1460,10 @@ void GSDrawScanlineCodeGenerator2::SampleTexture_TexelReadHelper(int mip_offset)
 		// xym7 = used[x86] vf[x64&&!needsMoreRegs]
 		// Free: xym4, xym5
 
-		// c00 = addr00.gather32_32((const uint32/uint8*)tex[, clut]);
-		// c01 = addr01.gather32_32((const uint32/uint8*)tex[, clut]);
-		// c10 = addr10.gather32_32((const uint32/uint8*)tex[, clut]);
-		// c11 = addr11.gather32_32((const uint32/uint8*)tex[, clut]);
+		// c00 = addr00.gather32_32((const u32/u8*)tex[, clut]);
+		// c01 = addr01.gather32_32((const u32/u8*)tex[, clut]);
+		// c10 = addr10.gather32_32((const u32/u8*)tex[, clut]);
+		// c11 = addr11.gather32_32((const u32/u8*)tex[, clut]);
 
 		const XYm& tmp1 = is64 ? xym7 : xym4; // OK to destroy if needsMoreRegs
 		const XYm& tmp2 = is64 ? xym4 : xym7;
@@ -1559,7 +1559,7 @@ void GSDrawScanlineCodeGenerator2::SampleTexture_TexelReadHelper(int mip_offset)
 
 		paddd(xym2, xym5);
 
-		// c00 = addr00.gather32_32((const uint32/uint8*)tex[, clut]);
+		// c00 = addr00.gather32_32((const u32/u8*)tex[, clut]);
 
 		ReadTexel1(xym5, xym2, xym0, xym1, mip_offset);
 
@@ -1875,25 +1875,25 @@ void GSDrawScanlineCodeGenerator2::SampleTextureLOD()
 			movdqa(xym5, xym2);
 			movdqa(xym3, xym6);
 
-			movd(xym0, _rip_local(temp.lod.i.u32[0]));
+			movd(xym0, _rip_local(temp.lod.i.U32[0]));
 			psrad(xym2, xym0);
 			THREEARG(psrlw, xym1, xym4, xym0);
-			movq(_rip_local(temp.uv_minmax[0].u32[0]), xym1);
+			movq(_rip_local(temp.uv_minmax[0].U32[0]), xym1);
 
-			movd(xym0, _rip_local(temp.lod.i.u32[1]));
+			movd(xym0, _rip_local(temp.lod.i.U32[1]));
 			psrad(xym5, xym0);
 			THREEARG(psrlw, xym1, xym4, xym0);
-			movq(_rip_local(temp.uv_minmax[1].u32[0]), xym1);
+			movq(_rip_local(temp.uv_minmax[1].U32[0]), xym1);
 
-			movd(xym0, _rip_local(temp.lod.i.u32[2]));
+			movd(xym0, _rip_local(temp.lod.i.U32[2]));
 			psrad(xym3, xym0);
 			THREEARG(psrlw, xym1, xym4, xym0);
-			movq(_rip_local(temp.uv_minmax[0].u32[2]), xym1);
+			movq(_rip_local(temp.uv_minmax[0].U32[2]), xym1);
 
-			movd(xym0, _rip_local(temp.lod.i.u32[3]));
+			movd(xym0, _rip_local(temp.lod.i.U32[3]));
 			psrad(xym6, xym0);
 			THREEARG(psrlw, xym1, xym4, xym0);
-			movq(_rip_local(temp.uv_minmax[1].u32[2]), xym1);
+			movq(_rip_local(temp.uv_minmax[1].U32[2]), xym1);
 
 			punpckldq(xym2, xym3);
 			punpckhdq(xym5, xym6);
@@ -1931,7 +1931,7 @@ void GSDrawScanlineCodeGenerator2::SampleTextureLOD()
 	{
 		// lod = K
 
-		movd(Xmm(xym0.getIdx()), _rip_global(lod.i.u32[0]));
+		movd(Xmm(xym0.getIdx()), _rip_global(lod.i.U32[0]));
 
 		psrad(xym2, Xmm(xym0.getIdx()));
 		psrad(xym3, Xmm(xym0.getIdx()));
@@ -2743,7 +2743,7 @@ void GSDrawScanlineCodeGenerator2::WriteZBuf()
 	// Clamp Z to ZPSM_FMT_MAX
 	if (m_sel.zclamp)
 	{
-		const uint8 amt = (uint8)((m_sel.zpsm & 0x3) * 8);
+		const u8 amt = (u8)((m_sel.zpsm & 0x3) * 8);
 		pcmpeqd(xym7, xym7);
 		psrld(xym7, amt);
 		pminsd(xym1, xym7);
@@ -3273,7 +3273,7 @@ void GSDrawScanlineCodeGenerator2::WritePixel(const XYm& src_, const AddressReg&
 	}
 }
 
-void GSDrawScanlineCodeGenerator2::WritePixel(const Xmm& src, const AddressReg& addr, uint8 i, uint8 j, int psm)
+void GSDrawScanlineCodeGenerator2::WritePixel(const Xmm& src, const AddressReg& addr, u8 i, u8 j, int psm)
 {
 	constexpr int s_offsets[8] = {0, 2, 8, 10, 16, 18, 24, 26};
 
@@ -3356,7 +3356,7 @@ void GSDrawScanlineCodeGenerator2::ReadTexelImpl(
 void GSDrawScanlineCodeGenerator2::ReadTexelImplLoadTexLOD(int lod, int mip_offset)
 {
 	AddressReg texIn = is64 ? _64_m_local__gd__tex : t2;
-	Address lod_addr = m_sel.lcm ? _rip_global(lod.i.u32[lod]) : _rip_local(temp.lod.i.u32[lod]);
+	Address lod_addr = m_sel.lcm ? _rip_global(lod.i.U32[lod]) : _rip_local(temp.lod.i.U32[lod]);
 	mov(ebx, lod_addr);
 	mov(rbx, ptr[texIn + rbx * wordsize + mip_offset]);
 }
@@ -3483,7 +3483,7 @@ void GSDrawScanlineCodeGenerator2::ReadTexelImplSSE4(
 	}
 }
 
-void GSDrawScanlineCodeGenerator2::ReadTexelImpl(const Xmm& dst, const Xmm& addr, uint8 i, bool texInRBX, bool preserveDst)
+void GSDrawScanlineCodeGenerator2::ReadTexelImpl(const Xmm& dst, const Xmm& addr, u8 i, bool texInRBX, bool preserveDst)
 {
 	ASSERT(i < 4);
 

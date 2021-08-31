@@ -84,11 +84,11 @@ private:
 		};
 
 		template <class T>
-		class FunctionMap : public GSFunctionMap<uint32, T>
+		class FunctionMap : public GSFunctionMap<u32, T>
 		{
 			std::list<HackEntry<T>>& m_tbl;
 
-			T GetDefaultFunction(uint32 key)
+			T GetDefaultFunction(u32 key)
 			{
 				CRC::Title title = (CRC::Title)(key & 0xffffff);
 				CRC::Region region = (CRC::Region)(key >> 24);
@@ -132,7 +132,7 @@ private:
 
 #pragma endregion
 
-	uint16 Interpolate_UV(float alpha, int t0, int t1);
+	u16 Interpolate_UV(float alpha, int t0, int t1);
 	float alpha0(int L, int X0, int X1);
 	float alpha1(int L, int X0, int X1);
 	void SwSpriteRender();
@@ -168,13 +168,13 @@ public:
 	GSRendererHW(GSTextureCache* tc);
 	virtual ~GSRendererHW();
 
-	void SetGameCRC(uint32 crc, int options);
+	void SetGameCRC(u32 crc, int options);
 	bool CanUpscale();
 	int GetUpscaleMultiplier();
 	GSVector2i GetCustomResolution();
 	void SetScaling();
 	void Lines2Sprites();
-	void EmulateAtst(GSVector4& FogColor_AREF, uint8& atst, const bool pass_2);
+	void EmulateAtst(GSVector4& FogColor_AREF, u8& atst, const bool pass_2);
 	void ConvertSpriteTextureShuffle(bool& write_ba, bool& read_ba);
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
 	GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);

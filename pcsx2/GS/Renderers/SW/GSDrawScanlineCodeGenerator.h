@@ -34,5 +34,5 @@ class GSDrawScanlineCodeGenerator : public GSCodeGenerator
 	bool m_rip;
 
 public:
-	GSDrawScanlineCodeGenerator(void* param, uint64 key, void* code, size_t maxsize);
+	GSDrawScanlineCodeGenerator(void* param, u64 key, void* code, size_t maxsize);
 };
