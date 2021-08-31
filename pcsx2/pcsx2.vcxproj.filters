@@ -1641,6 +1641,9 @@
     <ClInclude Include="Patch.h">
       <Filter>Misc</Filter>
     </ClInclude>
+    <ClInclude Include="PCSX2Base.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
     <ClInclude Include="PrecompiledHeader.h">
       <Filter>Misc</Filter>
     </ClInclude>
