@@ -104,23 +104,3 @@ extern void vmfree(void* ptr, size_t size);
 #endif
 
 #define ASSERT assert
-
-// sse
-#if defined(__GNUC__)
-
-	// Convert gcc see define into GS (windows) define
-	#if defined(__AVX2__)
-		#define _M_SSE 0x501
-	#elif defined(__AVX__)
-		#define _M_SSE 0x500
-	#elif defined(__SSE4_1__)
-		#define _M_SSE 0x401
-	#else
-		#error PCSX2 requires compiling for at least SSE 4.1
-	#endif
-
-#elif _M_SSE < 0x401
-
-	#error PCSX2 requires compiling for at least SSE 4.1
-
-#endif

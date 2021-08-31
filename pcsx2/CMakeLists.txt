@@ -214,6 +214,7 @@ set(pcsx2Headers
 	MemoryTypes.h
 	Patch.h
 	PathDefs.h
+	PCSX2Base.h
 	PrecompiledHeader.h
 	R3000A.h
 	R5900Exceptions.h
