@@ -20,6 +20,8 @@
 #include "GSVector.h"
 #include "GSBlock.h"
 #include "GSClut.h"
+#include <array>
+#include <unordered_map>
 
 struct GSPixelOffset
 {

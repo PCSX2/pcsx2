@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSPng.h"
+#include "GS_types.h"
 #include <zlib.h>
 #include <png.h>
 

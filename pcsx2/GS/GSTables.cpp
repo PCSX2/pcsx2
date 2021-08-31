@@ -17,7 +17,6 @@
 
 #include "PrecompiledHeader.h"
 #include "GSTables.h"
-#include "GS_types.h"
 
 template <int Width, int Height>
 static constexpr GSSizedBlockSwizzleTable<Height, Width> makeSwizzleTable(const u8 (&arr)[Height][Width]) {

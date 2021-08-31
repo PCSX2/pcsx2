@@ -20,8 +20,6 @@
 
 #include "config.h"
 #include "common/Pcsx2Types.h"
-#include "common/WindowInfo.h"
-#include "GS_types.h"
 #include "Window/GSSetting.h"
 #include "SaveState.h"
 
@@ -34,10 +32,6 @@
 #include <d3dcompiler.h>
 #include <d3d11_1.h>
 #include <dxgi1_3.h>
-
-#else
-
-#include <fcntl.h>
 
 #endif
 
@@ -55,43 +49,7 @@
 
 #endif
 
-// put these into vc9/common7/ide/usertype.dat to have them highlighted
-
-
-// stdc
-
-#include <cstddef>
-#include <cstdio>
-#include <cstdarg>
-#include <cstdlib>
-#include <cmath>
-#include <cfloat>
-#include <ctime>
-#include <climits>
-#include <cstring>
-#include <cassert>
-
-#if __GNUC__ > 5 || (__GNUC__ == 5 && __GNUC_MINOR__ >= 4)
-#include <codecvt>
-#include <locale>
-#endif
-
-#include <complex>
-#include <string>
-#include <array>
-#include <vector>
-#include <list>
 #include <map>
-#include <set>
-#include <queue>
-#include <algorithm>
-#include <thread>
-#include <atomic>
-#include <mutex>
-#include <condition_variable>
-#include <functional>
-#include <memory>
-#include <bitset>
 
 #ifdef __POSIX__
 #include <zlib.h>
@@ -99,85 +57,24 @@
 #include <zlib/zlib.h>
 #endif
 
-#include <unordered_map>
-#include <unordered_set>
-
 // Don't un-indent our ifdefs
 // clang-format off
 
 #ifdef _MSC_VER
-
-	#define EXPORT_C_(type) extern "C" type __stdcall
-	#define EXPORT_C EXPORT_C_(void)
-
 	#define ALIGN_STACK(n) alignas(n) int dummy__; (void)dummy__;
-
 #else
-
-	#ifndef __fastcall
-		#define __fastcall __attribute__((fastcall))
-	#endif
-
-	#define EXPORT_C_(type) extern "C" __attribute__((stdcall, externally_visible, visibility("default"))) type
-	#define EXPORT_C EXPORT_C_(void)
-
 	#ifdef __GNUC__
 		// GCC removes the variable as dead code and generates some warnings.
 		// Stack is automatically realigned due to SSE/AVX operations
 		#define ALIGN_STACK(n) (void)0;
-
 	#else
-
 		// TODO Check clang behavior
 		#define ALIGN_STACK(n) alignas(n) int dummy__;
-
 	#endif
-
-
-#endif
-
-#ifndef RESTRICT
-
-	#ifdef __INTEL_COMPILER
-
-		#define RESTRICT restrict
-
-	#elif defined(_MSC_VER)
-
-		#define RESTRICT __restrict
-
-	#elif defined(__GNUC__)
-
-		#define RESTRICT __restrict__
-
-	#else
-
-		#define RESTRICT
-
-	#endif
-
 #endif
 
 #include <xmmintrin.h>
 #include <emmintrin.h>
-
-#ifndef _MM_DENORMALS_ARE_ZERO
-#define _MM_DENORMALS_ARE_ZERO 0x0040
-#endif
-
-#define MXCSR (_MM_DENORMALS_ARE_ZERO | _MM_MASK_MASK | _MM_ROUND_NEAREST | _MM_FLUSH_ZERO_ON)
-
-#define _MM_TRANSPOSE4_SI128(row0, row1, row2, row3) \
-{ \
-	__m128 tmp0 = _mm_shuffle_ps(_mm_castsi128_ps(row0), _mm_castsi128_ps(row1), 0x44); \
-	__m128 tmp2 = _mm_shuffle_ps(_mm_castsi128_ps(row0), _mm_castsi128_ps(row1), 0xEE); \
-	__m128 tmp1 = _mm_shuffle_ps(_mm_castsi128_ps(row2), _mm_castsi128_ps(row3), 0x44); \
-	__m128 tmp3 = _mm_shuffle_ps(_mm_castsi128_ps(row2), _mm_castsi128_ps(row3), 0xEE); \
-	(row0) = _mm_castps_si128(_mm_shuffle_ps(tmp0, tmp1, 0x88)); \
-	(row1) = _mm_castps_si128(_mm_shuffle_ps(tmp0, tmp1, 0xDD)); \
-	(row2) = _mm_castps_si128(_mm_shuffle_ps(tmp2, tmp3, 0x88)); \
-	(row3) = _mm_castps_si128(_mm_shuffle_ps(tmp2, tmp3, 0xDD)); \
-}
 
 #include <tmmintrin.h>
 #include <smmintrin.h>
@@ -238,21 +135,21 @@ extern void fifo_free(void* ptr, size_t size, size_t repeat);
 	while(0);
 
 #if defined(_DEBUG)
-#  define GL_CACHE(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xFEAD, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
+	#define GL_CACHE(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xFEAD, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
 #else
-#  define GL_CACHE(...) (void)(0);
+	#define GL_CACHE(...) (void)(0);
 #endif
 
 #if defined(ENABLE_TRACE_REG) && defined(_DEBUG)
-#  define GL_REG(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xB0B0, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
+	#define GL_REG(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xB0B0, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
 #else
-#  define GL_REG(...) (void)(0);
+	#define GL_REG(...) (void)(0);
 #endif
 
 #if defined(ENABLE_EXTRA_LOG) && defined(_DEBUG)
-#  define GL_DBG(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xD0D0, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
+	#define GL_DBG(...) GL_INSERT(GL_DEBUG_TYPE_OTHER, 0xD0D0, GL_DEBUG_SEVERITY_NOTIFICATION, __VA_ARGS__)
 #else
-#  define GL_DBG(...) (void)(0);
+	#define GL_DBG(...) (void)(0);
 #endif
 
 #if defined(ENABLE_OGL_DEBUG)
@@ -284,7 +181,7 @@ extern const std::string root_hw;
 
 // MacOS headers define PAGE_SIZE to the size of an x86 page
 #ifdef PAGE_SIZE
-#  undef PAGE_SIZE
+	#undef PAGE_SIZE
 #endif
 
 #define VM_SIZE 4194304u

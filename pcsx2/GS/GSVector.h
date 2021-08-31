@@ -14,7 +14,6 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GS_types.h"
 
 #pragma once
 

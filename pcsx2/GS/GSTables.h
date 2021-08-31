@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include "GS_types.h"
-
 /// Table for storing swizzling of blocks within a page
 struct alignas(64) GSBlockSwizzleTable
 {

@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GLLoader.h"
 #include "GS.h"
+#include <unordered_set>
 
 namespace GLExtension
 {

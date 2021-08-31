@@ -13,8 +13,6 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "GS_types.h"
-
 class alignas(16) GSVector4i
 {
 	static const GSVector4i m_xff[17];
@@ -1670,7 +1668,14 @@ public:
 
 	__forceinline static void transpose(GSVector4i& a, GSVector4i& b, GSVector4i& c, GSVector4i& d)
 	{
-		_MM_TRANSPOSE4_SI128(a.m, b.m, c.m, d.m);
+		__m128 tmp0 = _mm_shuffle_ps(_mm_castsi128_ps(a.m), _mm_castsi128_ps(b.m), 0x44);
+		__m128 tmp2 = _mm_shuffle_ps(_mm_castsi128_ps(a.m), _mm_castsi128_ps(b.m), 0xEE);
+		__m128 tmp1 = _mm_shuffle_ps(_mm_castsi128_ps(c.m), _mm_castsi128_ps(d.m), 0x44);
+		__m128 tmp3 = _mm_shuffle_ps(_mm_castsi128_ps(c.m), _mm_castsi128_ps(d.m), 0xEE);
+		a = _mm_castps_si128(_mm_shuffle_ps(tmp0, tmp1, 0x88));
+		b = _mm_castps_si128(_mm_shuffle_ps(tmp0, tmp1, 0xDD));
+		c = _mm_castps_si128(_mm_shuffle_ps(tmp2, tmp3, 0x88));
+		d = _mm_castps_si128(_mm_shuffle_ps(tmp2, tmp3, 0xDD));
 	}
 
 	__forceinline static void sw4(GSVector4i& a, GSVector4i& b, GSVector4i& c, GSVector4i& d)

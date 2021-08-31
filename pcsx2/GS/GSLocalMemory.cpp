@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSLocalMemory.h"
 #include "GS.h"
+#include <unordered_set>
 
 template <typename Fn>
 static void foreachBlock(const GSOffset& off, GSLocalMemory* mem, const GSVector4i& r, u8* dst, int dstpitch, int bpp, Fn&& fn)
