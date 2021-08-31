@@ -73,6 +73,7 @@ endif()
 if(WIN32)
 	# Resources
 	target_sources(PCSX2 PRIVATE
+		PCSX2.rc
 		GS/GS.rc
 		PAD/Windows/PAD.rc
 		SPU2/Windows/SPU2.rc
