@@ -136,8 +136,6 @@
 
 #endif
 
-#define countof(a) (sizeof(a) / sizeof(a[0]))
-
 #ifndef RESTRICT
 
 	#ifdef __INTEL_COMPILER

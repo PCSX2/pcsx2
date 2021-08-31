@@ -66,7 +66,7 @@ void GSPerfMon::Update()
 #ifndef DISABLE_PERF_MON
 	if (m_count > 0)
 	{
-		for (size_t i = 0; i < countof(m_counters); i++)
+		for (size_t i = 0; i < std::size(m_counters); i++)
 		{
 			m_stats[i] = m_counters[i] / m_count;
 		}

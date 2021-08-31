@@ -336,7 +336,7 @@ bool i18n_SetLanguage( wxLanguage wxLangId, const wxString& langCode )
 	};
 	
 	bool foundone = false;
-	for (uint i=0; i<ArraySize(dictFiles); ++i)
+	for (uint i=0; i<std::size(dictFiles); ++i)
 	{
 		if (!dictFiles[i]) continue;
 

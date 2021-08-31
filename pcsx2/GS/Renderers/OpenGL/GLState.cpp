@@ -77,10 +77,8 @@ namespace GLState
 
 		rt = 0;
 		ds = 0;
-		for (size_t i = 0; i < countof(tex_unit); i++)
-			tex_unit[i] = 0;
-		for (size_t i = 0; i < countof(tex_handle); i++)
-			tex_handle[i] = 0;
+		std::fill(std::begin(tex_unit), std::end(tex_unit), 0);
+		std::fill(std::begin(tex_handle), std::end(tex_handle), 0);
 
 		ps = 0;
 		gs = 0;

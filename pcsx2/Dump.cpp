@@ -128,7 +128,7 @@ void iDumpRegisters(u32 startpc, u32 temp)
 	__Log("ipu %x %x %x %x; bp: %x %x %x %x", psHu32(0x2000), psHu32(0x2010), psHu32(0x2020), psHu32(0x2030), g_BP.BP, g_BP.bufferhasnew, g_BP.FP, g_BP.IFC);
 	__Log("gif: %x %x %x", psHu32(0x3000), psHu32(0x3010), psHu32(0x3020));
 
-	for(i = 0; i < ArraySize(dmacs); ++i) {
+	for(i = 0; i < std::size(dmacs); ++i) {
 		DMACh* p = (DMACh*)(&eeHw[dmacs[i]]);
 		__Log("dma%d c%x m%x q%x t%x s%x", i, p->chcr._u32, p->madr, p->qwc, p->tadr, p->sadr);
 	}
@@ -297,7 +297,7 @@ void iDumpBlock( int startpc, u8 * ptr )
 
 	memzero(used);
 	numused = 0;
-	for(uint i = 0; i < ArraySize(s_pInstCache->regs); ++i) {
+	for(uint i = 0; i < std::size(s_pInstCache->regs); ++i) {
 		if( s_pInstCache->regs[i] & EEINST_USED ) {
 			used[i] = 1;
 			numused++;
@@ -306,7 +306,7 @@ void iDumpBlock( int startpc, u8 * ptr )
 
 	memzero(fpuused);
 	fpunumused = 0;
-	for(uint i = 0; i < ArraySize(s_pInstCache->fpuregs); ++i) {
+	for(uint i = 0; i < std::size(s_pInstCache->fpuregs); ++i) {
 		if( s_pInstCache->fpuregs[i] & EEINST_USED ) {
 			fpuused[i] = 1;
 			fpunumused++;
@@ -314,11 +314,11 @@ void iDumpBlock( int startpc, u8 * ptr )
 	}
 
 	eff.Printf( "       " );
-	for(uint i = 0; i < ArraySize(s_pInstCache->regs); ++i) {
+	for(uint i = 0; i < std::size(s_pInstCache->regs); ++i) {
 		if( used[i] ) eff.Printf( "%2d ", i );
 	}
 	eff.Printf( "\n" );
-	for(uint i = 0; i < ArraySize(s_pInstCache->fpuregs); ++i) {
+	for(uint i = 0; i < std::size(s_pInstCache->fpuregs); ++i) {
 		if( fpuused[i] ) eff.Printf( "%2d ", i );
 	}
 
@@ -330,10 +330,10 @@ void iDumpBlock( int startpc, u8 * ptr )
 	int count;
 	EEINST* pcur;
 
-	for(uint i = 0; i < ArraySize(s_pInstCache->regs); ++i) {
+	for(uint i = 0; i < std::size(s_pInstCache->regs); ++i) {
 		if( used[i] ) fprintf(f, "%s ", disRNameGPR[i]);
 	}
-	for(uint i = 0; i < ArraySize(s_pInstCache->fpuregs); ++i) {
+	for(uint i = 0; i < std::size(s_pInstCache->fpuregs); ++i) {
 		if( fpuused[i] ) fprintf(f, "%s ", i<32?"FR":"FA");
 	}
 	fprintf(f, "\n");
@@ -343,14 +343,14 @@ void iDumpBlock( int startpc, u8 * ptr )
 		fprintf(f, "%2d: %2.2x ", i+1, pcur->info);
 
 		count = 1;
-		for(uint j = 0; j < ArraySize(s_pInstCache->regs); j++) {
+		for(uint j = 0; j < std::size(s_pInstCache->regs); j++) {
 			if( used[j] ) {
 				fprintf(f, "%2.2x%s", pcur->regs[j], ((count%8)&&count<numused)?"_":" ");
 				++count;
 			}
 		}
 		count = 1;
-		for(uint j = 0; j < ArraySize(s_pInstCache->fpuregs); j++) {
+		for(uint j = 0; j < std::size(s_pInstCache->fpuregs); j++) {
 			if( fpuused[j] ) {
 				fprintf(f, "%2.2x%s", pcur->fpuregs[j], ((count%8)&&count<fpunumused)?"_":" ");
 				++count;

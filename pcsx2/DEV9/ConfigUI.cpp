@@ -280,7 +280,7 @@ public:
 		m_dns2_address   .save(config.DNS2,    config.AutoDNS2);
 
 		config.hddEnable = m_hdd_enable->GetValue();
-		wxStrncpy(config.Hdd, m_hdd_file->GetPath(), ArraySize(config.Hdd) - 1);
+		wxStrncpy(config.Hdd, m_hdd_file->GetPath(), std::size(config.Hdd) - 1);
 		config.HddSize = m_hdd_size_spin->GetValue() * 1024;
 	}
 

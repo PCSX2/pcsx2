@@ -28,28 +28,28 @@
 
 void InputRecordingFileHeader::Init()
 {
-	memset(author, 0, ArraySize(author));
-	memset(gameName, 0, ArraySize(gameName));
+	memset(author, 0, std::size(author));
+	memset(gameName, 0, std::size(gameName));
 }
 
 void InputRecordingFileHeader::SetEmulatorVersion()
 {
 	wxString emuVersion = wxString::Format("%s-%d.%d.%d", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo);
-	int max = ArraySize(emu) - 1;
+	int max = std::size(emu) - 1;
 	strncpy(emu, emuVersion.c_str(), max);
 	emu[max] = 0;
 }
 
 void InputRecordingFileHeader::SetAuthor(wxString _author)
 {
-	int max = ArraySize(author) - 1;
+	int max = std::size(author) - 1;
 	strncpy(author, _author.c_str(), max);
 	author[max] = 0;
 }
 
 void InputRecordingFileHeader::SetGameName(wxString _gameName)
 {
-	int max = ArraySize(gameName) - 1;
+	int max = std::size(gameName) - 1;
 	strncpy(gameName, _gameName.c_str(), max);
 	gameName[max] = 0;
 }

@@ -143,10 +143,10 @@ GSDeviceOGL::~GSDeviceOGL()
 
 	m_ps.clear();
 
-	glDeleteSamplers(countof(m_ps_ss), m_ps_ss);
+	glDeleteSamplers(std::size(m_ps_ss), m_ps_ss);
 
-	for (uint32 key = 0; key < countof(m_om_dss); key++)
-		delete m_om_dss[key];
+	for (GSDepthStencilOGL* ds : m_om_dss)
+		delete ds;
 
 	PboPool::Destroy();
 
@@ -210,11 +210,7 @@ void GSDeviceOGL::GenerateProfilerData()
 	uint32 time_repartition[16] = {0};
 	for (auto t : times)
 	{
-		uint32 slot = (uint32)(t / 2.0);
-		if (slot >= countof(time_repartition))
-		{
-			slot = countof(time_repartition) - 1;
-		}
+		size_t slot = std::min<size_t>(t / 2.0, std::size(time_repartition) - 1);
 		time_repartition[slot]++;
 	}
 
@@ -225,7 +221,7 @@ void GSDeviceOGL::GenerateProfilerData()
 	fprintf(stderr, "SD   %4.2f ms\n", sd);
 	fprintf(stderr, "\n");
 	fprintf(stderr, "Frame Repartition\n");
-	for (uint32 i = 0; i < countof(time_repartition); i++)
+	for (uint32 i = 0; i < std::size(time_repartition); i++)
 	{
 		fprintf(stderr, "%3u ms => %3u ms\t%4u\n", 2 * i, 2 * (i + 1), time_repartition[i]);
 	}
@@ -343,7 +339,7 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 		glDebugMessageControl(GL_DONT_CARE, GL_DONT_CARE, GL_DONT_CARE, 0, NULL, true);
 		// Useless info message on Nvidia driver
 		GLuint ids[] = {0x20004};
-		glDebugMessageControl(GL_DEBUG_SOURCE_API_ARB, GL_DEBUG_TYPE_OTHER_ARB, GL_DONT_CARE, countof(ids), ids, false);
+		glDebugMessageControl(GL_DEBUG_SOURCE_API_ARB, GL_DEBUG_TYPE_OTHER_ARB, GL_DONT_CARE, std::size(ids), ids, false);
 	}
 #endif
 
@@ -424,7 +420,7 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 	{
 		GL_PUSH("GSDeviceOGL::Sampler");
 
-		for (uint32 key = 0; key < countof(m_ps_ss); key++)
+		for (uint32 key = 0; key < std::size(m_ps_ss); key++)
 		{
 			m_ps_ss[key] = CreateSampler(PSSamplerSelector(key));
 		}
@@ -450,7 +446,7 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 		vs = m_shader->Compile("convert.glsl", "vs_main", GL_VERTEX_SHADER, shader.data());
 
 		m_convert.vs = vs;
-		for (size_t i = 0; i < countof(m_convert.ps); i++)
+		for (size_t i = 0; i < std::size(m_convert.ps); i++)
 		{
 			ps = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
 			std::string pretty_name = "Convert pipe " + std::to_string(i);
@@ -480,7 +476,7 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 
 		theApp.LoadResource(IDR_MERGE_GLSL, shader);
 
-		for (size_t i = 0; i < countof(m_merge_obj.ps); i++)
+		for (size_t i = 0; i < std::size(m_merge_obj.ps); i++)
 		{
 			ps = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
 			std::string pretty_name = "Merge pipe " + std::to_string(i);
@@ -498,7 +494,7 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 
 		theApp.LoadResource(IDR_INTERLACE_GLSL, shader);
 
-		for (size_t i = 0; i < countof(m_interlace.ps); i++)
+		for (size_t i = 0; i < std::size(m_interlace.ps); i++)
 		{
 			ps = m_shader->Compile("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
 			std::string pretty_name = "Interlace pipe " + std::to_string(i);
@@ -658,14 +654,14 @@ void GSDeviceOGL::CreateTextureFX()
 	m_gs[2] = CompileGS(GSSelector(2));
 	m_gs[4] = CompileGS(GSSelector(4));
 
-	for (uint32 key = 0; key < countof(m_vs); key++)
+	for (uint32 key = 0; key < std::size(m_vs); key++)
 		m_vs[key] = CompileVS(VSSelector(key));
 
 	// Enable all bits for stencil operations. Technically 1 bit is
 	// enough but buffer is polluted with noise. Clear will be limited
 	// to the mask.
 	glStencilMask(0xFF);
-	for (uint32 key = 0; key < countof(m_om_dss); key++)
+	for (uint32 key = 0; key < std::size(m_om_dss); key++)
 	{
 		m_om_dss[key] = CreateDepthStencil(OMDepthStencilSelector(key));
 	}
@@ -1758,7 +1754,7 @@ void GSDeviceOGL::IASetPrimitiveTopology(GLenum topology)
 
 void GSDeviceOGL::PSSetShaderResource(int i, GSTexture* sr)
 {
-	ASSERT(i < (int)countof(GLState::tex_unit));
+	ASSERT(i < static_cast<int>(std::size(GLState::tex_unit)));
 	// Note: Nvidia debgger doesn't support the id 0 (ie the NULL texture)
 	if (sr)
 	{

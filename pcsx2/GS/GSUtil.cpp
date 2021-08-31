@@ -167,11 +167,11 @@ bool GSUtil::CheckSSE()
 #endif
 	};
 
-	for (size_t i = 0; i < countof(checks); i++)
+	for (const ISA& check : checks)
 	{
-		if (!g_cpu.has(checks[i].type))
+		if (!g_cpu.has(check.type))
 		{
-			fprintf(stderr, "This CPU does not support %s\n", checks[i].name);
+			fprintf(stderr, "This CPU does not support %s\n", check.name);
 
 			status = false;
 		}

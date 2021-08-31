@@ -95,10 +95,10 @@ static wxWindowID ParseThatResult( const wxString& src, const MsgButtons& validT
 		wxID_ANY,
 	};
 
-	for( uint i=0; i<ArraySize( retvals ); ++i )
+	for (wxWindowID retval : retvals)
 	{
-		if( (validTypes.Allows( retvals[i] )) && (src == ResultToString(retvals[i], validTypes)) )
-			return retvals[i];
+		if( (validTypes.Allows(retval)) && (src == ResultToString(retval, validTypes)) )
+			return retval;
 	}
 
 	return wxID_NONE;

@@ -166,7 +166,7 @@ static SysTraceLog * const traceLogList[] =
 	&SysTrace.IOP.MDEC,
 };
 
-static const uint traceLogCount = ArraySize(traceLogList);
+static const uint traceLogCount = std::size(traceLogList);
 
 void SysTraceLog_LoadSaveSettings( IniInterface& ini )
 {

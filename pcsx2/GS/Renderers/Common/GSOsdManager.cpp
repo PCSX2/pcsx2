@@ -212,7 +212,7 @@ void GSOsdManager::Log(const char* utf8)
 
 #if __GNUC__ < 5 || (__GNUC__ == 5 && __GNUC_MINOR__ < 4)
 	char32_t buffer[256];
-	dumb_utf8_to_utf32(utf8, buffer, countof(buffer));
+	dumb_utf8_to_utf32(utf8, buffer, std::size(buffer));
 	for (char32_t* c = buffer; *c; ++c)
 		AddGlyph(*c);
 #else
@@ -238,8 +238,8 @@ void GSOsdManager::Monitor(const char* key, const char* value)
 	{
 #if __GNUC__ < 5 || (__GNUC__ == 5 && __GNUC_MINOR__ < 4)
 		char32_t buffer[256], vbuffer[256];
-		dumb_utf8_to_utf32(key, buffer, countof(buffer));
-		dumb_utf8_to_utf32(value, vbuffer, countof(vbuffer));
+		dumb_utf8_to_utf32(key, buffer, std::size(buffer));
+		dumb_utf8_to_utf32(value, vbuffer, std::size(vbuffer));
 		for (char32_t* c = buffer; *c; ++c)
 			AddGlyph(*c);
 		for (char32_t* c = vbuffer; *c; ++c)
@@ -263,7 +263,7 @@ void GSOsdManager::Monitor(const char* key, const char* value)
 	{
 #if __GNUC__ < 5 || (__GNUC__ == 5 && __GNUC_MINOR__ < 4)
 		char32_t buffer[256];
-		dumb_utf8_to_utf32(key, buffer, countof(buffer));
+		dumb_utf8_to_utf32(key, buffer, std::size(buffer));
 #else
 #if _MSC_VER == 1900
 		std::wstring_convert<std::codecvt_utf8<unsigned int>, unsigned int> conv;

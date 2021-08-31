@@ -86,28 +86,28 @@ GSLocalMemory::GSLocalMemory()
 
 	memset(m_vm8, 0, m_vmsize);
 
-	for (size_t i = 0; i < countof(m_psm); i++)
+	for (psm_t& psm : m_psm)
 	{
-		m_psm[i].info = GSLocalMemory::swizzle32;
-		m_psm[i].rp = &GSLocalMemory::ReadPixel32;
-		m_psm[i].rpa = &GSLocalMemory::ReadPixel32;
-		m_psm[i].wp = &GSLocalMemory::WritePixel32;
-		m_psm[i].wpa = &GSLocalMemory::WritePixel32;
-		m_psm[i].rt = &GSLocalMemory::ReadTexel32;
-		m_psm[i].rta = &GSLocalMemory::ReadTexel32;
-		m_psm[i].wfa = &GSLocalMemory::WritePixel32;
-		m_psm[i].wi = &GSLocalMemory::WriteImage<PSM_PSMCT32, 8, 8, 32>;
-		m_psm[i].ri = &GSLocalMemory::ReadImageX; // TODO
-		m_psm[i].rtx = &GSLocalMemory::ReadTexture32;
-		m_psm[i].rtxP = &GSLocalMemory::ReadTexture32;
-		m_psm[i].rtxb = &GSLocalMemory::ReadTextureBlock32;
-		m_psm[i].rtxbP = &GSLocalMemory::ReadTextureBlock32;
-		m_psm[i].bpp = m_psm[i].trbpp = 32;
-		m_psm[i].pal = 0;
-		m_psm[i].bs = GSVector2i(8, 8);
-		m_psm[i].pgs = GSVector2i(64, 32);
-		m_psm[i].msk = 0xff;
-		m_psm[i].depth = 0;
+		psm.info = GSLocalMemory::swizzle32;
+		psm.rp = &GSLocalMemory::ReadPixel32;
+		psm.rpa = &GSLocalMemory::ReadPixel32;
+		psm.wp = &GSLocalMemory::WritePixel32;
+		psm.wpa = &GSLocalMemory::WritePixel32;
+		psm.rt = &GSLocalMemory::ReadTexel32;
+		psm.rta = &GSLocalMemory::ReadTexel32;
+		psm.wfa = &GSLocalMemory::WritePixel32;
+		psm.wi = &GSLocalMemory::WriteImage<PSM_PSMCT32, 8, 8, 32>;
+		psm.ri = &GSLocalMemory::ReadImageX; // TODO
+		psm.rtx = &GSLocalMemory::ReadTexture32;
+		psm.rtxP = &GSLocalMemory::ReadTexture32;
+		psm.rtxb = &GSLocalMemory::ReadTextureBlock32;
+		psm.rtxbP = &GSLocalMemory::ReadTextureBlock32;
+		psm.bpp = psm.trbpp = 32;
+		psm.pal = 0;
+		psm.bs = GSVector2i(8, 8);
+		psm.pgs = GSVector2i(64, 32);
+		psm.msk = 0xff;
+		psm.depth = 0;
 	}
 
 	m_psm[PSM_PSGPU24].info = GSLocalMemory::swizzle16;
@@ -289,8 +289,8 @@ GSLocalMemory::GSLocalMemory()
 	m_psm[PSM_PSMT8].pal = m_psm[PSM_PSMT8H].pal = 256;
 	m_psm[PSM_PSMT4].pal = m_psm[PSM_PSMT4HL].pal = m_psm[PSM_PSMT4HH].pal = 16;
 
-	for (size_t i = 0; i < countof(m_psm); i++)
-		m_psm[i].fmt = 3;
+	for (psm_t& psm : m_psm)
+		psm.fmt = 3;
 	m_psm[PSM_PSMCT32].fmt = m_psm[PSM_PSMZ32].fmt = 0;
 	m_psm[PSM_PSMCT24].fmt = m_psm[PSM_PSMZ24].fmt = 1;
 	m_psm[PSM_PSMCT16].fmt = m_psm[PSM_PSMZ16].fmt = 2;

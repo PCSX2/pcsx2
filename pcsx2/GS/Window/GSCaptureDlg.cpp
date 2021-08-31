@@ -180,7 +180,7 @@ bool GSCaptureDlg::OnCommand(HWND hWnd, UINT id, UINT code)
 				ofn.lStructSize = sizeof(ofn);
 				ofn.hwndOwner = m_hWnd;
 				ofn.lpstrFile = buff;
-				ofn.nMaxFile = countof(buff);
+				ofn.nMaxFile = std::size(buff);
 				ofn.lpstrFilter = L"Avi files (*.avi)\0*.avi\0";
 				ofn.Flags = OFN_EXPLORER | OFN_ENABLESIZING | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT | OFN_PATHMUSTEXIST;
 

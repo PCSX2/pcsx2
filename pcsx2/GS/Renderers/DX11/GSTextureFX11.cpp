@@ -117,7 +117,7 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 
 		std::vector<char> shader;
 		theApp.LoadResource(IDR_TFX_FX, shader);
-		CreateShader(shader, "tfx.fx", nullptr, "vs_main", sm.GetPtr(), &vs.vs, layout, countof(layout), vs.il.put());
+        CreateShader(shader, "tfx.fx", nullptr, "vs_main", sm.GetPtr(), &vs.vs, layout, std::size(layout), vs.il.put());
 
 		m_vs[sel] = vs;
 

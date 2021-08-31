@@ -193,7 +193,7 @@ void CfgReadStr(const TCHAR* Section, const TCHAR* Name, wxString& Data, const T
 {
 	initIni();
 	wchar_t workspace[512];
-	GetPrivateProfileString(Section, Name, L"", workspace, ArraySize(workspace), CfgFile);
+	GetPrivateProfileString(Section, Name, L"", workspace, std::size(workspace), CfgFile);
 
 	Data = workspace;
 
