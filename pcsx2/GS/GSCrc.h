@@ -177,9 +177,9 @@ public:
 	};
 
 private:
-	static Game m_games[];
-	static std::map<uint32, Game*> m_map;
+	static const Game m_games[];
+	static std::map<uint32, const Game*> m_map;
 
 public:
-	static Game Lookup(uint32 crc);
+	static const Game& Lookup(uint32 crc);
 };

@@ -52,13 +52,13 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel(wxWindow* parent)
 	m_text_Zoom = CreateNumericalTextCtrl(this, 5);
 
 	m_combo_AspectRatio = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
-										 ArraySize(aspect_ratio_labels), aspect_ratio_labels, wxCB_READONLY);
+										 std::size(aspect_ratio_labels), aspect_ratio_labels, wxCB_READONLY);
 
 	m_combo_FMVAspectRatioSwitch = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
-												  ArraySize(fmv_aspect_ratio_switch_labels), fmv_aspect_ratio_switch_labels, wxCB_READONLY);
+												  std::size(fmv_aspect_ratio_switch_labels), fmv_aspect_ratio_switch_labels, wxCB_READONLY);
 
 	m_combo_vsync = new wxComboBox(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize,
-								   ArraySize(vsync_label), vsync_label, wxCB_READONLY);
+								   std::size(vsync_label), vsync_label, wxCB_READONLY);
 
 	m_text_WindowWidth = CreateNumericalTextCtrl(this, 5);
 	m_text_WindowHeight = CreateNumericalTextCtrl(this, 5);

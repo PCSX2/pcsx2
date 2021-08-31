@@ -128,7 +128,7 @@ GSState::GSState()
 	m_sssize += sizeof(m_tr.x);
 	m_sssize += sizeof(m_tr.y);
 	m_sssize += m_mem.m_vmsize;
-	m_sssize += (sizeof(m_path[0].tag) + sizeof(m_path[0].reg)) * countof(m_path);
+	m_sssize += (sizeof(m_path[0].tag) + sizeof(m_path[0].reg)) * std::size(m_path);
 	m_sssize += sizeof(m_q);
 
 	PRIM = &m_env.PRIM;
@@ -187,7 +187,7 @@ void GSState::Reset()
 {
 	// FIXME: bios logo not shown cut in half after reset, missing graphics in GoW after first FMV
 	// memset(m_mem.m_vm8, 0, m_mem.m_vmsize);
-	memset(&m_path[0], 0, sizeof(m_path[0]) * countof(m_path));
+	memset(&m_path, 0, sizeof(m_path));
 	memset(&m_v, 0, sizeof(m_v));
 
 	m_env.Reset();
@@ -221,8 +221,7 @@ void GSState::Reset()
 
 void GSState::ResetHandlers()
 {
-	for (size_t i = 0; i < countof(m_fpGIFPackedRegHandlers); i++)
-		m_fpGIFPackedRegHandlers[i] = &GSState::GIFPackedRegHandlerNull;
+	std::fill(std::begin(m_fpGIFPackedRegHandlers), std::end(m_fpGIFPackedRegHandlers), &GSState::GIFPackedRegHandlerNull);
 
 	m_fpGIFPackedRegHandlers[GIF_REG_PRIM] = (GIFPackedRegHandler)(GIFRegHandler)&GSState::GIFRegHandlerPRIM;
 	m_fpGIFPackedRegHandlers[GIF_REG_RGBA] = &GSState::GIFPackedRegHandlerRGBA;
@@ -271,8 +270,7 @@ void GSState::ResetHandlers()
 		SetHandlerXYZ(GS_INVALID, false);
 	}
 
-	for (size_t i = 0; i < countof(m_fpGIFRegHandlers); i++)
-		m_fpGIFRegHandlers[i] = &GSState::GIFRegHandlerNull;
+	std::fill(std::begin(m_fpGIFRegHandlers), std::end(m_fpGIFRegHandlers), &GSState::GIFRegHandlerNull);
 
 	m_fpGIFRegHandlers[GIF_A_D_REG_PRIM] = &GSState::GIFRegHandlerPRIM;
 	m_fpGIFRegHandlers[GIF_A_D_REG_RGBAQ] = &GSState::GIFRegHandlerRGBAQ;
@@ -2054,19 +2052,19 @@ int GSState::Freeze(freezeData* fd, bool sizeonly)
 	WriteState(data, &m_tr.y);
 	WriteState(data, m_mem.m_vm8, m_mem.m_vmsize);
 
-	for (size_t i = 0; i < countof(m_path); i++)
+	for (GIFPath& path : m_path)
 	{
-		m_path[i].tag.NREG = m_path[i].nreg;
-		m_path[i].tag.NLOOP = m_path[i].nloop;
-		m_path[i].tag.REGS = 0;
+		path.tag.NREG = path.nreg;
+		path.tag.NLOOP = path.nloop;
+		path.tag.REGS = 0;
 
-		for (size_t j = 0; j < countof(m_path[i].regs.u8); j++)
+		for (size_t j = 0; j < std::size(path.regs.u8); j++)
 		{
-			m_path[i].tag.u32[2 + (j >> 3)] |= m_path[i].regs.u8[j] << ((j & 7) << 2);
+			path.tag.u32[2 + (j >> 3)] |= path.regs.u8[j] << ((j & 7) << 2);
 		}
 
-		WriteState(data, &m_path[i].tag);
-		WriteState(data, &m_path[i].reg);
+		WriteState(data, &path.tag);
+		WriteState(data, &path.reg);
 	}
 
 	WriteState(data, &m_q);
@@ -2162,12 +2160,12 @@ int GSState::Defrost(const freezeData* fd)
 
 	m_tr.total = 0; // TODO: restore transfer state
 
-	for (size_t i = 0; i < countof(m_path); i++)
+	for (GIFPath& path : m_path)
 	{
-		ReadState(&m_path[i].tag, data);
-		ReadState(&m_path[i].reg, data);
+		ReadState(&path.tag, data);
+		ReadState(&path.reg, data);
 
-		m_path[i].SetTag(&m_path[i].tag); // expand regs
+		path.SetTag(&path.tag); // expand regs
 	}
 
 	ReadState(&m_q, data);

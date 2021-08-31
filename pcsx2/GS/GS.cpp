@@ -752,9 +752,9 @@ void* fifo_alloc(size_t size, size_t repeat)
 {
 	ASSERT(s_fh == NULL);
 
-	if (repeat >= countof(s_Next))
+	if (repeat >= std::size(s_Next))
 	{
-		fprintf(stderr, "Memory mapping overflow (%zu >= %u)\n", repeat, static_cast<unsigned>(countof(s_Next)));
+		fprintf(stderr, "Memory mapping overflow (%zu >= %u)\n", repeat, static_cast<unsigned>(std::size(s_Next)));
 		return vmalloc(size * repeat, false); // Fallback to default vmalloc
 	}
 
@@ -808,7 +808,7 @@ void fifo_free(void* ptr, size_t size, size_t repeat)
 
 	UnmapViewOfFile(ptr);
 
-	for (size_t i = 1; i < countof(s_Next); i++)
+	for (size_t i = 1; i < std::size(s_Next); i++)
 	{
 		if (s_Next[i] != 0)
 		{
@@ -1375,12 +1375,12 @@ std::string GSApp::GetConfigS(const char* entry)
 
 	if (def != m_default_configuration.end())
 	{
-		GetIniString(m_section.c_str(), entry, def->second.c_str(), buff, countof(buff), m_ini.c_str());
+		GetIniString(m_section.c_str(), entry, def->second.c_str(), buff, std::size(buff), m_ini.c_str());
 	}
 	else
 	{
 		fprintf(stderr, "Option %s doesn't have a default value\n", entry);
-		GetIniString(m_section.c_str(), entry, "", buff, countof(buff), m_ini.c_str());
+		GetIniString(m_section.c_str(), entry, "", buff, std::size(buff), m_ini.c_str());
 	}
 
 	return {buff};

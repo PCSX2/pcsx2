@@ -37,13 +37,6 @@
 // Use this in those situations
 #define OFFSETOF(a, b) (reinterpret_cast<size_t>(&(static_cast<a*>(0)->b)))
 
-// Renamed ARRAYSIZE to ArraySize -- looks nice and gets rid of Windows.h conflicts (air)
-// Notes: I'd have used ARRAY_SIZE instead but ran into cross-platform lib conflicts with
-// that as well.  >_<
-#ifndef ArraySize
-	#define ArraySize(x) (sizeof(x) / sizeof((x)[0]))
-#endif
-
 // --------------------------------------------------------------------------------------
 // Dev / Debug conditionals - Consts for using if() statements instead of uglier #ifdef.
 // --------------------------------------------------------------------------------------

@@ -242,7 +242,7 @@ void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, con
 	{
 		GSTexture* tex[3] = {NULL, NULL, NULL};
 
-		for (size_t i = 0; i < countof(tex); i++)
+		for (size_t i = 0; i < std::size(tex); i++)
 		{
 			if (sTex[i] != NULL)
 			{
@@ -252,7 +252,7 @@ void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, con
 
 		DoMerge(tex, sRect, m_merge, dRect, PMODE, EXTBUF, c);
 
-		for (size_t i = 0; i < countof(tex); i++)
+		for (size_t i = 0; i < std::size(tex); i++)
 		{
 			if (tex[i] != sTex[i])
 			{

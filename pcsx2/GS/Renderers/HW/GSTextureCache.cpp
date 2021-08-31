@@ -2148,9 +2148,9 @@ void GSTextureCache::SourceMap::RemoveAll()
 
 	m_surfaces.clear();
 
-	for (size_t i = 0; i < countof(m_map); i++)
+	for (FastList<Source*>& item : m_map)
 	{
-		m_map[i].clear();
+		item.clear();
 	}
 }
 

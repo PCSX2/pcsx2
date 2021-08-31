@@ -707,13 +707,14 @@ void SaveState_DownloadState(ArchiveEntryList* destlist)
 	internals.SetDataSize(saveme.GetCurrentPos() - internals.GetDataIndex());
 	destlist->Add(internals);
 
-	for (uint i = 0; i < ArraySize(SavestateEntries); ++i)
+	for (const std::unique_ptr<BaseSavestateEntry>& entry : SavestateEntries)
 	{
 		uint startpos = saveme.GetCurrentPos();
-		SavestateEntries[i]->FreezeOut(saveme);
-		destlist->Add(ArchiveEntry(SavestateEntries[i]->GetFilename())
-						 .SetDataIndex(startpos)
-						 .SetDataSize(saveme.GetCurrentPos() - startpos));
+		entry->FreezeOut(saveme);
+		destlist->Add(
+			ArchiveEntry(entry->GetFilename())
+				.SetDataIndex(startpos)
+				.SetDataSize(saveme.GetCurrentPos() - startpos));
 	}
 }
 
@@ -834,7 +835,7 @@ void SaveState_UnzipFromDisk(const wxString& filename)
 	//bool foundEntry[ArraySize(SavestateEntries)] = false;
 
 	std::unique_ptr<wxZipEntry> foundInternal;
-	std::unique_ptr<wxZipEntry> foundEntry[ArraySize(SavestateEntries)];
+	std::unique_ptr<wxZipEntry> foundEntry[std::size(SavestateEntries)];
 
 	while (true)
 	{
@@ -866,7 +867,7 @@ void SaveState_UnzipFromDisk(const wxString& filename)
 			foundScreenshot = true;
 		}*/
 
-		for (uint i = 0; i < ArraySize(SavestateEntries); ++i)
+		for (uint i = 0; i < std::size(SavestateEntries); ++i)
 		{
 			if (entry->GetName().CmpNoCase(SavestateEntries[i]->GetFilename()) == 0)
 			{
@@ -887,7 +888,7 @@ void SaveState_UnzipFromDisk(const wxString& filename)
 
 	// Log any parts and pieces that are missing, and then generate an exception.
 	bool throwIt = false;
-	for (uint i = 0; i < ArraySize(SavestateEntries); ++i)
+	for (uint i = 0; i < std::size(SavestateEntries); ++i)
 	{
 		if (foundEntry[i])
 			continue;
@@ -907,7 +908,7 @@ void SaveState_UnzipFromDisk(const wxString& filename)
 	PatchesVerboseReset();
 	SysClearExecutionCache();
 
-	for (uint i = 0; i < ArraySize(SavestateEntries); ++i)
+	for (uint i = 0; i < std::size(SavestateEntries); ++i)
 	{
 		if (!foundEntry[i])
 			continue;

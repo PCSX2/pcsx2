@@ -452,7 +452,7 @@ void GSRenderer::VSync(int field)
 
 		std::lock_guard<std::mutex> lock(m_pGSsetTitle_Crit);
 
-		strncpy(m_GStitleInfoBuffer, s.c_str(), countof(m_GStitleInfoBuffer) - 1);
+        strncpy(m_GStitleInfoBuffer, s.c_str(), std::size(m_GStitleInfoBuffer) - 1);
 
 		m_GStitleInfoBuffer[sizeof(m_GStitleInfoBuffer) - 1] = 0; // make sure null terminated even if text overflows
 	}

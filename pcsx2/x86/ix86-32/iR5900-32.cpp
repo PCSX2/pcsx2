@@ -2232,9 +2232,9 @@ StartRecomp:
 
 #ifdef PCSX2_DEBUG
 	// dump code
-	for (i = 0; i < ArraySize(s_recblocks); ++i)
+	for (u32 recblock : s_recblocks)
 	{
-		if (startpc == s_recblocks[i])
+		if (startpc == recblock)
 		{
 			iDumpBlock(startpc, recPtr);
 		}

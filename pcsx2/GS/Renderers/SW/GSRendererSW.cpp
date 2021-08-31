@@ -38,14 +38,8 @@ GSRendererSW::GSRendererSW(int threads)
 
 	m_output = (uint8*)_aligned_malloc(1024 * 1024 * sizeof(uint32), 32);
 
-	for (uint32 i = 0; i < countof(m_fzb_pages); i++)
-	{
-		m_fzb_pages[i] = 0;
-	}
-	for (uint32 i = 0; i < countof(m_tex_pages); i++)
-	{
-		m_tex_pages[i] = 0;
-	}
+	std::fill(std::begin(m_fzb_pages), std::end(m_fzb_pages), 0);
+	std::fill(std::begin(m_tex_pages), std::end(m_tex_pages), 0);
 
 	#define InitCVB2(P, Q) \
 		m_cvb[P][0][0][Q] = &GSRendererSW::ConvertVertexBuffer<P, 0, 0, Q>; \
@@ -77,9 +71,9 @@ GSRendererSW::~GSRendererSW()
 {
 	delete m_tc;
 
-	for (size_t i = 0; i < countof(m_texture); i++)
+	for (GSTexture* tex : m_texture)
 	{
-		delete m_texture[i];
+		delete tex;
 	}
 
 	delete m_rl;
@@ -119,7 +113,7 @@ void GSRendererSW::VSync(int field)
 	/*
 	int draw[8], sum = 0;
 
-	for(size_t i = 0; i < countof(draw); i++)
+	for(size_t i = 0; i < std::size(draw); i++)
 	{
 		draw[i] = m_perfmon.CPU(GSPerfMon::WorkerDraw0 + i);
 		sum += draw[i];
@@ -142,11 +136,11 @@ void GSRendererSW::VSync(int field)
 
 void GSRendererSW::ResetDevice()
 {
-	for (size_t i = 0; i < countof(m_texture); i++)
+	for (GSTexture*& tex : m_texture)
 	{
-		delete m_texture[i];
+		delete tex;
 
-		m_texture[i] = NULL;
+		tex = NULL;
 	}
 }
 

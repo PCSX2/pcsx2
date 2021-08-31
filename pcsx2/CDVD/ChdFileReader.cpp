@@ -48,7 +48,7 @@ bool ChdFileReader::Open2(const wxString& fileName)
 	// TODO: Unicode correctness on Windows
 	while (CHDERR_REQUIRES_PARENT == (error = chd_open(chds[chd_depth].c_str(), CHD_OPEN_READ, NULL, &child)))
 	{
-		if (chd_depth >= static_cast<int>(ArraySize(chds) - 1))
+		if (chd_depth >= static_cast<int>(std::size(chds) - 1))
 		{
 			Console.Error(L"CDVD: chd_open hit recursion limit searching for parents");
 			return false;

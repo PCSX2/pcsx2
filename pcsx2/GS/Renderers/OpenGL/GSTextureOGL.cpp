@@ -56,10 +56,7 @@ namespace PboPool
 		m_map = (char*)glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, m_pbo_size, map_flags);
 		m_offset = 0;
 
-		for (size_t i = 0; i < countof(m_fence); i++)
-		{
-			m_fence[i] = 0;
-		}
+		std::fill(std::begin(m_fence), std::end(m_fence), nullptr);
 
 		UnbindPbo();
 	}
@@ -101,9 +98,9 @@ namespace PboPool
 		m_map = NULL;
 		m_offset = 0;
 
-		for (size_t i = 0; i < countof(m_fence); i++)
+		for (GLsync fence : m_fence)
 		{
-			glDeleteSync(m_fence[i]);
+			glDeleteSync(fence);
 		}
 
 		glDeleteBuffers(1, &m_buffer);
@@ -121,7 +118,7 @@ namespace PboPool
 
 		if (segment_current != segment_next)
 		{
-			if (segment_next >= countof(m_fence))
+			if (segment_next >= std::size(m_fence))
 			{
 				segment_next = 0;
 			}
@@ -355,10 +352,10 @@ GSTextureOGL::~GSTextureOGL()
 		GLState::rt = 0;
 	if (m_texture_id == GLState::ds)
 		GLState::ds = 0;
-	for (size_t i = 0; i < countof(GLState::tex_unit); i++)
+	for (GLuint& tex : GLState::tex_unit)
 	{
-		if (m_texture_id == GLState::tex_unit[i])
-			GLState::tex_unit[i] = 0;
+		if (m_texture_id == tex)
+			tex = 0;
 	}
 
 	glDeleteTextures(1, &m_texture_id);
