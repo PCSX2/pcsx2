@@ -46,15 +46,18 @@ void SPU2configure()
 
 	configure();
 
-	try
+	if (IsOpened)
 	{
-		Console.Warning("SPU2: Sound output module reset");
-		SndBuffer::Init();
-	}
-	catch (std::exception& ex)
-	{
-		fprintf(stderr, "SPU2 Error: Could not initialize device, or something.\nReason: %s", ex.what());
-		SPU2close();
+		try
+		{
+			Console.Warning("SPU2: Sound output module reset");
+			SndBuffer::Init();
+		}
+		catch (std::exception& ex)
+		{
+			fprintf(stderr, "SPU2 Error: Could not initialize device, or something.\nReason: %s", ex.what());
+			SPU2close();
+		}
 	}
 	paused_core.AllowResume();
 }
