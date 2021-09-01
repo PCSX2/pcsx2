@@ -180,7 +180,7 @@ int main(int argc, char* argv[])
 
 	fprintf( dest,
 		"#pragma once\n\n"
-		"#include \"Pcsx2Types.h\"\n"
+		"#include \"common/Pcsx2Types.h\"\n"
 		"#include <wx/gdicmn.h>\n\n"
 		"class %s\n{\n"
 		"public:\n"

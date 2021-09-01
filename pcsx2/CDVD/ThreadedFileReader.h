@@ -16,7 +16,7 @@
 #pragma once
 
 #include "AsyncFileReader.h"
-#include "Utilities/PersistentThread.h"
+#include "common/PersistentThread.h"
 
 #include <thread>
 #include <mutex>

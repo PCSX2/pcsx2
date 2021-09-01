@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include <Pcsx2Types.h>
+#include "common/Pcsx2Types.h"
 
 /////////// Some complementary utilities for zlib_indexed.c //////////
 

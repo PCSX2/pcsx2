@@ -17,7 +17,7 @@
 
 #include <wx/fileconf.h>
 
-#include "Utilities/IniInterface.h"
+#include "common/IniInterface.h"
 #include "Config.h"
 #include "GS.h"
 #include "gui/GSFrame.h"

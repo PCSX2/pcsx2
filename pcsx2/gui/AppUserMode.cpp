@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "MainFrame.h"
-#include "Utilities/IniInterface.h"
+#include "common/IniInterface.h"
 #include "Dialogs/ModalPopups.h"
 
 #include <wx/stdpaths.h>

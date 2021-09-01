@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include "Utilities/PersistentThread.h"
-#include "Utilities/pxStreams.h"
+#include "common/PersistentThread.h"
+#include "common/pxStreams.h"
 #include "wx/zipstrm.h"
 
 using namespace Threading;

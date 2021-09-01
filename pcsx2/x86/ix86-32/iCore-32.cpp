@@ -19,7 +19,7 @@
 #include "iR5900.h"
 #include "Vif.h"
 #include "VU.h"
-#include "x86emitter/x86emitter.h"
+#include "common/emitter/x86emitter.h"
 #include "R3000A.h"
 
 using namespace x86Emitter;

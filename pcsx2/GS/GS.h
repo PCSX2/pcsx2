@@ -19,7 +19,7 @@
 // clang-format off
 
 #include "config.h"
-#include "Pcsx2Types.h"
+#include "common/Pcsx2Types.h"
 #include "GS_types.h"
 #include "Window/GSSetting.h"
 #include "SaveState.h"

@@ -40,15 +40,15 @@
 #include "DebugTools/MIPSAnalyst.h"
 #include "DebugTools/SymbolMap.h"
 
-#include "Utilities/PageFaultSource.h"
-#include "Utilities/Threading.h"
+#include "common/PageFaultSource.h"
+#include "common/Threading.h"
 #include "IopBios.h"
 
 #ifdef __WXMSW__
 #include <wx/msw/wrapwin.h>
 #endif
 
-#include "x86emitter/x86_intrin.h"
+#include "common/emitter/x86_intrin.h"
 
 bool g_CDVDReset = false;
 

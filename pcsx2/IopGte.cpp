@@ -20,7 +20,7 @@
 #include "IopGte.h"
 //#include "R3000A.h"
 #include "IopCommon.h"
-#include "Utilities/MathUtils.h"
+#include "common/MathUtils.h"
 #ifdef GTE_DUMP
 #define G_OP(name,delay) fprintf(gteLog, "* : %08X : %02d : %s\n", psxRegs.code, delay, name);
 #define G_SD(reg)  fprintf(gteLog, "+D%02d : %08X\n", reg, psxRegs.CP2D.r[reg]);

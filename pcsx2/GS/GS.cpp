@@ -24,7 +24,7 @@
 #include "GSLzma.h"
 
 #include "AppCoreThread.h"
-#include "Utilities/pxStreams.h"
+#include "common/pxStreams.h"
 
 #ifdef _WIN32
 

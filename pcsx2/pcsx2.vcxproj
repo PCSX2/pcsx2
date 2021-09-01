@@ -1140,20 +1140,15 @@
       <Project>{2f6c0388-20cb-4242-9f6c-a6ebb6a83f47}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)common\build\Utilities\utilities.vcxproj">
-      <Project>{4639972e-424e-4e13-8b07-ca403c481346}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
-    <ProjectReference Include="$(SolutionDir)common\build\x86emitter\x86emitter.vcxproj">
-      <Project>{a51123f5-9505-4eae-85e7-d320290a272c}</Project>
-      <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
-    </ProjectReference>
     <ProjectReference Include="$(SolutionDir)tools\bin2cpp\bin2c.vcxproj">
       <Project>{677b7d11-d5e1-40b3-88b1-9a4df83d2213}</Project>
       <ReferenceOutputAssembly>false</ReferenceOutputAssembly>
     </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\jpgd\jpgd.vcxproj">
       <Project>{ed2f21fd-0a36-4a8f-9b90-e7d92a2acb63}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\common\common.vcxproj">
+      <Project>{4639972e-424e-4e13-8b07-ca403c481346}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

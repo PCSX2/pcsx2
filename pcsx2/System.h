@@ -17,8 +17,8 @@
 
 #include "SysForwardDefs.h"
 
-#include "Utilities/SafeArray.h"
-#include "Utilities/Threading.h"		// to use threading stuff, include the Threading namespace in your file.
+#include "common/SafeArray.h"
+#include "common/Threading.h"		// to use threading stuff, include the Threading namespace in your file.
 
 #include "vtlb.h"
 

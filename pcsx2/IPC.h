@@ -25,7 +25,7 @@
 #define IPC_DEFAULT_SLOT 28011
 #define IPC_EMULATOR_NAME "pcsx2"
 
-#include "Utilities/PersistentThread.h"
+#include "common/PersistentThread.h"
 #include "System/SysThreads.h"
 #include <string>
 #ifdef _WIN32

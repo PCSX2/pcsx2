@@ -19,7 +19,7 @@
 #include "MSWstuff.h"
 
 #include "ModalPopups.h"
-#include "Utilities/StringHelpers.h"
+#include "common/StringHelpers.h"
 
 using namespace pxSizerFlags;
 

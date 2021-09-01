@@ -17,8 +17,8 @@
 
 #include "System.h"
 
-#include "Utilities/PersistentThread.h"
-#include "x86emitter/tools.h"
+#include "common/PersistentThread.h"
+#include "common/emitter/tools.h"
 #include "IPC.h"
 
 

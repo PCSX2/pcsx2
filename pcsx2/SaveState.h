@@ -16,7 +16,7 @@
 #pragma once
 
 #include "System.h"
-#include "Utilities/Exceptions.h"
+#include "common/Exceptions.h"
 
 enum class FreezeAction
 {

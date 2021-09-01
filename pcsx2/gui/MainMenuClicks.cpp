@@ -37,7 +37,7 @@
 #include "Dialogs/ConfigurationDialog.h"
 #include "Debugger/DisassemblyDialog.h"
 
-#include "Utilities/IniInterface.h"
+#include "common/IniInterface.h"
 
 #include "fmt/core.h"
 #include "wx/numdlg.h"

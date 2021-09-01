@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include "Utilities/PersistentThread.h"
-#include "Utilities/pxEvents.h"
+#include "common/PersistentThread.h"
+#include "common/pxEvents.h"
 
 #include <wx/timer.h>
 #include <memory>

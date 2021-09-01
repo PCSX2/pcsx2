@@ -19,7 +19,7 @@
 
 #include "MemoryCardFile.h"
 
-#include "Utilities/IniInterface.h"
+#include "common/IniInterface.h"
 
 #include <wx/stdpaths.h>
 #include "DebugTools/Debug.h"

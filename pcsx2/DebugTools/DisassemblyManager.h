@@ -16,8 +16,8 @@
 #pragma once
 
 #include "SymbolMap.h"
-#include "Utilities/Threading.h"
-#include "Pcsx2Types.h"
+#include "common/Threading.h"
+#include "common/Pcsx2Types.h"
 #include "DebugInterface.h"
 #include "MIPSAnalyst.h"
 

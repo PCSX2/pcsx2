@@ -1,0 +1,162 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(SolutionDir)common\vsprops\BaseProjectConfig.props" />
+  <Import Project="$(SolutionDir)common\vsprops\WinSDK.props" />
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{4639972E-424E-4E13-8B07-CA403C481346}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>$(DefaultPlatformToolset)</PlatformToolset>
+    <CharacterSet>Unicode</CharacterSet>
+    <WholeProgramOptimization Condition="$(Configuration.Contains(Release))">true</WholeProgramOptimization>
+    <UseDebugLibraries Condition="$(Configuration.Contains(Debug))">true</UseDebugLibraries>
+    <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="PropertySheets">
+    <Import Project="vsprops\CommonLibrary.props" />
+    <Import Project="vsprops\3rdpartyDeps.props" />
+    <Import Project="vsprops\pthreads.props" />
+    <Import Condition="$(Configuration.Contains(Debug))" Project="vsprops\CodeGen_Debug.props" />
+    <Import Condition="$(Configuration.Contains(Devel))" Project="vsprops\CodeGen_Devel.props" />
+    <Import Condition="$(Configuration.Contains(Release))" Project="vsprops\CodeGen_Release.props" />
+    <Import Condition="!$(Configuration.Contains(Release))" Project="vsprops\IncrementalLinking.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+    <ClCompile>
+      <ExceptionHandling>Async</ExceptionHandling>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <ForcedIncludeFiles>PrecompiledHeader.h</ForcedIncludeFiles>
+      <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="AlignedMalloc.cpp" />
+    <ClCompile Include="CheckedStaticBox.cpp" />
+    <ClCompile Include="Console.cpp" />
+    <ClCompile Include="Exceptions.cpp" />
+    <ClCompile Include="FastFormatString.cpp" />
+    <ClCompile Include="IniInterface.cpp" />
+    <ClCompile Include="pxStreams.cpp" />
+    <ClCompile Include="pxTranslate.cpp" />
+    <ClCompile Include="pxWindowTextWriter.cpp" />
+    <ClCompile Include="ThreadingDialogs.cpp" />
+    <ClCompile Include="VirtualMemory.cpp" />
+    <ClCompile Include="x86\MemcpyFast.cpp">
+      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
+    </ClCompile>
+    <ClCompile Include="PathUtils.cpp" />
+    <ClCompile Include="Perf.cpp" />
+    <ClCompile Include="PrecompiledHeader.cpp">
+      <PrecompiledHeader>Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="pxCheckBox.cpp" />
+    <ClCompile Include="pxRadioPanel.cpp" />
+    <ClCompile Include="pxStaticText.cpp" />
+    <ClCompile Include="StringHelpers.cpp" />
+    <ClCompile Include="wxAppWithHelpers.cpp" />
+    <ClCompile Include="wxGuiTools.cpp" />
+    <ClCompile Include="wxHelpers.cpp" />
+    <ClCompile Include="Linux\LnxHostSys.cpp" />
+    <ClCompile Include="Linux\LnxMisc.cpp" />
+    <ClCompile Include="Linux\LnxThreads.cpp" />
+    <ClCompile Include="Windows\WinHostSys.cpp" />
+    <ClCompile Include="Windows\WinMisc.cpp" />
+    <ClCompile Include="Windows\WinThreads.cpp" />
+    <ClCompile Include="Mutex.cpp" />
+    <ClCompile Include="RwMutex.cpp" />
+    <ClCompile Include="Semaphore.cpp" />
+    <ClCompile Include="ThreadTools.cpp" />
+    <ClCompile Include="emitter\bmi.cpp" />
+    <ClCompile Include="emitter\cpudetect.cpp" />
+    <ClCompile Include="emitter\fpu.cpp" />
+    <ClCompile Include="emitter\groups.cpp" />
+    <ClCompile Include="emitter\jmp.cpp" />
+    <ClCompile Include="emitter\legacy.cpp" />
+    <ClCompile Include="emitter\legacy_sse.cpp" />
+    <ClCompile Include="emitter\movs.cpp" />
+    <ClCompile Include="emitter\simd.cpp" />
+    <ClCompile Include="emitter\x86emitter.cpp" />
+    <ClCompile Include="emitter\LnxCpuDetect.cpp" />
+    <ClCompile Include="emitter\WinCpuDetect.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="EventSource.inl" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="EmbeddedImage.h" />
+    <ClInclude Include="boost_spsc_queue.hpp" />
+    <ClInclude Include="ScopedAlloc.h" />
+    <ClInclude Include="ThreadingInternal.h" />
+    <ClInclude Include="Assertions.h" />
+    <ClInclude Include="CheckedStaticBox.h" />
+    <ClInclude Include="Console.h" />
+    <ClInclude Include="Dependencies.h" />
+    <ClInclude Include="EventSource.h" />
+    <ClInclude Include="Exceptions.h" />
+    <ClInclude Include="General.h" />
+    <ClInclude Include="MathUtils.h" />
+    <ClInclude Include="MemcpyFast.h" />
+    <ClInclude Include="Path.h" />
+    <ClInclude Include="PrecompiledHeader.h" />
+    <ClInclude Include="pxCheckBox.h" />
+    <ClInclude Include="pxEvents.h" />
+    <ClInclude Include="pxRadioPanel.h" />
+    <ClInclude Include="pxStaticText.h" />
+    <ClInclude Include="RedtapeWindows.h" />
+    <ClInclude Include="SafeArray.h" />
+    <ClInclude Include="StringHelpers.h" />
+    <ClInclude Include="wxAppWithHelpers.h" />
+    <ClInclude Include="wxBaseTools.h" />
+    <ClInclude Include="wxGuiTools.h" />
+    <ClInclude Include="Threading.h" />
+    <ClInclude Include="PersistentThread.h" />
+    <ClInclude Include="RwMutex.h" />
+    <ClInclude Include="emitter\implement\bmi.h" />
+    <ClInclude Include="emitter\cpudetect_internal.h" />
+    <ClInclude Include="emitter\instructions.h" />
+    <ClInclude Include="emitter\internal.h" />
+    <ClInclude Include="emitter\legacy_instructions.h" />
+    <ClInclude Include="emitter\legacy_internal.h" />
+    <ClInclude Include="emitter\legacy_types.h" />
+    <ClInclude Include="emitter\tools.h" />
+    <ClInclude Include="emitter\x86emitter.h" />
+    <ClInclude Include="emitter\x86types.h" />
+    <ClInclude Include="emitter\implement\dwshift.h" />
+    <ClInclude Include="emitter\implement\group1.h" />
+    <ClInclude Include="emitter\implement\group2.h" />
+    <ClInclude Include="emitter\implement\group3.h" />
+    <ClInclude Include="emitter\implement\helpers.h" />
+    <ClInclude Include="emitter\implement\incdec.h" />
+    <ClInclude Include="emitter\implement\jmpcall.h" />
+    <ClInclude Include="emitter\implement\movs.h" />
+    <ClInclude Include="emitter\implement\test.h" />
+    <ClInclude Include="emitter\implement\xchg.h" />
+    <ClInclude Include="emitter\implement\simd_arithmetic.h" />
+    <ClInclude Include="emitter\implement\simd_comparisons.h" />
+    <ClInclude Include="emitter\implement\simd_helpers.h" />
+    <ClInclude Include="emitter\implement\simd_moremovs.h" />
+    <ClInclude Include="emitter\implement\simd_shufflepack.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\3rdparty\pthreads4w\build\pthreads4w.vcxproj">
+      <Project>{0fae817d-9a32-4830-857e-81da57246e16}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\wxwidgets3.0\build\msw\wx30_base.vcxproj">
+      <Project>{3fcc50c2-81e9-5db2-b8d8-2129427568b1}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\wxwidgets3.0\build\msw\wx30_core.vcxproj">
+      <Project>{6744dad8-9c70-574a-bff2-9f8dddb24a75}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets" />
+</Project>

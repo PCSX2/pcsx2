@@ -23,7 +23,7 @@
 
 #include "Debugger/DisassemblyDialog.h"
 
-#include "Utilities/Threading.h"
+#include "common/Threading.h"
 
 #include "ps2/BiosTools.h"
 #include "GS.h"

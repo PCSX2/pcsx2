@@ -40,8 +40,8 @@
 #	include "Recording/InputRecording.h"
 #endif
 
-#include "Utilities/IniInterface.h"
-#include "Utilities/AppTrait.h"
+#include "common/IniInterface.h"
+#include "common/AppTrait.h"
 
 #include <wx/stdpaths.h>
 

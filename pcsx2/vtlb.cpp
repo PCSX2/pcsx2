@@ -36,7 +36,7 @@
 #include "Cache.h"
 #include "R5900Exceptions.h"
 
-#include "Utilities/MemsetFast.inl"
+#include "common/MemsetFast.inl"
 
 using namespace R5900;
 using namespace vtlb_private;

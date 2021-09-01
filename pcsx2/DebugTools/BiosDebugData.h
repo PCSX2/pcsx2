@@ -14,7 +14,7 @@
  */
 
 #pragma once
-#include "Pcsx2Types.h"
+#include "common/Pcsx2Types.h"
 #include "ps2/BiosTools.h"
 
 struct EEInternalThread { // internal struct

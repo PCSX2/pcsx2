@@ -24,7 +24,7 @@
 #include <limits.h>
 #include "AppConfig.h"
 
-#include "Utilities/MemsetFast.inl"
+#include "common/MemsetFast.inl"
 
 // the BP doesn't advance and returns -1 if there is no data to be read
 __aligned16 tIPU_cmd ipu_cmd;

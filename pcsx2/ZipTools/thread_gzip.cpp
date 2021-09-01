@@ -18,7 +18,7 @@
 #include "App.h"
 #include "SaveState.h"
 #include "ThreadedZipTools.h"
-#include "Utilities/SafeArray.inl"
+#include "common/SafeArray.inl"
 #include "wx/wfstream.h"
 
 
