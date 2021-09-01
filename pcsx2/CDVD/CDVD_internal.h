@@ -50,17 +50,22 @@ enum CdvdIrqId
 
 };
 
-/* is cdvd.Status only for NCMDS? (linuzappz) */
-/* cdvd.Status is a construction site as of now (rama)*/
+/* Cdvd.Status bits and their meaning
+0x0 = Stop
+0x1 = Tray Open
+0x2 = Spindle Motor Spinning
+0x4 = Reading disc
+0x8 = Ready but not reading
+0x10 = Seeking
+0x20 = Abnormal Termination
+*/
 enum cdvdStatus
 {
-	//CDVD_STATUS_NONE            = 0x00, // not sure ;)
-	//CDVD_STATUS_SEEK_COMPLETE   = 0x0A,
 	CDVD_STATUS_STOP = 0x00,
 	CDVD_STATUS_TRAY_OPEN = 0x01, // confirmed to be tray open
 	CDVD_STATUS_SPIN = 0x02,
 	CDVD_STATUS_READ = 0x06,
-	CDVD_STATUS_PAUSE = 0x0A, // neutral value. Recommended to never rely on this.
+	CDVD_STATUS_PAUSE = 0x0A,
 	CDVD_STATUS_SEEK = 0x12,
 	CDVD_STATUS_EMERGENCY = 0x20,
 };
