@@ -14,7 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "Utilities/SafeArray.inl"
+#include "common/SafeArray.inl"
 
 #include "MemoryCardFile.h"
 #include "MemoryCardFolder.h"

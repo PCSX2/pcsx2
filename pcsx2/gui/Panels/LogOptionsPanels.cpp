@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "LogOptionsPanels.h"
 
-#include "Utilities/IniInterface.h"
+#include "common/IniInterface.h"
 #include "DebugTools/Debug.h"
 
 #include <wx/statline.h>

@@ -14,7 +14,7 @@
  */
 
 #pragma once
-#include "Pcsx2Defs.h"
+#include "common/Pcsx2Defs.h"
 
 // Keep my nice alignment please!
 #define MOVZ MOVZtemp

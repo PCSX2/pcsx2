@@ -21,7 +21,7 @@
 
 #include "iCore.h"
 #include "iR5900.h"
-#include "Utilities/Perf.h"
+#include "common/Perf.h"
 
 using namespace vtlb_private;
 using namespace x86Emitter;

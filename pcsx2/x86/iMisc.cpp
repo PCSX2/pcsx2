@@ -15,7 +15,7 @@
 
 
 #include "PrecompiledHeader.h"
-#include "x86emitter/x86_intrin.h"
+#include "common/emitter/x86_intrin.h"
 
 SSE_MXCSR g_sseMXCSR	= { DEFAULT_sseMXCSR };
 SSE_MXCSR g_sseVUMXCSR	= { DEFAULT_sseVUMXCSR };

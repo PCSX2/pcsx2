@@ -22,7 +22,7 @@
 #include "VUmicro.h"
 
 #include "ZipTools/ThreadedZipTools.h"
-#include "Utilities/pxStreams.h"
+#include "common/pxStreams.h"
 #include "SPU2/spu2.h"
 #include "USB/USB.h"
 #ifdef _WIN32

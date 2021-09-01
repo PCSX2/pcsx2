@@ -33,7 +33,7 @@
 #include "Mpeg.h"
 #include "Vlc.h"
 
-#include "Utilities/MemsetFast.inl"
+#include "common/MemsetFast.inl"
 
 const int non_linear_quantizer_scale [] =
 {

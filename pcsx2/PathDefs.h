@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "Utilities/Path.h"
+#include "common/Path.h"
 
 enum FoldersEnum_t
 {

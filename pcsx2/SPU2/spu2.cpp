@@ -24,7 +24,7 @@
 #include "Windows/Dialogs.h"
 #endif
 #include "R3000A.h"
-#include "Utilities/pxStreams.h"
+#include "common/pxStreams.h"
 #include "AppCoreThread.h"
 
 using namespace Threading;

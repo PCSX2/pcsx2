@@ -20,8 +20,8 @@
 #include <wx/intl.h>
 #include <wx/log.h>
 #include <wx/filename.h>
-#include "Utilities/pxStreams.h"
-#include "Utilities/Console.h"
+#include "common/pxStreams.h"
+#include "common/Console.h"
 #include <stdio.h>
 #include <assert.h>
 

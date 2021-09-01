@@ -19,7 +19,7 @@
 
 #include "Dialogs/ConfigurationDialog.h"
 
-#include "Utilities/IniInterface.h"
+#include "common/IniInterface.h"
 
 using namespace pxSizerFlags;
 using namespace Panels;

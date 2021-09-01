@@ -18,7 +18,7 @@
 #include "Vif.h"
 #include "VU.h"
 
-#include "x86emitter/x86emitter.h"
+#include "common/emitter/x86emitter.h"
 #include "System/RecTypes.h"
 
 using namespace x86Emitter;

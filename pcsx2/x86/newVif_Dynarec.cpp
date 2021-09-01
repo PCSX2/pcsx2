@@ -20,7 +20,7 @@
 #include "PrecompiledHeader.h"
 #include "newVif_UnpackSSE.h"
 #include "MTVU.h"
-#include "Utilities/Perf.h"
+#include "common/Perf.h"
 
 static void recReset(int idx) {
 	nVif[idx].vifBlocks.reset();

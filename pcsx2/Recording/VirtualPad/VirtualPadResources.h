@@ -19,7 +19,7 @@
 
 #include <queue>
 
-#include "Pcsx2Types.h"
+#include "common/Pcsx2Types.h"
 #include "wx/bitmap.h"
 #include "wx/checkbox.h"
 #include "wx/gdicmn.h"

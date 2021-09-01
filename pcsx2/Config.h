@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include "x86emitter/tools.h"
-#include "Utilities/General.h"
+#include "common/emitter/tools.h"
+#include "common/General.h"
 #include <wx/filename.h>
 
 class IniInterface;

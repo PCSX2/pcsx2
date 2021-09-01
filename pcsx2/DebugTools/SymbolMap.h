@@ -21,7 +21,7 @@
 #include <string>
 #include <mutex>
 
-#include "Pcsx2Types.h"
+#include "common/Pcsx2Types.h"
 
 enum SymbolType {
 	ST_NONE     = 0,

@@ -22,7 +22,7 @@
 #	pragma warning(disable:4996) //ignore the stricmp deprecated warning
 #endif
 
-#include "Utilities/Dependencies.h"
+#include "common/Dependencies.h"
 
 #define NOMINMAX		// Disables other libs inclusion of their own min/max macros (we use std instead)
 
@@ -67,15 +67,15 @@
 // unchanged for long periods of time, or happen to be used by almost everything, so they
 // need a full recompile anyway, when modified (etc)
 
-#include "Pcsx2Defs.h"
+#include "common/Pcsx2Defs.h"
 #include "i18n.h"
 
-#include "Utilities/wxBaseTools.h"
-#include "Utilities/Path.h"
-#include "Utilities/Console.h"
-#include "Utilities/MemcpyFast.h"
-#include "Utilities/General.h"
-#include "x86emitter/tools.h"
+#include "common/wxBaseTools.h"
+#include "common/Path.h"
+#include "common/Console.h"
+#include "common/MemcpyFast.h"
+#include "common/General.h"
+#include "common/emitter/tools.h"
 
 #include "Config.h"
 

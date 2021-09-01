@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "Utilities/Threading.h"
+#include "common/Threading.h"
 #include "SaveState.h"
 
 extern Threading::MutexRecursive mtx_SPU2Status;

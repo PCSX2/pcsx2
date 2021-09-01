@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "i18n.h"
 #include "AppConfig.h"
-#include "Utilities/SafeArray.h"
+#include "common/SafeArray.h"
 #include <memory>
 
 // Some of the codes provided by wxWidgets are 'obsolete' -- effectively replaced by more specific

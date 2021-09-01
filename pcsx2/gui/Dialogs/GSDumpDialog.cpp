@@ -21,7 +21,7 @@
 #include "Dialogs/ModalPopups.h"
 
 
-#include "Utilities/EmbeddedImage.h"
+#include "common/EmbeddedImage.h"
 #include "Resources/NoIcon.h"
 #include "GS.h"
 

@@ -16,7 +16,7 @@
 #ifndef _PCSX2_CORE_RECOMPILER_
 #define _PCSX2_CORE_RECOMPILER_
 
-#include "x86emitter/x86emitter.h"
+#include "common/emitter/x86emitter.h"
 #include "VUmicro.h"
 
 // Namespace Note : iCore32 contains all of the Register Allocation logic, in addition to a handful

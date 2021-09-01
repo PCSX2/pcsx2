@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "Utilities/RedtapeWindows.h"		// our "safe" include of windows (sets version and undefs uselessness)
+#include "common/RedtapeWindows.h"		// our "safe" include of windows (sets version and undefs uselessness)
 
 #include "System.h"
 #include "resource.h"

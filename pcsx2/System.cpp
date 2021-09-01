@@ -24,8 +24,8 @@
 
 #include "System/RecTypes.h"
 
-#include "Utilities/MemsetFast.inl"
-#include "Utilities/Perf.h"
+#include "common/MemsetFast.inl"
+#include "common/Perf.h"
 
 
 // --------------------------------------------------------------------------------------

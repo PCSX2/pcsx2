@@ -18,7 +18,7 @@
 #include "App.h"
 #include "ConfigurationDialog.h"
 #include "Panels/ConfigurationPanels.h"
-#include "Utilities/pxStreams.h"
+#include "common/pxStreams.h"
 
 #include <wx/wizard.h>
 #include <wx/treectrl.h>

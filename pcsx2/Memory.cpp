@@ -47,7 +47,7 @@ BIOS
 #include "ps2/BiosTools.h"
 #include "SPU2/spu2.h"
 
-#include "Utilities/PageFaultSource.h"
+#include "common/PageFaultSource.h"
 
 #ifdef ENABLECACHE
 #include "Cache.h"

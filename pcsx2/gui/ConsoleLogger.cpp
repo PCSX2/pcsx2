@@ -19,9 +19,9 @@
 #include "ConsoleLogger.h"
 #include "MSWstuff.h"
 
-#include "Utilities/Console.h"
-#include "Utilities/IniInterface.h"
-#include "Utilities/SafeArray.inl"
+#include "common/Console.h"
+#include "common/IniInterface.h"
+#include "common/SafeArray.inl"
 #include "Dialogs/LogOptionsDialog.h"
 #include "DebugTools/Debug.h"
 

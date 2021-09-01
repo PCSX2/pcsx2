@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "Pcsx2Types.h"
+#include "common/Pcsx2Types.h"
 #include <vector>
 
 typedef std::pair<u64,u64> ExpressionPair;

@@ -17,7 +17,7 @@
 
 #ifndef DISABLE_RECORDING
 
-#include "Pcsx2Types.h"
+#include "common/Pcsx2Types.h"
 
 #include "Recording/PadData.h"
 #include "Recording/VirtualPad/VirtualPadResources.h"

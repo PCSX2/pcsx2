@@ -110,7 +110,7 @@ class GSVector8i;
 #include "GSVector8i.h"
 #include "GSVector8.h"
 
-#include "Utilities/Dependencies.h"
+#include "common/Dependencies.h"
 
 // conversion
 

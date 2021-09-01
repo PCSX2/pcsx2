@@ -18,7 +18,7 @@
 #include "App.h"
 #include "ConsoleLogger.h"
 #include "DebugTools/Debug.h"
-#include "Utilities/Console.h"
+#include "common/Console.h"
 
 #include <fmt/core.h>
 

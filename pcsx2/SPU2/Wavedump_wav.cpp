@@ -101,7 +101,7 @@ namespace WaveDump
 	}
 } // namespace WaveDump
 
-#include "Utilities/Threading.h"
+#include "common/Threading.h"
 
 using namespace Threading;
 

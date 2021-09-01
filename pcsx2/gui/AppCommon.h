@@ -15,15 +15,15 @@
 
 #pragma once
 
-#include "Utilities/SafeArray.h"
-#include "Utilities/EventSource.h"
-#include "Utilities/PersistentThread.h"
+#include "common/SafeArray.h"
+#include "common/EventSource.h"
+#include "common/PersistentThread.h"
 
-#include "Utilities/wxGuiTools.h"
-#include "Utilities/pxRadioPanel.h"
-#include "Utilities/pxCheckBox.h"
-#include "Utilities/pxStaticText.h"
-#include "Utilities/CheckedStaticBox.h"
+#include "common/wxGuiTools.h"
+#include "common/pxRadioPanel.h"
+#include "common/pxCheckBox.h"
+#include "common/pxStaticText.h"
+#include "common/CheckedStaticBox.h"
 
 #include "AppForwardDefs.h"
 #include "AppConfig.h"

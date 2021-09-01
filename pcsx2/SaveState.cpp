@@ -28,7 +28,7 @@
 #include "Elfheader.h"
 #include "Counters.h"
 
-#include "Utilities/SafeArray.inl"
+#include "common/SafeArray.inl"
 #include "SPU2/spu2.h"
 #include "gui/ConsoleLogger.h"
 

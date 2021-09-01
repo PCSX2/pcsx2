@@ -17,7 +17,7 @@
 #include "AsyncFileReader.h"
 #include "CompressedFileReaderUtils.h"
 #include "CsoFileReader.h"
-#include "Pcsx2Types.h"
+#include "common/Pcsx2Types.h"
 #ifdef __POSIX__
 #include <zlib.h>
 #else

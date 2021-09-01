@@ -21,7 +21,7 @@
 
 #include "vtlb.h"
 
-#include "x86emitter/x86_intrin.h"
+#include "common/emitter/x86_intrin.h"
 
 // [TODO] This *could* be replaced with an assignment operator on u128 that implicitly
 // uses _mm_store and _mm_load internally.  However, there are alignment concerns --

@@ -276,9 +276,6 @@
     <None Include="Docs\License.txt">
       <Filter>Docs</Filter>
     </None>
-    <None Include="ps2\eeHwTraceLog.inl">
-      <Filter>System\Ps2\EmotionEngine\Hardware</Filter>
-    </None>
     <None Include="x86\microVU_Alloc.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>

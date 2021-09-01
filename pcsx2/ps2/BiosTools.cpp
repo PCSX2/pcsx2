@@ -17,7 +17,7 @@
 #include "Common.h"
 #include "BiosTools.h"
 
-#include "Utilities/pxStreams.h"
+#include "common/pxStreams.h"
 #include "wx/ffile.h"
 
 

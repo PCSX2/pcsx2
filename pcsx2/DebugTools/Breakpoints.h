@@ -20,7 +20,7 @@
 #include <vector>
 
 #include "DebugInterface.h"
-#include "Pcsx2Types.h"
+#include "common/Pcsx2Types.h"
 
 struct BreakPointCond
 {

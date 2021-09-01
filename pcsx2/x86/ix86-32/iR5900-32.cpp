@@ -40,8 +40,8 @@
 #endif
 
 
-#include "Utilities/MemsetFast.inl"
-#include "Utilities/Perf.h"
+#include "common/MemsetFast.inl"
+#include "common/Perf.h"
 
 
 using namespace x86Emitter;

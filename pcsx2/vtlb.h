@@ -17,7 +17,7 @@
 
 #include "MemoryTypes.h"
 
-#include "Utilities/PageFaultSource.h"
+#include "common/PageFaultSource.h"
 
 static const uptr VTLB_AllocUpperBounds = _1gb * 2;
 

@@ -14,7 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "Utilities/SafeArray.inl"
+#include "common/SafeArray.inl"
 #include <wx/file.h>
 #include <wx/dir.h>
 #include <wx/stopwatch.h>

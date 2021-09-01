@@ -24,7 +24,7 @@
 
 #include "MSWstuff.h"
 
-#include "Utilities/EmbeddedImage.h"
+#include "common/EmbeddedImage.h"
 #include "Resources/BackgroundLogo.h"
 #include "Resources/ButtonIcon_Camera.h"
 
