@@ -893,6 +893,7 @@ __fi void cdvdReadInterrupt()
 	//Console.WriteLn("cdvdReadInterrupt %x %x %x %x %x", cpuRegs.interrupt, cdvd.Readed, cdvd.Reading, cdvd.nSectors, (HW_DMA3_BCR_H16 * HW_DMA3_BCR_L16) *4);
 
 	cdvd.Ready = CDVD_NOTREADY;
+	cdvd.Status = CDVD_STATUS_READ | CDVD_STATUS_SPIN;
 	if (!cdvd.Readed)
 	{
 		// Seeking finished.  Process the track we requested before, and
@@ -905,9 +906,6 @@ __fi void cdvdReadInterrupt()
 		cdvd.RetryCntP = 0;
 		cdvd.Reading = 1;
 		cdvd.Readed = 1;
-		//cdvd.Status = CDVD_STATUS_PAUSE; // check (rama)
-		cdvd.Status = CDVD_STATUS_READ | CDVD_STATUS_SPIN; // Time Crisis 2
-
 		cdvd.Sector = cdvd.SeekToSector;
 
 		CDVD_LOG("Cdvd Seek Complete > Scheduling block read interrupt at iopcycle=%8.8x.",
@@ -1002,9 +1000,11 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 	cdvd.Ready = CDVD_NOTREADY;
 	cdvd.Reading = 0;
 	cdvd.Readed = 0;
-	//cdvd.Status = CDVD_STATUS_STOP; // before r4961
-	//cdvd.Status = CDVD_STATUS_SEEK | CDVD_STATUS_SPIN; // Time Crisis 2 // but breaks ICO NTSC
-	cdvd.Status = CDVD_STATUS_PAUSE; // best so far in my tests (rama)
+
+	// Okay so let's explain this, since people keep messing with it in the past and just poking it.
+	// So when the drive is spinning, bit 0x2 is set on the Status, and bit 0x8 is set when the drive is not reading.
+	// So In the case where it's seeking to data it will be Spinning (0x2) not reading (0x8) and Seeking (0x10, but because seeking is also spinning 0x2 is also set))
+	cdvd.Status = CDVD_STATUS_SEEK | CDVD_STATUS_PAUSE;
 
 	if (!cdvd.Spinning)
 	{
@@ -1255,9 +1255,6 @@ static void cdvdWrite04(u8 rt)
 	CDVD_LOG("cdvdWrite04: NCMD %s (%x) (ParamP = %x)", nCmdName[rt], rt, cdvd.ParamP);
 
 	cdvd.nCommand = rt;
-	// Why fiddle with Status and PwOff here at all? (rama)
-	cdvd.Status = cdvd.Spinning ? CDVD_STATUS_SPIN : CDVD_STATUS_STOP; // checkme
-	cdvd.PwOff = Irq_None;                                             // good or bad?
 
 	switch (rt)
 	{
@@ -1275,6 +1272,9 @@ static void cdvdWrite04(u8 rt)
 			cdvd.Action = cdvdAction_Standby;
 			cdvd.ReadTime = cdvdBlockReadTime(MODE_DVDROM);
 			CDVD_INT(cdvdStartSeek(0, MODE_DVDROM));
+			// Might not seek, but makes sense since it does move to the inner most track
+			// It's only temporary until the interrupt anyway when it sets itself ready
+			cdvd.Status = CDVD_STATUS_SPIN | CDVD_STATUS_SEEK;
 			break;
 
 		case N_CD_STOP: // CdStop
@@ -1283,8 +1283,12 @@ static void cdvdWrite04(u8 rt)
 			CDVD_INT(PSXCLK / 6); // 166ms delay?
 			break;
 
-		// from an emulation point of view there is not much need to do anything for this one
 		case N_CD_PAUSE: // CdPause
+			// A few games rely on PAUSE setting the Status correctly.
+			// However we should probably stop any read in progress too, just to be safe
+			psxRegs.interrupt &= ~(1 << IopEvt_Cdvd);
+			cdvd.Ready = CDVD_READY2;
+			cdvd.Status = CDVD_STATUS_PAUSE;
 			cdvdSetIrq();
 			break;
 
@@ -1292,6 +1296,7 @@ static void cdvdWrite04(u8 rt)
 			cdvd.Action = cdvdAction_Seek;
 			cdvd.ReadTime = cdvdBlockReadTime(MODE_DVDROM);
 			CDVD_INT(cdvdStartSeek(*(uint*)(cdvd.Param + 0), MODE_DVDROM));
+			cdvd.Status = CDVD_STATUS_SEEK;
 			break;
 
 		case N_CD_READ: // CdRead
