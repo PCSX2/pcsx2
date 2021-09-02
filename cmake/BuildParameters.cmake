@@ -18,6 +18,7 @@ set(PCSX2_DEFS "")
 option(DISABLE_BUILD_DATE "Disable including the binary compile date")
 option(ENABLE_TESTS "Enables building the unit tests" ON)
 option(USE_SYSTEM_YAML "Uses a system version of yaml, if found")
+option(LTO_PCSX2_CORE "Enable LTO/IPO/LTCG on the subset of pcsx2 that benefits most from it but not anything else")
 
 if(WIN32)
 	set(DEFAULT_NATIVE_TOOLS ON)
