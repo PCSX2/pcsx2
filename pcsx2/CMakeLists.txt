@@ -1359,10 +1359,27 @@ set(pcsx2x86Headers
 	x86/R5900_Profiler.h
 	)
 
-# common Sources
-target_sources(PCSX2 PRIVATE
+# These ones benefit a lot from LTO
+set(pcsx2LTOSources
 	${pcsx2Sources}
 	${pcsx2Headers}
+	${pcsx2IPUSources}
+	${pcsx2IPUHeaders}
+	${pcsx2x86Sources}
+	${pcsx2x86Headers}
+)
+
+if(LTO_PCSX2_CORE)
+	add_library(PCSX2_LTO ${pcsx2LTOSources})
+	target_link_libraries(PCSX2_LTO PRIVATE PCSX2_FLAGS)
+	target_link_libraries(PCSX2 PRIVATE PCSX2_LTO)
+	set_target_properties(PCSX2_LTO PROPERTIES INTERPROCEDURAL_OPTIMIZATION true)
+else()
+	target_sources(PCSX2 PRIVATE ${pcsx2LTOSources})
+endif()
+
+# common Sources
+target_sources(PCSX2 PRIVATE
 	${pcsx2CDVDSources}
 	${pcsx2CDVDHeaders}
 	${pcsx2SPU2Sources}
@@ -1378,8 +1395,6 @@ target_sources(PCSX2 PRIVATE
 	${pcsx2GuiSources}
 	${pcsx2GuiResources}
 	${pcsx2GuiHeaders}
-	${pcsx2IPUSources}
-	${pcsx2IPUHeaders}
 	${pcsx2ps2Sources}
 	${pcsx2ps2Headers}
 	${pcsx2RecordingSources}
@@ -1389,8 +1404,6 @@ target_sources(PCSX2 PRIVATE
 	${pcsx2SystemHeaders}
 	${pcsx2UtilitiesSources}
 	${pcsx2UtilitiesHeaders}
-	${pcsx2x86Sources}
-	${pcsx2x86Headers}
 	${pcsx2ZipToolsSources}
 	${pcsx2ZipToolsHeaders})
 
