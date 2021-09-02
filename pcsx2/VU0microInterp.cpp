@@ -19,6 +19,8 @@
 
 #include "VUmicro.h"
 
+#include <cfenv>
+
 extern void _vuFlushAll(VURegs* VU);
 
 static void _vu0ExecUpper(VURegs* VU, u32 *ptr) {
@@ -82,6 +84,8 @@ static void _vu0Exec(VURegs* VU)
 
 	/* check upper flags */
 	if (ptr[1] & 0x80000000) { /* I flag */
+		_vuTestPipes(VU);
+
 		_vu0ExecUpper(VU, ptr);
 
 		VU->VI[REG_I].UL = ptr[0];
@@ -92,7 +96,7 @@ static void _vu0Exec(VURegs* VU)
 #ifndef INT_VUSTALLHACK
 		_vuTestLowerStalls(VU, &lregs);
 #endif
-
+		_vuTestPipes(VU);
 		vu0branch = lregs.pipe == VUPIPE_BRANCH;
 
 		vfreg = 0; vireg = 0;
@@ -146,8 +150,6 @@ static void _vu0Exec(VURegs* VU)
 	if (!(ptr[1] & 0x80000000))
 		_vuAddLowerStalls(VU, &lregs);
 
-	_vuTestPipes(VU);
-
 	if(VU->VIBackupCycles > 0) 
 		VU->VIBackupCycles--;
 
@@ -179,8 +181,8 @@ static void _vu0Exec(VURegs* VU)
 void vu0Exec(VURegs* VU)
 {
 	VU0.VI[REG_TPC].UL &= VU0_PROGMASK;
-	_vu0Exec(VU);
 	VU->cycle++;
+	_vu0Exec(VU);
 
 	if (VU->VI[0].UL != 0) DbgCon.Error("VI[0] != 0!!!!\n");
 	if (VU->VF[0].f.x != 0.0f) DbgCon.Error("VF[0].x != 0.0!!!!\n");
@@ -210,6 +212,9 @@ void InterpVU0::Step()
 
 void InterpVU0::Execute(u32 cycles)
 {
+	const int originalRounding = fegetround();
+	fesetround(g_sseVUMXCSR.RoundingControl << 8);
+
 	VU0.VI[REG_TPC].UL <<= 3;
 	VU0.flags &= ~VUFLAG_MFLAGSET;
 	for (int i = (int)cycles; i > 0; i--) {
@@ -222,4 +227,6 @@ void InterpVU0::Execute(u32 cycles)
 		vu0Exec(&VU0);
 	}
 	VU0.VI[REG_TPC].UL >>= 3;
+
+	fesetround(originalRounding);
 }

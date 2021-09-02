@@ -25,22 +25,6 @@
 /*          NEW FLAGS                    */ //By asadr. Thnkx F|RES :p
 /*****************************************/
 
-
-void vuUpdateDI(VURegs * VU) {
-//	u32 Flag_S = 0;
-//	u32 Flag_I = 0;
-//	u32 Flag_D = 0;
-//
-//	/*
-//	FLAG D - I
-//	*/
-//	Flag_I = (VU->statusflag >> 4) & 0x1;
-//	Flag_D = (VU->statusflag >> 5) & 0x1;
-//
-//	VU->statusflag|= (Flag_I | (VU0.VI[REG_STATUS_FLAG].US[0] >> 4)) << 10;
-//	VU->statusflag|= (Flag_D | (VU0.VI[REG_STATUS_FLAG].US[0] >> 5)) << 11;
-}
-
 static __ri u32 VU_MAC_UPDATE( int shift, VURegs * VU, float f )
 {
 	u32 v = *(u32*)&f;
@@ -64,7 +48,7 @@ static __ri u32 VU_MAC_UPDATE( int shift, VURegs * VU, float f )
 			VU->macflag = (VU->macflag&~(0x1000<<shift)) | (0x0101<<shift);
 			return s;
 		case 255:
-			VU->macflag = (VU->macflag&~(0x0100<<shift)) | (0x1000<<shift);
+			VU->macflag = (VU->macflag&~(0x0101<<shift)) | (0x1000<<shift);
 			return s|0x7f7fffff; /* max allowed */
 		default:
 			VU->macflag = (VU->macflag & ~(0x1101<<shift));
@@ -118,5 +102,6 @@ __ri void VU_STAT_UPDATE(VURegs * VU) {
 	if (VU->macflag & 0x00F0) newflag |= 0x2;
 	if (VU->macflag & 0x0F00) newflag |= 0x4;
 	if (VU->macflag & 0xF000) newflag |= 0x8;
-	VU->statusflag = (VU->statusflag&0xc30)|newflag|((VU->statusflag&0xf)<<6);
+	// Save old sticky flags and D/I settings, everthing else is the new flags only
+	VU->statusflag = (VU->statusflag&0xff0)| newflag | (newflag<<6);
 }
