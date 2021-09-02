@@ -17,6 +17,8 @@
 #include "Common.h"
 #include "VUmicro.h"
 #include "MTVU.h"
+#include "GS.h"
+#include "Gif_Unit.h"
 
 // Executes a Block based on EE delta time
 void BaseVUmicroCPU::ExecuteBlock(bool startUp)
@@ -32,7 +34,49 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 	}
 
 	if (!(stat & test))
+	{
+		if (m_Idx == 1)
+		{
+			if (VU1.xgkickenable && (cpuRegs.cycle - VU1.xgkicklastcycle) >= 2)
+			{
+				if (VU1.xgkicksizeremaining == 0)
+				{
+					IPU_LOG("Banana Reading next packet from %x", VU1.xgkickaddr);
+					u32 size = gifUnit.GetGSPacketSize(GIF_PATH_1, VU1.Mem, VU1.xgkickaddr);
+					VU1.xgkicksizeremaining = size & 0xFFFF;
+					VU1.xgkickendpacket = size >> 31;
+					IPU_LOG("Banana New packet size %x", VU1.xgkicksizeremaining);
+				}
+				u32 transfersize = std::min(VU1.xgkicksizeremaining / 0x10, (cpuRegs.cycle - VU1.xgkicklastcycle) / 2);
+				if (transfersize)
+				{
+					IPU_LOG("Banana Transferring %x bytes from %x size left %x", transfersize * 0x10, VU1.xgkickaddr, VU1.xgkicksizeremaining);
+					if ((transfersize * 0x10) > VU1.xgkicksizeremaining)
+						gifUnit.gifPath[GIF_PATH_1].CopyGSPacketData(&VU1.Mem[VU1.xgkickaddr], transfersize * 0x10, true);
+					else
+						gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &VU1.Mem[VU1.xgkickaddr], transfersize * 0x10, true);
+
+					VU1.xgkickaddr = (VU1.xgkickaddr + (transfersize * 0x10)) & 0x3FFF;
+					VU1.xgkicksizeremaining -= (transfersize * 0x10);
+					VU1.xgkickdiff = 0x4000 - VU1.xgkickaddr;
+					IPU_LOG("Banana next addr %x left size %x EOP %d", VU1.xgkickaddr, VU1.xgkicksizeremaining, VU1.xgkickendpacket);
+					VU1.xgkicklastcycle += std::max(transfersize * 2, 2U);
+
+					if (VU1.xgkicksizeremaining || !VU1.xgkickendpacket)
+						VU1.xgkickenable = 1;
+					else
+					{
+
+						VU1.xgkickenable = 0;
+						IPU_LOG("Banana transfer finished");
+					}
+				}
+				else
+					VU1.xgkickenable = 1;
+			}
+		}
 		return;
+	}
 
 	if (startUp && s) // Start Executing a microprogram (When kickstarted)
 	{

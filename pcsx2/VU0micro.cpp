@@ -44,6 +44,8 @@ void __fastcall vu0ExecMicro(u32 addr) {
 
 	// Need to copy the clip flag back to the interpreter in case COP2 has edited it
 	VU0.clipflag = VU0.VI[REG_CLIP_FLAG].UL;
+	VU0.macflag = VU0.VI[REG_MAC_FLAG].UL;
+	VU0.statusflag = VU0.VI[REG_STATUS_FLAG].UL;
 	VU0.VI[REG_VPU_STAT].UL &= ~0xFF;
 	VU0.VI[REG_VPU_STAT].UL |=  0x01;
 	VU0.cycle = cpuRegs.cycle;

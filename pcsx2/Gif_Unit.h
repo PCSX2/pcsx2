@@ -568,8 +568,14 @@ struct Gif_Unit
 			}
 			if (curSize >= size)
 				return size;
-			if (gifTag.tag.EOP)
+			if(!EmuConfig.Cpu.Recompiler.EnableVU1 && pathIdx == GIF_PATH_1)
+			{
+				return curSize | ((u32)gifTag.tag.EOP << 31);
+			}
+			if (gifTag.tag.EOP )
+			{
 				return curSize;
+			}
 		}
 	}
 

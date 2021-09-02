@@ -110,6 +110,7 @@ struct fmacPipe
 {
 	int enable;
 	int reg;
+	int flagreg;
 	int xyzw;
 	u32 sCycle;
 	u32 Cycle;
@@ -171,6 +172,12 @@ struct __aligned16 VURegs
 	u8* Mem;
 	u8* Micro;
 
+	u32 xgkickenable;
+	u32 xgkickaddr;
+	u32 xgkickdiff;
+	u32 xgkicksizeremaining;
+	u32 xgkicklastcycle;
+	u32 xgkickendpacket;
 	u32 ebit;
 
 	u8 VIBackupCycles;
