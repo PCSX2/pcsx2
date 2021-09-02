@@ -107,7 +107,7 @@ jobs:
           fi
 
       - name: Generate CMake Files
-        run: cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_PO=FALSE -B build .
+        run: cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_BUILD_PO=FALSE -DLTO_PCSX2_CORE=ON -B build .
 
       - name: Build PCSX2
         working-directory: build
