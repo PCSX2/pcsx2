@@ -20,6 +20,7 @@
 #include "GS/Renderers/Common/GSDevice.h"
 #include <unordered_map>
 #include <wil/com.h>
+#include <dxgi1_3.h>
 
 struct GSVertexShader11
 {

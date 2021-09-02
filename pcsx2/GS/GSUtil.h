@@ -17,6 +17,10 @@
 
 #include "GS.h"
 #include "GSRegs.h"
+#ifdef _WIN32
+#include <d3dcommon.h>
+#include <dxgi.h>
+#endif
 
 #include <xbyak/xbyak_util.h>
 

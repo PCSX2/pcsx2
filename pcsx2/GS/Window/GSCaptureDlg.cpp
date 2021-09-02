@@ -17,6 +17,7 @@
 #include "GS.h"
 #include "GSCaptureDlg.h"
 #include "GS/GSExtra.h"
+#include <commdlg.h>
 
 // Ideally this belongs in WIL, but CAUUID is used by a *single* COM function in WinAPI.
 // That's presumably why it's omitted and is unlikely to make it to upstream WIL.
