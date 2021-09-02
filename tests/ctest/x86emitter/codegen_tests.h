@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "Utilities/Dependencies.h"
+#include "common/Dependencies.h"
 
 void runCodegenTest(void (*exec)(void *base), const char* description, const char* expected);
 

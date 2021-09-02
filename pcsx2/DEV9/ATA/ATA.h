@@ -20,7 +20,7 @@
 #include <atomic>
 #include <mutex>
 #include <condition_variable>
-#include "ghc/filesystem.h"
+#include <ghc/filesystem.h>
 #include <fstream>
 
 #include "DEV9/SimpleQueue.h"

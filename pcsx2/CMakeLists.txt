@@ -1426,8 +1426,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "NetBS
 endif()
 
 target_link_libraries(PCSX2 PRIVATE
-	Utilities
-	x86emitter
+	common
 	fmt::fmt
 	yaml-cpp
 	chdr-static

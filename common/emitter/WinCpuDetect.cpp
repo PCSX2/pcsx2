@@ -13,6 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if defined(_WIN32)
+
 #include "common/Console.h"
 #include "common/emitter/cpudetect_internal.h"
 
@@ -79,3 +81,4 @@ SingleCoreAffinity::~SingleCoreAffinity()
     if (s_oldmask != ERROR_INVALID_PARAMETER)
         SetThreadAffinityMask(s_threadId, s_oldmask);
 }
+#endif

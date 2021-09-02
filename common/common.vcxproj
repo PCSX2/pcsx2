@@ -50,9 +50,7 @@
     <ClCompile Include="pxWindowTextWriter.cpp" />
     <ClCompile Include="ThreadingDialogs.cpp" />
     <ClCompile Include="VirtualMemory.cpp" />
-    <ClCompile Include="x86\MemcpyFast.cpp">
-      <ExcludedFromBuild Condition="'$(Platform)'=='x64'">true</ExcludedFromBuild>
-    </ClCompile>
+    <ClCompile Include="x86\MemcpyFast.cpp" />
     <ClCompile Include="PathUtils.cpp" />
     <ClCompile Include="Perf.cpp" />
     <ClCompile Include="PrecompiledHeader.cpp">

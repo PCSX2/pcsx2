@@ -1,6 +1,7 @@
 // GH: AMD memcpy was removed. The remaining part (memcmp_mmx) is likely from Zerofrog.
 // Hopefully memcmp_mmx will be dropped in the future.
 
+#if defined(_WIN32) && !defined(_M_AMD64)
 #include "common/MemcpyFast.h"
 #include "common/Assertions.h"
 
@@ -9,8 +10,6 @@
 #endif
 
 // Inline assembly syntax for use with Visual C++
-
-#if defined(_MSC_VER)
 
 // mmx mem-compare implementation, size has to be a multiple of 8
 // returns 0 is equal, nonzero value if not equal

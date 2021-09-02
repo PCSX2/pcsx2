@@ -13,15 +13,11 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if defined(_WIN32)
+
 #include "common/RedtapeWindows.h"
 #include "common/PersistentThread.h"
 #include "common/emitter/tools.h"
-
-#ifndef __WXMSW__
-
-#pragma message("WinThreads.cpp should only be compiled by projects or makefiles targeted at Microsoft Windows.")
-
-#else
 
 __fi void Threading::Sleep(int ms)
 {
