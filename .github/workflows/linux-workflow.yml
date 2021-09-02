@@ -70,11 +70,13 @@ jobs:
           - os: ubuntu-18.04
             platform: x86
             compiler: gcc
+            cmakeflags: -DLTO_PCSX2_CORE=ON
             appimage: true
             experimental: false
           - os: ubuntu-18.04
             platform: x64
             compiler: gcc
+            cmakeflags: -DLTO_PCSX2_CORE=ON
             appimage: true
             experimental: false
           - os: ubuntu-18.04
