@@ -1,10 +1,14 @@
 include(macros/GlibCompileResourcesSupport)
 
-add_executable(PCSX2)
+# All flags, libraries, etc, that are shared between PCSX2 compilation files
+add_library(PCSX2_FLAGS INTERFACE)
 
-target_compile_features(PCSX2 PRIVATE cxx_std_17)
-target_compile_definitions(PCSX2 PUBLIC "${PCSX2_DEFS}")
-target_compile_options(PCSX2 PRIVATE "${PCSX2_WARNINGS}")
+add_executable(PCSX2)
+target_link_libraries(PCSX2 PRIVATE PCSX2_FLAGS)
+
+target_compile_features(PCSX2_FLAGS INTERFACE cxx_std_17)
+target_compile_definitions(PCSX2_FLAGS INTERFACE "${PCSX2_DEFS}")
+target_compile_options(PCSX2_FLAGS INTERFACE "${PCSX2_WARNINGS}")
 
 if (PACKAGE_MODE)
 	install(TARGETS PCSX2 DESTINATION ${CMAKE_INSTALL_BINDIR})
@@ -25,10 +29,8 @@ if(NOT TOP_CMAKE_WAS_SOURCED)
 	It is advice to delete all wrongly generated cmake stuff => CMakeFiles & CMakeCache.txt")
 endif()
 
-if(MSVC)
-	set(CommonFlags)
-else()
-	set(CommonFlags
+if(NOT MSVC)
+	target_compile_options(PCSX2_FLAGS INTERFACE
 		-fno-strict-aliasing
 		-Wstrict-aliasing # Allow to track strict aliasing issue.
 		-Wno-parentheses
@@ -40,34 +42,32 @@ endif()
 
 if(GCC_VERSION VERSION_EQUAL "8.0" OR GCC_VERSION VERSION_GREATER "8.0")
 	# gs is pretty bad at this
-	list(APPEND CommonFlags -Wno-packed-not-aligned -Wno-class-memaccess)
+	target_compile_options(PCSX2_FLAGS INTERFACE -Wno-packed-not-aligned -Wno-class-memaccess)
 endif()
 
-target_compile_options(PCSX2 PRIVATE ${CommonFlags})
-
 if ("${PGO}" STREQUAL "generate")
-	target_compile_options(PCSX2 PRIVATE -fprofile-generate)
+	target_compile_options(PCSX2_FLAGS INTERFACE -fprofile-generate)
 elseif("${PGO}" STREQUAL "use")
-	target_compile_options(PCSX2 PRIVATE -fprofile-use)
+	target_compile_options(PCSX2_FLAGS INTERFACE -fprofile-use)
 endif()
 
 if(TARGET PkgConfig::PORTAUDIO)
-	target_compile_definitions(PCSX2 PRIVATE SPU2X_PORTAUDIO)
-	target_link_libraries(PCSX2 PRIVATE PkgConfig::PORTAUDIO)
+	target_compile_definitions(PCSX2_FLAGS INTERFACE SPU2X_PORTAUDIO)
+	target_link_libraries(PCSX2_FLAGS INTERFACE PkgConfig::PORTAUDIO)
 endif()
 
 if(TARGET PulseAudio::PulseAudio)
-	target_compile_definitions(PCSX2 PRIVATE SPU2X_PULSEAUDIO)
-	target_link_libraries(PCSX2 PRIVATE PulseAudio::PulseAudio)
+	target_compile_definitions(PCSX2_FLAGS INTERFACE SPU2X_PULSEAUDIO)
+	target_link_libraries(PCSX2_FLAGS INTERFACE PulseAudio::PulseAudio)
 endif()
 
 if(XDG_STD)
-	target_compile_definitions(PCSX2 PRIVATE XDG_STD)
+	target_compile_definitions(PCSX2_FLAGS INTERFACE XDG_STD)
 endif()
 
 if(TARGET SDL::SDL)
-	target_compile_definitions(PCSX2 PRIVATE SDL_BUILD)
-	target_link_libraries(PCSX2 PRIVATE SDL::SDL)
+	target_compile_definitions(PCSX2_FLAGS INTERFACE SDL_BUILD)
+	target_link_libraries(PCSX2_FLAGS INTERFACE SDL::SDL)
 endif()
 
 if(WIN32)
@@ -83,7 +83,7 @@ if(WIN32)
 		windows/wxResources.rc
 		windows/PCSX2.manifest
 	)
-	target_compile_definitions(PCSX2 PRIVATE
+	target_compile_definitions(PCSX2_FLAGS INTERFACE
 		_M_SSE=0x401 # TODO: Multiple ISA
 		DIRECTINPUT_VERSION=0x0800
 		WINVER=0x0603
@@ -92,7 +92,7 @@ if(WIN32)
 		LZMA_API_STATIC
 		WIL_SUPPRESS_EXCEPTIONS
 	)
-	target_include_directories(PCSX2 PRIVATE
+	target_include_directories(PCSX2_FLAGS INTERFACE
 		../3rdparty # GL headers
 	)
 	set_target_properties(PCSX2 PROPERTIES WIN32_EXECUTABLE TRUE)
@@ -536,7 +536,7 @@ else(WIN32)
 	# PAD resources pre-compilation
 	set(PADImgHeader "${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/ImgHeader")
 	set(PADImg "${CMAKE_SOURCE_DIR}/pcsx2/PAD/Linux/Img")
-	target_include_directories(PCSX2 PRIVATE "${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/")
+	target_include_directories(PCSX2_FLAGS INTERFACE "${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/")
 
 	file(MAKE_DIRECTORY ${PADImgHeader})
 
@@ -905,7 +905,7 @@ else(WIN32)
 		GS/res/glsl/tfx_vgs.glsl)
 
 	set(GSBin "${CMAKE_BINARY_DIR}/pcsx2/GS")
-	target_include_directories(PCSX2 PRIVATE "${GSBin}")
+	target_include_directories(PCSX2_FLAGS INTERFACE "${GSBin}")
 	file(MAKE_DIRECTORY "${GSBin}")
 
 	add_custom_command(
@@ -1407,7 +1407,7 @@ if(Linux)
 		${pcsx2LinuxHeaders}
 		)
 
-	target_link_libraries(PCSX2 PRIVATE
+	target_link_libraries(PCSX2_FLAGS INTERFACE
 		PkgConfig::AIO
 		PkgConfig::EGL
 		PkgConfig::LIBUDEV
@@ -1417,7 +1417,7 @@ if(Linux)
 		ALSA::ALSA
 		)
 elseif(UNIX AND NOT APPLE)
-	target_link_libraries(PCSX2 PRIVATE X11::X11)
+	target_link_libraries(PCSX2_FLAGS INTERFACE X11::X11)
 endif()
 
 # Windows
@@ -1446,7 +1446,7 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "NetBS
 		${pcsx2LinuxHeaders})
 endif()
 
-target_link_libraries(PCSX2 PRIVATE
+target_link_libraries(PCSX2_FLAGS INTERFACE
 	common
 	fmt::fmt
 	yaml-cpp
@@ -1462,7 +1462,7 @@ target_link_libraries(PCSX2 PRIVATE
 )
 
 if(WIN32)
-	target_link_libraries(PCSX2 PRIVATE
+	target_link_libraries(PCSX2_FLAGS INTERFACE
 		baseclasses
 		pthreads4w
 		WIL::WIL
@@ -1483,7 +1483,7 @@ if(WIN32)
 		comsuppw.lib
 	)
 else()
-	target_link_libraries(PCSX2 PRIVATE
+	target_link_libraries(PCSX2_FLAGS INTERFACE
 		GTK::gtk
 		HarfBuzz::HarfBuzz
 		OpenGL::GL
@@ -1519,7 +1519,7 @@ foreach(res_file IN ITEMS
 endforeach()
 
 # additonal include directories
-target_include_directories(PCSX2 PRIVATE
+target_include_directories(PCSX2_FLAGS INTERFACE
 	.
 	x86
 	${CMAKE_BINARY_DIR}/pcsx2
@@ -1530,7 +1530,7 @@ target_include_directories(PCSX2 PRIVATE
 
 if(COMMAND target_precompile_headers)
 	message("Using precompiled headers.")
-	target_precompile_headers(PCSX2 PRIVATE PrecompiledHeader.h)
+	target_precompile_headers(PCSX2_FLAGS INTERFACE PrecompiledHeader.h)
 endif()
 
 if (APPLE)
