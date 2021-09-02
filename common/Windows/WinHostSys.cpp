@@ -13,6 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if defined(_WIN32)
+
 #include "common/RedtapeWindows.h"
 #include "common/PageFaultSource.h"
 
@@ -148,3 +150,4 @@ void HostSys::MemProtect(void *baseaddr, size_t size, const PageProtectionMode &
         pxFailDev(apiError.FormatDiagnosticMessage());
     }
 }
+#endif

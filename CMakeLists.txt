@@ -42,8 +42,7 @@ if(NOT NO_TRANSLATION)
 endif()
 
 # make common
-add_subdirectory(common/src/Utilities)
-add_subdirectory(common/src/x86emitter)
+add_subdirectory(common)
 
 # make pcsx2
 add_subdirectory(pcsx2)
