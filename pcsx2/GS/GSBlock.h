@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "GS.h"
+#include "GSRegs.h"
 #include "GSTables.h"
 #include "GSVector.h"
 

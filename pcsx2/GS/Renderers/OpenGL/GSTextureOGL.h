@@ -16,7 +16,7 @@
 #pragma once
 
 #include "GS/Renderers/Common/GSTexture.h"
-#include "GS.h"
+#include "GS/GSGL.h"
 
 namespace PboPool
 {

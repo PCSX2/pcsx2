@@ -17,7 +17,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSRasterizer.h"
-#include "common/General.h"
+#include "GS/GSExtra.h"
 
 int GSRasterizerData::s_counter = 0;
 

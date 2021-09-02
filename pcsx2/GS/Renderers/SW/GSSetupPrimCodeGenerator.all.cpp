@@ -14,7 +14,6 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GS/GS_types.h"
 #include "GSSetupPrimCodeGenerator.all.h"
 #include "GSVertexSW.h"
 

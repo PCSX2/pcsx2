@@ -17,7 +17,7 @@
 #include "GSCapture.h"
 #include "GSPng.h"
 #include "GSUtil.h"
-#include "GS_types.h"
+#include "GSExtra.h"
 
 #ifdef _WIN32
 

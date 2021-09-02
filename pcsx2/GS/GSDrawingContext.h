@@ -19,7 +19,6 @@
 #pragma clang diagnostic ignored "-Wformat"
 #endif
 
-#include "GS.h"
 #include "GSLocalMemory.h"
 
 class alignas(32) GSDrawingContext

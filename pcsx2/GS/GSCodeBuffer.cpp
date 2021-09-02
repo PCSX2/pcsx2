@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSCodeBuffer.h"
-#include "GS.h"
+#include "GSExtra.h"
 
 GSCodeBuffer::GSCodeBuffer(size_t blocksize)
 	: m_blocksize(blocksize)

@@ -15,7 +15,6 @@
 
 #pragma once
 
-#include "GS.h"
 #include "GSVertexSW.h"
 #include "GS/Renderers/Common/GSFunctionMap.h"
 #include "GS/GSAlignedClass.h"

@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "GS.h"
+#include "GSRegs.h"
 #include "GSVector.h"
 #include "GSTables.h"
 #include "GSAlignedClass.h"
