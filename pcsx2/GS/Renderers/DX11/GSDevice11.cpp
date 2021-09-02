@@ -23,6 +23,7 @@
 #include <fstream>
 #include <sstream>
 #include <VersionHelpers.h>
+#include <d3dcompiler.h>
 
 GSDevice11::GSDevice11()
 {
