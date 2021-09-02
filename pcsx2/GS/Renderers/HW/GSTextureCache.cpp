@@ -16,6 +16,8 @@
 #include "PrecompiledHeader.h"
 #include "GSTextureCache.h"
 #include "GSRendererHW.h"
+#include "GS/GSGL.h"
+#include "GS/GSIntrin.h"
 #include "GS/GSUtil.h"
 
 bool GSTextureCache::m_disable_partial_invalidation = false;

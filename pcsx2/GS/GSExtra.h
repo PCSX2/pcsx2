@@ -15,7 +15,7 @@
 
 #pragma once
 
-// clang-format off
+#include "GSVector.h"
 
 #ifdef _WIN32
 inline std::string convert_utf16_to_utf8(const std::wstring& utf16_string)
@@ -44,3 +44,56 @@ inline FILE* px_fopen(const std::string& filename, const std::string& mode)
 	return fopen(filename.c_str(), mode.c_str());
 #endif
 }
+
+#ifdef ENABLE_ACCURATE_BUFFER_EMULATION
+static const GSVector2i default_rt_size(2048, 2048);
+#else
+static const GSVector2i default_rt_size(1280, 1024);
+#endif
+
+// Helper path to dump texture
+extern const std::string root_sw;
+extern const std::string root_hw;
+
+extern std::string format(const char* fmt, ...);
+
+extern void* vmalloc(size_t size, bool code);
+extern void vmfree(void* ptr, size_t size);
+
+extern void* fifo_alloc(size_t size, size_t repeat);
+extern void fifo_free(void* ptr, size_t size, size_t repeat);
+
+// clang-format off
+
+#ifdef __POSIX__
+	#include <zlib.h>
+#else
+	#include <zlib/zlib.h>
+#endif
+
+#ifdef _MSC_VER
+	#define ALIGN_STACK(n) alignas(n) int dummy__; (void)dummy__;
+#else
+	#ifdef __GNUC__
+		// GCC removes the variable as dead code and generates some warnings.
+		// Stack is automatically realigned due to SSE/AVX operations
+		#define ALIGN_STACK(n) (void)0;
+	#else
+		// TODO Check clang behavior
+		#define ALIGN_STACK(n) alignas(n) int dummy__;
+	#endif
+#endif
+
+#ifdef ENABLE_VTUNE
+	#include "jitprofiling.h"
+	#ifdef _WIN32
+		#pragma comment(lib, "jitprofiling.lib")
+	#endif
+#endif
+
+#ifdef _WIN32
+	#define DIRECTORY_SEPARATOR '\\'
+#else
+	#include <sys/stat.h> // mkdir
+	#define DIRECTORY_SEPARATOR '/'
+#endif

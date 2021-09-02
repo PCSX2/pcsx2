@@ -15,7 +15,8 @@
 
 #pragma once
 
-#include "GS.h"
+#include "SaveState.h"
+#include "GSRegs.h"
 #include "Renderers/SW/GSVertexSW.h"
 #include <lzma.h>
 

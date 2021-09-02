@@ -22,6 +22,9 @@
 #include "GS/GSAlignedClass.h"
 #include "GSOsdManager.h"
 #include <array>
+#ifdef _WIN32
+#include <dxgi.h>
+#endif
 
 enum ShaderConvert
 {

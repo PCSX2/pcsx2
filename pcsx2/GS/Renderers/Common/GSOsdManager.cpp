@@ -14,8 +14,8 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GS/GS.h"
 #include "GSOsdManager.h"
+#include "GS/GS.h"
 #ifdef _WIN32
 #include "GS/resource.h"
 #endif

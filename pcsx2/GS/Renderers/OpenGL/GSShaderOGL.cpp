@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSShaderOGL.h"
 #include "GLState.h"
+#include "GS/GS.h"
 
 #ifdef _WIN32
 #include "GS/resource.h"

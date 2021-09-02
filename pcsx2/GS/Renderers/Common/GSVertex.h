@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "GS/GS.h"
+#include "GS/GSRegs.h"
 #include "GS/GSVector.h"
 #include "GS/Renderers/HW/GSVertexHW.h"
 #include "GS/Renderers/SW/GSVertexSW.h"

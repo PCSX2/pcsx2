@@ -14,8 +14,9 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GS/GS.h"
 #include "GSDevice.h"
+#include "GS/GSGL.h"
+#include "GS/GS.h"
 
 GSDevice::GSDevice()
 	: m_vsync(false)

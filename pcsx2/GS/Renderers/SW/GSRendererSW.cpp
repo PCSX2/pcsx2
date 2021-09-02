@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSRendererSW.h"
+#include "GS/GSGL.h"
 
 #define LOG 0
 

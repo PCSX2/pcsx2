@@ -15,24 +15,30 @@
 
 #pragma once
 
-#include "GS/GSVector.h"
+#include <xmmintrin.h>
+#include <emmintrin.h>
 
-#pragma pack(push, 1)
+#include <tmmintrin.h>
+#include <smmintrin.h>
 
-struct alignas(32) GSVertexHW9
+#if _M_SSE >= 0x500
+	#include <immintrin.h>
+#endif
+
+#if !defined(_MSC_VER)
+// http://svn.reactos.org/svn/reactos/trunk/reactos/include/crt/mingw32/intrin_x86.h?view=markup
+
+static int _BitScanForward(unsigned long* const Index, const unsigned long Mask)
 {
-	GSVector4 t;
-	GSVector4 p;
+#if __has_builtin(__builtin_ctz)
+	if (Mask == 0)
+		return 0;
+	*Index = __builtin_ctz(Mask);
+	return 1;
+#else
+	__asm__("bsfl %k[Mask], %k[Index]" : [Index] "=r" (*Index) : [Mask] "mr" (Mask) : "cc");
+	return Mask ? 1 : 0;
+#endif
+}
 
-	// t.z = union {struct {u8 r, g, b, a;}; u32 c0;};
-	// t.w = union {struct {u8 ta0, ta1, res, f;}; u32 c1;}
-
-	GSVertexHW9& operator=(GSVertexHW9& v)
-	{
-		t = v.t;
-		p = v.p;
-		return *this;
-	}
-};
-
-#pragma pack(pop)
+#endif

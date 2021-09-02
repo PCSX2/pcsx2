@@ -15,9 +15,8 @@
 
 #pragma once
 
-#include "GS/GS.h"
 #include "GS/GSCodeBuffer.h"
-
+#include "GS/GSExtra.h"
 #include "GS/Renderers/SW/GSScanlineEnvironment.h"
 #include "common/emitter/tools.h"
 

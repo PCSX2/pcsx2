@@ -14,8 +14,9 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GS.h"
 #include "GSCrc.h"
+#include "GSExtra.h"
+#include "GS.h"
 
 const CRC::Game CRC::m_games[] =
 {

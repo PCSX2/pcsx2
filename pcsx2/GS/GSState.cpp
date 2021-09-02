@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSState.h"
-#include "GS.h"
+#include "GSGL.h"
 #include "GSUtil.h"
 
 #include <algorithm> // clamp

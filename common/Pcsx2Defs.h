@@ -216,6 +216,10 @@ static const int __pagesize = PCSX2_PAGESIZE;
 	#define __has_attribute(x) 0
 #endif
 
+#ifndef __has_builtin
+	#define __has_builtin(x) 0
+#endif
+
 #ifdef __cpp_constinit
 	#define CONSTINIT constinit
 #elif __has_attribute(require_constant_initialization)

@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSClut.h"
 #include "GSLocalMemory.h"
+#include "GSGL.h"
 
 #define CLUT_ALLOC_SIZE (2 * 4096)
 

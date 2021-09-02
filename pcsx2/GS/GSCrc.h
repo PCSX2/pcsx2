@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include <map>
+
 class CRC
 {
 public:

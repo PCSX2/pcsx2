@@ -14,6 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "GSIntrin.h"
 
 #pragma once
 

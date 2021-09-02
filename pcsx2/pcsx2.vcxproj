@@ -812,7 +812,10 @@
     <ClInclude Include="GS\Renderers\OpenGL\GLLoader.h" />
     <ClInclude Include="GS\Renderers\OpenGL\GLState.h" />
     <ClInclude Include="GS\GS.h" />
-    <ClInclude Include="GS\GS_types.h" />
+    <ClInclude Include="GS\GSExtra.h" />
+    <ClInclude Include="GS\GSGL.h" />
+    <ClInclude Include="GS\GSIntrin.h" />
+    <ClInclude Include="GS\GSRegs.h" />
     <ClInclude Include="GS\GSAlignedClass.h" />
     <ClInclude Include="GS\GSBlock.h" />
     <ClInclude Include="GS\GSCapture.h" />

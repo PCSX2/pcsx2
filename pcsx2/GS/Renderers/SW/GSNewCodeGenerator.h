@@ -15,7 +15,6 @@
 
 #pragma once
 
-#include "GS/GS_types.h"
 #include "xbyak/xbyak.h"
 #include "xbyak/xbyak_util.h"
 

@@ -18,6 +18,7 @@
 #include "gui/AppConfig.h"
 
 #ifdef _WIN32
+#include "GS/GSExtra.h"
 #include "GS/Renderers/DX11/D3D.h"
 #endif
 

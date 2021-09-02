@@ -16,6 +16,7 @@
 #pragma once
 
 #include "GS.h"
+#include "GSRegs.h"
 
 #include <xbyak/xbyak_util.h>
 

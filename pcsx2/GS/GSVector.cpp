@@ -14,7 +14,6 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GS.h"
 #include "GSVector.h"
 #include <cfloat>
 
