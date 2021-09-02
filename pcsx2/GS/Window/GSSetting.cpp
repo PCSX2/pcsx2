@@ -162,11 +162,10 @@ const char* dialog_message(int ID, bool* updateText)
 				"Note: This hack is a work in progress.");
 		case IDC_GEOMETRY_SHADER_OVERRIDE:
 			return cvtString("Allows the GPU instead of just the CPU to transform lines into sprites. This reduces CPU load and bandwidth requirement, but it is heavier on the GPU.\n"
-				"Automatic detection is recommended.\n\n"
-				"Note: This option is only supported by GPUs which support at least Direct3D 10.");
+				"Automatic detection is recommended.");
 		case IDC_IMAGE_LOAD_STORE:
-			return cvtString("Allows advanced atomic operations to speed up DATE Accuracy.\n"
-				"Only disable this if using DATE Accuracy causes (GPU driver) issues.\n\n"
+			return cvtString("Allows advanced atomic operations to speed up Accurate DATE.\n"
+				"Only disable this if using Accurate DATE causes (GPU driver) issues.\n\n"
 				"Note: This option is only supported by GPUs which support at least Direct3D 11.");
 		case IDC_SPARSE_TEXTURE:
 			return cvtString("Allows to reduce VRAM usage on the GPU.\n\n"
