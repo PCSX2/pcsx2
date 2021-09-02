@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -199,7 +199,15 @@ static __fi void mVU_EATAN_(mV, const xmm& PQ, const xmm& Fs, const xmm& t1, con
 
 mVUop(mVU_EATAN)
 {
-	pass1 { mVUanalyzeEFU1(mVU, _Fs_, _Fsf_, 54); }
+	pass1
+	{
+		if (isVU0)
+		{
+			mVUlow.isNOP = true;
+			return;
+		}
+		mVUanalyzeEFU1(mVU, _Fs_, _Fsf_, 54);
+	}
 	pass2
 	{
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, (1 << (3 - _Fsf_)));
@@ -221,7 +229,15 @@ mVUop(mVU_EATAN)
 
 mVUop(mVU_EATANxy)
 {
-	pass1 { mVUanalyzeEFU2(mVU, _Fs_, 54); }
+	pass1
+	{
+		if (isVU0)
+		{
+			mVUlow.isNOP = true;
+			return;
+		}
+		mVUanalyzeEFU2(mVU, _Fs_, 54);
+	}
 	pass2
 	{
 		const xmm& t1 = mVU.regAlloc->allocReg(_Fs_, 0, 0xf);
@@ -244,7 +260,15 @@ mVUop(mVU_EATANxy)
 
 mVUop(mVU_EATANxz)
 {
-	pass1 { mVUanalyzeEFU2(mVU, _Fs_, 54); }
+	pass1
+	{
+		if (isVU0)
+		{
+			mVUlow.isNOP = true;
+			return;
+		}
+		mVUanalyzeEFU2(mVU, _Fs_, 54);
+	}
 	pass2
 	{
 		const xmm& t1 = mVU.regAlloc->allocReg(_Fs_, 0, 0xf);
@@ -275,7 +299,15 @@ mVUop(mVU_EATANxz)
 
 mVUop(mVU_EEXP)
 {
-	pass1 { mVUanalyzeEFU1(mVU, _Fs_, _Fsf_, 44); }
+	pass1
+	{
+		if (isVU0)
+		{
+			mVUlow.isNOP = true;
+			return;
+		}
+		mVUanalyzeEFU1(mVU, _Fs_, _Fsf_, 44);
+	}
 	pass2
 	{
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, (1 << (3 - _Fsf_)));
@@ -319,7 +351,15 @@ static __fi void mVU_sumXYZ(mV, const xmm& PQ, const xmm& Fs)
 
 mVUop(mVU_ELENG)
 {
-	pass1 { mVUanalyzeEFU2(mVU, _Fs_, 18); }
+	pass1
+	{
+		if (isVU0)
+		{
+			mVUlow.isNOP = true;
+			return;
+		}
+		mVUanalyzeEFU2(mVU, _Fs_, 18);
+	}
 	pass2
 	{
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
@@ -335,7 +375,15 @@ mVUop(mVU_ELENG)
 
 mVUop(mVU_ERCPR)
 {
-	pass1 { mVUanalyzeEFU1(mVU, _Fs_, _Fsf_, 12); }
+	pass1
+	{
+		if (isVU0)
+		{
+			mVUlow.isNOP = true;
+			return;
+		}
+		mVUanalyzeEFU1(mVU, _Fs_, _Fsf_, 12);
+	}
 	pass2
 	{
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, (1 << (3 - _Fsf_)));
@@ -353,7 +401,15 @@ mVUop(mVU_ERCPR)
 
 mVUop(mVU_ERLENG)
 {
-	pass1 { mVUanalyzeEFU2(mVU, _Fs_, 24); }
+	pass1
+	{
+		if (isVU0)
+		{
+			mVUlow.isNOP = true;
+			return;
+		}
+		mVUanalyzeEFU2(mVU, _Fs_, 24);
+	}
 	pass2
 	{
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
@@ -372,7 +428,15 @@ mVUop(mVU_ERLENG)
 
 mVUop(mVU_ERSADD)
 {
-	pass1 { mVUanalyzeEFU2(mVU, _Fs_, 18); }
+	pass1
+	{
+		if (isVU0)
+		{
+			mVUlow.isNOP = true;
+			return;
+		}
+		mVUanalyzeEFU2(mVU, _Fs_, 18);
+	}
 	pass2
 	{
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
@@ -390,7 +454,15 @@ mVUop(mVU_ERSADD)
 
 mVUop(mVU_ERSQRT)
 {
-	pass1 { mVUanalyzeEFU1(mVU, _Fs_, _Fsf_, 18); }
+	pass1
+	{
+		if (isVU0)
+		{
+			mVUlow.isNOP = true;
+			return;
+		}
+		mVUanalyzeEFU1(mVU, _Fs_, _Fsf_, 18);
+	}
 	pass2
 	{
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, (1 << (3 - _Fsf_)));
@@ -409,7 +481,15 @@ mVUop(mVU_ERSQRT)
 
 mVUop(mVU_ESADD)
 {
-	pass1 { mVUanalyzeEFU2(mVU, _Fs_, 11); }
+	pass1
+	{
+		if (isVU0)
+		{
+			mVUlow.isNOP = true;
+			return;
+		}
+		mVUanalyzeEFU2(mVU, _Fs_, 11);
+	}
 	pass2
 	{
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
@@ -424,7 +504,15 @@ mVUop(mVU_ESADD)
 
 mVUop(mVU_ESIN)
 {
-	pass1 { mVUanalyzeEFU1(mVU, _Fs_, _Fsf_, 29); }
+	pass1
+	{
+		if (isVU0)
+		{
+			mVUlow.isNOP = true;
+			return;
+		}
+		mVUanalyzeEFU1(mVU, _Fs_, _Fsf_, 29);
+	}
 	pass2
 	{
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, (1 << (3 - _Fsf_)));
@@ -463,7 +551,15 @@ mVUop(mVU_ESIN)
 
 mVUop(mVU_ESQRT)
 {
-	pass1 { mVUanalyzeEFU1(mVU, _Fs_, _Fsf_, 12); }
+	pass1
+	{
+		if (isVU0)
+		{
+			mVUlow.isNOP = true;
+			return;
+		}
+		mVUanalyzeEFU1(mVU, _Fs_, _Fsf_, 12);
+	}
 	pass2
 	{
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, (1 << (3 - _Fsf_)));
@@ -479,7 +575,15 @@ mVUop(mVU_ESQRT)
 
 mVUop(mVU_ESUM)
 {
-	pass1 { mVUanalyzeEFU2(mVU, _Fs_, 12); }
+	pass1
+	{
+		if (isVU0)
+		{
+			mVUlow.isNOP = true;
+			return;
+		}
+		mVUanalyzeEFU2(mVU, _Fs_, 12);
+	}
 	pass2
 	{
 		const xmm& Fs = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
@@ -872,7 +976,15 @@ mVUop(mVU_MFIR)
 
 mVUop(mVU_MFP)
 {
-	pass1 { mVUanalyzeMFP(mVU, _Ft_); }
+	pass1
+	{
+		if (isVU0)
+		{
+			mVUlow.isNOP = true;
+			return;
+		}
+		mVUanalyzeMFP(mVU, _Ft_);
+	}
 	pass2
 	{
 		const xmm& Ft = mVU.regAlloc->allocReg(-1, _Ft_, _X_Y_Z_W);
@@ -1357,7 +1469,15 @@ mVUop(mVU_RXOR)
 
 mVUop(mVU_WAITP)
 {
-	pass1 { mVUstall = std::max(mVUstall, (u8)((mVUregs.p) ? (mVUregs.p - 1) : 0)); }
+	pass1
+	{
+		if (isVU0)
+		{
+			mVUlow.isNOP = true;
+			return;
+		}
+		mVUstall = std::max(mVUstall, (u8)((mVUregs.p) ? (mVUregs.p - 1) : 0));
+	}
 	pass2 { mVU.profiler.EmitOp(opWAITP); }
 	pass3 { mVUlog("WAITP"); }
 }
@@ -1377,6 +1497,12 @@ mVUop(mVU_XTOP)
 {
 	pass1
 	{
+		if (isVU0)
+		{
+			mVUlow.isNOP = true;
+			return;
+		}
+
 		if (!_It_)
 			mVUlow.isNOP = true;
 
@@ -1446,7 +1572,15 @@ static __fi void mVU_XGKICK_DELAY(mV)
 
 mVUop(mVU_XGKICK)
 {
-	pass1 { mVUanalyzeXGkick(mVU, _Is_, mVU_XGKICK_CYCLES); }
+	pass1
+	{
+		if (isVU0)
+		{
+			mVUlow.isNOP = true;
+			return;
+		}
+		mVUanalyzeXGkick(mVU, _Is_, mVU_XGKICK_CYCLES);
+	}
 	pass2
 	{
 		if (mVUinfo.doXGKICK) // check for XGkick Transfer
