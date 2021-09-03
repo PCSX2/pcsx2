@@ -182,7 +182,7 @@ __fi void vif1SetupTransfer()
 
 		bool ret;
 
-		static __aligned16 u128 masked_tag;
+		alignas(16) static u128 masked_tag;
 				
 		masked_tag._u64[0] = 0;
 		masked_tag._u64[1] = *((u64*)ptag + 1);

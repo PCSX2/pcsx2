@@ -22,7 +22,7 @@
 #define xMOV64(regX, loc)  xMOVUPS (regX, loc)
 #define xMOV128(regX, loc) xMOVUPS (regX, loc)
 
-static const __aligned16 u32 SSEXYZWMask[4][4] =
+alignas(16) static const u32 SSEXYZWMask[4][4] =
 {
 	{0xffffffff, 0xffffffff, 0xffffffff, 0x00000000},
 	{0xffffffff, 0xffffffff, 0x00000000, 0xffffffff},
@@ -30,7 +30,7 @@ static const __aligned16 u32 SSEXYZWMask[4][4] =
 	{0x00000000, 0xffffffff, 0xffffffff, 0xffffffff}
 };
 
-//static __pagealigned u8 nVifUpkExec[__pagesize*4];
+//alignas(__pagesize) static u8 nVifUpkExec[__pagesize*4];
 static RecompiledCodeReserve* nVifUpkExec = NULL;
 
 // Merges xmm vectors without modifying source reg

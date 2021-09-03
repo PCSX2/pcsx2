@@ -253,9 +253,9 @@ struct tlbs
 
 #endif
 
-extern __aligned16 cpuRegisters cpuRegs;
-extern __aligned16 fpuRegisters fpuRegs;
-extern __aligned16 tlbs tlb[48];
+alignas(16) extern cpuRegisters cpuRegs;
+alignas(16) extern fpuRegisters fpuRegs;
+alignas(16) extern tlbs tlb[48];
 
 extern u32 g_nextEventCycle;
 extern bool eeEventTestIsActive;

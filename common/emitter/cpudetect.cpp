@@ -44,7 +44,7 @@ static __inline__ __attribute__((always_inline)) void cpuid(int CPUInfo[], const
 
 using namespace x86Emitter;
 
-__aligned16 x86capabilities x86caps;
+alignas(16) x86capabilities x86caps;
 
 x86capabilities::x86capabilities()
 	: isIdentified(false)
@@ -87,7 +87,7 @@ void x86capabilities::SIMD_EstablishMXCSRmask()
 		MXCSR_Mask.bitmask = 0xFFFF; // SSE2 features added
 	}
 
-	__aligned16 u8 targetFXSAVE[512];
+	alignas(16) u8 targetFXSAVE[512];
 
 	// Work for recent enough GCC/CLANG/MSVC 2012
 	_fxsave(&targetFXSAVE);

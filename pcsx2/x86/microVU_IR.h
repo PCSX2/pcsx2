@@ -34,7 +34,7 @@ union regInfo
 // vi15 is only used if microVU const-prop is enabled (it is *not* by default).  When constprop
 // is disabled the vi15 field acts as additional padding that is required for 16 byte alignment
 // needed by the xmm compare.
-union __aligned16 microRegInfo
+union alignas(16) microRegInfo
 {
 	struct
 	{
@@ -81,7 +81,7 @@ struct microJumpCache
 	void* x86ptrStart;  // Start of code (Entry point for block)
 };
 
-struct __aligned16 microBlock
+struct alignas(16) microBlock
 {
 	microRegInfo    pState;      // Detailed State of Pipeline
 	microRegInfo    pStateEnd;   // Detailed State of Pipeline at End of Block (needed by JR/JALR opcodes)

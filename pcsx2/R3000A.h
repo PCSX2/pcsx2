@@ -115,7 +115,7 @@ struct psxRegisters {
 	//u32 _smflag[32];
 };
 
-extern __aligned16 psxRegisters psxRegs;
+alignas(16) extern psxRegisters psxRegs;
 
 extern u32 g_iopNextEventCycle;
 extern s32 iopBreak;		// used when the IOP execution is broken and control returned to the EE

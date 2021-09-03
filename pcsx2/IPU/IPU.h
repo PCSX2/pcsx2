@@ -74,8 +74,8 @@ union tIPU_CTRL {
 	void reset() { _u32 = 0; }
 };
 
-struct __aligned16 tIPU_BP {
-	__aligned16 u128 internal_qwc[2];
+struct alignas(16) tIPU_BP {
+	alignas(16) u128 internal_qwc[2];
 
 	u32 BP;		// Bit stream point (0 to 128*2)
 	u32 IFC;	// Input FIFO counter (8QWC) (0 to 8)
@@ -283,7 +283,7 @@ union tIPU_cmd
 
 static IPUregisters& ipuRegs = (IPUregisters&)eeHw[0x2000];
 
-extern __aligned16 tIPU_cmd ipu_cmd;
+alignas(16) extern tIPU_cmd ipu_cmd;
 extern int coded_block_pattern;
 
 extern void ipuReset();

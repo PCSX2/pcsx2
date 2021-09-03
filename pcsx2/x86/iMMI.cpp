@@ -1561,7 +1561,7 @@ void recPEXTUH()
 	_clearNeededXMMregs();
 }
 
-static __aligned16 u32 tempqw[8];
+alignas(16) static u32 tempqw[8];
 
 void recQFSRV()
 {
@@ -2660,7 +2660,7 @@ void recPSRAVW()
 
 
 ////////////////////////////////////////////////////
-static const __aligned16 u32 s_tempPINTEH[4] = {0x0000ffff, 0x0000ffff, 0x0000ffff, 0x0000ffff};
+alignas(16) static const u32 s_tempPINTEH[4] = {0x0000ffff, 0x0000ffff, 0x0000ffff, 0x0000ffff};
 
 void recPINTEH()
 {

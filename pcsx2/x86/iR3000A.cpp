@@ -105,7 +105,7 @@ static u32 psxdump = 0;
 static void __fastcall iopRecRecompile(const u32 startpc);
 
 // Recompiled code buffer for EE recompiler dispatchers!
-static u8 __pagealigned iopRecDispatchers[__pagesize];
+alignas(__pagesize) static u8 iopRecDispatchers[__pagesize];
 
 typedef void DynGenFunc();
 

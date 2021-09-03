@@ -776,8 +776,8 @@ extern bool HasMainFrame();
 extern MainEmuFrame& GetMainFrame();
 extern MainEmuFrame* GetMainFramePtr();
 
-extern __aligned16 AppCoreThread CoreThread;
-extern __aligned16 SysMtgsThread mtgsThread;
+alignas(16) extern AppCoreThread CoreThread;
+alignas(16) extern SysMtgsThread mtgsThread;
 
 extern void UI_UpdateSysControls();
 

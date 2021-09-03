@@ -61,8 +61,8 @@ struct tVIF_CTRL {
 
 // NOTE, if debugging vif stalls, use sega classics, spyro, gt4, and taito
 struct vifStruct {
-	__aligned16 u128 MaskRow;
-	__aligned16 u128 MaskCol;
+	alignas(16) u128 MaskRow;
+	alignas(16) u128 MaskCol;
 
 	struct { // These must be together for MTVU
 		vifCode tag;
@@ -97,7 +97,7 @@ struct vifStruct {
 	bool queued_gif_wait;
 };
 
-extern __aligned16 vifStruct  vif0, vif1;
+alignas(16) extern vifStruct  vif0, vif1;
 
 _vifT extern u32 vifRead32(u32 mem);
 _vifT extern bool vifWrite32(u32 mem, u32 value);
@@ -112,7 +112,7 @@ extern void vif1Reset();
 typedef int __fastcall FnType_VifCmdHandler(int pass, const u32 *data);
 typedef FnType_VifCmdHandler* Fnptr_VifCmdHandler;
 
-extern const __aligned16 Fnptr_VifCmdHandler vifCmdHandler[2][128];
+alignas(16) extern const Fnptr_VifCmdHandler vifCmdHandler[2][128];
 
 __fi static int _limit(int a, int max)
 {

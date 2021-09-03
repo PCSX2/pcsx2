@@ -19,7 +19,7 @@
 #include "newVif.h"
 #include "Gif_Unit.h"
 
-__aligned16 VU_Thread vu1Thread(CpuVU1, VU1);
+VU_Thread vu1Thread(CpuVU1, VU1);
 
 #define MTVU_ALWAYS_KICK 0
 #define MTVU_SYNC_MODE 0

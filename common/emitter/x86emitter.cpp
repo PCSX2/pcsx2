@@ -1186,7 +1186,7 @@ const xRegister32
 		xWrite8(0xC8 | to->Id);
 	}
 
-	static __aligned16 u64 xmm_data[iREGCNT_XMM * 2];
+	alignas(16) static u64 xmm_data[iREGCNT_XMM * 2];
 
 	__emitinline void xStoreReg(const xRegisterSSE& src)
 	{

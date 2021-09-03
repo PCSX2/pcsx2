@@ -45,7 +45,7 @@ using namespace vtlb_private;
 
 namespace vtlb_private
 {
-	__aligned(64) MapData vtlbdata;
+	alignas(64) MapData vtlbdata;
 }
 
 static vtlbHandler vtlbHandlerCount = 0;

@@ -28,7 +28,7 @@ __noinline void memset_sse_a(void* dest, const size_t size)
 
 	if (data != 0)
 	{
-		static __aligned16 const u8 loadval[8] = {data, data, data, data, data, data, data, data};
+		alignas(16) static const u8 loadval[8] = {data, data, data, data, data, data, data, data};
 		srcreg = _mm_loadh_pi(_mm_load_ps((float*)loadval), (__m64*)loadval);
 	}
 	else

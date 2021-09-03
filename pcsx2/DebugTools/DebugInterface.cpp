@@ -283,7 +283,7 @@ u64 R5900DebugInterface::read64(u32 address)
 
 u128 R5900DebugInterface::read128(u32 address)
 {
-	__aligned16 u128 result;
+	alignas(16) u128 result;
 	if (!isValidAddress(address) || address % 16)
 	{
 		result.hi = result.lo = -1;

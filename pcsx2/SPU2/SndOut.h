@@ -578,8 +578,8 @@ private:
 	static StereoOut32* m_buffer;
 	static s32 m_size;
 
-	static __aligned(4) volatile s32 m_rpos;
-	static __aligned(4) volatile s32 m_wpos;
+	alignas(4) static volatile s32 m_rpos;
+	alignas(4) static volatile s32 m_wpos;
 
 	static float lastEmergencyAdj;
 	static float cTempo;

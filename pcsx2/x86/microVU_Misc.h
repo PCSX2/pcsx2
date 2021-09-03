@@ -39,7 +39,7 @@ struct mVU_Globals
 };
 
 #define __four(val) { val, val, val, val }
-static const __aligned(32) mVU_Globals mVUglob = {
+alignas(32) static const mVU_Globals mVUglob = {
 	__four(0x7fffffff),       // absclip
 	__four(0x80000000),       // signbit
 	__four(0xff7fffff),       // minvals
@@ -208,7 +208,7 @@ typedef Fntype_mVUrecInst* Fnptr_mVUrecInst;
 //------------------------------------------------------------------
 // Define mVUquickSearch
 //------------------------------------------------------------------
-extern __pagealigned u8 mVUsearchXMM[__pagesize];
+alignas(__pagesize) extern u8 mVUsearchXMM[__pagesize];
 typedef u32(__fastcall* mVUCall)(void*, void*);
 #define mVUquickSearch(dest, src, size) ((((mVUCall)((void*)mVUsearchXMM))(dest, src)) == 0xf)
 #define mVUemitSearch() \

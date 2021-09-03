@@ -260,7 +260,7 @@ namespace vtlb_private
 		}
 	};
 
-	extern __aligned(64) MapData vtlbdata;
+	alignas(64) extern MapData vtlbdata;
 
 	inline void *VTLBVirtual::assumeHandlerGetRaw(int index, bool write) const
 	{

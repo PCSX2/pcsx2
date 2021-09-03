@@ -22,7 +22,7 @@
 
 struct IPU_Fifo_Input
 {
-	__aligned16 u32 data[32];
+	alignas(16) u32 data[32];
 	int readpos, writepos;
 
 	int write(u32* pMem, int size);
@@ -33,7 +33,7 @@ struct IPU_Fifo_Input
 
 struct IPU_Fifo_Output
 {
-	__aligned16 u32 data[32];
+	alignas(16) u32 data[32];
 	int readpos, writepos;
 
 	// returns number of qw read
@@ -45,13 +45,13 @@ struct IPU_Fifo_Output
 
 struct IPU_Fifo
 {
-	__aligned16 IPU_Fifo_Input in;
-	__aligned16 IPU_Fifo_Output out;
+	alignas(16) IPU_Fifo_Input in;
+	alignas(16) IPU_Fifo_Output out;
 
 	void init();
 	void clear();
 };
 
-extern __aligned16 IPU_Fifo ipu_fifo;
+alignas(16) extern IPU_Fifo ipu_fifo;
 
 #endif // IPU_FIFO_H_INCLUDED

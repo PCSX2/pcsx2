@@ -107,7 +107,7 @@ namespace R5900
 			g_cpuHasConstReg &= ~(1 << (reg)); \
 	}
 
-extern __aligned16 GPR_reg64 g_cpuConstRegs[32];
+alignas(16) extern GPR_reg64 g_cpuConstRegs[32];
 extern u32 g_cpuHasConstReg, g_cpuFlushedConstReg;
 
 // gets a memory pointer to the constant reg
