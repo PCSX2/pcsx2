@@ -13,6 +13,8 @@
 *  If not, see <http://www.gnu.org/licenses/>.
 */
 
+#if !defined(__APPLE__)
+
 #include "common/Threading.h"
 #include "common/wxBaseTools.h"
 #include "common/wxGuiTools.h"
@@ -160,3 +162,4 @@ int Threading::Semaphore::Count()
     sem_getvalue(&m_sema, &retval);
     return retval;
 }
+#endif

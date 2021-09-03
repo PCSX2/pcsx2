@@ -19,7 +19,7 @@
 #include "USB/deviceproxy.h"
 #include "USB/usb-pad/padproxy.h"
 #include "USB/usb-mic/audiodeviceproxy.h"
-#include "Utilities/Console.h"
+#include "common/Console.h"
 
 void SysMessage_stderr(const char* fmt, ...)
 {

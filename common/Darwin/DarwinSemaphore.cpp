@@ -13,26 +13,22 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if defined(__APPLE__)
+
 #include <cstdio>
 #include <cassert> // assert
-
 #include <pthread.h> // pthread_setcancelstate()
-
 #include <sys/time.h> // gettimeofday()
-
 #include <mach/mach.h>
 #include <mach/task.h>       // semaphore_create() and semaphore_destroy()
 #include <mach/semaphore.h>  // semaphore_*()
 #include <mach/mach_error.h> // mach_error_string()
 #include <mach/mach_time.h>  // mach_absolute_time()
 
-#include "PrecompiledHeader.h"
-
-#include "Threading.h"
-#include "ThreadingInternal.h"
-
-#include "wxBaseTools.h"
-#include "wxGuiTools.h"
+#include "common/Threading.h"
+#include "common/ThreadingInternal.h"
+#include "common/wxBaseTools.h"
+#include "common/wxGuiTools.h"
 
 // --------------------------------------------------------------------------------------
 //  Semaphore Implementation for Darwin/OSX
@@ -242,3 +238,4 @@ int Threading::Semaphore::Count()
 {
     return __atomic_load_n(&m_counter, __ATOMIC_SEQ_CST);
 }
+#endif

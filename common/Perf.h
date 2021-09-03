@@ -16,6 +16,7 @@
 #pragma once
 
 #include <vector>
+#include <cstdio>
 #include "common/Pcsx2Types.h"
 
 namespace Perf

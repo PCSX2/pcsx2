@@ -14,6 +14,7 @@
  */
 
 #include <wx/wx.h>
+#include "common/Pcsx2Defs.h" // __fastcall
 
 bool pxIsEnglish(int id)
 {

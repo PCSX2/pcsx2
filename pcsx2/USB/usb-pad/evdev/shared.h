@@ -16,7 +16,7 @@
 #pragma once
 #include <linux/joystick.h>
 #include <unistd.h>
-#include "Pcsx2Types.h"
+#include "common/Pcsx2Types.h"
 #include "USB/gtk.h"
 #include "USB/usb-pad/padproxy.h"
 #include "USB/configuration.h"

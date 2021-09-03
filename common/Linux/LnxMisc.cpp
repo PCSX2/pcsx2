@@ -13,12 +13,14 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__APPLE__)
 #include <ctype.h>
 #include <time.h>
 #include <unistd.h>
 #include <sys/time.h>
 #include <wx/utils.h>
+
+#include "common/Pcsx2Types.h"
 
 // Returns 0 on failure (not supported by the operating system).
 u64 GetPhysicalMemory()

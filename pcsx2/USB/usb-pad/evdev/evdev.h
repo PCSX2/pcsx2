@@ -18,7 +18,7 @@
 #include "shared.h"
 #include "USB/linux/util.h"
 #include "USB/readerwriterqueue/readerwriterqueue.h"
-#include "Utilities/Console.h"
+#include "common/Console.h"
 //#include <dirent.h> //gtk.h pulls in?
 #include <thread>
 #include <array>

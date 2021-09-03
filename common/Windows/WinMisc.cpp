@@ -13,6 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#if defined(_WIN32)
+
 #include <wx/string.h>
 #include "common/Pcsx2Defs.h"
 #include "common/RedtapeWindows.h"
@@ -114,3 +116,4 @@ void ScreensaverAllow(bool allow)
 		flags |= ES_DISPLAY_REQUIRED;
 	SetThreadExecutionState(flags);
 }
+#endif

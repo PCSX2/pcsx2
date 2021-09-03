@@ -16,9 +16,10 @@
 // This module contains implementations of _aligned_malloc for platforms that don't have
 // it built into their CRT/libc.
 
-#ifndef _WIN32
+#if !defined(_WIN32)
 
 #include "common/Assertions.h"
+#include "common/ScopedAlloc.h"
 
 void *__fastcall _aligned_malloc(size_t size, size_t align)
 {
