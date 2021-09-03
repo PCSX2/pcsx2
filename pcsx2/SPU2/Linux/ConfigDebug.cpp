@@ -17,7 +17,7 @@
 #include "SPU2/Global.h"
 #include "Dialogs.h"
 #include "Config.h"
-#include "Utilities/Path.h"
+#include "common/Path.h"
 
 bool DebugEnabled = false;
 bool _MsgToConsole = false;

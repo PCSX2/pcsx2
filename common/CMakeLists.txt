@@ -9,6 +9,7 @@ add_library(common)
 
 # x86emitter sources
 target_sources(common PRIVATE
+	AlignedMalloc.cpp
 	VirtualMemory.cpp
 	EventSource.inl
 	SafeArray.inl
@@ -45,9 +46,16 @@ target_sources(common PRIVATE
 	emitter/legacy_sse.cpp
 	emitter/movs.cpp
 	emitter/simd.cpp
+	emitter/LnxCpuDetect.cpp
 	emitter/WinCpuDetect.cpp
 	emitter/x86emitter.cpp
 	x86/MemcpyFast.cpp
+	Darwin/DarwinThreads.cpp
+	Darwin/DarwinMisc.cpp
+	Darwin/DarwinSemaphore.cpp
+	Linux/LnxHostSys.cpp
+	Linux/LnxThreads.cpp
+	Linux/LnxMisc.cpp
 	Windows/WinThreads.cpp
 	Windows/WinHostSys.cpp
 	Windows/WinMisc.cpp)

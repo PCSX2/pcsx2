@@ -16,7 +16,7 @@
 #pragma once
 
 #include "Global.h"
-#include "Utilities/mt_queue.h"
+#include "common/mt_queue.h"
 
 enum PadOptions
 {

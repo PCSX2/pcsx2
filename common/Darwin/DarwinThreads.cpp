@@ -13,18 +13,15 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../PrecompiledHeader.h"
-#include "PersistentThread.h"
+#if defined(__APPLE__)
 
 #include <unistd.h>
-
-#if !defined(__APPLE__)
-#error "DarwinThreads.cpp should only be compiled by projects or makefiles targeted at OSX."
-#else
-
 #include <mach/mach_init.h>
 #include <mach/thread_act.h>
 #include <mach/mach_port.h>
+
+#include "common/PrecompiledHeader.h"
+#include "common/PersistentThread.h"
 
 // Note: assuming multicore is safer because it forces the interlocked routines to use
 // the LOCK prefix.  The prefix works on single core CPUs fine (but is slow), but not

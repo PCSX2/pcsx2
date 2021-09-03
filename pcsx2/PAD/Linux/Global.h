@@ -25,11 +25,11 @@
 #include <mutex>
 #include <queue>
 
-#include "Pcsx2Defs.h"
+#include "common/Pcsx2Defs.h"
 #include "bitwise.h"
 
-#include "Utilities/pxStreams.h"
-#include "Utilities/Console.h"
+#include "common/pxStreams.h"
+#include "common/Console.h"
 #include "App.h"
 #include "DebugTools/Debug.h"
 

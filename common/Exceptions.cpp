@@ -13,11 +13,14 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#define WXINTL_NO_GETTEXT_MACRO
+
 #include <wx/app.h>
 #if defined(__UNIX__)
 #include <signal.h>
 #endif
 
+#include "common/Dependencies.h" // _ macro
 #include "common/Threading.h"
 #include "common/General.h"
 

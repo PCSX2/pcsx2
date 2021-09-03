@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _WIN32
+#if !defined(_WIN32)
 #include <wx/thread.h>
 #include <sys/mman.h>
 #include <signal.h>

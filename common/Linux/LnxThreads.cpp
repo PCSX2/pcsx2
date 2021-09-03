@@ -13,7 +13,7 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#ifndef _WIN32
+#if !defined(_WIN32) && !defined(__APPLE__)
 #include <unistd.h>
 #if defined(__linux__)
 #include <sys/prctl.h>

@@ -80,7 +80,7 @@ close(IN);
 open(OUT,">$output");
 ### Print the header
 print OUT "#pragma once\n\n";
-print OUT "#include \"Pcsx2Types.h\"\n";
+print OUT "#include \"common/Pcsx2Types.h\"\n";
 print OUT "#include <wx/gdicmn.h>\n\n";
 print OUT "class $wx_img_class\n{\n";
 print OUT "public:\n";

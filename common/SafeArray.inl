@@ -15,7 +15,8 @@
 
 #pragma once
 
-#include "SafeArray.h"
+#include "common/SafeArray.h"
+#include "common/StringHelpers.h"
 
 // Internal constructor for use by derived classes.  This allows a derived class to
 // use its own memory allocation (with an aligned memory, for example).

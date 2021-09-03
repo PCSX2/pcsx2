@@ -19,7 +19,7 @@
 #include "jpge.h"
 #include "jo_mpeg.h"
 #include "USB/gtk.h"
-#include "Utilities/Console.h"
+#include "common/Console.h"
 
 #include <stdio.h>
 #include <stdlib.h>

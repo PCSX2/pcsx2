@@ -16,7 +16,7 @@
 #pragma once
 #include "USB/usb-hid/usb-hid.h"
 #include "USB/linux/util.h"
-#include "Utilities/Console.h"
+#include "common/Console.h"
 #include <linux/input.h>
 #include <unistd.h>
 #include <dirent.h>

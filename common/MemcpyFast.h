@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <cstring> // memset
 #include "common/Pcsx2Types.h"
 #include "common/Pcsx2Defs.h"
 

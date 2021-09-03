@@ -13,15 +13,16 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "../PrecompiledHeader.h"
+#if defined(__APPLE__)
 
 #include <cstring>
 #include <cstdlib>
-
 #include <sys/types.h>
 #include <sys/sysctl.h>
-
 #include <mach/mach_time.h>
+#include <wx/string.h>
+
+#include "common/Pcsx2Types.h"
 
 #define NELEM(x) \
     ((sizeof(x) / sizeof(0 [x])) / ((size_t)(!(sizeof(x) % sizeof(0 [x])))))
@@ -148,3 +149,4 @@ void ScreensaverAllow(bool allow)
 {
     // no-op
 }
+#endif
