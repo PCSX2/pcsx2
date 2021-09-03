@@ -46,12 +46,12 @@ _x86regs x86regs[iREGCNT_GPR], s_saveX86regs[iREGCNT_GPR];
 #define VU_ACCx_ADDR   (uptr)&VU->ACC.UL[0]
 
 
-__aligned16 u32 xmmBackup[iREGCNT_XMM][4];
+alignas(16) u32 xmmBackup[iREGCNT_XMM][4];
 
 #ifdef __M_X86_64
-__aligned16 u64 gprBackup[iREGCNT_GPR];
+alignas(16) u64 gprBackup[iREGCNT_GPR];
 #else
-__aligned16 u32 gprBackup[iREGCNT_GPR];
+alignas(16) u32 gprBackup[iREGCNT_GPR];
 #endif
 
 static int s_xmmchecknext = 0;

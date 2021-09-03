@@ -205,14 +205,14 @@ static const uint mVUcacheReserve = 64; // mVU0, mVU1 Reserve Cache Size (in meg
 struct microVU
 {
 
-	__aligned16 u32 statFlag[4]; // 4 instances of status flag (backup for xgkick)
-	__aligned16 u32 macFlag [4]; // 4 instances of mac    flag (used in execution)
-	__aligned16 u32 clipFlag[4]; // 4 instances of clip   flag (used in execution)
-	__aligned16 u32 xmmCTemp[4];     // Backup used in mVUclamp2()
+	alignas(16) u32 statFlag[4]; // 4 instances of status flag (backup for xgkick)
+	alignas(16) u32 macFlag [4]; // 4 instances of mac    flag (used in execution)
+	alignas(16) u32 clipFlag[4]; // 4 instances of clip   flag (used in execution)
+	alignas(16) u32 xmmCTemp[4];     // Backup used in mVUclamp2()
 #ifdef __M_X86_64
-	__aligned16 u32 xmmBackup[16][4]; // Backup for xmm0~xmm15
+	alignas(16) u32 xmmBackup[16][4]; // Backup for xmm0~xmm15
 #else
-	__aligned16 u32 xmmBackup[8][4]; // Backup for xmm0~xmm7
+	alignas(16) u32 xmmBackup[8][4]; // Backup for xmm0~xmm7
 #endif
 
 	u32 index;        // VU Index (VU0 or VU1)
@@ -259,8 +259,8 @@ struct microVU
 };
 
 // microVU rec structs
-__aligned16 microVU microVU0;
-__aligned16 microVU microVU1;
+alignas(16) microVU microVU0;
+alignas(16) microVU microVU1;
 
 // Debug Helper
 int mVUdebugNow = 0;

@@ -38,8 +38,8 @@
 #include "Recording/InputRecordingControls.h"
 #endif
 
-__aligned16 SysMtgsThread mtgsThread;
-__aligned16 AppCoreThread CoreThread;
+alignas(16) SysMtgsThread mtgsThread;
+alignas(16) AppCoreThread CoreThread;
 
 typedef void (AppCoreThread::*FnPtr_CoreThreadMethod)();
 

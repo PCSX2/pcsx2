@@ -23,7 +23,7 @@
 
 #pragma comment(lib, "User32.lib")
 
-static __aligned16 LARGE_INTEGER lfreq;
+alignas(16) static LARGE_INTEGER lfreq;
 
 void InitCPUTicks()
 {

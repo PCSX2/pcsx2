@@ -23,8 +23,8 @@
 //------------------------------------------------------------------
 // Micro VU - Main Functions
 //------------------------------------------------------------------
-static u8 __pagealigned vu0_RecDispatchers[mVUdispCacheSize];
-static u8 __pagealigned vu1_RecDispatchers[mVUdispCacheSize];
+alignas(__pagesize) static u8 vu0_RecDispatchers[mVUdispCacheSize];
+alignas(__pagesize) static u8 vu1_RecDispatchers[mVUdispCacheSize];
 
 static __fi void mVUthrowHardwareDeficiency(const wxChar* extFail, int vuIndex)
 {

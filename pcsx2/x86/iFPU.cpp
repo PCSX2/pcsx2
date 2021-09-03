@@ -23,8 +23,8 @@
 
 using namespace x86Emitter;
 
-const __aligned16 u32 g_minvals[4] = {0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff};
-const __aligned16 u32 g_maxvals[4] = {0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff};
+alignas(16) const u32 g_minvals[4] = {0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff};
+alignas(16) const u32 g_maxvals[4] = {0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff};
 
 //------------------------------------------------------------------
 namespace R5900 {
@@ -82,8 +82,8 @@ namespace DOUBLE
 // Add/Sub opcodes produce the same results as the ps2
 #define FPU_CORRECT_ADD_SUB 1
 
-static const __aligned16 u32 s_neg[4] = {0x80000000, 0xffffffff, 0xffffffff, 0xffffffff};
-static const __aligned16 u32 s_pos[4] = {0x7fffffff, 0xffffffff, 0xffffffff, 0xffffffff};
+alignas(16) static const u32 s_neg[4] = {0x80000000, 0xffffffff, 0xffffffff, 0xffffffff};
+alignas(16) static const u32 s_pos[4] = {0x7fffffff, 0xffffffff, 0xffffffff, 0xffffffff};
 
 #define REC_FPUBRANCH(f) \
 	void f(); \
@@ -312,7 +312,7 @@ REC_FPUFUNC(RSQRT_S);
 // Clamp Functions (Converts NaN's and Infinities to Normal Numbers)
 //------------------------------------------------------------------
 
-static __aligned16 u64 FPU_FLOAT_TEMP[2];
+alignas(16) static u64 FPU_FLOAT_TEMP[2];
 __fi void fpuFloat3(int regd) // +NaN -> +fMax, -NaN -> -fMax, +Inf -> +fMax, -Inf -> -fMax
 {
 	int t1reg = _allocTempXMMreg(XMMT_FPS, -1);
@@ -1070,7 +1070,7 @@ void recDIVhelper2(int regd, int regt) // Doesn't sets flags
 	ClampValues(regd);
 }
 
-static __aligned16 SSE_MXCSR roundmode_nearest, roundmode_neg;
+alignas(16) static SSE_MXCSR roundmode_nearest, roundmode_neg;
 
 void recDIV_S_xmm(int info)
 {

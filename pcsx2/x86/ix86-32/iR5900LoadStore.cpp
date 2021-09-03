@@ -66,7 +66,7 @@ REC_FUNC(SQC2);
 
 #else
 
-__aligned16 u64 retValues[2];
+alignas(16) u64 retValues[2];
 
 void _eeOnLoadWrite(u32 reg)
 {
@@ -96,7 +96,7 @@ void _eeOnLoadWrite(u32 reg)
 
 using namespace Interpreter::OpcodeImpl;
 
-__aligned16 u32 dummyValue[4];
+alignas(16) u32 dummyValue[4];
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //

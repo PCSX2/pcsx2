@@ -30,7 +30,7 @@ s32 PrepareEEWrite()
 
 s32 PrepareEERead()
 {
-	static __aligned16 u32 tag[4];
+	alignas(16) static u32 tag[4];
 
 	// Process DMA tag at hw_dma9.tadr
 	sif0.iop.data = *(sifData *)iopPhysMem(hw_dma9.tadr);

@@ -108,8 +108,8 @@ int FindOutputModuleById(const wchar_t* omodid)
 
 StereoOut32* SndBuffer::m_buffer;
 s32 SndBuffer::m_size;
-__aligned(4) volatile s32 SndBuffer::m_rpos;
-__aligned(4) volatile s32 SndBuffer::m_wpos;
+alignas(4) volatile s32 SndBuffer::m_rpos;
+alignas(4) volatile s32 SndBuffer::m_wpos;
 
 bool SndBuffer::m_underrun_freeze;
 StereoOut32* SndBuffer::sndTempBuffer = nullptr;

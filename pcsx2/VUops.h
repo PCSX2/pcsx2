@@ -44,15 +44,15 @@ struct _VURegsNum {
 typedef void __vuRegsCall FnType_VuRegsN(_VURegsNum *VUregsn);
 typedef FnType_VuRegsN* Fnptr_VuRegsN;
 
-extern __aligned16 const Fnptr_Void VU0_LOWER_OPCODE[128];
-extern __aligned16 const Fnptr_Void VU0_UPPER_OPCODE[64];
-extern __aligned16 const Fnptr_VuRegsN VU0regs_LOWER_OPCODE[128];
-extern __aligned16 const Fnptr_VuRegsN VU0regs_UPPER_OPCODE[64];
+alignas(16) extern const Fnptr_Void VU0_LOWER_OPCODE[128];
+alignas(16) extern const Fnptr_Void VU0_UPPER_OPCODE[64];
+alignas(16) extern const Fnptr_VuRegsN VU0regs_LOWER_OPCODE[128];
+alignas(16) extern const Fnptr_VuRegsN VU0regs_UPPER_OPCODE[64];
 
-extern __aligned16 const Fnptr_Void VU1_LOWER_OPCODE[128];
-extern __aligned16 const Fnptr_Void VU1_UPPER_OPCODE[64];
-extern __aligned16 const Fnptr_VuRegsN VU1regs_LOWER_OPCODE[128];
-extern __aligned16 const Fnptr_VuRegsN VU1regs_UPPER_OPCODE[64];
+alignas(16) extern const Fnptr_Void VU1_LOWER_OPCODE[128];
+alignas(16) extern const Fnptr_Void VU1_UPPER_OPCODE[64];
+alignas(16) extern const Fnptr_VuRegsN VU1regs_LOWER_OPCODE[128];
+alignas(16) extern const Fnptr_VuRegsN VU1regs_UPPER_OPCODE[64];
 extern void _vuClearFMAC(VURegs * VU);
 extern void _vuTestPipes(VURegs * VU);
 extern void _vuTestUpperStalls(VURegs * VU, _VURegsNum *VUregsn);

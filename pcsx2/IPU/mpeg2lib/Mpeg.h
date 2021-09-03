@@ -221,12 +221,12 @@ extern int slice (u8 * buffer);
 #define BigEndian64(in) __builtin_bswap64(in) // or we could use the asm function bswap...
 #endif
 
-extern __aligned16 const mpeg2_scan_pack mpeg2_scan;
+alignas(16) extern const mpeg2_scan_pack mpeg2_scan;
 extern const int non_linear_quantizer_scale[];
 
 // The IPU can only do one task at once and never uses other buffers so all mpeg state variables
 // are made available to mpeg/vlc modules as globals here:
 
-extern __aligned16 tIPU_BP g_BP;
-extern __aligned16 decoder_t decoder;
+alignas(16) extern tIPU_BP g_BP;
+alignas(16) extern decoder_t decoder;
 

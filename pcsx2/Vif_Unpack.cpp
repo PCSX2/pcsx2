@@ -166,7 +166,7 @@ static void __fastcall UNPACK_V4_5(u32 *dest, const u32* src)
 	UnpackFuncSet( V4, idx, mode, u, 1 ), NULL,  \
 	UnpackFuncSet( V4, idx, mode, u, 1 ), UnpackV4_5set(idx, 1)
 
-__aligned16 const UNPACKFUNCTYPE VIFfuncTable[2][4][4 * 4 * 2 * 2] =
+alignas(16) const UNPACKFUNCTYPE VIFfuncTable[2][4][4 * 4 * 2 * 2] =
 {
 	{
 		{ UnpackModeSet(0,0) },

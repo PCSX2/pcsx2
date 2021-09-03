@@ -77,22 +77,6 @@
 	#define pxNonReleaseCode(code)
 #endif
 
-// --------------------------------------------------------------------------------------
-// __aligned / __aligned16 / __pagealigned
-// --------------------------------------------------------------------------------------
-// GCC Warning!  The GCC linker (LD) typically fails to assure alignment of class members.
-// If you want alignment to be assured, the variable must either be a member of a struct
-// or a static global.
-//
-// __pagealigned is equivalent to __aligned(0x1000), and is used to align a dynarec code
-// buffer to a page boundary (allows the use of execution-enabled mprotect).
-//
-// General Performance Warning: Any function that specifies alignment on a local (stack)
-// variable will have to align the stack frame on enter, and restore it on exit (adds
-// overhead).  Furthermore, compilers cannot inline functions that have aligned local
-// vars.  So use local var alignment with much caution.
-//
-
 // Defines the memory page size for the target platform at compilation.  All supported platforms
 // (which means Intel only right now) have a 4k granularity.
 #define PCSX2_PAGESIZE 0x1000
@@ -110,11 +94,6 @@ static const int __pagesize = PCSX2_PAGESIZE;
 	// This is the 2005/earlier compatible packing define, which must be used in conjunction
 	// with #ifdef _MSC_VER/#pragma pack() directives (ugly).
 	#define __packed
-
-	#define __aligned(alig) __declspec(align(alig))
-	#define __aligned16 __declspec(align(16))
-	#define __aligned32 __declspec(align(32))
-	#define __pagealigned __declspec(align(PCSX2_PAGESIZE))
 
 	#define __noinline __declspec(noinline)
 	#define __noreturn __declspec(noreturn)
@@ -134,12 +113,6 @@ static const int __pagesize = PCSX2_PAGESIZE;
 	#ifndef __packed
 		#define __packed __attribute__((packed))
 	#endif
-	#ifndef __aligned
-		#define __aligned(alig) __attribute__((aligned(alig)))
-	#endif
-	#define __aligned16 __attribute__((aligned(16)))
-	#define __aligned32 __attribute__((aligned(32)))
-	#define __pagealigned __attribute__((aligned(PCSX2_PAGESIZE)))
 
 	#define __assume(cond) do { if (!(cond)) __builtin_unreachable(); } while(0)
 	#define CALLBACK __attribute__((stdcall))

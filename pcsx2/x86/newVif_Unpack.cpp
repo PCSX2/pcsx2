@@ -23,20 +23,20 @@
 #include "newVif.h"
 #include "MTVU.h"
 
-__aligned16 nVifStruct nVif[2];
+alignas(16) nVifStruct nVif[2];
 
 // Interpreter-style SSE unpacks.  Array layout matches the interpreter C unpacks.
 //  ([USN][Masking][Unpack Type]) [curCycle]
-__aligned16 nVifCall nVifUpk[(2 * 2 * 16) * 4];
+alignas(16) nVifCall nVifUpk[(2 * 2 * 16) * 4];
 
 // This is used by the interpreted SSE unpacks only.  Recompiled SSE unpacks
 // and the interpreted C unpacks use the vif.MaskRow/MaskCol members directly.
 //  [MaskNumber][CycleNumber][Vector]
-__aligned16 u32 nVifMask[3][4][4] = {0};
+alignas(16) u32 nVifMask[3][4][4] = {0};
 
 // Number of bytes of data in the source stream needed for each vector.
 // [equivalent to ((32 >> VL) * (VN+1)) / 8]
-__aligned16 const u8 nVifT[16] = {
+alignas(16) const u8 nVifT[16] = {
 	4, // S-32
 	2, // S-16
 	1, // S-8
@@ -63,7 +63,7 @@ typedef void __fastcall FnType_VifUnpackLoop(const u8* data);
 typedef FnType_VifUnpackLoop* Fnptr_VifUnpackLoop;
 
 // Unpacks Until 'Num' is 0
-static const __aligned16 Fnptr_VifUnpackLoop UnpackLoopTable[2][2][2] = {
+alignas(16) static const Fnptr_VifUnpackLoop UnpackLoopTable[2][2][2] = {
 	{
 		{_nVifUnpackLoop<0, 0, 0>, _nVifUnpackLoop<0, 0, 1>},
 		{_nVifUnpackLoop<0, 1, 0>, _nVifUnpackLoop<0, 1, 1>},

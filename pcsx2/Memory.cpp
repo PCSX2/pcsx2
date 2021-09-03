@@ -672,7 +672,7 @@ public:
 static mmap_PageFaultHandler* mmap_faultHandler = NULL;
 
 EEVM_MemoryAllocMess* eeMem = NULL;
-__pagealigned u8 eeHw[Ps2MemSize::Hardware];
+alignas(__pagesize) u8 eeHw[Ps2MemSize::Hardware];
 
 
 void memBindConditionalHandlers()
@@ -904,7 +904,7 @@ struct vtlb_PageProtectionInfo
 	vtlb_ProtectionMode Mode;
 };
 
-static __aligned16 vtlb_PageProtectionInfo m_PageProtectInfo[Ps2MemSize::MainRam >> 12];
+alignas(16) static vtlb_PageProtectionInfo m_PageProtectInfo[Ps2MemSize::MainRam >> 12];
 
 
 // returns:

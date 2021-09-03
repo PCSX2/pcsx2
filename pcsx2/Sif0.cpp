@@ -90,7 +90,7 @@ static __fi bool WriteIOPtoFifo()
 // Read Fifo into an ee tag, transfer it to sif0ch, and process it.
 static __fi bool ProcessEETag()
 {
-	static __aligned16 u32 tag[4];
+	alignas(16) static u32 tag[4];
 	tDMA_TAG& ptag(*(tDMA_TAG*)tag);
 
 	sif0.fifo.read((u32*)&tag[0], 2); // Tag

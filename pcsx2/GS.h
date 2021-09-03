@@ -21,7 +21,7 @@
 #include "GS/GS.h"
 
 extern double GetVerticalFrequency();
-extern __aligned16 u8 g_RealGSMem[Ps2MemSize::GSregs];
+alignas(16) extern u8 g_RealGSMem[Ps2MemSize::GSregs];
 
 enum CSR_FifoState
 {
@@ -483,7 +483,7 @@ struct MTGS_BufferedData
 	}
 };
 
-extern __aligned(32) MTGS_BufferedData RingBuffer;
+alignas(32) extern MTGS_BufferedData RingBuffer;
 
 // FIXME: These belong in common with other memcpy tools.  Will move them there later if no one
 // else beats me to it.  --air

@@ -26,8 +26,8 @@
 // Should be a gifstate_t rather then int, but I don't feel like possibly interfering with savestates right now.
 
 
-__aligned16 GIF_Fifo gif_fifo;
-__aligned16 gifStruct gif;
+alignas(16) GIF_Fifo gif_fifo;
+alignas(16) gifStruct gif;
 
 static __fi void GifDMAInt(int cycles)
 {
