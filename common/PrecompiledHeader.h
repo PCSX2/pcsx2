@@ -12,3 +12,12 @@
  *  You should have received a copy of the GNU General Public License along with PCSX2.
  *  If not, see <http://www.gnu.org/licenses/>.
  */
+
+#include <memory>
+#include <atomic>
+#include <csignal>
+#include <cerrno>
+#include <cstdio>
+
+#include <wx/string.h>
+#include <wx/gdicmn.h>
