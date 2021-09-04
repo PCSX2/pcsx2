@@ -17,9 +17,9 @@
 #include "VU.h"
 #include "VUflags.h"
 
-#define float_to_int4(x)	(s32)((float)x * (1.0f / 0.0625f))
-#define float_to_int12(x)	(s32)((float)x * (1.0f / 0.000244140625f))
-#define float_to_int15(x)	(s32)((float)x * (1.0f / 0.000030517578125))
+#define float_to_int4(x)	((float)x * (1.0f / 0.0625f))
+#define float_to_int12(x)	((float)x * (1.0f / 0.000244140625f))
+#define float_to_int15(x)	((float)x * (1.0f / 0.000030517578125))
 
 #define int4_to_float(x)	(float)((float)x * 0.0625f)
 #define int12_to_float(x)	(float)((float)x * 0.000244140625f)
