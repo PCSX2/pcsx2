@@ -452,6 +452,8 @@ SCAJ-20077:
 SCAJ-20078:
   name: "Kuon"
   region: "NTSC-Unk"
+  roundModes:
+    eeRoundMode: 0  # Fixes Sugoroku mini-game.
 SCAJ-20079:
   name: "Katamari Damacy"
   region: "NTSC-Unk"
@@ -13414,6 +13416,8 @@ SLES-53408:
 SLES-53411:
   name: "Kuon"
   region: "PAL-M3"
+  roundModes:
+    eeRoundMode: 0  # Fixes Sugoroku mini-game.
 SLES-53413:
   name: "Rebel Raiders - Operation Nighthawk"
   region: "PAL-M5"
@@ -29647,6 +29651,8 @@ SLPS-25329:
   name: "Kuon"
   region: "NTSC-J"
   compat: 5
+  roundModes:
+    eeRoundMode: 0  # Fixes Sugoroku mini-game.
 SLPS-25330:
   name: "Dragon Ball Z - Budokai 2"
   region: "NTSC-J"
@@ -36304,6 +36310,8 @@ SLUS-21007:
   name: "Kuon"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    eeRoundMode: 0  # Fixes Sugoroku mini-game.
 SLUS-21008:
   name: "Katamari Damacy"
   region: "NTSC-U"
