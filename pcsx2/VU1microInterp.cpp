@@ -214,6 +214,8 @@ static void _vu1Exec(VURegs* VU)
 			IPU_LOG("Banana New packet size %x", VU->xgkicksizeremaining);
 		}
 		u32 transfersize = std::min(VU->xgkicksizeremaining / 0x10, (VU1.cycle - VU->xgkicklastcycle) / 2);
+		transfersize = std::min(transfersize, VU->xgkickdiff / 0x10);
+
 		if (transfersize)
 		{
 			IPU_LOG("Banana Transferring %x bytes from %x size left %x", transfersize * 0x10, VU->xgkickaddr, VU->xgkicksizeremaining);

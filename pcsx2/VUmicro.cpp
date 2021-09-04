@@ -48,6 +48,8 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 					IPU_LOG("Banana New packet size %x", VU1.xgkicksizeremaining);
 				}
 				u32 transfersize = std::min(VU1.xgkicksizeremaining / 0x10, (cpuRegs.cycle - VU1.xgkicklastcycle) / 2);
+				transfersize = std::min(transfersize, VU1.xgkickdiff / 0x10);
+
 				if (transfersize)
 				{
 					IPU_LOG("Banana Transferring %x bytes from %x size left %x", transfersize * 0x10, VU1.xgkickaddr, VU1.xgkicksizeremaining);
