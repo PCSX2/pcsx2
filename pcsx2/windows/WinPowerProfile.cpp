@@ -15,34 +15,33 @@
 
 #include "PrecompiledHeader.h"
 #include <powrprof.h>
+#include <wil/com.h>
+
+using unique_any_guidptr = wil::unique_any<GUID*, decltype(&::LocalFree), ::LocalFree>;
 
 // Checks the current active power plan
 // If the power plan isn't named 'high performance', put a little message in the console
 // This function fails silently
 void CheckIsUserOnHighPerfPowerPlan()
 {
-	GUID* pPwrGUID;
-	DWORD ret = PowerGetActiveScheme(NULL, &pPwrGUID);
+	unique_any_guidptr pPwrGUID;
+	DWORD ret = PowerGetActiveScheme(NULL, pPwrGUID.put());
 	if (ret != ERROR_SUCCESS)
 		return;
 
 	UCHAR aBuffer[2048];
 	DWORD aBufferSize = sizeof(aBuffer);
-	ret = PowerReadFriendlyName(NULL, pPwrGUID, &NO_SUBGROUP_GUID, NULL, aBuffer, &aBufferSize);
+	ret = PowerReadFriendlyName(NULL, pPwrGUID.get(), &NO_SUBGROUP_GUID, NULL, aBuffer, &aBufferSize);
 	if (ret != ERROR_SUCCESS)
-		goto cleanup;
+		return;
 
 	DWORD acMax = 0,acMin = 0,dcMax = 0,dcMin = 0;
 
-	if (PowerReadACValueIndex(NULL, pPwrGUID, &GUID_PROCESSOR_SETTINGS_SUBGROUP, &GUID_PROCESSOR_THROTTLE_MAXIMUM, &acMax) ||
-		PowerReadACValueIndex(NULL, pPwrGUID, &GUID_PROCESSOR_SETTINGS_SUBGROUP, &GUID_PROCESSOR_THROTTLE_MINIMUM, &acMin) ||
-		PowerReadDCValueIndex(NULL, pPwrGUID, &GUID_PROCESSOR_SETTINGS_SUBGROUP, &GUID_PROCESSOR_THROTTLE_MAXIMUM, &dcMax) ||
-		PowerReadDCValueIndex(NULL, pPwrGUID, &GUID_PROCESSOR_SETTINGS_SUBGROUP, &GUID_PROCESSOR_THROTTLE_MINIMUM, &dcMin))
-		goto cleanup;
+	if (PowerReadACValueIndex(NULL, pPwrGUID.get(), &GUID_PROCESSOR_SETTINGS_SUBGROUP, &GUID_PROCESSOR_THROTTLE_MAXIMUM, &acMax) ||
+		PowerReadACValueIndex(NULL, pPwrGUID.get(), &GUID_PROCESSOR_SETTINGS_SUBGROUP, &GUID_PROCESSOR_THROTTLE_MINIMUM, &acMin) ||
+		PowerReadDCValueIndex(NULL, pPwrGUID.get(), &GUID_PROCESSOR_SETTINGS_SUBGROUP, &GUID_PROCESSOR_THROTTLE_MAXIMUM, &dcMax) ||
+		PowerReadDCValueIndex(NULL, pPwrGUID.get(), &GUID_PROCESSOR_SETTINGS_SUBGROUP, &GUID_PROCESSOR_THROTTLE_MINIMUM, &dcMin))
+		return;
 
 	Console.WriteLn("The current power profile is '%S'.\nThe current min / max processor states\nAC: %d%% / %d%%\nBattery: %d%% / %d%%\n", aBuffer,acMin,acMax,dcMin,dcMax);
-
-cleanup:
-	LocalFree(pPwrGUID);
-	return;
 }
