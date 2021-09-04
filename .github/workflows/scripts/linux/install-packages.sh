@@ -36,10 +36,10 @@ declare -a PCSX2_PACKAGES=(
 )
 
 if [ "${COMPILER}" = "gcc" ]; then
-  BUILD_PACKAGES+=("g++-8-multilib")
+  BUILD_PACKAGES+=("g++-10-multilib")
 else
   BUILD_PACKAGES+=("clang")
-  PCSX2_PACKAGES+=("libstdc++-8-dev")
+  PCSX2_PACKAGES+=("libstdc++-10-dev")
 fi
 
 # - https://github.com/actions/virtual-environments/blob/main/images/linux/Ubuntu2004-README.md
