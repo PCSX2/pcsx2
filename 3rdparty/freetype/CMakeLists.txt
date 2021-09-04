@@ -44,7 +44,13 @@ add_library(freetype
 	include/freetype/config/ftoption.h
 	include/freetype/config/ftstdlib.h
 )
-target_compile_definitions(freetype PRIVATE _CRT_SECURE_NO_WARNINGS _CRT_SECURE_NO_DEPRECATE FT2_BUILD_LIBRARY)
+target_compile_definitions(freetype PRIVATE
+	_CRT_SECURE_NO_WARNINGS
+	_CRT_SECURE_NO_DEPRECATE
+	FT2_BUILD_LIBRARY
+	$<$<CONFIG:Debug>:FT_DEBUG_LEVEL_ERROR>
+	$<$<CONFIG:Debug>:FT_DEBUG_LEVEL_TRACE>
+)
 target_include_directories(freetype PUBLIC include)
 target_link_libraries(freetype PRIVATE ZLIB::ZLIB)
 add_library(Freetype::Freetype ALIAS freetype)

@@ -32,5 +32,17 @@ add_library(portaudio
 	include/portaudio.h
 	src/os/win/pa_win_coinitialize.h
 )
+target_compile_definitions(portaudio PRIVATE
+	_CRT_SECURE_NO_WARNINGS
+	_CRT_SECURE_NO_DEPRECATE
+	PAWIN_USE_WDMKS_DEVICE_INFO
+	PA_USE_DS=0
+	PA_USE_WASAPI=1
+	PA_USE_WDMKS=1
+	PA_USE_WMME=0
+	PA_USE_ASIO=0
+	$<$<CONFIG:Debug>:PA_ENABLE_DEBUG_OUTPUT>
+)
+target_link_libraries(portaudio PRIVATE ksuser.lib)
 target_include_directories(portaudio PUBLIC include PRIVATE src/common src/os/win)
 add_library(PkgConfig::PORTAUDIO ALIAS portaudio)
