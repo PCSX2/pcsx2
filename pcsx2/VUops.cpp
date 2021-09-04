@@ -83,27 +83,24 @@ static __ri bool _vuFMACflush(VURegs * VU) {
 
 			VU->fmac[currentpipe].enable = 0;
 
-			if ((VU->fmac[currentpipe].sCycle + VU->fmac[currentpipe].Cycle) >= cycle)
+			VUM_LOG("Writing back flags");
+			if (VU->fmac[currentpipe].flagreg & (1 << REG_STATUS_FLAG))
 			{
-				VUM_LOG("Writing back flags");
-				if (VU->fmac[currentpipe].flagreg & (1 << REG_STATUS_FLAG))
-				{
-					VUM_LOG("flushing FMAC Status Write pipe[%d] (status=%x) Cur Cycle %d Expected cycle %d", currentpipe, (VU->VI[REG_STATUS_FLAG].UL & 0xF30) | (VU->fmac[currentpipe].statusflag & 0x3CF), VU->cycle, VU->fmac[currentpipe].sCycle + VU->fmac[currentpipe].Cycle);
-					VU->VI[REG_STATUS_FLAG].UL = (VU->VI[REG_STATUS_FLAG].UL & 0x3F) | (VU->fmac[currentpipe].statusflag & 0xFC0);
-				}
-				else if (VU->fmac[currentpipe].flagreg & (1 << REG_CLIP_FLAG))
-				{
-					VUM_LOG("flushing FMAC Clip Write pipe[%d] (clip=%x) Cur Cycle %d Expected cycle %d", currentpipe, VU->fmac[currentpipe].clipflag, VU->cycle, VU->fmac[currentpipe].sCycle + VU->fmac[currentpipe].Cycle);
-					VU->VI[REG_CLIP_FLAG].UL = VU->fmac[currentpipe].clipflag;
-				}
-				else
-				{
-					VUM_LOG("flushing FMAC pipe[%d] (macflag=%x status=%x) Cur Cycle %d Expected cycle %d", currentpipe, VU->fmac[currentpipe].macflag, (VU->VI[REG_STATUS_FLAG].UL & 0xF30) | (VU->fmac[currentpipe].statusflag & 0x3CF), VU->cycle, VU->fmac[currentpipe].sCycle + VU->fmac[currentpipe].Cycle);
-					// FMAC only affectx Z/S/I/O
-					VU->VI[REG_STATUS_FLAG].UL = (VU->VI[REG_STATUS_FLAG].UL & 0xFF0) | (VU->fmac[currentpipe].statusflag & 0x3CF);
-					VU->VI[REG_MAC_FLAG].UL = VU->fmac[currentpipe].macflag;
+				VUM_LOG("flushing FMAC Status Write pipe[%d] (status=%x) Cur Cycle %d Expected cycle %d", currentpipe, (VU->VI[REG_STATUS_FLAG].UL & 0xF30) | (VU->fmac[currentpipe].statusflag & 0x3CF), VU->cycle, VU->fmac[currentpipe].sCycle + VU->fmac[currentpipe].Cycle);
+				VU->VI[REG_STATUS_FLAG].UL = (VU->VI[REG_STATUS_FLAG].UL & 0x3F) | (VU->fmac[currentpipe].statusflag & 0xFC0);
+			}
+			else if (VU->fmac[currentpipe].flagreg & (1 << REG_CLIP_FLAG))
+			{
+				VUM_LOG("flushing FMAC Clip Write pipe[%d] (clip=%x) Cur Cycle %d Expected cycle %d", currentpipe, VU->fmac[currentpipe].clipflag, VU->cycle, VU->fmac[currentpipe].sCycle + VU->fmac[currentpipe].Cycle);
+				VU->VI[REG_CLIP_FLAG].UL = VU->fmac[currentpipe].clipflag;
+			}
+			else
+			{
+				VUM_LOG("flushing FMAC pipe[%d] (macflag=%x status=%x) Cur Cycle %d Expected cycle %d", currentpipe, VU->fmac[currentpipe].macflag, (VU->VI[REG_STATUS_FLAG].UL & 0xF30) | (VU->fmac[currentpipe].statusflag & 0x3CF), VU->cycle, VU->fmac[currentpipe].sCycle + VU->fmac[currentpipe].Cycle);
+				// FMAC only affectx Z/S/I/O
+				VU->VI[REG_STATUS_FLAG].UL = (VU->VI[REG_STATUS_FLAG].UL & 0xFF0) | (VU->fmac[currentpipe].statusflag & 0x3CF);
+				VU->VI[REG_MAC_FLAG].UL = VU->fmac[currentpipe].macflag;
 
-				}
 			}
 			didflush = true;
 		}
@@ -2195,7 +2192,7 @@ static __ri void _vuELENG(VURegs * VU) {
 }
 
 static __ri void _vuERLENG(VURegs * VU) {
-	DevCon.Warning("ERLENG");
+	//DevCon.Warning("ERLENG");
 	float p = vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z);
 	if (p >= 0) {
 		p = sqrt(p);
