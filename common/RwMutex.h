@@ -19,72 +19,72 @@
 
 namespace Threading
 {
-// --------------------------------------------------------------------------------------
-//  RwMutex
-// --------------------------------------------------------------------------------------
-class RwMutex
-{
-    DeclareNoncopyableObject(RwMutex);
+	// --------------------------------------------------------------------------------------
+	//  RwMutex
+	// --------------------------------------------------------------------------------------
+	class RwMutex
+	{
+		DeclareNoncopyableObject(RwMutex);
 
-protected:
-    pthread_rwlock_t m_rwlock;
+	protected:
+		pthread_rwlock_t m_rwlock;
 
-public:
-    RwMutex();
-    virtual ~RwMutex();
+	public:
+		RwMutex();
+		virtual ~RwMutex();
 
-    virtual void AcquireRead();
-    virtual void AcquireWrite();
-    virtual bool TryAcquireRead();
-    virtual bool TryAcquireWrite();
+		virtual void AcquireRead();
+		virtual void AcquireWrite();
+		virtual bool TryAcquireRead();
+		virtual bool TryAcquireWrite();
 
-    virtual void Release();
-};
+		virtual void Release();
+	};
 
-// --------------------------------------------------------------------------------------
-//  BaseScopedReadWriteLock
-// --------------------------------------------------------------------------------------
-class BaseScopedReadWriteLock
-{
-    DeclareNoncopyableObject(BaseScopedReadWriteLock);
+	// --------------------------------------------------------------------------------------
+	//  BaseScopedReadWriteLock
+	// --------------------------------------------------------------------------------------
+	class BaseScopedReadWriteLock
+	{
+		DeclareNoncopyableObject(BaseScopedReadWriteLock);
 
-protected:
-    RwMutex &m_lock;
-    bool m_IsLocked;
+	protected:
+		RwMutex& m_lock;
+		bool m_IsLocked;
 
-public:
-    BaseScopedReadWriteLock(RwMutex &locker)
-        : m_lock(locker)
-    {
-    }
+	public:
+		BaseScopedReadWriteLock(RwMutex& locker)
+			: m_lock(locker)
+		{
+		}
 
-    virtual ~BaseScopedReadWriteLock();
+		virtual ~BaseScopedReadWriteLock();
 
-    void Release();
-    bool IsLocked() const { return m_IsLocked; }
-};
+		void Release();
+		bool IsLocked() const { return m_IsLocked; }
+	};
 
-// --------------------------------------------------------------------------------------
-//  ScopedReadLock / ScopedWriteLock
-// --------------------------------------------------------------------------------------
-class ScopedReadLock : public BaseScopedReadWriteLock
-{
-public:
-    ScopedReadLock(RwMutex &locker);
-    virtual ~ScopedReadLock() = default;
+	// --------------------------------------------------------------------------------------
+	//  ScopedReadLock / ScopedWriteLock
+	// --------------------------------------------------------------------------------------
+	class ScopedReadLock : public BaseScopedReadWriteLock
+	{
+	public:
+		ScopedReadLock(RwMutex& locker);
+		virtual ~ScopedReadLock() = default;
 
-    void Acquire();
-};
+		void Acquire();
+	};
 
-class ScopedWriteLock : public BaseScopedReadWriteLock
-{
-public:
-    ScopedWriteLock(RwMutex &locker);
-    virtual ~ScopedWriteLock() = default;
+	class ScopedWriteLock : public BaseScopedReadWriteLock
+	{
+	public:
+		ScopedWriteLock(RwMutex& locker);
+		virtual ~ScopedWriteLock() = default;
 
-    void Acquire();
+		void Acquire();
 
-protected:
-    ScopedWriteLock(RwMutex &locker, bool isTryLock);
-};
-}
+	protected:
+		ScopedWriteLock(RwMutex& locker, bool isTryLock);
+	};
+} // namespace Threading
