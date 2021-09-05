@@ -24,232 +24,239 @@ template class SafeArray<RadioPanelObjects>;
 // ===========================================================================================
 
 #define VerifyRealizedState() \
-    pxAssertDev(m_IsRealized, "Invalid object state: RadioButtonGroup as not been realized.")
+	pxAssertDev(m_IsRealized, "Invalid object state: RadioButtonGroup as not been realized.")
 
-void pxRadioPanel::Init(const RadioPanelItem *srcArray, int arrsize)
+void pxRadioPanel::Init(const RadioPanelItem* srcArray, int arrsize)
 {
-    m_DefaultIdx = -1;
-    m_IsRealized = false;
+	m_DefaultIdx = -1;
+	m_IsRealized = false;
 
-    // FIXME: This probably needs to be platform-dependent, and/or based on font size.
-    m_Indentation = 23;
+	// FIXME: This probably needs to be platform-dependent, and/or based on font size.
+	m_Indentation = 23;
 
-    for (int i = 0; i < arrsize; ++i)
-        Append(srcArray[i]);
+	for (int i = 0; i < arrsize; ++i)
+		Append(srcArray[i]);
 }
 
-pxRadioPanel &pxRadioPanel::Append(const RadioPanelItem &entry)
+pxRadioPanel& pxRadioPanel::Append(const RadioPanelItem& entry)
 {
-    m_buttonStrings.push_back(entry);
-    return *this;
+	m_buttonStrings.push_back(entry);
+	return *this;
 }
 
 void pxRadioPanel::Reset()
 {
-    m_IsRealized = false;
-    const int numbuttons = m_buttonStrings.size();
-    if (numbuttons == 0)
-        return;
+	m_IsRealized = false;
+	const int numbuttons = m_buttonStrings.size();
+	if (numbuttons == 0)
+		return;
 
-    for (int i = 0; i < numbuttons; ++i) {
-        safe_delete(m_objects[i].LabelObj);
-        safe_delete(m_objects[i].SubTextObj);
-    }
-    m_buttonStrings.clear();
+	for (int i = 0; i < numbuttons; ++i)
+	{
+		safe_delete(m_objects[i].LabelObj);
+		safe_delete(m_objects[i].SubTextObj);
+	}
+	m_buttonStrings.clear();
 }
 
 void pxRadioPanel::Realize()
 {
-    const int numbuttons = m_buttonStrings.size();
-    if (numbuttons == 0)
-        return;
-    if (m_IsRealized)
-        return;
-    m_IsRealized = true;
+	const int numbuttons = m_buttonStrings.size();
+	if (numbuttons == 0)
+		return;
+	if (m_IsRealized)
+		return;
+	m_IsRealized = true;
 
-    m_objects.MakeRoomFor(numbuttons);
+	m_objects.MakeRoomFor(numbuttons);
 
-    // Add all RadioButtons in one pass, and then go back and create all the subtext
-    // objects.  This ensures the radio buttons have consecutive tab order IDs, which
-    // is the "preferred" method when using grouping features of the native window
-    // managers (GTK tends to not care either way, but Win32 definitely prefers a
-    // linear tab order).
+	// Add all RadioButtons in one pass, and then go back and create all the subtext
+	// objects.  This ensures the radio buttons have consecutive tab order IDs, which
+	// is the "preferred" method when using grouping features of the native window
+	// managers (GTK tends to not care either way, but Win32 definitely prefers a
+	// linear tab order).
 
-    // first object has the group flag set to ensure it's the start of a radio group.
-    m_objects[0].LabelObj = new wxRadioButton(this, wxID_ANY, m_buttonStrings[0].Label, wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
-    for (int i = 1; i < numbuttons; ++i)
-        m_objects[i].LabelObj = new wxRadioButton(this, wxID_ANY, m_buttonStrings[i].Label);
+	// first object has the group flag set to ensure it's the start of a radio group.
+	m_objects[0].LabelObj = new wxRadioButton(this, wxID_ANY, m_buttonStrings[0].Label, wxDefaultPosition, wxDefaultSize, wxRB_GROUP);
+	for (int i = 1; i < numbuttons; ++i)
+		m_objects[i].LabelObj = new wxRadioButton(this, wxID_ANY, m_buttonStrings[i].Label);
 
-    for (int i = 0; i < numbuttons; ++i) {
-        m_objects[i].SubTextObj = NULL;
-        if (m_buttonStrings[i].SubText.IsEmpty())
-            continue;
-        m_objects[i].SubTextObj = new pxStaticText(this, m_buttonStrings[i].SubText, wxALIGN_LEFT);
-    }
+	for (int i = 0; i < numbuttons; ++i)
+	{
+		m_objects[i].SubTextObj = NULL;
+		if (m_buttonStrings[i].SubText.IsEmpty())
+			continue;
+		m_objects[i].SubTextObj = new pxStaticText(this, m_buttonStrings[i].SubText, wxALIGN_LEFT);
+	}
 
-    pxAssert(GetSizer() != NULL);
+	pxAssert(GetSizer() != NULL);
 
-    for (int i = 0; i < numbuttons; ++i) {
-        *this += m_objects[i].LabelObj | pxSizerFlags::StdExpand();
+	for (int i = 0; i < numbuttons; ++i)
+	{
+		*this += m_objects[i].LabelObj | pxSizerFlags::StdExpand();
 
-        if (pxStaticText *subobj = m_objects[i].SubTextObj) {
-            *this += subobj | pxBorder(wxLEFT, m_Indentation).Expand();
-            *this += 9 + m_padding.GetHeight();
-        }
-        if (!m_buttonStrings[i].ToolTip.IsEmpty())
-            _setToolTipImmediate(i, m_buttonStrings[i].ToolTip);
-    }
+		if (pxStaticText* subobj = m_objects[i].SubTextObj)
+		{
+			*this += subobj | pxBorder(wxLEFT, m_Indentation).Expand();
+			*this += 9 + m_padding.GetHeight();
+		}
+		if (!m_buttonStrings[i].ToolTip.IsEmpty())
+			_setToolTipImmediate(i, m_buttonStrings[i].ToolTip);
+	}
 
-    _RealizeDefaultOption();
+	_RealizeDefaultOption();
 }
 
-void pxRadioPanel::_setToolTipImmediate(int idx, const wxString &tip)
+void pxRadioPanel::_setToolTipImmediate(int idx, const wxString& tip)
 {
-    if (wxRadioButton *woot = m_objects[idx].LabelObj)
-        woot->SetToolTip(tip);
+	if (wxRadioButton* woot = m_objects[idx].LabelObj)
+		woot->SetToolTip(tip);
 
-    if (pxStaticText *woot = m_objects[idx].SubTextObj)
-        woot->SetToolTip(tip);
+	if (pxStaticText* woot = m_objects[idx].SubTextObj)
+		woot->SetToolTip(tip);
 }
 
 // The SetToolTip API provided by this function applies the tooltip to both the radio
 // button and it's static subtext (if present), and performs word wrapping on platforms
 // that need it (eg mswindows).
-pxRadioPanel &pxRadioPanel::SetToolTip(int idx, const wxString &tip)
+pxRadioPanel& pxRadioPanel::SetToolTip(int idx, const wxString& tip)
 {
-    m_buttonStrings[idx].SetToolTip(tip);
+	m_buttonStrings[idx].SetToolTip(tip);
 
-    if (m_IsRealized)
-        _setToolTipImmediate(idx, tip);
+	if (m_IsRealized)
+		_setToolTipImmediate(idx, tip);
 
-    return *this;
+	return *this;
 }
 
-pxRadioPanel &pxRadioPanel::SetSelection(int idx)
+pxRadioPanel& pxRadioPanel::SetSelection(int idx)
 {
-    if (!VerifyRealizedState())
-        return *this;
+	if (!VerifyRealizedState())
+		return *this;
 
-    pxAssert(m_objects[idx].LabelObj != NULL);
-    m_objects[idx].LabelObj->SetValue(true);
-    return *this;
+	pxAssert(m_objects[idx].LabelObj != NULL);
+	m_objects[idx].LabelObj->SetValue(true);
+	return *this;
 }
 
 void pxRadioPanel::_RealizeDefaultOption()
 {
-    if (m_IsRealized && m_DefaultIdx != -1) {
-        wxFont def(GetFont());
-        def.SetWeight(wxFONTWEIGHT_BOLD);
-        //def.SetStyle( wxFONTSTYLE_ITALIC );
-        m_objects[m_DefaultIdx].LabelObj->SetFont(def);
-        m_objects[m_DefaultIdx].LabelObj->SetForegroundColour(wxColour(20, 128, 40));
-    }
+	if (m_IsRealized && m_DefaultIdx != -1)
+	{
+		wxFont def(GetFont());
+		def.SetWeight(wxFONTWEIGHT_BOLD);
+		//def.SetStyle( wxFONTSTYLE_ITALIC );
+		m_objects[m_DefaultIdx].LabelObj->SetFont(def);
+		m_objects[m_DefaultIdx].LabelObj->SetForegroundColour(wxColour(20, 128, 40));
+	}
 }
 
 // Highlights (bold) the text of the default radio.
 // Not intended for restoring default value at later time.
-pxRadioPanel &pxRadioPanel::SetDefaultItem(int idx)
+pxRadioPanel& pxRadioPanel::SetDefaultItem(int idx)
 {
-    if (idx == m_DefaultIdx)
-        return *this;
+	if (idx == m_DefaultIdx)
+		return *this;
 
-    if (m_IsRealized && m_DefaultIdx != -1) {
-        wxFont def(GetFont());
-        m_objects[m_DefaultIdx].LabelObj->SetFont(def);
-        m_objects[m_DefaultIdx].LabelObj->SetForegroundColour(GetForegroundColour());
-    }
+	if (m_IsRealized && m_DefaultIdx != -1)
+	{
+		wxFont def(GetFont());
+		m_objects[m_DefaultIdx].LabelObj->SetFont(def);
+		m_objects[m_DefaultIdx].LabelObj->SetForegroundColour(GetForegroundColour());
+	}
 
-    m_DefaultIdx = idx;
-    _RealizeDefaultOption();
+	m_DefaultIdx = idx;
+	_RealizeDefaultOption();
 
-    return *this;
+	return *this;
 }
 
-pxRadioPanel &pxRadioPanel::EnableItem(int idx, bool enable)
+pxRadioPanel& pxRadioPanel::EnableItem(int idx, bool enable)
 {
-    pxAssertDev(m_IsRealized, "RadioPanel must be realized first, prior to enabling or disabling individual items.");
+	pxAssertDev(m_IsRealized, "RadioPanel must be realized first, prior to enabling or disabling individual items.");
 
-    if (m_objects[idx].LabelObj)
-        m_objects[idx].LabelObj->Enable(enable);
+	if (m_objects[idx].LabelObj)
+		m_objects[idx].LabelObj->Enable(enable);
 
-    if (m_objects[idx].SubTextObj)
-        m_objects[idx].SubTextObj->Enable(enable);
+	if (m_objects[idx].SubTextObj)
+		m_objects[idx].SubTextObj->Enable(enable);
 
-    return *this;
+	return *this;
 }
 
-const RadioPanelItem &pxRadioPanel::Item(int idx) const
+const RadioPanelItem& pxRadioPanel::Item(int idx) const
 {
-    return m_buttonStrings[idx];
+	return m_buttonStrings[idx];
 }
 
-RadioPanelItem &pxRadioPanel::Item(int idx)
+RadioPanelItem& pxRadioPanel::Item(int idx)
 {
-    return m_buttonStrings[idx];
+	return m_buttonStrings[idx];
 }
 
 int pxRadioPanel::GetSelection() const
 {
-    if (!VerifyRealizedState())
-        return 0;
+	if (!VerifyRealizedState())
+		return 0;
 
-    for (uint i = 0; i < m_buttonStrings.size(); ++i) {
-        if (wxRadioButton *woot = m_objects[i].LabelObj)
-            if (woot->GetValue())
-                return i;
-    }
+	for (uint i = 0; i < m_buttonStrings.size(); ++i)
+	{
+		if (wxRadioButton* woot = m_objects[i].LabelObj)
+			if (woot->GetValue())
+				return i;
+	}
 
-    // Technically radio buttons should never allow for a case where none are selected.
-    // However it *can* happen on some platforms if the program code doesn't explicitly
-    // select one of the members of the group (which is, as far as I'm concerned, a
-    // programmer error!). so Assert here in such cases, and return 0 as the assumed
-    // default, so that calling code has a "valid" return code in release builds.
+	// Technically radio buttons should never allow for a case where none are selected.
+	// However it *can* happen on some platforms if the program code doesn't explicitly
+	// select one of the members of the group (which is, as far as I'm concerned, a
+	// programmer error!). so Assert here in such cases, and return 0 as the assumed
+	// default, so that calling code has a "valid" return code in release builds.
 
-    pxFailDev("No valid selection was found in this group!");
-    return 0;
+	pxFailDev("No valid selection was found in this group!");
+	return 0;
 }
 
 // Returns the wxWindowID for the currently selected radio button.
 wxWindowID pxRadioPanel::GetSelectionId() const
 {
-    if (!VerifyRealizedState())
-        return 0;
-    return m_objects[GetSelection()].LabelObj->GetId();
+	if (!VerifyRealizedState())
+		return 0;
+	return m_objects[GetSelection()].LabelObj->GetId();
 }
 
 
 bool pxRadioPanel::IsSelected(int idx) const
 {
-    if (!VerifyRealizedState())
-        return false;
-    pxAssert(m_objects[idx].LabelObj != NULL);
-    return m_objects[idx].LabelObj->GetValue();
+	if (!VerifyRealizedState())
+		return false;
+	pxAssert(m_objects[idx].LabelObj != NULL);
+	return m_objects[idx].LabelObj->GetValue();
 }
 
-pxStaticText *pxRadioPanel::GetSubText(int idx)
+pxStaticText* pxRadioPanel::GetSubText(int idx)
 {
-    if (!VerifyRealizedState())
-        return NULL;
-    return m_objects[idx].SubTextObj;
+	if (!VerifyRealizedState())
+		return NULL;
+	return m_objects[idx].SubTextObj;
 }
 
-const pxStaticText *pxRadioPanel::GetSubText(int idx) const
+const pxStaticText* pxRadioPanel::GetSubText(int idx) const
 {
-    if (!VerifyRealizedState())
-        return NULL;
-    return m_objects[idx].SubTextObj;
+	if (!VerifyRealizedState())
+		return NULL;
+	return m_objects[idx].SubTextObj;
 }
 
-wxRadioButton *pxRadioPanel::GetButton(int idx)
+wxRadioButton* pxRadioPanel::GetButton(int idx)
 {
-    if (!VerifyRealizedState())
-        return NULL;
-    return m_objects[idx].LabelObj;
+	if (!VerifyRealizedState())
+		return NULL;
+	return m_objects[idx].LabelObj;
 }
 
-const wxRadioButton *pxRadioPanel::GetButton(int idx) const
+const wxRadioButton* pxRadioPanel::GetButton(int idx) const
 {
-    if (!VerifyRealizedState())
-        return NULL;
-    return m_objects[idx].LabelObj;
+	if (!VerifyRealizedState())
+		return NULL;
+	return m_objects[idx].LabelObj;
 }
