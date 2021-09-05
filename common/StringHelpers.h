@@ -24,7 +24,7 @@
 #define WX_STR(str) (str.wc_str())
 #else
 // Stupid wx3.0 doesn't support c_str for vararg function
-#define WX_STR(str) (static_cast<const char *>(str.c_str()))
+#define WX_STR(str) (static_cast<const char*>(str.c_str()))
 #endif
 
 // --------------------------------------------------------------------------------------
@@ -33,59 +33,59 @@
 // Converts a string to UTF8 and provides an interface for getting its length.
 class pxToUTF8
 {
-    DeclareNoncopyableObject(pxToUTF8);
+	DeclareNoncopyableObject(pxToUTF8);
 
 protected:
-    wxCharBuffer m_result;
-    int m_length;
+	wxCharBuffer m_result;
+	int m_length;
 
 public:
-    explicit pxToUTF8(const wxString &src)
-        : m_result(src.ToUTF8())
-    {
-        m_length = -1;
-    }
+	explicit pxToUTF8(const wxString& src)
+		: m_result(src.ToUTF8())
+	{
+		m_length = -1;
+	}
 
-    size_t Length()
-    {
-        if (-1 == m_length)
-            m_length = strlen(m_result);
-        return m_length;
-    }
+	size_t Length()
+	{
+		if (-1 == m_length)
+			m_length = strlen(m_result);
+		return m_length;
+	}
 
-    void Convert(const wxString &src)
-    {
-        m_result = src.ToUTF8();
-        m_length = -1;
-    }
+	void Convert(const wxString& src)
+	{
+		m_result = src.ToUTF8();
+		m_length = -1;
+	}
 
-    const char *data() const { return m_result; }
+	const char* data() const { return m_result; }
 
-    operator const char *() const
-    {
-        return m_result.data();
-    }
+	operator const char*() const
+	{
+		return m_result.data();
+	}
 };
 
-extern void px_fputs(FILE *fp, const char *src);
+extern void px_fputs(FILE* fp, const char* src);
 
 // wxWidgets lacks one of its own...
 extern const wxRect wxDefaultRect;
 
-extern void SplitString(wxArrayString &dest, const wxString &src, const wxString &delims, wxStringTokenizerMode mode = wxTOKEN_RET_EMPTY_ALL);
-extern wxString JoinString(const wxArrayString &src, const wxString &separator);
-extern wxString JoinString(const wxChar **src, const wxString &separator);
+extern void SplitString(wxArrayString& dest, const wxString& src, const wxString& delims, wxStringTokenizerMode mode = wxTOKEN_RET_EMPTY_ALL);
+extern wxString JoinString(const wxArrayString& src, const wxString& separator);
+extern wxString JoinString(const wxChar** src, const wxString& separator);
 
-extern wxString ToString(const wxPoint &src, const wxString &separator = L",");
-extern wxString ToString(const wxSize &src, const wxString &separator = L",");
-extern wxString ToString(const wxRect &src, const wxString &separator = L",");
+extern wxString ToString(const wxPoint& src, const wxString& separator = L",");
+extern wxString ToString(const wxSize& src, const wxString& separator = L",");
+extern wxString ToString(const wxRect& src, const wxString& separator = L",");
 
-extern bool TryParse(wxPoint &dest, const wxStringTokenizer &parts);
-extern bool TryParse(wxSize &dest, const wxStringTokenizer &parts);
+extern bool TryParse(wxPoint& dest, const wxStringTokenizer& parts);
+extern bool TryParse(wxSize& dest, const wxStringTokenizer& parts);
 
-extern bool TryParse(wxPoint &dest, const wxString &src, const wxPoint &defval = wxDefaultPosition, const wxString &separators = L",");
-extern bool TryParse(wxSize &dest, const wxString &src, const wxSize &defval = wxDefaultSize, const wxString &separators = L",");
-extern bool TryParse(wxRect &dest, const wxString &src, const wxRect &defval = wxDefaultRect, const wxString &separators = L",");
+extern bool TryParse(wxPoint& dest, const wxString& src, const wxPoint& defval = wxDefaultPosition, const wxString& separators = L",");
+extern bool TryParse(wxSize& dest, const wxString& src, const wxSize& defval = wxDefaultSize, const wxString& separators = L",");
+extern bool TryParse(wxRect& dest, const wxString& src, const wxRect& defval = wxDefaultRect, const wxString& separators = L",");
 
 // --------------------------------------------------------------------------------------
 //  ParsedAssignmentString
@@ -103,11 +103,11 @@ extern bool TryParse(wxRect &dest, const wxString &src, const wxRect &defval = w
 //
 struct ParsedAssignmentString
 {
-    wxString lvalue;
-    wxString rvalue;
-    bool IsComment;
+	wxString lvalue;
+	wxString rvalue;
+	bool IsComment;
 
-    ParsedAssignmentString(const wxString &src);
+	ParsedAssignmentString(const wxString& src);
 };
 
 // ======================================================================================
@@ -139,40 +139,40 @@ typedef ScopedAlignedAlloc<char, 16> CharBufferType;
 class FastFormatAscii
 {
 protected:
-    CharBufferType m_dest;
+	CharBufferType m_dest;
 
 public:
-    FastFormatAscii();
-    ~FastFormatAscii() = default;
-    FastFormatAscii &Write(const char *fmt, ...);
-    FastFormatAscii &WriteV(const char *fmt, va_list argptr);
+	FastFormatAscii();
+	~FastFormatAscii() = default;
+	FastFormatAscii& Write(const char* fmt, ...);
+	FastFormatAscii& WriteV(const char* fmt, va_list argptr);
 
-    void Clear();
-    bool IsEmpty() const;
+	void Clear();
+	bool IsEmpty() const;
 
-    const char *c_str() const { return m_dest.GetPtr(); }
-    operator const char *() const { return m_dest.GetPtr(); }
+	const char* c_str() const { return m_dest.GetPtr(); }
+	operator const char*() const { return m_dest.GetPtr(); }
 
-    const wxString GetString() const;
-    //operator wxString() const;
+	const wxString GetString() const;
+	//operator wxString() const;
 
-    FastFormatAscii &operator+=(const wxString &s)
-    {
-        Write("%s", WX_STR(s));
-        return *this;
-    }
+	FastFormatAscii& operator+=(const wxString& s)
+	{
+		Write("%s", WX_STR(s));
+		return *this;
+	}
 
-    FastFormatAscii &operator+=(const wxChar *psz)
-    {
-        Write("%ls", psz);
-        return *this;
-    }
+	FastFormatAscii& operator+=(const wxChar* psz)
+	{
+		Write("%ls", psz);
+		return *this;
+	}
 
-    FastFormatAscii &operator+=(const char *psz)
-    {
-        Write("%s", psz);
-        return *this;
-    }
+	FastFormatAscii& operator+=(const char* psz)
+	{
+		Write("%s", psz);
+		return *this;
+	}
 };
 
 // --------------------------------------------------------------------------------------
@@ -181,54 +181,54 @@ public:
 class FastFormatUnicode
 {
 protected:
-    CharBufferType m_dest;
-    uint m_Length;
+	CharBufferType m_dest;
+	uint m_Length;
 
 public:
-    FastFormatUnicode();
-    ~FastFormatUnicode() = default;
+	FastFormatUnicode();
+	~FastFormatUnicode() = default;
 
-    FastFormatUnicode &Write(const char *fmt, ...);
-    FastFormatUnicode &Write(const wxChar *fmt, ...);
-    FastFormatUnicode &Write(const wxString fmt, ...);
-    FastFormatUnicode &WriteV(const char *fmt, va_list argptr);
-    FastFormatUnicode &WriteV(const wxChar *fmt, va_list argptr);
+	FastFormatUnicode& Write(const char* fmt, ...);
+	FastFormatUnicode& Write(const wxChar* fmt, ...);
+	FastFormatUnicode& Write(const wxString fmt, ...);
+	FastFormatUnicode& WriteV(const char* fmt, va_list argptr);
+	FastFormatUnicode& WriteV(const wxChar* fmt, va_list argptr);
 
-    void Clear();
-    bool IsEmpty() const;
-    uint Length() const { return m_Length; }
+	void Clear();
+	bool IsEmpty() const;
+	uint Length() const { return m_Length; }
 
-    FastFormatUnicode &ToUpper();
-    FastFormatUnicode &ToLower();
+	FastFormatUnicode& ToUpper();
+	FastFormatUnicode& ToLower();
 
-    const wxChar *c_str() const { return (const wxChar *)m_dest.GetPtr(); }
-    operator const wxChar *() const { return (const wxChar *)m_dest.GetPtr(); }
-    operator wxString() const { return (const wxChar *)m_dest.GetPtr(); }
+	const wxChar* c_str() const { return (const wxChar*)m_dest.GetPtr(); }
+	operator const wxChar*() const { return (const wxChar*)m_dest.GetPtr(); }
+	operator wxString() const { return (const wxChar*)m_dest.GetPtr(); }
 
-    FastFormatUnicode &operator+=(const wxString &s)
-    {
-        Write(L"%s", WX_STR(s));
-        return *this;
-    }
+	FastFormatUnicode& operator+=(const wxString& s)
+	{
+		Write(L"%s", WX_STR(s));
+		return *this;
+	}
 
-    FastFormatUnicode &operator+=(const wxChar *psz)
-    {
-        Write(L"%s", psz);
-        return *this;
-    }
+	FastFormatUnicode& operator+=(const wxChar* psz)
+	{
+		Write(L"%s", psz);
+		return *this;
+	}
 
-    FastFormatUnicode &operator+=(const char *psz);
+	FastFormatUnicode& operator+=(const char* psz);
 };
 
-extern bool pxParseAssignmentString(const wxString &src, wxString &ldest, wxString &rdest);
+extern bool pxParseAssignmentString(const wxString& src, wxString& ldest, wxString& rdest);
 
 #define pxsFmt FastFormatUnicode().Write
 #define pxsFmtV FastFormatUnicode().WriteV
 
 #define pxsPtr(ptr) pxsFmt("0x%08X", (ptr)).c_str()
 
-extern wxString &operator+=(wxString &str1, const FastFormatUnicode &str2);
-extern wxString operator+(const wxString &str1, const FastFormatUnicode &str2);
-extern wxString operator+(const wxChar *str1, const FastFormatUnicode &str2);
-extern wxString operator+(const FastFormatUnicode &str1, const wxString &str2);
-extern wxString operator+(const FastFormatUnicode &str1, const wxChar *str2);
+extern wxString& operator+=(wxString& str1, const FastFormatUnicode& str2);
+extern wxString operator+(const wxString& str1, const FastFormatUnicode& str2);
+extern wxString operator+(const wxChar* str1, const FastFormatUnicode& str2);
+extern wxString operator+(const FastFormatUnicode& str1, const wxString& str2);
+extern wxString operator+(const FastFormatUnicode& str1, const wxChar* str2);
