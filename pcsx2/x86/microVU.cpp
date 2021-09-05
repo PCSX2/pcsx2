@@ -61,7 +61,7 @@ void mVUinit(microVU& mVU, uint vuIndex)
 	mVU.microMemSize = (mVU.index ? 0x4000 : 0x1000);
 	mVU.progSize     = (mVU.index ? 0x4000 : 0x1000) / 4;
 	mVU.progMemMask  =  mVU.progSize-1;
-	mVU.cacheSize    =  vuIndex ? mVU1cacheReserve : mVU0cacheReserve;
+	mVU.cacheSize    =  mVUcacheReserve;
 	mVU.cache        = NULL;
 	mVU.dispCache    = NULL;
 	mVU.startFunct   = NULL;
@@ -489,14 +489,14 @@ uint recMicroVU1::GetCacheReserve() const
 void recMicroVU0::SetCacheReserve(uint reserveInMegs) const
 {
 	DevCon.WriteLn("microVU0: Changing cache size [%dmb]", reserveInMegs);
-	microVU0.cacheSize = std::min(reserveInMegs, mVU0cacheReserve);
+	microVU0.cacheSize = std::min(reserveInMegs, mVUcacheReserve);
 	safe_delete(microVU0.cache_reserve); // I assume this unmaps the memory
 	mVUreserveCache(microVU0); // Need rec-reset after this
 }
 void recMicroVU1::SetCacheReserve(uint reserveInMegs) const
 {
 	DevCon.WriteLn("microVU1: Changing cache size [%dmb]", reserveInMegs);
-	microVU1.cacheSize = std::min(reserveInMegs, mVU1cacheReserve);
+	microVU1.cacheSize = std::min(reserveInMegs, mVUcacheReserve);
 	safe_delete(microVU1.cache_reserve); // I assume this unmaps the memory
 	mVUreserveCache(microVU1); // Need rec-reset after this
 }
