@@ -27,7 +27,7 @@
 #endif
 
 #ifndef wxNullChar
-#define wxNullChar ((wxChar *)NULL)
+#define wxNullChar ((wxChar*)NULL)
 #endif
 
 // FnChar_t - function name char type; typedef'd in case it ever changes between compilers
@@ -39,29 +39,29 @@ typedef char FnChar_t;
 // --------------------------------------------------------------------------------------
 struct DiagnosticOrigin
 {
-    const wxChar *srcfile;
-    const FnChar_t *function;
-    const wxChar *condition;
-    int line;
+	const wxChar* srcfile;
+	const FnChar_t* function;
+	const wxChar* condition;
+	int line;
 
-    DiagnosticOrigin(const wxChar *_file, int _line, const FnChar_t *_func, const wxChar *_cond = NULL)
-        : srcfile(_file)
-        , function(_func)
-        , condition(_cond)
-        , line(_line)
-    {
-    }
+	DiagnosticOrigin(const wxChar* _file, int _line, const FnChar_t* _func, const wxChar* _cond = NULL)
+		: srcfile(_file)
+		, function(_func)
+		, condition(_cond)
+		, line(_line)
+	{
+	}
 
-    wxString ToString(const wxChar *msg = NULL) const;
+	wxString ToString(const wxChar* msg = NULL) const;
 };
 
 // Returns ture if the assertion is to trap into the debugger, or false if execution
 // of the program should continue unimpeded.
-typedef bool pxDoAssertFnType(const DiagnosticOrigin &origin, const wxChar *msg);
+typedef bool pxDoAssertFnType(const DiagnosticOrigin& origin, const wxChar* msg);
 
 extern pxDoAssertFnType pxAssertImpl_LogIt;
 
-extern pxDoAssertFnType *pxDoAssert;
+extern pxDoAssertFnType* pxDoAssert;
 
 // ----------------------------------------------------------------------------------------
 //  pxAssert / pxAssertDev
@@ -159,11 +159,14 @@ extern pxDoAssertFnType *pxDoAssert;
 #define pxAssumeDev(cond, msg) (__assume(cond))
 
 #define pxFail(msg) \
-    do {            \
-    } while (0)
+	do \
+	{ \
+	} while (0)
+
 #define pxFailDev(msg) \
-    do {               \
-    } while (0)
+	do \
+	{ \
+	} while (0)
 
 #endif
 
@@ -177,18 +180,18 @@ extern pxDoAssertFnType *pxDoAssert;
 // IndexBoundsCheckDev.
 
 #define IndexBoundsCheck(objname, idx, sze) pxAssertMsg((uint)(idx) < (uint)(sze), \
-                                                        pxsFmt(L"Array index out of bounds accessing object '%s' (index=%d, size=%d)", objname, (idx), (sze)))
+	pxsFmt(L"Array index out of bounds accessing object '%s' (index=%d, size=%d)", objname, (idx), (sze)))
 
 #define IndexBoundsCheckDev(objname, idx, sze) pxAssertDev((uint)(idx) < (uint)(sze), \
-                                                           pxsFmt(L"Array index out of bounds accessing object '%s' (index=%d, size=%d)", objname, (idx), (sze)))
+	pxsFmt(L"Array index out of bounds accessing object '%s' (index=%d, size=%d)", objname, (idx), (sze)))
 
 #define IndexBoundsAssume(objname, idx, sze) pxAssumeMsg((uint)(idx) < (uint)(sze), \
-                                                         pxsFmt(L"Array index out of bounds accessing object '%s' (index=%d, size=%d)", objname, (idx), (sze)))
+	pxsFmt(L"Array index out of bounds accessing object '%s' (index=%d, size=%d)", objname, (idx), (sze)))
 
 #define IndexBoundsAssumeDev(objname, idx, sze) pxAssumeDev((uint)(idx) < (uint)(sze), \
-                                                            pxsFmt(L"Array index out of bounds accessing object '%s' (index=%d, size=%d)", objname, (idx), (sze)))
+	pxsFmt(L"Array index out of bounds accessing object '%s' (index=%d, size=%d)", objname, (idx), (sze)))
 
-extern void pxOnAssert(const DiagnosticOrigin &origin, const wxString &msg);
+extern void pxOnAssert(const DiagnosticOrigin& origin, const wxString& msg);
 
 // --------------------------------------------------------------------------------------
 // jNO_DEFAULT -- disables the default case in a switch, which improves switch optimization
@@ -201,9 +204,10 @@ extern void pxOnAssert(const DiagnosticOrigin &origin, const wxString &msg);
 // * In debug/devel builds the default case will cause an assertion.
 //
 #ifndef jNO_DEFAULT
-#define jNO_DEFAULT                                                                                   \
-    default: {                                                                                        \
-        pxAssumeDev(0, "Incorrect usage of jNO_DEFAULT detected (default case is not unreachable!)"); \
-        break;                                                                                        \
-    }
+#define jNO_DEFAULT \
+	default: \
+	{ \
+		pxAssumeDev(0, "Incorrect usage of jNO_DEFAULT detected (default case is not unreachable!)"); \
+		break; \
+	}
 #endif
