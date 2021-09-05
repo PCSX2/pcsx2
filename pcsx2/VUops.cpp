@@ -106,8 +106,8 @@ static __ri bool _vuFMACflush(VURegs * VU) {
 			{
 				if ((VU->cycle - VU->fmac[currentpipe].sCycle) < lastmac)
 				{
-				VUM_LOG("flushing FMAC pipe[%d] (macflag=%x status=%x) Cur Cycle %d Expected cycle %d", currentpipe, VU->fmac[currentpipe].macflag, (VU->VI[REG_STATUS_FLAG].UL & 0xF30) | (VU->fmac[currentpipe].statusflag & 0x3CF), VU->cycle, VU->fmac[currentpipe].sCycle + VU->fmac[currentpipe].Cycle);
-				// FMAC only affectx Z/S/I/O
+					VUM_LOG("flushing FMAC pipe[%d] (macflag=%x status=%x) Cur Cycle %d Expected cycle %d", currentpipe, VU->fmac[currentpipe].macflag, (VU->VI[REG_STATUS_FLAG].UL & 0xF30) | (VU->fmac[currentpipe].statusflag & 0x3CF), VU->cycle, VU->fmac[currentpipe].sCycle + VU->fmac[currentpipe].Cycle);
+					// FMAC only affectx Z/S/I/O
 					VU->VI[REG_STATUS_FLAG].UL = (VU->VI[REG_STATUS_FLAG].UL & 0xFF0) | ((VU->fmac[currentpipe].statusflag & 0xF) | ((VU->fmac[currentpipe].statusflag & 0xF) << 6));
 					VU->VI[REG_MAC_FLAG].UL = VU->fmac[currentpipe].macflag;
 					lastmac = (VU->cycle - VU->fmac[currentpipe].sCycle);
@@ -263,7 +263,7 @@ void _vuFlushAll(VURegs* VU)
 
 __fi void _vuTestPipes(VURegs * VU) {
 	bool flushed;
-	u32 startcycle = VU->cycle;
+
 	do {
 		flushed = false;
 		flushed |= _vuFMACflush(VU);

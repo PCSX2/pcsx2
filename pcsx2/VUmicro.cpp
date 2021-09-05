@@ -87,12 +87,12 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 		// I don't like doing this, but Crash Twinsanity seems to be upset without it
 		if (stat & test)
 		{
-			cpuSetNextEventDelta(s);
-
 			if (m_Idx)
-				VU1.cycle = cpuRegs.cycle;
+				cpuRegs.cycle = VU1.cycle;
 			else
-				VU0.cycle = cpuRegs.cycle;
+				cpuRegs.cycle = VU0.cycle;
+
+			cpuSetNextEventDelta(s);
 		}
 	}
 	else // Continue Executing

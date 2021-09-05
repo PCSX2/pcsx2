@@ -154,9 +154,7 @@ static void _vu0Exec(VURegs* VU)
 		}
 	}
 	_vuAddUpperStalls(VU, &uregs);
-
-	if (!(ptr[1] & 0x80000000))
-		_vuAddLowerStalls(VU, &lregs);
+	_vuAddLowerStalls(VU, &lregs);
 
 	if (VU->branch > 0) {
 		if (VU->branch-- == 1) {
@@ -222,7 +220,8 @@ void InterpVU0::Execute(u32 cycles)
 
 	VU0.VI[REG_TPC].UL <<= 3;
 	VU0.flags &= ~VUFLAG_MFLAGSET;
-	for (int i = (int)cycles; i > 0; i--) {
+	u32 startcycles = VU0.cycle;
+	while((VU0.cycle - startcycles) < cycles) {
 		if (!(VU0.VI[REG_VPU_STAT].UL & 0x1) || (VU0.flags & VUFLAG_MFLAGSET)) {
 			if (VU0.branch || VU0.ebit) {
 				vu0Exec(&VU0); // run branch delay slot?

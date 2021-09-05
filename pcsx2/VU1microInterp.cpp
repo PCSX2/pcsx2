@@ -297,7 +297,8 @@ void InterpVU1::Execute(u32 cycles)
 	fesetround(g_sseVUMXCSR.RoundingControl << 8);
 
 	VU1.VI[REG_TPC].UL <<= 3;
-	for (int i = (int)cycles; i > 0; i--)
+	u32 startcycles = VU1.cycle;
+	while ((VU1.cycle - startcycles) < cycles)
 	{
 		if (!(VU0.VI[REG_VPU_STAT].UL & 0x100))
 		{
