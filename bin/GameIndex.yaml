@@ -13647,13 +13647,14 @@ SLES-53518:
 SLES-53521:
   name: "Musashi - Samurai Legend"
   region: "PAL-M4"
-  patches:
-    BC897AC9:
-      content: |-
-        author=Prafull
-        comment=Patched by Prafull
-        // Fixes almost all problems apart from little translucent fog effect in some areas.
-        patch=1,EE,00147828,word,00000000
+  roundModes:
+    vuRoundMode: 0  # Fixes Red SPS while ingame.
+    eeRoundMode: 0  # Partially fixes wrong enemies eye rendering.
+  clampModes:
+    vuClampMode: 3  # Fixes White SPS while ingame.
+    eeClampMode: 3  # Fixes White SPS while ingame.
+  gameFixes:
+    - EETimingHack # Fixes garbled character animation.
 SLES-53523:
   name: "Gun"
   region: "PAL-M4"
