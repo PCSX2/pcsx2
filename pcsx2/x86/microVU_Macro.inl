@@ -405,7 +405,6 @@ static void recCTC2()
 
 	if (!(cpuRegs.code & 1))
 	{
-		;
 		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
 		xForwardJZ32 skipvuidle;
 		xMOV(eax, ptr32[&cpuRegs.cycle]);

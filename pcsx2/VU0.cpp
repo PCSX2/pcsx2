@@ -71,7 +71,7 @@ __fi void _vu0run(bool breakOnMbit, bool addCycles) {
 	do { // Run VU until it finishes or M-Bit
 		CpuVU0->Execute(runCycles);
 	} while ((VU0.VI[REG_VPU_STAT].UL & 1)						// E-bit Termination
-	  &&	(!breakOnMbit || !(VU0.flags & VUFLAG_MFLAGSET) || VU0.cycle < cpuRegs.cycle));	// M-bit Break
+	  &&	(!breakOnMbit || !(VU0.flags & VUFLAG_MFLAGSET)));	// M-bit Break
 
 	// Add cycles if called from EE's COP2
 	if (addCycles)

@@ -34,18 +34,48 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 	if (!(stat & test))
 		return;
 
-	if (startUp && s)
-	{ // Start Executing a microprogram
+	if (startUp && s) // Start Executing a microprogram (When kickstarted)
+	{
 		Execute(s); // Kick start VU
+
+		// I don't like doing this, but Crash Twinsanity seems to be upset without it
+		if (stat & test)
+		{
+			cpuSetNextEventDelta(s);
+
+			if (m_Idx)
+				VU1.cycle = cpuRegs.cycle;
+			else
+				VU0.cycle = cpuRegs.cycle;
+		}
 	}
-	else
-	{ // Continue Executing
+	else // Continue Executing
+	{
 		u32 cycle = m_Idx ? VU1.cycle : VU0.cycle;
 		s32 delta = (s32)(u32)(cpuRegs.cycle - cycle);
 		s32 nextblockcycles = m_Idx ? VU1.nextBlockCycles : VU0.nextBlockCycles;
 
-		if (delta >= nextblockcycles) // Enough time has passed
-			Execute(delta); // Execute the time since the last call
+		if (EmuConfig.Gamefixes.VUKickstartHack)
+		{
+			if (delta > 0)  // When kickstarting we just need 1 cycle for run ahead
+			Execute(delta);
+		}
+		else
+		{
+			if (delta >= nextblockcycles) // When running behind, make sure we have enough cycles passed for the block to run
+				Execute(delta);
+		}
+
+		if (stat & test)
+		{
+			// Queue up next required time to run a block
+			nextblockcycles = m_Idx ? VU1.nextBlockCycles : VU0.nextBlockCycles;
+			cycle = m_Idx ? VU1.cycle : VU0.cycle;
+			nextblockcycles = EmuConfig.Gamefixes.VUKickstartHack ? (cycle - cpuRegs.cycle) : nextblockcycles;
+
+			if(nextblockcycles)
+				cpuSetNextEventDelta(nextblockcycles);
+		}
 	}
 }
 
