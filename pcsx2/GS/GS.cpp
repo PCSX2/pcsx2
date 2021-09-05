@@ -1121,24 +1121,6 @@ void GSReplay(char* lpszCmdLine, int renderer)
 }
 #endif
 
-std::string format(const char* fmt, ...)
-{
-	va_list args;
-
-	va_start(args, fmt);
-	int size = vsnprintf(nullptr, 0, fmt, args) + 1;
-	va_end(args);
-
-	assert(size > 0);
-	std::vector<char> buffer(std::max(1, size));
-
-	va_start(args, fmt);
-	vsnprintf(buffer.data(), size, fmt, args);
-	va_end(args);
-
-	return {buffer.data()};
-}
-
 // Helper path to dump texture
 #ifdef _WIN32
 const std::string root_sw("c:\\temp1\\_");
