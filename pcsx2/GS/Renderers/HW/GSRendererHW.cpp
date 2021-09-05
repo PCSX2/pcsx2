@@ -1476,7 +1476,7 @@ void GSRendererHW::Draw()
 		if (s_n >= s_saven)
 		{
 			// Dump Register state
-			s = format("%05d_context.txt", s_n);
+			s = fmt::format("{:05d}_context.txt", s_n);
 
 			m_env.Dump(m_dump_root + s);
 			m_context->Dump(m_dump_root + s);
@@ -1484,7 +1484,7 @@ void GSRendererHW::Draw()
 
 		if (s_savet && s_n >= s_saven && m_src)
 		{
-			s = format("%05d_f%lld_itex_%05x_%s_%d%d_%02x_%02x_%02x_%02x.dds",
+			s = fmt::format("{:05d}_f{:d}_itex_{:05x}_{:s}_{:d}{:d}_{:02x}_{:02x}_{:02x}_{:02x}.dds",
 				s_n, frame, (int)context->TEX0.TBP0, psm_str(context->TEX0.PSM),
 				(int)context->CLAMP.WMS, (int)context->CLAMP.WMT,
 				(int)context->CLAMP.MINU, (int)context->CLAMP.MAXU,
@@ -1494,7 +1494,7 @@ void GSRendererHW::Draw()
 
 			if (m_src->m_palette)
 			{
-				s = format("%05d_f%lld_itpx_%05x_%s.dds", s_n, frame, context->TEX0.CBP, psm_str(context->TEX0.CPSM));
+				s = fmt::format("{:05d}_f{:d}_itpx_{:05x}_{:s}.dds", s_n, frame, (uint32)context->TEX0.CBP, psm_str(context->TEX0.CPSM));
 
 				m_src->m_palette->Save(m_dump_root + s);
 			}
@@ -1502,7 +1502,7 @@ void GSRendererHW::Draw()
 
 		if (s_save && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rt0_%05x_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
+			s = fmt::format("{:05d}_f{:d}_rt0_{:05x}_{:s}.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
 
 			if (rt)
 				rt->m_texture->Save(m_dump_root + s);
@@ -1510,7 +1510,7 @@ void GSRendererHW::Draw()
 
 		if (s_savez && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rz0_%05x_%s.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
+			s = fmt::format("{:05d}_f{:d}_rz0_{:05x}_{:s}.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
 
 			if (ds_tex)
 				ds_tex->Save(m_dump_root + s);
@@ -1657,7 +1657,7 @@ void GSRendererHW::Draw()
 
 		if (s_save && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rt1_%05x_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
+			s = fmt::format("{:05d}_f{:d}_rt1_{:05x}_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
 
 			if (rt)
 				rt->m_texture->Save(m_dump_root + s);
@@ -1665,7 +1665,7 @@ void GSRendererHW::Draw()
 
 		if (s_savez && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rz1_%05x_%s.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
+			s = fmt::format("{:05d}_f%{:d}_rz1_{:05x}_%s.bmp", s_n, frame, context->ZBUF.Block(), psm_str(context->ZBUF.PSM));
 
 			if (ds_tex)
 				ds_tex->Save(m_dump_root + s);
