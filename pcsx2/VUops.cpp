@@ -108,12 +108,30 @@ static __ri bool _vuFMACflush(VURegs * VU) {
 				{
 				VUM_LOG("flushing FMAC pipe[%d] (macflag=%x status=%x) Cur Cycle %d Expected cycle %d", currentpipe, VU->fmac[currentpipe].macflag, (VU->VI[REG_STATUS_FLAG].UL & 0xF30) | (VU->fmac[currentpipe].statusflag & 0x3CF), VU->cycle, VU->fmac[currentpipe].sCycle + VU->fmac[currentpipe].Cycle);
 				// FMAC only affectx Z/S/I/O
-					VU->VI[REG_STATUS_FLAG].UL = (VU->VI[REG_STATUS_FLAG].UL & 0xFF0) | (VU->fmac[currentpipe].statusflag & 0x3CF);
+					VU->VI[REG_STATUS_FLAG].UL = (VU->VI[REG_STATUS_FLAG].UL & 0xFF0) | ((VU->fmac[currentpipe].statusflag & 0xF) | ((VU->fmac[currentpipe].statusflag & 0xF) << 6));
 					VU->VI[REG_MAC_FLAG].UL = VU->fmac[currentpipe].macflag;
 					lastmac = (VU->cycle - VU->fmac[currentpipe].sCycle);
 				}
 
 			}
+			didflush = true;
+		}
+	}
+	return didflush;
+}
+
+static __ri bool _vuIALUflush(VURegs* VU) {
+	bool didflush = false;
+
+	VUM_LOG("Flushing ALU stalls");
+
+	for (int i = 0; i < 8; i++) {
+		int currentpipe = i;
+
+		if (VU->ialu[currentpipe].enable == 0) continue;
+
+		if ((VU->cycle - VU->ialu[currentpipe].sCycle) >= VU->ialu[currentpipe].Cycle) {
+			VU->ialu[currentpipe].enable = 0;
 			didflush = true;
 		}
 	}
@@ -198,7 +216,7 @@ void _vuFlushAll(VURegs* VU)
 				else
 				{
 					// FMAC only affectx Z/S/I/O
-					VU->VI[REG_STATUS_FLAG].UL = (VU->VI[REG_STATUS_FLAG].UL & 0xFF0) | (VU->fmac[currentpipe].statusflag & 0x3CF);
+					VU->VI[REG_STATUS_FLAG].UL = (VU->VI[REG_STATUS_FLAG].UL & 0xFF0) | ((VU->fmac[currentpipe].statusflag & 0xF) | ((VU->fmac[currentpipe].statusflag & 0xF) << 6));
 					VU->VI[REG_MAC_FLAG].UL = VU->fmac[currentpipe].macflag;
 				}
 			}
@@ -229,18 +247,29 @@ void _vuFlushAll(VURegs* VU)
 			}
 		}
 
-		VU->cycle++;
+		for (i = 0; i < 8; i++) {
+			int currentpipe = i;
 
+			if (VU->ialu[currentpipe].enable == 0) continue;
+			nRepeat = 1;
+			if ((VU->cycle - VU->ialu[currentpipe].sCycle) >= VU->ialu[currentpipe].Cycle) {
+				VU->ialu[currentpipe].enable = 0;
+			}
+		}
+
+		VU->cycle++;
 	} while(nRepeat);
 }
 
 __fi void _vuTestPipes(VURegs * VU) {
 	bool flushed;
+	u32 startcycle = VU->cycle;
 	do {
 		flushed = false;
 		flushed |= _vuFMACflush(VU);
 		flushed |= _vuFDIVflush(VU);
 		flushed |= _vuEFUflush(VU);
+		flushed |= _vuIALUflush(VU);
 	} while (flushed == true);
 }
 
@@ -353,6 +382,34 @@ static __fi void _vuAddFMACStalls(VURegs * VU, _VURegsNum *VUregsn) {
 	_vuFMACAdd(VU, VUregsn);
 }
 
+static __ri void __fastcall _vuIALUAdd(VURegs* VU, _VURegsNum* VUregsn) {
+	int i;
+
+	if (VUregsn->cycles == 0)
+		return;
+	//If it's an FMAC which doesn't modify FMAC flags, just exit, no need to queue
+	/* find a free fmac pipe */
+	for (i = 0; i < 8; i++) {
+		if (VU->ialu[i].enable == 1) continue;
+		break;
+	}
+
+	if (i < 8) {
+		VUM_LOG("adding IALU pipe[%d]; reg=%x xyzw=%x flagreg=%x target=%x current %x", i, VUregsn->VFwrite, VUregsn->VFwxyzw, VUregsn->VIwrite, VU->cycle + 4, VU->cycle);
+		VU->ialu[i].enable = 1;
+		VU->ialu[i].sCycle = VU->cycle;
+		VU->ialu[i].Cycle = VUregsn->cycles;
+		VU->ialu[i].reg = VUregsn->VIwrite;
+	}
+	else {
+		Console.Error("*PCSX2*: error , out of ALU's %d", VU->cycle);
+	}
+}
+
+static __fi void _vuAddIALUStalls(VURegs* VU, _VURegsNum* VUregsn) {
+	_vuIALUAdd(VU, VUregsn);
+}
+
 static __fi void _vuTestFDIVStalls(VURegs * VU, _VURegsNum *VUregsn) {
 //	_vuTestFMACStalls(VURegs * VU, _VURegsNum *VUregsn);
 	_vuTestFMACStalls(VU, VUregsn);
@@ -383,12 +440,31 @@ __fi void _vuTestUpperStalls(VURegs * VU, _VURegsNum *VUregsn) {
 		case VUPIPE_FMAC: _vuTestFMACStalls(VU, VUregsn); break;
 	}
 }
+static __fi void _vuTestALUStalls(VURegs* VU, _VURegsNum* VUregsn) {
+	int i;
+
+	for (i = 0; i < 8; i++) {
+		if (VU->ialu[i].enable == 0) continue;
+		if ((VU->cycle - VU->ialu[i].sCycle) >= VU->ialu[i].Cycle) continue;
+		if (VU->ialu[i].reg & VUregsn->VIread) // Read and written VI regs share the same register
+			break;
+	}
+
+	if (i == 8) return;
+
+	u32 newCycle = VU->ialu[i].Cycle + VU->ialu[i].sCycle;
+
+	VUM_LOG("ALU[%d] stall %d", i, newCycle - VU->cycle);
+	if (newCycle > VU->cycle)
+		VU->cycle = newCycle;
+}
 
 __fi void _vuTestLowerStalls(VURegs * VU, _VURegsNum *VUregsn) {
 	switch (VUregsn->pipe) {
 		case VUPIPE_FMAC: _vuTestFMACStalls(VU, VUregsn); break;
 		case VUPIPE_FDIV: _vuTestFDIVStalls(VU, VUregsn); break;
 		case VUPIPE_EFU:  _vuTestEFUStalls(VU, VUregsn); break;
+		case VUPIPE_BRANCH: _vuTestALUStalls(VU, VUregsn); break;
 	}
 }
 
@@ -403,6 +479,7 @@ __fi void _vuAddLowerStalls(VURegs * VU, _VURegsNum *VUregsn) {
 		case VUPIPE_FMAC: _vuAddFMACStalls(VU, VUregsn); break;
 		case VUPIPE_FDIV: _vuAddFDIVStalls(VU, VUregsn); break;
 		case VUPIPE_EFU:  _vuAddEFUStalls(VU, VUregsn); break;
+		case VUPIPE_IALU:  _vuAddIALUStalls(VU, VUregsn); break;
 	}
 }
 
@@ -1809,8 +1886,6 @@ static __ri void _vuILW(VURegs * VU) {
 	u16 addr = ((imm + VU->VI[_Is_].SS[0]) * 16);
 	u16* ptr = (u16*)GET_VU_MEM(VU, addr);
 
-	_vuBackupVI(VU, _It_);
-
 	if (_X) VU->VI[_It_].US[0] = ptr[0];
 	if (_Y) VU->VI[_It_].US[0] = ptr[2];
 	if (_Z) VU->VI[_It_].US[0] = ptr[4];
@@ -1832,8 +1907,6 @@ static __ri void _vuILWR(VURegs * VU) {
 
 	u32 addr = (VU->VI[_Is_].US[0] * 16);
 	u16* ptr = (u16*)GET_VU_MEM(VU, addr);
-
-	_vuBackupVI(VU, _It_);
 
 	if (_X) VU->VI[_It_].US[0] = ptr[0];
 	if (_Y) VU->VI[_It_].US[0] = ptr[2];
@@ -2012,12 +2085,10 @@ static __ri void _vuIBEQ(VURegs * VU) {
 	{
 		if(VU->VIRegNumber == _It_)
 		{
-			//DevCon.Warning("Banana IBEQ It backup used");
 			dest = VU->VIOldValue;
 		}
 		if(VU->VIRegNumber == _Is_)
 		{
-			//DevCon.Warning("Banana IBEQ Is backup used");
 			src = VU->VIOldValue;
 		}
 	}
@@ -2035,7 +2106,6 @@ static __ri void _vuIBGEZ(VURegs * VU) {
 	{
 		if(VU->VIRegNumber == _Is_)
 		{
-			//DevCon.Warning("Banana IBGEZ Is backup used");
 			src = VU->VIOldValue;
 		}
 	}
@@ -2053,7 +2123,6 @@ static __ri void _vuIBGTZ(VURegs * VU) {
 	{
 		if(VU->VIRegNumber == _Is_)
 		{
-			//DevCon.Warning("Banana IBGTZ Is backup used");
 			src = VU->VIOldValue;
 		}
 	}
@@ -2072,7 +2141,6 @@ static __ri void _vuIBLEZ(VURegs * VU) {
 	{
 		if(VU->VIRegNumber == _Is_)
 		{
-			//DevCon.Warning("Banana IBLEZ Is backup used");
 			src = VU->VIOldValue;
 		}
 	}
@@ -2090,7 +2158,6 @@ static __ri void _vuIBLTZ(VURegs * VU) {
 	{
 		if(VU->VIRegNumber == _Is_)
 		{
-			//DevCon.Warning("Banana IBLTZ Is backup used");
 			src = VU->VIOldValue;
 		}
 	}
@@ -2110,11 +2177,9 @@ static __ri void _vuIBNE(VURegs * VU) {
 		if(VU->VIRegNumber == _It_)
 		{
 			dest = VU->VIOldValue;
-			//DevCon.Warning("Banana IBNE It backup used");
 		}
 		if(VU->VIRegNumber == _Is_)
 		{
-			//DevCon.Warning("Banana IBNE Is backup used");
 			src = VU->VIOldValue;
 		}
 	}
@@ -2190,13 +2255,11 @@ static __ri void _vuWAITP(VURegs * VU) {
 }
 
 static __ri void _vuESADD(VURegs * VU) {
-	DevCon.Warning("ESADD");
 	float p = vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z);
 	VU->p.F = p;
 }
 
 static __ri void _vuERSADD(VURegs * VU) {
-	DevCon.Warning("ERSADD");
 	float p = (vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x)) + (vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y)) + (vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z));
 	if (p != 0.0)
 		p = 1.0f / p;
@@ -2204,7 +2267,6 @@ static __ri void _vuERSADD(VURegs * VU) {
 }
 
 static __ri void _vuELENG(VURegs * VU) {
-	DevCon.Warning("ELENG");
 	float p = vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z);
 	if(p >= 0){
 		p = sqrt(p);
@@ -2213,7 +2275,6 @@ static __ri void _vuELENG(VURegs * VU) {
 }
 
 static __ri void _vuERLENG(VURegs * VU) {
-	//DevCon.Warning("ERLENG");
 	float p = vuDouble(VU->VF[_Fs_].i.x) * vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) * vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) * vuDouble(VU->VF[_Fs_].i.z);
 	if (p >= 0) {
 		p = sqrt(p);
@@ -2243,7 +2304,6 @@ static __ri void _vuEATANxz(VURegs * VU) {
 }
 
 static __ri void _vuESUM(VURegs * VU) {
-	DevCon.Warning("ESUM");
 	float p = vuDouble(VU->VF[_Fs_].i.x) + vuDouble(VU->VF[_Fs_].i.y) + vuDouble(VU->VF[_Fs_].i.z) + vuDouble(VU->VF[_Fs_].i.w);
 	VU->p.F = p;
 }
@@ -2257,7 +2317,6 @@ static __ri void _vuERCPR(VURegs * VU) {
 }
 
 static __ri void _vuESQRT(VURegs * VU) {
-	DevCon.Warning("ESQRT");
 	float p = vuDouble(VU->VF[_Fs_].UL[_Fsf_]);
 	if (p >= 0){
 		p = sqrt(p);
@@ -2266,7 +2325,6 @@ static __ri void _vuESQRT(VURegs * VU) {
 }
 
 static __ri void _vuERSQRT(VURegs * VU) {
-	DevCon.Warning("ERSQRT");
 	float p = vuDouble(VU->VF[_Fs_].UL[_Fsf_]);
 	if (p >= 0) {
 		p = sqrt(p);
@@ -2290,7 +2348,6 @@ static __ri void _vuEATAN(VURegs * VU) {
 }
 
 static __ri void _vuEEXP(VURegs * VU) {
-	DevCon.Warning("EEXP");
 	float p = exp(-(vuDouble(VU->VF[_Fs_].UL[_Fsf_])));
 	VU->p.F = p;
 }

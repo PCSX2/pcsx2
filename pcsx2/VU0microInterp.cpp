@@ -78,6 +78,9 @@ static void _vu0Exec(VURegs* VU)
 
 	VU->code = ptr[1];
 	VU0regs_UPPER_OPCODE[VU->code & 0x3f](&uregs);
+	lregs.cycles = 0;
+	u32 cyclesBeforeOp = VU0.cycle-1;
+
 #ifndef INT_VUSTALLHACK
 	_vuTestUpperStalls(VU, &uregs);
 #endif
@@ -85,18 +88,23 @@ static void _vu0Exec(VURegs* VU)
 	/* check upper flags */
 	if (ptr[1] & 0x80000000) { /* I flag */
 		_vuTestPipes(VU);
-
+		if (VU->VIBackupCycles > 0)
+			VU->VIBackupCycles -= std::min((u8)(VU0.cycle - cyclesBeforeOp), VU->VIBackupCycles);
 		_vu0ExecUpper(VU, ptr);
 
 		VU->VI[REG_I].UL = ptr[0];
 		memset(&lregs, 0, sizeof(lregs));
 	} else {
 		VU->code = ptr[0];
+
+		
 		VU0regs_LOWER_OPCODE[VU->code >> 25](&lregs);
 #ifndef INT_VUSTALLHACK
 		_vuTestLowerStalls(VU, &lregs);
 #endif
 		_vuTestPipes(VU);
+		if (VU->VIBackupCycles > 0)
+			VU->VIBackupCycles -= std::min((u8)(VU0.cycle - cyclesBeforeOp), VU->VIBackupCycles);
 		vu0branch = lregs.pipe == VUPIPE_BRANCH;
 
 		vfreg = 0; vireg = 0;
@@ -149,9 +157,6 @@ static void _vu0Exec(VURegs* VU)
 
 	if (!(ptr[1] & 0x80000000))
 		_vuAddLowerStalls(VU, &lregs);
-
-	if(VU->VIBackupCycles > 0) 
-		VU->VIBackupCycles--;
 
 	if (VU->branch > 0) {
 		if (VU->branch-- == 1) {
