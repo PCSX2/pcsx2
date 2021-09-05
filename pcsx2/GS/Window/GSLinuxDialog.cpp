@@ -102,7 +102,7 @@ GtkWidget* CreateComboBoxFromVector(const std::vector<GSSetting>& s, const char*
 		std::string label = s[i].name;
 
 		if (!s[i].note.empty())
-			label += format(" (%s)", s[i].note.c_str());
+			label += fmt::format(" ({:s})", s[i].note.c_str());
 
 		gtk_combo_box_text_append_text(GTK_COMBO_BOX_TEXT(combo_box), label.c_str());
 
