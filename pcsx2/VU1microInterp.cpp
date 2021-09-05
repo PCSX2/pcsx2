@@ -86,13 +86,17 @@ static void _vu1Exec(VURegs* VU)
 
 	VU->code = ptr[1];
 	VU1regs_UPPER_OPCODE[VU->code & 0x3f](&uregs);
+
+	u32 cyclesBeforeOp = VU1.cycle-1;
+	lregs.cycles = 0;
 	_vuTestUpperStalls(VU, &uregs);
 
 	/* check upper flags */
 	if (ptr[1] & 0x80000000)
 	{ /* I flag */
 		_vuTestPipes(VU);
-
+		if (VU->VIBackupCycles > 0)
+			VU->VIBackupCycles -= std::min((u8)(VU1.cycle - cyclesBeforeOp), VU->VIBackupCycles);
 		_vu1ExecUpper(VU, ptr);
 
 		VU->VI[REG_I].UL = ptr[0];
@@ -108,19 +112,22 @@ static void _vu1Exec(VURegs* VU)
 		_vuTestLowerStalls(VU, &lregs);
 		_vuTestPipes(VU);
 
+		if (VU->VIBackupCycles > 0)
+			VU->VIBackupCycles-= std::min((u8)(VU1.cycle- cyclesBeforeOp), VU->VIBackupCycles);
+
 		vfreg = 0;
 		vireg = 0;
 		if (uregs.VFwrite)
 		{
 			if (lregs.VFwrite == uregs.VFwrite)
 			{
-				//Console.Warning("*PCSX2*: Warning, VF write to the same reg in both lower/upper cycle");
+				//Console.Warning("*PCSX2*: Warning, VF write to the same reg in both lower/upper cycle pc=%x", VU->VI[REG_TPC].UL);
 				discard = 1;
 			}
 			if (lregs.VFread0 == uregs.VFwrite ||
 				lregs.VFread1 == uregs.VFwrite)
 			{
-				//Console.WriteLn("saving reg %d at pc=%x", i, VU->VI[REG_TPC].UL);
+				//Console.WriteLn("saving reg %d at pc=%x", uregs.VFwrite, VU->VI[REG_TPC].UL);
 				_VF = VU->VF[uregs.VFwrite];
 				vfreg = uregs.VFwrite;
 			}
@@ -129,11 +136,12 @@ static void _vu1Exec(VURegs* VU)
 		{
 			if (lregs.VIwrite & (1 << REG_CLIP_FLAG))
 			{
-				Console.Warning("*PCSX2*: Warning, VI write to the same reg in both lower/upper cycle");
+				//Console.Warning("*PCSX2*: Warning, VI write to the same reg in both lower/upper cyclepc=%x", VU->VI[REG_TPC].UL);
 				discard = 1;
 			}
 			if (lregs.VIread & (1 << REG_CLIP_FLAG))
 			{
+				//Console.Warning("*PCSX2*: Warning, VI read same cycle as write pc=%x", VU->VI[REG_TPC].UL);
 				_VI = VU->VI[REG_CLIP_FLAG];
 				vireg = REG_CLIP_FLAG;
 			}
@@ -170,9 +178,6 @@ static void _vu1Exec(VURegs* VU)
 
 	//if (!(ptr[1] & 0x80000000))
 		_vuAddLowerStalls(VU, &lregs);
-
-	if (VU->VIBackupCycles > 0)
-		VU->VIBackupCycles--;
 
 	if (VU->branch > 0)
 	{
