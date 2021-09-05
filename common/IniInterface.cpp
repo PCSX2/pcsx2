@@ -23,393 +23,404 @@ const wxRect wxDefaultRect(wxDefaultCoord, wxDefaultCoord, wxDefaultCoord, wxDef
 wxDirName g_fullBaseDirName = wxDirName(L"");
 void SetFullBaseDir(wxDirName appRoot)
 {
-    g_fullBaseDirName = appRoot;
+	g_fullBaseDirName = appRoot;
 }
 
-static int _calcEnumLength(const wxChar *const *enumArray)
+static int _calcEnumLength(const wxChar* const* enumArray)
 {
-    int cnt = 0;
-    while (*enumArray != NULL) {
-        enumArray++;
-        cnt++;
-    }
+	int cnt = 0;
+	while (*enumArray != NULL)
+	{
+		enumArray++;
+		cnt++;
+	}
 
-    return cnt;
+	return cnt;
 }
 
-ScopedIniGroup::ScopedIniGroup(IniInterface &mommy, const wxString &group)
-    : m_mom(mommy)
+ScopedIniGroup::ScopedIniGroup(IniInterface& mommy, const wxString& group)
+	: m_mom(mommy)
 {
-    pxAssertDev(wxStringTokenize(group, L"/").Count() <= 1, L"Cannot nest more than one group deep per instance of ScopedIniGroup.");
-    m_mom.SetPath(group);
+	pxAssertDev(wxStringTokenize(group, L"/").Count() <= 1, L"Cannot nest more than one group deep per instance of ScopedIniGroup.");
+	m_mom.SetPath(group);
 }
 
 ScopedIniGroup::~ScopedIniGroup()
 {
-    m_mom.SetPath(L"..");
+	m_mom.SetPath(L"..");
 }
 
 // --------------------------------------------------------------------------------------
 //  IniInterface (implementations)
 // --------------------------------------------------------------------------------------
-IniInterface::IniInterface(wxConfigBase &config)
+IniInterface::IniInterface(wxConfigBase& config)
 {
-    m_Config = &config;
+	m_Config = &config;
 }
 
-IniInterface::IniInterface(wxConfigBase *config)
+IniInterface::IniInterface(wxConfigBase* config)
 {
-    m_Config = config;
+	m_Config = config;
 }
 
 IniInterface::IniInterface()
 {
-    m_Config = wxConfigBase::Get(false);
+	m_Config = wxConfigBase::Get(false);
 }
 
 IniInterface::~IniInterface()
 {
-    Flush();
+	Flush();
 }
 
-void IniInterface::SetPath(const wxString &path)
+void IniInterface::SetPath(const wxString& path)
 {
-    if (m_Config)
-        m_Config->SetPath(path);
+	if (m_Config)
+		m_Config->SetPath(path);
 }
 
 void IniInterface::Flush()
 {
-    if (m_Config)
-        m_Config->Flush();
+	if (m_Config)
+		m_Config->Flush();
 }
 
 
 // --------------------------------------------------------------------------------------
 //  IniLoader  (implementations)
 // --------------------------------------------------------------------------------------
-IniLoader::IniLoader(wxConfigBase &config)
-    : IniInterface(config)
+IniLoader::IniLoader(wxConfigBase& config)
+	: IniInterface(config)
 {
 }
 
-IniLoader::IniLoader(wxConfigBase *config)
-    : IniInterface(config)
+IniLoader::IniLoader(wxConfigBase* config)
+	: IniInterface(config)
 {
 }
 
 IniLoader::IniLoader()
-    : IniInterface()
+	: IniInterface()
 {
 }
 
-void IniLoader::Entry(const wxString &var, wxString &value, const wxString defvalue)
+void IniLoader::Entry(const wxString& var, wxString& value, const wxString defvalue)
 {
-    if (m_Config)
-        m_Config->Read(var, &value, defvalue);
-    else
-        value = defvalue;
+	if (m_Config)
+		m_Config->Read(var, &value, defvalue);
+	else
+		value = defvalue;
 }
 
-void IniLoader::Entry(const wxString &var, wxDirName &value, const wxDirName defvalue, bool isAllowRelative)
+void IniLoader::Entry(const wxString& var, wxDirName& value, const wxDirName defvalue, bool isAllowRelative)
 {
-    wxString dest;
-    if (m_Config)
-        m_Config->Read(var, &dest, wxEmptyString);
+	wxString dest;
+	if (m_Config)
+		m_Config->Read(var, &dest, wxEmptyString);
 
-    if (dest.IsEmpty())
-        value = defvalue;
-    else {
-        value = dest;
-        if (isAllowRelative)
-            value = g_fullBaseDirName + value;
+	if (dest.IsEmpty())
+		value = defvalue;
+	else
+	{
+		value = dest;
+		if (isAllowRelative)
+			value = g_fullBaseDirName + value;
 
-        if (value.IsAbsolute())
-            value.Normalize();
-    }
+		if (value.IsAbsolute())
+			value.Normalize();
+	}
 }
 
-void IniLoader::Entry(const wxString &var, wxFileName &value, const wxFileName defvalue, bool isAllowRelative)
+void IniLoader::Entry(const wxString& var, wxFileName& value, const wxFileName defvalue, bool isAllowRelative)
 {
-    wxString dest(defvalue.GetFullPath());
-    if (m_Config)
-        m_Config->Read(var, &dest, defvalue.GetFullPath());
-    value = dest;
-    if (isAllowRelative)
-        value = g_fullBaseDirName + value;
+	wxString dest(defvalue.GetFullPath());
+	if (m_Config)
+		m_Config->Read(var, &dest, defvalue.GetFullPath());
+	value = dest;
+	if (isAllowRelative)
+		value = g_fullBaseDirName + value;
 
-    if (value.IsAbsolute())
-        value.Normalize();
+	if (value.IsAbsolute())
+		value.Normalize();
 
-    if (value.HasVolume())
-        value.SetVolume(value.GetVolume().Upper());
+	if (value.HasVolume())
+		value.SetVolume(value.GetVolume().Upper());
 }
 
-void IniLoader::Entry(const wxString &var, int &value, const int defvalue)
+void IniLoader::Entry(const wxString& var, int& value, const int defvalue)
 {
-    if (m_Config)
-        m_Config->Read(var, &value, defvalue);
-    else
-        value = defvalue;
+	if (m_Config)
+		m_Config->Read(var, &value, defvalue);
+	else
+		value = defvalue;
 }
 
-void IniLoader::Entry(const wxString &var, uint &value, const uint defvalue)
+void IniLoader::Entry(const wxString& var, uint& value, const uint defvalue)
 {
-    if (m_Config)
-        m_Config->Read(var, (int *)&value, (int)defvalue);
-    else
-        value = defvalue;
+	if (m_Config)
+		m_Config->Read(var, (int*)&value, (int)defvalue);
+	else
+		value = defvalue;
 }
 
-void IniLoader::Entry(const wxString &var, bool &value, const bool defvalue)
+void IniLoader::Entry(const wxString& var, bool& value, const bool defvalue)
 {
-    // TODO : Stricter value checking on enabled/disabled?
-    wxString dest;
-    if(defvalue)
-        dest = wxString("enabled");
-    else
-        dest = wxString("disabled");
+	// TODO : Stricter value checking on enabled/disabled?
+	wxString dest;
+	if (defvalue)
+		dest = wxString("enabled");
+	else
+		dest = wxString("disabled");
 
-    if (m_Config)
-        m_Config->Read(var, &dest, dest);
-    value = (dest == L"enabled") || (dest == L"1");
+	if (m_Config)
+		m_Config->Read(var, &dest, dest);
+	value = (dest == L"enabled") || (dest == L"1");
 }
 
-bool IniLoader::EntryBitBool(const wxString &var, bool value, const bool defvalue)
+bool IniLoader::EntryBitBool(const wxString& var, bool value, const bool defvalue)
 {
-    // Note: 'value' param is used by inisaver only.
-    bool result;
-    Entry(var, result, defvalue);
-    return result;
+	// Note: 'value' param is used by inisaver only.
+	bool result;
+	Entry(var, result, defvalue);
+	return result;
 }
 
-int IniLoader::EntryBitfield(const wxString &var, int value, const int defvalue)
+int IniLoader::EntryBitfield(const wxString& var, int value, const int defvalue)
 {
-    int result;
-    Entry(var, result, defvalue);
-    return result;
+	int result;
+	Entry(var, result, defvalue);
+	return result;
 }
 
-void IniLoader::Entry(const wxString &var, double& value, const double defvalue)
+void IniLoader::Entry(const wxString& var, double& value, const double defvalue)
 {
-    auto readval = wxString::FromDouble(value);
+	auto readval = wxString::FromDouble(value);
 
-    if (m_Config)
-        m_Config->Read(var, &readval);
+	if (m_Config)
+		m_Config->Read(var, &readval);
 
-    if (!readval.ToDouble(&value))
-        value = 0.0;
+	if (!readval.ToDouble(&value))
+		value = 0.0;
 }
 
-void IniLoader::Entry(const wxString &var, wxPoint &value, const wxPoint defvalue)
+void IniLoader::Entry(const wxString& var, wxPoint& value, const wxPoint defvalue)
 {
-    if (!m_Config) {
-        value = defvalue;
-        return;
-    }
-    TryParse(value, m_Config->Read(var, ToString(defvalue)), defvalue);
+	if (!m_Config)
+	{
+		value = defvalue;
+		return;
+	}
+	TryParse(value, m_Config->Read(var, ToString(defvalue)), defvalue);
 }
 
-void IniLoader::Entry(const wxString &var, wxSize &value, const wxSize defvalue)
+void IniLoader::Entry(const wxString& var, wxSize& value, const wxSize defvalue)
 {
-    if (!m_Config) {
-        value = defvalue;
-        return;
-    }
-    TryParse(value, m_Config->Read(var, ToString(defvalue)), defvalue);
+	if (!m_Config)
+	{
+		value = defvalue;
+		return;
+	}
+	TryParse(value, m_Config->Read(var, ToString(defvalue)), defvalue);
 }
 
-void IniLoader::Entry(const wxString &var, wxRect &value, const wxRect defvalue)
+void IniLoader::Entry(const wxString& var, wxRect& value, const wxRect defvalue)
 {
-    if (!m_Config) {
-        value = defvalue;
-        return;
-    }
-    TryParse(value, m_Config->Read(var, ToString(defvalue)), defvalue);
+	if (!m_Config)
+	{
+		value = defvalue;
+		return;
+	}
+	TryParse(value, m_Config->Read(var, ToString(defvalue)), defvalue);
 }
 
-void IniLoader::_EnumEntry(const wxString &var, int &value, const wxChar *const *enumArray, int defvalue)
+void IniLoader::_EnumEntry(const wxString& var, int& value, const wxChar* const* enumArray, int defvalue)
 {
-    // Confirm default value sanity...
+	// Confirm default value sanity...
 
-    const int cnt = _calcEnumLength(enumArray);
-    if (!IndexBoundsCheck(L"IniLoader EnumDefaultValue", defvalue, cnt)) {
-        Console.Error("(LoadSettings) Default enumeration index is out of bounds. Truncating.");
-        defvalue = cnt - 1;
-    }
+	const int cnt = _calcEnumLength(enumArray);
+	if (!IndexBoundsCheck(L"IniLoader EnumDefaultValue", defvalue, cnt))
+	{
+		Console.Error("(LoadSettings) Default enumeration index is out of bounds. Truncating.");
+		defvalue = cnt - 1;
+	}
 
-    // Sanity confirmed, proceed with craziness!
+	// Sanity confirmed, proceed with craziness!
 
-    if (!m_Config) {
-        value = defvalue;
-        return;
-    }
+	if (!m_Config)
+	{
+		value = defvalue;
+		return;
+	}
 
-    wxString retval;
-    m_Config->Read(var, &retval, enumArray[defvalue]);
+	wxString retval;
+	m_Config->Read(var, &retval, enumArray[defvalue]);
 
-    int i = 0;
-    while (enumArray[i] != NULL && (retval != enumArray[i]))
-        i++;
+	int i = 0;
+	while (enumArray[i] != NULL && (retval != enumArray[i]))
+		i++;
 
-    if (enumArray[i] == NULL) {
-        Console.Warning(L"(LoadSettings) Warning: Unrecognized value '%s' on key '%s'\n\tUsing the default setting of '%s'.",
-                        WX_STR(retval), WX_STR(var), enumArray[defvalue]);
-        value = defvalue;
-    } else
-        value = i;
+	if (enumArray[i] == NULL)
+	{
+		Console.Warning(L"(LoadSettings) Warning: Unrecognized value '%s' on key '%s'\n\tUsing the default setting of '%s'.",
+			WX_STR(retval), WX_STR(var), enumArray[defvalue]);
+		value = defvalue;
+	}
+	else
+		value = i;
 }
 
 // --------------------------------------------------------------------------------------
 //  IniSaver  (implementations)
 // --------------------------------------------------------------------------------------
 
-IniSaver::IniSaver(wxConfigBase &config)
-    : IniInterface(config)
+IniSaver::IniSaver(wxConfigBase& config)
+	: IniInterface(config)
 {
 }
 
-IniSaver::IniSaver(wxConfigBase *config)
-    : IniInterface(config)
+IniSaver::IniSaver(wxConfigBase* config)
+	: IniInterface(config)
 {
 }
 
 IniSaver::IniSaver()
-    : IniInterface()
+	: IniInterface()
 {
 }
 
-void IniSaver::Entry(const wxString &var, wxString &value, const wxString defvalue)
+void IniSaver::Entry(const wxString& var, wxString& value, const wxString defvalue)
 {
-    if (!m_Config)
-        return;
-    m_Config->Write(var, value);
+	if (!m_Config)
+		return;
+	m_Config->Write(var, value);
 }
 
-void IniSaver::Entry(const wxString &var, wxDirName &value, const wxDirName defvalue, bool isAllowRelative)
+void IniSaver::Entry(const wxString& var, wxDirName& value, const wxDirName defvalue, bool isAllowRelative)
 {
-    if (!m_Config)
-        return;
-    wxDirName res(value);
+	if (!m_Config)
+		return;
+	wxDirName res(value);
 
-    if (res.IsAbsolute())
-        res.Normalize();
+	if (res.IsAbsolute())
+		res.Normalize();
 
-    if (isAllowRelative)
-        res = wxDirName::MakeAutoRelativeTo(res, g_fullBaseDirName.ToString());
+	if (isAllowRelative)
+		res = wxDirName::MakeAutoRelativeTo(res, g_fullBaseDirName.ToString());
 
 
-    /*if( value == defvalue )
+	/*if( value == defvalue )
 		m_Config->Write( var, wxString() );
 	else*/
-    m_Config->Write(var, res.ToString());
+	m_Config->Write(var, res.ToString());
 }
 
-void IniSaver::Entry(const wxString &var, wxFileName &value, const wxFileName defvalue, bool isAllowRelative)
+void IniSaver::Entry(const wxString& var, wxFileName& value, const wxFileName defvalue, bool isAllowRelative)
 {
-    if (!m_Config)
-        return;
-    wxFileName res(value);
+	if (!m_Config)
+		return;
+	wxFileName res(value);
 
-    if (res.IsAbsolute())
-        res.Normalize();
+	if (res.IsAbsolute())
+		res.Normalize();
 
-    if (isAllowRelative)
-        res = wxDirName::MakeAutoRelativeTo(res, g_fullBaseDirName.ToString());
+	if (isAllowRelative)
+		res = wxDirName::MakeAutoRelativeTo(res, g_fullBaseDirName.ToString());
 
-    m_Config->Write(var, res.GetFullPath());
+	m_Config->Write(var, res.GetFullPath());
 }
 
-void IniSaver::Entry(const wxString &var, int &value, const int defvalue)
+void IniSaver::Entry(const wxString& var, int& value, const int defvalue)
 {
-    if (!m_Config)
-        return;
-    m_Config->Write(var, value);
+	if (!m_Config)
+		return;
+	m_Config->Write(var, value);
 }
 
-void IniSaver::Entry(const wxString &var, uint &value, const uint defvalue)
+void IniSaver::Entry(const wxString& var, uint& value, const uint defvalue)
 {
-    if (!m_Config)
-        return;
-    m_Config->Write(var, (int)value);
+	if (!m_Config)
+		return;
+	m_Config->Write(var, (int)value);
 }
 
-void IniSaver::Entry(const wxString &var, bool &value, const bool defvalue)
+void IniSaver::Entry(const wxString& var, bool& value, const bool defvalue)
 {
-    if (!m_Config)
-        return;
-    m_Config->Write(var, value ? L"enabled" : L"disabled");
+	if (!m_Config)
+		return;
+	m_Config->Write(var, value ? L"enabled" : L"disabled");
 }
 
-bool IniSaver::EntryBitBool(const wxString &var, bool value, const bool defvalue)
+bool IniSaver::EntryBitBool(const wxString& var, bool value, const bool defvalue)
 {
-    if (m_Config)
-        m_Config->Write(var, value ? L"enabled" : L"disabled");
-    return value;
+	if (m_Config)
+		m_Config->Write(var, value ? L"enabled" : L"disabled");
+	return value;
 }
 
-int IniSaver::EntryBitfield(const wxString &var, int value, const int defvalue)
+int IniSaver::EntryBitfield(const wxString& var, int value, const int defvalue)
 {
-    if (m_Config)
-        m_Config->Write(var, value);
-    return value;
+	if (m_Config)
+		m_Config->Write(var, value);
+	return value;
 }
 
-void IniSaver::Entry(const wxString &var, double &value, const double defvalue)
+void IniSaver::Entry(const wxString& var, double& value, const double defvalue)
 {
-    if (!m_Config)
-        return;
+	if (!m_Config)
+		return;
 
-    m_Config->Write(var, wxString::FromDouble(value));
+	m_Config->Write(var, wxString::FromDouble(value));
 }
 
-void IniSaver::Entry(const wxString &var, wxPoint &value, const wxPoint defvalue)
+void IniSaver::Entry(const wxString& var, wxPoint& value, const wxPoint defvalue)
 {
-    if (!m_Config)
-        return;
-    m_Config->Write(var, ToString(value));
+	if (!m_Config)
+		return;
+	m_Config->Write(var, ToString(value));
 }
 
-void IniSaver::Entry(const wxString &var, wxSize &value, const wxSize defvalue)
+void IniSaver::Entry(const wxString& var, wxSize& value, const wxSize defvalue)
 {
-    if (!m_Config)
-        return;
-    m_Config->Write(var, ToString(value));
+	if (!m_Config)
+		return;
+	m_Config->Write(var, ToString(value));
 }
 
-void IniSaver::Entry(const wxString &var, wxRect &value, const wxRect defvalue)
+void IniSaver::Entry(const wxString& var, wxRect& value, const wxRect defvalue)
 {
-    if (!m_Config)
-        return;
-    m_Config->Write(var, ToString(value));
+	if (!m_Config)
+		return;
+	m_Config->Write(var, ToString(value));
 }
 
-void IniSaver::_EnumEntry(const wxString &var, int &value, const wxChar *const *enumArray, int defvalue)
+void IniSaver::_EnumEntry(const wxString& var, int& value, const wxChar* const* enumArray, int defvalue)
 {
-    const int cnt = _calcEnumLength(enumArray);
+	const int cnt = _calcEnumLength(enumArray);
 
-    // Confirm default value sanity...
+	// Confirm default value sanity...
 
-    if (!IndexBoundsCheck(L"IniSaver EnumDefaultValue", defvalue, cnt)) {
-        Console.Error("(SaveSettings) Default enumeration index is out of bounds. Truncating.");
-        defvalue = cnt - 1;
-    }
+	if (!IndexBoundsCheck(L"IniSaver EnumDefaultValue", defvalue, cnt))
+	{
+		Console.Error("(SaveSettings) Default enumeration index is out of bounds. Truncating.");
+		defvalue = cnt - 1;
+	}
 
-    if (!m_Config)
-        return;
+	if (!m_Config)
+		return;
 
-    if (value >= cnt) {
-        Console.Warning(L"(SaveSettings) An illegal enumerated index was detected when saving '%s'", WX_STR(var));
-        Console.Indent().Warning(
-            L"Illegal Value: %d\n"
-            L"Using Default: %d (%s)\n",
-            value, defvalue, enumArray[defvalue]);
+	if (value >= cnt)
+	{
+		Console.Warning(L"(SaveSettings) An illegal enumerated index was detected when saving '%s'", WX_STR(var));
+		Console.Indent().Warning(
+			L"Illegal Value: %d\n"
+			L"Using Default: %d (%s)\n",
+			value, defvalue, enumArray[defvalue]);
 
-        // Cause a debug assertion, since this is a fully recoverable error.
-        pxAssert(value < cnt);
+		// Cause a debug assertion, since this is a fully recoverable error.
+		pxAssert(value < cnt);
 
-        value = defvalue;
-    }
+		value = defvalue;
+	}
 
-    m_Config->Write(var, enumArray[value]);
+	m_Config->Write(var, enumArray[value]);
 }
