@@ -177,7 +177,7 @@ GSTexture* GSRendererSW::GetOutput(int i, int& y_offset)
 		{
 			if (s_savef && s_n >= s_saven)
 			{
-				m_texture[i]->Save(m_dump_root + format("%05d_f%lld_fr%d_%05x_%s.bmp", s_n, m_perfmon.GetFrame(), i, (int)DISPFB.Block(), psm_str(DISPFB.PSM)));
+				m_texture[i]->Save(m_dump_root + fmt::format("{:05d}_f{:d}_fr{:d}_{:05x}_{:s}.bmp", s_n, m_perfmon.GetFrame(), i, (int)DISPFB.Block(), psm_str(DISPFB.PSM)));
 			}
 		}
 	}
@@ -456,7 +456,7 @@ void GSRendererSW::Draw()
 		if (s_n >= s_saven)
 		{
 			// Dump Register state
-			s = format("%05d_context.txt", s_n);
+			s = fmt::format("{:05d}_context.txt", s_n);
 
 			m_env.Dump(m_dump_root + s);
 			m_context->Dump(m_dump_root + s);
@@ -467,11 +467,11 @@ void GSRendererSW::Draw()
 			if (texture_shuffle)
 			{
 				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
-				s = format("%05d_f%lld_itexraw_%05x_32bits.bmp", s_n, frame, (int)m_context->TEX0.TBP0);
+				s = fmt::format("{:05d}_f{:d}_itexraw_{:05x}_32bits.bmp", s_n, frame, (int)m_context->TEX0.TBP0);
 				m_mem.SaveBMP(m_dump_root + s, m_context->TEX0.TBP0, m_context->TEX0.TBW, 0, 1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH);
 			}
 
-			s = format("%05d_f%lld_itexraw_%05x_%s.bmp", s_n, frame, (int)m_context->TEX0.TBP0, psm_str(m_context->TEX0.PSM));
+			s = fmt::format("{:05d}_f{:d}_itexraw_{:05x}_{:s}.bmp", s_n, frame, (int)m_context->TEX0.TBP0, psm_str(m_context->TEX0.PSM));
 			m_mem.SaveBMP(m_dump_root + s, m_context->TEX0.TBP0, m_context->TEX0.TBW, m_context->TEX0.PSM, 1 << m_context->TEX0.TW, 1 << m_context->TEX0.TH);
 		}
 
@@ -481,17 +481,17 @@ void GSRendererSW::Draw()
 			if (texture_shuffle)
 			{
 				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
-				s = format("%05d_f%lld_rt0_%05x_32bits.bmp", s_n, frame, m_context->FRAME.Block());
+				s = fmt::format("{:05d}_f{:d}_rt0_{:05x}_32bits.bmp", s_n, frame, m_context->FRAME.Block());
 				m_mem.SaveBMP(m_dump_root + s, m_context->FRAME.Block(), m_context->FRAME.FBW, 0, GetFrameRect().width(), 512);
 			}
 
-			s = format("%05d_f%lld_rt0_%05x_%s.bmp", s_n, frame, m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
+			s = fmt::format("{:05d}_f{:d}_rt0_{:05x}_{:s}.bmp", s_n, frame, m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
 			m_mem.SaveBMP(m_dump_root + s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, GetFrameRect().width(), 512);
 		}
 
 		if (s_savez && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rz0_%05x_%s.bmp", s_n, frame, m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
+			s = fmt::format("{:05d}_f{:d}_rz0_{:05x}_{:s}.bmp", s_n, frame, m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
 
 			m_mem.SaveBMP(m_dump_root + s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, GetFrameRect().width(), 512);
 		}
@@ -505,17 +505,17 @@ void GSRendererSW::Draw()
 			if (texture_shuffle)
 			{
 				// Dump the RT in 32 bits format. It helps to debug texture shuffle effect
-				s = format("%05d_f%lld_rt1_%05x_32bits.bmp", s_n, frame, m_context->FRAME.Block());
+				s = fmt::format("{:05d}_f%{:d}_rt1_{:05x}_32bits.bmp", s_n, frame, m_context->FRAME.Block());
 				m_mem.SaveBMP(m_dump_root + s, m_context->FRAME.Block(), m_context->FRAME.FBW, 0, GetFrameRect().width(), 512);
 			}
 
-			s = format("%05d_f%lld_rt1_%05x_%s.bmp", s_n, frame, m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
+			s = fmt::format("{:05d}_f{:d}_rt1_{:05x}_{:s}.bmp", s_n, frame, m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
 			m_mem.SaveBMP(m_dump_root + s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, GetFrameRect().width(), 512);
 		}
 
 		if (s_savez && s_n >= s_saven)
 		{
-			s = format("%05d_f%lld_rz1_%05x_%s.bmp", s_n, frame, m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
+			s = fmt::format("{:05d}_f{:d}_rz1_{:05x}_{:s}.bmp", s_n, frame, m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
 
 			m_mem.SaveBMP(m_dump_root + s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, GetFrameRect().width(), 512);
 		}
@@ -607,14 +607,14 @@ void GSRendererSW::Sync(int reason)
 
 		if (s_save)
 		{
-			s = format("%05d_f%lld_rt1_%05x_%s.bmp", s_n, m_perfmon.GetFrame(), m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
+			s = fmt::format("{:05d}_f{:d}_rt1_{:05x}_{:s}.bmp", s_n, m_perfmon.GetFrame(), m_context->FRAME.Block(), psm_str(m_context->FRAME.PSM));
 
 			m_mem.SaveBMP(m_dump_root + s, m_context->FRAME.Block(), m_context->FRAME.FBW, m_context->FRAME.PSM, GetFrameRect().width(), 512);
 		}
 
 		if (s_savez)
 		{
-			s = format("%05d_f%lld_zb1_%05x_%s.bmp", s_n, m_perfmon.GetFrame(), m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
+			s = fmt::format("{:05d}_f{:d}_zb1_{:05x}_{:s}.bmp", s_n, m_perfmon.GetFrame(), m_context->ZBUF.Block(), psm_str(m_context->ZBUF.PSM));
 
 			m_mem.SaveBMP(m_dump_root + s, m_context->ZBUF.Block(), m_context->FRAME.FBW, m_context->ZBUF.PSM, GetFrameRect().width(), 512);
 		}
@@ -1565,7 +1565,7 @@ void GSRendererSW::SharedData::UpdateSource()
 			{
 				const GIFRegTEX0& TEX0 = m_parent->GetTex0Layer(i);
 
-				s = format("%05d_f%lld_itex%d_%05x_%s.bmp", m_parent->s_n, frame, i, TEX0.TBP0, psm_str(TEX0.PSM));
+				s = fmt::format("{:05d}_f{:d}_itex{:d}_{:05x}_{:s}.bmp", m_parent->s_n, frame, i, TEX0.TBP0, psm_str(TEX0.PSM));
 
 				m_tex[i].t->Save(root_sw + s);
 			}
@@ -1576,7 +1576,7 @@ void GSRendererSW::SharedData::UpdateSource()
 
 				t->Update(GSVector4i(0, 0, 256, 1), global.clut, sizeof(uint32) * 256);
 
-				s = format("%05d_f%lld_itexp_%05x_%s.bmp", m_parent->s_n, frame, (int)m_parent->m_context->TEX0.CBP, psm_str(m_parent->m_context->TEX0.CPSM));
+				s = fmt::format("{:05d}_f{:d}_itexp_{:05x}_{:s}.bmp", m_parent->s_n, frame, (int)m_parent->m_context->TEX0.CBP, psm_str(m_parent->m_context->TEX0.CPSM));
 
 				t->Save(root_sw + s);
 
