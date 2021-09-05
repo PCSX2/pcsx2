@@ -20,79 +20,92 @@
 using Threading::ScopedLock;
 
 template <typename ListenerType>
-typename EventSource<ListenerType>::ListenerIterator EventSource<ListenerType>::Add(ListenerType &listener)
+typename EventSource<ListenerType>::ListenerIterator EventSource<ListenerType>::Add(ListenerType& listener)
 {
-    ScopedLock locker(m_listeners_lock);
+	ScopedLock locker(m_listeners_lock);
 
-    // Check for duplicates before adding the event.
-    if (IsDebugBuild) {
-        ListenerIterator iter = m_listeners.begin();
-        while (iter != m_listeners.end()) {
-            if ((*iter) == &listener)
-                return iter;
-            ++iter;
-        }
-    }
-    return _AddFast_without_lock(listener);
+	// Check for duplicates before adding the event.
+	if (IsDebugBuild)
+	{
+		ListenerIterator iter = m_listeners.begin();
+		while (iter != m_listeners.end())
+		{
+			if ((*iter) == &listener)
+				return iter;
+			++iter;
+		}
+	}
+	return _AddFast_without_lock(listener);
 }
 
 template <typename ListenerType>
-void EventSource<ListenerType>::Remove(ListenerType &listener)
+void EventSource<ListenerType>::Remove(ListenerType& listener)
 {
-    ScopedLock locker(m_listeners_lock);
-    m_cache_valid = false;
-    m_listeners.remove(&listener);
+	ScopedLock locker(m_listeners_lock);
+	m_cache_valid = false;
+	m_listeners.remove(&listener);
 }
 
 template <typename ListenerType>
-void EventSource<ListenerType>::Remove(const ListenerIterator &listenerHandle)
+void EventSource<ListenerType>::Remove(const ListenerIterator& listenerHandle)
 {
-    ScopedLock locker(m_listeners_lock);
-    m_cache_valid = false;
-    m_listeners.erase(listenerHandle);
+	ScopedLock locker(m_listeners_lock);
+	m_cache_valid = false;
+	m_listeners.erase(listenerHandle);
 }
 
 template <typename ListenerType>
-typename EventSource<ListenerType>::ListenerIterator EventSource<ListenerType>::_AddFast_without_lock(ListenerType &listener)
+typename EventSource<ListenerType>::ListenerIterator EventSource<ListenerType>::_AddFast_without_lock(ListenerType& listener)
 {
-    m_cache_valid = false;
-    m_listeners.push_front(&listener);
-    return m_listeners.begin();
+	m_cache_valid = false;
+	m_listeners.push_front(&listener);
+	return m_listeners.begin();
 }
 
 
 template <typename ListenerType>
-__fi void EventSource<ListenerType>::_DispatchRaw(ListenerIterator iter, const ListenerIterator &iend, const EvtParams &evtparams)
+__fi void EventSource<ListenerType>::_DispatchRaw(ListenerIterator iter, const ListenerIterator& iend, const EvtParams& evtparams)
 {
-    while (iter != iend) {
-        try {
-            (*iter)->DispatchEvent(evtparams);
-        } catch (Exception::RuntimeError &ex) {
-            if (IsDevBuild) {
-                pxFailDev(L"Ignoring runtime error thrown from event listener (event listeners should not throw exceptions!): " + ex.FormatDiagnosticMessage());
-            } else {
-                Console.Error(L"Ignoring runtime error thrown from event listener: " + ex.FormatDiagnosticMessage());
-            }
-        } catch (BaseException &ex) {
-            if (IsDevBuild) {
-                ex.DiagMsg() = L"Non-runtime BaseException thrown from event listener .. " + ex.DiagMsg();
-                throw;
-            }
-            Console.Error(L"Ignoring non-runtime BaseException thrown from event listener: " + ex.FormatDiagnosticMessage());
-        }
-        ++iter;
-    }
+	while (iter != iend)
+	{
+		try
+		{
+			(*iter)->DispatchEvent(evtparams);
+		}
+		catch (Exception::RuntimeError& ex)
+		{
+			if (IsDevBuild)
+			{
+				pxFailDev(L"Ignoring runtime error thrown from event listener (event listeners should not throw exceptions!): " + ex.FormatDiagnosticMessage());
+			}
+			else
+			{
+				Console.Error(L"Ignoring runtime error thrown from event listener: " + ex.FormatDiagnosticMessage());
+			}
+		}
+		catch (BaseException& ex)
+		{
+			if (IsDevBuild)
+			{
+				ex.DiagMsg() = L"Non-runtime BaseException thrown from event listener .. " + ex.DiagMsg();
+				throw;
+			}
+			Console.Error(L"Ignoring non-runtime BaseException thrown from event listener: " + ex.FormatDiagnosticMessage());
+		}
+		++iter;
+	}
 }
 
 template <typename ListenerType>
-void EventSource<ListenerType>::Dispatch(const EvtParams &evtparams)
+void EventSource<ListenerType>::Dispatch(const EvtParams& evtparams)
 {
-    if (!m_cache_valid) {
-        m_cache_copy = m_listeners;
-        m_cache_valid = true;
-    }
+	if (!m_cache_valid)
+	{
+		m_cache_copy = m_listeners;
+		m_cache_valid = true;
+	}
 
-    if (m_cache_copy.empty())
-        return;
-    _DispatchRaw(m_cache_copy.begin(), m_cache_copy.end(), evtparams);
+	if (m_cache_copy.empty())
+		return;
+	_DispatchRaw(m_cache_copy.begin(), m_cache_copy.end(), evtparams);
 }
