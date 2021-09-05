@@ -17,10 +17,11 @@
 
 #include "common/Dependencies.h"
 
-enum x86VendorType {
-    x86Vendor_Intel = 0,
-    x86Vendor_AMD = 1,
-    x86Vendor_Unknown = 2
+enum x86VendorType
+{
+	x86Vendor_Intel = 0,
+	x86Vendor_AMD = 1,
+	x86Vendor_Unknown = 2
 };
 
 // --------------------------------------------------------------------------------------
@@ -29,117 +30,120 @@ enum x86VendorType {
 class x86capabilities
 {
 public:
-    bool isIdentified;
+	bool isIdentified;
 
 public:
-    x86VendorType VendorID;
+	x86VendorType VendorID;
 
-    uint FamilyID; // Processor Family
-    uint Model;    // Processor Model
-    uint TypeID;   // Processor Type
-    uint StepID;   // Stepping ID
+	uint FamilyID; // Processor Family
+	uint Model; // Processor Model
+	uint TypeID; // Processor Type
+	uint StepID; // Stepping ID
 
-    u32 Flags;   // Feature Flags
-    u32 Flags2;  // More Feature Flags
-    u32 EFlags;  // Extended Feature Flags
-    u32 EFlags2; // Extended Feature Flags pg2
-    u32 SEFlag;  // Structured Extended Feature Flags Enumeration
+	u32 Flags; // Feature Flags
+	u32 Flags2; // More Feature Flags
+	u32 EFlags; // Extended Feature Flags
+	u32 EFlags2; // Extended Feature Flags pg2
+	u32 SEFlag; // Structured Extended Feature Flags Enumeration
 
-    char VendorName[16]; // Vendor/Creator ID
-    char FamilyName[50]; // the original cpu name
+	char VendorName[16]; // Vendor/Creator ID
+	char FamilyName[50]; // the original cpu name
 
-    // ----------------------------------------------------------------------------
-    //   x86 CPU Capabilities Section (all boolean flags!)
-    // ----------------------------------------------------------------------------
+	// ----------------------------------------------------------------------------
+	//   x86 CPU Capabilities Section (all boolean flags!)
+	// ----------------------------------------------------------------------------
 
-    union
-    {
-        struct
-        {
-            u32 hasFloatingPointUnit : 1;
-            u32 hasVirtual8086ModeEnhancements : 1;
-            u32 hasDebuggingExtensions : 1;
-            u32 hasPageSizeExtensions : 1;
-            u32 hasTimeStampCounter : 1;
-            u32 hasModelSpecificRegisters : 1;
-            u32 hasPhysicalAddressExtension : 1;
-            u32 hasCOMPXCHG8BInstruction : 1;
-            u32 hasAdvancedProgrammableInterruptController : 1;
-            u32 hasSEPFastSystemCall : 1;
-            u32 hasMemoryTypeRangeRegisters : 1;
-            u32 hasPTEGlobalFlag : 1;
-            u32 hasMachineCheckArchitecture : 1;
-            u32 hasConditionalMoveAndCompareInstructions : 1;
-            u32 hasFGPageAttributeTable : 1;
-            u32 has36bitPageSizeExtension : 1;
-            u32 hasProcessorSerialNumber : 1;
-            u32 hasCFLUSHInstruction : 1;
-            u32 hasDebugStore : 1;
-            u32 hasACPIThermalMonitorAndClockControl : 1;
-            u32 hasFastStreamingSIMDExtensionsSaveRestore : 1;
-            u32 hasStreamingSIMDExtensions : 1;
-            u32 hasStreamingSIMD2Extensions : 1;
-            u32 hasSelfSnoop : 1;
+	union
+	{
+		struct
+		{
+			u32 hasFloatingPointUnit : 1;
+			u32 hasVirtual8086ModeEnhancements : 1;
+			u32 hasDebuggingExtensions : 1;
+			u32 hasPageSizeExtensions : 1;
+			u32 hasTimeStampCounter : 1;
+			u32 hasModelSpecificRegisters : 1;
+			u32 hasPhysicalAddressExtension : 1;
+			u32 hasCOMPXCHG8BInstruction : 1;
+			u32 hasAdvancedProgrammableInterruptController : 1;
+			u32 hasSEPFastSystemCall : 1;
+			u32 hasMemoryTypeRangeRegisters : 1;
+			u32 hasPTEGlobalFlag : 1;
+			u32 hasMachineCheckArchitecture : 1;
+			u32 hasConditionalMoveAndCompareInstructions : 1;
+			u32 hasFGPageAttributeTable : 1;
+			u32 has36bitPageSizeExtension : 1;
+			u32 hasProcessorSerialNumber : 1;
+			u32 hasCFLUSHInstruction : 1;
+			u32 hasDebugStore : 1;
+			u32 hasACPIThermalMonitorAndClockControl : 1;
+			u32 hasFastStreamingSIMDExtensionsSaveRestore : 1;
+			u32 hasStreamingSIMDExtensions : 1;
+			u32 hasStreamingSIMD2Extensions : 1;
+			u32 hasSelfSnoop : 1;
 
-            // is TRUE for both multi-core and Hyperthreaded CPUs.
-            u32 hasMultiThreading : 1;
+			// is TRUE for both multi-core and Hyperthreaded CPUs.
+			u32 hasMultiThreading : 1;
 
-            u32 hasThermalMonitor : 1;
-            u32 hasIntel64BitArchitecture : 1;
-            u32 hasStreamingSIMD3Extensions : 1;
-            u32 hasSupplementalStreamingSIMD3Extensions : 1;
-            u32 hasStreamingSIMD4Extensions : 1;
-            u32 hasStreamingSIMD4Extensions2 : 1;
-            u32 hasAVX : 1;
-            u32 hasAVX2 : 1;
-            u32 hasBMI1 : 1;
-            u32 hasBMI2 : 1;
-            u32 hasFMA : 1;
+			u32 hasThermalMonitor : 1;
+			u32 hasIntel64BitArchitecture : 1;
+			u32 hasStreamingSIMD3Extensions : 1;
+			u32 hasSupplementalStreamingSIMD3Extensions : 1;
+			u32 hasStreamingSIMD4Extensions : 1;
+			u32 hasStreamingSIMD4Extensions2 : 1;
+			u32 hasAVX : 1;
+			u32 hasAVX2 : 1;
+			u32 hasBMI1 : 1;
+			u32 hasBMI2 : 1;
+			u32 hasFMA : 1;
 
-            // AMD-specific CPU Features
-            u32 hasAMD64BitArchitecture : 1;
-            u32 hasStreamingSIMD4ExtensionsA : 1;
-        };
+			// AMD-specific CPU Features
+			u32 hasAMD64BitArchitecture : 1;
+			u32 hasStreamingSIMD4ExtensionsA : 1;
+		};
 
-        u64 AllCapabilities;
-    };
+		u64 AllCapabilities;
+	};
 
-    // Core Counts!
-    u32 PhysicalCores;
-    u32 LogicalCores;
+	// Core Counts!
+	u32 PhysicalCores;
+	u32 LogicalCores;
 
 public:
-    x86capabilities();
+	x86capabilities();
 
-    void Identify();
-    void CountCores();
-    wxString GetTypeName() const;
+	void Identify();
+	void CountCores();
+	wxString GetTypeName() const;
 
-    u32 CalculateMHz() const;
+	u32 CalculateMHz() const;
 
-    void SIMD_EstablishMXCSRmask();
+	void SIMD_EstablishMXCSRmask();
 
 protected:
-    s64 _CPUSpeedHz(u64 time) const;
-    void CountLogicalCores();
+	s64 _CPUSpeedHz(u64 time) const;
+	void CountLogicalCores();
 };
 
-enum SSE_RoundMode {
-    SSE_RoundMode_FIRST = 0,
-    SSEround_Nearest = 0,
-    SSEround_NegInf,
-    SSEround_PosInf,
-    SSEround_Chop,
-    SSE_RoundMode_COUNT
+enum SSE_RoundMode
+{
+	SSE_RoundMode_FIRST = 0,
+	SSEround_Nearest = 0,
+	SSEround_NegInf,
+	SSEround_PosInf,
+	SSEround_Chop,
+	SSE_RoundMode_COUNT
 };
 
 ImplementEnumOperators(SSE_RoundMode);
 
 // Predeclaration for xIndirect32
-namespace x86Emitter {
-	template <typename T> class xIndirect;
+namespace x86Emitter
+{
+	template <typename T>
+	class xIndirect;
 	typedef xIndirect<u32> xIndirect32;
-}
+} // namespace x86Emitter
 
 // --------------------------------------------------------------------------------------
 //  SSE_MXCSR  -  Control/Status Register (bitfield)
@@ -153,52 +157,52 @@ namespace x86Emitter {
 //
 union SSE_MXCSR
 {
-    u32 bitmask;
-    struct
-    {
-        u32
-            InvalidOpFlag : 1,
-            DenormalFlag : 1,
-            DivideByZeroFlag : 1,
-            OverflowFlag : 1,
-            UnderflowFlag : 1,
-            PrecisionFlag : 1,
+	u32 bitmask;
+	struct
+	{
+		u32
+			InvalidOpFlag : 1,
+			DenormalFlag : 1,
+			DivideByZeroFlag : 1,
+			OverflowFlag : 1,
+			UnderflowFlag : 1,
+			PrecisionFlag : 1,
 
-            // This bit is supported only on SSE2 or better CPUs.  Setting it to 1 on
-            // SSE1 cpus will result in an invalid instruction exception when executing
-            // LDMXSCR.
-            DenormalsAreZero : 1,
+			// This bit is supported only on SSE2 or better CPUs.  Setting it to 1 on
+			// SSE1 cpus will result in an invalid instruction exception when executing
+			// LDMXSCR.
+			DenormalsAreZero : 1,
 
-            InvalidOpMask : 1,
-            DenormalMask : 1,
-            DivideByZeroMask : 1,
-            OverflowMask : 1,
-            UnderflowMask : 1,
-            PrecisionMask : 1,
+			InvalidOpMask : 1,
+			DenormalMask : 1,
+			DivideByZeroMask : 1,
+			OverflowMask : 1,
+			UnderflowMask : 1,
+			PrecisionMask : 1,
 
-            RoundingControl : 2,
-            FlushToZero : 1;
-    };
+			RoundingControl : 2,
+			FlushToZero : 1;
+	};
 
-    SSE_RoundMode GetRoundMode() const;
-    SSE_MXCSR &SetRoundMode(SSE_RoundMode mode);
-    SSE_MXCSR &ClearExceptionFlags();
-    SSE_MXCSR &EnableExceptions();
-    SSE_MXCSR &DisableExceptions();
+	SSE_RoundMode GetRoundMode() const;
+	SSE_MXCSR& SetRoundMode(SSE_RoundMode mode);
+	SSE_MXCSR& ClearExceptionFlags();
+	SSE_MXCSR& EnableExceptions();
+	SSE_MXCSR& DisableExceptions();
 
-    SSE_MXCSR &ApplyReserveMask();
+	SSE_MXCSR& ApplyReserveMask();
 
-    bool operator==(const SSE_MXCSR &right) const
-    {
-        return bitmask == right.bitmask;
-    }
+	bool operator==(const SSE_MXCSR& right) const
+	{
+		return bitmask == right.bitmask;
+	}
 
-    bool operator!=(const SSE_MXCSR &right) const
-    {
-        return bitmask != right.bitmask;
-    }
+	bool operator!=(const SSE_MXCSR& right) const
+	{
+		return bitmask != right.bitmask;
+	}
 
-    operator x86Emitter::xIndirect32() const;
+	operator x86Emitter::xIndirect32() const;
 };
 
 extern SSE_MXCSR MXCSR_Mask;
