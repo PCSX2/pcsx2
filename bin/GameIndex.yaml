@@ -13647,14 +13647,12 @@ SLES-53518:
 SLES-53521:
   name: "Musashi - Samurai Legend"
   region: "PAL-M4"
-  roundModes:
-    vuRoundMode: 0  # Fixes Red SPS while ingame.
-    eeRoundMode: 0  # Partially fixes wrong enemies eye rendering.
-  clampModes:
-    vuClampMode: 3  # Fixes White SPS while ingame.
-    eeClampMode: 3  # Fixes White SPS while ingame.
-  gameFixes:
-    - EETimingHack # Fixes garbled character animation.
+  patches:
+    BC897AC9:
+      content: |-
+        author=Prafull, Kozarovv and Agrippa
+        // Fixes almost all problems apart from little translucent fog effect in some areas.
+        patch=1,EE,00147828,word,3c04000f
 SLES-53523:
   name: "Gun"
   region: "PAL-M4"
@@ -24187,21 +24185,13 @@ SLPM-66007:
 SLPM-66008:
   name: "Musashiden II - Blademaster"
   region: "NTSC-J"
-  roundModes:
-    vuRoundMode: 0  # Fixes Red SPS while ingame.
-    eeRoundMode: 0  # Partially fixes wrong enemies eye rendering.
-  clampModes:
-    vuClampMode: 3  # Fixes White SPS while ingame.
-    eeClampMode: 3  # Fixes White SPS while ingame.
-  gameFixes:
-    - EETimingHack # Fixes garbled character animation.
   patches:
     F0E90890:
       content: |-
-        author=Prafull
-        comment=patched by Prafull
+        author=Prafull, Kozarovv and Agrippa
+        comment=patched by Prafull and Kozarovv
         // Fixes almost all problems apart from little translucent fog effect in some areas.
-        patch=1,EE,00147c38,word,00000000
+        patch=1,EE,00147c38,word,3c04000f
 SLPM-66009:
   name: "World Soccer Winning Eleven 9 - Bonus Pack"
   region: "NTSC-J"
@@ -36146,9 +36136,9 @@ SLUS-20983:
   patches:
     675CEB8F:
       content: |-
-        author=Prafull
+        author=Prafull and Kozarovv
         // Fixes almost all problems apart from little translucent fog effect in some areas.
-        patch=1,EE,001473b0,word,00000000
+        patch=1,EE,001473b0,word,3c04000f
 SLUS-20984:
   name: "Resident Evil Outbreak - File #2"
   region: "NTSC-U"
