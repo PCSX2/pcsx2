@@ -389,7 +389,7 @@ void GSRenderer::VSync(int field)
 
 	if (s_dump && s_n >= s_saven)
 	{
-		m_regs->Dump(root_sw + format("%05d_f%lld_gs_reg.txt", s_n, m_perfmon.GetFrame()));
+		m_regs->Dump(root_sw + fmt::format("{:05d}_f{:d}_gs_reg.txt", s_n, m_perfmon.GetFrame()));
 	}
 
 	if (!m_dev->IsLost(true))
@@ -427,8 +427,8 @@ void GSRenderer::VSync(int field)
 
 			std::string s2 = m_regs->SMODE2.INT ? (std::string("Interlaced ") + (m_regs->SMODE2.FFMD ? "(frame)" : "(field)")) : "Progressive";
 
-			s = format(
-				"%lld | %d x %d | %.2f fps (%d%%) | %s - %s | %s | %d S/%d P/%d D | %d%% CPU | %.2f | %.2f",
+			s = fmt::format(
+				"{:d} | {:d} x {:d} | {:.2f} fps ({:d}%) | {:s} - {:s} | {:s} | {:d} S/{:d} P/{:d} D | {:d}% CPU | {:.2f} | {:.2f}",
 				m_perfmon.GetFrame(), GetInternalResolution().x, GetInternalResolution().y, fps, (int)(100.0 * fps / GetTvRefreshRate()),
 				s2.c_str(),
 				theApp.m_gs_interlace[m_interlace].name.c_str(),
@@ -444,7 +444,7 @@ void GSRenderer::VSync(int field)
 
 			if (fillrate > 0)
 			{
-				s += format(" | %.2f mpps", fps * fillrate / (1024 * 1024));
+				s += fmt::format(" | {:.2f} mpps", fps * fillrate / (1024 * 1024));
 
 				int sum = 0;
 
@@ -453,14 +453,14 @@ void GSRenderer::VSync(int field)
 					sum += m_perfmon.CPU(GSPerfMon::WorkerDraw0 + i);
 				}
 
-				s += format(" | %d%% CPU", sum);
+				s += fmt::format(" | {:d}% CPU", sum);
 			}
 		}
 		else
 		{
 			// Satisfy PCSX2's request for title info: minimal verbosity due to more external title text
 
-			s = format("%dx%d | %s", GetInternalResolution().x, GetInternalResolution().y, theApp.m_gs_interlace[m_interlace].name.c_str());
+			s = fmt::format("{:d}x{:d} | {:s}", GetInternalResolution().x, GetInternalResolution().y, theApp.m_gs_interlace[m_interlace].name.c_str());
 		}
 
 		if (m_capture.IsCapturing())
@@ -586,11 +586,11 @@ bool GSRenderer::MakeSnapshot(const std::string& path)
 			if (strftime(local_time, sizeof(local_time), "%Y%m%d%H%M%S", localtime(&cur_time)))
 			{
 				if (cur_time == prev_snap)
-					m_snapshot = format("%s_%s_(%d)", path.c_str(), local_time, n++);
+					m_snapshot = fmt::format("{:s}_{:s}_({:d})", path.c_str(), local_time, n++);
 				else
 				{
 					n = 2;
-					m_snapshot = format("%s_%s", path.c_str(), local_time);
+					m_snapshot = fmt::format("{:s}_{:s}", path.c_str(), local_time);
 				}
 				prev_snap = cur_time;
 			}
