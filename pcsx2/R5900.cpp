@@ -437,14 +437,11 @@ __fi void _cpuEventTest_Shared()
 		iopEventAction = false;
 	}
 
-	// ---- VU0 -------------
+	// ---- VU Sync -------------
 	// We're in a EventTest.  All dynarec registers are flushed
 	// so there is no need to freeze registers here.
 	CpuVU0->ExecuteBlock();
 	CpuVU1->ExecuteBlock();
-	// Note:  We don't update the VU1 here because it runs it's micro-programs in
-	// one shot always.  That is, when a program is executed the VU1 doesn't even
-	// bother to return until the program is completely finished.
 
 	// ---- Schedule Next Event Test --------------
 

@@ -44,10 +44,7 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 		s32 delta = (s32)(u32)(cpuRegs.cycle - cycle);
 		s32 nextblockcycles = m_Idx ? VU1.nextBlockCycles : VU0.nextBlockCycles;
 
-		if (delta < nextblockcycles)
-			return;
-
-		if (delta > 0) // Enough time has passed
+		if (delta >= nextblockcycles) // Enough time has passed
 			Execute(delta); // Execute the time since the last call
 	}
 }

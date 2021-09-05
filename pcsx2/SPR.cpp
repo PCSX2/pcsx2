@@ -30,6 +30,11 @@ static void TestClearVUs(u32 madr, u32 qwc, bool isWrite)
 {
 	if (madr >= 0x11000000 && (madr < 0x11010000))
 	{
+		// Sync the VU's if they're running, writing/reading from VU memory while they're running can be timing sensitive.
+		// Use Psychonauts for testing
+		CpuVU0->ExecuteBlock(0);
+		CpuVU1->ExecuteBlock(0);
+
 		if (madr < 0x11004000)
 		{
 			if(isWrite)
