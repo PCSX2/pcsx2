@@ -537,6 +537,7 @@ else(WIN32)
 			arrow_bottom arrow_left arrow_right)
 		add_custom_command(
 			OUTPUT  "${PADImgHeader}/${result_file}.h"
+			DEPENDS ${BIN2CPPDEP} "${PADImg}/${result_file}.png"
 			COMMAND ${BIN2CPP} "${PADImg}/${result_file}.png" "${PADImgHeader}/${result_file}" )
 	endforeach()
 
@@ -1477,7 +1478,11 @@ foreach(res_file IN ITEMS
 		AppIcon16 AppIcon32 AppIcon64 BackgroundLogo Logo NoIcon ButtonIcon_Camera
 		ConfigIcon_Cpu ConfigIcon_Gamefixes ConfigIcon_MemoryCard
 		ConfigIcon_Paths ConfigIcon_Speedhacks ConfigIcon_Video Breakpoint_Active Breakpoint_Inactive)
-	add_custom_command(OUTPUT "${res_bin}/${res_file}.h" COMMAND ${BIN2CPP} "${res_src}/${res_file}.png" "${res_bin}/${res_file}" )
+	add_custom_command(
+		OUTPUT "${res_bin}/${res_file}.h"
+		DEPENDS ${BIN2CPPDEP} "${res_src}/${res_file}.png"
+		COMMAND ${BIN2CPP} "${res_src}/${res_file}.png" "${res_bin}/${res_file}"
+	)
 endforeach()
 
 ### Generate Recording resource files
@@ -1485,7 +1490,11 @@ endforeach()
 foreach(res_file IN ITEMS
 		circlePressed controllerFull controllerHalf controllerThreeQuarters crossPressed downPressed l1Pressed l2Pressed l3Pressed leftPressed
 		r1Pressed r2Pressed r3Pressed rightPressed selectPressed squarePressed startPressed trianglePressed upPressed)
-	add_custom_command(OUTPUT "${res_rec_vp_src}/${res_file}.h" COMMAND ${BIN2CPP} "${res_rec_vp_src}/${res_file}.png" "${res_rec_vp_src}/${res_file}" )
+	add_custom_command(
+		OUTPUT "${res_rec_vp_src}/${res_file}.h"
+		DEPENDS ${BIN2CPPDEP} "${res_rec_vp_src}/${res_file}.png"
+		COMMAND ${BIN2CPP} "${res_rec_vp_src}/${res_file}.png" "${res_rec_vp_src}/${res_file}"
+	)
 endforeach()
 
 # additonal include directories
