@@ -26,49 +26,50 @@
 
 Threading::Semaphore::Semaphore()
 {
-    sem_init(&m_sema, false, 0);
+	sem_init(&m_sema, false, 0);
 }
 
 Threading::Semaphore::~Semaphore()
 {
-    sem_destroy(&m_sema);
+	sem_destroy(&m_sema);
 }
 
 void Threading::Semaphore::Reset()
 {
-    sem_destroy(&m_sema);
-    sem_init(&m_sema, false, 0);
+	sem_destroy(&m_sema);
+	sem_init(&m_sema, false, 0);
 }
 
 void Threading::Semaphore::Post()
 {
-    sem_post(&m_sema);
+	sem_post(&m_sema);
 }
 
 void Threading::Semaphore::Post(int multiple)
 {
 #if defined(_MSC_VER)
-    sem_post_multiple(&m_sema, multiple);
+	sem_post_multiple(&m_sema, multiple);
 #else
-    // Only w32pthreads has the post_multiple, but it's easy enough to fake:
-    while (multiple > 0) {
-        multiple--;
-        sem_post(&m_sema);
-    }
+	// Only w32pthreads has the post_multiple, but it's easy enough to fake:
+	while (multiple > 0)
+	{
+		multiple--;
+		sem_post(&m_sema);
+	}
 #endif
 }
 
 void Threading::Semaphore::WaitWithoutYield()
 {
-    pxAssertMsg(!wxThread::IsMain(), "Unyielding semaphore wait issued from the main/gui thread.  Please use Wait() instead.");
-    sem_wait(&m_sema);
+	pxAssertMsg(!wxThread::IsMain(), "Unyielding semaphore wait issued from the main/gui thread.  Please use Wait() instead.");
+	sem_wait(&m_sema);
 }
 
-bool Threading::Semaphore::WaitWithoutYield(const wxTimeSpan &timeout)
+bool Threading::Semaphore::WaitWithoutYield(const wxTimeSpan& timeout)
 {
-    wxDateTime megafail(wxDateTime::UNow() + timeout);
-    const timespec fail = {megafail.GetTicks(), megafail.GetMillisecond() * 1000000};
-    return sem_timedwait(&m_sema, &fail) == 0;
+	wxDateTime megafail(wxDateTime::UNow() + timeout);
+	const timespec fail = {megafail.GetTicks(), megafail.GetMillisecond() * 1000000};
+	return sem_timedwait(&m_sema, &fail) == 0;
 }
 
 
@@ -80,18 +81,23 @@ bool Threading::Semaphore::WaitWithoutYield(const wxTimeSpan &timeout)
 void Threading::Semaphore::Wait()
 {
 #if wxUSE_GUI
-    if (!wxThread::IsMain() || (wxTheApp == NULL)) {
-        sem_wait(&m_sema);
-    } else if (_WaitGui_RecursionGuard(L"Semaphore::Wait")) {
-        ScopedBusyCursor hourglass(Cursor_ReallyBusy);
-        sem_wait(&m_sema);
-    } else {
-        //ScopedBusyCursor hourglass( Cursor_KindaBusy );
-        while (!WaitWithoutYield(def_yieldgui_interval))
-            YieldToMain();
-    }
+	if (!wxThread::IsMain() || (wxTheApp == NULL))
+	{
+		sem_wait(&m_sema);
+	}
+	else if (_WaitGui_RecursionGuard(L"Semaphore::Wait"))
+	{
+		ScopedBusyCursor hourglass(Cursor_ReallyBusy);
+		sem_wait(&m_sema);
+	}
+	else
+	{
+		//ScopedBusyCursor hourglass( Cursor_KindaBusy );
+		while (!WaitWithoutYield(def_yieldgui_interval))
+			YieldToMain();
+	}
 #else
-    sem_wait(&m_sema);
+	sem_wait(&m_sema);
 #endif
 }
 
@@ -104,29 +110,35 @@ void Threading::Semaphore::Wait()
 //   false if the wait timed out before the semaphore was signaled, or true if the signal was
 //   reached prior to timeout.
 //
-bool Threading::Semaphore::Wait(const wxTimeSpan &timeout)
+bool Threading::Semaphore::Wait(const wxTimeSpan& timeout)
 {
 #if wxUSE_GUI
-    if (!wxThread::IsMain() || (wxTheApp == NULL)) {
-        return WaitWithoutYield(timeout);
-    } else if (_WaitGui_RecursionGuard(L"Semaphore::TimedWait")) {
-        ScopedBusyCursor hourglass(Cursor_ReallyBusy);
-        return WaitWithoutYield(timeout);
-    } else {
-        //ScopedBusyCursor hourglass( Cursor_KindaBusy );
-        wxTimeSpan countdown((timeout));
+	if (!wxThread::IsMain() || (wxTheApp == NULL))
+	{
+		return WaitWithoutYield(timeout);
+	}
+	else if (_WaitGui_RecursionGuard(L"Semaphore::TimedWait"))
+	{
+		ScopedBusyCursor hourglass(Cursor_ReallyBusy);
+		return WaitWithoutYield(timeout);
+	}
+	else
+	{
+		//ScopedBusyCursor hourglass( Cursor_KindaBusy );
+		wxTimeSpan countdown((timeout));
 
-        do {
-            if (WaitWithoutYield(def_yieldgui_interval))
-                break;
-            YieldToMain();
-            countdown -= def_yieldgui_interval;
-        } while (countdown.GetMilliseconds() > 0);
+		do
+		{
+			if (WaitWithoutYield(def_yieldgui_interval))
+				break;
+			YieldToMain();
+			countdown -= def_yieldgui_interval;
+		} while (countdown.GetMilliseconds() > 0);
 
-        return countdown.GetMilliseconds() > 0;
-    }
+		return countdown.GetMilliseconds() > 0;
+	}
 #else
-    return WaitWithoutYield(timeout);
+	return WaitWithoutYield(timeout);
 #endif
 }
 
@@ -140,26 +152,26 @@ bool Threading::Semaphore::Wait(const wxTimeSpan &timeout)
 // to do a lot of no-cancel waits in a tight loop worker thread, for example.
 void Threading::Semaphore::WaitNoCancel()
 {
-    int oldstate;
-    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
-    //WaitWithoutYield();
-    Wait();
-    pthread_setcancelstate(oldstate, NULL);
+	int oldstate;
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
+	//WaitWithoutYield();
+	Wait();
+	pthread_setcancelstate(oldstate, NULL);
 }
 
-void Threading::Semaphore::WaitNoCancel(const wxTimeSpan &timeout)
+void Threading::Semaphore::WaitNoCancel(const wxTimeSpan& timeout)
 {
-    int oldstate;
-    pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
-    //WaitWithoutYield( timeout );
-    Wait(timeout);
-    pthread_setcancelstate(oldstate, NULL);
+	int oldstate;
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &oldstate);
+	//WaitWithoutYield( timeout );
+	Wait(timeout);
+	pthread_setcancelstate(oldstate, NULL);
 }
 
 int Threading::Semaphore::Count()
 {
-    int retval;
-    sem_getvalue(&m_sema, &retval);
-    return retval;
+	int retval;
+	sem_getvalue(&m_sema, &retval);
+	return retval;
 }
 #endif
