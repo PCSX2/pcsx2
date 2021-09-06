@@ -53,7 +53,7 @@ extern __aligned16 const Fnptr_Void VU1_LOWER_OPCODE[128];
 extern __aligned16 const Fnptr_Void VU1_UPPER_OPCODE[64];
 extern __aligned16 const Fnptr_VuRegsN VU1regs_LOWER_OPCODE[128];
 extern __aligned16 const Fnptr_VuRegsN VU1regs_UPPER_OPCODE[64];
-
+extern void _vuClearFMAC(VURegs * VU);
 extern void _vuTestPipes(VURegs * VU);
 extern void _vuTestUpperStalls(VURegs * VU, _VURegsNum *VUregsn);
 extern void _vuTestLowerStalls(VURegs * VU, _VURegsNum *VUregsn);

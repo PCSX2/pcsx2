@@ -81,27 +81,28 @@ static void _vu0Exec(VURegs* VU)
 	lregs.cycles = 0;
 	u32 cyclesBeforeOp = VU0.cycle-1;
 
-#ifndef INT_VUSTALLHACK
 	_vuTestUpperStalls(VU, &uregs);
-#endif
 
 	/* check upper flags */
-	if (ptr[1] & 0x80000000) { /* I flag */
+	if (ptr[1] & 0x80000000) // I flag
+	{
 		_vuTestPipes(VU);
+
 		if (VU->VIBackupCycles > 0)
 			VU->VIBackupCycles -= std::min((u8)(VU0.cycle - cyclesBeforeOp), VU->VIBackupCycles);
+
 		_vu0ExecUpper(VU, ptr);
 
 		VU->VI[REG_I].UL = ptr[0];
 		memset(&lregs, 0, sizeof(lregs));
-	} else {
+	} 
+	else
+	{
 		VU->code = ptr[0];
 
-		
 		VU0regs_LOWER_OPCODE[VU->code >> 25](&lregs);
-#ifndef INT_VUSTALLHACK
 		_vuTestLowerStalls(VU, &lregs);
-#endif
+
 		_vuTestPipes(VU);
 		if (VU->VIBackupCycles > 0)
 			VU->VIBackupCycles -= std::min((u8)(VU0.cycle - cyclesBeforeOp), VU->VIBackupCycles);
@@ -153,6 +154,10 @@ static void _vu0Exec(VURegs* VU)
 			}
 		}
 	}
+
+	if (uregs.pipe == VUPIPE_FMAC || lregs.pipe == VUPIPE_FMAC)
+		_vuClearFMAC(VU);
+
 	_vuAddUpperStalls(VU, &uregs);
 	_vuAddLowerStalls(VU, &lregs);
 
@@ -179,6 +184,10 @@ static void _vu0Exec(VURegs* VU)
 			vif0Regs.stat.VEW = false;
 		}
 	}
+
+	// Progress the write position of the FMAC pipeline by one place
+	if (uregs.pipe == VUPIPE_FMAC || lregs.pipe == VUPIPE_FMAC)
+		VU->fmacwritepos = ++VU->fmacwritepos & 3;
 }
 
 void vu0Exec(VURegs* VU)
@@ -203,6 +212,17 @@ InterpVU0::InterpVU0()
 	IsInterpreter = true;
 }
 
+void InterpVU0::Reset()
+{
+	DevCon.Warning("VU0 Int Reset");
+	VU0.fmacwritepos = 0;
+	VU0.fmacreadpos = 0;
+	VU0.fmaccount = 0;
+	VU0.ialuwritepos = 0;
+	VU0.ialureadpos = 0;
+	VU0.ialucount = 0;
+
+}
 void InterpVU0::SetStartPC(u32 startPC)
 {
 	VU0.start_pc = startPC;
