@@ -354,12 +354,6 @@ static const bool doDBitHandling = false;
 // This hack only updates the Status Flag on blocks that will read it.
 // Most blocks do not read status flags, so this is a big speedup.
 
-// Min/Max Speed Hack
-#define CHECK_VU_MINMAXHACK 0 //(EmuConfig.Speedhacks.vuMinMax)
-// This hack uses SSE min/max instructions instead of emulated "logical min/max"
-// The PS2 does not consider denormals as zero on the mini/max opcodes.
-// This speedup is minor, but on AMD X2 CPUs it can be a 1~3% speedup
-
 //------------------------------------------------------------------
 // Unknown Data
 //------------------------------------------------------------------

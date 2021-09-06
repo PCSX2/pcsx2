@@ -477,31 +477,19 @@ void ADD_SS_TriAceHack(microVU& mVU, const xmm& to, const xmm& from)
 
 void SSE_MAXPS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
-	if (CHECK_VU_MINMAXHACK)
-		xMAX.PS(to, from);
-	else
-		MIN_MAX_PS(mVU, to, from, t1, t2, false);
+	MIN_MAX_PS(mVU, to, from, t1, t2, false);
 }
 void SSE_MINPS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
-	if (CHECK_VU_MINMAXHACK)
-		xMIN.PS(to, from);
-	else
-		MIN_MAX_PS(mVU, to, from, t1, t2, true);
+	MIN_MAX_PS(mVU, to, from, t1, t2, true);
 }
 void SSE_MAXSS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
-	if (CHECK_VU_MINMAXHACK)
-		xMAX.SS(to, from);
-	else
-		MIN_MAX_SS(mVU, to, from, t1, false);
+	MIN_MAX_SS(mVU, to, from, t1, false);
 }
 void SSE_MINSS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
-	if (CHECK_VU_MINMAXHACK)
-		xMIN.SS(to, from);
-	else
-		MIN_MAX_SS(mVU, to, from, t1, true);
+	MIN_MAX_SS(mVU, to, from, t1, true);
 }
 void SSE_ADD2SS(mV, const xmm& to, const xmm& from, const xmm& t1 = xEmptyReg, const xmm& t2 = xEmptyReg)
 {
