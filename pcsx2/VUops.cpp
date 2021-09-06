@@ -477,7 +477,7 @@ static __fi float vuADD_TriAceHack(u32 a, u32 b) {
 	// On VU0 TriAce Games use ADDi and expects these bit-perfect results:
 	//if (a == 0xb3e2a619 && b == 0x42546666) return vuDouble(0x42546666);
 	//if (a == 0x8b5b19e9 && b == 0xc7f079b3) return vuDouble(0xc7f079b3);
-	if (a == 0x4b1ed4a8 && b == 0x43a02666) return vuDouble(0x4b1ed5e7);
+	//if (a == 0x4b1ed4a8 && b == 0x43a02666) return vuDouble(0x4b1ed5e7);
 	//if (a == 0x7d1ca47b && b == 0x42f23333) return vuDouble(0x7d1ca47b);
 
 	// In the 3rd case, some other rounding error is giving us incorrect
@@ -487,20 +487,19 @@ static __fi float vuADD_TriAceHack(u32 a, u32 b) {
 	// microVU gets the correct operands and result. The interps likely
 	// don't get it due to rounding towards nearest in other calculations.
 
-	if (0) {
-		// microVU uses something like this to get TriAce games working,
-		// but VU interpreters don't seem to need it currently:
-		s32 aExp = (a >> 23) & 0xff;
-		s32 bExp = (b >> 23) & 0xff;
-		if (aExp - bExp >= 25) b &= 0x80000000;
-		if (aExp - bExp <=-25) a &= 0x80000000;
-		float ret = vuDouble(a) + vuDouble(b);
-		DevCon.WriteLn("aExp = %d, bExp = %d", aExp, bExp);
-		DevCon.WriteLn("0x%08x + 0x%08x = 0x%08x", a, b, (u32&)ret);
-		DevCon.WriteLn("%f + %f = %f", vuDouble(a), vuDouble(b), ret);
-		return ret;
-	}
-	return vuDouble(a) + vuDouble(b);
+	// microVU uses something like this to get TriAce games working,
+	// but VU interpreters don't seem to need it currently:
+
+	// Update Sept 2021, now the interpreters don't suck, they do - Refraction
+	s32 aExp = (a >> 23) & 0xff;
+	s32 bExp = (b >> 23) & 0xff;
+	if (aExp - bExp >= 25) b &= 0x80000000;
+	if (aExp - bExp <=-25) a &= 0x80000000;
+	float ret = vuDouble(a) + vuDouble(b);
+	//DevCon.WriteLn("aExp = %d, bExp = %d", aExp, bExp);
+	//DevCon.WriteLn("0x%08x + 0x%08x = 0x%08x", a, b, (u32&)ret);
+	//DevCon.WriteLn("%f + %f = %f", vuDouble(a), vuDouble(b), ret);
+	return ret;
 }
 
 void _vuABS(VURegs * VU) {
@@ -2231,20 +2230,40 @@ static __ri void _vuERLENG(VURegs * VU) {
 	VU->p.F = p;
 }
 
+
+static __ri float _vuCalculateEATAN(float inputvalue) {
+	float eatanconst[9] = { 0.999999344348907f, -0.333298563957214f, 0.199465364217758f, -0.13085337519646f,
+						0.096420042216778f, -0.055909886956215f, 0.021861229091883f, -0.004054057877511f,
+						0.785398185253143f };
+
+	float result = (eatanconst[0] * inputvalue) + (eatanconst[1] * pow(inputvalue, 3)) + (eatanconst[2] * pow(inputvalue, 5))
+		+ (eatanconst[3] * pow(inputvalue, 7)) + (eatanconst[4] * pow(inputvalue, 9)) + (eatanconst[5] * pow(inputvalue, 11))
+		+ (eatanconst[6] * pow(inputvalue, 13)) + (eatanconst[7] * pow(inputvalue, 15));
+
+	result += eatanconst[8];
+
+	result = vuDouble(*(u32*)&result);
+
+	return result;
+}
+
+static __ri void _vuEATAN(VURegs* VU) {
+	float p = _vuCalculateEATAN(vuDouble(VU->VF[_Fs_].UL[_Fsf_]));
+	VU->p.F = p;
+}
+
 static __ri void _vuEATANxy(VURegs * VU) {
-	DevCon.Warning("EATANxy");
 	float p = 0;
 	if(vuDouble(VU->VF[_Fs_].i.x) != 0) {
-		p = atan2(vuDouble(VU->VF[_Fs_].i.y), vuDouble(VU->VF[_Fs_].i.x));
+		p = _vuCalculateEATAN(vuDouble(VU->VF[_Fs_].i.y) / vuDouble(VU->VF[_Fs_].i.x));
 	}
 	VU->p.F = p;
 }
 
 static __ri void _vuEATANxz(VURegs * VU) {
-	DevCon.Warning("EATANxz");
 	float p = 0;
 	if(vuDouble(VU->VF[_Fs_].i.x) != 0) {
-		p = atan2(vuDouble(VU->VF[_Fs_].i.z), vuDouble(VU->VF[_Fs_].i.x));
+		p = _vuCalculateEATAN(vuDouble(VU->VF[_Fs_].i.z) / vuDouble(VU->VF[_Fs_].i.x));
 	}
 	VU->p.F = p;
 }
@@ -2282,19 +2301,23 @@ static __ri void _vuERSQRT(VURegs * VU) {
 }
 
 static __ri void _vuESIN(VURegs * VU) {
-	DevCon.Warning("ESIN");
-	float p = sin(vuDouble(VU->VF[_Fs_].UL[_Fsf_]));
-	VU->p.F = p;
-}
+	float sinconsts[5] = { 1.0f, -0.166666567325592f, 0.008333025500178f, -0.000198074136279f, 0.000002601886990f };
+	float p = vuDouble(VU->VF[_Fs_].UL[_Fsf_]);
 
-static __ri void _vuEATAN(VURegs * VU) {
-	DevCon.Warning("EATAN");
-	float p = atan(vuDouble(VU->VF[_Fs_].UL[_Fsf_]));
-	VU->p.F = p;
+	p = (sinconsts[0] * p) + (sinconsts[1] * pow(p, 3)) + (sinconsts[2] * pow(p, 5)) + (sinconsts[3] * pow(p, 7)) + (sinconsts[4] * pow(p, 9));
+	VU->p.F = vuDouble(*(u32*)&p);
 }
 
 static __ri void _vuEEXP(VURegs * VU) {
-	float p = exp(-(vuDouble(VU->VF[_Fs_].UL[_Fsf_])));
+	float consts[6] = { 0.249998688697815f, 0.031257584691048f, 0.002591371303424f,
+						0.000171562001924f, 0.000005430199963f, 0.000000690600018f };
+	float p = vuDouble(VU->VF[_Fs_].UL[_Fsf_]);
+
+	p = 1.0f + (consts[0] * p) + (consts[1] * pow(p, 2)) + (consts[2] * pow(p, 3)) + (consts[3] * pow(p, 4)) + (consts[4] * pow(p, 5)) + (consts[5] * pow(p, 6));
+	p = pow(p, 4);
+	p = vuDouble(*(u32*)&p);
+	p = 1 / p;
+
 	VU->p.F = p;
 }
 
@@ -4266,14 +4289,24 @@ _vuRegsTables(VU1, VU1regs, Fnptr_VuRegsN)
 
 static __fi void SYNCMSFLAGS()
 {
-	VU0.VI[REG_STATUS_FLAG].UL = VU0.statusflag;
+	VU0.VI[REG_STATUS_FLAG].UL = (VU0.VI[REG_STATUS_FLAG].UL & 0xC30) | (VU0.statusflag & 0xF) | ((VU0.statusflag & 0xF) << 6);
 	VU0.VI[REG_MAC_FLAG].UL = VU0.macflag;
+}
+
+static __fi void SYNCCLIPFLAG()
+{
+	VU0.VI[REG_CLIP_FLAG].UL = VU0.clipflag;
+}
+
+static __fi void SYNCSTATUSFLAG()
+{
+	VU0.VI[REG_STATUS_FLAG].UL = (VU0.VI[REG_STATUS_FLAG].UL & 0x3F) | (VU0.statusflag & 0xFC0);
 }
 
 static __fi void SYNCFDIV()
 {
 	VU0.VI[REG_Q].UL = VU0.q.UL;
-	VU0.VI[REG_STATUS_FLAG].UL = VU0.statusflag;
+	VU0.VI[REG_STATUS_FLAG].UL = (VU0.VI[REG_STATUS_FLAG].UL & 0x3CF) | (VU0.statusflag & 0x30) | ((VU0.statusflag & 0x30) << 6);
 }
 
 void VABS()  { VU0.code = cpuRegs.code; _vuABS(&VU0); }
@@ -4370,7 +4403,7 @@ void VITOF0()  { VU0.code = cpuRegs.code; _vuITOF0(&VU0); }
 void VITOF4()  { VU0.code = cpuRegs.code; _vuITOF4(&VU0); }
 void VITOF12() { VU0.code = cpuRegs.code; _vuITOF12(&VU0); }
 void VITOF15() { VU0.code = cpuRegs.code; _vuITOF15(&VU0); }
-void VCLIPw()  { VU0.code = cpuRegs.code; _vuCLIP(&VU0); VU0.VI[REG_CLIP_FLAG].UL = VU0.clipflag; }
+void VCLIPw()  { VU0.code = cpuRegs.code; _vuCLIP(&VU0); SYNCCLIPFLAG(); }
 
 void VDIV()    { VU0.code = cpuRegs.code; _vuDIV(&VU0); SYNCFDIV(); }
 void VSQRT()   { VU0.code = cpuRegs.code; _vuSQRT(&VU0); SYNCFDIV(); }
@@ -4404,14 +4437,14 @@ void VWAITQ()  { VU0.code = cpuRegs.code; _vuWAITQ(&VU0); }
 void VFSAND()  { VU0.code = cpuRegs.code; _vuFSAND(&VU0); }
 void VFSEQ()   { VU0.code = cpuRegs.code; _vuFSEQ(&VU0); }
 void VFSOR()   { VU0.code = cpuRegs.code; _vuFSOR(&VU0); }
-void VFSSET()  { VU0.code = cpuRegs.code; _vuFSSET(&VU0); }
+void VFSSET()  { VU0.code = cpuRegs.code; _vuFSSET(&VU0); SYNCSTATUSFLAG(); }
 void VFMAND()  { VU0.code = cpuRegs.code; _vuFMAND(&VU0); }
 void VFMEQ()   { VU0.code = cpuRegs.code; _vuFMEQ(&VU0); }
 void VFMOR()   { VU0.code = cpuRegs.code; _vuFMOR(&VU0); }
 void VFCAND()  { VU0.code = cpuRegs.code; _vuFCAND(&VU0); }
 void VFCEQ()   { VU0.code = cpuRegs.code; _vuFCEQ(&VU0); }
 void VFCOR()   { VU0.code = cpuRegs.code; _vuFCOR(&VU0); }
-void VFCSET()  { VU0.code = cpuRegs.code; _vuFCSET(&VU0); }
+void VFCSET()  { VU0.code = cpuRegs.code; _vuFCSET(&VU0); SYNCCLIPFLAG(); }
 void VFCGET()  { VU0.code = cpuRegs.code; _vuFCGET(&VU0); }
 void VXITOP()  { VU0.code = cpuRegs.code; _vuXITOP(&VU0); }
 
