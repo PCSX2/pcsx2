@@ -170,7 +170,7 @@ public:
 
 	void Reserve() { }
 	void Shutdown() noexcept { }
-	void Reset() { }
+	void Reset();
 
 	void Step();
 	void SetStartPC(u32 startPC);

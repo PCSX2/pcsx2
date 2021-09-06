@@ -92,11 +92,13 @@ static void _vu1Exec(VURegs* VU)
 	_vuTestUpperStalls(VU, &uregs);
 
 	/* check upper flags */
-	if (ptr[1] & 0x80000000)
-	{ /* I flag */
+	if (ptr[1] & 0x80000000) // I Flag (Lower op is a float)
+	{
 		_vuTestPipes(VU);
+
 		if (VU->VIBackupCycles > 0)
 			VU->VIBackupCycles -= std::min((u8)(VU1.cycle - cyclesBeforeOp), VU->VIBackupCycles);
+
 		_vu1ExecUpper(VU, ptr);
 
 		VU->VI[REG_I].UL = ptr[0];
@@ -174,10 +176,11 @@ static void _vu1Exec(VURegs* VU)
 			}
 		}
 	}
-	_vuAddUpperStalls(VU, &uregs);
+	if (uregs.pipe == VUPIPE_FMAC || lregs.pipe == VUPIPE_FMAC)
+		_vuClearFMAC(VU);
 
-	//if (!(ptr[1] & 0x80000000))
-		_vuAddLowerStalls(VU, &lregs);
+	_vuAddUpperStalls(VU, &uregs);
+	_vuAddLowerStalls(VU, &lregs);
 
 	if (VU->branch > 0)
 	{
@@ -245,6 +248,10 @@ static void _vu1Exec(VURegs* VU)
 			}
 		}
 	}
+	
+	// Progress the write position of the FMAC pipeline by one place
+	if (uregs.pipe == VUPIPE_FMAC || lregs.pipe == VUPIPE_FMAC)
+		VU->fmacwritepos = ++VU->fmacwritepos & 3;
 }
 
 void vu1Exec(VURegs* VU)
@@ -272,6 +279,13 @@ InterpVU1::InterpVU1()
 
 void InterpVU1::Reset()
 {
+	DevCon.Warning("VU1 Int Reset");
+	VU1.fmacwritepos = 0;
+	VU1.fmacreadpos = 0;
+	VU1.fmaccount = 0;
+	VU1.ialuwritepos = 0;
+	VU1.ialureadpos = 0;
+	VU1.ialucount = 0;
 	vu1Thread.WaitVU();
 }
 
