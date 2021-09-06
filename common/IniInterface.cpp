@@ -194,12 +194,12 @@ int IniLoader::EntryBitfield(const wxString& var, int value, const int defvalue)
 
 void IniLoader::Entry(const wxString& var, double& value, const double defvalue)
 {
-	auto readval = wxString::FromDouble(value);
+	auto readval = wxString::FromCDouble(value);
 
 	if (m_Config)
 		m_Config->Read(var, &readval);
 
-	if (!readval.ToDouble(&value))
+	if (!readval.ToCDouble(&value))
 		value = 0.0;
 }
 
@@ -369,7 +369,7 @@ void IniSaver::Entry(const wxString& var, double& value, const double defvalue)
 	if (!m_Config)
 		return;
 
-	m_Config->Write(var, wxString::FromDouble(value));
+	m_Config->Write(var, wxString::FromCDouble(value));
 }
 
 void IniSaver::Entry(const wxString& var, wxPoint& value, const wxPoint defvalue)
