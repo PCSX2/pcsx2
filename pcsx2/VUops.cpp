@@ -265,22 +265,17 @@ static __fi void _vuTestEFUStalls(VURegs* VU, _VURegsNum* VUregsn)
 	if (VU->efu.enable == 0)
 		return;
 
-	if (VUregsn->cycles == 0) // WAITP
-	{
-		u32 newCycle = VU->efu.sCycle + VU->efu.Cycle - 1;
-		VUM_LOG("waiting EFU pipe %d", newCycle - VU->cycle);
-		if (newCycle > VU->cycle)
-			VU->cycle = newCycle;
-		VU->efu.sCycle = VU->cycle;
-		VU->efu.Cycle = 1;
-	}
-	else
-	{
-		u32 newCycle = (VU->efu.Cycle + VU->efu.sCycle);
-		VUM_LOG("waiting EFU pipe %d", newCycle - VU->cycle);
-		if (newCycle > VU->cycle)
-			VU->cycle = newCycle;
-	}
+	// With EFU commands they have a throughput/latency that doesn't match, this means if a stall occurs
+	// The stall is released 1 cycle before P is updated. However there is no other command that can read
+	// P on the same cycle as the stall is released, and if the stall is caused by an EFU command other
+	// than WAITP, we're going to overwrite the value in the pipeline, which will break everything.
+	// So the TL;DR of this is that we should be safe to release 1 cycle early and write back P
+	VU->efu.Cycle -= 1;
+	u32 newCycle = VU->efu.sCycle + VU->efu.Cycle;
+
+	VUM_LOG("waiting EFU pipe %d", newCycle - VU->cycle);
+	if (newCycle > VU->cycle)
+		VU->cycle = newCycle;
 }
 
 static __fi void _vuTestALUStalls(VURegs* VU, _VURegsNum* VUregsn)
@@ -377,7 +372,7 @@ static __ri void __fastcall _vuEFUAdd(VURegs* VU, int cycles)
 	VU->efu.reg.F = VU->p.F;
 }
 
-static __ri void __fastcall _vuIALUAdd(VURegs* VU, _VURegsNum* VUregsn)
+static __ri void __fastcall _vuAddIALUStalls(VURegs* VU, _VURegsNum* VUregsn)
 {
 
 	if (VUregsn->cycles == 0)
@@ -392,11 +387,6 @@ static __ri void __fastcall _vuIALUAdd(VURegs* VU, _VURegsNum* VUregsn)
 
 	VU->ialuwritepos = ++VU->ialuwritepos & 3;
 	VU->ialucount++;
-}
-
-static __fi void _vuAddIALUStalls(VURegs* VU, _VURegsNum* VUregsn)
-{
-	_vuIALUAdd(VU, VUregsn);
 }
 
 static __fi void _vuAddFDIVStalls(VURegs * VU, _VURegsNum *VUregsn)
