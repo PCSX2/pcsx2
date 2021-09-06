@@ -324,15 +324,8 @@ __fi void _vuTestLowerStalls(VURegs* VU, _VURegsNum* VUregsn)
 __fi void _vuClearFMAC(VURegs* VU)
 {
 	int i = VU->fmacwritepos;
-	VU->fmac[i].regupper =0;
-	VU->fmac[i].xyzwupper = 0;
-	VU->fmac[i].flagreg = 0;
-	VU->fmac[i].reglower = 0;
-	VU->fmac[i].xyzwlower = 0;
-	VU->fmac[i].macflag = 0;
-	VU->fmac[i].statusflag = 0;
-	VU->fmac[i].clipflag = 0;
 
+	memset(&VU->fmac[i], 0, sizeof(fmacPipe));
 	VU->fmaccount++;
 }
 
@@ -2317,17 +2310,25 @@ void _vuXGKICKFlush(VURegs* VU)
 	{
 		if (VU->xgkicksizeremaining == 0)
 		{
-			IPU_LOG("Banana Reading next packet");
 			u32 size = gifUnit.GetGSPacketSize(GIF_PATH_1, VU->Mem, VU->xgkickaddr);
 			VU->xgkicksizeremaining = size & 0xFFFF;
 			VU->xgkickendpacket = size >> 31;
 			VU->xgkickdiff = 0x4000 - VU->xgkickaddr;
+
+			if (VU->xgkicksizeremaining == 0)
+			{
+				VUM_LOG("Invalid GS packet size returned, cancelling XGKick");
+				VU->xgkickenable = false;
+				break;
+			}
+			else
+				VUM_LOG("XGKICK New tag size %d bytes EOP %d", VU->xgkicksizeremaining, VU->xgkickendpacket);
 		}
 
-		IPU_LOG("Banana Force Transferring %x bytes from %x size left %x", VU->xgkicksizeremaining, VU->xgkickaddr, VU->xgkicksizeremaining);
+		VUM_LOG("XGKICK Force Transferring %x bytes from %x size left %x", VU->xgkicksizeremaining, VU->xgkickaddr, VU->xgkicksizeremaining);
 
 		if (VU->xgkicksizeremaining > VU->xgkickdiff) {
-			IPU_LOG( "VU1 Int: XGkick Wrap!");
+			//VUM_LOG( "VU1 Int: XGkick Wrap!");
 			gifUnit.gifPath[GIF_PATH_1].CopyGSPacketData(&VU->Mem[VU->xgkickaddr], VU->xgkickdiff, true);
 			gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &VU->Mem[0], VU->xgkicksizeremaining - VU->xgkickdiff, true);
 		}
@@ -2341,11 +2342,14 @@ void _vuXGKICKFlush(VURegs* VU)
 			VU->cycle += VU->xgkicksizeremaining / 2;
 
 		VU->xgkicksizeremaining = 0;
-		
-		IPU_LOG("Banana next addr %x left size %x EOP %d", VU->xgkickaddr, VU->xgkicksizeremaining, VU->xgkickendpacket);
+
+		if (!VU->xgkickendpacket)
+			VUM_LOG("XGKICK next addr %x left size %x EOP %d", VU->xgkickaddr, VU->xgkicksizeremaining, VU->xgkickendpacket);
+		else
+			VUM_LOG("XGKICK transfer finished");
 
 	}
-	VU->xgkickenable = 0;
+	VU->xgkickenable = false;
 	_vuTestPipes(VU);
 }
 
@@ -2359,15 +2363,13 @@ static __ri void _vuXGKICK(VURegs * VU)
 	u32 addr = (VU->VI[_Is_].US[0] & 0x3ff) * 16;
 	u32 diff = 0x4000 - addr;
 
-	VU->xgkickenable = 1;
+	VU->xgkickenable = true;
 	VU->xgkickaddr = addr;
 	VU->xgkickdiff = diff;
 	VU->xgkicksizeremaining = 0;
-	VU->xgkickendpacket = 0;
+	VU->xgkickendpacket = false;
 	VU->xgkicklastcycle = VU->cycle;
-	IPU_LOG("Banana XGKick size %x EOP %d addr %x", VU->xgkicksizeremaining, VU->xgkickendpacket, addr);
-	//_vuXGKICKFlush(VU);
-	//VU->cycle = oldcycle;
+	VUM_LOG("XGKICK size %x EOP %d addr %x", VU->xgkicksizeremaining, VU->xgkickendpacket, addr);
 }
 
 static __ri void _vuXTOP(VURegs * VU) {
