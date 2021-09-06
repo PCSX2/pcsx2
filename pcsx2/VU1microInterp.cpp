@@ -47,24 +47,17 @@ static void _vu1Exec(VURegs* VU)
 {
 	_VURegsNum lregs;
 	_VURegsNum uregs;
-	VECTOR _VF;
-	VECTOR _VFc;
-	REG_VI _VI;
-	REG_VI _VIc;
 	u32* ptr;
-	int vfreg;
-	int vireg;
-	int discard = 0;
 
 	ptr = (u32*)&VU->Micro[VU->VI[REG_TPC].UL];
 	VU->VI[REG_TPC].UL += 8;
 
-	if (ptr[1] & 0x40000000)
-	{ /* E flag */
+	if (ptr[1] & 0x40000000) // E flag
+	{
 		VU->ebit = 2;
 	}
-	if (ptr[1] & 0x10000000)
-	{ /* D flag */
+	if (ptr[1] & 0x10000000) // D flag
+	{
 		if (VU0.VI[REG_FBRST].UL & 0x400)
 		{
 			VU0.VI[REG_VPU_STAT].UL |= 0x200;
@@ -72,8 +65,8 @@ static void _vu1Exec(VURegs* VU)
 			VU->ebit = 1;
 		}
 	}
-	if (ptr[1] & 0x08000000)
-	{ /* T flag */
+	if (ptr[1] & 0x08000000) // T flag
+	{
 		if (VU0.VI[REG_FBRST].UL & 0x800)
 		{
 			VU0.VI[REG_VPU_STAT].UL |= 0x400;
@@ -88,7 +81,7 @@ static void _vu1Exec(VURegs* VU)
 	VU1regs_UPPER_OPCODE[VU->code & 0x3f](&uregs);
 
 	u32 cyclesBeforeOp = VU1.cycle-1;
-	lregs.cycles = 0;
+	
 	_vuTestUpperStalls(VU, &uregs);
 
 	/* check upper flags */
@@ -108,7 +101,16 @@ static void _vu1Exec(VURegs* VU)
 	}
 	else
 	{
+		VECTOR _VF;
+		VECTOR _VFc;
+		REG_VI _VI;
+		REG_VI _VIc;
+		int vfreg = 0;
+		int vireg = 0;
+		int discard = 0;
+
 		VU->code = ptr[0];
+		lregs.cycles = 0;
 		VU1regs_LOWER_OPCODE[VU->code >> 25](&lregs);
 
 		_vuTestLowerStalls(VU, &lregs);
@@ -117,8 +119,6 @@ static void _vu1Exec(VURegs* VU)
 		if (VU->VIBackupCycles > 0)
 			VU->VIBackupCycles-= std::min((u8)(VU1.cycle- cyclesBeforeOp), VU->VIBackupCycles);
 
-		vfreg = 0;
-		vireg = 0;
 		if (uregs.VFwrite)
 		{
 			if (lregs.VFwrite == uregs.VFwrite)
@@ -176,6 +176,7 @@ static void _vu1Exec(VURegs* VU)
 			}
 		}
 	}
+	// Clear an FMAC read for use
 	if (uregs.pipe == VUPIPE_FMAC || lregs.pipe == VUPIPE_FMAC)
 		_vuClearFMAC(VU);
 
@@ -190,10 +191,9 @@ static void _vu1Exec(VURegs* VU)
 
 			if (VU->takedelaybranch)
 			{
-				VU->branch = 1;
 				//DevCon.Warning("VU1 - Branch/Jump in Delay Slot");
+				VU->branch = 1;
 				VU->branchpc = VU->delaybranchpc;
-				VU->delaybranchpc = 0;
 				VU->takedelaybranch = false;
 			}
 		}
@@ -209,24 +209,29 @@ static void _vu1Exec(VURegs* VU)
 			vif1Regs.stat.VEW = false;
 		}
 	}
+
 	if (VU->xgkickenable && (VU1.cycle - VU->xgkicklastcycle) >= 2)
 	{
 		if (VU->xgkicksizeremaining == 0)
 		{
-			IPU_LOG("Banana Reading next packet from %x", VU->xgkickaddr);
 			u32 size = gifUnit.GetGSPacketSize(GIF_PATH_1, VU->Mem, VU->xgkickaddr);
 			VU->xgkicksizeremaining = size & 0xFFFF;
 			VU->xgkickendpacket = size >> 31;
+
 			if (VU->xgkicksizeremaining == 0)
-				VU->xgkickenable = 0;
-			IPU_LOG("Banana New packet size %x", VU->xgkicksizeremaining);
+			{
+				VUM_LOG("Invalid GS packet size returned, cancelling XGKick");
+				VU->xgkickenable = false;
+			}
+			else
+				VUM_LOG("XGKICK New tag size %d bytes EOP %d", VU->xgkicksizeremaining, VU->xgkickendpacket);
 		}
 		u32 transfersize = std::min(VU->xgkicksizeremaining / 0x10, (VU1.cycle - VU->xgkicklastcycle) / 2);
 		transfersize = std::min(transfersize, VU->xgkickdiff / 0x10);
 
 		if (transfersize)
 		{
-			IPU_LOG("Banana Transferring %x bytes from %x size left %x", transfersize * 0x10, VU->xgkickaddr, VU->xgkicksizeremaining);
+			VUM_LOG("XGKICK Transferring %x bytes from %x size left %x", transfersize * 0x10, VU->xgkickaddr, VU->xgkicksizeremaining);
 			if ((transfersize * 0x10) > VU->xgkicksizeremaining)
 				gifUnit.gifPath[GIF_PATH_1].CopyGSPacketData(&VU->Mem[VU->xgkickaddr], transfersize * 0x10, true);
 			else
@@ -235,16 +240,14 @@ static void _vu1Exec(VURegs* VU)
 			VU->xgkickaddr = (VU->xgkickaddr + (transfersize * 0x10)) & 0x3FFF;
 			VU->xgkicksizeremaining -= (transfersize * 0x10);
 			VU->xgkickdiff = 0x4000 - VU->xgkickaddr;
-			IPU_LOG("Banana next addr %x left size %x EOP %d", VU->xgkickaddr, VU->xgkicksizeremaining, VU->xgkickendpacket);
 			VU->xgkicklastcycle += std::max(transfersize * 2, 2U);
 
 			if (VU->xgkicksizeremaining || !VU->xgkickendpacket)
-				VU->xgkickenable = 1;
+				VUM_LOG("XGKICK next addr %x left size %x", VU->xgkickaddr, VU->xgkicksizeremaining);
 			else
 			{
-
-				VU->xgkickenable = 0;
-				IPU_LOG("Banana transfer finished");
+				VUM_LOG("XGKICK transfer finished");
+				VU->xgkickenable = false;
 			}
 		}
 	}

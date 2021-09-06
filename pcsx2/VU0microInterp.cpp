@@ -40,26 +40,22 @@ static void _vu0Exec(VURegs* VU)
 {
 	_VURegsNum lregs;
 	_VURegsNum uregs;
-	VECTOR _VF;
-	VECTOR _VFc;
-	REG_VI _VI;
-	REG_VI _VIc;
 	u32 *ptr;
-	int vfreg;
-	int vireg;
-	int discard=0;
 
 	ptr = (u32*)&VU->Micro[VU->VI[REG_TPC].UL];
 	VU->VI[REG_TPC].UL+=8;
 
-	if (ptr[1] & 0x40000000) {
+	if (ptr[1] & 0x40000000) // E flag
+	{
 		VU->ebit = 2;
 	}
-	if (ptr[1] & 0x20000000) { /* M flag */
+	if (ptr[1] & 0x20000000) // M flag
+	{
 		VU->flags|= VUFLAG_MFLAGSET;
 //		Console.WriteLn("fixme: M flag set");
 	}
-	if (ptr[1] & 0x10000000) { /* D flag */
+	if (ptr[1] & 0x10000000) // D flag
+	{
 		if (VU0.VI[REG_FBRST].UL & 0x4) {
 			VU0.VI[REG_VPU_STAT].UL|= 0x2;
 			hwIntcIrq(INTC_VU0);
@@ -67,7 +63,8 @@ static void _vu0Exec(VURegs* VU)
 		}
 		
 	}
-	if (ptr[1] & 0x08000000) { /* T flag */
+	if (ptr[1] & 0x08000000) // T flag
+	{
 		if (VU0.VI[REG_FBRST].UL & 0x8) {
 			VU0.VI[REG_VPU_STAT].UL|= 0x4;
 			hwIntcIrq(INTC_VU0);
@@ -78,7 +75,7 @@ static void _vu0Exec(VURegs* VU)
 
 	VU->code = ptr[1];
 	VU0regs_UPPER_OPCODE[VU->code & 0x3f](&uregs);
-	lregs.cycles = 0;
+	
 	u32 cyclesBeforeOp = VU0.cycle-1;
 
 	_vuTestUpperStalls(VU, &uregs);
@@ -98,8 +95,16 @@ static void _vu0Exec(VURegs* VU)
 	} 
 	else
 	{
-		VU->code = ptr[0];
+		VECTOR _VF;
+		VECTOR _VFc;
+		REG_VI _VI;
+		REG_VI _VIc;
+		int vfreg = 0;
+		int vireg = 0;
+		int discard = 0;
 
+		VU->code = ptr[0];
+		lregs.cycles = 0;
 		VU0regs_LOWER_OPCODE[VU->code >> 25](&lregs);
 		_vuTestLowerStalls(VU, &lregs);
 
@@ -108,25 +113,30 @@ static void _vu0Exec(VURegs* VU)
 			VU->VIBackupCycles -= std::min((u8)(VU0.cycle - cyclesBeforeOp), VU->VIBackupCycles);
 		vu0branch = lregs.pipe == VUPIPE_BRANCH;
 
-		vfreg = 0; vireg = 0;
-		if (uregs.VFwrite) {
-			if (lregs.VFwrite == uregs.VFwrite) {
+		if (uregs.VFwrite)
+		{
+			if (lregs.VFwrite == uregs.VFwrite)
+			{
 //				Console.Warning("*PCSX2*: Warning, VF write to the same reg in both lower/upper cycle");
 				discard = 1;
 			}
 			if (lregs.VFread0 == uregs.VFwrite ||
-				lregs.VFread1 == uregs.VFwrite) {
+				lregs.VFread1 == uregs.VFwrite)
+			{
 //				Console.WriteLn("saving reg %d at pc=%x", i, VU->VI[REG_TPC].UL);
 				_VF = VU->VF[uregs.VFwrite];
 				vfreg = uregs.VFwrite;
 			}
 		}
-		if (uregs.VIread & (1 << REG_CLIP_FLAG)) {
-			if (lregs.VIwrite & (1 << REG_CLIP_FLAG)) {
-				Console.Warning("*PCSX2*: Warning, VI write to the same reg in both lower/upper cycle");
+		if (uregs.VIread & (1 << REG_CLIP_FLAG))
+		{
+			if (lregs.VIwrite & (1 << REG_CLIP_FLAG))
+			{
+				//Console.Warning("*PCSX2*: Warning, VI write to the same reg in both lower/upper cycle");
 				discard = 1;
 			}
-			if (lregs.VIread & (1 << REG_CLIP_FLAG)) {
+			if (lregs.VIread & (1 << REG_CLIP_FLAG))
+			{
 				_VI = VU0.VI[REG_CLIP_FLAG];
 				vireg = REG_CLIP_FLAG;
 			}
@@ -134,22 +144,27 @@ static void _vu0Exec(VURegs* VU)
 
 		_vu0ExecUpper(VU, ptr);
 
-		if (discard == 0) {
-			if (vfreg) {
+		if (discard == 0)
+		{
+			if (vfreg)
+			{
 				_VFc = VU->VF[vfreg];
 				VU->VF[vfreg] = _VF;
 			}
-			if (vireg) {
+			if (vireg)
+			{
 				_VIc = VU->VI[vireg];
 				VU->VI[vireg] = _VI;
 			}
 
 			_vu0ExecLower(VU, ptr);
 
-			if (vfreg) {
+			if (vfreg)
+			{
 				VU->VF[vfreg] = _VFc;
 			}
-			if (vireg) {
+			if (vireg)
+			{
 				VU->VI[vireg] = _VIc;
 			}
 		}
@@ -161,23 +176,26 @@ static void _vu0Exec(VURegs* VU)
 	_vuAddUpperStalls(VU, &uregs);
 	_vuAddLowerStalls(VU, &lregs);
 
-	if (VU->branch > 0) {
-		if (VU->branch-- == 1) {
+	if (VU->branch > 0)
+	{
+		if (VU->branch-- == 1)
+		{
 			VU->VI[REG_TPC].UL = VU->branchpc;
 
 			if(VU->takedelaybranch)
-			{				
-				VU->branch = 1;
+			{
 				DevCon.Warning("VU0 - Branch/Jump in Delay Slot");
+				VU->branch = 1;
 				VU->branchpc = VU->delaybranchpc;
-				VU->delaybranchpc = 0;
 				VU->takedelaybranch = false;
 			}
 		}
 	}
 
-	if( VU->ebit > 0 ) {
-		if( VU->ebit-- == 1 ) {
+	if(VU->ebit > 0)
+	{
+		if(VU->ebit-- == 1)
+		{
 			VU->VIBackupCycles = 0;
 			_vuFlushAll(VU);
 			VU0.VI[REG_VPU_STAT].UL&= ~0x1; /* E flag */
