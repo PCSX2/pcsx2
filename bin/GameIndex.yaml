@@ -20326,6 +20326,9 @@ SLPM-62482:
 SLPM-62483:
   name: "Simple 2000 Series Vol.48 - The Taxi"
   region: "NTSC-J"
+  roundModes:
+     eeRoundMode: 2
+     vuRoundMode: 2
 SLPM-62484:
   name: "Simple 2000 Series Vol.50 - The Daibijin"
   region: "NTSC-J"
