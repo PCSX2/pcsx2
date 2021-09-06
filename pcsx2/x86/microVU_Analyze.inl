@@ -646,21 +646,16 @@ __ri int mVUbranchCheck(mV)
 
 			if (mVUlow.branch == 2 || mVUlow.branch == 10) // Needs linking, we can only guess this if the next is not conditional
 			{
-				if (branchType <= 2 || branchType >= 9) // First branch is not conditional so we know what the link will be so we can let the existing evil block do its thing! We know where to get the addr :)
+				// First branch is not conditional so we know what the link will be
+				// So we can let the existing evil block do its thing! We know where to get the addr :)
+				if (branchType <= 2 && branchType >= 9)
 				{
-					DevCon.Warning("yo");
-					DevCon.Warning("yo");
-					DevCon.Warning("yo");
-					DevCon.Warning("yo");
-					DevCon.Warning("yo");
-					DevCon.Warning("----");
-
 					mVUregs.blockType = 2;
-				} //Else it is conditional, so we need to do some nasty processing later in microVU_Branch.inl
+				} // Else it is conditional, so we need to do some nasty processing later in microVU_Branch.inl
 			}
 			else
 			{
-				mVUregs.blockType = 2; //Second branch doesn't need linking, so can let it run its evil block course (MGS2 for testing)
+				mVUregs.blockType = 2; // Second branch doesn't need linking, so can let it run its evil block course (MGS2 for testing)
 			}
 
 			mVUregs.needExactMatch |= 7; // This might not be necessary, but w/e...
