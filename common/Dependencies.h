@@ -61,44 +61,48 @@
 // method is not implemented!  You must implement it yourself if you want to use it:
 //   EnumToString(value);
 //
-#define ImplementEnumOperators(enumName)                                                                             \
-    static __fi enumName &operator++(enumName &src)                                                                  \
-    {                                                                                                                \
-        src = (enumName)((int)src + 1);                                                                              \
-        return src;                                                                                                  \
-    }                                                                                                                \
-    static __fi enumName &operator--(enumName &src)                                                                  \
-    {                                                                                                                \
-        src = (enumName)((int)src - 1);                                                                              \
-        return src;                                                                                                  \
-    }                                                                                                                \
-    static __fi enumName operator++(enumName &src, int)                                                              \
-    {                                                                                                                \
-        enumName orig = src;                                                                                         \
-        src = (enumName)((int)src + 1);                                                                              \
-        return orig;                                                                                                 \
-    }                                                                                                                \
-    static __fi enumName operator--(enumName &src, int)                                                              \
-    {                                                                                                                \
-        enumName orig = src;                                                                                         \
-        src = (enumName)((int)src - 1);                                                                              \
-        return orig;                                                                                                 \
-    }                                                                                                                \
-                                                                                                                     \
-    static __fi bool operator<(const enumName &left, const pxEnumEnd_t &) { return (int)left < enumName##_COUNT; }   \
-    static __fi bool operator!=(const enumName &left, const pxEnumEnd_t &) { return (int)left != enumName##_COUNT; } \
-    static __fi bool operator==(const enumName &left, const pxEnumEnd_t &) { return (int)left == enumName##_COUNT; } \
-                                                                                                                     \
-    static __fi bool EnumIsValid(enumName id)                                                                        \
-    {                                                                                                                \
-        return ((int)id >= enumName##_FIRST) && ((int)id < enumName##_COUNT);                                        \
-    }                                                                                                                \
-    static __fi void EnumAssert(enumName id)                                                                         \
-    {                                                                                                                \
-        pxAssert(EnumIsValid(id));                                                                                   \
-    }                                                                                                                \
-                                                                                                                     \
-    extern const wxChar *EnumToString(enumName id)
+#define ImplementEnumOperators(enumName) \
+	static __fi enumName& operator++(enumName& src) \
+	{ \
+		src = (enumName)((int)src + 1); \
+		return src; \
+	} \
+\
+	static __fi enumName& operator--(enumName& src) \
+	{ \
+		src = (enumName)((int)src - 1); \
+		return src; \
+	} \
+\
+	static __fi enumName operator++(enumName& src, int) \
+	{ \
+		enumName orig = src; \
+		src = (enumName)((int)src + 1); \
+		return orig; \
+	} \
+\
+	static __fi enumName operator--(enumName& src, int) \
+	{ \
+		enumName orig = src; \
+		src = (enumName)((int)src - 1); \
+		return orig; \
+	} \
+\
+	static __fi bool operator<(const enumName& left, const pxEnumEnd_t&) { return (int)left < enumName##_COUNT; } \
+	static __fi bool operator!=(const enumName& left, const pxEnumEnd_t&) { return (int)left != enumName##_COUNT; } \
+	static __fi bool operator==(const enumName& left, const pxEnumEnd_t&) { return (int)left == enumName##_COUNT; } \
+\
+	static __fi bool EnumIsValid(enumName id) \
+	{ \
+		return ((int)id >= enumName##_FIRST) && ((int)id < enumName##_COUNT); \
+	} \
+\
+	static __fi void EnumAssert(enumName id) \
+	{ \
+		pxAssert(EnumIsValid(id)); \
+	} \
+\
+	extern const wxChar* EnumToString(enumName id)
 
 class pxEnumEnd_t
 {
@@ -130,9 +134,9 @@ static const pxEnumEnd_t pxEnumEnd = {};
 //
 #ifndef DeclareNoncopyableObject
 #define DeclareNoncopyableObject(classname) \
-private:                                    \
-    explicit classname(const classname &);  \
-    classname &operator=(const classname &)
+private: \
+	explicit classname(const classname&); \
+	classname& operator=(const classname&)
 #endif
 
 
@@ -144,19 +148,19 @@ private:                                    \
 class ScopedBool
 {
 protected:
-    bool *m_boolme;
+	bool* m_boolme;
 
 public:
-    ScopedBool(bool &boolme)
-    {
-        boolme = true;
-        m_boolme = &boolme;
-    }
+	ScopedBool(bool& boolme)
+	{
+		boolme = true;
+		m_boolme = &boolme;
+	}
 
-    ~ScopedBool()
-    {
-        *m_boolme = false;
-    }
+	~ScopedBool()
+	{
+		*m_boolme = false;
+	}
 };
 
 // --------------------------------------------------------------------------------------
@@ -218,7 +222,7 @@ public:
 
 #include <stdexcept>
 #include <cstring> // string.h under c++
-#include <cstdio>  // stdio.h under c++
+#include <cstdio> // stdio.h under c++
 #include <cstdlib>
 #include <vector>
 #include <list>
@@ -262,12 +266,12 @@ static const s64 _4gb = _1gb * 4;
 #define pxE_dev(english) pxExpandMsg((english))
 
 
-extern const wxChar *__fastcall pxExpandMsg(const wxChar *message);
-extern const wxChar *__fastcall pxGetTranslation(const wxChar *message);
+extern const wxChar* __fastcall pxExpandMsg(const wxChar* message);
+extern const wxChar* __fastcall pxGetTranslation(const wxChar* message);
 extern bool pxIsEnglish(int id);
 
-extern wxString fromUTF8(const char *src);
-extern wxString fromAscii(const char *src);
+extern wxString fromUTF8(const char* src);
+extern wxString fromAscii(const char* src);
 
 
 #include "common/Assertions.h"

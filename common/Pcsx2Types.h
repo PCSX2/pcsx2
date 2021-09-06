@@ -60,116 +60,116 @@ typedef unsigned int uint;
 #ifdef __cplusplus
 union u128
 {
-    struct
-    {
-        u64 lo;
-        u64 hi;
-    };
+	struct
+	{
+		u64 lo;
+		u64 hi;
+	};
 
-    u64 _u64[2];
-    u32 _u32[4];
-    u16 _u16[8];
-    u8 _u8[16];
+	u64 _u64[2];
+	u32 _u32[4];
+	u16 _u16[8];
+	u8 _u8[16];
 
-    // Explicit conversion from u64. Zero-extends the source through 128 bits.
-    static u128 From64(u64 src)
-    {
-        u128 retval;
-        retval.lo = src;
-        retval.hi = 0;
-        return retval;
-    }
+	// Explicit conversion from u64. Zero-extends the source through 128 bits.
+	static u128 From64(u64 src)
+	{
+		u128 retval;
+		retval.lo = src;
+		retval.hi = 0;
+		return retval;
+	}
 
-    // Explicit conversion from u32. Zero-extends the source through 128 bits.
-    static u128 From32(u32 src)
-    {
-        u128 retval;
-        retval._u32[0] = src;
-        retval._u32[1] = 0;
-        retval.hi = 0;
-        return retval;
-    }
+	// Explicit conversion from u32. Zero-extends the source through 128 bits.
+	static u128 From32(u32 src)
+	{
+		u128 retval;
+		retval._u32[0] = src;
+		retval._u32[1] = 0;
+		retval.hi = 0;
+		return retval;
+	}
 
-    operator u32() const { return _u32[0]; }
-    operator u16() const { return _u16[0]; }
-    operator u8() const { return _u8[0]; }
+	operator u32() const { return _u32[0]; }
+	operator u16() const { return _u16[0]; }
+	operator u8() const { return _u8[0]; }
 
-    bool operator==(const u128 &right) const
-    {
-        return (lo == right.lo) && (hi == right.hi);
-    }
+	bool operator==(const u128& right) const
+	{
+		return (lo == right.lo) && (hi == right.hi);
+	}
 
-    bool operator!=(const u128 &right) const
-    {
-        return (lo != right.lo) || (hi != right.hi);
-    }
+	bool operator!=(const u128& right) const
+	{
+		return (lo != right.lo) || (hi != right.hi);
+	}
 
-    // In order for the following ToString() and WriteTo methods to be available, you must
-    // be linking to both wxWidgets and the pxWidgets extension library.  If you are not
-    // using them, then you will need to provide your own implementations of these methods.
-    wxString ToString() const;
-    wxString ToString64() const;
-    wxString ToString8() const;
+	// In order for the following ToString() and WriteTo methods to be available, you must
+	// be linking to both wxWidgets and the pxWidgets extension library.  If you are not
+	// using them, then you will need to provide your own implementations of these methods.
+	wxString ToString() const;
+	wxString ToString64() const;
+	wxString ToString8() const;
 
-    void WriteTo(FastFormatAscii &dest) const;
-    void WriteTo8(FastFormatAscii &dest) const;
-    void WriteTo64(FastFormatAscii &dest) const;
+	void WriteTo(FastFormatAscii& dest) const;
+	void WriteTo8(FastFormatAscii& dest) const;
+	void WriteTo64(FastFormatAscii& dest) const;
 };
 
 struct s128
 {
-    s64 lo;
-    s64 hi;
+	s64 lo;
+	s64 hi;
 
-    // explicit conversion from s64, with sign extension.
-    static s128 From64(s64 src)
-    {
-        s128 retval = {src, (src < 0) ? -1 : 0};
-        return retval;
-    }
+	// explicit conversion from s64, with sign extension.
+	static s128 From64(s64 src)
+	{
+		s128 retval = {src, (src < 0) ? -1 : 0};
+		return retval;
+	}
 
-    // explicit conversion from s32, with sign extension.
-    static s128 From64(s32 src)
-    {
-        s128 retval = {src, (src < 0) ? -1 : 0};
-        return retval;
-    }
+	// explicit conversion from s32, with sign extension.
+	static s128 From64(s32 src)
+	{
+		s128 retval = {src, (src < 0) ? -1 : 0};
+		return retval;
+	}
 
-    operator u32() const { return (s32)lo; }
-    operator u16() const { return (s16)lo; }
-    operator u8() const { return (s8)lo; }
+	operator u32() const { return (s32)lo; }
+	operator u16() const { return (s16)lo; }
+	operator u8() const { return (s8)lo; }
 
-    bool operator==(const s128 &right) const
-    {
-        return (lo == right.lo) && (hi == right.hi);
-    }
+	bool operator==(const s128& right) const
+	{
+		return (lo == right.lo) && (hi == right.hi);
+	}
 
-    bool operator!=(const s128 &right) const
-    {
-        return (lo != right.lo) || (hi != right.hi);
-    }
+	bool operator!=(const s128& right) const
+	{
+		return (lo != right.lo) || (hi != right.hi);
+	}
 };
 
 #else
 
 typedef union _u128_t
 {
-    struct
-    {
-        u64 lo;
-        u64 hi;
-    };
+	struct
+	{
+		u64 lo;
+		u64 hi;
+	};
 
-    u64 _u64[2];
-    u32 _u32[4];
-    u16 _u16[8];
-    u8 _u8[16];
+	u64 _u64[2];
+	u32 _u32[4];
+	u16 _u16[8];
+	u8 _u8[16];
 } u128;
 
 typedef union _s128_t
 {
-    u64 lo;
-    s64 hi;
+	u64 lo;
+	s64 hi;
 } s128;
 
 #endif

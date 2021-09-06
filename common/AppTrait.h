@@ -27,13 +27,13 @@
 //
 class Pcsx2AppTraits : public wxGUIAppTraits
 {
-    typedef wxGUIAppTraits _parent;
+	typedef wxGUIAppTraits _parent;
 
 public:
-    virtual ~Pcsx2AppTraits() {}
-    wxMessageOutput *CreateMessageOutput();
+	virtual ~Pcsx2AppTraits() {}
+	wxMessageOutput* CreateMessageOutput();
 
 #ifdef wxUSE_STDPATHS
-    wxStandardPaths &GetStandardPaths();
+	wxStandardPaths& GetStandardPaths();
 #endif
 };

@@ -32,7 +32,7 @@
 #undef Yield // release the burden of windows.h global namespace spam.
 
 #define AffinityAssert_AllowFrom_MainUI() \
-    pxAssertMsg(wxThread::IsMain(), "Thread affinity violation: Call allowed from main thread only.")
+	pxAssertMsg(wxThread::IsMain(), "Thread affinity violation: Call allowed from main thread only.")
 
 // --------------------------------------------------------------------------------------
 //  pxThreadLog / ConsoleLogSource_Threading
@@ -40,25 +40,25 @@
 
 class ConsoleLogSource_Threading : ConsoleLogSource
 {
-    typedef ConsoleLogSource _parent;
+	typedef ConsoleLogSource _parent;
 
 public:
-    using _parent::IsActive;
+	using _parent::IsActive;
 
-    ConsoleLogSource_Threading();
+	ConsoleLogSource_Threading();
 
-    bool Write(const wxString &thrname, const wxChar *msg)
-    {
-        return _parent::Write(wxsFormat(L"(thread:%s) ", WX_STR(thrname)) + msg);
-    }
-    bool Warn(const wxString &thrname, const wxChar *msg)
-    {
-        return _parent::Warn(wxsFormat(L"(thread:%s) ", WX_STR(thrname)) + msg);
-    }
-    bool Error(const wxString &thrname, const wxChar *msg)
-    {
-        return _parent::Error(wxsFormat(L"(thread:%s) ", WX_STR(thrname)) + msg);
-    }
+	bool Write(const wxString& thrname, const wxChar* msg)
+	{
+		return _parent::Write(wxsFormat(L"(thread:%s) ", WX_STR(thrname)) + msg);
+	}
+	bool Warn(const wxString& thrname, const wxChar* msg)
+	{
+		return _parent::Warn(wxsFormat(L"(thread:%s) ", WX_STR(thrname)) + msg);
+	}
+	bool Error(const wxString& thrname, const wxChar* msg)
+	{
+		return _parent::Error(wxsFormat(L"(thread:%s) ", WX_STR(thrname)) + msg);
+	}
 };
 
 extern ConsoleLogSource_Threading pxConLog_Thread;
@@ -88,97 +88,97 @@ class wxTimeSpan;
 
 namespace Threading
 {
-class pxThread;
-class RwMutex;
+	class pxThread;
+	class RwMutex;
 
-extern void pxTestCancel();
-extern pxThread *pxGetCurrentThread();
-extern wxString pxGetCurrentThreadName();
-extern u64 GetThreadCpuTime();
-extern u64 GetThreadTicksPerSecond();
+	extern void pxTestCancel();
+	extern pxThread* pxGetCurrentThread();
+	extern wxString pxGetCurrentThreadName();
+	extern u64 GetThreadCpuTime();
+	extern u64 GetThreadTicksPerSecond();
 
-// Yields the current thread and provides cancellation points if the thread is managed by
-// pxThread.  Unmanaged threads use standard Sleep.
-extern void pxYield(int ms);
-}
+	// Yields the current thread and provides cancellation points if the thread is managed by
+	// pxThread.  Unmanaged threads use standard Sleep.
+	extern void pxYield(int ms);
+} // namespace Threading
 
 namespace Exception
 {
-class BaseThreadError : public RuntimeError
-{
-    DEFINE_EXCEPTION_COPYTORS(BaseThreadError, RuntimeError)
-    DEFINE_EXCEPTION_MESSAGES(BaseThreadError)
+	class BaseThreadError : public RuntimeError
+	{
+		DEFINE_EXCEPTION_COPYTORS(BaseThreadError, RuntimeError)
+		DEFINE_EXCEPTION_MESSAGES(BaseThreadError)
 
-public:
-    Threading::pxThread *m_thread;
+	public:
+		Threading::pxThread* m_thread;
 
-protected:
-    BaseThreadError()
-    {
-        m_thread = NULL;
-    }
+	protected:
+		BaseThreadError()
+		{
+			m_thread = NULL;
+		}
 
-public:
-    explicit BaseThreadError(Threading::pxThread *_thread)
-    {
-        m_thread = _thread;
-        m_message_diag = L"An unspecified thread-related error occurred (thread=%s)";
-    }
+	public:
+		explicit BaseThreadError(Threading::pxThread* _thread)
+		{
+			m_thread = _thread;
+			m_message_diag = L"An unspecified thread-related error occurred (thread=%s)";
+		}
 
-    explicit BaseThreadError(Threading::pxThread &_thread)
-    {
-        m_thread = &_thread;
-        m_message_diag = L"An unspecified thread-related error occurred (thread=%s)";
-    }
+		explicit BaseThreadError(Threading::pxThread& _thread)
+		{
+			m_thread = &_thread;
+			m_message_diag = L"An unspecified thread-related error occurred (thread=%s)";
+		}
 
-    virtual wxString FormatDiagnosticMessage() const;
-    virtual wxString FormatDisplayMessage() const;
+		virtual wxString FormatDiagnosticMessage() const;
+		virtual wxString FormatDisplayMessage() const;
 
-    Threading::pxThread &Thread();
-    const Threading::pxThread &Thread() const;
-};
+		Threading::pxThread& Thread();
+		const Threading::pxThread& Thread() const;
+	};
 
-class ThreadCreationError : public BaseThreadError
-{
-    DEFINE_EXCEPTION_COPYTORS(ThreadCreationError, BaseThreadError)
+	class ThreadCreationError : public BaseThreadError
+	{
+		DEFINE_EXCEPTION_COPYTORS(ThreadCreationError, BaseThreadError)
 
-public:
-    explicit ThreadCreationError(Threading::pxThread *_thread)
-    {
-        m_thread = _thread;
-        SetBothMsgs(L"Thread creation failure.  An unspecified error occurred while trying to create the %s thread.");
-    }
+	public:
+		explicit ThreadCreationError(Threading::pxThread* _thread)
+		{
+			m_thread = _thread;
+			SetBothMsgs(L"Thread creation failure.  An unspecified error occurred while trying to create the %s thread.");
+		}
 
-    explicit ThreadCreationError(Threading::pxThread &_thread)
-    {
-        m_thread = &_thread;
-        SetBothMsgs(L"Thread creation failure.  An unspecified error occurred while trying to create the %s thread.");
-    }
-};
-}
+		explicit ThreadCreationError(Threading::pxThread& _thread)
+		{
+			m_thread = &_thread;
+			SetBothMsgs(L"Thread creation failure.  An unspecified error occurred while trying to create the %s thread.");
+		}
+	};
+} // namespace Exception
 
 
 namespace Threading
 {
-// --------------------------------------------------------------------------------------
-//  Platform Specific External APIs
-// --------------------------------------------------------------------------------------
-// The following set of documented functions have Linux/Win32 specific implementations,
-// which are found in WinThreads.cpp and LnxThreads.cpp
+	// --------------------------------------------------------------------------------------
+	//  Platform Specific External APIs
+	// --------------------------------------------------------------------------------------
+	// The following set of documented functions have Linux/Win32 specific implementations,
+	// which are found in WinThreads.cpp and LnxThreads.cpp
 
-// Releases a timeslice to other threads.
-extern void Timeslice();
+	// Releases a timeslice to other threads.
+	extern void Timeslice();
 
-// For use in spin/wait loops.
-extern void SpinWait();
+	// For use in spin/wait loops.
+	extern void SpinWait();
 
-// Optional implementation to enable hires thread/process scheduler for the operating system.
-// Needed by Windows, but might not be relevant to other platforms.
-extern void EnableHiresScheduler();
-extern void DisableHiresScheduler();
+	// Optional implementation to enable hires thread/process scheduler for the operating system.
+	// Needed by Windows, but might not be relevant to other platforms.
+	extern void EnableHiresScheduler();
+	extern void DisableHiresScheduler();
 
-// sleeps the current thread for the given number of milliseconds.
-extern void Sleep(int ms);
+	// sleeps the current thread for the given number of milliseconds.
+	extern void Sleep(int ms);
 
 // pthread Cond is an evil api that is not suited for Pcsx2 needs.
 // Let's not use it. Use mutexes and semaphores instead to create waits. (Air)
@@ -196,230 +196,230 @@ extern void Sleep(int ms);
 	};
 #endif
 
-// --------------------------------------------------------------------------------------
-//  NonblockingMutex
-// --------------------------------------------------------------------------------------
-// This is a very simple non-blocking mutex, which behaves similarly to pthread_mutex's
-// trylock(), but without any of the extra overhead needed to set up a structure capable
-// of blocking waits.  It basically optimizes to a single InterlockedExchange.
-//
-// Simple use: if TryAcquire() returns false, the Bool is already interlocked by another thread.
-// If TryAcquire() returns true, you've locked the object and are *responsible* for unlocking
-// it later.
-//
-class NonblockingMutex
-{
-protected:
-    std::atomic_flag val;
+	// --------------------------------------------------------------------------------------
+	//  NonblockingMutex
+	// --------------------------------------------------------------------------------------
+	// This is a very simple non-blocking mutex, which behaves similarly to pthread_mutex's
+	// trylock(), but without any of the extra overhead needed to set up a structure capable
+	// of blocking waits.  It basically optimizes to a single InterlockedExchange.
+	//
+	// Simple use: if TryAcquire() returns false, the Bool is already interlocked by another thread.
+	// If TryAcquire() returns true, you've locked the object and are *responsible* for unlocking
+	// it later.
+	//
+	class NonblockingMutex
+	{
+	protected:
+		std::atomic_flag val;
 
-public:
-    NonblockingMutex() { val.clear(); }
-    virtual ~NonblockingMutex() = default;
+	public:
+		NonblockingMutex() { val.clear(); }
+		virtual ~NonblockingMutex() = default;
 
-    bool TryAcquire() noexcept
-    {
-        return !val.test_and_set();
-    }
+		bool TryAcquire() noexcept
+		{
+			return !val.test_and_set();
+		}
 
-    // Can be done with a TryAcquire/Release but it is likely better to do it outside of the object
-    bool IsLocked()
-    {
-        pxAssertMsg(0, "IsLocked isn't supported for NonblockingMutex");
-        return false;
-    }
+		// Can be done with a TryAcquire/Release but it is likely better to do it outside of the object
+		bool IsLocked()
+		{
+			pxAssertMsg(0, "IsLocked isn't supported for NonblockingMutex");
+			return false;
+		}
 
-    void Release()
-    {
-        val.clear();
-    }
-};
+		void Release()
+		{
+			val.clear();
+		}
+	};
 
-class Semaphore
-{
-protected:
+	class Semaphore
+	{
+	protected:
 #ifdef __APPLE__
-    semaphore_t m_sema;
-    int m_counter;
+		semaphore_t m_sema;
+		int m_counter;
 #else
-    sem_t m_sema;
+		sem_t m_sema;
 #endif
 
-public:
-    Semaphore();
-    virtual ~Semaphore();
+	public:
+		Semaphore();
+		virtual ~Semaphore();
 
-    void Reset();
-    void Post();
-    void Post(int multiple);
+		void Reset();
+		void Post();
+		void Post(int multiple);
 
-    void WaitWithoutYield();
-    bool WaitWithoutYield(const wxTimeSpan &timeout);
-    void WaitNoCancel();
-    void WaitNoCancel(const wxTimeSpan &timeout);
-    int Count();
+		void WaitWithoutYield();
+		bool WaitWithoutYield(const wxTimeSpan& timeout);
+		void WaitNoCancel();
+		void WaitNoCancel(const wxTimeSpan& timeout);
+		int Count();
 
-    void Wait();
-    bool Wait(const wxTimeSpan &timeout);
-};
+		void Wait();
+		bool Wait(const wxTimeSpan& timeout);
+	};
 
-class Mutex
-{
-protected:
-    pthread_mutex_t m_mutex;
+	class Mutex
+	{
+	protected:
+		pthread_mutex_t m_mutex;
 
-public:
-    Mutex();
-    virtual ~Mutex();
-    virtual bool IsRecursive() const { return false; }
+	public:
+		Mutex();
+		virtual ~Mutex();
+		virtual bool IsRecursive() const { return false; }
 
-    void Recreate();
-    bool RecreateIfLocked();
-    void Detach();
+		void Recreate();
+		bool RecreateIfLocked();
+		void Detach();
 
-    void Acquire();
-    bool Acquire(const wxTimeSpan &timeout);
-    bool TryAcquire();
-    void Release();
+		void Acquire();
+		bool Acquire(const wxTimeSpan& timeout);
+		bool TryAcquire();
+		void Release();
 
-    void AcquireWithoutYield();
-    bool AcquireWithoutYield(const wxTimeSpan &timeout);
+		void AcquireWithoutYield();
+		bool AcquireWithoutYield(const wxTimeSpan& timeout);
 
-    void Wait();
-    bool Wait(const wxTimeSpan &timeout);
-    void WaitWithoutYield();
-    bool WaitWithoutYield(const wxTimeSpan &timeout);
+		void Wait();
+		bool Wait(const wxTimeSpan& timeout);
+		void WaitWithoutYield();
+		bool WaitWithoutYield(const wxTimeSpan& timeout);
 
-protected:
-    // empty constructor used by MutexLockRecursive
-    Mutex(bool) {}
-};
+	protected:
+		// empty constructor used by MutexLockRecursive
+		Mutex(bool) {}
+	};
 
-class MutexRecursive : public Mutex
-{
-public:
-    MutexRecursive();
-    virtual ~MutexRecursive();
-    virtual bool IsRecursive() const { return true; }
-};
+	class MutexRecursive : public Mutex
+	{
+	public:
+		MutexRecursive();
+		virtual ~MutexRecursive();
+		virtual bool IsRecursive() const { return true; }
+	};
 
-// --------------------------------------------------------------------------------------
-//  ScopedLock
-// --------------------------------------------------------------------------------------
-// Helper class for using Mutexes.  Using this class provides an exception-safe (and
-// generally clean) method of locking code inside a function or conditional block.  The lock
-// will be automatically released on any return or exit from the function.
-//
-// Const qualification note:
-//  ScopedLock takes const instances of the mutex, even though the mutex is modified
-//  by locking and unlocking.  Two rationales:
-//
-//  1) when designing classes with accessors (GetString, GetValue, etc) that need mutexes,
-//     this class needs a const hack to allow those accessors to be const (which is typically
-//     *very* important).
-//
-//  2) The state of the Mutex is guaranteed to be unchanged when the calling function or
-//     scope exits, by any means.  Only via manual calls to Release or Acquire does that
-//     change, and typically those are only used in very special circumstances of their own.
-//
-class ScopedLock
-{
-    DeclareNoncopyableObject(ScopedLock);
+	// --------------------------------------------------------------------------------------
+	//  ScopedLock
+	// --------------------------------------------------------------------------------------
+	// Helper class for using Mutexes.  Using this class provides an exception-safe (and
+	// generally clean) method of locking code inside a function or conditional block.  The lock
+	// will be automatically released on any return or exit from the function.
+	//
+	// Const qualification note:
+	//  ScopedLock takes const instances of the mutex, even though the mutex is modified
+	//  by locking and unlocking.  Two rationales:
+	//
+	//  1) when designing classes with accessors (GetString, GetValue, etc) that need mutexes,
+	//     this class needs a const hack to allow those accessors to be const (which is typically
+	//     *very* important).
+	//
+	//  2) The state of the Mutex is guaranteed to be unchanged when the calling function or
+	//     scope exits, by any means.  Only via manual calls to Release or Acquire does that
+	//     change, and typically those are only used in very special circumstances of their own.
+	//
+	class ScopedLock
+	{
+		DeclareNoncopyableObject(ScopedLock);
 
-protected:
-    Mutex *m_lock;
-    bool m_IsLocked;
+	protected:
+		Mutex* m_lock;
+		bool m_IsLocked;
 
-public:
-    virtual ~ScopedLock();
-    explicit ScopedLock(const Mutex *locker = NULL);
-    explicit ScopedLock(const Mutex &locker);
-    void AssignAndLock(const Mutex &locker);
-    void AssignAndLock(const Mutex *locker);
+	public:
+		virtual ~ScopedLock();
+		explicit ScopedLock(const Mutex* locker = NULL);
+		explicit ScopedLock(const Mutex& locker);
+		void AssignAndLock(const Mutex& locker);
+		void AssignAndLock(const Mutex* locker);
 
-    void Assign(const Mutex &locker);
-    void Assign(const Mutex *locker);
+		void Assign(const Mutex& locker);
+		void Assign(const Mutex* locker);
 
-    void Release();
-    void Acquire();
+		void Release();
+		void Acquire();
 
-    bool IsLocked() const { return m_IsLocked; }
+		bool IsLocked() const { return m_IsLocked; }
 
-protected:
-    // Special constructor used by ScopedTryLock
-    ScopedLock(const Mutex &locker, bool isTryLock);
-};
+	protected:
+		// Special constructor used by ScopedTryLock
+		ScopedLock(const Mutex& locker, bool isTryLock);
+	};
 
-class ScopedTryLock : public ScopedLock
-{
-public:
-    ScopedTryLock(const Mutex &locker)
-        : ScopedLock(locker, true)
-    {
-    }
-    virtual ~ScopedTryLock() = default;
-    bool Failed() const { return !m_IsLocked; }
-};
+	class ScopedTryLock : public ScopedLock
+	{
+	public:
+		ScopedTryLock(const Mutex& locker)
+			: ScopedLock(locker, true)
+		{
+		}
+		virtual ~ScopedTryLock() = default;
+		bool Failed() const { return !m_IsLocked; }
+	};
 
-// --------------------------------------------------------------------------------------
-//  ScopedNonblockingLock
-// --------------------------------------------------------------------------------------
-// A ScopedTryLock branded for use with Nonblocking mutexes.  See ScopedTryLock for details.
-//
-class ScopedNonblockingLock
-{
-    DeclareNoncopyableObject(ScopedNonblockingLock);
+	// --------------------------------------------------------------------------------------
+	//  ScopedNonblockingLock
+	// --------------------------------------------------------------------------------------
+	// A ScopedTryLock branded for use with Nonblocking mutexes.  See ScopedTryLock for details.
+	//
+	class ScopedNonblockingLock
+	{
+		DeclareNoncopyableObject(ScopedNonblockingLock);
 
-protected:
-    NonblockingMutex &m_lock;
-    bool m_IsLocked;
+	protected:
+		NonblockingMutex& m_lock;
+		bool m_IsLocked;
 
-public:
-    ScopedNonblockingLock(NonblockingMutex &locker)
-        : m_lock(locker)
-        , m_IsLocked(m_lock.TryAcquire())
-    {
-    }
+	public:
+		ScopedNonblockingLock(NonblockingMutex& locker)
+			: m_lock(locker)
+			, m_IsLocked(m_lock.TryAcquire())
+		{
+		}
 
-    virtual ~ScopedNonblockingLock()
-    {
-        if (m_IsLocked)
-            m_lock.Release();
-    }
+		virtual ~ScopedNonblockingLock()
+		{
+			if (m_IsLocked)
+				m_lock.Release();
+		}
 
-    bool Failed() const { return !m_IsLocked; }
-};
+		bool Failed() const { return !m_IsLocked; }
+	};
 
-// --------------------------------------------------------------------------------------
-//  ScopedLockBool
-// --------------------------------------------------------------------------------------
-// A ScopedLock in which you specify an external bool to get updated on locks/unlocks.
-// Note that the isLockedBool should only be used as an indicator for the locked status,
-// and not actually depended on for thread synchronization...
+	// --------------------------------------------------------------------------------------
+	//  ScopedLockBool
+	// --------------------------------------------------------------------------------------
+	// A ScopedLock in which you specify an external bool to get updated on locks/unlocks.
+	// Note that the isLockedBool should only be used as an indicator for the locked status,
+	// and not actually depended on for thread synchronization...
 
-struct ScopedLockBool
-{
-    ScopedLock m_lock;
-    std::atomic<bool> &m_bool;
+	struct ScopedLockBool
+	{
+		ScopedLock m_lock;
+		std::atomic<bool>& m_bool;
 
-    ScopedLockBool(Mutex &mutexToLock, std::atomic<bool> &isLockedBool)
-        : m_lock(mutexToLock)
-        , m_bool(isLockedBool)
-    {
-        m_bool.store(m_lock.IsLocked(), std::memory_order_relaxed);
-    }
-    virtual ~ScopedLockBool()
-    {
-        m_bool.store(false, std::memory_order_relaxed);
-    }
-    void Acquire()
-    {
-        m_lock.Acquire();
-        m_bool.store(m_lock.IsLocked(), std::memory_order_relaxed);
-    }
-    void Release()
-    {
-        m_bool.store(false, std::memory_order_relaxed);
-        m_lock.Release();
-    }
-};
-}
+		ScopedLockBool(Mutex& mutexToLock, std::atomic<bool>& isLockedBool)
+			: m_lock(mutexToLock)
+			, m_bool(isLockedBool)
+		{
+			m_bool.store(m_lock.IsLocked(), std::memory_order_relaxed);
+		}
+		virtual ~ScopedLockBool()
+		{
+			m_bool.store(false, std::memory_order_relaxed);
+		}
+		void Acquire()
+		{
+			m_lock.Acquire();
+			m_bool.store(m_lock.IsLocked(), std::memory_order_relaxed);
+		}
+		void Release()
+		{
+			m_bool.store(false, std::memory_order_relaxed);
+			m_lock.Release();
+		}
+	};
+} // namespace Threading

@@ -20,137 +20,140 @@
 // --------------------------------------------------------------------------------------
 //  pxWindowTextWriter  Implementations
 // --------------------------------------------------------------------------------------
-pxWindowTextWriter::pxWindowTextWriter(wxDC &dc)
-    : m_dc(dc)
+pxWindowTextWriter::pxWindowTextWriter(wxDC& dc)
+	: m_dc(dc)
 {
-    m_curpos = wxPoint();
-    m_align = wxALIGN_CENTER;
-    m_leading = 0;
+	m_curpos = wxPoint();
+	m_align = wxALIGN_CENTER;
+	m_leading = 0;
 
-    OnFontChanged();
+	OnFontChanged();
 }
 
 void pxWindowTextWriter::OnFontChanged()
 {
 }
 
-pxWindowTextWriter &pxWindowTextWriter::SetWeight(wxFontWeight weight)
+pxWindowTextWriter& pxWindowTextWriter::SetWeight(wxFontWeight weight)
 {
-    wxFont curfont(m_dc.GetFont());
-    curfont.SetWeight(weight);
-    m_dc.SetFont(curfont);
+	wxFont curfont(m_dc.GetFont());
+	curfont.SetWeight(weight);
+	m_dc.SetFont(curfont);
 
-    return *this;
+	return *this;
 }
 
-pxWindowTextWriter &pxWindowTextWriter::SetStyle(wxFontStyle style)
+pxWindowTextWriter& pxWindowTextWriter::SetStyle(wxFontStyle style)
 {
-    wxFont curfont(m_dc.GetFont());
-    curfont.SetStyle(style);
-    m_dc.SetFont(curfont);
-    return *this;
+	wxFont curfont(m_dc.GetFont());
+	curfont.SetStyle(style);
+	m_dc.SetFont(curfont);
+	return *this;
 }
 
-pxWindowTextWriter &pxWindowTextWriter::Normal()
+pxWindowTextWriter& pxWindowTextWriter::Normal()
 {
-    wxFont curfont(m_dc.GetFont());
-    curfont.SetStyle(wxFONTSTYLE_NORMAL);
-    curfont.SetWeight(wxFONTWEIGHT_NORMAL);
-    m_dc.SetFont(curfont);
+	wxFont curfont(m_dc.GetFont());
+	curfont.SetStyle(wxFONTSTYLE_NORMAL);
+	curfont.SetWeight(wxFONTWEIGHT_NORMAL);
+	m_dc.SetFont(curfont);
 
-    return *this;
+	return *this;
 }
 
-pxWindowTextWriter &pxWindowTextWriter::SetPos(const wxPoint &pos)
+pxWindowTextWriter& pxWindowTextWriter::SetPos(const wxPoint& pos)
 {
-    m_curpos = pos;
-    return *this;
+	m_curpos = pos;
+	return *this;
 }
 
-pxWindowTextWriter &pxWindowTextWriter::MovePos(const wxSize &delta)
+pxWindowTextWriter& pxWindowTextWriter::MovePos(const wxSize& delta)
 {
-    m_curpos += delta;
-    return *this;
+	m_curpos += delta;
+	return *this;
 }
 
-pxWindowTextWriter &pxWindowTextWriter::SetY(int ypos)
+pxWindowTextWriter& pxWindowTextWriter::SetY(int ypos)
 {
-    m_curpos.y = ypos;
-    return *this;
+	m_curpos.y = ypos;
+	return *this;
 }
 
-pxWindowTextWriter &pxWindowTextWriter::MoveY(int ydelta)
+pxWindowTextWriter& pxWindowTextWriter::MoveY(int ydelta)
 {
-    m_curpos.y += ydelta;
-    return *this;
+	m_curpos.y += ydelta;
+	return *this;
 }
 
-void pxWindowTextWriter::_DoWriteLn(const wxString &msg)
+void pxWindowTextWriter::_DoWriteLn(const wxString& msg)
 {
-    int tWidth, tHeight;
-    m_dc.GetMultiLineTextExtent(msg, &tWidth, &tHeight);
+	int tWidth, tHeight;
+	m_dc.GetMultiLineTextExtent(msg, &tWidth, &tHeight);
 
-    wxPoint dispos(m_curpos);
+	wxPoint dispos(m_curpos);
 
-    if (m_align & wxALIGN_CENTER_HORIZONTAL) {
-        dispos.x = (m_dc.GetSize().GetWidth() - tWidth) / 2;
-    } else if (m_align & wxALIGN_RIGHT) {
-        dispos.x = m_dc.GetSize().GetWidth() - tWidth;
-    }
+	if (m_align & wxALIGN_CENTER_HORIZONTAL)
+	{
+		dispos.x = (m_dc.GetSize().GetWidth() - tWidth) / 2;
+	}
+	else if (m_align & wxALIGN_RIGHT)
+	{
+		dispos.x = m_dc.GetSize().GetWidth() - tWidth;
+	}
 
-    m_dc.DrawText(msg, dispos);
-    m_curpos.y += tHeight + m_leading;
+	m_dc.DrawText(msg, dispos);
+	m_curpos.y += tHeight + m_leading;
 }
 
 // Splits incoming multi-line strings into pieces, and dispatches each line individually
 // to the text writer.
-void pxWindowTextWriter::_DoWrite(const wxChar *msg)
+void pxWindowTextWriter::_DoWrite(const wxChar* msg)
 {
-    pxAssert(msg);
+	pxAssert(msg);
 
-    wxArrayString parts;
-    SplitString(parts, msg, L'\n');
+	wxArrayString parts;
+	SplitString(parts, msg, L'\n');
 
-    for (size_t i = 0; i < parts.GetCount(); ++i)
-        _DoWriteLn(parts[i]);
+	for (size_t i = 0; i < parts.GetCount(); ++i)
+		_DoWriteLn(parts[i]);
 }
 
-pxWindowTextWriter &pxWindowTextWriter::SetFont(const wxFont &font)
+pxWindowTextWriter& pxWindowTextWriter::SetFont(const wxFont& font)
 {
-    m_dc.SetFont(font);
-    return *this;
+	m_dc.SetFont(font);
+	return *this;
 }
 
-pxWindowTextWriter &pxWindowTextWriter::Align(const wxAlignment &align)
+pxWindowTextWriter& pxWindowTextWriter::Align(const wxAlignment& align)
 {
-    m_align = align;
-    m_curpos.x = 0;
-    return *this;
+	m_align = align;
+	m_curpos.x = 0;
+	return *this;
 }
 
-pxWindowTextWriter &pxWindowTextWriter::WriteLn()
+pxWindowTextWriter& pxWindowTextWriter::WriteLn()
 {
-    _DoWriteLn(L"");
-    return *this;
+	_DoWriteLn(L"");
+	return *this;
 }
 
-pxWindowTextWriter &pxWindowTextWriter::WriteLn(const wxChar *fmt)
+pxWindowTextWriter& pxWindowTextWriter::WriteLn(const wxChar* fmt)
 {
-    _DoWrite(fmt);
-    return *this;
+	_DoWrite(fmt);
+	return *this;
 }
 
-pxWindowTextWriter &pxWindowTextWriter::FormatLn(const wxChar *fmt, ...)
+pxWindowTextWriter& pxWindowTextWriter::FormatLn(const wxChar* fmt, ...)
 {
-    va_list args;
-    va_start(args, fmt);
-    _DoWrite(pxsFmtV(fmt, args));
-    va_end(args);
-    return *this;
+	va_list args;
+	va_start(args, fmt);
+	_DoWrite(pxsFmtV(fmt, args));
+	va_end(args);
+	return *this;
 }
 
-pxWindowTextWriter &pxWindowTextWriter::WriteLn(const wxString fmt)
+pxWindowTextWriter& pxWindowTextWriter::WriteLn(const wxString fmt)
 {
-    _DoWrite(fmt.wc_str());
-    return *this;
+	_DoWrite(fmt.wc_str());
+	return *this;
 }

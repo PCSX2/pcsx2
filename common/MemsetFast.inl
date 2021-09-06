@@ -18,74 +18,78 @@
 #include <xmmintrin.h>
 
 template <u8 data>
-__noinline void memset_sse_a(void *dest, const size_t size)
+__noinline void memset_sse_a(void* dest, const size_t size)
 {
-    const uint MZFqwc = size / 16;
+	const uint MZFqwc = size / 16;
 
-    pxAssert((size & 0xf) == 0);
+	pxAssert((size & 0xf) == 0);
 
-    __m128 srcreg;
+	__m128 srcreg;
 
-    if (data != 0) {
-        static __aligned16 const u8 loadval[8] = {data, data, data, data, data, data, data, data};
-        srcreg = _mm_loadh_pi(_mm_load_ps((float *)loadval), (__m64 *)loadval);
-    } else
-        srcreg = _mm_setzero_ps();
+	if (data != 0)
+	{
+		static __aligned16 const u8 loadval[8] = {data, data, data, data, data, data, data, data};
+		srcreg = _mm_loadh_pi(_mm_load_ps((float*)loadval), (__m64*)loadval);
+	}
+	else
+		srcreg = _mm_setzero_ps();
 
-    float(*destxmm)[4] = (float(*)[4])dest;
+	float(*destxmm)[4] = (float(*)[4])dest;
 
-    switch (MZFqwc & 0x07) {
-        case 0x07:
-            _mm_store_ps(&destxmm[0x07 - 1][0], srcreg);
-            // Fall through
-        case 0x06:
-            _mm_store_ps(&destxmm[0x06 - 1][0], srcreg);
-            // Fall through
-        case 0x05:
-            _mm_store_ps(&destxmm[0x05 - 1][0], srcreg);
-            // Fall through
-        case 0x04:
-            _mm_store_ps(&destxmm[0x04 - 1][0], srcreg);
-            // Fall through
-        case 0x03:
-            _mm_store_ps(&destxmm[0x03 - 1][0], srcreg);
-            // Fall through
-        case 0x02:
-            _mm_store_ps(&destxmm[0x02 - 1][0], srcreg);
-            // Fall through
-        case 0x01:
-            _mm_store_ps(&destxmm[0x01 - 1][0], srcreg);
-            // Fall through
-    }
+	switch (MZFqwc & 0x07)
+	{
+		case 0x07:
+			_mm_store_ps(&destxmm[0x07 - 1][0], srcreg);
+			// Fall through
+		case 0x06:
+			_mm_store_ps(&destxmm[0x06 - 1][0], srcreg);
+			// Fall through
+		case 0x05:
+			_mm_store_ps(&destxmm[0x05 - 1][0], srcreg);
+			// Fall through
+		case 0x04:
+			_mm_store_ps(&destxmm[0x04 - 1][0], srcreg);
+			// Fall through
+		case 0x03:
+			_mm_store_ps(&destxmm[0x03 - 1][0], srcreg);
+			// Fall through
+		case 0x02:
+			_mm_store_ps(&destxmm[0x02 - 1][0], srcreg);
+			// Fall through
+		case 0x01:
+			_mm_store_ps(&destxmm[0x01 - 1][0], srcreg);
+			// Fall through
+	}
 
-    destxmm += (MZFqwc & 0x07);
-    for (uint i = 0; i < MZFqwc / 8; ++i, destxmm += 8) {
-        _mm_store_ps(&destxmm[0][0], srcreg);
-        _mm_store_ps(&destxmm[1][0], srcreg);
-        _mm_store_ps(&destxmm[2][0], srcreg);
-        _mm_store_ps(&destxmm[3][0], srcreg);
-        _mm_store_ps(&destxmm[4][0], srcreg);
-        _mm_store_ps(&destxmm[5][0], srcreg);
-        _mm_store_ps(&destxmm[6][0], srcreg);
-        _mm_store_ps(&destxmm[7][0], srcreg);
-    }
+	destxmm += (MZFqwc & 0x07);
+	for (uint i = 0; i < MZFqwc / 8; ++i, destxmm += 8)
+	{
+		_mm_store_ps(&destxmm[0][0], srcreg);
+		_mm_store_ps(&destxmm[1][0], srcreg);
+		_mm_store_ps(&destxmm[2][0], srcreg);
+		_mm_store_ps(&destxmm[3][0], srcreg);
+		_mm_store_ps(&destxmm[4][0], srcreg);
+		_mm_store_ps(&destxmm[5][0], srcreg);
+		_mm_store_ps(&destxmm[6][0], srcreg);
+		_mm_store_ps(&destxmm[7][0], srcreg);
+	}
 };
 
-static __fi void memzero_sse_a(void *dest, const size_t size)
+static __fi void memzero_sse_a(void* dest, const size_t size)
 {
-    memset_sse_a<0>(dest, size);
+	memset_sse_a<0>(dest, size);
 }
 
 template <u8 data, typename T>
-__noinline void memset_sse_a(T &dest)
+__noinline void memset_sse_a(T& dest)
 {
-    static_assert((sizeof(dest) & 0xf) == 0, "Bad size for SSE memset");
-    memset_sse_a<data>(&dest, sizeof(dest));
+	static_assert((sizeof(dest) & 0xf) == 0, "Bad size for SSE memset");
+	memset_sse_a<data>(&dest, sizeof(dest));
 }
 
 template <typename T>
-void memzero_sse_a(T &dest)
+void memzero_sse_a(T& dest)
 {
-    static_assert((sizeof(dest) & 0xf) == 0, "Bad size for SSE memset");
-    memset_sse_a<0>(&dest, sizeof(dest));
+	static_assert((sizeof(dest) & 0xf) == 0, "Bad size for SSE memset");
+	memset_sse_a<0>(&dest, sizeof(dest));
 }

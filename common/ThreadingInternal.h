@@ -21,10 +21,10 @@
 
 namespace Threading
 {
-extern const wxTimeSpan def_yieldgui_interval;
+	extern const wxTimeSpan def_yieldgui_interval;
 
-extern bool _WaitGui_RecursionGuard(const wxChar *name);
+	extern bool _WaitGui_RecursionGuard(const wxChar* name);
 
-extern void YieldToMain();
-extern bool AllowDeletions();
-}
+	extern void YieldToMain();
+	extern bool AllowDeletions();
+} // namespace Threading

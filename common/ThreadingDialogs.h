@@ -22,31 +22,31 @@ wxDECLARE_EVENT(pxEvt_ThreadedTaskComplete, wxCommandEvent);
 
 namespace Threading
 {
-// --------------------------------------------------------------------------------------
-//  WaitForTaskDialog
-// --------------------------------------------------------------------------------------
-// This dialog is displayed whenever the main thread is recursively waiting on multiple
-// mutexes or semaphores.  wxwidgets does not support recursive yielding to pending events
-// but it *does* support opening a modal dialog, which disables the interface (preventing
-// the user from starting additional actions), and processes messages (allowing the system
-// to continue to manage threads and process logging).
-//
-class WaitForTaskDialog : public wxDialogWithHelpers
-{
-    wxDECLARE_DYNAMIC_CLASS_NO_COPY(WaitForTaskDialog);
+	// --------------------------------------------------------------------------------------
+	//  WaitForTaskDialog
+	// --------------------------------------------------------------------------------------
+	// This dialog is displayed whenever the main thread is recursively waiting on multiple
+	// mutexes or semaphores.  wxwidgets does not support recursive yielding to pending events
+	// but it *does* support opening a modal dialog, which disables the interface (preventing
+	// the user from starting additional actions), and processes messages (allowing the system
+	// to continue to manage threads and process logging).
+	//
+	class WaitForTaskDialog : public wxDialogWithHelpers
+	{
+		wxDECLARE_DYNAMIC_CLASS_NO_COPY(WaitForTaskDialog);
 
-    typedef wxDialogWithHelpers _parent;
+		typedef wxDialogWithHelpers _parent;
 
-protected:
-    SynchronousActionState m_sync;
+	protected:
+		SynchronousActionState m_sync;
 
-public:
-    WaitForTaskDialog(const wxString &title = wxEmptyString, const wxString &heading = wxEmptyString);
-    virtual ~WaitForTaskDialog() = default;
-    virtual int ShowModal();
+	public:
+		WaitForTaskDialog(const wxString& title = wxEmptyString, const wxString& heading = wxEmptyString);
+		virtual ~WaitForTaskDialog() = default;
+		virtual int ShowModal();
 
-protected:
-    void OnTaskComplete(wxCommandEvent &evt);
-    //void OnTimer( wxTimerEvent& evt );
-};
-}
+	protected:
+		void OnTaskComplete(wxCommandEvent& evt);
+		//void OnTimer( wxTimerEvent& evt );
+	};
+} // namespace Threading

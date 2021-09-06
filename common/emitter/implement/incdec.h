@@ -21,15 +21,15 @@
 namespace x86Emitter
 {
 
-// --------------------------------------------------------------------------------------
-//  xImpl_IncDec
-// --------------------------------------------------------------------------------------
-struct xImpl_IncDec
-{
-    bool isDec;
+	// --------------------------------------------------------------------------------------
+	//  xImpl_IncDec
+	// --------------------------------------------------------------------------------------
+	struct xImpl_IncDec
+	{
+		bool isDec;
 
-    void operator()(const xRegisterInt &to) const;
-    void operator()(const xIndirect64orLess &to) const;
-};
+		void operator()(const xRegisterInt& to) const;
+		void operator()(const xIndirect64orLess& to) const;
+	};
 
 } // End namespace x86Emitter

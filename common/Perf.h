@@ -22,41 +22,41 @@
 namespace Perf
 {
 
-struct Info
-{
-    uptr m_x86;
-    u32 m_size;
-    char m_symbol[20];
-    // The idea is to keep static zones that are set only
-    // once.
-    bool m_dynamic;
+	struct Info
+	{
+		uptr m_x86;
+		u32 m_size;
+		char m_symbol[20];
+		// The idea is to keep static zones that are set only
+		// once.
+		bool m_dynamic;
 
-    Info(uptr x86, u32 size, const char *symbol);
-    Info(uptr x86, u32 size, const char *symbol, u32 pc);
-    void Print(FILE *fp);
-};
+		Info(uptr x86, u32 size, const char* symbol);
+		Info(uptr x86, u32 size, const char* symbol, u32 pc);
+		void Print(FILE* fp);
+	};
 
-class InfoVector
-{
-    std::vector<Info> m_v;
-    char m_prefix[20];
-    unsigned int m_vtune_id;
+	class InfoVector
+	{
+		std::vector<Info> m_v;
+		char m_prefix[20];
+		unsigned int m_vtune_id;
 
-public:
-    InfoVector(const char *prefix);
+	public:
+		InfoVector(const char* prefix);
 
-    void print(FILE *fp);
-    void map(uptr x86, u32 size, const char *symbol);
-    void map(uptr x86, u32 size, u32 pc);
-    void reset();
-};
+		void print(FILE* fp);
+		void map(uptr x86, u32 size, const char* symbol);
+		void map(uptr x86, u32 size, u32 pc);
+		void reset();
+	};
 
-void dump();
-void dump_and_reset();
+	void dump();
+	void dump_and_reset();
 
-extern InfoVector any;
-extern InfoVector ee;
-extern InfoVector iop;
-extern InfoVector vu;
-extern InfoVector vif;
-}
+	extern InfoVector any;
+	extern InfoVector ee;
+	extern InfoVector iop;
+	extern InfoVector vu;
+	extern InfoVector vif;
+} // namespace Perf

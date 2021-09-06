@@ -25,91 +25,91 @@ using Threading::ScopedLock;
 template <typename T>
 class ScopedPtrMT
 {
-    DeclareNoncopyableObject(ScopedPtrMT);
+	DeclareNoncopyableObject(ScopedPtrMT);
 
 protected:
-    std::atomic<T *> m_ptr;
-    Threading::Mutex m_mtx;
+	std::atomic<T*> m_ptr;
+	Threading::Mutex m_mtx;
 
 public:
-    typedef T element_type;
+	typedef T element_type;
 
-    wxEXPLICIT ScopedPtrMT(T *ptr = nullptr)
-    {
-        m_ptr = ptr;
-    }
+	wxEXPLICIT ScopedPtrMT(T* ptr = nullptr)
+	{
+		m_ptr = ptr;
+	}
 
-    ~ScopedPtrMT() { _Delete_unlocked(); }
+	~ScopedPtrMT() { _Delete_unlocked(); }
 
-    ScopedPtrMT &Reassign(T *ptr = nullptr)
-    {
-        T *doh = m_ptr.exchange(ptr);
-        if (ptr != doh)
-            delete doh;
-        return *this;
-    }
+	ScopedPtrMT& Reassign(T* ptr = nullptr)
+	{
+		T* doh = m_ptr.exchange(ptr);
+		if (ptr != doh)
+			delete doh;
+		return *this;
+	}
 
-    ScopedPtrMT &Delete() noexcept
-    {
-        ScopedLock lock(m_mtx);
-        _Delete_unlocked();
-    }
+	ScopedPtrMT& Delete() noexcept
+	{
+		ScopedLock lock(m_mtx);
+		_Delete_unlocked();
+	}
 
-    // Removes the pointer from scoped management, but does not delete!
-    // (ScopedPtr will be nullptr after this method)
-    T *DetachPtr()
-    {
-        ScopedLock lock(m_mtx);
+	// Removes the pointer from scoped management, but does not delete!
+	// (ScopedPtr will be nullptr after this method)
+	T* DetachPtr()
+	{
+		ScopedLock lock(m_mtx);
 
-        return m_ptr.exchange(nullptr);
-    }
+		return m_ptr.exchange(nullptr);
+	}
 
-    // Returns the managed pointer.  Can return nullptr as a valid result if the ScopedPtrMT
-    // has no object in management.
-    T *GetPtr() const
-    {
-        return m_ptr;
-    }
+	// Returns the managed pointer.  Can return nullptr as a valid result if the ScopedPtrMT
+	// has no object in management.
+	T* GetPtr() const
+	{
+		return m_ptr;
+	}
 
-    void SwapPtr(ScopedPtrMT &other)
-    {
-        ScopedLock lock(m_mtx);
-        m_ptr.exchange(other.m_ptr.exchange(m_ptr.load()));
-        T *const tmp = other.m_ptr;
-        other.m_ptr = m_ptr;
-        m_ptr = tmp;
-    }
+	void SwapPtr(ScopedPtrMT& other)
+	{
+		ScopedLock lock(m_mtx);
+		m_ptr.exchange(other.m_ptr.exchange(m_ptr.load()));
+		T* const tmp = other.m_ptr;
+		other.m_ptr = m_ptr;
+		m_ptr = tmp;
+	}
 
-    // ----------------------------------------------------------------------------
-    //  ScopedPtrMT Operators
-    // ----------------------------------------------------------------------------
-    // I've decided to use the ATL's approach to pointer validity tests, opposed to
-    // the wx/boost approach (which uses some bizarre member method pointer crap, and can't
-    // allow the T* implicit casting.
+	// ----------------------------------------------------------------------------
+	//  ScopedPtrMT Operators
+	// ----------------------------------------------------------------------------
+	// I've decided to use the ATL's approach to pointer validity tests, opposed to
+	// the wx/boost approach (which uses some bizarre member method pointer crap, and can't
+	// allow the T* implicit casting.
 
-    bool operator!() const noexcept
-    {
-        return m_ptr.load() == nullptr;
-    }
+	bool operator!() const noexcept
+	{
+		return m_ptr.load() == nullptr;
+	}
 
-    // Equality
-    bool operator==(T *pT) const noexcept
-    {
-        return m_ptr == pT;
-    }
+	// Equality
+	bool operator==(T* pT) const noexcept
+	{
+		return m_ptr == pT;
+	}
 
-    // Inequality
-    bool operator!=(T *pT) const noexcept
-    {
-        return !operator==(pT);
-    }
+	// Inequality
+	bool operator!=(T* pT) const noexcept
+	{
+		return !operator==(pT);
+	}
 
-    // Convenient assignment operator.  ScopedPtrMT = nullptr will issue an automatic deletion
-    // of the managed pointer.
-    ScopedPtrMT &operator=(T *src)
-    {
-        return Reassign(src);
-    }
+	// Convenient assignment operator.  ScopedPtrMT = nullptr will issue an automatic deletion
+	// of the managed pointer.
+	ScopedPtrMT& operator=(T* src)
+	{
+		return Reassign(src);
+	}
 
 #if 0
 	operator T*() const
@@ -133,8 +133,8 @@ public:
 #endif
 
 protected:
-    void _Delete_unlocked() noexcept
-    {
-        delete m_ptr.exchange(nullptr);
-    }
+	void _Delete_unlocked() noexcept
+	{
+		delete m_ptr.exchange(nullptr);
+	}
 };
