@@ -114,26 +114,26 @@ public:
 	explicit IniLoader(wxConfigBase& config);
 	explicit IniLoader(wxConfigBase* config);
 
-	bool IsLoading() const { return true; }
+	bool IsLoading() const override { return true; }
 
-	void Entry(const wxString& var, wxString& value, const wxString defvalue = wxEmptyString);
-	void Entry(const wxString& var, wxDirName& value, const wxDirName defvalue = wxDirName(), bool isAllowRelative = false);
-	void Entry(const wxString& var, wxFileName& value, const wxFileName defvalue = wxFileName(), bool isAllowRelative = false);
-	void Entry(const wxString& var, int& value, const int defvalue = 0);
-	void Entry(const wxString& var, uint& value, const uint defvalue = 0);
-	void Entry(const wxString& var, bool& value, const bool defvalue = false);
+	void Entry(const wxString& var, wxString& value, const wxString defvalue = wxEmptyString) override;
+	void Entry(const wxString& var, wxDirName& value, const wxDirName defvalue = wxDirName(), bool isAllowRelative = false) override;
+	void Entry(const wxString& var, wxFileName& value, const wxFileName defvalue = wxFileName(), bool isAllowRelative = false) override;
+	void Entry(const wxString& var, int& value, const int defvalue = 0) override;
+	void Entry(const wxString& var, uint& value, const uint defvalue = 0) override;
+	void Entry(const wxString& var, bool& value, const bool defvalue = false) override;
 
-	bool EntryBitBool(const wxString& var, bool value, const bool defvalue = false);
-	int EntryBitfield(const wxString& var, int value, const int defvalue = 0);
+	bool EntryBitBool(const wxString& var, bool value, const bool defvalue = false) override;
+	int EntryBitfield(const wxString& var, int value, const int defvalue = 0) override;
 
 	void Entry(const wxString& var, double& value, const double defvalue = 0.0) override;
 
-	void Entry(const wxString& var, wxPoint& value, const wxPoint defvalue = wxDefaultPosition);
-	void Entry(const wxString& var, wxSize& value, const wxSize defvalue = wxDefaultSize);
-	void Entry(const wxString& var, wxRect& value, const wxRect defvalue = wxDefaultRect);
+	void Entry(const wxString& var, wxPoint& value, const wxPoint defvalue = wxDefaultPosition) override;
+	void Entry(const wxString& var, wxSize& value, const wxSize defvalue = wxDefaultSize) override;
+	void Entry(const wxString& var, wxRect& value, const wxRect defvalue = wxDefaultRect) override;
 
 protected:
-	void _EnumEntry(const wxString& var, int& value, const wxChar* const* enumArray, int defvalue);
+	void _EnumEntry(const wxString& var, int& value, const wxChar* const* enumArray, int defvalue) override;
 };
 
 // --------------------------------------------------------------------------------------
@@ -152,26 +152,26 @@ public:
 	explicit IniSaver(wxConfigBase& config);
 	explicit IniSaver(wxConfigBase* config);
 
-	bool IsLoading() const { return false; }
+	bool IsLoading() const override { return false; }
 
-	void Entry(const wxString& var, wxString& value, const wxString defvalue = wxString());
-	void Entry(const wxString& var, wxDirName& value, const wxDirName defvalue = wxDirName(), bool isAllowRelative = false);
-	void Entry(const wxString& var, wxFileName& value, const wxFileName defvalue = wxFileName(), bool isAllowRelative = false);
-	void Entry(const wxString& var, int& value, const int defvalue = 0);
-	void Entry(const wxString& var, uint& value, const uint defvalue = 0);
-	void Entry(const wxString& var, bool& value, const bool defvalue = false);
+	void Entry(const wxString& var, wxString& value, const wxString defvalue = wxString()) override;
+	void Entry(const wxString& var, wxDirName& value, const wxDirName defvalue = wxDirName(), bool isAllowRelative = false) override;
+	void Entry(const wxString& var, wxFileName& value, const wxFileName defvalue = wxFileName(), bool isAllowRelative = false) override;
+	void Entry(const wxString& var, int& value, const int defvalue = 0) override;
+	void Entry(const wxString& var, uint& value, const uint defvalue = 0) override;
+	void Entry(const wxString& var, bool& value, const bool defvalue = false) override;
 
-	bool EntryBitBool(const wxString& var, bool value, const bool defvalue = false);
-	int EntryBitfield(const wxString& var, int value, const int defvalue = 0);
+	bool EntryBitBool(const wxString& var, bool value, const bool defvalue = false) override;
+	int EntryBitfield(const wxString& var, int value, const int defvalue = 0) override;
 
 	void Entry(const wxString& var, double& value, const double defvalue = 0.0) override;
 
-	void Entry(const wxString& var, wxPoint& value, const wxPoint defvalue = wxDefaultPosition);
-	void Entry(const wxString& var, wxSize& value, const wxSize defvalue = wxDefaultSize);
-	void Entry(const wxString& var, wxRect& value, const wxRect defvalue = wxDefaultRect);
+	void Entry(const wxString& var, wxPoint& value, const wxPoint defvalue = wxDefaultPosition) override;
+	void Entry(const wxString& var, wxSize& value, const wxSize defvalue = wxDefaultSize) override;
+	void Entry(const wxString& var, wxRect& value, const wxRect defvalue = wxDefaultRect) override;
 
 protected:
-	void _EnumEntry(const wxString& var, int& value, const wxChar* const* enumArray, int defvalue);
+	void _EnumEntry(const wxString& var, int& value, const wxChar* const* enumArray, int defvalue) override;
 };
 
 // ------------------------------------------------------------------------
