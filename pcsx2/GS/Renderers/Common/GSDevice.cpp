@@ -79,10 +79,10 @@ bool GSDevice::Reset(int w, int h)
 
 void GSDevice::Present(const GSVector4i& r, int shader)
 {
-	GSVector4i cr = m_wnd->GetClientRect();
+	const GSVector4i cr = m_wnd->GetClientRect();
 
-	int w = std::max<int>(cr.width(), 1);
-	int h = std::max<int>(cr.height(), 1);
+	const int w = std::max<int>(cr.width(), 1);
+	const int h = std::max<int>(cr.height(), 1);
 
 	if (!m_backbuffer || m_backbuffer->GetWidth() != w || m_backbuffer->GetHeight() != h)
 	{
@@ -318,12 +318,12 @@ void GSDevice::Interlace(const GSVector2i& ds, int field, int mode, float yoffse
 
 void GSDevice::ExternalFX()
 {
-	GSVector2i s = m_current->GetSize();
+	const GSVector2i s = m_current->GetSize();
 
 	if (ResizeTarget(&m_target_tmp))
 	{
-		GSVector4 sRect(0, 0, 1, 1);
-		GSVector4 dRect(0, 0, s.x, s.y);
+		const GSVector4 sRect(0, 0, 1, 1);
+		const GSVector4 dRect(0, 0, s.x, s.y);
 
 		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert_TRANSPARENCY_FILTER, false);
 		DoExternalFX(m_target_tmp, m_current);
@@ -332,12 +332,12 @@ void GSDevice::ExternalFX()
 
 void GSDevice::FXAA()
 {
-	GSVector2i s = m_current->GetSize();
+	const GSVector2i s = m_current->GetSize();
 
 	if (ResizeTarget(&m_target_tmp))
 	{
-		GSVector4 sRect(0, 0, 1, 1);
-		GSVector4 dRect(0, 0, s.x, s.y);
+		const GSVector4 sRect(0, 0, 1, 1);
+		const GSVector4 dRect(0, 0, s.x, s.y);
 
 		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert_TRANSPARENCY_FILTER, false);
 		DoFXAA(m_target_tmp, m_current);
@@ -346,12 +346,12 @@ void GSDevice::FXAA()
 
 void GSDevice::ShadeBoost()
 {
-	GSVector2i s = m_current->GetSize();
+	const GSVector2i s = m_current->GetSize();
 
 	if (ResizeTarget(&m_target_tmp))
 	{
-		GSVector4 sRect(0, 0, 1, 1);
-		GSVector4 dRect(0, 0, s.x, s.y);
+		const GSVector4 sRect(0, 0, 1, 1);
+		const GSVector4 dRect(0, 0, s.x, s.y);
 
 		StretchRect(m_current, sRect, m_target_tmp, dRect, ShaderConvert_COPY, false);
 		DoShadeBoost(m_target_tmp, m_current);
