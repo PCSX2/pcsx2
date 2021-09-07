@@ -10,6 +10,7 @@ add_library(common)
 # x86emitter sources
 target_sources(common PRIVATE
 	AlignedMalloc.cpp
+	DynamicLibrary.cpp
 	VirtualMemory.cpp
 	EventSource.inl
 	SafeArray.inl
@@ -60,6 +61,7 @@ target_sources(common PRIVATE
 	boost_spsc_queue.hpp
 	Console.h
 	Dependencies.h
+	DynamicLibrary.h
 	EventSource.h
 	Exceptions.h
 	FastJmp.h
@@ -117,10 +119,10 @@ endif()
 if(WIN32)
 	enable_language(ASM_MASM)
 	target_sources(common PRIVATE FastJmp.asm)
-	target_link_libraries(common PUBLIC pthreads4w Winmm.lib)
+	target_link_libraries(common PUBLIC pthreads4w WIL::WIL Winmm.lib)
 endif()
 
-target_link_libraries(common PRIVATE ${LIBC_LIBRARIES} PUBLIC wxWidgets::all)
+target_link_libraries(common PRIVATE ${LIBC_LIBRARIES} PUBLIC wxWidgets::all fmt)
 target_compile_features(common PUBLIC cxx_std_17)
 target_include_directories(common PUBLIC ../3rdparty/include ../)
 target_compile_definitions(common PUBLIC "${PCSX2_DEFS}")

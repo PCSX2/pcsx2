@@ -43,6 +43,7 @@
   <ItemGroup>
     <ClCompile Include="AlignedMalloc.cpp" />
     <ClCompile Include="Console.cpp" />
+    <ClCompile Include="DynamicLibrary.cpp" />
     <ClCompile Include="Exceptions.cpp" />
     <ClCompile Include="FastFormatString.cpp" />
     <ClCompile Include="FastJmp.cpp">
@@ -93,6 +94,7 @@
     </MASM>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="DynamicLibrary.h" />
     <ClInclude Include="EmbeddedImage.h" />
     <ClInclude Include="boost_spsc_queue.hpp" />
     <ClInclude Include="FastJmp.h" />
