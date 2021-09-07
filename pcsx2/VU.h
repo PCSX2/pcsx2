@@ -157,6 +157,7 @@ struct __aligned16 VURegs
 	u32 ebit;
 	u32 pending_q;
 	u32 pending_p;
+	u32 blockhasmbit;
 
 	__aligned16 u32 micro_macflags[4];
 	__aligned16 u32 micro_clipflags[4];

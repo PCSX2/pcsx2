@@ -580,11 +580,11 @@ void recLQC2()
 {
 	iFlushCall(FLUSH_EVERYTHING);
 
-	xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
-	xForwardJZ32 skipvuidle;
 	xMOV(eax, ptr32[&cpuRegs.cycle]);
 	xADD(eax, scaleblockcycles_clear());
 	xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
+	xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+	xForwardJZ32 skipvuidle;
 	xSUB(eax, ptr32[&VU0.cycle]);
 	xSUB(eax, ptr32[&VU0.nextBlockCycles]);
 	xCMP(eax, 8);
@@ -625,11 +625,11 @@ void recSQC2()
 {
 	iFlushCall(FLUSH_EVERYTHING);
 
-	xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
-	xForwardJZ32 skipvuidle;
 	xMOV(eax, ptr32[&cpuRegs.cycle]);
 	xADD(eax, scaleblockcycles_clear());
 	xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
+	xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+	xForwardJZ32 skipvuidle;
 	xSUB(eax, ptr32[&VU0.cycle]);
 	xSUB(eax, ptr32[&VU0.nextBlockCycles]);
 	xCMP(eax, 8);

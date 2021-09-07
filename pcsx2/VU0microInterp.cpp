@@ -49,9 +49,10 @@ static void _vu0Exec(VURegs* VU)
 	{
 		VU->ebit = 2;
 	}
-	if (ptr[1] & 0x20000000) // M flag
+	if (ptr[1] & 0x20000000 && VU == &VU0) // M flag
 	{
 		VU->flags|= VUFLAG_MFLAGSET;
+		VU0.blockhasmbit = true;
 //		Console.WriteLn("fixme: M flag set");
 	}
 	if (ptr[1] & 0x10000000) // D flag
@@ -182,6 +183,9 @@ static void _vu0Exec(VURegs* VU)
 		{
 			VU->VI[REG_TPC].UL = VU->branchpc;
 
+			if (VU->blockhasmbit)
+				VU->blockhasmbit = false;
+
 			if(VU->takedelaybranch)
 			{
 				DevCon.Warning("VU0 - Branch/Jump in Delay Slot");
@@ -200,6 +204,9 @@ static void _vu0Exec(VURegs* VU)
 			_vuFlushAll(VU);
 			VU0.VI[REG_VPU_STAT].UL&= ~0x1; /* E flag */
 			vif0Regs.stat.VEW = false;
+
+			if (VU->blockhasmbit)
+				VU->blockhasmbit = false;
 		}
 	}
 
@@ -269,6 +276,6 @@ void InterpVU0::Execute(u32 cycles)
 		vu0Exec(&VU0);
 	}
 	VU0.VI[REG_TPC].UL >>= 3;
-
+	VU0.nextBlockCycles = (VU0.cycle - cpuRegs.cycle) + 1;
 	fesetround(originalRounding);
 }

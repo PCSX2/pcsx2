@@ -478,6 +478,7 @@ void mVUtestCycles(microVU& mVU, microFlagCycles& mFC)
 	xForwardJGE32 skip;
 
 	mVUsavePipelineState(mVU);
+	xMOV(ptr32[&mVU.regs().nextBlockCycles], mVUcycles);
 	mVUendProgram(mVU, &mFC, 0);
 
 	skip.SetTarget();
@@ -537,6 +538,7 @@ __fi void mVUinitFirstPass(microVU& mVU, uptr pState, u8* thisPtr)
 	mVUregs.blockType = 0;
 	mVUregs.viBackUp  = 0;
 	mVUregs.flagInfo  = 0;
+	mVUregs.mbitinblock = false;
 	mVUsFlagHack = CHECK_VU_FLAGHACK;
 	mVUinitConstValues(mVU);
 }
@@ -693,6 +695,7 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 
 		if ((curI & _Mbit_) && isVU0)
 		{
+			mVUregs.mbitinblock = true;
 			if (xPC > 0)
 			{
 				incPC(-2);
@@ -780,7 +783,7 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 	// Fix up vi15 const info for propagation through blocks
 	mVUregs.vi15 = (doConstProp && mVUconstReg[15].isValid) ? (u16)mVUconstReg[15].regValue : 0;
 	mVUregs.vi15v = (doConstProp && mVUconstReg[15].isValid) ? 1 : 0;
-
+	xMOV(ptr32[&mVU.regs().blockhasmbit], mVUregs.mbitinblock);
 	mVUsetFlags(mVU, mFC);           // Sets Up Flag instances
 	mVUoptimizePipeState(mVU);       // Optimize the End Pipeline State for nicer Block Linking
 	mVUdebugPrintBlocks(mVU, false); // Prints Start/End PC of blocks executed, for debugging...
@@ -829,6 +832,7 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 				}
 				incPC(2);
 				mVUsetupRange(mVU, xPC, false);
+				xMOV(ptr32[&mVU.regs().nextBlockCycles], 0);
 				mVUendProgram(mVU, &mFC, 0);
 				normBranchCompile(mVU, xPC);
 				incPC(-2);
