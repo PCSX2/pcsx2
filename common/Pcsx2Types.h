@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include <stdint.h>
+#include <cstdint>
 
 // --------------------------------------------------------------------------------------
 //  Forward declarations
@@ -31,20 +31,20 @@ class FastFormatUnicode;
 //  Basic Atomic Types
 // --------------------------------------------------------------------------------------
 
-typedef int8_t s8;
-typedef int16_t s16;
-typedef int32_t s32;
-typedef int64_t s64;
+using s8 = int8_t;
+using s16 = int16_t;
+using s32 = int32_t;
+using s64 = int64_t;
 
-typedef uint8_t u8;
-typedef uint16_t u16;
-typedef uint32_t u32;
-typedef uint64_t u64;
+using u8 = uint8_t;
+using u16 = uint16_t;
+using u32 = uint32_t;
+using u64 = uint64_t;
 
-typedef uintptr_t uptr;
-typedef intptr_t sptr;
+using uptr = uintptr_t;
+using sptr = intptr_t;
 
-typedef unsigned int uint;
+using uint = unsigned int;
 
 // --------------------------------------------------------------------------------------
 //  u128 / s128 - A rough-and-ready cross platform 128-bit datatype, Non-SSE style.
@@ -54,7 +54,6 @@ typedef unsigned int uint;
 // uses of these types, that means we can't have constructors). Embedded functions for
 // performing explicit conversion from 64 and 32 bit values are provided instead.
 //
-#ifdef __cplusplus
 union u128
 {
 	struct
@@ -147,37 +146,13 @@ struct s128
 	}
 };
 
-#else
-
-typedef union _u128_t
-{
-	struct
-	{
-		u64 lo;
-		u64 hi;
-	};
-
-	u64 _u64[2];
-	u32 _u32[4];
-	u16 _u16[8];
-	u8 _u8[16];
-} u128;
-
-typedef union _s128_t
-{
-	u64 lo;
-	s64 hi;
-} s128;
-
-#endif
-
 // On linux sizes of long depends on the architecture (4B/x86 vs 86/amd64)
 // Windows compiler requires int/long type for _InterlockedExchange* function.
 // The best would be to port all _InterlockedExchange function to use
 // Theading::Atomic* function. Unfortunately Win version is not happy, until
 // code is properly fixed let's use a basic type alias.
 #ifdef _WIN32
-typedef long vol_t;
+using vol_t = long;
 #else
-typedef s32 vol_t;
+using vol_t = s32;
 #endif
