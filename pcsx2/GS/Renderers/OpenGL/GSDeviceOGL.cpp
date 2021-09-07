@@ -35,12 +35,12 @@ uint64 g_vertex_upload_byte = 0;
 uint64 g_uniform_upload_byte = 0;
 #endif
 
-static const uint32 g_merge_cb_index     = 10;
-static const uint32 g_interlace_cb_index = 11;
-static const uint32 g_fx_cb_index        = 14;
-static const uint32 g_convert_index      = 15;
-static const uint32 g_vs_cb_index        = 20;
-static const uint32 g_ps_cb_index        = 21;
+static constexpr uint32 g_merge_cb_index     = 10;
+static constexpr uint32 g_interlace_cb_index = 11;
+static constexpr uint32 g_fx_cb_index        = 14;
+static constexpr uint32 g_convert_index      = 15;
+static constexpr uint32 g_vs_cb_index        = 20;
+static constexpr uint32 g_ps_cb_index        = 21;
 
 bool  GSDeviceOGL::m_debug_gl_call = false;
 int   GSDeviceOGL::m_shader_inst = 0;
@@ -90,11 +90,13 @@ GSDeviceOGL::GSDeviceOGL()
 
 GSDeviceOGL::~GSDeviceOGL()
 {
+#ifdef ENABLE_OGL_DEBUG
 	if (m_debug_gl_file)
 	{
 		fclose(m_debug_gl_file);
 		m_debug_gl_file = NULL;
 	}
+#endif
 
 	// If the create function wasn't called nothing to do.
 	if (m_shader == NULL)
@@ -163,13 +165,13 @@ void GSDeviceOGL::GenerateProfilerData()
 		glGetQueryObjectuiv(m_profiler.timer(), GL_QUERY_RESULT_AVAILABLE, &available);
 	}
 
-	GLuint64 time_start;
-	GLuint64 time_end;
+	GLuint64 time_start = 0;
+	GLuint64 time_end = 0;
 	std::vector<double> times;
-	double ms = 0.000001;
+	const double ms = 0.000001;
 
-	int replay = theApp.GetConfigI("linux_replay");
-	int first_query = replay > 1 ? m_profiler.last_query / replay : 0;
+	const int replay = theApp.GetConfigI("linux_replay");
+	const int first_query = replay > 1 ? m_profiler.last_query / replay : 0;
 
 	glGetQueryObjectui64v(m_profiler.timer_query[first_query], GL_QUERY_RESULT, &time_start);
 	for (uint32 q = first_query + 1; q < m_profiler.last_query; q++)
@@ -186,7 +188,7 @@ void GSDeviceOGL::GenerateProfilerData()
 
 	glDeleteQueries(1 << 16, m_profiler.timer_query);
 
-	double frames = times.size();
+	const double frames = times.size();
 	double mean = 0.0;
 	double sd = 0.0;
 
@@ -280,7 +282,7 @@ GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, int format)
 		// correct behavior of force clear option (debug option)
 		t->Commit();
 
-		GSVector4 red(1.0f, 0.0f, 0.0f, 1.0f);
+		const GSVector4 red(1.0f, 0.0f, 0.0f, 1.0f);
 		switch (type)
 		{
 			case GSTexture::RenderTarget:
@@ -338,7 +340,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd>& wnd)
 		glGenFramebuffers(1, &m_fbo);
 		// Always write to the first buffer
 		OMSetFBO(m_fbo);
-		GLenum target[1] = {GL_COLOR_ATTACHMENT0};
+		const GLenum target[1] = {GL_COLOR_ATTACHMENT0};
 		glDrawBuffers(1, target);
 		OMSetFBO(0);
 
@@ -469,9 +471,9 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd>& wnd)
 	{
 		GL_PUSH("GSDeviceOGL::Shadeboost");
 
-		int ShadeBoost_Contrast = std::max(0, std::min(theApp.GetConfigI("ShadeBoost_Contrast"), 100));
-		int ShadeBoost_Brightness = std::max(0, std::min(theApp.GetConfigI("ShadeBoost_Brightness"), 100));
-		int ShadeBoost_Saturation = std::max(0, std::min(theApp.GetConfigI("ShadeBoost_Saturation"), 100));
+		const int ShadeBoost_Contrast = std::max(0, std::min(theApp.GetConfigI("ShadeBoost_Contrast"), 100));
+		const int ShadeBoost_Brightness = std::max(0, std::min(theApp.GetConfigI("ShadeBoost_Brightness"), 100));
+		const int ShadeBoost_Saturation = std::max(0, std::min(theApp.GetConfigI("ShadeBoost_Saturation"), 100));
 		std::string shade_macro = format("#define SB_SATURATION %d.0\n", ShadeBoost_Saturation)
 			+ format("#define SB_BRIGHTNESS %d.0\n", ShadeBoost_Brightness)
 			+ format("#define SB_CONTRAST %d.0\n", ShadeBoost_Contrast);
@@ -574,7 +576,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd>& wnd)
 	// ****************************************************************
 	// Texture Font (OSD)
 	// ****************************************************************
-	GSVector2i tex_font = m_osd.get_texture_font_size();
+	const GSVector2i tex_font = m_osd.get_texture_font_size();
 
 	m_font = std::unique_ptr<GSTexture>(
 		new GSTextureOGL(GSTextureOGL::Texture, tex_font.x, tex_font.y, GL_R8, m_fbo_read, false));
@@ -585,7 +587,7 @@ bool GSDeviceOGL::Create(const std::shared_ptr<GSWnd>& wnd)
 	if (!GSDevice::Create(wnd))
 		return false;
 
-	GSVector4i rect = wnd->GetClientRect();
+	const GSVector4i rect = wnd->GetClientRect();
 	Reset(rect.z, rect.w);
 
 	// Basic to ensure structures are correctly packed
@@ -725,7 +727,7 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
 	// TODO: check size of scissor before toggling it
 	glDisable(GL_SCISSOR_TEST);
 
-	uint32 old_color_mask = GLState::wrgba;
+	const uint32 old_color_mask = GLState::wrgba;
 	OMSetColorMaskState();
 
 	if (T->IsBackbuffer())
@@ -756,7 +758,7 @@ void GSDeviceOGL::ClearRenderTarget(GSTexture* t, uint32 c)
 	if (!t)
 		return;
 
-	GSVector4 color = GSVector4::rgba32(c) * (1.0f / 255);
+	const GSVector4 color = GSVector4::rgba32(c) * (1.0f / 255);
 	ClearRenderTarget(t, color);
 }
 
@@ -791,7 +793,7 @@ void GSDeviceOGL::ClearDepth(GSTexture* t)
 
 		// TODO: check size of scissor before toggling it
 		glDisable(GL_SCISSOR_TEST);
-		float c = 0.0f;
+		const float c = 0.0f;
 		if (GLState::depth_mask)
 		{
 			glClearBufferfv(GL_DEPTH, 0, &c);
@@ -819,7 +821,7 @@ void GSDeviceOGL::ClearStencil(GSTexture* t, uint8 c)
 	// of clean in DATE (impact big upscaling)
 	OMSetFBO(m_fbo);
 	OMAttachDs(T);
-	GLint color = c;
+	const GLint color = c;
 
 	glClearBufferiv(GL_STENCIL, 0, &color);
 }
@@ -881,7 +883,7 @@ GLuint GSDeviceOGL::CreateSampler(PSSamplerSelector sel)
 
 	glSamplerParameteri(sampler, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-	int anisotropy = theApp.GetConfigI("MaxAnisotropy");
+	const int anisotropy = theApp.GetConfigI("MaxAnisotropy");
 	if (anisotropy && sel.aniso)
 	{
 		if (GLExtension::Has("GL_ARB_texture_filter_anisotropic"))
@@ -936,7 +938,7 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& area)
 		m_date.t = CreateTexture(rtsize.x, rtsize.y, GL_R32I);
 
 	// Clean with the max signed value
-	int max_int = 0x7FFFFFFF;
+	const int max_int = 0x7FFFFFFF;
 	static_cast<GSTextureOGL*>(m_date.t)->Clear(&max_int, area);
 
 	glBindImageTexture(2, static_cast<GSTextureOGL*>(m_date.t)->GetID(), 0, false, 0, GL_READ_WRITE, GL_R32I);
@@ -1054,7 +1056,7 @@ void GSDeviceOGL::SelfShaderTestRun(const std::string& dir, const std::string& f
 	}
 #endif
 
-	GLuint p = CompilePS(sel);
+	const GLuint p = CompilePS(sel);
 	nb_shader++;
 	m_shader_inst += m_shader->DumpAsm(out, p);
 
@@ -1103,7 +1105,7 @@ void GSDeviceOGL::SelfShaderTest()
 				PSSelector sel;
 				sel.tfx = 4;
 
-				int ib = (i + 1) % 3;
+				const int ib = (i + 1) % 3;
 				sel.blend_a = i;
 				sel.blend_b = ib;
 				sel.blend_c = i;
@@ -1257,7 +1259,7 @@ GSTexture* GSDeviceOGL::CopyOffscreen(GSTexture* src, const GSVector4& sRect, in
 
 	GSTexture* dst = CreateOffscreen(w, h, format);
 
-	GSVector4 dRect(0, 0, w, h);
+	const GSVector4 dRect(0, 0, w, h);
 
 	// StretchRect will read an old target. However, the memory cache might contains
 	// invalid data (for example due to SW blending).
@@ -1349,7 +1351,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 		return;
 	}
 
-	bool draw_in_depth = (ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT32] || ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT24] ||
+	const bool draw_in_depth = (ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT32] || ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT24] ||
 	                      ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT16] || ps == m_convert.ps[ShaderConvert_RGB5A1_TO_FLOAT16]);
 
 	// Performance optimization. It might be faster to use a framebuffer blit for standard case
@@ -1391,16 +1393,16 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 
 
 	// Original code from DX
-	float left = dRect.x * 2 / ds.x - 1.0f;
-	float right = dRect.z * 2 / ds.x - 1.0f;
+	const float left = dRect.x * 2 / ds.x - 1.0f;
+	const float right = dRect.z * 2 / ds.x - 1.0f;
 #if 0
-	float top = 1.0f - dRect.y * 2 / ds.y;
-	float bottom = 1.0f - dRect.w * 2 / ds.y;
+	const float top = 1.0f - dRect.y * 2 / ds.y;
+	const float bottom = 1.0f - dRect.w * 2 / ds.y;
 #else
 	// Opengl get some issues with the coordinate
 	// I flip top/bottom to fix scaling of the internal resolution
-	float top = -1.0f + dRect.y * 2 / ds.y;
-	float bottom = -1.0f + dRect.w * 2 / ds.y;
+	const float top = -1.0f + dRect.y * 2 / ds.y;
+	const float bottom = -1.0f + dRect.w * 2 / ds.y;
 #endif
 
 	// Flip y axis only when we render in the backbuffer
@@ -1481,10 +1483,10 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 {
 	GL_PUSH("DoMerge");
 
-	GSVector4 full_r(0.0f, 0.0f, 1.0f, 1.0f);
-	bool feedback_write_2 = PMODE.EN2 && sTex[2] != nullptr && EXTBUF.FBIN == 1;
-	bool feedback_write_1 = PMODE.EN1 && sTex[2] != nullptr && EXTBUF.FBIN == 0;
-	bool feedback_write_2_but_blend_bg = feedback_write_2 && PMODE.SLBG == 1;
+	const GSVector4 full_r(0.0f, 0.0f, 1.0f, 1.0f);
+	const bool feedback_write_2 = PMODE.EN2 && sTex[2] != nullptr && EXTBUF.FBIN == 1;
+	const bool feedback_write_1 = PMODE.EN1 && sTex[2] != nullptr && EXTBUF.FBIN == 0;
+	const bool feedback_write_2_but_blend_bg = feedback_write_2 && PMODE.SLBG == 1;
 
 	// Merge the 2 source textures (sTex[0],sTex[1]). Final results go to dTex. Feedback write will go to sTex[2].
 	// If either 2nd output is disabled or SLBG is 1, a background color will be used.
@@ -1545,10 +1547,10 @@ void GSDeviceOGL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool
 
 	OMSetColorMaskState();
 
-	GSVector4 s = GSVector4(dTex->GetSize());
+	const GSVector4 s = GSVector4(dTex->GetSize());
 
-	GSVector4 sRect(0, 0, 1, 1);
-	GSVector4 dRect(0.0f, yoffset, s.x, s.y + yoffset);
+	const GSVector4 sRect(0, 0, 1, 1);
+	const GSVector4 dRect(0.0f, yoffset, s.x, s.y + yoffset);
 
 	InterlaceConstantBuffer cb;
 
@@ -1584,10 +1586,10 @@ void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 
 	OMSetColorMaskState();
 
-	GSVector2i s = dTex->GetSize();
+	const GSVector2i s = dTex->GetSize();
 
-	GSVector4 sRect(0, 0, 1, 1);
-	GSVector4 dRect(0, 0, s.x, s.y);
+	const GSVector4 sRect(0, 0, 1, 1);
+	const GSVector4 dRect(0, 0, s.x, s.y);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_fxaa.ps, true);
 }
@@ -1631,10 +1633,10 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 
 	OMSetColorMaskState();
 
-	GSVector2i s = dTex->GetSize();
+	const GSVector2i s = dTex->GetSize();
 
-	GSVector4 sRect(0, 0, 1, 1);
-	GSVector4 dRect(0, 0, s.x, s.y);
+	const GSVector4 sRect(0, 0, 1, 1);
+	const GSVector4 dRect(0, 0, s.x, s.y);
 
 	ExternalFXConstantBuffer cb;
 
@@ -1653,10 +1655,10 @@ void GSDeviceOGL::DoShadeBoost(GSTexture* sTex, GSTexture* dTex)
 
 	OMSetColorMaskState();
 
-	GSVector2i s = dTex->GetSize();
+	const GSVector2i s = dTex->GetSize();
 
-	GSVector4 sRect(0, 0, 1, 1);
-	GSVector4 dRect(0, 0, s.x, s.y);
+	const GSVector4 sRect(0, 0, 1, 1);
+	const GSVector4 dRect(0, 0, s.x, s.y);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_shadeboost.ps, true);
 }
@@ -1729,7 +1731,7 @@ void GSDeviceOGL::PSSetShaderResource(int i, GSTexture* sr)
 	// Note: Nvidia debgger doesn't support the id 0 (ie the NULL texture)
 	if (sr)
 	{
-		GLuint id = static_cast<GSTextureOGL*>(sr)->GetID();
+		const GLuint id = static_cast<GSTextureOGL*>(sr)->GetID();
 		if (GLState::tex_unit[i] != id)
 		{
 			GLState::tex_unit[i] = id;
@@ -1755,15 +1757,11 @@ void GSDeviceOGL::PSSetSamplerState(GLuint ss)
 
 void GSDeviceOGL::OMAttachRt(GSTextureOGL* rt)
 {
-	GLuint id;
+	GLuint id = 0;
 	if (rt)
 	{
 		rt->WasAttached();
 		id = rt->GetID();
-	}
-	else
-	{
-		id = 0;
 	}
 
 	if (GLState::rt != id)
@@ -1775,15 +1773,11 @@ void GSDeviceOGL::OMAttachRt(GSTextureOGL* rt)
 
 void GSDeviceOGL::OMAttachDs(GSTextureOGL* ds)
 {
-	GLuint id;
+	GLuint id = 0;
 	if (ds)
 	{
 		ds->WasAttached();
 		id = ds->GetID();
-	}
-	else
-	{
-		id = 0;
 	}
 
 	if (GLState::ds != id)
@@ -1831,7 +1825,7 @@ void GSDeviceOGL::OMSetBlendState(uint8 blend_index, uint8 blend_factor, bool is
 		if (is_blend_constant && GLState::bf != blend_factor)
 		{
 			GLState::bf = blend_factor;
-			float bf = (float)blend_factor / 128.0f;
+			const float bf = (float)blend_factor / 128.0f;
 			glBlendColor(bf, bf, bf, bf);
 		}
 
@@ -1895,7 +1889,7 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	}
 
 
-	GSVector2i size = rt ? rt->GetSize() : ds ? ds->GetSize() : GLState::viewport;
+	const GSVector2i size = rt ? rt->GetSize() : ds ? ds->GetSize() : GLState::viewport;
 	if (GLState::viewport != size)
 	{
 		GLState::viewport = size;
@@ -1903,7 +1897,7 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 		glViewportIndexedf(0, 0, 0, GLfloat(size.x), GLfloat(size.y));
 	}
 
-	GSVector4i r = scissor ? *scissor : GSVector4i(size).zwxy();
+	const GSVector4i r = scissor ? *scissor : GSVector4i(size).zwxy();
 
 	if (!GLState::scissor.eq(r))
 	{
@@ -1935,17 +1929,13 @@ void GSDeviceOGL::SetupCBMisc(const GSVector4i& channel)
 
 void GSDeviceOGL::SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, const PSSelector& psel)
 {
-	GLuint ps;
 	auto i = m_ps.find(psel);
+	GLuint ps = i->second;
 
 	if (i == m_ps.end())
 	{
 		ps = CompilePS(psel);
 		m_ps[psel] = ps;
-	}
-	else
-	{
-		ps = i->second;
 	}
 
 	{
@@ -2076,7 +2066,7 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 	if (GSState::s_n == 0)
 	{
 		int t, local, gpr, inst, byte;
-		int status = sscanf(message.c_str(), "type: %d, local: %d, gpr: %d, inst: %d, bytes: %d",
+		const int status = sscanf(message.c_str(), "type: %d, local: %d, gpr: %d, inst: %d, bytes: %d",
 			&t, &local, &gpr, &inst, &byte);
 		if (status == 5)
 		{
@@ -2087,10 +2077,10 @@ void GSDeviceOGL::DebugOutputToFile(GLenum gl_source, GLenum gl_type, GLuint id,
 	}
 #endif
 
+#ifdef ENABLE_OGL_DEBUG
 	if (m_debug_gl_file)
 		fprintf(m_debug_gl_file, "T:%s\tID:%d\tS:%s\t=> %s\n", type.c_str(), GSState::s_n, severity.c_str(), message.c_str());
 
-#ifdef _DEBUG
 	if (sev_counter >= 5)
 	{
 		// Close the file to flush the content on disk before exiting.
