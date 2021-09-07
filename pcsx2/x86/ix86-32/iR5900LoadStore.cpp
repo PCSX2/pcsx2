@@ -474,24 +474,210 @@ void recLDR()
 
 ////////////////////////////////////////////////////
 
+alignas(16) const u32 SD_MASK[2][4] = {
+	{ 0xffffffff, 0xffffffff, 0x00000000, 0x00000000 },
+	{ 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff }
+};
+
 void recSDL()
 {
+#ifdef LOADSTORE_RECOMPILE
+	xLEA(arg2reg, ptr128[&dummyValue[0]]);
+
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+		srcadr &= ~0x07;
+
+		vtlb_DynGenRead64_Const(64, srcadr);
+	}
+	else
+	{
+		// Load ECX with the source memory address that we're reading from.
+		_eeMoveGPRtoR(arg1regd, _Rs_);
+		if (_Imm_ != 0)
+			xADD(arg1regd, _Imm_);
+
+		xAND(arg1regd, ~0x07);
+
+		iFlushCall(FLUSH_FULLVTLB);
+
+		vtlb_DynGenRead64(64);
+	}
+	_flushEEreg(_Rt_); // flush register to mem
+
+	int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
+	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
+	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
+
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		u32 shiftval = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+		shiftval &= 0x7;
+		xMOV(eax, shiftval + 1);
+	}
+	else
+	{
+		_eeMoveGPRtoR(eax, _Rs_);
+		if (_Imm_ != 0)
+			xADD(eax, _Imm_);
+		xAND(eax, 0x7);
+		xADD(eax, 1);
+	}
+
+	xCMP(eax, 1);
+	xForwardJE32 skip;
+	//Calculate the shift from top bit to lowest
+	xMOV(edx, 64);
+	xSHL(eax, 3);
+	xSUB(edx, eax);
+	// Generate mask 128-(shiftx8) xPSRA.W does bit for bit
+	xMOVDZX(xRegisterSSE(t1reg), eax);
+	xMOVQZX(xRegisterSSE(t0reg), ptr128[&SD_MASK[0][0]]);
+	xPSLL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
+	xMOVQZX(xRegisterSSE(t1reg), ptr128[&dummyValue[0]]); // This line is super slow, but using MOVDQA/MOVAPS is even slower!
+	xPAND(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
+
+	// Shift over reg value (shift, PSLL.Q multiplies by 8)
+	xMOVDZX(xRegisterSSE(t1reg), edx);
+	xPSRL.Q(xRegisterSSE(rtreg), xRegisterSSE(t1reg));
+	xPOR(xRegisterSSE(rtreg), xRegisterSSE(t0reg));
+	skip.SetTarget();
+
+	xMOVQ(ptr128[&dummyValue[0]], xRegisterSSE(rtreg));
+
+	_deleteGPRtoXMMreg(_Rt_, 3);
+	_freeXMMreg(t0reg);
+	_freeXMMreg(t1reg);
+
+	xLEA(arg2reg, ptr128[&dummyValue[0]]);
+
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		u32 dstadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+		dstadr &= ~0x07;
+
+		vtlb_DynGenWrite_Const(64, dstadr);
+	}
+	else
+	{
+		_eeMoveGPRtoR(arg1regd, _Rs_);
+		if (_Imm_ != 0)
+			xADD(arg1regd, _Imm_);
+
+		xAND(arg1regd, ~0x7);
+
+		iFlushCall(FLUSH_FULLVTLB);
+
+		vtlb_DynGenWrite(64);
+	}
+#else
 	iFlushCall(FLUSH_INTERPRETER);
 	_deleteEEreg(_Rs_, 1);
 	_deleteEEreg(_Rt_, 1);
 	recCall(SDL);
-
+#endif
 	EE::Profiler.EmitOp(eeOpcode::SDL);
 }
 
 ////////////////////////////////////////////////////
 void recSDR()
 {
+#ifdef LOADSTORE_RECOMPILE
+	xLEA(arg2reg, ptr128[&dummyValue[0]]);
+
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+		srcadr &= ~0x07;
+
+		vtlb_DynGenRead64_Const(64, srcadr);
+	}
+	else
+	{
+		// Load ECX with the source memory address that we're reading from.
+		_eeMoveGPRtoR(arg1regd, _Rs_);
+		if (_Imm_ != 0)
+			xADD(arg1regd, _Imm_);
+
+		xAND(arg1regd, ~0x07);
+
+		iFlushCall(FLUSH_FULLVTLB);
+
+		vtlb_DynGenRead64(64);
+	}
+	_flushEEreg(_Rt_); // flush register to mem
+
+	int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
+	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
+	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
+
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		u32 shiftval = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+		shiftval &= 0x7;
+		xMOV(eax, shiftval);
+	}
+	else
+	{
+		_eeMoveGPRtoR(eax, _Rs_);
+		if (_Imm_ != 0)
+			xADD(eax, _Imm_);
+		xAND(eax, 0x7);
+	}
+
+	xCMP(eax, 0);
+	xForwardJE32 skip;
+	//Calculate the shift from top bit to lowest
+	xMOV(edx, 64);
+	xSHL(eax, 3);
+	xSUB(edx, eax);
+	// Generate mask 128-(shiftx8) xPSRA.W does bit for bit
+	xMOVDZX(xRegisterSSE(t1reg), edx);
+	xMOVQZX(xRegisterSSE(t0reg), ptr128[&SD_MASK[0][0]]);
+	xPSRL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
+	xMOVQZX(xRegisterSSE(t1reg), ptr128[&dummyValue[0]]); // This line is super slow, but using MOVDQA/MOVAPS is even slower!
+	xPAND(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
+
+	// Shift over reg value (shift, PSLL.Q multiplies by 8)
+	xMOVDZX(xRegisterSSE(t1reg), eax);
+	xPSLL.Q(xRegisterSSE(rtreg), xRegisterSSE(t1reg));
+	xPOR(xRegisterSSE(rtreg), xRegisterSSE(t0reg));
+	skip.SetTarget();
+
+	xMOVQ(ptr128[&dummyValue[0]], xRegisterSSE(rtreg));
+	
+	_deleteGPRtoXMMreg(_Rt_, 3);
+	_freeXMMreg(t0reg);
+	_freeXMMreg(t1reg);
+
+	xLEA(arg2reg, ptr128[&dummyValue[0]]);
+
+	if (GPR_IS_CONST1(_Rs_))
+	{
+		u32 dstadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+		dstadr &= ~0x07;
+
+		vtlb_DynGenWrite_Const(64, dstadr);
+	}
+	else
+	{
+		_eeMoveGPRtoR(arg1regd, _Rs_);
+		if (_Imm_ != 0)
+			xADD(arg1regd, _Imm_);
+
+		xAND(arg1regd, ~0x7);
+
+		iFlushCall(FLUSH_FULLVTLB);
+
+		vtlb_DynGenWrite(64);
+	}
+#else
 	iFlushCall(FLUSH_INTERPRETER);
 	_deleteEEreg(_Rs_, 1);
 	_deleteEEreg(_Rt_, 1);
 	recCall(SDR);
-
+#endif
 	EE::Profiler.EmitOp(eeOpcode::SDR);
 }
 
