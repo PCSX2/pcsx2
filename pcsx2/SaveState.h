@@ -39,11 +39,11 @@ static const u32 g_SaveVersion = (0x9A23 << 16) | 0x0000;
 // struct was system dependant as the size of int differs between systems, thus
 // subsystems making use of freezeData, like GSDump and save states aren't
 // necessarily portable; we might want to investigate this in the future -- govanify
-typedef struct
+struct freezeData
 {
     int size;
     u8 *data;
-} freezeData;
+};
 
 // this function is meant to be used in the place of GSfreeze, and provides a safe layer
 // between the GS saving function and the MTGS's needs. :)
