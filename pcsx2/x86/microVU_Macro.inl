@@ -112,6 +112,9 @@ void endMacroOp(int mode)
 #define INTERPRETATE_COP2_FUNC(f) \
 	void recV##f() \
 	{ \
+		xMOV(eax, ptr32[&cpuRegs.cycle]); \
+		xADD(eax, scaleblockcycles_clear()); \
+		xMOV(ptr32[&cpuRegs.cycle], eax); \
 		recCall(V##f); \
 		_freeX86regs(); \
 	}
@@ -283,15 +286,24 @@ void COP2_Interlock(bool mBitSync)
 	if (cpuRegs.code & 1)
 	{
 		iFlushCall(FLUSH_EVERYTHING);
+		xMOV(eax, ptr32[&cpuRegs.cycle]);
+		xADD(eax, scaleblockcycles_clear());
+		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
+
 		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
 		xForwardJZ32 skipvuidle;
-		xMOV(eax, ptr[&cpuRegs.cycle]);
-		xADD(eax, scaleblockcycles_clear());
-		xMOV(ptr[&cpuRegs.cycle], eax); // update cycles
-		xLoadFarAddr(arg1reg, CpuVU0);
-		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
 		if (mBitSync)
+		{
+			xSUB(eax, ptr32[&vu0Regs.cycle]);
+			xSUB(eax, ptr32[&vu0Regs.nextBlockCycles]);
+			xCMP(eax, 8);
+			xForwardJL32 skip;
+			xLoadFarAddr(arg1reg, CpuVU0);
+			xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+			skip.SetTarget();
+
 			xFastCall((void*)_vu0WaitMicro);
+		}
 		else
 			xFastCall((void*)_vu0FinishMicro);
 		skipvuidle.SetTarget();
@@ -320,11 +332,11 @@ static void recCFC2()
 
 	if (!(cpuRegs.code & 1))
 	{
-		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
-		xForwardJZ32 skipvuidle;
 		xMOV(eax, ptr32[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles_clear());
 		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
+		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+		xForwardJZ32 skipvuidle;
 		xSUB(eax, ptr32[&vu0Regs.cycle]);
 		xSUB(eax, ptr32[&vu0Regs.nextBlockCycles]);
 		xCMP(eax, 8);
@@ -405,11 +417,12 @@ static void recCTC2()
 
 	if (!(cpuRegs.code & 1))
 	{
-		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
-		xForwardJZ32 skipvuidle;
 		xMOV(eax, ptr32[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles_clear());
 		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
+
+		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+		xForwardJZ32 skipvuidle;
 		xSUB(eax, ptr32[&vu0Regs.cycle]);
 		xSUB(eax, ptr32[&vu0Regs.nextBlockCycles]);
 		xCMP(eax, 8);
@@ -498,11 +511,12 @@ static void recQMFC2()
 
 	if (!(cpuRegs.code & 1))
 	{
-		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
-		xForwardJZ32 skipvuidle;
 		xMOV(eax, ptr32[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles_clear());
 		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
+
+		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+		xForwardJZ32 skipvuidle;
 		xSUB(eax, ptr32[&vu0Regs.cycle]);
 		xSUB(eax, ptr32[&vu0Regs.nextBlockCycles]);
 		xCMP(eax, 8);
@@ -532,12 +546,14 @@ static void recQMTC2()
 
 	if (!(cpuRegs.code & 1))
 	{
-		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
-		xForwardJZ32 skipvuidle;
 		xMOV(eax, ptr32[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles_clear());
 		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
+
+		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
+		xForwardJZ32 skipvuidle;
 		xSUB(eax, ptr32[&vu0Regs.cycle]);
+		xSUB(eax, ptr32[&vu0Regs.nextBlockCycles]);
 		xCMP(eax, 8);
 		xForwardJL32 skip;
 		xLoadFarAddr(arg1reg, CpuVU0);

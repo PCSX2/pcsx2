@@ -49,8 +49,9 @@ union __aligned16 microRegInfo
 				u8 viBackUp;       // VI reg number that was written to on branch-delay slot
 				u8 blockType;      // 0 = Normal; 1,2 = Compile one instruction (E-bit/Branch Ending)
 				u8 r;
+				u8 mbitinblock;
 			};
-			u32 quick32[2];
+			u32 quick32[3];
 		};
 
 		u8 vi15v; // 'vi15' constant is valid

@@ -11696,7 +11696,6 @@ SLES-52568:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes bad Geometry.
-    - VUKickstartHack # Fixes loading hang.
 SLES-52569:
   name: "Spyro - A Hero's Tail"
   region: "PAL-M6"
@@ -35789,7 +35788,6 @@ SLUS-20909:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes bad geometry.
-    - VUKickstartHack # Fixes loading hang.
 SLUS-20910:
   name: "Test Drive - Eve of Destruction"
   region: "NTSC-U"

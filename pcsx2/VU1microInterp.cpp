@@ -328,6 +328,6 @@ void InterpVU1::Execute(u32 cycles)
 		Step();
 	}
 	VU1.VI[REG_TPC].UL >>= 3;
-
+	VU1.nextBlockCycles = (VU1.cycle - cpuRegs.cycle) + 1;
 	fesetround(originalRounding);
 }

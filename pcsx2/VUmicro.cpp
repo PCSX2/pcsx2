@@ -82,11 +82,15 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 		return;
 	}
 
-	if (startUp && s) // Start Executing a microprogram (When kickstarted)
+	// You might be looking at this and thinking, what the hell is going on? What's with all these conditions?
+	// Well, basically M-Bit timed games are REALLY picky, so we need some extra checks in to make sure the VU
+	// doesn't go too long without updating/syncing as games will wait for an M-Bit then transfer a bunch of stuff
+	// since they will know what the timing is going to be on them, so we need to keep it somewhat tight.
+	// For everything else (Especially stuff that needs kickstart), they can do what they like.
+	if (startUp) // Start Executing a microprogram (When kickstarted)
 	{
 		Execute(s); // Kick start VU
 
-		// I don't like doing this, but Crash Twinsanity seems to be upset without it
 		if (stat & test)
 		{
 			if (m_Idx)
@@ -94,7 +98,12 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 			else
 				cpuRegs.cycle = VU0.cycle;
 
-			cpuSetNextEventDelta(s);
+			u32 nextblockcycles = m_Idx ? VU1.nextBlockCycles : VU0.nextBlockCycles;
+
+			if((VU0.flags & VUFLAG_MFLAGSET) || VU0.blockhasmbit)
+				cpuSetNextEventDelta(nextblockcycles);
+			else if(s)
+				cpuSetNextEventDelta(s);
 		}
 	}
 	else // Continue Executing
@@ -110,19 +119,21 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 		}
 		else
 		{
-			if (delta >= nextblockcycles) // When running behind, make sure we have enough cycles passed for the block to run
+			if (delta >= nextblockcycles && delta > 0) // When running behind, make sure we have enough cycles passed for the block to run
 				Execute(delta);
 		}
 
-		if (stat & test)
+		if ((stat & test) && !EmuConfig.Gamefixes.VUKickstartHack)
 		{
 			// Queue up next required time to run a block
 			nextblockcycles = m_Idx ? VU1.nextBlockCycles : VU0.nextBlockCycles;
 			cycle = m_Idx ? VU1.cycle : VU0.cycle;
-			nextblockcycles = EmuConfig.Gamefixes.VUKickstartHack ? (cycle - cpuRegs.cycle) : nextblockcycles;
+			nextblockcycles = nextblockcycles - (cycle - cpuRegs.cycle);
 
-			if(nextblockcycles)
+			if (nextblockcycles > 0 || (VU0.flags & VUFLAG_MFLAGSET) || VU0.blockhasmbit)
+			{
 				cpuSetNextEventDelta(nextblockcycles);
+			}
 		}
 	}
 }
@@ -136,12 +147,13 @@ void BaseVUmicroCPU::ExecuteBlockJIT(BaseVUmicroCPU* cpu)
 	const u32& stat = VU0.VI[REG_VPU_STAT].UL;
 	const int test = 1;
 
+	//DevCon.Warning("Was set %d cycles ago", cpuRegs.cycle - setcycle);
 	if (stat & test)
 	{ // VU is running
 		s32 delta = (s32)(u32)(cpuRegs.cycle - VU0.cycle);
 
 		if (delta > 0)
-		{ // Enough time has passed
+		{
 			cpu->Execute(delta); // Execute the time since the last call
 		}
 	}
