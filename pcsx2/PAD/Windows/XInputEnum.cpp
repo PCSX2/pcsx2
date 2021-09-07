@@ -14,6 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "common/DynamicLibrary.h"
 #include "Global.h"
 #include <VersionHelpers.h>
 #include <xinput.h>
@@ -72,6 +73,8 @@ _XInputSetState pXInputSetState = 0;
 static bool xinputNotInstalled = false;
 
 static int xInputActiveCount = 0;
+
+static Common::DynamicLibrary s_xinput_lib("xinput1_4");
 
 // Completely unncessary, really.
 __forceinline int ShortToAxis(int v)
@@ -292,26 +295,19 @@ void EnumXInputDevices()
 		if (xinputNotInstalled)
 			return;
 
-		// Prefer XInput 1.3 since SCP only has an XInput 1.3 wrapper right now.
-		// Also use LoadLibrary and not LoadLibraryEx for XInput 1.3, since some
-		// Windows 7 systems have issues with it.
-		// FIXME: Missing FreeLibrary call.
-		HMODULE hMod = LoadLibrary(L"xinput1_3.dll");
-		if (hMod == nullptr && IsWindows8OrGreater())
+		if (s_xinput_lib.IsOpen())
 		{
-			hMod = LoadLibraryEx(L"XInput1_4.dll", nullptr, LOAD_LIBRARY_SEARCH_APPLICATION_DIR | LOAD_LIBRARY_SEARCH_SYSTEM32);
+			pXInputEnable = s_xinput_lib.GetSymbol<_XInputEnable>("XInputEnable");
+
+			// try to get the version that supports the guide button
+			pXInputGetStateEx = s_xinput_lib.GetSymbolOrdinal<_XInputGetStateEx>(100);
+			if(!pXInputGetStateEx)
+				pXInputGetStateEx = s_xinput_lib.GetSymbol<_XInputGetStateEx>("XInputGetState");
+
+			pXInputGetExtended = s_xinput_lib.GetSymbol<_XInputGetExtended>("XInputGetExtended");
+			pXInputSetState = s_xinput_lib.GetSymbol<_XInputSetState>("XInputSetState");
 		}
 
-		if (hMod)
-		{
-			if ((pXInputEnable = (_XInputEnable)GetProcAddress(hMod, "XInputEnable")) &&
-				((pXInputGetStateEx = (_XInputGetStateEx)GetProcAddress(hMod, (LPCSTR)100)) || // Try Ex version first
-				 (pXInputGetStateEx = (_XInputGetStateEx)GetProcAddress(hMod, "XInputGetState"))))
-			{
-				pXInputGetExtended = (_XInputGetExtended)GetProcAddress(hMod, "XInputGetExtended");
-				pXInputSetState = (_XInputSetState)GetProcAddress(hMod, "XInputSetState");
-			}
-		}
 		if (!pXInputSetState)
 		{
 			xinputNotInstalled = true;
