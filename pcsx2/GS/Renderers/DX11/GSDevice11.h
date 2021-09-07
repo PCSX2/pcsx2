@@ -243,7 +243,7 @@ public:
 				uint32 pabe    : 1;
 
 				// Others ways to fetch the texture
-				uint32 channel : 3;
+				uint32 channel : 4;
 
 				// Dithering
 				uint32 dither : 2;
@@ -253,12 +253,10 @@ public:
 
 				// Hack
 				uint32 tcoffsethack : 1;
-				uint32 urban_chaos_hle : 1;
-				uint32 tales_of_abyss_hle : 1;
 				uint32 point_sampler : 1;
 				uint32 invalid_tex0 : 1; // Lupin the 3rd
 
-				uint32 _free : 14;
+				uint32 _free : 15;
 			};
 
 			uint64 key;

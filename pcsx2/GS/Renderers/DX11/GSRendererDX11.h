@@ -38,7 +38,6 @@ private:
 	inline void EmulateZbuffer();
 	inline void EmulateBlending();
 	inline void EmulateTextureShuffleAndFbmask();
-	inline void EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex);
 	inline void EmulateTextureSampler(const GSTextureCache::Source* tex);
 
 	GSDevice11::VSSelector m_vs_sel;

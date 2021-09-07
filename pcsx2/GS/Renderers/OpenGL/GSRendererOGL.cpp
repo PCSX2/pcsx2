@@ -302,165 +302,6 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 	}
 }
 
-void GSRendererOGL::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::Source* tex)
-{
-	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
-
-	// Uncomment to disable HLE emulation (allow to trace the draw call)
-	// m_channel_shuffle = false;
-
-	// First let's check we really have a channel shuffle effect
-	if (m_channel_shuffle)
-	{
-		if (m_game.title == CRC::GT4 || m_game.title == CRC::GT3 || m_game.title == CRC::GTConcept || m_game.title == CRC::TouristTrophy)
-		{
-			GL_INS("Gran Turismo RGB Channel");
-			m_ps_sel.channel = ChannelFetch_RGB;
-			m_context->TEX0.TFX = TFX_DECAL;
-			*rt = tex->m_from_target;
-		}
-		else if (m_game.title == CRC::Tekken5)
-		{
-			if (m_context->FRAME.FBW == 1)
-			{
-				// Used in stages: Secret Garden, Acid Rain, Moonlit Wilderness
-				GL_INS("Tekken5 RGB Channel");
-				m_ps_sel.channel = ChannelFetch_RGB;
-				m_context->FRAME.FBMSK = 0xFF000000;
-				// 12 pages: 2 calls by channel, 3 channels, 1 blit
-				// Minus current draw call
-				m_skip = 12 * (3 + 3 + 1) - 1;
-				*rt = tex->m_from_target;
-			}
-			else
-			{
-				// Could skip model drawing if wrongly detected
-				m_channel_shuffle = false;
-			}
-		}
-		else if ((tex->m_texture->GetType() == GSTexture::DepthStencil) && !(tex->m_32_bits_fmt))
-		{
-			// So far 2 games hit this code path. Urban Chaos and Tales of Abyss
-			// UC: will copy depth to green channel
-			// ToA: will copy depth to alpha channel
-			if ((m_context->FRAME.FBMSK & 0xFF0000) == 0xFF0000)
-			{
-				// Green channel is masked
-				GL_INS("Tales Of Abyss Crazyness (MSB 16b depth to Alpha)");
-				m_ps_sel.tales_of_abyss_hle = 1;
-			}
-			else
-			{
-				GL_INS("Urban Chaos Crazyness (Green extraction)");
-				m_ps_sel.urban_chaos_hle = 1;
-			}
-		}
-		else if (m_index.tail <= 64 && m_context->CLAMP.WMT == 3)
-		{
-			// Blood will tell. I think it is channel effect too but again
-			// implemented in a different way. I don't want to add more CRC stuff. So
-			// let's disable channel when the signature is different
-			//
-			// Note: Tales Of Abyss and Tekken5 could hit this path too. Those games are
-			// handled above.
-			GL_INS("Maybe not a channel!");
-			m_channel_shuffle = false;
-		}
-		else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MAXU & 0x8) == 8))
-		{
-			// Read either blue or Alpha. Let's go for Blue ;)
-			// MGS3/Kill Zone
-			GL_INS("Blue channel");
-			m_ps_sel.channel = ChannelFetch_BLUE;
-		}
-		else if (m_context->CLAMP.WMS == 3 && ((m_context->CLAMP.MINU & 0x8) == 0))
-		{
-			// Read either Red or Green. Let's check the V coordinate. 0-1 is likely top so
-			// red. 2-3 is likely bottom so green (actually depends on texture base pointer offset)
-			const bool green = PRIM->FST && (m_vertex.buff[0].V & 32);
-			if (green && (m_context->FRAME.FBMSK & 0x00FFFFFF) == 0x00FFFFFF)
-			{
-				// Typically used in Terminator 3
-				const int blue_mask = m_context->FRAME.FBMSK >> 24;
-				const int green_mask = ~blue_mask & 0xFF;
-				int blue_shift = -1;
-
-				// Note: potentially we could also check the value of the clut
-				switch (m_context->FRAME.FBMSK >> 24)
-				{
-					case 0xFF: ASSERT(0);      break;
-					case 0xFE: blue_shift = 1; break;
-					case 0xFC: blue_shift = 2; break;
-					case 0xF8: blue_shift = 3; break;
-					case 0xF0: blue_shift = 4; break;
-					case 0xE0: blue_shift = 5; break;
-					case 0xC0: blue_shift = 6; break;
-					case 0x80: blue_shift = 7; break;
-					default:   ASSERT(0);      break;
-				}
-
-				const int green_shift = 8 - blue_shift;
-				dev->SetupCBMisc(GSVector4i(blue_mask, blue_shift, green_mask, green_shift));
-
-				if (blue_shift >= 0)
-				{
-					GL_INS("Green/Blue channel (%d, %d)", blue_shift, green_shift);
-					m_ps_sel.channel = ChannelFetch_GXBY;
-					m_context->FRAME.FBMSK = 0x00FFFFFF;
-				}
-				else
-				{
-					GL_INS("Green channel (wrong mask) (fbmask %x)", m_context->FRAME.FBMSK >> 24);
-					m_ps_sel.channel = ChannelFetch_GREEN;
-				}
-			}
-			else if (green)
-			{
-				GL_INS("Green channel");
-				m_ps_sel.channel = ChannelFetch_GREEN;
-			}
-			else
-			{
-				// Pop
-				GL_INS("Red channel");
-				m_ps_sel.channel = ChannelFetch_RED;
-			}
-		}
-		else
-		{
-			GL_INS("Channel not supported");
-			m_channel_shuffle = false;
-		}
-	}
-
-	// Effect is really a channel shuffle effect so let's cheat a little
-	if (m_channel_shuffle)
-	{
-		dev->PSSetShaderResource(4, tex->m_from_target);
-		m_require_one_barrier = true;
-
-		// Replace current draw with a fullscreen sprite
-		//
-		// Performance GPU note: it could be wise to reduce the size to
-		// the rendered size of the framebuffer
-
-		GSVertex* s = &m_vertex.buff[0];
-		s[0].XYZ.X = (uint16)(m_context->XYOFFSET.OFX + 0);
-		s[1].XYZ.X = (uint16)(m_context->XYOFFSET.OFX + 16384);
-		s[0].XYZ.Y = (uint16)(m_context->XYOFFSET.OFY + 0);
-		s[1].XYZ.Y = (uint16)(m_context->XYOFFSET.OFY + 16384);
-
-		m_vertex.head = m_vertex.tail = m_vertex.next = 2;
-		m_index.tail = 2;
-	}
-	else
-	{
-#ifdef ENABLE_OGL_DEBUG
-		dev->PSSetShaderResource(4, NULL);
-#endif
-	}
-}
-
 void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 {
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
@@ -1103,7 +944,29 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// Warning it must be done at the begining because it will change the
 	// vertex list (it will interact with PrimitiveOverlap and accurate
 	// blending)
-	EmulateChannelShuffle(&rt, tex);
+	if (m_channel_shuffle)
+	{
+		uint8 ps_channel = 0;
+		GSVector4i cb_ps_channel = GSVector4i::zero();
+
+		EmulateChannelShuffle(&rt, tex, ps_channel, cb_ps_channel);
+
+		// m_channel_shuffle might be disabled in EmulateChannelShuffle so check it again.
+		if (m_channel_shuffle)
+		{
+			m_ps_sel.channel = ps_channel;
+			dev->SetupCBMisc(cb_ps_channel);
+
+			dev->PSSetShaderResource(4, tex->m_from_target);
+			m_require_one_barrier = true;
+		}
+#ifdef ENABLE_OGL_DEBUG
+		else
+		{
+			dev->PSSetShaderResource(4, nullptr);
+		}
+#endif
+	}
 
 	// Upscaling hack to avoid various line/grid issues
 	MergeSprite(tex);

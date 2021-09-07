@@ -38,8 +38,6 @@
 #define PS_DEPTH_FMT 0
 #define PS_PAL_FMT 0
 #define PS_CHANNEL_FETCH 0
-#define PS_TALES_OF_ABYSS_HLE 0
-#define PS_URBAN_CHAOS_HLE 0
 #define PS_INVALID_TEX0 0
 #define PS_SCALE_FACTOR 1
 #define PS_HDR 0
@@ -321,7 +319,7 @@ float4 sample_depth(float2 st, float2 pos)
 
 	float4 t = (float4)(0.0f);
 
-	if (PS_TALES_OF_ABYSS_HLE == 1)
+	if (PS_CHANNEL_FETCH == 7)
 	{
 		// Warning: UV can't be used in channel effect
 		int depth = fetch_raw_depth(pos);
@@ -329,7 +327,7 @@ float4 sample_depth(float2 st, float2 pos)
 		// Convert msb based on the palette
 		t = Palette.Load(int3((depth >> 8) & 0xFF, 0, 0)) * 255.0f;
 	}
-	else if (PS_URBAN_CHAOS_HLE == 1)
+	else if (PS_CHANNEL_FETCH == 8)
 	{
 		// Depth buffer is read as a RGB5A1 texture. The game try to extract the green channel.
 		// So it will do a first channel trick to extract lsb, value is right-shifted.

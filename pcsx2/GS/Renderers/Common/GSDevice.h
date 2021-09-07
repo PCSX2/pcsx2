@@ -49,13 +49,15 @@ enum ShaderConvert
 
 enum ChannelFetch
 {
-	ChannelFetch_NONE  = 0,
-	ChannelFetch_RED   = 1,
-	ChannelFetch_GREEN = 2,
-	ChannelFetch_BLUE  = 3,
-	ChannelFetch_ALPHA = 4,
-	ChannelFetch_RGB   = 5,
-	ChannelFetch_GXBY  = 6,
+	ChannelFetch_NONE    = 0,
+	ChannelFetch_RED     = 1,
+	ChannelFetch_GREEN   = 2,
+	ChannelFetch_BLUE    = 3,
+	ChannelFetch_ALPHA   = 4,
+	ChannelFetch_RGB     = 5,
+	ChannelFetch_GXBY    = 6,
+	ChannelFetch_TOA_HLE = 7,
+	ChannelFetch_UC_HLE  = 8
 };
 
 #pragma pack(push, 1)
