@@ -31,10 +31,7 @@ class FastFormatUnicode;
 //  Basic Atomic Types
 // --------------------------------------------------------------------------------------
 
-// Note: char does not have a default sign, unlike other types. As we actually want
-// char and not signed char in pcsx2, we define s8 to char
-
-typedef char s8;
+typedef int8_t s8;
 typedef int16_t s16;
 typedef int32_t s32;
 typedef int64_t s64;

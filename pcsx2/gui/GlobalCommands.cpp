@@ -389,7 +389,7 @@ namespace Implementations
 			freezeData fP = {0, nullptr};
 			MTGS_FreezeData sstate = {&fP, 0};
 			GetMTGS().Freeze(FreezeAction::Size, sstate);
-			fP.data = new char[fP.size];
+			fP.data = new u8[fP.size];
 			GetMTGS().Freeze(FreezeAction::Save, sstate);
 			GetMTGS().Suspend(true);
 			renderswitch = !renderswitch;

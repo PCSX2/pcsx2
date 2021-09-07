@@ -101,7 +101,7 @@ void MainEmuFrame::Menu_GSSettings_Click(wxCommandEvent& event)
 	if (is_frame_init)
 	{
 		GetMTGS().Freeze(FreezeAction::Size, sstate);
-		fP.data = new char[fP.size];
+		fP.data = new u8[fP.size];
 		GetMTGS().Freeze(FreezeAction::Save, sstate);
 		GetMTGS().Suspend(true);
 	}

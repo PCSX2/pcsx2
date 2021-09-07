@@ -2375,14 +2375,14 @@ void GSState::Transfer(const uint8* mem, uint32 size)
 }
 
 template <class T>
-static void WriteState(char*& dst, T* src, size_t len = sizeof(T))
+static void WriteState(u8*& dst, T* src, size_t len = sizeof(T))
 {
 	memcpy(dst, src, len);
 	dst += len;
 }
 
 template <class T>
-static void ReadState(T* dst, char*& src, size_t len = sizeof(T))
+static void ReadState(T* dst, u8*& src, size_t len = sizeof(T))
 {
 	memcpy(dst, src, len);
 	src += len;
@@ -2403,7 +2403,7 @@ int GSState::Freeze(freezeData* fd, bool sizeonly)
 
 	Flush();
 
-    char* data = fd->data;
+    u8* data = fd->data;
 
 	WriteState(data, &m_version);
 	WriteState(data, &m_env.PRIM);
@@ -2482,7 +2482,7 @@ int GSState::Defrost(const freezeData* fd)
 		return -1;
 	}
 
-	char* data = fd->data;
+	u8* data = fd->data;
 
 	int version;
 

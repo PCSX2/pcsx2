@@ -516,7 +516,7 @@ void GSRenderer::VSync(int field)
 		{
 			freezeData fd = {0, nullptr};
 			Freeze(&fd, true);
-			fd.data = new char[fd.size];
+			fd.data = new u8[fd.size];
 			Freeze(&fd, false);
 
 			if (m_control_key)
