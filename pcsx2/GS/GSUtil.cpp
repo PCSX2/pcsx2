@@ -14,6 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "common/DynamicLibrary.h"
 #include "GSUtil.h"
 #include <locale>
 #include <codecvt>
@@ -201,10 +202,9 @@ bool GSUtil::CheckDXGI()
 {
 	if (0 == s_DXGI)
 	{
-		HMODULE hmod = LoadLibrary(L"dxgi.dll");
-		s_DXGI = hmod ? 1 : -1;
-		if (hmod)
-			FreeLibrary(hmod);
+		Common::DynamicLibrary lib("dxgi");
+
+		s_DXGI = lib.IsOpen();
 	}
 
 	return s_DXGI > 0;
@@ -217,10 +217,9 @@ bool GSUtil::CheckD3D11()
 
 	if (0 == s_D3D11)
 	{
-		HMODULE hmod = LoadLibrary(L"d3d11.dll");
-		s_D3D11 = hmod ? 1 : -1;
-		if (hmod)
-			FreeLibrary(hmod);
+		Common::DynamicLibrary lib("d3d11");
+
+		s_D3D11 = lib.IsOpen();
 	}
 
 	return s_D3D11 > 0;
