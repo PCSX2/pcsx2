@@ -957,7 +957,7 @@ void GSReplay(char* lpszCmdLine, int renderer)
 
 		freezeData fd;
 		file->Read(&fd.size, 4);
-		fd.data = new char[fd.size];
+		fd.data = new u8[fd.size];
 		file->Read(fd.data, fd.size);
 
 		GSfreeze(FreezeAction::Load, &fd);

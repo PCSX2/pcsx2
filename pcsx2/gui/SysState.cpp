@@ -68,7 +68,7 @@ static constexpr SysState_Component GS{"GS", SysState_MTGSFreeze};
 
 void SysState_ComponentFreezeOutRoot(void* dest, SysState_Component comp)
 {
-	freezeData fP = {0, (char*)dest};
+	freezeData fP = {0, (u8*)dest};
 	if (comp.freeze(FreezeAction::Size, &fP) != 0)
 		return;
 	if (!fP.size)
@@ -98,7 +98,7 @@ void SysState_ComponentFreezeIn(pxInputStream& infp, SysState_Component comp)
 		return;
 	}
 
-	ScopedAlloc<s8> data(fP.size);
+	ScopedAlloc<u8> data(fP.size);
 	fP.data = data.GetPtr();
 
 	infp.Read(fP.data, fP.size);

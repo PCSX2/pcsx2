@@ -385,7 +385,7 @@ s32 USBfreeze(FreezeAction mode, freezeData* data)
 		// restore USBPacket for OHCIState
 		usb_packet_init(&qemu_ohci->usb_packet);
 
-		s8* ptr = data->data + sizeof(USBfreezeData);
+		u8* ptr = data->data + sizeof(USBfreezeData);
 		RegisterDevice& regInst = RegisterDevice::instance();
 		for (int i = 0; i < 2; i++)
 		{
@@ -535,7 +535,7 @@ s32 USBfreeze(FreezeAction mode, freezeData* data)
 		usbd.cycles = clocks;
 		usbd.remaining = remaining;
 
-		s8* ptr = data->data + sizeof(USBfreezeData);
+		u8* ptr = data->data + sizeof(USBfreezeData);
 
 		// Save the state of the attached devices
 		for (int i = 0; i < 2; i++)

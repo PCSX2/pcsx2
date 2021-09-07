@@ -42,7 +42,7 @@ static const u32 g_SaveVersion = (0x9A23 << 16) | 0x0000;
 typedef struct
 {
     int size;
-    s8 *data;
+    u8 *data;
 } freezeData;
 
 // this function is meant to be used in the place of GSfreeze, and provides a safe layer
