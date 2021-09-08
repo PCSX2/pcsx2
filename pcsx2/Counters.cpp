@@ -339,7 +339,7 @@ u32 UpdateVSyncRate()
 	const double vertical_frequency = GetVerticalFrequency();
 
 	const double frames_per_second = vertical_frequency / 2.0;
-	const double frame_limit = frames_per_second * EmuConfig.GS.LimitScalar;
+	const double frame_limit = frames_per_second * EmuConfig.GS.LimitPercent;
 
 	const double tick_rate = GetTickFrequency() / 2.0;
 	const s64 ticks = static_cast<s64>(tick_rate / std::max(frame_limit, 1.0));

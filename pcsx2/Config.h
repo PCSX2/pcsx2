@@ -293,7 +293,7 @@ struct Pcsx2Config
 		int FramesToDraw{ 2 }; // number of consecutive frames (fields) to render
 		int FramesToSkip{ 2 }; // number of consecutive frames (fields) to skip
 
-		double LimitScalar{ 1.0 };
+		double LimitPercent{ 1.0 };
 		double FramerateNTSC{ 59.94 };
 		double FrameratePAL{ 50.00 };
 
@@ -311,7 +311,7 @@ struct Pcsx2Config
 				OpEqu( FrameLimitEnable )		&&
 				OpEqu( VsyncEnable )			&&
 
-				OpEqu( LimitScalar )			&&
+				OpEqu( LimitPercent )			&&
 				OpEqu( FramerateNTSC )			&&
 				OpEqu( FrameratePAL )			&&
 

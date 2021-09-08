@@ -865,18 +865,18 @@ void AppConfig::FramerateOptions::SanityCheck()
 {
 	// Ensure Conformation of various options...
 
-	NominalScalar = std::clamp(NominalScalar, 5.0, 1000.0);
-	TurboScalar = std::clamp(TurboScalar, 5.0, 1000.0);
-	SlomoScalar = std::clamp(SlomoScalar, 5.0, 1000.0);
+	NominalPercent = std::clamp(NominalPercent, 5.0, 1000.0);
+	TurboPercent = std::clamp(TurboPercent, 5.0, 1000.0);
+	SlomoPercent = std::clamp(SlomoPercent, 5.0, 1000.0);
 }
 
 void AppConfig::FramerateOptions::LoadSave( IniInterface& ini )
 {
 	ScopedIniGroup path( ini, L"Framerate" );
 
-	IniEntry( NominalScalar );
-	IniEntry( TurboScalar );
-	IniEntry( SlomoScalar );
+	IniEntry( NominalPercent );
+	IniEntry( TurboPercent );
+	IniEntry( SlomoPercent );
 
 	IniEntry( SkipOnLimit );
 	IniEntry( SkipOnTurbo );
@@ -995,8 +995,8 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
 	//Force some settings as a (current) base for all presets.
 
 	Framerate			= default_AppConfig.Framerate;
-	Framerate.SlomoScalar = original_Framerate.SlomoScalar;
-	Framerate.TurboScalar = original_Framerate.TurboScalar;
+	Framerate.SlomoPercent = original_Framerate.SlomoPercent;
+	Framerate.TurboPercent = original_Framerate.TurboPercent;
 
 	EnableGameFixes		= false;
 
@@ -1237,7 +1237,7 @@ static void LoadVmSettings()
 	std::unique_ptr<wxFileConfig> vmini( OpenFileConfig( GetVmSettingsFilename() ) );
 	IniLoader vmloader( vmini.get() );
 	g_Conf->EmuOptions.LoadSave( vmloader );
-	g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.NominalScalar;
+	g_Conf->EmuOptions.GS.LimitPercent = g_Conf->Framerate.NominalPercent;
 
 	if (g_Conf->EnablePresets){
 		g_Conf->IsOkApplyPreset(g_Conf->PresetIndex, true);

@@ -115,8 +115,8 @@ void Panels::FramelimiterPanel::ApplyConfigToGui( AppConfig& configToApply, int 
 	
 		m_check_LimiterDisable->SetValue(!gsconf.FrameLimitEnable);
 
-		m_spin_TurboPct->SetValue(appfps.TurboScalar);
-		m_spin_SlomoPct->SetValue(appfps.SlomoScalar);
+		m_spin_TurboPct->SetValue(appfps.TurboPercent);
+		m_spin_SlomoPct->SetValue(appfps.SlomoPercent);
 
 		m_spin_TurboPct->Enable(true);
 		m_spin_SlomoPct->Enable(true);
@@ -125,7 +125,7 @@ void Panels::FramelimiterPanel::ApplyConfigToGui( AppConfig& configToApply, int 
 	m_text_BaseNtsc->ChangeValue(wxString::FromDouble(gsconf.FramerateNTSC, 2));
 	m_text_BasePal->ChangeValue(wxString::FromDouble(gsconf.FrameratePAL, 2));
 
-	m_spin_NominalPct->SetValue(appfps.NominalScalar);
+	m_spin_NominalPct->SetValue(appfps.NominalPercent);
 	m_spin_NominalPct->Enable(!configToApply.EnablePresets);
 
 	m_text_BaseNtsc->Enable(!configToApply.EnablePresets);
@@ -139,9 +139,9 @@ void Panels::FramelimiterPanel::Apply()
 
 	gsconf.FrameLimitEnable	= !m_check_LimiterDisable->GetValue();
 
-	appfps.NominalScalar = m_spin_NominalPct->GetValue();
-	appfps.TurboScalar = m_spin_TurboPct->GetValue();
-	appfps.SlomoScalar = m_spin_SlomoPct->GetValue();
+	appfps.NominalPercent = m_spin_NominalPct->GetValue();
+	appfps.TurboPercent = m_spin_TurboPct->GetValue();
+	appfps.SlomoPercent = m_spin_SlomoPct->GetValue();
 
 	wxString ntsc_framerate_string = m_text_BaseNtsc->GetValue();
 	wxString pal_framerate_string = m_text_BasePal->GetValue();
