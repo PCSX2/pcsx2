@@ -39,44 +39,7 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 		{
 			if (VU1.xgkickenable && (cpuRegs.cycle - VU1.xgkicklastcycle) >= 2)
 			{
-				if (VU1.xgkicksizeremaining == 0)
-				{
-					u32 size = gifUnit.GetGSPacketSize(GIF_PATH_1, VU1.Mem, VU1.xgkickaddr);
-					VU1.xgkicksizeremaining = size & 0xFFFF;
-					VU1.xgkickendpacket = size >> 31;
-					VUM_LOG("XGKICK New packet size %x", VU1.xgkicksizeremaining);
-
-					if (VU1.xgkicksizeremaining == 0)
-					{
-						VUM_LOG("Invalid GS packet size returned, cancelling XGKick");
-						VU1.xgkickenable = false;
-						return;
-					}
-				}
-				u32 transfersize = std::min(VU1.xgkicksizeremaining / 0x10, (cpuRegs.cycle - VU1.xgkicklastcycle) / 2);
-				transfersize = std::min(transfersize, VU1.xgkickdiff / 0x10);
-
-				if (transfersize)
-				{
-					VUM_LOG("XGKICK Transferring %x bytes from %x size left %x", transfersize * 0x10, VU1.xgkickaddr, VU1.xgkicksizeremaining);
-					if ((transfersize * 0x10) > VU1.xgkicksizeremaining)
-						gifUnit.gifPath[GIF_PATH_1].CopyGSPacketData(&VU1.Mem[VU1.xgkickaddr], transfersize * 0x10, true);
-					else
-						gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &VU1.Mem[VU1.xgkickaddr], transfersize * 0x10, true);
-
-					VU1.xgkickaddr = (VU1.xgkickaddr + (transfersize * 0x10)) & 0x3FFF;
-					VU1.xgkicksizeremaining -= (transfersize * 0x10);
-					VU1.xgkickdiff = 0x4000 - VU1.xgkickaddr;
-					VU1.xgkicklastcycle += std::max(transfersize * 2, 2U);
-
-					if (VU1.xgkicksizeremaining || !VU1.xgkickendpacket)
-						VUM_LOG("XGKICK next addr %x left size %x", VU1.xgkickaddr, VU1.xgkicksizeremaining);
-					else
-					{
-						VU1.xgkickenable = false;
-						VUM_LOG("XGKICK transfer finished");
-					}
-				}
+				_vuXGKICKTransfer(&VU1, (cpuRegs.cycle - VU1.xgkicklastcycle), false);
 			}
 		}
 		return;
