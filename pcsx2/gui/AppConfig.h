@@ -294,7 +294,7 @@ public:
 
 public:
 	AppConfig();
-
+	wxString FullpathToSaveState(wxString serialName, wxString CRCvalue) const;
 	void LoadSave(IniInterface& ini, SettingsWrapper& wrap);
 	void LoadSaveRootItems(IniInterface& ini);
 

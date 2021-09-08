@@ -116,7 +116,7 @@ void States_DefrostCurrentSlotBackup()
 
 void States_updateLoadBackupMenuItem()
 {
-	wxString file = SaveStateBase::GetFilename(StatesC) + ".backup";
+	wxString file(SaveStateBase::GetSavestateFolder(StatesC) + ".backup");
 
 	sMainFrame.EnableMenuItem(MenuId_State_LoadBackup, wxFileExists(file));
 	sMainFrame.SetMenuItemLabel(MenuId_State_LoadBackup, wxsFormat(L"%s %d", _("Backup"), StatesC));

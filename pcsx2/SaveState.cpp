@@ -73,16 +73,56 @@ static void PostLoadPrep()
 // --------------------------------------------------------------------------------------
 //  SaveStateBase  (implementations)
 // --------------------------------------------------------------------------------------
-wxString SaveStateBase::GetFilename( int slot )
+wxString SaveStateBase::GetSavestateFolder( int slot, bool isSavingOrLoading )
 {
-	wxString serialName( DiscSerial );
-	if (serialName.IsEmpty()) serialName = L"BIOS";
+	wxString CRCvalue = wxString::Format(wxT("%08X"), ElfCRC);
+	wxString serialName(DiscSerial);
 
-	return (EmuFolders::Savestates +
-		pxsFmt( L"%s (%08X).%02d.p2s", WX_STR(serialName), ElfCRC, slot )).GetFullPath();
+	if (g_GameStarted || g_GameLoading)
+	{
+		if (DiscSerial.IsEmpty())
+		{
+			std::string ElfString = LastELF.ToStdString();
+			std::string ElfString_delimiter = "/";
 
-	//return (g_Conf->Folders.Savestates +
-	//	pxsFmt( L"%08X.%03d", ElfCRC, slot )).GetFullPath();
+#ifndef _UNIX_
+			std::replace(ElfString.begin(), ElfString.end(), '\\', '/');
+#endif
+			size_t pos = 0;
+			while ((pos = ElfString.find(ElfString_delimiter)) != std::string::npos)
+			{
+				// Running homebrew/standalone ELF, return only the ELF name.
+				ElfString.erase(0, pos + ElfString_delimiter.length());
+			}
+			wxString ElfString_toWxString(ElfString.c_str(), wxConvUTF8);
+			serialName = ElfString_toWxString;
+		}
+		else
+		{
+			// Running a normal retail game
+			// Folder format is "SLXX-XXXX - (00000000)"
+			serialName = DiscSerial;
+		}
+	}
+	else
+	{
+		// Still inside the BIOS/not running a game (why would anyone want to do this?)
+		wxString biosString = (pxsFmt(L"BIOS (%s v%u.%u)", WX_STR(biosZone), (BiosVersion >> 8), BiosVersion & 0xff));
+		serialName = biosString;
+		CRCvalue = L"None";
+	}
+
+	wxFileName dirname = wxFileName::DirName(g_Conf->FullpathToSaveState(serialName, CRCvalue));
+
+	if (isSavingOrLoading)
+	{
+		if (!wxDirExists(g_Conf->FullpathToSaveState(serialName, CRCvalue)))
+		{
+			wxMkdir(g_Conf->FullpathToSaveState(serialName, CRCvalue));
+		}
+	}
+	return (dirname.GetPath() + "/" +
+			pxsFmt( L"%s (%s).%02d.p2s", WX_STR(serialName), WX_STR(CRCvalue), slot ));
 }
 
 SaveStateBase::SaveStateBase( SafeArray<u8>& memblock )

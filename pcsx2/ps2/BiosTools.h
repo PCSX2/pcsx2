@@ -48,5 +48,6 @@ extern bool AllowParams1;
 extern bool AllowParams2;
 extern u32 BiosChecksum;
 extern wxString BiosDescription;
+extern wxString biosZone;
 extern void LoadBIOS();
 extern bool IsBIOS(const wxString& filename, wxString& description);

@@ -715,7 +715,7 @@ void __fastcall eeloadHook()
 		}
 	}
 
-	if (!g_GameStarted && (disctype == 2 || disctype == 1) && fromUTF8(elfname) == discelf)
+	if (!g_GameStarted && ((disctype == 2 && elfname == discelf.ToStdString()) || disctype == 1))
 		g_GameLoading = true;
 }
 

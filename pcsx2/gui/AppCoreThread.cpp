@@ -460,6 +460,11 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 				gameCompat = L" [Status = " + compatToStringWX(game.compat) + L"]";
 				gameMemCardFilter = fromUTF8(game.memcardFiltersAsString());
 			}
+			else
+			{
+				// Set correct title for loading standalone/homebrew ELFs
+				GameInfo::gameName = LastELF.AfterLast('\\');
+			}
 
 			if (fixup.EnablePatches)
 			{

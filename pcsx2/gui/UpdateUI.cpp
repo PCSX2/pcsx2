@@ -56,7 +56,8 @@ static void _SaveLoadStuff(bool enabled)
 	for (Saveslot &slot : saveslot_cache)
 	{
 		// We need to reload the file information if the crc or serial # changed.
-		if ((slot.crc != ElfCRC)|| (slot.serialName != DiscSerial))
+		// Invalidate slot cache when using full boot (g_GameLoading) otherwise it won't see the new folder path
+		if ((g_GameLoading || slot.crc != ElfCRC) || (slot.serialName != DiscSerial))
 		{
 			slot.invalid_cache = true;
 			crcChanged = true;
