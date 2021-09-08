@@ -68,14 +68,14 @@ public:
 
 	bool isUsed()
 	{
-		return wxFileExists(SaveStateBase::GetFilename(slot_num));
+		return wxFileExists(SaveStateBase::GetSavestateFolder(slot_num, false));
 	}
 
 	wxDateTime GetTimestamp()
 	{
 		if (!isUsed()) return wxInvalidDateTime;
 
-		return wxDateTime(wxFileModificationTime(SaveStateBase::GetFilename(slot_num)));
+		return wxDateTime(wxFileModificationTime(SaveStateBase::GetSavestateFolder(slot_num, false)));
 	}
 
 	void UpdateCache()

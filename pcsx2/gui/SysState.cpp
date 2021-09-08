@@ -37,6 +37,11 @@
 
 #include "Patch.h"
 
+// Required for savestate folder creation
+#include "CDVD/CDVD.h"
+#include "ps2/BiosTools.h"
+#include "Elfheader.h"
+
 // --------------------------------------------------------------------------------------
 //  SysExecEvent_DownloadState
 // --------------------------------------------------------------------------------------
@@ -180,12 +185,12 @@ void StateCopy_LoadFromFile(const wxString& file)
 // the one in the memory save. :)
 void StateCopy_SaveToSlot(uint num)
 {
-	const wxString file(SaveStateBase::GetFilename(num));
+	const wxString file(SaveStateBase::GetSavestateFolder(num, true));
 
 	// Backup old Savestate if one exists.
 	if (wxFileExists(file) && EmuConfig.BackupSavestate)
 	{
-		const wxString copy(SaveStateBase::GetFilename(num) + pxsFmt(L".backup"));
+		const wxString copy(SaveStateBase::GetSavestateFolder(num, true) + pxsFmt(L".backup"));
 
 		Console.Indent().WriteLn(Color_StrongGreen, L"Backing up existing state in slot %d.", num);
 		wxRenameFile(file, copy);
@@ -202,7 +207,7 @@ void StateCopy_SaveToSlot(uint num)
 
 void StateCopy_LoadFromSlot(uint slot, bool isFromBackup)
 {
-	wxString file(SaveStateBase::GetFilename(slot) + wxString(isFromBackup ? L".backup" : L""));
+	wxString file(SaveStateBase::GetSavestateFolder(slot, true) + wxString(isFromBackup ? L".backup" : L""));
 
 	if (!wxFileExists(file))
 	{

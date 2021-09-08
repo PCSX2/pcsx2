@@ -31,7 +31,7 @@ enum class FreezeAction
 //  the lower 16 bit value.  IF the change is breaking of all compatibility with old
 //  states, increment the upper 16 bit value, and clear the lower 16 bits to 0.
 
-static const u32 g_SaveVersion = (0x9A28 << 16) | 0x0000;
+static const u32 g_SaveVersion = (0x9A29 << 16) | 0x0000;
 
 // the freezing data between submodules and core
 // an interesting thing to note is that this dates back from before plugin
@@ -74,7 +74,7 @@ public:
 	SaveStateBase( VmStateBuffer* memblock );
 	virtual ~SaveStateBase() { }
 
-	static wxString GetFilename( int slot );
+	static wxString GetSavestateFolder( int slot, bool isSavingOrLoading = false );
 
 	// Gets the version of savestate that this object is acting on.
 	// The version refers to the low 16 bits only (high 16 bits classifies Pcsx2 build types)
@@ -349,3 +349,4 @@ namespace Exception
 	};
 }; // namespace Exception
 
+extern wxString GetSavestateFolder( int slot );
