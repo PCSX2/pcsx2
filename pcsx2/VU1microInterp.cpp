@@ -212,44 +212,7 @@ static void _vu1Exec(VURegs* VU)
 
 	if (VU->xgkickenable && (VU1.cycle - VU->xgkicklastcycle) >= 2)
 	{
-		if (VU->xgkicksizeremaining == 0)
-		{
-			u32 size = gifUnit.GetGSPacketSize(GIF_PATH_1, VU->Mem, VU->xgkickaddr);
-			VU->xgkicksizeremaining = size & 0xFFFF;
-			VU->xgkickendpacket = size >> 31;
-
-			if (VU->xgkicksizeremaining == 0)
-			{
-				VUM_LOG("Invalid GS packet size returned, cancelling XGKick");
-				VU->xgkickenable = false;
-			}
-			else
-				VUM_LOG("XGKICK New tag size %d bytes EOP %d", VU->xgkicksizeremaining, VU->xgkickendpacket);
-		}
-		u32 transfersize = std::min(VU->xgkicksizeremaining / 0x10, (VU1.cycle - VU->xgkicklastcycle) / 2);
-		transfersize = std::min(transfersize, VU->xgkickdiff / 0x10);
-
-		if (transfersize)
-		{
-			VUM_LOG("XGKICK Transferring %x bytes from %x size left %x", transfersize * 0x10, VU->xgkickaddr, VU->xgkicksizeremaining);
-			if ((transfersize * 0x10) > VU->xgkicksizeremaining)
-				gifUnit.gifPath[GIF_PATH_1].CopyGSPacketData(&VU->Mem[VU->xgkickaddr], transfersize * 0x10, true);
-			else
-				gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &VU->Mem[VU->xgkickaddr], transfersize * 0x10, true);
-
-			VU->xgkickaddr = (VU->xgkickaddr + (transfersize * 0x10)) & 0x3FFF;
-			VU->xgkicksizeremaining -= (transfersize * 0x10);
-			VU->xgkickdiff = 0x4000 - VU->xgkickaddr;
-			VU->xgkicklastcycle += std::max(transfersize * 2, 2U);
-
-			if (VU->xgkicksizeremaining || !VU->xgkickendpacket)
-				VUM_LOG("XGKICK next addr %x left size %x", VU->xgkickaddr, VU->xgkicksizeremaining);
-			else
-			{
-				VUM_LOG("XGKICK transfer finished");
-				VU->xgkickenable = false;
-			}
-		}
+		_vuXGKICKTransfer(VU, (VU1.cycle - VU->xgkicklastcycle), false);
 	}
 	
 	// Progress the write position of the FMAC pipeline by one place

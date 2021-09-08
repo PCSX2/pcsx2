@@ -775,6 +775,9 @@ struct Gif_Unit
 			}
 			else
 			{
+				// If PATH3 was stalled due to another transfer but the DMA ended, it'll never check this
+				// So lets quickly check if it's currently set to path3
+				gifCheckPathStatus(true);
 				if (isResume || curPath == 0)
 				{
 					stat.APATH = 0;

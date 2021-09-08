@@ -2317,10 +2317,15 @@ static __ri void _vuXITOP(VURegs * VU) {
 	else                        VU->VI[_It_].US[0] = VU->GetVifRegs().itop;
 }
 
-void _vuXGKICKFlush(VURegs* VU)
+void _vuXGKICKTransfer(VURegs* VU, u32 cycles, bool flush)
 {
+	if (!VU->xgkickenable)
+		return;
+
 	while (!VU->xgkickendpacket || VU->xgkicksizeremaining > 0)
 	{
+		u32 transfersize = 0;
+
 		if (VU->xgkicksizeremaining == 0)
 		{
 			u32 size = gifUnit.GetGSPacketSize(GIF_PATH_1, VU->Mem, VU->xgkickaddr);
@@ -2338,30 +2343,52 @@ void _vuXGKICKFlush(VURegs* VU)
 				VUM_LOG("XGKICK New tag size %d bytes EOP %d", VU->xgkicksizeremaining, VU->xgkickendpacket);
 		}
 
-		VUM_LOG("XGKICK Force Transferring %x bytes from %x size left %x", VU->xgkicksizeremaining, VU->xgkickaddr, VU->xgkicksizeremaining);
-
-		if (VU->xgkicksizeremaining > VU->xgkickdiff) {
-			//VUM_LOG( "VU1 Int: XGkick Wrap!");
-			gifUnit.gifPath[GIF_PATH_1].CopyGSPacketData(&VU->Mem[VU->xgkickaddr], VU->xgkickdiff, true);
-			gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &VU->Mem[0], VU->xgkicksizeremaining - VU->xgkickdiff, true);
+		if (!flush)
+		{
+			transfersize = std::min(VU->xgkicksizeremaining / 0x10, cycles / 2);
+			transfersize = std::min(transfersize, VU->xgkickdiff / 0x10);
 		}
-		else {
-			gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &VU->Mem[VU->xgkickaddr], VU->xgkicksizeremaining, true);
-		}
-
-		VU->xgkickaddr = (VU->xgkickaddr + VU->xgkicksizeremaining) & 0x3fff;
-
-		if (VU0.VI[REG_VPU_STAT].UL & 0x100)
-			VU->cycle += VU->xgkicksizeremaining / 2;
-
-		VU->xgkicksizeremaining = 0;
-
-		if (!VU->xgkickendpacket)
-			VUM_LOG("XGKICK next addr %x left size %x EOP %d", VU->xgkickaddr, VU->xgkicksizeremaining, VU->xgkickendpacket);
 		else
-			VUM_LOG("XGKICK transfer finished");
+		{
+			transfersize = VU->xgkicksizeremaining / 0x10;
+			transfersize = std::min(transfersize, VU->xgkickdiff / 0x10);
+		}
 
+		VUM_LOG("XGKICK Transferring %x bytes from %x size %x", transfersize * 0x10, VU->xgkickaddr, VU->xgkicksizeremaining);
+
+		if ((transfersize * 0x10) < VU->xgkicksizeremaining)
+			gifUnit.gifPath[GIF_PATH_1].CopyGSPacketData(&VU->Mem[VU->xgkickaddr], transfersize * 0x10, true);
+		else
+			gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &VU->Mem[VU->xgkickaddr], transfersize * 0x10, true);
+
+		if ((VU0.VI[REG_VPU_STAT].UL & 0x100) && flush)
+			VU->cycle += transfersize * 2;
+
+		cycles -= transfersize * 2;
+
+		VU->xgkickaddr = (VU->xgkickaddr + (transfersize * 0x10)) & 0x3FFF;
+		VU->xgkicksizeremaining -= (transfersize * 0x10);
+		VU->xgkickdiff = 0x4000 - VU->xgkickaddr;
+		VU->xgkicklastcycle += std::max(transfersize * 2, 2U);
+		
+		if (VU->xgkicksizeremaining || !VU->xgkickendpacket)
+			VUM_LOG("XGKICK next addr %x left size %x", VU->xgkickaddr, VU->xgkicksizeremaining);
+		else
+		{
+			VUM_LOG("XGKICK transfer finished");
+			VU->xgkickenable = false;
+			// Check if VIF is waiting for the GIF to not be busy
+			if (vif1Regs.stat.VGW)
+			{
+				vif1Regs.stat.VGW = false;
+				CPU_INT(DMAC_VIF1, 8);
+			}
+		}
+
+		if (!flush && cycles < 2)
+			return;
 	}
+	VUM_LOG("Disabling XGKICK");
 	VU->xgkickenable = false;
 	_vuTestPipes(VU);
 }
@@ -2370,7 +2397,7 @@ static __ri void _vuXGKICK(VURegs * VU)
 {
 	if (VU->xgkickenable)
 	{
-		_vuXGKICKFlush(VU);
+		_vuXGKICKTransfer(VU, 0, true);
 	}
 
 	u32 addr = (VU->VI[_Is_].US[0] & 0x3ff) * 16;

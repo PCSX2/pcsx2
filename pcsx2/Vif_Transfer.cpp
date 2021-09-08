@@ -32,7 +32,7 @@ _vifT void vifTransferLoop(u32* &data) {
 
 	vifXRegs.stat.VPS |= VPS_TRANSFERRING;
 	vifXRegs.stat.ER1  = false;
-	if(!idx)VIF_LOG("Starting VIF0 loop, pSize = %x, stalled = %x", pSize, vifX.vifstalled.enabled );
+	//VIF_LOG("Starting VIF%d loop, pSize = %x, stalled = %x", idx, pSize, vifX.vifstalled.enabled );
 	while (pSize > 0 && !vifX.vifstalled.enabled) {
 
 		if(!vifX.cmd) { // Get new VifCode
