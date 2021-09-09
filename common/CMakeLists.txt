@@ -22,7 +22,6 @@ target_sources(common PRIVATE
 	PathUtils.cpp
 	PrecompiledHeader.cpp
 	Perf.cpp
-	pxRadioPanel.cpp
 	pxStaticText.cpp
 	pxStreams.cpp
 	pxTranslate.cpp
@@ -71,7 +70,6 @@ target_sources(common PRIVATE
 	PageFaultSource.h
 	PrecompiledHeader.h
 	pxForwardDefs.h
-	pxRadioPanel.h
 	pxStaticText.h
 	pxStreams.h
 	RedtapeWindows.h

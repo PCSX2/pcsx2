@@ -315,6 +315,7 @@
     <ClCompile Include="gui\DriveList.cpp" />
     <ClCompile Include="gui\Panels\MemoryCardListView.cpp" />
     <ClCompile Include="gui\pxCheckBox.cpp" />
+    <ClCompile Include="gui\pxRadioPanel.cpp" />
     <ClCompile Include="gui\ThreadingDialogs.cpp" />
     <ClCompile Include="gui\wxAppWithHelpers.cpp" />
     <ClCompile Include="IopGte.cpp" />
@@ -751,6 +752,7 @@
     <ClInclude Include="gui\i18n.h" />
     <ClInclude Include="gui\DriveList.h" />
     <ClInclude Include="gui\pxCheckBox.h" />
+    <ClInclude Include="gui\pxRadioPanel.h" />
     <ClInclude Include="gui\Saveslots.h" />
     <ClInclude Include="gui\Debugger\BreakpointWindow.h" />
     <ClInclude Include="gui\Debugger\CtrlDisassemblyView.h" />

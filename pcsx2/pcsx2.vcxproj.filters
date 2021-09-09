@@ -1652,6 +1652,9 @@
     <ClCompile Include="gui\pxCheckBox.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
+    <ClCompile Include="gui\pxRadioPanel.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2735,6 +2738,9 @@
       <Filter>AppHost</Filter>
     </ClInclude>
     <ClInclude Include="gui\pxCheckBox.h">
+      <Filter>AppHost</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\pxRadioPanel.h">
       <Filter>AppHost</Filter>
     </ClInclude>
   </ItemGroup>
