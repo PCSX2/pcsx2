@@ -19,6 +19,7 @@
 #include "GS/GSCodeBuffer.h"
 
 #include "GS/Renderers/SW/GSScanlineEnvironment.h"
+#include "common/General.h"
 
 #include <xbyak/xbyak_util.h>
 
@@ -28,12 +29,11 @@ class GSFunctionMap
 protected:
 	struct ActivePtr
 	{
-		uint64 frame, frames;
+		uint64 frame, frames, prims;
 		uint64 ticks, actual, total;
 		VALUE f;
 	};
 
-	std::unordered_map<KEY, VALUE> m_map;
 	std::unordered_map<KEY, ActivePtr*> m_map_active;
 
 	ActivePtr* m_active;
@@ -64,15 +64,13 @@ public:
 		}
 		else
 		{
-			auto i = m_map.find(key);
-
 			ActivePtr* p = new ActivePtr();
 
 			memset(p, 0, sizeof(*p));
 
 			p->frame = (uint64)-1;
 
-			p->f = i != m_map.end() ? i->second : GetDefaultFunction(key);
+			p->f = GetDefaultFunction(key);
 
 			m_map_active[key] = p;
 
@@ -92,6 +90,7 @@ public:
 				m_active->frames++;
 			}
 
+			m_active->prims++;
 			m_active->ticks += ticks;
 			m_active->actual += actual;
 			m_active->total += total;
@@ -114,25 +113,36 @@ public:
 			}
 		}
 
+		uint64_t million = 1000 * 1000;
+		uint64_t billion = 1000 * million;
+		uint64_t tps = GetTickFrequency();
+
 		printf("GS stats\n");
+
+		printf("      key      | frames | prims |       runtime      |          pixels\n");
+		printf("               |        |  #/f  |   pct   µs/f ns/px |    #/f   #/prim overdraw\n");
 
 		for (const auto& i : m_map_active)
 		{
 			KEY key = i.first;
 			ActivePtr* p = i.second;
 
-			if (p->frames && ttpf)
+			if (p->frames && p->actual && ttpf)
 			{
-				uint64 tpp = p->actual > 0 ? p->ticks / p->actual : 0;
-				uint64 tpf = p->frames > 0 ? p->ticks / p->frames : 0;
-				uint64 ppf = p->frames > 0 ? p->actual / p->frames : 0;
+				uint64 tpp = p->ticks  / p->actual;
+				uint64 tpf = p->ticks  / p->frames;
+				uint64 ppf = p->actual / p->frames;
 
-				printf("[%014llx]%c %6.2f%% %5.2f%% f %4llu t %12llu p %12llu w %12lld tpp %4llu tpf %9llu ppf %9llu\n",
-					(uint64)key, m_map.find(key) == m_map.end() ? '*' : ' ',
-					(float)(tpf * 10000 / 34000000) / 100,
+				printf("%014llx | %6llu | %5llu | %5.2f%% %6llu %4llu | %8llu %6llu %5.2f%%\n",
+					(uint64)key,
+					p->frames,
+					p->prims / p->frames,
 					(float)(tpf * 10000 / ttpf) / 100,
-					p->frames, p->ticks, p->actual, p->total - p->actual,
-					tpp, tpf, ppf);
+					(tpf * million) / tps,
+					(tpp * billion) / tps,
+					ppf,
+					p->actual / p->prims,
+					(float)((p->total - p->actual) * 10000 / p->total) / 100);
 			}
 		}
 	}

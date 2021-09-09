@@ -17,6 +17,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSRasterizer.h"
+#include "common/General.h"
 
 int GSRasterizerData::s_counter = 0;
 
@@ -138,7 +139,7 @@ void GSRasterizer::Draw(GSRasterizerData* data)
 	m_pixels.actual = 0;
 	m_pixels.total = 0;
 
-	data->start = __rdtsc();
+	data->start = GetCPUTicks();
 
 	m_ds->BeginDraw(data);
 
@@ -244,7 +245,7 @@ void GSRasterizer::Draw(GSRasterizerData* data)
 
 	data->pixels = m_pixels.actual;
 
-	uint64 ticks = __rdtsc() - data->start;
+	uint64 ticks = GetCPUTicks() - data->start;
 
 	m_pixels.sum += m_pixels.actual;
 
@@ -1146,7 +1147,7 @@ void GSRasterizer::Flush(const GSVertexSW* vertex, const uint32* index, const GS
 void GSRasterizer::DrawScanline(int pixels, int left, int top, const GSVertexSW& scan)
 {
 	m_pixels.actual += pixels;
-	m_pixels.total += ((left + pixels + (PIXELS_PER_LOOP - 1)) & ~(PIXELS_PER_LOOP - 1)) - (left & (PIXELS_PER_LOOP - 1));
+	m_pixels.total += ((left + pixels + (PIXELS_PER_LOOP - 1)) & ~(PIXELS_PER_LOOP - 1)) - (left & ~(PIXELS_PER_LOOP - 1));
 	//m_pixels.total += ((left + pixels + (PIXELS_PER_LOOP - 1)) & ~(PIXELS_PER_LOOP - 1)) - left;
 
 	ASSERT(m_pixels.actual <= m_pixels.total);
