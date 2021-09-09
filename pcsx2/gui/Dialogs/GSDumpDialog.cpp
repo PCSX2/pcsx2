@@ -524,6 +524,8 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 					m_gif_packet->AppendItem(regId, wxString::Format("IMAGE %d bytes", nloop * 16));
 					break;
 			}
+			m_gif_packet->Expand(trootId);
+			m_gif_packet->Expand(regId);
 			break;
 		}
 		case GSType::VSync:
@@ -544,7 +546,6 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 			m_gif_packet->AppendItem(rootId, "Registers");
 			break;
 	}
-	m_gif_packet->ExpandAll();
 }
 
 void Dialogs::GSDumpDialog::ParsePacket(wxTreeEvent& event)
@@ -742,6 +743,7 @@ void Dialogs::GSDumpDialog::ParseTreePrim(wxTreeItemId& id, u32 prim)
 
 	for (auto& el : prim_infos)
 		m_gif_packet->AppendItem(id, el);
+	m_gif_packet->Expand(id);
 }
 
 void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSData& event, char* regs)
