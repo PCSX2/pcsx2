@@ -13,7 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "common/ThreadingDialogs.h"
+#include "PrecompiledHeader.h"
+#include "gui/ThreadingDialogs.h"
 #include "common/pxStaticText.h"
 
 using namespace pxSizerFlags;

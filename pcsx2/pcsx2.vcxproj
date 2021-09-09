@@ -313,6 +313,8 @@
     <ClCompile Include="gui\Dialogs\McdConfigDialog.cpp" />
     <ClCompile Include="gui\DriveList.cpp" />
     <ClCompile Include="gui\Panels\MemoryCardListView.cpp" />
+    <ClCompile Include="gui\ThreadingDialogs.cpp" />
+    <ClCompile Include="gui\wxAppWithHelpers.cpp" />
     <ClCompile Include="IopGte.cpp" />
     <ClCompile Include="IPC.cpp" />
     <ClCompile Include="FW.cpp" />
@@ -754,6 +756,8 @@
     <ClInclude Include="gui\Debugger\DebuggerLists.h" />
     <ClInclude Include="gui\Debugger\DisassemblyDialog.h" />
     <ClInclude Include="gui\Panels\MemoryCardPanels.h" />
+    <ClInclude Include="gui\ThreadingDialogs.h" />
+    <ClInclude Include="gui\wxAppWithHelpers.h" />
     <ClInclude Include="IopGte.h" />
     <ClInclude Include="IPC.h" />
     <ClInclude Include="FW.h" />

@@ -13,7 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "common/wxAppWithHelpers.h"
+#include "PrecompiledHeader.h"
+#include "gui/wxAppWithHelpers.h"
 #include "common/ThreadingInternal.h"
 #include "common/PersistentThread.h"
 

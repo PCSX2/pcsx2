@@ -48,7 +48,6 @@
     <ClCompile Include="pxStreams.cpp" />
     <ClCompile Include="pxTranslate.cpp" />
     <ClCompile Include="pxWindowTextWriter.cpp" />
-    <ClCompile Include="ThreadingDialogs.cpp" />
     <ClCompile Include="VirtualMemory.cpp" />
     <ClCompile Include="x86\MemcpyFast.cpp" />
     <ClCompile Include="PathUtils.cpp" />
@@ -60,7 +59,6 @@
     <ClCompile Include="pxRadioPanel.cpp" />
     <ClCompile Include="pxStaticText.cpp" />
     <ClCompile Include="StringHelpers.cpp" />
-    <ClCompile Include="wxAppWithHelpers.cpp" />
     <ClCompile Include="wxGuiTools.cpp" />
     <ClCompile Include="wxHelpers.cpp" />
     <ClCompile Include="Linux\LnxHostSys.cpp" />
@@ -112,7 +110,6 @@
     <ClInclude Include="RedtapeWindows.h" />
     <ClInclude Include="SafeArray.h" />
     <ClInclude Include="StringHelpers.h" />
-    <ClInclude Include="wxAppWithHelpers.h" />
     <ClInclude Include="wxBaseTools.h" />
     <ClInclude Include="wxGuiTools.h" />
     <ClInclude Include="Threading.h" />

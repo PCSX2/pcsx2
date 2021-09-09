@@ -32,9 +32,7 @@ target_sources(common PRIVATE
 	RwMutex.cpp
 	Semaphore.cpp
 	StringHelpers.cpp
-	ThreadingDialogs.cpp
 	ThreadTools.cpp
-	wxAppWithHelpers.cpp
 	wxGuiTools.cpp
 	wxHelpers.cpp
 	emitter/bmi.cpp
@@ -87,9 +85,7 @@ target_sources(common PRIVATE
 	ScopedPtrMT.h
 	StringHelpers.h
 	Threading.h
-	ThreadingDialogs.h
 	TraceLog.h
-	wxAppWithHelpers.h
 	wxBaseTools.h
 	wxGuiTools.h
 	emitter/cpudetect_internal.h

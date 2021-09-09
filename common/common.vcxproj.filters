@@ -100,9 +100,6 @@
     <ClCompile Include="StringHelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ThreadingDialogs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ThreadTools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -119,9 +116,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Windows\WinThreads.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="wxAppWithHelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="wxGuiTools.cpp">
@@ -274,9 +268,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="wxBaseTools.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wxAppWithHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="wxGuiTools.h">
