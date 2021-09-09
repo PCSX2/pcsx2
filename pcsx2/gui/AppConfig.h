@@ -239,9 +239,9 @@ public:
 		bool SkipOnLimit{ false };
 		bool SkipOnTurbo{ false };
 
-		double NominalScalar{ 100.0 };
-		double TurboScalar{ 200.0 };
-		double SlomoScalar{ 50.0 };
+		double NominalScalar{ 1.0 };
+		double TurboScalar{ 2.0 };
+		double SlomoScalar{ 0.5 };
 
 		void LoadSave( IniInterface& conf );
 		void SanityCheck();
