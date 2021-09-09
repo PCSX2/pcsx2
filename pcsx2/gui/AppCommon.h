@@ -21,7 +21,7 @@
 
 #include "common/wxGuiTools.h"
 #include "common/pxRadioPanel.h"
-#include "common/pxCheckBox.h"
+#include "gui/pxCheckBox.h"
 #include "common/pxStaticText.h"
 #include "gui/CheckedStaticBox.h"
 

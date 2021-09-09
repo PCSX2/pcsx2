@@ -67,9 +67,6 @@
     <ClCompile Include="PrecompiledHeader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pxCheckBox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="pxRadioPanel.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -205,9 +202,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="PrecompiledHeader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pxCheckBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="pxEvents.h">

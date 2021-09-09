@@ -1018,6 +1018,7 @@ set(pcsx2GuiSources
 	gui/Panels/PathsPanel.cpp
 	gui/Panels/SpeedhacksPanel.cpp
 	gui/Panels/VideoPanel.cpp
+	gui/pxCheckBox.cpp
 	gui/RecentIsoList.cpp
 	gui/Saveslots.cpp
 	gui/SysState.cpp
@@ -1063,6 +1064,7 @@ set(pcsx2GuiHeaders
 	gui/Panels/ConfigurationPanels.h
 	gui/Panels/LogOptionsPanels.h
 	gui/Panels/MemoryCardPanels.h
+	gui/pxCheckBox.h
 	gui/pxEventThread.h
 	gui/RecentIsoList.h
 	gui/Saveslots.h

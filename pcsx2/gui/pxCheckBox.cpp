@@ -13,7 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "common/pxCheckBox.h"
+#include "PrecompiledHeader.h"
+#include "gui/pxCheckBox.h"
 #include "common/pxStaticText.h"
 
 using namespace pxSizerFlags;
