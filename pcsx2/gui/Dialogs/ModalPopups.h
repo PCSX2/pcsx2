@@ -24,68 +24,27 @@
 #include <wx/treectrl.h>
 #include <wx/fswatcher.h>
 
-// clang-format off
-#define GSDUMP_GIFREG(X) \
-	X(PRIM, 0x00)        \
-	X(RGBAQ, 0x01)       \
-	X(ST, 0x02)          \
-	X(UV, 0x03)          \
-	X(XYZF2, 0x04)       \
-	X(XYZ2, 0x05)        \
-	X(TEX0_1, 0x06)      \
-	X(TEX0_2, 0x07)      \
-	X(CLAMP_1, 0x08)     \
-	X(CLAMP_2, 0x09)     \
-	X(FOG, 0x0a)         \
-	X(XYZF3, 0x0c)       \
-	X(XYZ3, 0x0d)        \
-	X(AD, 0x0e)          \
-	X(NOP, 0x0f)         \
-	X(TEX1_1, 0x14)      \
-	X(TEX1_2, 0x15)      \
-	X(TEX2_1, 0x16)      \
-	X(TEX2_2, 0x17)      \
-	X(XYOFFSET_1, 0x18)  \
-	X(XYOFFSET_2, 0x19)  \
-	X(PRMODECONT, 0x1a)  \
-	X(PRMODE, 0x1b)      \
-	X(TEXCLUT, 0x1c)     \
-	X(SCANMSK, 0x22)     \
-	X(MIPTBP1_1, 0x34)   \
-	X(MIPTBP1_2, 0x35)   \
-	X(MIPTBP2_1, 0x36)   \
-	X(MIPTBP2_2, 0x37)   \
-	X(TEXA, 0x3b)        \
-	X(FOGCOL, 0x3d)      \
-	X(TEXFLUSH, 0x3f)    \
-	X(SCISSOR_1, 0x40)   \
-	X(SCISSOR_2, 0x41)   \
-	X(ALPHA_1, 0x42)     \
-	X(ALPHA_2, 0x43)     \
-	X(DIMX, 0x44)        \
-	X(DTHE, 0x45)        \
-	X(COLCLAMP, 0x46)    \
-	X(TEST_1, 0x47)      \
-	X(TEST_2, 0x48)      \
-	X(PABE, 0x49)        \
-	X(FBA_1, 0x4a)       \
-	X(FBA_2, 0x4b)       \
-	X(FRAME_1, 0x4c)     \
-	X(FRAME_2, 0x4d)     \
-	X(ZBUF_1, 0x4e)      \
-	X(ZBUF_2, 0x4f)      \
-	X(BITBLTBUF, 0x50)   \
-	X(TRXPOS, 0x51)      \
-	X(TRXREG, 0x52)      \
-	X(TRXDIR, 0x53)      \
-	X(HWREG, 0x54)       \
-	X(SIGNAL, 0x60)      \
-	X(FINISH, 0x61)      \
-	X(LABEL, 0x62)
-// clang-format on
+#define GEN_REG_ENUM_CLASS_CONTENT(ClassName, EntryName, Value) \
+	EntryName = Value,
 
-#define GSDUMP_GIFREG_NAME GIFReg
-#define GSDUMP_GIFREG_TYPE u8
+#define GEN_REG_GETNAME_CONTENT(ClassName, EntryName, Value) \
+	case ClassName::EntryName: \
+		return #EntryName;
+
+#define GEN_REG_ENUM_CLASS_AND_GETNAME(Macro, ClassName, Type, DefaultString) \
+	enum class ClassName : Type \
+	{ \
+		Macro(GEN_REG_ENUM_CLASS_CONTENT) \
+	}; \
+	static constexpr const char* GetName(ClassName reg) \
+	{ \
+		switch (reg) \
+		{ \
+			Macro(GEN_REG_GETNAME_CONTENT) \
+			default: \
+				return DefaultString; \
+		} \
+	}
 
 class FirstTimeWizard : public wxWizard
 {
@@ -182,27 +141,96 @@ namespace Dialogs
 			ID_DEBUG_MODE,
 			ID_SETTINGS
 		};
-		enum GSType : u8
-		{
-			Transfer = 0,
-			VSync = 1,
-			ReadFIFO2 = 2,
-			Registers = 3
-		};
-		static constexpr const char* GSTypeNames[256] = {
-			"Transfer",
-			"VSync",
-			"ReadFIFO2",
-			"Registers"
-		};
-		enum GSTransferPath : u8
-		{
-			Path1Old = 0,
-			Path2 = 1,
-			Path3 = 2,
-			Path1New = 3,
-			Dummy = 4
-		};
+
+		// clang-format off
+
+#define DEF_GSType(X) \
+	X(GSType, Transfer,  0) \
+	X(GSType, VSync,     1) \
+	X(GSType, ReadFIFO2, 2) \
+	X(GSType, Registers, 3)
+		GEN_REG_ENUM_CLASS_AND_GETNAME(DEF_GSType, GSType, u8, "UnknownType")
+#undef DEF_GSType
+
+#define DEF_GSTransferPath(X) \
+	X(GSTransferPath, Path1Old, 0) \
+	X(GSTransferPath, Path2,    1) \
+	X(GSTransferPath, Path3,    2) \
+	X(GSTransferPath, Path1New, 3) \
+	X(GSTransferPath, Dummy,    4)
+		GEN_REG_ENUM_CLASS_AND_GETNAME(DEF_GSTransferPath, GSTransferPath, u8, "UnknownPath")
+#undef DEF_GSTransferPath
+
+#define DEF_GIFFlag(X) \
+	X(GIFFlag, PACKED,  0) \
+	X(GIFFlag, REGLIST, 1) \
+	X(GIFFlag, IMAGE,   2) \
+	X(GIFFlag, IMAGE2,  3)
+		GEN_REG_ENUM_CLASS_AND_GETNAME(DEF_GIFFlag, GIFFlag, u8, "UnknownFlag")
+#undef DEF_GifFlag
+
+#define DEF_GIFReg(X) \
+	X(GIFReg, PRIM,       0x00) \
+	X(GIFReg, RGBAQ,      0x01) \
+	X(GIFReg, ST,         0x02) \
+	X(GIFReg, UV,         0x03) \
+	X(GIFReg, XYZF2,      0x04) \
+	X(GIFReg, XYZ2,       0x05) \
+	X(GIFReg, TEX0_1,     0x06) \
+	X(GIFReg, TEX0_2,     0x07) \
+	X(GIFReg, CLAMP_1,    0x08) \
+	X(GIFReg, CLAMP_2,    0x09) \
+	X(GIFReg, FOG,        0x0a) \
+	X(GIFReg, XYZF3,      0x0c) \
+	X(GIFReg, XYZ3,       0x0d) \
+	X(GIFReg, AD,         0x0e) \
+	X(GIFReg, NOP,        0x0f) \
+	X(GIFReg, TEX1_1,     0x14) \
+	X(GIFReg, TEX1_2,     0x15) \
+	X(GIFReg, TEX2_1,     0x16) \
+	X(GIFReg, TEX2_2,     0x17) \
+	X(GIFReg, XYOFFSET_1, 0x18) \
+	X(GIFReg, XYOFFSET_2, 0x19) \
+	X(GIFReg, PRMODECONT, 0x1a) \
+	X(GIFReg, PRMODE,     0x1b) \
+	X(GIFReg, TEXCLUT,    0x1c) \
+	X(GIFReg, SCANMSK,    0x22) \
+	X(GIFReg, MIPTBP1_1,  0x34) \
+	X(GIFReg, MIPTBP1_2,  0x35) \
+	X(GIFReg, MIPTBP2_1,  0x36) \
+	X(GIFReg, MIPTBP2_2,  0x37) \
+	X(GIFReg, TEXA,       0x3b) \
+	X(GIFReg, FOGCOL,     0x3d) \
+	X(GIFReg, TEXFLUSH,   0x3f) \
+	X(GIFReg, SCISSOR_1,  0x40) \
+	X(GIFReg, SCISSOR_2,  0x41) \
+	X(GIFReg, ALPHA_1,    0x42) \
+	X(GIFReg, ALPHA_2,    0x43) \
+	X(GIFReg, DIMX,       0x44) \
+	X(GIFReg, DTHE,       0x45) \
+	X(GIFReg, COLCLAMP,   0x46) \
+	X(GIFReg, TEST_1,     0x47) \
+	X(GIFReg, TEST_2,     0x48) \
+	X(GIFReg, PABE,       0x49) \
+	X(GIFReg, FBA_1,      0x4a) \
+	X(GIFReg, FBA_2,      0x4b) \
+	X(GIFReg, FRAME_1,    0x4c) \
+	X(GIFReg, FRAME_2,    0x4d) \
+	X(GIFReg, ZBUF_1,     0x4e) \
+	X(GIFReg, ZBUF_2,     0x4f) \
+	X(GIFReg, BITBLTBUF,  0x50) \
+	X(GIFReg, TRXPOS,     0x51) \
+	X(GIFReg, TRXREG,     0x52) \
+	X(GIFReg, TRXDIR,     0x53) \
+	X(GIFReg, HWREG,      0x54) \
+	X(GIFReg, SIGNAL,     0x60) \
+	X(GIFReg, FINISH,     0x61) \
+	X(GIFReg, LABEL,      0x62)
+		GEN_REG_ENUM_CLASS_AND_GETNAME(DEF_GIFReg, GIFReg, u8, "UnknownReg")
+#undef DEF_GIFReg
+
+		// clang-format on
+
 		struct GSData
 		{
 			GSType id;
@@ -216,120 +244,7 @@ namespace Dialogs
 			RunCursor,
 			RunVSync
 		};
-		static constexpr const char* GSTransferPathNames[256] = {
-			"Path1Old",
-			"Path2",
-			"Path3",
-			"Path1New",
-			"Dummy"
-		};
-		enum GifFlag : u8
-		{
-			GIF_FLG_PACKED = 0,
-			GIF_FLG_REGLIST = 1,
-			GIF_FLG_IMAGE = 2,
-			GIF_FLG_IMAGE2 = 3
-		};
-		static constexpr const char* GifFlagNames[256] = {
-			"GIF_FLG_PACKED",
-			"GIF_FLG_REGLIST",
-			"GIF_FLG_IMAGE",
-			"GIF_FLG_IMAGE2"
-		};
-		static constexpr const char* GsPrimNames[256] = {
-			"GS_POINTLIST",
-			"GS_LINELIST",
-			"GS_LINESTRIP",
-			"GS_TRIANGLELIST",
-			"GS_TRIANGLESTRIP",
-			"GS_TRIANGLEFAN",
-			"GS_SPRITE",
-			"GS_INVALID"
-		};
-		static constexpr const char* GsIIPNames[256] = {
-			"FlatShading",
-			"Gouraud"
-		};
-		static constexpr const char* GsFSTNames[256] = {
-			"STQValue",
-			"UVValue"
-		};
-		static constexpr const char* GsCTXTNames[256] = {
-			"Context1",
-			"Context2"
-		};
-		static constexpr const char* GsFIXNames[256] = {
-			"Unfixed",
-			"Fixed"
-		};
-		static constexpr const char* TEXTCCNames[256] = {
-			"RGB",
-			"RGBA"
-		};
-		static constexpr const char* TEXTFXNames[256] = {
-			"MODULATE",
-			"DECAL",
-			"HIGHLIGHT",
-			"HIGHLIGHT2"
-		};
-		static constexpr const char* TEXCSMNames[256] = {
-			"CSM1",
-			"CSM2"
-		};
-		// a GNU extension exists to initialize array at given indices which would be 
-		// exactly what we need here but, obviously, MSVC is at it again to make our 
-		// life harder than sandpaper on your skin, so we make do
-		// clang-format off
-		static constexpr const char* TEXCPSMNames[256] = {
-			"PSMCT32",
-			"",
-			"PSMCT16",
-			"","","","","","","",
-			"PSMCT16S"
-		};
-		static constexpr const char* TEXPSMNames[256] = {
-			"PSMCT32",
-			"PSMCT24",
-			"PSMCT16",
-			"","","","","","","",
-			"PSMCT16S",
-			"","","","","","","","",
-			"PSMT8",
-			"PSMT4",
-			"","","","","","",
-			"PSMT8H",
-			"","","","","","","","",
-			"PSMT4HL",
-			"","","","","","","",
-			"PSMT4HH",
-			"","","",
-			"PSMZ32",
-			"PSMZ24",
-			"PSMZ16",
-			"","","","","","","",
-			"PSMZ16S"
-		};
-		// clang-format on
 
-		// the actual type is defined above thanks to preprocessing magic
-		enum GSDUMP_GIFREG_NAME : GSDUMP_GIFREG_TYPE
-		{
-#define X(name, value) name = value,
-			GSDUMP_GIFREG(X)
-#undef X
-		};
-		constexpr auto GIFRegName(GSDUMP_GIFREG_NAME e) noexcept
-		{
-#define X(name, value)               \
-	case (GSDUMP_GIFREG_NAME::name): \
-		return #name;
-			switch (e)
-			{
-				GSDUMP_GIFREG(X)
-			}
-#undef X
-			return "UNKNOWN";
-		};
 		struct GSEvent
 		{
 			ButtonState btn;
