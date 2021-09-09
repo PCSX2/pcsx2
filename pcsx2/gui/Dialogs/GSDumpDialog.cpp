@@ -562,117 +562,149 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 			break;
 		case GIFReg::RGBAQ:
 		{
-			std::array<wxString, 5> rgb_infos;
+			u32 r, g, b, a;
+			float q;
 
 			if (packed)
 			{
-				rgb_infos[0].Printf("R = %u", GetBits(data,  0, 8));
-				rgb_infos[1].Printf("G = %u", GetBits(data, 32, 8));
-				rgb_infos[2].Printf("B = %u", GetBits(data, 64, 8));
-				rgb_infos[3].Printf("A = %u", GetBits(data, 96, 8));;
-				rgb_infos[4].Printf("Q = %g", m_stored_q);
+				r = GetBits(data,  0, 8);
+				g = GetBits(data, 32, 8);
+				b = GetBits(data, 64, 8);
+				a = GetBits(data, 96, 8);
+				q = m_stored_q;
 			}
 			else
 			{
-				rgb_infos[0].Printf("R = %u", GetBits(data,  0, 8));
-				rgb_infos[1].Printf("G = %u", GetBits(data,  8, 8));
-				rgb_infos[2].Printf("B = %u", GetBits(data, 16, 8));
-				rgb_infos[3].Printf("A = %u", GetBits(data, 24, 8));
-				rgb_infos[4].Printf("Q = %g", BitCast<float>(data._u32[1]));
+				r = GetBits(data,  0, 8);
+				g = GetBits(data,  8, 8);
+				b = GetBits(data, 16, 8);
+				a = GetBits(data, 24, 8);
+				q = BitCast<float>(data._u32[1]);
 			}
 
-			for (auto& el : rgb_infos)
-				m_gif_packet->AppendItem(rootId, el);
+			m_gif_packet->SetItemText(rootId, wxString::Format("%s - #%02x%02x%02x%02x, %g", GetName(reg), r, g, b, a, q));
+			m_gif_packet->AppendItem(rootId, wxString::Format("R = %u", r));
+			m_gif_packet->AppendItem(rootId, wxString::Format("G = %u", g));
+			m_gif_packet->AppendItem(rootId, wxString::Format("B = %u", b));
+			m_gif_packet->AppendItem(rootId, wxString::Format("A = %u", a));
+			m_gif_packet->AppendItem(rootId, wxString::Format("Q = %g", q));
 			break;
 		}
 		case GIFReg::ST:
-			m_gif_packet->AppendItem(rootId, wxString::Format("S = %g", BitCast<float>(data._u32[0])));
-			m_gif_packet->AppendItem(rootId, wxString::Format("T = %g", BitCast<float>(data._u32[1])));
+		{
+			float s = BitCast<float>(data._u32[0]);
+			float t = BitCast<float>(data._u32[1]);
+			m_gif_packet->AppendItem(rootId, wxString::Format("S = %g", s));
+			m_gif_packet->AppendItem(rootId, wxString::Format("T = %g", t));
 			if (packed)
 			{
 				m_stored_q = BitCast<float>(data._u32[2]);
 				m_gif_packet->AppendItem(rootId, wxString::Format("Q = %g", m_stored_q));
-			}
-			break;
-		case GIFReg::UV:
-			m_gif_packet->AppendItem(rootId, wxString::Format("U = %g", static_cast<float>(GetBits(data, 0, 14)) / 16.f));
-			m_gif_packet->AppendItem(rootId, wxString::Format("V = %g", static_cast<float>(GetBits(data, packed ? 32 : 16, 14)) / 16.f));
-			break;
-		case GIFReg::XYZF2:
-		case GIFReg::XYZF3:
-		{
-			if (packed && (reg == GIFReg::XYZF2) && GetBits(data, 111, 1))
-				m_gif_packet->SetItemText(rootId, GetName(GIFReg::XYZF3));
-
-			std::array<wxString, 4> xyzf_infos;
-			if (packed)
-			{
-				xyzf_infos[0].Printf("X = %g", static_cast<float>(GetBits(data,  0, 16)) / 16.0);
-				xyzf_infos[1].Printf("Y = %g", static_cast<float>(GetBits(data, 32, 16)) / 16.0);
-				xyzf_infos[2].Printf("Z = %u", GetBits(data, 68, 24));
-				xyzf_infos[3].Printf("F = %u", GetBits(data, 100, 8));
+				m_gif_packet->SetItemText(rootId, wxString::Format("%s - (%g, %g, %g)", GetName(reg), s, t, m_stored_q));
 			}
 			else
 			{
-				xyzf_infos[0].Printf("X = %g", static_cast<float>(GetBits(data,  0, 16)) / 16.0);
-				xyzf_infos[1].Printf("Y = %g", static_cast<float>(GetBits(data, 16, 16)) / 16.0);
-				xyzf_infos[2].Printf("Z = %u", GetBits(data, 32, 24));
-				xyzf_infos[3].Printf("F = %u", GetBits(data, 56, 8));
+				m_gif_packet->SetItemText(rootId, wxString::Format("%s - (%g, %g)", GetName(reg), s, t));
+			}
+			break;
+		}
+		case GIFReg::UV:
+		{
+			float u = static_cast<float>(GetBits(data, 0, 14)) / 16.f;
+			float v = static_cast<float>(GetBits(data, packed ? 32 : 16, 14)) / 16.f;
+			m_gif_packet->AppendItem(rootId, wxString::Format("U = %g", u));
+			m_gif_packet->AppendItem(rootId, wxString::Format("V = %g", v));
+			m_gif_packet->SetItemText(rootId, wxString::Format("%s - (%g, %g)", GetName(reg), u, v));
+			break;
+		}
+		case GIFReg::XYZF2:
+		case GIFReg::XYZF3:
+		{
+			const char* name = GetName(reg);
+			if (packed && (reg == GIFReg::XYZF2) && GetBits(data, 111, 1))
+				name = GetName(GIFReg::XYZF3);
+
+			float x, y;
+			u32 z, f;
+
+			if (packed)
+			{
+				x = static_cast<float>(GetBits(data,  0, 16)) / 16.0;
+				y = static_cast<float>(GetBits(data, 32, 16)) / 16.0;
+				z = GetBits(data, 68, 24);
+				f = GetBits(data, 100, 8);
+			}
+			else
+			{
+				x = static_cast<float>(GetBits(data,  0, 16)) / 16.0;
+				y = static_cast<float>(GetBits(data, 16, 16)) / 16.0;
+				z = GetBits(data, 32, 24);
+				f = GetBits(data, 56, 8);
 			}
 
-			for (auto& el : xyzf_infos)
-				m_gif_packet->AppendItem(rootId, el);
+			m_gif_packet->SetItemText(rootId, wxString::Format("%s - (%g, %g, %u, %u)", name, x, y, z, f));
+			m_gif_packet->AppendItem(rootId, wxString::Format("X = %g", x));
+			m_gif_packet->AppendItem(rootId, wxString::Format("Y = %g", y));
+			m_gif_packet->AppendItem(rootId, wxString::Format("Z = %u", z));
+			m_gif_packet->AppendItem(rootId, wxString::Format("F = %u", f));
 			break;
 		}
 		case GIFReg::XYZ2:
 		case GIFReg::XYZ3:
 		{
+			const char* name = GetName(reg);
 			if (packed && (reg == GIFReg::XYZ2) && GetBits(data, 111, 1))
-				m_gif_packet->SetItemText(rootId, GetName(GIFReg::XYZ3));
+				name = GetName(GIFReg::XYZ3);
 
+			float x, y;
+			u32 z;
 			std::vector<wxString> xyz_infos(3);
 			if (packed)
 			{
-				xyz_infos[0].Printf("X = %g", static_cast<float>(GetBits(data,  0, 16)) / 16.0);
-				xyz_infos[1].Printf("Y = %g", static_cast<float>(GetBits(data, 32, 16)) / 16.0);
-				xyz_infos[2].Printf("Z = %u", data._u32[2]);
+				x = static_cast<float>(GetBits(data,  0, 16)) / 16.0;
+				y = static_cast<float>(GetBits(data, 32, 16)) / 16.0;
+				z = data._u32[2];
 			}
 			else
 			{
-				xyz_infos[0].Printf("X = %g", static_cast<float>(GetBits(data,  0, 16)) / 16.0);
-				xyz_infos[1].Printf("Y = %g", static_cast<float>(GetBits(data, 16, 16)) / 16.0);
-				xyz_infos[2].Printf("Z = %u", data._u32[1]);
+				x = static_cast<float>(GetBits(data,  0, 16)) / 16.0;
+				y = static_cast<float>(GetBits(data, 16, 16)) / 16.0;
+				z = data._u32[1];
 			}
 
-			for (auto& el : xyz_infos)
-				m_gif_packet->AppendItem(rootId, el);
+			m_gif_packet->SetItemText(rootId, wxString::Format("%s - (%g, %g, %u)", name, x, y, z));
+			m_gif_packet->AppendItem(rootId, wxString::Format("X = %g", x));
+			m_gif_packet->AppendItem(rootId, wxString::Format("Y = %g", y));
+			m_gif_packet->AppendItem(rootId, wxString::Format("Z = %u", z));
 			break;
 		}
 		case GIFReg::TEX0_1:
 		case GIFReg::TEX0_2:
 		{
-			std::array<wxString, 12> tex_infos;
+			u32 psm = GetBits(data, 20, 6);
+			u32 tw = GetBits(data, 26, 4);
+			u32 th = GetBits(data, 30, 4);
 
-			tex_infos[0].Printf("TBP0 = %u", GetBits(data, 0, 14));
-			tex_infos[1].Printf("TBW = %u",  GetBits(data, 14, 6));
-			tex_infos[2].Printf("PSM = %s",  GetNameTEXPSM (GetBits(data, 20, 6)));
-			tex_infos[3].Printf("TW = %u",   GetBits(data, 26, 4));
-			tex_infos[4].Printf("TH = %u",   GetBits(data, 30, 4));
-			tex_infos[5].Printf("TCC = %s",  GetNameTEXTCC (GetBits(data, 34, 1)));
-			tex_infos[6].Printf("TFX = %s",  GetNameTEXTFX (GetBits(data, 35, 2)));
-			tex_infos[7].Printf("CBP = %u",  GetBits(data, 37, 14));
-			tex_infos[8].Printf("CPSM = %s", GetNameTEXCPSM(GetBits(data, 51, 4)));
-			tex_infos[9].Printf("CSM = %s",  GetNameTEXCSM (GetBits(data, 55, 1)));
-			tex_infos[10].Printf("CSA = %u", GetBits(data, 56, 5));
-			tex_infos[11].Printf("CLD = %u", GetBits(data, 61, 3));
-
-			for (auto& el : tex_infos)
-				m_gif_packet->AppendItem(rootId, el);
+			m_gif_packet->SetItemText(rootId, wxString::Format("%s - %ux%u %s", GetName(reg), 1 << tw, 1 << th, GetNameTEXPSM(psm)));
+			m_gif_packet->AppendItem(rootId, wxString::Format("TBP0 = %u", GetBits(data, 0, 14)));
+			m_gif_packet->AppendItem(rootId, wxString::Format("TBW = %u",  GetBits(data, 14, 6)));
+			m_gif_packet->AppendItem(rootId, wxString::Format("PSM = %s",  GetNameTEXPSM(psm)));
+			m_gif_packet->AppendItem(rootId, wxString::Format("TW = %u",   tw));
+			m_gif_packet->AppendItem(rootId, wxString::Format("TH = %u",   th));
+			m_gif_packet->AppendItem(rootId, wxString::Format("TCC = %s",  GetNameTEXTCC (GetBits(data, 34, 1))));
+			m_gif_packet->AppendItem(rootId, wxString::Format("TFX = %s",  GetNameTEXTFX (GetBits(data, 35, 2))));
+			m_gif_packet->AppendItem(rootId, wxString::Format("CBP = %u",  GetBits(data, 37, 14)));
+			m_gif_packet->AppendItem(rootId, wxString::Format("CPSM = %s", GetNameTEXCPSM(GetBits(data, 51, 4))));
+			m_gif_packet->AppendItem(rootId, wxString::Format("CSM = %s",  GetNameTEXCSM (GetBits(data, 55, 1))));
+			m_gif_packet->AppendItem(rootId, wxString::Format("CSA = %u",  GetBits(data, 56, 5)));
+			m_gif_packet->AppendItem(rootId, wxString::Format("CLD = %u",  GetBits(data, 61, 3)));
 			break;
 		}
 		case GIFReg::FOG:
 		{
-			m_gif_packet->AppendItem(rootId, wxString::Format("F = %u", GetBits(data, packed ? 100 : 56, 8)));
+			u32 f = GetBits(data, packed ? 100 : 56, 8);
+			m_gif_packet->AppendItem(rootId, wxString::Format("F = %u", f));
+			m_gif_packet->SetItemText(rootId, wxString::Format("%s - %u", GetName(reg), f));
 			break;
 		}
 		case GIFReg::AD:
