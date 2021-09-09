@@ -42,7 +42,7 @@ namespace PacketReader::IP::UDP::DHCP
 		std::vector<BaseOption*> options;
 
 		//used by GetLength & WriteBytes
-		int maxLenth = 576;
+		int maxLength = 576;
 
 		DHCP_Packet() {}
 		DHCP_Packet(u8* buffer, int bufferSize);

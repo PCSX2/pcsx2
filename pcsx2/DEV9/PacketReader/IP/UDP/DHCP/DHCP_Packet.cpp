@@ -154,7 +154,7 @@ namespace PacketReader::IP::UDP::DHCP
 
 	int DHCP_Packet::GetLength()
 	{
-		return maxLenth - (8 + 20);
+		return maxLength - (8 + 20);
 	}
 
 	void DHCP_Packet::WriteBytes(u8* buffer, int* offset)
@@ -185,7 +185,7 @@ namespace PacketReader::IP::UDP::DHCP
 		int len = 240;
 		for (size_t i = 0; i < options.size(); i++)
 		{
-			if (len + options[i]->GetLength() < maxLenth)
+			if (len + options[i]->GetLength() < maxLength)
 			{
 				len += options[i]->GetLength();
 				options[i]->WriteBytes(buffer, offset);
@@ -194,7 +194,7 @@ namespace PacketReader::IP::UDP::DHCP
 			{
 				Console.Error("DEV9: DHCP_Packet: Oversized DHCP packet not handled");
 				//We need space for DHCP End
-				if (len == maxLenth)
+				if (len == maxLength)
 				{
 					i -= 1;
 					int pastLength = options[i]->GetLength();
