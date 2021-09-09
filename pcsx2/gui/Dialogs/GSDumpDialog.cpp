@@ -568,7 +568,7 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 				rgb_infos[1].Printf("G = %u", GetBits(data, 32, 8));
 				rgb_infos[2].Printf("B = %u", GetBits(data, 64, 8));
 				rgb_infos[3].Printf("A = %u", GetBits(data, 96, 8));;
-				rgb_infos[4].Printf("Q = %f", m_stored_q);
+				rgb_infos[4].Printf("Q = %g", m_stored_q);
 			}
 			else
 			{
@@ -576,7 +576,7 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 				rgb_infos[1].Printf("G = %u", GetBits(data,  8, 8));
 				rgb_infos[2].Printf("B = %u", GetBits(data, 16, 8));
 				rgb_infos[3].Printf("A = %u", GetBits(data, 24, 8));
-				rgb_infos[4].Printf("Q = %f", BitCast<float>(data._u32[1]));
+				rgb_infos[4].Printf("Q = %g", BitCast<float>(data._u32[1]));
 			}
 
 			for (auto& el : rgb_infos)
@@ -584,17 +584,17 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 			break;
 		}
 		case GIFReg::ST:
-			m_gif_packet->AppendItem(rootId, wxString::Format("S = %f", BitCast<float>(data._u32[0])));
-			m_gif_packet->AppendItem(rootId, wxString::Format("T = %f", BitCast<float>(data._u32[1])));
+			m_gif_packet->AppendItem(rootId, wxString::Format("S = %g", BitCast<float>(data._u32[0])));
+			m_gif_packet->AppendItem(rootId, wxString::Format("T = %g", BitCast<float>(data._u32[1])));
 			if (packed)
 			{
 				m_stored_q = BitCast<float>(data._u32[2]);
-				m_gif_packet->AppendItem(rootId, wxString::Format("Q = %f", m_stored_q));
+				m_gif_packet->AppendItem(rootId, wxString::Format("Q = %g", m_stored_q));
 			}
 			break;
 		case GIFReg::UV:
-			m_gif_packet->AppendItem(rootId, wxString::Format("U = %f", static_cast<float>(GetBits(data, 0, 14)) / 16.f));
-			m_gif_packet->AppendItem(rootId, wxString::Format("V = %f", static_cast<float>(GetBits(data, packed ? 32 : 16, 14)) / 16.f));
+			m_gif_packet->AppendItem(rootId, wxString::Format("U = %g", static_cast<float>(GetBits(data, 0, 14)) / 16.f));
+			m_gif_packet->AppendItem(rootId, wxString::Format("V = %g", static_cast<float>(GetBits(data, packed ? 32 : 16, 14)) / 16.f));
 			break;
 		case GIFReg::XYZF2:
 		case GIFReg::XYZF3:
@@ -605,15 +605,15 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 			std::array<wxString, 4> xyzf_infos;
 			if (packed)
 			{
-				xyzf_infos[0].Printf("X = %f", static_cast<float>(GetBits(data,  0, 16)) / 16.0);
-				xyzf_infos[1].Printf("Y = %f", static_cast<float>(GetBits(data, 32, 16)) / 16.0);
+				xyzf_infos[0].Printf("X = %g", static_cast<float>(GetBits(data,  0, 16)) / 16.0);
+				xyzf_infos[1].Printf("Y = %g", static_cast<float>(GetBits(data, 32, 16)) / 16.0);
 				xyzf_infos[2].Printf("Z = %u", GetBits(data, 68, 24));
 				xyzf_infos[3].Printf("F = %u", GetBits(data, 100, 8));
 			}
 			else
 			{
-				xyzf_infos[0].Printf("X = %f", static_cast<float>(GetBits(data,  0, 16)) / 16.0);
-				xyzf_infos[1].Printf("Y = %f", static_cast<float>(GetBits(data, 16, 16)) / 16.0);
+				xyzf_infos[0].Printf("X = %g", static_cast<float>(GetBits(data,  0, 16)) / 16.0);
+				xyzf_infos[1].Printf("Y = %g", static_cast<float>(GetBits(data, 16, 16)) / 16.0);
 				xyzf_infos[2].Printf("Z = %u", GetBits(data, 32, 24));
 				xyzf_infos[3].Printf("F = %u", GetBits(data, 56, 8));
 			}
@@ -631,14 +631,14 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 			std::vector<wxString> xyz_infos(3);
 			if (packed)
 			{
-				xyz_infos[0].Printf("X = %f", static_cast<float>(GetBits(data,  0, 16)) / 16.0);
-				xyz_infos[1].Printf("Y = %f", static_cast<float>(GetBits(data, 32, 16)) / 16.0);
+				xyz_infos[0].Printf("X = %g", static_cast<float>(GetBits(data,  0, 16)) / 16.0);
+				xyz_infos[1].Printf("Y = %g", static_cast<float>(GetBits(data, 32, 16)) / 16.0);
 				xyz_infos[2].Printf("Z = %u", data._u32[2]);
 			}
 			else
 			{
-				xyz_infos[0].Printf("X = %f", static_cast<float>(GetBits(data,  0, 16)) / 16.0);
-				xyz_infos[1].Printf("Y = %f", static_cast<float>(GetBits(data, 16, 16)) / 16.0);
+				xyz_infos[0].Printf("X = %g", static_cast<float>(GetBits(data,  0, 16)) / 16.0);
+				xyz_infos[1].Printf("Y = %g", static_cast<float>(GetBits(data, 16, 16)) / 16.0);
 				xyz_infos[2].Printf("Z = %u", data._u32[1]);
 			}
 
