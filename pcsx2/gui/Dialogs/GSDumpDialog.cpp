@@ -42,7 +42,128 @@
 #include <wx/dir.h>
 #include <wx/image.h>
 #include <wx/wfstream.h>
+#include <array>
 #include <functional>
+
+template <typename Output, typename Input, typename std::enable_if<sizeof(Input) == sizeof(Output), bool>::type = true>
+static constexpr Output BitCast(Input input)
+{
+	Output output;
+	memcpy(&output, &input, sizeof(input));
+	return output;
+}
+template <typename Output = u32>
+static constexpr Output GetBits(u64 value, u32 shift, u32 numbits)
+{
+	return static_cast<Output>((value >> shift) & ((1ull << numbits) - 1));
+}
+
+template <typename Output = u32>
+static constexpr Output GetBits(u128 value, u32 shift, u32 numbits)
+{
+	u64 outval = 0;
+	if (shift == 0)
+		outval = value.lo;
+	else if (shift < 64)
+		outval = (value.lo >> shift) | (value.hi << (64 - shift));
+	else
+		outval = value.hi >> (shift - 64);
+	return static_cast<Output>(outval & ((1ull << numbits) - 1));
+}
+static constexpr const char* GetNameOneBit(u8 value, const char* zero, const char* one)
+{
+	switch (value)
+	{
+		case 0: return zero;
+		case 1: return one;
+		default: return "UNKNOWN";
+	}
+}
+static constexpr const char* GetNameBool(bool value)
+{
+	return value ? "True" : "False";
+}
+
+static constexpr const char* GetNamePRIMPRIM(u8 prim)
+{
+	switch (prim)
+	{
+		case 0: return "Point";
+		case 1: return "Line";
+		case 2: return "Line Strip";
+		case 3: return "Triangle";
+		case 4: return "Triangle Strip";
+		case 5: return "Triangle Fan";
+		case 6: return "Sprite";
+		case 7: return "Invalid";
+		default: return "UNKNOWN";
+	}
+}
+static constexpr const char* GetNamePRIMIIP(u8 iip)
+{
+	return GetNameOneBit(iip, "Flat Shading", "Gouraud Shading");
+}
+static constexpr const char* GetNamePRIMFST(u8 fst)
+{
+	return GetNameOneBit(fst, "STQ Value", "UV Value");
+}
+static constexpr const char* GetNamePRIMCTXT(u8 ctxt)
+{
+	return GetNameOneBit(ctxt, "Context 1", "Context 2");
+}
+static constexpr const char* GetNamePRIMFIX(u8 fix)
+{
+	return GetNameOneBit(fix, "Unfixed", "Fixed");
+}
+static constexpr const char* GetNameTEXTCC(u8 tcc)
+{
+	return GetNameOneBit(tcc, "RGB", "RGBA");
+}
+static constexpr const char* GetNameTEXTFX(u8 tfx)
+{
+	switch (tfx)
+	{
+		case 0: return "Modulate";
+		case 1: return "Decal";
+		case 2: return "Highlight";
+		case 3: return "Highlight2";
+		default: return "UNKNOWN";
+	}
+}
+static constexpr const char* GetNameTEXCSM(u8 csm)
+{
+	return GetNameOneBit(csm, "CSM1", "CSM2");
+}
+static constexpr const char* GetNameTEXPSM(u8 psm)
+{
+	switch (psm)
+	{
+		case 000: return "PSMCT32";
+		case 001: return "PSMCT24";
+		case 002: return "PSMCT16";
+		case 012: return "PSMCT16S";
+		case 023: return "PSMT8";
+		case 024: return "PSMT4";
+		case 033: return "PSMT8H";
+		case 044: return "PSMT4HL";
+		case 054: return "PSMT4HH";
+		case 060: return "PSMZ32";
+		case 061: return "PSMZ24";
+		case 062: return "PSMZ16";
+		case 072: return "PSMZ16S";
+		default: return "UNKNOWN";
+	}
+}
+static constexpr const char* GetNameTEXCPSM(u8 psm)
+{
+	switch (psm)
+	{
+		case 000: return "PSMCT32";
+		case 002: return "PSMCT16";
+		case 012: return "PSMCT16S";
+		default: return "UNKNOWN";
+	}
+}
 
 namespace GSDump
 {
@@ -309,9 +430,9 @@ void Dialogs::GSDumpDialog::GenPacketList()
 	for (auto& element : m_dump_packets)
 	{
 		wxString s, t;
-		element.id == Transfer ? t.Printf(" - %s", GSTransferPathNames[element.path]) : t.Printf("");
-		s.Printf("%d - %s%s - %d byte", i, GSTypeNames[element.id], t, element.length);
-		if (element.id == VSync)
+		element.id == GSType::Transfer ? t.Printf(" - %s", GetName(element.path)) : t.Printf("");
+		s.Printf("%d - %s%s - %d byte", i, GetName(element.id), t, element.length);
+		if (element.id == GSType::VSync)
 		{
 			m_gif_list->SetItemText(rootId, s);
 			rootId = m_gif_list->AppendItem(mainrootId, "VSync");
@@ -335,108 +456,89 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 	wxTreeItemId rootId = m_gif_packet->AddRoot("root");
 	switch (dump.id)
 	{
-		case Transfer:
+		case GSType::Transfer:
 		{
-			wxTreeItemId trootId;
-			wxString s;
-			s.Printf("Transfer Path %s", GSTransferPathNames[dump.path]);
-			trootId = m_gif_packet->AppendItem(rootId, s);
-			u64 tag = *(u64*)(dump.data.get());
+			wxTreeItemId trootId = m_gif_packet->AppendItem(rootId, wxString::Format("Transfer Path %s", GetName(dump.path)));
+			u64 tag  = *(u64*)(dump.data.get());
 			u64 regs = *(u64*)(dump.data.get() + 8);
-			u32 nloop = tag & ((1 << 15) - 1);
-			u8 eop = (tag >> 15) & 1;
-			u8 pre = (tag >> 46) & 1;
-			u32 prim = (tag >> 47) & ((1 << 11) - 1);
-			u8 flg = ((tag >> 58) & 3);
-			u32 nreg = (u32)((tag >> 60) & ((1 << 4) - 1));
+			u32 nloop   = GetBits(tag,  0, 15);
+			u8 eop      = GetBits(tag, 15,  1);
+			u8 pre      = GetBits(tag, 46,  1);
+			u32 prim    = GetBits(tag, 47, 11);
+			GIFFlag flg = GetBits<GIFFlag>(tag, 58, 2);
+			u32 nreg    = GetBits(tag, 60,  4);
 			if (nreg == 0)
 				nreg = 16;
 
-			std::vector<wxString> infos(7);
+			std::array<wxString, 7> infos;
 			m_stored_q = 1.0;
 
-			infos[0].Printf("nloop = %u", nloop);
-			infos[1].Printf("eop = %u", eop);
-			infos[2].Printf("flg = %s", GifFlagNames[flg]);
-			infos[3].Printf("pre = %u", pre);
-			infos[4].Printf("Prim");
-			infos[5].Printf("nreg = %u", nreg);
-			infos[6].Printf("reg");
-
-			wxTreeItemId primId;
-			wxTreeItemId regId;
-			for (int i = 0; i < 7; i++)
+			m_gif_packet->AppendItem(trootId, wxString::Format("nloop = %u", nloop));
+			m_gif_packet->AppendItem(trootId, wxString::Format("eop = %u", eop));
+			m_gif_packet->AppendItem(trootId, wxString::Format("flg = %s", GetName(flg)));
+			m_gif_packet->AppendItem(trootId, wxString::Format("pre = %u", pre));
+			if (pre)
 			{
-				wxTreeItemId res = m_gif_packet->AppendItem(trootId, infos[i]);
-				switch (i)
-				{
-					case 4:
-						ParseTreePrim(res, prim);
-						break;
-					case 6:
-						regId = res;
-						break;
-				}
+				wxTreeItemId id = m_gif_packet->AppendItem(trootId, L"prim");
+				ParseTreePrim(id, prim);
 			}
+			m_gif_packet->AppendItem(trootId, wxString::Format("nreg = %u", nreg));
+			wxTreeItemId regId = m_gif_packet->AppendItem(trootId, L"reg");
 
 			int p = 16;
-			switch ((GifFlag)flg)
+			switch (flg)
 			{
-				case GIF_FLG_PACKED:
+				case GIFFlag::PACKED:
 				{
 					for (u32 j = 0; j < nloop; j++)
 					{
 						for (u32 i = 0; i < nreg; i++)
 						{
 							u128 reg_data;
-							reg_data.lo =  *(u64*)(dump.data.get() + p);
-							reg_data.hi =  *(u64*)(dump.data.get() + p + 8);
-							ParseTreeReg(regId, (GIFReg)((regs >> (i * 4)) & ((u64)(1 << 4) - 1)), reg_data, true);
+							memcpy(&reg_data, dump.data.get() + p, 16);
+							ParseTreeReg(regId, GetBits<GIFReg>(regs, i * 4, 4), reg_data, true);
 							p += 16;
 						}
 					}
 					break;
 				}
-				case GIF_FLG_REGLIST:
+				case GIFFlag::REGLIST:
 				{
 					for (u32 j = 0; j < nloop; j++)
 					{
 						for (u32 i = 0; i < nreg; i++)
 						{
 							u128 reg_data;
-							reg_data.lo =  *(u64*)(dump.data.get() + p);
-							ParseTreeReg(regId, (GIFReg)((regs >> (i * 4)) & ((u64)(1 << 4) - 1)), reg_data, false);
+							memcpy(&reg_data.lo, dump.data.get() + p, 8);
+							reg_data.hi = 0;
+							ParseTreeReg(regId, GetBits<GIFReg>(regs, i * 4, 4), reg_data, false);
 							p += 8;
 						}
 					}
 					break;
 				}
-				case GIF_FLG_IMAGE:
-				case GIF_FLG_IMAGE2:
-				{
-					wxString z;
-					s.Printf("IMAGE %d bytes", nloop * 16);
-					m_gif_packet->AppendItem(regId, z);
+				case GIFFlag::IMAGE:
+				case GIFFlag::IMAGE2:
+					m_gif_packet->AppendItem(regId, wxString::Format("IMAGE %d bytes", nloop * 16));
 					break;
-				}
 			}
 			break;
 		}
-		case VSync:
+		case GSType::VSync:
 		{
 			wxString s;
 			s.Printf("Field = %u", *(u8*)(dump.data.get()));
 			m_gif_packet->AppendItem(rootId, s);
 			break;
 		}
-		case ReadFIFO2:
+		case GSType::ReadFIFO2:
 		{
 			wxString s;
 			s.Printf("ReadFIFO2: Size = %d byte", dump.length);
 			m_gif_packet->AppendItem(rootId, s);
 			break;
 		}
-		case Registers:
+		case GSType::Registers:
 			m_gif_packet->AppendItem(rootId, "Registers");
 			break;
 	}
@@ -450,153 +552,131 @@ void Dialogs::GSDumpDialog::ParsePacket(wxTreeEvent& event)
 
 void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data, bool packed)
 {
-	wxTreeItemId rootId = m_gif_packet->AppendItem(id, wxString(GIFRegName(reg)));
+	wxTreeItemId rootId = m_gif_packet->AppendItem(id, wxString(GetName(reg)));
 	switch (reg)
 	{
-		case PRIM:
+		case GIFReg::PRIM:
 			ParseTreePrim(rootId, data.lo);
 			break;
-		case RGBAQ:
+		case GIFReg::RGBAQ:
 		{
-			std::vector<wxString> rgb_infos(5);
+			std::array<wxString, 5> rgb_infos;
 
 			if (packed)
 			{
-				rgb_infos[0].Printf("R = %u", (u32)(data.lo & ((u64)(1 << 8) - 1)));
-				rgb_infos[1].Printf("G = %u", (u32)((data.lo >> 32) & ((u64)(1 << 8) - 1)));
-				rgb_infos[2].Printf("B = %u", (u32)(data.hi & ((u64)(1 << 8) - 1)));
-				rgb_infos[3].Printf("A = %u", (u32)((data.hi >> 32) & ((u64)(1 << 8) - 1)));
+				rgb_infos[0].Printf("R = %u", GetBits(data,  0, 8));
+				rgb_infos[1].Printf("G = %u", GetBits(data, 32, 8));
+				rgb_infos[2].Printf("B = %u", GetBits(data, 64, 8));
+				rgb_infos[3].Printf("A = %u", GetBits(data, 96, 8));;
 				rgb_infos[4].Printf("Q = %f", m_stored_q);
 			}
 			else
 			{
-				rgb_infos[0].Printf("R = %u", (u32)(data.lo & ((u64)(1 << 8) - 1)));
-				rgb_infos[1].Printf("G = %u", (u32)((data.lo >> 8) & ((u64)(1 << 8) - 1)));
-				rgb_infos[2].Printf("B = %u", (u32)((data.lo >> 16) & ((u64)(1 << 8) - 1)));
-				rgb_infos[3].Printf("A = %u", (u32)((data.lo >> 24) & ((u64)(1 << 8) - 1)));
-				rgb_infos[4].Printf("Q = %f", *(float*)(&data.lo + 4));
+				rgb_infos[0].Printf("R = %u", GetBits(data,  0, 8));
+				rgb_infos[1].Printf("G = %u", GetBits(data,  8, 8));
+				rgb_infos[2].Printf("B = %u", GetBits(data, 16, 8));
+				rgb_infos[3].Printf("A = %u", GetBits(data, 24, 8));
+				rgb_infos[4].Printf("Q = %f", BitCast<float>(data._u32[1]));
 			}
 
 			for (auto& el : rgb_infos)
 				m_gif_packet->AppendItem(rootId, el);
 			break;
 		}
-		case ST:
-		{
-			std::vector<wxString> st_infos(2);
-			st_infos[0].Printf("S = %f", *(float*)(&data.lo));
-			st_infos[1].Printf("T = %f", *(float*)(&data.lo + 4));
+		case GIFReg::ST:
+			m_gif_packet->AppendItem(rootId, wxString::Format("S = %f", BitCast<float>(data._u32[0])));
+			m_gif_packet->AppendItem(rootId, wxString::Format("T = %f", BitCast<float>(data._u32[1])));
 			if (packed)
 			{
-				wxString q;
-				m_stored_q = *(float*)(&data.hi + 4);
-				q.Printf("Q = %f", m_stored_q);
-				st_infos.push_back(q);
+				m_stored_q = BitCast<float>(data._u32[2]);
+				m_gif_packet->AppendItem(rootId, wxString::Format("Q = %f", m_stored_q));
 			}
-			for (auto& el : st_infos)
-				m_gif_packet->AppendItem(rootId, el);
 			break;
-		}
-		case UV:
-		{
-			wxString s, t;
-			double v;
-			s.Printf("U = %f", (double)(data.lo & ((u64)(1 << 14) - 1)) / 16.0);
-			if (packed)
-				v = (double)((data.lo >> 32) & ((u64)(1 << 14) - 1)) / 16.0;
-			else 
-				v = (double)((data.lo >> 16) & ((u64)(1 << 14) - 1)) / 16.0;
-			t.Printf("V = %f", v);
-			m_gif_packet->AppendItem(rootId, s);
-			m_gif_packet->AppendItem(rootId, t);
+		case GIFReg::UV:
+			m_gif_packet->AppendItem(rootId, wxString::Format("U = %f", static_cast<float>(GetBits(data, 0, 14)) / 16.f));
+			m_gif_packet->AppendItem(rootId, wxString::Format("V = %f", static_cast<float>(GetBits(data, packed ? 32 : 16, 14)) / 16.f));
 			break;
-		}
-		case XYZF2:
-		case XYZF3:
+		case GIFReg::XYZF2:
+		case GIFReg::XYZF3:
 		{
-			if (packed && (reg == XYZF2) && ((data.lo >> 47) & ((u64)(1 << 1) - 1)) == 1)
-				m_gif_packet->SetItemText(rootId, GIFRegName(XYZF3));
+			if (packed && (reg == GIFReg::XYZF2) && GetBits(data, 111, 1))
+				m_gif_packet->SetItemText(rootId, GetName(GIFReg::XYZF3));
 
-			std::vector<wxString> xyzf_infos(4);
+			std::array<wxString, 4> xyzf_infos;
 			if (packed)
 			{
-				xyzf_infos[0].Printf("X = %f", (float)(data.lo & ((u64)(1 << 16) - 1)) / 16.0);
-				xyzf_infos[1].Printf("Y = %f", (float)((data.lo >> 32) & ((u64)(1 << 16) - 1)) / 16.0);
-				xyzf_infos[2].Printf("Z = %u", (u32)((data.hi >> 4) & ((u64)(1 << 24) - 1)));
-				xyzf_infos[3].Printf("F = %u", (u32)((data.hi >> 36) & ((u64)(1 << 8) - 1)));
+				xyzf_infos[0].Printf("X = %f", static_cast<float>(GetBits(data,  0, 16)) / 16.0);
+				xyzf_infos[1].Printf("Y = %f", static_cast<float>(GetBits(data, 32, 16)) / 16.0);
+				xyzf_infos[2].Printf("Z = %u", GetBits(data, 68, 24));
+				xyzf_infos[3].Printf("F = %u", GetBits(data, 100, 8));
 			}
 			else
 			{
-				xyzf_infos[0].Printf("X = %f", (float)(data.lo & ((u64)(1 << 16) - 1)) / 16.0);
-				xyzf_infos[1].Printf("Y = %f", (float)((data.lo >> 16) & ((u64)(1 << 16) - 1)) / 16.0);
-				xyzf_infos[2].Printf("Z = %u", (u32)((data.lo >> 32) & ((u64)(1 << 24) - 1)));
-				xyzf_infos[3].Printf("F = %u", (u32)((data.lo >> 56) & ((u64)(1 << 8) - 1)));
+				xyzf_infos[0].Printf("X = %f", static_cast<float>(GetBits(data,  0, 16)) / 16.0);
+				xyzf_infos[1].Printf("Y = %f", static_cast<float>(GetBits(data, 16, 16)) / 16.0);
+				xyzf_infos[2].Printf("Z = %u", GetBits(data, 32, 24));
+				xyzf_infos[3].Printf("F = %u", GetBits(data, 56, 8));
 			}
 
 			for (auto& el : xyzf_infos)
 				m_gif_packet->AppendItem(rootId, el);
 			break;
 		}
-		case XYZ2:
-		case XYZ3:
+		case GIFReg::XYZ2:
+		case GIFReg::XYZ3:
 		{
-			if (packed && (reg == XYZ2) && ((data.lo >> 47) & ((u64)(1 << 1) - 1)) == 1)
-				m_gif_packet->SetItemText(rootId, GIFRegName(XYZ3));
+			if (packed && (reg == GIFReg::XYZ2) && GetBits(data, 111, 1))
+				m_gif_packet->SetItemText(rootId, GetName(GIFReg::XYZ3));
 
 			std::vector<wxString> xyz_infos(3);
 			if (packed)
 			{
-				xyz_infos[0].Printf("X = %f", (float)(data.lo & ((u64)(1 << 16) - 1)) / 16.0);
-				xyz_infos[1].Printf("Y = %f", (float)((data.lo >> 32) & ((u64)(1 << 16) - 1)) / 16.0);
-				xyz_infos[2].Printf("Z = %u", *(u32*)(&data.hi));
+				xyz_infos[0].Printf("X = %f", static_cast<float>(GetBits(data,  0, 16)) / 16.0);
+				xyz_infos[1].Printf("Y = %f", static_cast<float>(GetBits(data, 32, 16)) / 16.0);
+				xyz_infos[2].Printf("Z = %u", data._u32[2]);
 			}
 			else
 			{
-				xyz_infos[0].Printf("X = %f", (float)(data.lo & ((u64)(1 << 16) - 1)) / 16.0);
-				xyz_infos[1].Printf("Y = %f", (float)((data.lo >> 16) & ((u64)(1 << 16) - 1)) / 16.0);
-				xyz_infos[2].Printf("Z = %u", *(u32*)(&data.lo)+4);
+				xyz_infos[0].Printf("X = %f", static_cast<float>(GetBits(data,  0, 16)) / 16.0);
+				xyz_infos[1].Printf("Y = %f", static_cast<float>(GetBits(data, 16, 16)) / 16.0);
+				xyz_infos[2].Printf("Z = %u", data._u32[1]);
 			}
 
 			for (auto& el : xyz_infos)
 				m_gif_packet->AppendItem(rootId, el);
 			break;
 		}
-		case TEX0_1:
-		case TEX0_2:
+		case GIFReg::TEX0_1:
+		case GIFReg::TEX0_2:
 		{
-			std::vector<wxString> tex_infos(12);
+			std::array<wxString, 12> tex_infos;
 
-			tex_infos[0].Printf("TBP0 = %u", (u32)(data.lo & ((u64)(1 << 14) - 1)));
-			tex_infos[1].Printf("TBW = %u", (u32)((data.lo >> 14) & ((u64)(1 << 6) - 1)));
-			tex_infos[2].Printf("PSM = %s", TEXPSMNames[(u32)((data.lo >> 20) & ((u64)(1 << 6) - 1))]);
-			tex_infos[3].Printf("TW = %u", (u32)((data.lo >> 26) & ((u64)(1 << 4) - 1)));
-			tex_infos[4].Printf("TH = %u", (u32)((data.lo >> 30) & ((u64)(1 << 4) - 1)));
-			tex_infos[5].Printf("TCC = %s", TEXTCCNames[(u32)((data.lo >> 34) & ((u64)(1 << 1) - 1))]);
-			tex_infos[6].Printf("TFX = %s", TEXTFXNames[(u32)((data.lo >> 35) & ((u64)(1 << 2) - 1))]);
-			tex_infos[7].Printf("CBP = %u", (u32)((data.lo >> 37) & ((u64)(1 << 14) - 1)));
-			tex_infos[8].Printf("CPSM = %s", TEXCPSMNames[(u32)((data.lo >> 51) & ((u64)(1 << 4) - 1))]);
-			tex_infos[9].Printf("CSM = %s", TEXCSMNames[(u32)((data.lo >> 55) & ((u64)(1 << 1) - 1))]);
-			tex_infos[10].Printf("CSA = %u", (u32)((data.lo >> 56) & ((u64)(1 << 5) - 1)));
-			tex_infos[11].Printf("CLD = %u", (u32)((data.lo >> 61) & ((u64)(1 << 3) - 1)));
+			tex_infos[0].Printf("TBP0 = %u", GetBits(data, 0, 14));
+			tex_infos[1].Printf("TBW = %u",  GetBits(data, 14, 6));
+			tex_infos[2].Printf("PSM = %s",  GetNameTEXPSM (GetBits(data, 20, 6)));
+			tex_infos[3].Printf("TW = %u",   GetBits(data, 26, 4));
+			tex_infos[4].Printf("TH = %u",   GetBits(data, 30, 4));
+			tex_infos[5].Printf("TCC = %s",  GetNameTEXTCC (GetBits(data, 34, 1)));
+			tex_infos[6].Printf("TFX = %s",  GetNameTEXTFX (GetBits(data, 35, 2)));
+			tex_infos[7].Printf("CBP = %u",  GetBits(data, 37, 14));
+			tex_infos[8].Printf("CPSM = %s", GetNameTEXCPSM(GetBits(data, 51, 4)));
+			tex_infos[9].Printf("CSM = %s",  GetNameTEXCSM (GetBits(data, 55, 1)));
+			tex_infos[10].Printf("CSA = %u", GetBits(data, 56, 5));
+			tex_infos[11].Printf("CLD = %u", GetBits(data, 61, 3));
 
 			for (auto& el : tex_infos)
 				m_gif_packet->AppendItem(rootId, el);
 			break;
 		}
-		case FOG:
+		case GIFReg::FOG:
 		{
-			wxString s;
-			if (packed)
-				s.Printf("F = %u", (u32)((data.hi >> 36) & ((u64)(1 << 8) - 1)));
-			else
-				s.Printf("F = %u", (u32)((data.lo >> 56) & ((u64)(1 << 8) - 1)));
-			m_gif_packet->AppendItem(rootId, s);
+			m_gif_packet->AppendItem(rootId, wxString::Format("F = %u", GetBits(data, packed ? 100 : 56, 8)));
 			break;
 		}
-		case AD:
+		case GIFReg::AD:
 		{
-			GIFReg nreg = (GIFReg)(data.hi & ((u64)(1 << 8) - 1));
-			if ((GIFReg)nreg == AD)
+			GIFReg nreg = GetBits<GIFReg>(data, 64, 8);
+			if (nreg == GIFReg::AD)
 			{
 				wxString s;
 				s.Printf("NOP");
@@ -614,17 +694,17 @@ void Dialogs::GSDumpDialog::ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data
 
 void Dialogs::GSDumpDialog::ParseTreePrim(wxTreeItemId& id, u32 prim)
 {
-	std::vector<wxString> prim_infos(9);
+	std::array<wxString, 9> prim_infos;
 
-	prim_infos[0].Printf("Primitive Type = %s", GsPrimNames[(prim & ((u64)(1 << 3) - 1))]);
-	prim_infos[1].Printf("IIP = %s", GsIIPNames[((prim >> 3) & 1)]);
-	prim_infos[2].Printf("TME = %s", (bool)((prim >> 4) & 1) ? "True" : "False");
-	prim_infos[3].Printf("FGE = %s", (bool)((prim >> 5) & 1) ? "True" : "False");
-	prim_infos[4].Printf("FGE = %s", (bool)((prim >> 6) & 1) ? "True" : "False");
-	prim_infos[5].Printf("AA1 = %s", (bool)((prim >> 7) & 1) ? "True" : "False");
-	prim_infos[6].Printf("FST = %s", GsFSTNames[((prim >> 3) & 1)]);
-	prim_infos[7].Printf("CTXT = %s", GsCTXTNames[((prim >> 9) & 1)]);
-	prim_infos[8].Printf("FIX = %s", GsFIXNames[((prim >> 10) & 1)]);
+	prim_infos[0].Printf("Primitive Type = %s", GetNamePRIMPRIM(GetBits(prim, 0, 3)));
+	prim_infos[1].Printf("IIP = %s",  GetNamePRIMIIP(GetBits(prim, 3, 1)));
+	prim_infos[2].Printf("TME = %s",  GetNameBool(GetBits(prim, 4, 1)));
+	prim_infos[3].Printf("FGE = %s",  GetNameBool(GetBits(prim, 5, 1)));
+	prim_infos[4].Printf("ABE = %s",  GetNameBool(GetBits(prim, 6, 1)));
+	prim_infos[5].Printf("AA1 = %s",  GetNameBool(GetBits(prim, 7, 1)));
+	prim_infos[6].Printf("FST = %s",  GetNamePRIMFST(GetBits(prim, 8, 1)));
+	prim_infos[7].Printf("CTXT = %s", GetNamePRIMCTXT(GetBits(prim, 9, 1)));
+	prim_infos[8].Printf("FIX = %s",  GetNamePRIMFIX(GetBits(prim, 10, 1)));
 
 	for (auto& el : prim_infos)
 		m_gif_packet->AppendItem(id, el);
@@ -634,11 +714,11 @@ void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSData& event, char* regs)
 {
 	switch (event.id)
 	{
-		case Transfer:
+		case GSType::Transfer:
 		{
 			switch (event.path)
 			{
-				case Path1Old:
+				case GSTransferPath::Path1Old:
 				{
 					std::unique_ptr<char[]> data(new char[16384]);
 					int addr = 16384 - event.length;
@@ -646,13 +726,13 @@ void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSData& event, char* regs)
 					GSgifTransfer1((u8*)data.get(), addr);
 					break;
 				}
-				case Path1New:
+				case GSTransferPath::Path1New:
 					GSgifTransfer((u8*)event.data.get(), event.length / 16);
 					break;
-				case Path2:
+				case GSTransferPath::Path2:
 					GSgifTransfer2((u8*)event.data.get(), event.length / 16);
 					break;
-				case Path3:
+				case GSTransferPath::Path3:
 					GSgifTransfer3((u8*)event.data.get(), event.length / 16);
 					break;
 				default:
@@ -660,19 +740,19 @@ void Dialogs::GSDumpDialog::ProcessDumpEvent(const GSData& event, char* regs)
 			}
 			break;
 		}
-		case VSync:
+		case GSType::VSync:
 		{
 			GSvsync((*((int*)(regs + 4096)) & 0x2000) > 0 ? (u8)1 : (u8)0, false);
 			g_FrameCount++;
 			break;
 		}
-		case ReadFIFO2:
+		case GSType::ReadFIFO2:
 		{
 			std::unique_ptr<char[]> arr(new char[*((int*)event.data.get())]);
 			GSreadFIFO2((u8*)arr.get(), *((int*)event.data.get()));
 			break;
 		}
-		case Registers:
+		case GSType::Registers:
 			memcpy(regs, event.data.get(), 8192);
 			break;
 	}
@@ -764,22 +844,22 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	while (pos < length)
 	{
 		GSType id;
-		GSTransferPath id_transfer = Dummy;
+		GSTransferPath id_transfer = GSTransferPath::Dummy;
 		READ_FROM_DUMP_FILE(&id, 1);
 		s32 size = 0;
 		switch (id)
 		{
-			case Transfer:
+			case GSType::Transfer:
 				READ_FROM_DUMP_FILE(&id_transfer, 1);
 				READ_FROM_DUMP_FILE(&size, 4);
 				break;
-			case VSync:
+			case GSType::VSync:
 				size = 1;
 				break;
-			case ReadFIFO2:
+			case GSType::ReadFIFO2:
 				size = 4;
 				break;
-			case Registers:
+			case GSType::Registers:
 				size = 8192;
 				break;
 		}
@@ -843,7 +923,7 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 							debug_idx = 1;
 						if ((debug_idx + 1) < m_root_window->m_dump_packets.size())
 						{
-							auto it = std::find_if(m_root_window->m_dump_packets.begin() + debug_idx + 1, m_root_window->m_dump_packets.end(), [](const GSData& gs) { return gs.id == Registers; });
+							auto it = std::find_if(m_root_window->m_dump_packets.begin() + debug_idx + 1, m_root_window->m_dump_packets.end(), [](const GSData& gs) { return gs.id == GSType::Registers; });
 							if (it != std::end(m_root_window->m_dump_packets))
 								m_debug_index = std::distance(m_root_window->m_dump_packets.begin(), it);
 						}
@@ -859,21 +939,21 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 					}
 					if ((debug_idx + 1) < m_root_window->m_dump_packets.size())
 					{
-						auto it = std::find_if(m_root_window->m_dump_packets.begin() + debug_idx + 1, m_root_window->m_dump_packets.end(), [](const GSData& gs) { return gs.id == Registers; });
+						auto it = std::find_if(m_root_window->m_dump_packets.begin() + debug_idx + 1, m_root_window->m_dump_packets.end(), [](const GSData& gs) { return gs.id == GSType::Registers; });
 						if (it != std::end(m_root_window->m_dump_packets))
 							m_root_window->ProcessDumpEvent(*it, regs);
 					}
 				}
 
 				// do vsync
-				m_root_window->ProcessDumpEvent({VSync, 0, 0, Dummy}, regs);
+				m_root_window->ProcessDumpEvent({GSType::VSync, 0, 0, GSTransferPath::Dummy}, regs);
 			}
 		}
 		else if (m_root_window->m_dump_packets.size())
 		{
 			do
 				m_root_window->ProcessDumpEvent(m_root_window->m_dump_packets[i++], regs);
-			while (i < m_root_window->m_dump_packets.size() && m_root_window->m_dump_packets[i].id != VSync);
+			while (i < m_root_window->m_dump_packets.size() && m_root_window->m_dump_packets[i].id != GSType::VSync);
 
 			if (i >= m_root_window->m_dump_packets.size())
 				i = 0;
