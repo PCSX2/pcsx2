@@ -111,12 +111,13 @@ void Panels::FramelimiterPanel::ApplyConfigToGui( AppConfig& configToApply, int 
 	const AppConfig::FramerateOptions& appfps( configToApply.Framerate );
 	const Pcsx2Config::GSOptions& gsconf( configToApply.EmuOptions.GS );
 
-	if( ! (flags & AppConfig::APPLY_FLAG_FROM_PRESET) ){	//Presets don't control these: only change if config doesn't come from preset.
+	if( ! (flags & AppConfig::APPLY_FLAG_FROM_PRESET) )
+	{	//Presets don't control these: only change if config doesn't come from preset.
 	
 		m_check_LimiterDisable->SetValue(!gsconf.FrameLimitEnable);
 
-		m_spin_TurboPct->SetValue(appfps.TurboScalar);
-		m_spin_SlomoPct->SetValue(appfps.SlomoScalar);
+		m_spin_TurboPct->SetValue(appfps.TurboScalar * 100.0);
+		m_spin_SlomoPct->SetValue(appfps.SlomoScalar * 100.0);
 
 		m_spin_TurboPct->Enable(true);
 		m_spin_SlomoPct->Enable(true);
@@ -125,7 +126,7 @@ void Panels::FramelimiterPanel::ApplyConfigToGui( AppConfig& configToApply, int 
 	m_text_BaseNtsc->ChangeValue(wxString::FromDouble(gsconf.FramerateNTSC, 2));
 	m_text_BasePal->ChangeValue(wxString::FromDouble(gsconf.FrameratePAL, 2));
 
-	m_spin_NominalPct->SetValue(appfps.NominalScalar);
+	m_spin_NominalPct->SetValue(appfps.NominalScalar * 100.0);
 	m_spin_NominalPct->Enable(!configToApply.EnablePresets);
 
 	m_text_BaseNtsc->Enable(!configToApply.EnablePresets);
@@ -139,9 +140,9 @@ void Panels::FramelimiterPanel::Apply()
 
 	gsconf.FrameLimitEnable	= !m_check_LimiterDisable->GetValue();
 
-	appfps.NominalScalar = m_spin_NominalPct->GetValue();
-	appfps.TurboScalar = m_spin_TurboPct->GetValue();
-	appfps.SlomoScalar = m_spin_SlomoPct->GetValue();
+	appfps.NominalScalar = static_cast<double>(m_spin_NominalPct->GetValue()) / 100.0;
+	appfps.TurboScalar = static_cast<double>(m_spin_TurboPct->GetValue()) / 100.0;
+	appfps.SlomoScalar = static_cast<double>(m_spin_SlomoPct->GetValue()) / 100.0;
 
 	wxString ntsc_framerate_string = m_text_BaseNtsc->GetValue();
 	wxString pal_framerate_string = m_text_BasePal->GetValue();

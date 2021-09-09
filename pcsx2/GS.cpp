@@ -51,13 +51,13 @@ void gsUpdateFrequency(Pcsx2Config& config)
 	switch (g_LimiterMode)
 	{
 	case LimiterModeType::Limit_Nominal:
-		config.GS.LimitScalar = g_Conf->Framerate.NominalScalar / 100.0;
+		config.GS.LimitScalar = g_Conf->Framerate.NominalScalar;
 		break;
 	case LimiterModeType::Limit_Slomo:
-		config.GS.LimitScalar = g_Conf->Framerate.SlomoScalar / 100.0;
+		config.GS.LimitScalar = g_Conf->Framerate.SlomoScalar;
 		break;
 	case LimiterModeType::Limit_Turbo:
-		config.GS.LimitScalar = g_Conf->Framerate.TurboScalar / 100.0;
+		config.GS.LimitScalar = g_Conf->Framerate.TurboScalar;
 		break;
 	default:
 		pxAssert("Unknown framelimiter mode!");

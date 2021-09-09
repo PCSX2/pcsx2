@@ -865,9 +865,9 @@ void AppConfig::FramerateOptions::SanityCheck()
 {
 	// Ensure Conformation of various options...
 
-	NominalScalar = std::clamp(NominalScalar, 5.0, 1000.0);
-	TurboScalar = std::clamp(TurboScalar, 5.0, 1000.0);
-	SlomoScalar = std::clamp(SlomoScalar, 5.0, 1000.0);
+	NominalScalar = std::clamp(NominalScalar, 0.05, 10.0);
+	TurboScalar = std::clamp(TurboScalar, 0.05, 10.0);
+	SlomoScalar = std::clamp(SlomoScalar, 0.05, 10.0);
 }
 
 void AppConfig::FramerateOptions::LoadSave( IniInterface& ini )
