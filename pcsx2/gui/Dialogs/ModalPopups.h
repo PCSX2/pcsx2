@@ -256,8 +256,10 @@ namespace Dialogs
 
 		float m_stored_q = 1.0;
 		void ProcessDumpEvent(const GSData& event, char* regs);
+		u32 ReadPacketSize(const void* packet);
 		void GenPacketList();
 		void GenPacketInfo(GSData& dump);
+		void ParseTransfer(wxTreeItemId& id, char* data);
 		void ParseTreeReg(wxTreeItemId& id, GIFReg reg, u128 data, bool packed);
 		void ParseTreePrim(wxTreeItemId& id, u32 prim);
 		void CloseDump(wxCommandEvent& event);

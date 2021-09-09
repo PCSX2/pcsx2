@@ -422,6 +422,26 @@ void Dialogs::GSDumpDialog::ToStart(wxCommandEvent& event)
 //  GSDumpDialog Packet Parsing
 // --------------------------------------------------------------------------------------
 
+u32 Dialogs::GSDumpDialog::ReadPacketSize(const void* packet)
+{
+	u128 tag;
+	memcpy(&tag, packet, sizeof(tag));
+	u32 nloop   = GetBits(tag,  0, 15);
+	GIFFlag flg = GetBits<GIFFlag>(tag, 58, 2);
+	u32 nreg    = GetBits(tag, 60,  4);
+	if (nreg == 0)
+		nreg = 16;
+	switch (flg)
+	{
+		case GIFFlag::PACKED:
+			return 16 + nloop * nreg * 16;
+		case GIFFlag::REGLIST:
+			return 16 + (nloop * nreg * 8 + 8) & ~15;
+		default:
+			return 16 + nloop * 16;
+	}
+}
+
 void Dialogs::GSDumpDialog::GenPacketList()
 {
 	int i = 0;
@@ -460,72 +480,19 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 	{
 		case GSType::Transfer:
 		{
-			wxTreeItemId trootId = m_gif_packet->AppendItem(rootId, wxString::Format("Transfer Path %s", GetName(dump.path)));
-			u64 tag  = *(u64*)(dump.data.get());
-			u64 regs = *(u64*)(dump.data.get() + 8);
-			u32 nloop   = GetBits(tag,  0, 15);
-			u8 eop      = GetBits(tag, 15,  1);
-			u8 pre      = GetBits(tag, 46,  1);
-			u32 prim    = GetBits(tag, 47, 11);
-			GIFFlag flg = GetBits<GIFFlag>(tag, 58, 2);
-			u32 nreg    = GetBits(tag, 60,  4);
-			if (nreg == 0)
-				nreg = 16;
-
-			std::array<wxString, 7> infos;
-			m_stored_q = 1.0;
-
-			m_gif_packet->AppendItem(trootId, wxString::Format("nloop = %u", nloop));
-			m_gif_packet->AppendItem(trootId, wxString::Format("eop = %u", eop));
-			m_gif_packet->AppendItem(trootId, wxString::Format("flg = %s", GetName(flg)));
-			m_gif_packet->AppendItem(trootId, wxString::Format("pre = %u", pre));
-			if (pre)
+			char* data = dump.data.get();
+			u32 remaining = dump.length;
+			int idx = 0;
+			while (remaining >= 16)
 			{
-				wxTreeItemId id = m_gif_packet->AppendItem(trootId, L"prim");
-				ParseTreePrim(id, prim);
+				wxTreeItemId trootId = m_gif_packet->AppendItem(rootId, wxString::Format("Transfer Path %s Packet %u", GetName(dump.path), idx));
+				ParseTransfer(trootId, data);
+				m_gif_packet->Expand(trootId);
+				u32 size = ReadPacketSize(data);
+				remaining -= size;
+				data += size;
+				idx++;
 			}
-			m_gif_packet->AppendItem(trootId, wxString::Format("nreg = %u", nreg));
-			wxTreeItemId regId = m_gif_packet->AppendItem(trootId, L"reg");
-
-			int p = 16;
-			switch (flg)
-			{
-				case GIFFlag::PACKED:
-				{
-					for (u32 j = 0; j < nloop; j++)
-					{
-						for (u32 i = 0; i < nreg; i++)
-						{
-							u128 reg_data;
-							memcpy(&reg_data, dump.data.get() + p, 16);
-							ParseTreeReg(regId, GetBits<GIFReg>(regs, i * 4, 4), reg_data, true);
-							p += 16;
-						}
-					}
-					break;
-				}
-				case GIFFlag::REGLIST:
-				{
-					for (u32 j = 0; j < nloop; j++)
-					{
-						for (u32 i = 0; i < nreg; i++)
-						{
-							u128 reg_data;
-							memcpy(&reg_data.lo, dump.data.get() + p, 8);
-							reg_data.hi = 0;
-							ParseTreeReg(regId, GetBits<GIFReg>(regs, i * 4, 4), reg_data, false);
-							p += 8;
-						}
-					}
-					break;
-				}
-				case GIFFlag::IMAGE:
-				case GIFFlag::IMAGE2:
-					m_gif_packet->AppendItem(regId, wxString::Format("IMAGE %d bytes", nloop * 16));
-					break;
-			}
-			m_gif_packet->Expand(trootId);
-			m_gif_packet->Expand(regId);
 			break;
 		}
 		case GSType::VSync:
@@ -546,6 +513,74 @@ void Dialogs::GSDumpDialog::GenPacketInfo(GSData& dump)
 			m_gif_packet->AppendItem(rootId, "Registers");
 			break;
 	}
+}
+
+void Dialogs::GSDumpDialog::ParseTransfer(wxTreeItemId& trootId, char* data)
+{
+	u64 tag  = *(u64*)data;
+	u64 regs = *(u64*)(data + 8);
+	u32 nloop   = GetBits(tag,  0, 15);
+	u8 eop      = GetBits(tag, 15,  1);
+	u8 pre      = GetBits(tag, 46,  1);
+	u32 prim    = GetBits(tag, 47, 11);
+	GIFFlag flg = GetBits<GIFFlag>(tag, 58, 2);
+	u32 nreg    = GetBits(tag, 60,  4);
+	if (nreg == 0)
+		nreg = 16;
+
+	std::array<wxString, 7> infos;
+	m_stored_q = 1.0;
+
+	m_gif_packet->AppendItem(trootId, wxString::Format("nloop = %u", nloop));
+	m_gif_packet->AppendItem(trootId, wxString::Format("eop = %u", eop));
+	m_gif_packet->AppendItem(trootId, wxString::Format("flg = %s", GetName(flg)));
+	m_gif_packet->AppendItem(trootId, wxString::Format("pre = %u", pre));
+	if (pre)
+	{
+		wxTreeItemId id = m_gif_packet->AppendItem(trootId, L"prim");
+		ParseTreePrim(id, prim);
+	}
+	m_gif_packet->AppendItem(trootId, wxString::Format("nreg = %u", nreg));
+	wxTreeItemId regId = m_gif_packet->AppendItem(trootId, L"reg");
+
+	int p = 16;
+	switch (flg)
+	{
+		case GIFFlag::PACKED:
+		{
+			for (u32 j = 0; j < nloop; j++)
+			{
+				for (u32 i = 0; i < nreg; i++)
+				{
+					u128 reg_data;
+					memcpy(&reg_data, data + p, 16);
+					ParseTreeReg(regId, GetBits<GIFReg>(regs, i * 4, 4), reg_data, true);
+					p += 16;
+				}
+			}
+			break;
+		}
+		case GIFFlag::REGLIST:
+		{
+			for (u32 j = 0; j < nloop; j++)
+			{
+				for (u32 i = 0; i < nreg; i++)
+				{
+					u128 reg_data;
+					memcpy(&reg_data.lo, data + p, 8);
+					reg_data.hi = 0;
+					ParseTreeReg(regId, GetBits<GIFReg>(regs, i * 4, 4), reg_data, false);
+					p += 8;
+				}
+			}
+			break;
+		}
+		case GIFFlag::IMAGE:
+		case GIFFlag::IMAGE2:
+			m_gif_packet->AppendItem(regId, wxString::Format("IMAGE %d bytes", nloop * 16));
+			break;
+	}
+	m_gif_packet->Expand(regId);
 }
 
 void Dialogs::GSDumpDialog::ParsePacket(wxTreeEvent& event)
