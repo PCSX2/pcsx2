@@ -1004,7 +1004,9 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 	// Okay so let's explain this, since people keep messing with it in the past and just poking it.
 	// So when the drive is spinning, bit 0x2 is set on the Status, and bit 0x8 is set when the drive is not reading.
 	// So In the case where it's seeking to data it will be Spinning (0x2) not reading (0x8) and Seeking (0x10, but because seeking is also spinning 0x2 is also set))
-	cdvd.Status = CDVD_STATUS_SEEK | CDVD_STATUS_PAUSE;
+	// Update - Apparently all that was rubbish and some games don't like it. WRC was the one in this scenario which hated SEEK |ZPAUSE, so just putting it back to pause for now.
+	// We should really run some tests for this behaviour.
+	cdvd.Status = CDVD_STATUS_PAUSE;
 
 	if (!cdvd.Spinning)
 	{
