@@ -179,7 +179,7 @@ using namespace pxSizerFlags;
 // --------------------------------------------------------------------------------------
 
 Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
-	: wxDialogWithHelpers(parent, _("GS Debugger"), pxDialogFlags().SetMinimize())
+	: wxDialogWithHelpers(parent, _("GS Debugger"), pxDialogFlags().SetMinimize().SetResize())
 	, m_dump_list(new wxListView(this, ID_DUMP_LIST, wxDefaultPosition, wxSize(400, 300), wxLC_NO_HEADER | wxLC_REPORT | wxLC_SINGLE_SEL))
 	, m_preview_image(new wxStaticBitmap(this, wxID_ANY, wxBitmap(EmbeddedImage<res_NoIcon>().Get()), wxDefaultPosition, wxSize(400,250)))
 	, m_debug_mode(new wxCheckBox(this, ID_DEBUG_MODE, _("Debug Mode")))
@@ -196,8 +196,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 {
 	wxBoxSizer* dump_info = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* dump_preview = new wxBoxSizer(wxVERTICAL);
-	wxFlexGridSizer* debugger = new wxFlexGridSizer(3, StdPadding, StdPadding);
-	wxBoxSizer* dumps = new wxBoxSizer(wxHORIZONTAL);
+	wxFlexGridSizer* grid = new wxFlexGridSizer(3, StdPadding, StdPadding);
 	wxBoxSizer* dbg_tree = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* dbg_actions = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* gif = new wxBoxSizer(wxVERTICAL);
@@ -217,14 +216,14 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	m_renderer_overrides->Create(this, wxID_ANY, "Renderer overrides", wxDefaultPosition, wxDefaultSize, rdoverrides, 1);
 
 	dbg_tree->Add(new wxStaticText(this, wxID_ANY, _("GIF Packets")));
-	dbg_tree->Add(m_gif_list, StdExpand());
+	dbg_tree->Add(m_gif_list, StdExpand().Proportion(1));
 	dbg_actions->Add(m_debug_mode);
 	dbg_actions->Add(m_start, StdExpand());
 	dbg_actions->Add(m_step, StdExpand());
 	dbg_actions->Add(m_selection, StdExpand());
 	dbg_actions->Add(m_vsync, StdExpand());
 	gif->Add(new wxStaticText(this, wxID_ANY, _("Packet Content")));
-	gif->Add(m_gif_packet, StdExpand());
+	gif->Add(m_gif_packet, StdExpand().Proportion(1));
 
 	dumps_list->Add(new wxStaticText(this, wxID_ANY, _("GS Dumps List")), StdExpand());
 	dumps_list->Add(m_dump_list, StdExpand());
@@ -234,16 +233,19 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	dump_preview->Add(new wxStaticText(this, wxID_ANY, _("Preview")), StdExpand());
 	dump_preview->Add(m_preview_image, StdCenter());
 
-	dumps->Add(dumps_list);
-	dumps->Add(dump_info);
-	dumps->Add(dump_preview);
+	grid->Add(dumps_list, StdExpand());
+	grid->Add(dump_info, StdExpand());
+	grid->Add(dump_preview, StdExpand());
 
-	debugger->Add(dbg_tree);
-	debugger->Add(dbg_actions);
-	debugger->Add(gif);
-	
-	*this += dumps;
-	*this += debugger;
+	grid->Add(dbg_tree, StdExpand());
+	grid->Add(dbg_actions, StdExpand());
+	grid->Add(gif, StdExpand());
+
+	grid->AddGrowableCol(0);
+	grid->AddGrowableCol(2);
+	grid->AddGrowableRow(1);
+
+	SetSizerAndFit(grid);
 
 	// populate UI and setup state
 	m_debug_mode->Disable();
