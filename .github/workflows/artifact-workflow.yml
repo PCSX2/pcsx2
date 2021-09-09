@@ -1,7 +1,8 @@
+
 name: PR artifacts
 on:
   workflow_run:
-    workflows: [🐧 Linux Builds,🖥️ Windows Builds]
+    workflows: Release
     types: [completed]
 jobs:
   pr_comment:
