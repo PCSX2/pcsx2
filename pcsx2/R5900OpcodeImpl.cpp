@@ -595,13 +595,13 @@ void LWL()
 	s32 addr = cpuRegs.GPR.r[_Rs_].UL[0] + _Imm_;
 	u32 shift = addr & 3;
 
-	// ensure the compiler does correct sign extension into 64 bits by using s32
-	s32 mem = memRead32(addr & ~3);
+	u32 mem = memRead32(addr & ~3);
 
 	if (!_Rt_) return;
 
-	cpuRegs.GPR.r[_Rt_].SD[0] =	(cpuRegs.GPR.r[_Rt_].SL[0] & LWL_MASK[shift]) |
-								(mem << LWL_SHIFT[shift]);
+	// ensure the compiler does correct sign extension into 64 bits by using s32
+	cpuRegs.GPR.r[_Rt_].SD[0] =	(s32)((cpuRegs.GPR.r[_Rt_].UL[0] & LWL_MASK[shift]) |
+								(mem << LWL_SHIFT[shift]));
 
 	/*
 	Mem = 1234.  Reg = abcd
