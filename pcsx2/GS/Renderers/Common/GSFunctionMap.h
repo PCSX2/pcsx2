@@ -80,7 +80,7 @@ public:
 		return m_active->f;
 	}
 
-	void UpdateStats(uint64 frame, uint64 ticks, int actual, int total)
+	void UpdateStats(uint64 frame, uint64 ticks, int actual, int total, int prims)
 	{
 		if (m_active)
 		{
@@ -90,7 +90,7 @@ public:
 				m_active->frames++;
 			}
 
-			m_active->prims++;
+			m_active->prims += prims;
 			m_active->ticks += ticks;
 			m_active->actual += actual;
 			m_active->total += total;

@@ -87,7 +87,7 @@ public:
 	virtual ~IDrawScanline() {}
 
 	virtual void BeginDraw(const GSRasterizerData* data) = 0;
-	virtual void EndDraw(uint64 frame, uint64 ticks, int actual, int total) = 0;
+	virtual void EndDraw(uint64 frame, uint64 ticks, int actual, int total, int prims) = 0;
 
 #ifdef ENABLE_JIT_RASTERIZER
 
@@ -137,6 +137,7 @@ protected:
 	GSVector4 m_fscissor_y;
 	struct { GSVertexSW* buff; int count; } m_edge;
 	struct { int sum, actual, total; } m_pixels;
+	int m_primcount;
 
 	typedef void (GSRasterizer::*DrawPrimPtr)(const GSVertexSW* v, int count);
 
