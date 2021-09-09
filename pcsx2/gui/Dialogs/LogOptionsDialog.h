@@ -19,7 +19,7 @@
 #include "ConfigurationDialog.h"
 
 #include "common/wxGuiTools.h"
-#include "common/CheckedStaticBox.h"
+#include "gui/CheckedStaticBox.h"
 
 namespace Dialogs {
 

@@ -23,7 +23,7 @@
 #include "common/pxRadioPanel.h"
 #include "common/pxCheckBox.h"
 #include "common/pxStaticText.h"
-#include "common/CheckedStaticBox.h"
+#include "gui/CheckedStaticBox.h"
 
 #include "AppForwardDefs.h"
 #include "AppConfig.h"

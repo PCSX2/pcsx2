@@ -13,7 +13,6 @@ target_sources(common PRIVATE
 	VirtualMemory.cpp
 	EventSource.inl
 	SafeArray.inl
-	CheckedStaticBox.cpp
 	Console.cpp
 	EventSource.cpp
 	Exceptions.cpp
@@ -62,7 +61,6 @@ target_sources(common PRIVATE
 target_sources(common PRIVATE
 	Assertions.h
 	boost_spsc_queue.hpp
-	CheckedStaticBox.h
 	Console.h
 	Dependencies.h
 	EventSource.h

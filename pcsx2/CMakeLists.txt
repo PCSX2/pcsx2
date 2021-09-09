@@ -969,6 +969,7 @@ set(pcsx2GuiSources
 	gui/AppInit.cpp
 	gui/AppMain.cpp
 	gui/AppRes.cpp
+	gui/CheckedStaticBox.cpp
 	gui/ConsoleLogger.cpp
 	gui/CpuUsageProvider.cpp
 	gui/Dialogs/AboutBoxDialog.cpp
@@ -1037,6 +1038,7 @@ set(pcsx2GuiHeaders
 	gui/App.h
 	gui/ApplyState.h
 	gui/AppSaveStates.h
+	gui/CheckedStaticBox.h
 	gui/ConsoleLogger.h
 	gui/CpuUsageProvider.h
 	gui/Debugger/BreakpointWindow.h

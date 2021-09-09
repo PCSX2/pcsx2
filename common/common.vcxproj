@@ -40,7 +40,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AlignedMalloc.cpp" />
-    <ClCompile Include="CheckedStaticBox.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Exceptions.cpp" />
     <ClCompile Include="FastFormatString.cpp" />
@@ -93,7 +92,6 @@
     <ClInclude Include="ScopedAlloc.h" />
     <ClInclude Include="ThreadingInternal.h" />
     <ClInclude Include="Assertions.h" />
-    <ClInclude Include="CheckedStaticBox.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="Dependencies.h" />
     <ClInclude Include="EventSource.h" />

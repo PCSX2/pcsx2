@@ -1646,6 +1646,9 @@
     <ClCompile Include="gui\ThreadingDialogs.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
+    <ClCompile Include="gui\CheckedStaticBox.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2723,6 +2726,9 @@
       <Filter>AppHost</Filter>
     </ClInclude>
     <ClInclude Include="gui\ThreadingDialogs.h">
+      <Filter>AppHost</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\CheckedStaticBox.h">
       <Filter>AppHost</Filter>
     </ClInclude>
   </ItemGroup>
