@@ -201,9 +201,6 @@
     <ClInclude Include="PrecompiledHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pxEvents.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="pxStaticText.h">
       <Filter>Header Files</Filter>
     </ClInclude>

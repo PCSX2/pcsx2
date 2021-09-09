@@ -2743,6 +2743,9 @@
     <ClInclude Include="gui\pxRadioPanel.h">
       <Filter>AppHost</Filter>
     </ClInclude>
+    <ClInclude Include="gui\pxEvents.h">
+      <Filter>AppHost</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="windows\wxResources.rc">

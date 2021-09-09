@@ -752,6 +752,7 @@
     <ClInclude Include="gui\i18n.h" />
     <ClInclude Include="gui\DriveList.h" />
     <ClInclude Include="gui\pxCheckBox.h" />
+    <ClInclude Include="gui\pxEvents.h" />
     <ClInclude Include="gui\pxRadioPanel.h" />
     <ClInclude Include="gui\Saveslots.h" />
     <ClInclude Include="gui\Debugger\BreakpointWindow.h" />

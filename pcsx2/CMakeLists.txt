@@ -1066,6 +1066,7 @@ set(pcsx2GuiHeaders
 	gui/Panels/LogOptionsPanels.h
 	gui/Panels/MemoryCardPanels.h
 	gui/pxCheckBox.h
+	gui/pxEvents.h
 	gui/pxEventThread.h
 	gui/pxRadioPanel.h
 	gui/RecentIsoList.h

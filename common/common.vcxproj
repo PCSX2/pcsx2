@@ -99,7 +99,6 @@
     <ClInclude Include="MemcpyFast.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="PrecompiledHeader.h" />
-    <ClInclude Include="pxEvents.h" />
     <ClInclude Include="pxStaticText.h" />
     <ClInclude Include="RedtapeWindows.h" />
     <ClInclude Include="SafeArray.h" />

@@ -19,7 +19,7 @@
 
 #include "common/Threading.h"
 #include "common/wxGuiTools.h"
-#include "common/pxEvents.h"
+#include "gui/pxEvents.h"
 #include "common/AppTrait.h"
 
 using namespace Threading;
