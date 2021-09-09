@@ -20,6 +20,11 @@
 
 namespace PacketReader::IP
 {
+	int IP_Packet::GetHeaderLength()
+	{
+		return headerLength;
+	}
+
 	u8 IP_Packet::GetDscpValue()
 	{
 		return (dscp >> 2) & 0x3F;
