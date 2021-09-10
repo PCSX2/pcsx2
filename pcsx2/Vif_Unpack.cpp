@@ -205,6 +205,16 @@ _vifT void vifUnpackSetup(const u32 *data) {
 	if (vifNum == 0) vifNum = 256;
 	vifXRegs.num =  vifNum;
 
+	// This is for use when XGKick is synced as VIF can overwrite XG Kick data as it's transferring out
+	// Test with Aggressive Inline Skating, or K-1 Premium 2005 Dynamite!
+	// VU currently flushes XGKICK on VU1 end so no need for this, yet
+	/*if (idx == 1 && VU1.xgkickenable && !(VU0.VI[REG_TPC].UL & 0x100))
+	{
+		// Catch up first, then the unpack cycles
+		_vuXGKICKTransfer(&VU1, cpuRegs.cycle - VU1.xgkicklastcycle, false);
+		_vuXGKICKTransfer(&VU1, vifNum * 2, false);
+	}*/
+
 	// Traditional-style way of calculating the gsize, based on VN/VL parameters.
 	// Useful when VN/VL are known template params, but currently they are not so we use
 	// the LUT instead (for now).

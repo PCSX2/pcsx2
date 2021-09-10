@@ -113,15 +113,6 @@ _vifT int nVifUnpack(const u8* data)
 	const bool isFill = (vifRegs.cycle.cl < wl);
 	s32        size   = ret << 2;
 
-	// This is for use when XGKick is synced as VIF can overwrite XG Kick data as it's transferring out
-	// Test with Aggressive Inline Skating, or K-1 Premium 2005 Dynamite!
-	if (idx == 1 && VU1.xgkickenable && !(VU0.VI[REG_TPC].UL & 0x100))
-	{
-		// Catch up first, then the unpack cycles
-		_vuXGKICKTransfer(&VU1, cpuRegs.cycle - VU1.xgkicklastcycle, false);
-		_vuXGKICKTransfer(&VU1, ret/2, false);
-	}
-
 	if (ret == vif.tag.size) // Full Transfer
 	{
 		if (v.bSize) // Last transfer was partial

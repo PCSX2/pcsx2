@@ -2334,7 +2334,7 @@ void _vuXGKICKTransfer(VURegs* VU, u32 cycles, bool flush)
 	VU->xgkicklastcycle += cycles;
 	VUM_LOG("Adding %d cycles, total XGKick cycles to run now %d", cycles, VU->xgkickcyclecount);
 
-	while ((!VU->xgkickendpacket || VU->xgkicksizeremaining > 0) && (flush || VU->xgkickcyclecount >= 2))
+	while (VU->xgkickenable && (flush || VU->xgkickcyclecount >= 2))
 	{
 		u32 transfersize = 0;
 
@@ -2393,15 +2393,15 @@ void _vuXGKICKTransfer(VURegs* VU, u32 cycles, bool flush)
 			// Check if VIF is waiting for the GIF to not be busy
 			if (vif1Regs.stat.VGW)
 			{
+				VU0.VI[REG_VPU_STAT].UL &= ~(1 << 12);
 				vif1Regs.stat.VGW = false;
 				CPU_INT(DMAC_VIF1, 8);
 			}
 		}
 	}
-	if (flush)
+	if ((VU0.VI[REG_VPU_STAT].UL & 0x100) && flush)
 	{
 		VUM_LOG("Disabling XGKICK");
-		VU->xgkickenable = false;
 		_vuTestPipes(VU);
 	}
 }
@@ -2423,6 +2423,7 @@ static __ri void _vuXGKICK(VURegs * VU)
 	VU->xgkickendpacket = false;
 	VU->xgkicklastcycle = VU->cycle;
 	VU->xgkickcyclecount = 0;
+	VU0.VI[REG_VPU_STAT].UL |= (1 << 12);
 	VUM_LOG("XGKICK addr %x", addr);
 }
 
