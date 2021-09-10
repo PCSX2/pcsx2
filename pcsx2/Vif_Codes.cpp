@@ -230,8 +230,11 @@ vifOp(vifCode_Flush)
 			vif1.vifstalled.value = VIF_TIMING_BREAK;
 			return 0;
 		}
-		else
-			vif1.cmd = 0;
+
+		if (vif1.waitforvu)
+			return 0;
+		
+		vif1.cmd = 0;
 		vif1.pass = 0;
 	}
 	pass3 { VifCodeLog("Flush"); }
@@ -258,6 +261,10 @@ vifOp(vifCode_FlushA)
 			vif1.vifstalled.value = VIF_TIMING_BREAK;
 			return 0;
 		}
+
+		if (vif1.waitforvu)
+			return 0;
+
 		vif1.cmd = 0;
 		vif1.pass = 0;
 	}

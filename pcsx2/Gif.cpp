@@ -108,11 +108,14 @@ int GIF_Fifo::write_fifo(u32* pMem, int size)
 
 	int writePos = fifoSize * 4;
 
-	GIF_LOG("GIF FIFO Adding %d QW to GIF FIFO at offset %d FIFO now contains %d QW", transferSize, writePos, fifoSize);
+	
 
 	memcpy(&data[writePos], pMem, transferSize * 16);
 
 	fifoSize += transferSize;
+
+	GIF_LOG("GIF FIFO Adding %d QW to GIF FIFO at offset %d FIFO now contains %d QW", transferSize, writePos, fifoSize);
+
 	gifRegs.stat.FQC = fifoSize;
 	CalculateFIFOCSR();
 
@@ -185,6 +188,13 @@ void incGifChAddr(u32 qwc)
 
 __fi void gifCheckPathStatus(bool calledFromGIF)
 {
+	// If GIF is running on it's own, let it handle its own timing.
+	if (calledFromGIF && gifch.chcr.STR)
+	{
+		if(gif_fifo.fifoSize == 16)
+			GifDMAInt(16);
+		return;
+	}
 	if (gifRegs.stat.APATH == 3)
 	{
 		gifRegs.stat.APATH = 0;
@@ -222,7 +232,7 @@ __fi void gifCheckPathStatus(bool calledFromGIF)
 
 __fi void gifInterrupt()
 {
-	GIF_LOG("gifInterrupt caught qwc=%d fifo=%d apath=%d oph=%d state=%d!", gifch.qwc, gifRegs.stat.FQC, gifRegs.stat.APATH, gifRegs.stat.OPH, gifUnit.gifPath[GIF_PATH_3].state);
+	GIF_LOG("gifInterrupt caught qwc=%d fifo=%d(%d) apath=%d oph=%d state=%d!", gifch.qwc, gifRegs.stat.FQC, gif_fifo.fifoSize, gifRegs.stat.APATH, gifRegs.stat.OPH, gifUnit.gifPath[GIF_PATH_3].state);
 	gifCheckPathStatus(false);
 
 	if (gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_IDLE)
@@ -280,8 +290,9 @@ __fi void gifInterrupt()
 				}
 			}
 		}
-
-		if (((gifch.qwc > 0) || (!gif.gspath3done)) && gif_fifo.fifoSize)
+		// If the dma has data waiting and there's something in the fifo, drain the fifo
+		// If the GIF is currently paused, check if the FIFO is full, otherwise fill it
+		if (((gifch.qwc > 0) || (!gif.gspath3done)) && (CheckPaths() || gif_fifo.fifoSize == 16 || readSize))
 			return;
 	}
 
@@ -791,7 +802,9 @@ void gifMFIFOInterrupt()
 			}
 		}
 
-		if (((gifch.qwc > 0) || (!gif.gspath3done)) && gif_fifo.fifoSize)
+		// If the dma has data waiting and there's something in the fifo, drain the fifo
+		// If the GIF is currently paused, check if the FIFO is full, otherwise fill it
+		if (((gifch.qwc > 0) || (!gif.gspath3done)) && (CheckPaths() || gif_fifo.fifoSize == 16 || readSize))
 			return;
 	}
 
