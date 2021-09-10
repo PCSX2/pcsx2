@@ -170,12 +170,10 @@ __fi void mVUsetFlags(mV, microFlagCycles& mFC)
 
 	if (!(mVUpBlock->pState.needExactMatch & 2))
 	{
-		//xM = (mVUpBlock->pState.flagInfo >> 4) & 3;
 		mFC.xMac[0] = -1;
 		mFC.xMac[1] = -1;
 		mFC.xMac[2] = -1;
 		mFC.xMac[3] = -1;
-		//mFC.xMac[(xM-1)&3] = 0;
 	}
 
 	if (!(mVUpBlock->pState.needExactMatch & 4))
@@ -408,8 +406,6 @@ void _mVUflagPass(mV, u32 startPC, u32 sCount, u32 found, std::vector<u32>& v)
 			mVUopL(mVU, 3);
 			incPC(1);
 		}
-
-		// if (mVUbranch&&(branch>=3)&&(branch<=5)) { DevCon.Error("Double Branch [%x]", xPC); mVUregs.needExactMatch |= 7; break; }
 
 		if (branch >= 2)
 		{

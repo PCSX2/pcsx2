@@ -107,9 +107,6 @@ void mVUdispatcherCD(mV)
 
 		mVU.exitFunctXG = x86Ptr;
 
-		//xPOP(gprT1); // Pop return address
-		//xMOV(ptr32[&mVU.resumePtrXG], gprT1);
-
 		// Backup Status Flag (other regs were backed up on xgkick)
 		xMOV(ptr32[&mVU.regs().micro_statusflags[0]], gprF0);
 		xMOV(ptr32[&mVU.regs().micro_statusflags[1]], gprF1);
@@ -155,9 +152,6 @@ _mVUt void* __fastcall mVUexecute(u32 startPC, u32 cycles)
 _mVUt void mVUcleanUp()
 {
 	microVU& mVU = mVUx;
-	//mVUprint("microVU: Program exited successfully!");
-	//mVUprint("microVU: VF0 = {%x,%x,%x,%x}", mVU.regs().VF[0].UL[0], mVU.regs().VF[0].UL[1], mVU.regs().VF[0].UL[2], mVU.regs().VF[0].UL[3]);
-	//mVUprint("microVU: VI0 = %x", mVU.regs().VI[0].UL);
 
 	mVU.prog.x86ptr = x86Ptr;
 
@@ -187,14 +181,6 @@ _mVUt void mVUcleanUp()
 		}
 	}
 	mVU.profiler.Print();
-	//static int ax = 0; ax++;
-	//if (!(ax % 100000)) {
-	//	for (u32 i = 0; i < (mVU.progSize / 2); i++) {
-	//		if (mVUcurProg.block[i]) {
-	//			mVUcurProg.block[i]->printInfo(i*8);
-	//		}
-	//	}
-	//}
 }
 
 //------------------------------------------------------------------

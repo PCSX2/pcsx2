@@ -104,8 +104,6 @@ void mVUreset(microVU& mVU, bool resetReserve)
 	mVUemitSearch();
 
 	mVU.regs().nextBlockCycles = 0;
-	// Clear All Program Data
-	//memset(&mVU.prog, 0, sizeof(mVU.prog));
 	memset(&mVU.prog.lpState, 0, sizeof(mVU.prog.lpState));
 	mVU.profiler.Reset(mVU.index);
 
@@ -121,7 +119,6 @@ void mVUreset(microVU& mVU, bool resetReserve)
 	mVU.prog.x86start = z;
 	mVU.prog.x86ptr   = z;
 	mVU.prog.x86end   = z + ((mVU.cacheSize - mVUcacheSafeZone) * _1mb);
-	//memset(mVU.prog.x86start, 0xcc, mVU.cacheSize*_1mb);
 
 	for (u32 i = 0; i < (mVU.progSize / 2); i++)
 	{
