@@ -42,7 +42,7 @@ void setIni(const wchar_t* Section)
 void CfgSetSettingsDir(const char* dir)
 {
 	FileLog("CfgSetSettingsDir(%s)\n", dir);
-	path = Path::ToWxString((dir == nullptr) ? "inis" : std::string(dir) / "SPU2.ini");
+	path = Path::ToWxString((dir == nullptr) ? "inis" : fs::path(dir) / "SPU2.ini");
 	pathSet = true;
 }
 

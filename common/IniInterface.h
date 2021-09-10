@@ -54,7 +54,7 @@ public:
 	virtual bool IsLoading() const = 0;
 	bool IsSaving() const { return !IsLoading(); }
 
-	virtual void Entry(const std::string &var, std::string &value, const std::string defvalue) = 0;
+	virtual void Entry(const std::string& var, std::string& value, const std::string defvalue) = 0;
 	virtual void Entry(const std::string& key, std::map<std::string, int>& var, const int defValue) = 0;
 	virtual void Entry(const wxString &var, wxString &value, const wxString defvalue = wxString()) = 0;
 	virtual void Entry(const wxString &var, wxDirName &value, const wxDirName defvalue = wxDirName(), bool isAllowRelative = false) = 0;
@@ -166,7 +166,7 @@ public:
 
 	void Entry(const std::string& var, std::string& value, const std::string defvalue) override;
 	void Entry(const std::string& key, std::map<std::string, int>& var, const int defValue) override;
-	void Entry(const wxString& var, wxString& value, const wxString defvalue = wxString()) override;
+	void Entry(const wxString &var, wxString& value, const wxString defvalue = wxEmptyString ) override;
 	void Entry(const wxString& var, wxDirName& value, const wxDirName defvalue = wxDirName(), bool isAllowRelative = false) override;
 	void Entry(const wxString& var, fs::path& value, const fs::path defvalue) override;
 	void Entry(const wxString& var, fs::path& value, fs::path defvalue, fs::path base) override;
@@ -184,7 +184,6 @@ public:
 	void Entry(const wxString& var, wxSize& value, const wxSize defvalue = wxDefaultSize) override;
 	void Entry(const wxString& var, wxRect& value, const wxRect defvalue = wxDefaultRect) override;
 
-protected:
 	void _EnumEntry(const wxString& var, int& value, const wxChar* const* enumArray, int defvalue) override;
 };
 

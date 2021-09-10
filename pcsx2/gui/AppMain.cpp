@@ -365,6 +365,7 @@ public:
 		if (wxGetEnv(L"XDG_CONFIG_HOME", &xdg_home_value))
 		{
 			if (xdg_home_value.IsEmpty())
+			{
 				// variable exist but it is empty. So use the default value
 				user_local_dir = wxDirName(Path::ToWxString(Path::FromWxString(GetUserConfigDir()) / Path::FromWxString(default_config_dir.ToString())));
 			}

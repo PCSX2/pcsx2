@@ -858,7 +858,7 @@ void Panels::MemoryCardListPanel_Simple::UiRenameCard(McdSlotItem& card)
 	card.IsEnabled = false;
 	Apply();
 
-	if (!wxRenameFile(wxFileName(Path::ToWxString(Path::FromWxString(basepath.ToString()) / card.Filename))).GetFullPath(), (basepath + wxFileName(newFilename)).GetFullPath(), false))
+	if (!wxRenameFile(wxFileName(Path::ToWxString(Path::FromWxString(basepath.ToString()) / card.Filename)).GetFullPath(), (basepath + wxFileName(newFilename)).GetFullPath(), false))
 	{
 		card.IsEnabled = origEnabled;
 		Apply();

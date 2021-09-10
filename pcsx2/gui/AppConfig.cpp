@@ -436,6 +436,7 @@ fs::path GetVmSettingsFilename()
 {
 	fs::path fname = Path::FromWxString(FilenameDefs::GetVmConfig().GetFullPath());
 	if (wxGetApp().Overrides.VmSettingsFile.IsOk())
+	{
 		fname = Path::FromWxString(wxGetApp().Overrides.VmSettingsFile.GetFullPath());
 	}
 	return GetSettingsFolder() / fname;
