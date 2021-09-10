@@ -180,6 +180,7 @@ struct __aligned16 VURegs
 	u32 xgkickdiff;
 	u32 xgkicksizeremaining;
 	u32 xgkicklastcycle;
+	u32 xgkickcyclecount;
 
 	u8 VIBackupCycles;
 	u32 VIOldValue;

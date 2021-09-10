@@ -207,12 +207,11 @@ static void _vu1Exec(VURegs* VU)
 			_vuFlushAll(VU);
 			VU0.VI[REG_VPU_STAT].UL &= ~0x100;
 			vif1Regs.stat.VEW = false;
+			// In instant VU mode, VU1 goes WAY ahead of the CPU, making the XGKick fall way behind
+			// We also have some code to update it in VIF Unpacks too, since in some games (Aggressive Inline) overwrite the XGKick data
+			if (INSTANT_VU1)
+				VU1.xgkicklastcycle = cpuRegs.cycle;
 		}
-	}
-
-	if (VU->xgkickenable && (VU1.cycle - VU->xgkicklastcycle) >= 2)
-	{
-		_vuXGKICKTransfer(VU, (VU1.cycle - VU->xgkicklastcycle), false);
 	}
 	
 	// Progress the write position of the FMAC pipeline by one place
@@ -278,13 +277,15 @@ void InterpVU1::Execute(u32 cycles)
 
 	VU1.VI[REG_TPC].UL <<= 3;
 	u32 startcycles = VU1.cycle;
+
 	while ((VU1.cycle - startcycles) < cycles)
 	{
 		if (!(VU0.VI[REG_VPU_STAT].UL & 0x100))
 		{
-			if (VU1.branch || VU1.ebit)
+			if (VU1.branch == 1)
 			{
-				Step(); // run branch delay slot?
+				VU1.VI[REG_TPC].UL = VU1.branchpc;
+				VU1.branch = 0;
 			}
 			break;
 		}

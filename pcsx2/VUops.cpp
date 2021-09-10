@@ -207,6 +207,14 @@ __fi void _vuTestPipes(VURegs * VU)
 		flushed |= _vuEFUflush(VU);
 		flushed |= _vuIALUflush(VU);
 	} while (flushed == true);
+
+	if (VU == &VU1)
+	{
+		if (VU1.xgkickenable)
+		{
+			_vuXGKICKTransfer(&VU1, (VU1.cycle - VU1.xgkicklastcycle), false);
+		}
+	}
 }
 
 static void __fastcall _vuFMACTestStall(VURegs* VU, int reg, int xyzw)
@@ -2322,7 +2330,11 @@ void _vuXGKICKTransfer(VURegs* VU, u32 cycles, bool flush)
 	if (!VU->xgkickenable)
 		return;
 
-	while (!VU->xgkickendpacket || VU->xgkicksizeremaining > 0)
+	VU->xgkickcyclecount += cycles;
+	VU->xgkicklastcycle += cycles;
+	VUM_LOG("Adding %d cycles, total XGKick cycles to run now %d", cycles, VU->xgkickcyclecount);
+
+	while ((!VU->xgkickendpacket || VU->xgkicksizeremaining > 0) && (flush || VU->xgkickcyclecount >= 2))
 	{
 		u32 transfersize = 0;
 
@@ -2345,7 +2357,7 @@ void _vuXGKICKTransfer(VURegs* VU, u32 cycles, bool flush)
 
 		if (!flush)
 		{
-			transfersize = std::min(VU->xgkicksizeremaining / 0x10, cycles / 2);
+			transfersize = std::min(VU->xgkicksizeremaining / 0x10, VU->xgkickcyclecount / 2);
 			transfersize = std::min(transfersize, VU->xgkickdiff / 0x10);
 		}
 		else
@@ -2366,12 +2378,11 @@ void _vuXGKICKTransfer(VURegs* VU, u32 cycles, bool flush)
 		if ((VU0.VI[REG_VPU_STAT].UL & 0x100) && flush)
 			VU->cycle += transfersize * 2;
 
-		cycles -= transfersize * 2;
+		VU->xgkickcyclecount -= transfersize * 2;
 
 		VU->xgkickaddr = (VU->xgkickaddr + (transfersize * 0x10)) & 0x3FFF;
 		VU->xgkicksizeremaining -= (transfersize * 0x10);
 		VU->xgkickdiff = 0x4000 - VU->xgkickaddr;
-		VU->xgkicklastcycle += std::max(transfersize * 2, 2U);
 		
 		if (VU->xgkicksizeremaining || !VU->xgkickendpacket)
 			VUM_LOG("XGKICK next addr %x left size %x", VU->xgkickaddr, VU->xgkicksizeremaining);
@@ -2386,13 +2397,13 @@ void _vuXGKICKTransfer(VURegs* VU, u32 cycles, bool flush)
 				CPU_INT(DMAC_VIF1, 8);
 			}
 		}
-
-		if (!flush && cycles < 2)
-			return;
 	}
-	VUM_LOG("Disabling XGKICK");
-	VU->xgkickenable = false;
-	_vuTestPipes(VU);
+	if (flush)
+	{
+		VUM_LOG("Disabling XGKICK");
+		VU->xgkickenable = false;
+		_vuTestPipes(VU);
+	}
 }
 
 static __ri void _vuXGKICK(VURegs * VU)
@@ -2411,7 +2422,8 @@ static __ri void _vuXGKICK(VURegs * VU)
 	VU->xgkicksizeremaining = 0;
 	VU->xgkickendpacket = false;
 	VU->xgkicklastcycle = VU->cycle;
-	IPU_LOG("XGKICK size %x EOP %d addr %x", VU->xgkicksizeremaining, VU->xgkickendpacket, addr);
+	VU->xgkickcyclecount = 0;
+	VUM_LOG("XGKICK addr %x", addr);
 }
 
 static __ri void _vuXTOP(VURegs * VU) {

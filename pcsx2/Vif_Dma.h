@@ -94,15 +94,13 @@ struct vifStruct {
 
 	bool queued_program;
 	u32 queued_pc;
-
-	
+	bool queued_gif_wait;
 };
 
 extern __aligned16 vifStruct  vif0, vif1;
 
 _vifT extern u32 vifRead32(u32 mem);
 _vifT extern bool vifWrite32(u32 mem, u32 value);
-void ExecuteVU(int idx);
 extern void vif0Interrupt();
 extern void vif0VUFinish();
 extern void vif0Reset();

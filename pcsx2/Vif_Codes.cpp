@@ -43,6 +43,12 @@ __ri void vifExecQueue(int idx)
 	if (!GetVifX.queued_program || (VU0.VI[REG_VPU_STAT].UL & 1 << (idx * 8)))
 		return;
 
+	if (GetVifX.queued_gif_wait)
+	{
+		if (gifUnit.checkPaths(1, 1, 0))
+			return;
+	}
+
 	GetVifX.queued_program = false;
 
 	if (!idx)
@@ -71,7 +77,7 @@ static __fi void vifFlush(int idx)
 	vifExecQueue(idx);
 }
 
-static __fi void vuExecMicro(int idx, u32 addr)
+static __fi void vuExecMicro(int idx, u32 addr, bool requires_wait)
 {
 	VIFregisters& vifRegs = vifXRegs;
 
@@ -114,27 +120,10 @@ static __fi void vuExecMicro(int idx, u32 addr)
 		GetVifX.queued_pc = addr & (idx ? 0x7ffu : 0x1ffu);
 	GetVifX.unpackcalls = 0;
 
+	GetVifX.queued_gif_wait = requires_wait;
+
 	if (!idx || (!THREAD_VU1 && !INSTANT_VU1))
 		vifExecQueue(idx);
-}
-
-void ExecuteVU(int idx)
-{
-	vifStruct& vifX = GetVifX;
-
-	if ((vifX.cmd & 0x7f) == 0x17)
-	{
-		vuExecMicro(idx, -1);
-		vifX.cmd = 0;
-		vifX.pass = 0;
-	}
-	else if ((vifX.cmd & 0x7f) == 0x14 || (vifX.cmd & 0x7f) == 0x15)
-	{
-		vuExecMicro(idx, (u16)(vifXRegs.code));
-		vifX.cmd = 0;
-		vifX.pass = 0;
-	}
-	vifExecQueue(idx);
 }
 
 //------------------------------------------------------------------
@@ -228,10 +217,9 @@ vifOp(vifCode_Flush)
 			vif1Regs.stat.VGW = true;
 			vif1.vifstalled.enabled = VifStallEnable(vif1ch);
 			vif1.vifstalled.value = VIF_TIMING_BREAK;
-			return 0;
 		}
 
-		if (vif1.waitforvu)
+		if (vif1.waitforvu || vif1Regs.stat.VGW)
 			return 0;
 		
 		vif1.cmd = 0;
@@ -259,10 +247,9 @@ vifOp(vifCode_FlushA)
 			vif1Regs.stat.VGW = true;
 			vif1.vifstalled.enabled = VifStallEnable(vif1ch);
 			vif1.vifstalled.value = VIF_TIMING_BREAK;
-			return 0;
 		}
 
-		if (vif1.waitforvu)
+		if (vif1.waitforvu || vif1Regs.stat.VGW)
 			return 0;
 
 		vif1.cmd = 0;
@@ -279,6 +266,10 @@ vifOp(vifCode_FlushE)
 	pass1
 	{
 		vifFlush(idx);
+
+		if (vifX.waitforvu)
+			return 0;
+
 		vifX.cmd = 0;
 		vifX.pass = 0;
 	}
@@ -381,7 +372,7 @@ vifOp(vifCode_MPG)
 		vifX.tag.size = vifNum ? (vifNum * 2) : 512;
 		vifFlush(idx);
 
-		if (vifX.vifstalled.enabled)
+		if (vifX.waitforvu)
 			return 0;
 		else
 		{
@@ -426,19 +417,20 @@ vifOp(vifCode_MSCAL)
 	{
 		vifFlush(idx);
 
-		if (!vifX.waitforvu)
+		if (vifX.waitforvu)
+			return 0;
+
+		vuExecMicro(idx, (u16)(vifXRegs.code), false);
+		vifX.cmd = 0;
+		vifX.pass = 0;
+
+		if (GetVifX.vifpacketsize > 1)
 		{
-			vuExecMicro(idx, (u16)(vifXRegs.code));
-			vifX.cmd = 0;
-			vifX.pass = 0;
-			if (GetVifX.vifpacketsize > 1)
+			//Warship Gunner 2 has a rather big dislike for the delays
+			if (((data[1] >> 24) & 0x60) == 0x60) // Immediate following Unpack
 			{
-				//Warship Gunner 2 has a rather big dislike for the delays
-				if (((data[1] >> 24) & 0x60) == 0x60) // Immediate following Unpack
-				{
-					//Snowblind games only use MSCAL, so other MS kicks force the program directly.
-					vifExecQueue(idx);
-				}
+				//Snowblind games only use MSCAL, so other MS kicks force the program directly.
+				vifExecQueue(idx);
 			}
 		}
 	}
@@ -460,13 +452,14 @@ vifOp(vifCode_MSCALF)
 			vifX.vifstalled.enabled = VifStallEnable(vifXch);
 			vifX.vifstalled.value = VIF_TIMING_BREAK;
 		}
-		if (!vifX.waitforvu)
-		{
-			vuExecMicro(idx, (u16)(vifXRegs.code));
-			vifX.cmd = 0;
-			vifX.pass = 0;
-			vifExecQueue(idx);
-		}
+
+		if (vifX.waitforvu || vif1Regs.stat.VGW)
+			return 0;
+
+		vuExecMicro(idx, (u16)(vifXRegs.code), true);
+		vifX.cmd = 0;
+		vifX.pass = 0;
+		vifExecQueue(idx);
 	}
 	pass3 { VifCodeLog("MSCALF"); }
 	return 1;
@@ -478,17 +471,18 @@ vifOp(vifCode_MSCNT)
 	pass1
 	{
 		vifFlush(idx);
-		if (!vifX.waitforvu)
+
+		if (vifX.waitforvu)
+			return 0;
+		
+		vuExecMicro(idx, -1, false);
+		vifX.cmd = 0;
+		vifX.pass = 0;
+		if (GetVifX.vifpacketsize > 1)
 		{
-			vuExecMicro(idx, -1);
-			vifX.cmd = 0;
-			vifX.pass = 0;
-			if (GetVifX.vifpacketsize > 1)
+			if (((data[1] >> 24) & 0x60) == 0x60) // Immediate following Unpack
 			{
-				if (((data[1] >> 24) & 0x60) == 0x60) // Immediate following Unpack
-				{
-					vifExecQueue(idx);
-				}
+				vifExecQueue(idx);
 			}
 		}
 	}
