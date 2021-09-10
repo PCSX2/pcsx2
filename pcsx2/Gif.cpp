@@ -292,7 +292,7 @@ __fi void gifInterrupt()
 		}
 		// If the dma has data waiting and there's something in the fifo, drain the fifo
 		// If the GIF is currently paused, check if the FIFO is full, otherwise fill it
-		if (((gifch.qwc > 0) || (!gif.gspath3done)) && (CheckPaths() || gif_fifo.fifoSize == 16 || readSize))
+		if ((!CheckPaths() && gif_fifo.fifoSize == 16) || (readSize && gif_fifo.fifoSize > 0))
 			return;
 	}
 
@@ -804,7 +804,7 @@ void gifMFIFOInterrupt()
 
 		// If the dma has data waiting and there's something in the fifo, drain the fifo
 		// If the GIF is currently paused, check if the FIFO is full, otherwise fill it
-		if (((gifch.qwc > 0) || (!gif.gspath3done)) && (CheckPaths() || gif_fifo.fifoSize == 16 || readSize))
+		if ((!CheckPaths() && gif_fifo.fifoSize == 16) || (readSize && gif_fifo.fifoSize > 0))
 			return;
 	}
 
