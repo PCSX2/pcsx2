@@ -23,7 +23,7 @@ namespace PacketReader::IP
 		virtual u8 GetLength() = 0;
 		virtual u8 GetCode() = 0;
 		virtual void WriteBytes(u8* buffer, int* offset) = 0;
-
+		virtual BaseOption* Clone() const = 0;
 		virtual ~BaseOption() {}
 	};
 
@@ -33,6 +33,7 @@ namespace PacketReader::IP
 		bool IsCopyOnFragment();
 		u8 GetClass(); //0 = control, 2 = debugging and measurement
 		u8 GetNumber();
+		virtual IPOption* Clone() const = 0;
 	};
 
 	class IPopUnk : public IPOption
@@ -48,6 +49,11 @@ namespace PacketReader::IP
 		virtual u8 GetCode() { return code; }
 
 		void WriteBytes(u8* buffer, int* offset);
+
+		virtual IPopUnk* Clone() const
+		{
+			return new IPopUnk(*this);
+		}
 	};
 
 	class IPopNOP : public IPOption
@@ -60,6 +66,11 @@ namespace PacketReader::IP
 		{
 			buffer[*offset] = GetCode();
 			(*offset)++;
+		}
+
+		virtual IPopNOP* Clone() const
+		{
+			return new IPopNOP(*this);
 		}
 	};
 
@@ -76,5 +87,10 @@ namespace PacketReader::IP
 		virtual u8 GetCode() { return 148; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual IPopRouterAlert* Clone() const
+		{
+			return new IPopRouterAlert(*this);
+		}
 	};
 } // namespace PacketReader::IP

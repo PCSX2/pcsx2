@@ -151,6 +151,30 @@ namespace PacketReader::IP::UDP::DHCP
 			}
 		} while (opReadFin == false);
 	}
+	DHCP_Packet::DHCP_Packet(const DHCP_Packet& original)
+		: op{original.op}
+		, hardwareType(original.hardwareType)
+		, hardwareAddressLength{original.hardwareAddressLength}
+		, hops{original.hops}
+		, transactionID{original.transactionID}
+		, seconds{original.seconds}
+		, flags{original.flags}
+		, clientIP{original.clientIP}
+		, yourIP{original.yourIP}
+		, serverIP{original.serverIP}
+		, gatewayIP{original.gatewayIP}
+		, magicCookie(original.magicCookie)
+		, maxLength{original.maxLength}
+	{
+		memcpy(clientHardwareAddress, original.clientHardwareAddress, 16);
+		//Assume BOOTP unused
+
+		//Clone options
+		options.reserve(original.options.size());
+		for (size_t i = 0; i < options.size(); i++)
+			options.push_back(original.options[i]->Clone());
+	}
+
 
 	int DHCP_Packet::GetLength()
 	{
@@ -213,6 +237,11 @@ namespace PacketReader::IP::UDP::DHCP
 
 		memset(&buffer[*offset], 0, delta);
 		*offset = start + GetLength();
+	}
+
+	DHCP_Packet* DHCP_Packet::Clone() const
+	{
+		return new DHCP_Packet(*this);
 	}
 
 	DHCP_Packet::~DHCP_Packet()

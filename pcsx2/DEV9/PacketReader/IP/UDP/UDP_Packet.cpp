@@ -46,6 +46,13 @@ namespace PacketReader::IP::UDP
 		payload = std::make_unique<PayloadPtr>(&buffer[offset], length - offset);
 		//AllDone
 	}
+	UDP_Packet::UDP_Packet(const UDP_Packet& original)
+		: sourcePort{original.sourcePort}
+		, destinationPort{original.destinationPort}
+		, checksum{original.destinationPort}
+		, payload{original.payload->Clone()}
+	{
+	}
 
 	Payload* UDP_Packet::GetPayload()
 	{
@@ -65,6 +72,11 @@ namespace PacketReader::IP::UDP
 		NetLib::WriteUInt16(buffer, offset, checksum);
 
 		payload->WriteBytes(buffer, offset);
+	}
+
+	UDP_Packet* UDP_Packet::Clone() const
+	{
+		return new UDP_Packet(*this);
 	}
 
 	u8 UDP_Packet::GetProtocol()

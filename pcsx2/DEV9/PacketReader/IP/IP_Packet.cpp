@@ -146,6 +146,25 @@ namespace PacketReader::IP
 		payload = std::make_unique<IP_PayloadPtr>(&buffer[offset], length - offset, protocol);
 	}
 
+	IP_Packet::IP_Packet(const IP_Packet& original)
+		: headerLength{original.headerLength}
+		, dscp{original.dscp}
+		, id{original.id}
+		, fragmentFlags1{original.fragmentFlags1}
+		, fragmentFlags2{original.fragmentFlags2}
+		, timeToLive{original.timeToLive}
+		, protocol{original.protocol}
+		, checksum{original.checksum}
+		, sourceIP{original.sourceIP}
+		, destinationIP{original.destinationIP}
+		, payload{original.payload->Clone()}
+	{
+		//Clone options
+		options.reserve(original.options.size());
+		for (size_t i = 0; i < options.size(); i++)
+			options.push_back(original.options[i]->Clone());
+	}
+
 	IP_Payload* IP_Packet::GetPayload()
 	{
 		return payload.get();
@@ -189,6 +208,11 @@ namespace PacketReader::IP
 		*offset = startOff + headerLength;
 
 		payload->WriteBytes(buffer, offset);
+	}
+
+	IP_Packet* IP_Packet::Clone() const
+	{
+		return new IP_Packet(*this);
 	}
 
 	void IP_Packet::ReComputeHeaderLen()

@@ -191,4 +191,9 @@ namespace PacketReader::IP::UDP::DNS
 		for (size_t i = 0; i < additional.size(); i++)
 			additional[i].WriteBytes(buffer, offset);
 	}
+
+	DNS_Packet* DNS_Packet::Clone() const
+	{
+		return new DNS_Packet(*this);
+	}
 } // namespace PacketReader::IP::UDP::DNS
