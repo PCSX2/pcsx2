@@ -37,11 +37,13 @@ namespace PacketReader::IP::UDP
 		//Takes ownership of payload
 		UDP_Packet(Payload* data);
 		UDP_Packet(u8* buffer, int bufferSize);
+		UDP_Packet(const UDP_Packet&);
 
 		Payload* GetPayload();
 
 		virtual int GetLength();
 		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual UDP_Packet* Clone() const;
 
 		virtual u8 GetProtocol();
 

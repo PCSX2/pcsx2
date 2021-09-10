@@ -22,6 +22,7 @@ namespace PacketReader
 	public:
 		virtual int GetLength() = 0;
 		virtual void WriteBytes(u8* buffer, int* offset) = 0;
+		virtual Payload* Clone() const = 0;
 		virtual ~Payload() {}
 	};
 
@@ -42,6 +43,16 @@ namespace PacketReader
 			if (len != 0)
 				data = std::make_unique<u8[]>(len);
 		}
+		PayloadData(const PayloadData& original)
+		{
+			length = original.length;
+
+			if (length != 0)
+			{
+				data = std::make_unique<u8[]>(length);
+				memcpy(data.get(), original.data.get(), length);
+			}
+		}
 		virtual int GetLength()
 		{
 			return length;
@@ -53,6 +64,10 @@ namespace PacketReader
 
 			memcpy(&buffer[*offset], data.get(), length);
 			*offset += length;
+		}
+		virtual PayloadData* Clone() const
+		{
+			return new PayloadData(*this);
 		}
 	};
 
@@ -71,6 +86,7 @@ namespace PacketReader
 			data = ptr;
 			length = len;
 		}
+		PayloadPtr(const PayloadPtr&) = delete;
 		virtual int GetLength()
 		{
 			return length;
@@ -84,6 +100,12 @@ namespace PacketReader
 
 			memcpy(&buffer[*offset], data, length);
 			*offset += length;
+		}
+		virtual Payload* Clone() const
+		{
+			PayloadData* ret = new PayloadData(length);
+			memcpy(ret->data.get(), data, length);
+			return ret;
 		}
 	};
 } // namespace PacketReader

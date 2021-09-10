@@ -25,6 +25,7 @@ namespace PacketReader::IP
 		virtual u8 GetProtocol() = 0;
 		virtual bool VerifyChecksum(IP_Address srcIP, IP_Address dstIP) { return false; }
 		virtual void CalculateChecksum(IP_Address srcIP, IP_Address dstIP) {}
+		virtual IP_Payload* Clone() const = 0;
 		virtual ~IP_Payload() {}
 	};
 
@@ -46,6 +47,17 @@ namespace PacketReader::IP
 			if (len != 0)
 				data = std::make_unique<u8[]>(len);
 		}
+		IP_PayloadData(const IP_PayloadData& original)
+		{
+			protocol = original.protocol;
+			length = original.length;
+
+			if (length != 0)
+			{
+				data = std::make_unique<u8[]>(length);
+				memcpy(data.get(), original.data.get(), length);
+			}
+		}
 		virtual int GetLength()
 		{
 			return length;
@@ -61,6 +73,10 @@ namespace PacketReader::IP
 		virtual u8 GetProtocol()
 		{
 			return protocol;
+		}
+		virtual IP_PayloadData* Clone() const
+		{
+			return new IP_PayloadData(*this);
 		}
 	};
 
@@ -81,6 +97,7 @@ namespace PacketReader::IP
 			length = len;
 			protocol = prot;
 		}
+		IP_PayloadPtr(const IP_PayloadPtr&) = delete;
 		virtual int GetLength()
 		{
 			return length;
@@ -94,6 +111,12 @@ namespace PacketReader::IP
 
 			memcpy(buffer, data, length);
 			*offset += length;
+		}
+		virtual IP_Payload* Clone() const
+		{
+			IP_PayloadData* ret = new IP_PayloadData(length, protocol);
+			memcpy(ret->data.get(), data, length);
+			return ret;
 		}
 		virtual u8 GetProtocol()
 		{

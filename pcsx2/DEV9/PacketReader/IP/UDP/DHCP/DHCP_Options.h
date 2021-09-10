@@ -34,6 +34,11 @@ namespace PacketReader::IP::UDP::DHCP
 			buffer[*offset] = GetCode();
 			(*offset)++;
 		}
+
+		virtual DHCPopNOP* Clone() const
+		{
+			return new DHCPopNOP(*this);
+		}
 	};
 
 	class DHCPopSubnet : public BaseOption
@@ -48,6 +53,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 1; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopSubnet* Clone() const
+		{
+			return new DHCPopSubnet(*this);
+		}
 	};
 
 	class DHCPopRouter : public BaseOption //can be longer then 1 address
@@ -61,6 +71,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 3; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopRouter* Clone() const
+		{
+			return new DHCPopRouter(*this);
+		}
 	};
 
 	class DHCPopDNS : public BaseOption //can be longer then 1 address
@@ -74,6 +89,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 6; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopDNS* Clone() const
+		{
+			return new DHCPopDNS(*this);
+		}
 	};
 
 	class DHCPopHostName : public BaseOption
@@ -89,6 +109,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 12; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopHostName* Clone() const
+		{
+			return new DHCPopHostName(*this);
+		}
 	};
 
 	class DHCPopDnsName : public BaseOption
@@ -104,6 +129,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 15; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopDnsName* Clone() const
+		{
+			return new DHCPopDnsName(*this);
+		}
 	};
 
 	class DHCPopBCIP : public BaseOption //The IP to send broadcasts to
@@ -118,6 +148,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 28; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopBCIP* Clone() const
+		{
+			return new DHCPopBCIP(*this);
+		}
 	};
 
 	//What even sent this?
@@ -146,6 +181,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 46; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopNBIOSType* Clone() const
+		{
+			return new DHCPopNBIOSType(*this);
+		}
 	};
 
 	class DHCPopREQIP : public BaseOption //The IP to send broadcasts to
@@ -160,6 +200,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 50; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopREQIP* Clone() const
+		{
+			return new DHCPopREQIP(*this);
+		}
 	};
 
 	class DHCPopIPLT : public BaseOption
@@ -174,6 +219,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 51; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopIPLT* Clone() const
+		{
+			return new DHCPopIPLT(*this);
+		}
 	};
 
 	class DHCPopMSG : public BaseOption
@@ -187,6 +237,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 53; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopMSG* Clone() const
+		{
+			return new DHCPopMSG(*this);
+		}
 	};
 
 	class DHCPopSERVIP : public BaseOption //DHCP server ip
@@ -201,6 +256,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 54; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopSERVIP* Clone() const
+		{
+			return new DHCPopSERVIP(*this);
+		}
 	};
 
 	class DHCPopREQLIST : public BaseOption
@@ -215,6 +275,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 55; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopREQLIST* Clone() const
+		{
+			return new DHCPopREQLIST(*this);
+		}
 	};
 
 	class DHCPopMSGStr : public BaseOption
@@ -230,6 +295,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 56; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopMSGStr* Clone() const
+		{
+			return new DHCPopMSGStr(*this);
+		}
 	};
 
 	class DHCPopMMSGS : public BaseOption
@@ -244,6 +314,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 57; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopMMSGS* Clone() const
+		{
+			return new DHCPopMMSGS(*this);
+		}
 	};
 
 	class DHCPopT1 : public BaseOption
@@ -258,6 +333,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 58; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopT1* Clone() const
+		{
+			return new DHCPopT1(*this);
+		}
 	};
 
 	class DHCPopT2 : public BaseOption
@@ -272,6 +352,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 59; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopT2* Clone() const
+		{
+			return new DHCPopT2(*this);
+		}
 	};
 
 	class DHCPopClassID : public BaseOption
@@ -287,6 +372,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 60; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopClassID* Clone() const
+		{
+			return new DHCPopClassID(*this);
+		}
 	};
 
 	class DHCPopClientID final : public BaseOption
@@ -301,6 +391,11 @@ namespace PacketReader::IP::UDP::DHCP
 		virtual u8 GetCode() { return 61; }
 
 		virtual void WriteBytes(u8* buffer, int* offset);
+
+		virtual DHCPopClientID* Clone() const
+		{
+			return new DHCPopClientID(*this);
+		}
 	};
 
 	class DHCPopEND : public BaseOption
@@ -315,6 +410,11 @@ namespace PacketReader::IP::UDP::DHCP
 		{
 			buffer[*offset] = GetCode();
 			(*offset)++;
+		}
+
+		virtual DHCPopEND* Clone() const
+		{
+			return new DHCPopEND(*this);
 		}
 	};
 } // namespace PacketReader::IP::UDP::DHCP

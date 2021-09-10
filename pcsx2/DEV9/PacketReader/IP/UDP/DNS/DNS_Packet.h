@@ -77,5 +77,6 @@ namespace PacketReader::IP::UDP::DNS
 
 		virtual int GetLength();
 		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual DNS_Packet* Clone() const;
 	};
 } // namespace PacketReader::IP::UDP::DNS

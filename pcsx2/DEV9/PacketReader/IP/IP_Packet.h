@@ -63,6 +63,8 @@ namespace PacketReader::IP
 		std::unique_ptr<IP_Payload> payload;
 
 	public:
+		int GetHeaderLength();
+
 		//DSCP/TOS Flags
 
 		/* Upper 3 Bits
@@ -122,11 +124,13 @@ namespace PacketReader::IP
 		//Takes ownership of payload
 		IP_Packet(IP_Payload* data);
 		IP_Packet(u8* buffer, int bufferSize, bool fromICMP = false);
+		IP_Packet(const IP_Packet&);
 
 		IP_Payload* GetPayload();
 
 		virtual int GetLength();
 		virtual void WriteBytes(u8* buffer, int* offset);
+		virtual IP_Packet* Clone() const;
 
 		bool VerifyChecksum();
 		static u16 InternetChecksum(u8* buffer, int length);
