@@ -2356,9 +2356,11 @@ void _vuXGKICKTransfer(VURegs* VU, u32 cycles, bool flush)
 
 		VUM_LOG("XGKICK Transferring %x bytes from %x size %x", transfersize * 0x10, VU->xgkickaddr, VU->xgkicksizeremaining);
 
-		if ((transfersize * 0x10) < VU->xgkicksizeremaining)
+		// Would be "nicer" to do the copy until it's all up, however this really screws up PATH3 masking stuff
+		// So lets just do it the other way :)
+		/*if ((transfersize * 0x10) < VU->xgkicksizeremaining)
 			gifUnit.gifPath[GIF_PATH_1].CopyGSPacketData(&VU->Mem[VU->xgkickaddr], transfersize * 0x10, true);
-		else
+		else*/
 			gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &VU->Mem[VU->xgkickaddr], transfersize * 0x10, true);
 
 		if ((VU0.VI[REG_VPU_STAT].UL & 0x100) && flush)
@@ -2409,7 +2411,7 @@ static __ri void _vuXGKICK(VURegs * VU)
 	VU->xgkicksizeremaining = 0;
 	VU->xgkickendpacket = false;
 	VU->xgkicklastcycle = VU->cycle;
-	VUM_LOG("XGKICK size %x EOP %d addr %x", VU->xgkicksizeremaining, VU->xgkickendpacket, addr);
+	IPU_LOG("XGKICK size %x EOP %d addr %x", VU->xgkicksizeremaining, VU->xgkickendpacket, addr);
 }
 
 static __ri void _vuXTOP(VURegs * VU) {
