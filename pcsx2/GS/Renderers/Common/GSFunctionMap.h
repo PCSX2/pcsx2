@@ -101,48 +101,45 @@ public:
 
 	virtual void PrintStats()
 	{
-		uint64 ttpf = 0;
+		uint64 totalTicks = 0;
 
 		for (const auto& i : m_map_active)
 		{
 			ActivePtr* p = i.second;
-
-			if (p->frames)
-			{
-				ttpf += p->ticks / p->frames;
-			}
+			totalTicks += p->ticks;
 		}
 
-		uint64_t million = 1000 * 1000;
-		uint64_t billion = 1000 * million;
-		uint64_t tps = GetTickFrequency();
+		double tick_secs = 1.0 / GetTickFrequency();
+		double tick_ms = tick_secs * 1000;
+		double tick_ns = tick_secs * (1000 * 1000 * 1000);
 
 		printf("GS stats\n");
 
-		printf("      key      | frames | prims |       runtime      |          pixels\n");
-		printf("               |        |  #/f  |   pct   µs/f ns/px |    #/f   #/prim overdraw\n");
+		printf("       key       | frames | prims |       runtime       |          pixels\n");
+		printf("                 |        |  #/f  |   pct   ms/f  ns/px |    #/f   #/prim overdraw\n");
 
-		for (const auto& i : m_map_active)
+		std::vector<std::pair<KEY, ActivePtr*>> sorted(std::begin(m_map_active), std::end(m_map_active));
+		std::sort(std::begin(sorted), std::end(sorted), [](const auto& l, const auto& r){ return l.second->ticks > r.second->ticks; });
+
+		for (const auto& i : sorted)
 		{
 			KEY key = i.first;
 			ActivePtr* p = i.second;
 
-			if (p->frames && p->actual && ttpf)
+			if (p->frames && p->actual)
 			{
-				uint64 tpp = p->ticks  / p->actual;
-				uint64 tpf = p->ticks  / p->frames;
-				uint64 ppf = p->actual / p->frames;
+				uint64 tpf = p->ticks / p->frames;
 
-				printf("%014llx | %6llu | %5llu | %5.2f%% %6llu %4llu | %8llu %6llu %5.2f%%\n",
+				printf("%016llx | %6llu | %5llu | %5.2f%% %5.1f %6.1f | %8llu %6llu %5.2f%%\n",
 					(uint64)key,
 					p->frames,
 					p->prims / p->frames,
-					(float)(tpf * 10000 / ttpf) / 100,
-					(tpf * million) / tps,
-					(tpp * billion) / tps,
-					ppf,
-					p->actual / p->prims,
-					(float)((p->total - p->actual) * 10000 / p->total) / 100);
+					(double)(p->ticks * 100) / totalTicks,
+					tpf * tick_ms,
+					(p->ticks * tick_ns) / p->actual,
+					p->actual / p->frames,
+					p->actual / (p->prims ? p->prims : 1),
+					(double)((p->total - p->actual) * 100) / p->total);
 			}
 		}
 	}
