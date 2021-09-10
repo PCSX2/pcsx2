@@ -183,8 +183,7 @@ static void _vu0Exec(VURegs* VU)
 		{
 			VU->VI[REG_TPC].UL = VU->branchpc;
 
-			if (VU->blockhasmbit)
-				VU->blockhasmbit = false;
+			VU->blockhasmbit = false;
 
 			if(VU->takedelaybranch)
 			{
@@ -205,8 +204,7 @@ static void _vu0Exec(VURegs* VU)
 			VU0.VI[REG_VPU_STAT].UL&= ~0x1; /* E flag */
 			vif0Regs.stat.VEW = false;
 
-			if (VU->blockhasmbit)
-				VU->blockhasmbit = false;
+			VU->blockhasmbit = false;
 		}
 	}
 
@@ -267,12 +265,16 @@ void InterpVU0::Execute(u32 cycles)
 	VU0.flags &= ~VUFLAG_MFLAGSET;
 	u32 startcycles = VU0.cycle;
 	while((VU0.cycle - startcycles) < cycles) {
-		if (!(VU0.VI[REG_VPU_STAT].UL & 0x1) || (VU0.flags & VUFLAG_MFLAGSET)) {
-			if (VU0.branch || VU0.ebit) {
-				vu0Exec(&VU0); // run branch delay slot?
+		if (!(VU0.VI[REG_VPU_STAT].UL & 0x1)) {
+			// Branches advance the PC to the new location if there was a branch in the E-Bit delay slot
+			if (VU0.branch) {
+				VU0.VI[REG_TPC].UL = VU0.branchpc;
+				VU0.branch = 0;
 			}
 			break;
 		}
+		if (VU0.flags & VUFLAG_MFLAGSET)
+			break;
 		vu0Exec(&VU0);
 	}
 	VU0.VI[REG_TPC].UL >>= 3;

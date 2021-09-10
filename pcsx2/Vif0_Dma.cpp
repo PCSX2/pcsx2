@@ -157,7 +157,6 @@ __fi void vif0VUFinish()
 	if(vif0.waitforvu)
 	{
 		vif0.waitforvu = false;
-		ExecuteVU(0);
 		//Make sure VIF0 isnt already scheduled to spin.
 		if(!(cpuRegs.interrupt & 0x1) && vif0ch.chcr.STR && !vif0Regs.stat.test(VIF0_STAT_VSS | VIF0_STAT_VIS | VIF0_STAT_VFS))
 			vif0Interrupt();
@@ -179,6 +178,10 @@ __fi void vif0Interrupt()
 	{
 		CPU_INT(VIF_VU0_FINISH, 16);
 		return;
+	}
+	if (vif0Regs.stat.VGW)
+	{
+		DevCon.Warning("VIF0 waiting for path");
 	}
 
 	if (vif0.irq && vif0.vifstalled.enabled && vif0.vifstalled.value == VIF_IRQ_STALL)

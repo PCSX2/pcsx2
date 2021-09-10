@@ -252,27 +252,13 @@ __fi void vif1VUFinish()
 	vif1Regs.stat.VEW = false;
 	VIF_LOG("VU1 finished");
 
-	if( gifRegs.stat.APATH == 1 )
-	{
-		VIF_LOG("Clear APATH1");
-		gifRegs.stat.APATH = 0;
-		gifRegs.stat.OPH = 0;
-		vif1Regs.stat.VGW = false; //Let vif continue if it's stuck on a flush
-
-		if(!vif1.waitforvu) 
-		{
-			if(gifUnit.checkPaths(0,1,1)) gifUnit.Execute(false, true);
-		}
-
-	}
 	if(vif1.waitforvu)
 	{
 		vif1.waitforvu = false;
-		ExecuteVU(1);
 		//Check if VIF is already scheduled to interrupt, if it's waiting, kick it :P
-		if((cpuRegs.interrupt & ((1<<DMAC_VIF1) | (1 << DMAC_MFIFO_VIF))) == 0 && vif1ch.chcr.STR && !vif1Regs.stat.test(VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS))
+		if ((cpuRegs.interrupt & ((1 << DMAC_VIF1) | (1 << DMAC_MFIFO_VIF))) == 0 && vif1ch.chcr.STR && !vif1Regs.stat.test(VIF1_STAT_VSS | VIF1_STAT_VIS | VIF1_STAT_VFS))
 		{
-			if(dmacRegs.ctrl.MFD == MFD_VIF1)
+			if (dmacRegs.ctrl.MFD == MFD_VIF1)
 				vifMFIFOInterrupt();
 			else
 				vif1Interrupt();
@@ -330,6 +316,10 @@ __fi void vif1Interrupt()
 		CPU_INT(VIF_VU1_FINISH, 16);
 		return;
 	}
+	
+	if (vif1Regs.stat.VGW)
+		return;
+		
 	if (!vif1ch.chcr.STR) Console.WriteLn("Vif1 running when CHCR == %x", vif1ch.chcr._u32);
 
 	if (vif1.irq && vif1.vifstalled.enabled && vif1.vifstalled.value == VIF_IRQ_STALL)

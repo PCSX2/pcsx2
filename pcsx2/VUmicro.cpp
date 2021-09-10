@@ -35,12 +35,9 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 
 	if (!(stat & test))
 	{
-		if (m_Idx == 1)
+		if (m_Idx == 1 && VU1.xgkickenable)
 		{
-			if (VU1.xgkickenable && (cpuRegs.cycle - VU1.xgkicklastcycle) >= 2)
-			{
-				_vuXGKICKTransfer(&VU1, (cpuRegs.cycle - VU1.xgkicklastcycle), false);
-			}
+			_vuXGKICKTransfer(&VU1, (cpuRegs.cycle - VU1.xgkicklastcycle), false);
 		}
 		return;
 	}
@@ -63,7 +60,9 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 
 			u32 nextblockcycles = m_Idx ? VU1.nextBlockCycles : VU0.nextBlockCycles;
 
-			if((VU0.flags & VUFLAG_MFLAGSET) || VU0.blockhasmbit)
+			bool useNextBlocks = (VU0.flags & VUFLAG_MFLAGSET) || VU0.blockhasmbit || !EmuConfig.Cpu.Recompiler.EnableVU0;
+			
+			if(useNextBlocks)
 				cpuSetNextEventDelta(nextblockcycles);
 			else if(s)
 				cpuSetNextEventDelta(s);
@@ -86,7 +85,7 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 				Execute(delta);
 		}
 
-		if ((stat & test) && !EmuConfig.Gamefixes.VUKickstartHack)
+		if ((stat & test) && (!EmuConfig.Gamefixes.VUKickstartHack || (!m_Idx && !EmuConfig.Cpu.Recompiler.EnableVU0)))
 		{
 			// Queue up next required time to run a block
 			nextblockcycles = m_Idx ? VU1.nextBlockCycles : VU0.nextBlockCycles;
