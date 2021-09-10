@@ -33,14 +33,15 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 		return;
 	}
 
-	if (!(stat & test))
+	// VU currently flushes XGKICK on VU1 end so no need for this, yet
+	/*if (!(stat & test))
 	{
 		if (m_Idx == 1 && VU1.xgkickenable)
 		{
 			_vuXGKICKTransfer(&VU1, (cpuRegs.cycle - VU1.xgkicklastcycle), false);
 		}
 		return;
-	}
+	}*/
 
 	// You might be looking at this and thinking, what the hell is going on? What's with all these conditions?
 	// Well, basically M-Bit timed games are REALLY picky, so we need some extra checks in to make sure the VU
