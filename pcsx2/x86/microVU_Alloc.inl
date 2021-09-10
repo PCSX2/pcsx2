@@ -159,13 +159,11 @@ __ri void mVUallocVIb(mV, const x32& GPRreg, int _reg_)
 __fi void getPreg(mV, const xmm& reg)
 {
 	mVUunpack_xyzw(reg, xmmPQ, (2 + mVUinfo.readP));
-	/*if (CHECK_VU_EXTRA_OVERFLOW) mVUclamp2(reg, xmmT1, 15);*/
 }
 
 __fi void getQreg(const xmm& reg, int qInstance)
 {
 	mVUunpack_xyzw(reg, xmmPQ, qInstance);
-	/*if (CHECK_VU_EXTRA_OVERFLOW) mVUclamp2<vuIndex>(reg, xmmT1, 15);*/
 }
 
 __ri void writeQreg(const xmm& reg, int qInstance)

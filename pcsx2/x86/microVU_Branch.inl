@@ -45,8 +45,6 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit)
 
 	if (isEbit)
 	{
-		/*memzero(mVUinfo);
-		memzero(mVUregsTemp);*/
 		mVUincCycles(mVU, 100); // Ensures Valid P/Q instances (And sets all cycle data to 0)
 		mVUcycles -= 100;
 		qInst = mVU.q;

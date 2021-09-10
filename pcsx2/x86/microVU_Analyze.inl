@@ -574,59 +574,6 @@ static void analyzeBranchVI(mV, int xReg, bool& infoVar)
 	}
 }
 
-/*
-// Dead Code... the old version of analyzeBranchVI()
-__fi void analyzeBranchVI(mV, int xReg, bool& infoVar)
-{
-	if (!xReg)
-		return;
-	int i;
-	int iEnd = std::min(5, mVUcount + 1);
-	int bPC = iPC;
-	incPC2(-2);
-	for (i = 0; i < iEnd; i++)
-	{
-		if ((i == mVUcount) && (i < 5))
-		{
-			if (mVUpBlock->pState.viBackUp == xReg)
-			{
-				infoVar = 1;
-				i++;
-			}
-			break; 
-		}
-		if ((mVUlow.VI_write.reg == xReg) && mVUlow.VI_write.used)
-		{
-			if (mVUlow.readFlags || i == 5) break;
-			if (i == 0)
-			{
-				incPC2(-2);
-				continue;
-			}
-			if (((mVUlow.VI_read[0].reg == xReg) && (mVUlow.VI_read[0].used))
-			 || ((mVUlow.VI_read[1].reg == xReg) && (mVUlow.VI_read[1].used)))
-			{
-				incPC2(-2);
-				continue;
-			}
-		}
-		break;
-	}
-	if (i)
-	{
-		if (!infoVar)
-		{
-			incPC2(2);
-			mVUlow.backupVI = 1;
-			infoVar = 1;
-		}
-		iPC = bPC;
-		DevCon.WriteLn( Color_Green, "microVU%d: Branch VI-Delay (%d) [%04x]", getIndex, i, xPC);
-	}
-	else iPC = bPC;
-}
-*/
-
 // Branch in Branch Delay-Slots
 __ri int mVUbranchCheck(mV)
 {
@@ -715,7 +662,6 @@ __ri void mVUanalyzeJump(mV, int Is, int It, bool isJALR)
 	{
 		mVUlow.constJump.isValid  = 1;
 		mVUlow.constJump.regValue = mVUconstReg[Is].regValue;
-		//DevCon.Status("microVU%d: Constant JR/JALR Address Optimization", mVU.index);
 	}
 	analyzeVIreg1(mVU, Is, mVUlow.VI_read[0]);
 	if (isJALR)
