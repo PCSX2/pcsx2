@@ -293,7 +293,7 @@ void MainEmuFrame::ConnectMenus()
 
 	// Misc
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ShowConsole, this, MenuId_Console);
-#if defined(__unix__)
+#if defined(__POSIX__)
 	Bind(wxEVT_MENU, &MainEmuFrame::Menu_ShowConsole_Stdio, this, MenuId_Console_Stdio);
 #endif
 
@@ -475,7 +475,7 @@ void MainEmuFrame::CreateWindowsMenu()
 #endif
 
 	m_menuWindow.Append(&m_MenuItem_Console);
-#if defined(__unix__)
+#if defined(__POSIX__)
 	m_menuWindow.AppendSeparator();
 	m_menuWindow.Append(&m_MenuItem_Console_Stdio);
 #endif
@@ -574,7 +574,7 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	, m_GameSettingsSubmenu(*new wxMenu())
 
 	, m_MenuItem_Console(*new wxMenuItem(&m_menuWindow, MenuId_Console, _("&Show Program Log"), wxEmptyString, wxITEM_CHECK))
-#if defined(__unix__)
+#if defined(__POSIX__)
 	, m_MenuItem_Console_Stdio(*new wxMenuItem(&m_menuWindow, MenuId_Console_Stdio, _("&Program Log to Stdio"), wxEmptyString, wxITEM_CHECK))
 #endif
 
@@ -830,7 +830,7 @@ void MainEmuFrame::ApplyConfigToGui(AppConfig& configToApply, int flags)
 #endif
 		menubar.Check(MenuId_EnableHostFs, configToApply.EmuOptions.HostFs);
 		menubar.Check(MenuId_Debug_CreateBlockdump, configToApply.EmuOptions.CdvdDumpBlocks);
-#if defined(__unix__)
+#if defined(__POSIX__)
 		menubar.Check(MenuId_Console_Stdio, configToApply.EmuOptions.ConsoleToStdio);
 #endif
 
