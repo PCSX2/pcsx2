@@ -141,7 +141,7 @@ void GSRasterizer::Draw(GSRasterizerData* data)
 	m_pixels.total = 0;
 	m_primcount = 0;
 
-	data->start = GetCPUTicks();
+	data->start = __rdtsc();
 
 	m_ds->BeginDraw(data);
 
@@ -247,7 +247,7 @@ void GSRasterizer::Draw(GSRasterizerData* data)
 
 	data->pixels = m_pixels.actual;
 
-	uint64 ticks = GetCPUTicks() - data->start;
+	uint64 ticks = __rdtsc() - data->start;
 
 	m_pixels.sum += m_pixels.actual;
 

@@ -18,6 +18,7 @@
 #include "common/emitter/cpudetect_internal.h"
 #include "common/emitter/internal.h"
 #include "common/emitter/x86_intrin.h"
+#include <atomic>
 
 // CPU information support
 #if defined(_WIN32)
@@ -329,4 +330,18 @@ u32 x86capabilities::CalculateMHz() const
 		return (u32)(_CPUSpeedHz(span / 1000) / 1000);
 	else
 		return (u32)(_CPUSpeedHz(span / 500) / 2000);
+}
+
+u32 x86capabilities::CachedMHz()
+{
+	static std::atomic<u32> cached{0};
+	u32 local = cached.load(std::memory_order_relaxed);
+	if (unlikely(local == 0))
+	{
+		x86capabilities caps;
+		caps.Identify();
+		local = caps.CalculateMHz();
+		cached.store(local, std::memory_order_relaxed);
+	}
+	return local;
 }

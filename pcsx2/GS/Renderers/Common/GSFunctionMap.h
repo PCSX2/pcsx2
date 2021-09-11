@@ -19,7 +19,7 @@
 #include "GS/GSCodeBuffer.h"
 
 #include "GS/Renderers/SW/GSScanlineEnvironment.h"
-#include "common/General.h"
+#include "common/emitter/tools.h"
 
 #include <xbyak/xbyak_util.h>
 
@@ -109,9 +109,9 @@ public:
 			totalTicks += p->ticks;
 		}
 
-		double tick_secs = 1.0 / GetTickFrequency();
-		double tick_ms = tick_secs * 1000;
-		double tick_ns = tick_secs * (1000 * 1000 * 1000);
+		double tick_us = 1.0 / x86capabilities::CachedMHz();
+		double tick_ms = tick_us / 1000;
+		double tick_ns = tick_us * 1000;
 
 		printf("GS stats\n");
 

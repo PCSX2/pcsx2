@@ -116,6 +116,7 @@ public:
 	void CountCores();
 	wxString GetTypeName() const;
 
+	static u32 CachedMHz();
 	u32 CalculateMHz() const;
 
 	void SIMD_EstablishMXCSRmask();
