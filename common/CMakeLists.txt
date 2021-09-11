@@ -13,7 +13,6 @@ target_sources(common PRIVATE
 	VirtualMemory.cpp
 	EventSource.inl
 	SafeArray.inl
-	CheckedStaticBox.cpp
 	Console.cpp
 	EventSource.cpp
 	Exceptions.cpp
@@ -23,8 +22,6 @@ target_sources(common PRIVATE
 	PathUtils.cpp
 	PrecompiledHeader.cpp
 	Perf.cpp
-	pxCheckBox.cpp
-	pxRadioPanel.cpp
 	pxStaticText.cpp
 	pxStreams.cpp
 	pxTranslate.cpp
@@ -32,9 +29,7 @@ target_sources(common PRIVATE
 	RwMutex.cpp
 	Semaphore.cpp
 	StringHelpers.cpp
-	ThreadingDialogs.cpp
 	ThreadTools.cpp
-	wxAppWithHelpers.cpp
 	wxGuiTools.cpp
 	wxHelpers.cpp
 	emitter/bmi.cpp
@@ -64,7 +59,6 @@ target_sources(common PRIVATE
 target_sources(common PRIVATE
 	Assertions.h
 	boost_spsc_queue.hpp
-	CheckedStaticBox.h
 	Console.h
 	Dependencies.h
 	EventSource.h
@@ -75,9 +69,7 @@ target_sources(common PRIVATE
 	Path.h
 	PageFaultSource.h
 	PrecompiledHeader.h
-	pxCheckBox.h
 	pxForwardDefs.h
-	pxRadioPanel.h
 	pxStaticText.h
 	pxStreams.h
 	RedtapeWindows.h
@@ -87,9 +79,7 @@ target_sources(common PRIVATE
 	ScopedPtrMT.h
 	StringHelpers.h
 	Threading.h
-	ThreadingDialogs.h
 	TraceLog.h
-	wxAppWithHelpers.h
 	wxBaseTools.h
 	wxGuiTools.h
 	emitter/cpudetect_internal.h

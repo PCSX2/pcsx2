@@ -7,9 +7,6 @@
     <ClCompile Include="emitter\bmi.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="CheckedStaticBox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -70,12 +67,6 @@
     <ClCompile Include="PrecompiledHeader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pxCheckBox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pxRadioPanel.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="pxStaticText.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -100,9 +91,6 @@
     <ClCompile Include="StringHelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ThreadingDialogs.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="ThreadTools.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -119,9 +107,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Windows\WinThreads.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="wxAppWithHelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="wxGuiTools.cpp">
@@ -142,9 +127,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="boost_spsc_queue.hpp">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="CheckedStaticBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Console.h">
@@ -219,15 +201,6 @@
     <ClInclude Include="PrecompiledHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pxCheckBox.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pxEvents.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="pxRadioPanel.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="pxStaticText.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -274,9 +247,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="wxBaseTools.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wxAppWithHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="wxGuiTools.h">

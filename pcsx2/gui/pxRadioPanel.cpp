@@ -13,7 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
-#include "common/pxRadioPanel.h"
+#include "PrecompiledHeader.h"
+#include "gui/pxRadioPanel.h"
 #include "common/pxStaticText.h"
 #include "common/SafeArray.inl"
 

@@ -40,7 +40,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="AlignedMalloc.cpp" />
-    <ClCompile Include="CheckedStaticBox.cpp" />
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Exceptions.cpp" />
     <ClCompile Include="FastFormatString.cpp" />
@@ -48,7 +47,6 @@
     <ClCompile Include="pxStreams.cpp" />
     <ClCompile Include="pxTranslate.cpp" />
     <ClCompile Include="pxWindowTextWriter.cpp" />
-    <ClCompile Include="ThreadingDialogs.cpp" />
     <ClCompile Include="VirtualMemory.cpp" />
     <ClCompile Include="x86\MemcpyFast.cpp" />
     <ClCompile Include="PathUtils.cpp" />
@@ -56,11 +54,8 @@
     <ClCompile Include="PrecompiledHeader.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="pxCheckBox.cpp" />
-    <ClCompile Include="pxRadioPanel.cpp" />
     <ClCompile Include="pxStaticText.cpp" />
     <ClCompile Include="StringHelpers.cpp" />
-    <ClCompile Include="wxAppWithHelpers.cpp" />
     <ClCompile Include="wxGuiTools.cpp" />
     <ClCompile Include="wxHelpers.cpp" />
     <ClCompile Include="Linux\LnxHostSys.cpp" />
@@ -95,7 +90,6 @@
     <ClInclude Include="ScopedAlloc.h" />
     <ClInclude Include="ThreadingInternal.h" />
     <ClInclude Include="Assertions.h" />
-    <ClInclude Include="CheckedStaticBox.h" />
     <ClInclude Include="Console.h" />
     <ClInclude Include="Dependencies.h" />
     <ClInclude Include="EventSource.h" />
@@ -105,14 +99,10 @@
     <ClInclude Include="MemcpyFast.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="PrecompiledHeader.h" />
-    <ClInclude Include="pxCheckBox.h" />
-    <ClInclude Include="pxEvents.h" />
-    <ClInclude Include="pxRadioPanel.h" />
     <ClInclude Include="pxStaticText.h" />
     <ClInclude Include="RedtapeWindows.h" />
     <ClInclude Include="SafeArray.h" />
     <ClInclude Include="StringHelpers.h" />
-    <ClInclude Include="wxAppWithHelpers.h" />
     <ClInclude Include="wxBaseTools.h" />
     <ClInclude Include="wxGuiTools.h" />
     <ClInclude Include="Threading.h" />

@@ -20,10 +20,10 @@
 #include "common/PersistentThread.h"
 
 #include "common/wxGuiTools.h"
-#include "common/pxRadioPanel.h"
-#include "common/pxCheckBox.h"
+#include "gui/pxRadioPanel.h"
+#include "gui/pxCheckBox.h"
 #include "common/pxStaticText.h"
-#include "common/CheckedStaticBox.h"
+#include "gui/CheckedStaticBox.h"
 
 #include "AppForwardDefs.h"
 #include "AppConfig.h"

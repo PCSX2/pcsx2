@@ -15,8 +15,8 @@
 
 #pragma once
 
-#include "Threading.h"
-#include "wxAppWithHelpers.h"
+#include "common/Threading.h"
+#include "pcsx2/gui/wxAppWithHelpers.h"
 
 wxDECLARE_EVENT(pxEvt_ThreadedTaskComplete, wxCommandEvent);
 

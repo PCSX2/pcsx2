@@ -368,9 +368,9 @@
     <ClCompile Include="PrecompiledHeader.cpp">
       <Filter>Misc</Filter>
     </ClCompile>
-	<ClInclude Include="resource.h">
-	  <Filter>Misc</Filter>
-	</ClInclude>
+    <ClInclude Include="resource.h">
+      <Filter>Misc</Filter>
+    </ClInclude>
     <ClCompile Include="ShiftJisToUnicode.cpp">
       <Filter>Misc</Filter>
     </ClCompile>
@@ -1640,6 +1640,21 @@
     <ClCompile Include="GS\Window\GSWnd.cpp">
       <Filter>System\Ps2\GS\Window</Filter>
     </ClCompile>
+    <ClCompile Include="gui\wxAppWithHelpers.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\ThreadingDialogs.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\CheckedStaticBox.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\pxCheckBox.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\pxRadioPanel.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2564,8 +2579,8 @@
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
     <ClInclude Include="GS\resource.h">
-	  <Filter>System\Ps2\GS</Filter>
-	</ClInclude>
+      <Filter>System\Ps2\GS</Filter>
+    </ClInclude>
     <ClInclude Include="GS.h">
       <Filter>System\Ps2</Filter>
     </ClInclude>
@@ -2712,6 +2727,24 @@
     </ClInclude>
     <ClInclude Include="GS\Window\GSWnd.h">
       <Filter>System\Ps2\GS\Window</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\wxAppWithHelpers.h">
+      <Filter>AppHost</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\ThreadingDialogs.h">
+      <Filter>AppHost</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\CheckedStaticBox.h">
+      <Filter>AppHost</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\pxCheckBox.h">
+      <Filter>AppHost</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\pxRadioPanel.h">
+      <Filter>AppHost</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\pxEvents.h">
+      <Filter>AppHost</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
