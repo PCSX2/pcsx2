@@ -24,9 +24,6 @@
 
 #include "common/Pcsx2Types.h"
 
-#define NELEM(x) \
-	((sizeof(x) / sizeof(0 [x])) / ((size_t)(!(sizeof(x) % sizeof(0 [x])))))
-
 // Darwin (OSX) is a bit different from Linux when requesting properties of
 // the OS because of its BSD/Mach heritage. Helpfully, most of this code
 // should translate pretty well to other *BSD systems. (e.g.: the sysctl(3)
@@ -39,29 +36,22 @@
 // failure (not supported by the operating system).
 u64 GetPhysicalMemory()
 {
-	static u64 mem = 0;
-
-	// fetch the total memory only once, as its an expensive system call and
-	// doesn't change during the course of the program. Thread-safety is
-	// ensured by atomic operations with full-barriers (usually compiled
-	// down to XCHG on x86).
-	if (__atomic_load_n(&mem, __ATOMIC_SEQ_CST) == 0)
-	{
-		u64 getmem = 0;
-		size_t len = sizeof(getmem);
-		int mib[] = {CTL_HW, HW_MEMSIZE};
-		if (sysctl(mib, NELEM(mib), &getmem, &len, NULL, 0) < 0)
-		{
-			perror("sysctl:");
-		}
-		__atomic_store_n(&mem, getmem, __ATOMIC_SEQ_CST);
-	}
-
-	return mem;
+	u64 getmem = 0;
+	size_t len = sizeof(getmem);
+	int mib[] = {CTL_HW, HW_MEMSIZE};
+	if (sysctl(mib, std::size(mib), &getmem, &len, NULL, 0) < 0)
+		perror("sysctl:");
+	return getmem;
 }
+
+static u64 tickfreq;
 
 void InitCPUTicks()
 {
+	mach_timebase_info_data_t info;
+	if (mach_timebase_info(&info) != KERN_SUCCESS)
+		abort();
+	tickfreq = (u64)1e9 * (u64)info.denom / (u64)info.numer;
 }
 
 // returns the performance-counter frequency: ticks per second (Hz)
@@ -74,28 +64,7 @@ void InitCPUTicks()
 // GetTickFrequency() to maintain good precision.
 u64 GetTickFrequency()
 {
-	static u64 freq = 0;
-
-	// by the time denom is not 0, the structure will have been fully
-	// updated and no more atomic accesses are necessary.
-	if (__atomic_load_n(&freq, __ATOMIC_SEQ_CST) == 0)
-	{
-		mach_timebase_info_data_t info;
-
-		// mach_timebase_info() is a syscall, very slow, that's why we take
-		// pains to only do it once. On x86(-64), the result is guaranteed
-		// to be info.denom == info.numer == 1 (i.e.: the frequency is 1e9,
-		// which means GetCPUTicks is just nanoseconds).
-		if (mach_timebase_info(&info) != KERN_SUCCESS)
-		{
-			abort();
-		}
-
-		// store the calculated value atomically
-		__atomic_store_n(&freq, (u64)1e9 * (u64)info.denom / (u64)info.numer, __ATOMIC_SEQ_CST);
-	}
-
-	return freq;
+	return tickfreq;
 }
 
 // return the number of "ticks" since some arbitrary, fixed time in the
@@ -107,48 +76,21 @@ u64 GetCPUTicks()
 	return mach_absolute_time();
 }
 
+static std::string sysctl_str(int category, int name)
+{
+	char buf[32];
+	size_t len = sizeof(buf);
+	int mib[] = {category, name};
+	sysctl(mib, std::size(mib), buf, &len, nullptr, 0);
+	return std::string(buf, len > 0 ? len - 1 : 0);
+}
+
 wxString GetOSVersionString()
 {
-	wxString version;
-	static int initialized = 0;
-
-	// fetch the OS description only once (thread-safely)
-	if (__atomic_load_n(&initialized, __ATOMIC_SEQ_CST) == 0)
-	{
-		char type[32] = {0};
-		char release[32] = {0};
-		char arch[32] = {0};
-
-#define SYSCTL_GET(var, base, name) \
-	do \
-	{ \
-		int mib[] = {base, name}; \
-		size_t len = sizeof(var); \
-		sysctl(mib, NELEM(mib), NULL, &len, NULL, 0); \
-		sysctl(mib, NELEM(mib), var, &len, NULL, 0); \
-	} while (0)
-
-		SYSCTL_GET(release, CTL_KERN, KERN_OSRELEASE);
-		SYSCTL_GET(type, CTL_KERN, KERN_OSTYPE);
-		SYSCTL_GET(arch, CTL_HW, HW_MACHINE);
-
-#undef SYSCTL_KERN
-
-		// I know strcat is not good, but stpcpy is not universally
-		// available yet.
-		char buf[128] = {0};
-		strcat(buf, type);
-		strcat(buf, " ");
-		strcat(buf, release);
-		strcat(buf, " ");
-		strcat(buf, arch);
-
-		version = buf;
-
-		__atomic_store_n(&initialized, 1, __ATOMIC_SEQ_CST);
-	}
-
-	return version;
+	std::string type    = sysctl_str(CTL_KERN, KERN_OSTYPE);
+	std::string release = sysctl_str(CTL_KERN, KERN_OSRELEASE);
+	std::string arch    = sysctl_str(CTL_HW, HW_MACHINE);
+	return type + " " + release + " " + arch;
 }
 
 void ScreensaverAllow(bool allow)
