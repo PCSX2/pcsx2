@@ -234,7 +234,7 @@ public:
 
 extern IConsoleWriter Console;
 
-#if defined(__unix__) || defined(__APPLE__)
+#if defined(__POSIX__)
 extern void Console_SetStdout(FILE* fp);
 #endif
 extern void Console_SetActiveHandler(const IConsoleWriter& writer, FILE* flushfp = NULL);

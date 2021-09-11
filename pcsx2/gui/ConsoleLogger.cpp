@@ -1071,11 +1071,11 @@ void Pcsx2App::ProgramLog_PostEvent( wxEvent& evt )
 
 static void __concall ConsoleToFile_Newline()
 {
-#if defined(__unix__)
+#if defined(__POSIX__)
 	if ((g_Conf) && (g_Conf->EmuOptions.ConsoleToStdio)) ConsoleWriter_Stdout.Newline();
 #endif
 
-#if defined(__unix__)
+#if defined(__POSIX__)
 	fputc( '\n', emuLog );
 #else
 	fputs( "\r\n", emuLog );
@@ -1084,7 +1084,7 @@ static void __concall ConsoleToFile_Newline()
 
 static void __concall ConsoleToFile_DoWrite( const wxString& fmt )
 {
-#if defined(__unix__)
+#if defined(__POSIX__)
 	if ((g_Conf) && (g_Conf->EmuOptions.ConsoleToStdio)) ConsoleWriter_Stdout.WriteRaw(fmt);
 #endif
 
