@@ -7434,13 +7434,73 @@ SLES-50263:
 SLES-50264:
   name: "Playmobil - Hype - The Time Quest"
   region: "PAL-F"
+  patches:
+    B911D61B:
+      content: |-
+        // patches __kernel_cosf function to show text and boxes
+        // due to the rounding being slightly off.
+        // It looks worse than it is, it's just moving a block down
+        // so I can fit in an extra instruction
+        author=Refraction
+        patch=1,EE,0011ede8,word,34210001
+        patch=1,EE,0011edec,word,44811800
+        patch=1,EE,0011edf0,word,46003002
+        patch=1,EE,0011edf4,word,46020841
+        patch=1,EE,0011edf8,word,46010001
+        patch=1,EE,0011edfc,word,03e00008
+        patch=1,EE,0011ee00,word,46001801
+        patch=1,EE,0011ee04,word,3c023f48
+        patch=1,EE,0011ee08,word,0044102a
+        patch=1,EE,0011ee0c,word,10400003
+        patch=1,EE,0011ee10,word,3c02ff00
+        patch=1,EE,0011ee18,word,3c023e90
 SLES-50265:
   name: "Playmobil - Hype - The Time Quest"
   region: "PAL-G"
+  patches:
+    3D2A2448:
+      content: |-
+        // patches __kernel_cosf function to show text and boxes
+        // due to the rounding being slightly off.
+        // It looks worse than it is, it's just moving a block down
+        // so I can fit in an extra instruction
+        author=Refraction
+        patch=1,EE,0011ede8,word,34210001
+        patch=1,EE,0011edec,word,44811800
+        patch=1,EE,0011edf0,word,46003002
+        patch=1,EE,0011edf4,word,46020841
+        patch=1,EE,0011edf8,word,46010001
+        patch=1,EE,0011edfc,word,03e00008
+        patch=1,EE,0011ee00,word,46001801
+        patch=1,EE,0011ee04,word,3c023f48
+        patch=1,EE,0011ee08,word,0044102a
+        patch=1,EE,0011ee0c,word,10400003
+        patch=1,EE,0011ee10,word,3c02ff00
+        patch=1,EE,0011ee18,word,3c023e90
 SLES-50266:
   name: "Playmobil - Hype - The Time Quest"
   region: "PAL-M4"
   compat: 4
+  patches:
+    F668693E:
+      content: |-
+        // patches __kernel_cosf function to show text and boxes
+        // due to the rounding being slightly off.
+        // It looks worse than it is, it's just moving a block down
+        // so I can fit in an extra instruction
+        author=Refraction
+        patch=1,EE,0011ede8,word,34210001
+        patch=1,EE,0011edec,word,44811800
+        patch=1,EE,0011edf0,word,46003002
+        patch=1,EE,0011edf4,word,46020841
+        patch=1,EE,0011edf8,word,46010001
+        patch=1,EE,0011edfc,word,03e00008
+        patch=1,EE,0011ee00,word,46001801
+        patch=1,EE,0011ee04,word,3c023f48
+        patch=1,EE,0011ee08,word,0044102a
+        patch=1,EE,0011ee0c,word,10400003
+        patch=1,EE,0011ee10,word,3c02ff00
+        patch=1,EE,0011ee18,word,3c023e90
 SLES-50267:
   name: "CART Fury Championship Racing"
   region: "PAL-M5"
