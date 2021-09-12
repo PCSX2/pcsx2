@@ -449,18 +449,19 @@ __fi void _vuBackupVI(VURegs* VU, int reg)
 #ifndef INT_VUDOUBLEHACK
 static float __fastcall vuDouble(u32 f)
 {
-	switch(f & 0x7f800000)
+	switch (f & 0x7f800000)
 	{
 		case 0x0:
 			f &= 0x80000000;
 			return *(float*)&f;
 			break;
 		case 0x7f800000:
-		{
-			u32 d = (f & 0x80000000)|0x7f7fffff;
-			return *(float*)&d;
+			if (CHECK_VU_OVERFLOW)
+			{
+				u32 d = (f & 0x80000000) | 0x7f7fffff;
+				return *(float*)&d;
+			}
 			break;
-		}
 	}
 	return *(float*)&f;
 }
