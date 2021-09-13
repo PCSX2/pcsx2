@@ -38,7 +38,7 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 	{
 		if (m_Idx == 1 && VU1.xgkickenable)
 		{
-			_vuXGKICKTransfer(&VU1, (cpuRegs.cycle - VU1.xgkicklastcycle), false);
+			_vuXGKICKTransfer((cpuRegs.cycle - VU1.xgkicklastcycle), false);
 		}
 		return;
 	}*/

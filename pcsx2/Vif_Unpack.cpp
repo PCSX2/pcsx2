@@ -211,8 +211,8 @@ _vifT void vifUnpackSetup(const u32 *data) {
 	/*if (idx == 1 && VU1.xgkickenable && !(VU0.VI[REG_TPC].UL & 0x100))
 	{
 		// Catch up first, then the unpack cycles
-		_vuXGKICKTransfer(&VU1, cpuRegs.cycle - VU1.xgkicklastcycle, false);
-		_vuXGKICKTransfer(&VU1, vifNum * 2, false);
+		_vuXGKICKTransfer(cpuRegs.cycle - VU1.xgkicklastcycle, false);
+		_vuXGKICKTransfer(vifNum * 2, false);
 	}*/
 
 	// Traditional-style way of calculating the gsize, based on VN/VL parameters.

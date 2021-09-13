@@ -209,7 +209,7 @@ static void _vu1Exec(VURegs* VU)
 			vif1Regs.stat.VEW = false;
 
 			if(VU1.xgkickenable)
-				_vuXGKICKTransfer(VU, 0, true);
+				_vuXGKICKTransfer(0, true);
 			// In instant VU mode, VU1 goes WAY ahead of the CPU, making the XGKick fall way behind
 			// We also have some code to update it in VIF Unpacks too, since in some games (Aggressive Inline) overwrite the XGKick data
 			// VU currently flushes XGKICK on end, so this isn't needed, yet
