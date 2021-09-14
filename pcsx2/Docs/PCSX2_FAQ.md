@@ -79,10 +79,14 @@ The PlayStation 2 is a complex console, and this complexity substantially raises
 ### Where do I get a PS2 BIOS?
 You have to dump the BIOS files from your PlayStation 2 console. There is a BIOS dumper tool [available on the PCSX2 website](https://pcsx2.net/download/releases/tools.html) to do this. If you need a guide, check the bottom of this FAQ for links to BIOS guides.
 
+ If you cannot do that,you can try to find bios on website,however PCSX2 considers it illegal.
+
 <div class="page"/> <!-- Because PDFs are terrible -->
 
 ### Where do I get PS2 games?
 You can use games from your personal collection of discs, purchase them from local stores that resell old games, or look online at sites like eBay or Amazon.
+
+You may also try to find games from an rom site,although it is illegal due to copyright reasons.
 
 ### Can I use PS2 discs directly with PCSX2?
 Yes. However, some games have speed problems, because unlike the PS2 which would constantly keep the disc spinning, PCSX2 will not do the same to your PC's disc drive. It is recommended to instead dump your games to ISO images. ImgBurn is a popular software to do this with, and we recommend [installing ImgBurn by using Ninite](https://ninite.com) to avoid any issues with the ImgBurn installer.
