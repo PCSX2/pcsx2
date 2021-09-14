@@ -11417,6 +11417,8 @@ SLES-52392:
 SLES-52393:
   name: "Pinball Fun"
   region: "PAL-E"
+  gameFixes:
+    - XGKickHack # Fixes SPS and console spam (The Tennis).
 SLES-52394:
   name: "UFEA Euro 2004"
   region: "PAL-E"
@@ -19798,6 +19800,8 @@ SLPM-62218:
 SLPM-62219:
   name: "Simple 2000 Series Vol.08 - The Tennis"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes SPS and console spam.
 SLPM-62221:
   name: "Winning Post 5 - Max 2002"
   region: "NTSC-J"
@@ -19866,6 +19870,8 @@ SLPM-62247:
 SLPM-62248:
   name: "Simple 2000 Series Vol.05 - The Love Mahjong"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes SPS.
 SLPM-62249:
   name: "Hello Kitty Star Light - Isogasi Cube"
   region: "NTSC-J"
@@ -20009,8 +20015,10 @@ SLPM-62305:
   name: "Othello [SuperLite 2000]"
   region: "NTSC-J"
 SLPM-62307:
-  name: "Simple 2000 Series Vol.26 - The Paintball X 3"
+  name: "Simple 2000 Series Vol.26 - The Pinball X 3"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes SPS and console spam.
 SLPM-62308:
   name: "Simple 2000 Series Vol.24 - The Bowling"
   region: "NTSC-J"
@@ -20884,6 +20892,8 @@ SLPM-62635:
 SLPM-62636:
   name: "Simple 2000 Series 2-in-1 Vol.1 - The Tennis & The Snowboard [Disc1of2]"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes SPS and console spam (The Tennis).
 SLPM-62637:
   name: "Simple 2000 Series 2-in-1 Vol.1 - The Tennis & The Snowboard [Disc2of2]"
   region: "NTSC-J"
@@ -22433,6 +22443,8 @@ SLPM-65393:
 SLPM-65394:
   name: "Love Smash! 5"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes bad Geometry.
 SLPM-65395:
   name: "Digi-Charat Fantasy"
   region: "NTSC-J"
@@ -28626,6 +28638,8 @@ SLPS-20453:
   name: "Simple 2000 Series Ultimate Vol.29 - K-1 Premium 2005 Dynamite!!"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - XGKickHack # Fixes black and white fighters.
 SLPS-20454:
   name: "Simple 2000 Series Vol.93 - The Right Brain Drill"
   region: "NTSC-J"
