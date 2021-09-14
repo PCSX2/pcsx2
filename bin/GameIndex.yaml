@@ -12777,9 +12777,13 @@ SLES-53046:
 SLES-53047:
   name: "Punisher, The"
   region: "PAL-E-F"
+  gameFixes:
+    - VUKickstartHack # Fixes Character SPS and Flying Characters.
 SLES-53049:
   name: "Punisher, The"
   region: "PAL-I-S"
+  gameFixes:
+    - VUKickstartHack # Fixes Character SPS and Flying Characters.
 SLES-53052:
   name: "Robots"
   region: "PAL-M5"
@@ -13043,6 +13047,8 @@ SLES-53194:
 SLES-53195:
   name: "Punisher, The"
   region: "PAL-E"
+  gameFixes:
+    - VUKickstartHack # Fixes Character SPS and Flying Characters.
 SLES-53196:
   name: "Destroy All Humans!"
   region: "PAL-M4"
@@ -13063,6 +13069,8 @@ SLES-53201:
 SLES-53203:
   name: "Punisher, The"
   region: "PAL-R"
+  gameFixes:
+    - VUKickstartHack # Fixes Character SPS and Flying Characters.
 SLES-53218:
   name: "Dancing Stage MAX"
   region: "PAL-M5"
@@ -35596,6 +35604,8 @@ SLUS-20864:
   name: "Punisher, The"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - VUKickstartHack # Fixes Character SPS and Flying Characters.
 SLUS-20865:
   name: "Backyard Baseball"
   region: "NTSC-U"
@@ -40696,6 +40706,8 @@ SLUS-29137:
 SLUS-29138:
   name: "Punisher, The [Demo]"
   region: "NTSC-U"
+  gameFixes:
+    - VUKickstartHack # Fixes Character SPS and Flying Characters.
 SLUS-29139:
   name: "Shadow of Rome [Demo]"
   region: "NTSC-U"
