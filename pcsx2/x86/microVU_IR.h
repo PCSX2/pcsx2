@@ -49,11 +49,12 @@ union __aligned16 microRegInfo
 				u8 viBackUp;       // VI reg number that was written to on branch-delay slot
 				u8 blockType;      // 0 = Normal; 1,2 = Compile one instruction (E-bit/Branch Ending)
 				u8 r;
-				u8 mbitinblock;
 			};
-			u32 quick32[3];
+			u32 quick32[4];
 		};
 
+		u32 xgkickcycles;
+		u8 mbitinblock;
 		u8 vi15v; // 'vi15' constant is valid
 		u16 vi15; // Constant Prop Info for vi15
 
@@ -64,12 +65,12 @@ union __aligned16 microRegInfo
 		};
 	};
 
-	u128 full128[160 / sizeof(u128)];
-	u64  full64[160 / sizeof(u64)];
-	u32  full32[160 / sizeof(u32)];
+	u128 full128[176 / sizeof(u128)];
+	u64  full64[176 / sizeof(u64)];
+	u32  full32[176 / sizeof(u32)];
 };
 
-static_assert(sizeof(microRegInfo) == 160, "microRegInfo was not 160 bytes");
+static_assert(sizeof(microRegInfo) == 176, "microRegInfo was not 176 bytes");
 
 struct microProgram;
 struct microJumpCache
@@ -139,6 +140,7 @@ struct microLowerOp
 	microVIreg VI_read[2];    // VI regs read by this instruction
 	microConstInfo constJump; // Constant Reg Info for JR/JARL instructions
 	u32  branch;     // Branch Type (0 = Not a Branch, 1 = B. 2 = BAL, 3~8 = Conditional Branches, 9 = JR, 10 = JALR)
+	u32  kickcycles; // Number of xgkick cycles accumulated by this instruction
 	bool badBranch;  // This instruction is a Branch who has another branch in its Delay Slot
 	bool evilBranch; // This instruction is a Branch in a Branch Delay Slot (Instruction after badBranch)
 	bool isNOP;      // This instruction is a NOP
@@ -148,6 +150,8 @@ struct microLowerOp
 	bool memReadIs;  // Read Is (VI reg) from memory (used by branches)
 	bool memReadIt;  // Read If (VI reg) from memory (used by branches)
 	bool readFlags;  // Current Instruction reads Status, Mac, or Clip flags
+	bool isMemWrite; // Current Instruction writes to VU memory
+	bool isKick;     // Op is a kick so don't count kick cycles
 };
 
 struct microFlagInst
@@ -312,6 +316,14 @@ public:
 					mVUsaveReg(xmm(i), ptr[&getVF(mapX.VFreg)], mapX.xyzw, 1);
 			}
 		}
+	}
+
+	bool checkCachedReg(int regId)
+	{
+		if (regId < xmmTotal)
+			return xmmMap[regId].VFreg >= 0;
+		else
+			return false;
 	}
 
 	void clearReg(const xmm& reg) { clearReg(reg.Id); }

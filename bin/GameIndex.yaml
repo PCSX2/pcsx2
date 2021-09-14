@@ -10449,6 +10449,8 @@ SLES-51860:
   name: "Tennis Court Smash"
   region: "PAL-E"
   compat: 3
+  gameFixes:
+    - XGKickHack # Fixes bad Geometry.
 SLES-51861:
   name: "Bowling Xciting"
   region: "PAL-E"
@@ -20875,6 +20877,8 @@ SLPM-62634:
 SLPM-62635:
   name: "Simple 2000 Series Vol.26 - The Love Smash! 5.1"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes bad Geometry.
 SLPM-62636:
   name: "Simple 2000 Series 2-in-1 Vol.1 - The Tennis & The Snowboard [Disc1of2]"
   region: "NTSC-J"
@@ -33881,18 +33885,7 @@ SLUS-20419:
   roundModes:
     eeRoundMode: 0  # Fixes crash when using the Subaru.
   gameFixes:
-    - XGKickHack # Fixes SPS while ingame (with following patch)
-  patches:
-    5838E074:
-      content: |-
-        author=kozarovv
-        // Rearrange XGKick timing to fix SPS
-        patch=1,EE,0020efa0,word,8000033c
-        patch=1,EE,0020efd8,word,80004efc
-        patch=1,EE,0020f040,word,8000033c
-        patch=1,EE,0020f0b0,word,80004efc
-        patch=1,EE,0020f118,word,8000033c
-        patch=1,EE,0020f188,word,80004efc     
+    - XGKickHack # Fixes SPS while ingame     
 SLUS-20420:
   name: "Star Wars - Bounty Hunter"
   region: "NTSC-U"

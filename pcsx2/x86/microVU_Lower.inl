@@ -1148,6 +1148,7 @@ mVUop(mVU_ISW)
 {
 	pass1
 	{
+		mVUlow.isMemWrite = true;
 		analyzeVIreg1(mVU, _Is_, mVUlow.VI_read[0]);
 		analyzeVIreg1(mVU, _It_, mVUlow.VI_read[1]);
 	}
@@ -1173,6 +1174,7 @@ mVUop(mVU_ISWR)
 {
 	pass1
 	{
+		mVUlow.isMemWrite = true;
 		analyzeVIreg1(mVU, _Is_, mVUlow.VI_read[0]);
 		analyzeVIreg1(mVU, _It_, mVUlow.VI_read[1]);
 	}
@@ -1544,7 +1546,7 @@ void __fastcall mVU_XGKICK_(u32 addr)
 {
 	addr = (addr & 0x3ff) * 16;
 	u32 diff = 0x4000 - addr;
-	u32 size = gifUnit.GetGSPacketSize(GIF_PATH_1, vuRegs[1].Mem, addr);
+	u32 size = gifUnit.GetGSPacketSize(GIF_PATH_1, vuRegs[1].Mem, addr, ~0u, true);
 
 	if (size > diff)
 	{
@@ -1556,6 +1558,92 @@ void __fastcall mVU_XGKICK_(u32 addr)
 	{
 		gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &vuRegs[1].Mem[addr], size, true);
 	}
+}
+
+void __fastcall _vuXGKICKTransfermVU(bool flush)
+{
+	while (VU1.xgkickenable && (flush || VU1.xgkickcyclecount >= 2))
+	{
+		u32 transfersize = 0;
+
+		if (VU1.xgkicksizeremaining == 0)
+		{
+			//VUM_LOG("XGKICK reading new tag from %x", VU1.xgkickaddr);
+			u32 size = gifUnit.GetGSPacketSize(GIF_PATH_1, vuRegs[1].Mem, VU1.xgkickaddr, ~0u, flush);
+			VU1.xgkicksizeremaining = size & 0xFFFF;
+			VU1.xgkickendpacket = size >> 31;
+			VU1.xgkickdiff = 0x4000 - VU1.xgkickaddr;
+
+			if (VU1.xgkicksizeremaining == 0)
+			{
+				//VUM_LOG("Invalid GS packet size returned, cancelling XGKick");
+				VU1.xgkickenable = false;
+				break;
+			}
+			//else
+				//VUM_LOG("XGKICK New tag size %d bytes EOP %d", VU1.xgkicksizeremaining, VU1.xgkickendpacket);
+		}
+
+		if (!flush)
+		{
+			transfersize = std::min(VU1.xgkicksizeremaining, VU1.xgkickcyclecount * 8);
+			transfersize = std::min(transfersize, VU1.xgkickdiff);
+		}
+		else
+		{
+			transfersize = VU1.xgkicksizeremaining;
+			transfersize = std::min(transfersize, VU1.xgkickdiff);
+		}
+
+		//VUM_LOG("XGKICK Transferring %x bytes from %x size %x", transfersize * 0x10, VU1.xgkickaddr, VU1.xgkicksizeremaining);
+
+		// Would be "nicer" to do the copy until it's all up, however this really screws up PATH3 masking stuff
+		// So lets just do it the other way :)
+		if (THREAD_VU1)
+		{
+			if (transfersize < VU1.xgkicksizeremaining)
+				gifUnit.gifPath[GIF_PATH_1].CopyGSPacketData(&VU1.Mem[VU1.xgkickaddr], transfersize, true);
+			else
+				gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &vuRegs[1].Mem[VU1.xgkickaddr], transfersize, true);
+		}
+		else
+		{
+			gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &vuRegs[1].Mem[VU1.xgkickaddr], transfersize, true);
+		}
+
+		if (flush)
+			VU1.cycle += transfersize / 8;
+
+		VU1.xgkickcyclecount -= transfersize / 8;
+
+		VU1.xgkickaddr = (VU1.xgkickaddr + transfersize) & 0x3FFF;
+		VU1.xgkicksizeremaining -= transfersize;
+		VU1.xgkickdiff = 0x4000 - VU1.xgkickaddr;
+
+		if (VU1.xgkickendpacket && !VU1.xgkicksizeremaining)
+		//	VUM_LOG("XGKICK next addr %x left size %x", VU1.xgkickaddr, VU1.xgkicksizeremaining);
+		//else
+		{
+			//VUM_LOG("XGKICK transfer finished");
+			VU1.xgkickenable = false;
+			// Check if VIF is waiting for the GIF to not be busy
+		}
+	}
+	//VUM_LOG("XGKick run complete Enabled %d", VU1.xgkickenable);
+}
+
+static __fi void mVU_XGKICK_SYNC(mV, bool flush)
+{
+	xTEST(ptr32[&VU1.xgkickenable], 0x1);
+	xForwardJZ32 skipxgkick;
+	xADD(ptr32[&VU1.xgkickcyclecount], mVUlow.kickcycles);
+	xCMP(ptr32[&VU1.xgkickcyclecount], 2);
+	xForwardJL32 needcycles;
+	mVUbackupRegs(mVU, true, true);
+	xFastCall(_vuXGKICKTransfermVU, flush);
+	mVUrestoreRegs(mVU, true, true);
+	needcycles.SetTarget();
+	skipxgkick.SetTarget();
 }
 
 static __fi void mVU_XGKICK_DELAY(mV)
@@ -1579,18 +1667,42 @@ mVUop(mVU_XGKICK)
 			mVUlow.isNOP = true;
 			return;
 		}
-		mVUanalyzeXGkick(mVU, _Is_, mVU_XGKICK_CYCLES);
+		mVUanalyzeXGkick(mVU, _Is_, 1);
 	}
-	pass2
+		pass2
 	{
+		if (CHECK_XGKICKHACK)
+		{
+			mVUlow.kickcycles = 99;
+			mVU_XGKICK_SYNC(mVU, true);
+			mVUlow.kickcycles = 0;
+		}
 		if (mVUinfo.doXGKICK) // check for XGkick Transfer
 		{
 			mVU_XGKICK_DELAY(mVU);
 			mVUinfo.doXGKICK = false;
 		}
-
-		mVUallocVIa(mVU, gprT1, _Is_);
-		xMOV(ptr32[&mVU.VIxgkick], gprT1);
+		
+		if (!CHECK_XGKICKHACK)
+		{
+			mVUallocVIa(mVU, gprT1, _Is_);
+			xMOV(ptr32[&mVU.VIxgkick], gprT1);
+		}
+		else
+		{
+			xMOV(ptr32[&VU1.xgkickenable], 1);
+			xMOV(ptr32[&VU1.xgkickendpacket], 0);
+			xMOV(ptr32[&VU1.xgkicksizeremaining], 0);
+			xMOV(ptr32[&VU1.xgkickcyclecount], 0);
+			xMOV(gprT2, ptr32[&mVU.totalCycles]);
+			xSUB(gprT2, ptr32[&mVU.cycles]);
+			xADD(gprT2, ptr32[&VU1.cycle]);
+			xMOV(ptr32[&VU1.xgkicklastcycle], gprT2);
+			mVUallocVIa(mVU, gprT1, _Is_);
+			xAND(gprT1, 0x3FF);
+			xSHL(gprT1, 4);
+			xMOV(ptr32[&VU1.xgkickaddr], gprT1);
+		}
 		mVU.profiler.EmitOp(opXGKICK);
 	}
 	pass3 { mVUlog("XGKICK vi%02d", _Fs_); }

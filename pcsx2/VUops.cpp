@@ -2625,7 +2625,8 @@ void _vuXGKICKTransfer(u32 cycles, bool flush)
 
 	VU1.xgkickcyclecount += cycles;
 	VU1.xgkicklastcycle += cycles;
-	VUM_LOG("Adding %d cycles, total XGKick cycles to run now %d", cycles, VU1.xgkickcyclecount);
+
+	VUM_LOG("Adding %d cycles, total XGKick cycles to run now %d flush %d enabled %d", cycles, VU1.xgkickcyclecount, flush, VU1.xgkickenable);
 
 	while (VU1.xgkickenable && (flush || VU1.xgkickcyclecount >= 2))
 	{
@@ -2633,7 +2634,8 @@ void _vuXGKICKTransfer(u32 cycles, bool flush)
 
 		if (VU1.xgkicksizeremaining == 0)
 		{
-			u32 size = gifUnit.GetGSPacketSize(GIF_PATH_1, VU1.Mem, VU1.xgkickaddr);
+			VUM_LOG("XGKICK reading new tag from %x", VU1.xgkickaddr);
+			u32 size = gifUnit.GetGSPacketSize(GIF_PATH_1, vuRegs[1].Mem, VU1.xgkickaddr, ~0u, flush);
 			VU1.xgkicksizeremaining = size & 0xFFFF;
 			VU1.xgkickendpacket = size >> 31;
 			VU1.xgkickdiff = 0x4000 - VU1.xgkickaddr;
@@ -2663,10 +2665,17 @@ void _vuXGKICKTransfer(u32 cycles, bool flush)
 
 		// Would be "nicer" to do the copy until it's all up, however this really screws up PATH3 masking stuff
 		// So lets just do it the other way :)
-		/*if ((transfersize * 0x10) < VU1.xgkicksizeremaining)
-			gifUnit.gifPath[GIF_PATH_1].CopyGSPacketData(&VU1.Mem[VU1.xgkickaddr], transfersize * 0x10, true);
+		/*if (THREAD_VU1)
+		{
+			if ((transfersize * 0x10) < VU1.xgkicksizeremaining)
+				gifUnit.gifPath[GIF_PATH_1].CopyGSPacketData(&VU1.Mem[VU1.xgkickaddr], transfersize * 0x10, true);
+			else
+				gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &vuRegs[1].Mem[VU1.xgkickaddr], transfersize * 0x10, true);
+		}
 		else*/
-		gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &VU1.Mem[VU1.xgkickaddr], transfersize * 0x10, true);
+		//{
+			gifUnit.TransferGSPacketData(GIF_TRANS_XGKICK, &vuRegs[1].Mem[VU1.xgkickaddr], transfersize * 0x10, true);
+		//}
 
 		if ((VU0.VI[REG_VPU_STAT].UL & 0x100) && flush)
 			VU1.cycle += transfersize * 2;
@@ -2692,11 +2701,12 @@ void _vuXGKICKTransfer(u32 cycles, bool flush)
 			}
 		}
 	}
-	if ((VU0.VI[REG_VPU_STAT].UL & 0x100) && flush)
+	if (flush)
 	{
 		VUM_LOG("Disabling XGKICK");
 		_vuTestPipes(&VU1);
 	}
+	VUM_LOG("XGKick run complete Enabled %d", VU1.xgkickenable);
 }
 
 static __ri void _vuXGKICK(VURegs* VU)

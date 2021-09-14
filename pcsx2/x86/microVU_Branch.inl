@@ -49,6 +49,7 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit)
 		mVUcycles -= 100;
 		qInst = mVU.q;
 		pInst = mVU.p;
+		mVUregs.xgkickcycles = 0;
 		if (mVUinfo.doDivFlag)
 		{
 			sFLAG.doFlag = true;
@@ -59,6 +60,11 @@ void mVUDTendProgram(mV, microFlagCycles* mFC, int isEbit)
 		if (mVUinfo.doXGKICK && xPC >= mVUinfo.XGKICKPC)
 		{
 			mVU_XGKICK_DELAY(mVU);
+		}
+		if (isVU1 && CHECK_XGKICKHACK)
+		{
+			mVUlow.kickcycles = 99;
+			mVU_XGKICK_SYNC(mVU, true);
 		}
 		if (!isVU1)
 			xFastCall((void*)mVU0clearlpStateJIT);
@@ -163,6 +169,7 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit)
 		mVUcycles -= 100;
 		qInst = mVU.q;
 		pInst = mVU.p;
+		mVUregs.xgkickcycles = 0;
 		if (mVUinfo.doDivFlag)
 		{
 			sFLAG.doFlag = true;
@@ -172,6 +179,11 @@ void mVUendProgram(mV, microFlagCycles* mFC, int isEbit)
 		if (mVUinfo.doXGKICK)
 		{
 			mVU_XGKICK_DELAY(mVU);
+		}
+		if (isVU1 && CHECK_XGKICKHACK)
+		{
+			mVUlow.kickcycles = 99;
+			mVU_XGKICK_SYNC(mVU, true);
 		}
 		if (!isVU1)
 			xFastCall((void*)mVU0clearlpStateJIT);
