@@ -30,6 +30,7 @@ target_sources(common PRIVATE
 	RwMutex.cpp
 	Semaphore.cpp
 	StringHelpers.cpp
+	StringUtil.cpp
 	ThreadTools.cpp
 	wxGuiTools.cpp
 	wxHelpers.cpp
@@ -80,6 +81,7 @@ target_sources(common PRIVATE
 	ScopedAlloc.h
 	ScopedPtrMT.h
 	StringHelpers.h
+	StringUtil.h
 	Threading.h
 	TraceLog.h
 	wxBaseTools.h

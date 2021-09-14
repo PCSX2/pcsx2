@@ -121,6 +121,9 @@
     <ClCompile Include="FastJmp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="StringUtil.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Assertions.h">
@@ -268,6 +271,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="FastJmp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="StringUtil.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
