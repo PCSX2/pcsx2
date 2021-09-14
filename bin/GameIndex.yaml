@@ -15189,6 +15189,8 @@ SLES-54169:
 SLES-54170:
   name: "Jaws Unleashed"
   region: "PAL-M5"
+  gameFixes:
+    - XGKickHack # Fixes GS packet errors (and potential crash).
 SLES-54171:
   name: "Yakuza"
   region: "PAL-M5"
@@ -36646,6 +36648,8 @@ SLUS-21062:
   name: "Jaws Unleashed"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - XGKickHack # Fixes GS packet errors (and potential crash).
 SLUS-21063:
   name: "Shining Tears"
   region: "NTSC-U"

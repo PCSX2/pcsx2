@@ -215,7 +215,7 @@ __fi void _vuTestPipes(VURegs* VU)
 	{
 		if (VU1.xgkickenable)
 		{
-			_vuXGKICKTransfer((VU1.cycle - VU1.xgkicklastcycle), false);
+			_vuXGKICKTransfer((VU1.cycle - VU1.xgkicklastcycle) - 1, false);
 		}
 	}
 }
@@ -2618,7 +2618,7 @@ static __ri void _vuXITOP(VURegs* VU)
 		VU->VI[_It_].US[0] = VU->GetVifRegs().itop;
 }
 
-void _vuXGKICKTransfer(u32 cycles, bool flush)
+void _vuXGKICKTransfer(s32 cycles, bool flush)
 {
 	if (!VU1.xgkickenable)
 		return;
