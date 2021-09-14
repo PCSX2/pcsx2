@@ -561,7 +561,7 @@ struct Gif_Unit
 	}
 
 	// Returns GS Packet Size in bytes
-	u32 GetGSPacketSize(GIF_PATH pathIdx, u8* pMem, u32 offset = 0, u32 size = ~0u)
+	u32 GetGSPacketSize(GIF_PATH pathIdx, u8* pMem, u32 offset = 0, u32 size = ~0u, bool flush = false)
 	{
 		u32 memMask = pathIdx ? ~0u : 0x3fffu;
 		u32 curSize = 0;
@@ -576,7 +576,7 @@ struct Gif_Unit
 			}
 			if (curSize >= size)
 				return size;
-			if(!EmuConfig.Cpu.Recompiler.EnableVU1 && pathIdx == GIF_PATH_1)
+			if(((flush && gifTag.tag.EOP) || !flush) && (CHECK_XGKICKHACK || !EmuConfig.Cpu.Recompiler.EnableVU1))
 			{
 				return curSize | ((u32)gifTag.tag.EOP << 31);
 			}

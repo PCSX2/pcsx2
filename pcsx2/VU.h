@@ -174,13 +174,13 @@ struct __aligned16 VURegs
 	u8* Mem;
 	u8* Micro;
 
-	bool xgkickenable;
-	bool xgkickendpacket;
 	u32 xgkickaddr;
 	u32 xgkickdiff;
 	u32 xgkicksizeremaining;
 	u32 xgkicklastcycle;
 	u32 xgkickcyclecount;
+	u32 xgkickenable;
+	u32 xgkickendpacket;
 
 	u8 VIBackupCycles;
 	u32 VIOldValue;

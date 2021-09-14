@@ -341,6 +341,7 @@ __fi void mVUanalyzeLQ(mV, int Ft, int Is, bool writeIs)
 
 __fi void mVUanalyzeSQ(mV, int Fs, int It, bool writeIt)
 {
+	mVUlow.isMemWrite = true;
 	analyzeReg1(mVU, Fs, mVUlow.VF_read[0]);
 	analyzeVIreg1(mVU, It, mVUlow.VI_read[0]);
 	if (writeIt)
@@ -477,9 +478,15 @@ __fi void mVUanalyzeCflag(mV, int It)
 
 __fi void mVUanalyzeXGkick(mV, int Fs, int xCycles)
 {
+	mVUlow.isKick = true;
+	mVUregs.xgkickcycles = 0;
+	mVUlow.kickcycles = 0;
 	analyzeVIreg1(mVU, Fs, mVUlow.VI_read[0]);
-	analyzeXGkick1(); // Stall will cause mVUincCycles() to trigger pending xgkick
-	analyzeXGkick2(xCycles);
+	if (!CHECK_XGKICKHACK)
+	{
+		analyzeXGkick1(); // Stall will cause mVUincCycles() to trigger pending xgkick
+		analyzeXGkick2(xCycles);
+	}
 	// Note: Technically XGKICK should stall on the next instruction,
 	// this code stalls on the same instruction. The only case where this
 	// will be a problem with, is if you have very-specifically placed

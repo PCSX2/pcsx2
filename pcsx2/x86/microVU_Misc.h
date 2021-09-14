@@ -354,17 +354,6 @@ static const bool doDBitHandling = false;
 // This hack only updates the Status Flag on blocks that will read it.
 // Most blocks do not read status flags, so this is a big speedup.
 
-//------------------------------------------------------------------
-// Unknown Data
-//------------------------------------------------------------------
-
-// XG Kick Transfer Delay Amount
-#define mVU_XGKICK_CYCLES ((CHECK_XGKICKHACK) ? 6 : 1)
-// Its unknown at recompile time how long the xgkick transfer will take
-// so give it a value that makes games happy :) (SO3 is fine at 1 cycle delay)
-
-//------------------------------------------------------------------
-
 extern void mVUmergeRegs(const xmm& dest, const xmm& src, int xyzw, bool modXYZW = false);
 extern void mVUsaveReg(const xmm& reg, xAddressVoid ptr, int xyzw, bool modXYZW);
 extern void mVUloadReg(const xmm& reg, xAddressVoid ptr, int xyzw);

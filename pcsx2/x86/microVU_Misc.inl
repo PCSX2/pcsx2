@@ -145,13 +145,14 @@ void mVUmergeRegs(const xmm& dest, const xmm& src, int xyzw, bool modXYZW)
 //------------------------------------------------------------------
 
 // Backup Volatile Regs (EAX, ECX, EDX, MM0~7, XMM0~7, are all volatile according to 32bit Win/Linux ABI)
-__fi void mVUbackupRegs(microVU& mVU, bool toMemory = false)
+__fi void mVUbackupRegs(microVU& mVU, bool toMemory = false, bool onlyNeeded = false)
 {
 	if (toMemory)
 	{
 		for (int i = 0; i < 8; i++)
 		{
-			xMOVAPS(ptr128[&mVU.xmmBackup[i][0]], xmm(i));
+			if (!onlyNeeded || mVU.regAlloc->checkCachedReg(i) || xmmPQ.Id == i)
+				xMOVAPS(ptr128[&mVU.xmmBackup[i][0]], xmm(i));
 		}
 	}
 	else
@@ -162,13 +163,14 @@ __fi void mVUbackupRegs(microVU& mVU, bool toMemory = false)
 }
 
 // Restore Volatile Regs
-__fi void mVUrestoreRegs(microVU& mVU, bool fromMemory = false)
+__fi void mVUrestoreRegs(microVU& mVU, bool fromMemory = false, bool onlyNeeded = false)
 {
 	if (fromMemory)
 	{
 		for (int i = 0; i < 8; i++)
 		{
-			xMOVAPS(xmm(i), ptr128[&mVU.xmmBackup[i][0]]);
+			if (!onlyNeeded || mVU.regAlloc->checkCachedReg(i) || xmmPQ.Id == i)
+				xMOVAPS(xmm(i), ptr128[&mVU.xmmBackup[i][0]]);
 		}
 	}
 	else

@@ -737,6 +737,22 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 			mVUup.tBit = true;
 		}
 		mVUsetCycles(mVU);
+		// Update XGKick information
+		if (!mVUlow.isKick)
+		{
+			mVUregs.xgkickcycles += 1 + mVUstall;
+			if (mVUlow.isMemWrite)
+			{
+				mVUlow.kickcycles = mVUregs.xgkickcycles;
+				mVUregs.xgkickcycles = 0;
+			}
+		}
+		else
+		{
+			mVUregs.xgkickcycles = 0;
+			mVUlow.kickcycles = 0;
+		}
+
 		mVUinfo.readQ = mVU.q;
 		mVUinfo.writeQ = !mVU.q;
 		mVUinfo.readP = mVU.p && isVU1;
@@ -753,6 +769,8 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 			}
 
 			branchWarning(mVU);
+			mVUlow.kickcycles = mVUregs.xgkickcycles;
+			mVUregs.xgkickcycles = 0;
 			break;
 		}
 		else if (branch == 1)
@@ -771,11 +789,17 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 		if (mVUup.mBit && !branch && !mVUup.eBit)
 		{
 			mVUregs.needExactMatch |= 7;
+			mVUlow.kickcycles = mVUregs.xgkickcycles;
+			mVUregs.xgkickcycles = 0;
 			break;
 		}
 
 		if (mVUinfo.isEOB)
+		{
+			mVUlow.kickcycles = mVUregs.xgkickcycles;
+			mVUregs.xgkickcycles = 0;
 			break;
+		}
 
 		incPC(1);
 	}
@@ -806,6 +830,12 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 		{
 			xOR(ptr32[&mVU.regs().flags], VUFLAG_MFLAGSET);
 		}
+
+		if (isVU1 && mVUlow.kickcycles && CHECK_XGKICKHACK)
+		{
+			mVU_XGKICK_SYNC(mVU, false);
+		}
+
 		mVUexecuteInstruction(mVU);
 		if (!mVUinfo.isBdelay && !mVUlow.branch) //T/D Bit on branch is handled after the branch, branch delay slots are executed.
 		{
