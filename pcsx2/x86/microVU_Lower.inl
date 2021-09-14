@@ -1634,15 +1634,19 @@ void __fastcall _vuXGKICKTransfermVU(bool flush)
 
 static __fi void mVU_XGKICK_SYNC(mV, bool flush)
 {
+	// Add the single cycle remainder after this instruction, some games do the store
+	// on the second instruction after the kick and that needs to go through first
+	// but that's VERY close..
 	xTEST(ptr32[&VU1.xgkickenable], 0x1);
 	xForwardJZ32 skipxgkick;
-	xADD(ptr32[&VU1.xgkickcyclecount], mVUlow.kickcycles);
+	xADD(ptr32[&VU1.xgkickcyclecount], mVUlow.kickcycles-1);
 	xCMP(ptr32[&VU1.xgkickcyclecount], 2);
 	xForwardJL32 needcycles;
 	mVUbackupRegs(mVU, true, true);
 	xFastCall(_vuXGKICKTransfermVU, flush);
 	mVUrestoreRegs(mVU, true, true);
 	needcycles.SetTarget();
+	xADD(ptr32[&VU1.xgkickcyclecount], 1);
 	skipxgkick.SetTarget();
 }
 

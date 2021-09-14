@@ -59,4 +59,4 @@ extern void _vuTestUpperStalls(VURegs * VU, _VURegsNum *VUregsn);
 extern void _vuTestLowerStalls(VURegs * VU, _VURegsNum *VUregsn);
 extern void _vuAddUpperStalls(VURegs * VU, _VURegsNum *VUregsn);
 extern void _vuAddLowerStalls(VURegs * VU, _VURegsNum *VUregsn);
-extern void _vuXGKICKTransfer(u32 cycles, bool flush);
+extern void _vuXGKICKTransfer(s32 cycles, bool flush);
