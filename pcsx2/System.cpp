@@ -148,41 +148,7 @@ void SysOutOfMemory_EmergencyResponse(uptr blocksize)
 
 #include "svnrev.h"
 
-const Pcsx2Config EmuConfig;
-
-// Provides an accessor for quick modification of GS options.  All GS options are allowed to be
-// changed "on the fly" by the *main/gui thread only*.
-Pcsx2Config::GSOptions& SetGSConfig()
-{
-	//DbgCon.WriteLn( "Direct modification of EmuConfig.GS detected" );
-	AffinityAssert_AllowFrom_MainUI();
-	return const_cast<Pcsx2Config::GSOptions&>(EmuConfig.GS);
-}
-
-// Provides an accessor for quick modification of Recompiler options.
-// Used by loadGameSettings() to set clamp modes via database at game startup.
-Pcsx2Config::RecompilerOptions& SetRecompilerConfig()
-{
-	//DbgCon.WriteLn( "Direct modification of EmuConfig.Gamefixes detected" );
-	AffinityAssert_AllowFrom_MainUI();
-	return const_cast<Pcsx2Config::RecompilerOptions&>(EmuConfig.Cpu.Recompiler);
-}
-
-// Provides an accessor for quick modification of Gamefix options.
-// Used by loadGameSettings() to set gamefixes via database at game startup.
-Pcsx2Config::GamefixOptions& SetGameFixConfig()
-{
-	//DbgCon.WriteLn( "Direct modification of EmuConfig.Gamefixes detected" );
-	AffinityAssert_AllowFrom_MainUI();
-	return const_cast<Pcsx2Config::GamefixOptions&>(EmuConfig.Gamefixes);
-}
-
-TraceLogFilters& SetTraceConfig()
-{
-	//DbgCon.WriteLn( "Direct modification of EmuConfig.TraceLog detected" );
-	AffinityAssert_AllowFrom_MainUI();
-	return const_cast<TraceLogFilters&>(EmuConfig.Trace);
-}
+Pcsx2Config EmuConfig;
 
 
 // This function should be called once during program execution.

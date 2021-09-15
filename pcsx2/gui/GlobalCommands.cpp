@@ -74,7 +74,7 @@ namespace Implementations
 	void Frameskip_Toggle()
 	{
 		g_Conf->EmuOptions.GS.FrameSkipEnable = !g_Conf->EmuOptions.GS.FrameSkipEnable;
-		SetGSConfig().FrameSkipEnable = g_Conf->EmuOptions.GS.FrameSkipEnable;
+		EmuConfig.GS.FrameSkipEnable = g_Conf->EmuOptions.GS.FrameSkipEnable;
 
 		if (EmuConfig.GS.FrameSkipEnable)
 		{
@@ -408,7 +408,7 @@ namespace Implementations
 
 		// FIXME: Some of the trace logs will require recompiler resets to be activated properly.
 #ifdef PCSX2_DEVBUILD
-		SetTraceConfig().Enabled = !EmuConfig.Trace.Enabled;
+		EmuConfig.Trace.Enabled = !EmuConfig.Trace.Enabled;
 		Console.WriteLn(EmuConfig.Trace.Enabled ? "Logging Enabled." : "Logging Disabled.");
 #endif
 	}
