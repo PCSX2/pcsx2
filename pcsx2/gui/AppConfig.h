@@ -175,14 +175,6 @@ public:
 		bool DisableResizeBorders;
 		bool DisableScreenSaver;
 
-		AspectRatioType AspectRatio;
-		FMVAspectRatioSwitchType FMVAspectRatioSwitch;
-
-		double Zoom;
-		double StretchY;
-		double OffsetX;
-		double OffsetY;
-
 		wxSize WindowSize;
 		wxPoint WindowPos;
 
@@ -192,19 +184,6 @@ public:
 		bool IsToggleFullscreenOnDoubleClick;
 
 		GSWindowOptions();
-
-		void LoadSave( IniInterface& conf );
-		void SanityCheck();
-	};
-
-	struct FramerateOptions
-	{
-		bool SkipOnLimit{ false };
-		bool SkipOnTurbo{ false };
-
-		double NominalScalar{ 1.0 };
-		double TurboScalar{ 2.0 };
-		double SlomoScalar{ 0.5 };
 
 		void LoadSave( IniInterface& conf );
 		void SanityCheck();
@@ -312,7 +291,6 @@ public:
 	ConsoleLogOptions		ProgLogBox;
 	FolderOptions			Folders;
 	GSWindowOptions			GSWindow;
-	FramerateOptions		Framerate;
 #ifndef DISABLE_RECORDING
 	InputRecordingOptions   inputRecording;
 #endif

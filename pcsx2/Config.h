@@ -67,20 +67,20 @@ enum class VsyncMode
 	Adaptive,
 };
 
-enum AspectRatioType
+enum class AspectRatioType : u8
 {
-	AspectRatio_Stretch,
-	AspectRatio_4_3,
-	AspectRatio_16_9,
-	AspectRatio_MaxCount
+	Stretch,
+	R4_3,
+	R16_9,
+	MaxCount
 };
 
-enum FMVAspectRatioSwitchType
+enum class FMVAspectRatioSwitchType : u8
 {
-	FMV_AspectRatio_Switch_Off,
-	FMV_AspectRatio_Switch_4_3,
-	FMV_AspectRatio_Switch_16_9,
-	FMV_AspectRatio_Switch_MaxCount
+	Off,
+	R4_3,
+	R16_9,
+	MaxCount
 };
 
 enum MemoryCardType
@@ -89,6 +89,13 @@ enum MemoryCardType
 	MemoryCard_File,
 	MemoryCard_Folder,
 	MemoryCard_MaxCount
+};
+
+enum class LimiterModeType : u8
+{
+	Nominal,
+	Turbo,
+	Slomo,
 };
 
 // Template function for casting enumerations to their underlying type
@@ -325,6 +332,14 @@ struct Pcsx2Config
 		double FramerateNTSC{ 59.94 };
 		double FrameratePAL{ 50.00 };
 
+		AspectRatioType AspectRatio{AspectRatioType::R4_3};
+		FMVAspectRatioSwitchType FMVAspectRatioSwitch{FMVAspectRatioSwitchType::Off};
+
+		double Zoom{100.0};
+		double StretchY{100.0};
+		double OffsetX{0.0};
+		double OffsetY{0.0};
+
 		void LoadSave( IniInterface& conf );
 
 		int GetVsync() const;
@@ -463,6 +478,20 @@ struct Pcsx2Config
 	};
 
 	// ------------------------------------------------------------------------
+	struct FramerateOptions
+	{
+		bool SkipOnLimit{false};
+		bool SkipOnTurbo{false};
+
+		double NominalScalar{1.0};
+		double TurboScalar{2.0};
+		double SlomoScalar{0.5};
+
+		void LoadSave(IniInterface& conf);
+		void SanityCheck();
+	};
+
+	// ------------------------------------------------------------------------
 	struct FolderOptions
 	{
 		wxDirName
@@ -532,6 +561,7 @@ struct Pcsx2Config
 	GamefixOptions		Gamefixes;
 	ProfilerOptions		Profiler;
 	DebugOptions		Debugger;
+	FramerateOptions		Framerate;
 
 	TraceLogFilters		Trace;
 
@@ -546,6 +576,8 @@ struct Pcsx2Config
 	wxString CurrentELF;
 	wxString CurrentIRX;
 	wxString CurrentGameArgs;
+	AspectRatioType CurrentAspectRatio = AspectRatioType::R4_3;
+	LimiterModeType LimiterMode = LimiterModeType::Nominal;
 
 	Pcsx2Config();
 	void LoadSave( IniInterface& ini );

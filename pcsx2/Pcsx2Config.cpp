@@ -236,11 +236,34 @@ void Pcsx2Config::GSOptions::LoadSave( IniInterface& ini )
 
 	IniEntry( FramesToDraw );
 	IniEntry( FramesToSkip );
+
+	static const wxChar* AspectRatioNames[] =
+		{
+			L"Stretch",
+			L"4:3",
+			L"16:9",
+			// WARNING: array must be NULL terminated to compute it size
+			NULL};
+
+#ifdef PCSX2_CORE
+	ini.EnumEntry(L"AspectRatio", AspectRatio, AspectRatioNames, AspectRatio);
+
+	static const wxChar* FMVAspectRatioSwitchNames[] =
+		{
+			L"Off",
+			L"4:3",
+			L"16:9",
+			// WARNING: array must be NULL terminated to compute it size
+			NULL};
+	ini.EnumEntry(L"FMVAspectRatioSwitch", FMVAspectRatioSwitch, FMVAspectRatioSwitchNames, FMVAspectRatioSwitch);
+
+	IniEntry(Zoom);
+#endif
 }
 
 int Pcsx2Config::GSOptions::GetVsync() const
 {
-	if (g_LimiterMode == Limit_Turbo || !FrameLimitEnable)
+	if (EmuConfig.LimiterMode == LimiterModeType::Turbo || !FrameLimitEnable)
 		return 0;
 
 	// D3D only support a boolean state. OpenGL waits a number of vsync
@@ -432,6 +455,27 @@ Pcsx2Config::FolderOptions::FolderOptions()
 
 }
 
+void Pcsx2Config::FramerateOptions::SanityCheck()
+{
+	// Ensure Conformation of various options...
+
+	NominalScalar = std::clamp(NominalScalar, 0.05, 10.0);
+	TurboScalar = std::clamp(TurboScalar, 0.05, 10.0);
+	SlomoScalar = std::clamp(SlomoScalar, 0.05, 10.0);
+}
+
+void Pcsx2Config::FramerateOptions::LoadSave(IniInterface& ini)
+{
+	ScopedIniGroup path(ini, L"Framerate");
+
+	IniEntry(NominalScalar);
+	IniEntry(TurboScalar);
+	IniEntry(SlomoScalar);
+
+	IniEntry(SkipOnLimit);
+	IniEntry(SkipOnTurbo);
+}
+
 Pcsx2Config::Pcsx2Config()
 {
 	bitset = 0;
@@ -480,7 +524,15 @@ void Pcsx2Config::LoadSave( IniInterface& ini )
 	Trace			.LoadSave( ini );
 
 	// For now, this in the derived config for backwards ini compatibility.
-	//BaseFilenames.LoadSave(ini);
+#ifdef PCSX2_CORE
+	BaseFilenames.LoadSave(ini);
+	Framerate.LoadSave(ini);
+#endif
+
+	if (ini.IsLoading())
+	{
+		CurrentAspectRatio = GS.AspectRatio;
+	}
 
 	ini.Flush();
 }
@@ -524,6 +576,7 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	Debugger = cfg.Debugger;
 	Trace = cfg.Trace;
 	BaseFilenames = cfg.BaseFilenames;
+	Framerate = cfg.Framerate;
 
 	CdvdVerboseReads = cfg.CdvdVerboseReads;
 	CdvdDumpBlocks = cfg.CdvdDumpBlocks;

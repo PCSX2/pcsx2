@@ -20,16 +20,6 @@
 #include "CpuUsageProvider.h"
 #include <memory>
 
-
-enum LimiterModeType
-{
-	Limit_Nominal,
-	Limit_Turbo,
-	Limit_Slomo,
-};
-
-extern LimiterModeType g_LimiterMode;
-
 // --------------------------------------------------------------------------------------
 //  GSPanel
 // --------------------------------------------------------------------------------------

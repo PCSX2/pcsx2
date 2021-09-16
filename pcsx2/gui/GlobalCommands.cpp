@@ -67,8 +67,6 @@ wxString KeyAcceleratorCode::ToString() const
 		.ToString();
 }
 
-LimiterModeType g_LimiterMode = Limit_Nominal;
-
 namespace Implementations
 {
 	void Frameskip_Toggle()
@@ -94,15 +92,15 @@ namespace Implementations
 		if (!g_Conf->EmuOptions.GS.FrameLimitEnable)
 		{
 			g_Conf->EmuOptions.GS.FrameLimitEnable = true;
-			g_LimiterMode = Limit_Turbo;
+			EmuConfig.LimiterMode = LimiterModeType::Turbo;
 			OSDlog(Color_StrongRed, true, "(FrameLimiter) Turbo + FrameLimit ENABLED.");
-			g_Conf->EmuOptions.GS.FrameSkipEnable = !!g_Conf->Framerate.SkipOnTurbo;
+			g_Conf->EmuOptions.GS.FrameSkipEnable = !!EmuConfig.Framerate.SkipOnTurbo;
 		}
-		else if (g_LimiterMode == Limit_Turbo)
+		else if (EmuConfig.LimiterMode == LimiterModeType::Turbo)
 		{
-			g_LimiterMode = Limit_Nominal;
+			EmuConfig.LimiterMode = LimiterModeType::Nominal;
 
-			if (g_Conf->Framerate.SkipOnLimit)
+			if (EmuConfig.Framerate.SkipOnLimit)
 			{
 				OSDlog(Color_StrongRed, true, "(FrameLimiter) Turbo DISABLED. Frameskip ENABLED");
 				g_Conf->EmuOptions.GS.FrameSkipEnable = true;
@@ -115,9 +113,9 @@ namespace Implementations
 		}
 		else
 		{
-			g_LimiterMode = Limit_Turbo;
+			EmuConfig.LimiterMode = LimiterModeType::Turbo;
 
-			if (g_Conf->Framerate.SkipOnTurbo)
+			if (EmuConfig.Framerate.SkipOnTurbo)
 			{
 				OSDlog(Color_StrongRed, true, "(FrameLimiter) Turbo + Frameskip ENABLED.");
 				g_Conf->EmuOptions.GS.FrameSkipEnable = true;
@@ -143,14 +141,14 @@ namespace Implementations
 		// out a better consistency approach... -air
 
 		ScopedCoreThreadPause pauser;
-		if (g_LimiterMode == Limit_Slomo)
+		if (EmuConfig.LimiterMode == LimiterModeType::Slomo)
 		{
-			g_LimiterMode = Limit_Nominal;
+			EmuConfig.LimiterMode = LimiterModeType::Nominal;
 			OSDlog(Color_StrongRed, true, "(FrameLimiter) SlowMotion DISABLED.");
 		}
 		else
 		{
-			g_LimiterMode = Limit_Slomo;
+			EmuConfig.LimiterMode = LimiterModeType::Slomo;
 			OSDlog(Color_StrongRed, true, "(FrameLimiter) SlowMotion ENABLED.");
 			g_Conf->EmuOptions.GS.FrameLimitEnable = true;
 		}
@@ -167,29 +165,27 @@ namespace Implementations
 		OSDlog(Color_StrongRed, true, "(FrameLimiter) %s.", g_Conf->EmuOptions.GS.FrameLimitEnable ? "ENABLED" : "DISABLED");
 
 		// Turbo/Slowmo don't make sense when framelimiter is toggled
-		g_LimiterMode = Limit_Nominal;
+		EmuConfig.LimiterMode = LimiterModeType::Nominal;
 
 		pauser.AllowResume();
 	}
 
 	void GSwindow_CycleAspectRatio()
 	{
-		AspectRatioType& art = g_Conf->GSWindow.AspectRatio;
+		AspectRatioType& art = EmuConfig.CurrentAspectRatio;
 		const char* arts = "Not modified";
-		if (art == AspectRatio_Stretch && GSGetFMVSwitch()) //avoids a double 4:3 when coming from FMV aspect ratio switch
-			art = AspectRatio_4_3;
 		switch (art)
 		{
-			case AspectRatio_Stretch:
-				art = AspectRatio_4_3;
+			case AspectRatioType::Stretch:
+				art = AspectRatioType::R4_3;
 				arts = "4:3";
 				break;
-			case AspectRatio_4_3:
-				art = AspectRatio_16_9;
+			case AspectRatioType::R4_3:
+				art = AspectRatioType::R16_9;
 				arts = "16:9";
 				break;
-			case AspectRatio_16_9:
-				art = AspectRatio_Stretch;
+			case AspectRatioType::R16_9:
+				art = AspectRatioType::Stretch;
 				arts = "Stretch";
 				break;
 			default:
@@ -197,36 +193,33 @@ namespace Implementations
 		}
 
 		OSDlog(Color_StrongBlue, true, "(GSwindow) Aspect ratio: %s", arts);
-
-		// Disable FMV mode if we were previously in it, so the user can override the AR.
-		GSSetFMVSwitch(false);
 	}
 
 	void SetOffset(float x, float y)
 	{
-		g_Conf->GSWindow.OffsetX = x;
-		g_Conf->GSWindow.OffsetY = y;
+		EmuConfig.GS.OffsetX = x;
+		EmuConfig.GS.OffsetY = y;
 		OSDlog(Color_StrongBlue, true, "(GSwindow) Offset: x=%f, y=%f", x, y);
 	}
 
 	void GSwindow_OffsetYplus()
 	{
-		SetOffset(g_Conf->GSWindow.OffsetX, g_Conf->GSWindow.OffsetY + 1);
+		SetOffset(EmuConfig.GS.OffsetX, EmuConfig.GS.OffsetY + 1);
 	}
 
 	void GSwindow_OffsetYminus()
 	{
-		SetOffset(g_Conf->GSWindow.OffsetX, g_Conf->GSWindow.OffsetY - 1);
+		SetOffset(EmuConfig.GS.OffsetX, EmuConfig.GS.OffsetY - 1);
 	}
 
 	void GSwindow_OffsetXplus()
 	{
-		SetOffset(g_Conf->GSWindow.OffsetX + 1, g_Conf->GSWindow.OffsetY);
+		SetOffset(EmuConfig.GS.OffsetX + 1, EmuConfig.GS.OffsetY);
 	}
 
 	void GSwindow_OffsetXminus()
 	{
-		SetOffset(g_Conf->GSWindow.OffsetX - 1, g_Conf->GSWindow.OffsetY);
+		SetOffset(EmuConfig.GS.OffsetX - 1, EmuConfig.GS.OffsetY);
 	}
 
 	void GSwindow_OffsetReset()
@@ -238,17 +231,17 @@ namespace Implementations
 	{
 		if (zoom <= 0)
 			return;
-		g_Conf->GSWindow.StretchY = zoom;
+		EmuConfig.GS.StretchY = zoom;
 		OSDlog(Color_StrongBlue, true, "(GSwindow) Vertical stretch: %f", zoom);
 	}
 
 	void GSwindow_ZoomInY()
 	{
-		SetZoomY(g_Conf->GSWindow.StretchY + 1);
+		SetZoomY(EmuConfig.GS.StretchY + 1);
 	}
 	void GSwindow_ZoomOutY()
 	{
-		SetZoomY(g_Conf->GSWindow.StretchY - 1);
+		SetZoomY(EmuConfig.GS.StretchY - 1);
 	}
 	void GSwindow_ZoomResetY()
 	{
@@ -259,7 +252,7 @@ namespace Implementations
 	{
 		if (zoom < 0)
 			return;
-		g_Conf->GSWindow.Zoom = zoom;
+		EmuConfig.GS.Zoom = zoom;
 
 		if (zoom == 0)
 			OSDlog(Color_StrongBlue, true, "(GSwindow) Zoom: 0 (auto, no black bars)");
@@ -270,7 +263,7 @@ namespace Implementations
 
 	void GSwindow_ZoomIn()
 	{
-		float z = g_Conf->GSWindow.Zoom;
+		float z = EmuConfig.GS.Zoom;
 		if (z == 0)
 			z = 100;
 		z++;
@@ -278,7 +271,7 @@ namespace Implementations
 	}
 	void GSwindow_ZoomOut()
 	{
-		float z = g_Conf->GSWindow.Zoom;
+		float z = EmuConfig.GS.Zoom;
 		if (z == 0)
 			z = 100;
 		z--;
@@ -286,7 +279,7 @@ namespace Implementations
 	}
 	void GSwindow_ZoomToggle()
 	{
-		float z = g_Conf->GSWindow.Zoom;
+		float z = EmuConfig.GS.Zoom;
 		if (z == 100)
 			z = 0;
 		else
