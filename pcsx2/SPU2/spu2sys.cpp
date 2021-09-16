@@ -1979,6 +1979,12 @@ void StartVoices(int core, u32 value)
 		if (!((value >> vc) & 1))
 			continue;
 
+		if ((Cycles - Cores[core].Voices[vc].PlayCycle) < 2)
+		{
+			ConLog("Attempt to start voice %d on core %d in less than 2T since last KeyOn\n", vc, core);
+			continue;
+		}
+
 		Cores[core].Voices[vc].Start();
 
 		if (IsDevBuild)
