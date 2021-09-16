@@ -15,7 +15,6 @@
 
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
-#include "gui/AppConfig.h"
 
 #include <memory>
 #include <ctype.h>
@@ -94,7 +93,7 @@ static int mg_BIToffset(u8* buffer)
 
 static void cdvdGetMechaVer(u8* ver)
 {
-	wxFileName mecfile(EmuConfig.BiosFilename);
+	wxFileName mecfile(EmuConfig.FullpathToBios());
 	mecfile.SetExt(L"mec");
 	const wxString fname(mecfile.GetFullPath());
 
@@ -168,7 +167,7 @@ static void cdvdCreateNewNVM(const wxString& filename)
 // be created for some reason.
 static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 {
-	wxFileName nvmfile(EmuConfig.BiosFilename);
+	wxFileName nvmfile(EmuConfig.FullpathToBios());
 	nvmfile.SetExt(L"nvm");
 	const wxString fname(nvmfile.GetFullPath());
 
@@ -587,7 +586,6 @@ s32 cdvdCtrlTrayClose()
 	cdvd.TrayTimeout = 0; // Reset so it can't get closed twice by cdvdVsync()
 
 	cdvdDetectDisk();
-	GetCoreThread().ApplySettings(g_Conf->EmuOptions);
 
 	return 0; // needs to be 0 for success according to homebrew test "CDVD"
 }

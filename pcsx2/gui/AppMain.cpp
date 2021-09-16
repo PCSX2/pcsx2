@@ -722,8 +722,6 @@ void AppApplySettings( const AppConfig* oldconf )
 	g_Conf->Folders.Cheats.Mkdir();
 	g_Conf->Folders.CheatsWS.Mkdir();
 
-	g_Conf->EmuOptions.BiosFilename = g_Conf->FullpathToBios();
-
 	RelocateLogfile();
 
 	if( (oldconf == NULL) || (oldconf->LanguageCode.CmpNoCase(g_Conf->LanguageCode)) )
@@ -1004,7 +1002,7 @@ protected:
 		// This function below gets called again from AppCoreThread.cpp and will pass the current ISO regardless if we
 		// are starting an ELF. In terms of symbol loading this doesn't matter because AppCoreThread.cpp doesn't clear the symbol map
 		// and we _only_ read symbols if the map is empty
-		CDVDsys_SetFile(CDVD_SourceType::Iso, m_UseELFOverride ? m_elf_override : g_Conf->CurrentIso );
+		CDVDsys_SetFile(CDVD_SourceType::Iso, m_UseELFOverride ? m_elf_override : EmuConfig.CurrentIso );
 		if( m_UseCDVDsrc )
 			CDVDsys_ChangeSource( m_cdvdsrc_type );
 		else if( CDVD == NULL )
@@ -1060,7 +1058,7 @@ void SysStatus( const wxString& text )
 // Applies a new active iso source file
 void SysUpdateIsoSrcFile( const wxString& newIsoFile )
 {
-	g_Conf->CurrentIso = newIsoFile;
+	EmuConfig.CurrentIso = newIsoFile;
 	sMainFrame.UpdateStatusBar();
 	sMainFrame.UpdateCdvdSrcSelection();
 }
@@ -1068,6 +1066,7 @@ void SysUpdateIsoSrcFile( const wxString& newIsoFile )
 void SysUpdateDiscSrcDrive( const wxString& newDiscDrive )
 {
 	g_Conf->Folders.RunDisc = newDiscDrive;
+	EmuConfig.CurrentDiscDrive = newDiscDrive;
 	AppSaveSettings();
 	sMainFrame.UpdateCdvdSrcSelection();
 }

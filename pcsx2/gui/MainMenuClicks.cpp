@@ -196,7 +196,7 @@ wxWindowID SwapOrReset_Iso(wxWindow* owner, IScopedCoreThread& core_control, con
 	}
 	wxWindowID result = wxID_CANCEL;
 
-	if ((g_Conf->CdvdSource == CDVD_SourceType::Iso) && (isoFilename == g_Conf->CurrentIso))
+	if ((EmuConfig.CdvdSource == CDVD_SourceType::Iso) && (isoFilename == EmuConfig.CurrentIso))
 	{
 		core_control.AllowResume();
 		return result;
@@ -226,7 +226,7 @@ wxWindowID SwapOrReset_Iso(wxWindow* owner, IScopedCoreThread& core_control, con
 	}
 
 	g_CDVDReset = true;
-	g_Conf->CdvdSource = CDVD_SourceType::Iso;
+	EmuConfig.CdvdSource = CDVD_SourceType::Iso;
 	SysUpdateIsoSrcFile(isoFilename);
 
 	if (result == wxID_RESET)
@@ -258,7 +258,7 @@ wxWindowID SwapOrReset_Disc(wxWindow* owner, IScopedCoreThread& core, const wxSt
 	}
 	wxWindowID result = wxID_CANCEL;
 
-	if ((g_Conf->CdvdSource == CDVD_SourceType::Disc) && (driveLetter == g_Conf->Folders.RunDisc))
+	if ((EmuConfig.CdvdSource == CDVD_SourceType::Disc) && (driveLetter == EmuConfig.CurrentDiscDrive))
 	{
 		core.AllowResume();
 		return result;
@@ -286,7 +286,7 @@ wxWindowID SwapOrReset_Disc(wxWindow* owner, IScopedCoreThread& core, const wxSt
 		}
 	}
 
-	g_Conf->CdvdSource = CDVD_SourceType::Disc;
+	EmuConfig.CdvdSource = CDVD_SourceType::Disc;
 	SysUpdateDiscSrcDrive(driveLetter);
 	if (result == wxID_RESET)
 	{
@@ -309,7 +309,7 @@ wxWindowID SwapOrReset_CdvdSrc(wxWindow* owner, CDVD_SourceType newsrc)
 		wxMessageBox("Please close the GS debugger first before playing a game", _("GS Debugger"), wxICON_ERROR);
 		return wxID_CANCEL;
 	}
-	if (newsrc == g_Conf->CdvdSource)
+	if (newsrc == EmuConfig.CdvdSource)
 		return wxID_CANCEL;
 	wxWindowID result = wxID_CANCEL;
 	ScopedCoreThreadPopup core;
@@ -320,7 +320,7 @@ wxWindowID SwapOrReset_CdvdSrc(wxWindow* owner, CDVD_SourceType newsrc)
 
 		wxString changeMsg;
 		changeMsg.Printf(_("You've selected to switch the CDVD source from %s to %s."),
-						 CDVD_SourceLabels[enum_cast(g_Conf->CdvdSource)], CDVD_SourceLabels[enum_cast(newsrc)]);
+						 CDVD_SourceLabels[enum_cast(EmuConfig.CdvdSource)], CDVD_SourceLabels[enum_cast(newsrc)]);
 
 		dialog += dialog.Heading(changeMsg + L"\n\n" +
 								 _("Do you want to swap discs or boot the new image (system reset)?"));
@@ -341,8 +341,8 @@ wxWindowID SwapOrReset_CdvdSrc(wxWindow* owner, CDVD_SourceType newsrc)
 	}
 
 	g_CDVDReset = true;
-	CDVD_SourceType oldsrc = g_Conf->CdvdSource;
-	g_Conf->CdvdSource = newsrc;
+	CDVD_SourceType oldsrc = EmuConfig.CdvdSource;
+	EmuConfig.CdvdSource = newsrc;
 
 	if (result != wxID_RESET)
 	{
@@ -356,7 +356,7 @@ wxWindowID SwapOrReset_CdvdSrc(wxWindow* owner, CDVD_SourceType newsrc)
 	else
 	{
 		core.DisallowResume();
-		sApp.SysExecute(g_Conf->CdvdSource);
+		sApp.SysExecute(EmuConfig.CdvdSource);
 	}
 
 	return result;
@@ -436,7 +436,7 @@ bool MainEmuFrame::_DoSelectELFBrowser()
 	if (ctrl.ShowModal() != wxID_CANCEL)
 	{
 		g_Conf->Folders.RunELF = wxFileName(ctrl.GetPath()).GetPath();
-		g_Conf->CurrentELF = ctrl.GetPath();
+		EmuConfig.CurrentELF = ctrl.GetPath();
 		return true;
 	}
 
@@ -452,18 +452,18 @@ void MainEmuFrame::_DoBootCdvd()
 	}
 	ScopedCoreThreadPause paused_core;
 
-	if (g_Conf->CdvdSource == CDVD_SourceType::Iso)
+	if (EmuConfig.CdvdSource == CDVD_SourceType::Iso)
 	{
-		bool selector = g_Conf->CurrentIso.IsEmpty();
+		bool selector = EmuConfig.CurrentIso.IsEmpty();
 
-		if (!selector && !wxFileExists(g_Conf->CurrentIso))
+		if (!selector && !wxFileExists(EmuConfig.CurrentIso))
 		{
 			// User has an iso selected from a previous run, but it doesn't exist anymore.
 			// Issue a courtesy popup and then an Iso Selector to choose a new one.
 
 			wxDialogWithHelpers dialog(this, _("ISO file not found!"));
 			dialog += dialog.Heading(
-				_("An error occurred while trying to open the file:") + wxString(L"\n\n") + g_Conf->CurrentIso + L"\n\n" +
+				_("An error occurred while trying to open the file:") + wxString(L"\n\n") + EmuConfig.CurrentIso + L"\n\n" +
 				_("Error: The configured ISO file does not exist.  Click OK to select a new ISO source for CDVD."));
 
 			pxIssueConfirmation(dialog, MsgButtons().OK());
@@ -497,7 +497,7 @@ void MainEmuFrame::_DoBootCdvd()
 		}
 	}
 
-	sApp.SysExecute(g_Conf->CdvdSource);
+	sApp.SysExecute(EmuConfig.CdvdSource);
 }
 
 void MainEmuFrame::Menu_CdvdSource_Click(wxCommandEvent& event)
@@ -576,7 +576,7 @@ void MainEmuFrame::Menu_IsoClear_Click(wxCommandEvent& event)
 	if (confirmed)
 	{
 		// If the CDVD mode is not ISO, or the system isn't running, wipe the CurrentIso field in INI file
-		if (g_Conf->CdvdSource != CDVD_SourceType::Iso || !SysHasValidState())
+		if (EmuConfig.CdvdSource != CDVD_SourceType::Iso || !SysHasValidState())
 			SysUpdateIsoSrcFile("");
 		wxGetApp().GetRecentIsoManager().Clear();
 		AppSaveSettings();
@@ -730,7 +730,7 @@ void MainEmuFrame::Menu_OpenELF_Click(wxCommandEvent&)
 	if (_DoSelectELFBrowser())
 	{
 		g_Conf->EmuOptions.UseBOOT2Injection = true;
-		sApp.SysExecute(g_Conf->CdvdSource, g_Conf->CurrentELF);
+		sApp.SysExecute(EmuConfig.CdvdSource, EmuConfig.CurrentELF);
 	}
 
 	stopped_core.AllowResume();

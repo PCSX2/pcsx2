@@ -14,7 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "gui/AppConfig.h"
+#include "Config.h"
 #include "Dialogs.h"
 #include <wx/fileconf.h>
 
@@ -26,7 +26,7 @@ void initIni()
 {
 	if (!pathSet)
 	{
-		path = GetSettingsFolder().Combine(path).GetFullPath();
+		path = EmuConfig.Folders.Settings.Combine(path).GetFullPath();
 		pathSet = true;
 	}
 	if (spuConfig == nullptr)

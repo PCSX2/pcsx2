@@ -88,7 +88,7 @@ protected:
 
 			dialog += dialog.Heading(AddAppName(_("You have dropped the following ELF binary into %s:\n\n")));
 			dialog += dialog.GetCharHeight();
-			dialog += dialog.Text( g_Conf->CurrentELF );
+			dialog += dialog.Text( EmuConfig.CurrentELF );
 			dialog += dialog.GetCharHeight();
 			dialog += dialog.Heading(GetMsg_ConfirmSysReset());
 
@@ -98,7 +98,7 @@ protected:
 		if( confirmed )
 		{
 			g_Conf->EmuOptions.UseBOOT2Injection = true;
-			sApp.SysExecute( g_Conf->CdvdSource, g_Conf->CurrentELF );
+			sApp.SysExecute( EmuConfig.CdvdSource, EmuConfig.CurrentELF );
 		}
 		else
 			stopped_core.AllowResume();
@@ -175,7 +175,7 @@ bool IsoDropTarget::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filen
 		{
 			Console.WriteLn( L"(Drag&Drop) Found ELF file type!" );
 
-			g_Conf->CurrentELF = filenames[0];
+			EmuConfig.CurrentELF = filenames[0];
 
 			wxGetApp().PostEvent( DroppedElf(m_WindowBound) );
 			return true;

@@ -34,7 +34,7 @@
 #include "CDVDisoReader.h"
 
 #include "DebugTools/SymbolMap.h"
-#include "gui/AppConfig.h"
+#include "Config.h"
 
 CDVD_API* CDVD = NULL;
 
@@ -388,10 +388,10 @@ bool DoCDVDopen()
 	else if (somepick.IsEmpty())
 		somepick = L"Untitled";
 
-	if (g_Conf->CurrentBlockdump.IsEmpty())
-		g_Conf->CurrentBlockdump = wxGetCwd();
+	if (EmuConfig.CurrentBlockdump.IsEmpty())
+		EmuConfig.CurrentBlockdump = wxGetCwd();
 
-	wxString temp(Path::Combine(g_Conf->CurrentBlockdump, somepick));
+	wxString temp(Path::Combine(EmuConfig.CurrentBlockdump, somepick));
 
 #ifdef ENABLE_TIMESTAMPS
 	wxDateTime curtime(wxDateTime::GetTimeNow());
