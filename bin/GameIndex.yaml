@@ -6823,6 +6823,8 @@ SLED-53745:
 SLED-53845:
   name: "Matrix - Path of Neo [Demo]"
   region: "PAL-E"
+  gameFixes:
+  - VUKickstartHack
 SLED-53937:
   name: "Black [Demo]"
   region: "PAL-M5"
@@ -13564,6 +13566,8 @@ SLES-53461:
 SLES-53462:
   name: "Matrix, The - Path of Neo"
   region: "PAL-M5"
+  gameFixes:
+    - VUKickstartHack
 SLES-53463:
   name: "NHL '06"
   region: "PAL-E"
@@ -14356,6 +14360,8 @@ SLES-53758:
 SLES-53759:
   name: "Matrix, The - Path of Neo"
   region: "PAL-M5"
+  gameFixes:
+  - VUKickstartHack
 SLES-53760:
   name: "Rugby Challenge 2006"
   region: "PAL-M5"
@@ -14429,6 +14435,8 @@ SLES-53799:
   name: "Matrix, The - Path of Neo"
   region: "PAL-M4"
   compat: 5
+  gameFixes:
+  - VUKickstartHack
 SLES-53800:
   name: "Rampage - Total Destruction"
   region: "PAL-M5"
@@ -37529,6 +37537,8 @@ SLUS-21273:
   name: "Matrix, The - Path of Neo"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - VUKickstartHack
 SLUS-21274:
   name: "OutRun 2006: Coast 2 Coast"
   region: "NTSC-U"
