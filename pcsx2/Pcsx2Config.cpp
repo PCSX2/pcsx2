@@ -407,8 +407,30 @@ void Pcsx2Config::DebugOptions::LoadSave( IniInterface& ini )
 	IniBitfield( MemoryViewBytesPerRow );
 }
 
+void Pcsx2Config::FilenameOptions::LoadSave(IniInterface& ini)
+{
+	ScopedIniGroup path(ini, L"Filenames");
 
+	static const wxFileName pc(L"Please Configure");
 
+	//when saving in portable mode, we just save the non-full-path filename
+	//  --> on load they'll be initialized with default (relative) paths (works for bios)
+	//note: this will break if converting from install to portable, and custom folders are used. We can live with that.
+	bool needRelativeName = ini.IsSaving() && IsPortable();
+
+	if (needRelativeName)
+	{
+		wxFileName bios_filename = wxFileName(Bios.GetFullName());
+		ini.Entry(L"BIOS", bios_filename, pc);
+	}
+	else
+		ini.Entry(L"BIOS", Bios, pc);
+}
+
+Pcsx2Config::FolderOptions::FolderOptions()
+{
+
+}
 
 Pcsx2Config::Pcsx2Config()
 {
@@ -418,6 +440,8 @@ Pcsx2Config::Pcsx2Config()
 	McdFolderAutoManage = true;
 	EnablePatches = true;
 	BackupSavestate = true;
+
+	CdvdSource = CDVD_SourceType::Iso;
 }
 
 void Pcsx2Config::LoadSave( IniInterface& ini )
@@ -455,6 +479,9 @@ void Pcsx2Config::LoadSave( IniInterface& ini )
 	Debugger		.LoadSave( ini );
 	Trace			.LoadSave( ini );
 
+	// For now, this in the derived config for backwards ini compatibility.
+	//BaseFilenames.LoadSave(ini);
+
 	ini.Flush();
 }
 
@@ -480,4 +507,41 @@ void Pcsx2Config::Save( const wxString& dstfile )
 	wxFileConfig cfg( dstfile );
 	IniSaver saver( cfg );
 	LoadSave( saver );
+}
+
+wxString Pcsx2Config::FullpathToBios() const
+{
+	return Path::Combine(Folders.Bios, BaseFilenames.Bios);
+}
+
+void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
+{
+	Cpu = cfg.Cpu;
+	GS = cfg.GS;
+	Speedhacks = cfg.Speedhacks;
+	Gamefixes = cfg.Gamefixes;
+	Profiler = cfg.Profiler;
+	Debugger = cfg.Debugger;
+	Trace = cfg.Trace;
+	BaseFilenames = cfg.BaseFilenames;
+
+	CdvdVerboseReads = cfg.CdvdVerboseReads;
+	CdvdDumpBlocks = cfg.CdvdDumpBlocks;
+	CdvdShareWrite = cfg.CdvdShareWrite;
+	EnablePatches = cfg.EnablePatches;
+	EnableCheats = cfg.EnableCheats;
+	EnableIPC = cfg.EnableIPC;
+	EnableWideScreenPatches = cfg.EnableWideScreenPatches;
+#ifndef DISABLE_RECORDING
+	EnableRecordingTools = cfg.EnableRecordingTools;
+#endif
+	UseBOOT2Injection = cfg.UseBOOT2Injection;
+	BackupSavestate = cfg.BackupSavestate;
+	McdEnableEjection = cfg.McdEnableEjection;
+	McdFolderAutoManage = cfg.McdFolderAutoManage;
+	MultitapPort0_Enabled = cfg.MultitapPort0_Enabled;
+	MultitapPort1_Enabled = cfg.MultitapPort1_Enabled;
+	ConsoleToStdio = cfg.ConsoleToStdio;
+	HostFs = cfg.HostFs;
+	FullBootConfig = cfg.FullBootConfig;
 }

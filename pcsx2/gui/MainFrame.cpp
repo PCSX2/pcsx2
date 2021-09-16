@@ -82,12 +82,12 @@ void MainEmuFrame::UpdateStatusBar()
 		if (g_Conf->EnableFastBoot)
 			temp += "Fast Boot - ";
 
-		if (g_Conf->CdvdSource == CDVD_SourceType::Iso)
-			temp += "Load: '" + wxFileName(g_Conf->CurrentIso).GetFullName() + "' ";
+		if (EmuConfig.CdvdSource == CDVD_SourceType::Iso)
+			temp += "Load: '" + wxFileName(EmuConfig.CurrentIso).GetFullName() + "' ";
 	}
 
 	m_statusbar.SetStatusText(temp, 0);
-	m_statusbar.SetStatusText(CDVD_SourceLabels[enum_cast(g_Conf->CdvdSource)], 1);
+	m_statusbar.SetStatusText(CDVD_SourceLabels[enum_cast(EmuConfig.CdvdSource)], 1);
 
 #ifdef __M_X86_64
 	m_statusbar.SetStatusText("x64", 2);
@@ -100,7 +100,7 @@ void MainEmuFrame::UpdateCdvdSrcSelection()
 {
 	MenuIdentifiers cdsrc = MenuId_Src_Iso;
 
-	switch (g_Conf->CdvdSource)
+	switch (EmuConfig.CdvdSource)
 	{
 		case CDVD_SourceType::Iso:
 			cdsrc = MenuId_Src_Iso;
@@ -772,7 +772,7 @@ void MainEmuFrame::ApplySuspendStatus()
 
 void MainEmuFrame::ApplyCDVDStatus()
 {
-	const CDVD_SourceType Source = g_Conf->CdvdSource;
+	const CDVD_SourceType Source = EmuConfig.CdvdSource;
 
 	wxMenuItem* cdvd_menu = GetMenuBar()->FindItem(MenuId_Boot_CDVD);
 

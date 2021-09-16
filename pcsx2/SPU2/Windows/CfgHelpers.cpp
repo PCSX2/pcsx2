@@ -14,7 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "gui/AppConfig.h"
+#include "Config.h"
 #include "SPU2/Global.h"
 #include "Dialogs.h"
 
@@ -58,7 +58,7 @@ void initIni()
 {
 	if (!pathSet)
 	{
-		CfgFile = GetSettingsFolder().Combine(CfgFile).GetFullPath();
+		CfgFile = EmuConfig.Folders.Settings.Combine(CfgFile).GetFullPath();
 		pathSet = true;
 	}
 }

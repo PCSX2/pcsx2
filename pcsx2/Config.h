@@ -17,9 +17,12 @@
 
 #include "common/emitter/tools.h"
 #include "common/General.h"
+#include "common/Path.h"
 #include <wx/filename.h>
 
 class IniInterface;
+
+enum class CDVD_SourceType : uint8_t;
 
 enum GamefixId
 {
@@ -459,6 +462,43 @@ struct Pcsx2Config
 		}
 	};
 
+	// ------------------------------------------------------------------------
+	struct FolderOptions
+	{
+		wxDirName
+			Settings,
+			Bios,
+			Snapshots,
+			Savestates,
+			MemoryCards,
+			Langs,
+			Logs,
+			Cheats,
+			CheatsWS;
+
+		// FolderOptions is expected to be initialized by the frontend, not
+		// loaded in the base config class.
+		FolderOptions();
+	};
+
+	// ------------------------------------------------------------------------
+	struct FilenameOptions
+	{
+		wxFileName Bios;
+
+		void LoadSave(IniInterface& conf);
+
+		bool operator==(const FilenameOptions& right) const
+		{
+			return OpEqu(Bios);
+		}
+
+		bool operator!=(const FilenameOptions& right) const
+		{
+			return !this->operator==(right);
+		}
+	};
+
 	BITFIELD32()
 		bool
 			CdvdVerboseReads	:1,		// enables cdvd read activity verbosely dumped to the console
@@ -495,7 +535,17 @@ struct Pcsx2Config
 
 	TraceLogFilters		Trace;
 
-	wxFileName			BiosFilename;
+	FolderOptions Folders;
+	FilenameOptions BaseFilenames;
+	
+	// Set at runtime, not loaded from config.
+	CDVD_SourceType CdvdSource;
+	wxString CurrentIso;
+	wxString CurrentDiscDrive;
+	wxString CurrentBlockdump;
+	wxString CurrentELF;
+	wxString CurrentIRX;
+	wxString CurrentGameArgs;
 
 	Pcsx2Config();
 	void LoadSave( IniInterface& ini );
@@ -504,6 +554,8 @@ struct Pcsx2Config
 	void Load( const wxInputStream& srcstream );
 	void Save( const wxString& dstfile );
 	void Save( const wxOutputStream& deststream );
+
+	wxString FullpathToBios() const;
 
 	bool MultitapEnabled( uint port ) const;
 
@@ -517,13 +569,17 @@ struct Pcsx2Config
 			OpEqu( Gamefixes )	&&
 			OpEqu( Profiler )	&&
 			OpEqu( Trace )		&&
-			OpEqu( BiosFilename );
+			OpEqu( BaseFilenames );
 	}
 
 	bool operator !=( const Pcsx2Config& right ) const
 	{
 		return !this->operator ==( right );
 	}
+
+	// You shouldn't assign to this class, because it'll mess with the runtime variables (Current...).
+	// But you can still use this to copy config. Only needed until we drop wx.
+	void CopyConfig(const Pcsx2Config& cfg);
 };
 
 extern Pcsx2Config EmuConfig;

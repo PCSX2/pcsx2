@@ -63,14 +63,9 @@ extern wxDirName		SettingsFolder;				// dictates where the settings folder comes
 
 extern wxDirName		InstallFolder;
 
-extern wxDirName GetSettingsFolder();
 extern wxString  GetVmSettingsFilename();
 extern wxString  GetUiSettingsFilename();
 extern wxString  GetUiKeysFilename();
-
-extern wxDirName GetLogFolder();
-extern wxDirName GetCheatsFolder();
-extern wxDirName GetCheatsWsFolder();
 
 enum InstallationModeType
 {
@@ -143,9 +138,9 @@ public:
 			Cheats,
 			CheatsWS;
 
-		wxDirName RunIso;		// last used location for Iso loading.
-		wxDirName RunELF;		// last used location for ELF loading.
-		wxString RunDisc;		// last used location for Disc loading.
+		wxDirName RunIso; // last used location for Iso loading.
+		wxDirName RunELF; // last used location for ELF loading.
+		wxString RunDisc; // last used location for Disc loading.
 
 		FolderOptions();
 		void LoadSave( IniInterface& conf );
@@ -156,14 +151,6 @@ public:
 		const wxDirName& operator[]( FoldersEnum_t folderidx ) const;
 		wxDirName& operator[]( FoldersEnum_t folderidx );
 		bool IsDefault( FoldersEnum_t folderidx ) const;
-	};
-
-	// ------------------------------------------------------------------------
-	struct FilenameOptions
-	{
-		wxFileName Bios;
-
-		void LoadSave( IniInterface& conf );
 	};
 
 	// ------------------------------------------------------------------------
@@ -317,13 +304,6 @@ public:
 
 	bool		AskOnBoot;
 
-	wxString				CurrentIso;
-    wxString				CurrentBlockdump;
-	wxString				CurrentELF;
-	wxString				CurrentIRX;
-	CDVD_SourceType			CdvdSource;
-	wxString				CurrentGameArgs;
-
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
 	// slots (3 each)
 	McdOptions				Mcd[8];
@@ -331,7 +311,6 @@ public:
 
 	ConsoleLogOptions		ProgLogBox;
 	FolderOptions			Folders;
-	FilenameOptions			BaseFilenames;
 	GSWindowOptions			GSWindow;
 	FramerateOptions		Framerate;
 #ifndef DISABLE_RECORDING
@@ -349,7 +328,6 @@ public:
 public:
 	AppConfig();
 
-	wxString FullpathToBios() const;
 	wxString FullpathToMcd( uint slot ) const;
 
 	void LoadSave( IniInterface& ini );

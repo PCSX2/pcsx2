@@ -196,7 +196,7 @@ void AppCoreThread::ChangeCdvdSource()
 		return;
 	}
 
-	CDVD_SourceType cdvdsrc(g_Conf->CdvdSource);
+	CDVD_SourceType cdvdsrc(EmuConfig.CdvdSource);
 	if (cdvdsrc == CDVDsys_GetSourceType())
 		return;
 
@@ -215,13 +215,13 @@ void Pcsx2App::SysApplySettings()
 		return;
 	CoreThread.ApplySettings(g_Conf->EmuOptions);
 
-	CDVD_SourceType cdvdsrc(g_Conf->CdvdSource);
-	if (cdvdsrc != CDVDsys_GetSourceType() || (cdvdsrc == CDVD_SourceType::Iso && (CDVDsys_GetFile(cdvdsrc) != g_Conf->CurrentIso)))
+	CDVD_SourceType cdvdsrc(EmuConfig.CdvdSource);
+	if (cdvdsrc != CDVDsys_GetSourceType() || (cdvdsrc == CDVD_SourceType::Iso && (CDVDsys_GetFile(cdvdsrc) != EmuConfig.CurrentIso)))
 	{
 		CoreThread.ResetCdvd();
 	}
 
-	CDVDsys_SetFile(CDVD_SourceType::Iso, g_Conf->CurrentIso);
+	CDVDsys_SetFile(CDVD_SourceType::Iso, EmuConfig.CurrentIso);
 }
 
 void AppCoreThread::OnResumeReady()
@@ -392,7 +392,7 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	// Note: It's important that we apply the commandline overrides *before* database fixes.
 	// The database takes precedence (if enabled).
 
-	fixup = src;
+	fixup.CopyConfig(src);
 
 	const CommandlineOverrides& overrides(wxGetApp().Overrides);
 	if (overrides.DisableSpeedhacks || !g_Conf->EnableSpeedHacks)
@@ -491,12 +491,12 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 
 	// regular cheat patches
 	if (fixup.EnableCheats)
-		gameCheats.Printf(L" [%d Cheats]", LoadPatchesFromDir(GameInfo::gameCRC, GetCheatsFolder(), L"Cheats"));
+		gameCheats.Printf(L" [%d Cheats]", LoadPatchesFromDir(GameInfo::gameCRC, EmuConfig.Folders.Cheats, L"Cheats"));
 
 	// wide screen patches
 	if (fixup.EnableWideScreenPatches)
 	{
-		if (int numberLoadedWideScreenPatches = LoadPatchesFromDir(GameInfo::gameCRC, GetCheatsWsFolder(), L"Widescreen hacks"))
+		if (int numberLoadedWideScreenPatches = LoadPatchesFromDir(GameInfo::gameCRC, EmuConfig.Folders.CheatsWS, L"Widescreen hacks"))
 		{
 			gameWsHacks.Printf(L" [%d widescreen hacks]", numberLoadedWideScreenPatches);
 			Console.WriteLn(Color_Gray, "Found widescreen patches in the cheats_ws folder --> skipping cheats_ws.zip");
@@ -590,7 +590,7 @@ void AppCoreThread::OnResumeInThread(SystemsMask systemsToReinstate)
 {
 	if (m_resetCdvd)
 	{
-		CDVDsys_ChangeSource(g_Conf->CdvdSource);
+		CDVDsys_ChangeSource(EmuConfig.CdvdSource);
 		cdvdCtrlTrayOpen();
 		DoCDVDopen();
 		m_resetCdvd = false;

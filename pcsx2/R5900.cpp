@@ -633,9 +633,9 @@ void __fastcall eeloadHook()
 		// mode). Then EELOAD is called with the argument "rom0:PS2LOGO". At this point, we do not need any additional tricks
 		// because EELOAD is now ready to accept launch arguments. So in full-boot mode, we simply wait for PS2LOGO to be called,
 		// then we add the desired launch arguments. PS2LOGO passes those on to the game itself as it calls EELOAD a third time.
-		if (!g_Conf->CurrentGameArgs.empty() && !strcmp(elfname.c_str(), "rom0:PS2LOGO"))
+		if (!EmuConfig.CurrentGameArgs.empty() && !strcmp(elfname.c_str(), "rom0:PS2LOGO"))
 		{
-			const char *argString = g_Conf->CurrentGameArgs.c_str();
+			const char *argString = EmuConfig.CurrentGameArgs.c_str();
 			Console.WriteLn("eeloadHook: Supplying launch argument(s) '%s' to module '%s'...", argString, elfname.c_str());
 
 			// Join all arguments by space characters so they can be processed as one string by ParseArgumentString(), then add the
@@ -648,7 +648,7 @@ void __fastcall eeloadHook()
 				arg_len = strlen((char *)PSM(arg_ptr));
 				memset(PSM(arg_ptr + arg_len), 0x20, 1);
 			}
-			strcpy((char *)PSM(arg_ptr + arg_len + 1), g_Conf->CurrentGameArgs.c_str());
+			strcpy((char *)PSM(arg_ptr + arg_len + 1), EmuConfig.CurrentGameArgs.c_str());
 			u32 first_arg_ptr = memRead32(cpuRegs.GPR.n.a1.UD[0]);
 #if DEBUG_LAUNCHARG
 			Console.WriteLn("eeloadHook: arg block is '%s'.", (char *)PSM(first_arg_ptr));
@@ -720,7 +720,7 @@ void __fastcall eeloadHook()
 // Only called if g_SkipBiosHack is true
 void __fastcall eeloadHook2()
 {
-	if (g_Conf->CurrentGameArgs.empty())
+	if (EmuConfig.CurrentGameArgs.empty())
 		return;
 
 	if (!g_osdsys_str)
@@ -729,14 +729,14 @@ void __fastcall eeloadHook2()
 		return;
 	}
 
-	const char *argString = g_Conf->CurrentGameArgs.c_str();
+	const char *argString = EmuConfig.CurrentGameArgs.c_str();
 	Console.WriteLn("eeloadHook2: Supplying launch argument(s) '%s' to ELF '%s'.", argString, (char *)PSM(g_osdsys_str));
 
 	// Add args string after game's ELF name that was written over "rom0:OSDSYS" by eeloadHook(). In between the ELF name and args
 	// string we insert a space character so that ParseArgumentString() has one continuous string to process.
 	int game_len = strlen((char *)PSM(g_osdsys_str));
 	memset(PSM(g_osdsys_str + game_len), 0x20, 1);
-	strcpy((char *)PSM(g_osdsys_str + game_len + 1), g_Conf->CurrentGameArgs.c_str());
+	strcpy((char *)PSM(g_osdsys_str + game_len + 1), EmuConfig.CurrentGameArgs.c_str());
 #if DEBUG_LAUNCHARG
 	Console.WriteLn("eeloadHook2: arg block is '%s'.", (char *)PSM(g_osdsys_str));
 #endif

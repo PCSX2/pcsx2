@@ -36,6 +36,7 @@
 #include "DEV9/pcap_io.h"
 #include "DEV9/net.h"
 #include "DEV9/PacketReader/IP/IP_Address.h"
+#include "Config.h"
 #include "gui/AppCoreThread.h"
 
 #include "DEV9/ATA/HddCreate.h"
@@ -199,11 +200,11 @@ void OnInitDialog()
 
 void OnBrowse(GtkButton* button, gpointer usr_data)
 {
-	ghc::filesystem::path inis(GetSettingsFolder().ToString().ToStdString());
+	ghc::filesystem::path inis(EmuConfig.Folders.Settings.ToString().ToStdString());
 
 	static const wxChar* hddFilterType = L"HDD|*.raw;*.RAW";
 
-	wxFileDialog ctrl(nullptr, _("HDD Image File"), GetSettingsFolder().ToString(), HDD_DEF,
+	wxFileDialog ctrl(nullptr, _("HDD Image File"), EmuConfig.Folders.Settings.ToString(), HDD_DEF,
 		(wxString)hddFilterType + L"|" + _("All Files (*.*)") + L"|*.*", wxFD_SAVE);
 
 	if (ctrl.ShowModal() != wxID_CANCEL)
@@ -279,7 +280,7 @@ void OnOk()
 
 	if (hddPath.is_relative())
 	{
-		ghc::filesystem::path path(GetSettingsFolder().ToString().wx_str());
+		ghc::filesystem::path path(EmuConfig.Folders.Settings.ToString().wx_str());
 		hddPath = path / hddPath;
 	}
 

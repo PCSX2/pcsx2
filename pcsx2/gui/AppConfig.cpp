@@ -410,29 +410,9 @@ namespace FilenameDefs
 	}
 };
 
-static wxDirName GetResolvedFolder(FoldersEnum_t id)
+static wxDirName GetSettingsFolder()
 {
-	return g_Conf->Folders.IsDefault(id) ? PathDefs::Get(id) : g_Conf->Folders[id];
-}
-
-wxDirName GetLogFolder()
-{
-	return GetResolvedFolder(FolderId_Logs);
-}
-
-wxDirName GetCheatsFolder()
-{
-	return GetResolvedFolder(FolderId_Cheats);
-}
-
-wxDirName GetCheatsWsFolder()
-{
-	return GetResolvedFolder(FolderId_CheatsWS);
-}
-
-wxDirName GetSettingsFolder()
-{
-	if( wxGetApp().Overrides.SettingsFolder.IsOk() )
+	if (wxGetApp().Overrides.SettingsFolder.IsOk())
 		return wxGetApp().Overrides.SettingsFolder;
 
 	return UseDefaultSettingsFolder ? PathDefs::GetSettings() : SettingsFolder;
@@ -456,8 +436,6 @@ wxString GetUiKeysFilename()
 	return GetSettingsFolder().Combine( fname ).GetFullPath();
 }
 
-
-wxString AppConfig::FullpathToBios() const				{ return Path::Combine( Folders.Bios, BaseFilenames.Bios ); }
 wxString AppConfig::FullpathToMcd( uint slot ) const
 {
 	return Path::Combine( Folders.MemoryCards, Mcd[slot].Filename );
@@ -491,8 +469,6 @@ AppConfig::AppConfig()
 
 	EnablePresets		= true;
 	PresetIndex			= 1;
-
-	CdvdSource			= CDVD_SourceType::Iso;
 
 	// To be moved to FileMemoryCard pluign (someday)
 	for( uint slot=0; slot<8; ++slot )
@@ -595,13 +571,15 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	IniEntry( Toolbar_ImageSize );
 	IniEntry( Toolbar_ShowLabels );
 
-	wxFileName res(CurrentIso);
-	ini.Entry( L"CurrentIso", res, res, ini.IsLoading() || IsPortable() );
-	CurrentIso = res.GetFullPath();
+	ini.EnumEntry(L"CdvdSource", EmuConfig.CdvdSource, CDVD_SourceLabels, EmuConfig.CdvdSource);
 
-	IniEntry( CurrentBlockdump );
-	IniEntry( CurrentELF );
-	IniEntry( CurrentIRX );
+	wxFileName res(EmuConfig.CurrentIso);
+	ini.Entry(L"CurrentIso", res, res, ini.IsLoading() || IsPortable());
+	EmuConfig.CurrentIso = res.GetFullPath();
+
+	ini.Entry(wxT("CurrentBlockdump"), EmuConfig.CurrentBlockdump, EmuConfig.CurrentBlockdump);
+	ini.Entry(wxT("CurrentELF"), EmuConfig.CurrentELF, EmuConfig.CurrentELF);
+	ini.Entry(wxT("CurrentIRX"), EmuConfig.CurrentIRX, EmuConfig.CurrentIRX);
 
 	IniEntry( EnableSpeedHacks );
 	IniEntry( EnableGameFixes );
@@ -614,8 +592,6 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	#ifdef __WXMSW__
 	IniEntry( McdCompressNTFS );
 	#endif
-
-	ini.EnumEntry( L"CdvdSource", CdvdSource, CDVD_SourceLabels, CdvdSource );
 }
 
 // ------------------------------------------------------------------------
@@ -628,7 +604,12 @@ void AppConfig::LoadSave( IniInterface& ini )
 	ProgLogBox		.LoadSave( ini, L"ProgramLog" );
 
 	Folders			.LoadSave( ini );
-	BaseFilenames	.LoadSave( ini );
+
+  // sync the EmuOptions folders with what we loaded. what a mess this is....
+	if (ini.IsLoading())
+		EmuOptions.Folders = EmuConfig.Folders;
+
+	EmuOptions.BaseFilenames.LoadSave( ini );
 	GSWindow		.LoadSave( ini );
 	Framerate		.LoadSave( ini );
 #ifndef DISABLE_RECORDING
@@ -734,26 +715,18 @@ void AppConfig::FolderOptions::LoadSave( IniInterface& ini )
 
 		for( int i=0; i<FolderId_COUNT; ++i )
 			operator[]( (FoldersEnum_t)i ).Normalize();
+
+		EmuConfig.Folders.Settings = GetSettingsFolder();
+		EmuConfig.CurrentDiscDrive = RunDisc;
+		EmuConfig.Folders.Bios = Bios;
+		EmuConfig.Folders.Snapshots = Snapshots;
+		EmuConfig.Folders.Savestates = Savestates;
+		EmuConfig.Folders.MemoryCards = MemoryCards;
+		EmuConfig.Folders.Logs = Logs;
+		EmuConfig.Folders.Langs = Langs;
+		EmuConfig.Folders.Cheats = Cheats;
+		EmuConfig.Folders.CheatsWS = CheatsWS;
 	}
-}
-
-// ------------------------------------------------------------------------
-void AppConfig::FilenameOptions::LoadSave( IniInterface& ini )
-{
-	ScopedIniGroup path( ini, L"Filenames" );
-
-	static const wxFileName pc( L"Please Configure" );
-
-	//when saving in portable mode, we just save the non-full-path filename
- 	//  --> on load they'll be initialized with default (relative) paths (works for bios)
-	//note: this will break if converting from install to portable, and custom folders are used. We can live with that.
-	bool needRelativeName = ini.IsSaving() && IsPortable();
-
-	if( needRelativeName ) { 
-		wxFileName bios_filename = wxFileName( Bios.GetFullName() );
-		ini.Entry( L"BIOS", bios_filename, pc );
-	} else
-		ini.Entry( L"BIOS", Bios, pc );
 }
 
 // ------------------------------------------------------------------------
@@ -1221,9 +1194,9 @@ static void LoadUiSettings()
 	g_Conf = std::make_unique<AppConfig>();
 	g_Conf->LoadSave( loader );
 
-	if( !wxFile::Exists( g_Conf->CurrentIso ) )
+	if( !wxFile::Exists( EmuConfig.CurrentIso ) )
 	{
-		g_Conf->CurrentIso.clear();
+		EmuConfig.CurrentIso.clear();
 	}
 
 	sApp.DispatchUiSettingsEvent( loader );
@@ -1256,12 +1229,12 @@ void AppLoadSettings()
 
 static void SaveUiSettings()
 {	
-	if( !wxFile::Exists( g_Conf->CurrentIso ) )
+	if( !wxFile::Exists(EmuConfig.CurrentIso ) )
 	{
-		g_Conf->CurrentIso.clear();
+		EmuConfig.CurrentIso.clear();
 	}
 
-	sApp.GetRecentIsoManager().Add( g_Conf->CurrentIso );
+	sApp.GetRecentIsoManager().Add( EmuConfig.CurrentIso );
 
 	AppIniSaver saver;
 	g_Conf->LoadSave( saver );

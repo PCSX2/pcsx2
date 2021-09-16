@@ -30,7 +30,7 @@
 
 // Needed to know if raw input is available.  It requires XP or higher.
 #include "PADRawInput.h"
-#include "gui/AppConfig.h"
+#include "Config.h"
 
 //max len 24 wchar_t
 const wchar_t* padTypes[] = {
@@ -337,7 +337,7 @@ void PADsetSettingsDir(const char* dir)
 
 	//uint targlen = MultiByteToWideChar(CP_ACP, 0, dir, -1, NULL, 0);
 	wxString iniName = "PAD.ini";
-	MultiByteToWideChar(CP_UTF8, 0, std::string(GetSettingsFolder().Combine(iniName).GetFullPath()).c_str(), -1, iniFileUSB, MAX_PATH * 2);
+	MultiByteToWideChar(CP_UTF8, 0, std::string(EmuConfig.Folders.Settings.Combine(iniName).GetFullPath()).c_str(), -1, iniFileUSB, MAX_PATH * 2);
 
 	createIniDir = false;
 

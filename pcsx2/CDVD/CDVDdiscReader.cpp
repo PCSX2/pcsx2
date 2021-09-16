@@ -15,8 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "CDVDdiscReader.h"
-
-#include "gui/AppConfig.h"
+#include "Config.h"
 
 #include <condition_variable>
 
@@ -184,9 +183,9 @@ void StopKeepAliveThread()
 s32 CALLBACK DISCopen(const char* pTitle)
 {
 #if defined(_WIN32)
-	std::wstring drive = g_Conf->Folders.RunDisc.ToStdWstring();
+	std::wstring drive = EmuConfig.CurrentDiscDrive.ToStdWstring();
 #else
-	std::string drive = g_Conf->Folders.RunDisc.ToStdString();
+	std::string drive = EmuConfig.CurrentDiscDrive.ToStdString();
 #endif
 	GetValidDrive(drive);
 	if (drive.empty())

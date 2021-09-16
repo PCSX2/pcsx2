@@ -137,7 +137,7 @@ void Panels::BiosSelectorPanel::Apply()
 			.SetUserMsg(pxE(L"Please select a valid BIOS.  If you are unable to make a valid selection then press Cancel to close the Configuration panel."));
 	}
 
-	g_Conf->BaseFilenames.Bios = (*m_BiosList)[(sptr)m_ComboBox->GetClientData(sel)];
+	g_Conf->EmuOptions.BaseFilenames.Bios = (*m_BiosList)[(sptr)m_ComboBox->GetClientData(sel)];
 }
 
 void Panels::BiosSelectorPanel::AppStatusEvent_OnSettingsApplied()
@@ -203,7 +203,7 @@ void Panels::BiosSelectorPanel::OnEnumComplete(wxCommandEvent& evt)
 	if (m_EnumeratorThread.get() != enumThread || m_BiosList->size() < enumThread->Result.size())
 		return;
 
-	const wxFileName& currentBios = g_Conf->FullpathToBios();
+	const wxFileName& currentBios = g_Conf->EmuOptions.FullpathToBios();
 	m_ComboBox->Clear(); // Clear the "Enumerating BIOSes..."
 
 	for (const std::pair<wxString, u32>& result : enumThread->Result)

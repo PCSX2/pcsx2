@@ -458,16 +458,16 @@ bool Pcsx2App::OnInit()
 		(new GameDatabaseLoaderThread())->Start();
 
 		// By default no IRX injection
-		g_Conf->CurrentIRX = "";
+		EmuConfig.CurrentIRX = "";
 
 		if (Startup.SysAutoRun)
 		{
 			g_Conf->EmuOptions.UseBOOT2Injection = !Startup.NoFastBoot;
-			g_Conf->CdvdSource = Startup.CdvdSource;
+			EmuConfig.CdvdSource = Startup.CdvdSource;
 			if (Startup.CdvdSource == CDVD_SourceType::Iso)
 				SysUpdateIsoSrcFile(Startup.IsoFile);
 			sApp.SysExecute(Startup.CdvdSource);
-			g_Conf->CurrentGameArgs = Startup.GameLaunchArgs;
+			EmuConfig.CurrentGameArgs = Startup.GameLaunchArgs;
 		}
 		else if (Startup.SysAutoRunElf)
 		{
@@ -495,7 +495,7 @@ bool Pcsx2App::OnInit()
 		{
 			g_Conf->EmuOptions.UseBOOT2Injection = true;
 
-			g_Conf->CurrentIRX = Startup.ElfFile;
+			EmuConfig.CurrentIRX = Startup.ElfFile;
 
 			// FIXME: ElfFile is an irx it will crash
 			sApp.SysExecute(Startup.CdvdSource, Startup.ElfFile);

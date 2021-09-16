@@ -19,6 +19,7 @@
 
 #include "IopCommon.h"
 #include "Patch.h"
+#include "Config.h"
 
 #include <memory>
 #include <vector>
@@ -247,7 +248,7 @@ int LoadPatchesFromDir(wxString name, const wxDirName& folderName, const wxStrin
 	wxString filespec = name + L"*.pnach";
 	loaded += _LoadPatchFiles(folderName, filespec, friendlyName, numberFoundPatchFiles);
 
-	if (folderName.ToString().IsSameAs(GetCheatsFolder().ToString()) && numberFoundPatchFiles == 0)
+	if (folderName.ToString().IsSameAs(EmuConfig.Folders.Cheats.ToString()) && numberFoundPatchFiles == 0)
 	{
 		wxString pathName = Path::Combine(folderName, name.MakeUpper() + L".pnach");
 		PatchesCon->WriteLn(Color_Gray, L"Not found %s file: %s", WX_STR(friendlyName), WX_STR(pathName));

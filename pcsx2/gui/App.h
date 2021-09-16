@@ -362,7 +362,6 @@ enum GsWindowMode_t
 class CommandlineOverrides
 {
 public:
-	AppConfig::FilenameOptions Filenames;
 	wxDirName SettingsFolder;
 	wxFileName VmSettingsFile;
 
