@@ -9684,6 +9684,8 @@ SLES-51390:
 SLES-51391:
   name: "RTL Skispringen 2003"
   region: "PAL-E-G"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLES-51392:
   name: "Evolution Snowboarding"
   region: "PAL-M3"
@@ -10525,7 +10527,7 @@ SLES-51888:
   name: "RTL Ski Jumping 2004"
   region: "PAL-E-G"
   clampModes:
-    vuClampMode: 3 # Fixes SPS 
+    vuClampMode: 3 # Fixes SPS.
 SLES-51890:
   name: "Buffy the Vampire Slayer - Chaos Bleeds"
   region: "PAL-M4"
@@ -12762,6 +12764,8 @@ SLES-53022:
 SLES-53023:
   name: "RTL Ski Jump 2005"
   region: "PAL-E-G"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLES-53024:
   name: "Altered Beast"
   region: "PAL-M5"
@@ -12829,6 +12833,8 @@ SLES-53039:
 SLES-53041:
   name: "RTL Ski Alpine 2005"
   region: "PAL-E-G"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLES-53044:
   name: "Juiced"
   region: "PAL-M4"
@@ -13237,10 +13243,10 @@ SLES-53301:
   region: "PAL-E"
   compat: 5
 SLES-53303:
-  name: "Ski Jumping 2006"
+  name: "RTL Ski Jumping 2006"
   region: "PAL-E-G"
   clampModes:
-    vuClampMode: 3 # Fixes SPS 
+    vuClampMode: 3 # Fixes SPS.
 SLES-53309:
   name: "Transformers [Director's Cut]"
   region: "PAL-M5"
@@ -13357,6 +13363,8 @@ SLES-53361:
 SLES-53362:
   name: "Alpine Skiing 2005"
   region: "PAL-E"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLES-53363:
   name: "Shin Megami Tensei: Lucifer's Call"
   region: "PAL-M3"
@@ -15576,15 +15584,23 @@ SLES-54366:
 SLES-54368:
   name: "RTL Ski Jumping 2007"
   region: "PAL-E-G"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLES-54370:
   name: "Alpine Ski Racing"
   region: "PAL-E-G"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLES-54372:
   name: "RTL Biathlon 2007"
   region: "PAL-E-G"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLES-54374:
   name: "RTL Wintergames 2007"
   region: "PAL-E-G"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLES-54376:
   name: "Barnyard"
   region: "PAL-E"
@@ -16027,7 +16043,7 @@ SLES-54560:
   name: "Alpine Ski Racing 2007"
   region: "PAL-M3"
   clampModes:
-    vuClampMode: 3
+    vuClampMode: 3 # Fixes SPS.
   gameFixes:
     - VUKickstartHack
 SLES-54561:
@@ -16818,15 +16834,23 @@ SLES-54933:
 SLES-54937:
   name: "RTL Biathlon 2008"
   region: "PAL-G"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLES-54938:
   name: "RTL Biathlon 2008"
   region: "PAL-E"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLES-54939:
   name: "RTL Winter Sports 2008 - The Ultimate Challenge"
   region: "PAL-G"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLES-54940:
-  name: "Winter Sports 2008 - The Ultimate Challenge"
+  name: "RTL Winter Sports 2008 - The Ultimate Challenge"
   region: "PAL-E"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLES-54942:
   name: "Disney Princess - Enchanted Journey"
   region: "PAL-F-G-I"
@@ -17774,12 +17798,16 @@ SLES-55406:
 SLES-55408:
   name: "RTL Biathlon 2009"
   region: "PAL-E-F"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLES-55409:
   name: "TT SuperBikes - Legends"
   region: "PAL-M5"
 SLES-55411:
-  name: "Winter Sports 2009 - The Next Challenge"
+  name: "RTL Winter Sports 2009 - The Next Challenge"
   region: "PAL-E-F"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLES-55415:
   name: "Disney TH!NK Fast"
   region: "PAL-I-S"
@@ -39387,6 +39415,8 @@ SLUS-21710:
 SLUS-21711:
   name: "RTL Biathlon 2008"
   region: "NTSC-U"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLUS-21712:
   name: "History Channel - Battle for the Pacific"
   region: "NTSC-U"
@@ -39953,6 +39983,8 @@ SLUS-21849:
   name: "Winter Sports 2: The Next Challenge"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLUS-21850:
   name: "Score International Baja 1000: The Official Game"
   region: "NTSC-U"
