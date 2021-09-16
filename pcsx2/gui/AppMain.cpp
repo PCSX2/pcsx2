@@ -458,10 +458,21 @@ void Pcsx2App::LogicalVsync()
 
 	FpsManager.DoFrame();
 
-	if (g_Conf->GSWindow.FMVAspectRatioSwitch != FMV_AspectRatio_Switch_Off) {
+	if (EmuConfig.GS.FMVAspectRatioSwitch != FMVAspectRatioSwitchType::Off) {
 		if (EnableFMV) {
 			DevCon.Warning("FMV on");
-			GSSetFMVSwitch(true);
+
+			switch (EmuConfig.GS.FMVAspectRatioSwitch)
+			{
+			case FMVAspectRatioSwitchType::R4_3:
+				EmuConfig.CurrentAspectRatio = AspectRatioType::R4_3;
+				break;
+			case FMVAspectRatioSwitchType::R16_9:
+				EmuConfig.CurrentAspectRatio = AspectRatioType::R16_9;
+				break;
+			default:
+				break;
+			}
 			EnableFMV = false;
 		}
 
@@ -469,7 +480,7 @@ void Pcsx2App::LogicalVsync()
 			int diff = cpuRegs.cycle - eecount_on_last_vdec;
 			if (diff > 60000000 ) {
 				DevCon.Warning("FMV off");
-				GSSetFMVSwitch(false);
+				EmuConfig.CurrentAspectRatio = EmuConfig.GS.AspectRatio;
 				FMVstarted = false;
 			}
 		}

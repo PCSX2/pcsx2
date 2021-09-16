@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSRenderer.h"
-#include "gui/AppConfig.h"
+#include "pcsx2/Config.h"
 #if defined(__unix__)
 #include <X11/keysym.h>
 #endif
@@ -29,7 +29,6 @@ GSRenderer::GSRenderer()
 	, m_shift_key(false)
 	, m_control_key(false)
 	, m_texture_shuffle(false)
-	, m_fmv_switch(false)
 	, m_real_size(0, 0)
 	, m_wnd()
 	, m_dev(NULL)
@@ -312,28 +311,10 @@ GSVector4i GSRenderer::ComputeDrawRectangle(int width, int height) const
 
 	double targetAr = clientAr;
 
-	if (m_fmv_switch)
-	{
-		if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_4_3)
-		{
-			targetAr = 4.0 / 3.0;
-		}
-		else if (g_Conf->GSWindow.FMVAspectRatioSwitch == FMV_AspectRatio_Switch_16_9)
-		{
-			targetAr = 16.0 / 9.0;
-		}
-	}
-	else
-	{
-		if (g_Conf->GSWindow.AspectRatio == AspectRatio_4_3)
-		{
-			targetAr = 4.0 / 3.0;
-		}
-		else if (g_Conf->GSWindow.AspectRatio == AspectRatio_16_9)
-		{
-			targetAr = 16.0 / 9.0;
-		}
-	}
+	if (EmuConfig.CurrentAspectRatio == AspectRatioType::R4_3)
+		targetAr = 4.0 / 3.0;
+	else if (EmuConfig.CurrentAspectRatio == AspectRatioType::R16_9)
+		targetAr = 16.0 / 9.0;
 
 	const double arr = targetAr / clientAr;
 	double target_width = f_width;
@@ -343,12 +324,12 @@ GSVector4i GSRenderer::ComputeDrawRectangle(int width, int height) const
 	else if (arr > 1)
 		target_height = std::floor(f_height / arr + 0.5);
 
-	float zoom = g_Conf->GSWindow.Zoom / 100.0;
+	float zoom = EmuConfig.GS.Zoom / 100.0;
 	if (zoom == 0) //auto zoom in untill black-bars are gone (while keeping the aspect ratio).
 		zoom = std::max((float)arr, (float)(1.0 / arr));
 
 	target_width *= zoom;
-	target_height *= zoom * g_Conf->GSWindow.StretchY / 100.0;
+	target_height *= zoom * EmuConfig.GS.StretchY / 100.0;
 
 	double target_x, target_y;
 	if (target_width > f_width)
@@ -361,8 +342,8 @@ GSVector4i GSRenderer::ComputeDrawRectangle(int width, int height) const
 		target_y = (f_height - target_height) * 0.5;
 
 	const double unit = .01 * std::min(target_x, target_y);
-	target_x += unit * g_Conf->GSWindow.OffsetX;
-	target_y += unit * g_Conf->GSWindow.OffsetY;
+	target_x += unit * EmuConfig.GS.OffsetX;
+	target_y += unit * EmuConfig.GS.OffsetY;
 
 	return GSVector4i(
 		static_cast<int>(std::floor(target_x)),
@@ -423,7 +404,7 @@ void GSRenderer::VSync(int field)
 #endif
 		{
 			//GS owns the window's title, be verbose.
-			static const char* aspect_ratio_names[AspectRatio_MaxCount] = { "Stretch", "4:3", "16:9" };
+			static const char* aspect_ratio_names[static_cast<int>(AspectRatioType::MaxCount)] = { "Stretch", "4:3", "16:9" };
 
 			std::string s2 = m_regs->SMODE2.INT ? (std::string("Interlaced ") + (m_regs->SMODE2.FFMD ? "(frame)" : "(field)")) : "Progressive";
 
@@ -432,7 +413,7 @@ void GSRenderer::VSync(int field)
 				m_perfmon.GetFrame(), GetInternalResolution().x, GetInternalResolution().y, fps, (int)(100.0 * fps / GetTvRefreshRate()),
 				s2.c_str(),
 				theApp.m_gs_interlace[m_interlace].name.c_str(),
-				aspect_ratio_names[g_Conf->GSWindow.AspectRatio],
+				aspect_ratio_names[static_cast<int>(EmuConfig.GS.AspectRatio)],
 				(int)m_perfmon.Get(GSPerfMon::SyncPoint),
 				(int)m_perfmon.Get(GSPerfMon::Prim),
 				(int)m_perfmon.Get(GSPerfMon::Draw),

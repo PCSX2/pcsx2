@@ -22,7 +22,7 @@
 #include "mpeg2lib/Mpeg.h"
 
 #include <limits.h>
-#include "gui/AppConfig.h"
+#include "Config.h"
 
 #include "common/MemsetFast.inl"
 
@@ -432,7 +432,7 @@ static __ri void ipuBDEC(tIPU_CMD_BDEC bdec)
 
 static __fi bool ipuVDEC(u32 val)
 {
-	if (g_Conf->GSWindow.FMVAspectRatioSwitch != FMV_AspectRatio_Switch_Off) {
+	if (EmuConfig.GS.FMVAspectRatioSwitch != FMVAspectRatioSwitchType::Off) {
 		static int count = 0;
 		if (count++ > 5) {
 			if (!FMVstarted) {

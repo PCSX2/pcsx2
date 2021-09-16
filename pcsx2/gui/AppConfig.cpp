@@ -611,7 +611,7 @@ void AppConfig::LoadSave( IniInterface& ini )
 
 	EmuOptions.BaseFilenames.LoadSave( ini );
 	GSWindow		.LoadSave( ini );
-	Framerate		.LoadSave( ini );
+	EmuOptions.Framerate		.LoadSave( ini );
 #ifndef DISABLE_RECORDING
 	inputRecording.loadSave(ini);
 #endif
@@ -738,13 +738,6 @@ AppConfig::GSWindowOptions::GSWindowOptions()
 	DisableResizeBorders	= false;
 	DisableScreenSaver		= true;
 
-	AspectRatio				= AspectRatio_4_3;
-	FMVAspectRatioSwitch	= FMV_AspectRatio_Switch_Off;
-	Zoom					= 100;
-	StretchY				= 100;
-	OffsetX					= 0;
-	OffsetY					= 0;
-
 	WindowSize				= wxSize( 640, 480 );
 	WindowPos				= wxDefaultPosition;
 	IsMaximized				= false;
@@ -768,9 +761,6 @@ void AppConfig::GSWindowOptions::SanityCheck()
 	// move into view:
 	if( !wxGetDisplayArea().Contains( wxRect( WindowPos, wxSize( 48,48 ) ) ) )
 		WindowPos = wxDefaultPosition;
-
-	if( (uint)AspectRatio >= (uint)AspectRatio_MaxCount )
-		AspectRatio = AspectRatio_4_3;
 }
 
 void AppConfig::GSWindowOptions::LoadSave( IniInterface& ini )
@@ -800,7 +790,9 @@ void AppConfig::GSWindowOptions::LoadSave( IniInterface& ini )
 		NULL
 	};
 
-	ini.EnumEntry( L"AspectRatio", AspectRatio, AspectRatioNames, AspectRatio );
+	ini.EnumEntry( L"AspectRatio", g_Conf->EmuOptions.GS.AspectRatio, AspectRatioNames, g_Conf->EmuOptions.GS.AspectRatio );
+	if (ini.IsLoading())
+		EmuConfig.CurrentAspectRatio = g_Conf->EmuOptions.GS.AspectRatio;
 
 	static const wxChar* FMVAspectRatioSwitchNames[] =
 	{
@@ -810,9 +802,9 @@ void AppConfig::GSWindowOptions::LoadSave( IniInterface& ini )
 		// WARNING: array must be NULL terminated to compute it size
 		NULL
 	};
-	ini.EnumEntry(L"FMVAspectRatioSwitch", FMVAspectRatioSwitch, FMVAspectRatioSwitchNames, FMVAspectRatioSwitch);
+	ini.EnumEntry(L"FMVAspectRatioSwitch", g_Conf->EmuOptions.GS.FMVAspectRatioSwitch, FMVAspectRatioSwitchNames, g_Conf->EmuOptions.GS.FMVAspectRatioSwitch);
 
-	IniEntry( Zoom );
+	ini.Entry(wxT("Zoom"), g_Conf->EmuOptions.GS.Zoom, g_Conf->EmuOptions.GS.Zoom);
 
 	if( ini.IsLoading() ) SanityCheck();
 }
@@ -832,28 +824,6 @@ void AppConfig::InputRecordingOptions::loadSave(IniInterface& ini)
 	IniEntry(m_frame_advance_amount);
 }
 #endif
-
-// ----------------------------------------------------------------------------
-void AppConfig::FramerateOptions::SanityCheck()
-{
-	// Ensure Conformation of various options...
-
-	NominalScalar = std::clamp(NominalScalar, 0.05, 10.0);
-	TurboScalar = std::clamp(TurboScalar, 0.05, 10.0);
-	SlomoScalar = std::clamp(SlomoScalar, 0.05, 10.0);
-}
-
-void AppConfig::FramerateOptions::LoadSave( IniInterface& ini )
-{
-	ScopedIniGroup path( ini, L"Framerate" );
-
-	IniEntry( NominalScalar );
-	IniEntry( TurboScalar );
-	IniEntry( SlomoScalar );
-
-	IniEntry( SkipOnLimit );
-	IniEntry( SkipOnTurbo );
-}
 
 AppConfig::CaptureOptions::CaptureOptions()
 {
@@ -945,7 +915,7 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
 
 	//Have some original and default values at hand to be used later.
 	Pcsx2Config::GSOptions        original_GS = EmuOptions.GS;
-	AppConfig::FramerateOptions	  original_Framerate = Framerate;
+	Pcsx2Config::FramerateOptions	  original_Framerate = EmuOptions.Framerate;
 	Pcsx2Config::SpeedhackOptions original_SpeedHacks = EmuOptions.Speedhacks;
 	AppConfig				default_AppConfig;
 	Pcsx2Config				default_Pcsx2Config;
@@ -967,9 +937,9 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
 
 	//Force some settings as a (current) base for all presets.
 
-	Framerate			= default_AppConfig.Framerate;
-	Framerate.SlomoScalar = original_Framerate.SlomoScalar;
-	Framerate.TurboScalar = original_Framerate.TurboScalar;
+	EmuOptions.Framerate			= default_Pcsx2Config.Framerate;
+	EmuOptions.Framerate.SlomoScalar = original_Framerate.SlomoScalar;
+	EmuOptions.Framerate.TurboScalar = original_Framerate.TurboScalar;
 
 	EnableGameFixes		= false;
 
@@ -1210,7 +1180,7 @@ static void LoadVmSettings()
 	std::unique_ptr<wxFileConfig> vmini( OpenFileConfig( GetVmSettingsFilename() ) );
 	IniLoader vmloader( vmini.get() );
 	g_Conf->EmuOptions.LoadSave( vmloader );
-	g_Conf->EmuOptions.GS.LimitScalar = g_Conf->Framerate.NominalScalar;
+	g_Conf->EmuOptions.GS.LimitScalar = g_Conf->EmuOptions.Framerate.NominalScalar;
 
 	if (g_Conf->EnablePresets){
 		g_Conf->IsOkApplyPreset(g_Conf->PresetIndex, true);

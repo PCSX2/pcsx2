@@ -1815,8 +1815,6 @@ void GSgetTitleInfo2(char* dest, size_t length);
 void GSsetFrameSkip(int frameskip);
 void GSsetVsync(int vsync);
 void GSsetExclusive(int enabled);
-bool GSGetFMVSwitch();
-void GSSetFMVSwitch(bool enabled);
 
 class GSApp
 {

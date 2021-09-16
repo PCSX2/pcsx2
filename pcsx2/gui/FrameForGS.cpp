@@ -696,11 +696,11 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 
 	if( g_Conf->EmuOptions.GS.FrameLimitEnable )
 	{
-		switch( g_LimiterMode )
+		switch( EmuConfig.LimiterMode )
 		{
-			case Limit_Nominal:	limiterStr = templates.LimiterNormal; break;
-			case Limit_Turbo:	limiterStr = templates.LimiterTurbo; break;
-			case Limit_Slomo:	limiterStr = templates.LimiterSlowmo; break;
+			case LimiterModeType::Nominal:	limiterStr = templates.LimiterNormal; break;
+			case LimiterModeType::Turbo:	limiterStr = templates.LimiterTurbo; break;
+			case LimiterModeType::Slomo:	limiterStr = templates.LimiterSlowmo; break;
 		}
 	}
 

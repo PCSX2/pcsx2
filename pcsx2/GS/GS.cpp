@@ -863,19 +863,6 @@ void GSsetExclusive(int enabled)
 	}
 }
 
-bool GSGetFMVSwitch()
-{
-	return s_gs ? s_gs->GetFMVSwitch() : false;
-}
-
-void GSSetFMVSwitch(bool enabled)
-{
-	if (s_gs)
-	{
-		s_gs->SetFMVSwitch(enabled);
-	}
-}
-
 #if defined(__unix__) || defined(__APPLE__)
 
 inline unsigned long timeGetTime()

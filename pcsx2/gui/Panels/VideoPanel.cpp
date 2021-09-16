@@ -108,7 +108,7 @@ void Panels::FramelimiterPanel::AppStatusEvent_OnSettingsApplied()
 
 void Panels::FramelimiterPanel::ApplyConfigToGui( AppConfig& configToApply, int flags )
 {
-	const AppConfig::FramerateOptions& appfps( configToApply.Framerate );
+	const Pcsx2Config::FramerateOptions& appfps( configToApply.EmuOptions.Framerate );
 	const Pcsx2Config::GSOptions& gsconf( configToApply.EmuOptions.GS );
 
 	if( ! (flags & AppConfig::APPLY_FLAG_FROM_PRESET) )
@@ -135,7 +135,7 @@ void Panels::FramelimiterPanel::ApplyConfigToGui( AppConfig& configToApply, int 
 
 void Panels::FramelimiterPanel::Apply()
 {
-	AppConfig::FramerateOptions& appfps( g_Conf->Framerate );
+	Pcsx2Config::FramerateOptions& appfps( g_Conf->EmuOptions.Framerate );
 	Pcsx2Config::GSOptions& gsconf( g_Conf->EmuOptions.GS );
 
 	gsconf.FrameLimitEnable	= !m_check_LimiterDisable->GetValue();
@@ -230,7 +230,7 @@ void Panels::FrameSkipPanel::AppStatusEvent_OnSettingsApplied()
 
 void Panels::FrameSkipPanel::ApplyConfigToGui( AppConfig& configToApply, int flags )
 {
-	const AppConfig::FramerateOptions& appfps( configToApply.Framerate );
+	const Pcsx2Config::FramerateOptions& appfps( configToApply.EmuOptions.Framerate );
 	const Pcsx2Config::GSOptions& gsconf( configToApply.EmuOptions.GS );
 
 	m_radio_SkipMode->SetSelection( appfps.SkipOnLimit ? 2 : (appfps.SkipOnTurbo ? 1 : 0) );
@@ -246,7 +246,7 @@ void Panels::FrameSkipPanel::ApplyConfigToGui( AppConfig& configToApply, int fla
 
 void Panels::FrameSkipPanel::Apply()
 {
-	AppConfig::FramerateOptions& appfps( g_Conf->Framerate );
+	Pcsx2Config::FramerateOptions& appfps( g_Conf->EmuOptions.Framerate );
 	Pcsx2Config::GSOptions& gsconf( g_Conf->EmuOptions.GS );
 
 	gsconf.FramesToDraw = m_spin_FramesToDraw->GetValue();
@@ -343,7 +343,7 @@ void Panels::VideoPanel::Defaults_Click(wxCommandEvent& evt)
 {
 	AppConfig config = *g_Conf;
 	config.EmuOptions.GS = Pcsx2Config::GSOptions();
-	config.Framerate = AppConfig::FramerateOptions();
+	config.EmuOptions.Framerate = Pcsx2Config::FramerateOptions();
 	VideoPanel::ApplyConfigToGui(config);
 	m_fpan->ApplyConfigToGui(config);
 	m_span->ApplyConfigToGui(config);
