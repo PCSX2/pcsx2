@@ -20,7 +20,11 @@
 #include "common/IniInterface.h"
 #include "Config.h"
 #include "GS.h"
-#include "gui/GSFrame.h"
+#include "CDVD/CDVDaccess.h"
+
+#ifndef PCSX2_CORE
+#include "gui/AppConfig.h"
+#endif
 
 void TraceLogFilters::LoadSave( IniInterface& ini )
 {
@@ -439,7 +443,11 @@ void Pcsx2Config::FilenameOptions::LoadSave(IniInterface& ini)
 	//when saving in portable mode, we just save the non-full-path filename
 	//  --> on load they'll be initialized with default (relative) paths (works for bios)
 	//note: this will break if converting from install to portable, and custom folders are used. We can live with that.
+#ifndef PCSX2_CORE
 	bool needRelativeName = ini.IsSaving() && IsPortable();
+#else
+	bool needRelativeName = ini.IsSaving();
+#endif
 
 	if (needRelativeName)
 	{
@@ -485,6 +493,8 @@ Pcsx2Config::Pcsx2Config()
 	EnablePatches = true;
 	BackupSavestate = true;
 
+	GzipIsoIndexTemplate = L"$(f).pindex.tmp";
+
 	CdvdSource = CDVD_SourceType::Iso;
 }
 
@@ -521,6 +531,8 @@ void Pcsx2Config::LoadSave( IniInterface& ini )
 
 	Debugger		.LoadSave( ini );
 	Trace			.LoadSave( ini );
+
+	IniEntry(GzipIsoIndexTemplate);
 
 	// For now, this in the derived config for backwards ini compatibility.
 #ifdef PCSX2_CORE
@@ -576,6 +588,8 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	Trace = cfg.Trace;
 	BaseFilenames = cfg.BaseFilenames;
 	Framerate = cfg.Framerate;
+
+	GzipIsoIndexTemplate = cfg.GzipIsoIndexTemplate;
 
 	CdvdVerboseReads = cfg.CdvdVerboseReads;
 	CdvdDumpBlocks = cfg.CdvdDumpBlocks;

@@ -479,8 +479,6 @@ AppConfig::AppConfig()
 		// Folder memory card is autodetected later.
 		Mcd[slot].Type = MemoryCardType::MemoryCard_File;
 	}
-
-	GzipIsoIndexTemplate = L"$(f).pindex.tmp";
 }
 
 // ------------------------------------------------------------------------
@@ -566,7 +564,7 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	ini.EnumEntry( L"LanguageId", LanguageId, NULL, LanguageId );
 	IniEntry( LanguageCode );
 	IniEntry( RecentIsoCount );
-	IniEntry( GzipIsoIndexTemplate );
+	ini.Entry(wxT("GzipIsoIndexTemplate"), EmuConfig.GzipIsoIndexTemplate, EmuConfig.GzipIsoIndexTemplate);
 	IniEntry( Listbook_ImageSize );
 	IniEntry( Toolbar_ImageSize );
 	IniEntry( Toolbar_ShowLabels );
