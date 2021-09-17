@@ -12969,6 +12969,8 @@ SLES-53114:
   region: "PAL-M5"
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
+  gameFixes:
+  - VUKickstartHack
 SLES-53119:
   name: "Kessen III"
   region: "PAL-E"
@@ -13001,6 +13003,8 @@ SLES-53131:
   region: "PAL-E"
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
+  gameFixes:
+  - VUKickstartHack
 SLES-53138:
   name: "Outlaw Volleyball - Remixed"
   region: "PAL-M4"
@@ -14106,6 +14110,8 @@ SLES-53656:
   region: "PAL-M4"
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
+  gameFixes:
+  - VUKickstartHack
 SLES-53657:
   name: "Shrek - Super Slam"
   region: "PAL-E"
@@ -14659,6 +14665,8 @@ SLES-53909:
   region: "PAL-G"
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
+  gameFixes:
+  - VUKickstartHack
 SLES-53910:
   name: "Agent Hugo"
   region: "PAL-R"
@@ -18791,6 +18799,8 @@ SLKA-25264:
   region: "NTSC-K"
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
+  gameFixes:
+  - VUKickstartHack
 SLKA-25265:
   name: "Devil May Cry 3"
   region: "NTSC-K"
@@ -25036,6 +25046,8 @@ SLPM-66263:
   region: "NTSC-J"
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
+  gameFixes:
+  - VUKickstartHack
 SLPM-66264:
   name: "Canvas 2 - Niji-iro no Sketch [Deluxe Pack]"
   region: "NTSC-J"
@@ -25540,6 +25552,8 @@ SLPM-66427:
   region: "NTSC-J"
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
+  gameFixes:
+  - VUKickstartHack
 SLPM-66429:
   name: "Special Forces - Fire for Effect"
   region: "NTSC-J"
@@ -36932,6 +36946,8 @@ SLUS-21145:
   compat: 5
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
+  gameFixes:
+  - VUKickstartHack
 SLUS-21146:
   name: "Far East of Eden"
   region: "NTSC-U"
@@ -37418,6 +37434,8 @@ SLUS-21250:
   compat: 5
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
+  gameFixes:
+  - VUKickstartHack
 SLUS-21251:
   name: "FlatOut 2"
   region: "NTSC-U"
