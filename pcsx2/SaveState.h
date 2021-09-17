@@ -45,9 +45,13 @@ struct freezeData
     u8 *data;
 };
 
-// this function is meant to be used in the place of GSfreeze, and provides a safe layer
-// between the GS saving function and the MTGS's needs. :)
-extern s32 CALLBACK gsSafeFreeze( int mode, freezeData *data );
+class ArchiveEntryList;
+
+// Wrappers to generate a save state compatible across all frontends.
+// These functions assume that the caller has paused the core thread.
+extern void SaveState_DownloadState(ArchiveEntryList* destlist);
+extern void SaveState_ZipToDisk(ArchiveEntryList* srclist, const wxString& filename);
+extern void SaveState_UnzipFromDisk(const wxString& filename);
 
 // --------------------------------------------------------------------------------------
 //  SaveStateBase class
