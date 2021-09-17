@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "gui/MemoryCardFile.h"
+#include "MemoryCardFile.h"
 
 struct _mcd
 {

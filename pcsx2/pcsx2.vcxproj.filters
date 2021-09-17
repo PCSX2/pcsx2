@@ -761,12 +761,6 @@
     <ClCompile Include="gui\MainMenuClicks.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
-    <ClCompile Include="gui\MemoryCardFile.cpp">
-      <Filter>AppHost</Filter>
-    </ClCompile>
-    <ClCompile Include="gui\MemoryCardFolder.cpp">
-      <Filter>AppHost</Filter>
-    </ClCompile>
     <ClCompile Include="gui\MessageBoxes.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
@@ -1667,6 +1661,12 @@
     <ClCompile Include="gui\pxRadioPanel.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
+    <ClCompile Include="MemoryCardFile.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryCardFolder.cpp">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -1991,12 +1991,6 @@
       <Filter>AppHost\Include</Filter>
     </ClInclude>
     <ClInclude Include="gui\MainFrame.h">
-      <Filter>AppHost\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="gui\MemoryCardFile.h">
-      <Filter>AppHost\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="gui\MemoryCardFolder.h">
       <Filter>AppHost\Include</Filter>
     </ClInclude>
     <ClInclude Include="gui\RecentIsoList.h">
@@ -2766,6 +2760,12 @@
     </ClInclude>
     <ClInclude Include="gui\pxEvents.h">
       <Filter>AppHost</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryCardFolder.h">
+      <Filter>System\Ps2\Iop</Filter>
+    </ClInclude>
+    <ClInclude Include="MemoryCardFile.h">
+      <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

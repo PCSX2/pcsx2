@@ -21,6 +21,7 @@
 #include "Config.h"
 #include "GS.h"
 #include "CDVD/CDVDaccess.h"
+#include "MemoryCardFile.h"
 
 #ifndef PCSX2_CORE
 #include "gui/AppConfig.h"
@@ -493,6 +494,20 @@ Pcsx2Config::Pcsx2Config()
 	EnablePatches = true;
 	BackupSavestate = true;
 
+#ifdef __WXMSW__
+	McdCompressNTFS = true;
+#endif
+
+	// To be moved to FileMemoryCard pluign (someday)
+	for (uint slot = 0; slot < 8; ++slot)
+	{
+		Mcd[slot].Enabled = !FileMcd_IsMultitapSlot(slot); // enables main 2 slots
+		Mcd[slot].Filename = FileMcd_GetDefaultName(slot);
+
+		// Folder memory card is autodetected later.
+		Mcd[slot].Type = MemoryCardType::MemoryCard_File;
+	}
+
 	GzipIsoIndexTemplate = L"$(f).pindex.tmp";
 
 	CdvdSource = CDVD_SourceType::Iso;
@@ -538,6 +553,13 @@ void Pcsx2Config::LoadSave( IniInterface& ini )
 #ifdef PCSX2_CORE
 	BaseFilenames.LoadSave(ini);
 	Framerate.LoadSave(ini);
+	LoadSaveMemcards(ini);
+
+	IniEntry(GzipIsoIndexTemplate);
+
+#ifdef __WXMSW__
+	IniEntry(McdCompressNTFS);
+#endif
 #endif
 
 	if (ini.IsLoading())
@@ -546,6 +568,30 @@ void Pcsx2Config::LoadSave( IniInterface& ini )
 	}
 
 	ini.Flush();
+}
+
+void Pcsx2Config::LoadSaveMemcards( IniInterface& ini )
+{
+	ScopedIniGroup path( ini, L"MemoryCards" );
+
+	for( uint slot=0; slot<2; ++slot )
+	{
+		ini.Entry( pxsFmt( L"Slot%u_Enable", slot+1 ),
+			Mcd[slot].Enabled, Mcd[slot].Enabled );
+		ini.Entry( pxsFmt( L"Slot%u_Filename", slot+1 ),
+			Mcd[slot].Filename, Mcd[slot].Filename );
+	}
+
+	for( uint slot=2; slot<8; ++slot )
+	{
+		int mtport = FileMcd_GetMtapPort(slot)+1;
+		int mtslot = FileMcd_GetMtapSlot(slot)+1;
+
+		ini.Entry( pxsFmt( L"Multitap%u_Slot%u_Enable", mtport, mtslot ),
+			Mcd[slot].Enabled, Mcd[slot].Enabled );
+		ini.Entry( pxsFmt( L"Multitap%u_Slot%u_Filename", mtport, mtslot ),
+			Mcd[slot].Filename, Mcd[slot].Filename );
+	}
 }
 
 bool Pcsx2Config::MultitapEnabled( uint port ) const
@@ -577,6 +623,11 @@ wxString Pcsx2Config::FullpathToBios() const
 	return Path::Combine(Folders.Bios, BaseFilenames.Bios);
 }
 
+wxString Pcsx2Config::FullpathToMcd(uint slot) const
+{
+	return Path::Combine(Folders.MemoryCards, Mcd[slot].Filename);
+}
+
 void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 {
 	Cpu = cfg.Cpu;
@@ -588,6 +639,8 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	Trace = cfg.Trace;
 	BaseFilenames = cfg.BaseFilenames;
 	Framerate = cfg.Framerate;
+	for (u32 i = 0; i < sizeof(Mcd) / sizeof(Mcd[0]); i++)
+		Mcd[i] = cfg.Mcd[i];
 
 	GzipIsoIndexTemplate = cfg.GzipIsoIndexTemplate;
 
@@ -609,4 +662,7 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	MultitapPort1_Enabled = cfg.MultitapPort1_Enabled;
 	ConsoleToStdio = cfg.ConsoleToStdio;
 	HostFs = cfg.HostFs;
+#ifdef __WXMSW__
+	McdCompressNTFS = cfg.McdCompressNTFS;
+#endif
 }

@@ -528,6 +528,16 @@ struct Pcsx2Config
 		}
 	};
 
+	// ------------------------------------------------------------------------
+	// Options struct for each memory card.
+	//
+	struct McdOptions
+	{
+		wxFileName	Filename;	// user-configured location of this memory card
+		bool		Enabled;	// memory card enabled (if false, memcard will not show up in-game)
+		MemoryCardType Type;	// the memory card implementation that should be used
+	};
+
 	BITFIELD32()
 		bool
 			CdvdVerboseReads	:1,		// enables cdvd read activity verbosely dumped to the console
@@ -552,6 +562,11 @@ struct Pcsx2Config
 
 			ConsoleToStdio		:1,
 			HostFs				:1;
+
+			// uses automatic ntfs compression when creating new memory cards (Win32 only)
+#ifdef __WXMSW__
+			bool		McdCompressNTFS;
+#endif
 	BITFIELD_END
 
 	CpuOptions			Cpu;
@@ -566,7 +581,10 @@ struct Pcsx2Config
 
 	FolderOptions Folders;
 	FilenameOptions BaseFilenames;
-	
+
+	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
+	// slots (3 each)
+	McdOptions Mcd[8];
 	wxString GzipIsoIndexTemplate; // for quick-access index with gzipped ISO
 
 	// Set at runtime, not loaded from config.
@@ -582,6 +600,7 @@ struct Pcsx2Config
 
 	Pcsx2Config();
 	void LoadSave( IniInterface& ini );
+	void LoadSaveMemcards( IniInterface& ini );
 
 	void Load( const wxString& srcfile );
 	void Load( const wxInputStream& srcstream );
@@ -589,6 +608,7 @@ struct Pcsx2Config
 	void Save( const wxOutputStream& deststream );
 
 	wxString FullpathToBios() const;
+	wxString FullpathToMcd(uint slot) const;
 
 	bool MultitapEnabled( uint port ) const;
 

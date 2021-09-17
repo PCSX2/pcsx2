@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "gui/AppCoreThread.h"
 #include "System.h"
-#include "gui/MemoryCardFile.h"
+#include "MemoryCardFile.h"
 
 #include "ConfigurationPanels.h"
 #include "MemoryCardPanels.h"
@@ -546,17 +546,17 @@ void Panels::MemoryCardListPanel_Simple::Apply()
 	Console.WriteLn(L"Apply memory cards:");
 	for (uint slot = 0; slot < 8; ++slot)
 	{
-		g_Conf->Mcd[slot].Type = m_Cards[slot].Type;
-		g_Conf->Mcd[slot].Enabled = m_Cards[slot].IsEnabled && m_Cards[slot].IsPresent;
+		g_Conf->EmuOptions.Mcd[slot].Type = m_Cards[slot].Type;
+		g_Conf->EmuOptions.Mcd[slot].Enabled = m_Cards[slot].IsEnabled && m_Cards[slot].IsPresent;
 		if (m_Cards[slot].IsPresent)
-			g_Conf->Mcd[slot].Filename = m_Cards[slot].Filename;
+			g_Conf->EmuOptions.Mcd[slot].Filename = m_Cards[slot].Filename;
 		else
-			g_Conf->Mcd[slot].Filename = L"";
+			g_Conf->EmuOptions.Mcd[slot].Filename = L"";
 
-		if (g_Conf->Mcd[slot].Enabled)
+		if (g_Conf->EmuOptions.Mcd[slot].Enabled)
 		{
 			used++;
-			Console.WriteLn(L"slot[%d]='%s'", slot, WX_STR(g_Conf->Mcd[slot].Filename.GetFullName()));
+			Console.WriteLn(L"slot[%d]='%s'", slot, WX_STR(g_Conf->EmuOptions.Mcd[slot].Filename.GetFullName()));
 		}
 	}
 	if (!used)
@@ -569,8 +569,8 @@ void Panels::MemoryCardListPanel_Simple::AppStatusEvent_OnSettingsApplied()
 {
 	for (uint slot = 0; slot < 8; ++slot)
 	{
-		m_Cards[slot].IsEnabled = g_Conf->Mcd[slot].Enabled;
-		m_Cards[slot].Filename = g_Conf->Mcd[slot].Filename;
+		m_Cards[slot].IsEnabled = g_Conf->EmuOptions.Mcd[slot].Enabled;
+		m_Cards[slot].Filename = g_Conf->EmuOptions.Mcd[slot].Filename;
 
 		// Automatically create the enabled but non-existing file such that it can be managed (else will get created anyway on boot)
 		wxString targetFile = (GetMcdPath() + m_Cards[slot].Filename.GetFullName()).GetFullPath();
@@ -697,7 +697,7 @@ void Panels::MemoryCardListPanel_Simple::UiConvertCard(McdSlotItem& card)
 		return;
 	}
 
-	AppConfig::McdOptions config;
+	Pcsx2Config::McdOptions config;
 	config.Filename = card.Filename.GetFullName();
 	config.Enabled = card.IsEnabled;
 	config.Type = card.Type;
