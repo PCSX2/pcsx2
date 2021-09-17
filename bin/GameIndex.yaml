@@ -457,8 +457,10 @@ SCAJ-20078:
 SCAJ-20079:
   name: "Katamari Damacy"
   region: "NTSC-Unk"
-  speedHacks:
-    mvuFlagSpeedHack: 0
+  roundModes:
+    vuRoundMode: 0 # Fixes SPS.
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SCAJ-20080:
   name: "Kaena"
   region: "NTSC-Unk"
@@ -673,10 +675,10 @@ SCAJ-20134:
 SCAJ-20135:
   name: "Minna Daisuki Katamari Damacy"
   region: "NTSC-Unk"
+  roundModes:
+    vuRoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3
-  speedHacks:
-    mvuFlagSpeedHack: 0
+    vuClampMode: 3 # Fixes SPS.
   memcardFilters:
     - "SCAJ-20135"
     - "SLPS-25467"
@@ -3425,8 +3427,10 @@ SCKA-20023:
 SCKA-20025:
   name: "Katamari Damacy"
   region: "NTSC-K"
-  speedHacks:
-    mvuFlagSpeedHack: 0
+  roundModes:
+    vuRoundMode: 0 # Fixes SPS.
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SCKA-20026:
   name: "Gungrave O.D."
   region: "NTSC-K"
@@ -3517,10 +3521,10 @@ SCKA-20050:
 SCKA-20051:
   name: "Minna Daisuki Katamari Damacy"
   region: "NTSC-K"
+  roundModes:
+    vuRoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3
-  speedHacks:
-    mvuFlagSpeedHack: 0
+    vuClampMode: 3 # Fixes SPS.
   memcardFilters:
     - "SCKA-20051"
     - "SCKA-20025"
@@ -14505,10 +14509,10 @@ SLES-53827:
 SLES-53828:
   name: "We Love Katamari"
   region: "PAL-M4"
+  roundModes:
+    vuRoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3
-  speedHacks:
-    mvuFlagSpeedHack: 0
+    vuClampMode: 3 # Fixes SPS.
 SLES-53829:
   name: "Raiden III"
   region: "PAL-E"
@@ -29838,8 +29842,10 @@ SLPS-25360:
   name: "Katamari Damacy"
   region: "NTSC-J"
   compat: 5
-  speedHacks:
-    mvuFlagSpeedHack: 0
+  roundModes:
+    vuRoundMode: 0 # Fixes SPS.
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLPS-25361:
   name: "Smash Court Professional Tournament 2"
   region: "NTSC-J"
@@ -30230,10 +30236,10 @@ SLPS-25467:
   name: "Minna Daisuki Katamari Damacy"
   region: "NTSC-J"
   compat: 5
+  roundModes:
+    vuRoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3
-  speedHacks:
-    mvuFlagSpeedHack: 0
+    vuClampMode: 3 # Fixes SPS.
   memcardFilters:
     - "SCAJ-20135"
     - "SLPS-25467"
@@ -31898,8 +31904,10 @@ SLPS-73209:
 SLPS-73210:
   name: "Katamari Damacy [PlayStation 2 The Best]"
   region: "NTSC-J"
-  speedHacks:
-    mvuFlagSpeedHack: 0
+  roundModes:
+    vuRoundMode: 0 # Fixes SPS.
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLPS-73211:
   name: "Summon Night 3 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -32054,15 +32062,17 @@ SLPS-73239:
 SLPS-73240:
   name: "Katamari Damacy [PlayStation 2 The Best]"
   region: "NTSC-J"
-  speedHacks:
-    mvuFlagSpeedHack: 0
+  roundModes:
+    vuRoundMode: 0 # Fixes SPS.
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SLPS-73241:
   name: "Minna Daisuki Katamari Damacy [PlayStation 2 The Best]"
   region: "NTSC-J"
+  roundModes:
+    vuRoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3
-  speedHacks:
-    mvuFlagSpeedHack: 0
+    vuClampMode: 3 # Fixes SPS.
   memcardFilters:
     - "SCAJ-20135"
     - "SLPS-25467"
@@ -36392,10 +36402,10 @@ SLUS-21008:
   name: "Katamari Damacy"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    vuRoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3
-  speedHacks:
-    mvuFlagSpeedHack: 0
+    vuClampMode: 3 # Fixes SPS.
 SLUS-21009:
   name: "Sega Classics Collection"
   region: "NTSC-U"
@@ -37311,10 +37321,10 @@ SLUS-21230:
   name: "We Love Katamari"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    vuRoundMode: 0 # Fixes SPS.
   clampModes:
-    vuClampMode: 3
-  speedHacks:
-    mvuFlagSpeedHack: 0
+    vuClampMode: 3 # Fixes SPS.
   memcardFilters: # Allows import of constellations from Katamari Damacy.
     - "SLUS-21230"
     - "SLUS-21008"
