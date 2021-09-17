@@ -224,7 +224,11 @@ struct microMapXMM
 class microRegAlloc
 {
 protected:
-	static const int xmmTotal = 7; // Don't allocate PQ?
+#ifdef __M_X86_64
+	static const int xmmTotal = 15; // PQ register is reserved
+#else
+	static const int xmmTotal = 7; // PQ register is reserved
+#endif
 	microMapXMM xmmMap[xmmTotal];
 	int         counter; // Current allocation count
 	int         index;   // VU0 or VU1
@@ -287,6 +291,10 @@ public:
 		counter = 0;
 	}
 
+	int getXmmCount()
+	{
+		return xmmTotal + 1;
+	}
 	// Flushes all allocated registers (i.e. writes-back to memory all modified registers).
 	// If clearState is 0, then it keeps cached reg data valid
 	// If clearState is 1, then it invalidates all cached reg data after write-back

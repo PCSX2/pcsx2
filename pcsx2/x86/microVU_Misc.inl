@@ -149,7 +149,7 @@ __fi void mVUbackupRegs(microVU& mVU, bool toMemory = false, bool onlyNeeded = f
 {
 	if (toMemory)
 	{
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < mVU.regAlloc->getXmmCount(); i++)
 		{
 			if (!onlyNeeded || mVU.regAlloc->checkCachedReg(i) || xmmPQ.Id == i)
 				xMOVAPS(ptr128[&mVU.xmmBackup[i][0]], xmm(i));
@@ -167,7 +167,7 @@ __fi void mVUrestoreRegs(microVU& mVU, bool fromMemory = false, bool onlyNeeded 
 {
 	if (fromMemory)
 	{
-		for (int i = 0; i < 8; i++)
+		for (int i = 0; i < mVU.regAlloc->getXmmCount(); i++)
 		{
 			if (!onlyNeeded || mVU.regAlloc->checkCachedReg(i) || xmmPQ.Id == i)
 				xMOVAPS(xmm(i), ptr128[&mVU.xmmBackup[i][0]]);
@@ -197,13 +197,13 @@ public:
 _mVUt void __fc mVUprintRegs()
 {
 	microVU& mVU = mVUx;
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < mVU.regAlloc->getXmmCount(); i++)
 	{
 		Console.WriteLn("xmm%d = [0x%08x,0x%08x,0x%08x,0x%08x]", i,
 			mVU.xmmBackup[i][0], mVU.xmmBackup[i][1],
 			mVU.xmmBackup[i][2], mVU.xmmBackup[i][3]);
 	}
-	for (int i = 0; i < 8; i++)
+	for (int i = 0; i < mVU.regAlloc->getXmmCount(); i++)
 	{
 		Console.WriteLn("xmm%d = [%f,%f,%f,%f]", i,
 			(float&)mVU.xmmBackup[i][0], (float&)mVU.xmmBackup[i][1],

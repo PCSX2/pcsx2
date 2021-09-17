@@ -141,7 +141,12 @@ static const char branchSTR[16][8] = {
 #define xmmT5  xmm4 // Used for regAlloc
 #define xmmT6  xmm5 // Used for regAlloc
 #define xmmT7  xmm6 // Used for regAlloc
+#ifdef __M_X86_64
+#define xmmPQ  xmm15 // Holds the Value and Backup Values of P and Q regs
+#else
 #define xmmPQ  xmm7 // Holds the Value and Backup Values of P and Q regs
+#endif
+
 
 #define gprT1  eax // eax - Temp Reg
 #define gprT2  ecx // ecx - Temp Reg
