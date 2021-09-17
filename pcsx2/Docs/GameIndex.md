@@ -133,7 +133,7 @@ These values are case-sensitive so take care.  If you incorrectly specify a Game
     *   Gundam games messed up camera-view. Dakar 2's sky showing over 3D. Others...
 
 *   `XGKickHack`
-    *   Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace.
+    *   Use accurate timing for VU XGKicks (Slower). Fixes graphical errors on WRC, Erementar Gerad, Tennis Court Smash and others.
 
 *   `IPUWaitHack`
     *   FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
