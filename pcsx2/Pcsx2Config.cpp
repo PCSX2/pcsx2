@@ -504,7 +504,6 @@ void Pcsx2Config::LoadSave( IniInterface& ini )
 #endif
 	IniBitBool( ConsoleToStdio );
 	IniBitBool( HostFs );
-	IniBitBool( FullBootConfig );
 
 	IniBitBool( BackupSavestate );
 	IniBitBool( McdEnableEjection );
@@ -596,5 +595,4 @@ void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 	MultitapPort1_Enabled = cfg.MultitapPort1_Enabled;
 	ConsoleToStdio = cfg.ConsoleToStdio;
 	HostFs = cfg.HostFs;
-	FullBootConfig = cfg.FullBootConfig;
 }
