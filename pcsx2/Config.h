@@ -567,6 +567,8 @@ struct Pcsx2Config
 	FolderOptions Folders;
 	FilenameOptions BaseFilenames;
 	
+	wxString GzipIsoIndexTemplate; // for quick-access index with gzipped ISO
+
 	// Set at runtime, not loaded from config.
 	CDVD_SourceType CdvdSource;
 	wxString CurrentIso;

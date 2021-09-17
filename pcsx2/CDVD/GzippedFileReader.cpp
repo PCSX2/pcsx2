@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include <fstream>
 #include <wx/stdpaths.h>
-#include "gui/AppConfig.h"
+#include "Config.h"
 #include "ChunksCache.h"
 #include "CompressedFileReaderUtils.h"
 #include "GzippedFileReader.h"
@@ -185,7 +185,7 @@ static wxString iso2indexname(const wxString& isoname)
 	wxDirName appRoot = // TODO: have only one of this in PCSX2. Right now have few...
 		(wxDirName)(wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath());
 	//TestTemplate(appRoot, isoname, false);
-	return ApplyTemplate(L"gzip index", appRoot, g_Conf->GzipIsoIndexTemplate, isoname, false);
+	return ApplyTemplate(L"gzip index", appRoot, EmuConfig.GzipIsoIndexTemplate, isoname, false);
 }
 
 GzippedFileReader::GzippedFileReader(void)
