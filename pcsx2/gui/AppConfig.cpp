@@ -17,8 +17,6 @@
 #include "App.h"
 #include "MainFrame.h"
 
-#include "MemoryCardFile.h"
-
 #include "common/IniInterface.h"
 
 #include <wx/stdpaths.h>
@@ -436,11 +434,6 @@ wxString GetUiKeysFilename()
 	return GetSettingsFolder().Combine( fname ).GetFullPath();
 }
 
-wxString AppConfig::FullpathToMcd( uint slot ) const
-{
-	return Path::Combine( Folders.MemoryCards, Mcd[slot].Filename );
-}
-
 bool IsPortable()
 {
 	return InstallationMode==InstallMode_Portable;
@@ -460,25 +453,12 @@ AppConfig::AppConfig()
 	Toolbar_ImageSize	= 24;
 	Toolbar_ShowLabels	= true;
 
-	#ifdef __WXMSW__
-	McdCompressNTFS		= true;
-	#endif
 	EnableSpeedHacks	= true;
 	EnableGameFixes		= false;
 	EnableFastBoot		= true;
 
 	EnablePresets		= true;
 	PresetIndex			= 1;
-
-	// To be moved to FileMemoryCard pluign (someday)
-	for( uint slot=0; slot<8; ++slot )
-	{
-		Mcd[slot].Enabled	= !FileMcd_IsMultitapSlot(slot);	// enables main 2 slots
-		Mcd[slot].Filename	= FileMcd_GetDefaultName( slot );
-
-		// Folder memory card is autodetected later.
-		Mcd[slot].Type = MemoryCardType::MemoryCard_File;
-	}
 }
 
 // ------------------------------------------------------------------------
@@ -529,30 +509,6 @@ void App_SaveInstallSettings( wxConfigBase* ini )
 }
 
 // ------------------------------------------------------------------------
-void AppConfig::LoadSaveMemcards( IniInterface& ini )
-{
-	ScopedIniGroup path( ini, L"MemoryCards" );
-
-	for( uint slot=0; slot<2; ++slot )
-	{
-		ini.Entry( pxsFmt( L"Slot%u_Enable", slot+1 ),
-			Mcd[slot].Enabled, Mcd[slot].Enabled );
-		ini.Entry( pxsFmt( L"Slot%u_Filename", slot+1 ),
-			Mcd[slot].Filename, Mcd[slot].Filename );
-	}
-
-	for( uint slot=2; slot<8; ++slot )
-	{
-		int mtport = FileMcd_GetMtapPort(slot)+1;
-		int mtslot = FileMcd_GetMtapSlot(slot)+1;
-
-		ini.Entry( pxsFmt( L"Multitap%u_Slot%u_Enable", mtport, mtslot ),
-			Mcd[slot].Enabled, Mcd[slot].Enabled );
-		ini.Entry( pxsFmt( L"Multitap%u_Slot%u_Filename", mtport, mtslot ),
-			Mcd[slot].Filename, Mcd[slot].Filename );
-	}
-}
-
 void AppConfig::LoadSaveRootItems( IniInterface& ini )
 {
 	IniEntry( MainGuiPosition );
@@ -588,7 +544,7 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	IniEntry( AskOnBoot );
 	
 	#ifdef __WXMSW__
-	IniEntry( McdCompressNTFS );
+	ini.Entry(wxT("McdCompressNTFS"), EmuOptions.McdCompressNTFS, EmuOptions.McdCompressNTFS);
 	#endif
 }
 
@@ -596,7 +552,7 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 void AppConfig::LoadSave( IniInterface& ini )
 {
 	LoadSaveRootItems( ini );
-	LoadSaveMemcards( ini );
+	EmuOptions.LoadSaveMemcards( ini );
 
 	// Process various sub-components:
 	ProgLogBox		.LoadSave( ini, L"ProgramLog" );

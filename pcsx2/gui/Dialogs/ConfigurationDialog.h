@@ -196,7 +196,7 @@ namespace Dialogs
 
 	public:
 		virtual ~ConvertMemoryCardDialog()  = default;
-		ConvertMemoryCardDialog( wxWindow* parent, const wxDirName& mcdPath, const AppConfig::McdOptions& mcdSourceConfig );
+		ConvertMemoryCardDialog( wxWindow* parent, const wxDirName& mcdPath, const Pcsx2Config::McdOptions& mcdSourceConfig );
 	
 	protected:
 		void CreateControls( const MemoryCardType sourceType );

@@ -130,6 +130,8 @@ set(pcsx2Sources
 	IPC.cpp
 	Mdec.cpp
 	Memory.cpp
+	MemoryCardFile.cpp
+	MemoryCardFolder.cpp
 	MMI.cpp
 	MTGS.cpp
 	MTVU.cpp
@@ -204,6 +206,8 @@ set(pcsx2Headers
 	Mdec.h
 	MTVU.h
 	Memory.h
+	MemoryCardFile.h
+	MemoryCardFolder.h
 	MemoryTypes.h
 	Patch.h
 	PathDefs.h
@@ -1010,8 +1014,6 @@ set(pcsx2GuiSources
 	gui/IsoDropTarget.cpp
 	gui/MainFrame.cpp
 	gui/MainMenuClicks.cpp
-	gui/MemoryCardFile.cpp
-	gui/MemoryCardFolder.cpp
 	gui/MessageBoxes.cpp
 	gui/MSWstuff.cpp
 	gui/Panels/BaseApplicableConfigPanel.cpp
@@ -1068,8 +1070,6 @@ set(pcsx2GuiHeaders
 	gui/i18n.h
 	gui/IsoDropTarget.h
 	gui/MainFrame.h
-	gui/MemoryCardFile.h
-	gui/MemoryCardFolder.h
 	gui/MSWstuff.h
 	gui/Panels/ConfigurationPanels.h
 	gui/Panels/LogOptionsPanels.h

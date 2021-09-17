@@ -20,7 +20,7 @@
 #include "MemoryCardFolder.h"
 
 #include "System.h"
-#include "AppConfig.h"
+#include "Config.h"
 
 #include "yaml-cpp/yaml.h"
 
@@ -91,10 +91,10 @@ bool FolderMemoryCard::IsFormatted() const
 
 void FolderMemoryCard::Open(const bool enableFiltering, const wxString& filter)
 {
-	Open(g_Conf->FullpathToMcd(m_slot), g_Conf->Mcd[m_slot], 0, enableFiltering, filter, false);
+	Open(EmuConfig.FullpathToMcd(m_slot), EmuConfig.Mcd[m_slot], 0, enableFiltering, filter, false);
 }
 
-void FolderMemoryCard::Open(const wxString& fullPath, const AppConfig::McdOptions& mcdOptions, const u32 sizeInClusters, const bool enableFiltering, const wxString& filter, bool simulateFileWrites)
+void FolderMemoryCard::Open(const wxString& fullPath, const Pcsx2Config::McdOptions& mcdOptions, const u32 sizeInClusters, const bool enableFiltering, const wxString& filter, bool simulateFileWrites)
 {
 	InitializeInternalData();
 	m_performFileWrites = !simulateFileWrites;

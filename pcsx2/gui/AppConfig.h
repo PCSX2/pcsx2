@@ -154,16 +154,6 @@ public:
 	};
 
 	// ------------------------------------------------------------------------
-	// Options struct for each memory card.
-	//
-	struct McdOptions
-	{
-		wxFileName	Filename;	// user-configured location of this memory card
-		bool		Enabled;	// memory card enabled (if false, memcard will not show up in-game)
-		MemoryCardType Type;	// the memory card implementation that should be used
-	};
-
-	// ------------------------------------------------------------------------
 	// The GS window receives much love from the land of Options and Settings.
 	//
 	struct GSWindowOptions
@@ -260,11 +250,6 @@ public:
 	// Enables display of toolbar text labels.
 	bool		Toolbar_ShowLabels;
 
-	// uses automatic ntfs compression when creating new memory cards (Win32 only)
-#ifdef __WXMSW__
-	bool		McdCompressNTFS;
-#endif
-
 	// Master toggle for enabling or disabling all speedhacks in one fail-free swoop.
 	// (the toggle is applied when a new EmuConfig is sent through AppCoreThread::ApplySettings)
 	bool		EnableSpeedHacks;
@@ -282,10 +267,6 @@ public:
 	int			PresetIndex;
 
 	bool		AskOnBoot;
-
-	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
-	// slots (3 each)
-	McdOptions				Mcd[8];
 
 	ConsoleLogOptions		ProgLogBox;
 	FolderOptions			Folders;
@@ -305,11 +286,8 @@ public:
 public:
 	AppConfig();
 
-	wxString FullpathToMcd( uint slot ) const;
-
 	void LoadSave( IniInterface& ini );
 	void LoadSaveRootItems( IniInterface& ini );
-	void LoadSaveMemcards( IniInterface& ini );
 
 	static int  GetMaxPresetIndex();
     static bool isOkGetPresetTextAndColor(int n, wxString& label, wxColor& c);
