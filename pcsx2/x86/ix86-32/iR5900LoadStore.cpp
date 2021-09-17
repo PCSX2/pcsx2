@@ -452,11 +452,6 @@ void recSWR()
 
 ////////////////////////////////////////////////////
 
-alignas(16) const u32 SHIFT_MASKS[2][4] = {
-	{ 0xffffffff, 0xffffffff, 0x00000000, 0x00000000 },
-	{ 0xffffffff, 0xffffffff, 0xffffffff, 0xffffffff }
-};
-
 void recLDL()
 {
 	if (!_Rt_)
@@ -514,22 +509,21 @@ void recLDL()
 	xSUB(edx, eax);
 
 	xMOVDZX(xRegisterSSE(t1reg), eax);
-	xMOVQZX(xRegisterSSE(t0reg), ptr128[&SHIFT_MASKS[0][0]]);
+	xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
 	xPSRL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
 	xPAND(xRegisterSSE(t0reg), xRegisterSSE(rtreg));
 	xMOVDQA(xRegisterSSE(t2reg), xRegisterSSE(t0reg));
 
 	xMOVDZX(xRegisterSSE(t1reg), edx);
-	xMOVQZX(xRegisterSSE(t0reg), ptr128[&dummyValue[0]]);
+	xMOVQZX(xRegisterSSE(t0reg), ptr64[&dummyValue[0]]);
 	xPSLL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
 	xPOR(xRegisterSSE(t0reg), xRegisterSSE(t2reg));
+	xMOVSD(xRegisterSSE(rtreg), xRegisterSSE(t0reg));
 	xForwardJump32 full;
 	skip.SetTarget();
 
-	xMOVQZX(xRegisterSSE(t0reg), ptr128[&dummyValue[0]]);
+	xMOVL.PS(xRegisterSSE(rtreg), ptr128[&dummyValue[0]]);
 	full.SetTarget();
-
-	xBLEND.PS(xRegisterSSE(rtreg), xRegisterSSE(t0reg), 0x3);
 
 	_freeXMMreg(t0reg);
 	_freeXMMreg(t1reg);
@@ -602,22 +596,21 @@ void recLDR()
 	xSUB(edx, eax);
 
 	xMOVDZX(xRegisterSSE(t1reg), edx); //64-shift*8
-	xMOVQZX(xRegisterSSE(t0reg), ptr128[&SHIFT_MASKS[0][0]]);
+	xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
 	xPSLL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
 	xPAND(xRegisterSSE(t0reg), xRegisterSSE(rtreg));
 	xMOVQZX(xRegisterSSE(t2reg), xRegisterSSE(t0reg));
 
 	xMOVDZX(xRegisterSSE(t1reg), eax); //shift*8
-	xMOVQZX(xRegisterSSE(t0reg), ptr128[&dummyValue[0]]);
+	xMOVQZX(xRegisterSSE(t0reg), ptr64[&dummyValue[0]]);
 	xPSRL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
 	xPOR(xRegisterSSE(t0reg), xRegisterSSE(t2reg));
+	xMOVSD(xRegisterSSE(rtreg), xRegisterSSE(t0reg));
 	xForwardJump32 full;
 	skip.SetTarget();
 
-	xMOVQZX(xRegisterSSE(t0reg), ptr128[&dummyValue[0]]);
+	xMOVL.PS(xRegisterSSE(rtreg), ptr128[&dummyValue[0]]);
 	full.SetTarget();
-
-	xBLEND.PS(xRegisterSSE(rtreg), xRegisterSSE(t0reg), 0x3);
 
 	_freeXMMreg(t0reg);
 	_freeXMMreg(t1reg);
@@ -689,9 +682,9 @@ void recSDL()
 	xSUB(edx, eax);
 	// Generate mask 128-(shiftx8) xPSRA.W does bit for bit
 	xMOVDZX(xRegisterSSE(t1reg), eax);
-	xMOVQZX(xRegisterSSE(t0reg), ptr128[&SHIFT_MASKS[0][0]]);
+	xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
 	xPSLL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
-	xMOVQZX(xRegisterSSE(t1reg), ptr128[&dummyValue[0]]); // This line is super slow, but using MOVDQA/MOVAPS is even slower!
+	xMOVQZX(xRegisterSSE(t1reg), ptr64[&dummyValue[0]]); // This line is super slow, but using MOVDQA/MOVAPS is even slower!
 	xPAND(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
 
 	// Shift over reg value (shift, PSLL.Q multiplies by 8)
@@ -700,7 +693,7 @@ void recSDL()
 	xPOR(xRegisterSSE(rtreg), xRegisterSSE(t0reg));
 	skip.SetTarget();
 
-	xMOVQ(ptr128[&dummyValue[0]], xRegisterSSE(rtreg));
+	xMOVQ(ptr64[&dummyValue[0]], xRegisterSSE(rtreg));
 
 	_deleteGPRtoXMMreg(_Rt_, 3);
 	_freeXMMreg(t0reg);
@@ -790,9 +783,9 @@ void recSDR()
 	xSUB(edx, eax);
 	// Generate mask 128-(shiftx8) xPSRA.W does bit for bit
 	xMOVDZX(xRegisterSSE(t1reg), edx);
-	xMOVQZX(xRegisterSSE(t0reg), ptr128[&SHIFT_MASKS[0][0]]);
+	xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
 	xPSRL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
-	xMOVQZX(xRegisterSSE(t1reg), ptr128[&dummyValue[0]]); // This line is super slow, but using MOVDQA/MOVAPS is even slower!
+	xMOVQZX(xRegisterSSE(t1reg), ptr64[&dummyValue[0]]); // This line is super slow, but using MOVDQA/MOVAPS is even slower!
 	xPAND(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
 
 	// Shift over reg value (shift, PSLL.Q multiplies by 8)
@@ -801,7 +794,7 @@ void recSDR()
 	xPOR(xRegisterSSE(rtreg), xRegisterSSE(t0reg));
 	skip.SetTarget();
 
-	xMOVQ(ptr128[&dummyValue[0]], xRegisterSSE(rtreg));
+	xMOVQ(ptr64[&dummyValue[0]], xRegisterSSE(rtreg));
 	
 	_deleteGPRtoXMMreg(_Rt_, 3);
 	_freeXMMreg(t0reg);
