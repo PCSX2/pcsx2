@@ -318,8 +318,6 @@ void recLWR()
 
 	// edi = bit offset in word
 	xMOV(calleeSavedReg1d, arg1regd);
-	xAND(calleeSavedReg1d, 3);
-	xSHL(calleeSavedReg1d, 3);
 
 	xAND(arg1regd, ~3);
 	vtlb_DynGenRead32(32, false);
@@ -327,24 +325,25 @@ void recLWR()
 	if (!_Rt_)
 		return;
 
-	// mask off bytes loaded
-	xMOV(ecx, 24);
-	xSUB(ecx, calleeSavedReg1d);
-	xMOV(edx, 0xffffff00);
-	xSHL(edx, cl);
-	xAND(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], edx);
+	xAND(calleeSavedReg1d, 3);
+	xForwardJE8 nomask;
+		xSHL(calleeSavedReg1d, 3);
+		// mask off bytes loaded
+		xMOV(ecx, 24);
+		xSUB(ecx, calleeSavedReg1d);
+		xMOV(edx, 0xffffff00);
+		xSHL(edx, cl);
+		xAND(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], edx);
 
-	// OR in bytes loaded
-	xMOV(ecx, calleeSavedReg1d);
-	xSHR(eax, cl);
-	xOR(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
+		// OR in bytes loaded
+		xMOV(ecx, calleeSavedReg1d);
+		xSHR(eax, cl);
+		xOR(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
 
-	xCMP(ecx, 0);
-	xForwardJump8 nosignextend(Jcc_NotEqual);
-	// if ((addr & 3) == 0)
-	xCDQ();
-	xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
-	nosignextend.SetTarget();
+		xForwardJump8 end;
+	nomask.SetTarget();
+		eeSignExtendTo(_Rt_);
+	end.SetTarget();
 #else
 	iFlushCall(FLUSH_INTERPRETER);
 	_deleteEEreg(_Rs_, 1);
@@ -368,32 +367,39 @@ void recSWL()
 
 	// edi = bit offset in word
 	xMOV(calleeSavedReg1d, arg1regd);
+	xAND(arg1regd, ~3);
 	xAND(calleeSavedReg1d, 3);
-	xSHL(calleeSavedReg1d, 3);
+	xCMP(calleeSavedReg1d, 3);
+	xForwardJE8 skip;
+		xSHL(calleeSavedReg1d, 3);
 
-	xAND(arg1regd, ~3);
-	vtlb_DynGenRead32(32, false);
+		vtlb_DynGenRead32(32, false);
 
-	// mask read -> arg2
-	xMOV(ecx, calleeSavedReg1d);
-	xMOV(arg2regd, 0xffffff00);
-	xSHL(arg2regd, cl);
-	xAND(arg2regd, eax);
+		// mask read -> arg2
+		xMOV(ecx, calleeSavedReg1d);
+		xMOV(arg2regd, 0xffffff00);
+		xSHL(arg2regd, cl);
+		xAND(arg2regd, eax);
 
-	if (_Rt_)
-	{
-		// mask write and OR -> edx
-		xNEG(ecx);
-		xADD(ecx, 24);
-		_eeMoveGPRtoR(eax, _Rt_);
-		xSHR(eax, cl);
-		xOR(arg2regd, eax);
-	}
+		if (_Rt_)
+		{
+			// mask write and OR -> edx
+			xNEG(ecx);
+			xADD(ecx, 24);
+			_eeMoveGPRtoR(eax, _Rt_);
+			xSHR(eax, cl);
+			xOR(arg2regd, eax);
+		}
 
-	_eeMoveGPRtoR(arg1regd, _Rs_);
-	if (_Imm_ != 0)
-		xADD(arg1regd, _Imm_);
-	xAND(arg1regd, ~3);
+		_eeMoveGPRtoR(arg1regd, _Rs_);
+		if (_Imm_ != 0)
+			xADD(arg1regd, _Imm_);
+		xAND(arg1regd, ~3);
+
+		xForwardJump8 end;
+	skip.SetTarget();
+		_eeMoveGPRtoR(arg2regd, _Rt_);
+	end.SetTarget();
 
 	vtlb_DynGenWrite(32);
 #else
@@ -418,32 +424,38 @@ void recSWR()
 
 	// edi = bit offset in word
 	xMOV(calleeSavedReg1d, arg1regd);
+	xAND(arg1regd, ~3);
 	xAND(calleeSavedReg1d, 3);
-	xSHL(calleeSavedReg1d, 3);
+	xForwardJE8 skip;
+		xSHL(calleeSavedReg1d, 3);
 
-	xAND(arg1regd, ~3);
-	vtlb_DynGenRead32(32, false);
+		vtlb_DynGenRead32(32, false);
 
-	// mask read -> edx
-	xMOV(ecx, 24);
-	xSUB(ecx, calleeSavedReg1d);
-	xMOV(arg2regd, 0xffffff);
-	xSHR(arg2regd, cl);
-	xAND(arg2regd, eax);
+		// mask read -> edx
+		xMOV(ecx, 24);
+		xSUB(ecx, calleeSavedReg1d);
+		xMOV(arg2regd, 0xffffff);
+		xSHR(arg2regd, cl);
+		xAND(arg2regd, eax);
 
-	if (_Rt_)
-	{
-		// mask write and OR -> edx
-		xMOV(ecx, calleeSavedReg1d);
-		_eeMoveGPRtoR(eax, _Rt_);
-		xSHL(eax, cl);
-		xOR(arg2regd, eax);
-	}
+		if (_Rt_)
+		{
+			// mask write and OR -> edx
+			xMOV(ecx, calleeSavedReg1d);
+			_eeMoveGPRtoR(eax, _Rt_);
+			xSHL(eax, cl);
+			xOR(arg2regd, eax);
+		}
 
-	_eeMoveGPRtoR(arg1regd, _Rs_);
-	if (_Imm_ != 0)
-		xADD(arg1regd, _Imm_);
-	xAND(arg1regd, ~3);
+		_eeMoveGPRtoR(arg1regd, _Rs_);
+		if (_Imm_ != 0)
+			xADD(arg1regd, _Imm_);
+		xAND(arg1regd, ~3);
+
+		xForwardJump8 end;
+	skip.SetTarget();
+		_eeMoveGPRtoR(arg2regd, _Rt_);
+	end.SetTarget();
 
 	vtlb_DynGenWrite(32);
 #else
@@ -717,7 +729,7 @@ void recSDL()
 		xAND(arg1regd, ~0x07);
 		xAND(calleeSavedReg1d, 0x7);
 		xCMP(calleeSavedReg1d, 7);
-		xForwardJE32 skip;
+		xForwardJE8 skip;
 			xADD(calleeSavedReg1d, 1);
 			int t2reg = vtlb_DynGenRead64(64, -1);
 			int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
@@ -790,7 +802,7 @@ void recSDR()
 		xMOV(calleeSavedReg1d, arg1regd);
 		xAND(arg1regd, ~0x07);
 		xAND(calleeSavedReg1d, 0x7);
-		xForwardJE32 skip;
+		xForwardJE8 skip;
 			int t2reg = vtlb_DynGenRead64(64, -1);
 			int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
 
