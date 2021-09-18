@@ -66,10 +66,10 @@ jobs:
       # Prevent one build from failing everything (although maybe those should be included as experimental builds instead)
       fail-fast: false
       matrix:
-        os: [windows-2019]
+        os: windows-2019
         platform: [Win32, x64]
         configuration: [Release, Release AVX2]
-        experimental: [false]
+        experimental: false
 
     name: Windows-${{ matrix.platform }} | ${{ matrix.configuration }}
     runs-on: ${{ matrix.os }}
@@ -288,9 +288,9 @@ jobs:
       # Prevent one build from failing everything (although maybe those should be included as experimental builds instead)
       fail-fast: false
       matrix:
-        os: [macos-10.15]
-        platform: [x64]
-        experimental: [false]
+        os: macos-10.15
+        platform: x64
+        experimental: false
 
     name: Mac-${{ matrix.platform }}
     runs-on: ${{ matrix.os }}
