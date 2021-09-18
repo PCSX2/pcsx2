@@ -33,17 +33,18 @@
 #include <mutex>
 #include <queue>
 
-#include "gui/App.h"
 #include "SaveState.h"
 
-typedef struct
+struct HostKeyEvent;
+
+struct PadDataS
 {
 	unsigned char controllerType;
 	unsigned short buttonStatus;
 	unsigned char rightJoyX, rightJoyY, leftJoyX, leftJoyY;
 	unsigned char moveX, moveY;
 	unsigned char reserved[91];
-} PadDataS;
+};
 
 void PADupdate(int pad);
 void PADshutdown();
@@ -52,7 +53,7 @@ s32 PADopen(void* pDsp);
 void PADclose();
 u8 PADstartPoll(int pad);
 u8 PADpoll(u8 value);
-keyEvent* PADkeyEvent();
+HostKeyEvent* PADkeyEvent();
 void PADconfigure();
 s32 PADfreeze(FreezeAction mode, freezeData* data);
 s32 PADsetSlot(u8 port, u8 slot);

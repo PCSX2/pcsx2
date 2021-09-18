@@ -2767,6 +2767,9 @@
     <ClInclude Include="MemoryCardFile.h">
       <Filter>System\Ps2\Iop</Filter>
     </ClInclude>
+    <ClInclude Include="Host.h">
+      <Filter>System\Include</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="windows\wxResources.rc">

@@ -247,7 +247,7 @@ void iDumpBlock(u32 ee_pc, u32 ee_size, uptr x86_pc, u32 x86_size)
 
 	// handy but slow solution (system call)
 #ifdef __linux__
-	wxString obj_filename = Path::Combine(g_Conf->Folders.Logs, wxString(L"objdump_tmp.o"));
+	wxString obj_filename = Path::Combine(EmuConfig.Folders.Logs, wxString(L"objdump_tmp.o"));
 	wxFFile objdump(obj_filename , L"wb");
 	objdump.Write(x86, x86_size);
 	objdump.Close();

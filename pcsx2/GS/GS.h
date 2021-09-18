@@ -1711,16 +1711,6 @@ struct GSPrivRegSet
 
 #pragma pack(pop)
 
-enum
-{
-	KEYPRESS   = 1,
-	KEYRELEASE = 2
-};
-struct GSKeyEventData
-{
-	uint32 key, type;
-};
-
 // ST_WRITE is defined in libc, avoid this
 enum stateType
 {
@@ -1774,6 +1764,8 @@ enum class CRCHackLevel : int8
 	Aggressive
 };
 
+struct HostKeyEvent;
+
 #ifdef ENABLE_ACCURATE_BUFFER_EMULATION
 const GSVector2i default_rt_size(2048, 2048);
 #else
@@ -1802,7 +1794,7 @@ void GSgifTransfer2(uint8* mem, uint32 size);
 void GSgifTransfer3(uint8* mem, uint32 size);
 void GSvsync(int field);
 uint32 GSmakeSnapshot(char* path);
-void GSkeyEvent(GSKeyEventData* e);
+void GSkeyEvent(const HostKeyEvent& e);
 int GSfreeze(FreezeAction mode, freezeData* data);
 void GSconfigure();
 int GStest();

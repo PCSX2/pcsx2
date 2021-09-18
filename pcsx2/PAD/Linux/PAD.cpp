@@ -35,16 +35,16 @@ const u32 build = 0; // increase that with each version
 #define PAD_SAVE_STATE_VERSION ((revision << 8) | (build << 0))
 
 PADconf g_conf;
-keyEvent event;
+HostKeyEvent event;
 
-static keyEvent s_event;
+static HostKeyEvent s_event;
 std::string s_padstrLogPath("logs/");
 
 FILE* padLog = NULL;
 
 KeyStatus g_key_status;
 
-MtQueue<keyEvent> g_ev_fifo;
+MtQueue<HostKeyEvent> g_ev_fifo;
 
 
 void __LogToConsole(const char* fmt, ...)
@@ -240,7 +240,7 @@ u8 PADpoll(u8 value)
 }
 
 // PADkeyEvent is called every vsync (return NULL if no event)
-keyEvent* PADkeyEvent()
+HostKeyEvent* PADkeyEvent()
 {
 #ifdef SDL_BUILD
 	// Take the opportunity to handle hot plugging here
@@ -263,7 +263,7 @@ keyEvent* PADkeyEvent()
 	{
 		// PAD_LOG("No events in queue, returning empty event\n");
 		s_event = event;
-		event.evt = 0;
+		event.type = HostKeyEvent::Type::NoEvent;
 		event.key = 0;
 		return &s_event;
 	}
@@ -274,14 +274,14 @@ keyEvent* PADkeyEvent()
 	return &s_event;
 #else // MacOS
 	s_event = event;
-	event.evt = 0;
+	event.type = HostKeyEvent::Type::NoEvent;
 	event.key = 0;
 	return &s_event;
 #endif
 }
 
 #if defined(__unix__)
-void PADWriteEvent(keyEvent& evt)
+void PADWriteEvent(HostKeyEvent& evt)
 {
 	// if (evt.evt != 6) { // Skip mouse move events for logging
 	//     PAD_LOG("Pushing Event. Event Type: %d, Key: %d\n", evt.evt, evt.key);

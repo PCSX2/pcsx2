@@ -20,10 +20,7 @@
 
 #include "Global.h"
 #include "keyboard.h"
-
-#include "common/mt_queue.h"
-extern keyEvent event;
-extern MtQueue<keyEvent> g_ev_fifo;
+#include "PAD.h"
 
 /// g_key_status.press but with proper handling for analog buttons
 static void PressButton(u32 pad, u32 button)
@@ -117,7 +114,7 @@ static bool s_Shift = false;
 static unsigned int s_previous_mouse_x = 0;
 static unsigned int s_previous_mouse_y = 0;
 
-void AnalyzeKeyEvent(keyEvent& evt)
+void AnalyzeKeyEvent(HostKeyEvent& evt)
 {
 	KeySym key = (KeySym)evt.key;
 	int pad = 0;
@@ -133,7 +130,7 @@ void AnalyzeKeyEvent(keyEvent& evt)
 		}
 	}
 
-	switch (evt.evt)
+	switch (static_cast<int>(evt.type))
 	{
 		case KeyPress:
 			// Shift F12 is not yet use by pcsx2. So keep it to grab/ungrab input
@@ -164,7 +161,7 @@ void AnalyzeKeyEvent(keyEvent& evt)
 
 			//PAD_LOG("Key pressed:%d\n", index);
 
-			event.evt = KEYPRESS;
+			event.type = HostKeyEvent::Type::KeyPressed;
 			event.key = key;
 			break;
 
@@ -175,7 +172,7 @@ void AnalyzeKeyEvent(keyEvent& evt)
 			if (index != -1)
 				g_key_status.release(pad, index);
 
-			event.evt = KEYRELEASE;
+			event.type = HostKeyEvent::Type::KeyReleased;
 			event.key = key;
 			break;
 
@@ -258,7 +255,7 @@ void AnalyzeKeyEvent(keyEvent& evt)
 
 void UpdateKeyboardInput()
 {
-	keyEvent evt = {0};
+	HostKeyEvent evt = {};
 	XEvent E = {0};
 
 	// Keyboard input send by PCSX2
@@ -271,7 +268,7 @@ void UpdateKeyboardInput()
 
 		// Change the format of the structure to be compatible with GSOpen2
 		// mode (event come from pcsx2 not X)
-		evt.evt = E.type;
+		evt.type = static_cast<HostKeyEvent::Type>(E.type);
 		switch (E.type)
 		{
 			case MotionNotify:

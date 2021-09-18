@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2020  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021 PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -16,31 +16,16 @@
 #pragma once
 
 #include "common/Pcsx2Defs.h"
-#include "Host.h"
 
-#if defined(__unix__) || defined(__APPLE__)
+struct HostKeyEvent
+{
+	enum class Type
+	{
+		NoEvent = 0,
+		KeyPressed = 1,
+		KeyReleased = 2
+	};
 
-#ifndef __APPLE__
-#include <X11/Xlib.h>
-#include <X11/Xutil.h>
-#include <X11/keysym.h>
-
-// x11 is dumb like that
-#undef DisableScreenSaver
-#endif
-
-extern void AnalyzeKeyEvent(HostKeyEvent& evt);
-extern void UpdateKeyboardInput();
-extern bool PollForNewKeyboardKeys(u32& pkey);
-#endif
-
-#if defined(__unix__)
-#include <gtk/gtk.h>
-#include <gdk/gdkkeysyms.h>
-
-extern Display* GSdsp;
-extern Window GSwin;
-
-#elif defined(__APPLE__)
-#include <Carbon/Carbon.h>
-#endif
+	Type type;
+	u32 key;
+};

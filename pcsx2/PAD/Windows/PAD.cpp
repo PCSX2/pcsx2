@@ -24,6 +24,7 @@
 #include "InputManager.h"
 #include "PADConfig.h"
 #include "PAD.h"
+#include "Host.h"
 
 #include "DeviceEnumerator.h"
 #ifdef _MSC_VER
@@ -32,6 +33,8 @@
 #endif
 #include "KeyboardQueue.h"
 #include "DualShock3.h"
+
+#include "gui/AppCoreThread.h"
 
 #define WMA_FORCE_UPDATE (WM_APP + 0x537)
 #define FORCE_UPDATE_WPARAM ((WPARAM)0x74328943)
@@ -222,9 +225,9 @@ u8 Cap(int i)
 
 inline void ReleaseModifierKeys()
 {
-	QueueKeyEvent(VK_SHIFT, KEYRELEASE);
-	QueueKeyEvent(VK_MENU, KEYRELEASE);
-	QueueKeyEvent(VK_CONTROL, KEYRELEASE);
+	QueueKeyEvent(VK_SHIFT, HostKeyEvent::Type::KeyReleased);
+	QueueKeyEvent(VK_MENU, HostKeyEvent::Type::KeyReleased);
+	QueueKeyEvent(VK_CONTROL, HostKeyEvent::Type::KeyReleased);
 }
 
 // RefreshEnabledDevices() enables everything that can potentially
@@ -387,7 +390,7 @@ void ProcessButtonBinding(Binding* b, ButtonSum* sum, int value)
 		unsigned int t = timeGetTime();
 		if (t - LastCheck < 300)
 			return;
-		QueueKeyEvent(VK_TAB, KEYPRESS);
+		QueueKeyEvent(VK_TAB, HostKeyEvent::Type::KeyPressed);
 		LastCheck = t;
 	}
 
@@ -945,7 +948,7 @@ ExtraWndProcResult StatusWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 			PrepareActivityState(LOWORD(wParam) != WA_INACTIVE);
 			break;
 		case WM_DESTROY:
-			QueueKeyEvent(VK_ESCAPE, KEYPRESS);
+			QueueKeyEvent(VK_ESCAPE, HostKeyEvent::Type::KeyPressed);
 			break;
 		case WM_KILLFOCUS:
 			PrepareActivityState(false);
@@ -1463,7 +1466,7 @@ u8 PADpoll(u8 value)
 	}
 }
 
-keyEvent* PADkeyEvent()
+HostKeyEvent* PADkeyEvent()
 {
 	// If running both pads, ignore every other call.  So if two keys pressed in same interval...
 	static char eventCount = 0;
@@ -1475,7 +1478,7 @@ keyEvent* PADkeyEvent()
 	eventCount = 0;
 
 	Update(2, 0);
-	static keyEvent ev;
+	static HostKeyEvent ev;
 	if (!GetQueuedKeyEvent(&ev))
 		return 0;
 
@@ -1485,7 +1488,7 @@ keyEvent* PADkeyEvent()
 	if (!activeWindow)
 		altDown = shiftDown = 0;
 
-	if (miceEnabled && (ev.key == VK_ESCAPE || (int)ev.key == -2) && ev.evt == KEYPRESS)
+	if (miceEnabled && (ev.key == VK_ESCAPE || (int)ev.key == -2) && ev.type == HostKeyEvent::Type::KeyPressed)
 	{
 		// Disable mouse/KB hooks on escape (before going into paused mode).
 		// This is a hack, since PADclose (which is called on pause) should enevtually also deactivate the
@@ -1507,7 +1510,7 @@ keyEvent* PADkeyEvent()
 	if (ev.key == VK_LSHIFT || ev.key == VK_RSHIFT || ev.key == VK_SHIFT)
 	{
 		ev.key = VK_SHIFT;
-		shiftDown = (ev.evt == KEYPRESS);
+		shiftDown = (ev.type == HostKeyEvent::Type::KeyReleased);
 	}
 	else if (ev.key == VK_LCONTROL || ev.key == VK_RCONTROL)
 	{
@@ -1516,7 +1519,7 @@ keyEvent* PADkeyEvent()
 	else if (ev.key == VK_LMENU || ev.key == VK_RMENU || ev.key == VK_SHIFT)
 	{
 		ev.key = VK_MENU;
-		altDown = (ev.evt == KEYPRESS);
+		altDown = (ev.type == HostKeyEvent::Type::KeyPressed);
 	}
 #endif
 	return &ev;

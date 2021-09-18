@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSRenderer.h"
+#include "Host.h"
 #include "pcsx2/Config.h"
 #if defined(__unix__)
 #include <X11/keysym.h>
@@ -595,27 +596,27 @@ void GSRenderer::EndCapture()
 	m_capture.EndCapture();
 }
 
-void GSRenderer::KeyEvent(GSKeyEventData* e)
+void GSRenderer::KeyEvent(const HostKeyEvent& e)
 {
 #ifndef __APPLE__ // TODO: Add hotkey support on macOS
 #ifdef _WIN32
 	m_shift_key = !!(::GetAsyncKeyState(VK_SHIFT) & 0x8000);
 	m_control_key = !!(::GetAsyncKeyState(VK_CONTROL) & 0x8000);
 #else
-	switch (e->key)
+	switch (e.key)
 	{
 		case XK_Shift_L:
 		case XK_Shift_R:
-			m_shift_key = (e->type == KEYPRESS);
+			m_shift_key = (e.type == HostKeyEvent::Type::KeyPressed);
 			return;
 		case XK_Control_L:
 		case XK_Control_R:
-			m_control_key = (e->type == KEYPRESS);
+			m_control_key = (e.type == HostKeyEvent::Type::KeyReleased);
 			return;
 	}
 #endif
 
-	if (e->type == KEYPRESS)
+	if (e.type == HostKeyEvent::Type::KeyPressed)
 	{
 
 		int step = m_shift_key ? -1 : 1;
@@ -630,7 +631,7 @@ void GSRenderer::KeyEvent(GSKeyEventData* e)
 #define VK_HOME XK_Home
 #endif
 
-		switch (e->key)
+		switch (e.key)
 		{
 			case VK_F5:
 				m_interlace = (m_interlace + s_interlace_nb + step) % s_interlace_nb;

@@ -17,14 +17,16 @@
 // This entire thing isn't really needed,
 // but takes little enough effort to be safe...
 
-void QueueKeyEvent(int key, int event);
-int GetQueuedKeyEvent(keyEvent* event);
+#include "Host.h"
+
+void QueueKeyEvent(u32 key, HostKeyEvent::Type event);
+int GetQueuedKeyEvent(HostKeyEvent* event);
 
 // Cleans up as well as clears queue.
 void ClearKeyQueue();
 
 #ifdef __linux__
-void R_QueueKeyEvent(const keyEvent& event);
-int R_GetQueuedKeyEvent(keyEvent* event);
+void R_QueueKeyEvent(const HostKeyEvent& event);
+int R_GetQueuedKeyEvent(HostKeyEvent* event);
 void R_ClearKeyQueue();
 #endif

@@ -31,7 +31,6 @@
 #include "common/pxStreams.h"
 #include "common/Console.h"
 #include "DebugTools/Debug.h"
-#include "gui/App.h"
 
 #define PADdefs
 

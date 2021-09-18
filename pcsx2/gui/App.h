@@ -33,17 +33,11 @@
 #endif
 
 class DisassemblyDialog;
-
-#include "System.h"
-#include "System/SysThreads.h"
+struct HostKeyEvent;
 
 #include "GS.h"
-
-typedef struct _keyEvent
-{
-    u32 key;
-    u32 evt;
-} keyEvent;
+#include "System.h"
+#include "System/SysThreads.h"
 
 extern uptr pDsp[2];
 
@@ -641,7 +635,7 @@ protected:
 	bool TryOpenConfigCwd();
 	void CleanupOnExit();
 	void OpenWizardConsole();
-	void PadKeyDispatch(const keyEvent& ev);
+	void PadKeyDispatch(const HostKeyEvent& ev);
 
 protected:
 	void HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent& event) const;
