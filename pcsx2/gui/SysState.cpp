@@ -21,7 +21,6 @@
 #include "SaveState.h"
 #include "VUmicro.h"
 
-#include "ZipTools/ThreadedZipTools.h"
 #include "common/pxStreams.h"
 #include "SPU2/spu2.h"
 #include "USB/USB.h"

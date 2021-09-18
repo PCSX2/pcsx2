@@ -1265,15 +1265,6 @@ set(pcsx2UtilitiesSources
 set(pcsx2UtilitiesHeaders
 	Utilities/AsciiFile.h)
 
-# Zip tools utilies sources
-set(pcsx2ZipToolsSources
-	ZipTools/thread_gzip.cpp
-	ZipTools/thread_lzma.cpp)
-
-# Zip tools utilies headers
-set(pcsx2ZipToolsHeaders
-	ZipTools/ThreadedZipTools.h)
-
 
 # Windows sources
 set(pcsx2WindowsSources
@@ -1408,9 +1399,7 @@ target_sources(PCSX2 PRIVATE
 	${pcsx2SystemSources}
 	${pcsx2SystemHeaders}
 	${pcsx2UtilitiesSources}
-	${pcsx2UtilitiesHeaders}
-	${pcsx2ZipToolsSources}
-	${pcsx2ZipToolsHeaders})
+	${pcsx2UtilitiesHeaders})
 
 # platform sources
 # Linux

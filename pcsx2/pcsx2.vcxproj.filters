@@ -863,12 +863,6 @@
     <ClCompile Include="gui\SysState.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
-    <ClCompile Include="ZipTools\thread_gzip.cpp">
-      <Filter>Misc</Filter>
-    </ClCompile>
-    <ClCompile Include="ZipTools\thread_lzma.cpp">
-      <Filter>Misc</Filter>
-    </ClCompile>
     <ClCompile Include="GameDatabase.cpp">
       <Filter>Misc</Filter>
     </ClCompile>
@@ -2016,9 +2010,6 @@
     </ClInclude>
     <ClInclude Include="SysForwardDefs.h">
       <Filter>AppHost\Include</Filter>
-    </ClInclude>
-    <ClInclude Include="ZipTools\ThreadedZipTools.h">
-      <Filter>Misc</Filter>
     </ClInclude>
     <ClInclude Include="GameDatabase.h">
       <Filter>Misc</Filter>

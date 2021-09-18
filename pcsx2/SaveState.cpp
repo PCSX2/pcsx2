@@ -28,8 +28,8 @@
 #include "Elfheader.h"
 #include "Counters.h"
 #include "Patch.h"
+#include "System/SysThreads.h"
 
-#include "ZipTools/ThreadedZipTools.h"
 #include "common/pxStreams.h"
 #include "common/SafeArray.inl"
 #include "SPU2/spu2.h"
@@ -43,6 +43,14 @@
 #include <wx/wfstream.h>
 
 #include "gui/ConsoleLogger.h"
+
+#ifndef PCSX2_CORE
+#include "gui/App.h"
+#endif
+
+#include "common/pxStreams.h"
+#include <wx/wfstream.h>
+#include <wx/zipstrm.h>
 
 using namespace R5900;
 
@@ -663,7 +671,7 @@ static void CheckVersion(pxInputStream& thr)
 
 void SaveState_DownloadState(ArchiveEntryList* destlist)
 {
-	if (!SysHasValidState())
+	if (!GetCoreThread().HasActiveMachine())
 		throw Exception::RuntimeError()
 			.SetDiagMsg(L"SysExecEvent_DownloadState: Cannot freeze/download an invalid VM state!")
 			.SetUserMsg(_("There is no active virtual machine state to download or save."));
@@ -691,54 +699,13 @@ void SaveState_DownloadState(ArchiveEntryList* destlist)
 // --------------------------------------------------------------------------------------
 //  CompressThread_VmState
 // --------------------------------------------------------------------------------------
-class VmStateCompressThread : public BaseCompressThread
+static void ZipStateToDiskOnThread(std::unique_ptr<ArchiveEntryList> srclist, std::unique_ptr<wxFFileOutputStream> outbase, wxString filename, wxString tempfile)
 {
-	typedef BaseCompressThread _parent;
+#ifndef PCSX2_CORE
+	wxGetApp().StartPendingSave();
+#endif
 
-protected:
-	ScopedLock m_lock_Compress;
-
-public:
-	VmStateCompressThread()
-	{
-		m_lock_Compress.Assign(mtx_CompressToDisk);
-	}
-
-	virtual ~VmStateCompressThread() = default;
-
-protected:
-	void OnStartInThread()
-	{
-		_parent::OnStartInThread();
-		m_lock_Compress.Acquire();
-	}
-
-	void OnCleanupInThread()
-	{
-		m_lock_Compress.Release();
-		_parent::OnCleanupInThread();
-	}
-};
-
-void SaveState_ZipToDisk(ArchiveEntryList* srclist, const wxString& filename)
-{
-	// Provisionals for scoped cleanup, in case of exception:
-	std::unique_ptr<ArchiveEntryList> elist(srclist);
-
-	wxString tempfile(filename + L".tmp");
-
-	wxFFileOutputStream* woot = new wxFFileOutputStream(tempfile);
-	if (!woot->IsOk())
-		throw Exception::CannotCreateStream(tempfile);
-
-	// Scheduler hint (yield) -- creating and saving the file is low priority compared to
-	// the emulator/vm thread.  Sleeping the executor thread briefly before doing file
-	// transactions should help reduce overhead. --air
-
-	pxYield(4);
-
-	// Write the version and screenshot:
-	std::unique_ptr<pxOutputStream> out(new pxOutputStream(tempfile, new wxZipOutputStream(woot)));
+	std::unique_ptr<pxOutputStream> out(new pxOutputStream(tempfile, new wxZipOutputStream(outbase.release())));
 	wxZipOutputStream* gzfp = (wxZipOutputStream*)out->GetWxStreamBase();
 
 	{
@@ -749,8 +716,9 @@ void SaveState_ZipToDisk(ArchiveEntryList* srclist, const wxString& filename)
 		gzfp->CloseEntry();
 	}
 
+#if 0
+	// This was never actually initialized...
 	std::unique_ptr<wxImage> m_screenshot;
-
 	if (m_screenshot)
 	{
 		wxZipEntry* vent = new wxZipEntry(EntryFilename_Screenshot);
@@ -759,16 +727,61 @@ void SaveState_ZipToDisk(ArchiveEntryList* srclist, const wxString& filename)
 		m_screenshot->SaveFile(*gzfp, wxBITMAP_TYPE_JPEG);
 		gzfp->CloseEntry();
 	}
+#endif
 
-	(*new VmStateCompressThread())
-		.SetSource(srclist)
-		.SetOutStream(out.get())
-		.SetFinishedPath(filename)
-		.Start();
+	uint listlen = srclist->GetLength();
+	for (uint i = 0; i < listlen; ++i)
+	{
+		const ArchiveEntry& entry = (*srclist)[i];
+		if (!entry.GetDataSize())
+			continue;
 
-	// No errors?  Release cleanup handlers:
-	elist.release();
-	out.release();
+		gzfp->PutNextEntry(entry.GetFilename());
+
+		static const uint BlockSize = 0x64000;
+		uint curidx = 0;
+
+		do
+		{
+			uint thisBlockSize = std::min(BlockSize, entry.GetDataSize() - curidx);
+			gzfp->Write(srclist->GetPtr(entry.GetDataIndex() + curidx), thisBlockSize);
+			curidx += thisBlockSize;
+		} while (curidx < entry.GetDataSize());
+
+		gzfp->CloseEntry();
+	}
+
+	gzfp->Close();
+
+	if (!wxRenameFile(out->GetStreamName(), filename, true))
+	{
+		Console.Error("Failed to rename save state '%s' to '%s'", static_cast<const char*>(out->GetStreamName().c_str()), static_cast<const char*>(filename.c_str()));
+#ifndef PCSX2_CORE
+		Msgbox::Alert(_("The savestate was not properly saved. The temporary file was created successfully but could not be moved to its final resting place."));
+#endif
+	}
+	else
+	{
+		Console.WriteLn("(gzipThread) Data saved to disk without error.");
+	}
+
+#ifndef PCSX2_CORE
+	wxGetApp().ClearPendingSave();
+#endif
+}
+
+void SaveState_ZipToDisk(ArchiveEntryList* srclist, const wxString& filename)
+{
+	// Provisionals for scoped cleanup, in case of exception:
+	std::unique_ptr<ArchiveEntryList> elist(srclist);
+
+	wxString tempfile(filename + L".tmp");
+	std::unique_ptr<wxFFileOutputStream> out = std::make_unique<wxFFileOutputStream>(tempfile);
+	if (!out->IsOk())
+		throw Exception::CannotCreateStream(tempfile);
+
+	std::thread threaded_save(ZipStateToDiskOnThread, std::move(elist), std::move(out), filename, tempfile);
+	threaded_save.detach();
 }
 
 void SaveState_UnzipFromDisk(const wxString& filename)
