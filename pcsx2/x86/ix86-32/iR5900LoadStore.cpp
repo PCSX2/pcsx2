@@ -929,7 +929,7 @@ void recLQC2()
 	xForwardJZ32 skipvuidle;
 	xSUB(eax, ptr32[&VU0.cycle]);
 	xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-	xCMP(eax, 8);
+	xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 8 : 0);
 	xForwardJL32 skip;
 	xLoadFarAddr(arg1reg, CpuVU0);
 	xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
@@ -967,6 +967,7 @@ void recSQC2()
 {
 	iFlushCall(FLUSH_EVERYTHING);
 
+
 	xMOV(eax, ptr32[&cpuRegs.cycle]);
 	xADD(eax, scaleblockcycles_clear());
 	xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
@@ -974,7 +975,7 @@ void recSQC2()
 	xForwardJZ32 skipvuidle;
 	xSUB(eax, ptr32[&VU0.cycle]);
 	xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-	xCMP(eax, 8);
+	xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 8 : 0);
 	xForwardJL32 skip;
 	xLoadFarAddr(arg1reg, CpuVU0);
 	xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);

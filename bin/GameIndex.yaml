@@ -6825,10 +6825,8 @@ SLED-53745:
   name: "Total Overdose [Demo]"
   region: "PAL-M5"
 SLED-53845:
-  name: "Matrix - Path of Neo [Demo]"
+  name: "Matrix, The - Path of Neo [Demo]"
   region: "PAL-E"
-  gameFixes:
-  - VUKickstartHack
 SLED-53937:
   name: "Black [Demo]"
   region: "PAL-M5"
@@ -12853,13 +12851,9 @@ SLES-53046:
 SLES-53047:
   name: "Punisher, The"
   region: "PAL-E-F"
-  gameFixes:
-    - VUKickstartHack # Fixes Character SPS and Flying Characters.
 SLES-53049:
   name: "Punisher, The"
   region: "PAL-I-S"
-  gameFixes:
-    - VUKickstartHack # Fixes Character SPS and Flying Characters.
 SLES-53052:
   name: "Robots"
   region: "PAL-M5"
@@ -12983,8 +12977,6 @@ SLES-53114:
   region: "PAL-M5"
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
-  gameFixes:
-  - VUKickstartHack
 SLES-53119:
   name: "Kessen III"
   region: "PAL-E"
@@ -13017,8 +13009,6 @@ SLES-53131:
   region: "PAL-E"
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
-  gameFixes:
-  - VUKickstartHack
 SLES-53138:
   name: "Outlaw Volleyball - Remixed"
   region: "PAL-M4"
@@ -13127,8 +13117,6 @@ SLES-53194:
 SLES-53195:
   name: "Punisher, The"
   region: "PAL-E"
-  gameFixes:
-    - VUKickstartHack # Fixes Character SPS and Flying Characters.
 SLES-53196:
   name: "Destroy All Humans!"
   region: "PAL-M4"
@@ -13149,8 +13137,6 @@ SLES-53201:
 SLES-53203:
   name: "Punisher, The"
   region: "PAL-R"
-  gameFixes:
-    - VUKickstartHack # Fixes Character SPS and Flying Characters.
 SLES-53218:
   name: "Dancing Stage MAX"
   region: "PAL-M5"
@@ -13586,8 +13572,6 @@ SLES-53461:
 SLES-53462:
   name: "Matrix, The - Path of Neo"
   region: "PAL-M5"
-  gameFixes:
-    - VUKickstartHack
 SLES-53463:
   name: "NHL '06"
   region: "PAL-E"
@@ -14126,8 +14110,6 @@ SLES-53656:
   region: "PAL-M4"
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
-  gameFixes:
-  - VUKickstartHack
 SLES-53657:
   name: "Shrek - Super Slam"
   region: "PAL-E"
@@ -14382,8 +14364,6 @@ SLES-53758:
 SLES-53759:
   name: "Matrix, The - Path of Neo"
   region: "PAL-M5"
-  gameFixes:
-  - VUKickstartHack
 SLES-53760:
   name: "Rugby Challenge 2006"
   region: "PAL-M5"
@@ -14457,8 +14437,6 @@ SLES-53799:
   name: "Matrix, The - Path of Neo"
   region: "PAL-M4"
   compat: 5
-  gameFixes:
-  - VUKickstartHack
 SLES-53800:
   name: "Rampage - Total Destruction"
   region: "PAL-M5"
@@ -14681,8 +14659,6 @@ SLES-53909:
   region: "PAL-G"
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
-  gameFixes:
-  - VUKickstartHack
 SLES-53910:
   name: "Agent Hugo"
   region: "PAL-R"
@@ -18837,8 +18813,6 @@ SLKA-25264:
   region: "NTSC-K"
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
-  gameFixes:
-  - VUKickstartHack
 SLKA-25265:
   name: "Devil May Cry 3"
   region: "NTSC-K"
@@ -24817,7 +24791,7 @@ SLPM-66176:
   region: "NTSC-J"
   compat: 5
 SLPM-66177:
-  name: "Matrix,The - Path of Neo"
+  name: "Matrix, The - Path of Neo"
   region: "NTSC-J"
 SLPM-66178:
   name: "Pop'n Music 7 [Konami The Best]"
@@ -25096,8 +25070,6 @@ SLPM-66263:
   region: "NTSC-J"
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
-  gameFixes:
-  - VUKickstartHack
 SLPM-66264:
   name: "Canvas 2 - Niji-iro no Sketch [Deluxe Pack]"
   region: "NTSC-J"
@@ -25602,8 +25574,6 @@ SLPM-66427:
   region: "NTSC-J"
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
-  gameFixes:
-  - VUKickstartHack
 SLPM-66429:
   name: "Special Forces - Fire for Effect"
   region: "NTSC-J"
@@ -35733,8 +35703,6 @@ SLUS-20864:
   name: "Punisher, The"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - VUKickstartHack # Fixes Character SPS and Flying Characters.
 SLUS-20865:
   name: "Backyard Baseball"
   region: "NTSC-U"
@@ -36995,8 +36963,6 @@ SLUS-21145:
   compat: 5
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
-  gameFixes:
-  - VUKickstartHack
 SLUS-21146:
   name: "Far East of Eden"
   region: "NTSC-U"
@@ -37483,8 +37449,6 @@ SLUS-21250:
   compat: 5
   speedHacks:
     mvuFlagSpeedHack: 0  # Fixes bad graphics.
-  gameFixes:
-  - VUKickstartHack
 SLUS-21251:
   name: "FlatOut 2"
   region: "NTSC-U"
@@ -37604,8 +37568,6 @@ SLUS-21273:
   name: "Matrix, The - Path of Neo"
   region: "NTSC-U"
   compat: 5
-  gameFixes:
-    - VUKickstartHack
 SLUS-21274:
   name: "OutRun 2006: Coast 2 Coast"
   region: "NTSC-U"
@@ -40847,8 +40809,6 @@ SLUS-29137:
 SLUS-29138:
   name: "Punisher, The [Demo]"
   region: "NTSC-U"
-  gameFixes:
-    - VUKickstartHack # Fixes Character SPS and Flying Characters.
 SLUS-29139:
   name: "Shadow of Rome [Demo]"
   region: "NTSC-U"

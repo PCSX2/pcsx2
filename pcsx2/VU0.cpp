@@ -59,7 +59,7 @@ __fi void _vu0run(bool breakOnMbit, bool addCycles) {
 	if (!(VU0.VI[REG_VPU_STAT].UL & 1)) return;
 
 	//VU0 is ahead of the EE and M-Bit is already encountered, so no need to wait for it, just catch up the EE
-	if ((VU0.flags & VUFLAG_MFLAGSET) && breakOnMbit && (s32)(cpuRegs.cycle - VU0.cycle) < 0)
+	if ((VU0.flags & VUFLAG_MFLAGSET) && breakOnMbit && (s32)(cpuRegs.cycle - VU0.cycle) <= 0)
 	{
 		cpuRegs.cycle = VU0.cycle;
 		return;
@@ -78,6 +78,7 @@ __fi void _vu0run(bool breakOnMbit, bool addCycles) {
 	{
 		cpuRegs.cycle += (VU0.cycle - startcycle);
 		CpuVU1->ExecuteBlock(0); // Catch up VU1 as it's likely fallen behind
+		cpuSetNextEventDelta(4);
 	}
 }
 
