@@ -18,6 +18,7 @@
 #include "InputManager.h"
 #include "KeyboardQueue.h"
 #include "PADConfig.h"
+#include "Host.h"
 
 InputDeviceManager* dm = 0;
 
@@ -235,9 +236,9 @@ void Device::CalcVirtualState()
 						if (i < numPhysicalControls)
 							continue;
 					}
-					int event = KEYPRESS;
+					HostKeyEvent::Type event = HostKeyEvent::Type::KeyPressed;
 					if (!(virtualControlState[index] >> 15))
-						event = KEYRELEASE;
+						event = HostKeyEvent::Type::KeyReleased;
 					QueueKeyEvent(c->vkey, event);
 				}
 			}

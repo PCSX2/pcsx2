@@ -29,11 +29,6 @@
 #include "VUmicro.h"
 
 #include "ps2/HwInternal.h"
-#ifdef _WIN32
-#include "PAD/Windows/PAD.h"
-#else
-#include "PAD/Linux/PAD.h"
-#endif
 #include "Sio.h"
 
 #ifndef DISABLE_RECORDING

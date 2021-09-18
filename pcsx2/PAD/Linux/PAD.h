@@ -16,7 +16,9 @@
 #pragma once
 
 #include "Global.h"
+#include "Host.h"
 #include "common/mt_queue.h"
+#include "SaveState.h"
 
 enum PadOptions
 {
@@ -32,8 +34,8 @@ enum PadOptions
 extern FILE* padLog;
 extern void initLogging();
 
-extern keyEvent event;
-extern MtQueue<keyEvent> g_ev_fifo;
+extern HostKeyEvent event;
+extern MtQueue<HostKeyEvent> g_ev_fifo;
 
 s32 _PADopen(void* pDsp);
 void _PADclose();
@@ -50,10 +52,10 @@ s32 PADsetSlot(u8 port, u8 slot);
 s32 PADfreeze(FreezeAction mode, freezeData* data);
 u8 PADstartPoll(int pad);
 u8 PADpoll(u8 value);
-keyEvent* PADkeyEvent();
+HostKeyEvent* PADkeyEvent();
 void PADupdate(int pad);
 void PADconfigure();
 
 #if defined(__unix__)
-void PADWriteEvent(keyEvent& evt);
+void PADWriteEvent(HostKeyEvent& evt);
 #endif

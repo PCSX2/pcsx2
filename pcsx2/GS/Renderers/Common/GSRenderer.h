@@ -20,6 +20,8 @@
 #include "GS/GSState.h"
 #include "GS/GSCapture.h"
 
+struct HostKeyEvent;
+
 class GSRenderer : public GSState
 {
 	GSCapture m_capture;
@@ -57,7 +59,7 @@ public:
 	virtual void ResetDevice();
 	virtual void VSync(int field);
 	virtual bool MakeSnapshot(const std::string& path);
-	virtual void KeyEvent(GSKeyEventData* e);
+	virtual void KeyEvent(const HostKeyEvent& e);
 	virtual bool CanUpscale() { return false; }
 	virtual int GetUpscaleMultiplier() { return 1; }
 	virtual GSVector2i GetCustomResolution() { return GSVector2i(0, 0); }

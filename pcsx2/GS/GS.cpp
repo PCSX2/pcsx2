@@ -658,7 +658,7 @@ uint32 GSmakeSnapshot(char* path)
 	}
 }
 
-void GSkeyEvent(GSKeyEventData* e)
+void GSkeyEvent(const HostKeyEvent& e)
 {
 	try
 	{

@@ -18,6 +18,7 @@
 #include "MainFrame.h"
 #include "GSFrame.h"
 #include "GS.h"
+#include "Host.h"
 #include "AppSaveStates.h"
 #include "AppGameDatabase.h"
 #include "AppAccelerators.h"
@@ -202,9 +203,9 @@ extern int TranslateVKToWXK( u32 keysym );
 extern int TranslateGDKtoWXK( u32 keysym );
 #endif
 
-void Pcsx2App::PadKeyDispatch( const keyEvent& ev )
+void Pcsx2App::PadKeyDispatch(const HostKeyEvent& ev)
 {
-	m_kevt.SetEventType( ( ev.evt == KEYPRESS ) ? wxEVT_KEY_DOWN : wxEVT_KEY_UP );
+	m_kevt.SetEventType( ( ev.type == HostKeyEvent::Type::KeyPressed ) ? wxEVT_KEY_DOWN : wxEVT_KEY_UP );
 
 //returns 0 for normal keys and a WXK_* value for special keys
 #ifdef __WXMSW__
@@ -489,7 +490,7 @@ void Pcsx2App::LogicalVsync()
 	if( (wxGetApp().GetGsFramePtr() != NULL) )
 		PADupdate(0);
 
-	while( const keyEvent* ev = PADkeyEvent() )
+	while( const HostKeyEvent* ev = PADkeyEvent() )
 	{
 		if( ev->key == 0 ) break;
 
@@ -498,7 +499,7 @@ void Pcsx2App::LogicalVsync()
 		// sucked and we had multiple components battling for input processing. I managed to make
 		// most of them go away during the plugin merge but GS still needs to process the inputs,
 		// we might want to move all the input handling in a frontend-specific file in the future -- govanify
-		GSkeyEvent((GSKeyEventData*)ev);
+		GSkeyEvent(*ev);
 		PadKeyDispatch( *ev );
 	}
 }
@@ -540,7 +541,7 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 				// When the GSFrame CoreThread is paused, so is the logical VSync
 				// Meaning that we have to grab the user-input through here to potentially
 				// resume emulation.
-				if (const keyEvent* ev = PADkeyEvent() )
+				if (const HostKeyEvent* ev = PADkeyEvent() )
 				{
 					if( ev->key != 0 )
 					{
