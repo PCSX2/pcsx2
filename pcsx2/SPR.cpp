@@ -30,10 +30,22 @@ static void TestClearVUs(u32 madr, u32 qwc, bool isWrite)
 {
 	if (madr >= 0x11000000 && (madr < 0x11010000))
 	{
-		// Sync the VU's if they're running, writing/reading from VU memory while they're running can be timing sensitive.
+		// Access to VU memory is only allowed when the VU is stopped
 		// Use Psychonauts for testing
-		CpuVU0->ExecuteBlock(0);
-		CpuVU1->ExecuteBlock(0);
+
+		if ((madr < 0x11008000) && (VU0.VI[REG_VPU_STAT].UL & 0x1))
+		{
+			_vu0FinishMicro();
+			//Catch up VU1 too
+			CpuVU1->ExecuteBlock(0);
+		}
+		if ((madr >= 0x11008000) && (VU0.VI[REG_VPU_STAT].UL & 0x100) && !THREAD_VU1)
+		{
+			CpuVU1->Execute(vu1RunCycles);
+			cpuRegs.cycle = VU1.cycle;
+			//Catch up VU0 too
+			CpuVU0->ExecuteBlock(0);
+		}
 
 		if (madr < 0x11004000)
 		{

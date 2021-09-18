@@ -33,41 +33,20 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 		return;
 	}
 
-	// VU currently flushes XGKICK on VU1 end so no need for this, yet
-	/*if (!(stat & test))
+	
+	if (!(stat & test))
 	{
-		if (m_Idx == 1 && VU1.xgkickenable)
+		// VU currently flushes XGKICK on VU1 end so no need for this, yet
+		/*if (m_Idx == 1 && VU1.xgkickenable)
 		{
 			_vuXGKICKTransfer((cpuRegs.cycle - VU1.xgkicklastcycle), false);
-		}
+		}*/
 		return;
-	}*/
+	}
 
-	// You might be looking at this and thinking, what the hell is going on? What's with all these conditions?
-	// Well, basically M-Bit timed games are REALLY picky, so we need some extra checks in to make sure the VU
-	// doesn't go too long without updating/syncing as games will wait for an M-Bit then transfer a bunch of stuff
-	// since they will know what the timing is going to be on them, so we need to keep it somewhat tight.
-	// For everything else (Especially stuff that needs kickstart), they can do what they like.
 	if (startUp) // Start Executing a microprogram (When kickstarted)
 	{
 		Execute(s); // Kick start VU
-
-		if (stat & test)
-		{
-			if (m_Idx)
-				cpuRegs.cycle = VU1.cycle;
-			else
-				cpuRegs.cycle = VU0.cycle;
-
-			u32 nextblockcycles = m_Idx ? VU1.nextBlockCycles : VU0.nextBlockCycles;
-
-			bool useNextBlocks = (VU0.flags & VUFLAG_MFLAGSET) || VU0.blockhasmbit || !EmuConfig.Cpu.Recompiler.EnableVU0;
-			
-			if(useNextBlocks)
-				cpuSetNextEventDelta(nextblockcycles);
-			else if(s)
-				cpuSetNextEventDelta(s);
-		}
 	}
 	else // Continue Executing
 	{
@@ -84,19 +63,6 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 		{
 			if (delta >= nextblockcycles && delta > 0) // When running behind, make sure we have enough cycles passed for the block to run
 				Execute(delta);
-		}
-
-		if ((stat & test) && (!EmuConfig.Gamefixes.VUKickstartHack || (!m_Idx && !EmuConfig.Cpu.Recompiler.EnableVU0)))
-		{
-			// Queue up next required time to run a block
-			nextblockcycles = m_Idx ? VU1.nextBlockCycles : VU0.nextBlockCycles;
-			cycle = m_Idx ? VU1.cycle : VU0.cycle;
-			nextblockcycles = nextblockcycles - (cycle - cpuRegs.cycle);
-
-			if (nextblockcycles > 0 || (VU0.flags & VUFLAG_MFLAGSET) || VU0.blockhasmbit)
-			{
-				cpuSetNextEventDelta(nextblockcycles);
-			}
 		}
 	}
 }
