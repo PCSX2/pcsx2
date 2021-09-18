@@ -17,6 +17,8 @@
 
 #ifndef DISABLE_RECORDING
 
+#include "App.h"
+
 #include "NewRecordingFrame.h"
 
 #include <wx/gbsizer.h>
@@ -70,6 +72,7 @@ NewRecordingFrame::NewRecordingFrame(wxWindow* parent)
 	m_panel->SetSizer(container);
 	m_panel->GetSizer()->Fit(this);
 	Centre();
+	SetIcons(wxGetApp().GetIconBundle());
 
 	m_fileBrowsed = false;
 	m_filePicker->GetPickerCtrl()->Bind(wxEVT_FILEPICKER_CHANGED, &NewRecordingFrame::OnFileDirChange, this);

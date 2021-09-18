@@ -64,7 +64,7 @@ public:
 	GSVector2i GetInternalResolution();
 	void SetVSync(int vsync);
 
-	virtual bool BeginCapture(std::string& filename);
+	virtual bool BeginCapture(wxWindow* parentWindow, std::string& filename);
 	virtual void EndCapture();
 
 	void PurgePool();

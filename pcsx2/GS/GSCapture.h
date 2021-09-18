@@ -19,9 +19,11 @@
 #include "GSPng.h"
 
 #ifdef _WIN32
-#include "Window/GSCaptureDlg.h"
 #include <wil/com.h>
+#include <streams.h>
 #endif
+
+#include "Window/wx/GSCaptureDlg.h"
 
 class GSCapture
 {
@@ -48,10 +50,13 @@ public:
 	GSCapture();
 	virtual ~GSCapture();
 
-	bool BeginCapture(float fps, GSVector2i recommendedResolution, float aspect, std::string& filename);
+	bool BeginCapture(wxWindow* parentWindow, float fps, GSVector2i recommendedResolution, float aspect, std::string& filename);
 	bool DeliverFrame(const void* bits, int pitch, bool rgba);
 	bool EndCapture();
 
 	bool IsCapturing() { return m_capturing; }
 	GSVector2i GetSize() { return m_size; }
+
+private:
+	GSCaptureDlg* m_settingsDialog = NULL;
 };

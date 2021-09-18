@@ -1787,7 +1787,7 @@ void GSkeyEvent(const HostKeyEvent& e);
 int GSfreeze(FreezeAction mode, freezeData* data);
 void GSconfigure();
 int GStest();
-bool GSsetupRecording(std::string& filename);
+bool GSsetupRecording(wxWindow* parentWindow, std::string& filename);
 void GSendRecording();
 void GSsetGameCRC(uint32 crc, int options);
 void GSgetTitleInfo2(char* dest, size_t length);

@@ -967,7 +967,7 @@ void MainEmuFrame::VideoCaptureToggle()
 
 		// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens
 		std::string filename;
-		if (GSsetupRecording(filename))
+		if (GSsetupRecording(this, filename))
 		{
 			if (!g_Conf->AudioCapture.EnableAudio || SPU2setupRecording(&filename))
 			{
