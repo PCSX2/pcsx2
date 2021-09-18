@@ -180,6 +180,124 @@ protected:
 };
 
 // --------------------------------------------------------------------------------------
+//  ArchiveEntry
+// --------------------------------------------------------------------------------------
+class ArchiveEntry
+{
+protected:
+	wxString	m_filename;
+	uptr		m_dataidx;
+	size_t		m_datasize;
+
+public:
+	ArchiveEntry(const wxString& filename = wxEmptyString)
+		: m_filename(filename)
+	{
+		m_dataidx = 0;
+		m_datasize = 0;
+	}
+
+	virtual ~ArchiveEntry() = default;
+
+	ArchiveEntry& SetDataIndex(uptr idx)
+	{
+		m_dataidx = idx;
+		return *this;
+	}
+
+	ArchiveEntry& SetDataSize(size_t size)
+	{
+		m_datasize = size;
+		return *this;
+	}
+
+	wxString GetFilename() const
+	{
+		return m_filename;
+	}
+
+	uptr GetDataIndex() const
+	{
+		return m_dataidx;
+	}
+
+	uint GetDataSize() const
+	{
+		return m_datasize;
+	}
+};
+
+typedef SafeArray< u8 > ArchiveDataBuffer;
+
+// --------------------------------------------------------------------------------------
+//  ArchiveEntryList
+// --------------------------------------------------------------------------------------
+class ArchiveEntryList
+{
+	DeclareNoncopyableObject(ArchiveEntryList);
+
+protected:
+	std::vector<ArchiveEntry> m_list;
+	std::unique_ptr<ArchiveDataBuffer> m_data;
+
+public:
+	virtual ~ArchiveEntryList() = default;
+
+	ArchiveEntryList() {}
+
+	ArchiveEntryList(ArchiveDataBuffer* data)
+		: m_data(data)
+	{
+	}
+
+	ArchiveEntryList(ArchiveDataBuffer& data)
+		: m_data(&data)
+	{
+	}
+
+	const VmStateBuffer* GetBuffer() const
+	{
+		return m_data.get();
+	}
+
+	VmStateBuffer* GetBuffer()
+	{
+		return m_data.get();
+	}
+
+	u8* GetPtr(uint idx)
+	{
+		return &(*m_data)[idx];
+	}
+
+	const u8* GetPtr(uint idx) const
+	{
+		return &(*m_data)[idx];
+	}
+
+	ArchiveEntryList& Add(const ArchiveEntry& src)
+	{
+		m_list.push_back(src);
+		return *this;
+	}
+
+	size_t GetLength() const
+	{
+		return m_list.size();
+	}
+
+	ArchiveEntry& operator[](uint idx)
+	{
+		return m_list[idx];
+	}
+
+	const ArchiveEntry& operator[](uint idx) const
+	{
+		return m_list[idx];
+	}
+};
+
+// --------------------------------------------------------------------------------------
 //  Saving and Loading Specialized Implementations...
 // --------------------------------------------------------------------------------------
 
