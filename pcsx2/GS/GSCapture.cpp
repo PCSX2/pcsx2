@@ -40,7 +40,7 @@ static void __stdcall CloseFilterInfo(_Inout_ FILTER_INFO* info) WI_NOEXCEPT
 using unique_pin_info = wil::unique_struct<PIN_INFO, decltype(&::ClosePinInfo), ::ClosePinInfo>;
 using unique_filter_info = wil::unique_struct<FILTER_INFO, decltype(&::CloseFilterInfo), ::CloseFilterInfo>;
 
-template<typename Func>
+template <typename Func>
 static void EnumFilters(IGraphBuilder* filterGraph, Func&& f)
 {
 	wil::com_ptr_nothrow<IEnumFilters> enumFilters;
@@ -54,7 +54,7 @@ static void EnumFilters(IGraphBuilder* filterGraph, Func&& f)
 	}
 }
 
-template<typename Func>
+template <typename Func>
 static void EnumPins(IBaseFilter* baseFilter, Func&& f)
 {
 	wil::com_ptr_nothrow<IEnumPins> enumPins;
@@ -75,15 +75,20 @@ static void EnumPins(IBaseFilter* baseFilter, Func&& f)
 // GSSource
 //
 interface __declspec(uuid("59C193BB-C520-41F3-BC1D-E245B80A86FA"))
-IGSSource : public IUnknown
+	IGSSource : public IUnknown
 {
-	STDMETHOD(DeliverNewSegment)() PURE;
-	STDMETHOD(DeliverFrame)(const void* bits, int pitch, bool rgba) PURE;
-	STDMETHOD(DeliverEOS)() PURE;
+	STDMETHOD(DeliverNewSegment)
+	() PURE;
+	STDMETHOD(DeliverFrame)
+	(const void* bits, int pitch, bool rgba) PURE;
+	STDMETHOD(DeliverEOS)
+	() PURE;
 };
 
 class __declspec(uuid("F8BB6F4F-0965-4ED4-BA74-C6A01E6E6C77"))
-GSSource : public CBaseFilter, private CCritSec, public IGSSource
+	GSSource : public CBaseFilter,
+			   private CCritSec,
+			   public IGSSource
 {
 	GSVector2i m_size;
 	REFERENCE_TIME m_atpf;
@@ -91,9 +96,7 @@ GSSource : public CBaseFilter, private CCritSec, public IGSSource
 
 	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void** ppv)
 	{
-		return riid == __uuidof(IGSSource)
-			? GetInterface((IGSSource*)this, ppv)
-			: __super::NonDelegatingQueryInterface(riid, ppv);
+		return riid == __uuidof(IGSSource) ? GetInterface((IGSSource*)this, ppv) : __super::NonDelegatingQueryInterface(riid, ppv);
 	}
 
 	class GSSourceOutputPin : public CBaseOutputPin
@@ -371,8 +374,7 @@ static wil::com_ptr_nothrow<IPin> GetFirstPin(IBaseFilter* pBF, PIN_DIRECTION di
 	wil::com_ptr_nothrow<IPin> result;
 	if (pBF)
 	{
-		EnumPins(pBF, [&](IPin* pin)
-		{
+		EnumPins(pBF, [&](IPin* pin) {
 			PIN_DIRECTION dir2;
 			pin->QueryDirection(&dir2);
 			if (dir == dir2)
@@ -394,7 +396,8 @@ static wil::com_ptr_nothrow<IPin> GetFirstPin(IBaseFilter* pBF, PIN_DIRECTION di
 //
 
 GSCapture::GSCapture()
-	: m_capturing(false), m_frame(0)
+	: m_capturing(false)
+	, m_frame(0)
 	, m_out_dir("/tmp/GS_Capture") // FIXME Later add an option
 {
 	m_out_dir = theApp.GetConfigS("capture_out_dir");
@@ -409,7 +412,7 @@ GSCapture::~GSCapture()
 	EndCapture();
 }
 
-bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float aspect, std::string& filename)
+bool GSCapture::BeginCapture(wxWindow* parentWindow, float fps, GSVector2i recommendedResolution, float aspect, std::string& filename)
 {
 	printf("Recommended resolution: %d x %d, DAR for muxing: %.4f\n", recommendedResolution.x, recommendedResolution.y, aspect);
 	std::lock_guard<std::recursive_mutex> lock(m_lock);
@@ -418,39 +421,46 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 
 	EndCapture();
 
-#ifdef _WIN32
-
-	GSCaptureDlg dlg;
-
-	if (IDOK != dlg.DoModal())
-		return false;
-
+	if (m_settingsDialog == NULL)
 	{
-		const int start = dlg.m_filename.length() - 4;
-		if (start > 0)
-		{
-			std::wstring test = dlg.m_filename.substr(start);
-			std::transform(test.begin(), test.end(), test.begin(), (char(_cdecl*)(int))tolower);
-			if (test.compare(L".avi") != 0)
-				dlg.m_filename += L".avi";
-		}
-		else
-			dlg.m_filename += L".avi";
-
-		FILE* test = _wfopen(dlg.m_filename.c_str(), L"w");
-		if (test)
-			fclose(test);
-		else
-		{
-			dlg.InvalidFile();
-			return false;
-		}
+		m_settingsDialog = new GSCaptureDlg(parentWindow);
 	}
 
-	m_size.x = (dlg.m_width + 7) & ~7;
-	m_size.y = (dlg.m_height + 7) & ~7;
-	//
+	if (m_settingsDialog->ShowModal() == wxID_CANCEL)
+	{
+		return false;
+	}
 
+	std::wstring filePath = m_settingsDialog->GetFilePath();
+	const int start = filePath.length() - 4;
+	if (start > 0)
+	{
+		std::wstring test = filePath.substr(start);
+		std::transform(test.begin(), test.end(), test.begin(), (char(_cdecl*)(int))tolower);
+		if (test.compare(L".avi") != 0)
+		{
+			filePath += L".avi";
+		}
+	}
+	else
+	{
+		filePath += L".avi";
+	}
+
+
+	FILE* test = _wfopen(filePath.c_str(), L"w");
+	if (test)
+		fclose(test);
+	else
+	{
+		wxMessageBox(_("Could not open file for capture"), _("Error"), wxICON_ERROR);
+		return false;
+	}
+
+	m_size.x = (m_settingsDialog->GetCaptureSize().first + 7) & ~7;
+	m_size.y = (m_settingsDialog->GetCaptureSize().second + 7) & ~7;
+
+#ifdef _WIN32
 	auto graph = wil::CoCreateInstanceNoThrow<IGraphBuilder>(CLSID_FilterGraph);
 	if (!graph)
 	{
@@ -463,8 +473,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	}
 
 	wil::com_ptr_nothrow<IBaseFilter> mux;
-	if (FAILED(cgb->SetFiltergraph(graph.get()))
-	 || FAILED(cgb->SetOutputFileName(&MEDIASUBTYPE_Avi, std::wstring(dlg.m_filename.begin(), dlg.m_filename.end()).c_str(), mux.put(), nullptr)))
+	if (FAILED(cgb->SetFiltergraph(graph.get())) || FAILED(cgb->SetOutputFileName(&MEDIASUBTYPE_Avi, std::wstring(filePath.begin(), filePath.end()).c_str(), mux.put(), nullptr)))
 	{
 		return false;
 	}
@@ -475,7 +484,7 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	// change this to `.attach(new GSSource(...))`.
 	wil::com_ptr_nothrow<IBaseFilter> src = new GSSource(m_size.x, m_size.y, fps, NULL, source_hr, dlg.m_colorspace);
 
-	if (dlg.m_enc == 0)
+	if (m_settingsDialog->GetCodecFilter() == 0)
 	{
 		if (FAILED(graph->AddFilter(src.get(), L"Source")))
 			return false;
@@ -484,26 +493,25 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	}
 	else
 	{
-		if (FAILED(graph->AddFilter(src.get(), L"Source")) || FAILED(graph->AddFilter(dlg.m_enc.get(), L"Encoder")))
+		auto codec = m_settingsDialog->GetCodecFilter().get();
+		if (FAILED(graph->AddFilter(src.get(), L"Source")) || FAILED(graph->AddFilter(codec, L"Encoder")))
 		{
 			return false;
 		}
 
-		if (FAILED(graph->ConnectDirect(GetFirstPin(src.get(), PINDIR_OUTPUT).get(), GetFirstPin(dlg.m_enc.get(), PINDIR_INPUT).get(), nullptr))
-		 || FAILED(graph->ConnectDirect(GetFirstPin(dlg.m_enc.get(), PINDIR_OUTPUT).get(), GetFirstPin(mux.get(), PINDIR_INPUT).get(), nullptr)))
+		if (FAILED(graph->ConnectDirect(GetFirstPin(src.get(), PINDIR_OUTPUT).get(), GetFirstPin(codec, PINDIR_INPUT).get(), nullptr)) ||
+			FAILED(graph->ConnectDirect(GetFirstPin(codec, PINDIR_OUTPUT).get(), GetFirstPin(mux.get(), PINDIR_INPUT).get(), nullptr)))
 		{
 			return false;
 		}
 	}
 
-	EnumFilters(graph.get(), [](IBaseFilter* baseFilter)
-	{
+	EnumFilters(graph.get(), [](IBaseFilter* baseFilter) {
 		unique_filter_info filter;
 		baseFilter->QueryFilterInfo(&filter);
 		printf("Filter [%p]: %ls\n", baseFilter, filter.achName);
 
-		EnumPins(baseFilter, [](IPin* pin)
-		{
+		EnumPins(baseFilter, [](IPin* pin) {
 			wil::com_ptr_nothrow<IPin> pinTo;
 			pin->ConnectedTo(pinTo.put());
 
@@ -521,28 +529,23 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	m_graph.query<IMediaControl>()->Run();
 	m_src.query<IGSSource>()->DeliverNewSegment();
 
-	m_capturing = true;
-	filename = convert_utf16_to_utf8(dlg.m_filename.erase(dlg.m_filename.length() - 3, 3) + L"wav");
-	return true;
 #elif defined(__unix__)
 	// Note I think it doesn't support multiple depth creation
 	GSmkdir(m_out_dir.c_str());
 
 	// Really cheap recording
 	m_frame = 0;
-	// Add option !!!
-	m_size.x = theApp.GetConfigI("CaptureWidth");
-	m_size.y = theApp.GetConfigI("CaptureHeight");
 
 	for (int i = 0; i < m_threads; i++)
 	{
 		m_workers.push_back(std::unique_ptr<GSPng::Worker>(new GSPng::Worker(&GSPng::Process)));
 	}
+#endif
 
 	m_capturing = true;
-	filename = m_out_dir + "/audio_recording.wav";
+	filename = convert_utf16_to_utf8(filePath.erase(filePath.length() - 3, 3) + L"wav");
+
 	return true;
-#endif
 }
 
 bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
@@ -596,7 +599,8 @@ bool GSCapture::EndCapture()
 	if (m_graph)
 	{
 		m_graph.query<IMediaControl>()->Stop();
-		m_graph.reset();;
+		m_graph.reset();
+		;
 	}
 
 #elif defined(__unix__)

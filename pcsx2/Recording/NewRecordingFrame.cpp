@@ -17,7 +17,7 @@
 
 #ifndef DISABLE_RECORDING
 
-#include "App.h"
+#include "gui/App.h"
 
 #include "NewRecordingFrame.h"
 
