@@ -458,6 +458,43 @@ void recSWR()
 
 ////////////////////////////////////////////////////
 
+/// Masks rt with (0xffffffffffffffff maskshift maskamt), merges with (value shift amt), leaves result in value
+static void ldlrhelper_const(int maskamt, const xImplSimd_Shift& maskshift, int amt, const xImplSimd_Shift& shift, const xRegisterSSE& value, const xRegisterSSE& rt)
+{
+	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
+	xRegisterSSE t0(t0reg);
+
+	xPCMP.EQD(t0, t0);
+	maskshift.Q(t0, maskamt);
+	xPAND(t0, rt);
+
+	shift.Q(value, amt);
+	xPOR(value, t0);
+
+	_freeXMMreg(t0reg);
+}
+
+/// Masks rt with (0xffffffffffffffff maskshift maskamt), merges with (value shift amt), leaves result in value
+static void ldlrhelper(const xRegister32& maskamt, const xImplSimd_Shift& maskshift, const xRegister32& amt, const xImplSimd_Shift& shift, const xRegisterSSE& value, const xRegisterSSE& rt)
+{
+	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
+	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
+	xRegisterSSE t0(t0reg);
+	xRegisterSSE t1(t1reg);
+
+	xMOVDZX(t1, maskamt);
+	xPCMP.EQD(t0, t0);
+	maskshift.Q(t0, t1);
+	xPAND(t0, rt);
+
+	xMOVDZX(t1, amt);
+	shift.Q(value, t1);
+	xPOR(value, t0);
+
+	_freeXMMreg(t1reg);
+	_freeXMMreg(t0reg);
+}
+
 void recLDL()
 {
 	if (!_Rt_)
@@ -480,6 +517,7 @@ void recLDL()
 		if (_Imm_ != 0)
 			xADD(arg1regd, _Imm_);
 
+		xMOV(calleeSavedReg1d, arg1regd);
 		xAND(arg1regd, ~0x07);
 
 		iFlushCall(FLUSH_FULLVTLB);
@@ -488,46 +526,34 @@ void recLDL()
 	}
 	
 	int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ | MODE_WRITE);
-	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
-	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
 
 	if (GPR_IS_CONST1(_Rs_))
 	{
-		u32 shiftval = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-		shiftval &= 0x7;
-		xMOV(eax, shiftval + 1);
+		u32 shift = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+		shift = ((shift & 0x7) + 1) * 8;
+		if (shift != 64)
+		{
+			ldlrhelper_const(shift, xPSRL, 64 - shift, xPSLL, xRegisterSSE(t2reg), xRegisterSSE(rtreg));
+		}
 	}
 	else
 	{
-		_eeMoveGPRtoR(eax, _Rs_);
-		if (_Imm_ != 0)
-			xADD(eax, _Imm_);
-		xAND(eax, 0x7);
-		xADD(eax, 1);
+		xAND(calleeSavedReg1d, 0x7);
+		xCMP(calleeSavedReg1d, 7);
+		xForwardJE8 skip;
+			// Calculate the shift from top bit to lowest
+			xADD(calleeSavedReg1d, 1);
+			xMOV(edx, 64);
+			xSHL(calleeSavedReg1d, 3);
+			xSUB(edx, calleeSavedReg1d);
+
+			ldlrhelper(calleeSavedReg1d, xPSRL, edx, xPSLL, xRegisterSSE(t2reg), xRegisterSSE(rtreg));
+		skip.SetTarget();
 	}
-
-	xCMP(eax, 8);
-	xForwardJE8 skip;
-	//Calculate the shift from top bit to lowest
-	xMOV(edx, 64);
-	xSHL(eax, 3);
-	xSUB(edx, eax);
-
-	xMOVDZX(xRegisterSSE(t1reg), eax);
-	xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
-	xPSRL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
-	xPAND(xRegisterSSE(t0reg), xRegisterSSE(rtreg));
-
-	xMOVDZX(xRegisterSSE(t1reg), edx);
-	xPSLL.Q(xRegisterSSE(t2reg), xRegisterSSE(t1reg));
-	xPOR(xRegisterSSE(t2reg), xRegisterSSE(t0reg));
-
-	skip.SetTarget();
 	xMOVSD(xRegisterSSE(rtreg), xRegisterSSE(t2reg));
 
-	_freeXMMreg(t0reg);
-	_freeXMMreg(t1reg);
 	_freeXMMreg(t2reg);
+	_clearNeededXMMregs();
 
 #else
 	iFlushCall(FLUSH_INTERPRETER);
@@ -562,6 +588,7 @@ void recLDR()
 		if (_Imm_ != 0)
 			xADD(arg1regd, _Imm_);
 
+		xMOV(calleeSavedReg1d, arg1regd);
 		xAND(arg1regd, ~0x07);
 
 		iFlushCall(FLUSH_FULLVTLB);
@@ -570,45 +597,33 @@ void recLDR()
 	}
 
 	int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ | MODE_WRITE);
-	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
-	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
 
 	if (GPR_IS_CONST1(_Rs_))
 	{
-		u32 shiftval = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-		shiftval &= 0x7;
-		xMOV(eax, shiftval);
+		u32 shift = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+		shift = (shift & 0x7) * 8;
+		if (shift != 0)
+		{
+			ldlrhelper_const(64 - shift, xPSLL, shift, xPSRL, xRegisterSSE(t2reg), xRegisterSSE(rtreg));
+		}
 	}
 	else
 	{
-		_eeMoveGPRtoR(eax, _Rs_);
-		if (_Imm_ != 0)
-			xADD(eax, _Imm_);
-		xAND(eax, 0x7);
+		xAND(calleeSavedReg1d, 0x7);
+		xForwardJE8 skip;
+			// Calculate the shift from top bit to lowest
+			xMOV(edx, 64);
+			xSHL(calleeSavedReg1d, 3);
+			xSUB(edx, calleeSavedReg1d);
+
+			ldlrhelper(edx, xPSLL, calleeSavedReg1d, xPSRL, xRegisterSSE(t2reg), xRegisterSSE(rtreg));
+		skip.SetTarget();
 	}
 
-	xCMP(eax, 0);
-	xForwardJE32 skip;
-	//Calculate the shift from top bit to lowest
-	xMOV(edx, 64);
-	xSHL(eax, 3);
-	xSUB(edx, eax);
-
-	xMOVDZX(xRegisterSSE(t1reg), edx); //64-shift*8
-	xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
-	xPSLL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
-	xPAND(xRegisterSSE(t0reg), xRegisterSSE(rtreg));
-
-	xMOVDZX(xRegisterSSE(t1reg), eax); //shift*8
-	xPSRL.Q(xRegisterSSE(t2reg), xRegisterSSE(t1reg));
-	xPOR(xRegisterSSE(t2reg), xRegisterSSE(t0reg));
-
-	skip.SetTarget();
 	xMOVSD(xRegisterSSE(rtreg), xRegisterSSE(t2reg));
 
-	_freeXMMreg(t0reg);
-	_freeXMMreg(t1reg);
 	_freeXMMreg(t2reg);
+	_clearNeededXMMregs();
 
 #else
 	iFlushCall(FLUSH_INTERPRETER);
@@ -622,16 +637,73 @@ void recLDR()
 
 ////////////////////////////////////////////////////
 
+/// Masks value with (0xffffffffffffffff maskshift maskamt), merges with (rt shift amt), saves to dummyValue
+static void sdlrhelper_const(int maskamt, const xImplSimd_Shift& maskshift, int amt, const xImplSimd_Shift& shift, const xRegisterSSE& value, const xRegisterSSE& rt)
+{
+	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
+	xRegisterSSE t0(t0reg);
+
+	xPCMP.EQD(t0, t0);
+	maskshift.Q(t0, maskamt);
+	xPAND(t0, value);
+
+	shift.Q(rt, amt);
+	xPOR(rt, t0);
+
+	xLEA(arg2reg, ptr[&dummyValue[0]]);
+	xMOVQ(ptr64[arg2reg], rt);
+
+	_freeXMMreg(t0reg);
+}
+
+/// Masks value with (0xffffffffffffffff maskshift maskamt), merges with (rt shift amt), saves to dummyValue
+static void sdlrhelper(const xRegister32& maskamt, const xImplSimd_Shift& maskshift, const xRegister32& amt, const xImplSimd_Shift& shift, const xRegisterSSE& value, const xRegisterSSE& rt)
+{
+	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
+	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
+	xRegisterSSE t0(t0reg);
+	xRegisterSSE t1(t1reg);
+
+	// Generate mask 128-(shiftx8)
+	xMOVDZX(t1, maskamt);
+	xPCMP.EQD(t0, t0);
+	maskshift.Q(t0, t1);
+	xPAND(t0, value);
+
+	// Shift over reg value
+	xMOVDZX(t1, amt);
+	shift.Q(rt, t1);
+	xPOR(rt, t0);
+
+	xLEA(arg2reg, ptr[&dummyValue[0]]);
+	xMOVQ(ptr64[arg2reg], rt);
+
+	_freeXMMreg(t1reg);
+	_freeXMMreg(t0reg);
+}
+
 void recSDL()
 {
 #ifdef LOADSTORE_RECOMPILE
-	int t2reg;
+	_flushEEreg(_Rt_); // flush register to mem
 	if (GPR_IS_CONST1(_Rs_))
 	{
-		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-		srcadr &= ~0x07;
-
-		t2reg = vtlb_DynGenRead64_Const(64, srcadr, -1);
+		u32 adr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+		u32 aligned = adr & ~0x07;
+		u32 shift = ((adr & 0x7) + 1) * 8;
+		if (shift == 64)
+		{
+			xLEA(arg2reg, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+		}
+		else
+		{
+			int t2reg = vtlb_DynGenRead64_Const(64, aligned, -1);
+			int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
+			sdlrhelper_const(shift, xPSLL, 64 - shift, xPSRL, xRegisterSSE(t2reg), xRegisterSSE(rtreg));
+			_deleteGPRtoXMMreg(_Rt_, 3);
+			_freeXMMreg(t2reg);
+		}
+		vtlb_DynGenWrite_Const(64, aligned);
 	}
 	else
 	{
@@ -640,74 +712,34 @@ void recSDL()
 		if (_Imm_ != 0)
 			xADD(arg1regd, _Imm_);
 
-		xAND(arg1regd, ~0x07);
-
 		iFlushCall(FLUSH_FULLVTLB);
+		xMOV(calleeSavedReg1d, arg1regd);
+		xAND(arg1regd, ~0x07);
+		xAND(calleeSavedReg1d, 0x7);
+		xCMP(calleeSavedReg1d, 7);
+		xForwardJE32 skip;
+			xADD(calleeSavedReg1d, 1);
+			int t2reg = vtlb_DynGenRead64(64, -1);
+			int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
 
-		t2reg = vtlb_DynGenRead64(64, -1);
-	}
-	_flushEEreg(_Rt_); // flush register to mem
+			//Calculate the shift from top bit to lowest
+			xMOV(edx, 64);
+			xSHL(calleeSavedReg1d, 3);
+			xSUB(edx, calleeSavedReg1d);
 
-	int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
-	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
-	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
+			sdlrhelper(calleeSavedReg1d, xPSLL, edx, xPSRL, xRegisterSSE(t2reg), xRegisterSSE(rtreg));
 
-	if (GPR_IS_CONST1(_Rs_))
-	{
-		u32 shiftval = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-		shiftval &= 0x7;
-		xMOV(eax, shiftval + 1);
-	}
-	else
-	{
-		_eeMoveGPRtoR(eax, _Rs_);
-		if (_Imm_ != 0)
-			xADD(eax, _Imm_);
-		xAND(eax, 0x7);
-		xADD(eax, 1);
-	}
+			_deleteGPRtoXMMreg(_Rt_, 3);
+			_freeXMMreg(t2reg);
 
-	xCMP(eax, 8);
-	xForwardJE8 skip;
-	//Calculate the shift from top bit to lowest
-	xMOV(edx, 64);
-	xSHL(eax, 3);
-	xSUB(edx, eax);
-	// Generate mask 128-(shiftx8) xPSRA.W does bit for bit
-	xMOVDZX(xRegisterSSE(t1reg), eax);
-	xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
-	xPSLL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
-	xPAND(xRegisterSSE(t0reg), xRegisterSSE(t2reg));
-
-	// Shift over reg value (shift, PSLL.Q multiplies by 8)
-	xMOVDZX(xRegisterSSE(t1reg), edx);
-	xPSRL.Q(xRegisterSSE(rtreg), xRegisterSSE(t1reg));
-	xPOR(xRegisterSSE(rtreg), xRegisterSSE(t0reg));
-	skip.SetTarget();
-
-	xMOVQ(ptr64[&dummyValue[0]], xRegisterSSE(rtreg));
-
-	_deleteGPRtoXMMreg(_Rt_, 3);
-	_freeXMMreg(t0reg);
-	_freeXMMreg(t1reg);
-	_freeXMMreg(t2reg);
-
-	xLEA(arg2reg, ptr128[&dummyValue[0]]);
-
-	if (GPR_IS_CONST1(_Rs_))
-	{
-		u32 dstadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-		dstadr &= ~0x07;
-
-		vtlb_DynGenWrite_Const(64, dstadr);
-	}
-	else
-	{
-		_eeMoveGPRtoR(arg1regd, _Rs_);
-		if (_Imm_ != 0)
-			xADD(arg1regd, _Imm_);
-
-		xAND(arg1regd, ~0x7);
+			_eeMoveGPRtoR(arg1regd, _Rs_);
+			if (_Imm_ != 0)
+				xADD(arg1regd, _Imm_);
+			xAND(arg1regd, ~0x7);
+			xForwardJump8 end;
+		skip.SetTarget();
+			xLEA(arg2reg, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+		end.SetTarget();
 
 		iFlushCall(FLUSH_FULLVTLB);
 
@@ -726,13 +758,26 @@ void recSDL()
 void recSDR()
 {
 #ifdef LOADSTORE_RECOMPILE
-	int t2reg;
+	_flushEEreg(_Rt_); // flush register to mem
 	if (GPR_IS_CONST1(_Rs_))
 	{
-		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-		srcadr &= ~0x07;
+		u32 adr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+		u32 aligned = adr & ~0x07;
+		u32 shift = (adr & 0x7) * 8;
+		if (shift == 0)
+		{
+			xLEA(arg2reg, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+		}
+		else
+		{
+			int t2reg = vtlb_DynGenRead64_Const(64, aligned, -1);
+			int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
+			sdlrhelper_const(64 - shift, xPSRL, shift, xPSLL, xRegisterSSE(t2reg), xRegisterSSE(rtreg));
+			_deleteGPRtoXMMreg(_Rt_, 3);
+			_freeXMMreg(t2reg);
+		}
 
-		t2reg = vtlb_DynGenRead64_Const(64, srcadr, -1);
+		vtlb_DynGenWrite_Const(64, aligned);
 	}
 	else
 	{
@@ -741,73 +786,31 @@ void recSDR()
 		if (_Imm_ != 0)
 			xADD(arg1regd, _Imm_);
 
-		xAND(arg1regd, ~0x07);
-
 		iFlushCall(FLUSH_FULLVTLB);
+		xMOV(calleeSavedReg1d, arg1regd);
+		xAND(arg1regd, ~0x07);
+		xAND(calleeSavedReg1d, 0x7);
+		xForwardJE32 skip;
+			int t2reg = vtlb_DynGenRead64(64, -1);
+			int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
 
-		t2reg = vtlb_DynGenRead64(64, -1);
-	}
-	_flushEEreg(_Rt_); // flush register to mem
+			xMOV(edx, 64);
+			xSHL(calleeSavedReg1d, 3);
+			xSUB(edx, calleeSavedReg1d);
 
-	int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ);
-	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
-	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
+			sdlrhelper(edx, xPSRL, calleeSavedReg1d, xPSLL, xRegisterSSE(t2reg), xRegisterSSE(rtreg));
 
-	if (GPR_IS_CONST1(_Rs_))
-	{
-		u32 shiftval = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-		shiftval &= 0x7;
-		xMOV(eax, shiftval);
-	}
-	else
-	{
-		_eeMoveGPRtoR(eax, _Rs_);
-		if (_Imm_ != 0)
-			xADD(eax, _Imm_);
-		xAND(eax, 0x7);
-	}
+			_deleteGPRtoXMMreg(_Rt_, 3);
+			_freeXMMreg(t2reg);
 
-	xCMP(eax, 0);
-	xForwardJE8 skip;
-	//Calculate the shift from top bit to lowest
-	xMOV(edx, 64);
-	xSHL(eax, 3);
-	xSUB(edx, eax);
-	// Generate mask 128-(shiftx8) xPSRA.W does bit for bit
-	xMOVDZX(xRegisterSSE(t1reg), edx);
-	xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
-	xPSRL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
-	xPAND(xRegisterSSE(t0reg), xRegisterSSE(t2reg));
-
-	// Shift over reg value (shift, PSLL.Q multiplies by 8)
-	xMOVDZX(xRegisterSSE(t1reg), eax);
-	xPSLL.Q(xRegisterSSE(rtreg), xRegisterSSE(t1reg));
-	xPOR(xRegisterSSE(rtreg), xRegisterSSE(t0reg));
-	skip.SetTarget();
-
-	xMOVQ(ptr64[&dummyValue[0]], xRegisterSSE(rtreg));
-	
-	_deleteGPRtoXMMreg(_Rt_, 3);
-	_freeXMMreg(t0reg);
-	_freeXMMreg(t1reg);
-	_freeXMMreg(t2reg);
-
-	xLEA(arg2reg, ptr128[&dummyValue[0]]);
-
-	if (GPR_IS_CONST1(_Rs_))
-	{
-		u32 dstadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
-		dstadr &= ~0x07;
-
-		vtlb_DynGenWrite_Const(64, dstadr);
-	}
-	else
-	{
-		_eeMoveGPRtoR(arg1regd, _Rs_);
-		if (_Imm_ != 0)
-			xADD(arg1regd, _Imm_);
-
-		xAND(arg1regd, ~0x7);
+			_eeMoveGPRtoR(arg1regd, _Rs_);
+			if (_Imm_ != 0)
+				xADD(arg1regd, _Imm_);
+			xAND(arg1regd, ~0x7);
+			xForwardJump8 end;
+		skip.SetTarget();
+			xLEA(arg2reg, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
+		end.SetTarget();
 
 		iFlushCall(FLUSH_FULLVTLB);
 
