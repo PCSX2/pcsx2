@@ -19,12 +19,6 @@
 #include "CDVD/IsoFS/IsoFSCDVD.h"
 #include "CDVD/IsoFS/IsoFS.h"
 
-#if 0
-//2002-09-20 (Florin)
-extern char args[256];		//to be filled by GUI
-extern unsigned int args_ptr;
-#endif
-
 struct ELF_HEADER {
 	u8	e_ident[16];	//0x7f,"ELF"  (ELF file identifier)
 	u16	e_type;			//ELF type: 0=NONE, 1=REL, 2=EXEC, 3=SHARED, 4=CORE
@@ -131,21 +125,20 @@ class ElfObject
 		ELF_SHR* secthead;
 		wxString filename;
 
-		void initElfHeaders();
+		void initElfHeaders(bool isPSXElf);
 		void readIso(IsoFile& file);
 		void readFile();
 		void checkElfSize(s64 elfsize);
 
 	public:
-		bool isCdvd;
 		ELF_HEADER& header;
 
 		// Destructor!
 		// C++ does all the cleanup automagically for us.
 		virtual ~ElfObject() = default;
 
-		ElfObject(const wxString& srcfile, IsoFile& isofile);
-		ElfObject( const wxString& srcfile, uint hdrsize );
+		ElfObject(const wxString& srcfile, IsoFile& isofile, bool isPSXElf);
+		ElfObject( const wxString& srcfile, uint hdrsize, bool isPSXElf );
 
 		void loadProgramHeaders();
 		void loadSectionHeaders();
@@ -168,5 +161,6 @@ extern u32 ElfCRC;
 extern u32 ElfEntry;
 extern std::pair<u32,u32> ElfTextRange;
 extern wxString LastELF;
+extern bool isPSXElf;
 
 #endif

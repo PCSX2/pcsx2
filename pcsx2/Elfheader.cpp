@@ -25,36 +25,40 @@ u32 ElfCRC;
 u32 ElfEntry;
 std::pair<u32,u32> ElfTextRange;
 wxString LastELF;
+bool isPSXElf;
 
 // All of ElfObjects functions.
-ElfObject::ElfObject(const wxString& srcfile, IsoFile& isofile)
+ElfObject::ElfObject(const wxString& srcfile, IsoFile& isofile, bool isPSXElf)
 	: data( wxULongLong(isofile.getLength()).GetLo(), L"ELF headers" )
 	, proghead( NULL )
 	, secthead( NULL )
 	, filename( srcfile )
 	, header( *(ELF_HEADER*)data.GetPtr() )
 {
-	isCdvd = true;
 	checkElfSize(data.GetSizeInBytes());
 	readIso(isofile);
-	initElfHeaders();
+	initElfHeaders(isPSXElf);
 }
 
-ElfObject::ElfObject( const wxString& srcfile, uint hdrsize )
+ElfObject::ElfObject( const wxString& srcfile, uint hdrsize, bool isPSXElf )
 	: data( wxULongLong(hdrsize).GetLo(), L"ELF headers" )
 	, proghead( NULL )
 	, secthead( NULL )
 	, filename( srcfile )
 	, header( *(ELF_HEADER*)data.GetPtr() )
 {
-	isCdvd = false;
 	checkElfSize(data.GetSizeInBytes());
 	readFile();
-	initElfHeaders();
+	initElfHeaders(isPSXElf);
 }
 
-void ElfObject::initElfHeaders()
+void ElfObject::initElfHeaders(bool isPSXElf)
 {
+	if (isPSXElf)
+	{
+		return;
+	}
+
 	DevCon.WriteLn( L"Initializing Elf: %d bytes", data.GetSizeInBytes());
 
 	if ( header.e_phnum > 0 )

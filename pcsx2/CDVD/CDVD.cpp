@@ -381,10 +381,10 @@ s32 cdvdWriteConfig(const u8* config)
 static MutexRecursive Mutex_NewDiskCB;
 
 // Sets ElfCRC to the CRC of the game bound to the CDVD source.
-static __fi ElfObject* loadElf(const wxString filename)
+static __fi ElfObject* loadElf(const wxString filename, bool isPSXElf)
 {
 	if (filename.StartsWith(L"host"))
-		return new ElfObject(filename.After(':'), Path::GetFileSize(filename.After(':')));
+		return new ElfObject(filename.After(':'), Path::GetFileSize(filename.After(':')), isPSXElf);
 
 	// Mimic PS2 behavior!
 	// Much trial-and-error with changing the ISOFS and BOOT2 contents of an image have shown that
@@ -408,7 +408,7 @@ static __fi ElfObject* loadElf(const wxString filename)
 
 	IsoFSCDVD isofs;
 	IsoFile file(isofs, fixedname);
-	return new ElfObject(fixedname, file);
+	return new ElfObject(fixedname, file, isPSXElf);
 }
 
 static __fi void _reloadElfInfo(wxString elfpath)
@@ -427,14 +427,44 @@ static __fi void _reloadElfInfo(wxString elfpath)
 		fname = elfpath.AfterLast(':');
 	if (fname.Matches(L"????_???.??*"))
 		DiscSerial = fname(0, 4) + L"-" + fname(5, 3) + fname(9, 2);
+	std::unique_ptr<ElfObject> elfptr(loadElf(elfpath, false));
 
-	std::unique_ptr<ElfObject> elfptr(loadElf(elfpath));
 
 	elfptr->loadHeaders();
 	ElfCRC = elfptr->getCRC();
 	ElfEntry = elfptr->header.e_entry;
 	ElfTextRange = elfptr->getTextRange();
 	Console.WriteLn(Color_StrongBlue, L"ELF (%s) Game CRC = 0x%08X, EntryPoint = 0x%08X", WX_STR(elfpath), ElfCRC, ElfEntry);
+
+	// Note: Do not load game database info here.  This code is generic and called from
+	// BIOS key encryption as well as eeloadReplaceOSDSYS.  The first is actually still executing
+	// BIOS code, and patches and cheats should not be applied yet.  (they are applied when
+	// eeGameStarting is invoked, which is when the VM starts executing the actual game ELF
+	// binary).
+}
+
+
+static __fi void _reloadPSXElfInfo(wxString elfpath)
+{
+	// Now's a good time to reload the ELF info...
+	ScopedLock locker(Mutex_NewDiskCB);
+
+	if (elfpath == LastELF)
+		return;
+	LastELF = elfpath;
+	wxString fname = elfpath.AfterLast('\\');
+	if (!fname)
+		fname = elfpath.AfterLast('/');
+	if (!fname)
+		fname = elfpath.AfterLast(':');
+	if (fname.Matches(L"????_???.??*"))
+		DiscSerial = fname(0, 4) + L"-" + fname(5, 3) + fname(9, 2);
+
+	std::unique_ptr<ElfObject> elfptr(loadElf(elfpath, true));
+
+	ElfCRC = elfptr->getCRC();
+	ElfTextRange = elfptr->getTextRange();
+	Console.WriteLn(Color_StrongBlue, L"PSX ELF (%s) Game CRC = 0x%08X", WX_STR(elfpath), ElfCRC);
 
 	// Note: Do not load game database info here.  This code is generic and called from
 	// BIOS key encryption as well as eeloadReplaceOSDSYS.  The first is actually still executing
@@ -465,10 +495,11 @@ void cdvdReloadElfInfo(wxString elfoverride)
 			// PCSX2 currently only recognizes *.elf executables in proper PS2 format.
 			// To support different PSX titles in the console title and for savestates, this code bypasses all the detection,
 			// simply using the exe name, stripped of problematic characters.
-			wxString fname = elfpath.AfterLast('\\').AfterLast(':'); // Also catch elf paths which lack a backslash, and only have a colon.
-			wxString fname2 = fname.BeforeFirst(';');
-			DiscSerial = fname2;
-			Console.SetTitle(DiscSerial);
+			wxString fname = elfpath.AfterLast('\\').BeforeFirst('_');
+			wxString fname2 = elfpath.AfterLast('_').BeforeFirst('.');
+			wxString fname3 = elfpath.AfterLast('.').BeforeFirst(';');
+			DiscSerial = fname + "-" + fname2 + fname3;
+			_reloadPSXElfInfo(elfpath);
 			return;
 		}
 
