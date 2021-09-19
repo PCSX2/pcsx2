@@ -453,6 +453,9 @@ void SysMainMemory::DecommitAll()
 	closeNewVif(0);
 	closeNewVif(1);
 
+	g_GameStarted = false;
+	g_GameLoading = false;
+
 	vtlb_Core_Free();
 }
 
