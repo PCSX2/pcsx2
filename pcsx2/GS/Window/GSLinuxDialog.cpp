@@ -309,6 +309,7 @@ void populate_hw_table(GtkWidget* hw_table)
 	AddTooltip(mipmap_label, IDC_MIPMAP_HW);
 	AddTooltip(mipmap_combo_box, IDC_MIPMAP_HW);
 	AddTooltip(acc_bld_label, acc_bld_combo_box, IDC_ACCURATE_BLEND_UNIT);
+	AddTooltip(dither_label, dither_combo_box, IDC_DITHERING);
 
 	s_table_line = 0;
 	InsertWidgetInTable(hw_table, hack_enable_check, acc_date_check);

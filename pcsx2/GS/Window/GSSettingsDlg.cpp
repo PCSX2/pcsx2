@@ -120,6 +120,7 @@ void GSSettingsDlg::OnInit()
 	AddTooltip(IDC_SWTHREADS_EDIT);
 	AddTooltip(IDC_AUTO_FLUSH_SW);
 	AddTooltip(IDC_CONSERVATIVE_FB);
+	AddTooltip(IDC_DITHERING);
 
 	UpdateControls();
 }

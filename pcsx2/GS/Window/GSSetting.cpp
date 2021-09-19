@@ -196,6 +196,13 @@ const char* dialog_message(int ID, bool* updateText)
 				   "Disabling this can amplify stuttering due to low RAM/VRAM.\n\n"
 				   "Note: It should be enabled for Armored Core, Destroy All Humans, Gran Turismo and possibly others.\n"
 				   "This option does not improve the graphics or the FPS.");
+		case IDC_DITHERING:
+			return cvtString("In the PS2's case, it reduces banding between colors and improves the perceived color depth.\n"
+				   "In the PS1's case, it was used more aggressively due to 16-bit colour.\n"
+				   "Sit far enough and don't examine it too closely for the best effect.\n\n"
+				   "Off:\nDisables any dithering.\n\n"
+				   "Unscaled:\nNative Dithering / Lowest dithering effect does not increase size of squares when upscaling.\n\n"
+				   "Scaled:\nUpscaling-aware / Highest dithering effect.");
 			// Windows only options.
 #ifdef _WIN32
 		case IDC_ACCURATE_BLEND_UNIT_D3D11:
