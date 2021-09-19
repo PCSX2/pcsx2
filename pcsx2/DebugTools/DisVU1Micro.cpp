@@ -55,7 +55,7 @@ typedef char* (*TdisR5900F)DisFInterface;
 
 #define dCP2128f(i) { \
 	if( !CpuVU1->IsInterpreter ) sprintf(ostrA, " %s,", R5900::COP2_REG_FP[i]); \
-	else sprintf(ostrA, " w=%f (%8.8x) z=%f (%8.8x) y=%f (%8.8xl) x=%f (%8.8x) (%s),", VU1.VF[i].f.w, VU1.VF[i].UL[3], VU1.VF[i].f.z, VU1.VF[i].UL[2], VU1.VF[i].f.y, VU1.VF[i].UL[1], VU1.VF[i].f.x, VU1.VF[i].UL[0], R5900::COP2_REG_FP[i]); \
+	else sprintf(ostrA, " w=%f (%8.8x) z=%f (%8.8x) y=%f (%8.8x) x=%f (%8.8x) (%s),", VU1.VF[i].f.w, VU1.VF[i].UL[3], VU1.VF[i].f.z, VU1.VF[i].UL[2], VU1.VF[i].f.y, VU1.VF[i].UL[1], VU1.VF[i].f.x, VU1.VF[i].UL[0], R5900::COP2_REG_FP[i]); \
 } \
 
 #define dCP232x(i) { \
