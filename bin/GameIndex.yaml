@@ -13003,6 +13003,7 @@ SLES-53125:
   region: "PAL-M5"
   clampModes:
     eeClampMode: 3
+    vuClampMode: 3 
 SLES-53127:
   name: "Teenage Mutant Ninja Turtles - Mutant Melee"
   region: "PAL-M5"
@@ -25076,6 +25077,7 @@ SLPM-66257:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 3
+    vuClampMode: 3
 SLPM-66258:
   name: "Magic Teacher Negima - Honor Version [Konami The Best]"
   region: "NTSC-J"
@@ -36198,6 +36200,7 @@ SLUS-20967:
   compat: 5
   clampModes:
     eeClampMode: 3
+    vuClampMode: 3
 SLUS-20968:
   name: "Karaoke Revolution Volume 2"
   region: "NTSC-U"
