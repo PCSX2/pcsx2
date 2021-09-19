@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -211,6 +211,13 @@ void Panels::BiosSelectorPanel::OnEnumComplete(wxCommandEvent& evt)
 		const int sel = m_ComboBox->Append(result.first, reinterpret_cast<void*>(result.second));
 		if (currentBios == wxFileName((*m_BiosList)[result.second]))
 			m_ComboBox->SetSelection(sel);
+	}
+	// Select a bios if one isn't selected. 
+	// This makes it so users don't _have_ to click on their bios,
+	// possibly reducing confusion.
+	if(m_ComboBox->GetSelection() == -1 && m_ComboBox->GetCount() > 0)
+	{
+		m_ComboBox->SetSelection(0);
 	}
 };
 
