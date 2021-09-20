@@ -164,7 +164,7 @@ DataType __fastcall vtlb_memRead(u32 addr)
 	return 0;		// technically unreachable, but suppresses warnings.
 }
 
-void __fastcall vtlb_memRead64(u32 mem, mem64_t *out)
+RETURNS_R64 vtlb_memRead64(u32 mem)
 {
 	auto vmv = vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
 
@@ -173,22 +173,22 @@ void __fastcall vtlb_memRead64(u32 mem, mem64_t *out)
 		if (!CHECK_EEREC) {
 			if(CHECK_CACHE && CheckCache(mem)) 
 			{
-				*out = readCache64(mem);
-				return;
+				return readCache64(mem);
 			}
 		}
 
-		*out = *(mem64_t*)vmv.assumePtr(mem);
+		return r64_load(reinterpret_cast<const void*>(vmv.assumePtr(mem)));
 	}
 	else
 	{
 		//has to: translate, find function, call function
 		u32 paddr = vmv.assumeHandlerGetPAddr(mem);
 		//Console.WriteLn("Translated 0x%08X to 0x%08X", addr,paddr);
-		vmv.assumeHandler<64, false>()(paddr, out);
+		return vmv.assumeHandler<64, false>()(paddr);
 	}
 }
-void __fastcall vtlb_memRead128(u32 mem, mem128_t *out)
+
+RETURNS_R128 vtlb_memRead128(u32 mem)
 {
 	auto vmv = vtlbdata.vmap[mem>>VTLB_PAGE_BITS];
 
@@ -198,20 +198,18 @@ void __fastcall vtlb_memRead128(u32 mem, mem128_t *out)
 		{
 			if(CHECK_CACHE && CheckCache(mem)) 
 			{
-				out->lo = readCache64(mem);
-				out->hi = readCache64(mem+8);
-				return;
+				return readCache128(mem);
 			}
 		}
 
-		CopyQWC(out,(void*)vmv.assumePtr(mem));
+		return r128_load(reinterpret_cast<const void*>(vmv.assumePtr(mem)));
 	}
 	else
 	{
 		//has to: translate, find function, call function
 		u32 paddr = vmv.assumeHandlerGetPAddr(mem);
 		//Console.WriteLn("Translated 0x%08X to 0x%08X", addr,paddr);
-		vmv.assumeHandler<128, false>()(paddr, out);
+		return vmv.assumeHandler<128, false>()(paddr);
 	}
 }
 
@@ -436,28 +434,28 @@ static __ri void vtlb_BusError(u32 addr,u32 mode)
 }
 
 template<typename OperandType, u32 saddr>
-OperandType __fastcall vtlbUnmappedVReadSm(u32 addr)					{ vtlb_Miss(addr|saddr,0); return 0; }
+OperandType __fastcall vtlbUnmappedVReadSm(u32 addr)                   { vtlb_Miss(addr|saddr,0); return 0; }
 
 template<typename OperandType, u32 saddr>
-void __fastcall vtlbUnmappedVReadLg(u32 addr,OperandType* data)			{ vtlb_Miss(addr|saddr,0); }
+u_to_r<OperandType> __vectorcall vtlbUnmappedVReadLg(u32 addr)         { vtlb_Miss(addr|saddr,0); return rhelper<OperandType>::zero(); }
 
 template<typename OperandType, u32 saddr>
-void __fastcall vtlbUnmappedVWriteSm(u32 addr,OperandType data)			{ vtlb_Miss(addr|saddr,1); }
+void __fastcall vtlbUnmappedVWriteSm(u32 addr,OperandType data)        { vtlb_Miss(addr|saddr,1); }
 
 template<typename OperandType, u32 saddr>
-void __fastcall vtlbUnmappedVWriteLg(u32 addr,const OperandType* data)	{ vtlb_Miss(addr|saddr,1); }
+void __fastcall vtlbUnmappedVWriteLg(u32 addr,const OperandType* data) { vtlb_Miss(addr|saddr,1); }
 
 template<typename OperandType, u32 saddr>
-OperandType __fastcall vtlbUnmappedPReadSm(u32 addr)					{ vtlb_BusError(addr|saddr,0); return 0; }
+OperandType __fastcall vtlbUnmappedPReadSm(u32 addr)                   { vtlb_BusError(addr|saddr,0); return 0; }
 
 template<typename OperandType, u32 saddr>
-void __fastcall vtlbUnmappedPReadLg(u32 addr,OperandType* data)			{ vtlb_BusError(addr|saddr,0); }
+u_to_r<OperandType> __vectorcall vtlbUnmappedPReadLg(u32 addr)         { vtlb_BusError(addr|saddr,0); return rhelper<OperandType>::zero(); }
 
 template<typename OperandType, u32 saddr>
-void __fastcall vtlbUnmappedPWriteSm(u32 addr,OperandType data)			{ vtlb_BusError(addr|saddr,1); }
+void __fastcall vtlbUnmappedPWriteSm(u32 addr,OperandType data)        { vtlb_BusError(addr|saddr,1); }
 
 template<typename OperandType, u32 saddr>
-void __fastcall vtlbUnmappedPWriteLg(u32 addr,const OperandType* data)	{ vtlb_BusError(addr|saddr,1); }
+void __fastcall vtlbUnmappedPWriteLg(u32 addr,const OperandType* data) { vtlb_BusError(addr|saddr,1); }
 
 // --------------------------------------------------------------------------------------
 //  VTLB mapping errors
@@ -484,14 +482,16 @@ static mem32_t __fastcall vtlbDefaultPhyRead32(u32 addr)
 	return 0;
 }
 
-static void __fastcall vtlbDefaultPhyRead64(u32 addr, mem64_t* dest)
+static __m128i __vectorcall vtlbDefaultPhyRead64(u32 addr)
 {
 	pxFailDev(pxsFmt("(VTLB) Attempted read64 from unmapped physical address @ 0x%08X.", addr));
+	return r64_zero();
 }
 
-static void __fastcall vtlbDefaultPhyRead128(u32 addr, mem128_t* dest)
+static __m128i __vectorcall vtlbDefaultPhyRead128(u32 addr)
 {
 	pxFailDev(pxsFmt("(VTLB) Attempted read128 from unmapped physical address @ 0x%08X.", addr));
+	return r128_zero();
 }
 
 static void __fastcall vtlbDefaultPhyWrite8(u32 addr, mem8_t data)

@@ -107,10 +107,8 @@ void recLoad64(u32 bits, bool sign)
 	// Load arg2 with the destination.
 	// 64/128 bit modes load the result directly into the cpuRegs.GPR struct.
 
-	if (_Rt_)
-		xLEA(arg2reg, ptr[&cpuRegs.GPR.r[_Rt_].UL[0]]);
-	else
-		xLEA(arg2reg, ptr[&dummyValue[0]]);
+	int gprreg = ((bits == 128) && _Rt_) ? _Rt_ : -1;
+	int reg;
 
 	if (GPR_IS_CONST1(_Rs_))
 	{
@@ -121,7 +119,7 @@ void recLoad64(u32 bits, bool sign)
 		_eeOnLoadWrite(_Rt_);
 		_deleteEEreg(_Rt_, 0);
 
-		vtlb_DynGenRead64_Const(bits, srcadr);
+		reg = vtlb_DynGenRead64_Const(bits, srcadr, gprreg);
 	}
 	else
 	{
@@ -134,9 +132,17 @@ void recLoad64(u32 bits, bool sign)
 
 		_eeOnLoadWrite(_Rt_);
 		_deleteEEreg(_Rt_, 0);
-		iFlushCall(FLUSH_FULLVTLB);
 
-		vtlb_DynGenRead64(bits);
+		iFlushCall(FLUSH_FULLVTLB);
+		reg = vtlb_DynGenRead64(bits, gprreg);
+	}
+
+	if (gprreg == -1)
+	{
+		if (_Rt_)
+			xMOVQ(ptr64[&cpuRegs.GPR.r[_Rt_].UL[0]], xRegisterSSE(reg));
+
+		_freeXMMreg(reg);
 	}
 }
 
@@ -458,14 +464,14 @@ void recLDL()
 		return;
 
 #ifdef LOADSTORE_RECOMPILE
-	xLEA(arg2reg, ptr128[&dummyValue[0]]);
+	int t2reg;
 
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
 		srcadr &= ~0x07;
 
-		vtlb_DynGenRead64_Const(64, srcadr);
+		t2reg = vtlb_DynGenRead64_Const(64, srcadr, -1);
 	}
 	else
 	{
@@ -478,13 +484,12 @@ void recLDL()
 
 		iFlushCall(FLUSH_FULLVTLB);
 
-		vtlb_DynGenRead64(64);
+		t2reg = vtlb_DynGenRead64(64, -1);
 	}
 	
 	int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ | MODE_WRITE);
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
-	int t2reg = _allocTempXMMreg(XMMT_INT, -1);
 
 	if (GPR_IS_CONST1(_Rs_))
 	{
@@ -502,7 +507,7 @@ void recLDL()
 	}
 
 	xCMP(eax, 8);
-	xForwardJE32 skip;
+	xForwardJE8 skip;
 	//Calculate the shift from top bit to lowest
 	xMOV(edx, 64);
 	xSHL(eax, 3);
@@ -512,18 +517,13 @@ void recLDL()
 	xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
 	xPSRL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
 	xPAND(xRegisterSSE(t0reg), xRegisterSSE(rtreg));
-	xMOVDQA(xRegisterSSE(t2reg), xRegisterSSE(t0reg));
 
 	xMOVDZX(xRegisterSSE(t1reg), edx);
-	xMOVQZX(xRegisterSSE(t0reg), ptr64[&dummyValue[0]]);
-	xPSLL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
-	xPOR(xRegisterSSE(t0reg), xRegisterSSE(t2reg));
-	xMOVSD(xRegisterSSE(rtreg), xRegisterSSE(t0reg));
-	xForwardJump32 full;
-	skip.SetTarget();
+	xPSLL.Q(xRegisterSSE(t2reg), xRegisterSSE(t1reg));
+	xPOR(xRegisterSSE(t2reg), xRegisterSSE(t0reg));
 
-	xMOVL.PS(xRegisterSSE(rtreg), ptr128[&dummyValue[0]]);
-	full.SetTarget();
+	skip.SetTarget();
+	xMOVSD(xRegisterSSE(rtreg), xRegisterSSE(t2reg));
 
 	_freeXMMreg(t0reg);
 	_freeXMMreg(t1reg);
@@ -546,14 +546,14 @@ void recLDR()
 		return;
 
 #ifdef LOADSTORE_RECOMPILE
-	xLEA(arg2reg, ptr128[&dummyValue[0]]);
+	int t2reg;
 
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
 		srcadr &= ~0x07;
 
-		vtlb_DynGenRead64_Const(64, srcadr);
+		t2reg = vtlb_DynGenRead64_Const(64, srcadr, -1);
 	}
 	else
 	{
@@ -566,13 +566,12 @@ void recLDR()
 
 		iFlushCall(FLUSH_FULLVTLB);
 
-		vtlb_DynGenRead64(64);
+		t2reg = vtlb_DynGenRead64(64, -1);
 	}
 
 	int rtreg = _allocGPRtoXMMreg(-1, _Rt_, MODE_READ | MODE_WRITE);
 	int t0reg = _allocTempXMMreg(XMMT_INT, -1);
 	int t1reg = _allocTempXMMreg(XMMT_INT, -1);
-	int t2reg = _allocTempXMMreg(XMMT_INT, -1);
 
 	if (GPR_IS_CONST1(_Rs_))
 	{
@@ -599,18 +598,13 @@ void recLDR()
 	xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
 	xPSLL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
 	xPAND(xRegisterSSE(t0reg), xRegisterSSE(rtreg));
-	xMOVQZX(xRegisterSSE(t2reg), xRegisterSSE(t0reg));
 
 	xMOVDZX(xRegisterSSE(t1reg), eax); //shift*8
-	xMOVQZX(xRegisterSSE(t0reg), ptr64[&dummyValue[0]]);
-	xPSRL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
-	xPOR(xRegisterSSE(t0reg), xRegisterSSE(t2reg));
-	xMOVSD(xRegisterSSE(rtreg), xRegisterSSE(t0reg));
-	xForwardJump32 full;
-	skip.SetTarget();
+	xPSRL.Q(xRegisterSSE(t2reg), xRegisterSSE(t1reg));
+	xPOR(xRegisterSSE(t2reg), xRegisterSSE(t0reg));
 
-	xMOVL.PS(xRegisterSSE(rtreg), ptr128[&dummyValue[0]]);
-	full.SetTarget();
+	skip.SetTarget();
+	xMOVSD(xRegisterSSE(rtreg), xRegisterSSE(t2reg));
 
 	_freeXMMreg(t0reg);
 	_freeXMMreg(t1reg);
@@ -631,14 +625,13 @@ void recLDR()
 void recSDL()
 {
 #ifdef LOADSTORE_RECOMPILE
-	xLEA(arg2reg, ptr128[&dummyValue[0]]);
-
+	int t2reg;
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
 		srcadr &= ~0x07;
 
-		vtlb_DynGenRead64_Const(64, srcadr);
+		t2reg = vtlb_DynGenRead64_Const(64, srcadr, -1);
 	}
 	else
 	{
@@ -651,7 +644,7 @@ void recSDL()
 
 		iFlushCall(FLUSH_FULLVTLB);
 
-		vtlb_DynGenRead64(64);
+		t2reg = vtlb_DynGenRead64(64, -1);
 	}
 	_flushEEreg(_Rt_); // flush register to mem
 
@@ -675,7 +668,7 @@ void recSDL()
 	}
 
 	xCMP(eax, 8);
-	xForwardJE32 skip;
+	xForwardJE8 skip;
 	//Calculate the shift from top bit to lowest
 	xMOV(edx, 64);
 	xSHL(eax, 3);
@@ -684,8 +677,7 @@ void recSDL()
 	xMOVDZX(xRegisterSSE(t1reg), eax);
 	xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
 	xPSLL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
-	xMOVQZX(xRegisterSSE(t1reg), ptr64[&dummyValue[0]]); // This line is super slow, but using MOVDQA/MOVAPS is even slower!
-	xPAND(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
+	xPAND(xRegisterSSE(t0reg), xRegisterSSE(t2reg));
 
 	// Shift over reg value (shift, PSLL.Q multiplies by 8)
 	xMOVDZX(xRegisterSSE(t1reg), edx);
@@ -698,6 +690,7 @@ void recSDL()
 	_deleteGPRtoXMMreg(_Rt_, 3);
 	_freeXMMreg(t0reg);
 	_freeXMMreg(t1reg);
+	_freeXMMreg(t2reg);
 
 	xLEA(arg2reg, ptr128[&dummyValue[0]]);
 
@@ -733,14 +726,13 @@ void recSDL()
 void recSDR()
 {
 #ifdef LOADSTORE_RECOMPILE
-	xLEA(arg2reg, ptr128[&dummyValue[0]]);
-
+	int t2reg;
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
 		srcadr &= ~0x07;
 
-		vtlb_DynGenRead64_Const(64, srcadr);
+		t2reg = vtlb_DynGenRead64_Const(64, srcadr, -1);
 	}
 	else
 	{
@@ -753,7 +745,7 @@ void recSDR()
 
 		iFlushCall(FLUSH_FULLVTLB);
 
-		vtlb_DynGenRead64(64);
+		t2reg = vtlb_DynGenRead64(64, -1);
 	}
 	_flushEEreg(_Rt_); // flush register to mem
 
@@ -776,7 +768,7 @@ void recSDR()
 	}
 
 	xCMP(eax, 0);
-	xForwardJE32 skip;
+	xForwardJE8 skip;
 	//Calculate the shift from top bit to lowest
 	xMOV(edx, 64);
 	xSHL(eax, 3);
@@ -785,8 +777,7 @@ void recSDR()
 	xMOVDZX(xRegisterSSE(t1reg), edx);
 	xPCMP.EQD(xRegisterSSE(t0reg), xRegisterSSE(t0reg));
 	xPSRL.Q(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
-	xMOVQZX(xRegisterSSE(t1reg), ptr64[&dummyValue[0]]); // This line is super slow, but using MOVDQA/MOVAPS is even slower!
-	xPAND(xRegisterSSE(t0reg), xRegisterSSE(t1reg));
+	xPAND(xRegisterSSE(t0reg), xRegisterSSE(t2reg));
 
 	// Shift over reg value (shift, PSLL.Q multiplies by 8)
 	xMOVDZX(xRegisterSSE(t1reg), eax);
@@ -799,6 +790,7 @@ void recSDR()
 	_deleteGPRtoXMMreg(_Rt_, 3);
 	_freeXMMreg(t0reg);
 	_freeXMMreg(t1reg);
+	_freeXMMreg(t2reg);
 
 	xLEA(arg2reg, ptr128[&dummyValue[0]]);
 
@@ -929,16 +921,13 @@ void recLQC2()
 	skip.SetTarget();
 	skipvuidle.SetTarget();
 
-	if (_Rt_)
-		xLEA(arg2reg, ptr[&VU0.VF[_Ft_].UD[0]]);
-	else
-		xLEA(arg2reg, ptr[&dummyValue[0]]);
+	int gpr;
 
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		int addr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
 
-		vtlb_DynGenRead64_Const(128, addr);
+		gpr = vtlb_DynGenRead64_Const(128, addr, -1);
 	}
 	else
 	{
@@ -948,8 +937,13 @@ void recLQC2()
 
 		iFlushCall(FLUSH_FULLVTLB);
 
-		vtlb_DynGenRead64(128);
+		gpr = vtlb_DynGenRead64(128, -1);
 	}
+
+	if (_Rt_)
+		xMOVAPS(ptr128[&VU0.VF[_Ft_].UD[0]], xRegisterSSE(gpr));
+
+	_freeXMMreg(gpr);
 
 	EE::Profiler.EmitOp(eeOpcode::LQC2);
 }

@@ -33,7 +33,7 @@ static __fi void IntCHackCheck()
 	if( diff > 0 ) cpuRegs.cycle = g_nextEventCycle;
 }
 
-template< uint page > void __fastcall _hwRead128(u32 mem, mem128_t* result );
+template< uint page > RETURNS_R128 _hwRead128(u32 mem);
 
 template< uint page, bool intcstathack >
 mem32_t __fastcall _hwRead32(u32 mem)
@@ -71,9 +71,8 @@ mem32_t __fastcall _hwRead32(u32 mem)
 
 			DevCon.WriteLn( Color_Cyan, "Reading 32-bit FIFO data" );
 
-			u128 out128;
-			_hwRead128<page>(mem & ~0x0f, &out128);
-			return out128._u32[(mem >> 2) & 0x3];
+			r128 out128 = _hwRead128<page>(mem & ~0x0f);
+			return reinterpret_cast<u32*>(&out128)[(mem >> 2) & 0x3];
 		}
 		break;
 
@@ -270,15 +269,14 @@ mem16_t __fastcall hwRead16_page_0F_INTC_HACK(u32 mem)
 }
 
 template< uint page >
-static void _hwRead64(u32 mem, mem64_t* result )
+static RETURNS_R64 _hwRead64(u32 mem)
 {
 	pxAssume( (mem & 0x07) == 0 );
 
 	switch (page)
 	{
 		case 0x02:
-			*result = ipuRead64(mem);
-		return;
+			return ipuRead64(mem);
 
 		case 0x04:
 		case 0x05:
@@ -295,11 +293,9 @@ static void _hwRead64(u32 mem, mem64_t* result )
 			uint wordpart = (mem >> 3) & 0x1;
 			DevCon.WriteLn( Color_Cyan, "Reading 64-bit FIFO data (%s 64 bits discarded)", wordpart ? "upper" : "lower" );
 
-			u128 out128;
-			_hwRead128<page>(mem & ~0x0f, &out128);
-			*result = out128._u64[wordpart];
+			r128 full = _hwRead128<page>(mem & ~0x0f);
+			return r64_load(reinterpret_cast<u64*>(&full) + wordpart);
 		}
-			return;
 		case 0x0F:
 			if ((mem & 0xffffff00) == 0x1000f300)
 			{
@@ -308,29 +304,32 @@ static void _hwRead64(u32 mem, mem64_t* result )
 				{
 
 					ReadFifoSingleWord();
-					*result = psHu32(0x1000f3E0);
+					u32 lo = psHu32(0x1000f3E0);
 					ReadFifoSingleWord();
-					*result |= (u64)psHu32(0x1000f3E0) << 32;
+					u32 hi = psHu32(0x1000f3E0);
+					return r64_from_u32x2(lo, hi);
 				}
 			}
-		return;
 		default: break;
 	}
 
-	*result = _hwRead32<page,false>( mem );
+	return r64_from_u32(_hwRead32<page, false>(mem));
 }
 
 template< uint page >
-void __fastcall hwRead64(u32 mem, mem64_t* result )
+RETURNS_R64 hwRead64(u32 mem)
 {
-	_hwRead64<page>( mem, result );
-	eeHwTraceLog( mem, *result, true );
+	r64 res = _hwRead64<page>(mem);
+	eeHwTraceLog(mem, *(u64*)&res, true);
+	return res;
 }
 
 template< uint page >
-void __fastcall _hwRead128(u32 mem, mem128_t* result )
+RETURNS_R128 _hwRead128(u32 mem)
 {
 	pxAssume( (mem & 0x0f) == 0 );
+
+	alignas(16) mem128_t result;
 
 	// FIFOs are the only "legal" 128 bit registers, so we Handle them first.
 	// All other registers fall back on the 64-bit handler (and from there
@@ -339,15 +338,15 @@ void __fastcall _hwRead128(u32 mem, mem128_t* result )
 	switch (page)
 	{
 		case 0x05:
-			ReadFIFO_VIF1( result );
-		break;
+			ReadFIFO_VIF1(&result);
+			break;
 
 		case 0x07:
 			if (mem & 0x10)
-				ZeroQWC( result );		// IPUin is write-only
+				return r128_zero(); // IPUin is write-only
 			else
-				ReadFIFO_IPUout( result );
-		break;
+				ReadFIFO_IPUout(&result);
+			break;
 
 		case 0x04:
 		case 0x06:
@@ -355,13 +354,12 @@ void __fastcall _hwRead128(u32 mem, mem128_t* result )
 			// [Ps2Confirm] Reads from these FIFOs (and IPUin) do one of the following:
 			// return zero, leave contents of the dest register unchanged, or in some
 			// indeterminate state.  The actual behavior probably isn't important.
-			ZeroQWC( result );
-		break;
+			return r128_zero();
 		case 0x0F:
 			// todo: psx mode: this is new
 			if (((mem & 0x1FFFFFFF) >= EEMemoryMap::SBUS_PS1_Start) && ((mem & 0x1FFFFFFF) < EEMemoryMap::SBUS_PS1_End)) {
-				PGIFrQword((mem & 0x1FFFFFFF), result);
-				return;
+				PGIFrQword((mem & 0x1FFFFFFF), &result);
+				break;
 			}
 
 			// WARNING: this code is never executed anymore due to previous condition.
@@ -373,37 +371,38 @@ void __fastcall _hwRead128(u32 mem, mem128_t* result )
 				{
 					
 					ReadFifoSingleWord();
-					result->lo = psHu32(0x1000f3E0);
+					u32 part0 = psHu32(0x1000f3E0);
 					ReadFifoSingleWord();
-					result->lo |= (u64)psHu32(0x1000f3E0) << 32;
+					u32 part1 = psHu32(0x1000f3E0);
 					ReadFifoSingleWord();
-					result->hi = psHu32(0x1000f3E0);
+					u32 part2 = psHu32(0x1000f3E0);
 					ReadFifoSingleWord();
-					result->hi |= (u64)psHu32(0x1000f3E0) << 32;
+					u32 part3 = psHu32(0x1000f3E0);
+					return r128_from_u32x4(part0, part1, part2, part3);
 				}
 			}
 			break;
-				
+
 		default:
-			_hwRead64<page>( mem, &result->lo );
-			result->hi = 0;
-		break;		
+			return r128_from_r64_clean(_hwRead64<page>(mem));
 	}
+	return r128_load(&result);
 }
 
 template< uint page >
-void __fastcall hwRead128(u32 mem, mem128_t* result )
+RETURNS_R128 hwRead128(u32 mem)
 {
-	_hwRead128<page>( mem, result );
-	eeHwTraceLog( mem, *result, true );
+	r128 res = _hwRead128<page>(mem);
+	eeHwTraceLog(mem, *(mem128_t*)&res, true);
+	return res;
 }
 
 #define InstantizeHwRead(pageidx) \
 	template mem8_t __fastcall hwRead8<pageidx>(u32 mem); \
 	template mem16_t __fastcall hwRead16<pageidx>(u32 mem); \
 	template mem32_t __fastcall hwRead32<pageidx>(u32 mem); \
-	template void __fastcall hwRead64<pageidx>(u32 mem, mem64_t* result ); \
-	template void __fastcall hwRead128<pageidx>(u32 mem, mem128_t* result ); \
+	template RETURNS_R64 hwRead64<pageidx>(u32 mem); \
+	template RETURNS_R128 hwRead128<pageidx>(u32 mem); \
 	template mem32_t __fastcall _hwRead32<pageidx, false>(u32 mem);
 
 InstantizeHwRead(0x00);	InstantizeHwRead(0x08);

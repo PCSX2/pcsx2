@@ -41,8 +41,8 @@
 template< uint page > extern mem8_t  __fastcall hwRead8  (u32 mem);
 template< uint page > extern mem16_t __fastcall hwRead16 (u32 mem);
 template< uint page > extern mem32_t __fastcall hwRead32 (u32 mem);
-template< uint page > extern void    __fastcall hwRead64 (u32 mem, mem64_t* out );
-template< uint page > extern void    __fastcall hwRead128(u32 mem, mem128_t* out);
+template< uint page > extern RETURNS_R64        hwRead64 (u32 mem);
+template< uint page > extern RETURNS_R128       hwRead128(u32 mem);
 
 // Internal hwRead32 which does not log reads, used by hwWrite8/16 to perform
 // read-modify-write operations.

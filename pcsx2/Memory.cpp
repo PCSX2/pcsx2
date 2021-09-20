@@ -220,13 +220,13 @@ static mem32_t __fastcall nullRead32(u32 mem) {
 	MEM_LOG("Read uninstalled memory at address %08x", mem);
 	return 0;
 }
-static void __fastcall nullRead64(u32 mem, mem64_t *out) {
+static RETURNS_R64 nullRead64(u32 mem) {
 	MEM_LOG("Read uninstalled memory at address %08x", mem);
-	*out = 0;
+	return r64_zero();
 }
-static void __fastcall nullRead128(u32 mem, mem128_t *out) {
+static RETURNS_R128 nullRead128(u32 mem) {
 	MEM_LOG("Read uninstalled memory at address %08x", mem);
-	ZeroQWC(out);
+	return r128_zero();
 }
 static void __fastcall nullWrite8(u32 mem, mem8_t value)
 {
@@ -324,12 +324,12 @@ static mem32_t __fastcall _ext_memRead32(u32 mem)
 }
 
 template<int p>
-static void __fastcall _ext_memRead64(u32 mem, mem64_t *out)
+static RETURNS_R64 _ext_memRead64(u32 mem)
 {
 	switch (p)
 	{
 		case 6: // gsm
-			*out = gsRead64(mem); return;
+			return r64_from_u64(gsRead64(mem));
 		default: break;
 	}
 
@@ -338,15 +338,14 @@ static void __fastcall _ext_memRead64(u32 mem, mem64_t *out)
 }
 
 template<int p>
-static void __fastcall _ext_memRead128(u32 mem, mem128_t *out)
+static RETURNS_R128 _ext_memRead128(u32 mem)
 {
 	switch (p)
 	{
 		//case 1: // hwm
-		//	hwRead128(mem & ~0xa0000000, out); return;
+		//	return hwRead128(mem & ~0xa0000000);
 		case 6: // gsm
-			CopyQWC(out,PS2GS_BASE(mem));
-		return;
+			return r128_load(PS2GS_BASE(mem));
 		default: break;
 	}
 
@@ -475,19 +474,19 @@ template<int vunum> static mem32_t __fc vuMicroRead32(u32 addr) {
 	if (vunum && THREAD_VU1) vu1Thread.WaitVU();
 	return *(u32*)&vu->Micro[addr];
 }
-template<int vunum> static void __fc vuMicroRead64(u32 addr,mem64_t* data) {
+template<int vunum> static RETURNS_R64 vuMicroRead64(u32 addr) {
 	VURegs* vu = vunum ?  &VU1 :  &VU0;
 	addr      &= vunum ? 0x3fff: 0xfff;
 	
 	if (vunum && THREAD_VU1) vu1Thread.WaitVU();
-	*data=*(u64*)&vu->Micro[addr];
+	return r64_load(&vu->Micro[addr]);
 }
-template<int vunum> static void __fc vuMicroRead128(u32 addr,mem128_t* data) {
+template<int vunum> static RETURNS_R128 vuMicroRead128(u32 addr) {
 	VURegs* vu = vunum ?  &VU1 :  &VU0;
 	addr      &= vunum ? 0x3fff: 0xfff;
 	if (vunum && THREAD_VU1) vu1Thread.WaitVU();
 	
-	CopyQWC(data,&vu->Micro[addr]);
+	return r128_load(&vu->Micro[addr]);
 }
 
 // Profiled VU writes: Happen very infrequently, with exception of BIOS initialization (at most twice per
@@ -578,17 +577,17 @@ template<int vunum> static mem32_t __fc vuDataRead32(u32 addr) {
 	if (vunum && THREAD_VU1) vu1Thread.WaitVU();
 	return *(u32*)&vu->Mem[addr];
 }
-template<int vunum> static void __fc vuDataRead64(u32 addr, mem64_t* data) {
+template<int vunum> static RETURNS_R64 vuDataRead64(u32 addr) {
 	VURegs* vu = vunum ?  &VU1 :  &VU0;
 	addr      &= vunum ? 0x3fff: 0xfff;
 	if (vunum && THREAD_VU1) vu1Thread.WaitVU();
-	*data=*(u64*)&vu->Mem[addr];
+	return r64_load(&vu->Mem[addr]);
 }
-template<int vunum> static void __fc vuDataRead128(u32 addr, mem128_t* data) {
+template<int vunum> static RETURNS_R128 vuDataRead128(u32 addr) {
 	VURegs* vu = vunum ?  &VU1 :  &VU0;
 	addr      &= vunum ? 0x3fff: 0xfff;
 	if (vunum && THREAD_VU1) vu1Thread.WaitVU();
-	CopyQWC(data,&vu->Mem[addr]);
+	return r128_load(&vu->Mem[addr]);
 }
 
 // VU Data Memory Writes...

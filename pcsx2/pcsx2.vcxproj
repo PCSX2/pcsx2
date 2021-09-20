@@ -952,6 +952,7 @@
     <ClInclude Include="Dump.h" />
     <ClInclude Include="IopCommon.h" />
     <ClInclude Include="SaveState.h" />
+    <ClInclude Include="SingleRegisterTypes.h" />
     <ClInclude Include="System.h" />
     <ClInclude Include="System\SysThreads.h" />
     <ClInclude Include="System\RecTypes.h" />

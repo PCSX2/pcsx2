@@ -212,17 +212,26 @@ static int getFreeCache(u32 mem, int* way)
 	return setIdx;
 }
 
+template <bool Write, int Bytes>
+void* prepareCacheAccess(u32 mem, int* way, int* idx)
+{
+	*way = 0;
+	*idx = getFreeCache(mem, way);
+	CacheLine line = cache.lineAt(*idx, *way);
+	if (Write)
+		line.tag.setDirty();
+	u32 aligned = mem & ~(Bytes - 1);
+	return &line.data.bytes[aligned & 0x3f];
+}
+
 template <typename Int>
 void writeCache(u32 mem, Int value)
 {
-	int way = 0;
-	const int idx = getFreeCache(mem, &way);
+	int way, idx;
+	void* addr = prepareCacheAccess<true, sizeof(Int)>(mem, &way, &idx);
 
 	CACHE_LOG("writeCache%d %8.8x adding to %d, way %d, value %llx", 8 * sizeof(value), mem, idx, way, value);
-	CacheLine line = cache.lineAt(idx, way);
-	line.tag.setDirty(); // Set dirty bit for writes;
-	u32 aligned = mem & ~(sizeof(value) - 1);
-	*reinterpret_cast<Int*>(&line.data.bytes[aligned & 0x3f]) = value;
+	*reinterpret_cast<Int*>(addr) = value;
 }
 
 void writeCache8(u32 mem, u8 value)
@@ -247,25 +256,20 @@ void writeCache64(u32 mem, const u64 value)
 
 void writeCache128(u32 mem, const mem128_t* value)
 {
-	int way = 0;
-	const int idx = getFreeCache(mem, &way);
+	int way, idx;
+	void* addr = prepareCacheAccess<true, sizeof(mem128_t)>(mem, &way, &idx);
 
-	CACHE_LOG("writeCache128 %8.8x adding to %d, way %x, lo %x, hi %x", mem, idx, way, value->lo, value->hi);
-	CacheLine line = cache.lineAt(idx, way);
-	line.tag.setDirty(); // Set dirty bit for writes;
-	u32 aligned = mem & ~0xF;
-	*reinterpret_cast<mem128_t*>(&line.data.bytes[aligned & 0x3f]) = *value;
+	CACHE_LOG("writeCache128 %8.8x adding to %d, way %x, lo %llx, hi %llx", mem, idx, way, value->lo, value->hi);
+	*reinterpret_cast<mem128_t*>(addr) = *value;
 }
 
 template <typename Int>
 Int readCache(u32 mem)
 {
-	int way = 0;
-	const int idx = getFreeCache(mem, &way);
+	int way, idx;
+	void* addr = prepareCacheAccess<false, sizeof(Int)>(mem, &way, &idx);
 
-	CacheLine line = cache.lineAt(idx, way);
-	u32 aligned = mem & ~(sizeof(Int) - 1);
-	Int value = *reinterpret_cast<Int*>(&line.data.bytes[aligned & 0x3f]);
+	Int value = *reinterpret_cast<Int*>(addr);
 	CACHE_LOG("readCache%d %8.8x from %d, way %d, value %llx", 8 * sizeof(value), mem, idx, way, value);
 	return value;
 }
@@ -286,9 +290,23 @@ u32 readCache32(u32 mem)
 	return readCache<u32>(mem);
 }
 
-u64 readCache64(u32 mem)
+RETURNS_R64 readCache64(u32 mem)
 {
-	return readCache<u64>(mem);
+	int way, idx;
+	void* addr = prepareCacheAccess<false, sizeof(u64)>(mem, &way, &idx);
+	r64 value = r64_load(addr);
+	CACHE_LOG("readCache64 %8.8x from %d, way %d, value %llx", mem, idx, way, *(u64*)&value);
+	return value;
+}
+
+RETURNS_R128 readCache128(u32 mem)
+{
+	int way, idx;
+	void* addr = prepareCacheAccess<false, sizeof(mem128_t)>(mem, &way, &idx);
+	r128 value = r128_load(addr);
+	u64* vptr = reinterpret_cast<u64*>(&value);
+	CACHE_LOG("readCache128 %8.8x from %d, way %d, lo %llx, hi %llx", mem, idx, way, vptr[0], vptr[1]);
+	return value;
 }
 
 template <typename Op>
