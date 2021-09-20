@@ -291,6 +291,19 @@ public:
 		counter = 0;
 	}
 
+	void reserveCOP2(u16 regs)
+	{
+		u16 regmask = ~regs;
+		for (int i = 0; i < xmmTotal; i++)
+		{
+			if (regmask & (1 << i))
+			{
+				xmmMap[i].isNeeded = true;
+				xmmMap[i].xyzw = 1; // Not really, but it tricks the allocator in to thinking it's needed
+			}
+		}
+	}
+
 	int getXmmCount()
 	{
 		return xmmTotal + 1;
