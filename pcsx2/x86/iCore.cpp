@@ -763,6 +763,65 @@ void _freeXMMreg(u32 xmmreg)
 	xmmregs[xmmreg].inuse = 0;
 }
 
+u16 _freeXMMregsCOP2(int requiredcount)
+{
+	int count = requiredcount;
+	u16 regs = 0;
+
+	// First check what's already free, it might be enough
+	for (int i = 0; i < iREGCNT_XMM - 1; i++)
+	{
+		if (!xmmregs[i].inuse)
+		{
+			count--;
+			regs |= (1 << i);
+		}
+	}
+
+	if (count <= 0)
+		return regs;
+
+	// If we still don't have enough, find regs in use but not needed
+	for (int i = 0; i < iREGCNT_XMM - 1; i++)
+	{
+		if (xmmregs[i].inuse && xmmregs[i].counter == 0)
+		{
+			count--;
+			regs |= (1 << i);
+			_freeXMMreg(i);
+		}
+
+		if (count <= 0)
+			break;
+	}
+
+	if (count <= 0)
+		return regs;
+
+	// Finally Get rid of registers which are gonna be needed, they'll need to be reloaded
+	int maxcount = 9999; // The lower this value the more towards the end of the block it'll need flushing
+	int regtoclear = -1;
+	while (count > 0)
+	{
+		for (int i = 0; i < iREGCNT_XMM - 1; i++)
+		{
+			if (xmmregs[i].inuse && xmmregs[i].counter < maxcount)
+			{
+				int regtoclear = i;
+				maxcount = xmmregs[i].counter;
+			}
+		}
+
+		_freeXMMreg(regtoclear);
+		count--;
+		regs |= (1 << regtoclear);
+	}
+
+	pxAssert(count <= 0);
+
+	return regs;
+}
+
 // Return the number of inuse XMM register that have the MODE_WRITE flag
 int _getNumXMMwrite()
 {

@@ -31,13 +31,32 @@ using namespace R5900::Dynarec;
 
 void setupMacroOp(int mode, const char* opName)
 {
+	// Set up reg allocation
+	microVU0.regAlloc->reset();
+
+	if (mode & 0x110) // X86 regs are modified, or flags modified
+	{
+		_freeX86reg(eax);
+		_freeX86reg(ecx);
+		_freeX86reg(edx);
+	}
+
+	if (mode & 0x03) // Q will be read/written
+		_freeXMMreg(xmmPQ.Id);
+
+	if (mode & 0xF000) // Number of XMM regs needed for op
+	{
+		u16 regs = _freeXMMregsCOP2(mode >> 12);
+		microVU0.regAlloc->reserveCOP2(regs);
+	}
+
+	// Set up MicroVU ready for new op
 	printCOP2(opName);
 	microVU0.cop2 = 1;
 	microVU0.prog.IRinfo.curPC = 0;
 	microVU0.code = cpuRegs.code;
 	memset(&microVU0.prog.IRinfo.info[0], 0, sizeof(microVU0.prog.IRinfo.info[0]));
-
-	microVU0.regAlloc->reset();
+	
 	if (mode & 0x01) // Q-Reg will be Read
 	{
 		xMOVSSZX(xmmPQ, ptr32[&vu0Regs.VI[REG_Q].UL]);
@@ -78,6 +97,7 @@ void endMacroOp(int mode)
 
 	if (mode & 0x10) // Update VU0 Status/Mac instances after flush to avoid corrupting anything
 	{
+		_freeXMMreg(xmmT1.Id);
 		mVUallocSFLAGd(&vu0Regs.VI[REG_STATUS_FLAG].UL);
 		xMOVDZX(xmmT1, eax);
 		xSHUF.PS(xmmT1, xmmT1, 0);
@@ -112,11 +132,13 @@ void endMacroOp(int mode)
 #define INTERPRETATE_COP2_FUNC(f) \
 	void recV##f() \
 	{ \
+		_freeX86reg(eax); \
 		xMOV(eax, ptr32[&cpuRegs.cycle]); \
 		xADD(eax, scaleblockcycles_clear()); \
 		xMOV(ptr32[&cpuRegs.cycle], eax); \
+		_cop2BackupRegs(); \
 		recCall(V##f); \
-		_freeX86regs(); \
+		_cop2RestoreRegs(); \
 	}
 
 //------------------------------------------------------------------
@@ -127,127 +149,136 @@ void endMacroOp(int mode)
 // Macro VU - Redirect Upper Instructions
 //------------------------------------------------------------------
 
-REC_COP2_mVU0(ABS,    "ABS",    0x00);
-REC_COP2_mVU0(ITOF0,  "ITOF0",  0x00);
-REC_COP2_mVU0(ITOF4,  "ITOF4",  0x00);
-REC_COP2_mVU0(ITOF12, "ITOF12", 0x00);
-REC_COP2_mVU0(ITOF15, "ITOF15", 0x00);
-REC_COP2_mVU0(FTOI0,  "FTOI0",  0x00);
-REC_COP2_mVU0(FTOI4,  "FTOI4",  0x00);
-REC_COP2_mVU0(FTOI12, "FTOI12", 0x00);
-REC_COP2_mVU0(FTOI15, "FTOI15", 0x00);
-REC_COP2_mVU0(ADD,    "ADD",    0x10);
-REC_COP2_mVU0(ADDi,   "ADDi",   0x10);
-REC_COP2_mVU0(ADDq,   "ADDq",   0x11);
-REC_COP2_mVU0(ADDx,   "ADDx",   0x10);
-REC_COP2_mVU0(ADDy,   "ADDy",   0x10);
-REC_COP2_mVU0(ADDz,   "ADDz",   0x10);
-REC_COP2_mVU0(ADDw,   "ADDw",   0x10);
-REC_COP2_mVU0(ADDA,   "ADDA",   0x10);
-REC_COP2_mVU0(ADDAi,  "ADDAi",  0x10);
-REC_COP2_mVU0(ADDAq,  "ADDAq",  0x11);
-REC_COP2_mVU0(ADDAx,  "ADDAx",  0x10);
-REC_COP2_mVU0(ADDAy,  "ADDAy",  0x10);
-REC_COP2_mVU0(ADDAz,  "ADDAz",  0x10);
-REC_COP2_mVU0(ADDAw,  "ADDAw",  0x10);
-REC_COP2_mVU0(SUB,    "SUB",    0x10);
-REC_COP2_mVU0(SUBi,   "SUBi",   0x10);
-REC_COP2_mVU0(SUBq,   "SUBq",   0x11);
-REC_COP2_mVU0(SUBx,   "SUBx",   0x10);
-REC_COP2_mVU0(SUBy,   "SUBy",   0x10);
-REC_COP2_mVU0(SUBz,   "SUBz",   0x10);
-REC_COP2_mVU0(SUBw,   "SUBw",   0x10);
-REC_COP2_mVU0(SUBA,   "SUBA",   0x10);
-REC_COP2_mVU0(SUBAi,  "SUBAi",  0x10);
-REC_COP2_mVU0(SUBAq,  "SUBAq",  0x11);
-REC_COP2_mVU0(SUBAx,  "SUBAx",  0x10);
-REC_COP2_mVU0(SUBAy,  "SUBAy",  0x10);
-REC_COP2_mVU0(SUBAz,  "SUBAz",  0x10);
-REC_COP2_mVU0(SUBAw,  "SUBAw",  0x10);
-REC_COP2_mVU0(MUL,    "MUL",    0x10);
-REC_COP2_mVU0(MULi,   "MULi",   0x10);
-REC_COP2_mVU0(MULq,   "MULq",   0x11);
-REC_COP2_mVU0(MULx,   "MULx",   0x10);
-REC_COP2_mVU0(MULy,   "MULy",   0x10);
-REC_COP2_mVU0(MULz,   "MULz",   0x10);
-REC_COP2_mVU0(MULw,   "MULw",   0x10);
-REC_COP2_mVU0(MULA,   "MULA",   0x10);
-REC_COP2_mVU0(MULAi,  "MULAi",  0x10);
-REC_COP2_mVU0(MULAq,  "MULAq",  0x11);
-REC_COP2_mVU0(MULAx,  "MULAx",  0x10);
-REC_COP2_mVU0(MULAy,  "MULAy",  0x10);
-REC_COP2_mVU0(MULAz,  "MULAz",  0x10);
-REC_COP2_mVU0(MULAw,  "MULAw",  0x10);
-REC_COP2_mVU0(MAX,    "MAX",    0x00);
-REC_COP2_mVU0(MAXi,   "MAXi",   0x00);
-REC_COP2_mVU0(MAXx,   "MAXx",   0x00);
-REC_COP2_mVU0(MAXy,   "MAXy",   0x00);
-REC_COP2_mVU0(MAXz,   "MAXz",   0x00);
-REC_COP2_mVU0(MAXw,   "MAXw",   0x00);
-REC_COP2_mVU0(MINI,   "MINI",   0x00);
-REC_COP2_mVU0(MINIi,  "MINIi",  0x00);
-REC_COP2_mVU0(MINIx,  "MINIx",  0x00);
-REC_COP2_mVU0(MINIy,  "MINIy",  0x00);
-REC_COP2_mVU0(MINIz,  "MINIz",  0x00);
-REC_COP2_mVU0(MINIw,  "MINIw",  0x00);
-REC_COP2_mVU0(MADD,   "MADD",   0x10);
-REC_COP2_mVU0(MADDi,  "MADDi",  0x10);
-REC_COP2_mVU0(MADDq,  "MADDq",  0x11);
-REC_COP2_mVU0(MADDx,  "MADDx",  0x10);
-REC_COP2_mVU0(MADDy,  "MADDy",  0x10);
-REC_COP2_mVU0(MADDz,  "MADDz",  0x10);
-REC_COP2_mVU0(MADDw,  "MADDw",  0x10);
-REC_COP2_mVU0(MADDA,  "MADDA",  0x10);
-REC_COP2_mVU0(MADDAi, "MADDAi", 0x10);
-REC_COP2_mVU0(MADDAq, "MADDAq", 0x11);
-REC_COP2_mVU0(MADDAx, "MADDAx", 0x10);
-REC_COP2_mVU0(MADDAy, "MADDAy", 0x10);
-REC_COP2_mVU0(MADDAz, "MADDAz", 0x10);
-REC_COP2_mVU0(MADDAw, "MADDAw", 0x10);
-REC_COP2_mVU0(MSUB,   "MSUB",   0x10);
-REC_COP2_mVU0(MSUBi,  "MSUBi",  0x10);
-REC_COP2_mVU0(MSUBq,  "MSUBq",  0x11);
-REC_COP2_mVU0(MSUBx,  "MSUBx",  0x10);
-REC_COP2_mVU0(MSUBy,  "MSUBy",  0x10);
-REC_COP2_mVU0(MSUBz,  "MSUBz",  0x10);
-REC_COP2_mVU0(MSUBw,  "MSUBw",  0x10);
-REC_COP2_mVU0(MSUBA,  "MSUBA",  0x10);
-REC_COP2_mVU0(MSUBAi, "MSUBAi", 0x10);
-REC_COP2_mVU0(MSUBAq, "MSUBAq", 0x11);
-REC_COP2_mVU0(MSUBAx, "MSUBAx", 0x10);
-REC_COP2_mVU0(MSUBAy, "MSUBAy", 0x10);
-REC_COP2_mVU0(MSUBAz, "MSUBAz", 0x10);
-REC_COP2_mVU0(MSUBAw, "MSUBAw", 0x10);
-REC_COP2_mVU0(OPMULA, "OPMULA", 0x10);
-REC_COP2_mVU0(OPMSUB, "OPMSUB", 0x10);
-REC_COP2_mVU0(CLIP,   "CLIP",   0x08);
+/* Mode information
+0x1  reads Q reg
+0x2  writes Q reg
+0x4  requires analysis pass
+0x8  write CLIP
+0x10 writes status/mac
+0x100 requires x86 regs
+0xF000 number of required XMMs (0-15)
+*/
+REC_COP2_mVU0(ABS,    "ABS",    0x1000);
+REC_COP2_mVU0(ITOF0,  "ITOF0",  0x1000);
+REC_COP2_mVU0(ITOF4,  "ITOF4",  0x1000);
+REC_COP2_mVU0(ITOF12, "ITOF12", 0x1000);
+REC_COP2_mVU0(ITOF15, "ITOF15", 0x1000);
+REC_COP2_mVU0(FTOI0,  "FTOI0",  0x3000);
+REC_COP2_mVU0(FTOI4,  "FTOI4",  0x3000);
+REC_COP2_mVU0(FTOI12, "FTOI12", 0x3000);
+REC_COP2_mVU0(FTOI15, "FTOI15", 0x3000);
+REC_COP2_mVU0(ADD,    "ADD",    0x4110);
+REC_COP2_mVU0(ADDi,   "ADDi",   0x4110);
+REC_COP2_mVU0(ADDq,   "ADDq",   0x4111);
+REC_COP2_mVU0(ADDx,   "ADDx",   0x4110);
+REC_COP2_mVU0(ADDy,   "ADDy",   0x4110);
+REC_COP2_mVU0(ADDz,   "ADDz",   0x4110);
+REC_COP2_mVU0(ADDw,   "ADDw",   0x4110);
+REC_COP2_mVU0(ADDA,   "ADDA",   0x4110);
+REC_COP2_mVU0(ADDAi,  "ADDAi",  0x4110);
+REC_COP2_mVU0(ADDAq,  "ADDAq",  0x4111);
+REC_COP2_mVU0(ADDAx,  "ADDAx",  0x4110);
+REC_COP2_mVU0(ADDAy,  "ADDAy",  0x4110);
+REC_COP2_mVU0(ADDAz,  "ADDAz",  0x4110);
+REC_COP2_mVU0(ADDAw,  "ADDAw",  0x4110);
+REC_COP2_mVU0(SUB,    "SUB",    0x4110);
+REC_COP2_mVU0(SUBi,   "SUBi",   0x4110);
+REC_COP2_mVU0(SUBq,   "SUBq",   0x4111);
+REC_COP2_mVU0(SUBx,   "SUBx",   0x4110);
+REC_COP2_mVU0(SUBy,   "SUBy",   0x4110);
+REC_COP2_mVU0(SUBz,   "SUBz",   0x4110);
+REC_COP2_mVU0(SUBw,   "SUBw",   0x4110);
+REC_COP2_mVU0(SUBA,   "SUBA",   0x4110);
+REC_COP2_mVU0(SUBAi,  "SUBAi",  0x4110);
+REC_COP2_mVU0(SUBAq,  "SUBAq",  0x4111);
+REC_COP2_mVU0(SUBAx,  "SUBAx",  0x4110);
+REC_COP2_mVU0(SUBAy,  "SUBAy",  0x4110);
+REC_COP2_mVU0(SUBAz,  "SUBAz",  0x4110);
+REC_COP2_mVU0(SUBAw,  "SUBAw",  0x4110);
+REC_COP2_mVU0(MUL,    "MUL",    0x4110);
+REC_COP2_mVU0(MULi,   "MULi",   0x4110);
+REC_COP2_mVU0(MULq,   "MULq",   0x4111);
+REC_COP2_mVU0(MULx,   "MULx",   0x4110);
+REC_COP2_mVU0(MULy,   "MULy",   0x4110);
+REC_COP2_mVU0(MULz,   "MULz",   0x4110);
+REC_COP2_mVU0(MULw,   "MULw",   0x4110);
+REC_COP2_mVU0(MULA,   "MULA",   0x4110);
+REC_COP2_mVU0(MULAi,  "MULAi",  0x4110);
+REC_COP2_mVU0(MULAq,  "MULAq",  0x4111);
+REC_COP2_mVU0(MULAx,  "MULAx",  0x4110);
+REC_COP2_mVU0(MULAy,  "MULAy",  0x4110);
+REC_COP2_mVU0(MULAz,  "MULAz",  0x4110);
+REC_COP2_mVU0(MULAw,  "MULAw",  0x4110);
+REC_COP2_mVU0(MAX,    "MAX",    0x4000);
+REC_COP2_mVU0(MAXi,   "MAXi",   0x4000);
+REC_COP2_mVU0(MAXx,   "MAXx",   0x4000);
+REC_COP2_mVU0(MAXy,   "MAXy",   0x4000);
+REC_COP2_mVU0(MAXz,   "MAXz",   0x4000);
+REC_COP2_mVU0(MAXw,   "MAXw",   0x4000);
+REC_COP2_mVU0(MINI,   "MINI",   0x4000);
+REC_COP2_mVU0(MINIi,  "MINIi",  0x4000);
+REC_COP2_mVU0(MINIx,  "MINIx",  0x4000);
+REC_COP2_mVU0(MINIy,  "MINIy",  0x4000);
+REC_COP2_mVU0(MINIz,  "MINIz",  0x4000);
+REC_COP2_mVU0(MINIw,  "MINIw",  0x4000);
+REC_COP2_mVU0(MADD,   "MADD",   0x4110);
+REC_COP2_mVU0(MADDi,  "MADDi",  0x4110);
+REC_COP2_mVU0(MADDq,  "MADDq",  0x4111);
+REC_COP2_mVU0(MADDx,  "MADDx",  0x4110);
+REC_COP2_mVU0(MADDy,  "MADDy",  0x4110);
+REC_COP2_mVU0(MADDz,  "MADDz",  0x4110);
+REC_COP2_mVU0(MADDw,  "MADDw",  0x4110);
+REC_COP2_mVU0(MADDA,  "MADDA",  0x4110);
+REC_COP2_mVU0(MADDAi, "MADDAi", 0x4110);
+REC_COP2_mVU0(MADDAq, "MADDAq", 0x4111);
+REC_COP2_mVU0(MADDAx, "MADDAx", 0x4110);
+REC_COP2_mVU0(MADDAy, "MADDAy", 0x4110);
+REC_COP2_mVU0(MADDAz, "MADDAz", 0x4110);
+REC_COP2_mVU0(MADDAw, "MADDAw", 0x4110);
+REC_COP2_mVU0(MSUB,   "MSUB",   0x4110);
+REC_COP2_mVU0(MSUBi,  "MSUBi",  0x4110);
+REC_COP2_mVU0(MSUBq,  "MSUBq",  0x4111);
+REC_COP2_mVU0(MSUBx,  "MSUBx",  0x4110);
+REC_COP2_mVU0(MSUBy,  "MSUBy",  0x4110);
+REC_COP2_mVU0(MSUBz,  "MSUBz",  0x4110);
+REC_COP2_mVU0(MSUBw,  "MSUBw",  0x4110);
+REC_COP2_mVU0(MSUBA,  "MSUBA",  0x4110);
+REC_COP2_mVU0(MSUBAi, "MSUBAi", 0x4110);
+REC_COP2_mVU0(MSUBAq, "MSUBAq", 0x4111);
+REC_COP2_mVU0(MSUBAx, "MSUBAx", 0x4110);
+REC_COP2_mVU0(MSUBAy, "MSUBAy", 0x4110);
+REC_COP2_mVU0(MSUBAz, "MSUBAz", 0x4110);
+REC_COP2_mVU0(MSUBAw, "MSUBAw", 0x4110);
+REC_COP2_mVU0(OPMULA, "OPMULA", 0x3110);
+REC_COP2_mVU0(OPMSUB, "OPMSUB", 0x3110);
+REC_COP2_mVU0(CLIP,   "CLIP",   0x3108);
 
 //------------------------------------------------------------------
 // Macro VU - Redirect Lower Instructions
 //------------------------------------------------------------------
 
-REC_COP2_mVU0(DIV,   "DIV",   0x12);
-REC_COP2_mVU0(SQRT,  "SQRT",  0x12);
-REC_COP2_mVU0(RSQRT, "RSQRT", 0x12);
-REC_COP2_mVU0(IADD,  "IADD",  0x04);
-REC_COP2_mVU0(IADDI, "IADDI", 0x04);
-REC_COP2_mVU0(IAND,  "IAND",  0x04);
-REC_COP2_mVU0(IOR,   "IOR",   0x04);
-REC_COP2_mVU0(ISUB,  "ISUB",  0x04);
-REC_COP2_mVU0(ILWR,  "ILWR",  0x04);
-REC_COP2_mVU0(ISWR,  "ISWR",  0x00);
-REC_COP2_mVU0(LQI,   "LQI",   0x04);
-REC_COP2_mVU0(LQD,   "LQD",   0x04);
-REC_COP2_mVU0(SQI,   "SQI",   0x00);
-REC_COP2_mVU0(SQD,   "SQD",   0x00);
-REC_COP2_mVU0(MFIR,  "MFIR",  0x04);
-REC_COP2_mVU0(MTIR,  "MTIR",  0x04);
-REC_COP2_mVU0(MOVE,  "MOVE",  0x00);
-REC_COP2_mVU0(MR32,  "MR32",  0x00);
-REC_COP2_mVU0(RINIT, "RINIT", 0x00);
-REC_COP2_mVU0(RGET,  "RGET",  0x04);
-REC_COP2_mVU0(RNEXT, "RNEXT", 0x04);
-REC_COP2_mVU0(RXOR,  "RXOR",  0x00);
+REC_COP2_mVU0(DIV,   "DIV",   0x3112);
+REC_COP2_mVU0(SQRT,  "SQRT",  0x1112);
+REC_COP2_mVU0(RSQRT, "RSQRT", 0x3112);
+REC_COP2_mVU0(IADD,  "IADD",  0x104);
+REC_COP2_mVU0(IADDI, "IADDI", 0x104);
+REC_COP2_mVU0(IAND,  "IAND",  0x104);
+REC_COP2_mVU0(IOR,   "IOR",   0x104);
+REC_COP2_mVU0(ISUB,  "ISUB",  0x104);
+REC_COP2_mVU0(ILWR,  "ILWR",  0x104);
+REC_COP2_mVU0(ISWR,  "ISWR",  0x100);
+REC_COP2_mVU0(LQI,   "LQI",   0x1104);
+REC_COP2_mVU0(LQD,   "LQD",   0x1104);
+REC_COP2_mVU0(SQI,   "SQI",   0x1100);
+REC_COP2_mVU0(SQD,   "SQD",   0x1100);
+REC_COP2_mVU0(MFIR,  "MFIR",  0x1104);
+REC_COP2_mVU0(MTIR,  "MTIR",  0x1104);
+REC_COP2_mVU0(MOVE,  "MOVE",  0x1000);
+REC_COP2_mVU0(MR32,  "MR32",  0x2000);
+REC_COP2_mVU0(RINIT, "RINIT", 0x1100);
+REC_COP2_mVU0(RGET,  "RGET",  0x1104);
+REC_COP2_mVU0(RNEXT, "RNEXT", 0x1104);
+REC_COP2_mVU0(RXOR,  "RXOR",  0x1100);
 
 //------------------------------------------------------------------
 // Macro VU - Misc...
@@ -285,6 +316,7 @@ void COP2_Interlock(bool mBitSync)
 
 	if (cpuRegs.code & 1)
 	{
+		_freeX86reg(eax);
 		xMOV(eax, ptr32[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles_clear());
 		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
@@ -323,7 +355,6 @@ void TEST_FBRST_RESET(FnType_Void* resetFunct, int vuIndex)
 static void recCFC2()
 {
 	printCOP2("CFC2");
-	_freeX86reg(eax);
 
 	COP2_Interlock(false);
 
@@ -332,6 +363,7 @@ static void recCFC2()
 
 	if (!(cpuRegs.code & 1))
 	{
+		_freeX86reg(eax);
 		xMOV(eax, ptr32[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles_clear());
 		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
@@ -378,7 +410,6 @@ static void recCFC2()
 static void recCTC2()
 {
 	printCOP2("CTC2");
-	_freeX86reg(eax);
 
 	COP2_Interlock(1);
 
@@ -387,6 +418,7 @@ static void recCTC2()
 
 	if (!(cpuRegs.code & 1))
 	{
+		_freeX86reg(eax);
 		xMOV(eax, ptr32[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles_clear());
 		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
@@ -480,7 +512,6 @@ static void recQMFC2()
 {
 
 	printCOP2("QMFC2");
-	_freeX86reg(eax);
 
 	COP2_Interlock(false);
 
@@ -489,6 +520,7 @@ static void recQMFC2()
 
 	if (!(cpuRegs.code & 1))
 	{
+		_freeX86reg(eax);
 		xMOV(eax, ptr32[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles_clear());
 		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
@@ -521,7 +553,6 @@ static void recQMTC2()
 {
 
 	printCOP2("QMTC2");
-	_freeX86reg(eax);
 
 	COP2_Interlock(true);
 
@@ -530,6 +561,7 @@ static void recQMTC2()
 
 	if (!(cpuRegs.code & 1))
 	{
+		_freeX86reg(eax);
 		xMOV(eax, ptr32[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles_clear());
 		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
@@ -626,14 +658,14 @@ namespace OpcodeImpl {
 void recCOP2_BC2() { recCOP2_BC2t[_Rt_](); }
 void recCOP2_SPEC1()
 {
-	_cop2BackupRegs();
 	xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
 	xForwardJZ32 skipvuidle;
+	_cop2BackupRegs();
 	xFastCall((void*)_vu0FinishMicro);
+	_cop2RestoreRegs();
 	skipvuidle.SetTarget();
 
 	recCOP2SPECIAL1t[_Funct_]();
 
-	_cop2RestoreRegs();
 }
 void recCOP2_SPEC2() { recCOP2SPECIAL2t[(cpuRegs.code & 3) | ((cpuRegs.code >> 4) & 0x7c)](); }
