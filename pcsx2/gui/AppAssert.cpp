@@ -79,7 +79,7 @@ protected:
 			wxFileName wxfn(frame.GetFileName());
 
 			wxfn.SetVolume( wxEmptyString );
-			for( int i=0; i<2; ++i )
+			for (int i = 0; i < 2 && wxfn.GetDirCount() > 0; ++i)
 				wxfn.RemoveDir(0);
 
 			m_stackTrace.Write( L" %s:%d", WX_STR(wxfn.GetFullPath()), frame.GetLine() );
