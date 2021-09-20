@@ -45,8 +45,80 @@ _x86regs x86regs[iREGCNT_GPR], s_saveX86regs[iREGCNT_GPR];
 #define VU_VFx_ADDR(x) (uptr)&VU->VF[x].UL[0]
 #define VU_ACCx_ADDR   (uptr)&VU->ACC.UL[0]
 
+
+__aligned16 u32 xmmBackup[iREGCNT_XMM][4];
+
+#ifdef __M_X86_64
+__aligned16 u64 gprBackup[iREGCNT_GPR];
+#else
+__aligned16 u32 gprBackup[iREGCNT_GPR];
+#endif
+
 static int s_xmmchecknext = 0;
 
+void _backupNeededXMM()
+{
+	for (int i = 0; i < iREGCNT_XMM; i++)
+	{
+		if (xmmregs[i].inuse)
+		{
+			xMOVAPS(ptr128[&xmmBackup[i][0]], xRegisterSSE(i));
+		}
+	}
+}
+
+void _restoreNeededXMM()
+{
+	for (int i = 0; i < iREGCNT_XMM; i++)
+	{
+		if (xmmregs[i].inuse)
+		{
+			xMOVAPS(xRegisterSSE(i), ptr128[&xmmBackup[i][0]]);
+		}
+	}
+}
+
+void _backupNeededx86()
+{
+	for (int i = 0; i < iREGCNT_GPR; i++)
+	{
+		if (x86regs[i].inuse)
+		{
+#ifdef __M_X86_64
+			xMOV(ptr64[&gprBackup[i]], xRegister64(i));
+#else
+			xMOV(ptr32[&gprBackup[i]], xRegister32(i));
+#endif
+		}
+	}
+}
+
+void _restoreNeededx86()
+{
+	for (int i = 0; i < iREGCNT_GPR; i++)
+	{
+		if (x86regs[i].inuse)
+		{
+#ifdef __M_X86_64
+			xMOV(xRegister64(i), ptr64[&gprBackup[i]]);
+#else
+			xMOV(xRegister32(i), ptr32[&gprBackup[i]]);
+#endif
+		}
+	}
+}
+
+void _cop2BackupRegs()
+{
+	_backupNeededx86();
+	_backupNeededXMM();
+}
+
+void _cop2RestoreRegs()
+{
+	_restoreNeededx86();
+	_restoreNeededXMM();
+}
 // Clear current register mapping structure
 // Clear allocation counter
 void _initXMMregs()

@@ -36,7 +36,7 @@ void setupMacroOp(int mode, const char* opName)
 	microVU0.prog.IRinfo.curPC = 0;
 	microVU0.code = cpuRegs.code;
 	memset(&microVU0.prog.IRinfo.info[0], 0, sizeof(microVU0.prog.IRinfo.info[0]));
-	iFlushCall(FLUSH_EVERYTHING);
+
 	microVU0.regAlloc->reset();
 	if (mode & 0x01) // Q-Reg will be Read
 	{
@@ -285,13 +285,13 @@ void COP2_Interlock(bool mBitSync)
 
 	if (cpuRegs.code & 1)
 	{
-		iFlushCall(FLUSH_EVERYTHING);
 		xMOV(eax, ptr32[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles_clear());
 		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
 
 		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
 		xForwardJZ32 skipvuidle;
+		_cop2BackupRegs();
 		if (mBitSync)
 		{
 			xSUB(eax, ptr32[&VU0.cycle]);
@@ -306,6 +306,7 @@ void COP2_Interlock(bool mBitSync)
 		}
 		else
 			xFastCall((void*)_vu0FinishMicro);
+		_cop2RestoreRegs();
 		skipvuidle.SetTarget();
 	}
 }
@@ -321,80 +322,47 @@ void TEST_FBRST_RESET(FnType_Void* resetFunct, int vuIndex)
 
 static void recCFC2()
 {
-
 	printCOP2("CFC2");
+	_freeX86reg(eax);
 
 	COP2_Interlock(false);
+
 	if (!_Rt_)
 		return;
-
-	iFlushCall(FLUSH_EVERYTHING);
 
 	if (!(cpuRegs.code & 1))
 	{
 		xMOV(eax, ptr32[&cpuRegs.cycle]);
 		xADD(eax, scaleblockcycles_clear());
 		xMOV(ptr32[&cpuRegs.cycle], eax); // update cycles
+
 		xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
 		xForwardJZ32 skipvuidle;
 		xSUB(eax, ptr32[&VU0.cycle]);
 		xSUB(eax, ptr32[&VU0.nextBlockCycles]);
 		xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 8 : 0);
 		xForwardJL32 skip;
+		_cop2BackupRegs();
 		xLoadFarAddr(arg1reg, CpuVU0);
 		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+		_cop2RestoreRegs();
 		skip.SetTarget();
 		skipvuidle.SetTarget();
 	}
+
+	_flushEEreg(_Rt_);
 
 	if (_Rd_ == REG_STATUS_FLAG) // Normalize Status Flag
 		xMOV(eax, ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL]);
 	else
 		xMOV(eax, ptr32[&vu0Regs.VI[_Rd_].UL]);
 
-	if (_Rd_ == REG_TPC) // Divide TPC register value by 8 during copying
-	{
-		// Ok, this deserves an explanation.
-		// Accoring to the official PS2 VU0 coding manual there are 3 ways to execute a micro subroutine on VU0
-		// one of which is using the VCALLMSR intruction.
-		// The manual requires putting the address of the micro subroutine
-		// into the CMSAR0 register divided by 8 using the CTC2 command before executing VCALLMSR.
-		// Many games (for instance, 24: The Game, GTA LCS, GTA VCS and FFXII) do in fact use this way,
-		// they diligently put the address of the micro subroutine into a separate register (v0, v1 etc), divide it by 8
-		// and move it to CMSAR0 by calling the CTC2 command.
-
-		// However, there are also at least 2 confirmed games (R Racing Evolution, Street Fighter EX3)
-		// that execute a piece of code to run a micro subroutine on VU0 like this:
-		//
-		// ...
-		// cfc2	t4, TPC
-		// ctc2	t4, CMSAR0
-		// callmsr
-		// ...
-		//
-		// Interestingly enough there is no division by 8 but it works fine in these 2 mentioned games.
-		// It means the division operation is implicit.
-		// Homebrew tests for the real PS2 have shown that in fact the instruction "cfc2 t4, TPC" ends up with values that are not always divisible by 8.
-
-		// There are 2 possibilities: either the CFC2 instruction divides the value of the TPC (which is the Program Counter register
-		// for micro subroutines) by 8 itself during copying or the TPC register always works with addresses already divided by 8.
-		// The latter seems less possible because the Program Counter register by definition holds the memory address of the instruction.
-		// In addition, PCSX2 already implements TPC as an instruction pointer so we'll assume that division by 8
-		// is done by CFC2 while working with the TPC register.
-		// (fixes R Racing Evolution and Street Fighter EX3)
-
-		//xSHR(eax, 3);
-
-		//Update Refraction - Don't need to do this anymore as addresses are fed in divided by 8 always.
-		//Games such at The Incredible Hulk will read VU1's TPC from VU0 (which will already be multiplied by 8) then try to use CMSAR1 (which will also multiply by 8)
-		//So everything is now fed in without multiplication
-	}
-
 	// FixMe: Should R-Reg have upper 9 bits 0?
 	xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]], eax);
 
 	if (_Rd_ >= 16)
 	{
+		_freeX86reg(edx);
 		xCDQ(); // Sign Extend
 		xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], edx);
 	}
@@ -402,18 +370,20 @@ static void recCFC2()
 		xMOV(ptr32[&cpuRegs.GPR.r[_Rt_].UL[1]], 0);
 
 	// FixMe: I think this is needed, but not sure how it works
-	_eeOnWriteReg(_Rt_, 1);
+	// Update Refraction 20/09/2021: This is needed because Const Prop is broken
+	// the Flushed flag isn't being cleared when it's not flushed. TODO I guess
+	_eeOnWriteReg(_Rt_, 0);
 }
 
 static void recCTC2()
 {
-
 	printCOP2("CTC2");
+	_freeX86reg(eax);
+
 	COP2_Interlock(1);
+
 	if (!_Rd_)
 		return;
-
-	iFlushCall(FLUSH_EVERYTHING);
 
 	if (!(cpuRegs.code & 1))
 	{
@@ -427,11 +397,15 @@ static void recCTC2()
 		xSUB(eax, ptr32[&VU0.nextBlockCycles]);
 		xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 8 : 0);
 		xForwardJL32 skip;
+		_cop2BackupRegs();
 		xLoadFarAddr(arg1reg, CpuVU0);
 		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+		_cop2RestoreRegs();
 		skip.SetTarget();
 		skipvuidle.SetTarget();
 	}
+
+	_flushEEreg(_Rt_);
 
 	switch (_Rd_)
 	{
@@ -456,6 +430,7 @@ static void recCTC2()
 			else
 				xAND(ptr32[&vu0Regs.VI[REG_STATUS_FLAG].UL], 0x3F);
 
+			_freeXMMreg(xmmT1.Id);
 			//Need to update the sticky flags for microVU
 			mVUallocSFLAGd(&vu0Regs.VI[REG_STATUS_FLAG].UL);
 			xMOVDZX(xmmT1, eax);
@@ -465,6 +440,7 @@ static void recCTC2()
 			break;
 		}
 		case REG_CMSAR1: // Execute VU1 Micro SubRoutine
+			_cop2BackupRegs();
 			xMOV(ecx, 1);
 			xFastCall((void*)vu1Finish, ecx);
 			if (_Rt_)
@@ -474,6 +450,7 @@ static void recCTC2()
 			else
 				xXOR(ecx, ecx);
 			xFastCall((void*)vu1ExecMicro, ecx);
+			_cop2RestoreRegs();
 			break;
 		case REG_FBRST:
 			if (!_Rt_)
@@ -483,10 +460,10 @@ static void recCTC2()
 			}
 			else
 				xMOV(eax, ptr32[&cpuRegs.GPR.r[_Rt_].UL[0]]);
-
+			_cop2BackupRegs();
 			TEST_FBRST_RESET(vu0ResetRegs, 0);
 			TEST_FBRST_RESET(vu1ResetRegs, 1);
-
+			_cop2RestoreRegs();
 			xAND(eax, 0x0C0C);
 			xMOV(ptr32[&vu0Regs.VI[REG_FBRST].UL], eax);
 			break;
@@ -503,11 +480,12 @@ static void recQMFC2()
 {
 
 	printCOP2("QMFC2");
+	_freeX86reg(eax);
+
 	COP2_Interlock(false);
+
 	if (!_Rt_)
 		return;
-
-	iFlushCall(FLUSH_EVERYTHING);
 
 	if (!(cpuRegs.code & 1))
 	{
@@ -521,14 +499,19 @@ static void recQMFC2()
 		xSUB(eax, ptr32[&VU0.nextBlockCycles]);
 		xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 8 : 0);
 		xForwardJL32 skip;
+		_cop2BackupRegs();
 		xLoadFarAddr(arg1reg, CpuVU0);
 		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+		_cop2RestoreRegs();
 		skip.SetTarget();
 		skipvuidle.SetTarget();
 	}
 
-	// FixMe: For some reason this line is needed or else games break:
-	_eeOnWriteReg(_Rt_, 0);
+	_flushEEreg(_Rt_);
+	_freeXMMreg(xmmT1.Id);
+	// Update Refraction 20/09/2021: This is needed because Const Prop is broken
+	// the Flushed flag isn't being cleared when it's not flushed. TODO I guess
+	_eeOnWriteReg(_Rt_, 0); // This is needed because Const Prop is broken
 
 	xMOVAPS(xmmT1, ptr128[&vu0Regs.VF[_Rd_]]);
 	xMOVAPS(ptr128[&cpuRegs.GPR.r[_Rt_]], xmmT1);
@@ -538,11 +521,12 @@ static void recQMTC2()
 {
 
 	printCOP2("QMTC2");
+	_freeX86reg(eax);
+
 	COP2_Interlock(true);
+
 	if (!_Rd_)
 		return;
-
-	iFlushCall(FLUSH_EVERYTHING);
 
 	if (!(cpuRegs.code & 1))
 	{
@@ -556,11 +540,16 @@ static void recQMTC2()
 		xSUB(eax, ptr32[&VU0.nextBlockCycles]);
 		xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 8 : 0);
 		xForwardJL32 skip;
+		_cop2BackupRegs();
 		xLoadFarAddr(arg1reg, CpuVU0);
 		xFastCall((void*)BaseVUmicroCPU::ExecuteBlockJIT, arg1reg);
+		_cop2RestoreRegs();
 		skip.SetTarget();
 		skipvuidle.SetTarget();
 	}
+
+	_flushEEreg(_Rt_);
+	_freeXMMreg(xmmT1.Id);
 
 	xMOVAPS(xmmT1, ptr128[&cpuRegs.GPR.r[_Rt_]]);
 	xMOVAPS(ptr128[&vu0Regs.VF[_Rd_]], xmmT1);
@@ -637,12 +626,14 @@ namespace OpcodeImpl {
 void recCOP2_BC2() { recCOP2_BC2t[_Rt_](); }
 void recCOP2_SPEC1()
 {
-	iFlushCall(FLUSH_EVERYTHING);
+	_cop2BackupRegs();
 	xTEST(ptr32[&VU0.VI[REG_VPU_STAT].UL], 0x1);
 	xForwardJZ32 skipvuidle;
 	xFastCall((void*)_vu0FinishMicro);
 	skipvuidle.SetTarget();
 
 	recCOP2SPECIAL1t[_Funct_]();
+
+	_cop2RestoreRegs();
 }
 void recCOP2_SPEC2() { recCOP2SPECIAL2t[(cpuRegs.code & 3) | ((cpuRegs.code >> 4) & 0x7c)](); }
