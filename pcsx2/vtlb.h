@@ -16,6 +16,7 @@
 #pragma once
 
 #include "MemoryTypes.h"
+#include "SingleRegisterTypes.h"
 
 #include "common/PageFaultSource.h"
 
@@ -25,8 +26,8 @@ static const uptr VTLB_AllocUpperBounds = _1gb * 2;
 typedef  mem8_t __fastcall vtlbMemR8FP(u32 addr);
 typedef  mem16_t __fastcall vtlbMemR16FP(u32 addr);
 typedef  mem32_t __fastcall vtlbMemR32FP(u32 addr);
-typedef  void __fastcall vtlbMemR64FP(u32 addr,mem64_t* data);
-typedef  void __fastcall vtlbMemR128FP(u32 addr,mem128_t* data);
+typedef  RETURNS_R64 vtlbMemR64FP(u32 addr);
+typedef  RETURNS_R128 vtlbMemR128FP(u32 addr);
 
 // Specialized function pointers for each write type
 typedef  void __fastcall vtlbMemW8FP(u32 addr,mem8_t data);
@@ -87,8 +88,8 @@ extern void vtlb_VMapUnmap(u32 vaddr,u32 sz);
 
 template< typename DataType >
 extern DataType __fastcall vtlb_memRead(u32 mem);
-extern void __fastcall vtlb_memRead64(u32 mem, mem64_t *out);
-extern void __fastcall vtlb_memRead128(u32 mem, mem128_t *out);
+extern RETURNS_R64 vtlb_memRead64(u32 mem);
+extern RETURNS_R128 vtlb_memRead128(u32 mem);
 
 template< typename DataType >
 extern void __fastcall vtlb_memWrite(u32 mem, DataType value);
@@ -97,10 +98,10 @@ extern void __fastcall vtlb_memWrite128(u32 mem, const mem128_t* value);
 
 extern void vtlb_DynGenWrite(u32 sz);
 extern void vtlb_DynGenRead32(u32 bits, bool sign);
-extern void vtlb_DynGenRead64(u32 sz);
+extern int  vtlb_DynGenRead64(u32 sz, int gpr);
 
 extern void vtlb_DynGenWrite_Const( u32 bits, u32 addr_const );
-extern void vtlb_DynGenRead64_Const( u32 bits, u32 addr_const );
+extern int  vtlb_DynGenRead64_Const( u32 bits, u32 addr_const, int gpr );
 extern void vtlb_DynGenRead32_Const( u32 bits, bool sign, u32 addr_const );
 
 // --------------------------------------------------------------------------------------

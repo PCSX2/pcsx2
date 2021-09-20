@@ -172,6 +172,8 @@ namespace vtlb_private
 	// ------------------------------------------------------------------------
 	static void DynGen_DirectRead(u32 bits, bool sign)
 	{
+		pxAssert(bits == 8 || bits == 16 || bits == 32);
+
 		switch (bits)
 		{
 			case 8:
@@ -192,15 +194,24 @@ namespace vtlb_private
 				xMOV(eax, ptr[arg1reg]);
 				break;
 
+			jNO_DEFAULT
+		}
+	}
+
+	static void DynGen_DirectRead64(u32 bits)
+	{
+		pxAssert(bits == 64 || bits == 128);
+
+		switch (bits) {
 			case 64:
-				iMOV64_Smart(ptr[arg2reg], ptr[arg1reg]);
+				xMOVQZX(xmm0, ptr64[arg1reg]);
 				break;
 
 			case 128:
-				iMOV128_SSE(ptr[arg2reg], ptr[arg1reg]);
+				xMOVAPS(xmm0, ptr128[arg1reg]);
 				break;
 
-				jNO_DEFAULT
+			jNO_DEFAULT
 		}
 	}
 
@@ -375,16 +386,18 @@ static void vtlb_SetWriteback(u32* writeback)
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //                            Dynarec Load Implementations
-void vtlb_DynGenRead64(u32 bits)
+int vtlb_DynGenRead64(u32 bits, int gpr)
 {
 	pxAssume(bits == 64 || bits == 128);
 
 	u32* writeback = DynGen_PrepRegs();
 
+	int reg = gpr == -1 ? _allocTempXMMreg(XMMT_INT, 0) : _allocGPRtoXMMreg(0, gpr, MODE_WRITE); // Handler returns in xmm0
 	DynGen_IndirectDispatch(0, bits);
-	DynGen_DirectRead(bits, false);
+	DynGen_DirectRead64(bits);
 
 	vtlb_SetWriteback(writeback); // return target for indirect's call/ret
+	return reg;
 }
 
 // ------------------------------------------------------------------------
@@ -406,25 +419,27 @@ void vtlb_DynGenRead32(u32 bits, bool sign)
 // ------------------------------------------------------------------------
 // TLB lookup is performed in const, with the assumption that the COP0/TLB will clear the
 // recompiler if the TLB is changed.
-void vtlb_DynGenRead64_Const(u32 bits, u32 addr_const)
+int vtlb_DynGenRead64_Const(u32 bits, u32 addr_const, int gpr)
 {
 	EE::Profiler.EmitConstMem(addr_const);
 
+	int reg;
 	auto vmv = vtlbdata.vmap[addr_const >> VTLB_PAGE_BITS];
 	if (!vmv.isHandler(addr_const))
 	{
-		auto ppf = vmv.assumePtr(addr_const);
+		void* ppf = reinterpret_cast<void*>(vmv.assumePtr(addr_const));
+		reg = gpr == -1 ? _allocTempXMMreg(XMMT_INT, -1) : _allocGPRtoXMMreg(-1, gpr, MODE_WRITE);
 		switch (bits)
 		{
 			case 64:
-				iMOV64_Smart(ptr[arg2reg], ptr[(void*)ppf]);
+				xMOVQZX(xRegisterSSE(reg), ptr64[ppf]);
 				break;
 
 			case 128:
-				iMOV128_SSE(ptr[arg2reg], ptr[(void*)ppf]);
+				xMOVAPS(xRegisterSSE(reg), ptr128[ppf]);
 				break;
 
-				jNO_DEFAULT
+			jNO_DEFAULT
 		}
 	}
 	else
@@ -440,8 +455,10 @@ void vtlb_DynGenRead64_Const(u32 bits, u32 addr_const)
 		}
 
 		iFlushCall(FLUSH_FULLVTLB);
+		reg = gpr == -1 ? _allocTempXMMreg(XMMT_INT, 0) : _allocGPRtoXMMreg(0, gpr, MODE_WRITE); // Handler returns in xmm0
 		xFastCall(vmv.assumeHandlerGetRaw(szidx, 0), paddr, arg2reg);
 	}
+	return reg;
 }
 
 // ------------------------------------------------------------------------

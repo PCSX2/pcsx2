@@ -1687,6 +1687,9 @@
     <ClInclude Include="SaveState.h">
       <Filter>System\Include</Filter>
     </ClInclude>
+    <ClInclude Include="SingleRegisterTypes.h">
+      <Filter>System\Include</Filter>
+    </ClInclude>
     <ClInclude Include="System.h">
       <Filter>System\Include</Filter>
     </ClInclude>

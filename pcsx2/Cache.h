@@ -17,6 +17,7 @@
 #define __CACHE_H__
 
 #include "Common.h"
+#include "SingleRegisterTypes.h"
 
 void resetCache();
 void writeCache8(u32 mem, u8 value);
@@ -27,6 +28,7 @@ void writeCache128(u32 mem, const mem128_t* value);
 u8 readCache8(u32 mem);
 u16 readCache16(u32 mem);
 u32 readCache32(u32 mem);
-u64 readCache64(u32 mem);
+RETURNS_R64  readCache64(u32 mem);
+RETURNS_R128 readCache128(u32 mem);
 
 #endif /* __CACHE_H__ */

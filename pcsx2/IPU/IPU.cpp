@@ -241,7 +241,7 @@ __fi u32 ipuRead32(u32 mem)
 	return psHu32(IPU_CMD + mem);
 }
 
-__fi u64 ipuRead64(u32 mem)
+__fi RETURNS_R64 ipuRead64(u32 mem)
 {
 	// Note: It's assumed that mem's input value is always in the 0x10002000 page
 	// of memory (if not, it's probably bad code).
@@ -263,7 +263,7 @@ __fi u64 ipuRead64(u32 mem)
 			
 			if (ipuRegs.cmd.DATA & 0xffffff)
 				IPU_LOG("read64: IPU_CMD=BUSY=%x, DATA=%08X", ipuRegs.cmd.BUSY ? 1 : 0, ipuRegs.cmd.DATA);
-			return ipuRegs.cmd._u64;
+			return r64_load(&ipuRegs.cmd._u64);
 		}
 
 		ipucase(IPU_CTRL):
@@ -282,7 +282,7 @@ __fi u64 ipuRead64(u32 mem)
 			IPU_LOG("read64: Unknown=%x", mem);
 			break;
 	}
-	return psHu64(IPU_CMD + mem);
+	return r64_load(&psHu64(IPU_CMD + mem));
 }
 
 void ipuSoftReset()

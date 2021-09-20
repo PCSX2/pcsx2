@@ -215,6 +215,7 @@ set(pcsx2Headers
 	SaveState.h
 	Sifcmd.h
 	Sif.h
+	SingleRegisterTypes.h
 	Sio.h
 	sio_internal.h
 	SPR.h
