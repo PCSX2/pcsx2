@@ -21,6 +21,8 @@
 #include "AppCommon.h"
 #include "SaveState.h"
 
+#include <memory>
+
 #define AffinityAssert_AllowFrom_CoreThread() \
 	pxAssertMsg(GetCoreThread().IsSelf(), "Thread affinity violation: Call allowed from SysCoreThread only.")
 
@@ -201,7 +203,7 @@ public:
 	virtual void AllowResume();
 	virtual void DisallowResume();
 
-	virtual bool PostToSysExec(BaseSysExecEvent_ScopedCore* msg);
+	virtual bool PostToSysExec(std::unique_ptr<BaseSysExecEvent_ScopedCore> msg);
 
 protected:
 	// Called from destructors -- do not make virtual!!
@@ -240,7 +242,7 @@ struct ScopedCoreThreadPause : public BaseScopedCoreThread
 	typedef BaseScopedCoreThread _parent;
 
 public:
-	ScopedCoreThreadPause(BaseSysExecEvent_ScopedCore* abuse_me = NULL);
+	ScopedCoreThreadPause();
 	virtual ~ScopedCoreThreadPause();
 };
 
