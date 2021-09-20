@@ -1020,11 +1020,17 @@ SCAJ-30010:
 SCAJ-30011:
   name: "God of War II"
   region: "NTSC-E"
+SCCS-40001:
+  name: "Ape Escape 2"
+  region: "NTSC-C"
 SCCS-40002:
   name: "Devil May Cry 2 - Disc 1"
   region: "NTSC-C"
 SCCS-40003:
   name: "Devil May Cry 2 - Disc 2"
+  region: "NTSC-C"
+SCCS-40004:
+  name: "XIGO: Zuihou de Touzi"
   region: "NTSC-C"
 SCCS-40005:
   name: "ICO"
@@ -1067,6 +1073,9 @@ SCCS-40019:
   region: "NTSC-C"
 SCCS-40022:
   name: "World Soccer Winning Eleven 8: Asia Championship"
+  region: "NTSC-C"
+SCCS-60002:
+  name: "Gran Turismo 4 [Review Copy]"
   region: "NTSC-C"
 SCED-50041:
   name: "Tekken Tag Tournament [Demo]"
