@@ -159,6 +159,8 @@ struct _xmmregs
 	u16 counter;
 };
 
+void _cop2BackupRegs();
+void _cop2RestoreRegs();
 void _initXMMregs();
 int _getFreeXMMreg();
 int _allocTempXMMreg(XMMSSEType type, int xmmreg);
