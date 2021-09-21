@@ -17,6 +17,7 @@ target_sources(common PRIVATE
 	EventSource.cpp
 	Exceptions.cpp
 	FastFormatString.cpp
+	FastJmp.cpp
 	IniInterface.cpp
 	Mutex.cpp
 	PathUtils.cpp
@@ -63,6 +64,7 @@ target_sources(common PRIVATE
 	Dependencies.h
 	EventSource.h
 	Exceptions.h
+	FastJmp.h
 	General.h
 	MemcpyFast.h
 	MemsetFast.inl
@@ -114,6 +116,8 @@ if(USE_VTUNE)
 endif()
 
 if(WIN32)
+	enable_language(ASM_MASM)
+	target_sources(common PRIVATE FastJmp.asm)
 	target_link_libraries(common PUBLIC pthreads4w Winmm.lib)
 endif()
 

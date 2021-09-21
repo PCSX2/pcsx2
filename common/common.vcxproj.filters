@@ -118,6 +118,9 @@
     <ClCompile Include="emitter\x86emitter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="FastJmp.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Assertions.h">
@@ -264,6 +267,9 @@
     <ClInclude Include="StringHelpers.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="FastJmp.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <Filter Include="Source Files">
@@ -277,5 +283,10 @@
     <None Include="EventSource.inl">
       <Filter>Source Files</Filter>
     </None>
+  </ItemGroup>
+  <ItemGroup>
+    <MASM Include="FastJmp.asm">
+      <Filter>Source Files</Filter>
+    </MASM>
   </ItemGroup>
 </Project>
