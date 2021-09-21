@@ -269,6 +269,20 @@ void IniLoader::_EnumEntry(const wxString& var, int& value, const wxChar* const*
 		value = i;
 }
 
+void IniLoader::Entry(const wxString& var, std::string& value, const std::string& default_value)
+{
+	if (m_Config)
+	{
+		wxString temp;
+		m_Config->Read(var, &temp, wxString(default_value));
+		value = temp.ToStdString();
+	}
+	else if (&value != &default_value)
+	{
+		value.assign(default_value);
+	}
+}
+
 // --------------------------------------------------------------------------------------
 //  IniSaver  (implementations)
 // --------------------------------------------------------------------------------------
@@ -423,4 +437,11 @@ void IniSaver::_EnumEntry(const wxString& var, int& value, const wxChar* const* 
 	}
 
 	m_Config->Write(var, enumArray[value]);
+}
+
+void IniSaver::Entry(const wxString& var, std::string& value, const std::string& default_value)
+{
+	if (!m_Config)
+		return;
+	m_Config->Write(var, wxString(value));
 }
