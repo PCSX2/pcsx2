@@ -20,6 +20,7 @@ target_sources(common PRIVATE
 	FastJmp.cpp
 	GL/Context.cpp
 	GL/StreamBuffer.cpp
+	FileSystem.cpp
 	IniInterface.cpp
 	Mutex.cpp
 	Misc.cpp
@@ -69,6 +70,7 @@ target_sources(common PRIVATE
 	EventSource.h
 	Exceptions.h
 	FastJmp.h
+	FileSystem.h
 	General.h
 	GL/Context.h
 	GL/StreamBuffer.h

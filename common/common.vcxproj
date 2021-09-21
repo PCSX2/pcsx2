@@ -52,6 +52,7 @@
     <ClCompile Include="GL\Context.cpp" />
     <ClCompile Include="GL\ContextWGL.cpp" />
     <ClCompile Include="GL\StreamBuffer.cpp" />
+    <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="IniInterface.cpp" />
     <ClCompile Include="pxStreams.cpp" />
     <ClCompile Include="pxTranslate.cpp" />
@@ -108,6 +109,7 @@
     <ClInclude Include="GL\Context.h" />
     <ClInclude Include="GL\ContextWGL.h" />
     <ClInclude Include="GL\StreamBuffer.h" />
+    <ClInclude Include="FileSystem.h" />
     <ClInclude Include="ScopedGuard.h" />
     <ClInclude Include="StringUtil.h" />
     <ClInclude Include="SettingsInterface.h" />
