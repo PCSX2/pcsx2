@@ -15,7 +15,9 @@
     <UseDebugLibraries Condition="!$(Configuration.Contains(Debug))">false</UseDebugLibraries>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
-  <ImportGroup Label="ExtensionSettings" />
+  <ImportGroup Label="ExtensionSettings">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.props" />
+  </ImportGroup>
   <ImportGroup Label="PropertySheets">
     <Import Project="vsprops\CommonLibrary.props" />
     <Import Project="vsprops\3rdpartyDeps.props" />
@@ -43,6 +45,9 @@
     <ClCompile Include="Console.cpp" />
     <ClCompile Include="Exceptions.cpp" />
     <ClCompile Include="FastFormatString.cpp" />
+    <ClCompile Include="FastJmp.cpp">
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="IniInterface.cpp" />
     <ClCompile Include="pxStreams.cpp" />
     <ClCompile Include="pxTranslate.cpp" />
@@ -83,10 +88,16 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="EventSource.inl" />
+    <MASM Include="FastJmp.asm">
+      <FileType>Document</FileType>
+      <PreprocessorDefinitions Condition="'$(Platform)'=='Win32'">_M_X86_32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">_M_X86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </MASM>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="EmbeddedImage.h" />
     <ClInclude Include="boost_spsc_queue.hpp" />
+    <ClInclude Include="FastJmp.h" />
     <ClInclude Include="ScopedAlloc.h" />
     <ClInclude Include="ThreadingInternal.h" />
     <ClInclude Include="Assertions.h" />
@@ -146,5 +157,7 @@
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
-  <ImportGroup Label="ExtensionTargets" />
+  <ImportGroup Label="ExtensionTargets">
+    <Import Project="$(VCTargetsPath)\BuildCustomizations\masm.targets" />
+  </ImportGroup>
 </Project>
