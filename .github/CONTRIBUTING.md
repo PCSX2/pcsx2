@@ -43,7 +43,7 @@ The following is a list of *general* style recommendations that will make review
 *   [Commenting Etiquette](https://github.com/PCSX2/pcsx2/wiki/Commenting-Etiquette)
 *   [Coding style](https://github.com/PCSX2/pcsx2/wiki/Code-Formatting-Guidelines)
     *   [More comprehensive style-guide (Currently in Draft)](https://github.com/tadanokojin/pcsx2/blob/coding-guide/pcsx2/Docs/Coding_Guidelines.md)
-*   [wxWidgets coding stategies](https://github.com/PCSX2/pcsx2/wiki/wxWidgets-Coding-Strategies)
+*   [wxWidgets coding strategies](https://github.com/PCSX2/pcsx2/wiki/wxWidgets-Coding-Strategies)
 
 ## Tasks
 
