@@ -365,10 +365,9 @@ public:
 				stream = nullptr;
 			}
 
-			// Seems to do more harm than good.
-			//PaError err = Pa_Terminate();
-			//if( err != paNoError )
-			//	fprintf(stderr,"* SPU2: PortAudio error: %s\n", Pa_GetErrorText( err ) );
+			PaError err = Pa_Terminate();
+			if( err != paNoError )
+				fprintf(stderr,"* SPU2: PortAudio error: %s\n", Pa_GetErrorText( err ) );
 
 			started = false;
 		}
