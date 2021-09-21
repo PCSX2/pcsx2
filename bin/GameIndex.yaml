@@ -8349,6 +8349,8 @@ SLES-50776:
 SLES-50777:
   name: "Battle Engine Aquila"
   region: "PAL-M5"
+  clampModes:
+    vuClampMode: 3 # Fixes missing graphics.
 SLES-50778:
   name: "TD Overdrive - The Brotherhood of Speed"
   region: "PAL-M5"
@@ -34209,6 +34211,8 @@ SLUS-20495:
   name: "Battle Engine Aquila"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vuClampMode: 3 # Fixes missing graphics.
 SLUS-20496:
   name: "V-Rally 3"
   region: "NTSC-U"
