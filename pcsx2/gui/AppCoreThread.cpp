@@ -577,7 +577,7 @@ void AppCoreThread::DoCpuReset()
 	_parent::DoCpuReset();
 }
 
-void AppCoreThread::OnResumeInThread(bool isSuspended)
+void AppCoreThread::OnResumeInThread(SystemsMask systemsToReinstate)
 {
 	if (m_resetCdvd)
 	{
@@ -586,10 +586,10 @@ void AppCoreThread::OnResumeInThread(bool isSuspended)
 		DoCDVDopen();
 		m_resetCdvd = false;
 	}
-	else if (isSuspended)
+	else if (systemsToReinstate & System_CDVD)
 		DoCDVDopen();
 
-	_parent::OnResumeInThread(isSuspended);
+	_parent::OnResumeInThread(systemsToReinstate);
 	PostCoreStatus(CoreThread_Resumed);
 }
 
@@ -720,7 +720,7 @@ void SysExecEvent_CoreThreadClose::InvokeEvent()
 
 void SysExecEvent_CoreThreadPause::InvokeEvent()
 {
-	ScopedCoreThreadPause paused_core;
+	ScopedCoreThreadPause paused_core(m_systemsToTearDown);
 	_post_and_wait(paused_core);
 	paused_core.AllowResume();
 }
@@ -820,7 +820,7 @@ ScopedCoreThreadClose::~ScopedCoreThreadClose()
 	DESTRUCTOR_CATCHALL
 }
 
-ScopedCoreThreadPause::ScopedCoreThreadPause()
+ScopedCoreThreadPause::ScopedCoreThreadPause(SystemsMask systemsToTearDown)
 {
 	if (ScopedCore_IsFullyClosed || ScopedCore_IsPaused)
 	{
@@ -829,11 +829,11 @@ ScopedCoreThreadPause::ScopedCoreThreadPause()
 		return;
 	}
 
-	if (!PostToSysExec(std::make_unique<SysExecEvent_CoreThreadPause>()))
+	if (!PostToSysExec(std::make_unique<SysExecEvent_CoreThreadPause>(systemsToTearDown)))
 	{
 		m_alreadyStopped = CoreThread.IsPaused();
 		if (!m_alreadyStopped)
-			CoreThread.Pause();
+			CoreThread.Pause(systemsToTearDown);
 	}
 
 	ScopedCore_IsPaused = true;

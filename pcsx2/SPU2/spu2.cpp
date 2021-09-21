@@ -40,25 +40,9 @@ u32 lClocks = 0;
 
 void SPU2configure()
 {
-	ScopedCoreThreadPause paused_core;
-
-	SndBuffer::Cleanup();
+	ScopedCoreThreadPause paused_core(SystemsMask::System_SPU2);
 
 	configure();
-
-	if (IsOpened)
-	{
-		try
-		{
-			Console.Warning("SPU2: Sound output module reset");
-			SndBuffer::Init();
-		}
-		catch (std::exception& ex)
-		{
-			fprintf(stderr, "SPU2 Error: Could not initialize device, or something.\nReason: %s", ex.what());
-			SPU2close();
-		}
-	}
 	paused_core.AllowResume();
 }
 
