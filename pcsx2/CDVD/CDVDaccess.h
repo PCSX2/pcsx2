@@ -14,6 +14,7 @@
  */
 
 #pragma once
+#include <string>
 
 typedef struct _cdvdSubQ
 {
@@ -151,8 +152,8 @@ extern CDVD_API CDVDapi_NoDisc;
 extern const wxChar* CDVD_SourceLabels[];
 
 extern void CDVDsys_ChangeSource(CDVD_SourceType type);
-extern void CDVDsys_SetFile(CDVD_SourceType srctype, const wxString& newfile);
-extern const wxString& CDVDsys_GetFile(CDVD_SourceType srctype);
+extern void CDVDsys_SetFile(CDVD_SourceType srctype, std::string newfile);
+extern const std::string& CDVDsys_GetFile(CDVD_SourceType srctype);
 extern CDVD_SourceType CDVDsys_GetSourceType();
 
 extern bool DoCDVDopen();

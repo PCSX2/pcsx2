@@ -293,30 +293,29 @@ static void DetectDiskType()
 	diskTypeCached = FindDiskType(mType);
 }
 
-static wxString m_SourceFilename[3];
+static std::string m_SourceFilename[3];
 static CDVD_SourceType m_CurrentSourceType = CDVD_SourceType::NoDisc;
 
-void CDVDsys_SetFile(CDVD_SourceType srctype, const wxString& newfile)
+void CDVDsys_SetFile(CDVD_SourceType srctype, std::string newfile)
 {
-	m_SourceFilename[enum_cast(srctype)] = newfile;
+	m_SourceFilename[enum_cast(srctype)] = std::move(newfile);
 
 	// look for symbol file
 	if (symbolMap.IsEmpty())
 	{
-		wxString symName;
-		int n = newfile.Last('.');
-		if (n == wxNOT_FOUND)
-			symName = newfile + L".sym";
+		std::string symName;
+		std::string::size_type n = m_SourceFilename[enum_cast(srctype)].rfind('.');
+		if (n == std::string::npos)
+			symName = m_SourceFilename[enum_cast(srctype)] + ".sym";
 		else
-			symName = newfile.substr(0, n) + L".sym";
+			symName = m_SourceFilename[enum_cast(srctype)].substr(0, n) + ".sym";
 
-		wxCharBuffer buf = symName.ToUTF8();
-		symbolMap.LoadNocashSym(buf);
+		symbolMap.LoadNocashSym(symName.c_str());
 		symbolMap.UpdateActiveSymbols();
 	}
 }
 
-const wxString& CDVDsys_GetFile(CDVD_SourceType srctype)
+const std::string& CDVDsys_GetFile(CDVD_SourceType srctype)
 {
 	return m_SourceFilename[enum_cast(srctype)];
 }
@@ -364,10 +363,7 @@ bool DoCDVDopen()
 	//TODO_CDVD check if ISO and Disc use UTF8
 
 	auto CurrentSourceType = enum_cast(m_CurrentSourceType);
-	int ret = CDVD->open(!m_SourceFilename[CurrentSourceType].IsEmpty() ?
-							 static_cast<const char*>(m_SourceFilename[CurrentSourceType].ToUTF8()) :
-							 (char*)NULL);
-
+	int ret = CDVD->open(!m_SourceFilename[CurrentSourceType].empty() ? m_SourceFilename[CurrentSourceType].c_str() : nullptr);
 	if (ret == -1)
 		return false; // error! (handled by caller)
 
@@ -388,8 +384,8 @@ bool DoCDVDopen()
 	else if (somepick.IsEmpty())
 		somepick = L"Untitled";
 
-	if (EmuConfig.CurrentBlockdump.IsEmpty())
-		EmuConfig.CurrentBlockdump = wxGetCwd();
+	if (EmuConfig.CurrentBlockdump.empty())
+		EmuConfig.CurrentBlockdump = wxGetCwd().ToStdString();
 
 	wxString temp(Path::Combine(EmuConfig.CurrentBlockdump, somepick));
 
