@@ -681,7 +681,7 @@ protected:
 
 		PatchesVerboseReset();
 
-		GetCoreThread().Pause();
+		GetCoreThread().Pause({});
 		SysClearExecutionCache();
 
 		for (uint i = 0; i < ArraySize(SavestateEntries); ++i)

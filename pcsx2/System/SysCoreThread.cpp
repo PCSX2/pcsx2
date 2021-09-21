@@ -101,6 +101,12 @@ void SysCoreThread::OnStart()
 	_parent::OnStart();
 }
 
+void SysCoreThread::OnSuspendInThread()
+{
+	TearDownSystems(static_cast<SystemsMask>(-1)); // All systems
+	GetMTGS().Suspend();
+}
+
 void SysCoreThread::Start()
 {
 	GSinit();
@@ -302,30 +308,26 @@ void SysCoreThread::ExecuteTaskInThread()
 	PCSX2_PAGEFAULT_EXCEPT;
 }
 
-void SysCoreThread::OnSuspendInThread()
+void SysCoreThread::TearDownSystems(SystemsMask systemsToTearDown)
 {
-	DEV9close();
-	USBclose();
-	DoCDVDclose();
-	FWclose();
-	PADclose();
-	SPU2close();
-	FileMcd_EmuClose();
-	GetMTGS().Suspend();
+	if (systemsToTearDown & System_DEV9) DEV9close();
+	if (systemsToTearDown & System_USB) USBclose();
+	if (systemsToTearDown & System_CDVD) DoCDVDclose();
+	if (systemsToTearDown & System_FW) FWclose();
+	if (systemsToTearDown & System_PAD) PADclose();
+	if (systemsToTearDown & System_SPU2) SPU2close();
+	if (systemsToTearDown & System_MCD) FileMcd_EmuClose();
 }
 
-void SysCoreThread::OnResumeInThread(bool isSuspended)
+void SysCoreThread::OnResumeInThread(SystemsMask systemsToReinstate)
 {
 	GetMTGS().WaitForOpen();
-	if (isSuspended)
-	{
-		DEV9open((void*)pDsp);
-		USBopen((void*)pDsp);
-	}
-	FWopen();
-	SPU2open((void*)pDsp);
-	PADopen((void*)pDsp);
-	FileMcd_EmuOpen();
+	if (systemsToReinstate & System_DEV9) DEV9open((void*)pDsp);
+	if (systemsToReinstate & System_USB) USBopen((void*)pDsp);
+	if (systemsToReinstate & System_FW) FWopen();
+	if (systemsToReinstate & System_SPU2) SPU2open((void*)pDsp);
+	if (systemsToReinstate & System_PAD) PADopen((void*)pDsp);
+	if (systemsToReinstate & System_MCD) FileMcd_EmuOpen();
 }
 
 

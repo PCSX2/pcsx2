@@ -385,8 +385,8 @@ protected:
 	void OnResumeReady();
 
 	void OnSuspendInThread();
-	void OnPauseInThread() {}
-	void OnResumeInThread( bool IsSuspended );
+	void OnPauseInThread(SystemsMask systemsToTearDown) override {}
+	void OnResumeInThread(SystemsMask systemsToReinstate) override;
 	void OnCleanupInThread();
 
 	void GenericStall( uint size );

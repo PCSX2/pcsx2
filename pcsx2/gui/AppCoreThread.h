@@ -119,13 +119,17 @@ public:
 	virtual ~SysExecEvent_CoreThreadPause() = default;
 	SysExecEvent_CoreThreadPause* Clone() const { return new SysExecEvent_CoreThreadPause(*this); }
 
-	SysExecEvent_CoreThreadPause(SynchronousActionState* sync = NULL, SynchronousActionState* resume_sync = NULL, Threading::Mutex* mtx_resume = NULL)
+	SysExecEvent_CoreThreadPause(SystemsMask systemsToTearDown, SynchronousActionState* sync = NULL, SynchronousActionState* resume_sync = NULL, Threading::Mutex* mtx_resume = NULL)
 		: BaseSysExecEvent_ScopedCore(sync, resume_sync, mtx_resume)
+		, m_systemsToTearDown(systemsToTearDown)
 	{
 	}
 
 protected:
 	void InvokeEvent();
+
+private:
+	SystemsMask m_systemsToTearDown;
 };
 
 // --------------------------------------------------------------------------------------
@@ -160,7 +164,7 @@ protected:
 	virtual void OnResumeReady();
 	virtual void OnPause();
 	virtual void OnPauseDebug();
-	virtual void OnResumeInThread(bool IsSuspended);
+	virtual void OnResumeInThread(SystemsMask systemsToReinstate) override;
 	virtual void OnSuspendInThread();
 	virtual void OnCleanupInThread();
 	virtual void VsyncInThread();
@@ -242,7 +246,7 @@ struct ScopedCoreThreadPause : public BaseScopedCoreThread
 	typedef BaseScopedCoreThread _parent;
 
 public:
-	ScopedCoreThreadPause();
+	ScopedCoreThreadPause(SystemsMask systemsToTearDown = {});
 	virtual ~ScopedCoreThreadPause();
 };
 

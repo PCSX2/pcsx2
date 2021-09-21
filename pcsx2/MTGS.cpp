@@ -603,12 +603,12 @@ void SysMtgsThread::OnSuspendInThread()
 	_parent::OnSuspendInThread();
 }
 
-void SysMtgsThread::OnResumeInThread(bool isSuspended)
+void SysMtgsThread::OnResumeInThread(SystemsMask systemsToReinstate)
 {
-	if (isSuspended)
+	if (systemsToReinstate & System_GS)
 		OpenGS();
 
-	_parent::OnResumeInThread(isSuspended);
+	_parent::OnResumeInThread(systemsToReinstate);
 }
 
 void SysMtgsThread::OnCleanupInThread()

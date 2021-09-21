@@ -962,13 +962,9 @@ ExtraWndProcResult StatusWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 
 void PADconfigure()
 {
-	HWND tmp = hWnd;
-	PADclose();
-	ScopedCoreThreadPause paused_core;
+	ScopedCoreThreadPause paused_core(SystemsMask::System_PAD);
 	Configure();
 	paused_core.AllowResume();
-	if(tmp != nullptr)
-		PADopen(tmp);
 }
 
 s32 PADopen(void* pDsp)

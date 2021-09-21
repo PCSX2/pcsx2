@@ -129,7 +129,7 @@ void SysThreadBase::Suspend(bool isBlocking)
 //   The previous suspension state; true if the thread was running or false if it was
 //   closed, not running, or paused.
 //
-void SysThreadBase::Pause(bool debug)
+void SysThreadBase::Pause(SystemsMask systemsToTearDown, bool debug)
 {
 	if (IsSelf() || !IsRunning())
 		return;
@@ -146,6 +146,7 @@ void SysThreadBase::Pause(bool debug)
 		if ((m_ExecMode == ExecMode_Closed) || (m_ExecMode == ExecMode_Paused))
 			return;
 
+		m_SystemsToTearDown.store(systemsToTearDown, std::memory_order_relaxed);
 		if (m_ExecMode == ExecMode_Opened)
 			m_ExecMode = ExecMode_Pausing;
 
@@ -281,7 +282,7 @@ void SysThreadBase::OnCleanupInThread()
 }
 
 void SysThreadBase::OnSuspendInThread() {}
-void SysThreadBase::OnResumeInThread(bool isSuspended) {}
+void SysThreadBase::OnResumeInThread(SystemsMask systemsToReinstate) {}
 
 // Tests for Pause and Suspend/Close requests.  If the thread is trying to be paused or
 // closed, it will enter a wait/holding pattern here in this method until the managing
@@ -294,6 +295,8 @@ void SysThreadBase::OnResumeInThread(bool isSuspended) {}
 //   continued execution unimpeded.
 bool SysThreadBase::StateCheckInThread()
 {
+	SystemsMask systemsToTearDown {}; // Used for Pausing/Paused
+
 	switch (m_ExecMode.load())
 	{
 
@@ -314,7 +317,9 @@ bool SysThreadBase::StateCheckInThread()
 		// -------------------------------------
 		case ExecMode_Pausing:
 		{
-			OnPauseInThread();
+			systemsToTearDown = m_SystemsToTearDown.exchange({}, std::memory_order_relaxed);
+
+			OnPauseInThread(systemsToTearDown);
 			m_ExecMode = ExecMode_Paused;
 			m_RunningLock.Release();
 		}
@@ -328,8 +333,12 @@ bool SysThreadBase::StateCheckInThread()
 			if (m_ExecMode != ExecMode_Closing)
 			{
 				if (g_CDVDReset)
-					//AppCoreThread deals with Reseting CDVD
-					OnResumeInThread(false);
+					// AppCoreThread deals with Reseting CDVD
+					// Reinit all but GS, USB, DEV9, CDVD (just like with isSuspend = false previously)
+					OnResumeInThread(static_cast<SystemsMask>(~(System_GS|System_USB|System_DEV9|System_CDVD)));
+				else
+					// Reinit previously torn down systems
+					OnResumeInThread(systemsToTearDown);
 					
 				g_CDVDReset = false;
 				break;
@@ -353,7 +362,7 @@ bool SysThreadBase::StateCheckInThread()
 				m_sem_Resume.WaitWithoutYield();
 
 			m_RunningLock.Acquire();
-			OnResumeInThread(true);
+			OnResumeInThread(static_cast<SystemsMask>(-1)); // All systems
 			g_CDVDReset = false;
 			break;
 
