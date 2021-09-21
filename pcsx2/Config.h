@@ -19,6 +19,7 @@
 #include "common/General.h"
 #include "common/Path.h"
 #include <wx/filename.h>
+#include <string>
 
 class IniInterface;
 
@@ -585,16 +586,16 @@ struct Pcsx2Config
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
 	// slots (3 each)
 	McdOptions Mcd[8];
-	wxString GzipIsoIndexTemplate; // for quick-access index with gzipped ISO
+	std::string GzipIsoIndexTemplate; // for quick-access index with gzipped ISO
 
 	// Set at runtime, not loaded from config.
 	CDVD_SourceType CdvdSource;
-	wxString CurrentIso;
-	wxString CurrentDiscDrive;
-	wxString CurrentBlockdump;
-	wxString CurrentELF;
-	wxString CurrentIRX;
-	wxString CurrentGameArgs;
+	std::string CurrentIso;
+	std::string CurrentDiscDrive;
+	std::string CurrentBlockdump;
+	std::string CurrentELF;
+	std::string CurrentIRX;
+	std::string CurrentGameArgs;
 	AspectRatioType CurrentAspectRatio = AspectRatioType::R4_3;
 	LimiterModeType LimiterMode = LimiterModeType::Nominal;
 

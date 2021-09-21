@@ -292,7 +292,7 @@ void InputRecording::SetupInitialState(u32 newStartingFrame)
 	else
 	{
 		// Check if the current game matches with the one used to make the original recording
-		if (!EmuConfig.CurrentIso.IsEmpty())
+		if (!EmuConfig.CurrentIso.empty())
 			if (resolveGameName() != inputRecordingData.GetHeader().gameName)
 				inputRec::consoleLog("Input recording was possibly constructed for a different game.");
 

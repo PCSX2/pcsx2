@@ -969,7 +969,7 @@ protected:
 	bool				m_UseCDVDsrc;
 	bool				m_UseELFOverride;
 	CDVD_SourceType		m_cdvdsrc_type;
-	wxString			m_elf_override;
+	std::string			m_elf_override;
 
 public:
 	virtual ~SysExecEvent_Execute() = default;
@@ -992,11 +992,11 @@ public:
 	{
 	}
 
-	SysExecEvent_Execute( CDVD_SourceType srctype, const wxString& elf_override )
+	SysExecEvent_Execute( CDVD_SourceType srctype, std::string elf_override )
 		: m_UseCDVDsrc(true)
 		, m_UseELFOverride(true)
 		, m_cdvdsrc_type(srctype)
-		, m_elf_override( elf_override )
+		, m_elf_override( std::move(elf_override) )
 	{
 	}
 
@@ -1039,7 +1039,7 @@ void Pcsx2App::SysExecute()
 // sources.
 void Pcsx2App::SysExecute( CDVD_SourceType cdvdsrc, const wxString& elf_override )
 {
-	SysExecutorThread.PostEvent( new SysExecEvent_Execute(cdvdsrc, elf_override) );
+	SysExecutorThread.PostEvent( new SysExecEvent_Execute(cdvdsrc, elf_override.ToStdString()) );
 #ifndef DISABLE_RECORDING
 	if (g_Conf->EmuOptions.EnableRecordingTools)
 	{

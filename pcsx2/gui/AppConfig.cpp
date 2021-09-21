@@ -671,7 +671,7 @@ void AppConfig::FolderOptions::LoadSave( IniInterface& ini )
 			operator[]( (FoldersEnum_t)i ).Normalize();
 
 		EmuConfig.Folders.Settings = GetSettingsFolder();
-		EmuConfig.CurrentDiscDrive = RunDisc;
+		EmuConfig.CurrentDiscDrive = RunDisc.ToStdString();
 		EmuConfig.Folders.Bios = Bios;
 		EmuConfig.Folders.Snapshots = Snapshots;
 		EmuConfig.Folders.Savestates = Savestates;

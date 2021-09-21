@@ -508,7 +508,7 @@ Pcsx2Config::Pcsx2Config()
 		Mcd[slot].Type = MemoryCardType::MemoryCard_File;
 	}
 
-	GzipIsoIndexTemplate = L"$(f).pindex.tmp";
+	GzipIsoIndexTemplate = "$(f).pindex.tmp";
 
 	CdvdSource = CDVD_SourceType::Iso;
 }

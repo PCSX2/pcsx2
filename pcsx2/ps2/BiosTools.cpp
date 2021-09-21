@@ -221,14 +221,14 @@ static void LoadExtraRom( const wxChar* ext, u8 (&dest)[_size] )
 	}
 }
 
-static void LoadIrx( const wxString& filename, u8* dest )
+static void LoadIrx( const std::string& filename, u8* dest )
 {
 	s64 filesize = 0;
 	try
 	{
 		wxFile irx(filename);
 		if( (filesize=Path::GetFileSize( filename ) ) <= 0 ) {
-			Console.Warning(L"IRX Warning: %s could not be read", WX_STR(filename));
+			Console.Warning("IRX Warning: %s could not be read", filename.c_str());
 			return;
 		}
 
@@ -236,7 +236,7 @@ static void LoadIrx( const wxString& filename, u8* dest )
 	}
 	catch (Exception::BadStream& ex)
 	{
-		Console.Warning(L"IRX Warning: %s could not be read", WX_STR(filename));
+		Console.Warning("IRX Warning: %s could not be read", filename.c_str());
 		Console.Indent().WriteLn(L"Details: %s", WX_STR(ex.FormatDiagnosticMessage()));
 	}
 }
@@ -299,7 +299,7 @@ void LoadBIOS()
 		LoadExtraRom( L"rom2", eeMem->ROM2 );
 		LoadExtraRom( L"erom", eeMem->EROM );
 
-		if (EmuConfig.CurrentIRX.Length() > 3)
+		if (EmuConfig.CurrentIRX.length() > 3)
 			LoadIrx(EmuConfig.CurrentIRX, &eeMem->ROM[0x3C0000]);
 
 		CurrentBiosInformation.threadListAddr = 0;
