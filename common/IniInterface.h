@@ -18,6 +18,7 @@
 #include "Path.h"
 #include <wx/config.h>
 #include <wx/gdicmn.h>
+#include <string>
 
 // --------------------------------------------------------------------------------------
 //  IniInterface (abstract base class)
@@ -52,18 +53,19 @@ public:
 	virtual bool IsLoading() const = 0;
 	bool IsSaving() const { return !IsLoading(); }
 
-	virtual void Entry(const wxString& var, wxString& value, const wxString defvalue = wxString()) = 0;
-	virtual void Entry(const wxString& var, wxDirName& value, const wxDirName defvalue = wxDirName(), bool isAllowRelative = false) = 0;
-	virtual void Entry(const wxString& var, wxFileName& value, const wxFileName defvalue = wxFileName(), bool isAllowRelative = false) = 0;
 	virtual void Entry(const wxString& var, int& value, const int defvalue = 0) = 0;
 	virtual void Entry(const wxString& var, uint& value, const uint defvalue = 0) = 0;
 	virtual void Entry(const wxString& var, bool& value, const bool defvalue = false) = 0;
+	virtual void Entry(const wxString& var, double& value, const double defvalue = 0.0) = 0;
+	virtual void Entry(const wxString& var, std::string& value, const std::string& default_value = std::string()) = 0;
 
 	// This special form of Entry is provided for bitfields, which cannot be passed by reference.
 	virtual bool EntryBitBool(const wxString& var, bool value, const bool defvalue = false) = 0;
 	virtual int EntryBitfield(const wxString& var, int value, const int defvalue = 0) = 0;
 
-	virtual void Entry(const wxString& var, double& value, const double defvalue = 0.0) = 0;
+	virtual void Entry(const wxString& var, wxString& value, const wxString defvalue = wxString()) = 0;
+	virtual void Entry(const wxString& var, wxDirName& value, const wxDirName defvalue = wxDirName(), bool isAllowRelative = false) = 0;
+	virtual void Entry(const wxString& var, wxFileName& value, const wxFileName defvalue = wxFileName(), bool isAllowRelative = false) = 0;
 
 	virtual void Entry(const wxString& var, wxPoint& value, const wxPoint defvalue = wxDefaultPosition) = 0;
 	virtual void Entry(const wxString& var, wxSize& value, const wxSize defvalue = wxDefaultSize) = 0;
@@ -116,21 +118,23 @@ public:
 
 	bool IsLoading() const override { return true; }
 
-	void Entry(const wxString& var, wxString& value, const wxString defvalue = wxEmptyString) override;
-	void Entry(const wxString& var, wxDirName& value, const wxDirName defvalue = wxDirName(), bool isAllowRelative = false) override;
-	void Entry(const wxString& var, wxFileName& value, const wxFileName defvalue = wxFileName(), bool isAllowRelative = false) override;
 	void Entry(const wxString& var, int& value, const int defvalue = 0) override;
 	void Entry(const wxString& var, uint& value, const uint defvalue = 0) override;
 	void Entry(const wxString& var, bool& value, const bool defvalue = false) override;
+	void Entry(const wxString& var, double& value, const double defvalue = 0.0) override;
+	void Entry(const wxString& var, std::string& value, const std::string& default_value = std::string()) override;
 
 	bool EntryBitBool(const wxString& var, bool value, const bool defvalue = false) override;
 	int EntryBitfield(const wxString& var, int value, const int defvalue = 0) override;
 
-	void Entry(const wxString& var, double& value, const double defvalue = 0.0) override;
+	void Entry(const wxString& var, wxString& value, const wxString defvalue = wxEmptyString) override;
+	void Entry(const wxString& var, wxDirName& value, const wxDirName defvalue = wxDirName(), bool isAllowRelative = false) override;
+	void Entry(const wxString& var, wxFileName& value, const wxFileName defvalue = wxFileName(), bool isAllowRelative = false) override;
 
 	void Entry(const wxString& var, wxPoint& value, const wxPoint defvalue = wxDefaultPosition) override;
 	void Entry(const wxString& var, wxSize& value, const wxSize defvalue = wxDefaultSize) override;
 	void Entry(const wxString& var, wxRect& value, const wxRect defvalue = wxDefaultRect) override;
+
 
 protected:
 	void _EnumEntry(const wxString& var, int& value, const wxChar* const* enumArray, int defvalue) override;
@@ -154,21 +158,23 @@ public:
 
 	bool IsLoading() const override { return false; }
 
-	void Entry(const wxString& var, wxString& value, const wxString defvalue = wxString()) override;
-	void Entry(const wxString& var, wxDirName& value, const wxDirName defvalue = wxDirName(), bool isAllowRelative = false) override;
-	void Entry(const wxString& var, wxFileName& value, const wxFileName defvalue = wxFileName(), bool isAllowRelative = false) override;
 	void Entry(const wxString& var, int& value, const int defvalue = 0) override;
 	void Entry(const wxString& var, uint& value, const uint defvalue = 0) override;
 	void Entry(const wxString& var, bool& value, const bool defvalue = false) override;
+	void Entry(const wxString& var, double& value, const double defvalue = 0.0) override;
+	void Entry(const wxString& var, std::string& value, const std::string& default_value = std::string()) override;
 
 	bool EntryBitBool(const wxString& var, bool value, const bool defvalue = false) override;
 	int EntryBitfield(const wxString& var, int value, const int defvalue = 0) override;
 
-	void Entry(const wxString& var, double& value, const double defvalue = 0.0) override;
+	void Entry(const wxString& var, wxString& value, const wxString defvalue = wxString()) override;
+	void Entry(const wxString& var, wxDirName& value, const wxDirName defvalue = wxDirName(), bool isAllowRelative = false) override;
+	void Entry(const wxString& var, wxFileName& value, const wxFileName defvalue = wxFileName(), bool isAllowRelative = false) override;
 
 	void Entry(const wxString& var, wxPoint& value, const wxPoint defvalue = wxDefaultPosition) override;
 	void Entry(const wxString& var, wxSize& value, const wxSize defvalue = wxDefaultSize) override;
 	void Entry(const wxString& var, wxRect& value, const wxRect defvalue = wxDefaultRect) override;
+
 
 protected:
 	void _EnumEntry(const wxString& var, int& value, const wxChar* const* enumArray, int defvalue) override;
