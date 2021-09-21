@@ -10656,7 +10656,8 @@ SLES-51954:
   name: "Max Payne 2 - The Fall of Max Payne"
   region: "PAL-E"
   clampModes:
-    vuClampMode: 2
+    vuClampMode: 3 # Fixes rainbow coloured graphics.
+    eeClampMode: 3 # Fixes bullet holes.
 SLES-51956:
   name: "Bionicle - The Game"
   region: "PAL-M6"
@@ -11113,7 +11114,8 @@ SLES-52256:
   name: "Max Payne 2 - The Fall of Max Payne"
   region: "PAL-E-S"
   clampModes:
-    vuClampMode: 2
+    vuClampMode: 3 # Fixes rainbow coloured graphics.
+    eeClampMode: 3 # Fixes bullet holes.
 SLES-52257:
   name: "P.T.O. IV - Pacific Theater of Operations IV"
   region: "PAL-E"
@@ -11291,17 +11293,20 @@ SLES-52336:
   region: "PAL-E-G"
   compat: 5
   clampModes:
-    vuClampMode: 2
+    vuClampMode: 3 # Fixes rainbow coloured graphics.
+    eeClampMode: 3 # Fixes bullet holes.
 SLES-52337:
   name: "Max Payne 2 - The Fall of Max Payne"
   region: "PAL-E-F"
   clampModes:
-    vuClampMode: 2
+    vuClampMode: 3 # Fixes rainbow coloured graphics.
+    eeClampMode: 3 # Fixes bullet holes.
 SLES-52338:
   name: "Max Payne 2 - The Fall of Max Payne"
   region: "PAL-E-I"
   clampModes:
-    vuClampMode: 2
+    vuClampMode: 3 # Fixes rainbow coloured graphics.
+    eeClampMode: 3 # Fixes bullet holes.
 SLES-52339:
   name: "Crash 'n Burn"
   region: "PAL-M5"
@@ -35520,7 +35525,8 @@ SLUS-20814:
   region: "NTSC-U"
   compat: 5
   clampModes:
-    vuClampMode: 2
+    vuClampMode: 3 # Fixes rainbow coloured graphics.
+    eeClampMode: 3 # Fixes bullet holes.
 SLUS-20816:
   name: "American Idol"
   region: "NTSC-U"
