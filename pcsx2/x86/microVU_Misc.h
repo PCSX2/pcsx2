@@ -105,7 +105,16 @@ static const char branchSTR[16][8] = {
 #define _Z ((mVU.code >> 22) & 0x1)
 #define _W ((mVU.code >> 21) & 0x1)
 
+#define _cX ((cpuRegs.code >> 24) & 0x1)
+#define _cY ((cpuRegs.code >> 23) & 0x1)
+#define _cZ ((cpuRegs.code >> 22) & 0x1)
+#define _cW ((cpuRegs.code >> 21) & 0x1)
+
 #define _X_Y_Z_W   (((mVU.code >> 21) & 0xF))
+#define _cX_Y_Z_W   (((cpuRegs.code >> 21) & 0xF))
+#define _cXYZW_SS  (_cX + _cY + _cZ + _cW == 1)
+#define _cXYZW_SS2  (_cXYZW_SS && (_cX_Y_Z_W != 8))
+
 #define _XYZW_SS   (_X + _Y + _Z + _W == 1)
 #define _XYZW_SS2  (_XYZW_SS && (_X_Y_Z_W != 8))
 #define _XYZW_PS   (_X_Y_Z_W == 0xf)
