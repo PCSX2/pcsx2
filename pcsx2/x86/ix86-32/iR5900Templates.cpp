@@ -50,7 +50,7 @@ void _deleteEEreg(int reg, int flush)
 	_deleteGPRtoXMMreg(reg, flush ? 0 : 2);
 }
 
-void _flushEEreg(int reg)
+void _flushEEreg(int reg, bool clear)
 {
 	if (!reg)
 		return;
@@ -59,7 +59,7 @@ void _flushEEreg(int reg)
 		_flushConstReg(reg);
 		return;
 	}
-	_deleteGPRtoXMMreg(reg, 1);
+	_deleteGPRtoXMMreg(reg, clear ? 2 : 1);
 }
 
 int eeProcessHILO(int reg, int mode, int mmx)

@@ -801,20 +801,23 @@ u16 _freeXMMregsCOP2(int requiredcount)
 	// Finally Get rid of registers which are gonna be needed, they'll need to be reloaded
 	int maxcount = 9999; // The lower this value the more towards the end of the block it'll need flushing
 	int regtoclear = -1;
+
 	while (count > 0)
 	{
 		for (int i = 0; i < iREGCNT_XMM - 1; i++)
 		{
 			if (xmmregs[i].inuse && xmmregs[i].counter < maxcount)
 			{
-				int regtoclear = i;
+				regtoclear = i;
 				maxcount = xmmregs[i].counter;
 			}
 		}
-
-		_freeXMMreg(regtoclear);
-		count--;
-		regs |= (1 << regtoclear);
+		if (regtoclear != -1)
+		{
+			_freeXMMreg(regtoclear);
+			count--;
+			regs |= (1 << regtoclear);
+		}
 	}
 
 	pxAssert(count <= 0);
