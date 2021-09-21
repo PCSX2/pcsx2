@@ -470,8 +470,10 @@ bool GSCapture::BeginCapture(float fps, GSVector2i recommendedResolution, float 
 	}
 
 	HRESULT source_hr = S_OK;
-	wil::com_ptr_nothrow<IBaseFilter> src;
-	src.attach(new GSSource(m_size.x, m_size.y, fps, NULL, source_hr, dlg.m_colorspace));
+	// WARNING: This increases the reference count! Right now it's fine, since GSSource inherits from CUnknown that
+	// starts the reference count from 0. Should this ever change and GSSource ends up with a refcount of 1 after constructing,
+	// change this to `.attach(new GSSource(...))`.
+	wil::com_ptr_nothrow<IBaseFilter> src = new GSSource(m_size.x, m_size.y, fps, NULL, source_hr, dlg.m_colorspace);
 
 	if (dlg.m_enc == 0)
 	{
