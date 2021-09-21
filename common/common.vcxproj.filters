@@ -130,6 +130,9 @@
     <ClCompile Include="GL\StreamBuffer.cpp">
       <Filter>Source Files\GL</Filter>
     </ClCompile>
+    <ClCompile Include="FileSystem.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Assertions.h">
@@ -302,6 +305,9 @@
     </ClInclude>
     <ClInclude Include="GL\StreamBuffer.h">
       <Filter>Header Files\GL</Filter>
+    </ClInclude>
+    <ClInclude Include="FileSystem.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
