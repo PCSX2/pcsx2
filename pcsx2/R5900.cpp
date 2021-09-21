@@ -367,7 +367,7 @@ u32 g_nextEventCycle = 0;
 // and the recompiler.  (moved here to help alleviate redundant code)
 __fi void _cpuEventTest_Shared()
 {
-	ScopedBool etest(eeEventTestIsActive);
+	eeEventTestIsActive = true;
 	g_nextEventCycle = cpuRegs.cycle + eeWaitCycles;
 
 	// ---- INTC / DMAC (CPU-level Exceptions) -----------------
@@ -463,6 +463,8 @@ __fi void _cpuEventTest_Shared()
 
 	// Apply vsync and other counter nextCycles
 	cpuSetNextEvent( nextsCounter, nextCounter );
+
+	eeEventTestIsActive = false;
 }
 
 __ri void cpuTestINTCInts()
