@@ -335,6 +335,7 @@ static RETURNS_R64 _ext_memRead64(u32 mem)
 
 	MEM_LOG("Unknown Memory read64  from address %8.8x", mem);
 	cpuTlbMissR(mem, cpuRegs.branch);
+	return r64_zero();
 }
 
 template<int p>
@@ -351,6 +352,7 @@ static RETURNS_R128 _ext_memRead128(u32 mem)
 
 	MEM_LOG("Unknown Memory read128 from address %8.8x", mem);
 	cpuTlbMissR(mem, cpuRegs.branch);
+	return r128_zero();
 }
 
 template<int p>

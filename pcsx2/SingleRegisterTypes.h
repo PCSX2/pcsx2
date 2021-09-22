@@ -59,7 +59,7 @@ __forceinline static r64 r64_from_u64(u64 val)
 #ifdef _M_X86_64
 	return _mm_cvtsi64_si128(val);
 #else
-	return r64_from_u32x2(val, val >> 64);
+	return r64_from_u32x2(val, val >> 32);
 #endif
 }
 
