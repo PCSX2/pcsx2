@@ -26,6 +26,8 @@
 #include <wx/gdicmn.h>
 #include <memory>
 
+class SettingsWrapper;
+
 enum DocsModeType
 {
 	// uses /home/user or /cwd for the program data.  This is the default mode and is the most
@@ -286,8 +288,8 @@ public:
 public:
 	AppConfig();
 
-	void LoadSave( IniInterface& ini );
-	void LoadSaveRootItems( IniInterface& ini );
+	void LoadSave(IniInterface& ini, SettingsWrapper& wrap);
+	void LoadSaveRootItems(IniInterface& ini);
 
 	static int  GetMaxPresetIndex();
     static bool isOkGetPresetTextAndColor(int n, wxString& label, wxColor& c);

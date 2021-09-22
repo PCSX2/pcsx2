@@ -20,7 +20,8 @@
 #include "common/Path.h"
 #include <string>
 
-class IniInterface;
+class SettingsInterface;
+class SettingsWrapper;
 
 enum class CDVD_SourceType : uint8_t;
 
@@ -191,7 +192,7 @@ struct TraceLogFilters
 		Enabled	= false;
 	}
 
-	void LoadSave( IniInterface& ini );
+	void LoadSave( SettingsWrapper& ini );
 
 	bool operator ==( const TraceLogFilters& right ) const
 	{
@@ -230,7 +231,7 @@ struct Pcsx2Config
 
 		// Default is Disabled, with all recs enabled underneath.
 		ProfilerOptions() : bitset( 0xfffffffe ) {}
-		void LoadSave( IniInterface& conf );
+		void LoadSave( SettingsWrapper& wrap);
 
 		bool operator ==( const ProfilerOptions& right ) const
 		{
@@ -275,7 +276,7 @@ struct Pcsx2Config
 		RecompilerOptions();
 		void ApplySanityCheck();
 
-		void LoadSave( IniInterface& conf );
+		void LoadSave( SettingsWrapper& wrap);
 
 		bool operator ==( const RecompilerOptions& right ) const
 		{
@@ -298,7 +299,7 @@ struct Pcsx2Config
 		SSE_MXCSR sseVUMXCSR;
 
 		CpuOptions();
-		void LoadSave( IniInterface& conf );
+		void LoadSave( SettingsWrapper& wrap);
 		void ApplySanityCheck();
 
 		bool operator ==( const CpuOptions& right ) const
@@ -340,7 +341,7 @@ struct Pcsx2Config
 		double OffsetX{0.0};
 		double OffsetY{0.0};
 
-		void LoadSave( IniInterface& conf );
+		void LoadSave( SettingsWrapper& wrap);
 
 		int GetVsync() const;
 
@@ -393,7 +394,7 @@ struct Pcsx2Config
 		BITFIELD_END
 
 		GamefixOptions();
-		void LoadSave( IniInterface& conf );
+		void LoadSave( SettingsWrapper& wrap);
 		GamefixOptions& DisableAll();
 
 		void Set( const wxString& list, bool enabled=true );
@@ -431,7 +432,7 @@ struct Pcsx2Config
 		u8	EECycleSkip;		// EE Cycle skip factor (0, 1, 2, or 3)
 
 		SpeedhackOptions();
-		void LoadSave(IniInterface& conf);
+		void LoadSave(SettingsWrapper& conf);
 		SpeedhackOptions& DisableAll();
 
 		void Set(SpeedhackId id, bool enabled = true);
@@ -463,7 +464,7 @@ struct Pcsx2Config
 		u32 MemoryViewBytesPerRow;
 
 		DebugOptions();
-		void LoadSave( IniInterface& conf );
+		void LoadSave( SettingsWrapper& wrap);
 		
 		bool operator ==( const DebugOptions& right ) const
 		{
@@ -487,7 +488,7 @@ struct Pcsx2Config
 		double TurboScalar{2.0};
 		double SlomoScalar{0.5};
 
-		void LoadSave(IniInterface& conf);
+		void LoadSave(SettingsWrapper& wrap);
 		void SanityCheck();
 	};
 
@@ -516,7 +517,7 @@ struct Pcsx2Config
 		std::string Bios;
 
 		FilenameOptions();
-		void LoadSave(IniInterface& conf);
+		void LoadSave(SettingsWrapper& wrap);
 
 		bool operator==(const FilenameOptions& right) const
 		{
@@ -600,13 +601,8 @@ struct Pcsx2Config
 	LimiterModeType LimiterMode = LimiterModeType::Nominal;
 
 	Pcsx2Config();
-	void LoadSave( IniInterface& ini );
-	void LoadSaveMemcards( IniInterface& ini );
-
-	void Load( const wxString& srcfile );
-	void Load( const wxInputStream& srcstream );
-	void Save( const wxString& dstfile );
-	void Save( const wxOutputStream& deststream );
+	void LoadSave(SettingsWrapper& wrap);
+	void LoadSaveMemcards(SettingsWrapper& wrap);
 
 	// TODO: Make these std::string when we remove wxFile...
 	wxString FullpathToBios() const;

@@ -17,7 +17,9 @@
 
 #include <wx/fileconf.h>
 
-#include "common/IniInterface.h"
+#include "common/SettingsInterface.h"
+#include "common/SettingsWrapper.h"
+#include "common/StringUtil.h"
 #include "Config.h"
 #include "GS.h"
 #include "CDVD/CDVDaccess.h"
@@ -27,17 +29,17 @@
 #include "gui/AppConfig.h"
 #endif
 
-void TraceLogFilters::LoadSave( IniInterface& ini )
+void TraceLogFilters::LoadSave(SettingsWrapper& wrap)
 {
-	ScopedIniGroup path( ini, L"TraceLog" );
+	SettingsWrapSection("EmuCore/TraceLog");
 
-	IniEntry( Enabled );
-	
+	SettingsWrapEntry(Enabled);
+
 	// Retaining backwards compat of the trace log enablers isn't really important, and
 	// doing each one by hand would be murder.  So let's cheat and just save it as an int:
 
-	IniEntry( EE.bitset );
-	IniEntry( IOP.bitset );
+	SettingsWrapEntry(EE.bitset);
+	SettingsWrapEntry(IOP.bitset);
 }
 
 const wxChar* const tbl_SpeedhackNames[] =
@@ -85,53 +87,53 @@ Pcsx2Config::SpeedhackOptions& Pcsx2Config::SpeedhackOptions::DisableAll()
 	return *this;
 }
 
-void Pcsx2Config::SpeedhackOptions::LoadSave(IniInterface& ini)
+void Pcsx2Config::SpeedhackOptions::LoadSave(SettingsWrapper& wrap)
 {
-	ScopedIniGroup path(ini, L"Speedhacks");
+	SettingsWrapSection("EmuCore/Speedhacks");
 
-	IniBitfield(EECycleRate);
-	IniBitfield(EECycleSkip);
-	IniBitBool(fastCDVD);
-	IniBitBool(IntcStat);
-	IniBitBool(WaitLoop);
-	IniBitBool(vuFlagHack);
-	IniBitBool(vuThread);
-	IniBitBool(vu1Instant);
+	SettingsWrapBitfield(EECycleRate);
+	SettingsWrapBitfield(EECycleSkip);
+	SettingsWrapBitBool(fastCDVD);
+	SettingsWrapBitBool(IntcStat);
+	SettingsWrapBitBool(WaitLoop);
+	SettingsWrapBitBool(vuFlagHack);
+	SettingsWrapBitBool(vuThread);
+	SettingsWrapBitBool(vu1Instant);
 }
 
-void Pcsx2Config::ProfilerOptions::LoadSave( IniInterface& ini )
+void Pcsx2Config::ProfilerOptions::LoadSave(SettingsWrapper& wrap)
 {
-	ScopedIniGroup path( ini, L"Profiler" );
+	SettingsWrapSection("EmuCore/Profiler");
 
-	IniBitBool( Enabled );
-	IniBitBool( RecBlocks_EE );
-	IniBitBool( RecBlocks_IOP );
-	IniBitBool( RecBlocks_VU0 );
-	IniBitBool( RecBlocks_VU1 );
+	SettingsWrapBitBool(Enabled);
+	SettingsWrapBitBool(RecBlocks_EE);
+	SettingsWrapBitBool(RecBlocks_IOP);
+	SettingsWrapBitBool(RecBlocks_VU0);
+	SettingsWrapBitBool(RecBlocks_VU1);
 }
 
 Pcsx2Config::RecompilerOptions::RecompilerOptions()
 {
-	bitset		= 0;
+	bitset = 0;
 
 	//StackFrameChecks	= false;
 	//PreBlockCheckEE	= false;
 
 	// All recs are enabled by default.
 
-	EnableEE	= true;
+	EnableEE = true;
 	EnableEECache = false;
-	EnableIOP	= true;
-	EnableVU0	= true;
-	EnableVU1	= true;
+	EnableIOP = true;
+	EnableVU0 = true;
+	EnableVU1 = true;
 
 	// vu and fpu clamping default to standard overflow.
-	vuOverflow	= true;
+	vuOverflow = true;
 	//vuExtraOverflow = false;
 	//vuSignOverflow = false;
 	//vuUnderflow = false;
 
-	fpuOverflow	= true;
+	fpuOverflow = true;
 	//fpuExtraOverflow = false;
 	//fpuFullMode = false;
 }
@@ -140,63 +142,65 @@ void Pcsx2Config::RecompilerOptions::ApplySanityCheck()
 {
 	bool fpuIsRight = true;
 
-	if( fpuExtraOverflow )
+	if (fpuExtraOverflow)
 		fpuIsRight = fpuOverflow;
 
-	if( fpuFullMode )
+	if (fpuFullMode)
 		fpuIsRight = fpuOverflow && fpuExtraOverflow;
 
-	if( !fpuIsRight )
+	if (!fpuIsRight)
 	{
 		// Values are wonky; assume the defaults.
-		fpuOverflow		= RecompilerOptions().fpuOverflow;
-		fpuExtraOverflow= RecompilerOptions().fpuExtraOverflow;
-		fpuFullMode		= RecompilerOptions().fpuFullMode;
+		fpuOverflow = RecompilerOptions().fpuOverflow;
+		fpuExtraOverflow = RecompilerOptions().fpuExtraOverflow;
+		fpuFullMode = RecompilerOptions().fpuFullMode;
 	}
 
 	bool vuIsOk = true;
 
-	if( vuExtraOverflow ) vuIsOk = vuIsOk && vuOverflow;
-	if( vuSignOverflow ) vuIsOk = vuIsOk && vuExtraOverflow;
+	if (vuExtraOverflow)
+		vuIsOk = vuIsOk && vuOverflow;
+	if (vuSignOverflow)
+		vuIsOk = vuIsOk && vuExtraOverflow;
 
-	if( !vuIsOk )
+	if (!vuIsOk)
 	{
 		// Values are wonky; assume the defaults.
-		vuOverflow		= RecompilerOptions().vuOverflow;
-		vuExtraOverflow	= RecompilerOptions().vuExtraOverflow;
-		vuSignOverflow	= RecompilerOptions().vuSignOverflow;
-		vuUnderflow		= RecompilerOptions().vuUnderflow;
+		vuOverflow = RecompilerOptions().vuOverflow;
+		vuExtraOverflow = RecompilerOptions().vuExtraOverflow;
+		vuSignOverflow = RecompilerOptions().vuSignOverflow;
+		vuUnderflow = RecompilerOptions().vuUnderflow;
 	}
 }
 
-void Pcsx2Config::RecompilerOptions::LoadSave( IniInterface& ini )
+void Pcsx2Config::RecompilerOptions::LoadSave(SettingsWrapper& wrap)
 {
-	ScopedIniGroup path( ini, L"Recompiler" );
+	SettingsWrapSection("EmuCore/CPU/Recompiler");
 
-	IniBitBool( EnableEE );
-	IniBitBool( EnableIOP );
-	IniBitBool( EnableEECache );
-	IniBitBool( EnableVU0 );
-	IniBitBool( EnableVU1 );
+	SettingsWrapBitBool(EnableEE);
+	SettingsWrapBitBool(EnableIOP);
+	SettingsWrapBitBool(EnableEECache);
+	SettingsWrapBitBool(EnableVU0);
+	SettingsWrapBitBool(EnableVU1);
 
-	IniBitBool( vuOverflow );
-	IniBitBool( vuExtraOverflow );
-	IniBitBool( vuSignOverflow );
-	IniBitBool( vuUnderflow );
+	SettingsWrapBitBool(vuOverflow);
+	SettingsWrapBitBool(vuExtraOverflow);
+	SettingsWrapBitBool(vuSignOverflow);
+	SettingsWrapBitBool(vuUnderflow);
 
-	IniBitBool( fpuOverflow );
-	IniBitBool( fpuExtraOverflow );
-	IniBitBool( fpuFullMode );
+	SettingsWrapBitBool(fpuOverflow);
+	SettingsWrapBitBool(fpuExtraOverflow);
+	SettingsWrapBitBool(fpuFullMode);
 
-	IniBitBool( StackFrameChecks );
-	IniBitBool( PreBlockCheckEE );
-	IniBitBool( PreBlockCheckIOP );
+	SettingsWrapBitBool(StackFrameChecks);
+	SettingsWrapBitBool(PreBlockCheckEE);
+	SettingsWrapBitBool(PreBlockCheckIOP);
 }
 
 Pcsx2Config::CpuOptions::CpuOptions()
 {
-	sseMXCSR.bitmask	= DEFAULT_sseMXCSR;
-	sseVUMXCSR.bitmask	= DEFAULT_sseVUMXCSR;
+	sseMXCSR.bitmask = DEFAULT_sseMXCSR;
+	sseVUMXCSR.bitmask = DEFAULT_sseVUMXCSR;
 }
 
 void Pcsx2Config::CpuOptions::ApplySanityCheck()
@@ -207,62 +211,62 @@ void Pcsx2Config::CpuOptions::ApplySanityCheck()
 	Recompiler.ApplySanityCheck();
 }
 
-void Pcsx2Config::CpuOptions::LoadSave( IniInterface& ini )
+void Pcsx2Config::CpuOptions::LoadSave(SettingsWrapper& wrap)
 {
-	ScopedIniGroup path( ini, L"CPU" );
+	SettingsWrapSection("EmuCore/CPU");
 
-	IniBitBoolEx( sseMXCSR.DenormalsAreZero,	"FPU.DenormalsAreZero" );
-	IniBitBoolEx( sseMXCSR.FlushToZero,			"FPU.FlushToZero" );
-	IniBitfieldEx( sseMXCSR.RoundingControl,	"FPU.Roundmode" );
+	SettingsWrapBitBoolEx(sseMXCSR.DenormalsAreZero, "FPU.DenormalsAreZero");
+	SettingsWrapBitBoolEx(sseMXCSR.FlushToZero, "FPU.FlushToZero");
+	SettingsWrapBitfieldEx(sseMXCSR.RoundingControl, "FPU.Roundmode");
 
-	IniBitBoolEx( sseVUMXCSR.DenormalsAreZero,	"VU.DenormalsAreZero" );
-	IniBitBoolEx( sseVUMXCSR.FlushToZero,		"VU.FlushToZero" );
-	IniBitfieldEx( sseVUMXCSR.RoundingControl,	"VU.Roundmode" );
+	SettingsWrapBitBoolEx(sseVUMXCSR.DenormalsAreZero, "VU.DenormalsAreZero");
+	SettingsWrapBitBoolEx(sseVUMXCSR.FlushToZero, "VU.FlushToZero");
+	SettingsWrapBitfieldEx(sseVUMXCSR.RoundingControl, "VU.Roundmode");
 
-	Recompiler.LoadSave( ini );
+	Recompiler.LoadSave(wrap);
 }
 
-void Pcsx2Config::GSOptions::LoadSave( IniInterface& ini )
+void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 {
-	ScopedIniGroup path( ini, L"GS" );
+	SettingsWrapSection("EmuCore/GS");
 
 #ifdef  PCSX2_DEVBUILD 
-	IniEntry( SynchronousMTGS );
+	SettingsWrapEntry(SynchronousMTGS);
 #endif
-	IniEntry( VsyncQueueSize );
+	SettingsWrapEntry(VsyncQueueSize);
 
-	IniEntry( FrameLimitEnable );
-	IniEntry( FrameSkipEnable );
-	ini.EnumEntry( L"VsyncEnable", VsyncEnable, NULL, VsyncEnable );
+	SettingsWrapEntry(FrameLimitEnable);
+	SettingsWrapEntry(FrameSkipEnable);
+	wrap.EnumEntry(CURRENT_SETTINGS_SECTION, "VsyncEnable", VsyncEnable, NULL, VsyncEnable);
 
-	IniEntry( LimitScalar );
-	IniEntry( FramerateNTSC );
-	IniEntry( FrameratePAL );
+	SettingsWrapEntry(LimitScalar);
+	SettingsWrapEntry(FramerateNTSC);
+	SettingsWrapEntry(FrameratePAL);
 
-	IniEntry( FramesToDraw );
-	IniEntry( FramesToSkip );
+	SettingsWrapEntry(FramesToDraw);
+	SettingsWrapEntry(FramesToSkip);
 
-	static const wxChar* AspectRatioNames[] =
+	static const char* AspectRatioNames[] =
 		{
-			L"Stretch",
-			L"4:3",
-			L"16:9",
+			"Stretch",
+			"4:3",
+			"16:9",
 			// WARNING: array must be NULL terminated to compute it size
 			NULL};
 
 #ifdef PCSX2_CORE
-	ini.EnumEntry(L"AspectRatio", AspectRatio, AspectRatioNames, AspectRatio);
+	wrap.EnumEntry("AspectRatio", AspectRatio, AspectRatioNames, AspectRatio);
 
-	static const wxChar* FMVAspectRatioSwitchNames[] =
+	static const char* FMVAspectRatioSwitchNames[] =
 		{
-			L"Off",
-			L"4:3",
-			L"16:9",
+			"Off",
+			"4:3",
+			"16:9",
 			// WARNING: array must be NULL terminated to compute it size
 			NULL};
-	ini.EnumEntry(L"FMVAspectRatioSwitch", FMVAspectRatioSwitch, FMVAspectRatioSwitchNames, FMVAspectRatioSwitch);
+	wrap.EnumEntry("FMVAspectRatioSwitch", FMVAspectRatioSwitch, FMVAspectRatioSwitchNames, FMVAspectRatioSwitch);
 
-	IniEntry(Zoom);
+	SettingsWrapEntry(Zoom);
 #endif
 }
 
@@ -273,12 +277,17 @@ int Pcsx2Config::GSOptions::GetVsync() const
 
 	// D3D only support a boolean state. OpenGL waits a number of vsync
 	// interrupt (negative value for late vsync).
-	switch (VsyncEnable) {
-		case VsyncMode::Adaptive: return -1;
-		case VsyncMode::Off: return 0;
-		case VsyncMode::On: return 1;
+	switch (VsyncEnable)
+	{
+		case VsyncMode::Adaptive:
+			return -1;
+		case VsyncMode::Off:
+			return 0;
+		case VsyncMode::On:
+			return 1;
 
-		default: return 0;
+		default:
+			return 0;
 	}
 }
 
@@ -323,27 +332,29 @@ Pcsx2Config::GamefixOptions& Pcsx2Config::GamefixOptions::DisableAll()
 // If an unrecognized tag is encountered, a warning is printed to the console, but no error
 // is generated.  This allows the system to function in the event that future versions of
 // PCSX2 remove old hacks once they become obsolete.
-void Pcsx2Config::GamefixOptions::Set( const wxString& list, bool enabled )
+void Pcsx2Config::GamefixOptions::Set(const wxString& list, bool enabled)
 {
-	wxStringTokenizer izer( list, L",|", wxTOKEN_STRTOK );
-	
-	while( izer.HasMoreTokens() )
+	wxStringTokenizer izer(list, L",|", wxTOKEN_STRTOK);
+
+	while (izer.HasMoreTokens())
 	{
-		wxString token( izer.GetNextToken() );
+		wxString token(izer.GetNextToken());
 
 		GamefixId i;
-		for (i=GamefixId_FIRST; i < pxEnumEnd; ++i)
+		for (i = GamefixId_FIRST; i < pxEnumEnd; ++i)
 		{
-			if( token.CmpNoCase( EnumToString(i) ) == 0 ) break;
+			if (token.CmpNoCase(EnumToString(i)) == 0)
+				break;
 		}
-		if( i < pxEnumEnd ) Set( i );
+		if (i < pxEnumEnd)
+			Set(i);
 	}
 }
 
-void Pcsx2Config::GamefixOptions::Set( GamefixId id, bool enabled )
+void Pcsx2Config::GamefixOptions::Set(GamefixId id, bool enabled)
 {
-	EnumAssert( id );
-	switch(id)
+	EnumAssert(id);
+	switch (id)
 	{
 		case Fix_VuAddSub:		VuAddSubHack		= enabled;	break;
 		case Fix_FpuMultiply:	FpuMulHack			= enabled;	break;
@@ -364,10 +375,10 @@ void Pcsx2Config::GamefixOptions::Set( GamefixId id, bool enabled )
 	}
 }
 
-bool Pcsx2Config::GamefixOptions::Get( GamefixId id ) const
+bool Pcsx2Config::GamefixOptions::Get(GamefixId id) const
 {
-	EnumAssert( id );
-	switch(id)
+	EnumAssert(id);
+	switch (id)
 	{
 		case Fix_VuAddSub:		return VuAddSubHack;
 		case Fix_FpuMultiply:	return FpuMulHack;
@@ -386,28 +397,28 @@ bool Pcsx2Config::GamefixOptions::Get( GamefixId id ) const
 		case Fix_VUOverflow:	return VUOverflowHack;
 		jNO_DEFAULT;
 	}
-	return false;		// unreachable, but we still need to suppress warnings >_<
+	return false; // unreachable, but we still need to suppress warnings >_<
 }
 
-void Pcsx2Config::GamefixOptions::LoadSave( IniInterface& ini )
+void Pcsx2Config::GamefixOptions::LoadSave(SettingsWrapper& wrap)
 {
-	ScopedIniGroup path( ini, L"Gamefixes" );
+	SettingsWrapSection("EmuCore/Gamefixes");
 
-	IniBitBool( VuAddSubHack );
-	IniBitBool( FpuMulHack );
-	IniBitBool( FpuNegDivHack );
-	IniBitBool( XgKickHack );
-	IniBitBool( EETimingHack );
-	IniBitBool( SkipMPEGHack );
-	IniBitBool( OPHFlagHack );
-	IniBitBool( DMABusyHack );
-	IniBitBool( VIFFIFOHack );
-	IniBitBool( VIF1StallHack );
-	IniBitBool( GIFFIFOHack );
-	IniBitBool( GoemonTlbHack );
-	IniBitBool( IbitHack );
-	IniBitBool( VUKickstartHack );
-	IniBitBool( VUOverflowHack );
+	SettingsWrapBitBool( VuAddSubHack );
+	SettingsWrapBitBool( FpuMulHack );
+	SettingsWrapBitBool( FpuNegDivHack );
+	SettingsWrapBitBool( XgKickHack );
+	SettingsWrapBitBool( EETimingHack );
+	SettingsWrapBitBool( SkipMPEGHack );
+	SettingsWrapBitBool( OPHFlagHack );
+	SettingsWrapBitBool( DMABusyHack );
+	SettingsWrapBitBool( VIFFIFOHack );
+	SettingsWrapBitBool( VIF1StallHack );
+	SettingsWrapBitBool( GIFFIFOHack );
+	SettingsWrapBitBool( GoemonTlbHack );
+	SettingsWrapBitBool( IbitHack );
+	SettingsWrapBitBool( VUKickstartHack );
+	SettingsWrapBitBool( VUOverflowHack );
 }
 
 
@@ -422,33 +433,32 @@ Pcsx2Config::DebugOptions::DebugOptions()
 	MemoryViewBytesPerRow = 16;
 }
 
-void Pcsx2Config::DebugOptions::LoadSave( IniInterface& ini )
+void Pcsx2Config::DebugOptions::LoadSave(SettingsWrapper& wrap)
 {
-	ScopedIniGroup path( ini, L"Debugger" );
+	SettingsWrapSection("EmuCore/Debugger");
 
-	IniBitBool( ShowDebuggerOnStart );
-	IniBitBool( AlignMemoryWindowStart );
-	IniBitfield( FontWidth );
-	IniBitfield( FontHeight );
-	IniBitfield( WindowWidth );
-	IniBitfield( WindowHeight );
-	IniBitfield( MemoryViewBytesPerRow );
+	SettingsWrapBitBool(ShowDebuggerOnStart);
+	SettingsWrapBitBool(AlignMemoryWindowStart);
+	SettingsWrapBitfield(FontWidth);
+	SettingsWrapBitfield(FontHeight);
+	SettingsWrapBitfield(WindowWidth);
+	SettingsWrapBitfield(WindowHeight);
+	SettingsWrapBitfield(MemoryViewBytesPerRow);
 }
 
 Pcsx2Config::FilenameOptions::FilenameOptions()
 {
 }
 
-void Pcsx2Config::FilenameOptions::LoadSave(IniInterface& ini)
+void Pcsx2Config::FilenameOptions::LoadSave(SettingsWrapper& wrap)
 {
-	ScopedIniGroup path(ini, L"Filenames");
+	SettingsWrapSection("Filenames");
 
-	ini.Entry(L"BIOS", Bios, Bios);
+	wrap.Entry(CURRENT_SETTINGS_SECTION, "BIOS", Bios, Bios);
 }
 
 Pcsx2Config::FolderOptions::FolderOptions()
 {
-
 }
 
 void Pcsx2Config::FramerateOptions::SanityCheck()
@@ -460,16 +470,16 @@ void Pcsx2Config::FramerateOptions::SanityCheck()
 	SlomoScalar = std::clamp(SlomoScalar, 0.05, 10.0);
 }
 
-void Pcsx2Config::FramerateOptions::LoadSave(IniInterface& ini)
+void Pcsx2Config::FramerateOptions::LoadSave(SettingsWrapper& wrap)
 {
-	ScopedIniGroup path(ini, L"Framerate");
+	SettingsWrapSection("Framerate");
 
-	IniEntry(NominalScalar);
-	IniEntry(TurboScalar);
-	IniEntry(SlomoScalar);
+	SettingsWrapEntry(NominalScalar);
+	SettingsWrapEntry(TurboScalar);
+	SettingsWrapEntry(SlomoScalar);
 
-	IniEntry(SkipOnLimit);
-	IniEntry(SkipOnTurbo);
+	SettingsWrapEntry(SkipOnLimit);
+	SettingsWrapEntry(SkipOnTurbo);
 }
 
 Pcsx2Config::Pcsx2Config()
@@ -500,109 +510,87 @@ Pcsx2Config::Pcsx2Config()
 	CdvdSource = CDVD_SourceType::Iso;
 }
 
-void Pcsx2Config::LoadSave( IniInterface& ini )
+void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
 {
-	ScopedIniGroup path( ini, L"EmuCore" );
+	SettingsWrapSection("EmuCore");
 
-	IniBitBool( CdvdVerboseReads );
-	IniBitBool( CdvdDumpBlocks );
-	IniBitBool( CdvdShareWrite );
-	IniBitBool( EnablePatches );
-	IniBitBool( EnableCheats );
-	IniBitBool( EnableIPC );
-	IniBitBool( EnableWideScreenPatches );
+	SettingsWrapBitBool(CdvdVerboseReads);
+	SettingsWrapBitBool(CdvdDumpBlocks);
+	SettingsWrapBitBool(CdvdShareWrite);
+	SettingsWrapBitBool(EnablePatches);
+	SettingsWrapBitBool(EnableCheats);
+	SettingsWrapBitBool(EnableIPC);
+	SettingsWrapBitBool(EnableWideScreenPatches);
 #ifndef DISABLE_RECORDING
-	IniBitBool( EnableRecordingTools );
+	SettingsWrapBitBool(EnableRecordingTools);
 #endif
-	IniBitBool( ConsoleToStdio );
-	IniBitBool( HostFs );
+	SettingsWrapBitBool(ConsoleToStdio);
+	SettingsWrapBitBool(HostFs);
 
-	IniBitBool( BackupSavestate );
-	IniBitBool( McdEnableEjection );
-	IniBitBool( McdFolderAutoManage );
-	IniBitBool( MultitapPort0_Enabled );
-	IniBitBool( MultitapPort1_Enabled );
+	SettingsWrapBitBool(BackupSavestate);
+	SettingsWrapBitBool(McdEnableEjection);
+	SettingsWrapBitBool(McdFolderAutoManage);
+	SettingsWrapBitBool(MultitapPort0_Enabled);
+	SettingsWrapBitBool(MultitapPort1_Enabled);
 
 	// Process various sub-components:
 
-	Speedhacks		.LoadSave( ini );
-	Cpu				.LoadSave( ini );
-	GS				.LoadSave( ini );
-	Gamefixes		.LoadSave( ini );
-	Profiler		.LoadSave( ini );
+	Speedhacks.LoadSave(wrap);
+	Cpu.LoadSave(wrap);
+	GS.LoadSave(wrap);
+	Gamefixes.LoadSave(wrap);
+	Profiler.LoadSave(wrap);
 
-	Debugger		.LoadSave( ini );
-	Trace			.LoadSave( ini );
+	Debugger.LoadSave(wrap);
+	Trace.LoadSave(wrap);
 
-	IniEntry(GzipIsoIndexTemplate);
+	SettingsWrapEntry(GzipIsoIndexTemplate);
 
 	// For now, this in the derived config for backwards ini compatibility.
 #ifdef PCSX2_CORE
-	BaseFilenames.LoadSave(ini);
-	Framerate.LoadSave(ini);
-	LoadSaveMemcards(ini);
+	BaseFilenames.LoadSave(wrap);
+	Framerate.LoadSave(wrap);
+	LoadSaveMemcards(wrap);
 
-	IniEntry(GzipIsoIndexTemplate);
+	SettingsWrapEntry(GzipIsoIndexTemplate);
 
 #ifdef __WXMSW__
-	IniEntry(McdCompressNTFS);
+	SettingsWrapEntry(McdCompressNTFS);
 #endif
 #endif
 
-	if (ini.IsLoading())
+	if (wrap.IsLoading())
 	{
 		CurrentAspectRatio = GS.AspectRatio;
 	}
-
-	ini.Flush();
 }
 
-void Pcsx2Config::LoadSaveMemcards( IniInterface& ini )
+void Pcsx2Config::LoadSaveMemcards(SettingsWrapper& wrap)
 {
-	ScopedIniGroup path( ini, L"MemoryCards" );
-
-	for( uint slot=0; slot<2; ++slot )
+	for (uint slot = 0; slot < 2; ++slot)
 	{
-		ini.Entry( pxsFmt( L"Slot%u_Enable", slot+1 ),
-			Mcd[slot].Enabled, Mcd[slot].Enabled );
-		ini.Entry( pxsFmt( L"Slot%u_Filename", slot+1 ),
-			Mcd[slot].Filename, Mcd[slot].Filename );
+		wrap.Entry("MemoryCards", StringUtil::StdStringFromFormat("Slot%u_Enable", slot + 1).c_str(),
+			Mcd[slot].Enabled, Mcd[slot].Enabled);
+		wrap.Entry("MemoryCards", StringUtil::StdStringFromFormat("Slot%u_Filename", slot + 1).c_str(),
+			Mcd[slot].Filename, Mcd[slot].Filename);
 	}
 
-	for( uint slot=2; slot<8; ++slot )
+	for (uint slot = 2; slot < 8; ++slot)
 	{
-		int mtport = FileMcd_GetMtapPort(slot)+1;
-		int mtslot = FileMcd_GetMtapSlot(slot)+1;
+		int mtport = FileMcd_GetMtapPort(slot) + 1;
+		int mtslot = FileMcd_GetMtapSlot(slot) + 1;
 
-		ini.Entry( pxsFmt( L"Multitap%u_Slot%u_Enable", mtport, mtslot ),
-			Mcd[slot].Enabled, Mcd[slot].Enabled );
-		ini.Entry( pxsFmt( L"Multitap%u_Slot%u_Filename", mtport, mtslot ),
-			Mcd[slot].Filename, Mcd[slot].Filename );
+		wrap.Entry("MemoryCards", StringUtil::StdStringFromFormat("Multitap%u_Slot%u_Enable", mtport, mtslot).c_str(),
+			Mcd[slot].Enabled, Mcd[slot].Enabled);
+		wrap.Entry("MemoryCards", StringUtil::StdStringFromFormat("Multitap%u_Slot%u_Filename", mtport, mtslot).c_str(),
+			Mcd[slot].Filename, Mcd[slot].Filename);
 	}
 }
 
-bool Pcsx2Config::MultitapEnabled( uint port ) const
+bool Pcsx2Config::MultitapEnabled(uint port) const
 {
-	pxAssert( port < 2 );
-	return (port==0) ? MultitapPort0_Enabled : MultitapPort1_Enabled;
-}
-
-void Pcsx2Config::Load( const wxString& srcfile )
-{
-	//m_IsLoaded = true;
-
-	wxFileConfig cfg( srcfile );
-	IniLoader loader( cfg );
-	LoadSave( loader );
-}
-
-void Pcsx2Config::Save( const wxString& dstfile )
-{
-	//if( !m_IsLoaded ) return;
-
-	wxFileConfig cfg( dstfile );
-	IniSaver saver( cfg );
-	LoadSave( saver );
+	pxAssert(port < 2);
+	return (port == 0) ? MultitapPort0_Enabled : MultitapPort1_Enabled;
 }
 
 wxString Pcsx2Config::FullpathToBios() const

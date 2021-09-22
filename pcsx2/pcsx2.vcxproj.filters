@@ -1661,6 +1661,9 @@
     <ClCompile Include="MemoryCardFolder.cpp">
       <Filter>System\Ps2\Iop</Filter>
     </ClCompile>
+    <ClCompile Include="gui\wxSettingsInterface.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2760,6 +2763,9 @@
     </ClInclude>
     <ClInclude Include="Host.h">
       <Filter>System\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\wxSettingsInterface.h">
+      <Filter>AppHost</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

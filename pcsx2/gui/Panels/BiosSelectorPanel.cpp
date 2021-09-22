@@ -203,7 +203,7 @@ void Panels::BiosSelectorPanel::OnEnumComplete(wxCommandEvent& evt)
 	if (m_EnumeratorThread.get() != enumThread || m_BiosList->size() < enumThread->Result.size())
 		return;
 
-	const wxFileName& currentBios = g_Conf->EmuOptions.FullpathToBios();
+	const wxFileName currentBios = g_Conf->EmuOptions.FullpathToBios();
 	m_ComboBox->Clear(); // Clear the "Enumerating BIOSes..."
 
 	for (const std::pair<wxString, u32>& result : enumThread->Result)

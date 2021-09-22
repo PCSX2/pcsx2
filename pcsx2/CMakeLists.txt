@@ -1037,6 +1037,7 @@ set(pcsx2GuiSources
 	gui/ThreadingDialogs.cpp
 	gui/UpdateUI.cpp
 	gui/wxAppWithHelpers.cpp
+	gui/wxSettingsInterface.cpp
 	)
 
 # gui headers
@@ -1082,6 +1083,7 @@ set(pcsx2GuiHeaders
 	gui/Saveslots.h
 	gui/ThreadingDialogs.h
 	gui/ThreadingDialogs.cpp
+	gui/wxSettingsInterface.cpp
 	)
 
 # Warning: the declaration of the .h are mandatory in case of resources files. It will ensure the creation

@@ -18,6 +18,8 @@
 #include "MainFrame.h"
 
 #include "common/IniInterface.h"
+#include "common/SettingsWrapper.h"
+#include "wxSettingsInterface.h"
 
 #include <wx/stdpaths.h>
 #include "DebugTools/Debug.h"
@@ -549,28 +551,28 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 }
 
 // ------------------------------------------------------------------------
-void AppConfig::LoadSave( IniInterface& ini )
+void AppConfig::LoadSave(IniInterface& ini, SettingsWrapper& wrap)
 {
+	// do all the wx stuff first so it doesn't screw with the wrapper's path
 	LoadSaveRootItems( ini );
-	EmuOptions.LoadSaveMemcards( ini );
+	ProgLogBox.LoadSave(ini, L"ProgramLog");
+	Folders.LoadSave(ini);
 
-	// Process various sub-components:
-	ProgLogBox		.LoadSave( ini, L"ProgramLog" );
-
-	Folders			.LoadSave( ini );
-
-  // sync the EmuOptions folders with what we loaded. what a mess this is....
+	// sync the EmuOptions folders with what we loaded. what a mess this is....
 	if (ini.IsLoading())
 		EmuOptions.Folders = EmuConfig.Folders;
 
-	EmuOptions.BaseFilenames.LoadSave( ini );
-	GSWindow		.LoadSave( ini );
-	EmuOptions.Framerate		.LoadSave( ini );
+	GSWindow.LoadSave(ini);
 #ifndef DISABLE_RECORDING
 	inputRecording.loadSave(ini);
 #endif
-	AudioCapture.LoadSave( ini );
-	Templates		.LoadSave( ini );
+	AudioCapture.LoadSave(ini);
+	Templates.LoadSave(ini);
+
+	// Process various sub-components:
+	EmuOptions.LoadSaveMemcards(wrap);
+	EmuOptions.BaseFilenames.LoadSave(wrap);
+	EmuOptions.Framerate		.LoadSave(wrap);
 
 	ini.Flush();
 }
@@ -1115,8 +1117,10 @@ static void LoadUiSettings()
 	ConLog_LoadSaveSettings( loader );
 	SysTraceLog_LoadSaveSettings( loader );
 
+	wxSettingsInterface wxsi(&loader.GetConfig());
+	SettingsLoadWrapper wrapper(wxsi);
 	g_Conf = std::make_unique<AppConfig>();
-	g_Conf->LoadSave( loader );
+	g_Conf->LoadSave( loader, wrapper );
 
 	if( !wxFile::Exists( EmuConfig.CurrentIso ) )
 	{
@@ -1132,8 +1136,10 @@ static void LoadVmSettings()
 	// are regulated by the PCSX2 UI.
 
 	std::unique_ptr<wxFileConfig> vmini( OpenFileConfig( GetVmSettingsFilename() ) );
-	IniLoader vmloader( vmini.get() );
-	g_Conf->EmuOptions.LoadSave( vmloader );
+	wxSettingsInterface wxsi(vmini.get());
+	IniLoader vmloader(vmini.get());
+	SettingsLoadWrapper vmwrapper(wxsi);
+	g_Conf->EmuOptions.LoadSave( vmwrapper );
 	g_Conf->EmuOptions.GS.LimitScalar = g_Conf->EmuOptions.Framerate.NominalScalar;
 
 	if (g_Conf->EnablePresets){
@@ -1161,7 +1167,9 @@ static void SaveUiSettings()
 	sApp.GetRecentIsoManager().Add( EmuConfig.CurrentIso );
 
 	AppIniSaver saver;
-	g_Conf->LoadSave( saver );
+	wxSettingsInterface wxsi(&saver.GetConfig());
+	SettingsSaveWrapper wrapper(wxsi);
+	g_Conf->LoadSave( saver, wrapper );
 	ConLog_LoadSaveSettings( saver );
 	SysTraceLog_LoadSaveSettings( saver );
 
@@ -1171,8 +1179,10 @@ static void SaveUiSettings()
 static void SaveVmSettings()
 {
 	std::unique_ptr<wxFileConfig> vmini( OpenFileConfig( GetVmSettingsFilename() ) );
-	IniSaver vmsaver( vmini.get() );
-	g_Conf->EmuOptions.LoadSave( vmsaver );
+	wxSettingsInterface wxsi(vmini.get());
+	IniSaver vmsaver(vmini.get());
+	SettingsSaveWrapper vmwrapper(wxsi);
+	g_Conf->EmuOptions.LoadSave(vmwrapper);
 
 	sApp.DispatchVmSettingsEvent( vmsaver );
 }
