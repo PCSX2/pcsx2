@@ -320,6 +320,7 @@
     <ClCompile Include="gui\pxRadioPanel.cpp" />
     <ClCompile Include="gui\ThreadingDialogs.cpp" />
     <ClCompile Include="gui\wxAppWithHelpers.cpp" />
+    <ClCompile Include="gui\wxSettingsInterface.cpp" />
     <ClCompile Include="IopGte.cpp" />
     <ClCompile Include="IPC.cpp" />
     <ClCompile Include="FW.cpp" />
@@ -767,6 +768,7 @@
     <ClInclude Include="gui\Panels\MemoryCardPanels.h" />
     <ClInclude Include="gui\ThreadingDialogs.h" />
     <ClInclude Include="gui\wxAppWithHelpers.h" />
+    <ClInclude Include="gui\wxSettingsInterface.h" />
     <ClInclude Include="Host.h" />
     <ClInclude Include="IopGte.h" />
     <ClInclude Include="IPC.h" />
