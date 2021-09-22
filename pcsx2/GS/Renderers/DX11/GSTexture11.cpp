@@ -139,7 +139,7 @@ bool GSTexture11::Save(const std::string& fn)
 		{
 			return false;
 		}
-		auto unmap_res = wil::scope_exit([&]{
+		auto unmap_res = wil::scope_exit([this, res]{ // Capture by value to preserve the original pointer
 			m_ctx->Unmap(res.get(), 0);
 		});
 
@@ -148,18 +148,18 @@ bool GSTexture11::Save(const std::string& fn)
 		{
 			return false;
 		}
-		auto unmap_dst = wil::scope_exit([&]{
+		auto unmap_dst = wil::scope_exit([this, dst]{ // Capture by value to preserve the original pointer
 			m_ctx->Unmap(dst.get(), 0);
 		});
 
-		uint8* s = static_cast<uint8*>(sm.pData);
+		const uint8* s = static_cast<const uint8*>(sm.pData);
 		uint8* d = static_cast<uint8*>(dm.pData);
 
 		for (uint32 y = 0; y < desc.Height; y++, s += sm.RowPitch, d += dm.RowPitch)
 		{
 			for (uint32 x = 0; x < desc.Width; x++)
 			{
-				reinterpret_cast<uint32*>(d)[x] = static_cast<uint32>(ldexpf(reinterpret_cast<float*>(s)[x * 2], 32));
+				reinterpret_cast<uint32*>(d)[x] = static_cast<uint32>(ldexpf(reinterpret_cast<const float*>(s)[x * 2], 32));
 			}
 		}
 
