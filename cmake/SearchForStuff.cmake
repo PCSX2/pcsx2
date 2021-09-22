@@ -259,6 +259,7 @@ else()
 endif()
 
 add_subdirectory(3rdparty/glad EXCLUDE_FROM_ALL)
+add_subdirectory(3rdparty/simpleini EXCLUDE_FROM_ALL)
 
 if(CUBEB_API)
 	add_subdirectory(3rdparty/cubeb EXCLUDE_FROM_ALL)
