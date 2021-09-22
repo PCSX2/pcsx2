@@ -65,7 +65,7 @@ static void xCopy64(u64* dst, u64* src)
 
 static void xCMPToZero64(u64* mem)
 {
-#ifndef __M_X86_64
+#ifdef __M_X86_64
 	xCMP(ptr64[mem], 0);
 #else
 	xMOV(eax, ptr32[(u32*)mem]);
