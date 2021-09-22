@@ -29,6 +29,7 @@ target_sources(common PRIVATE
 	pxWindowTextWriter.cpp
 	RwMutex.cpp
 	Semaphore.cpp
+	SettingsWrapper.cpp
 	StringHelpers.cpp
 	StringUtil.cpp
 	ThreadTools.cpp
@@ -80,6 +81,8 @@ target_sources(common PRIVATE
 	SafeArray.h
 	ScopedAlloc.h
 	ScopedPtrMT.h
+	SettingsInterface.h
+	SettingsWrapper.h
 	StringHelpers.h
 	StringUtil.h
 	Threading.h

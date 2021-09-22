@@ -53,6 +53,7 @@
     <ClCompile Include="pxTranslate.cpp" />
     <ClCompile Include="pxWindowTextWriter.cpp" />
     <ClCompile Include="StringUtil.cpp" />
+    <ClCompile Include="SettingsWrapper.cpp" />
     <ClCompile Include="VirtualMemory.cpp" />
     <ClCompile Include="x86\MemcpyFast.cpp" />
     <ClCompile Include="PathUtils.cpp" />
@@ -101,6 +102,8 @@
     <ClInclude Include="FastJmp.h" />
     <ClInclude Include="ScopedAlloc.h" />
     <ClInclude Include="StringUtil.h" />
+    <ClInclude Include="SettingsInterface.h" />
+    <ClInclude Include="SettingsWrapper.h" />
     <ClInclude Include="ThreadingInternal.h" />
     <ClInclude Include="Assertions.h" />
     <ClInclude Include="Console.h" />
