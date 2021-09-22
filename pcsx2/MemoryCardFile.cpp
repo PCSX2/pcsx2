@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "common/SafeArray.inl"
+#include "common/StringUtil.h"
 #include <wx/file.h>
 #include <wx/dir.h>
 #include <wx/stopwatch.h>
@@ -254,12 +255,12 @@ wxFileName FileMcd_GetSimpleName(uint slot)
 		return g_Conf->Folders.MemoryCards + wxsFormat( L"Mcd%03u.ps2", slot+1 );
 }
 */
-wxString FileMcd_GetDefaultName(uint slot)
+std::string FileMcd_GetDefaultName(uint slot)
 {
 	if (FileMcd_IsMultitapSlot(slot))
-		return wxsFormat(L"Mcd-Multitap%u-Slot%02u.ps2", FileMcd_GetMtapPort(slot) + 1, FileMcd_GetMtapSlot(slot) + 1);
+		return StringUtil::StdStringFromFormat("Mcd-Multitap%u-Slot%02u.ps2", FileMcd_GetMtapPort(slot) + 1, FileMcd_GetMtapSlot(slot) + 1);
 	else
-		return wxsFormat(L"Mcd%03u.ps2", slot + 1);
+		return StringUtil::StdStringFromFormat("Mcd%03u.ps2", slot + 1);
 }
 
 FileMemoryCard::FileMemoryCard()

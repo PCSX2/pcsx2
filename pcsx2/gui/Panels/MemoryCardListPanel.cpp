@@ -549,14 +549,14 @@ void Panels::MemoryCardListPanel_Simple::Apply()
 		g_Conf->EmuOptions.Mcd[slot].Type = m_Cards[slot].Type;
 		g_Conf->EmuOptions.Mcd[slot].Enabled = m_Cards[slot].IsEnabled && m_Cards[slot].IsPresent;
 		if (m_Cards[slot].IsPresent)
-			g_Conf->EmuOptions.Mcd[slot].Filename = m_Cards[slot].Filename;
+			g_Conf->EmuOptions.Mcd[slot].Filename = m_Cards[slot].Filename.GetFullName();
 		else
-			g_Conf->EmuOptions.Mcd[slot].Filename = L"";
+			g_Conf->EmuOptions.Mcd[slot].Filename.clear();
 
 		if (g_Conf->EmuOptions.Mcd[slot].Enabled)
 		{
 			used++;
-			Console.WriteLn(L"slot[%d]='%s'", slot, WX_STR(g_Conf->EmuOptions.Mcd[slot].Filename.GetFullName()));
+			Console.WriteLn("slot[%d]='%s'", slot, g_Conf->EmuOptions.Mcd[slot].Filename.c_str());
 		}
 	}
 	if (!used)

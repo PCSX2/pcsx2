@@ -435,28 +435,15 @@ void Pcsx2Config::DebugOptions::LoadSave( IniInterface& ini )
 	IniBitfield( MemoryViewBytesPerRow );
 }
 
+Pcsx2Config::FilenameOptions::FilenameOptions()
+{
+}
+
 void Pcsx2Config::FilenameOptions::LoadSave(IniInterface& ini)
 {
 	ScopedIniGroup path(ini, L"Filenames");
 
-	static const wxFileName pc(L"Please Configure");
-
-	//when saving in portable mode, we just save the non-full-path filename
-	//  --> on load they'll be initialized with default (relative) paths (works for bios)
-	//note: this will break if converting from install to portable, and custom folders are used. We can live with that.
-#ifndef PCSX2_CORE
-	bool needRelativeName = ini.IsSaving() && IsPortable();
-#else
-	bool needRelativeName = ini.IsSaving();
-#endif
-
-	if (needRelativeName)
-	{
-		wxFileName bios_filename = wxFileName(Bios.GetFullName());
-		ini.Entry(L"BIOS", bios_filename, pc);
-	}
-	else
-		ini.Entry(L"BIOS", Bios, pc);
+	ini.Entry(L"BIOS", Bios, Bios);
 }
 
 Pcsx2Config::FolderOptions::FolderOptions()
@@ -620,12 +607,12 @@ void Pcsx2Config::Save( const wxString& dstfile )
 
 wxString Pcsx2Config::FullpathToBios() const
 {
-	return Path::Combine(Folders.Bios, BaseFilenames.Bios);
+	return Path::Combine(Folders.Bios, wxString(BaseFilenames.Bios));
 }
 
 wxString Pcsx2Config::FullpathToMcd(uint slot) const
 {
-	return Path::Combine(Folders.MemoryCards, Mcd[slot].Filename);
+	return Path::Combine(Folders.MemoryCards, wxString(Mcd[slot].Filename));
 }
 
 void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)

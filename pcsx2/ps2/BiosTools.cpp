@@ -258,7 +258,7 @@ void LoadBIOS()
 	try
 	{
 		wxString Bios( EmuConfig.FullpathToBios() );
-		if( !EmuConfig.BaseFilenames.Bios.IsOk() || EmuConfig.BaseFilenames.Bios.IsDir() )
+		if( EmuConfig.BaseFilenames.Bios.empty() )
 			throw Exception::FileNotFound( Bios )
 				.SetDiagMsg(L"BIOS has not been configured, or the configuration has been corrupted.")
 				.SetUserMsg(_("The PS2 BIOS could not be loaded.  The BIOS has not been configured, or the configuration has been corrupted.  Please re-configure."));

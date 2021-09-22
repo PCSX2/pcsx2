@@ -18,7 +18,6 @@
 #include "common/emitter/tools.h"
 #include "common/General.h"
 #include "common/Path.h"
-#include <wx/filename.h>
 #include <string>
 
 class IniInterface;
@@ -514,8 +513,9 @@ struct Pcsx2Config
 	// ------------------------------------------------------------------------
 	struct FilenameOptions
 	{
-		wxFileName Bios;
+		std::string Bios;
 
+		FilenameOptions();
 		void LoadSave(IniInterface& conf);
 
 		bool operator==(const FilenameOptions& right) const
@@ -534,7 +534,7 @@ struct Pcsx2Config
 	//
 	struct McdOptions
 	{
-		wxFileName	Filename;	// user-configured location of this memory card
+		std::string	Filename;	// user-configured location of this memory card
 		bool		Enabled;	// memory card enabled (if false, memcard will not show up in-game)
 		MemoryCardType Type;	// the memory card implementation that should be used
 	};
@@ -608,6 +608,7 @@ struct Pcsx2Config
 	void Save( const wxString& dstfile );
 	void Save( const wxOutputStream& deststream );
 
+	// TODO: Make these std::string when we remove wxFile...
 	wxString FullpathToBios() const;
 	wxString FullpathToMcd(uint slot) const;
 
