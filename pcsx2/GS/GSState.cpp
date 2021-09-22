@@ -908,7 +908,7 @@ void GSState::ApplyTEX0(GIFRegTEX0& TEX0)
 
 	// clut loading already covered with WriteTest, for drawing only have to check CPSM and CSA (MGS3 intro skybox would be drawn piece by piece without this)
 
-	uint64 mask = 0x1f78001c3fffffffull; // TBP0 TBW PSM TW TCC TFX CPSM CSA
+	uint64 mask = 0x1f78001fffffffffull; // TBP0 TBW PSM TW TH TCC TFX CPSM CSA
 
 	if (wt || PRIM->CTXT == i && ((TEX0.u64 ^ m_env.CTXT[i].TEX0.u64) & mask))
 	{
