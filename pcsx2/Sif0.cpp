@@ -182,9 +182,12 @@ static __fi void EndIOP()
 		DevCon.Warning("SIF0 IOP: cycles = 0");
 		sif0.iop.cycles = 1;
 	}
-	// iop is 1/8th the clock rate of the EE and psxcycles is in words (not quadwords)
-	// So when we're all done, the equation looks like thus:
-	//PSX_INT(IopEvt_SIF0, ( ( sif0.iop.cycles*BIAS ) / 4 ) / 8);
+	// Hack alert
+	// Parappa the rapper hates SIF0 taking the length of time it should do on bigger packets
+	// I logged it and couldn't work out why, changing any other SIF timing (EE or IOP) seems to have no effect.
+	if (sif0.iop.cycles > 1000)
+		sif0.iop.cycles >>= 1; //2 word per cycle
+
 	PSX_INT(IopEvt_SIF0, sif0.iop.cycles);
 }
 

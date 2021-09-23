@@ -554,7 +554,7 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 					new_source = "None";
 					break;
 				}
-				DevCon.Warning("32bit Stall Source Changed to %s", new_source.c_str());
+				//DevCon.Warning("32bit Stall Source Changed to %s", new_source.c_str());
 			}
 			if ((oldvalue & 0xC0) != (value & 0xC0))
 			{
@@ -575,7 +575,7 @@ __fi bool dmacWrite32( u32 mem, mem32_t& value )
 					new_dest = "None";
 					break;
 				}
-				DevCon.Warning("32bit Stall Destination Changed to %s", new_dest.c_str());
+				//DevCon.Warning("32bit Stall Destination Changed to %s", new_dest.c_str());
 			}
 #endif
 			return false;
