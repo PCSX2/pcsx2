@@ -6549,6 +6549,8 @@ SLAJ-25012:
 SLAJ-25014:
   name: "Cyber Troopers - Virtual-On Marz"
   region: "NTSC-Unk"
+  clampModes:
+    eeClampMode: 2 # Fixes white shadows.
 SLAJ-25016:
   name: "Sangokushi Senki 2"
   region: "NTSC-Unk"
@@ -19307,6 +19309,11 @@ SLPM-61011:
 SLPM-61018:
   name: "Abarenbou Princess [Trial]"
   region: "NTSC-J"
+SLPM-61046:  
+  name: "Dennou Senki - Virtual-On Marz [Trial]"
+  region: "NTSC-J"
+  clampModes:
+    eeClampMode: 2 # Fixes white shadows.
 SLPM-61051:
   name: "Dengeki PS2 D61"
   region: "NTSC-J"
@@ -21227,6 +21234,8 @@ SLPM-62766:
 SLPM-62767:
   name: "Sega Ages 2500 Vol.31 - Dennou Senki Virtual On"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 2 # Fixes white shadows.
 SLPM-62770:
   name: "Volleyball World Cup - Venus Evolution"
   region: "NTSC-J"
@@ -22164,8 +22173,10 @@ SLPM-65302:
   name: "Torakapuu! Dash"
   region: "NTSC-J"
 SLPM-65303:
-  name: "Dennou Senki Virtual-On - Marz"
+  name: "Dennou Senki - Virtual-On Marz"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 2 # Fixes white shadows.
 SLPM-65305:
   name: "Genso Suikoden 3"
   region: "NTSC-J"
@@ -27762,8 +27773,10 @@ SLPM-74420:
   name: "Initial D - Street Stage [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74421:
-  name: "Virtual On - Marz [PlayStation 2 The Best]"
+  name: "Dennou Senki - Virtual-On Marz [PlayStation 2 The Best]"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 2 # Fixes white shadows.
 SLPS-20001:
   name: "Ridge Racer V"
   region: "NTSC-J"
@@ -34969,9 +34982,11 @@ SLUS-20673:
   region: "NTSC-U"
   compat: 5
 SLUS-20674:
-  name: "Cyber Troopers: Virtual-On Marz"
+  name: "Cyber Troopers - Virtual-On Marz"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    eeClampMode: 2 # Fixes white shadows.
 SLUS-20675:
   name: "Baldur's Gate: Dark Alliance II"
   region: "NTSC-U"
