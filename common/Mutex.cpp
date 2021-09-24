@@ -15,7 +15,6 @@
 
 #include "common/Threading.h"
 #include "common/wxBaseTools.h"
-#include "common/wxGuiTools.h"
 #include "common/ThreadingInternal.h"
 
 namespace Threading
@@ -205,7 +204,6 @@ void Threading::Mutex::Acquire()
 	}
 	else if (_WaitGui_RecursionGuard(L"Mutex::Acquire"))
 	{
-		ScopedBusyCursor hourglass(Cursor_ReallyBusy);
 		pthread_mutex_lock(&m_mutex);
 	}
 	else
@@ -228,7 +226,6 @@ bool Threading::Mutex::Acquire(const wxTimeSpan& timeout)
 	}
 	else if (_WaitGui_RecursionGuard(L"Mutex::TimedAcquire"))
 	{
-		ScopedBusyCursor hourglass(Cursor_ReallyBusy);
 		return AcquireWithoutYield(timeout);
 	}
 	else

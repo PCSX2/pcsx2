@@ -67,16 +67,10 @@
     <ClCompile Include="PrecompiledHeader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="pxStaticText.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="pxStreams.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pxTranslate.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="pxWindowTextWriter.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="RwMutex.cpp">
@@ -107,12 +101,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Windows\WinThreads.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="wxGuiTools.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="wxHelpers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="emitter\x86emitter.cpp">
@@ -210,9 +198,6 @@
     <ClInclude Include="PrecompiledHeader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="pxStaticText.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="RedtapeWindows.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -256,9 +241,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="wxBaseTools.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="wxGuiTools.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="emitter\x86emitter.h">

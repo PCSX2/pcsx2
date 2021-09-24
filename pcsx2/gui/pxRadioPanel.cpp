@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "gui/pxRadioPanel.h"
-#include "common/pxStaticText.h"
+#include "gui/pxStaticText.h"
 #include "common/SafeArray.inl"
 
 template class SafeArray<RadioPanelObjects>;

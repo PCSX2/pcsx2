@@ -1664,6 +1664,14 @@
     <ClCompile Include="gui\wxSettingsInterface.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
+    <ClCompile Include="gui\wxGuiTools.cpp" />
+    <ClCompile Include="gui\wxHelpers.cpp" />
+    <ClCompile Include="gui\pxStaticText.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\pxWindowTextWriter.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2765,6 +2773,10 @@
       <Filter>System\Include</Filter>
     </ClInclude>
     <ClInclude Include="gui\wxSettingsInterface.h">
+      <Filter>AppHost</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\wxGuiTools.h" />
+    <ClInclude Include="gui\pxStaticText.h">
       <Filter>AppHost</Filter>
     </ClInclude>
   </ItemGroup>

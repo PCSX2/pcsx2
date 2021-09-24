@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "gui/pxCheckBox.h"
-#include "common/pxStaticText.h"
+#include "gui/pxStaticText.h"
 
 using namespace pxSizerFlags;
 

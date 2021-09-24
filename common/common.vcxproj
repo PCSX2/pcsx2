@@ -51,7 +51,6 @@
     <ClCompile Include="IniInterface.cpp" />
     <ClCompile Include="pxStreams.cpp" />
     <ClCompile Include="pxTranslate.cpp" />
-    <ClCompile Include="pxWindowTextWriter.cpp" />
     <ClCompile Include="StringUtil.cpp" />
     <ClCompile Include="SettingsWrapper.cpp" />
     <ClCompile Include="VirtualMemory.cpp" />
@@ -61,10 +60,7 @@
     <ClCompile Include="PrecompiledHeader.cpp">
       <PrecompiledHeader>Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="pxStaticText.cpp" />
     <ClCompile Include="StringHelpers.cpp" />
-    <ClCompile Include="wxGuiTools.cpp" />
-    <ClCompile Include="wxHelpers.cpp" />
     <ClCompile Include="Linux\LnxHostSys.cpp" />
     <ClCompile Include="Linux\LnxMisc.cpp" />
     <ClCompile Include="Linux\LnxThreads.cpp" />
@@ -115,12 +111,10 @@
     <ClInclude Include="MemcpyFast.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="PrecompiledHeader.h" />
-    <ClInclude Include="pxStaticText.h" />
     <ClInclude Include="RedtapeWindows.h" />
     <ClInclude Include="SafeArray.h" />
     <ClInclude Include="StringHelpers.h" />
     <ClInclude Include="wxBaseTools.h" />
-    <ClInclude Include="wxGuiTools.h" />
     <ClInclude Include="Threading.h" />
     <ClInclude Include="PersistentThread.h" />
     <ClInclude Include="RwMutex.h" />

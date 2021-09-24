@@ -13,9 +13,11 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
+
 #include <wx/wizard.h>
-#include "common/pxStaticText.h"
 #include "common/Assertions.h"
+#include "gui/pxStaticText.h"
 
 // --------------------------------------------------------------------------------------
 //  pxStaticText  (implementations)

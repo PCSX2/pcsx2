@@ -1031,12 +1031,16 @@ set(pcsx2GuiSources
 	gui/Panels/VideoPanel.cpp
 	gui/pxCheckBox.cpp
 	gui/pxRadioPanel.cpp
+	gui/pxStaticText.cpp
+	gui/pxWindowTextWriter.cpp
 	gui/RecentIsoList.cpp
 	gui/Saveslots.cpp
 	gui/SysState.cpp
 	gui/ThreadingDialogs.cpp
 	gui/UpdateUI.cpp
 	gui/wxAppWithHelpers.cpp
+	gui/wxGuiTools.cpp
+	gui/wxHelpers.cpp
 	gui/wxSettingsInterface.cpp
 	)
 
@@ -1079,11 +1083,13 @@ set(pcsx2GuiHeaders
 	gui/pxEvents.h
 	gui/pxEventThread.h
 	gui/pxRadioPanel.h
+	gui/pxStaticText.h
 	gui/RecentIsoList.h
 	gui/Saveslots.h
 	gui/ThreadingDialogs.h
 	gui/ThreadingDialogs.cpp
-	gui/wxSettingsInterface.cpp
+	gui/wxGuiTools.h
+	gui/wxSettingsInterface.h
 	)
 
 # Warning: the declaration of the .h are mandatory in case of resources files. It will ensure the creation

@@ -13,9 +13,11 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#include "PrecompiledHeader.h"
+
 #include <wx/wx.h>
-#include "common/wxGuiTools.h"
 #include "common/StringHelpers.h"
+#include "gui/wxGuiTools.h"
 
 // --------------------------------------------------------------------------------------
 //  pxWindowTextWriter  Implementations

@@ -17,7 +17,7 @@
 
 #include <wx/wx.h>
 #include "common/SafeArray.h"
-#include "common/wxGuiTools.h"
+#include "gui/wxGuiTools.h"
 
 // --------------------------------------------------------------------------------------
 //  RadioPanelItem

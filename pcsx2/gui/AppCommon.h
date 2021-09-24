@@ -19,10 +19,10 @@
 #include "common/EventSource.h"
 #include "common/PersistentThread.h"
 
-#include "common/wxGuiTools.h"
+#include "gui/wxGuiTools.h"
 #include "gui/pxRadioPanel.h"
 #include "gui/pxCheckBox.h"
-#include "common/pxStaticText.h"
+#include "gui/pxStaticText.h"
 #include "gui/CheckedStaticBox.h"
 
 #include "AppForwardDefs.h"
