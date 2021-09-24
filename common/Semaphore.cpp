@@ -17,7 +17,6 @@
 
 #include "common/Threading.h"
 #include "common/wxBaseTools.h"
-#include "common/wxGuiTools.h"
 #include "common/ThreadingInternal.h"
 
 // --------------------------------------------------------------------------------------
@@ -87,7 +86,6 @@ void Threading::Semaphore::Wait()
 	}
 	else if (_WaitGui_RecursionGuard(L"Semaphore::Wait"))
 	{
-		ScopedBusyCursor hourglass(Cursor_ReallyBusy);
 		sem_wait(&m_sema);
 	}
 	else
@@ -119,7 +117,6 @@ bool Threading::Semaphore::Wait(const wxTimeSpan& timeout)
 	}
 	else if (_WaitGui_RecursionGuard(L"Semaphore::TimedWait"))
 	{
-		ScopedBusyCursor hourglass(Cursor_ReallyBusy);
 		return WaitWithoutYield(timeout);
 	}
 	else

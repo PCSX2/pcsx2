@@ -318,6 +318,8 @@
     <ClCompile Include="gui\Panels\MemoryCardListView.cpp" />
     <ClCompile Include="gui\pxCheckBox.cpp" />
     <ClCompile Include="gui\pxRadioPanel.cpp" />
+    <ClCompile Include="gui\pxStaticText.cpp" />
+    <ClCompile Include="gui\pxWindowTextWriter.cpp" />
     <ClCompile Include="gui\ThreadingDialogs.cpp" />
     <ClCompile Include="gui\wxAppWithHelpers.cpp" />
     <ClCompile Include="gui\wxSettingsInterface.cpp" />
@@ -667,6 +669,8 @@
     <ClCompile Include="gui\MSWstuff.cpp" />
     <ClCompile Include="gui\RecentIsoList.cpp" />
     <ClCompile Include="gui\UpdateUI.cpp" />
+    <ClCompile Include="gui\wxGuiTools.cpp" />
+    <ClCompile Include="gui\wxHelpers.cpp" />
     <ClCompile Include="gui\Dialogs\AboutBoxDialog.cpp" />
     <ClCompile Include="gui\Dialogs\AssertionDialog.cpp" />
     <ClCompile Include="gui\Dialogs\BaseConfigurationDialog.cpp" />
@@ -757,6 +761,7 @@
     <ClInclude Include="gui\pxCheckBox.h" />
     <ClInclude Include="gui\pxEvents.h" />
     <ClInclude Include="gui\pxRadioPanel.h" />
+    <ClInclude Include="gui\pxStaticText.h" />
     <ClInclude Include="gui\Saveslots.h" />
     <ClInclude Include="gui\Debugger\BreakpointWindow.h" />
     <ClInclude Include="gui\Debugger\CtrlDisassemblyView.h" />
@@ -1087,6 +1092,7 @@
     <ClInclude Include="gui\MainFrame.h" />
     <ClInclude Include="gui\pxEventThread.h" />
     <ClInclude Include="gui\RecentIsoList.h" />
+    <ClInclude Include="gui\wxGuiTools.h" />
     <ClInclude Include="PathDefs.h" />
     <ClInclude Include="SysForwardDefs.h" />
     <ClInclude Include="cheatscpp.h" />

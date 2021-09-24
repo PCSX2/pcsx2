@@ -38,13 +38,45 @@ ConsoleLogSource_App::ConsoleLogSource_App()
 
 ConsoleLogSource_App pxConLog_App;
 
+// --------------------------------------------------------------------------------------
+//  BaseDeletableObject Implementation
+// --------------------------------------------------------------------------------------
+// This code probably deserves a better home.  It's general purpose non-GUI code (the single
+// wxApp/Gui dependency is in wxGuiTools.cpp for now).
+//
+bool BaseDeletableObject::MarkForDeletion()
+{
+	return !m_IsBeingDeleted.exchange(true);
+}
+
+void BaseDeletableObject::DeleteSelf()
+{
+	if (MarkForDeletion())
+		DoDeletion();
+}
+
+BaseDeletableObject::BaseDeletableObject()
+{
+#ifdef _MSC_VER
+	// Bleh, this fails because _CrtIsValidHeapPointer calls HeapValidate on the
+	// pointer, but the pointer is a virtual base class, so it's not a valid block. >_<
+	//pxAssertDev( _CrtIsValidHeapPointer( this ), "BaseDeletableObject types cannot be created on the stack or as temporaries!" );
+#endif
+
+	m_IsBeingDeleted.store(false, std::memory_order_relaxed);
+}
+
+BaseDeletableObject::~BaseDeletableObject()
+{
+	AffinityAssert_AllowFrom_MainUI();
+}
+
 void BaseDeletableObject::DoDeletion()
 {
 	wxAppWithHelpers* app = wxDynamicCast(wxApp::GetInstance(), wxAppWithHelpers);
 	pxAssert(app != NULL);
 	app->DeleteObject(*this);
 }
-
 
 // --------------------------------------------------------------------------------------
 //  SynchronousActionState Implementations

@@ -16,7 +16,7 @@
 #pragma once
 
 #include <wx/wx.h>
-#include "common/wxGuiTools.h"
+#include "gui/wxGuiTools.h"
 
 // -------------------------------------------------------------------------------------
 //  pxCheckBox

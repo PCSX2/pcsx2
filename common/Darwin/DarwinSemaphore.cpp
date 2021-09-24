@@ -28,7 +28,6 @@
 #include "common/Threading.h"
 #include "common/ThreadingInternal.h"
 #include "common/wxBaseTools.h"
-#include "common/wxGuiTools.h"
 
 // --------------------------------------------------------------------------------------
 //  Semaphore Implementation for Darwin/OSX
@@ -167,7 +166,6 @@ void Threading::Semaphore::Wait()
 	}
 	else if (_WaitGui_RecursionGuard(L"Semaphore::Wait"))
 	{
-		ScopedBusyCursor hourglass(Cursor_ReallyBusy);
 		WaitWithoutYield();
 	}
 	else
@@ -200,12 +198,10 @@ bool Threading::Semaphore::Wait(const wxTimeSpan& timeout)
 	}
 	else if (_WaitGui_RecursionGuard(L"Semaphore::TimedWait"))
 	{
-		ScopedBusyCursor hourglass(Cursor_ReallyBusy);
 		return WaitWithoutYield(timeout);
 	}
 	else
 	{
-		//ScopedBusyCursor hourglass( Cursor_KindaBusy );
 		wxTimeSpan countdown((timeout));
 
 		do
