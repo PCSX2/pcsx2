@@ -107,15 +107,22 @@ These modes can be specified either on the **EE** (`eeRoundMode`) or **VU** (`vu
 
 The clamp modes are also numerically based.
 
-*   `eeClampMode` refers to the EE's FPU co-processor
-*   `vuClampMode` refers to the VU's and COP2 (VU0 Macro-mode)
+*   `eeClampMode` refers to the EE's FPU co-processor and COP2
+*   `vuClampMode` refers to the VU's in micro mode
 
-### Options for clamping
+### eeClampMode
+
+*   `0` = **Disables** clamping completely
+*   `1` = Clamp **Normally** (only clamp results)
+*   `2` = Clamp **Extra+Preserve Sign** (clamp results as well as operands)
+*   `3` = **Full Clamping** for FPU
+
+### vuClampMode
 
 *   `0` = **Disables** clamping completely
 *   `1` = Clamp **Normally** (only clamp results)
 *   `2` = Clamp **Extra** (clamp results as well as operands)
-*   `3` = **Full Clamping** for FPU / Extra+Preserve Sign Clamping for VU
+*   `3` = Clamp **Extra+Preserve Sign**
 
 ## Game Fixes
 
