@@ -18,7 +18,6 @@
 #include "Dialogs.h"
 
 #include <xaudio2.h>
-#include <cguid.h>
 #include <memory>
 #include <sstream>
 #include <stdexcept>
@@ -28,15 +27,17 @@
 #include <wil/resource.h>
 #include <wil/win32_helpers.h>
 
+//#define XAUDIO2_DEBUG
+
 namespace Exception
 {
 	class XAudio2Error final : public std::runtime_error
 	{
 	private:
-		static std::string CreateErrorMessage(const HRESULT result, const std::string& msg)
+		static std::string CreateErrorMessage(const HRESULT result, const std::string_view msg)
 		{
 			std::stringstream ss;
-			ss << " (code 0x" << std::hex << result << ")\n\n";
+			ss << msg << " (code 0x" << std::hex << result << ")\n\n";
 			switch (result)
 			{
 				case XAUDIO2_E_INVALID_CALL:
@@ -49,18 +50,16 @@ namespace Exception
 					ss << "Unknown error code!";
 					break;
 			}
-			return msg + ss.str();
+			return ss.str();
 		}
 
 	public:
-		explicit XAudio2Error(const HRESULT result, const std::string& msg)
+		explicit XAudio2Error(const HRESULT result, const std::string_view msg)
 			: std::runtime_error(CreateErrorMessage(result, msg))
 		{
 		}
 	};
 } // namespace Exception
-
-static const double SndOutNormalizer = (double)(1UL << (SndOutVolumeShift + 16));
 
 class XAudio2Mod final : public SndOutModule
 {
@@ -71,7 +70,7 @@ private:
 	class BaseStreamingVoice : public IXAudio2VoiceCallback
 	{
 	protected:
-		IXAudio2SourceVoice* pSourceVoice;
+		IXAudio2SourceVoice* pSourceVoice = nullptr;
 		std::unique_ptr<s16[]> m_buffer;
 
 		const uint m_nBuffers;
@@ -79,10 +78,10 @@ private:
 		const uint m_BufferSize;
 		const uint m_BufferSizeBytes;
 
-		wil::critical_section cs;
-
 	public:
-		int GetEmptySampleCount()
+		virtual ~BaseStreamingVoice() = default;
+
+		int GetEmptySampleCount() const
 		{
 			XAUDIO2_VOICE_STATE state;
 			pSourceVoice->GetState(&state);
@@ -90,108 +89,16 @@ private:
 		}
 
 		BaseStreamingVoice(uint numChannels)
-			: pSourceVoice(nullptr)
-			, m_nBuffers(Config_XAudio2.NumBuffers)
+			: m_nBuffers(Config_XAudio2.NumBuffers)
 			, m_nChannels(numChannels)
 			, m_BufferSize(SndOutPacketSize * m_nChannels * PacketsPerBuffer)
 			, m_BufferSizeBytes(m_BufferSize * sizeof(s16))
 		{
 		}
 
-		virtual void Init(IXAudio2* pXAudio2) = 0;
-
-	protected:
-		// Several things must be initialized separate of the constructor, due to the fact that
-		// virtual calls can't be made from the constructor's context.
-		void _init(IXAudio2* pXAudio2, uint chanConfig)
-		{
-			WAVEFORMATEXTENSIBLE wfx;
-
-			memset(&wfx, 0, sizeof(WAVEFORMATEXTENSIBLE));
-			wfx.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
-			wfx.Format.nSamplesPerSec = SampleRate;
-			wfx.Format.nChannels = m_nChannels;
-			wfx.Format.wBitsPerSample = 16;
-			wfx.Format.nBlockAlign = wfx.Format.nChannels * wfx.Format.wBitsPerSample / 8;
-			wfx.Format.nAvgBytesPerSec = SampleRate * wfx.Format.nBlockAlign;
-			wfx.Format.cbSize = sizeof(WAVEFORMATEXTENSIBLE) - sizeof(WAVEFORMATEX);
-			wfx.Samples.wValidBitsPerSample = 16;
-			wfx.dwChannelMask = chanConfig;
-			wfx.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
-
-			HRESULT hr;
-			if (FAILED(hr = pXAudio2->CreateSourceVoice(&pSourceVoice, (WAVEFORMATEX*)&wfx,
-														XAUDIO2_VOICE_NOSRC, 1.0f, this)))
-			{
-				throw Exception::XAudio2Error(hr, "XAudio2 CreateSourceVoice failure: ");
-			}
-
-			auto lock = cs.lock();
-
-			pSourceVoice->FlushSourceBuffers();
-			pSourceVoice->Start(0, 0);
-
-			m_buffer = std::make_unique<s16[]>(m_nBuffers * m_BufferSize);
-
-			// Start some buffers.
-			for (uint i = 0; i < m_nBuffers; i++)
-			{
-				XAUDIO2_BUFFER buf = {0};
-				buf.AudioBytes = m_BufferSizeBytes;
-				buf.pContext = &m_buffer[i * m_BufferSize];
-				buf.pAudioData = (BYTE*)buf.pContext;
-				pSourceVoice->SubmitSourceBuffer(&buf);
-			}
-		}
-
-		STDMETHOD_(void, OnVoiceProcessingPassStart)
-		() {}
-		STDMETHOD_(void, OnVoiceProcessingPassStart)
-		(UINT32) {}
-		STDMETHOD_(void, OnVoiceProcessingPassEnd)
-		() {}
-		STDMETHOD_(void, OnStreamEnd)
-		() {}
-		STDMETHOD_(void, OnBufferStart)
-		(void*) {}
-		STDMETHOD_(void, OnLoopEnd)
-		(void*) {}
-		STDMETHOD_(void, OnVoiceError)
-		(THIS_ void* pBufferContext, HRESULT Error) {}
-	};
-
-	template <typename T>
-	class StreamingVoice : public BaseStreamingVoice
-	{
-	public:
-		StreamingVoice()
-			: BaseStreamingVoice(sizeof(T) / sizeof(s16))
-		{
-		}
-
-		virtual ~StreamingVoice()
-		{
-			IXAudio2SourceVoice* killMe = pSourceVoice;
-			// XXX: Potentially leads to a race condition that causes a nullptr
-			// dereference when SubmitSourceBuffer is called in OnBufferEnd?
-			pSourceVoice = nullptr;
-			if (killMe != nullptr)
-			{
-				killMe->FlushSourceBuffers();
-				killMe->DestroyVoice();
-			}
-
-			// XXX: Not sure we even need a critical section - DestroyVoice is
-			// blocking, and the documentation states no callbacks are called
-			// or audio data is read after it returns, so it's safe to free up
-			// resources.
-			auto lock = cs.lock();
-			m_buffer = nullptr;
-		}
-
 		void Init(IXAudio2* pXAudio2)
 		{
-			int chanMask = 0;
+			DWORD chanMask = 0;
 			switch (m_nChannels)
 			{
 				case 1:
@@ -216,31 +123,88 @@ private:
 					chanMask |= SPEAKER_FRONT_LEFT | SPEAKER_FRONT_RIGHT | SPEAKER_FRONT_CENTER | SPEAKER_BACK_LEFT | SPEAKER_BACK_RIGHT | SPEAKER_SIDE_LEFT | SPEAKER_SIDE_RIGHT | SPEAKER_LOW_FREQUENCY;
 					break;
 			}
-			_init(pXAudio2, chanMask);
+
+			WAVEFORMATEXTENSIBLE wfx{};
+
+			wfx.Format.wFormatTag = WAVE_FORMAT_EXTENSIBLE;
+			wfx.Format.nSamplesPerSec = SampleRate;
+			wfx.Format.nChannels = m_nChannels;
+			wfx.Format.wBitsPerSample = 16;
+			wfx.Format.nBlockAlign = wfx.Format.nChannels * wfx.Format.wBitsPerSample / 8;
+			wfx.Format.nAvgBytesPerSec = SampleRate * wfx.Format.nBlockAlign;
+			wfx.Format.cbSize = sizeof(wfx) - sizeof(WAVEFORMATEX);
+			wfx.Samples.wValidBitsPerSample = 16;
+			wfx.dwChannelMask = chanMask;
+			wfx.SubFormat = KSDATAFORMAT_SUBTYPE_PCM;
+
+			const HRESULT hr = pXAudio2->CreateSourceVoice(&pSourceVoice, reinterpret_cast<WAVEFORMATEX*>(&wfx), XAUDIO2_VOICE_NOSRC, 1.0f, this);
+			if (FAILED(hr))
+			{
+				throw Exception::XAudio2Error(hr, "XAudio2 CreateSourceVoice failure: ");
+			}
+
+			m_buffer = std::make_unique<s16[]>(m_nBuffers * m_BufferSize);
+
+			// Start some buffers.
+			for (size_t i = 0; i < m_nBuffers; i++)
+			{
+				XAUDIO2_BUFFER buf{};
+				buf.AudioBytes = m_BufferSizeBytes;
+				buf.pContext = &m_buffer[i * m_BufferSize];
+				buf.pAudioData = static_cast<BYTE*>(buf.pContext);
+				pSourceVoice->SubmitSourceBuffer(&buf);
+			}
+
+			pSourceVoice->Start(0, 0);
+		}
+
+	protected:
+		STDMETHOD_(void, OnVoiceProcessingPassStart)
+		(UINT32) override {}
+		STDMETHOD_(void, OnVoiceProcessingPassEnd)
+		() override {}
+		STDMETHOD_(void, OnStreamEnd)
+		() override {}
+		STDMETHOD_(void, OnBufferStart)
+		(void*) override {}
+		STDMETHOD_(void, OnLoopEnd)
+		(void*) override {}
+		STDMETHOD_(void, OnVoiceError)
+		(THIS_ void* pBufferContext, HRESULT Error) override {}
+	};
+
+	template <typename T>
+	class StreamingVoice final : public BaseStreamingVoice
+	{
+	public:
+		StreamingVoice()
+			: BaseStreamingVoice(sizeof(T) / sizeof(s16))
+		{
+		}
+
+		virtual ~StreamingVoice() override
+		{
+			// Must be done here and not BaseStreamingVoice, as else OnBufferEnd will not be callable anymore
+			// but it will be called by DestroyVoice.
+			if (pSourceVoice != nullptr)
+			{
+				pSourceVoice->Stop();
+				pSourceVoice->DestroyVoice();
+			}
 		}
 
 	protected:
 		STDMETHOD_(void, OnBufferEnd)
-		(void* context)
+		(void* context) override
 		{
-			auto lock = cs.lock();
+			T* qb = static_cast<T*>(context);
 
-			// All of these checks are necessary because XAudio2 is wonky shizat.
-			// XXX: The pSourceVoice nullptr check seems a bit self-inflicted
-			// due to the destructor logic.
-			if (pSourceVoice == nullptr || context == nullptr)
-			{
-				return;
-			}
-
-			T* qb = (T*)context;
-
-			for (int p = 0; p < PacketsPerBuffer; p++, qb += SndOutPacketSize)
+			for (size_t p = 0; p < PacketsPerBuffer; p++, qb += SndOutPacketSize)
 				SndBuffer::ReadSamples(qb);
 
-			XAUDIO2_BUFFER buf = {0};
+			XAUDIO2_BUFFER buf{};
 			buf.AudioBytes = m_BufferSizeBytes;
-			buf.pAudioData = (BYTE*)context;
+			buf.pAudioData = static_cast<BYTE*>(context);
 			buf.pContext = context;
 
 			pSourceVoice->SubmitSourceBuffer(&buf);
@@ -254,7 +218,7 @@ private:
 	std::unique_ptr<BaseStreamingVoice> m_voiceContext;
 
 public:
-	s32 Init()
+	s32 Init() override
 	{
 		xaudio2CoInitialize = wil::CoInitializeEx_failfast(COINIT_MULTITHREADED);
 
@@ -270,8 +234,15 @@ public:
 			if (pXAudio2Create == nullptr)
 				throw std::runtime_error("XAudio2Create not found. Error code: " + std::to_string(GetLastError()));
 
-			if (FAILED(hr = pXAudio2Create(&pXAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR)))
+			hr = pXAudio2Create(&pXAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR);
+			if (FAILED(hr))
 				throw Exception::XAudio2Error(hr, "Failed to init XAudio2 engine. Error Details:");
+
+#ifdef XAUDIO2_DEBUG
+			XAUDIO2_DEBUG_CONFIGURATION debugConfig{};
+			debugConfig.BreakMask = XAUDIO2_LOG_ERRORS;
+			pXAudio2->SetDebugConfiguration(&debugConfig, nullptr);
+#endif
 
 			// Stereo Expansion was planned to grab the currently configured number of
 			// Speakers from Windows's audio config.
@@ -295,9 +266,11 @@ public:
 					break;
 				default:
 					speakers = 2;
+					break;
 			}
 
-			if (FAILED(hr = pXAudio2->CreateMasteringVoice(&pMasteringVoice, speakers, SampleRate)))
+			hr = pXAudio2->CreateMasteringVoice(&pMasteringVoice, speakers, SampleRate);
+			if (FAILED(hr))
 				throw Exception::XAudio2Error(hr, "Failed creating mastering voice: ");
 
 			switch (speakers)
@@ -354,64 +327,56 @@ public:
 		return 0;
 	}
 
-	void Close()
+	void Close() override
 	{
-		// Clean up?
-		// All XAudio2 interfaces are released when the engine is destroyed,
-		// but being tidy never hurt.
-
-		// Actually it can hurt.  As of DXSDK Aug 2008, doing a full cleanup causes
-		// XA2 on Vista to crash.  Even if you copy/paste code directly from Microsoft.
-		// But doing no cleanup at all causes XA2 under XP to crash.  So after much trial
-		// and error we found a happy compromise as follows:
-
-		m_voiceContext = nullptr;
+		m_voiceContext.reset();
 
 		if (pMasteringVoice != nullptr)
+		{
 			pMasteringVoice->DestroyVoice();
-
-		pMasteringVoice = nullptr;
+			pMasteringVoice = nullptr;
+		}
 
 		pXAudio2.reset();
 		xAudio2DLL.reset();
 		xaudio2CoInitialize.reset();
 	}
 
-	virtual void Configure(uptr parent)
+	void Configure(uptr parent) override
 	{
 	}
 
-	s32 Test() const
+	s32 Test() const override
 	{
 		return 0;
 	}
 
-	int GetEmptySampleCount()
+	int GetEmptySampleCount() override
 	{
 		if (m_voiceContext == nullptr)
 			return 0;
 		return m_voiceContext->GetEmptySampleCount();
 	}
 
-	const wchar_t* GetIdent() const
+	const wchar_t* GetIdent() const override
 	{
 		return L"xaudio2";
 	}
 
-	const wchar_t* GetLongName() const
+	const wchar_t* GetLongName() const override
 	{
 		return L"XAudio 2 (Recommended)";
 	}
 
-	void ReadSettings()
+	void ReadSettings() override
 	{
 	}
 
-	void SetApiSettings(wxString api)
+	void SetApiSettings(wxString api) override
 	{
 	}
 
-	void WriteSettings() const
+	void WriteSettings() const override
 	{
 	}
 
