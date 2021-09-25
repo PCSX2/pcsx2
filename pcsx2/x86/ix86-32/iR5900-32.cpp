@@ -36,7 +36,7 @@
 #include "Patch.h"
 
 #if !PCSX2_SEH
-	#include <csetjmp>
+	#include "common/FastJmp.h"
 #endif
 
 
@@ -703,7 +703,7 @@ void recStep()
 
 #if !PCSX2_SEH
 	#define SETJMP_CODE(x) x
-	static jmp_buf m_SetJmp_StateCheck;
+	static fastjmp_buf m_SetJmp_StateCheck;
 	static std::unique_ptr<BaseR5900Exception> m_cpuException;
 	static ScopedExcept m_Exception;
 #else
@@ -721,7 +721,7 @@ static void recExitExecution()
 	// creates.  However, the longjump is slow so we only want to do one when absolutely
 	// necessary:
 
-	longjmp(m_SetJmp_StateCheck, 1);
+	fastjmp_jmp(&m_SetJmp_StateCheck, 1);
 #endif
 }
 
@@ -759,7 +759,7 @@ static void recExecute()
 	// setjmp will save the register context and will return 0
 	// A call to longjmp will restore the context (included the eip/rip)
 	// but will return the longjmp 2nd parameter (here 1)
-	if (!setjmp(m_SetJmp_StateCheck))
+	if (!fastjmp_set(&m_SetJmp_StateCheck))
 	{
 		eeRecIsReset = false;
 		eeCpuExecuting = true;
