@@ -33,7 +33,6 @@ class GSShaderOGL
 	bool ValidatePipeline(GLuint p);
 
 	std::string GenGlslHeader(const std::string& entry, GLenum type, const std::string& macro);
-	std::vector<char> m_common_header;
 
 public:
 	GSShaderOGL(bool debug);
@@ -42,14 +41,14 @@ public:
 	void BindPipeline(GLuint vs, GLuint gs, GLuint ps);
 	void BindPipeline(GLuint pipe);
 
-	GLuint Compile(const std::string& glsl_file, const std::string& entry, GLenum type, const char* glsl_h_code, const std::string& macro_sel = "");
+	GLuint Compile(const char* glsl_file, const std::string& entry, GLenum type, const std::string& common_header, const char* glsl_h_code, const std::string& macro_sel = "");
 	GLuint LinkPipeline(const std::string& pretty_print, GLuint vs, GLuint gs, GLuint ps);
 
 	// Same as above but for not separated build
 	void BindProgram(GLuint vs, GLuint gs, GLuint ps);
 	void BindProgram(GLuint p);
 
-	GLuint CompileShader(const std::string& glsl_file, const std::string& entry, GLenum type, const char* glsl_h_code, const std::string& macro_sel = "");
+	GLuint CompileShader(const char* glsl_file, const std::string& entry, GLenum type, const std::string& common_header, const char* glsl_h_code, const std::string& macro_sel = "");
 	GLuint LinkProgram(GLuint vs, GLuint gs, GLuint ps);
 
 	int DumpAsm(const std::string& file, GLuint p);

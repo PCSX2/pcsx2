@@ -29,7 +29,7 @@ GSDialog::GSDialog(UINT id)
 
 INT_PTR GSDialog::DoModal()
 {
-	return DialogBoxParam(theApp.GetModuleHandle(), MAKEINTRESOURCE(m_id), GetActiveWindow(), DialogProc, (LPARAM)this);
+	return DialogBoxParam(GetModuleHandle(nullptr), MAKEINTRESOURCE(m_id), GetActiveWindow(), DialogProc, (LPARAM)this);
 }
 
 INT_PTR CALLBACK GSDialog::DialogProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -324,7 +324,7 @@ void GSDialog::AddTooltip(UINT id)
 	HWND hwndTip = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL,
 		TTS_ALWAYSTIP | TTS_NOPREFIX,
 		CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-		m_hWnd, NULL, theApp.GetModuleHandle(), NULL);
+		m_hWnd, NULL, GetModuleHandle(nullptr), NULL);
 	if (hwndTip == NULL)
 		return;
 
