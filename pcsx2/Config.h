@@ -627,6 +627,7 @@ namespace EmuFolders
 	extern wxDirName Logs;
 	extern wxDirName Cheats;
 	extern wxDirName CheatsWS;
+	extern wxDirName Resources;
 } // namespace EmuFolders
 
 /////////////////////////////////////////////////////////////////////////////////////////

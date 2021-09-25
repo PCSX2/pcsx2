@@ -307,6 +307,7 @@
     <ClCompile Include="GS\Renderers\DX11\D3D.cpp" />
     <ClCompile Include="GS\Window\GSwxDialog.cpp" />
     <ClCompile Include="gui\AppGameDatabase.cpp" />
+    <ClCompile Include="gui\AppHost.cpp" />
     <ClCompile Include="gui\AppUserMode.cpp" />
     <ClCompile Include="gui\CheckedStaticBox.cpp" />
     <ClCompile Include="gui\Debugger\BreakpointWindow.cpp" />
