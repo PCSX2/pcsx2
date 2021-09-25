@@ -36,9 +36,9 @@ void USBsetSettingsDir()
 	if(!USBpathSet)
 	{
 #ifdef _WIN32
-		IniPath = EmuConfig.Folders.Settings.Combine( iniFileUSB ).GetFullPath(); // default path, just in case
+		IniPath = EmuFolders::Settings.Combine( iniFileUSB ).GetFullPath(); // default path, just in case
 #else
-		IniPath = std::string(EmuConfig.Folders.Settings.Combine( iniFileUSB ).GetFullPath()); // default path, just in case
+		IniPath = std::string(EmuFolders::Settings.Combine( iniFileUSB ).GetFullPath()); // default path, just in case
 #endif
 		USBpathSet = true;
 	}

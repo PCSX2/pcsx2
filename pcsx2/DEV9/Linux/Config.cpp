@@ -113,7 +113,7 @@ void SaveConf()
      */
 
 
-	const std::string file(EmuConfig.Folders.Settings.Combine(wxString("DEV9.cfg")).GetFullPath());
+	const std::string file(EmuFolders::Settings.Combine(wxString("DEV9.cfg")).GetFullPath());
 
 	Console.WriteLn("DEV9: CONF: %s", file.c_str());
 
@@ -134,7 +134,7 @@ void SaveConf()
 
 void LoadConf()
 {
-	const std::string file(EmuConfig.Folders.Settings.Combine(wxString("DEV9.cfg")).GetFullPath());
+	const std::string file(EmuFolders::Settings.Combine(wxString("DEV9.cfg")).GetFullPath());
 	if (-1 == access(file.c_str(), F_OK))
 		return;
 

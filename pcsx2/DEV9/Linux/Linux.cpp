@@ -200,11 +200,11 @@ void OnInitDialog()
 
 void OnBrowse(GtkButton* button, gpointer usr_data)
 {
-	ghc::filesystem::path inis(EmuConfig.Folders.Settings.ToString().ToStdString());
+	ghc::filesystem::path inis(EmuFolders::Settings.ToString().ToStdString());
 
 	static const wxChar* hddFilterType = L"HDD|*.raw;*.RAW";
 
-	wxFileDialog ctrl(nullptr, _("HDD Image File"), EmuConfig.Folders.Settings.ToString(), HDD_DEF,
+	wxFileDialog ctrl(nullptr, _("HDD Image File"), EmuFolders::Settings.ToString(), HDD_DEF,
 		(wxString)hddFilterType + L"|" + _("All Files (*.*)") + L"|*.*", wxFD_SAVE);
 
 	if (ctrl.ShowModal() != wxID_CANCEL)
@@ -280,7 +280,7 @@ void OnOk()
 
 	if (hddPath.is_relative())
 	{
-		ghc::filesystem::path path(EmuConfig.Folders.Settings.ToString().wx_str());
+		ghc::filesystem::path path(EmuFolders::Settings.ToString().wx_str());
 		hddPath = path / hddPath;
 	}
 

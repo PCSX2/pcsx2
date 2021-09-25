@@ -219,7 +219,7 @@ void OnBrowse(HWND hW)
 	wchar_t wbuff[4096] = {0};
 	memcpy(wbuff, HDD_DEF, sizeof(HDD_DEF));
 
-	ghc::filesystem::path inis(EmuConfig.Folders.Settings.ToString().wx_str());
+	ghc::filesystem::path inis(EmuFolders::Settings.ToString().wx_str());
 	wstring w_inis = inis.wstring();
 
 	OPENFILENAMEW ofn;
@@ -336,7 +336,7 @@ void OnOk(HWND hW)
 	if (hddPath.is_relative())
 	{
 		//GHC uses UTF8 on all platforms
-		ghc::filesystem::path path(EmuConfig.Folders.Settings.ToUTF8().data());
+		ghc::filesystem::path path(EmuFolders::Settings.ToUTF8().data());
 		hddPath = path / hddPath;
 	}
 

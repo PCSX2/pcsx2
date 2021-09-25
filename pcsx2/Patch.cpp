@@ -248,7 +248,7 @@ int LoadPatchesFromDir(wxString name, const wxDirName& folderName, const wxStrin
 	wxString filespec = name + L"*.pnach";
 	loaded += _LoadPatchFiles(folderName, filespec, friendlyName, numberFoundPatchFiles);
 
-	if (folderName.ToString().IsSameAs(EmuConfig.Folders.Cheats.ToString()) && numberFoundPatchFiles == 0)
+	if (folderName.ToString().IsSameAs(EmuFolders::Cheats.ToString()) && numberFoundPatchFiles == 0)
 	{
 		wxString pathName = Path::Combine(folderName, name.MakeUpper() + L".pnach");
 		PatchesCon->WriteLn(Color_Gray, L"Not found %s file: %s", WX_STR(friendlyName), WX_STR(pathName));

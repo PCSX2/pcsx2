@@ -316,7 +316,7 @@ void LoadBIOS()
 
 bool IsBIOS(const wxString& filename, wxString& description)
 {
-	wxFileName Bios( EmuConfig.Folders.Bios + filename );
+	wxFileName Bios( EmuFolders::Bios + filename );
 	pxInputStream inway( filename, new wxFFileInputStream( filename ) );
 
 	if (!inway.IsOk()) return false;

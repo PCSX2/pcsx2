@@ -558,10 +558,6 @@ void AppConfig::LoadSave(IniInterface& ini, SettingsWrapper& wrap)
 	ProgLogBox.LoadSave(ini, L"ProgramLog");
 	Folders.LoadSave(ini);
 
-	// sync the EmuOptions folders with what we loaded. what a mess this is....
-	if (ini.IsLoading())
-		EmuOptions.Folders = EmuConfig.Folders;
-
 	GSWindow.LoadSave(ini);
 #ifndef DISABLE_RECORDING
 	inputRecording.loadSave(ini);
@@ -672,16 +668,16 @@ void AppConfig::FolderOptions::LoadSave( IniInterface& ini )
 		for( int i=0; i<FolderId_COUNT; ++i )
 			operator[]( (FoldersEnum_t)i ).Normalize();
 
-		EmuConfig.Folders.Settings = GetSettingsFolder();
 		EmuConfig.CurrentDiscDrive = RunDisc.ToStdString();
-		EmuConfig.Folders.Bios = Bios;
-		EmuConfig.Folders.Snapshots = Snapshots;
-		EmuConfig.Folders.Savestates = Savestates;
-		EmuConfig.Folders.MemoryCards = MemoryCards;
-		EmuConfig.Folders.Logs = Logs;
-		EmuConfig.Folders.Langs = Langs;
-		EmuConfig.Folders.Cheats = Cheats;
-		EmuConfig.Folders.CheatsWS = CheatsWS;
+		EmuFolders::Settings = GetSettingsFolder();
+		EmuFolders::Bios = Bios;
+		EmuFolders::Snapshots = Snapshots;
+		EmuFolders::Savestates = Savestates;
+		EmuFolders::MemoryCards = MemoryCards;
+		EmuFolders::Logs = Logs;
+		EmuFolders::Langs = Langs;
+		EmuFolders::Cheats = Cheats;
+		EmuFolders::CheatsWS = CheatsWS;
 	}
 }
 

@@ -491,12 +491,12 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 
 	// regular cheat patches
 	if (fixup.EnableCheats)
-		gameCheats.Printf(L" [%d Cheats]", LoadPatchesFromDir(GameInfo::gameCRC, EmuConfig.Folders.Cheats, L"Cheats"));
+		gameCheats.Printf(L" [%d Cheats]", LoadPatchesFromDir(GameInfo::gameCRC, EmuFolders::Cheats, L"Cheats"));
 
 	// wide screen patches
 	if (fixup.EnableWideScreenPatches)
 	{
-		if (int numberLoadedWideScreenPatches = LoadPatchesFromDir(GameInfo::gameCRC, EmuConfig.Folders.CheatsWS, L"Widescreen hacks"))
+		if (int numberLoadedWideScreenPatches = LoadPatchesFromDir(GameInfo::gameCRC, EmuFolders::CheatsWS, L"Widescreen hacks"))
 		{
 			gameWsHacks.Printf(L" [%d widescreen hacks]", numberLoadedWideScreenPatches);
 			Console.WriteLn(Color_Gray, "Found widescreen patches in the cheats_ws folder --> skipping cheats_ws.zip");

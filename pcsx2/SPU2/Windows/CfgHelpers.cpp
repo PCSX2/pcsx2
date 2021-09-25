@@ -58,7 +58,7 @@ void initIni()
 {
 	if (!pathSet)
 	{
-		CfgFile = EmuConfig.Folders.Settings.Combine(CfgFile).GetFullPath();
+		CfgFile = EmuFolders::Settings.Combine(CfgFile).GetFullPath();
 		pathSet = true;
 	}
 }

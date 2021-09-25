@@ -30,7 +30,7 @@
 
 void SaveDnsHosts()
 {
-	std::unique_ptr<wxFileConfig> hini(OpenFileConfig(EmuConfig.Folders.Settings.Combine(wxString("DEV9Hosts.ini")).GetFullPath()));
+	std::unique_ptr<wxFileConfig> hini(OpenFileConfig(EmuFolders::Settings.Combine(wxString("DEV9Hosts.ini")).GetFullPath()));
 	IniSaver ini((wxConfigBase*)hini.get());
 
 	for (size_t i = 0; i < config.EthHosts.size(); i++)
@@ -57,7 +57,7 @@ void SaveDnsHosts()
 
 void LoadDnsHosts()
 {
-	wxFileName iniPath = EmuConfig.Folders.Settings.Combine(wxString("DEV9Hosts.ini"));
+	wxFileName iniPath = EmuFolders::Settings.Combine(wxString("DEV9Hosts.ini"));
 	config.EthHosts.clear();
 	//If no file exists, create one to provice an example config
 	if (!iniPath.FileExists())
