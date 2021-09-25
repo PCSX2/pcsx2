@@ -18,16 +18,11 @@
 #include "GSDeviceOGL.h"
 #include "GLState.h"
 #include "GS/GSUtil.h"
+#include "Host.h"
 #include <fstream>
 #include <sstream>
 
 //#define ONLY_LINES
-
-#ifdef _WIN32
-#include "GS/resource.h"
-#else
-#include "GS_res.h"
-#endif
 
 // TODO port those value into PerfMon API
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
@@ -309,8 +304,6 @@ GSTexture* GSDeviceOGL::FetchSurface(int type, int w, int h, int format)
 
 bool GSDeviceOGL::Create(const WindowInfo& wi)
 {
-	std::vector<char> shader;
-
 	m_gl_context = GL::Context::Create(wi, GL::Context::GetAllVersionsList());
 	if (!m_gl_context || !m_gl_context->MakeCurrent())
 		return false;
@@ -326,6 +319,14 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 		printf("GS error: Exception caught in GSDeviceOGL::Create: %s", ex.what());
 		m_gl_context->DoneCurrent();
 		return false;
+	}
+
+	{
+		auto shader = Host::ReadResourceFileToString("gs_opengl/common_header.glsl");
+		if (!shader.has_value())
+			return false;
+
+		m_shader_common_header = std::move(*shader);
 	}
 
 	// ****************************************************************
@@ -442,14 +443,16 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 		m_misc_cb_cache.ScalingFactor = GSVector4i(std::max(1, theApp.GetConfigI("upscale_multiplier")));
 		m_convert.cb->cache_upload(&m_misc_cb_cache);
 
-		theApp.LoadResource(IDR_CONVERT_GLSL, shader);
+		const auto shader = Host::ReadResourceFileToString("gs_opengl/convert.glsl");
+		if (!shader.has_value())
+			return false;
 
-		vs = m_shader->Compile("convert.glsl", "vs_main", GL_VERTEX_SHADER, shader.data());
+		vs = m_shader->Compile("convert.glsl", "vs_main", GL_VERTEX_SHADER, m_shader_common_header, shader->c_str());
 
 		m_convert.vs = vs;
 		for (size_t i = 0; i < std::size(m_convert.ps); i++)
 		{
-			ps = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
+			ps = m_shader->Compile("convert.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, m_shader_common_header, shader->c_str());
 			std::string pretty_name = "Convert pipe " + std::to_string(i);
 			m_convert.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
@@ -475,11 +478,13 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 
 		m_merge_obj.cb = new GSUniformBufferOGL("Merge UBO", g_merge_cb_index, sizeof(MergeConstantBuffer));
 
-		theApp.LoadResource(IDR_MERGE_GLSL, shader);
+		const auto shader = Host::ReadResourceFileToString("gs_opengl/merge.glsl");
+		if (!shader.has_value())
+			return false;
 
 		for (size_t i = 0; i < std::size(m_merge_obj.ps); i++)
 		{
-			ps = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
+			ps = m_shader->Compile("merge.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, m_shader_common_header, shader->c_str());
 			std::string pretty_name = "Merge pipe " + std::to_string(i);
 			m_merge_obj.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
@@ -493,11 +498,13 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 
 		m_interlace.cb = new GSUniformBufferOGL("Interlace UBO", g_interlace_cb_index, sizeof(InterlaceConstantBuffer));
 
-		theApp.LoadResource(IDR_INTERLACE_GLSL, shader);
+		const auto shader = Host::ReadResourceFileToString("gs_opengl/interlace.glsl");
+		if (!shader.has_value())
+			return false;
 
 		for (size_t i = 0; i < std::size(m_interlace.ps); i++)
 		{
-			ps = m_shader->Compile("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, shader.data());
+			ps = m_shader->Compile("interlace.glsl", format("ps_main%d", i), GL_FRAGMENT_SHADER, m_shader_common_header, shader->c_str());
 			std::string pretty_name = "Interlace pipe " + std::to_string(i);
 			m_interlace.ps[i] = m_shader->LinkPipeline(pretty_name, vs, 0, ps);
 		}
@@ -516,9 +523,11 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 			+ format("#define SB_BRIGHTNESS %d.0\n", ShadeBoost_Brightness)
 			+ format("#define SB_CONTRAST %d.0\n", ShadeBoost_Contrast);
 
-		theApp.LoadResource(IDR_SHADEBOOST_GLSL, shader);
+		const auto shader = Host::ReadResourceFileToString("gs_opengl/shadeboost.glsl");
+		if (!shader.has_value())
+			return false;
 
-		ps = m_shader->Compile("shadeboost.glsl", "ps_main", GL_FRAGMENT_SHADER, shader.data(), shade_macro);
+		ps = m_shader->Compile("shadeboost.glsl", "ps_main", GL_FRAGMENT_SHADER, m_shader_common_header, shader->c_str(), shade_macro);
 		m_shadeboost.ps = m_shader->LinkPipeline("ShadeBoost pipe", vs, 0, ps);
 	}
 
@@ -567,7 +576,8 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 	// ****************************************************************
 	// HW renderer shader
 	// ****************************************************************
-	CreateTextureFX();
+	if (!CreateTextureFX())
+		return false;
 
 	// ****************************************************************
 	// Pbo Pool allocation
@@ -637,12 +647,17 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 	return true;
 }
 
-void GSDeviceOGL::CreateTextureFX()
+bool GSDeviceOGL::CreateTextureFX()
 {
 	GL_PUSH("GSDeviceOGL::CreateTextureFX");
 
-	theApp.LoadResource(IDR_TFX_VGS_GLSL, m_shader_tfx_vgs);
-	theApp.LoadResource(IDR_TFX_FS_GLSL, m_shader_tfx_fs);
+	auto vertex_shader = Host::ReadResourceFileToString("gs_opengl/tfx_vgs.glsl");
+	auto fragment_shader = Host::ReadResourceFileToString("gs_opengl/tfx_fs.glsl");
+	if (!vertex_shader.has_value() || !fragment_shader.has_value())
+		return false;
+
+	m_shader_tfx_vgs = std::move(*vertex_shader);
+	m_shader_tfx_fs = std::move(*fragment_shader);
 
 	// warning 1 sampler by image unit. So you cannot reuse m_ps_ss...
 	m_palette_ss = CreateSampler(PSSamplerSelector(0));
@@ -669,6 +684,7 @@ void GSDeviceOGL::CreateTextureFX()
 
 	// Help to debug FS in apitrace
 	m_apitrace = CompilePS(PSSelector());
+	return true;
 }
 
 bool GSDeviceOGL::Reset(int w, int h)
@@ -990,9 +1006,9 @@ GLuint GSDeviceOGL::CompileVS(VSSelector sel)
 	std::string macro = format("#define VS_INT_FST %d\n", sel.int_fst);
 
 	if (GLLoader::buggy_sso_dual_src)
-		return m_shader->CompileShader("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, m_shader_tfx_vgs.data(), macro);
+		return m_shader->CompileShader("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, m_shader_common_header, m_shader_tfx_vgs.data(), macro);
 	else
-		return m_shader->Compile("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, m_shader_tfx_vgs.data(), macro);
+		return m_shader->Compile("tfx_vgs.glsl", "vs_main", GL_VERTEX_SHADER, m_shader_common_header, m_shader_tfx_vgs.data(), macro);
 }
 
 GLuint GSDeviceOGL::CompileGS(GSSelector sel)
@@ -1001,9 +1017,9 @@ GLuint GSDeviceOGL::CompileGS(GSSelector sel)
 		+ format("#define GS_LINE %d\n", sel.line);
 
 	if (GLLoader::buggy_sso_dual_src)
-		return m_shader->CompileShader("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, m_shader_tfx_vgs.data(), macro);
+		return m_shader->CompileShader("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, m_shader_common_header, m_shader_tfx_vgs.data(), macro);
 	else
-		return m_shader->Compile("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, m_shader_tfx_vgs.data(), macro);
+		return m_shader->Compile("tfx_vgs.glsl", "gs_main", GL_GEOMETRY_SHADER, m_shader_common_header, m_shader_tfx_vgs.data(), macro);
 }
 
 GLuint GSDeviceOGL::CompilePS(PSSelector sel)
@@ -1049,9 +1065,9 @@ GLuint GSDeviceOGL::CompilePS(PSSelector sel)
 	;
 
 	if (GLLoader::buggy_sso_dual_src)
-		return m_shader->CompileShader("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, m_shader_tfx_fs.data(), macro);
+		return m_shader->CompileShader("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, m_shader_common_header, m_shader_tfx_fs.data(), macro);
 	else
-		return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, m_shader_tfx_fs.data(), macro);
+		return m_shader->Compile("tfx.glsl", "ps_main", GL_FRAGMENT_SHADER, m_shader_common_header, m_shader_tfx_fs.data(), macro);
 }
 
 void GSDeviceOGL::SelfShaderTestRun(const std::string& dir, const std::string& file, const PSSelector& sel, int& nb_shader)
@@ -1602,10 +1618,11 @@ void GSDeviceOGL::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 		std::string fxaa_macro = "#define FXAA_GLSL_130 1\n";
 		fxaa_macro += "#extension GL_ARB_gpu_shader5 : enable\n";
 
-		std::vector<char> shader;
-		theApp.LoadResource(IDR_FXAA_FX, shader);
+		std::optional<std::string> shader = Host::ReadResourceFileToString("gs_opengl/fxaa.fx");
+		if (!shader.has_value())
+			return;
 
-		GLuint ps = m_shader->Compile("fxaa.fx", "ps_main", GL_FRAGMENT_SHADER, shader.data(), fxaa_macro);
+		GLuint ps = m_shader->Compile("fxaa.fx", "ps_main", GL_FRAGMENT_SHADER, m_shader_common_header, shader->c_str(), fxaa_macro);
 		m_fxaa.ps = m_shader->LinkPipeline("FXAA pipe", m_convert.vs, 0, ps);
 	}
 
@@ -1652,7 +1669,7 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 
 
 		m_shaderfx.cb = new GSUniformBufferOGL("eFX UBO", g_fx_cb_index, sizeof(ExternalFXConstantBuffer));
-		GLuint ps = m_shader->Compile("Extra", "ps_main", GL_FRAGMENT_SHADER, shader.str().c_str(), config.str());
+		GLuint ps = m_shader->Compile("Extra", "ps_main", GL_FRAGMENT_SHADER, m_shader_common_header, shader.str().c_str(), config.str());
 		m_shaderfx.ps = m_shader->LinkPipeline("eFX pipie", m_convert.vs, 0, ps);
 	}
 

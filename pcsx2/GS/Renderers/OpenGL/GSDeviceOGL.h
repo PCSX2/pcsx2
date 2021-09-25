@@ -475,8 +475,9 @@ private:
 	bool m_disable_hw_gl_draw;
 
 	// Place holder for the GLSL shader code (to avoid useless reload)
-	std::vector<char> m_shader_tfx_vgs;
-	std::vector<char> m_shader_tfx_fs;
+	std::string m_shader_common_header;
+	std::string m_shader_tfx_vgs;
+	std::string m_shader_tfx_fs;
 
 	GLuint m_fbo; // frame buffer container
 	GLuint m_fbo_read; // frame buffer container only for reading
@@ -635,7 +636,7 @@ public:
 	bool HasColorSparse() final { return GLLoader::found_compatible_GL_ARB_sparse_texture2; }
 	bool HasDepthSparse() final { return GLLoader::found_compatible_sparse_depth; }
 
-	void CreateTextureFX();
+	bool CreateTextureFX();
 	GLuint CompileVS(VSSelector sel);
 	GLuint CompileGS(GSSelector sel);
 	GLuint CompilePS(PSSelector sel);

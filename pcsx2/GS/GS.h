@@ -149,14 +149,6 @@ public:
 	GSApp();
 
 	void Init();
-	void* GetModuleHandlePtr();
-
-#ifdef _WIN32
-	HMODULE GetModuleHandle()
-	{
-		return (HMODULE)GetModuleHandlePtr();
-	}
-#endif
 
 	void BuildConfigurationMap(const char* lpFileName);
 	void ReloadConfig();
@@ -164,12 +156,6 @@ public:
 	size_t GetIniString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName);
 	bool WriteIniString(const char* lpAppName, const char* lpKeyName, const char* pString, const char* lpFileName);
 	int GetIniInt(const char* lpAppName, const char* lpKeyName, int nDefault, const char* lpFileName);
-
-#ifdef _WIN32
-	bool LoadResource(int id, std::vector<char>& buff, const wchar_t* type = nullptr);
-#else
-	bool LoadResource(int id, std::vector<char>& buff, const char* type = nullptr);
-#endif
 
 	void SetConfig(const char* entry, const char* value);
 	void SetConfig(const char* entry, int value);

@@ -861,42 +861,6 @@ else(WIN32)
 		USB/usb-pad/evdev/evdev.h
 		USB/usb-pad/evdev/shared.h
 	)
-
-
-	# GS resources
-	set(pcsx2GSResources
-		GS/res/fxaa.fx
-		GS/res/glsl/common_header.glsl
-		GS/res/glsl/convert.glsl
-		GS/res/glsl/interlace.glsl
-		GS/res/glsl/merge.glsl
-		GS/res/glsl/shadeboost.glsl
-		GS/res/glsl/tfx_fs.glsl
-		GS/res/glsl/tfx_vgs.glsl)
-
-	set(GSBin "${CMAKE_BINARY_DIR}/pcsx2/GS")
-	target_include_directories(PCSX2_FLAGS INTERFACE "${GSBin}")
-	file(MAKE_DIRECTORY "${GSBin}")
-
-	add_custom_command(
-		OUTPUT ${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.h
-		COMMAND glib-compile-resources --sourcedir "${CMAKE_SOURCE_DIR}/pcsx2/GS/res" --generate-header
-		--c-name GS_res "${CMAKE_SOURCE_DIR}/pcsx2/GS/res/GS-res.xml" --target=${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.h
-		DEPENDS ${pcsx2GSResources})
-
-	add_custom_command(
-		OUTPUT ${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.cpp
-		COMMAND glib-compile-resources --sourcedir "${CMAKE_SOURCE_DIR}/pcsx2/GS/res" --generate-source
-		--c-name GS_res "${CMAKE_SOURCE_DIR}/pcsx2/GS/res/GS-res.xml" --target=${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.cpp
-		DEPENDS ${pcsx2GSResources})
-
-	list(APPEND pcsx2GSSources
-		GS/GS_res.cpp
-	)
-
-	list(APPEND pcsx2GSHeaders
-		GS/GS_res.h
-	)
 endif(WIN32)
 
 
@@ -1541,6 +1505,20 @@ if (APPLE)
 	target_sources(PCSX2 PRIVATE "${CMAKE_SOURCE_DIR}/bin/GameIndex.yaml")
 	set_source_files_properties("${CMAKE_CURRENT_SOURCE_DIR}/gui/Resources/PCSX2.icns" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
 	set_source_files_properties("${CMAKE_SOURCE_DIR}/bin/GameIndex.yaml" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+
+	# Add in shaders and other resources.
+	file(GLOB resource_files "${CMAKE_SOURCE_DIR}/bin/resources/*")
+	foreach(file ${resource_files})
+		target_sources(PCSX2 PRIVATE "${file}")
+		set_source_files_properties("${file}" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+	endforeach()
+
+	# Add in shaders and other resources.
+	file(GLOB resource_files "${CMAKE_SOURCE_DIR}/bin/resources/*")
+	foreach(file ${resource_files})
+		target_sources(PCSX2 PRIVATE "${file}")
+		set_source_files_properties("${file}" PROPERTIES MACOSX_PACKAGE_LOCATION Resources)
+	endforeach()
 
 	# If they say to skip postprocess bundle, leave the target in but make it so they have
 	# to manually run it

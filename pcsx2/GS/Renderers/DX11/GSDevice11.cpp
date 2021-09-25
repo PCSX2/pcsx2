@@ -19,7 +19,7 @@
 #include "GS/Renderers/DX11/D3D.h"
 #include "GS/GSExtra.h"
 #include "GS/GSUtil.h"
-#include "GS/resource.h"
+#include "Host.h"
 #include <fstream>
 #include <sstream>
 #include <VersionHelpers.h>
@@ -218,6 +218,11 @@ bool GSDevice11::Create(const WindowInfo& wi)
 		m_hack_topleft_offset = (m_upscale_multiplier != 1 && D3D::IsNvidia(adapter.get()) && !disable_safe_features) ? -0.01f : 0.0f;
 	}
 
+	std::optional<std::string> shader = Host::ReadResourceFileToString("gs_dx11/tfx.fx");
+	if (!shader.has_value())
+		return false;
+	m_tfx_source = std::move(*shader);
+
 	// convert
 
 	D3D11_INPUT_ELEMENT_DESC il_convert[] =
@@ -229,9 +234,10 @@ bool GSDevice11::Create(const WindowInfo& wi)
 
 	ShaderMacro sm_model(m_shader.model);
 
-	std::vector<char> shader;
-	theApp.LoadResource(IDR_CONVERT_FX, shader);
-    CreateShader(shader, "convert.fx", nullptr, "vs_main", sm_model.GetPtr(), &m_convert.vs, il_convert, std::size(il_convert), m_convert.il.put());
+	shader = Host::ReadResourceFileToString("gs_dx11/convert.fx");
+	if (!shader.has_value())
+		return false;
+	CreateShader(*shader, "convert.fx", nullptr, "vs_main", sm_model.GetPtr(), &m_convert.vs, il_convert, std::size(il_convert), m_convert.il.put());
 
 	ShaderMacro sm_convert(m_shader.model);
 	sm_convert.AddMacro("PS_SCALE_FACTOR", std::max(1, m_upscale_multiplier));
@@ -240,7 +246,7 @@ bool GSDevice11::Create(const WindowInfo& wi)
 
 	for (size_t i = 0; i < std::size(m_convert.ps); i++)
 	{
-		CreateShader(shader, "convert.fx", nullptr, format("ps_main%d", i).c_str(), sm_convert_ptr, m_convert.ps[i].put());
+		CreateShader(*shader, "convert.fx", nullptr, format("ps_main%d", i).c_str(), sm_convert_ptr, m_convert.ps[i].put());
 	}
 
 	memset(&dsd, 0, sizeof(dsd));
@@ -269,10 +275,13 @@ bool GSDevice11::Create(const WindowInfo& wi)
 
 	m_dev->CreateBuffer(&bd, nullptr, m_merge.cb.put());
 
-	theApp.LoadResource(IDR_MERGE_FX, shader);
+	shader = Host::ReadResourceFileToString("gs_dx11/merge.fx");
+	if (!shader.has_value())
+		return false;
+
 	for (size_t i = 0; i < std::size(m_merge.ps); i++)
 	{
-		CreateShader(shader, "merge.fx", nullptr, format("ps_main%d", i).c_str(), sm_model.GetPtr(), m_merge.ps[i].put());
+		CreateShader(*shader, "merge.fx", nullptr, format("ps_main%d", i).c_str(), sm_model.GetPtr(), m_merge.ps[i].put());
 	}
 
 	memset(&bsd, 0, sizeof(bsd));
@@ -298,10 +307,12 @@ bool GSDevice11::Create(const WindowInfo& wi)
 
 	m_dev->CreateBuffer(&bd, nullptr, m_interlace.cb.put());
 
-	theApp.LoadResource(IDR_INTERLACE_FX, shader);
+	shader = Host::ReadResourceFileToString("gs_dx11/interlace.fx");
+	if (!shader.has_value())
+		return false;
 	for (size_t i = 0; i < std::size(m_interlace.ps); i++)
 	{
-		CreateShader(shader, "interlace.fx", nullptr, format("ps_main%d", i).c_str(), sm_model.GetPtr(), m_interlace.ps[i].put());
+		CreateShader(*shader, "interlace.fx", nullptr, format("ps_main%d", i).c_str(), sm_model.GetPtr(), m_interlace.ps[i].put());
 	}
 
 	// Shade Boost
@@ -320,8 +331,10 @@ bool GSDevice11::Create(const WindowInfo& wi)
 
 	m_dev->CreateBuffer(&bd, nullptr, m_shadeboost.cb.put());
 
-	theApp.LoadResource(IDR_SHADEBOOST_FX, shader);
-	CreateShader(shader, "shadeboost.fx", nullptr, "ps_main", sm_sboost.GetPtr(), m_shadeboost.ps.put());
+	shader = Host::ReadResourceFileToString("gs_dx11/shadeboost.fx");
+	if (!shader.has_value())
+		return false;
+	CreateShader(*shader, "shadeboost.fx", nullptr, "ps_main", sm_sboost.GetPtr(), m_shadeboost.ps.put());
 
 	// External fx shader
 
@@ -920,9 +933,8 @@ void GSDevice11::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 
 			shader << fshader.rdbuf();
 			const std::string& s = shader.str();
-			std::vector<char> buff(s.begin(), s.end());
 			ShaderMacro sm(m_shader.model);
-			CreateShader(buff, shader_name.c_str(), D3D_COMPILE_STANDARD_FILE_INCLUDE, "ps_main", sm.GetPtr(), m_shaderfx.ps.put());
+			CreateShader(s, shader_name.c_str(), D3D_COMPILE_STANDARD_FILE_INCLUDE, "ps_main", sm.GetPtr(), m_shaderfx.ps.put());
 		}
 		catch (GSRecoverableError)
 		{
@@ -952,10 +964,12 @@ void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	{
 		try
 		{
-			std::vector<char> shader;
-			theApp.LoadResource(IDR_FXAA_FX, shader);
-			ShaderMacro sm(m_shader.model);
-			CreateShader(shader, "fxaa.fx", nullptr, "ps_main", sm.GetPtr(), m_fxaa.ps.put());
+			std::optional<std::string> shader = Host::ReadResourceFileToString("gs_dx11/fxaa.fx");
+			if (shader.has_value())
+			{
+				ShaderMacro sm(m_shader.model);
+				CreateShader(*shader, "fxaa.fx", nullptr, "ps_main", sm.GetPtr(), m_fxaa.ps.put());
+			}
 		}
 		catch (GSRecoverableError)
 		{
@@ -1394,7 +1408,7 @@ D3D_SHADER_MACRO* GSDevice11::ShaderMacro::GetPtr(void)
 	return (D3D_SHADER_MACRO*)mout.data();
 }
 
-void GSDevice11::CreateShader(const std::vector<char>& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11VertexShader** vs, D3D11_INPUT_ELEMENT_DESC* layout, int count, ID3D11InputLayout** il)
+void GSDevice11::CreateShader(const std::string& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11VertexShader** vs, D3D11_INPUT_ELEMENT_DESC* layout, int count, ID3D11InputLayout** il)
 {
 	HRESULT hr;
 
@@ -1417,7 +1431,7 @@ void GSDevice11::CreateShader(const std::vector<char>& source, const char* fn, I
 	}
 }
 
-void GSDevice11::CreateShader(const std::vector<char>& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11GeometryShader** gs)
+void GSDevice11::CreateShader(const std::string& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11GeometryShader** gs)
 {
 	wil::com_ptr_nothrow<ID3DBlob> shader;
 
@@ -1431,7 +1445,7 @@ void GSDevice11::CreateShader(const std::vector<char>& source, const char* fn, I
 	}
 }
 
-void GSDevice11::CreateShader(const std::vector<char>& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11PixelShader** ps)
+void GSDevice11::CreateShader(const std::string& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3D11PixelShader** ps)
 {
 	wil::com_ptr_nothrow<ID3DBlob> shader;
 
@@ -1445,7 +1459,7 @@ void GSDevice11::CreateShader(const std::vector<char>& source, const char* fn, I
 	}
 }
 
-void GSDevice11::CompileShader(const std::vector<char>& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3DBlob** shader, const std::string& shader_model)
+void GSDevice11::CompileShader(const std::string& source, const char* fn, ID3DInclude* include, const char* entry, D3D_SHADER_MACRO* macro, ID3DBlob** shader, const std::string& shader_model)
 {
 	wil::com_ptr_nothrow<ID3DBlob> error;
 
@@ -1456,7 +1470,7 @@ void GSDevice11::CompileShader(const std::vector<char>& source, const char* fn, 
 #endif
 
 	const HRESULT hr = D3DCompile(
-		source.data(), source.size(), fn, macro,
+		source.c_str(), source.size(), fn, macro,
 		include, entry, shader_model.c_str(),
 		flags, 0, shader, error.put());
 
