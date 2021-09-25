@@ -602,7 +602,7 @@ __ri int mVUbranchCheck(mV)
 			{
 				// First branch is not conditional so we know what the link will be
 				// So we can let the existing evil block do its thing! We know where to get the addr :)
-				if (branchType <= 2 && branchType >= 9)
+				if (branchType <= 2 || branchType >= 9)
 				{
 					mVUregs.blockType = 2;
 				} // Else it is conditional, so we need to do some nasty processing later in microVU_Branch.inl
