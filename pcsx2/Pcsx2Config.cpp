@@ -40,6 +40,7 @@ namespace EmuFolders
 	wxDirName Logs;
 	wxDirName Cheats;
 	wxDirName CheatsWS;
+	wxDirName Resources;
 } // namespace EmuFolders
 
 void TraceLogFilters::LoadSave(SettingsWrapper& wrap)
