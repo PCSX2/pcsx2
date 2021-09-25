@@ -44,52 +44,7 @@ BEGIN
     "\0"
 END
 
-3 TEXTINCLUDE 
-BEGIN
-    "#include ""res/tfx.fx""\r\n"
-    "#include ""res/convert.fx""\r\n"
-    "#include ""res/interlace.fx""\r\n"
-    "#include ""res/merge.fx""\r\n"
-    "#include ""res/fxaa.fx""\r\n"
-    "#include ""res/shadeboost.fx""\r\n"
-    "\0"
-END
-
 #endif    // APSTUDIO_INVOKED
-
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// RCDATA
-//
-
-IDR_TFX_FX              RCDATA                  "res\\tfx.fx"
-
-IDR_CONVERT_FX          RCDATA                  "res\\convert.fx"
-
-IDR_INTERLACE_FX        RCDATA                  "res\\interlace.fx"
-
-IDR_MERGE_FX            RCDATA                  "res\\merge.fx"
-
-IDR_FXAA_FX             RCDATA                  "res\\fxaa.fx"
-
-IDR_SHADEBOOST_FX       RCDATA                  "res\\shadeboost.fx"
-
-IDR_CONVERT_GLSL        RCDATA                  "res\\glsl\\convert.glsl";
-
-IDR_INTERLACE_GLSL      RCDATA                  "res\\glsl\\interlace.glsl";
-
-IDR_MERGE_GLSL          RCDATA                  "res\\glsl\\merge.glsl";
-
-IDR_SHADEBOOST_GLSL     RCDATA                  "res\\glsl\\shadeboost.glsl";
-
-IDR_COMMON_GLSL         RCDATA                  "res\\glsl\\common_header.glsl";
-
-IDR_TFX_VGS_GLSL        RCDATA                  "res\\glsl\\tfx_vgs.glsl";
-
-IDR_TFX_FS_GLSL         RCDATA                  "res\\glsl\\tfx_fs.glsl";
-
-IDR_FONT_ROBOTO         RCDATA                  "res\\fonts-roboto\\Roboto-Regular.ttf";
 
 
 /////////////////////////////////////////////////////////////////////////////
@@ -139,18 +94,4 @@ END
 
 
 
-#ifndef APSTUDIO_INVOKED
-/////////////////////////////////////////////////////////////////////////////
-//
-// Generated from the TEXTINCLUDE 3 resource.
-//
-#include "res/tfx.fx"
-#include "res/convert.fx"
-#include "res/interlace.fx"
-#include "res/merge.fx"
-#include "res/fxaa.fx"
-#include "res/shadeboost.fx"
-
-/////////////////////////////////////////////////////////////////////////////
-#endif    // not APSTUDIO_INVOKED
 // clang-format on
