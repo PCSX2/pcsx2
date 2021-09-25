@@ -14,19 +14,7 @@
  */
 
 #pragma once
-
-namespace Exception
-{
-	class BiosLoadFailed : public BadStream
-	{
-		DEFINE_EXCEPTION_COPYTORS( BiosLoadFailed, FileNotFound )
-		DEFINE_EXCEPTION_MESSAGES( BiosLoadFailed )
-		DEFINE_STREAM_EXCEPTION_ACCESSORS( BiosLoadFailed )
-
-	public:
-		BiosLoadFailed( const wxString& streamName );
-	};
-}
+#include <string>
 
 const u32 ThreadListInstructions[3] =
 {
@@ -47,7 +35,8 @@ extern bool NoOSD;			// Used for HLE OSD Config Params
 extern bool AllowParams1;
 extern bool AllowParams2;
 extern u32 BiosChecksum;
-extern wxString BiosDescription;
-extern wxString biosZone;
-extern void LoadBIOS();
-extern bool IsBIOS(const wxString& filename, wxString& description);
+extern std::string BiosDescription;
+extern std::string BiosZone;
+extern bool LoadBIOS();
+extern bool IsBIOS(const char* filename, u32& version, std::string& description, u32& region, std::string& zone);
+

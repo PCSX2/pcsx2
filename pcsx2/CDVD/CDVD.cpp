@@ -20,6 +20,8 @@
 #include <ctype.h>
 #include <wx/datetime.h>
 
+#include "common/FileSystem.h"
+
 #include "CdRom.h"
 #include "CDVD.h"
 #include "CDVD_internal.h"
@@ -111,34 +113,28 @@ static int mg_BIToffset(u8* buffer)
 
 static void cdvdGetMechaVer(u8* ver)
 {
-	wxFileName mecfile(EmuConfig.FullpathToBios());
-	mecfile.SetExt(L"mec");
-	const wxString fname(mecfile.GetFullPath());
-
-	// Likely a bad idea to go further
-	if (mecfile.IsDir())
-		throw Exception::CannotCreateStream(fname);
-
-
-	if (Path::GetFileSize(fname) < 4)
+	std::string mecfile(FileSystem::ReplaceExtension(EmuConfig.FullpathToBios(), "mec"));
+	auto fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "rb");
+	if (!fp || FileSystem::FSize64(fp.get()) < 4)
 	{
 		Console.Warning("MEC File Not Found, creating substitute...");
 
-		wxFFile fp(fname, L"wb");
-		if (!fp.IsOpened())
-			throw Exception::CannotCreateStream(fname);
+		fp.reset();
+		fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "w+b");
+		if (!fp)
+		{
+			Console.Error("Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings.");
+			return;
+		}
 
 		u8 version[4] = {0x3, 0x6, 0x2, 0x0};
-		fp.Write(version, sizeof(version));
+		std::fwrite(version, sizeof(version), 1, fp.get());
+		FileSystem::FSeek64(fp.get(), 0, SEEK_SET);
 	}
 
-	wxFFile fp(fname, L"rb");
-	if (!fp.IsOpened())
-		throw Exception::CannotCreateStream(fname);
-
-	size_t ret = fp.Read(ver, 4);
+	auto ret = std::fread(ver, 1, 4, fp.get());
 	if (ret != 4)
-		Console.Error(L"Failed to read from %s. Did only %zu/4 bytes", WX_STR(fname), ret);
+		Console.Error("Failed to read from %s. Did only %zu/4 bytes", mecfile.c_str(), ret);
 }
 
 NVMLayout* getNvmLayout()
@@ -153,14 +149,10 @@ NVMLayout* getNvmLayout()
 	return nvmLayout;
 }
 
-static void cdvdCreateNewNVM(const wxString& filename)
+static void cdvdCreateNewNVM(std::FILE* fp)
 {
-	wxFFile fp(filename, L"wb");
-	if (!fp.IsOpened())
-		throw Exception::CannotCreateStream(filename);
-
-	u8 zero[1024] = {0};
-	fp.Write(zero, sizeof(zero));
+	u8 zero[1024] = { 0 };
+	std::fwrite(zero, sizeof(zero), 1, fp);
 
 	// Write NVM ILink area with dummy data (Age of Empires 2)
 	// Also write language data defaulting to English (Guitar Hero 2)
@@ -168,36 +160,34 @@ static void cdvdCreateNewNVM(const wxString& filename)
 	NVMLayout* nvmLayout = getNvmLayout();
 	u8 ILinkID_Data[8] = {0x00, 0xAC, 0xFF, 0xFF, 0xFF, 0xFF, 0xB9, 0x86};
 
-	fp.Seek(*(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, ilinkId)));
-	fp.Write(ILinkID_Data, sizeof(ILinkID_Data));
+	std::fseek(fp, *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, ilinkId)), SEEK_SET);
+	std::fwrite(ILinkID_Data, sizeof(ILinkID_Data), 1, fp);
 
 	u8 biosLanguage[16];
 	memcpy(biosLanguage, &biosLangDefaults[BiosRegion][0], 16);
 	// Config sections first 16 bytes are generally blank expect the last byte which is PS1 mode stuff
 	// So let's ignore that and just write the PS2 mode stuff
-	fp.Seek(*(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, config1)) + 0x10);
-	fp.Write(biosLanguage, sizeof(biosLanguage));
-
-	fp.Close();
+	std::fseek(fp, *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, config1)) + 0x10, SEEK_SET);
+	std::fwrite(biosLanguage, sizeof(biosLanguage), 1, fp);
 }
 
-// Throws Exception::CannotCreateStream if the file cannot be opened for reading, or cannot
-// be created for some reason.
 static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 {
-	wxFileName nvmfile(EmuConfig.FullpathToBios());
-	nvmfile.SetExt(L"nvm");
-	const wxString fname(nvmfile.GetFullPath());
-
-	// Likely a bad idea to go further
-	if (nvmfile.IsDir())
-		throw Exception::CannotCreateStream(fname);
-
-	if (Path::GetFileSize(fname) < 1024)
+	std::string nvmfile(FileSystem::ReplaceExtension(EmuConfig.FullpathToBios(), "nvm"));
+	auto fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "r+b");
+	if (!fp || FileSystem::FSize64(fp.get()) < 1024)
 	{
-		Console.Warning("NVM File Not Found, creating substitute...");
+		fp.reset();
+		fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "w+b");
+		if (!fp)
+		{
+			Console.Error("Failed to open NVM file '%s' for writing", nvmfile.c_str());
+			if (read)
+				std::memset(buffer, 0, bytes);
+			return;
+		}
 
-		cdvdCreateNewNVM(fname);
+		cdvdCreateNewNVM(fp.get());
 	}
 	else
 	{
@@ -205,38 +195,29 @@ static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 		u8 zero[16] = {0};
 		NVMLayout* nvmLayout = getNvmLayout();
 
-		wxFFile fp(fname, L"r+b");
-		if (!fp.IsOpened())
-			throw Exception::CannotCreateStream(fname);
-
-		fp.Seek(*(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, config1)) + 0x10);
-		fp.Read(LanguageParams, 16);
-
-		fp.Close();
+		std::fseek(fp.get(), *(s32*)(((u8*)nvmLayout) + offsetof(NVMLayout, config1)) + 0x10, SEEK_SET);
+		std::fread(LanguageParams, 16, 1, fp.get());
 
 		if (memcmp(LanguageParams, zero, sizeof(LanguageParams)) == 0)
 		{
 			Console.Warning("Language Parameters missing, filling in defaults");
 
-			cdvdCreateNewNVM(fname);
+			FileSystem::FSeek64(fp.get(), 0, SEEK_SET);
+			cdvdCreateNewNVM(fp.get());
 		}
 	}
 
-	wxFFile fp(fname, L"r+b");
-	if (!fp.IsOpened())
-		throw Exception::CannotCreateStream(fname);
-
-	fp.Seek(offset);
+	std::fseek(fp.get(), offset, SEEK_SET);
 
 	size_t ret;
 	if (read)
-		ret = fp.Read(buffer, bytes);
+		ret = std::fread(buffer, 1, bytes, fp.get());
 	else
-		ret = fp.Write(buffer, bytes);
+		ret = std::fwrite(buffer, 1, bytes, fp.get());
 
 	if (ret != bytes)
 		Console.Error(L"Failed to %s %s. Did only %zu/%zu bytes",
-			read ? L"read from" : L"write to", WX_STR(fname), ret, bytes);
+					  read ? L"read from" : L"write to", nvmfile.c_str(), ret, bytes);
 }
 
 static void cdvdReadNVM(u8* dst, int offset, int bytes)
@@ -1996,7 +1977,6 @@ static __fi void fail_pol_cal()
 
 static void cdvdWrite16(u8 rt) // SCOMMAND
 {
-	try
 	{
 		//	cdvdTN	diskInfo;
 		//	cdvdTD	trackInfo;
@@ -2654,12 +2634,6 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 		//Console.WriteLn("SCMD - 0x%x\n", rt);
 		cdvd.ParamP = 0;
 		cdvd.ParamC = 0;
-	}
-	catch (Exception::CannotCreateStream&)
-	{
-		Cpu->ThrowException(Exception::RuntimeError()
-								.SetDiagMsg(L"Failed to read/write NVM/MEC file.")
-								.SetUserMsg(pxE(L"Failed to read/write NVM/MEC file. Check your BIOS setup/permission settings.")));
 	}
 }
 
