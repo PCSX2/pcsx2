@@ -42,6 +42,7 @@
 #endif
 
 #include "common/IniInterface.h"
+#include "common/StringUtil.h"
 #include "common/AppTrait.h"
 
 #include <wx/stdpaths.h>
@@ -969,7 +970,7 @@ protected:
 	bool				m_UseCDVDsrc;
 	bool				m_UseELFOverride;
 	CDVD_SourceType		m_cdvdsrc_type;
-	std::string			m_elf_override;
+	wxString			m_elf_override;
 
 public:
 	virtual ~SysExecEvent_Execute() = default;
@@ -992,11 +993,11 @@ public:
 	{
 	}
 
-	SysExecEvent_Execute( CDVD_SourceType srctype, std::string elf_override )
+	SysExecEvent_Execute( CDVD_SourceType srctype, const wxString& elf_override )
 		: m_UseCDVDsrc(true)
 		, m_UseELFOverride(true)
 		, m_cdvdsrc_type(srctype)
-		, m_elf_override( std::move(elf_override) )
+		, m_elf_override( elf_override )
 	{
 	}
 
@@ -1014,7 +1015,8 @@ protected:
 		// This function below gets called again from AppCoreThread.cpp and will pass the current ISO regardless if we
 		// are starting an ELF. In terms of symbol loading this doesn't matter because AppCoreThread.cpp doesn't clear the symbol map
 		// and we _only_ read symbols if the map is empty
-		CDVDsys_SetFile(CDVD_SourceType::Iso, m_UseELFOverride ? m_elf_override : EmuConfig.CurrentIso );
+		CDVDsys_SetFile(CDVD_SourceType::Disc, StringUtil::wxStringToUTF8String(g_Conf->Folders.RunDisc) );
+		CDVDsys_SetFile(CDVD_SourceType::Iso, StringUtil::wxStringToUTF8String(m_UseELFOverride ? m_elf_override : g_Conf->CurrentIso) );
 		if( m_UseCDVDsrc )
 			CDVDsys_ChangeSource( m_cdvdsrc_type );
 		else if( CDVD == NULL )
@@ -1070,7 +1072,7 @@ void SysStatus( const wxString& text )
 // Applies a new active iso source file
 void SysUpdateIsoSrcFile( const wxString& newIsoFile )
 {
-	EmuConfig.CurrentIso = newIsoFile;
+	g_Conf->CurrentIso = newIsoFile;
 	sMainFrame.UpdateStatusBar();
 	sMainFrame.UpdateCdvdSrcSelection();
 }
@@ -1078,7 +1080,6 @@ void SysUpdateIsoSrcFile( const wxString& newIsoFile )
 void SysUpdateDiscSrcDrive( const wxString& newDiscDrive )
 {
 	g_Conf->Folders.RunDisc = newDiscDrive;
-	EmuConfig.CurrentDiscDrive = newDiscDrive;
 	AppSaveSettings();
 	sMainFrame.UpdateCdvdSrcSelection();
 }

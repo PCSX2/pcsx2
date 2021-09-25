@@ -270,6 +270,11 @@ public:
 
 	bool		AskOnBoot;
 
+
+	wxString				CurrentIso;
+	wxString				CurrentELF;
+	CDVD_SourceType			CdvdSource;
+
 	ConsoleLogOptions		ProgLogBox;
 	FolderOptions			Folders;
 	GSWindowOptions			GSWindow;

@@ -292,7 +292,7 @@ void InputRecording::SetupInitialState(u32 newStartingFrame)
 	else
 	{
 		// Check if the current game matches with the one used to make the original recording
-		if (!EmuConfig.CurrentIso.empty())
+		if (!g_Conf->CurrentIso.IsEmpty())
 			if (resolveGameName() != inputRecordingData.GetHeader().gameName)
 				inputRec::consoleLog("Input recording was possibly constructed for a different game.");
 
@@ -350,7 +350,7 @@ bool InputRecording::Create(wxString fileName, const bool fromSaveState, wxStrin
 		StateCopy_SaveToFile(savestate);
 	}
 	else
-		sApp.SysExecute(EmuConfig.CdvdSource);
+		sApp.SysExecute(g_Conf->CdvdSource);
 
 	// Set emulator version
 	inputRecordingData.GetHeader().SetEmulatorVersion();
@@ -405,7 +405,7 @@ bool InputRecording::Play(wxWindow* parent, wxString filename)
 	{
 		state = InputRecordingMode::Replaying;
 		initialLoad = true;
-		sApp.SysExecute(EmuConfig.CdvdSource);
+		sApp.SysExecute(g_Conf->CdvdSource);
 	}
 	return true;
 }
@@ -439,7 +439,7 @@ void InputRecording::GoToFirstFrame(wxWindow* parent)
 		StateCopy_LoadFromFile(savestate);
 	}
 	else
-		sApp.SysExecute(EmuConfig.CdvdSource);
+		sApp.SysExecute(g_Conf->CdvdSource);
 
 	if (IsRecording())
 		SetToReplayMode();
@@ -462,7 +462,7 @@ wxString InputRecording::resolveGameName()
 			}
 		}
 	}
-	return !gameName.IsEmpty() ? gameName : (wxString)Path::GetFilename(EmuConfig.CurrentIso);
+	return !gameName.IsEmpty() ? gameName : (wxString)Path::GetFilename(g_Conf->CurrentIso);
 }
 
 #endif

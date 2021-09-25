@@ -17,6 +17,7 @@
 
 #include "wxSettingsInterface.h"
 #include "common/Assertions.h"
+#include "common/StringUtil.h"
 
 wxSettingsInterface::wxSettingsInterface(wxConfigBase* config)
 	: m_config(config)
@@ -98,7 +99,7 @@ bool wxSettingsInterface::GetStringValue(const char* section, const char* key, s
 		return false;
 
 	wxString ret = m_config->Read(wxKey);
-	*value = ret.ToStdString();
+	*value = StringUtil::wxStringToUTF8String(ret);
 	return true;
 }
 
@@ -135,7 +136,7 @@ void wxSettingsInterface::SetBoolValue(const char* section, const char* key, boo
 void wxSettingsInterface::SetStringValue(const char* section, const char* key, const char* value)
 {
 	CheckPath(section);
-	m_config->Write(key, value);
+	m_config->Write(key, wxString::FromUTF8(value));
 }
 
 std::vector<std::string> wxSettingsInterface::GetStringList(const char* section, const char* key)

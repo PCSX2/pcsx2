@@ -256,6 +256,88 @@ namespace PathDefs
 	}
 };
 
+
+// --------------------------------------------------------------------------------------
+//  Default Filenames
+// --------------------------------------------------------------------------------------
+namespace FilenameDefs
+{
+wxFileName GetUiConfig()
+{
+	return pxGetAppName() + L"_ui.ini";
+}
+
+wxFileName GetUiKeysConfig()
+{
+	return pxGetAppName() + L"_keys.ini";
+}
+
+wxFileName GetVmConfig()
+{
+	return pxGetAppName() + L"_vm.ini";
+}
+
+wxFileName GetUsermodeConfig()
+{
+	return wxFileName(L"usermode.ini");
+}
+
+const wxFileName& Memcard(uint port, uint slot)
+{
+	static const wxFileName retval[2][4] =
+	{
+		{
+			wxFileName(L"Mcd001.ps2"),
+			wxFileName(L"Mcd003.ps2"),
+			wxFileName(L"Mcd005.ps2"),
+			wxFileName(L"Mcd007.ps2"),
+		},
+		{
+			wxFileName(L"Mcd002.ps2"),
+			wxFileName(L"Mcd004.ps2"),
+			wxFileName(L"Mcd006.ps2"),
+			wxFileName(L"Mcd008.ps2"),
+		}
+	};
+
+	IndexBoundsAssumeDev(L"FilenameDefs::Memcard", port, 2);
+	IndexBoundsAssumeDev(L"FilenameDefs::Memcard", slot, 4);
+
+	return retval[port][slot];
+}
+};
+
+static wxDirName GetResolvedFolder(FoldersEnum_t id)
+{
+	return g_Conf->Folders.IsDefault(id) ? PathDefs::Get(id) : g_Conf->Folders[id];
+}
+
+static wxDirName GetSettingsFolder()
+{
+	if (wxGetApp().Overrides.SettingsFolder.IsOk())
+		return wxGetApp().Overrides.SettingsFolder;
+
+	return UseDefaultSettingsFolder ? PathDefs::GetSettings() : SettingsFolder;
+}
+
+wxString GetVmSettingsFilename()
+{
+	wxFileName fname(wxGetApp().Overrides.VmSettingsFile.IsOk() ? wxGetApp().Overrides.VmSettingsFile : FilenameDefs::GetVmConfig());
+	return GetSettingsFolder().Combine(fname).GetFullPath();
+}
+
+wxString GetUiSettingsFilename()
+{
+	wxFileName fname(FilenameDefs::GetUiConfig());
+	return GetSettingsFolder().Combine(fname).GetFullPath();
+}
+
+wxString GetUiKeysFilename()
+{
+	wxFileName fname(FilenameDefs::GetUiKeysConfig());
+	return GetSettingsFolder().Combine(fname).GetFullPath();
+}
+
 wxDirName& AppConfig::FolderOptions::operator[]( FoldersEnum_t folderidx )
 {
 	switch( folderidx )
@@ -310,36 +392,43 @@ void AppConfig::FolderOptions::Set( FoldersEnum_t folderidx, const wxString& src
 		case FolderId_Settings:
 			SettingsFolder = src;
 			UseDefaultSettingsFolder = useDefault;
+			EmuFolders::Settings = GetSettingsFolder();
 		break;
 
 		case FolderId_Bios:
 			Bios = src;
 			UseDefaultBios = useDefault;
+			EmuFolders::Bios = GetResolvedFolder(FolderId_Bios);
 		break;
 
 		case FolderId_Snapshots:
 			Snapshots = src;
 			UseDefaultSnapshots = useDefault;
+			EmuFolders::Snapshots = GetResolvedFolder(FolderId_Snapshots);
 		break;
 
 		case FolderId_Savestates:
 			Savestates = src;
 			UseDefaultSavestates = useDefault;
+			EmuFolders::Savestates = GetResolvedFolder(FolderId_Savestates);
 		break;
 
 		case FolderId_MemoryCards:
 			MemoryCards = src;
 			UseDefaultMemoryCards = useDefault;
+			EmuFolders::MemoryCards = GetResolvedFolder(FolderId_MemoryCards);
 		break;
 
 		case FolderId_Logs:
 			Logs = src;
 			UseDefaultLogs = useDefault;
+			EmuFolders::Logs = GetResolvedFolder(FolderId_Logs);
 		break;
 
 		case FolderId_Langs:
 			Langs = src;
 			UseDefaultLangs = useDefault;
+			EmuFolders::Langs = GetResolvedFolder(FolderId_Langs);
 		break;
 
 		case FolderId_Documents:
@@ -349,91 +438,17 @@ void AppConfig::FolderOptions::Set( FoldersEnum_t folderidx, const wxString& src
 		case FolderId_Cheats:
 			Cheats = src;
 			UseDefaultCheats = useDefault;
+			EmuFolders::Cheats = GetResolvedFolder(FolderId_Cheats);
 		break;
 
 		case FolderId_CheatsWS:
 			CheatsWS = src;
 			UseDefaultCheatsWS = useDefault;
+			EmuFolders::CheatsWS = GetResolvedFolder(FolderId_CheatsWS);
 		break;
 
 		jNO_DEFAULT
 	}
-}
-
-// --------------------------------------------------------------------------------------
-//  Default Filenames
-// --------------------------------------------------------------------------------------
-namespace FilenameDefs
-{
-	wxFileName GetUiConfig()
-	{
-		return pxGetAppName() + L"_ui.ini";
-	}
-
-	wxFileName GetUiKeysConfig()
-	{
-		return pxGetAppName() + L"_keys.ini";
-	}
-
-	wxFileName GetVmConfig()
-	{
-		return pxGetAppName() + L"_vm.ini";
-	}
-
-	wxFileName GetUsermodeConfig()
-	{
-		return wxFileName( L"usermode.ini" );
-	}
-
-	const wxFileName& Memcard( uint port, uint slot )
-	{
-		static const wxFileName retval[2][4] =
-		{
-			{
-				wxFileName( L"Mcd001.ps2" ),
-				wxFileName( L"Mcd003.ps2" ),
-				wxFileName( L"Mcd005.ps2" ),
-				wxFileName( L"Mcd007.ps2" ),
-			},
-			{
-				wxFileName( L"Mcd002.ps2" ),
-				wxFileName( L"Mcd004.ps2" ),
-				wxFileName( L"Mcd006.ps2" ),
-				wxFileName( L"Mcd008.ps2" ),
-			}
-		};
-
-		IndexBoundsAssumeDev( L"FilenameDefs::Memcard", port, 2 );
-		IndexBoundsAssumeDev( L"FilenameDefs::Memcard", slot, 4 );
-
-		return retval[port][slot];
-	}
-};
-
-static wxDirName GetSettingsFolder()
-{
-	if (wxGetApp().Overrides.SettingsFolder.IsOk())
-		return wxGetApp().Overrides.SettingsFolder;
-
-	return UseDefaultSettingsFolder ? PathDefs::GetSettings() : SettingsFolder;
-}
-
-wxString GetVmSettingsFilename()
-{
-	wxFileName fname( wxGetApp().Overrides.VmSettingsFile.IsOk() ? wxGetApp().Overrides.VmSettingsFile : FilenameDefs::GetVmConfig() );
-	return GetSettingsFolder().Combine( fname ).GetFullPath();
-}
-
-wxString GetUiSettingsFilename()
-{
-	wxFileName fname( FilenameDefs::GetUiConfig() );
-	return GetSettingsFolder().Combine( fname ).GetFullPath();
-}
-
-wxString GetUiKeysFilename()
-{
-	wxFileName fname( FilenameDefs::GetUiKeysConfig() );
-	return GetSettingsFolder().Combine( fname ).GetFullPath();
 }
 
 bool IsPortable()
@@ -461,6 +476,8 @@ AppConfig::AppConfig()
 
 	EnablePresets		= true;
 	PresetIndex			= 1;
+
+	CdvdSource			= CDVD_SourceType::Iso;
 }
 
 // ------------------------------------------------------------------------
@@ -527,14 +544,12 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	IniEntry( Toolbar_ImageSize );
 	IniEntry( Toolbar_ShowLabels );
 
-	ini.EnumEntry(L"CdvdSource", EmuConfig.CdvdSource, CDVD_SourceLabels, EmuConfig.CdvdSource);
-
-	wxFileName res(EmuConfig.CurrentIso);
-	ini.Entry(L"CurrentIso", res, res, ini.IsLoading() || IsPortable());
-	EmuConfig.CurrentIso = res.GetFullPath();
+	wxFileName res(CurrentIso);
+	ini.Entry( L"CurrentIso", res, res, ini.IsLoading() || IsPortable() );
+	CurrentIso = res.GetFullPath();
 
 	ini.Entry(wxT("CurrentBlockdump"), EmuConfig.CurrentBlockdump, EmuConfig.CurrentBlockdump);
-	ini.Entry(wxT("CurrentELF"), EmuConfig.CurrentELF, EmuConfig.CurrentELF);
+	IniEntry( CurrentELF );
 	ini.Entry(wxT("CurrentIRX"), EmuConfig.CurrentIRX, EmuConfig.CurrentIRX);
 
 	IniEntry( EnableSpeedHacks );
@@ -544,6 +559,8 @@ void AppConfig::LoadSaveRootItems( IniInterface& ini )
 	IniEntry( EnablePresets );
 	IniEntry( PresetIndex );
 	IniEntry( AskOnBoot );
+
+	ini.EnumEntry( L"CdvdSource", CdvdSource, CDVD_SourceLabels, CdvdSource );
 	
 	#ifdef __WXMSW__
 	ini.Entry(wxT("McdCompressNTFS"), EmuOptions.McdCompressNTFS, EmuOptions.McdCompressNTFS);
@@ -668,16 +685,15 @@ void AppConfig::FolderOptions::LoadSave( IniInterface& ini )
 		for( int i=0; i<FolderId_COUNT; ++i )
 			operator[]( (FoldersEnum_t)i ).Normalize();
 
-		EmuConfig.CurrentDiscDrive = RunDisc.ToStdString();
 		EmuFolders::Settings = GetSettingsFolder();
-		EmuFolders::Bios = Bios;
-		EmuFolders::Snapshots = Snapshots;
-		EmuFolders::Savestates = Savestates;
-		EmuFolders::MemoryCards = MemoryCards;
-		EmuFolders::Logs = Logs;
-		EmuFolders::Langs = Langs;
-		EmuFolders::Cheats = Cheats;
-		EmuFolders::CheatsWS = CheatsWS;
+		EmuFolders::Bios = GetResolvedFolder(FolderId_Bios);
+		EmuFolders::Snapshots = GetResolvedFolder(FolderId_Snapshots);
+		EmuFolders::Savestates = GetResolvedFolder(FolderId_Savestates);
+		EmuFolders::MemoryCards = GetResolvedFolder(FolderId_MemoryCards);
+		EmuFolders::Logs = GetResolvedFolder(FolderId_Logs);
+		EmuFolders::Langs = GetResolvedFolder(FolderId_Langs);
+		EmuFolders::Cheats = GetResolvedFolder(FolderId_Cheats);
+		EmuFolders::CheatsWS = GetResolvedFolder(FolderId_CheatsWS);
 	}
 }
 
@@ -1118,9 +1134,9 @@ static void LoadUiSettings()
 	g_Conf = std::make_unique<AppConfig>();
 	g_Conf->LoadSave( loader, wrapper );
 
-	if( !wxFile::Exists( EmuConfig.CurrentIso ) )
+	if( !wxFile::Exists( g_Conf->CurrentIso ) )
 	{
-		EmuConfig.CurrentIso.clear();
+		g_Conf->CurrentIso.clear();
 	}
 
 	sApp.DispatchUiSettingsEvent( loader );
@@ -1155,12 +1171,12 @@ void AppLoadSettings()
 
 static void SaveUiSettings()
 {	
-	if( !wxFile::Exists(EmuConfig.CurrentIso ) )
+	if( !wxFile::Exists( g_Conf->CurrentIso ) )
 	{
-		EmuConfig.CurrentIso.clear();
+		g_Conf->CurrentIso.clear();
 	}
 
-	sApp.GetRecentIsoManager().Add( EmuConfig.CurrentIso );
+	sApp.GetRecentIsoManager().Add( g_Conf->CurrentIso );
 
 	AppIniSaver saver;
 	wxSettingsInterface wxsi(&saver.GetConfig());

@@ -21,6 +21,7 @@
 #include <wx/stdpaths.h>
 #include "fmt/core.h"
 
+#include "common/StringUtil.h"
 #include "common/Threading.h"
 
 #include "ps2/BiosTools.h"
@@ -196,7 +197,7 @@ void AppCoreThread::ChangeCdvdSource()
 		return;
 	}
 
-	CDVD_SourceType cdvdsrc(EmuConfig.CdvdSource);
+	CDVD_SourceType cdvdsrc(g_Conf->CdvdSource);
 	if (cdvdsrc == CDVDsys_GetSourceType())
 		return;
 
@@ -215,13 +216,18 @@ void Pcsx2App::SysApplySettings()
 		return;
 	CoreThread.ApplySettings(g_Conf->EmuOptions);
 
-	CDVD_SourceType cdvdsrc(EmuConfig.CdvdSource);
-	if (cdvdsrc != CDVDsys_GetSourceType() || (cdvdsrc == CDVD_SourceType::Iso && (CDVDsys_GetFile(cdvdsrc) != EmuConfig.CurrentIso)))
+	const CDVD_SourceType cdvdsrc(g_Conf->CdvdSource);
+	const std::string currentIso(StringUtil::wxStringToUTF8String(g_Conf->CurrentIso));
+	const std::string currentDisc(StringUtil::wxStringToUTF8String(g_Conf->Folders.RunDisc));
+	if (cdvdsrc != CDVDsys_GetSourceType() ||
+			CDVDsys_GetFile(CDVD_SourceType::Iso) != currentIso ||
+			CDVDsys_GetFile(CDVD_SourceType::Disc) != currentDisc)
 	{
 		CoreThread.ResetCdvd();
 	}
 
-	CDVDsys_SetFile(CDVD_SourceType::Iso, EmuConfig.CurrentIso);
+	CDVDsys_SetFile(CDVD_SourceType::Iso, currentIso);
+	CDVDsys_SetFile(CDVD_SourceType::Disc, currentDisc);
 }
 
 void AppCoreThread::OnResumeReady()
@@ -590,7 +596,7 @@ void AppCoreThread::OnResumeInThread(SystemsMask systemsToReinstate)
 {
 	if (m_resetCdvd)
 	{
-		CDVDsys_ChangeSource(EmuConfig.CdvdSource);
+		CDVDsys_ChangeSource(g_Conf->CdvdSource);
 		cdvdCtrlTrayOpen();
 		DoCDVDopen();
 		m_resetCdvd = false;

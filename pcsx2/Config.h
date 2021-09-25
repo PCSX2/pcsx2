@@ -570,11 +570,7 @@ struct Pcsx2Config
 	std::string GzipIsoIndexTemplate; // for quick-access index with gzipped ISO
 
 	// Set at runtime, not loaded from config.
-	CDVD_SourceType CdvdSource;
-	std::string CurrentIso;
-	std::string CurrentDiscDrive;
 	std::string CurrentBlockdump;
-	std::string CurrentELF;
 	std::string CurrentIRX;
 	std::string CurrentGameArgs;
 	AspectRatioType CurrentAspectRatio = AspectRatioType::R4_3;
