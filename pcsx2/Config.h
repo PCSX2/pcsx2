@@ -493,25 +493,6 @@ struct Pcsx2Config
 	};
 
 	// ------------------------------------------------------------------------
-	struct FolderOptions
-	{
-		wxDirName
-			Settings,
-			Bios,
-			Snapshots,
-			Savestates,
-			MemoryCards,
-			Langs,
-			Logs,
-			Cheats,
-			CheatsWS;
-
-		// FolderOptions is expected to be initialized by the frontend, not
-		// loaded in the base config class.
-		FolderOptions();
-	};
-
-	// ------------------------------------------------------------------------
 	struct FilenameOptions
 	{
 		std::string Bios;
@@ -581,7 +562,6 @@ struct Pcsx2Config
 
 	TraceLogFilters		Trace;
 
-	FolderOptions Folders;
 	FilenameOptions BaseFilenames;
 
 	// Memorycard options - first 2 are default slots, last 6 are multitap 1 and 2
@@ -634,6 +614,19 @@ struct Pcsx2Config
 };
 
 extern Pcsx2Config EmuConfig;
+
+namespace EmuFolders
+{
+	extern wxDirName Settings;
+	extern wxDirName Bios;
+	extern wxDirName Snapshots;
+	extern wxDirName Savestates;
+	extern wxDirName MemoryCards;
+	extern wxDirName Langs;
+	extern wxDirName Logs;
+	extern wxDirName Cheats;
+	extern wxDirName CheatsWS;
+}
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Helper Macros for Reading Emu Configurations.

@@ -61,7 +61,7 @@ void PADSaveConfig()
 	FILE* f;
 
 	wxString iniName(L"PAD.ini");
-	const std::string iniFile = std::string(EmuConfig.Folders.Settings.Combine(iniName).GetFullPath()); // default path, just in case
+	const std::string iniFile = std::string(EmuFolders::Settings.Combine(iniName).GetFullPath()); // default path, just in case
 	f = fopen(iniFile.c_str(), "w");
 	if (f == NULL)
 	{
@@ -96,7 +96,7 @@ void PADLoadConfig()
 
 
 	wxString iniName(L"PAD.ini");
-	const std::string iniFile = std::string(EmuConfig.Folders.Settings.Combine(iniName).GetFullPath()); // default path, just in case
+	const std::string iniFile = std::string(EmuFolders::Settings.Combine(iniName).GetFullPath()); // default path, just in case
 	f = fopen(iniFile.c_str(), "r");
 	if (f == nullptr)
 	{

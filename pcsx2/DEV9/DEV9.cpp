@@ -203,7 +203,7 @@ s32 DEV9open(void* pDsp)
 
 	if (hddPath.is_relative())
 	{
-		ghc::filesystem::path path(EmuConfig.Folders.Settings.ToString().wx_str());
+		ghc::filesystem::path path(EmuFolders::Settings.ToString().wx_str());
 		hddPath = path / hddPath;
 	}
 
@@ -1092,7 +1092,7 @@ void ApplyConfigIfRunning(ConfigDEV9 oldConfig)
 	if (hddPath.is_relative())
 	{
 		//GHC uses UTF8 on all platforms
-		ghc::filesystem::path path(EmuConfig.Folders.Settings.ToString().wx_str());
+		ghc::filesystem::path path(EmuFolders::Settings.ToString().wx_str());
 		hddPath = path / hddPath;
 	}
 

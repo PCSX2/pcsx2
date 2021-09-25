@@ -38,7 +38,7 @@ bool FileExists(std::wstring szPath)
 
 void SaveConf()
 {
-	const std::wstring file(EmuConfig.Folders.Settings.Combine(wxString("DEV9.cfg")).GetFullPath());
+	const std::wstring file(EmuFolders::Settings.Combine(wxString("DEV9.cfg")).GetFullPath());
 	DeleteFile(file.c_str());
 
 	//Create file with UT16 BOM to allow PrivateProfile to save unicode data
@@ -89,7 +89,7 @@ void SaveConf()
 
 void LoadConf()
 {
-	const std::wstring file(EmuConfig.Folders.Settings.Combine(wxString("DEV9.cfg")).GetFullPath());
+	const std::wstring file(EmuFolders::Settings.Combine(wxString("DEV9.cfg")).GetFullPath());
 	if (FileExists(file.c_str()) == false)
 	{
 		LoadDnsHosts();

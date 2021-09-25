@@ -29,6 +29,19 @@
 #include "gui/AppConfig.h"
 #endif
 
+namespace EmuFolders
+{
+	wxDirName Settings;
+	wxDirName Bios;
+	wxDirName Snapshots;
+	wxDirName Savestates;
+	wxDirName MemoryCards;
+	wxDirName Langs;
+	wxDirName Logs;
+	wxDirName Cheats;
+	wxDirName CheatsWS;
+} // namespace EmuFolders
+
 void TraceLogFilters::LoadSave(SettingsWrapper& wrap)
 {
 	SettingsWrapSection("EmuCore/TraceLog");
@@ -457,10 +470,6 @@ void Pcsx2Config::FilenameOptions::LoadSave(SettingsWrapper& wrap)
 	wrap.Entry(CURRENT_SETTINGS_SECTION, "BIOS", Bios, Bios);
 }
 
-Pcsx2Config::FolderOptions::FolderOptions()
-{
-}
-
 void Pcsx2Config::FramerateOptions::SanityCheck()
 {
 	// Ensure Conformation of various options...
@@ -595,12 +604,12 @@ bool Pcsx2Config::MultitapEnabled(uint port) const
 
 wxString Pcsx2Config::FullpathToBios() const
 {
-	return Path::Combine(Folders.Bios, wxString(BaseFilenames.Bios));
+	return Path::Combine(EmuFolders::Bios, wxString(BaseFilenames.Bios));
 }
 
 wxString Pcsx2Config::FullpathToMcd(uint slot) const
 {
-	return Path::Combine(Folders.MemoryCards, wxString(Mcd[slot].Filename));
+	return Path::Combine(EmuFolders::MemoryCards, wxString(Mcd[slot].Filename));
 }
 
 void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)

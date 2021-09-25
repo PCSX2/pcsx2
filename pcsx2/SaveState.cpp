@@ -78,7 +78,7 @@ wxString SaveStateBase::GetFilename( int slot )
 	wxString serialName( DiscSerial );
 	if (serialName.IsEmpty()) serialName = L"BIOS";
 
-	return (EmuConfig.Folders.Savestates +
+	return (EmuFolders::Savestates +
 		pxsFmt( L"%s (%08X).%02d.p2s", WX_STR(serialName), ElfCRC, slot )).GetFullPath();
 
 	//return (g_Conf->Folders.Savestates +

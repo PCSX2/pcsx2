@@ -26,7 +26,7 @@ void initIni()
 {
 	if (!pathSet)
 	{
-		path = EmuConfig.Folders.Settings.Combine(path).GetFullPath();
+		path = EmuFolders::Settings.Combine(path).GetFullPath();
 		pathSet = true;
 	}
 	if (spuConfig == nullptr)
