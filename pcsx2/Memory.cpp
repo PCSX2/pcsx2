@@ -850,7 +850,8 @@ void eeMemoryReserve::Reset()
 	vtlb_VMap(0x00000000,0x00000000,0x20000000);
 	vtlb_VMapUnmap(0x20000000,0x60000000);
 
-	LoadBIOS();
+	if (!LoadBIOS())
+		pxFailRel("Failed to load BIOS");
 }
 
 void eeMemoryReserve::Decommit()

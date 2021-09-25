@@ -645,9 +645,9 @@ bool Pcsx2Config::MultitapEnabled(uint port) const
 	return (port == 0) ? MultitapPort0_Enabled : MultitapPort1_Enabled;
 }
 
-wxString Pcsx2Config::FullpathToBios() const
+std::string Pcsx2Config::FullpathToBios() const
 {
-	return Path::Combine(EmuFolders::Bios, StringUtil::UTF8StringToWxString(BaseFilenames.Bios));
+	return StringUtil::wxStringToUTF8String(Path::Combine(EmuFolders::Bios, StringUtil::UTF8StringToWxString(BaseFilenames.Bios)));
 }
 
 wxString Pcsx2Config::FullpathToMcd(uint slot) const

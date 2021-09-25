@@ -38,6 +38,7 @@
 #endif
 
 #include "common/IniInterface.h"
+#include "common/FileSystem.h"
 #include "common/StringUtil.h"
 #include "common/AppTrait.h"
 
@@ -75,61 +76,15 @@ std::unique_ptr<AppConfig> g_Conf;
 
 WindowInfo g_gs_window_info;
 
-// Returns a string message telling the user to consult guides for obtaining a legal BIOS.
-// This message is in a function because it's used as part of several dialogs in PCSX2 (there
-// are multiple variations on the BIOS and BIOS folder checks).
-wxString BIOS_GetMsg_Required()
+static bool CheckForBIOS()
 {
-	return pxE(L"PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't count).  Please consult the FAQs and Guides for further instructions."
-		);
-}
+	if (FileSystem::FileExists(g_Conf->EmuOptions.FullpathToBios().c_str()))
+		return true;
 
-class BIOSLoadErrorEvent : public pxExceptionEvent
-{
-	typedef pxExceptionEvent _parent;
+	wxString error = pxE(L"PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't count).  Please consult the FAQs and Guides for further instructions.");
 
-public:
-	BIOSLoadErrorEvent(BaseException* ex = NULL) : _parent(ex) {}
-	BIOSLoadErrorEvent(const BaseException& ex) : _parent(ex) {}
-
-	virtual ~BIOSLoadErrorEvent() = default;
-	virtual BIOSLoadErrorEvent *Clone() const { return new BIOSLoadErrorEvent(*this); }
-
-protected:
-	void InvokeEvent();
-
-};
-
-static bool HandleBIOSError(BaseException& ex)
-{
-	if (!pxDialogExists(L"Dialog:" + Dialogs::SysConfigDialog::GetNameStatic()))
-	{
-		if (!Msgbox::OkCancel(ex.FormatDisplayMessage() + L"\n\n" + BIOS_GetMsg_Required()
-			+ L"\n\n" + _("Press Ok to go to the BIOS Configuration Panel."), _("PS2 BIOS Error")))
-			return false;
-	}
-	else
-	{
-		Msgbox::Alert(ex.FormatDisplayMessage() + L"\n\n" + BIOS_GetMsg_Required(), _("PS2 BIOS Error"));
-	}
-
-	g_Conf->ComponentsTabName = L"BIOS";
-
-	return AppOpenModalDialog<Dialogs::SysConfigDialog>(L"BIOS") != wxID_CANCEL;
-}
-
-void BIOSLoadErrorEvent::InvokeEvent()
-{
-	if (!m_except) return;
-
-	ScopedExcept deleteMe(m_except);
-	m_except = NULL;
-
-	if (!HandleBIOSError(*deleteMe))
-	{
-		Console.Warning("User canceled BIOS configuration.");
-		Msgbox::Alert(_("Warning! Valid BIOS has not been selected. PCSX2 may be inoperable."));
-	}
+	Msgbox::Alert(error, _("PS2 BIOS Error"));
+	return false;
 }
 
 // Allows for activating menu actions from anywhere in PCSX2.
@@ -560,19 +515,6 @@ void Pcsx2App::HandleEvent(wxEvtHandler* handler, wxEventFunction func, wxEvent&
 	{
 		Console.Warning( ex.FormatDiagnosticMessage() );
 		Exit();
-	}
-	// ----------------------------------------------------------------------------
-	catch( Exception::BiosLoadFailed& ex )
-	{
-		// Commandline 'nogui' users will not receive an error message, but at least PCSX2 will
-		// terminate properly.
-		GSFrame* gsframe = wxGetApp().GetGsFramePtr();
-		gsframe->Close();
-
-		Console.Error(ex.FormatDiagnosticMessage());
-
-		if (wxGetApp().HasGUI())
-			AddIdleEvent(BIOSLoadErrorEvent(ex));
 	}
 	// ----------------------------------------------------------------------------
 	catch( Exception::SaveStateLoadError& ex)
@@ -1007,6 +949,9 @@ protected:
 // fresh VM with the requested sources.
 void Pcsx2App::SysExecute()
 {
+	if (!CheckForBIOS())
+		return;
+
 	SysExecutorThread.PostEvent( new SysExecEvent_Execute() );
 }
 
@@ -1015,6 +960,9 @@ void Pcsx2App::SysExecute()
 // sources.
 void Pcsx2App::SysExecute( CDVD_SourceType cdvdsrc, const wxString& elf_override )
 {
+	if (!CheckForBIOS())
+		return;
+
 	SysExecutorThread.PostEvent( new SysExecEvent_Execute(cdvdsrc, elf_override) );
 #ifndef DISABLE_RECORDING
 	if (g_Conf->EmuOptions.EnableRecordingTools)

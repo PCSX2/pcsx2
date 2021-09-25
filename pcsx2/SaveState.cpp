@@ -107,8 +107,8 @@ wxString SaveStateBase::GetSavestateFolder( int slot, bool isSavingOrLoading )
 	else
 	{
 		// Still inside the BIOS/not running a game (why would anyone want to do this?)
-		wxString biosString = (pxsFmt(L"BIOS (%s v%u.%u)", WX_STR(biosZone), (BiosVersion >> 8), BiosVersion & 0xff));
-		serialName = biosString;
+		const std::string biosString(StringUtil::StdStringFromFormat("BIOS (%s v%u.%u)", BiosZone.c_str(), (BiosVersion >> 8), BiosVersion & 0xff));
+		serialName = StringUtil::UTF8StringToWxString(biosString);
 		CRCvalue = L"None";
 	}
 
@@ -183,11 +183,8 @@ SaveStateBase& SaveStateBase::FreezeBios()
 	
 	u32 bioscheck = BiosChecksum;
 	char biosdesc[256];
-
-	pxToUTF8 utf8(BiosDescription);
-
 	memzero( biosdesc );
-	memcpy( biosdesc, utf8, std::min( sizeof(biosdesc), utf8.Length() ) );
+	memcpy( biosdesc, BiosDescription.c_str(), std::min( sizeof(biosdesc), BiosDescription.length() ) );
 	
 	Freeze( bioscheck );
 	Freeze( biosdesc );
@@ -197,9 +194,9 @@ SaveStateBase& SaveStateBase::FreezeBios()
 		Console.Newline();
 		Console.Indent(1).Error( "Warning: BIOS Version Mismatch, savestate may be unstable!" );
 		Console.Indent(2).Error(
-			"Current BIOS:   %ls (crc=0x%08x)\n"
+			"Current BIOS:   %s (crc=0x%08x)\n"
 			"Savestate BIOS: %s (crc=0x%08x)\n",
-			BiosDescription.wx_str(), BiosChecksum,
+			BiosDescription.c_str(), BiosChecksum,
 			biosdesc, bioscheck
 		);
 	}
