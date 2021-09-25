@@ -194,6 +194,7 @@ set(pcsx2Headers
 	Gif_Unit.h
 	GS.h
 	Hardware.h
+	Host.h
 	Hw.h
 	IopBios.h
 	IopCommon.h
@@ -937,6 +938,7 @@ set(pcsx2GuiSources
 	gui/AppCoreThread.cpp
 	gui/AppEventSources.cpp
 	gui/AppGameDatabase.cpp
+	gui/AppHost.cpp
 	gui/AppUserMode.cpp
 	gui/AppInit.cpp
 	gui/AppMain.cpp

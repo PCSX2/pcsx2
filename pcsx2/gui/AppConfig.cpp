@@ -102,7 +102,13 @@ namespace PathDefs
 			static const wxDirName retval(L"docs");
 			return retval;
 		}
-	}; // namespace Base
+
+		const wxDirName& Resources()
+		{
+			static const wxDirName retval(L"resources");
+			return retval;
+		}
+	};
 
 	// Specifies the root folder for the application install.
 	// (currently it's the CWD, but in the future I intend to move all binaries to a "bin"
@@ -236,6 +242,15 @@ namespace PathDefs
 		return wxDirName(wxStandardPaths::Get().GetResourcesDir());
 #else
 		return AppRoot() + Base::Langs();
+#endif
+	}
+
+	wxDirName GetResources()
+	{
+#ifdef __APPLE__
+		return wxDirName(wxStandardPaths::Get().GetResourcesDir());
+#else
+		return AppRoot() + Base::Resources();
 #endif
 	}
 
@@ -687,6 +702,7 @@ AppConfig::FolderOptions::FolderOptions()
 	, Logs(PathDefs::GetLogs())
 	, Cheats(PathDefs::GetCheats())
 	, CheatsWS(PathDefs::GetCheatsWS())
+	, Resources(PathDefs::GetResources())
 
 	, RunIso(PathDefs::GetDocuments()) // raw default is always the Documents folder.
 	, RunELF(PathDefs::GetDocuments()) // raw default is always the Documents folder.
@@ -752,6 +768,7 @@ void AppSetEmuFolders()
 	EmuFolders::Langs = GetResolvedFolder(FolderId_Langs);
 	EmuFolders::Cheats = GetResolvedFolder(FolderId_Cheats);
 	EmuFolders::CheatsWS = GetResolvedFolder(FolderId_CheatsWS);
+	EmuFolders::Resources = g_Conf->Folders.Resources;
 }
 
 // ------------------------------------------------------------------------
