@@ -196,6 +196,9 @@ const char* dialog_message(int ID, bool* updateText)
 		case IDC_PRELOAD_TEXTURES:
 			return cvtString("Uploads entire textures at once instead of small pieces, avoiding redundant uploads when possible.\n"
 				   "Improves performance in most games, but can make a small selection slower.");
+		case IDC_TEX_IN_RT:
+			return cvtString("Allows the texture cache to reuse as an input texture the inner portion of a previous framebuffer.\n"
+				"By default this is enabled only in Jak games.");
 		default:
 			if (updateText)
 				*updateText = false;

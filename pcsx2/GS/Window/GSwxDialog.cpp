@@ -346,6 +346,7 @@ HacksTab::HacksTab(wxWindow* parent)
 	m_ui.addCheckBox(rend_hacks_grid, "Disable Safe Features",     "UserHacks_Disable_Safe_Features",      IDC_SAFE_FEATURES,     hacks_prereq);
 	m_ui.addCheckBox(rend_hacks_grid, "Preload Frame Data",        "preload_frame_with_gs_data",           IDC_PRELOAD_GS,        hacks_prereq);
 	m_ui.addCheckBox(rend_hacks_grid, "Fast Texture Invalidation", "UserHacks_DisablePartialInvalidation", IDC_FAST_TC_INV,       hacks_prereq);
+	m_ui.addCheckBox(rend_hacks_grid, "Texture Inside RT",         "UserHacks_TextureInsideRt",            IDC_TEX_IN_RT,         hacks_prereq);
 
 	// Upscale
 	m_ui.addCheckBox(upscale_hacks_grid, "Align Sprite",   "UserHacks_align_sprite_X",  IDC_ALIGN_SPRITE,    upscale_hacks_prereq);
