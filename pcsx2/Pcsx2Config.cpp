@@ -515,8 +515,6 @@ Pcsx2Config::Pcsx2Config()
 	}
 
 	GzipIsoIndexTemplate = "$(f).pindex.tmp";
-
-	CdvdSource = CDVD_SourceType::Iso;
 }
 
 void Pcsx2Config::LoadSave(SettingsWrapper& wrap)
@@ -604,12 +602,12 @@ bool Pcsx2Config::MultitapEnabled(uint port) const
 
 wxString Pcsx2Config::FullpathToBios() const
 {
-	return Path::Combine(EmuFolders::Bios, wxString(BaseFilenames.Bios));
+	return Path::Combine(EmuFolders::Bios, StringUtil::UTF8StringToWxString(BaseFilenames.Bios));
 }
 
 wxString Pcsx2Config::FullpathToMcd(uint slot) const
 {
-	return Path::Combine(EmuFolders::MemoryCards, wxString(Mcd[slot].Filename));
+	return Path::Combine(EmuFolders::MemoryCards, StringUtil::UTF8StringToWxString(Mcd[slot].Filename));
 }
 
 void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)

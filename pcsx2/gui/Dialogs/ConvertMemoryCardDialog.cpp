@@ -32,14 +32,14 @@ enum MemoryCardConversionType {
 	MemoryCardConversion_MaxCount
 };
 
-Dialogs::ConvertMemoryCardDialog::ConvertMemoryCardDialog( wxWindow* parent, const wxDirName& mcdPath, const Pcsx2Config::McdOptions& mcdSourceConfig )
+Dialogs::ConvertMemoryCardDialog::ConvertMemoryCardDialog( wxWindow* parent, const wxDirName& mcdPath, MemoryCardType type, const wxString& sourceFilename )
 	: wxDialogWithHelpers( parent, _( "Convert a memory card to a different format" ) )
 	, m_mcdPath( mcdPath )
-	, m_mcdSourceFilename( mcdSourceConfig.Filename )
+	, m_mcdSourceFilename( sourceFilename )
 {
 	SetMinWidth( 472 * MSW_GetDPIScale());
 
-	CreateControls( mcdSourceConfig.Type );
+	CreateControls( type );
 
 	if ( m_radio_CardType ) m_radio_CardType->Realize();
 
@@ -62,7 +62,7 @@ Dialogs::ConvertMemoryCardDialog::ConvertMemoryCardDialog( wxWindow* parent, con
 
 	s_padding += m_radio_CardType | pxSizerFlags::StdExpand();
 
-	if ( mcdSourceConfig.Type != MemoryCardType::MemoryCard_File ) {
+	if ( type != MemoryCardType::MemoryCard_File ) {
 		s_padding += Heading( pxE( L"Please note that the resulting file may not actually contain all saves, depending on how many are in the source memory card." ) );
 	}
 	s_padding += Heading( pxE( L"WARNING: Converting a memory card may take a while! Please do not close the emulator during the conversion process, even if the emulator is no longer responding to input." ) );

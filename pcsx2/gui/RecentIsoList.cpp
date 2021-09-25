@@ -68,7 +68,7 @@ void RecentIsoManager::OnChangedSelection( wxCommandEvent& evt )
 	// Actually there is no change on the selection so the event can be skip
 	// Note: It also avoids a deadlock which appears when the core thread is already paused
 	// and ScopedCoreThreadPopup try to stop the thread (GSOpen1 code path)
-	if( (EmuConfig.CdvdSource == CDVD_SourceType::Iso) && (m_Items[i].Filename == EmuConfig.CurrentIso) )
+	if( (g_Conf->CdvdSource == CDVD_SourceType::Iso) && (m_Items[i].Filename == g_Conf->CurrentIso) )
 	{
 		evt.Skip();
 		return;
@@ -224,7 +224,7 @@ void RecentIsoManager::LoadListFrom( IniInterface& ini )
 		ini.Entry( pxsFmt( L"Filename%02d", i ), loadtmp, loadtmp, true );
 		if( loadtmp.GetFullName()!=L"" ) Add( loadtmp.GetFullPath() );
 	}
-	Add(EmuConfig.CurrentIso );
+	Add( g_Conf->CurrentIso );
 
 	ini.GetConfig().SetRecordDefaults( true );
 }

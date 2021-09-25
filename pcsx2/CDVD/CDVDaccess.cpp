@@ -33,6 +33,7 @@
 #include "IsoFS/IsoFSCDVD.h"
 #include "CDVDisoReader.h"
 
+#include "common/StringUtil.h"
 #include "DebugTools/SymbolMap.h"
 #include "Config.h"
 
@@ -385,9 +386,9 @@ bool DoCDVDopen()
 		somepick = L"Untitled";
 
 	if (EmuConfig.CurrentBlockdump.empty())
-		EmuConfig.CurrentBlockdump = wxGetCwd().ToStdString();
+		EmuConfig.CurrentBlockdump = StringUtil::wxStringToUTF8String(wxGetCwd());
 
-	wxString temp(Path::Combine(EmuConfig.CurrentBlockdump, somepick));
+	wxString temp(Path::Combine(StringUtil::UTF8StringToWxString(EmuConfig.CurrentBlockdump), somepick));
 
 #ifdef ENABLE_TIMESTAMPS
 	wxDateTime curtime(wxDateTime::GetTimeNow());

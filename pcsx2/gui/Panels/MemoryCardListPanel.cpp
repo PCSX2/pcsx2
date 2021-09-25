@@ -23,6 +23,7 @@
 
 #include "gui/Dialogs/ConfigurationDialog.h"
 #include "common/IniInterface.h"
+#include "common/StringUtil.h"
 #include "Sio.h"
 
 #include <wx/filepicker.h>
@@ -549,7 +550,7 @@ void Panels::MemoryCardListPanel_Simple::Apply()
 		g_Conf->EmuOptions.Mcd[slot].Type = m_Cards[slot].Type;
 		g_Conf->EmuOptions.Mcd[slot].Enabled = m_Cards[slot].IsEnabled && m_Cards[slot].IsPresent;
 		if (m_Cards[slot].IsPresent)
-			g_Conf->EmuOptions.Mcd[slot].Filename = m_Cards[slot].Filename.GetFullName();
+			g_Conf->EmuOptions.Mcd[slot].Filename = StringUtil::wxStringToUTF8String(m_Cards[slot].Filename.GetFullName());
 		else
 			g_Conf->EmuOptions.Mcd[slot].Filename.clear();
 
@@ -570,7 +571,7 @@ void Panels::MemoryCardListPanel_Simple::AppStatusEvent_OnSettingsApplied()
 	for (uint slot = 0; slot < 8; ++slot)
 	{
 		m_Cards[slot].IsEnabled = g_Conf->EmuOptions.Mcd[slot].Enabled;
-		m_Cards[slot].Filename = g_Conf->EmuOptions.Mcd[slot].Filename;
+		m_Cards[slot].Filename = StringUtil::UTF8StringToWxString(g_Conf->EmuOptions.Mcd[slot].Filename);
 
 		// Automatically create the enabled but non-existing file such that it can be managed (else will get created anyway on boot)
 		wxString targetFile = (GetMcdPath() + m_Cards[slot].Filename.GetFullName()).GetFullPath();
@@ -697,11 +698,7 @@ void Panels::MemoryCardListPanel_Simple::UiConvertCard(McdSlotItem& card)
 		return;
 	}
 
-	Pcsx2Config::McdOptions config;
-	config.Filename = card.Filename.GetFullName();
-	config.Enabled = card.IsEnabled;
-	config.Type = card.Type;
-	Dialogs::ConvertMemoryCardDialog dialog(this, m_FolderPicker->GetPath(), config);
+	Dialogs::ConvertMemoryCardDialog dialog(this, m_FolderPicker->GetPath(), card.Type, card.Filename.GetFullName());
 	wxWindowID result = dialog.ShowModal();
 
 	if (result != wxID_CANCEL)
