@@ -207,8 +207,6 @@ namespace StringUtil
 		return wxString::FromUTF8(str.data(), str.length());
 	}
 
-#ifdef _WIN32
-
 	/// Converts the specified UTF-8 string to a wide string.
 	std::wstring UTF8StringToWideString(const std::string_view& str);
 	bool UTF8StringToWideString(std::wstring& dest, const std::string_view& str);
@@ -216,7 +214,4 @@ namespace StringUtil
 	/// Converts the specified wide string to a UTF-8 string.
 	std::string WideStringToUTF8String(const std::wstring_view& str);
 	bool WideStringToUTF8String(std::string& dest, const std::wstring_view& str);
-
-#endif
-
 } // namespace StringUtil
