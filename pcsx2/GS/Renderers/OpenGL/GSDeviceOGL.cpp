@@ -1930,12 +1930,16 @@ void GSDeviceOGL::SetupCBMisc(const GSVector4i& channel)
 void GSDeviceOGL::SetupPipeline(const VSSelector& vsel, const GSSelector& gsel, const PSSelector& psel)
 {
 	auto i = m_ps.find(psel);
-	GLuint ps = i->second;
+	GLuint ps;
 
 	if (i == m_ps.end())
 	{
 		ps = CompilePS(psel);
 		m_ps[psel] = ps;
+	}
+	else
+	{
+		ps = i->second;
 	}
 
 	{
