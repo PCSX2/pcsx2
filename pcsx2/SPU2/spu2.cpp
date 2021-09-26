@@ -115,7 +115,7 @@ void SPU2writeDMA7Mem(u16* pMem, u32 size)
 
 s32 SPU2reset(PS2Modes isRunningPSXMode)
 {
-	u32 requiredSampleRate = (isRunningPSXMode == PS2Modes::PSX) ? 44100 : 48000;
+	int requiredSampleRate = (isRunningPSXMode == PS2Modes::PSX) ? 44100 : 48000;
 
 	if (isRunningPSXMode == PS2Modes::PS2)
 	{
