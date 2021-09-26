@@ -2492,6 +2492,7 @@ SCES-51904:
   gameFixes:
     - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+    - VUKickstartHack # Stops you seeing through walls.
 SCES-51910:
   name: "Arc the Lad - Twilight of the Spirits"
   region: "PAL-M5"
@@ -2559,6 +2560,7 @@ SCES-52306:
   gameFixes:
     - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+    - VUKickstartHack # Stops you seeing through walls.
 SCES-52327:
   name: "Forbidden Siren"
   region: "PAL-F"
@@ -5576,6 +5578,7 @@ SCUS-97275:
   gameFixes:
     - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+    - VUKickstartHack # Stops you seeing through walls.
 SCUS-97276:
   name: "NFL GameDay 2004"
   region: "NTSC-U"
@@ -5757,6 +5760,7 @@ SCUS-97366:
   gameFixes:
     - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+    - VUKickstartHack # Stops you seeing through walls.
 SCUS-97367:
   name: "Neopets - The Darkest Faerie"
   region: "NTSC-U"
@@ -5768,6 +5772,7 @@ SCUS-97368:
   gameFixes:
     - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+    - VUKickstartHack # Stops you seeing through walls.
 SCUS-97369:
   name: "ATV Off-Road Fury 2"
   region: "NTSC-U"
@@ -6233,6 +6238,7 @@ SCUS-97511:
   gameFixes:
     - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+    - VUKickstartHack # Stops you seeing through walls.
 SCUS-97512:
   name: "Gran Turismo 3 - A-Spec [Greatest Hits]"
   region: "NTSC-U"
@@ -41017,6 +41023,7 @@ TCES-51904:
   gameFixes:
     - EETimingHack # Get rids of DMA8/9 non-fatal errors.
     - VIF1StallHack # Fixes broken HUD.
+    - VUKickstartHack # Stops you seeing through walls.
 TCES-52004:
   name: "Killzone Beta Trial Code"
   region: "PAL-E"
