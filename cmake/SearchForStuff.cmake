@@ -268,3 +268,7 @@ else()
 endif()
 
 add_subdirectory(3rdparty/glad EXCLUDE_FROM_ALL)
+
+if(CUBEB_API)
+	add_subdirectory(3rdparty/cubeb EXCLUDE_FROM_ALL)
+endif()

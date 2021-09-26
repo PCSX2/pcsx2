@@ -17,3 +17,6 @@
 	path = 3rdparty/wil
 	url = https://github.com/microsoft/wil.git
 	branch = master
+[submodule "3rdparty/cubeb/cubeb"]
+	path = 3rdparty/cubeb/cubeb
+	url = https://github.com/mozilla/cubeb.git
