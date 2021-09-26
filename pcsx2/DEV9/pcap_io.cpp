@@ -376,7 +376,10 @@ PCAPAdapter::PCAPAdapter()
 	if (PCAPGetWin32Adapter(config.Eth, &adapter, &buffer))
 		InitInternalServer(&adapter);
 	else
+	{
+		Console.Error("DEV9: Failed to get adapter information");
 		InitInternalServer(nullptr);
+	}
 #elif defined(__POSIX__)
 	ifaddrs adapter;
 	ifaddrs* buffer;
@@ -386,7 +389,10 @@ PCAPAdapter::PCAPAdapter()
 		freeifaddrs(buffer);
 	}
 	else
+	{
+		Console.Error("DEV9: Failed to get adapter information");
 		InitInternalServer(nullptr);
+	}
 #endif
 
 	if (pcap_io_init(config.Eth, config.EthApi == NetApi::PCAP_Switched, newMAC) == -1)

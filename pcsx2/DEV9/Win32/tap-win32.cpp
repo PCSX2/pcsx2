@@ -563,7 +563,10 @@ TAPAdapter::TAPAdapter()
 	if (TAPGetWin32Adapter(config.Eth, &adapter, &buffer))
 		InitInternalServer(&adapter);
 	else
+	{
+		Console.Error("DEV9: Failed to get adapter information");
 		InitInternalServer(nullptr);
+	}
 
 	isActive = true;
 }
