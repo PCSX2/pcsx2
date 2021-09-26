@@ -625,7 +625,7 @@ public:
 	// the sample output is determined by the SndOutVolumeShift, which is the number of bits
 	// to shift right to get a 16 bit result.
 	template <typename T>
-	static void ReadSamples(T* bData);
+	static void ReadSamples(T* bData, int nSamples = SndOutPacketSize);
 };
 
 class SndOutModule
@@ -669,6 +669,9 @@ extern SndOutModule* XAudio2Out;
 #endif
 #if defined(SPU2X_PORTAUDIO)
 extern SndOutModule* PortaudioOut;
+#endif
+#if defined(SPU2X_CUBEB)
+extern SndOutModule* CubebOut;
 #endif
 extern SndOutModule* const SDLOut;
 extern SndOutModule* mods[];

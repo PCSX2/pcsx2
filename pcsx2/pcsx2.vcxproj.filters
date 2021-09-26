@@ -1647,6 +1647,9 @@
     <ClCompile Include="PerformanceMetrics.cpp">
       <Filter>System</Filter>
     </ClCompile>
+    <ClCompile Include="SPU2\SndOut_Cubeb.cpp">
+      <Filter>System\Ps2\SPU2</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">

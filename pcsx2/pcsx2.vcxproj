@@ -41,13 +41,14 @@
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\libpng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\glad\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\cubeb\cubeb\include;$(SolutionDir)3rdparty\cubeb\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>PrecompiledHeader.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
       <AdditionalOptions>/Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
-      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;LZMA_API_STATIC;BUILD_DX=1;SPU2X_PORTAUDIO;DIRECTINPUT_VERSION=0x0800;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;LZMA_API_STATIC;BUILD_DX=1;SPU2X_CUBEB;SPU2X_PORTAUDIO;DIRECTINPUT_VERSION=0x0800;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Debug))">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Devel))">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Release))">NDEBUG;_SECURE_SCL_=0;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -357,6 +358,7 @@
     <ClCompile Include="SPU2\DplIIdecoder.cpp" />
     <ClCompile Include="SPU2\debug.cpp" />
     <ClCompile Include="SPU2\RegLog.cpp" />
+    <ClCompile Include="SPU2\SndOut_Cubeb.cpp" />
     <ClCompile Include="SPU2\SndOut_Portaudio.cpp" />
     <ClCompile Include="SPU2\wavedump_wav.cpp" />
     <ClCompile Include="SPU2\SndOut.cpp" />
@@ -1156,6 +1158,9 @@
     </ProjectReference>
     <ProjectReference Include="$(SolutionDir)3rdparty\jpgd\jpgd.vcxproj">
       <Project>{ed2f21fd-0a36-4a8f-9b90-e7d92a2acb63}</Project>
+    </ProjectReference>
+    <ProjectReference Include="$(SolutionDir)3rdparty\cubeb\cubeb.vcxproj">
+      <Project>{bf74c473-dc04-44b3-92e8-4145f4e77342}</Project>
     </ProjectReference>
     <ProjectReference Include="..\common\common.vcxproj">
       <Project>{4639972e-424e-4e13-8b07-ca403c481346}</Project>
