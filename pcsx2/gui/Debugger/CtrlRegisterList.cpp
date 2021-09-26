@@ -316,6 +316,7 @@ void CtrlRegisterList::OnDraw(wxDC& dc)
 					break;
 				}
 			}
+				[[fallthrough]];
 			case DebugInterface::NORMAL: // display them in 32 bit parts
 			{
 				switch (registerBits)
