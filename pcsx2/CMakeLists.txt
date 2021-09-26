@@ -304,6 +304,12 @@ if(TARGET PkgConfig::PORTAUDIO)
 	list(APPEND pcsx2SPU2Sources SPU2/SndOut_Portaudio.cpp)
 endif()
 
+if(CUBEB_API)
+	list(APPEND pcsx2SPU2Sources SPU2/SndOut_Cubeb.cpp)
+	target_compile_definitions(PCSX2_FLAGS INTERFACE "SPU2X_CUBEB")
+	target_link_libraries(PCSX2_FLAGS INTERFACE cubeb)
+endif()
+
 # SPU2 headers
 set(pcsx2SPU2Headers
 	SPU2/Config.h
