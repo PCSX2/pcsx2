@@ -70,7 +70,7 @@ bool PCAPGetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, std::u
 
 	DWORD dwStatus = GetAdaptersAddresses(
 		AF_UNSPEC,
-		GAA_FLAG_INCLUDE_PREFIX,
+		GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
 		NULL,
 		AdapterInfo.get(),
 		&dwBufLen);
@@ -85,7 +85,7 @@ bool PCAPGetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, std::u
 
 		DWORD dwStatus = GetAdaptersAddresses(
 			AF_UNSPEC,
-			GAA_FLAG_INCLUDE_PREFIX,
+			GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
 			NULL,
 			AdapterInfo.get(),
 			&dwBufLen);
