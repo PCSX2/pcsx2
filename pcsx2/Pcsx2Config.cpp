@@ -221,7 +221,9 @@ void Pcsx2Config::GSOptions::LoadSave( IniInterface& ini )
 {
 	ScopedIniGroup path( ini, L"GS" );
 
+#ifdef  PCSX2_DEVBUILD 
 	IniEntry( SynchronousMTGS );
+#endif
 	IniEntry( VsyncQueueSize );
 
 	IniEntry( FrameLimitEnable );
