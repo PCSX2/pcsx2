@@ -629,37 +629,52 @@ static s32 cdvdReadDvdDualInfo(s32* dualType, u32* layer1Start)
 	return CDVD->getDualInfo(dualType, layer1Start);
 }
 
+static bool cdvdIsDVD()
+{
+	if (cdvd.Type == CDVD_TYPE_DETCTDVDS || cdvd.Type == CDVD_TYPE_DETCTDVDD
+		|| cdvd.Type == CDVD_TYPE_PS2DVD || cdvd.Type == CDVD_TYPE_DVDV)
+		return true;
+	else
+		return false;
+}
+
 static uint cdvdBlockReadTime(CDVD_MODE_TYPE mode)
 {
 	int numSectors = 0;
 	int offset = 0;
-	// Sector counts are taken from google for Single layer, Dual layer DVD's and for 700MB CD's
-	switch (cdvd.Type)
-	{
-		case CDVD_TYPE_DETCTDVDS:
-		case CDVD_TYPE_PS2DVD:
-			numSectors = 2298496;
-			break;
-		case CDVD_TYPE_DETCTDVDD:
-			numSectors = 4173824 / 2; // Total sectors for both layers, assume half per layer
-			u32 layer1Start;
-			s32 dualType;
 
-			// Layer 1 needs an offset as it goes back to the middle of the disc
-			cdvdReadDvdDualInfo(&dualType, &layer1Start);
-			if (cdvd.Sector >= layer1Start)
-				offset = layer1Start;
-			break;
-		default: // Pretty much every CD format
-			numSectors = 360000;
-			break;
+	// CAV Read speed is roughly 41% in the centre full speed on outer edge. I imagine it's more logarithmic than this
+	if (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV)
+	{
+		// Sector counts are taken from google for Single layer, Dual layer DVD's and for 700MB CD's
+		switch (cdvd.Type)
+		{
+			case CDVD_TYPE_DETCTDVDS:
+			case CDVD_TYPE_PS2DVD:
+				numSectors = 2298496;
+				break;
+			case CDVD_TYPE_DETCTDVDD:
+				numSectors = 4173824 / 2; // Total sectors for both layers, assume half per layer
+				u32 layer1Start;
+				s32 dualType;
+
+				// Layer 1 needs an offset as it goes back to the middle of the disc
+				cdvdReadDvdDualInfo(&dualType, &layer1Start);
+				if (cdvd.SeekToSector >= layer1Start)
+					offset = layer1Start;
+				break;
+			default: // Pretty much every CD format
+				numSectors = 360000;
+				break;
+		}
+	
+		const float sectorSpeed = (((float)(cdvd.SeekToSector - offset) / numSectors) * 0.60f) + 0.40f;
+
+		return ((PSXCLK * cdvd.BlockSize) / ((float)(((mode == MODE_CDROM) ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.Speed) * sectorSpeed));
 	}
-	// Read speed is roughly 37% at lowest and full speed on outer edge. I imagine it's more logarithmic than this
-	// Required for Shadowman to work
-	// Use SeekToSector as Sector hasn't been updated yet
-	const float sectorSpeed = (((float)(cdvd.SeekToSector-offset) / numSectors) * 0.63f) + 0.37f; 
-	//DevCon.Warning("Read speed %f sector %d\n", sectorSpeed, cdvd.Sector);
-	return ((PSXCLK * cdvd.BlockSize) / ((float)(((mode == MODE_CDROM) ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.Speed) * sectorSpeed));
+	
+	// CLV Read Speed is constant
+	return ((PSXCLK * cdvd.BlockSize) / (float)(((mode == MODE_CDROM) ? PSX_CD_READSPEED : PSX_DVD_READSPEED) * cdvd.Speed));
 }
 
 void cdvdReset()
@@ -747,11 +762,11 @@ int cdvdReadSector()
 	if (bcr < cdvd.BlockSize)
 	{
 		CDVD_LOG("READBLOCK:  bcr < cdvd.BlockSize; %x < %x", bcr, cdvd.BlockSize);
-		if (HW_DMA3_CHCR & 0x01000000)
+		/*if (HW_DMA3_CHCR & 0x01000000)
 		{
 			HW_DMA3_CHCR &= ~0x01000000;
 			psxDmaInterrupt(3);
-		}
+		}*/
 		return -1;
 	}
 
@@ -885,6 +900,23 @@ __fi void cdvdActionInterrupt()
 	psxHu32(0x1070) |= 0x4;
 }
 
+void cdvdDMAInterrupt()
+{
+	if (HW_DMA3_CHCR & 0x01000000)
+	{
+		HW_DMA3_CHCR &= ~0x01000000;
+		psxDmaInterrupt(3);
+
+		if (!cdvd.nSectors)
+		{
+			// Setting the data ready flag fixes a black screen loading issue in
+			// Street Fighter Ex3 (NTSC-J version).
+			cdvd.PwOff |= (1 << Irq_DataReady) | (1 << Irq_CommandComplete);
+			psxHu32(0x1070) |= 0x4;
+			cdvd.Ready = CDVD_READY2;
+		}
+	}
+}
 // inlined due to being referenced in only one place.
 __fi void cdvdReadInterrupt()
 {
@@ -955,9 +987,13 @@ __fi void cdvdReadInterrupt()
 			// bit and try to read the sector again later.
 			// An arbitrary delay of some number of cycles probably makes more sense here,
 			// but for now it's based on the cdvd.ReadTime value. -- air
+			int DMATime = (cdvd.BlockSize / 2) * 40;
 
+			CDVDREAD_INT(DMATime + 100); // Bring it back after the DMA has ended to avoid a nasty loop
 			pxAssert((int)cdvd.ReadTime > 0);
-			CDVDREAD_INT(cdvd.ReadTime / 4);
+
+			if (HW_DMA3_CHCR & 0x01000000)
+				PSX_INT(IopEvt_CdvdDMA, DMATime);
 			return;
 		}
 
@@ -966,14 +1002,10 @@ __fi void cdvdReadInterrupt()
 
 	if (--cdvd.nSectors <= 0)
 	{
-		// Setting the data ready flag fixes a black screen loading issue in
-		// Street Fighter Ex3 (NTSC-J version).
-		cdvd.PwOff |= (1 << Irq_DataReady) | (1 << Irq_CommandComplete);
-		psxHu32(0x1070) |= 0x4;
+		int DMATime = (cdvd.BlockSize / 2) * 40;
 
-		HW_DMA3_CHCR &= ~0x01000000;
-		psxDmaInterrupt(3);
-		cdvd.Ready = CDVD_READY2;
+		PSX_INT(IopEvt_CdvdDMA, DMATime);
+
 		cdvd.Status = CDVD_STATUS_PAUSE; // Needed here but could be smth else than Pause (rama)
 		// All done! :D
 		return;
@@ -1305,7 +1337,48 @@ static void cdvdWrite04(u8 rt)
 			cdvd.nSectors = *(u32*)(cdvd.Param + 4);
 			cdvd.RetryCnt = (cdvd.Param[8] == 0) ? 0x100 : cdvd.Param[8];
 			cdvd.SpindlCtrl = cdvd.Param[9];
-			cdvd.Speed = 24;
+
+			switch (cdvd.SpindlCtrl & CDVD_SPINDLE_SPEED)
+			{
+				case 0: // Will use current speed
+					break;
+				case 1: // x1
+					cdvd.Speed = 1;
+					break;
+				case 2: // x2
+					cdvd.Speed = 2;
+					break;
+				case 3: // x4
+					cdvd.Speed = 4;
+					break;
+				case 4: // x12
+					if (cdvdIsDVD())
+					{
+						DevCon.Warning("CDVD Read invalid DVD Speed %d", cdvd.SpindlCtrl & CDVD_SPINDLE_SPEED);
+						cdvd.Speed = 4;
+					}
+					else
+						cdvd.Speed = 12;
+					break;
+				case 5: // x24
+					if (cdvdIsDVD())
+					{
+						DevCon.Warning("CDVD Read invalid DVD Speed %d", cdvd.SpindlCtrl & CDVD_SPINDLE_SPEED);
+						cdvd.Speed = 4;
+					}
+					else
+						cdvd.Speed = 24;
+					break;
+				default:
+					Console.Error("Unknown CDVD Read Speed SpindleCtrl=%x", cdvd.SpindlCtrl);
+
+					if (cdvdIsDVD())
+						cdvd.Speed = 4; // Just assume 4x for now (DVD)
+					else
+						cdvd.Speed = 24; // Just assume 24x for now (CD)
+					break;
+			}
+
 			switch (cdvd.Param[10])
 			{
 				case 2:
@@ -1316,20 +1389,85 @@ static void cdvdWrite04(u8 rt)
 					cdvd.ReadMode = CDVD_MODE_2328;
 					cdvd.BlockSize = 2328;
 					break;
-				case 0:
 				default:
 					cdvd.ReadMode = CDVD_MODE_2048;
 					cdvd.BlockSize = 2048;
 					break;
 			}
 
-			CDVD_LOG("CdRead > startSector=%d, seekTo=%d, nSectors=%d, RetryCnt=%x, Speed=%x(%x), ReadMode=%x(%x) (1074=%x)",
-					 cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
+			CDVD_LOG("CDRead > startSector=%d, seekTo=%d nSectors=%d, RetryCnt=%x, Speed=%dx(%s), ReadMode=%x(%x) SpindleCtrl=%x",
+				cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.ReadMode, cdvd.Param[10], cdvd.SpindlCtrl);
 
 			if (EmuConfig.CdvdVerboseReads)
-				Console.WriteLn(Color_Gray, L"CdRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx",
-								cdvd.SeekToSector, cdvd.nSectors, cdvd.BlockSize, cdvd.Speed);
+				Console.WriteLn(Color_Gray, L"CDRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx(%s) Spindle=%x",
+					cdvd.SeekToSector, cdvd.nSectors, cdvd.BlockSize, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.SpindlCtrl);
 
+			cdvd.ReadTime = cdvdBlockReadTime((CDVD_MODE_TYPE)cdvdIsDVD());
+			CDVDREAD_INT(cdvdStartSeek(cdvd.SeekToSector, (CDVD_MODE_TYPE)cdvdIsDVD()));
+
+			// Read-ahead by telling CDVD about the track now.
+			// This helps improve performance on actual from-cd emulation
+			// (ie, not using the hard drive)
+			cdvd.RErr = DoCDVDreadTrack(cdvd.SeekToSector, cdvd.ReadMode);
+
+			// Set the reading block flag.  If a seek is pending then Readed will
+			// take priority in the handler anyway.  If the read is contiguous then
+			// this'll skip the seek delay.
+			cdvd.Reading = 1;
+			break;
+
+		case N_CD_READ_CDDA: // CdReadCDDA
+		case N_CD_READ_XCDDA: // CdReadXCDDA
+			// Assign the seek to sector based on cdvd.Param[0]-[3], and the number of  sectors based on cdvd.Param[4]-[7].
+			cdvd.SeekToSector = *(u32*)(cdvd.Param + 0);
+			cdvd.nSectors = *(u32*)(cdvd.Param + 4);
+			cdvd.RetryCnt = (cdvd.Param[8] == 0) ? 0x100 : cdvd.Param[8];
+			cdvd.SpindlCtrl = cdvd.Param[9];
+
+			switch (cdvd.SpindlCtrl & CDVD_SPINDLE_SPEED)
+			{
+				case 0: // Will use current speed
+					break;
+				case 1: // x1
+					cdvd.Speed = 1;
+					break;
+				case 2: // x2
+					cdvd.Speed = 2;
+					break;
+				case 3: // x4
+					cdvd.Speed = 4;
+					break;
+				case 4: // x12
+					cdvd.Speed = 12;
+					break;
+				case 5: // x24
+					cdvd.Speed = 24;
+					break;
+				default:
+					Console.Error("Unknown CDDA Read Speed SpindleCtrl=%x", cdvd.SpindlCtrl);
+					cdvd.Speed = 24; // Just assume 24x for now (CD)
+					break;
+			}
+
+			switch (cdvd.Param[10])
+			{
+				case 1:
+					cdvd.ReadMode = CDVD_MODE_2368;
+					cdvd.BlockSize = 2368;
+					break;
+				default:
+					cdvd.ReadMode = CDVD_MODE_2352;
+					cdvd.BlockSize = 2352;
+					break;
+			}
+
+			CDVD_LOG("CDRead > startSector=%d, seekTo=%d, nSectors=%d, RetryCnt=%x, Speed=%dx(%s), ReadMode=%x(%x) SpindleCtrl=%x",
+				cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.ReadMode, cdvd.Param[10], cdvd.SpindlCtrl);
+
+			if (EmuConfig.CdvdVerboseReads)
+				Console.WriteLn(Color_Gray, L"CdAudioRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx(%s) Spindle=%x",
+					cdvd.Sector, cdvd.nSectors, cdvd.BlockSize, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.SpindlCtrl);
+			
 			cdvd.ReadTime = cdvdBlockReadTime(MODE_CDROM);
 			CDVDREAD_INT(cdvdStartSeek(cdvd.SeekToSector, MODE_CDROM));
 
@@ -1355,16 +1493,35 @@ static void cdvdWrite04(u8 rt)
 				cdvd.RetryCnt = cdvd.Param[8];
 
 			cdvd.SpindlCtrl = cdvd.Param[9];
-			cdvd.Speed = 4;
-			cdvd.ReadMode = CDVD_MODE_2048;
-			cdvd.BlockSize = 2064; // Why oh why was it 2064
+			
+			switch (cdvd.SpindlCtrl & CDVD_SPINDLE_SPEED)
+			{
+				case 0: // Will use current speed
+					break;
+				case 1: // x1
+					cdvd.Speed = 1;
+					break;
+				case 2: // x2
+					cdvd.Speed = 2;
+					break;
+				case 3: // x4
+					cdvd.Speed = 4;
+					break;
+				default:
+					Console.Error("Unknown DVD Speed SpindleCtrl=%x", cdvd.SpindlCtrl);
+					cdvd.Speed = 4; // Just assume 4x for now
+					break;
+			}
 
-			CDVD_LOG("DvdRead > startSector=%d, seekTo=%d nSectors=%d, RetryCnt=%x, Speed=%x(%x), ReadMode=%x(%x) (1074=%x)",
-					 cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, cdvd.Param[9], cdvd.ReadMode, cdvd.Param[10], psxHu32(0x1074));
+			cdvd.ReadMode = CDVD_MODE_2048;
+			cdvd.BlockSize = 2064;
+
+			CDVD_LOG("DvdRead > startSector=%d, seekTo=%d nSectors=%d, RetryCnt=%x, Speed=%dx(%s), ReadMode=%x(%x) SpindleCtrl=%x",
+					 cdvd.Sector, cdvd.SeekToSector, cdvd.nSectors, cdvd.RetryCnt, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.ReadMode, cdvd.Param[10], cdvd.SpindlCtrl);
 
 			if (EmuConfig.CdvdVerboseReads)
-				Console.WriteLn(Color_Gray, L"DvdRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx",
-								cdvd.SeekToSector, cdvd.nSectors, cdvd.BlockSize, cdvd.Speed);
+				Console.WriteLn(Color_Gray, L"DvdRead: Reading Sector %07d (%03d Blocks of Size %d) at Speed=%dx(%s) SpindleCtrl=%x",
+								cdvd.SeekToSector, cdvd.nSectors, cdvd.BlockSize, cdvd.Speed, (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? L"CAV" : L"CLV", cdvd.SpindlCtrl);
 
 			cdvd.ReadTime = cdvdBlockReadTime(MODE_DVDROM);
 			CDVDREAD_INT(cdvdStartSeek(cdvd.SeekToSector, MODE_DVDROM));
