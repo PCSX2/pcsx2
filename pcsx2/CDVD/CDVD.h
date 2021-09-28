@@ -145,6 +145,7 @@ extern void cdvdReset();
 extern void cdvdVsync();
 extern void cdvdActionInterrupt();
 extern void cdvdReadInterrupt();
+extern void cdvdDMAInterrupt();
 
 // We really should not have a function with the exact same name as a callback except for case!
 extern void cdvdNewDiskCB();

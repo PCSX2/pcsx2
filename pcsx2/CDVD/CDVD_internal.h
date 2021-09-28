@@ -72,9 +72,9 @@ enum cdvdStatus
 
 enum cdvdready
 {
-	CDVD_NOTREADY = 0x00,
-	CDVD_READY1 = 0x40,
-	CDVD_READY2 = 0x4e // This is used in a few places for some reason.
+	CDVD_NOTREADY = 0x06,
+	CDVD_READY1 = 0x42,
+	CDVD_READY2 = 0x42 // This is used in a few places for some reason.
 					   //It would be worth checking if this was just a typo made at some point.
 };
 
@@ -128,8 +128,8 @@ static const uint tbl_ContigiousSeekDelta[3] =
 // concerned with accurate(ish) seek delays and less concerned with actual block read speeds.
 // Translation: it's a minor speedhack :D
 
-static const uint PSX_CD_READSPEED = 153600;   // 1 Byte Time @ x1 (150KB = cd x 1)
-static const uint PSX_DVD_READSPEED = 1382400; // 1 Byte Time @ x1 (1350KB = dvd x 1).
+static const uint PSX_CD_READSPEED = 153600;   // Bytes per second, rough values from outer CD (CAV).
+static const uint PSX_DVD_READSPEED = 1382400; // Bytes per second, rough values from outer DVD (CAV).
 
 // Legacy Note: FullSeek timing causes many games to load very slow, but it likely not the real problem.
 // Games breaking with it set to PSXCLK*40 : "wrath unleashed" and "Shijou Saikyou no Deshi Kenichi".
