@@ -285,10 +285,11 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 {
 	wxPanelWithHelpers* left	= new wxPanelWithHelpers( this, wxVERTICAL );
 	wxPanelWithHelpers* right	= new wxPanelWithHelpers( this, wxVERTICAL );
-
+#ifdef  PCSX2_DEVBUILD
 	m_check_SynchronousGS = new pxCheckBox( left, _("Use Synchronized MTGS"),
 		_t("For troubleshooting potential bugs in the MTGS only, as it is potentially very slow.")
 	);
+#endif 
 
 	m_spinner_VsyncQueue = new wxSpinCtrl(left);
 	m_spinner_VsyncQueue->SetRange(0, 3);
@@ -296,7 +297,9 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 	m_restore_defaults = new wxButton(right, wxID_DEFAULT, _("Restore Defaults"));
 
 	m_spinner_VsyncQueue->SetToolTip( pxEt(L"Setting this to a lower value improves input lag, a value around 2 or 3 will slightly improve framerates. (Default is 2)"));
+#ifdef  PCSX2_DEVBUILD 
 	m_check_SynchronousGS->SetToolTip( pxEt( L"Enable this if you think MTGS thread sync is causing crashes or graphical errors. For debugging to see if GS is running at the correct speed."));
+#endif 
 
 	//GSWindowSettingsPanel* winpan = new GSWindowSettingsPanel( left );
 	//winpan->AddFrame(_("Display/Window"));
@@ -322,8 +325,10 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 	*s_vsyncs	+= Label(_("Vsyncs in MTGS Queue:")) | StdExpand();
 	*s_vsyncs	+= m_spinner_VsyncQueue | pxBorder(wxTOP, -2).Right();
 	*left		+= s_vsyncs | StdExpand();
+#ifdef  PCSX2_DEVBUILD 
 	*left		+= 2;
 	*left		+= m_check_SynchronousGS | StdExpand();
+#endif 
 
 	*s_table	+= left		| StdExpand();
 	*s_table	+= right	| StdExpand();
@@ -354,7 +359,9 @@ void Panels::VideoPanel::OnOpenWindowSettings( wxCommandEvent& evt )
 
 void Panels::VideoPanel::Apply()
 {
+#ifdef  PCSX2_DEVBUILD 
 	g_Conf->EmuOptions.GS.SynchronousMTGS	= m_check_SynchronousGS->GetValue();
+#endif 
 	g_Conf->EmuOptions.GS.VsyncQueueSize = m_spinner_VsyncQueue->GetValue();
 }
 
@@ -364,10 +371,12 @@ void Panels::VideoPanel::AppStatusEvent_OnSettingsApplied()
 }
 
 void Panels::VideoPanel::ApplyConfigToGui( AppConfig& configToApply, int flags ){
-	
+
+#ifdef  PCSX2_DEVBUILD 
 	m_check_SynchronousGS->SetValue( configToApply.EmuOptions.GS.SynchronousMTGS );
-	m_spinner_VsyncQueue->SetValue( configToApply.EmuOptions.GS.VsyncQueueSize );
 	m_check_SynchronousGS->Enable(!configToApply.EnablePresets);
+#endif 
+	m_spinner_VsyncQueue->SetValue( configToApply.EmuOptions.GS.VsyncQueueSize );
 
 	if( flags & AppConfig::APPLY_FLAG_MANUALLY_PROPAGATE )
 	{
