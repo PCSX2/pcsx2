@@ -66,7 +66,7 @@ jobs:
       # Prevent one build from failing everything (although maybe those should be included as experimental builds instead)
       fail-fast: false
       matrix:
-        os: [macos-10.15]
+        os: [macos-11.0]
         platform: [x64]
         experimental: [false]
 
