@@ -108,6 +108,7 @@ PBPX-95514:
   region: "PAL-M5"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS in Ratchet and Clank.
+    - RC2MegaturretHack # Fixes Megaturret deployment
 PBPX-95517:
   name: "Network Adapter Start-Up Disc"
   region: "NTSC-U"
@@ -2439,6 +2440,7 @@ SCES-51607:
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
     - EETimingHack # Fixes DMA errors 
+    - RC2MegaturretHack # Fixes Megaturret deployment
   memcardFilters: # Reads Ratchet 1 data.
     - "SCES-51607"
     - "SCES-50916"

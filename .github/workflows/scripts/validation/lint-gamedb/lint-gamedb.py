@@ -35,6 +35,7 @@ allowed_game_fixes = [
     "VUKickstartHack",
     "IbitHack",
     "VUOverflowHack",
+    "RC2MegaturretHack",
 ]
 allowed_speed_hacks = ["mvuFlagSpeedHack", "InstantVU1SpeedHack"]
 # Patches are allowed to have a 'default' key or a crc-32 key, followed by

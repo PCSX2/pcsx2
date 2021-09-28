@@ -44,6 +44,7 @@ enum GamefixId
 	Fix_VUKickstart,
 	Fix_VUOverflow,
 	Fix_XGKick,
+	Fix_RC2Megaturret,
 
 	GamefixId_COUNT
 };
@@ -474,7 +475,8 @@ struct Pcsx2Config
 			IbitHack : 1, // I bit hack. Needed to stop constant VU recompilation in some games
 			VUKickstartHack : 1, // Gives new VU programs a slight head start and runs VU's ahead of EE to avoid VU register reading/writing issues
 			VUOverflowHack : 1, // Tries to simulate overflow flag checks (not really possible on x86 without soft floats)
-			XgKickHack : 1; // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
+			XgKickHack : 1, // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
+			RC2MegaturretHack : 1; // Ratchet & Clank 2 (PAL only) hack to tweak Megaturrent collision (?) for fixing deployment
 		BITFIELD_END
 
 		GamefixOptions();

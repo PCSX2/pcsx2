@@ -100,6 +100,10 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			_("VU XGkick Sync - Use accurate timing for VU XGKicks (Slower)"),
 			pxEt(L"Fixes graphical errors on WRC, Erementar Gerad, Tennis Court Smash and others."
 			)
+		},
+		{
+			_("Ratchet && Clank 2 (PAL) hack to fix deployment of Megaturrets"),
+			wxEmptyString
 		}
 	};
 

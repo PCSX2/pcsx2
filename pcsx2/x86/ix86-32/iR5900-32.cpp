@@ -1461,6 +1461,16 @@ void recompileNextInstruction(int delayslot)
 
 	cpuRegs.code = *(int*)s_pCode;
 
+	if (EmuConfig.Gamefixes.RC2MegaturretHack && cpuRegs.code == 0x0280202d)
+	{
+		if (*(int*)PSM(pc + 0x4) == 0x3c0140d0 && *(int*)PSM(pc + 0x8) == 0x44810800 && *(int*)PSM(pc + 0x10) == 0x46000836)
+		{
+			DevCon.Warning("Fixing RC2 Mega Turret at PC %x", cpuRegs.pc);
+			// li.s $f1, 6.5 -> li.s $f1, 1.5
+			memWrite32(pc + 0x4, 0x3c013fc0);
+		}
+	}
+
 	if (!delayslot)
 	{
 		pc += 4;
