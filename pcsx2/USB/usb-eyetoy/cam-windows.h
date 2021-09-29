@@ -21,6 +21,8 @@
 #include <windows.h>
 #include <dshow.h>
 
+#include <wil/com.h>
+
 extern "C" {
 extern GUID IID_ISampleGrabberCB;
 extern GUID CLSID_SampleGrabber;
@@ -109,6 +111,7 @@ namespace usb_eyetoy
 		private:
 			int mPort;
 
+			wil::unique_couninitialize_call dshowCoInitialize;
 			ICaptureGraphBuilder2* pGraphBuilder;
 			IFilterGraph2* pGraph;
 			IMediaControl* pControl;
