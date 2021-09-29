@@ -78,17 +78,18 @@ static void mVUupdateFlags(mV, const xmm& reg, const xmm& regT1in = xEmptyReg, c
 	xMOVMSKPS(gprT2, regT1); // Used for Zero Flag Calculation
 
 	xAND(mReg, AND_XYZW); // Grab "Is Signed" bits from the previous calculation
-	xSHL(mReg, 4 + ADD_XYZW);
+	xSHL(mReg, 4);
 
 	//-------------------------Check for Zero flags------------------------------
 
 	xAND(gprT2, AND_XYZW); // Grab "Is Zero" bits from the previous calculation
-	if (mFLAG.doFlag)
-		SHIFT_XYZW(gprT2);
 	xOR(mReg, gprT2);
 
 	//-------------------------Overflow Flags-----------------------------------
-	if (sFLAG.doFlag)
+	// We can't really do this because of the limited range of x86 and the value MIGHT genuinely be FLT_MAX (x86)
+	// so this will need to remain as a gamefix for the one game that needs it (Superman Returns)
+	// until some sort of soft float implementation.
+	if (sFLAG.doFlag && CHECK_VUOVERFLOWHACK)
 	{
 		//Calculate overflow
 		xMOVAPS(regT1, regT2);
@@ -97,16 +98,23 @@ static void mVUupdateFlags(mV, const xmm& reg, const xmm& regT1in = xEmptyReg, c
 		xMOVMSKPS(gprT2, regT1); // Grab sign bits  for equal results
 		xAND(gprT2, AND_XYZW); // Grab "Is FLT_MAX" bits from the previous calculation
 		xForwardJump32 oJMP(Jcc_Zero);
-			xOR(sReg, 0x820000);
+
+		xOR(sReg, 0x820000);
+		if (mFLAG.doFlag)
+		{
+			xSHL(gprT2, 12); // Add the results to the MAC Flag
+			xOR(mReg, gprT2);
+		}
+
 		oJMP.SetTarget();
-
-		xSHL(gprT2, 12 + ADD_XYZW); // Add the results to the MAC Flag
-		xOR(mReg, gprT2);
 	}
-	//-------------------------Write back flags------------------------------
 
+	//-------------------------Write back flags------------------------------
 	if (mFLAG.doFlag)
+	{
+		SHIFT_XYZW(mReg); // If it was Single Scalar, move the flags in to the correct position
 		mVUallocMFLAGb(mVU, mReg, mFLAG.write); // Set Mac Flag
+	}
 	if (sFLAG.doFlag)
 	{
 		xAND(mReg, 0xFF); // Ignore overflow bits, they're handled separately

@@ -96,6 +96,10 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 		{
 			_("VU Kickstart (Run ahead) to avoid sync problems when reading or writing VU registers"),
 			wxEmptyString
+		},
+		{
+			_("VU Overflow hack to check for possible float overflows (Superman Returns)"),
+			wxEmptyString
 		}
 	};
 
