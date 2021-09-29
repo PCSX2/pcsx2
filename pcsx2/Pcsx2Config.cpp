@@ -256,21 +256,21 @@ int Pcsx2Config::GSOptions::GetVsync() const
 
 const wxChar *const tbl_GamefixNames[] =
 {
-	L"VuAddSub",
 	L"FpuMul",
 	L"FpuNegDiv",
-	L"XGKick",
-	L"EETiming",
+	L"GoemonTlb",
 	L"SkipMPEG",
 	L"OPHFlag",
+	L"EETiming",
 	L"DMABusy",
+	L"GIFFIFO",
 	L"VIFFIFO",
 	L"VIF1Stall",
-	L"GIFFIFO",
-	L"GoemonTlb",
+	L"VuAddSub",
 	L"Ibit",
 	L"VUKickstart",
-	L"VUOverflow"
+	L"VUOverflow",
+	L"XGKick"
 };
 
 const __fi wxChar* EnumToString( GamefixId id )
