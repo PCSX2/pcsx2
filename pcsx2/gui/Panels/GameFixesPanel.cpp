@@ -37,10 +37,6 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 	const CheckTextMess check_text[GamefixId_COUNT] =
 	{
 		{
-			_("VU Add Hack - Fixes Tri-Ace games boot crash."),
-			_("Games that need this hack to boot:\n * Star Ocean 3\n * Radiata Stories\n * Valkyrie Profile 2")
-		},
-		{
 			_("FPU Multiply Hack - For Tales of Destiny."),
 			wxEmptyString
 		},
@@ -49,14 +45,8 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			wxEmptyString
 		},
 		{
-			_("VU XGkick Sync - Use accurate timing for VU XGKicks (Slower)"),
-			pxEt(L"Fixes graphical errors on WRC, Erementar Gerad, Tennis Court Smash and others."
-			)
-		},
-		{
-			_("EE timing hack - Multi purpose hack. Try if all else fails."),
-			pxEt( L"Known to affect following games:\n * Digital Devil Saga (Fixes FMV and crashes)\n * SSX (Fixes bad graphics and crashes)\n * Resident Evil: Dead Aim (Causes garbled textures)"
-			)
+			_("Preload TLB hack to avoid tlb miss on Goemon"),
+			wxEmptyString
 		},
 		{
 			_("Skip MPEG hack - Skips videos/FMVs in games to avoid game hanging/freezes."),
@@ -68,9 +58,18 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			)
 		},
 		{
+			_("EE timing hack - Multi purpose hack. Try if all else fails."),
+			pxEt(L"Known to affect following games:\n * Digital Devil Saga (Fixes FMV and crashes)\n * SSX (Fixes bad graphics and crashes)\n * Resident Evil: Dead Aim (Causes garbled textures)"
+			)
+		},
+		{
 			_("Handle DMAC writes when it is busy."),
 			pxEt( L"Known to affect following games:\n * Mana Khemia 1 (Going \"off campus\"), Metal Saga (Intro FMV), Pilot Down Behind Enemy Lines\n"
 			)
+		},
+		{
+			_("Force GIF PATH3 transfers through FIFO (Fifa Street 2)"),
+			wxEmptyString
 		},
 		{
 			_("Simulate VIF1 FIFO read ahead. Fixes slow loading games."),
@@ -82,12 +81,8 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 			wxEmptyString
 		},
 		{
-			_("Force GIF PATH3 transfers through FIFO (Fifa Street 2)"),
-			wxEmptyString
-		},
-		{
-			_("Preload TLB hack to avoid tlb miss on Goemon"),
-			wxEmptyString
+			_("VU Add Hack - Fixes Tri-Ace games boot crash."),
+			_("Games that need this hack to boot:\n * Star Ocean 3\n * Radiata Stories\n * Valkyrie Profile 2")
 		},
 		{
 			_("VU I bit Hack avoid constant recompilation in some games (Scarface The World Is Yours, Crash Tag Team Racing)"),
@@ -100,6 +95,11 @@ Panels::GameFixesPanel::GameFixesPanel( wxWindow* parent )
 		{
 			_("VU Overflow hack to check for possible float overflows (Superman Returns)"),
 			wxEmptyString
+		},
+		{
+			_("VU XGkick Sync - Use accurate timing for VU XGKicks (Slower)"),
+			pxEt(L"Fixes graphical errors on WRC, Erementar Gerad, Tennis Court Smash and others."
+			)
 		}
 	};
 
