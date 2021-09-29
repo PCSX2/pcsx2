@@ -1780,7 +1780,7 @@ msgid ""
 "machine."
 msgstr ""
 "A PCSX2 virtuális gép által szabályozott hardver-emulációs beállítások "
-"módosítása.\v"
+"módosítása."
 
 #: pcsx2/gui/MainFrame.cpp:811
 msgid "&Window Settings..."
