@@ -467,7 +467,6 @@ namespace usb_eyetoy
 			pSourceConfig = nullptr;
 			samplegrabber = nullptr;
 			callbackhandler = new CallbackHandler();
-			CoInitialize(NULL);
 			mpeg_buffer.start = calloc(1, 640 * 480 * 2);
 		}
 
@@ -479,6 +478,8 @@ namespace usb_eyetoy
 
 		int DirectShow::Open(int width, int height, FrameFormat format, int mirror)
 		{
+			dshowCoInitialize = wil::CoInitializeEx_failfast(COINIT_MULTITHREADED);
+
 			frame_width = width;
 			frame_height = height;
 			frame_format = format;
@@ -520,6 +521,7 @@ namespace usb_eyetoy
 			safe_release(pGraphBuilder);
 			safe_release(pGraph);
 			safe_release(pControl);
+			dshowCoInitialize.reset();
 			return 0;
 		};
 
