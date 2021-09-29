@@ -310,8 +310,6 @@ static __fi T _HwRead_16or32_Page1( u32 addr )
 
 			mcase(HW_PS1_GPU_DATA) :
 				ret = psxGPUr(addr);
-				//ret = psxHu32(addr); // old
-				DevCon.Warning("GPU Data Read %x", ret);
 			break;
 			
 			mcase(HW_PS1_GPU_STATUS) :
