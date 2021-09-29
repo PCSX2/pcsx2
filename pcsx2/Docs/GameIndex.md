@@ -29,7 +29,6 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
     - FpuMulHack
     - FpuNegDivHack
     - XGKickHack
-    - IPUWaitHack
     - EETimingHack
     - SkipMPEGHack
     - OPHFlagHack
@@ -40,6 +39,7 @@ SERIAL-12345: # !required! Serial number for the game, this is how games are loo
     - GoemonTlbHack
     - IbitHack
     - VUKickstartHack
+    - VUOverflowHack
   # The value of the speedhacks is assumed to be an integer,
   # but at the time of writing speedhacks are effectively booleans (0/1)
   speedHacks:
@@ -142,9 +142,6 @@ These values are case-sensitive so take care.  If you incorrectly specify a Game
 *   `XGKickHack`
     *   Use accurate timing for VU XGKicks (Slower). Fixes graphical errors on WRC, Erementar Gerad, Tennis Court Smash and others.
 
-*   `IPUWaitHack`
-    *   FFX FMV, makes GIF flush before doing IPU work. Fixes bad graphics overlay.
-
 *   `EETimingHack`
     *   General purpose timing hack.
 
@@ -174,6 +171,9 @@ These values are case-sensitive so take care.  If you incorrectly specify a Game
 
 *   `VUKickstartHack`
     *   Let the VU's both run ahead of the EE to fix some timing issues.
+
+*   `VUOverflowHack`
+    *   VU Overflow hack to check for possible float overflows (Superman Returns).
 
 ## SpeedHacks
 
