@@ -39,6 +39,7 @@ enum GamefixId
 	Fix_GoemonTlbMiss,
 	Fix_Ibit,
 	Fix_VUKickstart,
+	Fix_VUOverflow,
 
 	GamefixId_COUNT
 };
@@ -345,7 +346,8 @@ struct Pcsx2Config
 			GIFFIFOHack : 1,			// Enabled the GIF FIFO (more correct but slower)
 			GoemonTlbHack : 1,			// Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
 			IbitHack : 1,				// I bit hack. Needed to stop constant VU recompilation in some games
-			VUKickstartHack : 1;		// Gives new VU programs a slight head start and runs VU's ahead of EE to avoid VU register reading/writing issues
+			VUKickstartHack : 1,		// Gives new VU programs a slight head start and runs VU's ahead of EE to avoid VU register reading/writing issues
+			VUOverflowHack : 1;			// Tries to simulate overflow flag checks (not really possible on x86 without soft floats)
 		BITFIELD_END
 
 		GamefixOptions();
@@ -532,6 +534,7 @@ TraceLogFilters&				SetTraceConfig();
 #define CHECK_VIFFIFOHACK			(EmuConfig.Gamefixes.VIFFIFOHack)    // Pretends to fill the non-existant VIF FIFO Buffer.
 #define CHECK_VIF1STALLHACK			(EmuConfig.Gamefixes.VIF1StallHack)  // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
 #define CHECK_GIFFIFOHACK			(EmuConfig.Gamefixes.GIFFIFOHack)	 // Enabled the GIF FIFO (more correct but slower)
+#define CHECK_VUOVERFLOWHACK		(EmuConfig.Gamefixes.VUOverflowHack) // Special Fix for Superman Returns, they check for overflows on PS2 floats which we can't do without soft floats.
 
 //------------ Advanced Options!!! ---------------
 #define CHECK_VU_OVERFLOW			(EmuConfig.Cpu.Recompiler.vuOverflow)
