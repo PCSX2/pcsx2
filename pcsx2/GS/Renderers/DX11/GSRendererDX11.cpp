@@ -135,7 +135,7 @@ void GSRendererDX11::EmulateZbuffer()
 		{
 			vs_cb.MaxDepth = GSVector2i(max_z);
 		}
-		else
+		else if (!m_context->ZBUF.ZMSK)
 		{
 			ps_cb.Af_MaxDepth.y = max_z * ldexpf(1, -32);
 			m_ps_sel.zclamp = 1;
