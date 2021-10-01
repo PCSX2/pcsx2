@@ -29,7 +29,7 @@ GSDevice11::GSDevice11()
 	m_state.bf = -1;
 
 	m_mipmap = theApp.GetConfigI("mipmap");
-	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
+	m_upscale_multiplier = std::max(0, theApp.GetConfigI("upscale_multiplier"));
 
 	const BiFiltering nearest_filter = static_cast<BiFiltering>(theApp.GetConfigI("filter"));
 	const int aniso_level = theApp.GetConfigI("MaxAnisotropy");
@@ -306,9 +306,9 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd>& wnd)
 
 	ShaderMacro sm_sboost(m_shader.model);
 
-	sm_sboost.AddMacro("SB_SATURATION", std::max(0, std::min(theApp.GetConfigI("ShadeBoost_Saturation"), 100)));
-	sm_sboost.AddMacro("SB_BRIGHTNESS", std::max(0, std::min(theApp.GetConfigI("ShadeBoost_Brightness"), 100)));
-	sm_sboost.AddMacro("SB_CONTRAST", std::max(0, std::min(theApp.GetConfigI("ShadeBoost_Contrast"), 100)));
+	sm_sboost.AddMacro("SB_SATURATION", std::clamp(0, theApp.GetConfigI("ShadeBoost_Contrast"), 100));
+	sm_sboost.AddMacro("SB_BRIGHTNESS", std::clamp(0, theApp.GetConfigI("ShadeBoost_Brightness"), 100));
+	sm_sboost.AddMacro("SB_CONTRAST", std::clamp(0, theApp.GetConfigI("ShadeBoost_Saturation"), 100));
 
 	memset(&bd, 0, sizeof(bd));
 
