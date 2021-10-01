@@ -108,8 +108,6 @@ int GIF_Fifo::write_fifo(u32* pMem, int size)
 
 	int writePos = fifoSize * 4;
 
-	
-
 	memcpy(&data[writePos], pMem, transferSize * 16);
 
 	fifoSize += transferSize;
@@ -292,7 +290,7 @@ __fi void gifInterrupt()
 		}
 		// If the dma has data waiting and there's something in the fifo, drain the fifo
 		// If the GIF is currently paused, check if the FIFO is full, otherwise fill it
-		if ((!CheckPaths() && gif_fifo.fifoSize == 16) || (readSize && gif_fifo.fifoSize > 0))
+		if ((!CheckPaths() && gif_fifo.fifoSize == 16) || (readSize && gif_fifo.fifoSize < 16))
 			return;
 	}
 
@@ -804,7 +802,7 @@ void gifMFIFOInterrupt()
 
 		// If the dma has data waiting and there's something in the fifo, drain the fifo
 		// If the GIF is currently paused, check if the FIFO is full, otherwise fill it
-		if ((!CheckPaths() && gif_fifo.fifoSize == 16) || (readSize && gif_fifo.fifoSize > 0))
+		if ((!CheckPaths() && gif_fifo.fifoSize == 16) || (readSize && gif_fifo.fifoSize < 16))
 			return;
 	}
 
