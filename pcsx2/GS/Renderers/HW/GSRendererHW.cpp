@@ -34,7 +34,7 @@ GSRendererHW::GSRendererHW(GSTextureCache* tc)
 	, m_lod(GSVector2i(0, 0))
 {
 	m_mipmap = theApp.GetConfigI("mipmap_hw");
-	m_upscale_multiplier = theApp.GetConfigI("upscale_multiplier");
+	m_upscale_multiplier = std::max(0, theApp.GetConfigI("upscale_multiplier"));
 	m_conservative_framebuffer = theApp.GetConfigB("conservative_framebuffer");
 	m_accurate_date = theApp.GetConfigB("accurate_date");
 
