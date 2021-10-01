@@ -152,7 +152,7 @@ void CpuTabPage::reloadSymbolMap()
 		for (size_t i = 0; i < funcs.size(); i++)
 		{
 			wxString name = wxString(funcs[i].name.c_str(), wxConvUTF8);
-			functionList->Append(name, (void*)funcs[i].address);
+			functionList->Append(name, reinterpret_cast<void*>(static_cast<uintptr_t>(funcs[i].address)));
 		}
 	}
 }
