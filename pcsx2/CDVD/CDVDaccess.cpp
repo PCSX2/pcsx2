@@ -77,45 +77,51 @@ static void CheckNullCDVD()
 static int CheckDiskTypeFS(int baseType)
 {
 	IsoFSCDVD isofs;
-	IsoDirectory rootdir(isofs);
 	try
 	{
-		IsoFile file(rootdir, L"SYSTEM.CNF;1");
+		IsoDirectory rootdir(isofs);
 
-		int size = file.getLength();
-
-		std::unique_ptr<char[]> buffer(new char[file.getLength() + 1]);
-		file.read(buffer.get(), size);
-		buffer[size] = '\0';
-
-		char* pos = strstr(buffer.get(), "BOOT2");
-		if (pos == NULL)
+		try
 		{
-			pos = strstr(buffer.get(), "BOOT");
+			IsoFile file(rootdir, L"SYSTEM.CNF;1");
+
+			const int size = file.getLength();
+			const std::unique_ptr<char[]> buffer = std::make_unique<char[]>(size + 1);
+			file.read(buffer.get(), size);
+			buffer[size] = '\0';
+
+			char* pos = strstr(buffer.get(), "BOOT2");
 			if (pos == NULL)
-				return CDVD_TYPE_ILLEGAL;
-			return CDVD_TYPE_PSCD;
+			{
+				pos = strstr(buffer.get(), "BOOT");
+				if (pos == NULL)
+					return CDVD_TYPE_ILLEGAL;
+				return CDVD_TYPE_PSCD;
+			}
+
+			return (baseType == CDVD_TYPE_DETCTCD) ? CDVD_TYPE_PS2CD : CDVD_TYPE_PS2DVD;
+		}
+		catch (Exception::FileNotFound&)
+		{
 		}
 
-		return (baseType == CDVD_TYPE_DETCTCD) ? CDVD_TYPE_PS2CD : CDVD_TYPE_PS2DVD;
-	}
-	catch (Exception::FileNotFound&)
-	{
-	}
+		try
+		{
+			IsoFile file(rootdir, L"PSX.EXE;1");
+			return CDVD_TYPE_PSCD;
+		}
+		catch (Exception::FileNotFound&)
+		{
+		}
 
-	try
-	{
-		IsoFile file(rootdir, L"PSX.EXE;1");
-		return CDVD_TYPE_PSCD;
-	}
-	catch (Exception::FileNotFound&)
-	{
-	}
-
-	try
-	{
-		IsoFile file(rootdir, L"VIDEO_TS/VIDEO_TS.IFO;1");
-		return CDVD_TYPE_DVDV;
+		try
+		{
+			IsoFile file(rootdir, L"VIDEO_TS/VIDEO_TS.IFO;1");
+			return CDVD_TYPE_DVDV;
+		}
+		catch (Exception::FileNotFound&)
+		{
+		}
 	}
 	catch (Exception::FileNotFound&)
 	{
