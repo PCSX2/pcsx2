@@ -53,7 +53,7 @@ public:
 		glGenBuffers(1, &m_buffer_name);
 		// Warning m_limit is the number of object (not the size in Bytes)
 		// Round it to next power of 2
-		m_limit = 1u << (1u + (size_t)std::log2(count - 1u));
+		m_limit = static_cast<size_t>(1) << (1u + (size_t)std::log2(count - 1u));
 		m_quarter_shift = (size_t)std::log2(m_limit * STRIDE) - 2;
 
 		for (size_t i = 0; i < 5; i++)
