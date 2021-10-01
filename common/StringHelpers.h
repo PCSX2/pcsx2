@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include <cinttypes>
 #include <wx/tokenzr.h>
 #include "common/Dependencies.h"
 #include "common/SafeArray.h"
@@ -225,7 +226,11 @@ extern bool pxParseAssignmentString(const wxString& src, wxString& ldest, wxStri
 #define pxsFmt FastFormatUnicode().Write
 #define pxsFmtV FastFormatUnicode().WriteV
 
-#define pxsPtr(ptr) pxsFmt("0x%08X", (ptr)).c_str()
+#ifdef _M_X86_64
+#define pxsPtr(ptr) pxsFmt("0x%016" PRIXPTR, (ptr)).c_str()
+#else
+#define pxsPtr(ptr) pxsFmt("0x%08" PRIXPTR, (ptr)).c_str()
+#endif
 
 extern wxString& operator+=(wxString& str1, const FastFormatUnicode& str2);
 extern wxString operator+(const wxString& str1, const FastFormatUnicode& str2);
