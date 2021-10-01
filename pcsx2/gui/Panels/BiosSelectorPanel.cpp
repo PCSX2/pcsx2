@@ -208,7 +208,7 @@ void Panels::BiosSelectorPanel::OnEnumComplete(wxCommandEvent& evt)
 
 	for (const std::pair<wxString, u32>& result : enumThread->Result)
 	{
-		const int sel = m_ComboBox->Append(result.first, reinterpret_cast<void*>(result.second));
+		const int sel = m_ComboBox->Append(result.first, reinterpret_cast<void*>(static_cast<uintptr_t>(result.second)));
 		if (currentBios == wxFileName((*m_BiosList)[result.second]))
 			m_ComboBox->SetSelection(sel);
 	}
