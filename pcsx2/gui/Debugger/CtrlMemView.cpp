@@ -342,7 +342,7 @@ void CtrlMemView::onPopupClick(wxCommandEvent& evt)
 			}
 			break;
 		case ID_MEMVIEW_GOTOINDISASM:
-			postEvent(debEVT_GOTOINDISASM, 1);
+			postEvent(debEVT_GOTOINDISASM, curAddress);
 			break;
 		case ID_MEMVIEW_GOTOADDRESS:
 			postEvent(debEVT_GOTOADDRESS, curAddress);
