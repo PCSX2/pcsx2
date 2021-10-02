@@ -101,8 +101,6 @@ void cpuReset()
 	extern void Deci2Reset();		// lazy, no good header for it yet.
 	Deci2Reset();
 
-	g_GameStarted = false;
-	g_GameLoading = false;
 	g_SkipBiosHack = EmuConfig.UseBOOT2Injection;
 
 	ElfCRC = 0;
@@ -606,16 +604,11 @@ void __fastcall eeloadHook()
 {
 	const wxString &elf_override = GetCoreThread().GetElfOverride();
 
-	if (!cdvd.Type)
-	{
-		DoCDVDopen();
-		cdvdCtrlTrayClose();
-	
-		if (!elf_override.IsEmpty())
-			cdvdReloadElfInfo(L"host:" + elf_override);
-		else
-			cdvdReloadElfInfo();
-	}
+	if (!elf_override.IsEmpty())
+		cdvdReloadElfInfo(L"host:" + elf_override);
+	else
+		cdvdReloadElfInfo();
+
 	wxString discelf;
 	int disctype = GetPS2ElfName(discelf);
 

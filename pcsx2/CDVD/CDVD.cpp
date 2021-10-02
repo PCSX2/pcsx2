@@ -598,9 +598,6 @@ static void cdvdDetectDisk()
 			DevCon.Warning("Seeking");
 		}
 	}
-
-	if (cdvd.Type > 0 && cdvd.Type < 0x20)
-		cdvdReloadElfInfo();
 }
 
 // Note: Is tray status being kept as a var here somewhere?
@@ -667,7 +664,6 @@ s32 cdvdCtrlTrayClose()
 {
 	DevCon.WriteLn(Color_Green, L"Close virtual disk tray");
 
-	
 	if (!g_GameStarted && g_SkipBiosHack)
 	{
 		DevCon.WriteLn(Color_Green, L"Drive Engaging instantly");
@@ -776,6 +772,7 @@ void cdvdReset()
 
 	cdvd.sDataIn = 0x40;
 	cdvd.Ready = CDVD_READY2;
+	cdvd.Status = CDVD_STATUS_PAUSE;
 	cdvd.Speed = 4;
 	cdvd.BlockSize = 2064;
 	cdvd.Action = cdvdAction_None;
@@ -790,6 +787,12 @@ void cdvdReset()
 	cdvd.RTC.day = (u8)curtime.GetDay(wxDateTime::GMT9);
 	cdvd.RTC.month = (u8)curtime.GetMonth(wxDateTime::GMT9) + 1; // WX returns Jan as "0"
 	cdvd.RTC.year = (u8)(curtime.GetYear(wxDateTime::GMT9) - 2000);
+
+	g_GameStarted = false;
+	g_GameLoading = false;
+	g_SkipBiosHack = EmuConfig.UseBOOT2Injection;
+
+	cdvdCtrlTrayClose();
 }
 
 struct Freeze_v10Compat
