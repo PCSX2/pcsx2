@@ -76,6 +76,19 @@ struct cdvdRTC
 	u8 year;
 };
 
+enum TrayStates
+{
+	CDVD_DISC_ENGAGED,
+	CDVD_DISC_SEEKING,
+	CDVD_DISC_EJECT
+};
+
+struct cdvdTrayTimer
+{
+	u32 cdvdActionSeconds;
+	TrayStates trayState;
+};
+
 struct cdvdStruct
 {
 	u8 nCommand;
@@ -135,6 +148,8 @@ struct cdvdStruct
 	u32 SeekToSector; // Holds the destination sector during seek operations.
 	u32 ReadTime;     // Avg. time to read one block of data (in Iop cycles)
 	bool Spinning;    // indicates if the Cdvd is spinning or needs a spinup delay
+	bool mediaChanged;
+	cdvdTrayTimer Tray;
 };
 
 extern cdvdStruct cdvd;

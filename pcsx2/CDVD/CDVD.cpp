@@ -576,7 +576,11 @@ s32 cdvdReadSubQ(s32 lsn, cdvdSubQ* subq)
 static void cdvdDetectDisk()
 {
 	cdvd.Type = DoCDVDdetectDiskType();
-	cdvdReloadElfInfo();
+	if(cdvd.Type == 0)
+		cdvd.Status = CDVD_STATUS_TRAY_OPEN;
+
+	if (cdvd.Type > 0 && cdvd.Type < 0x20)
+		cdvdReloadElfInfo();
 }
 
 s32 cdvdCtrlTrayOpen()
@@ -586,16 +590,28 @@ s32 cdvdCtrlTrayOpen()
 	cdvd.Status = CDVD_STATUS_TRAY_OPEN;
 	cdvd.Ready = CDVD_NOTREADY;
 
+	cdvd.Tray.cdvdActionSeconds = 3;
+	cdvd.Tray.trayState = CDVD_DISC_EJECT;
 	return 0; // needs to be 0 for success according to homebrew test "CDVD"
 }
 
 s32 cdvdCtrlTrayClose()
 {
 	DevCon.WriteLn(Color_Green, L"Close virtual disk tray");
-	cdvd.Status = CDVD_STATUS_PAUSE;
-	cdvd.Ready = CDVD_READY1;
-	cdvd.TrayTimeout = 0; // Reset so it can't get closed twice by cdvdVsync()
 
+	cdvd.Ready = CDVD_READY1;
+	if (!g_GameStarted)
+	{
+		cdvd.Status = CDVD_STATUS_PAUSE;
+		cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
+		cdvd.Tray.cdvdActionSeconds = 0;
+	}
+	else
+	{
+		cdvd.Status = CDVD_STATUS_SEEK;
+		cdvd.Tray.trayState = CDVD_DISC_SEEKING;
+		cdvd.Tray.cdvdActionSeconds = 3;
+	}
 	cdvdDetectDisk();
 
 	return 0; // needs to be 0 for success according to homebrew test "CDVD"
@@ -621,7 +637,22 @@ s32 cdvdGetTrayStatus()
 // Modified by (efp) - 16/01/2006
 static __fi void cdvdGetDiskType()
 {
+	u32 oldtype = cdvd.Type;
 	cdvd.Type = DoCDVDdetectDiskType();
+
+	if (oldtype != cdvd.Type && CDVDsys_GetSourceType() != CDVD_SourceType::Iso)
+	{
+		if (cdvd.Type == 0)
+		{
+			cdvd.Status = CDVD_STATUS_TRAY_OPEN;
+			cdvd.Ready = CDVD_NOTREADY;
+		}
+		else
+		{
+			cdvd.Tray.cdvdActionSeconds = 3;
+			cdvd.Tray.trayState = CDVD_DISC_EJECT;
+		}
+	}
 }
 
 // check whether disc is single or dual layer
@@ -1105,14 +1136,26 @@ void cdvdVsync()
 		return;
 	cdvd.RTCcount = 0;
 
-	if (cdvd.Status == CDVD_STATUS_TRAY_OPEN)
+	if (cdvd.Tray.cdvdActionSeconds > 0)
 	{
-		cdvd.TrayTimeout++;
-	}
-	if (cdvd.TrayTimeout > 3)
-	{
-		cdvdCtrlTrayClose();
-		cdvd.TrayTimeout = 0;
+		if (--cdvd.Tray.cdvdActionSeconds == 0)
+		{
+			switch (cdvd.Tray.trayState)
+			{
+			case CDVD_DISC_EJECT:
+				DevCon.Warning("Tray handling closing tray and seeking");
+				cdvd.Status = CDVD_STATUS_SEEK;
+				cdvdCtrlTrayClose();
+				break;
+			case CDVD_DISC_SEEKING:
+			case CDVD_DISC_ENGAGED:
+				DevCon.Warning("Tray handling engaging disc");
+				cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
+				cdvd.Status = CDVD_STATUS_PAUSE;
+				cdvd.mediaChanged = true;
+				break;
+			}
+		}
 	}
 
 	cdvd.RTC.second++;
@@ -1192,11 +1235,11 @@ u8 cdvdRead(u8 key)
 
 		case 0x0B: // TRAY-STATE (if tray has been opened)
 		{
-			CDVD_LOG("cdvdRead0B(Tray) (1 open, 0 closed): %x", cdvd.Status);
-			if (cdvd.Status == CDVD_STATUS_TRAY_OPEN)
-				return 1;
-			else
-				return 0;
+			CDVD_LOG("cdvdRead0B(Media Change) (1 Changed, 0 Not Changed): %x", cdvd.mediaChanged);
+			bool ret = cdvd.mediaChanged;
+			cdvd.mediaChanged = false;
+
+			return ret;
 		}
 		case 0x0C: // CRT MINUTE
 			CDVD_LOG("cdvdRead0C(Min) %x", itob((u8)(cdvd.Sector / (60 * 75))));
@@ -1696,7 +1739,12 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 						SetResultSize(4);
 						cdvdGetMechaVer(&cdvd.Result[0]);
 						break;
-
+					case 0x30:
+						SetResultSize(2);
+						cdvd.Result[0] = cdvd.Status;
+						cdvd.Result[1] = (cdvd.Status & 0x1) ? 8 : 0;
+						//Console.Warning("Tray check param[1]=%02X", cdvd.Param[1]);
+						break;
 					case 0x44: // write console ID (9:1)
 						SetResultSize(1);
 						cdvdWriteConsoleID(&cdvd.Param[1]);
