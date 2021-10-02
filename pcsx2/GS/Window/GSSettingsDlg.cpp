@@ -419,11 +419,11 @@ void GSShaderDlg::UpdateControls()
 
 	wchar_t text[8] = {0};
 
-	wprintf(text, "%d", m_saturation);
+	swprintf_s(text, L"%d", m_saturation);
 	SetDlgItemText(m_hWnd, IDC_SATURATION_VALUE, text);
-	wprintf(text, "%d", m_brightness);
+	swprintf_s(text, L"%d", m_brightness);
 	SetDlgItemText(m_hWnd, IDC_BRIGHTNESS_VALUE, text);
-	wprintf(text, "%d", m_contrast);
+	swprintf_s(text, L"%d", m_contrast);
 	SetDlgItemText(m_hWnd, IDC_CONTRAST_VALUE, text);
 
 	// Shader Settings
@@ -458,7 +458,7 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 				m_saturation = (int)SendMessage(GetDlgItem(m_hWnd, IDC_SATURATION_SLIDER), TBM_GETPOS, 0, 0);
 
-				wprintf(text, "%d", m_saturation);
+				swprintf_s(text, L"%d", m_saturation);
 				SetDlgItemText(m_hWnd, IDC_SATURATION_VALUE, text);
 			}
 			else if ((HWND)lParam == GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER))
@@ -467,7 +467,7 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 				m_brightness = (int)SendMessage(GetDlgItem(m_hWnd, IDC_BRIGHTNESS_SLIDER), TBM_GETPOS, 0, 0);
 
-				wprintf(text, "%d", m_brightness);
+				swprintf_s(text, L"%d", m_brightness);
 				SetDlgItemText(m_hWnd, IDC_BRIGHTNESS_VALUE, text);
 			}
 			else if ((HWND)lParam == GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER))
@@ -476,7 +476,7 @@ bool GSShaderDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 				m_contrast = (int)SendMessage(GetDlgItem(m_hWnd, IDC_CONTRAST_SLIDER), TBM_GETPOS, 0, 0);
 
-				wprintf(text, "%d", m_contrast);
+				swprintf_s(text, L"%d", m_contrast);
 				SetDlgItemText(m_hWnd, IDC_CONTRAST_VALUE, text);
 			}
 		}
@@ -866,16 +866,16 @@ void GSOSDDlg::UpdateControls()
 	SendMessage(GetDlgItem(m_hWnd, IDC_OSD_COLOR_BLUE_SLIDER), TBM_SETPOS, TRUE, m_color.b);
 
 	wchar_t text[8] = {0};
-	wprintf(text, "%d", m_color.a);
+	swprintf_s(text, L"%d", m_color.a);
 	SetDlgItemText(m_hWnd, IDC_OSD_OPACITY_AMOUNT, text);
 
-	wprintf(text, "%d", m_color.r);
+	swprintf_s(text, L"%d", m_color.r);
 	SetDlgItemText(m_hWnd, IDC_OSD_COLOR_RED_AMOUNT, text);
 
-	wprintf(text, "%d", m_color.g);
+	swprintf_s(text, L"%d", m_color.g);
 	SetDlgItemText(m_hWnd, IDC_OSD_COLOR_GREEN_AMOUNT, text);
 
-	wprintf(text, "%d", m_color.b);
+	swprintf_s(text, L"%d", m_color.b);
 	SetDlgItemText(m_hWnd, IDC_OSD_COLOR_BLUE_AMOUNT, text);
 
 	const bool monitor_enabled = IsDlgButtonChecked(m_hWnd, IDC_OSD_MONITOR) == BST_CHECKED;
@@ -926,7 +926,7 @@ bool GSOSDDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 				m_color.a = (int)SendMessage(GetDlgItem(m_hWnd, IDC_OSD_OPACITY_SLIDER), TBM_GETPOS, 0, 0);
 
-				wprintf(text, "%d", m_color.a);
+				swprintf_s(text, L"%d", m_color.a);
 				SetDlgItemText(m_hWnd, IDC_OSD_OPACITY_AMOUNT, text);
 			}
 			else if ((HWND)lParam == GetDlgItem(m_hWnd, IDC_OSD_COLOR_RED_SLIDER))
@@ -935,7 +935,7 @@ bool GSOSDDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 				m_color.r = (int)SendMessage(GetDlgItem(m_hWnd, IDC_OSD_COLOR_RED_SLIDER), TBM_GETPOS, 0, 0);
 
-				wprintf(text, "%d", m_color.r);
+				swprintf_s(text, L"%d", m_color.r);
 				SetDlgItemText(m_hWnd, IDC_OSD_COLOR_RED_AMOUNT, text);
 			}
 			else if ((HWND)lParam == GetDlgItem(m_hWnd, IDC_OSD_COLOR_GREEN_SLIDER))
@@ -944,7 +944,7 @@ bool GSOSDDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 				m_color.g = (int)SendMessage(GetDlgItem(m_hWnd, IDC_OSD_COLOR_GREEN_SLIDER), TBM_GETPOS, 0, 0);
 
-				wprintf(text, "%d", m_color.g);
+				swprintf_s(text, L"%d", m_color.g);
 				SetDlgItemText(m_hWnd, IDC_OSD_COLOR_GREEN_AMOUNT, text);
 			}
 			else if ((HWND)lParam == GetDlgItem(m_hWnd, IDC_OSD_COLOR_BLUE_SLIDER))
@@ -953,7 +953,7 @@ bool GSOSDDlg::OnMessage(UINT message, WPARAM wParam, LPARAM lParam)
 
 				m_color.b = (int)SendMessage(GetDlgItem(m_hWnd, IDC_OSD_COLOR_BLUE_SLIDER), TBM_GETPOS, 0, 0);
 
-				wprintf(text, "%d", m_color.b);
+				swprintf_s(text, L"%d", m_color.b);
 				SetDlgItemText(m_hWnd, IDC_OSD_COLOR_BLUE_AMOUNT, text);
 			}
 		}
