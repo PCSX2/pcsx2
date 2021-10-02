@@ -692,6 +692,8 @@ void __fastcall eeloadHook()
 		{
 			if (disctype == 2)
 				elftoload = discelf.ToUTF8();
+			else
+				g_SkipBiosHack = false; // We're not fast booting, so disable it (Fixes some weirdness with the BIOS)
 		}
 
 		// When fast-booting, we insert the game's ELF name into EELOAD so that the game is called instead of the default call of

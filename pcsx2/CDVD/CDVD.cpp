@@ -590,6 +590,9 @@ s32 cdvdCtrlTrayOpen()
 	cdvd.Status = CDVD_STATUS_TRAY_OPEN;
 	cdvd.Ready = CDVD_NOTREADY;
 
+	if (!g_GameStarted && g_SkipBiosHack && CDVDsys_GetSourceType() != CDVD_SourceType::Iso)
+		return 0;
+
 	cdvd.Tray.cdvdActionSeconds = 3;
 	cdvd.Tray.trayState = CDVD_DISC_EJECT;
 	return 0; // needs to be 0 for success according to homebrew test "CDVD"
@@ -600,14 +603,16 @@ s32 cdvdCtrlTrayClose()
 	DevCon.WriteLn(Color_Green, L"Close virtual disk tray");
 
 	cdvd.Ready = CDVD_READY1;
-	if (!g_GameStarted)
+	if (!g_GameStarted && g_SkipBiosHack && CDVDsys_GetSourceType() != CDVD_SourceType::Iso)
 	{
+		DevCon.WriteLn(Color_Green, L"Drive Engaging instantly");
 		cdvd.Status = CDVD_STATUS_PAUSE;
 		cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
 		cdvd.Tray.cdvdActionSeconds = 0;
 	}
 	else
 	{
+		DevCon.WriteLn(Color_Green, L"Drive entering seek mode");
 		cdvd.Status = CDVD_STATUS_SEEK;
 		cdvd.Tray.trayState = CDVD_DISC_SEEKING;
 		cdvd.Tray.cdvdActionSeconds = 3;
@@ -640,7 +645,7 @@ static __fi void cdvdGetDiskType()
 	u32 oldtype = cdvd.Type;
 	cdvd.Type = DoCDVDdetectDiskType();
 
-	if (oldtype != cdvd.Type && CDVDsys_GetSourceType() != CDVD_SourceType::Iso)
+	if ((g_GameStarted || !g_SkipBiosHack) && oldtype != cdvd.Type && CDVDsys_GetSourceType() != CDVD_SourceType::Iso)
 	{
 		if (cdvd.Type == 0)
 		{
@@ -1143,13 +1148,11 @@ void cdvdVsync()
 			switch (cdvd.Tray.trayState)
 			{
 			case CDVD_DISC_EJECT:
-				DevCon.Warning("Tray handling closing tray and seeking");
-				cdvd.Status = CDVD_STATUS_SEEK;
 				cdvdCtrlTrayClose();
 				break;
 			case CDVD_DISC_SEEKING:
 			case CDVD_DISC_ENGAGED:
-				DevCon.Warning("Tray handling engaging disc");
+				DevCon.WriteLn(Color_Green, L"Drive Engaging");
 				cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
 				cdvd.Status = CDVD_STATUS_PAUSE;
 				cdvd.mediaChanged = true;
@@ -1256,7 +1259,10 @@ u8 cdvdRead(u8 key)
 		case 0x0F: // TYPE
 			CDVD_LOG("cdvdRead0F(Disc Type) %x", cdvd.Type);
 			cdvdGetDiskType();
-			return cdvd.Type;
+			if (cdvd.Tray.trayState == CDVD_DISC_ENGAGED)
+				return cdvd.Type;
+			else
+				return (cdvd.Tray.trayState == CDVD_DISC_SEEKING) ? 1 : 0; // Detecting Disc / No Disc
 
 		case 0x13: // UNKNOWN
 			CDVD_LOG("cdvdRead13(Unknown) %x", 4);
