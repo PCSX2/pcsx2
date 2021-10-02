@@ -84,12 +84,12 @@ enum class FMVAspectRatioSwitchType : u8
 	MaxCount
 };
 
-enum MemoryCardType
+enum class MemoryCardType
 {
-	MemoryCard_None,
-	MemoryCard_File,
-	MemoryCard_Folder,
-	MemoryCard_MaxCount
+	Empty,
+	File,
+	Folder,
+	MaxCount
 };
 
 enum class LimiterModeType : u8

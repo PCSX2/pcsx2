@@ -104,7 +104,7 @@ void FolderMemoryCard::Open(const wxString& fullPath, const Pcsx2Config::McdOpti
 	wxString str(configuredFileName.GetFullPath());
 	bool disabled = false;
 
-	if (mcdOptions.Enabled && mcdOptions.Type == MemoryCardType::MemoryCard_Folder)
+	if (mcdOptions.Enabled && mcdOptions.Type == MemoryCardType::Folder)
 	{
 		if (configuredFileName.GetFullName().IsEmpty())
 		{

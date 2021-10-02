@@ -297,7 +297,7 @@ void FileMemoryCard::Open()
 			cont = true;
 		}
 
-		if (EmuConfig.Mcd[slot].Type != MemoryCardType::MemoryCard_File)
+		if (EmuConfig.Mcd[slot].Type != MemoryCardType::File)
 		{
 			str = L"[is not memcard file]";
 			cont = true;
@@ -607,16 +607,16 @@ void FileMcd_EmuOpen()
 	{
 		if (EmuConfig.Mcd[slot].Enabled)
 		{
-			MemoryCardType type = MemoryCardType::MemoryCard_File; // default to file if we can't find anything at the path so it gets auto-generated
+			MemoryCardType type = MemoryCardType::File; // default to file if we can't find anything at the path so it gets auto-generated
 
 			const wxString path = EmuConfig.FullpathToMcd(slot);
 			if (wxFileExists(path))
 			{
-				type = MemoryCardType::MemoryCard_File;
+				type = MemoryCardType::File;
 			}
 			else if (wxDirExists(path))
 			{
-				type = MemoryCardType::MemoryCard_Folder;
+				type = MemoryCardType::Folder;
 			}
 
 			EmuConfig.Mcd[slot].Type = type;
@@ -642,9 +642,9 @@ s32 FileMcd_IsPresent(uint port, uint slot)
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
 	switch (EmuConfig.Mcd[combinedSlot].Type)
 	{
-		case MemoryCardType::MemoryCard_File:
+		case MemoryCardType::File:
 			return Mcd::impl.IsPresent(combinedSlot);
-		case MemoryCardType::MemoryCard_Folder:
+		case MemoryCardType::Folder:
 			return Mcd::implFolder.IsPresent(combinedSlot);
 		default:
 			return false;
@@ -656,10 +656,10 @@ void FileMcd_GetSizeInfo(uint port, uint slot, McdSizeInfo* outways)
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
 	switch (EmuConfig.Mcd[combinedSlot].Type)
 	{
-		case MemoryCardType::MemoryCard_File:
+		case MemoryCardType::File:
 			Mcd::impl.GetSizeInfo(combinedSlot, *outways);
 			break;
-		case MemoryCardType::MemoryCard_Folder:
+		case MemoryCardType::Folder:
 			Mcd::implFolder.GetSizeInfo(combinedSlot, *outways);
 			break;
 		default:
@@ -672,9 +672,9 @@ bool FileMcd_IsPSX(uint port, uint slot)
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
 	switch (EmuConfig.Mcd[combinedSlot].Type)
 	{
-		case MemoryCardType::MemoryCard_File:
+		case MemoryCardType::File:
 			return Mcd::impl.IsPSX(combinedSlot);
-		case MemoryCardType::MemoryCard_Folder:
+		case MemoryCardType::Folder:
 			return Mcd::implFolder.IsPSX(combinedSlot);
 		default:
 			return false;
@@ -686,9 +686,9 @@ s32 FileMcd_Read(uint port, uint slot, u8* dest, u32 adr, int size)
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
 	switch (EmuConfig.Mcd[combinedSlot].Type)
 	{
-		case MemoryCardType::MemoryCard_File:
+		case MemoryCardType::File:
 			return Mcd::impl.Read(combinedSlot, dest, adr, size);
-		case MemoryCardType::MemoryCard_Folder:
+		case MemoryCardType::Folder:
 			return Mcd::implFolder.Read(combinedSlot, dest, adr, size);
 		default:
 			return 0;
@@ -700,9 +700,9 @@ s32 FileMcd_Save(uint port, uint slot, const u8* src, u32 adr, int size)
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
 	switch (EmuConfig.Mcd[combinedSlot].Type)
 	{
-		case MemoryCardType::MemoryCard_File:
+		case MemoryCardType::File:
 			return Mcd::impl.Save(combinedSlot, src, adr, size);
-		case MemoryCardType::MemoryCard_Folder:
+		case MemoryCardType::Folder:
 			return Mcd::implFolder.Save(combinedSlot, src, adr, size);
 		default:
 			return 0;
@@ -714,9 +714,9 @@ s32 FileMcd_EraseBlock(uint port, uint slot, u32 adr)
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
 	switch (EmuConfig.Mcd[combinedSlot].Type)
 	{
-		case MemoryCardType::MemoryCard_File:
+		case MemoryCardType::File:
 			return Mcd::impl.EraseBlock(combinedSlot, adr);
-		case MemoryCardType::MemoryCard_Folder:
+		case MemoryCardType::Folder:
 			return Mcd::implFolder.EraseBlock(combinedSlot, adr);
 		default:
 			return 0;
@@ -728,9 +728,9 @@ u64 FileMcd_GetCRC(uint port, uint slot)
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
 	switch (EmuConfig.Mcd[combinedSlot].Type)
 	{
-		case MemoryCardType::MemoryCard_File:
+		case MemoryCardType::File:
 			return Mcd::impl.GetCRC(combinedSlot);
-		case MemoryCardType::MemoryCard_Folder:
+		case MemoryCardType::Folder:
 			return Mcd::implFolder.GetCRC(combinedSlot);
 		default:
 			return 0;
@@ -745,7 +745,7 @@ void FileMcd_NextFrame(uint port, uint slot)
 		//case MemoryCardType::MemoryCard_File:
 		//	Mcd::impl.NextFrame( combinedSlot );
 		//	break;
-		case MemoryCardType::MemoryCard_Folder:
+		case MemoryCardType::Folder:
 			Mcd::implFolder.NextFrame(combinedSlot);
 			break;
 		default:
@@ -758,10 +758,10 @@ bool FileMcd_ReIndex(uint port, uint slot, const wxString& filter)
 	const uint combinedSlot = FileMcd_ConvertToSlot(port, slot);
 	switch (EmuConfig.Mcd[combinedSlot].Type)
 	{
-		//case MemoryCardType::MemoryCard_File:
+		//case MemoryCardType::File:
 		//	return Mcd::impl.ReIndex( combinedSlot, filter );
 		//	break;
-		case MemoryCardType::MemoryCard_Folder:
+		case MemoryCardType::Folder:
 			return Mcd::implFolder.ReIndex(combinedSlot, EmuConfig.McdFolderAutoManage, filter);
 			break;
 		default:
