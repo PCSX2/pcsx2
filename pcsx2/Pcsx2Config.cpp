@@ -511,7 +511,7 @@ Pcsx2Config::Pcsx2Config()
 		Mcd[slot].Filename = FileMcd_GetDefaultName(slot);
 
 		// Folder memory card is autodetected later.
-		Mcd[slot].Type = MemoryCardType::MemoryCard_File;
+		Mcd[slot].Type = MemoryCardType::File;
 	}
 
 	GzipIsoIndexTemplate = "$(f).pindex.tmp";

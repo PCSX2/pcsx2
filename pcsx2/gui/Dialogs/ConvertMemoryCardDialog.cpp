@@ -62,7 +62,7 @@ Dialogs::ConvertMemoryCardDialog::ConvertMemoryCardDialog( wxWindow* parent, con
 
 	s_padding += m_radio_CardType | pxSizerFlags::StdExpand();
 
-	if ( type != MemoryCardType::MemoryCard_File ) {
+	if ( type != MemoryCardType::File ) {
 		s_padding += Heading( pxE( L"Please note that the resulting file may not actually contain all saves, depending on how many are in the source memory card." ) );
 	}
 	s_padding += Heading( pxE( L"WARNING: Converting a memory card may take a while! Please do not close the emulator during the conversion process, even if the emulator is no longer responding to input." ) );
@@ -102,10 +102,10 @@ void Dialogs::ConvertMemoryCardDialog::CreateControls( const MemoryCardType sour
 	const RadioPanelItem tblForFolder[] = { toFile8MB, toFile16MB, toFile32MB, toFile64MB };
 
 	switch ( sourceType ) {
-		case MemoryCardType::MemoryCard_File:
+		case MemoryCardType::File:
 			m_radio_CardType = new pxRadioPanel( this, tblForFile );
 			break;
-		case MemoryCardType::MemoryCard_Folder:
+		case MemoryCardType::Folder:
 			m_radio_CardType = new pxRadioPanel( this, tblForFolder );
 			break;
 		default:
@@ -177,7 +177,7 @@ bool Dialogs::ConvertMemoryCardDialog::ConvertToFile( const wxFileName& sourcePa
 	FolderMemoryCard sourceFolderMemoryCard;
 	Pcsx2Config::McdOptions config;
 	config.Enabled = true;
-	config.Type = MemoryCardType::MemoryCard_Folder;
+	config.Type = MemoryCardType::Folder;
 	sourceFolderMemoryCard.Open( sourcePath.GetFullPath(), config, ( sizeInMB * 1024 * 1024 ) / FolderMemoryCard::ClusterSize, false, L"" );
 
 	u8 buffer[FolderMemoryCard::PageSizeRaw];
@@ -206,7 +206,7 @@ bool Dialogs::ConvertMemoryCardDialog::ConvertToFolder( const wxFileName& source
 	FolderMemoryCard targetFolderMemoryCard;
 	Pcsx2Config::McdOptions config;
 	config.Enabled = true;
-	config.Type = MemoryCardType::MemoryCard_Folder;
+	config.Type = MemoryCardType::Folder;
 	u32 adr = 0;
 
 	for ( int i = 0; i < 2; ++i ) {

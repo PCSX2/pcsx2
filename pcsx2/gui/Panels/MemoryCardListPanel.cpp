@@ -62,7 +62,7 @@ bool EnumerateMemoryCard(McdSlotItem& dest, const wxFileName& filename, const wx
 	dest.IsFormatted = false;
 	dest.IsPresent = false;
 	dest.IsPSX = false;
-	dest.Type = MemoryCardType::MemoryCard_None;
+	dest.Type = MemoryCardType::Empty;
 
 	const wxString fullpath(filename.GetFullPath());
 	//DevCon.WriteLn( fullpath );
@@ -93,7 +93,7 @@ bool EnumerateMemoryCard(McdSlotItem& dest, const wxFileName& filename, const wx
 			dest.SizeInMB = 1; // MegaBIT
 		}
 
-		dest.Type = MemoryCardType::MemoryCard_File;
+		dest.Type = MemoryCardType::File;
 		dest.IsFormatted = IsMcdFormatted(mcdFile);
 		filename.GetTimes(NULL, &dest.DateModified, &dest.DateCreated);
 	}
@@ -113,7 +113,7 @@ bool EnumerateMemoryCard(McdSlotItem& dest, const wxFileName& filename, const wx
 
 		dest.SizeInMB = 0;
 
-		dest.Type = MemoryCardType::MemoryCard_Folder;
+		dest.Type = MemoryCardType::Folder;
 		dest.IsFormatted = IsMcdFormatted(mcdFile);
 		superBlockFileName.GetTimes(NULL, &dest.DateModified, &dest.DateCreated);
 	}
