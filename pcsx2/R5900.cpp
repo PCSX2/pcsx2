@@ -606,6 +606,8 @@ void __fastcall eeloadHook()
 {
 	const wxString &elf_override = GetCoreThread().GetElfOverride();
 
+	DoCDVDopen();
+	cdvdCtrlTrayClose();
 	if (!elf_override.IsEmpty())
 		cdvdReloadElfInfo(L"host:" + elf_override);
 	else

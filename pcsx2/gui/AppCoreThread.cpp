@@ -597,8 +597,8 @@ void AppCoreThread::OnResumeInThread(SystemsMask systemsToReinstate)
 	if (m_resetCdvd)
 	{
 		CDVDsys_ChangeSource(g_Conf->CdvdSource);
-		cdvdCtrlTrayOpen();
 		DoCDVDopen();
+		cdvdCtrlTrayOpen();
 		m_resetCdvd = false;
 	}
 	else if (systemsToReinstate & System_CDVD)

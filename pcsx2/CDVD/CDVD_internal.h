@@ -72,7 +72,8 @@ enum cdvdStatus
 
 enum cdvdready
 {
-	CDVD_NOTREADY = 0x06,
+	CDVD_DRIVENOTREADY = 0x02,
+	CDVD_NCMDNOTREADY = 0x06,
 	CDVD_READY1 = 0x42,
 	CDVD_READY2 = 0x42 // This is used in a few places for some reason.
 					   //It would be worth checking if this was just a typo made at some point.
