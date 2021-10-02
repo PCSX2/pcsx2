@@ -606,13 +606,16 @@ void __fastcall eeloadHook()
 {
 	const wxString &elf_override = GetCoreThread().GetElfOverride();
 
-	DoCDVDopen();
-	cdvdCtrlTrayClose();
-	if (!elf_override.IsEmpty())
-		cdvdReloadElfInfo(L"host:" + elf_override);
-	else
-		cdvdReloadElfInfo();
-
+	if (!cdvd.Type)
+	{
+		DoCDVDopen();
+		cdvdCtrlTrayClose();
+	
+		if (!elf_override.IsEmpty())
+			cdvdReloadElfInfo(L"host:" + elf_override);
+		else
+			cdvdReloadElfInfo();
+	}
 	wxString discelf;
 	int disctype = GetPS2ElfName(discelf);
 
