@@ -211,7 +211,7 @@ namespace HostSys
 
 // Safe version of Munmap -- NULLs the pointer variable immediately after free'ing it.
 #define SafeSysMunmap(ptr, size) \
-	((void)(HostSys::Munmap((uptr)(ptr), size), (ptr) = NULL))
+	((void)(HostSys::Munmap((uptr)(ptr), size), (ptr) = 0))
 
 extern void InitCPUTicks();
 extern u64 GetTickFrequency();
