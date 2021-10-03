@@ -53,7 +53,11 @@ u64 GetCPUTicks()
 
 wxString GetOSVersionString()
 {
+#if defined(__linux__)
 	return wxGetLinuxDistributionInfo().Description;
+#else // freebsd
+	return wxGetOsDescription();
+#endif
 }
 
 void ScreensaverAllow(bool allow)
