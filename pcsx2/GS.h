@@ -381,19 +381,19 @@ protected:
 	void OpenGS();
 	void CloseGS();
 
-	void OnStart();
-	void OnResumeReady();
+	void OnStart() override;
+	void OnResumeReady() override;
 
-	void OnSuspendInThread();
+	void OnSuspendInThread() override;
 	void OnPauseInThread(SystemsMask systemsToTearDown) override {}
 	void OnResumeInThread(SystemsMask systemsToReinstate) override;
-	void OnCleanupInThread();
+	void OnCleanupInThread() override;
 
 	void GenericStall( uint size );
 
 	// Used internally by SendSimplePacket type functions
 	void _FinishSimplePacket();
-	void ExecuteTaskInThread();
+	void ExecuteTaskInThread() override;
 };
 
 // GetMTGS() is a required external implementation. This function is *NOT* provided

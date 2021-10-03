@@ -212,13 +212,13 @@ public:
 
 	bool HasPendingStateChangeRequest() const;
 
-	virtual void OnResumeReady();
+	virtual void OnResumeReady() override;
 	virtual void Reset();
 	virtual void ResetQuick();
-	virtual void Cancel(bool isBlocking = true);
-	virtual bool Cancel(const wxTimeSpan& timeout);
+	virtual void Cancel(bool isBlocking = true) override;
+	virtual bool Cancel(const wxTimeSpan& timeout) override;
 
-	virtual bool StateCheckInThread();
+	virtual bool StateCheckInThread() override;
 	virtual void VsyncInThread();
 	virtual void GameStartingInThread();
 
@@ -232,13 +232,13 @@ public:
 protected:
 	void _reset_stuff_as_needed();
 
-	virtual void Start();
-	virtual void OnStart();
+	virtual void Start() override;
+	virtual void OnStart() override;
 	virtual void OnSuspendInThread() override;
 	virtual void OnPauseInThread(SystemsMask systemsToTearDown) override { TearDownSystems(systemsToTearDown); }
 	virtual void OnResumeInThread(SystemsMask systemsToReinstate) override;
-	virtual void OnCleanupInThread();
-	virtual void ExecuteTaskInThread();
+	virtual void OnCleanupInThread() override;
+	virtual void ExecuteTaskInThread() override;
 	virtual void DoCpuReset();
 	virtual void DoCpuExecute();
 
