@@ -17,11 +17,11 @@
 #include "Global.h"
 #include "spu2.h"
 #include "Dma.h"
-#if defined(__linux__) || defined(__APPLE__)
+#if defined(_WIN32)
+#include "Windows/Dialogs.h"
+#else // BSD, Macos
 #include "Linux/Dialogs.h"
 #include "Linux/Config.h"
-#elif defined(_WIN32)
-#include "Windows/Dialogs.h"
 #endif
 #include "R3000A.h"
 #include "common/pxStreams.h"

@@ -28,6 +28,10 @@
 #include <arpa/inet.h>
 #endif
 
+#if defined(__FreeBSD__)
+#include <sys/socket.h>
+#endif
+
 void SaveDnsHosts()
 {
 	std::unique_ptr<wxFileConfig> hini(OpenFileConfig(EmuFolders::Settings.Combine(wxString("DEV9Hosts.ini")).GetFullPath()));

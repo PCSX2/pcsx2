@@ -15,7 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "SPU2/Config.h"
-#if defined(__linux__) || defined(__APPLE__)
+#if !defined(_WIN32) // BSD, Macos
 #include "SPU2/Linux/Config.h"
 #endif
 #include "SPU2/Global.h"

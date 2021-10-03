@@ -29,6 +29,10 @@
 #include <netdb.h>
 #endif
 
+#if defined(__FreeBSD__)
+#include <netinet/in.h>
+#endif
+
 #include "DNS_Server.h"
 #include "DEV9/PacketReader/IP/UDP/UDP_Packet.h"
 #include "DEV9/PacketReader/IP/UDP/DNS/DNS_Packet.h"

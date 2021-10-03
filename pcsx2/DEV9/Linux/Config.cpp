@@ -30,6 +30,10 @@
 #include <libxml/parser.h>
 #include <libxml/tree.h>
 
+#if defined(__FreeBSD__)
+#include <sys/socket.h>
+#endif
+
 void SaveConf()
 {
 	xmlDocPtr doc = NULL; /* document pointer */
