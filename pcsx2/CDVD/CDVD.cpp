@@ -47,14 +47,25 @@ static __fi void SetResultSize(u8 size)
 	cdvd.sDataIn &= ~0x40;
 }
 
+static void CDVDDMA_INT(u32 eCycle)
+{
+	if (EmuConfig.Speedhacks.fastCDVD)
+	{
+		if (eCycle < Cdvd_FullSeek_Cycles && eCycle > 1)
+			eCycle *= 0.5f;
+	}
+
+	PSX_INT(IopEvt_CdvdDMA, eCycle);
+}
+
 static void CDVDREAD_INT(u32 eCycle)
 {
 	// Give it an arbitary FAST value. Good for ~5000kb/s in ULE when copying a file from CDVD to HDD
 	// Keep long seeks out though, as games may try to push dmas while seeking. (Tales of the Abyss)
 	if (EmuConfig.Speedhacks.fastCDVD)
 	{
-		if (eCycle < Cdvd_FullSeek_Cycles)
-			eCycle = 3000;
+		if (eCycle < Cdvd_FullSeek_Cycles && eCycle > 1)
+			eCycle *= 0.5f;
 	}
 
 	PSX_INT(IopEvt_CdvdRead, eCycle);
@@ -993,7 +1004,7 @@ __fi void cdvdReadInterrupt()
 			pxAssert((int)cdvd.ReadTime > 0);
 
 			if (HW_DMA3_CHCR & 0x01000000)
-				PSX_INT(IopEvt_CdvdDMA, DMATime);
+				CDVDDMA_INT(DMATime);
 			return;
 		}
 
@@ -1004,7 +1015,7 @@ __fi void cdvdReadInterrupt()
 	{
 		int DMATime = (cdvd.BlockSize / 2) * 40;
 
-		PSX_INT(IopEvt_CdvdDMA, DMATime);
+		CDVDDMA_INT(DMATime);
 
 		cdvd.Status = CDVD_STATUS_PAUSE; // Needed here but could be smth else than Pause (rama)
 		// All done! :D
