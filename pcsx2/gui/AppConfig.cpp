@@ -912,10 +912,11 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
 	EnableGameFixes		= false;
 
 	EmuOptions.EnablePatches		= true;
-	EmuOptions.GS					= default_Pcsx2Config.GS;
-	EmuOptions.GS.FrameLimitEnable	= original_GS.FrameLimitEnable;	//Frame limiter is not modified by presets
-	EmuOptions.GS.VsyncEnable		= original_GS.VsyncEnable;
-	EmuOptions.GS.VsyncQueueSize	= original_GS.VsyncQueueSize;
+
+	EmuOptions.GS.SynchronousMTGS = default_Pcsx2Config.GS.SynchronousMTGS;
+	EmuOptions.GS.FrameSkipEnable = default_Pcsx2Config.GS.FrameSkipEnable;
+	EmuOptions.GS.FramesToDraw = default_Pcsx2Config.GS.FramesToDraw;
+	EmuOptions.GS.FramesToSkip = default_Pcsx2Config.GS.FramesToSkip;
 
 	EmuOptions.Cpu					= default_Pcsx2Config.Cpu;
 	EmuOptions.Gamefixes			= default_Pcsx2Config.Gamefixes;
