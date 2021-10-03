@@ -148,29 +148,29 @@ public:
 
 	void ResetCdvd() { m_resetCdvd = true; }
 
-	virtual void Suspend(bool isBlocking = false);
-	virtual void Resume();
-	virtual void Reset();
-	virtual void ResetQuick();
-	virtual void Cancel(bool isBlocking = true);
-	virtual bool StateCheckInThread();
+	virtual void Suspend(bool isBlocking = false) override;
+	virtual void Resume() override;
+	virtual void Reset() override;
+	virtual void ResetQuick() override;
+	virtual void Cancel(bool isBlocking = true) override;
+	virtual bool StateCheckInThread() override;
 	virtual void ChangeCdvdSource();
 
-	virtual void ApplySettings(const Pcsx2Config& src);
+	virtual void ApplySettings(const Pcsx2Config& src) override;
 
 protected:
-	virtual void DoCpuExecute();
+	virtual void DoCpuExecute() override;
 
-	virtual void OnResumeReady();
-	virtual void OnPause();
-	virtual void OnPauseDebug();
+	virtual void OnResumeReady() override;
+	virtual void OnPause() override;
+	virtual void OnPauseDebug() override;
 	virtual void OnResumeInThread(SystemsMask systemsToReinstate) override;
-	virtual void OnSuspendInThread();
-	virtual void OnCleanupInThread();
-	virtual void VsyncInThread();
-	virtual void GameStartingInThread();
-	virtual void ExecuteTaskInThread();
-	virtual void DoCpuReset();
+	virtual void OnSuspendInThread() override;
+	virtual void OnCleanupInThread() override;
+	virtual void VsyncInThread() override;
+	virtual void GameStartingInThread() override;
+	virtual void ExecuteTaskInThread() override;
+	virtual void DoCpuReset() override;
 };
 
 // --------------------------------------------------------------------------------------
