@@ -3309,7 +3309,7 @@ SCES-55387:
   region: "PAL-G"
 SCES-55435:
   name: "SingStar ABBA"
-  region: "PAL"
+  region: "PAL-E"
 SCES-55436:
   name: "SingStar ABBA"
   region: "PAL-F"
@@ -28960,6 +28960,8 @@ SLPS-25034:
 SLPS-25035:
   name: "Monster Farm 3"
   region: "NTSC-J"
+  clampModes:
+    vuClampMode: 3  # Fixes SPS in game 
 SLPS-25036:
   name: "Gallop Racer 5"
   region: "NTSC-J"
@@ -32934,6 +32936,8 @@ SLUS-20190:
   name: "Monster Rancher 3"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vuClampMode: 3 # Fixes SPS in game 
 SLUS-20191:
   name: "Defender"
   region: "NTSC-U"
