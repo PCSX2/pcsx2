@@ -575,88 +575,35 @@ s32 cdvdReadSubQ(s32 lsn, cdvdSubQ* subq)
 
 static void cdvdDetectDisk()
 {
-	DevCon.WriteLn(Color_Green, L"Detect Disc");
-	u32 oldtype = cdvd.Type;
 	cdvd.Type = DoCDVDdetectDiskType();
-
-	if ((g_GameStarted || !g_SkipBiosHack) && oldtype != cdvd.Type && CDVDsys_GetSourceType() != CDVD_SourceType::Iso)
-	{
-		if (cdvd.Type == 0)
-		{
-			DevCon.Warning("Ejecting");
-			cdvd.Status = CDVD_STATUS_TRAY_OPEN;
-			cdvd.Ready = CDVD_DRIVENOTREADY;
-			cdvd.Tray.trayState = CDVD_DISC_EJECT;
-			cdvd.mediaChanged = true;
-		}
-		else
-		{
-			cdvd.Ready = CDVD_DRIVENOTREADY;
-			cdvd.Status = CDVD_STATUS_SEEK;
-			cdvd.Tray.trayState = CDVD_DISC_SEEKING;
-			cdvd.Tray.cdvdActionSeconds = 3;
-			DevCon.Warning("Seeking");
-		}
-	}
 }
-
-// Note: Is tray status being kept as a var here somewhere?
-// Yep, and sceCdTrayReq needs it to detect tray state changes (rama)
-
-//   cdvdNewDiskCB() can update it's status as well...
-
-// Modified by (efp) - 16/01/2006
-static __fi void cdvdGetDiskType()
-{
-	//DevCon.WriteLn(Color_Green, L"Get Disc Type");
-	u32 oldtype = cdvd.Type;
-	cdvd.Type = DoCDVDdetectDiskType();
-
-	if ((g_GameStarted || !g_SkipBiosHack) && oldtype != cdvd.Type && CDVDsys_GetSourceType() != CDVD_SourceType::Iso)
-	{
-		if (cdvd.Type == 0)
-		{
-			cdvd.Status = CDVD_STATUS_TRAY_OPEN;
-			cdvd.Ready = CDVD_DRIVENOTREADY;
-			cdvd.Tray.trayState = CDVD_DISC_EJECT;
-			cdvd.mediaChanged = true;
-		}
-		else
-		{
-			cdvd.Ready = CDVD_DRIVENOTREADY;
-			cdvd.Status = CDVD_STATUS_SEEK;
-			cdvd.Tray.trayState = CDVD_DISC_SEEKING;
-			cdvd.Tray.cdvdActionSeconds = 3;
-		}
-	}
-}
-
 
 s32 cdvdCtrlTrayOpen()
 {
 	DevCon.WriteLn(Color_Green, L"Open virtual disk tray");
-	
-	// If we switch using a source change we need to pretend it's a new disc
-	if(CDVDsys_GetSourceType() == CDVD_SourceType::Disc)
-		cdvdNewDiskCB();
 
-	//cdvdGetDiskType();
+	// If we switch using a source change we need to pretend it's a new disc
+	if (CDVDsys_GetSourceType() == CDVD_SourceType::Disc)
+	{
+		cdvdNewDiskCB();
+		return 0;
+	}
+
 	cdvdDetectDisk();
+
 	DiscSwapTimerSeconds = cdvd.RTC.second; // remember the PS2 time when this happened
 	cdvd.Status = CDVD_STATUS_TRAY_OPEN;
 	cdvd.Ready = CDVD_DRIVENOTREADY;
 
-	if (!g_GameStarted && g_SkipBiosHack && CDVDsys_GetSourceType() != CDVD_SourceType::Iso)
-		return 0;
-
 	cdvd.mediaChanged = true;
+
 	if (cdvd.Type > 0)
 	{
 		cdvd.Tray.cdvdActionSeconds = 3;
 		cdvd.Tray.trayState = CDVD_DISC_EJECT;
+		DevCon.WriteLn(Color_Green, L"Simulating ejected media");
 	}
-	else
-		DevCon.Warning("Not a disc type");
+
 	return 0; // needs to be 0 for success according to homebrew test "CDVD"
 }
 
@@ -666,7 +613,7 @@ s32 cdvdCtrlTrayClose()
 
 	if (!g_GameStarted && g_SkipBiosHack)
 	{
-		DevCon.WriteLn(Color_Green, L"Drive Engaging instantly");
+		DevCon.WriteLn(Color_Green, L"Media already loaded (fast boot)");
 		cdvd.Ready = CDVD_READY1;
 		cdvd.Status = CDVD_STATUS_PAUSE;
 		cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
@@ -674,7 +621,7 @@ s32 cdvdCtrlTrayClose()
 	}
 	else
 	{
-		DevCon.WriteLn(Color_Green, L"Drive entering seek mode");
+		DevCon.WriteLn(Color_Green, L"Seeking media");
 		cdvd.Ready = CDVD_DRIVENOTREADY;
 		cdvd.Status = CDVD_STATUS_SEEK;
 		cdvd.Tray.trayState = CDVD_DISC_SEEKING;
@@ -684,20 +631,6 @@ s32 cdvdCtrlTrayClose()
 
 	return 0; // needs to be 0 for success according to homebrew test "CDVD"
 }
-
-// Some legacy function, not used anymore
-s32 cdvdGetTrayStatus()
-{
-	/*s32 ret = CDVD->getTrayStatus();
-
-	if (ret == -1)
-		return(CDVD_TRAY_CLOSE);
-	else
-		return(ret);*/
-	return -1;
-}
-
-
 
 // check whether disc is single or dual layer
 // if its dual layer, check what the disctype is and what sector number
@@ -821,13 +754,37 @@ void SaveStateBase::cdvdFreeze()
 
 void cdvdNewDiskCB()
 {
-	DevCon.WriteLn(Color_Green, L"NewDiskCB");
 	ScopedTryLock lock(Mutex_NewDiskCB);
 	if (lock.Failed())
+	{
+		DevCon.WriteLn(Color_Red, L"NewDiskCB Lock Failed");
 		return;
+	}
 
 	DoCDVDresetDiskTypeCache();
 	cdvdDetectDisk();
+	
+	// If not ejected but we've swapped source pretend it got ejected
+	if ((g_GameStarted || !g_SkipBiosHack) && cdvd.Tray.trayState != CDVD_DISC_EJECT)
+	{
+		DevCon.WriteLn(Color_Green, L"Ejecting media");
+		cdvd.Status = CDVD_STATUS_TRAY_OPEN;
+		cdvd.Ready = CDVD_DRIVENOTREADY;
+		cdvd.Tray.trayState = CDVD_DISC_EJECT;
+		cdvd.mediaChanged = true;
+
+		// If it really got ejected, the DVD Reader will report Type 0, so no need to simulate ejection
+		if (cdvd.Type > 0)
+			cdvd.Tray.cdvdActionSeconds = 3;
+	}
+	else if(cdvd.Type > 0)
+	{
+		DevCon.WriteLn(Color_Green, L"Seeking new media");
+		cdvd.Ready = CDVD_DRIVENOTREADY;
+		cdvd.Status = CDVD_STATUS_SEEK;
+		cdvd.Tray.trayState = CDVD_DISC_SEEKING;
+		cdvd.Tray.cdvdActionSeconds = 3;
+	}
 }
 
 static void mechaDecryptBytes(u32 madr, int size)
@@ -1181,13 +1138,8 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 
 u8 monthmap[13] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
-void cdvdVsync()
+void cdvdUpdateTrayState()
 {
-	cdvd.RTCcount++;
-	if (cdvd.RTCcount < GetVerticalFrequency())
-		return;
-	cdvd.RTCcount = 0;
-
 	if (cdvd.Tray.cdvdActionSeconds > 0)
 	{
 		if (--cdvd.Tray.cdvdActionSeconds == 0)
@@ -1200,7 +1152,7 @@ void cdvdVsync()
 			case CDVD_DISC_SEEKING:
 			case CDVD_DISC_ENGAGED:
 				cdvd.mediaChanged = true;
-				DevCon.WriteLn(Color_Green, L"Drive Engaging");
+				DevCon.WriteLn(Color_Green, L"Media ready to read");
 				cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
 				cdvd.Status = CDVD_STATUS_PAUSE;
 				cdvd.Ready = CDVD_READY1;
@@ -1208,6 +1160,16 @@ void cdvdVsync()
 			}
 		}
 	}
+}
+
+void cdvdVsync()
+{
+	cdvd.RTCcount++;
+	if (cdvd.RTCcount < GetVerticalFrequency())
+		return;
+	cdvd.RTCcount = 0;
+
+	cdvdUpdateTrayState();
 
 	cdvd.RTC.second++;
 	if (cdvd.RTC.second < 60)
@@ -1284,7 +1246,7 @@ u8 cdvdRead(u8 key)
 			CDVD_LOG("cdvdRead0A(Status) %x", cdvd.Status);
 			return cdvd.Status;
 
-		case 0x0B: // TRAY-STATE (if tray has been opened)
+		case 0x0B: // MEDIA CHANGED (Set when disc is ejected or detected, aka cdvd.type changes)
 		{
 			CDVD_LOG("cdvdRead0B(Media Change) (1 Changed, 0 Not Changed): %x", cdvd.mediaChanged);
 			bool ret = cdvd.mediaChanged;
@@ -1305,8 +1267,6 @@ u8 cdvdRead(u8 key)
 			return itob((u8)(cdvd.Sector % 75));
 
 		case 0x0F: // TYPE
-			
-			//cdvdGetDiskType();
 			if (cdvd.Tray.trayState == CDVD_DISC_ENGAGED)
 			{
 				CDVD_LOG("cdvdRead0F(Disc Type) Engaged %x", cdvd.Type);
