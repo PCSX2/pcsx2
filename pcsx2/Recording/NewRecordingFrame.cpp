@@ -37,7 +37,7 @@ NewRecordingFrame::NewRecordingFrame(wxWindow* parent)
 
 	m_filePicker = new wxFilePickerCtrl(m_panel, MenuIds_New_Recording_Frame_File, wxEmptyString, "File", L"p2m2 file(*.p2m2)|*.p2m2", wxDefaultPosition, wxDefaultSize, wxFLP_SAVE | wxFLP_OVERWRITE_PROMPT | wxFLP_USE_TEXTCTRL);
 	m_authorInput = new wxTextCtrl(m_panel, MenuIds_New_Recording_Frame_Author, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxTE_PROCESS_ENTER);
-	m_fromChoice = new wxChoice(m_panel, MenuIds_New_Recording_Frame_From, wxDefaultPosition, wxDefaultSize, NULL);
+	m_fromChoice = new wxChoice(m_panel, MenuIds_New_Recording_Frame_From, wxDefaultPosition, wxDefaultSize);
 
 	m_savestate_label =
 		_("Be Warned! Basing an input recording off a savestate can be a mistake as savestates can break across emulator versions. Be prepared to be stuck to an emulator version or have to re-create your starting savestate in a later version.");
