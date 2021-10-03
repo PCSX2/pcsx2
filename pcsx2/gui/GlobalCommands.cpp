@@ -192,6 +192,10 @@ namespace Implementations
 				break;
 		}
 
+		// Sync the mode with the settings. This is kinda silly, since they won't be
+		// saved until shutdown, but it matches the behavior pre-settings-move.
+		g_Conf->EmuOptions.GS.AspectRatio = art;
+
 		OSDlog(Color_StrongBlue, true, "(GSwindow) Aspect ratio: %s", arts);
 	}
 
@@ -199,6 +203,8 @@ namespace Implementations
 	{
 		EmuConfig.GS.OffsetX = x;
 		EmuConfig.GS.OffsetY = y;
+		g_Conf->EmuOptions.GS.OffsetX = x;
+		g_Conf->EmuOptions.GS.OffsetY = y;
 		OSDlog(Color_StrongBlue, true, "(GSwindow) Offset: x=%f, y=%f", x, y);
 	}
 
@@ -232,6 +238,7 @@ namespace Implementations
 		if (zoom <= 0)
 			return;
 		EmuConfig.GS.StretchY = zoom;
+		g_Conf->EmuOptions.GS.StretchY = zoom;
 		OSDlog(Color_StrongBlue, true, "(GSwindow) Vertical stretch: %f", zoom);
 	}
 
@@ -253,6 +260,7 @@ namespace Implementations
 		if (zoom < 0)
 			return;
 		EmuConfig.GS.Zoom = zoom;
+		g_Conf->EmuOptions.GS.Zoom = zoom;
 
 		if (zoom == 0)
 			OSDlog(Color_StrongBlue, true, "(GSwindow) Zoom: 0 (auto, no black bars)");
@@ -401,8 +409,10 @@ namespace Implementations
 
 		// FIXME: Some of the trace logs will require recompiler resets to be activated properly.
 #ifdef PCSX2_DEVBUILD
-		EmuConfig.Trace.Enabled = !EmuConfig.Trace.Enabled;
-		Console.WriteLn(EmuConfig.Trace.Enabled ? "Logging Enabled." : "Logging Disabled.");
+		// This is touching the CPU thread's settings, it really shouldn't be, but it'll desync with the UI if we don't.
+		g_Conf->EmuOptions.Trace.Enabled = !g_Conf->EmuOptions.Trace.Enabled;
+		EmuConfig.Trace.Enabled = g_Conf->EmuOptions.Trace.Enabled;
+		Console.WriteLn(g_Conf->EmuOptions.Trace.Enabled ? "Logging Enabled." : "Logging Disabled.");
 #endif
 	}
 

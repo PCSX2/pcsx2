@@ -64,7 +64,8 @@ bool wxSettingsInterface::GetUIntValue(const char* section, const char* key, uin
 	if (!m_config->Read(key, &lvalue))
 		return false;
 
-	return static_cast<uint>(lvalue);
+	*value = static_cast<uint>(lvalue);
+	return true;
 }
 
 bool wxSettingsInterface::GetFloatValue(const char* section, const char* key, float* value) const

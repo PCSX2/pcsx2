@@ -103,7 +103,7 @@ protected:
 
 #define SettingsWrapSection(section) const char* CURRENT_SETTINGS_SECTION = section;
 #define SettingsWrapEntry(var) wrap.Entry(CURRENT_SETTINGS_SECTION, #var, var, var)
-#define SettingsWrapBitfield(var) wrap.EntryBitfield(CURRENT_SETTINGS_SECTION, #var, var, var)
+#define SettingsWrapBitfield(varname) varname = wrap.EntryBitfield(CURRENT_SETTINGS_SECTION, #varname, varname, varname)
 #define SettingsWrapBitBool(varname) varname = wrap.EntryBitBool(CURRENT_SETTINGS_SECTION, #varname, !!varname, varname)
 #define SettingsWrapBitfieldEx(varname, textname) varname = wrap.EntryBitfield(CURRENT_SETTINGS_SECTION, textname, varname, varname)
 #define SettingsWrapBitBoolEx(varname, textname) varname = wrap.EntryBitBool(CURRENT_SETTINGS_SECTION, textname, !!varname, varname)
