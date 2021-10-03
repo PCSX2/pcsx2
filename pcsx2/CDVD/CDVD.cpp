@@ -441,7 +441,7 @@ void cdvdReloadElfInfo(wxString elfoverride)
 	// called from context of executing VM code (recompilers), so we need to trap exceptions
 	// and route them through the VM's exception handler.  (needed for non-SEH platforms, such
 	// as Linux/GCC)
-
+	DevCon.WriteLn(Color_Green, L"Reload ELF");
 	try
 	{
 		if (!elfoverride.IsEmpty())
@@ -576,15 +576,33 @@ s32 cdvdReadSubQ(s32 lsn, cdvdSubQ* subq)
 static void cdvdDetectDisk()
 {
 	cdvd.Type = DoCDVDdetectDiskType();
-	cdvdReloadElfInfo();
 }
 
 s32 cdvdCtrlTrayOpen()
 {
 	DevCon.WriteLn(Color_Green, L"Open virtual disk tray");
+
+	// If we switch using a source change we need to pretend it's a new disc
+	if (CDVDsys_GetSourceType() == CDVD_SourceType::Disc)
+	{
+		cdvdNewDiskCB();
+		return 0;
+	}
+
+	cdvdDetectDisk();
+
 	DiscSwapTimerSeconds = cdvd.RTC.second; // remember the PS2 time when this happened
 	cdvd.Status = CDVD_STATUS_TRAY_OPEN;
-	cdvd.Ready = CDVD_NOTREADY;
+	cdvd.Ready = CDVD_DRIVENOTREADY;
+
+	cdvd.mediaChanged = true;
+
+	if (cdvd.Type > 0)
+	{
+		cdvd.Tray.cdvdActionSeconds = 3;
+		cdvd.Tray.trayState = CDVD_DISC_EJECT;
+		DevCon.WriteLn(Color_Green, L"Simulating ejected media");
+	}
 
 	return 0; // needs to be 0 for success according to homebrew test "CDVD"
 }
@@ -592,36 +610,26 @@ s32 cdvdCtrlTrayOpen()
 s32 cdvdCtrlTrayClose()
 {
 	DevCon.WriteLn(Color_Green, L"Close virtual disk tray");
-	cdvd.Status = CDVD_STATUS_PAUSE;
-	cdvd.Ready = CDVD_READY1;
-	cdvd.TrayTimeout = 0; // Reset so it can't get closed twice by cdvdVsync()
 
+	if (!g_GameStarted && g_SkipBiosHack)
+	{
+		DevCon.WriteLn(Color_Green, L"Media already loaded (fast boot)");
+		cdvd.Ready = CDVD_READY1;
+		cdvd.Status = CDVD_STATUS_PAUSE;
+		cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
+		cdvd.Tray.cdvdActionSeconds = 0;
+	}
+	else
+	{
+		DevCon.WriteLn(Color_Green, L"Seeking media");
+		cdvd.Ready = CDVD_DRIVENOTREADY;
+		cdvd.Status = CDVD_STATUS_SEEK;
+		cdvd.Tray.trayState = CDVD_DISC_SEEKING;
+		cdvd.Tray.cdvdActionSeconds = 3;
+	}
 	cdvdDetectDisk();
 
 	return 0; // needs to be 0 for success according to homebrew test "CDVD"
-}
-
-// Some legacy function, not used anymore
-s32 cdvdGetTrayStatus()
-{
-	/*s32 ret = CDVD->getTrayStatus();
-
-	if (ret == -1)
-		return(CDVD_TRAY_CLOSE);
-	else
-		return(ret);*/
-	return -1;
-}
-
-// Note: Is tray status being kept as a var here somewhere?
-// Yep, and sceCdTrayReq needs it to detect tray state changes (rama)
-
-//   cdvdNewDiskCB() can update it's status as well...
-
-// Modified by (efp) - 16/01/2006
-static __fi void cdvdGetDiskType()
-{
-	cdvd.Type = DoCDVDdetectDiskType();
 }
 
 // check whether disc is single or dual layer
@@ -697,6 +705,7 @@ void cdvdReset()
 
 	cdvd.sDataIn = 0x40;
 	cdvd.Ready = CDVD_READY2;
+	cdvd.Status = CDVD_STATUS_PAUSE;
 	cdvd.Speed = 4;
 	cdvd.BlockSize = 2064;
 	cdvd.Action = cdvdAction_None;
@@ -711,6 +720,12 @@ void cdvdReset()
 	cdvd.RTC.day = (u8)curtime.GetDay(wxDateTime::GMT9);
 	cdvd.RTC.month = (u8)curtime.GetMonth(wxDateTime::GMT9) + 1; // WX returns Jan as "0"
 	cdvd.RTC.year = (u8)(curtime.GetYear(wxDateTime::GMT9) - 2000);
+
+	g_GameStarted = false;
+	g_GameLoading = false;
+	g_SkipBiosHack = EmuConfig.UseBOOT2Injection;
+
+	cdvdCtrlTrayClose();
 }
 
 struct Freeze_v10Compat
@@ -741,10 +756,35 @@ void cdvdNewDiskCB()
 {
 	ScopedTryLock lock(Mutex_NewDiskCB);
 	if (lock.Failed())
+	{
+		DevCon.WriteLn(Color_Red, L"NewDiskCB Lock Failed");
 		return;
+	}
 
 	DoCDVDresetDiskTypeCache();
 	cdvdDetectDisk();
+	
+	// If not ejected but we've swapped source pretend it got ejected
+	if ((g_GameStarted || !g_SkipBiosHack) && cdvd.Tray.trayState != CDVD_DISC_EJECT)
+	{
+		DevCon.WriteLn(Color_Green, L"Ejecting media");
+		cdvd.Status = CDVD_STATUS_TRAY_OPEN;
+		cdvd.Ready = CDVD_DRIVENOTREADY;
+		cdvd.Tray.trayState = CDVD_DISC_EJECT;
+		cdvd.mediaChanged = true;
+
+		// If it really got ejected, the DVD Reader will report Type 0, so no need to simulate ejection
+		if (cdvd.Type > 0)
+			cdvd.Tray.cdvdActionSeconds = 3;
+	}
+	else if(cdvd.Type > 0)
+	{
+		DevCon.WriteLn(Color_Green, L"Seeking new media");
+		cdvd.Ready = CDVD_DRIVENOTREADY;
+		cdvd.Status = CDVD_STATUS_SEEK;
+		cdvd.Tray.trayState = CDVD_DISC_SEEKING;
+		cdvd.Tray.cdvdActionSeconds = 3;
+	}
 }
 
 static void mechaDecryptBytes(u32 madr, int size)
@@ -933,7 +973,7 @@ __fi void cdvdReadInterrupt()
 {
 	//Console.WriteLn("cdvdReadInterrupt %x %x %x %x %x", cpuRegs.interrupt, cdvd.Readed, cdvd.Reading, cdvd.nSectors, (HW_DMA3_BCR_H16 * HW_DMA3_BCR_L16) *4);
 
-	cdvd.Ready = CDVD_NOTREADY;
+	cdvd.Ready = CDVD_NCMDNOTREADY;
 	cdvd.Status = CDVD_STATUS_READ | CDVD_STATUS_SPIN;
 	if (!cdvd.Readed)
 	{
@@ -1038,7 +1078,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 	uint delta = abs((s32)(cdvd.SeekToSector - cdvd.Sector));
 	uint seektime;
 
-	cdvd.Ready = CDVD_NOTREADY;
+	cdvd.Ready = CDVD_NCMDNOTREADY;
 	cdvd.Reading = 0;
 	cdvd.Readed = 0;
 
@@ -1098,6 +1138,30 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 
 u8 monthmap[13] = {31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31};
 
+void cdvdUpdateTrayState()
+{
+	if (cdvd.Tray.cdvdActionSeconds > 0)
+	{
+		if (--cdvd.Tray.cdvdActionSeconds == 0)
+		{
+			switch (cdvd.Tray.trayState)
+			{
+			case CDVD_DISC_EJECT:
+				cdvdCtrlTrayClose();
+				break;
+			case CDVD_DISC_SEEKING:
+			case CDVD_DISC_ENGAGED:
+				cdvd.mediaChanged = true;
+				DevCon.WriteLn(Color_Green, L"Media ready to read");
+				cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
+				cdvd.Status = CDVD_STATUS_PAUSE;
+				cdvd.Ready = CDVD_READY1;
+				break;
+			}
+		}
+	}
+}
+
 void cdvdVsync()
 {
 	cdvd.RTCcount++;
@@ -1105,15 +1169,7 @@ void cdvdVsync()
 		return;
 	cdvd.RTCcount = 0;
 
-	if (cdvd.Status == CDVD_STATUS_TRAY_OPEN)
-	{
-		cdvd.TrayTimeout++;
-	}
-	if (cdvd.TrayTimeout > 3)
-	{
-		cdvdCtrlTrayClose();
-		cdvd.TrayTimeout = 0;
-	}
+	cdvdUpdateTrayState();
 
 	cdvd.RTC.second++;
 	if (cdvd.RTC.second < 60)
@@ -1190,13 +1246,13 @@ u8 cdvdRead(u8 key)
 			CDVD_LOG("cdvdRead0A(Status) %x", cdvd.Status);
 			return cdvd.Status;
 
-		case 0x0B: // TRAY-STATE (if tray has been opened)
+		case 0x0B: // MEDIA CHANGED (Set when disc is ejected or detected, aka cdvd.type changes)
 		{
-			CDVD_LOG("cdvdRead0B(Tray) (1 open, 0 closed): %x", cdvd.Status);
-			if (cdvd.Status == CDVD_STATUS_TRAY_OPEN)
-				return 1;
-			else
-				return 0;
+			CDVD_LOG("cdvdRead0B(Media Change) (1 Changed, 0 Not Changed): %x", cdvd.mediaChanged);
+			bool ret = cdvd.mediaChanged;
+			cdvd.mediaChanged = false;
+
+			return ret;
 		}
 		case 0x0C: // CRT MINUTE
 			CDVD_LOG("cdvdRead0C(Min) %x", itob((u8)(cdvd.Sector / (60 * 75))));
@@ -1211,9 +1267,16 @@ u8 cdvdRead(u8 key)
 			return itob((u8)(cdvd.Sector % 75));
 
 		case 0x0F: // TYPE
-			CDVD_LOG("cdvdRead0F(Disc Type) %x", cdvd.Type);
-			cdvdGetDiskType();
-			return cdvd.Type;
+			if (cdvd.Tray.trayState == CDVD_DISC_ENGAGED)
+			{
+				CDVD_LOG("cdvdRead0F(Disc Type) Engaged %x", cdvd.Type);
+				return cdvd.Type;
+			}
+			else
+			{
+				CDVD_LOG("cdvdRead0F(Disc Type) Detecting %x", (cdvd.Tray.trayState == CDVD_DISC_SEEKING) ? 1 : 0);
+				return (cdvd.Tray.trayState == CDVD_DISC_SEEKING) ? 1 : 0; // Detecting Disc / No Disc
+			}
 
 		case 0x13: // UNKNOWN
 			CDVD_LOG("cdvdRead13(Unknown) %x", 4);
@@ -1609,7 +1672,7 @@ static __fi void cdvdWrite07(u8 rt) // BREAK
 	CDVD_LOG("cdvdWrite07(Break) %x", rt);
 
 	// If we're already in a Ready state or already Breaking, then do nothing:
-	if ((cdvd.Ready != CDVD_NOTREADY) || (cdvd.Action == cdvdAction_Break))
+	if ((cdvd.Ready != CDVD_NCMDNOTREADY) || (cdvd.Action == cdvdAction_Break))
 		return;
 
 	DbgCon.WriteLn("*PCSX2*: CDVD BREAK %x", rt);
@@ -1696,7 +1759,12 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 						SetResultSize(4);
 						cdvdGetMechaVer(&cdvd.Result[0]);
 						break;
-
+					case 0x30:
+						SetResultSize(2);
+						cdvd.Result[0] = cdvd.Status;
+						cdvd.Result[1] = (cdvd.Status & 0x1) ? 8 : 0;
+						//Console.Warning("Tray check param[1]=%02X", cdvd.Param[1]);
+						break;
 					case 0x44: // write console ID (9:1)
 						SetResultSize(1);
 						cdvdWriteConsoleID(&cdvd.Param[1]);
