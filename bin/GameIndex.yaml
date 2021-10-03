@@ -3307,6 +3307,9 @@ SCES-55385:
 SCES-55387:
   name: "Buzz! Deutschlands Superquiz"
   region: "PAL-G"
+SCES-55435:
+  name: "SingStar ABBA"
+  region: "PAL"
 SCES-55436:
   name: "SingStar ABBA"
   region: "PAL-F"
