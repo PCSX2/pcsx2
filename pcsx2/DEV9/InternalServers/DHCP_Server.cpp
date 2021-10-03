@@ -23,6 +23,11 @@
 #include <arpa/inet.h>
 #endif
 
+#if defined(__FreeBSD__)
+#include <sys/socket.h>
+#include <netinet/in.h>
+#endif
+
 #include "DHCP_Server.h"
 #include "DEV9/PacketReader/IP/UDP/UDP_Packet.h"
 #include "DEV9/PacketReader/IP/UDP/DHCP/DHCP_Packet.h"
