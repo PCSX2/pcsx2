@@ -1427,7 +1427,12 @@ if(Linux)
 		ALSA::ALSA
 		)
 elseif(UNIX AND NOT APPLE)
-	target_link_libraries(PCSX2_FLAGS INTERFACE X11::X11)
+	target_link_libraries(PCSX2_FLAGS INTERFACE
+		X11::X11
+		PkgConfig::XCB
+		PkgConfig::EGL
+		PkgConfig::X11_XCB
+		)
 endif()
 
 # Windows
@@ -1437,8 +1442,8 @@ if(Windows)
 		${pcsx2WindowsHeaders})
 endif()
 
-# MacOSX
-if(APPLE)
+# MacOSX/BSD
+if(UNIX AND NOT Linux)
 	target_sources(PCSX2 PRIVATE
 		${pcsx2OSXSources}
 		${pcsx2LinuxHeaders}

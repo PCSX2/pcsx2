@@ -119,21 +119,25 @@ else()
 	## Use CheckLib package to find module
 	include(CheckLib)
 
-	if(Linux)
+	if(UNIX AND NOT APPLE)
 		check_lib(EGL EGL EGL/egl.h)
 		check_lib(X11_XCB X11-xcb X11/Xlib-xcb.h)
 		check_lib(XCB xcb xcb/xcb.h)
-		check_lib(AIO aio libaio.h)
-		# There are two udev pkg config files - udev.pc (wrong), libudev.pc (correct)
-		# When cross compiling, pkg-config will be skipped so we have to look for
-		# udev (it'll automatically be prefixed with lib). But when not cross
-		# compiling, we have to look for libudev.pc. Argh. Hence the silliness below.
-		if(CMAKE_CROSSCOMPILING)
-			check_lib(LIBUDEV udev libudev.h)
-		else()
-			check_lib(LIBUDEV libudev libudev.h)
+
+		if(Linux)
+			check_lib(AIO aio libaio.h)
+			# There are two udev pkg config files - udev.pc (wrong), libudev.pc (correct)
+			# When cross compiling, pkg-config will be skipped so we have to look for
+			# udev (it'll automatically be prefixed with lib). But when not cross
+			# compiling, we have to look for libudev.pc. Argh. Hence the silliness below.
+			if(CMAKE_CROSSCOMPILING)
+				check_lib(LIBUDEV udev libudev.h)
+			else()
+				check_lib(LIBUDEV libudev libudev.h)
+			endif()
 		endif()
 	endif()
+
 	if(PORTAUDIO_API)
 		check_lib(PORTAUDIO portaudio portaudio.h pa_linux_alsa.h)
 	endif()
