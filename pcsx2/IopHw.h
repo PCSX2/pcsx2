@@ -320,7 +320,6 @@ enum IopEventId
 	IopEvt_CdvdRead,
 	IopEvt_DEV9,
 	IopEvt_USB,
-	IopEvt_CdvdDMA,
 };
 
 extern void PSX_INT( IopEventId n, s32 ecycle);
