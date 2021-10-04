@@ -47,17 +47,6 @@ static __fi void SetResultSize(u8 size)
 	cdvd.sDataIn &= ~0x40;
 }
 
-static void CDVDDMA_INT(u32 eCycle)
-{
-	if (EmuConfig.Speedhacks.fastCDVD)
-	{
-		if (eCycle < Cdvd_FullSeek_Cycles && eCycle > 1)
-			eCycle *= 0.5f;
-	}
-
-	PSX_INT(IopEvt_CdvdDMA, eCycle);
-}
-
 static void CDVDREAD_INT(u32 eCycle)
 {
 	// Give it an arbitary FAST value. Good for ~5000kb/s in ULE when copying a file from CDVD to HDD
@@ -657,6 +646,53 @@ static bool cdvdIsDVD()
 		return false;
 }
 
+static uint cdvdRotationalLatency(CDVD_MODE_TYPE mode)
+{
+	// CAV rotation is constant (minimum speed to maintain exact speed on outer dge
+	if (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV)
+	{
+		float rotationPerSecond = (((mode == MODE_CDROM) ? CD_MIN_ROTATION_X1 : DVD_MIN_ROTATION_X1) * cdvd.Speed) / 60;
+		float msPerRotation = 1000.0f / rotationPerSecond;
+		return ((PSXCLK / 1000) * msPerRotation);
+	}
+	else
+	{
+		int numSectors = 0;
+		int offset = 0;
+		//CLV adjusts its speed based on where it is on the disc, so we can take the max RPM and use the sector to work it out
+		// Sector counts are taken from google for Single layer, Dual layer DVD's and for 700MB CD's
+		switch (cdvd.Type)
+		{
+			case CDVD_TYPE_DETCTDVDS:
+			case CDVD_TYPE_PS2DVD:
+				numSectors = 2298496;
+				break;
+			case CDVD_TYPE_DETCTDVDD:
+				numSectors = 4173824 / 2; // Total sectors for both layers, assume half per layer
+				u32 layer1Start;
+				s32 dualType;
+
+				// Layer 1 needs an offset as it goes back to the middle of the disc
+				cdvdReadDvdDualInfo(&dualType, &layer1Start);
+				if (cdvd.SeekToSector >= layer1Start)
+					offset = layer1Start;
+				break;
+			default: // Pretty much every CD format
+				numSectors = 360000;
+				break;
+		}
+
+		const float sectorSpeed = 1.0f - (((float)(cdvd.SeekToSector - offset) / numSectors) * 0.60f);
+
+		float rotationPerSecond = (((mode == MODE_CDROM) ? CD_MAX_ROTATION_X1 : DVD_MAX_ROTATION_X1) * cdvd.Speed * sectorSpeed) / 60;
+		float msPerRotation = 1000.0f / rotationPerSecond;
+
+		//DevCon.Warning("Rotations per second %f, msPerRotation cycles per ms %f total cycles per ms %d cycles per rotation %d", rotationPerSecond, msPerRotation, (u32)(PSXCLK / 1000), (u32)((PSXCLK / 1000) * msPerRotation));
+
+		return ((PSXCLK / 1000) * msPerRotation);
+	}
+}
+
 static uint cdvdBlockReadTime(CDVD_MODE_TYPE mode)
 {
 	int numSectors = 0;
@@ -815,11 +851,11 @@ int cdvdReadSector()
 	if (bcr < cdvd.BlockSize)
 	{
 		CDVD_LOG("READBLOCK:  bcr < cdvd.BlockSize; %x < %x", bcr, cdvd.BlockSize);
-		/*if (HW_DMA3_CHCR & 0x01000000)
+		if (HW_DMA3_CHCR & 0x01000000)
 		{
 			HW_DMA3_CHCR &= ~0x01000000;
 			psxDmaInterrupt(3);
-		}*/
+		}
 		return -1;
 	}
 
@@ -953,23 +989,6 @@ __fi void cdvdActionInterrupt()
 	psxHu32(0x1070) |= 0x4;
 }
 
-void cdvdDMAInterrupt()
-{
-	if (HW_DMA3_CHCR & 0x01000000)
-	{
-		HW_DMA3_CHCR &= ~0x01000000;
-		psxDmaInterrupt(3);
-
-		if (!cdvd.nSectors)
-		{
-			// Setting the data ready flag fixes a black screen loading issue in
-			// Street Fighter Ex3 (NTSC-J version).
-			cdvd.PwOff |= (1 << Irq_DataReady) | (1 << Irq_CommandComplete);
-			psxHu32(0x1070) |= 0x4;
-			cdvd.Ready = CDVD_READY2;
-		}
-	}
-}
 // inlined due to being referenced in only one place.
 __fi void cdvdReadInterrupt()
 {
@@ -1040,13 +1059,8 @@ __fi void cdvdReadInterrupt()
 			// bit and try to read the sector again later.
 			// An arbitrary delay of some number of cycles probably makes more sense here,
 			// but for now it's based on the cdvd.ReadTime value. -- air
-			int DMATime = (cdvd.BlockSize / 2) * 40;
-
-			CDVDREAD_INT(DMATime + 100); // Bring it back after the DMA has ended to avoid a nasty loop
 			pxAssert((int)cdvd.ReadTime > 0);
-
-			if (HW_DMA3_CHCR & 0x01000000)
-				CDVDDMA_INT(DMATime);
+			CDVDREAD_INT(cdvd.ReadTime); // Bring it back after the DMA has ended to avoid a nasty loop
 			return;
 		}
 
@@ -1055,10 +1069,16 @@ __fi void cdvdReadInterrupt()
 
 	if (--cdvd.nSectors <= 0)
 	{
-		int DMATime = (cdvd.BlockSize / 2) * 40;
-
-		CDVDDMA_INT(DMATime);
-
+		if (HW_DMA3_CHCR & 0x01000000)
+		{
+			HW_DMA3_CHCR &= ~0x01000000;
+			psxDmaInterrupt(3);
+		}
+		// Setting the data ready flag fixes a black screen loading issue in
+		// Street Fighter Ex3 (NTSC-J version).
+		cdvd.PwOff |= (1 << Irq_DataReady) | (1 << Irq_CommandComplete);
+		psxHu32(0x1070) |= 0x4;
+		cdvd.Ready = CDVD_READY2;
 		cdvd.Status = CDVD_STATUS_PAUSE; // Needed here but could be smth else than Pause (rama)
 		// All done! :D
 		return;
@@ -1118,7 +1138,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 		CDVD_LOG("CdSeek Begin > Contiguous block without seek - delta=%d sectors", delta);
 
 		// seektime is the time it takes to read to the destination block:
-		seektime = delta * cdvd.ReadTime;
+		seektime = cdvd.ReadTime;
 
 		if (delta == 0)
 		{
@@ -1131,8 +1151,15 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 			// cdvdReadInterrupt will load a block.  So make sure it's properly scheduled
 			// based on sector read speeds:
 
-			seektime = cdvd.ReadTime;
+			//seektime = cdvd.ReadTime;
 		}
+	}
+
+	if (delta)
+	{
+		int rotationalLatency = cdvdRotationalLatency((CDVD_MODE_TYPE)cdvdIsDVD());
+		//DevCon.Warning("%s rotational latency at sector %d is %d cycles", (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? "CAV" : "CLV", cdvd.SeekToSector, rotationalLatency);
+		seektime += rotationalLatency;
 	}
 
 	return seektime;
