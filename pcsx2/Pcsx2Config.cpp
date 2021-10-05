@@ -610,6 +610,29 @@ wxString Pcsx2Config::FullpathToMcd(uint slot) const
 	return Path::Combine(EmuFolders::MemoryCards, StringUtil::UTF8StringToWxString(Mcd[slot].Filename));
 }
 
+bool Pcsx2Config::operator==(const Pcsx2Config& right) const
+{
+	bool equal =
+		OpEqu(bitset) &&
+		OpEqu(Cpu) &&
+		OpEqu(GS) &&
+		OpEqu(Speedhacks) &&
+		OpEqu(Gamefixes) &&
+		OpEqu(Profiler) &&
+		OpEqu(Debugger) &&
+		OpEqu(Framerate) &&
+		OpEqu(Trace) &&
+		OpEqu(BaseFilenames) &&
+		OpEqu(GzipIsoIndexTemplate);
+	for (u32 i = 0; i < sizeof(Mcd) / sizeof(Mcd[0]); i++)
+	{
+		equal &= OpEqu(Mcd[i].Enabled);
+		equal &= OpEqu(Mcd[i].Filename);
+	}
+
+	return equal;
+}
+
 void Pcsx2Config::CopyConfig(const Pcsx2Config& cfg)
 {
 	Cpu = cfg.Cpu;

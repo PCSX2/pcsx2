@@ -490,6 +490,16 @@ struct Pcsx2Config
 
 		void LoadSave(SettingsWrapper& wrap);
 		void SanityCheck();
+
+		bool operator==(const FramerateOptions& right) const
+		{
+			return OpEqu(SkipOnLimit) && OpEqu(SkipOnTurbo) && OpEqu(NominalScalar) && OpEqu(TurboScalar) && OpEqu(SlomoScalar);
+		}
+
+		bool operator!=(const FramerateOptions& right) const
+		{
+			return !this->operator==(right);
+		}
 	};
 
 	// ------------------------------------------------------------------------
@@ -586,19 +596,7 @@ struct Pcsx2Config
 
 	bool MultitapEnabled( uint port ) const;
 
-	bool operator ==( const Pcsx2Config& right ) const
-	{
-		return
-			OpEqu( bitset )		&&
-			OpEqu( Cpu )		&&
-			OpEqu( GS )			&&
-			OpEqu( Speedhacks )	&&
-			OpEqu( Gamefixes )	&&
-			OpEqu( Profiler )	&&
-			OpEqu( Trace )		&&
-			OpEqu( BaseFilenames );
-	}
-
+	bool operator ==(const Pcsx2Config& right) const;
 	bool operator !=( const Pcsx2Config& right ) const
 	{
 		return !this->operator ==( right );
