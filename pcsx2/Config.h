@@ -106,12 +106,12 @@ typename std::underlying_type<Enumeration>::type enum_cast(Enumeration E)
 	return static_cast<typename std::underlying_type<Enumeration>::type>(E);
 }
 
-ImplementEnumOperators( GamefixId );
-ImplementEnumOperators( SpeedhackId );
+ImplementEnumOperators(GamefixId);
+ImplementEnumOperators(SpeedhackId);
 
 //------------ DEFAULT sseMXCSR VALUES ---------------
-#define DEFAULT_sseMXCSR	0xffc0 //FPU rounding > DaZ, FtZ, "chop"
-#define DEFAULT_sseVUMXCSR	0xffc0 //VU  rounding > DaZ, FtZ, "chop"
+#define DEFAULT_sseMXCSR 0xffc0 //FPU rounding > DaZ, FtZ, "chop"
+#define DEFAULT_sseVUMXCSR 0xffc0 //VU  rounding > DaZ, FtZ, "chop"
 
 // --------------------------------------------------------------------------------------
 //  TraceFiltersEE
@@ -120,10 +120,10 @@ struct TraceFiltersEE
 {
 	BITFIELD32()
 	bool
-		m_EnableAll		:1,		// Master Enable switch (if false, no logs at all)
-		m_EnableDisasm	:1,
-		m_EnableRegisters:1,
-		m_EnableEvents	:1;		// Enables logging of event-driven activity -- counters, DMAs, etc.
+		m_EnableAll : 1, // Master Enable switch (if false, no logs at all)
+		m_EnableDisasm : 1,
+		m_EnableRegisters : 1,
+		m_EnableEvents : 1; // Enables logging of event-driven activity -- counters, DMAs, etc.
 	BITFIELD_END
 
 	TraceFiltersEE()
@@ -131,14 +131,14 @@ struct TraceFiltersEE
 		bitset = 0;
 	}
 
-	bool operator ==( const TraceFiltersEE& right ) const
+	bool operator==(const TraceFiltersEE& right) const
 	{
-		return OpEqu( bitset );
+		return OpEqu(bitset);
 	}
 
-	bool operator !=( const TraceFiltersEE& right ) const
+	bool operator!=(const TraceFiltersEE& right) const
 	{
-		return !this->operator ==( right );
+		return !this->operator==(right);
 	}
 };
 
@@ -149,10 +149,10 @@ struct TraceFiltersIOP
 {
 	BITFIELD32()
 	bool
-		m_EnableAll		:1,		// Master Enable switch (if false, no logs at all)
-		m_EnableDisasm	:1,
-		m_EnableRegisters:1,
-		m_EnableEvents	:1;		// Enables logging of event-driven activity -- counters, DMAs, etc.
+		m_EnableAll : 1, // Master Enable switch (if false, no logs at all)
+		m_EnableDisasm : 1,
+		m_EnableRegisters : 1,
+		m_EnableEvents : 1; // Enables logging of event-driven activity -- counters, DMAs, etc.
 	BITFIELD_END
 
 	TraceFiltersIOP()
@@ -160,14 +160,14 @@ struct TraceFiltersIOP
 		bitset = 0;
 	}
 
-	bool operator ==( const TraceFiltersIOP& right ) const
+	bool operator==(const TraceFiltersIOP& right) const
 	{
-		return OpEqu( bitset );
+		return OpEqu(bitset);
 	}
 
-	bool operator !=( const TraceFiltersIOP& right ) const
+	bool operator!=(const TraceFiltersIOP& right) const
 	{
-		return !this->operator ==( right );
+		return !this->operator==(right);
 	}
 };
 
@@ -182,26 +182,26 @@ struct TraceLogFilters
 	// *very* high volume, and debug builds get noticably slower if they have to invoke
 	// methods/accessors to test the log enable bits.  Debug builds are slow enough already,
 	// so I prefer this to help keep them usable.
-	bool	Enabled;
+	bool Enabled;
 
-	TraceFiltersEE	EE;
-	TraceFiltersIOP	IOP;
+	TraceFiltersEE EE;
+	TraceFiltersIOP IOP;
 
 	TraceLogFilters()
 	{
-		Enabled	= false;
+		Enabled = false;
 	}
 
-	void LoadSave( SettingsWrapper& ini );
+	void LoadSave(SettingsWrapper& ini);
 
-	bool operator ==( const TraceLogFilters& right ) const
+	bool operator==(const TraceLogFilters& right) const
 	{
-		return OpEqu( Enabled ) && OpEqu( EE ) && OpEqu( IOP );
+		return OpEqu(Enabled) && OpEqu(EE) && OpEqu(IOP);
 	}
 
-	bool operator !=( const TraceLogFilters& right ) const
+	bool operator!=(const TraceLogFilters& right) const
 	{
-		return !this->operator ==( right );
+		return !this->operator==(right);
 	}
 };
 
@@ -221,26 +221,29 @@ struct Pcsx2Config
 	struct ProfilerOptions
 	{
 		BITFIELD32()
-			bool
-				Enabled:1,			// universal toggle for the profiler.
-				RecBlocks_EE:1,		// Enables per-block profiling for the EE recompiler [unimplemented]
-				RecBlocks_IOP:1,	// Enables per-block profiling for the IOP recompiler [unimplemented]
-				RecBlocks_VU0:1,	// Enables per-block profiling for the VU0 recompiler [unimplemented]
-				RecBlocks_VU1:1;	// Enables per-block profiling for the VU1 recompiler [unimplemented]
+		bool
+			Enabled : 1, // universal toggle for the profiler.
+			RecBlocks_EE : 1, // Enables per-block profiling for the EE recompiler [unimplemented]
+			RecBlocks_IOP : 1, // Enables per-block profiling for the IOP recompiler [unimplemented]
+			RecBlocks_VU0 : 1, // Enables per-block profiling for the VU0 recompiler [unimplemented]
+			RecBlocks_VU1 : 1; // Enables per-block profiling for the VU1 recompiler [unimplemented]
 		BITFIELD_END
 
 		// Default is Disabled, with all recs enabled underneath.
-		ProfilerOptions() : bitset( 0xfffffffe ) {}
-		void LoadSave( SettingsWrapper& wrap);
-
-		bool operator ==( const ProfilerOptions& right ) const
+		ProfilerOptions()
+			: bitset(0xfffffffe)
 		{
-			return OpEqu( bitset );
+		}
+		void LoadSave(SettingsWrapper& wrap);
+
+		bool operator==(const ProfilerOptions& right) const
+		{
+			return OpEqu(bitset);
 		}
 
-		bool operator !=( const ProfilerOptions& right ) const
+		bool operator!=(const ProfilerOptions& right) const
 		{
-			return !OpEqu( bitset );
+			return !OpEqu(bitset);
 		}
 	};
 
@@ -248,46 +251,45 @@ struct Pcsx2Config
 	struct RecompilerOptions
 	{
 		BITFIELD32()
-			bool
-				EnableEE		:1,
-				EnableIOP		:1,
-				EnableVU0		:1,
-				EnableVU1		:1;
+		bool
+			EnableEE : 1,
+			EnableIOP : 1,
+			EnableVU0 : 1,
+			EnableVU1 : 1;
 
-			bool
-				vuOverflow		:1,
-				vuExtraOverflow	:1,
-				vuSignOverflow	:1,
-				vuUnderflow		:1;
+		bool
+			vuOverflow : 1,
+			vuExtraOverflow : 1,
+			vuSignOverflow : 1,
+			vuUnderflow : 1;
 
-			bool
-				fpuOverflow		:1,
-				fpuExtraOverflow:1,
-				fpuFullMode		:1;
+		bool
+			fpuOverflow : 1,
+			fpuExtraOverflow : 1,
+			fpuFullMode : 1;
 
-			bool
-				StackFrameChecks:1,
-				PreBlockCheckEE	:1,
-				PreBlockCheckIOP:1;
-			bool
-				EnableEECache   :1;
+		bool
+			StackFrameChecks : 1,
+			PreBlockCheckEE : 1,
+			PreBlockCheckIOP : 1;
+		bool
+			EnableEECache : 1;
 		BITFIELD_END
 
 		RecompilerOptions();
 		void ApplySanityCheck();
 
-		void LoadSave( SettingsWrapper& wrap);
+		void LoadSave(SettingsWrapper& wrap);
 
-		bool operator ==( const RecompilerOptions& right ) const
+		bool operator==(const RecompilerOptions& right) const
 		{
-			return OpEqu( bitset );
+			return OpEqu(bitset);
 		}
 
-		bool operator !=( const RecompilerOptions& right ) const
+		bool operator!=(const RecompilerOptions& right) const
 		{
-			return !OpEqu( bitset );
+			return !OpEqu(bitset);
 		}
-
 	};
 
 	// ------------------------------------------------------------------------
@@ -299,39 +301,39 @@ struct Pcsx2Config
 		SSE_MXCSR sseVUMXCSR;
 
 		CpuOptions();
-		void LoadSave( SettingsWrapper& wrap);
+		void LoadSave(SettingsWrapper& wrap);
 		void ApplySanityCheck();
 
-		bool operator ==( const CpuOptions& right ) const
+		bool operator==(const CpuOptions& right) const
 		{
-			return OpEqu( sseMXCSR ) && OpEqu( sseVUMXCSR ) && OpEqu( Recompiler );
+			return OpEqu(sseMXCSR) && OpEqu(sseVUMXCSR) && OpEqu(Recompiler);
 		}
 
-		bool operator !=( const CpuOptions& right ) const
+		bool operator!=(const CpuOptions& right) const
 		{
-			return !this->operator ==( right );
+			return !this->operator==(right);
 		}
 	};
 
 	// ------------------------------------------------------------------------
 	struct GSOptions
 	{
-		int VsyncQueueSize{ 2 };
+		int VsyncQueueSize{2};
 
 		// forces the MTGS to execute tags/tasks in fully blocking/synchronous
 		// style. Useful for debugging potential bugs in the MTGS pipeline.
-		bool SynchronousMTGS{ false };
-		bool FrameLimitEnable{ true };
-		bool FrameSkipEnable{ false };
+		bool SynchronousMTGS{false};
+		bool FrameLimitEnable{true};
+		bool FrameSkipEnable{false};
 
-		VsyncMode VsyncEnable{ VsyncMode::Off };
+		VsyncMode VsyncEnable{VsyncMode::Off};
 
-		int FramesToDraw{ 2 }; // number of consecutive frames (fields) to render
-		int FramesToSkip{ 2 }; // number of consecutive frames (fields) to skip
+		int FramesToDraw{2}; // number of consecutive frames (fields) to render
+		int FramesToSkip{2}; // number of consecutive frames (fields) to skip
 
-		double LimitScalar{ 1.0 };
-		double FramerateNTSC{ 59.94 };
-		double FrameratePAL{ 50.00 };
+		double LimitScalar{1.0};
+		double FramerateNTSC{59.94};
+		double FrameratePAL{50.00};
 
 		AspectRatioType AspectRatio{AspectRatioType::R4_3};
 		FMVAspectRatioSwitchType FMVAspectRatioSwitch{FMVAspectRatioSwitchType::Off};
@@ -341,33 +343,31 @@ struct Pcsx2Config
 		double OffsetX{0.0};
 		double OffsetY{0.0};
 
-		void LoadSave( SettingsWrapper& wrap);
+		void LoadSave(SettingsWrapper& wrap);
 
 		int GetVsync() const;
 
-		bool operator ==( const GSOptions& right ) const
+		bool operator==(const GSOptions& right) const
 		{
-			return
-				OpEqu( SynchronousMTGS )		&&
-				OpEqu( VsyncQueueSize )			&&
-				
-				OpEqu( FrameSkipEnable )		&&
-				OpEqu( FrameLimitEnable )		&&
-				OpEqu( VsyncEnable )			&&
+			return OpEqu(SynchronousMTGS) &&
+				   OpEqu(VsyncQueueSize) &&
 
-				OpEqu( LimitScalar )			&&
-				OpEqu( FramerateNTSC )			&&
-				OpEqu( FrameratePAL )			&&
+				   OpEqu(FrameSkipEnable) &&
+				   OpEqu(FrameLimitEnable) &&
+				   OpEqu(VsyncEnable) &&
 
-				OpEqu( FramesToDraw )			&&
-				OpEqu( FramesToSkip );
+				   OpEqu(LimitScalar) &&
+				   OpEqu(FramerateNTSC) &&
+				   OpEqu(FrameratePAL) &&
+
+				   OpEqu(FramesToDraw) &&
+				   OpEqu(FramesToSkip);
 		}
 
-		bool operator !=( const GSOptions& right ) const
+		bool operator!=(const GSOptions& right) const
 		{
-			return !this->operator ==( right );
+			return !this->operator==(right);
 		}
-
 	};
 
 	// ------------------------------------------------------------------------
@@ -375,43 +375,43 @@ struct Pcsx2Config
 	struct GamefixOptions
 	{
 		BITFIELD32()
-			bool
-			FpuMulHack : 1,				// Tales of Destiny hangs.
-			FpuNegDivHack : 1,			// Gundam games messed up camera-view.
-			GoemonTlbHack : 1,			// Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
-			SkipMPEGHack : 1,			// Skips MPEG videos (Katamari and other games need this)
-			OPHFlagHack : 1,			// Bleach Blade Battlers
-			EETimingHack : 1,			// General purpose timing hack.
-			DMABusyHack : 1,			// Denies writes to the DMAC when it's busy. This is correct behaviour but bad timing can cause problems.
-			GIFFIFOHack : 1,			// Enabled the GIF FIFO (more correct but slower)
-			VIFFIFOHack : 1,			// Pretends to fill the non-existant VIF FIFO Buffer.
-			VIF1StallHack : 1,			// Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
-			VuAddSubHack : 1,			// Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
-			IbitHack : 1,				// I bit hack. Needed to stop constant VU recompilation in some games
-			VUKickstartHack : 1,		// Gives new VU programs a slight head start and runs VU's ahead of EE to avoid VU register reading/writing issues
-			VUOverflowHack : 1,			// Tries to simulate overflow flag checks (not really possible on x86 without soft floats)
-			XgKickHack : 1;				// Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
+		bool
+			FpuMulHack : 1, // Tales of Destiny hangs.
+			FpuNegDivHack : 1, // Gundam games messed up camera-view.
+			GoemonTlbHack : 1, // Gomeon tlb miss hack. The game need to access unmapped virtual address. Instead to handle it as exception, tlb are preloaded at startup
+			SkipMPEGHack : 1, // Skips MPEG videos (Katamari and other games need this)
+			OPHFlagHack : 1, // Bleach Blade Battlers
+			EETimingHack : 1, // General purpose timing hack.
+			DMABusyHack : 1, // Denies writes to the DMAC when it's busy. This is correct behaviour but bad timing can cause problems.
+			GIFFIFOHack : 1, // Enabled the GIF FIFO (more correct but slower)
+			VIFFIFOHack : 1, // Pretends to fill the non-existant VIF FIFO Buffer.
+			VIF1StallHack : 1, // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
+			VuAddSubHack : 1, // Tri-ace games, they use an encryption algorithm that requires VU ADDI opcode to be bit-accurate.
+			IbitHack : 1, // I bit hack. Needed to stop constant VU recompilation in some games
+			VUKickstartHack : 1, // Gives new VU programs a slight head start and runs VU's ahead of EE to avoid VU register reading/writing issues
+			VUOverflowHack : 1, // Tries to simulate overflow flag checks (not really possible on x86 without soft floats)
+			XgKickHack : 1; // Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics, but breaks Tri-ace games and others.
 		BITFIELD_END
 
 		GamefixOptions();
-		void LoadSave( SettingsWrapper& wrap);
+		void LoadSave(SettingsWrapper& wrap);
 		GamefixOptions& DisableAll();
 
-		void Set( const wxString& list, bool enabled=true );
-		void Clear( const wxString& list ) { Set( list, false ); }
+		void Set(const wxString& list, bool enabled = true);
+		void Clear(const wxString& list) { Set(list, false); }
 
-		bool Get( GamefixId id ) const;
-		void Set( GamefixId id, bool enabled=true );
-		void Clear( GamefixId id ) { Set( id, false ); }
+		bool Get(GamefixId id) const;
+		void Set(GamefixId id, bool enabled = true);
+		void Clear(GamefixId id) { Set(id, false); }
 
-		bool operator ==( const GamefixOptions& right ) const
+		bool operator==(const GamefixOptions& right) const
 		{
-			return OpEqu( bitset );
+			return OpEqu(bitset);
 		}
 
-		bool operator !=( const GamefixOptions& right ) const
+		bool operator!=(const GamefixOptions& right) const
 		{
-			return !OpEqu( bitset );
+			return !OpEqu(bitset);
 		}
 	};
 
@@ -419,17 +419,17 @@ struct Pcsx2Config
 	struct SpeedhackOptions
 	{
 		BITFIELD32()
-			bool
-				fastCDVD		:1,		// enables fast CDVD access
-				IntcStat		:1,		// tells Pcsx2 to fast-forward through intc_stat waits.
-				WaitLoop		:1,		// enables constant loop detection and fast-forwarding
-				vuFlagHack		:1,		// microVU specific flag hack
-				vuThread		:1,		// Enable Threaded VU1
-				vu1Instant		:1;		// Enable Instant VU1 (Without MTVU only)
+		bool
+			fastCDVD : 1, // enables fast CDVD access
+			IntcStat : 1, // tells Pcsx2 to fast-forward through intc_stat waits.
+			WaitLoop : 1, // enables constant loop detection and fast-forwarding
+			vuFlagHack : 1, // microVU specific flag hack
+			vuThread : 1, // Enable Threaded VU1
+			vu1Instant : 1; // Enable Instant VU1 (Without MTVU only)
 		BITFIELD_END
 
-		s8	EECycleRate;		// EE cycle rate selector (1.0, 1.5, 2.0)
-		u8	EECycleSkip;		// EE Cycle skip factor (0, 1, 2, or 3)
+		s8 EECycleRate; // EE cycle rate selector (1.0, 1.5, 2.0)
+		u8 EECycleSkip; // EE Cycle skip factor (0, 1, 2, or 3)
 
 		SpeedhackOptions();
 		void LoadSave(SettingsWrapper& conf);
@@ -437,24 +437,24 @@ struct Pcsx2Config
 
 		void Set(SpeedhackId id, bool enabled = true);
 
-		bool operator ==( const SpeedhackOptions& right ) const
+		bool operator==(const SpeedhackOptions& right) const
 		{
-			return OpEqu( bitset ) && OpEqu( EECycleRate ) && OpEqu( EECycleSkip );
+			return OpEqu(bitset) && OpEqu(EECycleRate) && OpEqu(EECycleSkip);
 		}
 
-		bool operator !=( const SpeedhackOptions& right ) const
+		bool operator!=(const SpeedhackOptions& right) const
 		{
-			return !this->operator ==( right );
+			return !this->operator==(right);
 		}
 	};
 
 	struct DebugOptions
 	{
 		BITFIELD32()
-			bool
-				ShowDebuggerOnStart	:1;
-			bool
-				AlignMemoryWindowStart :1;
+		bool
+			ShowDebuggerOnStart : 1;
+		bool
+			AlignMemoryWindowStart : 1;
 		BITFIELD_END
 
 		u8 FontWidth;
@@ -464,17 +464,16 @@ struct Pcsx2Config
 		u32 MemoryViewBytesPerRow;
 
 		DebugOptions();
-		void LoadSave( SettingsWrapper& wrap);
-		
-		bool operator ==( const DebugOptions& right ) const
+		void LoadSave(SettingsWrapper& wrap);
+
+		bool operator==(const DebugOptions& right) const
 		{
-			return OpEqu( bitset ) && OpEqu( FontWidth ) && OpEqu( FontHeight )
-				&& OpEqu( WindowWidth ) && OpEqu( WindowHeight ) && OpEqu( MemoryViewBytesPerRow );
+			return OpEqu(bitset) && OpEqu(FontWidth) && OpEqu(FontHeight) && OpEqu(WindowWidth) && OpEqu(WindowHeight) && OpEqu(MemoryViewBytesPerRow);
 		}
 
-		bool operator !=( const DebugOptions& right ) const
+		bool operator!=(const DebugOptions& right) const
 		{
-			return !this->operator ==( right );
+			return !this->operator==(right);
 		}
 	};
 
@@ -526,51 +525,51 @@ struct Pcsx2Config
 	//
 	struct McdOptions
 	{
-		std::string	Filename;	// user-configured location of this memory card
-		bool		Enabled;	// memory card enabled (if false, memcard will not show up in-game)
-		MemoryCardType Type;	// the memory card implementation that should be used
+		std::string Filename; // user-configured location of this memory card
+		bool Enabled; // memory card enabled (if false, memcard will not show up in-game)
+		MemoryCardType Type; // the memory card implementation that should be used
 	};
 
 	BITFIELD32()
-		bool
-			CdvdVerboseReads	:1,		// enables cdvd read activity verbosely dumped to the console
-			CdvdDumpBlocks		:1,		// enables cdvd block dumping
-			CdvdShareWrite		:1,		// allows the iso to be modified while it's loaded
-			EnablePatches		:1,		// enables patch detection and application
-			EnableCheats		:1,		// enables cheat detection and application
-			EnableIPC		    :1,		// enables inter-process communication 
-			EnableWideScreenPatches		:1,
+	bool
+		CdvdVerboseReads : 1, // enables cdvd read activity verbosely dumped to the console
+		CdvdDumpBlocks : 1, // enables cdvd block dumping
+		CdvdShareWrite : 1, // allows the iso to be modified while it's loaded
+		EnablePatches : 1, // enables patch detection and application
+		EnableCheats : 1, // enables cheat detection and application
+		EnableIPC : 1, // enables inter-process communication
+		EnableWideScreenPatches : 1,
 #ifndef DISABLE_RECORDING
-			EnableRecordingTools :1,
+		EnableRecordingTools : 1,
 #endif
 		// when enabled uses BOOT2 injection, skipping sony bios splashes
-			UseBOOT2Injection	:1,
-			BackupSavestate		:1,
+		UseBOOT2Injection : 1,
+		BackupSavestate : 1,
 		// enables simulated ejection of memory cards when loading savestates
-			McdEnableEjection	:1,
-			McdFolderAutoManage	:1,
+		McdEnableEjection : 1,
+		McdFolderAutoManage : 1,
 
-			MultitapPort0_Enabled:1,
-			MultitapPort1_Enabled:1,
+		MultitapPort0_Enabled : 1,
+		MultitapPort1_Enabled : 1,
 
-			ConsoleToStdio		:1,
-			HostFs				:1;
+		ConsoleToStdio : 1,
+		HostFs : 1;
 
-			// uses automatic ntfs compression when creating new memory cards (Win32 only)
+	// uses automatic ntfs compression when creating new memory cards (Win32 only)
 #ifdef __WXMSW__
-			bool		McdCompressNTFS;
+	bool McdCompressNTFS;
 #endif
 	BITFIELD_END
 
-	CpuOptions			Cpu;
-	GSOptions			GS;
-	SpeedhackOptions	Speedhacks;
-	GamefixOptions		Gamefixes;
-	ProfilerOptions		Profiler;
-	DebugOptions		Debugger;
-	FramerateOptions		Framerate;
+	CpuOptions Cpu;
+	GSOptions GS;
+	SpeedhackOptions Speedhacks;
+	GamefixOptions Gamefixes;
+	ProfilerOptions Profiler;
+	DebugOptions Debugger;
+	FramerateOptions Framerate;
 
-	TraceLogFilters		Trace;
+	TraceLogFilters Trace;
 
 	FilenameOptions BaseFilenames;
 
@@ -594,12 +593,12 @@ struct Pcsx2Config
 	wxString FullpathToBios() const;
 	wxString FullpathToMcd(uint slot) const;
 
-	bool MultitapEnabled( uint port ) const;
+	bool MultitapEnabled(uint port) const;
 
-	bool operator ==(const Pcsx2Config& right) const;
-	bool operator !=( const Pcsx2Config& right ) const
+	bool operator==(const Pcsx2Config& right) const;
+	bool operator!=(const Pcsx2Config& right) const
 	{
-		return !this->operator ==( right );
+		return !this->operator==(right);
 	}
 
 	// You shouldn't assign to this class, because it'll mess with the runtime variables (Current...).
@@ -620,7 +619,7 @@ namespace EmuFolders
 	extern wxDirName Logs;
 	extern wxDirName Cheats;
 	extern wxDirName CheatsWS;
-}
+} // namespace EmuFolders
 
 /////////////////////////////////////////////////////////////////////////////////////////
 // Helper Macros for Reading Emu Configurations.
@@ -628,42 +627,42 @@ namespace EmuFolders
 
 // ------------ CPU / Recompiler Options ---------------
 
-#define THREAD_VU1					(EmuConfig.Cpu.Recompiler.EnableVU1 && EmuConfig.Speedhacks.vuThread)
-#define INSTANT_VU1					(EmuConfig.Speedhacks.vu1Instant)
-#define CHECK_EEREC					(EmuConfig.Cpu.Recompiler.EnableEE)
-#define CHECK_CACHE					(EmuConfig.Cpu.Recompiler.EnableEECache)
-#define CHECK_IOPREC				(EmuConfig.Cpu.Recompiler.EnableIOP)
+#define THREAD_VU1 (EmuConfig.Cpu.Recompiler.EnableVU1 && EmuConfig.Speedhacks.vuThread)
+#define INSTANT_VU1 (EmuConfig.Speedhacks.vu1Instant)
+#define CHECK_EEREC (EmuConfig.Cpu.Recompiler.EnableEE)
+#define CHECK_CACHE (EmuConfig.Cpu.Recompiler.EnableEECache)
+#define CHECK_IOPREC (EmuConfig.Cpu.Recompiler.EnableIOP)
 
 //------------ SPECIAL GAME FIXES!!! ---------------
-#define CHECK_VUADDSUBHACK			(EmuConfig.Gamefixes.VuAddSubHack)	 // Special Fix for Tri-ace games, they use an encryption algorithm that requires VU addi opcode to be bit-accurate.
-#define CHECK_FPUMULHACK			(EmuConfig.Gamefixes.FpuMulHack)	 // Special Fix for Tales of Destiny hangs.
-#define CHECK_FPUNEGDIVHACK			(EmuConfig.Gamefixes.FpuNegDivHack)	 // Special Fix for Gundam games messed up camera-view.
-#define CHECK_XGKICKHACK			(EmuConfig.Gamefixes.XgKickHack)	 // Special Fix for Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics.
-#define CHECK_EETIMINGHACK			(EmuConfig.Gamefixes.EETimingHack)	 // Fix all scheduled events to happen in 1 cycle.
-#define CHECK_SKIPMPEGHACK			(EmuConfig.Gamefixes.SkipMPEGHack)	 // Finds sceMpegIsEnd pattern to tell the game the mpeg is finished (Katamari and a lot of games need this)
-#define CHECK_OPHFLAGHACK			(EmuConfig.Gamefixes.OPHFlagHack)	 // Bleach Blade Battlers
-#define CHECK_DMABUSYHACK			(EmuConfig.Gamefixes.DMABusyHack)    // Denies writes to the DMAC when it's busy. This is correct behaviour but bad timing can cause problems.
-#define CHECK_VIFFIFOHACK			(EmuConfig.Gamefixes.VIFFIFOHack)    // Pretends to fill the non-existant VIF FIFO Buffer.
-#define CHECK_VIF1STALLHACK			(EmuConfig.Gamefixes.VIF1StallHack)  // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
-#define CHECK_GIFFIFOHACK			(EmuConfig.Gamefixes.GIFFIFOHack)	 // Enabled the GIF FIFO (more correct but slower)
-#define CHECK_VUOVERFLOWHACK		(EmuConfig.Gamefixes.VUOverflowHack) // Special Fix for Superman Returns, they check for overflows on PS2 floats which we can't do without soft floats.
+#define CHECK_VUADDSUBHACK (EmuConfig.Gamefixes.VuAddSubHack) // Special Fix for Tri-ace games, they use an encryption algorithm that requires VU addi opcode to be bit-accurate.
+#define CHECK_FPUMULHACK (EmuConfig.Gamefixes.FpuMulHack) // Special Fix for Tales of Destiny hangs.
+#define CHECK_FPUNEGDIVHACK (EmuConfig.Gamefixes.FpuNegDivHack) // Special Fix for Gundam games messed up camera-view.
+#define CHECK_XGKICKHACK (EmuConfig.Gamefixes.XgKickHack) // Special Fix for Erementar Gerad, adds more delay to VU XGkick instructions. Corrects the color of some graphics.
+#define CHECK_EETIMINGHACK (EmuConfig.Gamefixes.EETimingHack) // Fix all scheduled events to happen in 1 cycle.
+#define CHECK_SKIPMPEGHACK (EmuConfig.Gamefixes.SkipMPEGHack) // Finds sceMpegIsEnd pattern to tell the game the mpeg is finished (Katamari and a lot of games need this)
+#define CHECK_OPHFLAGHACK (EmuConfig.Gamefixes.OPHFlagHack) // Bleach Blade Battlers
+#define CHECK_DMABUSYHACK (EmuConfig.Gamefixes.DMABusyHack) // Denies writes to the DMAC when it's busy. This is correct behaviour but bad timing can cause problems.
+#define CHECK_VIFFIFOHACK (EmuConfig.Gamefixes.VIFFIFOHack) // Pretends to fill the non-existant VIF FIFO Buffer.
+#define CHECK_VIF1STALLHACK (EmuConfig.Gamefixes.VIF1StallHack) // Like above, processes FIFO data before the stall is allowed (to make sure data goes over).
+#define CHECK_GIFFIFOHACK (EmuConfig.Gamefixes.GIFFIFOHack) // Enabled the GIF FIFO (more correct but slower)
+#define CHECK_VUOVERFLOWHACK (EmuConfig.Gamefixes.VUOverflowHack) // Special Fix for Superman Returns, they check for overflows on PS2 floats which we can't do without soft floats.
 
 //------------ Advanced Options!!! ---------------
-#define CHECK_VU_OVERFLOW			(EmuConfig.Cpu.Recompiler.vuOverflow)
-#define CHECK_VU_EXTRA_OVERFLOW		(EmuConfig.Cpu.Recompiler.vuExtraOverflow) // If enabled, Operands are clamped before being used in the VU recs
-#define CHECK_VU_SIGN_OVERFLOW		(EmuConfig.Cpu.Recompiler.vuSignOverflow)
-#define CHECK_VU_UNDERFLOW			(EmuConfig.Cpu.Recompiler.vuUnderflow)
-#define CHECK_VU_EXTRA_FLAGS		0	// Always disabled now // Sets correct flags in the sVU recs
+#define CHECK_VU_OVERFLOW (EmuConfig.Cpu.Recompiler.vuOverflow)
+#define CHECK_VU_EXTRA_OVERFLOW (EmuConfig.Cpu.Recompiler.vuExtraOverflow) // If enabled, Operands are clamped before being used in the VU recs
+#define CHECK_VU_SIGN_OVERFLOW (EmuConfig.Cpu.Recompiler.vuSignOverflow)
+#define CHECK_VU_UNDERFLOW (EmuConfig.Cpu.Recompiler.vuUnderflow)
+#define CHECK_VU_EXTRA_FLAGS 0 // Always disabled now // Sets correct flags in the sVU recs
 
-#define CHECK_FPU_OVERFLOW			(EmuConfig.Cpu.Recompiler.fpuOverflow)
-#define CHECK_FPU_EXTRA_OVERFLOW	(EmuConfig.Cpu.Recompiler.fpuExtraOverflow) // If enabled, Operands are checked for infinities before being used in the FPU recs
-#define CHECK_FPU_EXTRA_FLAGS		1	// Always enabled now // Sets D/I flags on FPU instructions
-#define CHECK_FPU_FULL				(EmuConfig.Cpu.Recompiler.fpuFullMode)
+#define CHECK_FPU_OVERFLOW (EmuConfig.Cpu.Recompiler.fpuOverflow)
+#define CHECK_FPU_EXTRA_OVERFLOW (EmuConfig.Cpu.Recompiler.fpuExtraOverflow) // If enabled, Operands are checked for infinities before being used in the FPU recs
+#define CHECK_FPU_EXTRA_FLAGS 1 // Always enabled now // Sets D/I flags on FPU instructions
+#define CHECK_FPU_FULL (EmuConfig.Cpu.Recompiler.fpuFullMode)
 
 //------------ EE Recompiler defines - Comment to disable a recompiler ---------------
 
-#define SHIFT_RECOMPILE		// Speed majorly reduced if disabled
-#define BRANCH_RECOMPILE	// Speed extremely reduced if disabled - more then shift
+#define SHIFT_RECOMPILE // Speed majorly reduced if disabled
+#define BRANCH_RECOMPILE // Speed extremely reduced if disabled - more then shift
 
 // Disabling all the recompilers in this block is interesting, as it still runs at a reasonable rate.
 // It also adds a few glitches. Really reminds me of the old Linux 64-bit version. --arcum42
