@@ -727,16 +727,21 @@ void AppConfig::FolderOptions::LoadSave(IniInterface& ini)
 		for (int i = 0; i < FolderId_COUNT; ++i)
 			operator[]((FoldersEnum_t)i).Normalize();
 
-		EmuFolders::Settings = GetSettingsFolder();
-		EmuFolders::Bios = GetResolvedFolder(FolderId_Bios);
-		EmuFolders::Snapshots = GetResolvedFolder(FolderId_Snapshots);
-		EmuFolders::Savestates = GetResolvedFolder(FolderId_Savestates);
-		EmuFolders::MemoryCards = GetResolvedFolder(FolderId_MemoryCards);
-		EmuFolders::Logs = GetResolvedFolder(FolderId_Logs);
-		EmuFolders::Langs = GetResolvedFolder(FolderId_Langs);
-		EmuFolders::Cheats = GetResolvedFolder(FolderId_Cheats);
-		EmuFolders::CheatsWS = GetResolvedFolder(FolderId_CheatsWS);
+		AppSetEmuFolders();
 	}
+}
+
+void AppSetEmuFolders()
+{
+	EmuFolders::Settings = GetSettingsFolder();
+	EmuFolders::Bios = GetResolvedFolder(FolderId_Bios);
+	EmuFolders::Snapshots = GetResolvedFolder(FolderId_Snapshots);
+	EmuFolders::Savestates = GetResolvedFolder(FolderId_Savestates);
+	EmuFolders::MemoryCards = GetResolvedFolder(FolderId_MemoryCards);
+	EmuFolders::Logs = GetResolvedFolder(FolderId_Logs);
+	EmuFolders::Langs = GetResolvedFolder(FolderId_Langs);
+	EmuFolders::Cheats = GetResolvedFolder(FolderId_Cheats);
+	EmuFolders::CheatsWS = GetResolvedFolder(FolderId_CheatsWS);
 }
 
 // ------------------------------------------------------------------------
@@ -1080,6 +1085,8 @@ void AppConfig_OnChangedSettingsFolder(bool overwrite)
 
 	if (!overwrite)
 		AppLoadSettings();
+	else
+		AppSetEmuFolders();
 
 	AppApplySettings();
 	AppSaveSettings(); //Make sure both ini files are created if needed.

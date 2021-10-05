@@ -316,6 +316,7 @@ public:
 extern void AppLoadSettings();
 extern void AppSaveSettings();
 extern void AppApplySettings( const AppConfig* oldconf=NULL );
+extern void AppSetEmuFolders();
 
 extern void App_LoadSaveInstallSettings( IniInterface& ini );
 extern void App_SaveInstallSettings( wxConfigBase* ini );
