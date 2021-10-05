@@ -93,6 +93,9 @@ PBPX-95506:
         comment=You must enable the EETimingHack when playing the WRC demo to avoids random hangs.
         comment=You must change the EE Clamping mode to Full when playing the Klonoa 2 demo to avoids misplaced objects.
         comment=You must change the VU Clamping mode to extra when playing the Klonoa 2 demo to fixes reflections issues.
+PBPX-95509:
+  name: "Linux Release 1.0 Runtime Environment  [Disc 1]"
+  region: "PAL-E"
 PBPX-95514:
   name: "Playstation 2 - Demo Disc 2002"
   region: "PAL-M5"
