@@ -108,7 +108,7 @@ void Dialogs::SysConfigDialog::AddPresetsControl()
 		wxDefaultPosition, wxDefaultSize, wxHORIZONTAL /*| wxSL_AUTOTICKS | wxSL_LABELS */);
 	m_slider_presets->SetMinSize(wxSize(100,25));
 
-	const wchar_t* presetTooltip = pxEt(L"Presets apply some speed hacks that may boost speed on underpowered systems, or speed up games that have unusual performance requirements. Uncheck this box to apply settings manually.\n\n1) Safest - No speed hacks. Most reliable, but possibly slow setting.\n2) Safe - Default. A few speed hacks known to provide boosts, with minimal to no side effects.\n3) Balanced - May help quad core CPUs.\n4) Aggressive - May help underpowered CPUs on less demanding games, but risks causing problems in other cases.\n5) Very Aggressive - May help underpowered CPUs on less demanding games, but is likely to cause problems in other cases.\n6) Mostly Harmful - Harsh application of speed hacks. May help a very small set of games that have unusual performance requirements, but have adverse effects on most others. Not recommended for underpowered PCs.");
+	const wchar_t* presetTooltip = pxEt(L"Presets apply some speed hacks that may boost speed on underpowered systems, or speed up games that have unusual performance requirements. Uncheck this box to apply settings manually.\n\n1) Safest - No speed hacks. Most reliable, but possibly slow setting.\n2) Safe - Default. A few speed hacks known to provide boosts, with minimal to no side effects.\n3) Balanced - May help quad core CPUs.");
 
 	m_slider_presets->SetToolTip(
 		presetTooltip
@@ -120,6 +120,9 @@ void Dialogs::SysConfigDialog::AddPresetsControl()
 		presetTooltip
 	);
 	m_check_presets->SetValue(!!g_Conf->EnablePresets);
+
+	g_Conf->PresetIndex = std::clamp(g_Conf->PresetIndex, 0, AppConfig::GetMaxPresetIndex());
+
 	//Console.WriteLn("--> SysConfigDialog::AddPresetsControl: EnablePresets: %s", g_Conf->EnablePresets?"true":"false");
 
 	wxString l; wxColor c(wxColour( L"Red" ));
