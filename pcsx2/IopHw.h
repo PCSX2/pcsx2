@@ -318,6 +318,7 @@ enum IopEventId
 	IopEvt_Cdrom,
 	IopEvt_CdromRead,
 	IopEvt_CdvdRead,
+	IopEvt_CdvdSectorReady,
 	IopEvt_DEV9,
 	IopEvt_USB,
 };
