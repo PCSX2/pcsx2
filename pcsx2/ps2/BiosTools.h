@@ -37,6 +37,8 @@ extern bool AllowParams2;
 extern u32 BiosChecksum;
 extern std::string BiosDescription;
 extern std::string BiosZone;
+extern std::string BiosPath;
 extern bool LoadBIOS();
 extern bool IsBIOS(const char* filename, u32& version, std::string& description, u32& region, std::string& zone);
+extern bool IsBIOSAvailable(const std::string& full_path);
 

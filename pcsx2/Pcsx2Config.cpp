@@ -647,7 +647,10 @@ bool Pcsx2Config::MultitapEnabled(uint port) const
 
 std::string Pcsx2Config::FullpathToBios() const
 {
-	return StringUtil::wxStringToUTF8String(Path::Combine(EmuFolders::Bios, StringUtil::UTF8StringToWxString(BaseFilenames.Bios)));
+	std::string ret;
+	if (!BaseFilenames.Bios.empty())
+		ret = Path::CombineStdString(EmuFolders::Bios, BaseFilenames.Bios);
+	return ret;
 }
 
 wxString Pcsx2Config::FullpathToMcd(uint slot) const
