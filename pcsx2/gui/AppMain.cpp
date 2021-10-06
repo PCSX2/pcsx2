@@ -78,7 +78,7 @@ WindowInfo g_gs_window_info;
 
 static bool CheckForBIOS()
 {
-	if (FileSystem::FileExists(g_Conf->EmuOptions.FullpathToBios().c_str()))
+	if (IsBIOSAvailable(g_Conf->EmuOptions.FullpathToBios()))
 		return true;
 
 	wxString error = pxE(L"PCSX2 requires a PS2 BIOS in order to run.  For legal reasons, you *must* obtain a BIOS from an actual PS2 unit that you own (borrowing doesn't count).  Please consult the FAQs and Guides for further instructions.");
