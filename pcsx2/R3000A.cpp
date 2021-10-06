@@ -179,6 +179,7 @@ static __fi void _psxTestInterrupts()
 	// Originally controlled by a preprocessor define, now PSX dependent.
 	if (psxHu32(HW_ICFG) & (1 << 3)) IopTestEvent(IopEvt_SIO, sioInterruptR);
 	IopTestEvent(IopEvt_CdvdRead,	cdvdReadInterrupt);
+	IopTestEvent(IopEvt_CdvdSectorReady, cdvdSectorReady);
 
 	// Profile-guided Optimization (sorta)
 	// The following ints are rarely called.  Encasing them in a conditional

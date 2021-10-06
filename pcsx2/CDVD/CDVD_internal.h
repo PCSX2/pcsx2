@@ -72,11 +72,9 @@ enum cdvdStatus
 
 enum cdvdready
 {
-	CDVD_DRIVENOTREADY = 0x02,
-	CDVD_NCMDNOTREADY = 0x06,
-	CDVD_READY1 = 0x42,
-	CDVD_READY2 = 0x42 // This is used in a few places for some reason.
-					   //It would be worth checking if this was just a typo made at some point.
+	CDVD_DRIVE_DATARDY = 0x2,
+	CDVD_DRIVE_PWOFF = 0x20,
+	CDVD_DRIVE_READY = 0x40,
 };
 
 // Cdvd actions tell the emulator how and when to respond to certain requests.

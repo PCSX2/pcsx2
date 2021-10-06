@@ -124,6 +124,7 @@ struct cdvdStruct
 	int nSectors;
 	int Readed;  // change to bool. --arcum42
 	int Reading; // same here.
+	int WaitingDMA;
 	int ReadMode;
 	int BlockSize; // Total bytes transfered at 1x speed
 	int Speed;
@@ -150,6 +151,7 @@ struct cdvdStruct
 	bool Spinning;    // indicates if the Cdvd is spinning or needs a spinup delay
 	bool mediaChanged;
 	cdvdTrayTimer Tray;
+	bool nextSectorBuffered;
 };
 
 extern cdvdStruct cdvd;
@@ -159,6 +161,7 @@ extern void cdvdReadLanguageParams(u8* config);
 extern void cdvdReset();
 extern void cdvdVsync();
 extern void cdvdActionInterrupt();
+extern void cdvdSectorReady();
 extern void cdvdReadInterrupt();
 extern void cdvdDMAInterrupt();
 
