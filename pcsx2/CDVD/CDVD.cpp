@@ -113,7 +113,7 @@ static int mg_BIToffset(u8* buffer)
 
 static void cdvdGetMechaVer(u8* ver)
 {
-	std::string mecfile(FileSystem::ReplaceExtension(EmuConfig.FullpathToBios(), "mec"));
+	std::string mecfile(FileSystem::ReplaceExtension(BiosPath, "mec"));
 	auto fp = FileSystem::OpenManagedCFile(mecfile.c_str(), "rb");
 	if (!fp || FileSystem::FSize64(fp.get()) < 4)
 	{
@@ -173,7 +173,7 @@ static void cdvdCreateNewNVM(std::FILE* fp)
 
 static void cdvdNVM(u8* buffer, int offset, size_t bytes, bool read)
 {
-	std::string nvmfile(FileSystem::ReplaceExtension(EmuConfig.FullpathToBios(), "nvm"));
+	std::string nvmfile(FileSystem::ReplaceExtension(BiosPath, "nvm"));
 	auto fp = FileSystem::OpenManagedCFile(nvmfile.c_str(), "r+b");
 	if (!fp || FileSystem::FSize64(fp.get()) < 1024)
 	{
