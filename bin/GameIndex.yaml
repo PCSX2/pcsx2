@@ -6769,6 +6769,8 @@ SLED-50117:
 SLED-50359:
   name: "Devil May Cry [Demo]"
   region: "PAL-E"
+  clampModes:
+    vuClampMode: 3  # Fixes out of place polys (COP2).
 SLED-50478:
   name: "WWF Smackdown! - Just Bring It [Demo]"
   region: "PAL-E"
@@ -7665,6 +7667,8 @@ SLES-50358:
   name: "Devil May Cry"
   region: "PAL-M5"
   compat: 5
+  clampModes:
+    vuClampMode: 3  # Fixes out of place polys (COP2).
 SLES-50362:
   name: "Jonny Moseley Mad Trix"
   region: "PAL-E"
@@ -21436,6 +21440,8 @@ SLPM-65038:
   name: "Devil May Cry"
   region: "NTSC-J"
   compat: 5
+  clampModes:
+    vuClampMode: 3  # Fixes out of place polys (COP2).
 SLPM-65039:
   name: "Densha de Go! Shinkansen"
   region: "NTSC-J"
@@ -27439,6 +27445,8 @@ SLPM-67502:
   name: "Devil May Cry"
   region: "NTSC-K"
   compat: 5
+  clampModes:
+    vuClampMode: 3  # Fixes out of place polys (COP2).
 SLPM-67507:
   name: "Onimusha Warlords"
   region: "NTSC-K"
@@ -33043,6 +33051,17 @@ SLUS-20216:
   name: "Devil May Cry"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vuClampMode: 3  # Fixes out of place polys (COP2).
+  patches:
+    79B8A95F:
+      content: |-
+        comment=Patch by Refraction
+        // Rearranges some bad CLIP/CFC2 instructions, not sure what it fixes, but can't be a good thing.
+        // 1da20c *4BD9C9FF vclip vf25xyz, vf25w
+        // 1da210 =48429000 cfc2    v0, ClipFlag
+        patch=1,EE,001DA20C,word,48429000
+        patch=1,EE,001DA210,word,4BD9C9FF
 SLUS-20217:
   name: "Arctic Thunder"
   region: "NTSC-U"
@@ -40582,6 +40601,8 @@ SLUS-29008:
 SLUS-29009:
   name: "Devil May Cry [Demo]"
   region: "NTSC-U"
+  clampModes:
+    vuClampMode: 3  # Fixes out of place polys (COP2).
 SLUS-29010:
   name: "Crash Bandicoot - The Wrath of Cortex [Demo]"
   region: "NTSC-U"
