@@ -23,17 +23,18 @@
 
 struct GenericListViewColumn
 {
-	const wchar_t *name;
+	const wchar_t* name;
 	float size;
 };
 
-class GenericListView: public wxListView
+class GenericListView : public wxListView
 {
 public:
 	GenericListView(wxWindow* parent, GenericListViewColumn* columns, int columnCount);
 	void update();
 
 	wxDECLARE_EVENT_TABLE();
+
 protected:
 	void sizeEvent(wxSizeEvent& evt);
 	void keydownEvent(wxKeyEvent& evt);
@@ -41,11 +42,11 @@ protected:
 	void mouseEvent(wxMouseEvent& evt);
 	void listEvent(wxListEvent& evt);
 
-	virtual wxString getColumnText(int row, int col) const = 0;
+	[[nodiscard]] virtual wxString getColumnText(int row, int col) const = 0;
 	virtual int getRowCount() = 0;
-	virtual void onDoubleClick(int itemIndex, const wxPoint& point) { };
-	virtual void onRightClick(int itemIndex, const wxPoint& point) { };
-	virtual void onKeyDown(int key) { };
+	virtual void onDoubleClick(int itemIndex, const wxPoint& point){};
+	virtual void onRightClick(int itemIndex, const wxPoint& point){};
+	virtual void onKeyDown(int key){};
 
 	// This flag prevents resizing loop in the resizeColumn method of this class
 	// when the Windows Classic theme with some large resolutions around larger
@@ -60,26 +61,28 @@ private:
 	void insertColumns(GenericListViewColumn* columns, int count);
 	void resizeColumn(int col, int width);
 	void resizeColumns(int totalWidth);
-	wxString OnGetItemText(long item, long col) const;
+	[[nodiscard]] wxString OnGetItemText(long item, long col) const override;
 
 	GenericListViewColumn* columns;
 	wxPoint clickPos;
 	bool dontResizeColumnsInSizeEventHandler;
 };
 
-class BreakpointList: public GenericListView
+class BreakpointList : public GenericListView
 {
 public:
 	BreakpointList(wxWindow* parent, DebugInterface* _cpu, CtrlDisassemblyView* _disassembly);
 	void reloadBreakpoints();
+
 protected:
 	void onPopupClick(wxCommandEvent& evt);
-	
-	virtual wxString getColumnText(int row, int col) const;
-	virtual int getRowCount();
-	virtual void onDoubleClick(int itemIndex, const wxPoint& point);
-	virtual void onRightClick(int itemIndex, const wxPoint& point);
-	virtual void onKeyDown(int key);
+
+	[[nodiscard]] wxString getColumnText(int row, int col) const override;
+	int getRowCount() override;
+	void onDoubleClick(int itemIndex, const wxPoint& point) override;
+	void onRightClick(int itemIndex, const wxPoint& point) override;
+	void onKeyDown(int key) override;
+
 private:
 	int getBreakpointIndex(int itemIndex, bool& isMemory) const;
 	int getTotalBreakpointCount();
@@ -95,34 +98,38 @@ private:
 	CtrlDisassemblyView* disasm;
 };
 
-class ThreadList: public GenericListView
+class ThreadList : public GenericListView
 {
 public:
 	ThreadList(wxWindow* parent, DebugInterface* _cpu);
 	void reloadThreads();
 	EEThread getRunningThread();
+
 protected:
 	void onPopupClick(wxCommandEvent& evt);
-	
-	virtual wxString getColumnText(int row, int col) const;
-	virtual int getRowCount();
-	virtual void onDoubleClick(int itemIndex, const wxPoint& point);
+
+	[[nodiscard]] wxString getColumnText(int row, int col) const override;
+	int getRowCount() override;
+	void onDoubleClick(int itemIndex, const wxPoint& point) override;
+
 private:
 	DebugInterface* cpu;
 	std::vector<EEThread> threads;
 };
 
-class StackFramesList: public GenericListView
+class StackFramesList : public GenericListView
 {
 public:
-	StackFramesList(wxWindow* parent, DebugInterface* _cpu,  CtrlDisassemblyView* _disassembly);
+	StackFramesList(wxWindow* parent, DebugInterface* _cpu, CtrlDisassemblyView* _disassembly);
 	void loadStackFrames(EEThread& currentThread);
+
 protected:
 	void onPopupClick(wxCommandEvent& evt);
-	
-	virtual wxString getColumnText(int row, int col) const;
-	virtual int getRowCount();
-	virtual void onDoubleClick(int itemIndex, const wxPoint& point);
+
+	[[nodiscard]] wxString getColumnText(int row, int col) const override;
+	int getRowCount() override;
+	void onDoubleClick(int itemIndex, const wxPoint& point) override;
+
 private:
 	DebugInterface* cpu;
 	CtrlDisassemblyView* disassembly;
