@@ -15,6 +15,8 @@
 
 #pragma once
 
+#include "SymbolMap.h"
+
 class DebugInterface;
 
 
@@ -39,7 +41,7 @@ namespace MIPSAnalyst
 		char name[64];
 	};
 
-	void ScanForFunctions(u32 startAddr, u32 endAddr, bool insertSymbols);
+	void ScanForFunctions(SymbolMap& map, u32 startAddr, u32 endAddr, bool insertSymbols);
 
 	enum LoadStoreLRType { LOADSTORE_NORMAL, LOADSTORE_LEFT, LOADSTORE_RIGHT };
 

@@ -147,7 +147,7 @@ void CpuTabPage::reloadSymbolMap()
 {
 	if (!symbolCount)
 	{
-		auto funcs = symbolMap.GetAllSymbols(ST_FUNCTION);
+		auto funcs = cpu->GetSymbolMap().GetAllSymbols(ST_FUNCTION);
 		symbolCount = funcs.size();
 		for (size_t i = 0; i < funcs.size(); i++)
 		{

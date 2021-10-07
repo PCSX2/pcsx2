@@ -196,7 +196,7 @@ namespace MIPSAnalyst
 		return furthestJumpbackAddr;
 	}
 
-	void ScanForFunctions(u32 startAddr, u32 endAddr, bool insertSymbols) {
+	void ScanForFunctions(SymbolMap& map, u32 startAddr, u32 endAddr, bool insertSymbols) {
 		AnalyzedFunction currentFunction = {startAddr};
 
 		u32 furthestBranch = 0;
@@ -210,7 +210,7 @@ namespace MIPSAnalyst
 		for (addr = startAddr; addr <= endAddr; addr += 4) {
 			// Use pre-existing symbol map info if available. May be more reliable.
 			SymbolInfo syminfo;
-			if (symbolMap.GetSymbolInfo(&syminfo, addr, ST_FUNCTION)) {
+			if (map.GetSymbolInfo(&syminfo, addr, ST_FUNCTION)) {
 				addr = syminfo.address + syminfo.size - 4;
 
 				// We still need to insert the func for hashing purposes.
@@ -317,7 +317,7 @@ namespace MIPSAnalyst
 			iter->size = iter->end - iter->start + 4;
 			if (insertSymbols) {
 				char temp[256];
-				symbolMap.AddFunction(DefaultFunctionName(temp, iter->start), iter->start, iter->end - iter->start + 4);
+				map.AddFunction(DefaultFunctionName(temp, iter->start), iter->start, iter->end - iter->start + 4);
 			}
 		}
 	}

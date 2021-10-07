@@ -148,5 +148,5 @@ private:
 	mutable std::recursive_mutex m_lock;
 };
 
-extern SymbolMap symbolMap;
-
+extern SymbolMap R5900SymbolMap;
+extern SymbolMap R3000SymbolMap;

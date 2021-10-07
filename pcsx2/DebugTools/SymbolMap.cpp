@@ -18,7 +18,8 @@
 #include "SymbolMap.h"
 #include <algorithm>
 
-SymbolMap symbolMap;
+SymbolMap R5900SymbolMap;
+SymbolMap R3000SymbolMap;
 
 #ifdef _WIN32
 #define strcasecmp stricmp

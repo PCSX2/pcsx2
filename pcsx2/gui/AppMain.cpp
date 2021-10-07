@@ -1009,7 +1009,8 @@ protected:
 		DbgCon.WriteLn( Color_Gray, "(SysExecute) received." );
 
 		CoreThread.ResetQuick();
-		symbolMap.Clear();
+		R5900SymbolMap.Clear();
+		R3000SymbolMap.Clear();
 		CBreakPoints::SetSkipFirst(BREAKPOINT_EE, 0);
 		CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, 0);
 		// This function below gets called again from AppCoreThread.cpp and will pass the current ISO regardless if we
