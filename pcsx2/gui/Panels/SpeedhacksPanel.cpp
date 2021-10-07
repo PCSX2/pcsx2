@@ -92,11 +92,6 @@ const wxChar* Panels::SpeedHacksPanel::GetEECycleSkipSliderMsg( int val )
 			m_msg_eeSkip->SetForegroundColour(LightRed);
 			return pxEt(L"Moderate EE Cycle Skipping. Slow down for most games, but may help some games with moderate VU starvation problems run at full speed.");
 		}
-		case 3:
-		{
-			m_msg_eeSkip->SetForegroundColour(wxColour(L"Red"));
-			return pxEt(L"Maximum EE Cycle Skipping. Mostly harmful. May help games with significant VU starvation problems run at full speed.");
-		}
 		default:
 			break;
 	}
@@ -151,7 +146,7 @@ Panels::SpeedHacksPanel::SpeedHacksPanel( wxWindow* parent )
 
 	m_eeSkipSliderPanel = new wxPanelWithHelpers( this, wxVERTICAL, _("EE Cycle Skipping [Not Recommended]") );
 
-	m_slider_eeSkip = new wxSlider(m_eeSkipSliderPanel, wxID_ANY, 0, 0, 3, wxDefaultPosition, wxDefaultSize,
+	m_slider_eeSkip = new wxSlider(m_eeSkipSliderPanel, wxID_ANY, 0, 0, 2, wxDefaultPosition, wxDefaultSize,
 		wxHORIZONTAL | wxSL_AUTOTICKS | wxSL_LABELS );
 
 	m_msg_eeSkip = new pxStaticHeading(m_eeSkipSliderPanel);
@@ -297,6 +292,8 @@ void Panels::SpeedHacksPanel::ApplyConfigToGui( AppConfig& configToApply, int fl
 	m_check_Enable->SetValue(configToApply.EnableSpeedHacks);
 
 	m_slider_eeRate	->SetValue( opts.EECycleRate );
+
+	opts.EECycleSkip = std::clamp<u8>(opts.EECycleSkip, 0, 2);
 	m_slider_eeSkip	->SetValue( opts.EECycleSkip );
 
 	SetEEcycleSliderMsg();
