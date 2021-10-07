@@ -114,9 +114,11 @@ __fi void mVUallocCFLAGb(mV, const x32& reg, int fInstance)
 	// On COP2 modifying the CLIP flag we need to update the microVU version for when it's restored on new program
 	if (fInstance == 0xff)
 	{
-		xMOVDZX(xmmT1, reg);
-		xSHUF.PS(xmmT1, xmmT1, 0);
-		xMOVAPS(ptr128[&mVU.regs().micro_clipflags], xmmT1);
+		int t0reg = _allocTempXMMreg(XMMT_INT, -1);
+		xMOVDZX(xRegisterSSE(t0reg), reg);
+		xPSHUF.D(xRegisterSSE(t0reg), xRegisterSSE(t0reg), 0);
+		xMOVDQA(ptr128[&mVU.regs().micro_clipflags], xRegisterSSE(t0reg));
+		_freeXMMreg(t0reg);
 	}
 }
 

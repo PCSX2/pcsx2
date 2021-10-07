@@ -7667,8 +7667,6 @@ SLES-50358:
   name: "Devil May Cry"
   region: "PAL-M5"
   compat: 5
-  clampModes:
-    vuClampMode: 3  # Fixes out of place polys (COP2).
 SLES-50362:
   name: "Jonny Moseley Mad Trix"
   region: "PAL-E"
@@ -21440,8 +21438,6 @@ SLPM-65038:
   name: "Devil May Cry"
   region: "NTSC-J"
   compat: 5
-  clampModes:
-    vuClampMode: 3  # Fixes out of place polys (COP2).
 SLPM-65039:
   name: "Densha de Go! Shinkansen"
   region: "NTSC-J"
@@ -27445,8 +27441,6 @@ SLPM-67502:
   name: "Devil May Cry"
   region: "NTSC-K"
   compat: 5
-  clampModes:
-    vuClampMode: 3  # Fixes out of place polys (COP2).
 SLPM-67507:
   name: "Onimusha Warlords"
   region: "NTSC-K"
@@ -33051,8 +33045,6 @@ SLUS-20216:
   name: "Devil May Cry"
   region: "NTSC-U"
   compat: 5
-  clampModes:
-    vuClampMode: 3  # Fixes out of place polys (COP2).
   patches:
     79B8A95F:
       content: |-
@@ -40601,8 +40593,6 @@ SLUS-29008:
 SLUS-29009:
   name: "Devil May Cry [Demo]"
   region: "NTSC-U"
-  clampModes:
-    vuClampMode: 3  # Fixes out of place polys (COP2).
 SLUS-29010:
   name: "Crash Bandicoot - The Wrath of Cortex [Demo]"
   region: "NTSC-U"
