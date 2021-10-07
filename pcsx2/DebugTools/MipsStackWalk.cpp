@@ -41,9 +41,9 @@ namespace MipsStackWalk {
 	// After this we assume we're stuck.
 	const size_t MAX_DEPTH = 1024;
 
-	static u32 GuessEntry(u32 pc) {
+	static u32 GuessEntry(DebugInterface* cpu, u32 pc) {
 		SymbolInfo info;
-		if (symbolMap.GetSymbolInfo(&info, pc)) {
+		if (cpu->GetSymbolMap().GetSymbolInfo(&info, pc)) {
 			return info.address;
 		}
 		return INVALIDTARGET;
@@ -174,10 +174,10 @@ namespace MipsStackWalk {
 
 		u32 prevEntry = INVALIDTARGET;
 		while (pc != threadEntry) {
-			u32 possibleEntry = GuessEntry(current.pc);
+			u32 possibleEntry = GuessEntry(cpu, current.pc);
 			if (DetermineFrameInfo(cpu, current, possibleEntry, threadEntry, ra)) {
 				frames.push_back(current);
-				if (current.entry == threadEntry || GuessEntry(current.entry) == threadEntry) {
+				if (current.entry == threadEntry || GuessEntry(cpu, current.entry) == threadEntry) {
 					break;
 				}
 				if (current.entry == prevEntry || frames.size() >= MAX_DEPTH) {

@@ -302,7 +302,7 @@ void CDVDsys_SetFile(CDVD_SourceType srctype, std::string newfile)
 	m_SourceFilename[enum_cast(srctype)] = std::move(newfile);
 
 	// look for symbol file
-	if (symbolMap.IsEmpty())
+	if (R5900SymbolMap.IsEmpty())
 	{
 		std::string symName;
 		std::string::size_type n = m_SourceFilename[enum_cast(srctype)].rfind('.');
@@ -311,8 +311,8 @@ void CDVDsys_SetFile(CDVD_SourceType srctype, std::string newfile)
 		else
 			symName = m_SourceFilename[enum_cast(srctype)].substr(0, n) + ".sym";
 
-		symbolMap.LoadNocashSym(symName.c_str());
-		symbolMap.UpdateActiveSymbols();
+		R5900SymbolMap.LoadNocashSym(symName.c_str());
+		R5900SymbolMap.UpdateActiveSymbols();
 	}
 }
 

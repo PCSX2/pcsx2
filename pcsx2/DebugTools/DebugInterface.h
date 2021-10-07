@@ -16,6 +16,7 @@
 #pragma once
 #include "MemoryTypes.h"
 #include "ExpressionParser.h"
+#include "SymbolMap.h"
 
 enum
 {
@@ -76,6 +77,7 @@ public:
 	virtual bool isValidAddress(u32 address) = 0;
 	virtual u32 getCycles() = 0;
 	virtual BreakPointCpu getCpuType() = 0;
+	[[nodiscard]] virtual SymbolMap& GetSymbolMap() const = 0;
 
 	bool initExpression(const char* exp, PostfixExpression& dest);
 	bool parseExpression(PostfixExpression& exp, u64& dest);
@@ -111,6 +113,7 @@ public:
 	u32 getPC() override;
 	void setPc(u32 newPc) override;
 	void setRegister(int cat, int num, u128 newValue) override;
+	[[nodiscard]] SymbolMap& GetSymbolMap() const override;
 
 	std::string disasm(u32 address, bool simplify) override;
 	bool isValidAddress(u32 address) override;
@@ -144,6 +147,7 @@ public:
 	u32 getPC() override;
 	void setPc(u32 newPc) override;
 	void setRegister(int cat, int num, u128 newValue) override;
+	[[nodiscard]] SymbolMap& GetSymbolMap() const override;
 
 	std::string disasm(u32 address, bool simplify) override;
 	bool isValidAddress(u32 address) override;

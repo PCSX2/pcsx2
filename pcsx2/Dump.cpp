@@ -222,9 +222,9 @@ void iDumpBlock(u32 ee_pc, u32 ee_size, uptr x86_pc, u32 x86_size)
 	eff.Printf("\n");
 
 
-	if (!symbolMap.GetLabelString(ee_pc).empty())
+	if (!R5900SymbolMap.GetLabelString(ee_pc).empty())
 	{
-		eff.Printf( "%s\n", symbolMap.GetLabelString(ee_pc).c_str() );
+		eff.Printf( "%s\n", R5900SymbolMap.GetLabelString(ee_pc).c_str() );
 	}
 
 	for ( u32 i = ee_pc; i < ee_end; i += 4 )
@@ -277,9 +277,9 @@ void iDumpBlock( int startpc, u8 * ptr )
 		Path::Combine( EmuFolders::Logs, wxsFormat(L"R5900dump%.8X.txt", startpc) ), L"w"
 	);
 
-	if (!symbolMap.GetLabelString(startpc).empty())
+	if (!R5900SymbolMap.GetLabelString(startpc).empty())
 	{
-		eff.Printf( "%s\n", symbolMap.GetLabelString(startpc).c_str() );
+		eff.Printf( "%s\n", R5900SymbolMap.GetLabelString(startpc).c_str() );
 	}
 
 	for ( uint i = startpc; i < s_nEndBlock; i += 4 )

@@ -284,7 +284,7 @@ wxString BreakpointList::getColumnText(int item, int col) const
 			}
 			else
 			{
-				const std::string sym = symbolMap.GetLabelString(displayedBreakPoints_[index].addr);
+				const std::string sym = cpu->GetSymbolMap().GetLabelString(displayedBreakPoints_[index].addr);
 				if (!sym.empty())
 				{
 					dest.Write("%s", sym.c_str());
@@ -775,7 +775,7 @@ wxString StackFramesList::getColumnText(int item, int col) const
 			break;
 		case SF_ENTRYNAME:
 		{
-			const std::string sym = symbolMap.GetLabelString(frame.entry);
+			const std::string sym = cpu->GetSymbolMap().GetLabelString(frame.entry);
 			if (!sym.empty())
 			{
 				dest.Write("%s", sym.c_str());

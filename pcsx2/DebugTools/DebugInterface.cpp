@@ -91,7 +91,7 @@ public:
 	virtual bool parseSymbol(char* str, u64& symbolValue)
 	{
 		u32 value;
-		bool result = symbolMap.GetLabelValue(str, value);
+		bool result = cpu->GetSymbolMap().GetLabelValue(str, value);
 		symbolValue = value;
 		return result;
 	}
@@ -654,6 +654,11 @@ u32 R5900DebugInterface::getCycles()
 	return cpuRegs.cycle;
 }
 
+SymbolMap& R5900DebugInterface::GetSymbolMap() const
+{
+	return R5900SymbolMap;
+}
+
 //
 // R3000DebugInterface
 //
@@ -892,4 +897,9 @@ bool R3000DebugInterface::isValidAddress(u32 addr)
 u32 R3000DebugInterface::getCycles()
 {
 	return psxRegs.cycle;
+}
+
+SymbolMap& R3000DebugInterface::GetSymbolMap() const
+{
+	return R3000SymbolMap;
 }

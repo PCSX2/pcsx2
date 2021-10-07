@@ -289,7 +289,7 @@ void ElfObject::loadSectionHeaders()
 		for(uint i = 1; i < (secthead[i_st].sh_size / sizeof(Elf32_Sym)); i++) {
 			if ((eS[i].st_value != 0) && (ELF32_ST_TYPE(eS[i].st_info) == 2))
 			{
-				symbolMap.AddLabel(&SymNames[eS[i].st_name],eS[i].st_value);
+				R5900SymbolMap.AddLabel(&SymNames[eS[i].st_name],eS[i].st_value);
 			}
 		}
 	}
