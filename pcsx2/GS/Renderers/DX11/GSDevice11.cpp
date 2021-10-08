@@ -306,9 +306,9 @@ bool GSDevice11::Create(const std::shared_ptr<GSWnd>& wnd)
 
 	ShaderMacro sm_sboost(m_shader.model);
 
-	sm_sboost.AddMacro("SB_SATURATION", std::clamp(0, theApp.GetConfigI("ShadeBoost_Contrast"), 100));
+	sm_sboost.AddMacro("SB_CONTRAST", std::clamp(0, theApp.GetConfigI("ShadeBoost_Contrast"), 100));
 	sm_sboost.AddMacro("SB_BRIGHTNESS", std::clamp(0, theApp.GetConfigI("ShadeBoost_Brightness"), 100));
-	sm_sboost.AddMacro("SB_CONTRAST", std::clamp(0, theApp.GetConfigI("ShadeBoost_Saturation"), 100));
+	sm_sboost.AddMacro("SB_SATURATION", std::clamp(0, theApp.GetConfigI("ShadeBoost_Saturation"), 100));
 
 	memset(&bd, 0, sizeof(bd));
 
