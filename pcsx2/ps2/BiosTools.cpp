@@ -311,7 +311,7 @@ bool LoadBIOS()
 	if (EmuConfig.CurrentIRX.length() > 3)
 		LoadIrx(EmuConfig.CurrentIRX, &eeMem->ROM[0x3C0000], sizeof(eeMem->ROM) - 0x3C0000);
 
-	CurrentBiosInformation.threadListAddr = 0;
+	CurrentBiosInformation.eeThreadListAddr = 0;
 	return true;
 }
 

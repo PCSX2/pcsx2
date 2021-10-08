@@ -48,19 +48,27 @@ public:
 	void refreshData();
 
 private:
-	const std::map<int, QString> ThreadStateStrings{
-		{THS_BAD, tr("BAD")},
-		{THS_RUN, tr("RUN")},
-		{THS_READY, tr("READY")},
-		{THS_WAIT, tr("WAIT")},
-		{THS_SUSPEND, tr("SUSPEND")},
-		{THS_WAIT_SUSPEND, tr("WAIT SUSPEND")},
-		{THS_DORMANT, tr("DORMANT")}};
+	const std::map<ThreadStatus, QString> ThreadStateStrings{
+		{ThreadStatus::THS_BAD, tr("BAD")},
+		{ThreadStatus::THS_RUN, tr("RUN")},
+		{ThreadStatus::THS_READY, tr("READY")},
+		{ThreadStatus::THS_WAIT, tr("WAIT")},
+		{ThreadStatus::THS_SUSPEND, tr("SUSPEND")},
+		{ThreadStatus::THS_WAIT_SUSPEND, tr("WAIT SUSPEND")},
+		{ThreadStatus::THS_DORMANT, tr("DORMANT")},
+	};
 
-	const std::map<int, QString> ThreadWaitStrings{
-		{WAIT_NONE, tr("NONE")},
-		{WAIT_WAKEUP_REQ, tr("WAKEUP REQUEST")},
-		{WAIT_SEMA, tr("SEMAPHORE")}};
+	const std::map<WaitState, QString> ThreadWaitStrings{
+		{WaitState::NONE, tr("NONE")},
+		{WaitState::WAKEUP_REQ, tr("WAKEUP REQUEST")},
+		{WaitState::SEMA, tr("SEMAPHORE")},
+		{WaitState::SLEEP, tr("SLEEP")},
+		{WaitState::DELAY, tr("DELAY")},
+		{WaitState::EVENTFLAG, tr("EVENTFLAG")},
+		{WaitState::MBOX, tr("MBOX")},
+		{WaitState::VPOOL, tr("VPOOL")},
+		{WaitState::FIXPOOL, tr("FIXPOOL")},
+	};
 
 	DebugInterface& m_cpu;
 };
