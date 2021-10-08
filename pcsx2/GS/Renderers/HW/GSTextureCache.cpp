@@ -1089,6 +1089,16 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 
 				// note: r.rintersect breaks Wizardry and Chaos Legion
 				// Read(t, t->m_valid) works in all tested games but is very slow in GUST titles ><
+
+				// propagate the format from the result of a channel effect
+				// texture is 16/8 bit but the real data is 32
+				// common use for shuffling is moving data into the alpha channel
+				// the game can then draw using 8H format
+				// in the case of silent hill blit 8H -> 8P
+				// this will matter later when the data ends up in GS memory in the wrong format
+				if (t->m_32_bits_fmt)
+					t->m_TEX0.PSM = PSM_PSMCT32;
+
 				if (GSTextureCache::m_disable_partial_invalidation)
 				{
 					Read(t, r.rintersect(t->m_valid));
