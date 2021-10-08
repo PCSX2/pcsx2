@@ -109,6 +109,7 @@ public:
 		Shox,
 		Simple2000Vol114,
 		SkyGunner,
+		SlamTennis,
 		SMTNocturne,
 		SonicUnleashed,
 		SoTC,

@@ -495,6 +495,7 @@ CRC::Game CRC::m_games[] =
 	{0x09F4038B, Shox, EU, 0},
 	{0x78FFA39F, Shox, EU, 0},
 	{0x3DF10389, Shox, EU, 0},
+	{0x43CC009B, SlamTennis, EU, 0},
 	{0xF17AF8BD, TheIncredibleHulkUD, US, 0},
 	{0xEA8D4BDF, TheIncredibleHulkUD, US, 0},
 	{0x6B3D50A5, TheIncredibleHulkUD, EU, 0},
