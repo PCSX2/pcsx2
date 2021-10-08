@@ -25,7 +25,9 @@ const u32 ThreadListInstructions[3] =
 
 struct BiosDebugInformation
 {
-	u32 threadListAddr;
+	u32 eeThreadListAddr;
+	u32 iopThreadListAddr;
+	u32 iopModListAddr;
 };
 
 extern BiosDebugInformation CurrentBiosInformation;

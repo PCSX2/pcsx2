@@ -107,18 +107,15 @@ QVariant StackModel::headerData(int section, Qt::Orientation orientation, int ro
 
 void StackModel::refreshData()
 {
-	if (m_cpu.getCpuType() == BREAKPOINT_IOP)
-		return;
-
 	// Hopefully in the near future we can get a stack frame for
 	// each thread
 	beginResetModel();
-	for (const auto& thread : getEEThreads())
+	for (const auto& thread : m_cpu.GetThreadList())
 	{
-		if (thread.data.status == THS_RUN)
+		if (thread->Status() == ThreadStatus::THS_RUN)
 		{
 			m_stackFrames = MipsStackWalk::Walk(&m_cpu, m_cpu.getPC(), m_cpu.getRegister(0, 31), m_cpu.getRegister(0, 29),
-				thread.data.entry_init, thread.data.stack);
+				thread->EntryPoint(), thread->StackTop());
 			break;
 		}
 	}
