@@ -69,14 +69,14 @@ GSOsdManager::GSOsdManager()
 {
 	m_monitor_enabled       = theApp.GetConfigB("osd_monitor_enabled");
 	m_log_enabled           = theApp.GetConfigB("osd_log_enabled");
-	m_size                  = std::clamp(1, theApp.GetConfigI("osd_fontsize"), 100);
-	m_opacity               = std::clamp(0, theApp.GetConfigI("osd_color_opacity"), 100);
-	m_log_timeout           = std::clamp(2, theApp.GetConfigI("osd_log_timeout"), 10);
-	m_max_onscreen_messages = std::clamp(1, theApp.GetConfigI("osd_max_log_messages"), 20);
+	m_size                  = std::clamp(theApp.GetConfigI("osd_fontsize"), 1, 100);
+	m_opacity               = std::clamp(theApp.GetConfigI("osd_color_opacity"), 0, 100);
+	m_log_timeout           = std::clamp(theApp.GetConfigI("osd_log_timeout"), 2, 10);
+	m_max_onscreen_messages = std::clamp(theApp.GetConfigI("osd_max_log_messages"), 1, 20);
 
-	int r = std::clamp(0, theApp.GetConfigI("osd_color_r"), 255);
-	int g = std::clamp(0, theApp.GetConfigI("osd_color_g"), 255);
-	int b = std::clamp(0, theApp.GetConfigI("osd_color_b"), 255);
+	const int r = std::clamp(theApp.GetConfigI("osd_color_r"), 0, 255);
+	const int g = std::clamp(theApp.GetConfigI("osd_color_g"), 0, 255);
+	const int b = std::clamp(theApp.GetConfigI("osd_color_b"), 0, 255);
 
 	m_color = r | (g << 8) | (b << 16) | (255 << 24);
 
