@@ -16,10 +16,10 @@
 #pragma once
 
 #include "CDVD.h"
-#include "wx/wfstream.h"
 #include "AsyncFileReader.h"
 #include "CompressedFileReader.h"
 #include <memory>
+#include <string>
 
 enum isoType
 {
@@ -45,7 +45,7 @@ protected:
 	uint ReadUnit;
 
 protected:
-	wxString m_filename;
+	std::string m_filename;
 	AsyncFileReader* m_reader;
 
 	u32 m_current_lsn;
@@ -75,13 +75,13 @@ public:
 	uint GetBlockCount() const { return m_blocks; }
 	int GetBlockOffset() const { return m_blockofs; }
 
-	const wxString& GetFilename() const
+	const std::string& GetFilename() const
 	{
 		return m_filename;
 	}
 
-	bool Test(const wxString& srcfile);
-	bool Open(const wxString& srcfile, bool testOnly = false);
+	bool Test(std::string srcfile);
+	bool Open(std::string srcfile, bool testOnly = false);
 	void Close();
 	bool Detect(bool readType = true);
 
@@ -102,7 +102,7 @@ class OutputIsoFile
 	DeclareNoncopyableObject(OutputIsoFile);
 
 protected:
-	wxString m_filename;
+	std::string m_filename;
 
 	u32 m_version;
 
@@ -116,7 +116,7 @@ protected:
 	// dtable is used when reading blockdumps
 	std::vector<u32> m_dtable;
 
-	std::unique_ptr<wxFileOutputStream> m_outstream;
+	std::FILE* m_outstream = nullptr;
 
 public:
 	OutputIsoFile();
@@ -125,12 +125,12 @@ public:
 	bool IsOpened() const;
 	u32 GetBlockSize() const;
 
-	const wxString& GetFilename() const
+	const std::string& GetFilename() const
 	{
 		return m_filename;
 	}
 
-	void Create(const wxString& filename, int mode);
+	void Create(std::string filename, int mode);
 	void Close();
 
 	void WriteHeader(int blockofs, uint blocksize, uint blocks);
