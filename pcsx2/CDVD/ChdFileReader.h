@@ -16,16 +16,17 @@
 #pragma once
 #include "ThreadedFileReader.h"
 #include "libchdr/chd.h"
+#include <vector>
 
 class ChdFileReader : public ThreadedFileReader
 {
 	DeclareNoncopyableObject(ChdFileReader);
 
 public:
-	virtual ~ChdFileReader(void) { Close(); };
+	virtual ~ChdFileReader() override;;
 
-	static bool CanHandle(const wxString& fileName);
-	bool Open2(const wxString& fileName) override;
+	static bool CanHandle(const std::string& fileName, const std::string& displayName);
+	bool Open2(std::string fileName) override;
 
 	Chunk ChunkForOffset(u64 offset) override;
 	int ReadChunk(void *dst, s64 blockID) override;
@@ -38,4 +39,5 @@ private:
 	chd_file* ChdFile;
 	u64 file_size;
 	u32 hunk_size;
+	std::vector<std::FILE*> m_files;
 };

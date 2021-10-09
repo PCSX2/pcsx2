@@ -19,19 +19,27 @@
 #include "ChdFileReader.h"
 #include "CsoFileReader.h"
 #include "GzippedFileReader.h"
+#include "common/FileSystem.h"
+#include <cctype>
 
 // CompressedFileReader factory.
-AsyncFileReader* CompressedFileReader::GetNewReader(const wxString& fileName)
+AsyncFileReader* CompressedFileReader::GetNewReader(const std::string& fileName)
 {
-	if (ChdFileReader::CanHandle(fileName))
+	if (!FileSystem::FileExists(fileName.c_str()))
+		return nullptr;
+
+	std::string displayName(FileSystem::GetDisplayNameFromPath(fileName));
+	std::transform(displayName.begin(), displayName.end(), displayName.begin(), tolower);
+
+	if (ChdFileReader::CanHandle(fileName, displayName))
 	{
 		return new ChdFileReader();
 	}
-	if (GzippedFileReader::CanHandle(fileName))
+	if (GzippedFileReader::CanHandle(fileName, displayName))
 	{
 		return new GzippedFileReader();
 	}
-	if (CsoFileReader::CanHandle(fileName))
+	if (CsoFileReader::CanHandle(fileName, displayName))
 	{
 		return new CsoFileReader();
 	}

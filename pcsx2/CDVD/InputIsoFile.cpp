@@ -194,19 +194,16 @@ void InputIsoFile::_init()
 //
 // Note that this is a member method, and that it will clobber any existing ISO state.
 // (assertions are generated in debug mode if the object state is not already closed).
-bool InputIsoFile::Test(const wxString& srcfile)
+bool InputIsoFile::Test(std::string srcfile)
 {
 	Close();
-	m_filename = srcfile;
-
-	return Open(srcfile, true);
+	return Open(std::move(srcfile), true);
 }
 
-bool InputIsoFile::Open(const wxString& srcfile, bool testOnly)
+bool InputIsoFile::Open(std::string srcfile, bool testOnly)
 {
 	Close();
-	m_filename = srcfile;
-	m_reader = NULL;
+	m_filename = std::move(srcfile);
 
 	bool isBlockdump = false;
 	bool isCompressed = false;
@@ -270,7 +267,7 @@ bool InputIsoFile::Open(const wxString& srcfile, bool testOnly)
 
 	m_blocks = m_reader->GetBlockCount();
 
-	Console.WriteLn(Color_StrongBlue, L"isoFile open ok: %s", WX_STR(m_filename));
+	Console.WriteLn(Color_StrongBlue, "isoFile open ok: %s", m_filename.c_str());
 
 	ConsoleIndentScope indent;
 

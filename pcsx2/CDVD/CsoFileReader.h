@@ -52,8 +52,8 @@ public:
 
 	~CsoFileReader(void) { Close(); };
 
-	static bool CanHandle(const wxString& fileName);
-	bool Open2(const wxString& fileName) override;
+	static bool CanHandle(const std::string& fileName, const std::string& displayName);
+	bool Open2(std::string fileName) override;
 
 	Chunk ChunkForOffset(u64 offset) override;
 	int ReadChunk(void *dst, s64 chunkID) override;

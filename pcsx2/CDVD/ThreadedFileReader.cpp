@@ -239,10 +239,10 @@ bool ThreadedFileReader::TryCachedRead(void*& buffer, u64& offset, u32& size, co
 	return allDone;
 }
 
-bool ThreadedFileReader::Open(const wxString& fileName)
+bool ThreadedFileReader::Open(std::string fileName)
 {
 	CancelAndWaitUntilStopped();
-	return Open2(fileName);
+	return Open2(std::move(fileName));
 }
 
 int ThreadedFileReader::ReadSync(void* pBuffer, uint sector, uint count)

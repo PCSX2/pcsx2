@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
+#include "common/StringUtil.h"
 
 FlatFileReader::FlatFileReader(bool shareWrite) : shareWrite(shareWrite)
 {
@@ -29,9 +30,9 @@ FlatFileReader::~FlatFileReader(void)
 	Close();
 }
 
-bool FlatFileReader::Open(const wxString& fileName)
+bool FlatFileReader::Open(std::string fileName)
 {
-	m_filename = fileName;
+	m_filename = std::move(fileName);
 
 	hEvent = CreateEvent(NULL, TRUE, FALSE, NULL);
 
@@ -40,7 +41,7 @@ bool FlatFileReader::Open(const wxString& fileName)
 		shareMode |= FILE_SHARE_WRITE;
 
 	hOverlappedFile = CreateFile(
-		fileName,
+		StringUtil::UTF8StringToWideString(m_filename).c_str(),
 		GENERIC_READ,
 		shareMode,
 		NULL,

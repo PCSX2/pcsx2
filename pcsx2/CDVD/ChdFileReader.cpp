@@ -16,71 +16,98 @@
 #include "PrecompiledHeader.h"
 #include "ChdFileReader.h"
 
-#include "CDVD/CompressedFileReaderUtils.h"
+#include "common/FileSystem.h"
+#include "common/StringUtil.h"
 
-#include <wx/dir.h>
-
-bool ChdFileReader::CanHandle(const wxString& fileName)
+ChdFileReader::~ChdFileReader()
 {
-	if (!wxFileName::FileExists(fileName) || !fileName.Lower().EndsWith(L".chd"))
-	{
+	Close();
+
+	for (std::FILE* fp : m_files)
+		std::fclose(fp);
+}
+
+bool ChdFileReader::CanHandle(const std::string& fileName, const std::string& displayName)
+{
+	if (!StringUtil::EndsWith(displayName, ".chd"))
 		return false;
-	}
+
 	return true;
 }
 
-bool ChdFileReader::Open2(const wxString& fileName)
+static chd_error chd_open_wrapper(const char* filename, std::FILE** fp, int mode, chd_file* parent, chd_file** chd)
+{
+	*fp = FileSystem::OpenCFile(filename, "rb");
+	if (!*fp)
+		return CHDERR_FILE_NOT_FOUND;
+
+	const chd_error err = chd_open_file(*fp, mode, parent, chd);
+	if (err == CHDERR_NONE)
+		return err;
+
+	std::fclose(*fp);
+	*fp = nullptr;
+	return err;
+}
+
+bool ChdFileReader::Open2(std::string fileName)
 {
 	Close2();
 
-	m_filename = fileName;
+	m_filename = std::move(fileName);
 
-	chd_file* child = NULL;
-	chd_file* parent = NULL;
+	chd_file* child = nullptr;
+	chd_file* parent = nullptr;
+	std::FILE* fp = nullptr;
 	chd_header header;
 	chd_header parent_header;
 
-	wxString chds[8];
-	chds[0] = fileName;
+	std::string chds[8];
+	chds[0] = m_filename;
 	int chd_depth = 0;
 	chd_error error;
 
-	// TODO: Unicode correctness on Windows
-	while (CHDERR_REQUIRES_PARENT == (error = chd_open(chds[chd_depth].c_str(), CHD_OPEN_READ, NULL, &child)))
+	std::string dirname;
+	FileSystem::FindResultsArray results;
+
+	while (CHDERR_REQUIRES_PARENT == (error = chd_open_wrapper(chds[chd_depth].c_str(), &fp, CHD_OPEN_READ, NULL, &child)))
 	{
 		if (chd_depth >= static_cast<int>(std::size(chds) - 1))
 		{
-			Console.Error(L"CDVD: chd_open hit recursion limit searching for parents");
+			Console.Error("CDVD: chd_open hit recursion limit searching for parents");
 			return false;
 		}
+
+		// TODO: This is still broken on Windows. Needs to be fixed in libchdr.
 		if (chd_read_header(chds[chd_depth].c_str(), &header) != CHDERR_NONE)
 		{
-			Console.Error(L"CDVD: chd_open chd_read_header error: %s: %s", chd_error_string(error), WX_STR(chds[chd_depth]));
+			Console.Error("CDVD: chd_open chd_read_header error: %s: %s", chd_error_string(error), chds[chd_depth].c_str());
 			return false;
 		}
+
 		bool found_parent = false;
-		wxFileName wxfilename(chds[chd_depth]);
-		wxString dir_path = wxfilename.GetPath();
-		wxDir dir(dir_path);
-		if (dir.IsOpened())
+		dirname = FileSystem::GetPathDirectory(chds[chd_depth]);
+		if (FileSystem::FindFiles(dirname.c_str(), "*.*", FILESYSTEM_FIND_FILES | FILESYSTEM_FIND_HIDDEN_FILES, &results))
 		{
-			wxString parent_fileName;
-			bool cont = dir.GetFirst(&parent_fileName, wxString("*.") + wxfilename.GetExt(), wxDIR_FILES | wxDIR_HIDDEN);
-			for (; cont; cont = dir.GetNext(&parent_fileName))
+			for (const FILESYSTEM_FIND_DATA& fd : results)
 			{
-				parent_fileName = wxFileName(dir_path, parent_fileName).GetFullPath();
-				if (chd_read_header(parent_fileName.c_str(), &parent_header) == CHDERR_NONE &&
+				const std::string_view extension(FileSystem::GetExtension(fd.FileName));
+				if (extension.empty() || StringUtil::Strncasecmp(extension.data(), "chd", 3) != 0)
+					continue;
+
+				if (chd_read_header(fd.FileName.c_str(), &parent_header) == CHDERR_NONE &&
 					memcmp(parent_header.sha1, header.parentsha1, sizeof(parent_header.sha1)) == 0)
 				{
 					found_parent = true;
-					chds[++chd_depth] = wxString(parent_fileName);
+					chds[++chd_depth] = std::move(fd.FileName);
 					break;
 				}
 			}
 		}
+
 		if (!found_parent)
 		{
-			Console.Error(L"CDVD: chd_open no parent for: %s", WX_STR(chds[chd_depth]));
+			Console.Error("CDVD: chd_open no parent for: %s", chds[chd_depth].c_str());
 			break;
 		}
 	}
@@ -91,11 +118,17 @@ bool ChdFileReader::Open2(const wxString& fileName)
 		return false;
 	}
 
+	if (child)
+	{
+		pxAssert(fp != nullptr);
+		m_files.push_back(fp);
+	}
+
 	for (int d = chd_depth - 1; d >= 0; d--)
 	{
 		parent = child;
 		child = NULL;
-		error = chd_open(chds[d].c_str(), CHD_OPEN_READ, parent, &child);
+		error = chd_open_wrapper(chds[d].c_str(), &fp, CHD_OPEN_READ, parent, &child);
 		if (error != CHDERR_NONE)
 		{
 			Console.Error(L"CDVD: chd_open return error: %s", chd_error_string(error));
@@ -103,19 +136,17 @@ bool ChdFileReader::Open2(const wxString& fileName)
 				chd_close(parent);
 			return false;
 		}
+
+		m_files.push_back(fp);
 	}
 	ChdFile = child;
-	if (chd_read_header(chds[0].c_str(), &header) != CHDERR_NONE)
-	{
-		Console.Error(L"CDVD: chd_open chd_read_header error: %s: %s", chd_error_string(error), WX_STR(chds[0]));
-		return false;
-	}
 
-	file_size = static_cast<u64>(header.unitbytes) * header.unitcount;
-	hunk_size = header.hunkbytes;
+	const chd_header* chd_header = chd_get_header(ChdFile);
+	file_size = static_cast<u64>(chd_header->unitbytes) * chd_header->unitcount;
+	hunk_size = chd_header->hunkbytes;
 	// CHD likes to use full 2448 byte blocks, but keeps the +24 offset of source ISOs
 	// The rest of PCSX2 likes to use 2448 byte buffers, which can't fit that so trim blocks instead
-	m_internalBlockSize = header.unitbytes;
+	m_internalBlockSize = chd_header->unitbytes;
 
 	return true;
 }
@@ -136,7 +167,7 @@ ThreadedFileReader::Chunk ChdFileReader::ChunkForOffset(u64 offset)
 	return chunk;
 }
 
-int ChdFileReader::ReadChunk(void *dst, s64 chunkID)
+int ChdFileReader::ReadChunk(void* dst, s64 chunkID)
 {
 	if (chunkID < 0)
 		return -1;

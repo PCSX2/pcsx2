@@ -17,15 +17,17 @@
 #include "PrecompiledHeader.h"
 #include "IopCommon.h"
 #include "IsoFileFormats.h"
+#include "common/FileSystem.h"
+#include "common/StringUtil.h"
 
 #include <errno.h>
 
-void pxStream_OpenCheck(const wxStreamBase& stream, const wxString& fname, const wxString& mode)
+void pxStream_OpenCheck(std::FILE* stream, const std::string& fname, const wxString& mode)
 {
-	if (stream.IsOk())
+	if (stream)
 		return;
 
-	ScopedExcept ex(Exception::FromErrno(fname, errno));
+	ScopedExcept ex(Exception::FromErrno(StringUtil::UTF8StringToWxString(fname), errno));
 	ex->SetDiagMsg(pxsFmt(L"Unable to open the file for %s: %s", WX_STR(mode), WX_STR(ex->DiagMsg())));
 	ex->Rethrow();
 }
@@ -50,20 +52,20 @@ void OutputIsoFile::_init()
 	m_blocks = 0;
 }
 
-void OutputIsoFile::Create(const wxString& filename, int version)
+void OutputIsoFile::Create(std::string filename, int version)
 {
 	Close();
-	m_filename = filename;
+	m_filename = std::move(filename);
 
 	m_version = version;
 	m_offset = 0;
 	m_blockofs = 24;
 	m_blocksize = 2048;
 
-	m_outstream = std::make_unique<wxFileOutputStream>(m_filename);
-	pxStream_OpenCheck(*m_outstream, m_filename, L"writing");
+	m_outstream = FileSystem::OpenCFile(m_filename.c_str(), "wb");
+	pxStream_OpenCheck(m_outstream, m_filename, L"writing");
 
-	Console.WriteLn("isoFile create ok: %s ", WX_STR(m_filename));
+	Console.WriteLn("isoFile create ok: %s ", m_filename.c_str());
 }
 
 // Generates format header information for blockdumps.
@@ -100,9 +102,8 @@ void OutputIsoFile::WriteSector(const u8* src, uint lsn)
 	}
 	else
 	{
-		wxFileOffset ofs = (wxFileOffset)lsn * m_blocksize + m_offset;
-
-		m_outstream->SeekO(ofs);
+		const s64 ofs = (s64)lsn * m_blocksize + m_offset;
+		FileSystem::FSeek64(m_outstream, ofs, SEEK_SET);
 	}
 
 	WriteBuffer(src + m_blockofs, m_blocksize);
@@ -112,19 +113,27 @@ void OutputIsoFile::Close()
 {
 	m_dtable.clear();
 
+	if (m_outstream)
+	{
+		std::fclose(m_outstream);
+		m_outstream = nullptr;
+	}
+
 	_init();
 }
 
 void OutputIsoFile::WriteBuffer(const void* src, size_t size)
 {
-	m_outstream->Write(src, size);
-	if (m_outstream->GetLastError() == wxSTREAM_WRITE_ERROR)
+	if (std::fwrite(src, size, 1, m_outstream) != 1)
 	{
 		int err = errno;
 		if (!err)
-			throw Exception::BadStream(m_filename).SetDiagMsg(pxsFmt(L"An error occurred while writing %u bytes to file", size));
+		{
+			throw Exception::BadStream(StringUtil::UTF8StringToWxString(m_filename))
+				.SetDiagMsg(pxsFmt(L"An error occurred while writing %u bytes to file", size));
+		}
 
-		ScopedExcept ex(Exception::FromErrno(m_filename, err));
+		ScopedExcept ex(Exception::FromErrno(StringUtil::UTF8StringToWxString(m_filename), err));
 		ex->SetDiagMsg(pxsFmt(L"An error occurred while writing %u bytes to file: %s", size, WX_STR(ex->DiagMsg())));
 		ex->Rethrow();
 	}
@@ -132,7 +141,7 @@ void OutputIsoFile::WriteBuffer(const void* src, size_t size)
 
 bool OutputIsoFile::IsOpened() const
 {
-	return m_outstream && m_outstream->IsOk();
+	return m_outstream != nullptr;
 }
 
 u32 OutputIsoFile::GetBlockSize() const

@@ -34,8 +34,8 @@ public:
 
 	virtual ~GzippedFileReader(void) { Close(); };
 
-	static bool CanHandle(const wxString& fileName);
-	virtual bool Open(const wxString& fileName);
+	static bool CanHandle(const std::string& fileName, const std::string& displayName);
+	virtual bool Open(std::string fileName);
 
 	virtual int ReadSync(void* pBuffer, uint sector, uint count);
 
@@ -71,8 +71,8 @@ private:
 	};
 
 	bool OkIndex(); // Verifies that we have an index, or try to create one
-	PX_off_t GetOptimalExtractionStart(PX_off_t offset);
-	int _ReadSync(void* pBuffer, PX_off_t offset, uint bytesToRead);
+	s64 GetOptimalExtractionStart(s64 offset);
+	int _ReadSync(void* pBuffer, s64 offset, uint bytesToRead);
 	void InitZstates();
 
 	int mBytesRead;   // Temp sync read result when simulating async read
@@ -93,6 +93,6 @@ private:
 	void AsyncPrefetchReset();
 	void AsyncPrefetchOpen();
 	void AsyncPrefetchClose();
-	void AsyncPrefetchChunk(PX_off_t dummy);
+	void AsyncPrefetchChunk(s64 dummy);
 	void AsyncPrefetchCancel();
 };

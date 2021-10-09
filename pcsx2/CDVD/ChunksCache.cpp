@@ -18,7 +18,7 @@
 
 void ChunksCache::SetLimit(uint megabytes)
 {
-	m_limit = (PX_off_t)megabytes * 1024 * 1024;
+	m_limit = (s64)megabytes * 1024 * 1024;
 	MatchLimit();
 }
 
@@ -34,7 +34,7 @@ void ChunksCache::MatchLimit(bool removeAll)
 	}
 }
 
-void ChunksCache::Take(void* pMallocedSrc, PX_off_t offset, int length, int coverage)
+void ChunksCache::Take(void* pMallocedSrc, s64 offset, int length, int coverage)
 {
 	m_entries.push_front(new CacheEntry(pMallocedSrc, offset, length, coverage));
 	m_size += length;
@@ -42,7 +42,7 @@ void ChunksCache::Take(void* pMallocedSrc, PX_off_t offset, int length, int cove
 }
 
 // By design, succeed only if the entire request is in a single cached chunk
-int ChunksCache::Read(void* pDest, PX_off_t offset, int length)
+int ChunksCache::Read(void* pDest, s64 offset, int length)
 {
 	for (auto it = m_entries.begin(); it != m_entries.end(); it++)
 	{

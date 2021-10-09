@@ -24,21 +24,22 @@
 #	include <aio.h>
 #endif
 #include <memory>
+#include <string>
 
 class AsyncFileReader
 {
 protected:
 	AsyncFileReader() : m_dataoffset(0), m_blocksize(0) {}
 
-	wxString m_filename;
+	std::string m_filename;
 
 	int m_dataoffset;
 	uint m_blocksize;
 
 public:
-	virtual ~AsyncFileReader(void) {};
+	virtual ~AsyncFileReader() {};
 
-	virtual bool Open(const wxString& fileName)=0;
+	virtual bool Open(std::string fileName)=0;
 
 	virtual int ReadSync(void* pBuffer, uint sector, uint count)=0;
 
@@ -55,7 +56,7 @@ public:
 
 	uint GetBlockSize() const { return m_blocksize; }
 
-	const wxString& GetFilename() const
+	const std::string& GetFilename() const
 	{
 		return m_filename;
 	}
@@ -86,22 +87,22 @@ class FlatFileReader : public AsyncFileReader
 
 public:
 	FlatFileReader(bool shareWrite = false);
-	virtual ~FlatFileReader(void);
+	virtual ~FlatFileReader() override;
 
-	virtual bool Open(const wxString& fileName);
+	virtual bool Open(std::string fileName) override;
 
-	virtual int ReadSync(void* pBuffer, uint sector, uint count);
+	virtual int ReadSync(void* pBuffer, uint sector, uint count) override;
 
-	virtual void BeginRead(void* pBuffer, uint sector, uint count);
-	virtual int FinishRead(void);
-	virtual void CancelRead(void);
+	virtual void BeginRead(void* pBuffer, uint sector, uint count) override;
+	virtual int FinishRead(void) override;
+	virtual void CancelRead(void) override;
 
-	virtual void Close(void);
+	virtual void Close(void) override;
 
-	virtual uint GetBlockCount(void) const;
+	virtual uint GetBlockCount(void) const override;
 
-	virtual void SetBlockSize(uint bytes) { m_blocksize = bytes; }
-	virtual void SetDataOffset(int bytes) { m_dataoffset = bytes; }
+	virtual void SetBlockSize(uint bytes) override { m_blocksize = bytes; }
+	virtual void SetDataOffset(int bytes) override { m_dataoffset = bytes; }
 };
 
 class MultipartFileReader : public AsyncFileReader
@@ -123,21 +124,21 @@ class MultipartFileReader : public AsyncFileReader
 
 public:
 	MultipartFileReader(AsyncFileReader* firstPart);
-	virtual ~MultipartFileReader(void);
+	virtual ~MultipartFileReader() override;
 
-	virtual bool Open(const wxString& fileName);
+	virtual bool Open(std::string fileName) override;
 
-	virtual int ReadSync(void* pBuffer, uint sector, uint count);
+	virtual int ReadSync(void* pBuffer, uint sector, uint count) override;
 
-	virtual void BeginRead(void* pBuffer, uint sector, uint count);
-	virtual int FinishRead(void);
-	virtual void CancelRead(void);
+	virtual void BeginRead(void* pBuffer, uint sector, uint count) override;
+	virtual int FinishRead(void) override;
+	virtual void CancelRead(void) override;
 
-	virtual void Close(void);
+	virtual void Close(void) override;
 
-	virtual uint GetBlockCount(void) const;
+	virtual uint GetBlockCount(void) const override;
 
-	virtual void SetBlockSize(uint bytes);
+	virtual void SetBlockSize(uint bytes) override;
 
 	static AsyncFileReader* DetectMultipart(AsyncFileReader* reader);
 };
@@ -146,7 +147,7 @@ class BlockdumpFileReader : public AsyncFileReader
 {
 	DeclareNoncopyableObject( BlockdumpFileReader );
 
-	wxFileInputStream* m_file;
+	std::FILE* m_file;
 
 	// total number of blocks in the ISO image (including all parts)
 	u32 m_blocks;
@@ -159,20 +160,20 @@ class BlockdumpFileReader : public AsyncFileReader
 	int m_lresult;
 
 public:
-	BlockdumpFileReader(void);
-	virtual ~BlockdumpFileReader(void);
+	BlockdumpFileReader();
+	virtual ~BlockdumpFileReader() override;
 
-	virtual bool Open(const wxString& fileName);
+	virtual bool Open(std::string fileName) override;
 
-	virtual int ReadSync(void* pBuffer, uint sector, uint count);
+	virtual int ReadSync(void* pBuffer, uint sector, uint count) override;
 
-	virtual void BeginRead(void* pBuffer, uint sector, uint count);
-	virtual int FinishRead(void);
-	virtual void CancelRead(void);
+	virtual void BeginRead(void* pBuffer, uint sector, uint count) override;
+	virtual int FinishRead(void) override;
+	virtual void CancelRead(void) override;
 
-	virtual void Close(void);
+	virtual void Close(void) override;
 
-	virtual uint GetBlockCount(void) const;
+	virtual uint GetBlockCount(void) const override;
 
 	static bool DetectBlockdump(AsyncFileReader* reader);
 
