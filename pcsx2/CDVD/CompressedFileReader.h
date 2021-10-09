@@ -14,6 +14,7 @@
  */
 
 #pragma once
+#include <string>
 
 // Factory - creates an AsyncFileReader derived instance which can read a compressed file
 class CompressedFileReader
@@ -23,7 +24,7 @@ public:
 	// If no matching handler is found, NULL is returned.
 	// The returned instance still needs ->Open(filename) before usage.
 	// Open(filename) may still fail.
-	static AsyncFileReader* GetNewReader(const wxString& fileName);
+	static AsyncFileReader* GetNewReader(const std::string& fileName);
 
 private:
 	virtual ~CompressedFileReader() = 0;

@@ -269,7 +269,6 @@ set(pcsx2CDVDHeaders
 	CDVD/CDVDisoReader.h
 	CDVD/ChunksCache.h
 	CDVD/CompressedFileReader.h
-	CDVD/CompressedFileReaderUtils.h
 	CDVD/ChdFileReader.h
 	CDVD/CsoFileReader.h
 	CDVD/GzippedFileReader.h

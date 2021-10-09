@@ -33,6 +33,7 @@
 #include "IsoFS/IsoFSCDVD.h"
 #include "CDVDisoReader.h"
 
+#include "common/FileSystem.h"
 #include "common/StringUtil.h"
 #include "DebugTools/SymbolMap.h"
 #include "Config.h"
@@ -376,33 +377,33 @@ bool DoCDVDopen()
 		return true;
 	}
 
-	wxString somepick(Path::GetFilenameWithoutExt(fromUTF8(m_SourceFilename[CurrentSourceType])));
+	std::string somepick(FileSystem::StripExtension(m_SourceFilename[CurrentSourceType]));
 	//FWIW Disc serial availability doesn't seem reliable enough, sometimes it's there and sometime it's just null
 	//Shouldn't the serial be available all time? Potentially need to look into Elfreloadinfo() reliability
 	//TODO: Add extra fallback case for CRC.
-	if (somepick.IsEmpty() && !DiscSerial.IsEmpty())
-		somepick = L"Untitled-" + DiscSerial;
-	else if (somepick.IsEmpty())
-		somepick = L"Untitled";
+	if (somepick.empty() && !DiscSerial.IsEmpty())
+		somepick = StringUtil::StdStringFromFormat("Untitled-%s", static_cast<const char*>(DiscSerial.c_str()));
+	else if (somepick.empty())
+		somepick = "Untitled";
 
 	if (EmuConfig.CurrentBlockdump.empty())
-		EmuConfig.CurrentBlockdump = StringUtil::wxStringToUTF8String(wxGetCwd());
+		EmuConfig.CurrentBlockdump = FileSystem::GetWorkingDirectory();
 
-	wxString temp(Path::Combine(StringUtil::UTF8StringToWxString(EmuConfig.CurrentBlockdump), somepick));
+	std::string temp(Path::CombineStdString(EmuConfig.CurrentBlockdump, somepick));
 
 #ifdef ENABLE_TIMESTAMPS
 	wxDateTime curtime(wxDateTime::GetTimeNow());
 
-	temp += pxsFmt(L" (%04d-%02d-%02d %02d-%02d-%02d)",
-				   curtime.GetYear(), curtime.GetMonth(), curtime.GetDay(),
-				   curtime.GetHour(), curtime.GetMinute(), curtime.GetSecond());
+	temp += StringUtil::StdStringFromFormat(" (%04d-%02d-%02d %02d-%02d-%02d)",
+		curtime.GetYear(), curtime.GetMonth(), curtime.GetDay(),
+		curtime.GetHour(), curtime.GetMinute(), curtime.GetSecond());
 #endif
-	temp += L".dump";
+	temp += ".dump";
 
 	cdvdTD td;
 	CDVD->getTD(0, &td);
 
-	blockDumpFile.Create(temp, 2);
+	blockDumpFile.Create(std::move(temp), 2);
 
 	if (blockDumpFile.IsOpened())
 	{

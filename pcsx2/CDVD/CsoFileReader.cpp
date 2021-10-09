@@ -15,9 +15,10 @@
 
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
-#include "CompressedFileReaderUtils.h"
 #include "CsoFileReader.h"
 #include "common/Pcsx2Types.h"
+#include "common/FileSystem.h"
+#include "common/StringUtil.h"
 #ifdef __POSIX__
 #include <zlib.h>
 #else
@@ -39,12 +40,12 @@ struct CsoHeader
 
 static const u32 CSO_READ_BUFFER_SIZE = 256 * 1024;
 
-bool CsoFileReader::CanHandle(const wxString& fileName)
+bool CsoFileReader::CanHandle(const std::string& fileName, const std::string& displayName)
 {
 	bool supported = false;
-	if (wxFileName::FileExists(fileName) && fileName.Lower().EndsWith(L".cso"))
+	if (StringUtil::EndsWith(displayName, ".cso"))
 	{
-		FILE* fp = PX_fopen_rb(fileName);
+		FILE* fp = FileSystem::OpenCFile(fileName.c_str(), "rb");
 		CsoHeader hdr;
 		if (fp)
 		{
@@ -67,17 +68,17 @@ bool CsoFileReader::ValidateHeader(const CsoHeader& hdr)
 	}
 	if (hdr.ver > 1)
 	{
-		Console.Error(L"Only CSOv1 files are supported.");
+		Console.Error("Only CSOv1 files are supported.");
 		return false;
 	}
 	if ((hdr.frame_size & (hdr.frame_size - 1)) != 0)
 	{
-		Console.Error(L"CSO frame size must be a power of two.");
+		Console.Error("CSO frame size must be a power of two.");
 		return false;
 	}
 	if (hdr.frame_size < 2048)
 	{
-		Console.Error(L"CSO frame size must be at least one sector.");
+		Console.Error("CSO frame size must be at least one sector.");
 		return false;
 	}
 
@@ -85,11 +86,11 @@ bool CsoFileReader::ValidateHeader(const CsoHeader& hdr)
 	return true;
 }
 
-bool CsoFileReader::Open2(const wxString& fileName)
+bool CsoFileReader::Open2(std::string fileName)
 {
 	Close2();
-	m_filename = fileName;
-	m_src = PX_fopen_rb(m_filename);
+	m_filename = std::move(fileName);
+	m_src = FileSystem::OpenCFile(m_filename.c_str(), "rb");
 
 	bool success = false;
 	if (m_src && ReadFileHeader() && InitializeBuffers())
@@ -109,16 +110,15 @@ bool CsoFileReader::ReadFileHeader()
 {
 	CsoHeader hdr = {};
 
-	PX_fseeko(m_src, m_dataoffset, SEEK_SET);
-	if (fread(&hdr, 1, sizeof(hdr), m_src) != sizeof(hdr))
+	if (FileSystem::FSeek64(m_src, m_dataoffset, SEEK_SET) != 0 || std::fread(&hdr, 1, sizeof(hdr), m_src) != sizeof(hdr))
 	{
-		Console.Error(L"Failed to read CSO file header.");
+		Console.Error("Failed to read CSO file header.");
 		return false;
 	}
 
 	if (!ValidateHeader(hdr))
 	{
-		Console.Error(L"CSO has invalid header.");
+		Console.Error("CSO has invalid header.");
 		return false;
 	}
 
@@ -156,7 +156,7 @@ bool CsoFileReader::InitializeBuffers()
 	m_index = new u32[indexSize];
 	if (fread(m_index, sizeof(u32), indexSize, m_src) != indexSize)
 	{
-		Console.Error(L"Unable to read index data from CSO.");
+		Console.Error("Unable to read index data from CSO.");
 		return false;
 	}
 
@@ -175,7 +175,7 @@ bool CsoFileReader::InitializeBuffers()
 
 void CsoFileReader::Close2()
 {
-	m_filename.Empty();
+	m_filename.clear();
 
 	if (m_src)
 	{
@@ -235,7 +235,7 @@ int CsoFileReader::ReadChunk(void *dst, s64 chunkID)
 	if (!compressed)
 	{
 		// Just read directly, easy.
-		if (PX_fseeko(m_src, frameRawPos, SEEK_SET) != 0)
+		if (FileSystem::FSeek64(m_src, frameRawPos, SEEK_SET) != 0)
 		{
 			Console.Error("Unable to seek to uncompressed CSO data.");
 			return 0;
@@ -244,7 +244,7 @@ int CsoFileReader::ReadChunk(void *dst, s64 chunkID)
 	}
 	else
 	{
-		if (PX_fseeko(m_src, frameRawPos, SEEK_SET) != 0)
+		if (FileSystem::FSeek64(m_src, frameRawPos, SEEK_SET) != 0)
 		{
 			Console.Error("Unable to seek to compressed CSO data.");
 			return 0;

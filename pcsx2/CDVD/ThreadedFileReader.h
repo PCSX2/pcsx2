@@ -47,7 +47,7 @@ protected:
 	/// Synchronously read the given block into `dst`
 	virtual int ReadChunk(void* dst, s64 chunkID) = 0;
 	/// AsyncFileReader open but ThreadedFileReader needs prep work first
-	virtual bool Open2(const wxString& fileName) = 0;
+	virtual bool Open2(std::string fileName) = 0;
 	/// AsyncFileReader close but ThreadedFileReader needs prep work first
 	virtual void Close2(void) = 0;
 
@@ -109,7 +109,7 @@ private:
 	bool TryCachedRead(void*& buffer, u64& offset, u32& size, const std::lock_guard<std::mutex>&);
 
 public:
-	bool Open(const wxString& fileName) final override;
+	bool Open(std::string fileName) final override;
 	int ReadSync(void* pBuffer, uint sector, uint count) final override;
 	void BeginRead(void* pBuffer, uint sector, uint count) final override;
 	int FinishRead(void) final override;

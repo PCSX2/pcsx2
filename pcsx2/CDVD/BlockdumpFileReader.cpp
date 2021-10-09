@@ -17,6 +17,7 @@
 #include "AsyncFileReader.h"
 #include "IopCommon.h"
 #include "IsoFileFormats.h"
+#include "common/FileSystem.h"
 
 #include <errno.h>
 
@@ -59,48 +60,46 @@ BlockdumpFileReader::~BlockdumpFileReader(void)
 	Close();
 }
 
-bool BlockdumpFileReader::Open(const wxString& fileName)
+bool BlockdumpFileReader::Open(std::string fileName)
 {
 	char buf[32];
 
-	m_filename = fileName;
+	m_filename = std::move(fileName);
 
-	m_file = new wxFileInputStream(m_filename);
-
-	m_file->SeekI(0);
-	m_file->Read(buf, 4);
-
-	if (strncmp(buf, "BDV2", 4) != 0)
+	m_file = FileSystem::OpenCFile(m_filename.c_str(), "rb");
+	if (!m_file || std::fread(buf, sizeof(buf), 1, m_file) != 1 || std::strncmp(buf, "BDV2", 4) != 0)
 	{
 		return false;
 	}
 
 	//m_flags = ISOFLAGS_BLOCKDUMP_V2;
-	m_file->Read(&m_blocksize, sizeof(m_blocksize));
-	m_file->Read(&m_blocks, sizeof(m_blocks));
-	m_file->Read(&m_blockofs, sizeof(m_blockofs));
+	if (std::fread(&m_blocksize, sizeof(m_blocksize), 1, m_file) != 1 ||
+		std::fread(&m_blocks, sizeof(m_blocks), 1, m_file) != 1 ||
+		std::fread(&m_blockofs, sizeof(m_blockofs), 1, m_file) != 1)
+	{
+		return false;
+	}
 
-	wxFileOffset flen = m_file->GetLength();
-	static const wxFileOffset datalen = flen - BlockDumpHeaderSize;
+	const s64 flen = FileSystem::FSize64(m_file);
+	const s64 datalen = flen - BlockDumpHeaderSize;
 
 	pxAssert((datalen % (m_blocksize + 4)) == 0);
 
 	m_dtablesize = datalen / (m_blocksize + 4);
 	m_dtable = std::unique_ptr<u32[]>(new u32[m_dtablesize]);
 
-	m_file->SeekI(BlockDumpHeaderSize);
+	if (FileSystem::FSeek64(m_file, BlockDumpHeaderSize, SEEK_SET) != 0)
+		return false;
 
 	u32 bs = 1024 * 1024;
 	u32 off = 0;
 	u32 has = 0;
 	int i = 0;
 
-	std::unique_ptr<u8[]> buffer(new u8[bs]);
+	std::unique_ptr<u8[]> buffer = std::make_unique<u8[]>(bs);
 	do
 	{
-		m_file->Read(buffer.get(), bs);
-		has = m_file->LastRead();
-
+		has = static_cast<u32>(std::fread(buffer.get(), 1, bs, m_file));
 		while (i < m_dtablesize && off < has)
 		{
 			m_dtable[i++] = *reinterpret_cast<u32*>(buffer.get() + off);
@@ -132,15 +131,15 @@ int BlockdumpFileReader::ReadSync(void* pBuffer, uint lsn, uint count)
 				// seek position ends up being based on (m_blocksize + 4) instead of just m_blocksize.
 
 #ifdef PCSX2_DEBUG
-			u32 check_lsn;
-			m_file->SeekI(BlockDumpHeaderSize + (i * (m_blocksize + 4)));
-			m_file->Read(&check_lsn, sizeof(check_lsn));
+			u32 check_lsn = 0;
+			FileSystem::FSeek64(m_file, BlockDumpHeaderSize + (i * (m_blocksize + 4)), SEEK_SET);
+			std::fread(&check_lsn, sizeof(check_lsn), 1, m_file);
 			pxAssert(check_lsn == lsn);
 #else
-			m_file->SeekI(BlockDumpHeaderSize + (i * (m_blocksize + 4)) + 4);
+			FileSystem::FSeek64(m_file, BlockDumpHeaderSize + (i * (m_blocksize + 4)) + 4, SEEK_SET);
 #endif
 
-			m_file->Read(dst, m_blocksize);
+			std::fread(dst, m_blocksize, 1, m_file);
 
 			ok = true;
 			break;
@@ -178,7 +177,7 @@ void BlockdumpFileReader::Close(void)
 {
 	if (m_file)
 	{
-		delete m_file;
+		std::fclose(m_file);
 		m_file = NULL;
 	}
 }

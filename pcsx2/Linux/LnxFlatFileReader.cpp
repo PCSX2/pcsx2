@@ -15,8 +15,10 @@
 
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
+#include "common/FileSystem.h"
 
-FlatFileReader::FlatFileReader(bool shareWrite) : shareWrite(shareWrite)
+FlatFileReader::FlatFileReader(bool shareWrite)
+	: shareWrite(shareWrite)
 {
 	m_blocksize = 2048;
 	m_fd = -1;
@@ -28,14 +30,15 @@ FlatFileReader::~FlatFileReader(void)
 	Close();
 }
 
-bool FlatFileReader::Open(const wxString& fileName)
+bool FlatFileReader::Open(std::string fileName)
 {
-	m_filename = fileName;
+	m_filename = std::move(fileName);
 
 	int err = io_setup(64, &m_aio_context);
-	if (err) return false;
+	if (err)
+		return false;
 
-    m_fd = wxOpen(fileName, O_RDONLY, 0);
+	m_fd = FileSystem::OpenFDFile(m_filename.c_str(), O_RDONLY, 0);
 
 	return (m_fd != -1);
 }
@@ -67,9 +70,8 @@ int FlatFileReader::FinishRead(void)
 	struct io_event events[max_nr];
 
 	int event = io_getevents(m_aio_context, min_nr, max_nr, events, NULL);
-	if (event < 1) {
+	if (event < 1)
 		return -1;
-	}
 
 	return 1;
 }
@@ -85,7 +87,8 @@ void FlatFileReader::CancelRead(void)
 void FlatFileReader::Close(void)
 {
 
-	if (m_fd != -1) close(m_fd);
+	if (m_fd != -1)
+		close(m_fd);
 
 	io_destroy(m_aio_context);
 
@@ -95,5 +98,15 @@ void FlatFileReader::Close(void)
 
 uint FlatFileReader::GetBlockCount(void) const
 {
-	return (int)(Path::GetFileSize(m_filename) / m_blocksize);
+#if defined(__HAIKU__) || defined(__APPLE__) || defined(__FreeBSD__)
+	struct stat sysStatData;
+	if (fstat(m_fd, &sysStatData) < 0)
+		return 0;
+#else
+	struct stat64 sysStatData;
+	if (fstat64(m_fd, &sysStatData) < 0)
+		return 0;
+#endif
+
+	return (int)(sysStatData.st_size / m_blocksize);
 }

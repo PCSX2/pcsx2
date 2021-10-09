@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "AsyncFileReader.h"
+#include "common/StringUtil.h"
 
 // Tests for a filename extension in both upper and lower case, if the filesystem happens
 // to be case-sensitive.
@@ -66,7 +67,7 @@ MultipartFileReader::~MultipartFileReader(void)
 
 void MultipartFileReader::FindParts()
 {
-	wxFileName nameparts( m_filename );
+	wxFileName nameparts( StringUtil::UTF8StringToWxString(m_filename) );
 	wxString curext( nameparts.GetExt() );
 	wxChar prefixch = wxTolower(curext[0]);
 
@@ -112,7 +113,7 @@ void MultipartFileReader::FindParts()
 
 		wxString name = nameparts.GetFullPath();
 
-		thisreader->Open(name);
+		thisreader->Open(StringUtil::wxStringToUTF8String(name));
 		thisreader->SetBlockSize(bsize);
 
 		thispart->start = blocks;
@@ -133,7 +134,7 @@ void MultipartFileReader::FindParts()
 	//Console.WriteLn( Color_Blue, "isoFile: multi-part ISO loaded (%u parts found)", m_numparts );
 }
 
-bool MultipartFileReader::Open(const wxString& fileName)
+bool MultipartFileReader::Open(std::string fileName)
 {
 	// Cannot open a MultipartFileReader directly,
 	// use DetectMultipart to convert a FlatFileReader

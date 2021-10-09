@@ -18,6 +18,7 @@
 
 #include "Dialogs/ModalPopups.h"
 
+#include "common/StringUtil.h"
 #include "CDVD/IsoFileFormats.h"
 
 #include <wx/wfstream.h>
@@ -188,7 +189,7 @@ bool IsoDropTarget::OnDropFiles(wxCoord x, wxCoord y, const wxArrayString& filen
 
 		InputIsoFile iso;
 
-		if (iso.Test( filenames[0] ))
+		if (iso.Test( StringUtil::wxStringToUTF8String(filenames[0]) ))
 		{
 			DevCon.WriteLn( L"(Drag&Drop) Found valid ISO file type!" );
 			wxGetApp().PostEvent( DroppedIso(m_WindowBound, filenames[0]) );
