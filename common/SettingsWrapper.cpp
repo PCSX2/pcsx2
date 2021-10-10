@@ -166,15 +166,6 @@ int SettingsSaveWrapper::EntryBitfield(const char* section, const char* var, int
 void SettingsSaveWrapper::_EnumEntry(const char* section, const char* var, int& value, const char* const* enumArray, int defvalue)
 {
 	const int cnt = _calcEnumLength(enumArray);
-	if (value >= cnt)
-	{
-		Console.Warning("(SaveSettings) An illegal enumerated index was detected when saving '%s'", var);
-		Console.Indent().Warning(
-			"Illegal Value: %d\n"
-			"Using Default: %d (%s)\n",
-			value, defvalue, enumArray[defvalue]);
-		value = defvalue;
-	}
-
-	m_si.SetIntValue(section, var, value);
+	const int index = (value < 0 || value >= cnt) ? defvalue : value;
+	m_si.SetStringValue(section, var, enumArray[index]);
 }
