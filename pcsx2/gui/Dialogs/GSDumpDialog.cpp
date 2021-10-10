@@ -84,8 +84,10 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	wxArrayString rdoverrides;
 	rdoverrides.Add("None");
 	rdoverrides.Add("OGL SW");
-	rdoverrides.Add("D3D11 HW");
 	rdoverrides.Add("OGL HW");
+#if defined(_WIN32)
+	rdoverrides.Add("D3D11 HW");
+#endif
 	m_renderer_overrides->Create(this, wxID_ANY, "Renderer overrides", wxDefaultPosition, wxDefaultSize, rdoverrides, 1);
 
 	dbg_tree->Add(new wxStaticText(this, wxID_ANY, _("GIF Packets")));
@@ -708,13 +710,13 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 		case 1:
 			renderer_override = 13;
 			break;
-		// D3D11 HW
-		case 2:
-			renderer_override = 3;
-			break;
 		// OGL HW
-		case 3:
+		case 2:
 			renderer_override = 12;
+			break;
+		// D3D11 HW
+		case 3:
+			renderer_override = 3;
 			break;
 		default:
 			break;
