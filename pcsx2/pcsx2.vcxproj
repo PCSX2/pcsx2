@@ -875,7 +875,6 @@
     <ClInclude Include="GS\GSVector8i.h" />
     <ClInclude Include="GS\GSVector8.h" />
     <ClInclude Include="GS\Renderers\Common\GSVertex.h" />
-    <ClInclude Include="GS\Renderers\OpenGL\GSVertexArrayOGL.h" />
     <ClInclude Include="GS\Renderers\HW\GSVertexHW.h" />
     <ClInclude Include="GS\Renderers\Common\GSVertexList.h" />
     <ClInclude Include="GS\Renderers\SW\GSVertexSW.h" />

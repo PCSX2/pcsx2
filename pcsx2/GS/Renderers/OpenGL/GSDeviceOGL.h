@@ -16,10 +16,10 @@
 #pragma once
 
 #include "common/GL/Context.h"
+#include "common/GL/StreamBuffer.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GSTextureOGL.h"
 #include "GS/GS.h"
-#include "GSVertexArrayOGL.h"
 #include "GSUniformBufferOGL.h"
 #include "GSShaderOGL.h"
 #include "GLState.h"
@@ -482,7 +482,12 @@ private:
 	GLuint m_fbo; // frame buffer container
 	GLuint m_fbo_read; // frame buffer container only for reading
 
-	GSVertexBufferStateOGL* m_va; // state of the vertex buffer/array
+	std::unique_ptr<GL::StreamBuffer> m_vertex_stream_buffer;
+	std::unique_ptr<GL::StreamBuffer> m_index_stream_buffer;
+	GLuint m_vertex_array_object = 0;
+	u32 m_vertex_buffer_base_vertex = 0;
+	u32 m_index_buffer_offset = 0;
+	GLenum m_draw_topology = 0;
 
 	struct
 	{
@@ -589,7 +594,6 @@ public:
 	void SetVSync(int vsync) override;
 
 	void DrawPrimitive() final;
-	void DrawPrimitive(int offset, int count);
 	void DrawIndexedPrimitive() final;
 	void DrawIndexedPrimitive(int offset, int count) final;
 
@@ -611,9 +615,6 @@ public:
 	void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, GLuint ps, int bs, OMColorMaskSelector cms, bool linear = true);
 
 	void SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* vertices, bool datm);
-
-	void BeginScene() final {}
-	void EndScene() final;
 
 	void IASetPrimitiveTopology(GLenum topology);
 	void IASetVertexBuffer(const void* vertices, size_t count);

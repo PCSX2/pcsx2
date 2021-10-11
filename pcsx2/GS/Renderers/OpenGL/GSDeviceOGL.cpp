@@ -42,6 +42,9 @@ static constexpr uint32 g_convert_index      = 15;
 static constexpr uint32 g_vs_cb_index        = 20;
 static constexpr uint32 g_ps_cb_index        = 21;
 
+static constexpr u32 VERTEX_BUFFER_SIZE = 32 * 1024 * 1024;
+static constexpr u32 INDEX_BUFFER_SIZE = 16 * 1024 * 1024;
+
 bool  GSDeviceOGL::m_debug_gl_call = false;
 int   GSDeviceOGL::m_shader_inst = 0;
 int   GSDeviceOGL::m_shader_reg  = 0;
@@ -51,7 +54,6 @@ GSDeviceOGL::GSDeviceOGL()
 	: m_force_texture_clear(0)
 	, m_fbo(0)
 	, m_fbo_read(0)
-	, m_va(NULL)
 	, m_apitrace(0)
 	, m_palette_ss(0)
 	, m_vs_cb(NULL)
@@ -105,7 +107,10 @@ GSDeviceOGL::~GSDeviceOGL()
 	GL_PUSH("GSDeviceOGL destructor");
 
 	// Clean vertex buffer state
-	delete m_va;
+	if (m_vertex_array_object)
+		glDeleteVertexArrays(0, &m_vertex_array_object);
+	m_vertex_stream_buffer.reset();
+	m_index_stream_buffer.reset();
 
 	// Clean m_merge_obj
 	delete m_merge_obj.cb;
@@ -381,18 +386,33 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 	{
 		GL_PUSH("GSDeviceOGL::Vertex Buffer");
 
+		glGenVertexArrays(1, &m_vertex_array_object);
+		glBindVertexArray(m_vertex_array_object);
+
+		m_vertex_stream_buffer = GL::StreamBuffer::Create(GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE);
+		m_index_stream_buffer = GL::StreamBuffer::Create(GL_ELEMENT_ARRAY_BUFFER, INDEX_BUFFER_SIZE);
+		if (!m_vertex_stream_buffer || !m_index_stream_buffer)
+		{
+			Console.Error("Failed to create vertex/index streaming buffers");
+			return false;
+		}
+
+		// rebind because of VAO state
+		m_vertex_stream_buffer->Bind();
+		m_index_stream_buffer->Bind();
+
 		static_assert(sizeof(GSVertexPT1) == sizeof(GSVertex), "wrong GSVertex size");
-		std::vector<GSInputLayoutOGL> il_convert = {
-			{0, 2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)( 0) } ,
-			{1, 2 , GL_FLOAT          , GL_FALSE , sizeof(GSVertexPT1) , (const GLvoid*)(16) } ,
-			{2, 4 , GL_UNSIGNED_BYTE  , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)( 8) } ,
-			{3, 1 , GL_FLOAT          , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(12) } ,
-			{4, 2 , GL_UNSIGNED_SHORT , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(16) } ,
-			{5, 1 , GL_UNSIGNED_INT   , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(20) } ,
-			{6, 2 , GL_UNSIGNED_SHORT , GL_FALSE , sizeof(GSVertex)    , (const GLvoid*)(24) } ,
-			{7, 4 , GL_UNSIGNED_BYTE  , GL_TRUE  , sizeof(GSVertex)    , (const GLvoid*)(28) } , // Only 1 byte is useful but hardware unit only support 4B
-		};
-		m_va = new GSVertexBufferStateOGL(il_convert);
+		for (u32 i = 0; i < 8; i++)
+			glEnableVertexAttribArray(i);
+
+		glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(GSVertexPT1), (const GLvoid*)(0));
+		glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, sizeof(GSVertexPT1), (const GLvoid*)(16));
+		glVertexAttribPointer(2, 4, GL_UNSIGNED_BYTE, GL_FALSE, sizeof(GSVertex), (const GLvoid*)(8));
+		glVertexAttribPointer(3, 1, GL_FLOAT, GL_FALSE, sizeof(GSVertex), (const GLvoid*)(12));
+		glVertexAttribIPointer(4, 2, GL_UNSIGNED_SHORT, sizeof(GSVertex), (const GLvoid*)(16));
+		glVertexAttribIPointer(5, 1, GL_UNSIGNED_INT, sizeof(GSVertex), (const GLvoid*)(20));
+		glVertexAttribIPointer(6, 2, GL_UNSIGNED_SHORT, sizeof(GSVertex), (const GLvoid*)(24));
+		glVertexAttribPointer(7, 4, GL_UNSIGNED_BYTE, GL_TRUE, sizeof(GSVertex), (const GLvoid*)(28));
 	}
 
 	// ****************************************************************
@@ -686,18 +706,16 @@ void GSDeviceOGL::Flip()
 
 void GSDeviceOGL::DrawPrimitive()
 {
-	m_va->DrawPrimitive();
-}
-
-void GSDeviceOGL::DrawPrimitive(int offset, int count)
-{
-	m_va->DrawPrimitive(offset, count);
+	glDrawArrays(m_draw_topology, m_vertex.start, m_vertex.count);
 }
 
 void GSDeviceOGL::DrawIndexedPrimitive()
 {
 	if (!m_disable_hw_gl_draw)
-		m_va->DrawIndexedPrimitive();
+	{
+		glDrawElementsBaseVertex(m_draw_topology, static_cast<u32>(m_index.count), GL_UNSIGNED_INT,
+			reinterpret_cast<void*>(static_cast<u32>(m_index.start) * sizeof(u32)), static_cast<GLint>(m_vertex.start));
+	}
 }
 
 void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
@@ -705,7 +723,11 @@ void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 	//ASSERT(offset + count <= (int)m_index.count);
 
 	if (!m_disable_hw_gl_draw)
-		m_va->DrawIndexedPrimitive(offset, count);
+	{
+		glDrawElementsBaseVertex(m_draw_topology, count, GL_UNSIGNED_INT,
+			reinterpret_cast<void*>((static_cast<u32>(m_index.start) + static_cast<u32>(offset)) * sizeof(u32)),
+			static_cast<GLint>(m_vertex.start));
+	}
 }
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
@@ -1472,9 +1494,11 @@ void GSDeviceOGL::RenderOsd(GSTexture* dt)
 
 	// Note scaling could also be done in shader (require gl3/dx10)
 	size_t count = m_osd.Size();
-	GSVertexPT1* dst = (GSVertexPT1*)m_va->MapVB(count);
-	count = m_osd.GeneratePrimitives(dst, count);
-	m_va->UnmapVB();
+	auto res = m_vertex_stream_buffer->Map(sizeof(GSVertexPT1), static_cast<u32>(count) * sizeof(GSVertexPT1));
+	count = m_osd.GeneratePrimitives(reinterpret_cast<GSVertexPT1*>(res.pointer), count);
+	m_vertex.start = res.index_aligned;
+	m_vertex.count = count;
+	m_vertex_stream_buffer->Unmap(static_cast<u32>(count) * sizeof(GSVertexPT1));
 
 	DrawPrimitive();
 
@@ -1707,24 +1731,29 @@ void GSDeviceOGL::SetupDATE(GSTexture* rt, GSTexture* ds, const GSVertexPT1* ver
 	EndScene();
 }
 
-void GSDeviceOGL::EndScene()
-{
-	m_va->EndScene();
-}
-
 void GSDeviceOGL::IASetVertexBuffer(const void* vertices, size_t count)
 {
-	m_va->UploadVB(vertices, count);
+	const u32 size = static_cast<u32>(count) * sizeof(GSVertexPT1);
+	auto res = m_vertex_stream_buffer->Map(sizeof(GSVertexPT1), size);
+	std::memcpy(res.pointer, vertices, size);
+	m_vertex.start = res.index_aligned;
+	m_vertex.count = count;
+	m_vertex_stream_buffer->Unmap(size);
 }
 
 void GSDeviceOGL::IASetIndexBuffer(const void* index, size_t count)
 {
-	m_va->UploadIB(index, count);
+	const u32 size = static_cast<u32>(count) * sizeof(u32);
+	auto res = m_index_stream_buffer->Map(sizeof(u32), size);
+	m_index.start = res.index_aligned;
+	m_index.count = count;
+	std::memcpy(res.pointer, index, size);
+	m_index_stream_buffer->Unmap(size);
 }
 
 void GSDeviceOGL::IASetPrimitiveTopology(GLenum topology)
 {
-	m_va->SetTopology(topology);
+	m_draw_topology = topology;
 }
 
 void GSDeviceOGL::PSSetShaderResource(int i, GSTexture* sr)
