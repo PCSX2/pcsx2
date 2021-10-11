@@ -39,8 +39,6 @@ namespace GLState
 	extern GLenum stencil_func;
 	extern GLenum stencil_pass;
 
-	extern GLuint ubo; // uniform buffer object
-
 	extern GLuint ps_ss; // sampler
 
 	extern GLuint rt; // render target

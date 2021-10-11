@@ -37,8 +37,6 @@ namespace GLState
 	GLenum stencil_func;
 	GLenum stencil_pass;
 
-	GLuint ubo;
-
 	GLuint ps_ss;
 
 	GLuint rt;
@@ -74,8 +72,6 @@ namespace GLState
 		stencil = false;
 		stencil_func = 0;
 		stencil_pass = 0xFFFF; // Note 0 is valid (GL_ZERO)
-
-		ubo = 0;
 
 		ps_ss = 0;
 

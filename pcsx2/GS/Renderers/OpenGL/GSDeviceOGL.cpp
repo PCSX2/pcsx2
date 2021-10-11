@@ -44,6 +44,8 @@ static constexpr uint32 g_ps_cb_index        = 21;
 
 static constexpr u32 VERTEX_BUFFER_SIZE = 32 * 1024 * 1024;
 static constexpr u32 INDEX_BUFFER_SIZE = 16 * 1024 * 1024;
+static constexpr u32 VERTEX_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024;
+static constexpr u32 FRAGMENT_UNIFORM_BUFFER_SIZE = 8 * 1024 * 1024;
 
 bool  GSDeviceOGL::m_debug_gl_call = false;
 int   GSDeviceOGL::m_shader_inst = 0;
@@ -56,8 +58,6 @@ GSDeviceOGL::GSDeviceOGL()
 	, m_fbo_read(0)
 	, m_apitrace(0)
 	, m_palette_ss(0)
-	, m_vs_cb(NULL)
-	, m_ps_cb(NULL)
 	, m_shader(NULL)
 {
 	memset(&m_merge_obj, 0, sizeof(m_merge_obj));
@@ -137,8 +137,8 @@ GSDeviceOGL::~GSDeviceOGL()
 	glDeleteFramebuffers(1, &m_fbo_read);
 
 	// Delete HW FX
-	delete m_vs_cb;
-	delete m_ps_cb;
+	m_vertex_uniform_stream_buffer.reset();
+	m_fragment_uniform_stream_buffer.reset();
 	glDeleteSamplers(1, &m_palette_ss);
 
 	m_ps.clear();
@@ -391,9 +391,12 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 
 		m_vertex_stream_buffer = GL::StreamBuffer::Create(GL_ARRAY_BUFFER, VERTEX_BUFFER_SIZE);
 		m_index_stream_buffer = GL::StreamBuffer::Create(GL_ELEMENT_ARRAY_BUFFER, INDEX_BUFFER_SIZE);
-		if (!m_vertex_stream_buffer || !m_index_stream_buffer)
+		m_vertex_uniform_stream_buffer = GL::StreamBuffer::Create(GL_UNIFORM_BUFFER, VERTEX_UNIFORM_BUFFER_SIZE);
+		m_fragment_uniform_stream_buffer = GL::StreamBuffer::Create(GL_UNIFORM_BUFFER, FRAGMENT_UNIFORM_BUFFER_SIZE);
+		glGetIntegerv(GL_UNIFORM_BUFFER_OFFSET_ALIGNMENT, &m_uniform_buffer_alignment);
+		if (!m_vertex_stream_buffer || !m_index_stream_buffer || !m_vertex_uniform_stream_buffer || !m_fragment_uniform_stream_buffer)
 		{
-			Console.Error("Failed to create vertex/index streaming buffers");
+			Console.Error("Failed to create vertex/index/uniform streaming buffers");
 			return false;
 		}
 
@@ -640,9 +643,6 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 void GSDeviceOGL::CreateTextureFX()
 {
 	GL_PUSH("GSDeviceOGL::CreateTextureFX");
-
-	m_vs_cb = new GSUniformBufferOGL("HW VS UBO", g_vs_cb_index, sizeof(VSConstantBuffer));
-	m_ps_cb = new GSUniformBufferOGL("HW PS UBO", g_ps_cb_index, sizeof(PSConstantBuffer));
 
 	theApp.LoadResource(IDR_TFX_VGS_GLSL, m_shader_tfx_vgs);
 	theApp.LoadResource(IDR_TFX_FS_GLSL, m_shader_tfx_fs);
@@ -1938,17 +1938,29 @@ void GSDeviceOGL::OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVecto
 	}
 }
 
+__fi static void WriteToStreamBuffer(GL::StreamBuffer* sb, u32 index, u32 align, const void* data, u32 size)
+{
+	const auto res = sb->Map(align, size);
+	std::memcpy(res.pointer, data, size);
+	sb->Unmap(size);
+
+	glBindBufferRange(GL_UNIFORM_BUFFER, index, sb->GetGLBufferId(), res.buffer_offset, size);
+}
+
 void GSDeviceOGL::SetupCB(const VSConstantBuffer* vs_cb, const PSConstantBuffer* ps_cb)
 {
 	GL_PUSH("UBO");
+
 	if (m_vs_cb_cache.Update(vs_cb))
 	{
-		m_vs_cb->upload(vs_cb);
+		WriteToStreamBuffer(m_vertex_uniform_stream_buffer.get(), g_vs_cb_index,
+			m_uniform_buffer_alignment, vs_cb, sizeof(VSConstantBuffer));
 	}
 
 	if (m_ps_cb_cache.Update(ps_cb))
 	{
-		m_ps_cb->upload(ps_cb);
+		WriteToStreamBuffer(m_fragment_uniform_stream_buffer.get(), g_ps_cb_index,
+			m_uniform_buffer_alignment, ps_cb, sizeof(PSConstantBuffer));
 	}
 }
 
