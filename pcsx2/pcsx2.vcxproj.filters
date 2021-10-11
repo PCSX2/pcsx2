@@ -2616,9 +2616,6 @@
     <ClInclude Include="GS\Renderers\OpenGL\GSTextureOGL.h">
       <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
     </ClInclude>
-    <ClInclude Include="GS\Renderers\OpenGL\GSVertexArrayOGL.h">
-      <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
-    </ClInclude>
     <ClInclude Include="GS\Renderers\OpenGL\GLState.h">
       <Filter>System\Ps2\GS\Renderers\OpenGL</Filter>
     </ClInclude>
