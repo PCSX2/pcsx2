@@ -44,11 +44,7 @@ public:
 
 	void bind()
 	{
-		if (GLState::ubo != m_buffer)
-		{
-			GLState::ubo = m_buffer;
-			glBindBuffer(GL_UNIFORM_BUFFER, m_buffer);
-		}
+		glBindBuffer(GL_UNIFORM_BUFFER, m_buffer);
 	}
 
 	void allocate()
@@ -60,7 +56,6 @@ public:
 	{
 		// From the opengl manpage:
 		// glBindBufferBase also binds buffer to the generic buffer binding point specified by target
-		GLState::ubo = m_buffer;
 		glBindBufferBase(GL_UNIFORM_BUFFER, m_index, m_buffer);
 	}
 
@@ -91,77 +86,3 @@ public:
 		_aligned_free(m_cache);
 	}
 };
-
-#define UBO_BUFFER_SIZE (4 * 1024 * 1024)
-
-class GSUniformBufferStorageOGL
-{
-	GLuint m_buffer; // data object
-	GLuint m_index;  // GLSL slot
-	uint32 m_size;   // size of the data
-	uint8* m_buffer_ptr;
-	uint32 m_offset;
-
-public:
-	GSUniformBufferStorageOGL(GLuint index, uint32 size)
-		: m_index(index) , m_size(size) , m_offset(0)
-	{
-		glGenBuffers(1, &m_buffer);
-		bind();
-		allocate();
-		attach();
-	}
-
-	void bind()
-	{
-		if (GLState::ubo != m_buffer)
-		{
-			GLState::ubo = m_buffer;
-			glBindBuffer(GL_UNIFORM_BUFFER, m_buffer);
-		}
-	}
-
-	void allocate()
-	{
-		const GLbitfield common_flags = GL_MAP_WRITE_BIT | GL_MAP_PERSISTENT_BIT /*| GL_MAP_COHERENT_BIT */;
-		const GLbitfield map_flags = common_flags | GL_MAP_FLUSH_EXPLICIT_BIT;
-		const GLbitfield create_flags = common_flags /*| GL_CLIENT_STORAGE_BIT */;
-
-		GLsizei buffer_size = UBO_BUFFER_SIZE;
-		glBufferStorage(GL_UNIFORM_BUFFER, buffer_size, NULL, create_flags);
-		m_buffer_ptr = (uint8*)glMapBufferRange(GL_UNIFORM_BUFFER, 0, buffer_size, map_flags);
-		ASSERT(m_buffer_ptr);
-	}
-
-	void attach()
-	{
-		// From the opengl manpage:
-		// glBindBufferBase also binds buffer to the generic buffer binding point specified by target
-		GLState::ubo = m_buffer;
-		//glBindBufferBase(GL_UNIFORM_BUFFER, m_index, m_buffer);
-		glBindBufferRange(GL_UNIFORM_BUFFER, m_index, m_buffer, m_offset, m_size);
-	}
-
-	void upload(const void* src)
-	{
-#ifdef ENABLE_OGL_DEBUG_MEM_BW
-		g_uniform_upload_byte += m_size;
-#endif
-
-		memcpy(m_buffer_ptr + m_offset, src, m_size);
-
-		attach();
-		glFlushMappedBufferRange(GL_UNIFORM_BUFFER, m_offset, m_size);
-
-		m_offset = (m_offset + m_size + 255u) & ~0xFF;
-		if (m_offset >= UBO_BUFFER_SIZE)
-			m_offset = 0;
-	}
-
-	~GSUniformBufferStorageOGL()
-	{
-		glDeleteBuffers(1, &m_buffer);
-	}
-};
-
-#undef UBO_BUFFER_SIZE

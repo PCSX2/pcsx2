@@ -489,6 +489,10 @@ private:
 	u32 m_index_buffer_offset = 0;
 	GLenum m_draw_topology = 0;
 
+	std::unique_ptr<GL::StreamBuffer> m_vertex_uniform_stream_buffer;
+	std::unique_ptr<GL::StreamBuffer> m_fragment_uniform_stream_buffer;
+	GLint m_uniform_buffer_alignment = 0;
+
 	struct
 	{
 		GLuint ps[2]; // program object
@@ -551,9 +555,6 @@ private:
 	GLuint m_apitrace;
 
 	GLuint m_palette_ss;
-
-	GSUniformBufferOGL* m_vs_cb;
-	GSUniformBufferOGL* m_ps_cb;
 
 	VSConstantBuffer m_vs_cb_cache;
 	PSConstantBuffer m_ps_cb_cache;
