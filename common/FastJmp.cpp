@@ -64,7 +64,7 @@ asm(
 	"\t.global " PREFIX "fastjmp_jmp\n"
 	"\t.text\n"
 	"\t" PREFIX "fastjmp_set:" R"(
-	movl %eax, 0(%esp)
+	movl 0(%esp), %eax
 	movl %esp, %edx			# fixup stack pointer, so it doesn't include the call to fastjmp_set
 	addl $4, %edx
 	movl %eax, 0(%ecx)	# actually eip
