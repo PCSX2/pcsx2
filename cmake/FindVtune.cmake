@@ -5,18 +5,20 @@
 # VTUNE_INCLUDE_DIRS include path to jitprofiling.h
 # VTUNE_LIBRARIES    path to vtune libs
 
-find_path(VTUNE_INCLUDE_DIRS NAMES jitprofiling.h PATHS
-	/opt/intel/oneapi/vtune/latest/include
-	/opt/intel/vtune_amplifier_xe_2018/include
-	/opt/intel/vtune_amplifier_xe_2017/include
-	/opt/intel/vtune_amplifier_xe_2016/include
+set(VTUNE_PATHS
+	/opt/intel/oneapi/vtune/latest
+	/opt/intel/vtune_amplifier_xe_2018
+	/opt/intel/vtune_amplifier_xe_2017
+	/opt/intel/vtune_amplifier_xe_2016
+	"C:\\Program Files (x86)\\Intel\\oneAPI\\vtune\\latest"
 )
 
-find_library(VTUNE_LIBRARIES NAMES libjitprofiling.a PATHS
-	/opt/intel/oneapi/vtune/latest/lib64
-	/opt/intel/vtune_amplifier_xe_2018/lib64
-	/opt/intel/vtune_amplifier_xe_2017/lib64
-	/opt/intel/vtune_amplifier_xe_2016/lib64
+find_path(VTUNE_INCLUDE_DIRS NAMES jitprofiling.h PATHS ${VTUNE_PATHS} PATH_SUFFIXES include)
+
+find_library(VTUNE_LIBRARIES
+	NAMES ${CMAKE_STATIC_LIBRARY_PREFIX}jitprofiling${CMAKE_STATIC_LIBRARY_SUFFIX}
+	PATHS ${VTUNE_PATHS}
+	PATH_SUFFIXES lib64
 )
 
 # handle the QUIETLY and REQUIRED arguments and set VTUNE_FOUND to TRUE if
