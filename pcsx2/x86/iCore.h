@@ -176,7 +176,8 @@ void _clearNeededXMMregs();
 void _deleteGPRtoXMMreg(int reg, int flush);
 void _deleteFPtoXMMreg(int reg, int flush);
 void _freeXMMreg(u32 xmmreg);
-u16 _freeXMMregsCOP2(int requiredcount);
+void _clearNeededCOP2Regs();
+u16 _freeXMMregsCOP2();
 //void _moveXMMreg(int xmmreg); // instead of freeing, moves it to a diff location
 void _flushXMMregs();
 u8 _hasFreeXMMreg();

@@ -674,7 +674,7 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 	// First Pass
 	iPC = startPC / 4;
 	mVUsetupRange(mVU, startPC, 1); // Setup Program Bounds/Range
-	mVU.regAlloc->reset();          // Reset regAlloc
+	mVU.regAlloc->reset(false);          // Reset regAlloc
 	mVUinitFirstPass(mVU, pState, thisPtr);
 	mVUbranch = 0;
 	for (int branch = 0; mVUcount < endCount;)

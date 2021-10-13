@@ -14,6 +14,7 @@
  */
 
 #pragma once
+#include "microVU.h"
 
 union regInfo
 {
@@ -232,6 +233,7 @@ protected:
 	microMapXMM xmmMap[xmmTotal];
 	int         counter; // Current allocation count
 	int         index;   // VU0 or VU1
+	bool        regAllocCOP2;    // Local COP2 check
 
 	// Helper functions to get VU regs
 	VURegs& regs() const { return ::vuRegs[index]; }
@@ -262,6 +264,11 @@ protected:
 
 	int findFreeReg()
 	{
+		if (regAllocCOP2)
+		{
+			return _freeXMMregsCOP2();
+		}
+
 		for (int i = 0; i < xmmTotal; i++)
 		{
 			if (!xmmMap[i].isNeeded && (xmmMap[i].VFreg < 0))
@@ -278,30 +285,18 @@ public:
 	microRegAlloc(int _index)
 	{
 		index = _index;
-		reset();
+		reset(false);
 	}
 
 	// Fully resets the regalloc by clearing all cached data
-	void reset()
+	void reset(bool cop2mode)
 	{
 		for (int i = 0; i < xmmTotal; i++)
 		{
 			clearReg(i);
 		}
 		counter = 0;
-	}
-
-	void reserveCOP2(u16 regs)
-	{
-		u16 regmask = ~regs;
-		for (int i = 0; i < xmmTotal; i++)
-		{
-			if (regmask & (1 << i))
-			{
-				xmmMap[i].isNeeded = true;
-				xmmMap[i].xyzw = 1; // Not really, but it tricks the allocator in to thinking it's needed
-			}
-		}
+		regAllocCOP2 = cop2mode;
 	}
 
 	int getXmmCount()
