@@ -745,66 +745,69 @@ void _freeXMMreg(u32 xmmreg)
 	xmmregs[xmmreg].inuse = 0;
 }
 
-u16 _freeXMMregsCOP2(int requiredcount)
+void _clearNeededCOP2Regs()
 {
-	int count = requiredcount;
-	u16 regs = 0;
+	for (size_t i = 0; i < iREGCNT_XMM - 1; i++)
+	{
+		if (xmmregs[i].inuse && xmmregs[i].type == XMMTYPE_VFREG)
+		{
+			xmmregs[i].inuse = false;
+			xmmregs[i].type = XMMTYPE_VFREG;
+			xmmregs[i].counter = 0;
+		}
+	}
+}
 
+u16 _freeXMMregsCOP2()
+{
 	// First check what's already free, it might be enough
 	for (size_t i = 0; i < iREGCNT_XMM - 1; i++)
 	{
 		if (!xmmregs[i].inuse)
 		{
-			count--;
-			regs |= (1 << i);
+			xmmregs[i].inuse = true;
+			xmmregs[i].type = XMMTYPE_VFREG;
+			xmmregs[i].counter = 9999;
+			return i;
 		}
 	}
-
-	if (count <= 0)
-		return regs;
 
 	// If we still don't have enough, find regs in use but not needed
 	for (size_t i = 0; i < iREGCNT_XMM - 1; i++)
 	{
 		if (xmmregs[i].inuse && xmmregs[i].counter == 0)
 		{
-			count--;
-			regs |= (1 << i);
 			_freeXMMreg(i);
+			xmmregs[i].inuse = true;
+			xmmregs[i].type = XMMTYPE_VFREG;
+			xmmregs[i].counter = 9999;
+			return i;
 		}
-
-		if (count <= 0)
-			break;
 	}
 
-	if (count <= 0)
-		return regs;
-
-	// Finally Get rid of registers which are gonna be needed, they'll need to be reloaded
-	int maxcount = 9999; // The lower this value the more towards the end of the block it'll need flushing
 	int regtoclear = -1;
+	int maxcount = 9999;
 
-	while (count > 0)
+	for (size_t i = 0; i < iREGCNT_XMM - 1; i++)
 	{
-		for (size_t i = 0; i < iREGCNT_XMM - 1; i++)
+		if (xmmregs[i].inuse && xmmregs[i].counter < maxcount)
 		{
-			if (xmmregs[i].inuse && xmmregs[i].counter < maxcount)
-			{
-				regtoclear = i;
-				maxcount = xmmregs[i].counter;
-			}
-		}
-		if (regtoclear != -1)
-		{
-			_freeXMMreg(regtoclear);
-			count--;
-			regs |= (1 << regtoclear);
+			regtoclear = i;
+			maxcount = xmmregs[i].counter;
 		}
 	}
+	if (regtoclear != -1)
+	{
+		_freeXMMreg(regtoclear);
+		xmmregs[regtoclear].inuse = true;
+		xmmregs[regtoclear].type = XMMTYPE_VFREG;
+		xmmregs[regtoclear].counter = 9999;
+		return regtoclear;
+	}
 
-	pxAssert(count <= 0);
+	pxAssert(0);
 
-	return regs;
+	return -1;
 }
 
 // Return the number of inuse XMM register that have the MODE_WRITE flag
