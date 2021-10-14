@@ -626,10 +626,10 @@ s32 cdvdCtrlTrayClose()
 	}
 	else
 	{
-		DevCon.WriteLn(Color_Green, L"Seeking media");
+		DevCon.WriteLn(Color_Green, L"Detecting media");
 		cdvd.Ready &= ~CDVD_DRIVE_READY;
 		cdvd.Status = CDVD_STATUS_SEEK;
-		cdvd.Tray.trayState = CDVD_DISC_SEEKING;
+		cdvd.Tray.trayState = CDVD_DISC_DETECTING;
 		cdvd.Tray.cdvdActionSeconds = 3;
 	}
 	cdvdDetectDisk();
@@ -664,7 +664,9 @@ static bool cdvdIsDVD()
 
 static int cdvdTrayStateDetecting()
 {
-	
+	if (cdvd.Tray.trayState == CDVD_DISC_DETECTING)
+		return CDVD_TYPE_DETCT;
+
 	if (cdvdIsDVD())
 	{
 		u32 layer1Start;
@@ -857,7 +859,7 @@ void cdvdNewDiskCB()
 		DevCon.WriteLn(Color_Green, L"Seeking new media");
 		cdvd.Ready &= ~CDVD_DRIVE_READY;
 		cdvd.Status = CDVD_STATUS_SEEK;
-		cdvd.Tray.trayState = CDVD_DISC_SEEKING;
+		cdvd.Tray.trayState = CDVD_DISC_DETECTING;
 		cdvd.Tray.cdvdActionSeconds = 3;
 	}
 }
@@ -1274,6 +1276,11 @@ void cdvdUpdateTrayState()
 			case CDVD_DISC_EJECT:
 				cdvdCtrlTrayClose();
 				break;
+			case CDVD_DISC_DETECTING:
+				DevCon.WriteLn(Color_Green, L"Seeking new disc");
+				cdvd.Tray.trayState = CDVD_DISC_SEEKING;
+				cdvd.Tray.cdvdActionSeconds = 2;
+				break;
 			case CDVD_DISC_SEEKING:
 			case CDVD_DISC_ENGAGED:
 				cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
@@ -1407,8 +1414,8 @@ u8 cdvdRead(u8 key)
 			}
 			else
 			{
-				CDVD_LOG("cdvdRead0F(Disc Type) Detecting %x", (cdvd.Tray.trayState == CDVD_DISC_SEEKING) ? 1 : 0);
-				return (cdvd.Tray.trayState == CDVD_DISC_SEEKING) ? cdvdTrayStateDetecting() : 0; // Detecting Disc / No Disc
+				CDVD_LOG("cdvdRead0F(Disc Type) Detecting %x", (cdvd.Tray.trayState <= CDVD_DISC_SEEKING) ? cdvdTrayStateDetecting() : 0);
+				return (cdvd.Tray.trayState <= CDVD_DISC_SEEKING) ? cdvdTrayStateDetecting() : 0; // Detecting Disc / No Disc
 			}
 
 		case 0x13: // UNKNOWN
