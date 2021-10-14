@@ -662,6 +662,24 @@ static bool cdvdIsDVD()
 		return false;
 }
 
+static int cdvdTrayStateDetecting()
+{
+	
+	if (cdvdIsDVD())
+	{
+		u32 layer1Start;
+		s32 dualType;
+
+		cdvdReadDvdDualInfo(&dualType, &layer1Start);
+
+		if (dualType > 0)
+			return CDVD_TYPE_DETCTDVDD;
+		else
+			return CDVD_TYPE_DETCTDVDS;
+	}
+
+	return CDVD_TYPE_DETCTCD;
+}
 static uint cdvdRotationalLatency(CDVD_MODE_TYPE mode)
 {
 	// CAV rotation is constant (minimum speed to maintain exact speed on outer dge
@@ -1382,7 +1400,7 @@ u8 cdvdRead(u8 key)
 			else
 			{
 				CDVD_LOG("cdvdRead0F(Disc Type) Detecting %x", (cdvd.Tray.trayState == CDVD_DISC_SEEKING) ? 1 : 0);
-				return (cdvd.Tray.trayState == CDVD_DISC_SEEKING) ? 1 : 0; // Detecting Disc / No Disc
+				return (cdvd.Tray.trayState == CDVD_DISC_SEEKING) ? cdvdTrayStateDetecting() : 0; // Detecting Disc / No Disc
 			}
 
 		case 0x13: // UNKNOWN
