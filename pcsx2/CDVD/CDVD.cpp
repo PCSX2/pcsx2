@@ -602,7 +602,7 @@ s32 cdvdCtrlTrayOpen()
 
 	cdvd.mediaChanged = true;
 
-	if (cdvd.Type > 0)
+	if (cdvd.Type > 0 || CDVDsys_GetSourceType() == CDVD_SourceType::NoDisc)
 	{
 		cdvd.Tray.cdvdActionSeconds = 3;
 		cdvd.Tray.trayState = CDVD_DISC_EJECT;
@@ -678,7 +678,10 @@ static int cdvdTrayStateDetecting()
 			return CDVD_TYPE_DETCTDVDS;
 	}
 
-	return CDVD_TYPE_DETCTCD;
+	if(cdvd.Type != CDVD_TYPE_NODISC)
+		return CDVD_TYPE_DETCTCD;
+	else
+		return CDVD_TYPE_DETCT; //Detecting any kind of disc existing
 }
 static uint cdvdRotationalLatency(CDVD_MODE_TYPE mode)
 {
@@ -1273,11 +1276,16 @@ void cdvdUpdateTrayState()
 				break;
 			case CDVD_DISC_SEEKING:
 			case CDVD_DISC_ENGAGED:
-				cdvd.mediaChanged = true;
-				DevCon.WriteLn(Color_Green, L"Media ready to read");
 				cdvd.Tray.trayState = CDVD_DISC_ENGAGED;
-				cdvd.Status = CDVD_STATUS_PAUSE;
 				cdvd.Ready |= CDVD_DRIVE_READY;
+				if (CDVDsys_GetSourceType() != CDVD_SourceType::NoDisc)
+				{
+					DevCon.WriteLn(Color_Green, L"Media ready to read");
+					cdvd.mediaChanged = true;
+					cdvd.Status = CDVD_STATUS_PAUSE;
+				}
+				else
+					cdvd.Status = CDVD_STATUS_STOP;
 				break;
 			}
 		}
