@@ -17,6 +17,7 @@
 #include "PrecompiledHeader.h"
 #include "Common.h"
 
+#include "ps2/BiosTools.h"
 #include "R5900.h"
 #include "R3000A.h"
 #include "ps2/pgif.h" // pgif init
@@ -102,6 +103,8 @@ void cpuReset()
 	Deci2Reset();
 
 	g_SkipBiosHack = EmuConfig.UseBOOT2Injection;
+	AllowParams1 = !g_SkipBiosHack;
+	AllowParams2 = !g_SkipBiosHack;
 
 	ElfCRC = 0;
 	DiscSerial = L"";

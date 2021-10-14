@@ -210,6 +210,10 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	Freeze(psxRegs);		// iop regs
 	Freeze(fpuRegs);
 	Freeze(tlb);			// tlbs
+	Freeze(AllowParams1);	//OSDConfig written (Fast Boot)
+	Freeze(AllowParams2);
+	Freeze(g_GameStarted);
+	Freeze(g_GameLoading);
 
 	// Third Block - Cycle Timers and Events
 	// -------------------------------------

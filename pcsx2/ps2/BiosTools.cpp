@@ -51,6 +51,8 @@ u32 BiosVersion;
 u32 BiosChecksum;
 u32 BiosRegion;
 bool NoOSD;
+bool AllowParams1;
+bool AllowParams2;
 wxString BiosDescription;
 BiosDebugInformation CurrentBiosInformation;
 

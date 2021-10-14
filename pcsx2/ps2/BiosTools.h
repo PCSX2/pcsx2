@@ -44,6 +44,8 @@ extern BiosDebugInformation CurrentBiosInformation;
 extern u32 BiosVersion;		// Used by CDVD
 extern u32 BiosRegion;		// Used by CDVD
 extern bool NoOSD;			// Used for HLE OSD Config Params
+extern bool AllowParams1;
+extern bool AllowParams2;
 extern u32 BiosChecksum;
 extern wxString BiosDescription;
 extern void LoadBIOS();

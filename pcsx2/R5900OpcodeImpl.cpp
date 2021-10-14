@@ -944,8 +944,11 @@ void SYSCALL()
 					DevCon.Warning("Set GS CRTC configuration. %s %s (%s)",mode.c_str(), inter, field);
 				}
 				break;
+		case Syscall::SetOsdConfigParam:
+			AllowParams1 = true;
+			break;
 		case Syscall::GetOsdConfigParam:
-			if(!NoOSD && g_SkipBiosHack)
+			if(!NoOSD && g_SkipBiosHack && !AllowParams1)
 			{
 				u32 memaddr = cpuRegs.GPR.n.a0.UL[0];
 				u8 params[16];
@@ -965,8 +968,11 @@ void SYSCALL()
 				return;
 			}
 			break;
+		case Syscall::SetOsdConfigParam2:
+			AllowParams2 = true;
+			break;
 		case Syscall::GetOsdConfigParam2:
-			if (!NoOSD && g_SkipBiosHack)
+			if (!NoOSD && g_SkipBiosHack && !AllowParams2)
 			{
 				u32 memaddr = cpuRegs.GPR.n.a0.UL[0];
 				u8 params[16];
