@@ -76,6 +76,7 @@ target_sources(common PRIVATE
 	RwMutex.h
 	SafeArray.h
 	ScopedAlloc.h
+	ScopedGuard.h
 	ScopedPtrMT.h
 	SettingsInterface.h
 	SettingsWrapper.h
