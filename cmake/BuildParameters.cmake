@@ -51,6 +51,11 @@ option(PORTAUDIO_API "Build portaudio support on SPU2" ON)
 option(SDL2_API "Use SDL2 on SPU2 and PAD Linux (wxWidget mustn't be built with SDL1.2 support" ON)
 option(GTK2_API "Use GTK2 api (legacy)")
 
+if(UNIX AND NOT APPLE)
+	option(X11_API "Enable X11 support" ON)
+	option(WAYLAND_API "Enable Wayland support" OFF)
+endif()
+
 if(PACKAGE_MODE)
 	# Compile all source codes with those defines
 	list(APPEND PCSX2_DEFS
@@ -232,6 +237,14 @@ endif()
 
 if(USE_VTUNE)
 	list(APPEND PCSX2_DEFS ENABLE_VTUNE)
+endif()
+
+if(X11_API)
+	list(APPEND PCSX2_DEFS X11_API)
+endif()
+
+if(WAYLAND_API)
+	list(APPEND PCSX2_DEFS WAYLAND_API)
 endif()
 
 # -Wno-attributes: "always_inline function might not be inlinable" <= real spam (thousand of warnings!!!)

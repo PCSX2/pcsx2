@@ -70,6 +70,10 @@ if(TARGET SDL::SDL)
 	target_link_libraries(PCSX2_FLAGS INTERFACE SDL::SDL)
 endif()
 
+if(WAYLAND_CLIENT_FOUND)
+	target_compile_definitions(PCSX2 PRIVATE WAYLAND_BUILD)
+endif()
+
 if(WIN32)
 	# Resources
 	target_sources(PCSX2 PRIVATE
@@ -1392,18 +1396,27 @@ if(Linux)
 		PkgConfig::AIO
 		PkgConfig::EGL
 		PkgConfig::LIBUDEV
-		PkgConfig::X11_XCB
-		PkgConfig::XCB
-		X11::X11
 		ALSA::ALSA
-		)
+	)
 elseif(UNIX AND NOT APPLE)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
-		X11::X11
-		PkgConfig::XCB
 		PkgConfig::EGL
-		PkgConfig::X11_XCB
+	)
+endif()
+
+if(UNIX AND NOT APPLE)
+	if(X11_API)
+		target_link_libraries(PCSX2_FLAGS INTERFACE
+			PkgConfig::X11_XCB
+			PkgConfig::XCB
+			X11::X11
 		)
+	endif()
+	if(WAYLAND_API)
+		target_link_libraries(PCSX2_FLAGS INTERFACE
+			${WAYLAND_CLIENT_LIBRARIES}
+		)
+	endif()
 endif()
 
 # Windows
