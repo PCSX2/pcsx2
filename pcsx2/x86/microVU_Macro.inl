@@ -112,8 +112,9 @@ void endMacroOp(int mode)
 #define REC_COP2_mVU0(f, opName, mode) \
 	void recV##f() \
 	{ \
-		setupMacroOp(mode, opName); \
-		if (mode & 4) \
+		int _mode = (mode); \
+		setupMacroOp(_mode, opName); \
+		if (_mode & 4) \
 		{ \
 			mVU_##f(microVU0, 0); \
 			if (!microVU0.prog.IRinfo.info[0].lOp.isNOP) \
@@ -125,7 +126,7 @@ void endMacroOp(int mode)
 		{ \
 			mVU_##f(microVU0, 1); \
 		} \
-		endMacroOp(mode); \
+		endMacroOp(_mode); \
 	}
 
 #define INTERPRETATE_COP2_FUNC(f) \
