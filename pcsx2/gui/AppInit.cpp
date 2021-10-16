@@ -36,6 +36,13 @@
 #include <wx/stdpaths.h>
 #include <memory>
 
+#ifdef __WXGTK__
+#include <gdk/gdkx.h>
+#ifdef GDK_WINDOWING_X11
+#include <X11/Xlib.h>
+#endif
+#endif	// __WXGTK__
+
 using namespace pxSizerFlags;
 
 void Pcsx2App::DetectCpuAndUserMode()
@@ -705,6 +712,11 @@ Pcsx2App::Pcsx2App()
 
 		_("Show about dialog.")
 	}
+#endif
+
+#ifdef GDK_WINDOWING_X11
+	// This *must* be done in the constructor, before wx starts making X calls.
+	XInitThreads();
 #endif
 
 	m_PendingSaves = 0;
