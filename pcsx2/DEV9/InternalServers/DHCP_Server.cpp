@@ -20,12 +20,16 @@
 #include <string>
 #include <vector>
 #include <fstream>
-#include <arpa/inet.h>
-#endif
-
-#if defined(__FreeBSD__)
-#include <sys/socket.h>
 #include <netinet/in.h>
+#include <arpa/inet.h>
+
+#if defined(__FreeBSD__) || (__APPLE__)
+#include <sys/param.h>
+#include <sys/sysctl.h>
+#include <sys/socket.h>
+#include <net/if.h>
+#include <net/route.h>
+#endif
 #endif
 
 #include "DHCP_Server.h"
@@ -167,6 +171,83 @@ namespace InternalServers
 		}
 		return collection;
 	}
+#elif defined(__FreeBSD__) || (__APPLE__)
+	std::vector<IP_Address> DHCP_Server::GetGatewaysBSD(char* interfaceName)
+	{
+		std::vector<IP_Address> collection;
+
+		//Get index for our adapter by matching the adapter name
+		int ifIndex = -1;
+
+		struct if_nameindex* ifNI;
+		ifNI = if_nameindex();
+		if (ifNI == nullptr)
+		{
+			Console.Error("DHCP: if_nameindex Failed");
+			return collection;
+		}
+
+		struct if_nameindex* i = ifNI;
+		while (i->if_index != 0 && i->if_name != nullptr)
+		{
+			if (strcmp(i->if_name, interfaceName) == 0)
+			{
+				ifIndex = i->if_index;
+				break;
+			}
+			i++;
+		}
+		if_freenameindex(ifNI);
+
+		//Check if we found the adapter
+		if (ifIndex == -1)
+		{
+			Console.Error("DHCP: Failed to get index for adapter");
+			return collection;
+		}
+
+		//Find the gateway by looking though the routing information
+		int name[] = {CTL_NET, PF_ROUTE, 0, AF_INET, NET_RT_DUMP, 0};
+		size_t bufferLen = 0;
+
+		if (sysctl(name, 6, NULL, &bufferLen, NULL, 0) != 0)
+		{
+			Console.Error("DHCP: Failed to perform NET_RT_DUMP");
+			return collection;
+		}
+
+		//len is an estimate, double it to be safe
+		bufferLen *= 2;
+		std::unique_ptr<u8[]> buffer = std::make_unique<u8[]>(bufferLen);
+
+		if (sysctl(name, 6, buffer.get(), &bufferLen, NULL, 0) != 0)
+		{
+			Console.Error("DHCP: Failed to perform NET_RT_DUMP");
+			return collection;
+		}
+
+		rt_msghdr* hdr;
+		for (size_t i = 0; i < bufferLen; i += hdr->rtm_msglen)
+		{
+			hdr = (rt_msghdr*)&buffer[i];
+
+			if (hdr->rtm_flags & RTF_GATEWAY && hdr->rtm_addrs & RTA_GATEWAY && (hdr->rtm_index == ifIndex))
+			{
+				sockaddr* sockaddrs = (sockaddr*)(hdr + 1);
+				pxAssert(sockaddrs[RTAX_DST].sa_family == AF_INET);
+
+				//Default gateway has no destination address
+				sockaddr_in* sockaddr = (sockaddr_in*)&sockaddrs[RTAX_DST];
+				if (sockaddr->sin_addr.s_addr != 0)
+					continue;
+
+				sockaddr = (sockaddr_in*)&sockaddrs[RTAX_GATEWAY];
+				IP_Address gwIP = *(IP_Address*)&sockaddr->sin_addr;
+				collection.push_back(gwIP);
+			}
+		}
+		return collection;
+	}
 #endif
 	std::vector<IP_Address> DHCP_Server::GetDNSUnix()
 	{
@@ -274,6 +355,13 @@ namespace InternalServers
 
 			if (gateways.size() > 0)
 				gateway = gateways[0];
+
+#elif defined(__FreeBSD__) || (__APPLE__)
+			std::vector<IP_Address> gateways = GetGatewaysBSD(adapter->ifa_name);
+
+			if (gateways.size() > 0)
+				gateway = gateways[0];
+
 #else
 			Console.Error("DHCP: Unsupported OS, can't find Gateway");
 #endif
