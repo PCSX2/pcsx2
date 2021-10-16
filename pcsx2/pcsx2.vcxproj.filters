@@ -2469,9 +2469,6 @@
     <ClInclude Include="PAD\Windows\PADRawInput.h">
       <Filter>System\Ps2\PAD</Filter>
     </ClInclude>
-    <ClInclude Include="PAD\Windows\PAD.h">
-      <Filter>System\Ps2\PAD</Filter>
-    </ClInclude>
     <ClInclude Include="PAD\Windows\resource_pad.h">
       <Filter>System\Ps2\PAD</Filter>
     </ClInclude>
@@ -2724,6 +2721,9 @@
     <ClInclude Include="gui\wxGuiTools.h" />
     <ClInclude Include="gui\pxStaticText.h">
       <Filter>AppHost</Filter>
+    </ClInclude>
+    <ClInclude Include="PAD\Gamepad.h">
+      <Filter>System\Ps2\PAD</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

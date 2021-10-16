@@ -493,7 +493,7 @@ if(WIN32)
 	)
 
 	set(pcsx2PADHeaders
-		PAD/Windows/PAD.h
+		PAD/Gamepad.h
 		PAD/Windows/PADConfig.h
 		PAD/Windows/DeviceEnumerator.h
 		PAD/Windows/Diagnostics.h
@@ -558,12 +558,12 @@ else(WIN32)
 		PAD/Linux/wx_dialog/GamepadConfiguration.cpp
 		PAD/Linux/wx_dialog/JoystickConfiguration.cpp
 		PAD/Linux/Config.cpp
-		PAD/Linux/linux.cpp
 		${CMAKE_BINARY_DIR}/pcsx2/PAD/Linux/resources_pad.cpp
 	)
 
 	# PAD/Linux headers
 	set(pcsx2PADHeaders
+		PAD/Gamepad.h
 		PAD/Linux/bitwise.h
 		PAD/Linux/Config.h
 		PAD/Linux/Device.h
@@ -572,7 +572,6 @@ else(WIN32)
 		PAD/Linux/SDL/joystick.h
 		PAD/Linux/keyboard.h
 		PAD/Linux/KeyStatus.h
-		PAD/Linux/PAD.h
 		PAD/Linux/state_management.h
 		PAD/Linux/wx_dialog/opPanel.h
 		PAD/Linux/wx_dialog/GamepadConfiguration.h

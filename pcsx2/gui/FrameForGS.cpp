@@ -23,11 +23,7 @@
 #include "GS/GS.h"
 #include "MainFrame.h"
 #include "MSWstuff.h"
-#ifdef _WIN32
-#include "PAD/Windows/PAD.h"
-#else
-#include "PAD/Linux/PAD.h"
-#endif
+#include "PAD/Gamepad.h"
 
 #include "gui/Dialogs/ModalPopups.h"
 

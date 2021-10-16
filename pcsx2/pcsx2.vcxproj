@@ -766,7 +766,7 @@
     <ClInclude Include="FW.h" />
     <ClInclude Include="MemoryCardFile.h" />
     <ClInclude Include="MemoryCardFolder.h" />
-    <ClInclude Include="PAD\Windows\PAD.h" />
+    <ClInclude Include="PAD\Gamepad.h" />
     <ClInclude Include="PAD\Windows\PADConfig.h" />
     <ClInclude Include="PAD\Windows\DeviceEnumerator.h" />
     <ClInclude Include="PAD\Windows\Diagnostics.h" />
