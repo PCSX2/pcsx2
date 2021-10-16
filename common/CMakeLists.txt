@@ -57,6 +57,7 @@ target_sources(common PRIVATE
 
 # x86emitter headers
 target_sources(common PRIVATE
+	Align.h
 	Assertions.h
 	boost_spsc_queue.hpp
 	Console.h
