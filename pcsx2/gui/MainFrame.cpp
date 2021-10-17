@@ -87,12 +87,18 @@ void MainEmuFrame::UpdateStatusBar()
 	}
 
 	m_statusbar.SetStatusText(temp, 0);
-	m_statusbar.SetStatusText(CDVD_SourceLabels[enum_cast(g_Conf->CdvdSource)], 1);
+
+	if (g_Conf->EnablePresets)
+		m_statusbar.SetStatusText(fmt::format("P:{}", g_Conf->PresetIndex + 1), 1);
+	else
+		m_statusbar.SetStatusText("---", 1);
+
+	m_statusbar.SetStatusText(CDVD_SourceLabels[enum_cast(g_Conf->CdvdSource)], 2);
 
 #ifdef __M_X86_64
-	m_statusbar.SetStatusText("x64", 2);
+	m_statusbar.SetStatusText("x64", 3);
 #else
-	m_statusbar.SetStatusText("x32", 2);
+	m_statusbar.SetStatusText("x32", 3);
 #endif
 }
 
@@ -636,9 +642,9 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 	// I cannot get it to work despite following various examples to the letter.
 	SetIcons(wxGetApp().GetIconBundle());
 
-	int m_statusbar_widths[] = {(int)-20, (int)-3, (int)-2};
-	m_statusbar.SetFieldsCount(3);
-	m_statusbar.SetStatusWidths(3, m_statusbar_widths);
+	int m_statusbar_widths[] = {(int)-20, (int)-3, (int)-3, (int)-3};
+	m_statusbar.SetFieldsCount(4);
+	m_statusbar.SetStatusWidths(4, m_statusbar_widths);
 	m_statusbar.SetStatusText(wxEmptyString, 0);
 
 	wxBoxSizer& joe(*new wxBoxSizer(wxVERTICAL));
