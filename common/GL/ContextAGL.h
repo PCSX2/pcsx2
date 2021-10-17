@@ -20,6 +20,7 @@
 #if defined(__APPLE__) && defined(__OBJC__)
 #import <AppKit/AppKit.h>
 #else
+struct NSView;
 struct NSOpenGLContext;
 struct NSOpenGLPixelFormat;
 #endif
@@ -45,17 +46,15 @@ namespace GL
 		std::unique_ptr<Context> CreateSharedContext(const WindowInfo& wi) override;
 
 	private:
-#if defined(__APPLE__) && defined(__OBJC__)
-		__fi NSView* GetView() const { return (__bridge NSView*)m_wi.window_handle; }
-#endif
-
 		bool Initialize(const Version* versions_to_try, size_t num_versions_to_try);
 		bool CreateContext(NSOpenGLContext* share_context, int profile, bool make_current);
 		void BindContextToView();
+		void CleanupView();
 
 		// returns true if dimensions have changed
 		bool UpdateDimensions();
 
+		NSView* m_view = nullptr;
 		NSOpenGLContext* m_context = nullptr;
 		NSOpenGLPixelFormat* m_pixel_format = nullptr;
 		void* m_opengl_module_handle = nullptr;

@@ -38,6 +38,8 @@ namespace GL
 		if ([NSOpenGLContext currentContext] == m_context)
 			[NSOpenGLContext clearCurrentContext];
 
+		CleanupView();
+
 		if (m_opengl_module_handle)
 			dlclose(m_opengl_module_handle);
 	}
@@ -103,10 +105,17 @@ namespace GL
 
 	bool ContextAGL::UpdateDimensions()
 	{
-		const NSSize window_size = [GetView() frame].size;
-		const CGFloat window_scale = [[GetView() window] backingScaleFactor];
-		const u32 new_width = static_cast<u32>(static_cast<CGFloat>(window_size.width) * window_scale);
-		const u32 new_height = static_cast<u32>(static_cast<CGFloat>(window_size.height) * window_scale);
+		if (![NSThread isMainThread])
+		{
+			bool ret;
+			dispatch_sync(dispatch_get_main_queue(), [this, &ret]{ ret = UpdateDimensions(); });
+			return ret;
+		}
+
+		const NSSize window_size = [m_view frame].size;
+		const CGFloat window_scale = [[m_view window] backingScaleFactor];
+		const u32 new_width = static_cast<u32>(window_size.width * window_scale);
+		const u32 new_height = static_cast<u32>(window_size.height * window_scale);
 
 		if (m_wi.surface_width == new_width && m_wi.surface_height == new_height)
 			return false;
@@ -114,14 +123,7 @@ namespace GL
 		m_wi.surface_width = new_width;
 		m_wi.surface_height = new_height;
 
-		dispatch_block_t block = ^{
-			[m_context update];
-		};
-
-		if ([NSThread isMainThread])
-			block();
-		else
-			dispatch_sync(dispatch_get_main_queue(), block);
+		[m_context update];
 
 		return true;
 	}
@@ -202,21 +204,42 @@ namespace GL
 
 	void ContextAGL::BindContextToView()
 	{
-		NSView* const view = GetView();
-		NSWindow* const window = [view window];
-		[view setWantsBestResolutionOpenGLSurface:YES];
+		if (![NSThread isMainThread])
+		{
+			dispatch_sync(dispatch_get_main_queue(), [this]{ BindContextToView(); });
+			return;
+		}
+
+#ifdef PCSX2_CORE
+		m_view = (__bridge NSView*)m_wi.window_handle;
+#else
+		// Drawing to wx's wxView somehow causes fighting between us and wx, resulting in massive CPU usage on the main thread and no image
+		// Avoid that by adding our own subview
+		CleanupView();
+		NSView* const superview = (__bridge NSView*)m_wi.window_handle;
+		m_view = [[NSView alloc] initWithFrame:[superview frame]];
+		[superview addSubview:m_view];
+		[m_view setAutoresizingMask:NSViewWidthSizable|NSViewHeightSizable];
+#endif
+		[m_view setWantsBestResolutionOpenGLSurface:YES];
 
 		UpdateDimensions();
 
-		dispatch_block_t block = ^{
-			[window makeFirstResponder:view];
-			[m_context setView:view];
-			[window makeKeyAndOrderFront:nil];
-		};
+		[m_context setView:m_view];
+	}
 
-		if ([NSThread isMainThread])
-			block();
-		else
-			dispatch_sync(dispatch_get_main_queue(), block);
+	void ContextAGL::CleanupView()
+	{
+#ifndef PCSX2_CORE
+		if (![NSThread isMainThread])
+		{
+			dispatch_sync(dispatch_get_main_queue(), [this]{ CleanupView(); });
+			return;
+		}
+
+		if (m_view)
+			[m_view removeFromSuperview];
+#endif
+		m_view = nullptr;
 	}
 } // namespace GL
