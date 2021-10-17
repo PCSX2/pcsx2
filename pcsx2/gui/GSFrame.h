@@ -61,7 +61,7 @@ public:
 protected:
 	void AppStatusEvent_OnSettingsApplied();
 
-	void OnResize(wxSizeEvent& event);
+	void OnResize(wxEvent& event);
 	void OnMouseEvent( wxMouseEvent& evt );
 	void OnHideMouseTimeout( wxTimerEvent& evt );
 	void OnKeyDownOrUp( wxKeyEvent& evt );
