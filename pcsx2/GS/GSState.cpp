@@ -2991,6 +2991,59 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 			__assume(0);
 	}
 
+	// Small optimisation left over from a much bigger (and broken) optimisation
+	// This makes Baldurs Gate 2 go brr. Without it, it's pretty slow due to cutting
+	// things up in to tiny pieces and the GS allocating a huge texture
+	if (wms == CLAMP_REPEAT && wmt == CLAMP_REPEAT)
+	{
+		GSVector4 st = m_vt.m_min.t.xyxy(m_vt.m_max.t);
+
+		if (linear)
+		{
+			st += GSVector4(-0.5f, 0.5f).xxyy();
+		}
+		
+		GSVector4i uv = GSVector4i(st.floor());
+
+		// See commented code below for the meaning of mask
+		const GSVector4i u = uv & GSVector4i::xffffffff().srl32(32 - tw);
+		const GSVector4i v = uv & GSVector4i::xffffffff().srl32(32 - th);
+
+		GSVector4i uu = uv.sra32(tw);
+		GSVector4i vv = uv.sra32(th);
+
+		const int mask = (uu.upl32(vv) == uu.uph32(vv)).mask();
+
+		uv = uv.rintersect(tr);
+
+		// This commented code cannot be used directly because it needs uv before the intersection
+		//if (uv_.x >> tw == uv_.z >> tw)
+		//{
+		//	vr.x = std::max(vr.x, (uv_.x & ((1 << tw) - 1)));
+		//	vr.z = std::min(vr.z, (uv_.z & ((1 << tw) - 1)) + 1);
+		//}
+		if (mask & 0x000f)
+		{
+			if (vr.x < u.x)
+				vr.x = u.x;
+			if (vr.z > u.z + 1)
+				vr.z = u.z + 1;
+		}
+
+		//if (uv_.y >> th == uv_.w >> th)
+		//{
+		//	vr.y = max(vr.y, (uv_.y & ((1 << th) - 1)));
+		//	vr.w = min(vr.w, (uv_.w & ((1 << th) - 1)) + 1);
+		//}
+		if (mask & 0xf000)
+		{
+			if (vr.y < v.y)
+				vr.y = v.y;
+			if (vr.w > v.w + 1)
+				vr.w = v.w + 1;
+		}
+	}
+
 	vr = vr.rintersect(tr);
 
 	// This really shouldn't happen now except with the clamping region set entirely outside the texture,
