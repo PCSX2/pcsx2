@@ -212,6 +212,9 @@ GSPanel::GSPanel( wxWindow* parent )
 	}
 
 	Bind(wxEVT_SIZE, &GSPanel::OnResize, this);
+#if wxCHECK_VERSION(3, 1, 3)
+	Bind(wxEVT_DPI_CHANGED, &GSPanel::OnResize, this);
+#endif
 	Bind(wxEVT_KEY_UP, &GSPanel::OnKeyDownOrUp, this);
 	Bind(wxEVT_KEY_DOWN, &GSPanel::OnKeyDownOrUp, this);
 
@@ -349,7 +352,7 @@ std::optional<WindowInfo> GSPanel::GetWindowInfo()
 	return ret;
 }
 
-void GSPanel::OnResize(wxSizeEvent& event)
+void GSPanel::OnResize(wxEvent& event)
 {
 	if( IsBeingDeleted() ) return;
 	event.Skip();
