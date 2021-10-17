@@ -23,8 +23,8 @@
 #include "Renderers/OpenGL/GSRendererOGL.h"
 #include "GSLzma.h"
 
-#include "Config.h"
 #include "common/pxStreams.h"
+#include "pcsx2/Config.h"
 
 #ifdef _WIN32
 
