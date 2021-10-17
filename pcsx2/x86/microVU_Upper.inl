@@ -200,13 +200,16 @@ static bool doSafeSub(microVU& mVU, int opCase, int opType, bool isACC)
 }
 
 // Sets Up Ft Reg for Normal, BC, I, and Q Cases
-static void setupFtReg(microVU& mVU, xmm& Ft, xmm& tempFt, int opCase)
+static void setupFtReg(microVU& mVU, xmm& Ft, xmm& tempFt, int opCase, int clampType)
 {
 	opCase1
 	{
-		if (_XYZW_SS2)   { Ft = mVU.regAlloc->allocReg(_Ft_, 0, _X_Y_Z_W); tempFt = Ft; }
-		else if (clampE) { Ft = mVU.regAlloc->allocReg(_Ft_, 0, 0xf);      tempFt = Ft; }
-		else             { Ft = mVU.regAlloc->allocReg(_Ft_);              tempFt = xEmptyReg; }
+		// Based on mVUclamp2 -> mVUclamp1 below.
+		const bool willClamp = (clampE || ((clampType & cFt) && !clampE && (CHECK_VU_OVERFLOW || CHECK_VU_SIGN_OVERFLOW)));
+
+		if (_XYZW_SS2)      { Ft = mVU.regAlloc->allocReg(_Ft_, 0, _X_Y_Z_W); tempFt = Ft; }
+		else if (willClamp) { Ft = mVU.regAlloc->allocReg(_Ft_, 0, 0xf);      tempFt = Ft; }
+		else                { Ft = mVU.regAlloc->allocReg(_Ft_);              tempFt = xEmptyReg;  }
 	}
 	opCase2
 	{
@@ -247,7 +250,7 @@ static void mVU_FMACa(microVU& mVU, int recPass, int opCase, int opType, bool is
 			return;
 
 		xmm Fs, Ft, ACC, tempFt;
-		setupFtReg(mVU, Ft, tempFt, opCase);
+		setupFtReg(mVU, Ft, tempFt, opCase, clampType);
 
 		if (isACC)
 		{
@@ -300,7 +303,7 @@ static void mVU_FMACb(microVU& mVU, int recPass, int opCase, int opType, microOp
 	pass2
 	{
 		xmm Fs, Ft, ACC, tempFt;
-		setupFtReg(mVU, Ft, tempFt, opCase);
+		setupFtReg(mVU, Ft, tempFt, opCase, clampType);
 
 		Fs = mVU.regAlloc->allocReg(_Fs_, 0, _X_Y_Z_W);
 		ACC = mVU.regAlloc->allocReg(32, 32, 0xf, false);
@@ -348,7 +351,7 @@ static void mVU_FMACc(microVU& mVU, int recPass, int opCase, microOpcode opEnum,
 	pass2
 	{
 		xmm Fs, Ft, ACC, tempFt;
-		setupFtReg(mVU, Ft, tempFt, opCase);
+		setupFtReg(mVU, Ft, tempFt, opCase, clampType);
 
 		ACC = mVU.regAlloc->allocReg(32);
 		Fs = mVU.regAlloc->allocReg(_Fs_, _Fd_, _X_Y_Z_W);
@@ -385,7 +388,7 @@ static void mVU_FMACd(microVU& mVU, int recPass, int opCase, microOpcode opEnum,
 	pass2
 	{
 		xmm Fs, Ft, Fd, tempFt;
-		setupFtReg(mVU, Ft, tempFt, opCase);
+		setupFtReg(mVU, Ft, tempFt, opCase, clampType);
 
 		Fs = mVU.regAlloc->allocReg(_Fs_,  0, _X_Y_Z_W);
 		Fd = mVU.regAlloc->allocReg(32, _Fd_, _X_Y_Z_W);
