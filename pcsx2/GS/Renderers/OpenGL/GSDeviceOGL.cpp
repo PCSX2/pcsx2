@@ -666,44 +666,28 @@ void GSDeviceOGL::Flip()
 	}
 }
 
-void GSDeviceOGL::BeforeDraw()
-{
-}
-
-void GSDeviceOGL::AfterDraw()
-{
-}
-
 void GSDeviceOGL::DrawPrimitive()
 {
-	BeforeDraw();
 	m_va->DrawPrimitive();
-	AfterDraw();
 }
 
 void GSDeviceOGL::DrawPrimitive(int offset, int count)
 {
-	BeforeDraw();
 	m_va->DrawPrimitive(offset, count);
-	AfterDraw();
 }
 
 void GSDeviceOGL::DrawIndexedPrimitive()
 {
-	BeforeDraw();
 	if (!m_disable_hw_gl_draw)
 		m_va->DrawIndexedPrimitive();
-	AfterDraw();
 }
 
 void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 {
 	//ASSERT(offset + count <= (int)m_index.count);
 
-	BeforeDraw();
 	if (!m_disable_hw_gl_draw)
 		m_va->DrawIndexedPrimitive(offset, count);
-	AfterDraw();
 }
 
 void GSDeviceOGL::ClearRenderTarget(GSTexture* t, const GSVector4& c)
