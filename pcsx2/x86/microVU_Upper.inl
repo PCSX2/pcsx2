@@ -281,7 +281,7 @@ static void mVU_FMACa(microVU& mVU, int recPass, int opCase, int opType, bool is
 				xPSHUF.D(ACC, ACC, shuffleSS(_X_Y_Z_W));
 			mVU.regAlloc->clearNeeded(ACC);
 		}
-		else if (opType < 3)
+		else if (opType < 3 || opType == 5) // Not Min/Max or is ADDi(5) (TODO: Reorganise this so its < 4 including ADDi)
 			mVUupdateFlags(mVU, Fs, tempFt);
 
 		mVU.regAlloc->clearNeeded(Fs); // Always Clear Written Reg First
