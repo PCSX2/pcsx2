@@ -2119,8 +2119,8 @@ static void cdvdWrite16(u8 rt) // SCOMMAND
 
 
 			case 0x0F: // sceCdPowerOff (0:1)- Call74 from Xcdvdman
-				SetResultSize(1);
-				cdvd.Result[0] = 0;
+				Console.WriteLn(Color_StrongBlack, "sceCdPowerOff called. Resetting VM.");
+				GetCoreThread().Reset();
 				break;
 
 			case 0x12: // sceCdReadILinkId (0:9)
