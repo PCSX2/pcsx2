@@ -22,8 +22,6 @@
 
 static bool spr0finished = false;
 static bool spr1finished = false;
-static bool spr0lastqwc = false;
-static bool spr1lastqwc = false;
 static u32 mfifotransferred = 0;
 
 static void TestClearVUs(u32 madr, u32 qwc, bool isWrite)
@@ -342,8 +340,6 @@ void SPRFROMinterrupt()
 		return;
 	}
 
-
-	spr0lastqwc = false;
 	spr0ch.chcr.STR = false;
 	hwDmacIrq(DMAC_FROM_SPR);
 	DMA_LOG("SPR0 DMA End");
@@ -539,7 +535,6 @@ void SPRTOinterrupt()
 
 	DMA_LOG("SPR1 DMA End");
 	spr1ch.chcr.STR = false;
-	spr1lastqwc = false;
 	hwDmacIrq(DMAC_TO_SPR);
 }
 

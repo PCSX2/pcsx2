@@ -852,9 +852,6 @@ void SaveStateBase::gifDmaFreeze()
 {
 	// Note: mfifocycles is not a persistent var, so no need to save it here.
 	FreezeTag("GIFdma");
-	Freeze(gif.gifstate);
-	Freeze(gif.gifqwc);
-	Freeze(gif.gspath3done);
-	Freeze(gif.gscycles);
+	Freeze(gif);
 	Freeze(gif_fifo);
 }

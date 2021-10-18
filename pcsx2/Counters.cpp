@@ -1044,6 +1044,7 @@ void SaveStateBase::rcntFreeze()
 	Freeze( vSyncInfo );
 	Freeze( gsVideoMode );
 	Freeze( gsIsInterlaced );
+	Freeze( gates );
 
 	if( IsLoading() )
 	{

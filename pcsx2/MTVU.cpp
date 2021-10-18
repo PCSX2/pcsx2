@@ -32,6 +32,8 @@ enum MTVU_EVENT
 	MTVU_VU_EXECUTE,     // Execute VU program
 	MTVU_VU_WRITE_MICRO, // Write to VU micro-mem
 	MTVU_VU_WRITE_DATA,  // Write to VU data-mem
+	MTVU_VU_WRITE_VIREGS,// Write to VU registers
+	MTVU_VU_WRITE_VFREGS,// Write to VU registers
 	MTVU_VIF_WRITE_COL,  // Write to Vif col reg
 	MTVU_VIF_WRITE_ROW,  // Write to Vif row reg
 	MTVU_VIF_UNPACK,     // Execute Vif Unpack
@@ -62,6 +64,8 @@ void SaveStateBase::mtvuFreeze()
 		vu1Thread.WriteRow(vif1);
 		vu1Thread.WriteMicroMem(0, VU1.Micro, 0x4000);
 		vu1Thread.WriteDataMem(0, VU1.Mem, 0x4000);
+		vu1Thread.WriteVIRegs(&VU1.VI[0]);
+		vu1Thread.WriteVFRegs(&VU1.VF[0]);
 	}
 	for (size_t i = 0; i < 4; ++i)
 	{
@@ -168,6 +172,12 @@ void VU_Thread::ExecuteRingBuffer()
 					Read(&vuRegs.Mem[vu_data_addr], size);
 					break;
 				}
+				case MTVU_VU_WRITE_VIREGS:
+					Read(&vuRegs.VI, size_u32(32));
+					break;
+				case MTVU_VU_WRITE_VFREGS:
+					Read(&vuRegs.VF, size_u32(4*32));
+					break;
 				case MTVU_VIF_WRITE_COL:
 					Read(&vif.MaskCol, sizeof(vif.MaskCol));
 					break;
@@ -487,6 +497,26 @@ void VU_Thread::WriteDataMem(u32 vu_data_addr, void* data, u32 size)
 	Write(vu_data_addr);
 	Write(size);
 	Write(data, size);
+	CommitWritePos();
+	KickStart();
+}
+
+void VU_Thread::WriteVIRegs(REG_VI* viRegs)
+{
+	MTVU_LOG("MTVU - WriteRegs!");
+	ReserveSpace(1 + size_u32(32));
+	Write(MTVU_VU_WRITE_VIREGS);
+	Write(viRegs, size_u32(32));
+	CommitWritePos();
+	KickStart();
+}
+
+void VU_Thread::WriteVFRegs(VECTOR* vfRegs)
+{
+	MTVU_LOG("MTVU - WriteRegs!");
+	ReserveSpace(1 + size_u32(32*4));
+	Write(MTVU_VU_WRITE_VFREGS);
+	Write(vfRegs, size_u32(32*4));
 	CommitWritePos();
 	KickStart();
 }
