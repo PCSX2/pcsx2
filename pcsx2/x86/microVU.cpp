@@ -506,3 +506,12 @@ void recMicroVU1::ResumeXGkick()
 		return;
 	((mVUrecCallXG)microVU1.startFunctXG)();
 }
+
+void SaveStateBase::vuJITFreeze()
+{
+	if (IsSaving())
+		vu1Thread.WaitVU();
+
+	Freeze(microVU0.prog.lpState);
+	Freeze(microVU1.prog.lpState);
+}

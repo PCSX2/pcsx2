@@ -231,6 +231,7 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	rcntFreeze();
 	gsFreeze();
 	vuMicroFreeze();
+	vuJITFreeze();
 	vif0Freeze();
 	vif1Freeze();
 	sifFreeze();

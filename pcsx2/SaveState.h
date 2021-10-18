@@ -152,6 +152,7 @@ protected:
 	void mtvuFreeze();
 	void rcntFreeze();
 	void vuMicroFreeze();
+	void vuJITFreeze();
 	void vif0Freeze();
 	void vif1Freeze();
 	void sifFreeze();
