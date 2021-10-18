@@ -288,10 +288,15 @@ __fi void gifInterrupt()
 				}
 			}
 		}
-		// If the dma has data waiting and there's something in the fifo, drain the fifo
-		// If the GIF is currently paused, check if the FIFO is full, otherwise fill it
-		if ((!CheckPaths() && gif_fifo.fifoSize == 16) || (readSize && gif_fifo.fifoSize < 16))
-			return;
+		// The following is quite timing sensitive so we need to pause/resume the DMA in these certain scenarios
+		// If the DMA is masked/blocked and the fifo is full, no need to run the DMA
+		// If we just read from the fifo, we want to loop and not read more DMA
+		// If there is no DMA data waiting and the DMA is active, let the DMA progress until there is
+		if ((!CheckPaths() && gif_fifo.fifoSize == 16) || readSize)
+		{
+			if (gifch.qwc || !gifch.chcr.STR)
+				return;
+		}
 	}
 
 	if (!(gifch.chcr.STR))
@@ -800,10 +805,15 @@ void gifMFIFOInterrupt()
 			}
 		}
 
-		// If the dma has data waiting and there's something in the fifo, drain the fifo
-		// If the GIF is currently paused, check if the FIFO is full, otherwise fill it
-		if ((!CheckPaths() && gif_fifo.fifoSize == 16) || (readSize && gif_fifo.fifoSize < 16))
-			return;
+		// The following is quite timing sensitive so we need to pause/resume the DMA in these certain scenarios
+		// If the DMA is masked/blocked and the fifo is full, no need to run the DMA
+		// If we just read from the fifo, we want to loop and not read more DMA
+		// If there is no DMA data waiting and the DMA is active, let the DMA progress until there is
+		if ((!CheckPaths() && gif_fifo.fifoSize == 16) || readSize)
+		{
+			if (gifch.qwc || !gifch.chcr.STR)
+				return;
+		}
 	}
 
 	if (!gifch.chcr.STR)
