@@ -6,28 +6,8 @@ on:
   push:
     branches:
       - master
-    paths-ignore:
-      - '**/*.md'
-      - '.clang-format'
-      - '.codacy.yaml'
-      - '.github/*'
-      - '.github/workflows/lint-gamedb.yml'
-      - '.github/workflows/linux-workflow.yml'
-      - '.github/workflows/macos-workflow.yml'
-      - '.github/workflows/scripts/linux/**'
-      - '.github/workflows/scripts/validation/**'
-      - '.gitignore'
-      - 'bin/PCSX2_keys.ini.default'
-      - 'build.sh'
-      - 'buildbot.xml'
-      - 'linux_various/**'
-      - 'mscompile.cmd'
-      - 'pcsx2/CDVD/Linux/**'
-      - 'pcsx2/DEV9/Linux/**'
-      - 'pcsx2/Linux/**'
-      - 'pcsx2/PAD/Linux/**'
-      - 'pcsx2/SPU2/Linux/**'
-      - 'pcsx2/USB/linux/**'
+    tags:
+      - v*
   pull_request:
     branches:
       - master
@@ -53,12 +33,6 @@ on:
       - 'pcsx2/PAD/Linux/**'
       - 'pcsx2/SPU2/Linux/**'
       - 'pcsx2/USB/linux/**'
-  workflow_dispatch:
-    inputs:
-      retainDebugArtifacts:
-        description: 'Retain debug artifacts (.pdb/.exp/.lib) for an easier debugging experience. (true|false)'
-        required: true
-        default: 'false'
 
 jobs:
   build:
@@ -86,12 +60,6 @@ jobs:
       BUILDCACHE_LOG_FILE: ${{ github.workspace }}\buildcache.log
 
     steps:
-      # NOTE - useful for debugging
-      # - name: Dump GitHub context
-      #   env:
-      #     GITHUB_CONTEXT: ${{ toJson(github) }}
-      #   run: echo "$GITHUB_CONTEXT"
-
       - name: Checkout Repository
         uses: actions/checkout@v2
 
@@ -175,24 +143,55 @@ jobs:
           TRIMMED_ARTIFACT_NAME=$(printf "%.199s]" "$ARTIFACT_NAME")
           echo "name=$TRIMMED_ARTIFACT_NAME"
           echo "##[set-output name=name;]${TRIMMED_ARTIFACT_NAME}"
-
-      - name: Prepare Artifact Folder
-        shell: bash
-        working-directory: bin
-        run: |
-          retainDebugArtifacts=$([ "${{ github.event.inputs.retainDebugArtifacts }}" == "true" ] && echo "true" || echo "false")
-          if [ "${retainDebugArtifacts}" == "false" ]; then
-            ls ./
-            rm -f *.bsc *.exp *.ilk *.iobj *.ipdb *.lib *.pdb
-          fi
-          shopt -s extglob dotglob
-          mkdir -p "${{ steps.artifact-metadata.outputs.name }}"
-          mv !("${{ steps.artifact-metadata.outputs.name }}") "${{ steps.artifact-metadata.outputs.name }}"
-          shopt -u dotglob
+          echo "##[set-output name=arch;]${ARCH}"
+          echo "##[set-output name=simd;]${SIMD}"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v2
         continue-on-error: true
         with:
           name: ${{ steps.artifact-metadata.outputs.name }}
-          path: bin
+          path: |
+            ./bin
+            !./bin/**/*.bsc
+            !./bin/**/*.exp
+            !./bin/**/*.ilk
+            !./bin/**/*.iobj
+            !./bin/**/*.ipdb
+            !./bin/**/*.pdb
+            !./bin/**/*.lib
+
+      - name: Upload artifact - with symbols
+        if: matrix.configuration != 'CMake'
+        uses: actions/upload-artifact@v2
+        continue-on-error: true
+        with:
+          name: ${{ steps.artifact-metadata.outputs.name }}-symbols
+          path: |
+            ./bin/**/*.pdb
+          retention-days: 30 # https://docs.github.com/en/free-pro-team@latest/actions/reference/usage-limits-billing-and-administration#artifact-and-log-retention-policy
+
+      # ---- Release / Tagging related steps ----
+      - name: Install Dependencies
+        if: startsWith(github.ref, 'refs/tags/') && matrix.configuration != 'CMake'
+        run: choco install 7zip.install
+
+      - name: Prepare Build Artifacts
+        if: startsWith(github.ref, 'refs/tags/') && matrix.configuration != 'CMake'
+        run: |
+          mkdir -p ./ci-artifacts/
+          7z a ./ci-artifacts/windows-${{ steps.artifact-metadata.outputs.arch }}-${{ steps.artifact-metadata.outputs.simd }}.7z ./bin/* '-xr!*bsc' '-xr!*.exp' '-xr!*.ilk' '-xr!*.iobj' '-xr!*.ipdb' '-xr!*.pdb' '-xr!*.lib'
+          7z a ./ci-artifacts/windows-${{ steps.artifact-metadata.outputs.arch }}-${{ steps.artifact-metadata.outputs.simd }}-symbols.7z ./bin/*.pdb
+          ls ./ci-artifacts/
+
+      - name: Upload Assets and Potential Publish Release
+        if: startsWith(github.ref, 'refs/tags/') && matrix.configuration != 'CMake'
+        env:
+          GITHUB_TOKEN: ${{ secrets.BOT_PAT }}
+          ASSET_DIR: ${{ github.WORKSPACE }}/ci-artifacts
+          ASSET_EXTENSION: "7z"
+          TAG_TO_SEARCH_FOR: ${{ github.REF }}
+        run: |
+          cd ./.github/workflows/scripts/releases/upload-release-artifacts
+          npm ci
+          node index.js
