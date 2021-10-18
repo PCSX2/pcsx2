@@ -621,6 +621,12 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 		// stable releases, with a simple title.
 		wintitle.Printf(L"%s  %d.%d.%d", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo);
 	}
+	else if (GIT_TAGGED_COMMIT) // Nightly builds
+	{
+		// tagged commit - more modern implementation of dev build versioning
+		// - there is no need to include the commit - that is associated with the tag, git is implied
+		wintitle.Printf(L"%s Nightly - %s", pxGetAppName().c_str(), GIT_TAG);
+	}
 	else
 	{
 		// beta / development editions, which feature revision number and compile date.
@@ -630,8 +636,8 @@ MainEmuFrame::MainEmuFrame(wxWindow* parent, const wxString& title)
 		}
 		else
 		{
-			wintitle.Printf(L"%s  %d.%d.%d-%lld%s (git)", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid,
-				PCSX2_VersionLo, SVN_REV, SVN_MODS ? L"m" : wxEmptyString);
+			wintitle.Printf(L"%s  %d.%d.%d-%lld (git)", pxGetAppName().c_str(), PCSX2_VersionHi, PCSX2_VersionMid,
+				PCSX2_VersionLo, SVN_REV);
 		}
 	}
 

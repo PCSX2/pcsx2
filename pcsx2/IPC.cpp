@@ -381,7 +381,16 @@ SocketIPC::IPCBuffer SocketIPC::ParseCommand(char* buf, char* ret_buffer, u32 bu
 			case MsgVersion:
 			{
 				char version[256] = {};
-				sprintf(version, "PCSX2 %u.%u.%u-%lld %s", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo, SVN_REV, SVN_MODS ? "(modded)" : "");
+				if (GIT_TAGGED_COMMIT) // Nightly builds
+				{
+					// tagged commit - more modern implementation of dev build versioning
+					// - there is no need to include the commit - that is associated with the tag, git is implied
+					sprintf(version, "PCSX2 Nightly - %s", GIT_TAG);
+				}
+				else
+				{
+					sprintf(version, "PCSX2 %u.%u.%u-%lld", PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo, SVN_REV);
+				}
 				version[255] = 0x00;
 				if (!SafetyChecks(buf_cnt, 0, ret_cnt, 256, buf_size))
 					goto error;
