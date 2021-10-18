@@ -129,7 +129,6 @@ class GSState : public GSAlignedClass<32>
 	bool m_mt;
 	void (*m_irq)();
 	bool m_path3hack;
-	bool m_init_read_fifo_supported;
 
 	struct GSTransferBuffer
 	{

@@ -28,7 +28,6 @@ public:
 	GIFRegXYOFFSET XYOFFSET;
 	GIFRegTEX0     TEX0;
 	GIFRegTEX1     TEX1;
-	GIFRegTEX2     TEX2;
 	GIFRegCLAMP    CLAMP;
 	GIFRegMIPTBP1  MIPTBP1;
 	GIFRegMIPTBP2  MIPTBP2;
@@ -61,7 +60,6 @@ public:
 		GIFRegXYOFFSET XYOFFSET;
 		GIFRegTEX0     TEX0;
 		GIFRegTEX1     TEX1;
-		GIFRegTEX2     TEX2;
 		GIFRegCLAMP    CLAMP;
 		GIFRegMIPTBP1  MIPTBP1;
 		GIFRegMIPTBP2  MIPTBP2;
@@ -89,7 +87,6 @@ public:
 		memset(&XYOFFSET, 0, sizeof(XYOFFSET));
 		memset(&TEX0, 0, sizeof(TEX0));
 		memset(&TEX1, 0, sizeof(TEX1));
-		memset(&TEX2, 0, sizeof(TEX2));
 		memset(&CLAMP, 0, sizeof(CLAMP));
 		memset(&MIPTBP1, 0, sizeof(MIPTBP1));
 		memset(&MIPTBP2, 0, sizeof(MIPTBP2));
@@ -155,7 +152,6 @@ public:
 		stack.XYOFFSET = XYOFFSET;
 		stack.TEX0 = TEX0;
 		stack.TEX1 = TEX1;
-		stack.TEX2 = TEX2;
 		stack.CLAMP = CLAMP;
 		stack.MIPTBP1 = MIPTBP1;
 		stack.MIPTBP2 = MIPTBP2;
@@ -175,7 +171,6 @@ public:
 		XYOFFSET = stack.XYOFFSET;
 		TEX0 = stack.TEX0;
 		TEX1 = stack.TEX1;
-		TEX2 = stack.TEX2;
 		CLAMP = stack.CLAMP;
 		MIPTBP1 = stack.MIPTBP1;
 		MIPTBP2 = stack.MIPTBP2;
@@ -241,15 +236,6 @@ public:
 		            "\tL:%u\n"
 		            "\tK:%d\n\n"
 		        , TEX1.LCM, TEX1.MXL, TEX1.MMAG, TEX1.MMIN, TEX1.MTBA, TEX1.L, TEX1.K);
-
-		fprintf(fp, "TEX2\n"
-		            "\tPSM:0x%x\n"
-		            "\tCBP:0x%x\n"
-		            "\tCPSM:0x%x\n"
-		            "\tCSM:%u\n"
-		            "\tCSA:%u\n"
-		            "\tCLD:%u\n\n"
-		        , TEX2.PSM, TEX2.CBP, TEX2.CPSM, TEX2.CSM, TEX2.CSA, TEX2.CLD);
 
 		fprintf(fp, "CLAMP\n"
 		            "\tWMS:%u\n"
