@@ -169,7 +169,6 @@ jobs:
           name: ${{ steps.artifact-metadata.outputs.name }}-symbols
           path: |
             ./bin/**/*.pdb
-          retention-days: 30 # https://docs.github.com/en/free-pro-team@latest/actions/reference/usage-limits-billing-and-administration#artifact-and-log-retention-policy
 
       # ---- Release / Tagging related steps ----
       - name: Install Dependencies
