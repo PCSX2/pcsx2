@@ -156,13 +156,21 @@ void SysLogMachineCaps()
 {
 	if ( !PCSX2_isReleaseVersion )
 	{
-		Console.WriteLn(Color_StrongGreen, "\nPCSX2 %u.%u.%u-%lld %s"
+		if (GIT_TAGGED_COMMIT) // Nightly builds
+		{
+			// tagged commit - more modern implementation of dev build versioning
+			// - there is no need to include the commit - that is associated with the tag, 
+			// - git is implied and the tag is timestamped
+			Console.WriteLn(Color_StrongGreen, "\nPCSX2 Nightly - %s", GIT_TAG);
+		} else {
+			Console.WriteLn(Color_StrongGreen, "\nPCSX2 %u.%u.%u-%lld"
 #ifndef DISABLE_BUILD_DATE
-			"- compiled on " __DATE__
+											   "- compiled on " __DATE__
 #endif
-			, PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
-			SVN_REV, SVN_MODS ? "(modded)" : ""
-			);
+				,
+				PCSX2_VersionHi, PCSX2_VersionMid, PCSX2_VersionLo,
+				SVN_REV);
+		}
 	}
 	else { // shorter release version string
 		Console.WriteLn(Color_StrongGreen, "PCSX2 %u.%u.%u-%lld"
