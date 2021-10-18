@@ -52,9 +52,9 @@ cp /usr/lib/$LIBARCH/libthai.so.0 "$GITHUB_WORKSPACE"/squashfs-root/usr/lib/
 export UPD_INFO="gh-releases-zsync|PCSX2|pcsx2|latest|$name.AppImage.zsync"
 export OUTPUT="$name.AppImage"
 /tmp/squashfs-root/AppRun --appdir="$GITHUB_WORKSPACE"/squashfs-root/ --plugin gtk -d "$GITHUB_WORKSPACE"/squashfs-root/PCSX2.desktop -i "$GITHUB_WORKSPACE"/squashfs-root/PCSX2.png --output appimage
-mkdir -p "$GITHUB_WORKSPACE"/artifacts/
+mkdir -p "$GITHUB_WORKSPACE"/ci-artifacts/
 ls -al .
-mv "$name.AppImage" "$GITHUB_WORKSPACE"/artifacts # && mv "$name.AppImage.zsync" "$GITHUB_WORKSPACE"/artifacts
-chmod -R 777 ./artifacts
-cd ./artifacts
+mv "$name.AppImage" "$GITHUB_WORKSPACE"/ci-artifacts # && mv "$name.AppImage.zsync" "$GITHUB_WORKSPACE"/ci-artifacts
+chmod -R 777 ./ci-artifacts
+cd ./ci-artifacts
 ls -al .
