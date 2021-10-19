@@ -361,7 +361,15 @@ struct Pcsx2Config
 				   OpEqu(FrameratePAL) &&
 
 				   OpEqu(FramesToDraw) &&
-				   OpEqu(FramesToSkip);
+				   OpEqu(FramesToSkip) &&
+
+				   OpEqu(AspectRatio) &&
+				   OpEqu(FMVAspectRatioSwitch) &&
+
+				   OpEqu(Zoom) &&
+				   OpEqu(StretchY) &&
+				   OpEqu(OffsetX) &&
+				   OpEqu(OffsetY);
 		}
 
 		bool operator!=(const GSOptions& right) const
