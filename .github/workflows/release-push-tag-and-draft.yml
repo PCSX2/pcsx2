@@ -1,6 +1,6 @@
 # Whenever a commit is pushed to master (ideally via a pull-request!)
 # this action will create the next release, which means:
-# 1. tag master with the proper semver
+# 1. tag master with the proper version
 # 2. create a new draft release (pre-released if a nightly build)
 # 3. add release notes
 
@@ -17,8 +17,8 @@ on:
   #       description: 'Should it be a stable release?'
   #       required: true
   #       default: 'false'
-  #     semverTag:
-  #       description: 'The semantic version to tag with'
+  #     versionTag:
+  #       description: 'The version to tag with'
   #       required: true
 
 jobs:
@@ -30,7 +30,7 @@ jobs:
       # Docs - https://github.com/mathieudutour/github-tag-action
       # Workflows cannot trigger other workflows implicitly
       # - https://github.community/t/github-actions-workflow-not-triggering-with-tag-push/17053/7
-      - name: Bump SemVer and Push Tag
+      - name: Bump Version and Push Tag
         id: tag_version
         uses: mathieudutour/github-tag-action@v5.6
         with:

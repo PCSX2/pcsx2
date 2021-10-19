@@ -199,7 +199,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.BOT_PAT }}
           ASSET_DIR: ${{ github.WORKSPACE }}/ci-artifacts
-          ASSET_EXTENSION: "AppImage"
+          ASSET_EXTENSION: AppImage
           TAG_TO_SEARCH_FOR: ${{ github.REF }}
         run: |
           cd ./.github/workflows/scripts/releases/upload-release-artifacts

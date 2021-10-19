@@ -167,14 +167,9 @@ jobs:
         continue-on-error: true
         with:
           name: ${{ steps.artifact-metadata.outputs.name }}-symbols
-          path: |
-            ./bin/**/*.pdb
+          path: ./bin/**/*.pdb
 
       # ---- Release / Tagging related steps ----
-      - name: Install Dependencies
-        if: startsWith(github.ref, 'refs/tags/') && matrix.configuration != 'CMake'
-        run: choco install 7zip.install
-
       - name: Prepare Build Artifacts
         if: startsWith(github.ref, 'refs/tags/') && matrix.configuration != 'CMake'
         run: |
@@ -188,7 +183,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.BOT_PAT }}
           ASSET_DIR: ${{ github.WORKSPACE }}/ci-artifacts
-          ASSET_EXTENSION: "7z"
+          ASSET_EXTENSION: 7z
           TAG_TO_SEARCH_FOR: ${{ github.REF }}
         run: |
           cd ./.github/workflows/scripts/releases/upload-release-artifacts
