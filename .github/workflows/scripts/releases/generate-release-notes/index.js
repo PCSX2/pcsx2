@@ -52,7 +52,7 @@ const { data: associatedPulls } = await octokit.rest.repos.listPullRequestsAssoc
 
 let releaseNotes = ``;
 
-if (associatedPulls.length == 0) {
+if (associatedPulls.length === 0) {
   releaseNotes += `- ${commit.commit.message}\n`;
 } else {
   for (var j = 0; j < associatedPulls.length; j++) {

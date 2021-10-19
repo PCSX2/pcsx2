@@ -10,7 +10,7 @@ participant Discord as discord
 
 user -> github : New Commit on master (from PR, or directly)
 ...waiting for commit push event to fire...
-github -> create : Push a new git tag, patch incrementing latest SemVer
+github -> create : Push a new git tag, patch incrementing latest Version
 alt from-pr? case
     create -> create : Use links to the PR as a description
 else was a commit
