@@ -32,6 +32,7 @@
 
 #include "common/pxStreams.h"
 #include "common/SafeArray.inl"
+#include "common/StringUtil.h"
 #include "SPU2/spu2.h"
 #include "USB/USB.h"
 #ifdef _WIN32
@@ -214,6 +215,13 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	Freeze(AllowParams2);
 	Freeze(g_GameStarted);
 	Freeze(g_GameLoading);
+	Freeze(ElfCRC);
+
+	char localDiscSerial[256];
+	StringUtil::Strlcpy(localDiscSerial, DiscSerial.ToUTF8(), sizeof(localDiscSerial));
+	Freeze(localDiscSerial);
+	if (IsLoading())
+		DiscSerial = wxString::FromUTF8(localDiscSerial);
 
 	// Third Block - Cycle Timers and Events
 	// -------------------------------------
