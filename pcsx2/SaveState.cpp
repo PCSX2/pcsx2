@@ -220,10 +220,16 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	FreezeTag( "Cycles" );
 	Freeze(EEsCycle);
 	Freeze(EEoCycle);
+	Freeze(iopCycleEE);
+	Freeze(iopBreak);
 	Freeze(g_nextEventCycle);
 	Freeze(g_iopNextEventCycle);
 	Freeze(s_iLastCOP0Cycle);
 	Freeze(s_iLastPERFCycle);
+	Freeze(nextCounter);
+	Freeze(nextsCounter);
+	Freeze(psxNextsCounter);
+	Freeze(psxNextCounter);
 
 	// Fourth Block - EE-related systems
 	// ---------------------------------
@@ -253,7 +259,6 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	cdrFreeze();
 	cdvdFreeze();
 
-	
 	// technically this is HLE BIOS territory, but we don't have enough such stuff
 	// to merit an HLE Bios sub-section... yet.
 	deci2Freeze();

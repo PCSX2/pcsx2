@@ -212,7 +212,6 @@ __ri void iopEventTest()
 		g_iopNextEventCycle = psxNextsCounter+psxNextCounter;
 	}
 
-
 	if (psxRegs.interrupt)
 	{
 		iopEventTestIsActive = true;

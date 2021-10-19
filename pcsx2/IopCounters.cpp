@@ -885,5 +885,5 @@ void SaveStateBase::psxRcntFreeze()
 	Freeze(psxhblankgate);
 
 	if (IsLoading())
-		psxRcntSetGates();
+		psxRcntUpdate();
 }
