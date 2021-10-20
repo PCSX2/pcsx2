@@ -351,16 +351,6 @@ bool GSDevice11::Create(const WindowInfo& wi)
 
 	m_dev->CreateBuffer(&bd, nullptr, m_shaderfx.cb.put());
 
-	// Fxaa
-
-	memset(&bd, 0, sizeof(bd));
-
-	bd.ByteWidth = sizeof(FXAAConstantBuffer);
-	bd.Usage = D3D11_USAGE_DEFAULT;
-	bd.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-
-	m_dev->CreateBuffer(&bd, nullptr, m_fxaa.cb.put());
-
 	//
 
 	memset(&rd, 0, sizeof(rd));
@@ -954,9 +944,7 @@ void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 	const GSVector4 sRect(0, 0, 1, 1);
 	const GSVector4 dRect(0, 0, s.x, s.y);
 
-	FXAAConstantBuffer cb;
-
-	if (m_fxaa.ps == nullptr)
+	if (!m_fxaa_ps)
 	{
 		try
 		{
@@ -964,7 +952,7 @@ void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 			if (shader.has_value())
 			{
 				ShaderMacro sm(m_shader.model);
-				CreateShader(*shader, "fxaa.fx", nullptr, "ps_main", sm.GetPtr(), m_fxaa.ps.put());
+				CreateShader(*shader, "fxaa.fx", nullptr, "ps_main", sm.GetPtr(), m_fxaa_ps.put());
 			}
 		}
 		catch (GSRecoverableError)
@@ -973,12 +961,7 @@ void GSDevice11::DoFXAA(GSTexture* sTex, GSTexture* dTex)
 		}
 	}
 
-	cb.rcpFrame = GSVector4(1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
-	cb.rcpFrameOpt = GSVector4::zero();
-
-	m_ctx->UpdateSubresource(m_fxaa.cb.get(), 0, nullptr, &cb, 0, 0);
-
-	StretchRect(sTex, sRect, dTex, dRect, m_fxaa.ps.get(), m_fxaa.cb.get(), true);
+	StretchRect(sTex, sRect, dTex, dRect, m_fxaa_ps.get(), nullptr, true);
 
 	//sTex->Save("c:\\temp1\\1.bmp");
 	//dTex->Save("c:\\temp1\\2.bmp");

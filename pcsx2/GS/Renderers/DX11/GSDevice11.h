@@ -193,11 +193,7 @@ private:
 		wil::com_ptr_nothrow<ID3D11Buffer> cb;
 	} m_shaderfx;
 
-	struct
-	{
-		wil::com_ptr_nothrow<ID3D11PixelShader> ps;
-		wil::com_ptr_nothrow<ID3D11Buffer> cb;
-	} m_fxaa;
+	wil::com_ptr_nothrow<ID3D11PixelShader> m_fxaa_ps;
 
 	struct
 	{

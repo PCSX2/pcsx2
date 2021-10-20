@@ -183,13 +183,6 @@ public:
 	using OMDepthStencilSelector = GSHWDrawConfig::DepthStencilSelector;
 	using OMColorMaskSelector = GSHWDrawConfig::ColorMaskSelector;
 
-	struct alignas(32) MiscConstantBuffer
-	{
-		GSVector4i EMOD_AC;
-
-		MiscConstantBuffer() { memset(this, 0, sizeof(*this)); }
-	};
-
 	struct ProgramSelector
 	{
 		VSSelector vs;
@@ -247,13 +240,11 @@ private:
 	struct
 	{
 		GL::Program ps[2]; // program object
-		GSUniformBufferOGL* cb; // uniform buffer object
 	} m_merge_obj;
 
 	struct
 	{
 		GL::Program ps[4]; // program object
-		GSUniformBufferOGL* cb; // uniform buffer object
 	} m_interlace;
 
 	struct
@@ -264,20 +255,17 @@ private:
 		GLuint pt; // sampler object
 		GSDepthStencilOGL* dss;
 		GSDepthStencilOGL* dss_write;
-		GSUniformBufferOGL* cb;
 	} m_convert;
 
 	struct
 	{
 		GL::Program ps;
-		GSUniformBufferOGL* cb;
 	} m_fxaa;
 
 #ifndef PCSX2_CORE
 	struct
 	{
 		GL::Program ps;
-		GSUniformBufferOGL* cb;
 	} m_shaderfx;
 #endif
 
@@ -309,7 +297,6 @@ private:
 
 	GSHWDrawConfig::VSConstantBuffer m_vs_cb_cache;
 	GSHWDrawConfig::PSConstantBuffer m_ps_cb_cache;
-	MiscConstantBuffer m_misc_cb_cache;
 
 	std::unique_ptr<GSTexture> m_font;
 	AlignedBuffer<u8, 32> m_download_buffer;

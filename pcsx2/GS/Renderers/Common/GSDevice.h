@@ -97,15 +97,6 @@ public:
 	ExternalFXConstantBuffer() { memset(this, 0, sizeof(*this)); }
 };
 
-class FXAAConstantBuffer
-{
-public:
-	GSVector4 rcpFrame;
-	GSVector4 rcpFrameOpt;
-
-	FXAAConstantBuffer() { memset(this, 0, sizeof(*this)); }
-};
-
 class ShadeBoostConstantBuffer
 {
 public:
