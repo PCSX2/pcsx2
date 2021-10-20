@@ -226,12 +226,6 @@ union PacketTagType
 	};
 };
 
-static void dummyIrqCallback()
-{
-	// dummy, because MTGS doesn't need this mess!
-	// (and zerogs does >_<)
-}
-
 void SysMtgsThread::OpenGS()
 {
 	if (m_Opened)
@@ -242,7 +236,6 @@ void SysMtgsThread::OpenGS()
 
 	memcpy(RingBuffer.Regs, PS2MEM_GS, sizeof(PS2MEM_GS));
 	GSsetBaseMem(RingBuffer.Regs);
-	GSirqCallback(dummyIrqCallback);
 
 	pxAssertMsg((GSopen2((void**)pDsp, 1 | (renderswitch ? 4 : 0)) == 0), "GS failed to open!");
 

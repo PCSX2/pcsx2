@@ -58,7 +58,6 @@ extern bool RunLinuxDialog();
 #undef None
 
 static GSRenderer* s_gs = NULL;
-static void (*s_irq)() = NULL;
 static uint8* s_basemem = NULL;
 static int s_vsync = 0;
 static bool s_exclusive = true;
@@ -147,7 +146,7 @@ void GSclose()
 int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads = -1)
 {
 	GSDevice* dev = NULL;
-	bool old_api = *dsp == NULL;
+	ASSERT(dsp != nullptr);
 
 	// Fresh start up or config file changed
 	if (renderer == GSRendererType::Undefined)
@@ -234,22 +233,8 @@ int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads 
 			{
 				try
 				{
-					if (old_api)
-					{
-						// old-style API expects us to create and manage our own window:
-						wnd->Create(title, w, h);
-
-						wnd->Show();
-
-						*dsp = wnd->GetDisplay();
-					}
-					else
-					{
-						wnd->Attach(win_handle, false);
-					}
-
+					wnd->Attach(win_handle, false);
 					window = wnd; // Previous code will throw if window isn't supported
-
 					break;
 				}
 				catch (GSRecoverableError)
@@ -335,11 +320,7 @@ int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads 
 	}
 
 	s_gs->SetRegsMem(s_basemem);
-	s_gs->SetIrqCallback(s_irq);
 	s_gs->SetVSync(s_vsync);
-
-	if (!old_api)
-		s_gs->SetMultithreaded(true);
 
 	if (!s_gs->CreateDevice(dev))
 	{
@@ -418,40 +399,6 @@ int GSopen2(void** dsp, uint32 flags)
 	stored_toggle_state = toggle_state;
 
 	int retval = _GSopen(dsp, "", current_renderer);
-
-	gsopen_done = true;
-
-	return retval;
-}
-
-int GSopen(void** dsp, const char* title, int mt)
-{
-	GSRendererType renderer = GSRendererType::Default;
-
-	// Legacy GUI expects to acquire vsync from the configuration files.
-
-	s_vsync = theApp.GetConfigI("vsync");
-
-	if (mt == 2)
-	{
-		// pcsx2 sent a switch renderer request
-		mt = 1;
-	}
-	else
-	{
-		// normal init
-
-		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
-	}
-
-	*dsp = NULL;
-
-	int retval = _GSopen(dsp, title, renderer);
-
-	if (retval == 0 && s_gs)
-	{
-		s_gs->SetMultithreaded(!!mt);
-	}
 
 	gsopen_done = true;
 
@@ -751,16 +698,6 @@ int GStest()
 		return -1;
 
 	return 0;
-}
-
-void GSirqCallback(void (*irq)())
-{
-	s_irq = irq;
-
-	if (s_gs)
-	{
-		s_gs->SetIrqCallback(s_irq);
-	}
 }
 
 void pt(const char* str)

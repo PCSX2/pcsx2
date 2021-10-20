@@ -1780,7 +1780,6 @@ int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads)
 void GSosdLog(const char* utf8, uint32 color);
 void GSosdMonitor(const char* key, const char* value, uint32 color);
 int GSopen2(void** dsp, uint32 flags);
-int GSopen(void** dsp, const char* title, int mt);
 void GSreset();
 void GSgifSoftReset(uint32 mask);
 void GSwriteCSR(uint32 csr);
@@ -1798,7 +1797,6 @@ void GSkeyEvent(const HostKeyEvent& e);
 int GSfreeze(FreezeAction mode, freezeData* data);
 void GSconfigure();
 int GStest();
-void GSirqCallback(void (*irq)());
 bool GSsetupRecording(std::string& filename);
 void GSendRecording();
 void GSsetGameCRC(uint32 crc, int options);
