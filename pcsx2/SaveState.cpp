@@ -32,6 +32,7 @@
 
 #include "common/pxStreams.h"
 #include "common/SafeArray.inl"
+#include "common/StringUtil.h"
 #include "SPU2/spu2.h"
 #include "USB/USB.h"
 #ifdef _WIN32
@@ -214,16 +215,29 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	Freeze(AllowParams2);
 	Freeze(g_GameStarted);
 	Freeze(g_GameLoading);
+	Freeze(ElfCRC);
+
+	char localDiscSerial[256];
+	StringUtil::Strlcpy(localDiscSerial, DiscSerial.ToUTF8(), sizeof(localDiscSerial));
+	Freeze(localDiscSerial);
+	if (IsLoading())
+		DiscSerial = wxString::FromUTF8(localDiscSerial);
 
 	// Third Block - Cycle Timers and Events
 	// -------------------------------------
 	FreezeTag( "Cycles" );
 	Freeze(EEsCycle);
 	Freeze(EEoCycle);
+	Freeze(iopCycleEE);
+	Freeze(iopBreak);
 	Freeze(g_nextEventCycle);
 	Freeze(g_iopNextEventCycle);
 	Freeze(s_iLastCOP0Cycle);
 	Freeze(s_iLastPERFCycle);
+	Freeze(nextCounter);
+	Freeze(nextsCounter);
+	Freeze(psxNextsCounter);
+	Freeze(psxNextCounter);
 
 	// Fourth Block - EE-related systems
 	// ---------------------------------
@@ -231,6 +245,7 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	rcntFreeze();
 	gsFreeze();
 	vuMicroFreeze();
+	vuJITFreeze();
 	vif0Freeze();
 	vif1Freeze();
 	sifFreeze();
@@ -252,7 +267,6 @@ SaveStateBase& SaveStateBase::FreezeInternals()
 	cdrFreeze();
 	cdvdFreeze();
 
-	
 	// technically this is HLE BIOS territory, but we don't have enough such stuff
 	// to merit an HLE Bios sub-section... yet.
 	deci2Freeze();

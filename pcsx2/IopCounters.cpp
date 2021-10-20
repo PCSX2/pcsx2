@@ -881,7 +881,9 @@ void SaveStateBase::psxRcntFreeze()
 	Freeze(psxCounters);
 	Freeze(psxNextCounter);
 	Freeze(psxNextsCounter);
+	Freeze(psxvblankgate);
+	Freeze(psxhblankgate);
 
 	if (IsLoading())
-		psxRcntSetGates();
+		psxRcntUpdate();
 }

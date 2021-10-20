@@ -131,8 +131,14 @@ static __fi void cpuRcntSet()
 {
 	int i;
 
+	// Default to next VBlank
 	nextsCounter = cpuRegs.cycle;
 	nextCounter = vsyncCounter.CycleT - (cpuRegs.cycle - vsyncCounter.sCycle);
+
+	// Also check next HSync
+	s32 nextHsync = hsyncCounter.CycleT - (cpuRegs.cycle - hsyncCounter.sCycle);
+	if (nextHsync < nextCounter)
+		nextCounter = nextHsync;
 
 	for (i = 0; i < 4; i++)
 		_rcntSet( i );
@@ -1044,13 +1050,8 @@ void SaveStateBase::rcntFreeze()
 	Freeze( vSyncInfo );
 	Freeze( gsVideoMode );
 	Freeze( gsIsInterlaced );
+	Freeze( gates );
 
 	if( IsLoading() )
-	{
-		// make sure the gate flags are set based on the counter modes...
-		for( int i=0; i<4; i++ )
-			_rcntSetGate( i );
-
-		iopEventAction = 1;	// probably not needed but won't hurt anything either.
-	}
+		cpuRcntSet();
 }
