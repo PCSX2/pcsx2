@@ -17072,6 +17072,14 @@ SLES-55012:
 SLES-55013:
   name: "Iridium Runners"
   region: "PAL-M5"
+  gameFixes:
+    - EETimingHack # Fixes game engine errors when going ingame.
+    - VUKickstartHack # Fixes distant shadows
+  patches:
+    304497e5:
+      content: |-
+        // Fixes random hangs when going ingame.
+        patch=1,EE,002242e0,word,00000000
 SLES-55015:
   name: "Barbie as the Island Princess"
   region: "PAL-M6"
@@ -39397,6 +39405,7 @@ SLUS-21697:
   compat: 3
   gameFixes:
     - EETimingHack # Fixes game engine errors when going ingame.
+    - VUKickstartHack # Fixes distant shadows
   patches:
     304497e5:
       content: |-
