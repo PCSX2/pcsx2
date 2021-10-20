@@ -29,7 +29,6 @@ GSState::GSState()
 	, m_skip(0)
 	, m_skip_offset(0)
 	, m_q(1.0f)
-	, m_texflush(true)
 	, m_vt(this)
 	, m_regs(NULL)
 	, m_crc(0)
@@ -220,8 +219,6 @@ void GSState::Reset()
 	m_vertex.tail = 0;
 	m_vertex.next = 0;
 	m_index.tail = 0;
-
-	m_texflush = true;
 }
 
 void GSState::ResetHandlers()
@@ -1122,8 +1119,6 @@ void GSState::GIFRegHandlerFOGCOL(const GIFReg* RESTRICT r)
 void GSState::GIFRegHandlerTEXFLUSH(const GIFReg* RESTRICT r)
 {
 	GL_REG("TEXFLUSH = 0x%x_%x", r->u32[1], r->u32[0]);
-
-	m_texflush = true;
 }
 
 template <int i>
