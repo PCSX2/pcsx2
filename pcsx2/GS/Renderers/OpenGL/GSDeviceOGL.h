@@ -18,6 +18,7 @@
 #include "common/GL/Context.h"
 #include "common/GL/StreamBuffer.h"
 #include "common/GL/Program.h"
+#include "common/GL/ShaderCache.h"
 #include "common/HashCombine.h"
 #include "GS/Renderers/Common/GSDevice.h"
 #include "GSTextureOGL.h"
@@ -213,6 +214,9 @@ public:
 	static int m_shader_reg;
 
 private:
+	// Increment this constant whenever shaders change, to invalidate user's program binary cache.
+	static constexpr u32 SHADER_VERSION = 1;
+
 	std::unique_ptr<GL::Context> m_gl_context;
 	int m_mipmap;
 	int m_upscale_multiplier;
@@ -299,6 +303,7 @@ private:
 	GLuint m_ps_ss[1 << 7];
 	GSDepthStencilOGL* m_om_dss[1 << 5];
 	std::unordered_map<ProgramSelector, GL::Program, ProgramSelectorHash> m_programs;
+	GL::ShaderCache m_shader_cache;
 
 	GLuint m_palette_ss;
 
