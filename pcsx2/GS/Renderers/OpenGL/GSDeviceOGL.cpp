@@ -32,12 +32,8 @@ u64 g_vertex_upload_byte = 0;
 u64 g_uniform_upload_byte = 0;
 #endif
 
-static constexpr u32 g_merge_cb_index     = 3;
-static constexpr u32 g_interlace_cb_index = 4;
-static constexpr u32 g_fx_cb_index        = 14;
-static constexpr u32 g_convert_index      = 5;
 static constexpr u32 g_vs_cb_index        = 1;
-static constexpr u32 g_ps_cb_index        = 2;
+static constexpr u32 g_ps_cb_index        = 0;
 
 static constexpr u32 VERTEX_BUFFER_SIZE = 32 * 1024 * 1024;
 static constexpr u32 INDEX_BUFFER_SIZE = 16 * 1024 * 1024;
@@ -110,24 +106,9 @@ GSDeviceOGL::~GSDeviceOGL()
 	m_vertex_stream_buffer.reset();
 	m_index_stream_buffer.reset();
 
-	// Clean m_merge_obj
-	delete m_merge_obj.cb;
-
-	// Clean m_interlace
-	delete m_interlace.cb;
-
 	// Clean m_convert
 	delete m_convert.dss;
 	delete m_convert.dss_write;
-	delete m_convert.cb;
-
-	// Clean m_fxaa
-	delete m_fxaa.cb;
-
-#ifndef PCSX2_CORE
-	// Clean m_shaderfx
-	delete m_shaderfx.cb;
-#endif
 
 	// Clean m_date
 	delete m_date.dss;
@@ -375,8 +356,6 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 	{
 		GL_PUSH("GSDeviceOGL::Convert");
 
-		m_convert.cb = new GSUniformBufferOGL("Misc UBO", g_convert_index, sizeof(MiscConstantBuffer));
-
 		// these all share the same vertex shader
 		const auto shader = Host::ReadResourceFileToString("shaders/opengl/convert.glsl");
 		if (!shader.has_value())
@@ -394,6 +373,9 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 			if (!m_shader_cache.GetProgram(&m_convert.ps[i], m_convert.vs, {}, ps))
 				return false;
 			m_convert.ps[i].SetFormattedName("Convert pipe %s", name);
+
+			if (static_cast<ShaderConvert>(i) == ShaderConvert::YUV)
+				m_convert.ps[i].RegisterUniform("EMOD");
 		}
 
 		PSSamplerSelector point;
@@ -415,10 +397,6 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 	{
 		GL_PUSH("GSDeviceOGL::Merge");
 
-		static const float default_merge_cb[4] = {};
-		m_merge_obj.cb = new GSUniformBufferOGL("Merge UBO", g_merge_cb_index, sizeof(MergeConstantBuffer));
-		m_merge_obj.cb->upload(default_merge_cb);
-
 		const auto shader = Host::ReadResourceFileToString("shaders/opengl/merge.glsl");
 		if (!shader.has_value())
 			return false;
@@ -429,6 +407,7 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 			if (!m_shader_cache.GetProgram(&m_merge_obj.ps[i], m_convert.vs, {}, ps))
 				return false;
 			m_merge_obj.ps[i].SetFormattedName("Merge pipe %zu", i);
+			m_merge_obj.ps[i].RegisterUniform("BGColor");
 		}
 	}
 
@@ -437,10 +416,6 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 	// ****************************************************************
 	{
 		GL_PUSH("GSDeviceOGL::Interlace");
-
-		m_interlace.cb = new GSUniformBufferOGL("Interlace UBO", g_interlace_cb_index, sizeof(InterlaceConstantBuffer));
-		InterlaceConstantBuffer interlace_cb;
-		m_interlace.cb->upload(&interlace_cb);
 
 		const auto shader = Host::ReadResourceFileToString("shaders/opengl/interlace.glsl");
 		if (!shader.has_value())
@@ -452,6 +427,8 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 			if (!m_shader_cache.GetProgram(&m_interlace.ps[i], m_convert.vs, {}, ps))
 				return false;
 			m_interlace.ps[i].SetFormattedName("Merge pipe %zu", i);
+			m_interlace.ps[i].RegisterUniform("ZrH");
+			m_interlace.ps[i].RegisterUniform("hH");
 		}
 	}
 
@@ -1322,20 +1299,19 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 	OMSetColorMaskState();
 	ClearRenderTarget(dTex, c);
 
-	// Upload constant to select YUV algo
-	if (feedback_write_2 || feedback_write_1)
-	{
-		// Write result to feedback loop
-		m_misc_cb_cache.EMOD_AC.x = EXTBUF.EMODA;
-		m_misc_cb_cache.EMOD_AC.y = EXTBUF.EMODC;
-		m_convert.cb->cache_upload(&m_misc_cb_cache);
-	}
-
 	if (sTex[1] && (PMODE.SLBG == 0 || feedback_write_2_but_blend_bg))
 	{
 		// 2nd output is enabled and selected. Copy it to destination so we can blend it with 1st output
 		// Note: value outside of dRect must contains the background color (c)
 		StretchRect(sTex[1], sRect[1], dTex, dRect[1], ShaderConvert::COPY);
+	}
+
+	// Upload constant to select YUV algo
+	if (feedback_write_2 || feedback_write_1)
+	{
+		// Write result to feedback loop
+		m_convert.ps[static_cast<int>(ShaderConvert::YUV)].Bind();
+		m_convert.ps[static_cast<int>(ShaderConvert::YUV)].Uniform2i(0, EXTBUF.EMODA, EXTBUF.EMODC);
 	}
 
 	// Save 2nd output
@@ -1355,7 +1331,8 @@ void GSDeviceOGL::DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex,
 		if (PMODE.MMOD == 1)
 		{
 			// Blend with a constant alpha
-			m_merge_obj.cb->cache_upload(&c.v);
+			m_merge_obj.ps[1].Bind();
+			m_merge_obj.ps[1].Uniform4fv(0, c.v);
 			StretchRect(sTex[0], sRect[0], dTex, dRect[0], m_merge_obj.ps[1], m_MERGE_BLEND, OMColorMaskSelector());
 		}
 		else
@@ -1380,12 +1357,9 @@ void GSDeviceOGL::DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool
 	const GSVector4 sRect(0, 0, 1, 1);
 	const GSVector4 dRect(0.0f, yoffset, s.x, s.y + yoffset);
 
-	InterlaceConstantBuffer cb;
-
-	cb.ZrH = GSVector2(0, 1.0f / s.y);
-	cb.hH = s.y / 2;
-
-	m_interlace.cb->cache_upload(&cb);
+	m_interlace.ps[shader].Bind();
+	m_interlace.ps[shader].Uniform2f(0, 0, 1.0f / s.y);
+	m_interlace.ps[shader].Uniform1f(1, s.y / 2);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_interlace.ps[shader], linear);
 }
@@ -1455,10 +1429,13 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 		shader << fshader.rdbuf();
 
 
-		m_shaderfx.cb = new GSUniformBufferOGL("eFX UBO", g_fx_cb_index, sizeof(ExternalFXConstantBuffer));
 		const std::string ps(GetShaderSource("ps_main", GL_FRAGMENT_SHADER, m_shader_common_header, shader.str(), config.str()));
 		if (!m_shaderfx.ps.Compile(m_convert.vs, {}, ps) || !m_shaderfx.ps.Link())
 			return;
+
+		m_shaderfx.ps.RegisterUniform("_xyFrame");
+		m_shaderfx.ps.RegisterUniform("_rcpFrame");
+		m_shaderfx.ps.RegisterUniform("_rcpFrameOpt");
 	}
 
 	GL_PUSH("DoExternalFX");
@@ -1470,13 +1447,10 @@ void GSDeviceOGL::DoExternalFX(GSTexture* sTex, GSTexture* dTex)
 	const GSVector4 sRect(0, 0, 1, 1);
 	const GSVector4 dRect(0, 0, s.x, s.y);
 
-	ExternalFXConstantBuffer cb;
-
-	cb.xyFrame = GSVector2((float)s.x, (float)s.y);
-	cb.rcpFrame = GSVector4(1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
-	cb.rcpFrameOpt = GSVector4::zero();
-
-	m_shaderfx.cb->cache_upload(&cb);
+	m_shaderfx.ps.Bind();
+	m_shaderfx.ps.Uniform2f(0, (float)s.x, (float)s.y);
+	m_shaderfx.ps.Uniform4f(1, 1.0f / s.x, 1.0f / s.y, 0.0f, 0.0f);
+	m_shaderfx.ps.Uniform4f(2, 0.0f, 0.0f, 0.0f, 0.0f);
 
 	StretchRect(sTex, sRect, dTex, dRect, m_shaderfx.ps, true);
 #endif

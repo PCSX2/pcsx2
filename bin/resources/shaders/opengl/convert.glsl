@@ -388,6 +388,8 @@ void ps_mod256()
 #endif
 
 #ifdef ps_yuv
+uniform ivec2 EMOD;
+
 void ps_yuv()
 {
     vec4 i = sample_c();
@@ -404,7 +406,7 @@ void ps_yuv()
     float Cr = float(0xE0)/255.0f * yuv.y + float(0x80)/255.0f;
     float Cb = float(0xE0)/255.0f * yuv.z + float(0x80)/255.0f;
 
-    switch(EMODA) {
+    switch(EMOD.x) {
         case 0:
             o.a = i.a;
             break;
@@ -419,7 +421,7 @@ void ps_yuv()
             break;
     }
 
-    switch(EMODC) {
+    switch(EMOD.y) {
         case 0:
             o.rgb = i.rgb;
             break;

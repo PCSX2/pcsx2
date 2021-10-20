@@ -9,11 +9,8 @@ in SHADER
 
 #ifdef FRAGMENT_SHADER
 
-layout(std140, binding = 4) uniform cb11
-{
-    vec2 ZrH;
-    float hH;
-};
+uniform vec2 ZrH;
+uniform float hH;
 
 layout(location = 0) out vec4 SV_Target0;
 
