@@ -14921,6 +14921,7 @@ SLES-54021:
   region: "PAL-M5"
   gameFixes:
     - EETimingHack # Fixes game engine errors when going ingame.
+    - VUKickstartHack # Fixes shadows on some surfaces.
   patches:
     b02c81e5:
       content: |-
@@ -17074,7 +17075,7 @@ SLES-55013:
   region: "PAL-M5"
   gameFixes:
     - EETimingHack # Fixes game engine errors when going ingame.
-    - VUKickstartHack # Fixes distant shadows
+    - VUKickstartHack # Fixes distant shadows.
   patches:
     304497e5:
       content: |-
@@ -37819,6 +37820,7 @@ SLUS-21314:
   compat: 4
   gameFixes:
     - EETimingHack # Needed to go ingame.
+    - VUKickstartHack # Fixes shadows on some surfaces.
   patches:
     f73488d5:
       content: |-
@@ -39405,7 +39407,7 @@ SLUS-21697:
   compat: 3
   gameFixes:
     - EETimingHack # Fixes game engine errors when going ingame.
-    - VUKickstartHack # Fixes distant shadows
+    - VUKickstartHack # Fixes distant shadows.
   patches:
     304497e5:
       content: |-
