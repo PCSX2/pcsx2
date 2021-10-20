@@ -14,6 +14,7 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "common/StringUtil.h"
 #include "GS/GSState.h"
 #include "GSDeviceOGL.h"
 #include "GLState.h"
@@ -262,6 +263,9 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 		return false;
 	}
 
+	if (!m_shader_cache.Open(false, StringUtil::wxStringToUTF8String(EmuFolders::Cache.ToString()), SHADER_VERSION))
+		Console.Warning("Shader cache failed to open.");
+
 	{
 		auto shader = Host::ReadResourceFileToString("shaders/opengl/common_header.glsl");
 		if (!shader.has_value())
@@ -387,7 +391,7 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
                                               format("#define PS_SCALE_FACTOR %d\n", m_upscale_multiplier) :
                                               std::string();
 			const std::string ps(GetShaderSource(name, GL_FRAGMENT_SHADER, m_shader_common_header, *shader, macro_sel));
-			if (!m_convert.ps[i].Compile(m_convert.vs, {}, ps) || !m_convert.ps[i].Link())
+			if (!m_shader_cache.GetProgram(&m_convert.ps[i], m_convert.vs, {}, ps))
 				return false;
 			m_convert.ps[i].SetFormattedName("Convert pipe %s", name);
 		}
@@ -422,7 +426,7 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 		for (size_t i = 0; i < std::size(m_merge_obj.ps); i++)
 		{
 			const std::string ps(GetShaderSource(format("ps_main%d", i), GL_FRAGMENT_SHADER, m_shader_common_header, *shader, {}));
-			if (!m_merge_obj.ps[i].Compile(m_convert.vs, {}, ps) || !m_merge_obj.ps[i].Link())
+			if (!m_shader_cache.GetProgram(&m_merge_obj.ps[i], m_convert.vs, {}, ps))
 				return false;
 			m_merge_obj.ps[i].SetFormattedName("Merge pipe %zu", i);
 		}
@@ -445,7 +449,7 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 		for (size_t i = 0; i < std::size(m_interlace.ps); i++)
 		{
 			const std::string ps(GetShaderSource(format("ps_main%d", i), GL_FRAGMENT_SHADER, m_shader_common_header, *shader, {}));
-			if (!m_interlace.ps[i].Compile(m_convert.vs, {}, ps) || !m_interlace.ps[i].Link())
+			if (!m_shader_cache.GetProgram(&m_interlace.ps[i], m_convert.vs, {}, ps))
 				return false;
 			m_interlace.ps[i].SetFormattedName("Merge pipe %zu", i);
 		}
@@ -469,7 +473,7 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 			return false;
 
 		const std::string ps(GetShaderSource("ps_main", GL_FRAGMENT_SHADER, m_shader_common_header, *shader, shade_macro));
-		if (!m_shadeboost.ps.Compile(m_convert.vs, {}, ps) || !m_shadeboost.ps.Link())
+		if (!m_shader_cache.GetProgram(&m_shadeboost.ps, m_convert.vs, {}, ps))
 			return false;
 		m_shadeboost.ps.SetName("Shadeboost pipe");
 	}
@@ -1768,9 +1772,7 @@ void GSDeviceOGL::SetupPipeline(const ProgramSelector& psel)
 	const std::string gs((psel.gs.key != 0) ? GetGSSource(psel.gs) : std::string());
 
 	GL::Program prog;
-	if (prog.Compile(vs, gs, ps))
-		prog.Link();
-
+	m_shader_cache.GetProgram(&prog, vs, gs, ps);
 	it = m_programs.emplace(psel, std::move(prog)).first;
 	it->second.Bind();
 }
