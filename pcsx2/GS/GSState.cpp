@@ -24,7 +24,6 @@ int GSState::s_n = 0;
 
 GSState::GSState()
 	: m_version(6)
-	, m_path3hack(0)
 	, m_gsc(NULL)
 	, m_skip(0)
 	, m_skip_offset(0)
