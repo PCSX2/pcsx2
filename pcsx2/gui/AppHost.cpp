@@ -120,7 +120,7 @@ HostDisplay* Host::AcquireHostDisplay(HostDisplay::RenderAPI api)
 	if (!s_host_display)
 		return nullptr;
 
-	if (!s_host_display->CreateRenderDevice(g_gs_window_info, GSConfig.Adapter, GSConfig.UseDebugDevice) ||
+	if (!s_host_display->CreateRenderDevice(g_gs_window_info, GSConfig.Adapter, GSConfig.ThreadedPresentation, GSConfig.UseDebugDevice) ||
 		!s_host_display->InitializeRenderDevice(StringUtil::wxStringToUTF8String(EmuFolders::Cache.ToString()), GSConfig.UseDebugDevice) ||
 		!ImGuiManager::Initialize())
 	{

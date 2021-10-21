@@ -1,32 +1,23 @@
-/*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2021  PCSX2 Dev Team
- *
- *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
- *  of the GNU Lesser General Public License as published by the Free Software Found-
- *  ation, either version 3 of the License, or (at your option) any later version.
- *
- *  PCSX2 is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY;
- *  without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR
- *  PURPOSE.  See the GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License along with PCSX2.
- *  If not, see <http://www.gnu.org/licenses/>.
- */
-
 #pragma once
-
-#include <glad.h>
-
-#include "HostDisplay.h"
-#include "common/GL/Context.h"
+#include "common/Vulkan/Loader.h"
+#include "common/Vulkan/StreamBuffer.h"
+#include "common/Vulkan/SwapChain.h"
 #include "common/WindowInfo.h"
+#include "pcsx2/HostDisplay.h"
 #include <memory>
+#include <string_view>
 
-class OpenGLHostDisplay final : public HostDisplay
+namespace Vulkan
+{
+	class StreamBuffer;
+	class SwapChain;
+} // namespace Vulkan
+
+class VulkanHostDisplay final : public HostDisplay
 {
 public:
-	OpenGLHostDisplay();
-	~OpenGLHostDisplay();
+	VulkanHostDisplay();
+	~VulkanHostDisplay();
 
 	RenderAPI GetRenderAPI() const override;
 	void* GetRenderDevice() const override;
@@ -51,8 +42,8 @@ public:
 	AdapterAndModeList GetAdapterAndModeList() override;
 	void DestroyRenderSurface() override;
 
-	std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels, const void* data,
-		u32 data_stride, bool dynamic) override;
+	std::unique_ptr<HostDisplayTexture> CreateTexture(u32 width, u32 height, u32 layers, u32 levels,
+		const void* data, u32 data_stride, bool dynamic = false) override;
 	void UpdateTexture(HostDisplayTexture* texture, u32 x, u32 y, u32 width, u32 height, const void* texture_data,
 		u32 texture_data_stride) override;
 
@@ -61,16 +52,12 @@ public:
 	bool BeginPresent(bool frame_skip) override;
 	void EndPresent() override;
 
-protected:
-	const char* GetGLSLVersionString() const;
-	std::string GetGLSLVersionHeader() const;
+	static AdapterAndModeList StaticGetAdapterAndModeList(const WindowInfo* wi);
 
+protected:
 	bool CreateImGuiContext() override;
 	void DestroyImGuiContext() override;
 	bool UpdateImGuiFontTexture() override;
 
-	std::unique_ptr<GL::Context> m_gl_context;
-
-	VsyncMode m_vsync_mode = VsyncMode::Off;
+	std::unique_ptr<Vulkan::SwapChain> m_swap_chain;
 };
-
