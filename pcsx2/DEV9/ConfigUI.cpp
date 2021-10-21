@@ -87,8 +87,10 @@ class DEV9Dialog : public wxDialog
 		}
 	};
 	wxCheckBox* m_eth_enable;
+	wxChoice* m_eth_adapter_api;
 	wxChoice* m_eth_adapter;
-	std::vector<AdapterEntry> m_adapter_list;
+	std::vector<NetApi> m_api_list;
+	std::vector<std::vector<AdapterEntry>> m_adapter_list;
 	wxCheckBox* m_intercept_dhcp;
 	wxTextCtrl* m_ps2_address;
 	IPInputWithAutoCheck m_subnet_mask;
@@ -100,6 +102,16 @@ class DEV9Dialog : public wxDialog
 	wxFilePickerCtrl* m_hdd_file;
 	wxSpinCtrl* m_hdd_size_spin;
 	wxSlider* m_hdd_size_slider;
+
+	void addAdapter(const AdapterEntry& adapter)
+	{
+		if (std::find(m_api_list.begin(), m_api_list.end(), adapter.type) == m_api_list.end())
+			m_api_list.push_back(adapter.type);
+		u32 idx = static_cast<u32>(adapter.type);
+		if (m_adapter_list.size() <= idx)
+			m_adapter_list.resize(idx + 1);
+		m_adapter_list[idx].push_back(adapter);
+	}
 
 public:
 	DEV9Dialog()
@@ -116,37 +128,42 @@ public:
 		eth_sizer->AddSpacer(5);
 
 		auto* eth_adapter_box = new wxGridBagSizer(5, 5);
-		auto* eth_adapter_label = new wxStaticText(this, wxID_ANY, _("Ethernet Device:"));
+		for (const AdapterEntry& adapter : PCAPAdapter::GetAdapters())
+			addAdapter(adapter);
 #ifdef _WIN32
-		m_adapter_list = TAPAdapter::GetAdapters();
-		auto pcap_adapters = PCAPAdapter::GetAdapters();
-		m_adapter_list.reserve(m_adapter_list.size() + pcap_adapters.size());
-		m_adapter_list.insert(m_adapter_list.end(), pcap_adapters.begin(), pcap_adapters.end());
-#else
-		m_adapter_list = PCAPAdapter::GetAdapters();
+		for (const AdapterEntry& adapter : TAPAdapter::GetAdapters())
+			addAdapter(adapter);
 #endif
-		wxArrayString adapter_name_list;
-		adapter_name_list.Add("");
-		for (const AdapterEntry& adapter : m_adapter_list)
-			adapter_name_list.Add(wxString::Format(_("%s (%s)"), adapter.name, NetApiToWxString(adapter.type)));
-		m_eth_adapter = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, adapter_name_list);
+		std::sort(m_api_list.begin(), m_api_list.end());
+		for (auto& list : m_adapter_list)
+			std::sort(list.begin(), list.end(), [](const AdapterEntry& a, AdapterEntry& b){ return a.name < b.name; });
+		wxArrayString adapter_api_name_list;
+		adapter_api_name_list.Add("");
+		for (const NetApi& type : m_api_list)
+			adapter_api_name_list.Add(NetApiToWxString(type));
+		auto* eth_adapter_api_label = new wxStaticText(this, wxID_ANY, _("Ethernet Device Type:"));
+		m_eth_adapter_api = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, adapter_api_name_list);
+		auto* eth_adapter_label = new wxStaticText(this, wxID_ANY, _("Ethernet Device:"));
+		m_eth_adapter = new wxChoice(this, wxID_ANY);
 		auto* intercept_dhcp_label = new wxStaticText(this, wxID_ANY, _("Intercept DHCP:"));
 		m_intercept_dhcp = new wxCheckBox(this, wxID_ANY, _("Enabled"));
 		auto* ps2_addr_label = new wxStaticText(this, wxID_ANY, _("PS2 Address:"));
 		m_ps2_address = new wxTextCtrl(this, wxID_ANY);
 		m_ps2_address->SetMinSize(wxSize(150, -1));
 
-		eth_adapter_box->Add(eth_adapter_label,    wxGBPosition(0, 0), wxDefaultSpan,  wxALIGN_RIGHT | wxALIGN_CENTRE_VERTICAL);
-		eth_adapter_box->Add(intercept_dhcp_label, wxGBPosition(1, 0), wxDefaultSpan,  wxALIGN_RIGHT | wxALIGN_CENTRE_VERTICAL);
-		eth_adapter_box->Add(ps2_addr_label,       wxGBPosition(2, 0), wxDefaultSpan,  wxALIGN_RIGHT | wxALIGN_CENTRE_VERTICAL);
-		eth_adapter_box->Add(m_eth_adapter,        wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND);
-		eth_adapter_box->Add(m_intercept_dhcp,     wxGBPosition(1, 1), wxDefaultSpan,  wxEXPAND);
-		eth_adapter_box->Add(m_ps2_address,        wxGBPosition(2, 1), wxDefaultSpan,  wxEXPAND);
+		eth_adapter_box->Add(eth_adapter_api_label, wxGBPosition(0, 0), wxDefaultSpan,  wxALIGN_RIGHT | wxALIGN_CENTRE_VERTICAL);
+		eth_adapter_box->Add(eth_adapter_label,     wxGBPosition(1, 0), wxDefaultSpan,  wxALIGN_RIGHT | wxALIGN_CENTRE_VERTICAL);
+		eth_adapter_box->Add(intercept_dhcp_label,  wxGBPosition(2, 0), wxDefaultSpan,  wxALIGN_RIGHT | wxALIGN_CENTRE_VERTICAL);
+		eth_adapter_box->Add(ps2_addr_label,        wxGBPosition(3, 0), wxDefaultSpan,  wxALIGN_RIGHT | wxALIGN_CENTRE_VERTICAL);
+		eth_adapter_box->Add(m_eth_adapter_api,     wxGBPosition(0, 1), wxGBSpan(1, 2), wxEXPAND);
+		eth_adapter_box->Add(m_eth_adapter,         wxGBPosition(1, 1), wxGBSpan(1, 2), wxEXPAND);
+		eth_adapter_box->Add(m_intercept_dhcp,      wxGBPosition(2, 1), wxDefaultSpan,  wxEXPAND);
+		eth_adapter_box->Add(m_ps2_address,         wxGBPosition(3, 1), wxDefaultSpan,  wxEXPAND);
 
-		m_subnet_mask    .create(3, this, eth_adapter_box, _("Subnet Mask:"));
-		m_gateway_address.create(4, this, eth_adapter_box, _("Gateway Address:"));
-		m_dns1_address   .create(5, this, eth_adapter_box, _("DNS1 Address:"));
-		m_dns2_address   .create(6, this, eth_adapter_box, _("DNS2 Address:"));
+		m_subnet_mask    .create(4, this, eth_adapter_box, _("Subnet Mask:"));
+		m_gateway_address.create(5, this, eth_adapter_box, _("Gateway Address:"));
+		m_dns1_address   .create(6, this, eth_adapter_box, _("DNS1 Address:"));
+		m_dns2_address   .create(7, this, eth_adapter_box, _("DNS2 Address:"));
 
 		eth_adapter_box->AddGrowableCol(1);
 		eth_sizer->Add(eth_adapter_box, wxSizerFlags().Expand());
@@ -187,22 +204,33 @@ public:
 		SetSizerAndFit(padding);
 		SetMaxSize(wxSize(wxDefaultCoord, GetMinSize().y));
 
-		Bind(wxEVT_CHECKBOX, &DEV9Dialog::OnCheck, this);
-		Bind(wxEVT_SLIDER,   &DEV9Dialog::OnSlide, this);
-		Bind(wxEVT_SPINCTRL, &DEV9Dialog::OnSpin,  this);
+		Bind(wxEVT_CHECKBOX, &DEV9Dialog::OnCheck,  this);
+		Bind(wxEVT_SLIDER,   &DEV9Dialog::OnSlide,  this);
+		Bind(wxEVT_SPINCTRL, &DEV9Dialog::OnSpin,   this);
+		Bind(wxEVT_CHOICE,   &DEV9Dialog::OnChoice, this);
 	}
 
 	void Load(const ConfigDEV9& config)
 	{
 		m_eth_enable->SetValue(config.ethEnable);
-		m_eth_adapter->SetSelection(0);
-		for (size_t i = 0; i < m_adapter_list.size(); i++)
+		m_eth_adapter_api->SetSelection(0);
+		for (size_t i = 0; i < m_api_list.size(); i++)
 		{
-			const AdapterEntry& adapter = m_adapter_list[i];
-			if (adapter.type == config.EthApi && adapter.name == config.Eth)
+			if (config.EthApi == m_api_list[i])
+				m_eth_adapter_api->SetSelection(i + 1);
+		}
+		UpdateAdapters();
+		m_eth_adapter->SetSelection(0);
+		if (static_cast<u32>(config.EthApi) < m_adapter_list.size())
+		{
+			const auto& list = m_adapter_list[static_cast<u32>(config.EthApi)];
+			for (size_t i = 0; i < list.size(); i++)
 			{
-				m_eth_adapter->SetSelection(i + 1);
-				break;
+				if (list[i].name == config.Eth)
+				{
+					m_eth_adapter->SetSelection(i + 1);
+					break;
+				}
 			}
 		}
 		m_intercept_dhcp->SetValue(config.InterceptDHCP);
@@ -224,11 +252,13 @@ public:
 	void Save(ConfigDEV9& config)
 	{
 		config.ethEnable = m_eth_enable->GetValue();
+		int api = m_eth_adapter_api->GetSelection();
 		int eth = m_eth_adapter->GetSelection();
-		if (eth)
+		if (api && eth)
 		{
-			wxStrncpy(config.Eth, m_adapter_list[eth - 1].name, ArraySize(config.Eth) - 1);
-			config.EthApi = m_adapter_list[eth - 1].type;
+			const AdapterEntry& adapter = m_adapter_list[static_cast<u32>(m_api_list[api - 1])][eth - 1];
+			wxStrncpy(config.Eth, adapter.name, std::size(config.Eth) - 1);
+			config.EthApi = adapter.type;
 		}
 		else
 		{
@@ -253,6 +283,7 @@ public:
 		bool hdd_enable = m_hdd_enable->GetValue();
 		bool dhcp_enable = eth_enable && m_intercept_dhcp->GetValue();
 
+		m_eth_adapter_api->Enable(eth_enable);
 		m_eth_adapter->Enable(eth_enable);
 		m_intercept_dhcp->Enable(eth_enable);
 		m_ps2_address->Enable(dhcp_enable);
@@ -263,6 +294,31 @@ public:
 		m_hdd_file->Enable(hdd_enable);
 		m_hdd_size_spin->Enable(hdd_enable);
 		m_hdd_size_slider->Enable(hdd_enable);
+	}
+
+	void UpdateAdapters()
+	{
+		int api = m_eth_adapter_api->GetSelection();
+		int selection = 0;
+		wxArrayString options;
+		options.Add("");
+		if (api)
+		{
+			const auto& list = m_adapter_list[static_cast<u32>(m_api_list[api - 1])];
+			wxString current;
+			if (m_eth_adapter->GetCount())
+				current = m_eth_adapter->GetString(m_eth_adapter->GetSelection());
+			if (current.empty())
+				current = config.Eth;
+			for (size_t i = 0; i < list.size(); i++)
+			{
+				options.Add(list[i].name);
+				if (list[i].name == current)
+					selection = i + 1;
+			}
+		}
+		m_eth_adapter->Set(options);
+		m_eth_adapter->SetSelection(selection);
 	}
 
 	void OnCheck(wxCommandEvent&)
@@ -278,6 +334,11 @@ public:
 	void OnSpin(wxCommandEvent&)
 	{
 		m_hdd_size_slider->SetValue(m_hdd_size_spin->GetValue());
+	}
+
+	void OnChoice(wxCommandEvent&)
+	{
+		UpdateAdapters();
 	}
 };
 
