@@ -209,6 +209,7 @@ public:
 		Bind(wxEVT_SLIDER,   &DEV9Dialog::OnSlide,  this);
 		Bind(wxEVT_SPINCTRL, &DEV9Dialog::OnSpin,   this);
 		Bind(wxEVT_CHOICE,   &DEV9Dialog::OnChoice, this);
+		Bind(wxEVT_BUTTON,   &DEV9Dialog::OnOK,     this, wxID_OK);
 	}
 
 	void Load(const ConfigDEV9& config)
@@ -337,9 +338,25 @@ public:
 		m_hdd_size_slider->SetValue(m_hdd_size_spin->GetValue());
 	}
 
-	void OnChoice(wxCommandEvent&)
+	void OnChoice(wxCommandEvent& ev)
 	{
-		UpdateAdapters();
+		if (ev.GetEventObject() == m_eth_adapter_api)
+			UpdateAdapters();
+	}
+
+	void OnOK(wxCommandEvent& ev)
+	{
+		const wxChar* msg = nullptr;
+
+		if (m_eth_enable->GetValue() && !m_eth_adapter->GetSelection())
+			msg = _("Please select an ethernet adapter or disable ethernet");
+		if (m_hdd_enable->GetValue() && m_hdd_file->GetPath().empty())
+			msg = _("Please specify a HDD file or disable the hard drive");
+
+		if (msg)
+			wxMessageDialog(this, msg).ShowModal();
+		else
+			ev.Skip();
 	}
 };
 
