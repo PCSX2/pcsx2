@@ -87,6 +87,9 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	rdoverrides.Add("None");
 	rdoverrides.Add(Pcsx2Config::GSOptions::GetRendererName(GSRendererType::SW));
 	rdoverrides.Add(Pcsx2Config::GSOptions::GetRendererName(GSRendererType::OGL));
+#ifdef ENABLE_VULKAN
+	rdoverrides.Add(Pcsx2Config::GSOptions::GetRendererName(GSRendererType::VK));
+#endif
 #if defined(_WIN32)
 	rdoverrides.Add(Pcsx2Config::GSOptions::GetRendererName(GSRendererType::DX11));
 #endif
@@ -719,10 +722,18 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 		case 2:
 			renderer = GSRendererType::OGL;
 			break;
-		// D3D11
+#ifdef ENABLE_VULKAN
+		// Vulkan
 		case 3:
+			renderer = GSRendererType::VK;
+			break;
+#endif
+#ifdef _WIN32
+		// D3D11
+		case 4:		// WIN32 implies WITH_VULKAN so this is okay
 			renderer = GSRendererType::DX11;
 			break;
+#endif
 		default:
 			break;
 	}

@@ -166,6 +166,8 @@ public:
 	GSRendererHW();
 	virtual ~GSRendererHW() override;
 
+	void Destroy() override;
+
 	void SetGameCRC(u32 crc, int options) override;
 	bool CanUpscale() override;
 	int GetUpscaleMultiplier() override;

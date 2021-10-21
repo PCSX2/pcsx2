@@ -280,6 +280,9 @@
     <Filter Include="Host">
       <UniqueIdentifier>{65f21394-287a-471b-a0c1-d8f0d5d95a81}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\GS\Renderers\Vulkan">
+      <UniqueIdentifier>{98829aa9-bb81-4564-bd6e-128719c4faa0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Utilities\folderdesc.txt">
@@ -1670,6 +1673,12 @@
     <ClCompile Include="Frontend\imgui_impl_vulkan.cpp">
       <Filter>Host</Filter>
     </ClCompile>
+    <ClCompile Include="GS\Renderers\Vulkan\GSTextureVK.cpp">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="GS\Renderers\Vulkan\GSDeviceVK.cpp">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Patch.h">
@@ -2788,6 +2797,13 @@
     <ClInclude Include="Frontend\VulkanHostDisplay.h">
       <Filter>Host</Filter>
     </ClInclude>
+    <ClInclude Include="GS\Renderers\Vulkan\GSTextureVK.h">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="GS\Renderers\Vulkan\GSDeviceVK.h">
+      <Filter>System\Ps2\GS\Renderers\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="GS.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="windows\wxResources.rc">

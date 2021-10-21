@@ -32,7 +32,6 @@ enum : u32
 	MAX_COMBINED_IMAGE_SAMPLER_DESCRIPTORS_PER_FRAME = 2 * MAX_DRAW_CALLS_PER_FRAME,
 	MAX_SAMPLED_IMAGE_DESCRIPTORS_PER_FRAME =
 		MAX_DRAW_CALLS_PER_FRAME, // assume at least half our draws aren't going to be shuffle/blending
-	MAX_STORAGE_IMAGE_DESCRIPTORS_PER_FRAME = MAX_DRAW_CALLS_PER_FRAME,
 	MAX_INPUT_ATTACHMENT_IMAGE_DESCRIPTORS_PER_FRAME = MAX_DRAW_CALLS_PER_FRAME,
 	MAX_DESCRIPTOR_SETS_PER_FRAME = MAX_DRAW_CALLS_PER_FRAME * 2
 };
@@ -406,7 +405,9 @@ namespace Vulkan
 		if (g_vulkan_context->m_debug_messenger_callback != VK_NULL_HANDLE)
 			g_vulkan_context->DisableDebugUtils();
 
-		vkDestroyInstance(g_vulkan_context->m_instance, nullptr);
+		if (g_vulkan_context->m_instance != VK_NULL_HANDLE)
+			vkDestroyInstance(g_vulkan_context->m_instance, nullptr);
+
 		Vulkan::UnloadVulkanLibrary();
 
 		g_vulkan_context.reset();
@@ -701,8 +702,7 @@ namespace Vulkan
 			VkDescriptorPoolSize pool_sizes[] = {
 				{VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, MAX_COMBINED_IMAGE_SAMPLER_DESCRIPTORS_PER_FRAME},
 				{VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE, MAX_SAMPLED_IMAGE_DESCRIPTORS_PER_FRAME},
-				{VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, MAX_STORAGE_IMAGE_DESCRIPTORS_PER_FRAME},
-				{VK_DESCRIPTOR_TYPE_STORAGE_IMAGE, MAX_STORAGE_IMAGE_DESCRIPTORS_PER_FRAME},
+				{VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT, MAX_INPUT_ATTACHMENT_IMAGE_DESCRIPTORS_PER_FRAME},
 			};
 
 			VkDescriptorPoolCreateInfo pool_create_info = {VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO, nullptr, 0,

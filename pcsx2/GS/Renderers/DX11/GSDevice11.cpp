@@ -43,6 +43,7 @@ GSDevice11::GSDevice11()
 	m_features.provoking_vertex_last = false;
 	m_features.point_expand = false;
 	m_features.line_expand = false;
+	m_features.prefer_new_textures = false;
 }
 
 bool GSDevice11::SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode)

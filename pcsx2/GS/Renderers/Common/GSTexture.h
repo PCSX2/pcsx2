@@ -49,6 +49,13 @@ public:
 		Int32,        ///< Int32 texture for date emulation
 	};
 
+	enum class State : u8
+	{
+		Dirty,
+		Cleared,
+		Invalidated
+	};
+
 protected:
 	GSVector2 m_scale;
 	GSVector2i m_size;
@@ -57,6 +64,7 @@ protected:
 	int m_mipmap_levels;
 	Type m_type;
 	Format m_format;
+	State m_state;
 	bool m_sparse;
 	bool m_needs_mipmaps_generated;
 
@@ -90,6 +98,23 @@ public:
 
 	Type GetType() const { return m_type; }
 	Format GetFormat() const { return m_format; }
+
+	bool IsRenderTargetOrDepthStencil() const
+	{
+		return (m_type >= Type::RenderTarget && m_type <= Type::DepthStencil) ||
+			(m_type >= Type::SparseRenderTarget && m_type <= Type::SparseDepthStencil);
+	}
+	bool IsRenderTarget() const
+	{
+		return (m_type == Type::RenderTarget || m_type == Type::SparseRenderTarget);
+	}
+	bool IsDepthStencil() const
+	{
+		return (m_type == Type::DepthStencil || m_type == Type::SparseDepthStencil);
+	}
+
+	State GetState() const { return m_state; }
+	void SetState(State state) { m_state = state; }
 
 	void GenerateMipmapsIfNeeded();
 	void ClearMipmapGenerationFlag() { m_needs_mipmaps_generated = false; }

@@ -119,12 +119,12 @@ std::unique_ptr<HostDisplay> HostDisplay::CreateDisplayForAPI(RenderAPI api)
 	switch (api)
 	{
 #ifdef _WIN32
-		case HostDisplay::RenderAPI::D3D11:
+		case RenderAPI::D3D11:
 			return std::make_unique<D3D11HostDisplay>();
 #endif
 
-		case HostDisplay::RenderAPI::OpenGL:
-		case HostDisplay::RenderAPI::OpenGLES:
+		case RenderAPI::OpenGL:
+		case RenderAPI::OpenGLES:
 			return std::make_unique<OpenGLHostDisplay>();
 
 #ifdef ENABLE_VULKAN

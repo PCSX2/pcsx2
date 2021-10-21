@@ -41,6 +41,10 @@
 #include "pcsx2/HostSettings.h"
 #endif
 
+#ifdef ENABLE_VULKAN
+#include "Renderers/Vulkan/GSDeviceVK.h"
+#endif
+
 #ifdef _WIN32
 
 #include "Renderers/DX11/GSDevice11.h"
@@ -154,6 +158,9 @@ static HostDisplay::RenderAPI GetAPIForRenderer(GSRendererType renderer)
 #endif
 			return HostDisplay::RenderAPI::OpenGL;
 
+		case GSRendererType::VK:
+			return HostDisplay::RenderAPI::Vulkan;
+
 #ifdef _WIN32
 		case GSRendererType::DX11:
 		case GSRendererType::SW:
@@ -182,6 +189,12 @@ static bool DoGSOpen(GSRendererType renderer, u8* basemem)
 		case HostDisplay::RenderAPI::OpenGLES:
 			g_gs_device = std::make_unique<GSDeviceOGL>();
 			break;
+
+#ifdef ENABLE_VULKAN
+		case HostDisplay::RenderAPI::Vulkan:
+			g_gs_device = std::make_unique<GSDeviceVK>();
+			break;
+#endif
 
 		default:
 			Console.Error("Unknown render API %u", static_cast<unsigned>(display->GetRenderAPI()));
@@ -1123,6 +1136,9 @@ void GSApp::Init()
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::DX11), "Direct3D 11", ""));
 #endif
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::OGL), "OpenGL", ""));
+#ifdef ENABLE_VULKAN
+	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::VK), "Vulkan", ""));
+#endif
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::SW), "Software", ""));
 
 	// The null renderer goes last, it has use for benchmarking purposes in a release build
@@ -1216,9 +1232,12 @@ void GSApp::Init()
 
 	// clang-format off
 	// Avoid to clutter the ini file with useless options
+#if defined(ENABLE_VULKAN) || defined(_WIN32)
+	m_default_configuration["Adapter"]																		= "";
+#endif
+
 #ifdef _WIN32
 	// Per OS option.
-	m_default_configuration["Adapter"]																		= "";
 	m_default_configuration["CaptureFileName"]                            = "";
 	m_default_configuration["CaptureVideoCodecDisplayName"]               = "";
 	m_default_configuration["dx_break_on_severity"]                       = "0";

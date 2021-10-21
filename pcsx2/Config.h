@@ -108,6 +108,7 @@ enum class GSRendererType : s8
 	Null = 11,
 	OGL = 12,
 	SW = 13,
+	VK = 14,
 };
 
 enum class GSInterlaceMode : u8
