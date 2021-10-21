@@ -24,3 +24,6 @@
 [submodule "3rdparty/imgui/imgui"]
 	path = 3rdparty/imgui/imgui
 	url = https://github.com/ocornut/imgui.git
+[submodule "3rdparty/glslang/glslang"]
+	path = 3rdparty/glslang/glslang
+	url = https://github.com/KhronosGroup/glslang.git
