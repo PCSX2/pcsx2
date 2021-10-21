@@ -141,14 +141,15 @@ public:
 		adapter_api_name_list.Add("");
 		for (const NetApi& type : m_api_list)
 			adapter_api_name_list.Add(NetApiToWxString(type));
+
 		auto* eth_adapter_api_label = new wxStaticText(this, wxID_ANY, _("Ethernet Device Type:"));
+		auto* eth_adapter_label     = new wxStaticText(this, wxID_ANY, _("Ethernet Device:"));
+		auto* intercept_dhcp_label  = new wxStaticText(this, wxID_ANY, _("Intercept DHCP:"));
+		auto* ps2_addr_label        = new wxStaticText(this, wxID_ANY, _("PS2 Address:"));
 		m_eth_adapter_api = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, adapter_api_name_list);
-		auto* eth_adapter_label = new wxStaticText(this, wxID_ANY, _("Ethernet Device:"));
-		m_eth_adapter = new wxChoice(this, wxID_ANY);
-		auto* intercept_dhcp_label = new wxStaticText(this, wxID_ANY, _("Intercept DHCP:"));
-		m_intercept_dhcp = new wxCheckBox(this, wxID_ANY, _("Enabled"));
-		auto* ps2_addr_label = new wxStaticText(this, wxID_ANY, _("PS2 Address:"));
-		m_ps2_address = new wxTextCtrl(this, wxID_ANY);
+		m_eth_adapter     = new wxChoice(this, wxID_ANY);
+		m_intercept_dhcp  = new wxCheckBox(this, wxID_ANY, _("Enabled"));
+		m_ps2_address     = new wxTextCtrl(this, wxID_ANY);
 		m_ps2_address->SetMinSize(wxSize(150, -1));
 
 		eth_adapter_box->Add(eth_adapter_api_label, wxGBPosition(0, 0), wxDefaultSpan,  wxALIGN_RIGHT | wxALIGN_CENTRE_VERTICAL);
