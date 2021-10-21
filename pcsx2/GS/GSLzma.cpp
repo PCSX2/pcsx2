@@ -34,6 +34,11 @@ GSDumpFile::GSDumpFile(char* filename, const char* repack_filename)
 	}
 }
 
+GSDumpFile::GSDumpFile(FILE* file, FILE* repack_file)
+	: m_repack_fp(repack_file), m_fp(file)
+{
+}
+
 void GSDumpFile::Repack(void* ptr, size_t size)
 {
 	if (m_repack_fp == nullptr)
@@ -56,7 +61,17 @@ GSDumpFile::~GSDumpFile()
 GSDumpLzma::GSDumpLzma(char* filename, const char* repack_filename)
 	: GSDumpFile(filename, repack_filename)
 {
+	Initialize();
+}
 
+GSDumpLzma::GSDumpLzma(FILE* file, FILE* repack_file)
+	: GSDumpFile(file, repack_file)
+{
+	Initialize();
+}
+
+void GSDumpLzma::Initialize()
+{
 	memset(&m_strm, 0, sizeof(lzma_stream));
 
 	lzma_ret ret = lzma_stream_decoder(&m_strm, UINT32_MAX, 0);
@@ -166,11 +181,11 @@ GSDumpLzma::~GSDumpLzma()
 GSDumpRaw::GSDumpRaw(char* filename, const char* repack_filename)
 	: GSDumpFile(filename, repack_filename)
 {
-	m_buff_size = 0;
-	m_area      = nullptr;
-	m_inbuf     = nullptr;
-	m_avail     = 0;
-	m_start     = 0;
+}
+
+GSDumpRaw::GSDumpRaw(FILE* file, FILE* repack_file)
+	: GSDumpFile(file, repack_file)
+{
 }
 
 bool GSDumpRaw::IsEof()
