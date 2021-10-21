@@ -709,7 +709,8 @@ void GSUpdateConfig(const Pcsx2Config::GSOptions& new_config)
 			GSConfig.Adapter != old_config.Adapter ||
 			GSConfig.UseDebugDevice != old_config.UseDebugDevice ||
 			GSConfig.UseBlitSwapChain != old_config.UseBlitSwapChain ||
-			GSConfig.DisableShaderCache != old_config.DisableShaderCache
+			GSConfig.DisableShaderCache != old_config.DisableShaderCache ||
+			GSConfig.ThreadedPresentation != old_config.ThreadedPresentation
 		);
 		GSreopen(do_full_restart);
 		return;
@@ -1300,7 +1301,7 @@ void GSApp::Init()
 	m_default_configuration["shaderfx_conf"]                              = "shaders/GS_FX_Settings.ini";
 	m_default_configuration["shaderfx_glsl"]                              = "shaders/GS.fx";
 	m_default_configuration["skip_duplicate_frames"]                      = "0";
-	m_default_configuration["threaded_presentation"]                      = "0";
+	m_default_configuration["ThreadedPresentation"]                       = "0";
 	m_default_configuration["throttle_present_rate"]                      = "0";
 	m_default_configuration["TVShader"]                                   = "0";
 	m_default_configuration["upscale_multiplier"]                         = "1";

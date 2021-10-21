@@ -281,6 +281,7 @@ Pcsx2Config::GSOptions::GSOptions()
 	UseDebugDevice = false;
 	UseBlitSwapChain = false;
 	DisableShaderCache = false;
+	ThreadedPresentation = false;
 	OsdShowMessages = true;
 	OsdShowSpeed = false;
 	OsdShowFPS = false;
@@ -390,7 +391,8 @@ bool Pcsx2Config::GSOptions::RestartOptionsAreEqual(const GSOptions& right) cons
 		OpEqu(Adapter) &&
 		OpEqu(UseDebugDevice) &&
 		OpEqu(UseBlitSwapChain) &&
-		OpEqu(DisableShaderCache);
+		OpEqu(DisableShaderCache) &&
+		OpEqu(ThreadedPresentation);
 }
 
 void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
@@ -417,6 +419,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	// These are loaded from GSWindow in wx.
 	SettingsWrapEnumEx(AspectRatio, "AspectRatio", AspectRatioNames);
 	SettingsWrapEnumEx(FMVAspectRatioSwitch, "FMVAspectRatioSwitch", FMVAspectRatioSwitchNames);
+
 	SettingsWrapEntry(Zoom);
 	SettingsWrapEntry(StretchY);
 	SettingsWrapEntry(OffsetX);
@@ -467,6 +470,7 @@ void Pcsx2Config::GSOptions::ReloadIniSettings()
 	GSSettingBool(UseDebugDevice);
 	GSSettingBool(UseBlitSwapChain);
 	GSSettingBoolEx(DisableShaderCache, "disable_shader_cache");
+	GSSettingBool(ThreadedPresentation);
 	GSSettingBool(OsdShowMessages);
 	GSSettingBool(OsdShowSpeed);
 	GSSettingBool(OsdShowFPS);

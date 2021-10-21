@@ -885,6 +885,17 @@ set(pcsx2FrontendHeaders
 	Frontend/OpenGLHostDisplay.h
 )
 
+if(USE_VULKAN)
+	list(APPEND pcsx2FrontendSources
+		Frontend/VulkanHostDisplay.cpp
+		Frontend/imgui_impl_vulkan.cpp
+	)
+	list(APPEND pcsx2FrontendHeaders
+		Frontend/imgui_impl_vulkan.h
+		Frontend/VulkanHostDisplay.h
+	)
+endif()
+
 if(WIN32)
 	list(APPEND pcsx2FrontendSources
 		Frontend/D3D11HostDisplay.cpp

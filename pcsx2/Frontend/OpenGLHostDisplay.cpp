@@ -196,7 +196,7 @@ bool OpenGLHostDisplay::HasRenderSurface() const
 	return m_window_info.type != WindowInfo::Type::Surfaceless;
 }
 
-bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool debug_device)
+bool OpenGLHostDisplay::CreateRenderDevice(const WindowInfo& wi, std::string_view adapter_name, bool threaded_presentation, bool debug_device)
 {
 	m_gl_context = GL::Context::Create(wi);
 	if (!m_gl_context)

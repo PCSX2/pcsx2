@@ -403,6 +403,7 @@ struct Pcsx2Config
 					UseDebugDevice : 1,
 					UseBlitSwapChain : 1,
 					DisableShaderCache : 1,
+					ThreadedPresentation : 1,
 					OsdShowMessages : 1,
 					OsdShowSpeed : 1,
 					OsdShowFPS : 1,
