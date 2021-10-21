@@ -122,7 +122,6 @@ class GSState : public GSAlignedClass<32>
 
 	int m_version;
 	int m_sssize;
-	bool m_path3hack;
 
 	struct GSTransferBuffer
 	{
@@ -259,11 +258,6 @@ public:
 	template<int index> void Transfer(const uint8* mem, uint32 size);
 	int Freeze(freezeData* fd, bool sizeonly);
 	int Defrost(const freezeData* fd);
-	void GetLastTag(uint32* tag)
-	{
-		*tag = m_path3hack;
-		m_path3hack = 0;
-	}
 	virtual void SetGameCRC(uint32 crc, int options);
 	void SetFrameSkip(int skip);
 	void SetRegsMem(uint8* basemem);

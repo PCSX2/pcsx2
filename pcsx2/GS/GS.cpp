@@ -750,11 +750,6 @@ void GSsetGameCRC(uint32 crc, int options)
 	s_gs->SetGameCRC(crc, options);
 }
 
-void GSgetLastTag(uint32* tag)
-{
-	s_gs->GetLastTag(tag);
-}
-
 void GSgetTitleInfo2(char* dest, size_t length)
 {
 	std::string s;
