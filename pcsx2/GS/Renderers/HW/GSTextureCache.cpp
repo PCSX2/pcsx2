@@ -1297,7 +1297,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		int h = (int)(scale.y * th);
 
 		GSTexture* sTex = dst->m_texture;
-		GSTexture* dTex = g_gs_device->CreateTexture(w, h, GSTexture::Format::Color);
+		GSTexture* dTex = g_gs_device->CreateTexture(w, h, GSTexture::Format::Color, true);
 
 		GSVector4i area(x, y, x + w, y + h);
 		g_gs_device->CopyRect(sTex, dTex, area);
@@ -1329,7 +1329,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// So it could be tricky to put in the middle of the DrawPrims
 
 		// Texture is created to keep code compatibility
-		GSTexture* dTex = g_gs_device->CreateTexture(tw, th, GSTexture::Format::Color);
+		GSTexture* dTex = g_gs_device->CreateTexture(tw, th, GSTexture::Format::Color, true);
 
 		// Keep a trace of origin of the texture
 		src->m_texture = dTex;
@@ -1503,7 +1503,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// 'src' is the new texture cache entry (hence the output)
 		GSTexture* sTex = dst->m_texture;
 		GSTexture* dTex = use_texture ?
-			g_gs_device->CreateTexture(w, h, GSTexture::Format::Color) :
+			g_gs_device->CreateTexture(w, h, GSTexture::Format::Color, true) :
 			g_gs_device->CreateRenderTarget(w, h, GSTexture::Format::Color, !texture_completely_overwritten);
 		src->m_texture = dTex;
 

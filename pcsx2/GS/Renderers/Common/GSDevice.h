@@ -197,7 +197,7 @@ struct alignas(16) GSHWDrawConfig
 				// Flat/goround shading
 				u32 iip : 1;
 				// Pixel test
-				u32 date : 3;
+				u32 date : 4;
 				u32 atst : 3;
 				// Color sampling
 				u32 fst : 1; // Investigate to do it on the VS
@@ -248,12 +248,17 @@ struct alignas(16) GSHWDrawConfig
 				// Scan mask
 				u32 scanmsk : 2;
 
-				u32 _free2 : 3;
+				u32 _free2 : 2;
 			};
 
 			u64 key;
 		};
 		PSSelector(): key(0) {}
+
+		__fi bool IsFeedbackLoop() const
+		{
+			return tex_is_fb || fbmask || date > 0 || blend_a == 1 || blend_b == 1 || blend_c == 1 || blend_d == 1;
+		}
 	};
 	struct SamplerSelector
 	{
@@ -501,6 +506,7 @@ public:
 		bool provoking_vertex_last: 1; ///< Supports using the last vertex in a primitive as the value for flat shading.
 		bool point_expand         : 1; ///< Supports point expansion in hardware without using geometry shaders.
 		bool line_expand          : 1; ///< Supports line expansion in hardware without using geometry shaders.
+		bool prefer_new_textures  : 1; ///< Allocate textures up to the pool size before reusing them, to avoid render pass restarts.
 		FeatureSupport()
 		{
 			memset(this, 0, sizeof(*this));
@@ -527,7 +533,8 @@ protected:
 	static const int m_NO_BLEND = 0;
 	static const int m_MERGE_BLEND = m_blendMap.size() - 1;
 
-	bool m_rbswapped;
+	static constexpr u32 MAX_POOLED_TEXTURES = 300;
+
 	HostDisplay* m_display;
 	GSTexture* m_merge;
 	GSTexture* m_weavebob;
@@ -543,11 +550,11 @@ protected:
 		size_t start, count, limit;
 	} m_index;
 	unsigned int m_frame; // for ageing the pool
-	bool m_linear_present;
+	bool m_rbswapped;
 	FeatureSupport m_features;
 
 	virtual GSTexture* CreateSurface(GSTexture::Type type, int w, int h, GSTexture::Format format) = 0;
-	virtual GSTexture* FetchSurface(GSTexture::Type type, int w, int h, GSTexture::Format format, bool clear);
+	virtual GSTexture* FetchSurface(GSTexture::Type type, int w, int h, GSTexture::Format format, bool clear, bool prefer_reuse);
 
 	virtual void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) = 0;
 	virtual void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset) = 0;
@@ -561,6 +568,7 @@ public:
 	virtual ~GSDevice();
 
 	__fi HostDisplay* GetDisplay() const { return m_display; }
+	__fi unsigned int GetFrameNumber() const { return m_frame; }
 
 	void Recycle(GSTexture* t);
 
@@ -606,7 +614,7 @@ public:
 	GSTexture* CreateSparseDepthStencil(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateRenderTarget(int w, int h, GSTexture::Format format, bool clear = true);
 	GSTexture* CreateDepthStencil(int w, int h, GSTexture::Format format, bool clear = true);
-	GSTexture* CreateTexture(int w, int h, GSTexture::Format format);
+	GSTexture* CreateTexture(int w, int h, GSTexture::Format format, bool prefer_reuse = false);
 	GSTexture* CreateOffscreen(int w, int h, GSTexture::Format format);
 	GSTexture::Format GetDefaultTextureFormat(GSTexture::Type type);
 
@@ -638,8 +646,8 @@ public:
 	void ShadeBoost();
 	void ExternalFX();
 
-	bool ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h, bool clear = true);
-	bool ResizeTexture(GSTexture** t, int w, int h, bool clear = true);
+	bool ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h, bool clear = true, bool prefer_reuse = false);
+	bool ResizeTexture(GSTexture** t, int w, int h, bool prefer_reuse = false);
 	bool ResizeTarget(GSTexture** t, int w, int h);
 	bool ResizeTarget(GSTexture** t);
 

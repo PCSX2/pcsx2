@@ -709,6 +709,17 @@ set(pcsx2GSHeaders
 	GS/Window/GSwxDialog.h
 	)
 
+if(USE_VULKAN)
+	list(APPEND pcsx2GSSources
+		GS/Renderers/Vulkan/GSDeviceVK.cpp
+		GS/Renderers/Vulkan/GSTextureVK.cpp
+	)
+	list(APPEND pcsx2GSHeaders
+		GS/Renderers/Vulkan/GSDeviceVK.h
+		GS/Renderers/Vulkan/GSTextureVK.h
+	)
+endif()
+
 if(WIN32)
 	list(APPEND pcsx2SPU2Sources
 		SPU2/Windows/CfgHelpers.cpp

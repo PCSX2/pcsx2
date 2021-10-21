@@ -185,6 +185,12 @@ GSRendererHW::~GSRendererHW()
 	delete m_tc;
 }
 
+void GSRendererHW::Destroy()
+{
+	m_tc->RemoveAll();
+	GSRenderer::Destroy();
+}
+
 void GSRendererHW::SetGameCRC(u32 crc, int options)
 {
 	GSRenderer::SetGameCRC(crc, options);

@@ -238,6 +238,7 @@ bool GSDeviceOGL::Create(HostDisplay* display)
 	m_features.image_load_store = GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture;
 	m_features.texture_barrier = true;
 	m_features.provoking_vertex_last = true;
+	m_features.prefer_new_textures = false;
 
 	GLint point_range[2] = {};
 	GLint line_range[2] = {};

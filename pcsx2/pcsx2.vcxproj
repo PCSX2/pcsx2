@@ -313,6 +313,8 @@
     <ClCompile Include="Gif_Unit.cpp" />
     <ClCompile Include="GS\Renderers\DX11\D3D.cpp" />
     <ClCompile Include="GS\Window\GSwxDialog.cpp" />
+    <ClCompile Include="GS\Renderers\Vulkan\GSDeviceVK.cpp" />
+    <ClCompile Include="GS\Renderers\Vulkan\GSTextureVK.cpp" />
     <ClCompile Include="gui\AppHost.cpp" />
     <ClCompile Include="gui\AppUserMode.cpp" />
     <ClCompile Include="gui\CheckedStaticBox.cpp" />
@@ -755,6 +757,8 @@
     <ClInclude Include="Gif_Unit.h" />
     <ClInclude Include="GS\Renderers\DX11\D3D.h" />
     <ClInclude Include="GS\Window\GSwxDialog.h" />
+    <ClInclude Include="GS\Renderers\Vulkan\GSDeviceVK.h" />
+    <ClInclude Include="GS\Renderers\Vulkan\GSTextureVK.h" />
     <ClInclude Include="gui\AppHost.h" />
     <ClInclude Include="gui\CheckedStaticBox.h" />
     <ClInclude Include="gui\i18n.h" />

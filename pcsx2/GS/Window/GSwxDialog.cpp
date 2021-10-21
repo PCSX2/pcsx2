@@ -23,6 +23,10 @@
 #include "Frontend/D3D11HostDisplay.h"
 #endif
 
+#ifdef ENABLE_VULKAN
+#include "Frontend/VulkanHostDisplay.h"
+#endif
+
 using namespace GSSettingsDialog;
 
 namespace
@@ -288,7 +292,7 @@ RendererTab::RendererTab(wxWindow* parent)
 
 	m_ui.addComboBoxAndLabel(hw_choice_grid, "Anisotropic Filtering:", "MaxAnisotropy",  &theApp.m_gs_max_anisotropy, IDC_AFCOMBO,   aniso_prereq);
 	m_ui.addComboBoxAndLabel(hw_choice_grid, "Dithering (PgDn):",      "dithering_ps2",  &theApp.m_gs_dithering,      IDC_DITHERING, hw_prereq);
-	m_ui.addComboBoxAndLabel(hw_choice_grid, "Mipmapping (Insert):",   "mipmap_hw",      &theApp.m_gs_hw_mipmapping,  IDC_MIPMAP_HW, hw_prereq);
+	m_ui.addComboBoxAndLabel(hw_choice_grid, "Mipmapping:",   "mipmap_hw",      &theApp.m_gs_hw_mipmapping,  IDC_MIPMAP_HW, hw_prereq);
 	m_ui.addComboBoxAndLabel(hw_choice_grid, "CRC Hack Level:",        "crc_hack_level", &theApp.m_gs_crc_level,      IDC_CRC_LEVEL, hw_prereq);
 
 	m_blend_mode = m_ui.addComboBoxAndLabel(hw_choice_grid, "Blending Accuracy:", "accurate_blending_unit", &theApp.m_gs_acc_blend_level, IDC_ACCURATE_BLEND_UNIT, hw_prereq);
@@ -349,7 +353,7 @@ HacksTab::HacksTab(wxWindow* parent)
 	auto hw_prereq = [this]{ return m_is_hardware; };
 	auto* hacks_check_box = m_ui.addCheckBox(tab_box.inner, "Enable HW Hacks", "UserHacks", -1, hw_prereq);
 	auto hacks_prereq = [this, hacks_check_box]{ return m_is_hardware && hacks_check_box->GetValue(); };
-	auto gl_hacks_prereq = [this, hacks_check_box]{ return m_is_ogl_hw && hacks_check_box->GetValue(); };
+	auto gl_or_vk_hacks_prereq = [this, hacks_check_box]{ return (m_is_ogl_hw || m_is_vk_hw) && hacks_check_box->GetValue(); };
 	auto upscale_hacks_prereq = [this, hacks_check_box]{ return !m_is_native_res && hacks_check_box->GetValue(); };
 
 	PaddedBoxSizer<wxStaticBoxSizer> rend_hacks_box   (wxVERTICAL, this, "Renderer Hacks");
@@ -379,7 +383,7 @@ HacksTab::HacksTab(wxWindow* parent)
 
 	// Renderer Hacks:
 	m_ui.addComboBoxAndLabel(rend_hack_choice_grid, "Half Screen Fix:",     "UserHacks_Half_Bottom_Override", &theApp.m_gs_generic_list, IDC_HALF_SCREEN_TS, hacks_prereq);
-	m_ui.addComboBoxAndLabel(rend_hack_choice_grid, "Trilinear Filtering:", "UserHacks_TriFilter",            &theApp.m_gs_trifilter,    IDC_TRI_FILTER,     gl_hacks_prereq);
+	m_ui.addComboBoxAndLabel(rend_hack_choice_grid, "Trilinear Filtering:", "UserHacks_TriFilter",            &theApp.m_gs_trifilter,    IDC_TRI_FILTER,     gl_or_vk_hacks_prereq);
 
 	// Skipdraw Range
 	add_label(this, rend_hack_choice_grid, "Skipdraw Range:", IDC_SKIPDRAWHACK);
@@ -470,10 +474,12 @@ PostTab::PostTab(wxWindow* parent)
 	PaddedBoxSizer<wxBoxSizer> tab_box(wxVERTICAL);
 	PaddedBoxSizer<wxStaticBoxSizer> shader_box(wxVERTICAL, this, "Custom Shader");
 
-	m_ui.addCheckBox(shader_box.inner, "Texture Filtering of Display", "linear_present", IDC_LINEAR_PRESENT);
-	m_ui.addCheckBox(shader_box.inner, "FXAA Shader (PgUp)",           "fxaa",           IDC_FXAA);
+	auto not_vk_prereq = [this] { return !m_is_vk_hw; };
 
-	CheckboxPrereq shade_boost_check(m_ui.addCheckBox(shader_box.inner, "Enable Shade Boost", "ShadeBoost", IDC_SHADEBOOST));
+	m_ui.addCheckBox(shader_box.inner, "Texture Filtering of Display", "linear_present", IDC_LINEAR_PRESENT);
+	m_ui.addCheckBox(shader_box.inner, "FXAA Shader (PgUp)",           "fxaa",           IDC_FXAA, not_vk_prereq);
+
+	CheckboxPrereq shade_boost_check(m_ui.addCheckBox(shader_box.inner, "Enable Shade Boost", "ShadeBoost", IDC_SHADEBOOST, not_vk_prereq));
 
 	PaddedBoxSizer<wxStaticBoxSizer> shade_boost_box(wxVERTICAL, this, "Shade Boost");
 	auto* shader_boost_grid = new wxFlexGridSizer(2, space, space);
@@ -486,7 +492,7 @@ PostTab::PostTab(wxWindow* parent)
 	shade_boost_box->Add(shader_boost_grid, wxSizerFlags().Expand());
 	shader_box->Add(shade_boost_box.outer, wxSizerFlags().Expand());
 
-	CheckboxPrereq ext_shader_check(m_ui.addCheckBox(shader_box.inner, "Enable External Shader", "shaderfx", IDC_SHADER_FX));
+	CheckboxPrereq ext_shader_check(m_ui.addCheckBox(shader_box.inner, "Enable External Shader", "shaderfx", IDC_SHADER_FX, not_vk_prereq));
 
 	PaddedBoxSizer<wxStaticBoxSizer> ext_shader_box(wxVERTICAL, this, "External Shader (Home)");
 	auto* ext_shader_grid = new wxFlexGridSizer(2, space, space);
@@ -688,6 +694,11 @@ void Dialog::RendererChange()
 		list = D3D11HostDisplay::StaticGetAdapterAndModeList();
 		break;
 #endif
+#ifdef ENABLE_VULKAN
+	case GSRendererType::VK:
+		list = VulkanHostDisplay::StaticGetAdapterAndModeList(nullptr);
+		break;
+#endif
 	default:
 		break;
 	}
@@ -763,13 +774,15 @@ void Dialog::Update()
 	else
 	{
 		// cross-tab dependencies yay
-		const bool is_hw = renderer == GSRendererType::OGL || renderer == GSRendererType::DX11;
+		const bool is_hw = renderer == GSRendererType::OGL || renderer == GSRendererType::DX11 || renderer == GSRendererType::VK;
 		const bool is_upscale = m_renderer_panel->m_internal_resolution->GetSelection() != 0;
 		m_hacks_panel->m_is_native_res = !is_hw || !is_upscale;
 		m_hacks_panel->m_is_hardware = is_hw;
 		m_hacks_panel->m_is_ogl_hw = renderer == GSRendererType::OGL;
+		m_hacks_panel->m_is_vk_hw = renderer == GSRendererType::VK;
 		m_renderer_panel->m_is_hardware = is_hw;
 		m_renderer_panel->m_is_native_res = !is_hw || !is_upscale;
+		m_post_panel->m_is_vk_hw = renderer == GSRendererType::VK;
 		m_debug_panel->m_is_ogl_hw = renderer == GSRendererType::OGL;
 
 		m_ui.Update();

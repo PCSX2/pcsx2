@@ -127,6 +127,7 @@ namespace GSSettingsDialog
 		bool m_is_hardware = false;
 		bool m_is_native_res = false;
 		bool m_is_ogl_hw = false;
+		bool m_is_vk_hw = false;
 
 		HacksTab(wxWindow* parent);
 		void Load() { m_ui.Load(); }
@@ -161,6 +162,7 @@ namespace GSSettingsDialog
 	{
 	public:
 		GSUIElementHolder m_ui;
+		bool m_is_vk_hw = false;
 
 		PostTab(wxWindow* parent);
 		void Load() { m_ui.Load(); }
