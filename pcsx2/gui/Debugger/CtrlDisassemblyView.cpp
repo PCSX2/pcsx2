@@ -1,4 +1,4 @@
-﻿/*  PCSX2 - PS2 Emulator for PCs
+/*  PCSX2 - PS2 Emulator for PCs
  *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
@@ -163,7 +163,7 @@ CtrlDisassemblyView::CtrlDisassemblyView(wxWindow* parent, DebugInterface* _cpu)
 	menu.Append(ID_DISASM_COPYINSTRUCTIONDISASM, L"Copy Instruction (Disasm)");
 	menu.Append(ID_DISASM_DISASSEMBLETOFILE, L"Disassemble to File");
 	menu.AppendSeparator();
-	menu.Append(ID_DISASM_ASSEMBLE, L"Assemble Opcode");
+	menu.Append(ID_DISASM_ASSEMBLE, L"Assemble Opcode(s)");
 	menu.AppendSeparator();
 	menu.Append(ID_DISASM_RUNTOHERE, L"Run to Cursor");
 	menu.Append(ID_DISASM_SETPCTOHERE, L"Jump to Cursor");
@@ -670,10 +670,18 @@ void CtrlDisassemblyView::assembleOpcode(u32 address, std::string defaultText)
 	if (result)
 	{
 		SysClearExecutionCache();
-		cpu->write32(address, encoded);
 
-		if (address == curAddress)
-			gotoAddress(manager.getNthNextAddress(curAddress, 1));
+		if((selectRangeEnd - selectRangeStart) > 4)
+		{
+			for(u32 addr = selectRangeStart; addr < selectRangeEnd; addr += 0x4)
+			{
+				cpu->write32(addr,encoded);
+			}
+		}
+		else
+		{
+			cpu->write32(address, encoded);
+		}
 
 		redraw();
 	}
@@ -1130,13 +1138,13 @@ void CtrlDisassemblyView::mouseEvent(wxMouseEvent& evt)
 	if (type == wxEVT_LEFT_DOWN || type == wxEVT_LEFT_DCLICK || type == wxEVT_RIGHT_DOWN)
 	{
 		u32 newAddress = yToAddress(evt.GetY());
-		bool extend = wxGetKeyState(WXK_SHIFT);
+		bool setNewAddress = true;
 
-		if (type == wxEVT_RIGHT_DOWN)
+		if (type == wxEVT_RIGHT_DOWN && !wxGetKeyState(WXK_SHIFT))
 		{
 			// Maintain the current selection if right clicking into it.
 			if (newAddress >= selectRangeStart && newAddress < selectRangeEnd)
-				extend = true;
+				setNewAddress = false;
 		}
 		else
 		{
@@ -1144,7 +1152,9 @@ void CtrlDisassemblyView::mouseEvent(wxMouseEvent& evt)
 				toggleBreakpoint(false);
 		}
 
-		setCurAddress(newAddress, extend);
+		if(setNewAddress)
+			setCurAddress(newAddress, wxGetKeyState(WXK_SHIFT));
+
 		SetFocus();
 		SetFocusFromKbd();
 	}
