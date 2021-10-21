@@ -29,6 +29,7 @@ public:
 	virtual bool Read(void* ptr, size_t size) = 0;
 
 	GSDumpFile(char* filename, const char* repack_filename);
+	GSDumpFile(FILE* file, FILE* repack_file);
 	virtual ~GSDumpFile();
 };
 
@@ -44,9 +45,11 @@ class GSDumpLzma : public GSDumpFile
 	size_t m_start;
 
 	void Decompress();
+	void Initialize();
 
 public:
 	GSDumpLzma(char* filename, const char* repack_filename);
+	GSDumpLzma(FILE* file, FILE* repack_file);
 	virtual ~GSDumpLzma();
 
 	bool IsEof() final;
@@ -55,15 +58,9 @@ public:
 
 class GSDumpRaw : public GSDumpFile
 {
-	size_t m_buff_size;
-	uint8_t* m_area;
-	uint8_t* m_inbuf;
-
-	size_t m_avail;
-	size_t m_start;
-
 public:
 	GSDumpRaw(char* filename, const char* repack_filename);
+	GSDumpRaw(FILE* file, FILE* repack_file);
 	virtual ~GSDumpRaw() = default;
 
 	bool IsEof() final;

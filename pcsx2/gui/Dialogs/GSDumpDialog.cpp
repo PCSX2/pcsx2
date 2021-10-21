@@ -277,25 +277,34 @@ void Dialogs::GSDumpDialog::GetDumpsList()
 	m_dump_list->ClearAll();
 	wxDir snaps(g_Conf->Folders.Snapshots.ToAscii());
 	wxString filename;
-	bool cont = snaps.GetFirst(&filename, "*.gs", wxDIR_DEFAULT);
-	int i = 0, h = 0, j = 0;
+	bool cont = snaps.GetFirst(&filename);
+	int h = 0, j = 0;
 	m_dump_list->AppendColumn("Dumps");
 	// set the column size to be exactly of the size of our list
 	m_dump_list->GetSize(&h, &j);
 	m_dump_list->SetColumnWidth(0, h);
+	std::vector<wxString> dumps;
 
 	while (cont)
 	{
-		m_dump_list->InsertItem(i, filename.substr(0, filename.find_last_of(".")));
-		i++;
+		if (filename.EndsWith(".gs"))
+			dumps.push_back(filename.substr(0, filename.length() - 3));
+		else if (filename.EndsWith(".gs.xz"))
+			dumps.push_back(filename.substr(0, filename.length() - 6));
 		cont = snaps.GetNext(&filename);
 	}
+	std::sort(dumps.begin(), dumps.end(), [](const wxString& a, const wxString& b) { return a.CmpNoCase(b) < 0; });
+	dumps.erase(std::unique(dumps.begin(), dumps.end()), dumps.end()); // In case there was both .gs and .gs.xz
+	for (size_t i = 0; i < dumps.size(); i++)
+		m_dump_list->InsertItem(i, dumps[i]);
 }
 
 void Dialogs::GSDumpDialog::SelectedDump(wxListEvent& evt)
 {
 	wxString filename_preview = g_Conf->Folders.Snapshots.ToAscii() + ("/" + evt.GetText()) + ".png";
 	wxString filename = g_Conf->Folders.Snapshots.ToAscii() + ("/" + evt.GetText()) + ".gs";
+	if (!wxFileExists(filename))
+		filename.append(".xz");
 	if (wxFileExists(filename_preview))
 	{
 		auto img = wxImage(filename_preview);
@@ -337,15 +346,18 @@ void Dialogs::GSDumpDialog::RunDump(wxCommandEvent& event)
 {
 	if (!m_run->IsEnabled())
 		return;
-	m_thread->m_dump_file = std::make_unique<pxInputStream>(m_selected_dump, new wxFFileInputStream(m_selected_dump));
-
-	if (!(m_thread->m_dump_file)->IsOk())
+	FILE* dumpfile = wxFopen(m_selected_dump, L"rb");
+	if (!dumpfile)
 	{
 		wxString s;
 		s.Printf(_("Failed to load the dump %s !"), m_selected_dump);
 		wxMessageBox(s, _("GS Debugger"), wxICON_ERROR);
 		return;
 	}
+	if (m_selected_dump.EndsWith(".xz"))
+		m_thread->m_dump_file = std::make_unique<GSDumpLzma>(dumpfile, nullptr);
+	else
+		m_thread->m_dump_file = std::make_unique<GSDumpRaw >(dumpfile, nullptr);
 	m_run->Disable();
 	m_settings->Disable();
 	m_debug_mode->Enable();
@@ -851,7 +863,7 @@ Dialogs::GSDumpDialog::GSThread::~GSThread()
 void Dialogs::GSDumpDialog::GSThread::OnStop()
 {
 	m_root_window->m_button_events.clear();
-	m_dump_file->Close();
+	m_dump_file = nullptr;
 
 	wxCommandEvent event(EVT_CLOSE_DUMP);
 	wxPostEvent(m_root_window, event);
@@ -900,29 +912,17 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 	freezeData fd = {(int)ss, (u8*)state_data.get()};
 	m_root_window->m_dump_packets.clear();
 
-	// Calling Length() internally does fseek() -> ftell() -> fseek(). Slow.
-	// Calling ftell() for Tell() doesn't seem to be very cheap either.
-	// So we track the position ourselves.
-	const wxFileOffset length = m_dump_file->Length();
-	wxFileOffset pos = m_dump_file->Tell();
-#define READ_FROM_DUMP_FILE(var, size) \
-	do \
-	{ \
-		m_dump_file->Read(var, size); \
-		pos += size; \
-	} while (0)
-
-	while (pos < length)
+	while (!m_dump_file->IsEof())
 	{
 		GSType id;
 		GSTransferPath id_transfer = GSTransferPath::Dummy;
-		READ_FROM_DUMP_FILE(&id, 1);
+		m_dump_file->Read(&id, 1);
 		s32 size = 0;
 		switch (id)
 		{
 			case GSType::Transfer:
-				READ_FROM_DUMP_FILE(&id_transfer, 1);
-				READ_FROM_DUMP_FILE(&size, 4);
+				m_dump_file->Read(&id_transfer, 1);
+				m_dump_file->Read(&size, 4);
 				break;
 			case GSType::VSync:
 				size = 1;
@@ -935,10 +935,9 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 				break;
 		}
 		std::unique_ptr<char[]> data(new char[size]);
-		READ_FROM_DUMP_FILE(data.get(), size);
+		m_dump_file->Read(data.get(), size);
 		m_root_window->m_dump_packets.push_back({id, std::move(data), size, id_transfer});
 	}
-#undef READ_FROM_DUMP_FILE
 
 	GSinit();
 	sApp.OpenGsPanel();

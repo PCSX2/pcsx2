@@ -19,6 +19,7 @@
 #include "ConfigurationDialog.h"
 #include "gui/Panels/ConfigurationPanels.h"
 #include "common/pxStreams.h"
+#include "GS/GSLzma.h"
 
 #include <wx/wizard.h>
 #include <wx/treectrl.h>
@@ -276,7 +277,7 @@ namespace Dialogs
 			int m_renderer = 0;
 			bool m_debug = false;
 			size_t m_debug_index;
-			std::unique_ptr<pxInputStream> m_dump_file;
+			std::unique_ptr<GSDumpFile> m_dump_file;
 			GSThread(GSDumpDialog* dlg);
 			virtual ~GSThread();
 		};
