@@ -24,6 +24,7 @@ target_sources(common PRIVATE
 	IniInterface.cpp
 	Mutex.cpp
 	Misc.cpp
+	MD5Digest.cpp
 	PathUtils.cpp
 	PrecompiledHeader.cpp
 	Perf.cpp
@@ -79,6 +80,7 @@ target_sources(common PRIVATE
 	HashCombine.h
 	MemcpyFast.h
 	MemsetFast.inl
+	MD5Digest.h
 	Path.h
 	PageFaultSource.h
 	PrecompiledHeader.h

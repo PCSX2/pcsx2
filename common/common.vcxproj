@@ -54,6 +54,7 @@
     <ClCompile Include="GL\StreamBuffer.cpp" />
     <ClCompile Include="FileSystem.cpp" />
     <ClCompile Include="IniInterface.cpp" />
+    <ClCompile Include="MD5Digest.cpp" />
     <ClCompile Include="ProgressCallback.cpp" />
     <ClCompile Include="pxStreams.cpp" />
     <ClCompile Include="pxTranslate.cpp" />
@@ -113,6 +114,7 @@
     <ClInclude Include="GL\StreamBuffer.h" />
     <ClInclude Include="FileSystem.h" />
     <ClInclude Include="HashCombine.h" />
+    <ClInclude Include="MD5Digest.h" />
     <ClInclude Include="ProgressCallback.h" />
     <ClInclude Include="ScopedGuard.h" />
     <ClInclude Include="StringUtil.h" />
