@@ -39,6 +39,7 @@
 #include <wx/button.h>
 #include <wx/treectrl.h>
 #include <wx/checkbox.h>
+#include <wx/spinctrl.h>
 #include <wx/dir.h>
 #include <wx/image.h>
 #include <wx/wfstream.h>
@@ -184,6 +185,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	, m_preview_image(new wxStaticBitmap(this, wxID_ANY, wxBitmap(EmbeddedImage<res_NoIcon>().Get()), wxDefaultPosition, wxSize(400,250)))
 	, m_debug_mode(new wxCheckBox(this, ID_DEBUG_MODE, _("Debug Mode")))
 	, m_renderer_overrides(new wxRadioBox())
+	, m_framerate_selector(new wxSpinCtrl(this, ID_FRAMERATE, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, 0, 999, 0))
 	, m_gif_list(new wxTreeCtrl(this, ID_SEL_PACKET, wxDefaultPosition, wxSize(400, 300), wxTR_HIDE_ROOT | wxTR_HAS_BUTTONS | wxTR_LINES_AT_ROOT))
 	, m_gif_packet(new wxTreeCtrl(this, wxID_ANY, wxDefaultPosition, wxSize(400, 300), wxTR_HIDE_ROOT | wxTR_HAS_BUTTONS | wxTR_LINES_AT_ROOT))
 	, m_start(new wxButton(this, ID_RUN_START, _("Go to Start"), wxDefaultPosition, wxSize(150,50)))
@@ -201,6 +203,9 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	wxBoxSizer* dbg_actions = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* gif = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* dumps_list = new wxBoxSizer(wxVERTICAL);
+	wxBoxSizer* framerate_sel = new wxBoxSizer(wxHORIZONTAL);
+	framerate_sel->Add(new wxStaticText(this, wxID_ANY, _("Framerate:")), wxSizerFlags().Centre());
+	framerate_sel->Add(m_framerate_selector, wxSizerFlags(1).Expand());
 
 	m_run->SetDefault();
 	wxArrayString rdoverrides;
@@ -228,6 +233,7 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	dumps_list->Add(new wxStaticText(this, wxID_ANY, _("GS Dumps List")), StdExpand());
 	dumps_list->Add(m_dump_list, StdExpand());
 	dump_info->Add(m_renderer_overrides, StdExpand());
+	dump_info->Add(framerate_sel, StdExpand());
 	dump_info->Add(m_settings, StdExpand());
 	dump_info->Add(m_run, StdExpand());
 	dump_preview->Add(new wxStaticText(this, wxID_ANY, _("Preview")), StdExpand());
@@ -269,7 +275,10 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 	Bind(wxEVT_BUTTON, &Dialogs::GSDumpDialog::OpenSettings, this, ID_SETTINGS);
 	Bind(wxEVT_TREE_SEL_CHANGED, &Dialogs::GSDumpDialog::ParsePacket, this, ID_SEL_PACKET);
 	Bind(wxEVT_CHECKBOX, &Dialogs::GSDumpDialog::CheckDebug, this, ID_DEBUG_MODE);
+	Bind(wxEVT_SPINCTRL, &Dialogs::GSDumpDialog::UpdateFramerate, this, ID_FRAMERATE);
 	Bind(EVT_CLOSE_DUMP, &Dialogs::GSDumpDialog::CloseDump, this);
+
+	UpdateFramerate(m_framerate_selector->GetValue());
 }
 
 void Dialogs::GSDumpDialog::GetDumpsList()
@@ -297,6 +306,19 @@ void Dialogs::GSDumpDialog::GetDumpsList()
 	dumps.erase(std::unique(dumps.begin(), dumps.end()), dumps.end()); // In case there was both .gs and .gs.xz
 	for (size_t i = 0; i < dumps.size(); i++)
 		m_dump_list->InsertItem(i, dumps[i]);
+}
+
+void Dialogs::GSDumpDialog::UpdateFramerate(int val)
+{
+	if (val)
+		m_thread->m_frame_ticks = (GetTickFrequency() + (val/2)) / val;
+	else
+		m_thread->m_frame_ticks = 0;
+}
+
+void Dialogs::GSDumpDialog::UpdateFramerate(wxCommandEvent& evt)
+{
+	UpdateFramerate(evt.GetInt());
 }
 
 void Dialogs::GSDumpDialog::SelectedDump(wxListEvent& evt)
@@ -1021,9 +1043,27 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 		}
 		else if (m_root_window->m_dump_packets.size())
 		{
-			do
-				m_root_window->ProcessDumpEvent(m_root_window->m_dump_packets[i++], regs);
-			while (i < m_root_window->m_dump_packets.size() && m_root_window->m_dump_packets[i].id != GSType::VSync);
+			while (i < m_root_window->m_dump_packets.size())
+			{
+				GSData& packet = m_root_window->m_dump_packets[i++];
+				m_root_window->ProcessDumpEvent(packet, regs);
+				if (packet.id == GSType::VSync)
+				{
+					if (m_frame_ticks)
+					{
+						// Frame limiter
+						u64 now = GetCPUTicks();
+						s64 ms = GetTickFrequency() / 1000;
+						s64 sleep = m_next_frame_time - now - ms;
+						if (sleep > ms)
+							Threading::Sleep(sleep / ms);
+						while ((now = GetCPUTicks()) < m_next_frame_time)
+							ShortSpin();
+						m_next_frame_time = std::max(now, m_next_frame_time + m_frame_ticks);
+					}
+					break;
+				}
+			}
 
 			if (i >= m_root_window->m_dump_packets.size())
 				i = 0;

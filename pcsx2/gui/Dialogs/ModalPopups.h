@@ -108,6 +108,7 @@ namespace Dialogs
 		wxString m_selected_dump;
 		wxCheckBox* m_debug_mode;
 		wxRadioBox* m_renderer_overrides;
+		wxSpinCtrl* m_framerate_selector;
 		wxTreeCtrl* m_gif_list;
 		wxTreeCtrl* m_gif_packet;
 		wxButton* m_start;
@@ -120,6 +121,8 @@ namespace Dialogs
 		wxFileSystemWatcher m_fs_watcher;
 
 		void GetDumpsList();
+		void UpdateFramerate(int val);
+		void UpdateFramerate(wxCommandEvent& evt);
 		void SelectedDump(wxListEvent& evt);
 		void RunDump(wxCommandEvent& event);
 		void ToStart(wxCommandEvent& event);
@@ -140,7 +143,8 @@ namespace Dialogs
 			ID_RUN_VSYNC,
 			ID_SEL_PACKET,
 			ID_DEBUG_MODE,
-			ID_SETTINGS
+			ID_SETTINGS,
+			ID_FRAMERATE,
 		};
 
 		// clang-format off
@@ -275,6 +279,8 @@ namespace Dialogs
 
 		public:
 			int m_renderer = 0;
+			u64 m_frame_ticks = 0;
+			u64 m_next_frame_time = 0;
 			bool m_debug = false;
 			size_t m_debug_index;
 			std::unique_ptr<GSDumpFile> m_dump_file;
