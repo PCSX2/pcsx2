@@ -357,7 +357,7 @@ wxString Exception::SaveStateLoadError::FormatDisplayMessage() const
 //static VmStateBuffer state_buffer( L"Public Savestate Buffer" );
 
 static const wxChar* EntryFilename_StateVersion = L"PCSX2 Savestate Version.id";
-static const wxChar* EntryFilename_Screenshot = L"Screenshot.jpg";
+//static const wxChar* EntryFilename_Screenshot = L"Screenshot.jpg";
 static const wxChar* EntryFilename_InternalStructures = L"PCSX2 Internal Structures.dat";
 
 struct SysState_Component
