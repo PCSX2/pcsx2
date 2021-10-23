@@ -259,6 +259,7 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 	SettingsWrapEntry(FramesToDraw);
 	SettingsWrapEntry(FramesToSkip);
 
+#ifdef PCSX2_CORE
 	static const char* AspectRatioNames[] =
 		{
 			"Stretch",
@@ -267,7 +268,6 @@ void Pcsx2Config::GSOptions::LoadSave(SettingsWrapper& wrap)
 			// WARNING: array must be NULL terminated to compute it size
 			NULL};
 
-#ifdef PCSX2_CORE
 	wrap.EnumEntry("AspectRatio", AspectRatio, AspectRatioNames, AspectRatio);
 
 	static const char* FMVAspectRatioSwitchNames[] =

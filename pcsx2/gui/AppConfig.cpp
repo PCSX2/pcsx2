@@ -924,7 +924,6 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
 	//Console.WriteLn("Applying Preset %d ...", n);
 
 	//Have some original and default values at hand to be used later.
-	Pcsx2Config::GSOptions original_GS = EmuOptions.GS;
 	Pcsx2Config::FramerateOptions original_Framerate = EmuOptions.Framerate;
 	Pcsx2Config::SpeedhackOptions original_SpeedHacks = EmuOptions.Speedhacks;
 	AppConfig default_AppConfig;
