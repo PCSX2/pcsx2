@@ -61,15 +61,16 @@ void __fastcall vu1ExecMicro(u32 addr)
 {
 	if (THREAD_VU1) {
 		VU0.VI[REG_VPU_STAT].UL &= ~0xFF00;
-
 		// Okay this is a little bit of a hack, but with good reason.
 		// Most of the time with MTVU we want to pretend the VU has finished quickly as to gain the benefit from running another thread
 		// however with T-Bit games when the T-Bit is enabled, it needs to wait in case a T-Bit happens, so we need to set "Busy"
 		// We shouldn't do this all the time as it negates the extra thread and causes games like Ratchet & Clank to be no faster.
-		if(VU0.VI[REG_FBRST].UL & 0x800)
+		if (VU0.VI[REG_FBRST].UL & 0x800)
+		{
 			VU0.VI[REG_VPU_STAT].UL |= 0x0100;
+		}
 
-		vu1Thread.ExecuteVU(addr, vif1Regs.top, vif1Regs.itop);
+		vu1Thread.ExecuteVU(addr, vif1Regs.top, vif1Regs.itop, VU0.VI[REG_FBRST].UL);
 		return;
 	}
 	static int count = 0;

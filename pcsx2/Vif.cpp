@@ -305,6 +305,7 @@ _vifT __fi u32 vifRead32(u32 mem)
 {
 	vifStruct& vif = MTVU_VifX;
 	bool wait = idx && THREAD_VU1;
+
 	switch (mem)
 	{
 		case caseVif(ROW0):
@@ -380,44 +381,36 @@ _vifT __fi bool vifWrite32(u32 mem, u32 value)
 
 		case caseVif(ROW0):
 			vif.MaskRow._u32[0] = value;
-			if (idx && THREAD_VU1)
-				vu1Thread.WriteRow(vif);
+			vu1Thread.WriteRow(vif);
 			return false;
 		case caseVif(ROW1):
 			vif.MaskRow._u32[1] = value;
-			if (idx && THREAD_VU1)
-				vu1Thread.WriteRow(vif);
+			vu1Thread.WriteRow(vif);
 			return false;
 		case caseVif(ROW2):
 			vif.MaskRow._u32[2] = value;
-			if (idx && THREAD_VU1)
-				vu1Thread.WriteRow(vif);
+			vu1Thread.WriteRow(vif);
 			return false;
 		case caseVif(ROW3):
 			vif.MaskRow._u32[3] = value;
-			if (idx && THREAD_VU1)
-				vu1Thread.WriteRow(vif);
+			vu1Thread.WriteRow(vif);
 			return false;
 
 		case caseVif(COL0):
 			vif.MaskCol._u32[0] = value;
-			if (idx && THREAD_VU1)
-				vu1Thread.WriteCol(vif);
+			vu1Thread.WriteCol(vif);
 			return false;
 		case caseVif(COL1):
 			vif.MaskCol._u32[1] = value;
-			if (idx && THREAD_VU1)
-				vu1Thread.WriteCol(vif);
+			vu1Thread.WriteCol(vif);
 			return false;
 		case caseVif(COL2):
 			vif.MaskCol._u32[2] = value;
-			if (idx && THREAD_VU1)
-				vu1Thread.WriteCol(vif);
+			vu1Thread.WriteCol(vif);
 			return false;
 		case caseVif(COL3):
 			vif.MaskCol._u32[3] = value;
-			if (idx && THREAD_VU1)
-				vu1Thread.WriteCol(vif);
+			vu1Thread.WriteCol(vif);
 			return false;
 	}
 

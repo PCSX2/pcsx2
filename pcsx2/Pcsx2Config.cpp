@@ -65,9 +65,11 @@ void TraceLogFilters::LoadSave(SettingsWrapper& wrap)
 }
 
 const char* const tbl_SpeedhackNames[] =
-	{
-		"mvuFlag",
-		"InstantVU1"};
+{
+	"mvuFlag",
+	"InstantVU1",
+	"MTVU"
+};
 
 const char* EnumToString(SpeedhackId id)
 {
@@ -84,6 +86,9 @@ void Pcsx2Config::SpeedhackOptions::Set(SpeedhackId id, bool enabled)
 			break;
 		case Speedhack_InstantVU1:
 			vu1Instant = enabled;
+			break;
+		case Speedhack_MTVU:
+			vuThread = enabled;
 			break;
 			jNO_DEFAULT;
 	}

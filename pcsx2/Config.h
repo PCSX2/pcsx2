@@ -58,6 +58,7 @@ enum SpeedhackId
 
 	Speedhack_mvuFlag = SpeedhackId_FIRST,
 	Speedhack_InstantVU1,
+	Speedhack_MTVU,
 
 	SpeedhackId_COUNT
 };

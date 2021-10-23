@@ -173,9 +173,6 @@ __fi void vif1SetupTransfer()
 		}
 	}
 
-			
-			
-
 	if (vif1ch.chcr.TTE)
 	{
 		// Transfer dma tag if tte is set
@@ -203,7 +200,7 @@ __fi void vif1SetupTransfer()
 			ret = VIF1transfer((u32*)&masked_tag + 2, 2, true);  //Transfer Tag
 			//ret = VIF1transfer((u32*)ptag + 2, 2);  //Transfer Tag
 		}
-				
+
 		if (!ret && vif1.irqoffset.enabled)
 		{
 			vif1.inprogress &= ~1; // Better clear this so it has to do it again (Jak 1)
@@ -233,8 +230,7 @@ __fi void vif1VUFinish()
 {
 	if (VU0.VI[REG_VPU_STAT].UL & 0x500)
 	{
-		if(THREAD_VU1)
-			vu1Thread.Get_MTVUChanges();
+		vu1Thread.Get_MTVUChanges();
 
 		CPU_INT(VIF_VU1_FINISH, 128);
 		return;
@@ -355,11 +351,11 @@ __fi void vif1Interrupt()
 	vif1.vifstalled.enabled = false;
 
 	//Mirroring change to VIF0
-	if (vif1.cmd) 
+	if (vif1.cmd)
 	{
 		if (vif1.done && (vif1ch.qwc == 0)) vif1Regs.stat.VPS = VPS_WAITING;
 	}
-	else		 
+	else
 	{
 		vif1Regs.stat.VPS = VPS_IDLE;
 	}
