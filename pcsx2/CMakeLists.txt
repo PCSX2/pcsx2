@@ -1464,6 +1464,12 @@ if(WIN32)
 		opengl32.lib
 		comsuppw.lib
 	)
+elseif(APPLE)
+	target_link_libraries(PCSX2_FLAGS INTERFACE
+		PkgConfig::GIO
+		PCAP::PCAP
+		LibXml2::LibXml2
+	)
 else()
 	target_link_libraries(PCSX2_FLAGS INTERFACE
 		GTK::gtk
