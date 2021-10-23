@@ -47,6 +47,7 @@ public:
 	Semaphore semaXGkick;
 	std::atomic<unsigned int> vuCycles[4]; // Used for VU cycle stealing hack
 	u32 vuCycleIdx;  // Used for VU cycle stealing hack
+	u32 vuFBRST;
 
 	enum InterruptFlag {
 		InterruptFlagFinish = 1 << 0,
@@ -76,7 +77,7 @@ public:
 
 	void Get_MTVUChanges();
 
-	void ExecuteVU(u32 vu_addr, u32 vif_top, u32 vif_itop);
+	void ExecuteVU(u32 vu_addr, u32 vif_top, u32 vif_itop, u32 fbrst);
 
 	void VifUnpack(vifStruct& _vif, VIFregisters& _vifRegs, u8* data, u32 size);
 

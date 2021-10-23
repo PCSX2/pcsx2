@@ -14,7 +14,6 @@
  */
 
 #pragma once
-
 extern void _vu0WaitMicro();
 extern void _vu0FinishMicro();
 

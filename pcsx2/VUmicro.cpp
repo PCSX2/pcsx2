@@ -33,7 +33,6 @@ void BaseVUmicroCPU::ExecuteBlock(bool startUp)
 		return;
 	}
 
-	
 	if (!(stat & test))
 	{
 		// VU currently flushes XGKICK on VU1 end so no need for this, yet

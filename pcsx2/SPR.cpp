@@ -37,9 +37,12 @@ static void TestClearVUs(u32 madr, u32 qwc, bool isWrite)
 			//Catch up VU1 too
 			CpuVU1->ExecuteBlock(0);
 		}
-		if ((madr >= 0x11008000) && (VU0.VI[REG_VPU_STAT].UL & 0x100) && !THREAD_VU1)
+		if ((madr >= 0x11008000) && (VU0.VI[REG_VPU_STAT].UL & 0x100) && (!THREAD_VU1 || !isWrite))
 		{
-			CpuVU1->Execute(vu1RunCycles);
+			if (THREAD_VU1)
+				vu1Thread.WaitVU();
+			else
+				CpuVU1->Execute(vu1RunCycles);
 			cpuRegs.cycle = VU1.cycle;
 			//Catch up VU0 too
 			CpuVU0->ExecuteBlock(0);
