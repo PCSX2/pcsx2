@@ -10042,6 +10042,8 @@ SLES-51257:
   name: "Sims, The (Die Sims)"
   region: "PAL-G"
   compat: 3
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLES-51258:
   name: "James Bond 007 - Nightfire"
   region: "PAL-M5"
@@ -10745,18 +10747,28 @@ SLES-51686:
   name: "Pitfall - The Lost Expedition"
   region: "PAL-E"
   compat: 4
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLES-51687:
   name: "Pitfall - The Lost Expedition"
   region: "PAL-F"
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLES-51688:
   name: "Pitfall - The Lost Expedition"
   region: "PAL-G"
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLES-51689:
   name: "Pitfall - The Lost Expedition"
   region: "PAL-I"
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLES-51690:
   name: "Pitfall - The Lost Expedition"
   region: "PAL-S"
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLES-51693:
   name: "Suffering, The"
   region: "PAL-E-F-G"
@@ -12354,12 +12366,18 @@ SLES-52536:
   name: "Shark Tale"
   region: "PAL-E"
   compat: 2
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLES-52537:
   name: "Shark Tale"
   region: "PAL-M3"
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLES-52539:
   name: "Shark Tale"
   region: "PAL-I"
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLES-52541:
   name: "Grand Theft Auto - San Andreas"
   region: "PAL-M5"
@@ -13148,6 +13166,8 @@ SLES-52913:
 SLES-52915:
   name: "Shark Tale"
   region: "PAL-SW"
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLES-52917:
   name: "Scaler"
   region: "PAL-E-F"
@@ -15294,6 +15314,8 @@ SLES-53863:
 SLES-53866:
   name: "Over the Hedge"
   region: "PAL-E"
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLES-53867:
   name: "Ski Alpin 2006"
   region: "PAL-E-G"
@@ -15530,15 +15552,23 @@ SLES-53984:
 SLES-53986:
   name: "Over the Hedge"
   region: "PAL-I"
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLES-53987:
   name: "Over the Hedge"
   region: "PAL-S"
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLES-53988:
   name: "Over the Hedge"
   region: "PAL-E-G"
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLES-53989:
   name: "Over the Hedge"
   region: "PAL-DU"
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLES-53991:
   name: "Urban Chaos - Riot Response"
   region: "PAL-M5"
@@ -15908,6 +15938,8 @@ SLES-54172:
 SLES-54173:
   name: "Over The Hedge"
   region: "PAL-SW"
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLES-54174:
   name: "ZooCube"
   region: "PAL-E"
@@ -24973,6 +25005,8 @@ SLPM-65900:
 SLPM-65901:
   name: "Shark Tale"
   region: "NTSC-J"
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLPM-65902:
   name: "Memories Off - After Rain Vol.2 Souen [Special Edition]"
   region: "NTSC-J"
@@ -35006,6 +35040,8 @@ SLUS-20408:
   name: "Pitfall - The Lost Expedition"
   region: "NTSC-U"
   compat: 4
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLUS-20409:
   name: "Total Immersion Racing"
   region: "NTSC-U"
@@ -35732,6 +35768,8 @@ SLUS-20573:
   name: "Sims, The"
   region: "NTSC-U"
   compat: 4
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLUS-20574:
   name: "NCAA March Madness 2003"
   region: "NTSC-U"
@@ -37182,6 +37220,8 @@ SLUS-20925:
   name: "Shark Tale"
   region: "NTSC-U"
   compat: 2
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLUS-20926:
   name: "Harry Potter and The Prisoner of Azkaban"
   region: "NTSC-U"
@@ -38915,6 +38955,8 @@ SLUS-21300:
   name: "Over the Hedge"
   region: "NTSC-U"
   compat: 5
+  speedHacks:
+    MTVUSpeedHack: 0  # Fixes bad graphics due to bad T-Bit handling.
 SLUS-21301:
   name: "World Series of Poker"
   region: "NTSC-U"
