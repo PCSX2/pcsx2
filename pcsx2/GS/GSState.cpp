@@ -1397,7 +1397,7 @@ void GSState::FlushWrite()
 
 	m_tr.start += len;
 
-	m_perfmon.Put(GSPerfMon::Swizzle, len);
+	g_perfmon.Put(GSPerfMon::Swizzle, len);
 }
 
 void GSState::FlushPrim()
@@ -1477,8 +1477,8 @@ void GSState::FlushPrim()
 
 		m_context->RestoreReg();
 
-		m_perfmon.Put(GSPerfMon::Draw, 1);
-		m_perfmon.Put(GSPerfMon::Prim, m_index.tail / GSUtil::GetVertexCount(PRIM->PRIM));
+		g_perfmon.Put(GSPerfMon::Draw, 1);
+		g_perfmon.Put(GSPerfMon::Prim, m_index.tail / GSUtil::GetVertexCount(PRIM->PRIM));
 
 		m_index.tail = 0;
 
@@ -1557,7 +1557,7 @@ void GSState::Write(const u8* mem, int len)
 
 		m_tr.start = m_tr.end = m_tr.total;
 
-		m_perfmon.Put(GSPerfMon::Swizzle, len);
+		g_perfmon.Put(GSPerfMon::Swizzle, len);
 	}
 	else
 	{
@@ -1791,7 +1791,7 @@ void GSState::SoftReset(u32 mask)
 
 void GSState::ReadFIFO(u8* mem, int size)
 {
-	GSPerfMonAutoTimer pmat(&m_perfmon);
+	GSPerfMonAutoTimer pmat(&g_perfmon);
 
 	Flush();
 
@@ -1811,7 +1811,7 @@ template void GSState::Transfer<3>(const u8* mem, u32 size);
 template <int index>
 void GSState::Transfer(const u8* mem, u32 size)
 {
-	GSPerfMonAutoTimer pmat(&m_perfmon);
+	GSPerfMonAutoTimer pmat(&g_perfmon);
 
 	const u8* start = mem;
 
@@ -2208,7 +2208,7 @@ int GSState::Defrost(const freezeData* fd)
 
 	UpdateScissor();
 
-	m_perfmon.SetFrame(5000);
+	g_perfmon.SetFrame(5000);
 
 	return 0;
 }

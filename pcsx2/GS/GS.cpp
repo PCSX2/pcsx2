@@ -35,6 +35,7 @@
 #include "pcsx2/Config.h"
 #include "pcsx2/Host.h"
 #include "pcsx2/HostDisplay.h"
+#include "pcsx2/GS.h"
 #ifdef PCSX2_CORE
 #include "pcsx2/HostSettings.h"
 #endif
@@ -629,26 +630,27 @@ void GSgetInternalResolution(int* width, int* height)
 
 void GSgetStats(std::string& info)
 {
-	GSPerfMon& pm = s_gs->m_perfmon;
+	GSPerfMon& pm = g_perfmon;
 
 	const char* api_name = HostDisplay::RenderAPIToString(s_render_api);
 
 	if (GSConfig.Renderer == GSRendererType::SW)
 	{
-		int sum = 0;
-		for (int i = 0; i < 16; i++)
-			sum += pm.CPU(GSPerfMon::WorkerDraw0 + i);
+		float sum = 0.0f;
+		for (int i = GSPerfMon::WorkerDraw0; i < GSPerfMon::TimerLast; i++)
+			sum += pm.GetTimer(static_cast<GSPerfMon::timer_t>(i));
 
-		const double fps = 1000.0f / pm.Get(GSPerfMon::Frame);
+		const double fps = GetVerticalFrequency();
 		const double fillrate = pm.Get(GSPerfMon::Fillrate);
-		info = format("%d S | %d P | %d D | %.2f U | %.2f D | %.2f mpps | %d%% WCPU",
+		info = format("%s SW | %d S | %d P | %d D | %.2f U | %.2f D | %.2f mpps | %d%% WCPU",
+			api_name,
 			(int)pm.Get(GSPerfMon::SyncPoint),
 			(int)pm.Get(GSPerfMon::Prim),
 			(int)pm.Get(GSPerfMon::Draw),
 			pm.Get(GSPerfMon::Swizzle) / 1024,
 			pm.Get(GSPerfMon::Unswizzle) / 1024,
 			fps * fillrate / (1024 * 1024),
-			sum);
+			static_cast<int>(std::lround(sum)));
 	}
 	else if (GSConfig.Renderer == GSRendererType::Null)
 	{
@@ -656,12 +658,14 @@ void GSgetStats(std::string& info)
 	}
 	else
 	{
-		info = format("%d S | %d P | %d D | %.2f U | %.2f D",
-			(int)pm.Get(GSPerfMon::SyncPoint),
+		info = format("%s HW | %d P | %d D | %d DC | %d RB | %d TC | %d TU",
+			api_name,
 			(int)pm.Get(GSPerfMon::Prim),
 			(int)pm.Get(GSPerfMon::Draw),
-			pm.Get(GSPerfMon::Swizzle) / 1024,
-			pm.Get(GSPerfMon::Unswizzle) / 1024);
+			(int)std::ceil(pm.Get(GSPerfMon::DrawCalls)),
+			(int)std::ceil(pm.Get(GSPerfMon::Readbacks)),
+			(int)std::ceil(pm.Get(GSPerfMon::TextureCopies)),
+			(int)std::ceil(pm.Get(GSPerfMon::TextureUploads)));
 	}
 }
 

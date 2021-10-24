@@ -680,6 +680,7 @@ void GSDeviceOGL::RestoreAPIState()
 
 void GSDeviceOGL::DrawPrimitive()
 {
+	g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 	glDrawArrays(m_draw_topology, m_vertex.start, m_vertex.count);
 }
 
@@ -687,6 +688,7 @@ void GSDeviceOGL::DrawIndexedPrimitive()
 {
 	if (!m_disable_hw_gl_draw)
 	{
+		g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 		glDrawElementsBaseVertex(m_draw_topology, static_cast<u32>(m_index.count), GL_UNSIGNED_INT,
 			reinterpret_cast<void*>(static_cast<u32>(m_index.start) * sizeof(u32)), static_cast<GLint>(m_vertex.start));
 	}
@@ -698,6 +700,7 @@ void GSDeviceOGL::DrawIndexedPrimitive(int offset, int count)
 
 	if (!m_disable_hw_gl_draw)
 	{
+		g_perfmon.Put(GSPerfMon::DrawCalls, 1);
 		glDrawElementsBaseVertex(m_draw_topology, count, GL_UNSIGNED_INT,
 			reinterpret_cast<void*>((static_cast<u32>(m_index.start) + static_cast<u32>(offset)) * sizeof(u32)),
 			static_cast<GLint>(m_vertex.start));
@@ -1105,6 +1108,7 @@ std::string GSDeviceOGL::GetPSSource(PSSelector sel)
 bool GSDeviceOGL::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map)
 {
 	ASSERT(src);
+	g_perfmon.Put(GSPerfMon::Readbacks, 1);
 
 	GSTextureOGL* srcgl = static_cast<GSTextureOGL*>(src);
 
@@ -1116,6 +1120,7 @@ bool GSDeviceOGL::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSText
 void GSDeviceOGL::BlitRect(GSTexture* sTex, const GSVector4i& r, const GSVector2i& dsize, bool at_origin, bool linear)
 {
 	GL_PUSH(format("CopyRectConv from %d", static_cast<GSTextureOGL*>(sTex)->GetID()).c_str());
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 	// NOTE: This previously used glCopyTextureSubImage2D(), but this appears to leak memory in
 	// the loading screens of Evolution Snowboarding in Intel/NVIDIA drivers.
@@ -1153,6 +1158,7 @@ void GSDeviceOGL::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r
 #endif
 
 	dTex->CommitRegion(GSVector2i(r.z, r.w));
+	g_perfmon.Put(GSPerfMon::TextureCopies, 1);
 
 	ASSERT(GLExtension::Has("GL_ARB_copy_image") && glCopyImageSubData);
 	glCopyImageSubData(sid, GL_TEXTURE_2D,
