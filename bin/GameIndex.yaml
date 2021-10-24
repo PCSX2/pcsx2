@@ -8985,6 +8985,8 @@ SLES-51057:
 SLES-51058:
   name: "Maken Shao - Demon Sword"
   region: "PAL-E"
+  gameFixes:
+    - VUKickstartHack  # Fixes SPS.
 SLES-51060:
   name: "Butt Ugly Martians"
   region: "PAL-M5"
@@ -19326,6 +19328,11 @@ SLPM-60273:
 SLPM-60282:
   name: "Lucky * Star RAvish Romance [Trial]"
   region: "NTSC-J"
+SLPM-61007:
+  name: "Maken Shao [Trial]"
+  region: "NTSC-J"
+  gameFixes:
+    - VUKickstartHack # Fixes SPS. 
 SLPM-61009:
   name: "Silent Hill 2 (Red Ribbon) [Trial]"
   region: "NTSC-J"
@@ -21772,6 +21779,11 @@ SLPM-65142:
 SLPM-65143:
   name: "Anime Super Remix, The - Ashita no Joe 2"
   region: "NTSC-J"
+SLPM-65144:
+  name: "Maken Shao"
+  region: "NTSC-J"
+  gameFixes:
+    - VUKickstartHack # Fixes SPS.
 SLPM-65148:
   name: "Densha de Go! Ryojouhen"
   region: "NTSC-J"
@@ -29008,6 +29020,13 @@ SLPS-25041:
 SLPS-25042:
   name: "Maken Shao [Limited Edition]"
   region: "NTSC-J"
+  gameFixes:
+    - VUKickstartHack # Fixes SPS. 
+SLPS-25043:
+  name: "Maken Shao"
+  region: "NTSC-J"
+  gameFixes:
+    - VUKickstartHack # Fixes SPS.
 SLPS-25044:
   name: "Evergrace 2"
   region: "NTSC-J"
