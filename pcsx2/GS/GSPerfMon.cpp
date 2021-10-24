@@ -15,6 +15,9 @@
 
 #include "PrecompiledHeader.h"
 #include "GSPerfMon.h"
+#include "GS.h"
+
+GSPerfMon g_perfmon;
 
 GSPerfMon::GSPerfMon()
 	: m_frame(0)
@@ -23,41 +26,15 @@ GSPerfMon::GSPerfMon()
 {
 	memset(m_counters, 0, sizeof(m_counters));
 	memset(m_stats, 0, sizeof(m_stats));
+	memset(m_timer_stats, 0, sizeof(m_timer_stats));
 	memset(m_total, 0, sizeof(m_total));
 	memset(m_begin, 0, sizeof(m_begin));
 }
 
-void GSPerfMon::Put(counter_t c, double val)
+void GSPerfMon::EndFrame()
 {
-#ifndef DISABLE_PERF_MON
-	if (c == Frame)
-	{
-#if defined(__unix__) || defined(__APPLE__)
-		struct timespec ts;
-# ifdef CLOCK_MONOTONIC_RAW
-		clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
-# else
-		clock_gettime(CLOCK_MONOTONIC, &ts);
-# endif
-		u64 now = (u64)ts.tv_sec * (u64)1e6 + (u64)ts.tv_nsec / (u64)1e3;
-#else
-		clock_t now = clock();
-#endif
-
-		if (m_lastframe != 0)
-		{
-			m_counters[c] += (now - m_lastframe) * 1000 / CLOCKS_PER_SEC;
-		}
-
-		m_lastframe = now;
-		m_frame++;
-		m_count++;
-	}
-	else
-	{
-		m_counters[c] += val;
-	}
-#endif
+	m_frame++;
+	m_count++;
 }
 
 void GSPerfMon::Update()
@@ -71,6 +48,30 @@ void GSPerfMon::Update()
 		}
 
 		m_count = 0;
+
+		// Update CPU usage for SW renderer.
+		if (GSConfig.Renderer == GSRendererType::SW)
+		{
+			const u64 current = __rdtsc();
+
+			for (size_t i = WorkerDraw0; i < TimerLast; i++)
+			{
+				if (m_begin[i] == 0)
+				{
+					m_timer_stats[i] = 0.0f;
+					continue;
+				}
+
+				m_timer_stats[i] =
+					static_cast<float>(static_cast<double>(m_total[i]) / static_cast<double>(current - m_begin[i])
+						* 100.0);
+
+				m_begin[i] = 0;
+				m_start[i] = 0;
+				m_total[i] = 0;
+			}
+		}
+
 	}
 
 	memset(m_counters, 0, sizeof(m_counters));
@@ -98,18 +99,4 @@ void GSPerfMon::Stop(int timer)
 		m_start[timer] = 0;
 	}
 #endif
-}
-
-int GSPerfMon::CPU(int timer, bool reset)
-{
-	int percent = (int)(100 * m_total[timer] / (__rdtsc() - m_begin[timer]));
-
-	if (reset)
-	{
-		m_begin[timer] = 0;
-		m_start[timer] = 0;
-		m_total[timer] = 0;
-	}
-
-	return percent;
 }

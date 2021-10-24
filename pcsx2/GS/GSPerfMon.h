@@ -29,20 +29,26 @@ public:
 
 	enum counter_t
 	{
-		Frame,
 		Prim,
 		Draw,
+		DrawCalls,
+		Readbacks,
 		Swizzle,
 		Unswizzle,
 		Fillrate,
 		Quad,
 		SyncPoint,
 		CounterLast,
+
+		// Reused counters for HW.
+		TextureCopies = Fillrate,
+		TextureUploads = SyncPoint,
 	};
 
 protected:
 	double m_counters[CounterLast];
 	double m_stats[CounterLast];
+	float m_timer_stats[TimerLast];
 	u64 m_begin[TimerLast], m_total[TimerLast], m_start[TimerLast];
 	u64 m_frame;
 	clock_t m_lastframe;
@@ -55,14 +61,15 @@ public:
 
 	void SetFrame(u64 frame) { m_frame = frame; }
 	u64 GetFrame() { return m_frame; }
+	void EndFrame();
 
-	void Put(counter_t c, double val = 0);
+	void Put(counter_t c, double val = 0) { m_counters[c] += val; }
 	double Get(counter_t c) { return m_stats[c]; }
+	float GetTimer(timer_t t) { return m_timer_stats[t]; }
 	void Update();
 
 	void Start(int timer = Main);
 	void Stop(int timer = Main);
-	int CPU(int timer = Main, bool reset = true);
 };
 
 class GSPerfMonAutoTimer
@@ -78,3 +85,5 @@ public:
 	}
 	~GSPerfMonAutoTimer() { m_pm->Stop(m_timer); }
 };
+
+extern GSPerfMon g_perfmon;
