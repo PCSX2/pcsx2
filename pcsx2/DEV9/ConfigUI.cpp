@@ -228,7 +228,7 @@ public:
 			const auto& list = m_adapter_list[static_cast<u32>(config.EthApi)];
 			for (size_t i = 0; i < list.size(); i++)
 			{
-				if (list[i].name == config.Eth)
+				if (list[i].guid == config.Eth)
 				{
 					m_eth_adapter->SetSelection(i + 1);
 					break;
@@ -259,7 +259,7 @@ public:
 		if (api && eth)
 		{
 			const AdapterEntry& adapter = m_adapter_list[static_cast<u32>(m_api_list[api - 1])][eth - 1];
-			wxStrncpy(config.Eth, adapter.name, std::size(config.Eth) - 1);
+			wxStrncpy(config.Eth, adapter.guid, std::size(config.Eth) - 1);
 			config.EthApi = adapter.type;
 		}
 		else
