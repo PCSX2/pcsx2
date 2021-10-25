@@ -38,4 +38,5 @@ public:
 	virtual void close();
 	virtual ~TAPAdapter();
 	static std::vector<AdapterEntry> GetAdapters();
+	static AdapterOptions GetAdapterOptions();
 };
