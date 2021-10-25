@@ -47,24 +47,33 @@ namespace InternalServers
 	}
 
 #ifdef _WIN32
-	void DHCP_Server::Init(PIP_ADAPTER_ADDRESSES adapter)
+	void DHCP_Server::Init(PIP_ADAPTER_ADDRESSES adapter, IP_Address ipOverride, IP_Address subnetOverride, IP_Address gatewayOverride)
 #elif defined(__POSIX__)
-	void DHCP_Server::Init(ifaddrs* adapter)
+	void DHCP_Server::Init(ifaddrs* adapter, IP_Address ipOverride, IP_Address subnetOverride, IP_Address gatewayOverride)
 #endif
 	{
-		ps2IP = *(IP_Address*)&EmuConfig.DEV9.PS2IP;
+		ps2IP = {0};
 		netmask = {0};
 		gateway = {0};
 		dns1 = {0};
 		dns2 = {0};
 		broadcastIP = {0};
 
-		if (EmuConfig.DEV9.AutoMask)
+		if (ipOverride.integer != 0)
+			ps2IP = ipOverride;
+		else
+			ps2IP = *(IP_Address*)&EmuConfig.DEV9.PS2IP;
+
+		if (subnetOverride.integer != 0)
+			netmask = subnetOverride;
+		else if (EmuConfig.DEV9.AutoMask)
 			AutoNetmask(adapter);
 		else
 			netmask = *(IP_Address*)EmuConfig.DEV9.Mask;
 
-		if (EmuConfig.DEV9.AutoGateway)
+		if (gatewayOverride.integer != 0)
+			gateway = gatewayOverride;
+		else if (EmuConfig.DEV9.AutoGateway)
 			AutoGateway(adapter);
 		else
 			gateway = *(IP_Address*)EmuConfig.DEV9.Gateway;

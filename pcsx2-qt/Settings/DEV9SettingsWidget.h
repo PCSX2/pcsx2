@@ -111,4 +111,9 @@ private:
 	std::vector<const char*> m_api_namelist;
 	std::vector<const char*> m_api_valuelist;
 	std::vector<std::vector<AdapterEntry>> m_adapter_list;
+
+	AdapterOptions m_adapter_options{AdapterOptions::None};
+
+	//Use by per-game ui only
+	Pcsx2Config::DEV9Options::NetApi m_global_api{Pcsx2Config::DEV9Options::NetApi::Unset};
 };

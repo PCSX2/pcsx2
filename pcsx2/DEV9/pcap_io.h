@@ -184,4 +184,5 @@ public:
 	virtual void reloadSettings();
 	virtual ~PCAPAdapter();
 	static std::vector<AdapterEntry> GetAdapters();
+	static AdapterOptions GetAdapterOptions();
 };

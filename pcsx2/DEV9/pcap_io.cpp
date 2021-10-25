@@ -410,6 +410,10 @@ PCAPAdapter::PCAPAdapter()
 	}
 #endif
 }
+AdapterOptions PCAPAdapter::GetAdapterOptions()
+{
+	return AdapterOptions::None;
+}
 bool PCAPAdapter::blocks()
 {
 	pxAssert(pcap_io_running);
