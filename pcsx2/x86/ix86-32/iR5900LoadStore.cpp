@@ -949,7 +949,7 @@ void recLQC2()
 	xForwardJZ32 skipvuidle;
 	xSUB(eax, ptr32[&VU0.cycle]);
 	xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-	xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 8 : 0);
+	xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 4 : 0);
 	xForwardJL32 skip;
 	_cop2BackupRegs();
 	xLoadFarAddr(arg1reg, CpuVU0);
@@ -998,7 +998,7 @@ void recSQC2()
 	xForwardJZ32 skipvuidle;
 	xSUB(eax, ptr32[&VU0.cycle]);
 	xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-	xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 8 : 0);
+	xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 4 : 0);
 	xForwardJL32 skip;
 	_cop2BackupRegs();
 	xLoadFarAddr(arg1reg, CpuVU0);
