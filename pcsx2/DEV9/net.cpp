@@ -67,6 +67,12 @@ void tx_put(NetPacket* pkt)
 	//pkt must be copied if its not processed by here, since it can be allocated on the callers stack
 }
 
+void ad_reset()
+{
+	if (nif != nullptr)
+		nif->reset();
+}
+
 NetAdapter* GetNetAdapter()
 {
 	NetAdapter* na = nullptr;
