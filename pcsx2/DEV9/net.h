@@ -117,6 +117,7 @@ public:
 	virtual bool isInitialised() = 0;
 	virtual bool recv(NetPacket* pkt); //gets a packet
 	virtual bool send(NetPacket* pkt); //sends the packet and deletes it when done
+	virtual void reset(){};
 	virtual void reloadSettings() = 0;
 	virtual void close(){};
 	virtual ~NetAdapter();
@@ -145,6 +146,8 @@ private:
 };
 
 void tx_put(NetPacket* ptr);
+void ad_reset();
+
 void InitNet();
 void ReconfigureLiveNet(const Pcsx2Config& old_config);
 void TermNet();
