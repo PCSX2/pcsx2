@@ -220,9 +220,6 @@ int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads 
 #endif
 					break;
 			}
-
-			int w = theApp.GetConfigI("ModeWidth");
-			int h = theApp.GetConfigI("ModeHeight");
 #if defined(__unix__)
 			void* win_handle = (void*)((uptr*)(dsp) + 1);
 #else
