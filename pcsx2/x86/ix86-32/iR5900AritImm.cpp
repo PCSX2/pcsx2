@@ -224,12 +224,15 @@ void recANDI_const()
 	g_cpuConstRegs[_Rt_].UD[0] = g_cpuConstRegs[_Rs_].UD[0] & (u64)_ImmU_; // Zero-extended Immediate
 }
 
-enum class LogicalOp
+namespace
 {
-	AND,
-	OR,
-	XOR
-};
+	enum class LogicalOp
+	{
+		AND,
+		OR,
+		XOR
+	};
+} // namespace
 
 static void recLogicalOpI(int info, LogicalOp op)
 {
