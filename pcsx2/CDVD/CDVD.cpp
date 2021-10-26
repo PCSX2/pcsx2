@@ -29,6 +29,10 @@
 #include "Elfheader.h"
 #include "ps2/BiosTools.h"
 
+#ifndef DISABLE_RECORDING
+#include "Recording/InputRecording.h"
+#endif
+
 // This typically reflects the Sony-assigned serial code for the Disc, if one exists.
 //  (examples:  SLUS-2113, etc).
 // If the disc is homebrew then it probably won't have a valid serial; in which case
@@ -780,6 +784,34 @@ void cdvdReset()
 	cdvd.Action = cdvdAction_None;
 	cdvd.ReadTime = cdvdBlockReadTime(MODE_DVDROM);
 
+	// If we are recording, always use the same RTC setting
+	// for games that use the RTC to seed their RNG -- this is very important to be the same everytime!
+#ifndef DISABLE_RECORDING
+	if (g_InputRecording.IsActive())
+	{
+		Console.WriteLn("Input Recording Active - Using Constant RTC of 04-03-2020 (DD-MM-YYYY)");
+		// Why not just 0 everything? Some games apparently require the date to be valid in terms of when
+		// the PS2 / Game actually came out. (MGS3).  So set it to a value well beyond any PS2 game's release date.
+		cdvd.RTC.second = 0;
+		cdvd.RTC.minute = 0;
+		cdvd.RTC.hour = 0;
+		cdvd.RTC.day = 4;
+		cdvd.RTC.month = 3;
+		cdvd.RTC.year = 2;
+	}
+	else
+	{
+		// CDVD internally uses GMT+9.  If you think the time's wrong, you're wrong.
+		// Set up your time zone and winter/summer in the BIOS.  No PS2 BIOS I know of features automatic DST.
+		wxDateTime curtime(wxDateTime::GetTimeNow());
+		cdvd.RTC.second = (u8)curtime.GetSecond();
+		cdvd.RTC.minute = (u8)curtime.GetMinute();
+		cdvd.RTC.hour = (u8)curtime.GetHour(wxDateTime::GMT9);
+		cdvd.RTC.day = (u8)curtime.GetDay(wxDateTime::GMT9);
+		cdvd.RTC.month = (u8)curtime.GetMonth(wxDateTime::GMT9) + 1; // WX returns Jan as "0"
+		cdvd.RTC.year = (u8)(curtime.GetYear(wxDateTime::GMT9) - 2000);
+	}
+#else
 	// CDVD internally uses GMT+9.  If you think the time's wrong, you're wrong.
 	// Set up your time zone and winter/summer in the BIOS.  No PS2 BIOS I know of features automatic DST.
 	wxDateTime curtime(wxDateTime::GetTimeNow());
@@ -789,6 +821,7 @@ void cdvdReset()
 	cdvd.RTC.day = (u8)curtime.GetDay(wxDateTime::GMT9);
 	cdvd.RTC.month = (u8)curtime.GetMonth(wxDateTime::GMT9) + 1; // WX returns Jan as "0"
 	cdvd.RTC.year = (u8)(curtime.GetYear(wxDateTime::GMT9) - 2000);
+#endif
 
 	g_GameStarted = false;
 	g_GameLoading = false;
