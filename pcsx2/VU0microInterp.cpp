@@ -212,7 +212,7 @@ static void _vu0Exec(VURegs* VU)
 
 	// Progress the write position of the FMAC pipeline by one place
 	if (uregs.pipe == VUPIPE_FMAC || lregs.pipe == VUPIPE_FMAC)
-		VU->fmacwritepos = ++VU->fmacwritepos & 3;
+		VU->fmacwritepos = (VU->fmacwritepos + 1) & 3;
 }
 
 void vu0Exec(VURegs* VU)
