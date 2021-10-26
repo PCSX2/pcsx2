@@ -120,7 +120,7 @@ u32 pgif_gp1_buffer[PGIF_CMD_RB_SIZE] = {0}; //Ring buffer data.
 #define PGIF_DAT_RB_SIZE 0x20000
 struct ringBuf_t rb_gp0; //Ring buffer control variables.
 u32 pgif_gp0_buffer[PGIF_DAT_RB_SIZE] = {0}; //Ring buffer data.
-
+dma_t dma;
 
 
 //TODO: Make this be called by IopHw.cpp / psxHwReset()... but maybe it should be called by the EE reset func,
