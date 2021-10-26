@@ -448,13 +448,16 @@ void recDSUBU(void)
 	recDSUB();
 }
 
-enum class LogicalOp
+namespace
 {
-	AND,
-	OR,
-	XOR,
-	NOR
-};
+	enum class LogicalOp
+	{
+		AND,
+		OR,
+		XOR,
+		NOR
+	};
+} // namespace
 
 static void recLogicalOp_constv(LogicalOp op, int info, int creg, u32 vreg)
 {
