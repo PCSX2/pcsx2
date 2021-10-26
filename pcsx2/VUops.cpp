@@ -220,7 +220,7 @@ __fi void _vuTestPipes(VURegs* VU)
 	}
 }
 
-static void __fastcall _vuFMACTestStall(VURegs* VU, int reg, int xyzw)
+static void __fastcall _vuFMACTestStall(VURegs* VU, u32 reg, u32 xyzw)
 {
 	u32 i = 0;
 
@@ -231,10 +231,8 @@ static void __fastcall _vuFMACTestStall(VURegs* VU, int reg, int xyzw)
 			continue;
 
 		// Check if the regs match
-		if ((VU->fmac[currentpipe].regupper == reg &&
-			VU->fmac[currentpipe].xyzwupper & xyzw)
-			|| (VU->fmac[currentpipe].reglower == reg &&
-				VU->fmac[currentpipe].xyzwlower & xyzw))
+		if ((VU->fmac[currentpipe].regupper == reg && VU->fmac[currentpipe].xyzwupper & xyzw)
+			|| (VU->fmac[currentpipe].reglower == reg && VU->fmac[currentpipe].xyzwlower & xyzw))
 		{
 			u32 newCycle = VU->fmac[currentpipe].Cycle + VU->fmac[currentpipe].sCycle;
 
@@ -398,7 +396,7 @@ static __ri void __fastcall _vuAddIALUStalls(VURegs* VU, _VURegsNum* VUregsn)
 	VU->ialu[i].Cycle = VUregsn->cycles;
 	VU->ialu[i].reg = VUregsn->VIwrite;
 
-	VU->ialuwritepos = (VU->ialuwritepos +1) & 3;
+	VU->ialuwritepos = (VU->ialuwritepos + 1) & 3;
 	VU->ialucount++;
 }
 
@@ -432,7 +430,7 @@ __fi void _vuAddLowerStalls(VURegs* VU, _VURegsNum* VUregsn)
 	}
 }
 
-__fi void _vuBackupVI(VURegs* VU, int reg)
+__fi void _vuBackupVI(VURegs* VU, u32 reg)
 {
 #ifdef VI_BACKUP
 	if (VU->VIBackupCycles && reg == VU->VIRegNumber)
