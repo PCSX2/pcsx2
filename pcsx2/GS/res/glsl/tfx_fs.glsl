@@ -530,9 +530,9 @@ void atst(vec4 C)
 {
     float a = C.a;
 
-#if (PS_ATST == 0)
-    // nothing to do
-#elif (PS_ATST == 1)
+    // Do nothing for PS_ATST 0
+
+#if (PS_ATST == 1)
     if (a > AREF) discard;
 #elif (PS_ATST == 2)
     if (a < AREF) discard;

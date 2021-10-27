@@ -24,7 +24,7 @@
 #define PS_AEM 0
 #define PS_TFX 0
 #define PS_TCC 1
-#define PS_ATST 1
+#define PS_ATST 0
 #define PS_FOG 0
 #define PS_CLR1 0
 #define PS_FBA 0
@@ -565,11 +565,9 @@ void atst(float4 C)
 {
 	float a = C.a;
 
-	if(PS_ATST == 0)
-	{
-		// nothing to do
-	}
-	else if(PS_ATST == 1)
+	// Do nothing for PS_ATST 0
+
+	if(PS_ATST == 1)
 	{
 		if (a > AREF) discard;
 	}
