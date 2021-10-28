@@ -23,7 +23,7 @@
 int GSState::s_n = 0;
 
 GSState::GSState()
-	: m_version(6)
+	: m_version(7)
 	, m_gsc(NULL)
 	, m_skip(0)
 	, m_skip_offset(0)
@@ -87,7 +87,6 @@ GSState::GSState()
 
 	m_sssize += sizeof(m_version);
 	m_sssize += sizeof(m_env.PRIM);
-	m_sssize += sizeof(m_env.PRMODE);
 	m_sssize += sizeof(m_env.PRMODECONT);
 	m_sssize += sizeof(m_env.TEXCLUT);
 	m_sssize += sizeof(m_env.SCANMSK);
@@ -2088,7 +2087,6 @@ int GSState::Freeze(freezeData* fd, bool sizeonly)
 
 	WriteState(data, &m_version);
 	WriteState(data, &m_env.PRIM);
-	WriteState(data, &m_env.PRMODE);
 	WriteState(data, &m_env.PRMODECONT);
 	WriteState(data, &m_env.TEXCLUT);
 	WriteState(data, &m_env.SCANMSK);
@@ -2175,7 +2173,10 @@ int GSState::Defrost(const freezeData* fd)
 	Reset();
 
 	ReadState(&m_env.PRIM, data);
-	ReadState(&m_env.PRMODE, data);
+
+	if (version <= 6)
+		data += sizeof(GIFRegPRMODE);
+
 	ReadState(&m_env.PRMODECONT, data);
 	ReadState(&m_env.TEXCLUT, data);
 	ReadState(&m_env.SCANMSK, data);
@@ -2202,6 +2203,10 @@ int GSState::Defrost(const freezeData* fd)
 		ReadState(&m_env.CTXT[i].XYOFFSET, data);
 		ReadState(&m_env.CTXT[i].TEX0, data);
 		ReadState(&m_env.CTXT[i].TEX1, data);
+
+		if (version <= 6)
+			data += sizeof(GIFRegTEX2);
+
 		ReadState(&m_env.CTXT[i].CLAMP, data);
 		ReadState(&m_env.CTXT[i].MIPTBP1, data);
 		ReadState(&m_env.CTXT[i].MIPTBP2, data);
