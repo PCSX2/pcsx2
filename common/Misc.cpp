@@ -14,6 +14,7 @@
  */
 
 #include "General.h"
+#include "Console.h"
 
 static u32 PAUSE_TIME = 0;
 
@@ -29,16 +30,40 @@ static void MultiPause()
 	_mm_pause();
 }
 
+static u32 MeasurePauseTime()
+{
+	// GetCPUTicks may have resolution as low as 1µs
+	// One call to MultiPause could take anywhere from 20ns (fast Haswell) to 400ns (slow Skylake)
+	// We want a measurement of reasonable resolution, but don't want to take too long
+	// So start at a fairly small number and increase it if it's too fast
+	for (int testcnt = 64; true; testcnt *= 2)
+	{
+		u64 start = GetCPUTicks();
+		for (int i = 0; i < testcnt; i++)
+		{
+			MultiPause();
+		}
+		u64 time = GetCPUTicks() - start;
+		if (time > 100)
+		{
+			u64 nanos = (time * 1000000000) / GetTickFrequency();
+			return (nanos / testcnt) + 1;
+		}
+	}
+}
+
 __noinline static void UpdatePauseTime()
 {
-	u64 start = GetCPUTicks();
-	for (int i = 0; i < 64; i++)
-	{
-		MultiPause();
-	}
-	u64 time = GetCPUTicks() - start;
-	u64 nanos = (time * 1000000000) / GetTickFrequency();
-	PAUSE_TIME = (nanos / 64) + 1;
+	u64 wait = GetCPUTicks() + GetTickFrequency() / 100; // Wake up processor (spin for 10ms)
+	while (GetCPUTicks() < wait)
+		;
+	u32 pause = MeasurePauseTime();
+	// Take a few measurements in case something weird happens during one
+	// (e.g. OS interrupt)
+	for (int i = 0; i < 4; i++)
+		pause = std::min(pause, MeasurePauseTime());
+	PAUSE_TIME = pause;
+	DevCon.WriteLn("MultiPause time: %uns", pause);
 }
 
 u32 ShortSpin()
