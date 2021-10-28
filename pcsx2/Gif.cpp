@@ -193,20 +193,22 @@ __fi void gifCheckPathStatus(bool calledFromGIF)
 			GifDMAInt(16);
 		return;
 	}
+
+	// Required for Path3 Masking timing!
+	if (gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_WAIT)
+		gifUnit.gifPath[GIF_PATH_3].state = GIF_PATH_IDLE;
+
 	if (gifRegs.stat.APATH == 3)
 	{
 		gifRegs.stat.APATH = 0;
 		gifRegs.stat.OPH = 0;
+
 		if (!calledFromGIF && (gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_IDLE || gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_WAIT))
 		{
 			if (gifUnit.checkPaths(1, 1, 0))
 				gifUnit.Execute(false, true);
 		}
 	}
-
-	// Required for Path3 Masking timing!
-	if (gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_WAIT)
-		gifUnit.gifPath[GIF_PATH_3].state = GIF_PATH_IDLE;
 
 	// GIF DMA isn't running but VIF might be waiting on PATH3 so resume it here
 	if (calledFromGIF && gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_IDLE)
@@ -275,19 +277,6 @@ __fi void gifInterrupt()
 		if (readSize)
 			GifDMAInt(readSize * BIAS);
 
-		gifCheckPathStatus(false);
-		// Double check as we might have read the fifo as it's ending the DMA
-		if (gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_IDLE)
-		{
-			if (vif1Regs.stat.VGW)
-			{
-				// Check if VIF is in a cycle or is currently "idle" waiting for GIF to come back.
-				if (!(cpuRegs.interrupt & (1 << DMAC_VIF1)))
-				{
-					CPU_INT(DMAC_VIF1, 1);
-				}
-			}
-		}
 		// The following is quite timing sensitive so we need to pause/resume the DMA in these certain scenarios
 		// If the DMA is masked/blocked and the fifo is full, no need to run the DMA
 		// If we just read from the fifo, we want to loop and not read more DMA
@@ -790,20 +779,6 @@ void gifMFIFOInterrupt()
 
 		if (readSize)
 			GifDMAInt(readSize * BIAS);
-
-		gifCheckPathStatus(false);
-		// Double check as we might have read the fifo as it's ending the DMA
-		if (gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_IDLE)
-		{
-			if (vif1Regs.stat.VGW)
-			{
-				//Check if VIF is in a cycle or is currently "idle" waiting for GIF to come back.
-				if (!(cpuRegs.interrupt & (1 << DMAC_VIF1)))
-				{
-					CPU_INT(DMAC_VIF1, 1);
-				}
-			}
-		}
 
 		// The following is quite timing sensitive so we need to pause/resume the DMA in these certain scenarios
 		// If the DMA is masked/blocked and the fifo is full, no need to run the DMA
