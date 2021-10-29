@@ -620,7 +620,7 @@ void pt(const char* str)
 	printf("%02i:%02i:%02i%s", current->tm_hour, current->tm_min, current->tm_sec, str);
 }
 
-bool GSsetupRecording(wxWindow* parentWindow, std::string& filename)
+bool GSsetupRecording(wxWindow* parentWindow, ghc::filesystem::path& filePath)
 {
 	if (s_gs == NULL)
 	{
@@ -635,7 +635,7 @@ bool GSsetupRecording(wxWindow* parentWindow, std::string& filename)
 	}
 #endif
 	printf("GS: Recording start command\n");
-	if (s_gs->BeginCapture(parentWindow, filename))
+	if (s_gs->BeginCapture(parentWindow, filePath))
 	{
 		pt(" - Capture started\n");
 		return true;

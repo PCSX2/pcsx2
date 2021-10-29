@@ -966,10 +966,10 @@ void MainEmuFrame::VideoCaptureToggle()
 		}
 
 		// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens
-		std::string filename;
-		if (GSsetupRecording(this, filename))
+		ghc::filesystem::path filePath;
+		if (GSsetupRecording(this, filePath))
 		{
-			if (!g_Conf->AudioCapture.EnableAudio || SPU2setupRecording(&filename))
+			if (!g_Conf->AudioCapture.EnableAudio || SPU2setupRecording(filePath))
 			{
 				m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, false);
 				m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, true);
@@ -982,17 +982,23 @@ void MainEmuFrame::VideoCaptureToggle()
 			}
 		}
 		else // recording dialog canceled by the user. align our state
+		{
 			m_capturingVideo = false;
-
+		}
+			
 		if (needsMainFrameEnable)
+		{
 			Enable();
+		}
 	}
 	else
 	{
 		// stop recording
 		GSendRecording();
 		if (g_Conf->AudioCapture.EnableAudio)
+		{
 			SPU2endRecording();
+		}
 		m_submenuVideoCapture.Enable(MenuId_Capture_Video_Record, true);
 		m_submenuVideoCapture.Enable(MenuId_Capture_Video_Stop, false);
 		m_submenuVideoCapture.Enable(MenuId_Capture_Video_IncludeAudio, true);

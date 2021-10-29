@@ -18,6 +18,8 @@
 #include "common/Threading.h"
 #include "SaveState.h"
 
+#include <ghc/filesystem.h>
+
 extern Threading::MutexRecursive mtx_SPU2Status;
 
 enum class PS2Modes
@@ -36,7 +38,7 @@ u16 SPU2read(u32 mem);
 
 // extended funcs
 // returns true if successful
-bool SPU2setupRecording(const std::string* filename);
+bool SPU2setupRecording(ghc::filesystem::path filePath);
 void SPU2endRecording();
 
 void SPU2async(u32 cycles);

@@ -477,9 +477,12 @@ void SPU2write(u32 rmem, u16 value)
 }
 
 // returns a non zero value if successful
-bool SPU2setupRecording(const std::string* filename)
+bool SPU2setupRecording(ghc::filesystem::path filePath)
 {
-	return RecordStart(filename);
+	// Replace extension on filepath
+	ghc::filesystem::path audioFilePath = filePath;
+	audioFilePath.replace_extension(".wav");
+	return RecordStart(&audioFilePath.string());
 }
 
 void SPU2endRecording()

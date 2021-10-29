@@ -113,7 +113,7 @@ GSCaptureDlg::GSCaptureDlg(wxWindow* parent)
 	// Init from Config
 	m_captureWidth = theApp.GetConfigI("CaptureWidth");
 	m_captureHeight = theApp.GetConfigI("CaptureHeight");
-	m_filename = convert_utf8_to_utf16(theApp.GetConfigS("CaptureFileName"));
+	m_filepath = ghc::filesystem::path(theApp.GetConfigS("CaptureFileName"));
 	// TODO - save colorspace to config?
 
 	// Sizers
@@ -244,12 +244,16 @@ GSCaptureDlg::GSCaptureDlg(wxWindow* parent)
 
 void GSCaptureDlg::UpdateConfirmationButton()
 {
-	m_confirmBtn->Enable(m_colorSpaceSelection != wxNOT_FOUND && m_captureWidth > 0 && m_captureHeight > 0 && m_filename != "");
+	m_confirmBtn->Enable(m_colorSpaceSelection != wxNOT_FOUND && m_captureWidth > 0 && m_captureHeight > 0 && !m_filepath.empty());
 }
 
 void GSCaptureDlg::FileEntryChanged(wxCommandEvent& event)
 {
-	m_filename = m_filePathInput->GetValue().ToStdWstring();
+#ifdef _WIN32
+	m_filepath = ghc::filesystem::path(m_filePathInput->GetValue().ToStdWstring());
+#else
+	m_filepath = ghc::filesystem::path(m_filePathInput->GetValue().ToStdString());
+#endif
 }
 
 void GSCaptureDlg::BrowseForFile(wxCommandEvent& event)
@@ -261,8 +265,12 @@ void GSCaptureDlg::BrowseForFile(wxCommandEvent& event)
 		return;
 	}
 
-	m_filename = filePicker.GetPath().ToStdWstring();
-	m_filePathInput->SetValue(wxString(m_filename));
+#ifdef _WIN32
+	m_filepath = ghc::filesystem::path(filePicker.GetPath().ToStdWstring());
+#else
+	m_filepath = ghc::filesystem::path(filePicker.GetPath().ToStdString());
+#endif
+	m_filePathInput->SetValue(filePicker.GetPath());
 }
 
 void GSCaptureDlg::ConfigureCodec(wxCommandEvent& event)
@@ -337,7 +345,7 @@ void GSCaptureDlg::ConfirmButtonClicked(wxCommandEvent& event)
 {
 	theApp.SetConfig("CaptureWidth", m_captureWidth);
 	theApp.SetConfig("CaptureHeight", m_captureHeight);
-	theApp.SetConfig("CaptureFileName", convert_utf16_to_utf8(m_filename).c_str());
+	theApp.SetConfig("CaptureFileName", m_filepath.string().c_str());
 
 #ifdef _WIN32
 	if (InitSelectedCodec())

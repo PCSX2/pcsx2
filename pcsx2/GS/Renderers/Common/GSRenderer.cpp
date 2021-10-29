@@ -564,12 +564,12 @@ bool GSRenderer::MakeSnapshot(const std::string& path)
 	return true;
 }
 
-bool GSRenderer::BeginCapture(wxWindow* parentWindow, std::string& filename)
+bool GSRenderer::BeginCapture(wxWindow* parentWindow, ghc::filesystem::path& filePath)
 {
 	GSVector4i disp = ComputeDrawRectangle(m_dev->GetBackbufferWidth(), m_dev->GetBackbufferHeight());
 	float aspect = (float)disp.width() / std::max(1, disp.height());
 
-	return m_capture.BeginCapture(parentWindow, GetTvRefreshRate(), GetInternalResolution(), aspect, filename);
+	return m_capture.BeginCapture(parentWindow, GetTvRefreshRate(), GetInternalResolution(), aspect, filePath);
 }
 
 void GSRenderer::EndCapture()

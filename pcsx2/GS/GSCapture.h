@@ -18,6 +18,8 @@
 #include "GSVector.h"
 #include "GSPng.h"
 
+#include <ghc/filesystem.h>
+
 #ifdef _WIN32
 #include <wil/com.h>
 #include <streams.h>
@@ -31,7 +33,6 @@ class GSCapture
 	bool m_capturing;
 	GSVector2i m_size;
 	uint64 m_frame;
-	std::string m_out_dir;
 	int m_threads;
 
 #ifdef _WIN32
@@ -50,7 +51,7 @@ public:
 	GSCapture();
 	virtual ~GSCapture();
 
-	bool BeginCapture(wxWindow* parentWindow, float fps, GSVector2i recommendedResolution, float aspect, std::string& filename);
+	bool BeginCapture(wxWindow* parentWindow, float fps, GSVector2i recommendedResolution, float aspect, ghc::filesystem::path& savedToPath);
 	bool DeliverFrame(const void* bits, int pitch, bool rgba);
 	bool EndCapture();
 

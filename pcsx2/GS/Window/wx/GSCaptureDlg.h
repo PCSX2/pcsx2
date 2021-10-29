@@ -15,6 +15,8 @@
 
 #include <wx/wx.h>
 
+#include <ghc/filesystem.h>
+
 #ifdef _WIN32
 #include <wil/com.h>
 #include <streams.h>
@@ -42,7 +44,7 @@ class GSCaptureDlg : public wxDialog
 public:
 	GSCaptureDlg(wxWindow* parent);
 
-	std::wstring GetFilePath() { return m_filename; };
+	ghc::filesystem::path GetFilePath() { return m_filepath; };
 	int GetColorSpaceSelection() { return m_colorSpaceSelection; };
 	std::pair<unsigned int, unsigned int> GetCaptureSize() { return {m_captureWidth, m_captureHeight}; };
 #ifdef _WIN32
@@ -77,8 +79,7 @@ private:
 
 	unsigned int m_captureWidth;
 	unsigned int m_captureHeight;
-	// TODO - change to fs::path
-	std::wstring m_filename;
+	ghc::filesystem::path m_filepath;
 	int m_colorSpaceSelection = 0;
 #ifdef _WIN32
 	wil::com_ptr_nothrow<IBaseFilter> m_enc;

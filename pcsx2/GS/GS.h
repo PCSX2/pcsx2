@@ -35,6 +35,8 @@
 #include <d3d11_1.h>
 #include <dxgi1_3.h>
 
+#include <ghc/filesystem.h>
+
 #else
 
 #include <fcntl.h>
@@ -1787,7 +1789,7 @@ void GSkeyEvent(const HostKeyEvent& e);
 int GSfreeze(FreezeAction mode, freezeData* data);
 void GSconfigure();
 int GStest();
-bool GSsetupRecording(wxWindow* parentWindow, std::string& filename);
+bool GSsetupRecording(wxWindow* parentWindow, ghc::filesystem::path& filePath);
 void GSendRecording();
 void GSsetGameCRC(uint32 crc, int options);
 void GSgetTitleInfo2(char* dest, size_t length);

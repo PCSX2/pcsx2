@@ -467,10 +467,10 @@ namespace Implementations
 				GetMainFramePtr()->Disable();
 
 			// GSsetupRecording can be aborted/canceled by the user. Don't go on to record the audio if that happens.
-			std::string filename;
-			if (GSsetupRecording(GetMainFramePtr(), filename))
+			ghc::filesystem::path filePath;
+			if (GSsetupRecording(GetMainFramePtr(), filePath))
 			{
-				if (g_Conf->AudioCapture.EnableAudio && !SPU2setupRecording(&filename))
+				if (g_Conf->AudioCapture.EnableAudio && !SPU2setupRecording(filePath))
 				{
 					GSendRecording();
 					g_Pcsx2Recording = false;

@@ -398,9 +398,7 @@ static wil::com_ptr_nothrow<IPin> GetFirstPin(IBaseFilter* pBF, PIN_DIRECTION di
 GSCapture::GSCapture()
 	: m_capturing(false)
 	, m_frame(0)
-	, m_out_dir("/tmp/GS_Capture") // FIXME Later add an option
 {
-	m_out_dir = theApp.GetConfigS("capture_out_dir");
 	m_threads = theApp.GetConfigI("capture_threads");
 #if defined(__unix__)
 	m_compression_level = theApp.GetConfigI("png_compression_level");
@@ -412,7 +410,7 @@ GSCapture::~GSCapture()
 	EndCapture();
 }
 
-bool GSCapture::BeginCapture(wxWindow* parentWindow, float fps, GSVector2i recommendedResolution, float aspect, std::string& filename)
+bool GSCapture::BeginCapture(wxWindow* parentWindow, float fps, GSVector2i recommendedResolution, float aspect, ghc::filesystem::path& savedToPath)
 {
 	printf("Recommended resolution: %d x %d, DAR for muxing: %.4f\n", recommendedResolution.x, recommendedResolution.y, aspect);
 	std::lock_guard<std::recursive_mutex> lock(m_lock);
@@ -431,26 +429,20 @@ bool GSCapture::BeginCapture(wxWindow* parentWindow, float fps, GSVector2i recom
 		return false;
 	}
 
-	std::wstring filePath = m_settingsDialog->GetFilePath();
-	const int start = filePath.length() - 4;
-	if (start > 0)
-	{
-		std::wstring test = filePath.substr(start);
-		std::transform(test.begin(), test.end(), test.begin(), (char(_cdecl*)(int))tolower);
-		if (test.compare(L".avi") != 0)
-		{
-			filePath += L".avi";
-		}
-	}
-	else
-	{
-		filePath += L".avi";
-	}
+	ghc::filesystem::path filePath = m_settingsDialog->GetFilePath();
+	// Ensure we are saving as an .avi file
+	filePath.replace_extension(".avi");
 
-
-	FILE* test = _wfopen(filePath.c_str(), L"w");
+	// TODO - switching to streams would clean this up
+#ifdef _WIN32
+	FILE* test = _wfopen(filePath.generic_wstring().c_str(), L"w");
+#else
+	FILE* test = fopen(filePath.string().c_str(), "w");
+#endif
 	if (test)
+	{
 		fclose(test);
+	}
 	else
 	{
 		wxMessageBox(_("Could not open file for capture"), _("Error"), wxICON_ERROR);
@@ -473,7 +465,7 @@ bool GSCapture::BeginCapture(wxWindow* parentWindow, float fps, GSVector2i recom
 	}
 
 	wil::com_ptr_nothrow<IBaseFilter> mux;
-	if (FAILED(cgb->SetFiltergraph(graph.get())) || FAILED(cgb->SetOutputFileName(&MEDIASUBTYPE_Avi, std::wstring(filePath.begin(), filePath.end()).c_str(), mux.put(), nullptr)))
+	if (FAILED(cgb->SetFiltergraph(graph.get())) || FAILED(cgb->SetOutputFileName(&MEDIASUBTYPE_Avi, filePath.generic_wstring().c_str(), mux.put(), nullptr)))
 	{
 		return false;
 	}
@@ -482,7 +474,7 @@ bool GSCapture::BeginCapture(wxWindow* parentWindow, float fps, GSVector2i recom
 	// WARNING: This increases the reference count! Right now it's fine, since GSSource inherits from CUnknown that
 	// starts the reference count from 0. Should this ever change and GSSource ends up with a refcount of 1 after constructing,
 	// change this to `.attach(new GSSource(...))`.
-	wil::com_ptr_nothrow<IBaseFilter> src = new GSSource(m_size.x, m_size.y, fps, NULL, source_hr, dlg.m_colorspace);
+	wil::com_ptr_nothrow<IBaseFilter> src = new GSSource(m_size.x, m_size.y, fps, NULL, source_hr, m_settingsDialog->GetColorSpaceSelection());
 
 	if (m_settingsDialog->GetCodecFilter() == 0)
 	{
@@ -530,9 +522,6 @@ bool GSCapture::BeginCapture(wxWindow* parentWindow, float fps, GSVector2i recom
 	m_src.query<IGSSource>()->DeliverNewSegment();
 
 #elif defined(__unix__)
-	// Note I think it doesn't support multiple depth creation
-	GSmkdir(m_out_dir.c_str());
-
 	// Really cheap recording
 	m_frame = 0;
 
@@ -543,8 +532,9 @@ bool GSCapture::BeginCapture(wxWindow* parentWindow, float fps, GSVector2i recom
 #endif
 
 	m_capturing = true;
-	filename = convert_utf16_to_utf8(filePath.erase(filePath.length() - 3, 3) + L"wav");
-
+	// Set the path arg so that other things in the capture process can go to the same directory
+	// - there is likely a better way to do this!
+	savedToPath = filePath;
 	return true;
 }
 
