@@ -107,13 +107,14 @@ void GSCaptureDlg::UpdateConfigureButton()
 // 'GS - ' should not be translated
 // but 'Capture Settings' should be, i assume this makes an unnecessary unique string which increases translation effort?
 // However, the current macro doesn't really offer much flexibility
-GSCaptureDlg::GSCaptureDlg(wxWindow* parent)
+GSCaptureDlg::GSCaptureDlg(wxWindow* parent, bool selectDir)
 	: wxDialog(parent, wxID_ANY, _("GS - Capture Settings"), wxDefaultPosition, wxDefaultSize, wxSTAY_ON_TOP | wxCLOSE_BOX | wxCAPTION)
 {
 	// Init from Config
 	m_captureWidth = theApp.GetConfigI("CaptureWidth");
 	m_captureHeight = theApp.GetConfigI("CaptureHeight");
 	m_filepath = ghc::filesystem::path(theApp.GetConfigS("CaptureFileName"));
+	m_selectDir = selectDir;
 	// TODO - save colorspace to config?
 
 	// Sizers
@@ -258,19 +259,36 @@ void GSCaptureDlg::FileEntryChanged(wxCommandEvent& event)
 
 void GSCaptureDlg::BrowseForFile(wxCommandEvent& event)
 {
-	wxFileDialog filePicker(this, _("GS Capture Settings - Select a File Location"), L"", L"",
-		L"AVI files (*.avi)|*.avi", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
-	if (filePicker.ShowModal() == wxID_CANCEL)
+	if (m_selectDir)
 	{
-		return;
+		wxDirDialog dirPicker(this, "Choose capture output directory", PathDefs::GetDocuments().ToString(), wxDD_DEFAULT_STYLE | wxDD_DIR_MUST_EXIST);
+		if (dirPicker.ShowModal() == wxID_CANCEL)
+		{
+			return;
+		}
+#ifdef _WIN32
+		m_filepath = ghc::filesystem::path(dirPicker.GetPath().ToStdWstring());
+#else
+		m_filepath = ghc::filesystem::path(dirPicker.GetPath().ToStdString());
+#endif
+		m_filePathInput->ChangeValue(dirPicker.GetPath());
 	}
+	else
+	{
+		wxFileDialog filePicker(this, _("GS Capture Settings - Select a File Location"), PathDefs::GetDocuments().ToString(), L"",
+			L"AVI files (*.avi)|*.avi", wxFD_SAVE | wxFD_OVERWRITE_PROMPT);
+		if (filePicker.ShowModal() == wxID_CANCEL)
+		{
+			return;
+		}
 
 #ifdef _WIN32
-	m_filepath = ghc::filesystem::path(filePicker.GetPath().ToStdWstring());
+		m_filepath = ghc::filesystem::path(filePicker.GetPath().ToStdWstring());
 #else
-	m_filepath = ghc::filesystem::path(filePicker.GetPath().ToStdString());
+		m_filepath = ghc::filesystem::path(filePicker.GetPath().ToStdString());
 #endif
-	m_filePathInput->SetValue(filePicker.GetPath());
+		m_filePathInput->ChangeValue(filePicker.GetPath());
+	}
 }
 
 void GSCaptureDlg::ConfigureCodec(wxCommandEvent& event)

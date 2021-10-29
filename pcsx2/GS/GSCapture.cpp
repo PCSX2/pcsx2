@@ -421,7 +421,11 @@ bool GSCapture::BeginCapture(wxWindow* parentWindow, float fps, GSVector2i recom
 
 	if (m_settingsDialog == NULL)
 	{
+#ifdef _WIN32
 		m_settingsDialog = new GSCaptureDlg(parentWindow);
+#else
+		m_settingsDialog = new GSCaptureDlg(parentWindow, true);
+#endif
 	}
 
 	if (m_settingsDialog->ShowModal() == wxID_CANCEL)
@@ -430,15 +434,11 @@ bool GSCapture::BeginCapture(wxWindow* parentWindow, float fps, GSVector2i recom
 	}
 
 	ghc::filesystem::path filePath = m_settingsDialog->GetFilePath();
+	
+#ifdef _WIN32
 	// Ensure we are saving as an .avi file
 	filePath.replace_extension(".avi");
-
-	// TODO - switching to streams would clean this up
-#ifdef _WIN32
 	FILE* test = _wfopen(filePath.generic_wstring().c_str(), L"w");
-#else
-	FILE* test = fopen(filePath.string().c_str(), "w");
-#endif
 	if (test)
 	{
 		fclose(test);
@@ -448,6 +448,7 @@ bool GSCapture::BeginCapture(wxWindow* parentWindow, float fps, GSVector2i recom
 		wxMessageBox(_("Could not open file for capture"), _("Error"), wxICON_ERROR);
 		return false;
 	}
+#endif
 
 	m_size.x = (m_settingsDialog->GetCaptureSize().first + 7) & ~7;
 	m_size.y = (m_settingsDialog->GetCaptureSize().second + 7) & ~7;
@@ -525,6 +526,11 @@ bool GSCapture::BeginCapture(wxWindow* parentWindow, float fps, GSVector2i recom
 	// Really cheap recording
 	m_frame = 0;
 
+	// The audio portion of the recording process modifies the filepath determined here for now
+	// so let's setup the path as expected for now (currently linux uses a directory and dumps individual frames)
+	m_out_dir = filePath.string(); // use the dir
+	filePath.append("audio_capture.wav"); // propagate the "file"
+
 	for (int i = 0; i < m_threads; i++)
 	{
 		m_workers.push_back(std::unique_ptr<GSPng::Worker>(new GSPng::Worker(&GSPng::Process)));
@@ -535,6 +541,7 @@ bool GSCapture::BeginCapture(wxWindow* parentWindow, float fps, GSVector2i recom
 	// Set the path arg so that other things in the capture process can go to the same directory
 	// - there is likely a better way to do this!
 	savedToPath = filePath;
+	
 	return true;
 }
 
@@ -559,7 +566,6 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 	}
 
 #elif defined(__unix__)
-
 	std::string out_file = m_out_dir + format("/frame.%010d.png", m_frame);
 	//GSPng::Save(GSPng::RGB_PNG, out_file, (uint8*)bits, m_size.x, m_size.y, pitch, m_compression_level);
 	m_workers[m_frame % m_threads]->Push(std::make_shared<GSPng::Transaction>(GSPng::RGB_PNG, out_file, static_cast<const uint8*>(bits), m_size.x, m_size.y, pitch, m_compression_level));

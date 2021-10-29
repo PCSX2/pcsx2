@@ -627,7 +627,7 @@ bool GSsetupRecording(wxWindow* parentWindow, ghc::filesystem::path& filePath)
 		printf("GS: no s_gs for recording\n");
 		return false;
 	}
-#if defined(__unix__) || defined(__APPLE__)
+#if defined(__APPLE__)
 	if (!theApp.GetConfigB("capture_enabled"))
 	{
 		printf("GS: Recording is disabled\n");
@@ -1208,7 +1208,6 @@ void GSApp::Init()
 #ifdef _WIN32
 	// Per OS option.
 	m_default_configuration["Adapter"]                                    = "default";
-	m_default_configuration["CaptureFileName"]                            = "";
 	m_default_configuration["CaptureVideoCodecDisplayName"]               = "";
 	m_default_configuration["dx_break_on_severity"]                       = "0";
 	// D3D Blending option
@@ -1224,6 +1223,7 @@ void GSApp::Init()
 	m_default_configuration["capture_enabled"]                            = "0";
 	m_default_configuration["capture_out_dir"]                            = "/tmp/GS_Capture";
 	m_default_configuration["capture_threads"]                            = "4";
+	m_default_configuration["CaptureFileName"]                            = "";
 	m_default_configuration["CaptureHeight"]                              = "480";
 	m_default_configuration["CaptureWidth"]                               = "640";
 	m_default_configuration["crc_hack_level"]                             = std::to_string(static_cast<int8>(CRCHackLevel::Automatic));

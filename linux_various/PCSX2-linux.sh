@@ -28,6 +28,9 @@ set -e
 current_script=$0
 me=PCSX2-linux.sh
 
+# for WSLg support, uncomment the following - performance will be terrible!
+# export LIBGL_ALWAYS_SOFTWARE=1
+
 # We are already in the good directory. Allow to use "bash PCSX2-linux.sh"
 if [ $current_script = $me ]
 then

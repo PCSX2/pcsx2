@@ -33,6 +33,7 @@ class GSCapture
 	bool m_capturing;
 	GSVector2i m_size;
 	uint64 m_frame;
+	std::string m_out_dir;
 	int m_threads;
 
 #ifdef _WIN32

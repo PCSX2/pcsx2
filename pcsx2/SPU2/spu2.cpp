@@ -482,7 +482,7 @@ bool SPU2setupRecording(ghc::filesystem::path filePath)
 	// Replace extension on filepath
 	ghc::filesystem::path audioFilePath = filePath;
 	audioFilePath.replace_extension(".wav");
-	return RecordStart(&audioFilePath.string());
+	return RecordStart(audioFilePath.string());
 }
 
 void SPU2endRecording()

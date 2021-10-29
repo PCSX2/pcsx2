@@ -31,6 +31,7 @@
 **/x64/Devel*
 
 **/bin/PCSX2-linux.sh
+bin/isos/
 
 _ReSharper.*
 pcsx2.snapshot_*

@@ -610,6 +610,7 @@ set(pcsx2GSSources
 	GS/GS.cpp
 	GS/GSAlignedClass.cpp
 	GS/GSBlock.cpp
+	GS/Window/wx/GSCaptureDlg.cpp
 	GS/GSCapture.cpp
 	GS/GSClut.cpp
 	GS/GSCodeBuffer.cpp
@@ -662,6 +663,7 @@ set(pcsx2GSHeaders
 	GS/config.h
 	GS/GSAlignedClass.h
 	GS/GSBlock.h
+	GS/Window/wx/GSCaptureDlg.h
 	GS/GSCapture.h
 	GS/GSClut.h
 	GS/GSCodeBuffer.h
@@ -722,7 +724,6 @@ set(pcsx2GSHeaders
 	GS/Renderers/OpenGL/GSTextureOGL.h
 	GS/Renderers/OpenGL/GSUniformBufferOGL.h
 	GS/Renderers/OpenGL/GSVertexArrayOGL.h
-	GS/Window/wx/GSCaptureDlg.h
 	GS/Window/GSDialog.h
 	GS/Window/GSSetting.h
 	GS/Window/GSSettingsDlg.h
@@ -795,7 +796,6 @@ if(WIN32)
 		GS/Renderers/DX11/GSTexture11.cpp
 		GS/Renderers/DX11/GSTextureCache11.cpp
 		GS/Renderers/DX11/GSTextureFX11.cpp
-		GS/Window/wx/GSCaptureDlg.cpp
 		GS/Window/GSDialog.cpp
 		GS/Window/GSSettingsDlg.cpp
 	)

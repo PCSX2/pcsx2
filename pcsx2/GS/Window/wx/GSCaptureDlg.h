@@ -42,11 +42,20 @@ class GSCaptureDlg : public wxDialog
 #endif
 
 public:
-	GSCaptureDlg(wxWindow* parent);
+	GSCaptureDlg(wxWindow* parent, bool selectDir = false);
 
-	ghc::filesystem::path GetFilePath() { return m_filepath; };
-	int GetColorSpaceSelection() { return m_colorSpaceSelection; };
-	std::pair<unsigned int, unsigned int> GetCaptureSize() { return {m_captureWidth, m_captureHeight}; };
+	ghc::filesystem::path GetFilePath()
+	{
+		return m_filepath;
+	};
+	int GetColorSpaceSelection()
+	{
+		return m_colorSpaceSelection;
+	};
+	std::pair<unsigned int, unsigned int> GetCaptureSize()
+	{
+		return {m_captureWidth, m_captureHeight};
+	};
 #ifdef _WIN32
 	wil::com_ptr_nothrow<IBaseFilter> GetCodecFilter()
 	{
@@ -80,6 +89,7 @@ private:
 	unsigned int m_captureWidth;
 	unsigned int m_captureHeight;
 	ghc::filesystem::path m_filepath;
+	bool m_selectDir;
 	int m_colorSpaceSelection = 0;
 #ifdef _WIN32
 	wil::com_ptr_nothrow<IBaseFilter> m_enc;

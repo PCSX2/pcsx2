@@ -25,6 +25,8 @@
 #include "Window/GSSetting.h"
 #include "SaveState.h"
 
+#include <ghc/filesystem.h>
+
 #ifdef _WIN32
 
 #include <windows.h>
@@ -34,8 +36,6 @@
 #include <d3dcompiler.h>
 #include <d3d11_1.h>
 #include <dxgi1_3.h>
-
-#include <ghc/filesystem.h>
 
 #else
 
