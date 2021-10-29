@@ -83,7 +83,7 @@ bool PCAPGetWin32Adapter(const char* name, PIP_ADAPTER_ADDRESSES adapter, std::u
 		dwBufLen = sizeof(IP_ADAPTER_ADDRESSES) * neededSize;
 		DevCon.WriteLn("DEV9: New size %i", neededSize);
 
-		DWORD dwStatus = GetAdaptersAddresses(
+		dwStatus = GetAdaptersAddresses(
 			AF_UNSPEC,
 			GAA_FLAG_INCLUDE_PREFIX | GAA_FLAG_INCLUDE_GATEWAYS,
 			NULL,
