@@ -158,36 +158,12 @@ void GSClut::Write(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 	m_read.dirty = true;
 
 	(this->*m_wc[TEX0.CSM][TEX0.CPSM][TEX0.PSM])(TEX0, TEXCLUT);
-
-	// Mirror write to other half of buffer to simulate wrapping memory
-
-	int offset = (TEX0.CSA & (TEX0.CPSM < PSM_PSMCT16 ? 15 : 31)) * 16;
-
-	if (TEX0.PSM == PSM_PSMT8 || TEX0.PSM == PSM_PSMT8H)
-	{
-		int size = TEX0.CPSM < PSM_PSMCT16 ? 512 : 256;
-
-		memcpy(m_clut + 512 + offset, m_clut + offset, sizeof(*m_clut) * std::min(size, 512 - offset));
-		memcpy(m_clut, m_clut + 512, sizeof(*m_clut) * std::max(0, size + offset - 512));
-	}
-	else
-	{
-		int size = 16;
-
-		memcpy(m_clut + 512 + offset, m_clut + offset, sizeof(*m_clut) * size);
-
-		if (TEX0.CPSM < PSM_PSMCT16)
-		{
-			memcpy(m_clut + 512 + 256 + offset, m_clut + 256 + offset, sizeof(*m_clut) * size);
-		}
-	}
 }
 
 void GSClut::WriteCLUT32_I8_CSM1(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
 	ALIGN_STACK(32);
-	//FIXME: Romance of the Three Kingdoms VIII text doesn't like the offset
-	WriteCLUT_T32_I8_CSM1((uint32*)m_mem->BlockPtr32(0, 0, TEX0.CBP, 1), m_clut + ((TEX0.CSA & 15) << 4));
+	WriteCLUT_T32_I8_CSM1((uint32*)m_mem->BlockPtr32(0, 0, TEX0.CBP, 1), m_clut, (TEX0.CSA & 15));
 }
 
 void GSClut::WriteCLUT32_I4_CSM1(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
@@ -443,16 +419,16 @@ void GSClut::GetAlphaMinMax32(int& amin_out, int& amax_out)
 
 //
 
-void GSClut::WriteCLUT_T32_I8_CSM1(const uint32* RESTRICT src, uint16* RESTRICT clut)
+void GSClut::WriteCLUT_T32_I8_CSM1(const uint32* RESTRICT src, uint16* RESTRICT clut, uint16 offset)
 {
-	// 4 blocks
-
-	for (int i = 0; i < 64; i += 16)
+	// This is required when CSA is offset from the base of the CLUT so we point to the right data
+	for (int i = offset; i < 16; i ++)
 	{
-		WriteCLUT_T32_I4_CSM1(&src[i + 0], &clut[i * 2 + 0]);
-		WriteCLUT_T32_I4_CSM1(&src[i + 64], &clut[i * 2 + 16]);
-		WriteCLUT_T32_I4_CSM1(&src[i + 128], &clut[i * 2 + 128]);
-		WriteCLUT_T32_I4_CSM1(&src[i + 192], &clut[i * 2 + 144]);
+		const int off = i << 4; // WriteCLUT_T32_I4_CSM1 loads 16 at a time
+		// Source column
+		const int s = clutTableT32I8[off & 0x70] | (off & 0x80);
+
+		WriteCLUT_T32_I4_CSM1(&src[s], &clut[off]);
 	}
 }
 
