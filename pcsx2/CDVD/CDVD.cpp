@@ -695,19 +695,18 @@ static uint cdvdRotationalLatency(CDVD_MODE_TYPE mode)
 	{
 		int numSectors = 0;
 		int offset = 0;
+
 		//CLV adjusts its speed based on where it is on the disc, so we can take the max RPM and use the sector to work it out
 		// Sector counts are taken from google for Single layer, Dual layer DVD's and for 700MB CD's
 		switch (cdvd.Type)
 		{
 			case CDVD_TYPE_DETCTDVDS:
 			case CDVD_TYPE_PS2DVD:
-				numSectors = 2298496;
-				break;
 			case CDVD_TYPE_DETCTDVDD:
-				numSectors = 4173824 / 2; // Total sectors for both layers, assume half per layer
+				numSectors = 2298496;
+
 				u32 layer1Start;
 				s32 dualType;
-
 				// Layer 1 needs an offset as it goes back to the middle of the disc
 				cdvdReadDvdDualInfo(&dualType, &layer1Start);
 				if (cdvd.SeekToSector >= layer1Start)
@@ -717,12 +716,10 @@ static uint cdvdRotationalLatency(CDVD_MODE_TYPE mode)
 				numSectors = 360000;
 				break;
 		}
-
-		const float sectorSpeed = 1.0f - (((float)(cdvd.SeekToSector - offset) / numSectors) * 0.60f);
+		const float sectorSpeed = (((float)(cdvd.SeekToSector - offset) / numSectors) * 0.60f) + 0.40f;
 
 		float rotationPerSecond = (((mode == MODE_CDROM) ? CD_MAX_ROTATION_X1 : DVD_MAX_ROTATION_X1) * cdvd.Speed * sectorSpeed) / 60;
 		float msPerRotation = 1000.0f / rotationPerSecond;
-
 		//DevCon.Warning("Rotations per second %f, msPerRotation cycles per ms %f total cycles per ms %d cycles per rotation %d", rotationPerSecond, msPerRotation, (u32)(PSXCLK / 1000), (u32)((PSXCLK / 1000) * msPerRotation));
 
 		return ((PSXCLK / 1000) * msPerRotation);
@@ -742,10 +739,8 @@ static uint cdvdBlockReadTime(CDVD_MODE_TYPE mode)
 		{
 			case CDVD_TYPE_DETCTDVDS:
 			case CDVD_TYPE_PS2DVD:
-				numSectors = 2298496;
-				break;
 			case CDVD_TYPE_DETCTDVDD:
-				numSectors = 4173824 / 2; // Total sectors for both layers, assume half per layer
+				numSectors = 2298496;
 				u32 layer1Start;
 				s32 dualType;
 
