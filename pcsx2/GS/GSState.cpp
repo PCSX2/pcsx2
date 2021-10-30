@@ -547,7 +547,7 @@ float GSState::GetTvRefreshRate()
 		case GSVideoMode::HDTV_1080I:
 			return 60;
 		default:
-			Console.Error("Unknown video mode. Please report: https://github.com/PCSX2/pcsx2/issues");
+			Console.Error("GS: Unknown video mode. Please report: https://github.com/PCSX2/pcsx2/issues");
 			return 0;
 	}
 
@@ -1433,37 +1433,38 @@ void GSState::FlushPrim()
 			ASSERT((int)unused < GSUtil::GetVertexCount(PRIM->PRIM));
 		}
 
-		if (GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt < 3 && GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt < 3)
+		// If the PSM format of Z is invalid, but it is masked (no write) and ZTST is set to ALWAYS pass (no test, just allow)
+		// we can ignore the Z format, since it won't be used in the draw (Star Ocean 3 transitions)
+		const bool ignoreZ = m_context->ZBUF.ZMSK && m_context->TEST.ZTST == 1;
+
+		if (GSLocalMemory::m_psm[m_context->FRAME.PSM].fmt >= 3 || (GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt >= 3 && !ignoreZ))
 		{
-			m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
-
-			m_context->SaveReg();
-
-			try
-			{
-				Draw();
-			}
-			catch (GSRecoverableError&)
-			{
-				// could be an unsupported draw call
-			}
-			catch (const std::bad_alloc&)
-			{
-				// Texture Out Of Memory
-				PurgePool();
-				Console.Error("Memory allocation failure.");
-			}
-
-			m_context->RestoreReg();
-
-			m_perfmon.Put(GSPerfMon::Draw, 1);
-			m_perfmon.Put(GSPerfMon::Prim, m_index.tail / GSUtil::GetVertexCount(PRIM->PRIM));
+			Console.Warning("GS: Possible invalid draw, Frame PSM %x ZPSM %x", m_context->FRAME.PSM, m_context->ZBUF.PSM);
 		}
-		else
+
+		m_vt.Update(m_vertex.buff, m_index.buff, m_vertex.tail, m_index.tail, GSUtil::GetPrimClass(PRIM->PRIM));
+
+		m_context->SaveReg();
+
+		try
 		{
-			Console.Error("Draw skipped due to invalid guest framebuffer format."
-			              "Please report: https://github.com/PCSX2/pcsx2/issues");
+			Draw();
 		}
+		catch (GSRecoverableError&)
+		{
+			// could be an unsupported draw call
+		}
+		catch (const std::bad_alloc&)
+		{
+			// Texture Out Of Memory
+			PurgePool();
+			Console.Error("GS: Memory allocation failure.");
+		}
+
+		m_context->RestoreReg();
+
+		m_perfmon.Put(GSPerfMon::Draw, 1);
+		m_perfmon.Put(GSPerfMon::Prim, m_index.tail / GSUtil::GetVertexCount(PRIM->PRIM));
 
 		m_index.tail = 0;
 
@@ -3006,7 +3007,7 @@ GIFRegTEX0 GSState::GetTex0Layer(uint32 lod)
 			TEX0.TBW = m_context->MIPTBP2.TBW6;
 			break;
 		default:
-			Console.Error("Invalid guest lod setting. Please report: https://github.com/PCSX2/pcsx2/issues");
+			Console.Error("GS: Invalid guest lod setting. Please report: https://github.com/PCSX2/pcsx2/issues");
 	}
 
 	// Correct the texture size
