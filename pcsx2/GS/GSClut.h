@@ -74,7 +74,7 @@ class alignas(32) GSClut : public GSAlignedClass<32>
 
 	void WriteCLUT_NULL(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT);
 
-	static void WriteCLUT_T32_I8_CSM1(const uint32* RESTRICT src, uint16* RESTRICT clut);
+	static void WriteCLUT_T32_I8_CSM1(const uint32* RESTRICT src, uint16* RESTRICT clut, uint16 offset);
 	static void WriteCLUT_T32_I4_CSM1(const uint32* RESTRICT src, uint16* RESTRICT clut);
 	static void WriteCLUT_T16_I8_CSM1(const uint16* RESTRICT src, uint16* RESTRICT clut);
 	static void WriteCLUT_T16_I4_CSM1(const uint16* RESTRICT src, uint16* RESTRICT clut);
