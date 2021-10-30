@@ -323,7 +323,7 @@ namespace GL
 
 		// BufferSubData is slower on all drivers except NVIDIA...
 		const char* vendor = reinterpret_cast<const char*>(glGetString(GL_VENDOR));
-		if (std::strcmp(vendor, "NVIDIA") == 0)
+		if (std::strstr(vendor, "NVIDIA"))
 			return detail::BufferSubDataStreamBuffer::Create(target, size);
 		else
 			return detail::BufferDataStreamBuffer::Create(target, size);
