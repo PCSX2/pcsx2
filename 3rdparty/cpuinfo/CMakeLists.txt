@@ -1,0 +1,223 @@
+CMAKE_MINIMUM_REQUIRED(VERSION 3.5 FATAL_ERROR)
+
+# ---[ Setup project
+PROJECT(
+    cpuinfo
+    LANGUAGES C CXX
+    )
+
+# ---[ Options.
+SET(CPUINFO_LIBRARY_TYPE "default" CACHE STRING "Type of cpuinfo library (shared, static, or default) to build")
+SET_PROPERTY(CACHE CPUINFO_LIBRARY_TYPE PROPERTY STRINGS default static shared)
+SET(CPUINFO_RUNTIME_TYPE "default" CACHE STRING "Type of runtime library (shared, static, or default) to use")
+SET_PROPERTY(CACHE CPUINFO_RUNTIME_TYPE PROPERTY STRINGS default static shared)
+SET(CPUINFO_LOG_LEVEL "default" CACHE STRING "Minimum logging level (info with lower severity will be ignored)")
+SET_PROPERTY(CACHE CPUINFO_LOG_LEVEL PROPERTY STRINGS default debug info warning error fatal none)
+
+MACRO(CPUINFO_TARGET_ENABLE_C99 target)
+  SET_TARGET_PROPERTIES(${target} PROPERTIES
+    C_STANDARD 99
+    C_EXTENSIONS NO)
+ENDMACRO()
+
+MACRO(CPUINFO_TARGET_ENABLE_CXX11 target)
+  SET_TARGET_PROPERTIES(${target} PROPERTIES
+    CXX_STANDARD 11
+    CXX_EXTENSIONS NO)
+ENDMACRO()
+
+MACRO(CPUINFO_TARGET_RUNTIME_LIBRARY target)
+  IF(MSVC AND NOT CPUINFO_RUNTIME_TYPE STREQUAL "default")
+    IF(CPUINFO_RUNTIME_TYPE STREQUAL "shared")
+      TARGET_COMPILE_OPTIONS(${target} PRIVATE
+        "/MD$<$<CONFIG:Debug>:d>")
+    ELSEIF(CPUINFO_RUNTIME_TYPE STREQUAL "static")
+      TARGET_COMPILE_OPTIONS(${target} PRIVATE
+        "/MT$<$<CONFIG:Debug>:d>")
+    ENDIF()
+  ENDIF()
+ENDMACRO()
+
+# -- [ Determine target processor
+SET(CPUINFO_TARGET_PROCESSOR "${CMAKE_SYSTEM_PROCESSOR}")
+IF(CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND CMAKE_OSX_ARCHITECTURES MATCHES "^(x86_64|arm64)$")
+  SET(CPUINFO_TARGET_PROCESSOR "${CMAKE_OSX_ARCHITECTURES}")
+ENDIF()
+
+# ---[ Build flags
+SET(CPUINFO_SUPPORTED_PLATFORM TRUE)
+IF(NOT CMAKE_SYSTEM_PROCESSOR)
+  IF(NOT IOS)
+    MESSAGE(WARNING
+      "Target processor architecture is not specified. "
+      "cpuinfo will compile, but cpuinfo_initialize() will always fail.")
+    SET(CPUINFO_SUPPORTED_PLATFORM FALSE)
+  ENDIF()
+ELSEIF(NOT CPUINFO_TARGET_PROCESSOR MATCHES "^(i[3-6]86|AMD64|x86(_64)?|armv[5-8].*|aarch64|arm64)$")
+  MESSAGE(WARNING
+    "Target processor architecture \"${CPUINFO_TARGET_PROCESSOR}\" is not supported in cpuinfo. "
+    "cpuinfo will compile, but cpuinfo_initialize() will always fail.")
+  SET(CPUINFO_SUPPORTED_PLATFORM FALSE)
+ENDIF()
+
+IF(NOT CMAKE_SYSTEM_NAME)
+    MESSAGE(WARNING
+      "Target operating system is not specified. "
+      "cpuinfo will compile, but cpuinfo_initialize() will always fail.")
+  SET(CPUINFO_SUPPORTED_PLATFORM FALSE)
+ELSEIF(NOT CMAKE_SYSTEM_NAME MATCHES "^(Windows|CYGWIN|MSYS|Darwin|Linux|Android)$")
+  IF(${CMAKE_VERSION} VERSION_GREATER_EQUAL "3.14" AND NOT CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    MESSAGE(WARNING
+      "Target operating system \"${CMAKE_SYSTEM_NAME}\" is not supported in cpuinfo. "
+      "cpuinfo will compile, but cpuinfo_initialize() will always fail.")
+    SET(CPUINFO_SUPPORTED_PLATFORM FALSE)
+  ENDIF()
+ENDIF()
+
+# ---[ cpuinfo library
+SET(CPUINFO_SRCS
+  src/init.c
+  src/api.c
+  src/cache.c)
+
+IF(CPUINFO_SUPPORTED_PLATFORM)
+  IF(NOT CMAKE_SYSTEM_NAME STREQUAL "Emscripten" AND (CPUINFO_TARGET_PROCESSOR MATCHES "^(i[3-6]86|AMD64|x86(_64)?)$" OR IOS_ARCH MATCHES "^(i386|x86_64)$"))
+    LIST(APPEND CPUINFO_SRCS
+      src/x86/init.c
+      src/x86/info.c
+      src/x86/vendor.c
+      src/x86/uarch.c
+      src/x86/name.c
+      src/x86/topology.c
+      src/x86/isa.c
+      src/x86/cache/init.c
+      src/x86/cache/descriptor.c
+      src/x86/cache/deterministic.c)
+    IF(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Android")
+      LIST(APPEND CPUINFO_SRCS
+        src/x86/linux/init.c
+        src/x86/linux/cpuinfo.c)
+    ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Darwin" OR CMAKE_SYSTEM_NAME STREQUAL "iOS")
+      LIST(APPEND CPUINFO_SRCS src/x86/mach/init.c)
+    ELSEIF(CMAKE_SYSTEM_NAME MATCHES "^(Windows|CYGWIN|MSYS)$")
+      LIST(APPEND CPUINFO_SRCS src/x86/windows/init.c)
+    ENDIF()
+  ELSEIF(CPUINFO_TARGET_PROCESSOR MATCHES "^(armv[5-8].*|aarch64|arm64)$" OR IOS_ARCH MATCHES "^(armv7.*|arm64.*)$")
+    LIST(APPEND CPUINFO_SRCS
+      src/arm/uarch.c
+      src/arm/cache.c)
+    IF(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Android")
+      LIST(APPEND CPUINFO_SRCS
+        src/arm/linux/init.c
+        src/arm/linux/cpuinfo.c
+        src/arm/linux/clusters.c
+        src/arm/linux/chipset.c
+        src/arm/linux/midr.c
+        src/arm/linux/hwcap.c)
+      IF(CMAKE_SYSTEM_PROCESSOR MATCHES "^armv[5-8]")
+        LIST(APPEND CPUINFO_SRCS src/arm/linux/aarch32-isa.c)
+        IF(CMAKE_SYSTEM_NAME STREQUAL "Android" AND ANDROID_ABI STREQUAL "armeabi")
+          SET_SOURCE_FILES_PROPERTIES(src/arm/linux/aarch32-isa.c PROPERTIES COMPILE_FLAGS -marm)
+        ENDIF()
+      ELSEIF(CMAKE_SYSTEM_PROCESSOR MATCHES "^(aarch64|arm64)$")
+        LIST(APPEND CPUINFO_SRCS src/arm/linux/aarch64-isa.c)
+      ENDIF()
+    ELSEIF(IOS OR (CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND CPUINFO_TARGET_PROCESSOR STREQUAL "arm64"))
+      LIST(APPEND CPUINFO_SRCS src/arm/mach/init.c)
+    ENDIF()
+    IF(CMAKE_SYSTEM_NAME STREQUAL "Android")
+      LIST(APPEND CPUINFO_SRCS
+        src/arm/android/properties.c)
+    ENDIF()
+  ENDIF()
+
+  IF(CMAKE_SYSTEM_NAME STREQUAL "Emscripten")
+    LIST(APPEND CPUINFO_SRCS
+      src/emscripten/init.c)
+  ENDIF()
+
+  IF(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Android")
+    LIST(APPEND CPUINFO_SRCS
+      src/linux/smallfile.c
+      src/linux/multiline.c
+      src/linux/cpulist.c
+      src/linux/processors.c)
+  ELSEIF(CMAKE_SYSTEM_NAME STREQUAL "Darwin" OR CMAKE_SYSTEM_NAME STREQUAL "iOS")
+    LIST(APPEND CPUINFO_SRCS src/mach/topology.c)
+  ENDIF()
+
+  IF(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Android")
+    SET(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+    SET(THREADS_PREFER_PTHREAD_FLAG TRUE)
+    FIND_PACKAGE(Threads REQUIRED)
+  ENDIF()
+ENDIF()
+
+IF(CPUINFO_LIBRARY_TYPE STREQUAL "default")
+  ADD_LIBRARY(cpuinfo ${CPUINFO_SRCS})
+ELSEIF(CPUINFO_LIBRARY_TYPE STREQUAL "shared")
+  ADD_LIBRARY(cpuinfo SHARED ${CPUINFO_SRCS})
+ELSEIF(CPUINFO_LIBRARY_TYPE STREQUAL "static")
+  ADD_LIBRARY(cpuinfo STATIC ${CPUINFO_SRCS})
+ELSE()
+  MESSAGE(FATAL_ERROR "Unsupported library type ${CPUINFO_LIBRARY_TYPE}")
+ENDIF()
+ADD_LIBRARY(cpuinfo_internals STATIC ${CPUINFO_SRCS})
+CPUINFO_TARGET_ENABLE_C99(cpuinfo)
+CPUINFO_TARGET_ENABLE_C99(cpuinfo_internals)
+CPUINFO_TARGET_RUNTIME_LIBRARY(cpuinfo)
+IF(CMAKE_SYSTEM_NAME MATCHES "^(Windows|CYGWIN|MSYS)$")
+  # Target Windows 7+ API
+  TARGET_COMPILE_DEFINITIONS(cpuinfo PRIVATE _WIN32_WINNT=0x0601)
+  TARGET_COMPILE_DEFINITIONS(cpuinfo_internals PRIVATE _WIN32_WINNT=0x0601)
+ENDIF()
+SET_TARGET_PROPERTIES(cpuinfo PROPERTIES PUBLIC_HEADER include/cpuinfo.h)
+TARGET_INCLUDE_DIRECTORIES(cpuinfo BEFORE PUBLIC include)
+TARGET_INCLUDE_DIRECTORIES(cpuinfo BEFORE PRIVATE src)
+TARGET_INCLUDE_DIRECTORIES(cpuinfo_internals BEFORE PUBLIC include src)
+IF(CPUINFO_LOG_LEVEL STREQUAL "default")
+  # default logging level: error (subject to change)
+  TARGET_COMPILE_DEFINITIONS(cpuinfo PRIVATE CPUINFO_LOG_LEVEL=2)
+ELSEIF(CPUINFO_LOG_LEVEL STREQUAL "debug")
+  TARGET_COMPILE_DEFINITIONS(cpuinfo PRIVATE CPUINFO_LOG_LEVEL=5)
+ELSEIF(CPUINFO_LOG_LEVEL STREQUAL "info")
+  TARGET_COMPILE_DEFINITIONS(cpuinfo PRIVATE CPUINFO_LOG_LEVEL=4)
+ELSEIF(CPUINFO_LOG_LEVEL STREQUAL "warning")
+  TARGET_COMPILE_DEFINITIONS(cpuinfo PRIVATE CPUINFO_LOG_LEVEL=3)
+ELSEIF(CPUINFO_LOG_LEVEL STREQUAL "error")
+  TARGET_COMPILE_DEFINITIONS(cpuinfo PRIVATE CPUINFO_LOG_LEVEL=2)
+ELSEIF(CPUINFO_LOG_LEVEL STREQUAL "fatal")
+  TARGET_COMPILE_DEFINITIONS(cpuinfo PRIVATE CPUINFO_LOG_LEVEL=1)
+ELSEIF(CPUINFO_LOG_LEVEL STREQUAL "none")
+  TARGET_COMPILE_DEFINITIONS(cpuinfo PRIVATE CPUINFO_LOG_LEVEL=0)
+ELSE()
+  MESSAGE(FATAL_ERROR "Unsupported logging level ${CPUINFO_LOG_LEVEL}")
+ENDIF()
+TARGET_COMPILE_DEFINITIONS(cpuinfo_internals PRIVATE CPUINFO_LOG_LEVEL=0)
+
+IF(CPUINFO_SUPPORTED_PLATFORM)
+  TARGET_COMPILE_DEFINITIONS(cpuinfo INTERFACE CPUINFO_SUPPORTED_PLATFORM=1)
+  IF(CMAKE_SYSTEM_NAME STREQUAL "Linux" OR CMAKE_SYSTEM_NAME STREQUAL "Android")
+    TARGET_LINK_LIBRARIES(cpuinfo PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+    TARGET_LINK_LIBRARIES(cpuinfo_internals PUBLIC ${CMAKE_THREAD_LIBS_INIT})
+    TARGET_COMPILE_DEFINITIONS(cpuinfo PRIVATE _GNU_SOURCE=1)
+    TARGET_COMPILE_DEFINITIONS(cpuinfo_internals PRIVATE _GNU_SOURCE=1)
+  ENDIF()
+ELSE()
+  TARGET_COMPILE_DEFINITIONS(cpuinfo INTERFACE CPUINFO_SUPPORTED_PLATFORM=0)
+ENDIF()
+
+# ---[ cpuinfo dependencies: clog
+IF(NOT DEFINED CLOG_SOURCE_DIR)
+  SET(CLOG_SOURCE_DIR "${PROJECT_SOURCE_DIR}/deps/clog")
+ENDIF()
+IF(NOT TARGET clog)
+  SET(CLOG_BUILD_TESTS OFF CACHE BOOL "")
+  SET(CLOG_RUNTIME_TYPE "${CPUINFO_RUNTIME_TYPE}" CACHE STRING "")
+  ADD_SUBDIRECTORY(
+    "${CLOG_SOURCE_DIR}")
+  # We build static version of clog but a dynamic library may indirectly depend on it
+  SET_PROPERTY(TARGET clog PROPERTY POSITION_INDEPENDENT_CODE ON)
+ENDIF()
+TARGET_LINK_LIBRARIES(cpuinfo PRIVATE clog)
+TARGET_LINK_LIBRARIES(cpuinfo_internals PRIVATE clog)
