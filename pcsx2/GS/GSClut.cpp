@@ -315,8 +315,7 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 			{
 				case PSM_PSMT8:
 				case PSM_PSMT8H:
-					clut += (TEX0.CSA & 15) << 4; // disney golf title screen
-					ReadCLUT_T32_I8(clut, m_buff32);
+					ReadCLUT_T32_I8(clut, m_buff32, (TEX0.CSA & 15) << 4);
 					break;
 				case PSM_PSMT4:
 				case PSM_PSMT4HL:
@@ -508,11 +507,18 @@ __forceinline void GSClut::WriteCLUT_T16_I4_CSM1(const uint16* RESTRICT src, uin
 	}
 }
 
-void GSClut::ReadCLUT_T32_I8(const uint16* RESTRICT clut, uint32* RESTRICT dst)
+void GSClut::ReadCLUT_T32_I8(const uint16* RESTRICT clut, uint32* RESTRICT dst, int offset)
 {
+	// Okay this deserves a small explanation
+	// T32 I8 can address up to 256 colors however the offset can be "more than zero" when reading
+	// Previously I assumed that it would wrap around the end of the buffer to the beginning
+	// but it turns out this is incorrect, the address doesn't mirror, it clamps to to the last offset,
+	// probably though some sort of addressing mechanism then picks the color from the lower 0xF of the requested CLUT entry.
+	// if we don't do this, the dirt on GTA SA goes transparent and actually cleans the car driving through dirt.
 	for (int i = 0; i < 256; i += 16)
 	{
-		ReadCLUT_T32_I4(&clut[i], &dst[i]);
+		// Min value + offet or Last CSA * 16 (240)
+		ReadCLUT_T32_I4(&clut[std::min((i + offset), 240)], &dst[i]);
 	}
 }
 
