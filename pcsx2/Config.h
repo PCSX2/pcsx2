@@ -399,6 +399,8 @@ struct Pcsx2Config
 		SSE_MXCSR sseMXCSR;
 		SSE_MXCSR sseVUMXCSR;
 
+		u32 AffinityControlMode;
+
 		CpuOptions();
 		void LoadSave(SettingsWrapper& wrap);
 		void ApplySanityCheck();
@@ -407,7 +409,7 @@ struct Pcsx2Config
 
 		bool operator==(const CpuOptions& right) const
 		{
-			return OpEqu(sseMXCSR) && OpEqu(sseVUMXCSR) && OpEqu(Recompiler);
+			return OpEqu(sseMXCSR) && OpEqu(sseVUMXCSR) && OpEqu(AffinityControlMode) && OpEqu(Recompiler);
 		}
 
 		bool operator!=(const CpuOptions& right) const

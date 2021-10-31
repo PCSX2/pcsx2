@@ -18,6 +18,7 @@
 #include "VMManager.h"
 
 #include <atomic>
+#include <sstream>
 #include <mutex>
 
 #include "common/Console.h"
@@ -26,6 +27,7 @@
 #include "common/StringUtil.h"
 #include "common/SettingsWrapper.h"
 #include "common/Timer.h"
+#include "common/Threading.h"
 #include "fmt/core.h"
 
 #include "Counters.h"
@@ -98,7 +100,8 @@ namespace VMManager
 		std::string filename, s32 slot_for_message);
 
 	static void SetTimerResolutionIncreased(bool enabled);
-	static void SetEmuThreadAffinities(bool force);
+	static void EnsureCPUInfoInitialized();
+	static void SetEmuThreadAffinities();
 } // namespace VMManager
 
 static std::unique_ptr<SysMainMemory> s_vm_memory;
@@ -924,7 +927,7 @@ bool VMManager::Initialize(const VMBootParameters& boot_params)
 
 	UpdateRunningGame(true, false);
 
-	SetEmuThreadAffinities(true);
+	SetEmuThreadAffinities();
 
 	PerformanceMetrics::Clear();
 
@@ -1410,6 +1413,12 @@ void VMManager::CheckForCPUConfigChanges(const Pcsx2Config& old_config)
 		// possible and reset next time we're called.
 		s_cpu_implementation_changed = true;
 	}
+
+	if (EmuConfig.Cpu.AffinityControlMode != old_config.Cpu.AffinityControlMode ||
+		EmuConfig.Speedhacks.vuThread != old_config.Speedhacks.vuThread)
+	{
+		SetEmuThreadAffinities();
+	}
 }
 
 void VMManager::CheckForGSConfigChanges(const Pcsx2Config& old_config)
@@ -1573,10 +1582,7 @@ void VMManager::ApplySettings()
 	LoadSettings();
 
 	if (HasValidVM())
-	{
 		CheckForConfigChanges(old_config);
-		SetEmuThreadAffinities(false);
-	}
 }
 
 bool VMManager::ReloadGameSettings()
@@ -1722,7 +1728,211 @@ void VMManager::SetTimerResolutionIncreased(bool enabled)
 
 #endif
 
-void VMManager::SetEmuThreadAffinities(bool force)
+static std::vector<u32> s_processor_list;
+static std::once_flag s_processor_list_initialized;
+
+#if defined(__linux__) || defined(_WIN32)
+
+#include "cpuinfo.h"
+
+static u32 GetProcessorIdForProcessor(const cpuinfo_processor* proc)
 {
-	Console.Error("(SetEmuThreadAffinities) Not implemented");
+#if defined(__linux__)
+	return static_cast<u32>(proc->linux_id);
+#elif defined(_WIN32)
+	return static_cast<u32>(proc->windows_processor_id);
+#else
+	return 0;
+#endif
+}
+
+static void InitializeCPUInfo()
+{
+	if (!cpuinfo_initialize())
+	{
+		Console.Error("Failed to initialize cpuinfo");
+		return;
+	}
+
+	const u32 cluster_count = cpuinfo_get_clusters_count();
+	if (cluster_count == 0)
+	{
+		Console.Error("Invalid CPU count returned");
+		return;
+	}
+
+	Console.WriteLn(Color_StrongYellow, "Processor count: %u cores, %u processors", cpuinfo_get_cores_count(), cpuinfo_get_processors_count());
+	Console.WriteLn(Color_StrongYellow, "Cluster count: %u", cluster_count);
+
+	static std::vector<const cpuinfo_processor*> ordered_processors;
+	for (u32 i = 0; i < cluster_count; i++)
+	{
+		const cpuinfo_cluster* cluster = cpuinfo_get_cluster(i);
+		for (u32 j = 0; j < cluster->processor_count; j++)
+		{
+			const cpuinfo_processor* proc = cpuinfo_get_processor(cluster->processor_start + j);
+			if (!proc)
+				continue;
+
+			ordered_processors.push_back(proc);
+		}
+	}
+	// find the large and small clusters based on frequency
+	// this is assuming the large cluster is always clocked higher
+	// sort based on core, so that hyperthreads get pushed down
+	std::sort(ordered_processors.begin(), ordered_processors.end(), [](const cpuinfo_processor* lhs, const cpuinfo_processor* rhs) {
+		return (lhs->core->frequency > rhs->core->frequency || lhs->smt_id < rhs->smt_id);
+	});
+
+	s_processor_list.reserve(ordered_processors.size());
+	std::stringstream ss;
+	ss << "Ordered processor list: ";
+	for (const cpuinfo_processor* proc : ordered_processors)
+	{
+		if (proc != ordered_processors.front())
+			ss << ", ";
+
+		const u32 procid = GetProcessorIdForProcessor(proc);
+		ss << procid;
+		if (proc->smt_id != 0)
+			ss << "[SMT " << proc->smt_id << "]";
+
+		s_processor_list.push_back(procid);
+	}
+	Console.WriteLn(ss.str());
+}
+
+static void SetMTVUAndAffinityControlDefault(Pcsx2Config& config)
+{
+	VMManager::EnsureCPUInfoInitialized();
+
+	const u32 cluster_count = cpuinfo_get_clusters_count();
+	if (cluster_count == 0)
+	{
+		Console.Error("Invalid CPU count returned");
+		return;
+	}
+
+	Console.WriteLn("Cluster count: %u", cluster_count);
+
+	for (u32 i = 0; i < cluster_count; i++)
+	{
+		const cpuinfo_cluster* cluster = cpuinfo_get_cluster(i);
+		Console.WriteLn("  Cluster %u: %u cores and %u processors at %u MHz",
+			i, cluster->core_count, cluster->processor_count, static_cast<u32>(cluster->frequency /* / 1000000u*/));
+	}
+
+	const bool has_big_little = cluster_count > 1;
+	Console.WriteLn("Big-Little: %s", has_big_little ? "yes" : "no");
+
+	const u32 big_cores = cpuinfo_get_cluster(0)->core_count + ((cluster_count > 2) ? cpuinfo_get_cluster(1)->core_count : 0u);
+	Console.WriteLn("Guessing we have %u big/medium cores...", big_cores);
+
+	bool mtvu_enable;
+	bool affinity_control;
+	if (big_cores >= 3 || big_cores == 1)
+	{
+		Console.WriteLn("  So enabling MTVU and disabling affinity control");
+		mtvu_enable = true;
+		affinity_control = false;
+	}
+	else
+	{
+		Console.WriteLn("  So disabling MTVU and enabling affinity control");
+		mtvu_enable = false;
+		affinity_control = true;
+	}
+
+	config.Speedhacks.vuThread = mtvu_enable;
+	config.Cpu.AffinityControlMode = affinity_control ? 1 : 0;
+}
+
+#else
+
+static void InitializeCPUInfo()
+{
+	DevCon.WriteLn("(VMManager) InitializeCPUInfo() not implemented.");
+}
+
+static void SetMTVUAndAffinityControlDefault(Pcsx2Config& config)
+{
+}
+
+#endif
+
+void VMManager::EnsureCPUInfoInitialized()
+{
+	std::call_once(s_processor_list_initialized, InitializeCPUInfo);
+}
+
+void VMManager::SetEmuThreadAffinities()
+{
+	EnsureCPUInfoInitialized();
+
+	if (s_processor_list.empty())
+	{
+		// not supported on this platform
+		return;
+	}
+
+	if (EmuConfig.Cpu.AffinityControlMode == 0 ||
+		s_processor_list.size() < (EmuConfig.Speedhacks.vuThread ? 3 : 2))
+	{
+		if (EmuConfig.Cpu.AffinityControlMode != 0)
+			Console.Error("Insufficient processors for affinity control.");
+
+		GetMTGS().GetThreadHandle().SetAffinity(0);
+		vu1Thread.GetThreadHandle().SetAffinity(0);
+		s_vm_thread_handle.SetAffinity(0);
+		return;
+	}
+
+	static constexpr u8 processor_assignment[7][2][3] = {
+		//EE xx GS  EE VU GS
+		{{0, 2, 1}, {0, 1, 2}}, // Disabled
+		{{0, 2, 1}, {0, 1, 2}}, // EE > VU > GS
+		{{0, 2, 1}, {0, 2, 1}}, // EE > GS > VU
+		{{0, 2, 1}, {1, 0, 2}}, // VU > EE > GS
+		{{1, 2, 0}, {2, 0, 1}}, // VU > GS > EE
+		{{1, 2, 0}, {1, 2, 0}}, // GS > EE > VU
+		{{1, 2, 0}, {2, 1, 0}}, // GS > VU > EE
+	};
+
+	// steal vu's thread if mtvu is off
+	const u8* this_proc_assigment = processor_assignment[EmuConfig.Cpu.AffinityControlMode][EmuConfig.Speedhacks.vuThread];
+	const u32 ee_index = s_processor_list[this_proc_assigment[0]];
+	const u32 vu_index = s_processor_list[this_proc_assigment[1]];
+	const u32 gs_index = s_processor_list[this_proc_assigment[2]];
+	Console.WriteLn("Processor order assignment: EE=%u, VU=%u, GS=%u",
+		this_proc_assigment[0], this_proc_assigment[1], this_proc_assigment[2]);
+
+	const u64 ee_affinity = static_cast<u64>(1) << ee_index;
+	Console.WriteLn(Color_StrongGreen, "EE thread is on processor %u (0x%llx)", ee_index, ee_affinity);
+	s_vm_thread_handle.SetAffinity(ee_affinity);
+
+	if (EmuConfig.Speedhacks.vuThread)
+	{
+		const u64 vu_affinity = static_cast<u64>(1) << vu_index;
+		Console.WriteLn(Color_StrongGreen, "VU thread is on processor %u (0x%llx)", vu_index, vu_affinity);
+		vu1Thread.GetThreadHandle().SetAffinity(vu_affinity);
+	}
+	else
+	{
+		vu1Thread.GetThreadHandle().SetAffinity(0);
+	}
+
+	const u64 gs_affinity = static_cast<u64>(1) << gs_index;
+	Console.WriteLn(Color_StrongGreen, "GS thread is on processor %u (0x%llx)", gs_index, gs_affinity);
+	GetMTGS().GetThreadHandle().SetAffinity(gs_affinity);
+}
+
+void VMManager::SetHardwareDependentDefaultSettings(Pcsx2Config& config)
+{
+	SetMTVUAndAffinityControlDefault(config);
+}
+
+const std::vector<u32>& VMManager::GetSortedProcessorList()
+{
+	EnsureCPUInfoInitialized();
+	return s_processor_list;
 }
