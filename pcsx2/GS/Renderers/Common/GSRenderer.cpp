@@ -393,12 +393,11 @@ void GSRenderer::VSync(int field)
 	{
 		m_perfmon.Update();
 
-		double fps = 1000.0f / m_perfmon.Get(GSPerfMon::Frame);
-
 		std::string s;
 
 #ifdef GSTITLEINFO_API_FORCE_VERBOSE
 		{
+			const double fps = 1000.0f / m_perfmon.Get(GSPerfMon::Frame);
 			//GS owns the window's title, be verbose.
 			static const char* aspect_ratio_names[static_cast<int>(AspectRatioType::MaxCount)] = { "Stretch", "4:3", "16:9" };
 
