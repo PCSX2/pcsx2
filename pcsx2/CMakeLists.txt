@@ -1604,6 +1604,7 @@ target_link_libraries(PCSX2_FLAGS INTERFACE
 	ryml
 	chdr-static
 	libzip::zip
+	cpuinfo
 	ZLIB::ZLIB
 	PkgConfig::SOUNDTOUCH
 	PkgConfig::SAMPLERATE

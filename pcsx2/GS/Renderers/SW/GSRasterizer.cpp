@@ -21,6 +21,10 @@
 #include "PerformanceMetrics.h"
 #include "common/StringUtil.h"
 
+#ifdef PCSX2_CORE
+#include "VMManager.h"
+#endif
+
 #define ENABLE_DRAW_STATS 0
 
 int GSRasterizerData::s_counter = 0;
@@ -1176,7 +1180,25 @@ GSRasterizerList::~GSRasterizerList()
 void GSRasterizerList::OnWorkerStartup(int i)
 {
 	Threading::SetNameOfCurrentThread(StringUtil::StdStringFromFormat("GS-SW-%d", i).c_str());
-	PerformanceMetrics::SetGSSWThread(i, Threading::ThreadHandle::GetForCallingThread());
+
+	Threading::ThreadHandle handle(Threading::ThreadHandle::GetForCallingThread());
+
+#ifdef PCSX2_CORE
+	if (EmuConfig.Cpu.AffinityControlMode != 0)
+	{
+		const std::vector<u32>& procs = VMManager::GetSortedProcessorList();
+		const u32 processor_index = (THREAD_VU1 ? 3 : 2) + i;
+		if (processor_index < procs.size())
+		{
+			const u32 procid = procs[processor_index];
+			const u64 affinity = static_cast<u64>(1) << procid;
+			Console.WriteLn("Pinning GS thread %d to CPU %u (0x%llx)", i, procid, affinity);
+			handle.SetAffinity(affinity);
+		}
+	}
+#endif
+
+	PerformanceMetrics::SetGSSWThread(i, std::move(handle));
 }
 
 void GSRasterizerList::OnWorkerShutdown(int i)

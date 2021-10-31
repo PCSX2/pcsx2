@@ -268,6 +268,8 @@ void QtHost::SetDefaultConfig()
 {
 	EmuConfig = Pcsx2Config();
 	EmuFolders::SetDefaults();
+	EmuFolders::EnsureFoldersExist();
+	VMManager::SetHardwareDependentDefaultSettings(EmuConfig);
 
 	SettingsInterface& si = *s_base_settings_interface.get();
 	si.SetUIntValue("UI", "SettingsVersion", SETTINGS_VERSION);

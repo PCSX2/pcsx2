@@ -159,6 +159,13 @@ namespace VMManager
 	/// If the scale is set to 0, the internal resolution will be used, otherwise it is treated as a multiplier to 1x.
 	void RequestDisplaySize(float scale = 0.0f);
 
+	/// Sets default settings based on hardware configuration.
+	void SetHardwareDependentDefaultSettings(Pcsx2Config& config);
+
+	/// Returns a list of processors in the system, and their corresponding affinity mask.
+	/// This list is ordered by most performant to least performant for pinning threads to.
+	const std::vector<u32>& GetSortedProcessorList();
+
 	/// Internal callbacks, implemented in the emu core.
 	namespace Internal
 	{
