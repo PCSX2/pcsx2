@@ -723,7 +723,6 @@ set(pcsx2GSHeaders
 	GS/Renderers/OpenGL/GSTextureCacheOGL.h
 	GS/Renderers/OpenGL/GSTextureOGL.h
 	GS/Renderers/OpenGL/GSUniformBufferOGL.h
-	GS/Renderers/OpenGL/GSVertexArrayOGL.h
 	GS/Window/GSDialog.h
 	GS/Window/GSSetting.h
 	GS/Window/GSSettingsDlg.h

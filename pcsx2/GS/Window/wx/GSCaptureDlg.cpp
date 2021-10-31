@@ -121,9 +121,7 @@ GSCaptureDlg::GSCaptureDlg(wxWindow* parent, bool selectDir)
 	wxBoxSizer* m_sizerMain = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* m_sizerContainer = new wxBoxSizer(wxVERTICAL);
 	wxBoxSizer* m_sizerFileRow = new wxBoxSizer(wxHORIZONTAL);
-	wxBoxSizer* m_sizerCodecRow = new wxBoxSizer(wxHORIZONTAL);
 	wxBoxSizer* m_sizerOptionsGroup = new wxBoxSizer(wxHORIZONTAL);
-	wxBoxSizer* m_sizerSizeControls = new wxBoxSizer(wxHORIZONTAL);
 	wxBoxSizer* m_sizerConfirmBtns = new wxBoxSizer(wxHORIZONTAL);
 
 	// Widgets
@@ -138,7 +136,6 @@ GSCaptureDlg::GSCaptureDlg(wxWindow* parent, bool selectDir)
 	m_codecInput->Append("Uncompressed");
 	m_codecInput->SetSelection(0);
 	m_codecConfigBtn = new wxButton(this, wxID_ANY, _("Config..."));
-#endif
 	wxStaticText* m_sizeLabel = new wxStaticText(this, wxID_ANY, _("Size:"));
 	m_widthInput = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, widthValidator);
 	m_heightInput = new wxTextCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, 0, heightValidator);
@@ -149,6 +146,7 @@ GSCaptureDlg::GSCaptureDlg(wxWindow* parent, bool selectDir)
 		m_colorSpaceInput->Append(wxString(option));
 	}
 	m_colorSpaceInput->SetSelection(0);
+#endif
 	m_cancelBtn = new wxButton(this, wxID_CANCEL, wxEmptyString);
 	m_confirmBtn = new wxButton(this, wxID_OK, wxEmptyString);
 
@@ -158,18 +156,22 @@ GSCaptureDlg::GSCaptureDlg(wxWindow* parent, bool selectDir)
 	m_sizerFileRow->Add(m_filePathInput, 3, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
 	m_sizerFileRow->Add(m_browseBtn, 1, wxALIGN_CENTER_VERTICAL, 0);
 #ifdef _WIN32
+	wxBoxSizer* m_sizerCodecRow = new wxBoxSizer(wxHORIZONTAL);
 	m_sizerContainer->Add(m_sizerCodecRow, 1, wxALL | wxEXPAND, 5);
 	m_sizerCodecRow->Add(m_codecInput, 3, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
 	m_sizerCodecRow->Add(m_codecConfigBtn, 1, wxALIGN_CENTER_VERTICAL, 0);
 #endif
 	m_sizerContainer->Add(m_sizerOptionsGroup, 1, wxALL | wxEXPAND, 5);
+#ifdef _WIN32
+	wxBoxSizer* m_sizerSizeControls = new wxBoxSizer(wxHORIZONTAL);
 	m_sizerOptionsGroup->Add(m_sizerSizeControls, 3, wxALIGN_CENTER_VERTICAL, 10);
-	m_sizerOptionsGroup->Add(m_sizerConfirmBtns, 1, wxALIGN_CENTER_VERTICAL, 0);
 	m_sizerSizeControls->Add(m_sizeLabel, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
 	m_sizerSizeControls->Add(m_widthInput, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 	m_sizerSizeControls->Add(m_heightInput, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 10);
 	m_sizerSizeControls->Add(m_colorSpaceLabel, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 	m_sizerSizeControls->Add(m_colorSpaceInput, 0, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
+#endif
+	m_sizerOptionsGroup->Add(m_sizerConfirmBtns, 1, wxALIGN_CENTER_VERTICAL, 0);
 	m_sizerConfirmBtns->Add(m_cancelBtn, 1, wxALIGN_CENTER_VERTICAL | wxRIGHT, 5);
 	m_sizerConfirmBtns->Add(m_confirmBtn, 1, wxALIGN_CENTER_VERTICAL | wxLEFT, 5);
 
@@ -179,11 +181,11 @@ GSCaptureDlg::GSCaptureDlg(wxWindow* parent, bool selectDir)
 #ifdef _WIN32
 	m_codecConfigBtn->Bind(wxEVT_BUTTON, &GSCaptureDlg::ConfigureCodec, this);
 	m_codecInput->Bind(wxEVT_COMBOBOX, &GSCaptureDlg::CodecSelected, this);
-#endif
-	m_colorSpaceInput->Bind(wxEVT_COMBOBOX, &GSCaptureDlg::ColorSpaceSelected, this);
-	m_filePathInput->Bind(wxEVT_TEXT, &GSCaptureDlg::FileEntryChanged, this);
 	m_widthInput->Bind(wxEVT_TEXT, &GSCaptureDlg::CaptureWidthChanged, this);
 	m_heightInput->Bind(wxEVT_TEXT, &GSCaptureDlg::CaptureHeightChanged, this);
+	m_colorSpaceInput->Bind(wxEVT_COMBOBOX, &GSCaptureDlg::ColorSpaceSelected, this);
+#endif
+	m_filePathInput->Bind(wxEVT_TEXT, &GSCaptureDlg::FileEntryChanged, this);
 
 	// Init Window
 	SetSizer(m_sizerMain);

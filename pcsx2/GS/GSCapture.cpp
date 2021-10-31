@@ -75,20 +75,15 @@ static void EnumPins(IBaseFilter* baseFilter, Func&& f)
 // GSSource
 //
 interface __declspec(uuid("59C193BB-C520-41F3-BC1D-E245B80A86FA"))
-	IGSSource : public IUnknown
+IGSSource : public IUnknown
 {
-	STDMETHOD(DeliverNewSegment)
-	() PURE;
-	STDMETHOD(DeliverFrame)
-	(const void* bits, int pitch, bool rgba) PURE;
-	STDMETHOD(DeliverEOS)
-	() PURE;
+	STDMETHOD(DeliverNewSegment)() PURE;
+	STDMETHOD(DeliverFrame)(const void* bits, int pitch, bool rgba) PURE;
+	STDMETHOD(DeliverEOS)() PURE;
 };
 
 class __declspec(uuid("F8BB6F4F-0965-4ED4-BA74-C6A01E6E6C77"))
-	GSSource : public CBaseFilter,
-			   private CCritSec,
-			   public IGSSource
+GSSource : public CBaseFilter, private CCritSec, public IGSSource
 {
 	GSVector2i m_size;
 	REFERENCE_TIME m_atpf;
@@ -96,7 +91,9 @@ class __declspec(uuid("F8BB6F4F-0965-4ED4-BA74-C6A01E6E6C77"))
 
 	STDMETHODIMP NonDelegatingQueryInterface(REFIID riid, void** ppv)
 	{
-		return riid == __uuidof(IGSSource) ? GetInterface((IGSSource*)this, ppv) : __super::NonDelegatingQueryInterface(riid, ppv);
+		return riid == __uuidof(IGSSource)
+			? GetInterface((IGSSource*)this, ppv)
+			: __super::NonDelegatingQueryInterface(riid, ppv);
 	}
 
 	class GSSourceOutputPin : public CBaseOutputPin
@@ -466,7 +463,8 @@ bool GSCapture::BeginCapture(wxWindow* parentWindow, float fps, GSVector2i recom
 	}
 
 	wil::com_ptr_nothrow<IBaseFilter> mux;
-	if (FAILED(cgb->SetFiltergraph(graph.get())) || FAILED(cgb->SetOutputFileName(&MEDIASUBTYPE_Avi, filePath.generic_wstring().c_str(), mux.put(), nullptr)))
+	if (FAILED(cgb->SetFiltergraph(graph.get()))
+	 || FAILED(cgb->SetOutputFileName(&MEDIASUBTYPE_Avi, filePath.generic_wstring().c_str(), mux.put(), nullptr)))
 	{
 		return false;
 	}
