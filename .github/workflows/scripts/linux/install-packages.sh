@@ -38,7 +38,7 @@ declare -a PCSX2_PACKAGES=(
 if [ "${COMPILER}" = "gcc" ]; then
   BUILD_PACKAGES+=("g++-10-multilib")
 else
-  BUILD_PACKAGES+=("clang")
+  BUILD_PACKAGES+=("clang-9")
   PCSX2_PACKAGES+=("libstdc++-10-dev")
 fi
 
