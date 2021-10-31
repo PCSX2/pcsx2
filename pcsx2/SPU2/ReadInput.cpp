@@ -111,7 +111,7 @@ StereoOut32 V_Core::ReadInput()
 			SetIrqCall(i);
 
 	// PlayMode & 2 is Bypass Mode, so it doesn't go through the SPU
-	if (Index == 1 || (Index == 0 && (PlayMode & 2) == 0))
+	if ((AutoDMACtrl & (Index + 1)) && !(Index == 0 && (PlayMode & 2) != 0))
 	{
 		retval = StereoOut32(
 			(s32)(*GetMemPtr(0x2000 + (Index << 10) + ReadIndex)),
