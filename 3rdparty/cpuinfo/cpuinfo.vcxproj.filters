@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="x86">
+      <UniqueIdentifier>{8fc9f543-ff04-48fb-ae1a-7c575a8aed13}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="x86\windows">
+      <UniqueIdentifier>{0b540baa-aafb-4e51-8cbf-b7e7c00d9a4d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="x86\descriptor">
+      <UniqueIdentifier>{53ef3c40-8e03-46d1-aeb3-6446c40469da}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="cpuinfo">
+      <UniqueIdentifier>{26002d26-399a-41bb-93cb-42fb9be21c1f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="clog">
+      <UniqueIdentifier>{7f0aba4c-ca06-4a7b-aed1-4f1e6976e839}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\x86\isa.c">
+      <Filter>x86</Filter>
+    </ClCompile>
+    <ClCompile Include="src\x86\name.c">
+      <Filter>x86</Filter>
+    </ClCompile>
+    <ClCompile Include="src\x86\topology.c">
+      <Filter>x86</Filter>
+    </ClCompile>
+    <ClCompile Include="src\x86\uarch.c">
+      <Filter>x86</Filter>
+    </ClCompile>
+    <ClCompile Include="src\x86\vendor.c">
+      <Filter>x86</Filter>
+    </ClCompile>
+    <ClCompile Include="src\x86\info.c">
+      <Filter>x86</Filter>
+    </ClCompile>
+    <ClCompile Include="src\x86\init.c">
+      <Filter>x86</Filter>
+    </ClCompile>
+    <ClCompile Include="src\x86\windows\init.c">
+      <Filter>x86\windows</Filter>
+    </ClCompile>
+    <ClCompile Include="src\x86\cache\deterministic.c">
+      <Filter>x86\descriptor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\x86\cache\init.c">
+      <Filter>x86\descriptor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\x86\cache\descriptor.c">
+      <Filter>x86\descriptor</Filter>
+    </ClCompile>
+    <ClCompile Include="src\api.c" />
+    <ClCompile Include="src\cache.c" />
+    <ClCompile Include="src\init.c" />
+    <ClCompile Include="deps\clog\src\clog.c">
+      <Filter>clog</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="src\x86\api.h">
+      <Filter>x86</Filter>
+    </ClInclude>
+    <ClInclude Include="src\x86\cpuid.h">
+      <Filter>x86</Filter>
+    </ClInclude>
+    <ClInclude Include="src\x86\windows\api.h">
+      <Filter>x86\windows</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpuinfo\internal-api.h">
+      <Filter>cpuinfo</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpuinfo\log.h">
+      <Filter>cpuinfo</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpuinfo\utils.h">
+      <Filter>cpuinfo</Filter>
+    </ClInclude>
+    <ClInclude Include="src\cpuinfo\common.h">
+      <Filter>cpuinfo</Filter>
+    </ClInclude>
+    <ClInclude Include="include\cpuinfo.h" />
+    <ClInclude Include="deps\clog\include\clog.h">
+      <Filter>clog</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>
