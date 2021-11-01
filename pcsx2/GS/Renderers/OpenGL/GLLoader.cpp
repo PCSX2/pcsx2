@@ -156,7 +156,6 @@ namespace GLLoader
 
 	bool found_geometry_shader = true; // we require GL3.3 so geometry must be supported by default
 	bool found_GL_ARB_clear_texture = false;
-	bool found_GL_ARB_get_texture_sub_image = false; // Not yet used
 	// DX11 GPU
 	bool found_GL_ARB_gpu_shader5 = false;             // Require IvyBridge
 	bool found_GL_ARB_shader_image_load_store = false; // Intel IB. Nvidia/AMD miss Mesa implementation.
@@ -164,6 +163,11 @@ namespace GLLoader
 	// In case sparse2 isn't supported
 	bool found_compatible_GL_ARB_sparse_texture2 = false;
 	bool found_compatible_sparse_depth = false;
+
+	// Not yet used
+#ifdef GL_EXT_TEX_SUB_IMAGE
+	bool found_GL_ARB_get_texture_sub_image = false;
+#endif
 
 	static void mandatory(const std::string& ext)
 	{
@@ -310,7 +314,10 @@ namespace GLLoader
 			// Mandatory for the advance HW renderer effect. Unfortunately Mesa LLVMPIPE/SWR renderers doesn't support this extension.
 			// Rendering might be corrupted but it could be good enough for test/virtual machine.
 			optional("GL_ARB_texture_barrier");
+			// Not yet used
+#ifdef GL_EXT_TEX_SUB_IMAGE
 			found_GL_ARB_get_texture_sub_image = optional("GL_ARB_get_texture_sub_image");
+#endif
 		}
 
 		if (vendor_id_amd)

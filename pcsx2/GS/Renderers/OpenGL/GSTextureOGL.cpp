@@ -468,7 +468,7 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 		// The fastest way will be to use a PBO to read the data asynchronously. Unfortunately GS
 		// architecture is waiting the data right now.
 
-#if 0
+#ifdef GL_EXT_TEX_SUB_IMAGE
 		// Maybe it is as good as the code below. I don't know
 		// With openGL 4.5 you can use glGetTextureSubImage
 
