@@ -1096,7 +1096,8 @@ void GSTextureCache::InvalidateLocalMem(GSOffset* off, const GSVector4i& r)
 				// the game can then draw using 8H format
 				// in the case of silent hill blit 8H -> 8P
 				// this will matter later when the data ends up in GS memory in the wrong format
-				if (t->m_32_bits_fmt)
+				// Be careful to avoid 24 bit textures which are technically 32bit, as you could lose alpha (8H) data.
+				if (t->m_32_bits_fmt && t->m_TEX0.PSM > PSM_PSMCT24)
 					t->m_TEX0.PSM = PSM_PSMCT32;
 
 				if (GSTextureCache::m_disable_partial_invalidation)
