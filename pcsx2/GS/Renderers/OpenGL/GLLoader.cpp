@@ -160,13 +160,6 @@ namespace GLLoader
 	// DX11 GPU
 	bool found_GL_ARB_gpu_shader5 = false;             // Require IvyBridge
 	bool found_GL_ARB_shader_image_load_store = false; // Intel IB. Nvidia/AMD miss Mesa implementation.
-	bool found_GL_ARB_shader_storage_buffer_object = false;
-	bool found_GL_ARB_compute_shader = false;
-	bool found_GL_ARB_texture_view = false; // maybe older gpu can support it ?
-
-	// Mandatory in the future
-	bool found_GL_ARB_multi_bind = false;
-	bool found_GL_ARB_vertex_attrib_binding = false;
 
 	// In case sparse2 isn't supported
 	bool found_compatible_GL_ARB_sparse_texture2 = false;
@@ -310,14 +303,8 @@ namespace GLLoader
 			found_GL_ARB_gpu_shader5 = optional("GL_ARB_gpu_shader5");
 			// GL4.2
 			found_GL_ARB_shader_image_load_store = optional("GL_ARB_shader_image_load_store");
-			// GL4.3
-			found_GL_ARB_compute_shader = optional("GL_ARB_compute_shader");
-			found_GL_ARB_shader_storage_buffer_object = optional("GL_ARB_shader_storage_buffer_object");
-			found_GL_ARB_texture_view = optional("GL_ARB_texture_view");
-			found_GL_ARB_vertex_attrib_binding = optional("GL_ARB_vertex_attrib_binding");
 			// GL4.4
 			found_GL_ARB_clear_texture = optional("GL_ARB_clear_texture");
-			found_GL_ARB_multi_bind = optional("GL_ARB_multi_bind");
 			// GL4.5
 			optional("GL_ARB_direct_state_access");
 			// Mandatory for the advance HW renderer effect. Unfortunately Mesa LLVMPIPE/SWR renderers doesn't support this extension.
