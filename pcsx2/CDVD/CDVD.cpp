@@ -1296,7 +1296,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 	if (delta && cdvd.nCommand != N_CD_SEEK)
 	{
 		int rotationalLatency = cdvdRotationalLatency((CDVD_MODE_TYPE)cdvdIsDVD());
-		DevCon.Warning("%s rotational latency at sector %d is %d cycles", (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? "CAV" : "CLV", cdvd.SeekToSector, rotationalLatency);
+		//DevCon.Warning("%s rotational latency at sector %d is %d cycles", (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? "CAV" : "CLV", cdvd.SeekToSector, rotationalLatency);
 		seektime += rotationalLatency + cdvd.ReadTime;
 		CDVDSECTORREADY_INT(seektime);
 		seektime += (cdvd.BlockSize / 4);
