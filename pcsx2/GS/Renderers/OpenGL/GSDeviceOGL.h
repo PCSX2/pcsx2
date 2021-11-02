@@ -593,9 +593,9 @@ public:
 	void Flip() override;
 	void SetVSync(int vsync) override;
 
-	void DrawPrimitive() final;
-	void DrawIndexedPrimitive() final;
-	void DrawIndexedPrimitive(int offset, int count) final;
+	void DrawPrimitive();
+	void DrawIndexedPrimitive();
+	void DrawIndexedPrimitive(int offset, int count);
 
 	void ClearRenderTarget(GSTexture* t, const GSVector4& c) final;
 	void ClearRenderTarget(GSTexture* t, u32 c) final;
@@ -623,13 +623,13 @@ public:
 	void IASetVertexBuffer(const void* vertices, size_t count);
 	void IASetIndexBuffer(const void* index, size_t count);
 
-	void PSSetShaderResource(int i, GSTexture* sr) final;
-	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1) final;
+	void PSSetShaderResource(int i, GSTexture* sr);
+	void PSSetShaderResources(GSTexture* sr0, GSTexture* sr1);
 	void PSSetSamplerState(GLuint ss);
 
 	void OMSetDepthStencilState(GSDepthStencilOGL* dss);
 	void OMSetBlendState(u8 blend_index = 0, u8 blend_factor = 0, bool is_blend_constant = false, bool accumulation_blend = false, bool blend_mix = false);
-	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL) final;
+	void OMSetRenderTargets(GSTexture* rt, GSTexture* ds, const GSVector4i* scissor = NULL);
 	void OMSetColorMaskState(OMColorMaskSelector sel = OMColorMaskSelector());
 
 	bool HasColorSparse() final { return GLLoader::found_compatible_GL_ARB_sparse_texture2; }
