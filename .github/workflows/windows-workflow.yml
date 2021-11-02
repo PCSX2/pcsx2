@@ -171,7 +171,7 @@ jobs:
 
       # ---- Release / Tagging related steps ----
       - name: Prepare Build Artifacts
-        if: startsWith(github.ref, 'refs/tags/') && matrix.configuration != 'CMake'
+        if: github.repository == 'PCSX2/pcsx2' && startsWith(github.ref, 'refs/tags/') && matrix.configuration != 'CMake'
         run: |
           mkdir -p ./ci-artifacts/
           7z a ./ci-artifacts/windows-${{ steps.artifact-metadata.outputs.arch }}-${{ steps.artifact-metadata.outputs.simd }}.7z ./bin/* '-xr!*bsc' '-xr!*.exp' '-xr!*.ilk' '-xr!*.iobj' '-xr!*.ipdb' '-xr!*.pdb' '-xr!*.lib'
@@ -179,7 +179,7 @@ jobs:
           ls ./ci-artifacts/
 
       - name: Upload Assets and Potential Publish Release
-        if: startsWith(github.ref, 'refs/tags/') && matrix.configuration != 'CMake'
+        if: github.repository == 'PCSX2/pcsx2' && startsWith(github.ref, 'refs/tags/') && matrix.configuration != 'CMake'
         env:
           GITHUB_TOKEN: ${{ secrets.BOT_PAT }}
           ASSET_DIR: ${{ github.WORKSPACE }}/ci-artifacts
