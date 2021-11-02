@@ -6,6 +6,7 @@ on:
 
 jobs:
   announce:
+    if: github.repository == 'PCSX2/pcsx2'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2

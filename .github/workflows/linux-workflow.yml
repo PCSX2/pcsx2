@@ -189,13 +189,13 @@ jobs:
 
       # ---- Release / Tagging related steps ----
       - name: Prepare Build Artifacts
-        if: startsWith(github.ref, 'refs/tags/') && matrix.appimage == true
+        if: github.repository == 'PCSX2/pcsx2' && startsWith(github.ref, 'refs/tags/') && matrix.appimage == true
         run: |
           mv ./ci-artifacts/*.AppImage ./ci-artifacts/linux-AppImage-${{ steps.artifact-metadata.outputs.arch }}.AppImage
           ls ./ci-artifacts/
 
       - name: Upload Assets and Potential Publish Release
-        if: startsWith(github.ref, 'refs/tags/') && matrix.appimage == true
+        if: github.repository == 'PCSX2/pcsx2' && startsWith(github.ref, 'refs/tags/') && matrix.appimage == true
         env:
           GITHUB_TOKEN: ${{ secrets.BOT_PAT }}
           ASSET_DIR: ${{ github.WORKSPACE }}/ci-artifacts
