@@ -31,7 +31,7 @@ bool GSDeviceNull::Reset(int w, int h)
 	return GSDevice::Reset(w, h);
 }
 
-GSTexture* GSDeviceNull::CreateSurface(GSTexture::Type type, int w, int h, int format)
+GSTexture* GSDeviceNull::CreateSurface(GSTexture::Type type, int w, int h, GSTexture::Format format)
 {
 	return new GSTextureNull(type, w, h, format);
 }

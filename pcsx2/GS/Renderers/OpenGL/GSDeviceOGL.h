@@ -559,8 +559,8 @@ private:
 
 	std::unique_ptr<GSTexture> m_font;
 
-	GSTexture* CreateSurface(GSTexture::Type type, int w, int h, int format) final;
-	GSTexture* FetchSurface(GSTexture::Type type, int w, int h, int format) final;
+	GSTexture* CreateSurface(GSTexture::Type type, int w, int h, GSTexture::Format format) final;
+	GSTexture* FetchSurface(GSTexture::Type type, int w, int h, GSTexture::Format format) final;
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) final;
 	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0) final;
@@ -605,7 +605,7 @@ public:
 	void InitPrimDateTexture(GSTexture* rt, const GSVector4i& area);
 	void RecycleDateTexture();
 
-	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, ShaderConvert ps_shader = ShaderConvert::COPY) final;
+	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, GSTexture::Format format, ShaderConvert ps_shader = ShaderConvert::COPY) final;
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r) final;
 

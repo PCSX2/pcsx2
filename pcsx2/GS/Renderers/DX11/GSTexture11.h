@@ -34,7 +34,7 @@ class GSTexture11 : public GSTexture
 	int m_max_layer;
 
 public:
-	explicit GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture);
+	explicit GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, GSTexture::Format format);
 
 	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0);
 	bool Map(GSMap& m, const GSVector4i* r = NULL, int layer = 0);

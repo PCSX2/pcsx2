@@ -239,7 +239,7 @@ void GSDeviceOGL::GenerateProfilerData()
 	}
 }
 
-GSTexture* GSDeviceOGL::CreateSurface(GSTexture::Type type, int w, int h, int fmt)
+GSTexture* GSDeviceOGL::CreateSurface(GSTexture::Type type, int w, int h, GSTexture::Format fmt)
 {
 	GL_PUSH("Create surface");
 
@@ -272,11 +272,8 @@ GSTexture* GSDeviceOGL::CreateSurface(GSTexture::Type type, int w, int h, int fm
 	return t;
 }
 
-GSTexture* GSDeviceOGL::FetchSurface(GSTexture::Type type, int w, int h, int format)
+GSTexture* GSDeviceOGL::FetchSurface(GSTexture::Type type, int w, int h, GSTexture::Format format)
 {
-	if (format == 0)
-		format = (type == GSTexture::Type::DepthStencil || type == GSTexture::Type::SparseDepthStencil) ? GL_DEPTH32F_STENCIL8 : GL_RGBA8;
-
 	GSTexture* t = GSDevice::FetchSurface(type, w, h, format);
 
 
@@ -621,7 +618,7 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 	const GSVector2i tex_font = m_osd.get_texture_font_size();
 
 	m_font = std::unique_ptr<GSTexture>(
-		new GSTextureOGL(GSTexture::Type::Texture, tex_font.x, tex_font.y, GL_R8, m_fbo_read, false)
+		new GSTextureOGL(GSTexture::Type::Texture, tex_font.x, tex_font.y, GSTexture::Format::UNorm8, m_fbo_read, false)
 	);
 
 	// ****************************************************************
@@ -686,7 +683,7 @@ bool GSDeviceOGL::Reset(int w, int h)
 	// in the backbuffer
 	m_gl_context->ResizeSurface(w, h);
 	m_backbuffer = new GSTextureOGL(GSTexture::Type::Backbuffer, m_gl_context->GetSurfaceWidth(),
-		m_gl_context->GetSurfaceHeight(), 0, m_fbo_read, false);
+		m_gl_context->GetSurfaceHeight(), GSTexture::Format::Backbuffer, m_fbo_read, false);
 	return true;
 }
 
@@ -961,7 +958,7 @@ void GSDeviceOGL::InitPrimDateTexture(GSTexture* rt, const GSVector4i& area)
 
 	// Create a texture to avoid the useless clean@0
 	if (m_date.t == NULL)
-		m_date.t = CreateTexture(rtsize.x, rtsize.y, GL_R32I);
+		m_date.t = CreateTexture(rtsize.x, rtsize.y, GSTexture::Format::Int32);
 
 	// Clean with the max signed value
 	const int max_int = 0x7FFFFFFF;
@@ -1275,13 +1272,10 @@ void GSDeviceOGL::SelfShaderTest()
 }
 
 // blit a texture into an offscreen buffer
-GSTexture* GSDeviceOGL::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format, ShaderConvert ps_shader)
+GSTexture* GSDeviceOGL::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, GSTexture::Format format, ShaderConvert ps_shader)
 {
-	if (format == 0)
-		format = GL_RGBA8;
-
 	ASSERT(src);
-	ASSERT(format == GL_RGBA8 || format == GL_R16UI || format == GL_R32UI);
+	ASSERT(format == GSTexture::Format::Color || format == GSTexture::Format::UInt16 || format == GSTexture::Format::UInt32);
 
 	GSTexture* dst = CreateOffscreen(w, h, format);
 

@@ -17,7 +17,7 @@
 #include "GSTexture11.h"
 #include "GS/GSPng.h"
 
-GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture)
+GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture, GSTexture::Format format)
 	: m_texture(std::move(texture)), m_layer(0)
 {
 	ASSERT(m_texture);
@@ -39,7 +39,7 @@ GSTexture11::GSTexture11(wil::com_ptr_nothrow<ID3D11Texture2D> texture)
 	else if (m_desc.Usage == D3D11_USAGE_STAGING)
 		m_type = Type::Offscreen;
 
-	m_format = (int)m_desc.Format;
+	m_format = format;
 
 	m_max_layer = m_desc.MipLevels;
 }

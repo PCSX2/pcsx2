@@ -32,31 +32,31 @@ void GSTextureCache11::Read(Target* t, const GSVector4i& r)
 
 	const GIFRegTEX0& TEX0 = t->m_TEX0;
 
-	DXGI_FORMAT format;
+	GSTexture::Format format;
 	ShaderConvert ps_shader;
 	switch (TEX0.PSM)
 	{
 		case PSM_PSMCT32:
 		case PSM_PSMCT24:
-			format = DXGI_FORMAT_R8G8B8A8_UNORM;
+			format = GSTexture::Format::Color;
 			ps_shader = ShaderConvert::COPY;
 			break;
 
 		case PSM_PSMCT16:
 		case PSM_PSMCT16S:
-			format = DXGI_FORMAT_R16_UINT;
+			format = GSTexture::Format::UInt16;
 			ps_shader = ShaderConvert::RGBA8_TO_16_BITS;
 			break;
 
 		case PSM_PSMZ32:
 		case PSM_PSMZ24:
-			format = DXGI_FORMAT_R32_UINT;
+			format = GSTexture::Format::UInt32;
 			ps_shader = ShaderConvert::FLOAT32_TO_32_BITS;
 			break;
 
 		case PSM_PSMZ16:
 		case PSM_PSMZ16S:
-			format = DXGI_FORMAT_R16_UINT;
+			format = GSTexture::Format::UInt16;
 			ps_shader = ShaderConvert::FLOAT32_TO_32_BITS;
 			break;
 
@@ -115,7 +115,7 @@ void GSTextureCache11::Read(Source* t, const GSVector4i& r)
 
 	const GIFRegTEX0& TEX0 = t->m_TEX0;
 
-	if (GSTexture* offscreen = m_renderer->m_dev->CreateOffscreen(r.width(), r.height()))
+	if (GSTexture* offscreen = m_renderer->m_dev->CreateOffscreen(r.width(), r.height(), GSTexture::Format::Color))
 	{
 		m_renderer->m_dev->CopyRect(t->m_texture, offscreen, r);
 

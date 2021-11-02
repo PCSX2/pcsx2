@@ -371,7 +371,7 @@ PS_OUTPUT ps_main19(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
-	output.c = input.c * float4(1.0, 1.0, 1.0, sample_c(input.t).r);
+	output.c = input.c * float4(1.0, 1.0, 1.0, sample_c(input.t).a);
 
 	return output;
 }

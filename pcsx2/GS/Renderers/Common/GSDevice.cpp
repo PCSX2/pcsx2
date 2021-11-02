@@ -135,7 +135,7 @@ void GSDevice::Present(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect,
 	StretchRect(sTex, dTex, dRect, shader, m_linear_present);
 }
 
-GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int w, int h, int format)
+GSTexture* GSDevice::FetchSurface(GSTexture::Type type, int w, int h, GSTexture::Format format)
 {
 	const GSVector2i size(w, h);
 
@@ -223,34 +223,42 @@ void GSDevice::PurgePool()
 	}
 }
 
-GSTexture* GSDevice::CreateSparseRenderTarget(int w, int h, int format)
+GSTexture* GSDevice::CreateSparseRenderTarget(int w, int h, GSTexture::Format format)
 {
 	return FetchSurface(HasColorSparse() ? GSTexture::Type::SparseRenderTarget : GSTexture::Type::RenderTarget, w, h, format);
 }
 
-GSTexture* GSDevice::CreateSparseDepthStencil(int w, int h, int format)
+GSTexture* GSDevice::CreateSparseDepthStencil(int w, int h, GSTexture::Format format)
 {
 	return FetchSurface(HasDepthSparse() ? GSTexture::Type::SparseDepthStencil : GSTexture::Type::DepthStencil, w, h, format);
 }
 
-GSTexture* GSDevice::CreateRenderTarget(int w, int h, int format)
+GSTexture* GSDevice::CreateRenderTarget(int w, int h, GSTexture::Format format)
 {
 	return FetchSurface(GSTexture::Type::RenderTarget, w, h, format);
 }
 
-GSTexture* GSDevice::CreateDepthStencil(int w, int h, int format)
+GSTexture* GSDevice::CreateDepthStencil(int w, int h, GSTexture::Format format)
 {
 	return FetchSurface(GSTexture::Type::DepthStencil, w, h, format);
 }
 
-GSTexture* GSDevice::CreateTexture(int w, int h, int format)
+GSTexture* GSDevice::CreateTexture(int w, int h, GSTexture::Format format)
 {
 	return FetchSurface(GSTexture::Type::Texture, w, h, format);
 }
 
-GSTexture* GSDevice::CreateOffscreen(int w, int h, int format)
+GSTexture* GSDevice::CreateOffscreen(int w, int h, GSTexture::Format format)
 {
 	return FetchSurface(GSTexture::Type::Offscreen, w, h, format);
+}
+
+GSTexture::Format GSDevice::GetDefaultTextureFormat(GSTexture::Type type)
+{
+	if (type == GSTexture::Type::DepthStencil || type == GSTexture::Type::SparseDepthStencil)
+		return GSTexture::Format::DepthStencil;
+	else
+		return GSTexture::Format::Color;
 }
 
 void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
@@ -390,9 +398,10 @@ bool GSDevice::ResizeTexture(GSTexture** t, GSTexture::Type type, int w, int h)
 
 	if (t2 == NULL || t2->GetWidth() != w || t2->GetHeight() != h)
 	{
+		GSTexture::Format fmt = t2 ? t2->GetFormat() : GetDefaultTextureFormat(type);
 		delete t2;
 
-		t2 = FetchSurface(type, w, h, 0);
+		t2 = FetchSurface(type, w, h, fmt);
 
 		*t = t2;
 	}
