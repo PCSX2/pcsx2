@@ -28,31 +28,31 @@ void GSTextureCacheOGL::Read(Target* t, const GSVector4i& r)
 
 	const GIFRegTEX0& TEX0 = t->m_TEX0;
 
-	GLuint fmt;
+	GSTexture::Format fmt;
 	ShaderConvert ps_shader;
 	switch (TEX0.PSM)
 	{
 		case PSM_PSMCT32:
 		case PSM_PSMCT24:
-			fmt = GL_RGBA8;
+			fmt = GSTexture::Format::Color;
 			ps_shader = ShaderConvert::COPY;
 			break;
 
 		case PSM_PSMCT16:
 		case PSM_PSMCT16S:
-			fmt = GL_R16UI;
+			fmt = GSTexture::Format::UInt16;
 			ps_shader = ShaderConvert::RGBA8_TO_16_BITS;
 			break;
 
 		case PSM_PSMZ32:
 		case PSM_PSMZ24:
-			fmt = GL_R32UI;
+			fmt = GSTexture::Format::UInt32;
 			ps_shader = ShaderConvert::FLOAT32_TO_32_BITS;
 			break;
 
 		case PSM_PSMZ16:
 		case PSM_PSMZ16S:
-			fmt = GL_R16UI;
+			fmt = GSTexture::Format::UInt16;
 			ps_shader = ShaderConvert::FLOAT32_TO_32_BITS;
 			break;
 
@@ -116,7 +116,7 @@ void GSTextureCacheOGL::Read(Source* t, const GSVector4i& r)
 	// FIXME Create a get function to avoid the useless copy
 	// Note: With openGL 4.5 you can use glGetTextureSubImage
 
-	if (GSTexture* offscreen = m_renderer->m_dev->CreateOffscreen(r.width(), r.height()))
+	if (GSTexture* offscreen = m_renderer->m_dev->CreateOffscreen(r.width(), r.height(), GSTexture::Format::Color))
 	{
 		m_renderer->m_dev->CopyRect(t->m_texture, offscreen, r);
 

@@ -60,7 +60,7 @@ private:
 	u32 m_mem_usage;
 
 public:
-	explicit GSTextureOGL(Type type, int w, int h, int format, GLuint fbo_read, bool mipmap);
+	explicit GSTextureOGL(Type type, int w, int h, Format format, GLuint fbo_read, bool mipmap);
 	virtual ~GSTextureOGL();
 
 	bool Update(const GSVector4i& r, const void* data, int pitch, int layer = 0) final;

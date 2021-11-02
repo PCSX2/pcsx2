@@ -512,7 +512,7 @@ void GSRenderer::VSync(int field)
 		{
 			GSVector2i size = m_capture.GetSize();
 
-			if (GSTexture* offscreen = m_dev->CopyOffscreen(current, GSVector4(0, 0, 1, 1), size.x, size.y))
+			if (GSTexture* offscreen = m_dev->CopyOffscreen(current, GSVector4(0, 0, 1, 1), size.x, size.y, GSTexture::Format::Color))
 			{
 				GSTexture::GSMap m;
 

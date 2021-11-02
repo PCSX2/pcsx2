@@ -396,8 +396,8 @@ private:
 	int m_mipmap;
 	int m_d3d_texsize;
 
-	GSTexture* CreateSurface(GSTexture::Type type, int w, int h, int format) final;
-	GSTexture* FetchSurface(GSTexture::Type type, int w, int h, int format) final;
+	GSTexture* CreateSurface(GSTexture::Type type, int w, int h, GSTexture::Format format) final;
+	GSTexture* FetchSurface(GSTexture::Type type, int w, int h, GSTexture::Format format) final;
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) final;
 	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0) final;
@@ -542,7 +542,7 @@ public:
 	void ClearDepth(GSTexture* t) final;
 	void ClearStencil(GSTexture* t, u8 c) final;
 
-	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, ShaderConvert ps_shader = ShaderConvert::COPY) final;
+	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, GSTexture::Format format, ShaderConvert ps_shader = ShaderConvert::COPY) final;
 
 	void CloneTexture(GSTexture* src, GSTexture** dest);
 

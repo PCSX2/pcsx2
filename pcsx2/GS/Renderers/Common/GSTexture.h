@@ -38,13 +38,26 @@ public:
 		SparseDepthStencil,
 	};
 
+	enum class Format
+	{
+		Invalid = 0,  ///< Used for initialization
+		Backbuffer,   ///< For displaying to the screen
+		Color,        ///< Standard (RGBA8) color texture
+		FloatColor,   ///< Float-based color texture for colclip emulation (RGBA32F)
+		DepthStencil, ///< Depth stencil texture
+		UNorm8,       ///< A8UNorm texture for paletted textures and the OSD font
+		UInt16,       ///< UInt16 texture for reading back 16-bit depth
+		UInt32,       ///< UInt32 texture for reading back 24 and 32-bit depth
+		Int32,        ///< Int32 texture for date emulation
+	};
+
 protected:
 	GSVector2 m_scale;
 	GSVector2i m_size;
 	GSVector2i m_committed_size;
 	GSVector2i m_gpu_page_size;
 	Type m_type;
-	int m_format;
+	Format m_format;
 	bool m_sparse;
 
 public:
@@ -72,7 +85,7 @@ public:
 	GSVector2i GetSize() const { return m_size; }
 
 	Type GetType() const { return m_type; }
-	int GetFormat() const { return m_format; }
+	Format GetFormat() const { return m_format; }
 
 	virtual void CommitPages(const GSVector2i& region, bool commit) {}
 	void CommitRegion(const GSVector2i& region);

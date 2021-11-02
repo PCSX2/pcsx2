@@ -1301,7 +1301,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		int h = (int)(scale.y * th);
 
 		GSTexture* sTex = dst->m_texture;
-		GSTexture* dTex = m_renderer->m_dev->CreateRenderTarget(w, h);
+		GSTexture* dTex = m_renderer->m_dev->CreateRenderTarget(w, h, GSTexture::Format::Color);
 
 		GSVector4i area(x, y, x + w, y + h);
 		m_renderer->m_dev->CopyRect(sTex, dTex, area);
@@ -1333,7 +1333,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// So it could be tricky to put in the middle of the DrawPrims
 
 		// Texture is created to keep code compatibility
-		GSTexture* dTex = m_renderer->m_dev->CreateRenderTarget(tw, th);
+		GSTexture* dTex = m_renderer->m_dev->CreateRenderTarget(tw, th, GSTexture::Format::Color);
 
 		// Keep a trace of origin of the texture
 		src->m_texture = dTex;
@@ -1504,7 +1504,7 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 		// Don't be fooled by the name. 'dst' is the old target (hence the input)
 		// 'src' is the new texture cache entry (hence the output)
 		GSTexture* sTex = dst->m_texture;
-		GSTexture* dTex = m_renderer->m_dev->CreateRenderTarget(w, h);
+		GSTexture* dTex = m_renderer->m_dev->CreateRenderTarget(w, h, GSTexture::Format::Color);
 		src->m_texture = dTex;
 
 		// GH: by default (m_paltex == 0) GS converts texture to the 32 bit format
@@ -1609,12 +1609,12 @@ GSTextureCache::Source* GSTextureCache::CreateSource(const GIFRegTEX0& TEX0, con
 	{
 		if (m_paltex && psm.pal > 0)
 		{
-			src->m_texture = m_renderer->m_dev->CreateTexture(tw, th, Get8bitFormat());
+			src->m_texture = m_renderer->m_dev->CreateTexture(tw, th, GSTexture::Format::UNorm8);
 			AttachPaletteToSource(src, psm.pal, true);
 		}
 		else
 		{
-			src->m_texture = m_renderer->m_dev->CreateTexture(tw, th);
+			src->m_texture = m_renderer->m_dev->CreateTexture(tw, th, GSTexture::Format::Color);
 			if (psm.pal > 0)
 			{
 				AttachPaletteToSource(src, psm.pal, false);
@@ -1641,13 +1641,13 @@ GSTextureCache::Target* GSTextureCache::CreateTarget(const GIFRegTEX0& TEX0, int
 
 	if (type == RenderTarget)
 	{
-		t->m_texture = m_renderer->m_dev->CreateSparseRenderTarget(w, h);
+		t->m_texture = m_renderer->m_dev->CreateSparseRenderTarget(w, h, GSTexture::Format::Color);
 
 		t->m_used = true; // FIXME
 	}
 	else if (type == DepthStencil)
 	{
-		t->m_texture = m_renderer->m_dev->CreateSparseDepthStencil(w, h);
+		t->m_texture = m_renderer->m_dev->CreateSparseDepthStencil(w, h, GSTexture::Format::DepthStencil);
 	}
 
 	m_dst[type].push_front(t);
@@ -2067,7 +2067,7 @@ void GSTextureCache::Target::Update()
 	TEXA.TA0 = 0;
 	TEXA.TA1 = 0x80;
 
-	GSTexture* t = m_renderer->m_dev->CreateTexture(w, h);
+	GSTexture* t = m_renderer->m_dev->CreateTexture(w, h, GSTexture::Format::Color);
 
 	GSOffset off = m_renderer->m_mem.GetOffset(m_TEX0.TBP0, m_TEX0.TBW, m_TEX0.PSM);
 
@@ -2227,7 +2227,7 @@ void GSTextureCache::Palette::InitializeTexture()
 		// sampling such texture are always normalized by 255.
 		// This is because indexes are stored as normalized values of an RGBA texture (e.g. index 15 will be read as (15/255),
 		// and therefore will read texel 15/255 * texture size).
-		m_tex_palette = m_renderer->m_dev->CreateTexture(256, 1);
+		m_tex_palette = m_renderer->m_dev->CreateTexture(256, 1, GSTexture::Format::Color);
 		m_tex_palette->Update(GSVector4i(0, 0, m_pal, 1), m_clut, m_pal * sizeof(m_clut[0]));
 	}
 }

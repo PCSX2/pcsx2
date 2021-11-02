@@ -418,7 +418,7 @@ bool GSDevice11::Create(const WindowInfo& wi)
 	const GSVector2i tex_font = m_osd.get_texture_font_size();
 
 	m_font = std::unique_ptr<GSTexture>(
-		CreateSurface(GSTexture::Type::Texture, tex_font.x, tex_font.y, DXGI_FORMAT_R8_UNORM));
+		CreateSurface(GSTexture::Type::Texture, tex_font.x, tex_font.y, GSTexture::Format::UNorm8));
 
 	return true;
 }
@@ -443,7 +443,7 @@ bool GSDevice11::Reset(int w, int h)
 			return false;
 		}
 
-		m_backbuffer = new GSTexture11(std::move(backbuffer));
+		m_backbuffer = new GSTexture11(std::move(backbuffer), GSTexture::Format::Backbuffer);
 	}
 
 	return true;
@@ -562,16 +562,32 @@ void GSDevice11::ClearStencil(GSTexture* t, u8 c)
 	m_ctx->ClearDepthStencilView(*(GSTexture11*)t, D3D11_CLEAR_STENCIL, 0, c);
 }
 
-GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int w, int h, int format)
+GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int w, int h, GSTexture::Format format)
 {
 	D3D11_TEXTURE2D_DESC desc;
 
 	memset(&desc, 0, sizeof(desc));
 
+	DXGI_FORMAT dxformat;
+	switch (format)
+	{
+		case GSTexture::Format::Color:        dxformat = DXGI_FORMAT_R8G8B8A8_UNORM;     break;
+		case GSTexture::Format::FloatColor:   dxformat = DXGI_FORMAT_R32G32B32A32_FLOAT; break;
+		case GSTexture::Format::DepthStencil: dxformat = DXGI_FORMAT_R32G8X24_TYPELESS;  break;
+		case GSTexture::Format::UNorm8:       dxformat = DXGI_FORMAT_A8_UNORM;           break;
+		case GSTexture::Format::UInt16:       dxformat = DXGI_FORMAT_R16_UINT;           break;
+		case GSTexture::Format::UInt32:       dxformat = DXGI_FORMAT_R32_UINT;           break;
+		case GSTexture::Format::Int32:        dxformat = DXGI_FORMAT_R32_SINT;           break;
+		case GSTexture::Format::Invalid:
+		case GSTexture::Format::Backbuffer:
+			ASSERT(0);
+			dxformat = DXGI_FORMAT_UNKNOWN;
+	}
+
 	// Texture limit for D3D10/11 min 1, max 8192 D3D10, max 16384 D3D11.
 	desc.Width = std::max(1, std::min(w, m_d3d_texsize));
 	desc.Height = std::max(1, std::min(h, m_d3d_texsize));
-	desc.Format = (DXGI_FORMAT)format;
+	desc.Format = dxformat;
 	desc.MipLevels = 1;
 	desc.ArraySize = 1;
 	desc.SampleDesc.Count = 1;
@@ -580,7 +596,7 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int w, int h, int for
 
 	// mipmap = m_mipmap > 1 || m_filter != TriFiltering::None;
 	const bool mipmap = m_mipmap > 1;
-	const int layers = mipmap && format == DXGI_FORMAT_R8G8B8A8_UNORM ? (int)log2(std::max(w, h)) : 1;
+	const int layers = mipmap && format == GSTexture::Format::Color ? (int)log2(std::max(w, h)) : 1;
 
 	switch (type)
 	{
@@ -607,7 +623,7 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int w, int h, int for
 
 	if (SUCCEEDED(hr))
 	{
-		t = new GSTexture11(std::move(texture));
+		t = new GSTexture11(std::move(texture), format);
 
 		switch (type)
 		{
@@ -627,24 +643,16 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int w, int h, int for
 	return t;
 }
 
-GSTexture* GSDevice11::FetchSurface(GSTexture::Type type, int w, int h, int format)
+GSTexture* GSDevice11::FetchSurface(GSTexture::Type type, int w, int h, GSTexture::Format format)
 {
-	if (format == 0)
-		format = (type == GSTexture::Type::DepthStencil || type == GSTexture::Type::SparseDepthStencil) ? DXGI_FORMAT_R32G8X24_TYPELESS : DXGI_FORMAT_R8G8B8A8_UNORM;
-
 	return __super::FetchSurface(type, w, h, format);
 }
 
-GSTexture* GSDevice11::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format, ShaderConvert ps_shader)
+GSTexture* GSDevice11::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, GSTexture::Format format, ShaderConvert ps_shader)
 {
 	GSTexture* dst = NULL;
 
-	if (format == 0)
-	{
-		format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	}
-
-	ASSERT(format == DXGI_FORMAT_R8G8B8A8_UNORM || format == DXGI_FORMAT_R16_UINT || format == DXGI_FORMAT_R32_UINT);
+	ASSERT(format == GSTexture::Format::Color || format == GSTexture::Format::UInt16 || format == GSTexture::Format::UInt32);
 
 	if (GSTexture* rt = CreateRenderTarget(w, h, format))
 	{

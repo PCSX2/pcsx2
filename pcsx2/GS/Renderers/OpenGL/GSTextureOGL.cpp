@@ -161,7 +161,7 @@ namespace PboPool
 	}
 } // namespace PboPool
 
-GSTextureOGL::GSTextureOGL(Type type, int w, int h, int format, GLuint fbo_read, bool mipmap)
+GSTextureOGL::GSTextureOGL(Type type, int w, int h, Format format, GLuint fbo_read, bool mipmap)
 	: m_clean(false), m_generate_mipmap(true), m_local_buffer(nullptr), m_r_x(0), m_r_y(0), m_r_w(0), m_r_h(0), m_layer(0)
 {
 	// OpenGL didn't like dimensions of size 0
@@ -173,77 +173,71 @@ GSTextureOGL::GSTextureOGL(Type type, int w, int h, int format, GLuint fbo_read,
 	m_texture_id = 0;
 	m_sparse = false;
 	m_max_layer = 1;
+	int gl_fmt = 0;
 
 	// Bunch of constant parameter
 	switch (m_format)
 	{
-			// 1 Channel integer
-		case GL_R32UI:
-		case GL_R32I:
+		// 1 Channel integer
+		case Format::Int32:
+			gl_fmt          = GL_R32I;
 			m_int_format    = GL_RED_INTEGER;
-			m_int_type      = (m_format == GL_R32UI) ? GL_UNSIGNED_INT : GL_INT;
+			m_int_type      = GL_INT;
 			m_int_shift     = 2;
 			break;
-		case GL_R16UI:
+		case Format::UInt32:
+			gl_fmt          = GL_R32UI;
+			m_int_format    = GL_RED_INTEGER;
+			m_int_type      = GL_UNSIGNED_INT;
+			m_int_shift     = 2;
+			break;
+		case Format::UInt16:
+			gl_fmt          = GL_R16UI;
 			m_int_format    = GL_RED_INTEGER;
 			m_int_type      = GL_UNSIGNED_SHORT;
 			m_int_shift     = 1;
 			break;
 
-			// 1 Channel normalized
-		case GL_R8:
+		// 1 Channel normalized
+		case Format::UNorm8:
+			gl_fmt          = GL_R8;
 			m_int_format    = GL_RED;
 			m_int_type      = GL_UNSIGNED_BYTE;
 			m_int_shift     = 0;
 			break;
 
-			// 4 channel normalized
-		case GL_RGBA16:
-			m_int_format    = GL_RGBA;
-			m_int_type      = GL_UNSIGNED_SHORT;
-			m_int_shift     = 3;
-			break;
-		case GL_RGBA8:
+		// 4 channel normalized
+		case Format::Color:
+			gl_fmt          = GL_RGBA8;
 			m_int_format    = GL_RGBA;
 			m_int_type      = GL_UNSIGNED_BYTE;
 			m_int_shift     = 2;
 			break;
 
-			// 4 channel integer
-		case GL_RGBA16I:
-		case GL_RGBA16UI:
-			m_int_format    = GL_RGBA_INTEGER;
-			m_int_type      = (m_format == GL_R16UI) ? GL_UNSIGNED_SHORT : GL_SHORT;
-			m_int_shift     = 3;
-			break;
-
-			// 4 channel float
-		case GL_RGBA32F:
+		// 4 channel float
+		case Format::FloatColor:
+			gl_fmt          = GL_RGBA32F;
 			m_int_format    = GL_RGBA;
 			m_int_type      = GL_FLOAT;
 			m_int_shift     = 4;
 			break;
-		case GL_RGBA16F:
-			m_int_format    = GL_RGBA;
-			m_int_type      = GL_HALF_FLOAT;
-			m_int_shift     = 3;
-			break;
 
-			// Depth buffer
-		case GL_DEPTH32F_STENCIL8:
+		// Depth buffer
+		case Format::DepthStencil:
+			gl_fmt          = GL_DEPTH32F_STENCIL8;
 			m_int_format    = GL_DEPTH_STENCIL;
 			m_int_type      = GL_FLOAT_32_UNSIGNED_INT_24_8_REV;
 			m_int_shift     = 3; // 4 bytes for depth + 4 bytes for stencil by texels
 			break;
 
-			// Backbuffer
-		case 0:
+		// Backbuffer
+		case Format::Backbuffer:
 			m_int_format    = 0;
 			m_int_type      = 0;
 			m_int_shift     = 2; // 4 bytes by texels
 			break;
 
-		default:
+		case Format::Invalid:
 			m_int_format    = 0;
 			m_int_type      = 0;
 			m_int_shift     = 0;
@@ -260,7 +254,7 @@ GSTextureOGL::GSTextureOGL(Type type, int w, int h, int format, GLuint fbo_read,
 			break;
 		case Type::Texture:
 			// Only 32 bits input texture will be supported for mipmap
-			m_max_layer = mipmap && m_format == GL_RGBA8 ? (int)log2(std::max(w, h)) : 1;
+			m_max_layer = mipmap && m_format == Format::Color ? (int)log2(std::max(w, h)) : 1;
 			break;
 		case Type::SparseRenderTarget:
 		case Type::SparseDepthStencil:
@@ -272,41 +266,37 @@ GSTextureOGL::GSTextureOGL(Type type, int w, int h, int format, GLuint fbo_read,
 
 	switch (m_format)
 	{
-		case GL_R16UI:
-		case GL_R8:
+		case Format::UInt16:
+		case Format::UNorm8:
 			m_sparse &= GLLoader::found_compatible_GL_ARB_sparse_texture2;
 			SetGpuPageSize(GSVector2i(255, 255));
 			break;
 
-		case GL_R32UI:
-		case GL_R32I:
-		case GL_RGBA16:
-		case GL_RGBA8:
-		case GL_RGBA16I:
-		case GL_RGBA16UI:
-		case GL_RGBA16F:
-		case 0:
+		case Format::Color:
+		case Format::UInt32:
+		case Format::Int32:
+		case Format::Backbuffer:
 			m_sparse &= GLLoader::found_compatible_GL_ARB_sparse_texture2;
 			SetGpuPageSize(GSVector2i(127, 127));
 			break;
 
-		case GL_RGBA32F:
+		case Format::FloatColor:
 			m_sparse &= GLLoader::found_compatible_GL_ARB_sparse_texture2;
 			SetGpuPageSize(GSVector2i(63, 63));
 			break;
 
-		case GL_DEPTH32F_STENCIL8:
+		case Format::DepthStencil:
 			m_sparse &= GLLoader::found_compatible_sparse_depth;
 			SetGpuPageSize(GSVector2i(127, 127));
 			break;
 
-		default:
+		case Format::Invalid:
 			ASSERT(0);
 	}
 
 	// Create a gl object (texture isn't allocated here)
 	glCreateTextures(GL_TEXTURE_2D, 1, &m_texture_id);
-	if (m_format == GL_R8)
+	if (m_format == Format::UNorm8)
 	{
 		// Emulate DX behavior, beside it avoid special code in shader to differentiate
 		// palette texture from a GL_RGBA target or a GL_R texture.
@@ -341,7 +331,7 @@ GSTextureOGL::GSTextureOGL(Type type, int w, int h, int format, GLuint fbo_read,
 		throw std::bad_alloc();
 	}
 
-	glTextureStorage2D(m_texture_id, m_max_layer + GL_TEX_LEVEL_0, m_format, m_size.x, m_size.y);
+	glTextureStorage2D(m_texture_id, m_max_layer + GL_TEX_LEVEL_0, gl_fmt, m_size.x, m_size.y);
 }
 
 GSTextureOGL::~GSTextureOGL()
@@ -610,7 +600,7 @@ bool GSTextureOGL::Save(const std::string& fn)
 
 		fmt = GSPng::RGB_A_PNG;
 	}
-	else if (m_format == GL_R32I)
+	else if (m_format == Format::Int32)
 	{
 		// Note: 4.5 function used for accurate DATE
 		// barely used outside of dev and not sparse anyway
@@ -624,16 +614,16 @@ bool GSTextureOGL::Save(const std::string& fn)
 
 		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
 
-		if (m_format == GL_RGBA8)
+		if (m_format == Format::Color)
 		{
 			glReadPixels(0, 0, m_committed_size.x, m_committed_size.y, GL_RGBA, GL_UNSIGNED_BYTE, image.get());
 		}
-		else if (m_format == GL_R16UI)
+		else if (m_format == Format::UInt16)
 		{
 			glReadPixels(0, 0, m_committed_size.x, m_committed_size.y, GL_RED_INTEGER, GL_UNSIGNED_SHORT, image.get());
 			fmt = GSPng::R16I_PNG;
 		}
-		else if (m_format == GL_R8)
+		else if (m_format == Format::UNorm8)
 		{
 			fmt = GSPng::R8I_PNG;
 			glReadPixels(0, 0, m_committed_size.x, m_committed_size.y, GL_RED, GL_UNSIGNED_BYTE, image.get());

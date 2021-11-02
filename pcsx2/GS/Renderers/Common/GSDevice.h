@@ -175,8 +175,8 @@ protected:
 	unsigned int m_frame; // for ageing the pool
 	bool m_linear_present;
 
-	virtual GSTexture* CreateSurface(GSTexture::Type type, int w, int h, int format) = 0;
-	virtual GSTexture* FetchSurface(GSTexture::Type type, int w, int h, int format);
+	virtual GSTexture* CreateSurface(GSTexture::Type type, int w, int h, GSTexture::Format format) = 0;
+	virtual GSTexture* FetchSurface(GSTexture::Type type, int w, int h, GSTexture::Format format);
 
 	virtual void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) = 0;
 	virtual void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset) = 0;
@@ -220,14 +220,15 @@ public:
 	virtual void ClearDepth(GSTexture* t) {}
 	virtual void ClearStencil(GSTexture* t, u8 c) {}
 
-	GSTexture* CreateSparseRenderTarget(int w, int h, int format = 0);
-	GSTexture* CreateSparseDepthStencil(int w, int h, int format = 0);
-	GSTexture* CreateRenderTarget(int w, int h, int format = 0);
-	GSTexture* CreateDepthStencil(int w, int h, int format = 0);
-	GSTexture* CreateTexture(int w, int h, int format = 0);
-	GSTexture* CreateOffscreen(int w, int h, int format = 0);
+	GSTexture* CreateSparseRenderTarget(int w, int h, GSTexture::Format format);
+	GSTexture* CreateSparseDepthStencil(int w, int h, GSTexture::Format format);
+	GSTexture* CreateRenderTarget(int w, int h, GSTexture::Format format);
+	GSTexture* CreateDepthStencil(int w, int h, GSTexture::Format format);
+	GSTexture* CreateTexture(int w, int h, GSTexture::Format format);
+	GSTexture* CreateOffscreen(int w, int h, GSTexture::Format format);
+	GSTexture::Format GetDefaultTextureFormat(GSTexture::Type type);
 
-	virtual GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, int format = 0, ShaderConvert ps_shader = ShaderConvert::COPY) { return NULL; }
+	virtual GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, GSTexture::Format format, ShaderConvert ps_shader = ShaderConvert::COPY) { return NULL; }
 
 	virtual void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r) {}
 	virtual void StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader = ShaderConvert::COPY, bool linear = true) {}
