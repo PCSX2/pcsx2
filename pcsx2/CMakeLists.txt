@@ -962,6 +962,7 @@ set(pcsx2GuiSources
 	gui/Debugger/CtrlDisassemblyView.cpp
 	gui/Debugger/CtrlRegisterList.cpp
 	gui/Debugger/CtrlMemView.cpp
+	gui/Debugger/CtrlMemSearch.cpp
 	gui/Debugger/DebuggerLists.cpp
 	gui/Debugger/DisassemblyDialog.cpp
 	gui/Debugger/DebugEvents.cpp
@@ -1021,6 +1022,7 @@ set(pcsx2GuiHeaders
 	gui/Debugger/BreakpointWindow.h
 	gui/Debugger/CtrlDisassemblyView.h
 	gui/Debugger/CtrlMemView.h
+	gui/Debugger/CtrlMemSearch.h
 	gui/Debugger/CtrlRegisterList.h
 	gui/Debugger/DebugEvents.h
 	gui/Debugger/DebuggerLists.h
@@ -1230,7 +1232,8 @@ set(pcsx2UtilitiesSources
 
 # Utilities headers
 set(pcsx2UtilitiesHeaders
-	Utilities/AsciiFile.h)
+	Utilities/AsciiFile.h
+	Utilities/BitCast.h)
 
 
 # Windows sources

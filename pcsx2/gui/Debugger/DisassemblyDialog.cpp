@@ -90,7 +90,10 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 	disassembly = new CtrlDisassemblyView(this, cpu);
 	registerList = new CtrlRegisterList(leftTabs, cpu);
 	functionList = new wxListBox(leftTabs, wxID_ANY, wxDefaultPosition, wxDefaultSize, 0, NULL, wxBORDER_NONE | wxLB_SORT);
-	memory = new CtrlMemView(bottomTabs, cpu);
+
+	wxPanel* memoryPanel = new wxPanel(bottomTabs);
+	memory = new CtrlMemView(memoryPanel, cpu);
+	memorySearch = new CtrlMemSearch(memoryPanel, cpu);
 
 	// create register list and disassembly section
 	wxBoxSizer* middleSizer = new wxBoxSizer(wxHORIZONTAL);
@@ -110,8 +113,17 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 	middleSizer->Add(disassembly, 2, wxEXPAND);
 	mainSizer->Add(middleSizer, 3, wxEXPAND | wxBOTTOM, 3);
 
+	wxBoxSizer *memorySizer = new wxBoxSizer(wxHORIZONTAL);
+	memorySizer->Add(memory, 1, wxEXPAND);
+
+	// Unfortuneately hacky, probably cause I'm bad at wxWidgets
+	// A max width of 360 ensures that the memory view will never be blocked by the memory search
+	memorySearch->SetMaxSize(wxSize(360, -1));
+	memorySizer->Add(memorySearch, 1, wxEXPAND);
+	memoryPanel->SetSizer(memorySizer);
+
 	// create bottom section
-	bottomTabs->AddPage(memory, L"Memory");
+	bottomTabs->AddPage(memoryPanel, L"Memory");
 
 	breakpointList = new BreakpointList(bottomTabs, cpu, disassembly);
 	bottomTabs->AddPage(breakpointList, L"Breakpoints");
