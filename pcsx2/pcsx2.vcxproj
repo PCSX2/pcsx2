@@ -309,6 +309,7 @@
     <ClCompile Include="gui\Debugger\BreakpointWindow.cpp" />
     <ClCompile Include="gui\Debugger\CtrlDisassemblyView.cpp" />
     <ClCompile Include="gui\Debugger\CtrlMemView.cpp" />
+    <ClCompile Include="gui\Debugger\CtrlMemSearch.cpp" />
     <ClCompile Include="gui\Debugger\CtrlRegisterList.cpp" />
     <ClCompile Include="gui\Debugger\DebugEvents.cpp" />
     <ClCompile Include="gui\Debugger\DebuggerLists.cpp" />
@@ -752,6 +753,7 @@
     <ClInclude Include="gui\Debugger\BreakpointWindow.h" />
     <ClInclude Include="gui\Debugger\CtrlDisassemblyView.h" />
     <ClInclude Include="gui\Debugger\CtrlMemView.h" />
+    <ClInclude Include="gui\Debugger\CtrlMemSearch.h" />
     <ClInclude Include="gui\Debugger\CtrlRegisterList.h" />
     <ClInclude Include="gui\Debugger\DebugEvents.h" />
     <ClInclude Include="gui\Debugger\DebuggerLists.h" />
