@@ -579,6 +579,23 @@ void MainEmuFrame::Menu_IsoClear_Click(wxCommandEvent& event)
 	}
 }
 
+void MainEmuFrame::Menu_IsoClearMissing_Click(wxCommandEvent& event)
+{
+	wxDialogWithHelpers dialog(this, _("Confirm clearing ISO list"));
+	dialog += dialog.Heading(_("This will remove all missing ISO files from the list. If an ISO is running it will remain in the list. Continue?"));
+
+	bool confirmed = pxIssueConfirmation(dialog, MsgButtons().YesNo()) == wxID_YES;
+
+	if (confirmed)
+	{
+		// If the CDVD mode is not ISO, or the system isn't running, wipe the CurrentIso field in INI file
+		if (g_Conf->CdvdSource != CDVD_SourceType::Iso || !SysHasValidState())
+			SysUpdateIsoSrcFile("");
+		wxGetApp().GetRecentIsoManager().ClearMissing();
+		AppSaveSettings();
+	}
+}
+
 void MainEmuFrame::Menu_Ask_On_Boot_Click(wxCommandEvent& event)
 {
 	g_Conf->AskOnBoot = event.IsChecked();

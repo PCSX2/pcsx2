@@ -49,6 +49,7 @@ protected:
 	wxMenuItem* m_Separator;
 	wxMenuItem* m_ClearSeparator;
 	wxMenuItem* m_Clear;
+	wxMenuItem* m_Prune;
 
 public:
 	RecentIsoManager( wxMenu* menu , int firstIdForMenuItems_or_wxID_ANY );
@@ -58,6 +59,7 @@ public:
 	void EnableItems(bool display);
 	void Repopulate();
 	void Clear();
+	void ClearMissing();
 	void Add( const wxString& src );
 
 protected:
