@@ -1,0 +1,29 @@
+name: 🏭 Update Controller Database
+
+on:
+  schedule:
+    - cron: "0 16 * * 1" # every monday @ 12pm EST - https://crontab.guru/#0_16_*_*_1
+
+jobs:
+  update-controller-db:
+    if: github.repository == 'PCSX2/pcsx2'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Get Latest DB and Prepare DB File
+        run: |
+          cd .github/workflows/scripts/controller-db/
+          wget -O game_controller_db.txt https://raw.githubusercontent.com/gabomdq/SDL_GameControllerDB/master/gamecontrollerdb.txt
+          python ./update-db.py
+          mv ./game_controller_db.txt ${{github.workspace}}/pcsx2/PAD/Linux/res/game_controller_db.txt
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v3
+        with:
+          title: "pad-linux: Update to latest controller database"
+          commit-message: "pad-linux: Update to latest controller database."
+          committer: "PCSX2 Bot <PCSX2Bot@users.noreply.github.com>"
+          author: "PCSX2 Bot <PCSX2Bot@users.noreply.github.com>"
+          body: "Weekly automatic update of SDL Controller DB for Linux / Mac OS"
+          reviewers: lightningterror
