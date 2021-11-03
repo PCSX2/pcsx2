@@ -11,9 +11,21 @@ for (var i = 0; i < assets.length; i++) {
     continue;
   }
   if (asset.name.includes("windows")) {
-    windowsAssetLinks += `- [${asset.name}](${asset.browser_download_url})\n`
+    let friendlyName = asset.name;
+    try {
+      friendlyName = asset.name.split("windows-")[1].split(".7z")[0].replace("-", " ");
+    } catch (e) {
+      console.log(e);
+    }
+    windowsAssetLinks += `- [${friendlyName}](${asset.browser_download_url})\n`
   } else if (asset.name.includes("linux")) {
-    linuxAssetLinks += `- [${asset.name}](${asset.browser_download_url})\n`
+    let friendlyName = asset.name;
+    try {
+      friendlyName = asset.name.split("linux-")[1].split(".AppImage")[0].replace("-", " ");
+    } catch (e) {
+      console.log(e);
+    }
+    linuxAssetLinks += `- [${friendlyName}](${asset.browser_download_url})\n`
   }
 }
 
@@ -24,7 +36,8 @@ const embed = new MessageEmbed()
   .addFields(
     { name: 'Version', value: github.context.payload.release.tag_name, inline: true },
     { name: 'Release Link', value: `[Github Release](${github.context.payload.release.html_url})`, inline: true },
-    { name: 'Installation Steps', value: '[See Here](https://github.com/PCSX2/pcsx2/wiki/Nightly-Build-Usage-Guide)', inline: true }
+    { name: 'Installation Steps', value: '[See Here](https://github.com/PCSX2/pcsx2/wiki/Nightly-Build-Usage-Guide)', inline: true },
+    { name: 'Included Changes', value: github.context.payload.release.body, inline: false }
   );
 
 if (windowsAssetLinks != "") {
