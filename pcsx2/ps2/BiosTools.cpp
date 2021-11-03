@@ -30,20 +30,16 @@
 // romdir structure (packing required!)
 // --------------------------------------------------------------------------------------
 //
-#if defined(_MSC_VER)
-#	pragma pack(1)
-#endif
+#pragma pack(push, 1)
 
 struct romdir
 {
 	char fileName[10];
 	u16 extInfoSize;
 	u32 fileSize;
-} __packed;			// +16
+};
 
-#ifdef _MSC_VER
-#	pragma pack()
-#endif
+#pragma pack(pop)
 
 static_assert( sizeof(romdir) == DIRENTRY_SIZE, "romdir struct not packed to 16 bytes" );
 
