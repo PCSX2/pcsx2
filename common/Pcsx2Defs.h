@@ -87,14 +87,6 @@ static const int __pagesize = PCSX2_PAGESIZE;
 // --------------------------------------------------------------------------------------
 #ifdef _MSC_VER
 
-	// Using these breaks compat with VC2005; so we're not using it yet.
-	//#	define __pack_begin		__pragma(pack(1))
-	//#	define __pack_end		__pragma(pack())
-
-	// This is the 2005/earlier compatible packing define, which must be used in conjunction
-	// with #ifdef _MSC_VER/#pragma pack() directives (ugly).
-	#define __packed
-
 	#define __noinline __declspec(noinline)
 	#define __noreturn __declspec(noreturn)
 
@@ -109,10 +101,6 @@ static const int __pagesize = PCSX2_PAGESIZE;
 // --------------------------------------------------------------------------------------
 //  GCC / Intel Compilers Section
 // --------------------------------------------------------------------------------------
-
-	#ifndef __packed
-		#define __packed __attribute__((packed))
-	#endif
 
 	#define __assume(cond) do { if (!(cond)) __builtin_unreachable(); } while(0)
 	#define CALLBACK __attribute__((stdcall))
