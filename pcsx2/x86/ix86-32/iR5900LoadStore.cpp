@@ -538,6 +538,11 @@ void recLDL()
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+
+		// If _Rs_ is equal to _Rt_ we need to put the shift in to eax since it won't take the CONST path
+		if (_Rs_ == _Rt_)
+			xMOV(calleeSavedReg1d, srcadr);
+
 		srcadr &= ~0x07;
 
 		t2reg = vtlb_DynGenRead64_Const(64, srcadr, -1);
@@ -609,6 +614,11 @@ void recLDR()
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+
+		// If _Rs_ is equal to _Rt_ we need to put the shift in to eax since it won't take the CONST path
+		if(_Rs_ == _Rt_)
+			xMOV(calleeSavedReg1d, srcadr);
+
 		srcadr &= ~0x07;
 
 		t2reg = vtlb_DynGenRead64_Const(64, srcadr, -1);
