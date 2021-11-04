@@ -18,10 +18,11 @@
 template <int i>
 class GSAlignedClass
 {
-public:
-	GSAlignedClass() {}
-	virtual ~GSAlignedClass() {}
+protected:
+	GSAlignedClass() = default;
+	~GSAlignedClass() = default;
 
+public:
 	void* operator new(size_t size)
 	{
 		return _aligned_malloc(size, i);
