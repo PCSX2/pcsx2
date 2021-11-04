@@ -485,8 +485,6 @@ private:
 	std::unique_ptr<GL::StreamBuffer> m_vertex_stream_buffer;
 	std::unique_ptr<GL::StreamBuffer> m_index_stream_buffer;
 	GLuint m_vertex_array_object = 0;
-	u32 m_vertex_buffer_base_vertex = 0;
-	u32 m_index_buffer_offset = 0;
 	GLenum m_draw_topology = 0;
 
 	std::unique_ptr<GL::StreamBuffer> m_vertex_uniform_stream_buffer;
