@@ -703,6 +703,7 @@
     <ClInclude Include="CDVD\CompressedFileReaderUtils.h" />
     <ClInclude Include="CDVD\CsoFileReader.h" />
     <ClInclude Include="CDVD\ChdFileReader.h" />
+    <ClInclude Include="CDVD\Decode_XA.h" />
     <ClInclude Include="CDVD\GzippedFileReader.h" />
     <ClInclude Include="CDVD\ThreadedFileReader.h" />
     <ClInclude Include="CDVD\zlib_indexed.h" />
