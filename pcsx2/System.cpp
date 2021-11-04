@@ -161,7 +161,7 @@ void SysLogMachineCaps()
 			// tagged commit - more modern implementation of dev build versioning
 			// - there is no need to include the commit - that is associated with the tag, 
 			// - git is implied and the tag is timestamped
-			Console.WriteLn(Color_StrongGreen, "\nPCSX2 Nightly - %s", GIT_TAG);
+			Console.WriteLn(Color_StrongGreen, "\nPCSX2 Nightly - %s Compiled on %s", GIT_TAG, __DATE__);
 		} else {
 			Console.WriteLn(Color_StrongGreen, "\nPCSX2 %u.%u.%u-%lld"
 #ifndef DISABLE_BUILD_DATE
