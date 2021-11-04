@@ -671,11 +671,11 @@ void CtrlDisassemblyView::assembleOpcode(u32 address, std::string defaultText)
 	{
 		SysClearExecutionCache();
 
-		if((selectRangeEnd - selectRangeStart) > 4)
+		if ((selectRangeEnd - selectRangeStart) > 4)
 		{
-			for(u32 addr = selectRangeStart; addr < selectRangeEnd; addr += 0x4)
+			for (u32 addr = selectRangeStart; addr < selectRangeEnd; addr += 0x4)
 			{
-				cpu->write32(addr,encoded);
+				cpu->write32(addr, encoded);
 			}
 		}
 		else
@@ -1152,7 +1152,7 @@ void CtrlDisassemblyView::mouseEvent(wxMouseEvent& evt)
 				toggleBreakpoint(false);
 		}
 
-		if(setNewAddress)
+		if (setNewAddress)
 			setCurAddress(newAddress, wxGetKeyState(WXK_SHIFT));
 
 		SetFocus();

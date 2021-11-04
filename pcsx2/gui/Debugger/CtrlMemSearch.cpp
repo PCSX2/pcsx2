@@ -334,19 +334,13 @@ void CtrlMemSearch::onSearchTypeChanged(wxCommandEvent& evt)
 		case SEARCHTYPE::QWORD:
 			radBigEndian->Enable(true);
 			radLittleEndian->Enable(true);
-			chkHexadecimal->Enable(false);
+			chkHexadecimal->Enable(true);
 			break;
 		case SEARCHTYPE::FLOAT:
 		case SEARCHTYPE::DOUBLE:
+		case SEARCHTYPE::STRING:
 			radBigEndian->Enable(false);
 			radLittleEndian->Enable(false);
-			chkHexadecimal->Enable(false);
-			chkHexadecimal->SetValue(false);
-			break;
-
-		case SEARCHTYPE::STRING:
-			radBigEndian->Enable(true);
-			radLittleEndian->Enable(true);
 			chkHexadecimal->Enable(false);
 			chkHexadecimal->SetValue(false);
 			break;
