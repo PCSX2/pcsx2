@@ -20,7 +20,7 @@
 #ifdef PCSX2_DEVBUILD
 static const int LATENCY_MAX = 3000;
 #else
-static const int LATENCY_MAX = 750;
+static const int LATENCY_MAX = 200;
 #endif
 
 static const int LATENCY_MIN = 3;
@@ -151,7 +151,7 @@ void WriteSettings()
 {
 	CfgWriteInt(L"MIXING", L"Interpolation", Interpolation);
 
-	CfgWriteInt(L"MIXING", L"FinalVolume", (int)(FinalVolume * 100 + 0.5f));
+	CfgWriteInt(L"MIXING", L"FinalVolume", (int)(FinalVolume * 100));
 
 	CfgWriteBool(L"MIXING", L"AdvancedVolumeControl", AdvancedVolumeControl);
 	CfgWriteFloat(L"MIXING", L"VolumeAdjustC(dB)", VolumeAdjustCdb);
@@ -236,16 +236,16 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			}
 			SendDialogMsg(hWnd, IDC_OUTPUT, CB_SETCURSEL, OutputModule, 0);
 
-			double minlat = (SynchMode == 0) ? LATENCY_MIN_TS : LATENCY_MIN;
+			float minlat = (SynchMode == 0) ? LATENCY_MIN_TS : LATENCY_MIN;
 			int minexp = (int)(pow(minlat + 1, 1.0 / 3.0) * 128.0);
-			int maxexp = (int)(pow((double)LATENCY_MAX + 2, 1.0 / 3.0) * 128.0);
-			INIT_SLIDER(IDC_LATENCY_SLIDER, minexp, maxexp, 200, 13, 15);
+			int maxexp = (int)(pow((float)LATENCY_MAX + 1, 1.0 / 3.0) * 128.0);
+			INIT_SLIDER(IDC_LATENCY_SLIDER, minexp, maxexp, 54, 10, 11);
 
-			SendDialogMsg(hWnd, IDC_LATENCY_SLIDER, TBM_SETPOS, TRUE, (int)((pow((double)SndOutLatencyMS, 1.0 / 3.0) * 128.0) + 1));
+			SendDialogMsg(hWnd, IDC_LATENCY_SLIDER, TBM_SETPOS, TRUE, (int)((pow((float)SndOutLatencyMS, 1.0 / 3.0) * 128.0) + 1));
 			swprintf_s(temp, L"%d ms (avg)", SndOutLatencyMS);
 			SetWindowText(GetDlgItem(hWnd, IDC_LATENCY_LABEL), temp);
 
-			int configvol = (int)(FinalVolume * 100 + 0.5f);
+			int configvol = (int)(FinalVolume * 100);
 			INIT_SLIDER(IDC_VOLUME_SLIDER, 0, 100, 10, 5, 1);
 
 			SendDialogMsg(hWnd, IDC_VOLUME_SLIDER, TBM_SETPOS, TRUE, configvol);
@@ -270,7 +270,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 			{
 				case IDOK:
 				{
-					double res = ((int)SendDialogMsg(hWnd, IDC_LATENCY_SLIDER, TBM_GETPOS, 0, 0)) / 128.0;
+					float res = ((int)SendDialogMsg(hWnd, IDC_LATENCY_SLIDER, TBM_GETPOS, 0, 0)) / 128.0;
 					SndOutLatencyMS = (int)pow(res, 3.0);
 					Clampify(SndOutLatencyMS, LATENCY_MIN, LATENCY_MAX);
 					FinalVolume = (float)(SendDialogMsg(hWnd, IDC_VOLUME_SLIDER, TBM_GETPOS, 0, 0)) / 100;
@@ -320,13 +320,13 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 					if (wmEvent == CBN_SELCHANGE)
 					{
 						int sMode = (int)SendDialogMsg(hWnd, IDC_SYNCHMODE, CB_GETCURSEL, 0, 0);
-						double minlat = (sMode == 0) ? LATENCY_MIN_TS : LATENCY_MIN;
+						float minlat = (sMode == 0) ? LATENCY_MIN_TS : LATENCY_MIN;
 						int minexp = (int)(pow(minlat + 1, 1.0 / 3.0) * 128.0);
-						int maxexp = (int)(pow((double)LATENCY_MAX + 2, 1.0 / 3.0) * 128.0);
-						INIT_SLIDER(IDC_LATENCY_SLIDER, minexp, maxexp, 200, 42, 1);
+						int maxexp = (int)(pow((float)LATENCY_MAX + 1, 1.0 / 3.0) * 128.0);
+						INIT_SLIDER(IDC_LATENCY_SLIDER, minexp, maxexp, 54, 10, 11);
 
 						int curpos = (int)SendMessage(GetDlgItem(hWnd, IDC_LATENCY_SLIDER), TBM_GETPOS, 0, 0);
-						double res = pow(curpos / 128.0, 3.0);
+						float res = pow(curpos / 128.0, 3.0);
 						curpos = (int)res;
 						swprintf_s(temp, L"%d ms (avg)", curpos);
 						SetDlgItemText(hWnd, IDC_LATENCY_LABEL, temp);
@@ -379,7 +379,7 @@ BOOL CALLBACK ConfigProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
 
 					if (hwndDlg == GetDlgItem(hWnd, IDC_LATENCY_SLIDER))
 					{
-						double res = pow(curpos / 128.0, 3.0);
+						float res = pow(curpos / 128.0, 3.0);
 						curpos = (int)res;
 						swprintf_s(temp, L"%d ms (avg)", curpos);
 						SetDlgItemText(hWnd, IDC_LATENCY_LABEL, temp);
