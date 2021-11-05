@@ -1,23 +1,18 @@
 [submodule "3rdparty/xz/xz"]
 	path = 3rdparty/xz/xz
 	url = https://github.com/PCSX2/xz.git
-	shallow = true
 [submodule "3rdparty/gtest"]
 	path = 3rdparty/gtest
 	url = https://github.com/google/googletest.git
-	shallow = true
 [submodule "3rdparty/fmt/fmt"]
 	path = 3rdparty/fmt/fmt
 	url = https://github.com/fmtlib/fmt.git
-	shallow = true
 [submodule "3rdparty/yaml-cpp/yaml-cpp"]
 	path = 3rdparty/yaml-cpp/yaml-cpp
 	url = https://github.com/jbeder/yaml-cpp.git
-	shallow = true
 [submodule "3rdparty/libchdr/libchdr"]
 	path = 3rdparty/libchdr/libchdr
 	url = https://github.com/rtissera/libchdr.git
-	shallow = true
 [submodule "3rdparty/wil"]
 	path = 3rdparty/wil
 	url = https://github.com/microsoft/wil.git
