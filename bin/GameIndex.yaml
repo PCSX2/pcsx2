@@ -19132,8 +19132,14 @@ SLPM-55008:
   name: "Sengoku Basara X"
   region: "NTSC-J"
   compat: 5
+SLPM-55024:
+  name: "Jikkyou Powerful Pro Yakyuu 15"
+  region: "NTSC-J"
 SLPM-55033:
   name: "J. League Winning Eleven 2008 - Club Championship"
+  region: "NTSC-J"
+SLPM-55062:
+  name: "Jikkyou Powerful Major League 3"
   region: "NTSC-J"
 SLPM-55063:
   name: "Hakuouki - Shinsengumi Kitan [Limited Edition]"
@@ -19210,6 +19216,9 @@ SLPM-55138:
   region: "NTSC-J"
 SLPM-55148:
   name: "007: Nagusame no Houshuu"
+  region: "NTSC-J"
+SLPM-55155:
+  name: "Jikkyou Powerful Major League 2009"
   region: "NTSC-J"
 SLPM-55170:
   name: "Skip Beat!"
@@ -19408,7 +19417,7 @@ SLPM-62007:
   region: "NTSC-J"
   compat: 5
 SLPM-62008:
-  name: "Powerful Pro Baseball 7"
+  name: "Jikkyou Powerful Pro Yakyuu 7"
   region: "NTSC-J"
 SLPM-62009:
   name: "Ganbare Nippon Olympics 2000"
@@ -19466,6 +19475,9 @@ SLPM-62031:
 SLPM-62032:
   name: "ESPN NBA 2Night"
   region: "NTSC-J"
+SLPM-62034:
+  name: "Jikkyou Powerful Pro Yakyuu 7 Ketteiban"
+  region: "NTSC-J"
 SLPM-62035:
   name: "Got to Do! Hot Spring Table Tennis"
   region: "NTSC-J"
@@ -19495,7 +19507,7 @@ SLPM-62048:
   name: "Battle Gear 2"
   region: "NTSC-J"
 SLPM-62049:
-  name: "Densha de Go! 3 - Takkyuu!!"
+  name: "Densha de Go! 3 - Tsuukin-hen"
   region: "NTSC-J"
 SLPM-62051:
   name: "Yanya Caballista - featuring Gawoo"
@@ -19536,6 +19548,9 @@ SLPM-62069:
   region: "NTSC-J"
 SLPM-62070:
   name: "Uchu-Jintte Naani"
+  region: "NTSC-J"
+SLPM-62071:
+  name: "Jikkyou Powerful Pro Yakyuu 8"
   region: "NTSC-J"
 SLPM-62072:
   name: "Horse Breaker"
@@ -19630,6 +19645,9 @@ SLPM-62118:
   name: "Bomberman Kart"
   region: "NTSC-J"
   compat: 5
+SLPM-62119:
+  name: "Jikkyou Powerful Pro Yakyuu 8 Ketteiban"
+  region: "NTSC-J"
 SLPM-62120:
   name: "Jikkyou World Soccer 2001"
   region: "NTSC-J"
@@ -19766,6 +19784,9 @@ SLPM-62186:
   region: "NTSC-J"
 SLPM-62190:
   name: "High Heat - Major League Baseball 2003"
+  region: "NTSC-J"
+SLPM-62192:
+  name: "Jikkyou Powerful Pro Yakyuu 9"
   region: "NTSC-J"
 SLPM-62193:
   name: "J League Perfect Striker 5"
@@ -19984,7 +20005,7 @@ SLPM-62273:
   name: "Mai-Shin 3"
   region: "NTSC-J"
 SLPM-62274:
-  name: "Powerful Pro Baseball 9 Ketteiban"
+  name: "Jikkyou Powerful Pro Yakyuu 9 Ketteiban"
   region: "NTSC-J"
 SLPM-62275:
   name: "Space Raiders"
@@ -21786,7 +21807,7 @@ SLPM-65144:
   gameFixes:
     - VUKickstartHack # Fixes SPS.
 SLPM-65148:
-  name: "Densha de Go! Ryojouhen"
+  name: "Densha de Go! Ryojou-hen"
   region: "NTSC-J"
 SLPM-65150:
   name: "Aero Dancing 4 - New Generation"
@@ -22272,7 +22293,7 @@ SLPM-65316:
   name: "Pop'n Music 8"
   region: "NTSC-J"
 SLPM-65317:
-  name: "Jikkyou Powerful Pro Baseball 10"
+  name: "Jikkyou Powerful Pro Yakyuu 10"
   region: "NTSC-J"
 SLPM-65318:
   name: "Shoubushi Tetsuya 2"
@@ -22650,7 +22671,7 @@ SLPM-65444:
   clampModes:
     eeClampMode: 3  # Fixes cutscene freezes.
 SLPM-65445:
-  name: "Powerful Pro Baseball 10 - Decision"
+  name: "Jikkyou Powerful Pro Yakyuu 10 Chou Ketteiban - 2003 Memorial"
   region: "NTSC-J"
 SLPM-65446:
   name: "James Bond 007 - Everything or Nothing"
@@ -24530,7 +24551,7 @@ SLPM-66060:
   name: "Boukoku no Aegis 2035 - Warship Gunner"
   region: "NTSC-J"
 SLPM-66061:
-  name: "Jikkyou Powerful Pro Baseball 12"
+  name: "Jikkyou Powerful Pro Yakyuu 12"
   region: "NTSC-J"
 SLPM-66062:
   name: "Mahou Sensei Negima! Gold Medal"
@@ -25617,7 +25638,7 @@ SLPM-66416:
   name: "Mystereet"
   region: "NTSC-J"
 SLPM-66417:
-  name: "Jikkyou Powerful Pro Major League"
+  name: "Jikkyou Powerful Major League"
   region: "NTSC-J"
 SLPM-66418:
   name: "Growlanser V - Generations"
@@ -25728,7 +25749,7 @@ SLPM-66449:
   name: "We Are"
   region: "NTSC-J"
 SLPM-66450:
-  name: "Jikkyou Powerful Pro Baseball 13"
+  name: "Jikkyou Powerful Pro Yakyuu 13"
   region: "NTSC-J"
   compat: 5
 SLPM-66451:
@@ -26188,7 +26209,7 @@ SLPM-66589:
   name: "NBA Live '07"
   region: "NTSC-J"
 SLPM-66590:
-  name: "Jikkyou Powerful Pro Yakyuu 13 Chou Ketteiban"
+  name: "Jikkyou Powerful Pro Yakyuu 13 Ketteiban"
   region: "NTSC-J"
 SLPM-66591:
   name: "FlatOut 2 GTR"
@@ -27087,7 +27108,7 @@ SLPM-66874:
   name: "Lucky Star"
   region: "NTSC-J"
 SLPM-66875:
-  name: "Jikkyou Powerful Pro Major League 2"
+  name: "Jikkyou Powerful Major League 2"
   region: "NTSC-J"
 SLPM-66876:
   name: "Izumo 2 [GN Software Best]"
@@ -27209,7 +27230,7 @@ SLPM-66915:
   name: "Yu-Gi-Oh Duel Monsters GX - Tag Force Evolution"
   region: "NTSC-J"
 SLPM-66916:
-  name: "Jikkyou Powerful Pro Yakyuu 14 Chou Ketteiban"
+  name: "Jikkyou Powerful Pro Yakyuu 14 Ketteiban"
   region: "NTSC-J"
 SLPM-66917:
   name: "Grand Theft Auto - Vice City Stories"
@@ -41131,7 +41152,7 @@ TCPS-10058:
   name: "Densha de Go! Shinkansen [with Controller]"
   region: "NTSC-J"
 TCPS-10068:
-  name: "Densha de Go! Ryojo-hen [with Controller]"
+  name: "Densha de Go! Ryojou-hen [with Controller]"
   region: "NTSC-J"
 TCPS-10074:
   name: "Space Invaders 25th Anniversary Bundle"
