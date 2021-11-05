@@ -1543,6 +1543,9 @@ SCED-52442:
 SCED-52452:
   name: "Official PlayStation 2 Magazine Demo 45"
   region: "PAL-M5"
+SCED-52461:
+  name: "SingStar [Press Kit]"
+  region: "PAL-E"
 SCED-52549:
   name: "Official PlayStation 2 Magazine Demo 47"
   region: "PAL-M5"
@@ -1570,6 +1573,9 @@ SCED-52818:
 SCED-52932:
   name: "Bonus Demo 8 (old)"
   region: "PAL-M5"
+SCED-52935:
+  name: "SingStar Party [Demo]"
+  region: "PAL-E"
 SCED-52938:
   name: "Official PlayStation 2 Magazine Demo 52"
   region: "PAL-M5"
@@ -1717,12 +1723,18 @@ SCED-53292:
 SCED-53293:
   name: "Official PlayStation 2 Magazine Demo 63"
   region: "PAL-M5"
+SCED-53316:
+  name: "SingStar Pop [Demo]"
+  region: "PAL-E"
 SCED-53325:
   name: "Official PlayStation 2 Magazine Demo 58" # Spanish/Portuguese
   region: "PAL-M5"
 SCED-53348:
   name: "Official PlayStation 2 Magazine Demo 58" # French
   region: "PAL-F"
+SCED-53684:
+  name: "SingStar '80s [Demo]"
+  region: "PAL-E"
 SCED-53854:
   name: "Official PS2 Magazine French Christmas Special" # French
   region: "PAL-F"
@@ -3016,13 +3028,13 @@ SCES-53891:
   name: "SingStar Rocks!"
   region: "PAL-G"
 SCES-53893:
-  name: "SingStar Rocks!"
+  name: "SingStar Rocks! [Promo]"
   region: "PAL-DU"
 SCES-53894:
   name: "SingStar Rocks!"
   region: "PAL-HR"
 SCES-53895:
-  name: "SingStar Rocks!"
+  name: "SingStar Rocks! [Promo]"
   region: "PAL-S"
 SCES-53897:
   name: "SingStar Rocks!"
@@ -3079,7 +3091,7 @@ SCES-54073:
   name: "Buzz! The Big Quiz"
   region: "PAL-Unk"
 SCES-54077:
-  name: "SingStar [Promo]"
+  name: "SingStar top.it"
   region: "PAL-I"
 SCES-54078:
   name: "SingStar Norsk på Norsk"
@@ -3088,7 +3100,7 @@ SCES-54128:
   name: "Deutsch Rock-Pop"
   region: "PAL-G"
 SCES-54129:
-  name: "SingStar"
+  name: "SingStar La Edad de Oro del Pop Español"
   region: "PAL-S"
 SCES-54131:
   name: "SingStar Anthems"
@@ -3099,7 +3111,7 @@ SCES-54145:
   region: "PAL-M10"
   compat: 5
 SCES-54191:
-  name: "SingStar Legends"
+  name: "SingStar Legends [Promo]"
   region: "PAL-E"
 SCES-54197:
   name: "SingStar Legends"
@@ -3168,6 +3180,24 @@ SCES-54330:
 SCES-54353:
   name: "SingStar Legends"
   region: "PAL-D"
+SCES-54370:
+  name: "SingStar Pop Hits"
+  region: "PAL-E"
+SCES-54371:
+  name: "SingStar Pop Hits"
+  region: "PAL-G"
+SCES-54372:
+  name: "SingStar Pop Hits - 40 Principales"
+  region: "PAL-S"
+SCES-54373:
+  name: "SingStar Pop Hits"
+  region: "PAL-SC" # Scandinavian (Danish,Norwegian,Finnish)
+SCES-54374:
+  name: "SingStar Pop Hits"
+  region: "PAL-F"
+SCES-54375:
+  name: "SingStar Pop Hits"
+  region: "PAL-P"
 SCES-54477:
   name: "SOCOM - US Navy Seals - Combined Assault"
   region: "PAL-M5"
@@ -3218,20 +3248,29 @@ SCES-54572:
 SCES-54573:
   name: "SingStar Pop Hits"
   region: "PAL-SC"
+SCES-54574:
+  name: "SingStar Pop Hits"
+  region: "PAL-F"
+SCES-54575:
+  name: "SingStar Pop Hits"
+  region: "PAL-P"
+SCES-54576:
+  name: "SingStar Pop Hits"
+  region: "PAL-PL"
 SCES-54597:
-  name: "Buzz! The Mega Quiz"
-  region: "PAL-M3"
+  name: "SingStar Rock Ballads"
+  region: "PAL-E"
 SCES-54598:
   name: "SingStar - Svenska Hits Schlager"
   region: "PAL-SW"
 SCES-54599:
-  name: "SingStar - '90s"
+  name: "SingStar '90s"
   region: "PAL-E"
 SCES-54600:
   name: "SingStar - Die Toten Hosen"
   region: "PAL-G"
 SCES-54601:
-  name: "SingStar - Apres-Ski Party"
+  name: "SingStar - Après-Ski Party"
   region: "PAL-G"
 SCES-54625:
   name: "Buzz! Junior - Monster Rumble"
@@ -3239,12 +3278,18 @@ SCES-54625:
 SCES-54638:
   name: "Gaelic Games - Football 2"
   region: "PAL-E-GA"
+SCES-54641:
+  name: "SingStar - Après-Ski Party 2"
+  region: "PAL-G"
 SCES-54676:
   name: "Buzz! Junior - RoboJam"
   region: "PAL-M7"
 SCES-54688:
   name: "ATV Offroad Fury 4"
   region: "PAL-M12"
+SCES-54741:
+  name: "SingStar Deutsch Rock-Pop Vol. 2"
+  region: "PAL-G"
 SCES-54748:
   name: "WipEout Pulse"
   region: "PAL-M5"
@@ -3260,6 +3305,21 @@ SCES-54761:
 SCES-54762:
   name: "SingStar R&B"
   region: "PAL-G"
+SCES-54764:
+  name: "SingStar Pop Hits 2"
+  region: "PAL-F"
+SCES-54765:
+  name: "SingStar R&B"
+  region: "PAL-PL"
+SCES-54768:
+  name: "SingStar Latino"
+  region: "PAL-S"
+SCES-54769:
+  name: "SingStar Latino"
+  region: "PAL-P"
+SCES-54773:
+  name: "SingStar Pop Hits"
+  region: "PAL-E"
 SCES-54794:
   name: "Syphon Filter - Dark Mirror"
   region: "PAL-M5"
@@ -3278,20 +3338,80 @@ SCES-54848:
 SCES-54851:
   name: "Buzz! The Hollywood Quiz"
   region: "PAL-M3"
+SCES-54869:
+  name: "SingStar Italian Party"
+  region: "PAL-I"
+SCES-54909:
+  name: "SingStar '90s"
+  region: "PAL-S"
+SCES-54910:
+  name: "SingStar Rock Ballads"
+  region: "PAL-S"
+SCES-55056:
+  name: "SingStar Summer Party"
+  region: "PAL-E"
+SCES-55057:
+  name: "SingStar Summer Party"
+  region: "PAL-G"
+SCES-55058:
+  name: "SingStar Summer Party"
+  region: "PAL-S"
+SCES-55059:
+  name: "SingStar Italian Greatest Hits"
+  region: "PAL-I"
+SCES-55061:
+  name: "SingStar Wakacyjna Impreza!"
+  region: "PAL-PL"
+SCES-55062:
+  name: "SingStar Pop Hits 3"
+  region: "PAL-F"
+SCES-55077:
+  name: "SingStar Party Hits"
+  region: "PAL-E"
 SCES-55093:
   name: "Buzz! The Pop Quiz"
   region: "PAL-E"
 SCES-55094:
   name: "Buzz! The Pop Quiz"
   region: "PAL-M3"
+SCES-55127:
+  name: "SingStar Summer Party"
+  region: "PAL-DU"
+SCES-55128:
+  name: "SingStar Summer Party"
+  region: "PAL-P"
+SCES-55158:
+  name: "SingStar Pop Hits 4"
+  region: "PAL-F"
+SCES-55159:
+  name: "SingStar Amped"
+  region: "PAL-G"
+SCES-55160:
+  name: "SingStar Hottest Hits"
+  region: "PAL-E"
+SCES-55173:
+  name: "SingStar Operación Triunfo"
+  region: "PAL-S"
+SCES-55176:
+  name: "SingStar Amped"
+  region: "PAL-E"
+SCES-55177:
+  name: "SingStar SuomiRock"
+  region: "PAL-FI"
 SCES-55178:
-  name: "Singstar Boy Bands vs Girl Bands"
-  region: "PAL-M5"
+  name: "SingStar Boy Bands vs Girl Bands"
+  region: "PAL-E"
 SCES-55179:
   name: "SingStar Schlager"
   region: "PAL-G"
+SCES-55181:
+  name: "SingStar Italian Party 2"
+  region: "PAL-I"
+SCES-55182:
+  name: "SingStar Clásicos"
+  region: "PAL-S"
 SCES-55183:
-  name: "SingStar Turkish Party"
+  name: "SingStar Turkish Party [Promo]"
   region: "PAL-TU"
 SCES-55210:
   name: "Buzz! Junior - Ace Racers"
@@ -3299,6 +3419,36 @@ SCES-55210:
 SCES-55213:
   name: "Buzz! Escuela de Talentos"
   region: "PAL-S"
+SCES-55241:
+  name: "SingStar Russian Hit"
+  region: "PAL-R"
+SCES-55255:
+  name: "SingStar Singalong with Disney"
+  region: "PAL-E"
+SCES-55256:
+  name: "SingStar Canciones Disney"
+  region: "PAL-S"
+SCES-55257:
+  name: "SingStar - Chansons Magiques de Disney"
+  region: "PAL-F"
+SCES-55258:
+  name: "SingStar Best of Disney"
+  region: "PAL-G"
+SCES-55259:
+  name: "SingStar Canções Disney"
+  region: "PAL-P"
+SCES-55260:
+  name: "SingStar e la Magia Disney"
+  region: "PAL-I"
+SCES-55261:
+  name: "SingStar Sjung med Disney"
+  region: "PAL-SW"
+SCES-55262:
+  name: "SingStar Syng med Disney"
+  region: "PAL-D"
+SCES-55360:
+  name: "SingStar Singalong with Disney"
+  region: "PAL-G"
 SCES-55361:
   name: "SingStar Boy Bands vs Girl Bands"
   region: "PAL-G"
@@ -3311,6 +3461,9 @@ SCES-55385:
 SCES-55387:
   name: "Buzz! Deutschlands Superquiz"
   region: "PAL-G"
+SCES-55401:
+  name: "SingStar Zingt met Disney"
+  region: "PAL-DU"
 SCES-55435:
   name: "SingStar ABBA"
   region: "PAL-E"
@@ -3320,18 +3473,54 @@ SCES-55436:
 SCES-55437:
   name: "SingStar ABBA"
   region: "PAL-G"
+SCES-55438:
+  name: "SingStar ABBA"
+  region: "PAL-S"
+SCES-55439:
+  name: "SingStar ABBA"
+  region: "PAL-I"
+SCES-55453:
+  name: "SingStar Queen"
+  region: "PAL-E"
 SCES-55454:
   name: "SingStar Queen"
   region: "PAL-G"
+SCES-55455:
+  name: "SingStar Queen"
+  region: "PAL-S"
 SCES-55464:
   name: "Hanuman: Boy Warrior"
   region: "PAL-E-HI"
   compat: 5
+SCES-55478:
+  name: "SingStar Afrikaanse Treffers"
+  region: "PAL-AF"
+SCES-55485:
+  name: "SingStar Queen"
+  region: "PAL-I"
+SCES-55489:
+  name: "SingStar Mallorca Party"
+  region: "PAL-G"
 SCES-55510:
   name: "Jak and Daxter: The Lost Frontier"
   region: "PAL-M12"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
+SCES-55513:
+  name: "SingStar Polskie Hity"
+  region: "PAL-PL"
+SCES-55514:
+  name: "SingStar Studio 100"
+  region: "PAL-DU"
+SCES-55515:
+  name: "SingStar Morangos com Açúcar"
+  region: "PAL-P"
+SCES-55521:
+  name: "SingStar SuomiPop"
+  region: "PAL-FI"
+SCES-55527:
+  name: "SingStar 2009"
+  region: "PAL-S"
 SCES-55535:
   name: "Desi Adda: Games of India"
   region: "PAL-M4"
@@ -3339,24 +3528,81 @@ SCES-55535:
 SCES-55538:
   name: "SingStar"
   region: "PAL-G"
+SCES-55540:
+  name: "SingStar Mecano"
+  region: "PAL-S"
+SCES-55549:
+  name: "SingStar MoTown [Promo]"
+  region: "PAL-E"
+SCES-55551:
+  name: "SingStar MoTown"
+  region: "PAL-I"
 SCES-55552:
   name: "SingStar MoTown"
   region: "PAL-G"
+SCES-55553:
+  name: "SingStar MoTown"
+  region: "PAL-DU"
 SCES-55554:
-  name: "Singstar Take That"
+  name: "SingStar Take That"
   region: "PAL-M5"
 SCES-55557:
   name: "SingStar Take That"
   region: "PAL-G"
+SCES-55564:
+  name: "SingStar Made in Germany"
+  region: "PAL-G"
+SCES-55566:
+  name: "SingStar Miliki"
+  region: "PAL-S"
+SCES-55567:
+  name: "SingStar The Wiggles"
+  region: "PAL-E"
+SCES-55568:
+  name: "SingStar Svenska Stjärnor"
+  region: "PAL-E"
 SCES-55570:
   name: "SingStar Chartbreaker"
   region: "PAL-G"
 SCES-55573:
   name: "MotorStorm - Arctic Edge"
   region: "PAL-M14"
+SCES-55594:
+  name: "SingStar Vasco"
+  region: "PAL-I"
 SCES-55606:
   name: "SingStar Die größten Solokünstler"
   region: "PAL-G"
+SCES-55611:
+  name: "SingStar Chart Hits"
+  region: "PAL-E"
+SCES-55612:
+  name: "SingStar SuomiHitIt"
+  region: "PAL-FI"
+SCES-55616:
+  name: "SingStar Polskie Hity 2"
+  region: "PAL-PL"
+SCES-55617:
+  name: "SingStar Fussballhits"
+  region: "PAL-G"
+SCES-55618:
+  name: "SingStar Kent"
+  region: "PAL-SW"
+SCES-55619:
+  name: "SingStar Portugal Hits"
+  region: "PAL-P"
+SCES-55621:
+  name: "SingStar Patito Feo"
+  region: "PAL-S"
+SCES-55640:
+  name: "SingStar Cantautori Italiani"
+  region: "PAL-I"
+SCES-55641:
+  name: "SingStar Après-Ski Party 2"
+  region: "PAL-G"
+SCES-55650:
+  name: "SingStar SuomiSuosikit"
+  region: "PAL-FI"
 SCES-55661:
   name: "RA.ONE: The Game"
   region: "PAL-E"
@@ -4983,7 +5229,7 @@ SCUS-90174:
   roundModes:
     vuRoundMode: 2  # Fixes very minor lines appearing at certain points during the game.
 SCUS-94346:
-  name: "Singstar Latino"
+  name: "SingStar Latino"
   region: "NTSC-U"
 SCUS-97097:
   name: "Network Adapter Start-Up Disc"
@@ -6386,7 +6632,7 @@ SCUS-97568:
   name: "MLB '07 - The Show [Demo]"
   region: "NTSC-U"
 SCUS-97571:
-  name: "SingStar Rocks! [with Microphone]"
+  name: "SingStar Rocks!"
   region: "NTSC-U"
   compat: 3
 SCUS-97572:
@@ -6396,7 +6642,7 @@ SCUS-97579:
   name: "ATV Off-Road Fury 4 [Demo]"
   region: "NTSC-U"
 SCUS-97580:
-  name: "SingStar Pop [with Microphone]"
+  name: "SingStar Pop"
   region: "NTSC-U"
 SCUS-97583:
   name: "MLB '08 - The Show"
@@ -6408,10 +6654,10 @@ SCUS-97589:
   name: "NBA '08 featuring The Life Vol.3"
   region: "NTSC-U"
 SCUS-97590:
-  name: "SingStar Rocks! [Game Only]"
+  name: "SingStar Rocks!"
   region: "NTSC-U"
 SCUS-97591:
-  name: "SingStar Pop [Game Only]"
+  name: "SingStar Pop"
   region: "NTSC-U"
 SCUS-97592:
   name: "Buzz! The Mega Quiz"
@@ -6441,11 +6687,11 @@ SCUS-97610:
   roundModes:
     vuRoundMode: 1  # Fixes the display of scores and text ingame.
 SCUS-97611:
-  name: "SingStar Amped [with Microphone]"
+  name: "SingStar Amped"
   region: "NTSC-U"
   compat: 3
 SCUS-97612:
-  name: "SingStar Amped [Game Only]"
+  name: "SingStar Amped"
   region: "NTSC-U"
 SCUS-97615:
   name: "Ratchet & Clank - Size Matters"
@@ -6457,7 +6703,7 @@ SCUS-97616:
   region: "NTSC-U"
   compat: 3
 SCUS-97618:
-  name: "SingStar 80's [Game Only]"
+  name: "SingStar 80's"
   region: "NTSC-U"
 SCUS-97620:
   name: "Syphon Filter - Dark Mirror [Demo]"
@@ -6477,14 +6723,14 @@ SCUS-97621:
         patch=1,EE,002461e0,word,4bc069fc
         patch=1,EE,002461e4,word,4a54c3bc
 SCUS-97622:
-  name: "SingStar 80's [with Microphone]"
+  name: "SingStar '80s"
   region: "NTSC-U"
 SCUS-97623:
   name: "Secret Agent Clank"
   region: "NTSC-U"
   compat: 5
 SCUS-97626:
-  name: "SingStar 90's"
+  name: "SingStar '90s"
   region: "NTSC-U"
 SCUS-97627:
   name: "SingStar Pop Volume 2"
@@ -6497,14 +6743,14 @@ SCUS-97634:
   name: "Buzz! Jr. RoboJam [Game Only]"
   region: "NTSC-U"
 SCUS-97636:
-  name: "SingStar 90's [Game Only]"
+  name: "SingStar '90s"
   region: "NTSC-U"
 SCUS-97640:
   name: "SingStar Legends"
   region: "NTSC-U"
   compat: 3
 SCUS-97642:
-  name: "SingStar Abba"
+  name: "SingStar ABBA"
   region: "NTSC-U"
   compat: 3
 SCUS-97643:
@@ -6513,6 +6759,12 @@ SCUS-97643:
   compat: 3
 SCUS-97644:
   name: "MLB '09: The Show"
+  region: "NTSC-U"
+SCUS-97649:
+  name: "SingStar Pop Vol. 2"
+  region: "NTSC-U"
+SCUS-97650:
+  name: "SingStar Country"
   region: "NTSC-U"
 SCUS-97651:
   name: "SingStar Country"
