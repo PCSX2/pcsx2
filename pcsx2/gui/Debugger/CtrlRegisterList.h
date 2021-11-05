@@ -16,6 +16,7 @@
 #pragma once
 #include <wx/wx.h>
 
+#include "gui/MSWstuff.h" // Required for MSW_GetDPIScale()
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
 
@@ -38,7 +39,7 @@ public:
 		if (GetWindowStyle() & wxVSCROLL)
 			optimalSize.x += wxSystemSettings::GetMetric(wxSYS_VSCROLL_X);
 
-		return wxSize(optimalSize.x, 0);
+		return wxSize(optimalSize.x * MSW_GetDPIScale(), 0);
 	}
 
 	virtual wxSize DoGetBestClientSize() const

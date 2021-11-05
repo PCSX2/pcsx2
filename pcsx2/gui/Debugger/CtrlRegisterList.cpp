@@ -74,8 +74,8 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 	SetDoubleBuffered(true);
 
 	const wxSize optSize = getOptimalSize();
-	SetVirtualSize(optSize);
-	SetScrollbars(1, rowHeight, optSize.x, optSize.y / rowHeight, 0, 0);
+	SetVirtualSize(optSize.x,optSize.y);
+	SetScrollbars(1, rowHeight, optSize.x, optSize.y * MSW_GetDPIScale() / rowHeight, 0, 0);
 }
 
 CtrlRegisterList::~CtrlRegisterList()
