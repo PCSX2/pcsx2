@@ -314,7 +314,9 @@ HacksTab::HacksTab(wxWindow* parent)
 	// Texture Offsets
 	add_label(this, upscale_hack_choice_grid, "Texture Offsets:", IDC_TCOFFSETX);
 	auto* tex_off_box = new wxBoxSizer(wxHORIZONTAL);
+	add_label(this, tex_off_box, "X:", IDC_TCOFFSETX);
 	m_ui.addSpin(tex_off_box, "UserHacks_TCOffsetX", 0, 10000, 0, IDC_TCOFFSETX, hacks_check);
+	add_label(this, tex_off_box, "Y:", IDC_TCOFFSETY);
 	m_ui.addSpin(tex_off_box, "UserHacks_TCOffsetY", 0, 10000, 0, IDC_TCOFFSETY, hacks_check);
 
 	upscale_hack_choice_grid->Add(tex_off_box);
