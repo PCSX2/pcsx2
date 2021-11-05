@@ -611,7 +611,7 @@ public:
 	wxString GetFilename() const { return L"USB.bin"; }
 	void FreezeIn(pxInputStream& reader) const { return SysState_ComponentFreezeIn(reader, USB); }
 	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, USB); }
-	bool IsRequired() const { return true; }
+	bool IsRequired() const { return false; }
 };
 
 class SavestateEntry_PAD : public BaseSavestateEntry
