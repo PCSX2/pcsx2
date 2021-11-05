@@ -61,7 +61,7 @@ namespace
 		theApp.SetConfig(str, s[idx].value);
 	}
 
-	void add_label(wxWindow* parent, wxSizer* sizer, const char* str, int tooltip = -1, long style = wxALIGN_RIGHT | wxALIGN_CENTRE_HORIZONTAL, wxSizerFlags flags = wxSizerFlags().Centre().Right())
+	void add_label(wxWindow* parent, wxSizer* sizer, const char* str, int tooltip = -1, wxSizerFlags flags = wxSizerFlags().Centre().Right(), long style = wxALIGN_RIGHT | wxALIGN_CENTRE_HORIZONTAL)
 	{
 		auto* temp_text = new wxStaticText(parent, wxID_ANY, str, wxDefaultPosition, wxDefaultSize, style);
 		add_tooltip(temp_text, tooltip);
@@ -248,12 +248,12 @@ RendererTab::RendererTab(wxWindow* parent)
 	software_box->AddSpacer(5);
 
 	// Rendering threads
-	auto* thread_box = new wxBoxSizer(wxHORIZONTAL);
+	auto* thread_box = new wxFlexGridSizer(2, 5, 5);
 	m_ui.addSpinAndLabel(thread_box, "Extra Rendering threads:", "extrathreads", 0, 32, 2, IDC_SWTHREADS);
 	software_box->Add(thread_box, wxSizerFlags().Centre());
 
-	tab_box->Add(hardware_box, wxSizerFlags().Centre().Expand());
-	tab_box->Add(software_box, wxSizerFlags().Centre().Expand());
+	tab_box->Add(hardware_box, wxSizerFlags().Expand());
+	tab_box->Add(software_box, wxSizerFlags().Expand());
 
 	SetSizerAndFit(tab_box);
 	Bind(wxEVT_CHECKBOX, &RendererTab::CallUpdate, this);
@@ -314,9 +314,9 @@ HacksTab::HacksTab(wxWindow* parent)
 	// Texture Offsets
 	add_label(this, upscale_hack_choice_grid, "Texture Offsets:", IDC_TCOFFSETX);
 	auto* tex_off_box = new wxBoxSizer(wxHORIZONTAL);
-	add_label(this, tex_off_box, "X:", IDC_TCOFFSETX);
+	add_label(this, tex_off_box, "X:", IDC_TCOFFSETX, wxSizerFlags().Centre());
 	m_ui.addSpin(tex_off_box, "UserHacks_TCOffsetX", 0, 10000, 0, IDC_TCOFFSETX, hacks_check);
-	add_label(this, tex_off_box, "Y:", IDC_TCOFFSETY);
+	add_label(this, tex_off_box, "Y:", IDC_TCOFFSETY, wxSizerFlags().Centre());
 	m_ui.addSpin(tex_off_box, "UserHacks_TCOffsetY", 0, 10000, 0, IDC_TCOFFSETY, hacks_check);
 
 	upscale_hack_choice_grid->Add(tex_off_box);
@@ -329,8 +329,8 @@ HacksTab::HacksTab(wxWindow* parent)
 	upscale_hacks_box->AddSpacer(5);
 	upscale_hacks_box->Add(upscale_hack_choice_grid, wxSizerFlags().Expand());
 
-	tab_box->Add(rend_hacks_box, wxSizerFlags().Centre().Expand());
-	tab_box->Add(upscale_hacks_box, wxSizerFlags().Centre().Expand());
+	tab_box->Add(rend_hacks_box, wxSizerFlags().Expand());
+	tab_box->Add(upscale_hacks_box, wxSizerFlags().Expand());
 
 	SetSizerAndFit(tab_box);
 	Bind(wxEVT_SPINCTRL, &HacksTab::CallUpdate, this);
@@ -376,9 +376,9 @@ RecTab::RecTab(wxWindow* parent)
 
 	m_ui.addDirPickerAndLabel(record_grid_box, "Output Directory:", "capture_out_dir", -1, record_check);
 
-	record_box->Add(record_grid_box, wxSizerFlags().Centre().Expand());
+	record_box->Add(record_grid_box, wxSizerFlags().Expand());
 
-	tab_box->Add(record_box, wxSizerFlags().Centre().Expand());
+	tab_box->Add(record_box, wxSizerFlags().Expand());
 	SetSizerAndFit(tab_box);
 	Bind(wxEVT_CHECKBOX, &RecTab::CallUpdate, this);
 }
@@ -408,8 +408,8 @@ PostTab::PostTab(wxWindow* parent)
 	m_ui.addSliderAndLabel(shader_boost_grid, "Contrast:",   "ShadeBoost_Contrast",   0, 100, 50, -1, shade_boost_check);
 	m_ui.addSliderAndLabel(shader_boost_grid, "Saturation:", "ShadeBoost_Saturation", 0, 100, 50, -1, shade_boost_check);
 
-	shade_boost_box->Add(shader_boost_grid, wxSizerFlags().Expand().Centre());
-	shader_box->Add(shade_boost_box, wxSizerFlags().Expand().Centre());
+	shade_boost_box->Add(shader_boost_grid, wxSizerFlags().Expand());
+	shader_box->Add(shade_boost_box, wxSizerFlags().Expand());
 
 	auto* ext_shader_check = m_ui.addCheckBox(shader_box, "Enable External Shader", "shaderfx", IDC_SHADER_FX);
 
@@ -420,11 +420,11 @@ PostTab::PostTab(wxWindow* parent)
 	m_ui.addFilePickerAndLabel(ext_shader_grid, "GLSL fx File:", "shaderfx_glsl", -1, ext_shader_check);
 	m_ui.addFilePickerAndLabel(ext_shader_grid, "Config File:",  "shaderfx_conf", -1, ext_shader_check);
 
-	ext_shader_box->Add(ext_shader_grid, wxSizerFlags().Expand().Centre());
-	shader_box->Add(ext_shader_box, wxSizerFlags().Expand().Centre());
+	ext_shader_box->Add(ext_shader_grid, wxSizerFlags().Expand());
+	shader_box->Add(ext_shader_box, wxSizerFlags().Expand());
 
 	// TV Shader
-	auto* tv_box = new wxBoxSizer(wxHORIZONTAL);
+	auto* tv_box = new wxFlexGridSizer(2, 5, 5);
 	m_ui.addComboBoxAndLabel(tv_box, "TV Shader:", "TVShader", &theApp.m_gs_tv_shaders);
 	shader_box->Add(tv_box);
 
@@ -457,8 +457,8 @@ OSDTab::OSDTab(wxWindow* parent)
 	m_ui.addSliderAndLabel(font_grid, "Blue:",    "osd_color_b",       0, 255,   0, -1, monitor_check);
 	m_ui.addSliderAndLabel(font_grid, "Opacity:", "osd_color_opacity", 0, 100, 100, -1, monitor_check);
 
-	font_box->Add(font_grid, wxSizerFlags().Centre().Expand());
-	tab_box->Add(font_box, wxSizerFlags().Centre().Expand());
+	font_box->Add(font_grid, wxSizerFlags().Expand());
+	tab_box->Add(font_box, wxSizerFlags().Expand());
 
 	auto* log_check = m_ui.addCheckBox(tab_box, "Enable Log", "osd_log_enabled", IDC_OSD_LOG);
 
@@ -468,8 +468,8 @@ OSDTab::OSDTab(wxWindow* parent)
 	m_ui.addSpinAndLabel(log_grid, "Timeout (seconds):",      "osd_log_timeout",      2, 10, 4,              -1, log_check);
 	m_ui.addSpinAndLabel(log_grid, "Max On-Screen Messages:", "osd_max_log_messages", 1, 10, 2, IDC_OSD_MAX_LOG, log_check);
 
-	log_box->Add(log_grid, wxSizerFlags().Centre().Expand());
-	tab_box->Add(log_box, wxSizerFlags().Centre());
+	log_box->Add(log_grid, wxSizerFlags().Expand());
+	tab_box->Add(log_box, wxSizerFlags().Expand());
 
 	SetSizerAndFit(tab_box);
 	Bind(wxEVT_CHECKBOX, &OSDTab::CallUpdate, this);
@@ -519,8 +519,8 @@ DebugTab::DebugTab(wxWindow* parent)
 	m_ui.addComboBoxAndLabel(ogl_grid, "Sparse Texture:",   "override_GL_ARB_sparse_texture",          &theApp.m_gs_generic_list, IDC_SPARSE_TEXTURE);
 	ogl_box->Add(ogl_grid);
 
-	tab_box->Add(debug_box, wxSizerFlags().Centre().Expand());
-	tab_box->Add(ogl_box, wxSizerFlags().Centre().Expand());
+	tab_box->Add(debug_box, wxSizerFlags().Expand());
+	tab_box->Add(ogl_box, wxSizerFlags().Expand());
 
 	SetSizerAndFit(tab_box);
 	Bind(wxEVT_SPINCTRL, &DebugTab::CallUpdate, this);
@@ -578,9 +578,9 @@ Dialog::Dialog()
 	book->AddPage(m_debug_panel, "Debug/OGL");
 
 	m_top_box->Add(top_grid, wxSizerFlags().Centre());
-	m_top_box->Add(book, wxSizerFlags().Centre().Expand());
+	m_top_box->Add(book, wxSizerFlags().Expand());
 
-	padding->Add(m_top_box, wxSizerFlags().Centre().Expand().Border(wxALL, 5));
+	padding->Add(m_top_box, wxSizerFlags().Expand().Border(wxALL, 5));
 
 	m_top_box->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), wxSizerFlags().Right());
 
