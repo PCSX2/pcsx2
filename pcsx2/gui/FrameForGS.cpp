@@ -24,6 +24,7 @@
 #include "MainFrame.h"
 #include "MSWstuff.h"
 #include "PAD/Gamepad.h"
+#include "PerformanceMetrics.h"
 
 #include "gui/Dialogs/ModalPopups.h"
 
@@ -859,32 +860,23 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	if (g_FrameCount == 0)
 		return;
 
-	double fps = wxGetApp().FpsManager.GetFramerate();
-
 	FastFormatUnicode cpuUsage;
-	if (m_CpuUsage.IsImplemented()) {
-		m_CpuUsage.UpdateStats();
-
-		if (!IsFullScreen()) {
-			cpuUsage.Write(L"EE: %3d%%", m_CpuUsage.GetEEcorePct());
-			cpuUsage.Write(L" | GS: %3d%%", m_CpuUsage.GetGsPct());
-
-			if (THREAD_VU1)
-				cpuUsage.Write(L" | VU: %3d%%", m_CpuUsage.GetVUPct());
-
-			pxNonReleaseCode(cpuUsage.Write(L" | UI: %3d%%", m_CpuUsage.GetGuiPct()));
-		}
+	if (!IsFullScreen()) {
+		cpuUsage.Write(L"EE: %3.0f%%", PerformanceMetrics::GetCPUThreadUsage());
+		cpuUsage.Write(L" | GS: %3.0f%%", PerformanceMetrics::GetGSThreadUsage());
 
 		if (THREAD_VU1)
-			OSDmonitor(Color_StrongGreen, "VU:", std::to_string(m_CpuUsage.GetVUPct()).c_str());
-
-		OSDmonitor(Color_StrongGreen, "EE:", std::to_string(m_CpuUsage.GetEEcorePct()).c_str());
-		OSDmonitor(Color_StrongGreen, "GS:", std::to_string(m_CpuUsage.GetGsPct()).c_str());
-		pxNonReleaseCode(OSDmonitor(Color_StrongGreen, "UI:", std::to_string(m_CpuUsage.GetGuiPct()).c_str()));
+		{
+			cpuUsage.Write(L" | VU: %3.0f%%", PerformanceMetrics::GetVUThreadUsage());
+			OSDmonitor(Color_StrongGreen, "VU:", std::to_string(lround(PerformanceMetrics::GetVUThreadUsage())).c_str());
+		}
+		
+		OSDmonitor(Color_StrongGreen, "EE:", std::to_string(lround(PerformanceMetrics::GetCPUThreadUsage())).c_str());
+		OSDmonitor(Color_StrongGreen, "GS:", std::to_string(lround(PerformanceMetrics::GetGSThreadUsage())).c_str());
 	}
 
 	std::ostringstream out;
-	out << std::fixed << std::setprecision(2) << fps;
+	out << std::fixed << std::setprecision(2) << PerformanceMetrics::GetFPS();
 	OSDmonitor(Color_StrongGreen, "FPS:", out.str());
 
 #ifdef __linux__
@@ -894,8 +886,6 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 #endif
 
 	AppConfig::UiTemplateOptions& templates = g_Conf->Templates;
-
-	const float percentage = (fps * 100) / GetVerticalFrequency();
 
 	char gsDest[128];
 	gsDest[0] = 0; // No need to set whole array to NULL.
@@ -934,8 +924,8 @@ void GSFrame::OnUpdateTitle( wxTimerEvent& evt )
 	
 	title.Replace(L"${slot}",		pxsFmt(L"%d", States_GetCurrentSlot()));
 	title.Replace(L"${limiter}",	limiterStr);
-	title.Replace(L"${speed}",		pxsFmt(L"%3d%%", lround(percentage)));
-	title.Replace(L"${vfps}",		pxsFmt(L"%.02f", fps));
+	title.Replace(L"${speed}",		pxsFmt(L"%3d%%", lround(PerformanceMetrics::GetSpeed())));
+	title.Replace(L"${vfps}",		pxsFmt(L"%.02f", PerformanceMetrics::GetFPS()));
 	title.Replace(L"${cpuusage}",	cpuUsage);
 	title.Replace(L"${omodef}",		omodef);
 	title.Replace(L"${omodei}",		omodei);

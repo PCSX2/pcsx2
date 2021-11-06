@@ -23,6 +23,7 @@
 #include "Gif_Unit.h"
 #include "MTVU.h"
 #include "Elfheader.h"
+#include "PerformanceMetrics.h"
 #include "gui/Dialogs/ModalPopups.h"
 
 #include "common/WindowInfo.h"
@@ -134,6 +135,7 @@ SysMtgsThread::~SysMtgsThread()
 
 void SysMtgsThread::OnResumeReady()
 {
+	PerformanceMetrics::Reset();
 	m_sem_OpenDone.Reset();
 }
 
@@ -477,6 +479,8 @@ void SysMtgsThread::ExecuteTaskInThread()
 							m_QueuedFrameCount.fetch_sub(1);
 							if (m_VsyncSignalListener.exchange(false))
 								m_sem_Vsync.Post();
+
+							PerformanceMetrics::Update();
 
 							// Do not StateCheckInThread() here
 							// Otherwise we could pause while there's still data in the queue

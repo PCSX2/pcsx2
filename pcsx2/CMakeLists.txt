@@ -142,6 +142,7 @@ set(pcsx2Sources
 	Patch.cpp
 	Patch_Memory.cpp
 	Pcsx2Config.cpp
+	PerformanceMetrics.cpp
 	PrecompiledHeader.cpp
 	R3000A.cpp
 	R3000AInterpreter.cpp
@@ -214,6 +215,7 @@ set(pcsx2Headers
 	Patch.h
 	PathDefs.h
 	PCSX2Base.h
+	PerformanceMetrics.h
 	PrecompiledHeader.h
 	R3000A.h
 	R5900Exceptions.h
@@ -907,7 +909,6 @@ set(pcsx2GuiSources
 	gui/AppRes.cpp
 	gui/CheckedStaticBox.cpp
 	gui/ConsoleLogger.cpp
-	gui/CpuUsageProvider.cpp
 	gui/Dialogs/AboutBoxDialog.cpp
 	gui/Dialogs/GSDumpDialog.cpp
 	gui/Dialogs/AssertionDialog.cpp
@@ -981,7 +982,6 @@ set(pcsx2GuiHeaders
 	gui/AppSaveStates.h
 	gui/CheckedStaticBox.h
 	gui/ConsoleLogger.h
-	gui/CpuUsageProvider.h
 	gui/Debugger/BreakpointWindow.h
 	gui/Debugger/CtrlDisassemblyView.h
 	gui/Debugger/CtrlMemView.h
