@@ -38,7 +38,11 @@ protected:
 		}
 	};
 
-	std::vector<RecentItem> m_Items;
+public:
+	using VectorType = std::vector<RecentItem>;
+
+protected:
+	VectorType m_Items;
 
 	wxMenu*		m_Menu;
 	uint		m_MaxLength;
@@ -49,11 +53,13 @@ protected:
 	wxMenuItem* m_Separator;
 	wxMenuItem* m_ClearSeparator;
 	wxMenuItem* m_Clear;
-	wxMenuItem* m_Prune;
+	wxMenuItem* m_ClearMissing;
 
 public:
 	RecentIsoManager( wxMenu* menu , int firstIdForMenuItems_or_wxID_ANY );
 	virtual ~RecentIsoManager();
+
+	VectorType GetMissingFiles() const;
 
 	void RemoveAllFromMenu();
 	void EnableItems(bool display);

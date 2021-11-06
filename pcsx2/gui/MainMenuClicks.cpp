@@ -581,18 +581,41 @@ void MainEmuFrame::Menu_IsoClear_Click(wxCommandEvent& event)
 
 void MainEmuFrame::Menu_IsoClearMissing_Click(wxCommandEvent& event)
 {
-	wxDialogWithHelpers dialog(this, _("Confirm clearing ISO list"));
-	dialog += dialog.Heading(_("This will remove all missing ISO files from the list. If an ISO is running it will remain in the list. Continue?"));
+	auto& iso_manager = wxGetApp().GetRecentIsoManager();
+	const auto& missing_files = iso_manager.GetMissingFiles();
 
-	bool confirmed = pxIssueConfirmation(dialog, MsgButtons().YesNo()) == wxID_YES;
-
-	if (confirmed)
+	if (missing_files.empty())
 	{
-		// If the CDVD mode is not ISO, or the system isn't running, wipe the CurrentIso field in INI file
-		if (g_Conf->CdvdSource != CDVD_SourceType::Iso || !SysHasValidState())
-			SysUpdateIsoSrcFile("");
-		wxGetApp().GetRecentIsoManager().ClearMissing();
-		AppSaveSettings();
+		wxDialogWithHelpers dialog(this, _("Information"));
+		dialog += dialog.Heading(_("No files to remove."));
+		pxIssueConfirmation(dialog, MsgButtons().OK());
+	}
+	else
+	{
+		wxDialogWithHelpers dialog(this, _("Confirm clearing ISO list"));
+		dialog += dialog.Heading(_("The following entries will be removed from the ISO list. Continue?"));
+
+		wxString missing_files_list;
+
+		for (const auto& file : missing_files)
+		{
+			missing_files_list += "* ";
+			missing_files_list += file.Filename;
+			missing_files_list += "\n";
+		}
+
+		dialog += dialog.Text(missing_files_list);
+
+		const bool confirmed = pxIssueConfirmation(dialog, MsgButtons().YesNo()) == wxID_YES;
+
+		if (confirmed)
+		{
+			// If the CDVD mode is not ISO, or the system isn't running, wipe the CurrentIso field in INI file
+			if (g_Conf->CdvdSource != CDVD_SourceType::Iso || !SysHasValidState())
+				SysUpdateIsoSrcFile("");
+			iso_manager.ClearMissing();
+			AppSaveSettings();
+		}
 	}
 }
 
