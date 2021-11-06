@@ -666,14 +666,11 @@ void pxLaunch(const char* filename)
 }
 
 // ------------------------------------------------------------------------
-// Launches a file explorer window on the specified path.  If the given path is not
-// a qualified URI (with a prefix:// ), file:// is automatically prepended.  This
-// bypasses wxWidgets internal filename checking, which can end up launching things
-// through browser more often than desired.
+// Launches a file explorer window on the specified path.
 //
 void pxExplore(const wxString& path)
 {
-	wxLaunchDefaultBrowser(!path.Contains(L"://") ? L"file://" + path : path);
+	wxLaunchDefaultApplication(path);
 }
 
 void pxExplore(const char* path)
