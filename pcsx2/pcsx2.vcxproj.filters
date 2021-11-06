@@ -881,9 +881,6 @@
     <ClCompile Include="gui\AppUserMode.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
-    <ClCompile Include="gui\AppGameDatabase.cpp">
-      <Filter>AppHost</Filter>
-    </ClCompile>
     <ClCompile Include="gui\Dialogs\McdConfigDialog.cpp">
       <Filter>AppHost\Dialogs</Filter>
     </ClCompile>
@@ -2000,9 +1997,6 @@
     </ClInclude>
     <ClInclude Include="IPU\IPUdma.h">
       <Filter>System\Ps2\IPU</Filter>
-    </ClInclude>
-    <ClInclude Include="gui\AppGameDatabase.h">
-      <Filter>AppHost</Filter>
     </ClInclude>
     <ClInclude Include="gui\i18n.h">
       <Filter>AppHost</Filter>
