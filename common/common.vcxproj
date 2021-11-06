@@ -33,12 +33,13 @@
   </PropertyGroup>
   <ItemDefinitionGroup>
     <ClCompile>
-      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\glad\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\glad\include;$(SolutionDir)3rdparty\glslang\glslang;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <ForcedIncludeFiles>PrecompiledHeader.h</ForcedIncludeFiles>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;NOMINMAX;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <ObjectFileName>$(IntDir)%(RelativeDir)</ObjectFileName>
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -64,6 +65,16 @@
     <ClCompile Include="SettingsWrapper.cpp" />
     <ClCompile Include="Timer.cpp" />
     <ClCompile Include="VirtualMemory.cpp" />
+    <ClCompile Include="Vulkan\vk_mem_alloc.cpp" />
+    <ClCompile Include="Vulkan\Builders.cpp" />
+    <ClCompile Include="Vulkan\Context.cpp" />
+    <ClCompile Include="Vulkan\Loader.cpp" />
+    <ClCompile Include="Vulkan\ShaderCache.cpp" />
+    <ClCompile Include="Vulkan\ShaderCompiler.cpp" />
+    <ClCompile Include="Vulkan\StreamBuffer.cpp" />
+    <ClCompile Include="Vulkan\SwapChain.cpp" />
+    <ClCompile Include="Vulkan\Texture.cpp" />
+    <ClCompile Include="Vulkan\Util.cpp" />
     <ClCompile Include="WindowInfo.cpp" />
     <ClCompile Include="x86\MemcpyFast.cpp" />
     <ClCompile Include="PathUtils.cpp" />
@@ -103,6 +114,7 @@
       <PreprocessorDefinitions Condition="'$(Platform)'=='Win32'">_M_X86_32;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="'$(Platform)'=='x64'">_M_X86_64;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </MASM>
+    <None Include="Vulkan\EntryPoints.inl" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Align.h" />
@@ -139,6 +151,16 @@
     <ClInclude Include="SafeArray.h" />
     <ClInclude Include="StringHelpers.h" />
     <ClInclude Include="Timer.h" />
+    <ClInclude Include="Vulkan\Builders.h" />
+    <ClInclude Include="Vulkan\Context.h" />
+    <ClInclude Include="Vulkan\EntryPoints.h" />
+    <ClInclude Include="Vulkan\Loader.h" />
+    <ClInclude Include="Vulkan\ShaderCache.h" />
+    <ClInclude Include="Vulkan\ShaderCompiler.h" />
+    <ClInclude Include="Vulkan\StreamBuffer.h" />
+    <ClInclude Include="Vulkan\SwapChain.h" />
+    <ClInclude Include="Vulkan\Texture.h" />
+    <ClInclude Include="Vulkan\Util.h" />
     <ClInclude Include="WindowInfo.h" />
     <ClInclude Include="wxBaseTools.h" />
     <ClInclude Include="Threading.h" />
@@ -173,6 +195,9 @@
   <ItemGroup>
     <ProjectReference Include="..\3rdparty\glad\glad.vcxproj">
       <Project>{c0293b32-5acf-40f0-aa6c-e6da6f3bf33a}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\glslang\glslang.vcxproj">
+      <Project>{ef6834a9-11f3-4331-bc34-21b325abb180}</Project>
     </ProjectReference>
     <ProjectReference Include="..\3rdparty\pthreads4w\build\pthreads4w.vcxproj">
       <Project>{0fae817d-9a32-4830-857e-81da57246e16}</Project>

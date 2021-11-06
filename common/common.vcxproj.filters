@@ -142,6 +142,33 @@
     <ClCompile Include="ProgressCallback.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Vulkan\Builders.cpp">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Vulkan\Context.cpp">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Vulkan\Loader.cpp">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Vulkan\ShaderCache.cpp">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Vulkan\ShaderCompiler.cpp">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Vulkan\StreamBuffer.cpp">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Vulkan\SwapChain.cpp">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Vulkan\Texture.cpp">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClCompile>
+    <ClCompile Include="Vulkan\Util.cpp">
+      <Filter>Source Files\Vulkan</Filter>
+    </ClCompile>
     <ClCompile Include="MD5Digest.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -150,6 +177,9 @@
     </ClCompile>
     <ClCompile Include="GL\ShaderCache.cpp">
       <Filter>Source Files\GL</Filter>
+    </ClCompile>
+    <ClCompile Include="Vulkan\vk_mem_alloc.cpp">
+      <Filter>Source Files\Vulkan</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -342,6 +372,36 @@
     <ClInclude Include="HashCombine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Vulkan\ShaderCompiler.h">
+      <Filter>Header Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\StreamBuffer.h">
+      <Filter>Header Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\SwapChain.h">
+      <Filter>Header Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\Texture.h">
+      <Filter>Header Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\Util.h">
+      <Filter>Header Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\Builders.h">
+      <Filter>Header Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\Context.h">
+      <Filter>Header Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\EntryPoints.h">
+      <Filter>Header Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\Loader.h">
+      <Filter>Header Files\Vulkan</Filter>
+    </ClInclude>
+    <ClInclude Include="Vulkan\ShaderCache.h">
+      <Filter>Header Files\Vulkan</Filter>
+    </ClInclude>
     <ClInclude Include="MD5Digest.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -365,10 +425,19 @@
     <Filter Include="Source Files\GL">
       <UniqueIdentifier>{5e76b340-cb0e-4946-83ec-7d72e397cac8}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Vulkan">
+      <UniqueIdentifier>{94154238-8b02-44f8-a7b8-3612e7bfa33c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Vulkan">
+      <UniqueIdentifier>{46f36c68-0e0e-4acd-a621-3365e3167c4f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="EventSource.inl">
       <Filter>Source Files</Filter>
+    </None>
+    <None Include="Vulkan\EntryPoints.inl">
+      <Filter>Source Files\Vulkan</Filter>
     </None>
   </ItemGroup>
   <ItemGroup>
