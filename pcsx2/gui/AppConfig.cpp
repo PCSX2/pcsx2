@@ -108,6 +108,12 @@ namespace PathDefs
 			static const wxDirName retval(L"resources");
 			return retval;
 		}
+
+		const wxDirName& Cache()
+		{
+			static const wxDirName retval(L"cache");
+			return retval;
+		}
 	};
 
 	// Specifies the root folder for the application install.
@@ -254,6 +260,11 @@ namespace PathDefs
 #endif
 	}
 
+	wxDirName GetCache()
+	{
+		return GetDocuments() + Base::Cache();
+	}
+
 	wxDirName Get(FoldersEnum_t folderidx)
 	{
 		switch (folderidx)
@@ -276,6 +287,8 @@ namespace PathDefs
 				return GetCheats();
 			case FolderId_CheatsWS:
 				return GetCheatsWS();
+			case FolderId_Cache:
+				return GetCache();
 
 			case FolderId_Documents:
 				return CustomDocumentsFolder;
@@ -389,6 +402,8 @@ wxDirName& AppConfig::FolderOptions::operator[](FoldersEnum_t folderidx)
 			return Cheats;
 		case FolderId_CheatsWS:
 			return CheatsWS;
+		case FolderId_Cache:
+			return Cache;
 
 		case FolderId_Documents:
 			return CustomDocumentsFolder;
@@ -425,6 +440,8 @@ bool AppConfig::FolderOptions::IsDefault(FoldersEnum_t folderidx) const
 			return UseDefaultCheats;
 		case FolderId_CheatsWS:
 			return UseDefaultCheatsWS;
+		case FolderId_Cache:
+			return UseDefaultCache;
 
 		case FolderId_Documents:
 			return false;
@@ -494,6 +511,13 @@ void AppConfig::FolderOptions::Set(FoldersEnum_t folderidx, const wxString& src,
 			CheatsWS = src;
 			UseDefaultCheatsWS = useDefault;
 			EmuFolders::CheatsWS = GetResolvedFolder(FolderId_CheatsWS);
+			break;
+
+		case FolderId_Cache:
+			Cache = src;
+			UseDefaultCache = useDefault;
+			EmuFolders::Cache = GetResolvedFolder(FolderId_Cache);
+			EmuFolders::Cache.Mkdir();
 			break;
 
 			jNO_DEFAULT
@@ -703,6 +727,7 @@ AppConfig::FolderOptions::FolderOptions()
 	, Cheats(PathDefs::GetCheats())
 	, CheatsWS(PathDefs::GetCheatsWS())
 	, Resources(PathDefs::GetResources())
+	, Cache(PathDefs::GetCache())
 
 	, RunIso(PathDefs::GetDocuments()) // raw default is always the Documents folder.
 	, RunELF(PathDefs::GetDocuments()) // raw default is always the Documents folder.
@@ -741,6 +766,7 @@ void AppConfig::FolderOptions::LoadSave(IniInterface& ini)
 	IniEntryDirFile(Langs, rel);
 	IniEntryDirFile(Cheats, rel);
 	IniEntryDirFile(CheatsWS, rel);
+	IniEntryDirFile(Cache, rel);
 
 	IniEntryDirFile(RunIso, rel);
 	IniEntryDirFile(RunELF, rel);
@@ -769,6 +795,10 @@ void AppSetEmuFolders()
 	EmuFolders::Cheats = GetResolvedFolder(FolderId_Cheats);
 	EmuFolders::CheatsWS = GetResolvedFolder(FolderId_CheatsWS);
 	EmuFolders::Resources = g_Conf->Folders.Resources;
+	EmuFolders::Cache = GetResolvedFolder(FolderId_Cache);
+
+	// Ensure cache directory exists, since we're going to write to it (e.g. game database)
+	EmuFolders::Cache.Mkdir();
 }
 
 // ------------------------------------------------------------------------

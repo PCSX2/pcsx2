@@ -79,6 +79,7 @@ oprofile_data/
 /bin/PCSX2-linux.sh
 /bin/GS*.txt
 /bin/bios
+/bin/cache
 /bin/dumps
 /bin/help
 /bin/inis
