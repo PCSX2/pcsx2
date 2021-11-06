@@ -17,7 +17,6 @@
 #pragma once
 
 #include "AppCommon.h"
-#include "CpuUsageProvider.h"
 #include "common/WindowInfo.h"
 #include <memory>
 #include <optional>
@@ -105,8 +104,6 @@ protected:
 	wxTimer					m_timer_UpdateTitle;
 	wxWindowID				m_id_gspanel;
 	wxStatusBar*			m_statusbar;
-
-	CpuUsageProvider		m_CpuUsage;
 
 public:
 	GSFrame( const wxString& title);

@@ -27,6 +27,7 @@
 
 #include "GS.h"
 #include "VUmicro.h"
+#include "PerformanceMetrics.h"
 
 #include "ps2/HwInternal.h"
 #include "Sio.h"
@@ -399,6 +400,8 @@ u32 UpdateVSyncRate()
 
 		cpuRcntSet();
 	}
+
+	PerformanceMetrics::SetVerticalFrequency(vertical_frequency);
 
 	if (m_iTicks != ticks)
 		m_iTicks = ticks;

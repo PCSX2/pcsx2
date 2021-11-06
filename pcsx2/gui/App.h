@@ -284,29 +284,6 @@ public:
 	virtual ~pxAppResources();
 };
 
-// --------------------------------------------------------------------------------------
-//  FramerateManager
-// --------------------------------------------------------------------------------------
-class FramerateManager
-{
-public:
-	static const uint FramerateQueueDepth = 64;
-
-protected:
-	u64 m_fpsqueue[FramerateQueueDepth];
-	int m_fpsqueue_writepos;
-	uint m_initpause;
-
-public:
-	FramerateManager() { Reset(); }
-	virtual ~FramerateManager() = default;
-
-	void Reset();
-	void Resume();
-	void DoFrame();
-	double GetFramerate() const;
-};
-
 class StartupOptions
 {
 public:
@@ -474,7 +451,6 @@ protected:
 	Threading::Mutex m_mtx_LoadingGameDB;
 
 public:
-	FramerateManager FpsManager;
 	std::unique_ptr<CommandDictionary> GlobalCommands;
 	std::unique_ptr<AcceleratorDictionary> GlobalAccels;
 
