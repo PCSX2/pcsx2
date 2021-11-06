@@ -22,6 +22,7 @@
 #include <wx/wfstream.h>
 #include "fmt/core.h"
 
+#include "common/FileSystem.h"
 #include "common/StringUtil.h"
 #include "common/Threading.h"
 
@@ -509,10 +510,11 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 		else
 		{
 			// No ws cheat files found at the cheats_ws folder, try the ws cheats zip file.
-			wxString cheats_ws_archive = Path::Combine(PathDefs::GetProgramDataDir(), wxFileName(L"cheats_ws.zip"));
+			const wxString cheats_ws_archive(Path::Combine(EmuFolders::Resources, wxFileName(L"cheats_ws.zip")));
 			if (wxFile::Exists(cheats_ws_archive))
 			{
-				int numberDbfCheatsLoaded = LoadPatchesFromZip(GameInfo::gameCRC, cheats_ws_archive, new wxFFileInputStream(cheats_ws_archive));
+				wxFFileInputStream* strm = new wxFFileInputStream(cheats_ws_archive);
+				int numberDbfCheatsLoaded = LoadPatchesFromZip(GameInfo::gameCRC, cheats_ws_archive, strm);
 				PatchesCon->WriteLn(Color_Green, "(Wide Screen Cheats DB) Patches Loaded: %d", numberDbfCheatsLoaded);
 				gameWsHacks.Printf(L" [%d widescreen hacks]", numberDbfCheatsLoaded);
 			}
