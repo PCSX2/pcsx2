@@ -20,7 +20,6 @@
 #include "GS.h"
 #include "Host.h"
 #include "AppSaveStates.h"
-#include "AppGameDatabase.h"
 #include "AppAccelerators.h"
 #include "PAD/Gamepad.h"
 
