@@ -352,6 +352,7 @@
     <ClCompile Include="PAD\Windows\WindowsMouse.cpp" />
     <ClCompile Include="PAD\Windows\WndProcEater.cpp" />
     <ClCompile Include="PAD\Windows\XInputEnum.cpp" />
+    <ClCompile Include="PerformanceMetrics.cpp" />
     <ClCompile Include="Recording\Utilities\InputRecordingLogger.cpp" />
     <ClCompile Include="SPU2\DplIIdecoder.cpp" />
     <ClCompile Include="SPU2\debug.cpp" />
@@ -647,7 +648,6 @@
     <ClCompile Include="gui\AppMain.cpp" />
     <ClCompile Include="gui\AppRes.cpp" />
     <ClCompile Include="gui\ConsoleLogger.cpp" />
-    <ClCompile Include="gui\CpuUsageProvider.cpp" />
     <ClCompile Include="gui\ExecutorThread.cpp" />
     <ClCompile Include="gui\FrameForGS.cpp" />
     <ClCompile Include="gui\GlobalCommands.cpp" />
@@ -791,6 +791,7 @@
     <ClInclude Include="PAD\Windows\WindowsMouse.h" />
     <ClInclude Include="PAD\Windows\WndProcEater.h" />
     <ClInclude Include="PAD\Windows\XInputEnum.h" />
+    <ClInclude Include="PerformanceMetrics.h" />
     <ClInclude Include="SPU2\Config.h" />
     <ClInclude Include="SPU2\Global.h" />
     <ClInclude Include="SPU2\interpolate_table.h" />
@@ -1076,7 +1077,6 @@
     <ClInclude Include="gui\ApplyState.h" />
     <ClInclude Include="gui\AppSaveStates.h" />
     <ClInclude Include="gui\ConsoleLogger.h" />
-    <ClInclude Include="gui\CpuUsageProvider.h" />
     <ClInclude Include="gui\GSFrame.h" />
     <ClInclude Include="gui\IsoDropTarget.h" />
     <ClInclude Include="gui\MainFrame.h" />
