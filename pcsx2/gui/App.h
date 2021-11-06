@@ -279,7 +279,6 @@ public:
 	std::unique_ptr<wxIconBundle> IconBundle;
 	std::unique_ptr<wxBitmap> Bitmap_Logo;
 	std::unique_ptr<wxBitmap> ScreenshotBitmap;
-	std::unique_ptr<AppGameDatabase> GameDB;
 
 	pxAppResources();
 	virtual ~pxAppResources();
@@ -592,7 +591,6 @@ public:
 	wxImageList& GetImgList_Toolbars();
 
 	const AppImageIds& GetImgId() const;
-	AppGameDatabase* GetGameDatabase();
 
 	// --------------------------------------------------------------------------
 	//  Overrides of wxApp virtuals:
