@@ -27,6 +27,7 @@
 #include <wx/statline.h>
 #include <wx/filepicker.h>
 #include <vector>
+#include <functional>
 
 class GSUIElementHolder
 {
@@ -66,28 +67,30 @@ class GSUIElementHolder
 		Type type;
 		wxControl* control;
 		const char* config;
-		wxCheckBox* prereq;
+		std::function<bool()> prereq;
 
-		UIElem(Type type, wxControl* control, const char* config, wxCheckBox* prereq)
+		UIElem(Type type, wxControl* control, const char* config, std::function<bool()> prereq)
 			: type(type), control(control), config(config), prereq(prereq)
 		{
 		}
 	};
 
+	static bool noPrereq() { return true; }
+
 	wxWindow* m_window;
 	std::vector<UIElem> m_elems;
 
-	void addWithLabel(wxControl* control, UIElem::Type type, wxSizer* sizer, const char* label, const char* config_name, int tooltip, wxCheckBox* prereq, wxSizerFlags flags = wxSizerFlags().Centre().Expand().Left());
+	void addWithLabel(wxControl* control, UIElem::Type type, wxSizer* sizer, const char* label, const char* config_name, int tooltip, std::function<bool()> prereq, wxSizerFlags flags = wxSizerFlags().Centre().Expand().Left());
 
 public:
 	GSUIElementHolder(wxWindow* window);
-	wxCheckBox* addCheckBox(wxSizer* sizer, const char* label, const char* config_name, int tooltip = -1, wxCheckBox* prereq = nullptr);
-	wxChoice* addComboBoxAndLabel(wxSizer* sizer, const char* label, const char* config_name, const std::vector<GSSetting>* settings, int tooltip = -1, wxCheckBox* prereq = nullptr);
-	wxSpinCtrl* addSpin(wxSizer* sizer, const char* config_name, int min, int max, int initial, int tooltip = -1, wxCheckBox* prereq = nullptr);
-	wxSpinCtrl* addSpinAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip = -1, wxCheckBox* prereq = nullptr);
-	wxSlider* addSliderAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip = -1, wxCheckBox* prereq = nullptr);
-	wxFilePickerCtrl* addFilePickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip = -1, wxCheckBox* prereq = nullptr);
-	wxDirPickerCtrl* addDirPickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip = -1, wxCheckBox* prereq = nullptr);
+	wxCheckBox* addCheckBox(wxSizer* sizer, const char* label, const char* config_name, int tooltip = -1, std::function<bool()> prereq = noPrereq);
+	wxChoice* addComboBoxAndLabel(wxSizer* sizer, const char* label, const char* config_name, const std::vector<GSSetting>* settings, int tooltip = -1, std::function<bool()> prereq = noPrereq);
+	wxSpinCtrl* addSpin(wxSizer* sizer, const char* config_name, int min, int max, int initial, int tooltip = -1, std::function<bool()> prereq = noPrereq);
+	wxSpinCtrl* addSpinAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip = -1, std::function<bool()> prereq = noPrereq);
+	wxSlider* addSliderAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip = -1, std::function<bool()> prereq = noPrereq);
+	wxFilePickerCtrl* addFilePickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip = -1, std::function<bool()> prereq = noPrereq);
+	wxDirPickerCtrl* addDirPickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip = -1, std::function<bool()> prereq = noPrereq);
 
 	void Load();
 	void Save();
