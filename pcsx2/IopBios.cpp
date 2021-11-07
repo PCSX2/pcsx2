@@ -22,6 +22,7 @@
 #include <string.h>
 #include <sys/stat.h>
 #include "ghc/filesystem.h"
+#include "common/FileSystem.h"
 
 #if !defined(S_ISREG) && defined(S_IFMT) && defined(S_IFREG)
 #define S_ISREG(m) (((m)&S_IFMT) == S_IFREG)
@@ -113,9 +114,9 @@ namespace R3000A
 	static int host_stat(const std::string path, fio_stat_t* host_stats)
 	{
 		struct stat file_stats;
-		const ghc::filesystem::path file_path{host_path(path)};
+		const std::string file_path(host_path(path));
 
-		if (::stat(file_path.string().c_str(), &file_stats))
+		if (!FileSystem::StatFile(file_path.c_str(), &file_stats))
 			return -IOP_ENOENT;
 
 		host_stats->size = file_stats.st_size;
@@ -203,8 +204,8 @@ namespace R3000A
 
 		static int open(IOManFile** file, const std::string& full_path, s32 flags, u16 mode)
 		{
-			const std::string path = full_path.substr(full_path.find(':') + 1);
-			const ghc::filesystem::path file_path{host_path(path)};
+			const std::string path(full_path.substr(full_path.find(':') + 1));
+			const std::string file_path(host_path(path));
 			int native_flags = O_BINARY; // necessary in Windows.
 
 			switch (flags & IOP_O_RDWR)
@@ -228,10 +229,12 @@ namespace R3000A
 				native_flags |= O_TRUNC;
 
 #ifdef _WIN32
-			int hostfd = ::_open(file_path.string().c_str(), native_flags, _S_IREAD | _S_IWRITE);
+			const int native_mode = _S_IREAD | _S_IWRITE;
 #else
-			int hostfd = ::open(file_path.string().c_str(), native_flags, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
+			const int native_mode = S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH;
 #endif
+
+			const int hostfd = FileSystem::OpenFDFile(file_path.c_str(), native_flags, native_mode);
 			if (hostfd < 0)
 				return translate_error(hostfd);
 
