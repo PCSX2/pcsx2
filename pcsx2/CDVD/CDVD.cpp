@@ -797,7 +797,7 @@ void cdvdReset()
 		cdvd.RTC.hour = 0;
 		cdvd.RTC.day = 4;
 		cdvd.RTC.month = 3;
-		cdvd.RTC.year = 2;
+		cdvd.RTC.year = 20;
 	}
 	else
 	{
