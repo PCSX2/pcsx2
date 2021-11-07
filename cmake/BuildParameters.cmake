@@ -121,15 +121,7 @@ endif()
 # It only cost several MB so disbable it by default
 option(CMAKE_BUILD_STRIP "Srip binaries to save a couple of MB (developer option)")
 
-if(NOT DEFINED CMAKE_BUILD_PO)
-	if(CMAKE_BUILD_TYPE STREQUAL "Release")
-		set(CMAKE_BUILD_PO TRUE)
-		message(STATUS "Enable the building of po files by default in ${CMAKE_BUILD_TYPE} build !!!")
-	else()
-		set(CMAKE_BUILD_PO FALSE)
-		message(STATUS "Disable the building of po files by default in ${CMAKE_BUILD_TYPE} build !!!")
-	endif()
-endif()
+option(CMAKE_BUILD_PO "Build po files (modifies git-tracked files)" OFF)
 
 #-------------------------------------------------------------------------------
 # Select the architecture
