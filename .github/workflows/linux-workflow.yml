@@ -45,19 +45,13 @@ jobs:
       matrix:
         include:
           - os: ubuntu-18.04
-            platform: x86
-            compiler: gcc
-            cmakeflags: -DLTO_PCSX2_CORE=ON
-            appimage: true
-            experimental: false
-          - os: ubuntu-18.04
             platform: x64
             compiler: gcc
             cmakeflags: -DLTO_PCSX2_CORE=ON
             appimage: true
             experimental: false
           - os: ubuntu-18.04
-            platform: x86
+            platform: x64
             compiler: clang
             # Need to disable PCH until cmake 3.17
             # (PCH conflicts with ccache, fixed by https://gitlab.kitware.com/cmake/cmake/-/merge_requests/4400)
@@ -66,14 +60,14 @@ jobs:
             appimage: false
             experimental: false
           - os: ubuntu-18.04
-            platform: x86
+            platform: x64
             compiler: gcc
             cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
             detail: " nopch"
             appimage: false
             experimental: false
           - os: ubuntu-18.04
-            platform: x86
+            platform: x64
             compiler: gcc
             cmakeflags: -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON -DARCH_FLAG=-march=haswell
             detail: " avx2 nopch"

@@ -41,12 +41,9 @@ jobs:
       fail-fast: false
       matrix:
         os: [windows-2019]
-        platform: [Win32, x64]
+        platform: [x64]
         configuration: [Release, Release AVX2, CMake, Qt]
         experimental: [false]
-        exclude:
-          - platform: win32
-            configuration: Qt
 
     name: ${{ matrix.platform }} | ${{ matrix.configuration }}
     runs-on: ${{ matrix.os }}
@@ -70,18 +67,18 @@ jobs:
         run: git submodule update --init --recursive -j $env:NUMBER_OF_PROCESSORS
 
       - name: Setup Buildcache
+        if: matrix.configuration == 'CMake' # TODO: buildcache on VS
         uses: mikehardy/buildcache-action@v1.2.2
         with:
           cache_key: ${{ matrix.os }} ${{ matrix.platform }} ${{ matrix.configuration }}
-        if: matrix.configuration == 'CMake' # TODO: buildcache on VS
 
       - name: Verify VS Project Files
-        run: .github\workflows\scripts\windows\validate-vs-filters.ps1
         if: matrix.configuration != 'CMake'
+        run: .github\workflows\scripts\windows\validate-vs-filters.ps1
 
       - name: Setup msbuild
-        uses: microsoft/setup-msbuild@v1
         if: matrix.configuration != 'CMake'
+        uses: microsoft/setup-msbuild@v1
 
       - name: Download Qt build files
         if: matrix.configuration == 'Qt'
@@ -93,6 +90,7 @@ jobs:
           del qt-6.2.2-x64.7z
 
       - name: Generate CMake
+        if: matrix.configuration == 'CMake'
         id: cmake
         shell: cmd
         run: |
@@ -102,7 +100,6 @@ jobs:
           echo ::set-output name=buildtype::%type%
           echo ::set-output name=vcvars::%vcvars%
           cmake . -B build -DCMAKE_BUILD_TYPE=%type% -DLTO_PCSX2_CORE=ON -G Ninja -DCMAKE_C_COMPILER_LAUNCHER=..\buildcache\bin\buildcache.exe -DCMAKE_CXX_COMPILER_LAUNCHER=..\buildcache\bin\buildcache.exe -DCMAKE_DISABLE_PRECOMPILE_HEADERS=ON
-        if: matrix.configuration == 'CMake'
 
       - name: Build PCSX2
         shell: cmd
@@ -123,11 +120,11 @@ jobs:
           )
 
       - name: Run Tests
+        if: matrix.configuration == 'CMake'
         shell: cmd
         run: |
           call "%ProgramFiles(x86)%\Microsoft Visual Studio\2019\Enterprise\VC\Auxiliary\Build\${{ steps.cmake.outputs.vcvars }}"
           cmake --build build --config ${{ steps.cmake.outputs.buildtype }} --target unittests
-        if: matrix.configuration == 'CMake'
 
       - name: Prepare Artifact Metadata
         id: artifact-metadata

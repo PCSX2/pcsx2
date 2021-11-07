@@ -111,11 +111,8 @@ const { data: releaseAssetsPost } = await octokit.rest.repos.listReleaseAssets({
 
 // Expected Assets, if we have all of them, we will publish it
 let expectedAssets = {
-  "windows-32bit-sse4": false,
-  "windows-32bit-avx2": false,
   "windows-64bit-sse4": false,
   "windows-64bit-avx2": false,
-  "linux-appimage-32bit": false,
   "linux-appimage-64bit": false
 }
 
