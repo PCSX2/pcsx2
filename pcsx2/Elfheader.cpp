@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Common.h"
+#include "common/FileSystem.h"
 
 #include "GS.h"			// for sending game crc to mtgs
 #include "Elfheader.h"
@@ -152,7 +153,7 @@ void ElfObject::readIso(IsoFile& file)
 void ElfObject::readFile()
 {
 	int rsize = 0;
-	FILE *f = wxFopen( filename, "rb" );
+	FILE *f = FileSystem::OpenCFile( filename.ToUTF8(), "rb" );
 	if (f == NULL) throw Exception::FileNotFound( filename );
 
 	fseek(f, 0, SEEK_SET);
