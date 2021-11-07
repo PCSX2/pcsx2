@@ -95,6 +95,7 @@ public:
 	void Load();
 	void Save();
 	void Update();
+	void DisableAll();
 };
 
 namespace GSSettingsDialog
@@ -104,11 +105,13 @@ namespace GSSettingsDialog
 	{
 	public:
 		GSUIElementHolder m_ui;
+		wxChoice* m_internal_resolution;
+		bool m_is_hardware = false;
 
 		RendererTab(wxWindow* parent);
-		void Load() { m_ui.Load(); m_ui.Update(); }
+		void Load() { m_ui.Load(); }
 		void Save() { m_ui.Save(); }
-		void CallUpdate(wxCommandEvent& event);
+		void DoUpdate() { m_ui.Update(); }
 	};
 
 	class HacksTab : public wxPanel
@@ -116,12 +119,12 @@ namespace GSSettingsDialog
 	public:
 		GSUIElementHolder m_ui;
 		wxSpinCtrl *skip_x_spin, *skip_y_spin;
+		bool m_is_native_res = false;
 
 		HacksTab(wxWindow* parent);
-		void Load() { m_ui.Load(); Update(); }
+		void Load() { m_ui.Load(); }
 		void Save() { m_ui.Save(); }
-		void Update();
-		void CallUpdate(wxCommandEvent& event);
+		void DoUpdate();
 	};
 
 	class DebugTab : public wxPanel
@@ -129,12 +132,12 @@ namespace GSSettingsDialog
 	public:
 		GSUIElementHolder m_ui;
 		wxSpinCtrl *start_dump_spin, *end_dump_spin;
+		bool m_is_ogl_hw = false;
 
 		DebugTab(wxWindow* parent);
-		void Load() { m_ui.Load(); Update(); }
+		void Load() { m_ui.Load(); }
 		void Save() { m_ui.Save(); }
-		void Update();
-		void CallUpdate(wxCommandEvent& event);
+		void DoUpdate();
 	};
 
 	class RecTab : public wxPanel
@@ -143,9 +146,9 @@ namespace GSSettingsDialog
 		GSUIElementHolder m_ui;
 
 		RecTab(wxWindow* parent);
-		void Load() { m_ui.Load(); m_ui.Update(); }
+		void Load() { m_ui.Load(); }
 		void Save() { m_ui.Save(); }
-		void CallUpdate(wxCommandEvent& event);
+		void DoUpdate() { m_ui.Update(); }
 	};
 
 	class PostTab : public wxPanel
@@ -154,9 +157,9 @@ namespace GSSettingsDialog
 		GSUIElementHolder m_ui;
 
 		PostTab(wxWindow* parent);
-		void Load() { m_ui.Load(); m_ui.Update(); }
+		void Load() { m_ui.Load(); }
 		void Save() { m_ui.Save(); }
-		void CallUpdate(wxCommandEvent& event);
+		void DoUpdate() { m_ui.Update(); }
 	};
 
 	class OSDTab : public wxPanel
@@ -165,9 +168,9 @@ namespace GSSettingsDialog
 		GSUIElementHolder m_ui;
 
 		OSDTab(wxWindow* parent);
-		void Load() { m_ui.Load(); m_ui.Update(); }
+		void Load() { m_ui.Load(); }
 		void Save() { m_ui.Save(); }
-		void CallUpdate(wxCommandEvent& event);
+		void DoUpdate() { m_ui.Update(); }
 	};
 
 	class Dialog : public wxDialog
