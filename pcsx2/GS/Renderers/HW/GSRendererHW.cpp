@@ -2184,7 +2184,7 @@ bool GSRendererHW::OI_SonicUnleashed(GSTexture* rt, GSTexture* ds, GSTextureCach
 	const GSVector4 sRect(0, 0, 1, 1);
 	const GSVector4 dRect(0, 0, size.x, size.y);
 
-	m_dev->StretchRect(src->m_texture, sRect, rt, dRect, true, true, true, false);
+	m_dev->StretchRectWRGBA(src->m_texture, sRect, rt, dRect, true, true, true, false);
 
 	return false;
 }
