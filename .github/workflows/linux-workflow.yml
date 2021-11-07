@@ -84,7 +84,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     continue-on-error: ${{ matrix.experimental }}
     # Set some sort of timeout in the event of run-away builds.  We are limited on concurrent jobs so, get rid of them.
-    timeout-minutes: 30
+    timeout-minutes: 60
 
     env:
       CCACHE_BASEDIR: ${{ github.workspace }}
