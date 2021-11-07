@@ -88,7 +88,7 @@ GSUIElementHolder::GSUIElementHolder(wxWindow* window)
 {
 }
 
-void GSUIElementHolder::addWithLabel(wxControl* control, UIElem::Type type, wxSizer* sizer, const char* label, const char* config_name, int tooltip, std::function<bool()> prereq, wxSizerFlags flags)
+wxStaticText* GSUIElementHolder::addWithLabel(wxControl* control, UIElem::Type type, wxSizer* sizer, const char* label, const char* config_name, int tooltip, std::function<bool()> prereq, wxSizerFlags flags)
 {
 	add_tooltip(control, tooltip);
 	wxStaticText* text = new wxStaticText(m_window, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
@@ -96,6 +96,7 @@ void GSUIElementHolder::addWithLabel(wxControl* control, UIElem::Type type, wxSi
 	sizer->Add(text, wxSizerFlags().Centre().Right());
 	sizer->Add(control, flags);
 	m_elems.emplace_back(type, control, config_name, prereq);
+	return text;
 }
 
 wxCheckBox* GSUIElementHolder::addCheckBox(wxSizer* sizer, const char* label, const char* config_name, int tooltip, std::function<bool()> prereq)
@@ -108,13 +109,12 @@ wxCheckBox* GSUIElementHolder::addCheckBox(wxSizer* sizer, const char* label, co
 	return box;
 }
 
-wxChoice* GSUIElementHolder::addComboBoxAndLabel(wxSizer* sizer, const char* label, const char* config_name, const std::vector<GSSetting>* settings, int tooltip, std::function<bool()> prereq)
+std::pair<wxChoice*, wxStaticText*> GSUIElementHolder::addComboBoxAndLabel(wxSizer* sizer, const char* label, const char* config_name, const std::vector<GSSetting>* settings, int tooltip, std::function<bool()> prereq)
 {
 	wxArrayString temp;
 	add_settings_to_array_string(*settings, temp);
 	wxChoice* choice = new GSwxChoice(m_window, wxID_ANY, wxDefaultPosition, wxDefaultSize, temp, settings);
-	addWithLabel(choice, UIElem::Type::Choice, sizer, label, config_name, tooltip, prereq);
-	return choice;
+	return std::make_pair(choice, addWithLabel(choice, UIElem::Type::Choice, sizer, label, config_name, tooltip, prereq));
 }
 
 wxSpinCtrl* GSUIElementHolder::addSpin(wxSizer* sizer, const char* config_name, int min, int max, int initial, int tooltip, std::function<bool()> prereq)
@@ -127,32 +127,28 @@ wxSpinCtrl* GSUIElementHolder::addSpin(wxSizer* sizer, const char* config_name, 
 	return spin;
 }
 
-wxSpinCtrl* GSUIElementHolder::addSpinAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip, std::function<bool()> prereq)
+std::pair<wxSpinCtrl*, wxStaticText*> GSUIElementHolder::addSpinAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip, std::function<bool()> prereq)
 {
 	wxSpinCtrl* spin = new wxSpinCtrl(m_window, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, min, max, initial);
-	addWithLabel(spin, UIElem::Type::Spin, sizer, label, config_name, tooltip, prereq, wxSizerFlags().Centre().Left());
-	return spin;
+	return std::make_pair(spin, addWithLabel(spin, UIElem::Type::Spin, sizer, label, config_name, tooltip, prereq, wxSizerFlags().Centre().Left()));
 }
 
-wxSlider* GSUIElementHolder::addSliderAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip, std::function<bool()> prereq)
+std::pair<wxSlider*, wxStaticText*> GSUIElementHolder::addSliderAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip, std::function<bool()> prereq)
 {
 	wxSlider* slider = new wxSlider(m_window, wxID_ANY, initial, min, max, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL | wxSL_VALUE_LABEL);
-	addWithLabel(slider, UIElem::Type::Slider, sizer, label, config_name, tooltip, prereq);
-	return slider;
+	return std::make_pair(slider, addWithLabel(slider, UIElem::Type::Slider, sizer, label, config_name, tooltip, prereq));
 }
 
-wxFilePickerCtrl* GSUIElementHolder::addFilePickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip, std::function<bool()> prereq)
+std::pair<wxFilePickerCtrl*, wxStaticText*> GSUIElementHolder::addFilePickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip, std::function<bool()> prereq)
 {
 	wxFilePickerCtrl* picker = new wxFilePickerCtrl(m_window, wxID_ANY);
-	addWithLabel(picker, UIElem::Type::File, sizer, label, config_name, tooltip, prereq);
-	return picker;
+	return std::make_pair(picker, addWithLabel(picker, UIElem::Type::File, sizer, label, config_name, tooltip, prereq));
 }
 
-wxDirPickerCtrl* GSUIElementHolder::addDirPickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip, std::function<bool()> prereq)
+std::pair<wxDirPickerCtrl*, wxStaticText*> GSUIElementHolder::addDirPickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip, std::function<bool()> prereq)
 {
 	wxDirPickerCtrl* picker = new wxDirPickerCtrl(m_window, wxID_ANY);
-	addWithLabel(picker, UIElem::Type::Directory, sizer, label, config_name, tooltip, prereq);
-	return picker;
+	return std::make_pair(picker, addWithLabel(picker, UIElem::Type::Directory, sizer, label, config_name, tooltip, prereq));
 }
 
 void GSUIElementHolder::Load()
@@ -254,13 +250,17 @@ RendererTab::RendererTab(wxWindow* parent)
 
 	auto* hw_choice_grid = new wxFlexGridSizer(2, 5, 5);
 
-	m_internal_resolution = m_ui.addComboBoxAndLabel(hw_choice_grid, "Internal Resolution:", "upscale_multiplier", &theApp.m_gs_upscale_multiplier, -1, hw_prereq);
+	m_internal_resolution = m_ui.addComboBoxAndLabel(hw_choice_grid, "Internal Resolution:", "upscale_multiplier", &theApp.m_gs_upscale_multiplier, -1, hw_prereq).first;
 
-	m_ui.addComboBoxAndLabel(hw_choice_grid, "Anisotropic Filtering:", "MaxAnisotropy",          &theApp.m_gs_max_anisotropy,  IDC_AFCOMBO,             hw_prereq);
-	m_ui.addComboBoxAndLabel(hw_choice_grid, "Dithering (PgDn):",      "dithering_ps2",          &theApp.m_gs_dithering,       IDC_DITHERING,           hw_prereq);
-	m_ui.addComboBoxAndLabel(hw_choice_grid, "Mipmapping (Insert):",   "mipmap_hw",              &theApp.m_gs_hw_mipmapping,   IDC_MIPMAP_HW,           hw_prereq);
-	m_ui.addComboBoxAndLabel(hw_choice_grid, "CRC Hack Level:",        "crc_hack_level",         &theApp.m_gs_crc_level,       IDC_CRC_LEVEL,           hw_prereq);
-	m_ui.addComboBoxAndLabel(hw_choice_grid, "Blending Accuracy:",     "accurate_blending_unit", &theApp.m_gs_acc_blend_level, IDC_ACCURATE_BLEND_UNIT, hw_prereq);
+	m_ui.addComboBoxAndLabel(hw_choice_grid, "Anisotropic Filtering:", "MaxAnisotropy",  &theApp.m_gs_max_anisotropy, IDC_AFCOMBO,   hw_prereq);
+	m_ui.addComboBoxAndLabel(hw_choice_grid, "Dithering (PgDn):",      "dithering_ps2",  &theApp.m_gs_dithering,      IDC_DITHERING, hw_prereq);
+	m_ui.addComboBoxAndLabel(hw_choice_grid, "Mipmapping (Insert):",   "mipmap_hw",      &theApp.m_gs_hw_mipmapping,  IDC_MIPMAP_HW, hw_prereq);
+	m_ui.addComboBoxAndLabel(hw_choice_grid, "CRC Hack Level:",        "crc_hack_level", &theApp.m_gs_crc_level,      IDC_CRC_LEVEL, hw_prereq);
+
+	m_blend_mode = m_ui.addComboBoxAndLabel(hw_choice_grid, "Blending Accuracy:", "accurate_blending_unit", &theApp.m_gs_acc_blend_level, IDC_ACCURATE_BLEND_UNIT, hw_prereq);
+#ifdef _WIN32
+	m_blend_mode_d3d11 = m_ui.addComboBoxAndLabel(hw_choice_grid, "Blending Accuracy:", "accurate_blending_unit_d3d11", &theApp.m_gs_acc_blend_level_d3d11, IDC_ACCURATE_BLEND_UNIT_D3D11, hw_prereq);
+#endif
 
 	hardware_box->Add(hw_checks_box, wxSizerFlags().Centre());
 	hardware_box->AddSpacer(5);
@@ -283,6 +283,26 @@ RendererTab::RendererTab(wxWindow* parent)
 	tab_box->Add(software_box, wxSizerFlags().Expand());
 
 	SetSizerAndFit(tab_box);
+}
+
+void RendererTab::UpdateBlendMode(GSRendererType renderer)
+{
+#ifdef _WIN32
+	if (renderer == GSRendererType::DX1011_HW)
+	{
+		m_blend_mode_d3d11.first ->Show();
+		m_blend_mode_d3d11.second->Show();
+		m_blend_mode.first ->Hide();
+		m_blend_mode.second->Hide();
+	}
+	else
+	{
+		m_blend_mode_d3d11.first ->Hide();
+		m_blend_mode_d3d11.second->Hide();
+		m_blend_mode.first ->Show();
+		m_blend_mode.second->Show();
+	}
+#endif
 }
 
 HacksTab::HacksTab(wxWindow* parent)
@@ -507,8 +527,8 @@ DebugTab::DebugTab(wxWindow* parent)
 
 	auto* dump_grid = new wxFlexGridSizer(2, 5, 5);
 
-	start_dump_spin = m_ui.addSpinAndLabel(dump_grid, "Start of Dump:", "saven", 0, pow(10, 9),    0);
-	end_dump_spin   = m_ui.addSpinAndLabel(dump_grid, "End of Dump:",   "savel", 0, pow(10, 5), 5000);
+	start_dump_spin = m_ui.addSpinAndLabel(dump_grid, "Start of Dump:", "saven", 0, pow(10, 9),    0).first;
+	end_dump_spin   = m_ui.addSpinAndLabel(dump_grid, "End of Dump:",   "savel", 0, pow(10, 5), 5000).first;
 
 	debug_box->AddSpacer(5);
 	debug_box->Add(dump_grid);
@@ -543,7 +563,7 @@ Dialog::Dialog()
 	auto* top_grid = new wxFlexGridSizer(2, 5, 5);
 	top_grid->SetFlexibleDirection(wxHORIZONTAL);
 
-	m_renderer_select = m_ui.addComboBoxAndLabel(top_grid, "Renderer:", "Renderer", &theApp.m_gs_renderers);
+	m_renderer_select = m_ui.addComboBoxAndLabel(top_grid, "Renderer:", "Renderer", &theApp.m_gs_renderers).first;
 	m_renderer_select->Bind(wxEVT_CHOICE, &Dialog::OnRendererChange, this);
 
 #ifdef _WIN32
@@ -595,7 +615,7 @@ void Dialog::CallUpdate(wxCommandEvent&)
 
 void Dialog::OnRendererChange(wxCommandEvent&)
 {
-	PopulateAdapterList();
+	RendererChange();
 	Update();
 }
 
@@ -605,7 +625,7 @@ GSRendererType Dialog::GetSelectedRendererType()
 
 	// there is no currently selected renderer or the combo box has more entries than the renderer list or the current selection is negative
 	// make sure you haven't made a mistake initializing everything
-	ASSERT(index < theApp.m_gs_renderers.size() || index >= 0);
+	ASSERT(index < static_cast<int>(theApp.m_gs_renderers.size()) || index >= 0);
 
 	const GSRendererType type = static_cast<GSRendererType>(
 		theApp.m_gs_renderers[index].value
@@ -614,12 +634,13 @@ GSRendererType Dialog::GetSelectedRendererType()
 	return type;
 }
 
-void Dialog::PopulateAdapterList()
+void Dialog::RendererChange()
 {
 #ifdef _WIN32
+	GSRendererType renderer = GetSelectedRendererType();
 	m_adapter_select->Clear();
 
-	if (GetSelectedRendererType() == GSRendererType::DX1011_HW)
+	if (renderer == GSRendererType::DX1011_HW)
 	{
 		auto factory = D3D::CreateFactory(false);
 		auto adapter_list = D3D::GetAdapterList(factory.get());
@@ -642,6 +663,9 @@ void Dialog::PopulateAdapterList()
 	{
 		m_adapter_select->Disable();
 	}
+	m_renderer_panel->UpdateBlendMode(renderer);
+
+	m_renderer_panel->Layout(); // The version of wx we use on Windows is dumb and something prevents relayout from happening to notebook pages
 #endif
 }
 
@@ -655,7 +679,7 @@ void Dialog::Load()
 	m_renderer_select->SetSelection(get_config_index(theApp.m_gs_renderers, static_cast<int>(renderer)));
 #endif
 
-	PopulateAdapterList();
+	RendererChange();
 
 	m_hacks_panel->Load();
 	m_renderer_panel->Load();
