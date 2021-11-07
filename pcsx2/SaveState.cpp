@@ -29,6 +29,7 @@
 #include "Counters.h"
 #include "Patch.h"
 #include "System/SysThreads.h"
+#include "DebugTools/Breakpoints.h"
 
 #include "common/pxStreams.h"
 #include "common/SafeArray.inl"
@@ -67,6 +68,8 @@ static void PostLoadPrep()
 //	WriteCP0Status(cpuRegs.CP0.n.Status.val);
 	for(int i=0; i<48; i++) MapTLB(i);
 	if (EmuConfig.Gamefixes.GoemonTlbHack) GoemonPreloadTlb();
+	CBreakPoints::SetSkipFirst(BREAKPOINT_EE, 0);
+	CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, 0);
 
 	UpdateVSyncRate();
 }
