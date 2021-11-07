@@ -80,17 +80,17 @@ class GSUIElementHolder
 	wxWindow* m_window;
 	std::vector<UIElem> m_elems;
 
-	void addWithLabel(wxControl* control, UIElem::Type type, wxSizer* sizer, const char* label, const char* config_name, int tooltip, std::function<bool()> prereq, wxSizerFlags flags = wxSizerFlags().Centre().Expand().Left());
+	wxStaticText* addWithLabel(wxControl* control, UIElem::Type type, wxSizer* sizer, const char* label, const char* config_name, int tooltip, std::function<bool()> prereq, wxSizerFlags flags = wxSizerFlags().Centre().Expand().Left());
 
 public:
 	GSUIElementHolder(wxWindow* window);
 	wxCheckBox* addCheckBox(wxSizer* sizer, const char* label, const char* config_name, int tooltip = -1, std::function<bool()> prereq = noPrereq);
-	wxChoice* addComboBoxAndLabel(wxSizer* sizer, const char* label, const char* config_name, const std::vector<GSSetting>* settings, int tooltip = -1, std::function<bool()> prereq = noPrereq);
+	std::pair<wxChoice*, wxStaticText*> addComboBoxAndLabel(wxSizer* sizer, const char* label, const char* config_name, const std::vector<GSSetting>* settings, int tooltip = -1, std::function<bool()> prereq = noPrereq);
 	wxSpinCtrl* addSpin(wxSizer* sizer, const char* config_name, int min, int max, int initial, int tooltip = -1, std::function<bool()> prereq = noPrereq);
-	wxSpinCtrl* addSpinAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip = -1, std::function<bool()> prereq = noPrereq);
-	wxSlider* addSliderAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip = -1, std::function<bool()> prereq = noPrereq);
-	wxFilePickerCtrl* addFilePickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip = -1, std::function<bool()> prereq = noPrereq);
-	wxDirPickerCtrl* addDirPickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip = -1, std::function<bool()> prereq = noPrereq);
+	std::pair<wxSpinCtrl*, wxStaticText*> addSpinAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip = -1, std::function<bool()> prereq = noPrereq);
+	std::pair<wxSlider*, wxStaticText*> addSliderAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip = -1, std::function<bool()> prereq = noPrereq);
+	std::pair<wxFilePickerCtrl*, wxStaticText*> addFilePickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip = -1, std::function<bool()> prereq = noPrereq);
+	std::pair<wxDirPickerCtrl*, wxStaticText*> addDirPickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip = -1, std::function<bool()> prereq = noPrereq);
 
 	void Load();
 	void Save();
@@ -106,11 +106,16 @@ namespace GSSettingsDialog
 	public:
 		GSUIElementHolder m_ui;
 		wxChoice* m_internal_resolution;
+		std::pair<wxChoice*, wxStaticText*> m_blend_mode;
+#ifdef _WIN32
+		std::pair<wxChoice*, wxStaticText*> m_blend_mode_d3d11;
+#endif
 		bool m_is_hardware = false;
 
 		RendererTab(wxWindow* parent);
 		void Load() { m_ui.Load(); }
 		void Save() { m_ui.Save(); }
+		void UpdateBlendMode(GSRendererType renderer);
 		void DoUpdate() { m_ui.Update(); }
 	};
 
@@ -179,7 +184,9 @@ namespace GSSettingsDialog
 
 		wxBoxSizer* m_top_box;
 		wxChoice* m_renderer_select;
+#ifdef _WIN32
 		wxChoice* m_adapter_select;
+#endif
 		wxArrayString m_adapter_arr_string;
 		RendererTab* m_renderer_panel;
 		HacksTab* m_hacks_panel;
@@ -196,7 +203,7 @@ namespace GSSettingsDialog
 		void Update();
 		void CallUpdate(wxCommandEvent& event);
 		void OnRendererChange(wxCommandEvent& event);
-		void PopulateAdapterList();
+		void RendererChange();
 		GSRendererType GetSelectedRendererType();
 	};
 
