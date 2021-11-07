@@ -67,6 +67,20 @@ namespace
 		add_tooltip(temp_text, tooltip);
 		sizer->Add(temp_text, flags);
 	}
+
+	struct CheckboxPrereq
+	{
+		wxCheckBox* box;
+		explicit CheckboxPrereq(wxCheckBox* box)
+			: box(box)
+		{
+		}
+
+		bool operator()()
+		{
+			return box->GetValue();
+		}
+	};
 } // namespace
 
 GSUIElementHolder::GSUIElementHolder(wxWindow* window)
@@ -74,7 +88,7 @@ GSUIElementHolder::GSUIElementHolder(wxWindow* window)
 {
 }
 
-void GSUIElementHolder::addWithLabel(wxControl* control, UIElem::Type type, wxSizer* sizer, const char* label, const char* config_name, int tooltip, wxCheckBox* prereq, wxSizerFlags flags)
+void GSUIElementHolder::addWithLabel(wxControl* control, UIElem::Type type, wxSizer* sizer, const char* label, const char* config_name, int tooltip, std::function<bool()> prereq, wxSizerFlags flags)
 {
 	add_tooltip(control, tooltip);
 	wxStaticText* text = new wxStaticText(m_window, wxID_ANY, label, wxDefaultPosition, wxDefaultSize, wxALIGN_RIGHT);
@@ -84,7 +98,7 @@ void GSUIElementHolder::addWithLabel(wxControl* control, UIElem::Type type, wxSi
 	m_elems.emplace_back(type, control, config_name, prereq);
 }
 
-wxCheckBox* GSUIElementHolder::addCheckBox(wxSizer* sizer, const char* label, const char* config_name, int tooltip, wxCheckBox* prereq)
+wxCheckBox* GSUIElementHolder::addCheckBox(wxSizer* sizer, const char* label, const char* config_name, int tooltip, std::function<bool()> prereq)
 {
 	wxCheckBox* box = new wxCheckBox(m_window, wxID_ANY, label);
 	add_tooltip(box, tooltip);
@@ -94,7 +108,7 @@ wxCheckBox* GSUIElementHolder::addCheckBox(wxSizer* sizer, const char* label, co
 	return box;
 }
 
-wxChoice* GSUIElementHolder::addComboBoxAndLabel(wxSizer* sizer, const char* label, const char* config_name, const std::vector<GSSetting>* settings, int tooltip, wxCheckBox* prereq)
+wxChoice* GSUIElementHolder::addComboBoxAndLabel(wxSizer* sizer, const char* label, const char* config_name, const std::vector<GSSetting>* settings, int tooltip, std::function<bool()> prereq)
 {
 	wxArrayString temp;
 	add_settings_to_array_string(*settings, temp);
@@ -103,7 +117,7 @@ wxChoice* GSUIElementHolder::addComboBoxAndLabel(wxSizer* sizer, const char* lab
 	return choice;
 }
 
-wxSpinCtrl* GSUIElementHolder::addSpin(wxSizer* sizer, const char* config_name, int min, int max, int initial, int tooltip, wxCheckBox* prereq)
+wxSpinCtrl* GSUIElementHolder::addSpin(wxSizer* sizer, const char* config_name, int min, int max, int initial, int tooltip, std::function<bool()> prereq)
 {
 	wxSpinCtrl* spin = new wxSpinCtrl(m_window, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, min, max, initial);
 	add_tooltip(spin, tooltip);
@@ -113,28 +127,28 @@ wxSpinCtrl* GSUIElementHolder::addSpin(wxSizer* sizer, const char* config_name, 
 	return spin;
 }
 
-wxSpinCtrl* GSUIElementHolder::addSpinAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip, wxCheckBox* prereq)
+wxSpinCtrl* GSUIElementHolder::addSpinAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip, std::function<bool()> prereq)
 {
 	wxSpinCtrl* spin = new wxSpinCtrl(m_window, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, min, max, initial);
 	addWithLabel(spin, UIElem::Type::Spin, sizer, label, config_name, tooltip, prereq, wxSizerFlags().Centre().Left());
 	return spin;
 }
 
-wxSlider* GSUIElementHolder::addSliderAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip, wxCheckBox* prereq)
+wxSlider* GSUIElementHolder::addSliderAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip, std::function<bool()> prereq)
 {
 	wxSlider* slider = new wxSlider(m_window, wxID_ANY, initial, min, max, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL | wxSL_VALUE_LABEL);
 	addWithLabel(slider, UIElem::Type::Slider, sizer, label, config_name, tooltip, prereq);
 	return slider;
 }
 
-wxFilePickerCtrl* GSUIElementHolder::addFilePickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip, wxCheckBox* prereq)
+wxFilePickerCtrl* GSUIElementHolder::addFilePickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip, std::function<bool()> prereq)
 {
 	wxFilePickerCtrl* picker = new wxFilePickerCtrl(m_window, wxID_ANY);
 	addWithLabel(picker, UIElem::Type::File, sizer, label, config_name, tooltip, prereq);
 	return picker;
 }
 
-wxDirPickerCtrl* GSUIElementHolder::addDirPickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip, wxCheckBox* prereq)
+wxDirPickerCtrl* GSUIElementHolder::addDirPickerAndLabel(wxSizer* sizer, const char* label, const char* config_name, int tooltip, std::function<bool()> prereq)
 {
 	wxDirPickerCtrl* picker = new wxDirPickerCtrl(m_window, wxID_ANY);
 	addWithLabel(picker, UIElem::Type::Directory, sizer, label, config_name, tooltip, prereq);
@@ -208,7 +222,7 @@ void GSUIElementHolder::Update()
 	for (const UIElem& elem : m_elems)
 	{
 		if (elem.prereq)
-			elem.control->Enable(elem.prereq->GetValue());
+			elem.control->Enable(elem.prereq());
 	}
 }
 
@@ -270,7 +284,7 @@ HacksTab::HacksTab(wxWindow* parent)
 {
 	auto* tab_box = new wxBoxSizer(wxVERTICAL);
 
-	auto* hacks_check = m_ui.addCheckBox(tab_box, "Enable User Hacks", "UserHacks");
+	CheckboxPrereq hacks_check(m_ui.addCheckBox(tab_box, "Enable User Hacks", "UserHacks"));
 
 	auto* rend_hacks_box    = new wxStaticBoxSizer(wxVERTICAL, this, "Renderer Hacks");
 	auto* upscale_hacks_box = new wxStaticBoxSizer(wxVERTICAL, this, "Upscale Hacks");
@@ -359,6 +373,7 @@ RecTab::RecTab(wxWindow* parent)
 	auto* tab_box = new wxBoxSizer(wxVERTICAL);
 
 	auto* record_check = m_ui.addCheckBox(tab_box, "Enable Recording (F12)", "capture_enabled");
+	CheckboxPrereq record_prereq(record_check);
 	auto* record_box = new wxStaticBoxSizer(wxVERTICAL, this, "Recording");
 	auto* record_grid_box = new wxFlexGridSizer(2, 5, 5);
 	record_grid_box->AddGrowableCol(1);
@@ -366,15 +381,15 @@ RecTab::RecTab(wxWindow* parent)
 	// Resolution
 	add_label(this, record_grid_box, "Resolution:");
 	auto* res_box = new wxBoxSizer(wxHORIZONTAL);
-	m_ui.addSpin(res_box, "CaptureWidth",  256, 8192, 640, -1, record_check);
-	m_ui.addSpin(res_box, "CaptureHeight", 256, 8192, 480, -1, record_check);
+	m_ui.addSpin(res_box, "CaptureWidth",  256, 8192, 640, -1, record_prereq);
+	m_ui.addSpin(res_box, "CaptureHeight", 256, 8192, 480, -1, record_prereq);
 
 	record_grid_box->Add(res_box);
 
-	m_ui.addSpinAndLabel(record_grid_box, "Saving Threads:",        "capture_threads",       1, 32, 4, -1, record_check);
-	m_ui.addSpinAndLabel(record_grid_box, "PNG Compression Level:", "png_compression_level", 1,  9, 1, -1, record_check);
+	m_ui.addSpinAndLabel(record_grid_box, "Saving Threads:",        "capture_threads",       1, 32, 4, -1, record_prereq);
+	m_ui.addSpinAndLabel(record_grid_box, "PNG Compression Level:", "png_compression_level", 1,  9, 1, -1, record_prereq);
 
-	m_ui.addDirPickerAndLabel(record_grid_box, "Output Directory:", "capture_out_dir", -1, record_check);
+	m_ui.addDirPickerAndLabel(record_grid_box, "Output Directory:", "capture_out_dir", -1, record_prereq);
 
 	record_box->Add(record_grid_box, wxSizerFlags().Expand());
 
@@ -398,7 +413,7 @@ PostTab::PostTab(wxWindow* parent)
 	m_ui.addCheckBox(shader_box, "Texture Filtering of Display", "linear_present", IDC_LINEAR_PRESENT);
 	m_ui.addCheckBox(shader_box, "FXAA Shader (PgUp)",           "fxaa",           IDC_FXAA);
 
-	auto* shade_boost_check = m_ui.addCheckBox(shader_box, "Enable Shade Boost", "ShadeBoost", IDC_SHADEBOOST);
+	CheckboxPrereq shade_boost_check(m_ui.addCheckBox(shader_box, "Enable Shade Boost", "ShadeBoost", IDC_SHADEBOOST));
 
 	auto* shade_boost_box = new wxStaticBoxSizer(wxVERTICAL, this, "Shade Boost");
 	auto* shader_boost_grid = new wxFlexGridSizer(2, 0, 5);
@@ -411,7 +426,7 @@ PostTab::PostTab(wxWindow* parent)
 	shade_boost_box->Add(shader_boost_grid, wxSizerFlags().Expand());
 	shader_box->Add(shade_boost_box, wxSizerFlags().Expand());
 
-	auto* ext_shader_check = m_ui.addCheckBox(shader_box, "Enable External Shader", "shaderfx", IDC_SHADER_FX);
+	CheckboxPrereq ext_shader_check(m_ui.addCheckBox(shader_box, "Enable External Shader", "shaderfx", IDC_SHADER_FX));
 
 	auto* ext_shader_box = new wxStaticBoxSizer(wxVERTICAL, this, "External Shader (Home)");
 	auto* ext_shader_grid = new wxFlexGridSizer(2, 0, 5);
@@ -444,7 +459,7 @@ OSDTab::OSDTab(wxWindow* parent)
 {
 	auto* tab_box = new wxBoxSizer(wxVERTICAL);
 
-	auto* monitor_check = m_ui.addCheckBox(tab_box, "Enable Monitor", "osd_monitor_enabled", IDC_OSD_MONITOR);
+	CheckboxPrereq monitor_check(m_ui.addCheckBox(tab_box, "Enable Monitor", "osd_monitor_enabled", IDC_OSD_MONITOR));
 
 	auto* font_box = new wxStaticBoxSizer(wxVERTICAL, this, "Font");
 	auto* font_grid = new wxFlexGridSizer(2, 0, 5);
@@ -460,7 +475,7 @@ OSDTab::OSDTab(wxWindow* parent)
 	font_box->Add(font_grid, wxSizerFlags().Expand());
 	tab_box->Add(font_box, wxSizerFlags().Expand());
 
-	auto* log_check = m_ui.addCheckBox(tab_box, "Enable Log", "osd_log_enabled", IDC_OSD_LOG);
+	CheckboxPrereq log_check(m_ui.addCheckBox(tab_box, "Enable Log", "osd_log_enabled", IDC_OSD_LOG));
 
 	auto* log_box = new wxStaticBoxSizer(wxVERTICAL, this, "Log Messages");
 	auto* log_grid = new wxFlexGridSizer(2, 5, 5);
