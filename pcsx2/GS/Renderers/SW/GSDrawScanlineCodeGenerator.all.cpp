@@ -808,7 +808,7 @@ void GSDrawScanlineCodeGenerator2::Init()
 		}
 
 		if (m_sel.fwrite && m_sel.fge && is64)
-			pbroadcastdLocal(_f, _rip_local(p.f));
+			pbroadcastwLocal(_f, _rip_local(p.f));
 	}
 
 	const XYm& vt = xym4;
