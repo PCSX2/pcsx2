@@ -122,7 +122,7 @@ wxSpinCtrl* GSUIElementHolder::addSpin(wxSizer* sizer, const char* config_name, 
 	wxSpinCtrl* spin = new wxSpinCtrl(m_window, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, min, max, initial);
 	add_tooltip(spin, tooltip);
 	if (sizer)
-		sizer->Add(spin, wxSizerFlags());
+		sizer->Add(spin, wxSizerFlags(1));
 	m_elems.emplace_back(UIElem::Type::Spin, spin, config_name, prereq);
 	return spin;
 }
@@ -130,7 +130,7 @@ wxSpinCtrl* GSUIElementHolder::addSpin(wxSizer* sizer, const char* config_name, 
 std::pair<wxSpinCtrl*, wxStaticText*> GSUIElementHolder::addSpinAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip, std::function<bool()> prereq)
 {
 	wxSpinCtrl* spin = new wxSpinCtrl(m_window, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, min, max, initial);
-	return std::make_pair(spin, addWithLabel(spin, UIElem::Type::Spin, sizer, label, config_name, tooltip, prereq, wxSizerFlags().Centre().Left()));
+	return std::make_pair(spin, addWithLabel(spin, UIElem::Type::Spin, sizer, label, config_name, tooltip, prereq, wxSizerFlags().Centre().Left().Expand()));
 }
 
 std::pair<wxSlider*, wxStaticText*> GSUIElementHolder::addSliderAndLabel(wxSizer* sizer, const char* label, const char* config_name, int min, int max, int initial, int tooltip, std::function<bool()> prereq)
@@ -337,6 +337,8 @@ HacksTab::HacksTab(wxWindow* parent)
 
 	auto* rend_hack_choice_grid    = new wxFlexGridSizer(2, 5, 5);
 	auto* upscale_hack_choice_grid = new wxFlexGridSizer(2, 5, 5);
+	rend_hack_choice_grid   ->AddGrowableCol(1);
+	upscale_hack_choice_grid->AddGrowableCol(1);
 
 	// Renderer Hacks:
 	m_ui.addComboBoxAndLabel(rend_hack_choice_grid, "Half Screen Fix:",     "UserHacks_HalfPixelOffset", &theApp.m_gs_generic_list, IDC_HALF_SCREEN_TS, hacks_check);
@@ -348,7 +350,7 @@ HacksTab::HacksTab(wxWindow* parent)
 	skip_x_spin = m_ui.addSpin(skip_box, "UserHacks_SkipDraw_Offset", 0, 10000, 0, IDC_SKIPDRAWOFFSET, hacks_check);
 	skip_y_spin = m_ui.addSpin(skip_box, "UserHacks_SkipDraw",        0, 10000, 0, IDC_SKIPDRAWHACK,   hacks_check);
 
-	rend_hack_choice_grid->Add(skip_box);
+	rend_hack_choice_grid->Add(skip_box, wxSizerFlags().Expand());
 
 	// Upscale Hacks:
 	m_ui.addComboBoxAndLabel(upscale_hack_choice_grid, "Half-Pixel Offset:", "UserHacks_Half_Bottom_Override", &theApp.m_gs_offset_hack, IDC_OFFSETHACK,   upscale_hacks_prereq);
@@ -362,13 +364,13 @@ HacksTab::HacksTab(wxWindow* parent)
 	add_label(this, tex_off_box, "Y:", IDC_TCOFFSETY, wxSizerFlags().Centre());
 	m_ui.addSpin(tex_off_box, "UserHacks_TCOffsetY", 0, 10000, 0, IDC_TCOFFSETY, hacks_check);
 
-	upscale_hack_choice_grid->Add(tex_off_box);
+	upscale_hack_choice_grid->Add(tex_off_box, wxSizerFlags().Expand());
 
-	rend_hacks_box->Add(rend_hacks_grid);
+	rend_hacks_box->Add(rend_hacks_grid, wxSizerFlags().Centre());
 	rend_hacks_box->AddSpacer(5);
 	rend_hacks_box->Add(rend_hack_choice_grid, wxSizerFlags().Expand());
 
-	upscale_hacks_box->Add(upscale_hacks_grid);
+	upscale_hacks_box->Add(upscale_hacks_grid, wxSizerFlags().Centre());
 	upscale_hacks_box->AddSpacer(5);
 	upscale_hacks_box->Add(upscale_hack_choice_grid, wxSizerFlags().Expand());
 
@@ -406,7 +408,7 @@ RecTab::RecTab(wxWindow* parent)
 	m_ui.addSpin(res_box, "CaptureWidth",  256, 8192, 640, -1, record_prereq);
 	m_ui.addSpin(res_box, "CaptureHeight", 256, 8192, 480, -1, record_prereq);
 
-	record_grid_box->Add(res_box);
+	record_grid_box->Add(res_box, wxSizerFlags().Expand());
 
 	m_ui.addSpinAndLabel(record_grid_box, "Saving Threads:",        "capture_threads",       1, 32, 4, -1, record_prereq);
 	m_ui.addSpinAndLabel(record_grid_box, "PNG Compression Level:", "png_compression_level", 1,  9, 1, -1, record_prereq);
@@ -456,8 +458,9 @@ PostTab::PostTab(wxWindow* parent)
 
 	// TV Shader
 	auto* tv_box = new wxFlexGridSizer(2, 5, 5);
+	tv_box->AddGrowableCol(1);
 	m_ui.addComboBoxAndLabel(tv_box, "TV Shader:", "TVShader", &theApp.m_gs_tv_shaders);
-	shader_box->Add(tv_box);
+	shader_box->Add(tv_box, wxSizerFlags().Expand());
 
 	tab_box->Add(shader_box, wxSizerFlags().Expand());
 	SetSizerAndFit(tab_box);
@@ -489,6 +492,7 @@ OSDTab::OSDTab(wxWindow* parent)
 
 	auto* log_box = new wxStaticBoxSizer(wxVERTICAL, this, "Log Messages");
 	auto* log_grid = new wxFlexGridSizer(2, 5, 5);
+	log_grid->AddGrowableCol(1);
 
 	m_ui.addSpinAndLabel(log_grid, "Timeout (seconds):",      "osd_log_timeout",      2, 10, 4,              -1, log_check);
 	m_ui.addSpinAndLabel(log_grid, "Max On-Screen Messages:", "osd_max_log_messages", 1, 10, 2, IDC_OSD_MAX_LOG, log_check);
