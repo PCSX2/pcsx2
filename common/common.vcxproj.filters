@@ -291,6 +291,9 @@
     <ClInclude Include="WindowInfo.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="BitCast.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="GL\Context.h">
       <Filter>Header Files\GL</Filter>
     </ClInclude>

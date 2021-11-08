@@ -13,6 +13,8 @@
  *  If not, see <http://www.gnu.org/licenses/>.
  */
 
+#pragma once
+
 // An implementation of bit_cast until we get c++20
 
 template<class T2, class T1>

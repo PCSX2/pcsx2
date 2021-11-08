@@ -17,8 +17,10 @@
 #include "CtrlMemSearch.h"
 #include "DebugTools/Debug.h"
 #include "gui/AppConfig.h"
-#include "Utilities/BitCast.h"
-#include "../Patch.h" // Required for SwapEndian :(
+#include "common/BitCast.h"
+#include "common/StringUtil.h"
+#include "Patch.h" // Required for SwapEndian :(
+
 
 #include "BreakpointWindow.h"
 #include "DebugEvents.h"
@@ -63,6 +65,14 @@ const wxString wxStringTypes[] =
 		"String"};
 const wxArrayString SearchTypes = wxArrayString(7, wxStringTypes);
 
+// StringUtils::FromChars doesn't appreciate the leading 0x.
+__fi wxString CheckHexadecimalString(wxString s)
+{
+		if(s.StartsWith("0x"))
+			return s.Remove(0, 2);
+		return s;
+}
+
 CtrlMemSearch::CtrlMemSearch(wxWindow* parent, DebugInterface* _cpu)
 	: wxWindow(parent, wxID_ANY, wxDefaultPosition, wxDefaultSize)
 	, cpu(_cpu)
@@ -102,7 +112,7 @@ CtrlMemSearch::CtrlMemSearch(wxWindow* parent, DebugInterface* _cpu)
 		txtMemoryEnd->SetValue(L"0x20000");
 
 	lblSearchHits = new wxStaticText(this, wxID_ANY, L"Hits: 0");
-	lblSearchHitSelected = new wxStaticText(this, wxID_ANY, L"Selected: 0");
+	lblSearchHitSelected = new wxStaticText(this, wxID_ANY, L"Cur: 0");
 
 	btnNext = new wxButton(this, wxID_ANY, L"Next", wxDefaultPosition);
 	btnNext->Enable(false);
@@ -194,17 +204,22 @@ void CtrlMemSearch::Search(wxCommandEvent& evt)
 	u64 startAddress = 0;
 	u64 endAddress = 0;
 
-	if (!txtMemoryStart->GetValue().ToULong(&startAddress, 16))
+	const auto resStart = StringUtil::FromChars<u64>(CheckHexadecimalString(txtMemoryStart->GetValue()).ToStdString(), 16);
+	if (!resStart.has_value())
 	{
 		wxMessageBox(L"Invalid start address", L"Error", wxOK | wxICON_ERROR);
 		return;
 	}
+	startAddress = resStart.value();
 
-	if (!txtMemoryEnd->GetValue().ToULong(&endAddress, 16))
+	const auto resEnd = StringUtil::FromChars<u64>(CheckHexadecimalString(txtMemoryEnd->GetValue()).ToStdString(), 16);
+	if (!resStart.has_value())
 	{
 		wxMessageBox(L"Invalid end address", L"Error", wxOK | wxICON_ERROR);
 		return;
 	}
+	endAddress = resEnd.value();
+
 	m_SearchThread->m_start = startAddress;
 	m_SearchThread->m_end = endAddress;
 	m_SearchThread->m_type = static_cast<SEARCHTYPE>(cmbSearchType->GetSelection());
@@ -212,19 +227,19 @@ void CtrlMemSearch::Search(wxCommandEvent& evt)
 	// Prepare the search value for the thread
 
 	wxString searchString = txtSearch->GetValue();
-	if (cmbSearchType->GetSelection() == SEARCHTYPE::STRING)
+	if (m_SearchThread->m_type == SEARCHTYPE::STRING)
 	{
 		m_SearchThread->m_value_string = searchString;
 	}
 	else if (chkHexadecimal->IsChecked())
 	{
-		u64 searchValue = 0;
-		if (!searchString.ToULong(&searchValue, 16))
+		const auto res = StringUtil::FromChars<u64>(CheckHexadecimalString(txtSearch->GetValue()).ToStdString(), 16);
+		if (!res.has_value())
 		{
 			wxMessageBox(L"Invalid hexadecimal value", L"Error", wxOK | wxICON_ERROR);
 			return;
 		}
-		m_SearchThread->m_value = radBigEndian->GetValue() ? SwapEndian(searchValue, SEARCHTYPEBITS[m_SearchThread->m_type]) : searchValue;
+		m_SearchThread->m_value = radBigEndian->GetValue() ? SwapEndian(res.value(), SEARCHTYPEBITS[cmbSearchType->GetSelection()]) : res.value();
 	}
 	else
 	{
@@ -237,11 +252,11 @@ void CtrlMemSearch::Search(wxCommandEvent& evt)
 
 		// Now we can convert the string to a number
 
-		if (cmbSearchType->GetSelection() == SEARCHTYPE::FLOAT || cmbSearchType->GetSelection() == SEARCHTYPE::DOUBLE)
+		if (m_SearchThread->m_type == SEARCHTYPE::FLOAT || m_SearchThread->m_type == SEARCHTYPE::DOUBLE)
 		{
 			// We're searching for a float or double, so we need to convert the string to a double
-			double searchValue = 0;
-			if (!searchString.ToDouble(&searchValue))
+			const auto res = StringUtil::FromChars<double>(txtSearch->GetValue().ToStdString());
+			if (!res.has_value())
 			{
 				wxMessageBox(L"Invalid floating point value", L"Error", wxOK | wxICON_ERROR);
 				return;
@@ -249,27 +264,28 @@ void CtrlMemSearch::Search(wxCommandEvent& evt)
 
 			if (m_SearchThread->m_type == SEARCHTYPE::FLOAT)
 			{
-				const u32 u32SearchValue = bit_cast<u32, float>(searchValue);
+				const u32 u32SearchValue = bit_cast<u32, float>(res.value());
 				m_SearchThread->m_value = u32SearchValue;
 			}
 			else
 			{
-				const u64 u64SearchValue = bit_cast<u64, double>(searchValue);
+				const u64 u64SearchValue = bit_cast<u64, double>(res.value());
 				m_SearchThread->m_value = u64SearchValue;
 			}
 		}
 		else
 		{
 			// We're searching for either a BYTE, WORD, DWORD or QWORD
-			u64 searchValue = 0;
-			if (!searchString.ToULong(&searchValue, 10))
+			
+			const auto res = StringUtil::FromChars<u64>(txtSearch->GetValue().ToStdString());
+			if(!res.has_value())
 			{
 				wxMessageBox(L"Invalid decimal search value", L"Error", wxOK | wxICON_ERROR);
 				return;
 			}
 
 			// We don't need to bitcast here, because the thread already has the correct value type of u64
-			m_SearchThread->m_value = radBigEndian->GetValue() ? SwapEndian(searchValue, SEARCHTYPEBITS[m_SearchThread->m_type]) : searchValue;
+			m_SearchThread->m_value = radBigEndian->GetValue() ? SwapEndian(res.value(), SEARCHTYPEBITS[cmbSearchType->GetSelection()]) : res.value();
 		}
 	}
 
@@ -326,7 +342,7 @@ void CtrlMemSearch::onSearchPrev(wxCommandEvent& evt)
 void CtrlMemSearch::onSearchTypeChanged(wxCommandEvent& evt)
 {
 	// Update the search value text box to match the search type
-	switch (cmbSearchType->GetSelection())
+	switch (static_cast<SEARCHTYPE>(cmbSearchType->GetSelection()))
 	{
 		case SEARCHTYPE::BYTE:
 		case SEARCHTYPE::WORD:
