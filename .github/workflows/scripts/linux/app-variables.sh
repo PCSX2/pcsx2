@@ -7,4 +7,4 @@ if [[ ! -e "$PWD/$BINARY_NAME.config" ]]; then
 fi       
 export XDG_CONFIG_HOME="$PWD/$BINARY_NAME.config"
 
-mkdir -p $HOME/.local/share/icons/hicolor/scalable/apps && cp $APPDIR/PCSX2.png $HOME/.local/share/icons/hicolor/scalable/apps
+mkdir -p "$HOME"/.local/share/icons/hicolor/scalable/apps && cp "$APPDIR"/PCSX2.png "$HOME"/.local/share/icons/hicolor/scalable/apps
