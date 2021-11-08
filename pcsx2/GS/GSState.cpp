@@ -217,6 +217,9 @@ void GSState::Reset()
 	m_vertex.tail = 0;
 	m_vertex.next = 0;
 	m_index.tail = 0;
+
+	if (m_userhacks_skipdraw) 
+		Console.Warning("Skipdraw is active! Please disable before reporting graphics bugs!");
 }
 
 void GSState::ResetHandlers()
@@ -1757,6 +1760,10 @@ void GSState::Move()
 
 void GSState::SoftReset(uint32 mask)
 {
+
+	if (m_userhacks_skipdraw) 
+		Console.Warning("Skipdraw is active! Please disable before reporting graphics bugs!");
+
 	if (mask & 1)
 	{
 		memset(&m_path[0], 0, sizeof(GIFPath));
