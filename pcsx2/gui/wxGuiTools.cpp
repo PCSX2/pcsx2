@@ -650,30 +650,3 @@ wxString pxGetAppName()
 	pxAssert(wxTheApp);
 	return wxTheApp->GetAppName();
 }
-
-
-// ------------------------------------------------------------------------
-// Launches the specified file according to its mime type
-//
-void pxLaunch(const wxString& filename)
-{
-	wxLaunchDefaultBrowser(filename);
-}
-
-void pxLaunch(const char* filename)
-{
-	pxLaunch(fromUTF8(filename));
-}
-
-// ------------------------------------------------------------------------
-// Launches a file explorer window on the specified path.
-//
-void pxExplore(const wxString& path)
-{
-	wxLaunchDefaultApplication(path);
-}
-
-void pxExplore(const char* path)
-{
-	pxExplore(fromUTF8(path));
-}
