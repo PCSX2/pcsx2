@@ -19,7 +19,7 @@
 #include "DebugTools/DebugInterface.h"
 #include "DebugTools/DisassemblyManager.h"
 
-enum SEARCHTYPE
+enum class SEARCHTYPE
 {
 	BYTE,
 	WORD,

@@ -100,6 +100,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Align.h" />
+    <ClInclude Include="BitCast.h" />
     <ClInclude Include="EmbeddedImage.h" />
     <ClInclude Include="boost_spsc_queue.hpp" />
     <ClInclude Include="FastJmp.h" />

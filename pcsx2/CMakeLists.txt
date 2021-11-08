@@ -1232,8 +1232,7 @@ set(pcsx2UtilitiesSources
 
 # Utilities headers
 set(pcsx2UtilitiesHeaders
-	Utilities/AsciiFile.h
-	Utilities/BitCast.h)
+	Utilities/AsciiFile.h)
 
 
 # Windows sources

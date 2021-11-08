@@ -16,7 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "CtrlRegisterList.h"
 #include "DebugTools/Debug.h"
-#include "Utilities/BitCast.h"
+#include "common/BitCast.h"
 
 #include "DebugEvents.h"
 #include "gui/AppConfig.h"
