@@ -1039,6 +1039,7 @@ SCCS-40004:
 SCCS-40005:
   name: "ICO"
   region: "NTSC-C"
+  compat: 5
   clampModes:
     eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
     vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
@@ -1069,15 +1070,18 @@ SCCS-40016:
 SCCS-40017:
   name: "EyeToy: Play"
   region: "NTSC-C"
+  compat: 5
 SCCS-40018:
   name: "Saru EyeToy: Oosawagi! Ukkiuki Game Tenkomori!!"
   region: "NTSC-C"
+  compat: 5
 SCCS-40019:
   name: "Formula One 04"
   region: "NTSC-C"
 SCCS-40022:
   name: "World Soccer Winning Eleven 8: Asia Championship"
   region: "NTSC-C"
+  compat: 5 
 SCCS-60002:
   name: "Gran Turismo 4 [Review Copy]"
   region: "NTSC-C"
@@ -9973,8 +9977,9 @@ SLES-51391:
 SLES-51392:
   name: "Evolution Snowboarding"
   region: "PAL-M3"
+  compat: 5
   patches:
-    2B2E1535:
+    C24C7FE3:
       content: |-
         author=kozarovv
         // Skip PSS movies, workaround for EE Cache requirement.
@@ -11245,19 +11250,29 @@ SLES-52125:
 SLES-52132:
   name: "Hitman - Contracts"
   region: "PAL-E"
+  roundModes:
+    vuRoundMode: 0  # Fixes effects and textures.
 SLES-52133:
   name: "Hitman - Contracts"
   region: "PAL-F"
+  roundModes:
+    vuRoundMode: 0  # Fixes effects and textures.
 SLES-52134:
   name: "Hitman - Contracts"
   region: "PAL-I"
   compat: 4
+  roundModes:
+    vuRoundMode: 0  # Fixes effects and textures.
 SLES-52135:
   name: "Hitman - Contracts"
   region: "PAL-G"
+  roundModes:
+    vuRoundMode: 0  # Fixes effects and textures.
 SLES-52136:
   name: "Hitman - Contracts"
   region: "PAL-S"
+  roundModes:
+    vuRoundMode: 0  # Fixes effects and textures.
 SLES-52143:
   name: "Carmen Sandiego - The Secret of the Stolen Drums"
   region: "PAL-M4"
@@ -19043,6 +19058,8 @@ SLKA-25217:
 SLKA-25218:
   name: "Hitman - Contracts"
   region: "NTSC-K"
+  roundModes:
+    vuRoundMode: 0  # Fixes effects and textures.
 SLKA-25219:
   name: "Monster Hunter G"
   region: "NTSC-K"
@@ -21800,8 +21817,9 @@ SLPM-65053:
   region: "NTSC-J"
   compat: 5
 SLPM-65054:
-  name: "Princess Abarenbou"
+  name: "Abarenbou Princess"
   region: "NTSC-J"
+  compat: 5 
 SLPM-65056:
   name: "Orega Kantoku da Vol.2 - Getitou Pennant Race"
   region: "NTSC-J"
@@ -22284,6 +22302,13 @@ SLPM-65230:
 SLPM-65231:
   name: "Evolution Snowboarding"
   region: "NTSC-J"
+  compat: 5
+  patches:
+    F96A2390:
+      content: |-
+        author=kozarovv
+        // Skip PSS movies, workaround for EE Cache requirement.
+        patch=1,EE,00122d00,word,100000d9
 SLPM-65232:
   name: "Devil May Cry 2 [Dante Disc]"
   region: "NTSC-J"
@@ -30395,6 +30420,8 @@ SLPS-25405:
 SLPS-25406:
   name: "Hitman - Contracts"
   region: "NTSC-J"
+  roundModes:
+    vuRoundMode: 0  # Fixes effects and textures.
 SLPS-25407:
   name: "King of Fighters 2003, The"
   region: "NTSC-J"
@@ -34779,9 +34806,9 @@ SLUS-20545:
 SLUS-20546:
   name: "Evolution Snowboarding"
   region: "NTSC-U"
-  compat: 4
+  compat: 5
   patches:
-    2B2E1535:
+    D3F68D3F:
       content: |-
         author=kozarovv
         // Skip PSS movies, workaround for EE Cache requirement.
@@ -36158,7 +36185,7 @@ SLUS-20882:
   region: "NTSC-U"
   compat: 3
   roundModes:
-    vuRoundMode: 2  # Fixes missing light shafts under lamps.
+    vuRoundMode: 0  # Fixes effects and textures.
 SLUS-20883:
   name: "Tom Clancy's Rainbow Six 3"
   region: "NTSC-U"
