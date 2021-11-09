@@ -273,9 +273,9 @@ RendererTab::RendererTab(wxWindow* parent)
 
 	auto* hw_checks_box = new wxWrapSizer(wxHORIZONTAL);
 
-	m_ui.addCheckBox(hw_checks_box, "GPU Palette Conversion",         "paltex",                   IDC_PALTEX,          hw_prereq);
-	m_ui.addCheckBox(hw_checks_box, "Conservative Buffer Allocation", "conservative_framebuffer", IDC_CONSERVATIVE_FB, hw_prereq);
-	m_ui.addCheckBox(hw_checks_box, "Accurate DATE",                  "accurate_date",            IDC_ACCURATE_DATE,   hw_prereq);
+	m_ui.addCheckBox(hw_checks_box, "GPU Palette Conversion",          "paltex",                   IDC_PALTEX,          hw_prereq);
+	m_ui.addCheckBox(hw_checks_box, "Conservative Buffer Allocation",  "conservative_framebuffer", IDC_CONSERVATIVE_FB, hw_prereq);
+	m_ui.addCheckBox(hw_checks_box, "Accurate Destination Alpha Test", "accurate_date",            IDC_ACCURATE_DATE,   hw_prereq);
 
 	auto* hw_choice_grid = new wxFlexGridSizer(2, space, space);
 
