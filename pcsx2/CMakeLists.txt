@@ -301,7 +301,6 @@ set(pcsx2SPU2Sources
 	SPU2/spu2sys.cpp
 	SPU2/Timestretcher.cpp
 	SPU2/Wavedump_wav.cpp
-	SPU2/WavFile.cpp
 	)
 
 if(TARGET PkgConfig::PORTAUDIO)
@@ -813,6 +812,7 @@ else(WIN32)
 		SPU2/Linux/ConfigDebug.cpp
 		SPU2/Linux/ConfigSoundTouch.cpp
 		SPU2/Linux/Dialogs.cpp
+		SPU2/WavFile.cpp
 		SPU2/wx/wxConfig.cpp
 	)
 	list(APPEND pcsx2SPU2Headers
