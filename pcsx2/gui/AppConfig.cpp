@@ -508,6 +508,8 @@ AppConfig::AppConfig()
 	EnableGameFixes = false;
 	EnableFastBoot = true;
 
+	DevMode = false;
+
 	EnablePresets = true;
 	PresetIndex = 1;
 
@@ -593,6 +595,8 @@ void AppConfig::LoadSaveRootItems(IniInterface& ini)
 	IniEntry(EnablePresets);
 	IniEntry(PresetIndex);
 	IniEntry(AskOnBoot);
+
+	IniEntry(DevMode);
 
 	ini.EnumEntry(L"CdvdSource", CdvdSource, CDVD_SourceLabels, CdvdSource);
 

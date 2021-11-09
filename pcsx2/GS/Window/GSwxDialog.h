@@ -136,7 +136,8 @@ namespace GSSettingsDialog
 	{
 	public:
 		GSUIElementHolder m_ui;
-		wxSpinCtrl *start_dump_spin, *end_dump_spin;
+		wxSpinCtrl* start_dump_spin = nullptr;
+		wxSpinCtrl* end_dump_spin = nullptr;
 		bool m_is_ogl_hw = false;
 
 		DebugTab(wxWindow* parent);

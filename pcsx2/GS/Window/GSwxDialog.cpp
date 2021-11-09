@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSwxDialog.h"
+#include "gui/AppConfig.h"
 
 #ifdef _WIN32
 #include "GS/Renderers/DX11/D3D.h"
@@ -547,31 +548,36 @@ DebugTab::DebugTab(wxWindow* parent)
 
 	auto ogl_hw_prereq = [this]{ return m_is_ogl_hw; };
 
-	PaddedBoxSizer<wxStaticBoxSizer> debug_box(wxVERTICAL, this, "Debug");
-	auto* debug_check_box = new wxWrapSizer(wxHORIZONTAL);
-	m_ui.addCheckBox(debug_check_box, "GLSL compilation", "debug_glsl_shader");
-	m_ui.addCheckBox(debug_check_box, "Print GL error", "debug_opengl");
+	if (g_Conf->DevMode || IsDevBuild)
+	{
+		PaddedBoxSizer<wxStaticBoxSizer> debug_box(wxVERTICAL, this, "Debug");
+		auto* debug_check_box = new wxWrapSizer(wxHORIZONTAL);
+		m_ui.addCheckBox(debug_check_box, "GLSL compilation", "debug_glsl_shader");
+		m_ui.addCheckBox(debug_check_box, "Print GL error", "debug_opengl");
 #ifdef _WIN32
-	m_ui.addCheckBox(debug_check_box, "D3D Debug Layer", "debug_d3d");
+		m_ui.addCheckBox(debug_check_box, "D3D Debug Layer", "debug_d3d");
 #endif
-	m_ui.addCheckBox(debug_check_box, "Dump GS data", "dump");
+		m_ui.addCheckBox(debug_check_box, "Dump GS data", "dump");
 
-	auto* debug_save_check_box = new wxWrapSizer(wxHORIZONTAL);
-	m_ui.addCheckBox(debug_save_check_box, "Save RT",      "save");
-	m_ui.addCheckBox(debug_save_check_box, "Save Frame",   "savef");
-	m_ui.addCheckBox(debug_save_check_box, "Save Texture", "savet");
-	m_ui.addCheckBox(debug_save_check_box, "Save Depth",   "savez");
+		auto* debug_save_check_box = new wxWrapSizer(wxHORIZONTAL);
+		m_ui.addCheckBox(debug_save_check_box, "Save RT",      "save");
+		m_ui.addCheckBox(debug_save_check_box, "Save Frame",   "savef");
+		m_ui.addCheckBox(debug_save_check_box, "Save Texture", "savet");
+		m_ui.addCheckBox(debug_save_check_box, "Save Depth",   "savez");
 
-	debug_box->Add(debug_check_box);
-	debug_box->Add(debug_save_check_box);
+		debug_box->Add(debug_check_box);
+		debug_box->Add(debug_save_check_box);
 
-	auto* dump_grid = new wxFlexGridSizer(2, space, space);
+		auto* dump_grid = new wxFlexGridSizer(2, space, space);
 
-	start_dump_spin = m_ui.addSpinAndLabel(dump_grid, "Start of Dump:", "saven", 0, pow(10, 9),    0).first;
-	end_dump_spin   = m_ui.addSpinAndLabel(dump_grid, "End of Dump:",   "savel", 0, pow(10, 5), 5000).first;
+		start_dump_spin = m_ui.addSpinAndLabel(dump_grid, "Start of Dump:", "saven", 0, pow(10, 9),    0).first;
+		end_dump_spin   = m_ui.addSpinAndLabel(dump_grid, "End of Dump:",   "savel", 0, pow(10, 5), 5000).first;
 
-	debug_box->AddSpacer(space);
-	debug_box->Add(dump_grid);
+		debug_box->AddSpacer(space);
+		debug_box->Add(dump_grid);
+
+		tab_box->Add(debug_box.outer, wxSizerFlags().Expand());
+	}
 
 	PaddedBoxSizer<wxStaticBoxSizer> ogl_box(wxVERTICAL, this, "OpenGL");
 	auto* ogl_grid = new wxFlexGridSizer(2, space, space);
@@ -580,7 +586,6 @@ DebugTab::DebugTab(wxWindow* parent)
 	m_ui.addComboBoxAndLabel(ogl_grid, "Sparse Texture:",   "override_GL_ARB_sparse_texture",          &theApp.m_gs_generic_list, IDC_SPARSE_TEXTURE,           ogl_hw_prereq);
 	ogl_box->Add(ogl_grid);
 
-	tab_box->Add(debug_box.outer, wxSizerFlags().Expand());
 	tab_box->Add(ogl_box.outer, wxSizerFlags().Expand());
 
 	SetSizerAndFit(tab_box.outer);
@@ -589,6 +594,8 @@ DebugTab::DebugTab(wxWindow* parent)
 void DebugTab::DoUpdate()
 {
 	m_ui.Update();
+	if (!end_dump_spin || !start_dump_spin)
+		return;
 	if (end_dump_spin->GetValue() < start_dump_spin->GetValue())
 		end_dump_spin->SetValue(start_dump_spin->GetValue());
 }
@@ -630,7 +637,7 @@ Dialog::Dialog()
 	book->AddPage(m_post_panel, "Shader");
 	book->AddPage(m_osd_panel, "OSD");
 	book->AddPage(m_rec_panel, "Recording");
-	book->AddPage(m_debug_panel, "Debug/OGL");
+	book->AddPage(m_debug_panel, "Advanced");
 
 	m_top_box->Add(top_grid, wxSizerFlags().Centre());
 	m_top_box->Add(book, wxSizerFlags().Expand());
