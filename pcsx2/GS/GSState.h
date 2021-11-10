@@ -157,6 +157,7 @@ protected:
 	float m_q;
 	GSVector4i m_scissor;
 	GSVector4i m_ofxy;
+	bool tex_flushed;
 
 	struct
 	{
