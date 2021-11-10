@@ -9759,6 +9759,8 @@ SLES-51289:
   name: "Gunfighter 2 - Legend of Jesse James"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - GIFFIFOHack # Fixes flickering textures.
 SLES-51290:
   name: "Sword of the Samurai"
   region: "PAL-E"
