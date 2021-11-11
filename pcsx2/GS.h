@@ -286,7 +286,6 @@ enum MTGS_RingCommand
 	GS_RINGTYPE_P2,
 	GS_RINGTYPE_P3,
 	GS_RINGTYPE_VSYNC,
-	GS_RINGTYPE_FRAMESKIP,
 	GS_RINGTYPE_FREEZE,
 	GS_RINGTYPE_RESET,          // issues a GSreset() command.
 	GS_RINGTYPE_SOFTRESET,      // issues a soft reset for the GIF
@@ -406,17 +405,10 @@ extern SysMtgsThread& GetMTGS();
 /////////////////////////////////////////////////////////////////////////////
 // Generalized GS Functions and Stuff
 
-extern s32 gsOpen();
-extern void gsClose();
 extern void gsReset();
 extern void gsSetVideoMode(GS_VideoMode mode);
-extern void gsResetFrameSkip();
 extern void gsPostVsyncStart();
-extern void gsFrameSkip();
 extern void gsUpdateFrequency(Pcsx2Config& config);
-
-// Some functions shared by both the GS and MTGS
-extern void _gs_ResetFrameskip();
 
 extern void gsWrite8(u32 mem, u8 value);
 extern void gsWrite16(u32 mem, u16 value);
