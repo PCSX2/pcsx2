@@ -457,11 +457,6 @@ void GSRenderer::VSync(int field)
 		m_GStitleInfoBuffer[sizeof(m_GStitleInfoBuffer) - 1] = 0; // make sure null terminated even if text overflows
 	}
 
-	if (m_frameskip)
-	{
-		return;
-	}
-
 	// present
 
 	// This will scale the OSD to the window's size.
