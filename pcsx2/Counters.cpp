@@ -422,7 +422,6 @@ static __fi void frameLimitUpdateCore()
 
 // Framelimiter - Measures the delta time between calls and stalls until a
 // certain amount of time passes if such time hasn't passed yet.
-// See the GS FrameSkip function for details on why this is here and not in the GS.
 static __fi void frameLimit()
 {
 	// Framelimiter off in settings? Framelimiter go brrr.
