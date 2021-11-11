@@ -32,7 +32,6 @@ GSState::GSState()
 	, m_regs(NULL)
 	, m_crc(0)
 	, m_options(0)
-	, m_frameskip(0)
 {
 	// m_nativeres seems to be a hack. Unfortunately it impacts draw call number which make debug painful in the replayer.
 	// Let's keep it disabled to ease debug.
@@ -153,34 +152,6 @@ void GSState::SetRegsMem(uint8* basemem)
 	ASSERT(basemem);
 
 	m_regs = (GSPrivRegSet*)basemem;
-}
-
-void GSState::SetFrameSkip(int skip)
-{
-	if (m_frameskip == skip)
-		return;
-
-	m_frameskip = skip;
-
-	if (skip)
-	{
-		m_fpGIFPackedRegHandlers[GIF_REG_XYZF2] = &GSState::GIFPackedRegHandlerNOP;
-		m_fpGIFPackedRegHandlers[GIF_REG_XYZ2] = &GSState::GIFPackedRegHandlerNOP;
-		m_fpGIFPackedRegHandlers[GIF_REG_XYZF3] = &GSState::GIFPackedRegHandlerNOP;
-		m_fpGIFPackedRegHandlers[GIF_REG_XYZ3] = &GSState::GIFPackedRegHandlerNOP;
-
-		m_fpGIFRegHandlers[GIF_A_D_REG_XYZF2] = &GSState::GIFRegHandlerNOP;
-		m_fpGIFRegHandlers[GIF_A_D_REG_XYZ2] = &GSState::GIFRegHandlerNOP;
-		m_fpGIFRegHandlers[GIF_A_D_REG_XYZF3] = &GSState::GIFRegHandlerNOP;
-		m_fpGIFRegHandlers[GIF_A_D_REG_XYZ3] = &GSState::GIFRegHandlerNOP;
-
-		m_fpGIFPackedRegHandlersC[GIF_REG_STQRGBAXYZF2] = &GSState::GIFPackedRegHandlerNOP;
-		m_fpGIFPackedRegHandlersC[GIF_REG_STQRGBAXYZ2] = &GSState::GIFPackedRegHandlerNOP;
-	}
-	else
-	{
-		UpdateVertexKick();
-	}
 }
 
 void GSState::Reset()
@@ -2228,9 +2199,6 @@ void GSState::UpdateScissor()
 
 void GSState::UpdateVertexKick()
 {
-	if (m_frameskip)
-		return;
-
 	const uint32 prim = PRIM->PRIM;
 
 	m_fpGIFPackedRegHandlers[GIF_REG_XYZF2] = m_fpGIFPackedRegHandlerXYZ[prim][0];

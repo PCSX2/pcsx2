@@ -206,7 +206,6 @@ public:
 	CRC::Game m_game;
 	std::unique_ptr<GSDumpBase> m_dump;
 	int m_options;
-	int m_frameskip;
 	bool m_NTSC_Saturation;
 	bool m_nativeres;
 	int m_mipmap;
@@ -259,6 +258,5 @@ public:
 	int Freeze(freezeData* fd, bool sizeonly);
 	int Defrost(const freezeData* fd);
 	virtual void SetGameCRC(uint32 crc, int options);
-	void SetFrameSkip(int skip);
 	void SetRegsMem(uint8* basemem);
 };
