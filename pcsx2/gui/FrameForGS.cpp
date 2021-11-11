@@ -82,7 +82,6 @@ void GSPanel::InitDefaultAccelerators()
 	m_Accels->Map( AAC( WXK_F2 ).Shift(),		"States_CycleSlotBackward" );
 
 	m_Accels->Map( AAC( WXK_F4 ),				"Framelimiter_MasterToggle");
-	m_Accels->Map( AAC( WXK_F4 ).Shift(),		"Frameskip_Toggle");
 	m_Accels->Map( AAC( WXK_TAB ),				"Framelimiter_TurboToggle" );
 	m_Accels->Map( AAC( WXK_TAB ).Shift(),		"Framelimiter_SlomoToggle" );
 

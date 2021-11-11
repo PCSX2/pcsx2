@@ -955,9 +955,6 @@ bool AppConfig::IsOkApplyPreset(int n, bool ignoreMTVU)
 	EmuOptions.EnablePatches = true;
 
 	EmuOptions.GS.SynchronousMTGS = default_Pcsx2Config.GS.SynchronousMTGS;
-	EmuOptions.GS.FrameSkipEnable = default_Pcsx2Config.GS.FrameSkipEnable;
-	EmuOptions.GS.FramesToDraw = default_Pcsx2Config.GS.FramesToDraw;
-	EmuOptions.GS.FramesToSkip = default_Pcsx2Config.GS.FramesToSkip;
 
 	EmuOptions.Cpu = default_Pcsx2Config.Cpu;
 	EmuOptions.Gamefixes = default_Pcsx2Config.Gamefixes;

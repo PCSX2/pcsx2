@@ -69,22 +69,6 @@ wxString KeyAcceleratorCode::ToString() const
 
 namespace Implementations
 {
-	void Frameskip_Toggle()
-	{
-		g_Conf->EmuOptions.GS.FrameSkipEnable = !g_Conf->EmuOptions.GS.FrameSkipEnable;
-		EmuConfig.GS.FrameSkipEnable = g_Conf->EmuOptions.GS.FrameSkipEnable;
-
-		if (EmuConfig.GS.FrameSkipEnable)
-		{
-			OSDlog(Color_StrongRed, true, "(FrameSkipping) Enabled.");
-			OSDlog(Color_StrongRed, true, "  FrameDraws=%d, FrameSkips=%d", g_Conf->EmuOptions.GS.FramesToDraw, g_Conf->EmuOptions.GS.FramesToSkip);
-		}
-		else
-		{
-			OSDlog(Color_StrongRed, true, "(FrameSkipping) Disabled.");
-		}
-	}
-
 	void Framelimiter_TurboToggle()
 	{
 		ScopedCoreThreadPause pauser;
@@ -94,37 +78,16 @@ namespace Implementations
 			g_Conf->EmuOptions.GS.FrameLimitEnable = true;
 			EmuConfig.LimiterMode = LimiterModeType::Turbo;
 			OSDlog(Color_StrongRed, true, "(FrameLimiter) Turbo + FrameLimit ENABLED.");
-			g_Conf->EmuOptions.GS.FrameSkipEnable = !!EmuConfig.Framerate.SkipOnTurbo;
 		}
 		else if (EmuConfig.LimiterMode == LimiterModeType::Turbo)
 		{
 			EmuConfig.LimiterMode = LimiterModeType::Nominal;
-
-			if (EmuConfig.Framerate.SkipOnLimit)
-			{
-				OSDlog(Color_StrongRed, true, "(FrameLimiter) Turbo DISABLED. Frameskip ENABLED");
-				g_Conf->EmuOptions.GS.FrameSkipEnable = true;
-			}
-			else
-			{
-				OSDlog(Color_StrongRed, true, "(FrameLimiter) Turbo DISABLED.");
-				g_Conf->EmuOptions.GS.FrameSkipEnable = false;
-			}
+			OSDlog(Color_StrongRed, true, "(FrameLimiter) Turbo DISABLED.");
 		}
 		else
 		{
 			EmuConfig.LimiterMode = LimiterModeType::Turbo;
-
-			if (EmuConfig.Framerate.SkipOnTurbo)
-			{
-				OSDlog(Color_StrongRed, true, "(FrameLimiter) Turbo + Frameskip ENABLED.");
-				g_Conf->EmuOptions.GS.FrameSkipEnable = true;
-			}
-			else
-			{
-				OSDlog(Color_StrongRed, true, "(FrameLimiter) Turbo ENABLED.");
-				g_Conf->EmuOptions.GS.FrameSkipEnable = false;
-			}
+			OSDlog(Color_StrongRed, true, "(FrameLimiter) Turbo ENABLED.");
 		}
 
 		gsUpdateFrequency(g_Conf->EmuOptions);
@@ -700,14 +663,6 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 		},
 
 		{
-			"Frameskip_Toggle",
-			Implementations::Frameskip_Toggle,
-			NULL,
-			NULL,
-			false,
-		},
-
-		{
 			"Framelimiter_TurboToggle",
 			Implementations::Framelimiter_TurboToggle,
 			NULL,
@@ -1011,7 +966,6 @@ void Pcsx2App::InitDefaultGlobalAccelerators()
 	GlobalAccels->Map(AAC(WXK_F2).Shift(), "States_CycleSlotBackward");
 
 	GlobalAccels->Map(AAC(WXK_F4), "Framelimiter_MasterToggle");
-	GlobalAccels->Map(AAC(WXK_F4).Shift(), "Frameskip_Toggle");
 
 	// At this early stage of startup, the application assumes installed mode, so portable mode custom keybindings may present issues.
 	// Relevant - https://github.com/PCSX2/pcsx2/blob/678829a5b2b8ca7a3e42d8edc9ab201bf00b0fe9/pcsx2/gui/AppInit.cpp#L479

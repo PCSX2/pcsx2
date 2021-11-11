@@ -163,120 +163,6 @@ void Panels::FramelimiterPanel::Apply()
 }
 
 // --------------------------------------------------------------------------------------
-//  FrameSkipPanel Implementations
-// --------------------------------------------------------------------------------------
-
-Panels::FrameSkipPanel::FrameSkipPanel( wxWindow* parent )
-	: BaseApplicableConfigPanel_SpecificConfig( parent )
-{
-	const RadioPanelItem FrameskipOptions[] =
-	{
-		RadioPanelItem(
-			_("Disabled [default]")
-		),
-		//  Implement custom hotkeys (Tab) with translatable string intact + not blank in GUI.  
-		RadioPanelItem(
-			_("Skip only on Turbo, to enable press") + fmt::format("{} ({})", " ", wxGetApp().GlobalAccels->findKeycodeWithCommandId("Framelimiter_TurboToggle").toTitleizedString())
-		),
-		//  Implement custom hotkeys (Shift + F4) with translatable string intact + not blank in GUI.  
-		RadioPanelItem(
-			_("Constant skipping") + fmt::format("{} ({})", " ", wxGetApp().GlobalAccels->findKeycodeWithCommandId("Frameskip_Toggle").toTitleizedString()),
-			wxEmptyString,
-			_("Normal and Turbo limit rates skip frames.  Slow motion mode will still disable frameskipping.")
-		),
-	};
-
-	m_radio_SkipMode = new pxRadioPanel( this, FrameskipOptions );
-	m_radio_SkipMode->Realize();
-
-	m_spin_FramesToDraw = new wxSpinCtrl(this);
-	m_spin_FramesToSkip = new wxSpinCtrl(this);
-
-	// Set tooltips for spinners.
-
-
-	// ------------------------------------------------------------
-	// Sizers and Layouts
-
-	*this += m_radio_SkipMode;
-
-	wxFlexGridSizer& s_spins( *new wxFlexGridSizer( 4 ) );
-	//s_spins.AddGrowableCol( 0 );
-
-	s_spins += m_spin_FramesToDraw			| pxBorder(wxTOP, 2);
-	s_spins += 10;
-	s_spins += Label(_("Frames to Draw"))	| StdExpand();
-	s_spins += 10;
-
-	s_spins += m_spin_FramesToSkip			| pxBorder(wxTOP, 2);
-	s_spins += 10;
-	s_spins += Label(_("Frames to Skip"))	| StdExpand();
-	s_spins += 10;
-
-	*this	+= s_spins	| StdExpand();
-
-	*this	+= Text( pxE( L"Notice: Due to PS2 hardware design, precise frame skipping is impossible. Enabling it will cause severe graphical errors in some games." )
-	) | StdExpand();
-
-	*this += 24; // Extends the right box to match the left one. Only works with (Windows) 100% dpi.
-
-	AppStatusEvent_OnSettingsApplied();
-}
-
-void Panels::FrameSkipPanel::AppStatusEvent_OnSettingsApplied()
-{
-	ApplyConfigToGui( *g_Conf );
-}
-
-void Panels::FrameSkipPanel::ApplyConfigToGui( AppConfig& configToApply, int flags )
-{
-	const Pcsx2Config::FramerateOptions& appfps( configToApply.EmuOptions.Framerate );
-	const Pcsx2Config::GSOptions& gsconf( configToApply.EmuOptions.GS );
-
-	m_radio_SkipMode->SetSelection( appfps.SkipOnLimit ? 2 : (appfps.SkipOnTurbo ? 1 : 0) );
-
-	m_spin_FramesToDraw->SetValue( gsconf.FramesToDraw );
-	m_spin_FramesToDraw->Enable(!configToApply.EnablePresets);
-	m_spin_FramesToSkip->SetValue( gsconf.FramesToSkip );
-	m_spin_FramesToSkip->Enable(!configToApply.EnablePresets);
-
-	this->Enable(!configToApply.EnablePresets);
-}
-
-
-void Panels::FrameSkipPanel::Apply()
-{
-	Pcsx2Config::FramerateOptions& appfps( g_Conf->EmuOptions.Framerate );
-	Pcsx2Config::GSOptions& gsconf( g_Conf->EmuOptions.GS );
-
-	gsconf.FramesToDraw = m_spin_FramesToDraw->GetValue();
-	gsconf.FramesToSkip = m_spin_FramesToSkip->GetValue();
-
-	switch( m_radio_SkipMode->GetSelection() )
-	{
-		case 0:
-			appfps.SkipOnLimit = false;
-			appfps.SkipOnTurbo = false;
-			gsconf.FrameSkipEnable = false;
-		break;
-
-		case 1:
-			appfps.SkipOnLimit = false;
-			appfps.SkipOnTurbo = true;
-			//gsconf.FrameSkipEnable = true;
-		break;
-
-		case 2:
-			appfps.SkipOnLimit = true;
-			appfps.SkipOnTurbo = true;
-			gsconf.FrameSkipEnable = true;
-		break;
-	}
-
-	appfps.SanityCheck();
-}
-
-// --------------------------------------------------------------------------------------
 //  VideoPanel Implementation
 // --------------------------------------------------------------------------------------
 
@@ -304,9 +190,6 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 	//GSWindowSettingsPanel* winpan = new GSWindowSettingsPanel( left );
 	//winpan->AddFrame(_("Display/Window"));
 
-	m_span = new FrameSkipPanel( right );
-	m_span->AddFrame(_("Frame Skipping"));
-
 	m_fpan = new FramelimiterPanel( left );
 	m_fpan->AddFrame(_("Framelimiter"));
 
@@ -315,7 +198,6 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 	s_table->AddGrowableCol( 0, 1 );
 	s_table->AddGrowableCol( 1, 1 );
 
-	*right		+= m_span		| pxExpand;
 	*right		+= 5;
 	*right		+= m_restore_defaults | StdButton();
 
@@ -346,7 +228,6 @@ void Panels::VideoPanel::Defaults_Click(wxCommandEvent& evt)
 	config.EmuOptions.Framerate = Pcsx2Config::FramerateOptions();
 	VideoPanel::ApplyConfigToGui(config);
 	m_fpan->ApplyConfigToGui(config);
-	m_span->ApplyConfigToGui(config);
 	evt.Skip();
 }
 
@@ -380,7 +261,6 @@ void Panels::VideoPanel::ApplyConfigToGui( AppConfig& configToApply, int flags )
 
 	if( flags & AppConfig::APPLY_FLAG_MANUALLY_PROPAGATE )
 	{
-		m_span->ApplyConfigToGui( configToApply, true );
 		m_fpan->ApplyConfigToGui( configToApply, true );
 	}
 

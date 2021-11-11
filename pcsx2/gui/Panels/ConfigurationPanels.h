@@ -213,26 +213,6 @@ namespace Panels
 	};
 
 	// --------------------------------------------------------------------------------------
-	//  FrameSkipPanel
-	// --------------------------------------------------------------------------------------
-	class FrameSkipPanel : public BaseApplicableConfigPanel_SpecificConfig
-	{
-	protected:
-		wxSpinCtrl* m_spin_FramesToSkip;
-		wxSpinCtrl* m_spin_FramesToDraw;
-
-		pxRadioPanel* m_radio_SkipMode;
-
-	public:
-		FrameSkipPanel(wxWindow* parent);
-		virtual ~FrameSkipPanel() = default;
-
-		void Apply();
-		void AppStatusEvent_OnSettingsApplied();
-		void ApplyConfigToGui(AppConfig& configToApply, int flags = 0);
-	};
-
-	// --------------------------------------------------------------------------------------
 	//  FramelimiterPanel
 	// --------------------------------------------------------------------------------------
 	class FramelimiterPanel : public BaseApplicableConfigPanel_SpecificConfig
@@ -303,7 +283,6 @@ namespace Panels
 		pxCheckBox* m_check_SynchronousGS;
 		wxSpinCtrl* m_spinner_VsyncQueue;
 		wxButton* m_restore_defaults;
-		FrameSkipPanel* m_span;
 		FramelimiterPanel* m_fpan;
 
 	public:
