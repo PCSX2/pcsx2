@@ -1791,7 +1791,6 @@ bool GSsetupRecording(std::string& filename);
 void GSendRecording();
 void GSsetGameCRC(uint32 crc, int options);
 void GSgetTitleInfo2(char* dest, size_t length);
-void GSsetFrameSkip(int frameskip);
 void GSsetVsync(int vsync);
 void GSsetExclusive(int enabled);
 

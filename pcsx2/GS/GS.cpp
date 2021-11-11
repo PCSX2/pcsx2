@@ -679,11 +679,6 @@ void GSgetTitleInfo2(char* dest, size_t length)
 	strcpy(dest, s.c_str());
 }
 
-void GSsetFrameSkip(int frameskip)
-{
-	s_gs->SetFrameSkip(frameskip);
-}
-
 void GSsetVsync(int vsync)
 {
 	s_vsync = vsync;
