@@ -170,7 +170,6 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 	BaseApplicableConfigPanel_SpecificConfig( parent )
 {
 	wxPanelWithHelpers* left	= new wxPanelWithHelpers( this, wxVERTICAL );
-	wxPanelWithHelpers* right	= new wxPanelWithHelpers( this, wxVERTICAL );
 #ifdef  PCSX2_DEVBUILD
 	m_check_SynchronousGS = new pxCheckBox( left, _("Use Synchronized MTGS"),
 		_t("For troubleshooting potential bugs in the MTGS only, as it is potentially very slow.")
@@ -180,7 +179,7 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 	m_spinner_VsyncQueue = new wxSpinCtrl(left);
 	m_spinner_VsyncQueue->SetRange(0, 3);
 
-	m_restore_defaults = new wxButton(right, wxID_DEFAULT, _("Restore Defaults"));
+	m_restore_defaults = new wxButton(this, wxID_DEFAULT, _("Restore Defaults"));
 
 	m_spinner_VsyncQueue->SetToolTip( pxEt(L"Setting this to a lower value improves input lag, a value around 2 or 3 will slightly improve framerates. (Default is 2)"));
 #ifdef  PCSX2_DEVBUILD 
@@ -198,9 +197,6 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 	s_table->AddGrowableCol( 0, 1 );
 	s_table->AddGrowableCol( 1, 1 );
 
-	*right		+= 5;
-	*right		+= m_restore_defaults | StdButton();
-
 	*left		+= m_fpan		| pxExpand;
 	*left		+= 5;
 	
@@ -211,11 +207,12 @@ Panels::VideoPanel::VideoPanel( wxWindow* parent ) :
 	*left		+= 2;
 	*left		+= m_check_SynchronousGS | StdExpand();
 #endif 
-
 	*s_table	+= left		| StdExpand();
-	*s_table	+= right	| StdExpand();
 
 	*this		+= s_table	| pxExpand;
+
+	*this		+= 12;
+	*this		+= m_restore_defaults | StdButton();
 
 	Bind(wxEVT_BUTTON, &VideoPanel::Defaults_Click, this, wxID_DEFAULT);
 	AppStatusEvent_OnSettingsApplied();
