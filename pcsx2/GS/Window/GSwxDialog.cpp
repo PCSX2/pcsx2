@@ -640,9 +640,9 @@ Dialog::Dialog()
 	book->AddPage(m_debug_panel, "Advanced");
 
 	m_top_box->Add(top_grid, wxSizerFlags().Centre());
-	m_top_box->Add(book, wxSizerFlags().Expand());
+	m_top_box->Add(book, wxSizerFlags(1).Expand());
 
-	padding->Add(m_top_box, wxSizerFlags().Expand().Border());
+	padding->Add(m_top_box, wxSizerFlags(1).Expand().Border());
 
 	m_top_box->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), wxSizerFlags().Right());
 
