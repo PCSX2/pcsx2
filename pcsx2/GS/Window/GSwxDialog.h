@@ -124,6 +124,7 @@ namespace GSSettingsDialog
 	public:
 		GSUIElementHolder m_ui;
 		wxSpinCtrl *skip_x_spin, *skip_y_spin;
+		bool m_is_hardware = false;
 		bool m_is_native_res = false;
 
 		HacksTab(wxWindow* parent);
