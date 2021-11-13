@@ -15,8 +15,8 @@
 
 #pragma once
 
+#include "GSDevice11.h"
 #include "GS/Renderers/HW/GSRendererHW.h"
-#include "GSTextureCache11.h"
 #include "GS/Renderers/HW/GSVertexHW.h"
 
 class GSRendererDX11 final : public GSRendererHW

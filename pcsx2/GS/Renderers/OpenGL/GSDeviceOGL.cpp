@@ -1271,23 +1271,14 @@ void GSDeviceOGL::SelfShaderTest()
 	SelfShaderTestPrint(test, nb_shader);
 }
 
-// blit a texture into an offscreen buffer
-GSTexture* GSDeviceOGL::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, GSTexture::Format format, ShaderConvert ps_shader)
+bool GSDeviceOGL::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map)
 {
 	ASSERT(src);
-	ASSERT(format == GSTexture::Format::Color || format == GSTexture::Format::UInt16 || format == GSTexture::Format::UInt32);
 
-	GSTexture* dst = CreateOffscreen(w, h, format);
+	GSTextureOGL* srcgl = static_cast<GSTextureOGL*>(src);
 
-	const GSVector4 dRect(0, 0, w, h);
-
-	// StretchRect will read an old target. However, the memory cache might contains
-	// invalid data (for example due to SW blending).
-	glTextureBarrier();
-
-	StretchRect(src, sRect, dst, dRect, m_convert.ps[(int)ps_shader]);
-
-	return dst;
+	out_map = srcgl->Read(rect, m_download_buffer);
+	return true;
 }
 
 // Copy a sub part of texture (same as below but force a conversion)

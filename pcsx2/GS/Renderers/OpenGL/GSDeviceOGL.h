@@ -22,6 +22,7 @@
 #include "GSUniformBufferOGL.h"
 #include "GSShaderOGL.h"
 #include "GLState.h"
+#include "GS/GS.h"
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 extern u64 g_real_texture_upload_byte;
@@ -558,6 +559,7 @@ private:
 	MiscConstantBuffer m_misc_cb_cache;
 
 	std::unique_ptr<GSTexture> m_font;
+	AlignedBuffer<u8, 32> m_download_buffer;
 
 	GSTexture* CreateSurface(GSTexture::Type type, int w, int h, GSTexture::Format format) final;
 	GSTexture* FetchSurface(GSTexture::Type type, int w, int h, GSTexture::Format format) final;
@@ -605,7 +607,7 @@ public:
 	void InitPrimDateTexture(GSTexture* rt, const GSVector4i& area);
 	void RecycleDateTexture();
 
-	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, GSTexture::Format format, ShaderConvert ps_shader = ShaderConvert::COPY) final;
+	bool DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map) final;
 
 	void CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r) final;
 

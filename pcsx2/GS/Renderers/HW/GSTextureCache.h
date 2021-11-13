@@ -226,19 +226,17 @@ protected:
 	u8 m_texture_inside_rt_cache_size = 255;
 	std::vector<TexInsideRtCacheEntry> m_texture_inside_rt_cache;
 
-	virtual Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false, int x_offset = 0, int y_offset = 0);
-	virtual Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type);
-
-	virtual int Get8bitFormat() = 0;
+	Source* CreateSource(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA, Target* t = NULL, bool half_right = false, int x_offset = 0, int y_offset = 0);
+	Target* CreateTarget(const GIFRegTEX0& TEX0, int w, int h, int type);
 
 	// TODO: virtual void Write(Source* s, const GSVector4i& r) = 0;
 	// TODO: virtual void Write(Target* t, const GSVector4i& r) = 0;
 
 public:
 	GSTextureCache(GSRenderer* r);
-	virtual ~GSTextureCache();
-	virtual void Read(Target* t, const GSVector4i& r) = 0;
-	virtual void Read(Source* t, const GSVector4i& r) = 0;
+	~GSTextureCache();
+	void Read(Target* t, const GSVector4i& r);
+	void Read(Source* t, const GSVector4i& r);
 	void RemoveAll();
 	void RemovePartial();
 

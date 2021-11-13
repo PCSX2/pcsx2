@@ -162,7 +162,7 @@ namespace PboPool
 } // namespace PboPool
 
 GSTextureOGL::GSTextureOGL(Type type, int w, int h, Format format, GLuint fbo_read, bool mipmap)
-	: m_clean(false), m_generate_mipmap(true), m_local_buffer(nullptr), m_r_x(0), m_r_y(0), m_r_w(0), m_r_h(0), m_layer(0)
+	: m_clean(false), m_generate_mipmap(true), m_r_x(0), m_r_y(0), m_r_w(0), m_r_h(0), m_layer(0)
 {
 	// OpenGL didn't like dimensions of size 0
 	m_size.x = std::max(1, w);
@@ -248,10 +248,6 @@ GSTextureOGL::GSTextureOGL(Type type, int w, int h, Format format, GLuint fbo_re
 	{
 		case Type::Backbuffer:
 			return; // backbuffer isn't a real texture
-		case Type::Offscreen:
-			// Offscreen is only used to read color. So it only requires 4B by pixel
-			m_local_buffer = (u8*)_aligned_malloc(m_size.x * m_size.y * 4, 32);
-			break;
 		case Type::Texture:
 			// Only 32 bits input texture will be supported for mipmap
 			m_max_layer = mipmap && m_format == Format::Color ? (int)log2(std::max(w, h)) : 1;
@@ -351,9 +347,6 @@ GSTextureOGL::~GSTextureOGL()
 	glDeleteTextures(1, &m_texture_id);
 
 	GLState::available_vram += m_mem_usage;
-
-	if (m_local_buffer)
-		_aligned_free(m_local_buffer);
 }
 
 void GSTextureOGL::Clear(const void* data)
@@ -450,36 +443,7 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 	u32 row_byte = r.width() << m_int_shift;
 	m.pitch = row_byte;
 
-	if (m_type == Type::Offscreen)
-	{
-		// The fastest way will be to use a PBO to read the data asynchronously. Unfortunately GSdx
-		// architecture is waiting the data right now.
-
-#ifdef GL_EXT_TEX_SUB_IMAGE
-		// Maybe it is as good as the code below. I don't know
-		// With openGL 4.5 you can use glGetTextureSubImage
-
-		glGetTextureSubImage(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, 0, r.width(), r.height(), 1, m_int_format, m_int_type, m_size.x * m_size.y * 4, m_local_buffer);
-#else
-
-		// Bind the texture to the read framebuffer to avoid any disturbance
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
-		glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
-
-		// In case a target is 16 bits (GT4)
-		glPixelStorei(GL_PACK_ALIGNMENT, 1u << m_int_shift);
-
-		glReadPixels(r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, m_local_buffer);
-
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
-
-#endif
-
-		m.bits = m_local_buffer;
-
-		return true;
-	}
-	else if (m_type == Type::Texture || m_type == Type::RenderTarget)
+	if (m_type == Type::Texture || m_type == Type::RenderTarget)
 	{
 		GL_PUSH_("Upload Texture %d", m_texture_id); // POP is in Unmap
 
@@ -571,6 +535,36 @@ void GSTextureOGL::CommitPages(const GSVector2i& region, bool commit)
 
 	m_mem_usage = (m_committed_size.x * m_committed_size.y) << m_int_shift;
 	GLState::available_vram -= m_mem_usage;
+}
+
+GSTexture::GSMap GSTextureOGL::Read(const GSVector4i& r, AlignedBuffer<u8, 32>& buffer)
+{
+	GSMap m;
+	m.pitch = r.width() << m_int_shift;
+	buffer.MakeRoomFor(m.pitch * r.height());
+	m.bits = buffer.GetPtr();
+
+	// The fastest way will be to use a PBO to read the data asynchronously. Unfortunately GSdx
+	// architecture is waiting the data right now.
+#if 0
+	// Maybe it is as good as the code below. I don't know
+	// With openGL 4.5 you can use glGetTextureSubImage
+
+	glGetTextureSubImage(m_texture_id, GL_TEX_LEVEL_0, r.x, r.y, 0, r.width(), r.height(), 1, m_int_format, m_int_type, m_size.x * m_size.y * 4, m.bits);
+#else
+	// Bind the texture to the read framebuffer to avoid any disturbance
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
+	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, m_texture_id, 0);
+
+	// In case a target is 16 bits (GT4)
+	glPixelStorei(GL_PACK_ALIGNMENT, 1u << m_int_shift);
+
+	glReadPixels(r.x, r.y, r.width(), r.height(), m_int_format, m_int_type, m.bits);
+
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+#endif
+
+	return m;
 }
 
 bool GSTextureOGL::Save(const std::string& fn)

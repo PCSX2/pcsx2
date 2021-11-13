@@ -165,7 +165,7 @@ protected:
 	void CustomResolutionScaling();
 
 public:
-	GSRendererHW(GSTextureCache* tc);
+	GSRendererHW();
 	virtual ~GSRendererHW();
 
 	void SetGameCRC(u32 crc, int options);

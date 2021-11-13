@@ -648,29 +648,24 @@ GSTexture* GSDevice11::FetchSurface(GSTexture::Type type, int w, int h, GSTextur
 	return __super::FetchSurface(type, w, h, format);
 }
 
-GSTexture* GSDevice11::CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, GSTexture::Format format, ShaderConvert ps_shader)
+bool GSDevice11::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map)
 {
-	GSTexture* dst = NULL;
+	ASSERT(src);
+	ASSERT(!m_download_tex);
+	m_download_tex.reset(static_cast<GSTexture11*>(CreateOffscreen(rect.width(), rect.height(), src->GetFormat())));
+	if (!m_download_tex)
+		return false;
+	m_ctx->CopyResource(*m_download_tex, *static_cast<GSTexture11*>(src));
+	return m_download_tex->Map(out_map);
+}
 
-	ASSERT(format == GSTexture::Format::Color || format == GSTexture::Format::UInt16 || format == GSTexture::Format::UInt32);
-
-	if (GSTexture* rt = CreateRenderTarget(w, h, format))
+void GSDevice11::DownloadTextureComplete()
+{
+	if (m_download_tex)
 	{
-		GSVector4 dRect(0, 0, w, h);
-
-		StretchRect(src, sRect, rt, dRect, m_convert.ps[static_cast<int>(ps_shader)].get(), NULL);
-
-		dst = CreateOffscreen(w, h, format);
-
-		if (dst)
-		{
-			m_ctx->CopyResource(*(GSTexture11*)dst, *(GSTexture11*)rt);
-		}
-
-		Recycle(rt);
+		m_download_tex->Unmap();
+		Recycle(m_download_tex.release());
 	}
-
-	return dst;
 }
 
 void GSDevice11::CopyRect(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r)

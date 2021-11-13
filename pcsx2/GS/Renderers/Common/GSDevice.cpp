@@ -261,6 +261,23 @@ GSTexture::Format GSDevice::GetDefaultTextureFormat(GSTexture::Type type)
 		return GSTexture::Format::Color;
 }
 
+bool GSDevice::DownloadTextureConvert(GSTexture* src, const GSVector4& sRect, const GSVector2i& dSize, GSTexture::Format format, ShaderConvert ps_shader, GSTexture::GSMap& out_map)
+{
+	ASSERT(src);
+	ASSERT(format == GSTexture::Format::Color || format == GSTexture::Format::UInt16 || format == GSTexture::Format::UInt32);
+
+	GSTexture* dst = CreateRenderTarget(dSize.x, dSize.y, format);
+	if (!dst)
+		return false;
+
+	GSVector4i dRect(0, 0, dSize.x, dSize.y);
+	StretchRect(src, sRect, dst, GSVector4(dRect), ps_shader);
+
+	bool ret = DownloadTexture(src, dRect, out_map);
+	Recycle(dst);
+	return ret;
+}
+
 void GSDevice::StretchRect(GSTexture* sTex, GSTexture* dTex, const GSVector4& dRect, ShaderConvert shader, bool linear)
 {
 	StretchRect(sTex, GSVector4(0, 0, 1, 1), dTex, dRect, shader, linear);
