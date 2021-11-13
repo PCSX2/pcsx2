@@ -13274,6 +13274,12 @@ SLES-53104:
 SLES-53106:
   name: "MX vs. ATV Unleashed"
   region: "PAL-E"
+  patches:
+    D7AE31F4:
+      content: |-
+        comment=Rearranging COP2 ops to avoid clip flag resonse. Fixes SPS.
+        patch=1,EE,001B0138,word,484E9000
+        patch=1,EE,001B013C,word,4BDBD9FF
 SLES-53107:
   name: "Cabela's Big Game Hunter 2005 Adventures"
   region: "PAL-E"
@@ -37200,6 +37206,12 @@ SLUS-21104:
   name: "MX vs. ATV Unleashed"
   region: "NTSC-U"
   compat: 5
+  patches:
+    95BB1901:
+      content: |-
+        comment=Rearranging COP2 ops to avoid clip flag resonse. Fixes SPS.
+        patch=1,EE,001b0458,word,484E9000
+        patch=1,EE,001b045c,word,4BDBD9FF
 SLUS-21105:
   name: "Tom Clancy's Ghost Recon 2"
   region: "NTSC-U"
