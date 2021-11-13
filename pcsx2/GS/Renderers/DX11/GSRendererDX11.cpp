@@ -17,7 +17,6 @@
 #include "GSRendererDX11.h"
 
 GSRendererDX11::GSRendererDX11()
-	: GSRendererHW(new GSTextureCache11(this))
 {
 	m_sw_blending = theApp.GetConfigI("accurate_blending_unit_d3d11");
 

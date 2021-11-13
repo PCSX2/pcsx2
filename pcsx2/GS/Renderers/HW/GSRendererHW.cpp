@@ -19,14 +19,14 @@
 
 const float GSRendererHW::SSR_UV_TOLERANCE = 1e-3f;
 
-GSRendererHW::GSRendererHW(GSTextureCache* tc)
+GSRendererHW::GSRendererHW()
 	: m_width(default_rt_size.x)
 	, m_height(default_rt_size.y)
 	, m_custom_width(1024)
 	, m_custom_height(1024)
 	, m_reset(false)
 	, m_userhacks_ts_half_bottom(-1)
-	, m_tc(tc)
+	, m_tc(new GSTextureCache(this))
 	, m_src(nullptr)
 	, m_userhacks_tcoffset(false)
 	, m_userhacks_tcoffset_x(0)

@@ -513,6 +513,7 @@ private:
 	PSConstantBuffer m_ps_cb_cache;
 
 	std::unique_ptr<GSTexture> m_font;
+	std::unique_ptr<GSTexture11> m_download_tex;
 
 protected:
 	struct
@@ -542,7 +543,8 @@ public:
 	void ClearDepth(GSTexture* t) final;
 	void ClearStencil(GSTexture* t, u8 c) final;
 
-	GSTexture* CopyOffscreen(GSTexture* src, const GSVector4& sRect, int w, int h, GSTexture::Format format, ShaderConvert ps_shader = ShaderConvert::COPY) final;
+	bool DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map) final;
+	void DownloadTextureComplete() final;
 
 	void CloneTexture(GSTexture* src, GSTexture** dest);
 
