@@ -132,6 +132,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="AlignedMalloc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="Assertions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -220,9 +223,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="SafeArray.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="ScopedAlloc.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="emitter\implement\simd_arithmetic.h">

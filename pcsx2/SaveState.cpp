@@ -452,8 +452,8 @@ void SysState_ComponentFreezeIn(pxInputStream& infp, SysState_Component comp)
 		return;
 	}
 
-	ScopedAlloc<u8> data(fP.size);
-	fP.data = data.GetPtr();
+	auto data = std::make_unique<u8[]>(fP.size);
+	fP.data = data.get();
 
 	infp.Read(fP.data, fP.size);
 	if (comp.freeze(FreezeAction::Load, &fP) != 0)
