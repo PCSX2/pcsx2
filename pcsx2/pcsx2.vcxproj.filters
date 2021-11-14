@@ -271,6 +271,9 @@
     <Filter Include="System\Ps2\GS\Window">
       <UniqueIdentifier>{eaa22029-6839-4c09-93e1-faea8d8c0d7c}</UniqueIdentifier>
     </Filter>
+    <Filter Include="System\Ps2\GS\GIF">
+      <UniqueIdentifier>{78f5077b-255e-435e-9a51-352171dfaee8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <None Include="Utilities\folderdesc.txt">
@@ -663,13 +666,13 @@
       <Filter>System\Ps2\IPU\mpeg2lib</Filter>
     </ClCompile>
     <ClCompile Include="GS.cpp">
-      <Filter>System\Ps2\GS</Filter>
+      <Filter>System\Ps2\GS\GIF</Filter>
     </ClCompile>
     <ClCompile Include="GSState.cpp">
-      <Filter>System\Ps2\GS</Filter>
+      <Filter>System\Ps2\GS\GIF</Filter>
     </ClCompile>
     <ClCompile Include="MTGS.cpp">
-      <Filter>System\Ps2\GS</Filter>
+      <Filter>System\Ps2\GS\GIF</Filter>
     </ClCompile>
     <ClCompile Include="DebugTools\DisR3000A.cpp">
       <Filter>System\Ps2\Debug</Filter>
@@ -888,7 +891,7 @@
       <Filter>AppHost\Panels</Filter>
     </ClCompile>
     <ClCompile Include="Gif_Unit.cpp">
-      <Filter>System\Ps2\GS</Filter>
+      <Filter>System\Ps2\GS\GIF</Filter>
     </ClCompile>
     <ClCompile Include="Gif_Logger.cpp">
       <Filter>System\Ps2\GS</Filter>
@@ -2008,7 +2011,7 @@
       <Filter>AppHost\Panels</Filter>
     </ClInclude>
     <ClInclude Include="Gif_Unit.h">
-      <Filter>System\Ps2\GS</Filter>
+      <Filter>System\Ps2\GS\GIF</Filter>
     </ClInclude>
     <ClInclude Include="x86\microVU_Profiler.h">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
@@ -2569,7 +2572,7 @@
       <Filter>System\Ps2\GS</Filter>
     </ClInclude>
     <ClInclude Include="GS.h">
-      <Filter>System\Ps2</Filter>
+      <Filter>System\Ps2\GIF</Filter>
     </ClInclude>
     <ClInclude Include="GS\Renderers\DX11\GSDevice11.h">
       <Filter>System\Ps2\GS\Renderers\Direct3D</Filter>
