@@ -12010,6 +12010,8 @@ SLES-52541:
   name: "Grand Theft Auto - San Andreas"
   region: "PAL-M5"
   compat: 5
+  clampModes:
+    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
 SLES-52542:
   name: "All Music Dance!"
   region: "PAL-I"
@@ -12801,6 +12803,8 @@ SLES-52922:
 SLES-52927:
   name: "Grand Theft Auto - San Andreas"
   region: "PAL-G"
+  clampModes:
+    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
 SLES-52931:
   name: "Legend of Kay"
   region: "PAL-M5"
@@ -13126,7 +13130,7 @@ SLES-53037:
   region: "PAL-M5"
   compat: 5
   roundModes:
-    eeRoundMode: 0  # Fixes object balls never stopping in the Monkey Billiards DX minigame.
+    eeRoundMode: 1  # Fixes object balls never stopping in the Monkey Billiards DX minigame.
 SLES-53038:
   name: "Devil May Cry 3 - Dante's Awakening"
   region: "PAL-M5"
@@ -16686,9 +16690,13 @@ SLES-54723:
   name: "Spider-Man 3"
   region: "PAL-E"
   compat: 4
+  clampModes:
+    vuClampMode: 0 # Fixes idle camera behaviour.
 SLES-54724:
   name: "Spider-Man 3"
   region: "PAL-M4"
+  clampModes:
+    vuClampMode: 0 # Fixes idle camera behaviour.
 SLES-54725:
   name: "Kirikou and the Wild Beasts"
   region: "PAL-M5"
@@ -19195,7 +19203,7 @@ SLKA-25290:
   name: "Super Monkey Ball Deluxe"
   region: "NTSC-K"
   roundModes:
-    eeRoundMode: 0  # Fixes object balls never stopping in the Monkey Billiards DX minigame.
+    eeRoundMode: 1  # Fixes object balls never stopping in the Monkey Billiards DX minigame.
 SLKA-25291:
   name: "Chains of Power"
   region: "NTSC-K"
@@ -19336,6 +19344,8 @@ SLKA-25384:
 SLKA-25385:
   name: "Spider-Man 3"
   region: "NTSC-K"
+  clampModes:
+    vuClampMode: 0 # Fixes idle camera behaviour.
 SLKA-25388:
   name: "One Piece - Grand Adventure"
   region: "NTSC-K"
@@ -19443,6 +19453,11 @@ SLPM-55081:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2  # Fixes wrong color on some characters and breakable objects.
+SLPM-55092:
+  name: "Grand Theft Auto - San Andreas [Best Price]"
+  region: "NTSC-J"
+  clampModes:
+    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
 SLPM-55096:
   name: "ThunderForce VI"
   region: "NTSC-J"
@@ -19563,6 +19578,11 @@ SLPM-55283:
 SLPM-55285:
   name: "Crimson Empire"
   region: "NTSC-J"
+SLPM-55292:
+  name: "Grand Theft Auto - San Andreas [Rockstar Classics]"
+  region: "NTSC-J"
+  clampModes:
+    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
 SLPM-60101:
   name: "0 Story"
   region: "NTSC-J"
@@ -24378,7 +24398,7 @@ SLPM-65909:
   name: "Super Monkey Ball Deluxe"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 0  # Fixes object balls never stopping in the Monkey Billiards DX minigame.
+    eeRoundMode: 1  # Fixes object balls never stopping in the Monkey Billiards DX minigame.
 SLPM-65910:
   name: "Cafe Lindbergh - Summer Season [Sweet Box]"
   region: "NTSC-J"
@@ -24609,6 +24629,8 @@ SLPM-65982:
 SLPM-65984:
   name: "Grand Theft Auto - San Andreas"
   region: "NTSC-J"
+  clampModes:
+    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
 SLPM-65985:
   name: "Iris no Atelier: Eternal Mana 2"
   region: "NTSC-J"
@@ -27159,6 +27181,8 @@ SLPM-66787:
 SLPM-66788:
   name: "Grand Theft Auto - San Andreas [Best Price]"
   region: "NTSC-J"
+  clampModes:
+    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
 SLPM-66789:
   name: "Grand Theft Auto III [Best Price]"
   region: "NTSC-J"
@@ -31888,6 +31912,8 @@ SLPS-25822:
 SLPS-25823:
   name: "Spider-Man 3"
   region: "NTSC-J"
+  clampModes:
+    vuClampMode: 0 # Fixes idle camera behaviour.
 SLPS-25825:
   name: "Zero no Tsukaima [Best Collection]"
   region: "NTSC-J"
@@ -36347,7 +36373,7 @@ SLUS-20918:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 0  # Fixes object balls never stopping in the Monkey Billiards DX minigame.
+    eeRoundMode: 1  # Fixes object balls never stopping in the Monkey Billiards DX minigame.
 SLUS-20919:
   name: "ESPN - NFL 2K5"
   region: "NTSC-U"
@@ -36480,6 +36506,8 @@ SLUS-20946:
   name: "Grand Theft Auto - San Andreas"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
 SLUS-20947:
   name: "WinBack 2: Project Poseidon"
   region: "NTSC-U"
@@ -39134,6 +39162,8 @@ SLUS-21552:
   name: "Spider-Man 3"
   region: "NTSC-U"
   compat: 4
+  clampModes:
+    vuClampMode: 0 # Fixes idle camera behaviour.
 SLUS-21553:
   name: "Lumines Plus"
   region: "NTSC-U"
@@ -39413,6 +39443,11 @@ SLUS-21616:
   compat: 5
   roundModes:
     vuRoundMode: 0
+SLUS-21617:
+  name: "Spiderman 3"
+  region: "NTSC-U"
+  clampModes:
+    vuClampMode: 0 # Fixes idle camera behaviour.
 SLUS-21618:
   name: "Plan, The"
   region: "NTSC-U"
