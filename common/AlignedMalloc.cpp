@@ -18,8 +18,8 @@
 
 #if !defined(_WIN32)
 
+#include "common/AlignedMalloc.h"
 #include "common/Assertions.h"
-#include "common/ScopedAlloc.h"
 
 void* __fastcall _aligned_malloc(size_t size, size_t align)
 {

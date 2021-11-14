@@ -80,50 +80,57 @@ extern Fnptr_OutOfMemory pxDoOutOfMemory;
 
 
 // --------------------------------------------------------------------------------------
-//  BaseScopedAlloc
+//  AlignedBuffer
 // --------------------------------------------------------------------------------------
-// Base class that allows various ScopedMalloc types to be passed to functions that act
-// on them.
+// A simple container class for an aligned allocation.  By default, no bounds checking is
+// performed, and there is no option for enabling bounds checking.  If bounds checking and
+// other features are needed, use the more robust SafeArray<> instead.
 //
-// Rationale: This class and the derived varieties are provided as a simple autonomous self-
-// destructing container for malloc.  The entire class is almost completely dependency free,
-// and thus can be included everywhere and anywhere without dependency hassles.
-//
-template <typename T>
-class BaseScopedAlloc
+template <typename T, uint align>
+class AlignedBuffer
 {
-protected:
-	T* m_buffer;
-	uint m_size;
+	static_assert(std::is_pod<T>::value, "Must use a POD type");
+
+	struct Deleter
+	{
+		void operator()(T* ptr)
+		{
+			_aligned_free(ptr);
+		}
+	};
+
+	std::unique_ptr<T[], Deleter> m_buffer;
+	std::size_t m_size;
 
 public:
-	BaseScopedAlloc()
+	AlignedBuffer(size_t size = 0)
 	{
-		m_buffer = NULL;
-		m_size = 0;
+		Alloc(size);
 	}
 
-	virtual ~BaseScopedAlloc()
-	{
-		//pxAssert(m_buffer==NULL);
-	}
-
-public:
 	size_t GetSize() const { return m_size; }
 	size_t GetLength() const { return m_size; }
 
-	// Allocates the object to the specified size.  If an existing allocation is in
-	// place, it is freed and replaced with the new allocation, and all data is lost.
-	// Parameter:
-	//   newSize - size of the new allocation, in elements (not bytes!).  If the specified
-	//     size is 0, the the allocation is freed, same as calling Free().
-	virtual void Alloc(size_t newsize) = 0;
+	void Alloc(size_t newsize)
+	{
+		m_size = newsize;
+		m_buffer.reset();
+		if (!m_size)
+			return;
 
-	// Re-sizes the allocation to the requested size, without any data loss.
-	// Parameter:
-	//   newSize - size of the new allocation, in elements (not bytes!).  If the specified
-	//     size is 0, the the allocation is freed, same as calling Free().
-	virtual void Resize(size_t newsize) = 0;
+		m_buffer.reset(reinterpret_cast<T*>(_aligned_malloc(this->m_size * sizeof(T), align)));
+		if (!m_buffer)
+			throw std::bad_alloc();
+	}
+
+	void Resize(size_t newsize)
+	{
+		m_buffer.reset(reinterpret_cast<T*>(pcsx2_aligned_realloc(m_buffer.release(), newsize * sizeof(T), align, m_size * sizeof(T))));
+		m_size = newsize;
+
+		if (!m_buffer)
+			throw std::bad_alloc();
+	}
 
 	void Free()
 	{
@@ -161,104 +168,4 @@ public:
 #endif
 		return m_buffer[idx];
 	}
-};
-
-// --------------------------------------------------------------------------------------
-//  ScopedAlloc
-// --------------------------------------------------------------------------------------
-// A simple container class for a standard malloc allocation.  By default, no bounds checking
-// is performed, and there is no option for enabling bounds checking.  If bounds checking and
-// other features are needed, use the more robust SafeArray<> instead.
-//
-// See docs for BaseScopedAlloc for details and rationale.
-//
-template <typename T>
-class ScopedAlloc : public BaseScopedAlloc<T>
-{
-	typedef BaseScopedAlloc<T> _parent;
-
-public:
-	ScopedAlloc(size_t size = 0)
-		: _parent()
-	{
-		Alloc(size);
-	}
-
-	virtual ~ScopedAlloc()
-	{
-		safe_free(this->m_buffer);
-	}
-
-	virtual void Alloc(size_t newsize)
-	{
-		safe_free(this->m_buffer);
-		this->m_size = newsize;
-		if (!this->m_size)
-			return;
-
-		this->m_buffer = (T*)malloc(this->m_size * sizeof(T));
-		if (!this->m_buffer)
-			throw Exception::OutOfMemory(L"ScopedAlloc");
-	}
-
-	virtual void Resize(size_t newsize)
-	{
-		this->m_size = newsize;
-		this->m_buffer = (T*)realloc(this->m_buffer, this->m_size * sizeof(T));
-
-		if (!this->m_buffer)
-			throw Exception::OutOfMemory(L"ScopedAlloc::Resize");
-	}
-
-	using _parent::operator[];
-};
-
-// --------------------------------------------------------------------------------------
-//  ScopedAlignedAlloc
-// --------------------------------------------------------------------------------------
-// A simple container class for an aligned allocation.  By default, no bounds checking is
-// performed, and there is no option for enabling bounds checking.  If bounds checking and
-// other features are needed, use the more robust SafeArray<> instead.
-//
-// See docs for BaseScopedAlloc for details and rationale.
-//
-template <typename T, uint align>
-class ScopedAlignedAlloc : public BaseScopedAlloc<T>
-{
-	typedef BaseScopedAlloc<T> _parent;
-
-public:
-	ScopedAlignedAlloc(size_t size = 0)
-		: _parent()
-	{
-		Alloc(size);
-	}
-
-	virtual ~ScopedAlignedAlloc()
-	{
-		safe_aligned_free(this->m_buffer);
-	}
-
-	virtual void Alloc(size_t newsize)
-	{
-		safe_aligned_free(this->m_buffer);
-		this->m_size = newsize;
-		if (!this->m_size)
-			return;
-
-		this->m_buffer = (T*)_aligned_malloc(this->m_size * sizeof(T), align);
-		if (!this->m_buffer)
-			throw Exception::OutOfMemory(L"ScopedAlignedAlloc");
-	}
-
-	virtual void Resize(size_t newsize)
-	{
-		this->m_buffer = (T*)pcsx2_aligned_realloc(this->m_buffer, newsize * sizeof(T), align, this->m_size * sizeof(T));
-		this->m_size = newsize;
-
-		if (!this->m_buffer)
-			throw Exception::OutOfMemory(L"ScopedAlignedAlloc::Resize");
-	}
-
-	using _parent::operator[];
 };
