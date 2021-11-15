@@ -83,6 +83,11 @@ GSDeviceOGL::GSDeviceOGL()
 	m_debug_gl_call = theApp.GetConfigB("debug_opengl");
 
 	m_disable_hw_gl_draw = theApp.GetConfigB("disable_hw_gl_draw");
+
+	m_features.broken_point_sampler = GLLoader::vendor_id_amd;
+	m_features.geometry_shader = GLLoader::found_geometry_shader;
+	m_features.image_load_store = GLLoader::found_GL_ARB_shader_image_load_store && GLLoader::found_GL_ARB_clear_texture;
+	m_features.texture_barrier = true;
 }
 
 GSDeviceOGL::~GSDeviceOGL()
@@ -2010,6 +2015,270 @@ GLuint GSDeviceOGL::GetPaletteSamplerID()
 void GSDeviceOGL::SetupOM(OMDepthStencilSelector dssel)
 {
 	OMSetDepthStencilState(m_om_dss[dssel]);
+}
+
+static GSDeviceOGL::VSConstantBuffer convertCB(const GSHWDrawConfig::VSConstantBuffer& cb)
+{
+	GSDeviceOGL::VSConstantBuffer out;
+	out.Vertex_Scale_Offset = GSVector4::loadl(&cb.vertex_scale).upld(GSVector4::loadl(&cb.vertex_offset));
+	out.Texture_Scale_Offset = GSVector4::loadl(&cb.texture_scale).upld(GSVector4::loadl(&cb.texture_offset));
+	out.PointSize = cb.point_size;
+	out.MaxDepth = cb.max_depth;
+	return out;
+}
+
+static GSDeviceOGL::PSConstantBuffer convertCB(const GSHWDrawConfig::PSConstantBuffer& cb, int atst)
+{
+	GSDeviceOGL::PSConstantBuffer out;
+	out.FogColor_AREF = GSVector4(GSVector4i::load(cb.fog_color_aref).u8to32());
+	if (atst == 1 || atst == 2) // Greater / Less alpha
+		out.FogColor_AREF.w -= 0.1f;
+	out.WH = cb.texture_size;
+	out.TA_MaxDepth_Af = GSVector4(GSVector4i::load(cb.ta_af).u8to32()) / GSVector4(255.f, 255.f, 1.f, 128.f);
+	out.TA_MaxDepth_Af.z = cb.max_depth * ldexpf(1, -32);
+	out.MskFix = GSVector4i::loadl(&cb.uv_msk_fix).u16to32();
+	out.FbMask = GSVector4i::load(cb.fbmask_int).u8to32();
+	out.HalfTexel = cb.half_texel;
+	out.MinMax = cb.uv_min_max;
+	out.TC_OH = GSVector4::zero().upld(GSVector4(cb.tc_offset));
+
+	GSVector4i dither = GSVector4i::loadl(&cb.dither_matrix).u8to16();
+	const GSVector4i ditherLow = dither.sll16(13).sra16(13);
+	const GSVector4i ditherHi  = dither.sll16( 9).sra16( 5);
+	dither = ditherLow.blend8(ditherHi, GSVector4i(0xFF00FF00));
+
+	out.DitherMatrix[0] = GSVector4(dither.xxxx().i8to32());
+	out.DitherMatrix[1] = GSVector4(dither.yyyy().i8to32());
+	out.DitherMatrix[2] = GSVector4(dither.zzzz().i8to32());
+	out.DitherMatrix[3] = GSVector4(dither.wwww().i8to32());
+
+	return out;
+}
+
+static GSDeviceOGL::VSSelector convertSel(const GSHWDrawConfig::VSSelector sel)
+{
+	GSDeviceOGL::VSSelector out;
+	out.int_fst = !sel.fst;
+	return out;
+}
+
+void GSDeviceOGL::RenderHW(GSHWDrawConfig& config)
+{
+	glScissor(config.scissor.x, config.scissor.y, config.scissor.width(), config.scissor.height());
+	GLState::scissor = config.scissor;
+
+	// Destination Alpha Setup
+	switch (config.destination_alpha)
+	{
+		case GSHWDrawConfig::DestinationAlphaMode::Off:
+		case GSHWDrawConfig::DestinationAlphaMode::Full:
+			break; // No setup
+		case GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking:
+			InitPrimDateTexture(config.rt, config.scissor);
+			break;
+		case GSHWDrawConfig::DestinationAlphaMode::StencilOne:
+			ClearStencil(config.ds, 1);
+			break;
+		case GSHWDrawConfig::DestinationAlphaMode::Stencil:
+		{
+			const GSVector4 src = GSVector4(config.scissor) / GSVector4(config.ds->GetSize()).xyxy();
+			const GSVector4 dst = src * 2.f - 1.f;
+			GSVertexPT1 vertices[] =
+			{
+				{GSVector4(dst.x, dst.y, 0.0f, 0.0f), GSVector2(src.x, src.y)},
+				{GSVector4(dst.z, dst.y, 0.0f, 0.0f), GSVector2(src.z, src.y)},
+				{GSVector4(dst.x, dst.w, 0.0f, 0.0f), GSVector2(src.x, src.w)},
+				{GSVector4(dst.z, dst.w, 0.0f, 0.0f), GSVector2(src.z, src.w)},
+			};
+			SetupDATE(config.rt, config.ds, vertices, config.datm);
+		}
+	}
+
+	GSTexture* hdr_rt = nullptr;
+	if (config.ps.hdr)
+	{
+		GSVector2i size = config.rt->GetSize();
+		hdr_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::FloatColor);
+		hdr_rt->CommitRegion(GSVector2i(config.scissor.z, config.scissor.w));
+		OMSetRenderTargets(hdr_rt, config.ds, &config.scissor);
+
+		// save blend state, since BlitRect destroys it
+		const bool old_blend = GLState::blend;
+		BlitRect(config.rt, config.scissor, config.rt->GetSize(), false, false);
+		if (old_blend)
+		{
+			GLState::blend = old_blend;
+			glEnable(GL_BLEND);
+		}
+	}
+
+	BeginScene();
+
+	IASetVertexBuffer(config.verts, config.nverts);
+	IASetIndexBuffer(config.indices, config.nindices);
+	GLenum topology = 0;
+	switch (config.topology)
+	{
+		case GSHWDrawConfig::Topology::Point:    topology = GL_POINTS;    break;
+		case GSHWDrawConfig::Topology::Line:     topology = GL_LINES;     break;
+		case GSHWDrawConfig::Topology::Triangle: topology = GL_TRIANGLES; break;
+	}
+	IASetPrimitiveTopology(topology);
+
+	PSSetShaderResources(config.tex, config.pal);
+	PSSetShaderResource(4, config.raw_tex);
+	// Always bind the RT. This way special effect can use it.
+	PSSetShaderResource(3, config.rt);
+
+	SetupSampler(PSSamplerSelector(config.sampler.key));
+	OMSetBlendState(config.blend.index, config.blend.factor, config.blend.is_constant, config.blend.is_accumulation, config.blend.is_mixed_hw_sw);
+	OMSetColorMaskState(OMColorMaskSelector(config.colormask.key));
+	SetupOM(OMDepthStencilSelector(config.depth.key));
+
+	VSConstantBuffer cb_vs = convertCB(config.cb_vs);
+	PSConstantBuffer cb_ps = convertCB(config.cb_ps, config.ps.atst);
+	SetupCB(&cb_vs, &cb_ps);
+
+	if (config.cb_ps.channel_shuffle_int)
+	{
+		SetupCBMisc(GSVector4i::load(config.cb_ps.channel_shuffle_int).u8to32());
+	}
+
+	GSSelector gssel;
+	if (config.gs.expand)
+	{
+		switch (config.gs.topology)
+		{
+			case GSHWDrawConfig::GSTopology::Point:  gssel.point  = 1; break;
+			case GSHWDrawConfig::GSTopology::Line:   gssel.line   = 1; break;
+			case GSHWDrawConfig::GSTopology::Sprite: gssel.sprite = 1; break;
+			case GSHWDrawConfig::GSTopology::Triangle: ASSERT(0);      break;
+		}
+	}
+
+	PSSelector pssel;
+	pssel.key = config.ps.key;
+	const VSSelector vssel = convertSel(config.vs);
+	SetupPipeline(vssel, gssel, pssel);
+
+	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
+	{
+		GL_PUSH("Date GL42");
+		// It could be good idea to use stencil in the same time.
+		// Early stencil test will reduce the number of atomic-load operation
+
+		// Create an r32i image that will contain primitive ID
+		// Note: do it at the beginning because the clean will dirty the FBO state
+		//dev->InitPrimDateTexture(rtsize.x, rtsize.y);
+
+		// I don't know how much is it legal to mount rt as Texture/RT. No write is done.
+		// In doubt let's detach RT.
+		OMSetRenderTargets(NULL, config.ds, &config.scissor);
+
+		// Don't write anything on the color buffer
+		// Neither in the depth buffer
+		glDepthMask(false);
+		// Compute primitiveID max that pass the date test (Draw without barrier)
+		DrawIndexedPrimitive();
+
+		// Ask PS to discard shader above the primitiveID max
+		glDepthMask(GLState::depth_mask);
+
+		pssel.date = 3;
+		config.ps.date = 3;
+		config.alpha_second_pass.ps.date = 3;
+		SetupPipeline(vssel, gssel, pssel);
+
+		// Be sure that first pass is finished !
+		Barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
+	}
+
+	OMSetRenderTargets(hdr_rt ? hdr_rt : config.rt, config.ds, &config.scissor);
+
+	SendHWDraw(config);
+
+	if (config.alpha_second_pass.enable)
+	{
+		if (0 != memcmp(&config.cb_ps, &config.alpha_second_pass.cb_ps, sizeof(config.cb_ps)))
+		{
+			cb_ps = convertCB(config.alpha_second_pass.cb_ps, config.alpha_second_pass.ps.atst);
+			SetupCB(&cb_vs, &cb_ps);
+		}
+		pssel.key = config.alpha_second_pass.ps.key;
+		SetupPipeline(vssel, gssel, pssel);
+		OMSetColorMaskState(OMColorMaskSelector(config.alpha_second_pass.colormask.key));
+		SetupOM(OMDepthStencilSelector(config.alpha_second_pass.depth.key));
+
+		SendHWDraw(config);
+	}
+
+	if (config.destination_alpha == GSHWDrawConfig::DestinationAlphaMode::PrimIDTracking)
+		RecycleDateTexture();
+
+	EndScene();
+
+	// Warning: EndScene must be called before StretchRect otherwise
+	// vertices will be overwritten. Trust me you don't want to do that.
+	if (hdr_rt)
+	{
+		GSVector2i size = config.rt->GetSize();
+		GSVector4 dRect(config.scissor);
+		const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
+		StretchRect(hdr_rt, sRect, config.rt, dRect, ShaderConvert::MOD_256, false);
+
+		Recycle(hdr_rt);
+	}
+}
+
+void GSDeviceOGL::SendHWDraw(const GSHWDrawConfig& config)
+{
+	if (config.drawlist)
+	{
+		GL_PUSH("Split the draw (SPRITE)");
+#if defined(_DEBUG)
+		// Check how draw call is split.
+		std::map<size_t, size_t> frequency;
+		for (const auto& it : *config.drawlist)
+			++frequency[it];
+
+		std::string message;
+		for (const auto& it : frequency)
+			message += " " + std::to_string(it.first) + "(" + std::to_string(it.second) + ")";
+
+		GL_PERF("Split single draw (%d sprites) into %zu draws: consecutive draws(frequency):%s",
+		        config.nindices / config.indices_per_prim, config.drawlist->size(), message.c_str());
+#endif
+
+		for (size_t count = 0, p = 0, n = 0; n < config.drawlist->size(); p += count, ++n)
+		{
+			count = (*config.drawlist)[n] * config.indices_per_prim;
+			glTextureBarrier();
+			DrawIndexedPrimitive(p, count);
+		}
+	}
+	else if (config.require_full_barrier)
+	{
+		GL_PUSH("Split the draw");
+
+		GL_PERF("Split single draw in %d draw", config.nindices / config.indices_per_prim);
+
+		for (size_t p = 0; p < config.nindices; p += config.indices_per_prim)
+		{
+			glTextureBarrier();
+			DrawIndexedPrimitive(p, config.indices_per_prim);
+		}
+	}
+	else if (config.require_one_barrier)
+	{
+		// One barrier needed
+		glTextureBarrier();
+		DrawIndexedPrimitive();
+	}
+	else
+	{
+		// No barriers needed
+		DrawIndexedPrimitive();
+	}
 }
 
 // Note: used as a callback of DebugMessageCallback. Don't change the signature

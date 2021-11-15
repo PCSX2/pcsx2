@@ -587,6 +587,8 @@ public:
 	void SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSelector ssel);
 	void SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 afix);
 
+	void RenderHW(GSHWDrawConfig& config) final;
+
 	ID3D11Device* operator->() { return m_dev.get(); }
 	operator ID3D11Device*() { return m_dev.get(); }
 	operator ID3D11DeviceContext*() { return m_ctx.get(); }

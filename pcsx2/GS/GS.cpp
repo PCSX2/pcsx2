@@ -23,6 +23,7 @@
 #include "Renderers/Null/GSDeviceNull.h"
 #include "Renderers/OpenGL/GSDeviceOGL.h"
 #include "Renderers/OpenGL/GSRendererOGL.h"
+#include "Renderers/HW/GSRendererNew.h"
 #include "GSLzma.h"
 
 #include "common/pxStreams.h"
@@ -218,13 +219,9 @@ int _GSopen(const WindowInfo& wi, const char* title, GSRendererType renderer, in
 			switch (renderer)
 			{
 				default:
-#ifdef _WIN32
 				case GSRendererType::DX1011_HW:
-					s_gs = (GSRenderer*)new GSRendererDX11();
-					break;
-#endif
 				case GSRendererType::OGL_HW:
-					s_gs = (GSRenderer*)new GSRendererOGL();
+					s_gs = (GSRenderer*)new GSRendererNew();
 					break;
 				case GSRendererType::OGL_SW:
 					s_gs = new GSRendererSW(threads);
