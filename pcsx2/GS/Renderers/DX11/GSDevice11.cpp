@@ -41,6 +41,11 @@ GSDevice11::GSDevice11()
 		m_aniso_filter = aniso_level;
 	else
 		m_aniso_filter = 0;
+
+	m_features.broken_point_sampler = true; // Not technically the case but the most common reason to use DX11 is because you're on AMD
+	m_features.geometry_shader = true;
+	m_features.image_load_store = false;
+	m_features.texture_barrier = false;
 }
 
 bool GSDevice11::SetFeatureLevel(D3D_FEATURE_LEVEL level, bool compat_mode)
@@ -1470,6 +1475,255 @@ void GSDevice11::CompileShader(const std::string& source, const char* fn, ID3DIn
 
 	if (FAILED(hr))
 		throw GSRecoverableError();
+}
+
+static GSDevice11::VSConstantBuffer convertCB(const GSHWDrawConfig::VSConstantBuffer& cb)
+{
+	GSDevice11::VSConstantBuffer out;
+	out.VertexScale  = GSVector4(cb.vertex_scale.x, -cb.vertex_scale.y, ldexpf(1, -32), 0.0f);
+	out.VertexOffset = GSVector4(cb.vertex_offset.x, -cb.vertex_offset.y, 0.0f, -1.0f);
+	out.Texture_Scale_Offset = GSVector4::loadl(&cb.texture_scale).upld(GSVector4::loadl(&cb.texture_offset));
+	out.MaxDepth = cb.max_depth;
+	return out;
+}
+
+static GSDevice11::GSConstantBuffer convertCBGS(const GSHWDrawConfig::VSConstantBuffer& cb)
+{
+	GSDevice11::GSConstantBuffer out;
+	out.PointSize = cb.point_size;
+	return out;
+}
+
+static GSDevice11::PSConstantBuffer convertCB(const GSHWDrawConfig::PSConstantBuffer& cb, int atst)
+{
+	GSDevice11::PSConstantBuffer out;
+	out.FogColor_AREF = GSVector4(GSVector4i::load(cb.fog_color_aref).u8to32());
+	if (atst == 1 || atst == 2) // Greater / Less alpha
+		out.FogColor_AREF.w -= 0.1f;
+	out.HalfTexel = cb.half_texel;
+	out.WH = cb.texture_size;
+	out.MinMax = cb.uv_min_max;
+	const GSVector4 ta_af(GSVector4i::load(cb.ta_af).u8to32());
+	out.MinF_TA = (GSVector4(out.MskFix) + 0.5f).xyxy(ta_af) / out.WH.xyxy(GSVector4(255, 255));
+	out.MskFix = GSVector4i::loadl(&cb.uv_msk_fix).u16to32();
+	out.ChannelShuffle = GSVector4i::load(cb.channel_shuffle_int).u8to32();
+	out.FbMask = GSVector4i::load(cb.fbmask_int).u8to32();
+	out.TC_OffsetHack = GSVector4(cb.tc_offset.x, cb.tc_offset.y).xyxy();
+	out.Af_MaxDepth = GSVector4(ta_af.a / 128.f, cb.max_depth * ldexpf(1, -32));
+
+	GSVector4i dither = GSVector4i::loadl(&cb.dither_matrix).u8to16();
+	const GSVector4i ditherLow = dither.sll16(13).sra16(13);
+	const GSVector4i ditherHi  = dither.sll16(9).sra16(5);
+	dither = ditherLow.blend8(ditherHi, GSVector4i(0xFF00FF00));
+
+	out.DitherMatrix[0] = GSVector4(dither.xxxx().i8to32());
+	out.DitherMatrix[1] = GSVector4(dither.yyyy().i8to32());
+	out.DitherMatrix[2] = GSVector4(dither.zzzz().i8to32());
+	out.DitherMatrix[3] = GSVector4(dither.wwww().i8to32());
+
+	return out;
+}
+
+static GSDevice11::OMDepthStencilSelector convertSel(GSHWDrawConfig::DepthStencilSelector sel)
+{
+	GSDevice11::OMDepthStencilSelector out;
+	out.zwe = sel.zwe;
+	out.ztst = sel.ztst;
+	out.date = sel.date;
+	out.date_one = sel.date_one;
+	out.fba = 0; // No longer seems to be in use?
+	return out;
+}
+
+static GSDevice11::OMBlendSelector convertSel(GSHWDrawConfig::ColorMaskSelector cm, GSHWDrawConfig::BlendState blend)
+{
+	GSDevice11::OMBlendSelector out;
+	out.wrgba = cm.wrgba;
+	out.abe = blend.index != 0;
+	out.blend_index = blend.index;
+	out.accu_blend = blend.is_accumulation;
+	out.blend_mix = blend.is_mixed_hw_sw;
+	return out;
+}
+
+static GSDevice11::VSSelector convertSel(GSHWDrawConfig::VSSelector sel)
+{
+	GSDevice11::VSSelector out;
+	out.tme = sel.tme;
+	out.fst = sel.fst;
+	return out;
+}
+
+static GSDevice11::PSSelector convertSel(GSHWDrawConfig::PSSelector sel)
+{
+	GSDevice11::PSSelector out;
+	out.fmt     = sel.pal_fmt << 2 | sel.aem_fmt;
+	out.dfmt    = sel.dfmt;
+	out.depth_fmt = sel.depth_fmt;
+	out.aem     = sel.aem;
+	out.fba     = sel.fba;
+	out.fog     = sel.fog;
+	out.atst    = sel.atst;
+	out.fst     = sel.fst;
+	out.tfx     = sel.tfx;
+	out.tcc     = sel.tcc;
+	out.wms     = sel.wms;
+	out.wmt     = sel.wmt;
+	out.ltf     = sel.ltf;
+	out.shuffle = sel.shuffle;
+	out.read_ba = sel.read_ba;
+	out.fbmask  = sel.fbmask;
+	out.hdr     = sel.hdr;
+	out.blend_a = sel.blend_a;
+	out.blend_b = sel.blend_b;
+	out.blend_c = sel.blend_c;
+	out.blend_d = sel.blend_d;
+	out.clr1    = sel.clr1;
+	out.colclip = sel.colclip;
+	out.pabe    = sel.pabe;
+	out.channel = sel.channel;
+	out.dither  = sel.dither;
+	out.zclamp  = sel.zclamp;
+	out.tcoffsethack       = sel.tcoffsethack;
+	out.urban_chaos_hle    = sel.urban_chaos_hle;
+	out.tales_of_abyss_hle = sel.tales_of_abyss_hle;
+	out.point_sampler      = sel.point_sampler;
+	out.invalid_tex0       = sel.invalid_tex0;
+	return out;
+}
+
+static GSDevice11::GSSelector convertSel(GSHWDrawConfig::GSSelector sel)
+{
+	GSDevice11::GSSelector out;
+	out.iip = sel.iip;
+	switch (sel.topology)
+	{
+		case GSHWDrawConfig::GSTopology::Point:
+			out.point = sel.expand;
+			out.prim = GS_POINT_CLASS;
+			break;
+		case GSHWDrawConfig::GSTopology::Line:
+			out.line = sel.expand;
+			out.prim = GS_LINE_CLASS;
+			break;
+		case GSHWDrawConfig::GSTopology::Triangle:
+			out.prim = GS_TRIANGLE_CLASS;
+			break;
+		case GSHWDrawConfig::GSTopology::Sprite:
+			out.cpu_sprite = !sel.expand;
+			out.prim = GS_SPRITE_CLASS;
+			break;
+	}
+	return out;
+}
+
+static GSDevice11::PSSamplerSelector convertSel(GSHWDrawConfig::SamplerSelector sel)
+{
+	GSDevice11::PSSamplerSelector out;
+	out.tau = sel.tau;
+	out.tav = sel.tav;
+	out.ltf = sel.biln;
+	return out;
+}
+
+void GSDevice11::RenderHW(GSHWDrawConfig& config)
+{
+	ASSERT(!config.require_full_barrier); // We always specify no support so it shouldn't request this
+
+	if (config.destination_alpha != GSHWDrawConfig::DestinationAlphaMode::Off)
+	{
+		const GSVector4 src = GSVector4(config.scissor) / GSVector4(config.ds->GetSize()).xyxy();
+		const GSVector4 dst = src * 2.0f - 1.0f;
+
+		GSVertexPT1 vertices[] =
+		{
+			{GSVector4(dst.x, -dst.y, 0.5f, 1.0f), GSVector2(src.x, src.y)},
+			{GSVector4(dst.z, -dst.y, 0.5f, 1.0f), GSVector2(src.z, src.y)},
+			{GSVector4(dst.x, -dst.w, 0.5f, 1.0f), GSVector2(src.x, src.w)},
+			{GSVector4(dst.z, -dst.w, 0.5f, 1.0f), GSVector2(src.z, src.w)},
+		};
+
+		SetupDATE(config.rt, config.ds, vertices, config.datm);
+	}
+
+	GSTexture* hdr_rt = nullptr;
+	if (config.ps.hdr)
+	{
+		const GSVector2i size = config.rt->GetSize();
+		const GSVector4 dRect(config.scissor);
+		const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
+		hdr_rt = CreateRenderTarget(size.x, size.y, GSTexture::Format::FloatColor);
+		hdr_rt->CommitRegion(GSVector2i(config.scissor.z, config.scissor.w));
+		// Warning: StretchRect must be called before BeginScene otherwise
+		// vertices will be overwritten. Trust me you don't want to do that.
+		StretchRect(config.rt, sRect, hdr_rt, dRect, ShaderConvert::COPY, false);
+	}
+
+	BeginScene();
+
+	void* ptr = nullptr;
+	if (IAMapVertexBuffer(&ptr, sizeof(*config.verts), config.nverts))
+	{
+		GSVector4i::storent(ptr, config.verts, config.nverts * sizeof(*config.verts));
+		IAUnmapVertexBuffer();
+	}
+	IASetIndexBuffer(config.indices, config.nindices);
+	D3D11_PRIMITIVE_TOPOLOGY topology;
+	switch (config.topology)
+	{
+		case GSHWDrawConfig::Topology::Point:    topology = D3D11_PRIMITIVE_TOPOLOGY_POINTLIST;    break;
+		case GSHWDrawConfig::Topology::Line:     topology = D3D11_PRIMITIVE_TOPOLOGY_LINELIST;     break;
+		case GSHWDrawConfig::Topology::Triangle: topology = D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST; break;
+	}
+	IASetPrimitiveTopology(topology);
+
+	PSSetShaderResources(config.tex, config.pal);
+	PSSetShaderResource(4, config.raw_tex);
+
+	if (config.require_one_barrier) // Used as "bind rt" flag when texture barrier is unsupported
+	{
+		// Bind the RT.This way special effect can use it.
+		// Do not always bind the rt when it's not needed,
+		// only bind it when effects use it such as fbmask emulation currently
+		// because we copy the frame buffer and it is quite slow.
+		PSSetShaderResource(3, config.rt);
+	}
+
+	const VSConstantBuffer cb_vs = convertCB(config.cb_vs);
+	const GSConstantBuffer cb_gs = convertCBGS(config.cb_vs);
+	PSConstantBuffer cb_ps = convertCB(config.cb_ps, config.ps.atst);
+
+	SetupOM(convertSel(config.depth), convertSel(config.colormask, config.blend), config.blend.factor);
+	SetupVS(convertSel(config.vs), &cb_vs);
+	SetupGS(convertSel(config.gs), &cb_gs);
+	SetupPS(convertSel(config.ps), &cb_ps, convertSel(config.sampler));
+
+	OMSetRenderTargets(hdr_rt ? hdr_rt : config.rt, config.ds, &config.scissor);
+
+	DrawIndexedPrimitive();
+
+	if (config.alpha_second_pass.enable)
+	{
+		if (0 != memcmp(&config.cb_ps, &config.alpha_second_pass.cb_ps, sizeof(config.cb_ps)))
+		{
+			cb_ps = convertCB(config.alpha_second_pass.cb_ps, config.alpha_second_pass.ps.atst);
+		}
+		SetupPS(convertSel(config.alpha_second_pass.ps), &cb_ps, convertSel(config.sampler));
+		SetupOM(convertSel(config.alpha_second_pass.depth), convertSel(config.alpha_second_pass.colormask, config.blend), config.blend.factor);
+
+		DrawIndexedPrimitive();
+	}
+
+	EndScene();
+
+	if (hdr_rt)
+	{
+		const GSVector2i size = config.rt->GetSize();
+		const GSVector4 dRect(config.scissor);
+		const GSVector4 sRect = dRect / GSVector4(size.x, size.y).xyxy();
+		StretchRect(hdr_rt, sRect, config.rt, dRect, ShaderConvert::MOD_256, false);
+		Recycle(hdr_rt);
+	}
 }
 
 u16 GSDevice11::ConvertBlendEnum(u16 generic)
