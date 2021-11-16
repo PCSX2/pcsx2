@@ -2493,12 +2493,7 @@ SCES-51719:
 SCES-51725:
   name: "Everquest Online Adventures"
   region: "PAL-M3"
-  compat: 3
-  patches:
-    555019B2:
-      content: |-
-        patch=0,EE,00571414,word,00000000
-        patch=0,EE,00571438,word,00000000
+  compat: 4
 SCES-51844:
   name: "Time Crisis 3"
   region: "PAL-M5"
@@ -7722,6 +7717,7 @@ SLES-50263:
 SLES-50264:
   name: "Playmobil - Hype - The Time Quest"
   region: "PAL-F"
+  compat: 5
   patches:
     B911D61B:
       content: |-
@@ -7745,6 +7741,7 @@ SLES-50264:
 SLES-50265:
   name: "Playmobil - Hype - The Time Quest"
   region: "PAL-G"
+  compat: 5
   patches:
     3D2A2448:
       content: |-
@@ -7768,7 +7765,7 @@ SLES-50265:
 SLES-50266:
   name: "Playmobil - Hype - The Time Quest"
   region: "PAL-M4"
-  compat: 4
+  compat: 5
   patches:
     F668693E:
       content: |-
@@ -8076,7 +8073,7 @@ SLES-50445:
 SLES-50446:
   name: "Shadow Man - 2econd Coming"
   region: "PAL-M4"
-  compat: 4
+  compat: 5
   speedHacks:
     InstantVU1SpeedHack: 0  # Fixes SPS.
 SLES-50447:
@@ -8164,15 +8161,6 @@ SLES-50498:
 SLES-50503:
   name: "Weakest Link"
   region: "PAL-E"
-  patches:
-    7193F81D:
-      content: |-
-        comment=Patch by Prafull
-        // Fixes game hanging at start.
-        patch=1,EE,00195f38,word,00000000
-        patch=1,EE,001a2fbc,word,00000000
-        patch=1,EE,00198b68,word,00000000
-        patch=1,EE,00145b50,word,00000000
 SLES-50504:
   name: "Half-Life"
   region: "PAL-E"
@@ -8227,6 +8215,8 @@ SLES-50538:
 SLES-50539:
   name: "James Bond 007 - Agent Under Fire"
   region: "PAL-M6"
+  clampModes:
+    vuClampMode: 2 # Fixes corrupt textures. 
 SLES-50540:
   name: "Simpsons Road Rage"
   region: "PAL-E"
@@ -8342,6 +8332,7 @@ SLES-50606:
 SLES-50608:
   name: "Shadow Man - 2econd Coming"
   region: "PAL-G"
+  compat: 5
   speedHacks:
     InstantVU1SpeedHack: 0  # Fixes SPS.
 SLES-50613:
@@ -8478,15 +8469,6 @@ SLES-50706:
 SLES-50709:
   name: "Weakest Link (Le Maillon Fable)"
   region: "PAL-F"
-  patches:
-    837321FA:
-      content: |-
-        comment=Patch by Prafull
-        // Fixes game hanging at start.
-        patch=1,EE,001980a8,word,00000000
-        patch=1,EE,001a512c,word,00000000
-        patch=1,EE,0019acd8,word,00000000
-        patch=1,EE,00147cc0,word,00000000
 SLES-50710:
   name: "Dr. Muto"
   region: "PAL-M5"
@@ -8858,25 +8840,6 @@ SLES-50842:
 SLES-50843:
   name: "Crashed"
   region: "PAL-M5"
-  patches:
-    0379b4f7:
-      content: |-
-        comment=Patch by Prafull
-        // Fixes hanging at start.
-        patch=0,EE,00151898,word,00000000
-        // Fixes ingame hangs.
-        patch=0,EE,001518b0,word,00000000
-        patch=0,EE,001518c4,word,00000000
-        patch=0,EE,001518d8,word,00000000
-        patch=0,EE,001518ec,word,00000000
-        patch=0,EE,00151900,word,00000000
-        patch=0,EE,00151914,word,00000000
-        patch=0,EE,00151928,word,00000000
-        patch=0,EE,0015193C,word,00000000
-        patch=0,EE,00151950,word,00000000
-        patch=0,EE,00151968,word,00000000
-        patch=0,EE,00151978,word,00000000
-        patch=0,EE,00151914,word,00000000
 SLES-50845:
   name: "Medal of Honor: En Première Ligne"
   region: "PAL-F"
@@ -9735,13 +9698,6 @@ SLES-51282:
 SLES-51283:
   name: "WWE SmackDown! Shut Your Mouth"
   region: "PAL-E"
-  patches:
-    D1D97A29:
-      content: |-
-        comment=Patch by Prafull
-        // Fixes freeze during entrances.
-        patch=1,EE,0010b7ac,word,00000000 //0440fffa
-        patch=1,EE,0010b894,word,00000000 //0440fffa
 SLES-51284:
   name: "Contra - Shattered Soldier"
   region: "PAL-M3"
@@ -18667,16 +18623,30 @@ SLES-82037:
     - "SLES-82036"
     - "SLES-82037"
 SLES-82038:
-  name: "Onimusha - Dawn of Dreams [Disc1]"
+  name: "Onimusha - Dawn of Dreams [Disc1of2]"
   region: "PAL-M5"
   compat: 5
   patches:
     812C5A96:
       content: |-
-        comment=Patch by Shadow Lady
-        patch=0,EE,00104170,word,00000000
+        comment=patched by Kozarrov and ported by Prafull
+        //Improve menus, and other 2D displays handled on IPU
+        // Set IPU_DATA IVF to Intra
+        patch=1,EE,003c3678,word,3C040020
+        // Set IPU_CMD to IDEC, and set QSC to 2
+        // Why 2? Because it seems to work best.
+        patch=1,EE,003c368c,word,3C021002
+        // Old patch by shadow lady (still needed)
+        patch=1,EE,00104170,word,00000000
+        // Disable print - we need that loop!
+        // Without loop ipu break itself.
+        patch=1,EE,0010FDC8,word,34190180
+        patch=1,EE,0010FDCC,word,1720FFFF
+        patch=1,EE,0010FDD0,word,2739FFFF
+        patch=1,EE,0010FDD4,word,03E00008
+        patch=1,EE,0010FDD8,word,00000000
 SLES-82039:
-  name: "Onimusha - Dawn of Dreams [Disc2]"
+  name: "Onimusha - Dawn of Dreams [Disc2of2]"
   region: "PAL-M5"
   compat: 5
   memcardFilters:
@@ -18684,8 +18654,22 @@ SLES-82039:
   patches:
     812C5A96:
       content: |-
-        comment=Patch by Shadow Lady
-        patch=0,EE,00104170,word,00000000
+        comment=patched by Kozarrov and ported by Prafull
+        //Improve menus, and other 2D displays handled on IPU
+        // Set IPU_DATA IVF to Intra
+        patch=1,EE,003c3678,word,3C040020
+        // Set IPU_CMD to IDEC, and set QSC to 2
+        // Why 2? Because it seems to work best.
+        patch=1,EE,003c368c,word,3C021002
+        // Old patch by shadow lady (still needed)
+        patch=1,EE,00104170,word,00000000
+        // Disable print - we need that loop!
+        // Without loop ipu break itself.
+        patch=1,EE,0010FDC8,word,34190180
+        patch=1,EE,0010FDCC,word,1720FFFF
+        patch=1,EE,0010FDD0,word,2739FFFF
+        patch=1,EE,0010FDD4,word,03E00008
+        patch=1,EE,0010FDD8,word,00000000
 SLES-82042:
   name: "Metal Gear Solid 3 - Subsistence [Disc1of3]"
   region: "PAL-E-F"
@@ -18798,13 +18782,6 @@ SLKA-25026:
 SLKA-25030:
   name: "WWE SmackDown! Shut Your Mouth"
   region: "NTSC-K"
-  patches:
-    43E396A7:
-      content: |-
-        comment=Patch by Prafull and Arapapa
-        // Fixes freeze during entrances.
-        patch=1,EE,0010b894,word,00000000
-        patch=1,EE,0010b7ac,word,00000000
 SLKA-25032:
   name: "Enter the Matrix"
   region: "NTSC-K"
@@ -19589,15 +19566,6 @@ SLPM-60101:
 SLPM-60102:
   name: "From Software First Previews"
   region: "NTSC-J"
-  patches:
-    9E9AC9DC:
-      content: |-
-        author=kozarovv
-        // Patch for From Software First Preview, Evergrace demo. 
-        // Fix loading. Expected data is 2 bytes later than game trying to read it. 
-        // Patch force read from address where data is.
-        patch=1,EE,E0018447,extended,0023BB86
-        patch=1,EE,0023BB84,extended,00000006
 SLPM-60104:
   name: "Konami PlayStation 2 Taikeban"
   region: "NTSC-J"
@@ -25153,8 +25121,15 @@ SLPM-66160:
   roundModes:
     eeRoundMode: 0
 SLPM-66163:
-  name: "Fuuuraiki 2"
+  name: "Fuuraiki 2"
   region: "NTSC-J"
+  patches:
+    FDF6D8C2:
+      content: |-
+        author=Prafull
+        // Skip sceipusync
+        // Fixes hang before going ingame
+        patch=1,EE,00156608,word,10000003
 SLPM-66164:
   name: "Mahou Tsukai Kurohime"
   region: "NTSC-J"
@@ -26099,8 +26074,15 @@ SLPM-66457:
         // This patch skips over the stack code, allowing the game to boot.
         patch=1,EE,001579D8,word,10000003
 SLPM-66458:
-  name: "Acheter Fuuuraiki"
+  name: "Fuuraiki"
   region: "NTSC-J"
+  patches:
+    37CA944E:
+      content: |-
+        author=Prafull
+        // Skip sceipusync
+        // Fixes hang before going ingame
+        patch=1,EE,0023122c,word,00000000
 SLPM-66459:
   name: "Zero Pilot - Zero"
   region: "NTSC-J"
@@ -27006,10 +26988,17 @@ SLPM-66736:
   name: "Rogue Hearts Dungeon"
   region: "NTSC-J"
 SLPM-66737:
-  name: "Roeran koekoe Host Club [Limited Edition]"
+  name: "Ouran Koukou Host Club [Limited Edition]"
   region: "NTSC-J"
+  patches:
+    3BE2C709:
+      content: |-
+        author=PSI, Prafull
+        // Game does weird stack manipulation, causing data sent to the IOP to be corrupted unless EE data cache is enabled.
+        // This patch skips over the stack code, allowing the game to boot.
+        patch=1,EE,00189e88,word,10000003
 SLPM-66738:
-  name: "Roeran koekoe Host Club"
+  name: "Ouran Koukou Host Club"
   region: "NTSC-J"
   patches:
     3BE2C709:
@@ -27797,6 +27786,12 @@ SLPM-67502:
   name: "Devil May Cry"
   region: "NTSC-K"
   compat: 5
+SLPM-67505:
+  name: "James Bond 007 - Agent Under Fire"
+  region: "NTSC-K"
+  compat: 5
+  clampModes:
+    vuClampMode: 2 # Fixes corrupt textures.
 SLPM-67507:
   name: "Onimusha Warlords"
   region: "NTSC-K"
@@ -33626,6 +33621,8 @@ SLUS-20265:
   name: "James Bond 007 - Agent Under Fire"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vuClampMode: 2 # Fixes corrupt textures. 
 SLUS-20266:
   name: "NASCAR - Thunder 2002"
   region: "NTSC-U"
@@ -33704,7 +33701,7 @@ SLUS-20281:
 SLUS-20282:
   name: "Victorious Boxers - Ippo's Road to Glory"
   region: "NTSC-U"
-  compat: 4
+  compat: 5
 SLUS-20283:
   name: "World of Outlaws - Sprint Cars 2002"
   region: "NTSC-U"
@@ -34273,7 +34270,7 @@ SLUS-20412:
 SLUS-20413:
   name: "Shadow Man - 2econd Coming"
   region: "NTSC-U"
-  compat: 4
+  compat: 5
   speedHacks:
     InstantVU1SpeedHack: 0  # Fixes SPS.
 SLUS-20414:
@@ -34577,13 +34574,6 @@ SLUS-20483:
   name: "WWE SmackDown! Shut Your Mouth"
   region: "NTSC-U"
   compat: 5
-  patches:
-    B0AE1898:
-      content: |-
-        comment=Patch by Prafull
-        // Fixes freeze during entrances.
-        patch=1,EE,0010b894,word,00000000
-        patch=1,EE,0010b7ac,word,00000000
 SLUS-20484:
   name: "Devil May Cry 2 [Disc1of2]"
   region: "NTSC-U"
@@ -35663,7 +35653,7 @@ SLUS-20743:
 SLUS-20744:
   name: "EverQuest - Online Adventures - Frontiers"
   region: "NTSC-U"
-  compat: 3
+  compat: 4
 SLUS-20745:
   name: "Shrek 2"
   region: "NTSC-U"
@@ -37561,8 +37551,21 @@ SLUS-21180:
   patches:
     FE44479E:
       content: |-
-        comment=Patch by Shadow Lady
-        patch=0,EE,00104170,word,00000000
+       author=kozarovv
+       // Set IPU_DATA IVF to Intra
+       patch=1,EE,003BFDD8,word,3C040020
+       // Set IPU_CMD to IDEC, and set QSC to 2
+       // Why 2? Because it seems to work best.
+       patch=1,EE,003BFDEC,word,3C021002
+       // Old patch by shadow lady (still needed)
+       patch=1,EE,00104170,word,00000000
+       // Disable print - we need that loop!
+       // Without loop ipu break itself.
+       patch=1,EE,0010FDC8,word,34190180
+       patch=1,EE,0010FDCC,word,1720FFFF
+       patch=1,EE,0010FDD0,word,2739FFFF
+       patch=1,EE,0010FDD4,word,03E00008
+       patch=1,EE,0010FDD8,word,00000000
 SLUS-21181:
   name: "D.I.C.E.: DNA Integrated Cybernetic Enterprises"
   region: "NTSC-U"
