@@ -305,9 +305,14 @@ endif()
 # MacOS-specific things
 #-------------------------------------------------------------------------------
 
-set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
+if(NOT CMAKE_GENERATOR MATCHES "Xcode")
+	# Assume Xcode builds aren't being used for distribution
+	# Helpful because Xcode builds don't build multiple metallibs for different macOS versions
+	# Also helpful because Xcode's interactive shader debugger requires apps be built for the latest macOS
+	set(CMAKE_OSX_DEPLOYMENT_TARGET 10.13)
+endif()
 
-if (APPLE AND ${CMAKE_OSX_DEPLOYMENT_TARGET} VERSION_LESS 10.14 AND NOT ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 9)
+if (APPLE AND CMAKE_OSX_DEPLOYMENT_TARGET AND "${CMAKE_OSX_DEPLOYMENT_TARGET}" VERSION_LESS 10.14 AND NOT ${CMAKE_CXX_COMPILER_VERSION} VERSION_LESS 9)
 	# Older versions of the macOS stdlib don't have operator new(size_t, align_val_t)
 	# Disable use of them with this flag
 	# Not great, but also no worse that what we were getting before we turned on C++17

@@ -86,6 +86,7 @@ target_sources(common PRIVATE
 	MemcpyFast.h
 	MemsetFast.inl
 	MD5Digest.h
+	MRCHelpers.h
 	Path.h
 	PageFaultSource.h
 	PrecompiledHeader.h
@@ -185,8 +186,8 @@ elseif(APPLE)
 		GL/ContextAGL.h
 	)
 	set_source_files_properties(GL/ContextAGL.mm PROPERTIES SKIP_PRECOMPILE_HEADERS ON)
-	target_compile_options(common PUBLIC -fobjc-arc)
-	target_link_options(common PUBLIC -fobjc-link-runtime)
+	target_compile_options(common PRIVATE -fobjc-arc)
+	target_link_options(common PRIVATE -fobjc-link-runtime)
 else()
 	if(X11_API OR WAYLAND_API)
 		target_sources(common PRIVATE

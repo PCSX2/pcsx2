@@ -46,6 +46,7 @@ public:
 	{
 		None,
 		D3D11,
+		Metal,
 		Vulkan,
 		OpenGL,
 		OpenGLES

@@ -18,7 +18,8 @@
 // clang-format off
 
 // MacOS headers define PAGE_SIZE to the size of an x86 page
-#ifdef PAGE_SIZE
+#ifdef __APPLE__
+	#include <mach/vm_page_size.h>
 	#undef PAGE_SIZE
 #endif
 
