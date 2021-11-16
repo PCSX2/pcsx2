@@ -313,7 +313,7 @@ void GSRendererSW::ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex*
 			}
 		}
 
-		if (primclass == GS_SPRITE_CLASS)
+		if (primclass == GS_SPRITE_CLASS || m_vt.m_eq.z)
 		{
 			xyzuvf = xyzuvf.min_u32(z_max);
 			t = t.insert32<1, 3>(GSVector4::cast(xyzuvf));
@@ -1341,6 +1341,7 @@ bool GSRendererSW::GetScanlineGlobalData(SharedData* data)
 
 		gd.sel.zpsm = GSLocalMemory::m_psm[context->ZBUF.PSM].fmt;
 		gd.sel.ztst = ztest ? context->TEST.ZTST : (int)ZTST_ALWAYS;
+		gd.sel.zequal = !!m_vt.m_eq.z;
 		gd.sel.zoverflow = (u32)GSVector4i(m_vt.m_max.p).z == 0x80000000U;
 		gd.sel.zclamp = (u32)GSVector4i(m_vt.m_max.p).z > z_max;
 	}

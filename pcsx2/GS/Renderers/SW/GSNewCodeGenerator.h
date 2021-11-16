@@ -407,6 +407,7 @@ public:
 	AFORWARD(3, pinsrd,    ARGS_XOI)
 	AFORWARD(2, pmaxsw,    ARGS_XO)
 	AFORWARD(2, pminsd,    ARGS_XO)
+	AFORWARD(2, pminud,    ARGS_XO)
 	AFORWARD(2, pminsw,    ARGS_XO)
 	SFORWARD(2, pmovsxbd,  ARGS_XO)
 	SFORWARD(2, pmovmskb,  const Reg32e&, const Xmm&)
