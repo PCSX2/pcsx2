@@ -912,7 +912,7 @@ int cdvdReadSector()
 	CDVD_LOG("SECTOR %d (BCR %x;%x)", cdvd.Sector, HW_DMA3_BCR_H16, HW_DMA3_BCR_L16);
 
 	bcr = (HW_DMA3_BCR_H16 * HW_DMA3_BCR_L16) * 4;
-	if (bcr < cdvd.BlockSize)
+	if (bcr < cdvd.BlockSize || !(HW_DMA3_CHCR & 0x01000000))
 	{
 		CDVD_LOG("READBLOCK:  bcr < cdvd.BlockSize; %x < %x", bcr, cdvd.BlockSize);
 		if (HW_DMA3_CHCR & 0x01000000)
