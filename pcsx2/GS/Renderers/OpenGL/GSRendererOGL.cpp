@@ -759,7 +759,9 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 		// The purpose of texture shuffle is to move color channel. Extra interpolation is likely a bad idea.
 		bilinear &= m_vt.IsLinear();
 
-		vs_cb.TextureOffset = RealignTargetTextureCoordinate(tex);
+		GSVector4 half_offset = RealignTargetTextureCoordinate(tex);
+		vs_cb.Texture_Scale_Offset.z = half_offset.x;
+		vs_cb.Texture_Scale_Offset.w = half_offset.y;
 	}
 	else if (tex->m_target)
 	{
@@ -817,7 +819,9 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 			bilinear &= m_vt.IsLinear();
 		}
 
-		vs_cb.TextureOffset = RealignTargetTextureCoordinate(tex);
+		GSVector4 half_offset = RealignTargetTextureCoordinate(tex);
+		vs_cb.Texture_Scale_Offset.z = half_offset.x;
+		vs_cb.Texture_Scale_Offset.w = half_offset.y;
 	}
 	else if (tex->m_palette)
 	{
@@ -882,7 +886,10 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 
 	// TC Offset Hack
 	m_ps_sel.tcoffsethack = m_userhacks_tcoffset;
-	ps_cb.TC_OH_TS = GSVector4(1 / 16.0f, 1 / 16.0f, m_userhacks_tcoffset_x, m_userhacks_tcoffset_y) / WH.xyxy();
+	GSVector4 tc_oh_ts = GSVector4(1 / 16.0f, 1 / 16.0f, m_userhacks_tcoffset_x, m_userhacks_tcoffset_y) / WH.xyxy();
+	ps_cb.TC_OH = tc_oh_ts.zwzw();
+	vs_cb.Texture_Scale_Offset.x = tc_oh_ts.x;
+	vs_cb.Texture_Scale_Offset.y = tc_oh_ts.y;
 
 	// Must be done after all coordinates math
 	if (m_context->HasFixedTEX0() && !PRIM->FST)
@@ -1138,7 +1145,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	const bool ate_second_pass = m_context->TEST.DoSecondPass();
 
 	ResetStates();
-	vs_cb.TextureOffset = GSVector4(0.0f);
+	vs_cb.Texture_Scale_Offset = GSVector4(0.0f);
 
 	ASSERT(m_dev != NULL);
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;

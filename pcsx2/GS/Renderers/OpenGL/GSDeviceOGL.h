@@ -127,17 +127,17 @@ public:
 	{
 		GSVector4 Vertex_Scale_Offset;
 
-		GSVector4 TextureOffset;
+		GSVector4 Texture_Scale_Offset;
 
 		GSVector2 PointSize;
 		GSVector2i MaxDepth;
 
 		VSConstantBuffer()
 		{
-			Vertex_Scale_Offset = GSVector4::zero();
-			TextureOffset       = GSVector4::zero();
-			PointSize           = GSVector2(0);
-			MaxDepth            = GSVector2i(0);
+			Vertex_Scale_Offset  = GSVector4::zero();
+			Texture_Scale_Offset = GSVector4::zero();
+			PointSize            = GSVector2(0);
+			MaxDepth             = GSVector2i(0);
 		}
 
 		__forceinline bool Update(const VSConstantBuffer* cb)
@@ -221,7 +221,7 @@ public:
 
 		GSVector4 HalfTexel;
 		GSVector4 MinMax;
-		GSVector4 TC_OH_TS;
+		GSVector4 TC_OH;
 		GSVector4 MaxDepth;
 
 		GSVector4 DitherMatrix[4];
@@ -234,7 +234,7 @@ public:
 			TA_Af         = GSVector4::zero();
 			MinMax        = GSVector4::zero();
 			MskFix        = GSVector4i::zero();
-			TC_OH_TS      = GSVector4::zero();
+			TC_OH         = GSVector4::zero();
 			FbMask        = GSVector4i::zero();
 			MaxDepth      = GSVector4::zero();
 

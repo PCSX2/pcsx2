@@ -24,8 +24,8 @@ const float exp_min32 = exp2(-32.0f);
 
 void texture_coord()
 {
-    vec2 uv = vec2(i_uv) - TextureOffset.xy;
-    vec2 st = i_st - TextureOffset.xy;
+    vec2 uv = vec2(i_uv) - TextureOffset;
+    vec2 st = i_st - TextureOffset;
 
     // Float coordinate
     VSout.t_float.xy = st;
