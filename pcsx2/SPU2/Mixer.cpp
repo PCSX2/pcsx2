@@ -283,7 +283,7 @@ static __forceinline void GetNextDataDummy(V_Core& thiscore, uint voiceidx)
 		vc.SCurrent = 0;
 	}
 
-	vc.SP -= 4096 * (4 - (vc.SCurrent & 3));
+	vc.SP -= 0x1000 * (4 - (vc.SCurrent & 3));
 	vc.SCurrent += 4 - (vc.SCurrent & 3);
 }
 
@@ -456,10 +456,10 @@ static __forceinline s32 GetVoiceValues(V_Core& thiscore, uint voiceidx)
 		}
 		vc.PV2 = vc.PV1;
 		vc.PV1 = GetNextDataBuffered(thiscore, voiceidx);
-		vc.SP -= 4096;
+		vc.SP -= 0x1000;
 	}
 
-	const s32 mu = vc.SP + 4096;
+	const s32 mu = vc.SP + 0x1000;
 
 	switch (InterpType)
 	{
