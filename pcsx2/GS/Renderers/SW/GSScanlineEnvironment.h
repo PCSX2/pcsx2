@@ -64,7 +64,7 @@ union GSScanlineSelector
 		u32 mmin   : 2; // 54
 		u32 notest : 1; // 55 (no ztest, no atest, no date, no scissor test, and horizontally aligned to 4 pixels)
 		// TODO: 1D texture flag? could save 2 texture reads and 4 lerps with bilinear, and also the texture coordinate clamp/wrap code in one direction
-
+		u32 zequal : 1; // 56
 		u32 breakpoint : 1; // Insert a trap to stop the program, helpful to stop debugger on a program
 	};
 

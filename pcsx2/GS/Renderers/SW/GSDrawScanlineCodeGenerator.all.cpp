@@ -784,19 +784,24 @@ void GSDrawScanlineCodeGenerator2::Init()
 
 			if (m_sel.zb)
 			{
-				// z = vp.zzzz() + m_local.d[skip].z;
-				shufps(z, z, _MM_SHUFFLE(2, 2, 2, 2));
-				if (is64)
+				if (!m_sel.zequal)
 				{
-					addps(z, ptr[a1 + offsetof(GSScanlineLocalData::skip, z)]);
+					// z = vp.zzzz() + m_local.d[skip].z;
+					shufps(z, z, _MM_SHUFFLE(2, 2, 2, 2));
+					if (is64)
+					{
+						addps(z, ptr[a1 + offsetof(GSScanlineLocalData::skip, z)]);
+					}
+					else
+					{
+						movaps(ptr[&m_local.temp.z], z);
+						movaps(xym2, ptr[a1 + offsetof(GSScanlineLocalData::skip, z)]);
+						movaps(ptr[&m_local.temp.zo], xym2);
+						addps(z, xym2);
+					}
 				}
 				else
-				{
-					movaps(ptr[&m_local.temp.z], z);
-					movaps(xym2, ptr[a1 + offsetof(GSScanlineLocalData::skip, z)]);
-					movaps(ptr[&m_local.temp.zo], xym2);
-					addps(z, xym2);
-				}
+					pbroadcastdLocal(z, _rip_local(p.z));
 			}
 		}
 	}
@@ -995,7 +1000,11 @@ void GSDrawScanlineCodeGenerator2::Step()
 
 		if (m_sel.zb)
 		{
-			if (is32)
+			if (m_sel.zequal)
+			{
+				pbroadcastdLocal(z, _rip_local(p.z));
+			}
+			else if (is32)
 			{
 				broadcastssLocal(z, _rip_local_d_p(z));
 				addps(z, _rip_local(temp.zo));
@@ -1185,9 +1194,18 @@ void GSDrawScanlineCodeGenerator2::TestZ(const XYm& temp1, const XYm& temp2)
 
 	if (m_sel.prim != GS_SPRITE_CLASS)
 	{
-		if (m_sel.zoverflow)
+		if (m_sel.zequal)
+		{
+			ONLY64(movdqa(xym0, _z));
+		}
+		else if (m_sel.zoverflow)
 		{
 			// zs = (GSVector4i(z * 0.5f) << 1) | (GSVector4i(z) & GSVector4i::x00000001());
+			/*GSVector8 z = GSVector8::broadcast32(&scan.p.z) + zo;
+			z /= 2;
+			zs = GSVector8i(z, true);
+			zs = zs.min_u32(GSVector8i::x7fffffff());
+			zs = zs.sll32(1) | 1;*/
 
 			auto m_half = loadAddress(rax, &GSVector4::m_half);
 
@@ -1195,6 +1213,7 @@ void GSDrawScanlineCodeGenerator2::TestZ(const XYm& temp1, const XYm& temp2)
 				vbroadcastss(temp1, ptr[m_half]);
 			else
 				movaps(temp1, ptr[m_half]);
+
 			mulps(temp1, z);
 			cvttps2dq(temp1, temp1);
 			pslld(temp1, 1);

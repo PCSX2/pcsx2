@@ -98,6 +98,7 @@ void GSDrawScanline::BeginDraw(const GSRasterizerData* data)
 	sel.fb = m_global.sel.fb;
 	sel.zb = m_global.sel.zb;
 	sel.zoverflow = m_global.sel.zoverflow;
+	sel.zequal = m_global.sel.zequal;
 	sel.notest = m_global.sel.notest;
 
 	m_sp = m_sp_map[sel];
@@ -143,13 +144,20 @@ void GSDrawScanline::SetupPrim(const GSVertexSW* vertex, const u32* index, const
 
 			if (has_z)
 			{
-				m_local.d8.p.z = dp8.extract32<2>();
-
-				GSVector8 dz = GSVector8::broadcast32(&dscan.p.z);
-
-				for (int i = 0; i < 8; i++)
+				if (sel.zequal)
 				{
-					m_local.d[i].z = dz * shift[1 + i];
+					m_local.p.z = vertex[index[1]].t.U32[3];
+				}
+
+				{
+					m_local.d8.p.z = dp8.extract32<2>();
+
+					const GSVector8 dz = GSVector8::broadcast32(&dscan.p.z);
+
+					for (int i = 0; i < 8; i++)
+					{
+						m_local.d[i].z = dz * shift[1 + i];
+					}
 				}
 			}
 		}
@@ -545,9 +553,14 @@ void GSDrawScanline::DrawScanline(int pixels, int left, int top, const GSVertexS
 
 				if (sel.prim != GS_SPRITE_CLASS)
 				{
+					// Need to handle when the float converts incorrectly
 					GSVector8 z = GSVector8::broadcast32(&scan.p.z) + zo;
 
-					if (sel.zoverflow)
+					if (sel.zequal)
+					{
+						zs = GSVector8i::broadcast32(&m_local.p.z);
+					}
+					else if (sel.zoverflow)
 					{
 						zs = (GSVector8i(z * 0.5f) << 1) | (GSVector8i(z) & GSVector8i::x00000001());
 					}
@@ -2787,7 +2800,7 @@ void GSDrawScanline::WritePixel(const T& src, int addr, int i, u32 psm)
 			*(u32*)dst = (src.U32[i] & 0xffffff) | (*(u32*)dst & 0xff000000);
 			break;
 		case 2:
-			*(u16*)dst = src.u16[i * 2];
+			*(u16*)dst = src.U16[i * 2];
 			break;
 	}
 }

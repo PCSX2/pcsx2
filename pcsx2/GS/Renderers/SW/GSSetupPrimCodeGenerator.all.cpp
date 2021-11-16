@@ -187,21 +187,43 @@ void GSSetupPrimCodeGenerator2::Depth_XMM()
 
 		if (m_en.z)
 		{
-			// GSVector4 dz = p.zzzz();
-
-			shufps(xmm0, xmm0, _MM_SHUFFLE(2, 2, 2, 2));
-
-			// m_local.d4.z = dz * 4.0f;
-
-			THREEARG(mulps, xmm1, xmm0, xmm3);
-			movdqa(_rip_local_d_p(z), xmm1);
-
-			for (int i = 0; i < (m_sel.notest ? 1 : 4); i++)
+			if (m_sel.zequal)
 			{
-				// m_local.d[i].z = dz * m_shift[i];
+				u32 offset = 0;
+				if (m_sel.prim != GS_POINT_CLASS)
+					offset = sizeof(u32) * 1;
 
-				THREEARG(mulps, xmm1, xmm0, XYm(4 + i));
-				movdqa(_rip_local(d[i].z), xmm1);
+				if (is32)
+					mov(_index, ptr[rsp + _32_index]);
+				mov(eax, ptr[_index + offset]);
+				shl(eax, 6); // * sizeof(GSVertexSW)
+				if (is64)
+					add(rax, _64_vertex);
+				else
+					add(rax, ptr[rsp + _32_vertex]);
+
+				movdqa(xmm0, ptr[rax + offsetof(GSVertexSW, t)]);
+				pshufd(xmm0, xmm0, _MM_SHUFFLE(3, 3, 3, 3));
+				movdqa(_rip_local(p.z), xmm0);
+			}
+			else
+			{
+				// GSVector4 dz = p.zzzz();
+
+				shufps(xmm0, xmm0, _MM_SHUFFLE(2, 2, 2, 2));
+
+				// m_local.d4.z = dz * 4.0f;
+
+				THREEARG(mulps, xmm1, xmm0, xmm3);
+				movdqa(_rip_local_d_p(z), xmm1);
+
+				for (int i = 0; i < (m_sel.notest ? 1 : 4); i++)
+				{
+					// m_local.d[i].z = dz * m_shift[i];
+
+					THREEARG(mulps, xmm1, xmm0, XYm(4 + i));
+					movdqa(_rip_local(d[i].z), xmm1);
+				}
 			}
 		}
 	}
@@ -257,13 +279,34 @@ void GSSetupPrimCodeGenerator2::Depth_YMM()
 
 		if (m_en.z)
 		{
-			// m_local.d8.p.z = dp8.extract32<2>();
+			if (m_sel.zequal)
+			{
+				u32 offset = 0;
+				if (m_sel.prim != GS_POINT_CLASS)
+					offset = sizeof(u32) * 1;
 
-			extractps(_rip_local_d_p(z), xmm1, 2);
+				if (is32)
+					mov(_index, ptr[rsp + _32_index]);
+				mov(eax, ptr[_index + offset]);
+				shl(eax, 6); // * sizeof(GSVertexSW)
+				if (is64)
+					add(rax, _64_vertex);
+				else
+					add(rax, ptr[rsp + _32_vertex]);
 
-			// GSVector8 dz = GSVector8(dscan.p).zzzz();
+				mov(t1.cvt32(), ptr[rax + offsetof(GSVertexSW, t.w)]);
+				mov(_rip_local(p.z), t1.cvt32());
+			}
+			else
+			{
+				// m_local.d8.p.z = dp8.extract32<2>();
 
-			vshufps(ymm2, ymm0, ymm0, _MM_SHUFFLE(2, 2, 2, 2));
+				extractps(_rip_local_d_p(z), xmm1, 2);
+
+				// GSVector8 dz = GSVector8(dscan.p).zzzz();
+
+				vshufps(ymm2, ymm0, ymm0, _MM_SHUFFLE(2, 2, 2, 2));
+			}
 		}
 
 		if (m_en.f)
