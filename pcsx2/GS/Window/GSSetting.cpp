@@ -97,13 +97,13 @@ const char* dialog_message(int ID, bool* updateText)
 				"Note: Direct3D 11 is less accurate.");
 		case IDC_ACCURATE_BLEND_UNIT:
 			return cvtString("Control the accuracy level of the GS blending unit emulation.\n\n"
-				"None:\nFast but introduces various rendering issues.\n"
+				"Minimum:\nFast but introduces various rendering issues.\n"
 				"It is intended for slow computer.\n\n"
 				"Basic:\nEmulate correctly most of the effects with a limited speed penalty.\n"
 				"This is the recommended setting.\n\n"
 				"Medium:\nExtend it to all sprites. Performance impact remains reasonable in 3D game.\n\n"
 				"High:\nExtend it to destination alpha blending and color wrapping (helps shadow and fog effects).\n"
-				"A good GPU is required.\n\n"
+				"A good CPU is required.\n\n"
 				"Full:\nExcept few cases, the blending unit will be fully emulated by the shader. It is ultra slow!\n"
 				"It is intended for debug.\n\n"
 				"Ultra:\nThe blending unit will be completely emulated by the shader. It is ultra slow!\n"
@@ -204,7 +204,7 @@ const char* dialog_message(int ID, bool* updateText)
 #ifdef _WIN32
 		case IDC_ACCURATE_BLEND_UNIT_D3D11:
 			return L"Control the accuracy level of the GS blending unit emulation.\n\n"
-				"None:\nFast but introduces various rendering issues.\n"
+				"Minimum:\nFast but introduces various rendering issues.\n"
 				"It is intended for slow computer.\n\n"
 				"Basic:\nEmulate correctly some of the effects with a limited speed penalty.\n"
 				"This is the recommended setting.\n\n"
