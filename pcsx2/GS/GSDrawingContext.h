@@ -15,11 +15,10 @@
 
 #pragma once
 #ifdef __clang__
-// Ignore format for this file, as it spams a lot of warnings about uint64 and %llu.
+// Ignore format for this file, as it spams a lot of warnings about u64 and %llu.
 #pragma clang diagnostic ignored "-Wformat"
 #endif
 
-#include "GS.h"
 #include "GSLocalMemory.h"
 
 class alignas(32) GSDrawingContext
@@ -28,7 +27,6 @@ public:
 	GIFRegXYOFFSET XYOFFSET;
 	GIFRegTEX0     TEX0;
 	GIFRegTEX1     TEX1;
-	GIFRegTEX2     TEX2;
 	GIFRegCLAMP    CLAMP;
 	GIFRegMIPTBP1  MIPTBP1;
 	GIFRegMIPTBP2  MIPTBP2;
@@ -49,9 +47,9 @@ public:
 
 	struct
 	{
-		GSOffset* fb;
-		GSOffset* zb;
-		GSOffset* tex;
+		GSOffset fb;
+		GSOffset zb;
+		GSOffset tex;
 		GSPixelOffset* fzb;
 		GSPixelOffset4* fzb4;
 	} offset;
@@ -61,7 +59,6 @@ public:
 		GIFRegXYOFFSET XYOFFSET;
 		GIFRegTEX0     TEX0;
 		GIFRegTEX1     TEX1;
-		GIFRegTEX2     TEX2;
 		GIFRegCLAMP    CLAMP;
 		GIFRegMIPTBP1  MIPTBP1;
 		GIFRegMIPTBP2  MIPTBP2;
@@ -89,7 +86,6 @@ public:
 		memset(&XYOFFSET, 0, sizeof(XYOFFSET));
 		memset(&TEX0, 0, sizeof(TEX0));
 		memset(&TEX1, 0, sizeof(TEX1));
-		memset(&TEX2, 0, sizeof(TEX2));
 		memset(&CLAMP, 0, sizeof(CLAMP));
 		memset(&MIPTBP1, 0, sizeof(MIPTBP1));
 		memset(&MIPTBP2, 0, sizeof(MIPTBP2));
@@ -105,10 +101,10 @@ public:
 	{
 		ASSERT(XYOFFSET.OFX <= 0xf800 && XYOFFSET.OFY <= 0xf800);
 
-		scissor.ex.u16[0] = (uint16)((SCISSOR.SCAX0 << 4) + XYOFFSET.OFX - 0x8000);
-		scissor.ex.u16[1] = (uint16)((SCISSOR.SCAY0 << 4) + XYOFFSET.OFY - 0x8000);
-		scissor.ex.u16[2] = (uint16)((SCISSOR.SCAX1 << 4) + XYOFFSET.OFX - 0x8000);
-		scissor.ex.u16[3] = (uint16)((SCISSOR.SCAY1 << 4) + XYOFFSET.OFY - 0x8000);
+		scissor.ex.U16[0] = (u16)((SCISSOR.SCAX0 << 4) + XYOFFSET.OFX - 0x8000);
+		scissor.ex.U16[1] = (u16)((SCISSOR.SCAY0 << 4) + XYOFFSET.OFY - 0x8000);
+		scissor.ex.U16[2] = (u16)((SCISSOR.SCAX1 << 4) + XYOFFSET.OFX - 0x8000);
+		scissor.ex.U16[3] = (u16)((SCISSOR.SCAY1 << 4) + XYOFFSET.OFY - 0x8000);
 
 		scissor.ofex = GSVector4(
 			(int)((SCISSOR.SCAX0 << 4) + XYOFFSET.OFX),
@@ -155,7 +151,6 @@ public:
 		stack.XYOFFSET = XYOFFSET;
 		stack.TEX0 = TEX0;
 		stack.TEX1 = TEX1;
-		stack.TEX2 = TEX2;
 		stack.CLAMP = CLAMP;
 		stack.MIPTBP1 = MIPTBP1;
 		stack.MIPTBP2 = MIPTBP2;
@@ -175,7 +170,6 @@ public:
 		XYOFFSET = stack.XYOFFSET;
 		TEX0 = stack.TEX0;
 		TEX1 = stack.TEX1;
-		TEX2 = stack.TEX2;
 		CLAMP = stack.CLAMP;
 		MIPTBP1 = stack.MIPTBP1;
 		MIPTBP2 = stack.MIPTBP2;
@@ -241,15 +235,6 @@ public:
 		            "\tL:%u\n"
 		            "\tK:%d\n\n"
 		        , TEX1.LCM, TEX1.MXL, TEX1.MMAG, TEX1.MMIN, TEX1.MTBA, TEX1.L, TEX1.K);
-
-		fprintf(fp, "TEX2\n"
-		            "\tPSM:0x%x\n"
-		            "\tCBP:0x%x\n"
-		            "\tCPSM:0x%x\n"
-		            "\tCSM:%u\n"
-		            "\tCSA:%u\n"
-		            "\tCLD:%u\n\n"
-		        , TEX2.PSM, TEX2.CBP, TEX2.CPSM, TEX2.CSM, TEX2.CSA, TEX2.CLD);
 
 		fprintf(fp, "CLAMP\n"
 		            "\tWMS:%u\n"

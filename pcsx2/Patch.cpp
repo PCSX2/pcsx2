@@ -134,12 +134,12 @@ int LoadPatchesFromGamesDB(const wxString& crc, const GameDatabaseSchema::GameEn
 	if (game.isValid)
 	{
 		GameDatabaseSchema::Patch patch;
-		bool patchFound = game.findPatch(std::string(crc), patch);
+		bool patchFound = game.findPatch(std::string(crc.ToUTF8()), patch);
 		if (patchFound && patch.patchLines.size() > 0)
 		{
 			for (auto line : patch.patchLines)
 			{
-				inifile_command(line);
+				inifile_command(fromUTF8(line));
 			}
 		}
 	}

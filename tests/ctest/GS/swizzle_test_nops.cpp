@@ -21,10 +21,6 @@
 #include "GSLocalMemory.h"
 
 GSLocalMemory::psm_t GSLocalMemory::m_psm[64];
-GSOffset* GSLocalMemory::GetOffset(uint32 bp, uint32 bw, uint32 psm)
-{
-	abort();
-}
 
 void* vmalloc(size_t size, bool code)
 {

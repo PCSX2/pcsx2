@@ -56,7 +56,7 @@ struct nVifStruct
 {
 	// Buffer for partial transfers (should always be first to ensure alignment)
 	// Maximum buffer size is 256 (vifRegs.Num max range) * 16 (quadword)
-	__aligned16 u8 buffer[256*16];
+	alignas(16) u8 buffer[256*16];
 	u32            bSize; // Size of 'buffer'
 
 	// VIF0 or VIF1 - provided for debugging helpfulness only, and is generally unused.
@@ -76,8 +76,8 @@ extern void closeNewVif(int idx);
 extern void resetNewVif(int idx);
 extern void releaseNewVif(int idx);
 
-extern __aligned16 nVifStruct nVif[2];
-extern __aligned16 nVifCall nVifUpk[(2 * 2 * 16) * 4]; // ([USN][Masking][Unpack Type]) [curCycle]
-extern __aligned16 u32      nVifMask[3][4][4];         // [MaskNumber][CycleNumber][Vector]
+alignas(16) extern nVifStruct nVif[2];
+alignas(16) extern nVifCall nVifUpk[(2 * 2 * 16) * 4]; // ([USN][Masking][Unpack Type]) [curCycle]
+alignas(16) extern u32      nVifMask[3][4][4];         // [MaskNumber][CycleNumber][Vector]
 
 static const bool newVifDynaRec = 1; // Use code in newVif_Dynarec.inl

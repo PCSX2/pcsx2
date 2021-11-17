@@ -33,11 +33,6 @@ GSRendererOGL::GSRendererOGL()
 	ResetStates();
 }
 
-bool GSRendererOGL::CreateDevice(GSDevice* dev)
-{
-	return GSRenderer::CreateDevice(dev);
-}
-
 void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 {
 	GL_PUSH("IA");
@@ -87,6 +82,9 @@ void GSRendererOGL::SetupIA(const float& sx, const float& sy)
 			//
 			// Note2: Due to MultiThreaded driver, Nvidia suffers less of the previous issue. Still it isn't free
 			// Shadow Heart is 90 fps (gs) vs 113 fps (no gs)
+			//
+			// Note3: Some GPUs (Happens on GT 750m, not on Intel 5200) don't properly divide by large floats (e.g. FLT_MAX/FLT_MAX == 0)
+			// Lines2Sprites predivides by Q, avoiding this issue, so always use it if m_vt.m_accurate_stq
 
 			// If the draw calls contains few primitives. Geometry Shader gain with be rather small versus
 			// the extra validation cost of the extra stage.
@@ -133,8 +131,8 @@ void GSRendererOGL::EmulateZbuffer()
 
 	// On the real GS we appear to do clamping on the max z value the format allows.
 	// Clamping is done after rasterization.
-	const uint32 max_z = 0xFFFFFFFF >> (GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt * 8);
-	const bool clamp_z = (uint32)(GSVector4i(m_vt.m_max.p).z) > max_z;
+	const u32 max_z = 0xFFFFFFFF >> (GSLocalMemory::m_psm[m_context->ZBUF.PSM].fmt * 8);
+	const bool clamp_z = (u32)(GSVector4i(m_vt.m_max.p).z) > max_z;
 
 	vs_cb.MaxDepth = GSVector2i(0xFFFFFFFF);
 	//ps_cb.MaxDepth = GSVector4(0.0f, 0.0f, 0.0f, 1.0f);
@@ -186,11 +184,11 @@ void GSRendererOGL::EmulateTextureShuffleAndFbmask()
 
 		// Please bang my head against the wall!
 		// 1/ Reduce the frame mask to a 16 bit format
-		const uint32& m = m_context->FRAME.FBMSK;
-		const uint32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
+		const u32& m = m_context->FRAME.FBMSK;
+		const u32 fbmask = ((m >> 3) & 0x1F) | ((m >> 6) & 0x3E0) | ((m >> 9) & 0x7C00) | ((m >> 16) & 0x8000);
 		// FIXME GSVector will be nice here
-		const uint8 rg_mask = fbmask & 0xFF;
-		const uint8 ba_mask = (fbmask >> 8) & 0xFF;
+		const u8 rg_mask = fbmask & 0xFF;
+		const u8 ba_mask = (fbmask >> 8) & 0xFF;
 		m_om_csel.wrgba = 0;
 
 		// 2 Select the new mask (Please someone put SSE here)
@@ -445,10 +443,10 @@ void GSRendererOGL::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 		// the rendered size of the framebuffer
 
 		GSVertex* s = &m_vertex.buff[0];
-		s[0].XYZ.X = (uint16)(m_context->XYOFFSET.OFX + 0);
-		s[1].XYZ.X = (uint16)(m_context->XYOFFSET.OFX + 16384);
-		s[0].XYZ.Y = (uint16)(m_context->XYOFFSET.OFY + 0);
-		s[1].XYZ.Y = (uint16)(m_context->XYOFFSET.OFY + 16384);
+		s[0].XYZ.X = (u16)(m_context->XYOFFSET.OFX + 0);
+		s[1].XYZ.X = (u16)(m_context->XYOFFSET.OFX + 16384);
+		s[0].XYZ.Y = (u16)(m_context->XYOFFSET.OFY + 0);
+		s[1].XYZ.Y = (u16)(m_context->XYOFFSET.OFY + 16384);
 
 		m_vertex.head = m_vertex.tail = m_vertex.next = 2;
 		m_index.tail = 2;
@@ -475,7 +473,7 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 	}
 
 	// Compute the blending equation to detect special case
-	const uint8 blend_index = uint8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
+	const u8 blend_index = u8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
 	const int blend_flag = m_dev->GetBlendFlags(blend_index);
 
 	// SW Blend is (nearly) free. Let's use it.
@@ -629,7 +627,7 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 		if (m_ps_sel.dfmt == 1 && ALPHA.C == 1)
 		{
 			// 24 bits doesn't have an alpha channel so use 1.0f fix factor as equivalent
-			const uint8 hacked_blend_index = blend_index + 3; // +3 <=> +1 on C
+			const u8 hacked_blend_index = blend_index + 3; // +3 <=> +1 on C
 			dev->OMSetBlendState(hacked_blend_index, 128, true);
 		}
 		else
@@ -648,8 +646,8 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	const GSLocalMemory::psm_t& psm = GSLocalMemory::m_psm[tex->m_TEX0.PSM];
 	const GSLocalMemory::psm_t& cpsm = psm.pal > 0 ? GSLocalMemory::m_psm[m_context->TEX0.CPSM] : psm;
 
-	const uint8 wms = m_context->CLAMP.WMS;
-	const uint8 wmt = m_context->CLAMP.WMT;
+	const u8 wms = m_context->CLAMP.WMS;
+	const u8 wmt = m_context->CLAMP.WMT;
 	const bool complex_wms_wmt = !!((wms | wmt) & 2);
 
 	const bool need_mipmap = IsMipMapDraw();
@@ -662,7 +660,7 @@ void GSRendererOGL::EmulateTextureSampler(const GSTextureCache::Source* tex)
 	switch (UserHacks_tri_filter)
 	{
 		case TriFiltering::Forced:
-			trilinear = static_cast<uint8>(GS_MIN_FILTER::Linear_Mipmap_Linear);
+			trilinear = static_cast<u8>(GS_MIN_FILTER::Linear_Mipmap_Linear);
 			trilinear_auto = m_mipmap != 2;
 			break;
 
@@ -1325,7 +1323,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	{
 		m_ps_sel.fog = 1;
 
-		const GSVector4 fc = GSVector4::rgba32(m_env.FOGCOL.u32[0]);
+		const GSVector4 fc = GSVector4::rgba32(m_env.FOGCOL.U32[0]);
 		// Blend AREF to avoid to load a random value for alpha (dirty cache)
 		ps_cb.FogColor_AREF = fc.blend32<8>(ps_cb.FogColor_AREF);
 	}
@@ -1336,7 +1334,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// pass to handle the depth based on the alpha test.
 	bool ate_RGBA_then_Z = false;
 	bool ate_RGB_then_ZA = false;
-	uint8 ps_atst = 0;
+	u8 ps_atst = 0;
 	if (ate_first_pass & ate_second_pass)
 	{
 		GL_DBG("Complex Alpha Test");
@@ -1407,7 +1405,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 			// We need the palette to convert the depth to the correct alpha value.
 			if (!tex->m_palette)
 			{
-				const uint16 pal = GSLocalMemory::m_psm[tex->m_TEX0.PSM].pal;
+				const u16 pal = GSLocalMemory::m_psm[tex->m_TEX0.PSM].pal;
 				m_tc->AttachPaletteToSource(tex, pal, true);
 				dev->PSSetShaderResource(1, tex->m_palette);
 			}

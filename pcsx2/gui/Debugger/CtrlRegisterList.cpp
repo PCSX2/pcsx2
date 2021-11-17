@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "CtrlRegisterList.h"
 #include "DebugTools/Debug.h"
+#include "common/BitCast.h"
 
 #include "DebugEvents.h"
 #include "gui/AppConfig.h"
@@ -74,8 +75,8 @@ CtrlRegisterList::CtrlRegisterList(wxWindow* parent, DebugInterface* _cpu)
 	SetDoubleBuffered(true);
 
 	const wxSize optSize = getOptimalSize();
-	SetVirtualSize(optSize);
-	SetScrollbars(1, rowHeight, optSize.x, optSize.y / rowHeight, 0, 0);
+	SetVirtualSize(optSize.x,optSize.y);
+	SetScrollbars(1, rowHeight, optSize.x, optSize.y * MSW_GetDPIScale() / rowHeight, 0, 0);
 }
 
 CtrlRegisterList::~CtrlRegisterList()
@@ -288,8 +289,7 @@ void CtrlRegisterList::OnDraw(wxDC& dc)
 						// and use this information for printing the VU0F titles
 						for (int j = 3; j >= 0; j--)
 						{
-							// Use std::bit_cast in C++20. The below is technically UB
-							sprintf(str, "%7.2f", *(float*)&val._u32[j]);
+							sprintf(str, "%7.2f", bit_cast<float,u32>(val._u32[j]));
 							dc.DrawText(wxString(str), x, y + 2);
 							x += charWidth * 8 + 2;
 						}

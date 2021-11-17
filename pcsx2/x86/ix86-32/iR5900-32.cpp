@@ -50,8 +50,8 @@ using namespace R5900;
 #define PC_GETBLOCK(x) PC_GETBLOCK_(x, recLUT)
 
 u32 maxrecmem = 0;
-static __aligned16 uptr recLUT[_64kb];
-static __aligned16 u32 hwLUT[_64kb];
+alignas(16) static uptr recLUT[_64kb];
+alignas(16) static u32 hwLUT[_64kb];
 
 static __fi u32 HWADDR(u32 mem) { return hwLUT[mem >> 16] + mem; }
 
@@ -60,7 +60,7 @@ u32 s_nBlockCycles = 0; // cycles of current block recompiling
 u32 pc;       // recompiler pc
 int g_branch; // set for branch
 
-__aligned16 GPR_reg64 g_cpuConstRegs[32] = {0};
+alignas(16) GPR_reg64 g_cpuConstRegs[32] = {0};
 u32 g_cpuHasConstReg = 0, g_cpuFlushedConstReg = 0;
 bool g_cpuFlushedPC, g_cpuFlushedCode, g_recompilingDelaySlot, g_maySignalException;
 
@@ -356,7 +356,7 @@ static void __fastcall dyna_block_discard(u32 start, u32 sz);
 static void __fastcall dyna_page_reset(u32 start, u32 sz);
 
 // Recompiled code buffer for EE recompiler dispatchers!
-static u8 __pagealigned eeRecDispatchers[__pagesize];
+alignas(__pagesize) static u8 eeRecDispatchers[__pagesize];
 
 typedef void DynGenFunc();
 
@@ -621,8 +621,8 @@ static void recAlloc()
 	_DynGen_Dispatchers();
 }
 
-static __aligned16 u16 manual_page[Ps2MemSize::MainRam >> 12];
-static __aligned16 u8 manual_counter[Ps2MemSize::MainRam >> 12];
+alignas(16) static u16 manual_page[Ps2MemSize::MainRam >> 12];
+alignas(16) static u8 manual_counter[Ps2MemSize::MainRam >> 12];
 
 static std::atomic<bool> eeRecIsReset(false);
 static std::atomic<bool> eeRecNeedsReset(false);
@@ -2232,9 +2232,9 @@ StartRecomp:
 
 #ifdef PCSX2_DEBUG
 	// dump code
-	for (i = 0; i < ArraySize(s_recblocks); ++i)
+	for (u32 recblock : s_recblocks)
 	{
-		if (startpc == s_recblocks[i])
+		if (startpc == recblock)
 		{
 			iDumpBlock(startpc, recPtr);
 		}

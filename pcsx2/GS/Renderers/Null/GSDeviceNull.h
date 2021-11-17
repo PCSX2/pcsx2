@@ -25,11 +25,11 @@ private:
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) {}
 	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0) {}
-	uint16 ConvertBlendEnum(uint16 generic) { return 0xFFFF; }
+	u16 ConvertBlendEnum(u16 generic) { return 0xFFFF; }
 
 public:
 	GSDeviceNull() {}
 
-	bool Create(const std::shared_ptr<GSWnd>& wnd);
+	bool Create(const WindowInfo& wi);
 	bool Reset(int w, int h);
 };

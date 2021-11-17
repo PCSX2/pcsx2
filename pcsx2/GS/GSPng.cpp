@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "GSPng.h"
+#include "GSExtra.h"
 #include <zlib.h>
 #include <png.h>
 
@@ -38,8 +39,8 @@ struct
 namespace GSPng
 {
 
-	bool SaveFile(const std::string& file, const Format fmt, const uint8* const image,
-		uint8* const row, const int width, const int height, const int pitch,
+	bool SaveFile(const std::string& file, const Format fmt, const u8* const image,
+		u8* const row, const int width, const int height, const int pitch,
 		const int compression, const bool rb_swapped = false, const bool first_image = false)
 	{
 		const int channel_bit_depth = pixel[fmt].channel_bit_depth;
@@ -105,7 +106,7 @@ namespace GSPng
 		return success;
 	}
 
-	bool Save(GSPng::Format fmt, const std::string& file, uint8* image, int w, int h, int pitch, int compression, bool rb_swapped)
+	bool Save(GSPng::Format fmt, const std::string& file, u8* image, int w, int h, int pitch, int compression, bool rb_swapped)
 	{
 		std::string root = file;
 		root.replace(file.length() - 4, 4, "");
@@ -115,7 +116,7 @@ namespace GSPng
 		if (compression < 0 || compression > Z_BEST_COMPRESSION)
 			compression = Z_BEST_SPEED;
 
-		std::unique_ptr<uint8[]> row(new uint8[pixel[fmt].bytes_per_pixel_out * w]);
+		std::unique_ptr<u8[]> row(new u8[pixel[fmt].bytes_per_pixel_out * w]);
 
 		std::string filename = root + pixel[fmt].extension[0];
 		if (!SaveFile(filename, fmt, image, row.get(), w, h, pitch, compression, rb_swapped, true))
@@ -129,11 +130,11 @@ namespace GSPng
 		return SaveFile(filename, fmt, image, row.get(), w, h, pitch, compression);
 	}
 
-	Transaction::Transaction(GSPng::Format fmt, const std::string& file, const uint8* image, int w, int h, int pitch, int compression)
+	Transaction::Transaction(GSPng::Format fmt, const std::string& file, const u8* image, int w, int h, int pitch, int compression)
 		: m_fmt(fmt), m_file(file), m_w(w), m_h(h), m_pitch(pitch), m_compression(compression)
 	{
 		// Note: yes it would be better to use shared pointer
-		m_image = (uint8*)_aligned_malloc(pitch * h, 32);
+		m_image = (u8*)_aligned_malloc(pitch * h, 32);
 		if (m_image)
 			memcpy(m_image, image, pitch * h);
 	}

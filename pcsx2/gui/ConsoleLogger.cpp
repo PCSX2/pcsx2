@@ -351,7 +351,7 @@ void ConLog_LoadSaveSettings( IniInterface& ini )
 
 	ini.Entry( L"Devel", DevConWriterEnabled, false );
 
-	uint srcnt = ArraySize(ConLogSources);
+	uint srcnt = std::size(ConLogSources);
 	for (uint i=0; i<srcnt; ++i)
 	{
 		if (ConsoleLogSource* log = ConLogSources[i])
@@ -456,7 +456,7 @@ ConsoleLogFrame::ConsoleLogFrame( MainEmuFrame *parent, const wxString& title, A
 	
 	menuSources.AppendSeparator();
 
-	uint srcnt = ArraySize(ConLogSources);
+	uint srcnt = std::size(ConLogSources);
 	for (uint i=0; i<srcnt; ++i)
 	{
 		if (const BaseTraceLogSource* log = ConLogSources[i])
@@ -536,7 +536,7 @@ ConsoleLogFrame::~ConsoleLogFrame()
 
 void ConsoleLogFrame::OnEnableAllLogging(wxCommandEvent& evt)
 {
-	uint srcnt = ArraySize(ConLogSources);
+	uint srcnt = std::size(ConLogSources);
 	for (uint i=0; i<srcnt; ++i)
 	{
 		if (ConsoleLogSource* log = ConLogSources[i])
@@ -552,7 +552,7 @@ void ConsoleLogFrame::OnEnableAllLogging(wxCommandEvent& evt)
 
 void ConsoleLogFrame::OnDisableAllLogging(wxCommandEvent& evt)
 {
-	uint srcnt = ArraySize(ConLogSources);
+	uint srcnt = std::size(ConLogSources);
 	for (uint i=0; i<srcnt; ++i)
 	{
 		if (ConsoleLogSource* log = ConLogSources[i])
@@ -568,7 +568,7 @@ void ConsoleLogFrame::OnDisableAllLogging(wxCommandEvent& evt)
 
 void ConsoleLogFrame::OnSetDefaultLogging(wxCommandEvent& evt)
 {
-	uint srcnt = ArraySize(ConLogSources);
+	uint srcnt = std::size(ConLogSources);
 	for (uint i = 0; i<srcnt; ++i)
 	{
 		if (ConsoleLogSource* log = ConLogSources[i])
@@ -592,7 +592,7 @@ void ConsoleLogFrame::OnLoggingChanged()
 	if( wxMenuItem* item = GetMenuBar()->FindItem(MenuId_LogSource_CDVD_Info) )
 		item->Check( g_Conf->EmuOptions.CdvdVerboseReads );
 
-	uint srcnt = ArraySize(ConLogSources);
+	uint srcnt = std::size(ConLogSources);
 	for (uint i=0; i<srcnt; ++i)
 	{
 		if (const ConsoleLogSource* log = ConLogSources[i])
@@ -858,7 +858,7 @@ void ConsoleLogFrame::OnToggleSource( wxCommandEvent& evt )
 
 	uint srcid = evt.GetId() - MenuId_LogSource_Start;
 
-	if (!pxAssertDev( ArraySize(ConLogSources) > srcid, "Invalid source log index (out of bounds)" )) return;
+	if (!pxAssertDev( std::size(ConLogSources) > srcid, "Invalid source log index (out of bounds)" )) return;
 	if (!pxAssertDev( ConLogSources[srcid] != NULL, "Invalid source log index (NULL pointer [separator])" )) return;
 
 	if( wxMenuItem* item = GetMenuBar()->FindItem(evt.GetId()) )
@@ -1273,6 +1273,6 @@ void OSDlog(ConsoleColors color, bool console, const std::string& str)
 }
 
 void OSDmonitor(ConsoleColors color, const std::string key, const std::string value) {
-	GSosdMonitor(wxString(key).utf8_str(), wxString(value).utf8_str(), wxGetApp().GetProgramLog()->GetRGBA(color));
+	GSosdMonitor(key.c_str(), value.c_str(), wxGetApp().GetProgramLog()->GetRGBA(color));
 }
 

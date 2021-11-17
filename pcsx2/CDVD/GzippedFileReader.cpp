@@ -185,7 +185,7 @@ static wxString iso2indexname(const wxString& isoname)
 	wxDirName appRoot = // TODO: have only one of this in PCSX2. Right now have few...
 		(wxDirName)(wxFileName(wxStandardPaths::Get().GetExecutablePath()).GetPath());
 	//TestTemplate(appRoot, isoname, false);
-	return ApplyTemplate(L"gzip index", appRoot, EmuConfig.GzipIsoIndexTemplate, isoname, false);
+	return ApplyTemplate(L"gzip index", appRoot, fromUTF8(EmuConfig.GzipIsoIndexTemplate), isoname, false);
 }
 
 GzippedFileReader::GzippedFileReader(void)

@@ -20,12 +20,13 @@
 # ---------------------------------------------
 # Usage
 # ---------------------------------------------
-# For comprehensive usage examples / explanations, see the following documentaiton
+# For comprehensive usage examples / explanations, see the following documentation:
 # https://github.com/PCSX2/pcsx2/blob/master/pcsx2/Docs/GameIndex.md
 
 # ---------------------------------------------
 # -- Game List
 # ---------------------------------------------
+
 GUST-00009:
   name: "Mana Khemia: Alchemists of Al-Revis [Premium Box]"
   region: "NTSC-J"
@@ -35,17 +36,17 @@ PAPX-90203:
   name: "Gran Turismo 2000 [Trial]"
   region: "NTSC-J"
 PAPX-90222:
-  name: "Jak x Daxter: Kyuusekai no Isan [Demo, Taikenba]"
+  name: "Jak x Daxter: Kyuu Sekai no Isan [Demo, Taikenban]"
   region: "NTSC-J"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
 PAPX-90223:
-  name: "Jak x Daxter: Kyuusekai no Isan [Demo, Taikenba]"
+  name: "Jak x Daxter: Kyuu Sekai no Isan [Demo, Taikenban]"
   region: "NTSC-J"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
 PAPX-90231:
-  name: "Kaitou Sly Cooper [Demo, Taikenba]"
+  name: "Kaitou Sly Cooper [Demo, Taikenban]"
   region: "NTSC-J"
 PAPX-90512:
   name: "Gran Turismo 4 - Toyota Prius [Trial]"
@@ -94,7 +95,7 @@ PBPX-95506:
         comment=You must change the EE Clamping mode to Full when playing the Klonoa 2 demo to avoids misplaced objects.
         comment=You must change the VU Clamping mode to extra when playing the Klonoa 2 demo to fixes reflections issues.
 PBPX-95509:
-  name: "Linux Release 1.0 Runtime Environment  [Disc 1]"
+  name: "Linux Release 1.0 Runtime Environment [Disc 1]"
   region: "PAL-E"
 PBPX-95514:
   name: "Playstation 2 - Demo Disc 2002"
@@ -147,7 +148,7 @@ SCAJ-10007:
   name: "Taiko no Tatsujin - Waku Waku Anime Matsuri"
   region: "NTSC-Unk"
 SCAJ-10008:
-  name: "Taiko no Tatsujin Atsumare Yonndaime"
+  name: "Taiko no Tatsujin - Atsumare! Matsuri da!! Yondaime"
   region: "NTSC-Unk"
 SCAJ-10009:
   name: "Psikyo Shooting Collection Vol.1 - Strikers 1&2"
@@ -540,7 +541,7 @@ SCAJ-20099:
   compat: 5
   clampModes:
     eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera gets stuck off the player in various spots.
+    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
 SCAJ-20100:
   name: "Tenchu Kurenai"
   region: "NTSC-Ch-J"
@@ -840,7 +841,7 @@ SCAJ-20173:
     - "SLPS-25418"
     - "SLPS-73218"
 SCAJ-20175:
-  name: "Dragon Quest - Shonen Yangus to Fushigi no Dungeon"
+  name: "Dragon Quest - Shounen Yangus to Fushigi no Dungeon"
   region: "NTSC-J"
 SCAJ-20176:
   name: "Curious George"
@@ -1038,9 +1039,10 @@ SCCS-40004:
 SCCS-40005:
   name: "ICO"
   region: "NTSC-C"
+  compat: 5
   clampModes:
     eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera gets stuck off the player in various spots.
+    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
 SCCS-40006:
   name: "Shin Sangoku Musou 2"
   region: "NTSC-C"
@@ -1068,15 +1070,18 @@ SCCS-40016:
 SCCS-40017:
   name: "EyeToy: Play"
   region: "NTSC-C"
+  compat: 5
 SCCS-40018:
   name: "Saru EyeToy: Oosawagi! Ukkiuki Game Tenkomori!!"
   region: "NTSC-C"
+  compat: 5
 SCCS-40019:
   name: "Formula One 04"
   region: "NTSC-C"
 SCCS-40022:
   name: "World Soccer Winning Eleven 8: Asia Championship"
   region: "NTSC-C"
+  compat: 5 
 SCCS-60002:
   name: "Gran Turismo 4 [Review Copy]"
   region: "NTSC-C"
@@ -1542,6 +1547,9 @@ SCED-52442:
 SCED-52452:
   name: "Official PlayStation 2 Magazine Demo 45"
   region: "PAL-M5"
+SCED-52461:
+  name: "SingStar [Press Kit]"
+  region: "PAL-E"
 SCED-52549:
   name: "Official PlayStation 2 Magazine Demo 47"
   region: "PAL-M5"
@@ -1569,6 +1577,9 @@ SCED-52818:
 SCED-52932:
   name: "Bonus Demo 8 (old)"
   region: "PAL-M5"
+SCED-52935:
+  name: "SingStar Party [Demo]"
+  region: "PAL-E"
 SCED-52938:
   name: "Official PlayStation 2 Magazine Demo 52"
   region: "PAL-M5"
@@ -1716,12 +1727,18 @@ SCED-53292:
 SCED-53293:
   name: "Official PlayStation 2 Magazine Demo 63"
   region: "PAL-M5"
+SCED-53316:
+  name: "SingStar Pop [Demo]"
+  region: "PAL-E"
 SCED-53325:
   name: "Official PlayStation 2 Magazine Demo 58" # Spanish/Portuguese
   region: "PAL-M5"
 SCED-53348:
   name: "Official PlayStation 2 Magazine Demo 58" # French
   region: "PAL-F"
+SCED-53684:
+  name: "SingStar '80s [Demo]"
+  region: "PAL-E"
 SCED-53854:
   name: "Official PS2 Magazine French Christmas Special" # French
   region: "PAL-F"
@@ -2161,7 +2178,7 @@ SCES-50760:
   compat: 5
   clampModes:
     eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera gets stuck off the player in various spots.
+    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
 SCES-50781:
   name: "Destruction Derby Arena [Beta, Promo, & Full Retail]"
   region: "PAL-M6"
@@ -2588,7 +2605,7 @@ SCES-52389:
       content: |-
         author=kozarovv
         // Proper patch for WRC 4. CRC independent.
-        // I wrote small runtime that move unpacker higher right after emulator boot.
+        // I wrote a small runtime that moves unpacker higher right after emulator boot.
         // Seems little bit extensive, but there is no way to make it smaller.
         // Solves TLB miss errors which prevented the game from booting.
         patch=0,EE,0040000C,double,3c0500603cc70054
@@ -2955,7 +2972,7 @@ SCES-53669:
   name: "Buzz! The Music Quiz"
   region: "PAL-E"
 SCES-53680:
-  name: "WRC avec Sebastien Loeb"
+  name: "WRC avec Sébastien Loeb"
   region: "PAL-M5"
   gameFixes:
     - XGKickHack # Fixes SPS.
@@ -3015,13 +3032,13 @@ SCES-53891:
   name: "SingStar Rocks!"
   region: "PAL-G"
 SCES-53893:
-  name: "SingStar Rocks!"
+  name: "SingStar Rocks! [Promo]"
   region: "PAL-DU"
 SCES-53894:
   name: "SingStar Rocks!"
   region: "PAL-HR"
 SCES-53895:
-  name: "SingStar Rocks!"
+  name: "SingStar Rocks! [Promo]"
   region: "PAL-S"
 SCES-53897:
   name: "SingStar Rocks!"
@@ -3078,16 +3095,16 @@ SCES-54073:
   name: "Buzz! The Big Quiz"
   region: "PAL-Unk"
 SCES-54077:
-  name: "SingStar [Promo]"
+  name: "SingStar top.it"
   region: "PAL-I"
 SCES-54078:
-  name: "SingStar Norsk pa Norsk"
+  name: "SingStar Norsk på Norsk"
   region: "PAL-N"
 SCES-54128:
   name: "Deutsch Rock-Pop"
   region: "PAL-G"
 SCES-54129:
-  name: "SingStar"
+  name: "SingStar La Edad de Oro del Pop Español"
   region: "PAL-S"
 SCES-54131:
   name: "SingStar Anthems"
@@ -3098,7 +3115,7 @@ SCES-54145:
   region: "PAL-M10"
   compat: 5
 SCES-54191:
-  name: "SingStar Legends"
+  name: "SingStar Legends [Promo]"
   region: "PAL-E"
 SCES-54197:
   name: "SingStar Legends"
@@ -3167,6 +3184,24 @@ SCES-54330:
 SCES-54353:
   name: "SingStar Legends"
   region: "PAL-D"
+SCES-54370:
+  name: "SingStar Pop Hits"
+  region: "PAL-E"
+SCES-54371:
+  name: "SingStar Pop Hits"
+  region: "PAL-G"
+SCES-54372:
+  name: "SingStar Pop Hits - 40 Principales"
+  region: "PAL-S"
+SCES-54373:
+  name: "SingStar Pop Hits"
+  region: "PAL-SC" # Scandinavian (Danish,Norwegian,Finnish)
+SCES-54374:
+  name: "SingStar Pop Hits"
+  region: "PAL-F"
+SCES-54375:
+  name: "SingStar Pop Hits"
+  region: "PAL-P"
 SCES-54477:
   name: "SOCOM - US Navy Seals - Combined Assault"
   region: "PAL-M5"
@@ -3217,20 +3252,29 @@ SCES-54572:
 SCES-54573:
   name: "SingStar Pop Hits"
   region: "PAL-SC"
+SCES-54574:
+  name: "SingStar Pop Hits"
+  region: "PAL-F"
+SCES-54575:
+  name: "SingStar Pop Hits"
+  region: "PAL-P"
+SCES-54576:
+  name: "SingStar Pop Hits"
+  region: "PAL-PL"
 SCES-54597:
-  name: "Buzz! The Mega Quiz"
-  region: "PAL-M3"
+  name: "SingStar Rock Ballads"
+  region: "PAL-E"
 SCES-54598:
   name: "SingStar - Svenska Hits Schlager"
   region: "PAL-SW"
 SCES-54599:
-  name: "SingStar - '90s"
+  name: "SingStar '90s"
   region: "PAL-E"
 SCES-54600:
   name: "SingStar - Die Toten Hosen"
   region: "PAL-G"
 SCES-54601:
-  name: "SingStar - Apres-Ski Party"
+  name: "SingStar - Après-Ski Party"
   region: "PAL-G"
 SCES-54625:
   name: "Buzz! Junior - Monster Rumble"
@@ -3238,12 +3282,18 @@ SCES-54625:
 SCES-54638:
   name: "Gaelic Games - Football 2"
   region: "PAL-E-GA"
+SCES-54641:
+  name: "SingStar - Après-Ski Party 2"
+  region: "PAL-G"
 SCES-54676:
   name: "Buzz! Junior - RoboJam"
   region: "PAL-M7"
 SCES-54688:
   name: "ATV Offroad Fury 4"
   region: "PAL-M12"
+SCES-54741:
+  name: "SingStar Deutsch Rock-Pop Vol. 2"
+  region: "PAL-G"
 SCES-54748:
   name: "WipEout Pulse"
   region: "PAL-M5"
@@ -3259,6 +3309,21 @@ SCES-54761:
 SCES-54762:
   name: "SingStar R&B"
   region: "PAL-G"
+SCES-54764:
+  name: "SingStar Pop Hits 2"
+  region: "PAL-F"
+SCES-54765:
+  name: "SingStar R&B"
+  region: "PAL-PL"
+SCES-54768:
+  name: "SingStar Latino"
+  region: "PAL-S"
+SCES-54769:
+  name: "SingStar Latino"
+  region: "PAL-P"
+SCES-54773:
+  name: "SingStar Pop Hits"
+  region: "PAL-E"
 SCES-54794:
   name: "Syphon Filter - Dark Mirror"
   region: "PAL-M5"
@@ -3277,20 +3342,80 @@ SCES-54848:
 SCES-54851:
   name: "Buzz! The Hollywood Quiz"
   region: "PAL-M3"
+SCES-54869:
+  name: "SingStar Italian Party"
+  region: "PAL-I"
+SCES-54909:
+  name: "SingStar '90s"
+  region: "PAL-S"
+SCES-54910:
+  name: "SingStar Rock Ballads"
+  region: "PAL-S"
+SCES-55056:
+  name: "SingStar Summer Party"
+  region: "PAL-E"
+SCES-55057:
+  name: "SingStar Summer Party"
+  region: "PAL-G"
+SCES-55058:
+  name: "SingStar Summer Party"
+  region: "PAL-S"
+SCES-55059:
+  name: "SingStar Italian Greatest Hits"
+  region: "PAL-I"
+SCES-55061:
+  name: "SingStar Wakacyjna Impreza!"
+  region: "PAL-PL"
+SCES-55062:
+  name: "SingStar Pop Hits 3"
+  region: "PAL-F"
+SCES-55077:
+  name: "SingStar Party Hits"
+  region: "PAL-E"
 SCES-55093:
   name: "Buzz! The Pop Quiz"
   region: "PAL-E"
 SCES-55094:
   name: "Buzz! The Pop Quiz"
   region: "PAL-M3"
+SCES-55127:
+  name: "SingStar Summer Party"
+  region: "PAL-DU"
+SCES-55128:
+  name: "SingStar Summer Party"
+  region: "PAL-P"
+SCES-55158:
+  name: "SingStar Pop Hits 4"
+  region: "PAL-F"
+SCES-55159:
+  name: "SingStar Amped"
+  region: "PAL-G"
+SCES-55160:
+  name: "SingStar Hottest Hits"
+  region: "PAL-E"
+SCES-55173:
+  name: "SingStar Operación Triunfo"
+  region: "PAL-S"
+SCES-55176:
+  name: "SingStar Amped"
+  region: "PAL-E"
+SCES-55177:
+  name: "SingStar SuomiRock"
+  region: "PAL-FI"
 SCES-55178:
-  name: "Singstar Boy Bands vs Girl Bands"
-  region: "PAL-M5"
+  name: "SingStar Boy Bands vs Girl Bands"
+  region: "PAL-E"
 SCES-55179:
   name: "SingStar Schlager"
   region: "PAL-G"
+SCES-55181:
+  name: "SingStar Italian Party 2"
+  region: "PAL-I"
+SCES-55182:
+  name: "SingStar Clásicos"
+  region: "PAL-S"
 SCES-55183:
-  name: "SingStar Turkish Party"
+  name: "SingStar Turkish Party [Promo]"
   region: "PAL-TU"
 SCES-55210:
   name: "Buzz! Junior - Ace Racers"
@@ -3298,6 +3423,36 @@ SCES-55210:
 SCES-55213:
   name: "Buzz! Escuela de Talentos"
   region: "PAL-S"
+SCES-55241:
+  name: "SingStar Russian Hit"
+  region: "PAL-R"
+SCES-55255:
+  name: "SingStar Singalong with Disney"
+  region: "PAL-E"
+SCES-55256:
+  name: "SingStar Canciones Disney"
+  region: "PAL-S"
+SCES-55257:
+  name: "SingStar - Chansons Magiques de Disney"
+  region: "PAL-F"
+SCES-55258:
+  name: "SingStar Best of Disney"
+  region: "PAL-G"
+SCES-55259:
+  name: "SingStar Canções Disney"
+  region: "PAL-P"
+SCES-55260:
+  name: "SingStar e la Magia Disney"
+  region: "PAL-I"
+SCES-55261:
+  name: "SingStar Sjung med Disney"
+  region: "PAL-SW"
+SCES-55262:
+  name: "SingStar Syng med Disney"
+  region: "PAL-D"
+SCES-55360:
+  name: "SingStar Singalong with Disney"
+  region: "PAL-G"
 SCES-55361:
   name: "SingStar Boy Bands vs Girl Bands"
   region: "PAL-G"
@@ -3310,6 +3465,9 @@ SCES-55385:
 SCES-55387:
   name: "Buzz! Deutschlands Superquiz"
   region: "PAL-G"
+SCES-55401:
+  name: "SingStar Zingt met Disney"
+  region: "PAL-DU"
 SCES-55435:
   name: "SingStar ABBA"
   region: "PAL-E"
@@ -3319,18 +3477,54 @@ SCES-55436:
 SCES-55437:
   name: "SingStar ABBA"
   region: "PAL-G"
+SCES-55438:
+  name: "SingStar ABBA"
+  region: "PAL-S"
+SCES-55439:
+  name: "SingStar ABBA"
+  region: "PAL-I"
+SCES-55453:
+  name: "SingStar Queen"
+  region: "PAL-E"
 SCES-55454:
   name: "SingStar Queen"
   region: "PAL-G"
+SCES-55455:
+  name: "SingStar Queen"
+  region: "PAL-S"
 SCES-55464:
   name: "Hanuman: Boy Warrior"
   region: "PAL-E-HI"
   compat: 5
+SCES-55478:
+  name: "SingStar Afrikaanse Treffers"
+  region: "PAL-AF"
+SCES-55485:
+  name: "SingStar Queen"
+  region: "PAL-I"
+SCES-55489:
+  name: "SingStar Mallorca Party"
+  region: "PAL-G"
 SCES-55510:
   name: "Jak and Daxter: The Lost Frontier"
   region: "PAL-M12"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
+SCES-55513:
+  name: "SingStar Polskie Hity"
+  region: "PAL-PL"
+SCES-55514:
+  name: "SingStar Studio 100"
+  region: "PAL-DU"
+SCES-55515:
+  name: "SingStar Morangos com Açúcar"
+  region: "PAL-P"
+SCES-55521:
+  name: "SingStar SuomiPop"
+  region: "PAL-FI"
+SCES-55527:
+  name: "SingStar 2009"
+  region: "PAL-S"
 SCES-55535:
   name: "Desi Adda: Games of India"
   region: "PAL-M4"
@@ -3338,24 +3532,81 @@ SCES-55535:
 SCES-55538:
   name: "SingStar"
   region: "PAL-G"
+SCES-55540:
+  name: "SingStar Mecano"
+  region: "PAL-S"
+SCES-55549:
+  name: "SingStar MoTown [Promo]"
+  region: "PAL-E"
+SCES-55551:
+  name: "SingStar MoTown"
+  region: "PAL-I"
 SCES-55552:
   name: "SingStar MoTown"
   region: "PAL-G"
+SCES-55553:
+  name: "SingStar MoTown"
+  region: "PAL-DU"
 SCES-55554:
-  name: "Singstar Take That"
+  name: "SingStar Take That"
   region: "PAL-M5"
 SCES-55557:
   name: "SingStar Take That"
   region: "PAL-G"
+SCES-55564:
+  name: "SingStar Made in Germany"
+  region: "PAL-G"
+SCES-55566:
+  name: "SingStar Miliki"
+  region: "PAL-S"
+SCES-55567:
+  name: "SingStar The Wiggles"
+  region: "PAL-E"
+SCES-55568:
+  name: "SingStar Svenska Stjärnor"
+  region: "PAL-E"
 SCES-55570:
   name: "SingStar Chartbreaker"
   region: "PAL-G"
 SCES-55573:
   name: "MotorStorm - Arctic Edge"
   region: "PAL-M14"
+SCES-55594:
+  name: "SingStar Vasco"
+  region: "PAL-I"
 SCES-55606:
-  name: "SingStar Die groten Solokunstler"
+  name: "SingStar Die größten Solokünstler"
   region: "PAL-G"
+SCES-55611:
+  name: "SingStar Chart Hits"
+  region: "PAL-E"
+SCES-55612:
+  name: "SingStar SuomiHitIt"
+  region: "PAL-FI"
+SCES-55616:
+  name: "SingStar Polskie Hity 2"
+  region: "PAL-PL"
+SCES-55617:
+  name: "SingStar Fussballhits"
+  region: "PAL-G"
+SCES-55618:
+  name: "SingStar Kent"
+  region: "PAL-SW"
+SCES-55619:
+  name: "SingStar Portugal Hits"
+  region: "PAL-P"
+SCES-55621:
+  name: "SingStar Patito Feo"
+  region: "PAL-S"
+SCES-55640:
+  name: "SingStar Cantautori Italiani"
+  region: "PAL-I"
+SCES-55641:
+  name: "SingStar Après-Ski Party 2"
+  region: "PAL-G"
+SCES-55650:
+  name: "SingStar SuomiSuosikit"
+  region: "PAL-FI"
 SCES-55661:
   name: "RA.ONE: The Game"
   region: "PAL-E"
@@ -3402,10 +3653,10 @@ SCKA-20011:
     - "SCKA-20011"
     - "SCKA-20120"
 SCKA-20012:
-  name: "Ark the Lad - Jeongryeongui Hwanghon"
+  name: "Arc the Lad - Jeong Ryeo Hui Hwang Ho"
   region: "NTSC-K"
 SCKA-20014:
-  name: "Dark Claud 2"
+  name: "Dark Cloud 2"
   region: "NTSC-K"
   compat: 5
 SCKA-20015:
@@ -3461,7 +3712,7 @@ SCKA-20028:
   compat: 5
   clampModes:
     eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera gets stuck off the player in various spots.
+    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
 SCKA-20029:
   name: "Gran Turismo Concept 2002 Tokyo-Seoul [PlayStation 2 Big Hit Series]"
   region: "NTSC-K"
@@ -3735,7 +3986,7 @@ SCPS-11003:
   compat: 5
   clampModes:
     eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera gets stuck off the player in various spots.
+    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
 SCPS-11004:
   name: "Bikkuri Mouse"
   region: "NTSC-J"
@@ -4393,7 +4644,7 @@ SCPS-19103:
   compat: 5
   clampModes:
     eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera gets stuck off the player in various spots.
+    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
 SCPS-19104:
   name: "Pipo Saru 2001 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -4406,7 +4657,7 @@ SCPS-19151:
   compat: 5
   clampModes:
     eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera gets stuck off the player in various spots.
+    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
 SCPS-19152:
   name: "Saru Get You! 2 [PlayStation 2 The Best]"
   region: "NTSC-J"
@@ -4704,7 +4955,7 @@ SCPS-55001:
   compat: 5
   clampModes:
     eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera gets stuck off the player in various spots.
+    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
 SCPS-55002:
   name: "Zero"
   region: "NTSC-J"
@@ -4913,7 +5164,7 @@ SCPS-56001:
   compat: 5
   clampModes:
     eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera gets stuck off the player in various spots.
+    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
 SCPS-56002:
   name: "Tekken Tag Tournament"
   region: "NTSC-K"
@@ -4982,7 +5233,7 @@ SCUS-90174:
   roundModes:
     vuRoundMode: 2  # Fixes very minor lines appearing at certain points during the game.
 SCUS-94346:
-  name: "Singstar Latino"
+  name: "SingStar Latino"
   region: "NTSC-U"
 SCUS-97097:
   name: "Network Adapter Start-Up Disc"
@@ -5035,7 +5286,7 @@ SCUS-97113:
   compat: 5
   clampModes:
     eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera gets stuck off the player in various spots.
+    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
 SCUS-97114:
   name: "NBA ShootOut 2001"
   region: "NTSC-U"
@@ -5193,7 +5444,7 @@ SCUS-97159:
   compat: 5
   clampModes:
     eeClampMode: 2  # Otherwise freezes in various spots, check full intro.
-    vuClampMode: 1  # Otherwise camera gets stuck off the player in various spots.
+    vuClampMode: 1  # Otherwise camera does not focus correctly on main character.
 SCUS-97160:
   name: "Extermination [Demo]"
   region: "NTSC-U"
@@ -6385,7 +6636,7 @@ SCUS-97568:
   name: "MLB '07 - The Show [Demo]"
   region: "NTSC-U"
 SCUS-97571:
-  name: "SingStar Rocks! [with Microphone]"
+  name: "SingStar Rocks!"
   region: "NTSC-U"
   compat: 3
 SCUS-97572:
@@ -6395,7 +6646,7 @@ SCUS-97579:
   name: "ATV Off-Road Fury 4 [Demo]"
   region: "NTSC-U"
 SCUS-97580:
-  name: "SingStar Pop [with Microphone]"
+  name: "SingStar Pop"
   region: "NTSC-U"
 SCUS-97583:
   name: "MLB '08 - The Show"
@@ -6407,10 +6658,10 @@ SCUS-97589:
   name: "NBA '08 featuring The Life Vol.3"
   region: "NTSC-U"
 SCUS-97590:
-  name: "SingStar Rocks! [Game Only]"
+  name: "SingStar Rocks!"
   region: "NTSC-U"
 SCUS-97591:
-  name: "SingStar Pop [Game Only]"
+  name: "SingStar Pop"
   region: "NTSC-U"
 SCUS-97592:
   name: "Buzz! The Mega Quiz"
@@ -6440,11 +6691,11 @@ SCUS-97610:
   roundModes:
     vuRoundMode: 1  # Fixes the display of scores and text ingame.
 SCUS-97611:
-  name: "SingStar Amped [with Microphone]"
+  name: "SingStar Amped"
   region: "NTSC-U"
   compat: 3
 SCUS-97612:
-  name: "SingStar Amped [Game Only]"
+  name: "SingStar Amped"
   region: "NTSC-U"
 SCUS-97615:
   name: "Ratchet & Clank - Size Matters"
@@ -6456,7 +6707,7 @@ SCUS-97616:
   region: "NTSC-U"
   compat: 3
 SCUS-97618:
-  name: "SingStar 80's [Game Only]"
+  name: "SingStar 80's"
   region: "NTSC-U"
 SCUS-97620:
   name: "Syphon Filter - Dark Mirror [Demo]"
@@ -6476,14 +6727,14 @@ SCUS-97621:
         patch=1,EE,002461e0,word,4bc069fc
         patch=1,EE,002461e4,word,4a54c3bc
 SCUS-97622:
-  name: "SingStar 80's [with Microphone]"
+  name: "SingStar '80s"
   region: "NTSC-U"
 SCUS-97623:
   name: "Secret Agent Clank"
   region: "NTSC-U"
   compat: 5
 SCUS-97626:
-  name: "SingStar 90's"
+  name: "SingStar '90s"
   region: "NTSC-U"
 SCUS-97627:
   name: "SingStar Pop Volume 2"
@@ -6496,14 +6747,14 @@ SCUS-97634:
   name: "Buzz! Jr. RoboJam [Game Only]"
   region: "NTSC-U"
 SCUS-97636:
-  name: "SingStar 90's [Game Only]"
+  name: "SingStar '90s"
   region: "NTSC-U"
 SCUS-97640:
   name: "SingStar Legends"
   region: "NTSC-U"
   compat: 3
 SCUS-97642:
-  name: "SingStar Abba"
+  name: "SingStar ABBA"
   region: "NTSC-U"
   compat: 3
 SCUS-97643:
@@ -6512,6 +6763,12 @@ SCUS-97643:
   compat: 3
 SCUS-97644:
   name: "MLB '09: The Show"
+  region: "NTSC-U"
+SCUS-97649:
+  name: "SingStar Pop Vol. 2"
+  region: "NTSC-U"
+SCUS-97650:
+  name: "SingStar Country"
   region: "NTSC-U"
 SCUS-97651:
   name: "SingStar Country"
@@ -6669,7 +6926,7 @@ SLAJ-25066:
     - "SLAJ-25053"
     - "SLPM-66204"
 SLAJ-25068:
-  name: "Shin Sangoku Musou 4 - Moushouden"
+  name: "Shin Sangoku Musou 4 - Mushoden"
   region: "NTSC-Unk"
 SLAJ-25072:
   name: "Matrix, The - Path of Neo"
@@ -7312,6 +7569,8 @@ SLES-50201:
   name: "Evil Twin - Cyprien's Chronicles"
   region: "PAL-M5"
   compat: 5
+  clampModes:
+    eeClampMode: 2  # Fixes texture mipmapping.
 SLES-50202:
   name: "DNA - Dark Native Apostle"
   region: "PAL-M5"
@@ -8113,7 +8372,7 @@ SLES-50633:
   name: "Gitaroo Man"
   region: "PAL-Unk"
 SLES-50636:
-  name: "Centre Court - Hardhitter"
+  name: "Centre Court - Hard Hitter"
   region: "PAL-M3"
 SLES-50637:
   name: "Pro Rally 2002"
@@ -8169,6 +8428,8 @@ SLES-50662:
   name: "Shadow of Zorro, The"
   region: "PAL-M5"
   compat: 4
+  clampModes:
+    eeClampMode: 2  # Fixes texture mipmapping.
 SLES-50670:
   name: "ESPN Winter X-Games Snowboarding 2"
   region: "PAL-M3"
@@ -8763,7 +9024,7 @@ SLES-50920:
       content: |-
         comment=Patch by Wgarvin
         // Fixes (black voids) central tower level loading.
-        // Issue: Some doors leading to some areas appeared as black voids that you can walk in to.
+        // Issue: Some doors leading to some areas appeared as black voids that you can walk into.
         patch=1,EE,001BCC4C,word,46150036
 SLES-50921:
   name: "Way of the Samurai"
@@ -8985,6 +9246,8 @@ SLES-51057:
 SLES-51058:
   name: "Maken Shao - Demon Sword"
   region: "PAL-E"
+  gameFixes:
+    - VUKickstartHack  # Fixes SPS.
 SLES-51060:
   name: "Butt Ugly Martians"
   region: "PAL-M5"
@@ -9496,6 +9759,8 @@ SLES-51289:
   name: "Gunfighter 2 - Legend of Jesse James"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - GIFFIFOHack # Fixes flickering textures.
 SLES-51290:
   name: "Sword of the Samurai"
   region: "PAL-E"
@@ -9714,8 +9979,9 @@ SLES-51391:
 SLES-51392:
   name: "Evolution Snowboarding"
   region: "PAL-M3"
+  compat: 5
   patches:
-    2B2E1535:
+    C24C7FE3:
       content: |-
         author=kozarovv
         // Skip PSS movies, workaround for EE Cache requirement.
@@ -10986,19 +11252,29 @@ SLES-52125:
 SLES-52132:
   name: "Hitman - Contracts"
   region: "PAL-E"
+  roundModes:
+    vuRoundMode: 0  # Fixes effects and textures.
 SLES-52133:
   name: "Hitman - Contracts"
   region: "PAL-F"
+  roundModes:
+    vuRoundMode: 0  # Fixes effects and textures.
 SLES-52134:
   name: "Hitman - Contracts"
   region: "PAL-I"
   compat: 4
+  roundModes:
+    vuRoundMode: 0  # Fixes effects and textures.
 SLES-52135:
   name: "Hitman - Contracts"
   region: "PAL-G"
+  roundModes:
+    vuRoundMode: 0  # Fixes effects and textures.
 SLES-52136:
   name: "Hitman - Contracts"
   region: "PAL-S"
+  roundModes:
+    vuRoundMode: 0  # Fixes effects and textures.
 SLES-52143:
   name: "Carmen Sandiego - The Secret of the Stolen Drums"
   region: "PAL-M4"
@@ -11734,6 +12010,8 @@ SLES-52541:
   name: "Grand Theft Auto - San Andreas"
   region: "PAL-M5"
   compat: 5
+  clampModes:
+    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
 SLES-52542:
   name: "All Music Dance!"
   region: "PAL-I"
@@ -12525,6 +12803,8 @@ SLES-52922:
 SLES-52927:
   name: "Grand Theft Auto - San Andreas"
   region: "PAL-G"
+  clampModes:
+    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
 SLES-52931:
   name: "Legend of Kay"
   region: "PAL-M5"
@@ -12850,7 +13130,7 @@ SLES-53037:
   region: "PAL-M5"
   compat: 5
   roundModes:
-    eeRoundMode: 0  # Fixes object balls never stopping in the Monkey Billiards DX minigame.
+    eeRoundMode: 1  # Fixes object balls never stopping in the Monkey Billiards DX minigame.
 SLES-53038:
   name: "Devil May Cry 3 - Dante's Awakening"
   region: "PAL-M5"
@@ -12894,7 +13174,7 @@ SLES-53058:
   region: "PAL-E"
   compat: 5
 SLES-53059:
-  name: "Samurai Showdown V"
+  name: "Samurai Shodown V"
   region: "PAL-E"
   compat: 5
 SLES-53060:
@@ -12998,6 +13278,12 @@ SLES-53104:
 SLES-53106:
   name: "MX vs. ATV Unleashed"
   region: "PAL-E"
+  patches:
+    D7AE31F4:
+      content: |-
+        comment=Rearranging COP2 ops to avoid clip flag resonse. Fixes SPS.
+        patch=1,EE,001B0138,word,484E9000
+        patch=1,EE,001B013C,word,4BDBD9FF
 SLES-53107:
   name: "Cabela's Big Game Hunter 2005 Adventures"
   region: "PAL-E"
@@ -13362,7 +13648,7 @@ SLES-53351:
   name: "SSX On Tour"
   region: "PAL-E"
 SLES-53353:
-  name: "Shonen Jump's Shaman King - Power of Spirit"
+  name: "Shounen Jump's Shaman King - Power of Spirit"
   region: "PAL-M3"
 SLES-53354:
   name: "Superbike GP"
@@ -16404,9 +16690,13 @@ SLES-54723:
   name: "Spider-Man 3"
   region: "PAL-E"
   compat: 4
+  clampModes:
+    vuClampMode: 0 # Fixes idle camera behaviour.
 SLES-54724:
   name: "Spider-Man 3"
   region: "PAL-M4"
+  clampModes:
+    vuClampMode: 0 # Fixes idle camera behaviour.
 SLES-54725:
   name: "Kirikou and the Wild Beasts"
   region: "PAL-M5"
@@ -18150,7 +18440,7 @@ SLES-55604:
   name: "PES 2010 - Pro Evolution Soccer [Demo]"
   region: "PAL-M10"
 SLES-55605:
-  name: "Naruto Shippuden - Ultimate Ninja 5"
+  name: "Naruto Shippuuden - Ultimate Ninja 5"
   region: "PAL-M5"
   compat: 5
 SLES-55609:
@@ -18784,6 +19074,8 @@ SLKA-25217:
 SLKA-25218:
   name: "Hitman - Contracts"
   region: "NTSC-K"
+  roundModes:
+    vuRoundMode: 0  # Fixes effects and textures.
 SLKA-25219:
   name: "Monster Hunter G"
   region: "NTSC-K"
@@ -18911,7 +19203,7 @@ SLKA-25290:
   name: "Super Monkey Ball Deluxe"
   region: "NTSC-K"
   roundModes:
-    eeRoundMode: 0  # Fixes object balls never stopping in the Monkey Billiards DX minigame.
+    eeRoundMode: 1  # Fixes object balls never stopping in the Monkey Billiards DX minigame.
 SLKA-25291:
   name: "Chains of Power"
   region: "NTSC-K"
@@ -18989,7 +19281,7 @@ SLKA-25328:
     - "SLKA-25328"
     - "SLKA-25082"
 SLKA-25329:
-  name: "Shin Sangoku Musou 4 - Moushouden"
+  name: "Shin Sangoku Musou 4 - Mushoden"
   region: "NTSC-K"
 SLKA-25331:
   name: "Marc Ecko's Getting Up - Contents Under Pressure"
@@ -19052,6 +19344,8 @@ SLKA-25384:
 SLKA-25385:
   name: "Spider-Man 3"
   region: "NTSC-K"
+  clampModes:
+    vuClampMode: 0 # Fixes idle camera behaviour.
 SLKA-25388:
   name: "One Piece - Grand Adventure"
   region: "NTSC-K"
@@ -19129,8 +19423,14 @@ SLPM-55008:
   name: "Sengoku Basara X"
   region: "NTSC-J"
   compat: 5
+SLPM-55024:
+  name: "Jikkyou Powerful Pro Yakyuu 15"
+  region: "NTSC-J"
 SLPM-55033:
   name: "J. League Winning Eleven 2008 - Club Championship"
+  region: "NTSC-J"
+SLPM-55062:
+  name: "Jikkyou Powerful Major League 3"
   region: "NTSC-J"
 SLPM-55063:
   name: "Hakuouki - Shinsengumi Kitan [Limited Edition]"
@@ -19153,6 +19453,11 @@ SLPM-55081:
   region: "NTSC-J"
   clampModes:
     eeClampMode: 2  # Fixes wrong color on some characters and breakable objects.
+SLPM-55092:
+  name: "Grand Theft Auto - San Andreas [Best Price]"
+  region: "NTSC-J"
+  clampModes:
+    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
 SLPM-55096:
   name: "ThunderForce VI"
   region: "NTSC-J"
@@ -19207,6 +19512,9 @@ SLPM-55138:
   region: "NTSC-J"
 SLPM-55148:
   name: "007: Nagusame no Houshuu"
+  region: "NTSC-J"
+SLPM-55155:
+  name: "Jikkyou Powerful Major League 2009"
   region: "NTSC-J"
 SLPM-55170:
   name: "Skip Beat!"
@@ -19270,6 +19578,11 @@ SLPM-55283:
 SLPM-55285:
   name: "Crimson Empire"
   region: "NTSC-J"
+SLPM-55292:
+  name: "Grand Theft Auto - San Andreas [Rockstar Classics]"
+  region: "NTSC-J"
+  clampModes:
+    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
 SLPM-60101:
   name: "0 Story"
   region: "NTSC-J"
@@ -19326,6 +19639,11 @@ SLPM-60273:
 SLPM-60282:
   name: "Lucky * Star RAvish Romance [Trial]"
   region: "NTSC-J"
+SLPM-61007:
+  name: "Maken Shao [Trial]"
+  region: "NTSC-J"
+  gameFixes:
+    - VUKickstartHack # Fixes SPS. 
 SLPM-61009:
   name: "Silent Hill 2 (Red Ribbon) [Trial]"
   region: "NTSC-J"
@@ -19400,7 +19718,7 @@ SLPM-62007:
   region: "NTSC-J"
   compat: 5
 SLPM-62008:
-  name: "Powerful Pro Baseball 7"
+  name: "Jikkyou Powerful Pro Yakyuu 7"
   region: "NTSC-J"
 SLPM-62009:
   name: "Ganbare Nippon Olympics 2000"
@@ -19458,6 +19776,9 @@ SLPM-62031:
 SLPM-62032:
   name: "ESPN NBA 2Night"
   region: "NTSC-J"
+SLPM-62034:
+  name: "Jikkyou Powerful Pro Yakyuu 7 Ketteiban"
+  region: "NTSC-J"
 SLPM-62035:
   name: "Got to Do! Hot Spring Table Tennis"
   region: "NTSC-J"
@@ -19487,7 +19808,7 @@ SLPM-62048:
   name: "Battle Gear 2"
   region: "NTSC-J"
 SLPM-62049:
-  name: "Densha de Go! 3 - Takkyuu!!"
+  name: "Densha de Go! 3 - Tsuukin-hen"
   region: "NTSC-J"
 SLPM-62051:
   name: "Yanya Caballista - featuring Gawoo"
@@ -19528,6 +19849,9 @@ SLPM-62069:
   region: "NTSC-J"
 SLPM-62070:
   name: "Uchu-Jintte Naani"
+  region: "NTSC-J"
+SLPM-62071:
+  name: "Jikkyou Powerful Pro Yakyuu 8"
   region: "NTSC-J"
 SLPM-62072:
   name: "Horse Breaker"
@@ -19622,6 +19946,9 @@ SLPM-62118:
   name: "Bomberman Kart"
   region: "NTSC-J"
   compat: 5
+SLPM-62119:
+  name: "Jikkyou Powerful Pro Yakyuu 8 Ketteiban"
+  region: "NTSC-J"
 SLPM-62120:
   name: "Jikkyou World Soccer 2001"
   region: "NTSC-J"
@@ -19758,6 +20085,9 @@ SLPM-62186:
   region: "NTSC-J"
 SLPM-62190:
   name: "High Heat - Major League Baseball 2003"
+  region: "NTSC-J"
+SLPM-62192:
+  name: "Jikkyou Powerful Pro Yakyuu 9"
   region: "NTSC-J"
 SLPM-62193:
   name: "J League Perfect Striker 5"
@@ -19976,7 +20306,7 @@ SLPM-62273:
   name: "Mai-Shin 3"
   region: "NTSC-J"
 SLPM-62274:
-  name: "Powerful Pro Baseball 9 Ketteiban"
+  name: "Jikkyou Powerful Pro Yakyuu 9 Ketteiban"
   region: "NTSC-J"
 SLPM-62275:
   name: "Space Raiders"
@@ -20109,7 +20439,7 @@ SLPM-62338:
   name: "Ishikura Noboru no Igo Kouza"
   region: "NTSC-J"
 SLPM-62339:
-  name: "Kikou Heidai - J-Phoenix 2"
+  name: "Kikou Heidan - J-Phoenix 2"
   region: "NTSC-J"
 SLPM-62340:
   name: "Apprentice Magician"
@@ -20592,7 +20922,7 @@ SLPM-62524:
   region: "NTSC-J"
   compat: 5
 SLPM-62525:
-  name: "Simple 2000 Series Vol.61 - The O-Ane-Chan-Bara"
+  name: "Simple 2000 Series Vol.61 - The OneeChanBara"
   region: "NTSC-J"
   compat: 5
 SLPM-62526:
@@ -20929,7 +21259,7 @@ SLPM-62637:
   name: "Simple 2000 Series 2-in-1 Vol.1 - The Tennis & The Snowboard [Disc2of2]"
   region: "NTSC-J"
 SLPM-62638:
-  name: "Simple 2000 Series Vol.80 - The O-Ane-Chan-Puruu"
+  name: "Simple 2000 Series Vol.80 - The OneeChanPuruu"
   region: "NTSC-J"
 SLPM-62639:
   name: "Mahjong Taikai III - Millennium League [Koei Selection Series]"
@@ -21243,7 +21573,7 @@ SLPM-62758:
   name: "River Ride Adventure featuring Salomon"
   region: "NTSC-J"
 SLPM-62759:
-  name: "Nobunaga no Yabou - Soutensoku [Koei Selection Series]"
+  name: "Nobunaga no Yabou - Soutenroku [Koei Selection Series]"
   region: "NTSC-J"
 SLPM-62760:
   name: "Sega Ages 2500 Vol.29 - Monster World Complete Collection"
@@ -21515,8 +21845,9 @@ SLPM-65053:
   region: "NTSC-J"
   compat: 5
 SLPM-65054:
-  name: "Princess Abarenbou"
+  name: "Abarenbou Princess"
   region: "NTSC-J"
+  compat: 5 
 SLPM-65056:
   name: "Orega Kantoku da Vol.2 - Getitou Pennant Race"
   region: "NTSC-J"
@@ -21772,8 +22103,13 @@ SLPM-65142:
 SLPM-65143:
   name: "Anime Super Remix, The - Ashita no Joe 2"
   region: "NTSC-J"
+SLPM-65144:
+  name: "Maken Shao"
+  region: "NTSC-J"
+  gameFixes:
+    - VUKickstartHack # Fixes SPS.
 SLPM-65148:
-  name: "Densha de Go! Ryojouhen"
+  name: "Densha de Go! Ryojou-hen"
   region: "NTSC-J"
 SLPM-65150:
   name: "Aero Dancing 4 - New Generation"
@@ -21809,7 +22145,7 @@ SLPM-65163:
     397F3835:
       content: |-
         comment=COP2 flag instance patch by refraction
-        // A mac flag check after running another vsub op which is irrelivant, rearranging
+        // A mac flag check after running another vsub op which is irrelevant, rearranging
         patch=0,EE,00276170,word,48438800
         patch=0,EE,0027617c,word,4BE521AC
 SLPM-65164:
@@ -21829,7 +22165,7 @@ SLPM-65169:
   region: "NTSC-J"
   compat: 5
 SLPM-65170:
-  name: "Shin Sangoku Musou 2 - Mushouden"
+  name: "Shin Sangoku Musou 2 - Mushoden"
   region: "NTSC-J"
 SLPM-65173:
   name: "Innocent Black"
@@ -21994,6 +22330,13 @@ SLPM-65230:
 SLPM-65231:
   name: "Evolution Snowboarding"
   region: "NTSC-J"
+  compat: 5
+  patches:
+    F96A2390:
+      content: |-
+        author=kozarovv
+        // Skip PSS movies, workaround for EE Cache requirement.
+        patch=1,EE,00122d00,word,100000d9
 SLPM-65232:
   name: "Devil May Cry 2 [Dante Disc]"
   region: "NTSC-J"
@@ -22093,10 +22436,10 @@ SLPM-65262:
   name: "Boboboubo Boubobo Hajike Matsuri"
   region: "NTSC-J"
 SLPM-65263:
-  name: "Shin Sangoku Musou 2 & Shin Sangoku Musou 2 Mushouden [Koei Mega Pack] [Disc1of2]"
+  name: "Shin Sangoku Musou 2 & Shin Sangoku Musou 2 Mushoden [Koei Mega Pack] [Disc1of2]"
   region: "NTSC-J"
 SLPM-65264:
-  name: "Shin Sangoku Musou 2 & Shin Sangoku Musou 2 Mushouden [Koei Mega Pack] [Disc2of2]"
+  name: "Shin Sangoku Musou 2 & Shin Sangoku Musou 2 Mushoden [Koei Mega Pack] [Disc2of2]"
   region: "NTSC-J"
 SLPM-65266:
   name: "Drag-on Dragoon"
@@ -22259,7 +22602,7 @@ SLPM-65316:
   name: "Pop'n Music 8"
   region: "NTSC-J"
 SLPM-65317:
-  name: "Jikkyou Powerful Pro Baseball 10"
+  name: "Jikkyou Powerful Pro Yakyuu 10"
   region: "NTSC-J"
 SLPM-65318:
   name: "Shoubushi Tetsuya 2"
@@ -22326,7 +22669,7 @@ SLPM-65337:
   region: "NTSC-J"
   compat: 5
 SLPM-65338:
-  name: "Junni Kuniki - Guren no Hyou Koujin no Mitsu"
+  name: "Juunikoku-ki - Guren no Shirube Koejin no Michi"
   region: "NTSC-J"
 SLPM-65339:
   name: "Akudaikan [Global The Best]"
@@ -22343,7 +22686,7 @@ SLPM-65342:
   name: "Kyoufu Shinbun (Heisei) Kaiki! Shinrei File"
   region: "NTSC-J"
 SLPM-65343:
-  name: "Kikou Heidai - J-Phoenix 2"
+  name: "Kikou Heidan - J-Phoenix 2"
   region: "NTSC-J"
 SLPM-65344:
   name: "Project Minerva - Professional"
@@ -22424,10 +22767,10 @@ SLPM-65374:
   speedHacks:
     InstantVU1SpeedHack: 0  # Fixes hanging while going ingame.
 SLPM-65375:
-  name: "Shin Sangoku Musou 3 - Mushouden [Premium Pack]"
+  name: "Shin Sangoku Musou 3 - Mushoden [Premium Pack]"
   region: "NTSC-J"
 SLPM-65377:
-  name: "Shin Sangoku Musou 3 - Mushouden"
+  name: "Shin Sangoku Musou 3 - Mushoden"
   region: "NTSC-J"
 SLPM-65378:
   name: "Busin 0: Wizardry Alternative Neo"
@@ -22464,10 +22807,10 @@ SLPM-65389:
   name: "Lost Passage"
   region: "NTSC-J"
 SLPM-65390:
-  name: "Shinki Genso - Spectral Souls [Limited Edition]"
+  name: "Shinki Gensou - Spectral Souls [Limited Edition]"
   region: "NTSC-J"
 SLPM-65391:
-  name: "Shinki Genso - Spectral Souls"
+  name: "Shinki Gensou - Spectral Souls"
   region: "NTSC-J"
 SLPM-65392:
   name: "Kanojo no Densetsu - Boku no Sekiban"
@@ -22637,7 +22980,7 @@ SLPM-65444:
   clampModes:
     eeClampMode: 3  # Fixes cutscene freezes.
 SLPM-65445:
-  name: "Powerful Pro Baseball 10 - Decision"
+  name: "Jikkyou Powerful Pro Yakyuu 10 Chou Ketteiban - 2003 Memorial"
   region: "NTSC-J"
 SLPM-65446:
   name: "James Bond 007 - Everything or Nothing"
@@ -22647,7 +22990,7 @@ SLPM-65447:
   region: "NTSC-J"
   compat: 5
 SLPM-65448:
-  name: "Cambrian QTS - Kaseki Ninattemo"
+  name: "Cambrian QTS - Kaseki ni Natte mo"
   region: "NTSC-J"
 SLPM-65449:
   name: "SSX 3"
@@ -22678,7 +23021,7 @@ SLPM-65460:
   name: "Conflict Delta - Wangan War 1991"
   region: "NTSC-J"
 SLPM-65461:
-  name: "Tantei Gakuen Q: Kiokan no Satsui"
+  name: "Tantei Gakuen Q: Kioukan no Satsui"
   region: "NTSC-J"
 SLPM-65462:
   name: "Shin Megami Tensei III: Nocturne Maniax"
@@ -22771,7 +23114,7 @@ SLPM-65493:
   name: "Hurrah! Sailor"
   region: "NTSC-J"
 SLPM-65494:
-  name: "Fuun Shinsengumi"
+  name: "Fuuun Shinsengumi"
   region: "NTSC-J"
 SLPM-65495:
   name: "Monster Hunter"
@@ -22922,10 +23265,10 @@ SLPM-65542:
   name: "Zero Shikikan Josentoki"
   region: "NTSC-J"
 SLPM-65543:
-  name: "Pro Yakyu Spirits 2004"
+  name: "Pro Yakyuu Spirits 2004"
   region: "NTSC-J"
 SLPM-65545:
-  name: "Izayoi Renke Kamifurusato"
+  name: "Juurokuya Renka - Kami Furusato"
   region: "NTSC-J"
 SLPM-65546:
   name: "Cross Channel - To All People [Limited Edition]"
@@ -22970,10 +23313,10 @@ SLPM-65558:
   name: "Steady X Study"
   region: "NTSC-J"
 SLPM-65559:
-  name: "Tenohira Taiyouni [Limited Edition]"
+  name: "Tenohira wo Taiyou ni [Limited Edition]"
   region: "NTSC-J"
 SLPM-65560:
-  name: "Tenohira Taiyouni"
+  name: "Tenohira wo Taiyou ni"
   region: "NTSC-J"
 SLPM-65561:
   name: "Shin Sangoku Musou 3 [Super Premium Pack]"
@@ -23014,7 +23357,7 @@ SLPM-65575:
   region: "NTSC-J"
   compat: 5
 SLPM-65576:
-  name: "Tantei Jingiji Saburo - Kind of Blue"
+  name: "Tantei Jinguuji Saburou - Kind of Blue"
   region: "NTSC-J"
 SLPM-65579:
   name: "After School Love Beat"
@@ -23140,7 +23483,7 @@ SLPM-65615:
   name: "Dokapon DX"
   region: "NTSC-J"
 SLPM-65616:
-  name: "Juuni Kuniki - Guren no Hyou Koujin noJi [Konami The Best]"
+  name: "Juunikoku-ki - Guren no Shirube Koejin no Michi [Konami The Best]"
   region: "NTSC-J"
 SLPM-65617:
   name: "Bouken Jidai Katsugeki Goemon [Konami Collection]"
@@ -23187,13 +23530,13 @@ SLPM-65627:
   name: "Gegege no Kitarou [Konami The Best]"
   region: "NTSC-J"
 SLPM-65628:
-  name: "Konhana Pack - 3tsu no Jikenbou [SuperLite 2000 Series]"
+  name: "Konohana Pack Vol.21 - 3-tsu no Jikenbo [SuperLite 2000 Series]"
   region: "NTSC-J"
 SLPM-65629:
   name: "Kappa no Kai-Kata - How to Breed Kappas"
   region: "NTSC-J"
 SLPM-65630:
-  name: "Jikkyo Powerful Pro Baseball XI"
+  name: "Jikkyou Powerful Pro Yakyuu 11"
   region: "NTSC-J"
 SLPM-65631:
   name: "Silent Hill 2 [Konami The Best]"
@@ -23205,7 +23548,7 @@ SLPM-65632:
   region: "NTSC-J"
   compat: 5
 SLPM-65633:
-  name: "I Love Baseball - Pro Yakyu wo Koyonaku"
+  name: "I Love Baseball - Pro Yakyuu wo Koyonaku Aisuru Hito Tachi e"
   region: "NTSC-J"
 SLPM-65634:
   name: "Summer Girl - Promised Summer"
@@ -23448,10 +23791,10 @@ SLPM-65716:
   name: "Gaika no Gouhou - Air Land Force [Koei The Best]"
   region: "NTSC-J"
 SLPM-65717:
-  name: "Tsuki wa Higashi ni Ha wa Nishi na - Operation Sanctuary"
+  name: "Tsuki wa Higashi ni Ha wa Nishi ni - Operation Sanctuary"
   region: "NTSC-J"
 SLPM-65718:
-  name: "Sengoku Musou Moushouden"
+  name: "Sengoku Musou Mushoden"
   region: "NTSC-J"
 SLPM-65719:
   name: "Burnout 3 - Takedown"
@@ -23459,7 +23802,7 @@ SLPM-65719:
   clampModes:
     vuClampMode: 0  # Fixes buggy lighting on certain objects.
 SLPM-65720:
-  name: "Shin Sangoku Musou 2 Mushouden [Koei the Best]"
+  name: "Shin Sangoku Musou 2 Mushoden [Koei the Best]"
   region: "NTSC-J"
 SLPM-65721:
   name: "Pro Yakyuu Spirits 2004 Climax"
@@ -23767,7 +24110,7 @@ SLPM-65809:
   name: "NanoBreaker"
   region: "NTSC-J"
 SLPM-65810:
-  name: "Densha de Go! Ryojouhen"
+  name: "Densha de Go! Ryojou-hen"
   region: "NTSC-J"
 SLPM-65811:
   name: "Zero Shikikan Josentoki [Taito Best]"
@@ -23870,7 +24213,7 @@ SLPM-65842:
   name: "Kanon [Best]"
   region: "NTSC-J"
 SLPM-65843:
-  name: "120-en no Haru - 120yen Stories"
+  name: "120 Yen no Haru - 120 Yen Stories"
   region: "NTSC-J"
 SLPM-65844:
   name: "Air [Best]"
@@ -23910,10 +24253,10 @@ SLPM-65859:
   name: "Junrui Sosa - Kan Pony - Eirian vs. Seirian"
   region: "NTSC-J"
 SLPM-65860:
-  name: "Shinki Genso Spectral Souls II [Premium Box]"
+  name: "Shinki Gensou Spectral Souls II [Premium Box]"
   region: "NTSC-J"
 SLPM-65861:
-  name: "Shinki Genso Spectral Souls II"
+  name: "Shinki Gensou Spectral Souls II"
   region: "NTSC-J"
 SLPM-65862:
   name: "Pyua Pyua Mimi Toshippono Monogatari"
@@ -24055,7 +24398,7 @@ SLPM-65909:
   name: "Super Monkey Ball Deluxe"
   region: "NTSC-J"
   roundModes:
-    eeRoundMode: 0  # Fixes object balls never stopping in the Monkey Billiards DX minigame.
+    eeRoundMode: 1  # Fixes object balls never stopping in the Monkey Billiards DX minigame.
 SLPM-65910:
   name: "Cafe Lindbergh - Summer Season [Sweet Box]"
   region: "NTSC-J"
@@ -24150,7 +24493,7 @@ SLPM-65939:
   name: "Memories Off - After Rain Vol.3"
   region: "NTSC-J"
 SLPM-65941:
-  name: "Mabino Style"
+  name: "Mabino x Style"
   region: "NTSC-J"
 SLPM-65942:
   name: "Mercenaries"
@@ -24208,7 +24551,7 @@ SLPM-65958:
   clampModes:
     vuClampMode: 0  # Fixes buggy lighting on certain objects.
 SLPM-65959:
-  name: "Standard Daisenryoku - Shiwareta Shouri"
+  name: "Standard Daisenryaku - Ushinawareta Shoeri"
   region: "NTSC-J"
 SLPM-65960:
   name: "North Wind Promise Forever [Limited Edition]"
@@ -24286,6 +24629,8 @@ SLPM-65982:
 SLPM-65984:
   name: "Grand Theft Auto - San Andreas"
   region: "NTSC-J"
+  clampModes:
+    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
 SLPM-65985:
   name: "Iris no Atelier: Eternal Mana 2"
   region: "NTSC-J"
@@ -24406,19 +24751,19 @@ SLPM-66022:
   name: "Kaido Touge no Densetsu"
   region: "NTSC-J"
 SLPM-66023:
-  name: "Fushigi Yuugi - Shigiyuugi Kurotake Kaiden Gaiden - Kagami no Fujo [Limited Edition]"
+  name: "Fushigi Yuugi - ShigiYuugi Kurotake Kaiden Gaiden - Kagami no Fujo [Limited Edition]"
   region: "NTSC-J"
 SLPM-66024:
-  name: "Fushigi Yuugi - Shigiyuugi Kurotake Kaiden Gaiden - Kagami no Fujo"
+  name: "Fushigi Yuugi - ShigiYuugi Kurotake Kaiden Gaiden - Kagami no Fujo"
   region: "NTSC-J"
 SLPM-66025:
   name: "Generation of Chaos IV [Idea Factory Collection]"
   region: "NTSC-J"
 SLPM-66026:
-  name: "Honotomi - First Kiss [Limited Edition]"
+  name: "Hatsukoi - First Kiss [Limited Edition]"
   region: "NTSC-J"
 SLPM-66027:
-  name: "Honotomi - First Kiss"
+  name: "Hatsukoi - First Kiss"
   region: "NTSC-J"
 SLPM-66028:
   name: "Ururun Quest"
@@ -24517,7 +24862,7 @@ SLPM-66060:
   name: "Boukoku no Aegis 2035 - Warship Gunner"
   region: "NTSC-J"
 SLPM-66061:
-  name: "Jikkyou Powerful Pro Baseball 12"
+  name: "Jikkyou Powerful Pro Yakyuu 12"
   region: "NTSC-J"
 SLPM-66062:
   name: "Mahou Sensei Negima! Gold Medal"
@@ -24582,10 +24927,10 @@ SLPM-66082:
   name: "Fire Pro Wrestling Returns"
   region: "NTSC-J"
 SLPM-66083:
-  name: "Ramune - Garasu-Bin ni Uturu Umi [Limited Edition]"
+  name: "Ramune - Garasu-Bin ni Utsuru Umi [Limited Edition]"
   region: "NTSC-J"
 SLPM-66084:
-  name: "Ramune - Garasu-Bin ni Uturu Umi"
+  name: "Ramune - Garasu-Bin ni Utsuru Umi"
   region: "NTSC-J"
 SLPM-66085:
   name: "Rumble Roses [Konami The Best]"
@@ -24616,7 +24961,7 @@ SLPM-66094:
   name: "Shin Sangoku Musou 2 [Koei Selection Series]"
   region: "NTSC-J"
 SLPM-66096:
-  name: "Shin Sangoku Musou 2 - Mushouden [Koei Selection Series]"
+  name: "Shin Sangoku Musou 2 - Mushoden [Koei Selection Series]"
   region: "NTSC-J"
 SLPM-66097:
   name: "Shinseiki Evangelion - Ayanami Ikusai Keikaku with Asuka Hokan Keikaku [Broccoli Best Quality]"
@@ -24628,7 +24973,7 @@ SLPM-66100:
   name: "Harukanaru Jikuu no Kade 3"
   region: "NTSC-J"
 SLPM-66101:
-  name: "Shin Sangoku Musou 4 - Moushouden"
+  name: "Shin Sangoku Musou 4 - Mushoden"
   region: "NTSC-J"
 SLPM-66102:
   name: "Zwei!! [Taito the Best]"
@@ -24680,10 +25025,10 @@ SLPM-66113:
   name: "Hissatsu Ura-Kagyou"
   region: "NTSC-J"
 SLPM-66114:
-  name: "Nizu no Senritsu [Limited Edition]"
+  name: "Mizu no Senritsu [Limited Edition]"
   region: "NTSC-J"
 SLPM-66115:
-  name: "Nizu no Senritsu"
+  name: "Mizu no Senritsu"
   region: "NTSC-J"
 SLPM-66116:
   name: "NBA Live 2005 [EA Best Hits]"
@@ -24808,7 +25153,7 @@ SLPM-66160:
   roundModes:
     eeRoundMode: 0
 SLPM-66163:
-  name: "Fuuraiki 2"
+  name: "Fuuuraiki 2"
   region: "NTSC-J"
 SLPM-66164:
   name: "Mahou Tsukai Kurohime"
@@ -25142,7 +25487,7 @@ SLPM-66266:
   name: "Kurogane no Houkou 2 - Warship Commander [Koei The Best]"
   region: "NTSC-J"
 SLPM-66267:
-  name: "Taiko Risshiden V"
+  name: "Taikou Risshiden V"
   region: "NTSC-J"
 SLPM-66268:
   name: "Smackdown! vs. Raw 2006 - Exciting Pro Wrestling 7"
@@ -25441,7 +25786,7 @@ SLPM-66358:
   name: "Shinobido Takumi"
   region: "NTSC-J"
 SLPM-66359:
-  name: "Mutsuzaki Hoshi Kikari"
+  name: "Mutsu-boshi Kirari - Hoshifuru Miyako"
   region: "NTSC-J"
 SLPM-66360:
   name: "Ys V - Lost Kefin - Kingdom of Sand"
@@ -25450,7 +25795,7 @@ SLPM-66361:
   name: "Konohana 4 - Yami wo Harau Inori [Superlite 2000]"
   region: "NTSC-J"
 SLPM-66363:
-  name: "Dragon Quest - Shounen Yangus no Fushigi na Daibouken"
+  name: "Dragon Quest: Shoenen Yangus to Fushigi no Dungeon"
   region: "NTSC-J"
 SLPM-66364:
   name: "Pro Yakyuu Spirits 3"
@@ -25509,7 +25854,7 @@ SLPM-66381:
         // This patch skips over the stack code, allowing the game to boot.
         patch=1,EE,00157318,word,10000003
 SLPM-66382:
-  name: "Tenshou Gakuen Kensousoku [Tokudame Price]"
+  name: "Tenshou Gakuen Gensouroku [Tokudane Price]"
   region: "NTSC-J"
 SLPM-66383:
   name: "Natsuyume Yobanashi [2800 Collection]"
@@ -25536,10 +25881,10 @@ SLPM-66391:
   name: "Prince of Persia - The Two Thrones"
   region: "NTSC-J"
 SLPM-66393:
-  name: "Final Fantasy XI - Aht Urghan no Hihou [All-in-One Pack]"
+  name: "Final Fantasy XI - Aht Urhgan no Hihou [All-in-One Pack]"
   region: "NTSC-J"
 SLPM-66394:
-  name: "Final Fantasy XI - Aht Urghan no Hihou"
+  name: "Final Fantasy XI - Aht Urhgan no Hihou"
   region: "NTSC-J"
 SLPM-66395:
   name: "Honoo no Takkyubin"
@@ -25604,7 +25949,7 @@ SLPM-66416:
   name: "Mystereet"
   region: "NTSC-J"
 SLPM-66417:
-  name: "Jikkyou Powerful Pro Major League"
+  name: "Jikkyou Powerful Major League"
   region: "NTSC-J"
 SLPM-66418:
   name: "Growlanser V - Generations"
@@ -25715,7 +26060,7 @@ SLPM-66449:
   name: "We Are"
   region: "NTSC-J"
 SLPM-66450:
-  name: "Jikkyou Powerful Pro Baseball 13"
+  name: "Jikkyou Powerful Pro Yakyuu 13"
   region: "NTSC-J"
   compat: 5
 SLPM-66451:
@@ -25754,7 +26099,7 @@ SLPM-66457:
         // This patch skips over the stack code, allowing the game to boot.
         patch=1,EE,001579D8,word,10000003
 SLPM-66458:
-  name: "Acheter Fuuraiki"
+  name: "Acheter Fuuuraiki"
   region: "NTSC-J"
 SLPM-66459:
   name: "Zero Pilot - Zero"
@@ -25766,7 +26111,7 @@ SLPM-66461:
   name: "Tom Clancy's Ghost Recon - Advanced Warfighter"
   region: "NTSC-J"
 SLPM-66462:
-  name: "Disney-Pixer's Cars"
+  name: "Disney-Pixar's Cars"
   region: "NTSC-J"
 SLPM-66463:
   name: "Def Jam - Fight for NY [EA Best Hits]"
@@ -25860,7 +26205,7 @@ SLPM-66488:
   name: "My Merry May With Be [2800 Collection]"
   region: "NTSC-J"
 SLPM-66489:
-  name: "Mabino Style [2800 Collection]"
+  name: "Mabino x Style [2800 Collection]"
   region: "NTSC-J"
 SLPM-66491:
   name: "Ayaka Shibito"
@@ -25936,7 +26281,7 @@ SLPM-66510:
   name: "NHL '06"
   region: "NTSC-J"
 SLPM-66511:
-  name: "Kyuuryuu Youma Gakuenki Re-charge"
+  name: "Kyuuryuu Youma Gakuenki Re:charge"
   region: "NTSC-J"
   compat: 5
 SLPM-66512:
@@ -25995,10 +26340,10 @@ SLPM-66530:
   name: "Gift Prism"
   region: "NTSC-J"
 SLPM-66531:
-  name: "Nizu no Senritsu 2 [Limited Edition]"
+  name: "Mizu no Senritsu 2 [Limited Edition]"
   region: "NTSC-J"
 SLPM-66532:
-  name: "Nizu no Senritsu 2"
+  name: "Mizu no Senritsu 2"
   region: "NTSC-J"
 SLPM-66533:
   name: "Pop'n Music 13 - Carnival"
@@ -26084,7 +26429,7 @@ SLPM-66562:
     - "SLPM-66051"
     - "SLPM-66960"
 SLPM-66563:
-  name: "Nizu no Senritsu [2800 Collection]"
+  name: "Mizu no Senritsu [2800 Collection]"
   region: "NTSC-J"
 SLPM-66564:
   name: "REC - DokiDoki Seiyuu Paradise [Limited Edition]"
@@ -26140,7 +26485,7 @@ SLPM-66577:
   name: "Gladiator - Road to Freedom [Special Remix] [Ertain the Best]"
   region: "NTSC-J"
 SLPM-66582:
-  name: "Kohitsuji Hokaku Keakaku! Sweet Boys Life [Limited Edition]"
+  name: "Kohitsuji Hokaku Keikaku! Sweet Boys Life [Limited Edition]"
   region: "NTSC-J"
   patches:
     9466CBA1:
@@ -26150,7 +26495,7 @@ SLPM-66582:
         // This patch skips over the stack code, allowing the game to boot.
         patch=1,EE,0014A148,word,10000003
 SLPM-66583:
-  name: "Kohitsuji Hokaku Keakaku! Sweet Boys Life"
+  name: "Kohitsuji Hokaku Keikaku! Sweet Boys Life"
   region: "NTSC-J"
 SLPM-66584:
   name: "Yoake Yori Ruriiro na - Brighter than Dawning Blue"
@@ -26175,7 +26520,7 @@ SLPM-66589:
   name: "NBA Live '07"
   region: "NTSC-J"
 SLPM-66590:
-  name: "Jikkyou Powerful Pro Yakyuu 13 Chou Ketteiban"
+  name: "Jikkyou Powerful Pro Yakyuu 13 Ketteiban"
   region: "NTSC-J"
 SLPM-66591:
   name: "FlatOut 2 GTR"
@@ -26290,10 +26635,10 @@ SLPM-66624:
   name: "Tsuyo Kiss - Mighty Heart [Princess Soft Collection]"
   region: "NTSC-J"
 SLPM-66625:
-  name: "Trouble Fortune Comany - Happy Cure [Limited Edition]"
+  name: "Trouble Fortune Company - HapiCure [Limited Edition]"
   region: "NTSC-J"
 SLPM-66626:
-  name: "Trouble Fortune Comany - Happy Cure"
+  name: "Trouble Fortune Company - HapiCure"
   region: "NTSC-J"
 SLPM-66627:
   name: "WWE SmackDown! vs. RAW 2007"
@@ -26306,7 +26651,7 @@ SLPM-66629:
   name: "Dirge of Cerberus - Final Fantasy VII International"
   region: "NTSC-J"
 SLPM-66630:
-  name: "Marheaven - Arm Fight Dream [Konami the Best]"
+  name: "Melheaven - Arm Fight Dream [Konami the Best]"
   region: "NTSC-J"
 SLPM-66631:
   name: "Gokujou Seitokai [Konami the Best]"
@@ -26406,7 +26751,7 @@ SLPM-66661:
   name: "Dessert Love - Sweet Plus [Best Collection]"
   region: "NTSC-J"
 SLPM-66662:
-  name: "Dog Island, The - Hitsotsuno no Hana no Monogatari"
+  name: "Dog Island, The - Hitotsu no Hana no Monogatari"
   region: "NTSC-J"
 SLPM-66663:
   name: "Phantasy Star Universe - Ambition of the Illuminus"
@@ -26602,7 +26947,7 @@ SLPM-66717:
   name: "Standard Daisenryaku - Dengekisen [Sega the Best]"
   region: "NTSC-J"
 SLPM-66718:
-  name: "Standard Daisenryoku - Shiwareta Shouri [Sega the Best]"
+  name: "Sutandādo Daisenryaku - Ushinawareta Shoeri [Sega the Best]"
   region: "NTSC-J"
 SLPM-66719:
   name: "Tenka-bito [Sega the Best]"
@@ -26661,10 +27006,10 @@ SLPM-66736:
   name: "Rogue Hearts Dungeon"
   region: "NTSC-J"
 SLPM-66737:
-  name: "Sakura Ran Koukou Hosutobu [Limited Edition]"
+  name: "Roeran koekoe Host Club [Limited Edition]"
   region: "NTSC-J"
 SLPM-66738:
-  name: "Sakura Ran Koukou Hosutobu"
+  name: "Roeran koekoe Host Club"
   region: "NTSC-J"
   patches:
     3BE2C709:
@@ -26689,7 +27034,7 @@ SLPM-66742:
   region: "NTSC-J"
   compat: 5
 SLPM-66743:
-  name: "Shinkyouku Soukai Polyphonica"
+  name: "Shinkyoku Soukai Polyphonica"
   region: "NTSC-J"
 SLPM-66744:
   name: "Killer7 [CapKore]"
@@ -26731,7 +27076,7 @@ SLPM-66754:
   name: "Getsumento Heiki Mina - Futatsu no Project M"
   region: "NTSC-J"
 SLPM-66755:
-  name: "Majommusume - A La Mode II"
+  name: "Majo-musume - A La Mode II"
   region: "NTSC-J"
 SLPM-66756:
   name: "Que - Ancient Leaf no Yousei [Limited Edition]"
@@ -26746,7 +27091,7 @@ SLPM-66759:
   name: "Harukanaru Jikuu no Kade 3 - Izayoiki [Koei the Best]"
   region: "NTSC-J"
 SLPM-66760:
-  name: "Nobunaga no Yabou - Soutensoku [with Power-Up Kit] [Koei Selection]"
+  name: "Nobunaga no Yabou - Soutenroku [with Power-Up Kit] [Koei Selection]"
   region: "NTSC-J"
 SLPM-66761:
   name: "Panic Palette [Limited Edition]"
@@ -26777,7 +27122,7 @@ SLPM-66769:
   name: "Missing Parts - The Tantei Stories - Side B [Best Version]"
   region: "NTSC-J"
 SLPM-66770:
-  name: "Kuon no Kizuna - Sairinsho [Best Version]"
+  name: "Kuon no Kizuna - Sairinshou [Best Version]"
   region: "NTSC-J"
 SLPM-66771:
   name: "Densha de Go! Shinkansen [PlayStation 2 The Best]"
@@ -26812,7 +27157,7 @@ SLPM-66780:
   memcardFilters:
     - "SLPM-66779"
 SLPM-66781:
-  name: "Dragon Quest - Shonen Yangus to Fushigi no Dungeon [Ultimate Hits]"
+  name: "Dragon Quest - Shounen Yangus to Fushigi no Dungeon [Ultimate Hits]"
   region: "NTSC-J"
 SLPM-66782:
   name: "Valkyrie Profile 2 - Silmeria [Ultimate Hits]"
@@ -26836,6 +27181,8 @@ SLPM-66787:
 SLPM-66788:
   name: "Grand Theft Auto - San Andreas [Best Price]"
   region: "NTSC-J"
+  clampModes:
+    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
 SLPM-66789:
   name: "Grand Theft Auto III [Best Price]"
   region: "NTSC-J"
@@ -26900,7 +27247,7 @@ SLPM-66813:
   name: "Sangokushi IX [Koei Selection]"
   region: "NTSC-J"
 SLPM-66814:
-  name: "Pure x Cure Re-covery"
+  name: "Pure x Cure Re:covery"
   region: "NTSC-J"
 SLPM-66815:
   name: "Baldr Bullet - Equilibrium"
@@ -26921,7 +27268,7 @@ SLPM-66820:
   name: "Jissen Pachinko Hisshouhou! CR Sakura Taisen"
   region: "NTSC-J"
 SLPM-66821:
-  name: "Sengoku Musou 2 Mushouden"
+  name: "Sengoku Musou 2 Mushoden"
   region: "NTSC-J"
 SLPM-66822:
   name: "GuitarFreaks V3 & DrumMania V3"
@@ -26968,7 +27315,7 @@ SLPM-66839:
   name: "We Are [Best Hit Selection]"
   region: "NTSC-J"
 SLPM-66840:
-  name: "Nizu no Senritsu 2 [Best Hit Selection]"
+  name: "Mizu no Senritsu 2 [Best Hit Selection]"
   region: "NTSC-J"
 SLPM-66841:
   name: "Will O' Wisp [Limited Edition]"
@@ -27074,7 +27421,7 @@ SLPM-66874:
   name: "Lucky Star"
   region: "NTSC-J"
 SLPM-66875:
-  name: "Jikkyou Powerful Pro Major League 2"
+  name: "Jikkyou Powerful Major League 2"
   region: "NTSC-J"
 SLPM-66876:
   name: "Izumo 2 [GN Software Best]"
@@ -27116,10 +27463,10 @@ SLPM-66888:
   name: "GI Jockey 4 - 2007"
   region: "NTSC-J"
 SLPM-66889:
-  name: "Pri-Saga! Princess o Sagase! [Limited Edition]"
+  name: "Puri-Saga! Princess o Sagase! [Limited Edition]"
   region: "NTSC-J"
 SLPM-66890:
-  name: "Pri-Saga! Princess o Sagase!"
+  name: "Puri-Saga! Princess o Sagase!"
   region: "NTSC-J"
 SLPM-66891:
   name: "Myself, Yourself [Limited Edition]"
@@ -27164,7 +27511,7 @@ SLPM-66905:
   name: "D.C. Da Capo The Origin"
   region: "NTSC-J"
 SLPM-66906:
-  name: "Tensho Gakuen Gekkoroku [Tokudame Price]"
+  name: "Tenshou Gakuen Gekkouroku [Tokudane Price]"
   region: "NTSC-J"
 SLPM-66907:
   name: "Iinazuke [Princess Soft Collection]"
@@ -27173,7 +27520,7 @@ SLPM-66908:
   name: "Izumo 2 - Gakuen Kyousoukyoku - Double Tact"
   region: "NTSC-J"
 SLPM-66909:
-  name: "Shinkyouku Soukai Polyphonica 3&4 Hanashi Kanketsuhen"
+  name: "Shinkyoku Soukai Polyphonica 3&4 Hanashi Kanketsuhen"
   region: "NTSC-J"
 SLPM-66910:
   name: "Stuntman - Ignition"
@@ -27193,10 +27540,10 @@ SLPM-66914:
   name: "Houkago wa Hakugin no Shirabe"
   region: "NTSC-J"
 SLPM-66915:
-  name: "Yu-Gi-Oh Dual Monsters GX - Tag Force Evolution"
+  name: "Yu-Gi-Oh Duel Monsters GX - Tag Force Evolution"
   region: "NTSC-J"
 SLPM-66916:
-  name: "Jikkyou Powerful Pro Yakyuu 14 Chou Ketteiban"
+  name: "Jikkyou Powerful Pro Yakyuu 14 Ketteiban"
   region: "NTSC-J"
 SLPM-66917:
   name: "Grand Theft Auto - Vice City Stories"
@@ -27236,10 +27583,10 @@ SLPM-66932:
   name: "Need for Speed - ProStreet"
   region: "NTSC-J"
 SLPM-66933:
-  name: "Kimi ga Aruji de Shitsuji ga Oro de - Oshie Nikki [Limited Edition]"
+  name: "Kimi ga Aruji de Shitsuji ga Ore de - Oshie Nikki [Limited Edition]"
   region: "NTSC-J"
 SLPM-66934:
-  name: "Kimi ga Aruji de Shitsuji ga Oro de - Oshie Nikki"
+  name: "Kimi ga Aruji de Shitsuji ga Ore de - Oshie Nikki"
   region: "NTSC-J"
 SLPM-66935:
   name: "True Tears"
@@ -27358,7 +27705,7 @@ SLPM-66974:
   name: "Slotter Up Core 10 - Mach GoGoGo"
   region: "NTSC-J"
 SLPM-66977:
-  name: "Shinkyouku Soukai Polyphonica 0-4 Hanashi Full Pack"
+  name: "Shinkyoku Soukai Polyphonica 0-4 Hanashi Full Pack"
   region: "NTSC-J"
 SLPM-66978:
   name: "Persona 4 [Konami-style Special Edition]"
@@ -27371,10 +27718,10 @@ SLPM-66989:
   name: "Castle Fantasia - Arihato Senki [Best Version]"
   region: "NTSC-J"
 SLPM-66990:
-  name: "Majommusume A La Mode II [Best Version]"
+  name: "Majo-musume A La Mode II [Best Version]"
   region: "NTSC-J"
 SLPM-66991:
-  name: "Fuuraiki [Best Version]"
+  name: "Fuuuraiki [Best Version]"
   region: "NTSC-J"
 SLPM-66992:
   name: "Fuuuraiki 2 [Best Version]"
@@ -27402,7 +27749,7 @@ SLPM-66999:
   name: "Fushigi Yuugi - Suzaku Ibun"
   region: "NTSC-J"
 SLPM-67000:
-  name: "Fushigi Yuugi - Shigiyuugi Kurotake Kaiden Gaiden - Kagami no Fujo [IF Collection]"
+  name: "Fushigi Yuugi - ShigiYuugi Kurotake Kaiden Gaiden - Kagami no Fujo [IF Collection]"
   region: "NTSC-J"
 SLPM-67002:
   name: "Metal Gear Solid 2 - Substance"
@@ -27503,7 +27850,7 @@ SLPM-67535:
   name: "Memories Of"
   region: "NTSC-J-K"
 SLPM-67536:
-  name: "Senkaiden Hoshin Engi"
+  name: "Bongsin Yeonui 2"
   region: "NTSC-K"
 SLPM-67540:
   name: "Auto Modellista"
@@ -27542,7 +27889,7 @@ SLPM-74002:
   name: "Shin Sangoku Musou [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74003:
-  name: "Crash Bandikoot 4 - Saikuretsu [PlayStation 2 The Best]"
+  name: "Crash Bandicoot 4 - Sakuretsu! Majin Power! [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74004:
   name: "Maximo - Ghosts to Glory [PlayStation 2 The Best]"
@@ -27575,7 +27922,7 @@ SLPM-74201:
   name: "Biohazard Outbreak [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74202:
-  name: "Fuun Shinsengumi [PlayStation 2 The Best]"
+  name: "Fuuun Shinsengumi [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74204:
   name: "Shutokou Battle 01 [PlayStation 2 The Best]"
@@ -27622,7 +27969,7 @@ SLPM-74222:
   name: "Samurai Kanzenban [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74224:
-  name: "Sengoku Musou Moushouden [PlayStation 2 The Best]"
+  name: "Sengoku Musou Mushoden [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74225:
   name: "Nobunaga no Yabou - Tenka Sousei [PlayStation 2 The Best]"
@@ -27636,7 +27983,7 @@ SLPM-74227:
   name: "Ikusa Gami [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74228:
-  name: "Fuun Bakumatsu-den [PlayStation 2 The Best]"
+  name: "Fuuun Bakumatsu-den [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74229:
   name: "BioHazard 4 [PlayStation 2 The Best]"
@@ -27715,10 +28062,10 @@ SLPM-74248:
   name: "Monster Hunter G [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74249:
-  name: "Sengoku Musou Moushouden [PlayStation 2 The Best]"
+  name: "Sengoku Musou Mushoden [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74250:
-  name: "Shin Sangoku Musou 4 Moushouden [PlayStation 2 The Best]"
+  name: "Shin Sangoku Musou 4 Mushoden [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74251:
   name: "Shin Onimusha - Dawn of Dreams [PlayStation 2 the Best - Reprint Disc 1]"
@@ -27788,7 +28135,7 @@ SLPM-74410:
   name: "Breath of Fire V: Dragon Quarter [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74411:
-  name: "Culdcelt II - Expansion [PlayStation 2 The Best]"
+  name: "Culdcept II - Expansion [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPM-74412:
   name: "Kengo 2 [PlayStation 2 The Best]"
@@ -27948,7 +28295,7 @@ SLPS-20048:
   name: "Sim Theme Park"
   region: "NTSC-J"
 SLPS-20050:
-  name: "Happy! Happy!! Boarders"
+  name: "Happy! Happy!! Boarders in Hokkaidou Rusutsu Resort"
   region: "NTSC-J"
 SLPS-20051:
   name: "Hissatsu Pachinko Station V"
@@ -27957,7 +28304,7 @@ SLPS-20052:
   name: "Global Folktale"
   region: "NTSC-J"
 SLPS-20053:
-  name: "Tenshi no Present - Marle Oukoku Monogatari"
+  name: "Tenshi no Present - Māru Oukoku Monogatari"
   region: "NTSC-J"
 SLPS-20054:
   name: "FIFA World Championship 2001"
@@ -27981,7 +28328,7 @@ SLPS-20060:
   name: "Dream Audition 2"
   region: "NTSC-J"
 SLPS-20062:
-  name: "Truck Kyousokyoku"
+  name: "Truck Kyousoukyoku"
   region: "NTSC-J"
 SLPS-20064:
   name: "Top Gear Daredevil"
@@ -28275,7 +28622,7 @@ SLPS-20273:
         // Fixes game hanging before going ingame.
         patch=1,EE,001023d0,word,00000000
 SLPS-20279:
-  name: "Hissatsu Pachinko Station v7 - Tensei Bakabon 2"
+  name: "Hissatsu Pachinko Station v7 - Tensai Bakabon 2"
   region: "NTSC-J"
 SLPS-20280:
   name: "Mahou no Pumpkin"
@@ -28298,7 +28645,7 @@ SLPS-20287:
   name: "Yakiniku Bugyou Bonfire!"
   region: "NTSC-J"
 SLPS-20288:
-  name: "Saikyo Todai Shogi 2003"
+  name: "Saikyoe Toedai Shoegi 2003"
   region: "NTSC-J"
 SLPS-20289:
   name: "Yamasa Digi World SP - Umi Ichiban R"
@@ -28483,7 +28830,7 @@ SLPS-20378:
   region: "NTSC-J"
   compat: 5
 SLPS-20379:
-  name: "Eikan wa Kimini 2004 - Koshien no Kodou [Artdink Best Choice]"
+  name: "Eikan wa Kimi ni 2004 - Koushien no Kodou [Artdink Best Choice]"
   region: "NTSC-J"
 SLPS-20380:
   name: "Shinkon Gattai Gondannar!!"
@@ -28496,7 +28843,7 @@ SLPS-20382:
   region: "NTSC-J"
   compat: 5
 SLPS-20383:
-  name: "Taiko no Tatsujin - Atsumare Matsurida Yonndaime"
+  name: "Taiko no Tatsujin - Atsumare! Matsuri da!! Yondaime"
   region: "NTSC-J"
 SLPS-20384:
   name: "Hayarigami: Keishichou Kaii Jiken File"
@@ -28595,7 +28942,7 @@ SLPS-20421:
   name: "Sekai Saikyou Ginsei Igo 6"
   region: "NTSC-J"
 SLPS-20422:
-  name: "Hayarikami Revenge"
+  name: "Hayarigami Revenge"
   region: "NTSC-J"
 SLPS-20423:
   name: "LEGO Star Wars - The Video Game"
@@ -28622,7 +28969,7 @@ SLPS-20430:
   gameFixes:
     - XGKickHack # Fixes cell shade like effect.
 SLPS-20431:
-  name: "Simple 2000 Series Vol.86 - The Menkyou Shutoku Simulation"
+  name: "Simple 2000 Series Vol.86 - The Menkyo Shutoku Simulation"
   region: "NTSC-J"
 SLPS-20436:
   name: "Sakigake!! Otokojuku"
@@ -28643,7 +28990,7 @@ SLPS-20443:
   name: "Blocks Club with Bumpy Trot"
   region: "NTSC-J"
 SLPS-20444:
-  name: "Simple 2000 Series Vol.90 - The O-Ane-Chan Bara 2"
+  name: "Simple 2000 Series Vol.90 - The OneeChanBara 2"
   region: "NTSC-J"
   compat: 5
 SLPS-20445:
@@ -28657,7 +29004,7 @@ SLPS-20447:
   region: "NTSC-J"
   compat: 5
 SLPS-20448:
-  name: "Karmen Rider classic [Trial]"
+  name: "Kamen Rider Hibiki - Taiko no Tatsujin Special Version [Trial]"
   region: "NTSC-J"
 SLPS-20450:
   name: "Taiko no Tatsujin - Wai Wai Happy Muyome [with Tatacon]"
@@ -28684,7 +29031,7 @@ SLPS-20456:
   name: "Simple 2000 Series Vol.95 - The Zombie vs. Kyuukyuusha"
   region: "NTSC-J"
 SLPS-20457:
-  name: "Hissatsu Pachislo Evolution 2 - Oso Matsu-Kun"
+  name: "Hissatsu Pachislo Evolution 2 - Osomatsu-Kun"
   region: "NTSC-J"
 SLPS-20458:
   name: "Simple 2000 Series Vol.96 - The Pirate"
@@ -28712,7 +29059,7 @@ SLPS-20465:
   name: "Simple 2000 Series Vol.100 - The Otoko Tachi no Kijuu Houza"
   region: "NTSC-J"
 SLPS-20466:
-  name: "Simple 2000 Series Vol.101 - The Oanechan Pon - Oanechan 2"
+  name: "Simple 2000 Series Vol.101 - The OneeChanpon - OneeChan 2 Special Edition"
   region: "NTSC-J"
 SLPS-20467:
   name: "Simple 2000 Series Vol.102 - The Fuhyou - Senjou no Inu Tachi"
@@ -28784,7 +29131,7 @@ SLPS-20488:
   name: "Simple 2000 Series Vol.113 - The Tairyou Jigoku"
   region: "NTSC-J"
 SLPS-20489:
-  name: "Simple 2000 Series Vol.114 - The Jokouppichi Torimonochou - Oanechan Go Go Go!"
+  name: "Simple 2000 Series Vol.114 - The Onna Okappichi Torimonochou - Oharu-chan GoGoGo!"
   region: "NTSC-J"
 SLPS-20490:
   name: "Pachi-Slot Club Collection - IM Juggler EX - Juggler Selection"
@@ -28815,10 +29162,10 @@ SLPS-20500:
   name: "Simple 2000 Series Vol.120 - The Saigo no Nippon Tsuwamono"
   region: "NTSC-J"
 SLPS-20501:
-  name: "Hayarikami 2"
+  name: "Hayarigami 2"
   region: "NTSC-J"
 SLPS-20503:
-  name: "Simple 2000 Series Vol.121 - The Boku no Machidzukuri 2 - Machi-ing Maker 2.1"
+  name: "Simple 2000 Series Vol.121 - The Boku no Machi-zukuri 2 - Machi-ing Maker 2.1"
   region: "NTSC-J"
 SLPS-20504:
   name: "Daito Giken Koushiki Pachi-Slot Simulator - Shin Yoshimune"
@@ -29008,6 +29355,13 @@ SLPS-25041:
 SLPS-25042:
   name: "Maken Shao [Limited Edition]"
   region: "NTSC-J"
+  gameFixes:
+    - VUKickstartHack # Fixes SPS. 
+SLPS-25043:
+  name: "Maken Shao"
+  region: "NTSC-J"
+  gameFixes:
+    - VUKickstartHack # Fixes SPS.
 SLPS-25044:
   name: "Evergrace 2"
   region: "NTSC-J"
@@ -29037,7 +29391,7 @@ SLPS-25052:
   region: "NTSC-J"
   compat: 5
 SLPS-25053:
-  name: "Eikan wa Kimini - Koushien no Hasha"
+  name: "Eikan wa Kimi ni - Koushien no Hasha"
   region: "NTSC-J"
 SLPS-25054:
   name: "Tamamayu Story 2"
@@ -29053,13 +29407,13 @@ SLPS-25057:
       content: |-
         comment=Patch by Wgarvin
         // Fixes (black voids) central tower level loading.
-        // Issue: Some doors leading to some areas appeared as black voids that you can walk in to.
+        // Issue: Some doors leading to some areas appeared as black voids that you can walk into.
         patch=1,EE,001BE37C,word,46150036
 SLPS-25059:
   name: "G-Breaker - Legend of Cloudia"
   region: "NTSC-J"
 SLPS-25060:
-  name: "Mobile Suit Gundam - Megurial Sora [Limited Edition]"
+  name: "Mobile Suit Gundam - Meguriai Sora [Limited Edition]"
   region: "NTSC-J"
 SLPS-25062:
   name: "Kidou Senshi Gundam - Meguriai Sora"
@@ -29209,7 +29563,7 @@ SLPS-25114:
   name: "G-Breaker - Daisanshi Cloudia Taisen"
   region: "NTSC-J"
 SLPS-25115:
-  name: "EOE - Eve of Evtinction"
+  name: "EOE - Eve of Extinction - Houkai no Zen'ya"
   region: "NTSC-J"
 SLPS-25117:
   name: "Sankyo Fever 6"
@@ -29319,7 +29673,7 @@ SLPS-25150:
   name: "Only You"
   region: "NTSC-J"
 SLPS-25151:
-  name: "Medal of Honor - Jishousaidai no Sakusen"
+  name: "Medal of Honor - Shijou Saidai no Sakusen"
   region: "NTSC-J"
 SLPS-25154:
   name: "Flower, Sun and Rain [Victor The Best]"
@@ -29420,7 +29774,7 @@ SLPS-25185:
   name: "Unlimited SaGa [Limited Edition]"
   region: "NTSC-J"
 SLPS-25186:
-  name: "Kidou Shin Sangumi Moeyo Ken"
+  name: "Kidou Shinsengumi - Moe yo Ken"
   region: "NTSC-J"
 SLPS-25190:
   name: "Sweet Legacy"
@@ -29677,7 +30031,7 @@ SLPS-25275:
   name: "Def Jam - Vendetta"
   region: "NTSC-J"
 SLPS-25276:
-  name: "Natsuyume Ya Wa"
+  name: "Natsu Yume Ya Wa"
   region: "NTSC-J"
 SLPS-25278:
   name: "Memories Off - Mix"
@@ -29739,7 +30093,7 @@ SLPS-25301:
   name: "Missing Parts - The Tantei Stories - Side A"
   region: "NTSC-J"
 SLPS-25302:
-  name: "Masked Rider - Geneology of Justice"
+  name: "Kamen Rider - Seigi no Keifu"
   region: "NTSC-J"
 SLPS-25303:
   name: "Zero - Crimson Butterfly"
@@ -29937,7 +30291,7 @@ SLPS-25362:
   name: "Tetsujin 28 Go"
   region: "NTSC-J"
 SLPS-25363:
-  name: "Sakura Zakashobotai"
+  name: "Sakurazaka Shouboutai"
   region: "NTSC-J"
 SLPS-25364:
   name: "Ultraman"
@@ -30098,6 +30452,8 @@ SLPS-25405:
 SLPS-25406:
   name: "Hitman - Contracts"
   region: "NTSC-J"
+  roundModes:
+    vuRoundMode: 0  # Fixes effects and textures.
 SLPS-25407:
   name: "King of Fighters 2003, The"
   region: "NTSC-J"
@@ -30191,7 +30547,7 @@ SLPS-25430:
   name: "Lupin III - Columbus no Isan wa Akenisomar"
   region: "NTSC-J"
 SLPS-25432:
-  name: "Majommusume A La Mode [Magical Box]"
+  name: "Majo-musume A La Mode [Magical Box]"
   region: "NTSC-J"
 SLPS-25433:
   name: "Teikoku Sensenki [Limited Edition]"
@@ -30200,7 +30556,7 @@ SLPS-25434:
   name: "Rhapsody of Zephyr, The [Best Collection]"
   region: "NTSC-J"
 SLPS-25435:
-  name: "Majommusume A La Mode"
+  name: "Majo-musume A La Mode"
   region: "NTSC-J"
 SLPS-25436:
   name: "Teikoku Sensenki"
@@ -30287,7 +30643,7 @@ SLPS-25456:
   name: "Gladiator - Road to Freedom"
   region: "NTSC-J"
 SLPS-25457:
-  name: "Poncotsu Roman Daikatsugeki Bumpy Trot"
+  name: "Ponkotsu Roeman Daikatsugeki Bumpy Trot"
   region: "NTSC-J"
 SLPS-25458:
   name: "King of Fighters 2001, The [SNK Best Collection]"
@@ -30385,7 +30741,7 @@ SLPS-25486:
   name: "Mobile Suit Gundam - Lost War Chronicles [Gundam the Best]"
   region: "NTSC-J"
 SLPS-25487:
-  name: "Mobile Suit Gundam - Megurial Sora [Gundam the Best]"
+  name: "Mobile Suit Gundam - Meguriai Sora [Gundam the Best]"
   region: "NTSC-J"
 SLPS-25488:
   name: "Zeonic Front - Mobile Suit Gundam 0079 [Gundam the Best]"
@@ -30403,7 +30759,7 @@ SLPS-25493:
   name: "Backyard Wrestling 2 - There Goes the Neighborhood"
   region: "NTSC-J"
 SLPS-25494:
-  name: "Fragrence Tale"
+  name: "Fragrance Tale"
   region: "NTSC-J"
 SLPS-25495:
   name: "Metal Slug 5"
@@ -30464,10 +30820,10 @@ SLPS-25511:
   name: "Rasetsu Alternative"
   region: "NTSC-J"
 SLPS-25513:
-  name: "Aoi Umi no Trista [Limited Edition]"
+  name: "Aoi Umi no Tristia [Limited Edition]"
   region: "NTSC-J"
 SLPS-25514:
-  name: "Aoi Umi no Trista"
+  name: "Aoi Umi no Tristia"
   region: "NTSC-J"
 SLPS-25515:
   name: "Futakoi Alternative [Limited Edition]"
@@ -30491,7 +30847,7 @@ SLPS-25521:
   name: "Soccer Life 2"
   region: "NTSC-J"
 SLPS-25522:
-  name: "Yoshitsuneki [Goukakenran Box]"
+  name: "Yoshitsuneki [Gouka Kenran Box]"
   region: "NTSC-J"
 SLPS-25523:
   name: "Yoshitsuneki"
@@ -30703,7 +31059,7 @@ SLPS-25586:
   region: "NTSC-J"
   compat: 5
 SLPS-25587:
-  name: "Sugar Sugar Rune - Koimo Osharemo Pick-Up"
+  name: "Sugar Sugar Rune - Koi mo Oshare mo Pick-Up"
   region: "NTSC-J"
 SLPS-25588:
   name: "Meitantei Conan - Daiei Teikoku no Isan [Bandai The Best]"
@@ -30726,7 +31082,7 @@ SLPS-25593:
   name: "Hoshigari Empusa"
   region: "NTSC-J"
 SLPS-25596:
-  name: "Konjiki no Gashbell! - Go!Go! Mamodo Fight"
+  name: "Konjiki no Gashbell! - Go!Go! Mamono Fight"
   region: "NTSC-J"
 SLPS-25597:
   name: "Kawa no Nushi Tsuri - Wonderful Journey [Best Collection]"
@@ -30741,7 +31097,7 @@ SLPS-25600:
   name: "Samurai Champloo - Sidetracked"
   region: "NTSC-J"
 SLPS-25601:
-  name: "Ueki no Housoku - Taosu Zeroberuto Juudan!!"
+  name: "Ueki no Housoku - Taosu Ze Roberuto Juudan!!"
   region: "NTSC-J"
 SLPS-25602:
   name: "Hisshou Pachinko-Pachislot Kouryaku Series Vol.2 - Bomber Powerful & Yume Yume World DX"
@@ -30750,7 +31106,7 @@ SLPS-25603:
   name: "Tensei - Swords of Destiny [Best Collection]"
   region: "NTSC-J"
 SLPS-25604:
-  name: "Ar tonelico: Sekai no Owari de Utai Tsudukeru Shoujo"
+  name: "Ar tonelico: Sekai no Owari de Utai Tsuzukeru Shoujo"
   region: "NTSC-J"
 SLPS-25605:
   name: "NeoGeo Online Collection Vol.3 - The King of Fighters - Orochi Collection"
@@ -30841,7 +31197,7 @@ SLPS-25629:
   patches:
     A04B52DB:
       content: |-
-        // Fixes collision/missle hit issues.
+        // Fixes collision/missile hit issues.
         patch=0,EE,00131e84,word,48498800
         patch=0,EE,00131e88,word,4B00682C
         patch=0,EE,00131e94,word,484A8800
@@ -31086,7 +31442,7 @@ SLPS-25682:
   name: "Sanyo Pachinko Paradise 13"
   region: "NTSC-J"
 SLPS-25683:
-  name: "Poncotsu Roman Daikatsugeki Bumpy Trot [Irem Collection]"
+  name: "Ponkotsu Roman Daikatsugeki Bumpy Trot [Irem Collection]"
   region: "NTSC-J"
 SLPS-25684:
   name: "Mermaid Prism [Limited Edition]"
@@ -31145,7 +31501,7 @@ SLPS-25701:
   name: "Gallop Racer Inbreed"
   region: "NTSC-J"
 SLPS-25702:
-  name: "Amekoushi no Kan"
+  name: "Amagoushi no Yakata"
   region: "NTSC-J"
 SLPS-25703:
   name: "Simple 2000 Series Vol.111 - The Itadaki Raider"
@@ -31238,7 +31594,7 @@ SLPS-25728:
   name: "Kujibiki Ambulance [Limited Edition]"
   region: "NTSC-J"
 SLPS-25729:
-  name: "Kujibibi Unbalance"
+  name: "Kujibiki Unbalance"
   region: "NTSC-J"
 SLPS-25730:
   name: "Armored Core [Machine Side Box]"
@@ -31556,6 +31912,8 @@ SLPS-25822:
 SLPS-25823:
   name: "Spider-Man 3"
   region: "NTSC-J"
+  clampModes:
+    vuClampMode: 0 # Fixes idle camera behaviour.
 SLPS-25825:
   name: "Zero no Tsukaima [Best Collection]"
   region: "NTSC-J"
@@ -31566,7 +31924,7 @@ SLPS-25827:
   name: "Soukou Kihei Votoms"
   region: "NTSC-J"
 SLPS-25828:
-  name: "Pachitte Chonmage Tatsujin 13 - Pachinko Hissatsu Shigotojin III"
+  name: "Pachitte Chonmage Tatsujin 13 - Pachinko Hissatsu Shigotonin III"
   region: "NTSC-J"
 SLPS-25829:
   name: "A.C.E. Another Century's Episode 2 [Special Vocal Version]"
@@ -31596,7 +31954,7 @@ SLPS-25837:
   name: "Naruto Shippuuden - Narutimate Accel 2"
   region: "NTSC-J"
 SLPS-25838:
-  name: "Taiheiyou no Arashi - Senkan Yamato, Akatsuki ni Shutsugekisu"
+  name: "Taiheiyou no Arashi - Senkan Yamato, Akatsuki ni Shutsugeki su"
   region: "NTSC-J"
 SLPS-25839:
   name: "Samurai Spirits: Rokuban Shoubu [NeoGeo Online Collection Vol. 12]"
@@ -31942,7 +32300,7 @@ SLPS-73110:
   name: "Taiko no Tatsujin - Appare Sandaime [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPS-73111:
-  name: "Taiko no Tatsujin Super Animehit [PlayStation 2 The Best]"
+  name: "Taiko no Tatsujin - Waku Waku Anime Matsuri [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPS-73201:
   name: "Fatal Frame II - Crimson Butterfly [PlayStation 2 The Best]"
@@ -32056,7 +32414,7 @@ SLPS-73227:
   name: "Another Century's Episode [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPS-73228:
-  name: "Fuun Bakumatsuden [PlayStation 2 The Best]"
+  name: "Fuuun Bakumatsuden [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPS-73229:
   name: "TearRing Saga Series - Berwick Saga [PlayStation 2 The Best]"
@@ -32188,7 +32546,7 @@ SLPS-73248:
   name: "Kagero 2 - Dark Illusion [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPS-73249:
-  name: "Ar tonelico: Sekai no Owari de Utai Tsudukeru Shoujo [PlayStation 2 The Best]"
+  name: "Ar tonelico: Sekai no Owari de Utai Tsuzukeru Shoujo [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPS-73250:
   name: "Ace Combat Zero - The Belkan War [PlayStation 2 The Best]"
@@ -32246,7 +32604,7 @@ SLPS-73401:
   name: "Victorious Boxers - Championship Edition [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPS-73402:
-  name: "Shutoko Battle Zero [PlayStation 2 The Best]"
+  name: "Shutokou Battle Zero [PlayStation 2 The Best]"
   region: "NTSC-J"
 SLPS-73403:
   name: "Armored Core 2 [PlayStation 2 The Best]"
@@ -33029,7 +33387,7 @@ SLUS-20213:
     D4A56F59:
       content: |-
         author=kozarovv
-        // 2.00 GameVersion. Fix initial loading by looping for some time on EE side. That allow IOP proceed requests correctly.
+        // 2.00 GameVersion. Fix initial loading by looping for some time on EE side. That allows IOP proceed requests correctly.
         patch=1,EE,E00223a2,extended,00308A30
         patch=1,EE,20308a30,extended,0803fff7
         patch=1,EE,20308a34,extended,240f2000
@@ -33039,7 +33397,7 @@ SLUS-20213:
     F456F555:
       content: |-
         author=kozarovv
-        // 1.00 GameVersion. Fix initial loading by looping for some time on EE side. That allow IOP proceed requests correctly.
+        // 1.00 GameVersion. Fix initial loading by looping for some time on EE side. That allows IOP proceed requests correctly.
         patch=1,EE,E0022262,extended,00308530
         patch=1,EE,20308530,extended,0803fff7
         patch=1,EE,20308534,extended,240f2000
@@ -33325,7 +33683,7 @@ SLUS-20277:
     4A35E19F:
       content: |-
         comment=COP2 flag instance patch by refraction
-        // A mac flag check after running another vsub op which is irrelivant, rearranging
+        // A mac flag check after running another vsub op which is irrelevant, rearranging
         patch=0,EE,00273230,word,48438800
         patch=0,EE,0027323c,word,4BE521AC
 SLUS-20278:
@@ -33493,7 +33851,7 @@ SLUS-20318:
       content: |-
         comment=Patch by Wgarvin
         // Fixes (black voids) central tower level loading.
-        // Issue: Some doors leading to some areas appeared as black voids that you can walk in to.
+        // Issue: Some doors leading to some areas appeared as black voids that you can walk into.
         patch=1,EE,001BE42C,word,46150036
 SLUS-20319:
   name: "Romance of the Three Kingdoms VII"
@@ -33521,7 +33879,7 @@ SLUS-20323:
         // Game interrupt required data read if break command is done too early.
         // Hard to tell that it works by luck on PS2, or maybe something is missing on pcsx2 side.
         // Also workaround to https://github.com/PCSX2/pcsx2/issues/2009. 
-        // Note: CDVD Break is used only in few places in that title, all of them break without patch.
+        // Note: CDVD Break is used only in a few places in that title, all of them break without patch.
         // Delay Break CDVD command
         // Fix replays / A.I replays loading
         patch=1,IOP,0003d010,word,0807fff9
@@ -33593,7 +33951,7 @@ SLUS-20336:
   region: "NTSC-U"
   compat: 5
 SLUS-20337:
-  name: "X-Men - Wolverines Revenge"
+  name: "X-Men - Wolverine's Revenge"
   region: "NTSC-U"
   compat: 5
 SLUS-20339:
@@ -34482,9 +34840,9 @@ SLUS-20545:
 SLUS-20546:
   name: "Evolution Snowboarding"
   region: "NTSC-U"
-  compat: 4
+  compat: 5
   patches:
-    2B2E1535:
+    D3F68D3F:
       content: |-
         author=kozarovv
         // Skip PSS movies, workaround for EE Cache requirement.
@@ -34593,7 +34951,7 @@ SLUS-20567:
   region: "NTSC-U"
   compat: 5
 SLUS-20568:
-  name: "Hardhitter Tennis"
+  name: "Hard Hitter Tennis"
   region: "NTSC-U"
 SLUS-20569:
   name: "All-Star Baseball 2004"
@@ -35861,7 +36219,7 @@ SLUS-20882:
   region: "NTSC-U"
   compat: 3
   roundModes:
-    vuRoundMode: 2  # Fixes missing light shafts under lamps.
+    vuRoundMode: 0  # Fixes effects and textures.
 SLUS-20883:
   name: "Tom Clancy's Rainbow Six 3"
   region: "NTSC-U"
@@ -36015,7 +36373,7 @@ SLUS-20918:
   region: "NTSC-U"
   compat: 5
   roundModes:
-    eeRoundMode: 0  # Fixes object balls never stopping in the Monkey Billiards DX minigame.
+    eeRoundMode: 1  # Fixes object balls never stopping in the Monkey Billiards DX minigame.
 SLUS-20919:
   name: "ESPN - NFL 2K5"
   region: "NTSC-U"
@@ -36148,6 +36506,8 @@ SLUS-20946:
   name: "Grand Theft Auto - San Andreas"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vuClampMode: 2 # Fixes Game freezes during "Reuniting The Families" mission.
 SLUS-20947:
   name: "WinBack 2: Project Poseidon"
   region: "NTSC-U"
@@ -36265,7 +36625,7 @@ SLUS-20971:
   region: "NTSC-U"
   compat: 5
 SLUS-20972:
-  name: "Samurai Showdown V"
+  name: "Samurai Shodown V"
   region: "NTSC-U"
 SLUS-20973:
   name: "Champions - Return to Arms" # aka "Champions of Norrath 2"
@@ -36874,6 +37234,12 @@ SLUS-21104:
   name: "MX vs. ATV Unleashed"
   region: "NTSC-U"
   compat: 5
+  patches:
+    95BB1901:
+      content: |-
+        comment=Rearranging COP2 ops to avoid clip flag resonse. Fixes SPS.
+        patch=1,EE,001b0458,word,484E9000
+        patch=1,EE,001b045c,word,4BDBD9FF
 SLUS-21105:
   name: "Tom Clancy's Ghost Recon 2"
   region: "NTSC-U"
@@ -37732,7 +38098,7 @@ SLUS-21293:
   gameFixes:
     - DMABusyHack # Intro FMV.
 SLUS-21294:
-  name: "Mark Ecko's Getting Up - Contents Under Pressure [Special Edition]"
+  name: "Marc Ecko's Getting Up - Contents Under Pressure [Special Edition]"
   region: "NTSC-U"
 SLUS-21295:
   name: "Tony Hawk's American Wasteland [Collector's Edition]"
@@ -37815,7 +38181,7 @@ SLUS-21313:
   region: "NTSC-U"
   compat: 5
 SLUS-21314:
-  name: "Ruff Trigger - Vancore Conspiracy"
+  name: "Ruff Trigger - Vanocore Conspiracy"
   region: "NTSC-U"
   compat: 4
   gameFixes:
@@ -37972,7 +38338,7 @@ SLUS-21346:
   patches:
     65729657:
       content: |-
-        // Fixes collision/missle hit issues.
+        // Fixes collision/missile hit issues.
         patch=0,EE,00131EBC,word,48498800
         patch=0,EE,00131EC0,word,4B00682C
         patch=0,EE,00131ECC,word,484A8800
@@ -38239,7 +38605,7 @@ SLUS-21400:
   region: "NTSC-U"
   compat: 5
 SLUS-21401:
-  name: "Lucinda Green's Equestrain Challenge"
+  name: "Lucinda Green's Equestrian Challenge"
   region: "NTSC-U"
   compat: 4
 SLUS-21402:
@@ -38796,6 +39162,8 @@ SLUS-21552:
   name: "Spider-Man 3"
   region: "NTSC-U"
   compat: 4
+  clampModes:
+    vuClampMode: 0 # Fixes idle camera behaviour.
 SLUS-21553:
   name: "Lumines Plus"
   region: "NTSC-U"
@@ -39075,6 +39443,11 @@ SLUS-21616:
   compat: 5
   roundModes:
     vuRoundMode: 0
+SLUS-21617:
+  name: "Spiderman 3"
+  region: "NTSC-U"
+  clampModes:
+    vuClampMode: 0 # Fixes idle camera behaviour.
 SLUS-21618:
   name: "Plan, The"
   region: "NTSC-U"
@@ -39125,7 +39498,7 @@ SLUS-21628:
   region: "NTSC-U"
   compat: 5
 SLUS-21629:
-  name: "Samurai Showdown Anthology"
+  name: "Samurai Shodown Anthology"
   region: "NTSC-U"
 SLUS-21630:
   name: "Star Trek - Conquest"
@@ -40277,7 +40650,7 @@ SLUS-21913:
         // Fixes graphics glitches.
         // It's a problem which apply to all games made by Khrome studio.
         // The EE seems to send invalid data to the GS and expect
-        // some kind of unknown behaviour to opperate.
+        // some kind of unknown behaviour to operate.
         // This can be fixed on the GS side but the software render is impossible to fix.
         // So this patch correct the issue on the EE side.
         patch=1,EE,00173328,word,3464fffd
@@ -41111,7 +41484,7 @@ TCPS-10058:
   name: "Densha de Go! Shinkansen [with Controller]"
   region: "NTSC-J"
 TCPS-10068:
-  name: "Densha de Go! Ryojo-hen [with Controller]"
+  name: "Densha de Go! Ryojou-hen [with Controller]"
   region: "NTSC-J"
 TCPS-10074:
   name: "Space Invaders 25th Anniversary Bundle"
@@ -41124,7 +41497,7 @@ TCPS-10085:
   region: "NTSC-J"
   compat: 5
 TCPS-10094:
-  name: "Ys III - Wanderer from Ys"
+  name: "Ys III - Wanderers from Ys"
   region: "NTSC-J"
 TCPS-10106:
   name: "Ys IV - Mask of the Sun - A New Theory"
@@ -41133,10 +41506,10 @@ TCPS-10107:
   name: "Giga Wing Generations"
   region: "NTSC-J"
 TCPS-10109:
-  name: "Ys III - Wanderer from Ys [Limited Edition]"
+  name: "Ys III - Wanderers from Ys [Limited Edition]"
   region: "NTSC-J"
 TCPS-10111:
-  name: "Eremental Gerad"
+  name: "Erementar Gerad"
   region: "NTSC-J"
   gameFixes:
     - XGKickHack # Fixes chocolate coloured characters.

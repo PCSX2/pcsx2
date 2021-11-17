@@ -29,6 +29,7 @@
 #include "Counters.h"
 #include "Patch.h"
 #include "System/SysThreads.h"
+#include "DebugTools/Breakpoints.h"
 
 #include "common/pxStreams.h"
 #include "common/SafeArray.inl"
@@ -67,6 +68,8 @@ static void PostLoadPrep()
 //	WriteCP0Status(cpuRegs.CP0.n.Status.val);
 	for(int i=0; i<48; i++) MapTLB(i);
 	if (EmuConfig.Gamefixes.GoemonTlbHack) GoemonPreloadTlb();
+	CBreakPoints::SetSkipFirst(BREAKPOINT_EE, 0);
+	CBreakPoints::SetSkipFirst(BREAKPOINT_IOP, 0);
 
 	UpdateVSyncRate();
 }
@@ -357,7 +360,7 @@ wxString Exception::SaveStateLoadError::FormatDisplayMessage() const
 //static VmStateBuffer state_buffer( L"Public Savestate Buffer" );
 
 static const wxChar* EntryFilename_StateVersion = L"PCSX2 Savestate Version.id";
-static const wxChar* EntryFilename_Screenshot = L"Screenshot.jpg";
+//static const wxChar* EntryFilename_Screenshot = L"Screenshot.jpg";
 static const wxChar* EntryFilename_InternalStructures = L"PCSX2 Internal Structures.dat";
 
 struct SysState_Component
@@ -611,7 +614,7 @@ public:
 	wxString GetFilename() const { return L"USB.bin"; }
 	void FreezeIn(pxInputStream& reader) const { return SysState_ComponentFreezeIn(reader, USB); }
 	void FreezeOut(SaveStateBase& writer) const { return SysState_ComponentFreezeOut(writer, USB); }
-	bool IsRequired() const { return true; }
+	bool IsRequired() const { return false; }
 };
 
 class SavestateEntry_PAD : public BaseSavestateEntry
@@ -704,13 +707,14 @@ void SaveState_DownloadState(ArchiveEntryList* destlist)
 	internals.SetDataSize(saveme.GetCurrentPos() - internals.GetDataIndex());
 	destlist->Add(internals);
 
-	for (uint i = 0; i < ArraySize(SavestateEntries); ++i)
+	for (const std::unique_ptr<BaseSavestateEntry>& entry : SavestateEntries)
 	{
 		uint startpos = saveme.GetCurrentPos();
-		SavestateEntries[i]->FreezeOut(saveme);
-		destlist->Add(ArchiveEntry(SavestateEntries[i]->GetFilename())
-						 .SetDataIndex(startpos)
-						 .SetDataSize(saveme.GetCurrentPos() - startpos));
+		entry->FreezeOut(saveme);
+		destlist->Add(
+			ArchiveEntry(entry->GetFilename())
+				.SetDataIndex(startpos)
+				.SetDataSize(saveme.GetCurrentPos() - startpos));
 	}
 }
 
@@ -831,7 +835,7 @@ void SaveState_UnzipFromDisk(const wxString& filename)
 	//bool foundEntry[ArraySize(SavestateEntries)] = false;
 
 	std::unique_ptr<wxZipEntry> foundInternal;
-	std::unique_ptr<wxZipEntry> foundEntry[ArraySize(SavestateEntries)];
+	std::unique_ptr<wxZipEntry> foundEntry[std::size(SavestateEntries)];
 
 	while (true)
 	{
@@ -863,7 +867,7 @@ void SaveState_UnzipFromDisk(const wxString& filename)
 			foundScreenshot = true;
 		}*/
 
-		for (uint i = 0; i < ArraySize(SavestateEntries); ++i)
+		for (uint i = 0; i < std::size(SavestateEntries); ++i)
 		{
 			if (entry->GetName().CmpNoCase(SavestateEntries[i]->GetFilename()) == 0)
 			{
@@ -884,7 +888,7 @@ void SaveState_UnzipFromDisk(const wxString& filename)
 
 	// Log any parts and pieces that are missing, and then generate an exception.
 	bool throwIt = false;
-	for (uint i = 0; i < ArraySize(SavestateEntries); ++i)
+	for (uint i = 0; i < std::size(SavestateEntries); ++i)
 	{
 		if (foundEntry[i])
 			continue;
@@ -904,7 +908,7 @@ void SaveState_UnzipFromDisk(const wxString& filename)
 	PatchesVerboseReset();
 	SysClearExecutionCache();
 
-	for (uint i = 0; i < ArraySize(SavestateEntries); ++i)
+	for (uint i = 0; i < std::size(SavestateEntries); ++i)
 	{
 		if (!foundEntry[i])
 			continue;

@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSShaderOGL.h"
 #include "GLState.h"
+#include "GS/GS.h"
 
 #ifdef _WIN32
 #include "GS/resource.h"
@@ -63,7 +64,7 @@ GLuint GSShaderOGL::LinkPipeline(const std::string& pretty_print, GLuint vs, GLu
 
 GLuint GSShaderOGL::LinkProgram(GLuint vs, GLuint gs, GLuint ps)
 {
-	uint32 hash = ((vs ^ gs) << 24) ^ ps;
+	u32 hash = ((vs ^ gs) << 24) ^ ps;
 	auto it = m_program.find(hash);
 	if (it != m_program.end())
 		return it->second;

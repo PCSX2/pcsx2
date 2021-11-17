@@ -74,7 +74,7 @@ bool Pcsx2App::TestUserPermissionsRights( const wxDirName& testFolder, wxString&
 
 	FastFormatUnicode createme, accessme;
 
-	for (uint i=0; i<ArraySize(PermissionFolders); ++i)
+	for (uint i=0; i<std::size(PermissionFolders); ++i)
 	{
 		wxDirName folder( testFolder + PermissionFolders[i] );
 

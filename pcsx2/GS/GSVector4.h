@@ -50,15 +50,15 @@ public:
 		struct { float r, g, b, a; };
 		struct { float left, top, right, bottom; };
 		float v[4];
-		float f32[4];
-		int8 i8[16];
-		int16 i16[8];
-		int32 i32[4];
-		int64 i64[2];
-		uint8 u8[16];
-		uint16 u16[8];
-		uint32 u32[4];
-		uint64 u64[2];
+		float F32[4];
+		s8  I8[16];
+		s16 I16[8];
+		s32 I32[4];
+		s64 I64[2];
+		u8  U8[16];
+		u16 U16[8];
+		u32 U32[4];
+		u64 U64[2];
 		__m128 m;
 	};
 
@@ -154,7 +154,7 @@ public:
 #endif
 	}
 
-	__forceinline explicit GSVector4(uint32 u)
+	__forceinline explicit GSVector4(u32 u)
 	{
 		GSVector4i v((int)u);
 
@@ -205,17 +205,28 @@ public:
 		return m;
 	}
 
-	__forceinline uint32 rgba32() const
+	/// Makes Clang think that the whole vector is needed, preventing it from changing shuffles around because it thinks we don't need the whole vector
+	/// Useful for e.g. preventing clang from optimizing shuffles that remove possibly-denormal garbage data from vectors before computing with them
+	__forceinline GSVector4 noopt()
+	{
+		// Note: Clang is currently the only compiler that attempts to optimize vector intrinsics, if that changes in the future the implementation should be updated
+#ifdef __clang__
+		__asm__("":"+x"(m)::);
+#endif
+		return *this;
+	}
+
+	__forceinline u32 rgba32() const
 	{
 		return GSVector4i(*this).rgba32();
 	}
 
-	__forceinline static GSVector4 rgba32(uint32 rgba)
+	__forceinline static GSVector4 rgba32(u32 rgba)
 	{
 		return GSVector4(GSVector4i::load((int)rgba).u8to32());
 	}
 
-	__forceinline static GSVector4 rgba32(uint32 rgba, int shift)
+	__forceinline static GSVector4 rgba32(u32 rgba, int shift)
 	{
 		return GSVector4(GSVector4i::load((int)rgba).u8to32() << shift);
 	}
@@ -623,7 +634,7 @@ GSVector.h:2973:15: error:  shadows template parm 'int i'
 		return GSVector4(_mm_load_ss(&f));
 	}
 
-	__forceinline static GSVector4 load(uint32 u)
+	__forceinline static GSVector4 load(u32 u)
 	{
 		GSVector4i v = GSVector4i::load((int)u);
 

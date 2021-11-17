@@ -18,6 +18,9 @@
 #include <fcntl.h>
 #include <stdarg.h>
 
+// NOTE: Must come first because of the None enum
+#include "common/WindowInfo.h"
+
 #include "keyboard.h"
 #include "PAD.h"
 #include "state_management.h"
@@ -109,7 +112,7 @@ void PADshutdown()
 	CloseLogging();
 }
 
-s32 PADopen(void* pDsp)
+s32 PADopen(const WindowInfo& wi)
 {
 	memset(&event, 0, sizeof(event));
 	g_key_status.Init();
@@ -119,7 +122,7 @@ s32 PADopen(void* pDsp)
 #if defined(__unix__) || defined(__APPLE__)
 	EnumerateDevices();
 #endif
-	return _PADopen(pDsp);
+	return _PADopen(wi);
 }
 
 void PADsetLogDir(const char* dir)

@@ -105,7 +105,7 @@ static u32 psxdump = 0;
 static void __fastcall iopRecRecompile(const u32 startpc);
 
 // Recompiled code buffer for EE recompiler dispatchers!
-static u8 __pagealigned iopRecDispatchers[__pagesize];
+alignas(__pagesize) static u8 iopRecDispatchers[__pagesize];
 
 typedef void DynGenFunc();
 
@@ -246,7 +246,7 @@ static void iIopDumpBlock(int startpc, u8* ptr)
 
 	memzero(used);
 	numused = 0;
-	for (i = 0; i < ArraySize(s_pInstCache->regs); ++i)
+	for (i = 0; i < std::size(s_pInstCache->regs); ++i)
 	{
 		if (s_pInstCache->regs[i] & EEINST_USED)
 		{
@@ -256,7 +256,7 @@ static void iIopDumpBlock(int startpc, u8* ptr)
 	}
 
 	f.Printf("       ");
-	for (i = 0; i < ArraySize(s_pInstCache->regs); ++i)
+	for (i = 0; i < std::size(s_pInstCache->regs); ++i)
 	{
 		if (used[i])
 			f.Printf("%2d ", i);
@@ -264,7 +264,7 @@ static void iIopDumpBlock(int startpc, u8* ptr)
 	f.Printf("\n");
 
 	f.Printf("       ");
-	for (i = 0; i < ArraySize(s_pInstCache->regs); ++i)
+	for (i = 0; i < std::size(s_pInstCache->regs); ++i)
 	{
 		if (used[i])
 			f.Printf("%s ", disRNameGPR[i]);
@@ -277,7 +277,7 @@ static void iIopDumpBlock(int startpc, u8* ptr)
 		f.Printf("%2d: %2.2x ", i + 1, pcur->info);
 
 		count = 1;
-		for (j = 0; j < ArraySize(s_pInstCache->regs); j++)
+		for (j = 0; j < std::size(s_pInstCache->regs); j++)
 		{
 			if (used[j])
 			{
@@ -1475,9 +1475,9 @@ StartRecomp:
 	// dump code
 	if (IsDebugBuild)
 	{
-		for (i = 0; i < ArraySize(s_psxrecblocks); ++i)
+		for (u32 recblock : s_psxrecblocks)
 		{
-			if (startpc == s_psxrecblocks[i])
+			if (startpc == recblock)
 			{
 				iIopDumpBlock(startpc, recPtr);
 			}

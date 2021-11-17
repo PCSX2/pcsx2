@@ -14,8 +14,8 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GS.h"
 #include "GSVector.h"
+#include <cfloat>
 
 CONSTINIT const GSVector4i GSVector4i::m_xff[17] =
 {
@@ -201,7 +201,7 @@ GSVector4i GSVector4i::fit(int preset) const
 {
 	GSVector4i r;
 
-	if (preset > 0 && preset < (int)countof(s_ar))
+	if (preset > 0 && preset < (int)std::size(s_ar))
 	{
 		r = fit(s_ar[preset][0], s_ar[preset][1]);
 	}

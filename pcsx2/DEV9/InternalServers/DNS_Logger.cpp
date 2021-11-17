@@ -155,7 +155,7 @@ namespace InternalServers
 		}
 		for (size_t i = 0; i < dns->additional.size(); i++)
 		{
-			DNS_ResponseEntry entry = dns->authorities[i];
+			DNS_ResponseEntry entry = dns->additional[i];
 			Console.WriteLn("DEV9: DNS: Add%i Name %s", i, entry.name.c_str());
 			Console.WriteLn("DEV9: DNS: Add%i Type %i", i, entry.entryType);
 			Console.WriteLn("DEV9: DNS: Add%i Class %i", i, entry.entryClass);

@@ -14,8 +14,10 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "GS/Window/GSwxDialog.h"
 #include "GS.h"
 #include "GSUtil.h"
+#include "GSExtra.h"
 #include "Renderers/SW/GSRendererSW.h"
 #include "Renderers/Null/GSRendererNull.h"
 #include "Renderers/Null/GSDeviceNull.h"
@@ -23,30 +25,17 @@
 #include "Renderers/OpenGL/GSRendererOGL.h"
 #include "GSLzma.h"
 
-#include "Config.h"
 #include "common/pxStreams.h"
+#include "pcsx2/Config.h"
 
 #ifdef _WIN32
 
 #include "Renderers/DX11/GSRendererDX11.h"
 #include "Renderers/DX11/GSDevice11.h"
-#include "Window/GSWndDX.h"
-#include "Window/GSWndWGL.h"
-#include "Window/GSSettingsDlg.h"
+#include "GS/Renderers/DX11/D3D.h"
 
 
 static HRESULT s_hr = E_FAIL;
-
-#else
-
-#include "GS/Window/GSWndEGL.h"
-
-#ifdef __APPLE__
-#include <gtk/gtk.h>
-#include <CoreFoundation/CoreFoundation.h>
-#endif
-
-extern bool RunLinuxDialog();
 
 #endif
 
@@ -58,14 +47,20 @@ extern bool RunLinuxDialog();
 #undef None
 
 static GSRenderer* s_gs = NULL;
-static void (*s_irq)() = NULL;
-static uint8* s_basemem = NULL;
+static u8* s_basemem = NULL;
 static int s_vsync = 0;
 static bool s_exclusive = true;
 static std::string s_renderer_name;
 bool gsopen_done = false; // crash guard for GSgetTitleInfo2 and GSKeyEvent (replace with lock?)
 
-void GSsetBaseMem(uint8* mem)
+#ifndef PCSX2_CORE
+static std::atomic_bool s_gs_window_resized{false};
+static std::mutex s_gs_window_resized_lock;
+static int s_new_gs_window_width = 0;
+static int s_new_gs_window_height = 0;
+#endif
+
+void GSsetBaseMem(u8* mem)
 {
 	s_basemem = mem;
 
@@ -127,6 +122,11 @@ void GSclose()
 {
 	gsopen_done = false;
 
+#ifndef PCSX2_CORE
+	// Make sure we don't have any leftover resize events from our last open.
+	s_gs_window_resized.store(false);
+#endif
+
 	if (s_gs == NULL)
 		return;
 
@@ -137,17 +137,11 @@ void GSclose()
 	delete s_gs->m_dev;
 
 	s_gs->m_dev = NULL;
-
-	if (s_gs->m_wnd)
-	{
-		s_gs->m_wnd->Detach();
-	}
 }
 
-int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads = -1)
+int _GSopen(const WindowInfo& wi, const char* title, GSRendererType renderer, int threads = -1)
 {
 	GSDevice* dev = NULL;
-	bool old_api = *dsp == NULL;
 
 	// Fresh start up or config file changed
 	if (renderer == GSRendererType::Undefined)
@@ -155,7 +149,12 @@ int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads 
 		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
 #ifdef _WIN32
 		if (renderer == GSRendererType::Default)
-			renderer = GSUtil::GetBestRenderer();
+		{
+			if (D3D::ShouldPreferD3D())
+				renderer = GSRendererType::DX1011_HW;
+			else
+				renderer = GSRendererType::OGL_HW;
+		}
 #endif
 	}
 
@@ -179,95 +178,7 @@ int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads 
 			theApp.SetCurrentRendererType(renderer);
 		}
 
-		std::shared_ptr<GSWnd> window;
-		{
-			// Select the window first to detect the GL requirement
-			std::vector<std::shared_ptr<GSWnd>> wnds;
-			switch (renderer)
-			{
-				case GSRendererType::OGL_HW:
-				case GSRendererType::OGL_SW:
-#if defined(__unix__)
-					// Note: EGL code use GLX otherwise maybe it could be also compatible with Windows
-					// Yes OpenGL code isn't complicated enough !
-					switch (GSWndEGL::SelectPlatform())
-					{
-#if GS_EGL_X11
-						case EGL_PLATFORM_X11_KHR:
-							wnds.push_back(std::make_shared<GSWndEGL_X11>());
-							break;
-#endif
-#if GS_EGL_WL
-						case EGL_PLATFORM_WAYLAND_KHR:
-							wnds.push_back(std::make_shared<GSWndEGL_WL>());
-							break;
-#endif
-						default:
-							break;
-					}
-#elif defined(__APPLE__)
-					// No windows available for macOS at the moment
-#else
-					wnds.push_back(std::make_shared<GSWndWGL>());
-#endif
-					break;
-				default:
-#ifdef _WIN32
-					wnds.push_back(std::make_shared<GSWndDX>());
-#elif defined(__APPLE__)
-					// No windows available for macOS at the moment
-#else
-					wnds.push_back(std::make_shared<GSWndEGL_X11>());
-#endif
-					break;
-			}
-
-			int w = theApp.GetConfigI("ModeWidth");
-			int h = theApp.GetConfigI("ModeHeight");
-#if defined(__unix__)
-			void* win_handle = (void*)((uptr*)(dsp) + 1);
-#else
-			void* win_handle = *dsp;
-#endif
-
-			for (auto& wnd : wnds)
-			{
-				try
-				{
-					if (old_api)
-					{
-						// old-style API expects us to create and manage our own window:
-						wnd->Create(title, w, h);
-
-						wnd->Show();
-
-						*dsp = wnd->GetDisplay();
-					}
-					else
-					{
-						wnd->Attach(win_handle, false);
-					}
-
-					window = wnd; // Previous code will throw if window isn't supported
-
-					break;
-				}
-				catch (GSRecoverableError)
-				{
-					wnd->Detach();
-				}
-			}
-
-			if (!window)
-			{
-				GSclose();
-
-				return -1;
-			}
-		}
-
 		std::string renderer_name;
-
 		switch (renderer)
 		{
 			default:
@@ -325,8 +236,6 @@ int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads 
 			if (s_gs == NULL)
 				return -1;
 		}
-
-		s_gs->m_wnd = window;
 	}
 	catch (std::exception& ex)
 	{
@@ -335,13 +244,9 @@ int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads 
 	}
 
 	s_gs->SetRegsMem(s_basemem);
-	s_gs->SetIrqCallback(s_irq);
 	s_gs->SetVSync(s_vsync);
 
-	if (!old_api)
-		s_gs->SetMultithreaded(true);
-
-	if (!s_gs->CreateDevice(dev))
+	if (!s_gs->CreateDevice(dev, wi))
 	{
 		// This probably means the user has DX11 configured with a video card that is only DX9
 		// compliant.  Cound mean drivr issues of some sort also, but to be sure, that's the most
@@ -363,19 +268,19 @@ int _GSopen(void** dsp, const char* title, GSRendererType renderer, int threads 
 	return 0;
 }
 
-void GSosdLog(const char* utf8, uint32 color)
+void GSosdLog(const char* utf8, u32 color)
 {
 	if (s_gs && s_gs->m_dev)
 		s_gs->m_dev->m_osd.Log(utf8);
 }
 
-void GSosdMonitor(const char* key, const char* value, uint32 color)
+void GSosdMonitor(const char* key, const char* value, u32 color)
 {
 	if (s_gs && s_gs->m_dev)
 		s_gs->m_dev->m_osd.Monitor(key, value);
 }
 
-int GSopen2(void** dsp, uint32 flags)
+int GSopen2(const WindowInfo& wi, u32 flags)
 {
 	static bool stored_toggle_state = false;
 	const bool toggle_state = !!(flags & 4);
@@ -399,7 +304,12 @@ int GSopen2(void** dsp, uint32 flags)
 				const auto config_renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
 
 				if (current_renderer == config_renderer)
-					current_renderer = GSUtil::GetBestRenderer();
+				{
+					if (D3D::ShouldPreferD3D())
+						current_renderer = GSRendererType::DX1011_HW;
+					else
+						current_renderer = GSRendererType::OGL_HW;
+				}
 				else
 					current_renderer = config_renderer;
 			}
@@ -417,41 +327,7 @@ int GSopen2(void** dsp, uint32 flags)
 	}
 	stored_toggle_state = toggle_state;
 
-	int retval = _GSopen(dsp, "", current_renderer);
-
-	gsopen_done = true;
-
-	return retval;
-}
-
-int GSopen(void** dsp, const char* title, int mt)
-{
-	GSRendererType renderer = GSRendererType::Default;
-
-	// Legacy GUI expects to acquire vsync from the configuration files.
-
-	s_vsync = theApp.GetConfigI("vsync");
-
-	if (mt == 2)
-	{
-		// pcsx2 sent a switch renderer request
-		mt = 1;
-	}
-	else
-	{
-		// normal init
-
-		renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
-	}
-
-	*dsp = NULL;
-
-	int retval = _GSopen(dsp, title, renderer);
-
-	if (retval == 0 && s_gs)
-	{
-		s_gs->SetMultithreaded(!!mt);
-	}
+	int retval = _GSopen(wi, "", current_renderer);
 
 	gsopen_done = true;
 
@@ -469,7 +345,7 @@ void GSreset()
 	}
 }
 
-void GSgifSoftReset(uint32 mask)
+void GSgifSoftReset(u32 mask)
 {
 	try
 	{
@@ -480,7 +356,7 @@ void GSgifSoftReset(uint32 mask)
 	}
 }
 
-void GSwriteCSR(uint32 csr)
+void GSwriteCSR(u32 csr)
 {
 	try
 	{
@@ -491,7 +367,7 @@ void GSwriteCSR(uint32 csr)
 	}
 }
 
-void GSinitReadFIFO(uint8* mem)
+void GSinitReadFIFO(u8* mem)
 {
 	GL_PERF("Init Read FIFO1");
 	try
@@ -507,7 +383,7 @@ void GSinitReadFIFO(uint8* mem)
 	}
 }
 
-void GSreadFIFO(uint8* mem)
+void GSreadFIFO(u8* mem)
 {
 	try
 	{
@@ -522,7 +398,7 @@ void GSreadFIFO(uint8* mem)
 	}
 }
 
-void GSinitReadFIFO2(uint8* mem, uint32 size)
+void GSinitReadFIFO2(u8* mem, u32 size)
 {
 	GL_PERF("Init Read FIFO2");
 	try
@@ -538,7 +414,7 @@ void GSinitReadFIFO2(uint8* mem, uint32 size)
 	}
 }
 
-void GSreadFIFO2(uint8* mem, uint32 size)
+void GSreadFIFO2(u8* mem, u32 size)
 {
 	try
 	{
@@ -553,7 +429,7 @@ void GSreadFIFO2(uint8* mem, uint32 size)
 	}
 }
 
-void GSgifTransfer(const uint8* mem, uint32 size)
+void GSgifTransfer(const u8* mem, u32 size)
 {
 	try
 	{
@@ -564,33 +440,33 @@ void GSgifTransfer(const uint8* mem, uint32 size)
 	}
 }
 
-void GSgifTransfer1(uint8* mem, uint32 addr)
+void GSgifTransfer1(u8* mem, u32 addr)
 {
 	try
 	{
-		s_gs->Transfer<0>(const_cast<uint8*>(mem) + addr, (0x4000 - addr) / 16);
+		s_gs->Transfer<0>(const_cast<u8*>(mem) + addr, (0x4000 - addr) / 16);
 	}
 	catch (GSRecoverableError)
 	{
 	}
 }
 
-void GSgifTransfer2(uint8* mem, uint32 size)
+void GSgifTransfer2(u8* mem, u32 size)
 {
 	try
 	{
-		s_gs->Transfer<1>(const_cast<uint8*>(mem), size);
+		s_gs->Transfer<1>(const_cast<u8*>(mem), size);
 	}
 	catch (GSRecoverableError)
 	{
 	}
 }
 
-void GSgifTransfer3(uint8* mem, uint32 size)
+void GSgifTransfer3(u8* mem, u32 size)
 {
 	try
 	{
-		s_gs->Transfer<2>(const_cast<uint8*>(mem), size);
+		s_gs->Transfer<2>(const_cast<u8*>(mem), size);
 	}
 	catch (GSRecoverableError)
 	{
@@ -601,23 +477,6 @@ void GSvsync(int field)
 {
 	try
 	{
-#ifdef _WIN32
-
-		if (s_gs->m_wnd->IsManaged())
-		{
-			MSG msg;
-
-			memset(&msg, 0, sizeof(msg));
-
-			while (msg.message != WM_QUIT && PeekMessage(&msg, NULL, 0, 0, PM_REMOVE))
-			{
-				TranslateMessage(&msg);
-				DispatchMessage(&msg);
-			}
-		}
-
-#endif
-
 		s_gs->VSync(field);
 	}
 	catch (GSRecoverableError)
@@ -629,7 +488,7 @@ void GSvsync(int field)
 	}
 }
 
-uint32 GSmakeSnapshot(char* path)
+u32 GSmakeSnapshot(char* path)
 {
 	try
 	{
@@ -706,39 +565,12 @@ void GSconfigure()
 		theApp.SetConfigDir();
 		theApp.Init();
 
-#ifdef _WIN32
-		GSDialog::InitCommonControls();
-		if (GSSettingsDlg().DoModal() == IDOK)
-		{
-			// Force a reload of the gs state
-			theApp.SetCurrentRendererType(GSRendererType::Undefined);
-		}
-
-#elif defined(__APPLE__)
-		// Rest of macOS UI doesn't use GTK so we need to init it now
-		gtk_init(nullptr, nullptr);
-		// GTK expects us to be using its event loop, rather than Cocoa's
-		// If we call its stuff right now, it'll attempt to drain a static autorelease pool that was already drained by Cocoa (see https://github.com/GNOME/gtk/blob/8c1072fad1cb6a2e292fce2441b4a571f173ce0f/gdk/quartz/gdkeventloop-quartz.c#L640-L646)
-		// We can convince it that touching that pool would be unsafe by running all GTK calls within a CFRunLoop
-		// (Blocks submitted to the main queue by dispatch_async are run by its CFRunLoop)
-		dispatch_async(dispatch_get_main_queue(), ^{
-		  if (RunLinuxDialog())
-		  {
-			  theApp.ReloadConfig();
-			  // Force a reload of the gs state
-			  theApp.SetCurrentRendererType(GSRendererType::Undefined);
-		  }
-		});
-#else
-
-		if (RunLinuxDialog())
+		if (RunwxDialog())
 		{
 			theApp.ReloadConfig();
 			// Force a reload of the gs state
 			theApp.SetCurrentRendererType(GSRendererType::Undefined);
 		}
-
-#endif
 	}
 	catch (GSRecoverableError)
 	{
@@ -751,16 +583,6 @@ int GStest()
 		return -1;
 
 	return 0;
-}
-
-void GSirqCallback(void (*irq)())
-{
-	s_irq = irq;
-
-	if (s_gs)
-	{
-		s_gs->SetIrqCallback(s_irq);
-	}
 }
 
 void pt(const char* str)
@@ -808,14 +630,9 @@ void GSendRecording()
 	pt(" - Capture ended\n");
 }
 
-void GSsetGameCRC(uint32 crc, int options)
+void GSsetGameCRC(u32 crc, int options)
 {
 	s_gs->SetGameCRC(crc, options);
-}
-
-void GSgetLastTag(uint32* tag)
-{
-	s_gs->GetLastTag(tag);
 }
 
 void GSgetTitleInfo2(char* dest, size_t length)
@@ -863,248 +680,25 @@ void GSsetExclusive(int enabled)
 	}
 }
 
-#if defined(__unix__) || defined(__APPLE__)
-
-inline unsigned long timeGetTime()
+#ifndef PCSX2_CORE
+void GSResizeWindow(int width, int height)
 {
-	struct timespec t;
-	clock_gettime(CLOCK_REALTIME, &t);
-	return (unsigned long)(t.tv_sec * 1000 + t.tv_nsec / 1000000);
+	std::unique_lock lock(s_gs_window_resized_lock);
+	s_new_gs_window_width = width;
+	s_new_gs_window_height = height;
+	s_gs_window_resized.store(true);
 }
 
-// Note
-void GSReplay(char* lpszCmdLine, int renderer)
+bool GSCheckForWindowResize(int* new_width, int* new_height)
 {
-	GLLoader::in_replayer = true;
-	// Required by multithread driver
-#ifndef __APPLE__
-	XInitThreads();
-#endif
+	if (!s_gs_window_resized.load())
+		return false;
 
-	GSinit();
-
-	GSRendererType m_renderer;
-	// Allow to easyly switch between SW/HW renderer -> this effectively removes the ability to select the renderer by function args
-	m_renderer = static_cast<GSRendererType>(theApp.GetConfigI("Renderer"));
-
-	if (m_renderer != GSRendererType::OGL_HW && m_renderer != GSRendererType::OGL_SW)
-	{
-		fprintf(stderr, "wrong renderer selected %d\n", static_cast<int>(m_renderer));
-		return;
-	}
-
-	struct Packet
-	{
-		uint8 type, param;
-		uint32 size, addr;
-		std::vector<uint8> buff;
-	};
-
-	std::list<Packet*> packets;
-	std::vector<uint8> buff;
-	uint8 regs[0x2000];
-
-	GSsetBaseMem(regs);
-
-	s_vsync = theApp.GetConfigI("vsync");
-	int finished = theApp.GetConfigI("linux_replay");
-	bool repack_dump = (finished < 0);
-
-	if (theApp.GetConfigI("dump"))
-	{
-		fprintf(stderr, "Dump is enabled. Replay will be disabled\n");
-		finished = 1;
-	}
-
-	long frame_number = 0;
-
-	void* hWnd = NULL;
-	int err = _GSopen((void**)&hWnd, "", m_renderer);
-	if (err != 0)
-	{
-		fprintf(stderr, "Error failed to GSopen\n");
-		return;
-	}
-	if (s_gs->m_wnd == NULL)
-		return;
-
-	{ // Read .gs content
-		std::string f(lpszCmdLine);
-		bool is_xz = (f.size() >= 4) && (f.compare(f.size() - 3, 3, ".xz") == 0);
-		if (is_xz)
-			f.replace(f.end() - 6, f.end(), "_repack.gs");
-		else
-			f.replace(f.end() - 3, f.end(), "_repack.gs");
-
-		GSDumpFile* file = is_xz ? (GSDumpFile*)new GSDumpLzma(lpszCmdLine, repack_dump ? f.c_str() : nullptr) : (GSDumpFile*)new GSDumpRaw(lpszCmdLine, repack_dump ? f.c_str() : nullptr);
-
-		uint32 crc;
-		file->Read(&crc, 4);
-		GSsetGameCRC(crc, 0);
-
-		freezeData fd;
-		file->Read(&fd.size, 4);
-		fd.data = new u8[fd.size];
-		file->Read(fd.data, fd.size);
-
-		GSfreeze(FreezeAction::Load, &fd);
-		delete[] fd.data;
-
-		file->Read(regs, 0x2000);
-
-		uint8 type;
-		while (file->Read(&type, 1))
-		{
-			Packet* p = new Packet();
-
-			p->type = type;
-
-			switch (type)
-			{
-				case 0:
-					file->Read(&p->param, 1);
-					file->Read(&p->size, 4);
-
-					switch (p->param)
-					{
-						case 0:
-							p->buff.resize(0x4000);
-							p->addr = 0x4000 - p->size;
-							file->Read(&p->buff[p->addr], p->size);
-							break;
-						case 1:
-						case 2:
-						case 3:
-							p->buff.resize(p->size);
-							file->Read(&p->buff[0], p->size);
-							break;
-					}
-
-					break;
-
-				case 1:
-					file->Read(&p->param, 1);
-					frame_number++;
-
-					break;
-
-				case 2:
-					file->Read(&p->size, 4);
-
-					break;
-
-				case 3:
-					p->buff.resize(0x2000);
-
-					file->Read(&p->buff[0], 0x2000);
-
-					break;
-			}
-
-			packets.push_back(p);
-
-			if (repack_dump && frame_number > -finished)
-				break;
-		}
-
-		delete file;
-	}
-
-	sleep(2);
-
-
-	frame_number = 0;
-
-	// Init vsync stuff
-	GSvsync(1);
-
-	while (finished > 0)
-	{
-		for (auto i = packets.begin(); i != packets.end(); i++)
-		{
-			Packet* p = *i;
-
-			switch (p->type)
-			{
-				case 0:
-
-					switch (p->param)
-					{
-						case 0:
-							GSgifTransfer1(&p->buff[0], p->addr);
-							break;
-						case 1:
-							GSgifTransfer2(&p->buff[0], p->size / 16);
-							break;
-						case 2:
-							GSgifTransfer3(&p->buff[0], p->size / 16);
-							break;
-						case 3:
-							GSgifTransfer(&p->buff[0], p->size / 16);
-							break;
-					}
-
-					break;
-
-				case 1:
-
-					GSvsync(p->param);
-					frame_number++;
-
-					break;
-
-				case 2:
-
-					if (buff.size() < p->size)
-						buff.resize(p->size);
-
-					GSreadFIFO2(&buff[0], p->size / 16);
-
-					break;
-
-				case 3:
-
-					memcpy(regs, &p->buff[0], 0x2000);
-
-					break;
-			}
-		}
-
-		if (finished >= 200)
-		{
-			; // Nop for Nvidia Profiler
-		}
-		else if (finished > 90)
-		{
-			sleep(1);
-		}
-		else
-		{
-			finished--;
-		}
-	}
-
-	static_cast<GSDeviceOGL*>(s_gs->m_dev)->GenerateProfilerData();
-
-#ifdef ENABLE_OGL_DEBUG_MEM_BW
-	unsigned long total_frame_nb = std::max(1l, frame_number) << 10;
-	fprintf(stderr, "memory bandwith. T: %f KB/f. V: %f KB/f. U: %f KB/f\n",
-		(float)g_real_texture_upload_byte / (float)total_frame_nb,
-		(float)g_vertex_upload_byte / (float)total_frame_nb,
-		(float)g_uniform_upload_byte / (float)total_frame_nb);
-#endif
-
-	for (auto i = packets.begin(); i != packets.end(); i++)
-	{
-		delete *i;
-	}
-
-	packets.clear();
-
-	sleep(2);
-
-	GSclose();
-	GSshutdown();
+	std::unique_lock lock(s_gs_window_resized_lock);
+	*new_width = s_new_gs_window_width;
+	*new_height = s_new_gs_window_height;
+	s_gs_window_resized.store(false);
+	return true;
 }
 #endif
 
@@ -1153,15 +747,15 @@ void vmfree(void* ptr, size_t size)
 }
 
 static HANDLE s_fh = NULL;
-static uint8* s_Next[8];
+static u8* s_Next[8];
 
 void* fifo_alloc(size_t size, size_t repeat)
 {
 	ASSERT(s_fh == NULL);
 
-	if (repeat >= countof(s_Next))
+	if (repeat >= std::size(s_Next))
 	{
-		fprintf(stderr, "Memory mapping overflow (%zu >= %u)\n", repeat, static_cast<unsigned>(countof(s_Next)));
+		fprintf(stderr, "Memory mapping overflow (%zu >= %u)\n", repeat, static_cast<unsigned>(std::size(s_Next)));
 		return vmalloc(size * repeat, false); // Fallback to default vmalloc
 	}
 
@@ -1177,8 +771,8 @@ void* fifo_alloc(size_t size, size_t repeat)
 	void* fifo = MapViewOfFile(s_fh, FILE_MAP_ALL_ACCESS, 0, 0, size);
 	for (size_t i = 1; i < repeat; i++)
 	{
-		void* base = (uint8*)fifo + size * i;
-		s_Next[i] = (uint8*)MapViewOfFileEx(s_fh, FILE_MAP_ALL_ACCESS, 0, 0, size, base);
+		void* base = (u8*)fifo + size * i;
+		s_Next[i] = (u8*)MapViewOfFileEx(s_fh, FILE_MAP_ALL_ACCESS, 0, 0, size, base);
 		errorID = ::GetLastError();
 		if (s_Next[i] != base)
 		{
@@ -1215,7 +809,7 @@ void fifo_free(void* ptr, size_t size, size_t repeat)
 
 	UnmapViewOfFile(ptr);
 
-	for (size_t i = 1; i < countof(s_Next); i++)
+	for (size_t i = 1; i < std::size(s_Next); i++)
 	{
 		if (s_Next[i] != 0)
 		{
@@ -1288,8 +882,8 @@ void* fifo_alloc(size_t size, size_t repeat)
 
 	for (size_t i = 1; i < repeat; i++)
 	{
-		void* base = (uint8*)fifo + size * i;
-		uint8* next = (uint8*)mmap(base, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, s_shm_fd, 0);
+		void* base = (u8*)fifo + size * i;
+		u8* next = (u8*)mmap(base, size, PROT_READ | PROT_WRITE, MAP_SHARED | MAP_FIXED, s_shm_fd, 0);
 		if (next != base)
 			fprintf(stderr, "Fail to mmap contiguous segment\n");
 	}
@@ -1488,16 +1082,16 @@ void GSApp::Init()
 	m_section = "Settings";
 
 #ifdef _WIN32
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::DX1011_HW), "Direct3D 11", ""));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW), "OpenGL", ""));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_SW), "Software", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::DX1011_HW), "Direct3D 11", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::OGL_HW), "OpenGL", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::OGL_SW), "Software", ""));
 #else // Linux
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_HW), "OpenGL", ""));
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::OGL_SW), "Software", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::OGL_HW), "OpenGL", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::OGL_SW), "Software", ""));
 #endif
 
 	// The null renderer goes third, it has use for benchmarking purposes in a release build
-	m_gs_renderers.push_back(GSSetting(static_cast<uint32>(GSRendererType::Null), "Null", ""));
+	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::Null), "Null", ""));
 
 	m_gs_interlace.push_back(GSSetting(0, "None", ""));
 	m_gs_interlace.push_back(GSSetting(1, "Weave tff", "saw-tooth"));
@@ -1527,14 +1121,14 @@ void GSApp::Init()
 	m_gs_dithering.push_back(GSSetting(2, "Unscaled", "Default"));
 	m_gs_dithering.push_back(GSSetting(1, "Scaled", ""));
 
-	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Nearest), "Nearest", ""));
-	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Forced_But_Sprite), "Bilinear", "Forced excluding sprite"));
-	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::Forced), "Bilinear", "Forced"));
-	m_gs_bifilter.push_back(GSSetting(static_cast<uint32>(BiFiltering::PS2), "Bilinear", "PS2"));
+	m_gs_bifilter.push_back(GSSetting(static_cast<u32>(BiFiltering::Nearest), "Nearest", ""));
+	m_gs_bifilter.push_back(GSSetting(static_cast<u32>(BiFiltering::Forced_But_Sprite), "Bilinear", "Forced excluding sprite"));
+	m_gs_bifilter.push_back(GSSetting(static_cast<u32>(BiFiltering::Forced), "Bilinear", "Forced"));
+	m_gs_bifilter.push_back(GSSetting(static_cast<u32>(BiFiltering::PS2), "Bilinear", "PS2"));
 
-	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::None), "None", "Default"));
-	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::PS2), "Trilinear", ""));
-	m_gs_trifilter.push_back(GSSetting(static_cast<uint32>(TriFiltering::Forced), "Trilinear", "Ultra/Slow"));
+	m_gs_trifilter.push_back(GSSetting(static_cast<u32>(TriFiltering::None), "None", "Default"));
+	m_gs_trifilter.push_back(GSSetting(static_cast<u32>(TriFiltering::PS2), "Trilinear", ""));
+	m_gs_trifilter.push_back(GSSetting(static_cast<u32>(TriFiltering::Forced), "Trilinear", "Ultra/Slow"));
 
 	m_gs_generic_list.push_back(GSSetting(-1, "Automatic", "Default"));
 	m_gs_generic_list.push_back(GSSetting(0, "Force-Disabled", ""));
@@ -1589,9 +1183,10 @@ void GSApp::Init()
 	// Avoid to clutter the ini file with useless options
 #ifdef _WIN32
 	// Per OS option.
-	m_default_configuration["Adapter"]                                    = "default";
+	m_default_configuration["adapter_index"]                              = "0";
 	m_default_configuration["CaptureFileName"]                            = "";
 	m_default_configuration["CaptureVideoCodecDisplayName"]               = "";
+	m_default_configuration["debug_d3d"]                                  = "0";
 	m_default_configuration["dx_break_on_severity"]                       = "0";
 	// D3D Blending option
 	m_default_configuration["accurate_blending_unit_d3d11"]               = "1";
@@ -1608,7 +1203,7 @@ void GSApp::Init()
 	m_default_configuration["capture_threads"]                            = "4";
 	m_default_configuration["CaptureHeight"]                              = "480";
 	m_default_configuration["CaptureWidth"]                               = "640";
-	m_default_configuration["crc_hack_level"]                             = std::to_string(static_cast<int8>(CRCHackLevel::Automatic));
+	m_default_configuration["crc_hack_level"]                             = std::to_string(static_cast<s8>(CRCHackLevel::Automatic));
 	m_default_configuration["CrcHacksExclusions"]                         = "";
 	m_default_configuration["debug_glsl_shader"]                          = "0";
 	m_default_configuration["debug_opengl"]                               = "0";
@@ -1617,7 +1212,7 @@ void GSApp::Init()
 	m_default_configuration["dump"]                                       = "0";
 	m_default_configuration["extrathreads"]                               = "2";
 	m_default_configuration["extrathreads_height"]                        = "4";
-	m_default_configuration["filter"]                                     = std::to_string(static_cast<int8>(BiFiltering::PS2));
+	m_default_configuration["filter"]                                     = std::to_string(static_cast<s8>(BiFiltering::PS2));
 	m_default_configuration["force_texture_clear"]                        = "0";
 	m_default_configuration["fxaa"]                                       = "0";
 	m_default_configuration["interlace"]                                  = "7";
@@ -1644,22 +1239,19 @@ void GSApp::Init()
 	m_default_configuration["osd_monitor_enabled"]                        = "0";
 	m_default_configuration["osd_max_log_messages"]                       = "2";
 	m_default_configuration["override_geometry_shader"]                   = "-1";
-	m_default_configuration["override_GL_ARB_compute_shader"]             = "-1";
 	m_default_configuration["override_GL_ARB_copy_image"]                 = "-1";
 	m_default_configuration["override_GL_ARB_clear_texture"]              = "-1";
 	m_default_configuration["override_GL_ARB_clip_control"]               = "-1";
 	m_default_configuration["override_GL_ARB_direct_state_access"]        = "-1";
 	m_default_configuration["override_GL_ARB_draw_buffers_blend"]         = "-1";
-	m_default_configuration["override_GL_ARB_get_texture_sub_image"]      = "-1";
 	m_default_configuration["override_GL_ARB_gpu_shader5"]                = "-1";
-	m_default_configuration["override_GL_ARB_multi_bind"]                 = "-1";
 	m_default_configuration["override_GL_ARB_shader_image_load_store"]    = "-1";
-	m_default_configuration["override_GL_ARB_shader_storage_buffer_object"] = "-1";
 	m_default_configuration["override_GL_ARB_sparse_texture"]             = "-1";
 	m_default_configuration["override_GL_ARB_sparse_texture2"]            = "-1";
-	m_default_configuration["override_GL_ARB_texture_view"]               = "-1";
-	m_default_configuration["override_GL_ARB_vertex_attrib_binding"]      = "-1";
 	m_default_configuration["override_GL_ARB_texture_barrier"]            = "-1";
+#ifdef GL_EXT_TEX_SUB_IMAGE
+	m_default_configuration["override_GL_ARB_get_texture_sub_image"]      = "-1";
+#endif
 	m_default_configuration["paltex"]                                     = "0";
 	m_default_configuration["png_compression_level"]                      = std::to_string(Z_BEST_SPEED);
 	m_default_configuration["preload_frame_with_gs_data"]                 = "0";
@@ -1697,7 +1289,7 @@ void GSApp::Init()
 	m_default_configuration["UserHacks_TCOffsetX"]                        = "0";
 	m_default_configuration["UserHacks_TCOffsetY"]                        = "0";
 	m_default_configuration["UserHacks_TextureInsideRt"]                  = "0";
-	m_default_configuration["UserHacks_TriFilter"]                        = std::to_string(static_cast<int8>(TriFiltering::None));
+	m_default_configuration["UserHacks_TriFilter"]                        = std::to_string(static_cast<s8>(TriFiltering::None));
 	m_default_configuration["UserHacks_WildHack"]                         = "0";
 	m_default_configuration["wrap_gs_mem"]                                = "0";
 	m_default_configuration["vsync"]                                      = "0";
@@ -1774,7 +1366,7 @@ void GSApp::SetConfigDir()
 	// core settings aren't populated yet, thus we do populate it if needed either when
 	// opening GS settings or init -- govanify
 	wxString iniName(L"GS.ini");
-	m_ini = EmuFolders::Settings.Combine(iniName).GetFullPath();
+	m_ini = EmuFolders::Settings.Combine(iniName).GetFullPath().ToUTF8();
 }
 
 std::string GSApp::GetConfigS(const char* entry)
@@ -1784,12 +1376,12 @@ std::string GSApp::GetConfigS(const char* entry)
 
 	if (def != m_default_configuration.end())
 	{
-		GetIniString(m_section.c_str(), entry, def->second.c_str(), buff, countof(buff), m_ini.c_str());
+		GetIniString(m_section.c_str(), entry, def->second.c_str(), buff, std::size(buff), m_ini.c_str());
 	}
 	else
 	{
 		fprintf(stderr, "Option %s doesn't have a default value\n", entry);
-		GetIniString(m_section.c_str(), entry, "", buff, countof(buff), m_ini.c_str());
+		GetIniString(m_section.c_str(), entry, "", buff, std::size(buff), m_ini.c_str());
 	}
 
 	return {buff};

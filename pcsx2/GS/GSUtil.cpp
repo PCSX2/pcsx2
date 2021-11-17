@@ -14,12 +14,13 @@
  */
 
 #include "PrecompiledHeader.h"
+#include "GS.h"
+#include "GSExtra.h"
 #include "GSUtil.h"
 #include <locale>
 #include <codecvt>
 
 #ifdef _WIN32
-#include "Renderers/DX11/GSDevice11.h"
 #include <VersionHelpers.h>
 #include "svnrev.h"
 #include <wil/com.h>
@@ -33,11 +34,11 @@ Xbyak::util::Cpu g_cpu;
 static class GSUtilMaps
 {
 public:
-	uint8 PrimClassField[8];
-	uint8 VertexCountField[8];
-	uint8 ClassVertexCountField[4];
-	uint32 CompatibleBitsField[64][2];
-	uint32 SharedBitsField[64][2];
+	u8 PrimClassField[8];
+	u8 VertexCountField[8];
+	u8 ClassVertexCountField[4];
+	u32 CompatibleBitsField[64][2];
+	u32 SharedBitsField[64][2];
 
 	// Defer init to avoid AVX2 illegal instructions
 	void Init()
@@ -106,42 +107,42 @@ void GSUtil::Init()
 	s_maps.Init();
 }
 
-GS_PRIM_CLASS GSUtil::GetPrimClass(uint32 prim)
+GS_PRIM_CLASS GSUtil::GetPrimClass(u32 prim)
 {
 	return (GS_PRIM_CLASS)s_maps.PrimClassField[prim];
 }
 
-int GSUtil::GetVertexCount(uint32 prim)
+int GSUtil::GetVertexCount(u32 prim)
 {
 	return s_maps.VertexCountField[prim];
 }
 
-int GSUtil::GetClassVertexCount(uint32 primclass)
+int GSUtil::GetClassVertexCount(u32 primclass)
 {
 	return s_maps.ClassVertexCountField[primclass];
 }
 
-const uint32* GSUtil::HasSharedBitsPtr(uint32 dpsm)
+const u32* GSUtil::HasSharedBitsPtr(u32 dpsm)
 {
 	return s_maps.SharedBitsField[dpsm];
 }
 
-bool GSUtil::HasSharedBits(uint32 spsm, const uint32* RESTRICT ptr)
+bool GSUtil::HasSharedBits(u32 spsm, const u32* RESTRICT ptr)
 {
 	return (ptr[spsm >> 5] & (1 << (spsm & 0x1f))) == 0;
 }
 
-bool GSUtil::HasSharedBits(uint32 spsm, uint32 dpsm)
+bool GSUtil::HasSharedBits(u32 spsm, u32 dpsm)
 {
 	return (s_maps.SharedBitsField[dpsm][spsm >> 5] & (1 << (spsm & 0x1f))) == 0;
 }
 
-bool GSUtil::HasSharedBits(uint32 sbp, uint32 spsm, uint32 dbp, uint32 dpsm)
+bool GSUtil::HasSharedBits(u32 sbp, u32 spsm, u32 dbp, u32 dpsm)
 {
 	return ((sbp ^ dbp) | (s_maps.SharedBitsField[dpsm][spsm >> 5] & (1 << (spsm & 0x1f)))) == 0;
 }
 
-bool GSUtil::HasCompatibleBits(uint32 spsm, uint32 dpsm)
+bool GSUtil::HasCompatibleBits(u32 spsm, u32 dpsm)
 {
 	return (s_maps.CompatibleBitsField[spsm][dpsm >> 5] & (1 << (dpsm & 0x1f))) != 0;
 }
@@ -168,11 +169,11 @@ bool GSUtil::CheckSSE()
 #endif
 	};
 
-	for (size_t i = 0; i < countof(checks); i++)
+	for (const ISA& check : checks)
 	{
-		if (!g_cpu.has(checks[i].type))
+		if (!g_cpu.has(check.type))
 		{
-			fprintf(stderr, "This CPU does not support %s\n", checks[i].name);
+			fprintf(stderr, "This CPU does not support %s\n", check.name);
 
 			status = false;
 		}
@@ -185,82 +186,6 @@ CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)
 {
 	return type == GSRendererType::OGL_HW ? CRCHackLevel::Partial : CRCHackLevel::Full;
 }
-
-#ifdef _WIN32
-// ---------------------------------------------------------------------------------
-//  DX11 Detection (includes DXGI detection and dynamic library method bindings)
-// ---------------------------------------------------------------------------------
-//  Code 'Borrowed' from Microsoft's DXGI sources -- Modified to suit our needs. --air
-//  Stripped down because of unnecessary complexity and false positives
-//  e.g. (d3d11_beta.dll would fail at device creation time) --pseudonym
-
-static int s_DXGI;
-static int s_D3D11;
-
-bool GSUtil::CheckDXGI()
-{
-	if (0 == s_DXGI)
-	{
-		HMODULE hmod = LoadLibrary(L"dxgi.dll");
-		s_DXGI = hmod ? 1 : -1;
-		if (hmod)
-			FreeLibrary(hmod);
-	}
-
-	return s_DXGI > 0;
-}
-
-bool GSUtil::CheckD3D11()
-{
-	if (!CheckDXGI())
-		return false;
-
-	if (0 == s_D3D11)
-	{
-		HMODULE hmod = LoadLibrary(L"d3d11.dll");
-		s_D3D11 = hmod ? 1 : -1;
-		if (hmod)
-			FreeLibrary(hmod);
-	}
-
-	return s_D3D11 > 0;
-}
-
-D3D_FEATURE_LEVEL GSUtil::CheckDirect3D11Level(IDXGIAdapter* adapter, D3D_DRIVER_TYPE type)
-{
-	HRESULT hr;
-	D3D_FEATURE_LEVEL level;
-
-	if (!CheckD3D11())
-		return (D3D_FEATURE_LEVEL)0;
-
-	hr = D3D11CreateDevice(adapter, type, NULL, 0, NULL, 0, D3D11_SDK_VERSION, NULL, &level, NULL);
-
-	return SUCCEEDED(hr) ? level : (D3D_FEATURE_LEVEL)0;
-}
-
-GSRendererType GSUtil::GetBestRenderer()
-{
-	wil::com_ptr_nothrow<IDXGIFactory1> dxgi_factory;
-	if (SUCCEEDED(CreateDXGIFactory1(IID_PPV_ARGS(dxgi_factory.put()))))
-	{
-		wil::com_ptr_nothrow<IDXGIAdapter1> adapter;
-		if (SUCCEEDED(dxgi_factory->EnumAdapters1(0, adapter.put())))
-		{
-			DXGI_ADAPTER_DESC1 desc;
-			if (SUCCEEDED(adapter->GetDesc1(&desc)))
-			{
-				D3D_FEATURE_LEVEL level = GSUtil::CheckDirect3D11Level();
-				// Check for Nvidia VendorID. Latest OpenGL features need at least DX11 level GPU
-				if (desc.VendorId == 0x10DE && level >= D3D_FEATURE_LEVEL_11_0)
-					return GSRendererType::OGL_HW;
-			}
-		}
-	}
-	return GSRendererType::DX1011_HW;
-}
-
-#endif
 
 #ifdef _WIN32
 void GSmkdir(const wchar_t* dir)

@@ -117,7 +117,7 @@ struct FPUd_Globals
 	//u64		dlb_s_neg[2];
 };
 
-static const __aligned(32) FPUd_Globals s_const =
+alignas(32) static const FPUd_Globals s_const =
 {
 	{0x80000000, 0xffffffff, 0xffffffff, 0xffffffff},
 	{0x7fffffff, 0xffffffff, 0xffffffff, 0xffffffff},
@@ -667,7 +667,7 @@ void recDIVhelper2(int regd, int regt) // Doesn't sets flags
 	ToPS2FPU(regd, false, regt, false);
 }
 
-static __aligned16 SSE_MXCSR roundmode_nearest, roundmode_neg;
+alignas(16) static SSE_MXCSR roundmode_nearest, roundmode_neg;
 
 void recDIV_S_xmm(int info)
 {
@@ -807,7 +807,7 @@ FPURECOMPILE_CONSTCODE(MADDA_S, XMMINFO_WRITEACC | XMMINFO_READACC | XMMINFO_REA
 // MAX / MIN XMM
 //------------------------------------------------------------------
 
-static const __aligned16 u32 minmax_mask[8] =
+alignas(16) static const u32 minmax_mask[8] =
 {
 	0xffffffff, 0x80000000, 0, 0,
 	0,          0x40000000, 0, 0,

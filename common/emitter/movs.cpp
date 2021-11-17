@@ -137,7 +137,7 @@ namespace x86Emitter
 		{
 			_g1_EmitOp(G1Type_XOR, to_, to_);
 		}
-		else if (imm == (u32)imm || !to.IsWide())
+		else if (imm == (sptr)(u32)imm || !to.IsWide())
 		{
 			// Note: MOV does not have (reg16/32,imm8) forms.
 			u8 opcode = (to_.Is8BitOp() ? 0xb0 : 0xb8) | to_.Id;

@@ -82,11 +82,7 @@ static u64 getthreadtime(thread_port_t thread)
 		   (u64)info.system_time.microseconds;
 }
 
-// Returns the current timestamp (not relative to a real world clock) in
-// units of 100 nanoseconds. The weird units are to mirror the Windows
-// counterpart in WinThreads.cpp, which uses the GetThreadTimes() API.  On
-// OSX/Darwin, this is only accurate up until 1ms (and possibly less), so
-// not very good.
+// Returns the current timestamp (not relative to a real world clock) in microseconds
 u64 Threading::GetThreadCpuTime()
 {
 	// we could also use mach_thread_self() and mach_port_deallocate(), but
@@ -95,7 +91,7 @@ u64 Threading::GetThreadCpuTime()
 	// to be user-space instead. In contract,
 	// pthread_mach_thread_np(pthread_self()) is entirely in user-space.
 	u64 us = getthreadtime(pthread_mach_thread_np(pthread_self()));
-	return us * 10ULL;
+	return us;
 }
 
 u64 Threading::pxThread::GetCpuTime() const
@@ -109,7 +105,7 @@ u64 Threading::pxThread::GetCpuTime() const
 		return 0;
 	}
 
-	return getthreadtime((thread_port_t)m_native_id) * 10ULL;
+	return getthreadtime((thread_port_t)m_native_id);
 }
 
 void Threading::pxThread::_platform_specific_OnStartInThread()

@@ -14,12 +14,12 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GS/GS.h"
 #include "GSDevice.h"
+#include "GS/GSGL.h"
+#include "GS/GS.h"
 
 GSDevice::GSDevice()
-	: m_wnd()
-	, m_vsync(false)
+	: m_vsync(false)
 	, m_rbswapped(false)
 	, m_backbuffer(NULL)
 	, m_merge(NULL)
@@ -46,10 +46,8 @@ GSDevice::~GSDevice()
 	delete m_target_tmp;
 }
 
-bool GSDevice::Create(const std::shared_ptr<GSWnd>& wnd)
+bool GSDevice::Create(const WindowInfo& wi)
 {
-	m_wnd = wnd;
-
 	return true;
 }
 
@@ -73,26 +71,18 @@ bool GSDevice::Reset(int w, int h)
 	m_target_tmp = NULL;
 
 	m_current = NULL; // current is special, points to other textures, no need to delete
-
-	return m_wnd != NULL;
+	return true;
 }
 
 void GSDevice::Present(const GSVector4i& r, int shader)
 {
-	const GSVector4i cr = m_wnd->GetClientRect();
-
-	const int w = std::max<int>(cr.width(), 1);
-	const int h = std::max<int>(cr.height(), 1);
-
-	if (!m_backbuffer || m_backbuffer->GetWidth() != w || m_backbuffer->GetHeight() != h)
-	{
-		if (!Reset(w, h))
-		{
-			return;
-		}
-	}
-
 	GL_PUSH("Present");
+
+#ifndef PCSX2_CORE
+	int new_width, new_height;
+	if (GSCheckForWindowResize(&new_width, &new_height) && !Reset(new_width, new_height))
+		return;
+#endif
 
 	// FIXME is it mandatory, it could be slow
 	ClearRenderTarget(m_backbuffer, 0);
@@ -137,7 +127,7 @@ GSTexture* GSDevice::FetchSurface(int type, int w, int h, int format)
 void GSDevice::PrintMemoryUsage()
 {
 #ifdef ENABLE_OGL_DEBUG
-	uint32 pool = 0;
+	u32 pool = 0;
 	for (auto t : m_pool)
 	{
 		if (t)
@@ -253,7 +243,7 @@ void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, con
 	{
 		GSTexture* tex[3] = {NULL, NULL, NULL};
 
-		for (size_t i = 0; i < countof(tex); i++)
+		for (size_t i = 0; i < std::size(tex); i++)
 		{
 			if (sTex[i] != NULL)
 			{
@@ -263,7 +253,7 @@ void GSDevice::Merge(GSTexture* sTex[3], GSVector4* sRect, GSVector4* dRect, con
 
 		DoMerge(tex, sRect, m_merge, dRect, PMODE, EXTBUF, c);
 
-		for (size_t i = 0; i < countof(tex); i++)
+		for (size_t i = 0; i < std::size(tex); i++)
 		{
 			if (tex[i] != sTex[i])
 			{
@@ -433,7 +423,7 @@ HWBlend GSDevice::GetBlend(size_t index)
 	return blend;
 }
 
-uint16 GSDevice::GetBlendFlags(size_t index) { return m_blendMap[index].flags; }
+u16 GSDevice::GetBlendFlags(size_t index) { return m_blendMap[index].flags; }
 
 // clang-format off
 

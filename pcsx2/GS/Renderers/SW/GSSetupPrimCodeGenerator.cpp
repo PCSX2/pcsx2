@@ -15,10 +15,11 @@
 
 #include "PrecompiledHeader.h"
 #include "GSSetupPrimCodeGenerator.h"
+#include "GSSetupPrimCodeGenerator.all.h"
 
 using namespace Xbyak;
 
-GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(void* param, uint64 key, void* code, size_t maxsize)
+GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(void* param, u64 key, void* code, size_t maxsize)
 	: GSCodeGenerator(code, maxsize)
 	, m_local(*(GSScanlineLocalData*)param)
 	, m_rip(false)
@@ -30,19 +31,5 @@ GSSetupPrimCodeGenerator::GSSetupPrimCodeGenerator(void* param, uint64 key, void
 	m_en.t = m_sel.fb && m_sel.tfx != TFX_NONE ? 1 : 0;
 	m_en.c = m_sel.fb && !(m_sel.tfx == TFX_DECAL && m_sel.tcc) ? 1 : 0;
 
-	try
-	{
-#if _M_SSE >= 0x501
-		Generate_AVX2();
-#else
-		if (m_cpu.has(util::Cpu::tAVX))
-			Generate_AVX();
-		else
-			Generate_SSE();
-#endif
-	}
-	catch (std::exception& e)
-	{
-		fprintf(stderr, "ERR:GSSetupPrimCodeGenerator %s\n", e.what());
-	}
+	GSSetupPrimCodeGenerator2(this, CPUInfo(m_cpu), param, key).Generate();
 }

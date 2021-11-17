@@ -31,10 +31,10 @@ class VU_Thread : public pxThread {
 
 	u32 buffer[buffer_size];
 	// Note: keep atomic on separate cache line to avoid CPU conflict
-	__aligned(64) std::atomic<bool> isBusy;   // Is thread processing data?
-	__aligned(64) std::atomic<int> m_ato_read_pos; // Only modified by VU thread
-	__aligned(64) std::atomic<int> m_ato_write_pos;    // Only modified by EE thread
-	__aligned(64) int  m_read_pos; // temporary read pos (local to the VU thread)
+	alignas(64) std::atomic<bool> isBusy;   // Is thread processing data?
+	alignas(64) std::atomic<int> m_ato_read_pos; // Only modified by VU thread
+	alignas(64) std::atomic<int> m_ato_write_pos;    // Only modified by EE thread
+	alignas(64) int  m_read_pos; // temporary read pos (local to the VU thread)
 	int  m_write_pos; // temporary write pos (local to the EE thread)
 	Mutex     mtxBusy;
 	Semaphore semaEvent;
@@ -42,8 +42,8 @@ class VU_Thread : public pxThread {
 	VURegs&          vuRegs;
 
 public:
-	__aligned16  vifStruct        vif;
-	__aligned16  VIFregisters     vifRegs;
+	alignas(16)  vifStruct        vif;
+	alignas(16)  VIFregisters     vifRegs;
 	Semaphore semaXGkick;
 	std::atomic<unsigned int> vuCycles[4]; // Used for VU cycle stealing hack
 	u32 vuCycleIdx;  // Used for VU cycle stealing hack
@@ -122,4 +122,4 @@ private:
 	u32 Get_vuCycles();
 };
 
-extern __aligned16 VU_Thread vu1Thread;
+extern VU_Thread vu1Thread;

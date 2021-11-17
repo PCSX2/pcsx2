@@ -45,7 +45,7 @@ using namespace vtlb_private;
 
 namespace vtlb_private
 {
-	__aligned(64) MapData vtlbdata;
+	alignas(64) MapData vtlbdata;
 }
 
 static vtlbHandler vtlbHandlerCount = 0;
@@ -587,7 +587,7 @@ void vtlb_MapHandler(vtlbHandler handler, u32 start, u32 size)
 	verify(0==(size&VTLB_PAGE_MASK) && size>0);
 
 	u32 end = start + (size - VTLB_PAGE_SIZE);
-	pxAssume( (end>>VTLB_PAGE_BITS) < ArraySize(vtlbdata.pmap) );
+	pxAssume( (end>>VTLB_PAGE_BITS) < std::size(vtlbdata.pmap) );
 
 	while (start <= end)
 	{
@@ -607,7 +607,7 @@ void vtlb_MapBlock(void* base, u32 start, u32 size, u32 blocksize)
 
 	sptr baseint = (sptr)base;
 	u32 end = start + (size - VTLB_PAGE_SIZE);
-	verify((end>>VTLB_PAGE_BITS) < ArraySize(vtlbdata.pmap));
+	verify((end>>VTLB_PAGE_BITS) < std::size(vtlbdata.pmap));
 
 	while (start <= end)
 	{
@@ -632,7 +632,7 @@ void vtlb_Mirror(u32 new_region,u32 start,u32 size)
 	verify(0==(size&VTLB_PAGE_MASK) && size>0);
 
 	u32 end = start + (size-VTLB_PAGE_SIZE);
-	verify((end>>VTLB_PAGE_BITS) < ArraySize(vtlbdata.pmap));
+	verify((end>>VTLB_PAGE_BITS) < std::size(vtlbdata.pmap));
 
 	while(start <= end)
 	{

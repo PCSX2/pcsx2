@@ -29,26 +29,9 @@ class GSSetupPrimCodeGenerator : public GSCodeGenerator
 
 	struct
 	{
-		uint32 z : 1, f : 1, t : 1, c : 1;
+		u32 z : 1, f : 1, t : 1, c : 1;
 	} m_en;
 
-#if _M_SSE < 0x501
-	void Generate_SSE();
-	void Depth_SSE();
-	void Texture_SSE();
-	void Color_SSE();
-
-	void Generate_AVX();
-	void Depth_AVX();
-	void Texture_AVX();
-	void Color_AVX();
-#else
-	void Generate_AVX2();
-	void Depth_AVX2();
-	void Texture_AVX2();
-	void Color_AVX2();
-#endif
-
 public:
-	GSSetupPrimCodeGenerator(void* param, uint64 key, void* code, size_t maxsize);
+	GSSetupPrimCodeGenerator(void* param, u64 key, void* code, size_t maxsize);
 };

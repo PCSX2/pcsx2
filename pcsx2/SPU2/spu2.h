@@ -28,7 +28,7 @@ enum class PS2Modes
 
 s32 SPU2init();
 s32 SPU2reset(PS2Modes isRunningPSXMode);
-s32 SPU2open(void* pDsp);
+s32 SPU2open();
 void SPU2close();
 void SPU2shutdown();
 void SPU2write(u32 mem, u16 value);

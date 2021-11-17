@@ -79,7 +79,7 @@ void GSTextureCache11::Read(Target* t, const GSVector4i& r)
 		{
 			// TODO: block level write
 
-			GSOffset* off = m_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
+			GSOffset off = m_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
 			switch (TEX0.PSM)
 			{
@@ -124,7 +124,7 @@ void GSTextureCache11::Read(Source* t, const GSVector4i& r)
 
 		if (offscreen->Map(m, &r_offscreen))
 		{
-			GSOffset* off = m_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
+			GSOffset off = m_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
 			m_renderer->m_mem.WritePixel32(m.bits, m.pitch, off, r);
 

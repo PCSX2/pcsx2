@@ -15,7 +15,7 @@
 
 #pragma once
 
-#include "GS/GS.h"
+#include "GS/GSRegs.h"
 #include "GS/GSVector.h"
 #include "GS/Renderers/HW/GSVertexHW.h"
 #include "GS/Renderers/SW/GSVertexSW.h"
@@ -31,8 +31,8 @@ struct alignas(32) GSVertex
 			GIFRegST ST;       // S:0, T:4
 			GIFRegRGBAQ RGBAQ; // RGBA:8, Q:12
 			GIFRegXYZ XYZ;     // XY:16, Z:20
-			union { uint32 UV; struct { uint16 U, V; }; }; // UV:24
-			uint32 FOG;        // FOG:28
+			union { u32 UV; struct { u16 U, V; }; }; // UV:24
+			u32 FOG;        // FOG:28
 		};
 
 #if _M_SSE >= 0x500
@@ -73,7 +73,7 @@ struct alignas(32) GSVertexPT1
 	GSVector4 p;
 	GSVector2 t;
 	char pad[4];
-	union { uint32 c; struct { uint8 r, g, b, a; }; };
+	union { u32 c; struct { u8 r, g, b, a; }; };
 };
 
 struct GSVertexPT2

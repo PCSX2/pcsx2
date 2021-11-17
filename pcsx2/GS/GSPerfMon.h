@@ -15,8 +15,6 @@
 
 #pragma once
 
-#include "GS_types.h"
-
 class GSPerfMon
 {
 public:
@@ -45,8 +43,8 @@ public:
 protected:
 	double m_counters[CounterLast];
 	double m_stats[CounterLast];
-	uint64 m_begin[TimerLast], m_total[TimerLast], m_start[TimerLast];
-	uint64 m_frame;
+	u64 m_begin[TimerLast], m_total[TimerLast], m_start[TimerLast];
+	u64 m_frame;
 	clock_t m_lastframe;
 	int m_count;
 
@@ -55,8 +53,8 @@ protected:
 public:
 	GSPerfMon();
 
-	void SetFrame(uint64 frame) { m_frame = frame; }
-	uint64 GetFrame() { return m_frame; }
+	void SetFrame(u64 frame) { m_frame = frame; }
+	u64 GetFrame() { return m_frame; }
 
 	void Put(counter_t c, double val = 0);
 	double Get(counter_t c) { return m_stats[c]; }

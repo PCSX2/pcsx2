@@ -46,12 +46,12 @@ _x86regs x86regs[iREGCNT_GPR], s_saveX86regs[iREGCNT_GPR];
 #define VU_ACCx_ADDR   (uptr)&VU->ACC.UL[0]
 
 
-__aligned16 u32 xmmBackup[iREGCNT_XMM][4];
+alignas(16) u32 xmmBackup[iREGCNT_XMM][4];
 
 #ifdef __M_X86_64
-__aligned16 u64 gprBackup[iREGCNT_GPR];
+alignas(16) u64 gprBackup[iREGCNT_GPR];
 #else
-__aligned16 u32 gprBackup[iREGCNT_GPR];
+alignas(16) u32 gprBackup[iREGCNT_GPR];
 #endif
 
 static int s_xmmchecknext = 0;
@@ -985,7 +985,7 @@ u32 _recIsRegWritten(EEINST* pinst, int size, u8 xmmtype, u8 reg)
 
 	while (size-- > 0)
 	{
-		for (size_t i = 0; i < ArraySize(pinst->writeType); ++i)
+        for (size_t i = 0; i < std::size(pinst->writeType); ++i)
 		{
 			if ((pinst->writeType[i] == xmmtype) && (pinst->writeReg[i] == reg))
 				return inst;
@@ -1001,7 +1001,7 @@ void _recFillRegister(EEINST& pinst, int type, int reg, int write)
 {
 	if (write)
 	{
-		for (size_t i = 0; i < ArraySize(pinst.writeType); ++i)
+        for (size_t i = 0; i < std::size(pinst.writeType); ++i)
 		{
 			if (pinst.writeType[i] == XMMTYPE_TEMP)
 			{
@@ -1014,7 +1014,7 @@ void _recFillRegister(EEINST& pinst, int type, int reg, int write)
 	}
 	else
 	{
-		for (size_t i = 0; i < ArraySize(pinst.readType); ++i)
+        for (size_t i = 0; i < std::size(pinst.readType); ++i)
 		{
 			if (pinst.readType[i] == XMMTYPE_TEMP)
 			{

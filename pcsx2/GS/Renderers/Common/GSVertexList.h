@@ -26,9 +26,9 @@ public:
 	GSVertexList()
 		: m_count(0)
 	{
-		m_base = _aligned_malloc(sizeof(Vertex) * countof(m_v), 32);
+		m_base = _aligned_malloc(sizeof(Vertex) * std::size(m_v), 32);
 
-		for (size_t i = 0; i < countof(m_v); i++)
+		for (size_t i = 0; i < std::size(m_v); i++)
 		{
 			m_v[i] = &((Vertex*)m_base)[i];
 		}

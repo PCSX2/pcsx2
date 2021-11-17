@@ -121,8 +121,14 @@ else()
 
 	if(UNIX AND NOT APPLE)
 		check_lib(EGL EGL EGL/egl.h)
-		check_lib(X11_XCB X11-xcb X11/Xlib-xcb.h)
-		check_lib(XCB xcb xcb/xcb.h)
+		if(X11_API)
+			check_lib(X11_XCB X11-xcb X11/Xlib-xcb.h)
+			check_lib(XCB xcb xcb/xcb.h)
+			check_lib(XRANDR xrandr)
+		endif()
+		if(WAYLAND_API)
+			find_package(Wayland REQUIRED)
+		endif()
 
 		if(Linux)
 			check_lib(AIO aio libaio.h)
@@ -172,6 +178,9 @@ else()
 		endif()
 		endif()
 	endif()
+	if(WAYLAND_API)
+		find_package(Wayland REQUIRED)
+	endif()
 
 	#----------------------------------------
 	#           Use system include
@@ -179,6 +188,9 @@ else()
 	find_package(HarfBuzz)
 
 endif(WIN32)
+
+# Require threads on all OSes.
+find_package(Threads REQUIRED)
 
 set(ACTUALLY_ENABLE_TESTS ${ENABLE_TESTS})
 if(ENABLE_TESTS)
@@ -256,3 +268,5 @@ else()
 	set(BIN2CPP perl ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl)
 	set(BIN2CPPDEP ${CMAKE_SOURCE_DIR}/linux_various/hex2h.pl)
 endif()
+
+add_subdirectory(3rdparty/glad EXCLUDE_FROM_ALL)

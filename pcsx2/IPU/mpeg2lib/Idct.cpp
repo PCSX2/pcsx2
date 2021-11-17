@@ -45,7 +45,7 @@
  * to +-3826 - this is the worst case for a column IDCT where the
  * column inputs are 16-bit values.
  */
-static __aligned16 u8 clip_lut[1024];
+alignas(16) static u8 clip_lut[1024];
 
 #define CLIP(i) ((clip_lut+384)[(i)])
 
@@ -248,4 +248,4 @@ mpeg2_scan_pack::mpeg2_scan_pack()
 	}
 }
 
-const __aligned16 mpeg2_scan_pack mpeg2_scan;
+alignas(16) const mpeg2_scan_pack mpeg2_scan;

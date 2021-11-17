@@ -19,11 +19,11 @@
 // Micro VU - Clamp Functions
 //------------------------------------------------------------------
 
-const __aligned16 u32 sse4_minvals[2][4] = {
+alignas(16) const u32 sse4_minvals[2][4] = {
 	{0xff7fffff, 0xffffffff, 0xffffffff, 0xffffffff}, //1000
 	{0xff7fffff, 0xff7fffff, 0xff7fffff, 0xff7fffff}, //1111
 };
-const __aligned16 u32 sse4_maxvals[2][4] = {
+alignas(16) const u32 sse4_maxvals[2][4] = {
 	{0x7f7fffff, 0x7fffffff, 0x7fffffff, 0x7fffffff}, //1000
 	{0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff}, //1111
 };

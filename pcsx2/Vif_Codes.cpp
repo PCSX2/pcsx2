@@ -746,7 +746,7 @@ vifOp(vifCode_Unpack)
 // Vif0/Vif1 Code Tables
 //------------------------------------------------------------------
 
-__aligned16 FnType_VifCmdHandler* const vifCmdHandler[2][128] =
+alignas(16) FnType_VifCmdHandler* const vifCmdHandler[2][128] =
 {
 	{
 		vifCode_Nop<0>     , vifCode_STCycl<0>  , vifCode_Offset<0>	, vifCode_Base<0>   , vifCode_ITop<0>   , vifCode_STMod<0>  , vifCode_MskPath3<0>, vifCode_Mark<0>,   /*0x00*/

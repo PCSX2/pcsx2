@@ -376,7 +376,7 @@ bool DoCDVDopen()
 		return true;
 	}
 
-	wxString somepick(Path::GetFilenameWithoutExt(m_SourceFilename[CurrentSourceType]));
+	wxString somepick(Path::GetFilenameWithoutExt(fromUTF8(m_SourceFilename[CurrentSourceType])));
 	//FWIW Disc serial availability doesn't seem reliable enough, sometimes it's there and sometime it's just null
 	//Shouldn't the serial be available all time? Potentially need to look into Elfreloadinfo() reliability
 	//TODO: Add extra fallback case for CRC.

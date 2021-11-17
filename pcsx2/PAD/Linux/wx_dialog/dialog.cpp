@@ -472,12 +472,12 @@ void PADDialog::InitDialog()
 
 void PADDialog::OnButtonClicked(wxCommandEvent& event)
 {
-	// Affichage d'un message à chaque clic sur le bouton
+	// Display a message each time the button is clicked
 	wxButton* bt_tmp = (wxButton*)event.GetEventObject(); // get the button object
 	int bt_id = bt_tmp->GetId() - wxID_HIGHEST - 1;       // get the real ID
 	int gamepad_id = m_tab_gamepad->GetSelection();       // get the tab ID (equivalent to the gamepad id)
 	if (bt_id >= 0 && bt_id <= PAD_R_LEFT)
-	{                      // if the button ID is a gamepad button
+	{ // if the button ID is a gamepad button
 		bt_tmp->Disable(); // switch the button state to "Disable"
 		config_key(gamepad_id, bt_id);
 		bt_tmp->Enable(); // switch the button state to "Enable"
@@ -540,7 +540,7 @@ void PADDialog::OnButtonClicked(wxCommandEvent& event)
 			}
 			m_pan_tabs[gamepad_id]->Refresh();
 			m_pan_tabs[gamepad_id]->Update();
-			config_key(gamepad_id, i);
+			bool key_captured = config_key(gamepad_id, i);
 			switch (i)
 			{
 				case PAD_L_UP: // Left joystick (Up) ↑
@@ -573,20 +573,24 @@ void PADDialog::OnButtonClicked(wxCommandEvent& event)
 			}
 			m_pan_tabs[gamepad_id]->Refresh();
 			m_pan_tabs[gamepad_id]->Update();
+			if (!key_captured)
+			{ // if ESC is hit, abort Set_all and return user control
+				break;
+			}
 			usleep(500000); // give enough time to the user to release the button
 		}
 	}
 	else if (bt_id == Ok)
-	{                    // If the button ID is equals to the Ok button ID
+	{ // If the button ID is equals to the Ok button ID
 		PADSaveConfig(); // Save the configuration
 		Close();         // Close the window
 	}
 	else if (bt_id == Apply)
-	{                    // If the button ID is equals to the Apply button ID
+	{ // If the button ID is equals to the Apply button ID
 		PADSaveConfig(); // Save the configuration
 	}
 	else if (bt_id == Cancel)
-	{            // If the button ID is equals to the cancel button ID
+	{ // If the button ID is equals to the cancel button ID
 		Close(); // Close the window
 	}
 }
@@ -595,7 +599,7 @@ void PADDialog::OnButtonClicked(wxCommandEvent& event)
 /*********** Methods functions **********/
 /****************************************/
 
-void PADDialog::config_key(int pad, int key)
+bool PADDialog::config_key(int pad, int key)
 {
 	bool captured = false;
 	u32 key_pressed = 0;
@@ -612,11 +616,17 @@ void PADDialog::config_key(int pad, int key)
 				set_keyboard_key(pad, key_pressed, key);
 				m_simulatedKeys[pad][key] = key_pressed;
 			}
+			else
+			{
+				return captured;
+			}
 			captured = true;
 		}
 	}
 	m_bt_gamepad[pad][key]->SetLabel(
 		KeyName(pad, key, m_simulatedKeys[pad][key]).c_str());
+
+	return captured;
 }
 
 void PADDialog::clear_key(int pad, int key)
@@ -655,7 +665,8 @@ void DisplayDialog()
 	if (g_conf.ftw)
 	{
 		wxString info("The PAD GUI is provided to map the keyboard/mouse to the virtual PS2 pad.\n\n"
-					  "Gamepads/Joysticks are plug and play. The active gamepad can be selected in the 'Gamepad Configuration' panel.\n\n");
+					  "Gamepads/Joysticks are plug and play. Re-mapping of Gamepads/Joysticks is currently not supported in the PAD GUI.\n\n"
+					  "The active gamepad can be selected in the 'Gamepad Configuration' panel.\n\n");
 
 		wxMessageDialog ftw(nullptr, info);
 		ftw.ShowModal();

@@ -45,7 +45,7 @@ u32 laststall = 0;
 
 #define VI_BACKUP
 
-static __aligned16 VECTOR RDzero;
+alignas(16) static VECTOR RDzero;
 
 static __ri bool _vuFMACflush(VURegs* VU)
 {
@@ -75,7 +75,7 @@ static __ri bool _vuFMACflush(VURegs* VU)
 			VU->VI[REG_STATUS_FLAG].UL = (VU->VI[REG_STATUS_FLAG].UL & 0xFF0) | (VU->fmac[i].statusflag & 0xF) | ((VU->fmac[i].statusflag & 0xF) << 6);
 		VU->VI[REG_MAC_FLAG].UL = VU->fmac[i].macflag;
 
-		VU->fmacreadpos = ++VU->fmacreadpos & 3;
+		VU->fmacreadpos = (VU->fmacreadpos + 1) & 3;
 		VU->fmaccount--;
 
 		didflush = true;
@@ -95,7 +95,7 @@ static __ri bool _vuIALUflush(VURegs* VU)
 		if ((VU->cycle - VU->ialu[i].sCycle) < VU->ialu[i].Cycle)
 			return didflush;
 
-		VU->ialureadpos = ++VU->ialureadpos & 3;
+		VU->ialureadpos = (VU->ialureadpos + 1) & 3;
 		VU->ialucount--;
 		didflush = true;
 	}
@@ -179,7 +179,7 @@ void _vuFlushAll(VURegs* VU)
 			VU->VI[REG_STATUS_FLAG].UL = (VU->VI[REG_STATUS_FLAG].UL & 0xFF0) | (VU->fmac[i].statusflag & 0xF) | ((VU->fmac[i].statusflag & 0xF) << 6);
 		VU->VI[REG_MAC_FLAG].UL = VU->fmac[i].macflag;
 
-		VU->fmacreadpos = ++VU->fmacreadpos & 3;
+		VU->fmacreadpos = (VU->fmacreadpos + 1) & 3;
 
 		if ((VU->cycle - VU->fmac[i].sCycle) < VU->fmac[i].Cycle)
 			VU->cycle = VU->fmac[i].sCycle + VU->fmac[i].Cycle;
@@ -189,7 +189,7 @@ void _vuFlushAll(VURegs* VU)
 
 	for (i = VU->ialureadpos; VU->ialucount > 0; i = (i + 1) & 3)
 	{
-		VU->ialureadpos = ++VU->ialureadpos & 3;
+		VU->ialureadpos = (VU->ialureadpos + 1) & 3;
 
 		if ((VU->cycle - VU->ialu[i].sCycle) < VU->ialu[i].Cycle)
 			VU->cycle = VU->ialu[i].sCycle + VU->ialu[i].Cycle;
@@ -220,7 +220,7 @@ __fi void _vuTestPipes(VURegs* VU)
 	}
 }
 
-static void __fastcall _vuFMACTestStall(VURegs* VU, int reg, int xyzw)
+static void __fastcall _vuFMACTestStall(VURegs* VU, u32 reg, u32 xyzw)
 {
 	u32 i = 0;
 
@@ -231,10 +231,8 @@ static void __fastcall _vuFMACTestStall(VURegs* VU, int reg, int xyzw)
 			continue;
 
 		// Check if the regs match
-		if ((VU->fmac[currentpipe].regupper == reg &&
-			VU->fmac[currentpipe].xyzwupper & xyzw)
-			|| (VU->fmac[currentpipe].reglower == reg &&
-				VU->fmac[currentpipe].xyzwlower & xyzw))
+		if ((VU->fmac[currentpipe].regupper == reg && VU->fmac[currentpipe].xyzwupper & xyzw)
+			|| (VU->fmac[currentpipe].reglower == reg && VU->fmac[currentpipe].xyzwlower & xyzw))
 		{
 			u32 newCycle = VU->fmac[currentpipe].Cycle + VU->fmac[currentpipe].sCycle;
 
@@ -398,7 +396,7 @@ static __ri void __fastcall _vuAddIALUStalls(VURegs* VU, _VURegsNum* VUregsn)
 	VU->ialu[i].Cycle = VUregsn->cycles;
 	VU->ialu[i].reg = VUregsn->VIwrite;
 
-	VU->ialuwritepos = ++VU->ialuwritepos & 3;
+	VU->ialuwritepos = (VU->ialuwritepos + 1) & 3;
 	VU->ialucount++;
 }
 
@@ -432,7 +430,7 @@ __fi void _vuAddLowerStalls(VURegs* VU, _VURegsNum* VUregsn)
 	}
 }
 
-__fi void _vuBackupVI(VURegs* VU, int reg)
+__fi void _vuBackupVI(VURegs* VU, u32 reg)
 {
 #ifdef VI_BACKUP
 	if (VU->VIBackupCycles && reg == VU->VIRegNumber)
@@ -4405,7 +4403,7 @@ static void __vuRegsCall VU1regsunknown(_VURegsNum* VUregsn)
 // --------------------------------------------------------------------------------------
 
 #define _vuTablesMess(PREFIX, FNTYPE) \
- static __aligned16 const FNTYPE PREFIX##LowerOP_T3_00_OPCODE[32] = { \
+alignas(16) static const FNTYPE PREFIX##LowerOP_T3_00_OPCODE[32] = { \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown , PREFIX##unknown, \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown , PREFIX##unknown,  \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown , PREFIX##unknown,  \
@@ -4416,7 +4414,7 @@ static void __vuRegsCall VU1regsunknown(_VURegsNum* VUregsn)
 	PREFIX##MI_ESADD , PREFIX##MI_EATANxy, PREFIX##MI_ESQRT, PREFIX##MI_ESIN,  \
 }; \
  \
- static __aligned16 const FNTYPE PREFIX##LowerOP_T3_01_OPCODE[32] = { \
+alignas(16) static const FNTYPE PREFIX##LowerOP_T3_01_OPCODE[32] = { \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown , PREFIX##unknown, \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown , PREFIX##unknown,  \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown , PREFIX##unknown,  \
@@ -4427,7 +4425,7 @@ static void __vuRegsCall VU1regsunknown(_VURegsNum* VUregsn)
 	PREFIX##MI_ERSADD, PREFIX##MI_EATANxz, PREFIX##MI_ERSQRT, PREFIX##MI_EATAN, \
 }; \
  \
- static __aligned16 const FNTYPE PREFIX##LowerOP_T3_10_OPCODE[32] = { \
+alignas(16) static const FNTYPE PREFIX##LowerOP_T3_10_OPCODE[32] = { \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown , PREFIX##unknown, \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown , PREFIX##unknown,  \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown , PREFIX##unknown,  \
@@ -4438,7 +4436,7 @@ static void __vuRegsCall VU1regsunknown(_VURegsNum* VUregsn)
 	PREFIX##MI_ELENG , PREFIX##MI_ESUM  , PREFIX##MI_ERCPR, PREFIX##MI_EEXP,  \
 }; \
  \
- static __aligned16 const FNTYPE PREFIX##LowerOP_T3_11_OPCODE[32] = { \
+alignas(16) static const FNTYPE PREFIX##LowerOP_T3_11_OPCODE[32] = { \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown , PREFIX##unknown, \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown , PREFIX##unknown,  \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown , PREFIX##unknown,  \
@@ -4449,7 +4447,7 @@ static void __vuRegsCall VU1regsunknown(_VURegsNum* VUregsn)
 	PREFIX##MI_ERLENG, PREFIX##unknown  , PREFIX##MI_WAITP, PREFIX##unknown,  \
 }; \
  \
- static __aligned16 const FNTYPE PREFIX##LowerOP_OPCODE[64] = { \
+alignas(16) static const FNTYPE PREFIX##LowerOP_OPCODE[64] = { \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown , PREFIX##unknown, \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown , PREFIX##unknown,  \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown , PREFIX##unknown,  \
@@ -4468,7 +4466,7 @@ static void __vuRegsCall VU1regsunknown(_VURegsNum* VUregsn)
 	PREFIX##LowerOP_T3_00, PREFIX##LowerOP_T3_01, PREFIX##LowerOP_T3_10, PREFIX##LowerOP_T3_11,  \
 }; \
  \
-__aligned16 const FNTYPE PREFIX##_LOWER_OPCODE[128] = { \
+alignas(16) const FNTYPE PREFIX##_LOWER_OPCODE[128] = { \
 	PREFIX##MI_LQ    , PREFIX##MI_SQ    , PREFIX##unknown , PREFIX##unknown,  \
 	PREFIX##MI_ILW   , PREFIX##MI_ISW   , PREFIX##unknown , PREFIX##unknown,  \
 	PREFIX##MI_IADDIU, PREFIX##MI_ISUBIU, PREFIX##unknown , PREFIX##unknown,  \
@@ -4503,7 +4501,7 @@ __aligned16 const FNTYPE PREFIX##_LOWER_OPCODE[128] = { \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown , PREFIX##unknown,  \
 }; \
  \
- static __aligned16 const FNTYPE PREFIX##_UPPER_FD_00_TABLE[32] = { \
+alignas(16) static const FNTYPE PREFIX##_UPPER_FD_00_TABLE[32] = { \
 	PREFIX##MI_ADDAx, PREFIX##MI_SUBAx , PREFIX##MI_MADDAx, PREFIX##MI_MSUBAx, \
 	PREFIX##MI_ITOF0, PREFIX##MI_FTOI0, PREFIX##MI_MULAx , PREFIX##MI_MULAq , \
 	PREFIX##MI_ADDAq, PREFIX##MI_SUBAq, PREFIX##MI_ADDA  , PREFIX##MI_SUBA  , \
@@ -4514,7 +4512,7 @@ __aligned16 const FNTYPE PREFIX##_LOWER_OPCODE[128] = { \
 	PREFIX##unknown , PREFIX##unknown , PREFIX##unknown  , PREFIX##unknown  , \
 }; \
  \
- static __aligned16 const FNTYPE PREFIX##_UPPER_FD_01_TABLE[32] = { \
+alignas(16) static const FNTYPE PREFIX##_UPPER_FD_01_TABLE[32] = { \
 	PREFIX##MI_ADDAy , PREFIX##MI_SUBAy  , PREFIX##MI_MADDAy, PREFIX##MI_MSUBAy, \
 	PREFIX##MI_ITOF4 , PREFIX##MI_FTOI4 , PREFIX##MI_MULAy , PREFIX##MI_ABS   , \
 	PREFIX##MI_MADDAq, PREFIX##MI_MSUBAq, PREFIX##MI_MADDA , PREFIX##MI_MSUBA , \
@@ -4525,7 +4523,7 @@ __aligned16 const FNTYPE PREFIX##_LOWER_OPCODE[128] = { \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown  , \
 }; \
  \
- static __aligned16 const FNTYPE PREFIX##_UPPER_FD_10_TABLE[32] = { \
+alignas(16) static const FNTYPE PREFIX##_UPPER_FD_10_TABLE[32] = { \
 	PREFIX##MI_ADDAz , PREFIX##MI_SUBAz  , PREFIX##MI_MADDAz, PREFIX##MI_MSUBAz, \
 	PREFIX##MI_ITOF12, PREFIX##MI_FTOI12, PREFIX##MI_MULAz , PREFIX##MI_MULAi , \
 	PREFIX##MI_ADDAi, PREFIX##MI_SUBAi , PREFIX##MI_MULA  , PREFIX##MI_OPMULA, \
@@ -4536,7 +4534,7 @@ __aligned16 const FNTYPE PREFIX##_LOWER_OPCODE[128] = { \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown  , \
 }; \
  \
- static __aligned16 const FNTYPE PREFIX##_UPPER_FD_11_TABLE[32] = { \
+alignas(16) static const FNTYPE PREFIX##_UPPER_FD_11_TABLE[32] = { \
 	PREFIX##MI_ADDAw , PREFIX##MI_SUBAw  , PREFIX##MI_MADDAw, PREFIX##MI_MSUBAw, \
 	PREFIX##MI_ITOF15, PREFIX##MI_FTOI15, PREFIX##MI_MULAw , PREFIX##MI_CLIP  , \
 	PREFIX##MI_MADDAi, PREFIX##MI_MSUBAi, PREFIX##unknown  , PREFIX##MI_NOP   , \
@@ -4547,7 +4545,7 @@ __aligned16 const FNTYPE PREFIX##_LOWER_OPCODE[128] = { \
 	PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown  , PREFIX##unknown  , \
 }; \
  \
-  __aligned16 const FNTYPE PREFIX##_UPPER_OPCODE[64] = { \
+alignas(16) const FNTYPE PREFIX##_UPPER_OPCODE[64] = { \
 	PREFIX##MI_ADDx  , PREFIX##MI_ADDy  , PREFIX##MI_ADDz  , PREFIX##MI_ADDw, \
 	PREFIX##MI_SUBx  , PREFIX##MI_SUBy  , PREFIX##MI_SUBz  , PREFIX##MI_SUBw, \
 	PREFIX##MI_MADDx , PREFIX##MI_MADDy , PREFIX##MI_MADDz , PREFIX##MI_MADDw, \

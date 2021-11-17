@@ -71,8 +71,6 @@ public:
 	GSRendererOGL();
 	virtual ~GSRendererOGL() {}
 
-	bool CreateDevice(GSDevice* dev);
-
 	void DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* tex) final;
 
 	PRIM_OVERLAP PrimitiveOverlap();

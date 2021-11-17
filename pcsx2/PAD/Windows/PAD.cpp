@@ -15,6 +15,7 @@
 
 #include "PrecompiledHeader.h"
 #include "Global.h"
+#include "Common/WindowInfo.h"
 
 #include <fstream>
 #include <iomanip>
@@ -34,17 +35,17 @@
 #include "KeyboardQueue.h"
 #include "DualShock3.h"
 
+#ifndef PCSX2_CORE
 #include "gui/AppCoreThread.h"
+#endif
 
 #define WMA_FORCE_UPDATE (WM_APP + 0x537)
 #define FORCE_UPDATE_WPARAM ((WPARAM)0x74328943)
 #define FORCE_UPDATE_LPARAM ((LPARAM)0x89437437)
 
-#ifdef __linux__
-Display* GSdsp;
-Window GSwin;
-#else
-HWND hWnd;
+static WindowInfo s_window_info;
+
+#ifdef _WIN32
 HWND hWndTop;
 
 WndProcEater hWndGSProc;
@@ -483,7 +484,8 @@ void Update(unsigned int port, unsigned int slot)
 			if (!updateQueued)
 			{
 				updateQueued = 1;
-				PostMessage(hWnd, WMA_FORCE_UPDATE, FORCE_UPDATE_WPARAM, FORCE_UPDATE_LPARAM);
+				PostMessage(static_cast<HWND>(s_window_info.window_handle),
+					WMA_FORCE_UPDATE, FORCE_UPDATE_WPARAM, FORCE_UPDATE_LPARAM);
 			}
 		}
 		else
@@ -963,66 +965,51 @@ ExtraWndProcResult StatusWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lPa
 }
 #endif
 
+#ifndef PCSX2_CORE
 void PADconfigure()
 {
 	ScopedCoreThreadPause paused_core(SystemsMask::System_PAD);
 	Configure();
 	paused_core.AllowResume();
 }
+#endif
 
-s32 PADopen(void* pDsp)
+s32 PADopen(const WindowInfo& wi)
 {
 	if (openCount++)
 		return 0;
 
 	miceEnabled = !config.mouseUnfocus;
 #ifdef _MSC_VER
-	if (!hWnd)
+	if (wi.type != WindowInfo::Type::Win32)
 	{
-		if (IsWindow((HWND)pDsp))
-		{
-			hWnd = (HWND)pDsp;
-		}
-		else if (pDsp && !IsBadReadPtr(pDsp, 4) && IsWindow(*(HWND*)pDsp))
-		{
-			hWnd = *(HWND*)pDsp;
-		}
-		else
-		{
-			openCount = 0;
-			MessageBoxA(GetActiveWindow(),
-						"Invalid Window handle passed to PAD.\n"
-						"\n"
-						"Either your emulator or gs plugin is buggy,\n"
-						"Despite the fact the emulator is about to\n"
-						"blame PAD for failing to initialize.",
-						"Non-PAD Error", MB_OK | MB_ICONERROR);
-			return -1;
-		}
-		hWndTop = GetAncestor(hWnd, GA_ROOT);
-
-		if (!hWndGSProc.SetWndHandle(hWnd))
-		{
-			openCount = 0;
-			return -1;
-		}
-
-		// Implements most hacks, as well as enabling/disabling mouse
-		// capture when focus changes.
-		updateQueued = 0;
-		hWndGSProc.Eat(StatusWndProc, 0);
-
-		if (hWnd != hWndTop)
-		{
-			if (!hWndTopProc.SetWndHandle(hWndTop))
-			{
-				openCount = 0;
-				return -1;
-			}
-		}
-
-		windowThreadId = GetWindowThreadProcessId(hWndTop, 0);
+		openCount = 0;
+		MessageBoxA(GetActiveWindow(),
+					"Invalid Window handle passed to PAD.\n"
+					"\n"
+					"Either your emulator or gs plugin is buggy,\n"
+					"Despite the fact the emulator is about to\n"
+					"blame PAD for failing to initialize.",
+					"Non-PAD Error", MB_OK | MB_ICONERROR);
+		return -1;
 	}
+
+	const HWND hWnd = static_cast<HWND>(wi.window_handle);
+	hWndTop = GetAncestor(hWnd, GA_ROOT);
+
+	if (!hWndGSProc.SetWndHandle(hWnd))
+	{
+		openCount = 0;
+		return -1;
+	}
+
+	// Implements most hacks, as well as enabling/disabling mouse
+	// capture when focus changes.
+	updateQueued = 0;
+	hWndGSProc.Eat(StatusWndProc, 0);
+
+	windowThreadId = GetWindowThreadProcessId(hWndTop, 0);
+	s_window_info = wi;
 
 #endif
 	for (int port = 0; port < 2; port++)
@@ -1049,10 +1036,6 @@ s32 PADopen(void* pDsp)
 // activeWindow = GetActiveWindow() == hWnd;
 
 // activeWindow = (GetAncestor(hWnd, GA_ROOT) == GetAncestor(GetForegroundWindow(), GA_ROOT));
-#else
-	// Not used so far
-	GSdsp = *(Display**)pDsp;
-	GSwin = (Window) * (((uptr*)pDsp) + 1);
 #endif
 	activeWindow = 1;
 	UpdateEnabledDevices();
@@ -1068,8 +1051,7 @@ void PADclose()
 		hWndGSProc.Release();
 		hWndTopProc.Release();
 		dm->ReleaseInput();
-		hWnd = 0;
-		hWndTop = 0;
+		s_window_info = WindowInfo();
 #else
 		R_ClearKeyQueue();
 #endif

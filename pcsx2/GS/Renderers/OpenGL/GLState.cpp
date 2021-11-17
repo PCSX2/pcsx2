@@ -23,11 +23,11 @@ namespace GLState
 	GSVector4i scissor;
 
 	bool blend;
-	uint16 eq_RGB;
-	uint16 f_sRGB;
-	uint16 f_dRGB;
-	uint8 bf;
-	uint32 wrgba;
+	u16 eq_RGB;
+	u16 f_sRGB;
+	u16 f_dRGB;
+	u8 bf;
+	u32 wrgba;
 
 	bool depth;
 	GLenum depth_func;
@@ -36,8 +36,6 @@ namespace GLState
 	bool stencil;
 	GLenum stencil_func;
 	GLenum stencil_pass;
-
-	GLuint ubo;
 
 	GLuint ps_ss;
 
@@ -52,7 +50,7 @@ namespace GLState
 	GLuint program;
 	GLuint pipeline;
 
-	int64 available_vram;
+	s64 available_vram;
 
 	void Clear()
 	{
@@ -75,16 +73,12 @@ namespace GLState
 		stencil_func = 0;
 		stencil_pass = 0xFFFF; // Note 0 is valid (GL_ZERO)
 
-		ubo = 0;
-
 		ps_ss = 0;
 
 		rt = 0;
 		ds = 0;
-		for (size_t i = 0; i < countof(tex_unit); i++)
-			tex_unit[i] = 0;
-		for (size_t i = 0; i < countof(tex_handle); i++)
-			tex_handle[i] = 0;
+		std::fill(std::begin(tex_unit), std::end(tex_unit), 0);
+		std::fill(std::begin(tex_handle), std::end(tex_handle), 0);
 
 		ps = 0;
 		gs = 0;

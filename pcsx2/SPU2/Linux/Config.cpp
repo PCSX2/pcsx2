@@ -183,7 +183,7 @@ void WriteSettings()
 	}
 
 	CfgWriteInt(L"MIXING", L"Interpolation", Interpolation);
-	CfgWriteInt(L"MIXING", L"FinalVolume", (int)(FinalVolume * 100 + 0.5f));
+	CfgWriteInt(L"MIXING", L"FinalVolume", (int)(FinalVolume * 100));
 
 	CfgWriteBool(L"MIXING", L"AdvancedVolumeControl", AdvancedVolumeControl);
 	CfgWriteFloat(L"MIXING", L"VolumeAdjustC(dB)", VolumeAdjustCdb);

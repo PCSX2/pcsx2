@@ -14,10 +14,11 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GS.h"
 #include "GSCrc.h"
+#include "GSExtra.h"
+#include "GS.h"
 
-CRC::Game CRC::m_games[] =
+const CRC::Game CRC::m_games[] =
 {
 	// Note: IDs 0x7ACF7E03, 0x7D4EA48F, 0x37C53760 - shouldn't be added as it's from the multiloaders when packing games.
 	{0x00000000, NoTitle, NoRegion, 0},
@@ -505,7 +506,7 @@ CRC::Game CRC::m_games[] =
 	{0xB1BE3E51, Whiplash, EU, 0},
 };
 
-std::map<uint32, CRC::Game*> CRC::m_map;
+std::map<u32, const CRC::Game*> CRC::m_map;
 
 std::string ToLower(std::string str)
 {
@@ -517,14 +518,14 @@ std::string ToLower(std::string str)
 // The list is case insensitive and order insensitive.
 // E.g. Disable all CRC hacks:          CrcHacksExclusions=all
 // E.g. Disable hacks for these CRCs:   CrcHacksExclusions=0x0F0C4A9C, 0x0EE5646B, 0x7ACF7E03
-bool IsCrcExcluded(std::string exclusionList, uint32 crc)
+bool IsCrcExcluded(std::string exclusionList, u32 crc)
 {
 	std::string target = format("0x%08x", crc);
 	exclusionList = ToLower(exclusionList);
 	return exclusionList.find(target) != std::string::npos || exclusionList.find("all") != std::string::npos;
 }
 
-CRC::Game CRC::Lookup(uint32 crc)
+const CRC::Game& CRC::Lookup(u32 crc)
 {
 	printf("GS Lookup CRC:%08X\n", crc);
 	if (m_map.empty())
@@ -533,20 +534,20 @@ CRC::Game CRC::Lookup(uint32 crc)
 		if (exclusions.length() != 0)
 			printf("GS: CrcHacksExclusions: %s\n", exclusions.c_str());
 		int crcDups = 0;
-		for (size_t i = 0; i < countof(m_games); i++)
+		for (const Game& game : m_games)
 		{
-			if (!IsCrcExcluded(exclusions, m_games[i].crc))
+			if (!IsCrcExcluded(exclusions, game.crc))
 			{
-				if (m_map[m_games[i].crc])
+				if (m_map[game.crc])
 				{
-					printf("[FIXME] GS: Duplicate CRC: 0x%08X: (game-id/region-id) %d/%d overrides %d/%d\n", m_games[i].crc, m_games[i].title, m_games[i].region, m_map[m_games[i].crc]->title, m_map[m_games[i].crc]->region);
+					printf("[FIXME] GS: Duplicate CRC: 0x%08X: (game-id/region-id) %d/%d overrides %d/%d\n", game.crc, game.title, game.region, m_map[game.crc]->title, m_map[game.crc]->region);
 					crcDups++;
 				}
 
-				m_map[m_games[i].crc] = &m_games[i];
+				m_map[game.crc] = &game;
 			}
 			//else
-			//	printf( "GS: excluding CRC hack for 0x%08x\n", m_games[i].crc );
+			//	printf( "GS: excluding CRC hack for 0x%08x\n", game.crc );
 		}
 		if (crcDups)
 			printf("[FIXME] GS: Duplicate CRC: Overall: %d\n", crcDups);

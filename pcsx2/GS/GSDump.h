@@ -15,7 +15,8 @@
 
 #pragma once
 
-#include "GS.h"
+#include "SaveState.h"
+#include "GSRegs.h"
 #include "Renderers/SW/GSVertexSW.h"
 #include <lzma.h>
 
@@ -45,28 +46,28 @@ class GSDumpBase
 	FILE* m_gs;
 
 protected:
-	void AddHeader(uint32 crc, const freezeData& fd, const GSPrivRegSet* regs);
+	void AddHeader(u32 crc, const freezeData& fd, const GSPrivRegSet* regs);
 	void Write(const void* data, size_t size);
 
 	virtual void AppendRawData(const void* data, size_t size) = 0;
-	virtual void AppendRawData(uint8 c) = 0;
+	virtual void AppendRawData(u8 c) = 0;
 
 public:
 	GSDumpBase(const std::string& fn);
 	virtual ~GSDumpBase();
 
-	void ReadFIFO(uint32 size);
-	void Transfer(int index, const uint8* mem, size_t size);
+	void ReadFIFO(u32 size);
+	void Transfer(int index, const u8* mem, size_t size);
 	bool VSync(int field, bool last, const GSPrivRegSet* regs);
 };
 
 class GSDump final : public GSDumpBase
 {
 	void AppendRawData(const void* data, size_t size) final;
-	void AppendRawData(uint8 c) final;
+	void AppendRawData(u8 c) final;
 
 public:
-	GSDump(const std::string& fn, uint32 crc, const freezeData& fd, const GSPrivRegSet* regs);
+	GSDump(const std::string& fn, u32 crc, const freezeData& fd, const GSPrivRegSet* regs);
 	virtual ~GSDump() = default;
 };
 
@@ -74,14 +75,14 @@ class GSDumpXz final : public GSDumpBase
 {
 	lzma_stream m_strm;
 
-	std::vector<uint8> m_in_buff;
+	std::vector<u8> m_in_buff;
 
 	void Flush();
 	void Compress(lzma_action action, lzma_ret expected_status);
 	void AppendRawData(const void* data, size_t size);
-	void AppendRawData(uint8 c);
+	void AppendRawData(u8 c);
 
 public:
-	GSDumpXz(const std::string& fn, uint32 crc, const freezeData& fd, const GSPrivRegSet* regs);
+	GSDumpXz(const std::string& fn, u32 crc, const freezeData& fd, const GSPrivRegSet* regs);
 	virtual ~GSDumpXz();
 };

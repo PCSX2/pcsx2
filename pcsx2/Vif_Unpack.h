@@ -30,10 +30,10 @@ create_some_unpacks(32);
 create_some_unpacks(16);
 create_some_unpacks(8);
 
-extern __aligned16 const u8 nVifT[16];
+alignas(16) extern const u8 nVifT[16];
 
 // Array sub-dimension order: [vifidx] [mode] (VN * VL * USN * doMask)
-extern __aligned16 const UNPACKFUNCTYPE VIFfuncTable[2][4][(4 * 4 * 2 * 2)];
+alignas(16) extern const UNPACKFUNCTYPE VIFfuncTable[2][4][(4 * 4 * 2 * 2)];
 
 _vifT extern int  nVifUnpack (const u8* data);
 extern void resetNewVif(int idx);

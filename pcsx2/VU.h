@@ -127,7 +127,7 @@ struct ialuPipe
 	u32 Cycle;
 };
 
-struct __aligned16 VURegs
+struct alignas(16) VURegs
 {
 	VECTOR VF[32]; // VF and VI need to be first in this struct for proper mapping
 	REG_VI VI[32]; // needs to be 128bit x 32 (cottonvibes)
@@ -159,9 +159,9 @@ struct __aligned16 VURegs
 	u32 pending_p;
 	u32 blockhasmbit;
 
-	__aligned16 u32 micro_macflags[4];
-	__aligned16 u32 micro_clipflags[4];
-	__aligned16 u32 micro_statusflags[4];
+	alignas(16) u32 micro_macflags[4];
+	alignas(16) u32 micro_clipflags[4];
+	alignas(16) u32 micro_statusflags[4];
 	// MAC/Status flags -- these are used by interpreters but are kind of hacky
 	// and shouldn't be relied on for any useful/valid info.  Would like to move them out of
 	// this struct eventually.
@@ -223,7 +223,7 @@ enum VUPipeState
 	VUPIPE_XGKICK
 };
 
-extern __aligned16 VURegs vuRegs[2];
+extern VURegs vuRegs[2];
 
 // Obsolete(?)  -- I think I'd rather use vu0Regs/vu1Regs or actually have these explicit to any
 // CPP file that needs them only. --air

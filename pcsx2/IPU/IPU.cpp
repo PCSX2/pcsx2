@@ -27,9 +27,9 @@
 #include "common/MemsetFast.inl"
 
 // the BP doesn't advance and returns -1 if there is no data to be read
-__aligned16 tIPU_cmd ipu_cmd;
-__aligned16 tIPU_BP g_BP;
-__aligned16 decoder_t decoder;
+alignas(16) tIPU_cmd ipu_cmd;
+alignas(16) tIPU_BP g_BP;
+alignas(16) decoder_t decoder;
 
 void IPUWorker();
 

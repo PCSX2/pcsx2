@@ -14,14 +14,14 @@
  */
 
 #include "PrecompiledHeader.h"
-#include "GS_types.h"
+#include "GSIntrin.h"
 
 #pragma once
 
 #ifdef _WIN32
-#  define gsforceinline __forceinline
+	#define gsforceinline __forceinline
 #else
-#  define gsforceinline __forceinline __inline__
+	#define gsforceinline __forceinline __inline__
 #endif
 
 enum Align_Mode
@@ -53,28 +53,22 @@ public:
 		struct { T v[2]; };
 	};
 
-	GSVector2T()
+	GSVector2T() = default;
+
+	constexpr GSVector2T(T x): x(x), y(x)
 	{
 	}
 
-	GSVector2T(T x)
+	constexpr GSVector2T(T x, T y): x(x), y(y)
 	{
-		this->x = x;
-		this->y = x;
 	}
 
-	GSVector2T(T x, T y)
-	{
-		this->x = x;
-		this->y = y;
-	}
-
-	bool operator==(const GSVector2T& v) const
+	constexpr bool operator==(const GSVector2T& v) const
 	{
 		return x == v.x && y == v.y;
 	}
 
-	bool operator!=(const GSVector2T& v) const
+	constexpr bool operator!=(const GSVector2T& v) const
 	{
 		return x != v.x || y != v.y;
 	}

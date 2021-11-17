@@ -16,17 +16,18 @@
 #include "PrecompiledHeader.h"
 #include "GSClut.h"
 #include "GSLocalMemory.h"
+#include "GSGL.h"
 
 #define CLUT_ALLOC_SIZE (2 * 4096)
 
 GSClut::GSClut(GSLocalMemory* mem)
 	: m_mem(mem)
 {
-	uint8* p = (uint8*)vmalloc(CLUT_ALLOC_SIZE, false);
+	u8* p = (u8*)vmalloc(CLUT_ALLOC_SIZE, false);
 
-	m_clut = (uint16*)&p[0];      // 1k + 1k for mirrored area simulating wrapping memory
-	m_buff32 = (uint32*)&p[2048]; // 1k
-	m_buff64 = (uint64*)&p[4096]; // 2k
+	m_clut = (u16*)&p[0];      // 1k + 1k for mirrored area simulating wrapping memory
+	m_buff32 = (u32*)&p[2048]; // 1k
+	m_buff64 = (u64*)&p[4096]; // 2k
 	m_write.dirty = true;
 	m_read.dirty = true;
 
@@ -107,7 +108,7 @@ void GSClut::Invalidate()
 	m_write.dirty = true;
 }
 
-void GSClut::Invalidate(uint32 block)
+void GSClut::Invalidate(u32 block)
 {
 	if (block == m_write.TEX0.CBP)
 	{
@@ -158,113 +159,83 @@ void GSClut::Write(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 	m_read.dirty = true;
 
 	(this->*m_wc[TEX0.CSM][TEX0.CPSM][TEX0.PSM])(TEX0, TEXCLUT);
-
-	// Mirror write to other half of buffer to simulate wrapping memory
-
-	int offset = (TEX0.CSA & (TEX0.CPSM < PSM_PSMCT16 ? 15 : 31)) * 16;
-
-	if (TEX0.PSM == PSM_PSMT8 || TEX0.PSM == PSM_PSMT8H)
-	{
-		int size = TEX0.CPSM < PSM_PSMCT16 ? 512 : 256;
-
-		memcpy(m_clut + 512 + offset, m_clut + offset, sizeof(*m_clut) * std::min(size, 512 - offset));
-		memcpy(m_clut, m_clut + 512, sizeof(*m_clut) * std::max(0, size + offset - 512));
-	}
-	else
-	{
-		int size = 16;
-
-		memcpy(m_clut + 512 + offset, m_clut + offset, sizeof(*m_clut) * size);
-
-		if (TEX0.CPSM < PSM_PSMCT16)
-		{
-			memcpy(m_clut + 512 + 256 + offset, m_clut + 256 + offset, sizeof(*m_clut) * size);
-		}
-	}
 }
 
 void GSClut::WriteCLUT32_I8_CSM1(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
 	ALIGN_STACK(32);
-	//FIXME: Romance of the Three Kingdoms VIII text doesn't like the offset
-	WriteCLUT_T32_I8_CSM1((uint32*)m_mem->BlockPtr32(0, 0, TEX0.CBP, 1), m_clut + ((TEX0.CSA & 15) << 4));
+	WriteCLUT_T32_I8_CSM1((u32*)m_mem->BlockPtr32(0, 0, TEX0.CBP, 1), m_clut, (TEX0.CSA & 15));
 }
 
 void GSClut::WriteCLUT32_I4_CSM1(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
 	ALIGN_STACK(32);
 
-	WriteCLUT_T32_I4_CSM1((uint32*)m_mem->BlockPtr32(0, 0, TEX0.CBP, 1), m_clut + ((TEX0.CSA & 15) << 4));
+	WriteCLUT_T32_I4_CSM1((u32*)m_mem->BlockPtr32(0, 0, TEX0.CBP, 1), m_clut + ((TEX0.CSA & 15) << 4));
 }
 
 void GSClut::WriteCLUT16_I8_CSM1(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
-	WriteCLUT_T16_I8_CSM1((uint16*)m_mem->BlockPtr16(0, 0, TEX0.CBP, 1), m_clut + (TEX0.CSA << 4));
+	WriteCLUT_T16_I8_CSM1((u16*)m_mem->BlockPtr16(0, 0, TEX0.CBP, 1), m_clut + (TEX0.CSA << 4));
 }
 
 void GSClut::WriteCLUT16_I4_CSM1(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
-	WriteCLUT_T16_I4_CSM1((uint16*)m_mem->BlockPtr16(0, 0, TEX0.CBP, 1), m_clut + (TEX0.CSA << 4));
+	WriteCLUT_T16_I4_CSM1((u16*)m_mem->BlockPtr16(0, 0, TEX0.CBP, 1), m_clut + (TEX0.CSA << 4));
 }
 
 void GSClut::WriteCLUT16S_I8_CSM1(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
-	WriteCLUT_T16_I8_CSM1((uint16*)m_mem->BlockPtr16S(0, 0, TEX0.CBP, 1), m_clut + (TEX0.CSA << 4));
+	WriteCLUT_T16_I8_CSM1((u16*)m_mem->BlockPtr16S(0, 0, TEX0.CBP, 1), m_clut + (TEX0.CSA << 4));
 }
 
 void GSClut::WriteCLUT16S_I4_CSM1(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
-	WriteCLUT_T16_I4_CSM1((uint16*)m_mem->BlockPtr16S(0, 0, TEX0.CBP, 1), m_clut + (TEX0.CSA << 4));
+	WriteCLUT_T16_I4_CSM1((u16*)m_mem->BlockPtr16S(0, 0, TEX0.CBP, 1), m_clut + (TEX0.CSA << 4));
 }
 
 template <int n>
 void GSClut::WriteCLUT32_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
-	GSOffset* off = m_mem->GetOffset(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT32);
+	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT32);
+	auto pa = off.paMulti(m_mem->m_vm32, TEXCLUT.COU << 4, TEXCLUT.COV);
 
-	uint32* RESTRICT s = &m_mem->m_vm32[off->pixel.row[TEXCLUT.COV]];
-	int* RESTRICT col = &off->pixel.col[0][TEXCLUT.COU << 4];
-
-	uint16* RESTRICT clut = m_clut + ((TEX0.CSA & 15) << 4);
+	u16* RESTRICT clut = m_clut + ((TEX0.CSA & 15) << 4);
 
 	for (int i = 0; i < n; i++)
 	{
-		uint32 c = s[col[i]];
+		u32 c = *pa.value(i);
 
-		clut[i] = (uint16)(c & 0xffff);
-		clut[i + 256] = (uint16)(c >> 16);
+		clut[i] = (u16)(c & 0xffff);
+		clut[i + 256] = (u16)(c >> 16);
 	}
 }
 
 template <int n>
 void GSClut::WriteCLUT16_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
-	GSOffset* off = m_mem->GetOffset(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT16);
+	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT16);
+	auto pa = off.paMulti(m_mem->m_vm16, TEXCLUT.COU << 4, TEXCLUT.COV);
 
-	uint16* RESTRICT s = &m_mem->m_vm16[off->pixel.row[TEXCLUT.COV]];
-	int* RESTRICT col = &off->pixel.col[0][TEXCLUT.COU << 4];
-
-	uint16* RESTRICT clut = m_clut + (TEX0.CSA << 4);
+	u16* RESTRICT clut = m_clut + (TEX0.CSA << 4);
 
 	for (int i = 0; i < n; i++)
 	{
-		clut[i] = s[col[i]];
+		clut[i] = *pa.value(i);
 	}
 }
 
 template <int n>
 void GSClut::WriteCLUT16S_CSM2(const GIFRegTEX0& TEX0, const GIFRegTEXCLUT& TEXCLUT)
 {
-	GSOffset* off = m_mem->GetOffset(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT16S);
+	GSOffset off = GSOffset::fromKnownPSM(TEX0.CBP, TEXCLUT.CBW, PSM_PSMCT16S);
+	auto pa = off.paMulti(m_mem->m_vm16, TEXCLUT.COU << 4, TEXCLUT.COV);
 
-	uint16* RESTRICT s = &m_mem->m_vm16[off->pixel.row[TEXCLUT.COV]];
-	int* RESTRICT col = &off->pixel.col[0][TEXCLUT.COU << 4];
-
-	uint16* RESTRICT clut = m_clut + (TEX0.CSA << 4);
+	u16* RESTRICT clut = m_clut + (TEX0.CSA << 4);
 
 	for (int i = 0; i < n; i++)
 	{
-		clut[i] = s[col[i]];
+		clut[i] = *pa.value(i);
 	}
 }
 
@@ -282,7 +253,7 @@ void GSClut::Read(const GIFRegTEX0& TEX0)
 		m_read.TEX0 = TEX0;
 		m_read.dirty = false;
 
-		uint16* clut = m_clut;
+		u16* clut = m_clut;
 
 		if(TEX0.CPSM == PSM_PSMCT32 || TEX0.CPSM == PSM_PSMCT24)
 		{
@@ -331,7 +302,7 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 		m_read.dirty = false;
 		m_read.adirty = true;
 
-		uint16* clut = m_clut;
+		u16* clut = m_clut;
 
 		if (TEX0.CPSM == PSM_PSMCT32 || TEX0.CPSM == PSM_PSMCT24)
 		{
@@ -339,8 +310,7 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 			{
 				case PSM_PSMT8:
 				case PSM_PSMT8H:
-					clut += (TEX0.CSA & 15) << 4; // disney golf title screen
-					ReadCLUT_T32_I8(clut, m_buff32);
+					ReadCLUT_T32_I8(clut, m_buff32, (TEX0.CSA & 15) << 4);
 					break;
 				case PSM_PSMT4:
 				case PSM_PSMT4HL:
@@ -348,7 +318,7 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 					clut += (TEX0.CSA & 15) << 4;
 					// TODO: merge these functions
 					ReadCLUT_T32_I4(clut, m_buff32);
-					ExpandCLUT64_T32_I8(m_buff32, (uint64*)m_buff64); // sw renderer does not need m_buff64 anymore
+					ExpandCLUT64_T32_I8(m_buff32, (u64*)m_buff64); // sw renderer does not need m_buff64 anymore
 					break;
 			}
 		}
@@ -367,7 +337,7 @@ void GSClut::Read32(const GIFRegTEX0& TEX0, const GIFRegTEXA& TEXA)
 					clut += TEX0.CSA << 4;
 					// TODO: merge these functions
 					Expand16(clut, m_buff32, 16, TEXA);
-					ExpandCLUT64_T32_I8(m_buff32, (uint64*)m_buff64); // sw renderer does not need m_buff64 anymore
+					ExpandCLUT64_T32_I8(m_buff32, (u64*)m_buff64); // sw renderer does not need m_buff64 anymore
 					break;
 			}
 		}
@@ -443,20 +413,20 @@ void GSClut::GetAlphaMinMax32(int& amin_out, int& amax_out)
 
 //
 
-void GSClut::WriteCLUT_T32_I8_CSM1(const uint32* RESTRICT src, uint16* RESTRICT clut)
+void GSClut::WriteCLUT_T32_I8_CSM1(const u32* RESTRICT src, u16* RESTRICT clut, u16 offset)
 {
-	// 4 blocks
-
-	for (int i = 0; i < 64; i += 16)
+	// This is required when CSA is offset from the base of the CLUT so we point to the right data
+	for (int i = offset; i < 16; i ++)
 	{
-		WriteCLUT_T32_I4_CSM1(&src[i + 0], &clut[i * 2 + 0]);
-		WriteCLUT_T32_I4_CSM1(&src[i + 64], &clut[i * 2 + 16]);
-		WriteCLUT_T32_I4_CSM1(&src[i + 128], &clut[i * 2 + 128]);
-		WriteCLUT_T32_I4_CSM1(&src[i + 192], &clut[i * 2 + 144]);
+		const int off = i << 4; // WriteCLUT_T32_I4_CSM1 loads 16 at a time
+		// Source column
+		const int s = clutTableT32I8[off & 0x70] | (off & 0x80);
+
+		WriteCLUT_T32_I4_CSM1(&src[s], &clut[off]);
 	}
 }
 
-__forceinline void GSClut::WriteCLUT_T32_I4_CSM1(const uint32* RESTRICT src, uint16* RESTRICT clut)
+__forceinline void GSClut::WriteCLUT_T32_I4_CSM1(const u32* RESTRICT src, u16* RESTRICT clut)
 {
 	// 1 block
 
@@ -497,7 +467,7 @@ __forceinline void GSClut::WriteCLUT_T32_I4_CSM1(const uint32* RESTRICT src, uin
 #endif
 }
 
-void GSClut::WriteCLUT_T16_I8_CSM1(const uint16* RESTRICT src, uint16* RESTRICT clut)
+void GSClut::WriteCLUT_T16_I8_CSM1(const u16* RESTRICT src, u16* RESTRICT clut)
 {
 	// 2 blocks
 
@@ -522,7 +492,7 @@ void GSClut::WriteCLUT_T16_I8_CSM1(const uint16* RESTRICT src, uint16* RESTRICT 
 	}
 }
 
-__forceinline void GSClut::WriteCLUT_T16_I4_CSM1(const uint16* RESTRICT src, uint16* RESTRICT clut)
+__forceinline void GSClut::WriteCLUT_T16_I4_CSM1(const u16* RESTRICT src, u16* RESTRICT clut)
 {
 	// 1 block (half)
 
@@ -532,15 +502,22 @@ __forceinline void GSClut::WriteCLUT_T16_I4_CSM1(const uint16* RESTRICT src, uin
 	}
 }
 
-void GSClut::ReadCLUT_T32_I8(const uint16* RESTRICT clut, uint32* RESTRICT dst)
+void GSClut::ReadCLUT_T32_I8(const u16* RESTRICT clut, u32* RESTRICT dst, int offset)
 {
+	// Okay this deserves a small explanation
+	// T32 I8 can address up to 256 colors however the offset can be "more than zero" when reading
+	// Previously I assumed that it would wrap around the end of the buffer to the beginning
+	// but it turns out this is incorrect, the address doesn't mirror, it clamps to to the last offset,
+	// probably though some sort of addressing mechanism then picks the color from the lower 0xF of the requested CLUT entry.
+	// if we don't do this, the dirt on GTA SA goes transparent and actually cleans the car driving through dirt.
 	for (int i = 0; i < 256; i += 16)
 	{
-		ReadCLUT_T32_I4(&clut[i], &dst[i]);
+		// Min value + offet or Last CSA * 16 (240)
+		ReadCLUT_T32_I4(&clut[std::min((i + offset), 240)], &dst[i]);
 	}
 }
 
-__forceinline void GSClut::ReadCLUT_T32_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst)
+__forceinline void GSClut::ReadCLUT_T32_I4(const u16* RESTRICT clut, u32* RESTRICT dst)
 {
 	GSVector4i* s = (GSVector4i*)clut;
 	GSVector4i* d = (GSVector4i*)dst;
@@ -559,7 +536,7 @@ __forceinline void GSClut::ReadCLUT_T32_I4(const uint16* RESTRICT clut, uint32* 
 }
 
 #if 0
-__forceinline void GSClut::ReadCLUT_T32_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst32, uint64* RESTRICT dst64)
+__forceinline void GSClut::ReadCLUT_T32_I4(const u16* RESTRICT clut, u32* RESTRICT dst32, u64* RESTRICT dst64)
 {
 	GSVector4i* s = (GSVector4i*)clut;
 	GSVector4i* d32 = (GSVector4i*)dst32;
@@ -585,7 +562,7 @@ __forceinline void GSClut::ReadCLUT_T32_I4(const uint16* RESTRICT clut, uint32* 
 #endif
 
 #if 0
-void GSClut::ReadCLUT_T16_I8(const uint16* RESTRICT clut, uint32* RESTRICT dst)
+void GSClut::ReadCLUT_T16_I8(const u16* RESTRICT clut, u32* RESTRICT dst)
 {
 	for(int i = 0; i < 256; i += 16)
 	{
@@ -595,7 +572,7 @@ void GSClut::ReadCLUT_T16_I8(const uint16* RESTRICT clut, uint32* RESTRICT dst)
 #endif
 
 #if 0
-__forceinline void GSClut::ReadCLUT_T16_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst)
+__forceinline void GSClut::ReadCLUT_T16_I4(const u16* RESTRICT clut, u32* RESTRICT dst)
 {
 	GSVector4i* s = (GSVector4i*)clut;
 	GSVector4i* d = (GSVector4i*)dst;
@@ -611,7 +588,7 @@ __forceinline void GSClut::ReadCLUT_T16_I4(const uint16* RESTRICT clut, uint32* 
 #endif
 
 #if 0
-__forceinline void GSClut::ReadCLUT_T16_I4(const uint16* RESTRICT clut, uint32* RESTRICT dst32, uint64* RESTRICT dst64)
+__forceinline void GSClut::ReadCLUT_T16_I4(const u16* RESTRICT clut, u32* RESTRICT dst32, u64* RESTRICT dst64)
 {
 	GSVector4i* s = (GSVector4i*)clut;
 	GSVector4i* d32 = (GSVector4i*)dst32;
@@ -637,7 +614,7 @@ __forceinline void GSClut::ReadCLUT_T16_I4(const uint16* RESTRICT clut, uint32* 
 }
 #endif
 
-void GSClut::ExpandCLUT64_T32_I8(const uint32* RESTRICT src, uint64* RESTRICT dst)
+void GSClut::ExpandCLUT64_T32_I8(const u32* RESTRICT src, u64* RESTRICT dst)
 {
 	GSVector4i* s = (GSVector4i*)src;
 	GSVector4i* d = (GSVector4i*)dst;
@@ -680,7 +657,7 @@ __forceinline void GSClut::ExpandCLUT64_T32(const GSVector4i& hi, const GSVector
 }
 
 #if 0
-void GSClut::ExpandCLUT64_T16_I8(const uint32* RESTRICT src, uint64* RESTRICT dst)
+void GSClut::ExpandCLUT64_T16_I8(const u32* RESTRICT src, u64* RESTRICT dst)
 {
 	GSVector4i* s = (GSVector4i*)src;
 	GSVector4i* d = (GSVector4i*)dst;
@@ -729,7 +706,7 @@ CONSTINIT const GSVector4i GSClut::m_bm = GSVector4i::cxpr(0x00007c00);
 CONSTINIT const GSVector4i GSClut::m_gm = GSVector4i::cxpr(0x000003e0);
 CONSTINIT const GSVector4i GSClut::m_rm = GSVector4i::cxpr(0x0000001f);
 
-void GSClut::Expand16(const uint16* RESTRICT src, uint32* RESTRICT dst, int w, const GIFRegTEXA& TEXA)
+void GSClut::Expand16(const u16* RESTRICT src, u32* RESTRICT dst, int w, const GIFRegTEXA& TEXA)
 {
 	ASSERT((w & 7) == 0);
 

@@ -34,24 +34,24 @@ protected:
 	GSScanlineGlobalData m_global;
 	GSScanlineLocalData m_local;
 
-	GSCodeGeneratorFunctionMap<GSSetupPrimCodeGenerator, uint64, SetupPrimPtr> m_sp_map;
-	GSCodeGeneratorFunctionMap<GSDrawScanlineCodeGenerator, uint64, DrawScanlinePtr> m_ds_map;
+	GSCodeGeneratorFunctionMap<GSSetupPrimCodeGenerator, u64, SetupPrimPtr> m_sp_map;
+	GSCodeGeneratorFunctionMap<GSDrawScanlineCodeGenerator, u64, DrawScanlinePtr> m_ds_map;
 
 	template <class T, bool masked>
-	void DrawRectT(const int* RESTRICT row, const int* RESTRICT col, const GSVector4i& r, uint32 c, uint32 m);
+	void DrawRectT(const GSOffset& off, const GSVector4i& r, u32 c, u32 m);
 
 	template <class T, bool masked>
-	__forceinline void FillRect(const int* RESTRICT row, const int* RESTRICT col, const GSVector4i& r, uint32 c, uint32 m);
+	__forceinline void FillRect(const GSOffset& off, const GSVector4i& r, u32 c, u32 m);
 
 #if _M_SSE >= 0x501
 
 	template <class T, bool masked>
-	__forceinline void FillBlock(const int* RESTRICT row, const int* RESTRICT col, const GSVector4i& r, const GSVector8i& c, const GSVector8i& m);
+	__forceinline void FillBlock(const GSOffset& off, const GSVector4i& r, const GSVector8i& c, const GSVector8i& m);
 
 #else
 
 	template <class T, bool masked>
-	__forceinline void FillBlock(const int* RESTRICT row, const int* RESTRICT col, const GSVector4i& r, const GSVector4i& c, const GSVector4i& m);
+	__forceinline void FillBlock(const GSOffset& off, const GSVector4i& r, const GSVector4i& c, const GSVector4i& m);
 
 #endif
 
@@ -62,13 +62,13 @@ public:
 	// IDrawScanline
 
 	void BeginDraw(const GSRasterizerData* data);
-	void EndDraw(uint64 frame, uint64 ticks, int actual, int total, int prims);
+	void EndDraw(u64 frame, u64 ticks, int actual, int total, int prims);
 
 	void DrawRect(const GSVector4i& r, const GSVertexSW& v);
 
 #ifndef ENABLE_JIT_RASTERIZER
 
-	void SetupPrim(const GSVertexSW* vertex, const uint32* index, const GSVertexSW& dscan);
+	void SetupPrim(const GSVertexSW* vertex, const u32* index, const GSVertexSW& dscan);
 	void DrawScanline(int pixels, int left, int top, const GSVertexSW& scan);
 	void DrawEdge(int pixels, int left, int top, const GSVertexSW& scan);
 
@@ -76,7 +76,7 @@ public:
 	bool IsRect() const { return m_global.sel.IsSolidRect(); }
 
 	template<class T> bool TestAlpha(T& test, T& fm, T& zm, const T& ga);
-	template<class T> void WritePixel(const T& src, int addr, int i, uint32 psm);
+	template<class T> void WritePixel(const T& src, int addr, int i, u32 psm);
 
 #endif
 

@@ -149,12 +149,12 @@ void BreakpointWindow::setDefaultValues()
 	if (address != 0xFFFFFFFF)
 	{
 		swprintf(str,64,L"0x%08X",address);
-		editAddress->SetLabel(str);
+		editAddress->SetValue(str);
 	}
 	
 	swprintf(str,64,L"0x%08X",size);
-	editSize->SetLabel(str);
-	editCondition->SetLabel(wxString(condition,wxConvUTF8));	
+	editSize->SetValue(str);
+	editCondition->SetValue(wxString(condition,wxConvUTF8));	
 }
 
 void BreakpointWindow::loadFromMemcheck(MemCheck& memcheck)

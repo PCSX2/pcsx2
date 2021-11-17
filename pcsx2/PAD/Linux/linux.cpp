@@ -14,6 +14,8 @@
  */
 
 #include "gui/AppCoreThread.h"
+#include "common/WindowInfo.h"
+
 #include "Global.h"
 #include "Device.h"
 #include "keyboard.h"
@@ -42,11 +44,14 @@ static void SysMessage(const char* fmt, ...)
 	dialog.ShowModal();
 }
 
-s32 _PADopen(void* pDsp)
+s32 _PADopen(const WindowInfo& wi)
 {
 #ifndef __APPLE__
-	GSdsp = *(Display**)pDsp;
-	GSwin = (Window) * (((u32*)pDsp) + 1);
+	if (wi.type != WindowInfo::Type::X11)
+		return -1;
+
+	GSdsp = static_cast<Display*>(wi.display_connection);
+	GSwin = reinterpret_cast<Window>(wi.window_handle);
 #endif
 
 	return 0;
@@ -65,7 +70,7 @@ void PADupdate(int pad)
 	// Emulate an user activity
 	static int count = 0;
 	count++;
-	if ((count & 0xFFF) == 0)
+	if ((count & 0xFFF) == 0 && GSdsp)
 	{
 		// 1 call every 4096 Vsync is enough
 		XResetScreenSaver(GSdsp);

@@ -13,7 +13,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// Anglais (�tats-Unis) resources
+// English (United States) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
 LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
@@ -444,34 +444,35 @@ IDD_GENERAL DIALOGEX 0, 0, 424, 283
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Input APIs",IDC_STATIC,7,6,410,133
-    GROUPBOX        "Keyboard API",IDC_STATIC,16,16,192,51
+    GROUPBOX        "Input APIs",IDC_STATIC,7,0,410,133
+    GROUPBOX        "Keyboard API",IDC_STATIC,16,16,192,39
     CONTROL         "Windows messaging (Recommended)",IDC_KB_WM,"Button",BS_AUTORADIOBUTTON | WS_GROUP,22,28,137,10
     CONTROL         "Raw input",IDC_KB_RAW,"Button",BS_AUTORADIOBUTTON,22,40,112,10
-    GROUPBOX        "Game Device APIs",IDC_STATIC,16,70,191,62
-    CONTROL         "DirectInput (Legacy)",IDC_G_DI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,82,100,10
-    CONTROL         "XInput (Modern)",IDC_G_XI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,94,100,10
-    CONTROL         "DualShock 3 native mode (Requires libusb)",IDC_G_DS3,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,106,155,10
-    CONTROL         "Monitor when in background",IDC_BACKGROUND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,118,107,10
-    GROUPBOX        "Mouse API", IDC_STATIC, 216, 16, 192, 58 
-    CONTROL         "Windows messaging (Recommended)", IDC_M_WM, "Button", BS_AUTORADIOBUTTON | WS_GROUP, 223, 27, 137, 10 
-    CONTROL         "Raw input", IDC_M_RAW, "Button", BS_AUTORADIOBUTTON, 223, 39, 112, 10 
-    CONTROL         "Disable", IDC_M_DISABLE, "Button", BS_AUTORADIOBUTTON, 223, 51, 39, 10 
-    CONTROL         "Start without mouse focus", IDC_MOUSE_UNFOCUS, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 223, 63, 98, 10 
-    GROUPBOX        "Pads", IDC_STATIC, 7, 142, 410, 62 
-    CONTROL         "Port 1 Multitap", IDC_MULTITAP1, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 14, 152, 63, 10 
-    CONTROL         "Port 2 Multitap", IDC_MULTITAP2, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 14, 164, 63, 10 
-    CONTROL         "Multiple bindings", IDC_MULTIPLE_BINDING, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 14, 176, 66, 10 
-    CONTROL         "", IDC_PAD_LIST, "SysListView32", LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | WS_TABSTOP, 81, 151, 183, 48, WS_EX_CLIENTEDGE 
-    COMBOBOX        IDC_PAD_TYPE, 270, 151, 140, 118, CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP 
-    GROUPBOX        "Device Diagnostics", IDC_STATIC, 78, 206, 264, 74 
-    CONTROL         "", IDC_DIAG_LIST, "SysListView32", LVS_LIST | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_NOSORTHEADER | WS_BORDER | WS_VSCROLL | WS_TABSTOP, 84, 217, 252, 57, WS_EX_CLIENTEDGE 
-    GROUPBOX        "Hacks and advanced features", IDC_STATIC, 216, 75, 192, 57 
-    CONTROL         "Enable logging", IDC_DEBUG_FILE, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 223, 88, 79, 10 
-    CONTROL         "Guitar Hero 2 Hack", IDC_GH2_HACK, "Button", BS_AUTOCHECKBOX | WS_TABSTOP, 223, 100, 79, 10 
-    PUSHBUTTON      "Restore Defaults", ID_RESTORE_DEFAULTS, 306, 168, 62, 15 
-    PUSHBUTTON      "Load Bindings", ID_LOAD, 271, 186, 62, 15 
-    PUSHBUTTON      "Save Bindings", ID_SAVE, 345, 186, 62, 15 
+    GROUPBOX        "Game Device APIs",IDC_STATIC,16,59,191,62
+    CONTROL         "DirectInput (Legacy)",IDC_G_DI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,71,100,10
+    CONTROL         "XInput (Modern)",IDC_G_XI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,82,100,10
+    CONTROL         "DualShock 3 native mode (Requires libusb)",IDC_G_DS3,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,94,155,10
+    CONTROL         "Monitor when in background",IDC_BACKGROUND,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,22,105,107,10
+    GROUPBOX        "Mouse API",IDC_STATIC,216,16,192,61
+    CONTROL         "Windows messaging (Recommended)",IDC_M_WM,"Button",BS_AUTORADIOBUTTON | WS_GROUP,223,27,137,10
+    CONTROL         "Raw input",IDC_M_RAW,"Button",BS_AUTORADIOBUTTON,223,39,112,10
+    CONTROL         "Disable",IDC_M_DISABLE,"Button",BS_AUTORADIOBUTTON,223,51,39,10
+    CONTROL         "Start without mouse focus",IDC_MOUSE_UNFOCUS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,223,63,98,10
+    GROUPBOX        "Pads",IDC_STATIC,7,142,410,62
+    CONTROL         "Port 1 Multitap",IDC_MULTITAP1,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,152,63,10
+    CONTROL         "Port 2 Multitap",IDC_MULTITAP2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,164,63,10
+    CONTROL         "Multiple bindings",IDC_MULTIPLE_BINDING,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,176,66,10
+    CONTROL         "",IDC_PAD_LIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_ALIGNLEFT | WS_TABSTOP,81,151,183,48,WS_EX_CLIENTEDGE
+    COMBOBOX        IDC_PAD_TYPE,270,151,140,118,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    GROUPBOX        "Device Diagnostics",IDC_STATIC,78,206,264,74
+    CONTROL         "",IDC_DIAG_LIST,"SysListView32",LVS_LIST | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_NOSORTHEADER | WS_BORDER | WS_VSCROLL | WS_TABSTOP,84,217,252,57,WS_EX_CLIENTEDGE
+    GROUPBOX        "Hacks and advanced features",IDC_STATIC,216,82,192,39
+    CONTROL         "Enable logging",IDC_DEBUG_FILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,223,94,79,10
+    CONTROL         "Guitar Hero 2 Hack",IDC_GH2_HACK,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,223,106,79,10
+    PUSHBUTTON      "Restore Defaults",ID_RESTORE_DEFAULTS,306,168,62,15
+    PUSHBUTTON      "Load Bindings",ID_LOAD,271,186,62,15
+    PUSHBUTTON      "Save Bindings",ID_SAVE,345,186,62,15
 END
 
 IDD_DIAG DIALOGEX 0, 0, 190, 178
@@ -560,7 +561,7 @@ IDR_INI1                RCDATA                  "Default.ini"
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
 
-#endif    // Anglais (�tats-Unis) resources
+#endif    // English (United States) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -574,4 +575,3 @@ IDR_INI1                RCDATA                  "Default.ini"
 
 /////////////////////////////////////////////////////////////////////////////
 #endif    // not APSTUDIO_INVOKED
-

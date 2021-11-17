@@ -16,6 +16,11 @@
 #pragma once
 
 #include "GS.h"
+#include "GSRegs.h"
+#ifdef _WIN32
+#include <d3dcommon.h>
+#include <dxgi.h>
+#endif
 
 #include <xbyak/xbyak_util.h>
 
@@ -24,25 +29,18 @@ class GSUtil
 public:
 	static void Init();
 
-	static GS_PRIM_CLASS GetPrimClass(uint32 prim);
-	static int GetVertexCount(uint32 prim);
-	static int GetClassVertexCount(uint32 primclass);
+	static GS_PRIM_CLASS GetPrimClass(u32 prim);
+	static int GetVertexCount(u32 prim);
+	static int GetClassVertexCount(u32 primclass);
 
-	static const uint32* HasSharedBitsPtr(uint32 dpsm);
-	static bool HasSharedBits(uint32 spsm, const uint32* ptr);
-	static bool HasSharedBits(uint32 spsm, uint32 dpsm);
-	static bool HasSharedBits(uint32 sbp, uint32 spsm, uint32 dbp, uint32 dpsm);
-	static bool HasCompatibleBits(uint32 spsm, uint32 dpsm);
+	static const u32* HasSharedBitsPtr(u32 dpsm);
+	static bool HasSharedBits(u32 spsm, const u32* ptr);
+	static bool HasSharedBits(u32 spsm, u32 dpsm);
+	static bool HasSharedBits(u32 sbp, u32 spsm, u32 dbp, u32 dpsm);
+	static bool HasCompatibleBits(u32 spsm, u32 dpsm);
 
 	static bool CheckSSE();
 	static CRCHackLevel GetRecommendedCRCHackLevel(GSRendererType type);
-
-#ifdef _WIN32
-	static bool CheckDXGI();
-	static bool CheckD3D11();
-	static GSRendererType GetBestRenderer();
-	static D3D_FEATURE_LEVEL CheckDirect3D11Level(IDXGIAdapter* adapter = NULL, D3D_DRIVER_TYPE type = D3D_DRIVER_TYPE_HARDWARE);
-#endif
 };
 
 #ifdef _WIN32

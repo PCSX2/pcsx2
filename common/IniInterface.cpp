@@ -274,7 +274,7 @@ void IniLoader::Entry(const wxString& var, std::string& value, const std::string
 	if (m_Config)
 	{
 		wxString temp;
-		m_Config->Read(var, &temp, wxString(default_value));
+		m_Config->Read(var, &temp, fromUTF8(default_value));
 		value = temp.ToStdString();
 	}
 	else if (&value != &default_value)
@@ -443,5 +443,5 @@ void IniSaver::Entry(const wxString& var, std::string& value, const std::string&
 {
 	if (!m_Config)
 		return;
-	m_Config->Write(var, wxString(value));
+	m_Config->Write(var, fromUTF8(value));
 }

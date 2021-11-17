@@ -30,7 +30,7 @@
 	} while (0)
 
 
-const __aligned16 u32 sse4_compvals[2][4] = {
+alignas(16) const u32 sse4_compvals[2][4] = {
 	{0x7f7fffff, 0x7f7fffff, 0x7f7fffff, 0x7f7fffff}, //1111
 	{0x7fffffff, 0x7fffffff, 0x7fffffff, 0x7fffffff}, //1111
 };

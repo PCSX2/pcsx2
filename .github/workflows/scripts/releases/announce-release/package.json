@@ -1,0 +1,16 @@
+{
+  "name": "announce-release",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@actions/github": "^5.0.0",
+    "discord.js": "^13.2.0"
+  }
+}

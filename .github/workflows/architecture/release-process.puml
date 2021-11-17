@@ -1,0 +1,47 @@
+@startuml
+participant User as user
+participant Github as github
+participant "Create Release WF" as create
+participant "Build WFs" as build
+participant "Finalize Release WF" as finalize
+participant Discord as discord
+
+==Nightly Release==
+
+user -> github : New Commit on master (from PR, or directly)
+...waiting for commit push event to fire...
+github -> create : Push a new git tag, patch incrementing latest Version
+alt from-pr? case
+    create -> create : Use links to the PR as a description
+else was a commit
+    create -> create : Use Commit Message as Description
+end
+create -> create : Generate release notes
+create -> github : Create new draft release, associated with tag and with the notes
+note right
+Draft releases are not public facing, only those with write access can see them!
+end note
+...waiting for push tag event to fire...
+loop for all build workflows
+github -> build : Build the tag commit
+build -> build : .exe will use the git tag for it's title and such
+build -> build : Upload the generated artifact to the associated release
+alt all-artifacts-uploaded? case
+  build -> github : Publish the release
+  user -> github : Can now download the artifacts on the published release
+end
+note right 
+This is the only area where an eventual consistency issue is apparent
+It is because GitHub does not fire events for when draft releases are edited
+This is glossed over in the initial impl and can be improved and be made eventually consistent as well
+end note
+
+
+...waiting for release publish event to fire...
+github -> finalize : Announce the Release
+finalize -> github : Gather all asset links, and format message embed.
+finalize -> discord : Announce new build via a WebHook
+
+...waiting for announcement...
+user -> discord : Can download artifacts from links via the discord
+@enduml

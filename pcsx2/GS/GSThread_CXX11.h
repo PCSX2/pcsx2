@@ -18,6 +18,9 @@
 #include "GS.h"
 #include "common/boost_spsc_queue.hpp"
 #include "common/General.h"
+#include <condition_variable>
+#include <functional>
+#include <mutex>
 
 template <class T, int CAPACITY>
 class GSJobQueue final
@@ -50,7 +53,7 @@ private:
 
 			l.unlock();
 
-			uint32 waited = 0;
+			u32 waited = 0;
 			while (true)
 			{
 				while (m_queue.consume_one(*this))
@@ -110,7 +113,7 @@ public:
 
 	void Wait()
 	{
-		uint32 waited = 0;
+		u32 waited = 0;
 		while (true)
 		{
 			if (IsEmpty())

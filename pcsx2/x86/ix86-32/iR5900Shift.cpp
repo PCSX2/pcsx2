@@ -415,7 +415,7 @@ static void recDShiftV(const xImpl_Group2& shift)
 
 #else
 
-__aligned16 u32 s_sa[4] = {0x1f, 0, 0x3f, 0};
+alignas(16) u32 s_sa[4] = {0x1f, 0, 0x3f, 0};
 
 void recSetShiftV(int info, int* rsreg, int* rtreg, int* rdreg, int* rstemp)
 {

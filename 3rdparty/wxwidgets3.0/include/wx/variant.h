@@ -230,6 +230,7 @@ public:
     wxString GetString() const;
 
 #if wxUSE_STD_STRING
+#ifndef _WIN32 // PCSX2: std::string conversion removal
     wxVariant(const std::string& val, const wxString& name = wxEmptyString);
     bool operator==(const std::string& value) const
         { return operator==(wxString(value)); }
@@ -238,6 +239,7 @@ public:
     wxVariant& operator=(const std::string& value)
         { return operator=(wxString(value)); }
     operator std::string() const { return (operator wxString()).ToStdString(); }
+#endif
 
     wxVariant(const wxStdWideString& val, const wxString& name = wxEmptyString);
     bool operator==(const wxStdWideString& value) const

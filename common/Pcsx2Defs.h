@@ -15,28 +15,27 @@
 
 #pragma once
 
+// clang-format off
+
 #ifdef __CYGWIN__
-#define __linux__
+	#define __linux__
 #endif
 
 // make sure __POSIX__ is defined for all systems where we assume POSIX
 // compliance
 #if defined(__linux__) || defined(__APPLE__) || defined(__unix__) || defined(__CYGWIN__) || defined(__LINUX__)
-#if !defined(__POSIX__)
-#define __POSIX__ 1
-#endif
+	#ifndef __POSIX__
+		#define __POSIX__ 1
+	#endif
 #endif
 
 #include "Pcsx2Types.h"
 
 #include "common/emitter/x86_intrin.h"
 
-// Renamed ARRAYSIZE to ArraySize -- looks nice and gets rid of Windows.h conflicts (air)
-// Notes: I'd have used ARRAY_SIZE instead but ran into cross-platform lib conflicts with
-// that as well.  >_<
-#ifndef ArraySize
-#define ArraySize(x) (sizeof(x) / sizeof((x)[0]))
-#endif
+// The C++ standard doesn't allow `offsetof` to be used on non-constant values (e.g. `offsetof(class, field[i])`)
+// Use this in those situations
+#define OFFSETOF(a, b) (reinterpret_cast<size_t>(&(static_cast<a*>(0)->b)))
 
 // --------------------------------------------------------------------------------------
 // Dev / Debug conditionals - Consts for using if() statements instead of uglier #ifdef.
@@ -47,52 +46,36 @@
 // some tight loops it will likely make debug builds unusably slow.
 //
 #ifdef PCSX2_DEVBUILD
-static const bool IsDevBuild = true;
+	static const bool IsDevBuild = true;
 #else
-static const bool IsDevBuild = false;
+	static const bool IsDevBuild = false;
 #endif
 
 #ifdef PCSX2_DEBUG
-static const bool IsDebugBuild = true;
+	static const bool IsDebugBuild = true;
 #else
-static const bool IsDebugBuild = false;
+	static const bool IsDebugBuild = false;
 #endif
 
 #ifdef PCSX2_DEBUG
-#define pxDebugCode(code) code
+	#define pxDebugCode(code) code
 #else
-#define pxDebugCode(code)
+	#define pxDebugCode(code)
 #endif
 
 #ifdef PCSX2_DEVBUILD
-#define pxDevelCode(code) code
+	#define pxDevelCode(code) code
 #else
-#define pxDevelCode(code)
+	#define pxDevelCode(code)
 #endif
 
 #if defined(PCSX2_DEBUG) || defined(PCSX2_DEVBUILD)
-#define pxReleaseCode(code)
-#define pxNonReleaseCode(code) code
+	#define pxReleaseCode(code)
+	#define pxNonReleaseCode(code) code
 #else
-#define pxReleaseCode(code) code
-#define pxNonReleaseCode(code)
+	#define pxReleaseCode(code) code
+	#define pxNonReleaseCode(code)
 #endif
-
-// --------------------------------------------------------------------------------------
-// __aligned / __aligned16 / __pagealigned
-// --------------------------------------------------------------------------------------
-// GCC Warning!  The GCC linker (LD) typically fails to assure alignment of class members.
-// If you want alignment to be assured, the variable must either be a member of a struct
-// or a static global.
-//
-// __pagealigned is equivalent to __aligned(0x1000), and is used to align a dynarec code
-// buffer to a page boundary (allows the use of execution-enabled mprotect).
-//
-// General Performance Warning: Any function that specifies alignment on a local (stack)
-// variable will have to align the stack frame on enter, and restore it on exit (adds
-// overhead).  Furthermore, compilers cannot inline functions that have aligned local
-// vars.  So use local var alignment with much caution.
-//
 
 // Defines the memory page size for the target platform at compilation.  All supported platforms
 // (which means Intel only right now) have a 4k granularity.
@@ -104,27 +87,14 @@ static const int __pagesize = PCSX2_PAGESIZE;
 // --------------------------------------------------------------------------------------
 #ifdef _MSC_VER
 
-// Using these breaks compat with VC2005; so we're not using it yet.
-//#	define __pack_begin		__pragma(pack(1))
-//#	define __pack_end		__pragma(pack())
+	#define __noinline __declspec(noinline)
+	#define __noreturn __declspec(noreturn)
 
-// This is the 2005/earlier compatible packing define, which must be used in conjunction
-// with #ifdef _MSC_VER/#pragma pack() directives (ugly).
-#define __packed
+	// Don't know if there are Visual C++ equivalents of these.
+	#define likely(x) (!!(x))
+	#define unlikely(x) (!!(x))
 
-#define __aligned(alig) __declspec(align(alig))
-#define __aligned16 __declspec(align(16))
-#define __aligned32 __declspec(align(32))
-#define __pagealigned __declspec(align(PCSX2_PAGESIZE))
-
-#define __noinline __declspec(noinline)
-#define __noreturn __declspec(noreturn)
-
-// Don't know if there are Visual C++ equivalents of these.
-#define likely(x) (!!(x))
-#define unlikely(x) (!!(x))
-
-#define CALLBACK __stdcall
+	#define CALLBACK __stdcall
 
 #else
 
@@ -132,41 +102,35 @@ static const int __pagesize = PCSX2_PAGESIZE;
 //  GCC / Intel Compilers Section
 // --------------------------------------------------------------------------------------
 
-#ifndef __packed
-#define __packed __attribute__((packed))
-#endif
-#ifndef __aligned
-#define __aligned(alig) __attribute__((aligned(alig)))
-#endif
-#define __aligned16 __attribute__((aligned(16)))
-#define __aligned32 __attribute__((aligned(32)))
-#define __pagealigned __attribute__((aligned(PCSX2_PAGESIZE)))
+	#define __assume(cond) do { if (!(cond)) __builtin_unreachable(); } while(0)
+	#define CALLBACK __attribute__((stdcall))
 
-#define __assume(cond) ((void)0) // GCC has no equivalent for __assume
-#define CALLBACK __attribute__((stdcall))
+	// Inlining note: GCC needs ((unused)) attributes defined on inlined functions to suppress
+	// warnings when a static inlined function isn't used in the scope of a single file (which
+	// happens *by design* like all the friggen time >_<)
 
-// Inlining note: GCC needs ((unused)) attributes defined on inlined functions to suppress
-// warnings when a static inlined function isn't used in the scope of a single file (which
-// happens *by design* like all the friggen time >_<)
-
-#ifndef __fastcall
-#define __fastcall __attribute__((fastcall))
-#endif
-#define __vectorcall __fastcall
-#define _inline __inline__ __attribute__((unused))
-#ifdef NDEBUG
-#define __forceinline __attribute__((always_inline, unused))
-#else
-#define __forceinline __attribute__((unused))
-#endif
-#ifndef __noinline
-#define __noinline __attribute__((noinline))
-#endif
-#ifndef __noreturn
-#define __noreturn __attribute__((noreturn))
-#endif
-#define likely(x) __builtin_expect(!!(x), 1)
-#define unlikely(x) __builtin_expect(!!(x), 0)
+	#ifndef __fastcall
+		#ifndef _M_X86_32
+			#define __fastcall // Attribute not available, and x86_32 is pretty much the only cc that passes literally everything in registers
+		#else
+			#define __fastcall __attribute__((fastcall))
+		#endif
+	#endif
+	#define __vectorcall __fastcall
+	#define _inline __inline__ __attribute__((unused))
+	#ifdef NDEBUG
+		#define __forceinline __attribute__((always_inline, unused))
+	#else
+		#define __forceinline __attribute__((unused))
+	#endif
+	#ifndef __noinline
+		#define __noinline __attribute__((noinline))
+	#endif
+	#ifndef __noreturn
+		#define __noreturn __attribute__((noreturn))
+	#endif
+	#define likely(x) __builtin_expect(!!(x), 1)
+	#define unlikely(x) __builtin_expect(!!(x), 0)
 #endif
 
 // --------------------------------------------------------------------------------------
@@ -181,11 +145,48 @@ static const int __pagesize = PCSX2_PAGESIZE;
 // environment.
 //
 #ifdef PCSX2_DEVBUILD
-#define __releaseinline
+	#define __releaseinline
 #else
-#define __releaseinline __forceinline
+	#define __releaseinline __forceinline
 #endif
 
 #define __ri __releaseinline
 #define __fi __forceinline
 #define __fc __fastcall
+
+// Makes sure that if anyone includes xbyak, it doesn't do anything bad
+#define XBYAK_ENABLE_OMITTED_OPERAND
+
+#ifdef __x86_64__
+	#define _M_AMD64
+#endif
+
+#ifndef RESTRICT
+	#ifdef __INTEL_COMPILER
+		#define RESTRICT restrict
+	#elif defined(_MSC_VER)
+		#define RESTRICT __restrict
+	#elif defined(__GNUC__)
+		#define RESTRICT __restrict__
+	#else
+		#define RESTRICT
+	#endif
+#endif
+
+#ifndef __has_attribute
+	#define __has_attribute(x) 0
+#endif
+
+#ifndef __has_builtin
+	#define __has_builtin(x) 0
+#endif
+
+#ifdef __cpp_constinit
+	#define CONSTINIT constinit
+#elif __has_attribute(require_constant_initialization)
+	#define CONSTINIT __attribute__((require_constant_initialization))
+#else
+	#define CONSTINIT
+#endif
+
+#define ASSERT assert

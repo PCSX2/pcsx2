@@ -106,7 +106,7 @@ const ListViewColumnInfo& MemoryCardListView_Simple::GetDefaultColumnInfo( uint 
 		{ _("Created on")	, 80 , wxLIST_FORMAT_LEFT	},
 	};
 
-	pxAssertDev( idx < ArraySize(columns), "ListView column index is out of bounds." );
+	pxAssertDev( idx < std::size(columns), "ListView column index is out of bounds." );
 	return columns[idx];
 }
 

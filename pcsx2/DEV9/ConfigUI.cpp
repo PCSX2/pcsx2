@@ -120,14 +120,17 @@ public:
 		auto* padding = new wxBoxSizer(wxVERTICAL);
 		auto* top_box = new wxBoxSizer(wxVERTICAL);
 
+		int space = wxSizerFlags().Border().GetBorderInPixels();
+		int two_space = wxSizerFlags().DoubleBorder().GetBorderInPixels();
+
 		// Ethernet section
 		auto* eth_sizer = new wxStaticBoxSizer(wxVERTICAL, this, _("Ethernet"));
 
 		m_eth_enable = new wxCheckBox(this, wxID_ANY, _("Enabled"));
 		eth_sizer->Add(m_eth_enable);
-		eth_sizer->AddSpacer(5);
+		eth_sizer->AddSpacer(space);
 
-		auto* eth_adapter_box = new wxGridBagSizer(5, 5);
+		auto* eth_adapter_box = new wxGridBagSizer(space, space);
 		for (const AdapterEntry& adapter : PCAPAdapter::GetAdapters())
 			addAdapter(adapter);
 #ifdef _WIN32
@@ -166,42 +169,44 @@ public:
 		m_dns1_address   .create(6, this, eth_adapter_box, _("DNS1 Address:"));
 		m_dns2_address   .create(7, this, eth_adapter_box, _("DNS2 Address:"));
 
-		eth_adapter_box->AddGrowableCol(1);
+		eth_adapter_box->AddGrowableCol(2);
 		eth_sizer->Add(eth_adapter_box, wxSizerFlags().Expand());
 
 		// HDD section
 		auto* hdd_sizer = new wxStaticBoxSizer(wxVERTICAL, this, _("Hard Disk Drive"));
 
 		m_hdd_enable = new wxCheckBox(this, wxID_ANY, _("Enabled"));
-		hdd_sizer->Add(m_hdd_enable);
-		hdd_sizer->AddSpacer(5);
 
-		auto* hdd_grid = new wxFlexGridSizer(2, 0, 5);
-		hdd_grid->AddGrowableCol(1);
-		auto* hdd_file_label = new wxStaticText(this, wxID_ANY, _("HDD File:"));
+		auto* hdd_file_label = new wxStaticText(this, wxID_ANY, _("HDD File"));
 		m_hdd_file = new wxFilePickerCtrl(this, wxID_ANY, wxEmptyString, _("HDD image file"), "HDD|*.raw", wxDefaultPosition, wxDefaultSize, wxFLP_SAVE | wxFLP_USE_TEXTCTRL);
-		hdd_grid->Add(hdd_file_label, wxSizerFlags().Centre().Right());
-		hdd_grid->Add(m_hdd_file,     wxSizerFlags().Expand());
-		auto* hdd_size_label = new wxStaticText(this, wxID_ANY, _("HDD Size (GiB):"));
+		auto* hdd_size_label = new wxStaticText(this, wxID_ANY, _("HDD Size (GiB)"));
 		auto* hdd_size_box = new wxBoxSizer(wxHORIZONTAL);
-		m_hdd_size_slider = new wxSlider(this, wxID_ANY, HDD_MIN_GB, HDD_MIN_GB, HDD_MAX_GB, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL | wxSL_MIN_MAX_LABELS | wxSL_AUTOTICKS);
+		m_hdd_size_slider = new wxSlider(this, wxID_ANY, HDD_MIN_GB, HDD_MIN_GB, HDD_MAX_GB, wxDefaultPosition, wxDefaultSize, wxSL_HORIZONTAL | wxSL_AUTOTICKS);
 		m_hdd_size_slider->SetPageSize(10);
-		for (int i = 15; i < HDD_MAX_GB; i += 5)
-			m_hdd_size_slider->SetTick(i);
+		m_hdd_size_slider->SetTickFreq(10);
 		m_hdd_size_spin = new wxSpinCtrl(this, wxID_ANY, wxEmptyString, wxDefaultPosition, wxDefaultSize, wxSP_ARROW_KEYS, HDD_MIN_GB, HDD_MAX_GB, HDD_MIN_GB);
 		m_hdd_size_spin->SetSizeHints(m_hdd_size_spin->GetSizeFromTextSize(30));
 		hdd_size_box->Add(m_hdd_size_slider, wxSizerFlags(1).Centre());
+		hdd_size_box->AddSpacer(space);
 		hdd_size_box->Add(m_hdd_size_spin,   wxSizerFlags(0).Centre());
-		hdd_grid->Add(hdd_size_label, wxSizerFlags().Centre().Right());
-		hdd_grid->Add(hdd_size_box,   wxSizerFlags().Expand());
 
-		hdd_sizer->Add(hdd_grid, wxSizerFlags().Expand());
+		hdd_sizer->Add(m_hdd_enable);
+		hdd_sizer->AddSpacer(two_space);
+		hdd_sizer->Add(hdd_file_label, wxSizerFlags().Left());
+		hdd_sizer->AddSpacer(space);
+		hdd_sizer->Add(m_hdd_file,     wxSizerFlags().Expand());
+		hdd_sizer->AddSpacer(two_space);
+		hdd_sizer->Add(hdd_size_label, wxSizerFlags().Left());
+		hdd_sizer->AddSpacer(space);
+		hdd_sizer->Add(hdd_size_box,   wxSizerFlags().Expand());
 
 		top_box->Add(eth_sizer, wxSizerFlags().Expand());
+		top_box->AddSpacer(space);
 		top_box->Add(hdd_sizer, wxSizerFlags().Expand());
+		top_box->AddSpacer(space);
 		top_box->Add(CreateStdDialogButtonSizer(wxOK | wxCANCEL), wxSizerFlags().Right());
 
-		padding->Add(top_box, wxSizerFlags().Expand().Border(wxALL, 5));
+		padding->Add(top_box, wxSizerFlags().Expand().Border());
 		SetSizerAndFit(padding);
 		SetMaxSize(wxSize(wxDefaultCoord, GetMinSize().y));
 
@@ -228,7 +233,7 @@ public:
 			const auto& list = m_adapter_list[static_cast<u32>(config.EthApi)];
 			for (size_t i = 0; i < list.size(); i++)
 			{
-				if (list[i].name == config.Eth)
+				if (list[i].guid == config.Eth)
 				{
 					m_eth_adapter->SetSelection(i + 1);
 					break;
@@ -259,7 +264,7 @@ public:
 		if (api && eth)
 		{
 			const AdapterEntry& adapter = m_adapter_list[static_cast<u32>(m_api_list[api - 1])][eth - 1];
-			wxStrncpy(config.Eth, adapter.name, std::size(config.Eth) - 1);
+			wxStrncpy(config.Eth, adapter.guid, std::size(config.Eth) - 1);
 			config.EthApi = adapter.type;
 		}
 		else
@@ -275,7 +280,7 @@ public:
 		m_dns2_address   .save(config.DNS2,    config.AutoDNS2);
 
 		config.hddEnable = m_hdd_enable->GetValue();
-		wxStrncpy(config.Hdd, m_hdd_file->GetPath(), ArraySize(config.Hdd) - 1);
+		wxStrncpy(config.Hdd, m_hdd_file->GetPath(), std::size(config.Hdd) - 1);
 		config.HddSize = m_hdd_size_spin->GetValue() * 1024;
 	}
 
@@ -321,6 +326,9 @@ public:
 		}
 		m_eth_adapter->Set(options);
 		m_eth_adapter->SetSelection(selection);
+		// Update minimum sizes for the possibly increased dropdown size
+		// Nothing else seems to update the minimum size of the window
+		SetSizerAndFit(GetSizer(), false);
 	}
 
 	void OnCheck(wxCommandEvent&)

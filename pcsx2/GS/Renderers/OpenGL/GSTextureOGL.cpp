@@ -20,20 +20,20 @@
 #include "GS/GSPng.h"
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
-extern uint64 g_real_texture_upload_byte;
+extern u64 g_real_texture_upload_byte;
 #endif
 
 // FIXME OGL4: investigate, only 1 unpack buffer always bound
 namespace PboPool
 {
 
-	const uint32 m_pbo_size = 64 * 1024 * 1024;
-	const uint32 m_seg_size = 16 * 1024 * 1024;
+	const u32 m_pbo_size = 64 * 1024 * 1024;
+	const u32 m_seg_size = 16 * 1024 * 1024;
 
 	GLuint m_buffer;
 	uptr m_offset;
 	char* m_map;
-	uint32 m_size;
+	u32 m_size;
 	GLsync m_fence[m_pbo_size / m_seg_size];
 
 	// Option for buffer storage
@@ -56,15 +56,12 @@ namespace PboPool
 		m_map = (char*)glMapBufferRange(GL_PIXEL_UNPACK_BUFFER, 0, m_pbo_size, map_flags);
 		m_offset = 0;
 
-		for (size_t i = 0; i < countof(m_fence); i++)
-		{
-			m_fence[i] = 0;
-		}
+		std::fill(std::begin(m_fence), std::end(m_fence), nullptr);
 
 		UnbindPbo();
 	}
 
-	char* Map(uint32 size)
+	char* Map(u32 size)
 	{
 		char* map;
 		// Note: keep offset aligned for SSE/AVX
@@ -101,9 +98,9 @@ namespace PboPool
 		m_map = NULL;
 		m_offset = 0;
 
-		for (size_t i = 0; i < countof(m_fence); i++)
+		for (GLsync fence : m_fence)
 		{
-			glDeleteSync(m_fence[i]);
+			glDeleteSync(fence);
 		}
 
 		glDeleteBuffers(1, &m_buffer);
@@ -116,12 +113,12 @@ namespace PboPool
 
 	void Sync()
 	{
-		uint32 segment_current = m_offset / m_seg_size;
-		uint32 segment_next = (m_offset + m_size) / m_seg_size;
+		u32 segment_current = m_offset / m_seg_size;
+		u32 segment_next = (m_offset + m_size) / m_seg_size;
 
 		if (segment_current != segment_next)
 		{
-			if (segment_next >= countof(m_fence))
+			if (segment_next >= std::size(m_fence))
 			{
 				segment_next = 0;
 			}
@@ -259,7 +256,7 @@ GSTextureOGL::GSTextureOGL(int type, int w, int h, int format, GLuint fbo_read, 
 			return; // backbuffer isn't a real texture
 		case GSTexture::Offscreen:
 			// Offscreen is only used to read color. So it only requires 4B by pixel
-			m_local_buffer = (uint8*)_aligned_malloc(m_size.x * m_size.y * 4, 32);
+			m_local_buffer = (u8*)_aligned_malloc(m_size.x * m_size.y * 4, 32);
 			break;
 		case GSTexture::Texture:
 			// Only 32 bits input texture will be supported for mipmap
@@ -355,10 +352,10 @@ GSTextureOGL::~GSTextureOGL()
 		GLState::rt = 0;
 	if (m_texture_id == GLState::ds)
 		GLState::ds = 0;
-	for (size_t i = 0; i < countof(GLState::tex_unit); i++)
+	for (GLuint& tex : GLState::tex_unit)
 	{
-		if (m_texture_id == GLState::tex_unit[i])
-			GLState::tex_unit[i] = 0;
+		if (m_texture_id == tex)
+			tex = 0;
 	}
 
 	glDeleteTextures(1, &m_texture_id);
@@ -394,8 +391,8 @@ bool GSTextureOGL::Update(const GSVector4i& r, const void* data, int pitch, int 
 
 	m_clean = false;
 
-	uint32 row_byte = r.width() << m_int_shift;
-	uint32 map_size = r.height() * row_byte;
+	u32 row_byte = r.width() << m_int_shift;
+	u32 map_size = r.height() * row_byte;
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 	g_real_texture_upload_byte += map_size;
 #endif
@@ -460,7 +457,7 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 	ASSERT(r.width() != 0);
 	ASSERT(r.height() != 0);
 
-	uint32 row_byte = r.width() << m_int_shift;
+	u32 row_byte = r.width() << m_int_shift;
 	m.pitch = row_byte;
 
 	if (m_type == GSTexture::Offscreen)
@@ -468,7 +465,7 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 		// The fastest way will be to use a PBO to read the data asynchronously. Unfortunately GS
 		// architecture is waiting the data right now.
 
-#if 0
+#ifdef GL_EXT_TEX_SUB_IMAGE
 		// Maybe it is as good as the code below. I don't know
 		// With openGL 4.5 you can use glGetTextureSubImage
 
@@ -498,9 +495,9 @@ bool GSTextureOGL::Map(GSMap& m, const GSVector4i* _r, int layer)
 
 		m_clean = false;
 
-		uint32 map_size = r.height() * row_byte;
+		u32 map_size = r.height() * row_byte;
 
-		m.bits = (uint8*)PboPool::Map(map_size);
+		m.bits = (u8*)PboPool::Map(map_size);
 
 #ifdef ENABLE_OGL_DEBUG_MEM_BW
 		g_real_texture_upload_byte += map_size;
@@ -589,9 +586,9 @@ void GSTextureOGL::CommitPages(const GSVector2i& region, bool commit)
 bool GSTextureOGL::Save(const std::string& fn)
 {
 	// Collect the texture data
-	uint32 pitch = 4 * m_committed_size.x;
-	uint32 buf_size = pitch * m_committed_size.y * 2; // Note *2 for security (depth/stencil)
-	std::unique_ptr<uint8[]> image(new uint8[buf_size]);
+	u32 pitch = 4 * m_committed_size.x;
+	u32 buf_size = pitch * m_committed_size.y * 2; // Note *2 for security (depth/stencil)
+	std::unique_ptr<u8[]> image(new u8[buf_size]);
 #ifdef ENABLE_OGL_DEBUG
 	GSPng::Format fmt = GSPng::RGB_A_PNG;
 #else
@@ -649,7 +646,7 @@ bool GSTextureOGL::Save(const std::string& fn)
 	return GSPng::Save(fmt, fn, image.get(), m_committed_size.x, m_committed_size.y, pitch, compression);
 }
 
-uint32 GSTextureOGL::GetMemUsage()
+u32 GSTextureOGL::GetMemUsage()
 {
 	return m_mem_usage;
 }

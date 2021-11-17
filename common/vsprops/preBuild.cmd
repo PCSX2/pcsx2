@@ -23,7 +23,11 @@ FOR /F "tokens=1-2" %%i IN ('"git show -s --format=%%%ci HEAD 2> NUL"') do (
 )
 
 FOR /F %%i IN ('"git describe 2> NUL"') do (
-    set GIT_REV=%%i
+  set GIT_REV=%%i
+)
+
+FOR /F "tokens=* USEBACKQ" %%i IN (`git tag --points-at HEAD`) DO (
+  set GIT_TAG=%%i
 )
 
 set REV2=%REV3: =%
@@ -40,12 +44,24 @@ if %ERRORLEVEL% NEQ 0 (
 
   echo #define SVN_REV_UNKNOWN > "%CD%\svnrev.h"
   echo #define SVN_REV 0ll >> "%CD%\svnrev.h"
-  echo #define SVN_MODS 0 >> "%CD%\svnrev.h"
   echo #define GIT_REV "" >> "%CD%\svnrev.h"
+  echo #define GIT_TAG "" >> "%CD%\svnrev.h"
+  echo #define GIT_TAGGED_COMMIT 0 >> "%CD%\svnrev.h"
 ) else (
-  echo #define SVN_REV %REV%ll > "%CD%\svnrev.h"
-  echo #define SVN_MODS 0 /* Not implemented at the moment. */ >> "%CD%\svnrev.h"
-  echo #define GIT_REV "%GIT_REV%" >> "%CD%\svnrev.h"
+  :: Support New Tagged Release Model
+  if [%GIT_TAG%] NEQ [] (
+    echo Detected that the current commit is tagged, using that!
+    echo #define SVN_REV_UNKNOWN > "%CD%\svnrev.h"
+    echo #define SVN_REV 0ll >> "%CD%\svnrev.h"
+    echo #define GIT_REV "" >> "%CD%\svnrev.h"
+    echo #define GIT_TAG "%GIT_TAG%" >> "%CD%\svnrev.h"
+    echo #define GIT_TAGGED_COMMIT 1 >> "%CD%\svnrev.h"
+  ) else (
+    echo #define SVN_REV %REV%ll > "%CD%\svnrev.h"
+    echo #define GIT_REV "%GIT_REV%" >> "%CD%\svnrev.h"
+    echo #define GIT_TAG "" >> "%CD%\svnrev.h"
+    echo #define GIT_TAGGED_COMMIT 0 >> "%CD%\svnrev.h"
+  )
 )
 
 ENDLOCAL

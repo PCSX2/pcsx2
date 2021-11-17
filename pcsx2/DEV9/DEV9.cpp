@@ -183,7 +183,7 @@ void DEV9shutdown()
 	delete dev9.ata;
 }
 
-s32 DEV9open(void* pDsp)
+s32 DEV9open()
 {
 	DevCon.WriteLn("DEV9: DEV9open");
 	LoadConf();

@@ -17,7 +17,7 @@
 #include "GSCapture.h"
 #include "GSPng.h"
 #include "GSUtil.h"
-#include "GS_types.h"
+#include "GSExtra.h"
 
 #ifdef _WIN32
 
@@ -126,7 +126,7 @@ GSSource : public CBaseFilter, private CCritSec, public IGSSource
 			vih.bmiHeader.biPlanes = 1;
 			vih.bmiHeader.biBitCount = 16;
 			vih.bmiHeader.biSizeImage = m_size.x * m_size.y * 2;
-			mt.SetFormat((uint8*)&vih, sizeof(vih));
+			mt.SetFormat((u8*)&vih, sizeof(vih));
 
 			m_mts.push_back(mt);
 
@@ -139,7 +139,7 @@ GSSource : public CBaseFilter, private CCritSec, public IGSSource
 			vih.bmiHeader.biPlanes = 1;
 			vih.bmiHeader.biBitCount = 32;
 			vih.bmiHeader.biSizeImage = m_size.x * m_size.y * 4;
-			mt.SetFormat((uint8*)&vih, sizeof(vih));
+			mt.SetFormat((u8*)&vih, sizeof(vih));
 
 			if (colorspace == 1)
 				m_mts.insert(m_mts.begin(), mt);
@@ -272,8 +272,8 @@ public:
 
 		const CMediaType& mt = m_output->CurrentMediaType();
 
-		uint8* src = (uint8*)bits;
-		uint8* dst = NULL;
+		u8* src = (u8*)bits;
+		u8* dst = NULL;
 
 		sample->GetPointer(&dst);
 
@@ -300,8 +300,8 @@ public:
 
 			for (int j = 0; j < h; j++, dst += dstpitch, src += srcpitch)
 			{
-				uint32* s = (uint32*)src;
-				uint16* d = (uint16*)dst;
+				u32* s = (u32*)src;
+				u16* d = (u16*)dst;
 
 				for (int i = 0; i < w; i += 2)
 				{
@@ -314,7 +314,7 @@ public:
 
 					GSVector4 c = lo.hadd(hi) + offset;
 
-					*((uint32*)&d[i]) = GSVector4i(c).rgba32();
+					*((u32*)&d[i]) = GSVector4i(c).rgba32();
 				}
 			}
 		}
@@ -568,8 +568,8 @@ bool GSCapture::DeliverFrame(const void* bits, int pitch, bool rgba)
 #elif defined(__unix__)
 
 	std::string out_file = m_out_dir + format("/frame.%010d.png", m_frame);
-	//GSPng::Save(GSPng::RGB_PNG, out_file, (uint8*)bits, m_size.x, m_size.y, pitch, m_compression_level);
-	m_workers[m_frame % m_threads]->Push(std::make_shared<GSPng::Transaction>(GSPng::RGB_PNG, out_file, static_cast<const uint8*>(bits), m_size.x, m_size.y, pitch, m_compression_level));
+	//GSPng::Save(GSPng::RGB_PNG, out_file, (u8*)bits, m_size.x, m_size.y, pitch, m_compression_level);
+	m_workers[m_frame % m_threads]->Push(std::make_shared<GSPng::Transaction>(GSPng::RGB_PNG, out_file, static_cast<const u8*>(bits), m_size.x, m_size.y, pitch, m_compression_level));
 
 	m_frame++;
 

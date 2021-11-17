@@ -18,7 +18,6 @@
 
 #include <list>
 
-#include "GS.h"
 #include "Gif_Unit.h"
 #include "Counters.h"
 #include "Config.h"
@@ -26,7 +25,7 @@
 using namespace Threading;
 using namespace R5900;
 
-__aligned16 u8 g_RealGSMem[Ps2MemSize::GSregs];
+alignas(16) u8 g_RealGSMem[Ps2MemSize::GSregs];
 
 void gsSetVideoMode(GS_VideoMode mode)
 {

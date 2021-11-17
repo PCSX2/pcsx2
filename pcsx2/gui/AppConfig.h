@@ -270,6 +270,8 @@ public:
 
 	bool		AskOnBoot;
 
+	bool		DevMode; // Enable extra options in config menus
+
 
 	wxString				CurrentIso;
 	wxString				CurrentELF;

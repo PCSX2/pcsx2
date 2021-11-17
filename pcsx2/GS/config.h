@@ -28,6 +28,8 @@
 
 //#define DISABLE_DATE
 
+// Not yet used/experimental OpenGL extensions
+//#define GL_EXT_TEX_SUB_IMAGE
 
 #if !defined(NDEBUG) || defined(_DEBUG) || defined(_DEVEL)
 #define ENABLE_OGL_DEBUG // Create a debug context and check opengl command status. Allow also to dump various textures/states.

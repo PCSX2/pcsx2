@@ -43,14 +43,27 @@ static YAML::Node LoadYAMLFromFile(const wxString& fileName)
 
 	if (result)
 	{
-		wxString fileContents;
-		if (indexFile.ReadAll(&fileContents))
+		size_t len = indexFile.Length();
+		std::string fileContents(len, '\0');
+		if (indexFile.Read(fileContents.data(), len) == len)
 		{
-			index = YAML::Load(fileContents.mbc_str());
+			index = YAML::Load(fileContents);
 		}
 	}
 
 	return index;
+}
+
+/// A helper function to write a YAML file
+static void SaveYAMLToFile(const wxString& filename, const YAML::Node& node)
+{
+	wxFFile file;
+	if (file.Open(filename, L"w"))
+	{
+		// Make sure WX doesn't do anything funny with encoding
+		std::string yaml = YAML::Dump(node);
+		file.Write(yaml.data(), yaml.length());
+	}
 }
 
 FolderMemoryCard::FolderMemoryCard()
@@ -1249,11 +1262,7 @@ void FolderMemoryCard::FlushFileEntries(const u32 dirCluster, const u32 remainin
 						entryNode["timeModified"] = entry->entry.data.timeModified.ToTime();
 
 						// Write out the changes
-						wxFFile indexFile;
-						if (indexFile.Open(metaFileName.GetFullPath(), L"w"))
-						{
-							indexFile.Write(YAML::Dump(index));
-						}
+						SaveYAMLToFile(metaFileName.GetFullPath(), index);
 					}
 
 					MemoryCardFileMetadataReference* dirRef = AddDirEntryToMetadataQuickAccess(entry, parent);
@@ -1745,11 +1754,7 @@ void FolderMemoryCard::DeleteFromIndex(const wxString& filePath, const wxString&
 	index.remove(entryUTF8.data());
 
 	// Write out the changes
-	wxFFile indexFile;
-	if (indexFile.Open(indexName, L"w"))
-	{
-		indexFile.Write(YAML::Dump(index));
-	}
+	SaveYAMLToFile(indexName, index);
 }
 
 // from http://www.oocities.org/siliconvalley/station/8269/sma02/sma02.html#ECC
@@ -1935,11 +1940,7 @@ void FileAccessHelper::WriteIndex(wxFileName folderName, MemoryCardFileEntry* co
 	entryNode["timeModified"] = e->timeModified.ToTime();
 
 	// Write out the changes
-	wxFFile indexFile;
-	if (indexFile.Open(folderName.GetFullPath(), L"w"))
-	{
-		indexFile.Write(YAML::Dump(index));
-	}
+	SaveYAMLToFile(folderName.GetFullPath(), index);
 }
 
 wxFFile* FileAccessHelper::ReOpen(const wxFileName& folderName, MemoryCardFileMetadataReference* fileRef, bool writeMetadata)

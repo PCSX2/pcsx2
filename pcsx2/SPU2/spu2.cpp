@@ -250,18 +250,13 @@ static INT_PTR CALLBACK DebugProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lP
 #endif
 uptr gsWindowHandle = 0;
 
-s32 SPU2open(void* pDsp)
+s32 SPU2open()
 {
 	ScopedLock lock(mtx_SPU2Status);
 	if (IsOpened)
 		return 0;
 
 	FileLog("[%10d] SPU2 Open\n", Cycles);
-
-	if (pDsp != nullptr)
-		gsWindowHandle = *(uptr*)pDsp;
-	else
-		gsWindowHandle = 0;
 
 #ifdef _MSC_VER
 #ifdef PCSX2_DEVBUILD // Define may not be needed but not tested yet. Better make sure.

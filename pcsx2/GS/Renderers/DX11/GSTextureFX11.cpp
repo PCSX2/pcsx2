@@ -117,7 +117,7 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 
 		std::vector<char> shader;
 		theApp.LoadResource(IDR_TFX_FX, shader);
-		CreateShader(shader, "tfx.fx", nullptr, "vs_main", sm.GetPtr(), &vs.vs, layout, countof(layout), vs.il.put());
+        CreateShader(shader, "tfx.fx", nullptr, "vs_main", sm.GetPtr(), &vs.vs, layout, std::size(layout), vs.il.put());
 
 		m_vs[sel] = vs;
 
@@ -279,7 +279,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 	PSSetShader(i->second.get(), m_ps_cb.get());
 }
 
-void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, uint8 afix)
+void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 afix)
 {
 	auto i = std::as_const(m_om_dss).find(dssel);
 

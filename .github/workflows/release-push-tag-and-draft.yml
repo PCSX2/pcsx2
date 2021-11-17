@@ -1,0 +1,62 @@
+# Whenever a commit is pushed to master (ideally via a pull-request!)
+# this action will create the next release, which means:
+# 1. tag master with the proper version
+# 2. create a new draft release (pre-released if a nightly build)
+# 3. add release notes
+
+name: 🏭 Create Release
+
+on:
+  push:
+    branches:
+      - master
+  # TODO - future work
+  # workflow_dispatch:
+  #   inputs:
+  #     isStable:
+  #       description: 'Should it be a stable release?'
+  #       required: true
+  #       default: 'false'
+  #     versionTag:
+  #       description: 'The version to tag with'
+  #       required: true
+
+jobs:
+  cut-release:
+    if: github.repository == 'PCSX2/pcsx2'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      # Docs - https://github.com/mathieudutour/github-tag-action
+      # Workflows cannot trigger other workflows implicitly
+      # - https://github.community/t/github-actions-workflow-not-triggering-with-tag-push/17053/7
+      - name: Bump Version and Push Tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v5.6
+        with:
+          github_token: ${{ secrets.BOT_PAT }}
+          tag_prefix: v
+          default_bump: patch
+
+      # Generate the Release Notes
+      - name: Generate Release Notes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMIT_SHA: ${{ github.SHA }}
+        run: |
+          cd ./.github/workflows/scripts/releases/generate-release-notes
+          npm ci
+          node index.js
+          mv ./release-notes.md ${GITHUB_WORKSPACE}/release-notes.md
+          ls
+
+      # Docs - https://github.com/softprops/action-gh-release
+      - name: Create a GitHub Release
+        uses: softprops/action-gh-release@v1
+        if: steps.tag_version.outputs.new_tag
+        with:
+          body_path: ./release-notes.md
+          draft: true
+          prerelease: true
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}

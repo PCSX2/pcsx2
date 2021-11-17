@@ -35,8 +35,8 @@ class GSRendererSW : public GSRenderer
 
 	public:
 		GSRendererSW* m_parent;
-		const uint32* m_fb_pages;
-		const uint32* m_zb_pages;
+		GSOffset::PageLooper m_fb_pages;
+		GSOffset::PageLooper m_zb_pages;
 		int m_fpsm;
 		int m_zpsm;
 		bool m_using_pages;
@@ -52,7 +52,7 @@ class GSRendererSW : public GSRenderer
 		SharedData(GSRendererSW* parent);
 		virtual ~SharedData();
 
-		void UsePages(const uint32* fb_pages, int fpsm, const uint32* zb_pages, int zpsm);
+		void UsePages(const GSOffset::PageLooper* fb_pages, int fpsm, const GSOffset::PageLooper* zb_pages, int zpsm);
 		void ReleasePages();
 
 		void SetSource(GSTextureCacheSW::Texture* t, const GSVector4i& r, int level);
@@ -63,20 +63,19 @@ class GSRendererSW : public GSRenderer
 
 	ConvertVertexBufferPtr m_cvb[4][2][2][2];
 
-	template <uint32 primclass, uint32 tme, uint32 fst, uint32 q_div>
+	template <u32 primclass, u32 tme, u32 fst, u32 q_div>
 	void ConvertVertexBuffer(GSVertexSW* RESTRICT dst, const GSVertex* RESTRICT src, size_t count);
 
 protected:
 	IRasterizer* m_rl;
 	GSTextureCacheSW* m_tc;
 	GSTexture* m_texture[2];
-	uint8* m_output;
+	u8* m_output;
 	GSPixelOffset4* m_fzb;
 	GSVector4i m_fzb_bbox;
-	uint32 m_fzb_cur_pages[16];
-	std::atomic<uint32> m_fzb_pages[512]; // uint16 frame/zbuf pages interleaved
-	std::atomic<uint16> m_tex_pages[512];
-	uint32 m_tmp_pages[512 + 1];
+	u32 m_fzb_cur_pages[16];
+	std::atomic<u32> m_fzb_pages[512]; // u16 frame/zbuf pages interleaved
+	std::atomic<u16> m_tex_pages[512];
 
 	void Reset();
 	void VSync(int field);
@@ -90,10 +89,10 @@ protected:
 	void InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r);
 	void InvalidateLocalMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r, bool clut = false);
 
-	void UsePages(const uint32* pages, const int type);
-	void ReleasePages(const uint32* pages, const int type);
+	void UsePages(const GSOffset::PageLooper& pages, const int type);
+	void ReleasePages(const GSOffset::PageLooper& pages, const int type);
 
-	bool CheckTargetPages(const uint32* fb_pages, const uint32* zb_pages, const GSVector4i& r);
+	bool CheckTargetPages(const GSOffset::PageLooper* fb_pages, const GSOffset::PageLooper* zb_pages, const GSVector4i& r);
 	bool CheckSourcePages(SharedData* sd);
 
 	bool GetScanlineGlobalData(SharedData* data);

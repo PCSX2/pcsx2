@@ -54,7 +54,7 @@ enum gui_buttons
 #define BUTTONS_LENGHT 32 // numbers of buttons on the gamepad
 #define UPDATE_TIME 5
 #define DEFAULT_WIDTH 1000
-#define DEFAULT_HEIGHT 740
+#define DEFAULT_HEIGHT 760
 
 class PADDialog : public wxDialog
 {
@@ -72,7 +72,7 @@ class PADDialog : public wxDialog
 	bool m_pressed[GAMEPAD_NUMBER][NB_IMG];
 
 	// methods
-	void config_key(int, int);
+	bool config_key(int, int);
 	void clear_key(int, int);
 	void repopulate();
 

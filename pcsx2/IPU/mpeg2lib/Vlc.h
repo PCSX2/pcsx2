@@ -99,7 +99,7 @@ static const MBtab MB_I [] = {
 #define MC MACROBLOCK_MOTION_FORWARD
 #define CODED MACROBLOCK_PATTERN
 
-static const __aligned16 MBtab MB_P [] = {
+alignas(16) static const MBtab MB_P [] = {
     {INTRA|QUANT, 6}, {CODED|QUANT, 5}, {MC|CODED|QUANT, 5}, {INTRA,    5},
     {MC,          3}, {MC,          3}, {MC,             3}, {MC,       3},
     {CODED,       2}, {CODED,       2}, {CODED,          2}, {CODED,    2},
@@ -114,7 +114,7 @@ static const __aligned16 MBtab MB_P [] = {
 #define BWD MACROBLOCK_MOTION_BACKWARD
 #define INTER MACROBLOCK_MOTION_FORWARD|MACROBLOCK_MOTION_BACKWARD
 
-static const __aligned16 MBtab MB_B [] = {
+alignas(16) static const MBtab MB_B [] = {
     {0,                 0}, {INTRA|QUANT,       6},
     {BWD|CODED|QUANT,   6}, {FWD|CODED|QUANT,   6},
     {INTER|CODED|QUANT, 5}, {INTER|CODED|QUANT, 5},
@@ -148,7 +148,7 @@ static const MVtab MV_4 [] = {
     { 3, 6}, { 2, 4}, { 1, 3}, { 1, 3}, { 0, 2}, { 0, 2}, { 0, 2}, { 0, 2}
 };
 
-static const __aligned16 MVtab MV_10 [] = {
+alignas(16) static const MVtab MV_10 [] = {
     { 0,10}, { 0,10}, { 0,10}, { 0,10}, { 0,10}, { 0,10}, { 0,10}, { 0,10},
     { 0,10}, { 0,10}, { 0,10}, { 0,10}, {15,10}, {14,10}, {13,10}, {12,10},
     {11,10}, {10,10}, { 9, 9}, { 9, 9}, { 8, 9}, { 8, 9}, { 7, 9}, { 7, 9},
@@ -163,7 +163,7 @@ static const DMVtab DMV_2 [] = {
 };
 
 
-static const __aligned16 CBPtab CBP_7 [] = {
+alignas(16) static const CBPtab CBP_7 [] = {
     {0x22, 7}, {0x12, 7}, {0x0a, 7}, {0x06, 7},
     {0x21, 7}, {0x11, 7}, {0x09, 7}, {0x05, 7},
     {0x3f, 6}, {0x3f, 6}, {0x03, 6}, {0x03, 6},
@@ -194,7 +194,7 @@ static const __aligned16 CBPtab CBP_7 [] = {
     {0x3c, 3}, {0x3c, 3}, {0x3c, 3}, {0x3c, 3}
 };
 
-static const __aligned16 CBPtab CBP_9 [] = {
+alignas(16) static const CBPtab CBP_9 [] = {
     {0,    0}, {0x00, 9}, {0x27, 9}, {0x1b, 9},
     {0x3b, 9}, {0x37, 9}, {0x2f, 9}, {0x1f, 9},
     {0x3a, 8}, {0x3a, 8}, {0x36, 8}, {0x36, 8},
@@ -391,7 +391,7 @@ struct MBAtabSet
 	MBAtab mba5[30];
 	MBAtab mba11[26*4];
 };
-static const __aligned16 MBAtabSet MBA = {
+alignas(16) static const MBAtabSet MBA = {
 	{	// mba5
 				{6, 5}, {5, 5}, {4, 4}, {4, 4}, {3, 4}, {3, 4},
 		{2, 3}, {2, 3}, {2, 3}, {2, 3}, {1, 3}, {1, 3}, {1, 3}, {1, 3},
@@ -465,7 +465,7 @@ struct DCtabSet
 	DCtab chrom1[32];	// Table B-13, dct_dc_size_chrominance, codes 111110xxxx ... 1111111111
 };
 
-static const __aligned16 DCtabSet DCtable =
+alignas(16) static const DCtabSet DCtable =
 {
 	// lum0: Table B-12, dct_dc_size_luminance, codes 00xxx ... 11110 */
 	{ {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2}, {1, 2},
@@ -507,7 +507,7 @@ struct DCTtabSet
 	DCTtab tab6[16];
 };
 
-static const __aligned16 DCTtabSet DCT =
+alignas(16) static const DCTtabSet DCT =
 {
 	/* first[12]: Table B-14, DCT coefficients table zero,
 	 * codes 0100 ... 1xxx (used for first (DC) coefficient)

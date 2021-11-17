@@ -262,6 +262,9 @@ void UpdateKeyboardInput()
 	g_ev_fifo.consume_all(AnalyzeKeyEvent);
 
 	// keyboard input
+	if (!GSdsp)
+		return;
+
 	while (XPending(GSdsp) > 0)
 	{
 		XNextEvent(GSdsp, &E);

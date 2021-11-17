@@ -120,7 +120,7 @@ struct PGPUregisters
 static PGPUregisters& pgpu = (PGPUregisters&)eeHw[0xf300];
 
 //Internal dma flags:
-static struct dma_t
+struct dma_t
 {
 	struct dmaState_t
 	{
@@ -143,7 +143,7 @@ static struct dma_t
 		u32 current_word; //current word number in Normal DMA
 		u32 address;
 	} normal;
-} dma;
+};
 
 union tCHCR_DMA
 {

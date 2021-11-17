@@ -16,9 +16,9 @@
 #include "PrecompiledHeader.h"
 #include "GSDeviceNull.h"
 
-bool GSDeviceNull::Create(const std::shared_ptr<GSWnd>& wnd)
+bool GSDeviceNull::Create(const WindowInfo& wi)
 {
-	if (!GSDevice::Create(wnd))
+	if (!GSDevice::Create(wi))
 		return false;
 
 	Reset(1, 1);

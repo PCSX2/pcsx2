@@ -38,8 +38,8 @@
 #include "Recording/InputRecordingControls.h"
 #endif
 
-__aligned16 SysMtgsThread mtgsThread;
-__aligned16 AppCoreThread CoreThread;
+alignas(16) SysMtgsThread mtgsThread;
+alignas(16) AppCoreThread CoreThread;
 
 typedef void (AppCoreThread::*FnPtr_CoreThreadMethod)();
 
@@ -314,7 +314,7 @@ static int loadGameSettings(Pcsx2Config& dest, const GameDatabaseSchema::GameEnt
 	// TODO - config - this could be simplified with maps instead of bitfields and enums
 	for (SpeedhackId id = SpeedhackId_FIRST; id < pxEnumEnd; id++)
 	{
-		std::string key = fmt::format("{}SpeedHack", wxString(EnumToString(id)));
+		std::string key = fmt::format("{}SpeedHack", wxString(EnumToString(id)).ToUTF8());
 
 		// Gamefixes are already guaranteed to be valid, any invalid ones are dropped
 		if (game.speedHacks.count(key) == 1)
@@ -323,7 +323,7 @@ static int loadGameSettings(Pcsx2Config& dest, const GameDatabaseSchema::GameEnt
 			// are effectively booleans like the gamefixes
 			bool mode = game.speedHacks.at(key) ? 1 : 0;
 			dest.Speedhacks.Set(id, mode);
-			PatchesCon->WriteLn(L"(GameDB) Setting Speedhack '" + key + "' to [mode=%d]", mode);
+			PatchesCon->WriteLn(fmt::format("(GameDB) Setting Speedhack '{}' to [mode={}]", key, (int)mode));
 			gf++;
 		}
 	}
@@ -331,14 +331,14 @@ static int loadGameSettings(Pcsx2Config& dest, const GameDatabaseSchema::GameEnt
 	// TODO - config - this could be simplified with maps instead of bitfields and enums
 	for (GamefixId id = GamefixId_FIRST; id < pxEnumEnd; id++)
 	{
-		std::string key = fmt::format("{}Hack", wxString(EnumToString(id)));
+		std::string key = fmt::format("{}Hack", wxString(EnumToString(id)).ToUTF8());
 
 		// Gamefixes are already guaranteed to be valid, any invalid ones are dropped
 		if (std::find(game.gameFixes.begin(), game.gameFixes.end(), key) != game.gameFixes.end())
 		{
 			// if the fix is present, it is said to be enabled
 			dest.Gamefixes.Set(id, true);
-			PatchesCon->WriteLn(L"(GameDB) Enabled Gamefix: " + key);
+			PatchesCon->WriteLn("(GameDB) Enabled Gamefix: " + key);
 			gf++;
 
 			// The LUT is only used for 1 game so we allocate it only when the gamefix is enabled (save 4MB)
@@ -452,13 +452,13 @@ static void _ApplySettings(const Pcsx2Config& src, Pcsx2Config& fixup)
 	{
 		if (IGameDatabase* GameDB = AppHost_GetGameDatabase())
 		{
-			GameDatabaseSchema::GameEntry game = GameDB->findGame(std::string(curGameKey));
+			GameDatabaseSchema::GameEntry game = GameDB->findGame(std::string(curGameKey.ToUTF8()));
 			if (game.isValid)
 			{
-				GameInfo::gameName = game.name;
-				GameInfo::gameName += L" (" + game.region + L")";
+				GameInfo::gameName = fromUTF8(game.name);
+				GameInfo::gameName += L" (" + fromUTF8(game.region) + L")";
 				gameCompat = L" [Status = " + compatToStringWX(game.compat) + L"]";
-				gameMemCardFilter = game.memcardFiltersAsString();
+				gameMemCardFilter = fromUTF8(game.memcardFiltersAsString());
 			}
 
 			if (fixup.EnablePatches)

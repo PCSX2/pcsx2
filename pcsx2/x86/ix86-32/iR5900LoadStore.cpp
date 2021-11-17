@@ -66,7 +66,7 @@ REC_FUNC(SQC2);
 
 #else
 
-__aligned16 u64 retValues[2];
+alignas(16) u64 retValues[2];
 
 void _eeOnLoadWrite(u32 reg)
 {
@@ -96,7 +96,7 @@ void _eeOnLoadWrite(u32 reg)
 
 using namespace Interpreter::OpcodeImpl;
 
-__aligned16 u32 dummyValue[4];
+alignas(16) u32 dummyValue[4];
 
 //////////////////////////////////////////////////////////////////////////////////////////
 //
@@ -538,6 +538,11 @@ void recLDL()
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+
+		// If _Rs_ is equal to _Rt_ we need to put the shift in to eax since it won't take the CONST path
+		if (_Rs_ == _Rt_)
+			xMOV(calleeSavedReg1d, srcadr);
+
 		srcadr &= ~0x07;
 
 		t2reg = vtlb_DynGenRead64_Const(64, srcadr, -1);
@@ -609,6 +614,11 @@ void recLDR()
 	if (GPR_IS_CONST1(_Rs_))
 	{
 		u32 srcadr = g_cpuConstRegs[_Rs_].UL[0] + _Imm_;
+
+		// If _Rs_ is equal to _Rt_ we need to put the shift in to eax since it won't take the CONST path
+		if(_Rs_ == _Rt_)
+			xMOV(calleeSavedReg1d, srcadr);
+
 		srcadr &= ~0x07;
 
 		t2reg = vtlb_DynGenRead64_Const(64, srcadr, -1);
@@ -949,7 +959,7 @@ void recLQC2()
 	xForwardJZ32 skipvuidle;
 	xSUB(eax, ptr32[&VU0.cycle]);
 	xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-	xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 8 : 0);
+	xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 4 : 0);
 	xForwardJL32 skip;
 	_cop2BackupRegs();
 	xLoadFarAddr(arg1reg, CpuVU0);
@@ -998,7 +1008,7 @@ void recSQC2()
 	xForwardJZ32 skipvuidle;
 	xSUB(eax, ptr32[&VU0.cycle]);
 	xSUB(eax, ptr32[&VU0.nextBlockCycles]);
-	xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 8 : 0);
+	xCMP(eax, EmuConfig.Gamefixes.VUKickstartHack ? 4 : 0);
 	xForwardJL32 skip;
 	_cop2BackupRegs();
 	xLoadFarAddr(arg1reg, CpuVU0);

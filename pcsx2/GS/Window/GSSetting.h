@@ -38,7 +38,6 @@ const wchar_t* dialog_message(int ID, bool* updateText = NULL);
 const char* dialog_message(int ID, bool* updateText = NULL);
 #endif
 
-#ifndef _WIN32
 enum
 {
 	// Renderer
@@ -52,6 +51,9 @@ enum
 	IDC_MIPMAP_HW,
 	IDC_CRC_LEVEL,
 	IDC_ACCURATE_BLEND_UNIT,
+#ifdef _WIN32
+	IDC_ACCURATE_BLEND_UNIT_D3D11,
+#endif
 	// Rendering Hacks
 	IDC_AUTO_FLUSH_HW,
 	IDC_TC_DEPTH,
@@ -91,6 +93,12 @@ enum
 	IDC_OSD_MONITOR,
 	IDC_OSD_MAX_LOG,
 	IDC_OSD_MAX_LOG_EDIT,
+	// Shader Configuration
+	IDC_SHADEBOOST,
+	IDC_SHADER_FX,
+	IDC_FXAA,
+	IDC_LINEAR_PRESENT,
+#ifndef _WIN32
 	// Shader
 	IDR_CONVERT_GLSL,
 	IDR_FXAA_FX,
@@ -101,12 +109,7 @@ enum
 	IDR_TFX_VGS_GLSL,
 	IDR_TFX_FS_GLSL,
 	IDR_TFX_CL,
-	// Shader Configuration
-	IDC_SHADEBOOST,
-	IDC_SHADER_FX,
-	IDC_FXAA,
-	IDC_LINEAR_PRESENT,
 	// Fonts
 	IDR_FONT_ROBOTO,
-};
 #endif
+};

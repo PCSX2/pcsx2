@@ -15,6 +15,7 @@
 
 #pragma once
 
+#include "GS/GS.h"
 #include "GS/GSDrawingContext.h"
 #include "GSVertex.h"
 #include "GS/Renderers/SW/GSVertexSW.h"
@@ -45,12 +46,12 @@ protected:
 
 	static const GSVector4 s_minmax;
 
-	typedef void (GSVertexTrace::*FindMinMaxPtr)(const void* vertex, const uint32* index, int count);
+	typedef void (GSVertexTrace::*FindMinMaxPtr)(const void* vertex, const u32* index, int count);
 
-	FindMinMaxPtr m_fmm[2][2][2][2][2][4];
+	FindMinMaxPtr m_fmm[2][2][2][2][4];
 
-	template <GS_PRIM_CLASS primclass, uint32 iip, uint32 tme, uint32 fst, uint32 color, uint32 accurate_stq>
-	void FindMinMax(const void* vertex, const uint32* index, int count);
+	template <GS_PRIM_CLASS primclass, u32 iip, u32 tme, u32 fst, u32 color>
+	void FindMinMax(const void* vertex, const u32* index, int count);
 
 public:
 	GS_PRIM_CLASS m_primclass;
@@ -61,14 +62,14 @@ public:
 
 	union
 	{
-		uint32 value;
-		struct { uint32 r:4, g:4, b:4, a:4, x:1, y:1, z:1, f:1, s:1, t:1, q:1, _pad:1; };
-		struct { uint32 rgba:16, xyzf:4, stq:4; };
+		u32 value;
+		struct { u32 r:4, g:4, b:4, a:4, x:1, y:1, z:1, f:1, s:1, t:1, q:1, _pad:1; };
+		struct { u32 rgba:16, xyzf:4, stq:4; };
 	} m_eq;
 
 	union
 	{
-		struct { uint32 mmag:1, mmin:1, linear:1, opt_linear:1; };
+		struct { u32 mmag:1, mmin:1, linear:1, opt_linear:1; };
 	} m_filter;
 
 	GSVector2 m_lod; // x = min, y = max
@@ -77,7 +78,7 @@ public:
 	GSVertexTrace(const GSState* state);
 	virtual ~GSVertexTrace() {}
 
-	void Update(const void* vertex, const uint32* index, int v_count, int i_count, GS_PRIM_CLASS primclass);
+	void Update(const void* vertex, const u32* index, int v_count, int i_count, GS_PRIM_CLASS primclass);
 
 	bool IsLinear() const { return m_filter.opt_linear; }
 	bool IsRealLinear() const { return m_filter.linear; }

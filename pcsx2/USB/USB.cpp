@@ -21,6 +21,7 @@
 
 #include "PrecompiledHeader.h"
 #include "common/pxStreams.h"
+#include "common/WindowInfo.h"
 #include "USB.h"
 #include "qemu-usb/USBinternal.h"
 #include "qemu-usb/desc.h"
@@ -67,7 +68,7 @@ int64_t usb_bit_time;
 s64 clocks = 0;
 s64 remaining = 0;
 
-#if _WIN32
+#if defined(_WIN32)
 HWND gsWnd = nullptr;
 #elif defined(__linux__)
 #include "gtk.h"
@@ -243,7 +244,7 @@ void USBshutdown()
 	usb_opened = false;
 }
 
-s32 USBopen(void* pDsp)
+s32 USBopen(const WindowInfo& wi)
 {
 
 	if (conf.Log && !usbLog)
@@ -252,29 +253,25 @@ s32 USBopen(void* pDsp)
 		//if(usbLog) setvbuf(usbLog, NULL,  _IONBF, 0);
 	}
 
-#if _WIN32
-
-	HWND hWnd = 0;
-	if (IsWindow((HWND)pDsp))
+  void* window_handle_for_init = nullptr;
+#if defined(_WIN32)
+	if (wi.type == WindowInfo::Type::Win32)
 	{
-		hWnd = (HWND)pDsp;
+		gsWnd = static_cast<HWND>(wi.window_handle);
+		window_handle_for_init = wi.window_handle;
 	}
-	else if (pDsp && !IsBadReadPtr(pDsp, 4) && IsWindow(*(HWND*)pDsp))
-	{
-		hWnd = *(HWND*)pDsp;
-	}
-
-	gsWnd = hWnd;
-	pDsp = gsWnd;
 #elif defined(__linux__)
-
-	g_GSdsp = (Display*)((uptr*)pDsp)[0];
-	g_GSwin = (Window)((uptr*)pDsp)[1];
+	if (wi.type == WindowInfo::Type::X11)
+	{
+		g_GSdsp = static_cast<Display*>(wi.display_connection);
+		g_GSwin = reinterpret_cast<Window>(wi.window_handle);
+		window_handle_for_init = reinterpret_cast<void*>(g_GSwin);
+	}
 #endif
 
 	try
 	{
-		shared::Initialize(pDsp);
+		shared::Initialize(window_handle_for_init);
 	}
 	catch (std::runtime_error& e)
 	{
@@ -298,6 +295,12 @@ void USBclose()
 	CloseDevice(1);
 	shared::Uninitialize();
 	usb_opened = false;
+#if defined(_WIN32)
+	gsWnd = {};
+#elif defined(__linux__)
+  g_GSdsp = nullptr;
+	g_GSwin = {};
+#endif
 }
 
 u8 USBread8(u32 addr)

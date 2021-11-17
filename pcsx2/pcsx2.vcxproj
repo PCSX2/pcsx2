@@ -40,11 +40,13 @@
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\baseclasses;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\zlib;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\libpng;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)3rdparty\glad\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <ExceptionHandling>Async</ExceptionHandling>
       <PrecompiledHeader>Use</PrecompiledHeader>
       <PrecompiledHeaderFile>PrecompiledHeader.h</PrecompiledHeaderFile>
       <ForcedIncludeFiles>PrecompiledHeader.h;%(ForcedIncludeFiles)</ForcedIncludeFiles>
       <EnableEnhancedInstructionSet>NoExtensions</EnableEnhancedInstructionSet>
+      <AdditionalOptions>/Zc:externConstexpr %(AdditionalOptions)</AdditionalOptions>
       <PreprocessorDefinitions>WIN32_LEAN_AND_MEAN;LZMA_API_STATIC;BUILD_DX=1;SPU2X_PORTAUDIO;DIRECTINPUT_VERSION=0x0800;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Debug))">PCSX2_DEBUG;PCSX2_DEVBUILD;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PreprocessorDefinitions Condition="$(Configuration.Contains(Devel))">PCSX2_DEVEL;PCSX2_DEVBUILD;NDEBUG;_SECURE_SCL_=1;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -302,12 +304,15 @@
     <ClCompile Include="GameDatabase.cpp" />
     <ClCompile Include="Gif_Logger.cpp" />
     <ClCompile Include="Gif_Unit.cpp" />
+    <ClCompile Include="GS\Renderers\DX11\D3D.cpp" />
+    <ClCompile Include="GS\Window\GSwxDialog.cpp" />
     <ClCompile Include="gui\AppGameDatabase.cpp" />
     <ClCompile Include="gui\AppUserMode.cpp" />
     <ClCompile Include="gui\CheckedStaticBox.cpp" />
     <ClCompile Include="gui\Debugger\BreakpointWindow.cpp" />
     <ClCompile Include="gui\Debugger\CtrlDisassemblyView.cpp" />
     <ClCompile Include="gui\Debugger\CtrlMemView.cpp" />
+    <ClCompile Include="gui\Debugger\CtrlMemSearch.cpp" />
     <ClCompile Include="gui\Debugger\CtrlRegisterList.cpp" />
     <ClCompile Include="gui\Debugger\DebugEvents.cpp" />
     <ClCompile Include="gui\Debugger\DebuggerLists.cpp" />
@@ -465,12 +470,8 @@
     <ClCompile Include="GS\GSDrawingContext.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSDrawScanline.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.x64.avx.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.x64.avx2.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.x64.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.x86.avx.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.x86.avx2.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.x86.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.all.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSNewCodeGenerator.cpp" />
     <ClCompile Include="GS\GSDump.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSFunctionMap.cpp" />
     <ClCompile Include="GS\Renderers\HW\GSHwHack.cpp" />
@@ -487,14 +488,8 @@
     <ClCompile Include="GS\Renderers\OpenGL\GSRendererOGL.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSRendererSW.cpp" />
     <ClCompile Include="GS\Window\GSSetting.cpp" />
-    <ClCompile Include="GS\Window\GSSettingsDlg.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x64.avx.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x64.avx2.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x64.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x86.avx.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x86.avx2.cpp" />
-    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.x86.cpp" />
+    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.all.cpp" />
     <ClCompile Include="GS\Renderers\OpenGL\GSShaderOGL.cpp" />
     <ClCompile Include="GS\GSState.cpp" />
     <ClCompile Include="GS\GSTables.cpp" />
@@ -513,12 +508,6 @@
     <ClCompile Include="GS\Renderers\Common\GSVertexList.cpp" />
     <ClCompile Include="GS\Renderers\SW\GSVertexSW.cpp" />
     <ClCompile Include="GS\Renderers\Common\GSVertexTrace.cpp" />
-    <ClCompile Include="GS\Window\GSWnd.cpp" />
-    <ClCompile Include="GS\Window\GSWndDX.cpp" />
-    <ClCompile Include="GS\Window\GSWndEGL.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
-    <ClCompile Include="GS\Window\GSWndWGL.cpp" />
     <ClCompile Include="Utilities\FileUtils.cpp" />
     <ClCompile Include="Dump.cpp" />
     <ClCompile Include="x86\iMisc.cpp" />
@@ -754,6 +743,8 @@
     <ClInclude Include="DEV9\Win32\tap.h" />
     <ClInclude Include="GameDatabase.h" />
     <ClInclude Include="Gif_Unit.h" />
+    <ClInclude Include="GS\Renderers\DX11\D3D.h" />
+    <ClInclude Include="GS\Window\GSwxDialog.h" />
     <ClInclude Include="gui\AppGameDatabase.h" />
     <ClInclude Include="gui\CheckedStaticBox.h" />
     <ClInclude Include="gui\i18n.h" />
@@ -766,6 +757,7 @@
     <ClInclude Include="gui\Debugger\BreakpointWindow.h" />
     <ClInclude Include="gui\Debugger\CtrlDisassemblyView.h" />
     <ClInclude Include="gui\Debugger\CtrlMemView.h" />
+    <ClInclude Include="gui\Debugger\CtrlMemSearch.h" />
     <ClInclude Include="gui\Debugger\CtrlRegisterList.h" />
     <ClInclude Include="gui\Debugger\DebugEvents.h" />
     <ClInclude Include="gui\Debugger\DebuggerLists.h" />
@@ -820,8 +812,10 @@
     <ClInclude Include="GS\Renderers\OpenGL\GLLoader.h" />
     <ClInclude Include="GS\Renderers\OpenGL\GLState.h" />
     <ClInclude Include="GS\GS.h" />
-    <ClInclude Include="GS\GS_codegen.h" />
-    <ClInclude Include="GS\GS_types.h" />
+    <ClInclude Include="GS\GSExtra.h" />
+    <ClInclude Include="GS\GSGL.h" />
+    <ClInclude Include="GS\GSIntrin.h" />
+    <ClInclude Include="GS\GSRegs.h" />
     <ClInclude Include="GS\GSAlignedClass.h" />
     <ClInclude Include="GS\GSBlock.h" />
     <ClInclude Include="GS\GSCapture.h" />
@@ -839,6 +833,8 @@
     <ClInclude Include="GS\GSDrawingEnvironment.h" />
     <ClInclude Include="GS\Renderers\SW\GSDrawScanline.h" />
     <ClInclude Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.h" />
+    <ClInclude Include="GS\Renderers\SW\GSDrawScanlineCodeGenerator.all.h" />
+    <ClInclude Include="GS\Renderers\SW\GSNewCodeGenerator.h" />
     <ClInclude Include="GS\GSDump.h" />
     <ClInclude Include="GS\Renderers\Common\GSFastList.h" />
     <ClInclude Include="GS\Renderers\Common\GSFunctionMap.h" />
@@ -856,8 +852,8 @@
     <ClInclude Include="GS\Renderers\SW\GSRendererSW.h" />
     <ClInclude Include="GS\Renderers\SW\GSScanlineEnvironment.h" />
     <ClInclude Include="GS\Window\GSSetting.h" />
-    <ClInclude Include="GS\Window\GSSettingsDlg.h" />
     <ClInclude Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.h" />
+    <ClInclude Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.all.h" />
     <ClInclude Include="GS\Renderers\OpenGL\GSShaderOGL.h" />
     <ClInclude Include="GS\GSState.h" />
     <ClInclude Include="GS\GSTables.h" />
@@ -880,19 +876,15 @@
     <ClInclude Include="GS\GSVector8i.h" />
     <ClInclude Include="GS\GSVector8.h" />
     <ClInclude Include="GS\Renderers\Common\GSVertex.h" />
-    <ClInclude Include="GS\Renderers\OpenGL\GSVertexArrayOGL.h" />
     <ClInclude Include="GS\Renderers\HW\GSVertexHW.h" />
     <ClInclude Include="GS\Renderers\Common\GSVertexList.h" />
     <ClInclude Include="GS\Renderers\SW\GSVertexSW.h" />
     <ClInclude Include="GS\Renderers\Common\GSVertexTrace.h" />
-    <ClInclude Include="GS\Window\GSWnd.h" />
-    <ClInclude Include="GS\Window\GSWndDX.h" />
-    <ClInclude Include="GS\Window\GSWndEGL.h" />
-    <ClInclude Include="GS\Window\GSWndWGL.h" />
     <ClInclude Include="GS\resource.h" />
     <ClInclude Include="IPU\IPUdma.h" />
     <ClInclude Include="Mdec.h" />
     <ClInclude Include="Patch.h" />
+    <ClInclude Include="PCSX2Base.h" />
     <ClInclude Include="PrecompiledHeader.h" />
     <ClInclude Include="sio_internal.h" />
     <ClInclude Include="ps2\pgif.h" />
@@ -1170,6 +1162,9 @@
     </ProjectReference>
     <ProjectReference Include="..\common\common.vcxproj">
       <Project>{4639972e-424e-4e13-8b07-ca403c481346}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\3rdparty\glad\glad.vcxproj">
+      <Project>{c0293b32-5acf-40f0-aa6c-e6da6f3bf33a}</Project>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

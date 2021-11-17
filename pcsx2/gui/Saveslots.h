@@ -43,7 +43,7 @@ static const int StateSlotsCount = 10;
 class Saveslot
 {
 public:
-	u32 slot_num;
+	int slot_num;
 	bool empty;
 	wxDateTime updated;
 	u32 crc;

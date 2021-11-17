@@ -125,6 +125,11 @@ struct IConsoleWriter
 	bool WriteLn(const wxString fmt, ...) const;
 	bool Error(const wxString fmt, ...) const;
 	bool Warning(const wxString fmt, ...) const;
+
+	bool WriteLn(ConsoleColors color, const std::string& str) const;
+	bool WriteLn(const std::string& str) const;
+	bool Error(const std::string& str) const;
+	bool Warning(const std::string& str) const;
 };
 
 // --------------------------------------------------------------------------------------

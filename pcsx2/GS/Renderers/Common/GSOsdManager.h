@@ -21,19 +21,20 @@
 #include "GSTexture.h"
 #include "ft2build.h"
 #include FT_FREETYPE_H
+#include <map>
 
 class GSOsdManager
 {
 	struct glyph_info
 	{
-		int32 ax; // advance.x
-		int32 ay; // advance.y
+		s32 ax; // advance.x
+		s32 ay; // advance.y
 
-		uint32 bw; // bitmap.width;
-		uint32 bh; // bitmap.rows;
+		u32 bw; // bitmap.width;
+		u32 bh; // bitmap.rows;
 
-		int32 bl; // bitmap_left;
-		int32 bt; // bitmap_top;
+		s32 bl; // bitmap_left;
+		s32 bt; // bitmap_top;
 
 		float tx; // x offset of glyph
 		float ty; // y offset of glyph
@@ -47,10 +48,10 @@ class GSOsdManager
 	FT_Face m_face;
 	FT_UInt m_size;
 
-	uint32 m_atlas_h;
-	uint32 m_atlas_w;
-	int32 m_max_width;
-	int32 m_onscreen_messages;
+	u32 m_atlas_h;
+	u32 m_atlas_w;
+	s32 m_max_width;
+	s32 m_onscreen_messages;
 
 	struct log_info
 	{
@@ -62,15 +63,15 @@ class GSOsdManager
 	std::map<std::u32string, std::u32string> m_monitor;
 
 	void AddGlyph(char32_t codepoint);
-	void RenderGlyph(GSVertexPT1* dst, const glyph_info g, float x, float y, uint32 color);
-	void RenderString(GSVertexPT1* dst, const std::u32string msg, float x, float y, uint32 color);
+	void RenderGlyph(GSVertexPT1* dst, const glyph_info g, float x, float y, u32 color);
+	void RenderString(GSVertexPT1* dst, const std::u32string msg, float x, float y, u32 color);
 	float StringSize(const std::u32string msg);
 
 	bool m_log_enabled;
 	int m_log_timeout;
 	bool m_monitor_enabled;
 	int m_opacity;
-	uint32 m_color;
+	u32 m_color;
 	int m_max_onscreen_messages;
 
 public:

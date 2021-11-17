@@ -15,12 +15,16 @@
 
 #pragma once
 
+#include "common/WindowInfo.h"
 #include "GSFastList.h"
-#include "GS/Window/GSWnd.h"
 #include "GSTexture.h"
 #include "GSVertex.h"
 #include "GS/GSAlignedClass.h"
 #include "GSOsdManager.h"
+#include <array>
+#ifdef _WIN32
+#include <dxgi.h>
+#endif
 
 enum ShaderConvert
 {
@@ -120,7 +124,7 @@ enum HWBlendFlags
 // Determines the HW blend function for DX11/OGL
 struct HWBlend
 {
-	uint16 flags, op, src, dst;
+	u16 flags, op, src, dst;
 };
 
 class GSDevice : public GSAlignedClass<32>
@@ -130,7 +134,7 @@ private:
 	static std::array<HWBlend, 3*3*3*3 + 1> m_blendMap;
 
 protected:
-	enum : uint16
+	enum : u16
 	{
 		// HW blend factors
 		SRC_COLOR,   INV_SRC_COLOR,    DST_COLOR,  INV_DST_COLOR,
@@ -145,7 +149,6 @@ protected:
 	static const int m_NO_BLEND = 0;
 	static const int m_MERGE_BLEND = m_blendMap.size() - 1;
 
-	std::shared_ptr<GSWnd> m_wnd;
 	int m_vsync;
 	bool m_rbswapped;
 	GSTexture* m_backbuffer;
@@ -173,7 +176,7 @@ protected:
 	virtual void DoFXAA(GSTexture* sTex, GSTexture* dTex) {}
 	virtual void DoShadeBoost(GSTexture* sTex, GSTexture* dTex) {}
 	virtual void DoExternalFX(GSTexture* sTex, GSTexture* dTex) {}
-	virtual uint16 ConvertBlendEnum(uint16 generic) = 0; // Convert blend factors/ops from the generic enum to DX11/OGl specific.
+	virtual u16 ConvertBlendEnum(u16 generic) = 0; // Convert blend factors/ops from the generic enum to DX11/OGl specific.
 
 public:
 	GSOsdManager m_osd;
@@ -190,7 +193,7 @@ public:
 		DontCare
 	};
 
-	virtual bool Create(const std::shared_ptr<GSWnd>& wnd);
+	virtual bool Create(const WindowInfo& wi);
 	virtual bool Reset(int w, int h);
 	virtual bool IsLost(bool update = false) { return false; }
 	virtual void Present(const GSVector4i& r, int shader);
@@ -209,9 +212,9 @@ public:
 	virtual bool HasColorSparse() { return false; }
 
 	virtual void ClearRenderTarget(GSTexture* t, const GSVector4& c) {}
-	virtual void ClearRenderTarget(GSTexture* t, uint32 c) {}
+	virtual void ClearRenderTarget(GSTexture* t, u32 c) {}
 	virtual void ClearDepth(GSTexture* t) {}
-	virtual void ClearStencil(GSTexture* t, uint8 c) {}
+	virtual void ClearStencil(GSTexture* t, u8 c) {}
 
 	GSTexture* CreateSparseRenderTarget(int w, int h, int format = 0);
 	GSTexture* CreateSparseDepthStencil(int w, int h, int format = 0);
@@ -247,6 +250,8 @@ public:
 	bool ResizeTarget(GSTexture** t);
 
 	bool IsRBSwapped() { return m_rbswapped; }
+	int GetBackbufferWidth() const { return m_backbuffer ? m_backbuffer->GetWidth() : 0; }
+	int GetBackbufferHeight() const { return m_backbuffer ? m_backbuffer->GetHeight() : 0; }
 
 	void AgePool();
 	void PurgePool();
@@ -256,15 +261,15 @@ public:
 	// Convert the GS blend equations to HW specific blend factors/ops
 	// Index is computed as ((((A * 3 + B) * 3) + C) * 3) + D. A, B, C, D taken from ALPHA register.
 	HWBlend GetBlend(size_t index);
-	uint16 GetBlendFlags(size_t index);
+	u16 GetBlendFlags(size_t index);
 };
 
 struct GSAdapter
 {
-	uint32 vendor;
-	uint32 device;
-	uint32 subsys;
-	uint32 rev;
+	u32 vendor;
+	u32 device;
+	u32 subsys;
+	u32 rev;
 
 	operator std::string() const;
 	bool operator==(const GSAdapter&) const;

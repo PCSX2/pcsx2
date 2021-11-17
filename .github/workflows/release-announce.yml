@@ -1,0 +1,24 @@
+name: 📢 Announce Release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  announce:
+    if: github.repository == 'PCSX2/pcsx2'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: 16
+
+      - name: Announce Release
+        env:
+          DISCORD_BUILD_WEBHOOK: ${{ secrets.DISCORD_BUILD_WEBHOOK }}
+        run: |
+          cd ./.github/workflows/scripts/releases/announce-release
+          npm ci
+          node index.js

@@ -152,7 +152,8 @@ struct cdvdStruct
 	bool Spinning;    // indicates if the Cdvd is spinning or needs a spinup delay
 	bool mediaChanged;
 	cdvdTrayTimer Tray;
-	bool nextSectorBuffered;
+	u8 nextSectorsBuffered;
+	bool triggerDataReady;
 };
 
 extern cdvdStruct cdvd;
