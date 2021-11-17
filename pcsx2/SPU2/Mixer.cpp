@@ -629,7 +629,7 @@ static __forceinline StereoOut32 MixVoice(uint coreidx, uint voiceidx)
 	}
 	else
 	{
-		while (vc.SP > 0)
+		while (vc.SP >= 0)
 			GetNextDataDummy(thiscore, voiceidx); // Dummy is enough
 	}
 
