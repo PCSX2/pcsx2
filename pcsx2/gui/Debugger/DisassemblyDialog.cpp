@@ -121,6 +121,7 @@ CpuTabPage::CpuTabPage(wxWindow* parent, DebugInterface* _cpu)
 	memorySearch->SetMaxSize(wxSize(360, -1));
 	memorySizer->Add(memorySearch, 1, wxEXPAND);
 	memoryPanel->SetSizer(memorySizer);
+	memoryPanel->SetBackgroundColour(wxTransparentColor);
 
 	// create bottom section
 	bottomTabs->AddPage(memoryPanel, L"Memory");
