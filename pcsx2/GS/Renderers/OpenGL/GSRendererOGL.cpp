@@ -1214,20 +1214,18 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	}
 
 	// DATE setup, no DATE_GL45 please
-
+	const GSVector4i commitRect = ComputeBoundingBox(rtscale, rtsize);
 	if (DATE && !DATE_GL45)
 	{
-		const GSVector4i dRect = ComputeBoundingBox(rtscale, rtsize);
-
 		// Reduce the quantity of clean function
-		glScissor(dRect.x, dRect.y, dRect.width(), dRect.height());
-		GLState::scissor = dRect;
+		glScissor(commitRect.x, commitRect.y, commitRect.width(), commitRect.height());
+		GLState::scissor = commitRect;
 
 		// Must be done here to avoid any GL state pertubation (clear function...)
 		// Create an r32ui image that will containt primitive ID
 		if (DATE_GL42)
 		{
-			dev->InitPrimDateTexture(rt, dRect);
+			dev->InitPrimDateTexture(rt, commitRect);
 		}
 		else if (DATE_one)
 		{
@@ -1235,7 +1233,7 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		}
 		else
 		{
-			const GSVector4 src = GSVector4(dRect) / GSVector4(rtsize.x, rtsize.y).xyxy();
+			const GSVector4 src = GSVector4(commitRect) / GSVector4(rtsize.x, rtsize.y).xyxy();
 			const GSVector4 dst = src * 2.0f - 1.0f;
 
 			GSVertexPT1 vertices[] =
@@ -1366,6 +1364,36 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		m_ps_sel.atst = ps_atst;
 	}
 
+	// rs
+	const GSVector4& hacked_scissor = m_channel_shuffle ? GSVector4(0, 0, 1024, 1024) : m_context->scissor.in;
+	const GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * hacked_scissor).rintersect(GSVector4i(rtsize).zwxy());
+
+	if (rt)
+		rt->CommitRegion(GSVector2i(commitRect.z, commitRect.w));
+
+	if (ds)
+		ds->CommitRegion(GSVector2i(commitRect.z, commitRect.w));
+
+	if (m_ps_sel.hdr)
+	{
+		hdr_rt = dev->CreateTexture(rtsize.x, rtsize.y, GL_RGBA32F);
+		dev->OMSetRenderTargets(hdr_rt, ds, &scissor);
+
+		// save blend state, since BlitRect destroys it
+		const bool old_blend = GLState::blend;
+		hdr_rt->CommitRegion(GSVector2i(commitRect.z, commitRect.w));
+		dev->BlitRect(rt, commitRect, rt->GetSize(), false, false);
+		if (old_blend)
+		{
+			GLState::blend = old_blend;
+			glEnable(GL_BLEND);
+		}
+	}
+	else
+	{
+		dev->OMSetRenderTargets(rt, ds, &scissor);
+	}
+
 	if (tex)
 	{
 		EmulateTextureSampler(tex);
@@ -1412,10 +1440,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 		}
 	}
 
-	// rs
-	const GSVector4& hacked_scissor = m_channel_shuffle ? GSVector4(0, 0, 1024, 1024) : m_context->scissor.in;
-	const GSVector4i scissor = GSVector4i(GSVector4(rtscale).xyxy() * hacked_scissor).rintersect(GSVector4i(rtsize).zwxy());
-
 	SetupIA(sx, sy);
 
 	dev->OMSetColorMaskState(m_om_csel);
@@ -1424,14 +1448,6 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	dev->SetupCB(&vs_cb, &ps_cb);
 
 	dev->SetupPipeline(m_vs_sel, m_gs_sel, m_ps_sel);
-
-	const GSVector4i commitRect = ComputeBoundingBox(rtscale, rtsize);
-
-	if (rt)
-		rt->CommitRegion(GSVector2i(commitRect.z, commitRect.w));
-
-	if (ds)
-		ds->CommitRegion(GSVector2i(commitRect.z, commitRect.w));
 
 	if (DATE_GL42)
 	{
@@ -1461,19 +1477,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 
 		// Be sure that first pass is finished !
 		dev->Barrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT);
-	}
 
-	if (m_ps_sel.hdr)
-	{
-		hdr_rt = dev->CreateTexture(rtsize.x, rtsize.y, GL_RGBA32F);
-
-		dev->CopyRectConv(rt, hdr_rt, ComputeBoundingBox(rtscale, rtsize), false);
-
-		dev->OMSetRenderTargets(hdr_rt, ds, &scissor);
-	}
-	else
-	{
-		dev->OMSetRenderTargets(rt, ds, &scissor);
+		dev->OMSetRenderTargets(hdr_rt ? hdr_rt : rt, ds, &scissor);
 	}
 
 	if (ate_first_pass)
@@ -1560,9 +1565,8 @@ void GSRendererOGL::DrawPrims(GSTexture* rt, GSTexture* ds, GSTextureCache::Sour
 	// vertices will be overwritten. Trust me you don't want to do that.
 	if (hdr_rt)
 	{
-		const GSVector4 dRect(ComputeBoundingBox(rtscale, rtsize));
-		const GSVector4 sRect = dRect / GSVector4(rtsize.x, rtsize.y).xyxy();
-		dev->StretchRect(hdr_rt, sRect, rt, dRect, ShaderConvert_MOD_256, false);
+		const GSVector4 sRect = GSVector4(commitRect) / GSVector4(rtsize.x, rtsize.y).xyxy();
+		dev->StretchRect(hdr_rt, sRect, rt, GSVector4(commitRect), ShaderConvert_MOD_256, false);
 
 		dev->Recycle(hdr_rt);
 	}

@@ -1292,28 +1292,28 @@ GSTexture* GSDeviceOGL::CopyOffscreen(GSTexture* src, const GSVector4& sRect, in
 }
 
 // Copy a sub part of texture (same as below but force a conversion)
-void GSDeviceOGL::CopyRectConv(GSTexture* sTex, GSTexture* dTex, const GSVector4i& r, bool at_origin)
+void GSDeviceOGL::BlitRect(GSTexture* sTex, const GSVector4i& r, const GSVector2i& dsize, bool at_origin, bool linear)
 {
-	ASSERT(sTex && dTex);
-	if (!(sTex && dTex))
-		return;
+	const GLuint sid = static_cast<GSTextureOGL*>(sTex)->GetID();
+	GL_PUSH(format("CopyRectConv from %d", sid).c_str());
 
-	const GLuint& sid = static_cast<GSTextureOGL*>(sTex)->GetID();
-	const GLuint& did = static_cast<GSTextureOGL*>(dTex)->GetID();
+	// NOTE: This previously used glCopyTextureSubImage2D(), but this appears to leak memory in
+	// the loading screens of Evolution Snowboarding in Intel/NVIDIA drivers.
+	glDisable(GL_SCISSOR_TEST);
 
-	GL_PUSH(format("CopyRectConv from %d to %d", sid, did).c_str());
+	const GSVector4 float_r(r);
 
-	dTex->CommitRegion(GSVector2i(r.z, r.w));
+	BeginScene();
+	m_shader->BindPipeline(m_convert.ps[ShaderConvert_COPY]);
+	OMSetDepthStencilState(m_convert.dss);
+	OMSetBlendState();
+	OMSetColorMaskState();
+	PSSetShaderResource(0, sTex);
+	PSSetSamplerState(linear ? m_convert.ln : m_convert.pt);
+	DrawStretchRect(float_r / (GSVector4(sTex->GetSize()).xyxy()), float_r, dsize);
+	EndScene();
 
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo_read);
-
-	glFramebufferTexture2D(GL_READ_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, sid, 0);
-	if (at_origin)
-		glCopyTextureSubImage2D(did, GL_TEX_LEVEL_0, 0, 0, r.x, r.y, r.width(), r.height());
-	else
-		glCopyTextureSubImage2D(did, GL_TEX_LEVEL_0, r.x, r.y, r.x, r.y, r.width(), r.height());
-
-	glBindFramebuffer(GL_READ_FRAMEBUFFER, 0);
+	glEnable(GL_SCISSOR_TEST);
 }
 
 // Copy a sub part of a texture into another
@@ -1373,7 +1373,7 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	}
 
 	const bool draw_in_depth = (ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT32] || ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT24] ||
-	                      ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT16] || ps == m_convert.ps[ShaderConvert_RGB5A1_TO_FLOAT16]);
+		ps == m_convert.ps[ShaderConvert_RGBA8_TO_FLOAT16] || ps == m_convert.ps[ShaderConvert_RGB5A1_TO_FLOAT16]);
 
 	// Performance optimization. It might be faster to use a framebuffer blit for standard case
 	// instead to emulate it with shader
@@ -1413,6 +1413,40 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	// ************************************
 
 
+	// Flip y axis only when we render in the backbuffer
+	// By default everything is render in the wrong order (ie dx).
+	// 1/ consistency between several pass rendering (interlace)
+	// 2/ in case some GS code expect thing in dx order.
+	// Only flipping the backbuffer is transparent (I hope)...
+	GSVector4 flip_sr = sRect;
+	if (static_cast<GSTextureOGL*>(dTex)->IsBackbuffer())
+	{
+		flip_sr.y = sRect.w;
+		flip_sr.w = sRect.y;
+	}
+
+	// ************************************
+	// Texture
+	// ************************************
+
+	PSSetShaderResource(0, sTex);
+	PSSetSamplerState(linear ? m_convert.ln : m_convert.pt);
+
+	// ************************************
+	// Draw
+	// ************************************
+	dTex->CommitRegion(GSVector2i((int)dRect.z + 1, (int)dRect.w + 1));
+	DrawStretchRect(flip_sr, dRect, ds);
+
+	// ************************************
+	// End
+	// ************************************
+
+	EndScene();
+}
+
+void GSDeviceOGL::DrawStretchRect(const GSVector4& sRect, const GSVector4& dRect, const GSVector2i& ds)
+{
 	// Original code from DX
 	const float left = dRect.x * 2 / ds.x - 1.0f;
 	const float right = dRect.z * 2 / ds.x - 1.0f;
@@ -1426,47 +1460,17 @@ void GSDeviceOGL::StretchRect(GSTexture* sTex, const GSVector4& sRect, GSTexture
 	const float bottom = -1.0f + dRect.w * 2 / ds.y;
 #endif
 
-	// Flip y axis only when we render in the backbuffer
-	// By default everything is render in the wrong order (ie dx).
-	// 1/ consistency between several pass rendering (interlace)
-	// 2/ in case some GS code expect thing in dx order.
-	// Only flipping the backbuffer is transparent (I hope)...
-	GSVector4 flip_sr = sRect;
-	if (static_cast<GSTextureOGL*>(dTex)->IsBackbuffer())
-	{
-		flip_sr.y = sRect.w;
-		flip_sr.w = sRect.y;
-	}
-
 	GSVertexPT1 vertices[] =
 	{
-		{GSVector4(left  , top   , 0.0f, 0.0f) , GSVector2(flip_sr.x , flip_sr.y)} ,
-		{GSVector4(right , top   , 0.0f, 0.0f) , GSVector2(flip_sr.z , flip_sr.y)} ,
-		{GSVector4(left  , bottom, 0.0f, 0.0f) , GSVector2(flip_sr.x , flip_sr.w)} ,
-		{GSVector4(right , bottom, 0.0f, 0.0f) , GSVector2(flip_sr.z , flip_sr.w)} ,
+		{GSVector4(left  , top   , 0.0f, 0.0f) , GSVector2(sRect.x , sRect.y)} ,
+		{GSVector4(right , top   , 0.0f, 0.0f) , GSVector2(sRect.z , sRect.y)} ,
+		{GSVector4(left  , bottom, 0.0f, 0.0f) , GSVector2(sRect.x , sRect.w)} ,
+		{GSVector4(right , bottom, 0.0f, 0.0f) , GSVector2(sRect.z , sRect.w)} ,
 	};
 
 	IASetVertexBuffer(vertices, 4);
 	IASetPrimitiveTopology(GL_TRIANGLE_STRIP);
-
-	// ************************************
-	// Texture
-	// ************************************
-
-	PSSetShaderResource(0, sTex);
-	PSSetSamplerState(linear ? m_convert.ln : m_convert.pt);
-
-	// ************************************
-	// Draw
-	// ************************************
-	dTex->CommitRegion(GSVector2i((int)dRect.z + 1, (int)dRect.w + 1));
 	DrawPrimitive();
-
-	// ************************************
-	// End
-	// ************************************
-
-	EndScene();
 }
 
 void GSDeviceOGL::RenderOsd(GSTexture* dt)
