@@ -82,12 +82,6 @@ namespace Emulate_DSA
 		glTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, width, height, format, type, pixels);
 	}
 
-	void APIENTRY CopyTextureSubImage(GLuint texture, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y, GLsizei width, GLsizei height)
-	{
-		BindTextureUnit(7, texture);
-		glCopyTexSubImage2D(GL_TEXTURE_2D, level, xoffset, yoffset, x, y, width, height);
-	}
-
 	void APIENTRY GetTexureImage(GLuint texture, GLint level, GLenum format, GLenum type, GLsizei bufSize, void* pixels)
 	{
 		BindTextureUnit(7, texture);
@@ -126,7 +120,6 @@ namespace Emulate_DSA
 		glCreateTextures = CreateTexture;
 		glTextureStorage2D = TextureStorage;
 		glTextureSubImage2D = TextureSubImage;
-		glCopyTextureSubImage2D = CopyTextureSubImage;
 		glGetTextureImage = GetTexureImage;
 		glTextureParameteri = TextureParameteri;
 
