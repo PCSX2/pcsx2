@@ -1,5 +1,5 @@
 /*  PCSX2 - PS2 Emulator for PCs
- *  Copyright (C) 2002-2010  PCSX2 Dev Team
+ *  Copyright (C) 2002-2021  PCSX2 Dev Team
  *
  *  PCSX2 is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU Lesser General Public License as published by the Free Software Found-
@@ -107,7 +107,7 @@ Panels::GSWindowSettingsPanel::GSWindowSettingsPanel(wxWindow* parent)
 	s_AspectRatio.AddGrowableCol(1);
 
 	// Implement custom hotkeys (F6) with translatable string intact + not blank in GUI.
-	s_AspectRatio += Label(_("Aspect Ratio:") + wxString("\t") + wxGetApp().GlobalAccels->findKeycodeWithCommandId("GSwindow_CycleAspectRatio").toTitleizedString()) | pxMiddle;
+	s_AspectRatio += Label(_("Aspect Ratio:") + wxString::Format(" (%s)", wxGetApp().GlobalAccels->findKeycodeWithCommandId("GSwindow_CycleAspectRatio").toTitleizedString()));
 	s_AspectRatio += m_combo_AspectRatio | pxAlignRight;
 	s_AspectRatio += Label(_("FMV Aspect Ratio Override:")) | pxMiddle;
 	s_AspectRatio += m_combo_FMVAspectRatioSwitch | pxAlignRight;
