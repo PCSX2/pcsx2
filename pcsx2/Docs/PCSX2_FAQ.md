@@ -69,7 +69,7 @@ The PCSX2 website has a [compatibility list](https://pcsx2.net/compatibility-lis
 ### Question 10: Do PS1 (PSX) games work on PCSX2?
 
 #### If you want to enjoy your PS1 games without issues:
-No, they will not work without issues. Please use a proper PS1 emulator, such as Mednafen.
+No, they will not work without issues. Please use a proper PS1 emulator, such as Duckstation or Mednafen.
 
 #### If you are a tinkerer and like to break things:
 PS1 games may work on PCSX2, but compatibility is very limited. Specific settings are often required to get a game to boot, and there are other universal problems including missing/pitch-shifted audio and severe FMV corruption. A [forum thread for PS1 compatibility](https://forums.pcsx2.net/Thread-PSX-Mode-Unofficial-Compatibility-List) is tracking some fixes and compatibility reports. 
