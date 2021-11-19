@@ -129,6 +129,8 @@ Dialogs::GSDumpDialog::GSDumpDialog(wxWindow* parent)
 #endif
 #if defined(_WIN32)
 	rdoverrides.Add(Pcsx2Config::GSOptions::GetRendererName(GSRendererType::DX11));
+#elif defined(__APPLE__)
+	rdoverrides.Add(Pcsx2Config::GSOptions::GetRendererName(GSRendererType::Metal));
 #endif
 	m_renderer_overrides->Create(this, wxID_ANY, "Renderer overrides", wxDefaultPosition, wxDefaultSize, rdoverrides, 1);
 
@@ -829,18 +831,21 @@ void Dialogs::GSDumpDialog::GSThread::ExecuteTaskInThread()
 		case 2:
 			renderer = GSRendererType::OGL;
 			break;
-#ifdef ENABLE_VULKAN
-		// Vulkan
 		case 3:
+#ifdef ENABLE_VULKAN
+			// Vulkan
 			renderer = GSRendererType::VK;
 			break;
+		case 4:
 #endif
 #ifdef _WIN32
-		// D3D11
-		case 4:		// WIN32 implies WITH_VULKAN so this is okay
+			// D3D11
 			renderer = GSRendererType::DX11;
-			break;
+#elif defined(__APPLE__)
+			// Metal
+			renderer = GSRendererType::Metal;
 #endif
+			break;
 		default:
 			break;
 	}

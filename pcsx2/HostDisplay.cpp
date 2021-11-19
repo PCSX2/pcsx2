@@ -143,6 +143,10 @@ std::unique_ptr<HostDisplay> HostDisplay::CreateDisplayForAPI(RenderAPI api)
 		case RenderAPI::D3D11:
 			return std::make_unique<D3D11HostDisplay>();
 #endif
+#ifdef __APPLE__
+		case HostDisplay::RenderAPI::Metal:
+			return std::unique_ptr<HostDisplay>(MakeMetalHostDisplay());
+#endif
 
 		case RenderAPI::OpenGL:
 		case RenderAPI::OpenGLES:
