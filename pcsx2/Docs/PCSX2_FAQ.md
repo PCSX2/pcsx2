@@ -104,10 +104,10 @@ If you are using an ISO image:
 
 If you are using a disc:
 
-1) Click the CDVD menu
-2) Check that "Disc" mode is selected.
-3) Go to "Drive Selector", then select your drive.
-4) Click the System menu, then Boot CDVD.
+1)  Click the CDVD menu
+2)  Check that "Disc" mode is selected.
+3)  Go to "Drive Selector", then select your drive.
+4)  Click the System menu, then Boot CDVD.
 
 ### Question 17: What is Fast boot?
 Normally, PCSX2 will launch the PS2 BIOS, which will then launch the game. Some games need this for multi-language settings or times to work.
