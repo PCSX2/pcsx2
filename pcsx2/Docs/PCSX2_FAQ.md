@@ -112,7 +112,7 @@ If you are using a disc:
 ### Question 17: What is Fast Boot?
 Normally, PCSX2 will launch the PS2 BIOS, which will then launch the game. Some games need this for multi-language settings or times to work.
 
-Fast Boot will directly mount and launch the game without first launching the PS2 BIOS. On versions 1.6 and below, this may cause some multi-language games to boot into the wrong language, or games that use the clock to give inaccurate times.
+Fast Boot will directly mount and launch the game without first launching the PS2 BIOS. On versions 1.6 and below, this may cause some multi-language games to boot into the wrong language.
 
 ### Question 18: How do I compile the PCSX2 source code?
 *   [Windows compile guide](https://wiki.pcsx2.net/PCSX2_Documentation/Compiling_on_Windows)
