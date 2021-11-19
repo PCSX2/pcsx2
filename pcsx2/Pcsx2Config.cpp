@@ -271,6 +271,7 @@ const char* Pcsx2Config::GSOptions::GetRendererName(GSRendererType type)
 	{
 		case GSRendererType::Auto:  return "Auto";
 		case GSRendererType::DX11:  return "Direct3D 11";
+		case GSRendererType::Metal: return "Metal";
 		case GSRendererType::OGL:   return "OpenGL";
 		case GSRendererType::VK:    return "Vulkan";
 		case GSRendererType::SW:    return "Software";
@@ -637,7 +638,7 @@ void Pcsx2Config::GSOptions::MaskUpscalingHacks()
 
 bool Pcsx2Config::GSOptions::UseHardwareRenderer() const
 {
-	return (Renderer == GSRendererType::DX11 || Renderer == GSRendererType::OGL || Renderer == GSRendererType::VK);
+	return (Renderer == GSRendererType::DX11 || Renderer == GSRendererType::OGL || Renderer == GSRendererType::VK || Renderer == GSRendererType::Metal);
 }
 
 VsyncMode Pcsx2Config::GetEffectiveVsyncMode() const

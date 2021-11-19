@@ -26,6 +26,7 @@
 #include "Renderers/Null/GSRendererNull.h"
 #include "Renderers/Null/GSDeviceNull.h"
 #include "Renderers/OpenGL/GSDeviceOGL.h"
+#include "Renderers/Metal/GSMetalCPPAccessible.h"
 #include "Renderers/HW/GSRendererNew.h"
 #include "Renderers/HW/GSTextureReplacements.h"
 #include "GSLzma.h"
@@ -166,6 +167,10 @@ static HostDisplay::RenderAPI GetAPIForRenderer(GSRendererType renderer)
 		case GSRendererType::VK:
 			return HostDisplay::RenderAPI::Vulkan;
 
+#ifdef __APPLE__
+		case GSRendererType::Metal:
+			return HostDisplay::RenderAPI::Metal;
+#endif
 #ifdef _WIN32
 		case GSRendererType::DX11:
 		case GSRendererType::SW:
@@ -189,7 +194,11 @@ static bool DoGSOpen(GSRendererType renderer, u8* basemem)
 			g_gs_device = std::make_unique<GSDevice11>();
 			break;
 #endif
-
+#ifdef __APPLE__
+		case HostDisplay::RenderAPI::Metal:
+			g_gs_device = std::unique_ptr<GSDevice>(MakeGSDeviceMTL());
+			break;
+#endif
 		case HostDisplay::RenderAPI::OpenGL:
 		case HostDisplay::RenderAPI::OpenGLES:
 			g_gs_device = std::make_unique<GSDeviceOGL>();
@@ -1180,6 +1189,9 @@ void GSApp::Init()
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::Auto), "Automatic", ""));
 #ifdef _WIN32
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::DX11), "Direct3D 11", ""));
+#endif
+#ifdef __APPLE__
+	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::Metal), "Metal", ""));
 #endif
 	m_gs_renderers.push_back(GSSetting(static_cast<u32>(GSRendererType::OGL), "OpenGL", ""));
 #ifdef ENABLE_VULKAN

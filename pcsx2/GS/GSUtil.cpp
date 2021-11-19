@@ -190,6 +190,9 @@ CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)
 
 GSRendererType GSUtil::GetPreferredRenderer()
 {
+#ifdef __APPLE__
+	return GSRendererType::Metal;
+#endif
 #ifdef _WIN32
 	if (D3D::ShouldPreferD3D())
 		return GSRendererType::DX11;
