@@ -10,7 +10,7 @@ urlcolor: "cyan"
 ## About the PCSX2 Project
 
 ### Question 1: What is the purpose of the PCSX2 project?
-PCSX2 intends to emulate the PlayStation 2 console, allowing PS2 games to be played on a PC. This requires having an original PlayStation 2 console to supply a BIOS dump and the original games, either to be played directly off the disc or to be dumped and played as ISO/CSO images.
+PCSX2 intends to emulate the PlayStation 2 console, allowing PS2 games to be played on a computer. This requires having an original PlayStation 2 console to supply a BIOS dump and the original games, either to be played directly off the disc or to be dumped and played as ISO/CSO images.
 
 ### Question 2: Is PCSX2 open source?
 PCSX2 is open source, licensed under the GNU Lesser General Public License v3.0. [Source code is kept on GitHub](https://github.com/pcsx2/pcsx2).
@@ -109,10 +109,10 @@ If you are using a disc:
 3)  Go to "Drive Selector", then select your drive.
 4)  Click the System menu, then Boot CDVD.
 
-### Question 17: What is Fast boot?
+### Question 17: What is Fast Boot?
 Normally, PCSX2 will launch the PS2 BIOS, which will then launch the game. Some games need this for multi-language settings or times to work.
 
-Fast boot will directly mount and launch the game without first launching the PS2 BIOS. On versions 1.6 and below, this may cause some multi-language games to boot into the wrong language, or games that use the clock to give inaccurate times.
+Fast Boot will directly mount and launch the game without first launching the PS2 BIOS. On versions 1.6 and below, this may cause some multi-language games to boot into the wrong language, or games that use the clock to give inaccurate times.
 
 ### Question 18: How do I compile the PCSX2 source code?
 *   [Windows compile guide](https://wiki.pcsx2.net/PCSX2_Documentation/Compiling_on_Windows)
