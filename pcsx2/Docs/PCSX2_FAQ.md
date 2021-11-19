@@ -173,9 +173,9 @@ In newer versions, these have been merged into the main emulator, and there is n
 PCSX2's default audio playback mode is Timestretch, which will attempt to stretch sounds out when the emulator is unable to play at full speed, to fill the gaps in the sound playback and prevent even harsher stutters. If you are unable to get the game running at full speed or an acceptable speed where timestretching does not ruin the sound, you can try changing from Timestretch to Async, but this may break games.
 
 ### Question 28: Is my controller supported?
-For Windows users, PCSX2 will ship with XInput bindings already created. This will automatically work with an Xbox One controller or any other XInput controller. Bindings can easily be made for DirectInput controllers, such as Xbox 360 controllers. PS3, PS4, or Switch Pro controllers should be set up using a compatibility software, such as Steam's Big Picture mode. 
+For Windows users, PCSX2 will ship with XInput bindings already created. This will automatically work with an Xbox One controller or any other XInput controller. Bindings can easily be made for DirectInput and XInput controllers, such as Xbox 360 controllers. PS3, PS4, or Switch Pro controllers should be set up using third party compatibility software, such as Steam's Big Picture mode.
 
-For Linux users, PCSX2 will automatically detect and bind controls to any recognizable controller. 
+For Linux users, PCSX2 will automatically detect and bind controls to any recognizable controller.
 
 <div class="page"/> <!-- Because PDFs are terrible -->
 
