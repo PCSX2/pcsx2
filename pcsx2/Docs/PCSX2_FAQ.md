@@ -110,9 +110,9 @@ If you are using a disc:
 4) Click the System menu, then Boot CDVD.
 
 ### Question 17: What is Fast boot?
-Normally, Pcsx2 will launch the PS2 BIOS, which will then launch the game. Some games need this for multi-language settings or times to work.
+Normally, PCSX2 will launch the PS2 BIOS, which will then launch the game. Some games need this for multi-language settings or times to work.
 
-Fast boot will directly mount and launch the game without first launching the PS2 BIOS. Though slightly faster, this may cause some multi-language games to boot into the wrong language, or games that use the clock to give inaccurate times. 
+Fast boot will directly mount and launch the game without first launching the PS2 BIOS. On versions 1.6 and below, this may cause some multi-language games to boot into the wrong language, or games that use the clock to give inaccurate times.
 
 ### Question 18: How do I compile the PCSX2 source code?
 *   [Windows compile guide](https://wiki.pcsx2.net/PCSX2_Documentation/Compiling_on_Windows)
@@ -126,7 +126,7 @@ It will be released when it is ready. Please don't waste your time and ours aski
 ---
 ## PCSX2 Configuration
 
-### Question 20: How do I configure Pcsx2?
+### Question 20: How do I configure PCSX2?
 Refer to the Configuration_Guide.pdf (located in the same folder as this FAQ) for an initial setup guide and resolutions or workarounds to some common known issues.
 
 ### Question 21: Will framelimiter options increase my FPS?
