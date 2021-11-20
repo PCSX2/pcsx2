@@ -282,10 +282,7 @@ __fi void gifInterrupt()
 		// If we just read from the fifo, we want to loop and not read more DMA
 		// If there is no DMA data waiting and the DMA is active, let the DMA progress until there is
 		if ((!CheckPaths() && gif_fifo.fifoSize == 16) || readSize)
-		{
-			if (gifch.qwc || !gifch.chcr.STR)
-				return;
-		}
+			return;
 	}
 
 	if (!(gifch.chcr.STR))
@@ -751,27 +748,6 @@ void gifMFIFOInterrupt()
 		return;
 	}
 
-	gifCheckPathStatus(false);
-
-	if (gifUnit.gifPath[GIF_PATH_3].state == GIF_PATH_IDLE)
-	{
-		if (vif1Regs.stat.VGW)
-		{
-			// Check if VIF is in a cycle or is currently "idle" waiting for GIF to come back.
-			if (!(cpuRegs.interrupt & (1 << DMAC_VIF1)))
-				CPU_INT(DMAC_VIF1, 1);
-
-			// Make sure it loops if the GIF packet is empty to prepare for the next packet
-			// or end if it was the end of a packet.
-			// This must trigger after VIF retriggers as VIf might instantly mask Path3
-			if (!gifUnit.Path3Masked() || gifch.qwc == 0)
-			{
-				GifDMAInt(16);
-			}
-			return;
-		}
-	}
-
 	// If there's something in the FIFO and we can do PATH3, empty the FIFO.
 	if (gif_fifo.fifoSize > 0)
 	{
@@ -785,10 +761,7 @@ void gifMFIFOInterrupt()
 		// If we just read from the fifo, we want to loop and not read more DMA
 		// If there is no DMA data waiting and the DMA is active, let the DMA progress until there is
 		if ((!CheckPaths() && gif_fifo.fifoSize == 16) || readSize)
-		{
-			if (gifch.qwc || !gifch.chcr.STR)
-				return;
-		}
+			return;
 	}
 
 	if (!gifch.chcr.STR)
@@ -805,7 +778,6 @@ void gifMFIFOInterrupt()
 
 	if (gifch.qwc > 0 || !gif.gspath3done)
 	{
-
 		mfifoGIFtransfer();
 		return;
 	}
