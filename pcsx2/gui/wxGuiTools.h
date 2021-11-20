@@ -802,9 +802,3 @@ extern void pxSetToolTip(wxWindow& wind, const wxString& src);
 extern wxFont pxGetFixedFont(int ptsize = 8, wxFontWeight weight = wxFONTWEIGHT_NORMAL, bool underline = false);
 
 extern pxDialogCreationFlags pxDialogFlags();
-
-extern void pxExplore(const wxString& path);
-extern void pxExplore(const char* path);
-
-extern void pxLaunch(const wxString& path);
-extern void pxLaunch(const char* path);
