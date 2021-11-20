@@ -56,7 +56,7 @@ static int findmax(int tl, int br, int limit, int wm, int minuv, int maxuv)
 
 static int reduce(int uv, int size)
 {
-	while (size > 3 && (1 << (size - 1)) >= uv + 1)
+	while (size > 3 && (1 << (size - 1)) >= uv)
 	{
 		size--;
 	}
@@ -66,7 +66,7 @@ static int reduce(int uv, int size)
 
 static int extend(int uv, int size)
 {
-	while (size < 10 && (1 << size) < uv + 1)
+	while (size < 10 && (1 << size) < uv)
 	{
 		size++;
 	}
@@ -99,7 +99,7 @@ GIFRegTEX0 GSDrawingContext::GetSizeFixedTEX0(const GSVector4& st, bool linear, 
 		uvf += GSVector4(-0.5f, 0.5f).xxyy();
 	}
 
-	GSVector4i uv = GSVector4i(uvf.floor());
+	GSVector4i uv = GSVector4i(uvf.floor().xyzw(uvf.ceil()));
 
 	uv.x = findmax(uv.x, uv.z, (1 << tw) - 1, wms, minu, maxu);
 	uv.y = findmax(uv.y, uv.w, (1 << th) - 1, wmt, minv, maxv);
@@ -154,7 +154,7 @@ void GSDrawingContext::ComputeFixedTEX0(const GSVector4& st)
 	int maxu = (int)CLAMP.MAXU;
 	int maxv = (int)CLAMP.MAXV;
 
-	GSVector4i uv = GSVector4i(st.floor());
+	GSVector4i uv = GSVector4i(st.floor().xyzw(st.ceil()));
 
 	uv.x = findmax(uv.x, uv.z, (1 << TEX0.TW) - 1, wms, minu, maxu);
 	uv.y = findmax(uv.y, uv.w, (1 << TEX0.TH) - 1, wmt, minv, maxv);
