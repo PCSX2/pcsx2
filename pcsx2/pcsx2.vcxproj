@@ -1087,7 +1087,6 @@
     <ClInclude Include="gui\wxGuiTools.h" />
     <ClInclude Include="PathDefs.h" />
     <ClInclude Include="SysForwardDefs.h" />
-    <ClInclude Include="cheatscpp.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="$(SolutionDir)3rdparty\wxwidgets3.0\include\wx\msw\wx.rc">
