@@ -1,6 +1,6 @@
 # Docs - https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-githubs-form-schema
-name: Bug Report
-description: Found a problem? Help us improve.
+name: Emulation Bug Report
+description: Problem in a game (ie. graphical artifacts, crashes)? Help us improve it.
 title: "[BUG]: "
 labels: [Bug]
 # assignees:
@@ -69,7 +69,7 @@ body:
     attributes:
       label: PCSX2 Revision
       description: "We only accept bug reports for the latest dev version. Please try upgrading before making an issue."
-      placeholder: "Example: dev-525"
+      placeholder: "Example: v1.7.1337"
     validations:
       required: true
   - type: dropdown
@@ -77,6 +77,8 @@ body:
     attributes:
       label: Operating System
       options:
+      - Windows 11 (32bit)
+      - Windows 11 (64bit)
       - Windows 10 (32bit)
       - Windows 10 (64bit)
       - Windows 8.1 (32bit)
