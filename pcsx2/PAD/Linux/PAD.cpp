@@ -22,7 +22,7 @@
 #include "common/WindowInfo.h"
 
 #include "keyboard.h"
-#include "PAD.h"
+#include "../Gamepad.h"
 #include "state_management.h"
 
 #if defined(__unix__) || defined(__APPLE__)
@@ -31,6 +31,14 @@
 
 #ifdef __linux__
 #include <unistd.h>
+#endif
+
+#include "gui/AppCoreThread.h"
+#include "wx_dialog/dialog.h"
+
+#ifndef __APPLE__
+Display* GSdsp;
+Window GSwin;
 #endif
 
 const u32 revision = 3;
@@ -122,22 +130,20 @@ s32 PADopen(const WindowInfo& wi)
 #if defined(__unix__) || defined(__APPLE__)
 	EnumerateDevices();
 #endif
-	return _PADopen(wi);
-}
+#ifndef __APPLE__
+	if (wi.type != WindowInfo::Type::X11)
+		return -1;
 
-void PADsetLogDir(const char* dir)
-{
-	// Get the path to the log directory.
-	s_padstrLogPath = (dir == NULL) ? "logs/" : dir;
+	GSdsp = static_cast<Display*>(wi.display_connection);
+	GSwin = reinterpret_cast<Window>(wi.window_handle);
+#endif
 
-	// Reload the log file after updated the path
-	CloseLogging();
-	initLogging();
+	return 0;
 }
 
 void PADclose()
 {
-	_PADclose();
+	device_manager.devices.clear();
 }
 
 s32 PADsetSlot(u8 port, u8 slot)
@@ -292,3 +298,33 @@ void PADWriteEvent(HostKeyEvent& evt)
 	g_ev_fifo.push(evt);
 }
 #endif
+
+void PADupdate(int pad)
+{
+#ifndef __APPLE__
+	// Gamepad inputs don't count as an activity. Therefore screensaver will
+	// be fired after a couple of minute.
+	// Emulate an user activity
+	static int count = 0;
+	count++;
+	if ((count & 0xFFF) == 0)
+	{
+		// 1 call every 4096 Vsync is enough
+		XResetScreenSaver(GSdsp);
+	}
+#endif
+
+	// Actually PADupdate is always call with pad == 0. So you need to update both
+	// pads -- Gregory
+	device_manager.Update();
+}
+
+void PADconfigure()
+{
+	ScopedCoreThreadPause paused_core;
+	PADLoadConfig();
+
+	DisplayDialog();
+	paused_core.AllowResume();
+	return;
+}

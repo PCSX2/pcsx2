@@ -34,11 +34,7 @@ extern WindowInfo g_gs_window_info;
 #include "DEV9/DEV9.h"
 #include "USB/USB.h"
 #include "MemoryCardFile.h"
-#ifdef _WIN32
-#include "PAD/Windows/PAD.h"
-#else
-#include "PAD/Linux/PAD.h"
-#endif
+#include "PAD/Gamepad.h"
 
 #include "DebugTools/MIPSAnalyst.h"
 #include "DebugTools/SymbolMap.h"

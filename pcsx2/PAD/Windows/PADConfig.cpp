@@ -26,7 +26,6 @@
 #include "KeyboardQueue.h"
 #include "WndProcEater.h"
 #include "DualShock3.h"
-#include "PAD.h"
 
 // Needed to know if raw input is available.  It requires XP or higher.
 #include "PADRawInput.h"

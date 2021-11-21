@@ -24,7 +24,6 @@
 #include "resource_pad.h"
 #include "InputManager.h"
 #include "PADConfig.h"
-#include "PAD.h"
 #include "Host.h"
 
 #include "DeviceEnumerator.h"
