@@ -1,0 +1,82 @@
+# Docs - https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/syntax-for-githubs-form-schema
+name: Application Bug Report
+description: Found a problem with the application itself (ie. bad file path handling, UX issue)? Help us improve it.
+title: "[BUG]: "
+labels: [Bug]
+# assignees:
+#   - octocat
+body:
+  - type: markdown
+    attributes:
+      value: |
+        ## Important: Read First
+
+        Please do not make support requests on GitHub. Our issue tracker is for tracking bugs and feature requests only
+        If you need help configuring the emulator please make a request on our forums or contact us on discord
+
+        If you are unsure, start with [discord](https://discord.com/invite/TCz3t9k) or the [forums](https://forums.pcsx2.net/index.php)
+
+        Please make an effort to make sure your issue isn't already reported
+
+        ### Please Avoid Issues Pertaining to the Following:
+        - We are **not** accepting bug reports for **PSX mode** at this time
+          - If you are interested in helping contribute to PSX mode please do so on the forums. Otherwise our recommendation is that you use a [proper PSX emulator](https://emulation.gametechwiki.com/index.php/PlayStation_emulators)
+        - We do **not** accept issues relating to **upscaling** at this time
+          - We are aware of the various problems with upscaling. The issue spans many games and having hundreds of issues for the same fundamental issues isn't particularly helpful. There are several workarounds for graphical problems that come as a result of upscaling
+          - Please try your game at native resolution before creating an issue
+          - If your bug is the result of upscaling please use the forums or discord for assistance with various upscaling workarounds. Additionally, the unofficial PCSX2 [Wiki](https://wiki.pcsx2.net/Main_Page) often lists various fixes for upscaling issues
+  - type: textarea
+    id: desc
+    attributes:
+      label: Describe the Bug
+      description: "A clear and concise description of what the bug is"
+    validations:
+      required: true
+  - type: textarea
+    id: repro
+    attributes:
+      label: Reproduction Steps
+      description: "Steps to reproduce the behavior"
+    validations:
+      required: true
+  - type: textarea
+    id: expect
+    attributes:
+      label: Expected Behavior
+      description: "A clear and concise description of what you expected to happen"
+    validations:
+      required: false
+  - type: input
+    id: rev
+    attributes:
+      label: PCSX2 Revision
+      description: "Please ensure you are on the latest version before making an issue"
+      placeholder: "Example: v1.7.1337"
+    validations:
+      required: true
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating System
+      options:
+      - Windows 11 (32bit)
+      - Windows 11 (64bit)
+      - Windows 10 (32bit)
+      - Windows 10 (64bit)
+      - Windows 8.1 (32bit)
+      - Windows 8.1 (64bit)
+      - Linux (32bit) - Specify Distro Below
+      - Linux (64bit) - Specify Distro Below
+      - macOS (Monteray)
+      - macOS (BigSur)
+      - macOS (Catalina)
+      - macOS (Mojave)
+    validations:
+      required: true
+  - type: input
+    id: os-distro
+    attributes:
+      label: If Linux - Specify Distro
+      placeholder: "Example: Arch"
+    validations:
+      required: false
