@@ -416,34 +416,6 @@ namespace Implementations
 #endif
 	}
 
-	void Sys_FreezeGS()
-	{
-		// fixme : fix up gsstate mess and make it mtgs compatible -- air
-#ifdef _STGS_GSSTATE_CODE
-		wxString Text;
-		if (strgametitle[0] != 0)
-		{
-			// only take the first two words
-			wxString gsText;
-
-			wxStringTokenizer parts(strgametitle, L" ");
-
-			wxString name(parts.GetNextToken()); // first part
-			wxString part2(parts.GetNextToken());
-
-			if (!!part2)
-				name += L"_" + part2;
-
-			gsText.Printf(L"%s.%d.gs", WX_STR(name), StatesC);
-			Text = Path::Combine(g_Conf->Folders.Savestates, gsText);
-		}
-		else
-		{
-			Text = GetGSStateFilename();
-		}
-#endif
-	}
-
 	void Sys_RecordingToggle()
 	{
 		ScopedCoreThreadPause paused_core;
@@ -805,13 +777,6 @@ static const GlobalCommandDescriptor CommandDeclarations[] =
 			false,
 		},
 
-		{
-			"Sys_FreezeGS",
-			Implementations::Sys_FreezeGS,
-			NULL,
-			NULL,
-			false,
-		},
 		{
 			"Sys_RecordingToggle",
 			Implementations::Sys_RecordingToggle,
