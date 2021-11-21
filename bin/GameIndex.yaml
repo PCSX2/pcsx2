@@ -1763,6 +1763,10 @@ SCED-54001:
 SCED-54024:
   name: "Official PlayStation 2 Magazine Demo 70"
   region: "PAL-M5"
+  patches:
+    default:
+      content: |-
+        comment=- Castlevania needs VU clamping none and EEclamping extra.
 SCED-54036:
   name: "Official PlayStation 2 Magazine Demo 69/70"
   region: "PAL-M5"
@@ -3328,15 +3332,33 @@ SCES-54823:
 SCES-54844:
   name: "Buzz! The Hollywood Quiz"
   region: "PAL-E"
+  gameFixes:
+    - EETimingHack # Fixes long delays between questions.
 SCES-54845:
   name: "Buzz! The Hollywood Quiz"
   region: "PAL-G"
+  gameFixes:
+    - EETimingHack # Fixes long delays between questions.
 SCES-54848:
   name: "Buzz! Hollywood"
   region: "PAL-P-S"
+  gameFixes:
+    - EETimingHack # Fixes long delays between questions.
 SCES-54851:
   name: "Buzz! The Hollywood Quiz"
   region: "PAL-M3"
+  gameFixes:
+    - EETimingHack # Fixes long delays between questions.
+SCES-54852:
+  name: "Buzz! The Hollywood Quiz"
+  region: "PAL-F"
+  gameFixes:
+    - EETimingHack # Fixes long delays between questions.
+SCES-54856:
+  name: "Buzz! The Hollywood Quiz"
+  region: "PAL-P"
+  gameFixes:
+    - EETimingHack # Fixes long delays between questions.
 SCES-54869:
   name: "SingStar Italian Party"
   region: "PAL-I"
@@ -6666,6 +6688,8 @@ SCUS-97594:
   name: "Buzz! The Hollywood Quiz [Bundle]"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes long delays between questions.
 SCUS-97596:
   name: "Buzz! Junior Jungle Party"
   region: "NTSC-U"
@@ -6738,6 +6762,8 @@ SCUS-97627:
 SCUS-97633:
   name: "Buzz! The Hollywood Quiz [Game Only]"
   region: "NTSC-U"
+  gameFixes:
+    - EETimingHack # Fixes long delays between questions.
 SCUS-97634:
   name: "Buzz! Jr. RoboJam [Game Only]"
   region: "NTSC-U"
@@ -7072,6 +7098,11 @@ SLED-52597:
 SLED-52875:
   name: "Sega Superstars [Demo]"
   region: "PAL-E"
+SLED-52890:
+  name: "FIFA 2005 [Demo]"
+  region: "PAL-M7"
+  gameFixes:
+    - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
 SLED-52929:
   name: "Prince of Persia - Warrior Within [Demo]"
   region: "PAL-M5"
@@ -12011,18 +12042,28 @@ SLES-52558:
 SLES-52559:
   name: "FIFA 2005"
   region: "PAL-E"
+  gameFixes:
+    - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
 SLES-52560:
   name: "FIFA 2005"
   region: "PAL-G"
+  gameFixes:
+    - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
 SLES-52561:
   name: "FIFA 2005"
   region: "PAL-P-S"
+  gameFixes:
+    - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
 SLES-52562:
   name: "FIFA 2005"
   region: "PAL-I"
+  gameFixes:
+    - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
 SLES-52563:
   name: "FIFA Football 2005"
   region: "PAL-M6"
+  gameFixes:
+    - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
 SLES-52567:
   name: "Catwoman"
   region: "PAL-M7"
@@ -19030,6 +19071,11 @@ SLKA-25207:
 SLKA-25208:
   name: "From TV Animation - One Piece - Round the Land!"
   region: "NTSC-K"
+SLKA-25209:
+  name: "FIFA 2005"
+  region: "NTSC-K"
+  gameFixes:
+    - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
 SLKA-25213:
   name: "Berserk"
   region: "NTSC-K"
@@ -19356,7 +19402,7 @@ SLKA-25413:
 SLKA-25422:
   name: "Silent Hill - Origins"
   region: "NTSC-K"
-  compat: 4
+  compat: 5
 SLKA-25424:
   name: "SNK Arcade Classics Vol.1"
   region: "NTSC-K"
@@ -19601,6 +19647,16 @@ SLPM-60262:
 SLPM-60265:
   name: "10th Anniversary PlayStation & PlayStation 2 All-Soft Catalogue Special SaveData Collection [PS2 Disc]"
   region: "NTSC-J"
+SLPM-60270:
+  name: "D1 Professional Drift Grand Prix Series 2005 [Trial]"
+  region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes black screen.
+SLPM-60271:
+  name: "D1 Professional Drift Grand Prix Series 2005 [Trial]"
+  region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes black screen.
 SLPM-60273:
   name: "Zettai Zetsumei Toshi 2: Itetsuita Kioku-tachi [Trial B]"
   region: "NTSC-J"
@@ -25070,6 +25126,8 @@ SLPM-66143:
 SLPM-66144:
   name: "D1 Grand Prix 2005"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes black screen.
 SLPM-66145:
   name: "GoldenEye - Rogue Agent [EA Best Hits]"
   region: "NTSC-J"
@@ -37027,6 +37085,8 @@ SLUS-21051:
   name: "FIFA 2005"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - GIFFIFOHack # Partially fixes graphical issues also needs EE cycle rate + 3.
 SLUS-21052:
   name: "Disney's Monsters Inc."
   region: "NTSC-U"
