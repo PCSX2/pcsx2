@@ -19,6 +19,7 @@
 #include "GSUtil.h"
 
 #include <algorithm> // clamp
+#include <cfloat> // FLT_MAX
 
 int GSState::s_n = 0;
 
