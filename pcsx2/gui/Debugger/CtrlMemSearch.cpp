@@ -298,7 +298,7 @@ void CtrlMemSearch::onSearchFinished(wxCommandEvent& evt)
 
 	m_searchResultsMutex.lock();
 
-	lblSearchHits->SetLabelText(wxString::Format(L"Hits: %d", m_searchResults.size()));
+	lblSearchHits->SetLabelText(wxString::Format(L"Hits: %zu", m_searchResults.size()));
 	
 	// Enable the buttons only if we have results
 	// -1 indicates we haven't jumped to a result yet
