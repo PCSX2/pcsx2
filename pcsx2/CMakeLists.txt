@@ -1422,7 +1422,6 @@ if(WIN32)
 	)
 elseif(APPLE)
 	target_link_libraries(PCSX2_FLAGS INTERFACE
-		PkgConfig::GIO
 		PCAP::PCAP
 		LibXml2::LibXml2
 	)
