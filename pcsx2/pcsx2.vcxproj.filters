@@ -1995,9 +1995,6 @@
     <ClInclude Include="GameDatabase.h">
       <Filter>Misc</Filter>
     </ClInclude>
-    <ClInclude Include="cheatscpp.h">
-      <Filter>Misc</Filter>
-    </ClInclude>
     <ClInclude Include="IPU\IPUdma.h">
       <Filter>System\Ps2\IPU</Filter>
     </ClInclude>
