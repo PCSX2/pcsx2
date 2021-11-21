@@ -40,7 +40,7 @@ else()
 		/usr/lib64
 		/usr/local/lib64)
 	set(CMAKE_LIBRARY_ARCHITECTURE ".")
-	if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+	if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD" OR ${CMAKE_SYSTEM_NAME} MATCHES "Darwin" )
 		list(APPEND CMAKE_LIBRARY_PATH /usr/local/lib)
 		list(APPEND CMAKE_LIBRARY_PATH /usr/lib)
 		list(APPEND CMAKE_LIBRARY_PATH /lib)
