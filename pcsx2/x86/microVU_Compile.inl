@@ -596,6 +596,18 @@ void* mVUcompileSingleInstruction(microVU& mVU, u32 startPC, uptr pState, microF
 		mVUopL(mVU, 0);
 		incPC(1);
 	}
+
+	if (!mVUlow.isKick)
+	{
+		mVUlow.kickcycles = 1 + mVUstall;
+		mVUregs.xgkickcycles = 0;
+	}
+	else
+	{
+		mVUregs.xgkickcycles = 0;
+		mVUlow.kickcycles = 0;
+	}
+
 	mVUsetCycles(mVU);
 	mVUinfo.readQ = mVU.q;
 	mVUinfo.writeQ = !mVU.q;
@@ -620,11 +632,18 @@ void* mVUcompileSingleInstruction(microVU& mVU, u32 startPC, uptr pState, microF
 	}
 	mVUexecuteInstruction(mVU);
 
+	if (isVU1 && mVUlow.kickcycles && CHECK_XGKICKHACK)
+	{
+		mVU_XGKICK_SYNC(mVU, false);
+	}
+
 	mVUincCycles(mVU, 1); //Just incase the is XGKick
 	if (mVUinfo.doXGKICK)
 	{
 		mVU_XGKICK_DELAY(mVU);
 	}
+
+	mVUregs.xgkickcycles = 0;
 
 	return thisPtr;
 }
@@ -769,8 +788,11 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 			}
 
 			branchWarning(mVU);
-			mVUlow.kickcycles = mVUregs.xgkickcycles;
-			mVUregs.xgkickcycles = 0;
+			if (mVUregs.xgkickcycles)
+			{
+				mVUlow.kickcycles = mVUregs.xgkickcycles;
+				mVUregs.xgkickcycles = 0;
+			}
 			break;
 		}
 		else if (branch == 1)
@@ -789,15 +811,21 @@ void* mVUcompile(microVU& mVU, u32 startPC, uptr pState)
 		if (mVUup.mBit && !branch && !mVUup.eBit)
 		{
 			mVUregs.needExactMatch |= 7;
-			mVUlow.kickcycles = mVUregs.xgkickcycles;
-			mVUregs.xgkickcycles = 0;
+			if (mVUregs.xgkickcycles)
+			{
+				mVUlow.kickcycles = mVUregs.xgkickcycles;
+				mVUregs.xgkickcycles = 0;
+			}
 			break;
 		}
 
 		if (mVUinfo.isEOB)
 		{
-			mVUlow.kickcycles = mVUregs.xgkickcycles;
-			mVUregs.xgkickcycles = 0;
+			if (mVUregs.xgkickcycles)
+			{
+				mVUlow.kickcycles = mVUregs.xgkickcycles;
+				mVUregs.xgkickcycles = 0;
+			}
 			break;
 		}
 
