@@ -280,35 +280,40 @@ function(_GTK3_FIND_INCLUDE_DIR _var _hdr)
 			message(STATUS "Adding ${_gtk3_arch_dir} to search path for multiarch support")
 		endif()
 	endif()
-	find_path(GTK3_${_var}_INCLUDE_DIR ${_hdr}
-		PATHS
-			${_gtk3_arch_dir}
-			/usr/local/lib64
-			/usr/local/lib
-			/usr/lib64
-			/usr/lib
-			/usr/X11R6/include
-			/usr/X11R6/lib
-			/opt/gnome/include
-			/opt/gnome/lib
-			/opt/openwin/include
-			/usr/openwin/lib
-			/sw/include
-			/sw/lib
-			/opt/local/include
-			/opt/local/lib
-			/usr/pkg/lib
-			/usr/pkg/include/glib
-			$ENV{GTKMM_BASEPATH}/include
-			$ENV{GTKMM_BASEPATH}/lib
-			[HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\3.0;Path]/include
-			[HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\3.0;Path]/lib
-			[HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\3.0;Path]/include
-			[HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\3.0;Path]/lib
-		PATH_SUFFIXES
-			${_suffixes}
-	)
-	mark_as_advanced(GTK3_${_var}_INCLUDE_DIR)
+	if (${CMAKE_SYSTEM_NAME} MATCHES "FreeBSD")
+		/usr/local/lib
+		/usr/local/lib64
+	else()
+		find_path(GTK3_${_var}_INCLUDE_DIR ${_hdr}
+			PATHS
+				${_gtk3_arch_dir}
+				/usr/lib
+				/usr/lib64
+				/usr/local/lib
+				/usr/local/lib64
+				/usr/X11R6/include
+				/usr/X11R6/lib
+				/opt/gnome/include
+				/opt/gnome/lib
+				/opt/openwin/include
+				/usr/openwin/lib
+				/sw/include
+				/sw/lib
+				/opt/local/include
+				/opt/local/lib
+				/usr/pkg/lib
+				/usr/pkg/include/glib
+				$ENV{GTKMM_BASEPATH}/include
+				$ENV{GTKMM_BASEPATH}/lib
+				[HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\3.0;Path]/include
+				[HKEY_CURRENT_USER\\SOFTWARE\\gtkmm\\3.0;Path]/lib
+				[HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\3.0;Path]/include
+				[HKEY_LOCAL_MACHINE\\SOFTWARE\\gtkmm\\3.0;Path]/lib
+			PATH_SUFFIXES
+				${_suffixes}
+		)
+		mark_as_advanced(GTK3_${_var}_INCLUDE_DIR)
+	endif()
 
 	if(GTK3_${_var}_INCLUDE_DIR)
 		set(GTK3_INCLUDE_DIRS ${GTK3_INCLUDE_DIRS} ${GTK3_${_var}_INCLUDE_DIR} PARENT_SCOPE)
