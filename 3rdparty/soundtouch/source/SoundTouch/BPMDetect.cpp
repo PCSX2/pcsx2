@@ -313,7 +313,7 @@ void BPMDetect::updateXCorr(int process_samples)
     #pragma omp parallel for
     for (offs = windowStart; offs < windowLen; offs ++) 
     {
-        double sum;
+        float sum;
         int i;
 
         sum = 0;
@@ -341,7 +341,6 @@ void BPMDetect::updateBeatPos(int process_samples)
     //    static double thr = 0.0003;
     double posScale = (double)this->decimateBy / (double)this->sampleRate;
     int resetDur = (int)(0.12 / posScale + 0.5);
-    double corrScale = 1.0 / (double)(windowLen - windowStart);
 
     // prescale pbuffer
     float tmp[XCORR_UPDATE_SEQUENCE / 2];
@@ -353,7 +352,7 @@ void BPMDetect::updateBeatPos(int process_samples)
     #pragma omp parallel for
     for (int offs = windowStart; offs < windowLen; offs++)
     {
-        double sum = 0;
+        float sum = 0;
         for (int i = 0; i < process_samples; i++)
         {
             sum += tmp[i] * pBuffer[offs + i];
@@ -562,7 +561,7 @@ float BPMDetect::getBpm()
 /// \return number of beats in the arrays.
 int BPMDetect::getBeats(float *pos, float *values, int max_num)
 {
-    int num = beats.size();
+    int num = (int)beats.size();
     if ((!pos) || (!values)) return num;    // pos or values NULL, return just size
 
     for (int i = 0; (i < num) && (i < max_num); i++)

@@ -57,7 +57,7 @@ int PeakFinder::findTop(const float *data, int peakpos) const
 
     refvalue = data[peakpos];
 
-    // seek within �10 points
+    // seek within ±10 points
     start = peakpos - 10;
     if (start < minPos) start = minPos;
     end = peakpos + 10;
@@ -142,7 +142,7 @@ int PeakFinder::findCrossingLevel(const float *data, float level, int peakpos, i
     peaklevel = data[peakpos];
     assert(peaklevel >= level);
     pos = peakpos;
-    while ((pos >= minPos) && (pos < maxPos))
+    while ((pos >= minPos) && (pos + direction < maxPos))
     {
         if (data[pos + direction] < level) return pos;   // crossing found
         pos += direction;
@@ -256,7 +256,7 @@ double PeakFinder::detectPeak(const float *data, int aminPos, int amaxPos)
 
         // accept harmonic peak if 
         // (a) it is found
-        // (b) is within �4% of the expected harmonic interval
+        // (b) is within ±4% of the expected harmonic interval
         // (c) has at least half x-corr value of the max. peak
 
         double diff = harmonic * peaktmp / highPeak;
