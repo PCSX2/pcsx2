@@ -2607,6 +2607,9 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 	if (m_vt.m_max.t.x >= FLT_MAX || m_vt.m_min.t.x <= -FLT_MAX ||
 		m_vt.m_max.t.y >= FLT_MAX || m_vt.m_min.t.y <= -FLT_MAX)
 		skipClamp = true;
+
+	if (wms == CLAMP_REGION_REPEAT && wmt == CLAMP_REGION_REPEAT)
+		skipClamp = true;
 	
 	// Optimisation aims to reduce the amount of texture loaded to only the bit which will be read
 	if (!skipClamp)
@@ -2620,24 +2623,14 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 		GSVector4i u, v, uu, vv;
 
 		// Checks for UV's going above the size of the texture (for wrapping)
-		if (wms == CLAMP_REGION_REPEAT)
-		{
-			u = uv & (maxu | minu);
-			uu = uv & ~(maxu | minu);
-		}
-		else if (wms == CLAMP_REPEAT)
+		if (wms == CLAMP_REPEAT)
 		{
 			// See commented code below for the meaning of mask
 			u = uv & GSVector4i::xffffffff().srl32(32 - tw);
 			uu = uv.sra32(tw);
 		}
 
-		if (wmt == CLAMP_REGION_REPEAT)
-		{
-			v = uv & (maxv | minv);
-			vv = uv & ~(maxv | minv);
-		}
-		else if (wmt == CLAMP_REPEAT)
+		if (wmt == CLAMP_REPEAT)
 		{
 			// See commented code below for the meaning of mask
 			v = uv & GSVector4i::xffffffff().srl32(32 - th);
@@ -2657,7 +2650,6 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 		switch (wms)
 		{
 			case CLAMP_REPEAT:
-			case CLAMP_REGION_REPEAT:
 				// This commented code cannot be used directly because it needs uv before the intersection
 				//if (uv_.x >> tw == uv_.z >> tw)
 				//{
@@ -2685,7 +2677,6 @@ void GSState::GetTextureMinMax(GSVector4i& r, const GIFRegTEX0& TEX0, const GIFR
 		switch (wmt)
 		{
 			case CLAMP_REPEAT:
-			case CLAMP_REGION_REPEAT:
 				//if (uv_.y >> th == uv_.w >> th)
 				//{
 				//	vr.y = max(vr.y, (uv_.y & ((1 << th) - 1)));
