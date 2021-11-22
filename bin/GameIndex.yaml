@@ -33926,26 +33926,6 @@ SLUS-20323:
   name: "Virtua Fighter 4"
   region: "NTSC-U"
   compat: 5
-  patches:
-    EA131B57:
-      content: |-
-        author=kozarovv
-        // Fix for Virtua Fighter 4 SLUS-20323 hang while loading replays.
-        // Game interrupt required data read if break command is done too early.
-        // Hard to tell that it works by luck on PS2, or maybe something is missing on pcsx2 side.
-        // Also workaround to https://github.com/PCSX2/pcsx2/issues/2009. 
-        // Note: CDVD Break is used only in a few places in that title, all of them break without patch.
-        // Delay Break CDVD command
-        // Fix replays / A.I replays loading
-        patch=1,IOP,0003d010,word,0807fff9
-        patch=1,IOP,0003d014,word,3c020004
-        patch=1,IOP,001fffe4,word,24180016
-        patch=1,IOP,001fffe8,word,14980003
-        patch=1,IOP,001fffec,word,3c190010
-        patch=1,IOP,001ffff0,word,1720ffff
-        patch=1,IOP,001ffff4,word,2739ffff
-        patch=1,IOP,001ffff8,word,0800f406
-        patch=1,IOP,001ffffc,word,8c42e36c
 SLUS-20324:
   name: "Paris Dakar Rally"
   region: "NTSC-U"
