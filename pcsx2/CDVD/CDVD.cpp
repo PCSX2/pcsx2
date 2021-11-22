@@ -1243,7 +1243,7 @@ __fi void cdvdReadInterrupt()
 				cdvd.Status = CDVD_STATUS_PAUSE;
 
 			cdvd.nCommand = 0;
-			//DevCon.Warning("Scheduling interrupt in %d cycles", cdvd.ReadTime - (cdvd.BlockSize / 4));
+			//DevCon.Warning("Scheduling interrupt in %d cycles", cdvd.ReadTime - ((cdvd.BlockSize / 4) * 12));
 			// Timing issues on command end
 			// Star Ocean (1.1 Japan) expects the DMA to end and interrupt at least 128 or more cycles before the CDVD command ends.
 			// However the time required seems to increase slowly, so delaying the end of the command is not the solution.
@@ -1254,7 +1254,7 @@ __fi void cdvdReadInterrupt()
 	}
 	else
 	{
-		CDVDREAD_INT((cdvd.BlockSize / 4));
+		CDVDREAD_INT((cdvd.BlockSize / 4) * 12);
 		return;
 	}
 
@@ -1262,9 +1262,9 @@ __fi void cdvdReadInterrupt()
 	cdvd.Reading = 1;
 	cdvd.RErr = DoCDVDreadTrack(cdvd.Sector, cdvd.ReadMode);
 	if (cdvd.nextSectorsBuffered)
-		CDVDREAD_INT((cdvd.BlockSize / 4));
+		CDVDREAD_INT((cdvd.BlockSize / 4) * 12);
 	else
-		CDVDREAD_INT(cdvd.ReadTime + (cdvd.BlockSize / 4));
+		CDVDREAD_INT(cdvd.ReadTime + ((cdvd.BlockSize / 4) * 12));
 }
 
 // Returns the number of IOP cycles until the event completes.
@@ -1338,16 +1338,16 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 				if (psxRegs.interrupt & (1 << IopEvt_CdvdSectorReady))
 				{
 					//DevCon.Warning("coming back from ready sector early reducing %d cycles by %d cycles", seektime, psxRegs.cycle - psxRegs.sCycle[IopEvt_CdvdSectorReady]);
-					seektime = (psxRegs.cycle - psxRegs.sCycle[IopEvt_CdvdSectorReady]) + (cdvd.BlockSize / 4);
+					seektime = (psxRegs.cycle - psxRegs.sCycle[IopEvt_CdvdSectorReady]) + ((cdvd.BlockSize / 4) * 12);
 				}
 				else
 				{
 					CDVDSECTORREADY_INT(cdvd.ReadTime);
-					seektime = cdvd.ReadTime + (cdvd.BlockSize / 4);
+					seektime = cdvd.ReadTime + ((cdvd.BlockSize / 4) * 12);
 				}
 			}
 			else
-				seektime = (cdvd.BlockSize / 4);
+				seektime = (cdvd.BlockSize / 4) * 12;
 		}
 		else
 		{
@@ -1363,7 +1363,7 @@ static uint cdvdStartSeek(uint newsector, CDVD_MODE_TYPE mode)
 		//DevCon.Warning("%s rotational latency at sector %d is %d cycles", (cdvd.SpindlCtrl & CDVD_SPINDLE_CAV) ? "CAV" : "CLV", cdvd.SeekToSector, rotationalLatency);
 		seektime += rotationalLatency + cdvd.ReadTime;
 		CDVDSECTORREADY_INT(seektime);
-		seektime += (cdvd.BlockSize / 4);
+		seektime += (cdvd.BlockSize / 4) * 12;
 	}
 	return seektime;
 }
