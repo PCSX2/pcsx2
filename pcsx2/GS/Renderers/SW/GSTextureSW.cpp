@@ -81,7 +81,7 @@ void GSTextureSW::Unmap()
 
 bool GSTextureSW::Save(const std::string& fn)
 {
-#ifdef ENABLE_OGL_DEBUG
+#ifdef PCSX2_DEVBUILD
 	GSPng::Format fmt = GSPng::RGB_A_PNG;
 #else
 	GSPng::Format fmt = GSPng::RGB_PNG;

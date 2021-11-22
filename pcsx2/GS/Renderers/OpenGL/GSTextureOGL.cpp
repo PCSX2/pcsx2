@@ -573,7 +573,7 @@ bool GSTextureOGL::Save(const std::string& fn)
 	u32 pitch = 4 * m_committed_size.x;
 	u32 buf_size = pitch * m_committed_size.y * 2; // Note *2 for security (depth/stencil)
 	std::unique_ptr<u8[]> image(new u8[buf_size]);
-#ifdef ENABLE_OGL_DEBUG
+#ifdef PCSX2_DEVBUILD
 	GSPng::Format fmt = GSPng::RGB_A_PNG;
 #else
 	GSPng::Format fmt = GSPng::RGB_PNG;
