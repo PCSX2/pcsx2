@@ -1,4 +1,4 @@
-////////////////////////////////////////////////////////////////////////////////
+///////////////////////////////////////////////////////////////////////////////
 /// 
 /// Sampled sound tempo changer/time stretch algorithm. Changes the sound tempo 
 /// while maintaining the original pitch by using a time domain WSOLA-like 
@@ -54,7 +54,6 @@ using namespace soundtouch;
 
 #define max(x, y) (((x) > (y)) ? (x) : (y))
 
-
 /*****************************************************************************
  *
  * Constant definitions
@@ -92,11 +91,6 @@ TDStretch::TDStretch() : FIFOProcessor(&outputBuffer)
 
     bAutoSeqSetting = true;
     bAutoSeekSetting = true;
-
-    maxnorm = 0;
-    maxnormf = 1e8;
-
-    skipFract = 0;
 
     tempo = 1.0f;
     setParameters(44100, DEFAULT_SEQUENCE_MS, DEFAULT_SEEKWINDOW_MS, DEFAULT_OVERLAP_MS);
@@ -203,7 +197,7 @@ void TDStretch::overlapMono(SAMPLETYPE *pOutput, const SAMPLETYPE *pInput) const
     m1 = (SAMPLETYPE)0;
     m2 = (SAMPLETYPE)overlapLength;
 
-    for (i = 0; i < overlapLength ; i ++) 
+    for (i = 0; i < overlapLength ; i ++)
     {
         pOutput[i] = (pInput[i] * m1 + pMidBuffer[i] * m2 ) / overlapLength;
         m1 += 1;
@@ -224,6 +218,9 @@ void TDStretch::clearInput()
     inputBuffer.clear();
     clearMidBuffer();
     isBeginning = true;
+    maxnorm = 0;
+    maxnormf = 1e8;
+    skipFract = 0;
 }
 
 
@@ -311,13 +308,14 @@ int TDStretch::seekBestOverlapPositionFull(const SAMPLETYPE *refPos)
     bestCorr = (bestCorr + 0.1) * 0.75;
 
     #pragma omp parallel for
-    for (i = 1; i < seekLength; i ++) 
+    for (i = 1; i < seekLength; i ++)
     {
         double corr;
         // Calculates correlation value for the mixing position corresponding to 'i'
-#ifdef _OPENMP
+#if defined(_OPENMP) || defined(ST_SIMD_AVOID_UNALIGNED)
         // in parallel OpenMP mode, can't use norm accumulator version as parallel executor won't
         // iterate the loop in sequential order
+        // in SIMD mode, avoid accumulator version to allow avoiding unaligned positions
         corr = calcCrossCorr(refPos + channels * i, pMidBuffer, norm);
 #else
         // In non-parallel version call "calcCrossCorrAccumulate" that is otherwise same
@@ -675,23 +673,24 @@ void TDStretch::processSamples()
             // Adjust processing offset at beginning of track by not perform initial overlapping
             // and compensating that in the 'input buffer skip' calculation
             isBeginning = false;
-            int skip = (int)(tempo * overlapLength + 0.5);
+            int skip = (int)(tempo * overlapLength + 0.5 * seekLength + 0.5);
 
-            #ifdef SOUNDTOUCH_ALLOW_NONEXACT_SIMD_OPTIMIZATION
-                #ifdef SOUNDTOUCH_ALLOW_SSE
-                // if SSE mode, round the skip amount to value corresponding to aligned memory address
-                if (channels == 1)
-                {
-                    skip &= -4;
-                }
-                else if (channels == 2)
-                {
-                    skip &= -2;
-                }
-                #endif
+            #ifdef ST_SIMD_AVOID_UNALIGNED
+            // in SIMD mode, round the skip amount to value corresponding to aligned memory address
+            if (channels == 1)
+            {
+                skip &= -4;
+            }
+            else if (channels == 2)
+            {
+                skip &= -2;
+            }
             #endif
             skipFract -= skip;
-            assert(nominalSkip >= -skipFract);
+            if (skipFract <= -nominalSkip)
+            {
+                skipFract = -nominalSkip;
+            }
         }
 
         // ... then copy sequence samples from 'inputBuffer' to output:
@@ -818,7 +817,7 @@ void TDStretch::overlapStereo(short *poutput, const short *input) const
     short temp;
     int cnt2;
 
-    for (i = 0; i < overlapLength ; i ++) 
+    for (i = 0; i < overlapLength ; i ++)
     {
         temp = (short)(overlapLength - i);
         cnt2 = 2 * i;
@@ -830,21 +829,19 @@ void TDStretch::overlapStereo(short *poutput, const short *input) const
 
 // Overlaps samples in 'midBuffer' with the samples in 'input'. The 'Multi'
 // version of the routine.
-void TDStretch::overlapMulti(SAMPLETYPE *poutput, const SAMPLETYPE *input) const
+void TDStretch::overlapMulti(short *poutput, const short *input) const
 {
-    SAMPLETYPE m1=(SAMPLETYPE)0;
-    SAMPLETYPE m2;
-    int i=0;
+    short m1;
+    int i = 0;
 
-    for (m2 = (SAMPLETYPE)overlapLength; m2; m2 --)
+    for (m1 = 0; m1 < overlapLength; m1 ++)
     {
+        short m2 = (short)(overlapLength - m1);
         for (int c = 0; c < channels; c ++)
         {
             poutput[i] = (input[i] * m1 + pMidBuffer[i] * m2)  / overlapLength;
             i++;
         }
-
-        m1++;
     }
 }
 
@@ -889,20 +886,23 @@ double TDStretch::calcCrossCorr(const short *mixingPos, const short *compare, do
     unsigned long lnorm;
     int i;
 
+    #ifdef ST_SIMD_AVOID_UNALIGNED
+        // in SIMD mode skip 'mixingPos' positions that aren't aligned to 16-byte boundary
+        if (((ulongptr)mixingPos) & 15) return -1e50;
+    #endif
+
+    // hint compiler autovectorization that loop length is divisible by 8
+    int ilength = (channels * overlapLength) & -8;
+
     corr = lnorm = 0;
-    // Same routine for stereo and mono. For stereo, unroll loop for better
-    // efficiency and gives slightly better resolution against rounding. 
-    // For mono it same routine, just  unrolls loop by factor of 4
-    for (i = 0; i < channels * overlapLength; i += 4) 
+    // Same routine for stereo and mono
+    for (i = 0; i < ilength; i += 2)
     {
         corr += (mixingPos[i] * compare[i] + 
-                 mixingPos[i + 1] * compare[i + 1]) >> overlapDividerBitsNorm;  // notice: do intermediate division here to avoid integer overflow
-        corr += (mixingPos[i + 2] * compare[i + 2] + 
-                mixingPos[i + 3] * compare[i + 3]) >> overlapDividerBitsNorm;
+                 mixingPos[i + 1] * compare[i + 1]) >> overlapDividerBitsNorm;
         lnorm += (mixingPos[i] * mixingPos[i] + 
-                mixingPos[i + 1] * mixingPos[i + 1]) >> overlapDividerBitsNorm; // notice: do intermediate division here to avoid integer overflow
-        lnorm += (mixingPos[i + 2] * mixingPos[i + 2] + 
-                mixingPos[i + 3] * mixingPos[i + 3]) >> overlapDividerBitsNorm;
+                  mixingPos[i + 1] * mixingPos[i + 1]) >> overlapDividerBitsNorm;
+        // do intermediate scalings to avoid integer overflow
     }
 
     if (lnorm > maxnorm)
@@ -925,8 +925,11 @@ double TDStretch::calcCrossCorr(const short *mixingPos, const short *compare, do
 double TDStretch::calcCrossCorrAccumulate(const short *mixingPos, const short *compare, double &norm)
 {
     long corr;
-    unsigned long lnorm;
+    long lnorm;
     int i;
+
+    // hint compiler autovectorization that loop length is divisible by 8
+    int ilength = (channels * overlapLength) & -8;
 
     // cancel first normalizer tap from previous round
     lnorm = 0;
@@ -936,15 +939,11 @@ double TDStretch::calcCrossCorrAccumulate(const short *mixingPos, const short *c
     }
 
     corr = 0;
-    // Same routine for stereo and mono. For stereo, unroll loop for better
-    // efficiency and gives slightly better resolution against rounding. 
-    // For mono it same routine, just  unrolls loop by factor of 4
-    for (i = 0; i < channels * overlapLength; i += 4) 
+    // Same routine for stereo and mono.
+    for (i = 0; i < ilength; i += 2) 
     {
         corr += (mixingPos[i] * compare[i] + 
-                 mixingPos[i + 1] * compare[i + 1]) >> overlapDividerBitsNorm;  // notice: do intermediate division here to avoid integer overflow
-        corr += (mixingPos[i + 2] * compare[i + 2] + 
-                 mixingPos[i + 3] * compare[i + 3]) >> overlapDividerBitsNorm;
+                 mixingPos[i + 1] * compare[i + 1]) >> overlapDividerBitsNorm;
     }
 
     // update normalizer with last samples of this round
@@ -1045,27 +1044,24 @@ void TDStretch::calculateOverlapLength(int overlapInMsec)
 /// Calculate cross-correlation
 double TDStretch::calcCrossCorr(const float *mixingPos, const float *compare, double &anorm)
 {
-    double corr;
-    double norm;
+    float corr;
+    float norm;
     int i;
 
+    #ifdef ST_SIMD_AVOID_UNALIGNED
+        // in SIMD mode skip 'mixingPos' positions that aren't aligned to 16-byte boundary
+        if (((ulongptr)mixingPos) & 15) return -1e50;
+    #endif
+
+    // hint compiler autovectorization that loop length is divisible by 8
+    int ilength = (channels * overlapLength) & -8;
+
     corr = norm = 0;
-    // Same routine for stereo and mono. For Stereo, unroll by factor of 2.
-    // For mono it's same routine yet unrollsd by factor of 4.
-    for (i = 0; i < channels * overlapLength; i += 4) 
+    // Same routine for stereo and mono
+    for (i = 0; i < ilength; i ++)
     {
-        corr += mixingPos[i] * compare[i] +
-                mixingPos[i + 1] * compare[i + 1];
-
-        norm += mixingPos[i] * mixingPos[i] + 
-                mixingPos[i + 1] * mixingPos[i + 1];
-
-        // unroll the loop for better CPU efficiency:
-        corr += mixingPos[i + 2] * compare[i + 2] +
-                mixingPos[i + 3] * compare[i + 3];
-
-        norm += mixingPos[i + 2] * mixingPos[i + 2] +
-                mixingPos[i + 3] * mixingPos[i + 3];
+        corr += mixingPos[i] * compare[i];
+        norm += mixingPos[i] * mixingPos[i];
     }
 
     anorm = norm;
@@ -1076,7 +1072,7 @@ double TDStretch::calcCrossCorr(const float *mixingPos, const float *compare, do
 /// Update cross-correlation by accumulating "norm" coefficient by previously calculated value
 double TDStretch::calcCrossCorrAccumulate(const float *mixingPos, const float *compare, double &norm)
 {
-    double corr;
+    float corr;
     int i;
 
     corr = 0;
@@ -1087,14 +1083,13 @@ double TDStretch::calcCrossCorrAccumulate(const float *mixingPos, const float *c
         norm -= mixingPos[-i] * mixingPos[-i];
     }
 
-    // Same routine for stereo and mono. For Stereo, unroll by factor of 2.
-    // For mono it's same routine yet unrollsd by factor of 4.
-    for (i = 0; i < channels * overlapLength; i += 4) 
+    // hint compiler autovectorization that loop length is divisible by 8
+    int ilength = (channels * overlapLength) & -8;
+
+    // Same routine for stereo and mono
+    for (i = 0; i < ilength; i ++)
     {
-        corr += mixingPos[i] * compare[i] +
-                mixingPos[i + 1] * compare[i + 1] +
-                mixingPos[i + 2] * compare[i + 2] +
-                mixingPos[i + 3] * compare[i + 3];
+        corr += mixingPos[i] * compare[i];
     }
 
     // update normalizer with last samples of this round

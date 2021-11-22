@@ -57,6 +57,7 @@ protected:
 
     // Memory for filter coefficients
     SAMPLETYPE *filterCoeffs;
+    SAMPLETYPE *filterCoeffsStereo;
 
     virtual uint evaluateFilterStereo(SAMPLETYPE *dest, 
                                       const SAMPLETYPE *src, 

@@ -1,587 +1,651 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
+
 <head>
   <title>SoundTouch library README</title>
-  <meta http-equiv="Content-Type"
- content="text/html; charset=windows-1252">
   <meta http-equiv="Content-Language" content="en-us">
   <meta name="author" content="Olli Parviainen">
-  <meta name="description"
- content="Readme file for SoundTouch audio processing library">
- <style>
-   body {font-family: Arial, Helvetica; }
- </style>
+  <meta name="description" content="Readme file for SoundTouch audio processing library">
+  <style>
+    body {
+      font-family: Arial, Helvetica;
+    }
+  </style>
 </head>
+
 <body class="normal">
-<hr>
-<h1>SoundTouch audio processing library v2.1.2</h1>
-<p class="normal">SoundTouch library Copyright &copy; Olli Parviainen 2001-2018</p>
-<hr>
-<h2>1. Introduction </h2>
-<p>SoundTouch is an open-source audio processing library that allows
-changing the sound tempo, pitch and playback rate parameters
-independently from each other, i.e.:</p>
-<ul>
-  <li> Sound tempo can be increased or decreased while maintaining the
-original pitch</li>
-  <li> Sound pitch can be increased or decreased while maintaining the
-original tempo</li>
-  <li> Change playback rate that affects both tempo and pitch at the
-same time</li>
-  <li> Choose any combination of tempo/pitch/rate</li>
-</ul>
-<h3>1.1 Contact information </h3>
-<p>Author email: oparviai 'at' iki.fi </p>
-<p>SoundTouch WWW page: <a href="http://soundtouch.surina.net">http://soundtouch.surina.net</a></p>
-<p>SoundTouch git repository: <a href="https://gitlab.com/soundtouch/soundtouch.git">https://gitlab.com/soundtouch/soundtouch.git</a></p>
-<hr>
-<h2>2. Compiling SoundTouch</h2>
-<p>Before compiling, notice that you can choose the sample data format if it's 
-desirable to use floating point sample data instead of 16bit integers. See 
-section &quot;sample data format&quot; for more information.</p>
-<p>Also notice that SoundTouch can use OpenMP instructions for parallel 
-computation to accelerate the runtime processing speed in multi-core systems, 
-however, these improvements need to be separately enabled before compiling. See 
-OpenMP notes in Chapter 3 below.</p>
-<h3>2.1. Building in Microsoft Windows</h3>
-<p>Project files for Microsoft Visual C++ are supplied with the source 
-code package. Go to Microsoft WWW page to download 
-<a href="http://www.visualstudio.com/en-US/products/visual-studio-express-vs">
-Microsoft Visual Studio Express version for free</a>.
-</p>
-<p>To build the binaries with Visual C++ compiler, either run
-"make-win.bat" script, or open the appropriate project files in source
-code directories with Visual Studio. The final executable will appear
-under the "SoundTouch\bin" directory. If using the Visual Studio IDE
-instead of the make-win.bat script, directories bin and lib may need to
-be created manually to the SoundTouch package root for the final
-executables. The make-win.bat script creates these directories
-automatically. </p>
-<p><strong>C# example</strong>: The source code package includes also a C# example 
-    application for Windows that shows how to invoke SoundTouch.dll 
+  <hr>
+  <h1>SoundTouch audio processing library v2.3.1</h1>
+  <p class="normal">SoundTouch library Copyright &copy; Olli Parviainen 2001-2021</p>
+  <hr>
+  <h2>1. Introduction </h2>
+  <p>SoundTouch is an open-source audio processing library that allows
+    changing the sound tempo, pitch and playback rate parameters
+    independently from each other, i.e.:</p>
+  <ul>
+    <li> Sound tempo can be increased or decreased while maintaining the
+      original pitch</li>
+    <li> Sound pitch can be increased or decreased while maintaining the
+      original tempo</li>
+    <li> Change playback rate that affects both tempo and pitch at the
+      same time</li>
+    <li> Choose any combination of tempo/pitch/rate</li>
+  </ul>
+  <h3>1.1 Contact information </h3>
+  <p>Author email: oparviai 'at' iki.fi </p>
+  <p>SoundTouch WWW page: <a href="http://soundtouch.surina.net">http://soundtouch.surina.net</a></p>
+  <p>SoundTouch git repository: <a
+      href="https://gitlab.com/soundtouch/soundtouch.git">https://gitlab.com/soundtouch/soundtouch.git</a></p>
+  <hr>
+  <h2>2. Compiling SoundTouch</h2>
+  <p>Before compiling, notice that you can choose the sample data format if it's
+    desirable to use 16bit integer sample data instead of floating point samples. See
+    section &quot;sample data format&quot; for more information.</p>
+  <p>Also notice that SoundTouch can use OpenMP instructions for parallel
+    computation to accelerate the runtime processing speed in multi-core systems,
+    however, these improvements need to be separately enabled before compiling. See
+    OpenMP notes in Chapter 3 below.</p>
+  <h3>2.1. Building in Microsoft Windows</h3>
+  <p>Project files for Microsoft Visual C++ are supplied with the source
+    code package. Go to Microsoft WWW page to download
+    <a href="http://www.visualstudio.com/en-US/products/visual-studio-express-vs">
+      Microsoft Visual Studio Express version for free</a>.
+  </p>
+  <p>To build the binaries with Visual C++ compiler, either run
+    "make-win.bat" script, or open the appropriate project files in source
+    code directories with Visual Studio. The final executable will appear
+    under the "SoundTouch\bin" directory. If using the Visual Studio IDE
+    instead of the make-win.bat script, directories bin and lib may need to
+    be created manually to the SoundTouch package root for the final
+    executables. The make-win.bat script creates these directories
+    automatically. </p>
+  <p><strong>C# example</strong>: The source code package includes also a C# example
+    application for Windows that shows how to invoke SoundTouch.dll
     dynamic-load library for processing mp3 audio.
-<p><strong>OpenMP NOTE</strong>: If activating the OpenMP parallel computing in 
-the compilation, the target program will require additional vcomp dll library to 
-properly run. In Visual C++ 9.0 these libraries can be found in the following 
-folders.</p>
-<ul>
-    <li>x86 32bit: C:\Program Files (x86)\Microsoft Visual Studio 
-    9.0\VC\redist\x86\Microsoft.VC90.OPENMP\vcomp90.dll</li>
-    <li>x64 64bit: C:\Program Files (x86)\Microsoft Visual Studio 
-    9.0\VC\redist\amd64\Microsoft.VC90.OPENMP\vcomp90.dll</li>
-</ul>
-<p>In Visual Studio 2008, a SP1 version may be required for these libraries. In 
-other VC++ versions the required library will be expectedly found in similar 
-&quot;redist&quot; location.</p>
-<p>Notice that as minor demonstration of a &quot;dll hell&quot; phenomenon both the 32-bit 
-and 64-bit version of vcomp90.dll have the same filename but different contents, 
-thus choose the proper version to allow the program start.</p>
-<h3>2.2. Building in Gnu platforms</h3>
-<p>The SoundTouch library compiles in practically any platform
-supporting GNU compiler (GCC) tools. SoundTouch requires GCC version 4.3 or later.</p>
-<p>To build and install the binaries, run the following commands in 
-/soundtouch directory:</p>
-<table border="0" cellpadding="0" cellspacing="4">
-  <tbody>
-    <tr>
-      <td style="vertical-align: top;">
-      <pre>./bootstrap  -</pre>
-      </td>
-      <td style="vertical-align: top;">Creates "configure" file with
-local autoconf/automake toolset.<br>
-      </td>
-    </tr>
-    <tr valign="top">
-      <td>
-      <pre>./configure  -</pre>
-      </td>
-      <td>
-      <p>Configures the SoundTouch package for the local environment.
-Notice that "configure" file is not available before running the
-"./bootstrap" command as above.<br>
-      </p>
-      </td>
-    </tr>
-    <tr valign="top">
-      <td>
-      <pre>make         -</pre>
-      </td>
-      <td>
-      <p>Builds the SoundTouch library &amp; SoundStretch utility. You can 
-      optionally add &quot;-j&quot; switch after &quot;make&quot; to speed up the compilation in 
-      multi-core systems.</p>
-      </td>
-    </tr>
-    <tr valign="top">
-      <td>
-      <pre>make install -</pre>
-      </td>
-      <td>
-      <p>Installs the SoundTouch &amp; BPM libraries to <b>/usr/local/lib</b>
-and SoundStretch utility to <b>/usr/local/bin</b>. Please notice that
-'root' privileges may be required to install the binaries to the
-destination locations.</p>
-      </td>
-    </tr>
-  </tbody>
-</table>
-<h4><b>2.2.1 Required GNU tools</b></h4>
-<p> <span style="font-weight: bold;">Bash shell</span>, <span
- style="font-weight: bold;">GNU C++ compiler</span>, <span
- style="font-weight: bold;">libtool</span>, <span
- style="font-weight: bold;">autoconf</span> and <span
- style="font-weight: bold;">automake</span> tools
-are required for compiling the SoundTouch library. These are usually
-included with the GNU/Linux distribution, but if not, install these
-packages first. For example, Ubuntu Linux can acquire and install
-these with the following command:</p>
-<pre><b>sudo apt-get install automake autoconf libtool build-essential</b></pre>
-<h4><b>2.2.2 Problems with GCC compiler compatibility</b></h4>
-<p>At the release time the SoundTouch package has been tested to
-compile in GNU/Linux platform. However, If you have problems getting the
-SoundTouch library compiled, try disabling optimizations that are specific for 
-x86 processors by running <b>./configure</b> script with switch
-<blockquote>
-<pre>--enable-x86-optimizations=no</pre>
-</blockquote>
+  <p><strong>OpenMP NOTE</strong>: If activating the OpenMP parallel computing in
+    the compilation, the target program will require additional vcomp dll library to
+    properly run. In Visual C++ 9.0 these libraries can be found in the following
+    folders.</p>
+  <ul>
+    <li>x86 32bit: C:\Program Files (x86)\Microsoft Visual Studio
+      9.0\VC\redist\x86\Microsoft.VC90.OPENMP\vcomp90.dll</li>
+    <li>x64 64bit: C:\Program Files (x86)\Microsoft Visual Studio
+      9.0\VC\redist\amd64\Microsoft.VC90.OPENMP\vcomp90.dll</li>
+  </ul>
+  <p>In other VC++ versions the required library will be expectedly found in similar
+    &quot;redist&quot; location.</p>
+  <p>Notice that as minor demonstration of a &quot;dll hell&quot; phenomenon both the 32-bit
+    and 64-bit version of vcomp90.dll have the same filename but different contents,
+    thus choose the proper version to allow the program to start.</p>
+  <h3>2.2. Building in Gnu platforms</h3>
+  <p>The SoundTouch library compiles in practically any platform
+    supporting GNU compiler (GCC) tools.
+  <h4>2.2.1 Compiling with autotools</h4>
+  <p>To install build prerequisites for 'autotools' tool chain:</p>
+  <pre>    sudo apt-get install automake autoconf libtool build-essential</pre>
+  <p>To build and install the binaries, run the following commands in
+    /soundtouch directory:</p>
+  <table border="0" cellpadding="0" cellspacing="4">
+    <tbody>
+      <tr>
+        <td style="vertical-align: top;">
+          <pre>./bootstrap  -</pre>
+        </td>
+        <td style="vertical-align: top;">Creates "configure" file with
+          local autoconf/automake toolset.<br>
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>
+          <pre>./configure  -</pre>
+        </td>
+        <td>
+          <p>Configures the SoundTouch package for the local environment.
+            Notice that "configure" file is not available before running the
+            "./bootstrap" command as above.<br>
+          </p>
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>
+          <pre>make         -</pre>
+        </td>
+        <td>
+          <p>Builds the SoundTouch library &amp; SoundStretch utility. You can
+            optionally add &quot;-j&quot; switch after &quot;make&quot; to speed up the compilation in
+            multi-core systems.</p>
+        </td>
+      </tr>
+      <tr valign="top">
+        <td>
+          <pre>make install -</pre>
+        </td>
+        <td>
+          <p>Installs the SoundTouch &amp; BPM libraries to <b>/usr/local/lib</b>
+            and SoundStretch utility to <b>/usr/local/bin</b>. Please notice that
+            'root' privileges may be required to install the binaries to the
+            destination locations.</p>
+        </td>
+      </tr>
+    </tbody>
+  </table>
 
-Alternatively, if you don't use GNU Configure system, edit file "include/STTypes.h" 
-directly and remove the following definition:<blockquote>
-  <pre>#define SOUNDTOUCH_ALLOW_X86_OPTIMIZATIONS 1</pre>
-</blockquote>
+  <b>Compiling portable Shared Library / DLL version</b>
+  <p> The GNU autotools compilation does not automatically create a shared-library version of
+    SoundTouch (.so or .dll) that features position-independent code and C-language
+    api that are more suitable for cross-language development than C++ libraries.</p>
+  <p> Use script "make-gnu-dll-sh" to build a portable dynamic library version if such is desired.</p>
 
-<h4><b>2.2.3 Compiling Shared Library / DLL version in Cygwin</b></h4>
-    <p>
-        The GNU compilation does not automatically create a shared-library version of 
-        SoundTouch (.so or .dll). If such is desired, then you can create it as follows 
-        after running the usual compilation:</p>
-    <blockquote>
-  <pre>g++ -shared -static -DDLL_EXPORTS -I../../include -o SoundTouch.dll \
-     SoundTouchDLL.cpp ../SoundTouch/.libs/libSoundTouch.a
-sstrip SoundTouch.dll</pre>
-</blockquote>
+  <h4><b>2.2.2 Compiling with cmake</b></h4>
+  <p>'cmake' build scripts are provided as an alternative to the autotools toolchain.</p>
+  <p>To install cmake build prerequisites:</p>
+  <pre>    sudo apt-get install libtool build-essential cmake</pre>
+  <p>To build:</p>
+  <pre>
+    cmake .
+    make -j
+    make install</pre>
+  <p>To compile the additional portable Shared Library / DLL version with the native C-language API:</p>
+  <pre>
+    cmake . -DSOUNDTOUCH_DLL=ON
+    make -j
+    make install</pre>
 
-<h3>2.3. Building in Android</h3>
-<p>Android compilation instructions are within the 
-    source code package, see file &quot;<b>source/Android-lib/README-SoundTouch-Android.html</b>&quot; 
+  <h3>2.3. Building in Android</h3>
+  <p>Android compilation instructions are within the
+    source code package, see file &quot;<b>source/Android-lib/README-SoundTouch-Android.html</b>&quot;
     in the source code package. </p>
-<p>The Android compilation automatically builds separate .so library binaries 
-for ARM, X86 and MIPS processor architectures. For optimal device support, 
-include all these .so library binaries into the Android .apk application 
-package, so the target Android device can automatically choose the proper 
-library binary version to use.</p>
-<p>The <strong>source/Android-lib</strong> folder includes also an Android 
-example application that processes WAV audio files using SoundTouch library in 
-Android devices.</p>
+  <p>The Android compilation automatically builds separate .so library binaries
+    for ARM, X86 and MIPS processor architectures. For optimal device support,
+    include all these .so library binaries into the Android .apk application
+    package, so the target Android device can automatically choose the proper
+    library binary version to use.</p>
+  <p>The <strong>source/Android-lib</strong> folder includes also an Android
+    example application that processes WAV audio files using SoundTouch library in
+    Android devices.</p>
 
-<hr>
-<h2>3. About implementation &amp; Usage tips <h3>3.1. Supported sample data formats</h3>
-<p>The sample data format can be chosen between 16bit signed integer
-and 32bit floating point values. The default is 32bit floating point format, 
-which will also provide slightly better sound quality over the integer format. </p>
-<p> In Windows environment, the sample data format is chosen in file
-"STTypes.h" by choosing one of the following defines:</p>
-<ul>
-  <li> <span style="font-weight: bold;">#define
-SOUNDTOUCH_INTEGER_SAMPLES</span> for 16bit signed integer</li>
-  <li> <span style="font-weight: bold;">#define </span><span
- style="font-weight: bold;">SOUNDTOUCH_</span><span
- style="font-weight: bold;">FLOAT_SAMPLES</span> for 32bit floating
-point</li>
-</ul>
-<p> In GNU environment, the floating sample format is used by default,
-but integer sample format can be chosen by giving the following switch
-to the configure script: </p>
-<blockquote>
-  <pre>./configure --enable-integer-samples</pre>
-</blockquote>
-<p>The sample data can have either single (mono) or double (stereo)
-audio channel. Stereo data is interleaved so that every other data
-value is for left channel and every second for right channel. Notice
-that while it'd be possible in theory to process stereo sound as two
-separate mono channels, this isn't recommended because processing the
-channels separately would result in losing the phase coherency between
-the channels, which consequently would ruin the stereo effect.</p>
-<p>Sample rates between 8000-48000H are supported.</p>
-<h3>3.2. Processing latency</h3>
-<p>The processing and latency constraints of the SoundTouch library are:</p>
-<ul>
-  <li> Input/output processing latency for the SoundTouch processor is
-around 100 ms. This is when time-stretching is used. If the rate
-transposing effect alone is used, the latency requirement is much
-shorter, see section 'About algorithms'.</li>
-  <li> Processing CD-quality sound (16bit stereo sound with 44100H
-sample rate) in real-time or faster is possible starting from
-processors equivalent to Intel Pentium 133Mh or better, if using the
-"quick" processing algorithm. If not using the "quick" mode or if
-floating point sample data are being used, several times more CPU power
-is typically required.</li>
-</ul>
-<h3>3.3. About algorithms</h3>
-<p>SoundTouch provides three seemingly independent effects: tempo,
-pitch and playback rate control. These three controls are implemented
-as combination of two primary effects, <em>sample rate transposing</em>
-and <em>time-stretching</em>.</p>
-<p><em>Sample rate transposing</em> affects both the audio stream
-duration and pitch. It's implemented simply by converting the original
-audio sample stream to the desired duration by interpolating from
-the original audio samples. In SoundTouch, linear interpolation with
-anti-alias filtering is used. Theoretically a higher-order
-interpolation provide better result than 1st order linear
-interpolation, but in audio application linear interpolation together
-with anti-alias filtering performs subjectively about as well as
-higher-order filtering would.</p>
-<p><em>Time-stretching </em>means changing the audio stream duration
-without affecting it's pitch. SoundTouch uses WSOLA-like
-time-stretching routines that operate in the time domain. Compared to
-sample rate transposing, time-stretching is a much heavier operation
-and also requires a longer processing "window" of sound samples used by
-the processing algorithm, thus increasing the algorithm input/output
-latency. Typical i/o latency for the SoundTouch time-stretch algorithm
-is around 100 ms.</p>
-<p>Sample rate transposing and time-stretching are then used together
-to produce the tempo, pitch and rate controls:</p>
-<ul>
-  <li> <strong>'Tempo'</strong> control is implemented purely by
-time-stretching.</li>
-  <li> <strong>'Rate</strong>' control is implemented purely by sample
-rate transposing.</li>
-  <li> <strong>'Pitch</strong>' control is implemented as a
-combination of time-stretching and sample rate transposing. For
-example, to increase pitch the audio stream is first time-stretched to
-longer duration (without affecting pitch) and then transposed back to
-original duration by sample rate transposing, which simultaneously
-reduces duration and increases pitch. The result is original duration
-but increased pitch.</li>
-</ul>
-<h3>3.4 Tuning the algorithm parameters</h3>
-<p>The time-stretch algorithm has few parameters that can be tuned to
-optimize sound quality for certain application. The current default
-parameters have been chosen by iterative if-then analysis (read: "trial
-and error") to obtain best subjective sound quality in pop/rock music
-processing, but in applications processing different kind of sound the
-default parameter set may result into a sub-optimal result.</p>
-<p>The time-stretch algorithm default parameter values are set by the
-following #defines in file "TDStretch.h":</p>
-<blockquote>
-  <pre>#define DEFAULT_SEQUENCE_MS     AUTOMATIC<br>#define DEFAULT_SEEKWINDOW_MS   AUTOMATIC<br>#define DEFAULT_OVERLAP_MS      8</pre>
-</blockquote>
-<p>These parameters affect to the time-stretch algorithm as follows:</p>
-<ul>
-  <li> <strong>DEFAULT_SEQUENCE_MS</strong>: This is the default
-length of a single processing sequence in milliseconds which determines
-the how the original sound is chopped in the time-stretch algorithm.
-Larger values mean fewer sequences are used in processing. In principle
-a larger value sounds better when slowing down the tempo, but worse
-when increasing the tempo and vice versa.<br>
-    <br>
-By default, this setting value is calculated automatically according to
-tempo value.<br>
- </li>
-  <li> <strong>DEFAULT_SEEKWINDOW_MS</strong>: The seeking window
-default length in milliseconds is for the algorithm that seeks the best
-possible overlapping location. This determines from how wide a sample
-"window" the algorithm can use to find an optimal mixing location when
-the sound sequences are to be linked back together.<br>
-    <br>
-The bigger this window setting is, the higher the possibility to find a
-better mixing position becomes, but at the same time large values may
-cause a "drifting" sound artifact because neighboring sequences can be
-chosen at more uneven intervals. If there's a disturbing artifact that
-sounds as if a constant frequency was drifting around, try reducing
-this setting.<br>
-    <br>
-By default, this setting value is calculated automatically according to
-tempo value.<br>
- </li>
-  <li> <strong>DEFAULT_OVERLAP_MS</strong>: Overlap length in
-milliseconds. When the sound sequences are mixed back together to form
-again a continuous sound stream, this parameter defines how much the
-ends of the consecutive sequences will overlap with each other.<br>
-    <br>
-This shouldn't be that critical parameter. If you reduce the
-DEFAULT_SEQUENCE_MS setting by a large amount, you might wish to try a
-smaller value on this.</li>
-</ul>
-<p>Notice that these parameters can also be set during execution time
-with functions "<strong>TDStretch::setParameters()</strong>" and "<strong>SoundTouch::setSetting()</strong>".</p>
-<p>The table below summaries how the parameters can be adjusted for
-different applications:</p>
-<table border="1">
-  <tbody>
-    <tr>
-      <td valign="top"><strong>Parameter name</strong></td>
-      <td valign="top"><strong>Default value magnitude</strong></td>
-      <td valign="top"><strong>Larger value affects...</strong></td>
-      <td valign="top"><strong>Smaller value affects...</strong></td>
-      <td valign="top"><strong>Effect to CPU burden</strong></td>
-    </tr>
-    <tr>
-      <td valign="top">
-      <pre>SEQUENCE_MS</pre>
-      </td>
-      <td valign="top">Default value is relatively large, chosen for
-slowing down music tempo</td>
-      <td valign="top">Larger value is usually better for slowing down
-tempo. Growing the value decelerates the "echoing" artifact when
-slowing down the tempo.</td>
-      <td valign="top">Smaller value might be better for speeding up
-tempo. Reducing the value accelerates the "echoing" artifact when
-slowing down the tempo </td>
-      <td valign="top">Increasing the parameter value reduces
-computation burden</td>
-    </tr>
-    <tr>
-      <td valign="top">
-      <pre>SEEKWINDOW_MS</pre>
-      </td>
-      <td valign="top">Default value is relatively large, chosen for
-slowing down music tempo</td>
-      <td valign="top">Larger value eases finding a good mixing
-position, but may cause a "drifting" artifact</td>
-      <td valign="top">Smaller reduce possibility to find a good mixing
-position, but reduce the "drifting" artifact.</td>
-      <td valign="top">Increasing the parameter value increases
-computation burden</td>
-    </tr>
-    <tr>
-      <td valign="top">
-      <pre>OVERLAP_MS</pre>
-      </td>
-      <td valign="top">Default value is relatively large, chosen to
-suit with above parameters.</td>
-      <td valign="top"></td>
-      <td valign="top">If you reduce the "sequence ms" setting, you
-might wish to try a smaller value.</td>
-      <td valign="top">Increasing the parameter value increases
-computation burden</td>
-    </tr>
-  </tbody>
-</table>
-<h3>3.5 Performance Optimizations </h3>
-<p><strong>General optimizations:</strong></p>
-<p>The time-stretch routine has a 'quick' mode that substantially
-speeds up the algorithm but may slightly compromise the sound quality. 
-This mode is activated by calling SoundTouch::setSetting()
-function with parameter id of SETTING_USE_QUICKSEEK and value
-"1", i.e. </p>
-<blockquote>
-  <p>setSetting(SETTING_USE_QUICKSEEK, 1);</p>
-</blockquote>
-<p><strong>CPU-specific optimizations:</strong></p>
-<p>Intel x86 specific SIMD optimizations are implemented using compiler 
-intrinsics, providing about a 3x processing speedup for x86 compatible 
-processors vs. non-SIMD implementation:</p>
-<ul>
-    <li> Intel MMX optimized routines are used with x86 CPUs when 16bit integer 
-    sample type is used</li>
-  <li> Intel SSE optimized routines are used with x86 CPUs when 32bit floating 
-  point sample type is used</li>
-</ul>
-<h3>3.5 OpenMP parallel computation</h3>
-<p>SoundTouch 1.9 onwards support running the algorithms parallel in several CPU 
-cores. Based on benchmark the experienced multi-core processing speed-up gain 
-ranges between +30% (on a high-spec dual-core x86 Windows PC) to 215% (on a moderately low-spec 
-quad-core ARM of Raspberry Pi2). </p>
-<p>See an external blog article with more detailed discussion about the
-<a href="http://www.softwarecoven.com/parallel-computing-in-embedded-mobile-devices/">
-SoundTouch OpenMP optimization</a>.</p>
-<p>The parallel computing support is implemented using OpenMP spec 3.0 
-instructions. These instructions are supported by Visual C++ 2008 and later, and 
-GCC v4.2 and later. Compilers that do not supporting OpenMP will ignore these 
-optimizations and routines will still work properly. Possible warnings about 
-unknown #pragmas are related to OpenMP support and can be safely ignored.</p>
-<p>The OpenMP improvements are disabled by default, and need to be enabled by 
-developer during compile-time. Reason for this is that parallel processing adds 
-moderate runtime overhead in managing the multi-threading, so it may not be 
-necessary nor desirable in all applications. For example real-time processing 
-that is not constrained by CPU power will not benefit of speed-up provided by 
-the parallel processing, in the contrary it may increase power consumption due 
-to the increased overhead.</p>
-<p>However, applications that run on low-spec multi-core CPUs and may otherwise 
-have possibly constrained performance will benefit of the OpenMP improvements. 
-This include for example multi-core embedded devices.</p>
-<p>OpenMP parallel computation can be enabled before compiling SoundTouch 
-library as follows:</p>
-<ul>
-    <li><strong>Visual Studio</strong>: Open properties for the <strong>SoundTouch
-    </strong>sub-project, browse to <strong>C/C++</strong> and <strong>Language 
-    </strong>settings. Set 
-    there &quot;<strong>OpenMP support</strong>&quot; to &quot;<strong>Yes</strong>&quot;. Alternatively add 
-    <strong>/openmp</strong> switch to command-line 
-    parameters</li>
-    <li><strong>GNU</strong>: Run the configure script with &quot;<strong>./configure 
-    --enable-openmp</strong>&quot; switch, then run make as usually</li>
-    <li><strong>Android</strong>: Add &quot;<strong>-fopenmp</strong>&quot; switches to compiler &amp; linker 
-    options, see README-SoundTouch-Android.html in the source code package for 
-    more detailed instructions.</li>
-</ul>
-<hr>
-<h2><a name="SoundStretch"></a>4. SoundStretch audio processing utility
-</h2>
-<p>SoundStretch audio processing utility<br>
-    Copyright (c) Olli Parviainen 2002-2015</p>
-<p>SoundStretch is a simple command-line application that can change
-tempo, pitch and playback rates of WAV sound files. This program is
-intended primarily to demonstrate how the "SoundTouch" library can be
-used to process sound in your own program, but it can as well be used
-for processing sound files.</p>
-<h3>4.1. SoundStretch Usage Instructions</h3>
-<p>SoundStretch Usage syntax:</p>
-<blockquote>
-  <pre>soundstretch infilename outfilename [switches]</pre>
-</blockquote>
-<p>Where: </p>
-<table width="100%" border="0" cellpadding="2">
-  <tbody>
-    <tr>
-      <td valign="top">
-      <pre>"infilename"</pre>
-      </td>
-      <td valign="top">Name of the input sound data file (in .WAV audio
-file format). Give "stdin" as filename to use standard input pipe. </td>
-    </tr>
-    <tr>
-      <td valign="top">
-      <pre>"outfilename"</pre>
-      </td>
-      <td valign="top">Name of the output sound file where the
-resulting sound is saved (in .WAV audio file format). This parameter
-may be omitted if you don't want to save the output (e.g. when
-only calculating BPM rate with '-bpm' switch). Give "stdout" as
-filename to use standard output pipe.</td>
-    </tr>
-    <tr>
-      <td valign="top">
-      <pre>[switches]</pre>
-      </td>
-      <td valign="top">Are one or more control switches.</td>
-    </tr>
-  </tbody>
-</table>
-<p>Available control switches are:</p>
-<table width="100%" border="0" cellpadding="2">
-  <tbody>
-    <tr>
-      <td valign="top">
-      <pre>-tempo=n </pre>
-      </td>
-      <td valign="top">Change the sound tempo by n percents (n = -95.0
-.. +5000.0 %) </td>
-    </tr>
-    <tr>
-      <td valign="top">
-      <pre>-pitch=n</pre>
-      </td>
-      <td valign="top">Change the sound pitch by n semitones (n = -60.0
-.. + 60.0 semitones) </td>
-    </tr>
-    <tr>
-      <td valign="top">
-      <pre>-rate=n</pre>
-      </td>
-      <td valign="top">Change the sound playback rate by n percents (n
-= -95.0 .. +5000.0 %) </td>
-    </tr>
-    <tr>
-      <td valign="top">
-      <pre>-bpm=n</pre>
-      </td>
-      <td valign="top">Detect the Beats-Per-Minute (BPM) rate of the
-sound and adjust the tempo to meet 'n' BPMs. When this switch is
-applied, the "-tempo" switch is ignored. If "=n" is omitted, i.e.
-switch "-bpm" is used alone, then the BPM rate is estimated and
-displayed, but tempo not adjusted according to the BPM value. </td>
-    </tr>
-    <tr>
-      <td valign="top">
-      <pre>-quick</pre>
-      </td>
-      <td valign="top">Use quicker tempo change algorithm. Gains speed
-but loses sound quality. </td>
-    </tr>
-    <tr>
-      <td valign="top">
-      <pre>-naa</pre>
-      </td>
-      <td valign="top">Don't use anti-alias filtering in sample rate
-transposing. Gains speed but loses sound quality. </td>
-    </tr>
-    <tr>
-      <td valign="top">
-      <pre>-license</pre>
-      </td>
-      <td valign="top">Displays the program license text (LGPL)</td>
-    </tr>
-  </tbody>
-</table>
-<p>Notes:</p>
-<ul>
-  <li> To use standard input/output pipes for processing, give "stdin"
-and "stdout" as input/output filenames correspondingly. The standard
-input/output pipes will still carry the audio data in .wav audio file
-format.</li>
-  <li> The numerical switches allow both integer (e.g. "-tempo=123")
-and decimal (e.g. "-tempo=123.45") numbers.</li>
-  <li> The "-naa" and/or "-quick" switches can be used to reduce CPU
-usage while compromising some sound quality</li>
-  <li> The BPM detection algorithm works by detecting repeating bass or
-drum patterns at low frequencies of &lt;250Hz. A lower-than-expected
-BPM figure may be reported for music with uneven or complex bass
-patterns.</li>
-</ul>
-<h3>4.2. SoundStretch usage examples </h3>
-<p><strong>Example 1</strong></p>
-<p>The following command increases tempo of the sound file
-"originalfile.wav" by 12.5% and stores result to file
-"destinationfile.wav":</p>
-<blockquote>
-  <pre>soundstretch originalfile.wav destinationfile.wav -tempo=12.5</pre>
-</blockquote>
-<p><strong>Example 2</strong></p>
-<p>The following command decreases the sound pitch (key) of the sound
-file "orig.wav" by two semitones and stores the result to file
-"dest.wav":</p>
-<blockquote>
-  <pre>soundstretch orig.wav dest.wav -pitch=-2</pre>
-</blockquote>
-<p><strong>Example 3</strong></p>
-<p>The following command processes the file "orig.wav" by decreasing
-the sound tempo by 25.3% and increasing the sound pitch (key) by 1.5
-semitones. Resulting .wav audio data is directed to standard output
-pipe:</p>
-<blockquote>
-  <pre>soundstretch orig.wav stdout -tempo=-25.3 -pitch=1.5</pre>
-</blockquote>
-<p><strong>Example 4</strong></p>
-<p>The following command detects the BPM rate of the file "orig.wav"
-and adjusts the tempo to match 100 beats per minute. Result is stored
-to file "dest.wav":</p>
-<blockquote>
-  <pre>soundstretch orig.wav dest.wav -bpm=100</pre>
-</blockquote>
-<p><strong>Example 5</strong></p>
-<p>The following command reads .wav sound data from standard input pipe
-and estimates the BPM rate:</p>
-<blockquote>
-  <pre>soundstretch stdin -bpm</pre>
-</blockquote>
-<p><strong>Example 6</strong></p>
-<p>The following command tunes song from original 440Hz tuning to 432Hz tuning: 
-this corresponds to lowering the pitch by -0.318 semitones:</p>
-<blockquote>
-  <pre>soundstretch original.wav output.wav -pitch=-0.318</pre>
-</blockquote>
-<hr>
-<h2>5. Change History</h2>
-<h3>5.1. SoundTouch library Change History </h3>
+  <h3>2.4. Building in Mac</h3>
+  <p>Install autoconf tool as instructed in <a
+      href="http://macappstore.org/autoconf/">http://macappstore.org/autoconf/</a>, or alternatively the 'cmake' toolchain.</p>
+  <p>Then, build as described above in section "Building in Gnu platforms".</p>
+
+  <hr>
+  <h2>3. About implementation &amp; Usage tips <h3>3.1. Supported sample data formats</h3>
+    <p>The sample data format can be chosen between 16bit signed integer
+      and 32bit floating point values.</p>
+    </p> The default sample type is 32bit floating point format,
+    which also provides better sound quality than integer format because
+    integer algorithms need to scale already intermediate calculation results to
+    avoid integer overflows. These early integer scalings can slightly degrade
+    output quality.</p>
+    <p> In Windows environment, the sample data format is chosen in file
+      "STTypes.h" by choosing one of the following defines:</p>
+    <ul>
+      <li> <span style="font-weight: bold;">#define
+          SOUNDTOUCH_INTEGER_SAMPLES</span> for 16bit signed integer</li>
+      <li> <span style="font-weight: bold;">#define </span><span style="font-weight: bold;">SOUNDTOUCH_</span><span
+          style="font-weight: bold;">FLOAT_SAMPLES</span> for 32bit floating
+        point</li>
+    </ul>
+    <p> In GNU environment, the floating sample format is used by default,
+      but integer sample format can be chosen by giving the following switch
+      to the configure script: </p>
+    <blockquote>
+      <pre>./configure --enable-integer-samples</pre>
+    </blockquote>
+    <p>The sample data can have either single (mono) or double (stereo)
+      audio channel. Stereo data is interleaved so that every other data
+      value is for left channel and every second for right channel. Notice
+      that while it'd be possible in theory to process stereo sound as two
+      separate mono channels, this isn't recommended because processing the
+      channels separately would result in losing the phase coherency between
+      the channels, which consequently would ruin the stereo effect.</p>
+    <p>Sample rates between 8000-48000H are supported.</p>
+    <h3>3.2. Processing latency</h3>
+    <p>The processing and latency constraints of the SoundTouch library are:</p>
+    <ul>
+      <li> Input/output processing latency for the SoundTouch processor is
+        around 100 ms. This is when time-stretching is used. If the rate
+        transposing effect alone is used, the latency requirement is much
+        shorter, see section 'About algorithms'.</li>
+      <li> Processing CD-quality sound (16bit stereo sound with 44100H
+        sample rate) in real-time or faster is possible starting from
+        processors equivalent to Intel Pentium 133Mh or better, if using the
+        "quick" processing algorithm. If not using the "quick" mode or if
+        floating point sample data are being used, several times more CPU power
+        is typically required.</li>
+    </ul>
+    <h3>3.3. About algorithms</h3>
+    <p>SoundTouch provides three seemingly independent effects: tempo,
+      pitch and playback rate control. These three controls are implemented
+      as combination of two primary effects, <em>sample rate transposing</em>
+      and <em>time-stretching</em>.</p>
+    <p><em>Sample rate transposing</em> affects both the audio stream
+      duration and pitch. It's implemented simply by converting the original
+      audio sample stream to the desired duration by interpolating from
+      the original audio samples. In SoundTouch, linear interpolation with
+      anti-alias filtering is used. Theoretically a higher-order
+      interpolation provide better result than 1st order linear
+      interpolation, but in audio application linear interpolation together
+      with anti-alias filtering performs subjectively about as well as
+      higher-order filtering would.</p>
+    <p><em>Time-stretching </em>means changing the audio stream duration
+      without affecting it's pitch. SoundTouch uses WSOLA-like
+      time-stretching routines that operate in the time domain. Compared to
+      sample rate transposing, time-stretching is a much heavier operation
+      and also requires a longer processing "window" of sound samples used by
+      the processing algorithm, thus increasing the algorithm input/output
+      latency. Typical i/o latency for the SoundTouch time-stretch algorithm
+      is around 100 ms.</p>
+    <p>Sample rate transposing and time-stretching are then used together
+      to produce the tempo, pitch and rate controls:</p>
+    <ul>
+      <li> <strong>'Tempo'</strong> control is implemented purely by
+        time-stretching.</li>
+      <li> <strong>'Rate</strong>' control is implemented purely by sample
+        rate transposing.</li>
+      <li> <strong>'Pitch</strong>' control is implemented as a
+        combination of time-stretching and sample rate transposing. For
+        example, to increase pitch the audio stream is first time-stretched to
+        longer duration (without affecting pitch) and then transposed back to
+        original duration by sample rate transposing, which simultaneously
+        reduces duration and increases pitch. The result is original duration
+        but increased pitch.</li>
+    </ul>
+    <h3>3.4 Tuning the algorithm parameters</h3>
+    <p>The time-stretch algorithm has few parameters that can be tuned to
+      optimize sound quality for certain application. The current default
+      parameters have been chosen by iterative if-then analysis (read: "trial
+      and error") to obtain best subjective sound quality in pop/rock music
+      processing, but in applications processing different kind of sound the
+      default parameter set may result into a sub-optimal result.</p>
+    <p>The time-stretch algorithm default parameter values are set by the
+      following #defines in file "TDStretch.h":</p>
+    <blockquote>
+      <pre>#define DEFAULT_SEQUENCE_MS     AUTOMATIC<br>#define DEFAULT_SEEKWINDOW_MS   AUTOMATIC<br>#define DEFAULT_OVERLAP_MS      8</pre>
+    </blockquote>
+    <p>These parameters affect to the time-stretch algorithm as follows:</p>
+    <ul>
+      <li> <strong>DEFAULT_SEQUENCE_MS</strong>: This is the default
+        length of a single processing sequence in milliseconds which determines
+        the how the original sound is chopped in the time-stretch algorithm.
+        Larger values mean fewer sequences are used in processing. In principle
+        a larger value sounds better when slowing down the tempo, but worse
+        when increasing the tempo and vice versa.<br>
+        <br>
+        By default, this setting value is calculated automatically according to
+        tempo value.<br>
+      </li>
+      <li> <strong>DEFAULT_SEEKWINDOW_MS</strong>: The seeking window
+        default length in milliseconds is for the algorithm that seeks the best
+        possible overlapping location. This determines from how wide a sample
+        "window" the algorithm can use to find an optimal mixing location when
+        the sound sequences are to be linked back together.<br>
+        <br>
+        The bigger this window setting is, the higher the possibility to find a
+        better mixing position becomes, but at the same time large values may
+        cause a "drifting" sound artifact because neighboring sequences can be
+        chosen at more uneven intervals. If there's a disturbing artifact that
+        sounds as if a constant frequency was drifting around, try reducing
+        this setting.<br>
+        <br>
+        By default, this setting value is calculated automatically according to
+        tempo value.<br>
+      </li>
+      <li> <strong>DEFAULT_OVERLAP_MS</strong>: Overlap length in
+        milliseconds. When the sound sequences are mixed back together to form
+        again a continuous sound stream, this parameter defines how much the
+        ends of the consecutive sequences will overlap with each other.<br>
+        <br>
+        This shouldn't be that critical parameter. If you reduce the
+        DEFAULT_SEQUENCE_MS setting by a large amount, you might wish to try a
+        smaller value on this.
+      </li>
+    </ul>
+    <p>Notice that these parameters can also be set during execution time
+      with functions "<strong>TDStretch::setParameters()</strong>" and "<strong>SoundTouch::setSetting()</strong>".</p>
+    <p>The table below summaries how the parameters can be adjusted for
+      different applications:</p>
+    <table border="1">
+      <tbody>
+        <tr>
+          <td valign="top"><strong>Parameter name</strong></td>
+          <td valign="top"><strong>Default value magnitude</strong></td>
+          <td valign="top"><strong>Larger value affects...</strong></td>
+          <td valign="top"><strong>Smaller value affects...</strong></td>
+          <td valign="top"><strong>Effect to CPU burden</strong></td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <pre>SEQUENCE_MS</pre>
+          </td>
+          <td valign="top">Default value is relatively large, chosen for
+            slowing down music tempo</td>
+          <td valign="top">Larger value is usually better for slowing down
+            tempo. Growing the value decelerates the "echoing" artifact when
+            slowing down the tempo.</td>
+          <td valign="top">Smaller value might be better for speeding up
+            tempo. Reducing the value accelerates the "echoing" artifact when
+            slowing down the tempo </td>
+          <td valign="top">Increasing the parameter value reduces
+            computation burden</td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <pre>SEEKWINDOW_MS</pre>
+          </td>
+          <td valign="top">Default value is relatively large, chosen for
+            slowing down music tempo</td>
+          <td valign="top">Larger value eases finding a good mixing
+            position, but may cause a "drifting" artifact</td>
+          <td valign="top">Smaller reduce possibility to find a good mixing
+            position, but reduce the "drifting" artifact.</td>
+          <td valign="top">Increasing the parameter value increases
+            computation burden</td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <pre>OVERLAP_MS</pre>
+          </td>
+          <td valign="top">Default value is relatively large, chosen to
+            suit with above parameters.</td>
+          <td valign="top"></td>
+          <td valign="top">If you reduce the "sequence ms" setting, you
+            might wish to try a smaller value.</td>
+          <td valign="top">Increasing the parameter value increases
+            computation burden</td>
+        </tr>
+      </tbody>
+    </table>
+    <h3>3.5 Performance Optimizations </h3>
+    <p><strong>Integer vs floating point:</strong></p>
+    <p>Floating point sample type is generally recommended because it provides
+      better sound quality.</p>
+
+    <p>However, execution speed difference between integer and floating point processing
+      depends on the CPU architecture. As rule of thumb,
+    <ul>
+      <li>in 32-bit x86 floating point and integer are roughly equally fast</li>
+      <li>in 64-bit x86/x64 floating point can be significantly faster than integer
+        version, because MMX integer optimizations are not available in the x64 architecture.
+        That depends on the compiler however, so that gcc can autovectorize integer routines
+        to work equally fast as floating point, where as Visual C++ (2017) does not
+        perform equally well and produces integer code that runs some 3x slower than
+        SSE-optimized floating poing code.
+      </li>
+      <li>in ARMv7 integer routines are twice as fast as floating point. Their
+        relative difference is roughly the same both with and without NEON; NEON
+        vfpu can however bring 2.4x speed improvement.
+      </li>
+      <li>in other platforms: try out if the execution time performance makes a
+        big difference</li>
+    </ul>
+    </p>
+    <p><strong>General optimizations:</strong></p>
+    <p>The time-stretch routine has a 'quick' mode that substantially
+      speeds up the algorithm but may slightly compromise the sound quality.
+      This mode is activated by calling SoundTouch::setSetting()
+      function with parameter id of SETTING_USE_QUICKSEEK and value
+      "1", i.e. </p>
+    <blockquote>
+      <p>setSetting(SETTING_USE_QUICKSEEK, 1);</p>
+    </blockquote>
+    <p><strong>CPU-specific optimizations:</strong></p>
+    <p>Intel x86 specific SIMD optimizations are implemented using compiler
+      intrinsics, providing about a 3x processing speedup for x86 compatible
+      processors vs. non-SIMD implementation:</p>
+    <ul>
+      <li> MMX optimized routines are used in 32-bit x86 build when 16bit integer
+        sample type is used</li>
+      <li> SSE optimized routines are used in 32- and 64-bit x86 CPUs when 32bit
+        floating point sample type is used</li>
+    </ul>
+    <p>The algorithms are tuned to utilize autovectorization efficiently
+      also in other CPU architectures, for example ARM cpus see approx 2.4x processing
+      speedup when NEON SIMD support is present.
+    </p>
+    <h3>3.5 OpenMP parallel computation</h3>
+    <p>SoundTouch 1.9 onwards support running the algorithms parallel in several CPU
+      cores. Based on benchmark the experienced multi-core processing speed-up gain
+      ranges between +30% (on a high-spec dual-core x86 Windows PC) to 215% (on a moderately low-spec
+      quad-core ARM of Raspberry Pi2). </p>
+    <p>See an external blog article with more detailed discussion about the
+      <a href="http://www.softwarecoven.com/parallel-computing-in-embedded-mobile-devices/">
+        SoundTouch OpenMP optimization</a>.
+    </p>
+    <p>The parallel computing support is implemented using OpenMP spec 3.0
+      instructions. These instructions are supported by Visual C++ 2008 and later, and
+      GCC v4.2 and later. Compilers that do not supporting OpenMP will ignore these
+      optimizations and routines will still work properly. Possible warnings about
+      unknown #pragmas are related to OpenMP support and can be safely ignored.</p>
+    <p>The OpenMP improvements are disabled by default, and need to be enabled by
+      developer during compile-time. Reason for this is that parallel processing adds
+      moderate runtime overhead in managing the multi-threading, so it may not be
+      necessary nor desirable in all applications. For example real-time processing
+      that is not constrained by CPU power will not benefit of speed-up provided by
+      the parallel processing, in the contrary it may increase power consumption due
+      to the increased overhead.</p>
+    <p>However, applications that run on low-spec multi-core CPUs and may otherwise
+      have possibly constrained performance will benefit of the OpenMP improvements.
+      This include for example multi-core embedded devices.</p>
+    <p>OpenMP parallel computation can be enabled before compiling SoundTouch
+      library as follows:</p>
+    <ul>
+      <li><strong>Visual Studio</strong>: Open properties for the <strong>SoundTouch
+        </strong>sub-project, browse to <strong>C/C++</strong> and <strong>Language
+        </strong>settings. Set
+        there &quot;<strong>OpenMP support</strong>&quot; to &quot;<strong>Yes</strong>&quot;. Alternatively add
+        <strong>/openmp</strong> switch to command-line
+        parameters
+      </li>
+      <li><strong>GNU</strong>: Run the configure script with &quot;<strong>./configure
+          --enable-openmp</strong>&quot; switch, then run make as usually</li>
+      <li><strong>Android</strong>: Add &quot;<strong>-fopenmp</strong>&quot; switches to compiler &amp; linker
+        options, see README-SoundTouch-Android.html in the source code package for
+        more detailed instructions.</li>
+    </ul>
+    <hr>
+    <h2><a name="SoundStretch"></a>4. SoundStretch audio processing utility
+    </h2>
+    <p>SoundStretch audio processing utility<br>
+      Copyright (c) Olli Parviainen 2002-2015</p>
+    <p>SoundStretch is a simple command-line application that can change
+      tempo, pitch and playback rates of WAV sound files. This program is
+      intended primarily to demonstrate how the "SoundTouch" library can be
+      used to process sound in your own program, but it can as well be used
+      for processing sound files.</p>
+    <h3>4.1. SoundStretch Usage Instructions</h3>
+    <p>SoundStretch Usage syntax:</p>
+    <blockquote>
+      <pre>soundstretch infilename outfilename [switches]</pre>
+    </blockquote>
+    <p>Where: </p>
+    <table width="100%" border="0" cellpadding="2">
+      <tbody>
+        <tr>
+          <td valign="top">
+            <pre>"infilename"</pre>
+          </td>
+          <td valign="top">Name of the input sound data file (in .WAV audio
+            file format). Give "stdin" as filename to use standard input pipe. </td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <pre>"outfilename"</pre>
+          </td>
+          <td valign="top">Name of the output sound file where the
+            resulting sound is saved (in .WAV audio file format). This parameter
+            may be omitted if you don't want to save the output (e.g. when
+            only calculating BPM rate with '-bpm' switch). Give "stdout" as
+            filename to use standard output pipe.</td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <pre>[switches]</pre>
+          </td>
+          <td valign="top">Are one or more control switches.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Available control switches are:</p>
+    <table width="100%" border="0" cellpadding="2">
+      <tbody>
+        <tr>
+          <td valign="top">
+            <pre>-tempo=n </pre>
+          </td>
+          <td valign="top">Change the sound tempo by n percents (n = -95.0
+            .. +5000.0 %) </td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <pre>-pitch=n</pre>
+          </td>
+          <td valign="top">Change the sound pitch by n semitones (n = -60.0
+            .. + 60.0 semitones) </td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <pre>-rate=n</pre>
+          </td>
+          <td valign="top">Change the sound playback rate by n percents (n
+            = -95.0 .. +5000.0 %) </td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <pre>-bpm=n</pre>
+          </td>
+          <td valign="top">Detect the Beats-Per-Minute (BPM) rate of the
+            sound and adjust the tempo to meet 'n' BPMs. When this switch is
+            applied, the "-tempo" switch is ignored. If "=n" is omitted, i.e.
+            switch "-bpm" is used alone, then the BPM rate is estimated and
+            displayed, but tempo not adjusted according to the BPM value. </td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <pre>-quick</pre>
+          </td>
+          <td valign="top">Use quicker tempo change algorithm. Gains speed
+            but loses sound quality. </td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <pre>-naa</pre>
+          </td>
+          <td valign="top">Don't use anti-alias filtering in sample rate
+            transposing. Gains speed but loses sound quality. </td>
+        </tr>
+        <tr>
+          <td valign="top">
+            <pre>-license</pre>
+          </td>
+          <td valign="top">Displays the program license text (LGPL)</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>Notes:</p>
+    <ul>
+      <li> To use standard input/output pipes for processing, give "stdin"
+        and "stdout" as input/output filenames correspondingly. The standard
+        input/output pipes will still carry the audio data in .wav audio file
+        format.</li>
+      <li> The numerical switches allow both integer (e.g. "-tempo=123")
+        and decimal (e.g. "-tempo=123.45") numbers.</li>
+      <li> The "-naa" and/or "-quick" switches can be used to reduce CPU
+        usage while compromising some sound quality</li>
+      <li> The BPM detection algorithm works by detecting repeating bass or
+        drum patterns at low frequencies of &lt;250Hz. A lower-than-expected
+        BPM figure may be reported for music with uneven or complex bass
+        patterns.</li>
+    </ul>
+    <h3>4.2. SoundStretch usage examples </h3>
+    <p><strong>Example 1</strong></p>
+    <p>The following command increases tempo of the sound file
+      "originalfile.wav" by 12.5% and stores result to file
+      "destinationfile.wav":</p>
+    <blockquote>
+      <pre>soundstretch originalfile.wav destinationfile.wav -tempo=12.5</pre>
+    </blockquote>
+    <p><strong>Example 2</strong></p>
+    <p>The following command decreases the sound pitch (key) of the sound
+      file "orig.wav" by two semitones and stores the result to file
+      "dest.wav":</p>
+    <blockquote>
+      <pre>soundstretch orig.wav dest.wav -pitch=-2</pre>
+    </blockquote>
+    <p><strong>Example 3</strong></p>
+    <p>The following command processes the file "orig.wav" by decreasing
+      the sound tempo by 25.3% and increasing the sound pitch (key) by 1.5
+      semitones. Resulting .wav audio data is directed to standard output
+      pipe:</p>
+    <blockquote>
+      <pre>soundstretch orig.wav stdout -tempo=-25.3 -pitch=1.5</pre>
+    </blockquote>
+    <p><strong>Example 4</strong></p>
+    <p>The following command detects the BPM rate of the file "orig.wav"
+      and adjusts the tempo to match 100 beats per minute. Result is stored
+      to file "dest.wav":</p>
+    <blockquote>
+      <pre>soundstretch orig.wav dest.wav -bpm=100</pre>
+    </blockquote>
+    <p><strong>Example 5</strong></p>
+    <p>The following command reads .wav sound data from standard input pipe
+      and estimates the BPM rate:</p>
+    <blockquote>
+      <pre>soundstretch stdin -bpm</pre>
+    </blockquote>
+    <p><strong>Example 6</strong></p>
+    <p>The following command tunes song from original 440Hz tuning to 432Hz tuning:
+      this corresponds to lowering the pitch by -0.318 semitones:</p>
+    <blockquote>
+      <pre>soundstretch original.wav output.wav -pitch=-0.318</pre>
+    </blockquote>
+    <hr>
+    <h2>5. Change History</h2>
+    <h3>5.1. SoundTouch library Change History </h3>
+    <p><b>2.3.1:</b></p>
+    <ul>
+      <li>Adjusted cmake build settings and header files that cmake installs</li>
+    </ul>
+    <p><b>2.3.0:</b></p>
+    <ul>
+      <li>Disable setting "SOUNDTOUCH_ALLOW_NONEXACT_SIMD_OPTIMIZATION" by default. The original
+        purpose of this setting was to avoid performance penalty due to unaligned SIMD memory
+        accesses in old CPUs, but that is not any more issue in concurrent CPU SIMD implementations
+        and having this setting enabled can cause slight compromise in result quality.
+      </li>
+      <li>Bugfix: soundtouch.clear() to really clear whole processing pipeline state. Earlier
+        individual variables were left uncleared, which caused slightly different result if
+        the same audio stream were processed again after calling clear().
+      </li>
+      <li>Bugfix: TDstretch to align initial offset position to be in middle of correlation search
+        window. This ensures that with zero tempo change the output will be same as input.
+      </li>
+      <li>Bugfix: Fix a bug in TDstrectch with too small initial skipFract value that occurred
+        with certain processing parameter settings: Replace assert with assignment that 
+        corrects the situation.
+      </li>
+      <li>Remove OpenMP "_init_threading" workaround from Android build as it's not needed with concurrent
+        Android SDKs any more.</li>
+    </ul>
+    <p><b>2.2:</b></p>
+    <ul>
+      <li>Improved source codes so that compiler can autovectorize them more effectively.
+        This brings remarkable improvement e.g. ARM cpus equipped with NEON vfpu: Bencmarked
+        2.4x improvement in execution speed in ARMv7l vs the previous SoundTouch version
+        for both integer and floating point sample types.
+      </li>
+      <li>Bugfix: Resolved bad sound quality when using integer sample types in non-x86 CPU</li>
+      <li>Bugfix: Fixed possible reading past end of array in BPM peak detection algorithm</li>
+    </ul>
     <p><b>2.1.2:</b></p>
     <ul>
       <li>Bump version to 2.1.2 also in configure.ac. The earlier release had old version info for GNU autotools.</li>
     </ul>
     <p><b>2.1.1:</b></p>
     <ul>
-      <li>Bugfixes: Fixed potential buffer overwrite bugs in WavFile routines. Replaced asserts with runtime exceptions.</li>
+      <li>Bugfixes: Fixed potential buffer overwrite bugs in WavFile routines. Replaced asserts with runtime exceptions.
+      </li>
       <li>Android: Migrated the SoundTouch Android example to new Android Studio</li>
       <li>Automake: unset ACLOCAL in bootstrap script in case earlier build script has set it</li>
 
@@ -589,10 +653,10 @@ this corresponds to lowering the pitch by -0.318 semitones:</p>
     <p><b>2.1:</b></p>
     <ul>
       <li>Refactored C# interface example</li>
-      <li>Disable anti-alias filter when switch 
-      SOUNDTOUCH_PREVENT_CLICK_AT_RATE_CROSSOVER defined because anti-alias 
-      filter cause slight click if the rate change crosses zero during 
-      processing</li>
+      <li>Disable anti-alias filter when switch
+        SOUNDTOUCH_PREVENT_CLICK_AT_RATE_CROSSOVER defined because anti-alias
+        filter cause slight click if the rate change crosses zero during
+        processing</li>
       <li>Added script for building SoundTouchDll dynamic-link-library for GNU platforms</li>
       <li>Rewrote Beats-per-Minute analysis algorithm for more reliable BPM detection</li>
       <li>Added BPM functions to SoundTouchDll API</li>
@@ -602,326 +666,334 @@ this corresponds to lowering the pitch by -0.318 semitones:</p>
     </ul>
     <p><b>2.0:</b></p>
     <ul>
-        <li>Added functions to get initial processing latency, duration ratio between the original input and processed output tracks, and clarified reporting of input/output batch sizes</li>
-        <li>Fixed issue that added brief sequence of silence to beginning of output audio</li>
-        <li>Adjusted algorithm parameters to reduce reverberating effect at tempo slowdown</li>
-        <li>Bugfix: Fixed a glitch that could cause negative array indexing in quick seek algorithm</li>
-        <li>Bugfix: flush() didn't properly flush final samples from the pipeline on 2nd time in case that soundtouch object instance was recycled and used for processing a second audio stream.</li>
-        <li>Bugfix: Pi value had incorrect 9th/10th decimals</li>
-        <li>Added C# example application that uses SoundTouch dll library for processing MP3 files</li>
+      <li>Added functions to get initial processing latency, duration ratio between the original input and processed
+        output tracks, and clarified reporting of input/output batch sizes</li>
+      <li>Fixed issue that added brief sequence of silence to beginning of output audio</li>
+      <li>Adjusted algorithm parameters to reduce reverberating effect at tempo slowdown</li>
+      <li>Bugfix: Fixed a glitch that could cause negative array indexing in quick seek algorithm</li>
+      <li>Bugfix: flush() didn't properly flush final samples from the pipeline on 2nd time in case that soundtouch
+        object instance was recycled and used for processing a second audio stream.</li>
+      <li>Bugfix: Pi value had incorrect 9th/10th decimals</li>
+      <li>Added C# example application that uses SoundTouch dll library for processing MP3 files</li>
     </ul>
     <p><b>1.9.2:</b></p>
     <ul>
-        <li>Fix in GNU package configuration</li>
+      <li>Fix in GNU package configuration</li>
     </ul>
     <p><b>1.9.1:</b></p>
     <ul>
-        <li>Improved SoundTouch::flush() function so that it returns precisely the desired amount of samples for exact output duration control</li>
-        <li>Redesigned quickseek algorithm for improved sound quality when using the quickseek mode. The new quickseek algorithm can find 99% as good results as the 
-        default full-scan mode, while the quickseek algorithm is remarkable less 
+      <li>Improved SoundTouch::flush() function so that it returns precisely the desired amount of samples for exact
+        output duration control</li>
+      <li>Redesigned quickseek algorithm for improved sound quality when using the quickseek mode. The new quickseek
+        algorithm can find 99% as good results as the
+        default full-scan mode, while the quickseek algorithm is remarkable less
         CPU intensive.</li>
-        <li>Added adaptive integer divider scaling for improved sound quality when using integer processing algorithm
-        </li>
+      <li>Added adaptive integer divider scaling for improved sound quality when using integer processing algorithm
+      </li>
     </ul>
-<p><b>1.9:</b></p>
-<ul>
-    <li>Added support for parallel computation support via OpenMP primitives for better performance in multicore systems. 
-        Benchmarks show that achieved parallel processing speedup improvement 
-    typically range from +30% (x86 dual-core) to +180% (ARM quad-core). The 
-    OpenMP optimizations are disabled by default, see OpenMP notes above in this 
-    readme file how to enabled these optimizations.</li>
-    <li>Android: Added support for Android devices featuring X86 and MIPS CPUs, 
-    in addition to ARM CPUs.</li>
-    <li>Android: More versatile Android example application that processes WAV 
-    audio files with SoundTouch library</li>
-    <li>Replaced Windows-like 'BOOL' types with native 'bool'</li>
-    <li>Changed documentation token to "dist_doc_DATA" in Makefile.am file</li>
-    <li>Miscellaneous small fixes and improvements</li>
-</ul>
-<p><b>1.8.0:</b></p>
-<ul>
-    <li>Added support for multi-channel audio processing</li>
-    <li>Added support for <b>cubic</b> and <b>shannon</b> interpolation for rate and pitch shift effects besides 
-        the original <b>linear</b> interpolation, to reduce aliasing at high frequencies due to interpolation.
-        Cubic interpolation is used as default for floating point processing, and linear interpolation for integer 
-        processing.</li>
-    <li>Fixed bug in anti-alias filtering that limited stop-band attenuation to -10 dB instead of <-50dB, and
-        increased filter length from 32 to 64 taps to further reduce aliasing due to frequency folding.</li>
-    <li>Performance improvements in cross-correlation algorithm</li>
-    <li>Other bug and compatibility fixes</li>
-</ul>
-<p><b>1.7.1:</b></p>
-<ul>
-    <li>Added files for Android compilation
-</ul>
-<p><b>1.7.0:</b></p>
-<ul>
-    <li>Sound quality improvements/li>
-    <li>Improved flush() to adjust output sound stream duration to match better with 
-        ideal duration</li>
-    <li>Rewrote x86 cpu feature check to resolve compatibility problems</li>
-    <li>Configure script automatically checks if CPU supports mmx & sse compatibility for GNU platform, and
-    the script support now "--enable-x86-optimizations" switch to allow disabling x86-specific optimizations.</li>
-    <li>Revised #define conditions for 32bit/64bit compatibility</li>
-    <li>gnu autoconf/automake script compatibility fixes</li>
-    <li>Tuned beat-per-minute detection algorithm</li>
-</ul>
-<p><b>1.6.0:</b></p>
-<ul>
-  <li> Added automatic cutoff threshold adaptation to beat detection
-routine to better adapt BPM calculation to different types of music</li>
-  <li> Retired 3DNow! optimization support as 3DNow! is nowadays
-obsoleted and assembler code is nuisance to maintain</li>
-  <li>Retired "configure" file from source code package due to
-autoconf/automake versio conflicts, so that it is from now on to be
-generated by invoking "boostrap" script that uses locally available
-toolchain version for generating the "configure" file</li>
-  <li>Resolved namespace/label naming conflicts with other libraries by
-replacing global labels such as INTEGER_SAMPLES with more specific
-SOUNDTOUCH_INTEGER_SAMPLES etc.<br>
- </li>
-  <li>Updated windows build scripts &amp; project files for Visual
-Studio 2008 support</li>
-  <li> Updated SoundTouch.dll API for .NET compatibility</li>
-  <li> Added API for querying nominal processing input &amp; output
-sample batch sizes</li>
-</ul>
-<p><strong>1.5.0:</strong></p>
-<ul>
-  <li> Added normalization to correlation calculation and improvement
-automatic seek/sequence parameter calculation to improve sound quality</li>
-  <li> Bugfixes:
+    <p><b>1.9:</b></p>
     <ul>
-      <li> Fixed negative array indexing in quick seek algorithm</li>
-      <li> FIR autoalias filter running too far in processing buffer</li>
-      <li> Check against zero sample count in rate transposing</li>
-      <li> Fix for x86-64 support: Removed pop/push instructions from
-the cpu detection algorithm.</li>
-      <li> Check against empty buffers in FIFOSampleBuffer</li>
-      <li> Other minor fixes &amp; code cleanup</li>
+      <li>Added support for parallel computation support via OpenMP primitives for better performance in multicore
+        systems.
+        Benchmarks show that achieved parallel processing speedup improvement
+        typically range from +30% (x86 dual-core) to +180% (ARM quad-core). The
+        OpenMP optimizations are disabled by default, see OpenMP notes above in this
+        readme file how to enabled these optimizations.</li>
+      <li>Android: Added support for Android devices featuring X86 and MIPS CPUs,
+        in addition to ARM CPUs.</li>
+      <li>Android: More versatile Android example application that processes WAV
+        audio files with SoundTouch library</li>
+      <li>Replaced Windows-like 'BOOL' types with native 'bool'</li>
+      <li>Changed documentation token to "dist_doc_DATA" in Makefile.am file</li>
+      <li>Miscellaneous small fixes and improvements</li>
     </ul>
- </li>
-  <li> Fixes in compilation scripts for non-Intel platforms</li>
-  <li> Added Dynamic-Link-Library (DLL) version of SoundTouch library
-build, provided with Delphi/Pascal wrapper for calling the dll routines
- </li>
-  <li> Added #define PREVENT_CLICK_AT_RATE_CROSSOVER that prevents a
-click artifact when crossing the nominal pitch from either positive to
-negative side or vice versa</li>
-</ul>
-<p><strong>1.4.1:</strong></p>
-<ul>
-  <li> Fixed a buffer overflow bug in BPM detect algorithm routines if
-processing more than 2048 samples at one call</li>
-</ul>
-<p><strong>1.4.0:</strong></p>
-<ul>
-  <li> Improved sound quality by automatic calculation of time stretch
-algorithm processing parameters according to tempo setting</li>
-  <li> Moved BPM detection routines from SoundStretch application into
-SoundTouch library</li>
-  <li> Bugfixes: Usage of uninitialied variables, GNU build scripts,
-compiler errors due to 'const' keyword mismatch.</li>
-  <li> Source code cleanup</li>
-</ul>
-<p><strong>1.3.1: </strong> </p>
-<ul>
-  <li> Changed static class declaration to GCC 4.x compiler compatible
-syntax.</li>
-  <li> Enabled MMX/SSE-optimized routines also for GCC compilers.
-Earlier the MMX/SSE-optimized routines were written in
-compiler-specific inline assembler, now these routines are migrated to
-use compiler intrinsic syntax which allows compiling the same
-MMX/SSE-optimized source code with both Visual C++ and GCC compilers.</li>
-  <li> Set floating point as the default sample format and added switch
-to the GNU configure script for selecting the other sample format.</li>
-</ul>
-<p><strong>1.3.0: </strong> </p>
-<ul>
-  <li> Fixed tempo routine output duration inaccuracy due to rounding
-error</li>
-  <li> Implemented separate processing routines for integer and
-floating arithmetic to allow improvements to floating point routines
-(earlier used algorithms mostly optimized for integer arithmetic also
-for floating point samples)</li>
-  <li> Fixed a bug that distorts sound if sample rate changes during
-the sound stream</li>
-  <li> Fixed a memory leak that appeared in MMX/SSE/3DNow! optimized
-routines</li>
-  <li> Reduced redundant code pieces in MMX/SSE/3DNow! optimized
-routines vs. the standard C routines.</li>
-  <li> MMX routine incompatibility with new gcc compiler versions</li>
-  <li> Other miscellaneous bug fixes</li>
-</ul>
-<p><strong>1.2.1: </strong> </p>
-<ul>
-  <li> Added automake/autoconf scripts for GNU platforms (in courtesy
-of David Durham)</li>
-  <li> Fixed SCALE overflow bug in rate transposer routine.</li>
-  <li> Fixed 64bit address space bugs.</li>
-  <li> Created a 'soundtouch' namespace for SAMPLETYPE definitions.</li>
-</ul>
-<p><strong>1.2.0: </strong> </p>
-<ul>
-  <li> Added support for 32bit floating point sample data type with
-SSE/3DNow! optimizations for Win32 platform (SSE/3DNow! optimizations
-currently not supported in GCC environment)</li>
-  <li> Replaced 'make-gcc' script for GNU environment by master
-Makefile</li>
-  <li> Added time-stretch routine configurability to SoundTouch main
-class</li>
-  <li> Bugfixes</li>
-</ul>
-<p><strong>1.1.1: </strong> </p>
-<ul>
-  <li> Moved SoundTouch under lesser GPL license (LGPL). This allows
-using SoundTouch library in programs that aren't released under GPL
-license.</li>
-  <li> Changed MMX routine organiation so that MMX optimized routines
-are now implemented in classes that are derived from the basic classes
-having the standard non-mmx routines.</li>
-  <li> MMX routines to support gcc version 3.</li>
-  <li> Replaced windows makefiles by script using the .dsw files</li>
-</ul>
-<p><strong>1.0.1: </strong> </p>
-<ul>
-  <li> "mmx_gcc.cpp": Added "using namespace std" and removed "return
-0" from a function with void return value to fix compiler errors when
-compiling the library in Solaris environment.</li>
-  <li> Moved file "FIFOSampleBuffer.h" to "include" directory to allow
-accessing the FIFOSampleBuffer class from external files.</li>
-</ul>
-<p><strong>1.0: </strong> </p>
-<ul>
-  <li> Initial release</li>
-</ul>
-<h3>5.2. SoundStretch application Change History </h3>
-<p><b>1.9:</b></p>
-<ul>
-    <li>Added support for WAV file 'fact' information chunk.</li>
-</ul>
+    <p><b>1.8.0:</b></p>
+    <ul>
+      <li>Added support for multi-channel audio processing</li>
+      <li>Added support for <b>cubic</b> and <b>shannon</b> interpolation for rate and pitch shift effects besides
+        the original <b>linear</b> interpolation, to reduce aliasing at high frequencies due to interpolation.
+        Cubic interpolation is used as default for floating point processing, and linear interpolation for integer
+        processing.</li>
+      <li>Fixed bug in anti-alias filtering that limited stop-band attenuation to -10 dB instead of <-50dB, and
+          increased filter length from 32 to 64 taps to further reduce aliasing due to frequency folding.</li>
+      <li>Performance improvements in cross-correlation algorithm</li>
+      <li>Other bug and compatibility fixes</li>
+    </ul>
+    <p><b>1.7.1:</b></p>
+    <ul>
+      <li>Added files for Android compilation
+    </ul>
+    <p><b>1.7.0:</b></p>
+    <ul>
+      <li>Sound quality improvements/li>
+      <li>Improved flush() to adjust output sound stream duration to match better with
+        ideal duration</li>
+      <li>Rewrote x86 cpu feature check to resolve compatibility problems</li>
+      <li>Configure script automatically checks if CPU supports mmx & sse compatibility for GNU platform, and
+        the script support now "--enable-x86-optimizations" switch to allow disabling x86-specific optimizations.</li>
+      <li>Revised #define conditions for 32bit/64bit compatibility</li>
+      <li>gnu autoconf/automake script compatibility fixes</li>
+      <li>Tuned beat-per-minute detection algorithm</li>
+    </ul>
+    <p><b>1.6.0:</b></p>
+    <ul>
+      <li> Added automatic cutoff threshold adaptation to beat detection
+        routine to better adapt BPM calculation to different types of music</li>
+      <li> Retired 3DNow! optimization support as 3DNow! is nowadays
+        obsoleted and assembler code is nuisance to maintain</li>
+      <li>Retired "configure" file from source code package due to
+        autoconf/automake versio conflicts, so that it is from now on to be
+        generated by invoking "boostrap" script that uses locally available
+        toolchain version for generating the "configure" file</li>
+      <li>Resolved namespace/label naming conflicts with other libraries by
+        replacing global labels such as INTEGER_SAMPLES with more specific
+        SOUNDTOUCH_INTEGER_SAMPLES etc.<br>
+      </li>
+      <li>Updated windows build scripts &amp; project files for Visual
+        Studio 2008 support</li>
+      <li> Updated SoundTouch.dll API for .NET compatibility</li>
+      <li> Added API for querying nominal processing input &amp; output
+        sample batch sizes</li>
+    </ul>
+    <p><strong>1.5.0:</strong></p>
+    <ul>
+      <li> Added normalization to correlation calculation and improvement
+        automatic seek/sequence parameter calculation to improve sound quality</li>
+      <li> Bugfixes:
+        <ul>
+          <li> Fixed negative array indexing in quick seek algorithm</li>
+          <li> FIR autoalias filter running too far in processing buffer</li>
+          <li> Check against zero sample count in rate transposing</li>
+          <li> Fix for x86-64 support: Removed pop/push instructions from
+            the cpu detection algorithm.</li>
+          <li> Check against empty buffers in FIFOSampleBuffer</li>
+          <li> Other minor fixes &amp; code cleanup</li>
+        </ul>
+      </li>
+      <li> Fixes in compilation scripts for non-Intel platforms</li>
+      <li> Added Dynamic-Link-Library (DLL) version of SoundTouch library
+        build, provided with Delphi/Pascal wrapper for calling the dll routines
+      </li>
+      <li> Added #define PREVENT_CLICK_AT_RATE_CROSSOVER that prevents a
+        click artifact when crossing the nominal pitch from either positive to
+        negative side or vice versa</li>
+    </ul>
+    <p><strong>1.4.1:</strong></p>
+    <ul>
+      <li> Fixed a buffer overflow bug in BPM detect algorithm routines if
+        processing more than 2048 samples at one call</li>
+    </ul>
+    <p><strong>1.4.0:</strong></p>
+    <ul>
+      <li> Improved sound quality by automatic calculation of time stretch
+        algorithm processing parameters according to tempo setting</li>
+      <li> Moved BPM detection routines from SoundStretch application into
+        SoundTouch library</li>
+      <li> Bugfixes: Usage of uninitialied variables, GNU build scripts,
+        compiler errors due to 'const' keyword mismatch.</li>
+      <li> Source code cleanup</li>
+    </ul>
+    <p><strong>1.3.1: </strong> </p>
+    <ul>
+      <li> Changed static class declaration to GCC 4.x compiler compatible
+        syntax.</li>
+      <li> Enabled MMX/SSE-optimized routines also for GCC compilers.
+        Earlier the MMX/SSE-optimized routines were written in
+        compiler-specific inline assembler, now these routines are migrated to
+        use compiler intrinsic syntax which allows compiling the same
+        MMX/SSE-optimized source code with both Visual C++ and GCC compilers.</li>
+      <li> Set floating point as the default sample format and added switch
+        to the GNU configure script for selecting the other sample format.</li>
+    </ul>
+    <p><strong>1.3.0: </strong> </p>
+    <ul>
+      <li> Fixed tempo routine output duration inaccuracy due to rounding
+        error</li>
+      <li> Implemented separate processing routines for integer and
+        floating arithmetic to allow improvements to floating point routines
+        (earlier used algorithms mostly optimized for integer arithmetic also
+        for floating point samples)</li>
+      <li> Fixed a bug that distorts sound if sample rate changes during
+        the sound stream</li>
+      <li> Fixed a memory leak that appeared in MMX/SSE/3DNow! optimized
+        routines</li>
+      <li> Reduced redundant code pieces in MMX/SSE/3DNow! optimized
+        routines vs. the standard C routines.</li>
+      <li> MMX routine incompatibility with new gcc compiler versions</li>
+      <li> Other miscellaneous bug fixes</li>
+    </ul>
+    <p><strong>1.2.1: </strong> </p>
+    <ul>
+      <li> Added automake/autoconf scripts for GNU platforms (in courtesy
+        of David Durham)</li>
+      <li> Fixed SCALE overflow bug in rate transposer routine.</li>
+      <li> Fixed 64bit address space bugs.</li>
+      <li> Created a 'soundtouch' namespace for SAMPLETYPE definitions.</li>
+    </ul>
+    <p><strong>1.2.0: </strong> </p>
+    <ul>
+      <li> Added support for 32bit floating point sample data type with
+        SSE/3DNow! optimizations for Win32 platform (SSE/3DNow! optimizations
+        currently not supported in GCC environment)</li>
+      <li> Replaced 'make-gcc' script for GNU environment by master
+        Makefile</li>
+      <li> Added time-stretch routine configurability to SoundTouch main
+        class</li>
+      <li> Bugfixes</li>
+    </ul>
+    <p><strong>1.1.1: </strong> </p>
+    <ul>
+      <li> Moved SoundTouch under lesser GPL license (LGPL). This allows
+        using SoundTouch library in programs that aren't released under GPL
+        license.</li>
+      <li> Changed MMX routine organiation so that MMX optimized routines
+        are now implemented in classes that are derived from the basic classes
+        having the standard non-mmx routines.</li>
+      <li> MMX routines to support gcc version 3.</li>
+      <li> Replaced windows makefiles by script using the .dsw files</li>
+    </ul>
+    <p><strong>1.0.1: </strong> </p>
+    <ul>
+      <li> "mmx_gcc.cpp": Added "using namespace std" and removed "return
+        0" from a function with void return value to fix compiler errors when
+        compiling the library in Solaris environment.</li>
+      <li> Moved file "FIFOSampleBuffer.h" to "include" directory to allow
+        accessing the FIFOSampleBuffer class from external files.</li>
+    </ul>
+    <p><strong>1.0: </strong> </p>
+    <ul>
+      <li> Initial release</li>
+    </ul>
+    <h3>5.2. SoundStretch application Change History </h3>
+    <p><b>1.9:</b></p>
+    <ul>
+      <li>Added support for WAV file 'fact' information chunk.</li>
+    </ul>
 
-<p><b>1.7.0:</b></p>
-<ul>
-    <li>Bugfixes in Wavfile: exception string formatting, avoid getLengthMs() integer 
+    <p><b>1.7.0:</b></p>
+    <ul>
+      <li>Bugfixes in Wavfile: exception string formatting, avoid getLengthMs() integer
         precision overflow, support WAV files using 24/32bit sample format.</li>
-</ul>
+    </ul>
     <p><b>1.5.0:</b></p>
-<ul>
-  <li> Added "-speech" switch to activate algorithm parameters more
-suitable for speech processing than the default parameters tuned for
-music processing.</li>
-</ul>
-<p><strong>1.4.0:</strong></p>
-<ul>
-  <li> Moved BPM detection routines from SoundStretch application into
-SoundTouch library</li>
-  <li> Allow using standard input/output pipes as audio processing
-input/output streams</li>
-</ul>
-<p><strong>1.3.0:</strong></p>
-<ul>
-  <li> Simplified accessing WAV files with floating point sample
-format.</li>
-</ul>
-<p><strong>1.2.1: </strong> </p>
-<ul>
-  <li> Fixed 64bit address space bugs.</li>
-</ul>
-<p><strong>1.2.0: </strong> </p>
-<ul>
-  <li> Added support for 32bit floating point sample data type</li>
-  <li> Restructured the BPM routines into separate library</li>
-  <li> Fixed big-endian conversion bugs in WAV file routines (hopefully
-:)</li>
-</ul>
-<p><strong>1.1.1: </strong> </p>
-<ul>
-  <li> Fixed bugs in WAV file reading &amp; added byte-order conversion
-for big-endian processors.</li>
-  <li> Moved SoundStretch source code under 'example' directory to
-highlight difference from SoundTouch stuff.</li>
-  <li> Replaced windows makefiles by script using the .dsw files</li>
-  <li> Output file name isn't required if output isn't desired (e.g. if
-using the switch '-bpm' in plain format only)</li>
-</ul>
-<p><strong>1.1:</strong></p>
-<ul>
-  <li> Fixed "Release" settings in Microsoft Visual C++ project file
-(.dsp)</li>
-  <li> Added beats-per-minute (BPM) detection routine and command-line
-switch "-bpm"</li>
-</ul>
-<p><strong>1.01: </strong> </p>
-<ul>
-  <li> Initial release</li>
-</ul>
-<hr>
-<h2>6. Acknowledgements </h2>
-<p>Kudos for these people who have contributed to development or
-submitted bugfixes:</p>
-<ul>
-  <li> Arthur A</li>
-  <li> Paul Adenot</li>
-  <li> Richard Ash</li>
-  <li> Stanislav Brabec</li>
-  <li> Christian Budde</li>
-  <li> Jamie Bullock</li>
-  <li> Chris Bryan</li>  
-  <li> Jacek Caban</li>
-  <li> Brian Cameron</li>
-  <li> Jason Champion</li>
-  <li> David Clark</li>
-  <li> Patrick Colis</li>
-  <li> Miquel Colon</li>
-  <li> Jim Credland</li>
-  <li> Sandro Cumerlato</li>
-  <li> Gerry Fan</li>
-  <li> Justin Frankel</li>
-  <li> Masa H.</li>
-  <li> Jason Garland</li>
-  <li> Takashi Iwai</li>
-  <li> Thomas Klausner</li>
-  <li> Lu Zhihe</li>
-	<li> Luzpaz</li>
-  <li> Tony Mechelynck </li>
-  <li> Mathias M&ouml;hl</li>
-  <li> Yuval Naveh</li>
-  <li> Mats Palmgren </li>
-  <li> Chandni Patel</li>
-  <li> Paulo Pizarro</li>
-  <li> Andrey Ponomarenko</li>
-  <li> Blaise Potard</li>
-  <li> Michael Pruett</li>
-  <li> Rajeev Puran</li>
-  <li> RJ Ryan</li>
-  <li> John Sheehy</li>
-  <li> Tim Shuttleworth</li>
-  <li> Albert Sirvent</li>
-  <li> Tyson Smith</li>
-  <li> John Stumpo</li>
-  <li> Mario di Vece</li>
-  <li> Katja Vetter</li>
-  <li> Wu Q.</li>
-</ul>
-<p>Moral greetings to all other contributors and users also!</p>
-<hr>
-<h2>7. LICENSE </h2>
-<p>SoundTouch audio processing library<br>
-Copyright (c) Olli Parviainen</p>
-<p>This library is free software; you can redistribute it and/or modify
-it under the terms of the GNU Lesser General Public License version 2.1
-as published by the Free Software Foundation.</p>
-<p>This library is distributed in the hope that it will be useful, but
-WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
-General Public License for more details.</p>
-<p>You should have received a copy of the GNU Lesser General Public
-License along with this library; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA</p>
-<p>---</p>
-<p>commercial license alternative also available, contact author for details.</p>
-<hr>
-<p><i>README.html file updated in November-2018</i></p>
+    <ul>
+      <li> Added "-speech" switch to activate algorithm parameters more
+        suitable for speech processing than the default parameters tuned for
+        music processing.</li>
+    </ul>
+    <p><strong>1.4.0:</strong></p>
+    <ul>
+      <li> Moved BPM detection routines from SoundStretch application into
+        SoundTouch library</li>
+      <li> Allow using standard input/output pipes as audio processing
+        input/output streams</li>
+    </ul>
+    <p><strong>1.3.0:</strong></p>
+    <ul>
+      <li> Simplified accessing WAV files with floating point sample
+        format.</li>
+    </ul>
+    <p><strong>1.2.1: </strong> </p>
+    <ul>
+      <li> Fixed 64bit address space bugs.</li>
+    </ul>
+    <p><strong>1.2.0: </strong> </p>
+    <ul>
+      <li> Added support for 32bit floating point sample data type</li>
+      <li> Restructured the BPM routines into separate library</li>
+      <li> Fixed big-endian conversion bugs in WAV file routines (hopefully
+        :)</li>
+    </ul>
+    <p><strong>1.1.1: </strong> </p>
+    <ul>
+      <li> Fixed bugs in WAV file reading &amp; added byte-order conversion
+        for big-endian processors.</li>
+      <li> Moved SoundStretch source code under 'example' directory to
+        highlight difference from SoundTouch stuff.</li>
+      <li> Replaced windows makefiles by script using the .dsw files</li>
+      <li> Output file name isn't required if output isn't desired (e.g. if
+        using the switch '-bpm' in plain format only)</li>
+    </ul>
+    <p><strong>1.1:</strong></p>
+    <ul>
+      <li> Fixed "Release" settings in Microsoft Visual C++ project file
+        (.dsp)</li>
+      <li> Added beats-per-minute (BPM) detection routine and command-line
+        switch "-bpm"</li>
+    </ul>
+    <p><strong>1.01: </strong> </p>
+    <ul>
+      <li> Initial release</li>
+    </ul>
+    <hr>
+    <h2>6. Acknowledgements </h2>
+    <p>Kudos for these people who have contributed to development or
+      submitted bugfixes:</p>
+    <ul>
+      <li> Arthur A</li>
+      <li> Paul Adenot</li>
+      <li> Richard Ash</li>
+      <li> Stanislav Brabec</li>
+      <li> Christian Budde</li>
+      <li> Jamie Bullock</li>
+      <li> Chris Bryan</li>
+      <li> Jacek Caban</li>
+      <li> Marketa Calabkova</li>
+      <li> Brian Cameron</li>
+      <li> Jason Champion</li>
+      <li> Giuseppe Cigala</li>
+      <li> David Clark</li>
+      <li> Patrick Colis</li>
+      <li> Miquel Colon</li>
+      <li> Jim Credland</li>
+      <li> Sandro Cumerlato</li>
+      <li> Gerry Fan</li>
+      <li> Justin Frankel</li>
+      <li> Masa H.</li>
+      <li> Jason Garland</li>
+      <li> Takashi Iwai</li>
+      <li> Thomas Klausner</li>
+      <li> Lu Zhihe</li>
+      <li> Luzpaz</li>
+      <li> Tony Mechelynck </li>
+      <li> Mathias M&ouml;hl</li>
+      <li> Yuval Naveh</li>
+      <li> Mats Palmgren </li>
+      <li> Chandni Patel</li>
+      <li> Paulo Pizarro</li>
+      <li> Andrey Ponomarenko</li>
+      <li> Blaise Potard</li>
+      <li> Michael Pruett</li>
+      <li> Rajeev Puran</li>
+      <li> RJ Ryan</li>
+      <li> John Sheehy</li>
+      <li> Tim Shuttleworth</li>
+      <li> Albert Sirvent</li>
+      <li> Tyson Smith</li>
+      <li> John Stumpo</li>
+      <li> Mario di Vece</li>
+      <li> Rémi Verschelde</li>
+      <li> Katja Vetter</li>
+      <li> Wu Q.</li>
+    </ul>
+    <p>Moral greetings to all other contributors and users also!</p>
+    <hr>
+    <h2>7. LICENSE </h2>
+    <p>SoundTouch audio processing library<br>
+      Copyright (c) Olli Parviainen</p>
+    <p>This library is free software; you can redistribute it and/or modify
+      it under the terms of the GNU Lesser General Public License version 2.1
+      as published by the Free Software Foundation.</p>
+    <p>This library is distributed in the hope that it will be useful, but
+      WITHOUT ANY WARRANTY; without even the implied warranty of
+      MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+      General Public License for more details.</p>
+    <p>You should have received a copy of the GNU Lesser General Public
+      License along with this library; if not, write to the Free Software
+      Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA</p>
+    <p>---</p>
+    <p>commercial license alternative also available, contact author for details.</p>
+    <hr>
 </body>
+
 </html>

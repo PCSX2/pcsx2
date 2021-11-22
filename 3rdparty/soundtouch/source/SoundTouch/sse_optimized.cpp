@@ -80,7 +80,7 @@ double TDStretchSSE::calcCrossCorr(const float *pV1, const float *pV2, double &a
     // Compile-time define SOUNDTOUCH_ALLOW_NONEXACT_SIMD_OPTIMIZATION is provided
     // for choosing if this little cheating is allowed.
 
-#ifdef SOUNDTOUCH_ALLOW_NONEXACT_SIMD_OPTIMIZATION
+#ifdef ST_SIMD_AVOID_UNALIGNED
     // Little cheating allowed, return valid correlation only for 
     // aligned locations, meaning every second round for stereo sound.
 

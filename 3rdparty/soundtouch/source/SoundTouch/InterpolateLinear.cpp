@@ -142,7 +142,7 @@ int InterpolateLinearInteger::transposeMulti(SAMPLETYPE *dest, const SAMPLETYPE 
         LONG_SAMPLETYPE temp, vol1;
     
         assert(iFract < SCALE);
-        vol1 = (SCALE - iFract);
+        vol1 = (LONG_SAMPLETYPE)(SCALE - iFract);
         for (int c = 0; c < numChannels; c ++)
         {
             temp = vol1 * src[c] + iFract * src[c + numChannels];

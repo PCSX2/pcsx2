@@ -170,6 +170,9 @@ public:
     /// allow trimming (downwards) amount of samples in pipeline.
     /// Returns adjusted amount of samples
     uint adjustAmountOfSamples(uint numSamples);
+
+    /// Add silence to end of buffer
+    void addSilent(uint nSamples);
 };
 
 }
