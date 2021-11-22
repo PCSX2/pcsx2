@@ -2100,7 +2100,7 @@ SCES-50494:
 SCES-50499:
   name: "Ecco the Dolphin - Defender of the Future"
   region: "PAL-M5"
-  compat: 2
+  compat: 5
   patches:
     7FEDF999:
       content: |-
@@ -34103,14 +34103,6 @@ SLUS-20369:
   name: "Knockout Kings 2002"
   region: "NTSC-U"
   compat: 5
-  patches:
-    36feee3a:
-      content: |-
-        author=Prafull
-        // Fixes Hanging at start of fight.
-        patch=1,EE,001d7fec,word,1000000f
-        patch=1,EE,001d8020,word,1000000f
-        patch=1,EE,001d8074,word,1000000f
 SLUS-20370:
   name: "Kingdom Hearts"
   region: "NTSC-U"
@@ -34227,7 +34219,7 @@ SLUS-20393:
 SLUS-20394:
   name: "Ecco the Dolphin - Defender of the Future"
   region: "NTSC-U"
-  compat: 2
+  compat: 5
   patches:
     B78EAA30:
       content: |-
@@ -39793,6 +39785,10 @@ SLUS-21689:
   name: "Petz - Horsez 2"
   region: "NTSC-U"
   compat: 4
+  patches:
+    default:
+      content: |-
+        comment= Horsez 2 needs EE cycle rate +2 or +3.
   gameFixes:
     - VUKickstartHack # Fixes SPS.
 SLUS-21690:
