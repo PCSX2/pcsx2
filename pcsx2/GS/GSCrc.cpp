@@ -25,6 +25,7 @@ const CRC::Game CRC::m_games[] =
 	{0xF95F37EE, ArTonelico2, US, 0},
 	{0x68CE6801, ArTonelico2, JP, 0},
 	{0xCE2C1DBF, ArTonelico2, EU, 0},
+	{0xC38067F4, ArTonelico2, NoRegion, 0}, // project metafalica 1.0
 	{0x2113EA2E, MetalSlug6, JP, 0},
 	{0x42E05BAF, TomoyoAfter, JP, PointListPalette},
 	{0x7800DC84, Clannad, JP, PointListPalette},
