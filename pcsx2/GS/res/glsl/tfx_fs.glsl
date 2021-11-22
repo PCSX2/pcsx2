@@ -627,7 +627,6 @@ void ps_blend(inout vec4 Color, float As)
 {
 #if SW_BLEND
     vec4 RT = trunc(texelFetch(RtSampler, ivec2(gl_FragCoord.xy), 0) * 255.0f + 0.1f);
-    vec4 Color_pabe = Color;
 
 #if PS_DFMT == FMT_24
     float Ad = 1.0f;
@@ -681,7 +680,7 @@ void ps_blend(inout vec4 Color, float As)
 
     // PABE
 #if PS_PABE
-    Color.rgb = (Color_pabe.a >= 128.0f) ? Color.rgb : Color_pabe.rgb;
+    Color.rgb = (As >= 1.0f) ? Color.rgb : Cs;
 #endif
 
     // Dithering
