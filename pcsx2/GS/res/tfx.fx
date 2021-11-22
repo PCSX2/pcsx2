@@ -677,33 +677,30 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 
 		float3 Cd = RT.rgb;
 		float3 Cs = Color.rgb;
-		float3 Cv;
 
 		float3 A = (PS_BLEND_A == 0) ? Cs : ((PS_BLEND_A == 1) ? Cd : (float3)0.0f);
 		float3 B = (PS_BLEND_B == 0) ? Cs : ((PS_BLEND_B == 1) ? Cd : (float3)0.0f);
 		float3 C = (PS_BLEND_C == 0) ? As : ((PS_BLEND_C == 1) ? Ad : Af);
 		float3 D = (PS_BLEND_D == 0) ? Cs : ((PS_BLEND_D == 1) ? Cd : (float3)0.0f);
 
-		Cv = (PS_BLEND_A == PS_BLEND_B) ? D : trunc(((A - B) * C) + D);
+		Color.rgb = (PS_BLEND_A == PS_BLEND_B) ? D : trunc(((A - B) * C) + D);
 
 		// PABE
 		if (PS_PABE)
-			Cv = (Color.a >= 128.0f) ? Cv : Color.rgb;
+			Color.rgb = (As >= 1.0f) ? Color.rgb : Cs;
 
 		// Dithering
-		ps_dither(Cv, pos_xy);
+		ps_dither(Color.rgb, pos_xy);
 
 		// Standard Clamp
 		if (PS_COLCLIP == 0 && PS_HDR == 0)
-			Cv = clamp(Cv, (float3)0.0f, (float3)255.0f);
+			Color.rgb = clamp(Color.rgb, (float3)0.0f, (float3)255.0f);
 
 		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
 		if (PS_DFMT == FMT_16)
-			Cv = (float3)((int3)Cv & (int3)0xF8);
+			Color.rgb = (float3)((int3)Color.rgb & (int3)0xF8);
 		else if (PS_COLCLIP == 1 && PS_HDR == 0)
-			Cv = (float3)((int3)Cv & (int3)0xFF);
-
-		Color.rgb = Cv;
+			Color.rgb = (float3)((int3)Color.rgb & (int3)0xFF);
 	}
 }
 
