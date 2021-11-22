@@ -168,7 +168,7 @@ bool GSTexture11::Save(const std::string& fn)
 
 	res->GetDesc(&desc);
 
-#ifdef ENABLE_OGL_DEBUG
+#ifdef PCSX2_DEVBUILD
 	GSPng::Format format = GSPng::RGB_A_PNG;
 #else
 	GSPng::Format format = GSPng::RGB_PNG;
