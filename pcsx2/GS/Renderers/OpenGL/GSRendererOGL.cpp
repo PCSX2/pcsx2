@@ -463,8 +463,6 @@ void GSRendererOGL::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache::
 void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 {
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
-	const GIFRegALPHA& ALPHA = m_context->ALPHA;
-	bool sw_blending = false;
 
 	// No blending so early exit
 	if (!(PRIM->ABE || m_env.PABE.PABE))
@@ -474,6 +472,7 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 	}
 
 	// Compute the blending equation to detect special case
+	const GIFRegALPHA& ALPHA = m_context->ALPHA;
 	const u8 blend_index = u8(((ALPHA.A * 3 + ALPHA.B) * 3 + ALPHA.C) * 3 + ALPHA.D);
 	const int blend_flag = m_dev->GetBlendFlags(blend_index);
 
@@ -490,6 +489,7 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 
 	// Warning no break on purpose
 	// Note: the [[fallthrough]] attribute tell compilers not to complain about not having breaks.
+	bool sw_blending = false;
 	switch (m_sw_blending)
 	{
 		case ACC_BLEND_ULTRA:
