@@ -1091,7 +1091,6 @@ void GSApp::Init()
 	// Avoid to clutter the ini file with useless options
 #ifdef _WIN32
 	// Per OS option.
-	m_default_configuration["adapter_index"]                              = "0";
 	m_default_configuration["CaptureFileName"]                            = "";
 	m_default_configuration["CaptureVideoCodecDisplayName"]               = "";
 	m_default_configuration["debug_d3d"]                                  = "0";
@@ -1101,6 +1100,7 @@ void GSApp::Init()
 #else
 	m_default_configuration["linux_replay"]                               = "1";
 #endif
+	m_default_configuration["adapter_index"]                              = "-1";
 	m_default_configuration["aa1"]                                        = "1";
 	m_default_configuration["accurate_date"]                              = "1";
 	m_default_configuration["accurate_blending_unit"]                     = "1";
