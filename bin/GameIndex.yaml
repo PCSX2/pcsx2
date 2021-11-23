@@ -25187,7 +25187,7 @@ SLPM-66163:
         author=Prafull
         // Skip sceipusync
         // Fixes hang before going ingame
-        patch=1,EE,00156608,word,10000003
+        patch=1,EE,002324dc,word,00000000
 SLPM-66164:
   name: "Mahou Tsukai Kurohime"
   region: "NTSC-J"
