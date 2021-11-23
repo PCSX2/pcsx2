@@ -442,8 +442,12 @@ void GSRendererDX11::EmulateBlending()
 {
 	// Partial port of OGL SW blending. Currently only works for accumulation and non recursive blend.
 
+	// AA1: Don't enable blending on AA1, not yet implemented on hardware mode,
+	// it requires coverage sample so it's safer to turn it off instead.
+	const bool aa1 = PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS);
+
 	// No blending so early exit
-	if (!(PRIM->ABE || m_env.PABE.PABE))
+	if (aa1 || !(PRIM->ABE || m_env.PABE.PABE))
 		return;
 
 	m_om_bsel.abe = 1;
