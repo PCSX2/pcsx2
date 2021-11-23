@@ -59,8 +59,7 @@ body:
     attributes:
       label: Operating System
       options:
-      - Windows 11 (32bit)
-      - Windows 11 (64bit)
+      - Windows 11
       - Windows 10 (32bit)
       - Windows 10 (64bit)
       - Windows 8.1 (32bit)
