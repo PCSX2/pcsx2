@@ -722,7 +722,13 @@ __forceinline void GSState::ApplyPRIM(u32 prim)
 {
 	if (GSUtil::GetPrimClass(m_env.PRIM.PRIM) == GSUtil::GetPrimClass(prim & 7)) // NOTE: assume strips/fans are converted to lists
 	{
-		if (m_env.PRMODECONT.AC == 1 && (m_env.PRIM.U32[0] ^ prim) & 0x7f8) // all fields except PRIM
+		u32 prim_mask = 0x7f8;
+		const bool is_hardware_renderer =
+			((theApp.GetCurrentRendererType() == GSRendererType::OGL_HW) || (theApp.GetCurrentRendererType() == GSRendererType::DX1011_HW));
+		if (is_hardware_renderer && GSUtil::GetPrimClass(prim & 7) == GS_TRIANGLE_CLASS)
+			prim_mask &= ~0x80; // Mask out AA1.
+
+		if (m_env.PRMODECONT.AC == 1 && (m_env.PRIM.U32[0] ^ prim) & prim_mask) // all fields except PRIM
 			Flush();
 	}
 	else
@@ -1055,7 +1061,13 @@ void GSState::GIFRegHandlerPRMODE(const GIFReg* RESTRICT r)
 
 	if (!m_env.PRMODECONT.AC)
 	{
-		if ((m_env.PRIM.U32[0] ^ r->PRMODE.U32[0]) & 0x7f8)
+		u32 prim_mask = 0x7f8;
+		const bool is_hardware_renderer =
+			((theApp.GetCurrentRendererType() == GSRendererType::OGL_HW) || (theApp.GetCurrentRendererType() == GSRendererType::DX1011_HW));
+		if (is_hardware_renderer && GSUtil::GetPrimClass(m_env.PRIM.PRIM) == GS_TRIANGLE_CLASS)
+			prim_mask &= ~0x80; // Mask out AA1.
+
+		if ((m_env.PRIM.U32[0] ^ r->PRMODE.U32[0]) & prim_mask)
 			Flush();
 	}
 	else
