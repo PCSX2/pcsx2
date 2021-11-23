@@ -36,13 +36,7 @@ enum class GSRendererType : int8_t
 	OGL_HW = 12,
 	OGL_SW = 13,
 
-#ifdef _WIN32
 	Default = Undefined
-#else
-	// Use ogl renderer as default otherwise it crash at startup
-	// GSRenderOGL only GSDeviceOGL (not GSDeviceNULL)
-	Default = OGL_HW
-#endif
 };
 
 // ST_WRITE is defined in libc, avoid this

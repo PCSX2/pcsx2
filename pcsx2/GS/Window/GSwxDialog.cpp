@@ -16,11 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSwxDialog.h"
 #include "gui/AppConfig.h"
-
-#ifdef _WIN32
-#include "GS/GSExtra.h"
-#include "GS/Renderers/DX11/D3D.h"
-#endif
+#include "GS/GSUtil.h"
 
 using namespace GSSettingsDialog;
 
@@ -620,11 +616,9 @@ Dialog::Dialog()
 	m_renderer_select = m_ui.addComboBoxAndLabel(top_grid, "Renderer:", "Renderer", &theApp.m_gs_renderers).first;
 	m_renderer_select->Bind(wxEVT_CHOICE, &Dialog::OnRendererChange, this);
 
-#ifdef _WIN32
 	add_label(this, top_grid, "Adapter:");
 	m_adapter_select = new wxChoice(this, wxID_ANY, wxDefaultPosition, wxDefaultSize, {});
 	top_grid->Add(m_adapter_select, wxSizerFlags().Expand());
-#endif
 
 	m_ui.addComboBoxAndLabel(top_grid, "Interlacing (F5):", "interlace", &theApp.m_gs_interlace);
 
@@ -691,33 +685,37 @@ GSRendererType Dialog::GetSelectedRendererType()
 
 void Dialog::RendererChange()
 {
-#ifdef _WIN32
 	GSRendererType renderer = GetSelectedRendererType();
+	std::string current;
+	int current_sel = m_adapter_select->GetSelection();
+	if (current_sel >= 0 && current_sel < static_cast<int>(m_adapter_arr_string.Count()))
+		current = m_adapter_arr_string[current_sel].ToUTF8();
+
+	size_t default_adapter = 0;
+	std::vector<std::string> adapters = GSUtil::GetAdapterList(renderer, default_adapter);
+
 	m_adapter_select->Clear();
-
-	if (renderer == GSRendererType::DX1011_HW)
-	{
-		auto factory = D3D::CreateFactory(false);
-		auto adapter_list = D3D::GetAdapterList(factory.get());
-
-		wxArrayString adapter_arr_string;
-		for (const auto name : adapter_list)
-		{
-			adapter_arr_string.push_back(
-				convert_utf8_to_utf16(name)
-			);
-		}
-
-		m_adapter_select->Insert(adapter_arr_string, 0);
-		m_adapter_select->Enable();
-		m_adapter_select->SetSelection(
-			theApp.GetConfigI("adapter_index")
-		);
-	}
-	else
+	if (adapters.empty())
 	{
 		m_adapter_select->Disable();
 	}
+	else
+	{
+		m_adapter_arr_string.Clear();
+		int new_sel = theApp.GetConfigI("adapter_index");
+		if (new_sel < 0 || new_sel >= static_cast<int>(adapters.size()))
+			new_sel = default_adapter;
+		for (std::string& adapter : adapters)
+		{
+			if (adapter == current)
+				new_sel = m_adapter_arr_string.Count();
+			m_adapter_arr_string.Add(fromUTF8(adapter));
+		}
+		m_adapter_select->Set(m_adapter_arr_string);
+		m_adapter_select->SetSelection(new_sel);
+		m_adapter_select->Enable();
+	}
+#ifdef _WIN32
 	m_renderer_panel->UpdateBlendMode(renderer);
 
 	m_renderer_panel->Layout(); // The version of wx we use on Windows is dumb and something prevents relayout from happening to notebook pages
@@ -727,12 +725,10 @@ void Dialog::RendererChange()
 void Dialog::Load()
 {
 	m_ui.Load();
-#ifdef _WIN32
 	GSRendererType renderer = GSRendererType(theApp.GetConfigI("Renderer"));
 	if (renderer == GSRendererType::Undefined)
-		renderer = D3D::ShouldPreferD3D() ? GSRendererType::DX1011_HW : GSRendererType::OGL_HW;
+		renderer = GSUtil::GetPreferredRenderer();
 	m_renderer_select->SetSelection(get_config_index(theApp.m_gs_renderers, static_cast<int>(renderer)));
-#endif
 
 	RendererChange();
 
@@ -747,17 +743,10 @@ void Dialog::Load()
 void Dialog::Save()
 {
 	m_ui.Save();
-#ifdef _WIN32
 	// only save the adapter when it makes sense to
 	// prevents changing the adapter, switching to another renderer and saving
-	if (GetSelectedRendererType() == GSRendererType::DX1011_HW)
-	{
-		const int current_adapter =
-			m_adapter_select->GetSelection();
-
-		theApp.SetConfig("adapter_index", current_adapter);
-	}
-#endif
+	if (m_adapter_select->GetCount())
+		theApp.SetConfig("adapter_index", m_adapter_select->GetSelection());
 
 	m_hacks_panel->Save();
 	m_renderer_panel->Save();

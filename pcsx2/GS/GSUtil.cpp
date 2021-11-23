@@ -23,6 +23,7 @@
 #ifdef _WIN32
 #include <VersionHelpers.h>
 #include "svnrev.h"
+#include "Renderers/DX11/D3D.h"
 #include <wil/com.h>
 #else
 #define SVN_REV 0
@@ -185,6 +186,28 @@ bool GSUtil::CheckSSE()
 CRCHackLevel GSUtil::GetRecommendedCRCHackLevel(GSRendererType type)
 {
 	return type == GSRendererType::OGL_HW ? CRCHackLevel::Partial : CRCHackLevel::Full;
+}
+
+GSRendererType GSUtil::GetPreferredRenderer()
+{
+#ifdef _WIN32
+	if (D3D::ShouldPreferD3D())
+		return GSRendererType::DX1011_HW;
+#endif
+	return GSRendererType::OGL_HW;
+}
+
+std::vector<std::string> GSUtil::GetAdapterList(GSRendererType renderer, size_t& default_adapter)
+{
+#ifdef _WIN32
+	if (renderer == GSRendererType::DX1011_HW)
+	{
+		default_adapter = 0;
+		auto factory = D3D::CreateFactory(false);
+		return D3D::GetAdapterList(factory.get());
+	}
+#endif
+	return {};
 }
 
 #ifdef _WIN32
