@@ -464,8 +464,12 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 {
 	GSDeviceOGL* dev = (GSDeviceOGL*)m_dev;
 
+	// AA1: Don't enable blending on AA1, not yet implemented on hardware mode,
+	// it requires coverage sample so it's safer to turn it off instead.
+	const bool aa1 = PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS);
+
 	// No blending so early exit
-	if (!(PRIM->ABE || m_env.PABE.PABE))
+	if (aa1 || !(PRIM->ABE || m_env.PABE.PABE))
 	{
 		dev->OMSetBlendState();
 		return;
