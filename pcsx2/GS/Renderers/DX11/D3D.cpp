@@ -78,10 +78,11 @@ namespace D3D
 		ASSERT(factory);
 
 		wil::com_ptr_nothrow<IDXGIAdapter1> adapter;
-		if (factory->EnumAdapters1(index, adapter.put()) == DXGI_ERROR_NOT_FOUND)
+		if (index < 0 || factory->EnumAdapters1(index, adapter.put()) == DXGI_ERROR_NOT_FOUND)
 		{
 			// try index 0 (default adapter)
-			fprintf(stderr, "D3D: adapter not found, falling back to the default\n");
+			if (index >= 0)
+				fprintf(stderr, "D3D: adapter not found, falling back to the default\n");
 			if (FAILED(factory->EnumAdapters1(0, adapter.put())))
 			{
 				// either there are no adapters connected or something major is wrong with the system
