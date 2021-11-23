@@ -108,7 +108,8 @@ void GSRendererDX11::EmulateZbuffer()
 	if (m_context->TEST.ZTE)
 	{
 		m_om_dssel.ztst = m_context->TEST.ZTST;
-		m_om_dssel.zwe = !m_context->ZBUF.ZMSK;
+		// AA1: Z is not written on lines since coverage is always less than 0x80.
+		m_om_dssel.zwe = (m_context->ZBUF.ZMSK || (PRIM->AA1 && m_vt.m_primclass == GS_LINE_CLASS)) ? 0 : 1;
 	}
 	else
 	{
