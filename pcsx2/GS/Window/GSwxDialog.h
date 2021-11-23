@@ -185,9 +185,7 @@ namespace GSSettingsDialog
 
 		wxBoxSizer* m_top_box;
 		wxChoice* m_renderer_select;
-#ifdef _WIN32
 		wxChoice* m_adapter_select;
-#endif
 		wxChoice* m_bifilter_select;
 		wxArrayString m_adapter_arr_string;
 		RendererTab* m_renderer_panel;
