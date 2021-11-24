@@ -446,8 +446,8 @@ void GSRendererDX11::EmulateBlending()
 	// it requires coverage sample so it's safer to turn it off instead.
 	const bool aa1 = PRIM->AA1 && (m_vt.m_primclass == GS_LINE_CLASS);
 
-	// No blending so early exit
-	if (aa1 || !(PRIM->ABE || m_env.PABE.PABE))
+	// No blending or coverage anti-aliasing so early exit
+	if (!(PRIM->ABE || m_env.PABE.PABE || aa1))
 		return;
 
 	m_om_bsel.abe = 1;
