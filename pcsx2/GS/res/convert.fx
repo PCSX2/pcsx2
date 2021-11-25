@@ -49,7 +49,7 @@ VS_OUTPUT vs_main(VS_INPUT input)
 	return output;
 }
 
-PS_OUTPUT ps_main0(PS_INPUT input)
+PS_OUTPUT ps_copy(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	
@@ -58,7 +58,7 @@ PS_OUTPUT ps_main0(PS_INPUT input)
 	return output;
 }
 
-PS_OUTPUT ps_main7(PS_INPUT input)
+PS_OUTPUT ps_filter_transparency(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	
@@ -95,7 +95,7 @@ float4 ps_scanlines(PS_INPUT input, int i)
 	return sample_c(input.t) * saturate(mask[i] + 0.5f);
 }
 
-uint ps_main1(PS_INPUT input) : SV_Target0
+uint ps_convert_rgba8_16bits(PS_INPUT input) : SV_Target0
 {
 	float4 c = sample_c(input.t);
 
@@ -106,7 +106,7 @@ uint ps_main1(PS_INPUT input) : SV_Target0
 	return (i.x & 0x001f) | (i.y & 0x03e0) | (i.z & 0x7c00) | (i.w & 0x8000);	
 }
 
-PS_OUTPUT ps_main2(PS_INPUT input)
+PS_OUTPUT ps_datm1(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	
@@ -117,7 +117,7 @@ PS_OUTPUT ps_main2(PS_INPUT input)
 	return output;
 }
 
-PS_OUTPUT ps_main3(PS_INPUT input)
+PS_OUTPUT ps_datm0(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	
@@ -128,7 +128,7 @@ PS_OUTPUT ps_main3(PS_INPUT input)
 	return output;
 }
 
-PS_OUTPUT ps_main4(PS_INPUT input)
+PS_OUTPUT ps_mod256(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
@@ -142,7 +142,7 @@ PS_OUTPUT ps_main4(PS_INPUT input)
 	return output;
 }
 
-PS_OUTPUT ps_main5(PS_INPUT input) // scanlines
+PS_OUTPUT ps_filter_scanlines(PS_INPUT input)
 {
 	PS_OUTPUT output;
 	
@@ -153,7 +153,7 @@ PS_OUTPUT ps_main5(PS_INPUT input) // scanlines
 	return output;
 }
 
-PS_OUTPUT ps_main6(PS_INPUT input) // diagonal
+PS_OUTPUT ps_filter_diagonal(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
@@ -164,7 +164,7 @@ PS_OUTPUT ps_main6(PS_INPUT input) // diagonal
 	return output;
 }
 
-PS_OUTPUT ps_main8(PS_INPUT input) // triangular
+PS_OUTPUT ps_filter_triangular(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
@@ -177,7 +177,7 @@ PS_OUTPUT ps_main8(PS_INPUT input) // triangular
 }
 
 static const float PI = 3.14159265359f;
-PS_OUTPUT ps_main9(PS_INPUT input) // triangular
+PS_OUTPUT ps_filter_complex(PS_INPUT input) // triangular
 {
 	PS_OUTPUT output;
 
@@ -191,13 +191,13 @@ PS_OUTPUT ps_main9(PS_INPUT input) // triangular
 	return output;
 }
 
-uint ps_main10(PS_INPUT input) : SV_Target0
+uint ps_convert_float32_32bits(PS_INPUT input) : SV_Target0
 {
 	// Convert a FLOAT32 depth texture into a 32 bits UINT texture
 	return uint(exp2(32.0f) * sample_c(input.t).r);
 }
 
-PS_OUTPUT ps_main11(PS_INPUT input)
+PS_OUTPUT ps_convert_float32_rgba8(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
@@ -212,7 +212,7 @@ PS_OUTPUT ps_main11(PS_INPUT input)
 	return output;
 }
 
-PS_OUTPUT ps_main12(PS_INPUT input)
+PS_OUTPUT ps_convert_float16_rgb5a1(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
@@ -225,7 +225,7 @@ PS_OUTPUT ps_main12(PS_INPUT input)
 
 	return output;
 }
-float ps_main13(PS_INPUT input) : SV_Depth
+float ps_convert_rgba8_float32(PS_INPUT input) : SV_Depth
 {
 	// Convert a RRGBA texture into a float depth texture
 	// FIXME: I'm afraid of the accuracy
@@ -234,7 +234,7 @@ float ps_main13(PS_INPUT input) : SV_Depth
 	return dot(sample_c(input.t), bitSh);
 }
 
-float ps_main14(PS_INPUT input) : SV_Depth
+float ps_convert_rgba8_float24(PS_INPUT input) : SV_Depth
 {
 	// Same as above but without the alpha channel (24 bits Z)
 
@@ -244,7 +244,7 @@ float ps_main14(PS_INPUT input) : SV_Depth
 	return dot(sample_c(input.t).rgb, bitSh);
 }
 
-float ps_main15(PS_INPUT input) : SV_Depth
+float ps_convert_rgba8_float16(PS_INPUT input) : SV_Depth
 {
 	// Same as above but without the A/B channels (16 bits Z)
 
@@ -255,7 +255,7 @@ float ps_main15(PS_INPUT input) : SV_Depth
 	return dot(sample_c(input.t).rg, bitSh);
 }
 
-float ps_main16(PS_INPUT input) : SV_Depth
+float ps_convert_rgb5a1_float16(PS_INPUT input) : SV_Depth
 {
 	// Convert a RGB5A1 (saved as RGBA8) color to a 16 bit Z
 	// FIXME: I'm afraid of the accuracy
@@ -266,7 +266,7 @@ float ps_main16(PS_INPUT input) : SV_Depth
 	return dot(float4(color), bitSh);
 }
 
-PS_OUTPUT ps_main17(PS_INPUT input)
+PS_OUTPUT ps_convert_rgba_8i(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
@@ -358,7 +358,7 @@ PS_OUTPUT ps_main17(PS_INPUT input)
 }
 
 // DUMMY
-PS_OUTPUT ps_main18(PS_INPUT input)
+PS_OUTPUT ps_yuv(PS_INPUT input)
 {
 	PS_OUTPUT output;
 
@@ -367,7 +367,7 @@ PS_OUTPUT ps_main18(PS_INPUT input)
 	return output;
 }
 
-PS_OUTPUT ps_main19(PS_INPUT input)
+PS_OUTPUT ps_osd(PS_INPUT input)
 {
 	PS_OUTPUT output;
 

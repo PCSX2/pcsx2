@@ -240,7 +240,7 @@ bool GSDevice11::Create(const WindowInfo& wi)
 
 	for (size_t i = 0; i < std::size(m_convert.ps); i++)
 	{
-		CreateShader(shader, "convert.fx", nullptr, format("ps_main%d", i).c_str(), sm_convert_ptr, m_convert.ps[i].put());
+		CreateShader(shader, "convert.fx", nullptr, shaderName(static_cast<ShaderConvert>(i)), sm_convert_ptr, m_convert.ps[i].put());
 	}
 
 	memset(&dsd, 0, sizeof(dsd));
