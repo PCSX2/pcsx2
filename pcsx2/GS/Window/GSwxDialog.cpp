@@ -267,6 +267,7 @@ RendererTab::RendererTab(wxWindow* parent)
 	const int space = wxSizerFlags().Border().GetBorderInPixels();
 	auto hw_prereq = [this]{ return m_is_hardware; };
 	auto sw_prereq = [this]{ return !m_is_hardware; };
+	auto upscale_prereq = [this]{ return !m_is_native_res; };
 
 	PaddedBoxSizer<wxBoxSizer> tab_box(wxVERTICAL);
 	PaddedBoxSizer<wxStaticBoxSizer> hardware_box(wxVERTICAL, this, "Hardware Mode");
@@ -275,14 +276,16 @@ RendererTab::RendererTab(wxWindow* parent)
 	auto* hw_checks_box = new wxWrapSizer(wxHORIZONTAL);
 
 	m_ui.addCheckBox(hw_checks_box, "Accurate Destination Alpha Test", "accurate_date",            IDC_ACCURATE_DATE,   hw_prereq);
-	m_ui.addCheckBox(hw_checks_box, "Conservative Buffer Allocation",  "conservative_framebuffer", IDC_CONSERVATIVE_FB, hw_prereq);
-	m_ui.addCheckBox(hw_checks_box, "GPU Palette Conversion",          "paltex",                   IDC_PALTEX,          hw_prereq);
+	m_ui.addCheckBox(hw_checks_box, "Conservative Buffer Allocation",  "conservative_framebuffer", IDC_CONSERVATIVE_FB, upscale_prereq);
+
+	auto* paltex_prereq = m_ui.addCheckBox(hw_checks_box, "GPU Palette Conversion", "paltex", IDC_PALTEX, hw_prereq);
+	auto aniso_prereq = [this, paltex_prereq]{ return m_is_hardware && !m_is_nearest_filter && paltex_prereq->GetValue() == false; };
 
 	auto* hw_choice_grid = new wxFlexGridSizer(2, space, space);
 
 	m_internal_resolution = m_ui.addComboBoxAndLabel(hw_choice_grid, "Internal Resolution:", "upscale_multiplier", &theApp.m_gs_upscale_multiplier, -1, hw_prereq).first;
 
-	m_ui.addComboBoxAndLabel(hw_choice_grid, "Anisotropic Filtering:", "MaxAnisotropy",  &theApp.m_gs_max_anisotropy, IDC_AFCOMBO,   hw_prereq);
+	m_ui.addComboBoxAndLabel(hw_choice_grid, "Anisotropic Filtering:", "MaxAnisotropy",  &theApp.m_gs_max_anisotropy, IDC_AFCOMBO,   aniso_prereq);
 	m_ui.addComboBoxAndLabel(hw_choice_grid, "Dithering (PgDn):",      "dithering_ps2",  &theApp.m_gs_dithering,      IDC_DITHERING, hw_prereq);
 	m_ui.addComboBoxAndLabel(hw_choice_grid, "Mipmapping (Insert):",   "mipmap_hw",      &theApp.m_gs_hw_mipmapping,  IDC_MIPMAP_HW, hw_prereq);
 	m_ui.addComboBoxAndLabel(hw_choice_grid, "CRC Hack Level:",        "crc_hack_level", &theApp.m_gs_crc_level,      IDC_CRC_LEVEL, hw_prereq);
@@ -345,6 +348,7 @@ HacksTab::HacksTab(wxWindow* parent)
 	auto hw_prereq = [this]{ return m_is_hardware; };
 	auto* hacks_check_box = m_ui.addCheckBox(tab_box.inner, "Enable HW Hacks", "UserHacks", -1, hw_prereq);
 	auto hacks_prereq = [this, hacks_check_box]{ return m_is_hardware && hacks_check_box->GetValue(); };
+	auto gl_hacks_prereq = [this, hacks_check_box]{ return m_is_ogl_hw && hacks_check_box->GetValue(); };
 	auto upscale_hacks_prereq = [this, hacks_check_box]{ return !m_is_native_res && hacks_check_box->GetValue(); };
 
 	PaddedBoxSizer<wxStaticBoxSizer> rend_hacks_box   (wxVERTICAL, this, "Renderer Hacks");
@@ -374,7 +378,7 @@ HacksTab::HacksTab(wxWindow* parent)
 
 	// Renderer Hacks:
 	m_ui.addComboBoxAndLabel(rend_hack_choice_grid, "Half Screen Fix:",     "UserHacks_Half_Bottom_Override", &theApp.m_gs_generic_list, IDC_HALF_SCREEN_TS, hacks_prereq);
-	m_ui.addComboBoxAndLabel(rend_hack_choice_grid, "Trilinear Filtering:", "UserHacks_TriFilter",            &theApp.m_gs_trifilter,    IDC_TRI_FILTER,     hacks_prereq);
+	m_ui.addComboBoxAndLabel(rend_hack_choice_grid, "Trilinear Filtering:", "UserHacks_TriFilter",            &theApp.m_gs_trifilter,    IDC_TRI_FILTER,     gl_hacks_prereq);
 
 	// Skipdraw Range
 	add_label(this, rend_hack_choice_grid, "Skipdraw Range:", IDC_SKIPDRAWHACK);
@@ -623,7 +627,8 @@ Dialog::Dialog()
 #endif
 
 	m_ui.addComboBoxAndLabel(top_grid, "Interlacing (F5):", "interlace", &theApp.m_gs_interlace);
-	m_ui.addComboBoxAndLabel(top_grid, "Texture Filtering:", "filter", &theApp.m_gs_bifilter, IDC_FILTER);
+
+	m_bifilter_select = m_ui.addComboBoxAndLabel(top_grid, "Texture Filtering:", "filter", &theApp.m_gs_bifilter, IDC_FILTER).first;
 
 	auto* book = new wxNotebook(this, wxID_ANY, wxDefaultPosition, wxDefaultSize);
 
@@ -779,11 +784,15 @@ void Dialog::Update()
 	else
 	{
 		// cross-tab dependencies yay
-		bool is_hw = renderer == GSRendererType::OGL_HW || renderer == GSRendererType::DX1011_HW;
-		bool is_upscale = m_renderer_panel->m_internal_resolution->GetSelection() != 0;
+		const bool is_hw = renderer == GSRendererType::OGL_HW || renderer == GSRendererType::DX1011_HW;
+		const bool is_upscale = m_renderer_panel->m_internal_resolution->GetSelection() != 0;
+		const bool is_nearest_filter = m_bifilter_select->GetSelection() == static_cast<int>(BiFiltering::Nearest);
 		m_hacks_panel->m_is_native_res = !is_hw || !is_upscale;
 		m_hacks_panel->m_is_hardware = is_hw;
+		m_hacks_panel->m_is_ogl_hw = renderer == GSRendererType::OGL_HW;
 		m_renderer_panel->m_is_hardware = is_hw;
+		m_renderer_panel->m_is_native_res = !is_hw || !is_upscale;
+		m_renderer_panel->m_is_nearest_filter = is_nearest_filter;
 		m_debug_panel->m_is_ogl_hw = renderer == GSRendererType::OGL_HW;
 
 		m_ui.Update();
