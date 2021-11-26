@@ -38,6 +38,12 @@ public:
 		return ptr;
 	}
 
+	void operator delete(void* ptr, void* placement_ptr)
+	{
+		// Just here to satisfy compilers
+		// Person who calls in-place placement new must handle error case
+	}
+
 	void* operator new[](size_t size)
 	{
 		return _aligned_malloc(size, i);

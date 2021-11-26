@@ -64,18 +64,18 @@ public:
 	template <typename T, typename... Args>
 	T* make(Args&&... args)
 	{
-		void* ptr = alloc(sizeof(T), alignof(T));
-		new (ptr) T(std::forward<Args>(args)...);
-		return static_cast<T*>(ptr);
+		std::unique_ptr<void, void(*)(void*)> ptr(alloc(sizeof(T), alignof(T)), GSRingHeap::free);
+		new (ptr.get()) T(std::forward<Args>(args)...);
+		return static_cast<T*>(ptr.release());
 	}
 
 	/// Allocate and default-initialize `count` `T`s
 	template <typename T>
 	T* make_array(size_t count)
 	{
-		void* ptr = alloc(sizeof(T) * count, alignof(T));
-		new (ptr) T[count]();
-		return static_cast<T*>(ptr);
+		std::unique_ptr<void, void(*)(void*)> ptr(alloc(sizeof(T) * count, alignof(T)), GSRingHeap::free);
+		new (ptr.get()) T[count]();
+		return static_cast<T*>(ptr.release());
 	}
 
 	/// Free a pointer allocated with `alloc`
@@ -207,17 +207,19 @@ public:
 	SharedPtr<T> make_shared(Args&&... args)
 	{
 		using Header = typename SharedPtr<T>::AllocationHeader;
-		constexpr size_t alloc_size = sizeof(T) + sizeof(Header);
+		static constexpr size_t alloc_size = sizeof(T) + sizeof(Header);
 		static_assert(alignof(Header) <= MIN_ALIGN, "Header alignment too high");
 		static_assert(alloc_size <= UINT32_MAX, "Allocation overflow");
 
 		void* ptr = alloc_internal(sizeof(T), getAlignMask(alignof(T)), sizeof(Header));
+		std::unique_ptr<void, void(*)(void*)> guard(ptr, [](void* p){ free_internal(p, alloc_size); });
 		Header* header = static_cast<Header*>(ptr);
 		header->size = static_cast<uint32_t>(alloc_size);
 		header->refcnt.store(1, std::memory_order_relaxed);
 
 		T* tptr = reinterpret_cast<T*>(header + 1);
 		new (tptr) T(std::forward<Args>(args)...);
+		guard.release();
 		return SharedPtr<T>(tptr);
 	}
 
