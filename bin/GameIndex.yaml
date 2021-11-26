@@ -1408,6 +1408,11 @@ SCED-51700:
   region: "PAL-M5"
   gameFixes:
     - VUKickstartHack # Fixes Character SPS.
+SCED-51922:
+  name: "Ghosthunter [Demo]"
+  region: "PAL-G"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SCED-51935:
   name: "Official PlayStation 2 Magazine Demo 38" # German
   region: "PAL-E-G"
@@ -2378,6 +2383,8 @@ SCES-51463:
   name: "Ghosthunter"
   region: "PAL-M6"
   compat: 5
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
   gameFixes:
     - VUKickstartHack # Fixes Missing Graphics.
 SCES-51480:
@@ -2566,6 +2573,8 @@ SCES-52154:
 SCES-52156:
   name: "Ghosthunter - Hunter on the spectres"
   region: "PAL-M3"
+  clampModes:
+    vuClampMode: 3 # Fixes SPS.
 SCES-52268:
   name: "SingStar"
   region: "PAL-E"
@@ -8105,6 +8114,8 @@ SLES-50446:
   name: "Shadow Man - 2econd Coming"
   region: "PAL-M4"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes cutscene freezes. 
   speedHacks:
     InstantVU1SpeedHack: 0  # Fixes SPS.
 SLES-50447:
@@ -8364,6 +8375,8 @@ SLES-50608:
   name: "Shadow Man - 2econd Coming"
   region: "PAL-G"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes cutscene freezes. 
   speedHacks:
     InstantVU1SpeedHack: 0  # Fixes SPS.
 SLES-50613:
@@ -9367,6 +9380,8 @@ SLES-51113:
   name: "Zone of the Enders: The 2nd Runner Special Edition"
   region: "PAL-M5"
   compat: 5
+  gameFixes:
+    - DMABusyHack # Fixes the corrupted fade effect in cutscenes.
 SLES-51114:
   name: "Pro Evolution Soccer 2"
   region: "PAL-M5"
@@ -16783,11 +16798,15 @@ SLES-54767:
 SLES-54770:
   name: "DreamWorks Shrek the Third"
   region: "PAL-E"
+  roundModes:
+    vuRoundMode: 0  # Fixes black zones.
   clampModes:
     eeClampMode: 3  # Fixes objects spawning.
 SLES-54771:
   name: "DreamWorks Shrek the Third"
   region: "PAL-M5"
+  roundModes:
+    vuRoundMode: 0  # Fixes black zones.
   clampModes:
     eeClampMode: 3  # Fixes objects spawning.
 SLES-54772:
@@ -16795,6 +16814,8 @@ SLES-54772:
   region: "PAL-E"
 SLES-54774:
   name: "DreamWorks Shrek the Third"
+  roundModes:
+    vuRoundMode: 0  # Fixes black zones.
   region: "PAL-M5"
   clampModes:
     eeClampMode: 3  # Fixes objects spawning.
@@ -34301,6 +34322,8 @@ SLUS-20413:
   name: "Shadow Man - 2econd Coming"
   region: "NTSC-U"
   compat: 5
+  gameFixes:
+    - EETimingHack # Fixes cutscene freezes. 
   speedHacks:
     InstantVU1SpeedHack: 0  # Fixes SPS.
 SLUS-20414:
@@ -38259,6 +38282,8 @@ SLUS-21322:
   name: "Eragon"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    vuClampMode: 3 # Fixes SPS and spawn issues.
 SLUS-21323:
   name: "Rampage - Total Destruction"
   region: "NTSC-U"
@@ -38895,6 +38920,8 @@ SLUS-21454:
   name: "DreamWorks Shrek the Third"
   region: "NTSC-U"
   compat: 5
+  roundModes:
+    vuRoundMode: 0  # Fixes black zones.
   clampModes:
     eeClampMode: 3  # Fixes objects spawning.
 SLUS-21455:
