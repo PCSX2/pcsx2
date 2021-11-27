@@ -207,12 +207,12 @@ public:
 	SharedPtr<T> make_shared(Args&&... args)
 	{
 		using Header = typename SharedPtr<T>::AllocationHeader;
-		size_t alloc_size = sizeof(T) + sizeof(Header);
+		constexpr size_t alloc_size = sizeof(T) + sizeof(Header);
 		static_assert(alignof(Header) <= MIN_ALIGN, "Header alignment too high");
+		static_assert(alloc_size <= UINT32_MAX, "Allocation overflow");
 
 		void* ptr = alloc_internal(sizeof(T), getAlignMask(alignof(T)), sizeof(Header));
 		Header* header = static_cast<Header*>(ptr);
-		assert(alloc_size <= UINT32_MAX && "Allocation overflow");
 		header->size = static_cast<uint32_t>(alloc_size);
 		header->refcnt.store(1, std::memory_order_relaxed);
 
