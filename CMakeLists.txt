@@ -1,13 +1,9 @@
-# Project Name
-project(Pcsx2)
-
-# Debian-based distributions require at least 2.8.5 due to multiarch.
-# Bumping up to 3.0 seems reasonable at this point, and will let us modernize
-# things a bit.
-#
 # Setting it to a range tells it that it supports the features on the newer
 # versions as well, avoiding setting policies.
-cmake_minimum_required(VERSION 3.10...3.17)
+cmake_minimum_required(VERSION 3.11...3.22)
+
+# Project Name
+project(Pcsx2)
 
 # Variable to check that people use the good file
 set(TOP_CMAKE_WAS_SOURCED TRUE)

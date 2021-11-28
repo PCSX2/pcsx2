@@ -72,7 +72,7 @@ endif()
 #-------------------------------------------------------------------------------
 option(USE_ASAN "Enable address sanitizer")
 
-if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+if(CMAKE_CXX_COMPILER_ID STREQUAL "Clang" OR CMAKE_CXX_COMPILER_ID STREQUAL "AppleClang")
 	set(USE_CLANG TRUE)
 	message(STATUS "Building with Clang/LLVM.")
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "Intel")
