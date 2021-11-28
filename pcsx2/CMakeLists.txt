@@ -271,7 +271,7 @@ set(pcsx2CDVDHeaders
 	CDVD/CompressedFileReaderUtils.h
 	CDVD/ChdFileReader.h
 	CDVD/CsoFileReader.h
-	CDVD/Decode_XA.h
+	#CDVD/Decode_XA.h
 	CDVD/GzippedFileReader.h
 	CDVD/ThreadedFileReader.h
 	CDVD/IsoFileFormats.h
