@@ -70,10 +70,6 @@ if(TARGET SDL::SDL)
 	target_link_libraries(PCSX2_FLAGS INTERFACE SDL::SDL)
 endif()
 
-if(WAYLAND_CLIENT_FOUND)
-	target_compile_definitions(PCSX2 PRIVATE WAYLAND_BUILD)
-endif()
-
 if(WIN32)
 	# Resources
 	target_sources(PCSX2 PRIVATE
@@ -1344,7 +1340,7 @@ if(UNIX AND NOT APPLE)
 	endif()
 	if(WAYLAND_API)
 		target_link_libraries(PCSX2_FLAGS INTERFACE
-			${WAYLAND_CLIENT_LIBRARIES}
+			Wayland::Client
 		)
 	endif()
 endif()
