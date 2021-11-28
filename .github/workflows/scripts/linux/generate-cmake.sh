@@ -20,6 +20,7 @@ cmake                                       \
 -DCMAKE_CXX_COMPILER_LAUNCHER=ccache        \
 -DCMAKE_BUILD_TYPE=Release                  \
 -DPACKAGE_MODE=TRUE                         \
+-DWAYLAND_API=TRUE                          \
 -DDISABLE_ADVANCE_SIMD=TRUE                 \
 -DCMAKE_INSTALL_LIBDIR="/tmp/"              \
 -DCMAKE_INSTALL_DATADIR="/tmp/"             \
