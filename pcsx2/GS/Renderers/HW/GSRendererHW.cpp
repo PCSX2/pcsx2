@@ -1295,8 +1295,8 @@ void GSRendererHW::Draw()
 	TEX0.TBW = context->FRAME.FBW;
 	TEX0.PSM = context->FRAME.PSM;
 
-	GSTextureCache::Target* rt = NULL;
-	GSTexture* rt_tex = NULL;
+	GSTextureCache::Target* rt = nullptr;
+	GSTexture* rt_tex = nullptr;
 	if (!no_rt)
 	{
 		rt = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::RenderTarget, true, fm);
@@ -1307,8 +1307,8 @@ void GSRendererHW::Draw()
 	TEX0.TBW = context->FRAME.FBW;
 	TEX0.PSM = context->ZBUF.PSM;
 
-	GSTextureCache::Target* ds = NULL;
-	GSTexture* ds_tex = NULL;
+	GSTextureCache::Target* ds = nullptr;
+	GSTexture* ds_tex = nullptr;
 	if (!no_ds)
 	{
 		ds = m_tc->LookupTarget(TEX0, m_width, m_height, GSTextureCache::DepthStencil, context->DepthWrite());
@@ -1491,6 +1491,41 @@ void GSRendererHW::Draw()
 		rt->m_32_bits_fmt = m_texture_shuffle || (GSLocalMemory::m_psm[context->FRAME.PSM].bpp != 16);
 	}
 
+	// The rectangle of the draw
+	m_r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
+
+	{
+		const GSVector2 up_s = GetTextureScaleFactor();
+		const int up_w = static_cast<int>(std::ceil(static_cast<float>(m_r.z) * up_s.x));
+		const int up_h = static_cast<int>(std::ceil(static_cast<float>(m_r.w) * up_s.y));
+		const int new_w = std::max(up_w, std::max(rt_tex ? rt_tex->GetWidth() : 0, ds_tex ? ds_tex->GetWidth() : 0));
+		const int new_h = std::max(up_h, std::max(rt_tex ? rt_tex->GetHeight() : 0, ds_tex ? ds_tex->GetHeight() : 0));
+		std::array<GSTextureCache::Target*, 2> ts{ rt, ds };
+		for (GSTextureCache::Target* t : ts)
+		{
+			if (t)
+			{
+				// Adjust texture size to fit current draw if necessary.
+				GSTexture* tex = t->m_texture;
+				assert(up_s == tex->GetScale());
+				const int w = tex->GetWidth();
+				const int h = tex->GetHeight();
+				if (w != new_w || h != new_h)
+				{
+					const bool is_rt = t == rt;
+					t->m_texture = is_rt ?
+						m_dev->CreateSparseRenderTarget(new_w, new_h, tex->GetFormat()) :
+						m_dev->CreateSparseDepthStencil(new_w, new_h, tex->GetFormat());
+					const GSVector4i r{ 0, 0, w, h };
+					m_dev->CopyRect(tex, t->m_texture, r);
+					m_dev->Recycle(tex);
+					t->m_texture->SetScale(up_s);
+					(is_rt ? rt_tex : ds_tex) = t->m_texture;
+				}
+			}
+		}
+	}
+
 	if (s_dump)
 	{
 		const u64 frame = m_perfmon.GetFrame();
@@ -1528,8 +1563,8 @@ void GSRendererHW::Draw()
 		{
 			s = format("%05d_f%lld_rt0_%05x_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
 
-			if (rt)
-				rt->m_texture->Save(m_dump_root + s);
+			if (rt_tex)
+				rt_tex->Save(m_dump_root + s);
 		}
 
 		if (s_savez && s_n >= s_saven)
@@ -1540,9 +1575,6 @@ void GSRendererHW::Draw()
 				ds_tex->Save(m_dump_root + s);
 		}
 	}
-
-	// The rectangle of the draw
-	m_r = GSVector4i(m_vt.m_min.p.xyxy(m_vt.m_max.p)).rintersect(GSVector4i(context->scissor.in));
 
 	if (m_hacks.m_oi && !(this->*m_hacks.m_oi)(rt_tex, ds_tex, m_src))
 	{
@@ -1634,18 +1666,6 @@ void GSRendererHW::Draw()
 
 	//
 
-	// Help to detect rendering outside of the framebuffer
-#if _DEBUG
-	if (m_upscale_multiplier * m_r.z > m_width)
-	{
-		GL_INS("ERROR: RT width is too small only %d but require %d", m_width, m_upscale_multiplier * m_r.z);
-	}
-	if (m_upscale_multiplier * m_r.w > m_height)
-	{
-		GL_INS("ERROR: RT height is too small only %d but require %d", m_height, m_upscale_multiplier * m_r.w);
-	}
-#endif
-
 	if (fm != 0xffffffff && rt)
 	{
 		//rt->m_valid = rt->m_valid.runion(r);
@@ -1683,8 +1703,8 @@ void GSRendererHW::Draw()
 		{
 			s = format("%05d_f%lld_rt1_%05x_%s.bmp", s_n, frame, context->FRAME.Block(), psm_str(context->FRAME.PSM));
 
-			if (rt)
-				rt->m_texture->Save(m_dump_root + s);
+			if (rt_tex)
+				rt_tex->Save(m_dump_root + s);
 		}
 
 		if (s_savez && s_n >= s_saven)
