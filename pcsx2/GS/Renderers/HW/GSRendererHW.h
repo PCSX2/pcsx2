@@ -179,6 +179,7 @@ public:
 	GSVector4 RealignTargetTextureCoordinate(const GSTextureCache::Source* tex);
 	GSVector4i ComputeBoundingBox(const GSVector2& rtscale, const GSVector2i& rtsize);
 	void MergeSprite(GSTextureCache::Source* tex);
+	GSVector2 GetTextureScaleFactor();
 
 	void Reset();
 	void VSync(int field);

@@ -775,6 +775,29 @@ void GSRendererHW::MergeSprite(GSTextureCache::Source* tex)
 	}
 }
 
+GSVector2 GSRendererHW::GetTextureScaleFactor()
+{
+	GSVector2 scale_factor{ 1.0f, 1.0f };
+	if (CanUpscale())
+	{
+		const int multiplier = GetUpscaleMultiplier();
+		if (multiplier == 0)
+		{
+			// Custom resolution.
+			const GSVector4i display_rect = GetDisplayRect();
+			const GSVector2i requested_resolution = GetCustomResolution();
+			scale_factor.x = static_cast<float>(requested_resolution.x) / display_rect.width();
+			scale_factor.y = static_cast<float>(requested_resolution.y) / display_rect.height();
+		}
+		else
+		{
+			scale_factor.x = multiplier;
+			scale_factor.y = multiplier;
+		}
+	}
+	return scale_factor;
+}
+
 void GSRendererHW::InvalidateVideoMem(const GIFRegBITBLTBUF& BITBLTBUF, const GSVector4i& r)
 {
 	// printf("[%d] InvalidateVideoMem %d,%d - %d,%d %05x (%d)\n", (int)m_perfmon.GetFrame(), r.left, r.top, r.right, r.bottom, (int)BITBLTBUF.DBP, (int)BITBLTBUF.DPSM);
