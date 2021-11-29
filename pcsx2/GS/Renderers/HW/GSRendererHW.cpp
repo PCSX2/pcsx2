@@ -1576,7 +1576,7 @@ void GSRendererHW::Draw()
 	// A couple of hack to avoid upscaling issue. So far it seems to impacts mostly sprite
 	// Note: first hack corrects both position and texture coordinate
 	// Note: second hack corrects only the texture coordinate
-	if ((m_upscale_multiplier > 1) && (m_vt.m_primclass == GS_SPRITE_CLASS))
+	if (CanUpscale() && (m_vt.m_primclass == GS_SPRITE_CLASS))
 	{
 		const size_t count = m_vertex.next;
 		GSVertex* v = &m_vertex.buff[0];
