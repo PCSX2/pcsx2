@@ -35,7 +35,7 @@ private:
 	bool m_userhacks_enabled_gs_mem_clear;
 	bool m_userHacks_merge_sprite;
 
-	static const float SSR_UV_TOLERANCE;
+	static constexpr float SSR_UV_TOLERANCE = 1.0f;
 
 #pragma region hacks
 
@@ -59,8 +59,10 @@ private:
 	bool OI_SuperManReturns(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_ArTonelico2(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 	bool OI_JakGames(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
+	bool OI_BurnoutGames(GSTexture* rt, GSTexture* ds, GSTextureCache::Source* t);
 
 	void OO_MajokkoALaMode2();
+	void OO_BurnoutGames();
 
 	bool CU_MajokkoALaMode2();
 	bool CU_TalesOfAbyss();
@@ -136,7 +138,7 @@ private:
 	float alpha0(int L, int X0, int X1);
 	float alpha1(int L, int X0, int X1);
 	void SwSpriteRender();
-	bool CanUseSwSpriteRender(bool allow_64x64_sprite);
+	bool CanUseSwSpriteRender();
 
 	template <bool linear>
 	void RoundSpriteOffset();
