@@ -33,7 +33,7 @@ jobs:
       # - https://github.community/t/github-actions-workflow-not-triggering-with-tag-push/17053/7
       - name: Bump Version and Push Tag
         id: tag_version
-        uses: mathieudutour/github-tag-action@v5.6
+        uses: mathieudutour/github-tag-action@v6.0
         with:
           github_token: ${{ secrets.BOT_PAT }}
           tag_prefix: v
