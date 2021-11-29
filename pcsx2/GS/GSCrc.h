@@ -153,6 +153,7 @@ public:
 		US,
 		EU,
 		JP,
+		JPUNDUB,
 		RU,
 		FR,
 		DE,
