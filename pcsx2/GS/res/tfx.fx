@@ -667,6 +667,24 @@ void ps_dither(inout float3 C, float2 pos_xy)
 	}
 }
 
+void ps_color_clamp_wrap(inout float3 C)
+{
+	// When dithering the bottom 3 bits become meaningless and cause lines in the picture
+	// so we need to limit the color depth on dithered items
+	if (SW_BLEND || PS_DITHER)
+	{
+		// Standard Clamp
+		if (PS_COLCLIP == 0 && PS_HDR == 0)
+			C = clamp(C, (float3)0.0f, (float3)255.0f);
+
+		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
+		if (PS_DFMT == FMT_16)
+			C = (float3)((int3)C & (int3)0xF8);
+		else if (PS_COLCLIP == 1 && PS_HDR == 0)
+			C = (float3)((int3)C & (int3)0xFF);
+	}
+}
+
 void ps_blend(inout float4 Color, float As, float2 pos_xy)
 {
 	if (SW_BLEND)
@@ -688,19 +706,6 @@ void ps_blend(inout float4 Color, float As, float2 pos_xy)
 		// PABE
 		if (PS_PABE)
 			Color.rgb = (As >= 1.0f) ? Color.rgb : Cs;
-
-		// Dithering
-		ps_dither(Color.rgb, pos_xy);
-
-		// Standard Clamp
-		if (PS_COLCLIP == 0 && PS_HDR == 0)
-			Color.rgb = clamp(Color.rgb, (float3)0.0f, (float3)255.0f);
-
-		// In 16 bits format, only 5 bits of color are used. It impacts shadows computation of Castlevania
-		if (PS_DFMT == FMT_16)
-			Color.rgb = (float3)((int3)Color.rgb & (int3)0xF8);
-		else if (PS_COLCLIP == 1 && PS_HDR == 0)
-			Color.rgb = (float3)((int3)Color.rgb & (int3)0xFF);
 	}
 }
 
@@ -752,21 +757,14 @@ PS_OUTPUT ps_main(PS_INPUT input)
 		if (C.a < A_one) C.a += A_one;
 	}
 
-	if (!SW_BLEND)
-		ps_dither(C.rgb, input.p.xy);
-
 	ps_blend(C, alpha_blend, input.p.xy);
 
-	ps_fbmask(C, input.p.xy);
+	ps_dither(C.rgb, input.p.xy);
 
-	// When dithering the bottom 3 bits become meaningless and cause lines in the picture
-	// so we need to limit the color depth on dithered items
-	// SW_BLEND already deals with this so no need to do in those cases
-	if (!SW_BLEND && PS_DITHER && PS_DFMT == FMT_16 && !PS_COLCLIP)
-	{
-		C.rgb = clamp(C.rgb, (float3)0.0f, (float3)255.0f);
-		C.rgb = (uint3)((uint3)C.rgb & (uint3)0xF8);
-	}
+	// Color clamp/wrap needs to be done after sw blending and dithering
+	ps_color_clamp_wrap(C.rgb);
+
+	ps_fbmask(C, input.p.xy);
 
 	output.c0 = C / 255.0f;
 	output.c1 = (float4)(alpha_blend);
