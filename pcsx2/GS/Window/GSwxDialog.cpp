@@ -59,7 +59,7 @@ namespace
 		theApp.SetConfig(str, s[idx].value);
 	}
 
-	void add_label(wxWindow* parent, wxSizer* sizer, const char* str, int tooltip = -1, wxSizerFlags flags = wxSizerFlags().Centre().Right(), long style = wxALIGN_RIGHT | wxALIGN_CENTRE_HORIZONTAL)
+	void add_label(wxWindow* parent, wxSizer* sizer, const char* str, int tooltip = -1, wxSizerFlags flags = wxSizerFlags().Centre().Right(), long style = wxALIGN_RIGHT | wxALIGN_CENTRE_VERTICAL)
 	{
 		auto* temp_text = new wxStaticText(parent, wxID_ANY, str, wxDefaultPosition, wxDefaultSize, style);
 		add_tooltip(temp_text, tooltip);
