@@ -42,7 +42,7 @@ public:
 	static bool CheckSSE();
 	static CRCHackLevel GetRecommendedCRCHackLevel(GSRendererType type);
 	static GSRendererType GetPreferredRenderer();
-	static std::vector<std::string> GetAdapterList(GSRendererType renderer, size_t& default_adapter);
+	static std::vector<std::string> GetAdapterList(GSRendererType renderer);
 };
 
 #ifdef _WIN32

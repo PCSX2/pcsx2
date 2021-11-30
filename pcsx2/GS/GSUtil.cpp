@@ -197,12 +197,11 @@ GSRendererType GSUtil::GetPreferredRenderer()
 	return GSRendererType::OGL_HW;
 }
 
-std::vector<std::string> GSUtil::GetAdapterList(GSRendererType renderer, size_t& default_adapter)
+std::vector<std::string> GSUtil::GetAdapterList(GSRendererType renderer)
 {
 #ifdef _WIN32
 	if (renderer == GSRendererType::DX1011_HW)
 	{
-		default_adapter = 0;
 		auto factory = D3D::CreateFactory(false);
 		return D3D::GetAdapterList(factory.get());
 	}
