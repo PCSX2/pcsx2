@@ -637,6 +637,7 @@ Dialog::Dialog()
 	book->AddPage(m_debug_panel, "Advanced");
 
 	m_top_box->Add(top_grid, wxSizerFlags().Centre());
+	m_top_box->AddSpacer(space);
 	m_top_box->Add(book, wxSizerFlags(1).Expand());
 
 	padding->Add(m_top_box, wxSizerFlags(1).Expand().Border());
