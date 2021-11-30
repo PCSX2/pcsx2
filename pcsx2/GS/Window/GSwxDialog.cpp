@@ -690,31 +690,23 @@ void Dialog::RendererChange()
 	int current_sel = m_adapter_select->GetSelection();
 	if (current_sel >= 0 && current_sel < static_cast<int>(m_adapter_arr_string.Count()))
 		current = m_adapter_arr_string[current_sel].ToUTF8();
+	bool explicitly_selected_default = m_adapter_arr_string.Count() > 1 && current_sel == 0;
 
-	size_t default_adapter = 0;
-	std::vector<std::string> adapters = GSUtil::GetAdapterList(renderer, default_adapter);
+	std::vector<std::string> adapters = GSUtil::GetAdapterList(renderer);
 
-	m_adapter_select->Clear();
-	if (adapters.empty())
+	m_adapter_arr_string.Clear();
+	m_adapter_arr_string.Add(_("Default Adapter"));
+	int new_sel = theApp.GetConfigI("adapter_index") + 1;
+	if (new_sel < 0 || new_sel >= static_cast<int>(adapters.size() + 1) || explicitly_selected_default)
+		new_sel = 0;
+	for (std::string& adapter : adapters)
 	{
-		m_adapter_select->Disable();
+		if (adapter == current)
+			new_sel = m_adapter_arr_string.Count();
+		m_adapter_arr_string.Add(fromUTF8(adapter));
 	}
-	else
-	{
-		m_adapter_arr_string.Clear();
-		int new_sel = theApp.GetConfigI("adapter_index");
-		if (new_sel < 0 || new_sel >= static_cast<int>(adapters.size()))
-			new_sel = default_adapter;
-		for (std::string& adapter : adapters)
-		{
-			if (adapter == current)
-				new_sel = m_adapter_arr_string.Count();
-			m_adapter_arr_string.Add(fromUTF8(adapter));
-		}
-		m_adapter_select->Set(m_adapter_arr_string);
-		m_adapter_select->SetSelection(new_sel);
-		m_adapter_select->Enable();
-	}
+	m_adapter_select->Set(m_adapter_arr_string);
+	m_adapter_select->SetSelection(new_sel);
 #ifdef _WIN32
 	m_renderer_panel->UpdateBlendMode(renderer);
 
@@ -745,8 +737,8 @@ void Dialog::Save()
 	m_ui.Save();
 	// only save the adapter when it makes sense to
 	// prevents changing the adapter, switching to another renderer and saving
-	if (m_adapter_select->GetCount())
-		theApp.SetConfig("adapter_index", m_adapter_select->GetSelection());
+	if (m_adapter_select->GetCount() > 1) // First option is system default
+		theApp.SetConfig("adapter_index", m_adapter_select->GetSelection() - 1);
 
 	m_hacks_panel->Save();
 	m_renderer_panel->Save();
