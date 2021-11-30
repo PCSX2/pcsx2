@@ -169,10 +169,10 @@ JoystickInfo::JoystickInfo(int id)
 	if (m_controller == nullptr)
 	{
 		fprintf(stderr, "PAD: Joystick (%s,GUID:%s) isn't yet supported by the SDL2 game controller API\n"
-						"You can use SDL2 Gamepad Tool (https://www.generalarcade.com/gamepadtool/) or Steam to configure your joystick\n"
-						"The mapping can be stored in PAD.ini as 'SDL2 = <...mapping description...>'\n"
-						"Please post the new generated mapping to (https://github.com/gabomdq/SDL_GameControllerDB) so it can be added to the database.",
-				m_device_name.c_str(), guid);
+		                "You can use SDL2 Gamepad Tool (https://www.generalarcade.com/gamepadtool/) or Steam to configure your joystick\n"
+		                "The mapping can be stored in PAD.ini as 'SDL2 = <...mapping description...>'\n"
+		                "Please post the new generated mapping to (https://github.com/gabomdq/SDL_GameControllerDB) so it can be added to the database.",
+		        m_device_name.c_str(), guid);
 
 #if SDL_MINOR_VERSION >= 4 // Version before 2.0.4 are bugged, JoystickClose crashes randomly
 		SDL_JoystickClose(joy);
@@ -202,14 +202,14 @@ JoystickInfo::JoystickInfo(int id)
 		effect.periodic.delay = 0;
 		effect.periodic.attack_length = 0;
 		/* Sine and triangle are quite probably the best, don't change that lightly and if you do
-         * keep effects ordered by type
-         */
+		 * keep effects ordered by type
+		 */
 		if (i == 0)
 		{
 			/* Effect for small motor */
 			/* Sine seems to be the only effect making little motor from DS3/4 react
-             * Intensity has pretty much no effect either(which is coherent with what is explain in hid_sony driver
-             */
+			 * Intensity has pretty much no effect either(which is coherent with what is explain in hid_sony driver
+			 */
 			effect.type = SDL_HAPTIC_SINE;
 		}
 		else
