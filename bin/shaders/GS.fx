@@ -40,12 +40,8 @@
 #define saturate(x) clamp(x, 0.0, 1.0)
 #define SamplerState sampler2D
 
-in SHADER
-{
-    vec4 p;
-    vec2 t;
-    vec4 c;
-} PSin;
+in vec4 PSin_p;
+in vec2 PSin_t;
 
 layout(location = 0) out vec4 SV_Target0;
 
@@ -2412,8 +2408,8 @@ PS_OUTPUT ps_main(VS_OUTPUT input)
 #endif
 {
     #if GLSL == 1
-    float2 texcoord = PSin.t;
-    float4 position = PSin.p;
+    float2 texcoord = PSin_t;
+    float4 position = PSin_p;
     float4 color = texture(TextureSampler, texcoord);
     #else
     PS_OUTPUT output;

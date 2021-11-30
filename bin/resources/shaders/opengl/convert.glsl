@@ -15,18 +15,15 @@ layout(location = 7) in vec4 COLOR;
 // smooth, the default, means to do perspective-correct interpolation.
 //
 // The centroid qualifier only matters when multisampling. If this qualifier is not present, then the value is interpolated to the pixel's center, anywhere in the pixel, or to one of the pixel's samples. This sample may lie outside of the actual primitive being rendered, since a primitive can cover only part of a pixel's area. The centroid qualifier is used to prevent this; the interpolation point must fall within both the pixel's area and the primitive's area.
-out SHADER
-{
-    vec4 p;
-    vec2 t;
-    vec4 c;
-} VSout;
+out vec4 PSin_p;
+out vec2 PSin_t;
+out vec4 PSin_c;
 
 void vs_main()
 {
-    VSout.p = vec4(POSITION, 0.5f, 1.0f);
-    VSout.t = TEXCOORD0;
-    VSout.c = COLOR;
+    PSin_p = vec4(POSITION, 0.5f, 1.0f);
+    PSin_t = TEXCOORD0;
+    PSin_c = COLOR;
     gl_Position = vec4(POSITION, 0.5f, 1.0f); // NOTE I don't know if it is possible to merge POSITION_OUT and gl_Position
 }
 
@@ -34,12 +31,9 @@ void vs_main()
 
 #ifdef FRAGMENT_SHADER
 
-in SHADER
-{
-    vec4 p;
-    vec2 t;
-    vec4 c;
-} PSin;
+in vec4 PSin_p;
+in vec2 PSin_t;
+in vec4 PSin_c;
 
 // Give a different name so I remember there is a special case!
 #if defined(ps_convert_rgba8_16bits) || defined(ps_convert_float32_32bits)
@@ -50,7 +44,7 @@ layout(location = 0) out vec4 SV_Target0;
 
 vec4 sample_c()
 {
-    return texture(TextureSampler, PSin.t);
+    return texture(TextureSampler, PSin_t);
 }
 
 vec4 ps_crt(uint i)
@@ -281,7 +275,7 @@ void ps_convert_rgba_8i()
 #ifdef ps_osd
 void ps_osd()
 {
-    SV_Target0 = PSin.c * vec4(1.0, 1.0, 1.0, sample_c().r);
+    SV_Target0 = PSin_c * vec4(1.0, 1.0, 1.0, sample_c().r);
 }
 #endif
 
@@ -349,11 +343,11 @@ void ps_filter_complex()
     vec2 texdim = vec2(textureSize(TextureSampler, 0));
 
     vec4 c;
-    if (dFdy(PSin.t.y) * PSin.t.y > 0.5f) {
+    if (dFdy(PSin_t.y) * PSin_t.y > 0.5f) {
         c = sample_c();
     } else {
-        float factor = (0.9f - 0.4f * cos(2.0f * PI * PSin.t.y * texdim.y));
-        c =  factor * texture(TextureSampler, vec2(PSin.t.x, (floor(PSin.t.y * texdim.y) + 0.5f) / texdim.y));
+        float factor = (0.9f - 0.4f * cos(2.0f * PI * PSin_t.y * texdim.y));
+        c =  factor * texture(TextureSampler, vec2(PSin_t.x, (floor(PSin_t.y * texdim.y) + 0.5f) / texdim.y));
     }
 
     SV_Target0 = c;
