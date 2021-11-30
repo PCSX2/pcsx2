@@ -62,9 +62,28 @@ PCSX2_PACKAGES=("${PCSX2_PACKAGES[@]/%/"${ARCH}"}")
 echo "Will install the following packages for pcsx2 - ${PCSX2_PACKAGES[*]}"
 sudo apt-get -y install "${PCSX2_PACKAGES[@]}"
 
-cd /tmp
+# Add to cache
+if [[ ! -e $GITHUB_WORKSPACE/.ccache ]]; then
+  mkdir "$GITHUB_WORKSPACE"/.ccache
+fi  
+
+# Upgrade Patchelf
+cd "$GITHUB_WORKSPACE"/.ccache
 curl -sSfLO https://github.com/NixOS/patchelf/releases/download/0.12/patchelf-0.12.tar.bz2        
 tar xvf patchelf-0.12.tar.bz2
 cd patchelf-0.12*/ 
 ./configure
 make && sudo make install
+
+# Set up SDL 2.0.16
+SDL2VER=2.0.16
+cd "$GITHUB_WORKSPACE"/.ccache
+if [[ ! -e SDL2-${SDL2VER} ]]; then
+  curl -sLO https://libsdl.org/release/SDL2-${SDL2VER}.tar.gz
+  tar -xzf SDL2-${SDL2VER}.tar.gz
+  cd SDL2-${SDL2VER}
+  ./configure --prefix=/usr
+  make && cd ../
+  rm SDL2-${SDL2VER}.tar.gz
+fi
+sudo make -C SDL2-${SDL2VER} install
