@@ -12,20 +12,10 @@
 							 [GLOBALS|FUNCTIONS]
 ------------------------------------------------------------------------------*/
 #if (FXAA_GLSL_130 == 1)
-in SHADER
-{
-    vec4 p;
-    vec2 t;
-    vec4 c;
-} PSin;
+
+in vec2 PSin_t;
 
 layout(location = 0) out vec4 SV_Target0;
-
-layout(std140, binding = 14) uniform cb14
-{
-    vec2 _xyFrame;
-    vec4 _rcpFrame;
-};
 
 #elif (SHADER_MODEL >= 0x400)
 Texture2D Texture : register(t0);
@@ -511,9 +501,9 @@ float4 FxaaPass(float4 FxaaColor : COLOR0, float2 uv0 : TEXCOORD0)
 
 void ps_main()
 {
-	vec4 color = texture(TextureSampler, PSin.t);
-	color      = PreGammaPass(color, PSin.t);
-	color      = FxaaPass(color, PSin.t);
+	vec4 color = texture(TextureSampler, PSin_t);
+	color      = PreGammaPass(color, PSin_t);
+	color      = FxaaPass(color, PSin_t);
 
 	SV_Target0 = color;
 }

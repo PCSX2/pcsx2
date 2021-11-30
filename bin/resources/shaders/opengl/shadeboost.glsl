@@ -11,12 +11,9 @@
 
 #ifdef FRAGMENT_SHADER
 
-in SHADER
-{
-    vec4 p;
-    vec2 t;
-    vec4 c;
-} PSin;
+in vec4 PSin_p;
+in vec2 PSin_t;
+in vec4 PSin_c;
 
 layout(location = 0) out vec4 SV_Target0;
 
@@ -48,7 +45,7 @@ vec4 ContrastSaturationBrightness(vec4 color)
 
 void ps_main()
 {
-    vec4 c = texture(TextureSampler, PSin.t);
+    vec4 c = texture(TextureSampler, PSin_t);
     SV_Target0 = ContrastSaturationBrightness(c);
 }
 
