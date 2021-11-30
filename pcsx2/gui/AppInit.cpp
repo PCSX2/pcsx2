@@ -318,14 +318,15 @@ bool Pcsx2App::OnCmdLineParsed(wxCmdLineParser& parser)
 	{
 		wxString elf_file;
 		if (parser.Found(L"elf", &elf_file) && !elf_file.IsEmpty())
-		{
 			Startup.SysAutoRunElf = true;
-			Startup.ElfFile = elf_file;
-		}
 		else if (parser.Found(L"irx", &elf_file) && !elf_file.IsEmpty())
-		{
 			Startup.SysAutoRunIrx = true;
-			Startup.ElfFile = elf_file;
+
+		if (!elf_file.IsEmpty())
+		{
+			auto path = wxFileName(elf_file);
+			path.Normalize();
+			Startup.ElfFile = path.GetFullPath();
 		}
 	}
 
