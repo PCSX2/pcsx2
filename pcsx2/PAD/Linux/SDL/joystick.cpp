@@ -34,6 +34,14 @@ void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<Device>>& vjoy
 	{
 		// Tell SDL to catch event even if the windows isn't focussed
 		SDL_SetHint(SDL_HINT_JOYSTICK_ALLOW_BACKGROUND_EVENTS, "1");
+		// Enable rumble on PS4 controllers (note: breaks DirectInput handling)
+		SDL_SetHint(SDL_HINT_JOYSTICK_HIDAPI_PS4_RUMBLE, "1");
+		// We want buttons to come in as positions, not labels, where possible
+		// New as of SDL 2.0.12, so use string
+		SDL_SetHint("SDL_GAMECONTROLLER_USE_BUTTON_LABELS", "0");
+		// Super annoying to have a bright blue LED shining in your face all the time
+		// New as of SDL 2.0.18, so use string
+		SDL_SetHint("SDL_JOYSTICK_HIDAPI_SWITCH_HOME_LED", "0");
 
 		if (SDL_Init(flag) < 0)
 			return;
