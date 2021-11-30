@@ -17,6 +17,10 @@
 #include "Host.h"
 #include <signal.h> // sigaction
 
+#if !SDL_VERSION_ATLEAST(2, 0, 9)
+	#error PCSX2 requires SDL2 2.0.9 or higher
+#endif
+
 //////////////////////////
 // Joystick definitions //
 //////////////////////////
@@ -71,36 +75,47 @@ void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<Device>>& vjoy
 
 void JoystickInfo::Rumble(unsigned type, unsigned pad)
 {
-	if (type >= m_effects_id.size())
+	if (type >= std::size(m_rumble_end))
 		return;
 
 	if (!(g_conf.pad_options[pad].forcefeedback))
 		return;
 
-	if (m_haptic == nullptr)
-		return;
+	m_rumble_enabled[type] = true;
+	m_rumble_end[type] = SDL_GetTicks() + 125; // 125ms feels quite near to original
+	UpdateRumble(true);
+}
 
-	int id = m_effects_id[type];
-	if (SDL_HapticRunEffect(m_haptic, id, 1) != 0)
+void JoystickInfo::UpdateRumble(bool needs_update)
+{
+	u16 rumble_amt[2] = {0, 0};
+	u32 rumble_time = 0;
+
+	u32 now = SDL_GetTicks();
+	for (size_t i = 0; i < std::size(m_rumble_end); i++)
 	{
-		fprintf(stderr, "ERROR: Effect is not working! %s, id is %d\n", SDL_GetError(), id);
+		s32 remaining = static_cast<s32>(m_rumble_end[i] - now);
+		if (m_rumble_enabled[i])
+		{
+			if (remaining > 0)
+			{
+				rumble_amt[i] = std::min<u32>(g_conf.get_ff_intensity(), UINT16_MAX);
+				rumble_time = std::max(rumble_time, static_cast<u32>(remaining));
+			}
+			else
+			{
+				m_rumble_enabled[i] = false;
+				needs_update = true;
+			}
+		}
 	}
+
+	if (needs_update)
+		SDL_GameControllerRumble(m_controller, rumble_amt[1], rumble_amt[0], rumble_time);
 }
 
 JoystickInfo::~JoystickInfo()
 {
-	// Haptic must be closed before the joystick
-	if (m_haptic != nullptr)
-	{
-		for (const auto& eid : m_effects_id)
-		{
-			if (eid >= 0)
-				SDL_HapticDestroyEffect(m_haptic, eid);
-		}
-
-		SDL_HapticClose(m_haptic);
-	}
-
 	if (m_controller != nullptr)
 	{
 #if SDL_MINOR_VERSION >= 4
@@ -114,11 +129,9 @@ JoystickInfo::~JoystickInfo()
 JoystickInfo::JoystickInfo(int id)
 	: Device()
 	, m_controller(nullptr)
-	, m_haptic(nullptr)
 	, m_unique_id(0)
 {
 	SDL_Joystick* joy = nullptr;
-	m_effects_id.fill(-1);
 	// Values are hardcoded currently but it could be later extended to allow remapping of the buttons
 	m_pad_to_sdl[PAD_L2] = SDL_CONTROLLER_AXIS_TRIGGERLEFT;
 	m_pad_to_sdl[PAD_R2] = SDL_CONTROLLER_AXIS_TRIGGERRIGHT;
@@ -184,61 +197,10 @@ JoystickInfo::JoystickInfo(int id)
 	std::hash<std::string> hash_me;
 	m_unique_id = hash_me(std::string(guid));
 
-	// Default haptic effect
-	SDL_HapticEffect effects[NB_EFFECT];
-	for (int i = 0; i < NB_EFFECT; i++)
-	{
-		SDL_HapticEffect effect;
-		memset(&effect, 0, sizeof(SDL_HapticEffect)); // 0 is safe default
-		SDL_HapticDirection direction;
-		direction.type = SDL_HAPTIC_POLAR; // We'll be using polar direction encoding.
-		direction.dir[0] = 18000;
-		effect.periodic.direction = direction;
-		effect.periodic.period = 10;
-		effect.periodic.magnitude = (Sint16)(g_conf.get_ff_intensity()); // Effect at maximum instensity
-		effect.periodic.offset = 0;
-		effect.periodic.phase = 18000;
-		effect.periodic.length = 125; // 125ms feels quite near to original
-		effect.periodic.delay = 0;
-		effect.periodic.attack_length = 0;
-		/* Sine and triangle are quite probably the best, don't change that lightly and if you do
-		 * keep effects ordered by type
-		 */
-		if (i == 0)
-		{
-			/* Effect for small motor */
-			/* Sine seems to be the only effect making little motor from DS3/4 react
-			 * Intensity has pretty much no effect either(which is coherent with what is explain in hid_sony driver
-			 */
-			effect.type = SDL_HAPTIC_SINE;
-		}
-		else
-		{
-			/** Effect for big motor **/
-			effect.type = SDL_HAPTIC_TRIANGLE;
-		}
-
-		effects[i] = effect;
-	}
-
-	if (SDL_JoystickIsHaptic(joy))
-	{
-		m_haptic = SDL_HapticOpenFromJoystick(joy);
-
-		for (auto& eid : m_effects_id)
-		{
-			eid = SDL_HapticNewEffect(m_haptic, &effects[0]);
-			if (eid < 0)
-			{
-				fprintf(stderr, "ERROR: Effect is not uploaded! %s\n", SDL_GetError());
-				m_haptic = nullptr;
-				break;
-			}
-		}
-	}
+	bool rumble_support = SDL_GameControllerRumble(m_controller, 0, 0, 1) >= 0;
 
 	fprintf(stdout, "PAD: controller (%s) detected%s, GUID:%s\n",
-			m_device_name.c_str(), m_haptic ? " with rumble support" : "", guid);
+			m_device_name.c_str(), rumble_support ? " with rumble support" : "", guid);
 
 	m_no_error = true;
 }
@@ -255,20 +217,9 @@ size_t JoystickInfo::GetUniqueIdentifier()
 
 bool JoystickInfo::TestForce(float strength = 0.60)
 {
-	// This code just use standard rumble to check that SDL handles the pad correctly! --3kinox
-	if (m_haptic == nullptr)
-		return false; // Otherwise, core dump!
+	u16 u16strength = static_cast<u16>(0x7fff * strength);
 
-	SDL_HapticRumbleInit(m_haptic);
-
-	// Make the haptic pad rumble 60% strength for half a second, shoudld be enough for user to see if it works or not
-	if (SDL_HapticRumblePlay(m_haptic, strength, 400) != 0)
-	{
-		fprintf(stderr, "ERROR: Rumble is not working! %s\n", SDL_GetError());
-		return false;
-	}
-
-	return true;
+	return SDL_GameControllerRumble(m_controller, u16strength, u16strength, 400) >= 0;
 }
 
 int JoystickInfo::GetInput(gamePadValues input)
@@ -297,5 +248,6 @@ int JoystickInfo::GetInput(gamePadValues input)
 
 void JoystickInfo::UpdateDeviceState()
 {
+	UpdateRumble(false);
 	SDL_GameControllerUpdate();
 }

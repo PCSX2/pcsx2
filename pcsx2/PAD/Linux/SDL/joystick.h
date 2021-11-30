@@ -38,6 +38,7 @@ public:
 	static void EnumerateJoysticks(std::vector<std::unique_ptr<Device>>& vjoysticks);
 
 	void Rumble(unsigned type, unsigned pad) override;
+	void UpdateRumble(bool needs_update);
 
 	bool TestForce(float) override;
 
@@ -51,8 +52,8 @@ public:
 
 private:
 	SDL_GameController* m_controller;
-	SDL_Haptic* m_haptic;
-	std::array<int, NB_EFFECT> m_effects_id;
+	u32 m_rumble_end[NB_EFFECT] = {};
+	bool m_rumble_enabled[NB_EFFECT] = {};
 	size_t m_unique_id;
 	std::array<int, MAX_KEYS> m_pad_to_sdl;
 };
