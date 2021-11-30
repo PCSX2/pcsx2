@@ -84,6 +84,9 @@ void PADSaveConfig()
 	for (auto const& it : g_conf.sdl2_mapping)
 		fprintf(f, "SDL2 = %s\n", it.c_str());
 
+	for (auto const& pair : g_conf.sdl2_hints)
+		fprintf(f, "SDL_HINT_%s = %s\n", pair.first.c_str(), pair.second.c_str());
+
 	fclose(f);
 }
 
@@ -139,9 +142,20 @@ void PADLoadConfig()
 			have_user_setting = true;
 	}
 
-	char sdl2[512];
-	while (fscanf(f, "SDL2 = %511[^\n]\n", sdl2) == 1)
-		g_conf.sdl2_mapping.push_back(std::string(sdl2));
+	char extra_name[512];
+	char extra_value[512];
+	while (fscanf(f, "%511[^ =] = %511[^\n]\n", extra_name, extra_value) == 2)
+	{
+		static constexpr const char* HINT_PREFIX = "SDL_HINT_";
+		if (strcmp(extra_name, "SDL2") == 0)
+		{
+			g_conf.sdl2_mapping.push_back(std::string(extra_value));
+		}
+		else if (strncmp(extra_name, HINT_PREFIX, strlen(HINT_PREFIX)) == 0)
+		{
+			g_conf.sdl2_hints.push_back({extra_name + strlen(HINT_PREFIX), extra_value});
+		}
+	}
 
 	if (!have_user_setting)
 		DefaultKeyboardValues();

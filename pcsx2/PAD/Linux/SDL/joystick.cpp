@@ -43,6 +43,9 @@ void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<Device>>& vjoy
 		// New as of SDL 2.0.18, so use string
 		SDL_SetHint("SDL_JOYSTICK_HIDAPI_SWITCH_HOME_LED", "0");
 
+		for (const auto& hint : g_conf.sdl2_hints)
+			SDL_SetHint(hint.first.c_str(), hint.second.c_str());
+
 		if (SDL_Init(flag) < 0)
 			return;
 
