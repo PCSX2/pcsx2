@@ -37,6 +37,7 @@ class GamepadConfiguration : public wxDialog
 	void repopulate();
 
 	// Events
+	void OnUpdateEvent(wxCommandEvent&);
 	void OnSliderReleased(wxCommandEvent&);
 	void OnCheckboxChange(wxCommandEvent&);
 	void OnChoiceChange(wxCommandEvent&);
