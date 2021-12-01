@@ -73,7 +73,7 @@ void PADSaveConfig()
 	fprintf(f, "log = %d\n", g_conf.log);
 	fprintf(f, "options = %d\n", g_conf.packed_options);
 	fprintf(f, "mouse_sensibility = %d\n", g_conf.get_sensibility());
-	fprintf(f, "ff_intensity = %d\n", g_conf.get_ff_intensity());
+	fprintf(f, "ff_intensity = %g\n", g_conf.get_ff_intensity());
 	fprintf(f, "uid[0] = %zu\n", g_conf.get_joy_uid(0));
 	fprintf(f, "uid[1] = %zu\n", g_conf.get_joy_uid(1));
 
@@ -109,6 +109,7 @@ void PADLoadConfig()
 	}
 
 	u32 value;
+	float fvalue;
 
 	if (fscanf(f, "first_time_wizard = %u\n", &value) == 1)
 		g_conf.ftw = value;
@@ -122,8 +123,12 @@ void PADLoadConfig()
 	if (fscanf(f, "mouse_sensibility = %u\n", &value) == 1)
 		g_conf.set_sensibility(value);
 
-	if (fscanf(f, "ff_intensity = %u\n", &value) == 1)
-		g_conf.set_ff_intensity(value);
+	if (fscanf(f, "ff_intensity = %f\n", &fvalue) == 1)
+	{
+		if (fvalue > 1)
+			fvalue /= 0x7fff; // Old config
+		g_conf.set_ff_intensity(fvalue);
+	}
 
 	size_t uid;
 	if (fscanf(f, "uid[0] = %zu\n", &uid) == 1)
