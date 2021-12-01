@@ -93,6 +93,7 @@ jobs:
       CCACHE_COMPRESSLEVEL: 9
       CCACHE_MAXSIZE: 100M
       SDL: SDL2-2.0.16
+      PATCHELF_VERSION: 0.12
 
     steps:
       # NOTE - useful for debugging
@@ -158,14 +159,24 @@ jobs:
           COMPILER: ${{ matrix.compiler }}
         run: .github/workflows/scripts/linux/install-packages.sh
 
-      - name: Cache SDL2
+      - name: Cache Dependencies
         uses: actions/cache@v2.1.7
         with:
-          path: 3rdparty/${{ env.SDL }}
-          key: ${{ matrix.os }} ${{ matrix.platform }} ${{ env.SDL }}
+          path: |
+            3rdparty/${{ env.SDL }}
+            3rdparty/patchelf-${{ env.PATCHELF_VERSION }}
+          key: ${{ matrix.os }} ${{ matrix.platform }} ${{ env.SDL }} patchelf-${{ env.PATCHELF_VERSION }}
 
-      - name: Build SDL2
+      - name: Build Dependencies
         run: |
+          if [[ ! -e 3rdparty/patchelf-${{ env.PATCHELF_VERSION }} ]]; then
+            curl -sSfL https://github.com/NixOS/patchelf/releases/download/${{ env.PATCHELF_VERSION }}/patchelf-${{ env.PATCHELF_VERSION }}.tar.bz2 | tar -xjC 3rdparty
+            mv 3rdparty/patchelf-${{ env.PATCHELF_VERSION }}* 3rdparty/patchelf-${{ env.PATCHELF_VERSION }}
+            cd 3rdparty/patchelf-${{ env.PATCHELF_VERSION }}
+            ./configure
+            make && cd ../../
+          fi
+          sudo make -C 3rdparty/patchelf-${{ env.PATCHELF_VERSION }} install
           if [[ ! -e 3rdparty/${{ env.SDL }} ]]; then
             curl -sL https://libsdl.org/release/${{ env.SDL }}.tar.gz | tar -xzC 3rdparty
             cd 3rdparty/${{ env.SDL }}
