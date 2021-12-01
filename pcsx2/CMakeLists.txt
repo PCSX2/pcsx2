@@ -60,9 +60,9 @@ if(XDG_STD)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE XDG_STD)
 endif()
 
-if(TARGET SDL::SDL)
+if(TARGET PkgConfig::SDL2)
 	target_compile_definitions(PCSX2_FLAGS INTERFACE SDL_BUILD)
-	target_link_libraries(PCSX2_FLAGS INTERFACE SDL::SDL)
+	target_link_libraries(PCSX2_FLAGS INTERFACE PkgConfig::SDL2)
 endif()
 
 if(WIN32)

@@ -193,7 +193,6 @@ for ARG in "$@"; do
         --rel|--release     ) flags="$flags -DCMAKE_BUILD_TYPE=Release" ; build="$root/build_rel";;
         --prof              ) flags="$flags -DCMAKE_BUILD_TYPE=RelWithDebInfo"; build="$root/build_prof";;
         --strip             ) flags="$flags -DCMAKE_BUILD_STRIP=TRUE" ;;
-        --sdl12             ) flags="$flags -DSDL2_API=FALSE" ;;
         --use-system-yaml   ) flags="$flags -DUSE_SYSTEM_YAML=TRUE" ;;
         --asan              ) flags="$flags -DUSE_ASAN=TRUE" ;;
         --gtk2              ) flags="$flags -DGTK2_API=TRUE" ;;
@@ -226,7 +225,6 @@ for ARG in "$@"; do
             echo "--no-cross-multilib: Build a native version of PCSX2 (default)"
             echo
             echo "** Distribution Compatibilities **"
-            echo "--sdl12         : Build with SDL1.2 (requires if wx is linked against SDL1.2)"
             echo "--no-portaudio  : Skip portaudio for SPU2."
             echo "--use-system-yaml  : Use system rapidyaml library"
             echo
