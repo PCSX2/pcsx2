@@ -117,11 +117,12 @@ void GamepadConfiguration::OnSliderReleased(wxCommandEvent& event)
 
 	if (sl_id == rumble_slider_id)
 	{
-		g_conf.set_ff_intensity(m_sl_rumble_intensity->GetValue());
+		float value = static_cast<float>(m_sl_rumble_intensity->GetValue()) / 0x7FFF;
+		g_conf.set_ff_intensity(value);
 
 		// convert in a float value between 0 and 1, and run rumble feedback.
 		// 0 to 1 scales to 0x0 to 0x7FFF
-		device_manager.devices[m_pad_id]->TestForce(m_sl_rumble_intensity->GetValue() / (float)0x7FFF);
+		device_manager.devices[m_pad_id]->TestForce(value);
 	}
 	else if (sl_id == joy_slider_id)
 	{
@@ -174,7 +175,7 @@ void GamepadConfiguration::repopulate()
 {
 	m_cb_rumble->SetValue(g_conf.pad_options[m_pad_id].forcefeedback);
 
-	m_sl_rumble_intensity->SetValue(g_conf.get_ff_intensity());
+	m_sl_rumble_intensity->SetValue(g_conf.get_ff_intensity() * 0x7FFF);
 	m_sl_joystick_sensibility->SetValue(g_conf.get_sensibility());
 
 	u32 joyid = Device::uid_to_index(m_pad_id);

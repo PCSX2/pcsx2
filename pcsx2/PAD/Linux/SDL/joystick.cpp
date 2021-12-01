@@ -110,7 +110,7 @@ void JoystickInfo::UpdateRumble(bool needs_update)
 		{
 			if (remaining > 0)
 			{
-				rumble_amt[i] = std::min<u32>(g_conf.get_ff_intensity(), UINT16_MAX);
+				rumble_amt[i] = std::min<u32>(g_conf.get_ff_intensity() * UINT16_MAX, UINT16_MAX);
 				rumble_time = std::max(rumble_time, static_cast<u32>(remaining));
 			}
 			else
@@ -228,7 +228,7 @@ size_t JoystickInfo::GetUniqueIdentifier()
 
 bool JoystickInfo::TestForce(float strength = 0.60)
 {
-	u16 u16strength = static_cast<u16>(0x7fff * strength);
+	u16 u16strength = static_cast<u16>(UINT16_MAX * strength);
 
 	return SDL_GameControllerRumble(m_controller, u16strength, u16strength, 400) >= 0;
 }
