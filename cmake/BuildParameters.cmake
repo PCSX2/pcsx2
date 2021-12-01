@@ -47,7 +47,6 @@ option(DISABLE_PCSX2_WRAPPER "Disable including the PCSX2-linux.sh file")
 option(DISABLE_SETCAP "Do not set files capabilities")
 option(XDG_STD "Use XDG standard path instead of the standard PCSX2 path")
 option(CUBEB_API "Build Cubeb support on SPU2" ON)
-option(SDL2_API "Use SDL2 on PAD Linux (wxWidget mustn't be built with SDL1.2 support" ON)
 option(GTK2_API "Use GTK2 api (legacy)")
 
 if(UNIX AND NOT APPLE)

@@ -146,14 +146,7 @@ else()
 	check_lib(SOUNDTOUCH SoundTouch SoundTouch.h PATH_SUFFIXES soundtouch)
 	check_lib(SAMPLERATE samplerate samplerate.h)
 
-	if(SDL2_API)
-		check_lib(SDL2 SDL2 SDL.h PATH_SUFFIXES SDL2)
-		alias_library(SDL::SDL PkgConfig::SDL2)
-	else()
-		# Tell cmake that we use SDL as a library and not as an application
-		set(SDL_BUILDING_LIBRARY TRUE)
-		find_package(SDL REQUIRED)
-	endif()
+	check_lib(SDL2 SDL2 SDL.h PATH_SUFFIXES SDL2)
 
 	if(UNIX AND NOT APPLE)
 		find_package(X11 REQUIRED)
