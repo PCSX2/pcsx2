@@ -15,7 +15,7 @@ The latest officially released stable version is version 1.6.0.
 
 Installers and binaries for both Windows and Linux are available from [our website](https://pcsx2.net/download.html).
 
-Development builds are also available from [our website](https://pcsx2.net/download/development.html).
+Development builds are also available from [Github](https://github.com/PCSX2/pcsx2/releases). 
 
 ## System Requirements
 
