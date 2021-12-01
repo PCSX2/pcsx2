@@ -49,6 +49,7 @@ GamepadConfiguration::GamepadConfiguration(int pad, wxWindow* parent)
 	gamepad_box->Add(rumble_box, wxSizerFlags().Expand().Border(wxALL, 5));
 	gamepad_box->Add(joy_box, wxSizerFlags().Expand().Border(wxALL, 5));
 
+	Bind(wxEVT_UPDATE_UI, &GamepadConfiguration::OnUpdateEvent, this);
 	Bind(wxEVT_SCROLL_THUMBRELEASE, &GamepadConfiguration::OnSliderReleased, this);
 	Bind(wxEVT_CHECKBOX, &GamepadConfiguration::OnCheckboxChange, this);
 	Bind(wxEVT_CHOICE, &GamepadConfiguration::OnChoiceChange, this);
@@ -94,6 +95,12 @@ void GamepadConfiguration::InitGamepadConfiguration()
 		m_cb_rumble->Disable();               // disable the rumble checkbox
 		m_sl_rumble_intensity->Disable();     // disable the rumble intensity slider
 	}
+}
+
+void GamepadConfiguration::OnUpdateEvent(wxCommandEvent& event)
+{
+	// Makes sure joystick rumble testing works properly
+	SDL_GameControllerUpdate();
 }
 
 /**
