@@ -129,11 +129,7 @@ JoystickInfo::~JoystickInfo()
 {
 	if (m_controller != nullptr)
 	{
-#if SDL_MINOR_VERSION >= 4
-		// Version before 2.0.4 are bugged, JoystickClose crashes randomly
-		// Note: GameControllerClose calls JoystickClose)
 		SDL_GameControllerClose(m_controller);
-#endif
 	}
 }
 
@@ -198,9 +194,7 @@ JoystickInfo::JoystickInfo(int id)
 		                "Please post the new generated mapping to (https://github.com/gabomdq/SDL_GameControllerDB) so it can be added to the database.",
 		        m_device_name.c_str(), guid);
 
-#if SDL_MINOR_VERSION >= 4 // Version before 2.0.4 are bugged, JoystickClose crashes randomly
 		SDL_JoystickClose(joy);
-#endif
 
 		return;
 	}
