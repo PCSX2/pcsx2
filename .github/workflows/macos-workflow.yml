@@ -99,7 +99,7 @@ jobs:
         run: |
           # To save time, only brew update if running the install without it fails
           function do-install() {
-            brew install sound-touch portaudio wxmac sdl2 libsamplerate
+            brew install sound-touch portaudio wxwidgets sdl2 libsamplerate glib
           }
           if ! do-install; then
             brew update
