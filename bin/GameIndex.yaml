@@ -8690,6 +8690,8 @@ SLES-50788:
 SLES-50789:
   name: "Men in Black II: Alien Escape"
   region: "PAL-M5"
+  gameFixes:
+    - VIFFIFOHack # Needed to load the main game properly.
 SLES-50790:
   name: "International Superstar Soccer 2002"
   region: "PAL-M3"
