@@ -566,22 +566,31 @@ GSTextureCache::Target* GSTextureCache::LookupTarget(const GIFRegTEX0& TEX0, int
 
 		if (dst_match)
 		{
-			GSVector4 sRect(0, 0, 1, 1);
-			GSVector4 dRect(0, 0, w, h);
+			const GSVector2& new_s = m_renderer->GetTextureScaleFactor();
+			const GSVector2& old_s = dst_match->m_texture->GetScale();
+			const GSVector2 ratio{ new_s.x / old_s.x, new_s.y / old_s.y };
+			const int old_w = dst_match->m_texture->GetWidth();
+			const int old_h = dst_match->m_texture->GetHeight();
+			const float res_w = static_cast<float>(old_w) * ratio.x;
+			const float res_h = static_cast<float>(old_h) * ratio.y;
+			const int new_w = std::max(static_cast<int>(std::ceil(res_w)), w);
+			const int new_h = std::max(static_cast<int>(std::ceil(res_h)), h);
+			const GSVector4 sRect(0, 0, 1, 1);
+			const GSVector4 dRect(0.0f, 0.0f, res_w, res_h);
 
-			dst = CreateTarget(TEX0, w, h, type);
+			dst = CreateTarget(TEX0, new_w, new_h, type);
 			dst->m_32_bits_fmt = dst_match->m_32_bits_fmt;
 
 			ShaderConvert shader;
 			bool fmt_16_bits = (psm_s.bpp == 16 && GSLocalMemory::m_psm[dst_match->m_TEX0.PSM].bpp == 16);
 			if (type == DepthStencil)
 			{
-				GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, %s was %s)", w, h, bp, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
+				GL_CACHE("TC: Lookup Target(Depth) %dx%d, hit Color (0x%x, %s was %s)", new_w, new_h, bp, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
 				shader = (fmt_16_bits) ? ShaderConvert::RGB5A1_TO_FLOAT16 : (ShaderConvert)((int)ShaderConvert::RGBA8_TO_FLOAT32 + psm_s.fmt);
 			}
 			else
 			{
-				GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, %s was %s)", w, h, bp, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
+				GL_CACHE("TC: Lookup Target(Color) %dx%d, hit Depth (0x%x, %s was %s)", new_w, new_h, bp, psm_str(TEX0.PSM), psm_str(dst_match->m_TEX0.PSM));
 				shader = (fmt_16_bits) ? ShaderConvert::FLOAT16_TO_RGB5A1 : ShaderConvert::FLOAT32_TO_RGBA8;
 			}
 			m_renderer->m_dev->StretchRect(dst_match->m_texture, sRect, dst->m_texture, dRect, shader, false);
