@@ -17,7 +17,7 @@
 
 #include "common/Pcsx2Defs.h"
 
-enum Syscall : u8
+enum Syscall : u32
 {
 	SetGsCrt = 2,
 	SetVTLBRefillHandler = 13,
