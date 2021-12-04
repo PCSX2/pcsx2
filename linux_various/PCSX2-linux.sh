@@ -43,7 +43,7 @@ fi
 DIR=`dirname $current_script`
 MY_LD_LIBRARY_PATH=$LD_LIBRARY_PATH
 
-if [ ! -x "$DIR/PCSX2" ]
+if [ ! -x "$DIR/pcsx2" ]
 then
     echo "Error PCSX2 not found in $DIR"
     echo "Maybe the script was directly 'called'"
