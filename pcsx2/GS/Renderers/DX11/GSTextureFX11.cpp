@@ -351,6 +351,8 @@ void GSDevice11::SetupOM(OMDepthStencilSelector dssel, OMBlendSelector bsel, u8 
 				bd.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
 				bd.RenderTarget[0].DestBlend = D3D11_BLEND_ONE;
 			}
+			else if (bsel.blend_mix)
+				bd.RenderTarget[0].SrcBlend = D3D11_BLEND_ONE;
 		}
 
 		if (bsel.wr) bd.RenderTarget[0].RenderTargetWriteMask |= D3D11_COLOR_WRITE_ENABLE_RED;
