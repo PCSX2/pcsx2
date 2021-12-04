@@ -381,7 +381,7 @@ PCAPAdapter::PCAPAdapter()
 
 	if (pcap_io_init(config.Eth, config.EthApi == NetApi::PCAP_Switched, newMAC) == -1)
 	{
-		Console.Error("Can't open Device '%s'\n", config.Eth);
+		Console.Error("DEV9: Can't open Device '%s'", config.Eth);
 		return;
 	}
 
