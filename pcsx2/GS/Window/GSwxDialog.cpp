@@ -576,8 +576,8 @@ DebugTab::DebugTab(wxWindow* parent)
 
 		auto* dump_grid = new wxFlexGridSizer(2, space, space);
 
-		start_dump_spin = m_ui.addSpinAndLabel(dump_grid, "Start of Dump:", "saven", 0, pow(10, 9),    0).first;
-		end_dump_spin   = m_ui.addSpinAndLabel(dump_grid, "End of Dump:",   "savel", 0, pow(10, 5), 5000).first;
+		m_ui.addSpinAndLabel(dump_grid, "Start of Dump:",  "saven", 0, pow(10, 9),    0);
+		m_ui.addSpinAndLabel(dump_grid, "Length of Dump:", "savel", 1, pow(10, 5), 5000);
 
 		debug_box->AddSpacer(space);
 		debug_box->Add(dump_grid);
@@ -600,10 +600,6 @@ DebugTab::DebugTab(wxWindow* parent)
 void DebugTab::DoUpdate()
 {
 	m_ui.Update();
-	if (!end_dump_spin || !start_dump_spin)
-		return;
-	if (end_dump_spin->GetValue() < start_dump_spin->GetValue())
-		end_dump_spin->SetValue(start_dump_spin->GetValue());
 }
 
 Dialog::Dialog()
