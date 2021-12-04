@@ -121,7 +121,7 @@ jobs:
             Release) SIMD="SSE4";;
             *AVX2)   SIMD="AVX2";;
             CMake)   SIMD="CMake"
-                     cp build/pcsx2/PCSX2* bin/ ;;
+                     cp build/pcsx2/pcsx2* bin/ ;;
             *)       SIMD="UNKNOWN";;
           esac
           if [ ${{ github.event_name }} == "pull_request" ]; then

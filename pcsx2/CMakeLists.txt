@@ -1483,6 +1483,12 @@ foreach(path IN LISTS RESOURCE_FILES)
 	pcsx2_resource(${path} ${CMAKE_SOURCE_DIR}/bin/resources/)
 endforeach()
 
+if (NOT APPLE)
+	set_target_properties(PCSX2 PROPERTIES
+		OUTPUT_NAME pcsx2
+	)
+endif()
+
 if (APPLE)
 	# MacOS defaults to having a maximum protection of the __DATA segment of rw (non-executable)
 	# We have a bunch of page-sized arrays in bss that we use for jit
@@ -1522,9 +1528,9 @@ endif()
 
 if(NOT DISABLE_SETCAP)
 	if(PACKAGE_MODE)
-		install(CODE "execute_process(COMMAND /bin/bash -c \"echo 'Enabling networking capability on Linux...';set -x; [ -f '${CMAKE_INSTALL_FULL_BINDIR}/PCSX2' ] && sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' '${CMAKE_INSTALL_FULL_BINDIR}/PCSX2'; set +x\")")
+		install(CODE "execute_process(COMMAND /bin/bash -c \"echo 'Enabling networking capability on Linux...';set -x; [ -f '${CMAKE_INSTALL_FULL_BINDIR}/pcsx2' ] && sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' '${CMAKE_INSTALL_FULL_BINDIR}/pcsx2'; set +x\")")
 	else()
-		install(CODE "execute_process(COMMAND /bin/bash -c \"echo 'Enabling networking capability on Linux...';set -x; [ -f '${CMAKE_SOURCE_DIR}/bin/PCSX2' ] && sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' '${CMAKE_SOURCE_DIR}/bin/PCSX2'; set +x\")")
+		install(CODE "execute_process(COMMAND /bin/bash -c \"echo 'Enabling networking capability on Linux...';set -x; [ -f '${CMAKE_SOURCE_DIR}/bin/pcsx2' ] && sudo setcap 'CAP_NET_RAW+eip CAP_NET_ADMIN+eip' '${CMAKE_SOURCE_DIR}/bin/pcsx2'; set +x\")")
 	endif()
 endif()
 

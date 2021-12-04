@@ -25,8 +25,8 @@ sudo cp /usr/local/bin/patchelf /tmp/squashfs-root/usr/bin/patchelf
 cd "$GITHUB_WORKSPACE"
 mkdir -p squashfs-root/usr/bin
 ls -al "$BUILDBIN"
-cp -P "$BUILDBIN"/PCSX2 "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/
-patchelf --set-rpath /tmp/PCSX2 "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/PCSX2
+cp -P "$BUILDBIN"/pcsx2 "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/
+patchelf --set-rpath /tmp/PCSX2 "$GITHUB_WORKSPACE"/squashfs-root/usr/bin/pcsx2
 cp ./pcsx2/gui/Resources/AppIcon64.png ./squashfs-root/PCSX2.png
 cp ./linux_various/PCSX2.desktop.in ./squashfs-root/PCSX2.desktop 
 sed -i -e 's|Categories=@PCSX2_MENU_CATEGORIES@|Categories=Game;Emulator;|g' ./squashfs-root/PCSX2.desktop
