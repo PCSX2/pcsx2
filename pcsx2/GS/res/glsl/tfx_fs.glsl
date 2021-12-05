@@ -369,6 +369,17 @@ vec4 fetch_red()
     return sample_p(rt.r) * 255.0f;
 }
 
+vec4 fetch_green()
+{
+#if PS_DEPTH_FMT == 1 || PS_DEPTH_FMT == 2
+    int depth = (fetch_raw_depth() >> 8) & 0xFF;
+    vec4 rt = vec4(depth) / 255.0f;
+#else
+    vec4 rt = fetch_raw_color();
+#endif
+    return sample_p(rt.g) * 255.0f;
+}
+
 vec4 fetch_blue()
 {
 #if PS_DEPTH_FMT == 1 || PS_DEPTH_FMT == 2
@@ -378,12 +389,6 @@ vec4 fetch_blue()
     vec4 rt = fetch_raw_color();
 #endif
     return sample_p(rt.b) * 255.0f;
-}
-
-vec4 fetch_green()
-{
-    vec4 rt = fetch_raw_color();
-    return sample_p(rt.g) * 255.0f;
 }
 
 vec4 fetch_alpha()
