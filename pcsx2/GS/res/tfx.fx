@@ -410,6 +410,23 @@ float4 fetch_red(int2 xy)
 	return sample_p(rt.r) * 255.0f;
 }
 
+float4 fetch_green(int2 xy)
+{
+	float4 rt;
+
+	if ((PS_DEPTH_FMT == 1) || (PS_DEPTH_FMT == 2))
+	{
+		int depth = (fetch_raw_depth(xy) >> 8) & 0xFF;
+		rt = (float4)(depth) / 255.0f;
+	}
+	else
+	{
+		rt = fetch_raw_color(xy);
+	}
+
+	return sample_p(rt.g) * 255.0f;
+}
+
 float4 fetch_blue(int2 xy)
 {
 	float4 rt;
@@ -425,12 +442,6 @@ float4 fetch_blue(int2 xy)
 	}
 
 	return sample_p(rt.b) * 255.0f;
-}
-
-float4 fetch_green(int2 xy)
-{
-	float4 rt = fetch_raw_color(xy);
-	return sample_p(rt.g) * 255.0f;
 }
 
 float4 fetch_alpha(int2 xy)

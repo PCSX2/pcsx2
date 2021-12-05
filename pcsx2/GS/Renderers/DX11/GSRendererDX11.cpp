@@ -375,7 +375,7 @@ void GSRendererDX11::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache:
 					case 0xE0: blue_shift = 5; break;
 					case 0xC0: blue_shift = 6; break;
 					case 0x80: blue_shift = 7; break;
-					default:   ASSERT(0);      break;
+					default:                   break;
 				}
 
 				const int green_shift = 8 - blue_shift;
