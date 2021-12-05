@@ -361,11 +361,10 @@ void GSRendererDX11::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache:
 			{
 				// Typically used in Terminator 3
 				const int blue_mask = m_context->FRAME.FBMSK >> 24;
-				const int green_mask = ~blue_mask & 0xFF;
 				int blue_shift = -1;
 
 				// Note: potentially we could also check the value of the clut
-				switch (m_context->FRAME.FBMSK >> 24)
+				switch (blue_mask)
 				{
 					case 0xFF: ASSERT(0);      break;
 					case 0xFE: blue_shift = 1; break;
@@ -378,18 +377,19 @@ void GSRendererDX11::EmulateChannelShuffle(GSTexture** rt, const GSTextureCache:
 					default:                   break;
 				}
 
-				const int green_shift = 8 - blue_shift;
-				ps_cb.ChannelShuffle = GSVector4i(blue_mask, blue_shift, green_mask, green_shift);
-
 				if (blue_shift >= 0)
 				{
+					const int green_mask = ~blue_mask & 0xFF;
+					const int green_shift = 8 - blue_shift;
+
 					// fprintf(stderr, "%d: Green/Blue channel (%d, %d)\n", s_n, blue_shift, green_shift);
+					ps_cb.ChannelShuffle = GSVector4i(blue_mask, blue_shift, green_mask, green_shift);
 					m_ps_sel.channel = ChannelFetch_GXBY;
 					m_context->FRAME.FBMSK = 0x00FFFFFF;
 				}
 				else
 				{
-					// fprintf(stderr, "%d: Green channel (wrong mask) (fbmask %x)\n", s_n, m_context->FRAME.FBMSK >> 24);
+					// fprintf(stderr, "%d: Green channel (wrong mask) (fbmask %x)\n", s_n, blue_mask);
 					m_ps_sel.channel = ChannelFetch_GREEN;
 				}
 			}
