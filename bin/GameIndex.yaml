@@ -1741,6 +1741,13 @@ SCED-53325:
 SCED-53348:
   name: "Official PlayStation 2 Magazine Demo 58" # French
   region: "PAL-F"
+SCED-53679:
+  name: "Fire It Up Lads Demo"
+  region: "PAL-E"
+  patches:
+    default:
+      content: |-
+        comment=- WRC Rally needs XGKick fix enabled
 SCED-53684:
   name: "SingStar '80s [Demo]"
   region: "PAL-E"
@@ -14788,6 +14795,14 @@ SLES-53805:
 SLES-53809:
   name: "K-1 Premium Dynamite!!"
   region: "PAL-E"
+  gameFixes:
+    - XGKickHack # Fixes black and white fighters.
+  patches:
+    B6F9C8D3:
+      content: |-
+        comment=Fixes black screen in hardware mode.
+        patch=1,EE,0030a420,word,0000948c
+        patch=1,EE,0030a448,word,0000948c
 SLES-53810:
   name: "Sensible Soccer 2006"
   region: "PAL-M5"
@@ -19665,6 +19680,11 @@ SLPM-60254:
 SLPM-60256:
   name: "Dengeki D73 demo"
   region: "NTSC-J"
+SLPM-60260:
+  name: "D1 Professional Drift Grand Prix Series [Taikenban]"
+  region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes black void.
 SLPM-60262:
   name: "10th Anniversary Memorial Save Data [Disc 2]"
   region: "NTSC-J"
@@ -21135,6 +21155,14 @@ SLPM-62580:
 SLPM-62581:
   name: "K-1 Premium 2004 - Fighting Dynamite!!"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes black and white fighters.
+  patches:
+    0A1042EE:
+      content: |-
+        comment=Fixes black screen in hardware mode.
+        patch=1,EE,00301de0,word,0000948c
+        patch=1,EE,00301e08,word,0000948c
 SLPM-62582:
   name: "Slotter-Up Core 6"
   region: "NTSC-J"
@@ -24312,6 +24340,8 @@ SLPM-65862:
 SLPM-65863:
   name: "D1 Grand Prix Series - Professional Drift"
   region: "NTSC-J"
+  clampModes:
+    eeClampMode: 3 # Fixes black void.
 SLPM-65864:
   name: "Nobunaga no Yabou - Tenka Sousei [with Power-Up Kit]"
   region: "NTSC-J"
@@ -24962,6 +24992,14 @@ SLPM-66077:
   name: "K-1 World Max 2005"
   region: "NTSC-J"
   compat: 5
+  gameFixes:
+    - XGKickHack # Fixes black and white fighters.
+  patches:
+    08E3C435:
+      content: |-
+        comment=Fixes black screen in hardware mode.
+        patch=1,EE,003dfe60,word,0000948c
+        patch=1,EE,003dfe88,word,0000948c
 SLPM-66078:
   name: "White Princess the Second"
   region: "NTSC-J"
@@ -29098,6 +29136,12 @@ SLPS-20453:
   compat: 5
   gameFixes:
     - XGKickHack # Fixes black and white fighters.
+  patches:
+    602B7A48:
+      content: |-
+        comment=Fixes black screen in hardware mode.
+        patch=1,EE,00336a20,word,0000948c
+        patch=1,EE,00336a48,word,0000948c
 SLPS-20454:
   name: "Simple 2000 Series Vol.93 - The Right Brain Drill"
   region: "NTSC-J"
@@ -31113,6 +31157,14 @@ SLPS-25577:
 SLPS-25578:
   name: "K-1 World Grand Prix 2005"
   region: "NTSC-J"
+  gameFixes:
+    - XGKickHack # Fixes black and white fighters.
+  patches:
+    F8664E20:
+      content: |-
+        comment=Fixes black screen in hardware mode.
+        patch=1,EE,004269f0,word,0000948c
+        patch=1,EE,00426a18,word,0000948c
 SLPS-25579:
   name: "Little Aid"
   region: "NTSC-J"
@@ -38732,6 +38784,8 @@ SLUS-21416:
   name: "D1 Grand Prix"
   region: "NTSC-U"
   compat: 5
+  clampModes:
+    eeClampMode: 3 # Fixes black screen.
 SLUS-21417:
   name: "Xenosaga - Episode III - Also Sprach Zarathustra [Disc2of2]"
   region: "NTSC-U"
