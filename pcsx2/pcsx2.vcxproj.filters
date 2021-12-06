@@ -282,6 +282,9 @@
     <None Include="Docs\License.txt">
       <Filter>Docs</Filter>
     </None>
+    <None Include="ps2\eeHwTraceLog.inl">
+      <Filter>System\Ps2\EmotionEngine\Hardware</Filter>
+    </None>
     <None Include="x86\microVU_Alloc.inl">
       <Filter>System\Ps2\EmotionEngine\VU\Dynarec\microVU</Filter>
     </None>
@@ -1538,6 +1541,9 @@
     <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.cpp">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClCompile>
+    <ClCompile Include="GS\Renderers\SW\GSSetupPrimCodeGenerator.all.cpp">
+      <Filter>System\Ps2\GS\Renderers\Software</Filter>
+    </ClCompile>
     <ClCompile Include="GS\Renderers\SW\GSTextureCacheSW.cpp">
       <Filter>System\Ps2\GS\Renderers\Software</Filter>
     </ClCompile>
@@ -1634,8 +1640,12 @@
     <ClCompile Include="gui\wxSettingsInterface.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
-    <ClCompile Include="gui\wxGuiTools.cpp" />
-    <ClCompile Include="gui\wxHelpers.cpp" />
+    <ClCompile Include="gui\wxGuiTools.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
+    <ClCompile Include="gui\wxHelpers.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
     <ClCompile Include="gui\pxStaticText.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
@@ -2748,7 +2758,9 @@
     <ClInclude Include="gui\wxSettingsInterface.h">
       <Filter>AppHost</Filter>
     </ClInclude>
-    <ClInclude Include="gui\wxGuiTools.h" />
+    <ClInclude Include="gui\wxGuiTools.h">
+      <Filter>AppHost</Filter>
+    </ClInclude>
     <ClInclude Include="gui\pxStaticText.h">
       <Filter>AppHost</Filter>
     </ClInclude>
