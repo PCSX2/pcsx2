@@ -87,6 +87,7 @@
     <None Include="PAD\Windows\Default.ini" />
     <None Include="Utilities\folderdesc.txt" />
     <None Include="Docs\License.txt" />
+    <None Include="ps2\eeHwTraceLog.inl" />
     <None Include="x86\microVU_Alloc.inl" />
     <None Include="x86\microVU_Analyze.inl" />
     <None Include="x86\microVU_Branch.inl" />
