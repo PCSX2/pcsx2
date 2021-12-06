@@ -173,14 +173,12 @@ namespace PathDefs
 	{
 #ifdef __APPLE__
 		return wxDirName(wxStandardPaths::Get().GetResourcesDir());
-#elif !defined(GAMEINDEX_DIR_COMPILATION)
+#elif !defined(RESOURCES_DIR_COMPILATION)
 		return AppRoot();
 #else
 		// Each linux distributions have his rules for path so we give them the possibility to
 		// change it with compilation flags. -- Gregory
-#define xGAMEINDEX_str(s) GAMEINDEX_DIR_str(s)
-#define GAMEINDEX_DIR_str(s) #s
-		return wxDirName(xGAMEINDEX_str(GAMEINDEX_DIR_COMPILATION));
+		return wxDirName(STRINGIZE(RESOURCES_DIR_COMPILATION));
 #endif
 	}
 
