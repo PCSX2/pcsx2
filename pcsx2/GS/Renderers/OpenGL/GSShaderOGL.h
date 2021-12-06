@@ -33,10 +33,10 @@ class GSShaderOGL
 	bool ValidatePipeline(GLuint p);
 
 	std::string GenGlslHeader(const std::string& entry, GLenum type, const std::string& macro);
-	std::vector<char> m_common_header;
+	std::string m_common_header;
 
 public:
-	GSShaderOGL(bool debug);
+	GSShaderOGL(bool debug, std::string common_header);
 	~GSShaderOGL();
 
 	void BindPipeline(GLuint vs, GLuint gs, GLuint ps);

@@ -15,8 +15,8 @@
 
 #include "PrecompiledHeader.h"
 #include "GSDevice11.h"
-#include "GS/resource.h"
 #include "GS/GSTables.h"
+#include "gui/AppResources.h"
 
 bool GSDevice11::CreateTextureFX()
 {
@@ -115,9 +115,7 @@ void GSDevice11::SetupVS(VSSelector sel, const VSConstantBuffer* cb)
 
 		GSVertexShader11 vs;
 
-		std::vector<char> shader;
-		theApp.LoadResource(IDR_TFX_FX, shader);
-        CreateShader(shader, "tfx.fx", nullptr, "vs_main", sm.GetPtr(), &vs.vs, layout, std::size(layout), vs.il.put());
+		CreateShader(m_tfx_shader, "tfx.fx", nullptr, "vs_main", sm.GetPtr(), &vs.vs, layout, std::size(layout), vs.il.put());
 
 		m_vs[sel] = vs;
 
@@ -157,9 +155,7 @@ void GSDevice11::SetupGS(GSSelector sel, const GSConstantBuffer* cb)
 			sm.AddMacro("GS_POINT", sel.point);
 			sm.AddMacro("GS_LINE", sel.line);
 
-			std::vector<char> shader;
-			theApp.LoadResource(IDR_TFX_FX, shader);
-			CreateShader(shader, "tfx.fx", nullptr, "gs_main", sm.GetPtr(), gs.put());
+			CreateShader(m_tfx_shader, "tfx.fx", nullptr, "gs_main", sm.GetPtr(), gs.put());
 
 			m_gs[sel] = gs;
 		}
@@ -219,9 +215,7 @@ void GSDevice11::SetupPS(PSSelector sel, const PSConstantBuffer* cb, PSSamplerSe
 
 		wil::com_ptr_nothrow<ID3D11PixelShader> ps;
 
-		std::vector<char> shader;
-		theApp.LoadResource(IDR_TFX_FX, shader);
-		CreateShader(shader, "tfx.fx", nullptr, "ps_main", sm.GetPtr(), ps.put());
+		CreateShader(m_tfx_shader, "tfx.fx", nullptr, "ps_main", sm.GetPtr(), ps.put());
 
 		i = m_ps.try_emplace(sel, std::move(ps)).first;
 	}

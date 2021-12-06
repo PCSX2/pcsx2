@@ -912,91 +912,6 @@ void fifo_free(void* ptr, size_t size, size_t repeat)
 
 #endif
 
-static void* s_hModule;
-
-#ifdef _WIN32
-
-bool GSApp::LoadResource(int id, std::vector<char>& buff, const wchar_t* type)
-{
-	buff.clear();
-	HRSRC hRsrc = FindResource((HMODULE)s_hModule, MAKEINTRESOURCE(id), type != NULL ? type : (LPWSTR)RT_RCDATA);
-	if (!hRsrc)
-		return false;
-	HGLOBAL hGlobal = ::LoadResource((HMODULE)s_hModule, hRsrc);
-	if (!hGlobal)
-		return false;
-	DWORD size = SizeofResource((HMODULE)s_hModule, hRsrc);
-	if (!size)
-		return false;
-	// On Linux resources are always NULL terminated
-	// Add + 1 on size to do the same for compatibility sake (required by GSDeviceOGL)
-	buff.resize(size + 1);
-	memcpy(buff.data(), LockResource(hGlobal), size);
-	return true;
-}
-
-#else
-
-#include "GS_res.h"
-
-bool GSApp::LoadResource(int id, std::vector<char>& buff, const char* type)
-{
-	std::string path;
-	switch (id)
-	{
-		case IDR_COMMON_GLSL:
-			path = "/GS/res/glsl/common_header.glsl";
-			break;
-		case IDR_CONVERT_GLSL:
-			path = "/GS/res/glsl/convert.glsl";
-			break;
-		case IDR_FXAA_FX:
-			path = "/GS/res/fxaa.fx";
-			break;
-		case IDR_INTERLACE_GLSL:
-			path = "/GS/res/glsl/interlace.glsl";
-			break;
-		case IDR_MERGE_GLSL:
-			path = "/GS/res/glsl/merge.glsl";
-			break;
-		case IDR_SHADEBOOST_GLSL:
-			path = "/GS/res/glsl/shadeboost.glsl";
-			break;
-		case IDR_TFX_VGS_GLSL:
-			path = "/GS/res/glsl/tfx_vgs.glsl";
-			break;
-		case IDR_TFX_FS_GLSL:
-			path = "/GS/res/glsl/tfx_fs.glsl";
-			break;
-		case IDR_FONT_ROBOTO:
-			path = "/GS/res/fonts-roboto/Roboto-Regular.ttf";
-			break;
-		default:
-			printf("LoadResource not implemented for id %d\n", id);
-			return false;
-	}
-
-	GBytes* bytes = g_resource_lookup_data(GS_res_get_resource(), path.c_str(), G_RESOURCE_LOOKUP_FLAGS_NONE, nullptr);
-
-	size_t size = 0;
-	const void* data = g_bytes_get_data(bytes, &size);
-
-	if (data == nullptr || size == 0)
-	{
-		printf("Failed to get data for resource: %d\n", id);
-		return false;
-	}
-
-	buff.clear();
-	buff.resize(size + 1);
-	memcpy(buff.data(), data, size + 1);
-
-	g_bytes_unref(bytes);
-
-	return true;
-}
-#endif
-
 size_t GSApp::GetIniString(const char* lpAppName, const char* lpKeyName, const char* lpDefault, char* lpReturnedString, size_t nSize, const char* lpFileName)
 {
 	BuildConfigurationMap(lpFileName);
@@ -1359,11 +1274,6 @@ void GSApp::BuildConfigurationMap(const char* lpFileName)
 
 		m_configuration_map[key] = value;
 	}
-}
-
-void* GSApp::GetModuleHandlePtr()
-{
-	return s_hModule;
 }
 
 void GSApp::SetConfigDir()

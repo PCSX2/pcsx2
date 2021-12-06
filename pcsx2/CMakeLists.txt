@@ -848,42 +848,6 @@ else(WIN32)
 		USB/usb-pad/evdev/evdev.h
 		USB/usb-pad/evdev/shared.h
 	)
-
-
-	# GS resources
-	set(pcsx2GSResources
-		GS/res/fxaa.fx
-		GS/res/glsl/common_header.glsl
-		GS/res/glsl/convert.glsl
-		GS/res/glsl/interlace.glsl
-		GS/res/glsl/merge.glsl
-		GS/res/glsl/shadeboost.glsl
-		GS/res/glsl/tfx_fs.glsl
-		GS/res/glsl/tfx_vgs.glsl)
-
-	set(GSBin "${CMAKE_BINARY_DIR}/pcsx2/GS")
-	target_include_directories(PCSX2_FLAGS INTERFACE "${GSBin}")
-	file(MAKE_DIRECTORY "${GSBin}")
-
-	add_custom_command(
-		OUTPUT ${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.h
-		COMMAND glib-compile-resources --sourcedir "${CMAKE_SOURCE_DIR}/pcsx2/GS/res" --generate-header
-		--c-name GS_res "${CMAKE_SOURCE_DIR}/pcsx2/GS/res/GS-res.xml" --target=${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.h
-		DEPENDS ${pcsx2GSResources})
-
-	add_custom_command(
-		OUTPUT ${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.cpp
-		COMMAND glib-compile-resources --sourcedir "${CMAKE_SOURCE_DIR}/pcsx2/GS/res" --generate-source
-		--c-name GS_res "${CMAKE_SOURCE_DIR}/pcsx2/GS/res/GS-res.xml" --target=${CMAKE_BINARY_DIR}/pcsx2/GS/GS_res.cpp
-		DEPENDS ${pcsx2GSResources})
-
-	list(APPEND pcsx2GSSources
-		GS/GS_res.cpp
-	)
-
-	list(APPEND pcsx2GSHeaders
-		GS/GS_res.h
-	)
 endif(WIN32)
 
 
@@ -1533,6 +1497,9 @@ foreach(path IN LISTS RESOURCE_FILES)
 		continue()
 	endif()
 	if("${file}" MATCHES "^\\.")
+		continue()
+	endif()
+	if(NOT WIN32 AND "${path}" MATCHES "/dx11/")
 		continue()
 	endif()
 	pcsx2_resource(${path} ${CMAKE_SOURCE_DIR}/bin/resources/)

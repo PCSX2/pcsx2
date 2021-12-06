@@ -16,6 +16,7 @@
 #include "PrecompiledHeader.h"
 #include "GSOsdManager.h"
 #include "GS/GS.h"
+#include "gui/AppResources.h"
 #ifdef _WIN32
 #include "GS/resource.h"
 #endif
@@ -31,8 +32,11 @@ void GSOsdManager::LoadFont()
 	if (error)
 	{
 		FT_Error error_load_res = 1;
-		if (theApp.LoadResource(IDR_FONT_ROBOTO, resource_data_buffer))
-			error_load_res = FT_New_Memory_Face(m_library, (const FT_Byte*)resource_data_buffer.data(), resource_data_buffer.size(), 0, &m_face);
+		if (auto res = AppResources::LoadResource("fonts-roboto/Roboto-Regular.ttf"))
+		{
+			resource_data_buffer = std::move(*res);
+			error_load_res = FT_New_Memory_Face(m_library, resource_data_buffer.data(), resource_data_buffer.size(), 0, &m_face);
+		}
 
 		if (error_load_res)
 		{

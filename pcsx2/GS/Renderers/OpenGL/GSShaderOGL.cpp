@@ -18,18 +18,11 @@
 #include "GLState.h"
 #include "GS/GS.h"
 
-#ifdef _WIN32
-#include "GS/resource.h"
-#else
-#include "GS_res.h"
-#endif
-
-GSShaderOGL::GSShaderOGL(bool debug)
+GSShaderOGL::GSShaderOGL(bool debug, std::string common_header)
 	: m_pipeline(0)
 	, m_debug_shader(debug)
+	, m_common_header(std::move(common_header))
 {
-	theApp.LoadResource(IDR_COMMON_GLSL, m_common_header);
-
 	// Create a default pipeline
 	m_pipeline = LinkPipeline("HW pipe", 0, 0, 0);
 	BindPipeline(m_pipeline);
@@ -286,7 +279,7 @@ GLuint GSShaderOGL::Compile(const std::string& glsl_file, const std::string& ent
 	std::string header = GenGlslHeader(entry, type, macro_sel);
 
 	sources[0] = header.c_str();
-	sources[1] = m_common_header.data();
+	sources[1] = m_common_header.c_str();
 	sources[2] = glsl_h_code;
 
 	program = glCreateShaderProgramv(type, shader_nb, sources);
@@ -321,7 +314,7 @@ GLuint GSShaderOGL::CompileShader(const std::string& glsl_file, const std::strin
 	std::string header = GenGlslHeader(entry, type, macro_sel);
 
 	sources[0] = header.c_str();
-	sources[1] = m_common_header.data();
+	sources[1] = m_common_header.c_str();
 	sources[2] = glsl_h_code;
 
 	shader = glCreateShader(type);
