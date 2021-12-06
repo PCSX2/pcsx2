@@ -946,6 +946,7 @@ set(pcsx2GuiSources
 	gui/AppInit.cpp
 	gui/AppMain.cpp
 	gui/AppRes.cpp
+	gui/AppResources.cpp
 	gui/CheckedStaticBox.cpp
 	gui/ConsoleLogger.cpp
 	gui/CpuUsageProvider.cpp
@@ -1018,6 +1019,7 @@ set(pcsx2GuiHeaders
 	gui/AppEventListeners.h
 	gui/AppForwardDefs.h
 	gui/AppGameDatabase.h
+	gui/AppResources.h
 	gui/App.h
 	gui/ApplyState.h
 	gui/AppSaveStates.h

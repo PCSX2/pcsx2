@@ -647,6 +647,7 @@
     <ClCompile Include="gui\AppInit.cpp" />
     <ClCompile Include="gui\AppMain.cpp" />
     <ClCompile Include="gui\AppRes.cpp" />
+    <ClCompile Include="gui\AppResources.cpp" />
     <ClCompile Include="gui\ConsoleLogger.cpp" />
     <ClCompile Include="gui\CpuUsageProvider.cpp" />
     <ClCompile Include="gui\ExecutorThread.cpp" />
@@ -1077,6 +1078,7 @@
     <ClInclude Include="gui\AppCoreThread.h" />
     <ClInclude Include="gui\AppEventListeners.h" />
     <ClInclude Include="gui\AppForwardDefs.h" />
+    <ClInclude Include="gui\AppResources.h" />
     <ClInclude Include="gui\ApplyState.h" />
     <ClInclude Include="gui\AppSaveStates.h" />
     <ClInclude Include="gui\ConsoleLogger.h" />

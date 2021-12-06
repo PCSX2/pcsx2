@@ -740,6 +740,9 @@
     <ClCompile Include="gui\AppRes.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
+    <ClCompile Include="gui\AppResources.cpp">
+      <Filter>AppHost</Filter>
+    </ClCompile>
     <ClCompile Include="gui\ConsoleLogger.cpp">
       <Filter>AppHost</Filter>
     </ClCompile>
@@ -1957,6 +1960,9 @@
       <Filter>AppHost\Include</Filter>
     </ClInclude>
     <ClInclude Include="gui\AppSaveStates.h">
+      <Filter>AppHost\Include</Filter>
+    </ClInclude>
+    <ClInclude Include="gui\AppResources.h">
       <Filter>AppHost\Include</Filter>
     </ClInclude>
     <ClInclude Include="gui\ConsoleLogger.h">
