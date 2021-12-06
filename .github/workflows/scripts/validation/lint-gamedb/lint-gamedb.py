@@ -1,7 +1,7 @@
 import yaml
 
 # Assumes this is ran from the root of the repository
-file_path = "./bin/GameIndex.yaml"
+file_path = "./bin/resources/GameIndex.yaml"
 
 # These settings have to be manually kept in sync with the emulator code unfortunately.
 # up to date validation should ALWAYS be provided via the application!

@@ -174,7 +174,7 @@ namespace PathDefs
 #ifdef __APPLE__
 		return wxDirName(wxStandardPaths::Get().GetResourcesDir());
 #elif !defined(RESOURCES_DIR_COMPILATION)
-		return AppRoot();
+		return AppRoot() + wxDirName("resources");
 #else
 		// Each linux distributions have his rules for path so we give them the possibility to
 		// change it with compilation flags. -- Gregory
