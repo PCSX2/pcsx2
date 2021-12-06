@@ -14,7 +14,7 @@
  */
 
 #include "joystick.h"
-#include "resources_pad.h"
+#include "gui/AppResources.h"
 #include <signal.h> // sigaction
 
 //////////////////////////
@@ -46,15 +46,8 @@ void JoystickInfo::EnumerateJoysticks(std::vector<std::unique_ptr<Device>>& vjoy
 		SDL_EventState(SDL_CONTROLLERDEVICEREMOVED, SDL_ENABLE);
 
 		{ // Support as much Joystick as possible
-			GBytes* bytes = g_resource_lookup_data(PAD_res_get_resource(), "/PAD/res/game_controller_db.txt", G_RESOURCE_LOOKUP_FLAGS_NONE, nullptr);
-
-			size_t size = 0;
-			// SDL forget to add const for SDL_RWFromMem API...
-			void* data = const_cast<void*>(g_bytes_get_data(bytes, &size));
-
-			SDL_GameControllerAddMappingsFromRW(SDL_RWFromMem(data, size), 1);
-
-			g_bytes_unref(bytes);
+			if (auto db = AppResources::LoadResource("game_controller_db.txt"))
+				SDL_GameControllerAddMappingsFromRW(SDL_RWFromMem(db->data(), db->size()), 1);
 
 			// Add user mapping too
 			for (auto const& map : g_conf.sdl2_mapping)
