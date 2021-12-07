@@ -462,7 +462,6 @@ public:
 
 private:
 	std::unique_ptr<GL::Context> m_gl_context;
-	int m_force_texture_clear;
 	int m_mipmap;
 	TriFiltering m_filter;
 
@@ -559,7 +558,6 @@ private:
 	AlignedBuffer<u8, 32> m_download_buffer;
 
 	GSTexture* CreateSurface(GSTexture::Type type, int w, int h, GSTexture::Format format) final;
-	GSTexture* FetchSurface(GSTexture::Type type, int w, int h, GSTexture::Format format) final;
 
 	void DoMerge(GSTexture* sTex[3], GSVector4* sRect, GSTexture* dTex, GSVector4* dRect, const GSRegPMODE& PMODE, const GSRegEXTBUF& EXTBUF, const GSVector4& c) final;
 	void DoInterlace(GSTexture* sTex, GSTexture* dTex, int shader, bool linear, float yoffset = 0) final;
