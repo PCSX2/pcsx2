@@ -467,7 +467,7 @@ void GSRendererDX11::EmulateBlending(u8& afix)
 	const bool blend_mix1 = !!(blend_flag & BLEND_MIX1);
 	const bool blend_mix2 = !!(blend_flag & BLEND_MIX2);
 	const bool blend_mix3 = !!(blend_flag & BLEND_MIX3);
-	const bool blend_mix  = (blend_mix1 || blend_mix2 || blend_mix3)
+	bool blend_mix = (blend_mix1 || blend_mix2 || blend_mix3)
 		// Do not enable if As > 128 or F > 128, hw blend clamps to 1
 		&& !((ALPHA.C == 0 && m_vt.m_alpha.max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
 
@@ -477,10 +477,17 @@ void GSRendererDX11::EmulateBlending(u8& afix)
 		case ACC_BLEND_HIGH_D3D11:
 		case ACC_BLEND_MEDIUM_D3D11:
 		case ACC_BLEND_BASIC_D3D11:
-			sw_blending |= accumulation_blend || blend_non_recursive || blend_mix;
+			sw_blending |= accumulation_blend || blend_non_recursive;
 			[[fallthrough]];
 		default:
 			break;
+	}
+
+	// Do not run BLEND MIX if sw blending is already present, it's less accurate
+	if (m_sw_blending)
+	{
+		blend_mix &= !sw_blending;
+		sw_blending |= blend_mix;
 	}
 
 	// Color clip
