@@ -110,7 +110,7 @@ public:
 protected:
 	void InvokeEvent()
 	{
-		SaveState_ZipToDisk(m_src_list, m_filename);
+		SaveState_ZipToDisk(m_src_list, nullptr, m_filename, -1);
 	}
 
 	void CleanupEvent()
