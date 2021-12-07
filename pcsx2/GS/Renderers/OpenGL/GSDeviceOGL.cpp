@@ -49,8 +49,7 @@ int   GSDeviceOGL::m_shader_reg  = 0;
 FILE* GSDeviceOGL::m_debug_gl_file = NULL;
 
 GSDeviceOGL::GSDeviceOGL()
-	: m_force_texture_clear(0)
-	, m_fbo(0)
+	: m_fbo(0)
 	, m_fbo_read(0)
 	, m_apitrace(0)
 	, m_palette_ss(0)
@@ -238,67 +237,8 @@ GSTexture* GSDeviceOGL::CreateSurface(GSTexture::Type type, int w, int h, GSText
 {
 	GL_PUSH("Create surface");
 
-	// A wrapper to call GSTextureOGL, with the different kind of parameter
+	// A wrapper to call GSTextureOGL, with the different kind of parameters.
 	GSTextureOGL* t = new GSTextureOGL(type, w, h, fmt, m_fbo_read, m_mipmap > 1 || m_filter != TriFiltering::None);
-
-	// NOTE: I'm not sure RenderTarget always need to be cleared. It could be costly for big upscale.
-	// FIXME: it will be more logical to do it in FetchSurface. This code is only called at first creation
-	//  of the texture. However we could reuse a deleted texture.
-	if (m_force_texture_clear == 0)
-	{
-		// Clear won't be done if the texture isn't committed. Commit the full texture to ensure
-		// correct behavior of force clear option (debug option)
-		t->Commit();
-
-		switch (type)
-		{
-			case GSTexture::Type::RenderTarget:
-				ClearRenderTarget(t, 0);
-				break;
-			case GSTexture::Type::DepthStencil:
-				ClearDepth(t);
-				// No need to clear the stencil now.
-				break;
-			default:
-				break;
-		}
-	}
-
-	return t;
-}
-
-GSTexture* GSDeviceOGL::FetchSurface(GSTexture::Type type, int w, int h, GSTexture::Format format)
-{
-	GSTexture* t = GSDevice::FetchSurface(type, w, h, format);
-
-
-	if (m_force_texture_clear)
-	{
-		// Clear won't be done if the texture isn't committed. Commit the full texture to ensure
-		// correct behavior of force clear option (debug option)
-		t->Commit();
-
-		const GSVector4 red(1.0f, 0.0f, 0.0f, 1.0f);
-		switch (type)
-		{
-			case GSTexture::Type::RenderTarget:
-				ClearRenderTarget(t, 0);
-				break;
-			case GSTexture::Type::DepthStencil:
-				ClearDepth(t);
-				// No need to clear the stencil now.
-				break;
-			case GSTexture::Type::Texture:
-				if (m_force_texture_clear > 1)
-					static_cast<GSTextureOGL*>(t)->Clear((void*)&red);
-				else if (m_force_texture_clear)
-					static_cast<GSTextureOGL*>(t)->Clear(NULL);
-
-				break;
-			default:
-				break;
-		}
-	}
 
 	return t;
 }
@@ -345,8 +285,6 @@ bool GSDeviceOGL::Create(const WindowInfo& wi)
 		glDebugMessageControl(GL_DEBUG_SOURCE_API_ARB, GL_DEBUG_TYPE_OTHER_ARB, GL_DONT_CARE, std::size(ids), ids, false);
 	}
 #endif
-
-	m_force_texture_clear = theApp.GetConfigI("force_texture_clear");
 
 	// WARNING it must be done after the control setup (at least on MESA)
 	GL_PUSH("GSDeviceOGL::Create");

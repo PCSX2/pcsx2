@@ -629,7 +629,7 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int w, int h, GSTextu
 			break;
 	}
 
-	GSTexture11* t = NULL;
+	GSTexture11* t = nullptr;
 
 	wil::com_ptr_nothrow<ID3D11Texture2D> texture;
 	HRESULT hr = m_dev->CreateTexture2D(&desc, nullptr, texture.put());
@@ -637,16 +637,7 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int w, int h, GSTextu
 	if (SUCCEEDED(hr))
 	{
 		t = new GSTexture11(std::move(texture), format);
-
-		switch (type)
-		{
-			case GSTexture::Type::RenderTarget:
-				ClearRenderTarget(t, 0);
-				break;
-			case GSTexture::Type::DepthStencil:
-				ClearDepth(t);
-				break;
-		}
+		assert(type == t->GetType());
 	}
 	else
 	{
@@ -654,11 +645,6 @@ GSTexture* GSDevice11::CreateSurface(GSTexture::Type type, int w, int h, GSTextu
 	}
 
 	return t;
-}
-
-GSTexture* GSDevice11::FetchSurface(GSTexture::Type type, int w, int h, GSTexture::Format format)
-{
-	return __super::FetchSurface(type, w, h, format);
 }
 
 bool GSDevice11::DownloadTexture(GSTexture* src, const GSVector4i& rect, GSTexture::GSMap& out_map)
