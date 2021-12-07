@@ -566,6 +566,7 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 		{
 			GL_INS("PABE mode ENABLED");
 			m_ps_sel.pabe = 1;
+			accumulation_blend = false;
 		}
 	}
 
