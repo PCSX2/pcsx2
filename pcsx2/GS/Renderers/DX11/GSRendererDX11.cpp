@@ -514,6 +514,7 @@ void GSRendererDX11::EmulateBlending(u8& afix)
 		{
 			// fprintf(stderr, "%d: PABE mode ENABLED\n", s_n);
 			m_ps_sel.pabe = 1;
+			sw_blending = !accumulation_blend;
 		}
 	}
 
