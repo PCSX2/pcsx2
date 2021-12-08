@@ -16,7 +16,6 @@
 #include "PrecompiledHeader.h"
 #include "Frontend/XInputSource.h"
 #include "Frontend/InputManager.h"
-#include "HostSettings.h"
 #include "common/Assertions.h"
 #include "common/StringUtil.h"
 #include "common/Console.h"

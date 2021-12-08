@@ -39,6 +39,7 @@
 #include "pcsx2/GS.h"
 #ifdef PCSX2_CORE
 #include "pcsx2/HostSettings.h"
+#include "pcsx2/Frontend/InputManager.h"
 #endif
 
 #ifdef ENABLE_VULKAN
@@ -1509,3 +1510,98 @@ void GSApp::SetConfig(const char* entry, int value)
 
 	SetConfig(entry, buff);
 }
+
+#ifdef PCSX2_CORE
+
+static void HotkeyAdjustUpscaleMultiplier(s32 delta)
+{
+	const u32 new_multiplier = static_cast<u32>(std::clamp(static_cast<s32>(EmuConfig.GS.UpscaleMultiplier) + delta, 1, 8));
+	Host::AddKeyedFormattedOSDMessage("UpscaleMultiplierChanged", 10.0f, "Upscale multiplier set to %ux.", new_multiplier);
+	EmuConfig.GS.UpscaleMultiplier = new_multiplier;
+
+	// this is pretty slow. we only really need to flush the TC and recompile shaders.
+	// TODO(Stenzek): Make it faster at some point in the future.
+	GetMTGS().ApplySettings();
+}
+
+static void HotkeyAdjustZoom(double delta)
+{
+	const double new_zoom = std::clamp(EmuConfig.GS.Zoom + delta, 1.0, 200.0);
+	Host::AddKeyedFormattedOSDMessage("ZoomChanged", 10.0f, "Zoom set to %.1f%%.", new_zoom);
+	EmuConfig.GS.Zoom = new_zoom;
+
+	// no need to go through the full settings update for this
+	GetMTGS().RunOnGSThread([new_zoom]() { GSConfig.Zoom = new_zoom; });
+}
+
+BEGIN_HOTKEY_LIST(g_gs_hotkeys){
+	"ToggleSoftwareRendering", "Graphics", "Toggle Software Rendering", [](bool pressed) {
+		if (!pressed)
+			GetMTGS().ToggleSoftwareRendering();
+	}},
+	{"IncreaseUpscaleMultiplier", "Graphics", "Increase Upscale Multiplier", [](bool pressed) {
+		 if (!pressed)
+			 HotkeyAdjustUpscaleMultiplier(1);
+	 }},
+	{"DecreaseUpscaleMultiplier", "Graphics", "Decrease Upscale Multiplier", [](bool pressed) {
+		 if (!pressed)
+			 HotkeyAdjustUpscaleMultiplier(-1);
+	 }},
+	{"CycleAspectRatio", "Graphics", "Cycle Aspect Ratio", [](bool pressed) {
+		 if (pressed)
+			 return;
+
+		 GetMTGS().RunOnGSThread([]() {
+			 GSConfig.AspectRatio = static_cast<AspectRatioType>((static_cast<int>(GSConfig.AspectRatio) + 1) % static_cast<int>(AspectRatioType::MaxCount));
+			 Host::AddKeyedFormattedOSDMessage("CycleAspectRatio", 10.0f, "Aspect ratio set to '%s'.", Pcsx2Config::GSOptions::AspectRatioNames[static_cast<int>(GSConfig.AspectRatio)]);
+		 });
+	 }},
+	{"CycleMipmapMode", "Graphics", "Cycle Hardware Mipmapping", [](bool pressed) {
+		 if (pressed)
+			 return;
+
+		 static constexpr s32 CYCLE_COUNT = 4;
+		 static constexpr std::array<const char*, CYCLE_COUNT> option_names = {{"Automatic", "Off", "Basic (Generated)", "Full (PS2)"}};
+
+		 const HWMipmapLevel new_level = static_cast<HWMipmapLevel>(((static_cast<s32>(EmuConfig.GS.HWMipmap) + 2) % CYCLE_COUNT) - 1);
+		 Host::AddKeyedFormattedOSDMessage("CycleMipmapMode", 10.0f, "Hardware mipmapping set to '%s'.", option_names[static_cast<s32>(new_level) + 1]);
+		 EmuConfig.GS.HWMipmap = new_level;
+
+		 GetMTGS().RunOnGSThread([new_level]() {
+			 GSConfig.HWMipmap = new_level;
+			 s_gs->PurgeTextureCache();
+			 s_gs->PurgePool();
+		 });
+	 }},
+	{"CycleInterlaceMode", "Graphics", "Cycle Interlace Mode", [](bool pressed) {
+		 if (pressed)
+			 return;
+
+		 static constexpr std::array<const char*, static_cast<int>(GSInterlaceMode::Count)> option_names = {{
+			 "Off",
+			 "Weave (Top Field First)",
+			 "Weave (Bottom Field First)",
+			 "Bob (Top Field First)",
+			 "Bob (Bottom Field First)",
+			 "Blend (Top Field First)",
+			 "Blend (Bottom Field First)",
+			 "Automatic",
+		 }};
+
+		 const GSInterlaceMode new_mode = static_cast<GSInterlaceMode>((static_cast<s32>(EmuConfig.GS.InterlaceMode) + 1) % static_cast<s32>(GSInterlaceMode::Count));
+		 Host::AddKeyedFormattedOSDMessage("CycleMipmapMode", 10.0f, "Interlace mode set to '%s'.", option_names[static_cast<s32>(new_mode)]);
+		 EmuConfig.GS.InterlaceMode = new_mode;
+
+		 GetMTGS().RunOnGSThread([new_mode]() { GSConfig.InterlaceMode = new_mode; });
+	 }},
+	{"ZoomIn", "Graphics", "Zoom In", [](bool pressed) {
+		 if (!pressed)
+			 HotkeyAdjustZoom(1.0);
+	 }},
+	{"ZoomOut", "Graphics", "Zoom Out", [](bool pressed) {
+		 if (!pressed)
+			 HotkeyAdjustZoom(-1.0);
+	 }},
+END_HOTKEY_LIST()
+
+#endif

@@ -222,7 +222,7 @@ static std::array<std::unique_ptr<InputSource>, static_cast<u32>(InputSourceType
 // ------------------------------------------------------------------------
 // Hotkeys
 // ------------------------------------------------------------------------
-static const HotkeyInfo* const s_hotkey_list[] = {g_vm_manager_hotkeys, g_host_hotkeys};
+static const HotkeyInfo* const s_hotkey_list[] = {g_vm_manager_hotkeys, g_gs_hotkeys, g_host_hotkeys};
 
 // ------------------------------------------------------------------------
 // Binding Parsing
