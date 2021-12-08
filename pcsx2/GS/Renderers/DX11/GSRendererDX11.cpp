@@ -456,7 +456,7 @@ void GSRendererDX11::EmulateBlending(u8& afix)
 	const int blend_flag = m_dev->GetBlendFlags(m_om_bsel.blend_index);
 
 	// Do the multiplication in shader for blending accumulation: Cs*As + Cd or Cs*Af + Cd
-	const bool accumulation_blend = !!(blend_flag & BLEND_ACCU);
+	bool accumulation_blend = !!(blend_flag & BLEND_ACCU);
 
 	// Blending doesn't require sampling of the rt
 	const bool blend_non_recursive = !!(blend_flag & BLEND_NO_REC);
@@ -477,17 +477,26 @@ void GSRendererDX11::EmulateBlending(u8& afix)
 		case ACC_BLEND_HIGH_D3D11:
 		case ACC_BLEND_MEDIUM_D3D11:
 		case ACC_BLEND_BASIC_D3D11:
-			sw_blending |= accumulation_blend || blend_non_recursive;
-			[[fallthrough]];
+			sw_blending |= blend_non_recursive;
+			break;
 		default:
 			break;
 	}
 
-	// Do not run BLEND MIX if sw blending is already present, it's less accurate
+	// Do not run BLEND MIX/ACCU if sw blending is already present
 	if (m_sw_blending)
 	{
-		blend_mix &= !sw_blending;
-		sw_blending |= blend_mix;
+		// Keep accumulation blend on when no other case needs sw blending.
+		// Superman shadows of Apokolips needs sw blending to produce proper shadows, game uses SW FBMASK.
+		// It is also the same with blend mix for various different games,
+		// so best solution is to enable them if no other effect needs sw blending.
+		// This way we make sure we can rely on accurate behavior.
+
+		accumulation_blend &= !sw_blending;
+		sw_blending        |= accumulation_blend;
+
+		blend_mix          &= !sw_blending;
+		sw_blending        |= blend_mix;
 	}
 
 	// Color clip
