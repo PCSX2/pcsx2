@@ -215,7 +215,10 @@ option(USE_PGO_OPTIMIZE "Enable PGO optimization (use profile)")
 if(MSVC)
 	add_compile_options("$<$<COMPILE_LANGUAGE:CXX>:/Zc:externConstexpr>")
 else()
-	add_compile_options(-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse -fno-operator-names)
+	add_compile_options(-pipe -fvisibility=hidden -pthread -fno-builtin-strcmp -fno-builtin-memcmp -mfpmath=sse)
+
+	# -fno-operator-names should only be for C++ files, not C files.
+	add_compile_options($<$<COMPILE_LANGUAGE:CXX>:-fno-operator-names>)
 endif()
 
 if(WIN32)
