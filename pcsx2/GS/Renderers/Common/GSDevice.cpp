@@ -277,7 +277,7 @@ GSTexture::Format GSDevice::GetDefaultTextureFormat(GSTexture::Type type)
 		return GSTexture::Format::Color;
 }
 
-bool GSDevice::DownloadTextureConvert(GSTexture* src, const GSVector4& sRect, const GSVector2i& dSize, GSTexture::Format format, ShaderConvert ps_shader, GSTexture::GSMap& out_map)
+bool GSDevice::DownloadTextureConvert(GSTexture* src, const GSVector4& sRect, const GSVector2i& dSize, GSTexture::Format format, ShaderConvert ps_shader, GSTexture::GSMap& out_map, const bool linear)
 {
 	ASSERT(src);
 	ASSERT(format == GSTexture::Format::Color || format == GSTexture::Format::UInt16 || format == GSTexture::Format::UInt32);
@@ -287,7 +287,7 @@ bool GSDevice::DownloadTextureConvert(GSTexture* src, const GSVector4& sRect, co
 		return false;
 
 	GSVector4i dRect(0, 0, dSize.x, dSize.y);
-	StretchRect(src, sRect, dst, GSVector4(dRect), ps_shader);
+	StretchRect(src, sRect, dst, GSVector4(dRect), ps_shader, linear);
 
 	bool ret = DownloadTexture(dst, dRect, out_map);
 	Recycle(dst);

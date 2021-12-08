@@ -1693,7 +1693,7 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 	GL_PERF("TC: Read Back Target: %d (0x%x)[fmt: 0x%x]. Size %dx%d",
 	        t->m_texture->GetID(), TEX0.TBP0, TEX0.PSM, r.width(), r.height());
 
-	GSVector4 src = GSVector4(r) * GSVector4(t->m_texture->GetScale()).xyxy() / GSVector4(t->m_texture->GetSize()).xyxy();
+	const GSVector4 src = GSVector4(r) * GSVector4(t->m_texture->GetScale()).xyxy() / GSVector4(t->m_texture->GetSize()).xyxy();
 
 	bool res;
 	GSTexture::GSMap m;
@@ -1701,11 +1701,11 @@ void GSTextureCache::Read(Target* t, const GSVector4i& r)
 	if (t->m_texture->GetScale() == GSVector2(1, 1) && ps_shader == ShaderConvert::COPY)
 		res = m_renderer->m_dev->DownloadTexture(t->m_texture, r, m);
 	else
-		res = m_renderer->m_dev->DownloadTextureConvert(t->m_texture, src, GSVector2i(r.width(), r.height()), fmt, ps_shader, m);
+		res = m_renderer->m_dev->DownloadTextureConvert(t->m_texture, src, GSVector2i(r.width(), r.height()), fmt, ps_shader, m, false);
 
 	if (res)
 	{
-		GSOffset off = m_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
+		const GSOffset off = m_renderer->m_mem.GetOffset(TEX0.TBP0, TEX0.TBW, TEX0.PSM);
 
 		switch (TEX0.PSM)
 		{

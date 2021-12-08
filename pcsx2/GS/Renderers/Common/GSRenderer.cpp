@@ -517,7 +517,7 @@ void GSRenderer::VSync(int field)
 			if (size == current->GetSize())
 				res = m_dev->DownloadTexture(current, GSVector4i(0, 0, size.x, size.y), m);
 			else
-				res = m_dev->DownloadTextureConvert(current, GSVector4(0, 0, 1, 1), size, GSTexture::Format::Color, ShaderConvert::COPY, m);
+				res = m_dev->DownloadTextureConvert(current, GSVector4(0, 0, 1, 1), size, GSTexture::Format::Color, ShaderConvert::COPY, m, true);
 
 			if (res)
 			{
