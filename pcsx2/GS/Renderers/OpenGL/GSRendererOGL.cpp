@@ -499,7 +499,6 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 	// SW Blend is (nearly) free. Let's use it.
 	const bool impossible_or_free_blend = (blend_flag & BLEND_A_MAX) // Impossible blending
 		|| blend_non_recursive                 // Free sw blending, doesn't require barriers or reading fb
-		|| accumulation_blend                  // Mix of hw/sw blending
 		|| (m_prim_overlap == PRIM_OVERLAP_NO) // Blend can be done in a single draw
 		|| (m_require_full_barrier);           // Another effect (for example fbmask) already requires a full barrier
 
@@ -509,8 +508,8 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 	switch (m_sw_blending)
 	{
 		case ACC_BLEND_ULTRA:
-			sw_blending |= true;
-			[[fallthrough]];
+			sw_blending = true;
+			break;
 		case ACC_BLEND_FULL:
 			sw_blending |= (ALPHA.A != ALPHA.B) && ((ALPHA.C == 0 && m_vt.m_alpha.max > 128) || (ALPHA.C == 2 && ALPHA.FIX > 128u));
 			[[fallthrough]];
@@ -525,16 +524,25 @@ void GSRendererOGL::EmulateBlending(bool& DATE_GL42, bool& DATE_GL45)
 			[[fallthrough]];
 		case ACC_BLEND_BASIC:
 			sw_blending |= impossible_or_free_blend;
-			[[fallthrough]];
+			break;
 		default:
-			/*sw_blending |= accumulation_blend*/;
+			break;
 	}
 
-	// Do not run BLEND MIX if sw blending is already present, it's less accurate
+	// Do not run BLEND MIX/ACCU if sw blending is already present
 	if (m_sw_blending)
 	{
-		blend_mix &= !sw_blending;
-		sw_blending |= blend_mix;
+		// Keep accumulation blend on when no other case needs sw blending.
+		// Superman shadows of Apokolips needs sw blending to produce proper shadows, game uses SW FBMASK.
+		// It is also the same with blend mix for various different games,
+		// so best solution is to enable them if no other effect needs sw blending.
+		// This way we make sure we can rely on accurate behavior.
+
+		accumulation_blend &= !sw_blending;
+		sw_blending        |= accumulation_blend;
+
+		blend_mix          &= !sw_blending;
+		sw_blending        |= blend_mix;
 	}
 
 	// Color clip
