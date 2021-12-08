@@ -121,6 +121,7 @@ struct HotkeyInfo
 #define END_HOTKEY_LIST() {nullptr, nullptr, nullptr, nullptr} };
 
 DECLARE_HOTKEY_LIST(g_vm_manager_hotkeys);
+DECLARE_HOTKEY_LIST(g_gs_hotkeys);
 DECLARE_HOTKEY_LIST(g_host_hotkeys);
 
 /// External input source class.
